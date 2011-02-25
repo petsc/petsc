@@ -32,17 +32,17 @@ class QuadratureGenerator(script.Script):
 
   def createQuadrature(self, shape, degree):
     import FIAT.quadrature
-    return FIAT.quadrature.make_quadrature_by_degree(shape, degree)
+    return FIAT.quadrature.make_quadrature(shape, degree)
 
   def createFaceQuadrature(self, shape, degree):
-    import FIAT.shapes
+    from FIAT.reference_element import default_simplex
 
-    if shape == FIAT.shapes.TRIANGLE:
-      q0 = self.createQuadrature(FIAT.shapes.LINE, degree)
+    if shape == default_simplex(2):
+      q0 = self.createQuadrature(default_simplex(1), degree)
       q0.x = [[p, -1.0] for p in q0.x]
-      q1 = self.createQuadrature(FIAT.shapes.LINE, degree)
+      q1 = self.createQuadrature(default_simplex(1), degree)
       q1.x = [[-1.0, p] for p in q1.x]
-      q2 = self.createQuadrature(FIAT.shapes.LINE, degree)
+      q2 = self.createQuadrature(default_simplex(1), degree)
       q2.x = [[p, p] for p in q2.x]
       return (q0, q1, q2)
     else:
@@ -103,10 +103,9 @@ class QuadratureGenerator(script.Script):
                                                 v0-----------v1
                                                     e2
     '''
-    import FIAT.shapes
-    basis = element.function_space()
-    dim   = FIAT.shapes.dimension(basis.base.shape)
-    ids   = element.Udual.entity_ids
+    basis = element.get_nodal_basis()
+    dim   = element.get_reference_element().get_spatial_dimension()
+    ids   = element.entity_dofs()
     if dim == 1:
       perm = []
       for e in ids[1]:
@@ -136,13 +135,12 @@ class QuadratureGenerator(script.Script):
         perm.extend(ids[0][v])
     else:
       perm = None
-    if hasattr(element.Udual, 'pts'): print element.Udual.pts
-    print element.Udual.entity_ids
+    print [f.get_point_dict() for f in element.dual_basis()]
+    print element.entity_dofs()
     print 'Perm:',perm
     return perm
 
   def getReferenceTensor(self, element, quadrature):
-    import FIAT.shapes
     import numpy
 
     components = element.function_space().tensor_shape()[0]
@@ -151,7 +149,7 @@ class QuadratureGenerator(script.Script):
     elemMats = []
     for i in range(components):
       basis = element.function_space().select_vector_component(i)
-      dim = FIAT.shapes.dimension(basis.base.shape)
+      dim = element.get_reference_element().get_spatial_dimension()
       elemMat = numpy.zeros((len(basis), len(basis), dim, dim), dtype = numpy.float32)
       basisTab = numpy.transpose(basis.tabulate(points))
       basisDerTab = numpy.transpose([basis.deriv_all(d).tabulate(points) for d in range(dim)])
@@ -176,25 +174,27 @@ class QuadratureGenerator(script.Script):
   def getBasisStructs(self, name, element, quadrature, num):
     '''Return C arrays with the basis functions and their derivatives evalauted at the quadrature points
        - FIAT uses a reference element of (-1,-1):(1,-1):(-1,1)'''
+    from FIAT.polynomial_set import mis
     from Cxx import Define
-    import FIAT.shapes
     import numpy
 
     self.logPrint('Generating basis structures for element '+str(element.__class__), debugSection = 'codegen')
     points = quadrature.get_points()
     code = []
-    for i in range(element.function_space().tensor_shape()[0]):
-      basis = element.function_space().select_vector_component(i)
-      dim = FIAT.shapes.dimension(basis.base.shape)
+    #TODO: No longer handles vector elements, use element.value_shape()
+    for i in range(1):
+      basis = element.get_nodal_basis()
+      dim = element.get_reference_element().get_spatial_dimension()
       ext = '_'+str(num+i)
       numFunctions = Define()
       numFunctions.identifier = 'NUM_BASIS_FUNCTIONS'+ext
-      numFunctions.replacementText = str(len(basis))
-      basisName = name+'Basis'+ext
+      numFunctions.replacementText = str(basis.get_num_members())
+      basisName    = name+'Basis'+ext
       basisDerName = name+'BasisDerivatives'+ext
-      perm = self.getBasisFuncOrder(element)
-      basisTab = numpy.transpose(basis.tabulate(points))
-      basisDerTab = numpy.transpose([basis.deriv_all(d).tabulate(points) for d in range(dim)])
+      perm         = self.getBasisFuncOrder(element)
+      evals        = basis.tabulate(points, 1)
+      basisTab     = numpy.array(evals[mis(dim, 0)[0]]).transpose()
+      basisDerTab  = numpy.array([evals[alpha] for alpha in mis(dim, 1)]).transpose()
       if not perm is None:
         basisTabOld    = numpy.array(basisTab)
         basisDerTabOld = numpy.array(basisDerTab)
@@ -267,10 +267,10 @@ class QuadratureGenerator(script.Script):
     return
 
   def cellToFaceTransform(self, shape, cmpd, coordVar, quadVar, face):
-    import FIAT.shapes
+    from FIAT.reference_element import default_simplex
     from math import sqrt
     from Cxx import Break
-    if shape == FIAT.shapes.TRIANGLE:
+    if shape == default_simplex(2):
       if face == 0:
         cStmt = self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(coordVar, 0), self.Cxx.getArrayRef(quadVar, 'q')), caseLabel = face)
         cmpd.children.extend([cStmt, self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(coordVar, 1), -1.0)), Break()])
@@ -283,15 +283,14 @@ class QuadratureGenerator(script.Script):
     return
 
   def getIntegratorPoints(self, n, element):
-    from FIAT import shapes
     from Cxx import Define
     import numpy
 
-    ids  = element.Udual.entity_ids
-    pts  = element.Udual.pts
+    ids  = element.entity_dofs()
+    pts  = [f.get_point_dict().keys()[0] for f in element.dual_basis()]
     perm = self.getBasisFuncOrder(element)
     ext  = '_'+str(n)
-    dim  = shapes.dimension(element.function_space().base.shape)
+    dim  = element.get_reference_element().get_spatial_dimension()
     if dim == 1:
       num = len(ids[1][0]) + len(ids[0][0])*2
     elif dim == 2:
@@ -308,11 +307,10 @@ class QuadratureGenerator(script.Script):
     return [numPoints, self.getArray(self.Cxx.getVar('dualPoints'+ext), dualPoints, 'Dual points\n   - (x1,y1,x2,y2,...)')]
 
   def getIntegratorSetup_PointEvaluation(self, n, element, isBd = False):
-    import FIAT.shapes
     from Cxx import Break, CompoundStatement, Function, Pointer, Switch
-    dim  = FIAT.shapes.dimension(element.function_space().base.shape)
-    ids  = element.Udual.entity_ids
-    pts  = element.Udual.pts
+    dim  = element.get_reference_element().get_spatial_dimension()
+    ids  = element.entity_dofs()
+    pts  = [f.get_point_dict().keys()[0] for f in element.dual_basis()]
     perm = self.getBasisFuncOrder(element)
     p    = 0
     if isBd:
@@ -361,7 +359,6 @@ class QuadratureGenerator(script.Script):
     return self.Cxx.getFunctionHeader(funcName)+[func]
 
   def getIntegratorSetup_IntegralMoment(self, n, element):
-    import FIAT.shapes
     from Cxx import Break, CompoundStatement, Function, Pointer, Switch
     code   = []
     idxVar = self.Cxx.getVar('dualIndex')
@@ -369,8 +366,8 @@ class QuadratureGenerator(script.Script):
     realVar = self.Cxx.getVar('coords')
     valVar = self.Cxx.getVar('value')
     bcFunc = self.Cxx.getFunctionPointer('func', self.Cxx.getType('double'), [self.Cxx.getParameter('coords', self.Cxx.getType('double', 1, isConst = 1))])
-    shape  = element.function_space().base.shape
-    dim    = FIAT.shapes.dimension(shape)
+    shape  = element.get_reference_element()
+    dim    = shape.get_spatial_dimension()
     ids    = element.Udual.entity_ids
     for i in range(element.function_space().tensor_shape()[0]):
       funcName = 'IntegrateDualBasis_gen_'+str(n+i)
@@ -406,16 +403,21 @@ class QuadratureGenerator(script.Script):
     return code
 
   def getIntegratorSetup(self, n, element, isBd = False):
-    if hasattr(element.Udual, 'pts'):
+    import FIAT.functional
+
+    if isinstance(element.dual_basis()[0], FIAT.functional.PointEvaluation):
       return self.getIntegratorSetup_PointEvaluation(n, element, isBd)
-    elif element.Udual.get_functional_set():
+    elif isinstance(element.dual_basis()[0], FIAT.functional.IntegralMoment):
       return self.getIntegratorSetup_IntegralMoment(n, element)
     raise RuntimeError('Could not generate dual basis evaluation code')
 
   def getSectionSetup(self, n, element):
     from Cxx import CompoundStatement
+    if len(element.value_shape()) > 0:
+      rank    = element.value_shape()[0]
+    else:
+      rank    = 1
     code      = []
-    rank      = element.function_space().tensor_shape()[0]
     meshVar   = self.Cxx.getVar('mesh')
     numBCVar  = self.Cxx.getVar('numBC')
     markerVar = self.Cxx.getVar('markers')
@@ -435,7 +437,7 @@ class QuadratureGenerator(script.Script):
                                                    self.Cxx.getFunctionCall('new ALE::Discretization',
                                                                             [self.Cxx.getFunctionCall(self.Cxx.getStructRef('m', 'comm')),
                                                                              self.Cxx.getFunctionCall(self.Cxx.getStructRef('m', 'debug'))]))]
-      for d, ids in element.Udual.entity_ids.items():
+      for d, ids in element.entity_dofs().items():
         cmpd.children.append(self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('d', 'setNumDof'), [d, len(ids[0])])))
       cmpd.children.append(self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('d', 'setQuadratureSize'), ['NUM_QUADRATURE_POINTS_'+str(n+i)])))
       cmpd.children.append(self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('d', 'setQuadraturePoints'), ['points_'+str(n+i)])))
@@ -659,19 +661,22 @@ class QuadratureGenerator(script.Script):
       for element in elements:
         #name      = element.family+str(element.n)
         name       = ''
-        shape      = element.shape
+        shape      = element.get_reference_element()
         order      = element.order
         if self.quadDegree < 0:
-          quadrature = self.createQuadrature(shape, 2*order+1)
+          quadrature = self.createQuadrature(shape, order)
         else:
           quadrature = self.createQuadrature(shape, self.quadDegree)
-        defns.extend(self.getQuadratureStructs(quadrature.degree, quadrature, n))
+        defns.extend(self.getQuadratureStructs(2*len(quadrature.pts)-1, quadrature, n))
         defns.extend(self.getBasisStructs(name, element, quadrature, n))
         defns.extend(self.getIntegratorPoints(n, element))
         defns.extend(self.getIntegratorSetup(n, element))
         defns.extend(self.getIntegratorSetup(n, element, True))
         defns.extend(self.getSectionSetup(n, element))
-        n += element.function_space().tensor_shape()[0]
+        if len(element.value_shape()) > 0:
+          n += element.value_shape()[0]
+        else:
+          n += 1
       #defns.extend(self.getQuadratureSetup())
       #defns.extend(self.getElementIntegrals())
     except CompilerException, e:
@@ -701,10 +706,11 @@ class QuadratureGenerator(script.Script):
 
   def run(self, elements, filename = ''):
     if elements is None:
-      import FIAT.shapes
-      import FIAT.Lagrange
-      elements =[FIAT.Lagrange.Lagrange(FIAT.shapes.TRIANGLE, 1)]
-      self.logPrint('Making a P'+str(order)+' element on a triangle')
+      from FIAT.reference_element import default_simplex
+      from FIAT.Lagrange import lagrange
+      order = 1
+      elements =[lagrange(default_simplex(2), order)]
+      self.logPrint('Making a P'+str(order)+' Lagrange element on a triangle')
     self.outputElementSource(self.getElementSource(elements), filename)
     return
 
