@@ -102,6 +102,8 @@ typedef struct _Py_object_t PyObject; /* fake definition */
 
 static PyObject* Py_None = 0;
 
+static const char* (*Py_GetVersion)(void);
+
 static int   	 (*Py_IsInitialized)(void);
 static void  	 (*Py_InitializeEx)(int);
 static void  	 (*Py_Finalize)(void);
@@ -139,6 +141,7 @@ static PetscErrorCode PetscPythonLoadLibrary(const char pythonlib[])
   ierr = PetscInfo1(0,"Python: loaded dynamic library %s\n", pythonlib);CHKERRQ(ierr);
   /* look required symbols from the Python C-API */
   ierr = PetscDLPyLibSym("_Py_NoneStruct"        , &Py_None               );CHKERRQ(ierr);
+  ierr = PetscDLPyLibSym("Py_GetVersion"         , &Py_GetVersion         );CHKERRQ(ierr);
   ierr = PetscDLPyLibSym("Py_IsInitialized"      , &Py_IsInitialized      );CHKERRQ(ierr);
   ierr = PetscDLPyLibSym("Py_InitializeEx"       , &Py_InitializeEx       );CHKERRQ(ierr);
   ierr = PetscDLPyLibSym("Py_Finalize"           , &Py_Finalize           );CHKERRQ(ierr);
@@ -154,6 +157,7 @@ static PetscErrorCode PetscPythonLoadLibrary(const char pythonlib[])
   ierr = PetscDLPyLibSym("PyErr_Restore",            &PyErr_Restore           );CHKERRQ(ierr);
   /* XXX TODO: check that ALL symbols were there !!! */
   if (!Py_None)          SETERRQ(PETSC_COMM_SELF,1,"Python: failed to load symbols from dynamic library");
+  if (!Py_GetVersion)    SETERRQ(PETSC_COMM_SELF,1,"Python: failed to load symbols from dynamic library");
   if (!Py_IsInitialized) SETERRQ(PETSC_COMM_SELF,1,"Python: failed to load symbols from dynamic library");
   if (!Py_InitializeEx)  SETERRQ(PETSC_COMM_SELF,1,"Python: failed to load symbols from dynamic library");
   if (!Py_Finalize)      SETERRQ(PETSC_COMM_SELF,1,"Python: failed to load symbols from dynamic library");
@@ -201,8 +205,6 @@ PetscErrorCode  PetscPythonFinalize(void)
 @*/
 PetscErrorCode  PetscPythonInitialize(const char pyexe[],const char pylib[])
 {
-  int               argc       = 0;
-  char              **argv     = 0;
   PyObject          *module    = 0;
   static PetscBool  registered = PETSC_FALSE;
   PetscErrorCode    ierr;
@@ -225,11 +227,16 @@ PetscErrorCode  PetscPythonInitialize(const char pyexe[],const char pylib[])
   /* initialize Python */
   PetscBeganPython = PETSC_FALSE;
   if (!Py_IsInitialized()) {
+    const char *py_version = Py_GetVersion();
     /* call below does not install signal handlers */
     Py_InitializeEx(0);
     /* call below required to build 'sys.argv' list */
-    ierr = PetscGetArgs(&argc,&argv);CHKERRQ(ierr);
-    if (argc && argv && argv[0]) PySys_SetArgv(argc,argv);
+    if (py_version[0] == '2') {
+      int  argc   = 0;
+      char **argv = 0;
+      ierr = PetscGetArgs(&argc,&argv);CHKERRQ(ierr);
+      if (argc && argv) PySys_SetArgv(argc,argv);
+    }
     /* register finalizer */
     if (!registered) {
       ierr = PetscRegisterFinalize(PetscPythonFinalize);CHKERRQ(ierr);

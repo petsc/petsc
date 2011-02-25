@@ -743,9 +743,6 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
       }
     }
   }
-  flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-python",&flg,PETSC_NULL);CHKERRQ(ierr);
-  if (flg) {ierr = PetscPythonInitialize(PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);}
 
 #if defined(PETSC_HAVE_CUDA)
   cublasInit();
@@ -757,6 +754,12 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
     PetscAMSPublishAll = PETSC_TRUE;
   }
 #endif
+
+  ierr = PetscOptionsHasName(PETSC_NULL,"-python",&flg);CHKERRQ(ierr);
+  if (flg) {
+    PetscInitializeCalled = PETSC_TRUE;
+    ierr = PetscPythonInitialize(PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  }
 
   /*
       Once we are completedly initialized then we can set this variables
@@ -837,9 +840,6 @@ PetscErrorCode  PetscFinalize(void)
 #endif
 
   ierr = PetscOpenMPFinalize();CHKERRQ(ierr); 
-
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-python",&flg1,PETSC_NULL);CHKERRQ(ierr);
-  if (flg1) {ierr = PetscPythonFinalize();CHKERRQ(ierr);}
 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(PETSC_NULL,"-malloc_info",&flg2,PETSC_NULL);CHKERRQ(ierr);
