@@ -1,5 +1,6 @@
 
-static char help[] = "Tests LU and Cholesky factorization for a dense matrix.\n\n";
+static char help[] = "Tests LU, Cholesky factorization and MatMatSolve() for a sequential dense matrix. \n\
+                      For MATSEQDENSE matrix, the factorization is just a thin wrapper to LAPACK \n\n";
 
 #include "petscmat.h"
 
@@ -7,30 +8,54 @@ static char help[] = "Tests LU and Cholesky factorization for a dense matrix.\n\
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  Mat            mat,fact;
+  Mat            mat,F,RHS,SOLU;
   MatInfo        info;
   PetscErrorCode ierr;
-  PetscInt       m = 10,n = 10,i = 4,rstart,rend;
+  PetscInt       m = 10,n = 10,i,j,rstart,rend,nrhs=2;
   PetscScalar    value = 1.0;
-  Vec            x,y,b;
+  Vec            x,y,b,ytmp;
   PetscReal      norm;
-  IS             perm;
-  MatFactorInfo  luinfo,factinfo;
+  PetscMPIInt    size;
+  PetscScalar    *rhs_array,*solu_array;
+  PetscRandom    rand;
+  PetscScalar    *array,rval;
 
   PetscInitialize(&argc,&argv,(char*) 0,help);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only!");
 
+  /* create single vectors */
   ierr = VecCreate(PETSC_COMM_WORLD,&y);CHKERRQ(ierr); 
   ierr = VecSetSizes(y,PETSC_DECIDE,m);CHKERRQ(ierr); 
   ierr = VecSetFromOptions(y);CHKERRQ(ierr);
   ierr = VecDuplicate(y,&x);CHKERRQ(ierr);
+  ierr = VecDuplicate(y,&ytmp);CHKERRQ(ierr);
   ierr = VecSet(x,value);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
   ierr = VecSetSizes(b,PETSC_DECIDE,n);CHKERRQ(ierr);
   ierr = VecSetFromOptions(b);CHKERRQ(ierr);
-  ierr = ISCreateStride(PETSC_COMM_WORLD,m,0,1,&perm);CHKERRQ(ierr);
 
+  /* create multiple vectors RHS and SOLU */
+  ierr = MatCreate(PETSC_COMM_WORLD,&RHS);CHKERRQ(ierr);
+  ierr = MatSetSizes(RHS,PETSC_DECIDE,PETSC_DECIDE,n,nrhs);CHKERRQ(ierr);
+  ierr = MatSetType(RHS,MATDENSE);CHKERRQ(ierr); 
+  ierr = MatSetFromOptions(RHS);CHKERRQ(ierr); 
+  
+  ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rand);CHKERRQ(ierr);
+  ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
+  ierr = MatGetArray(RHS,&array);CHKERRQ(ierr);
+  for (j=0; j<nrhs; j++){
+    for (i=0; i<n; i++){
+      ierr = PetscRandomGetValue(rand,&rval);CHKERRQ(ierr);
+      array[n*j+i] = rval; 
+    }
+  }
+  ierr = MatRestoreArray(RHS,&array);CHKERRQ(ierr);
+  
+  ierr = MatDuplicate(RHS,MAT_DO_NOT_COPY_VALUES,&SOLU);CHKERRQ(ierr);
+
+  /* create matrix */
   ierr = MatCreateSeqDense(PETSC_COMM_WORLD,m,n,PETSC_NULL,&mat);CHKERRQ(ierr);
-
   ierr = MatGetOwnershipRange(mat,&rstart,&rend);CHKERRQ(ierr);
   for (i=rstart; i<rend; i++) {
     value = (PetscReal)i+1;
@@ -43,65 +68,81 @@ int main(int argc,char **argv)
   ierr = PetscPrintf(PETSC_COMM_WORLD,"matrix nonzeros = %D, allocated nonzeros = %D\n",
     (PetscInt)info.nz_used,(PetscInt)info.nz_allocated);CHKERRQ(ierr);
 
-  /* Cholesky factorization is not yet in place for this matrix format */
-  ierr = MatFactorInfoInitialize(&factinfo);CHKERRQ(ierr);
-  factinfo.fill = 1.0;
+  /* Cholesky factorization - perm and factinfo are ignored by LAPACK */
+  /* in-place Cholesky */
   ierr = MatMult(mat,x,b);CHKERRQ(ierr);
-  ierr = MatConvert(mat,MATSAME,MAT_INITIAL_MATRIX,&fact);CHKERRQ(ierr);
-  ierr = MatCholeskyFactor(fact,perm,&factinfo);CHKERRQ(ierr);
-  ierr = MatSolve(fact,b,y);CHKERRQ(ierr);
-  ierr = MatDestroy(fact);CHKERRQ(ierr);
+  ierr = MatConvert(mat,MATSAME,MAT_INITIAL_MATRIX,&F);CHKERRQ(ierr);
+  ierr = MatCholeskyFactor(F,0,0);CHKERRQ(ierr);
+  ierr = MatSolve(F,b,y);CHKERRQ(ierr);
+  ierr = MatDestroy(F);CHKERRQ(ierr);
   value = -1.0; ierr = VecAXPY(y,value,x);CHKERRQ(ierr);
   ierr = VecNorm(y,NORM_2,&norm);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error for Cholesky %A\n",norm);CHKERRQ(ierr);
-  ierr = MatGetFactor(mat,MATSOLVERPETSC,MAT_FACTOR_CHOLESKY,&fact);CHKERRQ(ierr);
-  ierr = MatCholeskyFactorSymbolic(fact,mat,perm,&factinfo);CHKERRQ(ierr);
-  ierr = MatCholeskyFactorNumeric(fact,mat,&factinfo);CHKERRQ(ierr);
-  ierr = MatSolve(fact,b,y);CHKERRQ(ierr);
+  /* out-place Cholesky */
+  ierr = MatGetFactor(mat,MATSOLVERPETSC,MAT_FACTOR_CHOLESKY,&F);CHKERRQ(ierr);
+  ierr = MatCholeskyFactorSymbolic(F,mat,0,0);CHKERRQ(ierr);
+  ierr = MatCholeskyFactorNumeric(F,mat,0);CHKERRQ(ierr);
+  ierr = MatSolve(F,b,y);CHKERRQ(ierr);
   value = -1.0; ierr = VecAXPY(y,value,x);CHKERRQ(ierr);
   ierr = VecNorm(y,NORM_2,&norm);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error for Cholesky %A\n",norm);CHKERRQ(ierr);
-  ierr = MatDestroy(fact);CHKERRQ(ierr);
+  ierr = MatDestroy(F);CHKERRQ(ierr);
 
+  /* LU factorization - perms and factinfo are ignored by LAPACK */
   i = m-1; value = 1.0;
   ierr = MatSetValues(mat,1,&i,1,&i,&value,INSERT_VALUES);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatMult(mat,x,b);CHKERRQ(ierr);
-  ierr = MatConvert(mat,MATSAME,MAT_INITIAL_MATRIX,&fact);CHKERRQ(ierr);
+  ierr = MatConvert(mat,MATSAME,MAT_INITIAL_MATRIX,&F);CHKERRQ(ierr);
 
-  ierr = MatFactorInfoInitialize(&luinfo);CHKERRQ(ierr);
-  luinfo.fill           = 1.0;
-  luinfo.dtcol          = 1.e-6; /* default to pivoting; this is only thing PETSc LU supports */
-  luinfo.zeropivot      = 1.e-12;
-  luinfo.shifttype      = (PetscReal)MAT_SHIFT_INBLOCKS;
-  luinfo.shiftamount    = 1.e-12;
-  
-  ierr = MatLUFactor(fact,perm,perm,&luinfo);CHKERRQ(ierr);
-  ierr = MatSolve(fact,b,y);CHKERRQ(ierr);
+  /* in-place LU */
+  ierr = MatLUFactor(F,0,0,0);CHKERRQ(ierr);
+  ierr = MatSolve(F,b,y);CHKERRQ(ierr);
   value = -1.0; ierr = VecAXPY(y,value,x);CHKERRQ(ierr);
   ierr = VecNorm(y,NORM_2,&norm);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error for LU %A\n",norm);CHKERRQ(ierr);
-  ierr = MatDestroy(fact);CHKERRQ(ierr);
 
-  luinfo.fill        = 1.0;
-  luinfo.dtcol       = 0.0; 
-  luinfo.zeropivot   = 1.e-14; 
-  luinfo.shifttype   = (PetscReal)MAT_SHIFT_INBLOCKS;
-  luinfo.shiftamount = 1.e-12;
-  ierr = MatGetFactor(mat,MATSOLVERPETSC,MAT_FACTOR_LU,&fact);CHKERRQ(ierr);
-  ierr = MatLUFactorSymbolic(fact,mat,perm,perm,&luinfo);CHKERRQ(ierr);
-  ierr = MatLUFactorNumeric(fact,mat,&luinfo);CHKERRQ(ierr);
-  ierr = MatSolve(fact,b,y);CHKERRQ(ierr);
+  ierr = MatMatSolve(F,RHS,SOLU);CHKERRQ(ierr);
+  for (j=0; j<nrhs; j++){
+    ierr = MatGetArray(SOLU,&solu_array);CHKERRQ(ierr);
+    ierr = MatGetArray(RHS,&rhs_array);CHKERRQ(ierr);
+    ierr = VecPlaceArray(y,solu_array);CHKERRQ(ierr);
+    ierr = VecPlaceArray(b,rhs_array);CHKERRQ(ierr);
+
+    ierr = MatMult(mat,y,ytmp);CHKERRQ(ierr); 
+    ierr = VecAXPY(ytmp,-1.0,b);CHKERRQ(ierr); /* ytmp = mat*SOLU[:,j] - RHS[:,j] */
+    ierr = VecNorm(ytmp,NORM_2,&norm);CHKERRQ(ierr);
+    if (norm > 1.e-12){
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"Error: Norm of residual for LU %A\n",norm);CHKERRQ(ierr);
+    }
+    
+    ierr = VecResetArray(b);CHKERRQ(ierr);
+    ierr = VecResetArray(y);CHKERRQ(ierr);
+    ierr = MatRestoreArray(RHS,&rhs_array);CHKERRQ(ierr);
+    ierr = MatRestoreArray(SOLU,&solu_array);CHKERRQ(ierr);
+  }
+
+  ierr = MatDestroy(F);CHKERRQ(ierr);
+  /* out-place LU */
+  ierr = MatGetFactor(mat,MATSOLVERPETSC,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
+  ierr = MatLUFactorSymbolic(F,mat,0,0,0);CHKERRQ(ierr);
+  ierr = MatLUFactorNumeric(F,mat,0);CHKERRQ(ierr);
+  ierr = MatSolve(F,b,y);CHKERRQ(ierr);
   value = -1.0; ierr = VecAXPY(y,value,x);CHKERRQ(ierr);
   ierr = VecNorm(y,NORM_2,&norm);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error for LU %A\n",norm);CHKERRQ(ierr);  
-  ierr = MatDestroy(fact);CHKERRQ(ierr);
+
+  /* free space */
+  ierr = MatDestroy(F);CHKERRQ(ierr);
   ierr = MatDestroy(mat);CHKERRQ(ierr);
+  ierr = MatDestroy(RHS);CHKERRQ(ierr);
+  ierr = MatDestroy(SOLU);CHKERRQ(ierr);
+  ierr = PetscRandomDestroy(rand);CHKERRQ(ierr);
   ierr = VecDestroy(x);CHKERRQ(ierr);
   ierr = VecDestroy(b);CHKERRQ(ierr);
   ierr = VecDestroy(y);CHKERRQ(ierr);
-  ierr = ISDestroy(perm);CHKERRQ(ierr);
+  ierr = VecDestroy(ytmp);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

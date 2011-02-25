@@ -2647,7 +2647,7 @@ PetscErrorCode  MatLUFactor(Mat mat,IS row,IS col,const MatFactorInfo *info)
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   if (row) PetscValidHeaderSpecific(row,IS_CLASSID,2);
   if (col) PetscValidHeaderSpecific(col,IS_CLASSID,3);
-  PetscValidPointer(info,4);
+  if (info) PetscValidPointer(info,4);
   PetscValidType(mat,1);
   if (!mat->assembled) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factortype) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
@@ -2763,7 +2763,7 @@ PetscErrorCode  MatLUFactorSymbolic(Mat fact,Mat mat,IS row,IS col,const MatFact
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   if (row) PetscValidHeaderSpecific(row,IS_CLASSID,2);
   if (col) PetscValidHeaderSpecific(col,IS_CLASSID,3);
-  PetscValidPointer(info,4);
+  if (info) PetscValidPointer(info,4);
   PetscValidType(mat,1);
   PetscValidPointer(fact,5);
   if (!mat->assembled) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
@@ -2872,8 +2872,8 @@ PetscErrorCode  MatCholeskyFactor(Mat mat,IS perm,const MatFactorInfo *info)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidType(mat,1);
-  PetscValidHeaderSpecific(perm,IS_CLASSID,2);
-  PetscValidPointer(info,3);
+  if (perm) PetscValidHeaderSpecific(perm,IS_CLASSID,2);
+  if (info) PetscValidPointer(info,3);
   if (mat->rmap->N != mat->cmap->N) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONG,"Matrix must be square");
   if (!mat->assembled) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factortype) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
@@ -2931,7 +2931,7 @@ PetscErrorCode  MatCholeskyFactorSymbolic(Mat fact,Mat mat,IS perm,const MatFact
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidType(mat,1);
   if (perm) PetscValidHeaderSpecific(perm,IS_CLASSID,2);
-  PetscValidPointer(info,3);
+  if (info) PetscValidPointer(info,3);
   PetscValidPointer(fact,4);
   if (mat->rmap->N != mat->cmap->N) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONG,"Matrix must be square");
   if (!mat->assembled) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");

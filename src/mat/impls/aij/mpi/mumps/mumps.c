@@ -949,7 +949,7 @@ PetscErrorCode MatLUFactorSymbolic_BAIJMUMPS(Mat F,Mat A,IS r,IS c,const MatFact
   PetscFunctionReturn(0); 
 }
 
-/* Note the Petsc r permutation is ignored */
+/* Note the Petsc r permutation and factor info are ignored */
 #undef __FUNCT__  
 #define __FUNCT__ "MatCholeskyFactorSymbolic_MUMPS"
 PetscErrorCode MatCholeskyFactorSymbolic_MUMPS(Mat F,Mat A,IS r,const MatFactorInfo *info) 
