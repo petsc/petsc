@@ -49,17 +49,19 @@
  48 KSP Residual norm 0.000176722 
  49 KSP Residual norm 0.00010203 
  50 KSP Residual norm < 1.e-11
-KSP Object:
+KSP Object: 1 MPI processes
   type: python
     Python: example1.ConjGrad
   maximum iterations=10000, initial guess is zero
   tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
   left preconditioning
-PC Object:
+  using PRECONDITIONED norm type for convergence test
+PC Object: 1 MPI processes
   type: python
     Python: example1.Jacobi
   linear system matrix = precond matrix:
-  Matrix Object:
-    type=python, rows=100, cols=100
+  Matrix Object:   1 MPI processes  
+    type: python
+    rows=100, cols=100
         Python: example1.Laplace1D
  error norm =   6.83138198246195374E-013
