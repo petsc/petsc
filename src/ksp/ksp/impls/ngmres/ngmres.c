@@ -12,8 +12,9 @@
 #define __FUNCT__ "KSPSetUp_NGMRES"
 PetscErrorCode KSPSetUp_NGMRES(KSP ksp)
 {
-  KSP_NGMRES    *cgP = (KSP_NGMRES*)ksp->data;
+  KSP_NGMRES     *cgP = (KSP_NGMRES*)ksp->data;
   PetscErrorCode ierr;
+  PetscBool      diagonalscale;
 
   PetscFunctionBegin;
   /* 
@@ -22,6 +23,8 @@ PetscErrorCode KSPSetUp_NGMRES(KSP ksp)
   */
   if (ksp->pc_side == PC_RIGHT) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"No right preconditioning for KSPNGMRES");
   else if (ksp->pc_side == PC_SYMMETRIC) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"No symmetric preconditioning for KSPNGMRES");
+  ierr    = PCGetDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
+  if (diagonalscale) SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
   ierr = KSPGetVecs(ksp,cgP->msize,&cgP->v,cgP->msize,&cgP->w);CHKERRQ(ierr);
   ierr = KSPDefaultGetWork(ksp,3);CHKERRQ(ierr);
   PetscFunctionReturn(0);
