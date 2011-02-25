@@ -19,10 +19,14 @@ class BaseTestObject(object):
     def testTypeRegistry(self):
         type_reg = PETSc.__type_registry__
         classid = self.obj.getClassId()
-        self.assertTrue(type_reg[classid] is self.CLASS )
+        typeobj = self.CLASS
+        if isinstance(self.obj, PETSc.DA):
+            typeobj = PETSc.DM
+        self.assertTrue(type_reg[classid] is typeobj )
 
     def testLogClass(self):
         name = self.CLASS.__name__
+        if name == 'DA': name = 'DM'
         logcls = PETSc.Log.Class(name)
         classid = self.obj.getClassId()
         self.assertEqual(logcls.id, classid)
