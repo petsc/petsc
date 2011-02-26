@@ -158,6 +158,7 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
       ierr = VecXDot(Z,S,&delta);CHKERRQ(ierr);
     }
     ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);                     /*  beta <- z'*r       */
+    if PetscIsInfOrNanScalar(beta) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_FP,"Infinite or not-a-number generated in dot product");
     dp = sqrt(PetscAbsScalar(beta));                           /*    dp <- r'*z = r'*B*r = e'*A'*B*A*e */
   } else dp = 0.0;
   KSPLogResidualHistory(ksp,dp);
@@ -187,7 +188,7 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
        ierr = PetscInfo(ksp,"converged due to beta = 0\n");CHKERRQ(ierr);
        break;
 #if !defined(PETSC_USE_COMPLEX)
-     } else if (beta < 0.0) {
+     } else if ((i > 0) && (beta*betaold < 0.0)) {
        ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
        ierr = PetscInfo(ksp,"diverging due to indefinite preconditioner\n");CHKERRQ(ierr);
        break;
@@ -206,16 +207,16 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
      }
      dpiold = dpi;
      if (!cg->singlereduction || !i) {
-       ierr = KSP_MatMult(ksp,Amat,P,W);CHKERRQ(ierr);          /*     w <- Kp         */
+       ierr = KSP_MatMult(ksp,Amat,P,W);CHKERRQ(ierr);          /*     w <- Ap         */
        ierr = VecXDot(P,W,&dpi);CHKERRQ(ierr);                  /*     dpi <- p'w     */
      } else { 
-	ierr = VecAYPX(W,beta/betaold,S);CHKERRQ(ierr);                  /*     w <- Kp         */
+	ierr = VecAYPX(W,beta/betaold,S);CHKERRQ(ierr);                  /*     w <- Ap         */
         dpi = delta - beta*beta*dpiold/(betaold*betaold);              /*     dpi <- p'w     */
      }
      betaold = beta;
      if PetscIsInfOrNanScalar(dpi) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_FP,"Infinite or not-a-number generated in dot product");
 
-     if (PetscRealPart(dpi) <= 0.0) {
+     if ((dpi == 0.0) || ((i > 0) && (PetscRealPart(dpi*dpiold) <= 0.0))) {
        ksp->reason = KSP_DIVERGED_INDEFINITE_MAT;
        ierr = PetscInfo(ksp,"diverging due to indefinite or negative definite matrix\n");CHKERRQ(ierr);
        break;
@@ -406,7 +407,7 @@ EXTERN_C_END
 
    Level: beginner
 
-   Notes: The PCG method requires both the matrix and preconditioner to be symmetric positive (semi) definite
+   Notes: The PCG method requires both the matrix and preconditioner to be symmetric positive (or negative) (semi) definite
           Only left preconditioning is supported.
 
    References:
