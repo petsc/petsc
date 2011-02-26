@@ -189,6 +189,45 @@ PetscErrorCode MatSolve_SeqDense(Mat A,Vec xx,Vec yy)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "MatMatSolve_SeqDense"
+PetscErrorCode MatMatSolve_SeqDense(Mat A,Mat B,Mat X)
+{
+  Mat_SeqDense   *mat = (Mat_SeqDense*)A->data;
+  PetscErrorCode ierr;
+  PetscScalar    *b,*x;
+  PetscBLASInt   nrhs,info,m=PetscBLASIntCast(A->rmap->n);
+  
+  PetscFunctionBegin;
+  ierr = MatGetSize(B,PETSC_NULL,&nrhs);CHKERRQ(ierr);
+  ierr = MatGetArray(B,&b);CHKERRQ(ierr); 
+  ierr = MatGetArray(X,&x);CHKERRQ(ierr);
+
+  ierr = PetscMemcpy(x,b,m*sizeof(PetscScalar));CHKERRQ(ierr);
+ 
+  if (A->factortype == MAT_FACTOR_LU) {
+#if defined(PETSC_MISSING_LAPACK_GETRS) 
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"GETRS - Lapack routine is unavailable.");
+#else
+    LAPACKgetrs_("N",&m,&nrhs,mat->v,&mat->lda,mat->pivots,x,&m,&info);
+    if (info) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"GETRS - Bad solve");
+#endif
+  } else if (A->factortype == MAT_FACTOR_CHOLESKY){
+#if defined(PETSC_MISSING_LAPACK_POTRS) 
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"POTRS - Lapack routine is unavailable.");
+#else
+    LAPACKpotrs_("L",&m,&nrhs,mat->v,&mat->lda,x,&m,&info);
+    if (info) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"POTRS Bad solve");
+#endif
+  }
+  else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix must be factored to solve");
+ 
+  ierr = MatRestoreArray(B,&b);CHKERRQ(ierr); 
+  ierr = MatRestoreArray(X,&x);CHKERRQ(ierr);
+  ierr = PetscLogFlops(nrhs*(2.0*m*m- m));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatSolveTranspose_SeqDense"
 PetscErrorCode MatSolveTranspose_SeqDense(Mat A,Vec xx,Vec yy)
 {
@@ -1889,7 +1928,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqDense,
        MatImaginaryPart_SeqDense,
        0,
        0,
-/*109*/0,
+/*109*/MatMatSolve_SeqDense,
        0,
        MatGetRowMin_SeqDense,
        MatGetColumnVector_SeqDense,
