@@ -480,7 +480,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
     }
 
     if (!mg->galerkin) {
-      /* each coarse level gets its DM */
+      /* each coarse level gets its DM; finest level does not get DM because it shared the outer PC operators */
       for (i=n-2; i>-1; i--) {
         ierr = KSPSetDM(mglevels[i]->smoothd,dms[i]);CHKERRQ(ierr);
       }
@@ -537,11 +537,6 @@ PetscErrorCode PCSetUp_MG(PC pc)
       }
     }
     for (i=1; i<n; i++) {
-      if (!mglevels[i]->residual) {
-        Mat mat;
-        ierr = KSPGetOperators(mglevels[i]->smoothd,PETSC_NULL,&mat,PETSC_NULL);CHKERRQ(ierr);
-        ierr = PCMGSetResidual(pc,i,PCMGDefaultResidual,mat);CHKERRQ(ierr);
-      }
       if (mglevels[i]->restrct && !mglevels[i]->interpolate) {
         ierr = PCMGSetInterpolation(pc,i,mglevels[i]->restrct);CHKERRQ(ierr);
       }
@@ -592,6 +587,11 @@ PetscErrorCode PCSetUp_MG(PC pc)
     if (mglevels[i]->eventsmoothsetup) {ierr = PetscLogEventBegin(mglevels[i]->eventsmoothsetup,0,0,0,0);CHKERRQ(ierr);}
     ierr = KSPSetUp(mglevels[i]->smoothd);CHKERRQ(ierr);
     if (mglevels[i]->eventsmoothsetup) {ierr = PetscLogEventEnd(mglevels[i]->eventsmoothsetup,0,0,0,0);CHKERRQ(ierr);}
+    if (!mglevels[i]->residual) {
+      Mat mat;
+      ierr = KSPGetOperators(mglevels[i]->smoothd,PETSC_NULL,&mat,PETSC_NULL);CHKERRQ(ierr);
+      ierr = PCMGSetResidual(pc,i,PCMGDefaultResidual,mat);CHKERRQ(ierr);
+    }
   }
   for (i=1; i<n; i++) {
     if (mglevels[i]->smoothu && mglevels[i]->smoothu != mglevels[i]->smoothd) {

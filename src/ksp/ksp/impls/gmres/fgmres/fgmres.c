@@ -311,6 +311,7 @@ PetscErrorCode KSPSolve_FGMRES(KSP ksp)
 }
 
 extern PetscErrorCode KSPDestroy_GMRES(KSP);
+extern PetscErrorCode KSPReset_FGMRES(KSP);
 /*
 
    KSPDestroy_FGMRES - Frees all memory space used by the Krylov method.
@@ -320,21 +321,10 @@ extern PetscErrorCode KSPDestroy_GMRES(KSP);
 #define __FUNCT__ "KSPDestroy_FGMRES" 
 PetscErrorCode KSPDestroy_FGMRES(KSP ksp)
 {
-  KSP_FGMRES     *fgmres = (KSP_FGMRES*)ksp->data;
   PetscErrorCode ierr;
-  PetscInt       i;
 
   PetscFunctionBegin;
-  ierr = PetscFree (fgmres->prevecs);CHKERRQ(ierr);
-  for (i=0; i<fgmres->nwork_alloc; i++) {
-    ierr = VecDestroyVecs(&fgmres->prevecs_user_work[i],fgmres->mwork_alloc[i]);CHKERRQ(ierr);
-  }
-  ierr = PetscFree(fgmres->prevecs_user_work);CHKERRQ(ierr);
-  if (fgmres->modifydestroy) {
-    ierr = (*fgmres->modifydestroy)(fgmres->modifyctx);CHKERRQ(ierr);
-  }
-
-  /* clear composed functions */
+  ierr = KSPReset_FGMRES(ksp);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPFGMRESSetModifyPC_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = KSPDestroy_GMRES(ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -640,22 +630,26 @@ extern PetscErrorCode  KSPGMRESSetOrthogonalization_GMRES(KSP,PetscErrorCode (*)
 extern PetscErrorCode  KSPGMRESGetOrthogonalization_GMRES(KSP,PetscErrorCode (**)(KSP,PetscInt));
 EXTERN_C_END
 
-extern PetscErrorCode KSPDestroy_GMRES_Internal(KSP);
+extern PetscErrorCode KSPReset_GMRES(KSP);
 
 #undef __FUNCT__  
-#define __FUNCT__ "KSPDestroy_FGMRES_Internal" 
-PetscErrorCode KSPDestroy_FGMRES_Internal(KSP ksp)
+#define __FUNCT__ "KSPReset_FGMRES" 
+PetscErrorCode KSPReset_FGMRES(KSP ksp)
 {
-  KSP_FGMRES     *gmres = (KSP_FGMRES*)ksp->data;
+  KSP_FGMRES     *fgmres = (KSP_FGMRES*)ksp->data;
   PetscErrorCode ierr;
+  PetscInt       i;
 
   PetscFunctionBegin;
-  ierr = KSPDestroy_GMRES_Internal(ksp);CHKERRQ(ierr);
-  ierr = PetscFree (gmres->prevecs);CHKERRQ(ierr);
-  ierr = PetscFree(gmres->prevecs_user_work);CHKERRQ(ierr);
-  if (gmres->modifydestroy) {
-    ierr = (*gmres->modifydestroy)(gmres->modifyctx);CHKERRQ(ierr);
+  ierr = PetscFree (fgmres->prevecs);CHKERRQ(ierr);
+  for (i=0; i<fgmres->nwork_alloc; i++) {
+    ierr = VecDestroyVecs(&fgmres->prevecs_user_work[i],fgmres->mwork_alloc[i]);CHKERRQ(ierr);
   }
+  ierr = PetscFree(fgmres->prevecs_user_work);CHKERRQ(ierr);
+  if (fgmres->modifydestroy) {
+    ierr = (*fgmres->modifydestroy)(fgmres->modifyctx);CHKERRQ(ierr);
+  }
+  ierr = KSPReset_GMRES(ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -675,7 +669,7 @@ PetscErrorCode  KSPGMRESSetRestart_FGMRES(KSP ksp,PetscInt max_k)
      gmres->max_k = max_k;
      ksp->setupstage = KSP_SETUP_NEW;
      /* free the data structures, then create them again */
-     ierr = KSPDestroy_FGMRES_Internal(ksp);CHKERRQ(ierr);
+     ierr = KSPReset_FGMRES(ksp);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -749,6 +743,7 @@ PetscErrorCode  KSPCreate_FGMRES(KSP ksp)
   ksp->ops->buildsolution                = KSPBuildSolution_FGMRES;
   ksp->ops->setup                        = KSPSetUp_FGMRES;
   ksp->ops->solve                        = KSPSolve_FGMRES;
+  ksp->ops->reset                        = KSPReset_FGMRES;
   ksp->ops->destroy                      = KSPDestroy_FGMRES;
   ksp->ops->view                         = KSPView_GMRES;
   ksp->ops->setfromoptions               = KSPSetFromOptions_FGMRES;

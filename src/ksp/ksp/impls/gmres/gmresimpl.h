@@ -20,35 +20,25 @@ typedef struct {
   PetscReal   *Dsvd;
   PetscScalar *Rsvd;
       
-  /* parameters */
-  PetscReal haptol;
-  PetscInt  max_k;
 
-  PetscErrorCode (*orthog)(KSP,PetscInt); /* Functions to use (special to gmres) */
+  PetscReal haptol;                                       /* tolerance for happy ending */
+  PetscInt  max_k;                                        /* number of vectors in Krylov space, restart size */
+
+  PetscErrorCode            (*orthog)(KSP,PetscInt); 
   KSPGMRESCGSRefinementType cgstype;
     
-  Vec   *vecs;  /* holds the work vectors */
-  /* vv_allocated is the number of allocated gmres direction vectors */
+  Vec         *vecs;                                     /* the work vectors */
   PetscInt    q_preallocate,delta_allocate;
-  PetscInt    vv_allocated;
-  /* vecs_allocated is the total number of vecs available (used to 
-       simplify the dynamic allocation of vectors */
-  PetscInt    vecs_allocated;
+  PetscInt    vv_allocated;                              /*  number of allocated gmres direction vectors */
+  PetscInt    vecs_allocated;                           /*   total number of vecs available */
   /* Since we may call the user "obtain_work_vectors" several times, 
-       we have to keep track of the pointers that it has returned 
-      (so that we may free the storage) */
+   we have to keep track of the pointers that it has returned */
   Vec         **user_work;
-  PetscInt    *mwork_alloc;    /* Number of work vectors allocated as part of
-                               a work-vector chunck */
-  PetscInt    nwork_alloc;     /* Number of work vectors allocated */
-
-  /* In order to allow the solution to be constructed during the solution
-     process, we need some additional information: */
+  PetscInt    *mwork_alloc;    /* Number of work vectors allocated as part of  a work-vector chunck */
+  PetscInt    nwork_alloc;     /* Number of work vector chunks allocated */
 
   PetscInt    it;              /* Current iteration: inside restart */
-  PetscScalar *nrs;            /* temp that holds the coefficients of the 
-                               Krylov vectors that form the minimum residual
-                               solution */
+  PetscScalar *nrs;            /* temp that holds the coefficients of the Krylov vectors that form the minimum residual solution */
   Vec         sol_temp;        /* used to hold temporary solution */
 } KSP_GMRES;
 

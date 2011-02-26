@@ -247,8 +247,8 @@ PetscErrorCode KSPSolve_GMRES(KSP ksp)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "KSPDestroy_GMRES_Internal" 
-PetscErrorCode KSPDestroy_GMRES_Internal(KSP ksp)
+#define __FUNCT__ "KSPReset_GMRES" 
+PetscErrorCode KSPReset_GMRES(KSP ksp)
 {
   KSP_GMRES      *gmres = (KSP_GMRES*)ksp->data;
   PetscErrorCode ierr;
@@ -258,13 +258,12 @@ PetscErrorCode KSPDestroy_GMRES_Internal(KSP ksp)
   /* Free the Hessenberg matrices */
   ierr = PetscFree5(gmres->hh_origin,gmres->hes_origin,gmres->rs_origin,gmres->cc_origin,gmres->ss_origin);CHKERRQ(ierr);
 
-  /* Free the pointer to user variables */
-  ierr = PetscFree(gmres->vecs);CHKERRQ(ierr);
-
   /* free work vectors */
+  ierr = PetscFree(gmres->vecs);CHKERRQ(ierr);
   for (i=0; i<gmres->nwork_alloc; i++) {
     ierr = VecDestroyVecs(&gmres->user_work[i],gmres->mwork_alloc[i]);CHKERRQ(ierr);
   }
+  gmres->nwork_alloc = 0;
   ierr = PetscFree(gmres->user_work);CHKERRQ(ierr);
   ierr = PetscFree(gmres->mwork_alloc);CHKERRQ(ierr);
   ierr = PetscFree(gmres->nrs);CHKERRQ(ierr);
@@ -288,7 +287,7 @@ PetscErrorCode KSPDestroy_GMRES(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = KSPDestroy_GMRES_Internal(ksp);CHKERRQ(ierr);
+  ierr = KSPReset_GMRES(ksp);CHKERRQ(ierr);
   ierr = PetscFree(ksp->data);CHKERRQ(ierr);
   /* clear composed functions */
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetPreAllocateVectors_C","",PETSC_NULL);CHKERRQ(ierr);
@@ -649,7 +648,7 @@ PetscErrorCode  KSPGMRESSetRestart_GMRES(KSP ksp,PetscInt max_k)
      gmres->max_k = max_k;
      ksp->setupstage = KSP_SETUP_NEW;
      /* free the data structures, then create them again */
-     ierr = KSPDestroy_GMRES_Internal(ksp);CHKERRQ(ierr);
+     ierr = KSPReset_GMRES(ksp);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -931,6 +930,7 @@ PetscErrorCode  KSPCreate_GMRES(KSP ksp)
   ksp->ops->buildsolution                = KSPBuildSolution_GMRES;
   ksp->ops->setup                        = KSPSetUp_GMRES;
   ksp->ops->solve                        = KSPSolve_GMRES;
+  ksp->ops->reset                        = KSPReset_GMRES;
   ksp->ops->destroy                      = KSPDestroy_GMRES;
   ksp->ops->view                         = KSPView_GMRES;
   ksp->ops->setfromoptions               = KSPSetFromOptions_GMRES;

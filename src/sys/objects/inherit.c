@@ -113,12 +113,6 @@ PetscErrorCode  PetscHeaderDestroy_Private(PetscObject h)
   ierr = PetscFree(h->name);CHKERRQ(ierr);
   ierr = PetscFree(h->prefix);CHKERRQ(ierr);
   ierr = PetscFree(h->fortran_func_pointers);CHKERRQ(ierr);
-  ierr = PetscFree(h->intcomposeddata);CHKERRQ(ierr);
-  ierr = PetscFree(h->intcomposedstate);CHKERRQ(ierr);
-  ierr = PetscFree(h->realcomposeddata);CHKERRQ(ierr);
-  ierr = PetscFree(h->realcomposedstate);CHKERRQ(ierr);
-  ierr = PetscFree(h->scalarcomposeddata);CHKERRQ(ierr);
-  ierr = PetscFree(h->scalarcomposedstate);CHKERRQ(ierr);
 
   /* Record object removal from list of all objects */
   for (i=0; i<PetscObjectsMaxCounts; i++) {

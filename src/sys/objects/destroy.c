@@ -10,6 +10,8 @@ struct _p_GenericObject {
   PETSCHEADER(int);
 };
 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscObjectDestroy_GenericObject"
 PetscErrorCode PetscObjectDestroy_GenericObject(GenericObject obj)
 {
   PetscErrorCode ierr;
@@ -20,9 +22,13 @@ PetscErrorCode PetscObjectDestroy_GenericObject(GenericObject obj)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscComposedQuantitiesDestroy"
 PetscErrorCode PetscComposedQuantitiesDestroy(PetscObject obj)
 {
-  PetscErrorCode ierr; int i;
+  PetscErrorCode ierr; 
+  PetscInt       i;
+
   PetscFunctionBegin;
   if (obj->intstar_idmax>0) {
     for (i=0; i<obj->intstar_idmax; i++) {
@@ -45,6 +51,12 @@ PetscErrorCode PetscComposedQuantitiesDestroy(PetscObject obj)
     ierr = PetscFree(obj->scalarstarcomposeddata);CHKERRQ(ierr);
     ierr = PetscFree(obj->scalarstarcomposedstate);CHKERRQ(ierr);
   }
+  ierr = PetscFree(obj->intcomposeddata);CHKERRQ(ierr);
+  ierr = PetscFree(obj->intcomposedstate);CHKERRQ(ierr);
+  ierr = PetscFree(obj->realcomposeddata);CHKERRQ(ierr);
+  ierr = PetscFree(obj->realcomposedstate);CHKERRQ(ierr);
+  ierr = PetscFree(obj->scalarcomposeddata);CHKERRQ(ierr);
+  ierr = PetscFree(obj->scalarcomposedstate);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
