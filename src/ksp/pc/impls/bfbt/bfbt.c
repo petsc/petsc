@@ -324,25 +324,37 @@ PetscErrorCode PCSetUp_BFBt(PC pc)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCDestroy_BFBt"
-PetscErrorCode PCDestroy_BFBt(PC pc)
+#define __FUNCT__ "PCReset_BFBt"
+PetscErrorCode PCReset_BFBt(PC pc)
 {
   PC_BFBt       *ctx = (PC_BFBt *) pc->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (ctx == PETSC_NULL) {PetscFunctionReturn(0);}
-  if (ctx->form_GtG && ctx->GtG != PETSC_NULL) {
+  if (!ctx) PetscFunctionReturn(0);
+  if (ctx->form_GtG && ctx->GtG) {
     ierr = MatDestroy(ctx->GtG);CHKERRQ(ierr);
   }
-  if (ctx->ksp        != PETSC_NULL) {ierr = KSPDestroy(ctx->ksp);CHKERRQ(ierr);}
-  if (ctx->s          != PETSC_NULL) {ierr = VecDestroy(ctx->s);CHKERRQ(ierr);}
-  if (ctx->X          != PETSC_NULL) {ierr = VecDestroy(ctx->X);CHKERRQ(ierr);}
-  if (ctx->t          != PETSC_NULL) {ierr = VecDestroy(ctx->t);CHKERRQ(ierr);}
-  if (ctx->inv_diag_M != PETSC_NULL) {ierr = VecDestroy(ctx->inv_diag_M);CHKERRQ(ierr);}
-  ierr = PetscFree(ctx);CHKERRQ(ierr);
+  if (ctx->ksp) {ierr = KSPDestroy(ctx->ksp);CHKERRQ(ierr);}
+  if (ctx->s) {ierr = VecDestroy(ctx->s);CHKERRQ(ierr);}
+  if (ctx->X) {ierr = VecDestroy(ctx->X);CHKERRQ(ierr);}
+  if (ctx->t) {ierr = VecDestroy(ctx->t);CHKERRQ(ierr);}
+  if (ctx->inv_diag_M) {ierr = VecDestroy(ctx->inv_diag_M);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__  
+#define __FUNCT__ "PCDestroy_BFBt"
+PetscErrorCode PCDestroy_BFBt(PC pc)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PCReset_BFBt(pc);CHKERRQ(ierr);
+  ierr = PetscFree(pc->data);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetFromOptions_BFBt"

@@ -699,8 +699,8 @@ EXTERN_C_END
         These are for a single block per processor; works for AIJ, BAIJ; Seq and MPI
 */
 #undef __FUNCT__  
-#define __FUNCT__ "PCDestroy_BJacobi_Singleblock"
-PetscErrorCode PCDestroy_BJacobi_Singleblock(PC pc)
+#define __FUNCT__ "PCReset_BJacobi_Singleblock"
+PetscErrorCode PCReset_BJacobi_Singleblock(PC pc)
 {
   PC_BJacobi             *jac = (PC_BJacobi*)pc->data;
   PC_BJacobi_Singleblock *bjac = (PC_BJacobi_Singleblock*)jac->data;
@@ -718,10 +718,24 @@ PetscErrorCode PCDestroy_BJacobi_Singleblock(PC pc)
     ierr = MatDestroy(jac->tp_pmat);CHKERRQ(ierr);
   }
 
+  ierr = KSPReset(jac->ksp[0]);CHKERRQ(ierr);
+  if (bjac->x) {ierr = VecDestroy(bjac->x);CHKERRQ(ierr);}
+  if (bjac->y) {ierr = VecDestroy(bjac->y);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PCDestroy_BJacobi_Singleblock"
+PetscErrorCode PCDestroy_BJacobi_Singleblock(PC pc)
+{
+  PC_BJacobi             *jac = (PC_BJacobi*)pc->data;
+  PC_BJacobi_Singleblock *bjac = (PC_BJacobi_Singleblock*)jac->data;
+  PetscErrorCode         ierr;
+
+  PetscFunctionBegin;
+  ierr = PCReset_BJacobi_Singleblock(pc);CHKERRQ(ierr);
   ierr = KSPDestroy(jac->ksp[0]);CHKERRQ(ierr);
   ierr = PetscFree(jac->ksp);CHKERRQ(ierr);
-  ierr = VecDestroy(bjac->x);CHKERRQ(ierr);
-  ierr = VecDestroy(bjac->y);CHKERRQ(ierr);
   ierr = PetscFree(jac->l_lens);CHKERRQ(ierr);
   ierr = PetscFree(jac->g_lens);CHKERRQ(ierr);
   ierr = PetscFree(bjac);CHKERRQ(ierr);
@@ -903,6 +917,7 @@ static PetscErrorCode PCSetUp_BJacobi_Singleblock(PC pc,Mat mat,Mat pmat)
     ierr = PetscLogObjectParent(pc,x);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(pc,y);CHKERRQ(ierr);
 
+    pc->ops->reset               = PCReset_BJacobi_Singleblock;
     pc->ops->destroy             = PCDestroy_BJacobi_Singleblock;
     pc->ops->apply               = PCApply_BJacobi_Singleblock;
     pc->ops->applysymmetricleft  = PCApplySymmetricLeft_BJacobi_Singleblock;
@@ -934,10 +949,9 @@ static PetscErrorCode PCSetUp_BJacobi_Singleblock(PC pc,Mat mat,Mat pmat)
 }
 
 /* ---------------------------------------------------------------------------------------------*/
-
 #undef __FUNCT__  
-#define __FUNCT__ "PCDestroy_BJacobi_Multiblock"
-PetscErrorCode PCDestroy_BJacobi_Multiblock(PC pc)
+#define __FUNCT__ "PCReset_BJacobi_Multiblock"
+PetscErrorCode PCReset_BJacobi_Multiblock(PC pc)
 {
   PC_BJacobi            *jac = (PC_BJacobi*)pc->data;
   PC_BJacobi_Multiblock *bjac = (PC_BJacobi_Multiblock*)jac->data;
@@ -945,9 +959,11 @@ PetscErrorCode PCDestroy_BJacobi_Multiblock(PC pc)
   PetscInt              i;
 
   PetscFunctionBegin;
-  ierr = MatDestroyMatrices(jac->n_local,&bjac->pmat);CHKERRQ(ierr);
-  if (jac->use_true_local) {
-    ierr = MatDestroyMatrices(jac->n_local,&bjac->mat);CHKERRQ(ierr);
+  if (bjac && bjac->pmat) {
+    ierr = MatDestroyMatrices(jac->n_local,&bjac->pmat);CHKERRQ(ierr);
+    if (jac->use_true_local) {
+      ierr = MatDestroyMatrices(jac->n_local,&bjac->mat);CHKERRQ(ierr);
+    }
   }
 
   /*
@@ -962,18 +978,38 @@ PetscErrorCode PCDestroy_BJacobi_Multiblock(PC pc)
   }
 
   for (i=0; i<jac->n_local; i++) {
-    ierr = KSPDestroy(jac->ksp[i]);CHKERRQ(ierr);
-    ierr = VecDestroy(bjac->x[i]);CHKERRQ(ierr);
-    ierr = VecDestroy(bjac->y[i]);CHKERRQ(ierr);
-    ierr = ISDestroy(bjac->is[i]);CHKERRQ(ierr);
+    ierr = KSPReset(jac->ksp[i]);CHKERRQ(ierr);
+    if (bjac && bjac->x) {
+      ierr = VecDestroy(bjac->x[i]);CHKERRQ(ierr);
+      ierr = VecDestroy(bjac->y[i]);CHKERRQ(ierr);
+      ierr = ISDestroy(bjac->is[i]);CHKERRQ(ierr);
+    }
   }
-  ierr = PetscFree(jac->ksp);CHKERRQ(ierr);
-  ierr = PetscFree2(bjac->x,bjac->y);CHKERRQ(ierr);
-  ierr = PetscFree(bjac->starts);CHKERRQ(ierr);
-  ierr = PetscFree(bjac->is);CHKERRQ(ierr);
-  ierr = PetscFree(bjac);CHKERRQ(ierr);
+  if (bjac) {
+    ierr = PetscFree2(bjac->x,bjac->y);CHKERRQ(ierr);
+    ierr = PetscFree(bjac->starts);CHKERRQ(ierr);
+    ierr = PetscFree(bjac->is);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(jac->data);CHKERRQ(ierr);
   ierr = PetscFree(jac->l_lens);CHKERRQ(ierr);
   ierr = PetscFree(jac->g_lens);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PCDestroy_BJacobi_Multiblock"
+PetscErrorCode PCDestroy_BJacobi_Multiblock(PC pc)
+{
+  PC_BJacobi            *jac = (PC_BJacobi*)pc->data;
+  PetscErrorCode        ierr;
+  PetscInt              i;
+
+  PetscFunctionBegin;
+  ierr = PCReset_BJacobi_Multiblock(pc);CHKERRQ(ierr);
+  for (i=0; i<jac->n_local; i++) {
+    ierr = KSPDestroy(jac->ksp[i]);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(jac->ksp);CHKERRQ(ierr);
   ierr = PetscFree(pc->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1092,6 +1128,7 @@ static PetscErrorCode PCSetUp_BJacobi_Multiblock(PC pc,Mat mat,Mat pmat)
 
   if (!pc->setupcalled) {
     scall                  = MAT_INITIAL_MATRIX;
+    pc->ops->reset         = PCReset_BJacobi_Multiblock;
     pc->ops->destroy       = PCDestroy_BJacobi_Multiblock;
     pc->ops->apply         = PCApply_BJacobi_Multiblock;
     pc->ops->applytranspose= PCApplyTranspose_BJacobi_Multiblock;
@@ -1190,8 +1227,8 @@ static PetscErrorCode PCSetUp_BJacobi_Multiblock(PC pc,Mat mat,Mat pmat)
       These are for a single block with multiple processes; 
 */
 #undef __FUNCT__  
-#define __FUNCT__ "PCDestroy_BJacobi_Multiproc"
-static PetscErrorCode PCDestroy_BJacobi_Multiproc(PC pc)
+#define __FUNCT__ "PCReset_BJacobi_Multiproc"
+static PetscErrorCode PCReset_BJacobi_Multiproc(PC pc)
 {
   PC_BJacobi           *jac = (PC_BJacobi*)pc->data;
   PC_BJacobi_Multiproc *mpjac = (PC_BJacobi_Multiproc*)jac->data;
@@ -1201,6 +1238,19 @@ static PetscErrorCode PCDestroy_BJacobi_Multiproc(PC pc)
   if (mpjac->ysub){ierr = VecDestroy(mpjac->ysub);CHKERRQ(ierr);}
   if (mpjac->xsub){ierr = VecDestroy(mpjac->xsub);CHKERRQ(ierr);}
   if (mpjac->submats){ierr = MatDestroy(mpjac->submats);CHKERRQ(ierr);}
+  if (mpjac->ksp){ierr = KSPReset(mpjac->ksp);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PCDestroy_BJacobi_Multiproc"
+static PetscErrorCode PCDestroy_BJacobi_Multiproc(PC pc)
+{
+  PC_BJacobi           *jac = (PC_BJacobi*)pc->data;
+  PC_BJacobi_Multiproc *mpjac = (PC_BJacobi_Multiproc*)jac->data;
+  PetscErrorCode       ierr;
+
+  PetscFunctionBegin;
   if (mpjac->ksp){ierr = KSPDestroy(mpjac->ksp);CHKERRQ(ierr);}
   if (mpjac->psubcomm){ierr = PetscSubcommDestroy(mpjac->psubcomm);CHKERRQ(ierr);}
 
@@ -1297,6 +1347,7 @@ static PetscErrorCode PCSetUp_BJacobi_Multiproc(PC pc)
     ierr = PetscLogObjectParent(pc,mpjac->xsub);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(pc,mpjac->ysub);CHKERRQ(ierr);
 
+    pc->ops->reset   = PCReset_BJacobi_Multiproc;
     pc->ops->destroy = PCDestroy_BJacobi_Multiproc;
     pc->ops->apply   = PCApply_BJacobi_Multiproc;
   }

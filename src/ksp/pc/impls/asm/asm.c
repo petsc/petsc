@@ -441,8 +441,8 @@ static PetscErrorCode PCApplyTranspose_ASM(PC pc,Vec x,Vec y)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCDestroy_ASM"
-static PetscErrorCode PCDestroy_ASM(PC pc)
+#define __FUNCT__ "PCReset_ASM"
+static PetscErrorCode PCReset_ASM(PC pc)
 {
   PC_ASM         *osm = (PC_ASM*)pc->data;
   PetscErrorCode ierr;
@@ -451,9 +451,8 @@ static PetscErrorCode PCDestroy_ASM(PC pc)
   PetscFunctionBegin;
   if (osm->ksp) {
     for (i=0; i<osm->n_local_true; i++) {
-      ierr = KSPDestroy(osm->ksp[i]);CHKERRQ(ierr);
+      ierr = KSPReset(osm->ksp[i]);CHKERRQ(ierr);
     }
-    ierr = PetscFree(osm->ksp);CHKERRQ(ierr);
   }
   if (osm->pmat) {
     if (osm->n_local_true > 0) {
@@ -478,8 +477,29 @@ static PetscErrorCode PCDestroy_ASM(PC pc)
   }
   if (osm->is) {
     ierr = PCASMDestroySubdomains(osm->n_local_true,osm->is,osm->is_local);CHKERRQ(ierr);
+    osm->is       = 0;
+    osm->is_local = 0;
   }
-  ierr = PetscFree(osm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PCDestroy_ASM"
+static PetscErrorCode PCDestroy_ASM(PC pc)
+{
+  PC_ASM         *osm = (PC_ASM*)pc->data;
+  PetscErrorCode ierr;
+  PetscInt       i;
+
+  PetscFunctionBegin;
+  ierr = PCReset_ASM(pc);CHKERRQ(ierr);
+  if (osm->ksp) {
+    for (i=0; i<osm->n_local_true; i++) {
+      ierr = KSPDestroy(osm->ksp[i]);CHKERRQ(ierr);
+    }
+    ierr = PetscFree(osm->ksp);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(pc->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -988,6 +1008,7 @@ PetscErrorCode  PCCreate_ASM(PC pc)
   pc->ops->apply             = PCApply_ASM;
   pc->ops->applytranspose    = PCApplyTranspose_ASM;
   pc->ops->setup             = PCSetUp_ASM;
+  pc->ops->reset             = PCReset_ASM;
   pc->ops->destroy           = PCDestroy_ASM;
   pc->ops->setfromoptions    = PCSetFromOptions_ASM;
   pc->ops->setuponblocks     = PCSetUpOnBlocks_ASM;
