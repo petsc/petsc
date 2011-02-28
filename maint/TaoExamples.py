@@ -109,6 +109,25 @@ class ExampleList:
                 l.append(e)
         return l
 
+    def setWithTags(self,taglist):
+        negtags = []
+        retlist = []
+
+        for t in taglist:
+            if t.startswith('-'):
+                negtags.append(t[1:])
+            else:
+                for e in self.list:
+                    if e.hasTag(t):
+                        retlist.append(e)
+        if len(retlist) == 0: # No inclusion tags defaults to entire list
+            retlist = self.list[:]
+        self.list = retlist
+        for t in negtags:
+            for e in retlist:
+                if e.hasTag(t):
+                    self.list.remove(e)
+
 class TaoExamples(ExampleList):
     def __init__(self):
         self.list = []

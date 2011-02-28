@@ -10,6 +10,13 @@ TAO = {'TAO_DIR':'/home/sarich/working/tao_c',
 
 if __name__=="__main__":
     examples = TaoExamples.TaoExamples()
+    examples.setWithTags(sys.argv[1:])
+    if examples is None:
+        sys.stderr.write('No examples match arguments:\n%s\n' % str(sys.argv[1:]))
+        sys.exit(0)
+    for e in examples.list:
+        print(e.name)
+    sys.exit(0)
     for ex in examples.list: #.withTag("eptorsion"):
         sys.stdout.write("\n\n*** Example %s ***\n" % ex.name)
 
