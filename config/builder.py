@@ -366,7 +366,7 @@ class DependencyBuilder(logger.Logger):
     target = target.split()[0]
     assert(target == self.sourceManager.getObjectName(source))
     deps = [d for d in deps.replace('\\','').split() if not os.path.splitext(d)[1] == '.mod']
-    if not deps[0] == source:
+    if not os.path.basename(deps[0]) == source:
       raise RuntimeError('ERROR: first dependency %s should be %s' % (deps[0], source))
     self.sourceDatabase.setNode(os.path.join(dirname, source), [os.path.join(dirname, d) for d in deps[1:]])
     return
