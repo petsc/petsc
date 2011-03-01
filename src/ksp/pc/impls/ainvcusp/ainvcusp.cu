@@ -117,9 +117,9 @@ static PetscErrorCode PCApply_AINVCUSP(PC pc,Vec x,Vec y)
   ierr = VecCUSPGetArrayWrite(y,&yarray);CHKERRQ(ierr);
   try {
     if (ainv->scaled) {
-      cusp::multiply(*(cuspainvprecondscaled)ainv->AINVCUSP,*xarray,*yarray);
+      cusp::multiply(*(cuspainvprecondscaled *)ainv->AINVCUSP,*xarray,*yarray);
     } else {
-      cusp::multiply(*(cuspainvprecond)ainv->AINVCUSP,*xarray,*yarray);
+      cusp::multiply(*(cuspainvprecond *)ainv->AINVCUSP,*xarray,*yarray);
     }
   } catch(char* ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
@@ -218,7 +218,7 @@ PetscErrorCode PCAINVCUSPSetNonzeros(PC pc, PetscInt nonzeros)
   ierr = PetscTryMethod(pc, "PCAINVCUSPSetNonzeros_C",(PC,PetscInt),(pc,nonzeros));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
+#undef __FUNCT__
 #define __FUNCT__ "PCAINVCUSPSetLinParameter_AINVCUSP"
 static PetscErrorCode PCAINVCUSPSetLinParameter_AINVCUSP(PC pc, PetscInt param)
 {
@@ -243,7 +243,7 @@ PetscErrorCode PCAINVCUSPSetLinParameter(PC pc, PetscInt param)
   ierr = PetscTryMethod(pc, "PCAINVCUSPSetLinParameter_C",(PC,PetscInt),(pc,param));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
+#undef __FUNCT__
 #define __FUNCT__ "PCAINVCUSPUseScaling_AINVCUSP"
 static PetscErrorCode PCAINVCUSPUseScaling_AINVCUSP(PC pc, PetscBool scaled)
 {
@@ -321,7 +321,6 @@ PetscErrorCode  PCCreate_AINVCUSP(PC pc)
   ierr                 = PetscNewLog(pc,PC_AINVCUSP,&ainv);CHKERRQ(ierr);
   pc->data             = (void*)ainv;
   ainv->AINVCUSP       = 0;
-  ainv->drop           = DROP_STANDARD;
   ainv->droptolerance  = 0.1;
   ainv->nonzeros       = -1;
   ainv->scaled         = PETSC_TRUE;
@@ -346,7 +345,7 @@ PetscErrorCode  PCCreate_AINVCUSP(PC pc)
 
  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc, "PCAINVCUSPSetDropTolerance_C", "PCAINVCUSPSetDropTolerance_AINVCUSP", PCAINVCUSPSetDropTolerance_AINVCUSP);CHKERRQ(ierr);
  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc, "PCAINVCUSPUseScaling_C", "PCAINVCUSPUseScaling_AINVCUSP", PCAINVCUSPUseScaling_AINVCUSP);CHKERRQ(ierr);
- ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc, "PCAINVCUSPSetLimParameter_C", "PCAINVCUSPSetLimParameter_AINVCUSP", PCAINVCUSPSetLimParameter_AINVCUSP);CHKERRQ(ierr);
+ ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc, "PCAINVCUSPSetLinParameter_C", "PCAINVCUSPSetLinParameter_AINVCUSP", PCAINVCUSPSetLinParameter_AINVCUSP);CHKERRQ(ierr);
  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc, "PCAINVCUSPSetNonzeros_C", "PCAINVCUSPSetNonzeros_AINVCUSP", PCAINVCUSPSetNonzeros_AINVCUSP);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -407,7 +407,7 @@ extern PetscErrorCode  PCBiCGStabCUSPSetUseVerboseMonitor(PC,PetscBool);
 extern PetscErrorCode  PCAINVCUSPSetDropTolerance(PC,PetscReal);
 extern PetscErrorCode  PCAINVCUSPUseScaling(PC,PetscBool);
 extern PetscErrorCode  PCAINVCUSPSetNonzeros(PC,PetscInt);
-extern PetscErrorCode  PCAINVCUSPSetLimParameter(PC,PetscInt);
+extern PetscErrorCode  PCAINVCUSPSetLinParameter(PC,PetscInt);
 PETSC_EXTERN_CXX_END
 
 #endif /* __PETSCPC_H */
