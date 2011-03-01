@@ -440,6 +440,7 @@ class PETScConfigureInfo(object):
 
 class PETScMaker(script.Script):
  def findArch(self):
+   import nargs
    arch = nargs.Arg.findArgument('arch', sys.argv[1:])
    if arch is None:
      arch = os.environ.get('PETSC_ARCH', None)
