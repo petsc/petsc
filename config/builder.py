@@ -296,7 +296,6 @@ class DirectoryTreeWalker(logger.Logger):
     if not self.checkDir(rootDir):
       self.logPrint('Nothing to be done in '+rootDir)
     for root, dirs, files in os.walk(rootDir):
-      self.logPrint('Processing '+root)
       yield root, files
       for badDir in [d for d in dirs if not self.checkDir(os.path.join(root, d))]:
         dirs.remove(badDir)
@@ -367,7 +366,8 @@ class DependencyBuilder(logger.Logger):
     target = target.split()[0]
     assert(target == self.sourceManager.getObjectName(source))
     deps = [d for d in deps.replace('\\','').split() if not os.path.splitext(d)[1] == '.mod']
-    assert(deps[0] == source)
+    if not deps[0] == source:
+      raise RuntimeError('ERROR: first dependency %s should be %s' % (deps[0], source))
     self.sourceDatabase.setNode(os.path.join(dirname, source), [os.path.join(dirname, d) for d in deps[1:]])
     return
 
