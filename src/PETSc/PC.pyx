@@ -146,6 +146,9 @@ cdef class PC(Object):
     def setUp(self):
         CHKERR( PCSetUp(self.pc) )
 
+    def reset(self):
+        CHKERR( PCReset(self.pc) )
+
     def setUpOnBlocks(self):
         CHKERR( PCSetUpOnBlocks(self.pc) )
 

@@ -126,6 +126,7 @@ cdef extern from * nogil:
     int KSPGetPC(PetscKSP,PetscPC*)
 
     int KSPSetUp(PetscKSP)
+    int KSPReset(PetscKSP)
     int KSPSetUpOnBlocks(PetscKSP)
     int KSPSolve(PetscKSP,PetscVec,PetscVec)
     int KSPSolveTranspose(PetscKSP,PetscVec,PetscVec)

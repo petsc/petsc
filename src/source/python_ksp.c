@@ -230,6 +230,17 @@ static PetscErrorCode KSPBuildResidual_Python(KSP ksp, Vec t, Vec v, Vec *V)
   PetscFunctionReturn(0);
 }
 
+#if !(PETSC_VERSION_(3,1,0) || PETSC_VERSION_(3,0,0))
+#undef __FUNCT__
+#define __FUNCT__ "KSPReset_Python"
+static PetscErrorCode KSPReset_Python(KSP ksp)
+{
+  PetscFunctionBegin;
+  KSP_PYTHON_CALL(ksp, "reset", ("O&", PyPetscKSP_New,  ksp));
+  PetscFunctionReturn(0);
+}
+#endif
+
 /* -------------------------------------------------------------------------- */
 
 /*MC
@@ -269,7 +280,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_Python(KSP ksp)
   ksp->ops->solve                = KSPSolve_Python;
   ksp->ops->buildsolution        = KSPBuildSolution_Python;
   ksp->ops->buildresidual        = KSPBuildResidual_Python;
-
+#if !(PETSC_VERSION_(3,1,0) || PETSC_VERSION_(3,0,0))
+  ksp->ops->reset                = KSPReset_Python;
+#endif
   ierr = PetscObjectComposeFunction((PetscObject)ksp,
                                     "KSPPythonSetType_C","KSPPythonSetType_PYTHON",
                                     (PetscVoidFunction)KSPPythonSetType_PYTHON);CHKERRQ(ierr);

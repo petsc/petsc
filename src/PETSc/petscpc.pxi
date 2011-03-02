@@ -70,6 +70,7 @@ cdef extern from * nogil:
     int PCSetFromOptions(PetscPC)
 
     int PCSetUp(PetscPC)
+    int PCReset(PetscPC)
     int PCSetUpOnBlocks(PetscPC)
 
     int PCApply(PetscPC,PetscVec,PetscVec)

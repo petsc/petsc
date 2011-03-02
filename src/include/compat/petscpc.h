@@ -10,6 +10,29 @@
 
 #if (PETSC_VERSION_(3,1,0) || \
      PETSC_VERSION_(3,0,0))
+#undef __FUNCT__  
+#define __FUNCT__ "PCReset"
+static PetscErrorCode PCReset_Compat(PC pc)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  if (pc->diagonalscaleright) {ierr = VecDestroy(pc->diagonalscaleright);CHKERRQ(ierr);}
+  if (pc->diagonalscaleleft)  {ierr = VecDestroy(pc->diagonalscaleleft);CHKERRQ(ierr);}
+  if (pc->pmat) {ierr = MatDestroy(pc->pmat);CHKERRQ(ierr);}
+  if (pc->mat) {ierr = MatDestroy(pc->mat);CHKERRQ(ierr);}
+  /*if (pc->ops->reset) {ierr = (*pc->ops->reset)(pc);}*/
+  pc->diagonalscaleright = 0;
+  pc->diagonalscaleleft = 0;
+  pc->setupcalled = 0;
+  pc->pmat = pc->mat = 0;
+  PetscFunctionReturn(0);
+}
+#define PCReset PCReset_Compat
+#endif
+
+#if (PETSC_VERSION_(3,1,0) || \
+     PETSC_VERSION_(3,0,0))
 /* PCFieldSplitSetFields */
 #undef __FUNCT__
 #define __FUNCT__ "PCFieldSplitSetFields"

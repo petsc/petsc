@@ -316,6 +316,17 @@ static PetscErrorCode PCSetUp_Python(PC pc)
   PetscFunctionReturn(0);
 }
 
+#if !(PETSC_VERSION_(3,1,0) || PETSC_VERSION_(3,0,0))
+#undef __FUNCT__
+#define __FUNCT__ "PCReset_Python"
+static PetscErrorCode PCReset_Python(PC pc)
+{
+  PetscFunctionBegin;
+  PC_PYTHON_CALL(pc, "reset", ("O&", PyPetscPC_New,  pc));
+  PetscFunctionReturn(0);
+}
+#endif
+
 /* -------------------------------------------------------------------------- */
 
 /*MC
@@ -353,6 +364,9 @@ PetscErrorCode PETSCTS_DLLEXPORT PCCreate_Python(PC pc)
   pc->ops->apply           = PCApply_Python;
   pc->ops->presolve        = PCPreSolve_Python;
   pc->ops->postsolve       = PCPostSolve_Python;
+#if !(PETSC_VERSION_(3,1,0) || PETSC_VERSION_(3,0,0))
+  pc->ops->reset           = PCReset_Python;
+#endif
   /* To be filled later in PCSetUp_Python() ... */
   pc->ops->applysymmetricleft  = PETSC_NULL/*PCApplySymmetricLeft_Python*/;
   pc->ops->applysymmetricright = PETSC_NULL/*PCApplySymmetricRight_Python*/;

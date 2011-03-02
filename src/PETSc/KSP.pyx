@@ -319,6 +319,9 @@ cdef class KSP(Object):
     def setUp(self):
         CHKERR( KSPSetUp(self.ksp) )
 
+    def reset(self):
+        CHKERR( KSPReset(self.ksp) )
+
     def setUpOnBlocks(self):
         CHKERR( KSPSetUpOnBlocks(self.ksp) )
 
