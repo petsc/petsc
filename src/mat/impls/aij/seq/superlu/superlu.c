@@ -110,7 +110,7 @@ PetscErrorCode MatFactorInfo_SuperLU(Mat A,PetscViewer viewer)
 #define __FUNCT__ "MatLUFactorNumeric_SuperLU"
 PetscErrorCode MatLUFactorNumeric_SuperLU(Mat F,Mat A,const MatFactorInfo *info)
 {
-  Mat_SuperLU    *lu = (Mat_SuperLU*)(F)->spptr;
+  Mat_SuperLU    *lu = (Mat_SuperLU*)F->spptr;
   Mat_SeqAIJ     *aa;
   PetscErrorCode ierr;
   PetscInt       sinfo;
@@ -201,8 +201,8 @@ PetscErrorCode MatLUFactorNumeric_SuperLU(Mat F,Mat A,const MatFactorInfo *info)
   }
 
   lu->flg = SAME_NONZERO_PATTERN;
-  (F)->ops->solve          = MatSolve_SuperLU;
-  (F)->ops->solvetranspose = MatSolveTranspose_SuperLU;
+  F->ops->solve          = MatSolve_SuperLU;
+  F->ops->solvetranspose = MatSolveTranspose_SuperLU;
   PetscFunctionReturn(0);
 }
 
@@ -386,12 +386,12 @@ PetscErrorCode MatSolveTranspose_SuperLU(Mat A,Vec b,Vec x)
 #define __FUNCT__ "MatLUFactorSymbolic_SuperLU"
 PetscErrorCode MatLUFactorSymbolic_SuperLU(Mat F,Mat A,IS r,IS c,const MatFactorInfo *info)
 {
-  Mat_SuperLU    *lu = (Mat_SuperLU*)((F)->spptr);
+  Mat_SuperLU    *lu = (Mat_SuperLU*)(F->spptr);
  
   PetscFunctionBegin;
-  lu->flg                   = DIFFERENT_NONZERO_PATTERN;
-  lu->CleanUpSuperLU        = PETSC_TRUE;
-  (F)->ops->lufactornumeric = MatLUFactorNumeric_SuperLU;
+  lu->flg                 = DIFFERENT_NONZERO_PATTERN;
+  lu->CleanUpSuperLU      = PETSC_TRUE;
+  F->ops->lufactornumeric = MatLUFactorNumeric_SuperLU;
   PetscFunctionReturn(0);
 }
 

@@ -404,19 +404,19 @@ runex8_1:
 	   else echo "Possible problem with ex8_1, diffs above"; fi; \
 	   ${RM} -f ex8_1.tmp
 
-runex8g_1:
+runex8g_1: 
 	-@${MPIEXEC} -n 1 ./ex8g -M 7 -N 9 -user_set_subdomains -Mdomains 1 -Ndomains 3 -print_error > ex8g_1.tmp 2>&1; \
 	   if (${DIFF} output/ex8g_1.out ex8g_1.tmp) then true; \
 	   else echo "Possible problem with ex8g_1, diffs above"; fi; \
 	   ${RM} -f ex8g_1.tmp
 
-runex8g_2:
+runex8g_2: 
 	-@${MPIEXEC} -n 2 ./ex8g -M 7 -N 9 -user_set_subdomains -Mdomains 1 -Ndomains 3 -print_error > ex8g_2.tmp 2>&1; \
 	   if (${DIFF} output/ex8g_2.out ex8g_2.tmp) then true; \
 	   else echo "Possible problem with ex8g_2, diffs above"; fi; \
 	   ${RM} -f ex8g_2.tmp
 
-runex8g_3:
+runex8g_3: 
 	-@${MPIEXEC} -n 3 ./ex8g -M 7 -N 9 -user_set_subdomains -Mdomains 1 -Ndomains 3 -print_error > ex8g_3.tmp 2>&1; \
 	   if (${DIFF} output/ex8g_3.out ex8g_3.tmp) then true; \
 	   else echo "Possible problem with ex8g_3, diffs above"; fi; \

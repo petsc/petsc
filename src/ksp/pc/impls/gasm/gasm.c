@@ -530,6 +530,13 @@ static PetscErrorCode PCDestroy_GASM(PC pc)
   if (osm->is) {
     ierr = PCGASMDestroySubdomains(osm->n,osm->is,osm->is_local);CHKERRQ(ierr);
   }
+
+  if(osm->gis) {
+    ierr = ISDestroy(osm->gis); CHKERRQ(ierr);
+  }
+  if(osm->gis_local) {
+    ierr = ISDestroy(osm->gis_local); CHKERRQ(ierr);
+  }
   ierr = PetscFree(pc->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

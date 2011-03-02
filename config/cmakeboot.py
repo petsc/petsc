@@ -2,8 +2,8 @@
 
 import os,sys,string
 from collections import deque
-sys.path.insert(0, os.path.join(os.environ['PETSC_DIR'], 'config'))
-sys.path.insert(0, os.path.join(os.environ['PETSC_DIR'], 'config', 'BuildSystem'))
+sys.path.insert(0, os.path.join(os.path.abspath('config')))
+sys.path.insert(0, os.path.join(os.path.abspath('config'),'BuildSystem'))
 import script
 
 def noCheck(command, status, output, error):
