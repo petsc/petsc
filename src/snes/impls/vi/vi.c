@@ -882,7 +882,41 @@ PetscErrorCode SNESSolveVI_RS(SNES snes)
       ierr = SNESVIResetPCandKSP(snes,jac_inact_inact,prejac_inact_inact);CHKERRQ(ierr);
     }
     
+    /*      ierr = ISView(IS_inact,0);CHKERRQ(ierr); */
+    /*      ierr = ISView(IS_act,0);CHKERRQ(ierr);*/
+    /*      ierr = MatView(snes->jacobian_pre,0); */
+
     ierr = KSPSetOperators(snes->ksp,jac_inact_inact,prejac_inact_inact,flg);CHKERRQ(ierr);
+    ierr = KSPSetUp(snes->ksp);CHKERRQ(ierr);
+    {
+      PC        pc;
+      PetscBool flg;
+      ierr = KSPGetPC(snes->ksp,&pc);CHKERRQ(ierr);
+      ierr = PetscTypeCompare((PetscObject)pc,PCFIELDSPLIT,&flg);CHKERRQ(ierr);
+      if (flg) {
+        KSP      *subksps;
+        ierr = PCFieldSplitGetSubKSP(pc,PETSC_NULL,&subksps);CHKERRQ(ierr);
+        ierr = KSPGetPC(subksps[0],&pc);CHKERRQ(ierr);
+        ierr = PetscFree(subksps);CHKERRQ(ierr);
+        ierr = PetscTypeCompare((PetscObject)pc,PCBJACOBI,&flg);CHKERRQ(ierr);
+        if (flg) {
+          PetscInt       n,N = 101*101,j,cnts[3] = {0,0,0};
+          const PetscInt *ii;
+
+          ierr = ISGetSize(IS_inact,&n);CHKERRQ(ierr);
+          ierr = ISGetIndices(IS_inact,&ii);CHKERRQ(ierr);
+          for (j=0; j<n; j++) {
+            if (ii[j] < N) cnts[0]++;
+            else if (ii[j] < 2*N) cnts[1]++;
+            else if (ii[j] < 3*N) cnts[2]++;
+          }
+          ierr = ISRestoreIndices(IS_inact,&ii);CHKERRQ(ierr);
+
+          ierr = PCBJacobiSetTotalBlocks(pc,3,cnts);CHKERRQ(ierr);
+        }
+      }
+    }
+
     ierr = SNES_KSPSolve(snes,snes->ksp,F_inact,Y_inact);CHKERRQ(ierr);
     ierr = KSPGetConvergedReason(snes->ksp,&kspreason);CHKERRQ(ierr);
     if (kspreason < 0) {

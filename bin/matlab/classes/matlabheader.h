@@ -66,7 +66,7 @@ int VecAssemblyEnd(Vec);
 int VecCopy(Vec,Vec);
 int VecDuplicate(Vec,Vec*);
 int VecView(Vec,PetscViewer);
-int VecDestroy(Vec);
+int VecDestroy_(Vec);
 
 typedef PetscPointer Mat;
 typedef int MatAssemblyType;
@@ -85,7 +85,7 @@ int MatAssemblyBegin(Mat,MatAssemblyType);
 int MatAssemblyEnd(Mat,MatAssemblyType);
 int MatView(Mat,PetscViewer);
 int MatLoad(Mat,PetscViewer);
-int MatDestroy(Mat);
+int MatDestroy_(Mat);
 int MatSetValuesStencil(Mat,int,MatStencil*,int,MatStencil*,double*,InsertMode);
 int MatSeqAIJFromMatlab(mxArray*,Mat);
 mxArray* MatSeqAIJToMatlab(Mat);

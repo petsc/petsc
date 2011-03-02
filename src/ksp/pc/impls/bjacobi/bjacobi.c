@@ -46,7 +46,7 @@ static PetscErrorCode PCSetUp_BJacobi(PC pc)
         if (jac->l_lens[i]/bs*bs !=jac->l_lens[i]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Mat blocksize doesn't match block Jacobi layout");
         sum += jac->l_lens[i];
       }
-      if (sum != M) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local lens sent incorrectly");
+      if (sum != M) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local lens set incorrectly");
     } else {
       ierr = PetscMalloc(jac->n_local*sizeof(PetscInt),&jac->l_lens);CHKERRQ(ierr);
       for (i=0; i<jac->n_local; i++) {
@@ -68,7 +68,7 @@ static PetscErrorCode PCSetUp_BJacobi(PC pc)
         /* check that user set these correctly */
         sum = 0;
         for (i=0; i<jac->n_local; i++) sum += jac->l_lens[i];
-        if (sum != M) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Global lens sent incorrectly");
+        if (sum != M) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Global lens set incorrectly");
       } else {
         ierr = MatGetOwnershipRange(pc->pmat,&start,&end);CHKERRQ(ierr);
         /* loop over blocks determing first one owned by me */
