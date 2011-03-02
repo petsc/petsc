@@ -124,6 +124,20 @@ class BaseTestDA(object):
         for n1, n2 in zip(self.da.getSizes(), rda.getSizes()):
             self.assertTrue(abs(n1-n2)<=1)
 
+    def testRefineHierarchy(self):
+        levels = self.da.refineHierarchy(2)
+        self.assertTrue(isinstance(levels, list))
+        self.assertEqual(len(levels), 2)
+        for item in levels:
+            self.assertTrue(isinstance(item, PETSc.DM))
+
+    def testCoarsenHierarchy(self):
+        levels = self.da.coarsenHierarchy(2)
+        self.assertTrue(isinstance(levels, list))
+        self.assertEqual(len(levels), 2)
+        for item in levels:
+            self.assertTrue(isinstance(item, PETSc.DM))
+
     def testGetInterpolation(self):
         da = self.da
         if da.dim == 1: return

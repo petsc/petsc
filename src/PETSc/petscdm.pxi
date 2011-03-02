@@ -23,6 +23,8 @@ cdef extern from * nogil:
     int DMRefine(PetscDM,MPI_Comm,PetscDM*)
     int DMCoarsen(PetscDM,MPI_Comm,PetscDM*)
     int DMGetAggregates(PetscDM,PetscDM,PetscMat*)
+    int DMRefineHierarchy(PetscDM,PetscInt,PetscDM[])
+    int DMCoarsenHierarchy(PetscDM,PetscInt,PetscDM[])
 
     int DMGlobalToLocalBegin(PetscDM,PetscVec,PetscInsertMode,PetscVec)
     int DMGlobalToLocalEnd(PetscDM,PetscVec,PetscInsertMode,PetscVec)
@@ -34,5 +36,26 @@ cdef extern from * nogil:
 
     int DMGetElements(PetscDM,PetscInt*,PetscInt*,const_PetscInt**)
     int DMRestoreElements(PetscDM,PetscInt*,PetscInt*,const_PetscInt**)
+
+# --------------------------------------------------------------------
+
+cdef inline type subtype_DM(PetscDM dm):
+    cdef type klass = DM
+    cdef PetscBool match = PETSC_FALSE
+    cdef PetscObject obj = <PetscObject> dm
+    if obj == NULL: return klass
+    # DA
+    CHKERR( PetscTypeCompare(obj, b"da", &match) ) # petsc-3.2
+    if match == PETSC_FALSE: # petsc-3.1
+        CHKERR( PetscTypeCompare(obj, b"da1d", &match) )
+        if match == PETSC_FALSE:
+            CHKERR( PetscTypeCompare(obj, b"da2d", &match) )
+            if match == PETSC_FALSE:
+                CHKERR( PetscTypeCompare(obj, b"da3d", &match) )
+                if match == PETSC_FALSE: # petsc-3.0
+                    CHKERR( PetscTypeCompare(obj, b"DA", &match) )
+    if match == PETSC_TRUE: klass = DA
+    # --
+    return klass
 
 # --------------------------------------------------------------------
