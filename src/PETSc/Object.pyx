@@ -168,6 +168,8 @@ cdef class Object:
                     CHKERR( PetscTypeCompare(cobj, b"da2d", &match) )
                     if match == PETSC_FALSE:
                         CHKERR( PetscTypeCompare(cobj, b"da3d", &match) )
+                        if match == PETSC_FALSE:
+                            CHKERR( PetscTypeCompare(cobj, b"DA", &match) )
             if match == PETSC_TRUE: Class = DA
         #
         cdef Object newobj = Class()
