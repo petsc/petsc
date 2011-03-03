@@ -712,6 +712,7 @@ PetscErrorCode  KSPReset(KSP ksp)
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   if (ksp->guess) {
     ierr = KSPFischerGuessDestroy(ksp->guess);CHKERRQ(ierr);
+    ksp->guess = 0;
   }  
   if (ksp->ops->reset) {
     ierr = (*ksp->ops->reset)(ksp);CHKERRQ(ierr);
