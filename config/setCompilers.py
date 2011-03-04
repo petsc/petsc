@@ -877,12 +877,17 @@ class Configure(config.base.Configure):
     setattr(self, flagsArg, oldFlags)
     return valid
 
+  def insertCompilerFlag(self, flag, compilerOnly):
+    '''DANGEROUS: Put in the compiler flag without checking'''
+    flagsArg = self.getCompilerFlagsArg(compilerOnly)
+    setattr(self, flagsArg, getattr(self, flagsArg)+' '+flag)
+    self.framework.log.write('Added '+self.language[-1]+' compiler flag '+flag+'\n')
+    return
+
   def addCompilerFlag(self, flag, includes = '', body = '', extraflags = '', compilerOnly = 0):
     '''Determine whether the compiler accepts the given flag, and add it if valid, otherwise throw an exception'''
     if self.checkCompilerFlag(flag+' '+extraflags, includes, body, compilerOnly):
-      flagsArg = self.getCompilerFlagsArg(compilerOnly)
-      setattr(self, flagsArg, getattr(self, flagsArg)+' '+flag)
-      self.framework.log.write('Added '+self.language[-1]+' compiler flag '+flag+'\n')
+      self.insertCompilerFlag(flag, compilerOnly)
       return
     raise RuntimeError('Bad compiler flag: '+flag)
 

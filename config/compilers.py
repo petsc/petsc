@@ -1247,10 +1247,18 @@ class Configure(config.base.Configure):
           if not self.setCompilers.checkLinkerFlag(testFlag):
             self.framework.logPrint('Rejected '+language+' compiler flag '+testFlag+' because linker cannot handle it')
             continue
-          self.framework.logPrint('Adding '+language+' compiler flag '+testFlag)
-          self.setCompilers.addCompilerFlag(testFlag, compilerOnly = 1)
-          self.generateDependencies = 1
-          break
+          self.framework.logPrint('Testing '+language+' compiler flag '+testFlag)
+          if self.setCompilers.checkCompilerFlag(testFlag, compilerOnly = 1):
+            depFilename = os.path.splitext(self.setCompilers.compilerObj)[0]+'.d'
+            if os.path.isfile(depFilename):
+              os.remove(depFilename)
+              self.setCompilers.insertCompilerFlag(testFlag, compilerOnly = 1)
+              self.generateDependencies = 1
+              break
+            else:
+              self.framework.logPrint('Rejected '+language+' compiler flag '+testFlag+' because no dependency file ('+depFilename+') was generated')
+          else:
+            self.framework.logPrint('Rejected '+language+' compiler flag '+testFlag)
         except RuntimeError:
           self.framework.logPrint('Rejected '+language+' compiler flag '+testFlag)
       self.setCompilers.popLanguage()
