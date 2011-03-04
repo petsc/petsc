@@ -562,22 +562,22 @@ runex1:
 	   ${RM} -f ex1_1.tmp
 
 runex2:
-	-@${MPIEXEC} -n 1 ./ex2 -mat_type seqaij -rectA > ex2_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex2 -mat_type seqaij -rectA | grep -v "Matrix Object" > ex2_1.tmp 2>&1; \
 	if (${DIFF} output/ex2_11_A.out ex2_1.tmp) then true; \
 	else echo "Possible problem with ex2_11_A for seqaij, diffs above"; fi; \
 	${RM} -f ex2_1.tmp;
 
-	-@${MPIEXEC} -n 1 ./ex2 -mat_type seqdense -rectA > ex2_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex2 -mat_type seqdense -rectA | grep -v "Matrix Object" > ex2_1.tmp 2>&1; \
 	if (${DIFF} output/ex2_12_A.out ex2_1.tmp) then true; \
 	else echo "Possible problem with ex2_12_A for seqdense, diffs above"; fi; \
 	${RM} -f ex2_1.tmp;
 
-	-@${MPIEXEC} -n 1 ./ex2 -mat_type seqaij -rectB > ex2_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex2 -mat_type seqaij -rectB | grep -v "Matrix Object" > ex2_1.tmp 2>&1; \
 	if (${DIFF} output/ex2_11_B.out ex2_1.tmp) then true; \
 	else echo "Possible problem with ex2_11_B for seqaij, diffs above"; fi; \
 	${RM} -f ex2_1.tmp;
 
-	-@${MPIEXEC} -n 1 ./ex2 -mat_type seqdense -rectB > ex2_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex2 -mat_type seqdense -rectB | grep -v "Matrix Object" > ex2_1.tmp 2>&1; \
 	if (${DIFF} output/ex2_12_B.out ex2_1.tmp) then true; \
 	else echo "Possible problem with ex2_12_B for seqdense, diffs above"; fi; \
 	${RM} -f ex2_1.tmp;
@@ -710,7 +710,7 @@ runex6:
 	   else echo "Possible problem with ex6_1, diffs above"; fi; \
 	   ${RM} -f ex6_1.tmp
 runex7:
-	-@${MPIEXEC} -n 1  ./ex7 > ex7_1.tmp 2>&1;   \
+	-@${MPIEXEC} -n 1  ./ex7 | grep -v "MPI processes" > ex7_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex7_1.out ex7_1.tmp) then true; \
 	   else echo "Possible problem with ex7_1, diffs above"; fi; \
 	   ${RM} -f ex7_1.tmp
@@ -751,27 +751,27 @@ runex11_4:
 	   ${RM} -f ex11_4.tmp
 
 runex12:
-	-@${MPIEXEC}  -n 2 ./ex12 > ex12_1.tmp 2>&1;   \
+	-@${MPIEXEC}  -n 2 ./ex12 | grep -v "MPI processes" > ex12_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex12_1.out ex12_1.tmp) then true; \
 	   else echo "Possible problem with ex12_1, diffs above"; fi; \
 	   ${RM} -f ex12_1.tmp
 runex12_2:
-	-@${MPIEXEC}  -n 3 ./ex12 -mat_type mpibaij -mat_block_size 3 > ex12_2.tmp 2>&1;   \
+	-@${MPIEXEC}  -n 3 ./ex12 -mat_type mpibaij -mat_block_size 3 | grep -v "MPI processes" > ex12_2.tmp 2>&1;   \
 	   if (${DIFF} output/ex12_2.out ex12_2.tmp) then true; \
 	   else echo "Possible problem with ex12_2, diffs above"; fi; \
 	   ${RM} -f ex12_2.tmp
 runex12_3:
-	-@${MPIEXEC}  -n 3 ./ex12 -mat_type mpiaij -keep_nonzero_pattern > ex12_3.tmp 2>&1;   \
+	-@${MPIEXEC}  -n 3 ./ex12 -mat_type mpiaij -keep_nonzero_pattern | grep -v "MPI processes"> ex12_3.tmp 2>&1;   \
 	   if (${DIFF} output/ex12_3.out ex12_3.tmp) then true; \
 	   else echo "Possible problem with ex12_3, diffs above"; fi; \
 	   ${RM} -f ex12_3.tmp
 runex12_4:
-	-@${MPIEXEC} -n 3 ./ex12 -keep_nonzero_pattern -mat_type mpibaij -mat_block_size 3 > ex12_4.tmp 2>&1; \
+	-@${MPIEXEC} -n 3 ./ex12 -keep_nonzero_pattern -mat_type mpibaij -mat_block_size 3 | grep -v "MPI processes"> ex12_4.tmp 2>&1; \
 	   if (${DIFF} output/ex12_4.out ex12_4.tmp) then true; \
 	   else echo "Possible problem with ex12_4, diffs above"; fi; \
 	   ${RM} -f ex12_4.tmp
 runex13:
-	-@${MPIEXEC} -n 1  ./ex13 > ex13_1.tmp 2>&1;   \
+	-@${MPIEXEC} -n 1  ./ex13 | grep -v "MPI processes" > ex13_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex13_1.out ex13_1.tmp) then true; \
 	   else echo "Possible problem with ex13_1, diffs above"; fi; \
 	   ${RM} -f ex13_1.tmp
@@ -821,7 +821,7 @@ runex22:
 	   else echo "Possible problem with ex22_1, diffs above"; fi; \
 	   ${RM} -f ex22_1.tmp
 runex30:
-	-@${MPIEXEC} -n 1 ./ex30 -mat_ordering -display_matrices -nox > ex30_1.tmp 2>&1;   \
+	-@${MPIEXEC} -n 1 ./ex30 -mat_ordering -display_matrices -nox | grep -v "MPI processes" > ex30_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex30_1.out ex30_1.tmp) then true; \
 	   else echo "Possible problem with ex30_1, diffs above"; fi; \
 	   ${RM} -f ex30_1.tmp
@@ -852,7 +852,7 @@ runex30_6:
 	   ${RM} -f ex30_3.tmp
 
 runex31:
-	-@${MPIEXEC} -n 1  ./ex31 > ex31_1.tmp 2>&1;   \
+	-@${MPIEXEC} -n 1  ./ex31 | grep -v "MPI processes" > ex31_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex31_1.out ex31_1.tmp) then true; \
 	   else echo "Possible problem with ex31_1, diffs above"; fi; \
 	   ${RM} -f ex31_1.tmp
@@ -867,32 +867,32 @@ runex36f:
 	   else echo "Possible problem with ex36f_1, diffs above"; fi; \
 	   ${RM} -f ex36_1.tmp
 runex37:
-	-@${MPIEXEC} -n 1 ./ex37 > ex37_1.tmp 2>&1;   \
+	-@${MPIEXEC} -n 1 ./ex37 | grep -v "MPI processes"> ex37_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex37_1.out ex37_1.tmp) then true; \
 	   else echo "Possible problem with ex37_1, diffs above"; fi; \
 	   ${RM} -f ex37_1.tmp
 runex37_2:
-	-@${MPIEXEC} -n 3 ./ex37 > ex37_1.tmp 2>&1;   \
+	-@${MPIEXEC} -n 3 ./ex37  | grep -v "MPI processes"> ex37_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex37_2.out ex37_1.tmp) then true; \
 	   else echo "Possible problem with ex37_2, diffs above"; fi; \
 	   ${RM} -f ex37_1.tmp
 runex37_3:
-	-@${MPIEXEC} -n 1 ./ex37 -mat_type baij -mat_block_size 1 > ex37_1.tmp 2>&1;   \
+	-@${MPIEXEC} -n 1 ./ex37 -mat_type baij -mat_block_size 1 | grep -v "MPI processes" > ex37_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex37_3.out ex37_1.tmp) then true; \
 	   else echo "Possible problem with ex37_3, diffs above"; fi; \
 	   ${RM} -f ex37_1.tmp
 runex37_4:
-	-@${MPIEXEC} -n 1 ./ex37 -mat_type baij -mat_block_size 2 > ex37_1.tmp 2>&1;   \
+	-@${MPIEXEC} -n 1 ./ex37 -mat_type baij -mat_block_size 2  | grep -v "MPI processes"> ex37_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex37_4.out ex37_1.tmp) then true; \
 	   else echo "Possible problem with ex37_4, diffs above"; fi; \
 	   ${RM} -f ex37_1.tmp
 runex37_5:
-	-@${MPIEXEC} -n 2 ./ex37 -mat_type baij -mat_block_size 1 > ex37_1.tmp 2>&1;   \
+	-@${MPIEXEC} -n 2 ./ex37 -mat_type baij -mat_block_size 1  | grep -v "MPI processes"> ex37_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex37_5.out ex37_1.tmp) then true; \
 	   else echo "Possible problem with ex37_5, diffs above"; fi; \
 	   ${RM} -f ex37_1.tmp
 runex37_6:
-	-@${MPIEXEC} -n 2 ./ex37 -mat_type baij -mat_block_size 2 > ex37_1.tmp 2>&1;   \
+	-@${MPIEXEC} -n 2 ./ex37 -mat_type baij -mat_block_size 2  | grep -v "MPI processes"> ex37_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex37_6.out ex37_1.tmp) then true; \
 	   else echo "Possible problem with ex37_6, diffs above"; fi; \
 	   ${RM} -f ex37_1.tmp
@@ -918,7 +918,7 @@ runex42:
 	   ${RM} -f ex42_1.tmp ex42_12.tmp
 runex42_2:
 	-@${MPIEXEC} -n 1  ./ex42 -f ${DATAFILESPATH}/matrices/arco1 \
-	   -nd 5 -ov 2  -n > ex42_2.tmp 2>&1; \
+	   -nd 5 -ov 2 > ex42_2.tmp 2>&1; \
 	   if (${DIFF} output/ex42_2.out ex42_2.tmp) then true; \
 	   else echo "Possible problem with ex42_2, diffs above"; fi; \
 	   ${RM} -f ex42_2.tmp
@@ -1025,19 +1025,19 @@ runex55_2:
 	   ${RM} -f ex55_2.tmp
 
 runex56:
-	-@${MPIEXEC} -n 1  ./ex56  > ex56_1.tmp 2>&1;   \
+	-@${MPIEXEC} -n 1 ./ex56 | grep -v "MPI processes" > ex56_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex56_1.out ex56_1.tmp) then true; \
 	   else echo "Possible problem with ex56_1, diffs above"; fi; \
 	   ${RM} -f ex56_1.tmp
 
 runex56_4:
-	-@${MPIEXEC} -n 3  ./ex56 -ass_extern > ex56_4.tmp 2>&1;   \
+	-@${MPIEXEC} -n 3 ./ex56 -ass_extern | grep -v "MPI processes"> ex56_4.tmp 2>&1;   \
 	   if (${DIFF} output/ex56_4.out ex56_4.tmp) then true; \
 	   else echo "Possible problem with ex56_4, diffs above"; fi; \
 	   ${RM} -f ex56_4.tmp
 
 runex56_5:
-	-@${MPIEXEC} -n 3  ./ex56 -ass_extern -zero_rows > ex56_5.tmp 2>&1;   \
+	-@${MPIEXEC} -n 3 ./ex56 -ass_extern -zero_rows| grep -v "MPI processes" > ex56_5.tmp 2>&1;   \
 	   if (${DIFF} output/ex56_5.out ex56_5.tmp) then true; \
 	   else echo "Possible problem with ex56_5, diffs above"; fi; \
 	   ${RM} -f ex56_5.tmp
@@ -1201,7 +1201,7 @@ runex94_2:
 	   ${RM} -f ex94_2.tmp
 
 runex95:
-	-@${MPIEXEC} -n 3 ./ex95 > ex95_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 3 ./ex95 | grep -v "MPI processes" > ex95_1.tmp 2>&1; \
 	   if (${DIFF} output/ex95_1.out ex95_1.tmp) then true; \
 	   else echo "Possible problem with ex95_1, diffs above"; fi; \
 	   ${RM} -f ex95_1.tmp
