@@ -308,18 +308,19 @@ PetscErrorCode  KSPFischerGuessSetFromOptions(KSPFischerGuess ITG)
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPFischerGuessDestroy" 
-PetscErrorCode  KSPFischerGuessDestroy(KSPFischerGuess ITG)
+PetscErrorCode  KSPFischerGuessDestroy(KSPFischerGuess *ITG)
 {
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  if (--ITG->refcnt) PetscFunctionReturn(0);
+  if (--(*ITG)->refcnt) PetscFunctionReturn(0);
 
-  if (ITG->method == 1) {
-    ierr = KSPFischerGuessDestroy_Method1((KSPFischerGuess_Method1 *)ITG);CHKERRQ(ierr);
-  } else if (ITG->method == 2) {
-    ierr = KSPFischerGuessDestroy_Method2((KSPFischerGuess_Method2 *)ITG);CHKERRQ(ierr);
-  } else SETERRQ(((PetscObject)ITG->ksp)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Method can only be 1 or 2");
+  if ((*ITG)->method == 1) {
+    ierr = KSPFischerGuessDestroy_Method1((KSPFischerGuess_Method1 *)*ITG);CHKERRQ(ierr);
+  } else if ((*ITG)->method == 2) {
+    ierr = KSPFischerGuessDestroy_Method2((KSPFischerGuess_Method2 *)*ITG);CHKERRQ(ierr);
+  } else SETERRQ(((PetscObject)(*ITG)->ksp)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Method can only be 1 or 2");
+  *ITG = PETSC_NULL;
   PetscFunctionReturn(0);
 }
 
