@@ -1,5 +1,5 @@
 Original matrix
-Matrix Object:
+Matrix Object: 1 MPI processes
   type: mpiaij
 row 0: (0, 1)  (5, 6) 
 row 1: (1, 2)  (6, 7) 
@@ -12,23 +12,23 @@ row 7:
 row 8:
 row 9:
 Submatrices
-Matrix Object:
+Matrix Object: 1 MPI processes
   type: seqaij
 row 0: (3, 8) 
 row 1: (4, 9) 
 row 2: (0, 5) 
-Matrix Object:
+Matrix Object: 1 MPI processes
   type: seqaij
 row 0: (3, 8) 
 row 1: (4, 9) 
 row 2: (0, 5) 
-Matrix Object:
+Matrix Object: 1 MPI processes
   type: seqaij
 row 0: (3, 8) 
 row 1: (4, 9) 
 row 2: (0, 5) 
 Original zeroed matrix
-Matrix Object:
+Matrix Object: 1 MPI processes
   type: mpiaij
 row 0:
 row 1:

@@ -471,6 +471,7 @@ class PETScMaker(script.Script):
    help.addArgument('PETScMaker', '-dryRun',  nargs.ArgBool(None, False, 'Only output what would be run', isTemporary = 1))
    help.addArgument('PETScMaker', '-dependencies',  nargs.ArgBool(None, True, 'Use dependencies to control build', isTemporary = 1))
    help.addArgument('PETScMaker', '-buildLibraries', nargs.ArgBool(None, True, 'Build the PETSc libraries', isTemporary = 1))
+   help.addArgument('PETScMaker', '-buildArchive', nargs.ArgBool(None, False, 'Build an archive of the object files', isTemporary = 1))
    help.addArgument('PETScMaker', '-regressionTests', nargs.ArgBool(None, False, 'Only run regression tests', isTemporary = 1))
    help.addArgument('PETScMaker', '-rebuildDependencies', nargs.ArgBool(None, False, 'Force dependency information to be recalculated', isTemporary = 1))
    help.addArgument('PETScMaker', '-verbose', nargs.ArgInt(None, 0, 'The verbosity level', min = 0, isTemporary = 1))
@@ -603,8 +604,6 @@ class PETScMaker(script.Script):
    flags.extend([self.configInfo.setCompilers.CPPFLAGS, self.configInfo.CHUD.CPPFLAGS]) # Add CPP_FLAGS
    if not language == 'FC':
      flags.append('-D__INSDIR__='+os.getcwd().replace(self.petscDir, ''))               # Define __INSDIR__
-   # TODO: Move this up to configure
-   flags.append('-MMD')
    cmd      = ' '.join([compiler]+['-c']+includes+[packageIncludes]+flags+source)
    self.logWrite(cmd+'\n', debugSection = self.debugSection, forceScroll = True)
    if not self.dryRun:
@@ -633,9 +632,32 @@ class PETScMaker(script.Script):
        shutil.move(locMod, mod)
    return objects
 
- def archive(self, library, objects):
+ def ranlib(self, library):
+   '''${ranlib} ${LIBNAME} '''
+   lib = os.path.splitext(library)[0]+'.'+self.configInfo.setCompilers.AR_LIB_SUFFIX
+   cmd = ' '.join([self.configInfo.setCompilers.RANLIB, lib])
+   self.logPrint('Running ranlib on '+lib)
+   if not self.dryRun:
+     (output, error, status) = self.executeShellCommand(cmd, checkCommand = noCheckCommand, log=self.log)
+     if status:
+       self.operationFailed = True
+       self.logPrint("ERROR IN RANLIB ******************************", debugSection='screen')
+       self.logPrint(output+error, debugSection='screen')
+   return
+
+ def expandArchive(self, archive, objDir):
+   [shutil.rmtree(p) for p in os.listdir(objDir)]
+   oldDir = os.getcwd()
+   os.chdir(objDir)
+   self.executeShellCommand(self.setCompilers.AR+' x '+archive, log = self.log)
+   os.chdir(oldDir)
+   return
+
+ def buildArchive(self, library, objects):
    '''${AR} ${AR_FLAGS} ${LIBNAME} $*.o'''
    lib = os.path.splitext(library)[0]+'.'+self.configInfo.setCompilers.AR_LIB_SUFFIX
+   self.logPrint('Archiving files '+str(objects)+' into '+lib)
+   self.logWrite('Building archive '+lib+'\n', debugSection = 'screen', forceScroll = True)
    if self.rootDir == self.petscDir:
      cmd = ' '.join([self.configInfo.setCompilers.AR, self.configInfo.setCompilers.FAST_AR_FLAGS, lib]+objects)
    else:
@@ -647,22 +669,8 @@ class PETScMaker(script.Script):
        self.operationFailed = True
        self.logPrint("ERROR IN ARCHIVE ******************************", debugSection='screen')
        self.logPrint(output+error, debugSection='screen')
+   self.ranlib(library)
    return [library]
-
- def ranlib(self, library):
-   '''${ranlib} ${LIBNAME} '''
-   library = os.path.join(self.petscLibDir, library)
-   lib     = os.path.splitext(library)[0]+'.'+self.configInfo.setCompilers.AR_LIB_SUFFIX
-   cmd     = ' '.join([self.configInfo.setCompilers.RANLIB, lib])
-   self.logPrint('Running ranlib on '+lib)
-   self.logWrite(cmd+'\n', debugSection = self.debugSection, forceScroll = True)
-   if not self.dryRun:
-     (output, error, status) = self.executeShellCommand(cmd, checkCommand = noCheckCommand, log=self.log)
-     if status:
-       self.operationFailed = True
-       self.logPrint("ERROR IN RANLIB ******************************", debugSection='screen')
-       self.logPrint(output+error, debugSection='screen')
-   return
 
  def linkShared(self, sharedLib, libDir, tmpDir):
    osName = sys.platform
@@ -716,15 +724,7 @@ class PETScMaker(script.Script):
        self.executeShellCommand(cmd, log=self.log)
    return
 
- def expandArchive(self, archive, objDir):
-   [shutil.rmtree(p) for p in os.listdir(objDir)]
-   oldDir = os.getcwd()
-   os.chdir(objDir)
-   self.executeShellCommand(self.setCompilers.AR+' x '+archive, log = self.log)
-   os.chdir(oldDir)
-   return
-
- def buildSharedLibrary(self, libname):
+ def buildSharedLibrary(self, libname, objects):
    '''
    PETSC_LIB_DIR        = ${PETSC_DIR}/${PETSC_ARCH}/lib
    INSTALL_LIB_DIR	= ${PETSC_LIB_DIR}
@@ -734,18 +734,16 @@ class PETScMaker(script.Script):
      objDir = self.getObjDir(libname)
      self.logPrint('Making shared libraries in '+libDir)
      sharedLib = os.path.join(libDir, os.path.splitext(libname)[0]+'.'+self.configInfo.setCompilers.sharedLibraryExt)
-     archive   = os.path.join(libDir, os.path.splitext(libname)[0]+'.'+self.configInfo.setCompilers.AR_LIB_SUFFIX)
-     # Should we rebuild?
-     rebuild = False
-     if os.path.isfile(archive):
-       if os.path.isfile(sharedLib):
-         if os.path.getmtime(archive) >= os.path.getmtime(sharedLib):
+     rebuild   = False
+     if os.path.isfile(sharedLib):
+       for obj in objects:
+         if os.path.getmtime(obj) >= os.path.getmtime(sharedLib):
            rebuild = True
-       else:
-         rebuild = True
+           break
+     else:
+       rebuild = True
      if rebuild:
-       self.logPrint('Building '+sharedLib)
-       #self.expandArchive(archive, objDir)
+       self.logWrite('Building shared library '+sharedLib+'\n', debugSection = 'screen', forceScroll = True)
        self.linkShared(sharedLib, libDir, objDir)
      else:
        self.logPrint('Nothing to rebuild for shared library '+libname)
@@ -807,6 +805,7 @@ class PETScMaker(script.Script):
    objDir  = self.getObjDir(libname)
    # Remove old library and object files by default when rebuilding the entire package
    if totalRebuild:
+     self.logPrint('Doing a total rebuild of PETSc')
      lib = os.path.splitext(library)[0]+'.'+self.configInfo.setCompilers.AR_LIB_SUFFIX
      if os.path.isfile(lib):
        self.logPrint('Removing '+lib)
@@ -843,10 +842,9 @@ class PETScMaker(script.Script):
          objects += self.buildDir(root, files, objDir)
 
    if len(objects):
-     self.logPrint('Archiving files '+str(objects)+' into '+libname)
-     self.archive(library, objects)
-     self.ranlib(libname)
-     self.buildSharedLibrary(libname)
+     if self.argDB['buildArchive']:
+       self.buildArchive(library, objects)
+     self.buildSharedLibrary(libname, objects)
    return len(objects)
 
  def rebuildDependencies(self, libname, rootDir):

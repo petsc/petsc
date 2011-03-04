@@ -100,11 +100,10 @@ Timestep 97: time = 0.0139328, 2-norm error = 0.00134149, max norm error = 0.001
 Timestep 98: time = 0.0140764, 2-norm error = 0.00134199, max norm error = 0.00168066
 Timestep 99: time = 0.0142201, 2-norm error = 0.0013428, max norm error = 0.00167101
 Timestep 100: time = 0.0143637, 2-norm error = 0.00134389, max norm error = 0.00166276
-TS Object:
+TS Object: 3 MPI processes
   type: euler
   maximum steps=100
   maximum time=1
-  total number of nonlinear solver iterations=0
   total number of linear solver iterations=0
 Total timesteps 100, Final time 0.0143637
 Avg. error (2 norm) = 0.00258577, Avg. error (max norm) = 0.00385707
