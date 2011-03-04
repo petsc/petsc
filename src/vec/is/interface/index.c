@@ -188,8 +188,8 @@ PetscErrorCode  ISSetPermutation(IS is)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "ISDestroy" 
-/*@
+#define __FUNCT__ "ISDestroy_" 
+/*@C
    ISDestroy - Destroys an index set.
 
    Collective on IS
@@ -201,7 +201,7 @@ PetscErrorCode  ISSetPermutation(IS is)
 
 .seealso: ISCreateGeneral(), ISCreateStride(), ISCreateBlocked()
 @*/
-PetscErrorCode  ISDestroy(IS is)
+PetscErrorCode  ISDestroy_(IS is)
 {
   PetscErrorCode ierr;
 
@@ -211,9 +211,7 @@ PetscErrorCode  ISDestroy(IS is)
   if(is->complement) {
     PetscInt refcnt;
     ierr = PetscObjectGetReference((PetscObject)(is->complement), &refcnt); CHKERRQ(ierr);
-    if(refcnt > 1) {
-      SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Nonlocal IS has not been restored");
-    }
+    if(refcnt > 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Nonlocal IS has not been restored");
     ierr = ISDestroy(is->complement); CHKERRQ(ierr);
   }
   if (is->ops->destroy) {

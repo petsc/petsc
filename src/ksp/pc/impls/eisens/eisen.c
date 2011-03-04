@@ -106,8 +106,8 @@ static PetscErrorCode PCPostSolve_Eisenstat(PC pc,KSP ksp,Vec b,Vec x)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCDestroy_Eisenstat"
-static PetscErrorCode PCDestroy_Eisenstat(PC pc)
+#define __FUNCT__ "PCReset_Eisenstat"
+static PetscErrorCode PCReset_Eisenstat(PC pc)
 {
   PC_Eisenstat   *eis = (PC_Eisenstat *)pc->data; 
   PetscErrorCode ierr;
@@ -116,6 +116,18 @@ static PetscErrorCode PCDestroy_Eisenstat(PC pc)
   if (eis->b)     {ierr = VecDestroy(eis->b);CHKERRQ(ierr);}
   if (eis->shell) {ierr = MatDestroy(eis->shell);CHKERRQ(ierr);}
   if (eis->diag)  {ierr = VecDestroy(eis->diag);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PCDestroy_Eisenstat"
+static PetscErrorCode PCDestroy_Eisenstat(PC pc)
+{
+  PC_Eisenstat   *eis = (PC_Eisenstat *)pc->data; 
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PCReset_Eisentat(pc);CHKERRQ(ierr);
   ierr = PetscFree(pc->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -337,6 +349,7 @@ PetscErrorCode  PCCreate_Eisenstat(PC pc)
   pc->ops->applyrichardson = 0;
   pc->ops->setfromoptions  = PCSetFromOptions_Eisenstat;
   pc->ops->destroy         = PCDestroy_Eisenstat;
+  pc->ops->reset           = PCReset_Eisenstat;
   pc->ops->view            = PCView_Eisenstat;
   pc->ops->setup           = PCSetUp_Eisenstat;
 

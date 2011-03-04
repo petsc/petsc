@@ -121,6 +121,25 @@ static PetscErrorCode PCSetUp_Composite(PC pc)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "PCReset_Composite"
+static PetscErrorCode PCReset_Composite(PC pc)
+{
+  PC_Composite     *jac = (PC_Composite*)pc->data;
+  PetscErrorCode   ierr;
+  PC_CompositeLink next = jac->head,next_tmp;
+
+  PetscFunctionBegin;
+  while (next) {
+    ierr = PCReset(next->pc);CHKERRQ(ierr);
+    next_tmp = next;
+    next     = next->next;
+  }
+  if (jac->work1) {ierr = VecDestroy(jac->work1);CHKERRQ(ierr);}
+  if (jac->work2) {ierr = VecDestroy(jac->work2);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "PCDestroy_Composite"
 static PetscErrorCode PCDestroy_Composite(PC pc)
 {
@@ -129,15 +148,13 @@ static PetscErrorCode PCDestroy_Composite(PC pc)
   PC_CompositeLink next = jac->head,next_tmp;
 
   PetscFunctionBegin;
+  ierr = PCReset_Composite(pc);CHKERRQ(ierr);
   while (next) {
     ierr = PCDestroy(next->pc);CHKERRQ(ierr);
     next_tmp = next;
     next     = next->next;
     ierr = PetscFree(next_tmp);CHKERRQ(ierr);
   }
-
-  if (jac->work1) {ierr = VecDestroy(jac->work1);CHKERRQ(ierr);}
-  if (jac->work2) {ierr = VecDestroy(jac->work2);CHKERRQ(ierr);}
   ierr = PetscFree(pc->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -507,6 +524,7 @@ PetscErrorCode  PCCreate_Composite(PC pc)
   ierr = PetscNewLog(pc,PC_Composite,&jac);CHKERRQ(ierr);
   pc->ops->apply              = PCApply_Composite_Additive;
   pc->ops->setup              = PCSetUp_Composite;
+  pc->ops->reset              = PCReset_Composite;
   pc->ops->destroy            = PCDestroy_Composite;
   pc->ops->setfromoptions     = PCSetFromOptions_Composite;
   pc->ops->view               = PCView_Composite;
