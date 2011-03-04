@@ -590,11 +590,8 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
 
 #if defined(PETSC_HAVE_CUSP)
   ierr = PetscOptionsHasName(PETSC_NULL,"-log_summary",&flg3);CHKERRQ(ierr);
-  if (flg3) {
-    flg1 = PETSC_TRUE;
-  } else {
-    flg1 = PETSC_FALSE;
-  }
+  if (flg3) flg1 = PETSC_TRUE;
+  else flg1 = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-cusp_synchronize",&flg1,PETSC_NULL);CHKERRQ(ierr);
   if (flg1) synchronizeCUSP = PETSC_TRUE;
 #endif
