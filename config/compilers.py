@@ -35,6 +35,7 @@ class Configure(config.base.Configure):
     help.addArgument('Compilers', '-with-clib-autodetect=<bool>',           nargs.ArgBool(None, 1, 'Autodetect C compiler libraries'))
     help.addArgument('Compilers', '-with-fortranlib-autodetect=<bool>',     nargs.ArgBool(None, 1, 'Autodetect Fortran compiler libraries'))
     help.addArgument('Compilers', '-with-cxxlib-autodetect=<bool>',         nargs.ArgBool(None, 1, 'Autodetect C++ compiler libraries'))
+    help.addArgument('Compilers', '-with-dependencies=<bool>',              nargs.ArgBool(None, 1, 'Compile with -MMD or equivalent flag if possible'))
 
     return
 
@@ -647,7 +648,6 @@ class Configure(config.base.Configure):
     self.setCompilers.popLanguage()
     self.logPrint('Fortran does not support defining macro', 3, 'compilers')
     return
-    
 
   def checkFortranLibraries(self):
     '''Substitutes for FLIBS the libraries needed to link with Fortran
@@ -1228,6 +1228,34 @@ class Configure(config.base.Configure):
     #  raise RuntimeError('Cannot determine Fortran module output flag')
     return
 
+  def checkDependencyGenerationFlag(self):
+    '''Check if -MMD works for dependency generation, and add it if it does'''
+    self.generateDependencies = 0
+    if not self.framework.argDB['with-dependencies'] :
+      self.framework.logPrint("Skip checking dependency compiler options on user request")
+      return
+    languages = ['C']
+    if hasattr(self, 'CXX'):
+      languages.append('Cxx')
+    if hasattr(self, 'FC'):
+      languages.append('FC')
+    for language in languages:
+      self.setCompilers.pushLanguage(language)
+      for testFlag in ['-MMD']:
+        try:
+          self.framework.logPrint('Trying '+language+' compiler flag '+testFlag)
+          if not self.setCompilers.checkLinkerFlag(testFlag):
+            self.framework.logPrint('Rejected '+language+' compiler flag '+testFlag+' because linker cannot handle it')
+            continue
+          self.framework.logPrint('Adding '+language+' compiler flag '+testFlag)
+          self.setCompilers.addCompilerFlag(testFlag, compilerOnly = 1)
+          self.generateDependencies = 1
+          break
+        except RuntimeError:
+          self.framework.logPrint('Rejected '+language+' compiler flag '+testFlag)
+      self.setCompilers.popLanguage()
+    return
+
   def configure(self):
     import config.setCompilers
     if hasattr(self.setCompilers, 'CC'):
@@ -1237,7 +1265,8 @@ class Configure(config.base.Configure):
       self.executeTest(self.checkCStaticInline)
       self.executeTest(self.checkDynamicLoadFlag)
       if self.framework.argDB['with-clib-autodetect']:
-        self.executeTest(self.checkCLibraries)      
+        self.executeTest(self.checkCLibraries)
+      self.executeTest(self.checkDependencyGenerationFlag)
     else:
       self.isGCC = 0
     if hasattr(self.setCompilers, 'CXX'):
