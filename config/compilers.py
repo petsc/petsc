@@ -1252,7 +1252,8 @@ class Configure(config.base.Configure):
             depFilename = os.path.splitext(self.setCompilers.compilerObj)[0]+'.d'
             if os.path.isfile(depFilename):
               os.remove(depFilename)
-              self.setCompilers.insertCompilerFlag(testFlag, compilerOnly = 1)
+              #self.setCompilers.insertCompilerFlag(testFlag, compilerOnly = 1)
+              self.dependenciesGenerationFlag = testFlag
               self.generateDependencies = 1
               break
             else:
