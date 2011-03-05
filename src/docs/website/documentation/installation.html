@@ -51,7 +51,6 @@ PETSc</strong></a></li>
             <li><a href="tutorials/index.html"><strong>Tutorials</strong></a></li>
             <li><strong><font color="#ff0000">Installation</font></strong>
             </li>
-            <li><strong><a href="zope.html">Zope</a></strong></li>
             <li><strong></strong><strong><a href="ams.html">AMS</a></strong></li>
             <li><strong><a href="changes/index.html">Changes</a></strong></li>
             <li><strong><a href="bugreporting.html">Bug
@@ -59,7 +58,7 @@ Reporting</a></strong></li>
             <li><strong><a href="codemanagement.html">Code
 Management</a></strong></li>
             <li><strong><a href="faq.html">FAQ</a> </strong></li>
-            <li><strong><a href="copyright.html">Copyright</a> </strong></li>
+            <li><strong><a href="copyright.html">License</a> </strong></li>
           </ul>
         </li>
         <li><a href="../publications/index.html"><strong>Applications/Publications</strong></a></li>
@@ -114,6 +113,8 @@ or
 the
 
 
+
+
           <a href="#ExampleUsage">example usages</a>
 below)</li>
         <li> <font color="#ff0000">make all</font><br>
@@ -158,7 +159,9 @@ these
 scripts
 locally
 for
-testing - <span style="font-weight: bold;"></span>for
+testing
+-
+          <span style="font-weight: bold;"></span>for
 example
 one
 can update these
@@ -232,6 +235,8 @@ make
 
 
 
+
+
           </font><font color="#ff0000">PETSC_ARCH=linux-gnu test</font><font
  color="#ff0000"><br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -243,6 +248,8 @@ make
 make </font><font color="#ff0000">PETSC_ARCH=linux-gnu-intel</font><br>
           <font color="#ff0000">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 make
+
+
 
 
 
@@ -284,7 +291,9 @@ the
 location
 of
 the
-PETSc installation that is used. Multiple PETSc versions can coexist
+PETSc
+installation
+that is used. Multiple PETSc versions can coexist
 on the same file-system. By changing PETSC_DIR value, one can switch
 between these installed versions of PETSc.</p>
       <p><b><font color="#551a8b">PETSC_ARCH</font></b>:
@@ -443,7 +452,8 @@ specify the package to configure. For eg:<br>
 --with-superlu-lib=/home/petsc/software/superlu/lib/libsuperlu.a</span></li>
         <li><span style="color: rgb(255, 0, 0);">--with-parmetis-include=/sandbox/balay/parmetis/include
 --with-parmetis-lib="-L/sandbox/balay/parmetis/lib
--lparmetis -lmetis"</span></li>
+-lparmetis
+-lmetis"</span></li>
         <li><span style="color: rgb(255, 0, 0);">--with-parmetis-include=/sandbox/balay/parmetis/include
 --with-parmetis-lib=[/sandbox/balay/parmetis/lib/libparmetis.a,libmetis.a]</span></li>
       </ul>
@@ -577,7 +587,8 @@ MPICH]</li>
 [Install
 and
 use
-Open MPI]<br>
+Open
+MPI]<br>
           </li>
         </ul>
         <li>Alternatively one can use other <a
@@ -709,7 +720,9 @@ with
 Intel
 ifort
 and
-Comapq F90 compilers. If you
+Comapq
+F90
+compilers. If you
 are using these compilers - please do [from cygwin/bash shell]:<br>
       </p>
       <ul>
@@ -826,7 +839,9 @@ use
 PETSc
 with
 gcc/gfortran
-compilers from cygwin. In
+compilers
+from
+cygwin. In
 this case follow the regular instructions.<br>
       </p>
       <p><b><font color="#551a8b"><a name="Win32fe"></a>PETSc Win32
@@ -892,7 +907,9 @@ with
 the
 --prefix
 option
-then you DO
+then
+you
+DO
 NOT use a PETSC_ARCH variable. You should install different
 configurations using different --prefix names.<br>
       <hr>
@@ -905,7 +922,9 @@ compiler
 or
 a
 job
-scheduler, such as IBM SP or IBM Blue Gene:</font></a></h3>
+scheduler,
+such
+as IBM SP or IBM Blue Gene:</font></a></h3>
       <p>If one has to use a cross compiler - or go through the job
 scheduler to use MPI on a
 given machine - use the configure option <span
