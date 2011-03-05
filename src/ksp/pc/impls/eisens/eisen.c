@@ -123,11 +123,10 @@ static PetscErrorCode PCReset_Eisenstat(PC pc)
 #define __FUNCT__ "PCDestroy_Eisenstat"
 static PetscErrorCode PCDestroy_Eisenstat(PC pc)
 {
-  PC_Eisenstat   *eis = (PC_Eisenstat *)pc->data; 
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PCReset_Eisentat(pc);CHKERRQ(ierr);
+  ierr = PCReset_Eisenstat(pc);CHKERRQ(ierr);
   ierr = PetscFree(pc->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
