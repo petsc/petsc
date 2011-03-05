@@ -1230,7 +1230,8 @@ class Configure(config.base.Configure):
 
   def checkDependencyGenerationFlag(self):
     '''Check if -MMD works for dependency generation, and add it if it does'''
-    self.generateDependencies = 0
+    self.generateDependencies       = {}
+    self.dependenciesGenerationFlag = {}
     if not self.framework.argDB['with-dependencies'] :
       self.framework.logPrint("Skip checking dependency compiler options on user request")
       return
@@ -1240,6 +1241,7 @@ class Configure(config.base.Configure):
     if hasattr(self, 'FC'):
       languages.append('FC')
     for language in languages:
+      self.generateDependencies[language] = 0
       self.setCompilers.pushLanguage(language)
       for testFlag in ['-MMD']:
         try:
@@ -1253,8 +1255,8 @@ class Configure(config.base.Configure):
             if os.path.isfile(depFilename):
               os.remove(depFilename)
               #self.setCompilers.insertCompilerFlag(testFlag, compilerOnly = 1)
-              self.dependenciesGenerationFlag = testFlag
-              self.generateDependencies = 1
+              self.dependenciesGenerationFlag[language] = testFlag
+              self.generateDependencies[language]       = 1
               break
             else:
               self.framework.logPrint('Rejected '+language+' compiler flag '+testFlag+' because no dependency file ('+depFilename+') was generated')
