@@ -22,13 +22,11 @@ class Configure(PETSc.package.NewPackage):
     g = open(os.path.join(self.packageDir,'Make.inc'),'w')
     self.setCompilers.pushLanguage('C')
     g.write('CC          = '+self.setCompilers.getCompiler()+'\n') 
-    g.write('CFLAGS      = ' + self.setCompilers.getCompilerFlags().replace('-Wall','').replace('-Wshadow','') +'\n')
+    g.write('CFLAGS      = ' + self.setCompilers.getCompilerFlags().replace('-Wall','').replace('-Wshadow','') +' '+self.headers.toString(self.mpi.include)+'\n')
     self.setCompilers.popLanguage()
     g.write('AR          = '+self.setCompilers.AR+'\n')
     g.write('ARFLAGS     = '+self.setCompilers.AR_FLAGS+'\n')
     g.write('RANLIB      = '+self.setCompilers.RANLIB+'\n')
-    g.write('MPI_LIBS    = '+self.libraries.toString(self.mpi.lib)+'\n') 
-    g.write('MPI_INCLUDE_DIR = '+self.headers.toString(self.mpi.include)+'\n') 
     g.close()
     if self.installNeeded('Make.inc'):
       try:

@@ -1,24 +1,24 @@
 test_solve 
 x1 
-Vector Object:
+Vector Object: 1 MPI processes
   type: seq
 0.655738
 -0.983607
 0.491803
 x2 
-Vector Object:
+Vector Object: 1 MPI processes
   type: seq
 -0.147541
 0.311475
 test_solve_matgetvecs 
 x1 
-Vector Object:
+Vector Object: 1 MPI processes
   type: seq
 0.655738
 -0.983607
 0.491803
 x2 
-Vector Object:
+Vector Object: 1 MPI processes
   type: seq
 -0.147541
 0.311475

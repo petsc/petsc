@@ -23,7 +23,7 @@ class Configure(PETSc.package.NewPackage):
     else:
       matlab_dl = ['']
     # Matlab libraries require libstdc++-libc6.1-2.so.3 which they provide in the sys/os directory
-    if self.matlab.matlab_arch == 'glnx86':
+    if self.matlab.matlab_arch == 'glnx86' or self.matlab.matlab_arch == 'glnxa64':
        matlab_sys = self.setCompilers.CSharedLinkerFlag+os.path.join(self.matlab.matlab,'sys','os',self.matlab.matlab_arch)
        matlab_sys += ':'+os.path.join(self.matlab.matlab,'bin',self.matlab.matlab_arch)+':'+os.path.join(self.matlab.matlab,'extern','lib',self.matlab.matlab_arch)
     else:

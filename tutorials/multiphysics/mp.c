@@ -222,7 +222,7 @@ PetscErrorCode FormCoupleLocations(DM dmcomposite,Mat A,PetscInt *dnz,PetscInt *
   PetscFunctionBegin;
   PetscMPIInt rank;
   ierr = MPI_Comm_rank(((PetscObject)dmcomposite)->comm,&rank);CHKERRQ(ierr);
-  printf("[%d] __rstart %d, __nrows %d, __start %d, __end %d,\n",rank,__rstart,__nrows,__start,__end);
+  /* printf("[%d] __rstart %d, __nrows %d, __start %d, __end %d,\n",rank,__rstart,__nrows,__start,__end);*/
   ierr =  DMCompositeGetEntries(dmcomposite,&da1,&da2);CHKERRQ(ierr);
   ierr =  DMDAGetInfo(da1,0,&M,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   ierr  = DMDAGetCorners(da1,&istart,&jstart,PETSC_NULL,&in,&jn,PETSC_NULL);CHKERRQ(ierr);

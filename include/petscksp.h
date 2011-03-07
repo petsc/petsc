@@ -583,7 +583,7 @@ extern PetscErrorCode  PCShellSetPostSolve(PC,PetscErrorCode (*)(PC,KSP,Vec,Vec)
 typedef struct _p_KSPFischerGuess {PetscInt method,curl,maxl,refcnt;PetscBool  monitor;Mat mat; KSP ksp;}* KSPFischerGuess;
 
 extern PetscErrorCode  KSPFischerGuessCreate(KSP,PetscInt,PetscInt,KSPFischerGuess*);
-extern PetscErrorCode  KSPFischerGuessDestroy(KSPFischerGuess);
+extern PetscErrorCode  KSPFischerGuessDestroy(KSPFischerGuess*);
 extern PetscErrorCode  KSPFischerGuessReset(KSPFischerGuess);
 extern PetscErrorCode  KSPFischerGuessUpdate(KSPFischerGuess,Vec);
 extern PetscErrorCode  KSPFischerGuessFormGuess(KSPFischerGuess,Vec,Vec);

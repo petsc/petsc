@@ -94,7 +94,7 @@ void PETSC_STDCALL kspfischerguesscreate_(KSP *ksp,PetscInt *model,PetscInt *siz
 
 void PETSC_STDCALL kspfischerguessdestroy_(KSPFischerGuess *guess,PetscErrorCode *ierr)
 {
-  *ierr = KSPFischerGuessDestroy(*guess);
+  *ierr = KSPFischerGuessDestroy(guess);
 }
 
 EXTERN_C_END

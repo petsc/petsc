@@ -556,6 +556,9 @@ PetscErrorCode  PCApplyTransposeExists(PC pc,PetscBool  *flg)
 
    Level: developer
 
+   Notes: If the PC has had PCSetDiagonalScale() set then D M A D^{-1} for left preconditioning or  D A M D^{-1} is actually applied. Note that the 
+   specific KSPSolve() method must also be written to handle the post-solve "correction" for the diagonal scaling.
+
 .keywords: PC, apply, operator
 
 .seealso: PCApply(), PCApplyTranspose(), PCApplyBAorABTranspose()

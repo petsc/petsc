@@ -116,8 +116,8 @@ static PetscErrorCode PCApply_CP(PC pc,Vec bb,Vec xx)
 }
 /* -------------------------------------------------------------------------- */
 #undef __FUNCT__  
-#define __FUNCT__ "PCDestroy_CP"
-static PetscErrorCode PCDestroy_CP(PC pc)
+#define __FUNCT__ "PCReset_CP"
+static PetscErrorCode PCReset_CP(PC pc)
 {
   PC_CP          *cp = (PC_CP*)pc->data;
   PetscErrorCode ierr;
@@ -125,6 +125,20 @@ static PetscErrorCode PCDestroy_CP(PC pc)
   PetscFunctionBegin;
   ierr = PetscFree(cp->d);CHKERRQ(ierr);
   if (cp->work) {ierr = VecDestroy(cp->work);CHKERRQ(ierr);}
+  ierr = PetscFree3(cp->a,cp->i,cp->j);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PCDestroy_CP"
+static PetscErrorCode PCDestroy_CP(PC pc)
+{
+  PC_CP          *cp = (PC_CP*)pc->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PCReset_CP(pc);CHKERRQ(ierr);
+  ierr = PetscFree(cp->d);CHKERRQ(ierr);
   ierr = PetscFree3(cp->a,cp->i,cp->j);CHKERRQ(ierr);
   ierr = PetscFree(pc->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -193,6 +207,7 @@ PetscErrorCode  PCCreate_CP(PC pc)
   pc->ops->apply               = PCApply_CP;
   pc->ops->applytranspose      = PCApply_CP;
   pc->ops->setup               = PCSetUp_CP;
+  pc->ops->reset               = PCReset_CP;
   pc->ops->destroy             = PCDestroy_CP;
   pc->ops->setfromoptions      = PCSetFromOptions_CP;
   pc->ops->view                = 0;

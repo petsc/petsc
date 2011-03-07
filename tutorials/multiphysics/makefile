@@ -71,13 +71,13 @@ runmp_5:
 	   ${RM} -f mp_5.tmp
 
 runmp_6:
-	-@${MPIEXEC} -n 1 ./mp -grashof 1.0 -couple -snes_monitor_short -pc_type fieldsplit -snes_mf_operator > mp_6.tmp 2>&1;   \
+	-@${MPIEXEC} -n 1 ./mp -grashof 1.0 -couple -pc_type fieldsplit -snes_mf_operator > mp_6.tmp 2>&1;   \
 	   if (${DIFF} output/mp_6.out mp_6.tmp) then true; \
 	   else echo "Possible problem with mp_6, diffs above"; fi; \
 	   ${RM} -f mp_6.tmp
 
 runmp_7:
-	-@${MPIEXEC} -n 3 ./mp -grashof 1.0 -couple -ksp_monitor_short  -pc_type fieldsplit > mp_7.tmp 2>&1;   \
+	-@${MPIEXEC} -n 3 ./mp -grashof 1.0 -couple -pc_type fieldsplit > mp_7.tmp 2>&1;   \
 	   if (${DIFF} output/mp_7.out mp_7.tmp) then true; \
 	   else echo "Possible problem with mp_7, diffs above"; fi; \
 	   ${RM} -f mp_7.tmp
@@ -89,7 +89,7 @@ runmp_8:
 	   ${RM} -f mp_8.tmp
 
 runmp_9:
-	-@${MPIEXEC} -n 1 ./mp -couple -snes_monitor_short -pc_type fieldsplit -ksp_monitor_short -pc_fieldsplit_type schur -fieldsplit_1_ksp_monitor_short -fieldsplit_1_ksp_type fgmres -fieldsplit_0_ksp_type gmres -fieldsplit_0_ksp_monitor_short -pc_fieldsplit_schur_precondition diag > mp_9.tmp 2>&1;   \
+	-@${MPIEXEC} -n 1 ./mp -couple -snes_monitor_short -pc_type fieldsplit -ksp_monitor_short -pc_fieldsplit_type schur -fieldsplit_1_ksp_type fgmres -fieldsplit_0_ksp_type gmres -pc_fieldsplit_schur_precondition diag > mp_9.tmp 2>&1;   \
 	   if (${DIFF} output/mp_9.out mp_9.tmp) then true; \
 	   else echo "Possible problem with mp_9, diffs above"; fi; \
 	   ${RM} -f mp_9.tmp

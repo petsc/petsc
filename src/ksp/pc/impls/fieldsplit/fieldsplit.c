@@ -869,7 +869,7 @@ PetscErrorCode  PCFieldSplitGetSubKSP_FieldSplit_Schur(PC pc,PetscInt *n,KSP **s
   ierr = PetscMalloc(jac->nsplits*sizeof(KSP),subksp);CHKERRQ(ierr);
   ierr = MatSchurComplementGetKSP(jac->schur,*subksp);CHKERRQ(ierr);
   (*subksp)[1] = jac->kspschur;
-  *n = jac->nsplits;
+  if (n) *n = jac->nsplits;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -891,7 +891,7 @@ PetscErrorCode  PCFieldSplitGetSubKSP_FieldSplit(PC pc,PetscInt *n,KSP **subksp)
     ilink = ilink->next;
   }
   if (cnt != jac->nsplits) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Corrupt PCFIELDSPLIT object: number splits in linked list %D in object %D",cnt,jac->nsplits);
-  *n = jac->nsplits;
+  if (n) *n = jac->nsplits;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -1061,7 +1061,7 @@ PetscErrorCode  PCFieldSplitSetBlockSize(PC pc,PetscInt bs)
 .  pc - the preconditioner context
 
    Output Parameters:
-+  n - the number of split
++  n - the number of splits
 -  pc - the array of KSP contexts
 
    Note:  
@@ -1080,7 +1080,7 @@ PetscErrorCode  PCFieldSplitGetSubKSP(PC pc,PetscInt *n,KSP *subksp[])
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  PetscValidIntPointer(n,2);
+  if (n) PetscValidIntPointer(n,2);
   ierr = PetscUseMethod(pc,"PCFieldSplitGetSubKSP_C",(PC,PetscInt*,KSP **),(pc,n,subksp));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

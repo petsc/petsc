@@ -139,7 +139,7 @@ clean::
 	       *.ad.c *.ad.h ad_deriv.h .adic* *.cp_ *.cp__ *.c*.c pageform.txt \
                .adic* *.dep *.proj ctoatmp PETScArena* *.L *.anl main *.mod .mpi* \
 	       *.class *.ouit *.ad.* g_* silly.cmp *.tmp.* *.ilk *.pdb *.inst.c *.rej *.gcda *.gcno
-	@-${RM} -rf ${CLEANDIRS} AD_cache SunWS_cache
+	@-${RM} -rf ${CLEANDIRS} *.dSYM AD_cache SunWS_cache
 
 
 cleanadic:

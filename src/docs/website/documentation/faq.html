@@ -36,7 +36,6 @@ pages and Users Manual</strong></a></li>
 PETSc</strong></a></li>
             <li><a href="tutorials/index.html"><strong>Tutorials</strong></a></li>
             <li><strong><a href="installation.html">Installation</a> </strong></li>
-            <li><strong><a href="zope.html">Zope</a></strong></li>
             <li><strong></strong><strong><a href="ams.html">AMS</a></strong></li>
             <li><strong><a href="changes/index.html">Changes</a></strong></li>
             <li><strong><a href="bugreporting.html">Bug
@@ -44,7 +43,7 @@ Reporting</a></strong></li>
             <li><strong><a href="codemanagement.html">Code
 Management</a></strong></li>
             <li><strong><font color="#ff0000">FAQ</font> </strong></li>
-            <li><strong><a href="copyright.html">Copyright</a> </strong></li>
+            <li><strong><a href="copyright.html">License</a> </strong></li>
           </ul>
         </li>
         <li><a href="../publications/index.html"><strong>Applications/Publications</strong></a></li>
@@ -192,6 +191,8 @@ slow,
 
 
 
+
+
         </span>what can I do to make it
 faster?</a></li>
       <li><a href="faq.html#log-summary">How can I
@@ -312,13 +313,21 @@ provide better performance when the second processor is used, that is,
 you will not see speed-up when you using the second processor. This is
 because the speed of sparse matrix computations is almost totally
 determined by the speed of the memory, not the speed of the CPU. Smart
-process to core/socket binding may help you. For example, consider using fewer processes than cores and binding processes to separate sockets so that each process uses a different memory bus:
-<dl>
-  <dt><a href="http://wiki.mcs.anl.gov/mpich2/index.php/Using_the_Hydra_Process_Manager#Process-core_Binding">MPICH2 binding with the Hydra process manager</a></dt>
-  <dd>mpiexec.hydra -n 4 --binding cpu:sockets</dd>
-  <dt><a href="http://www.open-mpi.org/doc/v1.5/man1/mpiexec.1.php#sect8">Open MPI binding</a></dt>
-  <dd>mpiexec -n 4 --bysocket --bind-to-socket --report-bindings</dd>
-</dl>
+process to core/socket binding may help you. For example, consider
+using fewer processes than cores and binding processes to separate
+sockets so that each process uses a different memory bus:
+          <dl>
+            <dt><a
+ href="http://wiki.mcs.anl.gov/mpich2/index.php/Using_the_Hydra_Process_Manager#Process-core_Binding">MPICH2
+binding
+with the Hydra process manager</a></dt>
+            <dd>mpiexec.hydra -n 4 --binding cpu:sockets</dd>
+            <dt><a
+ href="http://www.open-mpi.org/doc/v1.5/man1/mpiexec.1.php#sect8">Open
+MPI binding</a></dt>
+            <dd>mpiexec -n 4 --bysocket --bind-to-socket
+--report-bindings</dd>
+          </dl>
         </li>
         <li>The software &nbsp;<a href="http://open-mx.org">http://open-mx.org</a>
 provides faster speed for ethernet systems, we have not tried it but it
@@ -329,7 +338,7 @@ MPICH or Open MPI to use it.</li>
       <a name="license"><font color="#ff0000">What kind of
 license is PETSc released under?</font><br>
       </a><br>
-See the <a href="copyright.html">copyright notice.</a>&nbsp; <span
+See the <a href="copyright.html">licensing notice.</a>&nbsp; <span
  style="text-decoration: underline;"></span>
       <p><a name="why-c"><font color="#ff0000">Why is PETSc
 programmed in C, instead of
@@ -899,21 +908,22 @@ XXXSetType(obj,type) and hardwire the type at that point.<br>
             <br>
             <br>
             <br>
-            <a name="makefiles"></a><span
- style="color: rgb(255, 0, 0);">Can I use my own makefiles or rules for
+            <a name="makefiles"></a><span style="color: rgb(255, 0, 0);">Can
+I
+use my own makefiles or rules for
 compiling code, instead of using PETSc's?</span><br>
             <br>
 Yes, see the section of the <a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manual.pdf">users
 manual</a> called Makefiles <br>
             <br>
-            <a name="cmake"></a><span style="color: rgb(255, 0, 0);">
-              Can I use CMake to build my own project that depends on
-              PETSc?
-            </span><br>
+            <a name="cmake"></a><span style="color: rgb(255, 0, 0);">Can
+I use CMake to build my own project that depends on PETSc? </span><br>
             <br>
-            Use the FindPETSc.cmake module from <a href="https://github.com/jedbrown/cmake-modules/">this repository</a>.  See the CMakeLists.txt from <a href="https://github.com/jedbrown/dohp">Dohp</a> for example usage.
-            <br>
+Use the FindPETSc.cmake module from <a
+ href="https://github.com/jedbrown/cmake-modules/">this repository</a>.
+See the CMakeLists.txt from <a href="https://github.com/jedbrown/dohp">Dohp</a>
+for example usage. <br>
             <br>
             <a name="carriagereturns"></a><span
  style="color: rgb(255, 0, 0);">How can I put carriage returns in
@@ -1087,7 +1097,9 @@ Dirichlet
 rows
 but
 this
-results in a
+results
+in
+a
 non-symmetric system. How can I apply Dirichlet boundary conditions
 but&nbsp; keep the
 matrix symmetric?<br>
@@ -1118,7 +1130,8 @@ Mats
 to
 MATLAB
 or
-vice versa?<br>
+vice
+versa?<br>
             </span><br>
             <span style="color: rgb(255, 0, 0);"><br>
             </span>There are five ways to work with PETSc and MATLAB<br>
@@ -1150,7 +1163,9 @@ PetscOpenSocket
 in
 bin/matlab
 for
-access from the MATLAB side.</li>
+access
+from
+the MATLAB side.</li>
               <li>You can save PETSc Vecs (not Mats) with the <a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-dev/docs/manualpages/Viewer/PetscViewerMatlabOpen.html">PetscViewerMatlabOpen</a>()
 viewer
@@ -1174,7 +1189,9 @@ developing this. See bin/matlab/classes/PetscInitialize.m<br>
             <span style="color: rgb(255, 0, 0);"><a name="usingCython"></a>How
 do
 I
-get started with Cython so that I can extend petsc4py?<br>
+get
+started
+with Cython so that I can extend petsc4py?<br>
             </span><br>
 Steps I used:
             <ol>
@@ -1185,7 +1202,9 @@ module</a></li>
  href="http://stackoverflow.com/questions/3046305/simple-wrapping-of-c-code-with-cython">here</a>.
 Note
 also
-the next comment that shows how to create numpy arrays in the
+the
+next
+comment that shows how to create numpy arrays in the
 Cython and pass them back.</li>
               <li>Check out <a
  href="http://docs.cython.org/src/tutorial/numpy.html">this page</a>
@@ -1367,6 +1386,8 @@ in
 
 
 
+
+
           <a href="faq.html#slow">generating the
 matrix</a> or some other operation.</li>
         <li>There must be enough work for each process to
@@ -1402,6 +1423,8 @@ consider
 multigrid
 preconditioners
 like
+
+
 
 
 
@@ -1612,7 +1635,9 @@ in
 local
 and
 global
-sizes that do not make
+sizes
+that
+do not make
 sense for the correct number of processors. For example if you pass in
 a local size of 2 and a global size of 100 and run on two processors,
 this cannot work since the sum of the local sizes is 4, not 100.</span></font><br>
@@ -1641,6 +1666,8 @@ problem.<br>
 &nbsp; <br>
 If -malloc_debug does not help: on GNU/Linux and Apple Mac OS X
 machines - you can try using&nbsp;<a href="http://valgrind.org/">http://valgrind.org
+
+
 
 
 
@@ -1695,49 +1722,31 @@ LU factorization mean?</font><br>
       <font color="#ff0000"><span style="color: rgb(0, 0, 0);">A zero
 pivot
 in LU, ILU, Cholesky, or ICC sparse factorization does not always mean
-that the matrix is singular. You can use -pc_factor_shift_nonzero or
--pc_factor_shift_positive_definite,
--[level]_pc_factor_shift_nonzero,&nbsp; </span></font><font
- style="color: rgb(0, 0, 0);" color="#ff0000">-[level]_pc_factor_shift_postive_definite
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      </font><font style="color: rgb(0, 0, 0);" color="#ff0000">to
-prevent the zero pivot. For lu, ilu,
-cholesky, or icc and [level] is sub is for a block in the bjacobi or
-ASM preconditioner and -mg_levels and -mg_coarse are for inside
-multigrid
-smoothers or the coarse grid solver). See PCFactorSetShiftNonzero(),
-PCFactorSetShiftPd().</font> <font style="color: rgb(0, 0, 0);"
+that the matrix is singular. You can use '-pc_factor_shift_type NONZERO
+-pc_factor_shift_amount [amount]' or
+'-pc_factor_shift_type POSITIVE_DEFINITE';
+'-[level]_pc_factor_shift_type NONZERO -pc_factor_shift_amount
+[amount]' &nbsp; </span></font><font style="color: rgb(0, 0, 0);"
+ color="#ff0000"> or '-[level]_pc_factor_shift_type POSITIVE_DEFINITE' </font><font
+ style="color: rgb(0, 0, 0);" color="#ff0000">to
+prevent the zero pivot. [level] is "sub"
+when lu, ilu, cholesky, or icc are employed in each individual block of
+the bjacobi or
+ASM preconditioner; and [level] is "mg_levels" or "mg_coarse" when lu,
+ilu, cholesky, or icc are used inside multigrid
+smoothers or to the coarse grid solver.
+See PCFactorSetShiftType(),
+PCFactorSetAmount().</font> <font style="color: rgb(0, 0, 0);"
  color="#ff0000"> </font>
       <p style="color: rgb(0, 0, 0);">This error can also
 happen if your matrix
-is singular , see KSPSetNullSpace() for
+is singular, see KSPSetNullSpace() for
 how to
 handle this.</p>
-If
-this
-error occurs in
-the zeroth
-row of
-the matrix it is likely you have an error in
-the code
-that generates the matrix.<a><span style="font-family: Terminal;"><br>
+If this error occurs in the zeroth row of the matrix, it is likely you
+have an error in
+the code that generates the matrix.<a><span
+ style="font-family: Terminal;"><br>
       </span></a>
       <p></p>
       <p><a><span style="font-family: Terminal;"></span><span

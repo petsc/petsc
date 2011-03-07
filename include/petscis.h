@@ -105,7 +105,8 @@ extern PetscErrorCode    ISBlockSetIndices(IS,PetscInt,PetscInt,const PetscInt[]
 extern PetscErrorCode    ISCreateStride(MPI_Comm,PetscInt,PetscInt,PetscInt,IS *);
 extern PetscErrorCode    ISStrideSetStride(IS,PetscInt,PetscInt,PetscInt);
 
-extern PetscErrorCode    ISDestroy(IS);
+extern PetscErrorCode    ISDestroy_(IS);
+#define ISDestroy(a)  (ISDestroy_(a) || (((a) = 0),0))
 
 extern PetscErrorCode    ISSetPermutation(IS);
 extern PetscErrorCode    ISPermutation(IS,PetscBool *); 

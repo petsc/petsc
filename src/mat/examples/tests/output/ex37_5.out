@@ -1,5 +1,4 @@
 A is obtained with MatCopy(,,DIFFERENT_NONZERO_PATTERN):
-Matrix Object:
   type: mpibaij
   rows=10, cols=10
   total: nonzeros=28, allocated nonzeros=230
@@ -7,14 +6,12 @@ Matrix Object:
       block size is 1
 
 A is obtained with MatCopy(,,SAME_NONZERO_PATTERN):
-Matrix Object:
   type: mpibaij
   rows=10, cols=10
   total: nonzeros=28, allocated nonzeros=28
   total number of mallocs used during MatSetValues calls =0
       block size is 1
 A:
-Matrix Object:
   type: mpibaij
 row 0: (0, 2)  (1, -1) 
 row 1: (0, -1)  (1, 2)  (2, -1) 
