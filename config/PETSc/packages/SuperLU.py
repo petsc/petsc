@@ -28,7 +28,7 @@ class Configure(PETSc.package.NewPackage):
     g.write('SUPERLULIB   = $(SuperLUroot)/lib/libsuperlu_4.1.a\n')
     g.write('BLASLIB      = '+self.libraries.toString(self.blasLapack.dlib)+'\n')
     g.write('BLASDEF      = -DUSE_VENDOR_BLAS\n')
-    g.write('LIBS	  = $(SUPERLULIB) $(BLASLIB)\n')
+    g.write('LIBS         = $(SUPERLULIB) $(BLASLIB)\n')
     g.write('ARCH         = '+self.setCompilers.AR+'\n')
     g.write('ARCHFLAGS    = '+self.setCompilers.AR_FLAGS+'\n')
     g.write('RANLIB       = '+self.setCompilers.RANLIB+'\n')
