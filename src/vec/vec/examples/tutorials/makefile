@@ -183,7 +183,7 @@ runex2:
 	   else echo "Possible problem with ex2_1, diffs above"; fi;\
 	   ${RM} -f ex2_1.tmp
 runex2f:
-	-@${MPIEXEC}  -n 2 ./ex2f > ex2f_1.tmp 2>&1;\
+	-@${MPIEXEC}  -n 2 ./ex2f | grep -v "MPI processes" > ex2f_1.tmp 2>&1;\
 	   if (${DIFF} output/ex2f_1.out ex2f_1.tmp) then true; \
 	   else echo "Possible problem with ex2f_1, diffs above"; fi;\
 	   ${RM} -f ex2f_1.tmp
@@ -227,7 +227,7 @@ runex6:
 	-@${RM} -f ex6_1.tmp input.dat input.dat.info
 runex7:
 	-@${RM} -f input.dat input.dat.info
-	-@${MPIEXEC} -n 3 ./ex7 | sort > ex7_1.tmp 2>&1;\
+	-@${MPIEXEC} -n 3 ./ex7 | sort |grep -v "MPI processes" > ex7_1.tmp 2>&1;\
 	   if (${DIFF} output/ex7_1.out ex7_1.tmp) then true; \
 	   else echo "Possible problem with ex7_1, diffs above"; fi
 	-@${RM} -f ex7_1.tmp input.dat input.dat.info
@@ -241,21 +241,6 @@ runex9:
 	   if (${DIFF} output/ex9_1.out ex9_1.tmp) then true; \
 	   else echo "Possible problem with ex9_1, diffs above"; fi;\
 	   ${RM} -f ex9_1.tmp
-runex10:
-	-@${MPIEXEC} -n 2 ./ex10 -binary > ex10_1.tmp 2>&1;\
-	   if (${DIFF} output/ex10_1.out ex10_1.tmp) then true; \
-	   else echo "Possible problem with ex10_1, diffs above"; fi;\
-	   ${RM} -f ex10_1.tmp
-runex10_2:
-	-@${MPIEXEC} -n 3 ./ex10 -binary > ex10_2.tmp 2>&1;\
-	   if (${DIFF} output/ex10_2.out ex10_2.tmp) then true; \
-	   else echo "Possible problem with ex10_2, diffs above"; fi;\
-	   ${RM} -f ex10_2.tmp
-runex10_3:
-	-@${MPIEXEC} -n 5 ./ex10 -binary > ex10_3.tmp 2>&1;\
-	   if (${DIFF} output/ex10_3.out ex10_3.tmp) then true; \
-	   else echo "Possible problem with ex10_3, diffs above"; fi;\
-	   ${RM} -f ex10_3.tmp
 runex9_2:
 	-@${MPIEXEC} -n 2 ./ex9 -allocate > ex9_2.tmp 2>&1;\
 	   if (${DIFF} output/ex9_1.out ex9_2.tmp) then true; \
@@ -271,6 +256,23 @@ runex9f_2:
 	   if (${DIFF} output/ex9f_1.out ex9f_1.tmp) then true; \
 	   else echo "Possible problem with ex9f_2, diffs above"; fi;\
 	   ${RM} -f ex9f_1.tmp
+
+runex10:
+	-@${MPIEXEC} -n 2 ./ex10 -binary > ex10_1.tmp 2>&1;\
+	   if (${DIFF} output/ex10_1.out ex10_1.tmp) then true; \
+	   else echo "Possible problem with ex10_1, diffs above"; fi;\
+	   ${RM} -f ex10_1.tmp
+runex10_2:
+	-@${MPIEXEC} -n 3 ./ex10 -binary > ex10_2.tmp 2>&1;\
+	   if (${DIFF} output/ex10_2.out ex10_2.tmp) then true; \
+	   else echo "Possible problem with ex10_2, diffs above"; fi;\
+	   ${RM} -f ex10_2.tmp
+runex10_3:
+	-@${MPIEXEC} -n 5 ./ex10 -binary > ex10_3.tmp 2>&1;\
+	   if (${DIFF} output/ex10_3.out ex10_3.tmp) then true; \
+	   else echo "Possible problem with ex10_3, diffs above"; fi;\
+	   ${RM} -f ex10_3.tmp
+
 runex11:
 	-@${MPIEXEC}  -n 2 ./ex11 > ex11_1.tmp 2>&1;\
 	   if (${DIFF} output/ex11_1.out ex11_1.tmp) then true ;  \
