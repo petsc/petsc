@@ -1484,7 +1484,7 @@ PetscErrorCode MatGetSubMatricesParallel_MPIXAIJ(Mat C,PetscInt ismax,const IS i
   if(!ismax_c) { /* Sequential ISs only, so can call the sequential matrix extraction subroutine. */
     ierr = (*getsubmats_seq)(C,ismax,isrow,iscol,scall,submat); CHKERRQ(ierr); 
   }
-  else {
+  else { /* if(ismax_c) */
     Mat *A,*B;
     IS  *isrow_c, *iscol_c;
     PetscMPIInt size;
@@ -1494,19 +1494,21 @@ PetscErrorCode MatGetSubMatricesParallel_MPIXAIJ(Mat C,PetscInt ismax,const IS i
      Which arrays to allocate is based on the value of MatReuse scall.
      There are as many diag matrices as there are original index sets.
      There are only as many parallel and off-diag matrices, as there are parallel (comm size > 1) index sets.
-    */
 
-    /* 
-     Sequential matrix arrays are allocated in any event. 
-     Even if the array of parallel matrices already exists, we have to consolidate the underlying seq matrices.
+     Sequential matrix arrays are allocated in any event: even if the array of parallel matrices already exists, 
+     we need to consolidate the underlying seq matrices into as single array to serve as placeholders into getsubmats_seq 
+     will deposite the extracted diag and off-diag parts. 
+     However, if reuse is taking place, we have to allocate the seq matrix arrays here.
+     If reuse is NOT taking place, then the seq matrix arrays are allocated by getsubmats_seq.
     */
-    ierr = PetscMalloc2(ismax, Mat, &A, ismax_c, Mat, &B); CHKERRQ(ierr); 
     
-    /* Parallel matrix array is only allocated if no reuse is taking place. */
+    /* Parallel matrix array is allocated only if no reuse is taking place. */
     if (scall != MAT_REUSE_MATRIX) {
       ierr = PetscMalloc((ismax)*sizeof(Mat),submat);CHKERRQ(ierr);
     }
     else {
+      ierr = PetscMalloc(ismax*sizeof(Mat), &A); CHKERRQ(ierr);
+      ierr = PetscMalloc(ismax_c*sizeof(Mat), &B); CHKERRQ(ierr); 
       /* If parallel matrices are being reused, then simply reuse the underlying seq matrices as well. */
       for(i = 0, ii = 0; i < ismax; ++i) {
         ierr = MPI_Comm_size(((PetscObject)isrow[i])->comm, &size); CHKERRQ(ierr);
@@ -1565,7 +1567,8 @@ PetscErrorCode MatGetSubMatricesParallel_MPIXAIJ(Mat C,PetscInt ismax,const IS i
         }
       }
     }
-    ierr = PetscFree2(A,B); CHKERRQ(ierr);
+    ierr = PetscFree(A); CHKERRQ(ierr);
+    ierr = PetscFree(B); CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }/* MatGetSubMatricesParallel_MPIXAIJ() */

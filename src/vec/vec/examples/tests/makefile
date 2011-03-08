@@ -268,7 +268,7 @@ runex17:
 	   else echo "Possible problem with ex17_1, diffs above"; fi;\
 	   ${RM} -f ex17_1.tmp
 runex17f:
-	-@${MPIEXEC}  -n 3 ./ex17f > ex17f_1.tmp 2>&1;\
+	-@${MPIEXEC}  -n 3 ./ex17f |grep -v "MPI processes" > ex17f_1.tmp 2>&1;\
 	   if (${DIFF} output/ex17f_1.out ex17f_1.tmp) then true; \
 	   else echo "Possible problem with ex17f_1, diffs above"; fi;\
 	   ${RM} -f ex17f_1.tmp
