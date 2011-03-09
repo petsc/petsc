@@ -376,7 +376,6 @@ PetscErrorCode KSPDestroy_DGMRES (KSP ksp) {
         ierr=PetscFree (TTF);        CHKERRQ (ierr);
         ierr=PetscFree (INVP);        CHKERRQ (ierr);
 
-        ierr=PetscFree (SR);        CHKERRQ (ierr);
         ierr=PetscFree (XMX);        CHKERRQ (ierr);
         ierr=PetscFree (UMX);        CHKERRQ (ierr);
         ierr=PetscFree (XMU);        CHKERRQ (ierr);
@@ -390,6 +389,7 @@ PetscErrorCode KSPDestroy_DGMRES (KSP ksp) {
         ierr = PetscFree (AUU);        CHKERRQ (ierr);
         ierr = PetscFree (SR2);        CHKERRQ (ierr);
     }
+    ierr=PetscFree (SR);        CHKERRQ (ierr);
     ierr = KSPDestroy_GMRES (ksp);
     CHKERRQ (ierr);
     PetscFunctionReturn (0);
