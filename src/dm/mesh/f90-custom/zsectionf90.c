@@ -40,6 +40,8 @@ extern void PetscRmPointer(void*);
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define sectionrealrestrict_        sectionrealrestrict
 #define sectionintrestrict_         sectionintrestrict
+#define sectionrealrestore_         sectionrealrestore
+#define sectionintrestore_          sectionintrestore
 #define sectionrealrestrictclosure_ sectionrealrestrictclosure
 #define sectionintrestrictclosure_  sectionintrestrictclosure
 #define sectionrealupdate_          sectionrealupdate
