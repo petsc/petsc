@@ -602,6 +602,8 @@ class PETScMaker(script.Script):
    flags    = []
    flags.append(self.configInfo.setCompilers.getCompilerFlags())                        # Add PCC_FLAGS
    flags.extend([self.configInfo.setCompilers.CPPFLAGS, self.configInfo.CHUD.CPPFLAGS]) # Add CPP_FLAGS
+   if self.configInfo.compilers.generateDependencies[language]:
+     flags.append(self.configInfo.compilers.dependenciesGenerationFlag[language])
    if not language == 'FC':
      flags.append('-D__INSDIR__='+os.getcwd().replace(self.petscDir, ''))               # Define __INSDIR__
    cmd      = ' '.join([compiler]+['-c']+includes+[packageIncludes]+flags+source)

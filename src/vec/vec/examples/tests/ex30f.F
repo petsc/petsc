@@ -94,12 +94,14 @@
       call VecScatterBegin(scat2,v1,v3,ADD_VALUES,SCATTER_FORWARD,ierr)
       call VecScatterEnd(scat2,v1,v3,ADD_VALUES,SCATTER_FORWARD,ierr)
       
-      if (rank.eq.0) print *, "V1"
+      call PetscObjectSetName(v1, "V1",ierr)
       call VecView(v1,PETSC_VIEWER_STDOUT_WORLD,ierr)
-      if (rank.eq.0) print *, "V2"
+
+      call PetscObjectSetName(v2, "V2",ierr)
       call VecView(v2,PETSC_VIEWER_STDOUT_WORLD,ierr)
+      
       if (rank.eq.0) then
-         print *, "V3"
+         call PetscObjectSetName(v3, "V3",ierr)
          call VecView(v3,PETSC_VIEWER_STDOUT_SELF,ierr)
       end if
 

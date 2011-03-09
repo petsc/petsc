@@ -35,7 +35,7 @@ lid velocity = 0.0204082, prandtl # = 1, grashof # = 1
    15 KSP Residual norm 3.897e-10 
    16 KSP Residual norm 2.021e-10 
   2 SNES Function norm 2.021e-10 
-SNES Object:
+SNES Object: 3 MPI processes
   type: ls
     line search variant: SNESLineSearchCubic
     alpha=0.0001, maxstep=1e+08, minlambda=1e-12
@@ -43,7 +43,7 @@ SNES Object:
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
   total number of linear solver iterations=31
   total number of function evaluations=3
-  KSP Object:
+  KSP Object:   3 MPI processes  
     type: fgmres
       GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
       GMRES: happy breakdown tolerance 1e-30
@@ -51,28 +51,28 @@ SNES Object:
     tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
     right preconditioning
     using UNPRECONDITIONED norm type for convergence test
-  PC Object:
+  PC Object:   3 MPI processes  
     type: fieldsplit
       FieldSplit with MULTIPLICATIVE composition: total splits = 4, blocksize = 4
       Solver info for each split is in the following KSP objects:
       Split number 0 Fields  0
-      KSP Object:(fieldsplit_0_)
+      KSP Object:      (fieldsplit_0_)       3 MPI processes      
         type: preonly
         maximum iterations=10000, initial guess is zero
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
         left preconditioning
         using PRECONDITIONED norm type for convergence test
-      PC Object:(fieldsplit_0_)
+      PC Object:      (fieldsplit_0_)       3 MPI processes      
         type: bjacobi
           block Jacobi: number of blocks = 3
           Local solve is same for all blocks, in the following KSP and PC objects:
-        KSP Object:(fieldsplit_0_sub_)
+        KSP Object:        (fieldsplit_0_sub_)         1 MPI processes        
           type: preonly
           maximum iterations=10000, initial guess is zero
           tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
           left preconditioning
           using PRECONDITIONED norm type for convergence test
-        PC Object:(fieldsplit_0_sub_)
+        PC Object:        (fieldsplit_0_sub_)         1 MPI processes        
           type: ilu
             ILU: out-of-place factorization
             0 levels of fill
@@ -81,7 +81,7 @@ SNES Object:
             matrix ordering: natural
             factor fill ratio given 1, needed 1
               Factored matrix follows:
-                Matrix Object:
+                Matrix Object:                 1 MPI processes                
                   type: seqaij
                   rows=21, cols=21
                   package used to perform factorization: petsc
@@ -89,37 +89,37 @@ SNES Object:
                   total number of mallocs used during MatSetValues calls =0
                     not using I-node routines
           linear system matrix = precond matrix:
-          Matrix Object:
+          Matrix Object:           1 MPI processes          
             type: seqaij
             rows=21, cols=21
             total: nonzeros=85, allocated nonzeros=85
             total number of mallocs used during MatSetValues calls =0
               not using I-node routines
         linear system matrix = precond matrix:
-        Matrix Object:
+        Matrix Object:         3 MPI processes        
           type: mpiaij
           rows=49, cols=49
           total: nonzeros=217, allocated nonzeros=217
           total number of mallocs used during MatSetValues calls =0
             not using I-node (on process 0) routines
       Split number 1 Fields  1
-      KSP Object:(fieldsplit_1_)
+      KSP Object:      (fieldsplit_1_)       3 MPI processes      
         type: preonly
         maximum iterations=10000, initial guess is zero
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
         left preconditioning
         using PRECONDITIONED norm type for convergence test
-      PC Object:(fieldsplit_1_)
+      PC Object:      (fieldsplit_1_)       3 MPI processes      
         type: bjacobi
           block Jacobi: number of blocks = 3
           Local solve is same for all blocks, in the following KSP and PC objects:
-        KSP Object:(fieldsplit_1_sub_)
+        KSP Object:        (fieldsplit_1_sub_)         1 MPI processes        
           type: preonly
           maximum iterations=10000, initial guess is zero
           tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
           left preconditioning
           using PRECONDITIONED norm type for convergence test
-        PC Object:(fieldsplit_1_sub_)
+        PC Object:        (fieldsplit_1_sub_)         1 MPI processes        
           type: ilu
             ILU: out-of-place factorization
             0 levels of fill
@@ -128,7 +128,7 @@ SNES Object:
             matrix ordering: natural
             factor fill ratio given 1, needed 1
               Factored matrix follows:
-                Matrix Object:
+                Matrix Object:                 1 MPI processes                
                   type: seqaij
                   rows=21, cols=21
                   package used to perform factorization: petsc
@@ -136,37 +136,37 @@ SNES Object:
                   total number of mallocs used during MatSetValues calls =0
                     not using I-node routines
           linear system matrix = precond matrix:
-          Matrix Object:
+          Matrix Object:           1 MPI processes          
             type: seqaij
             rows=21, cols=21
             total: nonzeros=85, allocated nonzeros=85
             total number of mallocs used during MatSetValues calls =0
               not using I-node routines
         linear system matrix = precond matrix:
-        Matrix Object:
+        Matrix Object:         3 MPI processes        
           type: mpiaij
           rows=49, cols=49
           total: nonzeros=217, allocated nonzeros=217
           total number of mallocs used during MatSetValues calls =0
             not using I-node (on process 0) routines
       Split number 2 Fields  2
-      KSP Object:(fieldsplit_2_)
+      KSP Object:      (fieldsplit_2_)       3 MPI processes      
         type: preonly
         maximum iterations=10000, initial guess is zero
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
         left preconditioning
         using PRECONDITIONED norm type for convergence test
-      PC Object:(fieldsplit_2_)
+      PC Object:      (fieldsplit_2_)       3 MPI processes      
         type: bjacobi
           block Jacobi: number of blocks = 3
           Local solve is same for all blocks, in the following KSP and PC objects:
-        KSP Object:(fieldsplit_2_sub_)
+        KSP Object:        (fieldsplit_2_sub_)         1 MPI processes        
           type: preonly
           maximum iterations=10000, initial guess is zero
           tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
           left preconditioning
           using PRECONDITIONED norm type for convergence test
-        PC Object:(fieldsplit_2_sub_)
+        PC Object:        (fieldsplit_2_sub_)         1 MPI processes        
           type: ilu
             ILU: out-of-place factorization
             0 levels of fill
@@ -175,7 +175,7 @@ SNES Object:
             matrix ordering: natural
             factor fill ratio given 1, needed 1
               Factored matrix follows:
-                Matrix Object:
+                Matrix Object:                 1 MPI processes                
                   type: seqaij
                   rows=21, cols=21
                   package used to perform factorization: petsc
@@ -183,37 +183,37 @@ SNES Object:
                   total number of mallocs used during MatSetValues calls =0
                     not using I-node routines
           linear system matrix = precond matrix:
-          Matrix Object:
+          Matrix Object:           1 MPI processes          
             type: seqaij
             rows=21, cols=21
             total: nonzeros=85, allocated nonzeros=85
             total number of mallocs used during MatSetValues calls =0
               not using I-node routines
         linear system matrix = precond matrix:
-        Matrix Object:
+        Matrix Object:         3 MPI processes        
           type: mpiaij
           rows=49, cols=49
           total: nonzeros=217, allocated nonzeros=217
           total number of mallocs used during MatSetValues calls =0
             not using I-node (on process 0) routines
       Split number 3 Fields  3
-      KSP Object:(fieldsplit_3_)
+      KSP Object:      (fieldsplit_3_)       3 MPI processes      
         type: preonly
         maximum iterations=10000, initial guess is zero
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
         left preconditioning
         using PRECONDITIONED norm type for convergence test
-      PC Object:(fieldsplit_3_)
+      PC Object:      (fieldsplit_3_)       3 MPI processes      
         type: bjacobi
           block Jacobi: number of blocks = 3
           Local solve is same for all blocks, in the following KSP and PC objects:
-        KSP Object:(fieldsplit_3_sub_)
+        KSP Object:        (fieldsplit_3_sub_)         1 MPI processes        
           type: preonly
           maximum iterations=10000, initial guess is zero
           tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
           left preconditioning
           using PRECONDITIONED norm type for convergence test
-        PC Object:(fieldsplit_3_sub_)
+        PC Object:        (fieldsplit_3_sub_)         1 MPI processes        
           type: ilu
             ILU: out-of-place factorization
             0 levels of fill
@@ -222,7 +222,7 @@ SNES Object:
             matrix ordering: natural
             factor fill ratio given 1, needed 1
               Factored matrix follows:
-                Matrix Object:
+                Matrix Object:                 1 MPI processes                
                   type: seqaij
                   rows=21, cols=21
                   package used to perform factorization: petsc
@@ -230,26 +230,26 @@ SNES Object:
                   total number of mallocs used during MatSetValues calls =0
                     not using I-node routines
           linear system matrix = precond matrix:
-          Matrix Object:
+          Matrix Object:           1 MPI processes          
             type: seqaij
             rows=21, cols=21
             total: nonzeros=85, allocated nonzeros=85
             total number of mallocs used during MatSetValues calls =0
               not using I-node routines
         linear system matrix = precond matrix:
-        Matrix Object:
+        Matrix Object:         3 MPI processes        
           type: mpiaij
           rows=49, cols=49
           total: nonzeros=217, allocated nonzeros=217
           total number of mallocs used during MatSetValues calls =0
             not using I-node (on process 0) routines
     linear system matrix = precond matrix:
-    Matrix Object:
+    Matrix Object:     3 MPI processes    
       type: mpiaij
       rows=196, cols=196
       total: nonzeros=3472, allocated nonzeros=3472
       total number of mallocs used during MatSetValues calls =0
-        Matrix Object:
+        Matrix Object:         3 MPI processes        
           type: mpiaij
           rows=196, cols=196
           total: nonzeros=3472, allocated nonzeros=3472

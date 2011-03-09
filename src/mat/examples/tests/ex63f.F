@@ -38,8 +38,8 @@
          
          call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr)
          call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr)
-         write (6,100)
- 100     format('The Contents of the Original Matrix')
+ 
+         call PetscObjectSetName(A,"Original Matrix",ierr)
          call MatView(A,PETSC_VIEWER_STDOUT_SELF,ierr)
 !         
 !        Now Write this matrix to a binary file
@@ -57,8 +57,9 @@
          call MatCreate(PETSC_COMM_SELF,A,ierr)
          call MatSetType(A, MATSEQDENSE,ierr)
          call MatLoad(A,view,ierr)
-         write (6,200)
- 200     format('The Contents of SeqDense Matrix read in from file')
+
+         call PetscObjectSetName(A,"SeqDense Matrix read in from file",     &
+     &        ierr)
          call MatView(A,PETSC_VIEWER_STDOUT_SELF,ierr)
          call MatDestroy(A,ierr)
          call PetscViewerDestroy(view,ierr)
@@ -75,10 +76,9 @@
       call MatCreate(PETSC_COMM_WORLD,A,ierr)
       call MatSetType(A, MATMPIDENSE,ierr)
       call MatLoad(A,view,ierr)
-      if (rank .eq. 0) then
-         write (6,300)
- 300     format('The Contents of MPIDense Matrix read in from file')
-      endif
+      
+      call PetscObjectSetName(A, "MPIDense Matrix read in from file",        &
+     &     ierr)
       call MatView(A,PETSC_VIEWER_STDOUT_WORLD,ierr)
       call MatDestroy(A,ierr)
       call PetscViewerDestroy(view,ierr)

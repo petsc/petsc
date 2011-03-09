@@ -81,9 +81,7 @@
        call VecAssemblyEnd(x,ierr)
 
 !  View vector
-
-       write(6,20)
-  20   format('initial vector:')
+       call PetscObjectSetName(x, "initial vector:",ierr)
        call VecView(x,PETSC_VIEWER_STDOUT_SELF,ierr)
        call VecCopy(x,y,ierr)
 
@@ -111,13 +109,10 @@
        call VecRestoreArray(y,yy_v,yy_i,ierr)
 
 !  View vectors
-
-       write(6,40)
-  40   format('new vector 1:')
+       call PetscObjectSetName(x, "new vector 1:",ierr)
        call VecView(x,PETSC_VIEWER_STDOUT_SELF,ierr)
 
-       write(6,50)
-  50   format('new vector 2:')
+       call PetscObjectSetName(y, "new vector 2:",ierr)
        call VecView(y,PETSC_VIEWER_STDOUT_SELF,ierr)
 
 !  Free work space.  All PETSc objects should be destroyed when they
