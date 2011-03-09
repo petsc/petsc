@@ -363,13 +363,13 @@ PetscErrorCode KSPDestroy_DGMRES (KSP ksp) {
 
     PetscFunctionBegin;
     if (dgmres->r) {
-        ierr=VecDestroyVecs (UU, max_neig);
+        ierr=VecDestroyVecs (max_neig, &UU);
         CHKERRQ (ierr);
-        ierr=VecDestroyVecs (MU, max_neig);
+        ierr=VecDestroyVecs (max_neig, &MU);
         CHKERRQ (ierr);
-        ierr=VecDestroyVecs (XX, neig1);
+        ierr=VecDestroyVecs (neig1, &XX);
         CHKERRQ (ierr);
-        ierr=VecDestroyVecs (MX, neig1);
+        ierr=VecDestroyVecs (neig1, &MX);
         CHKERRQ (ierr);
 
         ierr=PetscFree (TT);        CHKERRQ (ierr);
