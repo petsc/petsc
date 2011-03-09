@@ -16,6 +16,7 @@
 #include "petscdgmresblaslapack_c.h"
 #endif
 
+EXTERN_C_BEGIN
 #if !defined(PETSC_USE_COMPLEX)
  extern void LAPACKhseqr_(const char *, const char *, PetscBLASInt *, PetscBLASInt *, PetscBLASInt *, PetscScalar *, PetscBLASInt *, PetscScalar *, PetscScalar *, PetscScalar *, PetscBLASInt *, PetscScalar *, PetscBLASInt *,PetscBLASInt * );
  extern void LAPACKhgeqz_(const char *, const char *, const char *, PetscBLASInt *, PetscBLASInt *, PetscBLASInt *, PetscScalar *, PetscBLASInt *, PetscScalar *, PetscBLASInt *, PetscScalar *, PetscScalar *, PetscScalar *, PetscScalar *, PetscBLASInt *, PetscScalar *, PetscBLASInt *, PetscScalar *, PetscBLASInt *, PetscBLASInt * );
@@ -32,7 +33,8 @@
  extern void LAPACKtrsen_(const char *, const char *, PetscBLASInt *, PetscBLASInt *, PetscScalar *, PetscBLASInt *, PetscScalar *, PetscBLASInt *, PetscScalar *, PetscBLASInt *, PetscReal *, PetscReal *, PetscScalar *, PetscBLASInt *, PetscBLASInt *);
  extern void LAPACKtgsen_(PetscBLASInt *, PetscBLASInt *, PetscBLASInt *, PetscBLASInt *, PetscBLASInt *, PetscScalar *, PetscBLASInt *, PetScalar *, PetscBLASInt *, PetscScalar *, PetscScalar *, PetscScalar *, PetscBLASInt *, PetscScalar *, PetscBLASInt *, PetscBLASInt *, PetscReal *, PetscReal *, PetscReal *, PetscReal *, PetscBLASInt *, PetscBLASInt *, PetscBLASInt *, PetscBLASInt *);
 #endif 
- 
+EXTERN_C_END
+
 typedef struct {
   /* Hessenberg matrix and orthogonalization information.  Hes holds
        the original (unmodified) hessenberg matrix which may be used
@@ -112,7 +114,7 @@ typedef struct {
   PetscInt		improve; /* 0 = do not improve the eigenvalues; This is an experimental option */
   
 } KSP_DGMRES;
-PetscInt KSP_CLASSID;
+
 PetscLogEvent KSP_DGMRESComputeDeflationData, KSP_DGMRESApplyDeflation;
 #define HH(a,b)  (dgmres->hh_origin + (b)*(dgmres->max_k+2)+(a))
 #define HES(a,b) (dgmres->hes_origin + (b)*(dgmres->max_k+1)+(a))

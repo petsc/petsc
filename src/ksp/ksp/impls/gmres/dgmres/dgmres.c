@@ -14,25 +14,24 @@
 static PetscErrorCode    DGMRESGetNewVectors (KSP,PetscInt);
 static PetscErrorCode    DGMRESUpdateHessenberg (KSP,PetscInt,PetscTruth,PetscReal*);
 static PetscErrorCode    BuildDGmresSoln (PetscScalar*,Vec,Vec,KSP,PetscInt);
+
 /* Functions from gmres */
-EXTERN_C_BEGIN
 extern PetscErrorCode  KSPComputeExtremeSingularValues_GMRES (KSP,PetscReal *,PetscReal *);
 extern PetscErrorCode  KSPComputeEigenvalues_GMRES (KSP,PetscInt,PetscReal *,PetscReal *,PetscInt *);
-extern PetscErrorCode  KSPGMRESSetHapTol_GMRES (KSP,double);
-extern PetscErrorCode  KSPGMRESSetPreAllocateVectors_GMRES (KSP);
-extern PetscErrorCode  KSPGMRESSetRestart_GMRES (KSP,PetscInt);
 extern PetscErrorCode  KSPGMRESGetRestart_GMRES (KSP,PetscInt*);
-extern PetscErrorCode  KSPGMRESSetOrthogonalization_GMRES (KSP,PetscErrorCode (*) (KSP,PetscInt));
 extern PetscErrorCode  KSPGMRESGetOrthogonalization_GMRES (KSP,PetscErrorCode (**) (KSP,PetscInt));
-extern PetscErrorCode  KSPGMRESSetCGSRefinementType_GMRES (KSP,KSPGMRESCGSRefinementType);
 extern PetscErrorCode  KSPGMRESGetCGSRefinementType_GMRES (KSP,KSPGMRESCGSRefinementType*);
 extern PetscErrorCode  KSPSetUp_GMRES (KSP);
 extern PetscErrorCode  KSPView_GMRES (KSP,PetscViewer);
 extern PetscErrorCode  KSPDestroy_GMRES (KSP);
 extern PetscErrorCode  KSPSetFromOptions_GMRES (KSP);
+EXTERN_C_BEGIN
+extern PetscErrorCode  KSPGMRESSetPreAllocateVectors_GMRES (KSP);
+extern PetscErrorCode  KSPGMRESSetOrthogonalization_GMRES (KSP,PetscErrorCode (*) (KSP,PetscInt));
+extern PetscErrorCode  KSPGMRESSetRestart_GMRES (KSP,PetscInt);
+extern PetscErrorCode  KSPGMRESSetHapTol_GMRES (KSP,double);
+extern PetscErrorCode  KSPGMRESSetCGSRefinementType_GMRES (KSP,KSPGMRESCGSRefinementType);
 EXTERN_C_END
-
-
 
 #undef __FUNCT__
 #define __FUNCT__  "KSPDGMRESSetEigen"
@@ -894,6 +893,7 @@ PetscErrorCode  KSPDGMRESComputeDeflationData_DGMRES (KSP ksp) {
     CHKERRQ (ierr);
     PetscFunctionReturn (0);
 }
+EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
