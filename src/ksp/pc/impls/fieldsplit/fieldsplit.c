@@ -722,8 +722,8 @@ static PetscErrorCode PCApplyTranspose_FieldSplit(PC pc,Vec x,Vec y)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCDestroy_FieldSplit"
-static PetscErrorCode PCDestroy_FieldSplit(PC pc)
+#define __FUNCT__ "PCReset_FieldSplit"
+static PetscErrorCode PCReset_FieldSplit(PC pc)
 {
   PC_FieldSplit     *jac = (PC_FieldSplit*)pc->data;
   PetscErrorCode    ierr;
@@ -731,19 +731,20 @@ static PetscErrorCode PCDestroy_FieldSplit(PC pc)
 
   PetscFunctionBegin;
   while (ilink) {
-    ierr = KSPDestroy(ilink->ksp);CHKERRQ(ierr);
+    ierr = KSPReset(ilink->ksp);CHKERRQ(ierr);
     if (ilink->x) {ierr = VecDestroy(ilink->x);CHKERRQ(ierr);}
     if (ilink->y) {ierr = VecDestroy(ilink->y);CHKERRQ(ierr);}
     if (ilink->sctx) {ierr = VecScatterDestroy(ilink->sctx);CHKERRQ(ierr);}
     if (ilink->is) {ierr = ISDestroy(ilink->is);CHKERRQ(ierr);}
     next = ilink->next;
-    ierr = PetscFree(ilink->splitname);CHKERRQ(ierr);
-    ierr = PetscFree(ilink->fields);CHKERRQ(ierr);
-    ierr = PetscFree(ilink);CHKERRQ(ierr);
     ilink = next;
   }
   ierr = PetscFree2(jac->x,jac->y);CHKERRQ(ierr);
-  if (jac->mat && jac->mat != jac->pmat) {ierr = MatDestroyMatrices(jac->nsplits,&jac->mat);CHKERRQ(ierr);}
+  if (jac->mat && jac->mat != jac->pmat) {
+    ierr = MatDestroyMatrices(jac->nsplits,&jac->mat);CHKERRQ(ierr);
+  } else if (jac->mat) {
+    jac->mat = PETSC_NULL;
+  }
   if (jac->pmat) {ierr = MatDestroyMatrices(jac->nsplits,&jac->pmat);CHKERRQ(ierr);}
   if (jac->Afield) {ierr = MatDestroyMatrices(jac->nsplits,&jac->Afield);CHKERRQ(ierr);}
   if (jac->w1) {ierr = VecDestroy(jac->w1);CHKERRQ(ierr);}
@@ -753,6 +754,28 @@ static PetscErrorCode PCDestroy_FieldSplit(PC pc)
   if (jac->kspschur) {ierr = KSPDestroy(jac->kspschur);CHKERRQ(ierr);}
   if (jac->B) {ierr = MatDestroy(jac->B);CHKERRQ(ierr);}
   if (jac->C) {ierr = MatDestroy(jac->C);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PCDestroy_FieldSplit"
+static PetscErrorCode PCDestroy_FieldSplit(PC pc)
+{
+  PC_FieldSplit     *jac = (PC_FieldSplit*)pc->data;
+  PetscErrorCode    ierr;
+  PC_FieldSplitLink ilink = jac->head,next;
+
+  PetscFunctionBegin;
+  ierr = PCReset_FieldSplit(pc);CHKERRQ(ierr);
+  while (ilink) {
+    ierr = KSPDestroy(ilink->ksp);CHKERRQ(ierr);
+    next = ilink->next;
+    ierr = PetscFree(ilink->splitname);CHKERRQ(ierr);
+    ierr = PetscFree(ilink->fields);CHKERRQ(ierr);
+    ierr = PetscFree(ilink);CHKERRQ(ierr);
+    ilink = next;
+  }
+  ierr = PetscFree2(jac->x,jac->y);CHKERRQ(ierr);
   ierr = PetscFree(pc->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1321,6 +1344,7 @@ PetscErrorCode  PCCreate_FieldSplit(PC pc)
   pc->ops->apply             = PCApply_FieldSplit;
   pc->ops->applytranspose    = PCApplyTranspose_FieldSplit;
   pc->ops->setup             = PCSetUp_FieldSplit;
+  pc->ops->reset             = PCReset_FieldSplit;
   pc->ops->destroy           = PCDestroy_FieldSplit;
   pc->ops->setfromoptions    = PCSetFromOptions_FieldSplit;
   pc->ops->view              = PCView_FieldSplit;

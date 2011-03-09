@@ -33,7 +33,7 @@ static PetscErrorCode SSPGetWorkVectors(TS ts,PetscInt n,Vec **work)
   if (ssp->workout) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Work vectors already gotten");
   if (ssp->nwork < n) {
     if (ssp->nwork > 0) {
-      ierr = VecDestroyVecs(&ssp->work,ssp->nwork);CHKERRQ(ierr);
+      ierr = VecDestroyVecs(ssp->nwork,&ssp->work);CHKERRQ(ierr);
     }
     ierr = VecDuplicateVecs(ts->vec_sol,n,&ssp->work);CHKERRQ(ierr);
     ssp->nwork = n;
@@ -213,7 +213,7 @@ static PetscErrorCode TSDestroy_SSP(TS ts)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (ssp->work) {ierr = VecDestroyVecs(&ssp->work,ssp->nwork);CHKERRQ(ierr);}
+  if (ssp->work) {ierr = VecDestroyVecs(ssp->nwork,&ssp->work);CHKERRQ(ierr);}
   ierr = PetscFree(ts->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

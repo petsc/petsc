@@ -1584,7 +1584,7 @@ PetscErrorCode  VecReplaceArray(Vec vec,const PetscScalar array[])
     call VecSet(y(2),alpha,ierr)
     call VecSet(y(2),alpha,ierr)
     ....
-    call VecDestroyVecsF90(y,2,ierr)
+    call VecDestroyVecsF90(2,y,ierr)
 .ve
 
     Notes:

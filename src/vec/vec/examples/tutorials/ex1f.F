@@ -216,7 +216,7 @@ c      print*,name
       call VecDestroy(x,ierr)
       call VecDestroy(y,ierr)
       call VecDestroy(w,ierr)
-      call VecDestroyVecs(z,ithree,ierr)
+      call VecDestroyVecs(ithree,z,ierr)
       call PetscFinalize(ierr)
 
       end

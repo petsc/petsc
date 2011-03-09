@@ -310,9 +310,8 @@ PetscErrorCode SNESDestroy_LS(SNES snes)
     ierr = VecDestroy(snes->vec_sol_update);CHKERRQ(ierr);
     snes->vec_sol_update = PETSC_NULL;
   }
-  if (snes->nwork) {
-    ierr = VecDestroyVecs(&snes->work,snes->nwork);CHKERRQ(ierr);
-    snes->nwork = 0;
+  if (snes->work) {
+    ierr = VecDestroyVecs(snes->nwork,&snes->work);CHKERRQ(ierr);
   }
   if (ls->monitor) {
     ierr = PetscViewerASCIIMonitorDestroy(ls->monitor);CHKERRQ(ierr);

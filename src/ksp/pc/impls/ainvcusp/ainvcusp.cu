@@ -130,6 +130,30 @@ static PetscErrorCode PCApply_AINVCUSP(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
+
+#undef __FUNCT__
+#define __FUNCT__ "PCReset_AINVCUSP"
+static PetscErrorCode PCReset_AINVCUSP(PC pc)
+{
+  PC_AINVCUSP    *ainv  = (PC_AINVCUSP*)pc->data;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  if (ainv->AINVCUSP) {
+    try {
+      if (ainv->scaled) {
+        delete (cuspainvprecondscaled *)ainv->AINVCUSP;
+      } else {
+        delete (cuspainvprecond *)ainv->AINVCUSP;
+      }
+    } catch(char* ex) {
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
+    }
+    ainv->AINVCUSP = PETSC_NULL;
+  }
+  PetscFunctionReturn(0);
+}
+
 /*
    PCDestroy_AINVCUSP - Destroys the private context for the AINVCUSP preconditioner
    that was created with PCCreate_AINVCUSP().
@@ -146,18 +170,8 @@ static PetscErrorCode PCDestroy_AINVCUSP(PC pc)
   PC_AINVCUSP    *ainv  = (PC_AINVCUSP*)pc->data;
   PetscErrorCode  ierr;
 
-  PetscFunctionBegin;
-  if (ainv->AINVCUSP) {
-    try {
-      if (ainv->scaled) {
-        delete (cuspainvprecondscaled *)ainv->AINVCUSP;
-      } else {
-        delete (cuspainvprecond *)ainv->AINVCUSP;
-      }
-    } catch(char* ex) {
-      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
-    }
-  }
+  PetscFunctionBegin; 
+  PCReset_AINVCUSP(pc);CHKERRQ(ierr);
 
   /*
       Free the private data structure that was hanging off the PC
@@ -336,6 +350,7 @@ PetscErrorCode  PCCreate_AINVCUSP(PC pc)
   pc->ops->apply               = PCApply_AINVCUSP;
   pc->ops->applytranspose      = 0;
   pc->ops->setup               = PCSetUp_AINVCUSP;
+  pc->ops->reset               = PCReset_AINVCUSP;
   pc->ops->destroy             = PCDestroy_AINVCUSP;
   pc->ops->setfromoptions      = PCSetFromOptions_AINVCUSP;
   pc->ops->view                = 0;

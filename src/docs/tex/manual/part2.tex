@@ -173,7 +173,7 @@ command
 \end{tabbing}
 To destroy an array of vectors, use the command 
 \begin{tabbing}
-  VecDestroyVecs(Vec **vecs,int n);
+  VecDestroyVecs(PetscInt n,Vec **vecs);
 \end{tabbing}
 Note that the Fortran interface for VecDestroyVecs() differs slightly,
 as described in Section~\ref{sec_fortvecd}.
@@ -5139,7 +5139,7 @@ duplicates \trl{v_old} to form two new vectors, \trl{v_new(1)} and \trl{v_new(2)
    alpha = 6.0\\
    call VecSet(v\_new(2),alpha,ierr)\\
    ....\\
-   call VecDestroyVecs(\&v\_new,2,ierr)
+   call VecDestroyVecs(2,\&v\_new,ierr)
 \end{tabbing}
 
 \subsection{Matrix, Vector and IS Indices}

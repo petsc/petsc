@@ -134,8 +134,8 @@ PetscErrorCode KSPReset_NGMRES(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecDestroyVecs(&cg->v,cg->msize);CHKERRQ(ierr);
-  ierr = VecDestroyVecs(&cg->w,cg->msize);CHKERRQ(ierr);
+  ierr = VecDestroyVecs(cg->msize,&cg->v);CHKERRQ(ierr);
+  ierr = VecDestroyVecs(cg->msize,&cg->w);CHKERRQ(ierr);
   ierr = KSPDefaultDestroy(ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

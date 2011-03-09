@@ -258,7 +258,7 @@ extern PetscErrorCode  VecExp(Vec);
 extern PetscErrorCode  VecAbs(Vec);
 extern PetscErrorCode  VecDuplicate(Vec,Vec*);          
 extern PetscErrorCode  VecDuplicateVecs(Vec,PetscInt,Vec*[]);         
-extern PetscErrorCode  VecDestroyVecs(Vec*[],PetscInt); 
+extern PetscErrorCode  VecDestroyVecs(PetscInt, Vec*[]); 
 extern PetscErrorCode  VecStrideNormAll(Vec,NormType,PetscReal[]);
 extern PetscErrorCode  VecStrideMaxAll(Vec,PetscInt [],PetscReal []);
 extern PetscErrorCode  VecStrideMinAll(Vec,PetscInt [],PetscReal []);
@@ -390,7 +390,8 @@ extern PetscErrorCode  VecScatterCreateEmpty(MPI_Comm,VecScatter *);
 extern PetscErrorCode  VecScatterCreateLocal(VecScatter,PetscInt,const PetscInt[],const PetscInt[],const PetscInt[],PetscInt,const PetscInt[],const PetscInt[],const PetscInt[],PetscInt);
 extern PetscErrorCode  VecScatterBegin(VecScatter,Vec,Vec,InsertMode,ScatterMode);
 extern PetscErrorCode  VecScatterEnd(VecScatter,Vec,Vec,InsertMode,ScatterMode); 
-extern PetscErrorCode  VecScatterDestroy(VecScatter);
+extern PetscErrorCode  VecScatterDestroy_(VecScatter);
+#define VecScatterDestroy(a)  (VecScatterDestroy_(a) || (((a) = 0),0))
 extern PetscErrorCode  VecScatterCopy(VecScatter,VecScatter *);
 extern PetscErrorCode  VecScatterView(VecScatter,PetscViewer);
 extern PetscErrorCode  VecScatterRemap(VecScatter,PetscInt *,PetscInt*);

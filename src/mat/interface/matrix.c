@@ -6385,6 +6385,7 @@ PetscErrorCode  MatDestroyMatrices(PetscInt n,Mat *mat[])
   }
   /* memory is allocated even if n = 0 */
   ierr = PetscFree(*mat);CHKERRQ(ierr);
+  *mat = PETSC_NULL;
   PetscFunctionReturn(0);
 }
 

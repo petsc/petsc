@@ -20,9 +20,8 @@ PetscErrorCode SNESDestroy_Picard(SNES snes)
   if (snes->vec_sol_update) {
     ierr = VecDestroy(snes->vec_sol_update);CHKERRQ(ierr);
   }
-  if (snes->nwork) {
-    ierr = VecDestroyVecs(&snes->work, snes->nwork);CHKERRQ(ierr);
-    snes->nwork = 0;
+  if (snes->work) {
+    ierr = VecDestroyVecs(snes->nwork,&snes->work);CHKERRQ(ierr);
   }
   ierr = PetscFree(snes->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);

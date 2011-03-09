@@ -627,7 +627,7 @@ PetscErrorCode  DMMGSetNullSpace(DMMG *dmmg,PetscBool  has_cnst,PetscInt n,Petsc
     }
     ierr = MatNullSpaceDestroy(nullsp);CHKERRQ(ierr);
     if (n) {
-      ierr = VecDestroyVecs(&nulls,n);CHKERRQ(ierr);
+      ierr = VecDestroyVecs(n,&nulls);CHKERRQ(ierr);
     }
   }
   /* make all the coarse grid solvers have LU shift since they are singular */

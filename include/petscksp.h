@@ -69,7 +69,8 @@ extern PetscErrorCode  KSPSetUpOnBlocks(KSP);
 extern PetscErrorCode  KSPSolve(KSP,Vec,Vec);
 extern PetscErrorCode  KSPSolveTranspose(KSP,Vec,Vec);
 extern PetscErrorCode  KSPReset(KSP);
-extern PetscErrorCode  KSPDestroy(KSP);
+extern PetscErrorCode  KSPDestroy_(KSP);
+#define KSPDestroy(a)  (KSPDestroy_(a) || (((a) = 0),0))
 
 extern PetscFList KSPList;
 extern PetscBool  KSPRegisterAllCalled;

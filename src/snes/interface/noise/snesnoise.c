@@ -72,7 +72,7 @@ PetscErrorCode DiffParameterDestroy_More(void *nePv)
 
   PetscFunctionBegin;
   /* Destroy work vectors and close output file */
-  ierr = VecDestroyVecs(&neP->workv,3);CHKERRQ(ierr);
+  ierr = VecDestroyVecs(3,&neP->workv);CHKERRQ(ierr);
   err = fclose(neP->fp);
   if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");    
   ierr = PetscFree(neP);CHKERRQ(ierr);

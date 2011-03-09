@@ -50,7 +50,7 @@ typedef struct _VecOps *VecOps;
 struct _VecOps {
   PetscErrorCode (*duplicate)(Vec,Vec*);         /* get single vector */
   PetscErrorCode (*duplicatevecs)(Vec,PetscInt,Vec**);     /* get array of vectors */
-  PetscErrorCode (*destroyvecs)(Vec[],PetscInt);           /* free array of vectors */
+  PetscErrorCode (*destroyvecs)(PetscInt,Vec[]);           /* free array of vectors */
   PetscErrorCode (*dot)(Vec,Vec,PetscScalar*);             /* z = x^H * y */
   PetscErrorCode (*mdot)(Vec,PetscInt,const Vec[],PetscScalar*); /* z[j] = x dot y[j] */
   PetscErrorCode (*norm)(Vec,NormType,PetscReal*);        /* z = sqrt(x^H * x) */
@@ -271,7 +271,7 @@ PETSC_STATIC_INLINE PetscErrorCode VecRestoreArray(Vec x,PetscScalar *a[])
 
 /* Default obtain and release vectors; can be used by any implementation */
 extern PetscErrorCode VecDuplicateVecs_Default(Vec,PetscInt,Vec *[]);
-extern PetscErrorCode VecDestroyVecs_Default(Vec [],PetscInt);
+extern PetscErrorCode VecDestroyVecs_Default(PetscInt,Vec []);
 extern PetscErrorCode VecLoad_Binary(Vec, PetscViewer);
 extern PetscErrorCode VecLoad_Default(Vec, PetscViewer);
 
