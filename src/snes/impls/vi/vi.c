@@ -1006,8 +1006,8 @@ PetscErrorCode SNESSolveVI_RS(SNES snes)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESVISetCheckRedundancyFunction"
-PetscErrorCode SNESVISetCheckRedundancyFunction(SNES snes,PetscErrorCode (*func)(SNES,IS,IS*,void*))
+#define __FUNCT__ "SNESVISetRedundancyCheck"
+PetscErrorCode SNESVISetRedundancyCheck(SNES snes,PetscErrorCode (*func)(SNES,IS,IS*,void*))
 {
   SNES_VI         *vi = (SNES_VI*)snes->data;
 
@@ -1019,7 +1019,7 @@ PetscErrorCode SNESVISetCheckRedundancyFunction(SNES snes,PetscErrorCode (*func)
 
 /* Variational Inequality solver using augmented space method. It does the opposite of the
    reduced space method i.e. it identifies the active set variables and instead of discarding
-   them from the linear solve, it augments the original system by introducing additional equality 
+   them it augments the original system by introducing additional equality 
    constraint equations for a subset of active set variables. This subset is given by a user
    defined routine which checks for redundant active set variables.
    Specific implementation for Allen-Cahn problem 
