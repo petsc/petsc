@@ -8,6 +8,20 @@
 #include <petscda.h>
 #endif
 
+#if (PETSC_VERSION_(3,1,0) || \
+     PETSC_VERSION_(3,0,0))
+#define DABoundaryType DAPeriodicType
+#define DASetBoundaryType DASetPeriodicity
+#define DA_NONGHOSTED DA_NONPERIODIC
+#define DA_XGHOSTED   DA_XYZGHOSTED
+#define DA_YGHOSTED   DA_XYZGHOSTED
+#define DA_ZGHOSTED   DA_XYZGHOSTED
+#define DA_XYGHOSTED  DA_XYZGHOSTED
+#define DA_XZGHOSTED  DA_XYZGHOSTED
+#define DA_YZGHOSTED  DA_XYZGHOSTED
+#define DA_XYZGHOSTED DA_XYZGHOSTED
+#endif
+
 #if PETSC_VERSION_(3,1,0)
 #undef __FUNCT__
 #define __FUNCT__ "DASetUp"

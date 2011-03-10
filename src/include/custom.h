@@ -1387,20 +1387,27 @@ DACreateND(MPI_Comm comm,
 #define DASetSizes           DMDASetSizes
 #define DASetNumProcs        DMDASetNumProcs
 #define DASetOwnershipRanges DMDASetOwnershipRanges
-#define DASetPeriodicity     DMDASetPeriodicity
+#define DASetBoundaryType    DMDASetPeriodicity
 #define DASetStencilType     DMDASetStencilType
 #define DASetStencilWidth    DMDASetStencilWidth
 
-#define DAPeriodicType DMDAPeriodicType
+#define DABoundaryType DMDAPeriodicType
 #define DA_NONPERIODIC DMDA_NONPERIODIC
 #define DA_XPERIODIC   DMDA_XPERIODIC
 #define DA_YPERIODIC   DMDA_YPERIODIC
 #define DA_ZPERIODIC   DMDA_ZPERIODIC
-#define DA_XYPERIODIC  DMDA_XYPERIODIC
-#define DA_XZPERIODIC  DMDA_XZPERIODIC
-#define DA_YZPERIODIC  DMDA_YZPERIODIC
-#define DA_XYZPERIODIC DMDA_XYZPERIODIC
-#define DA_XYZGHOSTED  DMDA_XYZGHOSTED
+#define DA_XYPERIODIC  (DMDA_XPERIODIC|DMDA_YPERIODIC)
+#define DA_XZPERIODIC  (DMDA_XPERIODIC|DMDA_ZPERIODIC)
+#define DA_YZPERIODIC  (DMDA_YPERIODIC|DMDA_ZPERIODIC)
+#define DA_XYZPERIODIC (DMDA_XPERIODIC|DMDA_YPERIODIC|DMDA_ZPERIODIC)
+#define DA_NONGHOSTED  DMDA_NONGHOSTED
+#define DA_XGHOSTED    DMDA_XGHOSTED
+#define DA_YGHOSTED    DMDA_YGHOSTED
+#define DA_ZGHOSTED    DMDA_ZGHOSTED
+#define DA_XYGHOSTED   (DMDA_XGHOSTED|DMDA_YGHOSTED)
+#define DA_XZGHOSTED   (DMDA_XGHOSTED|DMDA_ZGHOSTED)
+#define DA_YZGHOSTED   (DMDA_YGHOSTED|DMDA_ZGHOSTED)
+#define DA_XYZGHOSTED  (DMDA_XGHOSTED|DMDA_YGHOSTED|DMDA_ZGHOSTED)
 
 #define DADirection DMDADirection
 #define DA_X        DMDA_X
@@ -1481,7 +1488,7 @@ DACreateND(MPI_Comm comm,
            PetscInt M,PetscInt N,PetscInt P,
            PetscInt m,PetscInt n,PetscInt p,
            const PetscInt lx[],const PetscInt ly[],const PetscInt lz[],
-           DAPeriodicType wrap,
+           DABoundaryType wrap,
            DAStencilType stencil_type,PetscInt stencil_width,
            DA *da)
 {
@@ -1493,7 +1500,7 @@ DACreateND(MPI_Comm comm,
   ierr = DASetSizes(*da,M,N,P);CHKERRQ(ierr);
   ierr = DASetNumProcs(*da,m,n,p);CHKERRQ(ierr);
   ierr = DASetOwnershipRanges(*da,lx,ly,lz);CHKERRQ(ierr);
-  ierr = DASetPeriodicity(*da,wrap);CHKERRQ(ierr);
+  ierr = DASetBoundaryType(*da,wrap);CHKERRQ(ierr);
   ierr = DASetStencilType(*da,stencil_type);CHKERRQ(ierr);
   ierr = DASetStencilWidth(*da,stencil_width);CHKERRQ(ierr);
   ierr = DASetUp(*da);CHKERRQ(ierr);

@@ -1,18 +1,16 @@
 # --------------------------------------------------------------------
 
-class DAPeriodicType(object):
-    NONE = DA_NONPERIODIC
+class DABoundaryType(object):
+    NONPERIODIC = DA_NONPERIODIC
+    NONGHOSTED  = DA_NONGHOSTED
     #
-    X    = DA_XPERIODIC
-    Y    = DA_YPERIODIC
-    Z    = DA_ZPERIODIC
-    XY   = DA_XYPERIODIC
-    XZ   = DA_XZPERIODIC
-    YZ   = DA_YZPERIODIC
-    XYZ  = DA_XYZPERIODIC
+    PERIODIC_X = DA_XPERIODIC
+    PERIODIC_Y = DA_YPERIODIC
+    PERIODIC_Z = DA_ZPERIODIC
     #
-    PERIODIC_XYZ = DA_XYZPERIODIC
-    GHOSTED_XYZ  = DA_XYZGHOSTED
+    GHOSTED_X    = DA_XGHOSTED
+    GHOSTED_Y    = DA_YGHOSTED
+    GHOSTED_Z    = DA_ZGHOSTED
 
 class DAStencilType(object):
     STAR = DA_STENCIL_STAR
@@ -30,7 +28,7 @@ class DAElementType(object):
 
 cdef class DA(DM):
 
-    PeriodicType      = DAPeriodicType
+    BoundaryType      = DABoundaryType
     StencilType       = DAStencilType
     InterpolationType = DAInterpolationType
     ElementType       = DAElementType
@@ -51,7 +49,7 @@ cdef class DA(DM):
         return self
 
     def create(self, dim=None, dof=1,
-               sizes=None, proc_sizes=None, periodic=None,
+               sizes=None, proc_sizes=None, boundary_type=None,
                stencil_type=None, stencil_width=1, comm=None):
         #
         cdef object arg = None
@@ -64,7 +62,7 @@ cdef class DA(DM):
         cdef PetscInt M = 1, m = PETSC_DECIDE, *lx = NULL
         cdef PetscInt N = 1, n = PETSC_DECIDE, *ly = NULL
         cdef PetscInt P = 1, p = PETSC_DECIDE, *lz = NULL
-        cdef PetscDAPeriodicType ptype = DA_NONPERIODIC
+        cdef PetscDABoundaryType btype = DA_NONPERIODIC|DA_NONGHOSTED
         cdef PetscDAStencilType  stype = DA_STENCIL_BOX
         cdef PetscInt            swidth = 1
         # global grid sizes
@@ -88,7 +86,7 @@ cdef class DA(DM):
         if dof is not None: ndof = asInt(dof)
         if ndim==PETSC_DECIDE and gdim>0: ndim = gdim
         if ndof==PETSC_DECIDE: ndof = 1
-        ptype = asPeriodic(ndim, periodic)
+        btype = asBoundary(ndim, boundary_type)
         stype = asStencil(stencil_type)
         swidth = asInt(stencil_width)
         # create the DA object
@@ -96,7 +94,7 @@ cdef class DA(DM):
         cdef PetscDA newda = NULL
         CHKERR( DACreateND(ccomm, ndim, ndof,
                            M, N, P, m, n, p, lx, ly, lz,
-                           ptype, stype, swidth, &newda) )
+                           btype, stype, swidth, &newda) )
         PetscCLEAR(self.obj); self.da = newda
         return self
 
@@ -156,26 +154,26 @@ cdef class DA(DM):
                           NULL, NULL) )
         return (toInt(m), toInt(n), toInt(p))[:<Py_ssize_t>dim]
 
-    def getPeriodic(self):
+    def getBoundary(self):
         cdef PetscInt dim = 0
-        cdef PetscDAPeriodicType ptype = DA_NONPERIODIC
+        cdef PetscDABoundaryType btype = DA_NONPERIODIC|DA_NONGHOSTED
         CHKERR( DAGetInfo(self.da,
                           &dim,
                           NULL, NULL, NULL,
                           NULL, NULL, NULL,
                           NULL, NULL,
-                          &ptype, NULL) )
-        return toPeriodic(dim, ptype)
+                          &btype, NULL) )
+        return toBoundary(dim, btype)
 
-    def getPeriodicType(self):
-        cdef PetscDAPeriodicType ptype = DA_NONPERIODIC
+    def getBoundaryType(self):
+        cdef PetscDABoundaryType btype = DA_NONPERIODIC|DA_NONGHOSTED
         CHKERR( DAGetInfo(self.da,
                           NULL,
                           NULL, NULL, NULL,
                           NULL, NULL, NULL,
                           NULL, NULL,
-                          &ptype, NULL) )
-        return ptype
+                          &btype, NULL) )
+        return btype
 
     def getStencil(self):
         cdef PetscDAStencilType  stype = DA_STENCIL_BOX
@@ -424,7 +422,7 @@ cdef class DA(DM):
     def getInterpolation(self, DA da not None):
         cdef Mat A = Mat()
         cdef Vec scale = Vec()
-        CHKERR( DAGetInterpolation(self.da, da.da, 
+        CHKERR( DAGetInterpolation(self.da, da.da,
                                    &A.mat, &scale.vec))
         return(A, scale)
 
@@ -482,11 +480,11 @@ cdef class DA(DM):
 
     property periodic:
         def __get__(self):
-            return self.getPeriodic()
+            return self.getBoundary()
 
     property periodic_type:
         def __get__(self):
-            return self.getPeriodicType()
+            return self.getBoundaryType()
 
     property stencil:
         def __get__(self):
@@ -520,7 +518,7 @@ cdef class DA(DM):
 
 # --------------------------------------------------------------------
 
-del DAPeriodicType
+del DABoundaryType
 del DAStencilType
 del DAInterpolationType
 del DAElementType

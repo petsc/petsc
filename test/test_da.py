@@ -7,7 +7,7 @@ class BaseTestDA(object):
 
     COMM = PETSc.COMM_WORLD
     SIZES = None
-    PERIODIC = None
+    BOUNDARY = None
     DOF = 1
     STENCIL = PETSc.DA.StencilType.STAR
     SWIDTH = 1
@@ -16,7 +16,7 @@ class BaseTestDA(object):
         self.da = PETSc.DA().create(dim=len(self.SIZES),
                                     dof=self.DOF,
                                     sizes=self.SIZES,
-                                    periodic=self.PERIODIC,
+                                    boundary_type=self.BOUNDARY,
                                     stencil_type=self.STENCIL,
                                     stencil_width=self.SWIDTH,
                                     comm=self.COMM)
@@ -30,13 +30,13 @@ class BaseTestDA(object):
         dof = self.da.getDof()
         sizes = self.da.getSizes()
         psizes = self.da.getProcSizes()
-        periodic = self.da.getPeriodic()
+        boundary = self.da.getBoundary()
         stencil_type = self.da.getStencilType()
         stencil_width = self.da.getStencilWidth()
         self.assertEqual(dim, len(self.SIZES))
         self.assertEqual(dof, self.DOF)
         self.assertEqual(sizes, tuple(self.SIZES))
-        self.assertEqual(periodic, (False,)*dim)
+        self.assertEqual(boundary, self.BOUNDARY or (0,)*dim)
         self.assertEqual(stencil_type, self.STENCIL)
         self.assertEqual(stencil_width, self.SWIDTH)
 
@@ -190,6 +190,14 @@ class TestDA_2D_W2(TestDA_2D):
 class TestDA_2D_W2_N2(TestDA_2D):
     DOF = 2
     SWIDTH = 2
+class TestDA_2D_PXY(TestDA_2D):
+    DOF = 2
+    SWIDTH = 5
+    BOUNDARY = (1,1)
+class TestDA_2D_GXY(TestDA_2D):
+    DOF = 2
+    SWIDTH = 5
+    BOUNDARY = (2,2)
 
 class TestDA_3D(BaseTestDA_3D, unittest.TestCase):
     pass
@@ -198,12 +206,19 @@ class TestDA_3D_W0(TestDA_3D):
 class TestDA_3D_W0_N2(TestDA_3D):
     DOF = 2
     SWIDTH = 0
-
 class TestDA_3D_W2(TestDA_3D):
     SWIDTH = 2
 class TestDA_3D_W2_N2(TestDA_3D):
     DOF = 2
     SWIDTH = 2
+class TestDA_3D_PXYZ(TestDA_3D):
+    DOF = 2
+    SWIDTH = 3
+    BOUNDARY = (1,1,1)
+class TestDA_3D_GXYZ(TestDA_3D):
+    DOF = 2
+    SWIDTH = 3
+    BOUNDARY = (2,2,2)
 
 # --------------------------------------------------------------------
 
@@ -211,14 +226,14 @@ class TestDACreate(unittest.TestCase):
 
     def testCreate(self):
         da = PETSc.DA()
-        for dim in (3,2,1):
+        for dim in (1,2,3):
             for dof in (1,2,3,4,5):
-                for periodic in (None, False, True,
-                                "periodic", "ghosted",
-                                (False,)*dim, (True,)*dim,):
+                for boundary in (None, "periodic", "ghosted",
+                                 (False,)*dim, (True,)*dim,
+                                 (0,)*dim,(1,)*dim,(2,)*dim,):
                     for stencil_type in (None, "box", "star"):
                         da.create([8*SCALE]*dim, dof=dof,
-                                  periodic=periodic,
+                                  boundary_type=boundary,
                                   stencil_type=stencil_type)
                         da.destroy()
 
