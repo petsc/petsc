@@ -10,7 +10,7 @@
 
 EXTERN_C_BEGIN
 void PETSC_STDCALL dmdagetinfo_(DM *da,PetscInt *dim,PetscInt *M,PetscInt *N,PetscInt *P,PetscInt *m,PetscInt *n,PetscInt *p,PetscInt *w,PetscInt *s,
-                DMDAPeriodicType *wrap,DMDAStencilType *st,PetscErrorCode *ierr)
+                DMDABoundaryType *wrap,DMDAStencilType *st,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLINTEGER(dim);
   CHKFORTRANNULLINTEGER(M);

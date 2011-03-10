@@ -45,11 +45,11 @@ PetscErrorCode  DMDALoad(PetscViewer viewer,PetscInt M,PetscInt N,PetscInt P,DM 
   if (nmax != 8) SETERRQ1(((PetscObject)viewer)->comm,PETSC_ERR_FILE_UNEXPECTED,"Wrong number of items in DMDA information in file: %D",nmax);
 
   if (info[0] == 1) {
-    ierr = DMDACreate1d(comm,(DMDAPeriodicType) info[7],info[1],info[4],info[5],0,da);CHKERRQ(ierr);
+    ierr = DMDACreate1d(comm,(DMDABoundaryType) info[7],info[1],info[4],info[5],0,da);CHKERRQ(ierr);
   } else if (info[0] == 2) {
-    ierr = DMDACreate2d(comm,(DMDAPeriodicType) info[7],(DMDAStencilType) info[6],info[1],info[2],M,N,info[4],info[5],0,0,da);CHKERRQ(ierr);
+    ierr = DMDACreate2d(comm,(DMDABoundaryType) info[7],(DMDAStencilType) info[6],info[1],info[2],M,N,info[4],info[5],0,0,da);CHKERRQ(ierr);
   } else if (info[0] == 3) {
-    ierr = DMDACreate3d(comm,(DMDAPeriodicType) info[7],(DMDAStencilType) info[6],info[1],info[2],info[3],M,N,P,info[4],info[5],0,0,0,da);CHKERRQ(ierr);
+    ierr = DMDACreate3d(comm,(DMDABoundaryType) info[7],(DMDAStencilType) info[6],info[1],info[2],info[3],M,N,P,info[4],info[5],0,0,0,da);CHKERRQ(ierr);
   } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Dimension in info file is not 1, 2, or 3 it is %D",info[0]);
 
   for (i=0; i<info[4]; i++) {

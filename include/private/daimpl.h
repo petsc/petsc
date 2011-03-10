@@ -17,7 +17,7 @@ typedef struct {
                                                    values above already scaled by w */
   PetscInt            *idx,Nl;               /* local to global map */
   PetscInt            base;                  /* global number of 1st local node */
-  DMDAPeriodicType      wrap;                  /* indicates type of periodic boundaries */
+  DMDABoundaryType      wrap;                  /* indicates type of periodic boundaries */
   VecScatter          gtol,ltog,ltol;        /* scatters, see below for details */
   DMDAStencilType       stencil_type;          /* stencil, either box or star */
   PetscInt            dim;                   /* DMDA dimension (1,2, or 3) */

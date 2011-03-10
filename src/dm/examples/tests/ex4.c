@@ -14,7 +14,7 @@ int main(int argc,char **argv)
   PetscInt       Xs,Xm,Ys,Ym,iloc,*iglobal,*ltog;
   PetscInt       *lx = PETSC_NULL,*ly = PETSC_NULL;
   PetscBool      testorder = PETSC_FALSE,flg;
-  DMDAPeriodicType wrap = DMDA_NONPERIODIC;
+  DMDABoundaryType wrap = DMDA_NONPERIODIC;
   DM             da;
   PetscViewer    viewer;
   Vec            local,global;

@@ -83,7 +83,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
   PetscBool          isnull,useports = PETSC_FALSE;
   MPI_Comm           comm;
   Vec                xlocal,xcoor,xcoorl;
-  DMDAPeriodicType   periodic;
+  DMDABoundaryType   periodic;
   DMDAStencilType    st;
   ZoomCtx            zctx;
   PetscDrawViewPorts *ports;

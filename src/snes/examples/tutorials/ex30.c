@@ -90,7 +90,7 @@ typedef struct { /* physical and miscelaneous parameters */
 } Parameter;
 
 typedef struct { /* grid parameters */
-  DMDAPeriodicType periodic;
+  DMDABoundaryType periodic;
   DMDAStencilType  stencil;
   PetscInt       corner,ni,nj,jlid,jfault,inose;
   PetscInt       dof,stencil_width,mglevels;

@@ -10,7 +10,7 @@
 
 EXTERN_C_BEGIN
 
-void PETSC_STDCALL dmdacreate1d_(MPI_Comm *comm,DMDAPeriodicType *wrap,PetscInt *M,PetscInt *w,PetscInt *s,
+void PETSC_STDCALL dmdacreate1d_(MPI_Comm *comm,DMDABoundaryType *wrap,PetscInt *M,PetscInt *w,PetscInt *s,
                  PetscInt *lc,DM *inra,PetscErrorCode *ierr)
 {
  CHKFORTRANNULLINTEGER(lc);

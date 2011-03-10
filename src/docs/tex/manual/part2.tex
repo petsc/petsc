@@ -543,7 +543,7 @@ proper layout.
 One creates a distributed array communication data structure 
 in two dimensions with the command 
 \begin{tabbing}
-  DMDACreate2d(MPI\_Comm comm,DMDAPeriodicType wrap,DMDAStencilType st,int M,\\
+  DMDACreate2d(MPI\_Comm comm,DMDABoundaryType wrap,DMDAStencilType st,int M,\\
              int N,int m,int n,int dof,int s,int *lx,int *ly,DM *da);
 \end{tabbing}
 The  \sindex{array, distributed} arguments
@@ -591,15 +591,15 @@ discretization technique).
 The commands for creating distributed array communication data structures
 in one and three dimensions are analogous:
 \begin{tabbing}
-  DMDACreate1d(MPI\_Comm comm,DMDAPeriodicType wrap,int M,int w,int s,int *lc,DM *inra);\\
-  DMDACreate3d\=(MPI\_Comm comm,DMDAPeriodicType wrap,DMDAStencilType stencil\_type,\\
+  DMDACreate1d(MPI\_Comm comm,DMDABoundaryType wrap,int M,int w,int s,int *lc,DM *inra);\\
+  DMDACreate3d\=(MPI\_Comm comm,DMDABoundaryType wrap,DMDAStencilType stencil\_type,\\
              \>int M,int N,int P,int m,int n,int p,int w,int s,int *lx,int *ly,int *lz,DM *inra);
 \end{tabbing}
 \trl{DA_ZPERIODIC}, \findex{DA_ZPERIODIC}
 \trl{DA_XZPERIODIC}, \findex{DA_XZPERIODIC}
 \trl{DA_YZPERIODIC}, and \findex{DA_YZPERIODIC}
 \trl{DA_XYZPERIODIC} \findex{DA_XYZPERIODIC}
-are additional options in three dimensions for DMDAPeriodicType.
+are additional options in three dimensions for DMDABoundaryType.
 The routines to create distributed arrays are collective, so that all
 processes in the communicator \trl{comm} must call \trl{DACreateXXX()}.
 

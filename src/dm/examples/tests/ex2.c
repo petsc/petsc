@@ -9,7 +9,7 @@ int main(int argc,char **argv)
 {
   PetscMPIInt    rank;
   PetscInt       M = 13,s=1,dof=1;
-  DMDAPeriodicType wrap = DMDA_XPERIODIC;
+  DMDABoundaryType wrap = DMDA_XPERIODIC;
   PetscErrorCode ierr;
   DM             da;
   PetscViewer    viewer;
@@ -27,7 +27,7 @@ int main(int argc,char **argv)
 
   /* Readoptions */
   ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetEnum(PETSC_NULL,"-wrap",DMDAPeriodicTypes,(PetscEnum*)&wrap,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetEnum(PETSC_NULL,"-wrap",DMDABoundaryTypes,(PetscEnum*)&wrap,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-dof",&dof,PETSC_NULL);CHKERRQ(ierr); 
   ierr = PetscOptionsGetInt(PETSC_NULL,"-s",&s,PETSC_NULL);CHKERRQ(ierr); 
 

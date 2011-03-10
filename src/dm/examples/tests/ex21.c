@@ -13,7 +13,7 @@ PetscErrorCode test1_DAInjection3d( PetscInt mx, PetscInt my, PetscInt mz )
   PetscViewer vv;
   Vec ac,af;
   PetscInt periodicity;
-  DMDAPeriodicType pt;
+  DMDABoundaryType pt;
 
   PetscFunctionBegin;
   periodicity = 0;

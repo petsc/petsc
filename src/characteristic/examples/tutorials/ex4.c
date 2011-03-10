@@ -54,7 +54,7 @@ typedef struct parameter_s {
 } Parameter;
 
 typedef struct gridinfo_s {
-  DMDAPeriodicType periodic;
+  DMDABoundaryType periodic;
   DMDAStencilType  stencil;
   int            ni,nj,dof,stencil_width,mglevels;
   PassiveScalar  dx,dz;

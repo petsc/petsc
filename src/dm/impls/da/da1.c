@@ -6,9 +6,9 @@
 
 #include "private/daimpl.h"     /*I  "petscdm.h"   I*/
 
-const char *DMDAPeriodicTypes[] = {"NONPERIODIC","XPERIODIC","YPERIODIC","XYPERIODIC",
+const char *DMDABoundaryTypes[] = {"NONPERIODIC","XPERIODIC","YPERIODIC","XYPERIODIC",
                                    "XYZPERIODIC","XZPERIODIC","YZPERIODIC","ZPERIODIC",
-                                   "XYZGHOSTED","DMDAPeriodicType","DMDA_",0};
+                                   "XYZGHOSTED","DMDABoundaryType","DMDA_",0};
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMView_DA_1d"
@@ -137,7 +137,7 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
   const PetscInt         s     = dd->s;
   const PetscInt         sDist = s*dof;  /* absolute stencil distance */
   const PetscInt         *lx    = dd->lx;
-  const DMDAPeriodicType wrap  = dd->wrap;
+  const DMDABoundaryType wrap  = dd->wrap;
   MPI_Comm               comm;
   Vec                    local, global;
   VecScatter             ltog, gtol;
@@ -297,7 +297,7 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
   */
   for (i=0; i<Xe-IXe; i++) {idx[nn++] = -1; } /* pad with -1s if needed for ghosted case*/
 
-  ierr = ISLocalToGlobalMappingCreate(comm,nn,idx,PETSC_OWN_POINTER,&da->ltogmap);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingCreate(comm,nn,idx,PETSC_COPY_VALUES,&da->ltogmap);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingBlock(da->ltogmap,dd->w,&da->ltogmapb);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(da,da->ltogmap);CHKERRQ(ierr);
 
@@ -350,7 +350,7 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
           DMDAGetInfo(), DMCreateGlobalVector(), DMCreateLocalVector(), DMDACreateNaturalVector(), DMDALoad(), DMDAGetOwnershipRanges()
 
 @*/
-PetscErrorCode  DMDACreate1d(MPI_Comm comm, DMDAPeriodicType wrap, PetscInt M, PetscInt dof, PetscInt s, const PetscInt lx[], DM *da)
+PetscErrorCode  DMDACreate1d(MPI_Comm comm, DMDABoundaryType wrap, PetscInt M, PetscInt dof, PetscInt s, const PetscInt lx[], DM *da)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;

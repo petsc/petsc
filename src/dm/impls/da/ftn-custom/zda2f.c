@@ -112,7 +112,7 @@ void PETSC_STDCALL dmdasetlocalfunction_(DM *da,void (PETSC_STDCALL *func)(DMDAL
 
 /************************************************/
 
-void PETSC_STDCALL dmdacreate2d_(MPI_Comm *comm,DMDAPeriodicType *wrap,DMDAStencilType
+void PETSC_STDCALL dmdacreate2d_(MPI_Comm *comm,DMDABoundaryType *wrap,DMDAStencilType
                   *stencil_type,PetscInt *M,PetscInt *N,PetscInt *m,PetscInt *n,PetscInt *w,
                   PetscInt *s,PetscInt *lx,PetscInt *ly,DM *inra,PetscErrorCode *ierr)
 {

@@ -13,7 +13,7 @@ int main(int argc,char **argv)
   Vec            v_c,v_f;
   Mat            I;
   PetscScalar    one = 1.0;
-  DMDAPeriodicType pt = DMDA_NONPERIODIC;
+  DMDABoundaryType pt = DMDA_NONPERIODIC;
  
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
 

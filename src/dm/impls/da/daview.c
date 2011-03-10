@@ -17,7 +17,7 @@ PetscErrorCode DMView_DA_Matlab(DM da,PetscViewer viewer)
   PetscMPIInt      rank;
   PetscInt         dim,m,n,p,dof,swidth;
   DMDAStencilType  stencil;
-  DMDAPeriodicType periodic;
+  DMDABoundaryType periodic;
   mxArray          *mx;
   const char       *fnames[] = {"dimension","m","n","p","dof","stencil_width","periodicity","stencil_type"};
 
@@ -51,7 +51,7 @@ PetscErrorCode DMView_DA_Binary(DM da,PetscViewer viewer)
   PetscInt         i,dim,m,n,p,dof,swidth,M,N,P;
   size_t           j,len;
   DMDAStencilType  stencil;
-  DMDAPeriodicType periodic;
+  DMDABoundaryType periodic;
   MPI_Comm         comm;
   DM_DA            *dd = (DM_DA*)da->data;
 
@@ -176,7 +176,7 @@ PetscErrorCode DMView_DA_VTK(DM da, PetscViewer viewer)
 
 .seealso: DMView(), DMDAGetCorners(), DMDAGetLocalInfo()
 @*/
-PetscErrorCode  DMDAGetInfo(DM da,PetscInt *dim,PetscInt *M,PetscInt *N,PetscInt *P,PetscInt *m,PetscInt *n,PetscInt *p,PetscInt *dof,PetscInt *s,DMDAPeriodicType *wrap,DMDAStencilType *st)
+PetscErrorCode  DMDAGetInfo(DM da,PetscInt *dim,PetscInt *M,PetscInt *N,PetscInt *P,PetscInt *m,PetscInt *n,PetscInt *p,PetscInt *dof,PetscInt *s,DMDABoundaryType *wrap,DMDAStencilType *st)
 {
   DM_DA *dd = (DM_DA*)da->data;
 

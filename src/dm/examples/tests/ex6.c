@@ -17,7 +17,7 @@ int main(int argc,char **argv)
   PetscViewer    viewer;
   Vec            local,global;
   PetscScalar    value;
-  DMDAPeriodicType wrap = DMDA_NONPERIODIC;
+  DMDABoundaryType wrap = DMDA_NONPERIODIC;
   DMDAStencilType  stencil_type = DMDA_STENCIL_BOX;
   AO             ao;
   PetscBool      flg = PETSC_FALSE;

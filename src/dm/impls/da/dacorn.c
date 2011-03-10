@@ -152,7 +152,7 @@ PetscErrorCode  DMDAGetCoordinateDA(DM da,DM *cda)
     ierr = MPI_Comm_size(((PetscObject)da)->comm,&size);CHKERRQ(ierr);
     if (dd->dim == 1) {
       PetscInt            s,m,*lc,l;
-      DMDAPeriodicType pt;
+      DMDABoundaryType pt;
       ierr = DMDAGetInfo(da,0,&m,0,0,0,0,0,0,&s,&pt,0);CHKERRQ(ierr);
       ierr = DMDAGetCorners(da,0,0,0,&l,0,0);CHKERRQ(ierr);
       ierr = PetscMalloc(size*sizeof(PetscInt),&lc);CHKERRQ(ierr);
@@ -161,7 +161,7 @@ PetscErrorCode  DMDAGetCoordinateDA(DM da,DM *cda)
       ierr = PetscFree(lc);CHKERRQ(ierr);
     } else if (dd->dim == 2) {
       PetscInt            i,s,m,*lc,*ld,l,k,n,M,N;
-      DMDAPeriodicType pt;
+      DMDABoundaryType pt;
       ierr = DMDAGetInfo(da,0,&m,&n,0,&M,&N,0,0,&s,&pt,0);CHKERRQ(ierr);
       ierr = DMDAGetCorners(da,0,0,0,&l,&k,0);CHKERRQ(ierr);
       ierr = PetscMalloc2(size,PetscInt,&lc,size,PetscInt,&ld);CHKERRQ(ierr);
@@ -176,7 +176,7 @@ PetscErrorCode  DMDAGetCoordinateDA(DM da,DM *cda)
       ierr = PetscFree2(lc,ld);CHKERRQ(ierr);
     } else if (dd->dim == 3) {
       PetscInt            i,s,m,*lc,*ld,*le,l,k,q,n,M,N,P,p;
-      DMDAPeriodicType pt;
+      DMDABoundaryType pt;
       ierr = DMDAGetInfo(da,0,&m,&n,&p,&M,&N,&P,0,&s,&pt,0);CHKERRQ(ierr);
       ierr = DMDAGetCorners(da,0,0,0,&l,&k,&q);CHKERRQ(ierr);
       ierr = PetscMalloc3(size,PetscInt,&lc,size,PetscInt,&ld,size,PetscInt,&le);CHKERRQ(ierr);

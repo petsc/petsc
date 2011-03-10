@@ -107,9 +107,9 @@ PetscErrorCode  DMDASetNumProcs(DM da, PetscInt m, PetscInt n, PetscInt p)
   Level: intermediate
 
 .keywords:  distributed array, periodicity
-.seealso: DMDACreate(), DMDestroy(), DMDA, DMDAPeriodicType
+.seealso: DMDACreate(), DMDestroy(), DMDA, DMDABoundaryType
 @*/
-PetscErrorCode  DMDASetPeriodicity(DM da, DMDAPeriodicType ptype)
+PetscErrorCode  DMDASetPeriodicity(DM da, DMDABoundaryType ptype)
 {
   DM_DA *dd = (DM_DA*)da->data;
 

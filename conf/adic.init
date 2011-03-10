@@ -23,7 +23,7 @@
 	KSP           = "typedef int KSP;"
 	SNES           = "typedef int SNES;"
 	SNESConvergedReason           = "typedef int SNESConvergedReason;"
-	DAPeriodicType = "typedef int DMDAPeriodicType;"
+	DAPeriodicType = "typedef int DMDABoundaryType;"
 	DAStencilType  = "typedef int DMDAStencilType;"
         ISColoring     = "typedef int ISColoring;"
 	PetscBool      = "typedef int PetscBool ;"

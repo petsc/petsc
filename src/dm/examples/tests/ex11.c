@@ -31,7 +31,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-periodic",&wrap,PETSC_NULL);CHKERRQ(ierr); 
 
   /* Create distributed array and get vectors */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,(DMDAPeriodicType)wrap,DMDA_STENCIL_BOX,M,N,PETSC_DECIDE,
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,(DMDABoundaryType)wrap,DMDA_STENCIL_BOX,M,N,PETSC_DECIDE,
                     PETSC_DECIDE,dof,s,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
   ierr = DMDASetUniformCoordinates(da,0.0,1.0,0.0,1.0,0.0,0.0);CHKERRQ(ierr);
   for (i=0; i<dof; i++) {

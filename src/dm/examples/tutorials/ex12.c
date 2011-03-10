@@ -20,7 +20,7 @@ int main(int argc,char **argv)
   PetscBool      flg = PETSC_FALSE;
   DM             da;
   Vec            global1,global2,global3;
-  DMDAPeriodicType ptype = DMDA_NONPERIODIC;
+  DMDABoundaryType ptype = DMDA_NONPERIODIC;
   DMDAStencilType  stype = DMDA_STENCIL_BOX;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 

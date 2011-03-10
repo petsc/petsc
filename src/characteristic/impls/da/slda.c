@@ -110,7 +110,7 @@ EXTERN_C_END
    ----------------------------------------------------------------------------------------*/
 PetscErrorCode DMDAMapCoordsToPeriodicDomain(DM da, PetscScalar *x, PetscScalar *y)
 {
-  DMDAPeriodicType periodic_type;
+  DMDABoundaryType periodic_type;
   PetscInt       dim, gx, gy;
   PetscErrorCode ierr;
 

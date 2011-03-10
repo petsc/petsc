@@ -173,7 +173,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
   PetscInt               p            = dd->p;
   const PetscInt         dof          = dd->w;
   const PetscInt         s            = dd->s;
-  const DMDAPeriodicType wrap         = dd->wrap;
+  const DMDABoundaryType wrap         = dd->wrap;
   const DMDAStencilType  stencil_type = dd->stencil_type;
   PetscInt               *lx           = dd->lx;
   PetscInt               *ly           = dd->ly;
@@ -186,7 +186,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
   const PetscInt         *idx_full;
   PetscInt               n0,n1,n2,n3,n4,n5,n6,n7,n8,n9,n10,n11,n12,n14;
   PetscInt               n15,n16,n17,n18,n19,n20,n21,n22,n23,n24,n25,n26;
-  PetscInt               *bases,*ldims,base,x_t,y_t,z_t,s_t,count,count_dbg,s_x,s_y,s_z;
+  PetscInt               *bases,*ldims,base,x_t,y_t,z_t,s_t,count,s_x,s_y,s_z;
   PetscInt               sn0 = 0,sn1 = 0,sn2 = 0,sn3 = 0,sn5 = 0,sn6 = 0,sn7 = 0;
   PetscInt               sn8 = 0,sn9 = 0,sn11 = 0,sn15 = 0,sn24 = 0,sn25 = 0,sn26 = 0;
   PetscInt               sn17 = 0,sn18 = 0,sn19 = 0,sn20 = 0,sn21 = 0,sn23 = 0;
@@ -377,7 +377,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
   ierr = VecGetOwnershipRange(global,&start,&end);CHKERRQ(ierr);
   ierr = ISCreateStride(comm,x*y*z*dof,start,1,&to);CHKERRQ(ierr);
 
-  count_dbg = x*y*z;
+  count = x*y*z;
   ierr = PetscMalloc(x*y*z*sizeof(PetscInt),&idx);CHKERRQ(ierr);
   left   = xs - Xs; right = left + x;
   bottom = ys - Ys; top = bottom + y;
@@ -391,10 +391,6 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
     }
   }
 
-  if (count != count_dbg) {
-    SETERRQ(((PetscObject)da)->comm, PETSC_ERR_SUP,"count != count_dbg");
-    PetscFunctionReturn(1);
-  }
   ierr = ISCreateBlock(comm,dof,count,idx,PETSC_OWN_POINTER,&from);CHKERRQ(ierr);
   ierr = VecScatterCreate(local,from,global,to,&ltog);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(da,ltog);CHKERRQ(ierr);
@@ -404,8 +400,8 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
   /* global to local must include ghost points within the domain,
      but not ghost points outside the domain that aren't periodic */
   if (stencil_type == DMDA_STENCIL_BOX) {
-    count_dbg = (IXe-IXs)*(IYe-IYs)*(IZe-IZs);
-    ierr  = PetscMalloc(count_dbg*sizeof(PetscInt),&idx);CHKERRQ(ierr);
+    count = (IXe-IXs)*(IYe-IYs)*(IZe-IZs);
+    ierr  = PetscMalloc(count*sizeof(PetscInt),&idx);CHKERRQ(ierr);
 
     left   = IXs - Xs; right = left + (IXe-IXs);
     bottom = IYs - Ys; top = bottom + (IYe-IYs);
@@ -418,16 +414,12 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
         }
       }
     }
-    if (count != count_dbg) {
-      SETERRQ(((PetscObject)da)->comm, PETSC_ERR_SUP,"count != count_dbg");
-      PetscFunctionReturn(1);
-    }
     ierr = ISCreateBlock(comm,dof,count,idx,PETSC_OWN_POINTER,&to);CHKERRQ(ierr);
 
   } else {
     /* This is way ugly! We need to list the funny cross type region */
-    count_dbg = ((ys-IYs) + (IYe-ye))*x*z + ((xs-IXs) + (IXe-xe))*y*z + ((zs-IZs) + (IZe-ze))*x*y + x*y*z;
-    ierr   = PetscMalloc(count_dbg*sizeof(PetscInt),&idx);CHKERRQ(ierr);
+    count = ((ys-IYs) + (IYe-ye))*x*z + ((xs-IXs) + (IXe-xe))*y*z + ((zs-IZs) + (IZe-ze))*x*y + x*y*z;
+    ierr   = PetscMalloc(count*sizeof(PetscInt),&idx);CHKERRQ(ierr);
 
     left   = xs - Xs; right = left + x;
     bottom = ys - Ys; top = bottom + y;
@@ -459,10 +451,6 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
       for (j=bottom; j<top; j++) {
         for (k=left; k<right; k++) idx[count++] = (i*(Ye-Ys) + j)*(Xe-Xs) + k;
       }
-    }
-    if (count != count_dbg) {
-      SETERRQ(((PetscObject)da)->comm, PETSC_ERR_SUP,"count != count_dbg");
-      PetscFunctionReturn(1);
     }
     ierr = ISCreateBlock(comm,dof,count,idx,PETSC_OWN_POINTER,&to);CHKERRQ(ierr);
   }
@@ -1264,16 +1252,11 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
      Set the local to global ordering in the global vector, this allows use
      of VecSetValuesLocal().
   */
-  if (nn != (Xe-Xs)*(Ye-Ys)*(Ze-Zs)) {
-    SETERRQ(((PetscObject)da)->comm, PETSC_ERR_SUP,"nn != count_dbg");
-    PetscFunctionReturn(1);
-  }
   ierr = ISCreateBlock(comm,dof,nn,idx,PETSC_OWN_POINTER,&ltogis);CHKERRQ(ierr);
   ierr = PetscMalloc(nn*dof*sizeof(PetscInt),&idx_cpy);CHKERRQ(ierr);
-  /* ierr = PetscLogObjectMemory(da,nn*dof*sizeof(PetscInt));CHKERRQ(ierr); */
+  ierr = PetscLogObjectMemory(da,nn*dof*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = ISGetIndices(ltogis, &idx_full);
   ierr = PetscMemcpy(idx_cpy,idx_full,nn*dof*sizeof(PetscInt));CHKERRQ(ierr);
-  CHKMEMQ;
   ierr = ISRestoreIndices(ltogis, &idx_full);
   ierr = ISLocalToGlobalMappingCreateIS(ltogis,&da->ltogmap);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(da,da->ltogmap);CHKERRQ(ierr);
@@ -1361,7 +1344,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
           DMDAGetInfo(), DMCreateGlobalVector(), DMCreateLocalVector(), DMDACreateNaturalVector(), DMDALoad(), DMDAGetOwnershipRanges()
 
 @*/
-PetscErrorCode  DMDACreate3d(MPI_Comm comm,DMDAPeriodicType wrap,DMDAStencilType stencil_type,PetscInt M,
+PetscErrorCode  DMDACreate3d(MPI_Comm comm,DMDABoundaryType wrap,DMDAStencilType stencil_type,PetscInt M,
                PetscInt N,PetscInt P,PetscInt m,PetscInt n,PetscInt p,PetscInt dof,PetscInt s,const PetscInt lx[],const PetscInt ly[],const PetscInt lz[],DM *da)
 {
   PetscErrorCode ierr;

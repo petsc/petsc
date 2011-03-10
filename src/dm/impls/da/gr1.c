@@ -28,7 +28,7 @@ PetscErrorCode  DMDASetUniformCoordinates(DM da,PetscReal xmin,PetscReal xmax,Pe
 {
   MPI_Comm         comm;
   DM               cda;
-  DMDAPeriodicType periodic;
+  DMDABoundaryType periodic;
   Vec              xcoor;
   PetscScalar      *coors;
   PetscReal        hx,hy,hz_;
@@ -112,7 +112,7 @@ PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
   MPI_Comm          comm;
   PetscDrawAxis     axis;
   Vec               xcoor;
-  DMDAPeriodicType  periodic;
+  DMDABoundaryType  periodic;
 
   PetscFunctionBegin;
   ierr = PetscViewerDrawGetDraw(v,0,&draw);CHKERRQ(ierr);

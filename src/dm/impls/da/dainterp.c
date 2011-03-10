@@ -53,7 +53,7 @@ PetscErrorCode DMGetInterpolation_DA_1D_Q1(DM dac,DM daf,Mat *A)
   PetscInt         i_c,i_start_c,i_start_ghost_c,cols[2],dof;
   PetscScalar      v[2],x,*coors = 0,*ccoors;
   Mat              mat;
-  DMDAPeriodicType pt;
+  DMDABoundaryType pt;
   Vec              vcoors,cvcoors;
   DM_DA            *ddc = (DM_DA*)dac->data, *ddf = (DM_DA*)daf->data;
   
@@ -191,7 +191,7 @@ PetscErrorCode DMGetInterpolation_DA_1D_Q0(DM dac,DM daf,Mat *A)
   PetscInt         i_c,i_start_c,i_start_ghost_c,cols[2],dof;
   PetscScalar      v[2],x;
   Mat              mat;
-  DMDAPeriodicType pt;
+  DMDABoundaryType pt;
   
   PetscFunctionBegin;
   ierr = DMDAGetInfo(dac,0,&Mx,0,0,0,0,0,0,0,&pt,0);CHKERRQ(ierr);
@@ -264,7 +264,7 @@ PetscErrorCode DMGetInterpolation_DA_2D_Q1(DM dac,DM daf,Mat *A)
   PetscMPIInt      size_c,size_f,rank_f;
   PetscScalar      v[4],x,y;
   Mat              mat;
-  DMDAPeriodicType pt;
+  DMDABoundaryType pt;
   DMDACoor2d       **coors = 0,**ccoors;
   Vec              vcoors,cvcoors;
   DM_DA            *ddc = (DM_DA*)dac->data, *ddf = (DM_DA*)daf->data;
@@ -504,7 +504,7 @@ PetscErrorCode DMGetInterpolation_DA_2D_Q0(DM dac,DM daf,Mat *A)
   PetscMPIInt      size_c,size_f,rank_f;
   PetscScalar      v[4];
   Mat              mat;
-  DMDAPeriodicType pt;
+  DMDABoundaryType pt;
 
   PetscFunctionBegin;
   ierr = DMDAGetInfo(dac,0,&Mx,&My,0,0,0,0,0,0,&pt,0);CHKERRQ(ierr);
@@ -615,7 +615,7 @@ PetscErrorCode DMGetInterpolation_DA_3D_Q0(DM dac,DM daf,Mat *A)
   PetscMPIInt      size_c,size_f,rank_f;
   PetscScalar      v[8];
   Mat              mat;
-  DMDAPeriodicType pt;
+  DMDABoundaryType pt;
   
   PetscFunctionBegin;
   ierr = DMDAGetInfo(dac,0,&Mx,&My,&Mz,0,0,0,0,0,&pt,0);CHKERRQ(ierr);
@@ -735,7 +735,7 @@ PetscErrorCode DMGetInterpolation_DA_3D_Q1(DM dac,DM daf,Mat *A)
   PetscInt         l_start_ghost_c,p_ghost_c,l_c,*dnz,*onz;
   PetscScalar      v[8],x,y,z;
   Mat              mat;
-  DMDAPeriodicType pt;
+  DMDABoundaryType pt;
   DMDACoor3d       ***coors = 0,***ccoors;
   Vec              vcoors,cvcoors;
   DM_DA            *ddc = (DM_DA*)dac->data, *ddf = (DM_DA*)daf->data;
@@ -1023,7 +1023,7 @@ PetscErrorCode  DMGetInterpolation_DA(DM dac,DM daf,Mat *A,Vec *scale)
 {
   PetscErrorCode   ierr;
   PetscInt         dimc,Mc,Nc,Pc,mc,nc,pc,dofc,sc,dimf,Mf,Nf,Pf,mf,nf,pf,doff,sf;
-  DMDAPeriodicType wrapc,wrapf;
+  DMDABoundaryType wrapc,wrapf;
   DMDAStencilType  stc,stf;
   DM_DA            *ddc = (DM_DA*)dac->data;
 
@@ -1081,7 +1081,7 @@ PetscErrorCode DMGetInjection_DA_2D(DM dac,DM daf,VecScatter *inject)
   PetscInt         row,i_start_ghost,j_start_ghost,mx,m_c,my,nc,ratioi,ratioj;
   PetscInt         i_start_c,j_start_c,n_c,i_start_ghost_c,j_start_ghost_c;
   PetscInt         *cols;
-  DMDAPeriodicType pt;
+  DMDABoundaryType pt;
   Vec              vecf,vecc;
   IS               isf;
 
@@ -1152,7 +1152,7 @@ PetscErrorCode DMGetInjection_DA_3D(DM dac,DM daf,VecScatter *inject)
   PetscInt         row,nc,dof;
   PetscInt         *idx_c,*idx_f;
   PetscInt         *cols;
-  DMDAPeriodicType pt;
+  DMDABoundaryType pt;
   Vec              vecf,vecc;
   IS               isf;
 
@@ -1226,7 +1226,7 @@ PetscErrorCode  DMGetInjection_DA(DM dac,DM daf,VecScatter *inject)
 {
   PetscErrorCode   ierr;
   PetscInt         dimc,Mc,Nc,Pc,mc,nc,pc,dofc,sc,dimf,Mf,Nf,Pf,mf,nf,pf,doff,sf;
-  DMDAPeriodicType wrapc,wrapf;
+  DMDABoundaryType wrapc,wrapf;
   DMDAStencilType  stc,stf;
 
   PetscFunctionBegin;
@@ -1262,7 +1262,7 @@ PetscErrorCode  DMGetAggregates_DA(DM dac,DM daf,Mat *rest)
   PetscErrorCode   ierr;
   PetscInt         dimc,Mc,Nc,Pc,mc,nc,pc,dofc,sc;
   PetscInt         dimf,Mf,Nf,Pf,mf,nf,pf,doff,sf;
-  DMDAPeriodicType wrapc,wrapf;
+  DMDABoundaryType wrapc,wrapf;
   DMDAStencilType  stc,stf;
   PetscInt         i,j,l;
   PetscInt         i_start,j_start,l_start, m_f,n_f,p_f;

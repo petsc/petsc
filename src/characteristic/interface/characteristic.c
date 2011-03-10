@@ -321,7 +321,7 @@ PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
   Vec                     velocityLocal, velocityLocalOld;
   Vec                     fieldLocal;
   DMDALocalInfo             info;
-  DMDAPeriodicType          periodic_type;
+  DMDABoundaryType          periodic_type;
   PetscScalar             **solArray;
   void                    *velocityArray;
   void                    *velocityArrayOld;
@@ -788,7 +788,7 @@ PetscErrorCode SiftDown(Characteristic c, Queue queue, PetscInt root, PetscInt b
 /* [center, left, top-left, top, top-right, right, bottom-right, bottom, bottom-left] */
 PetscErrorCode DMDAGetNeighborsRank(DM da, PetscMPIInt neighbors[])
 {
-  DMDAPeriodicType periodic_type;
+  DMDABoundaryType periodic_type;
   PetscBool      IPeriodic = PETSC_FALSE, JPeriodic = PETSC_FALSE;
   MPI_Comm       comm;
   PetscMPIInt    rank;
