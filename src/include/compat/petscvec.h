@@ -15,7 +15,7 @@
      PETSC_VERSION_(3,0,0))
 #undef __FUNCT__
 #define __FUNCT__ "VecDestroyVecs"
-static PetscErrorCode VecDestroyVecs_Compat(Vec *vv[],PetscInt m)
+static PetscErrorCode VecDestroyVecs_Compat(PetscInt m,Vec *vv[])
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;

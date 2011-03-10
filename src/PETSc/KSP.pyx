@@ -387,9 +387,9 @@ cdef class KSP(Object):
                 vecsl.append(ref_Vec(vl[i]))
         finally:
             if nr > 0 and vr != NULL:
-                VecDestroyVecs(&vr, nr) # XXX errors?
+                VecDestroyVecs(nr, &vr) # XXX errors?
             if nl > 0 and vl !=NULL:
-                VecDestroyVecs(&vl, nl) # XXX errors?
+                VecDestroyVecs(nl, &vl) # XXX errors?
         #
         if R and L: return (vecsr, vecsl)
         elif R:     return vecsr
