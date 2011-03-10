@@ -800,10 +800,10 @@ PetscErrorCode DMDAGetNeighborsRank(DM da, PetscMPIInt neighbors[])
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da, 0, 0, 0, 0, &PI,&PJ, 0, 0, 0, &periodic_type, 0);
 
-  if (periodic_type==DMDA_XPERIODIC || periodic_type==DMDA_XYPERIODIC) {
+  if (DMDAXPeriodic(periodic_type)) {
     IPeriodic = PETSC_TRUE;
   }
-  if (periodic_type==DMDA_YPERIODIC || periodic_type==DMDA_XYPERIODIC) {
+  if (DMDAYPeriodic(periodic_type)) {
     JPeriodic = PETSC_TRUE;
   }
 

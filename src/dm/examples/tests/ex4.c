@@ -26,20 +26,25 @@ int main(int argc,char **argv)
   ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"",300,0,400,400,&viewer);CHKERRQ(ierr);
  
   /* Readoptions */
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-NX",&M,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-NY",&N,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-s",&s,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-w",&w,PETSC_NULL);CHKERRQ(ierr);
+  wrap = 0x0;
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-xwrap",&flg,PETSC_NULL);CHKERRQ(ierr); if (flg)  wrap = DMDA_XPERIODIC;
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-xperiodic",&flg,PETSC_NULL);CHKERRQ(ierr); if (flg) wrap = wrap | DMDA_XPERIODIC;
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-ywrap",&flg,PETSC_NULL);CHKERRQ(ierr); if (flg)  wrap = DMDA_YPERIODIC;
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-yperiodic",&flg,PETSC_NULL);CHKERRQ(ierr); if (flg) wrap = wrap | DMDA_YPERIODIC;
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-xywrap",&flg,PETSC_NULL);CHKERRQ(ierr); if (flg) wrap = DMDA_XYPERIODIC;
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-xghosted",&flg,PETSC_NULL);CHKERRQ(ierr); if (flg) wrap = wrap | DMDA_XGHOSTED;
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-star",&flg,PETSC_NULL);CHKERRQ(ierr); if (flg)   st = DMDA_STENCIL_STAR;
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-yghosted",&flg,PETSC_NULL);CHKERRQ(ierr); if (flg) wrap = wrap | DMDA_YGHOSTED;
+  flg  = PETSC_FALSE;
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-star",&flg,PETSC_NULL);CHKERRQ(ierr); if (flg) st = DMDA_STENCIL_STAR;
+  flg  = PETSC_FALSE;
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-box",&flg,PETSC_NULL);CHKERRQ(ierr); if (flg) st = DMDA_STENCIL_BOX;
   flg  = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-testorder",&testorder,PETSC_NULL);CHKERRQ(ierr);
   /*
@@ -142,7 +147,7 @@ int main(int argc,char **argv)
       }
     }
     ierr = PetscFree(iglobal);CHKERRQ(ierr);
-  } 
+  }
 
   /* Free memory */
   ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);

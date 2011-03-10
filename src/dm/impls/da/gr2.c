@@ -110,7 +110,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
   */
   ierr = PetscObjectQuery((PetscObject)da,"GraphicsGhosted",(PetscObject*)&xlocal);CHKERRQ(ierr);
   if (!xlocal) {
-    if (periodic != DMDA_NONPERIODIC || s != 1 || st != DMDA_STENCIL_BOX) {
+    if (!periodic || s != 1 || st != DMDA_STENCIL_BOX) {
       /* 
          if original da is not of stencil width one, or periodic or not a box stencil then
          create a special DMDA to handle one level of ghost points for graphics
@@ -135,7 +135,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
     ierr = PetscObjectCompose((PetscObject)da,"GraphicsGhosted",(PetscObject)xlocal);CHKERRQ(ierr);
     ierr = PetscObjectDereference((PetscObject)xlocal);CHKERRQ(ierr);
   } else {
-    if (periodic == DMDA_NONPERIODIC && s == 1 && st == DMDA_STENCIL_BOX) {
+    if (!periodic && s == 1 && st == DMDA_STENCIL_BOX) {
       dac = da;
     } else {
       ierr = PetscObjectQuery((PetscObject)xlocal,"DMDA",(PetscObject*)&dac);CHKERRQ(ierr);

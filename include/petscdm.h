@@ -8,7 +8,6 @@
 PETSC_EXTERN_CXX_BEGIN
 
 extern PetscErrorCode  DMInitializePackage(const char[]);
-
 /*S
      DM - Abstract PETSc object that manages an abstract grid object
           
@@ -55,17 +54,33 @@ M*/
 M*/
 
 /*E
-    DMDAPeriodicType - Is the domain periodic in one or more directions
+    DMDAPeriodicType - Is the domain periodic or ghosted in one or more directions
 
    Level: beginner
 
-   DMDA_XYZGHOSTED means that ghost points are put around all the physical boundaries
-   in the local representation of the Vec (i.e. DMDACreate/GetLocalVector().
+   Each dimension may be non-periodic, ghosted (meaning ghost nodes are added outside
+   of the boundary, but not filled by DMDAGlobalToLocal()), or periodic.  Dimensions 
+   may be composed using the bitwise or operator, i.e.:
+
+   DMDA_XYPERIODIC = DMDA_XPERIODIC | DMDA_YPERIODIC
 
 .seealso: DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMDACreate()
 E*/
-typedef enum { DMDA_NONPERIODIC,DMDA_XPERIODIC,DMDA_YPERIODIC,DMDA_XYPERIODIC,
-               DMDA_XYZPERIODIC,DMDA_XZPERIODIC,DMDA_YZPERIODIC,DMDA_ZPERIODIC,DMDA_XYZGHOSTED} DMDAPeriodicType;
+typedef enum {
+  DMDA_NONGHOSTED = 0x0,
+  DMDA_NONPERIODIC = 0x0, /* kept for backwards compatiblity, though it's not precise */
+  DMDA_XGHOSTED = 0x1,
+  DMDA_XPERIODIC = 0x3,
+  DMDA_YGHOSTED = 0x4,
+  DMDA_YPERIODIC = 0xc,
+  DMDA_ZGHOSTED = 0x10,
+  DMDA_ZPERIODIC = 0x30,
+  DMDA_XYPERIODIC = 0xf,
+  DMDA_XZPERIODIC = 0x33,
+  DMDA_YZPERIODIC = 0x3c,
+  DMDA_XYZPERIODIC = 0x3f,
+  DMDA_XYZGHOSTED = 0x15} DMDAPeriodicType;
+
 extern const char *DMDAPeriodicTypes[];
 
 /*E
@@ -94,9 +109,12 @@ typedef enum { DMDA_ELEMENT_P1, DMDA_ELEMENT_Q1 } DMDAElementType;
 extern PetscErrorCode   DMDASetElementType(DM,DMDAElementType);
 extern PetscErrorCode   DMDAGetElementType(DM,DMDAElementType*);
 
-#define DMDAXPeriodic(pt) ((pt)==DMDA_XPERIODIC||(pt)==DMDA_XYPERIODIC||(pt)==DMDA_XZPERIODIC||(pt)==DMDA_XYZPERIODIC)
-#define DMDAYPeriodic(pt) ((pt)==DMDA_YPERIODIC||(pt)==DMDA_XYPERIODIC||(pt)==DMDA_YZPERIODIC||(pt)==DMDA_XYZPERIODIC)
-#define DMDAZPeriodic(pt) ((pt)==DMDA_ZPERIODIC||(pt)==DMDA_XZPERIODIC||(pt)==DMDA_YZPERIODIC||(pt)==DMDA_XYZPERIODIC)
+#define DMDAXPeriodic(pt) ((pt) & 0x2) /* (DMDA_XPERIODIC ^ DMDA_XGHOSTED)) */
+#define DMDAYPeriodic(pt) ((pt) & 0x8) /* (DMDA_YPERIODIC ^ DMDA_YGHOSTED)) */
+#define DMDAZPeriodic(pt) ((pt) & 0x20) /* (DMDA_ZPERIODIC ^ DMDA_ZGHOSTED)) */
+#define DMDAXGhosted(pt) ((pt) & DMDA_XGHOSTED)
+#define DMDAYGhosted(pt) ((pt) & DMDA_YGHOSTED)
+#define DMDAZGhosted(pt) ((pt) & DMDA_ZGHOSTED)
 
 typedef enum { DMDA_X,DMDA_Y,DMDA_Z } DMDADirection;
 
@@ -137,7 +155,8 @@ extern PetscErrorCode     DMDAGetScatter(DM,VecScatter*,VecScatter*,VecScatter*)
 extern PetscErrorCode     DMDAGetNeighbors(DM,const PetscMPIInt**);
 
 extern PetscErrorCode     DMDAGetAO(DM,AO*);
-extern PetscErrorCode     DMDASetCoordinates(DM,Vec); 
+extern PetscErrorCode     DMDASetCoordinates(DM,Vec);
+extern PetscErrorCode     DMDASetGhostedCoordinates(DM,Vec);
 extern PetscErrorCode     DMDAGetCoordinates(DM,Vec *);
 extern PetscErrorCode     DMDAGetGhostedCoordinates(DM,Vec *);
 extern PetscErrorCode     DMDAGetCoordinateDA(DM,DM *);

@@ -25,7 +25,7 @@
 
 .keywords: distributed array, get, corners, nodes, local indices, coordinates
 
-.seealso: DMDAGetGhostCorners(), DMDAGetCoordinates(), DMDASetUniformCoordinates(). DMDAGetGhostedCoordinates(), DMDAGetCoordinateDA()
+.seealso: DMDASetGhostCoordinates(), DMDAGetGhostCorners(), DMDAGetCoordinates(), DMDASetUniformCoordinates(). DMDAGetGhostedCoordinates(), DMDAGetCoordinateDA()
 @*/
 PetscErrorCode  DMDASetCoordinates(DM da,Vec c)
 {
@@ -43,6 +43,46 @@ PetscErrorCode  DMDASetCoordinates(DM da,Vec c)
     ierr = VecDestroy(dd->ghosted_coordinates);CHKERRQ(ierr);
     dd->ghosted_coordinates = PETSC_NULL;
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMDASetGhostedCoordinates"
+/*@
+   DMDASetGhostedCoordinates - Sets into the DMDA a vector that indicates the 
+      coordinates of the local nodes, including ghost nodes.
+
+   Collective on DMDA
+
+   Input Parameter:
++  da - the distributed array
+-  c - coordinate vector
+
+   Note:
+    The coordinates of interior ghost points can be set using DMDASetCoordinates()
+    followed by DMDAGetGhostedCoordinates().  This is intended to enable the setting
+    of ghost coordinates outside of the domain.
+
+    Non-ghosted coordinates, if set, are assumed still valid.
+
+  Level: intermediate
+
+.keywords: distributed array, get, corners, nodes, local indices, coordinates
+
+.seealso: DMDASetCoordinates(), DMDAGetGhostCorners(), DMDAGetCoordinates(), DMDASetUniformCoordinates(). DMDAGetGhostedCoordinates(), DMDAGetCoordinateDA()
+@*/
+PetscErrorCode  DMDASetGhostedCoordinates(DM da,Vec c)
+{
+  PetscErrorCode ierr;
+  DM_DA          *dd = (DM_DA*)da->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidHeaderSpecific(c,VEC_CLASSID,2);
+  ierr = PetscObjectReference((PetscObject)c);CHKERRQ(ierr);
+  if (dd->ghosted_coordinates) {ierr = VecDestroy(dd->ghosted_coordinates);CHKERRQ(ierr);}
+  dd->ghosted_coordinates = c;
+  ierr = VecSetBlockSize(c,dd->dim);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
