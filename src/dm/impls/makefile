@@ -1,6 +1,6 @@
 ALL: lib
 
-DIRS     = da adda sliced composite
+DIRS     = da adda sliced composite mesh
 LOCDIR   = src/dm/impls
 MANSEC   = DA
 
