@@ -1358,7 +1358,8 @@ DACreateND(MPI_Comm comm,
            PetscInt M,PetscInt N,PetscInt P,
            PetscInt m,PetscInt n,PetscInt p,
            const PetscInt lx[],const PetscInt ly[],const PetscInt lz[],
-           DAPeriodicType wrap,DAStencilType stencil_type,PetscInt stencil_width,
+           DAPeriodicType wrap,
+           DAStencilType stencil_type,PetscInt stencil_width,
            DA *da)
 {
   PetscErrorCode ierr;

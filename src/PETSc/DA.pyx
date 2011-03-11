@@ -108,6 +108,37 @@ cdef class DA(DM):
 
     #
 
+    def duplicate(self, dof=None, boundary_type=None,
+                  stencil_type=None, stencil_width=None):
+        cdef PetscInt ndim = 0
+        cdef PetscInt M = 1, N = 1, P = 1
+        cdef PetscInt m = 1, n = 1, p = 1
+        cdef PetscInt ndof = 1, swidth = 1
+        cdef PetscDABoundaryType btype = DA_NONPERIODIC|DA_NONGHOSTED
+        cdef PetscDAStencilType  stype = DA_STENCIL_BOX
+        CHKERR( DAGetInfo(self.da, &ndim,
+                          &M, &N, &P,
+                          &m, &n, &p,
+                          &ndof, &swidth,
+                          &btype, &stype) )
+        cdef const_PetscInt *lx = NULL, *ly = NULL, *lz = NULL
+        CHKERR( DAGetOwnershipRanges(self.da, &lx, &ly, &lz) )
+        cdef MPI_Comm comm = MPI_COMM_NULL
+        CHKERR( PetscObjectGetComm(<PetscObject>self.da, &comm) )
+        #
+        if dof           is not None: ndof   = asInt(dof)
+        if boundary_type is not None: btype  = asBoundary(ndim, boundary_type)
+        if stencil_type  is not None: stype  = asStencil(stencil_type)
+        if stencil_width is not None: swidth = asInt(stencil_width)
+        #
+        cdef DA da = DA()
+        CHKERR( DACreateND(comm, ndim, ndof,
+                           M, N, P, m, n, p, lx, ly, lz,
+                           btype, stype, swidth, &da.da) )
+        return da
+
+    #
+
     def getDim(self):
         cdef PetscInt dim = 0
         CHKERR( DAGetInfo(self.da,
@@ -176,7 +207,7 @@ cdef class DA(DM):
         return btype
 
     def getStencil(self):
-        cdef PetscDAStencilType  stype = DA_STENCIL_BOX
+        cdef PetscDAStencilType stype = DA_STENCIL_BOX
         CHKERR( DAGetInfo(self.da,
                           NULL,
                           NULL, NULL, NULL,
@@ -478,11 +509,11 @@ cdef class DA(DM):
         def __get__(self):
             return self.getProcSizes()
 
-    property periodic:
+    property boundary:
         def __get__(self):
             return self.getBoundary()
 
-    property periodic_type:
+    property boundary_type:
         def __get__(self):
             return self.getBoundaryType()
 

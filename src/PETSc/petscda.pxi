@@ -40,7 +40,7 @@ cdef extern from * nogil:
                    PetscInt,PetscInt,PetscInt,       # M, N, P
                    PetscInt,PetscInt,PetscInt,       # m, n, p
                    PetscInt[],PetscInt[],PetscInt[], # lx, ly, lz
-                   PetscDABoundaryType,              # periodicity
+                   PetscDABoundaryType,              # boundary type
                    PetscDAStencilType,               # stencil type
                    PetscInt,                         # stencil width
                    PetscDA*)
@@ -57,6 +57,10 @@ cdef extern from * nogil:
                   PetscInt*,PetscInt*,PetscInt*,
                   PetscInt*,PetscInt*,
                   PetscDABoundaryType*,PetscDAStencilType*)
+    int DAGetOwnershipRanges(PetscDA,
+                             const_PetscInt*[],
+                             const_PetscInt*[],
+                             const_PetscInt*[])
 
     int DAGetCorners(PetscDA,
                      PetscInt*,PetscInt*,PetscInt*,
