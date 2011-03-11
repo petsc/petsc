@@ -94,9 +94,9 @@ PetscErrorCode  DMDASetNumProcs(DM da, PetscInt m, PetscInt n, PetscInt p)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DMDASetPeriodicity"
+#define __FUNCT__ "DMDASetBoundaryType"
 /*@
-  DMDASetPeriodicity - Sets the type of periodicity
+  DMDASetBoundaryType - Sets the type of periodicity
 
   Not collective
 
@@ -109,7 +109,7 @@ PetscErrorCode  DMDASetNumProcs(DM da, PetscInt m, PetscInt n, PetscInt p)
 .keywords:  distributed array, periodicity
 .seealso: DMDACreate(), DMDestroy(), DMDA, DMDABoundaryType
 @*/
-PetscErrorCode  DMDASetPeriodicity(DM da, DMDABoundaryType ptype)
+PetscErrorCode  DMDASetBoundaryType(DM da, DMDABoundaryType ptype)
 {
   DM_DA *dd = (DM_DA*)da->data;
 

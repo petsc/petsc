@@ -1811,7 +1811,7 @@ PetscErrorCode  DMDACreate2d(MPI_Comm comm,DMDABoundaryType wrap,DMDAStencilType
   ierr = DMDASetDim(*da, 2);CHKERRQ(ierr);
   ierr = DMDASetSizes(*da, M, N, 1);CHKERRQ(ierr);
   ierr = DMDASetNumProcs(*da, m, n, PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = DMDASetPeriodicity(*da, wrap);CHKERRQ(ierr);
+  ierr = DMDASetBoundaryType(*da, wrap);CHKERRQ(ierr);
   ierr = DMDASetDof(*da, dof);CHKERRQ(ierr);
   ierr = DMDASetStencilType(*da, stencil_type);CHKERRQ(ierr);
   ierr = DMDASetStencilWidth(*da, s);CHKERRQ(ierr);

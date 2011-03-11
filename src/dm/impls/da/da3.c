@@ -1354,7 +1354,7 @@ PetscErrorCode  DMDACreate3d(MPI_Comm comm,DMDABoundaryType wrap,DMDAStencilType
   ierr = DMDASetDim(*da, 3);CHKERRQ(ierr);
   ierr = DMDASetSizes(*da, M, N, P);CHKERRQ(ierr);
   ierr = DMDASetNumProcs(*da, m, n, p);CHKERRQ(ierr);
-  ierr = DMDASetPeriodicity(*da, wrap);CHKERRQ(ierr);
+  ierr = DMDASetBoundaryType(*da, wrap);CHKERRQ(ierr);
   ierr = DMDASetDof(*da, dof);CHKERRQ(ierr);
   ierr = DMDASetStencilType(*da, stencil_type);CHKERRQ(ierr);
   ierr = DMDASetStencilWidth(*da, s);CHKERRQ(ierr);

@@ -31,7 +31,7 @@ int main(int argc,char **argv)
 
   ierr = DMDACreate(PETSC_COMM_WORLD,&da);CHKERRQ(ierr);
   ierr = DMDASetDim(da,3);CHKERRQ(ierr);
-  ierr = DMDASetPeriodicity(da,DMDA_NONPERIODIC);CHKERRQ(ierr);
+  ierr = DMDASetBoundaryType(da,DMDA_NONPERIODIC);CHKERRQ(ierr);
   ierr = DMDASetStencilType(da,DMDA_STENCIL_STAR);CHKERRQ(ierr);
   ierr = DMDASetSizes(da,3,3,3);CHKERRQ(ierr);
   ierr = DMDASetNumProcs(da,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);

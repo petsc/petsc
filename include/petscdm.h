@@ -166,7 +166,7 @@ extern PetscErrorCode     DMDAGetLocalBoundingBox(DM,PetscReal[],PetscReal[]);
 extern PetscErrorCode     DMDASetFieldName(DM,PetscInt,const char[]);
 extern PetscErrorCode     DMDAGetFieldName(DM,PetscInt,const char**);
 
-extern PetscErrorCode  DMDASetPeriodicity(DM, DMDABoundaryType);
+extern PetscErrorCode  DMDASetBoundaryType(DM, DMDABoundaryType);
 extern PetscErrorCode  DMDASetDof(DM, int);
 extern PetscErrorCode  DMDASetStencilWidth(DM, PetscInt);
 extern PetscErrorCode  DMDASetOwnershipRanges(DM,const PetscInt[],const PetscInt[],const PetscInt[]);

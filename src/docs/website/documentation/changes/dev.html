@@ -303,7 +303,8 @@ be constructed lazily.</li>
 ghost cells to be included in DM_DAs on domain boundaries even for
 non-periodic dimensions through the use of DMDA_{XYZ}GHOSTED.
 DMDABoundaryType is assigned through bitwise-or composition,
-i.e. DMDA_XPERIODIC | DMDA_YGHOSTED.  
+i.e. DMDA_XPERIODIC | DMDA_YGHOSTED.</li>
+        <li>DMDASetPeriodicity() is now DMDASetBoundaryType()</li>
 	<li>DMDASetGhostedCoordinates() is added.</li>
       </ul>
       <p><u><b>DMMG:</b></u></p>
