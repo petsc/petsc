@@ -1387,11 +1387,11 @@ DACreateND(MPI_Comm comm,
 #define DASetSizes           DMDASetSizes
 #define DASetNumProcs        DMDASetNumProcs
 #define DASetOwnershipRanges DMDASetOwnershipRanges
-#define DASetBoundaryType    DMDASetPeriodicity
+#define DASetBoundaryType    DMDASetBoundaryType
 #define DASetStencilType     DMDASetStencilType
 #define DASetStencilWidth    DMDASetStencilWidth
 
-#define DABoundaryType DMDAPeriodicType
+#define DABoundaryType DMDABoundaryType
 #define DA_NONPERIODIC DMDA_NONPERIODIC
 #define DA_XPERIODIC   DMDA_XPERIODIC
 #define DA_YPERIODIC   DMDA_YPERIODIC
