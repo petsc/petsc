@@ -155,7 +155,7 @@ class Configure(config.package.Package):
       self.mpiexec = 'Not_appropriate_for_batch_systems'
       self.addMakeMacro('MPIEXEC',self.mpiexec)
       return
-    mpiexecs = ['mpiexec -n 1', 'mpirun -n 1', 'mprun -n 1', 'mpiexec', 'mpirun', 'mprun']
+    mpiexecs = ['mpiexec -n 1', 'mpirun -n 1', 'mprun -n 1', 'mpiexec', 'mpirun', 'mprun', '/bin/false']
     path    = []
     if 'with-mpi-dir' in self.framework.argDB:
       path.append(os.path.join(os.path.abspath(self.framework.argDB['with-mpi-dir']), 'bin'))
