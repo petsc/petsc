@@ -1020,8 +1020,8 @@ PetscErrorCode SNESVISetRedundancyCheck(SNES snes,PetscErrorCode (*func)(SNES,IS
 /* Variational Inequality solver using augmented space method. It does the opposite of the
    reduced space method i.e. it identifies the active set variables and instead of discarding
    them it augments the original system by introducing additional equality 
-   constraint equations for a subset of active set variables. This subset is given by a user
-   defined routine which checks for redundant active set variables.
+   constraint equations for active set variables. The user can optionally provide an IS for 
+   a subset of 'redundant' active set variables which will treated as free variables.
    Specific implementation for Allen-Cahn problem 
 */
 #undef __FUNCT__  
@@ -1078,14 +1078,17 @@ PetscErrorCode SNESSolveVI_RS2(SNES snes)
   if (snes->reason) PetscFunctionReturn(0);
 
   for (i=0; i<maxits; i++) {
-
-    IS         IS_act,IS_inact; /* _act -> active set _inact -> inactive set */
-    VecScatter scat_act,scat_inact;
-    PetscInt   nis_act,nis_inact;
-    Vec        Y_act,Y_inact,F_inact;
-    Mat        jac_inact_inact,prejac_inact_inact;
-    IS         keptrows;
-    PetscBool  isequal;
+    IS             IS_act,IS_inact; /* _act -> active set _inact -> inactive set */
+    IS             IS_redact=PETSC_NULL; /* redundant active set */
+    Mat            J_aug,Jpre_aug;
+    Vec            F_aug,Y_aug;
+    PetscInt       nis_redact,nis_act;
+    const PetscInt *idx_redact,*idx_act;
+    PetscInt       k;
+    PetscInt       *idx_actkept=PETSC_NULL,nkept=0; /* list of kept active set */
+    PetscScalar    *f,*f2;
+    PetscBool      isequal;
+    PetscInt       i1=0,j1=0;
 
     /* Call general purpose update function */
     if (snes->ops->update) {
@@ -1096,75 +1099,93 @@ PetscErrorCode SNESSolveVI_RS2(SNES snes)
     /* Create active and inactive index sets */
     ierr = SNESVICreateIndexSets_RS(snes,X,F,&IS_act,&IS_inact);CHKERRQ(ierr);
 
-    /* Create inactive set submatrix */
-    ierr = MatGetSubMatrix(snes->jacobian,IS_inact,IS_inact,MAT_INITIAL_MATRIX,&jac_inact_inact);CHKERRQ(ierr);
-    ierr = MatFindNonzeroRows(jac_inact_inact,&keptrows);CHKERRQ(ierr);
-    if (keptrows) {
-      PetscInt       cnt,*nrows,k;
-      const PetscInt *krows,*inact;
-      PetscInt       rstart=jac_inact_inact->rmap->rstart;
-
-      ierr = MatDestroy(jac_inact_inact);CHKERRQ(ierr);
-      ierr = ISDestroy(IS_act);CHKERRQ(ierr);
-
-      ierr = ISGetLocalSize(keptrows,&cnt);CHKERRQ(ierr);
-      ierr = ISGetIndices(keptrows,&krows);CHKERRQ(ierr);
-      ierr = ISGetIndices(IS_inact,&inact);CHKERRQ(ierr);
-      ierr = PetscMalloc(cnt*sizeof(PetscInt),&nrows);CHKERRQ(ierr);
-      for (k=0; k<cnt; k++) {
-        nrows[k] = inact[krows[k]-rstart];
-      }
-      ierr = ISRestoreIndices(keptrows,&krows);CHKERRQ(ierr);
-      ierr = ISRestoreIndices(IS_inact,&inact);CHKERRQ(ierr);
-      ierr = ISDestroy(keptrows);CHKERRQ(ierr);
-      ierr = ISDestroy(IS_inact);CHKERRQ(ierr);
-     
-      ierr = ISCreateGeneral(PETSC_COMM_WORLD,cnt,nrows,PETSC_OWN_POINTER,&IS_inact);CHKERRQ(ierr);
-      ierr = ISComplement(IS_inact,F->map->rstart,F->map->rend,&IS_act);CHKERRQ(ierr);
-      ierr = MatGetSubMatrix(snes->jacobian,IS_inact,IS_inact,MAT_INITIAL_MATRIX,&jac_inact_inact);CHKERRQ(ierr);
-    }
-
-    /* Get sizes of active and inactive sets */
+    /* Get local active set size */
     ierr = ISGetLocalSize(IS_act,&nis_act);CHKERRQ(ierr);
-    ierr = ISGetLocalSize(IS_inact,&nis_inact);CHKERRQ(ierr);
+    ierr = ISGetIndices(IS_act,&idx_act);CHKERRQ(ierr);
+    if(nis_act) {
+      if(vi->checkredundancy) {
+	(*vi->checkredundancy)(snes,IS_act,&IS_redact,snes->funP);
+      }
 
-    /* Create active and inactive set vectors */
-    ierr = SNESVICreateSubVectors(snes,nis_inact,&F_inact);CHKERRQ(ierr);
-    ierr = SNESVICreateSubVectors(snes,nis_act,&Y_act);CHKERRQ(ierr);
-    ierr = SNESVICreateSubVectors(snes,nis_inact,&Y_inact);CHKERRQ(ierr);
+      if(!IS_redact) {
+	/* User called checkredundancy function but didn't create IS_redact because
+           there were no redundant active set variables */
+	/* Copy over all active set indices to the list */
+	ierr = PetscMalloc(nis_act*sizeof(PetscInt),&idx_actkept);CHKERRQ(ierr);
+	for(k=0;k < nis_act;k++) idx_actkept[k] = idx_act[k];
+	nkept = nis_act;
+      } else {
+	ierr = ISGetLocalSize(IS_redact,&nis_redact);CHKERRQ(ierr);
+	ierr = PetscMalloc((nis_act-nis_redact)*sizeof(PetscInt),&idx_actkept);CHKERRQ(ierr);
 
-    /* Create scatter contexts */
-    ierr = VecScatterCreate(Y,IS_act,Y_act,PETSC_NULL,&scat_act);CHKERRQ(ierr);
-    ierr = VecScatterCreate(Y,IS_inact,Y_inact,PETSC_NULL,&scat_inact);CHKERRQ(ierr);
+	/* Create reduced active set list */ 
+	ierr = ISGetIndices(IS_act,&idx_act);CHKERRQ(ierr);
+	ierr = ISGetIndices(IS_redact,&idx_redact);CHKERRQ(ierr);
+	j1 = 0;
+	for(k=0;k<nis_act;k++) {
+	  if(j1 < nis_redact && idx_act[k] == idx_redact[j1]) j1++;
+	  else idx_actkept[nkept++] = idx_act[k];
+	}
+	ierr = ISRestoreIndices(IS_act,&idx_act);CHKERRQ(ierr);
+	ierr = ISRestoreIndices(IS_redact,&idx_redact);CHKERRQ(ierr);
+      }
 
-    /* Do a vec scatter to active and inactive set vectors */
-    ierr = VecScatterBegin(scat_inact,F,F_inact,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd(scat_inact,F,F_inact,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      /* Create augmented F and Y */
+      ierr = VecCreate(((PetscObject)snes)->comm,&F_aug);CHKERRQ(ierr);
+      ierr = VecSetSizes(F_aug,F->map->n+nkept,PETSC_DECIDE);CHKERRQ(ierr);
+      ierr = VecSetFromOptions(F_aug);CHKERRQ(ierr);
+      ierr = VecDuplicate(F_aug,&Y_aug);CHKERRQ(ierr);
+      
+      /* Copy over F to F_aug in the first n locations */
+      ierr = VecGetArray(F,&f);CHKERRQ(ierr);
+      ierr = VecGetArray(F_aug,&f2);CHKERRQ(ierr);
+      ierr = PetscMemcpy(f2,f,F->map->n*sizeof(PetscScalar));CHKERRQ(ierr);
+      ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
+      ierr = VecRestoreArray(F_aug,&f2);CHKERRQ(ierr);
+      
+      /* Create the augmented jacobian matrix */
+      ierr = MatCreate(((PetscObject)snes)->comm,&J_aug);CHKERRQ(ierr);
+      ierr = MatSetSizes(J_aug,X->map->n+nkept,X->map->n+nkept,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+      ierr = MatSetFromOptions(J_aug);CHKERRQ(ierr);
+      
+      /* set preallocation info..will add this later */
 
-    ierr = VecScatterBegin(scat_act,Y,Y_act,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd(scat_act,Y,Y_act,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      /* Set values in the augmented matrix...Doing only sequential case first*/
+      PetscInt          ncols;
+      const PetscInt    *cols;
+      const PetscScalar *vals;
+      PetscScalar        value=1.0;
+      PetscInt           row,col;
 
-    ierr = VecScatterBegin(scat_inact,Y,Y_inact,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd(scat_inact,Y,Y_inact,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    
-    /* Active set direction = 0 */
-    ierr = VecSet(Y_act,0);CHKERRQ(ierr);
-    if (snes->jacobian != snes->jacobian_pre) {
-      ierr = MatGetSubMatrix(snes->jacobian_pre,IS_inact,IS_inact,MAT_INITIAL_MATRIX,&prejac_inact_inact);CHKERRQ(ierr);
-    } else prejac_inact_inact = jac_inact_inact;
+      /* Set the original jacobian matrix in J_aug */
+      for(row=0;row<snes->jacobian->rmap->n;row++) {
+	ierr = MatGetRow(snes->jacobian,row,&ncols,&cols,&vals);CHKERRQ(ierr);
+	ierr = MatSetValues(J_aug,1,&row,ncols,cols,vals,INSERT_VALUES);CHKERRQ(ierr);
+	ierr = MatRestoreRow(snes->jacobian,row,&ncols,&cols,&vals);CHKERRQ(ierr);
+      }
+      /* Add the augmented part */
+      for(k=0;k<nkept;k++) {
+	row = idx_actkept[k];
+	col = snes->jacobian->rmap->n+k;
+	ierr = MatSetValues(J_aug,1,&row,1,&col,&value,INSERT_VALUES);CHKERRQ(ierr);
+	ierr = MatSetValues(J_aug,1,&col,1,&row,&value,INSERT_VALUES);CHKERRQ(ierr);
+      }
+      ierr = MatAssemblyBegin(J_aug,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+      ierr = MatAssemblyEnd(J_aug,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+      /* Only considering prejac = jac for now */
+      Jpre_aug = J_aug;
+
+    } else {
+      F_aug = F; J_aug = snes->jacobian; Y_aug = Y; Jpre_aug = snes->jacobian_pre;
+    }
 
     ierr = ISEqual(vi->IS_inact_prev,IS_inact,&isequal);CHKERRQ(ierr);
     if (!isequal) {
-      ierr = SNESVIResetPCandKSP(snes,jac_inact_inact,prejac_inact_inact);CHKERRQ(ierr);
+      ierr = SNESVIResetPCandKSP(snes,J_aug,Jpre_aug);CHKERRQ(ierr);
     }
-    
-    /*      ierr = ISView(IS_inact,0);CHKERRQ(ierr); */
-    /*      ierr = ISView(IS_act,0);CHKERRQ(ierr);*/
-    /*      ierr = MatView(snes->jacobian_pre,0); */
-
-    ierr = KSPSetOperators(snes->ksp,jac_inact_inact,prejac_inact_inact,flg);CHKERRQ(ierr);
+    ierr = KSPSetOperators(snes->ksp,J_aug,Jpre_aug,flg);CHKERRQ(ierr);
     ierr = KSPSetUp(snes->ksp);CHKERRQ(ierr);
-    {
+    /*  {
       PC        pc;
       PetscBool flg;
       ierr = KSPGetPC(snes->ksp,&pc);CHKERRQ(ierr);
@@ -1192,8 +1213,8 @@ PetscErrorCode SNESSolveVI_RS2(SNES snes)
         }
       }
     }
-
-    ierr = SNES_KSPSolve(snes,snes->ksp,F_inact,Y_inact);CHKERRQ(ierr);
+    */
+    ierr = SNES_KSPSolve(snes,snes->ksp,F_aug,Y_aug);CHKERRQ(ierr);
     ierr = KSPGetConvergedReason(snes->ksp,&kspreason);CHKERRQ(ierr);
     if (kspreason < 0) {
       if (++snes->numLinearSolveFailures >= snes->maxLinearSolveFailures) {
@@ -1201,28 +1222,33 @@ PetscErrorCode SNESSolveVI_RS2(SNES snes)
         snes->reason = SNES_DIVERGED_LINEAR_SOLVE;
         break;
       }
-     }
+    }
 
-    ierr = VecScatterBegin(scat_act,Y_act,Y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-    ierr = VecScatterEnd(scat_act,Y_act,Y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-    ierr = VecScatterBegin(scat_inact,Y_inact,Y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-    ierr = VecScatterEnd(scat_inact,Y_inact,Y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    if(nis_act) {
+      PetscScalar *y1,*y2;
+      ierr = VecGetArray(Y,&y1);CHKERRQ(ierr);
+      ierr = VecGetArray(Y_aug,&y2);CHKERRQ(ierr);
+      /* Copy over inactive Y_aug to Y */
+      j1 = 0;
+      for(i1=Y->map->rstart;i1 < Y->map->rend;i1++) {
+	if(j1 < nkept && idx_actkept[j1] == i1) j1++;
+	else y1[i1-Y->map->rstart] = y2[i1-Y->map->rstart];
+      }
+      ierr = VecRestoreArray(Y,&y1);CHKERRQ(ierr);
+      ierr = VecRestoreArray(Y_aug,&y2);CHKERRQ(ierr);
 
-    ierr = VecDestroy(F_inact);CHKERRQ(ierr);
-    ierr = VecDestroy(Y_act);CHKERRQ(ierr);
-    ierr = VecDestroy(Y_inact);CHKERRQ(ierr);
-    ierr = VecScatterDestroy(scat_act);CHKERRQ(ierr);
-    ierr = VecScatterDestroy(scat_inact);CHKERRQ(ierr);
-    ierr = ISDestroy(IS_act);CHKERRQ(ierr);
+      ierr = VecDestroy(F_aug);CHKERRQ(ierr);
+      ierr = VecDestroy(Y_aug);CHKERRQ(ierr);
+      ierr = MatDestroy(J_aug);CHKERRQ(ierr);
+      ierr = PetscFree(idx_actkept);CHKERRQ(ierr);
+    }
+	
     if (!isequal) {
       ierr = ISDestroy(vi->IS_inact_prev);CHKERRQ(ierr);
       ierr = ISDuplicate(IS_inact,&vi->IS_inact_prev);CHKERRQ(ierr);
     }
     ierr = ISDestroy(IS_inact);CHKERRQ(ierr);
-    ierr = MatDestroy(jac_inact_inact);CHKERRQ(ierr);
-    if (snes->jacobian != snes->jacobian_pre) {
-      ierr = MatDestroy(prejac_inact_inact);CHKERRQ(ierr);
-    }
+
     ierr = KSPGetIterationNumber(snes->ksp,&lits);CHKERRQ(ierr);
     snes->linear_its += lits;
     ierr = PetscInfo2(snes,"iter=%D, linear solve iterations=%D\n",snes->iter,lits);CHKERRQ(ierr);
