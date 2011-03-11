@@ -11,6 +11,7 @@ static PetscErrorCode TaoSolverSetUp_BQPIP(TaoSolver tao)
 
   /* Set pointers to Data */
   ierr = VecGetSize(tao->solution,&qp->n); CHKERRQ(ierr);
+  ierr = KSPSetTolerances(tao->ksp, PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT, qp->n); CHKERRQ(ierr);
 
   /* Allocate some arrays */
   if (!tao->gradient) {
@@ -54,12 +55,6 @@ static PetscErrorCode TaoSolverSetUp_BQPIP(TaoSolver tao)
 
 
   qp->m=2*qp->n;
-
-  ierr = KSPCreate(((PetscObject)tao)->comm, &tao->ksp); CHKERRQ(ierr);
-  ierr = KSPSetType(tao->ksp, KSPCG); CHKERRQ(ierr);
-  ierr = KSPSetTolerances(tao->ksp, 1e-14, 1e-30, 1e30, qp->n); CHKERRQ(ierr);
-  ierr = KSPSetOptionsPrefix(tao->ksp, "tao_"); CHKERRQ(ierr);
-  ierr = KSPSetFromOptions(tao->ksp); CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -164,64 +159,26 @@ static PetscErrorCode TaoSolverDestroy_BQPIP(TaoSolver tao)
 
   /* Free allocated memory in GPCG structure */
   PetscFunctionBegin;
-  if (qp->G) {
+  if (tao->setupcalled) {
     ierr = VecDestroy(qp->G); CHKERRQ(ierr);
-  }
-  if (qp->DG) {
     ierr = VecDestroy(qp->DG); CHKERRQ(ierr);
-  }
-  if (qp->Z) {
     ierr = VecDestroy(qp->Z); CHKERRQ(ierr);
-  }
-  if (qp->DZ) {
     ierr = VecDestroy(qp->DZ); CHKERRQ(ierr);
-  }
-  if (qp->GZwork) {
     ierr = VecDestroy(qp->GZwork); CHKERRQ(ierr);
-  }
-  if (qp->R3) {
     ierr = VecDestroy(qp->R3); CHKERRQ(ierr);
-  }
-  if (qp->S) {
     ierr = VecDestroy(qp->S); CHKERRQ(ierr);
-  }
-  if (qp->DS) {
     ierr = VecDestroy(qp->DS); CHKERRQ(ierr);
-  }
-  if (qp->T) {
     ierr = VecDestroy(qp->T); CHKERRQ(ierr);
-  }
-  if (qp->DT) {
-    ierr = VecDestroy(qp->DT); CHKERRQ(ierr);
-  }
-  if (qp->TSwork) {
-    ierr = VecDestroy(qp->TSwork); CHKERRQ(ierr);
-  }
-  if (qp->R5) {
-    ierr = VecDestroy(qp->R5); CHKERRQ(ierr);
-  }
-  if (qp->HDiag) {
-    ierr = VecDestroy(qp->HDiag); CHKERRQ(ierr);
-  }
-  if (qp->Work) {
-    ierr = VecDestroy(qp->Work); CHKERRQ(ierr);
-  }
-  if (qp->DiagAxpy) {
-    ierr = VecDestroy(qp->DiagAxpy); CHKERRQ(ierr);
-  }
-  if (qp->RHS) {
-    ierr = VecDestroy(qp->RHS); CHKERRQ(ierr);
-  }
-  if (qp->RHS2) {
-    ierr = VecDestroy(qp->RHS2); CHKERRQ(ierr);
-  }
-  if (qp->C0) {
-    ierr = VecDestroy(qp->C0); CHKERRQ(ierr);
-  }
 
-  if (tao->ksp) {
-    ierr = KSPDestroy(tao->ksp); CHKERRQ(ierr);
-    tao->ksp = PETSC_NULL;
+    ierr = VecDestroy(qp->DT); CHKERRQ(ierr);
+    ierr = VecDestroy(qp->TSwork); CHKERRQ(ierr);
+    ierr = VecDestroy(qp->R5); CHKERRQ(ierr);
+    ierr = VecDestroy(qp->HDiag); CHKERRQ(ierr);
+    ierr = VecDestroy(qp->Work); CHKERRQ(ierr);
+    ierr = VecDestroy(qp->DiagAxpy); CHKERRQ(ierr);
+    ierr = VecDestroy(qp->RHS); CHKERRQ(ierr);
+    ierr = VecDestroy(qp->RHS2); CHKERRQ(ierr);
+    ierr = VecDestroy(qp->C0); CHKERRQ(ierr);
   }
   ierr = PetscFree(tao->data); CHKERRQ(ierr);
   tao->data = PETSC_NULL;
@@ -548,6 +505,7 @@ static PetscErrorCode TaoSolverSetFromOptions_BQPIP(TaoSolver tao)
   ierr = PetscOptionsInt("-predcorr","Use a predictor-corrector method","",qp->predcorr,&qp->predcorr,0);
   CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
+  ierr = KSPSetFromOptions(tao->ksp); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -603,6 +561,11 @@ PetscErrorCode TaoSolverCreate_BQPIP(TaoSolver tao)
   qp->dsteplength    = 0.0;
 
   tao->data = (void*)qp;
+
+  ierr = KSPCreate(((PetscObject)tao)->comm, &tao->ksp); CHKERRQ(ierr);
+  ierr = KSPSetType(tao->ksp, KSPCG); CHKERRQ(ierr);
+  ierr = KSPSetTolerances(tao->ksp, 1e-14, 1e-30, 1e30, qp->n); CHKERRQ(ierr);
+
 
   PetscFunctionReturn(0);
 }
