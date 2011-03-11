@@ -29,7 +29,7 @@ PetscErrorCode GenerateSliceScatter(DM da,VecScatter *scatter,Vec *vslice)
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
   ierr = DMDAGetAO(da,&ao);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(da,0,&M,&N,&P,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,0,&M,&N,&P,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
 
   /* 
      nslice is number of degrees of freedom in this processors slice

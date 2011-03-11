@@ -23,7 +23,7 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,(char *)0,help);
 
   ierr = DMMGCreate(PETSC_COMM_WORLD,3,PETSC_NULL,&dmmg);CHKERRQ(ierr);
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_XPERIODIC,-3,2,1,0,&da);CHKERRQ(ierr);  
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_PERIODIC,-3,2,1,0,&da);CHKERRQ(ierr);  
   ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr);
   ierr = DMDestroy(da);CHKERRQ(ierr);
 
@@ -57,7 +57,7 @@ PetscErrorCode ComputeInitialSolution(DMMG *dmmg)
   Vec            x = DMMGGetx(dmmg);
 
   PetscFunctionBegin;
-  ierr = DMDAGetInfo(DMMGGetDM(dmmg),0,&mx,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(DMMGGetDM(dmmg),0,&mx,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   Hx = 2.0*PETSC_PI / (PetscReal)(mx);
   ierr = DMDAGetCorners(DMMGGetDM(dmmg),&xs,0,0,&xm,0,0);CHKERRQ(ierr);
   
@@ -80,7 +80,7 @@ PetscErrorCode ComputeRHS(DMMG dmmg,Vec b)
   PetscScalar    h;
 
   PetscFunctionBegin;
-  ierr = DMDAGetInfo(dmmg->dm,0,&mx,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(dmmg->dm,0,&mx,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   h    = 2.0*PETSC_PI/((mx));
   ierr = VecCopy(dmmg->x,b);CHKERRQ(ierr);
   ierr = VecScale(b,h);CHKERRQ(ierr);
@@ -99,7 +99,7 @@ PetscErrorCode ComputeMatrix(DMMG dmmg,Mat J,Mat jac)
   PetscScalar    lambda;
 
   ierr = PetscMemzero(col,7*sizeof(MatStencil));CHKERRQ(ierr);
-  ierr = DMDAGetInfo(da,0,&mx,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);  
+  ierr = DMDAGetInfo(da,0,&mx,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);  
   Hx = 2.0*PETSC_PI / (PetscReal)(mx);
   ierr = DMDAGetCorners(da,&xs,0,0,&xm,0,0);CHKERRQ(ierr);
   lambda = 2.0*Hx;

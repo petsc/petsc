@@ -75,7 +75,7 @@
 
 !   Set up the ghost point communication pattern                       
 
-      call DMDACreate1d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,M,i1,i1,            &
+      call DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,M,i1,i1,            &
      &     PETSC_NULL_INTEGER,da,ierr)
       call DMCreateGlobalVector(da,global,ierr) 
       call VecGetLocalSize(global,m,ierr) 

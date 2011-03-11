@@ -31,14 +31,14 @@ int main(int argc,char **argv)
   ierr = PetscMalloc(nredundant1*sizeof(PetscScalar),&redundant1);CHKERRQ(ierr);
   ierr = DMCompositeAddArray(packer,0,nredundant1);CHKERRQ(ierr);
 
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,8,1,1,PETSC_NULL,&da1);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,8,1,1,PETSC_NULL,&da1);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(da1,&local1);CHKERRQ(ierr);
   ierr = DMCompositeAddDM(packer,(DM)da1);CHKERRQ(ierr);
 
   ierr = PetscMalloc(nredundant2*sizeof(PetscScalar),&redundant2);CHKERRQ(ierr);
   ierr = DMCompositeAddArray(packer,1%size,nredundant2);CHKERRQ(ierr);
 
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,6,1,1,PETSC_NULL,&da2);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,6,1,1,PETSC_NULL,&da2);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(da2,&local2);CHKERRQ(ierr);
   ierr = DMCompositeAddDM(packer,(DM)da2);CHKERRQ(ierr);
 

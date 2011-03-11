@@ -169,7 +169,7 @@ static PetscErrorCode DMDAGetLocalElementSize(DM da,PetscInt *mxl,PetscInt *myl,
   PetscInt ml,nl,pl;
 
   PetscFunctionBegin;
-  DMDAGetInfo(da,0,&M,&N,&P,0,0,0,0,0,0,0);
+  DMDAGetInfo(da,0,&M,&N,&P,0,0,0,0,0,0,0,0,0);
   DMDAGetCorners(da,&sx,&sy,&sz,&m,&n,&p);
 
   ml = nl = pl = 0;
@@ -288,7 +288,7 @@ static PetscErrorCode DMDAGetElementOwnershipRanges2d(DM da,PetscInt **_lx,Petsc
   PetscFunctionBegin;
   MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
 
-  DMDAGetInfo(da,0,0,0,0,&cpu_x,&cpu_y,0,0,0,0,0);
+  DMDAGetInfo(da,0,0,0,0,&cpu_x,&cpu_y,0,0,0,0,0,0,0);
 
   proc_J = rank/cpu_x;
   proc_I = rank-cpu_x*proc_J;
@@ -407,7 +407,7 @@ static PetscErrorCode DMDAViewGnuplot2d(DM da,Vec fields,const char comment[],co
   if (!fp) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file");
 
   ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"### %s (processor %1.4d) ### \n",comment,rank);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(da,0,0,0,0,0,0,0,&n_dofs,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,0,0,0,0,0,0,0,&n_dofs,0,0,0,0,0);CHKERRQ(ierr);
   ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"### x y ");CHKERRQ(ierr);
   for (d = 0; d < n_dofs; d++) {
     const char *field_name;
@@ -474,7 +474,7 @@ static PetscErrorCode DMDAViewCoefficientsGnuplot2d(DM da,Vec fields,const char 
   if (!fp) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"Cannot open file");
 
   ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"### %s (processor %1.4d) ### \n",comment,rank);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(da,0,0,0,0,0,0,0,&n_dofs,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,0,0,0,0,0,0,0,&n_dofs,0,0,0,0,0);CHKERRQ(ierr);
   ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"### x y ");CHKERRQ(ierr);
   for (d = 0; d < n_dofs; d++) {
     const char *field_name;
@@ -1015,7 +1015,7 @@ static PetscErrorCode DMDACreateSolCx(PetscReal eta0,PetscReal eta1,PetscReal xc
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,DMDA_STENCIL_BOX,
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,
                     mx+1,my+1,PETSC_DECIDE,PETSC_DECIDE,3,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,0,"anlytic_Vx");CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,1,"anlytic_Vy");CHKERRQ(ierr);
@@ -1121,7 +1121,7 @@ static PetscErrorCode DMDAIntegrateErrors(DM stokes_da,Vec X,Vec X_analytic)
   ierr = DMGlobalToLocalEnd(stokes_da,X,INSERT_VALUES,X_local);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(stokes_da,X_local,&stokes);CHKERRQ(ierr);
 
-  ierr = DMDAGetInfo(stokes_da,0,&M,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(stokes_da,0,&M,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetBoundingBox(stokes_da,xymin,xymax);CHKERRQ(ierr);
 
   h = (xymax[0]-xymin[0])/((double)M);
@@ -1222,7 +1222,7 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
   p_dof         = P_DOFS; /* p - pressure */
   dof           = u_dof+p_dof;
   stencil_width = 1;
-  ierr          = DMDACreate2d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,DMDA_STENCIL_BOX,
+  ierr          = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,
                              mx+1,my+1,PETSC_DECIDE,PETSC_DECIDE,dof,stencil_width,PETSC_NULL,PETSC_NULL,&da_Stokes);CHKERRQ(ierr);
   ierr = DMDASetFieldName(da_Stokes,0,"Vx");CHKERRQ(ierr);
   ierr = DMDASetFieldName(da_Stokes,1,"Vy");CHKERRQ(ierr);
@@ -1237,18 +1237,18 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
   ierr = DMDAGetLocalElementSize(da_Stokes,&mxl,&myl,PETSC_NULL);CHKERRQ(ierr);
 
   /* !!! IN PARALLEL WE MUST MAKE SURE THE TWO DMDA's ALIGN !!! // */
-  ierr = DMDAGetInfo(da_Stokes,0,0,0,0,&cpu_x,&cpu_y,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da_Stokes,0,0,0,0,&cpu_x,&cpu_y,0,0,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetElementOwnershipRanges2d(da_Stokes,&lx,&ly);CHKERRQ(ierr);
 
   prop_dof           = (int)(sizeof(GaussPointCoefficients)/sizeof(PetscScalar)); /* gauss point setup */
   prop_stencil_width = 0;
-  ierr               = DMDACreate2d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,DMDA_STENCIL_BOX,
+  ierr               = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,
                                   mx,my,cpu_x,cpu_y,prop_dof,prop_stencil_width,lx,ly,&da_prop);CHKERRQ(ierr);
   ierr = PetscFree(lx);CHKERRQ(ierr);
   ierr = PetscFree(ly);CHKERRQ(ierr);
 
   /* define centroid positions */
-  ierr = DMDAGetInfo(da_prop,0,&M,&N,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da_prop,0,&M,&N,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   dx   = 1.0/((PetscReal)(M));
   dy   = 1.0/((PetscReal)(N));
 
@@ -1589,7 +1589,7 @@ static PetscErrorCode BCApply_EAST(DM da,PetscInt d_idx,PetscScalar bc_val,Mat A
   ierr = DMDAGetGhostedCoordinates(da,&coords);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(cda,coords,&_coords);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(cda,&si,&sj,0,&nx,&ny,0);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(da,0,&M,&N,0,0,0,0,&n_dofs,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,0,&M,&N,0,0,0,0,&n_dofs,0,0,0,0,0);CHKERRQ(ierr);
 
   /* /// */
 
@@ -1661,7 +1661,7 @@ static PetscErrorCode BCApply_WEST(DM da,PetscInt d_idx,PetscScalar bc_val,Mat A
   ierr = DMDAGetGhostedCoordinates(da,&coords);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(cda,coords,&_coords);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(cda,&si,&sj,0,&nx,&ny,0);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(da,0,&M,&N,0,0,0,0,&n_dofs,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,0,&M,&N,0,0,0,0,&n_dofs,0,0,0,0,0);CHKERRQ(ierr);
 
   /* /// */
 
@@ -1733,7 +1733,7 @@ static PetscErrorCode BCApply_NORTH(DM da,PetscInt d_idx,PetscScalar bc_val,Mat 
   ierr = DMDAGetGhostedCoordinates(da,&coords);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(cda,coords,&_coords);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(cda,&si,&sj,0,&nx,&ny,0);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(da,0,&M,&N,0,0,0,0,&n_dofs,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,0,&M,&N,0,0,0,0,&n_dofs,0,0,0,0,0);CHKERRQ(ierr);
 
   /* /// */
 
@@ -1805,7 +1805,7 @@ static PetscErrorCode BCApply_SOUTH(DM da,PetscInt d_idx,PetscScalar bc_val,Mat 
   ierr = DMDAGetGhostedCoordinates(da,&coords);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(cda,coords,&_coords);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(cda,&si,&sj,0,&nx,&ny,0);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(da,0,&M,&N,0,0,0,0,&n_dofs,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,0,&M,&N,0,0,0,0,&n_dofs,0,0,0,0,0);CHKERRQ(ierr);
 
   /* /// */
 

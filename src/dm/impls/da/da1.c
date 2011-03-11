@@ -6,9 +6,7 @@
 
 #include "private/daimpl.h"     /*I  "petscdm.h"   I*/
 
-const char *DMDABoundaryTypes[] = {"NONPERIODIC","XPERIODIC","YPERIODIC","XYPERIODIC",
-                                   "XYZPERIODIC","XZPERIODIC","YZPERIODIC","ZPERIODIC",
-                                   "XYZGHOSTED","DMDABoundaryType","DMDA_",0};
+const char *DMDABoundaryTypes[] = {"BOUNDARY_NONE","BOUNDARY_GHOSTED","BOUNDARY_PERIODIC","DMDA_",0};
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMView_DA_1d"
@@ -137,7 +135,7 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
   const PetscInt         s     = dd->s;
   const PetscInt         sDist = s*dof;  /* absolute stencil distance */
   const PetscInt         *lx    = dd->lx;
-  const DMDABoundaryType wrap  = dd->wrap;
+  const DMDABoundaryType bx  = dd->bx;
   MPI_Comm               comm;
   Vec                    local, global;
   VecScatter             ltog, gtol;
@@ -207,7 +205,7 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
   xe  = xs + x;
 
   /* determine ghost region */
-  if (DMDAXGhosted(wrap)) {
+  if (bx) {
     Xs = xs - sDist;
     Xe = xe + sDist;
   } else {
@@ -215,7 +213,7 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
     if ((xe+sDist) <= M*dof) Xe = xe+sDist;  else Xe = M*dof;
   }
 
-  if (DMDAXPeriodic(wrap)) {
+  if (bx == DMDA_BOUNDARY_PERIODIC) {
     IXs = xs - sDist;
     IXe = xe + sDist;
   } else {
@@ -251,7 +249,7 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
   for (i=0; i<IXs-Xs; i++) {idx[i] = -1; } /* prepend with -1s if needed for ghosted case*/
 
   nn = IXs-Xs;
-  if DMDAXPeriodic(wrap) { /* Handle all cases with wrap first */
+  if (bx == DMDA_BOUNDARY_PERIODIC) { /* Handle all cases with wrap first */
     for (i=0; i<sDist; i++) {  /* Left ghost points */
       if ((xs-sDist+i)>=0) { idx[nn++] = xs-sDist+i;}
       else                 { idx[nn++] = M*dof+(xs-sDist+i);}
@@ -318,8 +316,8 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
 
    Input Parameters:
 +  comm - MPI communicator
-.  wrap - type of ghost cells at the boundary the array should have, if any. Use 
-          DMDA_NONGHOSTED, DMDA_XGHOSTED, or DMDA_XPERIODIC.
+.  bx - type of ghost cells at the boundary the array should have, if any. Use 
+          DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_GHOSTED, or DMDA_BOUNDARY_PERIODIC.
 .  M - global dimension of the array (use -M to indicate that it may be set to a different value 
             from the command line with -da_grid_x <M>)
 .  dof - number of degrees of freedom per node
@@ -350,7 +348,7 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
           DMDAGetInfo(), DMCreateGlobalVector(), DMCreateLocalVector(), DMDACreateNaturalVector(), DMDALoad(), DMDAGetOwnershipRanges()
 
 @*/
-PetscErrorCode  DMDACreate1d(MPI_Comm comm, DMDABoundaryType wrap, PetscInt M, PetscInt dof, PetscInt s, const PetscInt lx[], DM *da)
+PetscErrorCode  DMDACreate1d(MPI_Comm comm, DMDABoundaryType bx, PetscInt M, PetscInt dof, PetscInt s, const PetscInt lx[], DM *da)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;
@@ -361,7 +359,7 @@ PetscErrorCode  DMDACreate1d(MPI_Comm comm, DMDABoundaryType wrap, PetscInt M, P
   ierr = DMDASetSizes(*da, M, 1, 1);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   ierr = DMDASetNumProcs(*da, size, PETSC_DECIDE, PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = DMDASetBoundaryType(*da, wrap);CHKERRQ(ierr);
+  ierr = DMDASetBoundaryType(*da, bx, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
   ierr = DMDASetDof(*da, dof);CHKERRQ(ierr);
   ierr = DMDASetStencilWidth(*da, s);CHKERRQ(ierr);
   ierr = DMDASetOwnershipRanges(*da, lx, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);

@@ -56,7 +56,7 @@ void PETSC_STDCALL dmdasetlocaljacobian_(DM *da,void (PETSC_STDCALL *jac)(DMDALo
   PetscInt dim;
 
   PetscObjectAllocateFortranPointers(*da,6);
-  *ierr = DMDAGetInfo(*da,&dim,0,0,0,0,0,0,0,0,0,0); if (*ierr) return;
+  *ierr = DMDAGetInfo(*da,&dim,0,0,0,0,0,0,0,0,0,0,0,0); if (*ierr) return;
   if (dim == 2) {
     ((PetscObject)*da)->fortran_func_pointers[1] = (PetscVoidFunction)jac;
     *ierr = DMDASetLocalJacobian(*da,(DMDALocalFunction1)ourlj2d);
@@ -97,7 +97,7 @@ void PETSC_STDCALL dmdasetlocalfunction_(DM *da,void (PETSC_STDCALL *func)(DMDAL
   PetscInt dim;
 
   PetscObjectAllocateFortranPointers(*da,6);
-  *ierr = DMDAGetInfo(*da,&dim,0,0,0,0,0,0,0,0,0,0); if (*ierr) return;
+  *ierr = DMDAGetInfo(*da,&dim,0,0,0,0,0,0,0,0,0,0,0,0); if (*ierr) return;
   if (dim == 2) {
     ((PetscObject)*da)->fortran_func_pointers[4] = (PetscVoidFunction)func;
     *ierr = DMDASetLocalFunction(*da,(DMDALocalFunction1)ourlf2d);
@@ -112,13 +112,13 @@ void PETSC_STDCALL dmdasetlocalfunction_(DM *da,void (PETSC_STDCALL *func)(DMDAL
 
 /************************************************/
 
-void PETSC_STDCALL dmdacreate2d_(MPI_Comm *comm,DMDABoundaryType *wrap,DMDAStencilType
+void PETSC_STDCALL dmdacreate2d_(MPI_Comm *comm,DMDABoundaryType *bx,DMDABoundaryType *by,DMDAStencilType
                   *stencil_type,PetscInt *M,PetscInt *N,PetscInt *m,PetscInt *n,PetscInt *w,
                   PetscInt *s,PetscInt *lx,PetscInt *ly,DM *inra,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLINTEGER(lx);
   CHKFORTRANNULLINTEGER(ly);
-  *ierr = DMDACreate2d(MPI_Comm_f2c(*(MPI_Fint *)&*comm),*wrap,*stencil_type,*M,*N,*m,*n,*w,*s,lx,ly,inra);
+  *ierr = DMDACreate2d(MPI_Comm_f2c(*(MPI_Fint *)&*comm),*bx,*by,*stencil_type,*M,*N,*m,*n,*w,*s,lx,ly,inra);
 }
 
 void PETSC_STDCALL dmdagetownershipranges_(DM *da,PetscInt lx[],PetscInt ly[],PetscInt lz[],PetscErrorCode *ierr)
@@ -129,7 +129,7 @@ void PETSC_STDCALL dmdagetownershipranges_(DM *da,PetscInt lx[],PetscInt ly[],Pe
   CHKFORTRANNULLINTEGER(lx);
   CHKFORTRANNULLINTEGER(ly);
   CHKFORTRANNULLINTEGER(lz);
-  *ierr = DMDAGetInfo(*da,0,0,0,0,&M,&N,&P,0,0,0,0);if (*ierr) return;
+  *ierr = DMDAGetInfo(*da,0,0,0,0,&M,&N,&P,0,0,0,0,0,0);if (*ierr) return;
   *ierr = DMDAGetOwnershipRanges(*da,&gx,&gy,&gz);if (*ierr) return;
   if (lx) {for (i=0; i<M; i++) {lx[i] = gx[i];}}
   if (ly) {for (i=0; i<N; i++) {ly[i] = gy[i];}}

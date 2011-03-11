@@ -18,7 +18,7 @@ int main(int argc, char *argv[]) {
   ierr = PetscInitialize(&argc,&argv,0,0);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
   /* Create 2D DMDA */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_NONPERIODIC, DMDA_STENCIL_STAR, M, N, PETSC_DECIDE, PETSC_DECIDE, 1, 1, PETSC_NULL, PETSC_NULL, &da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE, DMDA_STENCIL_STAR, M, N, PETSC_DECIDE, PETSC_DECIDE, 1, 1, PETSC_NULL, PETSC_NULL, &da);CHKERRQ(ierr);
   /* Create 1D DMDAs along two directions */
   ierr = DMDAGetOwnershipRanges(da, &lx, &ly, PETSC_NULL);CHKERRQ(ierr);
   ierr = DMDAGetLocalInfo(da, &info);CHKERRQ(ierr);
@@ -30,8 +30,8 @@ int main(int argc, char *argv[]) {
   ierr = MPI_Comm_size(commY, &subsize);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(commY, &subrank);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF, "[%d]Y subrank: %d subsize: %d\n", rank, subrank, subsize);
-  ierr = DMDACreate1d(commX, DMDA_NONPERIODIC, M, dof, 1, lx, &daX);CHKERRQ(ierr);
-  ierr = DMDACreate1d(commY, DMDA_NONPERIODIC, N, dof, 1, ly, &daY);CHKERRQ(ierr);
+  ierr = DMDACreate1d(commX, DMDA_BOUNDARY_NONE, M, dof, 1, lx, &daX);CHKERRQ(ierr);
+  ierr = DMDACreate1d(commY, DMDA_BOUNDARY_NONE, N, dof, 1, ly, &daY);CHKERRQ(ierr);
   /* Create 1D vectors for basis functions */
   ierr = DMGetGlobalVector(daX, &basisX);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(daY, &basisY);CHKERRQ(ierr);

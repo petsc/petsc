@@ -109,7 +109,7 @@ int main(int argc,char **argv)
   PetscInt       M = 5,N = 4,P = 3, m = PETSC_DECIDE,n = PETSC_DECIDE,p = PETSC_DECIDE,dim = 1;
   PetscErrorCode ierr;
   DM             dac,daf;
-  DMDABoundaryType ptype = DMDA_NONPERIODIC;
+  DMDABoundaryType bx=DMDA_BOUNDARY_NONE,by=DMDA_BOUNDARY_NONE,bz=DMDA_BOUNDARY_NONE;
   DMDAStencilType  stype = DMDA_STENCIL_BOX;
   Mat            A;
 
@@ -126,11 +126,11 @@ int main(int argc,char **argv)
 
   /* Create distributed array and get vectors */
   if (dim == 1) {
-    ierr = DMDACreate1d(PETSC_COMM_WORLD,ptype,M,1,1,PETSC_NULL,&dac);CHKERRQ(ierr);
+    ierr = DMDACreate1d(PETSC_COMM_WORLD,bx,M,1,1,PETSC_NULL,&dac);CHKERRQ(ierr);
   } else if (dim == 2) {
-    ierr = DMDACreate2d(PETSC_COMM_WORLD,ptype,stype,M,N,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&dac);CHKERRQ(ierr);
+    ierr = DMDACreate2d(PETSC_COMM_WORLD,bx,by,stype,M,N,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&dac);CHKERRQ(ierr);
   } else if (dim == 3) {
-    ierr = DMDACreate3d(PETSC_COMM_WORLD,ptype,stype,M,N,P,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,PETSC_NULL,&dac);CHKERRQ(ierr);
+    ierr = DMDACreate3d(PETSC_COMM_WORLD,bx,by,bz,stype,M,N,P,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,PETSC_NULL,&dac);CHKERRQ(ierr);
   }
 
   ierr = DMRefine(dac,PETSC_COMM_WORLD,&daf);CHKERRQ(ierr);

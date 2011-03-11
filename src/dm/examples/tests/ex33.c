@@ -12,7 +12,7 @@ int main(int argc,char **argv)
   PetscInt       stencil_width=1,pt=0,st=0;
   PetscErrorCode ierr;
   PetscBool      flg2,flg3,isbinary,mpiio;
-  DMDABoundaryType periodic = DMDA_NONPERIODIC;
+  DMDABoundaryType bx = DMDA_BOUNDARY_NONE,by = DMDA_BOUNDARY_NONE,bz = DMDA_BOUNDARY_NONE;
   DMDAStencilType  stencil_type = DMDA_STENCIL_STAR;
   DM             da,da2;
   Vec            global1,global2;
@@ -34,7 +34,10 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-dof",&dof,PETSC_NULL);CHKERRQ(ierr); 
   ierr = PetscOptionsGetInt(PETSC_NULL,"-stencil_width",&stencil_width,PETSC_NULL);CHKERRQ(ierr); 
   ierr = PetscOptionsGetInt(PETSC_NULL,"-periodic",&pt,PETSC_NULL);CHKERRQ(ierr); 
-  periodic = (DMDABoundaryType) pt;
+  if (pt == 1) bx = DMDA_BOUNDARY_PERIODIC;
+  if (pt == 2) by = DMDA_BOUNDARY_PERIODIC;
+  if (pt == 4) bx = DMDA_BOUNDARY_PERIODIC; by = DMDA_BOUNDARY_PERIODIC
+
   ierr = PetscOptionsGetInt(PETSC_NULL,"-stencil_type",&st,PETSC_NULL);CHKERRQ(ierr); 
   stencil_type = (DMDAStencilType) st;
 
@@ -48,12 +51,12 @@ int main(int argc,char **argv)
 #endif
   ierr = PetscOptionsHasName(PETSC_NULL,"-mpiio",&mpiio);CHKERRQ(ierr);
   if (flg2) {
-    ierr = DMDACreate2d(PETSC_COMM_WORLD,periodic,stencil_type,M,N,PETSC_DECIDE,PETSC_DECIDE,dof,stencil_width,0,0,&da);CHKERRQ(ierr);
+    ierr = DMDACreate2d(PETSC_COMM_WORLD,bx,by,stencil_type,M,N,PETSC_DECIDE,PETSC_DECIDE,dof,stencil_width,0,0,&da);CHKERRQ(ierr);
   } else if (flg3) {
-    ierr = DMDACreate3d(PETSC_COMM_WORLD,periodic,stencil_type,M,N,P,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof,stencil_width,0,0,0,&da);CHKERRQ(ierr);
+    ierr = DMDACreate3d(PETSC_COMM_WORLD,bx,by,bz,stencil_type,M,N,P,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof,stencil_width,0,0,0,&da);CHKERRQ(ierr);
   }
   else {
-    ierr = DMDACreate1d(PETSC_COMM_WORLD,periodic,M,dof,stencil_width,PETSC_NULL,&da);CHKERRQ(ierr);
+    ierr = DMDACreate1d(PETSC_COMM_WORLD,bx,M,dof,stencil_width,PETSC_NULL,&da);CHKERRQ(ierr);
   }
 
   ierr = DMCreateGlobalVector(da,&global1);CHKERRQ(ierr);
@@ -80,12 +83,12 @@ int main(int argc,char **argv)
   ierr = VecView(global1,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   if (flg2) {
-    ierr = DMDACreate2d(PETSC_COMM_WORLD,periodic,stencil_type,M,N,PETSC_DECIDE,PETSC_DECIDE,dof,stencil_width,0,0,&da2);CHKERRQ(ierr);
+    ierr = DMDACreate2d(PETSC_COMM_WORLD,bx,by,stencil_type,M,N,PETSC_DECIDE,PETSC_DECIDE,dof,stencil_width,0,0,&da2);CHKERRQ(ierr);
   } else if (flg3) {
-    ierr = DMDACreate3d(PETSC_COMM_WORLD,periodic,stencil_type,M,N,P,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof,stencil_width,0,0,0,&da2);CHKERRQ(ierr);
+    ierr = DMDACreate3d(PETSC_COMM_WORLD,bx,by,bz,stencil_type,M,N,P,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,dof,stencil_width,0,0,0,&da2);CHKERRQ(ierr);
   }
   else {
-    ierr = DMDACreate1d(PETSC_COMM_WORLD,periodic,M,dof,stencil_width,PETSC_NULL,&da2);CHKERRQ(ierr);
+    ierr = DMDACreate1d(PETSC_COMM_WORLD,bx,M,dof,stencil_width,PETSC_NULL,&da2);CHKERRQ(ierr);
   }
 
   if (isbinary) {

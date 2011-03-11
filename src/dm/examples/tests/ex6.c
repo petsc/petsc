@@ -17,7 +17,7 @@ int main(int argc,char **argv)
   PetscViewer    viewer;
   Vec            local,global;
   PetscScalar    value;
-  DMDABoundaryType wrap = DMDA_NONPERIODIC;
+  DMDABoundaryType bx = DMDA_BOUNDARY_NONE,by = DMDA_BOUNDARY_NONE,bz = DMDA_BOUNDARY_NONE;
   DMDAStencilType  stencil_type = DMDA_STENCIL_BOX;
   AO             ao;
   PetscBool      flg = PETSC_FALSE;
@@ -43,28 +43,28 @@ int main(int argc,char **argv)
 
   flg = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-xperiodic",&flg,PETSC_NULL);CHKERRQ(ierr); 
-  if (flg) wrap = wrap | DMDA_XPERIODIC;
+  if (flg) bx = DMDA_BOUNDARY_PERIODIC;
   flg = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-xghosted",&flg,PETSC_NULL);CHKERRQ(ierr); 
-  if (flg) wrap = wrap | DMDA_XPERIODIC;
+  if (flg) bx = DMDA_BOUNDARY_GHOSTED;
   flg = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-xnonghosted",&flg,PETSC_NULL);CHKERRQ(ierr); 
 
   flg = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-yperiodic",&flg,PETSC_NULL);CHKERRQ(ierr); 
-  if (flg) wrap = wrap | DMDA_YPERIODIC;
+  if (flg) by = DMDA_BOUNDARY_PERIODIC;
   flg = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-yghosted",&flg,PETSC_NULL);CHKERRQ(ierr); 
-  if (flg) wrap = wrap | DMDA_YPERIODIC;
+  if (flg) by = DMDA_BOUNDARY_GHOSTED;
   flg = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-ynonghosted",&flg,PETSC_NULL);CHKERRQ(ierr); 
 
   flg = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-zperiodic",&flg,PETSC_NULL);CHKERRQ(ierr); 
-  if (flg) wrap = wrap | DMDA_ZPERIODIC;
+  if (flg) bz = DMDA_BOUNDARY_PERIODIC;
   flg = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-zghosted",&flg,PETSC_NULL);CHKERRQ(ierr); 
-  if (flg) wrap = wrap | DMDA_ZPERIODIC;
+  if (flg) bz = DMDA_BOUNDARY_GHOSTED;
   flg = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-znonghosted",&flg,PETSC_NULL);CHKERRQ(ierr); 
 
@@ -88,7 +88,7 @@ int main(int argc,char **argv)
   }
 
   /* Create distributed array and get vectors */
-  ierr = DMDACreate3d(PETSC_COMM_WORLD,wrap,stencil_type,M,N,P,m,n,p,w,s,lx,ly,lz,&da);CHKERRQ(ierr);
+  ierr = DMDACreate3d(PETSC_COMM_WORLD,bx,by,bz,stencil_type,M,N,P,m,n,p,w,s,lx,ly,lz,&da);CHKERRQ(ierr);
   ierr = PetscFree(lx);CHKERRQ(ierr);
   ierr = PetscFree(ly);CHKERRQ(ierr);
   ierr = PetscFree(lz);CHKERRQ(ierr);

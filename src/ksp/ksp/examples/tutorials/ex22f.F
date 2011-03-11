@@ -38,7 +38,8 @@
       i3 = 3
       i1 = 1
       call DMMGCreate(PETSC_COMM_WORLD,i3,PETSC_NULL_INTEGER,dmmg,ierr)
-      call DMDACreate3d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,                               &
+      call DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,            &
+     &    DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,                               &
      &    DMDA_STENCIL_STAR,i3,i3,i3,PETSC_DECIDE,PETSC_DECIDE,                        &
      &    PETSC_DECIDE,i1,i1,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                        &
      &                PETSC_NULL_INTEGER,da,ierr)  
@@ -77,6 +78,7 @@
      &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                 &
      &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                 &
      &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                 &
+     &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                 &
      &               PETSC_NULL_INTEGER,ierr)
       h    = 1.d0/((mx-1)*(my-1)*(mz-1))
 
@@ -109,6 +111,7 @@
       i7 = 7
       call DMMGGetDM(dmmg,da,ierr)
       call DMDAGetInfo(da,PETSC_NULL_INTEGER,mx,my,mz,                       &
+     &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                &
      &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                &
      &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                &
      &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                &

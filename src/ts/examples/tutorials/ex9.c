@@ -1061,7 +1061,7 @@ static PetscErrorCode FVRHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
 
   PetscFunctionBegin;
   ierr = DMGetLocalVector(ctx->da,&Xloc);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(ctx->da,0, &Mx,0,0, 0,0,0, &dof,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(ctx->da,0, &Mx,0,0, 0,0,0, &dof,0,0,0,0,0);CHKERRQ(ierr);
   hx = (ctx->xmax - ctx->xmin)/Mx;
   ierr = DMGlobalToLocalBegin(ctx->da,X,INSERT_VALUES,Xloc);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd  (ctx->da,X,INSERT_VALUES,Xloc);CHKERRQ(ierr);
@@ -1164,7 +1164,7 @@ static PetscErrorCode FVSample(FVCtx *ctx,PetscReal time,Vec U)
 
   PetscFunctionBegin;
   if (!ctx->physics.sample) SETERRQ(PETSC_COMM_SELF,1,"Physics has not provided a sampling function");
-  ierr = DMDAGetInfo(ctx->da,0, &Mx,0,0, 0,0,0, &dof,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(ctx->da,0, &Mx,0,0, 0,0,0, &dof,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetCorners(ctx->da,&xs,0,0,&xm,0,0);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(ctx->da,U,&u);CHKERRQ(ierr);
   ierr = PetscMalloc(dof*sizeof uj[0],&uj);CHKERRQ(ierr);
@@ -1204,7 +1204,7 @@ static PetscErrorCode SolutionStatsView(DM da,Vec X,PetscViewer viewer)
     ierr = DMGlobalToLocalEnd  (da,X,INSERT_VALUES,Xloc);CHKERRQ(ierr);
     ierr = DMDAVecGetArray(da,Xloc,&x);CHKERRQ(ierr);
     ierr = DMDAGetCorners(da,&xs,0,0,&xm,0,0);CHKERRQ(ierr);
-    ierr = DMDAGetInfo(da,0, &Mx,0,0, 0,0,0, &dof,0,0,0);CHKERRQ(ierr);
+    ierr = DMDAGetInfo(da,0, &Mx,0,0, 0,0,0, &dof,0,0,0,0,0);CHKERRQ(ierr);
     tvsum = 0;
     for (i=xs; i<xs+xm; i++) {
       for (j=0; j<dof; j++) tvsum += PetscAbsScalar(x[i*dof+j] - x[(i-1)*dof+j]);
@@ -1321,7 +1321,7 @@ int main(int argc,char *argv[])
   }
 
   /* Create a DMDA to manage the parallel grid */
-  ierr = DMDACreate1d(comm,DMDA_XPERIODIC,-50,ctx.physics.dof,2,PETSC_NULL,&ctx.da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(comm,DMDA_BOUNDARY_PERIODIC,-50,ctx.physics.dof,2,PETSC_NULL,&ctx.da);CHKERRQ(ierr);
   /* Inform the DMDA of the field names provided by the physics. */
   /* The names will be shown in the title bars when run with -ts_monitor_solution */
   for (i=0; i<ctx.physics.dof; i++) {
@@ -1330,7 +1330,7 @@ int main(int argc,char *argv[])
   /* Allow customization of the DMDA at runtime, mostly to change problem size with -da_grid_x M */
   ierr = DMSetFromOptions(ctx.da);CHKERRQ(ierr);
   ierr = DMSetUp(ctx.da);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(ctx.da,0, &Mx,0,0, 0,0,0, &dof,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(ctx.da,0, &Mx,0,0, 0,0,0, &dof,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetCorners(ctx.da,&xs,0,0,&xm,0,0);CHKERRQ(ierr);
 
   /* Set coordinates of cell centers */

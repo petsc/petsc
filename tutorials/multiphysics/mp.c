@@ -47,7 +47,7 @@ int main(int argc,char **argv)
 	- Lap(Omega) + Div([U*Omega,V*Omega]) - GR*Grad_x(T) = 0
         where T is given by the given x.temp
         - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDACreate2d(comm,DMDA_NONPERIODIC,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,3,1,0,0,&da1);CHKERRQ(ierr);
+  ierr = DMDACreate2d(comm,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,3,1,0,0,&da1);CHKERRQ(ierr);
   ierr = DMDASetFieldName(da1,0,"x-velocity");CHKERRQ(ierr);
   ierr = DMDASetFieldName(da1,1,"y-velocity");CHKERRQ(ierr);
   ierr = DMDASetFieldName(da1,2,"Omega");CHKERRQ(ierr);
@@ -57,7 +57,7 @@ int main(int argc,char **argv)
         - Lap(T) + PR*Div([U*T,V*T]) = 0        
         where U and V are given by the given x.u and x.v
         - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDACreate2d(comm,DMDA_NONPERIODIC,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,&da2);CHKERRQ(ierr);
+  ierr = DMDACreate2d(comm,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,&da2);CHKERRQ(ierr);
   ierr = DMDASetFieldName(da2,0,"temperature");CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -83,7 +83,7 @@ int main(int argc,char **argv)
   ierr = DMMGSetUp(dmmg_comp);CHKERRQ(ierr);
 
   /* Problem parameters (velocity of lid, prandtl, and grashof numbers) */
-  ierr = DMDAGetInfo(da1,PETSC_NULL,&mx,&my,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da1,PETSC_NULL,&mx,&my,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   user.lidvelocity = 1.0/(mx*my);
   user.prandtl     = 1.0;
   user.grashof     = 1000.0; 
@@ -224,7 +224,7 @@ PetscErrorCode FormCoupleLocations(DM dmcomposite,Mat A,PetscInt *dnz,PetscInt *
   ierr = MPI_Comm_rank(((PetscObject)dmcomposite)->comm,&rank);CHKERRQ(ierr);
   /* printf("[%d] __rstart %d, __nrows %d, __start %d, __end %d,\n",rank,__rstart,__nrows,__start,__end);*/
   ierr =  DMCompositeGetEntries(dmcomposite,&da1,&da2);CHKERRQ(ierr);
-  ierr =  DMDAGetInfo(da1,0,&M,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr =  DMDAGetInfo(da1,0,&M,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   ierr  = DMDAGetCorners(da1,&istart,&jstart,PETSC_NULL,&in,&jn,PETSC_NULL);CHKERRQ(ierr);
 
   /* coupling from physics 1 to physics 2 */

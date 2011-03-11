@@ -13,8 +13,8 @@ PetscErrorCode LoadCreate(PetscInt n1, PetscInt n2, Load *load)
   PetscErrorCode ierr;
 
   ierr = PetscNew(Load,&load);CHKERRQ(ierr);
-  ierr = DMDACreate1d(PETSC_COMM_SELF,DMDA_NONPERIODIC,n1,1,1,PETSC_NULL,(DM*)&load->L1);CHKERRQ(ierr);
-  ierr = DMDACreate1d(PETSC_COMM_SELF,DMDA_NONPERIODIC,n1,1,1,PETSC_NULL,(DM*)&load->L2);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_SELF,DMDA_BOUNDARY_NONE,n1,1,1,PETSC_NULL,(DM*)&load->L1);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_SELF,DMDA_BOUNDARY_NONE,n1,1,1,PETSC_NULL,(DM*)&load->L2);CHKERRQ(ierr);
   ierr = DMCompositeCreate(PETSC_COMM_SELF,(DMComposite*)&load->load);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

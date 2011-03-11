@@ -34,7 +34,7 @@ void PETSC_STDCALL dmdavecgetarrayf901_(DM *da,Vec *v,F90Array1d *a,PetscErrorCo
 
   *ierr = DMDAGetCorners(*da,&xs,&ys,&zs,&xm,&ym,&zm);if (*ierr) return;
   *ierr = DMDAGetGhostCorners(*da,&gxs,&gys,&gzs,&gxm,&gym,&gzm);if (*ierr) return;
-  *ierr = DMDAGetInfo(*da,&dim,0,0,0,0,0,0,&dof,0,0,0);if (*ierr) return;
+  *ierr = DMDAGetInfo(*da,&dim,0,0,0,0,0,0,&dof,0,0,0,0,0);if (*ierr) return;
 
   /* Handle case where user passes in global vector as opposed to local */
   *ierr = VecGetLocalSize(*v,&N);if (*ierr) return;
@@ -65,7 +65,7 @@ void PETSC_STDCALL dmdavecgetarrayf902_(DM *da,Vec *v,F90Array2d *a,PetscErrorCo
 
   *ierr = DMDAGetCorners(*da,&xs,&ys,&zs,&xm,&ym,&zm);if (*ierr) return;
   *ierr = DMDAGetGhostCorners(*da,&gxs,&gys,&gzs,&gxm,&gym,&gzm);if (*ierr) return;
-  *ierr = DMDAGetInfo(*da,&dim,0,0,0,0,0,0,&dof,0,0,0);if (*ierr) return;
+  *ierr = DMDAGetInfo(*da,&dim,0,0,0,0,0,0,&dof,0,0,0,0,0);if (*ierr) return;
 
   /* Handle case where user passes in global vector as opposed to local */
   *ierr = VecGetLocalSize(*v,&N);if (*ierr) return;
@@ -102,7 +102,7 @@ void PETSC_STDCALL dmdavecgetarrayf903_(DM *da,Vec *v,F90Array3d *a,PetscErrorCo
 
   *ierr = DMDAGetCorners(*da,&xs,&ys,&zs,&xm,&ym,&zm);if (*ierr) return;
   *ierr = DMDAGetGhostCorners(*da,&gxs,&gys,&gzs,&gxm,&gym,&gzm);if (*ierr) return;
-  *ierr = DMDAGetInfo(*da,&dim,0,0,0,0,0,0,&dof,0,0,0);if (*ierr) return;
+  *ierr = DMDAGetInfo(*da,&dim,0,0,0,0,0,0,&dof,0,0,0,0,0);if (*ierr) return;
 
   /* Handle case where user passes in global vector as opposed to local */
   *ierr = VecGetLocalSize(*v,&N);if (*ierr) return;
@@ -141,7 +141,7 @@ void PETSC_STDCALL dmdavecgetarrayf904_(DM *da,Vec *v,F90Array4d *a,PetscErrorCo
 
   *ierr = DMDAGetCorners(*da,&xs,&ys,&zs,&xm,&ym,&zm);if (*ierr) return;
   *ierr = DMDAGetGhostCorners(*da,&gxs,&gys,&gzs,&gxm,&gym,&gzm);if (*ierr) return;
-  *ierr = DMDAGetInfo(*da,&dim,0,0,0,0,0,0,&dof,0,0,0);if (*ierr) return;
+  *ierr = DMDAGetInfo(*da,&dim,0,0,0,0,0,0,&dof,0,0,0,0,0);if (*ierr) return;
 
   /* Handle case where user passes in global vector as opposed to local */
   *ierr = VecGetLocalSize(*v,&N);if (*ierr) return;

@@ -20,7 +20,7 @@ int main(int argc,char **argv)
   PetscBool      flg = PETSC_FALSE;
   DM             da;
   Vec            global1,global2,global3;
-  DMDABoundaryType ptype = DMDA_NONPERIODIC;
+  DMDABoundaryType bx = DMDA_BOUNDARY_NONE,by = DMDA_BOUNDARY_NONE;
   DMDAStencilType  stype = DMDA_STENCIL_BOX;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
@@ -28,7 +28,7 @@ int main(int argc,char **argv)
   if (flg) stype = DMDA_STENCIL_STAR;
       
   /* Create distributed array and get vectors */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,ptype,stype,M,N,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,bx,by,stype,M,N,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(da,&global1);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(da,&global2);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(da,&global1);CHKERRQ(ierr);

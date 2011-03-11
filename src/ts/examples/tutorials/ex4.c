@@ -131,7 +131,7 @@ int main(int argc,char **argv)
      total grid values spread equally among all the processors.
   */ 
 
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,m,1,1,PETSC_NULL,&appctx.da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,m,1,1,PETSC_NULL,&appctx.da);CHKERRQ(ierr);
 
   /*
      Extract global and local vectors from DMDA; we use these to store the

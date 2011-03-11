@@ -801,9 +801,9 @@ static PetscErrorCode RDView(RD rd,Vec X,PetscViewer viewer)
     (radiation temperature).  It is not necessary to create a DMDA for this, but this way
     output and visualization will have meaningful variable names and correct scales.
   */
-  ierr = DMDAGetInfo(rd->da,0, &M,0,0, 0,0,0, 0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(rd->da,0, &M,0,0, 0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetOwnershipRanges(rd->da,&lx,0,0);CHKERRQ(ierr);
-  ierr = DMDACreate1d(((PetscObject)rd->da)->comm,DMDA_NONPERIODIC,M,1,0,lx,&da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(((PetscObject)rd->da)->comm,DMDA_BOUNDARY_NONE,M,1,0,lx,&da);CHKERRQ(ierr);
   ierr = DMDASetUniformCoordinates(da,0.,rd->L,0.,0.,0.,0.);CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,0,"T_rad");CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da,&Y);CHKERRQ(ierr);
@@ -1015,7 +1015,7 @@ static PetscErrorCode RDCreate(MPI_Comm comm,RD *inrd)
     break;
   }
 
-  ierr = DMDACreate1d(comm,DMDA_NONPERIODIC,-20,sizeof(RDNode)/sizeof(PetscScalar),1,PETSC_NULL,&rd->da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(comm,DMDA_BOUNDARY_NONE,-20,sizeof(RDNode)/sizeof(PetscScalar),1,PETSC_NULL,&rd->da);CHKERRQ(ierr);
   ierr = DMDASetFieldName(rd->da,0,"E");CHKERRQ(ierr);
   ierr = DMDASetFieldName(rd->da,1,"T");CHKERRQ(ierr);
   ierr = DMDASetUniformCoordinates(rd->da,0.,1.,0.,0.,0.,0.);CHKERRQ(ierr);

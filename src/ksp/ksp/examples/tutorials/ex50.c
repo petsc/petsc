@@ -69,7 +69,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);  CHKERRQ(ierr);
   
   ierr = DMMGCreate(PETSC_COMM_WORLD,mglevels,PETSC_NULL,&dmmg); CHKERRQ(ierr);
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,DMDA_STENCIL_STAR,M,N,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&da); CHKERRQ(ierr);  
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,M,N,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&da); CHKERRQ(ierr);  
   ierr = DMMGSetDM(dmmg,(DM)da);
   ierr = DMDestroy(da); CHKERRQ(ierr);
   
@@ -127,7 +127,7 @@ PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
   PetscScalar    **array;
 
   PetscFunctionBegin;
-  ierr = DMDAGetInfo(da, 0, &M, &N, 0,0,0,0,0,0,0,0); CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da, 0, &M, &N, 0,0,0,0,0,0,0,0,0,0); CHKERRQ(ierr);
   uu = user->uu; tt = user->tt;
   pi = 4*atan(1.0); 
   Hx   = 1.0/(PetscReal)(M);
@@ -168,7 +168,7 @@ PetscErrorCode ComputeJacobian(DMMG dmmg, Mat J, Mat jac)
   MatStencil     row, col[5];
 
   PetscFunctionBegin;
-  ierr = DMDAGetInfo(da,0,&M,&N,0,0,0,0,0,0,0,0); CHKERRQ(ierr);  
+  ierr = DMDAGetInfo(da,0,&M,&N,0,0,0,0,0,0,0,0,0,0); CHKERRQ(ierr);  
   Hx    = 1.0 / (PetscReal)(M);
   Hy    = 1.0 / (PetscReal)(N);
   HxdHy = Hx/Hy;
@@ -231,7 +231,7 @@ PetscErrorCode ComputeTrueSolution(DMMG *dmmg, Vec b)
   PetscScalar    *array;
 
   PetscFunctionBegin;
-  ierr = DMDAGetInfo(da, 0, &M, &N, 0,0,0,0,0,0,0,0); CHKERRQ(ierr); /* level_0 ! */
+  ierr = DMDAGetInfo(da, 0, &M, &N, 0,0,0,0,0,0,0,0,0,0); CHKERRQ(ierr); /* level_0 ! */
   //printf("ComputeTrueSolution - M N: %d %d;\n",M,N);
 
   uu = user->uu; tt = user->tt;
@@ -277,7 +277,7 @@ PetscErrorCode VecView_VTK(Vec x, const char filename[], const char bcName[])
   ierr = PetscObjectQuery((PetscObject) x, "DMDA", (PetscObject *) &da); CHKERRQ(ierr);
   if (!da) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Vector not generated from a DMDA");
 
-  ierr = DMDAGetInfo(da, 0, &M, &N, 0,0,0,0,&dof,0,0,0); CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da, 0, &M, &N, 0,0,0,0,&dof,0,0,0,0,0); CHKERRQ(ierr);
 
   ierr = PetscViewerASCIIPrintf(viewer, "# vtk DataFile Version 2.0\n"); CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer, "Inhomogeneous Poisson Equation with %s boundary conditions\n", bcName); CHKERRQ(ierr);

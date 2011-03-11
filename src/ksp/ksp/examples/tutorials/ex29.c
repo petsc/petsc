@@ -58,7 +58,7 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,(char *)0,help);
 
   ierr = DMMGCreate(PETSC_COMM_WORLD,3,PETSC_NULL,&dmmg);CHKERRQ(ierr);
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,DMDA_STENCIL_STAR,-3,-3,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,&da);CHKERRQ(ierr);  
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-3,-3,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,&da);CHKERRQ(ierr);  
   ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr);
   ierr = DMDestroy(da);CHKERRQ(ierr);
   for (l = 0; l < DMMGGetLevels(dmmg); l++) {
@@ -109,7 +109,7 @@ PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
   PetscScalar    **array;
 
   PetscFunctionBegin;
-  ierr = DMDAGetInfo(da, 0, &mx, &my, 0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da, 0, &mx, &my, 0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   Hx   = 1.0 / (PetscReal)(mx-1);
   Hy   = 1.0 / (PetscReal)(my-1);
   ierr = DMDAGetCorners(da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
@@ -161,7 +161,7 @@ PetscErrorCode ComputeMatrix(DMMG dmmg, Mat J,Mat jac)
   MatStencil     row, col[5];
 
   PetscFunctionBegin;
-  ierr = DMDAGetInfo(da,0,&mx,&my,0,0,0,0,0,0,0,0);CHKERRQ(ierr);  
+  ierr = DMDAGetInfo(da,0,&mx,&my,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);  
   Hx    = 1.0 / (PetscReal)(mx-1);
   Hy    = 1.0 / (PetscReal)(my-1);
   HxdHy = Hx/Hy;
@@ -236,7 +236,7 @@ PetscErrorCode VecView_VTK(Vec x, const char filename[], const char bcName[])
   ierr = PetscObjectQuery((PetscObject) x, "DMDA", (PetscObject *) &da);CHKERRQ(ierr);
   if (!da) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Vector not generated from a DMDA");
 
-  ierr = DMDAGetInfo(da, 0, &mx, &my, 0,0,0,0, &dof,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da, 0, &mx, &my, 0,0,0,0, &dof,0,0,0,0,0);CHKERRQ(ierr);
 
   ierr = PetscViewerASCIIPrintf(viewer, "# vtk DataFile Version 2.0\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer, "Inhomogeneous Poisson Equation with %s boundary conditions\n", bcName);CHKERRQ(ierr);

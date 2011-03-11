@@ -81,7 +81,7 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,(char *)0,help);
 
   ierr = DMMGCreate(PETSC_COMM_WORLD,3,PETSC_NULL,&dmmg);CHKERRQ(ierr);
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,DMDA_STENCIL_STAR,3,3,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,&da);CHKERRQ(ierr);  
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,3,3,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,&da);CHKERRQ(ierr);  
   ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr);
   ierr = DMDestroy(da);CHKERRQ(ierr);
   for (l = 0; l < DMMGGetLevels(dmmg); l++) {
@@ -256,7 +256,7 @@ PetscErrorCode TaylorGalerkinStepI(DM da, UserContext *user)
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = DMDAGetInfo(da, 0, &mx, &my, 0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da, 0, &mx, &my, 0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   hx   = 1.0 / (PetscReal)(mx-1);
   hy   = 1.0 / (PetscReal)(my-1);
   ierr = VecSet(user->sol_phi.rho,0.0);CHKERRQ(ierr);
@@ -364,7 +364,7 @@ PetscErrorCode TaylorGalerkinStepIIMomentum(DM da, UserContext *user)
   ierr = KSPCreate(comm, &ksp);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
-  ierr = DMDAGetInfo(da, 0, &mx, &my, 0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da, 0, &mx, &my, 0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   hx   = 1.0 / (PetscReal)(mx-1);
   hy   = 1.0 / (PetscReal)(my-1);
   area = 0.5*hx*hy;
@@ -493,7 +493,7 @@ PetscErrorCode TaylorGalerkinStepIIMassEnergy(DM da, UserContext *user)
   ierr = KSPCreate(comm, &ksp);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
-  ierr = DMDAGetInfo(da, 0, &mx, &my, 0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da, 0, &mx, &my, 0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   hx   = 1.0 / (PetscReal)(mx-1);
   hy   = 1.0 / (PetscReal)(my-1);
   area = 0.5*hx*hy;
@@ -743,7 +743,7 @@ PetscErrorCode ComputeMatrix(DMMG dmmg, Mat J,Mat jac)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMDAGetInfo(da, 0, &mx, &my, 0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da, 0, &mx, &my, 0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
   hx   = 1.0 / (mx-1);
   hy   = 1.0 / (my-1);
