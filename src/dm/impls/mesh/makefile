@@ -6,10 +6,10 @@ ALL: lib
 CPPFLAGS =
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = ALE.cxx mesh.c meshbardhan.c meshpcice.c meshpylith.c meshlagrit.c meshzoltan.c meshdolfin.c meshexodus.c section.c
+SOURCEC  = ALE.cxx mesh.c meshbardhan.c meshpcice.c meshpylith.c meshlagrit.c meshzoltan.c meshdolfin.c meshexodus.c section.c cartesian.c
 SOURCEF  =
 SOURCEH  =
-OBJSC    = ALE.o   mesh.o meshbardhan.o meshpcice.o meshpylith.o meshlagrit.o meshzoltan.o meshdolfin.o meshexodus.o section.o
+OBJSC    = ALE.o   mesh.o meshbardhan.o meshpcice.o meshpylith.o meshlagrit.o meshzoltan.o meshdolfin.o meshexodus.o section.o cartesian.o
 OBJSF    =
 DIRS     =
 LIBBASE  = libpetscdm

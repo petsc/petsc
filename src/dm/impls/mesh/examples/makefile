@@ -1,7 +1,7 @@
 
 ALL:
 
-LOCDIR   = src/dm/mesh/examples/
+LOCDIR   = src/dm/impls/mesh/examples/
 DIRS     = tutorials
 
 include ${PETSC_DIR}/conf/variables
