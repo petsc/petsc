@@ -1,4 +1,4 @@
-KSP Object:
+KSP Object: 2 MPI processes
   type: gmres
     GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with one step of iterative refinement
     GMRES: happy breakdown tolerance 1e-30
@@ -6,11 +6,11 @@ KSP Object:
   tolerances:  relative=1e-07, absolute=1e-50, divergence=10000
   left preconditioning
   using PRECONDITIONED norm type for convergence test
-PC Object:
+PC Object: 2 MPI processes
   type: shell
     Shell: no name
   linear system matrix = precond matrix:
-  Matrix Object:
+  Matrix Object:   2 MPI processes  
     type: mpiaij
     rows=56, cols=56
     total: nonzeros=250, allocated nonzeros=560
