@@ -397,14 +397,14 @@ PetscErrorCode  MatSetDA_HYPREStruct(Mat mat,DM da)
   Mat_HYPREStruct *ex = (Mat_HYPREStruct*) mat->data;
   PetscInt         dim,dof,sw[3],nx,ny,nz;
   int              ilower[3],iupper[3],ssize,i;
-  DMDABoundaryType   p;
+  DMDABoundaryType   px,py,pz;
   DMDAStencilType    st;
 
   PetscFunctionBegin;
   ex->da = da;
   ierr   = PetscObjectReference((PetscObject)da);CHKERRQ(ierr); 
 
-  ierr = DMDAGetInfo(ex->da,&dim,0,0,0,0,0,0,&dof,&sw[0],&p,&st);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(ex->da,&dim,0,0,0,0,0,0,&dof,&sw[0],&px,&py,&pz,&st);CHKERRQ(ierr);
   ierr = DMDAGetCorners(ex->da,&ilower[0],&ilower[1],&ilower[2],&iupper[0],&iupper[1],&iupper[2]);CHKERRQ(ierr);
   iupper[0] += ilower[0] - 1;    
   iupper[1] += ilower[1] - 1;    
@@ -420,7 +420,7 @@ PetscErrorCode  MatSetDA_HYPREStruct(Mat mat,DM da)
 
   /* create the hypre grid object and set its information */
   if (dof > 1) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"Currently only support for scalar problems");
-  if (p) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"Ask us to add periodic support by calling HYPRE_StructGridSetPeriodic()");
+  if (px || py || pz) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"Ask us to add periodic support by calling HYPRE_StructGridSetPeriodic()");
   PetscStackCallHypre(0,HYPRE_StructGridCreate,(ex->hcomm,dim,&ex->hgrid));
   PetscStackCallHypre(0,HYPRE_StructGridSetExtents,(ex->hgrid,ilower,iupper));
   PetscStackCallHypre(0,HYPRE_StructGridAssemble,(ex->hgrid));
@@ -837,7 +837,7 @@ PetscErrorCode  MatSetDA_HYPRESStruct(Mat mat,DM da)
   Mat_HYPRESStruct *ex = (Mat_HYPRESStruct*) mat->data;
   PetscInt          dim,dof,sw[3],nx,ny,nz;
   int               ilower[3],iupper[3],ssize,i;
-  DMDABoundaryType    p;
+  DMDABoundaryType    px,py,pz;
   DMDAStencilType     st;
   int               nparts= 1; /* assuming only one part */
   int               part  = 0;
@@ -846,7 +846,7 @@ PetscErrorCode  MatSetDA_HYPRESStruct(Mat mat,DM da)
   ex->da = da;
   ierr   = PetscObjectReference((PetscObject)da);CHKERRQ(ierr);
 
-  ierr = DMDAGetInfo(ex->da,&dim,0,0,0,0,0,0,&dof,&sw[0],&p,&st);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(ex->da,&dim,0,0,0,0,0,0,&dof,&sw[0],&px,&py,&pz,&st);CHKERRQ(ierr);
   ierr = DMDAGetCorners(ex->da,&ilower[0],&ilower[1],&ilower[2],&iupper[0],&iupper[1],&iupper[2]);CHKERRQ(ierr);
   iupper[0] += ilower[0] - 1;
   iupper[1] += ilower[1] - 1;
@@ -865,7 +865,7 @@ PetscErrorCode  MatSetDA_HYPRESStruct(Mat mat,DM da)
   ex->nvars= dof;
 
   /* create the hypre grid object and set its information */
-  if (p) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"Ask us to add periodic support by calling HYPRE_SStructGridSetPeriodic()");
+  if (px || py || pz) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"Ask us to add periodic support by calling HYPRE_SStructGridSetPeriodic()");
   PetscStackCallHypre(0,HYPRE_SStructGridCreate,(ex->hcomm,dim,nparts,&ex->ss_grid));
 
   PetscStackCallHypre(0,HYPRE_SStructGridSetExtents,(ex->ss_grid,part,ex->hbox.imin,ex->hbox.imax));
