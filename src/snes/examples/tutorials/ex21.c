@@ -62,9 +62,9 @@ int main(int argc,char **argv)
   ierr = DMCompositeCreate(PETSC_COMM_WORLD,&user.packer);CHKERRQ(ierr);
   user.nredundant = 1;
   ierr = DMCompositeAddArray(user.packer,0,user.nredundant);CHKERRQ(ierr);
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,-5,1,1,PETSC_NULL,&user.da1);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,-5,1,1,PETSC_NULL,&user.da1);CHKERRQ(ierr);
   ierr = DMCompositeAddDM(user.packer,(DM)user.da1);CHKERRQ(ierr);
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,-5,1,1,PETSC_NULL,&user.da2);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,-5,1,1,PETSC_NULL,&user.da2);CHKERRQ(ierr);
   ierr = DMCompositeAddDM(user.packer,(DM)user.da2);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(user.packer,&U);CHKERRQ(ierr);
   ierr = VecDuplicate(U,&FU);CHKERRQ(ierr);
@@ -118,7 +118,7 @@ PetscErrorCode FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
   ierr = DMCompositeScatter(user->packer,U,w,vu,vlambda);CHKERRQ(ierr);
 
   ierr = DMDAGetCorners(user->da1,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(user->da1,0,&N,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(user->da1,0,&N,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(user->da1,vu,&u);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(user->da1,vfu,&fu);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(user->da1,vlambda,&lambda);CHKERRQ(ierr);

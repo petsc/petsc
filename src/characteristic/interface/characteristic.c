@@ -320,8 +320,7 @@ PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
   DM                      da = c->velocityDA;
   Vec                     velocityLocal, velocityLocalOld;
   Vec                     fieldLocal;
-  DMDALocalInfo             info;
-  DMDABoundaryType          periodic_type;
+  DMDALocalInfo           info;
   PetscScalar             **solArray;
   void                    *velocityArray;
   void                    *velocityArrayOld;
@@ -345,7 +344,7 @@ PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
   ierr = CharacteristicSetNeighbors(c, 9, neighbors);CHKERRQ(ierr);
   ierr = CharacteristicSetUp(c);CHKERRQ(ierr);
   /* global and local grid info */
-  ierr = DMDAGetInfo(da, &dim, &gx, &gy, 0, 0, 0, 0, 0, 0, &periodic_type, 0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da, &dim, &gx, &gy, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);CHKERRQ(ierr);
   ierr = DMDAGetLocalInfo(da, &info);CHKERRQ(ierr);
   ni   = info.mx;          nj   = info.my;
   is   = info.xs;          ie   = info.xs+info.xm; 
@@ -559,7 +558,7 @@ PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
 
   /* Return field of characteristics at t_n-1 */
   ierr = PetscLogEventBegin(CHARACTERISTIC_DAUpdate,0,0,0,0);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(c->fieldDA, 0, 0, 0, 0, 0, 0, 0, &dof, 0, 0, 0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(c->fieldDA,0,0,0,0,0,0,0,&dof,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(c->fieldDA, solution, &solArray);CHKERRQ(ierr);
   for(n = 0; n < c->queueSize; n++) {
     Qi = c->queue[n];
@@ -788,7 +787,7 @@ PetscErrorCode SiftDown(Characteristic c, Queue queue, PetscInt root, PetscInt b
 /* [center, left, top-left, top, top-right, right, bottom-right, bottom, bottom-left] */
 PetscErrorCode DMDAGetNeighborsRank(DM da, PetscMPIInt neighbors[])
 {
-  DMDABoundaryType periodic_type;
+  DMDABoundaryType bx, by;
   PetscBool      IPeriodic = PETSC_FALSE, JPeriodic = PETSC_FALSE;
   MPI_Comm       comm;
   PetscMPIInt    rank;
@@ -798,12 +797,12 @@ PetscErrorCode DMDAGetNeighborsRank(DM da, PetscMPIInt neighbors[])
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject) da, &comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(da, 0, 0, 0, 0, &PI,&PJ, 0, 0, 0, &periodic_type, 0);
+  ierr = DMDAGetInfo(da, 0, 0, 0, 0, &PI,&PJ, 0, 0, 0, &bx, &by,0, 0);
 
-  if (DMDAXPeriodic(periodic_type)) {
+  if (bx == DMDA_BOUNDARY_PERIODIC) {
     IPeriodic = PETSC_TRUE;
   }
-  if (DMDAYPeriodic(periodic_type)) {
+  if (by == DMDA_BOUNDARY_PERIODIC) {
     JPeriodic = PETSC_TRUE;
   }
 

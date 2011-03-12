@@ -173,7 +173,9 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
   PetscInt               p            = dd->p;
   const PetscInt         dof          = dd->w;
   const PetscInt         s            = dd->s;
-  const DMDABoundaryType wrap         = dd->wrap;
+  const DMDABoundaryType bx         = dd->bx;
+  const DMDABoundaryType by         = dd->by;
+  const DMDABoundaryType bz         = dd->bz;
   const DMDAStencilType  stencil_type = dd->stencil_type;
   PetscInt               *lx           = dd->lx;
   PetscInt               *ly           = dd->ly;
@@ -339,12 +341,12 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
   if (ze+s <= P) { Ze = ze + s; IZe = ze + s; } else { Ze = P; IZe = P; }
 
   /* fix for periodicity/ghosted */
-  if (DMDAXGhosted(wrap)) { Xs = xs - s; Xe = xe + s; }
-  if (DMDAXPeriodic(wrap)) { IXs = xs - s; IXe = xe + s; }
-  if (DMDAYGhosted(wrap)) { Ys = ys - s; Ye = ye + s; }
-  if (DMDAYPeriodic(wrap)) { IYs = ys - s; IYe = ye + s; }
-  if (DMDAZGhosted(wrap)) { Zs = zs - s; Ze = ze + s; }
-  if (DMDAZPeriodic(wrap)) { IZs = zs - s; IZe = ze + s; }
+  if (bx) { Xs = xs - s; Xe = xe + s; }
+  if (bx == DMDA_BOUNDARY_PERIODIC) { IXs = xs - s; IXe = xe + s; }
+  if (by) { Ys = ys - s; Ye = ye + s; }
+  if (by == DMDA_BOUNDARY_PERIODIC) { IYs = ys - s; IYe = ye + s; }
+  if (bz) { Zs = zs - s; Ze = ze + s; }
+  if (bz == DMDA_BOUNDARY_PERIODIC) { IZs = zs - s; IZe = ze + s; }
 
   /* Resize all X parameters to reflect w */
   s_x = s;
@@ -658,19 +660,19 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
   /* Check for when not X,Y, and Z Periodic */
 
   /* If not X periodic */
-  if (!DMDAXPeriodic(wrap)) {
+  if (bx != DMDA_BOUNDARY_PERIODIC) {
     if (xs==0)   {n0  = n3  = n6  = n9  = n12 = n15 = n18 = n21 = n24 = -2;}
     if (xe==M) {n2  = n5  = n8  = n11 = n14 = n17 = n20 = n23 = n26 = -2;}
   }
 
   /* If not Y periodic */
-  if (!DMDAYPeriodic(wrap)) {
+  if (by != DMDA_BOUNDARY_PERIODIC) {
     if (ys==0)   {n0  = n1  = n2  = n9  = n10 = n11 = n18 = n19 = n20 = -2;}
     if (ye==N)   {n6  = n7  = n8  = n15 = n16 = n17 = n24 = n25 = n26 = -2;}
   }
 
   /* If not Z periodic */
-  if (!DMDAZPeriodic(wrap)) {
+  if (bz != DMDA_BOUNDARY_PERIODIC) {
     if (zs==0)   {n0  = n1  = n2  = n3  = n4  = n5  = n6  = n7  = n8  = -2;}
     if (ze==P)   {n18 = n19 = n20 = n21 = n22 = n23 = n24 = n25 = n26 = -2;}
   }
@@ -961,9 +963,9 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
   }
 
   if ((stencil_type == DMDA_STENCIL_STAR) ||
-      (!DMDAXPeriodic(wrap) && DMDAXGhosted(wrap)) ||
-      (!DMDAYPeriodic(wrap) && DMDAYGhosted(wrap)) ||
-      (!DMDAZPeriodic(wrap) && DMDAZGhosted(wrap))) {
+      (bx != DMDA_BOUNDARY_PERIODIC && bx) ||
+      (by != DMDA_BOUNDARY_PERIODIC && by) ||
+      (bz != DMDA_BOUNDARY_PERIODIC && bz)) {
     /*
         Recompute the local to global mappings, this time keeping the 
       information about the cross corner processor numbers.
@@ -1296,8 +1298,8 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
 
    Input Parameters:
 +  comm - MPI communicator
-.  wrap - type of periodicity the array should have, if any.  Use one
-          of DMDA_NONPERIODIC, DMDA_XPERIODIC, DMDA_YPERIODIC, DMDA_ZPERIODIC, DMDA_XYPERIODIC, DMDA_XZPERIODIC, DMDA_YZPERIODIC, DMDA_XYZPERIODIC, or DMDA_XYZGHOSTED.
+.  bx,by,bz - type of ghost nodes the array have. 
+         Use one of DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_GHOSTED, DMDA_BOUNDARY_PERIODIC.
 .  stencil_type - Type of stencil (DMDA_STENCIL_STAR or DMDA_STENCIL_BOX)
 .  M,N,P - global dimension in each direction of the array (use -M, -N, and or -P to indicate that it may be set to a different value 
             from the command line with -da_grid_x <M> -da_grid_y <N> -da_grid_z <P>)
@@ -1344,7 +1346,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
           DMDAGetInfo(), DMCreateGlobalVector(), DMCreateLocalVector(), DMDACreateNaturalVector(), DMDALoad(), DMDAGetOwnershipRanges()
 
 @*/
-PetscErrorCode  DMDACreate3d(MPI_Comm comm,DMDABoundaryType wrap,DMDAStencilType stencil_type,PetscInt M,
+PetscErrorCode  DMDACreate3d(MPI_Comm comm,DMDABoundaryType bx,DMDABoundaryType by,DMDABoundaryType bz,DMDAStencilType stencil_type,PetscInt M,
                PetscInt N,PetscInt P,PetscInt m,PetscInt n,PetscInt p,PetscInt dof,PetscInt s,const PetscInt lx[],const PetscInt ly[],const PetscInt lz[],DM *da)
 {
   PetscErrorCode ierr;
@@ -1354,7 +1356,7 @@ PetscErrorCode  DMDACreate3d(MPI_Comm comm,DMDABoundaryType wrap,DMDAStencilType
   ierr = DMDASetDim(*da, 3);CHKERRQ(ierr);
   ierr = DMDASetSizes(*da, M, N, P);CHKERRQ(ierr);
   ierr = DMDASetNumProcs(*da, m, n, p);CHKERRQ(ierr);
-  ierr = DMDASetBoundaryType(*da, wrap);CHKERRQ(ierr);
+  ierr = DMDASetBoundaryType(*da, bx, by, bz);CHKERRQ(ierr);
   ierr = DMDASetDof(*da, dof);CHKERRQ(ierr);
   ierr = DMDASetStencilType(*da, stencil_type);CHKERRQ(ierr);
   ierr = DMDASetStencilWidth(*da, s);CHKERRQ(ierr);

@@ -44,7 +44,7 @@ PetscErrorCode CharacteristicSetUp_DA(Characteristic c)
   PetscInt       dim, numValues;
   PetscErrorCode ierr;
 
-  ierr = DMDAGetInfo(c->velocityDA, &dim, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(c->velocityDA, &dim, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0,0);CHKERRQ(ierr);
   if (c->structured) {
     c->numIds = dim;
   } else {
@@ -110,25 +110,20 @@ EXTERN_C_END
    ----------------------------------------------------------------------------------------*/
 PetscErrorCode DMDAMapCoordsToPeriodicDomain(DM da, PetscScalar *x, PetscScalar *y)
 {
-  DMDABoundaryType periodic_type;
+  DMDABoundaryType bx, by;
   PetscInt       dim, gx, gy;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMDAGetInfo(da, &dim, &gx, &gy, 0, 0, 0, 0, 0, 0, &periodic_type, 0);
+  ierr = DMDAGetInfo(da, &dim, &gx, &gy, 0, 0, 0, 0, 0, 0, &bx, &by, 0, 0);
 
-  if ( periodic_type == DMDA_NONPERIODIC ) {
-    ierr = 0;
-  } else {
-    if (DMDAXPeriodic(periodic_type)) {
+  if (bx == DMDA_BOUNDARY_PERIODIC) {
       while (*x >= ( PetscScalar ) gx ) { *x -= ( PetscScalar ) gx; }
       while (*x < 0.0 )                 { *x += ( PetscScalar ) gx; }
     }
-    if (DMDAYPeriodic(periodic_type)) {
+    if (by == DMDA_BOUNDARY_PERIODIC) {
       while (*y >= ( PetscScalar ) gy ) { *y -= ( PetscScalar ) gy; }
       while (*y < 0.0 )                 { *y += ( PetscScalar ) gy; }
     }
-  }
-    
   PetscFunctionReturn(ierr);
 }

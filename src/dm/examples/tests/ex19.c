@@ -12,7 +12,7 @@ PetscErrorCode doit(DM da,Vec global)
   PetscErrorCode ierr;
   PetscInt       i,j,k,M,N,dof;
 
-  ierr = DMDAGetInfo(da,0,&M,&N,0,0,0,0,&dof,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,0,&M,&N,0,0,0,0,&dof,0,0,0,0,0);CHKERRQ(ierr);
   {
     struct {PetscScalar inside[dof];} **mystruct;
     ierr = DMDAVecGetArray(da,global,(void*) &mystruct);
@@ -42,7 +42,7 @@ int main(int argc,char **argv)
 
   ierr = PetscOptionsGetInt(0,"-dof",&dof,0);CHKERRQ(ierr);
   /* Create distributed array and get vectors */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,DMDA_STENCIL_BOX,
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,
                     M,N,m,n,dof,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da,&global);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(da,&local);CHKERRQ(ierr);

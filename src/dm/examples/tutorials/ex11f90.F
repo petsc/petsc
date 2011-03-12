@@ -41,7 +41,7 @@
       s = 1
       dof = 1
       CALL PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-      call DMDACreate1d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,m,dof,1,             &
+      call DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,m,dof,1,             &
      &                PETSC_NULL_INTEGER,ada,ierr)
       call DMGetGlobalVector(ada,g,ierr)
       call DMDAGetCorners(ada,xs,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,       &
@@ -57,7 +57,8 @@
       call DMRestoreGlobalVector(ada,g,ierr)
       call DMDestroy(ada,ierr)
 
-      call DMDACreate2d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,                      &
+      call DMDACreate2d(PETSC_COMM_WORLD,                                   &
+     &      DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,                      &
      &      DMDA_STENCIL_BOX,m,n,PETSC_DECIDE,PETSC_DECIDE,dof,s,                 &
      &                PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ada,ierr)
       call DMGetGlobalVector(ada,g,ierr)
@@ -76,7 +77,8 @@
       call DMRestoreGlobalVector(ada,g,ierr)
       call DMDestroy(ada,ierr)
 
-      call DMDACreate3d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,                       &
+      call DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,                       &
+     &     DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,                               &
      &     DMDA_STENCIL_BOX, m,n,p,PETSC_DECIDE,PETSC_DECIDE,                     &
      &                PETSC_DECIDE,dof,s,                                  &
      &                PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,               &
@@ -104,7 +106,7 @@
 !
       dof = 2
       CALL PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-      call DMDACreate1d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,m,dof,1,             &
+      call DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,m,dof,1,             &
      &                PETSC_NULL_INTEGER,ada,ierr)
       call DMGetGlobalVector(ada,g,ierr)
       call DMDAGetCorners(ada,xs,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,       &
@@ -122,7 +124,8 @@
       call DMDestroy(ada,ierr)
 
       dof = 2
-      call DMDACreate2d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,                      &
+      call DMDACreate2d(PETSC_COMM_WORLD,                               &
+     &     DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,                      &
      &     DMDA_STENCIL_BOX,m,n,PETSC_DECIDE,PETSC_DECIDE,dof,s,                 &
      &                PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,ada,ierr)
       call DMGetGlobalVector(ada,g,ierr)
@@ -143,7 +146,8 @@
       call DMDestroy(ada,ierr)
 
       dof = 3
-      call DMDACreate3d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,                  &
+      call DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,
+     &     DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,                            &
      &         DMDA_STENCIL_BOX,m,n,p,PETSC_DECIDE,PETSC_DECIDE,                     &
      &                PETSC_DECIDE,dof,s,                                  &
      &                PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,               &

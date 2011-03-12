@@ -9,7 +9,7 @@ int main(int argc,char **argv)
 {
   PetscMPIInt    rank;
   PetscInt       M = 13,s=1,dof=1;
-  DMDABoundaryType wrap = DMDA_XPERIODIC;
+  DMDABoundaryType bx = DMDA_BOUNDARY_PERIODIC;
   PetscErrorCode ierr;
   DM             da;
   PetscViewer    viewer;
@@ -27,12 +27,12 @@ int main(int argc,char **argv)
 
   /* Readoptions */
   ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetEnum(PETSC_NULL,"-wrap",DMDABoundaryTypes,(PetscEnum*)&wrap,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetEnum(PETSC_NULL,"-wrap",DMDABoundaryTypes,(PetscEnum*)&bx,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-dof",&dof,PETSC_NULL);CHKERRQ(ierr); 
   ierr = PetscOptionsGetInt(PETSC_NULL,"-s",&s,PETSC_NULL);CHKERRQ(ierr); 
 
   /* Create distributed array and get vectors */
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,wrap,M,dof,s,PETSC_NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,bx,M,dof,s,PETSC_NULL,&da);CHKERRQ(ierr);
   ierr = DMView(da,viewer);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da,&global);CHKERRQ(ierr);
   ierr = DMCreateLocalVector(da,&local);CHKERRQ(ierr);

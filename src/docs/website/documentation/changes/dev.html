@@ -299,13 +299,16 @@ DAGetISLocalToGlobalMappingBlck() are now DMGetLocalToGlobalMapping()
 and DMGetLocalToGlobalMappingBlock() and are collective since they may
 be constructed lazily.</li>
         <li>DMGetBlockSize() is added.</li>
-	<li>Changed DMDAPeriodicType to DMDABoundaryType, and enabled
-ghost cells to be included in DM_DAs on domain boundaries even for
-non-periodic dimensions through the use of DMDA_{XYZ}GHOSTED.
-DMDABoundaryType is assigned through bitwise-or composition,
-i.e. DMDA_XPERIODIC | DMDA_YGHOSTED.</li>
-        <li>DMDASetPeriodicity() is now DMDASetBoundaryType()</li>
-	<li>DMDASetGhostedCoordinates() is added.</li>
+	<li>Changed DMDAPeriodicType to DMDABoundaryType, and changed
+this enum to only specify one boundary (one for each dimension).  This
+enum is now one of DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_GHOSTED, or
+DMDA_BOUNDARY_PERIODIC.  See DMDABoundaryType man page for more.</li>
+        <li>DMDASetPeriodicity() is now DMDASetBoundaryType(), and API
+is changed to take three DMDABoundaryType arguments.</li>
+        <li>Changed API for DMDACreate*D(), DMDAGetInfo() to take the
+correct number of DMDABoundaryType enums for the dimension.</li>
+	<li>DMDASetGhostedCoordinates() is added to set coordinates of
+non-periodic ghost cells.</li>
       </ul>
       <p><u><b>DMMG:</b></u></p>
       <ul>

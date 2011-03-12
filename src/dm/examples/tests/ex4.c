@@ -14,7 +14,7 @@ int main(int argc,char **argv)
   PetscInt       Xs,Xm,Ys,Ym,iloc,*iglobal,*ltog;
   PetscInt       *lx = PETSC_NULL,*ly = PETSC_NULL;
   PetscBool      testorder = PETSC_FALSE,flg;
-  DMDABoundaryType wrap = DMDA_NONPERIODIC;
+  DMDABoundaryType bx = DMDA_BOUNDARY_NONE,by= DMDA_BOUNDARY_NONE;
   DM             da;
   PetscViewer    viewer;
   Vec            local,global;
@@ -32,15 +32,15 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-s",&s,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-w",&w,PETSC_NULL);CHKERRQ(ierr);
-  wrap = 0x0;
+
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-xperiodic",&flg,PETSC_NULL);CHKERRQ(ierr); if (flg) wrap = wrap | DMDA_XPERIODIC;
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-xperiodic",&flg,PETSC_NULL);CHKERRQ(ierr); if (flg) bx = DMDA_BOUNDARY_PERIODIC;
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-yperiodic",&flg,PETSC_NULL);CHKERRQ(ierr); if (flg) wrap = wrap | DMDA_YPERIODIC;
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-yperiodic",&flg,PETSC_NULL);CHKERRQ(ierr); if (flg) by = DMDA_BOUNDARY_PERIODIC;
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-xghosted",&flg,PETSC_NULL);CHKERRQ(ierr); if (flg) wrap = wrap | DMDA_XGHOSTED;
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-xghosted",&flg,PETSC_NULL);CHKERRQ(ierr); if (flg) bx = DMDA_BOUNDARY_GHOSTED;
   flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-yghosted",&flg,PETSC_NULL);CHKERRQ(ierr); if (flg) wrap = wrap | DMDA_YGHOSTED;
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-yghosted",&flg,PETSC_NULL);CHKERRQ(ierr); if (flg) by = DMDA_BOUNDARY_GHOSTED;
   flg  = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-star",&flg,PETSC_NULL);CHKERRQ(ierr); if (flg) st = DMDA_STENCIL_STAR;
   flg  = PETSC_FALSE;
@@ -66,7 +66,7 @@ int main(int argc,char **argv)
 
 
   /* Create distributed array and get vectors */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,wrap,st,M,N,m,n,w,s,lx,ly,&da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,bx,by,st,M,N,m,n,w,s,lx,ly,&da);CHKERRQ(ierr);
   ierr = PetscFree(lx);CHKERRQ(ierr);
   ierr = PetscFree(ly);CHKERRQ(ierr);
 

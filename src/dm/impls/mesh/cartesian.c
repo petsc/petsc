@@ -1,7 +1,7 @@
 #include "private/meshimpl.h"
 #include <CartesianSieve.hh>
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MeshCartesianGetMesh"
 /*@C
     MeshCartesianGetMesh - Gets the internal mesh object
@@ -13,7 +13,7 @@
 
     Output Parameter:
 .    m - the internal mesh object
- 
+
     Level: advanced
 
 .seealso MeshCreate(), MeshCartesianSetMesh()
@@ -27,7 +27,7 @@ PetscErrorCode  MeshCartesianGetMesh(Mesh mesh, ALE::Obj<ALE::CartesianMesh>& m)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MeshCartesianSetMesh"
 /*@C
     MeshCartesianSetMesh - Sets the internal mesh object
@@ -37,7 +37,7 @@ PetscErrorCode  MeshCartesianGetMesh(Mesh mesh, ALE::Obj<ALE::CartesianMesh>& m)
     Input Parameters:
 +    mesh - the mesh object
 -    m - the internal mesh object
- 
+
     Level: advanced
 
 .seealso MeshCreate(), MeshCartesianGetMesh()
@@ -51,7 +51,7 @@ PetscErrorCode  MeshCartesianSetMesh(Mesh mesh, const ALE::Obj<ALE::CartesianMes
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MeshDestroy_Cartesian"
 PetscErrorCode  MeshDestroy_Cartesian(Mesh mesh)
 {
@@ -66,7 +66,7 @@ PetscErrorCode  MeshDestroy_Cartesian(Mesh mesh)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MeshView_Cartesian_Ascii"
 PetscErrorCode MeshView_Cartesian_Ascii(const ALE::Obj<ALE::CartesianMesh>& mesh, PetscViewer viewer)
 {
@@ -107,7 +107,7 @@ PetscErrorCode  MeshView_Cartesian(Mesh mesh, PetscViewer viewer)
     ierr = MeshView_Cartesian_Ascii(*((ALE::Obj<ALE::CartesianMesh> *) mesh->data), viewer);CHKERRQ(ierr);
   } else if (isbinary) {
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Binary viewer not implemented for Cartesian Mesh");
-  } else if (isdraw){ 
+  } else if (isdraw){
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Draw viewer not implemented for Cartesian Mesh");
   } else {
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported by this mesh object", ((PetscObject)viewer)->type_name);
@@ -115,7 +115,7 @@ PetscErrorCode  MeshView_Cartesian(Mesh mesh, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MeshGetInterpolation_Cartesian"
 PetscErrorCode MeshGetInterpolation_Cartesian(Mesh fineMesh, Mesh coarseMesh, Mat *interpolation, Vec *scaling)
 {
@@ -169,7 +169,7 @@ PetscErrorCode MeshGetInterpolation_Cartesian(Mesh fineMesh, Mesh coarseMesh, Ma
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MeshRefine_Cartesian"
 PetscErrorCode MeshRefine_Cartesian(Mesh mesh, MPI_Comm comm, Mesh *refinedMesh)
 {
@@ -193,7 +193,7 @@ PetscErrorCode MeshRefine_Cartesian(Mesh mesh, MPI_Comm comm, Mesh *refinedMesh)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MeshCoarsen_Cartesian"
 PetscErrorCode MeshCoarsen_Cartesian(Mesh mesh, MPI_Comm comm, Mesh *coarseMesh)
 {
@@ -217,7 +217,7 @@ PetscErrorCode MeshCoarsen_Cartesian(Mesh mesh, MPI_Comm comm, Mesh *coarseMesh)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MeshGetSectionReal_Cartesian"
 PetscErrorCode MeshGetSectionReal_Cartesian(Mesh mesh, const char name[], SectionReal *section)
 {
@@ -236,7 +236,7 @@ PetscErrorCode MeshGetSectionReal_Cartesian(Mesh mesh, const char name[], Sectio
 }
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MeshCreate_Cartesian"
 PetscErrorCode  MeshCreate_Cartesian(Mesh mesh)
 {

@@ -229,11 +229,13 @@
 
 ! This really needs only the star-type stencil, but we use the box
 ! stencil temporarily.
-      call DMDACreate2d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,              &
+      call DMDACreate2d(PETSC_COMM_WORLD,                               &
+     &     DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,                      &
      &     DMDA_STENCIL_BOX,nfour,nfour,PETSC_DECIDE,PETSC_DECIDE,          &
      &     ione,ione,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,user%da,ierr)
       call DMDAGetInfo(user%da,PETSC_NULL_INTEGER,user%mx,user%my,        &
      &               PETSC_NULL_INTEGER,                                &
+     &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,             &
      &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,             &
      &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,             &
      &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,             &

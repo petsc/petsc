@@ -123,7 +123,7 @@ int main(int argc,char **argv)
     ierr = DMCompositeCreate(app.comm,&app.pack);CHKERRQ(ierr);
 
     /* 6 fluid unknowns, 3 ghost points on each end for either periodicity or simply boundary conditions */
-    ierr = DMDACreate1d(app.comm,DMDA_XPERIODIC,app.nxv,6,3,0,&da);CHKERRQ(ierr);
+    ierr = DMDACreate1d(app.comm,DMDA_BOUNDARY_PERIODIC,app.nxv,6,3,0,&da);CHKERRQ(ierr);
     ierr = DMDASetFieldName(da,0,"prss");CHKERRQ(ierr);
     ierr = DMDASetFieldName(da,1,"ergg");CHKERRQ(ierr);
     ierr = DMDASetFieldName(da,2,"ergf");CHKERRQ(ierr);
@@ -133,12 +133,12 @@ int main(int argc,char **argv)
     ierr = DMCompositeAddDM(app.pack,(DM)da);CHKERRQ(ierr);
     ierr = DMDestroy(da);CHKERRQ(ierr);
 
-    ierr = DMDACreate2d(app.comm,DMDA_YPERIODIC,DMDA_STENCIL_STAR,app.nxv,app.nyv,PETSC_DETERMINE,1,1,1,0,0,&da);CHKERRQ(ierr);
+    ierr = DMDACreate2d(app.comm,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_PERIODIC,DMDA_STENCIL_STAR,app.nxv,app.nyv,PETSC_DETERMINE,1,1,1,0,0,&da);CHKERRQ(ierr);
     ierr = DMDASetFieldName(da,0,"Tempature");CHKERRQ(ierr);
     ierr = DMCompositeAddDM(app.pack,(DM)da);CHKERRQ(ierr);
     ierr = DMDestroy(da);CHKERRQ(ierr);
 
-    ierr = DMDACreate2d(app.comm,DMDA_XYPERIODIC,DMDA_STENCIL_STAR,app.nxv,app.nyvf,PETSC_DETERMINE,1,2,1,0,0,&da);CHKERRQ(ierr);
+    ierr = DMDACreate2d(app.comm,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,app.nxv,app.nyvf,PETSC_DETERMINE,1,2,1,0,0,&da);CHKERRQ(ierr);
     ierr = DMDASetFieldName(da,0,"Phi");CHKERRQ(ierr);
     ierr = DMDASetFieldName(da,1,"Pre");CHKERRQ(ierr);
     ierr = DMCompositeAddDM(app.pack,(DM)da);CHKERRQ(ierr);
@@ -526,7 +526,7 @@ PetscErrorCode MyPCSetUp(PC pc)
   ierr = DMMGCreate(app->comm,1,0,&app->fdmmg);CHKERRQ(ierr);
   ierr = DMMGSetOptionsPrefix(app->fdmmg,"phi_");CHKERRQ(ierr);
   ierr = DMMGSetUser(app->fdmmg,0,app);CHKERRQ(ierr);
-  ierr = DMDACreate2d(app->comm,DMDA_NONPERIODIC,DMDA_STENCIL_STAR,app->nxv,app->nyvf,PETSC_DETERMINE,1,1,1,0,0,&da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(app->comm,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,app->nxv,app->nyvf,PETSC_DETERMINE,1,1,1,0,0,&da);CHKERRQ(ierr);
   ierr = DMMGSetDM(app->fdmmg,(DM)da);CHKERRQ(ierr); 
   ierr = DMMGSetKSP(app->fdmmg,PETSC_NULL,MyFormMatrix);CHKERRQ(ierr);
   app->dx = DMMGGetRHS(app->fdmmg);

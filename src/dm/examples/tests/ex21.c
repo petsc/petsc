@@ -13,22 +13,23 @@ PetscErrorCode test1_DAInjection3d( PetscInt mx, PetscInt my, PetscInt mz )
   PetscViewer vv;
   Vec ac,af;
   PetscInt periodicity;
-  DMDABoundaryType pt;
+  DMDABoundaryType bx,by,bz;
 
   PetscFunctionBegin;
+  bx = DMDA_BOUNDARY_NONE;
+  by = DMDA_BOUNDARY_NONE;
+  bz = DMDA_BOUNDARY_NONE;
   periodicity = 0;
   ierr = PetscOptionsGetInt(PETSC_NULL,"-periodic", &periodicity, PETSC_NULL);CHKERRQ(ierr);
   if (periodicity==1) {
-    pt = DMDA_XPERIODIC;
+    bx = DMDA_BOUNDARY_PERIODIC;
   } else if (periodicity==2) {
-    pt = DMDA_YPERIODIC;
+    by = DMDA_BOUNDARY_PERIODIC;
   } else if (periodicity==3) {
-    pt = DMDA_ZPERIODIC;
-  } else {
-    pt = DMDA_NONPERIODIC;
+    bz = DMDA_BOUNDARY_PERIODIC;
   }
 
-  ierr = DMDACreate3d(PETSC_COMM_WORLD, pt, DMDA_STENCIL_BOX,
+  ierr = DMDACreate3d(PETSC_COMM_WORLD, bx,by,bz, DMDA_STENCIL_BOX,
                       mx+1, my+1,mz+1,
                       PETSC_DECIDE, PETSC_DECIDE,PETSC_DECIDE,
                       1, /* 1 dof */
@@ -68,7 +69,7 @@ PetscErrorCode test1_DAInjection3d( PetscInt mx, PetscInt my, PetscInt mz )
     ierr = VecAXPY(coordsf2,-1.0,coordsf);CHKERRQ(ierr);
     ierr = VecNorm(coordsf2,NORM_MAX,&norm);CHKERRQ(ierr);
     /* The fine coordinates are only reproduced in certain cases */
-    if (pt == DMDA_NONPERIODIC && norm > 1.e-10) {ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm %A\n",norm);CHKERRQ(ierr);}
+    if (!bx && !by && !bz && norm > 1.e-10) {ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm %A\n",norm);CHKERRQ(ierr);}
     ierr = VecDestroy(coordsf2);CHKERRQ(ierr);
     ierr = MatDestroy(interp);CHKERRQ(ierr);
   }
