@@ -206,8 +206,8 @@ extern PetscErrorCode  MeshGetSectionReal(Mesh, const char [], SectionReal *);
 extern PetscErrorCode  MeshSetSectionReal(Mesh, SectionReal);
 extern PetscErrorCode  MeshCreateMatrix(Mesh, SectionReal, MatType, Mat *);
 extern PetscErrorCode  MeshCreateVector(Mesh, SectionReal, Vec *);
-extern PetscErrorCode  assembleVector(Vec, Mesh, SectionReal, PetscInt, PetscScalar [], InsertMode);
-extern PetscErrorCode  assembleMatrix(Mat, Mesh, SectionReal, PetscInt, PetscScalar [], InsertMode);
+extern PetscErrorCode  assembleVector(Vec, DM, SectionReal, PetscInt, PetscScalar [], InsertMode);
+extern PetscErrorCode  assembleMatrix(Mat, DM, SectionReal, PetscInt, PetscScalar [], InsertMode);
 
 extern PetscErrorCode  MeshCreateGlobalRealVector(Mesh, SectionReal, Vec *);
 extern PetscErrorCode  MeshGetGlobalScatter(Mesh,VecScatter *);
@@ -268,49 +268,11 @@ extern PetscErrorCode  MeshHasSectionInt(Mesh, const char [], PetscBool  *);
 extern PetscErrorCode  MeshGetSectionInt(Mesh, const char [], SectionInt *);
 extern PetscErrorCode  MeshSetSectionInt(Mesh, SectionInt);
 
-#if 0
-/*S
-  SectionPair - Abstract PETSc object that manages distributed field data over a topology (Sieve).
-
-  Level: beginner
-
-  Concepts: distributed mesh, field
-
-.seealso:  SectionPairCreate(), SectionPairDestroy(), Mesh, MeshCreate()
-S*/
-typedef struct _p_SectionPair* SectionPair;
-
-/* Logging support */
-extern PetscClassId  SECTIONPAIR_CLASSID;
-
-extern PetscErrorCode  SectionPairCreate(MPI_Comm,SectionPair*);
-extern PetscErrorCode  SectionPairDestroy(SectionPair);
-extern PetscErrorCode  SectionPairView(SectionPair,PetscViewer);
-
-extern PetscErrorCode  SectionPairGetSection(SectionPair,ALE::Obj<PETSC_MESH_TYPE::pair_section_type>&);
-extern PetscErrorCode  SectionPairSetSection(SectionPair,const ALE::Obj<PETSC_MESH_TYPE::pair_section_type>&);
-extern PetscErrorCode  SectionPairGetBundle(SectionPair,ALE::Obj<PETSC_MESH_TYPE>&);
-extern PetscErrorCode  SectionPairSetBundle(SectionPair,const ALE::Obj<PETSC_MESH_TYPE>&);
-
-typedef struct {
-  int    i;
-  double x, y, z;
-} PetscPair;
-
-extern PetscErrorCode  SectionPairDistribute(SectionPair, Mesh, SectionPair *);
-extern PetscErrorCode  SectionPairRestrict(SectionPair, PetscInt, PetscPair *[]);
-extern PetscErrorCode  SectionPairUpdate(SectionPair, PetscInt, const PetscPair []);
-
-extern PetscErrorCode  MeshHasSectionPair(Mesh, const char [], PetscBool  *);
-extern PetscErrorCode  MeshGetSectionPair(Mesh, const char [], SectionPair *);
-extern PetscErrorCode  MeshSetSectionPair(Mesh, SectionPair);
-#endif
-
 extern PetscErrorCode  WriteVTKHeader(PetscViewer);
 extern PetscErrorCode  WriteVTKVertices(Mesh, PetscViewer);
 extern PetscErrorCode  WriteVTKElements(Mesh, PetscViewer);
 extern PetscErrorCode  WritePCICEVertices(Mesh, PetscViewer);
-extern PetscErrorCode  WritePCICEElements(Mesh, PetscViewer);  
+extern PetscErrorCode  WritePCICEElements(Mesh, PetscViewer);
 extern PetscErrorCode  WritePyLithVertices(Mesh, PetscViewer);
 extern PetscErrorCode  WritePyLithElements(Mesh, SectionReal, PetscViewer);
 extern PetscErrorCode  WritePyLithVerticesLocal(Mesh, PetscViewer);

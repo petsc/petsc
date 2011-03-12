@@ -10,19 +10,11 @@ PetscLogEvent  Mesh_View, Mesh_GetGlobalScatter, Mesh_restrictVector, Mesh_assem
 PetscBool  MeshRegisterAllCalled = PETSC_FALSE;
 PetscFList MeshList;
 
-#if PETSC_HAVE_SIEVE
 ALE::MemoryLogger Petsc_MemoryLogger;
-#endif
-
-extern PetscErrorCode MeshView_Mesh(Mesh, PetscViewer);
-extern PetscErrorCode MeshRefine_Mesh(Mesh, MPI_Comm, Mesh *);
-extern PetscErrorCode MeshCoarsenHierarchy_Mesh(Mesh, int, Mesh *);
-extern PetscErrorCode MeshGetInterpolation_Mesh(Mesh, Mesh, Mat *, Vec *);
-extern PetscErrorCode MeshGetInterpolation_Mesh_New(Mesh, Mesh, Mat *, Vec *);
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
-#define __FUNCT__ "Mesh_DelTag" 
+#undef __FUNCT__
+#define __FUNCT__ "Mesh_DelTag"
 /*
    Private routine to delete internal tag storage when a communicator is freed.
 
@@ -32,14 +24,14 @@ EXTERN_C_BEGIN
 
          we do not use PetscFree() since it is unsafe after PetscFinalize()
 */
-PetscMPIInt  Mesh_DelTag(MPI_Comm comm,PetscMPIInt keyval,void* attr_val,void* extra_state)
+PetscMPIInt Mesh_DelTag(MPI_Comm comm,PetscMPIInt keyval,void* attr_val,void* extra_state)
 {
   free(attr_val);
   return(MPI_SUCCESS);
 }
 EXTERN_C_END
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MeshFinalize"
 PetscErrorCode MeshFinalize()
 {
@@ -48,9 +40,65 @@ PetscErrorCode MeshFinalize()
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MeshView_Sieve_Ascii"
-PetscErrorCode MeshView_Sieve_Ascii(const ALE::Obj<PETSC_MESH_TYPE>& mesh, PetscViewer viewer)
+#undef __FUNCT__
+#define __FUNCT__ "DMMeshGetMesh"
+/*@C
+  DMMeshGetMesh - Gets the internal mesh object
+
+  Not collective
+
+  Input Parameter:
+. mesh - the mesh object
+
+  Output Parameter:
+. m - the internal mesh object
+
+  Level: advanced
+
+.seealso DMMeshCreate(), DMMeshSetMesh()
+@*/
+PetscErrorCode DMMeshGetMesh(DM dm, ALE::Obj<PETSC_MESH_TYPE>& m)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  m = ((DM_Mesh*) dm->data)->m;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMMeshSetMesh"
+/*@C
+  DMMeshSetMesh - Sets the internal mesh object
+
+  Not collective
+
+  Input Parameters:
++ mesh - the mesh object
+- m - the internal mesh object
+
+  Level: advanced
+
+.seealso DMMeshCreate(), DMMeshGetMesh()
+@*/
+PetscErrorCode DMMeshSetMesh(DM dm, const ALE::Obj<PETSC_MESH_TYPE>& m)
+{
+  DM_Mesh *mesh = (DM_Mesh *) dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  mesh->m = m;
+  if (mesh->globalScatter) {
+    PetscErrorCode ierr;
+
+    ierr = VecScatterDestroy(mesh->globalScatter);CHKERRQ(ierr);
+    mesh->globalScatter = PETSC_NULL;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMMeshView_Sieve_Ascii"
+PetscErrorCode DMMeshView_Sieve_Ascii(const ALE::Obj<PETSC_MESH_TYPE>& mesh, PetscViewer viewer)
 {
   PetscViewerFormat format;
   PetscErrorCode    ierr;
@@ -66,9 +114,7 @@ PetscErrorCode MeshView_Sieve_Ascii(const ALE::Obj<PETSC_MESH_TYPE>& mesh, Petsc
     const PETSC_MESH_TYPE::label_sequence::iterator    end   = cells->end();
     const int                                          rank  = mesh->commRank();
 
-#ifdef PETSC_OPT_SIEVE
     p->setChart(PETSC_MESH_TYPE::int_section_type::chart_type(*cells));
-#endif
     p->setFiberDimension(cells, 1);
     p->allocatePoint();
     for(PETSC_MESH_TYPE::label_sequence::iterator c_iter = cells->begin(); c_iter != end; ++c_iter) {
@@ -151,9 +197,9 @@ PetscErrorCode MeshView_Sieve_Ascii(const ALE::Obj<PETSC_MESH_TYPE>& mesh, Petsc
 }
 
 
-#undef __FUNCT__  
-#define __FUNCT__ "MeshView_Sieve_Binary"
-PetscErrorCode MeshView_Sieve_Binary(const ALE::Obj<PETSC_MESH_TYPE>& mesh, PetscViewer viewer)
+#undef __FUNCT__
+#define __FUNCT__ "DMMeshView_Sieve_Binary"
+PetscErrorCode DMMeshView_Sieve_Binary(const ALE::Obj<PETSC_MESH_TYPE>& mesh, PetscViewer viewer)
 {
   char           *filename;
   PetscErrorCode  ierr;
@@ -164,9 +210,9 @@ PetscErrorCode MeshView_Sieve_Binary(const ALE::Obj<PETSC_MESH_TYPE>& mesh, Pets
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MeshView_Sieve"
-PetscErrorCode MeshView_Sieve(const ALE::Obj<PETSC_MESH_TYPE>& mesh, PetscViewer viewer)
+#undef __FUNCT__
+#define __FUNCT__ "DMMeshView_Sieve"
+PetscErrorCode DMMeshView_Sieve(const ALE::Obj<PETSC_MESH_TYPE>& mesh, PetscViewer viewer)
 {
   PetscBool      iascii, isbinary, isdraw;
   PetscErrorCode ierr;
@@ -177,10 +223,10 @@ PetscErrorCode MeshView_Sieve(const ALE::Obj<PETSC_MESH_TYPE>& mesh, PetscViewer
   ierr = PetscTypeCompare((PetscObject) viewer, PETSCVIEWERDRAW, &isdraw);CHKERRQ(ierr);
 
   if (iascii){
-    ierr = MeshView_Sieve_Ascii(mesh, viewer);CHKERRQ(ierr);
+    ierr = DMMeshView_Sieve_Ascii(mesh, viewer);CHKERRQ(ierr);
   } else if (isbinary) {
-    ierr = MeshView_Sieve_Binary(mesh, viewer);CHKERRQ(ierr);
-  } else if (isdraw){ 
+    ierr = DMMeshView_Sieve_Binary(mesh, viewer);CHKERRQ(ierr);
+  } else if (isdraw){
     SETERRQ(((PetscObject)viewer)->comm,PETSC_ERR_SUP, "Draw viewer not implemented for Mesh");
   } else {
     SETERRQ1(((PetscObject)viewer)->comm,PETSC_ERR_SUP,"Viewer type %s not supported by this mesh object", ((PetscObject)viewer)->type_name);
@@ -188,100 +234,40 @@ PetscErrorCode MeshView_Sieve(const ALE::Obj<PETSC_MESH_TYPE>& mesh, PetscViewer
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MeshView_Mesh"
-PetscErrorCode  MeshView_Mesh(Mesh mesh, PetscViewer viewer)
+#undef __FUNCT__
+#define __FUNCT__ "DMView_Mesh"
+PetscErrorCode DMView_Mesh(DM dm, PetscViewer viewer)
 {
+  DM_Mesh       *mesh = (DM_Mesh *) dm->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MeshView_Sieve(mesh->m, viewer);CHKERRQ(ierr);
+  ierr = DMMeshView_Sieve(mesh->m, viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MeshView"
-/*@C
-   MeshView - Views a Mesh object. 
-
-   Collective on Mesh
-
-   Input Parameters:
-+  mesh - the mesh
--  viewer - an optional visualization context
-
-   Notes:
-   The available visualization contexts include
-+     PETSC_VIEWER_STDOUT_SELF - standard output (default)
--     PETSC_VIEWER_STDOUT_WORLD - synchronized standard
-         output where only the first processor opens
-         the file.  All other processors send their 
-         data to the first processor to print. 
-
-   You can change the format the mesh is printed using the 
-   option PetscViewerSetFormat().
-
-   The user can open alternative visualization contexts with
-+    PetscViewerASCIIOpen() - Outputs mesh to a specified file
-.    PetscViewerBinaryOpen() - Outputs mesh in binary to a
-         specified file; corresponding input uses MeshLoad()
-.    PetscViewerDrawOpen() - Outputs mesh to an X window display
-
-   The user can call PetscViewerSetFormat() to specify the output
-   format of ASCII printed objects (when using PETSC_VIEWER_STDOUT_SELF,
-   PETSC_VIEWER_STDOUT_WORLD and PetscViewerASCIIOpen).  Available formats include
-+    PETSC_VIEWER_DEFAULT - default, prints mesh information
--    PETSC_VIEWER_ASCII_VTK - outputs a VTK file describing the mesh
-
-   Level: beginner
-
-   Concepts: mesh^printing
-   Concepts: mesh^saving to disk
-
-.seealso: PetscViewerASCIIOpen(), PetscViewerDrawOpen(), PetscViewerBinaryOpen(),
-          MeshLoad(), PetscViewerCreate()
-@*/
-PetscErrorCode  MeshView(Mesh mesh, PetscViewer viewer)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(mesh, MESH_CLASSID, 1);
-  PetscValidType(mesh, 1);
-  if (!viewer) {
-    ierr = PetscViewerASCIIGetStdout(((PetscObject)mesh)->comm,&viewer);CHKERRQ(ierr);
-  }
-  PetscValidHeaderSpecific(viewer, PETSC_VIEWER_CLASSID, 2);
-  PetscCheckSameComm(mesh, 1, viewer, 2);
-
-  ierr = PetscLogEventBegin(Mesh_View,0,0,0,0);CHKERRQ(ierr);
-  ierr = (*mesh->ops->view)(mesh, viewer);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(Mesh_View,0,0,0,0);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MeshLoad" 
+#undef __FUNCT__
+#define __FUNCT__ "DMMeshLoad"
 /*@
-    MeshLoad - Create a mesh topology from the saved data in a viewer.
+  DMMeshLoad - Create a mesh topology from the saved data in a viewer.
 
-    Collective on Viewer
+  Collective on Viewer
 
-    Input Parameter:
-.   viewer - The viewer containing the data
+  Input Parameter:
+. viewer - The viewer containing the data
 
-    Output Parameters:
-.   mesh - the mesh object
+  Output Parameters:
+. mesh - the mesh object
 
-    Level: advanced
+  Level: advanced
 
 .seealso MeshView()
-
 @*/
-PetscErrorCode  MeshLoad(PetscViewer viewer, Mesh mesh)
+PetscErrorCode DMMeshLoad(PetscViewer viewer, DM dm)
 {
-  char           *filename;
-  PetscErrorCode  ierr;
+  DM_Mesh       *mesh = (DM_Mesh *) dm->data;
+  char          *filename;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!mesh->m) {
@@ -289,74 +275,17 @@ PetscErrorCode  MeshLoad(PetscViewer viewer, Mesh mesh)
 
     ierr = PetscObjectGetComm((PetscObject) viewer, &comm);CHKERRQ(ierr);
     ALE::Obj<PETSC_MESH_TYPE> m = new PETSC_MESH_TYPE(comm, 1);
-
-    ierr = MeshSetMesh(mesh, m);CHKERRQ(ierr);
+    ierr = DMMeshSetMesh(dm, m);CHKERRQ(ierr);
   }
   ierr = PetscViewerFileGetName(viewer, &filename);CHKERRQ(ierr);
   ALE::MeshSerializer::loadMesh(filename, *mesh->m);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MeshGetMesh"
+#undef __FUNCT__
+#define __FUNCT__ "DMMeshCreateMatrix"
 /*@C
-    MeshGetMesh - Gets the internal mesh object
-
-    Not collective
-
-    Input Parameter:
-.    mesh - the mesh object
-
-    Output Parameter:
-.    m - the internal mesh object
- 
-    Level: advanced
-
-.seealso MeshCreate(), MeshSetMesh()
-
-@*/
-PetscErrorCode  MeshGetMesh(Mesh mesh, ALE::Obj<PETSC_MESH_TYPE>& m)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(mesh, MESH_CLASSID, 1);
-  m = mesh->m;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MeshSetMesh"
-/*@C
-    MeshSetMesh - Sets the internal mesh object
-
-    Not collective
-
-    Input Parameters:
-+    mesh - the mesh object
--    m - the internal mesh object
- 
-    Level: advanced
-
-.seealso MeshCreate(), MeshGetMesh()
-
-@*/
-PetscErrorCode  MeshSetMesh(Mesh mesh, const ALE::Obj<PETSC_MESH_TYPE>& m)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(mesh, MESH_CLASSID, 1);
-  mesh->m = m;
-  if (mesh->globalScatter) {
-    PetscErrorCode ierr;
-
-    ierr = VecScatterDestroy(mesh->globalScatter);CHKERRQ(ierr);
-    mesh->globalScatter = PETSC_NULL;
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MeshCreateMatrix" 
-/*@C
-  MeshCreateMatrix - Creates a matrix with the correct parallel layout required for 
+  DMMeshCreateMatrix - Creates a matrix with the correct parallel layout required for
     computing the Jacobian on a function defined using the information in the Section.
 
   Collective on Mesh
@@ -373,353 +302,121 @@ PetscErrorCode  MeshSetMesh(Mesh mesh, const ALE::Obj<PETSC_MESH_TYPE>& m)
 
   Level: advanced
 
-  Notes: This properly preallocates the number of nonzeros in the sparse matrix so you 
+  Notes: This properly preallocates the number of nonzeros in the sparse matrix so you
        do not need to do it yourself.
 
 .seealso ISColoringView(), ISColoringGetIS(), MatFDColoringCreate(), DMDASetBlockFills()
 @*/
-PetscErrorCode  MeshCreateMatrix(Mesh mesh, SectionReal section, MatType mtype, Mat *J)
+PetscErrorCode DMMeshCreateMatrix(DM dm, SectionReal section, MatType mtype, Mat *J)
 {
   ALE::Obj<PETSC_MESH_TYPE> m;
   ALE::Obj<PETSC_MESH_TYPE::real_section_type> s;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
   ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
   try {
     ierr = MeshCreateMatrix(m, s, mtype, J);CHKERRQ(ierr);
   } catch(ALE::Exception e) {
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB, e.message());
   }
-  ierr = PetscObjectCompose((PetscObject) *J, "mesh", (PetscObject) mesh);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject) *J, "DMMesh", (PetscObject) dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MeshGetVertexMatrix" 
-PetscErrorCode  MeshGetVertexMatrix(Mesh mesh, MatType mtype, Mat *J)
+#undef __FUNCT__
+#define __FUNCT__ "DMMeshGetVertexMatrix"
+PetscErrorCode DMMeshGetVertexMatrix(DM dm, MatType mtype, Mat *J)
 {
   SectionReal    section;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MeshGetVertexSectionReal(mesh, "default", 1, &section);CHKERRQ(ierr);
-  ierr = MeshCreateMatrix(mesh, section, mtype, J);CHKERRQ(ierr);
+  ierr = DMMeshGetVertexSectionReal(dm, "default", 1, &section);CHKERRQ(ierr);
+  ierr = DMMeshCreateMatrix(dm, section, mtype, J);CHKERRQ(ierr);
   ierr = SectionRealDestroy(section);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MeshGetMatrix" 
-/*@C
-    MeshGetMatrix - Creates a matrix with the correct parallel layout required for 
-      computing the Jacobian on a function defined using the information in Mesh.
+#undef __FUNCT__
+#define __FUNCT__ "DMMeshGetCellMatrix"
+PetscErrorCode DMMeshGetCellMatrix(DM dm, MatType mtype, Mat *J)
+{
+  SectionReal    section;
+  PetscErrorCode ierr;
 
-    Collective on Mesh
+  PetscFunctionBegin;
+  ierr = DMMeshGetCellSectionReal(dm, "default", 1, &section);CHKERRQ(ierr);
+  ierr = DMMeshCreateMatrix(dm, section, mtype, J);CHKERRQ(ierr);
+  ierr = SectionRealDestroy(section);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
-    Input Parameters:
-+   mesh - the mesh object
--   mtype - Supported types are MATSEQAIJ, MATMPIAIJ, MATSEQBAIJ, MATMPIBAIJ, MATSEQSBAIJ, MATMPISBAIJ,
-            or any type which inherits from one of these (such as MATAIJ, MATLUSOL, etc.).
-
-    Output Parameter:
-.   J  - matrix with the correct nonzero preallocation
-        (obviously without the correct Jacobian values)
-
-    Level: advanced
-
-    Notes: This properly preallocates the number of nonzeros in the sparse matrix so you 
-       do not need to do it yourself.
-
-.seealso ISColoringView(), ISColoringGetIS(), MatFDColoringCreate(), DMDASetBlockFills()
-
-@*/
-PetscErrorCode  MeshGetMatrix(Mesh mesh, const MatType mtype, Mat *J)
+#undef __FUNCT__
+#define __FUNCT__ "DMGetMatrix_Mesh"
+PetscErrorCode DMGetMatrix_Mesh(DM dm, const MatType mtype, Mat *J)
 {
   ALE::Obj<PETSC_MESH_TYPE> m;
-  PetscBool           flag;
-  PetscErrorCode      ierr;
-
-  PetscFunctionBegin;
-  ierr = MeshHasSectionReal(mesh, "default", &flag);CHKERRQ(ierr);
-  if (!flag) SETERRQ(((PetscObject)mesh)->comm,PETSC_ERR_ARG_WRONGSTATE, "Must set default section");
-  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-  ierr = MeshCreateMatrix(m, m->getRealSection("default"), mtype, J);CHKERRQ(ierr);
-  ierr = PetscObjectCompose((PetscObject) *J, "mesh", (PetscObject) mesh);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MeshCreate"
-/*@C
-    MeshCreate - Creates a DM object, used to manage data for an unstructured problem
-    described by a Sieve.
-
-    Collective on MPI_Comm
-
-    Input Parameter:
-.   comm - the processors that will share the global vector
-
-    Output Parameters:
-.   mesh - the mesh object
-
-    Level: advanced
-
-.seealso MeshDestroy(), MeshCreateGlobalVector(), MeshGetGlobalIndices()
-
-@*/
-PetscErrorCode  MeshCreate(MPI_Comm comm,Mesh *mesh)
-{
+  MatType        ttype[256];
+  PetscBool      flag;
   PetscErrorCode ierr;
-  Mesh         p;
 
   PetscFunctionBegin;
-  PetscValidPointer(mesh,2);
-  *mesh = PETSC_NULL;
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
-  ierr = DMInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
+  if (!mtype) mtype = MATAIJ;
+  ierr = PetscStrcpy((char*)ttype,mtype);CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(((PetscObject) dm)->comm, ((PetscObject) dm)->prefix, "DMMesh options", "Mat");CHKERRQ(ierr); 
+  ierr = PetscOptionsList("-dm_mat_type", "Matrix type", "MatSetType", MatList, mtype, (char *) ttype, 256, &flag);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();
 
-  ierr = PetscHeaderCreate(p,_p_Mesh,struct _MeshOps,MESH_CLASSID,0,"Mesh",comm,MeshDestroy,MeshView);CHKERRQ(ierr);
-  p->ops->view               = MeshView_Mesh;
-  p->ops->destroy            = PETSC_NULL;
-  p->ops->createglobalvector = MeshCreateGlobalVector;
-  p->ops->createlocalvector  = MeshCreateLocalVector;
-  p->ops->getcoloring        = PETSC_NULL;
-  p->ops->getmatrix          = MeshGetMatrix;
-  p->ops->getinterpolation   = MeshGetInterpolation_Mesh_New;
-  p->ops->getinjection       = PETSC_NULL;
-  p->ops->refine             = MeshRefine_Mesh;
-  p->ops->coarsen            = PETSC_NULL;
-  p->ops->refinehierarchy    = PETSC_NULL;
-  p->ops->coarsenhierarchy   = MeshCoarsenHierarchy_Mesh;
-
-  ierr = PetscObjectChangeTypeName((PetscObject) p, "sieve");CHKERRQ(ierr);
-
-  new(&p->m) ALE::Obj<PETSC_MESH_TYPE>(PETSC_NULL);
-  p->globalScatter = PETSC_NULL;
-  p->lf            = PETSC_NULL;
-  p->lj            = PETSC_NULL;
-  p->data          = PETSC_NULL;
-  *mesh = p;
+  ierr = DMMeshHasSectionReal(dm, "default", &flag);CHKERRQ(ierr);
+  if (!flag) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONGSTATE, "Must set default section");
+  ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
+  ierr = MeshCreateMatrix(m, m->getRealSection("default"), mtype, J);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject) *J, "DMMesh", (PetscObject) dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MeshDestroy"
-/*@
-    MeshDestroy - Destroys a mesh.
-
-    Collective on Mesh
-
-    Input Parameter:
-.   mesh - the mesh object
-
-    Level: advanced
-
-.seealso MeshCreate(), MeshCreateGlobalVector(), MeshGetGlobalIndices()
-@*/
-PetscErrorCode  MeshDestroy(Mesh mesh)
+#undef __FUNCT__
+#define __FUNCT__ "DMDestroy_Mesh"
+PetscErrorCode DMDestroy_Mesh(DM dm)
 {
-  PetscErrorCode     ierr;
+  DM_Mesh       *mesh = (DM_Mesh *) dm->data;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (--((PetscObject)mesh)->refct > 0) PetscFunctionReturn(0);
-  PETSc::Log::Event("MeshDestroy").begin();
-  if (mesh->globalScatter) {ierr = VecScatterDestroy(mesh->globalScatter);CHKERRQ(ierr);}
   mesh->m = PETSC_NULL;
-  ierr = PetscHeaderDestroy(mesh);CHKERRQ(ierr);
-  PETSc::Log::Event("MeshDestroy").end();
+  if (mesh->globalScatter) {ierr = VecScatterDestroy(mesh->globalScatter);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MeshSetType"
-/*@C
-  MeshSetType - Sets the Mesh type
-
-  Collective on Mesh
-
-  Input Parameters:
-+ mesh - the Mesh context
-- type - the type
-
-  Options Database Key:
-. -mesh_type  <method> - Sets the type; use -help for a list 
-    of available types (for instance, cartesian or sieve)
-
-  Notes:
-  See "petsc/include/petscmesh.h" for available types (for instance,
-  MESHCARTESIAN or MESHSIEVE).
-
-  Level: intermediate
-
-.keywords: Mesh, set, typr
-.seealso: MeshGetType(), MeshType
-@*/
-PetscErrorCode  MeshSetType(Mesh mesh, const MeshType type)
-{
-  PetscErrorCode ierr,(*r)(Mesh);
-  PetscBool      match;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(mesh,MESH_CLASSID,1);
-  PetscValidCharPointer(type,2);
-
-  ierr = PetscTypeCompare((PetscObject)mesh,type,&match);CHKERRQ(ierr);
-  if (match) PetscFunctionReturn(0);
-
-  ierr =  PetscFListFind(MeshList,((PetscObject)mesh)->comm,type,(void (**)(void)) &r);CHKERRQ(ierr);
-  if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested Mesh type %s",type);
-  /* Destroy the previous private Mesh context */
-  if (mesh->ops->destroy) { ierr = (*mesh->ops->destroy)(mesh);CHKERRQ(ierr); }
-  /* Reinitialize function pointers in MeshOps structure */
-  ierr = PetscMemzero(mesh->ops, sizeof(struct _MeshOps));CHKERRQ(ierr);
-  /* Call the MeshCreate_XXX routine for this particular mesh */
-  ierr = (*r)(mesh);CHKERRQ(ierr);
-  ierr = PetscObjectChangeTypeName((PetscObject) mesh, type);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MeshGetType"
-/*@C
-  MeshGetType - Gets the Mesh type as a string from the Mesh object.
-
-  Not Collective
-
-  Input Parameter:
-. mesh - Mesh context 
-
-  Output Parameter:
-. name - name of Mesh type 
-
-  Level: intermediate
-
-.keywords: Mesh, get, type
-.seealso: MeshSetType()
-@*/
-PetscErrorCode  MeshGetType(Mesh mesh,const MeshType *type)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(mesh,MESH_CLASSID,1);
-  PetscValidPointer(type,2);
-  *type = ((PetscObject)mesh)->type_name;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MeshRegister"
-/*@C
-  MeshRegister - See MeshRegisterDynamic()
-
-  Level: advanced
-@*/
-PetscErrorCode  MeshRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(Mesh))
-{
-  PetscErrorCode ierr;
-  char           fullname[PETSC_MAX_PATH_LEN];
-
-  PetscFunctionBegin;
-  ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&MeshList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-EXTERN_C_BEGIN
-extern PetscErrorCode  MeshCreate_Cartesian(Mesh);
-EXTERN_C_END
-
-#undef __FUNCT__  
-#define __FUNCT__ "MeshRegisterAll"
-/*@C
-  MeshRegisterAll - Registers all of the Mesh types in the Mesh package.
-
-  Not Collective
-
-  Level: advanced
-
-.keywords: Mesh, register, all
-.seealso:  MeshRegisterDestroy()
-@*/
-PetscErrorCode  MeshRegisterAll(const char path[])
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  MeshRegisterAllCalled = PETSC_TRUE;
-
-  ierr = MeshRegisterDynamic(MESHCARTESIAN, path, "MeshCreate_Cartesian", MeshCreate_Cartesian);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MeshRegisterDestroy"
-/*@C
-  MeshRegisterDestroy - Frees the list of Mesh types that were
-  registered by MeshRegister().
-
-  Not Collective
-
-  Level: advanced
-
-.keywords: Mesh, register, destroy
-.seealso: MeshRegister(), MeshRegisterAll()
-@*/
-PetscErrorCode  MeshRegisterDestroy(void)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscFListDestroy(&MeshList);CHKERRQ(ierr);
-  MeshRegisterAllCalled = PETSC_FALSE;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MeshCreateGlobalVector"
-/*@C
-    MeshCreateGlobalVector - Creates a vector of the correct size to be gathered into 
-        by the mesh.
-
-    Collective on Mesh
-
-    Input Parameter:
-.    mesh - the mesh object
-
-    Output Parameters:
-.   gvec - the global vector
-
-    Level: advanced
-
-    Notes: Once this has been created you cannot add additional arrays or vectors to be packed.
-
-.seealso MeshDestroy(), MeshCreate(), MeshGetGlobalIndices()
-
-@*/
-PetscErrorCode  MeshCreateGlobalVector(Mesh mesh, Vec *gvec)
+#undef __FUNCT__
+#define __FUNCT__ "DMCreateGlobalVector_Mesh"
+PetscErrorCode DMCreateGlobalVector_Mesh(DM dm, Vec *gvec)
 {
   ALE::Obj<PETSC_MESH_TYPE> m;
   PetscBool      flag;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MeshHasSectionReal(mesh, "default", &flag);CHKERRQ(ierr);
-  if (!flag) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Must set default section for mesh %p", m.objPtr);
-  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  ierr = DMMeshHasSectionReal(dm, "default", &flag);CHKERRQ(ierr);
+  if (!flag) SETERRQ(((PetscObject) dm)->comm,PETSC_ERR_ARG_WRONGSTATE, "Must set default section");
+  ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
   const ALE::Obj<PETSC_MESH_TYPE::order_type>& order = m->getFactory()->getGlobalOrder(m, "default", m->getRealSection("default"));
 
-  ierr = VecCreate(m->comm(), gvec);CHKERRQ(ierr);
+  ierr = VecCreate(((PetscObject) dm)->comm, gvec);CHKERRQ(ierr);
   ierr = VecSetSizes(*gvec, order->getLocalSize(), order->getGlobalSize());CHKERRQ(ierr);
   ierr = VecSetFromOptions(*gvec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MeshCreateVector"
+#undef __FUNCT__
+#define __FUNCT__ "DMMeshCreateVector"
 /*@
-  MeshCreateVector - Creates a global vector matching the input section
+  DMMeshCreateVector - Creates a global vector matching the input section
 
   Collective on Mesh
 
@@ -733,16 +430,16 @@ PetscErrorCode  MeshCreateGlobalVector(Mesh mesh, Vec *gvec)
   Level: advanced
 
   Notes: The vector can safely be destroyed using VecDestroy().
-.seealso MeshDestroy(), MeshCreate(), MeshGetGlobalIndices()
+.seealso DMMeshCreate(), MeshGetGlobalIndices()
 @*/
-PetscErrorCode  MeshCreateVector(Mesh mesh, SectionReal section, Vec *vec)
+PetscErrorCode DMMeshCreateVector(DM mesh, SectionReal section, Vec *vec)
 {
   ALE::Obj<PETSC_MESH_TYPE> m;
   ALE::Obj<PETSC_MESH_TYPE::real_section_type> s;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  ierr = DMMeshGetMesh(mesh, m);CHKERRQ(ierr);
   ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
   const ALE::Obj<PETSC_MESH_TYPE::order_type>& order = m->getFactory()->getGlobalOrder(m, s->getName(), s);
 
@@ -752,36 +449,18 @@ PetscErrorCode  MeshCreateVector(Mesh mesh, SectionReal section, Vec *vec)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MeshCreateLocalVector"
-/*@C
-    MeshCreateLocalVector - Creates a vector of the correct size for local computation.
-
-    Not Collective
-
-    Input Parameter:
-.    mesh - the mesh object
-
-    Output Parameters:
-.   lvec - the local vector
-
-    Level: advanced
-
-    Notes: Once this has been created you cannot add additional arrays or vectors to be packed.
-
-.seealso MeshDestroy(), MeshCreate(), MeshCreateGlobalVector()
-
-@*/
-PetscErrorCode  MeshCreateLocalVector(Mesh mesh, Vec *lvec)
+#undef __FUNCT__
+#define __FUNCT__ "DMCreateLocalVector_Mesh"
+PetscErrorCode DMCreateLocalVector_Mesh(DM dm, Vec *lvec)
 {
   ALE::Obj<PETSC_MESH_TYPE> m;
   PetscBool      flag;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MeshHasSectionReal(mesh, "default", &flag);CHKERRQ(ierr);
-  if (!flag) SETERRQ(((PetscObject)mesh)->comm,PETSC_ERR_ARG_WRONGSTATE, "Must set default section");
-  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  ierr = DMMeshHasSectionReal(dm, "default", &flag);CHKERRQ(ierr);
+  if (!flag) SETERRQ(((PetscObject) dm)->comm,PETSC_ERR_ARG_WRONGSTATE, "Must set default section");
+  ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
   const int size = m->getRealSection("default")->getStorageSize();
 
   ierr = VecCreate(PETSC_COMM_SELF, lvec);CHKERRQ(ierr);
@@ -790,36 +469,35 @@ PetscErrorCode  MeshCreateLocalVector(Mesh mesh, Vec *lvec)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MeshGetGlobalIndices"
+#undef __FUNCT__
+#define __FUNCT__ "DMMeshGetGlobalIndices"
 /*@C
-    MeshGetGlobalIndices - Gets the global indices for all the local entries
+  DMMeshGetGlobalIndices - Gets the global indices for all the local entries
 
-    Collective on Mesh
+  Collective on Mesh
 
-    Input Parameter:
-.    mesh - the mesh object
+  Input Parameter:
+. mesh - the mesh object
 
-    Output Parameters:
-.    idx - the individual indices for each packed vector/array
- 
-    Level: advanced
+  Output Parameters:
+. idx - the individual indices for each packed vector/array
 
-    Notes:
-       The idx parameters should be freed by the calling routine with PetscFree()
+  Level: advanced
 
-.seealso MeshDestroy(), MeshCreateGlobalVector(), MeshCreate()
+  Notes:
+  The idx parameters should be freed by the calling routine with PetscFree()
 
+.seealso DMCreateGlobalVector(), DMMeshCreate()
 @*/
-PetscErrorCode  MeshGetGlobalIndices(Mesh mesh,PetscInt *idx[])
+PetscErrorCode MeshGetGlobalIndices(DM dm, PetscInt *idx[])
 {
-  SETERRQ(((PetscObject)mesh)->comm,PETSC_ERR_SUP, "");
+  SETERRQ(((PetscObject) dm)->comm,PETSC_ERR_SUP, "Still too lazy");
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MeshCreateGlobalScatter"
+#define __FUNCT__ "DMMeshCreateGlobalScatter"
 /*@
-  MeshCreateGlobalScatter - Create a VecScatter which maps from local, overlapping
+  DMMeshCreateGlobalScatter - Create a VecScatter which maps from local, overlapping
   storage in the Section to a global Vec
 
   Collective on Mesh
@@ -830,38 +508,54 @@ PetscErrorCode  MeshGetGlobalIndices(Mesh mesh,PetscInt *idx[])
 
   Output Parameter:
 . scatter - the VecScatter
- 
+
   Level: advanced
 
-.seealso MeshDestroy(), MeshCreateGlobalVector(), MeshCreate()
+.seealso MeshDestroy(), MeshCreateGlobalVector(), DMMeshCreate()
 @*/
-PetscErrorCode  MeshCreateGlobalScatter(Mesh mesh, SectionReal section, VecScatter *scatter)
+PetscErrorCode DMMeshCreateGlobalScatter(DM dm, SectionReal section, VecScatter *scatter)
 {
   ALE::Obj<PETSC_MESH_TYPE> m;
   ALE::Obj<PETSC_MESH_TYPE::real_section_type> s;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
   ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
   ierr = MeshCreateGlobalScatter(m, s, scatter);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MeshGetGlobalScatter"
-PetscErrorCode  MeshGetGlobalScatter(Mesh mesh, VecScatter *scatter)
+#define __FUNCT__ "DMMeshGetGlobalScatter"
+/*@
+  DMMeshGetGlobalScatter - Retrieve the VecScatter which maps from local, overlapping storage in the default Section to a global Vec
+
+  Collective on Mesh
+
+  Input Parameters:
+. mesh - the mesh object
+
+  Output Parameter:
+. scatter - the VecScatter
+
+  Level: advanced
+
+.seealso MeshDestroy(), MeshCreateGlobalVector(), DMMeshCreate()
+@*/
+PetscErrorCode DMMeshGetGlobalScatter(DM dm, VecScatter *scatter)
 {
+  DM_Mesh       *mesh = (DM_Mesh *) dm->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mesh, MESH_CLASSID, 1);
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(scatter, 2);
   if (!mesh->globalScatter) {
     SectionReal section;
 
-    ierr = MeshGetSectionReal(mesh, "default", &section);CHKERRQ(ierr);
-    ierr = MeshCreateGlobalScatter(mesh, section, &mesh->globalScatter);CHKERRQ(ierr);
+    ierr = DMMeshGetSectionReal(dm, "default", &section);CHKERRQ(ierr);
+    ierr = DMMeshCreateGlobalScatter(dm, section, &mesh->globalScatter);CHKERRQ(ierr);
     ierr = SectionRealDestroy(section);CHKERRQ(ierr);
   }
   *scatter = mesh->globalScatter;
@@ -869,85 +563,95 @@ PetscErrorCode  MeshGetGlobalScatter(Mesh mesh, VecScatter *scatter)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MeshGetLocalFunction"
-PetscErrorCode  MeshGetLocalFunction(Mesh mesh, PetscErrorCode (**lf)(Mesh, SectionReal, SectionReal, void *))
+#define __FUNCT__ "DMMeshGetLocalFunction"
+PetscErrorCode DMMeshGetLocalFunction(DM dm, PetscErrorCode (**lf)(DM, SectionReal, SectionReal, void *))
 {
+  DM_Mesh *mesh = (DM_Mesh *) dm->data;
+
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mesh, MESH_CLASSID, 1);
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   if (lf) *lf = mesh->lf;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MeshSetLocalFunction"
-PetscErrorCode  MeshSetLocalFunction(Mesh mesh, PetscErrorCode (*lf)(Mesh, SectionReal, SectionReal, void *))
+#define __FUNCT__ "DMMeshSetLocalFunction"
+PetscErrorCode DMMeshSetLocalFunction(DM dm, PetscErrorCode (*lf)(DM, SectionReal, SectionReal, void *))
 {
+  DM_Mesh *mesh = (DM_Mesh *) dm->data;
+
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mesh, MESH_CLASSID, 1);
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   mesh->lf = lf;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MeshSetLocalJacobian"
-PetscErrorCode  MeshGetLocalJacobian(Mesh mesh, PetscErrorCode (**lj)(Mesh, SectionReal, Mat, void *))
+#define __FUNCT__ "DMMeshSetLocalJacobian"
+PetscErrorCode DMMeshGetLocalJacobian(DM dm, PetscErrorCode (**lj)(DM, SectionReal, Mat, void *))
 {
+  DM_Mesh *mesh = (DM_Mesh *) dm->data;
+
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mesh, MESH_CLASSID, 1);
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   if (lj) *lj = mesh->lj;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MeshSetLocalJacobian"
-PetscErrorCode  MeshSetLocalJacobian(Mesh mesh, PetscErrorCode (*lj)(Mesh, SectionReal, Mat, void *))
+#define __FUNCT__ "DMMeshSetLocalJacobian"
+PetscErrorCode DMMeshSetLocalJacobian(DM dm, PetscErrorCode (*lj)(DM, SectionReal, Mat, void *))
 {
+  DM_Mesh *mesh = (DM_Mesh *) dm->data;
+
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mesh, MESH_CLASSID, 1);
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   mesh->lj = lj;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MeshFormFunction"
-PetscErrorCode  MeshFormFunction(Mesh mesh, SectionReal X, SectionReal F, void *ctx)
+#define __FUNCT__ "DMMeshFormFunction"
+PetscErrorCode DMMeshFormFunction(DM dm, SectionReal X, SectionReal F, void *ctx)
 {
+  DM_Mesh       *mesh = (DM_Mesh *) dm->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mesh, MESH_CLASSID, 1);
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(X, SECTIONREAL_CLASSID, 2);
   PetscValidHeaderSpecific(F, SECTIONREAL_CLASSID, 3);
   if (mesh->lf) {
-    ierr = (*mesh->lf)(mesh, X, F, ctx);CHKERRQ(ierr);
+    ierr = (*mesh->lf)(dm, X, F, ctx);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MeshFormJacobian"
-PetscErrorCode  MeshFormJacobian(Mesh mesh, SectionReal X, Mat J, void *ctx)
+#define __FUNCT__ "DMMeshFormJacobian"
+PetscErrorCode DMMeshFormJacobian(DM dm, SectionReal X, Mat J, void *ctx)
 {
+  DM_Mesh       *mesh = (DM_Mesh *) dm->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mesh, MESH_CLASSID, 1);
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidHeaderSpecific(X, SECTIONREAL_CLASSID, 2);
   PetscValidHeaderSpecific(J, MAT_CLASSID, 3);
   if (mesh->lj) {
-    ierr = (*mesh->lj)(mesh, X, J, ctx);CHKERRQ(ierr);
+    ierr = (*mesh->lj)(dm, X, J, ctx);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MeshInterpolatePoints"
+#define __FUNCT__ "DMMeshInterpolatePoints"
 // Here we assume:
 //  - Assumes 3D and tetrahedron
 //  - The section takes values on vertices and is P1
 //  - Points have the same dimension as the mesh
 //  - All values have the same dimension
-PetscErrorCode  MeshInterpolatePoints(Mesh mesh, SectionReal section, int numPoints, PetscReal *points, PetscScalar **values)
+PetscErrorCode DMMeshInterpolatePoints(DM dm, SectionReal section, int numPoints, PetscReal *points, PetscScalar **values)
 {
   Obj<PETSC_MESH_TYPE> m;
   Obj<PETSC_MESH_TYPE::real_section_type> s;
@@ -955,7 +659,7 @@ PetscErrorCode  MeshInterpolatePoints(Mesh mesh, SectionReal section, int numPoi
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
   ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
   const Obj<PETSC_MESH_TYPE::real_section_type>& coordinates = m->getRealSection("coordinates");
   int embedDim = coordinates->getFiberDimension(*m->depthStratum(0)->begin());
@@ -983,9 +687,9 @@ PetscErrorCode  MeshInterpolatePoints(Mesh mesh, SectionReal section, int numPoi
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MeshGetMaximumDegree"
+#define __FUNCT__ "DMMeshGetMaximumDegree"
 /*@C
-  MeshGetMaximumDegree - Return the maximum degree of any mesh vertex
+  DMMeshGetMaximumDegree - Return the maximum degree of any mesh vertex
 
   Collective on mesh
 
@@ -997,18 +701,18 @@ PetscErrorCode  MeshInterpolatePoints(Mesh mesh, SectionReal section, int numPoi
 
    Level: beginner
 
-.seealso: MeshCreate()
+.seealso: DMMeshCreate()
 @*/
-PetscErrorCode MeshGetMaximumDegree(Mesh mesh, PetscInt *maxDegree)
+PetscErrorCode DMMeshGetMaximumDegree(DM dm, PetscInt *maxDegree)
 {
   Obj<PETSC_MESH_TYPE> m;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
   const ALE::Obj<PETSC_MESH_TYPE::label_sequence>& vertices = m->depthStratum(0);
   const ALE::Obj<PETSC_MESH_TYPE::sieve_type>&     sieve    = m->getSieve();
-  PetscInt                                          maxDeg   = -1;
+  PetscInt                                         maxDeg   = -1;
 
   for(PETSC_MESH_TYPE::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
     maxDeg = PetscMax(maxDeg, (PetscInt) sieve->getSupportSize(*v_iter));
@@ -1120,19 +824,19 @@ PetscErrorCode assembleVectorComplete(Vec g, Vec l, InsertMode mode)
 @*/
 PetscErrorCode assembleVector(Vec b, PetscInt e, PetscScalar v[], InsertMode mode)
 {
-  Mesh           mesh;
+  DM             dm;
   SectionReal    section;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectQuery((PetscObject) b, "mesh", (PetscObject *) &mesh);CHKERRQ(ierr);
-  ierr = MeshGetSectionReal(mesh, "x", &section);CHKERRQ(ierr);
-  ierr = assembleVector(b, mesh, section, e, v, mode);CHKERRQ(ierr);
+  ierr = PetscObjectQuery((PetscObject) b, "DMMesh", (PetscObject *) &dm);CHKERRQ(ierr);
+  ierr = DMMeshGetSectionReal(dm, "x", &section);CHKERRQ(ierr);
+  ierr = assembleVector(b, dm, section, e, v, mode);CHKERRQ(ierr);
   ierr = SectionRealDestroy(section);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode assembleVector(Vec b, Mesh mesh, SectionReal section, PetscInt e, PetscScalar v[], InsertMode mode)
+PetscErrorCode assembleVector(Vec b, DM dm, SectionReal section, PetscInt e, PetscScalar v[], InsertMode mode)
 {
   ALE::Obj<PETSC_MESH_TYPE> m;
   ALE::Obj<PETSC_MESH_TYPE::real_section_type> s;
@@ -1141,7 +845,7 @@ PetscErrorCode assembleVector(Vec b, Mesh mesh, SectionReal section, PetscInt e,
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(Mesh_assembleVector,0,0,0,0);CHKERRQ(ierr);
-  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
   ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
   //firstElement = elementBundle->getLocalSizes()[bundle->getCommRank()];
   firstElement = 0;
@@ -1162,70 +866,13 @@ PetscErrorCode assembleVector(Vec b, Mesh mesh, SectionReal section, PetscInt e,
 #define __FUNCT__ "updateOperator"
 PetscErrorCode updateOperator(Mat A, const ALE::Obj<PETSC_MESH_TYPE>& m, const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& section, const ALE::Obj<PETSC_MESH_TYPE::order_type>& globalOrder, const PETSC_MESH_TYPE::point_type& e, PetscScalar array[], InsertMode mode)
 {
-  PetscFunctionBegin;
-#ifdef PETSC_OPT_SIEVE
-  typedef ALE::ISieveVisitor::IndicesVisitor<PETSC_MESH_TYPE::real_section_type,PETSC_MESH_TYPE::order_type,PetscInt> visitor_type;
-  visitor_type iV(*section, *globalOrder, (int) pow((double) m->getSieve()->getMaxConeSize(), m->depth())*m->getMaxDof(), m->depth() > 1);
-
-  PetscErrorCode ierr = updateOperator(A, *m->getSieve(), iV, e, array, mode);CHKERRQ(ierr);
-#else
-  const PETSC_MESH_TYPE::indices_type indicesBlock = m->getIndices(section, e, globalOrder);
-  const PetscInt *indices    = indicesBlock.first;
-  const int&      numIndices = indicesBlock.second;
-  PetscErrorCode  ierr;
-
-  ierr = PetscLogEventBegin(Mesh_updateOperator,0,0,0,0);CHKERRQ(ierr);
-  if (section->debug()) {
-    printf("[%d]mat for element %d\n", section->commRank(), e);
-    for(int i = 0; i < numIndices; i++) {
-      printf("[%d]mat indices[%d] = %d\n", section->commRank(), i, indices[i]);
-    }
-    for(int i = 0; i < numIndices; i++) {
-      printf("[%d]", section->commRank());
-      for(int j = 0; j < numIndices; j++) {
-        printf(" %g", array[i*numIndices+j]);
-      }
-      printf("\n");
-    }
-  }
-  ierr = MatSetValues(A, numIndices, indices, numIndices, indices, array, mode);
-  if (ierr) {
-    printf("[%d]ERROR in updateOperator: point %d\n", section->commRank(), e);
-    for(int i = 0; i < numIndices; i++) {
-      printf("[%d]mat indices[%d] = %d\n", section->commRank(), i, indices[i]);
-    }
-    CHKERRQ(ierr);
-  }
-  ierr = PetscLogEventEnd(Mesh_updateOperator,0,0,0,0);CHKERRQ(ierr);
-#endif
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "updateOperator"
-PetscErrorCode updateOperator(Mat A, const ALE::Obj<PETSC_MESH_TYPE>& m, const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& section, const ALE::Obj<PETSC_MESH_TYPE::order_type>& globalOrder, int tag, int p, PetscScalar array[], InsertMode mode)
-{
-#ifdef PETSC_OPT_SIEVE
-  SETERRQ(((PetscObject)A)->comm,PETSC_ERR_SUP, "This is not applicable for optimized sieves");
-#else
-  const int *offsets, *indices;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  section->getCustomRestrictAtlas(tag, &offsets, &indices);
-  const int& numIndices = offsets[p+1] - offsets[p];
+  typedef ALE::ISieveVisitor::IndicesVisitor<PETSC_MESH_TYPE::real_section_type,PETSC_MESH_TYPE::order_type,PetscInt> visitor_type;
+  visitor_type iV(*section, *globalOrder, (int) pow((double) m->getSieve()->getMaxConeSize(), m->depth())*m->getMaxDof(), m->depth() > 1);
 
-  ierr = PetscLogEventBegin(Mesh_updateOperator,0,0,0,0);CHKERRQ(ierr);
-  ierr = MatSetValues(A, numIndices, indices, numIndices, indices, array, mode);
-  if (ierr) {
-    printf("[%d]ERROR in updateOperator: tag %d point num %d\n", section->commRank(), tag, p);
-    for(int i = 0; i < numIndices; i++) {
-      printf("[%d]mat indices[%d] = %d\n", section->commRank(), i, indices[i]);
-    }
-    CHKERRQ(ierr);
-  }
-  ierr = PetscLogEventEnd(Mesh_updateOperator,0,0,0,0);CHKERRQ(ierr);
-#endif
+  updateOperator(A, *m->getSieve(), iV, e, array, mode);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1233,68 +880,18 @@ PetscErrorCode updateOperator(Mat A, const ALE::Obj<PETSC_MESH_TYPE>& m, const A
 #define __FUNCT__ "updateOperatorGeneral"
 PetscErrorCode updateOperatorGeneral(Mat A, const ALE::Obj<PETSC_MESH_TYPE>& rowM, const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& rowSection, const ALE::Obj<PETSC_MESH_TYPE::order_type>& rowGlobalOrder, const PETSC_MESH_TYPE::point_type& rowE, const ALE::Obj<PETSC_MESH_TYPE>& colM, const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& colSection, const ALE::Obj<PETSC_MESH_TYPE::order_type>& colGlobalOrder, const PETSC_MESH_TYPE::point_type& colE, PetscScalar array[], InsertMode mode)
 {
-#ifdef PETSC_OPT_SIEVE
   typedef ALE::ISieveVisitor::IndicesVisitor<PETSC_MESH_TYPE::real_section_type,PETSC_MESH_TYPE::order_type,PetscInt> visitor_type;
   visitor_type iVr(*rowSection, *rowGlobalOrder, (int) pow((double) rowM->getSieve()->getMaxConeSize(), rowM->depth())*rowM->getMaxDof(), rowM->depth() > 1);
   visitor_type iVc(*colSection, *colGlobalOrder, (int) pow((double) colM->getSieve()->getMaxConeSize(), colM->depth())*colM->getMaxDof(), colM->depth() > 1);
 
   PetscErrorCode ierr = updateOperator(A, *rowM->getSieve(), iVr, rowE, *colM->getSieve(), iVc, colE, array, mode);CHKERRQ(ierr);
-#else
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  const PETSC_MESH_TYPE::indices_type rowIndicesBlock = rowM->getIndices(rowSection, rowE, rowGlobalOrder);
-
-  const PetscInt *tmpIndices    = rowIndicesBlock.first;
-  const int       numRowIndices = rowIndicesBlock.second;
-  PetscInt       *rowIndices    = new PetscInt[numRowIndices];
-  PetscMemcpy(rowIndices, tmpIndices, numRowIndices*sizeof(PetscInt));
-
-  const PETSC_MESH_TYPE::indices_type colIndicesBlock = colM->getIndices(colSection, colE, colGlobalOrder);
-
-  const PetscInt *colIndices    = colIndicesBlock.first;
-  const int      numColIndices = colIndicesBlock.second;
-
-  ierr = PetscLogEventBegin(Mesh_updateOperator,0,0,0,0);CHKERRQ(ierr);
-  if (rowSection->debug()) {
-    printf("[%d]mat for elements %d %d\n", rowSection->commRank(), rowE, colE);
-    for(int i = 0; i < numRowIndices; i++) {
-      printf("[%d]mat row indices[%d] = %d\n", rowSection->commRank(), i, rowIndices[i]);
-    }
-  }
-  if (colSection->debug()) {
-    for(int i = 0; i < numColIndices; i++) {
-      printf("[%d]mat col indices[%d] = %d\n", colSection->commRank(), i, colIndices[i]);
-    }
-    for(int i = 0; i < numRowIndices; i++) {
-      printf("[%d]", rowSection->commRank());
-      for(int j = 0; j < numColIndices; j++) {
-        printf(" %g", array[i*numColIndices+j]);
-      }
-      printf("\n");
-    }
-  }
-  ierr = MatSetValues(A, numRowIndices, rowIndices, numColIndices, colIndices, array, mode);
-  if (ierr) {
-    printf("[%d]ERROR in updateOperator: points %d %d\n", colSection->commRank(), rowE, colE);
-    for(int i = 0; i < numRowIndices; i++) {
-      printf("[%d]mat row indices[%d] = %d\n", rowSection->commRank(), i, rowIndices[i]);
-    }
-    for(int i = 0; i < numColIndices; i++) {
-      printf("[%d]mat col indices[%d] = %d\n", colSection->commRank(), i, colIndices[i]);
-    }
-    CHKERRQ(ierr);
-  }
-  ierr = PetscLogEventEnd(Mesh_updateOperator,0,0,0,0);CHKERRQ(ierr);
-  delete [] rowIndices;
-#endif
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MeshSetMaxDof"
+#define __FUNCT__ "DMMeshSetMaxDof"
 /*@
-  MeshSetMaxDof - Sets the maximum number of degrees of freedom on any sieve point
+  DMMeshSetMaxDof - Sets the maximum number of degrees of freedom on any sieve point
 
   Logically Collective on A
 
@@ -1314,13 +911,13 @@ PetscErrorCode updateOperatorGeneral(Mat A, const ALE::Obj<PETSC_MESH_TYPE>& row
 
 .seealso: updateOperator(), assembleMatrix()
 @*/
-PetscErrorCode MeshSetMaxDof(Mesh mesh, PetscInt maxDof)
+PetscErrorCode DMMeshSetMaxDof(DM dm, PetscInt maxDof)
 {
   Obj<PETSC_MESH_TYPE> m;
   PetscErrorCode       ierr;
 
   PetscFunctionBegin;
-  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
   m->setMaxDof(maxDof);
   PetscFunctionReturn(0);
 }
@@ -1334,7 +931,7 @@ PetscErrorCode MeshSetMaxDof(Mesh mesh, PetscInt maxDof)
 
   Input Parameters:
 + A - the matrix
-. mesh - Mesh needed for orderings
+. dm - Mesh needed for orderings
 . section - A Section which describes the layout
 . e - The element
 . v - The values
@@ -1346,7 +943,7 @@ PetscErrorCode MeshSetMaxDof(Mesh mesh, PetscInt maxDof)
 
 .seealso: MatSetOption()
 @*/
-PetscErrorCode assembleMatrix(Mat A, Mesh mesh, SectionReal section, PetscInt e, PetscScalar v[], InsertMode mode)
+PetscErrorCode assembleMatrix(Mat A, DM dm, SectionReal section, PetscInt e, PetscScalar v[], InsertMode mode)
 {
   PetscErrorCode ierr;
 
@@ -1356,7 +953,7 @@ PetscErrorCode assembleMatrix(Mat A, Mesh mesh, SectionReal section, PetscInt e,
     Obj<PETSC_MESH_TYPE> m;
     Obj<PETSC_MESH_TYPE::real_section_type> s;
 
-    ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+    ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
     ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
     const ALE::Obj<PETSC_MESH_TYPE::order_type>& globalOrder = m->getFactory()->getGlobalOrder(m, s->getName(), s);
 
@@ -1371,189 +968,186 @@ PetscErrorCode assembleMatrix(Mat A, Mesh mesh, SectionReal section, PetscInt e,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "preallocateMatrix"
-PetscErrorCode preallocateMatrix(const ALE::Obj<PETSC_MESH_TYPE>& mesh, const int bs, const ALE::Obj<PETSC_MESH_TYPE::real_section_type::atlas_type>& atlas, const ALE::Obj<PETSC_MESH_TYPE::order_type>& globalOrder, Mat A)
-{
-#ifdef PETSC_OPT_SIEVE
-  SETERRQ(((PetscObject)A)->comm,PETSC_ERR_SUP, "This is not applicable for optimized sieves");
-#else
-  PetscInt       localSize = globalOrder->getLocalSize();
-  PetscInt      *dnz, *onz;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscMalloc2(localSize, PetscInt, &dnz, localSize, PetscInt, &onz);CHKERRQ(ierr);
-  ierr = preallocateOperator(mesh, bs, atlas, globalOrder, dnz, onz, A);CHKERRQ(ierr);
-  ierr = PetscFree2(dnz, onz);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-#endif
-}
-
 /******************************** C Wrappers **********************************/
 
-#undef __FUNCT__  
+#undef __FUNCT__
+#define __FUNCT__ "DMMeshGetLabelSize"
+/*@C
+  DMMeshGetLabelSize - Get the number of different integer ids in a Label
+
+  Not Collective
+
+  Input Parameters:
++ dm   - The Mesh object
+- name - The label name
+
+  Output Parameter:
+. size - The label size (number of different integer ids)
+
+  Level: beginner
+
+.keywords: mesh, ExodusII
+.seealso: MeshCreateExodus()
+@*/
+PetscErrorCode MeshGetLabelSize(DM dm, const char name[], PetscInt *size)
+{
+  ALE::Obj<PETSC_MESH_TYPE> m;
+  PetscErrorCode            ierr;
+
+  PetscFunctionBegin;
+  ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
+  *size = m->getLabel(name)->getCapSize();
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMMeshGetLabelIds"
+/*@C
+  DMMeshGetLabelIds - Get the integer ids in a label
+
+  Not Collective
+
+  Input Parameters:
++ mesh - The Mesh object
+. name - The label name
+- ids - The id storage array
+
+  Output Parameter:
+. ids - The integer ids
+
+  Level: beginner
+
+.keywords: mesh, ExodusII
+.seealso: MeshCreateExodus()
+@*/
+PetscErrorCode DMMeshGetLabelIds(DM dm, const char name[], PetscInt *ids)
+{
+  ALE::Obj<PETSC_MESH_TYPE> m;
+  PetscErrorCode            ierr;
+
+  PetscFunctionBegin;
+  ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
+  const ALE::Obj<PETSC_MESH_TYPE::label_type::capSequence>&      labelIds = m->getLabel(name)->cap();
+  const PETSC_MESH_TYPE::label_type::capSequence::const_iterator iEnd     = labelIds->end();
+  PetscInt                                                       i        = 0;
+
+  for(PETSC_MESH_TYPE::label_type::capSequence::const_iterator i_iter = labelIds->begin(); i_iter != iEnd; ++i_iter, ++i) {
+    ids[i] = *i_iter;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMMeshGetStratumSize"
+/*@C
+  DMMeshGetStratumSize - Get the number of points in a label stratum
+
+  Not Collective
+
+  Input Parameters:
++ dm - The Mesh object
+. name - The label name
+- value - The stratum value
+
+  Output Parameter:
+. size - The stratum size
+
+  Level: beginner
+
+.keywords: mesh, ExodusII
+.seealso: MeshCreateExodus()
+@*/
+PetscErrorCode DMMeshGetStratumSize(DM dm, const char name[], PetscInt value, PetscInt *size)
+{
+  ALE::Obj<PETSC_MESH_TYPE> m;
+  PetscErrorCode            ierr;
+
+  PetscFunctionBegin;
+  ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
+  *size = m->getLabelStratum(name, value)->size();
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMMeshGetStratum"
+/*@C
+  DMMeshGetStratum - Get the points in a label stratum
+
+  Not Collective
+
+  Input Parameters:
++ dm - The Mesh object
+. name - The label name
+. value - The stratum value
+- points - The stratum points storage array
+
+  Output Parameter:
+. points - The stratum points
+
+  Level: beginner
+
+.keywords: mesh, ExodusII
+.seealso: MeshCreateExodus()
+@*/
+PetscErrorCode DMMeshGetStratum(DM dm, const char name[], PetscInt value, PetscInt *points)
+{
+  ALE::Obj<PETSC_MESH_TYPE> m;
+  PetscErrorCode            ierr;
+
+  PetscFunctionBegin;
+  ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
+  const ALE::Obj<PETSC_MESH_TYPE::label_sequence>& stratum = m->getLabelStratum(name, value);
+  const PETSC_MESH_TYPE::label_sequence::iterator  sEnd    = stratum->end();
+  PetscInt                                         s       = 0;
+
+  for(PETSC_MESH_TYPE::label_sequence::iterator s_iter = stratum->begin(); s_iter != sEnd; ++s_iter, ++s) {
+    points[s] = *s_iter;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "WriteVTKHeader"
-PetscErrorCode WriteVTKHeader(Mesh mesh, PetscViewer viewer)
+PetscErrorCode WriteVTKHeader(DM dm, PetscViewer viewer)
 {
   ALE::Obj<PETSC_MESH_TYPE> m;
   PetscErrorCode ierr;
 
-  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
   return VTKViewer::writeHeader(m, viewer);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "WriteVTKVertices"
-PetscErrorCode WriteVTKVertices(Mesh mesh, PetscViewer viewer)
+PetscErrorCode WriteVTKVertices(DM dm, PetscViewer viewer)
 {
   ALE::Obj<PETSC_MESH_TYPE> m;
   PetscErrorCode ierr;
 
-  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
   return VTKViewer::writeVertices(m, viewer);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "WriteVTKElements"
-PetscErrorCode WriteVTKElements(Mesh mesh, PetscViewer viewer)
+PetscErrorCode WriteVTKElements(DM dm, PetscViewer viewer)
 {
   ALE::Obj<PETSC_MESH_TYPE> m;
   PetscErrorCode ierr;
 
-  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
   return VTKViewer::writeElements(m, viewer);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "WritePCICEVertices"
-PetscErrorCode WritePCICEVertices(Mesh mesh, PetscViewer viewer)
-{
-  ALE::Obj<PETSC_MESH_TYPE> m;
-  PetscErrorCode ierr;
-
-  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-  return ALE::PCICE::Viewer::writeVertices(m, viewer);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "WritePCICEElements"
-PetscErrorCode WritePCICEElements(Mesh mesh, PetscViewer viewer)
-{
-  ALE::Obj<PETSC_MESH_TYPE> m;
-  PetscErrorCode ierr;
-
-  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-  return ALE::PCICE::Viewer::writeElements(m, viewer);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "WritePCICERestart"
-PetscErrorCode WritePCICERestart(Mesh mesh, PetscViewer viewer)
-{
-  ALE::Obj<PETSC_MESH_TYPE> m;
-  PetscErrorCode ierr;
-
-  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-  return ALE::PCICE::Viewer::writeRestart(m, viewer);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MeshCreatePCICE"
+#undef __FUNCT__
+#define __FUNCT__ "DMMeshGetCoordinates"
 /*@C
-  MeshCreatePCICE - Create a Mesh from PCICE files.
-
-  Not Collective
-
-  Input Parameters:
-+ dim - The topological mesh dimension
-. coordFilename - The file containing vertex coordinates
-. adjFilename - The file containing the vertices for each element
-. interpolate - The flag for construction of intermediate elements
-. bcFilename - The file containing the boundary topology and conditions
-. numBdFaces - The number of boundary faces (or edges)
-- numBdVertices - The number of boundary vertices
-
-  Output Parameter:
-. mesh - The Mesh object
-
-  Level: beginner
-
-.keywords: mesh, PCICE
-.seealso: MeshCreate()
-@*/
-PetscErrorCode MeshCreatePCICE(MPI_Comm comm, const int dim, const char coordFilename[], const char adjFilename[], PetscBool  interpolate, const char bcFilename[], Mesh *mesh)
-{
-  ALE::Obj<PETSC_MESH_TYPE> m;
-  PetscInt            debug = 0;
-  PetscBool           flag;
-  PetscErrorCode      ierr;
-
-  PetscFunctionBegin;
-  ierr = MeshCreate(comm, mesh);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL, "-debug", &debug, &flag);CHKERRQ(ierr);
-  try {
-    m  = ALE::PCICE::Builder::readMesh(comm, dim, std::string(coordFilename), std::string(adjFilename), false, interpolate, debug);
-    if (debug) {m->view("Mesh");}
-  } catch(ALE::Exception e) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN, e.message());
-  }
-  if (bcFilename) {
-    ALE::PCICE::Builder::readBoundary(m, std::string(bcFilename));
-  }
-  ierr = MeshSetMesh(*mesh, m);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MeshCreatePyLith"
-/*@C
-  MeshCreatePyLith - Create a Mesh from PyLith files.
-
-  Not Collective
-
-  Input Parameters:
-+ dim - The topological mesh dimension
-. baseFilename - The basename for mesh files
-. zeroBase - Use 0 to start numbering
-- interpolate - The flag for mesh interpolation
-
-  Output Parameter:
-. mesh - The Mesh object
-
-  Level: beginner
-
-.keywords: mesh, PCICE
-.seealso: MeshCreate()
-@*/
-PetscErrorCode MeshCreatePyLith(MPI_Comm comm, const int dim, const char baseFilename[], PetscBool  zeroBase, PetscBool  interpolate, Mesh *mesh)
-{
-  ALE::Obj<PETSC_MESH_TYPE> m;
-  PetscInt            debug = 0;
-  PetscBool           flag;
-  PetscErrorCode      ierr;
-
-  PetscFunctionBegin;
-  ierr = MeshCreate(comm, mesh);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL, "-debug", &debug, &flag);CHKERRQ(ierr);
-  try {
-    m  = ALE::PyLith::Builder::readMesh(comm, dim, std::string(baseFilename), zeroBase, interpolate, debug);
-  } catch(ALE::Exception e) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN, e.message());
-  }
-  ierr = MeshSetMesh(*mesh, m);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MeshGetCoordinates"
-/*@C
-  MeshGetCoordinates - Creates an array holding the coordinates.
+  DMMeshGetCoordinates - Creates an array holding the coordinates.
 
   Not Collective
 
   Input Parameter:
-+ mesh - The Mesh object
++ dm - The Mesh object
 - columnMajor - Flag for column major order
 
   Output Parameter:
@@ -1566,26 +1160,26 @@ PetscErrorCode MeshCreatePyLith(MPI_Comm comm, const int dim, const char baseFil
 .keywords: mesh, coordinates
 .seealso: MeshCreate()
 @*/
-PetscErrorCode MeshGetCoordinates(Mesh mesh, PetscBool  columnMajor, PetscInt *numVertices, PetscInt *dim, PetscReal *coords[])
+PetscErrorCode DMMeshGetCoordinates(DM dm, PetscBool  columnMajor, PetscInt *numVertices, PetscInt *dim, PetscReal *coords[])
 {
   ALE::Obj<PETSC_MESH_TYPE> m;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
-  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
   ALE::PCICE::Builder::outputVerticesLocal(m, numVertices, dim, coords, columnMajor);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MeshGetElements"
+#undef __FUNCT__
+#define __FUNCT__ "DMMeshGetElements"
 /*@C
-  MeshGetElements - Creates an array holding the vertices on each element.
+  DMMeshGetElements - Creates an array holding the vertices on each element.
 
   Not Collective
 
   Input Parameters:
-+ mesh - The Mesh object
++ dm - The Mesh object
 - columnMajor - Flag for column major order
 
   Output Parameters:
@@ -1598,26 +1192,26 @@ PetscErrorCode MeshGetCoordinates(Mesh mesh, PetscBool  columnMajor, PetscInt *n
 .keywords: mesh, elements
 .seealso: MeshCreate()
 @*/
-PetscErrorCode MeshGetElements(Mesh mesh, PetscBool  columnMajor, PetscInt *numElements, PetscInt *numCorners, PetscInt *vertices[])
+PetscErrorCode MeshGetElements(DM dm, PetscBool  columnMajor, PetscInt *numElements, PetscInt *numCorners, PetscInt *vertices[])
 {
   ALE::Obj<PETSC_MESH_TYPE> m;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
-  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
   ALE::PCICE::Builder::outputElementsLocal(m, numElements, numCorners, vertices, columnMajor);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MeshGetCone"
+#undef __FUNCT__
+#define __FUNCT__ "DMMeshGetCone"
 /*@C
-  MeshGetCone - Creates an array holding the cone of a given point
+  DMMeshGetCone - Creates an array holding the cone of a given point
 
   Not Collective
 
   Input Parameters:
-+ mesh - The Mesh object
++ dm - The Mesh object
 - p - The mesh point
 
   Output Parameters:
@@ -1629,13 +1223,13 @@ PetscErrorCode MeshGetElements(Mesh mesh, PetscBool  columnMajor, PetscInt *numE
 .keywords: mesh, cone
 .seealso: MeshCreate()
 @*/
-PetscErrorCode MeshGetCone(Mesh mesh, PetscInt p, PetscInt *numPoints, PetscInt *points[])
+PetscErrorCode DMMeshGetCone(DM dm, PetscInt p, PetscInt *numPoints, PetscInt *points[])
 {
   ALE::Obj<PETSC_MESH_TYPE> m;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
-  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
   *numPoints = m->getSieve()->getConeSize(p);
   ALE::ISieveVisitor::PointRetriever<PETSC_MESH_TYPE::sieve_type> v(*numPoints);
 
@@ -1644,10 +1238,10 @@ PetscErrorCode MeshGetCone(Mesh mesh, PetscInt p, PetscInt *numPoints, PetscInt 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MeshDistribute"
+#undef __FUNCT__
+#define __FUNCT__ "DMMeshDistribute"
 /*@C
-  MeshDistribute - Distributes the mesh and any associated sections.
+  DMMeshDistribute - Distributes the mesh and any associated sections.
 
   Not Collective
 
@@ -1664,37 +1258,27 @@ PetscErrorCode MeshGetCone(Mesh mesh, PetscInt p, PetscInt *numPoints, PetscInt 
 
 .seealso: MeshCreate(), MeshDistributeByFace()
 @*/
-PetscErrorCode MeshDistribute(Mesh serialMesh, const char partitioner[], Mesh *parallelMesh)
+PetscErrorCode MeshDistribute(DM serialMesh, const char partitioner[], DM *parallelMesh)
 {
   ALE::Obj<PETSC_MESH_TYPE> oldMesh;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
-  ierr = MeshGetMesh(serialMesh, oldMesh);CHKERRQ(ierr);
-  ierr = MeshCreate(oldMesh->comm(), parallelMesh);CHKERRQ(ierr);
-#ifdef PETSC_OPT_SIEVE
+  ierr = DMMeshGetMesh(serialMesh, oldMesh);CHKERRQ(ierr);
+  ierr = DMMeshCreate(oldMesh->comm(), parallelMesh);CHKERRQ(ierr);
   const Obj<PETSC_MESH_TYPE>             newMesh  = new PETSC_MESH_TYPE(oldMesh->comm(), oldMesh->getDimension(), oldMesh->debug());
   const Obj<PETSC_MESH_TYPE::sieve_type> newSieve = new PETSC_MESH_TYPE::sieve_type(oldMesh->comm(), oldMesh->debug());
 
   newMesh->setSieve(newSieve);
   ALE::DistributionNew<PETSC_MESH_TYPE>::distributeMeshAndSectionsV(oldMesh, newMesh);
-  ierr = MeshSetMesh(*parallelMesh, newMesh);CHKERRQ(ierr);
-#else
-  if (partitioner == NULL) {
-    ALE::Obj<PETSC_MESH_TYPE> newMesh = ALE::Distribution<PETSC_MESH_TYPE>::distributeMesh(oldMesh);
-    ierr = MeshSetMesh(*parallelMesh, newMesh);CHKERRQ(ierr);
-  } else {
-    ALE::Obj<PETSC_MESH_TYPE> newMesh = ALE::Distribution<PETSC_MESH_TYPE>::distributeMesh(oldMesh, 0, partitioner);
-    ierr = MeshSetMesh(*parallelMesh, newMesh);CHKERRQ(ierr);
-  }
-#endif
+  ierr = DMMeshSetMesh(*parallelMesh, newMesh);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MeshDistributeByFace"
+#define __FUNCT__ "DMMeshDistributeByFace"
 /*@C
-  MeshDistribute - Distributes the mesh and any associated sections.
+  DMMeshDistribute - Distributes the mesh and any associated sections.
 
   Not Collective
 
@@ -1711,32 +1295,25 @@ PetscErrorCode MeshDistribute(Mesh serialMesh, const char partitioner[], Mesh *p
 
 .seealso: MeshCreate(), MeshDistribute()
 @*/
-PetscErrorCode MeshDistributeByFace(Mesh serialMesh, const char partitioner[], Mesh *parallelMesh)
+PetscErrorCode DMMeshDistributeByFace(DM serialMesh, const char partitioner[], DM *parallelMesh)
 {
   ALE::Obj<PETSC_MESH_TYPE> oldMesh;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
-  ierr = MeshGetMesh(serialMesh, oldMesh);CHKERRQ(ierr);
-  ierr = MeshCreate(oldMesh->comm(), parallelMesh);CHKERRQ(ierr);
-#ifdef PETSC_OPT_SIEVE
+  ierr = DMMeshGetMesh(serialMesh, oldMesh);CHKERRQ(ierr);
+  ierr = DMMeshCreate(oldMesh->comm(), parallelMesh);CHKERRQ(ierr);
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "I am being lazy, bug me.");
-#else
-  if (partitioner == NULL) {
-    ALE::Obj<PETSC_MESH_TYPE> newMesh = ALE::Distribution<PETSC_MESH_TYPE>::distributeMesh(oldMesh, 1);
-    ierr = MeshSetMesh(*parallelMesh, newMesh);CHKERRQ(ierr);
-  } else {
-    ALE::Obj<PETSC_MESH_TYPE> newMesh = ALE::Distribution<PETSC_MESH_TYPE>::distributeMesh(oldMesh, 1, partitioner);
-    ierr = MeshSetMesh(*parallelMesh, newMesh);CHKERRQ(ierr);
-  }
+#if 0
+  ALE::DistributionNew<PETSC_MESH_TYPE>::distributeMeshAndSectionsV(oldMesh, newMesh, height = 1);
 #endif
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MeshGenerate"
+#undef __FUNCT__
+#define __FUNCT__ "DMMeshGenerate"
 /*@C
-  MeshGenerate - Generates a mesh.
+  DMMeshGenerate - Generates a mesh.
 
   Not Collective
 
@@ -1752,27 +1329,23 @@ PetscErrorCode MeshDistributeByFace(Mesh serialMesh, const char partitioner[], M
 .keywords: mesh, elements
 .seealso: MeshCreate(), MeshRefine()
 @*/
-PetscErrorCode MeshGenerate(Mesh boundary, PetscBool  interpolate, Mesh *mesh)
+PetscErrorCode MeshGenerate(DM boundary, PetscBool  interpolate, DM *mesh)
 {
   ALE::Obj<PETSC_MESH_TYPE> mB;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
-  ierr = MeshGetMesh(boundary, mB);CHKERRQ(ierr);
-  ierr = MeshCreate(mB->comm(), mesh);CHKERRQ(ierr);
-#ifdef PETSC_OPT_SIEVE
+  ierr = DMMeshGetMesh(boundary, mB);CHKERRQ(ierr);
+  ierr = DMMeshCreate(mB->comm(), mesh);CHKERRQ(ierr);
   ALE::Obj<PETSC_MESH_TYPE> m = ALE::Generator<PETSC_MESH_TYPE>::generateMeshV(mB, interpolate);
-#else
-  ALE::Obj<PETSC_MESH_TYPE> m = ALE::Generator<PETSC_MESH_TYPE>::generateMesh(mB, interpolate);
-#endif
-  ierr = MeshSetMesh(*mesh, m);CHKERRQ(ierr);
+  ierr = DMMeshSetMesh(*mesh, m);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MeshRefine"
+#undef __FUNCT__
+#define __FUNCT__ "DMMeshRefine"
 /*@C
-  MeshRefine - Refines the mesh.
+  DMMeshRefine - Refines the mesh.
 
   Not Collective
 
@@ -1789,532 +1362,59 @@ PetscErrorCode MeshGenerate(Mesh boundary, PetscBool  interpolate, Mesh *mesh)
 .keywords: mesh, elements
 .seealso: MeshCreate(), MeshGenerate()
 @*/
-PetscErrorCode MeshRefine(Mesh mesh, double refinementLimit, PetscBool  interpolate, Mesh *refinedMesh)
+PetscErrorCode DMMeshRefine(DM mesh, double refinementLimit, PetscBool  interpolate, DM *refinedMesh)
 {
   ALE::Obj<PETSC_MESH_TYPE> oldMesh;
-  PetscErrorCode      ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MeshGetMesh(mesh, oldMesh);CHKERRQ(ierr);
-  ierr = MeshCreate(oldMesh->comm(), refinedMesh);CHKERRQ(ierr);
-#ifdef PETSC_OPT_SIEVE
+  ierr = DMMeshGetMesh(mesh, oldMesh);CHKERRQ(ierr);
+  ierr = DMMeshCreate(oldMesh->comm(), refinedMesh);CHKERRQ(ierr);
   ALE::Obj<PETSC_MESH_TYPE> newMesh = ALE::Generator<PETSC_MESH_TYPE>::refineMeshV(oldMesh, refinementLimit, interpolate);
-#else
-  ALE::Obj<PETSC_MESH_TYPE> newMesh = ALE::Generator<PETSC_MESH_TYPE>::refineMesh(oldMesh, refinementLimit, interpolate);
-#endif
-  ierr = MeshSetMesh(*refinedMesh, newMesh);CHKERRQ(ierr);
+  ierr = DMMeshSetMesh(*refinedMesh, newMesh);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-#undef __FUNCT__  
-#define __FUNCT__ "MeshRefine_Mesh"
-PetscErrorCode MeshRefine_Mesh(Mesh mesh, MPI_Comm comm, Mesh *refinedMesh)
-{
-  ALE::Obj<PETSC_MESH_TYPE> oldMesh;
-  double              refinementLimit;
-  PetscErrorCode      ierr;
-
-  PetscFunctionBegin;
-  ierr = MeshGetMesh(mesh, oldMesh);CHKERRQ(ierr);
-  ierr = MeshCreate(comm, refinedMesh);CHKERRQ(ierr);
-  refinementLimit = oldMesh->getMaxVolume()/2.0;
-#ifdef PETSC_OPT_SIEVE
-  ALE::Obj<PETSC_MESH_TYPE> newMesh = ALE::Generator<PETSC_MESH_TYPE>::refineMeshV(oldMesh, refinementLimit, true);
-#else
-  ALE::Obj<PETSC_MESH_TYPE> newMesh = ALE::Generator<PETSC_MESH_TYPE>::refineMesh(oldMesh, refinementLimit, true);
-#endif
-  ierr = MeshSetMesh(*refinedMesh, newMesh);CHKERRQ(ierr);
-#ifndef PETSC_OPT_SIEVE
-  const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& s = newMesh->getRealSection("default");
-  const Obj<std::set<std::string> >& discs = oldMesh->getDiscretizations();
-
-  for(std::set<std::string>::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter) {
-    newMesh->setDiscretization(*f_iter, oldMesh->getDiscretization(*f_iter));
-  }
-  newMesh->setupField(s);
-#endif
-  PetscFunctionReturn(0);
-}
-
-#ifndef PETSC_OPT_SIEVE
-
-#include "Hierarchy_New.hh"
 
 #undef __FUNCT__
-#define __FUNCT__ "MeshCoarsenHierarchy_New"
-
-
-#include "Hierarchy.hh"
-
-#undef __FUNCT__  
-#define __FUNCT__ "MeshCoarsenHierarchy"
-/*@C
-  MeshCoarsenHierarchy - Coarsens the mesh into a hierarchy.
-
-  Not Collective
-
-  Input Parameters:
-+ mesh - The original Mesh object
-. numLevels - The number of 
-. coarseningFactor - The expansion factor for coarse meshes
-- interpolate - Flag to create intermediate mesh elements
-
-  Output Parameter:
-. coarseHierarchy - The coarse Mesh objects
-
-  Level: intermediate
-
-.keywords: mesh, elements
-.seealso: MeshCreate(), MeshGenerate()
-@*/
-PetscErrorCode MeshCoarsenHierarchy(Mesh mesh, int numLevels, double coarseningFactor, PetscBool  interpolate, Mesh *coarseHierarchy)
+#define __FUNCT__ "DMRefine_Mesh"
+PetscErrorCode DMRefine_Mesh(DM dm, MPI_Comm comm, DM *dmRefined)
 {
   ALE::Obj<PETSC_MESH_TYPE> oldMesh;
-  PetscErrorCode      ierr;
+  double                    refinementLimit;
+  PetscErrorCode            ierr;
 
   PetscFunctionBegin;
-  if (numLevels < 1) {
-    *coarseHierarchy = PETSC_NULL;
-    PetscFunctionReturn(0);
-  }
-  ierr = MeshGetMesh(mesh, oldMesh);CHKERRQ(ierr);
-  for (int i = 0; i < numLevels; i++) {
-    ierr = MeshCreate(oldMesh->comm(), &coarseHierarchy[i]);CHKERRQ(ierr);
-  }
-  ierr = MeshSpacingFunction(mesh);CHKERRQ(ierr);
-  ierr = MeshCreateHierarchyLabel_Link(mesh, coarseningFactor, numLevels+1, coarseHierarchy);
-  
-#if 0
-  if (oldMesh->getDimension() != 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Coarsening only works in two dimensions right now");
-  ierr = ALE::Coarsener::IdentifyBoundary(oldMesh, 2);CHKERRQ(ierr);
-  ierr = ALE::Coarsener::make_coarsest_boundary(oldMesh, 2, numLevels+1);CHKERRQ(ierr);
-  ierr = ALE::Coarsener::CreateSpacingFunction(oldMesh, 2);CHKERRQ(ierr);
-  ierr = ALE::Coarsener::CreateCoarsenedHierarchyNew(oldMesh, 2, numLevels, coarseningFactor);CHKERRQ(ierr);
-  ierr = PetscMalloc(numLevels * sizeof(Mesh),coarseHierarchy);CHKERRQ(ierr);
-  for(int l = 0; l < numLevels; l++) {
-    ALE::Obj<PETSC_MESH_TYPE> newMesh = new PETSC_MESH_TYPE(oldMesh->comm(), oldMesh->debug());
-    const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& s = newMesh->getRealSection("default");
-
-    ierr = MeshCreate(oldMesh->comm(), &(*coarseHierarchy)[l]);CHKERRQ(ierr);
-    newMesh->getTopology()->setPatch(0, oldMesh->getTopology()->getPatch(l+1));
-    newMesh->setDiscretization(oldMesh->getDiscretization());
-    newMesh->setBoundaryCondition(oldMesh->getBoundaryCondition());
-    newMesh->setupField(s);
-    ierr = MeshSetMesh((*coarseHierarchy)[l], newMesh);CHKERRQ(ierr);
-  }
-#endif
+  ierr = DMMeshGetMesh(dm, oldMesh);CHKERRQ(ierr);
+  ierr = DMMeshCreate(comm, dmRefined);CHKERRQ(ierr);
+  refinementLimit = oldMesh->getMaxVolume()/2.0;
+  ALE::Obj<PETSC_MESH_TYPE> newMesh = ALE::Generator<PETSC_MESH_TYPE>::refineMeshV(oldMesh, refinementLimit, true);
+  ierr = DMMeshSetMesh(*dmRefined, newMesh);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#endif
-
-PetscErrorCode MeshCoarsenHierarchy_Mesh(Mesh mesh, int numLevels, Mesh *coarseHierarchy)
+#undef __FUNCT__
+#define __FUNCT__ "DMCoarsenHierarchy_Mesh"
+PetscErrorCode DMCoarsenHierarchy_Mesh(DM mesh, int numLevels, DM *coarseHierarchy)
 {
   PetscReal      cfactor = 1.5;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscOptionsReal("-dmmg_coarsen_factor", "The coarsening factor", PETSC_NULL, cfactor, &cfactor, PETSC_NULL);CHKERRQ(ierr);
-#ifdef PETSC_OPT_SIEVE
-  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "This needs to be rewritten for optimized meshes.");
-#else
-  ierr = MeshCoarsenHierarchy(mesh, numLevels, cfactor, PETSC_FALSE, coarseHierarchy);CHKERRQ(ierr);
-#endif
+  SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Peter needs to incorporate his code.");
   PetscFunctionReturn(0);
 }
-
-#if 0
 
 #undef __FUNCT__
-#define __FUNCT__ "MeshGetInterpolation_Mesh_General"
-
-//Interpolate between two meshes whenever the unknowns can be evaluated at points.
-
-PetscErrorCode MeshGetInterpolation_Mesh_General(Mesh coarse_mesh, Mesh fine_mesh, Mat *interpolation, Vec *scaling) {
-  ALE::Obj<PETSC_MESH_TYPE> fm, cm;
-  Mat                 P;
-  PetscErrorCode      ierr;
-  
-  PetscFunctionBegin;
-  //Stages: 
-  //  1. Create a section on the fine mesh describing the location in the fine mesh of the assorted unknowns.
-  //  2. Fill in this section by traversing across the mesh via cones and supports, transforming the coordinates of the assorted functional points
-  //  3. Preallocate the matrix rows/columns
-  //  4. Assemble the matrix by writing evaluating each unknown as the point 
-  ierr = MeshGetMesh(dmFine, fm);CHKERRQ(ierr);
-  ierr = MeshGetMesh(dmCoarse, cm);CHKERRQ(ierr);
-  //  ALE::Obj<PETSC_MESH_TYPE::label_type> coarsetraversal = cm->createLabel("traversal");
-  //  ALE::Obj<PETSC_MESH_TYPE::label_type> finetraversal   = fm->createLabel ("traversal");
-  const int                       debug           = fm->debug();
-  if (debug) {ierr = PetscPrintf(fm->comm(), "Fine: %d vertices, Coarse: %d vertices\n", fm->depthStratum(0)->size(), cm->depthStratum(0)->size());CHKERRQ(ierr);}
-  const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& finecoordinates   = fm->getRealSection("coordinates");
-  const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& coarsecoordinates = cm->getRealSection("coordinates");
-
-  const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& sCoarse           = cm->getRealSection("default");
-  const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& sFine             = fm->getRealSection("default");
-
-  const ALE::Obj<PETSC_MESH_TYPE::order_type>&        coarseOrder       = cm->getFactory()->getGlobalOrder(cm, "default", sCoarse);
-  const ALE::Obj<PETSC_MESH_TYPE::order_type>&        fineOrder         = fm->getFactory()->getGlobalOrder(fm, "default", sFine);
-
-  std::list<PETSC_MESH_TYPE::point_type> travlist;        // store point
-  std::list<PETSC_MESH_TYPE::point_type> travguesslist;   // store guess
-  std::list<PETSC_MESH_TYPE::point_type> eguesslist;      // store the next guesses for the location of the current point.
-
-  const ALE::Obj<PETSC_MESH_TYPE::sieve_type::supportSet> coarse_traversal = PETSC_MESH_TYPE::sieve_type::supportSet();
-  const ALE::Obj<PETSC_MESH_TYPE::sieve_type::supportSet> fine_traversal = PETSC_MESH_TYPE::sieve_type::supportSet();
-  const ALE::Obj<PETSC_MESH_TYPE::sieve_type::supportSet> covering_points = PETSC_MESH_TYPE::sieve_type::supportSet();
-
-  const ALE::Obj<PETSC_MESH_TYPE::sieve_type::supportSet> uncorrected_points = PETSC_MESH_TYPE::sieve_type::supportSet();
-  static double loc[4], v0[3], J[9], invJ[9], detJ; // first point, jacobian, inverse jacobian, and jacobian determinant of a cell
-  if (debug) {ierr = PetscPrintf(fm->comm(), "Starting Interpolation Matrix Build\n");CHKERRQ(ierr);}
-
-  //set up the new section holding the names of the contained points.  
-
-  const ALE::Obj<PETSC_MESH_TYPE::int_section_type> & node_locations = fm->getIntSection("node_locations");
-  const ALE::Obj<PETSC_MESH_TYPE::real_section_type> & fine_default = fm->getRealSection("default");
-  int total_dimension
-  for (int i = 0; i < dim; i++) {
-    const ALE::Obj<PETSC_MESH_TYPE::label_sequence> & present_level = fm->depthStratum(i);
-    int current_dimension = fine_default->getFiberDimension(*present_level->begin());
-    node_locations->setFiberDimension(present_level, current_dimension);
-  }
-  node_locations->allocate();
-  //traverse!
-
-  
-
-  ALE::Obj<PETSC_MESH_TYPE::label_sequence> fine_cells = fm->heightStratum(0);
-  ALE::Obj<PETSC_MESH_TYPE::label_sequence> coarse_cells = cm->heightStratum(0);
-
-  PETSC_MESH_TYPE::label_sequence::iterator fc_iter = fine_cells->begin();
-  PETSC_MESH_TYPE::label_sequence::iterator fc_iter_end = fine_cells->end();
-  while (fc_iter != fc_iter_end) {
-    //locate an initial coarse cell that overlaps with this fine cell in terms of their bounding boxes;
-    PETSC_MESH_TYPE::label_sequence::iterator cc_iter = coarse_cells->begin();
-    PETSC_MESH_TYPE::label_sequence::iterator cc_iter_end = coarse_cells->end();
-    while (cc_iter != cc_iter_end) {
-      
-      cc_iter++;
-    }
-    fc_iter++;
-  }
+#define __FUNCT__ "DMGetInterpolation_Mesh"
+PetscErrorCode DMGetInterpolation_Mesh(DM dmCoarse, DM dmFine, Mat *interpolation, Vec *scaling) {
+  SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Peter needs to incorporate his code.");
 }
-
-#endif
 
 #undef __FUNCT__
-#define __FUNCT__ "MeshGetInterpolation_Mesh_New"
-
-PetscErrorCode MeshGetInterpolation_Mesh_New(Mesh dmCoarse, Mesh dmFine, Mat *interpolation, Vec *scaling) {
-
-#ifdef PETSC_OPT_SIEVE
-  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "This needs to be rewritten for optimized meshes.");
-#else
-  ALE::Obj<PETSC_MESH_TYPE> fm, cm;
-  Mat                 P;
-  PetscErrorCode      ierr;
-
-  PetscFunctionBegin;
-  ierr = MeshGetMesh(dmFine, fm);CHKERRQ(ierr);
-  ierr = MeshGetMesh(dmCoarse, cm);CHKERRQ(ierr);
-  //  ALE::Obj<PETSC_MESH_TYPE::label_type> coarsetraversal = cm->createLabel("traversal");
-  //  ALE::Obj<PETSC_MESH_TYPE::label_type> finetraversal   = fm->createLabel ("traversal");
-  const int                       debug           = fm->debug();
-  if (debug) {ierr = PetscPrintf(fm->comm(), "Fine: %d vertices, Coarse: %d vertices\n", fm->depthStratum(0)->size(), cm->depthStratum(0)->size());CHKERRQ(ierr);}
-  const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& finecoordinates   = fm->getRealSection("coordinates");
-  const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& coarsecoordinates = cm->getRealSection("coordinates");
-  const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& sCoarse           = cm->getRealSection("default");
-  const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& sFine             = fm->getRealSection("default");
-  const ALE::Obj<PETSC_MESH_TYPE::order_type>&        coarseOrder       = cm->getFactory()->getGlobalOrder(cm, "default", sCoarse);
-  const ALE::Obj<PETSC_MESH_TYPE::order_type>&        fineOrder         = fm->getFactory()->getGlobalOrder(fm, "default", sFine);
-  std::list<PETSC_MESH_TYPE::point_type> travlist;        // store point
-  std::list<PETSC_MESH_TYPE::point_type> travguesslist;   // store guess
-  std::list<PETSC_MESH_TYPE::point_type> eguesslist;      // store the next guesses for the location of the current point.
-  const ALE::Obj<PETSC_MESH_TYPE::sieve_type::supportSet> coarse_traversal = PETSC_MESH_TYPE::sieve_type::supportSet();
-  const ALE::Obj<PETSC_MESH_TYPE::sieve_type::supportSet> fine_traversal = PETSC_MESH_TYPE::sieve_type::supportSet();
-  const ALE::Obj<PETSC_MESH_TYPE::sieve_type::supportSet> uncorrected_points = PETSC_MESH_TYPE::sieve_type::supportSet();
-  static double loc[4], v0[3], J[9], invJ[9], detJ; // first point, jacobian, inverse jacobian, and jacobian determinant of a cell
-  if (debug) {ierr = PetscPrintf(fm->comm(), "Starting Interpolation Matrix Build\n");CHKERRQ(ierr);}
-
-  ierr = MatCreate(fm->comm(), &P);CHKERRQ(ierr);
-  ierr = MatSetSizes(P, sFine->size(), sCoarse->size(), PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(P,10,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(P);CHKERRQ(ierr);
-
-  const int dim = fm->getDimension();
-  int maxComparisons = 60; //point is considered a lost cause beyond this many comparisons with volumes
-  if (dim == 3) maxComparisons = 1000; //3D is odd
-  if (dim != cm->getDimension()) throw ALE::Exception("Dimensions of the fine and coarse meshes do not match"); 
-
-  //traversal labels on both layers
-  const ALE::Obj<PETSC_MESH_TYPE::label_sequence>& finevertices = fm->depthStratum(0);
-  const PETSC_MESH_TYPE::label_sequence::iterator  fv_iter_end  = finevertices->end();
-  PETSC_MESH_TYPE::label_sequence::iterator        fv_iter      = finevertices->begin();
-
-  //  while (fv_iter != fv_iter_end) {
-  //    fm->setValue(finetraversal, *fv_iter, 0);
-  //    fv_iter++;
-  //  }
-
-  const ALE::Obj<PETSC_MESH_TYPE::label_sequence>& coarseelements = cm->heightStratum(0);
-  const PETSC_MESH_TYPE::label_sequence::iterator  ce_iter_end    = coarseelements->end();
-  PETSC_MESH_TYPE::label_sequence::iterator        ce_iter        = coarseelements->begin();
-  
-  //  while (ce_iter != ce_iter_end) {
-  //    cm->setValue(coarsetraversal, *ce_iter, 0);
-  //    ce_iter++;
-  //  }
-
-  double *fvCoords = new double[dim], *nvCoords = new double[dim];
-  bool pointIsInElement;
-
-  if (debug) {ierr = PetscPrintf(fm->comm(), "starting iterations\n");CHKERRQ(ierr);}
-  fv_iter = finevertices->begin();
-  while (fv_iter != fv_iter_end) {
-    // locate an initial point.
-    //    if (fm->getValue(finetraversal, *fv_iter) == 0) {
-    if ((fine_traversal->find(*fv_iter) == fine_traversal->end()) && (uncorrected_points->find(*fv_iter) == uncorrected_points->end())) {
-      bool isLocated = false;
-
-      ce_iter = coarseelements->begin();
-      ierr = PetscMemcpy(fvCoords, finecoordinates->restrictPoint(*fv_iter), dim*sizeof(double));
-      while ((ce_iter != ce_iter_end) && (!isLocated)) {
-        cm->computeElementGeometry(coarsecoordinates, *ce_iter, v0, J, invJ, detJ);
-        // generalized simplicial location for 2D, 3D:
-        loc[0] = 1.0;
-        pointIsInElement = true;
-        for(int i = 0; i < dim; i++) {
-          loc[i+1] = 0.0;
-          for(int j = 0; j < dim; j++) {
-            loc[i+1] += 0.5*invJ[i*dim+j]*(fvCoords[j] - v0[j]);
-          }
-          loc[0] -= loc[i+1];
-          //PetscPrintf(fm->comm(), "%f, ", loc[i+1]);
-          if (loc[i+1] < -0.000000000001) pointIsInElement = false;
-        }
-        //PetscPrintf(fm->comm(), "%f\n", loc[0]);
-        if (loc[0] < -0.000000000001) pointIsInElement = false;
-        if (pointIsInElement) {
-          //PetscPrintf(fm->comm(), "%f, %f, %f\n", loc[0], loc[1], loc[2]);
-          //PetscPrintf(fm->comm(), "located by guess.\n");
-          isLocated = true;
-          ierr = updateOperatorGeneral(P, fm, sFine, fineOrder, *fv_iter, cm, sCoarse, coarseOrder, *ce_iter, loc, INSERT_VALUES);CHKERRQ(ierr);
-          //fm->setValue(finetraversal, *fv_iter, 1);
-          fine_traversal->insert(*fv_iter);
-          const ALE::Obj<PETSC_MESH_TYPE::sieve_type::coneSet> & neighbors  = fm->getSieve()->cone(fm->getSieve()->support(*fv_iter));
-          const PETSC_MESH_TYPE::sieve_type::coneSet::iterator n_iter_end = neighbors->end();
-          PETSC_MESH_TYPE::sieve_type::coneSet::iterator       n_iter     = neighbors->begin();
-          while (n_iter != n_iter_end) {
-	    //            if (fm->getValue(finetraversal, *n_iter) == 0) {
-	    if (fine_traversal->find(*n_iter) != fine_traversal->end()) {
-              travlist.push_back(*n_iter);
-	      //              fm->setValue(finetraversal, *n_iter, 1);
-              fine_traversal->insert(*n_iter);
-              travguesslist.push_back(*ce_iter);
-            }
-            n_iter++;
-          }
-          //do a DFS across the finemesh with BFSes on the coarse mesh for each point using assumed regularity of edgelength as a justification for guessing neighboring point's locations.
-          while (!travlist.empty()) {
-            PETSC_MESH_TYPE::point_type curVert = *travlist.begin();
-            PetscMemcpy(nvCoords, finecoordinates->restrictPoint(curVert), dim*sizeof(double));
-            PETSC_MESH_TYPE::point_type curEle =  *travguesslist.begin();
-            travlist.pop_front();
-            travguesslist.pop_front();
-            eguesslist.push_front(curEle);
-            //cm->setValue(coarsetraversal, curEle, 1);
-            coarse_traversal->insert(curEle);
-            bool locationDiscovered  = false;
-            //int traversalcomparisons = 0;
-            while ((!eguesslist.empty()) && (!locationDiscovered) && (int)coarse_traversal->size() < maxComparisons) {
-              //traversalcomparisons = 0;
-              PETSC_MESH_TYPE::point_type curguess = *eguesslist.begin();
-              eguesslist.pop_front();
-              pointIsInElement = true;
-              cm->computeElementGeometry(coarsecoordinates, curguess, v0, J, invJ, detJ);
-              loc[0] = 1.0;
-              for(int i = 0; i < dim; i++) {
-                loc[i+1] = 0.0;
-                for(int j = 0; j < dim; j++) {
-                  loc[i+1] += 0.5*invJ[i*dim+j]*(nvCoords[j] - v0[j]);
-                }
-                loc[0] -= loc[i+1];
-                if (loc[i+1] < -0.00000000001) pointIsInElement = false;
-              }
-              if (loc[0] < -0.00000000001) pointIsInElement = false;
-
-              if (pointIsInElement) {
-                //PetscPrintf(fm->comm(), "%f, %f, %f\n", loc[0], loc[1], loc[2]);
-                locationDiscovered = true;
-                //PetscPrintf(fm->comm(), "located by traversal.\n");
-                //set the label.
-                //fm->setValue(prolongation, curVert, curguess);
-                ierr = updateOperatorGeneral(P, fm, sFine, fineOrder, curVert, cm, sCoarse, coarseOrder, curguess, loc, INSERT_VALUES);CHKERRQ(ierr);
-                //PetscPrintf(fm->comm(), "Point %d located in %d.\n",  curVert, curguess);
-                //stick its neighbors in the queue along with its location as a good guess of the location of its neighbors
-                const ALE::Obj<PETSC_MESH_TYPE::sieve_type::coneSet> newNeighbors = fm->getSieve()->cone(fm->getSieve()->support(curVert));
-                const PETSC_MESH_TYPE::sieve_type::coneSet::iterator nn_iter_end  = newNeighbors->end();
-                PETSC_MESH_TYPE::sieve_type::coneSet::iterator       nn_iter      = newNeighbors->begin();
-                while (nn_iter != nn_iter_end) {
-		  //if (fm->getValue(finetraversal, *nn_iter) == 0) { //unlocated neighbor
-                  if (fine_traversal->find(*nn_iter) == fine_traversal->end()) {
-                    travlist.push_back(*nn_iter);
-                    travguesslist.push_back(curguess);
-                    //fm->setValue(finetraversal, *nn_iter, 1);
-                    fine_traversal->insert(*nn_iter);
-                  }
-                  nn_iter++;
-                }
-              } else {
-              //add the current guesses neighbors to the comparison queue and start over.
-                const ALE::Obj<PETSC_MESH_TYPE::sieve_type::supportSet> & curguessneighbors = cm->getSieve()->support(cm->getSieve()->cone(curguess));
-                const PETSC_MESH_TYPE::sieve_type::supportSet::iterator cgn_iter_end      = curguessneighbors->end();
-                PETSC_MESH_TYPE::sieve_type::supportSet::iterator       cgn_iter          = curguessneighbors->begin();
-                while (cgn_iter != cgn_iter_end) {
-                  //if (cm->getValue(coarsetraversal, *cgn_iter) == 0) {
-                  if (coarse_traversal->find(*cgn_iter) == coarse_traversal->end()) {
-                    eguesslist.push_back(*cgn_iter);
-                    //cm->setValue(coarsetraversal, *cgn_iter, 1);
-                    coarse_traversal->insert(*cgn_iter);
-                  }
-                  cgn_iter++;
-                }
-              }
-            }
-            coarse_traversal->clear();
-            if (!locationDiscovered) {  //if a position for it is not discovered, it doesn't get corrected; complain
-              if (fm->debug())PetscPrintf(fm->comm(), "Point %d (%f, %f) not located.\n",  curVert, nvCoords[0], nvCoords[1]);
-              //fm->setValue(finetraversal, curVert, 2); //don't try again.
-              uncorrected_points->insert(curVert);
-            }
-            eguesslist.clear(); //we've discovered the location of the point or exhausted our possibilities on this contiguous block of elements.
-            //unset the traversed element list
-            //const ALE::Obj<PETSC_MESH_TYPE::label_sequence>& traved_elements = cm->getLabelStratum("traversal", 1);
-            //const PETSC_MESH_TYPE::label_sequence::iterator  tp_iter_end     = traved_elements->end();
-            //PETSC_MESH_TYPE::label_sequence::iterator        tp_iter         = traved_elements->begin();
-            //PetscPrintf(cm->comm(), "%d\n", traved_elements->size());
-            //while (tp_iter != tp_iter_end) {
-            //  eguesslist.push_back(*tp_iter);
-            //  tp_iter++;
-            //}
-            //while (!eguesslist.empty()) {
-            //  cm->setValue(coarsetraversal, *eguesslist.begin(), 0);
-            //  eguesslist.pop_front();
-            //}
-            
-          }
-        }
-        ce_iter++;
-      }
-      if (!isLocated) {
-       if (fm->debug())ierr = PetscPrintf(fm->comm(), "NOT located\n");CHKERRQ(ierr);
-       //fm->setValue(finetraversal, *fv_iter, 2); //don't try again.
-       uncorrected_points->insert(*fv_iter);
-      }
-    }
-    // printf("-");
-    fv_iter++;
-  }
-  ierr = MatAssemblyBegin(P, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(P, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  //MatView(P, PETSC_VIEWER_STDOUT_SELF);
-  delete [] fvCoords; delete [] nvCoords;
-  *interpolation = P;
-  if (debug) {ierr = PetscPrintf(fm->comm(), "Ending Interpolation Matrix Build\n");CHKERRQ(ierr);}
-  PetscFunctionReturn(0);
-#endif
-}
-
-
-#undef __FUNCT__  
-#define __FUNCT__ "MeshGetInterpolation_Mesh"
-/*
-  This method only handle P_1 discretizations at present.
-*/
-PetscErrorCode MeshGetInterpolation_Mesh(Mesh dmCoarse, Mesh dmFine, Mat *interpolation, Vec *scaling)
-{
-#ifdef PETSC_OPT_SIEVE
-  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "This has been superceded.");
-#else
-  ALE::Obj<PETSC_MESH_TYPE> coarse;
-  ALE::Obj<PETSC_MESH_TYPE> fine;
-  Mat                 P;
-  PetscErrorCode      ierr;
-
-  PetscFunctionBegin;
-  ierr = MeshGetMesh(dmFine,   fine);CHKERRQ(ierr);
-  ierr = MeshGetMesh(dmCoarse, coarse);CHKERRQ(ierr);
-  const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& coarseCoordinates = coarse->getRealSection("coordinates");
-  const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& fineCoordinates   = fine->getRealSection("coordinates");
-  const ALE::Obj<PETSC_MESH_TYPE::label_sequence>&    vertices          = fine->depthStratum(0);
-  const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& sCoarse           = coarse->getRealSection("default");
-  const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& sFine             = fine->getRealSection("default");
-  const ALE::Obj<PETSC_MESH_TYPE::order_type>&        coarseOrder = coarse->getFactory()->getGlobalOrder(coarse, "default", sCoarse);
-  const ALE::Obj<PETSC_MESH_TYPE::order_type>&        fineOrder   = fine->getFactory()->getGlobalOrder(fine, "default", sFine);
-
-  const int dim    = coarse->getDimension();
-  const int numDof = fine->getDiscretization()->getNumDof(fine->getDimension());
-  double *v0, *J, *invJ, detJ, *refCoords, *values;
-
-  ierr = MatCreate(fine->comm(), &P);CHKERRQ(ierr);
-  ierr = MatSetSizes(P, sFine->size(), sCoarse->size(), PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(P);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(P, numDof, PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(P, numDof, PETSC_NULL, numDof, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscMalloc5(dim,double,&v0,dim*dim,double,&J,dim*dim,double,&invJ,dim,double,&refCoords,dim+1,double,&values);CHKERRQ(ierr);
-  bool hasprolong;
-  if (fine->hasLabel("prolongation")) { 
-    hasprolong = true;
-  } else {
-    hasprolong = false;
-    PetscPrintf(fine->comm(), "WARNING: Point Location Label Does Not Exist");
-  }
-  PETSC_MESH_TYPE::label_sequence::iterator v_iter_end = vertices->end();
-  PETSC_MESH_TYPE::real_section_type::value_type *coords = new PETSC_MESH_TYPE::real_section_type::value_type[dim];
-
-  for(PETSC_MESH_TYPE::label_sequence::iterator v_iter = vertices->begin(); v_iter != v_iter_end; ++v_iter) {
-    //const PETSC_MESH_TYPE::real_section_type::value_type *coords     = fineCoordinates->restrictPoint(*v_iter);
-    ierr = PetscMemcpy(coords, fineCoordinates->restrictPoint(*v_iter), dim*sizeof(double));CHKERRQ(ierr);
-    PETSC_MESH_TYPE::point_type coarseCell;
-    PETSC_MESH_TYPE::point_type cellguess = -1;
-    if (hasprolong) {
-      cellguess = fine->getValue(fine->getLabel("prolongation"), *v_iter);
-      coarseCell = coarse->locatePoint(coords, cellguess);
-    } else {
-      coarseCell = coarse->locatePoint(coords);
-    }
-//      coarseCell = coarse->locatePoint(coords);
-    if (coarseCell == -1) {
-     // do NO CORRECTION!
-    } else {
-      coarse->computeElementGeometry(coarseCoordinates, coarseCell, v0, J, invJ, detJ);
-      for(int d = 0; d < dim; ++d) {
-        refCoords[d] = 0.0;
-        for(int e = 0; e < dim; ++e) {
-          refCoords[d] += invJ[d*dim+e]*(coords[e] - v0[e]);
-        }
-        refCoords[d] -= 1.0;
-      }
-      values[0] = -(refCoords[0] + refCoords[1])/2.0;
-      values[1] = 0.5*(refCoords[0] + 1.0);
-      values[2] = 0.5*(refCoords[1] + 1.0);
-  //    PetscPrintf(fine->comm(), "%f, %f, %f\n", values[0], values[1], values[2]);
-      ierr = updateOperatorGeneral(P, fine, sFine, fineOrder, *v_iter, coarse, sCoarse, coarseOrder, coarseCell, values, INSERT_VALUES);CHKERRQ(ierr);
-    }
-  }
-  ierr = PetscFree5(v0,J,invJ,refCoords,values);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(P, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(P, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  delete [] coords;
-  *interpolation = P;
-  PetscFunctionReturn(0);
-#endif
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MeshHasSectionReal"
+#define __FUNCT__ "DMMeshHasSectionReal"
 /*@C
-  MeshHasSectionReal - Determines whether this mesh has a SectionReal with the given name.
+  DMMeshHasSectionReal - Determines whether this mesh has a SectionReal with the given name.
 
   Not Collective
 
@@ -2330,21 +1430,21 @@ PetscErrorCode MeshGetInterpolation_Mesh(Mesh dmCoarse, Mesh dmFine, Mat *interp
 .keywords: mesh, elements
 .seealso: MeshCreate()
 @*/
-PetscErrorCode MeshHasSectionReal(Mesh mesh, const char name[], PetscBool  *flag)
+PetscErrorCode DMMeshHasSectionReal(DM dm, const char name[], PetscBool  *flag)
 {
   ALE::Obj<PETSC_MESH_TYPE> m;
-  PetscErrorCode      ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
   *flag = (PetscBool) m->hasRealSection(std::string(name));
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MeshGetSectionReal"
+#undef __FUNCT__
+#define __FUNCT__ "DMMeshGetSectionReal"
 /*@C
-  MeshGetSectionReal - Returns a SectionReal of the given name from the Mesh.
+  DMMeshGetSectionReal - Returns a SectionReal of the given name from the Mesh.
 
   Collective on Mesh
 
@@ -2362,31 +1462,29 @@ PetscErrorCode MeshHasSectionReal(Mesh mesh, const char name[], PetscBool  *flag
 .keywords: mesh, elements
 .seealso: MeshCreate()
 @*/
-PetscErrorCode MeshGetSectionReal(Mesh mesh, const char name[], SectionReal *section)
+PetscErrorCode DMMeshGetSectionReal(DM dm, const char name[], SectionReal *section)
 {
   ALE::Obj<PETSC_MESH_TYPE> m;
   bool                      has;
   PetscErrorCode            ierr;
 
   PetscFunctionBegin;
-  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
   ierr = SectionRealCreate(m->comm(), section);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) *section, name);CHKERRQ(ierr);
   has  = m->hasRealSection(std::string(name));
   ierr = SectionRealSetSection(*section, m->getRealSection(std::string(name)));CHKERRQ(ierr);
   ierr = SectionRealSetBundle(*section, m);CHKERRQ(ierr);
-#ifdef PETSC_OPT_SIEVE
   if (!has) {
     m->getRealSection(std::string(name))->setChart(m->getSieve()->getChart());
   }
-#endif
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MeshSetSectionReal"
+#undef __FUNCT__
+#define __FUNCT__ "DMMeshSetSectionReal"
 /*@C
-  MeshSetSectionReal - Puts a SectionReal of the given name into the Mesh.
+  DMMeshSetSectionReal - Puts a SectionReal of the given name into the Mesh.
 
   Collective on Mesh
 
@@ -2401,25 +1499,25 @@ PetscErrorCode MeshGetSectionReal(Mesh mesh, const char name[], SectionReal *sec
 .keywords: mesh, elements
 .seealso: MeshCreate()
 @*/
-PetscErrorCode MeshSetSectionReal(Mesh mesh, SectionReal section)
+PetscErrorCode DMMeshSetSectionReal(DM dm, SectionReal section)
 {
   ALE::Obj<PETSC_MESH_TYPE> m;
   ALE::Obj<PETSC_MESH_TYPE::real_section_type> s;
-  const char         *name;
-  PetscErrorCode      ierr;
+  const char    *name;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
   ierr = PetscObjectGetName((PetscObject) section, &name);CHKERRQ(ierr);
   ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
   m->setRealSection(std::string(name), s);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MeshHasSectionInt"
+#undef __FUNCT__
+#define __FUNCT__ "DMMeshHasSectionInt"
 /*@C
-  MeshHasSectionInt - Determines whether this mesh has a SectionInt with the given name.
+  DMMeshHasSectionInt - Determines whether this mesh has a SectionInt with the given name.
 
   Not Collective
 
@@ -2435,21 +1533,21 @@ PetscErrorCode MeshSetSectionReal(Mesh mesh, SectionReal section)
 .keywords: mesh, elements
 .seealso: MeshCreate()
 @*/
-PetscErrorCode MeshHasSectionInt(Mesh mesh, const char name[], PetscBool  *flag)
+PetscErrorCode MeshHasSectionInt(DM dm, const char name[], PetscBool  *flag)
 {
   ALE::Obj<PETSC_MESH_TYPE> m;
-  PetscErrorCode      ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
   *flag = (PetscBool) m->hasIntSection(std::string(name));
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MeshGetSectionInt"
+#undef __FUNCT__
+#define __FUNCT__ "DMMeshGetSectionInt"
 /*@C
-  MeshGetSectionInt - Returns a SectionInt of the given name from the Mesh.
+  DMMeshGetSectionInt - Returns a SectionInt of the given name from the Mesh.
 
   Collective on Mesh
 
@@ -2467,31 +1565,29 @@ PetscErrorCode MeshHasSectionInt(Mesh mesh, const char name[], PetscBool  *flag)
 .keywords: mesh, elements
 .seealso: MeshCreate()
 @*/
-PetscErrorCode MeshGetSectionInt(Mesh mesh, const char name[], SectionInt *section)
+PetscErrorCode DMMeshGetSectionInt(DM dm, const char name[], SectionInt *section)
 {
   ALE::Obj<PETSC_MESH_TYPE> m;
   bool                      has;
   PetscErrorCode            ierr;
 
   PetscFunctionBegin;
-  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
   ierr = SectionIntCreate(m->comm(), section);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) *section, name);CHKERRQ(ierr);
   has  = m->hasIntSection(std::string(name));
   ierr = SectionIntSetSection(*section, m->getIntSection(std::string(name)));CHKERRQ(ierr);
   ierr = SectionIntSetBundle(*section, m);CHKERRQ(ierr);
-#ifdef PETSC_OPT_SIEVE
   if (!has) {
     m->getIntSection(std::string(name))->setChart(m->getSieve()->getChart());
   }
-#endif
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MeshSetSectionInt"
+#undef __FUNCT__
+#define __FUNCT__ "DMMeshSetSectionInt"
 /*@C
-  MeshSetSectionInt - Puts a SectionInt of the given name into the Mesh.
+  DMMeshSetSectionInt - Puts a SectionInt of the given name into the Mesh.
 
   Collective on Mesh
 
@@ -2506,22 +1602,22 @@ PetscErrorCode MeshGetSectionInt(Mesh mesh, const char name[], SectionInt *secti
 .keywords: mesh, elements
 .seealso: MeshCreate()
 @*/
-PetscErrorCode MeshSetSectionInt(Mesh mesh, SectionInt section)
+PetscErrorCode DMMeshSetSectionInt(DM dm, SectionInt section)
 {
   ALE::Obj<PETSC_MESH_TYPE> m;
   ALE::Obj<PETSC_MESH_TYPE::int_section_type> s;
-  const char         *name;
-  PetscErrorCode      ierr;
+  const char    *name;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
   ierr = PetscObjectGetName((PetscObject) section, &name);CHKERRQ(ierr);
   ierr = SectionIntGetSection(section, s);CHKERRQ(ierr);
   m->setIntSection(std::string(name), s);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SectionGetArray"
 /*@C
   SectionGetArray - Returns the array underlying the Section.
@@ -2542,13 +1638,13 @@ PetscErrorCode MeshSetSectionInt(Mesh mesh, SectionInt section)
 .keywords: mesh, elements
 .seealso: MeshCreate()
 @*/
-PetscErrorCode SectionGetArray(Mesh mesh, const char name[], PetscInt *numElements, PetscInt *fiberDim, PetscScalar *array[])
+PetscErrorCode SectionGetArray(DM dm, const char name[], PetscInt *numElements, PetscInt *fiberDim, PetscScalar *array[])
 {
   ALE::Obj<PETSC_MESH_TYPE> m;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
-  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
   const Obj<PETSC_MESH_TYPE::real_section_type>& section = m->getRealSection(std::string(name));
   if (section->size() == 0) {
     *numElements = 0;
@@ -2579,67 +1675,6 @@ PetscErrorCode SectionGetArray(Mesh mesh, const char name[], PetscInt *numElemen
   *array       = (PetscScalar *) section->restrictSpace();
   PetscFunctionReturn(0);
 }
-
-#undef __FUNCT__  
-#define __FUNCT__ "WritePyLithVertices"
-PetscErrorCode WritePyLithVertices(Mesh mesh, PetscViewer viewer)
-{
-  ALE::Obj<PETSC_MESH_TYPE> m;
-  PetscErrorCode ierr;
-
-  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-  return ALE::PyLith::Viewer::writeVertices(m, viewer);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "WritePyLithElements"
-PetscErrorCode WritePyLithElements(Mesh mesh, SectionInt material, PetscViewer viewer)
-{
-  ALE::Obj<PETSC_MESH_TYPE> m;
-  ALE::Obj<PETSC_MESH_TYPE::int_section_type> s;
-  PetscErrorCode ierr;
-
-  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-  ierr = SectionIntGetSection(material, s);CHKERRQ(ierr);
-  return ALE::PyLith::Viewer::writeElements(m, s, viewer);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "WritePyLithVerticesLocal"
-PetscErrorCode WritePyLithVerticesLocal(Mesh mesh, PetscViewer viewer)
-{
-  ALE::Obj<PETSC_MESH_TYPE> m;
-  PetscErrorCode ierr;
-
-  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-  return ALE::PyLith::Viewer::writeVerticesLocal(m, viewer);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "WritePyLithElementsLocal"
-PetscErrorCode WritePyLithElementsLocal(Mesh mesh, SectionInt material, PetscViewer viewer)
-{
-  ALE::Obj<PETSC_MESH_TYPE> m;
-  ALE::Obj<PETSC_MESH_TYPE::int_section_type> s;
-  PetscErrorCode ierr;
-
-  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-  ierr = SectionIntGetSection(material, s);CHKERRQ(ierr);
-  return ALE::PyLith::Viewer::writeElementsLocal(m, s, viewer);
-}
-
-#if 0
-#undef __FUNCT__  
-#define __FUNCT__ "WritePyLithTractionsLocal"
-PetscErrorCode WritePyLithTractionsLocal(Mesh mesh, PetscViewer viewer)
-{
-  ALE::Obj<PETSC_MESH_TYPE> m;
-  PetscErrorCode ierr;
-
-  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-  return ALE::PyLith::Viewer::writeTractionsLocal(m, m->getRealSection("tractions"), viewer);
-}
-#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "ExpandInterval"

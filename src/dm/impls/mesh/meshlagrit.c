@@ -110,28 +110,33 @@ namespace ALE {
       *vertices = verts;
       ierr = PetscViewerDestroy(viewer);
     };
-#ifdef PETSC_OPT_SIEVE
     Obj<Builder::Mesh> Builder::readMesh(MPI_Comm comm, const int dim, const std::string& filename, const bool interpolate = false, const int debug = 0) {
-      throw ALE::Exception("Not implemented for optimized sieves");
+      typedef ALE::Mesh<PetscInt,PetscScalar> FlexMesh;
+      Obj<Mesh>       mesh  = new Mesh(comm, dim, debug);
+      Obj<sieve_type> sieve = new sieve_type(comm, debug);
+      Obj<FlexMesh>             m = new FlexMesh(comm, dim, debug);
+      Obj<FlexMesh::sieve_type> s = new FlexMesh::sieve_type(comm, debug);
+      std::map<Mesh::point_type,Mesh::point_type> renumbering;
+      int    *cells;
+      double *coordinates;
+      int     numCells = 0, numVertices = 0, numCorners = dim+1;
+      PetscErrorCode ierr;
+
+      mesh->setSieve(sieve);
+      Builder::readInpFile(comm, filename, dim, numCorners, numCells, &cells, numVertices, &coordinates);
+      ALE::SieveBuilder<FlexMesh>::buildTopology(s, dim, numCells, cells, numVertices, interpolate, numCorners, -1, m->getArrowSection("orientation"));
+      m->setSieve(s);
+      m->stratify();
+      ALE::SieveBuilder<FlexMesh>::buildCoordinates(m, dim+1, coordinates);
+      ierr = PetscFree(cells);CHKERRXX(ierr);
+      ierr = PetscFree(coordinates);CHKERRXX(ierr);
+      ALE::ISieveConverter::convertMesh(*m, *mesh, renumbering, false);
+      return mesh;
     };
     void Builder::readFault(Obj<Builder::Mesh> mesh, const std::string& filename) {
       throw ALE::Exception("Not implemented for optimized sieves");
     };
-#else
-    Obj<Builder::Mesh> Builder::readMesh(MPI_Comm comm, const int dim, const std::string& filename, const bool interpolate = false, const int debug = 0) {
-      Obj<Mesh>       mesh  = new Mesh(comm, dim, debug);
-      Obj<sieve_type> sieve = new sieve_type(comm, debug);
-      int    *cells;
-      double *coordinates;
-      int     numCells = 0, numVertices = 0, numCorners = dim+1;
-
-      Builder::readInpFile(comm, filename, dim, numCorners, numCells, &cells, numVertices, &coordinates);
-      ALE::SieveBuilder<Mesh>::buildTopology(sieve, dim, numCells, cells, numVertices, interpolate, numCorners);
-      mesh->setSieve(sieve);
-      mesh->stratify();
-      ALE::SieveBuilder<Mesh>::buildCoordinates(mesh, dim, coordinates);
-      return mesh;
-    };
+#if 0
     void Builder::readFault(Obj<Builder::Mesh> mesh, const std::string& filename) {
       const int      numCells = mesh->heightStratum(0)->size();
       PetscViewer    viewer;
