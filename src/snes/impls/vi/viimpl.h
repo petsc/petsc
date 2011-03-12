@@ -45,8 +45,10 @@ typedef struct {
 
   /* Tolerance to check whether the constraint is satisfied */
   PetscReal             const_tol;
-  /* Copy of user supplied function evaluation and jacobian evaluation function pointers */
+  /* Copy of user supplied function evaluation routine  */
   PetscErrorCode (*computeuserfunction)(SNES,Vec,Vec,void*);
+  /* user supplied function for checking redundant equations for SNESSolveVI_RS2 */
+  PetscErrorCode (*checkredundancy)(SNES,IS,IS*,void*);
 } SNES_VI;
 
 #endif

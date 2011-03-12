@@ -91,7 +91,7 @@ int MatSeqAIJFromMatlab(mxArray*,Mat);
 mxArray* MatSeqAIJToMatlab(Mat);
 
 typedef PetscPointer DM;
-typedef int DMDAPeriodicType;
+typedef int DMDABoundaryType;
 typedef int DMDAStencilType;
 int DMCreate(MPI_Comm,DM*);
 int DMSetType(DM,const char*);
@@ -103,14 +103,14 @@ int DMDestroy(DM);
 int DMView(DM,PetscViewer);
 int DMSetFunctionMatlab(DM,const char*);
 int DMSetJacobianMatlab(DM,const char*);
-int DMDASetPeriodicity(DM, DMDAPeriodicType);
+int DMDASetBoundaryType(DM, DMDABoundaryType);
 int DMDASetDof(DM, int);
 int DMSetUp(DM);
 int DMDASetStencilWidth(DM, int);
 int DMDASetStencilType(DM, DMDAStencilType);
 int DMCreateGlobalVector(DM,Vec*);
 int DMGetMatrix(DM,const char*,Mat*);
-int DMDAGetInfo(DM,int*,int*,int*,int*,int*,int*,int*,int*,int*,DMDAPeriodicType*,DMDAStencilType*);
+int DMDAGetInfo(DM,int*,int*,int*,int*,int*,int*,int*,int*,int*,DMDABoundaryType*,DMDAStencilType*);
 
 typedef PetscPointer PC;
 int PCCreate(MPI_Comm,PC *);

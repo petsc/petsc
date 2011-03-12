@@ -45,7 +45,7 @@ int main(int argc,char **argv)
 	- Lap(Omega) + Div([U*Omega,V*Omega]) - GR*Grad_x(T) = 0
         where T is given by the given x.temp
         - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDACreate2d(comm,DMDA_NONPERIODIC,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,3,1,0,0,&da1);CHKERRQ(ierr);
+  ierr = DMDACreate2d(comm,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,3,1,0,0,&da1);CHKERRQ(ierr);
   ierr = DMDASetFieldName(da1,0,"x-velocity");CHKERRQ(ierr);
   ierr = DMDASetFieldName(da1,1,"y-velocity");CHKERRQ(ierr);
   ierr = DMDASetFieldName(da1,2,"Omega");CHKERRQ(ierr);
@@ -59,7 +59,7 @@ int main(int argc,char **argv)
   ierr = DMMGSetSNES(dmmg,FormFunction,0);CHKERRQ(ierr);
   ierr = DMMGSetFromOptions(dmmg);CHKERRQ(ierr);
 
-  ierr = DMDAGetInfo(da1,PETSC_NULL,&mx,&my,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da1,PETSC_NULL,&mx,&my,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   user.lidvelocity = 1.0/(mx*my);
   user.prandtl     = 1.0;
   user.grashof     = 1.0;

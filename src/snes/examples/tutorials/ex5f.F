@@ -110,7 +110,8 @@
 
 ! This really needs only the star-type stencil, but we use the box
 ! stencil temporarily.
-      call DMDACreate2d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,                      &
+      call DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,            &
+     &     DMDA_BOUNDARY_NONE,                                          &
      &     DMDA_STENCIL_STAR,i4,i4,PETSC_DECIDE,PETSC_DECIDE,i1,i1,                &
      &     PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,da,ierr)
 
@@ -123,6 +124,7 @@
 !  Get local grid boundaries (for 2-dimensional DMDA)
 
       call DMDAGetInfo(da,PETSC_NULL_INTEGER,mx,my,PETSC_NULL_INTEGER,            &
+     &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                     &
      &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                     &
      &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                     &
      &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                     &

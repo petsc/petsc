@@ -17,14 +17,14 @@ PetscErrorCode DMView_DA_Matlab(DM da,PetscViewer viewer)
   PetscMPIInt      rank;
   PetscInt         dim,m,n,p,dof,swidth;
   DMDAStencilType  stencil;
-  DMDAPeriodicType periodic;
+  DMDABoundaryType bx,by,bz;
   mxArray          *mx;
-  const char       *fnames[] = {"dimension","m","n","p","dof","stencil_width","periodicity","stencil_type"};
+  const char       *fnames[] = {"dimension","m","n","p","dof","stencil_width","bx","by","bz","stencil_type"};
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(((PetscObject)da)->comm,&rank);CHKERRQ(ierr);
   if (!rank) {
-    ierr = DMDAGetInfo(da,&dim,&m,&n,&p,0,0,0,&dof,&swidth,&periodic,&stencil);CHKERRQ(ierr);
+    ierr = DMDAGetInfo(da,&dim,&m,&n,&p,0,0,0,&dof,&swidth,&bx,&by,&bz,&stencil);CHKERRQ(ierr);
     mx = mxCreateStructMatrix(1,1,8,(const char **)fnames);
     if (!mx) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Unable to generate MATLAB struct array to hold DMDA informations");
     mxSetFieldByNumber(mx,0,0,mxCreateDoubleScalar((double)dim));
@@ -33,8 +33,10 @@ PetscErrorCode DMView_DA_Matlab(DM da,PetscViewer viewer)
     mxSetFieldByNumber(mx,0,3,mxCreateDoubleScalar((double)p));
     mxSetFieldByNumber(mx,0,4,mxCreateDoubleScalar((double)dof));
     mxSetFieldByNumber(mx,0,5,mxCreateDoubleScalar((double)swidth));
-    mxSetFieldByNumber(mx,0,6,mxCreateDoubleScalar((double)periodic));
-    mxSetFieldByNumber(mx,0,7,mxCreateDoubleScalar((double)stencil));
+    mxSetFieldByNumber(mx,0,6,mxCreateDoubleScalar((double)bx));
+    mxSetFieldByNumber(mx,0,7,mxCreateDoubleScalar((double)by));
+    mxSetFieldByNumber(mx,0,8,mxCreateDoubleScalar((double)bz));
+    mxSetFieldByNumber(mx,0,9,mxCreateDoubleScalar((double)stencil));
     ierr = PetscObjectName((PetscObject)da);CHKERRQ(ierr);
     ierr = PetscViewerMatlabPutVariable(viewer,((PetscObject)da)->name,mx);CHKERRQ(ierr);
   }
@@ -51,14 +53,14 @@ PetscErrorCode DMView_DA_Binary(DM da,PetscViewer viewer)
   PetscInt         i,dim,m,n,p,dof,swidth,M,N,P;
   size_t           j,len;
   DMDAStencilType  stencil;
-  DMDAPeriodicType periodic;
+  DMDABoundaryType bx,by,bz;
   MPI_Comm         comm;
   DM_DA            *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
 
-  ierr = DMDAGetInfo(da,&dim,&m,&n,&p,&M,&N,&P,&dof,&swidth,&periodic,&stencil);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,&dim,&m,&n,&p,&M,&N,&P,&dof,&swidth,&bx,&by,&bz,&stencil);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (!rank) {
     FILE *file;
@@ -67,7 +69,7 @@ PetscErrorCode DMView_DA_Binary(DM da,PetscViewer viewer)
     if (file) {
       char fieldname[PETSC_MAX_PATH_LEN];
 
-      ierr = PetscFPrintf(PETSC_COMM_SELF,file,"-daload_info %D,%D,%D,%D,%D,%D,%D,%D\n",dim,m,n,p,dof,swidth,stencil,periodic);CHKERRQ(ierr);
+      ierr = PetscFPrintf(PETSC_COMM_SELF,file,"-daload_info %D,%D,%D,%D,%D,%D,%D,%D,%D,%D\n",dim,m,n,p,dof,swidth,stencil,bx,by,bz);CHKERRQ(ierr);
       for (i=0; i<dof; i++) {
         if (dd->fieldname[i]) {
           ierr = PetscStrncpy(fieldname,dd->fieldname[i],PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
@@ -94,11 +96,11 @@ PetscErrorCode DMView_DA_Binary(DM da,PetscViewer viewer)
     /* create the appropriate DMDA to map to natural ordering */
     ierr = DMDAGetOwnershipRanges(da,&lx,&ly,&lz);CHKERRQ(ierr);
     if (dim == 1) {
-      ierr = DMDACreate1d(comm,DMDA_NONPERIODIC,m,dim,0,lx,&dac);CHKERRQ(ierr); 
+      ierr = DMDACreate1d(comm,DMDA_BOUNDARY_NONE,m,dim,0,lx,&dac);CHKERRQ(ierr); 
     } else if (dim == 2) {
-      ierr = DMDACreate2d(comm,DMDA_NONPERIODIC,DMDA_STENCIL_BOX,m,n,M,N,dim,0,lx,ly,&dac);CHKERRQ(ierr); 
+      ierr = DMDACreate2d(comm,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,m,n,M,N,dim,0,lx,ly,&dac);CHKERRQ(ierr); 
     } else if (dim == 3) {
-      ierr = DMDACreate3d(comm,DMDA_NONPERIODIC,DMDA_STENCIL_BOX,m,n,p,M,N,P,dim,0,lx,ly,lz,&dac);CHKERRQ(ierr); 
+      ierr = DMDACreate3d(comm,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,m,n,p,M,N,P,dim,0,lx,ly,lz,&dac);CHKERRQ(ierr); 
     } else SETERRQ1(comm,PETSC_ERR_ARG_CORRUPT,"Dimension is not 1 2 or 3: %D\n",dim);
     ierr = DMDACreateNaturalVector(dac,&natural);CHKERRQ(ierr);
     ierr = PetscObjectSetOptionsPrefix((PetscObject)natural,"coor_");CHKERRQ(ierr);
@@ -120,7 +122,7 @@ PetscErrorCode DMView_DA_VTK(DM da, PetscViewer viewer)
   DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
-  ierr = DMDAGetInfo(da, &dim, &M, &N, &P, PETSC_NULL, PETSC_NULL, PETSC_NULL, &dof, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da, &dim, &M, &N, &P, PETSC_NULL, PETSC_NULL, PETSC_NULL, &dof, PETSC_NULL, PETSC_NULL, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
   /* if (dim != 3) {SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "VTK output only works for three dimensional DMDAs.");} */
   if (!dd->coordinates) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP, "VTK output requires DMDA coordinates.");
   /* Write Header */
@@ -158,14 +160,14 @@ PetscErrorCode DMView_DA_VTK(DM da, PetscViewer viewer)
 .  da - the distributed array
 
    Output Parameters:
-+  dim     - dimension of the distributed array (1, 2, or 3)
-.  M, N, P - global dimension in each direction of the array
-.  m, n, p - corresponding number of procs in each dimension
-.  dof     - number of degrees of freedom per node
-.  s       - stencil width
-.  wrap    - type of periodicity, one of DMDA_NONPERIODIC, DMDA_XPERIODIC, DMDA_YPERIODIC, 
-             DMDA_XYPERIODIC, DMDA_XYZPERIODIC, DMDA_XZPERIODIC, DMDA_YZPERIODIC,DMDA_ZPERIODIC
--  st      - stencil type, either DMDA_STENCIL_STAR or DMDA_STENCIL_BOX
++  dim      - dimension of the distributed array (1, 2, or 3)
+.  M, N, P  - global dimension in each direction of the array
+.  m, n, p  - corresponding number of procs in each dimension
+.  dof      - number of degrees of freedom per node
+.  s        - stencil width
+.  bx,by,bz - type of ghost nodes at boundary, one of DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_GHOSTED, 
+              DMDA_BOUNDARY_MIRROR, DMDA_BOUNDARY_PERIODIC
+-  st       - stencil type, either DMDA_STENCIL_STAR or DMDA_STENCIL_BOX
 
    Level: beginner
   
@@ -176,7 +178,7 @@ PetscErrorCode DMView_DA_VTK(DM da, PetscViewer viewer)
 
 .seealso: DMView(), DMDAGetCorners(), DMDAGetLocalInfo()
 @*/
-PetscErrorCode  DMDAGetInfo(DM da,PetscInt *dim,PetscInt *M,PetscInt *N,PetscInt *P,PetscInt *m,PetscInt *n,PetscInt *p,PetscInt *dof,PetscInt *s,DMDAPeriodicType *wrap,DMDAStencilType *st)
+PetscErrorCode  DMDAGetInfo(DM da,PetscInt *dim,PetscInt *M,PetscInt *N,PetscInt *P,PetscInt *m,PetscInt *n,PetscInt *p,PetscInt *dof,PetscInt *s,DMDABoundaryType *bx,DMDABoundaryType *by,DMDABoundaryType *bz,DMDAStencilType *st)
 {
   DM_DA *dd = (DM_DA*)da->data;
 
@@ -191,7 +193,9 @@ PetscErrorCode  DMDAGetInfo(DM da,PetscInt *dim,PetscInt *M,PetscInt *N,PetscInt
   if (p)    *p    = dd->p;
   if (dof)  *dof  = dd->w;
   if (s)    *s    = dd->s;
-  if (wrap) *wrap = dd->wrap;
+  if (bx) *bx = dd->bx;
+  if (by) *by = dd->by;
+  if (bz) *bz = dd->bz;
   if (st)   *st   = dd->stencil_type;
   PetscFunctionReturn(0);
 }  
@@ -230,7 +234,9 @@ PetscErrorCode  DMDAGetLocalInfo(DM da,DMDALocalInfo *info)
   info->mz   = dd->P;
   info->dof  = dd->w;
   info->sw   = dd->s;
-  info->pt   = dd->wrap;
+  info->bx   = dd->bx;
+  info->by   = dd->by;
+  info->bz   = dd->bz;
   info->st   = dd->stencil_type;
 
   /* since the xs, xe ... have all been multiplied by the number of degrees 

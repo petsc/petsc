@@ -60,6 +60,15 @@ namespace ALE {
         return MPI_INT;
       } else if (sizeof(value_type) == 8) {
         return MPI_DOUBLE;
+      } else if (sizeof(value_type) == 16) {
+        int          blen[1], ierr;
+        MPI_Aint     indices[1];
+        MPI_Datatype oldtypes[1], newtype;
+        blen[0] = 4; indices[0] = 0;           oldtypes[0] = MPI_INT;
+        ierr = MPI_Type_struct(1, blen, indices, oldtypes, &newtype);CHKERRXX(ierr);
+        ierr = MPI_Type_commit(&newtype);CHKERRXX(ierr);
+        this->_createdType = true;
+        return newtype;
       } else if (sizeof(value_type) == 28) {
         int          blen[2], ierr;
         MPI_Aint     indices[2];

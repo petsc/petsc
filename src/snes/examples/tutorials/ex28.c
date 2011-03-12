@@ -340,14 +340,14 @@ int main(int argc, char *argv[])
   PetscBool      view_draw;
 
   PetscInitialize(&argc,&argv,0,help);
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,-10,1,1,PETSC_NULL,&dau);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,-10,1,1,PETSC_NULL,&dau);CHKERRQ(ierr);
   ierr = DMDACreateOwnershipRanges(dau);CHKERRQ(ierr); /* Ensure that the ownership ranges agree so that we can get a compatible grid for the coefficient */
   ierr = DMDAGetOwnershipRanges(dau,&lxu,0,0);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(dau,0, &m,0,0, &nprocs,0,0, 0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(dau,0, &m,0,0, &nprocs,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
   ierr = PetscMalloc(nprocs*sizeof(*lxk),&lxk);CHKERRQ(ierr);
   ierr = PetscMemcpy(lxk,lxu,nprocs*sizeof(*lxk));CHKERRQ(ierr);
   lxk[0]--;
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,m-1,1,1,lxk,&dak);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,m-1,1,1,lxk,&dak);CHKERRQ(ierr);
   ierr = PetscFree(lxk);CHKERRQ(ierr);
 
   ierr = DMCompositeCreate(PETSC_COMM_WORLD,&pack);CHKERRQ(ierr);

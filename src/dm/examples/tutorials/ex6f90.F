@@ -219,21 +219,24 @@
 !     set up distributed arrays.
 !-----------------------------------------------------------------------
       IF(fa%comm(1) /= 0)THEN
-         CALL DMDACreate2d(fa%comm(1),DMDA_XPERIODIC,DMDA_STENCIL_BOX,             &
+         CALL DMDACreate2d(fa%comm(1),DMDA_BOUNDARY_PERIODIC,                   &
+     &        DMDA_BOUNDARY_NONE, DMDA_STENCIL_BOX,                          &
      &        fa%p2,fa%r2g,PETSC_DECIDE,PETSC_DECIDE,1,fa%sw,                &
      &        PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,da2,ierr)
          CALL DMGetLocalVector(da2,vl2,ierr)
          CALL DMGetGlobalVector(da2,vg2,ierr)
       ENDIF
       IF(fa%comm(2) /= 0)THEN
-         CALL DMDACreate2d(fa%comm(2),DMDA_NONPERIODIC,DMDA_STENCIL_BOX,           &
+         CALL DMDACreate2d(fa%comm(2),DMDA_BOUNDARY_NONE,                       &
+     &        DMDA_BOUNDARY_NONE, DMDA_STENCIL_BOX,                        &
      &        fa%p1-fa%p2,fa%r2g,PETSC_DECIDE,PETSC_DECIDE,1,fa%sw,          &
      &        PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,da3,ierr)
          CALL DMGetLocalVector(da3,vl3,ierr)
          CALL DMGetGlobalVector(da3,vg3,ierr)
       ENDIF
       IF(fa%comm(0) /= 0)THEN
-         CALL DMDACreate2d(fa%comm(0),DMDA_NONPERIODIC,DMDA_STENCIL_BOX,           &
+         CALL DMDACreate2d(fa%comm(0),DMDA_BOUNDARY_NONE,                       &
+     &        DMDA_BOUNDARY_NONE, DMDA_STENCIL_BOX,                        &
      &        fa%p1,fa%r1g,PETSC_DECIDE,PETSC_DECIDE,1,fa%sw,                &
      &        PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,da1,ierr)
          CALL DMGetLocalVector(da1,vl1,ierr)

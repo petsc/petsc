@@ -40,7 +40,7 @@ PetscErrorCode DMDAGetWireBasketInterpolation(DM da,PC_Exotic *exotic,Mat Agloba
   PetscTable             ht;
 
   PetscFunctionBegin;
-  ierr = DMDAGetInfo(da,&dim,0,0,0,&mp,&np,&pp,&dof,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,&dim,0,0,0,&mp,&np,&pp,&dof,0,0,0,0,0);CHKERRQ(ierr);
   if (dof != 1) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"Only for single field problems");
   if (dim != 3) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"Only coded for 3d problems");
   ierr = DMDAGetCorners(da,0,0,0,&m,&n,&p);CHKERRQ(ierr);
@@ -318,7 +318,7 @@ PetscErrorCode DMDAGetFaceInterpolation(DM da,PC_Exotic *exotic,Mat Aglobal,MatR
   PetscTable             ht;
 
   PetscFunctionBegin;
-  ierr = DMDAGetInfo(da,&dim,0,0,0,&mp,&np,&pp,&dof,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,&dim,0,0,0,&mp,&np,&pp,&dof,0,0,0,0,0);CHKERRQ(ierr);
   if (dof != 1) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"Only for single field problems");
   if (dim != 3) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"Only coded for 3d problems");
   ierr = DMDAGetCorners(da,0,0,0,&m,&n,&p);CHKERRQ(ierr);

@@ -90,7 +90,7 @@ typedef struct { /* physical and miscelaneous parameters */
 } Parameter;
 
 typedef struct { /* grid parameters */
-  DMDAPeriodicType periodic;
+  DMDABoundaryType bx,by;
   DMDAStencilType  stencil;
   PetscInt       corner,ni,nj,jlid,jfault,inose;
   PetscInt       dof,stencil_width,mglevels;
@@ -187,7 +187,7 @@ int main(int argc,char **argv)
      for principal unknowns (x) and governing residuals (f)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */ 
   ierr = DMMGCreate(comm,grid.mglevels,user,&dmmg);CHKERRQ(ierr); 
-  ierr = DMDACreate2d(comm,grid.periodic,grid.stencil,grid.ni,grid.nj,PETSC_DECIDE,PETSC_DECIDE,grid.dof,grid.stencil_width,0,0,&da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(comm,grid.bx,grid.by,grid.stencil,grid.ni,grid.nj,PETSC_DECIDE,PETSC_DECIDE,grid.dof,grid.stencil_width,0,0,&da);CHKERRQ(ierr);
   ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr);
   ierr = DMDestroy(da);CHKERRQ(ierr);
   ierr = DMDASetFieldName(DMMGGetDM(dmmg),0,"x-velocity");CHKERRQ(ierr);
@@ -201,7 +201,7 @@ int main(int argc,char **argv)
      for principal unknowns (x) and governing residuals (f)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */ 
   ierr = DMMGCreate(comm,grid.mglevels,&user,&dmmg);CHKERRQ(ierr); 
-  ierr = DMDACreate2d(comm,grid.periodic,grid.stencil,grid.ni,grid.nj,PETSC_DECIDE,PETSC_DECIDE,grid.dof,grid.stencil_width,0,0,&da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(comm,grid.bx,grid.by,grid.stencil,grid.ni,grid.nj,PETSC_DECIDE,PETSC_DECIDE,grid.dof,grid.stencil_width,0,0,&da);CHKERRQ(ierr);
   ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr);
   ierr = DMDestroy(da);CHKERRQ(ierr);
   ierr = DMDASetFieldName(DMMGGetDM(dmmg),0,"x-velocity");CHKERRQ(ierr);
@@ -222,7 +222,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set up the SNES solver with callback functions.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMMGSetSNESLocal(dmmg,FormFunctionLocal,0,0,0);CHKERRQ(ierr);
+  ierr = DMMGSetSNESLocal(dmmg,FormFunctionLocal,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DMMGSetFromOptions(dmmg);CHKERRQ(ierr);
   ierr = DMMGSetInitialGuess(dmmg,FormInitialGuess);CHKERRQ(ierr);
   ierr = SNESSetConvergenceTest(DMMGGetSNES(dmmg),SNESConverged_Interactive,(void*)user,PETSC_NULL);CHKERRQ(ierr);
@@ -927,7 +927,8 @@ PetscErrorCode SetParams(Parameter *param, GridInfo *grid)
   param->depth         = grid->dz*(grid->nj-2);                            /* km */
   grid->inose          = 0;                                         /* gridpoints*/
   ierr = PetscOptionsGetInt(PETSC_NULL,"-inose",&(grid->inose),PETSC_NULL);CHKERRQ(ierr);
-  grid->periodic       = DMDA_NONPERIODIC;
+  grid->bx       = DMDA_BOUNDARY_NONE;
+  grid->by       = DMDA_BOUNDARY_NONE;
   grid->stencil        = DMDA_STENCIL_BOX;
   grid->dof            = 4;
   grid->stencil_width  = 2;

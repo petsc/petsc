@@ -1,5 +1,5 @@
 
-static char help[] = "Tests various 1-dimensional DM routines.\n\n";
+static char help[] = "Tests various 2-dimensional DM routines.\n\n";
 
 #include "petscdm.h"
 
@@ -7,7 +7,7 @@ static char help[] = "Tests various 1-dimensional DM routines.\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  PetscInt       M = 5,N = 4,dof=1,s=1,wrap=0,i,n,j,k,m,cnt;
+  PetscInt       M = 5,N = 4,dof=1,s=1,bx=0,by=0,i,n,j,k,m,cnt;
   PetscErrorCode ierr;
   DM             da;
   PetscViewer    viewer;
@@ -28,10 +28,11 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-dof",&dof,PETSC_NULL);CHKERRQ(ierr); 
   ierr = PetscOptionsGetInt(PETSC_NULL,"-s",&s,PETSC_NULL);CHKERRQ(ierr); 
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-periodic",&wrap,PETSC_NULL);CHKERRQ(ierr); 
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-periodic_x",&wrap,PETSC_NULL);CHKERRQ(ierr); 
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-periodic_y",&wrap,PETSC_NULL);CHKERRQ(ierr); 
 
   /* Create distributed array and get vectors */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,(DMDAPeriodicType)wrap,DMDA_STENCIL_BOX,M,N,PETSC_DECIDE,
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,(DMDABoundaryType)bx,(DMDABoundaryType)by,DMDA_STENCIL_BOX,M,N,PETSC_DECIDE,
                     PETSC_DECIDE,dof,s,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
   ierr = DMDASetUniformCoordinates(da,0.0,1.0,0.0,1.0,0.0,0.0);CHKERRQ(ierr);
   for (i=0; i<dof; i++) {

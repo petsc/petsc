@@ -13,7 +13,7 @@
 #define DM PetscFortranAddr
 #endif
 #define DMMG PetscFortranAddr
-#define DMDAPeriodicType PetscEnum
+#define DMDABoundaryType PetscEnum
 #define DMDAStencilType PetscEnum
 #define DMDADirection PetscEnum
 

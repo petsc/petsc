@@ -8,7 +8,6 @@
 PETSC_EXTERN_CXX_BEGIN
 
 extern PetscErrorCode  DMInitializePackage(const char[]);
-
 /*S
      DM - Abstract PETSc object that manages an abstract grid object
           
@@ -55,18 +54,19 @@ M*/
 M*/
 
 /*E
-    DMDAPeriodicType - Is the domain periodic in one or more directions
+    DMDABoundaryType - Describes the choice for fill of ghost cells on domain boundaries.
 
    Level: beginner
 
-   DMDA_XYZGHOSTED means that ghost points are put around all the physical boundaries
-   in the local representation of the Vec (i.e. DMDACreate/GetLocalVector().
+   A boundary may be of type DMDA_BOUNDARY_NONE (no ghost nodes), DMDA_BOUNDARY_GHOST (ghost nodes 
+   exist but aren't filled), DMDA_BOUNDARY_MIRROR (not yet implemented), or DMDA_BOUNDARY_PERIODIC
+   (ghost nodes filled by the opposite edge of the domain).
 
-.seealso: DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMDACreate()
+.seealso: DMDASetBoundaryType(), DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMDACreate()
 E*/
-typedef enum { DMDA_NONPERIODIC,DMDA_XPERIODIC,DMDA_YPERIODIC,DMDA_XYPERIODIC,
-               DMDA_XYZPERIODIC,DMDA_XZPERIODIC,DMDA_YZPERIODIC,DMDA_ZPERIODIC,DMDA_XYZGHOSTED} DMDAPeriodicType;
-extern const char *DMDAPeriodicTypes[];
+typedef enum { DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_GHOSTED, DMDA_BOUNDARY_MIRROR, DMDA_BOUNDARY_PERIODIC } DMDABoundaryType;
+
+extern const char *DMDABoundaryTypes[];
 
 /*E
     DMDAInterpolationType - Defines the type of interpolation that will be returned by 
@@ -94,10 +94,6 @@ typedef enum { DMDA_ELEMENT_P1, DMDA_ELEMENT_Q1 } DMDAElementType;
 extern PetscErrorCode   DMDASetElementType(DM,DMDAElementType);
 extern PetscErrorCode   DMDAGetElementType(DM,DMDAElementType*);
 
-#define DMDAXPeriodic(pt) ((pt)==DMDA_XPERIODIC||(pt)==DMDA_XYPERIODIC||(pt)==DMDA_XZPERIODIC||(pt)==DMDA_XYZPERIODIC)
-#define DMDAYPeriodic(pt) ((pt)==DMDA_YPERIODIC||(pt)==DMDA_XYPERIODIC||(pt)==DMDA_YZPERIODIC||(pt)==DMDA_XYZPERIODIC)
-#define DMDAZPeriodic(pt) ((pt)==DMDA_ZPERIODIC||(pt)==DMDA_XZPERIODIC||(pt)==DMDA_YZPERIODIC||(pt)==DMDA_XYZPERIODIC)
-
 typedef enum { DMDA_X,DMDA_Y,DMDA_Z } DMDADirection;
 
 extern PetscClassId  DM_CLASSID;
@@ -107,9 +103,9 @@ extern PetscClassId  DM_CLASSID;
 extern PetscErrorCode  DMDACreate(MPI_Comm,DM*);
 extern PetscErrorCode  DMDASetDim(DM,PetscInt);
 extern PetscErrorCode  DMDASetSizes(DM,PetscInt,PetscInt,PetscInt);
-extern PetscErrorCode     DMDACreate1d(MPI_Comm,DMDAPeriodicType,PetscInt,PetscInt,PetscInt,const PetscInt[],DM *);
-extern PetscErrorCode     DMDACreate2d(MPI_Comm,DMDAPeriodicType,DMDAStencilType,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],const PetscInt[],DM*);
-extern PetscErrorCode     DMDACreate3d(MPI_Comm,DMDAPeriodicType,DMDAStencilType,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],const PetscInt[],const PetscInt[],DM*);
+extern PetscErrorCode     DMDACreate1d(MPI_Comm,DMDABoundaryType,PetscInt,PetscInt,PetscInt,const PetscInt[],DM *);
+extern PetscErrorCode     DMDACreate2d(MPI_Comm,DMDABoundaryType,DMDABoundaryType,DMDAStencilType,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],const PetscInt[],DM*);
+extern PetscErrorCode     DMDACreate3d(MPI_Comm,DMDABoundaryType,DMDABoundaryType,DMDABoundaryType,DMDAStencilType,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],const PetscInt[],const PetscInt[],DM*);
 extern PetscErrorCode  DMSetOptionsPrefix(DM,const char []);
 extern PetscErrorCode  DMSetVecType(DM,const VecType);
 
@@ -124,7 +120,7 @@ extern PetscErrorCode     DMDACreateNaturalVector(DM,Vec *);
 extern PetscErrorCode     DMDALoad(PetscViewer,PetscInt,PetscInt,PetscInt,DM *);
 extern PetscErrorCode     DMDAGetCorners(DM,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
 extern PetscErrorCode     DMDAGetGhostCorners(DM,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
-extern PetscErrorCode     DMDAGetInfo(DM,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,DMDAPeriodicType*,DMDAStencilType*);
+extern PetscErrorCode     DMDAGetInfo(DM,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,DMDABoundaryType*,DMDABoundaryType*,DMDABoundaryType*,DMDAStencilType*);
 extern PetscErrorCode     DMDAGetProcessorSubset(DM,DMDADirection,PetscInt,MPI_Comm*);
 extern PetscErrorCode     DMDAGetProcessorSubsets(DM,DMDADirection,MPI_Comm*);
 
@@ -137,7 +133,8 @@ extern PetscErrorCode     DMDAGetScatter(DM,VecScatter*,VecScatter*,VecScatter*)
 extern PetscErrorCode     DMDAGetNeighbors(DM,const PetscMPIInt**);
 
 extern PetscErrorCode     DMDAGetAO(DM,AO*);
-extern PetscErrorCode     DMDASetCoordinates(DM,Vec); 
+extern PetscErrorCode     DMDASetCoordinates(DM,Vec);
+extern PetscErrorCode     DMDASetGhostedCoordinates(DM,Vec);
 extern PetscErrorCode     DMDAGetCoordinates(DM,Vec *);
 extern PetscErrorCode     DMDAGetGhostedCoordinates(DM,Vec *);
 extern PetscErrorCode     DMDAGetCoordinateDA(DM,DM *);
@@ -147,7 +144,7 @@ extern PetscErrorCode     DMDAGetLocalBoundingBox(DM,PetscReal[],PetscReal[]);
 extern PetscErrorCode     DMDASetFieldName(DM,PetscInt,const char[]);
 extern PetscErrorCode     DMDAGetFieldName(DM,PetscInt,const char**);
 
-extern PetscErrorCode  DMDASetPeriodicity(DM, DMDAPeriodicType);
+extern PetscErrorCode  DMDASetBoundaryType(DM,DMDABoundaryType,DMDABoundaryType,DMDABoundaryType);
 extern PetscErrorCode  DMDASetDof(DM, int);
 extern PetscErrorCode  DMDASetStencilWidth(DM, PetscInt);
 extern PetscErrorCode  DMDASetOwnershipRanges(DM,const PetscInt[],const PetscInt[],const PetscInt[]);
@@ -260,7 +257,7 @@ typedef struct {
   PetscInt       xm,ym,zm;    /* number of grid points on this processor, excluding ghosts */
   PetscInt       gxs,gys,gzs;    /* starting point of this processor including ghosts */
   PetscInt       gxm,gym,gzm;    /* number of grid points on this processor including ghosts */
-  DMDAPeriodicType pt;
+  DMDABoundaryType bx,by,bz; /* type of ghost nodes at boundary */
   DMDAStencilType  st;
   DM             da;
 } DMDALocalInfo;

@@ -81,7 +81,7 @@ struct TOPS_CStructuredSolver__data {
   DM                                    da;
   int                                   lengths[4],m,n,p,dim,s,levels,bs;
   DMDAStencilType                         stencil_type;
-  DMDAPeriodicType                        wrap;
+  DMDABoundaryType                        wrap;
   int                                   startedpetsc;
   gov_cca_Services			myServices;
   gov_cca_ports_ParameterPortFactory 	ppf;

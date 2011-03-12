@@ -106,6 +106,7 @@ PetscErrorCode  DMDestroy_DA(DM da)
     ierr = AODestroy(dd->ao);CHKERRQ(ierr);
   }
 
+  ierr = PetscFree(dd->idx);CHKERRQ(ierr);
   ierr = PetscFree(dd->lx);CHKERRQ(ierr);
   ierr = PetscFree(dd->ly);CHKERRQ(ierr);
   ierr = PetscFree(dd->lz);CHKERRQ(ierr);

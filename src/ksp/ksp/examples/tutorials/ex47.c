@@ -39,7 +39,7 @@ int main(int argc,char **argv)
   ierr = PetscInitialize(&argc,&argv,(char *)0,help);CHKERRQ(ierr);
 
   ierr = DMMGCreate(PETSC_COMM_WORLD,3,PETSC_NULL,&dmmg);CHKERRQ(ierr);
-  ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_XYZPERIODIC,DMDA_STENCIL_STAR,-3,-3,-3,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,0,&da);CHKERRQ(ierr);  
+  ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-3,-3,-3,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,0,&da);CHKERRQ(ierr);  
   ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr);
   ierr = DMDestroy(da);CHKERRQ(ierr);
 
@@ -134,7 +134,7 @@ PetscErrorCode ComputeRHS(DMMG dmmg,Vec b, PetscBool  withBC= PETSC_TRUE)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMDAGetInfo(da,0,&mx,&my,&mz,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,0,&mx,&my,&mz,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
   sc   = 1.0/((mx-1)*(my-1)*(mz-1));
   //wallPos = (mz-1)/20;
@@ -171,7 +171,7 @@ PetscErrorCode ComputeMatrix(DMMG dmmg,Mat jac,Mat B)
   PetscScalar    v[7],Hx,Hy,Hz,HxHydHz,HyHzdHx,HxHzdHy;
   MatStencil     row,col[7];
 
-  ierr = DMDAGetInfo(da,0,&mx,&my,&mz,0,0,0,0,0,0,0);CHKERRQ(ierr);  
+  ierr = DMDAGetInfo(da,0,&mx,&my,&mz,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);  
   Hx = 1.0 / (PetscReal)(mx-1); Hy = 1.0 / (PetscReal)(my-1); Hz = 1.0 / (PetscReal)(mz-1);
   //Hx = L[0] / (PetscReal)(mx-1); Hy = L[1] / (PetscReal)(my-1); Hz = L[2] / (PetscReal)(mz-1);
   //HxHydHz = Hx*Hy/Hz; HxHzdHy = Hx*Hz/Hy; HyHzdHx = Hy*Hz/Hx;
@@ -220,8 +220,8 @@ PetscErrorCode Solve_FFT(DM da, Vec rhs, Vec phi)
   PetscErrorCode ierr;
 	
   PetscFunctionBegin;
-  ierr = DMDAGetInfo(da, 0, &M, &N, &P, 0, 0, 0, 0, 0, 0, 0);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(da, 0, &dim[2], &dim[1], &dim[0], 0, 0, 0, 0, 0, 0, 0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da, 0, &M, &N, &P, 0, 0, 0, 0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da, 0, &dim[2], &dim[1], &dim[0], 0, 0, 0, 0,0,0,0,0,0);CHKERRQ(ierr);
   ierr = MatCreateSeqFFTW(PETSC_COMM_WORLD, 3, dim, &F);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da, &xs, &ys, &zs, &xm, &ym, &zm);CHKERRQ(ierr);
   h[0] = L[0]/(M - 1);

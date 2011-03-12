@@ -45,7 +45,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetScalar(0,"-e",&user.e,0);CHKERRQ(ierr);
 
   ierr = DMMGCreate(PETSC_COMM_WORLD,3,&user,&dmmg);CHKERRQ(ierr);
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,-3,1,1,0,&da);CHKERRQ(ierr);  
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,-3,1,1,0,&da);CHKERRQ(ierr);  
   ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr);
   ierr = DMDestroy(da);CHKERRQ(ierr);
 
@@ -73,7 +73,7 @@ PetscErrorCode ComputeRHS(DMMG dmmg,Vec b)
   PetscScalar    h,v[2];
 
   PetscFunctionBegin;
-  ierr   = DMDAGetInfo(dmmg->dm,0,&mx,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr   = DMDAGetInfo(dmmg->dm,0,&mx,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   h      = 1.0/((mx-1));
   ierr   = VecSet(b,h);CHKERRQ(ierr);
   idx[0] = 0; idx[1] = mx -1;
@@ -95,7 +95,7 @@ PetscErrorCode ComputeMatrix(DMMG dmmg,Mat J,Mat jac)
   MatStencil     row,col[3];
   AppCtx         *user = (AppCtx*)dmmg->user;
 
-  ierr = DMDAGetInfo(da,0,&mx,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);  
+  ierr = DMDAGetInfo(da,0,&mx,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);  
   ierr = DMDAGetCorners(da,&xs,0,0,&xm,0,0);CHKERRQ(ierr);
   h    = 1.0/(mx-1);
 

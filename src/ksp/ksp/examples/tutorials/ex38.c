@@ -42,7 +42,7 @@ int main(int Argc,char **Args)
 
   ierr = KSPSetOperators(kspmg,cmat,cmat,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
 
-  ierr = DMDACreate1d(PETSC_COMM_WORLD, DMDA_NONPERIODIC, n, 1, 1, 0, &da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, n, 1, 1, 0, &da);CHKERRQ(ierr);
   ierr = DMDASetRefinementFactor(da, 3, 3, 3);CHKERRQ(ierr);
   ierr = PCASASetDM(pcmg, (DM) da);CHKERRQ(ierr);
 

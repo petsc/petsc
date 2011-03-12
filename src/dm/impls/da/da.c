@@ -94,28 +94,33 @@ PetscErrorCode  DMDASetNumProcs(DM da, PetscInt m, PetscInt n, PetscInt p)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DMDASetPeriodicity"
+#define __FUNCT__ "DMDASetBoundaryType"
 /*@
-  DMDASetPeriodicity - Sets the type of periodicity
+  DMDASetBoundaryType - Sets the type of ghost nodes on domain boundaries.
 
   Not collective
 
   Input Parameter:
 + da    - The DMDA
-- ptype - One of DMDA_NONPERIODIC, DMDA_XPERIODIC, DMDA_YPERIODIC, DMDA_ZPERIODIC, DMDA_XYPERIODIC, DMDA_XZPERIODIC, DMDA_YZPERIODIC, or DMDA_XYZPERIODIC
+- bx,by,bz - One of DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_GHOSTED, DMDA_BOUNDARY_PERIODIC
 
   Level: intermediate
 
 .keywords:  distributed array, periodicity
-.seealso: DMDACreate(), DMDestroy(), DMDA, DMDAPeriodicType
+.seealso: DMDACreate(), DMDestroy(), DMDA, DMDABoundaryType
 @*/
-PetscErrorCode  DMDASetPeriodicity(DM da, DMDAPeriodicType ptype)
+PetscErrorCode  DMDASetBoundaryType(DM da,DMDABoundaryType bx,DMDABoundaryType by,DMDABoundaryType bz)
 {
   DM_DA *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
-  dd->wrap = ptype;
+  PetscValidLogicalCollectiveInt(da,bx,2);
+  PetscValidLogicalCollectiveInt(da,by,3);
+  PetscValidLogicalCollectiveInt(da,bz,4);
+  dd->bx = bx;
+  dd->by = by;
+  dd->bz = bz;
   PetscFunctionReturn(0);
 }
 
@@ -733,17 +738,17 @@ PetscErrorCode  DMRefine_DA(DM da,MPI_Comm comm,DM *daref)
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   PetscValidPointer(daref,3);
 
-  if (DMDAXPeriodic(dd->wrap) || dd->interptype == DMDA_Q0){
+  if (dd->bx == DMDA_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0){
     M = dd->refine_x*dd->M;
   } else {
     M = 1 + dd->refine_x*(dd->M - 1);
   }
-  if (DMDAYPeriodic(dd->wrap) || dd->interptype == DMDA_Q0){
+  if (dd->by == DMDA_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0){
     N = dd->refine_y*dd->N;
   } else {
     N = 1 + dd->refine_y*(dd->N - 1);
   }
-  if (DMDAZPeriodic(dd->wrap) || dd->interptype == DMDA_Q0){
+  if (dd->bz == DMDA_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0){
     P = dd->refine_z*dd->P;
   } else {
     P = 1 + dd->refine_z*(dd->P - 1);
@@ -752,23 +757,23 @@ PetscErrorCode  DMRefine_DA(DM da,MPI_Comm comm,DM *daref)
   if (dd->dim == 3) {
     PetscInt *lx,*ly,*lz;
     ierr = PetscMalloc3(dd->m,PetscInt,&lx,dd->n,PetscInt,&ly,dd->p,PetscInt,&lz);CHKERRQ(ierr);
-    ierr = DMDARefineOwnershipRanges(da,(PetscBool)(DMDAXPeriodic(dd->wrap) || dd->interptype == DMDA_Q0),dd->s,dd->refine_x,dd->m,dd->lx,lx);CHKERRQ(ierr);
-    ierr = DMDARefineOwnershipRanges(da,(PetscBool)(DMDAYPeriodic(dd->wrap) || dd->interptype == DMDA_Q0),dd->s,dd->refine_y,dd->n,dd->ly,ly);CHKERRQ(ierr);
-    ierr = DMDARefineOwnershipRanges(da,(PetscBool)(DMDAZPeriodic(dd->wrap) || dd->interptype == DMDA_Q0),dd->s,dd->refine_z,dd->p,dd->lz,lz);CHKERRQ(ierr);
-    ierr = DMDACreate3d(((PetscObject)da)->comm,dd->wrap,dd->stencil_type,M,N,P,dd->m,dd->n,dd->p,dd->w,dd->s,lx,ly,lz,&da2);CHKERRQ(ierr);
+    ierr = DMDARefineOwnershipRanges(da,(PetscBool)(dd->bx == DMDA_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0),dd->s,dd->refine_x,dd->m,dd->lx,lx);CHKERRQ(ierr);
+    ierr = DMDARefineOwnershipRanges(da,(PetscBool)(dd->by == DMDA_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0),dd->s,dd->refine_y,dd->n,dd->ly,ly);CHKERRQ(ierr);
+    ierr = DMDARefineOwnershipRanges(da,(PetscBool)(dd->bz == DMDA_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0),dd->s,dd->refine_z,dd->p,dd->lz,lz);CHKERRQ(ierr);
+    ierr = DMDACreate3d(((PetscObject)da)->comm,dd->bx,dd->by,dd->bz,dd->stencil_type,M,N,P,dd->m,dd->n,dd->p,dd->w,dd->s,lx,ly,lz,&da2);CHKERRQ(ierr);
     ierr = PetscFree3(lx,ly,lz);CHKERRQ(ierr);
   } else if (dd->dim == 2) {
     PetscInt *lx,*ly;
     ierr = PetscMalloc2(dd->m,PetscInt,&lx,dd->n,PetscInt,&ly);CHKERRQ(ierr);
-    ierr = DMDARefineOwnershipRanges(da,(PetscBool)(DMDAXPeriodic(dd->wrap) || dd->interptype == DMDA_Q0),dd->s,dd->refine_x,dd->m,dd->lx,lx);CHKERRQ(ierr);
-    ierr = DMDARefineOwnershipRanges(da,(PetscBool)(DMDAYPeriodic(dd->wrap) || dd->interptype == DMDA_Q0),dd->s,dd->refine_y,dd->n,dd->ly,ly);CHKERRQ(ierr);
-    ierr = DMDACreate2d(((PetscObject)da)->comm,dd->wrap,dd->stencil_type,M,N,dd->m,dd->n,dd->w,dd->s,lx,ly,&da2);CHKERRQ(ierr);
+    ierr = DMDARefineOwnershipRanges(da,(PetscBool)(dd->bx == DMDA_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0),dd->s,dd->refine_x,dd->m,dd->lx,lx);CHKERRQ(ierr);
+    ierr = DMDARefineOwnershipRanges(da,(PetscBool)(dd->by == DMDA_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0),dd->s,dd->refine_y,dd->n,dd->ly,ly);CHKERRQ(ierr);
+    ierr = DMDACreate2d(((PetscObject)da)->comm,dd->bx,dd->by,dd->stencil_type,M,N,dd->m,dd->n,dd->w,dd->s,lx,ly,&da2);CHKERRQ(ierr);
     ierr = PetscFree2(lx,ly);CHKERRQ(ierr);
   } else if (dd->dim == 1) {
     PetscInt *lx;
     ierr = PetscMalloc(dd->m*sizeof(PetscInt),&lx);CHKERRQ(ierr);
-    ierr = DMDARefineOwnershipRanges(da,(PetscBool)(DMDAXPeriodic(dd->wrap) || dd->interptype == DMDA_Q0),dd->s,dd->refine_x,dd->m,dd->lx,lx);CHKERRQ(ierr);
-    ierr = DMDACreate1d(((PetscObject)da)->comm,dd->wrap,M,dd->w,dd->s,lx,&da2);CHKERRQ(ierr);
+    ierr = DMDARefineOwnershipRanges(da,(PetscBool)(dd->bx == DMDA_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0),dd->s,dd->refine_x,dd->m,dd->lx,lx);CHKERRQ(ierr);
+    ierr = DMDACreate1d(((PetscObject)da)->comm,dd->bx,M,dd->w,dd->s,lx,&da2);CHKERRQ(ierr);
     ierr = PetscFree(lx);CHKERRQ(ierr);
   }
   dd2 = (DM_DA*)da2->data;
@@ -830,17 +835,17 @@ PetscErrorCode  DMCoarsen_DA(DM da, MPI_Comm comm,DM *daref)
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   PetscValidPointer(daref,3);
 
-  if (DMDAXPeriodic(dd->wrap) || dd->interptype == DMDA_Q0){
+  if (dd->bx == DMDA_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0){
     M = dd->M / dd->refine_x;
   } else {
     M = 1 + (dd->M - 1) / dd->refine_x;
   }
-  if (DMDAYPeriodic(dd->wrap) || dd->interptype == DMDA_Q0){
+  if (dd->by == DMDA_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0){
     N = dd->N / dd->refine_y;
   } else {
     N = 1 + (dd->N - 1) / dd->refine_y;
   }
-  if (DMDAZPeriodic(dd->wrap) || dd->interptype == DMDA_Q0){
+  if (dd->bz == DMDA_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0){
     P = dd->P / dd->refine_z;
   } else {
     P = 1 + (dd->P - 1) / dd->refine_z;
@@ -849,23 +854,23 @@ PetscErrorCode  DMCoarsen_DA(DM da, MPI_Comm comm,DM *daref)
   if (dd->dim == 3) {
     PetscInt *lx,*ly,*lz;
     ierr = PetscMalloc3(dd->m,PetscInt,&lx,dd->n,PetscInt,&ly,dd->p,PetscInt,&lz);CHKERRQ(ierr);
-    ierr = DMDACoarsenOwnershipRanges(da,(PetscBool)(DMDAXPeriodic(dd->wrap) || dd->interptype == DMDA_Q0),dd->s,dd->refine_x,dd->m,dd->lx,lx);CHKERRQ(ierr);
-    ierr = DMDACoarsenOwnershipRanges(da,(PetscBool)(DMDAYPeriodic(dd->wrap) || dd->interptype == DMDA_Q0),dd->s,dd->refine_y,dd->n,dd->ly,ly);CHKERRQ(ierr);
-    ierr = DMDACoarsenOwnershipRanges(da,(PetscBool)(DMDAZPeriodic(dd->wrap) || dd->interptype == DMDA_Q0),dd->s,dd->refine_z,dd->p,dd->lz,lz);CHKERRQ(ierr);
-    ierr = DMDACreate3d(((PetscObject)da)->comm,dd->wrap,dd->stencil_type,M,N,P,dd->m,dd->n,dd->p,dd->w,dd->s,lx,ly,lz,&da2);CHKERRQ(ierr);
+    ierr = DMDACoarsenOwnershipRanges(da,(PetscBool)(dd->bx == DMDA_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0),dd->s,dd->refine_x,dd->m,dd->lx,lx);CHKERRQ(ierr);
+    ierr = DMDACoarsenOwnershipRanges(da,(PetscBool)(dd->by == DMDA_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0),dd->s,dd->refine_y,dd->n,dd->ly,ly);CHKERRQ(ierr);
+    ierr = DMDACoarsenOwnershipRanges(da,(PetscBool)(dd->bz == DMDA_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0),dd->s,dd->refine_z,dd->p,dd->lz,lz);CHKERRQ(ierr);
+    ierr = DMDACreate3d(((PetscObject)da)->comm,dd->bx,dd->by,dd->bz,dd->stencil_type,M,N,P,dd->m,dd->n,dd->p,dd->w,dd->s,lx,ly,lz,&da2);CHKERRQ(ierr);
     ierr = PetscFree3(lx,ly,lz);CHKERRQ(ierr);
   } else if (dd->dim == 2) {
     PetscInt *lx,*ly;
     ierr = PetscMalloc2(dd->m,PetscInt,&lx,dd->n,PetscInt,&ly);CHKERRQ(ierr);
-    ierr = DMDACoarsenOwnershipRanges(da,(PetscBool)(DMDAXPeriodic(dd->wrap) || dd->interptype == DMDA_Q0),dd->s,dd->refine_x,dd->m,dd->lx,lx);CHKERRQ(ierr);
-    ierr = DMDACoarsenOwnershipRanges(da,(PetscBool)(DMDAYPeriodic(dd->wrap) || dd->interptype == DMDA_Q0),dd->s,dd->refine_y,dd->n,dd->ly,ly);CHKERRQ(ierr);
-    ierr = DMDACreate2d(((PetscObject)da)->comm,dd->wrap,dd->stencil_type,M,N,dd->m,dd->n,dd->w,dd->s,lx,ly,&da2);CHKERRQ(ierr);
+    ierr = DMDACoarsenOwnershipRanges(da,(PetscBool)(dd->bx == DMDA_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0),dd->s,dd->refine_x,dd->m,dd->lx,lx);CHKERRQ(ierr);
+    ierr = DMDACoarsenOwnershipRanges(da,(PetscBool)(dd->by == DMDA_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0),dd->s,dd->refine_y,dd->n,dd->ly,ly);CHKERRQ(ierr);
+    ierr = DMDACreate2d(((PetscObject)da)->comm,dd->bx,dd->by,dd->stencil_type,M,N,dd->m,dd->n,dd->w,dd->s,lx,ly,&da2);CHKERRQ(ierr);
     ierr = PetscFree2(lx,ly);CHKERRQ(ierr);
   } else if (dd->dim == 1) {
     PetscInt *lx;
     ierr = PetscMalloc(dd->m*sizeof(PetscInt),&lx);CHKERRQ(ierr);
-    ierr = DMDACoarsenOwnershipRanges(da,(PetscBool)(DMDAXPeriodic(dd->wrap) || dd->interptype == DMDA_Q0),dd->s,dd->refine_x,dd->m,dd->lx,lx);CHKERRQ(ierr);
-    ierr = DMDACreate1d(((PetscObject)da)->comm,dd->wrap,M,dd->w,dd->s,lx,&da2);CHKERRQ(ierr);
+    ierr = DMDACoarsenOwnershipRanges(da,(PetscBool)(dd->bx == DMDA_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0),dd->s,dd->refine_x,dd->m,dd->lx,lx);CHKERRQ(ierr);
+    ierr = DMDACreate1d(((PetscObject)da)->comm,dd->bx,M,dd->w,dd->s,lx,&da2);CHKERRQ(ierr);
     ierr = PetscFree(lx);CHKERRQ(ierr);
   }
   dd2 = (DM_DA*)da2->data;

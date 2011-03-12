@@ -4,25 +4,29 @@
 #
 #  w = degress of freedom per node
 #  s = stencil width
-#  M,N = global dimension in each direction of array
+#  NX,NY = global dimension in each direction of array
 #  m,n = number of processors in each dimension
 #  np = number of processors
 #
 
   foreach m (1 2 3)
    foreach n (1 2 3)
-    foreach M (16 17)
-     foreach N (14 15)
+    foreach NX (16 17)
+     foreach NY (14 15)
       foreach w (1 2 3)
        foreach s (1 2)
-        set np = `expr $m \* $n`
-        echo 'mpirun -np' $np' ex4 -testorder -nox -w' $w '-s' $s '-M' $M '-N' $N '-m' $m '-n' $n
-        mpirun -np $np ex4 -testorder -nox -w $w -s $s -M $M -N $N -m $m -n $n
+        foreach stencil ('-star' '-box')
+         foreach xwrap ('-xperiodic' '-xghosted' '-xnonghosted')
+          foreach ywrap ('-yperiodic' '-yghosted' '-ynonghosted')
+           set np = `expr $m \* $n`
+           echo 'mpiexec -n' $np' ./ex4 -testorder -nox -w' $w '-s' $s '-NX' $NX '-NY' $NY '-m' $m '-n' $n $xwrap $ywrap $stencil
+           mpiexec -n $np ./ex4 -testorder -nox -w $w -s $s -NX $NX -NY $NY -m $m -n $n $xwrap $ywrap $stencil
+          end
+         end
+        end
        end
       end
      end
     end
    end
   end
-
-
