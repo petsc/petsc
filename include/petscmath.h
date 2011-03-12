@@ -33,109 +33,6 @@ extern  MPI_Datatype  MPIU_2INT;
 */
 #include <complex>
 
-#if defined(PETSC_USE_SCALAR_SINGLE)
-/*
-    For d double and c single complex defines the following operations
-       d == c
-       c == d
-       d != c
-       c != d
-       d / c
-       c /d
-       d * c
-       c * d
-       d - c
-       c - d
-       d + c
-       c + d
-*/
-namespace std
-{
-  template<typename _Tp>
-    inline bool
-    operator==(const double& __x, const complex<_Tp>& __y)
-    { return __x == __y.real() && _Tp() == __y.imag(); }
-  template<typename _Tp>
-    inline bool
-    operator==(const complex<_Tp>& __x, const double& __y)
-    { return __x.real() == __y && __x.imag() == _Tp(); }
-  template<typename _Tp>
-    inline bool
-    operator!=(const complex<_Tp>& __x, const double& __y)
-    { return __x.real() != __y || __x.imag() != _Tp(); }
-  template<typename _Tp>
-    inline bool
-    operator!=(const double& __x, const complex<_Tp>& __y)
-    { return __x != __y.real() || _Tp() != __y.imag(); }
-  template<typename _Tp>
-    inline complex<_Tp>
-    operator/(const complex<_Tp>& __x, const double& __y)
-    {
-      complex<_Tp> __r = __x;
-      __r /= ((float)__y);
-      return __r;
-    }
-  template<typename _Tp>
-    inline complex<_Tp>
-    operator/(const double& __x, const complex<_Tp>& __y)
-    {
-      complex<_Tp> __r = (float)__x;
-      __r /= __y;
-      return __r;
-    }
-  template<typename _Tp>
-    inline complex<_Tp>
-    operator*(const complex<_Tp>& __x, const double& __y)
-    {
-      complex<_Tp> __r = __x;
-      __r *= ((float)__y);
-      return __r;
-    }
-  template<typename _Tp>
-    inline complex<_Tp>
-    operator*(const double& __x, const complex<_Tp>& __y)
-    {
-      complex<_Tp> __r = (float)__x;
-      __r *= __y;
-      return __r;
-    }
-  template<typename _Tp>
-    inline complex<_Tp>
-    operator-(const complex<_Tp>& __x, const double& __y)
-    {
-      complex<_Tp> __r = __x;
-      __r -= ((float)__y);
-      return __r;
-    }
-  template<typename _Tp>
-    inline complex<_Tp>
-    operator-(const double& __x, const complex<_Tp>& __y)
-    {
-      complex<_Tp> __r = (float)__x;
-      __r -= __y;
-      return __r;
-    }
-  template<typename _Tp>
-    inline complex<_Tp>
-    operator+(const complex<_Tp>& __x, const double& __y)
-    {
-      complex<_Tp> __r = __x;
-      __r += ((float)__y);
-      return __r;
-    }
-  template<typename _Tp>
-    inline complex<_Tp>
-    operator+(const double& __x, const complex<_Tp>& __y)
-    {
-      complex<_Tp> __r = (float)__x;
-      __r += __y;
-      return __r;
-    }
-}
-#endif
-
-
-
 #define PetscRealPart(a)      (a).real()
 #define PetscImaginaryPart(a) (a).imag()
 #define PetscAbsScalar(a)     std::abs(a)
@@ -161,7 +58,7 @@ typedef std::complex<double> PetscScalar;
 
 /* 
    C support of complex numbers: Warning it needs a 
-   C90 compliant compiler to work...
+   C99 compliant compiler to work...
  */
 
 #if defined(PETSC_USE_SCALAR_SINGLE)
