@@ -1349,7 +1349,6 @@ AOGetType(AO ao, AOType *aotype)
 /* ---------------------------------------------------------------- */
 
 #if (PETSC_VERSION_(3,0,0))
-
 #undef __FUNCT__
 #define __FUNCT__ "DACreateND"
 static PetscErrorCode
@@ -1362,12 +1361,13 @@ DACreateND(MPI_Comm comm,
            DAStencilType stencil_type,PetscInt stencil_width,
            DA *da)
 {
-  DAPerioridType wrap;
+  DAPeriodicType ptype = DA_NONPERIODIC;
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = DACreate(comm,dim,wrap,stencil_type,
+  ierr = DA_Boundary2Periodic(dim,bx,by,bz,&ptype);CHKERRQ(ierr);
+  ierr = DACreate(comm,dim,ptype,stencil_type,
                   M,N,P,m,n,p,dof,stencil_width,
-                  lx,ly,lz, da);CHKERRQ(ierr);
+                  lx,ly,lz,da);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

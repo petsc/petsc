@@ -292,11 +292,18 @@ class TestDADuplicate(unittest.TestCase):
                                 width = da.stencil_width
                             self.assertEqual(newda.dof, dof)
                             self.assertEqual(newda.boundary_type, boundary)
-                            self.assertEqual(newda.stencil, (stencil,width))
+                            if dim == 1:
+                                if PETSc.Sys.getVersion() > (3,0,0):
+                                    self.assertEqual(newda.stencil, 
+                                                     (stencil, width))
                             newda.destroy()
         da.destroy()
         
 # --------------------------------------------------------------------
+
+if PETSc.Sys.getVersion() <= (3,0,0):
+    del BaseTestDA.testRefineHierarchy
+    del BaseTestDA.testCoarsenHierarchy
 
 if PETSc.COMM_WORLD.getSize() > 1:
     del TestDA_1D_W0

@@ -120,4 +120,40 @@ static PetscErrorCode DMLocalToGlobalEnd(DM dm,Vec l,InsertMode mode,Vec g)
 
 #endif
 
+
+#if PETSC_VERSION_(3,0,0)
+#undef __FUNCT__
+#define __FUNCT__ "DMRefineHierarchy_Compat"
+static PetscErrorCode
+DMRefineHierarchy_Compat(DM dm,PetscInt nlevels,DM dmf[])
+{
+  PetscInt       i;
+  DM             *dmftmp;
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_COOKIE,1);
+  PetscValidPointer(dmf,2);
+  ierr = DMRefineHierarchy(dm,nlevels,&dmftmp);CHKERRQ(ierr);
+  ierr = PetscMemcpy(dmf,dmftmp,nlevels*sizeof(DM));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#define DMRefineHierarchy DMRefineHierarchy_Compat
+#undef __FUNCT__
+#define __FUNCT__ "DMCoarsenHierarchy_Compat"
+static PetscErrorCode
+DMCoarsenHierarchy_Compat(DM dm,PetscInt nlevels,DM dmc[])
+{
+  DM             *dmctmp;
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_COOKIE,1);
+  PetscValidPointer(dmc,2);
+  ierr = DMCoarsenHierarchy(dm,nlevels,&dmctmp);CHKERRQ(ierr);
+  ierr = PetscMemcpy(dmc,dmctmp,nlevels*sizeof(DM));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#define DMCoarsenHierarchy DMCoarsenHierarchy_Compat
+#endif
+
+
 #endif /* _COMPAT_PETSC_DM_H */
