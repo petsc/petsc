@@ -56,22 +56,22 @@ PetscErrorCode  KSPDGMRESSetMaxEigen (KSP ksp,PetscInt max_neig) {
 #undef __FUNCT__
 #define __FUNCT__  "KSPDGMRESSetMaxEigen"
 PetscErrorCode  KSPDGMRESForce (KSP ksp,PetscInt force) {
-	PetscErrorCode ierr;
+        PetscErrorCode ierr;
 
-	PetscFunctionBegin;
-	ierr = PetscTryMethod ( (ksp),"KSPDGMRESForce_C", (KSP,PetscInt), (ksp,force));
-	CHKERRQ (ierr);
-	PetscFunctionReturn (0);
+        PetscFunctionBegin;
+        ierr = PetscTryMethod ( (ksp),"KSPDGMRESForce_C", (KSP,PetscInt), (ksp,force));
+        CHKERRQ (ierr);
+        PetscFunctionReturn (0);
 }
 #undef __FUNCT__
 #define __FUNCT__  "KSPDGMRESSetMaxEigen"
 PetscErrorCode  KSPDGMRESSetRatio (KSP ksp,PetscReal ratio) {
-	PetscErrorCode ierr;
+        PetscErrorCode ierr;
 
-	PetscFunctionBegin;
-	ierr = PetscTryMethod ( (ksp),"KSPDGMRESSetRatio_C", (KSP,PetscReal), (ksp,ratio));
-	CHKERRQ (ierr);
-	PetscFunctionReturn (0);
+        PetscFunctionBegin;
+        ierr = PetscTryMethod ( (ksp),"KSPDGMRESSetRatio_C", (KSP,PetscReal), (ksp,ratio));
+        CHKERRQ (ierr);
+        PetscFunctionReturn (0);
 }
 #undef __FUNCT__
 #define __FUNCT__  "KSPDGMRESComputeSchurForm"
@@ -118,9 +118,9 @@ PetscErrorCode  KSPDGMRESImproveEig (KSP ksp, PetscInt neig) {
 #define __FUNCT__ "KSPSetUp_DGMRES"
 PetscErrorCode    KSPSetUp_DGMRES (KSP ksp) {
     PetscErrorCode    ierr;
-    KSP_DGMRES        *dgmres 	= (KSP_DGMRES *) ksp->data;
-    PetscInt			neig		= dgmres->neig+EIG_OFFSET;
-    PetscInt			max_k		= dgmres->max_k+1;
+    KSP_DGMRES        *dgmres   = (KSP_DGMRES *) ksp->data;
+    PetscInt                    neig            = dgmres->neig+EIG_OFFSET;
+    PetscInt                    max_k           = dgmres->max_k+1;
 
     PetscFunctionBegin;
 
@@ -153,7 +153,7 @@ PetscErrorCode    KSPSetUp_DGMRES (KSP ksp) {
     Run GMRES, possibly with restart.  Return residual history if requested.
     input parameters:
 
-.	gmres  - structure containing parameters and work areas
+.       gmres  - structure containing parameters and work areas
 
     output parameters:
 .        nres    - residuals (from preconditioned system) at each step.
@@ -174,8 +174,8 @@ PetscErrorCode DGMREScycle (PetscInt *itcount,KSP ksp) {
     PetscErrorCode ierr;
     PetscInt       it = 0, max_k = dgmres->max_k;
     PetscTruth     hapend = PETSC_FALSE;
-    PetscReal		res_old;
-    PetscInt		test;
+    PetscReal           res_old;
+    PetscInt            test;
 
     PetscFunctionBegin;
     ierr    = VecNormalize (VEC_VV (0),&res_norm);
@@ -267,7 +267,7 @@ PetscErrorCode DGMREScycle (PetscInt *itcount,KSP ksp) {
         /* Catch error in happy breakdown and signal convergence and break from loop */
         if (hapend) {
             if (!ksp->reason) {
-	      SETERRQ1 (((PetscObject)ksp)->comm, PETSC_ERR_PLIB,"You reached the happy break down, but convergence was not indicated. Residual norm = %G",res);
+              SETERRQ1 (((PetscObject)ksp)->comm, PETSC_ERR_PLIB,"You reached the happy break down, but convergence was not indicated. Residual norm = %G",res);
             }
             break;
         }
@@ -357,8 +357,8 @@ PetscErrorCode KSPSolve_DGMRES (KSP ksp) {
 PetscErrorCode KSPDestroy_DGMRES (KSP ksp) {
     PetscErrorCode ierr;
     KSP_DGMRES     *dgmres = (KSP_DGMRES*) ksp->data;
-    PetscInt 		neig1 = dgmres->neig+EIG_OFFSET;
-    PetscInt		max_neig = dgmres->max_neig;
+    PetscInt            neig1 = dgmres->neig+EIG_OFFSET;
+    PetscInt            max_neig = dgmres->max_neig;
 
     PetscFunctionBegin;
     if (dgmres->r) {
@@ -399,9 +399,9 @@ PetscErrorCode KSPDestroy_DGMRES (KSP ksp) {
 
     Input parameters:
         nrs - work area of size it + 1.
-	vs  - index of initial guess
-	vdest - index of result.  Note that vs may == vdest (replace
-	        guess with the solution).
+        vs  - index of initial guess
+        vdest - index of result.  Note that vs may == vdest (replace
+                guess with the solution).
 
      This is an internal routine that knows about the GMRES internals.
  */
@@ -519,11 +519,11 @@ static PetscErrorCode DGMRESUpdateHessenberg (KSP ksp,PetscInt it,PetscTruth hap
         *res      = PetscAbsScalar (*GRS (it+1));
     } else {
         /* happy breakdown: HH(it+1, it) = 0, therfore we don't need to apply
-        	another rotation matrix (so RH doesn't change).  The new residual is
-        	always the new sine term times the residual from last time (GRS(it)),
-        	but now the new sine rotation would be zero...so the residual should
-        	be zero...so we will multiply "zero" by the last residual.  This might
-        	not be exactly what we want to do here -could just return "zero". */
+                another rotation matrix (so RH doesn't change).  The new residual is
+                always the new sine term times the residual from last time (GRS(it)),
+                but now the new sine rotation would be zero...so the residual should
+                be zero...so we will multiply "zero" by the last residual.  This might
+                not be exactly what we want to do here -could just return "zero". */
 
         *res = 0.0;
     }
@@ -609,15 +609,15 @@ PetscErrorCode KSPView_DGMRES (KSP ksp,PetscViewer viewer) {
             PetscViewerASCIIPrintf (viewer, "   DGMRES: Adaptive strategy is used: FALSE\n");
         else
             PetscViewerASCIIPrintf (viewer, "   DGMRES: Adaptive strategy is used: TRUE\n");
-        ierr=PetscViewerASCIIPrintf (viewer, "	DGMRES: Frequency of extracted eigenvalues = %D\n", dgmres->neig);
+        ierr=PetscViewerASCIIPrintf (viewer, "  DGMRES: Frequency of extracted eigenvalues = %D\n", dgmres->neig);
         CHKERRQ (ierr);
-        ierr=PetscViewerASCIIPrintf (viewer, "	DGMRES: Total number of extracted eigenvalues = %D\n", dgmres->r);
+        ierr=PetscViewerASCIIPrintf (viewer, "  DGMRES: Total number of extracted eigenvalues = %D\n", dgmres->r);
         CHKERRQ (ierr);
-        ierr=PetscViewerASCIIPrintf (viewer, "	DGMRES: Maximum number of eigenvalues set to be extracted = %D\n", dgmres->max_neig);
+        ierr=PetscViewerASCIIPrintf (viewer, "  DGMRES: Maximum number of eigenvalues set to be extracted = %D\n", dgmres->max_neig);
         CHKERRQ (ierr);
-        ierr=PetscViewerASCIIPrintf (viewer, "	DGMRES: relaxation parameter for the adaptive strategy(smv)  = %g\n", dgmres->smv);
+        ierr=PetscViewerASCIIPrintf (viewer, "  DGMRES: relaxation parameter for the adaptive strategy(smv)  = %g\n", dgmres->smv);
         CHKERRQ (ierr);
-        ierr=PetscViewerASCIIPrintf (viewer, "	DGMRES: Number of matvecs : %D\n", dgmres->matvecs);
+        ierr=PetscViewerASCIIPrintf (viewer, "  DGMRES: Number of matvecs : %D\n", dgmres->matvecs);
         CHKERRQ (ierr);
     } else {
       SETERRQ1 (((PetscObject)ksp)->comm, PETSC_ERR_SUP,"Viewer type %s not supported for KSP DGMRES", ( (PetscObject) viewer)->type_name);
@@ -657,11 +657,11 @@ EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "KSPDGMRESSetRatio_DGMRES"
 PetscErrorCode  KSPDGMRESSetRatio_DGMRES (KSP ksp,PetscReal ratio) {
-	KSP_DGMRES      *dgmres = (KSP_DGMRES *) ksp->data;
-	PetscFunctionBegin;
-	if (ratio <= 0)  SETERRQ (((PetscObject)ksp)->comm, PETSC_ERR_ARG_OUTOFRANGE,"The relaxation parameter value must be positive");
-	dgmres->smv=ratio;
-	PetscFunctionReturn (0);
+        KSP_DGMRES      *dgmres = (KSP_DGMRES *) ksp->data;
+        PetscFunctionBegin;
+        if (ratio <= 0)  SETERRQ (((PetscObject)ksp)->comm, PETSC_ERR_ARG_OUTOFRANGE,"The relaxation parameter value must be positive");
+        dgmres->smv=ratio;
+        PetscFunctionReturn (0);
 }
 EXTERN_C_END
 
@@ -669,11 +669,11 @@ EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "KSPDGMRESForce_DGMRES"
 PetscErrorCode  KSPDGMRESForce_DGMRES (KSP ksp,PetscInt force) {
-	KSP_DGMRES      *dgmres = (KSP_DGMRES *) ksp->data;
-	PetscFunctionBegin;
-	if (force != 0 && force != 1)  SETERRQ (((PetscObject)ksp)->comm, PETSC_ERR_ARG_OUTOFRANGE,"Value must be 0 or 1");
-	dgmres->force = 1;
-	PetscFunctionReturn (0);
+        KSP_DGMRES      *dgmres = (KSP_DGMRES *) ksp->data;
+        PetscFunctionBegin;
+        if (force != 0 && force != 1)  SETERRQ (((PetscObject)ksp)->comm, PETSC_ERR_ARG_OUTOFRANGE,"Value must be 0 or 1");
+        dgmres->force = 1;
+        PetscFunctionReturn (0);
 }
 EXTERN_C_END
 
@@ -685,11 +685,11 @@ extern PetscErrorCode KSPSetFromOptions_DGMRES (KSP);
 PetscErrorCode KSPSetFromOptions_DGMRES (KSP ksp) {
     PetscErrorCode ierr;
     PetscInt       neig;
-    PetscInt	     max_neig;
+    PetscInt         max_neig;
     KSP_DGMRES     *dgmres = (KSP_DGMRES*) ksp->data;
     PetscTruth     flg;
-    PetscReal		smv;
-    PetscInt		input;
+    PetscReal           smv;
+    PetscInt            input;
 
     PetscFunctionBegin;
     ierr = KSPSetFromOptions_GMRES (ksp);
@@ -725,18 +725,19 @@ PetscErrorCode KSPSetFromOptions_DGMRES (KSP ksp) {
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "KSPDGMRESComputeDeflationData_DGMRES"
-PetscErrorCode  KSPDGMRESComputeDeflationData_DGMRES (KSP ksp) {
-    KSP_DGMRES     	*dgmres = (KSP_DGMRES*) ksp->data;
-    PetscErrorCode 	ierr;
-    PetscInt	i,j, k;
-    PetscInt	r=dgmres->r;
-    PetscBLASInt	br, bmax, info;
-    PetscInt	neig; /* number of eigenvalues to extract at each restart */
-    PetscInt	neig1 = dgmres->neig + EIG_OFFSET; /* max number of eig that can be extracted at each restart */
-    PetscInt	max_neig = dgmres->max_neig; /* Max number of eigenvalues to extract during the iterative process */
-    PetscInt	N = dgmres->max_k+1;
-    PetscInt    n = dgmres->it+1;
-    PetscReal	alpha;
+PetscErrorCode  KSPDGMRESComputeDeflationData_DGMRES (KSP ksp) 
+{
+    KSP_DGMRES     *dgmres = (KSP_DGMRES*) ksp->data;
+    PetscErrorCode ierr;
+    PetscInt       i,j, k;
+    PetscInt       r=dgmres->r;
+    PetscBLASInt   bmax, info;
+    PetscInt       neig; /* number of eigenvalues to extract at each restart */
+    PetscInt       neig1 = dgmres->neig + EIG_OFFSET; /* max number of eig that can be extracted at each restart */
+    PetscInt       max_neig = dgmres->max_neig; /* Max number of eigenvalues to extract during the iterative process */
+    PetscInt	   N = dgmres->max_k+1;
+    PetscInt       n = dgmres->it+1;
+    PetscReal	   alpha;
 
     PetscFunctionBegin;
     ierr=PetscLogEventBegin (KSP_DGMRESComputeDeflationData, ksp, 0,0,0);
@@ -861,7 +862,6 @@ PetscErrorCode  KSPDGMRESComputeDeflationData_DGMRES (KSP ksp) {
     r=dgmres->r;
     /*LU Factorize T with Lapack xgetrf routine */
 
-    br = PetscBLASIntCast (r);
     bmax = PetscBLASIntCast (max_neig);
     if (!TTF) {
         ierr = PetscMalloc (bmax*bmax*sizeof (PetscReal), &TTF);

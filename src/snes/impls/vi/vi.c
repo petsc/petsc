@@ -177,8 +177,8 @@ static PetscErrorCode SNESVIComputeMeritFunction(Vec phi, PetscReal* merit,Petsc
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecNormBegin(phi,NORM_2,phinorm);
-  ierr = VecNormEnd(phi,NORM_2,phinorm);
+  ierr = VecNormBegin(phi,NORM_2,phinorm);CHKERRQ(ierr);
+  ierr = VecNormEnd(phi,NORM_2,phinorm);CHKERRQ(ierr);
 
   *merit = 0.5*(*phinorm)*(*phinorm);
   PetscFunctionReturn(0);
@@ -358,7 +358,7 @@ PetscErrorCode SNESVIComputeMeritFunctionGradient(Mat H, Vec phi, Vec dpsi)
   PetscErrorCode ierr;
     
   PetscFunctionBegin;
-  ierr = MatMultTranspose(H,phi,dpsi);
+  ierr = MatMultTranspose(H,phi,dpsi);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

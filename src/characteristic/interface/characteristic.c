@@ -333,7 +333,7 @@ PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
   PetscMPIInt             neighbors[9];
   PetscInt                dof;
   PetscInt                gx, gy;
-  PetscInt                n, ni, nj, is, ie, js, je, qs, comp;
+  PetscInt                n, is, ie, js, je, comp;
   PetscErrorCode          ierr;
   PetscBool               verbose = PETSC_FALSE;
 
@@ -346,10 +346,8 @@ PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
   /* global and local grid info */
   ierr = DMDAGetInfo(da, &dim, &gx, &gy, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);CHKERRQ(ierr);
   ierr = DMDAGetLocalInfo(da, &info);CHKERRQ(ierr);
-  ni   = info.mx;          nj   = info.my;
   is   = info.xs;          ie   = info.xs+info.xm; 
   js   = info.ys;          je   = info.ys+info.ym;
-  qs   = info.xm*info.ym;
   /* Allocation */
   ierr = PetscMalloc(dim*sizeof(PetscScalar),                &interpIndices);CHKERRQ(ierr);
   ierr = PetscMalloc(c->numVelocityComp*sizeof(PetscScalar), &velocityValues);CHKERRQ(ierr);
@@ -863,11 +861,11 @@ PetscErrorCode DMDAGetNeighborsRank(DM da, PetscMPIInt neighbors[])
 */
 PetscInt DMDAGetNeighborRelative(DM da, PassiveReal ir, PassiveReal jr)
 {
-  DMDALocalInfo    info;
+  DMDALocalInfo  info;
   PassiveReal    is,ie,js,je;
   PetscErrorCode ierr;
   
-  ierr = DMDAGetLocalInfo(da, &info);
+  ierr = DMDAGetLocalInfo(da, &info);CHKERRQ(ierr);
   is = (PassiveReal) info.xs - 0.5; ie = (PassiveReal) info.xs + info.xm - 0.5; 
   js = (PassiveReal) info.ys - 0.5; je = (PassiveReal) info.ys + info.ym - 0.5;
   

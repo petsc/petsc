@@ -162,11 +162,10 @@ PetscInt XYT_free(xyt_ADT xyt_handle)
 /**************************************xyt.c***********************************/
 PetscInt XYT_stats(xyt_ADT xyt_handle)
 {
-  PetscInt  op[] = {NON_UNIFORM,GL_MIN,GL_MAX,GL_ADD,GL_MIN,GL_MAX,GL_ADD,GL_MIN,GL_MAX,GL_ADD};
-  PetscInt fop[] = {NON_UNIFORM,GL_MIN,GL_MAX,GL_ADD};
-  PetscInt   vals[9],  work[9];
+  PetscInt    op[] = {NON_UNIFORM,GL_MIN,GL_MAX,GL_ADD,GL_MIN,GL_MAX,GL_ADD,GL_MIN,GL_MAX,GL_ADD};
+  PetscInt   fop[] = {NON_UNIFORM,GL_MIN,GL_MAX,GL_ADD};
+  PetscInt    vals[9],  work[9];
   PetscScalar fvals[3], fwork[3];
-  PetscErrorCode ierr;
 
   comm_init();
   check_handle(xyt_handle);

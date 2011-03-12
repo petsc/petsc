@@ -126,12 +126,11 @@ static PetscErrorCode PCReset_Composite(PC pc)
 {
   PC_Composite     *jac = (PC_Composite*)pc->data;
   PetscErrorCode   ierr;
-  PC_CompositeLink next = jac->head,next_tmp;
+  PC_CompositeLink next = jac->head;
 
   PetscFunctionBegin;
   while (next) {
     ierr = PCReset(next->pc);CHKERRQ(ierr);
-    next_tmp = next;
     next     = next->next;
   }
   if (jac->work1) {ierr = VecDestroy(jac->work1);CHKERRQ(ierr);}
