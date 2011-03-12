@@ -127,6 +127,7 @@
      &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                     &
      &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                     &
      &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                     &
+     &               PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,                     &
      &               PETSC_NULL_INTEGER,ierr)
       call DMDAGetCorners(da,xs,ys,PETSC_NULL_INTEGER,xm,ym,                      &
      &     PETSC_NULL_INTEGER,ierr)

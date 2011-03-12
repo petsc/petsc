@@ -175,7 +175,7 @@ PetscErrorCode PetscViewerBinaryMatlabOutputVecDA(PetscViewer viewer, const char
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
   ierr = PetscViewerBinaryGetInfoPointer(viewer,&info);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(da,&dim,&ni,&nj,&nk,&pi,&pj,&pk,&dof,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,&dim,&ni,&nj,&nk,&pi,&pj,&pk,&dof,0,0,0,0,0);CHKERRQ(ierr);
   ierr = VecView(vec,viewer);CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,info,"%%--- begin code written by PetscViewerBinaryMatlabOutputVecDA ---%\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,info,"%%$$ tmp = PetscBinaryRead(fd); \n");CHKERRQ(ierr);
