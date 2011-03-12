@@ -8,20 +8,6 @@
 #include <petscda.h>
 #endif
 
-#if (PETSC_VERSION_(3,1,0) || \
-     PETSC_VERSION_(3,0,0))
-#define DABoundaryType DAPeriodicType
-#define DASetBoundaryType DASetPeriodicity
-#define DA_NONGHOSTED DA_NONPERIODIC
-#define DA_XGHOSTED   DA_XYZGHOSTED
-#define DA_YGHOSTED   DA_XYZGHOSTED
-#define DA_ZGHOSTED   DA_XYZGHOSTED
-#define DA_XYGHOSTED  DA_XYZGHOSTED
-#define DA_XZGHOSTED  DA_XYZGHOSTED
-#define DA_YZGHOSTED  DA_XYZGHOSTED
-#define DA_XYZGHOSTED DA_XYZGHOSTED
-#endif
-
 #if PETSC_VERSION_(3,1,0)
 #undef __FUNCT__
 #define __FUNCT__ "DASetUp"
@@ -247,6 +233,120 @@ DARestoreElements_Compat(DA da,PetscInt *nel,PetscInt *nen,const PetscInt *e[])
 }
 #define DARestoreElements DARestoreElements_Compat
 
+#endif
+
+#if (PETSC_VERSION_(3,1,0) || \
+     PETSC_VERSION_(3,0,0))
+typedef enum {
+  DA_BOUNDARY_NONE=0,
+  DA_BOUNDARY_GHOSTED=1,
+  DA_BOUNDARY_MIRROR=2,
+  DA_BOUNDARY_PERIODIC=3,
+} DABoundaryType;
+#endif
+
+/* ---------------------------------------------------------------- */
+
+#if PETSC_VERSION_(3,1,0)
+#undef __FUNCT__
+#define __FUNCT__ "DASetBoundaryType"
+static PetscErrorCode
+DASetBoundaryType(DA da,DABoundaryType x,DABoundaryType y,DABoundaryType z)
+{
+  DAPeriodicType ptype = DA_NONPERIODIC;
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DM_COOKIE,1);
+  /*  */ if (x==DA_BOUNDARY_NONE && 
+	     y==DA_BOUNDARY_NONE &&
+	     z==DA_BOUNDARY_NONE) {
+    ptype = DA_NONPERIODIC;
+  } else if (x==DA_BOUNDARY_GHOSTED || 
+	     y==DA_BOUNDARY_GHOSTED ||
+	     y==DA_BOUNDARY_GHOSTED) {
+    PetscInt dim;
+    ierr = DAGetInfo(da,&dim,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+    if ((dim==1 && (x==DA_BOUNDARY_GHOSTED)) ||
+	(dim==2 && (x==DA_BOUNDARY_GHOSTED &&
+		    y==DA_BOUNDARY_GHOSTED)) ||
+	(dim==3 && (x==DA_BOUNDARY_GHOSTED &&
+		    y==DA_BOUNDARY_GHOSTED &&
+		    z==DA_BOUNDARY_GHOSTED)))
+      ptype = DA_XYZGHOSTED;
+    else {
+      SETERRQ(PETSC_ERR_SUP,
+	      "Boundary type not supported in this PETSc version");
+    }
+  } else if(x==DA_BOUNDARY_PERIODIC &&
+	    y==DA_BOUNDARY_PERIODIC &&
+	    z==DA_BOUNDARY_PERIODIC) {
+    ptype = DA_XYZPERIODIC;
+  } else if(x==DA_BOUNDARY_PERIODIC &&
+	    y==DA_BOUNDARY_PERIODIC) {
+    ptype = DA_XYPERIODIC;
+  } else if(x==DA_BOUNDARY_PERIODIC &&
+	    z==DA_BOUNDARY_PERIODIC) {
+    ptype = DA_XZPERIODIC;
+  } else if(y==DA_BOUNDARY_PERIODIC &&
+	    z==DA_BOUNDARY_PERIODIC) {
+    ptype = DA_YZPERIODIC;
+  } else if(x==DA_BOUNDARY_PERIODIC) {
+    ptype = DA_XPERIODIC;
+  } else if(y==DA_BOUNDARY_PERIODIC) {
+    ptype = DA_YPERIODIC;
+  } else if(z==DA_BOUNDARY_PERIODIC) {
+    ptype = DA_ZPERIODIC;
+  } else {
+    SETERRQ(PETSC_ERR_SUP,
+	    "Boundary type not supported in this PETSc version");
+  }
+  ierr = DASetPeriodicity(da,ptype);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#define DASetUp DASetUp_Compat
+#endif
+
+#if (PETSC_VERSION_(3,1,0) || \
+     PETSC_VERSION_(3,0,0))
+#undef __FUNCT__
+#define __FUNCT__ "DAGetInfo_Compat"
+static PetscErrorCode
+DAGetInfo_Compat(DA da, 
+		 PetscInt *dim,
+		 PetscInt *M,PetscInt *N,PetscInt *P,
+		 PetscInt *m,PetscInt *n,PetscInt *p,
+		 PetscInt *dof,PetscInt *s,
+		 DABoundaryType *btx,
+		 DABoundaryType *bty,
+		 DABoundaryType *btz,
+		 DAStencilType *stype)
+{
+  DAPeriodicType ptype;
+  DABoundaryType x=DA_BOUNDARY_NONE;
+  DABoundaryType y=DA_BOUNDARY_NONE;
+  DABoundaryType z=DA_BOUNDARY_NONE;
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DM_COOKIE,1);
+  ierr = DAGetInfo(da,dim,M,N,P,m,n,p,dof,s,&ptype,stype);CHKERRQ(ierr);
+  switch (ptype) {
+  case DA_NONPERIODIC: break;
+  case DA_XPERIODIC:   x = DA_BOUNDARY_PERIODIC; break;
+  case DA_YPERIODIC:   y = DA_BOUNDARY_PERIODIC; break;
+  case DA_ZPERIODIC:   z = DA_BOUNDARY_PERIODIC; break;
+  case DA_XYPERIODIC:  x = y = DA_BOUNDARY_PERIODIC; break;
+  case DA_XZPERIODIC:  x = z = DA_BOUNDARY_PERIODIC; break;
+  case DA_YZPERIODIC:  y = z = DA_BOUNDARY_PERIODIC; break;
+  case DA_XYZPERIODIC: x = y = z = DA_BOUNDARY_PERIODIC; break;
+  case DA_XYZGHOSTED:  x = y = z = DA_BOUNDARY_GHOSTED; break;
+  default: break;
+  }
+  if (btx) *btx = x;
+  if (bty) *bty = y;
+  if (btz) *btz = z;
+  PetscFunctionReturn(0);
+}
+#define DAGetInfo DAGetInfo_Compat
 #endif
 
 /* ---------------------------------------------------------------- */

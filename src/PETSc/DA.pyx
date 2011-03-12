@@ -1,16 +1,10 @@
 # --------------------------------------------------------------------
 
 class DABoundaryType(object):
-    NONPERIODIC = DA_NONPERIODIC
-    NONGHOSTED  = DA_NONGHOSTED
-    #
-    PERIODIC_X = DA_XPERIODIC
-    PERIODIC_Y = DA_YPERIODIC
-    PERIODIC_Z = DA_ZPERIODIC
-    #
-    GHOSTED_X    = DA_XGHOSTED
-    GHOSTED_Y    = DA_YGHOSTED
-    GHOSTED_Z    = DA_ZGHOSTED
+    NONE     = DA_BOUNDARY_NONE
+    GHOSTED  = DA_BOUNDARY_GHOSTED
+    MIRROR   = DA_BOUNDARY_MIRROR
+    PERIODIC = DA_BOUNDARY_PERIODIC
 
 class DAStencilType(object):
     STAR = DA_STENCIL_STAR
@@ -62,7 +56,9 @@ cdef class DA(DM):
         cdef PetscInt M = 1, m = PETSC_DECIDE, *lx = NULL
         cdef PetscInt N = 1, n = PETSC_DECIDE, *ly = NULL
         cdef PetscInt P = 1, p = PETSC_DECIDE, *lz = NULL
-        cdef PetscDABoundaryType btype = DA_NONPERIODIC|DA_NONGHOSTED
+        cdef PetscDABoundaryType btx = DA_BOUNDARY_NONE
+        cdef PetscDABoundaryType bty = DA_BOUNDARY_NONE
+        cdef PetscDABoundaryType btz = DA_BOUNDARY_NONE
         cdef PetscDAStencilType  stype = DA_STENCIL_BOX
         cdef PetscInt            swidth = 1
         # global grid sizes
@@ -86,15 +82,19 @@ cdef class DA(DM):
         if dof is not None: ndof = asInt(dof)
         if ndim==PETSC_DECIDE and gdim>0: ndim = gdim
         if ndof==PETSC_DECIDE: ndof = 1
-        btype = asBoundary(ndim, boundary_type)
-        stype = asStencil(stencil_type)
-        swidth = asInt(stencil_width)
+        if boundary_type is not None:
+            asBoundary(ndim, boundary_type, &btx, &bty, &btz)
+        if stencil_type is not None:
+            stype = asStencil(stencil_type)
+        if stencil_width is not None:
+            swidth = asInt(stencil_width)
         # create the DA object
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscDA newda = NULL
         CHKERR( DACreateND(ccomm, ndim, ndof,
                            M, N, P, m, n, p, lx, ly, lz,
-                           btype, stype, swidth, &newda) )
+                           btx, bty, btz,
+                           stype, swidth, &newda) )
         PetscCLEAR(self.obj); self.da = newda
         return self
 
@@ -110,31 +110,40 @@ cdef class DA(DM):
 
     def duplicate(self, dof=None, boundary_type=None,
                   stencil_type=None, stencil_width=None):
-        cdef PetscInt ndim = 0
+        cdef PetscInt dim = 0
         cdef PetscInt M = 1, N = 1, P = 1
         cdef PetscInt m = 1, n = 1, p = 1
         cdef PetscInt ndof = 1, swidth = 1
-        cdef PetscDABoundaryType btype = DA_NONPERIODIC|DA_NONGHOSTED
+        cdef PetscDABoundaryType btx = DA_BOUNDARY_NONE
+        cdef PetscDABoundaryType bty = DA_BOUNDARY_NONE
+        cdef PetscDABoundaryType btz = DA_BOUNDARY_NONE
         cdef PetscDAStencilType  stype = DA_STENCIL_BOX
-        CHKERR( DAGetInfo(self.da, &ndim,
+        CHKERR( DAGetInfo(self.da, 
+                          &dim,
                           &M, &N, &P,
                           &m, &n, &p,
                           &ndof, &swidth,
-                          &btype, &stype) )
+                          &btx, &bty, &btz,
+                          &stype) )
         cdef const_PetscInt *lx = NULL, *ly = NULL, *lz = NULL
         CHKERR( DAGetOwnershipRanges(self.da, &lx, &ly, &lz) )
         cdef MPI_Comm comm = MPI_COMM_NULL
         CHKERR( PetscObjectGetComm(<PetscObject>self.da, &comm) )
         #
-        if dof           is not None: ndof   = asInt(dof)
-        if boundary_type is not None: btype  = asBoundary(ndim, boundary_type)
-        if stencil_type  is not None: stype  = asStencil(stencil_type)
-        if stencil_width is not None: swidth = asInt(stencil_width)
+        if dof is not None: 
+            ndof = asInt(dof)
+        if boundary_type is not None:
+            asBoundary(dim, boundary_type, &btx, &bty, &btz)
+        if stencil_type  is not None:
+            stype = asStencil(stencil_type)
+        if stencil_width is not None:
+            swidth = asInt(stencil_width)
         #
         cdef DA da = DA()
-        CHKERR( DACreateND(comm, ndim, ndof,
+        CHKERR( DACreateND(comm, dim, ndof,
                            M, N, P, m, n, p, lx, ly, lz,
-                           btype, stype, swidth, &da.da) )
+                           btx, bty, btz,
+                           stype, swidth, &da.da) )
         return da
 
     #
@@ -146,7 +155,8 @@ cdef class DA(DM):
                           NULL, NULL, NULL,
                           NULL, NULL, NULL,
                           NULL, NULL,
-                          NULL, NULL) )
+                          NULL, NULL, NULL,
+                          NULL) )
         return toInt(dim)
 
     def getDof(self):
@@ -156,7 +166,8 @@ cdef class DA(DM):
                           NULL, NULL, NULL,
                           NULL, NULL, NULL,
                           &dof, NULL,
-                          NULL, NULL) )
+                          NULL, NULL, NULL,
+                          NULL) )
         return toInt(dof)
 
     def getSizes(self):
@@ -169,8 +180,9 @@ cdef class DA(DM):
                           &M, &N, &P,
                           NULL, NULL, NULL,
                           NULL, NULL,
-                          NULL, NULL) )
-        return (toInt(M), toInt(N), toInt(P))[:<Py_ssize_t>dim]
+                          NULL, NULL, NULL,
+                          NULL) )
+        return toDims(dim, M, N, P)
 
     def getProcSizes(self):
         cdef PetscInt dim = 0
@@ -182,48 +194,45 @@ cdef class DA(DM):
                           NULL, NULL, NULL,
                           &m, &n, &p,
                           NULL, NULL,
-                          NULL, NULL) )
-        return (toInt(m), toInt(n), toInt(p))[:<Py_ssize_t>dim]
+                          NULL, NULL, NULL,
+                          NULL) )
+        return toDims(dim, m, n, p)
 
-    def getBoundary(self):
+    def getBoundaryType(self):
         cdef PetscInt dim = 0
-        cdef PetscDABoundaryType btype = DA_NONPERIODIC|DA_NONGHOSTED
+        cdef PetscDABoundaryType btx = DA_BOUNDARY_NONE
+        cdef PetscDABoundaryType bty = DA_BOUNDARY_NONE
+        cdef PetscDABoundaryType btz = DA_BOUNDARY_NONE
         CHKERR( DAGetInfo(self.da,
                           &dim,
                           NULL, NULL, NULL,
                           NULL, NULL, NULL,
                           NULL, NULL,
-                          &btype, NULL) )
-        return toBoundary(dim, btype)
+                          &btx, &bty, &btz,
+                          NULL) )
+        return toDims(dim, btx, bty, btz)
 
-    def getBoundaryType(self):
-        cdef PetscDABoundaryType btype = DA_NONPERIODIC|DA_NONGHOSTED
+    def getStencil(self):
+        cdef PetscDAStencilType stype = DA_STENCIL_BOX
+        cdef PetscInt swidth = 0
         CHKERR( DAGetInfo(self.da,
                           NULL,
                           NULL, NULL, NULL,
                           NULL, NULL, NULL,
-                          NULL, NULL,
-                          &btype, NULL) )
-        return btype
+                          NULL, &swidth,
+                          NULL, NULL, NULL,
+                          &stype) )
+        return (toStencil(stype), toInt(swidth))
 
-    def getStencil(self):
+    def getStencilType(self):
         cdef PetscDAStencilType stype = DA_STENCIL_BOX
         CHKERR( DAGetInfo(self.da,
                           NULL,
                           NULL, NULL, NULL,
                           NULL, NULL, NULL,
                           NULL, NULL,
-                          NULL, &stype) )
-        return toStencil(stype)
-
-    def getStencilType(self):
-        cdef PetscDAStencilType  stype = DA_STENCIL_BOX
-        CHKERR( DAGetInfo(self.da,
-                          NULL,
                           NULL, NULL, NULL,
-                          NULL, NULL, NULL,
-                          NULL, NULL,
-                          NULL, &stype) )
+                          &stype) )
         return stype
 
     def getStencilWidth(self):
@@ -233,7 +242,8 @@ cdef class DA(DM):
                           NULL, NULL, NULL,
                           NULL, NULL, NULL,
                           NULL, &swidth,
-                          NULL, NULL) )
+                          NULL, NULL, NULL,
+                          NULL) )
         return toInt(swidth)
 
     #
@@ -508,10 +518,6 @@ cdef class DA(DM):
     property proc_sizes:
         def __get__(self):
             return self.getProcSizes()
-
-    property boundary:
-        def __get__(self):
-            return self.getBoundary()
 
     property boundary_type:
         def __get__(self):

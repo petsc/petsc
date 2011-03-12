@@ -2,27 +2,15 @@
 
 cdef extern from * nogil:
 
+    ctypedef enum PetscDABoundaryType "DABoundaryType":
+        DA_BOUNDARY_NONE
+        DA_BOUNDARY_GHOSTED
+        DA_BOUNDARY_MIRROR
+        DA_BOUNDARY_PERIODIC
+
     ctypedef enum PetscDAStencilType "DAStencilType":
         DA_STENCIL_STAR
         DA_STENCIL_BOX
-
-    ctypedef enum PetscDABoundaryType "DABoundaryType":
-        DA_NONPERIODIC
-        DA_XPERIODIC
-        DA_YPERIODIC
-        DA_ZPERIODIC
-        DA_XYPERIODIC
-        DA_XZPERIODIC
-        DA_YZPERIODIC
-        DA_XYZPERIODIC
-        DA_NONGHOSTED
-        DA_XGHOSTED
-        DA_YGHOSTED
-        DA_ZGHOSTED
-        DA_XYGHOSTED
-        DA_XZGHOSTED
-        DA_YZGHOSTED
-        DA_XYZGHOSTED
 
     ctypedef enum PetscDAInterpolationType "DAInterpolationType":
         DA_INTERPOLATION_Q0 "DA_Q0"
@@ -40,7 +28,9 @@ cdef extern from * nogil:
                    PetscInt,PetscInt,PetscInt,       # M, N, P
                    PetscInt,PetscInt,PetscInt,       # m, n, p
                    PetscInt[],PetscInt[],PetscInt[], # lx, ly, lz
-                   PetscDABoundaryType,              # boundary type
+                   PetscDABoundaryType,              # bx
+                   PetscDABoundaryType,              # by
+                   PetscDABoundaryType,              # bz
                    PetscDAStencilType,               # stencil type
                    PetscInt,                         # stencil width
                    PetscDA*)
@@ -56,7 +46,10 @@ cdef extern from * nogil:
                   PetscInt*,PetscInt*,PetscInt*,
                   PetscInt*,PetscInt*,PetscInt*,
                   PetscInt*,PetscInt*,
-                  PetscDABoundaryType*,PetscDAStencilType*)
+                  PetscDABoundaryType*,
+                  PetscDABoundaryType*,
+                  PetscDABoundaryType*,
+                  PetscDAStencilType*)
     int DAGetOwnershipRanges(PetscDA,
                              const_PetscInt*[],
                              const_PetscInt*[],
@@ -116,96 +109,38 @@ cdef extern from * nogil:
 
 # --------------------------------------------------------------------
 
-cdef enum:
-    DA_PERIODIC_NONE = 0+0
-    DA_PERIODIC_X    = 0+1
-    DA_PERIODIC_Y    = 0+2
-    DA_PERIODIC_Z    = 0+4
-
-cdef enum:
-    DA_GHOSTED_NONE  = 8+0
-    DA_GHOSTED_X     = 8+1
-    DA_GHOSTED_Y     = 8+2
-    DA_GHOSTED_Z     = 8+4
-
-cdef PetscDABoundaryType daboundary[8+8]
-#
-daboundary[DA_PERIODIC_NONE] = DA_NONPERIODIC
-daboundary[DA_PERIODIC_X] = DA_XPERIODIC
-daboundary[DA_PERIODIC_Y] = DA_YPERIODIC
-daboundary[DA_PERIODIC_Z] = DA_ZPERIODIC
-daboundary[DA_PERIODIC_X|DA_PERIODIC_Y] = DA_XYPERIODIC
-daboundary[DA_PERIODIC_X|DA_PERIODIC_Z] = DA_XZPERIODIC
-daboundary[DA_PERIODIC_Y|DA_PERIODIC_Z] = DA_YZPERIODIC
-daboundary[DA_PERIODIC_X|DA_PERIODIC_Y|DA_PERIODIC_Z] = DA_XYZPERIODIC
-#
-daboundary[DA_GHOSTED_NONE] = DA_NONGHOSTED
-daboundary[DA_GHOSTED_X] = DA_XGHOSTED
-daboundary[DA_GHOSTED_Y] = DA_YGHOSTED
-daboundary[DA_GHOSTED_Z] = DA_ZGHOSTED
-daboundary[DA_GHOSTED_X|DA_GHOSTED_Y] = DA_XYGHOSTED
-daboundary[DA_GHOSTED_X|DA_GHOSTED_Z] = DA_XZGHOSTED
-daboundary[DA_GHOSTED_Y|DA_GHOSTED_Z] = DA_YZGHOSTED
-daboundary[DA_GHOSTED_X|DA_GHOSTED_Y|DA_GHOSTED_Z] = DA_XYZGHOSTED
-
-cdef inline PetscDABoundaryType DA_BOUNDARY(PetscInt dim,
-                                            int x, int y, int z) nogil:
-    cdef int flag = 0
-    if dim >= 1 and x:
-        if x == 1: flag |= DA_PERIODIC_X
-        if x == 2: flag |= DA_GHOSTED_X
-    if dim >= 2 and y:
-        if y == 1: flag |= DA_PERIODIC_Y
-        if y == 2: flag |= DA_GHOSTED_Y
-    if dim >= 3 and z:
-        if z == 1: flag |= DA_PERIODIC_Z
-        if z == 2: flag |= DA_GHOSTED_Z
-    return daboundary[flag]
-
-cdef inline PetscDABoundaryType asBoundary(PetscInt dim, object boundary) \
-    except <PetscDABoundaryType>(-1):
+cdef inline int asBoundary(PetscInt dim, 
+                           object boundary,
+                           PetscDABoundaryType *x,
+                           PetscDABoundaryType *y,
+                           PetscDABoundaryType *z) except -1:
     if boundary is None:
-        return DA_BOUNDARY(dim,0,0,0)
+        return 0
     if isinstance(boundary, str):
-        if   boundary == 'periodic':
-            return DA_BOUNDARY(dim,1,1,1)
+        if boundary == 'none':
+            boundary = DA_BOUNDARY_NONE
         elif boundary == 'ghosted':
-            return DA_BOUNDARY(dim,2,2,2)
+            boundary = DA_BOUNDARY_GHOSTED
+        elif boundary == 'mirror':
+            boundary = DA_BOUNDARY_MIRROR
+        elif boundary == 'periodic':
+            boundary = DA_BOUNDARY_PERIODIC
         else:
             raise ValueError("unknown boundary type: %s" % boundary)
     if isinstance(boundary, int):
-        return boundary
-    cdef PetscInt pdim = len(boundary)
-    cdef int x=0, y=0, z=0
-    if   pdim == 1: (x,)    = boundary
-    elif pdim == 2: (x,y)   = boundary
-    elif pdim == 3: (x,y,z) = boundary
-    return DA_BOUNDARY(dim,x,y,z)
+        boundary = (boundary,)*toInt(dim)
+    if   dim == 1: (x[0],) = boundary
+    elif dim == 2: (x[0],y[0]) = boundary
+    elif dim == 3: (x[0],y[0],z[0]) = boundary
+    return 0
 
-cdef inline object toBoundary(PetscInt dim, PetscDABoundaryType ptype):
-    cdef int x=0, y=0, z=0
-    #
-    if   ptype == DA_NONPERIODIC: pass
-    elif ptype == DA_XYZPERIODIC: x = y = z = 1
-    elif ptype == DA_XYPERIODIC:  x = y = 1
-    elif ptype == DA_XZPERIODIC:  x = z = 1
-    elif ptype == DA_YZPERIODIC:  y = z = 1
-    elif ptype == DA_XPERIODIC:   x = 1
-    elif ptype == DA_YPERIODIC:   y = 1
-    elif ptype == DA_ZPERIODIC:   z = 1
-    #
-    if   ptype == DA_NONGHOSTED: pass
-    elif ptype == DA_XYZGHOSTED: x = y = z = 2
-    elif ptype == DA_XYGHOSTED:  x = y = 2
-    elif ptype == DA_XZGHOSTED:  x = z = 2
-    elif ptype == DA_YZGHOSTED:  y = z = 2
-    elif ptype == DA_XGHOSTED:   x = 2
-    elif ptype == DA_YGHOSTED:   y = 2
-    elif ptype == DA_ZGHOSTED:   z = 2
-    #
+cdef inline object toBoundary(PetscInt dim, 
+                              PetscDABoundaryType x,
+                              PetscDABoundaryType y,
+                              PetscDABoundaryType z):
     if   dim == 1: return (x,)
-    elif dim == 2: return (x,y)
-    elif dim == 3: return (x,y,z)
+    elif dim == 2: return (x, y)
+    elif dim == 3: return (x, y, z)
 
 cdef inline PetscDAStencilType asStencil(object stencil) \
     except <PetscDAStencilType>(-1):
@@ -242,7 +177,8 @@ cdef inline int DAGetDim(PetscDA da, PetscInt *dim) nogil:
                       NULL, NULL, NULL,
                       NULL, NULL, NULL,
                       NULL, NULL,
-                      NULL, NULL)
+                      NULL, NULL, NULL,
+                      NULL)
 
 cdef inline PetscInt asDims(dims,
                             PetscInt *_M,
@@ -280,7 +216,7 @@ cdef class _DA_Vec_array(object):
         cdef PetscInt dim, dof
         CHKERR( DAGetInfo(da.da,
                           &dim, NULL, NULL, NULL, NULL, NULL, NULL,
-                          &dof, NULL, NULL, NULL) )
+                          &dof, NULL, NULL, NULL, NULL, NULL) )
         cdef PetscInt lxs, lys, lzs, lxm, lym, lzm
         CHKERR( DAGetCorners(da.da,
                              &lxs, &lys, &lzs,
