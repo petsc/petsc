@@ -1,4 +1,4 @@
-#define PETSCVEC_DLL
+
 #include "petscpf.h"          /*I   "petscpf.h"   I*/
 
 EXTERN_C_BEGIN

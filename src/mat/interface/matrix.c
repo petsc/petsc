@@ -1,4 +1,3 @@
-#define PETSCMAT_DLL
 
 /*
    This is where the abstract matrix operations are defined

@@ -1,4 +1,4 @@
-#define PETSC_DLL
+
 static char help[] = \
 "Sets up a simple component framework consisting of \n\
  a computational component \"Electrolyte\" and a vizualization component \"Viz\".\n\

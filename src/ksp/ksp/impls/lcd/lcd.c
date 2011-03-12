@@ -1,4 +1,3 @@
-#define PETSCKSP_DLL
 
 #include "../src/ksp/ksp/impls/lcd/lcdimpl.h"
 #undef __FUNCT__  

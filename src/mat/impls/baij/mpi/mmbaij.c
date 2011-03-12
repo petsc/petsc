@@ -1,4 +1,3 @@
-#define PETSCMAT_DLL
 
 /*
    Support for the parallel BAIJ matrix vector multiply

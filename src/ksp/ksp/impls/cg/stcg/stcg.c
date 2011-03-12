@@ -1,4 +1,3 @@
-#define PETSCKSP_DLL
 
 #include "private/kspimpl.h"             /*I "petscksp.h" I*/
 #include "../src/ksp/ksp/impls/cg/stcg/stcgimpl.h"

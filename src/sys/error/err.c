@@ -1,4 +1,4 @@
-#define PETSC_DLL
+
 /*
       Code that allows one to set the error handlers
 */

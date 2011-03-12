@@ -1,4 +1,4 @@
-#define PETSCKSP_DLL
+
 /*
     Routines to set PC methods and options.
 */

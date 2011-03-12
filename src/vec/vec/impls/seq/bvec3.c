@@ -1,4 +1,4 @@
-#define PETSCVEC_DLL
+
 /*
    Implements the sequential vectors.
 */

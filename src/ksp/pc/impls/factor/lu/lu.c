@@ -1,4 +1,3 @@
-#define PETSCKSP_DLL
 
 /*
    Defines a direct factorization preconditioner for any Mat implementation

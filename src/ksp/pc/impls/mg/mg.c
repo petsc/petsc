@@ -1,4 +1,3 @@
-#define PETSCKSP_DLL
 
 /*
     Defines the multigrid preconditioner interface.

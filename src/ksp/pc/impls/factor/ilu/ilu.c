@@ -1,4 +1,3 @@
-#define PETSCKSP_DLL
 
 /*
    Defines a ILU factorization preconditioner for any Mat implementation

@@ -1,4 +1,3 @@
-#define PETSCKSP_DLL
 
 /*
      The basic KSP routines, Create, View etc. are here.

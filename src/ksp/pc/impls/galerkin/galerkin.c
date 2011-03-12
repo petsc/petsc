@@ -1,4 +1,3 @@
-#define PETSCKSP_DLL
 
 /*
       Defines a preconditioner defined by R^T S R 

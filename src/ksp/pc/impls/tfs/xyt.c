@@ -1,4 +1,3 @@
-#define PETSCKSP_DLL
 
 /*************************************xyt.c************************************
 Module Name: xyt
@@ -171,12 +170,10 @@ PetscInt XYT_stats(xyt_ADT xyt_handle)
   check_handle(xyt_handle);
 
   /* if factorization not done there are no stats */
-  if (!xyt_handle->info||!xyt_handle->mvi)
-    {
-      if (!my_id) 
-	{ierr = PetscPrintf(PETSC_COMM_WORLD,"XYT_stats() :: no stats available!\n");}
-      return 1;
-    }
+  if (!xyt_handle->info||!xyt_handle->mvi) {
+    if (!my_id) PetscPrintf(PETSC_COMM_WORLD,"XYT_stats() :: no stats available!\n");
+    return 1;
+  }
 
   vals[0]=vals[1]=vals[2]=xyt_handle->info->nnz;
   vals[3]=vals[4]=vals[5]=xyt_handle->mvi->n;
@@ -187,25 +184,24 @@ PetscInt XYT_stats(xyt_ADT xyt_handle)
     =xyt_handle->info->tot_solve_time/xyt_handle->info->nsolves++;
   grop(fvals,fwork,sizeof(fop)/sizeof(fop[0])-1,fop);
 
-  if (!my_id) 
-    {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"%D :: min   xyt_nnz=%D\n",my_id,vals[0]);
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"%D :: max   xyt_nnz=%D\n",my_id,vals[1]);
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"%D :: avg   xyt_nnz=%g\n",my_id,1.0*vals[2]/num_nodes);
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"%D :: tot   xyt_nnz=%D\n",my_id,vals[2]);
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"%D :: xyt   C(2d)  =%g\n",my_id,vals[2]/(pow(1.0*vals[5],1.5)));
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"%D :: xyt   C(3d)  =%g\n",my_id,vals[2]/(pow(1.0*vals[5],1.6667)));
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"%D :: min   xyt_n  =%D\n",my_id,vals[3]);
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"%D :: max   xyt_n  =%D\n",my_id,vals[4]);
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"%D :: avg   xyt_n  =%g\n",my_id,1.0*vals[5]/num_nodes);
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"%D :: tot   xyt_n  =%D\n",my_id,vals[5]);
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"%D :: min   xyt_buf=%D\n",my_id,vals[6]);
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"%D :: max   xyt_buf=%D\n",my_id,vals[7]);
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"%D :: avg   xyt_buf=%g\n",my_id,1.0*vals[8]/num_nodes);
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"%D :: min   xyt_slv=%g\n",my_id,fvals[0]);
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"%D :: max   xyt_slv=%g\n",my_id,fvals[1]);
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"%D :: avg   xyt_slv=%g\n",my_id,fvals[2]/num_nodes);
-    }
+  if (!my_id) {
+    PetscPrintf(PETSC_COMM_WORLD,"%D :: min   xyt_nnz=%D\n",my_id,vals[0]);
+    PetscPrintf(PETSC_COMM_WORLD,"%D :: max   xyt_nnz=%D\n",my_id,vals[1]);
+    PetscPrintf(PETSC_COMM_WORLD,"%D :: avg   xyt_nnz=%g\n",my_id,1.0*vals[2]/num_nodes);
+    PetscPrintf(PETSC_COMM_WORLD,"%D :: tot   xyt_nnz=%D\n",my_id,vals[2]);
+    PetscPrintf(PETSC_COMM_WORLD,"%D :: xyt   C(2d)  =%g\n",my_id,vals[2]/(pow(1.0*vals[5],1.5)));
+    PetscPrintf(PETSC_COMM_WORLD,"%D :: xyt   C(3d)  =%g\n",my_id,vals[2]/(pow(1.0*vals[5],1.6667)));
+    PetscPrintf(PETSC_COMM_WORLD,"%D :: min   xyt_n  =%D\n",my_id,vals[3]);
+    PetscPrintf(PETSC_COMM_WORLD,"%D :: max   xyt_n  =%D\n",my_id,vals[4]);
+    PetscPrintf(PETSC_COMM_WORLD,"%D :: avg   xyt_n  =%g\n",my_id,1.0*vals[5]/num_nodes);
+    PetscPrintf(PETSC_COMM_WORLD,"%D :: tot   xyt_n  =%D\n",my_id,vals[5]);
+    PetscPrintf(PETSC_COMM_WORLD,"%D :: min   xyt_buf=%D\n",my_id,vals[6]);
+    PetscPrintf(PETSC_COMM_WORLD,"%D :: max   xyt_buf=%D\n",my_id,vals[7]);
+    PetscPrintf(PETSC_COMM_WORLD,"%D :: avg   xyt_buf=%g\n",my_id,1.0*vals[8]/num_nodes);
+    PetscPrintf(PETSC_COMM_WORLD,"%D :: min   xyt_slv=%g\n",my_id,fvals[0]);
+    PetscPrintf(PETSC_COMM_WORLD,"%D :: max   xyt_slv=%g\n",my_id,fvals[1]);
+    PetscPrintf(PETSC_COMM_WORLD,"%D :: avg   xyt_slv=%g\n",my_id,fvals[2]/num_nodes);
+  }
 
   return(0);
 }

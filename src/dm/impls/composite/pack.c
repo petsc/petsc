@@ -1,4 +1,3 @@
-#define PETSCDM_DLL
 
 #include "packimpl.h" /*I   "petscdm.h"   I*/
 

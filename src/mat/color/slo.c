@@ -1,4 +1,3 @@
-#define PETSCMAT_DLL
 
 /* slo.f -- translated by f2c (version of 25 March 1992  12:58:56).*/
 

@@ -1,5 +1,4 @@
 
-#define PETSC_DLL
 /*
        Contains the data structure for plotting several line
     graphs in a window with an axis. This is intended for line 

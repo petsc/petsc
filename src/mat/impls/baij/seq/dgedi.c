@@ -1,4 +1,3 @@
-#define PETSCMAT_DLL
 
 /*  
               This file creating by running f2c 

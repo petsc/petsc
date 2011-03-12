@@ -1,4 +1,4 @@
-#define PETSC_DLL
+
 /*
      Interface to malloc() and free(). This code allows for 
   logging of memory usage and some error checking 

@@ -1,4 +1,3 @@
-#define PETSC_DLL
 /*
       Code to handle PETSc starting up in debuggers,etc.
 */

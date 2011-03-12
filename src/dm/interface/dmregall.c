@@ -1,4 +1,3 @@
-#define PETSCDM_DLL
 
 #include "private/daimpl.h"     /*I  "petscdm.h"  I*/
 EXTERN_C_BEGIN

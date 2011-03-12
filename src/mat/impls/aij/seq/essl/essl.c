@@ -1,4 +1,3 @@
-#define PETSCMAT_DLL
 
 /* 
         Provides an interface to the IBM RS6000 Essl sparse solver

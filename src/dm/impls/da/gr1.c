@@ -1,4 +1,3 @@
-#define PETSCDM_DLL
 
 /* 
    Plots vectors obtained with DMDACreate1d()

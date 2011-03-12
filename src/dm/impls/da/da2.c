@@ -1,6 +1,4 @@
 
-#define PETSCDM_DLL
- 
 #include "private/daimpl.h"    /*I   "petscdm.h"   I*/
 
 #undef __FUNCT__  

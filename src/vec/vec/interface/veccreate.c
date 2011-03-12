@@ -1,4 +1,4 @@
-#define PETSCVEC_DLL
+
 #include "private/vecimpl.h"      /*I "petscvec.h" I*/
 
 #undef __FUNCT__  

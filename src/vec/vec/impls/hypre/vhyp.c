@@ -1,4 +1,4 @@
-#define PETSCVEC_DLL
+
 /*
     Creates hypre ijvector from PETSc vector
 */

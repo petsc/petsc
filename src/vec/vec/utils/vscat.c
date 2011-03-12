@@ -1,4 +1,4 @@
-#define PETSCVEC_DLL
+
 /*
      Code for creating scatters between vectors. This file 
   includes the code for scattering between sequential vectors and

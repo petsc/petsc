@@ -1,4 +1,4 @@
-#define PETSC_DLL
+
 /*
       Some PETSc utilites
 */

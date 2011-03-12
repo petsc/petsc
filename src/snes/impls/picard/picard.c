@@ -1,4 +1,3 @@
-#define PETSCSNES_DLL
 
 #include "../src/snes/impls/picard/picard.h"
 

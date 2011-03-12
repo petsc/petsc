@@ -1,4 +1,3 @@
-#define PETSCKSP_DLL
 
 /*
     The PC (preconditioner) interface routines, callable by users.

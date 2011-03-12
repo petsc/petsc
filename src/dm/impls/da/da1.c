@@ -1,4 +1,4 @@
-#define PETSCDM_DLL
+
 /* 
    Code for manipulating distributed regular 1d arrays in parallel.
    This file was created by Peter Mell   6/30/95    

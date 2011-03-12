@@ -1,4 +1,3 @@
-#define PETCSMAT_DLL
 
 /* 
    Provides an interface to the Spooles serial sparse solver

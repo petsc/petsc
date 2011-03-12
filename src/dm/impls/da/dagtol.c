@@ -1,4 +1,3 @@
-#define PETSCDM_DLL
 
 /*
   Code for manipulating distributed regular arrays in parallel.

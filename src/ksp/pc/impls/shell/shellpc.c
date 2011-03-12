@@ -1,5 +1,3 @@
-#define PETSCKSP_DLL
-
 
 /*
    This provides a simple shell for Fortran (and C programmers) to 

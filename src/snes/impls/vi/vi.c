@@ -1,4 +1,3 @@
-#define PETSCSNES_DLL
 
 #include "../src/snes/impls/vi/viimpl.h" /*I "petscsnes.h" I*/
 #include "../include/private/kspimpl.h"

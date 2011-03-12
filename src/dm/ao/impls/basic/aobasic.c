@@ -1,4 +1,3 @@
-#define PETSCDM_DLL
 
 /*
     The most basic AO application ordering routines. These store the 

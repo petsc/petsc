@@ -1,4 +1,4 @@
-#define PETSC_DLL
+
 /*
       Utilites routines to add simple ASCII IO capability.
 */

@@ -1,4 +1,3 @@
-#define PETSCKSP_DLL
 
 #include "../src/ksp/pc/impls/factor/icc/icc.h"   /*I "petscpc.h" I*/
 

@@ -1,4 +1,4 @@
-#define PETSC_DLL
+
 /*
       Code for manipulating files.
 */

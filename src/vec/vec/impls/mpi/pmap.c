@@ -1,4 +1,4 @@
-#define PETSCVEC_DLL
+
 /*
    This file contains routines for basic map object implementation.
 */

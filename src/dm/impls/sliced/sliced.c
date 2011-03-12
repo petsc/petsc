@@ -1,4 +1,3 @@
-#define PETSCDM_DLL
  
 #include "petscdm.h"     /*I      "petscdm.h"     I*/
 #include "petscmat.h"    /*I      "petscmat.h"    I*/

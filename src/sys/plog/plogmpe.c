@@ -1,4 +1,4 @@
-#define PETSC_DLL
+
 /*
       PETSc code to log PETSc events using MPE
 */

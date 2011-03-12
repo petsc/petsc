@@ -1,4 +1,3 @@
-#define PETSCMAT_DLL
 
 #include "private/matimpl.h"          /*I "petscmat.h" I*/
 #include "petscksp.h"                              /*I "petscksp.h" I*/

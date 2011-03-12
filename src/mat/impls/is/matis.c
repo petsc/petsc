@@ -1,4 +1,3 @@
-#define PETSCMAT_DLL
 
 /*
     Creates a matrix class for using the Neumann-Neumann type preconditioners.

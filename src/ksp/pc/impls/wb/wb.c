@@ -1,5 +1,3 @@
-#define PETSCKSP_DLL
-
 
 #include "petscpc.h"   /*I "petscpc.h" I*/
 #include "petscmg.h"   /*I "petscmg.h" I*/

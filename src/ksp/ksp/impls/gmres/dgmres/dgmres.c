@@ -1,4 +1,3 @@
-#define PETSCKSP_DLL
 
 /*
     This file implements the deflated GMRES

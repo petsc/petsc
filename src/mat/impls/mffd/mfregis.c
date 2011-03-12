@@ -1,4 +1,3 @@
-#define PETSCMAT_DLL
 
 #include "../src/mat/impls/mffd/mffdimpl.h"   /*I  "petscmat.h"   I*/
 

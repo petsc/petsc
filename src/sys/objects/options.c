@@ -1,6 +1,6 @@
-#define PETSC_DLL
 
 /* Feature test macros to make sure atoll is available (SVr4, POSIX.1-2001, 4.3BSD, C99), not in (C89 and POSIX.1-1996) */
+/* This is not correct PETSc code; ./configure should determine what flags need to be set and set them when needed */
 #define _POSIX_C_SOURCE 200112L
 #define _BSD_SOURCE
 

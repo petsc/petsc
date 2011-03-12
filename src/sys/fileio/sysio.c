@@ -1,4 +1,3 @@
-#define PETSC_DLL
 
 /* 
    This file contains simple binary read/write routines.

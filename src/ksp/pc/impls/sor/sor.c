@@ -1,4 +1,3 @@
-#define PETSCKSP_DLL
 
 /*
    Defines a  (S)SOR  preconditioner for any Mat implementation

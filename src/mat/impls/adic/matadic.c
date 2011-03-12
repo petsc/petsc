@@ -1,4 +1,3 @@
-#define PETSCMAT_DLL
 
 /*
     ADIC matrix-free matrix implementation

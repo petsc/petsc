@@ -1,4 +1,3 @@
-#define PETSCKSP_DLL
 
 /*
     This file implements GMRES (a Generalized Minimal Residual) method.  

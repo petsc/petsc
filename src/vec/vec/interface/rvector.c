@@ -1,4 +1,3 @@
-#define PETSCVEC_DLL
 
 /*
      Provides the interface functions for vector operations that have PetscScalar/PetscReal in the signature

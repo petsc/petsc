@@ -1,4 +1,3 @@
-#define PETSCKSP_DLL
 
 #include "../src/ksp/ksp/impls/ngmres/ngmresimpl.h"       /*I "petscksp.h" I*/
 

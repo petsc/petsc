@@ -1,4 +1,3 @@
-#define PETSCKSP_DLL
 
 /*
     Code for setting KSP options from the options database.

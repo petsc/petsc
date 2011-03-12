@@ -1,4 +1,4 @@
-#define PETSC_DLL
+
 /*
   This is to allow one to measure CPU time usage of their job, 
   NOT real time usage. Do not use this for reported timings, speedup etc.

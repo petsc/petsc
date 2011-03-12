@@ -1,4 +1,3 @@
-#define PETSCKSP_DLL
 
 #include "petscksp.h"  /*I "petscksp.h" I*/
 #undef __FUNCT__  

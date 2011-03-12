@@ -1,4 +1,4 @@
-#define PETSC_DLL
+
 /*
        Provides the calling sequences for all the basic Draw routines.
 */

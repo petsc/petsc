@@ -1,4 +1,3 @@
-#define PETSCKSP_DLL
 
 /*
   This file defines an additive Schwarz preconditioner for any Mat implementation.

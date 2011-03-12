@@ -1,4 +1,3 @@
-#define PETSCDM_DLL
  
 #include "private/dmimpl.h"     /*I      "petscdm.h"     I*/
 

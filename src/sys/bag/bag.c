@@ -1,4 +1,3 @@
-#define PETSC_DLL
 
 #include "../src/sys/bag/bagimpl.h"     /*I  "petscbag.h"   I*/
 

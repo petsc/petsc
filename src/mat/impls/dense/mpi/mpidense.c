@@ -1,4 +1,3 @@
-#define PETSCMAT_DLL
 
 /*
    Basic functions for basic parallel dense matrices.

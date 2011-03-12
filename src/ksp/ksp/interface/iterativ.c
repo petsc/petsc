@@ -1,4 +1,3 @@
-#define PETSCKSP_DLL
 
 /*
    This file contains some simple default routines.  

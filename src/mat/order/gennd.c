@@ -1,4 +1,3 @@
-#define PETSCMAT_DLL
 
 /* gennd.f -- translated by f2c (version 19931217).*/
 

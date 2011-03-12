@@ -1,4 +1,3 @@
-#define PETSCVEC_DLL
 
 #include "petscvec.h"    /*I "petscvec.h" I*/
 

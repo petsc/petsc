@@ -1,4 +1,3 @@
-#define PETSC_DLL
 /*
       Routines for opening dynamic link libraries (DLLs), keeping a searchable
    path of DLLs, obtaining remote DLLs via a URL and opening them locally.

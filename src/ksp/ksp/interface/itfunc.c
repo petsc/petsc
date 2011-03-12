@@ -1,4 +1,3 @@
-#define PETSCKSP_DLL
 
 /*
       Interface KSP routines that the user calls.

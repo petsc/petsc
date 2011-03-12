@@ -1,4 +1,3 @@
-#define PETSCMAT_DLL
 
 /* 
    Provides an interface to the UMFPACKv5.1 sparse solver

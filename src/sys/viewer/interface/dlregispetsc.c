@@ -1,4 +1,3 @@
-#define PETSC_DLL
 
 #include "petscdraw.h"
 

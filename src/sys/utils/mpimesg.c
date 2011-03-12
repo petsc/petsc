@@ -1,4 +1,3 @@
-#define PETSC_DLL
 
 #include "petscsys.h"        /*I  "petscsys.h"  I*/
 

@@ -1,4 +1,4 @@
-#define PETSC_DLL
+
 /*
   Contains the data structure for plotting a histogram in a window with an axis.
 */

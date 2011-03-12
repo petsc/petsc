@@ -1,4 +1,3 @@
-#define PETSCDM_DLL
 
 #include "../src/dm/ao/aoimpl.h"
 #include "private/daimpl.h"

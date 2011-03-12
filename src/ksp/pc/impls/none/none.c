@@ -1,4 +1,3 @@
-#define PETSCKSP_DLL
 
 /*
     Identity preconditioner, simply copies vector x to y.

@@ -1,4 +1,3 @@
-#define PETSC_DLL
 
 #include "../src/sys/random/randomimpl.h"
 #if defined (PETSC_HAVE_STDLIB_H)

@@ -1,4 +1,3 @@
-#define PETSCMAT_DLL
 
 /*
     Creates hypre ijmatrix from PETSc matrix

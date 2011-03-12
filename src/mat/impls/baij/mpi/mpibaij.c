@@ -1,4 +1,3 @@
-#define PETSCMAT_DLL
 
 #include "../src/mat/impls/baij/mpi/mpibaij.h"   /*I  "petscmat.h"  I*/
 #include "petscblaslapack.h"

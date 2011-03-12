@@ -1,4 +1,3 @@
-#define PETSCDM_DLL
 
 /*
      Tools to help solve the coarse grid problem redundantly.

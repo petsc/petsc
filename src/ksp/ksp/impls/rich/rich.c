@@ -1,4 +1,3 @@
-#define PETSCKSP_DLL
 
 /*          
             This implements Richardson Iteration.       

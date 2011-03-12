@@ -1,4 +1,3 @@
-#define PETSCDM_DLL
 
 /*  
    Defines the abstract operations on AO (application orderings) 

@@ -1,4 +1,3 @@
-#define PETSCMAT_DLL
 
 #include "../src/mat/impls/sbaij/seq/sbaij.h"
 #include "../src/mat/blockinvert.h"

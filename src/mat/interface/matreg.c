@@ -1,4 +1,3 @@
-#define PETSCMAT_DLL
 
 /*
      Mechanism for register PETSc matrix types

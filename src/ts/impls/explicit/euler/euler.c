@@ -1,4 +1,3 @@
-#define PETSCTS_DLL
 
 /*
        Code for Timestepping with explicit Euler.

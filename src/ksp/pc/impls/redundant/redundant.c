@@ -1,4 +1,3 @@
-#define PETSCKSP_DLL
 
 /*
   This file defines a "solve the problem redundantly on each subgroup of processor" preconditioner.

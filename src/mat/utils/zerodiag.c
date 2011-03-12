@@ -1,4 +1,3 @@
-#define PETSCMAT_DLL
 
 /*
     This file contains routines to reorder a matrix so that the diagonal

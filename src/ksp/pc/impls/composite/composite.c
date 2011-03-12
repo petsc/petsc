@@ -1,4 +1,3 @@
-#define PETSCKSP_DLL
 
 /*
       Defines a preconditioner that can consist of a collection of PCs

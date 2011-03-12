@@ -1,4 +1,4 @@
-#define PETSC_DLL
+
 /* Contributed by - Mark Adams */
 
 #include "petscsys.h"

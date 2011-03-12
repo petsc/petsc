@@ -1,4 +1,3 @@
-#define PETSCMAT_DLL
 
 /*
   Implements the DS PETSc approach for computing the h 

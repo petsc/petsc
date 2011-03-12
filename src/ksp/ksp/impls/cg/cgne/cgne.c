@@ -1,4 +1,3 @@
-#define PETSCKSP_DLL
 
 /*
        cgimpl.h defines the simple data structured used to store information

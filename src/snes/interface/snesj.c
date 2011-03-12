@@ -1,4 +1,3 @@
-#define PETSCSNES_DLL
 
 #include "private/snesimpl.h"    /*I  "petscsnes.h"  I*/
 

@@ -1,4 +1,3 @@
-#define PETSC_DLL
 
 #include "petscsys.h"
 #if defined(PETSC_HAVE_PWD_H)

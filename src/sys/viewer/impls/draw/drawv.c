@@ -1,4 +1,3 @@
-#define PETSC_DLL
 
 #include "../src/sys/viewer/impls/draw/vdraw.h" /*I "petscdraw.h" I*/
 
