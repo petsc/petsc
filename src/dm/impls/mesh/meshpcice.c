@@ -1,6 +1,86 @@
 #include <petscmesh_formats.hh>   /*I      "petscmesh.h"   I*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
+#define __FUNCT__ "WritePCICEVertices"
+PetscErrorCode WritePCICEVertices(DM dm, PetscViewer viewer)
+{
+  ALE::Obj<PETSC_MESH_TYPE> m;
+  PetscErrorCode ierr;
+
+  ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
+  return ALE::PCICE::Viewer::writeVertices(m, viewer);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "WritePCICEElements"
+PetscErrorCode WritePCICEElements(DM dm, PetscViewer viewer)
+{
+  ALE::Obj<PETSC_MESH_TYPE> m;
+  PetscErrorCode ierr;
+
+  ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
+  return ALE::PCICE::Viewer::writeElements(m, viewer);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "WritePCICERestart"
+PetscErrorCode WritePCICERestart(DM dm, PetscViewer viewer)
+{
+  ALE::Obj<PETSC_MESH_TYPE> m;
+  PetscErrorCode ierr;
+
+  ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
+  return ALE::PCICE::Viewer::writeRestart(m, viewer);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MeshCreatePCICE"
+/*@C
+  MeshCreatePCICE - Create a Mesh from PCICE files.
+
+  Not Collective
+
+  Input Parameters:
++ dim - The topological mesh dimension
+. coordFilename - The file containing vertex coordinates
+. adjFilename - The file containing the vertices for each element
+. interpolate - The flag for construction of intermediate elements
+. bcFilename - The file containing the boundary topology and conditions
+. numBdFaces - The number of boundary faces (or edges)
+- numBdVertices - The number of boundary vertices
+
+  Output Parameter:
+. mesh - The Mesh object
+
+  Level: beginner
+
+.keywords: mesh, PCICE
+.seealso: DMMeshCreate()
+@*/
+PetscErrorCode MeshCreatePCICE(MPI_Comm comm, const int dim, const char coordFilename[], const char adjFilename[], PetscBool  interpolate, const char bcFilename[], Mesh *mesh)
+{
+  ALE::Obj<PETSC_MESH_TYPE> m;
+  PetscInt            debug = 0;
+  PetscBool           flag;
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+  ierr = MeshCreate(comm, mesh);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL, "-debug", &debug, &flag);CHKERRQ(ierr);
+  try {
+    m  = ALE::PCICE::Builder::readMesh(comm, dim, std::string(coordFilename), std::string(adjFilename), false, interpolate, debug);
+    if (debug) {m->view("Mesh");}
+  } catch(ALE::Exception e) {
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN, e.message());
+  }
+  if (bcFilename) {
+    ALE::PCICE::Builder::readBoundary(m, std::string(bcFilename));
+  }
+  ierr = MeshSetMesh(*mesh, m);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PCICERenumberBoundary"
 /*@C
   PCICERenumberBoundary - Change global element names into offsets
@@ -14,13 +94,13 @@
 
   .seealso: MeshCreate()
 @*/
-PetscErrorCode  PCICERenumberBoundary(Mesh mesh)
+PetscErrorCode  PCICERenumberBoundary(DM dm)
 {
   ALE::Obj<PETSC_MESH_TYPE> m;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
-  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
   try {
     ALE::PCICE::fuseBoundary(m);
   } catch(ALE::Exception e) {
@@ -29,7 +109,7 @@ PetscErrorCode  PCICERenumberBoundary(Mesh mesh)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "BCSectionGetArray"
 /*@C
   BCSectionGetArray - Returns the array underlying the BCSection.
@@ -50,13 +130,13 @@ PetscErrorCode  PCICERenumberBoundary(Mesh mesh)
 .keywords: mesh, elements
 .seealso: MeshCreate()
 @*/
-PetscErrorCode BCSectionGetArray(Mesh mesh, const char name[], PetscInt *numElements, PetscInt *fiberDim, PetscInt *array[])
+PetscErrorCode BCSectionGetArray(DM dm, const char name[], PetscInt *numElements, PetscInt *fiberDim, PetscInt *array[])
 {
   ALE::Obj<PETSC_MESH_TYPE> m;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
-  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
   const ALE::Obj<PETSC_MESH_TYPE::int_section_type>& section = m->getIntSection(std::string(name));
   if (!section->size()) {
     *numElements = 0;
@@ -84,7 +164,7 @@ PetscErrorCode BCSectionGetArray(Mesh mesh, const char name[], PetscInt *numElem
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "BCSectionRealCreate"
 /*@C
   BCSectionRealCreate - Creates a BCSection.
@@ -101,13 +181,13 @@ PetscErrorCode BCSectionGetArray(Mesh mesh, const char name[], PetscInt *numElem
 .keywords: mesh, elements
 .seealso: MeshCreate()
 @*/
-PetscErrorCode BCSectionRealCreate(Mesh mesh, const char name[], PetscInt fiberDim)
+PetscErrorCode BCSectionRealCreate(DM dm, const char name[], PetscInt fiberDim)
 {
   ALE::Obj<PETSC_MESH_TYPE> m;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
-  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
   const ALE::Obj<PETSC_MESH_TYPE::real_section_type>&  section = m->getRealSection(std::string(name));
   const ALE::Obj<PETSC_MESH_TYPE::int_section_type>&   ibc     = m->getIntSection("IBC");
   const PETSC_MESH_TYPE::int_section_type::chart_type& chart   = ibc->getChart();
@@ -119,7 +199,7 @@ PetscErrorCode BCSectionRealCreate(Mesh mesh, const char name[], PetscInt fiberD
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "BCSectionRealGetArray"
 /*@C
   BCSectionRealGetArray - Returns the array underlying the BCSection.
@@ -140,13 +220,13 @@ PetscErrorCode BCSectionRealCreate(Mesh mesh, const char name[], PetscInt fiberD
 .keywords: mesh, elements
 .seealso: MeshCreate()
 @*/
-PetscErrorCode BCSectionRealGetArray(Mesh mesh, const char name[], PetscInt *numElements, PetscInt *fiberDim, PetscReal *array[])
+PetscErrorCode BCSectionRealGetArray(DM dm, const char name[], PetscInt *numElements, PetscInt *fiberDim, PetscReal *array[])
 {
   ALE::Obj<PETSC_MESH_TYPE> m;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
-  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
   const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& section = m->getRealSection(std::string(name));
   if (!section->size()) {
     *numElements = 0;
@@ -174,15 +254,15 @@ PetscErrorCode BCSectionRealGetArray(Mesh mesh, const char name[], PetscInt *num
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "BCFUNCGetArray"
-PetscErrorCode BCFUNCGetArray(Mesh mesh, PetscInt *numElements, PetscInt *fiberDim, PetscScalar *array[])
+PetscErrorCode BCFUNCGetArray(DM dm, PetscInt *numElements, PetscInt *fiberDim, PetscScalar *array[])
 {
   ALE::Obj<PETSC_MESH_TYPE> m;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
-  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
 #if 0
   PETSC_MESH_TYPE::bc_values_type& bcValues = m->getBCValues();
   *numElements = bcValues.size();
@@ -243,7 +323,7 @@ namespace ALE {
       ierr = PetscMalloc(numCells*corners * sizeof(PetscInt), &verts);
       while(fgets(buf, 2048, f) != NULL) {
         const char *v = strtok(buf, " ");
-      
+
         /* Ignore cell number */
         v = strtok(NULL, " ");
         for(c = 0; c < corners; c++) {

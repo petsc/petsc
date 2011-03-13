@@ -65,7 +65,6 @@ namespace ALE {
       *vertices = verts;
       ierr = PetscViewerDestroy(viewer);
     };
-#ifdef PETSC_OPT_SIEVE
     Obj<Builder::Mesh> Builder::readMesh(MPI_Comm comm, const int dim, const std::string& filename, const bool interpolate = false, const int debug = 0) {
       typedef ALE::Mesh<PetscInt,PetscScalar> FlexMesh;
       Obj<Mesh>       mesh  = new Mesh(comm, dim, debug);
@@ -90,24 +89,5 @@ namespace ALE {
       ALE::ISieveConverter::convertMesh(*m, *mesh, renumbering, false);
       return mesh;
     };
-#else
-    Obj<Builder::Mesh> Builder::readMesh(MPI_Comm comm, const int dim, const std::string& filename, const bool interpolate = false, const int debug = 0) {
-      Obj<Mesh>       mesh  = new Mesh(comm, dim, debug);
-      Obj<sieve_type> sieve = new sieve_type(comm, debug);
-      int    *cells;
-      double *coordinates, *normals;
-      int     numCells = 0, numVertices = 0, numCorners = dim+1;
-
-      Builder::readInpFile(comm, filename, dim, numCorners, numCells, &cells, numVertices, &coordinates, &normals);
-      ALE::SieveBuilder<Mesh>::buildTopology(sieve, dim, numCells, cells, numVertices, interpolate, numCorners);
-      mesh->setSieve(sieve);
-      mesh->stratify();
-      ALE::SieveBuilder<Mesh>::buildCoordinates(mesh, dim+1, coordinates);
-      ierr = PetscFree(cells);CHKERRXX(ierr);
-      ierr = PetscFree(coordinates);CHKERRXX(ierr);
-      ierr = PetscFree(normals);CHKERRXX(ierr);
-      return mesh;
-    };
-#endif
   }
 }

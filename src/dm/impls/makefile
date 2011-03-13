@@ -1,6 +1,6 @@
 ALL: lib
 
-DIRS     = da adda sliced composite mesh
+DIRS     = da adda sliced composite mesh cartesian
 LOCDIR   = src/dm/impls
 MANSEC   = DA
 

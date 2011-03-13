@@ -214,9 +214,9 @@ PetscErrorCode PetscReadExodusII(MPI_Comm comm, const char filename[], ALE::Obj<
 #endif // PETSC_HAVE_EXODUSII
 
 #undef __FUNCT__
-#define __FUNCT__ "MeshCreateExodus"
+#define __FUNCT__ "DMMeshCreateExodus"
 /*@C
-  MeshCreateExodus - Create a Mesh from an ExodusII file.
+  DMMeshCreateExodus - Create a Mesh from an ExodusII file.
 
   Not Collective
 
@@ -225,42 +225,42 @@ PetscErrorCode PetscReadExodusII(MPI_Comm comm, const char filename[], ALE::Obj<
 - filename - The ExodusII filename
 
   Output Parameter:
-. mesh - The Mesh object
+. dm - The Mesh object
 
   Level: beginner
 
 .keywords: mesh, ExodusII
 .seealso: MeshCreate()
 @*/
-PetscErrorCode MeshCreateExodus(MPI_Comm comm, const char filename[], Mesh *mesh)
+PetscErrorCode DMMeshCreateExodus(MPI_Comm comm, const char filename[], DM *dm)
 {
   PetscInt       debug = 0;
   PetscBool      flag;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MeshCreate(comm, mesh);CHKERRQ(ierr);
+  ierr = DMMeshCreate(comm, dm);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL, "-debug", &debug, &flag);CHKERRQ(ierr);
   ALE::Obj<PETSC_MESH_TYPE> m = new PETSC_MESH_TYPE(comm, -1, debug);
 #ifdef PETSC_HAVE_EXODUSII
   ierr = PetscReadExodusII(comm, filename, m);CHKERRQ(ierr);
 #else
-  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "This method requires ExodusII support. Reconfigure using --with-exodus-dir=/path/to/exodus");
+  SETERRQ(comm, PETSC_ERR_SUP, "This method requires ExodusII support. Reconfigure using --with-exodus-dir=/path/to/exodus");
 #endif
   if (debug) {m->view("Mesh");}
-  ierr = MeshSetMesh(*mesh, m);CHKERRQ(ierr);
+  ierr = DMMeshSetMesh(*dm, m);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MeshExodusGetInfo"
+#define __FUNCT__ "DMMeshExodusGetInfo"
 /*@C
-  MeshExodusGetInfo - Get information about an ExodusII Mesh.
+  DMMeshExodusGetInfo - Get information about an ExodusII Mesh.
 
   Not Collective
 
   Input Parameter:
-. mesh - The Mesh object
+. dm - The Mesh object
 
   Output Parameters:
 + dim - The mesh dimension
@@ -274,153 +274,17 @@ PetscErrorCode MeshCreateExodus(MPI_Comm comm, const char filename[], Mesh *mesh
 .keywords: mesh, ExodusII
 .seealso: MeshCreateExodus()
 @*/
-PetscErrorCode MeshExodusGetInfo(Mesh mesh, PetscInt *dim, PetscInt *numVertices, PetscInt *numCells, PetscInt *numCellBlocks, PetscInt *numVertexSets)
+PetscErrorCode DMMeshExodusGetInfo(DM dm, PetscInt *dim, PetscInt *numVertices, PetscInt *numCells, PetscInt *numCellBlocks, PetscInt *numVertexSets)
 {
   ALE::Obj<PETSC_MESH_TYPE> m;
   PetscErrorCode            ierr;
 
   PetscFunctionBegin;
-  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
   *dim           = m->getDimension();
   *numVertices   = m->depthStratum(0)->size();
   *numCells      = m->heightStratum(0)->size();
   *numCellBlocks = m->getLabel("CellBlocks")->getCapSize();
   *numVertexSets = m->getLabel("VertexSets")->getCapSize();
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MeshGetLabelSize"
-/*@C
-  MeshGetLabelSize - Get the number of different integer ids in a Label
-
-  Not Collective
-
-  Input Parameters:
-+ mesh - The Mesh object
-- name - The label name
-
-  Output Parameter:
-. size - The label size (number of different integer ids)
-
-  Level: beginner
-
-.keywords: mesh, ExodusII
-.seealso: MeshCreateExodus()
-@*/
-PetscErrorCode MeshGetLabelSize(Mesh mesh, const char name[], PetscInt *size)
-{
-  ALE::Obj<PETSC_MESH_TYPE> m;
-  PetscErrorCode            ierr;
-
-  PetscFunctionBegin;
-  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-  *size = m->getLabel(name)->getCapSize();
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MeshGetLabelIds"
-/*@C
-  MeshGetLabelIds - Get the integer ids in a label
-
-  Not Collective
-
-  Input Parameters:
-+ mesh - The Mesh object
-. name - The label name
-- ids - The id storage array
-
-  Output Parameter:
-. ids - The integer ids
-
-  Level: beginner
-
-.keywords: mesh, ExodusII
-.seealso: MeshCreateExodus()
-@*/
-PetscErrorCode MeshGetLabelIds(Mesh mesh, const char name[], PetscInt *ids)
-{
-  ALE::Obj<PETSC_MESH_TYPE> m;
-  PetscErrorCode            ierr;
-
-  PetscFunctionBegin;
-  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-  const ALE::Obj<PETSC_MESH_TYPE::label_type::capSequence>&      labelIds = m->getLabel(name)->cap();
-  const PETSC_MESH_TYPE::label_type::capSequence::const_iterator iEnd     = labelIds->end();
-  PetscInt                                                       i        = 0;
-
-  for(PETSC_MESH_TYPE::label_type::capSequence::const_iterator i_iter = labelIds->begin(); i_iter != iEnd; ++i_iter, ++i) {
-    ids[i] = *i_iter;
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MeshGetStratumSize"
-/*@C
-  MeshGetStratumSize - Get the number of points in a label stratum
-
-  Not Collective
-
-  Input Parameters:
-+ mesh - The Mesh object
-. name - The label name
-- value - The stratum value
-
-  Output Parameter:
-. size - The stratum size
-
-  Level: beginner
-
-.keywords: mesh, ExodusII
-.seealso: MeshCreateExodus()
-@*/
-PetscErrorCode MeshGetStratumSize(Mesh mesh, const char name[], PetscInt value, PetscInt *size)
-{
-  ALE::Obj<PETSC_MESH_TYPE> m;
-  PetscErrorCode            ierr;
-
-  PetscFunctionBegin;
-  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-  *size = m->getLabelStratum(name, value)->size();
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MeshGetStratum"
-/*@C
-  MeshGetStratum - Get the points in a label stratum
-
-  Not Collective
-
-  Input Parameters:
-+ mesh - The Mesh object
-. name - The label name
-. value - The stratum value
-- points - The stratum points storage array
-
-  Output Parameter:
-. points - The stratum points
-
-  Level: beginner
-
-.keywords: mesh, ExodusII
-.seealso: MeshCreateExodus()
-@*/
-PetscErrorCode MeshGetStratum(Mesh mesh, const char name[], PetscInt value, PetscInt *points)
-{
-  ALE::Obj<PETSC_MESH_TYPE> m;
-  PetscErrorCode            ierr;
-
-  PetscFunctionBegin;
-  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-  const ALE::Obj<PETSC_MESH_TYPE::label_sequence>& stratum = m->getLabelStratum(name, value);
-  const PETSC_MESH_TYPE::label_sequence::iterator  sEnd    = stratum->end();
-  PetscInt                                         s       = 0;
-
-  for(PETSC_MESH_TYPE::label_sequence::iterator s_iter = stratum->begin(); s_iter != sEnd; ++s_iter, ++s) {
-    points[s] = *s_iter;
-  }
   PetscFunctionReturn(0);
 }

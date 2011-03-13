@@ -3,7 +3,6 @@
 */
 #if !defined(__PETSCPC_H)
 #define __PETSCPC_H
-#include "petscmat.h"
 #include "petscdm.h"
 PETSC_EXTERN_CXX_BEGIN
 

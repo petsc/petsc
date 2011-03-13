@@ -1,4 +1,3 @@
-
 /*
    This file contains some simple default routines.  
    These routines should be SHORT, since they will be included in every
@@ -7,7 +6,6 @@
    files) 
  */
 #include "private/kspimpl.h"   /*I "petscksp.h" I*/
-
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPGetResidualNorm"

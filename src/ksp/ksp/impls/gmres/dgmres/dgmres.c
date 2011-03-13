@@ -741,7 +741,7 @@ PetscErrorCode  KSPDGMRESComputeDeflationData_DGMRES (KSP ksp)
     PetscFunctionBegin;
     ierr=PetscLogEventBegin (KSP_DGMRESComputeDeflationData, ksp, 0,0,0);
     CHKERRQ (ierr);
-    if ( (dgmres->neig == 0))
+    if (dgmres->neig == 0)
         PetscFunctionReturn (0);
     if (max_neig < (r+neig1) && !dgmres->improve) {
         ierr=PetscLogEventEnd (KSP_DGMRESComputeDeflationData, ksp, 0,0,0);

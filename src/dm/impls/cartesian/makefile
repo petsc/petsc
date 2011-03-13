@@ -6,15 +6,15 @@ ALL: lib
 CPPFLAGS =
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = ALE.cxx meshcreate.c mesh.c section.c meshbardhan.c meshdolfin.c meshexodus.c meshlagrit.c meshpcice.c meshzoltan.c
+SOURCEC  = cartesian.c
 SOURCEF  =
 SOURCEH  =
-OBJSC    = ALE.o   meshcreate.o mesh.o section.o meshbardhan.o meshdolfin.o meshexodus.o meshlagrit.o meshpcice.o meshzoltan.o
+OBJSC    = cartesian.o
 OBJSF    =
 DIRS     =
 LIBBASE  = libpetscdm
 MANSEC   = DM
-LOCDIR   = src/dm/impls/mesh/
+LOCDIR   = src/dm/impls/cartesian/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules
