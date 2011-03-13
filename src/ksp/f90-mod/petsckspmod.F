@@ -26,7 +26,7 @@
 
         module petscmgdef
         use petsckspdef
-#include "finclude/petscmg.h"
+#include "finclude/petscpcmg.h"
         end module
 
         module petscmg

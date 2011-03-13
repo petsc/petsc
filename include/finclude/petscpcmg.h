@@ -1,7 +1,7 @@
 !
 !  Include file for Fortran use of the MG preconditioner in PETSc
 !
-#include "finclude/petscmgdef.h"
+#include "finclude/petscpcmgdef.h"
 
 !
 !

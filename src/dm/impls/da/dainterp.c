@@ -4,7 +4,7 @@
 */
 
 #include "private/daimpl.h"    /*I   "petscdm.h"   I*/
-#include "petscmg.h"
+#include "petscpcmg.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMGetInterpolationScale"

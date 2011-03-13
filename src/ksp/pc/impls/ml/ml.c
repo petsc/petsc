@@ -5,7 +5,7 @@
                                     Jed Brown, see [PETSC #18321, #18449]. 
 */
 #include "private/pcimpl.h"   /*I "petscpc.h" I*/
-#include "../src/ksp/pc/impls/mg/mgimpl.h"                    /*I "petscmg.h" I*/
+#include "../src/ksp/pc/impls/mg/mgimpl.h"                    /*I "petscpcmg.h" I*/
 #include "../src/mat/impls/aij/seq/aij.h"
 #include "../src/mat/impls/aij/mpi/mpiaij.h"
 

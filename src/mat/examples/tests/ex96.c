@@ -14,7 +14,7 @@ static char help[] ="Tests sequential and parallel DMGetMatrix(), MatMatMult() a
 
 #include "petscksp.h"
 #include "petscdm.h"
-#include "petscmg.h"
+#include "petscpcmg.h"
 #include "../src/mat/impls/aij/seq/aij.h"
 #include "../src/mat/impls/aij/mpi/mpiaij.h"
 

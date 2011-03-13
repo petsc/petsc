@@ -1,4 +1,4 @@
-#include <petscmg.h>      /*I      "petscmg.h"    I*/
+#include <petscpcmg.h>      /*I      "petscpcmg.h"    I*/
 #include <petscdmmg.h>    /*I      "petscdmmg.h"  I*/
 #include <Selection.hh>
 

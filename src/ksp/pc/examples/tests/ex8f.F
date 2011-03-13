@@ -16,7 +16,7 @@
 #include "finclude/petscmat.h"
 #include "finclude/petscpc.h"
 #include "finclude/petscksp.h"
-#include "finclude/petscmg.h"
+#include "finclude/petscpcmg.h"
 !
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations

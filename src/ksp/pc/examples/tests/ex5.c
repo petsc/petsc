@@ -12,7 +12,7 @@ This example also demonstrates matrix-free methods\n\n";
 /*
   This is not a good example to understand the use of multigrid with PETSc.
 */
-#include "petscmg.h"
+#include "petscpcmg.h"
 
 PetscErrorCode  residual(Mat,Vec,Vec,Vec);
 PetscErrorCode  gauss_seidel(PC,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,PetscInt,PetscBool ,PetscInt*,PCRichardsonConvergedReason*);

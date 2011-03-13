@@ -37,7 +37,7 @@ options are:\n\
 
 #include "petscsnes.h"
 #include "petscdm.h"
-#include "petscmg.h"
+#include "petscpcmg.h"
 
 /* User-defined application contexts */
 

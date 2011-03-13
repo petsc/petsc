@@ -36,7 +36,7 @@ static char help[] = "Solves 2D inhomogeneous Laplacian using multigrid.\n\n";
 
 #include "petscdm.h"
 #include "petscksp.h"
-#include "petscmg.h"
+#include "petscpcmg.h"
 #include "petscdmmg.h"
 
 extern PetscErrorCode CreateStructures(DMMG);

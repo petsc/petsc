@@ -3,7 +3,7 @@ static char help[] = "Solves PDE optimization problem of ex22.c with AD for adjo
 
 #include "petscdm.h"
 #include "petscpf.h"
-#include "petscmg.h"
+#include "petscpcmg.h"
 #include "petscsnes.h"
 #include "petscdmmg.h"
 

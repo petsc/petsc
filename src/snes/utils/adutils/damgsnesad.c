@@ -1,6 +1,6 @@
  
 #include "petscdm.h"      /*I      "petscdm.h"    I*/
-#include "petscmg.h"      /*I      "petscmg.h"    I*/
+#include "petscpcmg.h"      /*I      "petscpcmg.h"    I*/
 #include "petscdmmg.h"    /*I      "petscdmmg.h"  I*/
 #include "../src/mat/blockinvert.h"
 #include "../src/snes/impls/ls/lsimpl.h"
@@ -87,7 +87,7 @@ PetscErrorCode  SNESDAComputeJacobianWithAdic(SNES snes,Vec X,Mat *J,Mat *B,MatS
   PetscFunctionReturn(0);
 }
 
-#include "../src/ksp/pc/impls/mg/mgimpl.h"                    /*I "petscmg.h" I*/
+#include "../src/ksp/pc/impls/mg/mgimpl.h"                    /*I "petscpcmg.h" I*/
 /*
           This is pre-beta FAS code. It's design should not be taken seriously!
 

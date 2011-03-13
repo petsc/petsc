@@ -1,7 +1,7 @@
  
 #include "petscdm.h"            /*I "petscdm.h"   I*/
 #include "petscksp.h"           /*I "petscksp.h"  I*/
-#include "petscmg.h"            /*I "petscmg.h"   I*/
+#include "petscpcmg.h"            /*I "petscpcmg.h"   I*/
 #include "petscdmmg.h"          /*I "petscdmmg.h" I*/
 #include "private/pcimpl.h"     /*I "petscpc.h"   I*/
 

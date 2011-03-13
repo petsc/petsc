@@ -1,5 +1,5 @@
 /*
     This include file allows you to use ANY PETSc function
 */
-#include "petscmg.h"
+#include "petscpcmg.h"
 #include "petscts.h"

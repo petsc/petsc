@@ -61,7 +61,7 @@ static char help[] = "Solves 2D inhomogeneous Laplacian using multigrid in an io
 
 #include "petscmesh.h"
 #include "petscksp.h"
-#include "petscmg.h"
+#include "petscpcmg.h"
 #include "petscdmmg.h"
 
 PetscErrorCode MeshView_Sieve_Newer(ALE::Obj<ALE::Mesh>, PetscViewer);

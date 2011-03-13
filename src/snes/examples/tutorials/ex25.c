@@ -30,7 +30,7 @@ T*/
 
 #include "petscsnes.h"
 #include "petscdm.h"
-#include "petscmg.h"
+#include "petscpcmg.h"
 #include "petscdmmg.h"
 
 extern PetscErrorCode FormFunction(SNES,Vec,Vec,void*);

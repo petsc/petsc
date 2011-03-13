@@ -32,7 +32,7 @@ T*/
 /* 
    Include "petscdm.h" so that we can use distributed arrays (DMDAs).
    Include "petscsnes.h" so that we can use SNES solvers.  
-   Include "petscmg.h" to control the multigrid solvers. 
+   Include "petscpcmg.h" to control the multigrid solvers. 
    Note that these automatically include:
      petscsys.h       - base PETSc routines   petscvec.h - vectors
      petscmat.h - matrices
@@ -42,7 +42,7 @@ T*/
 */
 #include "petscsnes.h"
 #include "petscdm.h"
-#include "petscmg.h"
+#include "petscpcmg.h"
 #include "petscdmmg.h"
 
 #ifdef HAVE_DA_HDF

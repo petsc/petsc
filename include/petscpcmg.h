@@ -1,8 +1,8 @@
 /*
       Structure used for Multigrid preconditioners 
 */
-#if !defined(__PETSCMG_H)
-#define __PETSCMG_H
+#if !defined(__PETSCPCMG_H)
+#define __PETSCPCMG_H
 #include "petscksp.h"
 PETSC_EXTERN_CXX_BEGIN
 

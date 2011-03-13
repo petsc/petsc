@@ -2,7 +2,7 @@
 #include "petscdm.h"      /*I      "petscdm.h"    I*/
 #include "private/daimpl.h" 
 /* It appears that preprocessor directives are not respected by bfort */
-#include "petscmg.h"      /*I      "petscmg.h"    I*/
+#include "petscpcmg.h"      /*I      "petscpcmg.h"    I*/
 #include "petscdmmg.h"    /*I      "petscdmmg.h"  I*/
 
 #if defined(PETSC_HAVE_ADIC)

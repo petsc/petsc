@@ -22,7 +22,7 @@ static char help[] ="Solvers Laplacian with multigrid, bad way.\n\
 
 #include "petscksp.h"
 #include "petscdm.h"
-#include "petscmg.h"
+#include "petscpcmg.h"
 
 /* User-defined application contexts */
 

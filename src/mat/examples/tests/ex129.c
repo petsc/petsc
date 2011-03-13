@@ -13,7 +13,7 @@ static char help[] = "This example is for testing different MatSolve routines :M
 Example usage: ./ex129 -mat_type aij -dof 2\n\n";
 
 #include "petscdm.h"
-#include "petscmg.h"
+#include "petscpcmg.h"
 
 extern PetscErrorCode ComputeMatrix(DM,Mat);
 extern PetscErrorCode ComputeRHS(DM,Vec);

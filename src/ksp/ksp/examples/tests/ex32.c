@@ -12,7 +12,7 @@ static char help[] = "Solves 3D Laplacian using wirebasket based multigrid.\n\n"
 
 #include "petscdm.h"
 #include "petscksp.h"
-#include "petscmg.h"
+#include "petscpcmg.h"
 
 extern PetscErrorCode ComputeMatrix(DM,Mat);
 extern PetscErrorCode ComputeRHS(DM,Vec);
