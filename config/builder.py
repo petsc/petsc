@@ -624,6 +624,9 @@ class PETScMaker(script.Script):
  def compileC(self, source, objDir = None):
    return self.compile(self.configInfo.languages.clanguage, source, objDir)
 
+ def compileCxx(self, source, objDir = None):
+   return self.compile('Cxx', source, objDir)
+
  def compileFortran(self, source, objDir = None):
    objects = self.compile('FC', source, objDir)
    # Copy any module files produced into the include directory
@@ -781,7 +784,7 @@ class PETScMaker(script.Script):
    os.chdir(dirname)
    sourceMap = self.sourceManager.sortSourceFiles(files, objDir)
    objects   = []
-   for language in ['C', 'Fortran', 'Cuda']:
+   for language in ['C', 'Cxx', 'Fortran', 'Cuda']:
      if sourceMap[language]:
        self.logPrint('Compiling %s files %s' % (language, str(sourceMap['C'])))
        objects.extend(getattr(self, 'compile'+language)(sourceMap[language], objDir))
