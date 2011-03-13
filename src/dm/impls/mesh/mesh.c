@@ -32,8 +32,8 @@ PetscMPIInt Mesh_DelTag(MPI_Comm comm,PetscMPIInt keyval,void* attr_val,void* ex
 EXTERN_C_END
 
 #undef __FUNCT__
-#define __FUNCT__ "MeshFinalize"
-PetscErrorCode MeshFinalize()
+#define __FUNCT__ "DMMeshFinalize"
+PetscErrorCode DMMeshFinalize()
 {
   PetscFunctionBegin;
   PETSC_MESH_TYPE::MeshNumberingFactory::singleton(0, 0, true);
@@ -430,7 +430,7 @@ PetscErrorCode DMCreateGlobalVector_Mesh(DM dm, Vec *gvec)
   Level: advanced
 
   Notes: The vector can safely be destroyed using VecDestroy().
-.seealso DMMeshCreate(), MeshGetGlobalIndices()
+.seealso DMMeshCreate()
 @*/
 PetscErrorCode DMMeshCreateVector(DM mesh, SectionReal section, Vec *vec)
 {
@@ -467,31 +467,6 @@ PetscErrorCode DMCreateLocalVector_Mesh(DM dm, Vec *lvec)
   ierr = VecSetSizes(*lvec, size, size);CHKERRQ(ierr);
   ierr = VecSetFromOptions(*lvec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMMeshGetGlobalIndices"
-/*@C
-  DMMeshGetGlobalIndices - Gets the global indices for all the local entries
-
-  Collective on Mesh
-
-  Input Parameter:
-. mesh - the mesh object
-
-  Output Parameters:
-. idx - the individual indices for each packed vector/array
-
-  Level: advanced
-
-  Notes:
-  The idx parameters should be freed by the calling routine with PetscFree()
-
-.seealso DMCreateGlobalVector(), DMMeshCreate()
-@*/
-PetscErrorCode MeshGetGlobalIndices(DM dm, PetscInt *idx[])
-{
-  SETERRQ(((PetscObject) dm)->comm,PETSC_ERR_SUP, "Still too lazy");
 }
 
 #undef __FUNCT__

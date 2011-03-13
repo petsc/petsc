@@ -569,13 +569,33 @@ extern PetscErrorCode DMMeshCreate(MPI_Comm, DM*);
 extern PetscErrorCode DMMeshGetMesh(DM, ALE::Obj<PETSC_MESH_TYPE>&);
 extern PetscErrorCode DMMeshSetMesh(DM, const ALE::Obj<PETSC_MESH_TYPE>&);
 extern PetscErrorCode DMMeshGetGlobalScatter(DM, VecScatter *);
+extern PetscErrorCode DMMeshFinalize();
 
-extern PetscErrorCode MeshGetLabelSize(DM, const char [], PetscInt *);
-extern PetscErrorCode DMMeshGetLabelIds(DM, const char [], PetscInt *);
+extern PetscErrorCode DMMeshDistribute(DM, const char[], Mesh*);
+extern PetscErrorCode DMMeshDistributeByFace(DM, const char[], Mesh*);
+extern PetscErrorCode DMMeshGenerate(DM, PetscBool , Mesh *);
+extern PetscErrorCode DMMeshRefine(DM, double, PetscBool , Mesh*);
+extern PetscErrorCode DMMeshLoad(PetscViewer, DM);
+extern PetscErrorCode DMMeshGetMaximumDegree(DM, PetscInt *);
+
+extern PetscErrorCode DMMeshGetLabelSize(DM, const char[], PetscInt *);
+extern PetscErrorCode DMMeshGetLabelIds(DM, const char[], PetscInt *);
 extern PetscErrorCode DMMeshGetStratumSize(DM, const char [], PetscInt, PetscInt *);
 extern PetscErrorCode DMMeshGetStratum(DM, const char [], PetscInt, PetscInt *);
 
 extern PetscErrorCode DMCartesianCreate(MPI_Comm, DM *);
+extern PetscErrorCode DMMeshCartesianGetMesh(DM, ALE::Obj<ALE::CartesianMesh>&);
+extern PetscErrorCode DMMeshCartesianSetMesh(DM, const ALE::Obj<ALE::CartesianMesh>&);
+
+extern PetscErrorCode DMMeshGetCoordinates(DM, PetscBool , PetscInt *, PetscInt *, PetscReal *[]);
+extern PetscErrorCode DMMeshGetElements(DM, PetscBool , PetscInt *, PetscInt *, PetscInt *[]);
+extern PetscErrorCode DMMeshGetCone(DM, PetscInt, PetscInt *, PetscInt *[]);
+
+extern PetscErrorCode restrictVector(Vec, Vec, InsertMode);
+extern PetscErrorCode assembleVectorComplete(Vec, Vec, InsertMode);
+extern PetscErrorCode assembleVector(Vec, PetscInt, PetscScalar [], InsertMode);
+extern PetscErrorCode updateOperator(Mat, const ALE::Obj<PETSC_MESH_TYPE>&, const ALE::Obj<PETSC_MESH_TYPE::real_section_type>&, const ALE::Obj<PETSC_MESH_TYPE::order_type>&, const PETSC_MESH_TYPE::point_type&, PetscScalar [], InsertMode);
+extern PetscErrorCode updateOperatorGeneral(Mat, const ALE::Obj<PETSC_MESH_TYPE>&, const ALE::Obj<PETSC_MESH_TYPE::real_section_type>&, const ALE::Obj<PETSC_MESH_TYPE::order_type>&, const PETSC_MESH_TYPE::point_type&, const ALE::Obj<PETSC_MESH_TYPE>&, const ALE::Obj<PETSC_MESH_TYPE::real_section_type>&, const ALE::Obj<PETSC_MESH_TYPE::order_type>&, const PETSC_MESH_TYPE::point_type&, PetscScalar [], InsertMode);
 
 /*S
   SectionReal - Abstract PETSc object that manages distributed field data over a topology (Sieve).
@@ -584,7 +604,7 @@ extern PetscErrorCode DMCartesianCreate(MPI_Comm, DM *);
 
   Concepts: distributed mesh, field
 
-.seealso:  SectionRealCreate(), SectionRealDestroy(), Mesh, MeshCreate()
+.seealso:  SectionRealCreate(), SectionRealDestroy(), Mesh, DMMeshCreate()
 S*/
 typedef struct _p_SectionReal* SectionReal;
 
@@ -625,9 +645,27 @@ extern PetscErrorCode  SectionRealRestrictClosure(SectionReal, DM, PetscInt, Pet
 extern PetscErrorCode  SectionRealRestrictClosure(SectionReal, DM, PetscInt, const PetscScalar *[]);
 extern PetscErrorCode  SectionRealUpdateClosure(SectionReal, DM, PetscInt, PetscScalar [], InsertMode);
 
-extern PetscErrorCode  DMMeshHasSectionReal(DM, const char [], PetscBool  *);
-extern PetscErrorCode  DMMeshGetSectionReal(DM, const char [], SectionReal *);
-extern PetscErrorCode  DMMeshSetSectionReal(DM, SectionReal);
+extern PetscErrorCode DMMeshHasSectionReal(DM, const char [], PetscBool  *);
+extern PetscErrorCode DMMeshGetSectionReal(DM, const char [], SectionReal *);
+extern PetscErrorCode DMMeshSetSectionReal(DM, SectionReal);
+extern PetscErrorCode DMMeshGetVertexSectionReal(DM, const char[], PetscInt, SectionReal *);
+PetscPolymorphicSubroutine(MeshGetVertexSectionReal,(DM dm, PetscInt fiberDim, SectionReal *section),(dm,"default",fiberDim,section))
+extern PetscErrorCode DMMeshGetCellSectionReal(DM, const char[], PetscInt, SectionReal *);
+extern PetscErrorCode DMMeshCreateMatrix(DM, SectionReal, MatType, Mat *);
+extern PetscErrorCode DMMeshCreateVector(Mesh, SectionReal, Vec *);
+extern PetscErrorCode assembleVector(Vec, DM, SectionReal, PetscInt, PetscScalar [], InsertMode);
+extern PetscErrorCode assembleMatrix(Mat, DM, SectionReal, PetscInt, PetscScalar [], InsertMode);
+
+extern PetscErrorCode DMMeshCreateGlobalRealVector(DM, SectionReal, Vec *);
+extern PetscErrorCode DMMeshGetGlobalScatter(DM,VecScatter *);
+extern PetscErrorCode DMMeshCreateGlobalScatter(DM,SectionReal,VecScatter *);
+extern PetscErrorCode DMMeshGetLocalFunction(DM, PetscErrorCode (**)(Mesh, SectionReal, SectionReal, void*));
+extern PetscErrorCode DMMeshSetLocalFunction(DM, PetscErrorCode (*)(Mesh, SectionReal, SectionReal, void*));
+extern PetscErrorCode DMMeshGetLocalJacobian(DM, PetscErrorCode (**)(Mesh, SectionReal, Mat, void*));
+extern PetscErrorCode DMMeshSetLocalJacobian(DM, PetscErrorCode (*)(Mesh, SectionReal, Mat, void*));
+extern PetscErrorCode DMMeshFormFunction(DM, SectionReal, SectionReal, void*);
+extern PetscErrorCode DMMeshFormJacobian(DM, SectionReal, Mat, void*);
+extern PetscErrorCode DMMeshInterpolatePoints(DM, SectionReal, int, double *, double **);
 
 /*S
   SectionInt - Abstract PETSc object that manages distributed field data over a topology (Sieve).
@@ -636,7 +674,7 @@ extern PetscErrorCode  DMMeshSetSectionReal(DM, SectionReal);
 
   Concepts: distributed mesh, field
 
-.seealso:  SectionIntCreate(), SectionIntDestroy(), DM, MeshCreate()
+.seealso:  SectionIntCreate(), SectionIntDestroy(), DM, DMMeshCreate()
 S*/
 typedef struct _p_SectionInt* SectionInt;
 
@@ -674,6 +712,8 @@ extern PetscErrorCode  SectionIntUpdateClosure(SectionInt, DM, PetscInt, PetscIn
 extern PetscErrorCode  DMMeshHasSectionInt(DM, const char [], PetscBool  *);
 extern PetscErrorCode  DMMeshGetSectionInt(DM, const char [], SectionInt *);
 extern PetscErrorCode  DMMeshSetSectionInt(DM, SectionInt);
+extern PetscErrorCode  DMMeshGetVertexSectionInt(DM, const char[], PetscInt, SectionInt *);
+extern PetscErrorCode  DMMeshGetCellSectionInt(DM, const char[], PetscInt, SectionInt *);
 
 typedef PetscErrorCode (*DMMeshLocalFunction1)(DM,SectionReal,SectionReal,void*);
 typedef PetscErrorCode (*DMMeshLocalJacobian1)(DM,SectionReal,Mat,void*);
@@ -699,6 +739,21 @@ PetscPolymorphicSubroutine(DMMeshGetCellSectionInt,(DM dm, PetscInt fiberDim, Se
 /* Support for various mesh formats */
 extern PetscErrorCode DMMeshCreateExodus(MPI_Comm, const char [], DM *);
 extern PetscErrorCode DMMeshExodusGetInfo(DM, PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *);
+
+extern PetscErrorCode DMWriteVTKHeader(PetscViewer);
+extern PetscErrorCode DMWriteVTKVertices(DM, PetscViewer);
+extern PetscErrorCode DMWriteVTKElements(DM, PetscViewer);
+extern PetscErrorCode DMWritePCICEVertices(DM, PetscViewer);
+extern PetscErrorCode DMWritePCICEElements(DM, PetscViewer);
+extern PetscErrorCode DMWritePyLithVertices(DM, PetscViewer);
+extern PetscErrorCode DMWritePyLithElements(DM, SectionReal, PetscViewer);
+extern PetscErrorCode DMWritePyLithVerticesLocal(DM, PetscViewer);
+extern PetscErrorCode WDMritePyLithElementsLocal(DM, SectionReal, PetscViewer);
+
+typedef struct {
+  int           numQuadPoints, numBasisFuncs;
+  const double *quadPoints, *quadWeights, *basis, *basisDer;
+} PetscQuadrature;
 
 #endif /* Mesh section */
 
