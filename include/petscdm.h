@@ -571,10 +571,10 @@ extern PetscErrorCode DMMeshSetMesh(DM, const ALE::Obj<PETSC_MESH_TYPE>&);
 extern PetscErrorCode DMMeshGetGlobalScatter(DM, VecScatter *);
 extern PetscErrorCode DMMeshFinalize();
 
-extern PetscErrorCode DMMeshDistribute(DM, const char[], Mesh*);
-extern PetscErrorCode DMMeshDistributeByFace(DM, const char[], Mesh*);
-extern PetscErrorCode DMMeshGenerate(DM, PetscBool , Mesh *);
-extern PetscErrorCode DMMeshRefine(DM, double, PetscBool , Mesh*);
+extern PetscErrorCode DMMeshDistribute(DM, const char[], DM*);
+extern PetscErrorCode DMMeshDistributeByFace(DM, const char[], DM*);
+extern PetscErrorCode DMMeshGenerate(DM, PetscBool , DM *);
+extern PetscErrorCode DMMeshRefine(DM, double, PetscBool , DM*);
 extern PetscErrorCode DMMeshLoad(PetscViewer, DM);
 extern PetscErrorCode DMMeshGetMaximumDegree(DM, PetscInt *);
 
@@ -648,21 +648,19 @@ extern PetscErrorCode  SectionRealUpdateClosure(SectionReal, DM, PetscInt, Petsc
 extern PetscErrorCode DMMeshHasSectionReal(DM, const char [], PetscBool  *);
 extern PetscErrorCode DMMeshGetSectionReal(DM, const char [], SectionReal *);
 extern PetscErrorCode DMMeshSetSectionReal(DM, SectionReal);
-extern PetscErrorCode DMMeshGetVertexSectionReal(DM, const char[], PetscInt, SectionReal *);
-PetscPolymorphicSubroutine(MeshGetVertexSectionReal,(DM dm, PetscInt fiberDim, SectionReal *section),(dm,"default",fiberDim,section))
-extern PetscErrorCode DMMeshGetCellSectionReal(DM, const char[], PetscInt, SectionReal *);
 extern PetscErrorCode DMMeshCreateMatrix(DM, SectionReal, MatType, Mat *);
-extern PetscErrorCode DMMeshCreateVector(Mesh, SectionReal, Vec *);
+extern PetscErrorCode DMMeshCreateVector(DM, SectionReal, Vec *);
+extern PetscErrorCode DMMeshCreateGlobalScatter(DM, SectionReal, VecScatter *);
 extern PetscErrorCode assembleVector(Vec, DM, SectionReal, PetscInt, PetscScalar [], InsertMode);
 extern PetscErrorCode assembleMatrix(Mat, DM, SectionReal, PetscInt, PetscScalar [], InsertMode);
 
 extern PetscErrorCode DMMeshCreateGlobalRealVector(DM, SectionReal, Vec *);
 extern PetscErrorCode DMMeshGetGlobalScatter(DM,VecScatter *);
 extern PetscErrorCode DMMeshCreateGlobalScatter(DM,SectionReal,VecScatter *);
-extern PetscErrorCode DMMeshGetLocalFunction(DM, PetscErrorCode (**)(Mesh, SectionReal, SectionReal, void*));
-extern PetscErrorCode DMMeshSetLocalFunction(DM, PetscErrorCode (*)(Mesh, SectionReal, SectionReal, void*));
-extern PetscErrorCode DMMeshGetLocalJacobian(DM, PetscErrorCode (**)(Mesh, SectionReal, Mat, void*));
-extern PetscErrorCode DMMeshSetLocalJacobian(DM, PetscErrorCode (*)(Mesh, SectionReal, Mat, void*));
+extern PetscErrorCode DMMeshGetLocalFunction(DM, PetscErrorCode (**)(DM, SectionReal, SectionReal, void*));
+extern PetscErrorCode DMMeshSetLocalFunction(DM, PetscErrorCode (*)(DM, SectionReal, SectionReal, void*));
+extern PetscErrorCode DMMeshGetLocalJacobian(DM, PetscErrorCode (**)(DM, SectionReal, Mat, void*));
+extern PetscErrorCode DMMeshSetLocalJacobian(DM, PetscErrorCode (*)(DM, SectionReal, Mat, void*));
 extern PetscErrorCode DMMeshFormFunction(DM, SectionReal, SectionReal, void*);
 extern PetscErrorCode DMMeshFormJacobian(DM, SectionReal, Mat, void*);
 extern PetscErrorCode DMMeshInterpolatePoints(DM, SectionReal, int, double *, double **);
@@ -712,16 +710,11 @@ extern PetscErrorCode  SectionIntUpdateClosure(SectionInt, DM, PetscInt, PetscIn
 extern PetscErrorCode  DMMeshHasSectionInt(DM, const char [], PetscBool  *);
 extern PetscErrorCode  DMMeshGetSectionInt(DM, const char [], SectionInt *);
 extern PetscErrorCode  DMMeshSetSectionInt(DM, SectionInt);
-extern PetscErrorCode  DMMeshGetVertexSectionInt(DM, const char[], PetscInt, SectionInt *);
-extern PetscErrorCode  DMMeshGetCellSectionInt(DM, const char[], PetscInt, SectionInt *);
 
 typedef PetscErrorCode (*DMMeshLocalFunction1)(DM,SectionReal,SectionReal,void*);
 typedef PetscErrorCode (*DMMeshLocalJacobian1)(DM,SectionReal,Mat,void*);
 
 /* Misc Mesh functions*/
-extern PetscErrorCode DMMeshLoad(PetscViewer, DM);
-extern PetscErrorCode DMMeshCreateVector(DM, SectionReal, Vec *);
-extern PetscErrorCode DMMeshCreateGlobalScatter(DM, SectionReal, VecScatter *);
 extern PetscErrorCode DMMeshSetMaxDof(DM, PetscInt);
 
 /* Helper functions for simple distributions */

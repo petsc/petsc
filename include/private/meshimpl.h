@@ -2,7 +2,6 @@
 #define _MESHIMPL_H
 
 #include "petscmat.h"    /*I      "petscmat.h"    I*/
-#include "petscmesh.h"   /*I      "petscmesh.h"   I*/
 #include "private/dmimpl.h"
 
 typedef struct {
