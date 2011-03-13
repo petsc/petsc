@@ -372,8 +372,13 @@ extern PetscErrorCode  PetscGlobalSum(MPI_Comm, const PetscScalar*,PetscScalar*)
 
 M*/
 #if defined(PETSC_HAVE_ISINF) && defined(PETSC_HAVE_ISNAN)
-#define PetscIsInfOrNanScalar(a) (isinf(PetscAbsScalar(a)) || isnan(PetscAbsScalar(a)))
-#define PetscIsInfOrNanReal(a) (isinf(a) || isnan(a))
+/* I had to introduce these inline functions because the C++ <valarray> header invalidates isinf(), making it std::isinf() */
+PETSC_STATIC_INLINE PetscErrorCode PetscIsInfOrNanScalar(PetscScalar a) {
+  return isinf(PetscAbsScalar(a)) || isnan(PetscAbsScalar(a));
+}
+PETSC_STATIC_INLINE PetscErrorCode PetscIsInfOrNanReal(PetscReal a) {
+  return isinf(a) || isnan(a);
+}
 #elif defined(PETSC_HAVE__FINITE) && defined(PETSC_HAVE__ISNAN)
 #if defined(PETSC_HAVE_FLOAT_H)
 #include "float.h"  /* windows defines _finite() in float.h */

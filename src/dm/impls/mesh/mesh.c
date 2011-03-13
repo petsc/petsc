@@ -1,4 +1,4 @@
-#include "private/meshimpl.h"   /*I      "petscmesh.h"   I*/
+#include "private/meshimpl.h"   /*I      "petscdm.h"   I*/
 #include <petscmesh_viewers.hh>
 #include <petscmesh_formats.hh>
 

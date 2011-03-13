@@ -3,14 +3,14 @@
 */
 #if !defined(__PETSCDA_H)
 #define __PETSCDA_H
-#include "petscvec.h"
+#include "petscmat.h"
 #include "petscao.h"
 PETSC_EXTERN_CXX_BEGIN
 
 extern PetscErrorCode  DMInitializePackage(const char[]);
 /*S
      DM - Abstract PETSc object that manages an abstract grid object
-          
+
    Level: intermediate
 
   Concepts: grids, grid refinement
@@ -434,9 +434,6 @@ extern PetscErrorCode   DMDASetLocalAdicMFFunctionib_Private(DM,PetscErrorCode (
 #endif
 
 extern PetscErrorCode   DMDAFormFunctioniTest1(DM,void*);
-
-#include "petscmat.h"
-
 
 extern PetscErrorCode   DMView(DM,PetscViewer);
 extern PetscErrorCode   DMDestroy(DM);
