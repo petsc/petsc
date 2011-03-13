@@ -97,7 +97,7 @@ PetscErrorCode  DMFinalizePackage(void)
   DMList               = PETSC_NULL;
   DMRegisterAllCalled  = PETSC_FALSE;
 #ifdef PETSC_HAVE_SIEVE
-  ierr = MeshFinalize();CHKERRQ(ierr);
+  ierr = DMMeshFinalize();CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }
@@ -136,7 +136,6 @@ PetscErrorCode  DMInitializePackage(const char path[])
   /* Register Classes */
   ierr = PetscClassIdRegister("Distributed array",&DM_CLASSID);CHKERRQ(ierr);
 #ifdef PETSC_HAVE_SIEVE
-  ierr = PetscClassIdRegister("Mesh",&MESH_CLASSID);CHKERRQ(ierr);
   ierr = PetscClassIdRegister("SectionReal",&SECTIONREAL_CLASSID);CHKERRQ(ierr);
   ierr = PetscClassIdRegister("SectionInt",&SECTIONINT_CLASSID);CHKERRQ(ierr);
 #endif
@@ -147,21 +146,18 @@ PetscErrorCode  DMInitializePackage(const char path[])
 
   /* Register Constructors */
   ierr = DMRegisterAll(path);CHKERRQ(ierr);
-#ifdef PETSC_HAVE_SIEVE
-  ierr = MeshRegisterAll(path);CHKERRQ(ierr);
-#endif
   /* Register Events */
   ierr = PetscLogEventRegister("DMGlobalToLocal",      DM_CLASSID,&DMDA_GlobalToLocal);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMLocalToGlobal",      DM_CLASSID,&DMDA_LocalToGlobal);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMDALocalADFunc",        DM_CLASSID,&DMDA_LocalADFunction);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DMDALocalADFunc",      DM_CLASSID,&DMDA_LocalADFunction);CHKERRQ(ierr);
 #ifdef PETSC_HAVE_SIEVE
-  ierr = PetscLogEventRegister("MeshView",             MESH_CLASSID,&Mesh_View);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MeshGetGlobalScatter", MESH_CLASSID,&Mesh_GetGlobalScatter);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MeshRestrictVector",   MESH_CLASSID,&Mesh_restrictVector);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MeshAssembleVector",   MESH_CLASSID,&Mesh_assembleVector);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MeshAssemVecComplete", MESH_CLASSID,&Mesh_assembleVectorComplete);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MeshAssembleMatrix",   MESH_CLASSID,&Mesh_assembleMatrix);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MeshUpdateOperator",   MESH_CLASSID,&Mesh_updateOperator);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MeshView",             DM_CLASSID,&Mesh_View);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MeshGetGlobalScatter", DM_CLASSID,&Mesh_GetGlobalScatter);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MeshRestrictVector",   DM_CLASSID,&Mesh_restrictVector);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MeshAssembleVector",   DM_CLASSID,&Mesh_assembleVector);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MeshAssemVecComplete", DM_CLASSID,&Mesh_assembleVectorComplete);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MeshAssembleMatrix",   DM_CLASSID,&Mesh_assembleMatrix);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MeshUpdateOperator",   DM_CLASSID,&Mesh_updateOperator);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("SectionRealView",      SECTIONREAL_CLASSID,&SectionReal_View);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("SectionIntView",       SECTIONINT_CLASSID,&SectionInt_View);CHKERRQ(ierr);
 #endif
@@ -173,10 +169,6 @@ PetscErrorCode  DMInitializePackage(const char path[])
       ierr = PetscInfoDeactivateClass(DM_CLASSID);CHKERRQ(ierr);
     }
 #ifdef PETSC_HAVE_SIEVE
-    ierr = PetscStrstr(logList, "mesh", &className);CHKERRQ(ierr);
-    if (className) {
-      ierr = PetscInfoDeactivateClass(MESH_CLASSID);CHKERRQ(ierr);
-    }
     ierr = PetscStrstr(logList, "sectionreal", &className);CHKERRQ(ierr);
     if (className) {
       ierr = PetscInfoDeactivateClass(SECTIONREAL_CLASSID);CHKERRQ(ierr);
@@ -195,10 +187,6 @@ PetscErrorCode  DMInitializePackage(const char path[])
       ierr = PetscLogEventDeactivateClass(DM_CLASSID);CHKERRQ(ierr);
     }
 #ifdef PETSC_HAVE_SIEVE
-    ierr = PetscStrstr(logList, "mesh", &className);CHKERRQ(ierr);
-    if (className) {
-      ierr = PetscLogEventDeactivateClass(MESH_CLASSID);CHKERRQ(ierr);
-    }
     ierr = PetscStrstr(logList, "sectionreal", &className);CHKERRQ(ierr);
     if (className) {
       ierr = PetscLogEventDeactivateClass(SECTIONREAL_CLASSID);CHKERRQ(ierr);
