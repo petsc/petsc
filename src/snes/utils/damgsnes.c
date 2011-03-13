@@ -2,9 +2,6 @@
 #include "petscdm.h"      /*I      "petscdm.h"    I*/
 #include "private/daimpl.h" 
 /* It appears that preprocessor directives are not respected by bfort */
-#ifdef PETSC_HAVE_SIEVE
-#include "petscmesh.h"
-#endif
 #include "petscmg.h"      /*I      "petscmg.h"    I*/
 #include "petscdmmg.h"    /*I      "petscdmmg.h"  I*/
 
