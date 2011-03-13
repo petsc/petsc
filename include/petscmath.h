@@ -48,8 +48,6 @@ extern  MPI_Datatype  MPIU_2INT;
 typedef std::complex<float> PetscScalar;
 #elif defined(PETSC_USE_SCALAR_LONG_DOUBLE)
 typedef std::complex<long double> PetscScalar;
-#elif defined(PETSC_USE_SCALAR_INT)
-typedef std::complex<int> PetscScalar;
 #else
 typedef std::complex<double> PetscScalar;
 #endif
@@ -127,8 +125,6 @@ extern  MPI_Datatype  MPI_C_COMPLEX;
 #    define MPIU_SCALAR           MPI_FLOAT
 #  elif defined(PETSC_USE_SCALAR_LONG_DOUBLE)
 #    define MPIU_SCALAR           MPI_LONG_DOUBLE
-#  elif defined(PETSC_USE_SCALAR_INT)
-#    define MPIU_SCALAR           MPI_INT
 #  else
 #    define MPIU_SCALAR           MPI_DOUBLE
 #  endif
@@ -136,8 +132,6 @@ extern  MPI_Datatype  MPI_C_COMPLEX;
 #    define MPIU_MATSCALAR        MPI_FLOAT
 #  elif defined(PETSC_USE_SCALAR_LONG_DOUBLE)
 #    define MPIU_MATSCALAR        MPI_LONG_DOUBLE
-#  elif defined(PETSC_USE_SCALAR_INT)
-#    define MPIU_MATSCALAR        MPI_INT
 #  else
 #    define MPIU_MATSCALAR        MPI_DOUBLE
 #  endif
@@ -156,8 +150,6 @@ extern  MPI_Datatype  MPI_C_COMPLEX;
   typedef float PetscScalar;
 #  elif defined(PETSC_USE_SCALAR_LONG_DOUBLE)
   typedef long double PetscScalar;
-#  elif defined(PETSC_USE_SCALAR_INT)
-  typedef int PetscScalar;
 #  else
   typedef double PetscScalar;
 #  endif
@@ -167,8 +159,6 @@ extern  MPI_Datatype  MPI_C_COMPLEX;
 #  define MPIU_REAL   MPI_FLOAT
 #elif defined(PETSC_USE_SCALAR_LONG_DOUBLE)
 #  define MPIU_REAL   MPI_LONG_DOUBLE
-#elif defined(PETSC_USE_SCALAR_INT)
-#  define MPIU_REAL   MPI_INT
 #else
 #  define MPIU_REAL   MPI_DOUBLE
 #endif
@@ -194,8 +184,6 @@ typedef PetscScalar MatScalar;
   typedef float PetscReal;
 #elif defined(PETSC_USE_SCALAR_LONG_DOUBLE)
   typedef long double PetscReal;
-#elif defined(PETSC_USE_SCALAR_INT)
-  typedef int PetscReal;
 #else 
   typedef double PetscReal;
 #endif
@@ -336,12 +324,6 @@ M*/
 #  define PETSC_MACHINE_EPSILON         1.e-7
 #  define PETSC_SQRT_MACHINE_EPSILON    3.e-4
 #  define PETSC_SMALL                   1.e-5
-#elif defined(PETSC_USE_SCALAR_INT)
-#  define PETSC_MAX                     PETSC_MAX_INT
-#  define PETSC_MIN                     PETSC_MIN_INT
-#  define PETSC_MACHINE_EPSILON         1
-#  define PETSC_SQRT_MACHINE_EPSILON    1
-#  define PETSC_SMALL                   0
 #else
 #  define PETSC_MAX                     1.e300
 #  define PETSC_MIN                    -1.e300

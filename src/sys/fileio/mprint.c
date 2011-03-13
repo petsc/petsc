@@ -1,4 +1,3 @@
-
 /*
       Utilites routines to add simple ASCII IO capability.
 */
@@ -68,9 +67,7 @@ PetscErrorCode  PetscFormatConvert(const char *format,char *newformat,size_t siz
       i += 3;
     } else if (format[i] == '%' && format[i+1] == 'G') {
       newformat[j++] = '%';
-#if defined(PETSC_USE_SCALAR_INT)
-      newformat[j++] = 'd';
-#elif !defined(PETSC_USE_SCALAR_LONG_DOUBLE)
+#if !defined(PETSC_USE_SCALAR_LONG_DOUBLE)
       newformat[j++] = 'g';
 #else
       newformat[j++] = 'L';

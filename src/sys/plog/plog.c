@@ -1704,8 +1704,6 @@ PetscErrorCode  PetscLogView(PetscViewer viewer)
   ierr = PetscFPrintf(comm, fd, "Compiled with single precision PetscScalar and PetscReal\n");CHKERRQ(ierr);
 #elif defined(PETSC_USE_LONGDOUBLE)
   ierr = PetscFPrintf(comm, fd, "Compiled with long double precision PetscScalar and PetscReal\n");CHKERRQ(ierr);
-#elif defined(PETSC_USE_SCALAR_INT)
-  ierr = PetscFPrintf(comm, fd, "Compiled with int PetscScalar and PetscReal\n");CHKERRQ(ierr);
 #endif
 
 #if defined(PETSC_USE_SCALAR_MAT_SINGLE)

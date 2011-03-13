@@ -17,14 +17,8 @@
 #include "petscblaslapack_uscore.h"
 #elif defined(PETSC_BLASLAPACK_CAPS)
 #include "petscblaslapack_caps.h"
-#elif defined(PETSC_USE_SCALAR_QD_DD)
-#include "petscblaslapack_qd.h"
 #else
 #include "petscblaslapack_c.h"
-#endif
-
-#if !defined(PETSC_USE_SCALAR_QD_DD)
-EXTERN_C_BEGIN
 #endif
 
 extern void LAPACKgetrf_(PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*);
@@ -82,10 +76,6 @@ extern void LAPACKgesvd_(const char*,const char*,PetscBLASInt *,PetscBLASInt*,Pe
 #else
 extern void LAPACKgeev_(const char*,const char*,PetscBLASInt *,PetscScalar *,PetscBLASInt*,PetscReal*,PetscReal*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
 extern void LAPACKgesvd_(const char*,const char*,PetscBLASInt *,PetscBLASInt*,PetscScalar *,PetscBLASInt*,PetscReal*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
-#endif
-
-#if !defined(PETSC_USE_SCALAR_QD_DD)
-EXTERN_C_END
 #endif
 
 #endif
