@@ -195,7 +195,8 @@ PetscErrorCode  DMMGDestroy(DMMG *dmmg)
 -   dm - the DMDA or DMComposite object
 
     Options Database Keys:
-.   -dmmg_refine: Use the input problem as the coarse level and refine. Otherwise, use it as the fine level and coarsen.
+.   -dmmg_refine: Use the input problem as the coarse level and refine.
+.   -dmmg_refine false: Use the input problem as the fine level and coarsen.
 
     Level: advanced
 
