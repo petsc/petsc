@@ -112,14 +112,15 @@ class tetgenio {
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
-    self.download  = ['hg://www.mcs.anl.gov/petsc/tetgen-dev','http://ftp.mcs.anl.gov/pub/petsc/externalpackages/TetGen.tar.gz']
+    self.download  = ['http://tetgen.berlios.de/files/tetgen1.4.3.tar.gz']
     self.functions = ['tetrahedralize']
-    self.functionsCxx = [1, structDecl+'void tetrahedralize(char *switches, tetgenio *in, tetgenio *out);', 'tetrahedralize("", NULL, NULL)']
+    self.functionsCxx = [1, structDecl+'void tetrahedralize(char *switches, tetgenio *in, tetgenio *out,tetgenio *addin = NULL, tetgenio *bgmin = NULL);', 'tetrahedralize("", NULL, NULL)']
     self.includes  = ['tetgen.h']
-    self.liblist   = [['libtetgen.a']]
+    self.liblist   = [['libtet.a']]
     self.cxx       = 1
     self.needsMath = 1
     self.complex   = 1
+    self.downloadname = 'tetgen'
     return
 
   def setupDependencies(self, framework):
@@ -132,13 +133,15 @@ class Configure(PETSc.package.NewPackage):
   def Install(self):
     import os, sys
     import config.base
+    import fileinput
 
     libDir         = os.path.join(self.installDir, 'lib')
     includeDir     = os.path.join(self.installDir, 'include')
     makeinc        = os.path.join(self.packageDir, 'make.inc')
-    installmakeinc = os.path.join(self.installDir, 'make.inc')
     configheader   = os.path.join(self.packageDir, 'configureheader.h')
 
+    # This make.inc stuff is completely unnecessary for compiling TetGen. It is
+    # just here for comparing different PETSC_ARCH's
     self.setCompilers.pushLanguage('C++')
     g = open(makeinc,'w')
     g.write('SHELL            = '+self.programs.SHELL+'\n')
@@ -158,70 +161,31 @@ class Configure(PETSc.package.NewPackage):
     g.write('PREFIX           = '+self.installDir+'\n')
     g.write('LIBDIR           = '+libDir+'\n')
     g.write('INSTALL_LIB_DIR  = '+libDir+'\n')
-    g.write('TETGENLIB        = $(LIBDIR)/libtetgen.$(AR_LIB_SUFFIX)\n')
-    g.write('SHLIB            = libtetgen\n')
-    
+    g.write('TETGENLIB        = $(LIBDIR)/libtet.$(AR_LIB_SUFFIX)\n')
+    g.write('SHLIB            = libtet\n')
+
     cflags = self.setCompilers.getCompilerFlags().replace('-Wall','').replace('-Wshadow','')
     cflags += ' '+self.headers.toString('.')
-        
+
     g.write('CC             = '+self.setCompilers.getCompiler()+'\n')
     g.write('CFLAGS         = '+cflags+'\n')
     self.setCompilers.popLanguage()
-
-    if self.sharedLibraries.useShared:
-      import config.setCompilers
-
-      g.write('BUILDSHAREDLIB = yes\n')
-      if config.setCompilers.Configure.isSolaris() and config.setCompilers.Configure.isGNU(self.framework.getCompiler()):
-        g.write('shared_arch: shared_'+sys.platform+'gnu\n')
-      else:
-        g.write('shared_arch: shared_'+sys.platform+'\n')
-        g.write('''
-tetgen_shared: 
-	-@if [ "${BUILDSHAREDLIB}" = "no" ]; then \\
-	    echo "Shared libraries disabled"; \\
-	  else \
-	    echo "making shared libraries in ${INSTALL_LIB_DIR}"; \\
-	    ${RM} -rf ${INSTALL_LIB_DIR}/tmp-tetgen-shlib; \\
-	    mkdir ${INSTALL_LIB_DIR}/tmp-tetgen-shlib; \\
-            cwd=`pwd`; \\
-	    for LIBNAME in ${SHLIB}; \\
-	    do \\
-	      if test -f ${INSTALL_LIB_DIR}/$$LIBNAME.${AR_LIB_SUFFIX} -o -f ${INSTALL_LIB_DIR}/lt_$$LIBNAME.${AR_LIB_SUFFIX}; then \\
-	        if test -f ${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX}; then \\
-	          flag=`find ${INSTALL_LIB_DIR} -type f -name $$LIBNAME.${AR_LIB_SUFFIX} -newer ${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX} -print`; \\
-	          if [ "$$flag" = "" ]; then \\
-	            flag=`find ${INSTALL_LIB_DIR} -type f -name lt_$$LIBNAME.${AR_LIB_SUFFIX} -newer ${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX} -print`; \\
-	          fi; \\
-	        else \\
-	          flag="build"; \\
-	        fi; \\
-	        if [ "$$flag" != "" ]; then \\
-                echo "building $$LIBNAME.${SL_LINKER_SUFFIX}"; \\
-                  ${RM} -f ${INSTALL_LIB_DIR}/tmp-tetgen-shlib/*; \\
-	          cd  ${INSTALL_LIB_DIR}/tmp-tetgen-shlib; \\
-	          ${AR} x ${INSTALL_LIB_DIR}/$$LIBNAME.${AR_LIB_SUFFIX}; \\
-	          ${RANLIB} ${INSTALL_LIB_DIR}/$$LIBNAME.${AR_LIB_SUFFIX}; \\
-                  cd $$cwd;\\
-	          ${OMAKE} LIBNAME=$$LIBNAME SHARED_LIBRARY_TMPDIR=${INSTALL_LIB_DIR}/tmp-tetgen-shlib shared_arch; \\
-	        fi; \\
-	      fi; \\
-	    done; \\
-	    ${RM} -rf ${INSTALL_LIB_DIR}/tmp-tetgen-shlib; \\
-	  fi\n''')
-    else:
-      g.write('BUILDSHAREDLIB = no\n')
-      g.write('shared_arch:\n')
-      g.write('shared:\n')
-      g.write('tetgen_shared:\n')
     g.close()
+
+    # I'd rather have this than to completely fork TetGen
+    new_file = open(os.path.join(self.packageDir, 'tetgen_def.h'),'w')
+    old_file = open(os.path.join(self.packageDir, 'tetgen.h'))
+    for line in old_file:
+      new_file.write(line.replace('// #define TETLIBRARY', '#define TETLIBRARY'))
+    new_file.close()
+    old_file.close()
 
     # Now compile & install
     if self.installNeeded('make.inc'):
       self.framework.outputHeader(configheader)
       try:
         self.logPrintBox('Compiling & installing TetGen; this may take several minutes')
-        output1,err1,ret1  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && make clean && make tetlib tetgen_shared && make clean', timeout=2500, log = self.framework.log)
+        output1,err1,ret1  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && make CXX="'+ self.setCompilers.getCompiler() + '" CXXFLAGS="' + cflags + '" tetlib && mv tetgen_def.h tetgen.h && cp *.a ' + libDir + ' && rm *.o *.a', timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on TetGen: '+str(e))
       output2,err2,ret2  = PETSc.package.NewPackage.executeShellCommand('cp -f '+os.path.join(self.packageDir, 'tetgen.h')+' '+includeDir, timeout=5, log = self.framework.log)
