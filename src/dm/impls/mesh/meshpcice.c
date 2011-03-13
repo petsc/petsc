@@ -34,9 +34,9 @@ PetscErrorCode WritePCICERestart(DM dm, PetscViewer viewer)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MeshCreatePCICE"
+#define __FUNCT__ "DMMeshCreatePCICE"
 /*@C
-  MeshCreatePCICE - Create a Mesh from PCICE files.
+  DMMeshCreatePCICE - Create a Mesh from PCICE files.
 
   Not Collective
 
@@ -57,7 +57,7 @@ PetscErrorCode WritePCICERestart(DM dm, PetscViewer viewer)
 .keywords: mesh, PCICE
 .seealso: DMMeshCreate()
 @*/
-PetscErrorCode MeshCreatePCICE(MPI_Comm comm, const int dim, const char coordFilename[], const char adjFilename[], PetscBool  interpolate, const char bcFilename[], Mesh *mesh)
+PetscErrorCode DMMeshCreatePCICE(MPI_Comm comm, const int dim, const char coordFilename[], const char adjFilename[], PetscBool  interpolate, const char bcFilename[], DM *mesh)
 {
   ALE::Obj<PETSC_MESH_TYPE> m;
   PetscInt            debug = 0;
@@ -65,7 +65,7 @@ PetscErrorCode MeshCreatePCICE(MPI_Comm comm, const int dim, const char coordFil
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
-  ierr = MeshCreate(comm, mesh);CHKERRQ(ierr);
+  ierr = DMMeshCreate(comm, mesh);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL, "-debug", &debug, &flag);CHKERRQ(ierr);
   try {
     m  = ALE::PCICE::Builder::readMesh(comm, dim, std::string(coordFilename), std::string(adjFilename), false, interpolate, debug);
@@ -76,7 +76,7 @@ PetscErrorCode MeshCreatePCICE(MPI_Comm comm, const int dim, const char coordFil
   if (bcFilename) {
     ALE::PCICE::Builder::readBoundary(m, std::string(bcFilename));
   }
-  ierr = MeshSetMesh(*mesh, m);CHKERRQ(ierr);
+  ierr = DMMeshSetMesh(*mesh, m);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

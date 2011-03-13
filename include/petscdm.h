@@ -565,6 +565,8 @@ PetscBool  ADDAHCiter(const PetscInt, const PetscInt *const, const PetscInt *con
 #include <sieve/Distribution.hh>
 #include <sieve/Generator.hh>
 
+extern PetscLogEvent Mesh_View, Mesh_GetGlobalScatter, Mesh_restrictVector, Mesh_assembleVector, Mesh_assembleVectorComplete, Mesh_assembleMatrix, Mesh_updateOperator;
+
 extern PetscErrorCode DMMeshCreate(MPI_Comm, DM*);
 extern PetscErrorCode DMMeshGetMesh(DM, ALE::Obj<PETSC_MESH_TYPE>&);
 extern PetscErrorCode DMMeshSetMesh(DM, const ALE::Obj<PETSC_MESH_TYPE>&);
@@ -716,6 +718,7 @@ typedef PetscErrorCode (*DMMeshLocalJacobian1)(DM,SectionReal,Mat,void*);
 
 /* Misc Mesh functions*/
 extern PetscErrorCode DMMeshSetMaxDof(DM, PetscInt);
+extern PetscErrorCode SectionGetArray(DM, const char [], PetscInt *, PetscInt *, PetscScalar *[]);
 
 /* Helper functions for simple distributions */
 extern PetscErrorCode DMMeshGetVertexMatrix(DM, MatType, Mat *);
@@ -732,6 +735,8 @@ PetscPolymorphicSubroutine(DMMeshGetCellSectionInt,(DM dm, PetscInt fiberDim, Se
 /* Support for various mesh formats */
 extern PetscErrorCode DMMeshCreateExodus(MPI_Comm, const char [], DM *);
 extern PetscErrorCode DMMeshExodusGetInfo(DM, PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *);
+
+extern PetscErrorCode DMMeshCreatePCICE(MPI_Comm, const int, const char [], const char [], PetscBool , const char [], DM *);
 
 extern PetscErrorCode DMWriteVTKHeader(PetscViewer);
 extern PetscErrorCode DMWriteVTKVertices(DM, PetscViewer);

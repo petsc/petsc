@@ -3,12 +3,7 @@
 #include <petscmesh_formats.hh>
 
 /* Logging support */
-PetscClassId  MESH_CLASSID;
-PetscLogEvent  Mesh_View, Mesh_GetGlobalScatter, Mesh_restrictVector, Mesh_assembleVector,
-            Mesh_assembleVectorComplete, Mesh_assembleMatrix, Mesh_updateOperator;
-
-PetscBool  MeshRegisterAllCalled = PETSC_FALSE;
-PetscFList MeshList;
+PetscLogEvent Mesh_View, Mesh_GetGlobalScatter, Mesh_restrictVector, Mesh_assembleVector, Mesh_assembleVectorComplete, Mesh_assembleMatrix, Mesh_updateOperator;
 
 ALE::MemoryLogger Petsc_MemoryLogger;
 

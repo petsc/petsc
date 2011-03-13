@@ -1,5 +1,5 @@
 #include "private/fortranimpl.h"
-#include "petscmesh.h"
+#include "petscdm.h"
 
 #ifdef PETSC_USE_POINTER_CONVERSION
 #if defined(__cplusplus)
@@ -50,13 +50,13 @@ void PETSC_STDCALL sectionintview_(SectionInt *x,PetscViewer *vin,PetscErrorCode
   PetscPatchDefaultViewers_Fortran(vin,v);
   *ierr = SectionIntView(*x,v);
 }
-void PETSC_STDCALL sectionrealdistribute(SectionReal *serialSection, Mesh parallelMesh, SectionReal *parallelSection, PetscErrorCode *ierr)
+void PETSC_STDCALL sectionrealdistribute(SectionReal *serialSection, DM parallelMesh, SectionReal *parallelSection, PetscErrorCode *ierr)
 {
-  *ierr = SectionRealDistribute(*serialSection, (Mesh) PetscToPointer(parallelMesh), parallelSection);
+  *ierr = SectionRealDistribute(*serialSection, (DM) PetscToPointer(parallelMesh), parallelSection);
 }
-void PETSC_STDCALL sectionintdistribute(SectionInt *serialSection, Mesh parallelMesh, SectionInt *parallelSection, PetscErrorCode *ierr)
+void PETSC_STDCALL sectionintdistribute(SectionInt *serialSection, DM parallelMesh, SectionInt *parallelSection, PetscErrorCode *ierr)
 {
-  *ierr = SectionIntDistribute(*serialSection, (Mesh) PetscToPointer(parallelMesh), parallelSection);
+  *ierr = SectionIntDistribute(*serialSection, (DM) PetscToPointer(parallelMesh), parallelSection);
 }
 void PETSC_STDCALL sectionrealgetfibration_(SectionReal *section, PetscInt *field,SectionReal *subsection, int *__ierr ){
   *__ierr = SectionRealGetFibration(*section,*field,subsection);

@@ -16,8 +16,6 @@ typedef struct {
   ALE::Obj<ALE::CartesianMesh> m;
 } DM_Cartesian;
 
-extern PetscLogEvent Mesh_View, Mesh_GetGlobalScatter, Mesh_restrictVector, Mesh_assembleVector, Mesh_assembleVectorComplete, Mesh_assembleMatrix, Mesh_updateOperator;
-
 typedef struct _SectionRealOps *SectionRealOps;
 struct _SectionRealOps {
   PetscErrorCode (*view)(SectionReal,PetscViewer);
