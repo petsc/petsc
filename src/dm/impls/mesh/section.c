@@ -1863,10 +1863,10 @@ PetscErrorCode  SectionIntGetFibration(SectionInt section, const PetscInt field,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MeshGetVertexSectionInt"
+#undef __FUNCT__
+#define __FUNCT__ "DMMeshGetVertexSectionInt"
 /*@C
-  MeshGetVertexSectionInt - Create a Section over the vertices with the specified fiber dimension
+  DMMeshGetVertexSectionInt - Create a Section over the vertices with the specified fiber dimension
 
   Collective on Mesh
 
@@ -1882,7 +1882,7 @@ PetscErrorCode  SectionIntGetFibration(SectionInt section, const PetscInt field,
 .keywords: mesh, section, vertex
 .seealso: MeshCreate(), SectionIntCreate()
 @*/
-PetscErrorCode MeshGetVertexSectionInt(DM dm, const char name[], PetscInt fiberDim, SectionInt *section)
+PetscErrorCode DMMeshGetVertexSectionInt(DM dm, const char name[], PetscInt fiberDim, SectionInt *section)
 {
   ALE::Obj<PETSC_MESH_TYPE> m;
   ALE::Obj<PETSC_MESH_TYPE::int_section_type> s;
@@ -1903,10 +1903,10 @@ PetscErrorCode MeshGetVertexSectionInt(DM dm, const char name[], PetscInt fiberD
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MeshGetCellSectionInt"
+#undef __FUNCT__
+#define __FUNCT__ "DMMeshGetCellSectionInt"
 /*@C
-  MeshGetCellSectionInt - Create a Section over the cells with the specified fiber dimension
+  DMMeshGetCellSectionInt - Create a Section over the cells with the specified fiber dimension
 
   Collective on Mesh
 
@@ -1922,7 +1922,7 @@ PetscErrorCode MeshGetVertexSectionInt(DM dm, const char name[], PetscInt fiberD
 .keywords: mesh, section, cell
 .seealso: MeshCreate(), SectionIntCreate()
 @*/
-PetscErrorCode MeshGetCellSectionInt(DM dm, const char name[], PetscInt fiberDim, SectionInt *section)
+PetscErrorCode DMMeshGetCellSectionInt(DM dm, const char name[], PetscInt fiberDim, SectionInt *section)
 {
   ALE::Obj<PETSC_MESH_TYPE> m;
   ALE::Obj<PETSC_MESH_TYPE::int_section_type> s;

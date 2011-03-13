@@ -282,46 +282,6 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
           ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
         }
       }
-    } else if (format == PETSC_VIEWER_ASCII_PYLITH) {
-      PetscInt bs, b, vertexCount = 1;
-
-      ierr = VecGetLocalSize(xin, &nLen);CHKERRQ(ierr);
-      n    = PetscMPIIntCast(nLen);
-      ierr = VecGetBlockSize(xin, &bs);CHKERRQ(ierr);
-      if (bs != 3) {
-        SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "PyLith can only handle 3D objects, but vector dimension is %d", bs);
-      }
-      ierr = PetscViewerASCIIPrintf(viewer,"#\n");CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"#  Node      X-coord           Y-coord           Z-coord\n");CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"#\n");CHKERRQ(ierr);
-      for (i=0; i<n/bs; i++) {
-        ierr = PetscViewerASCIIPrintf(viewer,"%7D ", vertexCount++);CHKERRQ(ierr);
-        for (b=0; b<bs; b++) {
-          if (b > 0) {
-            ierr = PetscViewerASCIIPrintf(viewer," ");CHKERRQ(ierr);
-          }
-#if !defined(PETSC_USE_COMPLEX)
-          ierr = PetscViewerASCIIPrintf(viewer,"% 16.8E",xarray[i*bs+b]);CHKERRQ(ierr);
-#endif
-        }
-        ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
-      }
-      for (j=1; j<size; j++) {
-        ierr = MPI_Recv(values,(PetscMPIInt)len,MPIU_SCALAR,j,tag,((PetscObject)xin)->comm,&status);CHKERRQ(ierr);
-        ierr = MPI_Get_count(&status,MPIU_SCALAR,&n);CHKERRQ(ierr);
-        for (i=0; i<n/bs; i++) {
-          ierr = PetscViewerASCIIPrintf(viewer,"%7D ", vertexCount++);CHKERRQ(ierr);
-          for (b=0; b<bs; b++) {
-            if (b > 0) {
-              ierr = PetscViewerASCIIPrintf(viewer," ");CHKERRQ(ierr);
-            }
-#if !defined(PETSC_USE_COMPLEX)
-            ierr = PetscViewerASCIIPrintf(viewer,"% 16.8E",values[i*bs+b]);CHKERRQ(ierr);
-#endif
-          }
-          ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
-        }
-      }
     } else {
       ierr = PetscObjectPrintClassNamePrefixType((PetscObject)xin,viewer,"Vector Object");CHKERRQ(ierr);
       if (format != PETSC_VIEWER_ASCII_COMMON) {ierr = PetscViewerASCIIPrintf(viewer,"Process [%d]\n",rank);CHKERRQ(ierr);}
