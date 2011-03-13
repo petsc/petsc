@@ -57,7 +57,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once(Mat C,PetscInt imax,IS is[]
   Mat_MPIAIJ     *c = (Mat_MPIAIJ*)C->data;
   PetscMPIInt    *w1,*w2,nrqr,*w3,*w4,*onodes1,*olengths1,*onodes2,*olengths2;
   const PetscInt **idx,*idx_i;
-  PetscInt       *n,*rtable,**data,len;
+  PetscInt       *n,**data,len;
   PetscErrorCode ierr;
   PetscMPIInt    size,rank,tag1,tag2;
   PetscInt       m,i,j,k,**rbuf,row,proc,nrqs,msz,**outdat,**ptr;
@@ -76,19 +76,11 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once(Mat C,PetscInt imax,IS is[]
   ierr = PetscObjectGetNewTag((PetscObject)C,&tag1);CHKERRQ(ierr);
   ierr = PetscObjectGetNewTag((PetscObject)C,&tag2);CHKERRQ(ierr);
  
-  ierr = PetscMalloc3(imax,PetscInt*,&idx,imax,PetscInt,&n,m,PetscInt,&rtable);CHKERRQ(ierr);
+  ierr = PetscMalloc2(imax,PetscInt*,&idx,imax,PetscInt,&n);CHKERRQ(ierr);
    
   for (i=0; i<imax; i++) {
     ierr = ISGetIndices(is[i],&idx[i]);CHKERRQ(ierr);
     ierr = ISGetLocalSize(is[i],&n[i]);CHKERRQ(ierr);
-  }
-  
-  /* Create hash table for the mapping :row -> proc*/
-  for (i=0,j=0; i<size; i++) {
-    len = C->rmap->range[i+1];  
-    for (; j<len; j++) {
-      rtable[j] = i;
-    }
   }
 
   /* evaluate communication - mesg to who,length of mesg, and buffer space
@@ -104,7 +96,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once(Mat C,PetscInt imax,IS is[]
     for (j=0; j<len; j++) {
       row  = idx_i[j];
       if (row < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Index set cannot have negative entries");
-      proc = rtable[row];
+      ierr = PetscLayoutFindOwner(C->rmap,row,&proc);CHKERRQ(ierr);
       w4[proc]++;
     }
     for (j=0; j<size; j++){ 
@@ -197,7 +189,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once(Mat C,PetscInt imax,IS is[]
       isz_i   = isz[i];
       for (j=0;  j<n_i; j++) {  /* parse the indices of each IS */
         row  = idx_i[j];
-        proc = rtable[row];
+        ierr = PetscLayoutFindOwner(C->rmap,row,&proc);CHKERRQ(ierr);
         if (proc != rank) { /* copy to the outgoing buffer */
           ctr[proc]++;
           *ptr[proc] = row;
@@ -230,7 +222,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once(Mat C,PetscInt imax,IS is[]
   for (i=0; i<imax; ++i) {
     ierr = ISRestoreIndices(is[i],idx+i);CHKERRQ(ierr);
   }
-  ierr = PetscFree3(idx,n,rtable);CHKERRQ(ierr);
+  ierr = PetscFree2(idx,n);CHKERRQ(ierr);
 
   for (i=0; i<imax; ++i) {
     ierr = ISDestroy(is[i]);CHKERRQ(ierr);
