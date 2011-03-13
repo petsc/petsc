@@ -1,4 +1,3 @@
-#define PETSC_DLL
 
 /*
     We define the memory operations here. The reason we just do not use 

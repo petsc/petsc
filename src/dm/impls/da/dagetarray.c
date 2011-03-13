@@ -1,4 +1,3 @@
-#define PETSCDM_DLL
  
 #include "petscdm.h"    /*I   "petscdm.h"   I*/
 
@@ -51,7 +50,7 @@ PetscErrorCode  DMDAVecGetArray(DM da,Vec vec,void *array)
   PetscFunctionBegin;
   ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(da,&gxs,&gys,&gzs,&gxm,&gym,&gzm);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(da,&dim,0,0,0,0,0,0,&dof,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,&dim,0,0,0,0,0,0,&dof,0,0,0,0,0);CHKERRQ(ierr);
 
   /* Handle case where user passes in global vector as opposed to local */
   ierr = VecGetLocalSize(vec,&N);CHKERRQ(ierr);
@@ -108,7 +107,7 @@ PetscErrorCode  DMDAVecRestoreArray(DM da,Vec vec,void *array)
   PetscFunctionBegin;
   ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(da,&gxs,&gys,&gzs,&gxm,&gym,&gzm);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(da,&dim,0,0,0,0,0,0,&dof,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,&dim,0,0,0,0,0,0,&dof,0,0,0,0,0);CHKERRQ(ierr);
 
   /* Handle case where user passes in global vector as opposed to local */
   ierr = VecGetLocalSize(vec,&N);CHKERRQ(ierr);
@@ -170,7 +169,7 @@ PetscErrorCode  DMDAVecGetArrayDOF(DM da,Vec vec,void *array)
   PetscFunctionBegin;
   ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(da,&gxs,&gys,&gzs,&gxm,&gym,&gzm);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(da,&dim,0,0,0,0,0,0,&dof,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,&dim,0,0,0,0,0,0,&dof,0,0,0,0,0);CHKERRQ(ierr);
 
   /* Handle case where user passes in global vector as opposed to local */
   ierr = VecGetLocalSize(vec,&N);CHKERRQ(ierr);
@@ -224,7 +223,7 @@ PetscErrorCode  DMDAVecRestoreArrayDOF(DM da,Vec vec,void *array)
   PetscFunctionBegin;
   ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(da,&gxs,&gys,&gzs,&gxm,&gym,&gzm);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(da,&dim,0,0,0,0,0,0,&dof,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,&dim,0,0,0,0,0,0,&dof,0,0,0,0,0);CHKERRQ(ierr);
 
   /* Handle case where user passes in global vector as opposed to local */
   ierr = VecGetLocalSize(vec,&N);CHKERRQ(ierr);

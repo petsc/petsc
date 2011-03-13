@@ -1,4 +1,3 @@
-#define PETSCVEC_DLL
 
 #include "../src/vec/pf/pfimpl.h"            /*I "petscpf.h" I*/
 

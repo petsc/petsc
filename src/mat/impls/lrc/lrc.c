@@ -1,4 +1,3 @@
-#define PETSCMAT_DLL
 
 #include "private/matimpl.h"          /*I "petscmat.h" I*/
 #include "../src/mat/impls/dense/seq/dense.h"

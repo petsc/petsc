@@ -1,4 +1,3 @@
-#define PETSCMAT_DLL
 
 /*
   Defines symbolic transpose routines for SeqAIJ matrices.

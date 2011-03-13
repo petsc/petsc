@@ -1,4 +1,3 @@
-#define PETSCMAT_DLL
 
 /*
     Factorization code for SBAIJ format. 

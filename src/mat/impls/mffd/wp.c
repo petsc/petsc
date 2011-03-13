@@ -1,4 +1,3 @@
-#define PETSCMAT_DLL
 
 /*MC
      MATMFFD_WP - Implements an alternative approach for computing the differencing parameter

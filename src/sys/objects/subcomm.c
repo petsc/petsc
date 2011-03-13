@@ -1,4 +1,4 @@
-#define PETSC_DLL
+
 /*
      Provides utility routines for split MPI communicator.
 */

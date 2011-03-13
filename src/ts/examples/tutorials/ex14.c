@@ -679,7 +679,7 @@ static PetscErrorCode THIInitializePrm(THI thi,DM da2prm,PrmNode **p)
 
   PetscFunctionBegin;
   ierr = DMDAGetGhostCorners(da2prm,&ys,&xs,0,&ym,&xm,0);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(da2prm,0, &my,&mx,0, 0,0,0, 0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da2prm,0, &my,&mx,0, 0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
   for (i=xs; i<xs+xm; i++) {
     for (j=ys; j<ys+ym; j++) {
       PetscReal xx = thi->Lx*i/mx,yy = thi->Ly*j/my;
@@ -706,7 +706,7 @@ static PetscErrorCode THIInitial(THI thi,DM pack,Vec X)
   ierr = DMCompositeGetAccess(pack,X,&X3g,&X2g);CHKERRQ(ierr);
   ierr = DMGetLocalVector(da2,&X2);CHKERRQ(ierr);
 
-  ierr = DMDAGetInfo(da3,0, 0,&my,&mx, 0,0,0, 0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da3,0, 0,&my,&mx, 0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da3,&zs,&ys,&xs,&zm,&ym,&xm);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da3,X3g,&x);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da2,X2,&prm);CHKERRQ(ierr);
@@ -1046,7 +1046,7 @@ static PetscErrorCode THISurfaceStatistics(DM pack,Vec X,PetscReal *min,PetscRea
   ierr = DMCompositeGetEntries(pack,&da3,&da2);CHKERRQ(ierr);
   ierr = DMCompositeGetAccess(pack,X,&X3,&X2);CHKERRQ(ierr);
   *min = *max = *mean = 0;
-  ierr = DMDAGetInfo(da3,0, &mz,&my,&mx, 0,0,0, 0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da3,0, &mz,&my,&mx, 0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da3,&zs,&ys,&xs,&zm,&ym,&xm);CHKERRQ(ierr);
   if (zs != 0 || zm != mz) SETERRQ(PETSC_COMM_SELF,1,"Unexpected decomposition");
   ierr = DMDAVecGetArray(da3,X3,&x);CHKERRQ(ierr);
@@ -1448,7 +1448,7 @@ static PetscErrorCode THIDAVecView_VTK_XML(THI thi,DM pack,Vec X,const char file
   comm = ((PetscObject)thi)->comm;
   ierr = DMCompositeGetEntries(pack,&da3,&da2);CHKERRQ(ierr);
   ierr = DMCompositeGetAccess(pack,X,&X3,&X2);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(da3,0, &mz,&my,&mx, 0,0,0, 0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da3,0, &mz,&my,&mx, 0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = PetscViewerASCIIOpen(comm,filename,&viewer3);CHKERRQ(ierr);
@@ -1663,7 +1663,7 @@ int main(int argc,char *argv[])
   {
     PetscInt Mx,My,mx,my,s;
     DMDAStencilType st;
-    ierr = DMDAGetInfo(da3,0, 0,&My,&Mx, 0,&my,&mx, 0,&s,0,&st);CHKERRQ(ierr);
+    ierr = DMDAGetInfo(da3,0, 0,&My,&Mx, 0,&my,&mx, 0,&s,0,0,0,&st);CHKERRQ(ierr);
     ierr = DMDACreate2d(((PetscObject)thi)->comm,DMDA_XYPERIODIC,st,My,Mx,my,mx,sizeof(PrmNode)/sizeof(PetscScalar),s,0,0,&da2);CHKERRQ(ierr);
   }
 
@@ -1692,7 +1692,7 @@ int main(int argc,char *argv[])
     PetscReal Lx = thi->Lx / thi->units->meter,Ly = thi->Ly / thi->units->meter,Lz = thi->Lz / thi->units->meter;
     PetscInt Mx,My,Mz;
     ierr = DMCompositeGetEntries(pack,&da3,&da2);CHKERRQ(ierr);
-    ierr = DMDAGetInfo(da3,0, &Mz,&My,&Mx, 0,0,0, 0,0,0,0);CHKERRQ(ierr);
+    ierr = DMDAGetInfo(da3,0, &Mz,&My,&Mx, 0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
     ierr = PetscPrintf(((PetscObject)thi)->comm,"Level %d domain size (m) %8.2g x %8.2g x %8.2g, num elements %3d x %3d x %3d (%8d), size (m) %g x %g x %g\n",i,Lx,Ly,Lz,Mx,My,Mz,Mx*My*Mz,Lx/Mx,Ly/My,1000./(Mz-1));CHKERRQ(ierr);
   }
   ierr = DMMGSetInitialGuess(dmmg,THIInitialDMMG);CHKERRQ(ierr);

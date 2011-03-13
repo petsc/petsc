@@ -1,4 +1,4 @@
-#define PETSC_DLL
+
 /* 
    This file contains routines to open an X window display and window
    This consists of a number of routines that set the various

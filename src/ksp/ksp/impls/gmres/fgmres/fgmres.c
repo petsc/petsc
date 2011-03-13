@@ -1,4 +1,3 @@
-#define PETSCKSP_DLL
 
 /*
     This file implements FGMRES (a Generalized Minimal Residual) method.  
@@ -643,7 +642,7 @@ PetscErrorCode KSPReset_FGMRES(KSP ksp)
   PetscFunctionBegin;
   ierr = PetscFree (fgmres->prevecs);CHKERRQ(ierr);
   for (i=0; i<fgmres->nwork_alloc; i++) {
-    ierr = VecDestroyVecs(&fgmres->prevecs_user_work[i],fgmres->mwork_alloc[i]);CHKERRQ(ierr);
+    ierr = VecDestroyVecs(fgmres->mwork_alloc[i],&fgmres->prevecs_user_work[i]);CHKERRQ(ierr);
   }
   ierr = PetscFree(fgmres->prevecs_user_work);CHKERRQ(ierr);
   if (fgmres->modifydestroy) {

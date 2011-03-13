@@ -150,7 +150,7 @@ int main(int argc,char **argv)
       parallel grid and vectors for principal unknowns (x) and
       governing residuals (f)
     */
-    ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_XYPERIODIC, DMDA_STENCIL_STAR, -5, -5,
+    ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_PERIODIC, DMDA_BOUNDARY_PERIODIC, DMDA_STENCIL_STAR, -5, -5,
                       PETSC_DECIDE, PETSC_DECIDE, 4, 1, 0, 0, &da);CHKERRQ(ierr);
 
     /* overwrite the default sparsity pattern toone specific for
@@ -191,7 +191,7 @@ int main(int argc,char **argv)
     /* Initialize stuff related to time stepping */
     /*======================================================================*/
 
-    ierr = DMDAGetInfo(DMMGGetDM(dmmg),0,&mx,&my,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+    ierr = DMDAGetInfo(DMMGGetDM(dmmg),0,&mx,&my,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
 
     tsCtx.fnorm_ini   = 0;  
     tsCtx.max_steps   = 1000000;   
@@ -265,7 +265,7 @@ int main(int argc,char **argv)
       ierr = PetscPrintf(PETSC_COMM_WORLD, "# viscosity = %G, resistivity = %G, "
 			 "skin_depth # = %G, larmor_radius # = %G\n",
 			 param.nu, param.eta, param.d_e, param.rho_s);CHKERRQ(ierr);
-      ierr = DMDAGetInfo(DMMGGetDM(dmmg),0,&m,&n,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+      ierr = DMDAGetInfo(DMMGGetDM(dmmg),0,&m,&n,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
       ierr = PetscPrintf(PETSC_COMM_WORLD,"Problem size %D by %D\n",m,n);CHKERRQ(ierr);
       ierr = PetscPrintf(PETSC_COMM_WORLD,"dx %G dy %G dt %G ratio dt/min(dx,dy) %G\n",lx/mx,ly/my,tsCtx.dt,dt_ratio);CHKERRQ(ierr);
     }
@@ -376,7 +376,7 @@ PetscErrorCode Initialize(DMMG *dmmg)
   de2   = sqr(param->d_e);
 
   da   = (dmmg[param->mglevels-1]->dm);
-  ierr = DMDAGetInfo(da,0,&mx,&my,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,0,&mx,&my,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
 
   dhx   = mx/lx;              dhy = my/ly;
   hx    = one/dhx;             hy = one/dhy;
@@ -471,7 +471,7 @@ PetscErrorCode ComputeMaxima(DM da, Vec X, PetscReal t)
 
   PetscFunctionBegin;
 
-  ierr = DMDAGetInfo(da,0,&mx,&my,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,0,&mx,&my,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
 
   ierr = DMDAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
 

@@ -1,4 +1,4 @@
-#define PETSC_DLL
+
 /*
     Code that allows a user to dictate what malloc() PETSc uses.
 */

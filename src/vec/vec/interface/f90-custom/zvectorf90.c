@@ -47,7 +47,7 @@ void PETSC_STDCALL vecduplicatevecsf90_(Vec *v,int *m,F90Array1d *ptr,int *__ier
   *__ierr = F90Array1dCreate(newvint,PETSC_FORTRANADDR,1,*m,ptr PETSC_F90_2PTR_PARAM(ptrd));
 }
 
-void PETSC_STDCALL vecdestroyvecsf90_(F90Array1d *ptr,int *m,int *__ierr PETSC_F90_2PTR_PROTO(ptrd))
+void PETSC_STDCALL vecdestroyvecsf90_(int *m,F90Array1d *ptr,int *__ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   Vec *vecs;
   int i;

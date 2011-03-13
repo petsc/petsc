@@ -1,4 +1,3 @@
-#define PETSCSNES_DLL
 
 #include "private/snesimpl.h"      /*I "petscsnes.h"  I*/
 
@@ -1475,7 +1474,7 @@ PetscErrorCode  SNESDestroy(SNES snes)
   if (snes->jacobian_pre) {ierr = MatDestroy(snes->jacobian_pre);CHKERRQ(ierr);}
   if (snes->ksp) {ierr = KSPDestroy(snes->ksp);CHKERRQ(ierr);}
   ierr = PetscFree(snes->kspconvctx);CHKERRQ(ierr);
-  if (snes->vwork) {ierr = VecDestroyVecs(&snes->vwork,snes->nvwork);CHKERRQ(ierr);}
+  if (snes->vwork) {ierr = VecDestroyVecs(snes->nvwork,&snes->vwork);CHKERRQ(ierr);}
   ierr = SNESMonitorCancel(snes);CHKERRQ(ierr);
   if (snes->ops->convergeddestroy) {ierr = (*snes->ops->convergeddestroy)(snes->cnvP);CHKERRQ(ierr);}
   ierr = PetscHeaderDestroy(snes);CHKERRQ(ierr);

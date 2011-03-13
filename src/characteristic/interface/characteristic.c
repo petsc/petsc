@@ -320,8 +320,7 @@ PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
   DM                      da = c->velocityDA;
   Vec                     velocityLocal, velocityLocalOld;
   Vec                     fieldLocal;
-  DMDALocalInfo             info;
-  DMDAPeriodicType          periodic_type;
+  DMDALocalInfo           info;
   PetscScalar             **solArray;
   void                    *velocityArray;
   void                    *velocityArrayOld;
@@ -334,7 +333,7 @@ PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
   PetscMPIInt             neighbors[9];
   PetscInt                dof;
   PetscInt                gx, gy;
-  PetscInt                n, ni, nj, is, ie, js, je, qs, comp;
+  PetscInt                n, is, ie, js, je, comp;
   PetscErrorCode          ierr;
   PetscBool               verbose = PETSC_FALSE;
 
@@ -345,12 +344,10 @@ PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
   ierr = CharacteristicSetNeighbors(c, 9, neighbors);CHKERRQ(ierr);
   ierr = CharacteristicSetUp(c);CHKERRQ(ierr);
   /* global and local grid info */
-  ierr = DMDAGetInfo(da, &dim, &gx, &gy, 0, 0, 0, 0, 0, 0, &periodic_type, 0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da, &dim, &gx, &gy, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);CHKERRQ(ierr);
   ierr = DMDAGetLocalInfo(da, &info);CHKERRQ(ierr);
-  ni   = info.mx;          nj   = info.my;
   is   = info.xs;          ie   = info.xs+info.xm; 
   js   = info.ys;          je   = info.ys+info.ym;
-  qs   = info.xm*info.ym;
   /* Allocation */
   ierr = PetscMalloc(dim*sizeof(PetscScalar),                &interpIndices);CHKERRQ(ierr);
   ierr = PetscMalloc(c->numVelocityComp*sizeof(PetscScalar), &velocityValues);CHKERRQ(ierr);
@@ -559,7 +556,7 @@ PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
 
   /* Return field of characteristics at t_n-1 */
   ierr = PetscLogEventBegin(CHARACTERISTIC_DAUpdate,0,0,0,0);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(c->fieldDA, 0, 0, 0, 0, 0, 0, 0, &dof, 0, 0, 0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(c->fieldDA,0,0,0,0,0,0,0,&dof,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(c->fieldDA, solution, &solArray);CHKERRQ(ierr);
   for(n = 0; n < c->queueSize; n++) {
     Qi = c->queue[n];
@@ -788,7 +785,7 @@ PetscErrorCode SiftDown(Characteristic c, Queue queue, PetscInt root, PetscInt b
 /* [center, left, top-left, top, top-right, right, bottom-right, bottom, bottom-left] */
 PetscErrorCode DMDAGetNeighborsRank(DM da, PetscMPIInt neighbors[])
 {
-  DMDAPeriodicType periodic_type;
+  DMDABoundaryType bx, by;
   PetscBool      IPeriodic = PETSC_FALSE, JPeriodic = PETSC_FALSE;
   MPI_Comm       comm;
   PetscMPIInt    rank;
@@ -798,12 +795,12 @@ PetscErrorCode DMDAGetNeighborsRank(DM da, PetscMPIInt neighbors[])
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject) da, &comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(da, 0, 0, 0, 0, &PI,&PJ, 0, 0, 0, &periodic_type, 0);
+  ierr = DMDAGetInfo(da, 0, 0, 0, 0, &PI,&PJ, 0, 0, 0, &bx, &by,0, 0);
 
-  if (periodic_type==DMDA_XPERIODIC || periodic_type==DMDA_XYPERIODIC) {
+  if (bx == DMDA_BOUNDARY_PERIODIC) {
     IPeriodic = PETSC_TRUE;
   }
-  if (periodic_type==DMDA_YPERIODIC || periodic_type==DMDA_XYPERIODIC) {
+  if (by == DMDA_BOUNDARY_PERIODIC) {
     JPeriodic = PETSC_TRUE;
   }
 
@@ -864,11 +861,11 @@ PetscErrorCode DMDAGetNeighborsRank(DM da, PetscMPIInt neighbors[])
 */
 PetscInt DMDAGetNeighborRelative(DM da, PassiveReal ir, PassiveReal jr)
 {
-  DMDALocalInfo    info;
+  DMDALocalInfo  info;
   PassiveReal    is,ie,js,je;
   PetscErrorCode ierr;
   
-  ierr = DMDAGetLocalInfo(da, &info);
+  ierr = DMDAGetLocalInfo(da, &info);CHKERRQ(ierr);
   is = (PassiveReal) info.xs - 0.5; ie = (PassiveReal) info.xs + info.xm - 0.5; 
   js = (PassiveReal) info.ys - 0.5; je = (PassiveReal) info.ys + info.ym - 0.5;
   

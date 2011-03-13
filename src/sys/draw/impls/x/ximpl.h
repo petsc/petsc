@@ -1,4 +1,3 @@
-#define PETSC_DLL
 
 /*
       Defines the internal data structures for the X-windows 

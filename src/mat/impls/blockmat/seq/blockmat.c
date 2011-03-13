@@ -1,4 +1,3 @@
-#define PETSCMAT_DLL
 
 /*
    This provides a matrix that consists of Mats

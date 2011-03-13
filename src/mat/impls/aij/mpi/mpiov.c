@@ -1,6 +1,4 @@
 
-#define PETSCMAT_DLL
-
 /*
    Routines to compute overlapping regions of a parallel MPI matrix
   and to find submatrices that were shared across processors.
@@ -888,6 +886,7 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
     w1[j] += w2[j] + 2* w3[j];   
     msz   += w1[j];  
   }
+  ierr = PetscInfo2(C,"Number of outgoing messages %D Total message length %D\n",nrqs,msz);CHKERRQ(ierr);
 
   /* Determine the number of messages to expect, their lengths, from from-ids */
   ierr = PetscGatherNumberOfMessages(comm,w2,w1,&nrqr);CHKERRQ(ierr);

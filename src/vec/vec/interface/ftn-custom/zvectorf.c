@@ -143,7 +143,7 @@ void PETSC_STDCALL vecduplicatevecs_(Vec *v,PetscInt *m,Vec *newv,PetscErrorCode
   *ierr = PetscFree(lV); 
 }
 
-void PETSC_STDCALL vecdestroyvecs_(Vec *vecs,PetscInt *m,PetscErrorCode *ierr)
+void PETSC_STDCALL vecdestroyvecs_(PetscInt *m,Vec *vecs,PetscErrorCode *ierr)
 {
   PetscInt i;
   for (i=0; i<*m; i++) {

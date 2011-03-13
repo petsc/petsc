@@ -135,7 +135,7 @@ int main(int argc,char **argv)
   /* create DMComposite object to manage composite vector */
   ierr = DMCompositeCreate(PETSC_COMM_WORLD,&packer);CHKERRQ(ierr);
   ierr = DMCompositeAddArray(packer,0,1);CHKERRQ(ierr);
-  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,-5,1,1,PETSC_NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,-5,1,1,PETSC_NULL,&da);CHKERRQ(ierr);
   ierr = DMCompositeAddDM(packer,(DM)da);CHKERRQ(ierr);
   ierr = DMCompositeAddDM(packer,(DM)da);CHKERRQ(ierr);
   ierr = DMDestroy(da);CHKERRQ(ierr);
@@ -266,7 +266,7 @@ PetscErrorCode FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
 
   ierr = DMCompositeGetEntries(packer,&nredundant,&da,PETSC_IGNORE);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(da,0,&N,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,0,&N,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   d    = (N-1.0);
   h    = 1.0/d;
   h2   = 2.0*h;

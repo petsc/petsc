@@ -1,4 +1,3 @@
-#define PETSCMAT_DLL
 
 /*
     Provides an interface to the FFT packages.

@@ -1,4 +1,4 @@
-#define PETSC_DLL
+
 /*
       Utilites routines to add simple ASCII IO capability.
 */
@@ -662,13 +662,12 @@ PetscErrorCode  PetscSynchronizedFGets(MPI_Comm comm,FILE* fp,size_t len,char st
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
-  char           *str;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   
   if (!rank) {
-    str = fgets(string,len,fp); /* Not very useful error behavior, but what is desired behavior for attempt to read at EOF? */
+    (void) fgets(string,len,fp); /* Not very useful error behavior, but what is desired behavior for attempt to read at EOF? */
   }
   ierr = MPI_Bcast(string,len,MPI_BYTE,0,comm);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -81,7 +81,7 @@ int main(int argc,char **argv)
     if (Nx*Ny != size && (Nx != PETSC_DECIDE || Ny != PETSC_DECIDE)) SETERRQ(PETSC_COMM_SELF,1,"Incompatible number of processors:  Nx * Ny != size");
     
     /* Set up distributed array */
-    ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,DMDA_STENCIL_STAR,user.mx,user.my,Nx,Ny,1,1,
+    ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.mx,user.my,Nx,Ny,1,1,
                       PETSC_NULL,PETSC_NULL,&user.da);CHKERRQ(ierr);
     ierr = DMCreateGlobalVector(user.da,&x);CHKERRQ(ierr);
     ierr = VecDuplicate(x,&r);CHKERRQ(ierr);

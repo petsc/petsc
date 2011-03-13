@@ -1,4 +1,4 @@
-#define PETSC_DLL
+
 /*
     Defines the operations for the X PetscDraw implementation.
 */

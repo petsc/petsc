@@ -1,4 +1,3 @@
-#define PETSCMAT_DLL
 
 /*
   Defines basic operations for the MATSEQAIJPERM matrix class.

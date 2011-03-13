@@ -115,12 +115,12 @@ int main(int argc,char **argv)
     for principal unknowns (x) and governing residuals (f)
   */
   dof  = 4;
-  ierr = DMDACreate2d(comm,DMDA_NONPERIODIC,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,dof,1,0,0,&da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,dof,1,0,0,&da);CHKERRQ(ierr);
   ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr);
   ierr = DMDestroy(da);CHKERRQ(ierr);
 
   ierr = DMDAGetInfo(DMMGGetDM(dmmg),0,&mx,&my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
-                     PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
+                     PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
 
   /* Problem parameters (velocity of lid, prandtl, and grashof numbers) */
   user.lidvelocity = 1.0/(mx*my);
@@ -184,7 +184,7 @@ int main(int argc,char **argv)
   ierr = DMMGCreate(comm,nlevels,&user,&dmmg1);CHKERRQ(ierr);
   dof  = 3;
   user.COMPOSITE_MODEL = PETSC_FALSE;
-  ierr = DMDACreate2d(comm,DMDA_NONPERIODIC,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,dof,1,0,0,&da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,dof,1,0,0,&da);CHKERRQ(ierr);
   ierr = DMMGSetDM(dmmg1,(DM)da);CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,0,"x-velocity");CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,1,"y-velocity");CHKERRQ(ierr);
@@ -215,7 +215,7 @@ int main(int argc,char **argv)
   ierr = DMMGCreate(comm,nlevels,&user,&dmmg2);CHKERRQ(ierr);
   dof  = 1;
   user.COMPOSITE_MODEL = PETSC_FALSE;
-  ierr = DMDACreate2d(comm,DMDA_NONPERIODIC,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,dof,1,0,0,&da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,dof,1,0,0,&da);CHKERRQ(ierr);
   ierr = DMMGSetDM(dmmg2,(DM)da);CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,0,"temperature");CHKERRQ(ierr);
   ierr = DMDestroy(da);CHKERRQ(ierr);
@@ -308,7 +308,7 @@ PetscErrorCode FormInitialGuessLocal(DMMG dmmg,Vec X)
   Field          **x;
 
   grashof = user->grashof;
-  ierr = DMDAGetInfo(da,0,&mx,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,0,&mx,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   dx  = 1.0/(mx-1);
 
   /*
@@ -356,7 +356,7 @@ PetscErrorCode FormInitialGuessLocal1(DMMG dmmg,Vec X)
   PetscErrorCode ierr;
   Field1         **x;
 
-  ierr = DMDAGetInfo(da,0,&mx,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,0,&mx,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
 
   ierr = DMDAVecGetArray(da,X,&x);CHKERRQ(ierr);
@@ -384,7 +384,7 @@ PetscErrorCode FormInitialGuessLocal2(DMMG dmmg,Vec X)
   Field2         **x;
 
   grashof = user->grashof;
-  ierr = DMDAGetInfo(da,0,&mx,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,0,&mx,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   dx  = 1.0/(mx-1);
 
   ierr = DMDAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);

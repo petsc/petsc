@@ -1,4 +1,3 @@
-#define PETSCTS_DLL
 
 #include "../src/ts/impls/implicit/gl/gl.h" /*I  "petscts.h" I*/
 

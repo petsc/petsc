@@ -1,4 +1,3 @@
-#define PETSCVEC_DLL
 
 /*
      Provides the interface functions for vector operations that do NOT have PetscScalar/PetscReal in the signature
@@ -583,7 +582,7 @@ PetscErrorCode  VecDuplicateVecs(Vec v,PetscInt m,Vec *V[])
 
 .seealso: VecDuplicateVecs(), VecDestroyVecsf90()
 @*/
-PetscErrorCode  VecDestroyVecs(Vec *vv[],PetscInt m)
+PetscErrorCode  VecDestroyVecs(PetscInt m,Vec *vv[])
 {
   PetscErrorCode ierr;
 
@@ -591,7 +590,7 @@ PetscErrorCode  VecDestroyVecs(Vec *vv[],PetscInt m)
   PetscValidPointer(vv,1);
   PetscValidHeaderSpecific(**vv,VEC_CLASSID,1);
   PetscValidType(**vv,1);
-  ierr = (*(**vv)->ops->destroyvecs)(*vv,m);CHKERRQ(ierr);
+  ierr = (*(**vv)->ops->destroyvecs)(m,*vv);CHKERRQ(ierr);
   *vv = 0;
   PetscFunctionReturn(0);
 }
@@ -919,7 +918,7 @@ PetscErrorCode VecDuplicateVecs_Default(Vec w,PetscInt m,Vec *V[])
 
 #undef __FUNCT__
 #define __FUNCT__ "VecDestroyVecs_Default"
-PetscErrorCode VecDestroyVecs_Default(Vec v[], PetscInt m)
+PetscErrorCode VecDestroyVecs_Default(PetscInt m,Vec v[])
 {
   PetscErrorCode ierr;
   PetscInt       i;

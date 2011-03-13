@@ -22,7 +22,7 @@
         PetscInt ::       xm,ym,zm
         PetscInt ::       gxs,gys,gzs
         PetscInt ::       gxm,gym,gzm
-        DMDAPeriodicType :: pt
+        DMDABoundaryType :: pt
         DMDAStencilType  :: st
         DM_HIDE ::        da
       end type DMDALocalInfof90

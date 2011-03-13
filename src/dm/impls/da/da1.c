@@ -1,4 +1,4 @@
-#define PETSCDM_DLL
+
 /* 
    Code for manipulating distributed regular 1d arrays in parallel.
    This file was created by Peter Mell   6/30/95    
@@ -6,8 +6,7 @@
 
 #include "private/daimpl.h"     /*I  "petscdm.h"   I*/
 
-const char *DMDAPeriodicTypes[] = {"NONPERIODIC","XPERIODIC","YPERIODIC","XYPERIODIC",
-                                   "XYZPERIODIC","XZPERIODIC","YZPERIODIC","ZPERIODIC","XYZGHOSTED","DMDAPeriodicType","DMDA_",0};
+const char *DMDABoundaryTypes[] = {"BOUNDARY_NONE","BOUNDARY_GHOSTED","BOUNDARY_PERIODIC","DMDA_",0};
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMView_DA_1d"
@@ -136,14 +135,14 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
   const PetscInt         s     = dd->s;
   const PetscInt         sDist = s*dof;  /* absolute stencil distance */
   const PetscInt         *lx    = dd->lx;
-  const DMDAPeriodicType wrap  = dd->wrap;
+  const DMDABoundaryType bx  = dd->bx;
   MPI_Comm               comm;
   Vec                    local, global;
   VecScatter             ltog, gtol;
   IS                     to, from;
   PetscBool              flg1 = PETSC_FALSE, flg2 = PETSC_FALSE;
   PetscMPIInt            rank, size;
-  PetscInt               i,*idx,nn,left,xs,xe,x,Xs,Xe,start,end,m;
+  PetscInt               i,*idx,nn,left,xs,xe,x,Xs,Xe,start,end,m,IXs,IXe;
   PetscErrorCode         ierr;
 
   PetscFunctionBegin;
@@ -206,12 +205,20 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
   xe  = xs + x;
 
   /* determine ghost region */
-  if (wrap == DMDA_XPERIODIC || wrap == DMDA_XYZGHOSTED) {
-    Xs = xs - sDist; 
+  if (bx) {
+    Xs = xs - sDist;
     Xe = xe + sDist;
   } else {
-    if ((xs-sDist) >= 0)     Xs = xs-sDist;  else Xs = 0; 
-    if ((xe+sDist) <= M*dof) Xe = xe+sDist;  else Xe = M*dof;    
+    if ((xs-sDist) >= 0)     Xs = xs-sDist;  else Xs = 0;
+    if ((xe+sDist) <= M*dof) Xe = xe+sDist;  else Xe = M*dof;
+  }
+
+  if (bx == DMDA_BOUNDARY_PERIODIC) {
+    IXs = xs - sDist;
+    IXe = xe + sDist;
+  } else {
+    if ((xs-sDist) >= 0)     IXs = xs-sDist;  else IXs = 0;
+    if ((xe+sDist) <= M*dof) IXe = xe+sDist;  else IXe = M*dof;
   }
 
   /* allocate the base parallel and sequential vectors */
@@ -221,7 +228,7 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
   dd->nlocal = (Xe-Xs);
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,dd->nlocal,0,&local);CHKERRQ(ierr);
   ierr = VecSetBlockSize(local,dof);CHKERRQ(ierr);
-    
+
   /* Create Local to Global Vector Scatter Context */
   /* local to global inserts non-ghost point region into global */
   ierr = VecGetOwnershipRange(global,&start,&end);CHKERRQ(ierr);
@@ -234,57 +241,37 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
 
   /* Create Global to Local Vector Scatter Context */
   /* global to local must retrieve ghost points */
-  if  (wrap == DMDA_XYZGHOSTED) {
-    if (size == 1) {
-      ierr = ISCreateStride(comm,(xe-xs),sDist,1,&to);CHKERRQ(ierr);
-    } else if (!rank) {
-      ierr = ISCreateStride(comm,(Xe-xs),sDist,1,&to);CHKERRQ(ierr);
-    } else if (rank == size-1) {
-      ierr = ISCreateStride(comm,(xe-Xs),0,1,&to);CHKERRQ(ierr);
-    } else {
-      ierr = ISCreateStride(comm,(Xe-Xs),0,1,&to);CHKERRQ(ierr);
-    }
-  } else {
-    ierr = ISCreateStride(comm,(Xe-Xs),0,1,&to);CHKERRQ(ierr);
-  }
- 
+  ierr = ISCreateStride(comm,(IXe-IXs),IXs-Xs,1,&to);CHKERRQ(ierr);
+
   ierr = PetscMalloc((x+2*sDist)*sizeof(PetscInt),&idx);CHKERRQ(ierr);  
   ierr = PetscLogObjectMemory(da,(x+2*sDist)*sizeof(PetscInt));CHKERRQ(ierr);
 
-  nn = 0;
-  if (wrap == DMDA_XPERIODIC) {    /* Handle all cases with wrap first */
+  for (i=0; i<IXs-Xs; i++) {idx[i] = -1; } /* prepend with -1s if needed for ghosted case*/
 
+  nn = IXs-Xs;
+  if (bx == DMDA_BOUNDARY_PERIODIC) { /* Handle all cases with wrap first */
     for (i=0; i<sDist; i++) {  /* Left ghost points */
       if ((xs-sDist+i)>=0) { idx[nn++] = xs-sDist+i;}
       else                 { idx[nn++] = M*dof+(xs-sDist+i);}
     }
 
     for (i=0; i<x; i++) { idx [nn++] = xs + i;}  /* Non-ghost points */
-    
+
     for (i=0; i<sDist; i++) { /* Right ghost points */
       if ((xe+i)<M*dof) { idx [nn++] =  xe+i; }
       else              { idx [nn++] = (xe+i) - M*dof;}
     }
-  } else if (wrap == DMDA_XYZGHOSTED) { 
-
-    if (sDist <= xs) {for (i=0; i<sDist; i++) {idx[nn++] = xs - sDist + i;}}
-
-    for (i=0; i<x; i++) { idx [nn++] = xs + i;}
-    
-    if ((xe+sDist)<=M*dof) {for (i=0;  i<sDist;     i++) {idx[nn++]=xe+i;}}
-
   } else {      /* Now do all cases with no wrapping */
-
     if (sDist <= xs) {for (i=0; i<sDist; i++) {idx[nn++] = xs - sDist + i;}}
     else             {for (i=0; i<xs;    i++) {idx[nn++] = i;}}
 
     for (i=0; i<x; i++) { idx [nn++] = xs + i;}
-    
+
     if ((xe+sDist)<=M*dof) {for (i=0;  i<sDist;   i++) {idx[nn++]=xe+i;}}
     else                   {for (i=xe; i<(M*dof); i++) {idx[nn++]=i;}}
   }
 
-  ierr = ISCreateGeneral(comm,nn,idx,PETSC_COPY_VALUES,&from);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(comm,nn-IXs+Xs,&idx[IXs-Xs],PETSC_COPY_VALUES,&from);CHKERRQ(ierr);
   ierr = VecScatterCreate(global,from,local,to,&gtol);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(da,to);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(da,from);CHKERRQ(ierr);
@@ -306,33 +293,9 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
      Set the local to global ordering in the global vector, this allows use
      of VecSetValuesLocal().
   */
-  if (wrap == DMDA_XYZGHOSTED) {
-    PetscInt *tmpidx;
-    if (size == 1) {
-      ierr = PetscMalloc((nn+2*sDist)*sizeof(PetscInt),&tmpidx);CHKERRQ(ierr);
-      for (i=0; i<sDist; i++) tmpidx[i] = -1;
-      ierr = PetscMemcpy(tmpidx+sDist,idx,nn*sizeof(PetscInt));CHKERRQ(ierr);
-      for (i=nn+sDist; i<nn+2*sDist; i++) tmpidx[i] = -1;
-      ierr = PetscFree(idx);CHKERRQ(ierr);
-      idx  = tmpidx;
-      nn  += 2*sDist;
-    } else if (!rank) { /* must preprend -1 marker for ghost location that have no global value */
-      ierr = PetscMalloc((nn+sDist)*sizeof(PetscInt),&tmpidx);CHKERRQ(ierr);
-      for (i=0; i<sDist; i++) tmpidx[i] = -1;
-      ierr = PetscMemcpy(tmpidx+sDist,idx,nn*sizeof(PetscInt));CHKERRQ(ierr);
-      ierr = PetscFree(idx);CHKERRQ(ierr);
-      idx  = tmpidx;
-      nn  += sDist;
-    } else if (rank  == size-1) { /* must postpend -1 marker for ghost location that have no global value */
-      ierr = PetscMalloc((nn+sDist)*sizeof(PetscInt),&tmpidx);CHKERRQ(ierr);
-      ierr = PetscMemcpy(tmpidx,idx,nn*sizeof(PetscInt));CHKERRQ(ierr);
-      for (i=nn; i<nn+sDist; i++) tmpidx[i] = -1;
-      ierr = PetscFree(idx);CHKERRQ(ierr);
-      idx  = tmpidx;
-      nn  += sDist;
-    }
-  }
-  ierr = ISLocalToGlobalMappingCreate(comm,nn,idx,PETSC_OWN_POINTER,&da->ltogmap);CHKERRQ(ierr);
+  for (i=0; i<Xe-IXe; i++) {idx[nn++] = -1; } /* pad with -1s if needed for ghosted case*/
+
+  ierr = ISLocalToGlobalMappingCreate(comm,nn,idx,PETSC_COPY_VALUES,&da->ltogmap);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingBlock(da->ltogmap,dd->w,&da->ltogmapb);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(da,da->ltogmap);CHKERRQ(ierr);
 
@@ -353,8 +316,8 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
 
    Input Parameters:
 +  comm - MPI communicator
-.  wrap - type of periodicity should the array have, if any. Use 
-          either DMDA_NONPERIODIC or DMDA_XPERIODIC
+.  bx - type of ghost cells at the boundary the array should have, if any. Use 
+          DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_GHOSTED, or DMDA_BOUNDARY_PERIODIC.
 .  M - global dimension of the array (use -M to indicate that it may be set to a different value 
             from the command line with -da_grid_x <M>)
 .  dof - number of degrees of freedom per node
@@ -385,7 +348,7 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
           DMDAGetInfo(), DMCreateGlobalVector(), DMCreateLocalVector(), DMDACreateNaturalVector(), DMDALoad(), DMDAGetOwnershipRanges()
 
 @*/
-PetscErrorCode  DMDACreate1d(MPI_Comm comm, DMDAPeriodicType wrap, PetscInt M, PetscInt dof, PetscInt s, const PetscInt lx[], DM *da)
+PetscErrorCode  DMDACreate1d(MPI_Comm comm, DMDABoundaryType bx, PetscInt M, PetscInt dof, PetscInt s, const PetscInt lx[], DM *da)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;
@@ -396,7 +359,7 @@ PetscErrorCode  DMDACreate1d(MPI_Comm comm, DMDAPeriodicType wrap, PetscInt M, P
   ierr = DMDASetSizes(*da, M, 1, 1);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   ierr = DMDASetNumProcs(*da, size, PETSC_DECIDE, PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = DMDASetPeriodicity(*da, wrap);CHKERRQ(ierr);
+  ierr = DMDASetBoundaryType(*da, bx, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE);CHKERRQ(ierr);
   ierr = DMDASetDof(*da, dof);CHKERRQ(ierr);
   ierr = DMDASetStencilWidth(*da, s);CHKERRQ(ierr);
   ierr = DMDASetOwnershipRanges(*da, lx, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);

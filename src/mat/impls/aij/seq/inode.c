@@ -1,4 +1,3 @@
-#define PETSCMAT_DLL
 
 /*
   This file provides high performance routines for the Inode format (compressed sparse row)

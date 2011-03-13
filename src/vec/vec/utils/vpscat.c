@@ -1,6 +1,4 @@
 
-#define PETSCVEC_DLL
-
 /*
     Defines parallel vector scatters.
 */

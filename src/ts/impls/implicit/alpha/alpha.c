@@ -1,4 +1,4 @@
-#define PETSCTS_DLL
+
 /*
   Code for timestepping with implicit generalized-\alpha method
   for first order systems.

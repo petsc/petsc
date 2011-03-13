@@ -1,4 +1,3 @@
-#define PETSCVEC_DLL
 
 #include "petscvec.h"
 #include "petscpf.h"

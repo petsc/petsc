@@ -1,4 +1,3 @@
-#define PETSCVEC_DLL
 /*
     The PF mathematical functions interface routines, callable by users.
 */

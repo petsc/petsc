@@ -1,4 +1,3 @@
-#define PETSCKSP_DLL
 
 /*
    Defines a direct factorization preconditioner for any Mat implementation
@@ -163,8 +162,8 @@ static PetscErrorCode PCSetUp_LU(PC pc)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCDestroy_LU"
-static PetscErrorCode PCDestroy_LU(PC pc)
+#define __FUNCT__ "PCReset_LU"
+static PetscErrorCode PCReset_LU(PC pc)
 {
   PC_LU          *dir = (PC_LU*)pc->data;
   PetscErrorCode ierr;
@@ -173,6 +172,18 @@ static PetscErrorCode PCDestroy_LU(PC pc)
   if (!dir->inplace && ((PC_Factor*)dir)->fact) {ierr = MatDestroy(((PC_Factor*)dir)->fact);CHKERRQ(ierr);}
   if (dir->row && dir->col && dir->row != dir->col) {ierr = ISDestroy(dir->row);CHKERRQ(ierr);}
   if (dir->col) {ierr = ISDestroy(dir->col);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PCDestroy_LU"
+static PetscErrorCode PCDestroy_LU(PC pc)
+{
+  PC_LU          *dir = (PC_LU*)pc->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PCReset_LU(pc);CHKERRQ(ierr);
   ierr = PetscFree(((PC_Factor*)dir)->ordering);CHKERRQ(ierr);
   ierr = PetscFree(((PC_Factor*)dir)->solvertype);CHKERRQ(ierr);
   ierr = PetscFree(pc->data);CHKERRQ(ierr);
@@ -296,6 +307,7 @@ PetscErrorCode  PCCreate_LU(PC pc)
   dir->reuseordering    = PETSC_FALSE;
   pc->data              = (void*)dir;
 
+  pc->ops->reset             = PCReset_LU;
   pc->ops->destroy           = PCDestroy_LU;
   pc->ops->apply             = PCApply_LU;
   pc->ops->applytranspose    = PCApplyTranspose_LU;

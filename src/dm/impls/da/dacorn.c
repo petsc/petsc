@@ -1,4 +1,3 @@
-#define PETSCDM_DLL
 
 /*
   Code for manipulating distributed regular arrays in parallel.
@@ -25,7 +24,7 @@
 
 .keywords: distributed array, get, corners, nodes, local indices, coordinates
 
-.seealso: DMDAGetGhostCorners(), DMDAGetCoordinates(), DMDASetUniformCoordinates(). DMDAGetGhostedCoordinates(), DMDAGetCoordinateDA()
+.seealso: DMDASetGhostCoordinates(), DMDAGetGhostCorners(), DMDAGetCoordinates(), DMDASetUniformCoordinates(). DMDAGetGhostedCoordinates(), DMDAGetCoordinateDA()
 @*/
 PetscErrorCode  DMDASetCoordinates(DM da,Vec c)
 {
@@ -43,6 +42,46 @@ PetscErrorCode  DMDASetCoordinates(DM da,Vec c)
     ierr = VecDestroy(dd->ghosted_coordinates);CHKERRQ(ierr);
     dd->ghosted_coordinates = PETSC_NULL;
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMDASetGhostedCoordinates"
+/*@
+   DMDASetGhostedCoordinates - Sets into the DMDA a vector that indicates the 
+      coordinates of the local nodes, including ghost nodes.
+
+   Collective on DMDA
+
+   Input Parameter:
++  da - the distributed array
+-  c - coordinate vector
+
+   Note:
+    The coordinates of interior ghost points can be set using DMDASetCoordinates()
+    followed by DMDAGetGhostedCoordinates().  This is intended to enable the setting
+    of ghost coordinates outside of the domain.
+
+    Non-ghosted coordinates, if set, are assumed still valid.
+
+  Level: intermediate
+
+.keywords: distributed array, get, corners, nodes, local indices, coordinates
+
+.seealso: DMDASetCoordinates(), DMDAGetGhostCorners(), DMDAGetCoordinates(), DMDASetUniformCoordinates(). DMDAGetGhostedCoordinates(), DMDAGetCoordinateDA()
+@*/
+PetscErrorCode  DMDASetGhostedCoordinates(DM da,Vec c)
+{
+  PetscErrorCode ierr;
+  DM_DA          *dd = (DM_DA*)da->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidHeaderSpecific(c,VEC_CLASSID,2);
+  ierr = PetscObjectReference((PetscObject)c);CHKERRQ(ierr);
+  if (dd->ghosted_coordinates) {ierr = VecDestroy(dd->ghosted_coordinates);CHKERRQ(ierr);}
+  dd->ghosted_coordinates = c;
+  ierr = VecSetBlockSize(c,dd->dim);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -112,17 +151,17 @@ PetscErrorCode  DMDAGetCoordinateDA(DM da,DM *cda)
     ierr = MPI_Comm_size(((PetscObject)da)->comm,&size);CHKERRQ(ierr);
     if (dd->dim == 1) {
       PetscInt            s,m,*lc,l;
-      DMDAPeriodicType pt;
-      ierr = DMDAGetInfo(da,0,&m,0,0,0,0,0,0,&s,&pt,0);CHKERRQ(ierr);
+      DMDABoundaryType bx;
+      ierr = DMDAGetInfo(da,0,&m,0,0,0,0,0,0,&s,&bx,0,0,0);CHKERRQ(ierr);
       ierr = DMDAGetCorners(da,0,0,0,&l,0,0);CHKERRQ(ierr);
       ierr = PetscMalloc(size*sizeof(PetscInt),&lc);CHKERRQ(ierr);
       ierr = MPI_Allgather(&l,1,MPIU_INT,lc,1,MPIU_INT,((PetscObject)da)->comm);CHKERRQ(ierr);
-      ierr = DMDACreate1d(((PetscObject)da)->comm,pt,m,1,s,lc,&dd->da_coordinates);CHKERRQ(ierr);
+      ierr = DMDACreate1d(((PetscObject)da)->comm,bx,m,1,s,lc,&dd->da_coordinates);CHKERRQ(ierr);
       ierr = PetscFree(lc);CHKERRQ(ierr);
     } else if (dd->dim == 2) {
       PetscInt            i,s,m,*lc,*ld,l,k,n,M,N;
-      DMDAPeriodicType pt;
-      ierr = DMDAGetInfo(da,0,&m,&n,0,&M,&N,0,0,&s,&pt,0);CHKERRQ(ierr);
+      DMDABoundaryType bx,by;
+      ierr = DMDAGetInfo(da,0,&m,&n,0,&M,&N,0,0,&s,&bx,&by,0,0);CHKERRQ(ierr);
       ierr = DMDAGetCorners(da,0,0,0,&l,&k,0);CHKERRQ(ierr);
       ierr = PetscMalloc2(size,PetscInt,&lc,size,PetscInt,&ld);CHKERRQ(ierr);
       /* only first M values in lc matter */
@@ -132,12 +171,12 @@ PetscErrorCode  DMDAGetCoordinateDA(DM da,DM *cda)
       for ( i=0; i<N; i++) {
         ld[i] = ld[M*i];
       }
-      ierr = DMDACreate2d(((PetscObject)da)->comm,pt,DMDA_STENCIL_BOX,m,n,M,N,2,s,lc,ld,&dd->da_coordinates);CHKERRQ(ierr);
+      ierr = DMDACreate2d(((PetscObject)da)->comm,bx,by,DMDA_STENCIL_BOX,m,n,M,N,2,s,lc,ld,&dd->da_coordinates);CHKERRQ(ierr);
       ierr = PetscFree2(lc,ld);CHKERRQ(ierr);
     } else if (dd->dim == 3) {
       PetscInt            i,s,m,*lc,*ld,*le,l,k,q,n,M,N,P,p;
-      DMDAPeriodicType pt;
-      ierr = DMDAGetInfo(da,0,&m,&n,&p,&M,&N,&P,0,&s,&pt,0);CHKERRQ(ierr);
+      DMDABoundaryType bx,by,bz;
+      ierr = DMDAGetInfo(da,0,&m,&n,&p,&M,&N,&P,0,&s,&bx,&by,&bz,0);CHKERRQ(ierr);
       ierr = DMDAGetCorners(da,0,0,0,&l,&k,&q);CHKERRQ(ierr);
       ierr = PetscMalloc3(size,PetscInt,&lc,size,PetscInt,&ld,size,PetscInt,&le);CHKERRQ(ierr);
       /* only first M values in lc matter */
@@ -151,7 +190,7 @@ PetscErrorCode  DMDAGetCoordinateDA(DM da,DM *cda)
       for ( i=0; i<P; i++) {
         le[i] = le[M*N*i];
       }
-      ierr = DMDACreate3d(((PetscObject)da)->comm,pt,DMDA_STENCIL_BOX,m,n,p,M,N,P,3,s,lc,ld,le,&dd->da_coordinates);CHKERRQ(ierr);
+      ierr = DMDACreate3d(((PetscObject)da)->comm,bx,by,bz,DMDA_STENCIL_BOX,m,n,p,M,N,P,3,s,lc,ld,le,&dd->da_coordinates);CHKERRQ(ierr);
       ierr = PetscFree3(lc,ld,le);CHKERRQ(ierr);
     }
   }

@@ -1,4 +1,3 @@
-#define PETSCSNES_DLL
 
 /* fnoise/snesdnest.F -- translated by f2c (version 20020314).
 */

@@ -1,4 +1,3 @@
-#define PETSCMAT_DLL
 
 /*
    Provides an interface to the CHOLMOD 1.7.1 sparse solver

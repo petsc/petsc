@@ -1,4 +1,3 @@
-#define PETSCKSP_DLL
 
 /*
    Defines a  Eisenstat trick SSOR  preconditioner. This uses about 

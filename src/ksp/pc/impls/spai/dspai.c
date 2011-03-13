@@ -1,4 +1,3 @@
-#define PETSCKSP_DLL
 
 #include "petscmat.h"
 

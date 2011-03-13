@@ -1,5 +1,3 @@
-#define PETSCMAT_DLL
-
 
 #include "../src/mat/impls/aij/seq/aij.h"
 #include "../src/mat/impls/sbaij/seq/sbaij.h"

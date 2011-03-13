@@ -98,8 +98,8 @@ static PetscErrorCode CheckMatrices(Mat A,Mat B,Vec left,Vec right,Vec X,Vec Y,V
   ierr = MatMultTransposeAdd(B,Y,X1,rtmp[1]);CHKERRQ(ierr);
   ierr = Compare2(rtmp,"MatMultTransposeAdd v2!=v3");CHKERRQ(ierr);
 
-  ierr = VecDestroyVecs(&ltmp,2);CHKERRQ(ierr);
-  ierr = VecDestroyVecs(&rtmp,2);CHKERRQ(ierr);
+  ierr = VecDestroyVecs(2,&ltmp);CHKERRQ(ierr);
+  ierr = VecDestroyVecs(2,&rtmp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

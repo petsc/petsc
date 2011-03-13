@@ -1,4 +1,4 @@
-#define PETSC_DLL
+
 /*
    This file contains routines to draw a 3-d like frame about a given 
    box with a given width.  Note that we might like to use a high/low

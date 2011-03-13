@@ -1,4 +1,3 @@
-#define PETSCMAT_DLL
 
 #include "matnestimpl.h" /*I   "petscmat.h"   I*/
 

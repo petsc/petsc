@@ -1,4 +1,3 @@
-#define PETSCMAT_DLL
 
 /*
     Routines to project vectors out of null spaces.
@@ -137,7 +136,7 @@ PetscErrorCode  MatNullSpaceDestroy(MatNullSpace sp)
   if (--((PetscObject)sp)->refct > 0) PetscFunctionReturn(0);
 
   if (sp->vec)  { ierr = VecDestroy(sp->vec);CHKERRQ(ierr); }
-  if (sp->vecs) { ierr = VecDestroyVecs(&sp->vecs,sp->n);CHKERRQ(ierr); }
+  if (sp->vecs) { ierr = VecDestroyVecs(sp->n,&sp->vecs);CHKERRQ(ierr); }
   ierr = PetscFree(sp->alpha);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(sp);CHKERRQ(ierr);
   PetscFunctionReturn(0);

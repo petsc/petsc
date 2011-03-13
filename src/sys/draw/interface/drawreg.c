@@ -1,4 +1,4 @@
-#define PETSC_DLL
+
 /*
        Provides the registration process for PETSc PetscDraw routines
 */

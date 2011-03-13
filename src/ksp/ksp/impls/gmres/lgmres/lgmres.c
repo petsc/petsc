@@ -1,4 +1,3 @@
-#define PETSCKSP_DLL
 
 #include "../src/ksp/ksp/impls/gmres/lgmres/lgmresimpl.h"   /*I petscksp.h I*/
 
@@ -400,7 +399,7 @@ PetscErrorCode KSPDestroy_LGMRES(KSP ksp)
   PetscFunctionBegin;
   ierr = PetscFree(lgmres->augvecs);CHKERRQ(ierr);
   if (lgmres->augwork_alloc) {
-    ierr = VecDestroyVecs(&lgmres->augvecs_user_work[0],lgmres->augwork_alloc);CHKERRQ(ierr);
+    ierr = VecDestroyVecs(lgmres->augwork_alloc,&lgmres->augvecs_user_work[0]);CHKERRQ(ierr);
   }
   ierr = PetscFree(lgmres->augvecs_user_work);CHKERRQ(ierr);
   ierr = PetscFree(lgmres->aug_order);CHKERRQ(ierr);

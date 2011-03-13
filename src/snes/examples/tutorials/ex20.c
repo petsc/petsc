@@ -90,7 +90,7 @@ int main(int argc,char **argv)
   /*
       Set the DMDA (grid structure) for the grids.
   */
-  ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,DMDA_STENCIL_STAR,-5,-5,-5,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,0,&da);CHKERRQ(ierr);
+  ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-5,-5,-5,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,0,&da);CHKERRQ(ierr);
   ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr);
   ierr = DMDestroy(da);CHKERRQ(ierr);
 
@@ -170,7 +170,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void* ptr)
 
   PetscFunctionBegin;
   ierr = DMGetLocalVector(dmmg->dm,&localX);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(dmmg->dm,PETSC_NULL,&mx,&my,&mz,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(dmmg->dm,PETSC_NULL,&mx,&my,&mz,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   hx    = one/(PetscReal)(mx-1);  hy    = one/(PetscReal)(my-1);  hz = one/(PetscReal)(mz-1);
   hxhydhz = hx*hy/hz;   hyhzdhx = hy*hz/hx;   hzhxdhy = hz*hx/hy;
   tleft = user->tleft;         tright = user->tright;
@@ -488,7 +488,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void
 
   PetscFunctionBegin;
   ierr = DMGetLocalVector(dmmg->dm,&localX);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(dmmg->dm,PETSC_NULL,&mx,&my,&mz,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(dmmg->dm,PETSC_NULL,&mx,&my,&mz,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   hx    = one/(PetscReal)(mx-1);  hy    = one/(PetscReal)(my-1);  hz = one/(PetscReal)(mz-1);
   hxhydhz = hx*hy/hz;   hyhzdhx = hy*hz/hx;   hzhxdhy = hz*hx/hy;
   tleft = user->tleft;         tright = user->tright;

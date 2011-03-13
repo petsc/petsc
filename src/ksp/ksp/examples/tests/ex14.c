@@ -143,7 +143,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-Ny",&Ny,PETSC_NULL);CHKERRQ(ierr);
   if (Nx*Ny != size && (Nx != PETSC_DECIDE || Ny != PETSC_DECIDE))
     SETERRQ(PETSC_COMM_WORLD,1,"Incompatible number of processors:  Nx * Ny != size");
-  ierr = DMDACreate2d(comm,DMDA_NONPERIODIC,DMDA_STENCIL_STAR,user.mx,
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.mx,
                     user.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&user.da);CHKERRQ(ierr);
 
   /*

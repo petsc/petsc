@@ -47,7 +47,7 @@ PetscInt main(PetscInt argc,char **args)
 
   
 
-  ierr = DMDACreate3d(PETSC_COMM_SELF,DMDA_NONPERIODIC,DMDA_STENCIL_STAR, 
+  ierr = DMDACreate3d(PETSC_COMM_SELF,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR, 
                     dim[0], dim[1], dim[2], 
                     PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, 
                     dof, stencil,

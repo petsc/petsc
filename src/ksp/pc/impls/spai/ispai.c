@@ -1,4 +1,3 @@
-#define PETSCKSP_DLL
 
 /* 
    3/99 Modified by Stephen Barnard to support SPAI version 3.0 

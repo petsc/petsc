@@ -1,4 +1,3 @@
-#define PETSCMAT_DLL
 
 #include "../src/mat/impls/baij/mpi/mpibaij.h"   /*I  "petscmat.h"  I*/
 #include "petscblaslapack.h"
@@ -1075,7 +1074,7 @@ static PetscErrorCode MatView_MPIBAIJ_Binary(Mat mat,PetscViewer viewer)
   Mat_SeqBAIJ*   A = (Mat_SeqBAIJ*)a->A->data;
   Mat_SeqBAIJ*   B = (Mat_SeqBAIJ*)a->B->data;
   PetscErrorCode ierr;
-  PetscInt       i,*row_lens,*crow_lens,bs = mat->rmap->bs,count,j,k,bs2=a->bs2,header[4],nz,rlen;
+  PetscInt       i,*row_lens,*crow_lens,bs = mat->rmap->bs,j,k,bs2=a->bs2,header[4],nz,rlen;
   PetscInt       *range=0,nzmax,*column_indices,cnt,col,*garray = a->garray,cstart = mat->cmap->rstart/bs,len,pcnt,l,ll;
   int            fd;
   PetscScalar    *column_values;
@@ -1106,7 +1105,6 @@ static PetscErrorCode MatView_MPIBAIJ_Binary(Mat mat,PetscViewer viewer)
 
   ierr  = PetscMalloc((rlen/bs)*sizeof(PetscInt),&crow_lens);CHKERRQ(ierr);
   /* compute lengths of each row  */
-  count = 0;
   for (i=0; i<a->mbs; i++) {
     crow_lens[i] = A->i[i+1] - A->i[i] + B->i[i+1] - B->i[i];
   }

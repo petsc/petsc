@@ -38,7 +38,7 @@
 ! match calling sequence for C/C++.
 !
       Interface 
-        Subroutine VecDestroyVecsF90(vs,m,ierr)
+        Subroutine VecDestroyVecsF90(m,vs,ierr)
           USE_VEC_HIDE
           VEC_HIDE, pointer :: vs(:)
           PetscInt m

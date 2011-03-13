@@ -175,8 +175,8 @@ PetscErrorCode KSPReset_GCR( KSP ksp )
   PetscFunctionBegin;
   if (ctx) {
     if (ctx->R) {ierr = VecDestroy( ctx->R );CHKERRQ(ierr);}
-    if (ctx->VV) {ierr = VecDestroyVecs(&ctx->VV, ctx->restart );CHKERRQ(ierr);}
-    if (ctx->SS) {ierr = VecDestroyVecs(&ctx->SS, ctx->restart );CHKERRQ(ierr);}
+    if (ctx->VV) {ierr = VecDestroyVecs(ctx->restart,&ctx->VV);CHKERRQ(ierr);}
+    if (ctx->SS) {ierr = VecDestroyVecs(ctx->restart,&ctx->SS);CHKERRQ(ierr);}
     if (ctx->modifypc_destroy) {
       ierr = (*ctx->modifypc_destroy)(ctx->modifypc_ctx);CHKERRQ(ierr);
     }

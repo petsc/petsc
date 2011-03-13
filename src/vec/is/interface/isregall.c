@@ -1,4 +1,3 @@
-#define PETSCVEC_DLL
 
 #include "private/isimpl.h"     /*I  "petscis.h"  I*/
 EXTERN_C_BEGIN

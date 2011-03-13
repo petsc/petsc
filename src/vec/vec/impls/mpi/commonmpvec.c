@@ -1,4 +1,4 @@
-#define PETSCVEC_DLL
+
 #include "../src/vec/vec/impls/mpi/pvecimpl.h"   /*I  "petscvec.h"   I*/
 
 #undef __FUNCT__  

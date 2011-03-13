@@ -1,4 +1,3 @@
-#define PETSCKSP_DLL
 
 #include "../src/ksp/ksp/impls/broyden/broydenimpl.h"       /*I "petscksp.h" I*/
 
@@ -153,8 +152,8 @@ PetscErrorCode KSPReset_Broyden(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (cg->v) {ierr = VecDestroyVecs(&cg->v,cg->msize);CHKERRQ(ierr);}
-  if (cg->w) {ierr = VecDestroyVecs(&cg->w,cg->msize);CHKERRQ(ierr);}
+  if (cg->v) {ierr = VecDestroyVecs(cg->msize,&cg->v);CHKERRQ(ierr);}
+  if (cg->w) {ierr = VecDestroyVecs(cg->msize,&cg->w);CHKERRQ(ierr);}
   ierr = KSPDefaultReset(ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

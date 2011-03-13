@@ -1,5 +1,3 @@
-#define PETSCMAT_DLL
-
 
 /*
     Defines the basic matrix operations for the AIJ (compressed row)
@@ -2814,7 +2812,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
        MatImaginaryPart_SeqAIJ,
        0,
        0,
-/*109*/0,
+/*109*/MatMatSolve_SeqAIJ,
        0,
        MatGetRowMin_SeqAIJ,
        0,

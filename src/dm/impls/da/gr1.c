@@ -1,4 +1,3 @@
-#define PETSCDM_DLL
 
 /* 
    Plots vectors obtained with DMDACreate1d()
@@ -28,7 +27,7 @@ PetscErrorCode  DMDASetUniformCoordinates(DM da,PetscReal xmin,PetscReal xmax,Pe
 {
   MPI_Comm         comm;
   DM               cda;
-  DMDAPeriodicType periodic;
+  DMDABoundaryType bx,by,bz;
   Vec              xcoor;
   PetscScalar      *coors;
   PetscReal        hx,hy,hz_;
@@ -39,13 +38,13 @@ PetscErrorCode  DMDASetUniformCoordinates(DM da,PetscReal xmin,PetscReal xmax,Pe
   if (xmax <= xmin) SETERRQ2(((PetscObject)da)->comm,PETSC_ERR_ARG_INCOMP,"xmax must be larger than xmin %G %G",xmin,xmax);
 
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(da,&dim,&M,&N,&P,0,0,0,0,0,&periodic,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,&dim,&M,&N,&P,0,0,0,0,0,&bx,&by,&bz,0);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&istart,&jstart,&kstart,&isize,&jsize,&ksize);CHKERRQ(ierr);
   ierr = DMDAGetCoordinateDA(da, &cda);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(cda, &xcoor);CHKERRQ(ierr);
   if (dim == 1) {
-    if (periodic == DMDA_NONPERIODIC) hx = (xmax-xmin)/(M-1);
-    else                            hx = (xmax-xmin)/M;
+    if (bx == DMDA_BOUNDARY_PERIODIC) hx = (xmax-xmin)/M;
+    else                         hx = (xmax-xmin)/(M-1);
     ierr = VecGetArray(xcoor,&coors);CHKERRQ(ierr);
     for (i=0; i<isize; i++) {
       coors[i] = xmin + hx*(i+istart);
@@ -53,9 +52,9 @@ PetscErrorCode  DMDASetUniformCoordinates(DM da,PetscReal xmin,PetscReal xmax,Pe
     ierr = VecRestoreArray(xcoor,&coors);CHKERRQ(ierr);
   } else if (dim == 2) {
     if (ymax <= ymin) SETERRQ2(((PetscObject)da)->comm,PETSC_ERR_ARG_INCOMP,"ymax must be larger than ymin %G %G",ymin,ymax);
-    if (DMDAXPeriodic(periodic)) hx = (xmax-xmin)/(M);
+    if (bx == DMDA_BOUNDARY_PERIODIC) hx = (xmax-xmin)/(M);
     else                       hx = (xmax-xmin)/(M-1);
-    if (DMDAYPeriodic(periodic)) hy = (ymax-ymin)/(N);
+    if (by == DMDA_BOUNDARY_PERIODIC) hy = (ymax-ymin)/(N);
     else                       hy = (ymax-ymin)/(N-1);
     ierr = VecGetArray(xcoor,&coors);CHKERRQ(ierr);
     cnt  = 0;
@@ -69,11 +68,11 @@ PetscErrorCode  DMDASetUniformCoordinates(DM da,PetscReal xmin,PetscReal xmax,Pe
   } else if (dim == 3) {
     if (ymax <= ymin) SETERRQ2(((PetscObject)da)->comm,PETSC_ERR_ARG_INCOMP,"ymax must be larger than ymin %G %G",ymin,ymax);
     if (zmax <= zmin) SETERRQ2(((PetscObject)da)->comm,PETSC_ERR_ARG_INCOMP,"zmax must be larger than zmin %G %G",zmin,zmax);
-    if (DMDAXPeriodic(periodic)) hx = (xmax-xmin)/(M);
+    if (bx == DMDA_BOUNDARY_PERIODIC) hx = (xmax-xmin)/(M);
     else                       hx = (xmax-xmin)/(M-1);
-    if (DMDAYPeriodic(periodic)) hy = (ymax-ymin)/(N);
+    if (by == DMDA_BOUNDARY_PERIODIC) hy = (ymax-ymin)/(N);
     else                       hy = (ymax-ymin)/(N-1);
-    if (DMDAZPeriodic(periodic)) hz_ = (zmax-zmin)/(P);
+    if (bz == DMDA_BOUNDARY_PERIODIC) hz_ = (zmax-zmin)/(P);
     else                       hz_ = (zmax-zmin)/(P-1);
     ierr = VecGetArray(xcoor,&coors);CHKERRQ(ierr);
     cnt  = 0;
@@ -112,7 +111,7 @@ PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
   MPI_Comm          comm;
   PetscDrawAxis     axis;
   Vec               xcoor;
-  DMDAPeriodicType  periodic;
+  DMDABoundaryType  bx;
 
   PetscFunctionBegin;
   ierr = PetscViewerDrawGetDraw(v,0,&draw);CHKERRQ(ierr);
@@ -123,7 +122,7 @@ PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
 
   ierr = PetscOptionsGetBool(PETSC_NULL,"-draw_vec_mark_points",&showpoints,PETSC_NULL);CHKERRQ(ierr);
 
-  ierr = DMDAGetInfo(da,0,&N,0,0,0,0,0,&step,0,&periodic,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,0,&N,0,0,0,0,0,&step,0,&bx,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&istart,0,0,&isize,0,0);CHKERRQ(ierr);
   ierr = VecGetArrayRead(xin,&array);CHKERRQ(ierr);
   ierr = VecGetLocalSize(xin,&n);CHKERRQ(ierr);
@@ -201,7 +200,7 @@ PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
       ierr = MPI_Send((void*)&array[j+(n-1)*step],1,MPIU_REAL,rank+1,tag1,comm);CHKERRQ(ierr);
       ierr = MPI_Send((void*)&xg[n-1],1,MPIU_REAL,rank+1,tag1,comm);CHKERRQ(ierr);
     }
-    if (!rank && periodic && size > 1) { /* first processor sends first value to last */
+    if (!rank && bx == DMDA_BOUNDARY_PERIODIC && size > 1) { /* first processor sends first value to last */
       ierr = MPI_Send((void*)&array[j],1,MPIU_REAL,size-1,tag2,comm);CHKERRQ(ierr);
     }
 
@@ -227,7 +226,7 @@ PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
         ierr = PetscDrawPoint(draw,xgtmp,tmp,PETSC_DRAW_BLACK);CHKERRQ(ierr);
       }
     }
-    if (rank == size-1 && periodic && size > 1) {
+    if (rank == size-1 && bx == DMDA_BOUNDARY_PERIODIC && size > 1) {
       ierr = MPI_Recv(&tmp,1,MPIU_REAL,0,tag2,comm,&status);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
       ierr = PetscDrawLine(draw,xg[n-2],array[j+step*(n-1)],xg[n-1],tmp,PETSC_DRAW_RED);CHKERRQ(ierr);

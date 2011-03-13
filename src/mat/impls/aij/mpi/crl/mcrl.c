@@ -1,4 +1,3 @@
-#define PETSCMAT_DLL
 
 /*
   Defines a matrix-vector product for the MATMPIAIJCRL matrix class.

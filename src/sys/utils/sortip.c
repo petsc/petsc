@@ -1,4 +1,4 @@
-#define PETSC_DLL
+
 /*
    This file contains routines for sorting integers and doubles with a permutation array.
 

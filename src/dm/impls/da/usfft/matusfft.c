@@ -1,4 +1,3 @@
-#define PETSCMAT_DLL
 
 /*
     Provides an implementation of the Unevenly Sampled FFT algorithm as a Mat.

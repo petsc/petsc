@@ -1,4 +1,4 @@
-#define PETSCMAT_DLL
+
 /*
     ADIC based nonlinear operator object that can be used with FAS
 

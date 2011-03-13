@@ -1,4 +1,3 @@
-#define PETSCTS_DLL
 
 #include "private/tsimpl.h"        /*I "petscts.h"  I*/
 

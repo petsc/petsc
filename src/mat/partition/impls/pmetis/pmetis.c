@@ -1,4 +1,3 @@
-#define PETSCMAT_DLL
  
 #include "../src/mat/impls/adj/mpi/mpiadj.h"    /*I "petscmat.h" I*/
 

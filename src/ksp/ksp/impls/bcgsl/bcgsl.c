@@ -1,4 +1,4 @@
-#define PETSCKSP_DLL
+
 /*
  * Implementation of BiCGstab(L) the paper by D.R. Fokkema,
  * "Enhanced implementation of BiCGStab(L) for solving linear systems

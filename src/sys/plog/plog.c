@@ -1,5 +1,4 @@
 
-#define PETSC_DLL
 /*
       PETSc code to log object creation and destruction and PETSc events.
 
@@ -2086,7 +2085,6 @@ PetscErrorCode  PetscLogViewPython(PetscViewer viewer)
   StageLog          stageLog;
   StageInfo         *stageInfo = PETSC_NULL;
   EventPerfInfo     *eventInfo = PETSC_NULL;
-  ClassPerfInfo     *classInfo;
   const char        *name;
   PetscLogDouble    locTotalTime, TotalTime = 0, TotalFlops = 0;
   PetscLogDouble    numMessages = 0, messageLength = 0, avgMessLen, numReductions = 0;
@@ -2384,9 +2382,7 @@ for(stage = 0; stage < numStages; stage++) {
      stats for stages local to processor sets.
   */
   for(stage = 0; stage < numStages; stage++) {
-    if (localStageUsed[stage]) {
-      classInfo = stageLog->stageInfo[stage].classLog->classInfo;
-    } else {
+    if (!localStageUsed[stage]) {
       ierr = PetscFPrintf(comm, fd, "\n--- Event Stage %d: Unknown\n\n", stage);CHKERRQ(ierr);
     }
   }

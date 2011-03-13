@@ -1,4 +1,4 @@
-#define PETSCMAT_DLL
+
 #include "../src/mat/impls/aij/seq/aij.h"
 
 extern PetscErrorCode Mat_CheckInode(Mat,PetscBool );

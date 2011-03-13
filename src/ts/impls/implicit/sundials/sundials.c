@@ -1,4 +1,3 @@
-#define PETSCTS_DLL
 
 /*
     Provides a PETSc interface to SUNDIALS/CVODE solver.

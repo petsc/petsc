@@ -1,4 +1,3 @@
-#define PETSCKSP_DLL
 
 /*
    This file contains some simple default routines.  
@@ -859,7 +858,7 @@ PetscErrorCode KSPDefaultReset(KSP ksp)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   if (ksp->work)  {
-    ierr      = VecDestroyVecs(&ksp->work,ksp->nwork);CHKERRQ(ierr);
+    ierr      = VecDestroyVecs(ksp->nwork,&ksp->work);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

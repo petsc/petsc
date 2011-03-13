@@ -1,4 +1,3 @@
-#define PETSCKSP_DLL
 
 #include "private/kspimpl.h"  /*I "petscksp.h" I*/
 
@@ -31,6 +30,9 @@ extern PetscErrorCode  KSPCreate_Broyden(KSP);
 extern PetscErrorCode  KSPCreate_GCR(KSP);
 extern PetscErrorCode  KSPCreate_NGMRES(KSP);
 extern PetscErrorCode  KSPCreate_SpecEst(KSP);
+#if !defined(PETSC_USE_COMPLEX)
+extern PetscErrorCode  KSPCreate_DGMRES(KSP);
+#endif
 EXTERN_C_END
   
 /*
@@ -88,6 +90,9 @@ PetscErrorCode  KSPRegisterAll(const char path[])
   ierr = KSPRegisterDynamic(KSPGCR,        path,"KSPCreate_GCR",       KSPCreate_GCR);CHKERRQ(ierr);
   ierr = KSPRegisterDynamic(KSPNGMRES,     path,"KSPCreate_NGMRES",    KSPCreate_NGMRES);CHKERRQ(ierr);
   ierr = KSPRegisterDynamic(KSPSPECEST,    path,"KSPCreate_SpecEst",  KSPCreate_SpecEst);CHKERRQ(ierr);
+#if !defined(PETSC_USE_COMPLEX)
+  ierr = KSPRegisterDynamic(KSPDGMRES,     path,"KSPCreate_DGMRES", KSPCreate_DGMRES); CHKERRQ(ierr);
+#endif
   PetscFunctionReturn(0);
 }
 

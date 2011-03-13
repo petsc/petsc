@@ -1,4 +1,3 @@
-#define PETSCMAT_DLL
 
 /*
      Provides the code that allows PETSc users to register their own

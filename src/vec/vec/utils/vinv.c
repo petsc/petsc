@@ -1,4 +1,3 @@
-#define PETSCVEC_DLL
 
 /*
      Some useful vector utility functions.

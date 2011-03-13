@@ -1,4 +1,4 @@
-#define PETSC_DLL
+
 /*
    Low-level routines for managing dynamic link libraries (DLLs).
 */

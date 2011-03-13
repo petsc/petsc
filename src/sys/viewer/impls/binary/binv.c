@@ -1,4 +1,4 @@
-#define PETSC_DLL
+
 #include "private/viewerimpl.h"    /*I   "petscsys.h"   I*/
 #include <fcntl.h>
 #if defined(PETSC_HAVE_UNISTD_H)

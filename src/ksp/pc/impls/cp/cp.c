@@ -1,4 +1,3 @@
-#define PETSCKSP_DLL
 
 #include "private/pcimpl.h"   /*I "petscpc.h" I*/
 #include "../src/mat/impls/aij/seq/aij.h"

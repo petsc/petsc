@@ -1,4 +1,3 @@
-#define PETSCMAT_DLL
 
 /* 
         Provides an interface to the SuperLU_DIST_2.2 sparse solver

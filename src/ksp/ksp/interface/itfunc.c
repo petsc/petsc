@@ -1,4 +1,3 @@
-#define PETSCKSP_DLL
 
 /*
       Interface KSP routines that the user calls.
@@ -727,8 +726,8 @@ PetscErrorCode  KSPReset(KSP ksp)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "KSPDestroy"
-/*@
+#define __FUNCT__ "KSPDestroy_"
+/*@C
    KSPDestroy - Destroys KSP context.
 
    Collective on KSP
@@ -742,7 +741,7 @@ PetscErrorCode  KSPReset(KSP ksp)
 
 .seealso: KSPCreate(), KSPSetUp(), KSPSolve()
 @*/
-PetscErrorCode  KSPDestroy(KSP ksp)
+PetscErrorCode  KSPDestroy_(KSP ksp)
 {
   PetscErrorCode ierr;
 

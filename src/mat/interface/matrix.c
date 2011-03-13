@@ -1,4 +1,3 @@
-#define PETSCMAT_DLL
 
 /*
    This is where the abstract matrix operations are defined
@@ -1283,8 +1282,8 @@ $    idxm(MatStencil_c,1) = c
  
    For periodic boundary conditions use negative indices for values to the left (below 0; that are to be 
    obtained by wrapping values from right edge). For values to the right of the last entry using that index plus one
-   etc to obtain values that obtained by wrapping the values from the left edge. This does not work for the DMDA_NONPERIODIC
-   wrap.
+   etc to obtain values that obtained by wrapping the values from the left edge. This does not work for anything but the
+   DMDA_BOUNDARY_PERIODIC boundary type.
 
    For indices that don't mean anything for your case (like the k index when working in 2d) or the c index when you have
    a single value per point) you can skip filling those indices.
@@ -5445,8 +5444,8 @@ $    idxm(MatStencil_c,1) = c
 
    For periodic boundary conditions use negative indices for values to the left (below 0; that are to be 
    obtained by wrapping values from right edge). For values to the right of the last entry using that index plus one
-   etc to obtain values that obtained by wrapping the values from the left edge. This does not work for the DMDA_NONPERIODIC
-   wrap.
+   etc to obtain values that obtained by wrapping the values from the left edge. This does not work for anything but the
+   DMDA_BOUNDARY_PERIODIC boundary type.
 
    For indices that don't mean anything for your case (like the k index when working in 2d) or the c index when you have
    a single value per point) you can skip filling those indices.
@@ -6385,6 +6384,7 @@ PetscErrorCode  MatDestroyMatrices(PetscInt n,Mat *mat[])
   }
   /* memory is allocated even if n = 0 */
   ierr = PetscFree(*mat);CHKERRQ(ierr);
+  *mat = PETSC_NULL;
   PetscFunctionReturn(0);
 }
 

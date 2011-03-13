@@ -1,4 +1,4 @@
-#define PETSC_DLL
+
 /*
    Implements the higher-level options database querying methods. These are self-documenting and can attach at runtime to 
    GUI code to display the options and get values from the users.

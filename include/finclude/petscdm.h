@@ -15,22 +15,15 @@
 !
 !  Types of periodicity
 !
-      PetscEnum DMDA_NONPERIODIC
-      PetscEnum DMDA_XPERIODIC
-      PetscEnum DMDA_YPERIODIC
-      PetscEnum DMDA_XYPERIODIC
-      PetscEnum DMDA_XYZPERIODIC
-      PetscEnum DMDA_XZPERIODIC
-      PetscEnum DMDA_YZPERIODIC
-      PetscEnum DMDA_ZPERIODIC
-      PetscEnum DMDA_XYZGHOSTED
+      PetscEnum DMDA_BOUNDARY_NONE
+      PetscEnum DMDA_BOUNDARY_GHOSTED
+      PetscEnum DMDA_BOUNDARY_MIRROR
+      PetscEnum DMDA_BOUNDARY_PERIODIC
 
-      parameter (DMDA_NONPERIODIC = 0,DMDA_XPERIODIC = 1)
-      parameter (DMDA_YPERIODIC = 2)
-      parameter (DMDA_XYPERIODIC = 3,DMDA_XYZPERIODIC = 4)
-      parameter (DMDA_XZPERIODIC = 5,DMDA_YZPERIODIC = 6)
-      parameter (DMDA_ZPERIODIC = 7)
-      parameter (DMDA_XYZGHOSTED = 8)
+      parameter (DMDA_BOUNDARY_NONE = 0)
+      parameter (DMDA_BOUNDARY_GHOSTED = 0)
+      parameter (DMDA_BOUNDARY_MIRROR = 0)
+      parameter (DMDA_BOUNDARY_PERIODIC = 0)
 
 !
 ! DMDAInterpolationType

@@ -240,7 +240,7 @@ int main(int argc,char **args)
      mapping is needed when we determine the global column numbers for
      grid points on a processor edge.
   */
-  ierr = DMDACreate2d(user.comm,DMDA_NONPERIODIC,DMDA_STENCIL_STAR,user.m_eta,
+  ierr = DMDACreate2d(user.comm,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,user.m_eta,
                     user.m_xi,N_eta,N_xi,1,1,PETSC_NULL,PETSC_NULL,&user.da);CHKERRA(ierr);
   ierr = DMCreateGlobalVector(user.da,&user.phi);CHKERRA(ierr);
   ierr = VecGetLocalSize(user.phi,&user.m_ldim);CHKERRA(ierr);

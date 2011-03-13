@@ -1,4 +1,3 @@
-#define PETSCMAT_DLL
 
 /* 
         Provides an interface to the DSCPACK (Domain-Separator Codes) sparse direct solver

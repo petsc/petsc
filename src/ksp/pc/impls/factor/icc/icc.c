@@ -1,4 +1,3 @@
-#define PETSCKSP_DLL
 
 #include "../src/ksp/pc/impls/factor/icc/icc.h"   /*I "petscpc.h" I*/
 
@@ -34,6 +33,18 @@ static PetscErrorCode PCSetup_ICC(PC pc)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "PCReset_ICC"
+static PetscErrorCode PCReset_ICC(PC pc)
+{
+  PC_ICC         *icc = (PC_ICC*)pc->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (((PC_Factor*)icc)->fact) {ierr = MatDestroy(((PC_Factor*)icc)->fact);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "PCDestroy_ICC"
 static PetscErrorCode PCDestroy_ICC(PC pc)
 {
@@ -41,7 +52,7 @@ static PetscErrorCode PCDestroy_ICC(PC pc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (((PC_Factor*)icc)->fact) {ierr = MatDestroy(((PC_Factor*)icc)->fact);CHKERRQ(ierr);}
+  ierr = PCReset_ICC(pc);CHKERRQ(ierr);
   ierr = PetscFree(((PC_Factor*)icc)->ordering);CHKERRQ(ierr);
   ierr = PetscFree(((PC_Factor*)icc)->solvertype);CHKERRQ(ierr);
   ierr = PetscFree(pc->data);CHKERRQ(ierr);
@@ -191,6 +202,7 @@ PetscErrorCode  PCCreate_ICC(PC pc)
   pc->data	               = (void*)icc;
   pc->ops->apply	       = PCApply_ICC;
   pc->ops->setup               = PCSetup_ICC;
+  pc->ops->reset  	       = PCReset_ICC;
   pc->ops->destroy	       = PCDestroy_ICC;
   pc->ops->setfromoptions      = PCSetFromOptions_ICC;
   pc->ops->view                = PCView_ICC;

@@ -1,4 +1,3 @@
-#define PETSCMAT_DLL
 
 /*
       Inverts 6 by 6 matrix using partial pivoting.

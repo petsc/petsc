@@ -1,5 +1,5 @@
 m = 1, N=81
-Matrix Object:
+Matrix Object: 1 MPI processes
   type: seqaij
   rows=36, cols=36
   total: nonzeros=1200, allocated nonzeros=1200

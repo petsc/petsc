@@ -1,4 +1,4 @@
-#define PETSC_DLL
+
 /*
     We define the string operations here. The reason we just do not use 
   the standard string routines in the PETSc code is that on some machines 

@@ -1,4 +1,3 @@
-#define PETSCSNES_DLL
  
 #include "petscdm.h"      /*I      "petscdm.h"    I*/
 #include "private/daimpl.h" 

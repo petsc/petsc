@@ -179,21 +179,25 @@ int main(int argc,char **args)
   if (PreLoadIt==0)
   {
       /* small problem */
-      ierr=DMDACreate3d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,DMDA_STENCIL_STAR,10,10,10,
-            1,PETSC_DECIDE,1,1,1,0,0,0,&da); CHKERRQ(ierr);
+      ierr=DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,
+                        DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,10,10,10,
+                        1,PETSC_DECIDE,1,1,1,0,0,0,&da); CHKERRQ(ierr);
   }
   else
   {
      /* actual problem */
       if (freepart)     /* petsc determines partitioning */
       {
-        ierr=DMDACreate3d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,DMDA_STENCIL_STAR,-10,-10,-10,
-            PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,0,&da); CHKERRQ(ierr);
+        ierr=DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,
+                          DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-10,-10,-10,
+                          PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,
+                          1,1,0,0,0,&da); CHKERRQ(ierr);
       }
       else             /* (1,NP,1) partitioning */
       {
-        ierr=DMDACreate3d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,DMDA_STENCIL_STAR,-10,-10,-10,
-            1,PETSC_DECIDE,1,1,1,0,0,0,&da); CHKERRQ(ierr);
+        ierr=DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUDNARY_NONE,DMDA_BOUDNARY_NONE,
+                          DMDA_BOUDNARY_NONE,DMDA_STENCIL_STAR,-10,-10,-10,
+                          1,PETSC_DECIDE,1,1,1,0,0,0,&da); CHKERRQ(ierr);
       }
 
       /* now we print what partitioning is chosen */

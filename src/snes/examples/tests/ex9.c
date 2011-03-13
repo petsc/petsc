@@ -70,7 +70,7 @@ int main(int argc,char **argv)
   if (user.param >= bratu_lambda_max || user.param <= bratu_lambda_min) SETERRQ(PETSC_COMM_SELF,1,"Lambda is out of range");
   
   /* Set up distributed array */
-  ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,stencil,user.mx,user.my,user.mz,
+  ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,stencil,user.mx,user.my,user.mz,
                     Nx,Ny,Nz,1,1,PETSC_NULL,PETSC_NULL,PETSC_NULL,&user.da);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(user.da,&x);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&r);CHKERRQ(ierr);

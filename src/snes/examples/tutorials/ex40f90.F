@@ -20,7 +20,8 @@
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
 
-      call DMDACreate2d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,              &
+      call DMDACreate2d(PETSC_COMM_WORLD,                               &
+     &     DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,                       &
      &                DMDA_STENCIL_BOX,                                 &
      &                -10,-10,PETSC_DECIDE,PETSC_DECIDE,2,1,            &
      &                PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,da,ierr)

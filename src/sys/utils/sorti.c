@@ -1,4 +1,4 @@
-#define PETSC_DLL
+
 /*
    This file contains routines for sorting integers. Values are sorted in place.
  */

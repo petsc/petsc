@@ -1,4 +1,4 @@
-#define PETSC_DLL
+
 /*
        The default error handlers and code that allows one to change
    error handlers.

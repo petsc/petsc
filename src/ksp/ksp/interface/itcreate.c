@@ -1,4 +1,3 @@
-#define PETSCKSP_DLL
 
 /*
      The basic KSP routines, Create, View etc. are here.
@@ -472,7 +471,7 @@ PetscErrorCode  KSPCreate(MPI_Comm comm,KSP *inksp)
   ierr = KSPInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
-  ierr = PetscHeaderCreate(ksp,_p_KSP,struct _KSPOps,KSP_CLASSID,-1,"KSP",comm,KSPDestroy,KSPView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(ksp,_p_KSP,struct _KSPOps,KSP_CLASSID,-1,"KSP",comm,KSPDestroy_,KSPView);CHKERRQ(ierr);
 
   ksp->max_it        = 10000;
   ksp->pc_side       = PC_LEFT;

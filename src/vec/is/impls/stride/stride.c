@@ -1,4 +1,4 @@
-#define PETSCVEC_DLL
+
 /*
        Index sets of evenly space integers, defined by a 
     start, stride and length.

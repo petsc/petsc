@@ -1,4 +1,4 @@
-#define PETSC_DLL
+
 /*
    This file contains routines for sorting doubles.  Values are sorted in place.
    These are provided because the general sort routines incur a great deal

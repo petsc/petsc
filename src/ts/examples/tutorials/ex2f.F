@@ -118,7 +118,7 @@
 !  Set up the ghost point communication pattern.  There are m total
 !  grid values spread equally among all the processors.
       i1 = 1
-      call DMDACreate1d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,m,i1,i1,                &
+      call DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,m,i1,i1,                &
      &     PETSC_NULL_INTEGER,da,ierr)
 
 !  Extract global and local vectors from DMDA; then duplicate for remaining

@@ -1,4 +1,4 @@
-#define PETSC_DLL
+
 /*
       Code for opening and closing files.
 */

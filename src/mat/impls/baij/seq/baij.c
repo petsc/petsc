@@ -1,4 +1,3 @@
-#define PETSCMAT_DLL
 
 /*
     Defines the basic matrix operations for the BAIJ (compressed row)

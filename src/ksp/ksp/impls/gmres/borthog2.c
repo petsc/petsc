@@ -1,4 +1,3 @@
-#define PETSCKSP_DLL
 
 /*
     Routines used for the orthogonalization of the Hessenberg matrix.

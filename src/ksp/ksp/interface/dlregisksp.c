@@ -1,4 +1,3 @@
-#define PETSCKSP_DLL
 
 #include "private/pcimpl.h"
 #include "private/kspimpl.h"

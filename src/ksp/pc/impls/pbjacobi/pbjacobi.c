@@ -1,4 +1,3 @@
-#define PETSCKSP_DLL
 
 /* 
    Include files needed for the PBJacobi preconditioner:

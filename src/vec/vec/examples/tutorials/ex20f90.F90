@@ -216,7 +216,7 @@
       call VecDestroy(x,ierr)
       call VecDestroy(y,ierr)
       call VecDestroy(w,ierr)
-      call VecDestroyVecsF90(z,ithree,ierr)
+      call VecDestroyVecsF90(ithree,z,ierr)
       call PetscFinalize(ierr)
 
       end

@@ -1,4 +1,4 @@
-#define PETSCVEC_DLL
+
 /*
      Code for creating scatters between vectors. This file 
   includes the code for scattering between sequential vectors and
@@ -746,7 +746,7 @@ PetscErrorCode  VecScatterCreateEmpty(MPI_Comm comm,VecScatter *newctx)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscHeaderCreate(ctx,_p_VecScatter,int,VEC_SCATTER_CLASSID,0,"VecScatter",comm,VecScatterDestroy,VecScatterView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(ctx,_p_VecScatter,int,VEC_SCATTER_CLASSID,0,"VecScatter",comm,VecScatterDestroy_,VecScatterView);CHKERRQ(ierr);
   ctx->inuse               = PETSC_FALSE;
   ctx->beginandendtogether = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-vecscatter_merge",&ctx->beginandendtogether,PETSC_NULL);CHKERRQ(ierr);
@@ -863,7 +863,7 @@ PetscErrorCode  VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
 
   
   /* generate the Scatter context */
-  ierr = PetscHeaderCreate(ctx,_p_VecScatter,int,VEC_SCATTER_CLASSID,0,"VecScatter",comm,VecScatterDestroy,VecScatterView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(ctx,_p_VecScatter,int,VEC_SCATTER_CLASSID,0,"VecScatter",comm,VecScatterDestroy_,VecScatterView);CHKERRQ(ierr);
   ctx->inuse               = PETSC_FALSE;
 
   ctx->beginandendtogether = PETSC_FALSE;
@@ -1629,8 +1629,8 @@ PetscErrorCode  VecScatterEnd(VecScatter ctx,Vec x,Vec y,InsertMode addv,Scatter
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "VecScatterDestroy"
-/*@
+#define __FUNCT__ "VecScatterDestroy_"
+/*@C
    VecScatterDestroy - Destroys a scatter context created by 
    VecScatterCreate().
 
@@ -1643,7 +1643,7 @@ PetscErrorCode  VecScatterEnd(VecScatter ctx,Vec x,Vec y,InsertMode addv,Scatter
 
 .seealso: VecScatterCreate(), VecScatterCopy()
 @*/
-PetscErrorCode  VecScatterDestroy(VecScatter ctx)
+PetscErrorCode  VecScatterDestroy_(VecScatter ctx)
 {
   PetscErrorCode ierr;
 
@@ -1684,7 +1684,7 @@ PetscErrorCode  VecScatterCopy(VecScatter sctx,VecScatter *ctx)
   PetscValidHeaderSpecific(sctx,VEC_SCATTER_CLASSID,1);
   PetscValidPointer(ctx,2);
   if (!sctx->copy) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot copy this type");
-  ierr = PetscHeaderCreate(*ctx,_p_VecScatter,int,VEC_SCATTER_CLASSID,0,"VecScatter",((PetscObject)sctx)->comm,VecScatterDestroy,VecScatterView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(*ctx,_p_VecScatter,int,VEC_SCATTER_CLASSID,0,"VecScatter",((PetscObject)sctx)->comm,VecScatterDestroy_,VecScatterView);CHKERRQ(ierr);
   (*ctx)->to_n   = sctx->to_n;
   (*ctx)->from_n = sctx->from_n;
   ierr = (*sctx->copy)(sctx,*ctx);CHKERRQ(ierr);

@@ -1,4 +1,3 @@
-#define PETSCMAT_DLL
 
 #include "../src/mat/impls/aij/mpi/mpiaij.h"   /*I "petscmat.h" I*/
 #include "petscblaslapack.h"
@@ -3190,7 +3189,7 @@ static int MPILong_Send(void *mess,PetscInt cnt, MPI_Datatype type,int to, int t
   numchunks = cnt/CHUNKSIZE + 1;
   for (i=0; i<numchunks; i++) {
     icnt = PetscMPIIntCast((i < numchunks-1) ? CHUNKSIZE : cnt - (numchunks-1)*CHUNKSIZE);
-    ierr = MPI_Send(mess,icnt,type,to,tag,comm);
+    ierr = MPI_Send(mess,icnt,type,to,tag,comm);if (ierr) return ierr;
     if (type == MPIU_INT) {
       mess = (void*) (((PetscInt*)mess) + CHUNKSIZE);
     } else if (type == MPIU_SCALAR) {
@@ -3210,7 +3209,7 @@ static int MPILong_Recv(void *mess,PetscInt cnt, MPI_Datatype type,int from, int
   numchunks = cnt/CHUNKSIZE + 1;
   for (i=0; i<numchunks; i++) {
     icnt = PetscMPIIntCast((i < numchunks-1) ? CHUNKSIZE : cnt - (numchunks-1)*CHUNKSIZE);
-    ierr = MPI_Recv(mess,icnt,type,from,tag,comm,&status);
+    ierr = MPI_Recv(mess,icnt,type,from,tag,comm,&status);if (ierr) return ierr;
     if (type == MPIU_INT) {
       mess = (void*) (((PetscInt*)mess) + CHUNKSIZE);
     } else if (type == MPIU_SCALAR) {

@@ -1,4 +1,3 @@
-#define PETSCKSP_DLL
 
 /*
     This file implements GMRES (a Generalized Minimal Residual) method.  
@@ -261,7 +260,7 @@ PetscErrorCode KSPReset_GMRES(KSP ksp)
   /* free work vectors */
   ierr = PetscFree(gmres->vecs);CHKERRQ(ierr);
   for (i=0; i<gmres->nwork_alloc; i++) {
-    ierr = VecDestroyVecs(&gmres->user_work[i],gmres->mwork_alloc[i]);CHKERRQ(ierr);
+    ierr = VecDestroyVecs(gmres->mwork_alloc[i],&gmres->user_work[i]);CHKERRQ(ierr);
   }
   gmres->nwork_alloc = 0;
   ierr = PetscFree(gmres->user_work);CHKERRQ(ierr);

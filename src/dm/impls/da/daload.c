@@ -1,4 +1,3 @@
-#define PETSCDM_DLL
 
 #include "private/daimpl.h"     /*I  "petscdm.h"   I*/
 
@@ -27,7 +26,7 @@
 PetscErrorCode  DMDALoad(PetscViewer viewer,PetscInt M,PetscInt N,PetscInt P,DM *da)
 {
   PetscErrorCode ierr;
-  PetscInt       info[8],nmax = 8,i;
+  PetscInt       info[10],nmax = 10,i;
   MPI_Comm       comm;
   char           fieldnametag[32],fieldname[64];
   PetscBool      isbinary,flag;
@@ -42,14 +41,14 @@ PetscErrorCode  DMDALoad(PetscViewer viewer,PetscInt M,PetscInt N,PetscInt P,DM 
 
   ierr = PetscOptionsGetIntArray(PETSC_NULL,"-daload_info",info,&nmax,&flag);CHKERRQ(ierr);
   if (!flag) SETERRQ(((PetscObject)viewer)->comm,PETSC_ERR_FILE_UNEXPECTED,"No DMDA information in file");
-  if (nmax != 8) SETERRQ1(((PetscObject)viewer)->comm,PETSC_ERR_FILE_UNEXPECTED,"Wrong number of items in DMDA information in file: %D",nmax);
+  if (nmax != 10) SETERRQ1(((PetscObject)viewer)->comm,PETSC_ERR_FILE_UNEXPECTED,"Wrong number of items in DMDA information in file: %D",nmax);
 
   if (info[0] == 1) {
-    ierr = DMDACreate1d(comm,(DMDAPeriodicType) info[7],info[1],info[4],info[5],0,da);CHKERRQ(ierr);
+    ierr = DMDACreate1d(comm,(DMDABoundaryType) info[7],info[1],info[4],info[5],0,da);CHKERRQ(ierr);
   } else if (info[0] == 2) {
-    ierr = DMDACreate2d(comm,(DMDAPeriodicType) info[7],(DMDAStencilType) info[6],info[1],info[2],M,N,info[4],info[5],0,0,da);CHKERRQ(ierr);
+    ierr = DMDACreate2d(comm,(DMDABoundaryType) info[7],(DMDABoundaryType) info[8],(DMDAStencilType) info[6],info[1],info[2],M,N,info[4],info[5],0,0,da);CHKERRQ(ierr);
   } else if (info[0] == 3) {
-    ierr = DMDACreate3d(comm,(DMDAPeriodicType) info[7],(DMDAStencilType) info[6],info[1],info[2],info[3],M,N,P,info[4],info[5],0,0,0,da);CHKERRQ(ierr);
+    ierr = DMDACreate3d(comm,(DMDABoundaryType) info[7],(DMDABoundaryType) info[8],(DMDABoundaryType) info[9],(DMDAStencilType) info[6],info[1],info[2],info[3],M,N,P,info[4],info[5],0,0,0,da);CHKERRQ(ierr);
   } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Dimension in info file is not 1, 2, or 3 it is %D",info[0]);
 
   for (i=0; i<info[4]; i++) {
@@ -71,11 +70,11 @@ PetscErrorCode  DMDALoad(PetscViewer viewer,PetscInt M,PetscInt N,PetscInt P,DM 
     PetscInt mlocal;
 
     if (info[0] == 1) {
-      ierr = DMDACreate1d(comm,DMDA_NONPERIODIC,info[1],1,0,0,&dac);CHKERRQ(ierr);
+      ierr = DMDACreate1d(comm,DMDA_BOUNDARY_NONE,info[1],1,0,0,&dac);CHKERRQ(ierr);
     } else if (info[0] == 2) {
-      ierr = DMDACreate2d(comm,DMDA_NONPERIODIC,DMDA_STENCIL_BOX,info[1],info[2],M,N,2,0,0,0,&dac);CHKERRQ(ierr);
+      ierr = DMDACreate2d(comm,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,info[1],info[2],M,N,2,0,0,0,&dac);CHKERRQ(ierr);
     } else if (info[0] == 3) {
-      ierr = DMDACreate3d(comm,DMDA_NONPERIODIC,DMDA_STENCIL_BOX,info[1],info[2],info[3],M,N,P,3,0,0,0,0,&dac);CHKERRQ(ierr);
+      ierr = DMDACreate3d(comm,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,info[1],info[2],info[3],M,N,P,3,0,0,0,0,&dac);CHKERRQ(ierr);
     }
 
     /* this nonsense is so that the vector set to DMDASetCoordinates() does NOT have a DMDA */

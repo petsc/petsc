@@ -1,4 +1,3 @@
-#define PETSC_DLL
 
 #include "engine.h"   /* Matlab include file */
 #include "petscsys.h" 

@@ -1,4 +1,3 @@
-#define PETSCKSP_DLL
 
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
@@ -38,8 +37,8 @@ PetscErrorCode  PCFactorReorderForNonzeroDiagonal_ILU(PC pc,PetscReal z)
 EXTERN_C_END
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCDestroy_ILU_Internal"
-PetscErrorCode PCDestroy_ILU_Internal(PC pc)
+#define __FUNCT__ "PCReset_ILU"
+PetscErrorCode PCReset_ILU(PC pc)
 {
   PC_ILU         *ilu = (PC_ILU*)pc->data;
   PetscErrorCode ierr;
@@ -253,7 +252,7 @@ static PetscErrorCode PCDestroy_ILU(PC pc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PCDestroy_ILU_Internal(pc);CHKERRQ(ierr);
+  ierr = PCReset_ILU(pc);CHKERRQ(ierr);
   ierr = PetscFree(((PC_Factor*)ilu)->solvertype);CHKERRQ(ierr);
   ierr = PetscFree(((PC_Factor*)ilu)->ordering);CHKERRQ(ierr);
   ierr = PetscFree(pc->data);CHKERRQ(ierr);
@@ -389,6 +388,7 @@ PetscErrorCode  PCCreate_ILU(PC pc)
   ((PC_Factor*)ilu)->info.diagonal_fill      = 0.;
   pc->data                     = (void*)ilu;
 
+  pc->ops->reset               = PCReset_ILU;
   pc->ops->destroy             = PCDestroy_ILU;
   pc->ops->apply               = PCApply_ILU;
   pc->ops->applytranspose      = PCApplyTranspose_ILU;

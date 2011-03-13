@@ -1,4 +1,3 @@
-#define PETSCKSP_DLL
 
 /* 
    Provides an interface to the LLNL package hypre

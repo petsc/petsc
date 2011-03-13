@@ -1,4 +1,4 @@
-#define PETSCDM_DLL
+
 #include "private/daimpl.h"    /*I   "petscdm.h"   I*/
 
 #undef __FUNCT__  
@@ -109,7 +109,9 @@ PetscErrorCode  DMCreate_DA(DM da)
   dd->ltol         = PETSC_NULL;
   dd->ao           = PETSC_NULL;
   dd->base         = -1;
-  dd->wrap         = DMDA_NONPERIODIC;
+  dd->bx         = DMDA_BOUNDARY_NONE;
+  dd->by         = DMDA_BOUNDARY_NONE;
+  dd->bz         = DMDA_BOUNDARY_NONE;
   dd->stencil_type = DMDA_STENCIL_BOX;
   dd->interptype   = DMDA_Q1;
   dd->idx          = PETSC_NULL;

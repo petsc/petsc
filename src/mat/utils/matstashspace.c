@@ -1,6 +1,4 @@
 
-#define PETSCMAT_DLL
-
 #include "private/matimpl.h"
 
 /* Get new PetscMatStashSpace into the existing space */

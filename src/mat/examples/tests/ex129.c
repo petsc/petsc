@@ -43,7 +43,7 @@ int main(int argc,char **args)
 
   ierr = DMDACreate(PETSC_COMM_WORLD,&da);CHKERRQ(ierr);
   ierr = DMDASetDim(da,3);CHKERRQ(ierr);
-  ierr = DMDASetPeriodicity(da,DMDA_NONPERIODIC);CHKERRQ(ierr);
+  ierr = DMDASetBoundaryType(da,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE);CHKERRQ(ierr);
   ierr = DMDASetStencilType(da,DMDA_STENCIL_STAR);CHKERRQ(ierr);
   ierr = DMDASetSizes(da,M,M,M);CHKERRQ(ierr);
   ierr = DMDASetNumProcs(da,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
@@ -166,7 +166,7 @@ PetscErrorCode ComputeRHS(DM da,Vec b)
   PetscScalar    h;
 
   PetscFunctionBegin;
-  ierr = DMDAGetInfo(da,0,&mx,&my,&mz,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,0,&mx,&my,&mz,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   h    = 1.0/((mx-1)*(my-1)*(mz-1));
   ierr = VecSet(b,h);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -227,7 +227,7 @@ PetscErrorCode ComputeMatrix(DM da,Mat B)
   ierr = PetscRandomSetInterval(rand,-.001,.001);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
 
-  ierr = DMDAGetInfo(da,0,&mx,&my,&mz,0,0,0,&dof,0,0,0);CHKERRQ(ierr); 
+  ierr = DMDAGetInfo(da,0,&mx,&my,&mz,0,0,0,&dof,0,0,0,0,0);CHKERRQ(ierr); 
   /* For simplicity, this example only works on mx=my=mz */
   if ( mx != my || mx != mz) SETERRQ3(PETSC_COMM_SELF,1,"This example only works with mx %d = my %d = mz %d\n",mx,my,mz);
 

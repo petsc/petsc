@@ -1,4 +1,3 @@
-#define PETSC_DLL
 
 #include "private/viewerimpl.h"  /*I "petscviewer.h" I*/
 

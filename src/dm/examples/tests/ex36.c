@@ -85,7 +85,7 @@ PetscErrorCode DAApplyConformalMapping(DM da,PetscInt idx)
   
   ierr = VecGetArray(Gcoords,&XX);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&sx,&sy,&sz,&nx,&ny,&nz);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(da, &dim, 0,0,0, 0,0,0, 0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da, &dim, 0,0,0, 0,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
   ierr = VecGetLocalSize(Gcoords,&n);CHKERRQ(ierr);
   n = n / dim;
   
@@ -345,7 +345,7 @@ PetscErrorCode da_test_RefineCoords1D(PetscInt mx)
   PetscBool output = PETSC_FALSE;
   
   PetscFunctionBegin;
-  ierr = DMDACreate1d( PETSC_COMM_WORLD, DMDA_NONPERIODIC,
+  ierr = DMDACreate1d( PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE,
                       mx+1,
                       1, /* 1 dof */
                       1, /* stencil = 1 */
@@ -354,7 +354,7 @@ PetscErrorCode da_test_RefineCoords1D(PetscInt mx)
   ierr = DMSetFromOptions(dac);CHKERRQ(ierr);
   
   ierr = DMRefine(dac,PETSC_NULL,&daf);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(daf,0,&Mx,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(daf,0,&Mx,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   Mx--;
   
   ierr = DMDASetUniformCoordinates(dac, -1.0,1.0, PETSC_DECIDE,PETSC_DECIDE, PETSC_DECIDE,PETSC_DECIDE );CHKERRQ(ierr); 
@@ -440,7 +440,7 @@ PetscErrorCode da_test_RefineCoords2D(PetscInt mx,PetscInt my)
   PetscBool output = PETSC_FALSE;
   
   PetscFunctionBegin;
-  ierr = DMDACreate2d( PETSC_COMM_WORLD, DMDA_NONPERIODIC, DMDA_STENCIL_BOX,
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE, DMDA_STENCIL_BOX,
                       mx+1, my+1,
                       PETSC_DECIDE, PETSC_DECIDE,
                       1, /* 1 dof */
@@ -450,7 +450,7 @@ PetscErrorCode da_test_RefineCoords2D(PetscInt mx,PetscInt my)
   ierr = DMSetFromOptions(dac);CHKERRQ(ierr);
   
   ierr = DMRefine(dac,PETSC_NULL,&daf);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(daf,0,&Mx,&My,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(daf,0,&Mx,&My,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   Mx--; My--;
   
   ierr = DMDASetUniformCoordinates(dac, -1.0,1.0, -1.0,1.0, PETSC_DECIDE,PETSC_DECIDE );CHKERRQ(ierr); 
@@ -544,7 +544,7 @@ PetscErrorCode da_test_RefineCoords3D(PetscInt mx,PetscInt my,PetscInt mz)
   PetscBool output = PETSC_FALSE;
   
   PetscFunctionBegin;
-  ierr = DMDACreate3d( PETSC_COMM_WORLD, DMDA_NONPERIODIC, DMDA_STENCIL_BOX,
+  ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,
                       mx+1, my+1,mz+1,
                       PETSC_DECIDE, PETSC_DECIDE,PETSC_DECIDE,
                       1, /* 1 dof */
@@ -554,7 +554,7 @@ PetscErrorCode da_test_RefineCoords3D(PetscInt mx,PetscInt my,PetscInt mz)
   ierr = DMSetFromOptions(dac);CHKERRQ(ierr);
   
   ierr = DMRefine(dac,PETSC_NULL,&daf);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(daf,0,&Mx,&My,&Mz,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(daf,0,&Mx,&My,&Mz,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   Mx--; My--; Mz--;
   
   ierr = DMDASetUniformCoordinates(dac, -1.0,1.0, -1.0,1.0, -1.0,1.0 );CHKERRQ(ierr); 

@@ -1,4 +1,3 @@
-#define PETSCVEC_DLL
 
 /*  
    Defines the abstract operations on index sets, i.e. the public interface. 

@@ -29,7 +29,7 @@ PetscErrorCode GenerateSliceScatter(DM da,VecScatter *scatter,Vec *vslice)
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
   ierr = DMDAGetAO(da,&ao);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(da,0,&M,&N,&P,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,0,&M,&N,&P,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
 
   /* 
      nslice is number of degrees of freedom in this processors slice
@@ -88,7 +88,7 @@ int main(int argc,char **argv)
   DM             da;
   Vec            local,global,vslice;
   PetscScalar    value;
-  DMDAPeriodicType wrap = DMDA_XYPERIODIC;
+  DMDABoundaryType wrap = DMDA_XYPERIODIC;
   DMDAStencilType  stencil_type = DMDA_STENCIL_BOX;
   VecScatter     scatter;
 

@@ -1,4 +1,3 @@
-#define PETSCDM_DLL
 
 /*
   These AO application ordering routines do not require that the input
