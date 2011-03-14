@@ -109,29 +109,43 @@ cdef extern from * nogil:
 
 # --------------------------------------------------------------------
 
-cdef inline int asBoundary(PetscInt dim, 
-                           object boundary,
-                           PetscDABoundaryType *x,
-                           PetscDABoundaryType *y,
-                           PetscDABoundaryType *z) except -1:
+cdef inline PetscDABoundaryType asBoundaryType(object boundary) \
+    except <PetscDABoundaryType>(-1):
     if boundary is None:
-        return 0
+        return DA_BOUNDARY_NONE
     if isinstance(boundary, str):
         if boundary == 'none':
-            boundary = DA_BOUNDARY_NONE
+            return DA_BOUNDARY_NONE
         elif boundary == 'ghosted':
-            boundary = DA_BOUNDARY_GHOSTED
+            return DA_BOUNDARY_GHOSTED
         elif boundary == 'mirror':
-            boundary = DA_BOUNDARY_MIRROR
+            return DA_BOUNDARY_MIRROR
         elif boundary == 'periodic':
-            boundary = DA_BOUNDARY_PERIODIC
+            return DA_BOUNDARY_PERIODIC
         else:
             raise ValueError("unknown boundary type: %s" % boundary)
-    if isinstance(boundary, int):
-        boundary = (boundary,)*toInt(dim)
-    if   dim == 1: (x[0],) = boundary
-    elif dim == 2: (x[0],y[0]) = boundary
-    elif dim == 3: (x[0],y[0],z[0]) = boundary
+    return boundary
+
+cdef inline int asBoundary(PetscInt dim, 
+                           object boundary,
+                           PetscDABoundaryType *_x,
+                           PetscDABoundaryType *_y,
+                           PetscDABoundaryType *_z) except -1:
+    if boundary is None: return 0
+    cdef object x, y, z
+    if isinstance(boundary, str):
+        x = y = z = boundary
+    elif isinstance(boundary, int):
+        x = y = z = boundary
+    else:
+        x = y = z = None
+        if   dim == 1: (x,) = boundary
+        elif dim == 2: (x, y) = boundary
+        elif dim == 3: (x, y, z) = boundary
+    #
+    if dim >= 1: _x[0] = asBoundaryType(x)
+    if dim >= 2: _y[0] = asBoundaryType(y)
+    if dim >= 3: _z[0] = asBoundaryType(z)
     return 0
 
 cdef inline object toBoundary(PetscInt dim, 
