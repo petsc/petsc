@@ -362,7 +362,10 @@ class DependencyBuilder(logger.Logger):
     - Source files depend on headers
     '''
     with file(depFile) as f:
-      target, deps = f.read().split(':')
+      try:
+        target, deps = f.read().split(':')
+      except ValueError, e:
+        self.logPrint('ERROR in dependency file %s: %s' % (depFile, str(e)))
     target = target.split()[0]
     assert(target == self.sourceManager.getObjectName(source))
     deps = [d for d in deps.replace('\\','').split() if not os.path.splitext(d)[1] == '.mod']
