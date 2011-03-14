@@ -20,7 +20,7 @@ extern  MPI_Datatype  MPIU_2INT;
      Defines operations that are different for complex and real numbers;
    note that one cannot really mix the use of complex and real in the same 
    PETSc program. All PETSc objects in one program are built around the object
-   PetscScalar which is either always a double or a complex.
+   PetscScalar which is either always a real or a complex.
 
 */
 
@@ -55,8 +55,7 @@ typedef std::complex<double> PetscScalar;
 #include <complex.h>
 
 /* 
-   C support of complex numbers: Warning it needs a 
-   C99 compliant compiler to work...
+   C support of complex numbers: Requires C99 compliant compiler
  */
 
 #if defined(PETSC_USE_SCALAR_SINGLE)
@@ -112,12 +111,6 @@ extern  MPI_Datatype  MPI_C_COMPLEX;
 #else
 #define MPIU_SCALAR         MPI_C_DOUBLE_COMPLEX
 #endif
-#if defined(PETSC_USE_SCALAR_MAT_SINGLE)
-#define MPIU_MATSCALAR        ??Notdone
-#else
-#define MPIU_MATSCALAR      MPI_C_DOUBLE_COMPLEX
-#endif
-
 
 /* Compiling for real numbers only */
 #else
@@ -127,13 +120,6 @@ extern  MPI_Datatype  MPI_C_COMPLEX;
 #    define MPIU_SCALAR           MPI_LONG_DOUBLE
 #  else
 #    define MPIU_SCALAR           MPI_DOUBLE
-#  endif
-#  if defined(PETSC_USE_SCALAR_MAT_SINGLE) || defined(PETSC_USE_SCALAR_SINGLE)
-#    define MPIU_MATSCALAR        MPI_FLOAT
-#  elif defined(PETSC_USE_SCALAR_LONG_DOUBLE)
-#    define MPIU_MATSCALAR        MPI_LONG_DOUBLE
-#  else
-#    define MPIU_MATSCALAR        MPI_DOUBLE
 #  endif
 #  define PetscRealPart(a)      (a)
 #  define PetscImaginaryPart(a) (0.)
@@ -165,20 +151,6 @@ extern  MPI_Datatype  MPI_C_COMPLEX;
 
 #define PetscSign(a) (((a) >= 0) ? ((a) == 0 ? 0 : 1) : -1)
 #define PetscAbs(a)  (((a) >= 0) ? (a) : -(a))
-/*
-       Allows compiling PETSc so that matrix values are stored in 
-   single precision but all other objects still use double
-   precision. This does not work for complex numbers in that case
-   it remains double
-
-          EXPERIMENTAL! NOT YET COMPLETELY WORKING
-*/
-
-#if defined(PETSC_USE_SCALAR_MAT_SINGLE)
-typedef float MatScalar;
-#else
-typedef PetscScalar MatScalar;
-#endif
 
 #if defined(PETSC_USE_SCALAR_SINGLE)
   typedef float PetscReal;
@@ -187,15 +159,6 @@ typedef PetscScalar MatScalar;
 #else 
   typedef double PetscReal;
 #endif
-
-#if defined(PETSC_USE_COMPLEX)
-typedef PetscReal MatReal;
-#elif defined(PETSC_USE_SCALAR_MAT_SINGLE) || defined(PETSC_USE_SCALAR_SINGLE)
-typedef float MatReal;
-#else
-typedef PetscReal MatReal;
-#endif
-
 
 /* --------------------------------------------------------------------------*/
 
@@ -354,7 +317,6 @@ extern PetscErrorCode  PetscGlobalSum(MPI_Comm, const PetscScalar*,PetscScalar*)
 
 M*/
 #if defined(PETSC_HAVE_ISINF) && defined(PETSC_HAVE_ISNAN)
-/* I had to introduce these inline functions because the C++ <valarray> header invalidates isinf(), making it std::isinf() */
 PETSC_STATIC_INLINE PetscErrorCode PetscIsInfOrNanScalar(PetscScalar a) {
   return isinf(PetscAbsScalar(a)) || isnan(PetscAbsScalar(a));
 }
@@ -363,16 +325,24 @@ PETSC_STATIC_INLINE PetscErrorCode PetscIsInfOrNanReal(PetscReal a) {
 }
 #elif defined(PETSC_HAVE__FINITE) && defined(PETSC_HAVE__ISNAN)
 #if defined(PETSC_HAVE_FLOAT_H)
-#include "float.h"  /* windows defines _finite() in float.h */
+#include "float.h"  /* Microsoft Windows defines _finite() in float.h */
 #endif
 #if defined(PETSC_HAVE_IEEEFP_H)
 #include "ieeefp.h"  /* Solaris prototypes these here */
 #endif
-#define PetscIsInfOrNanScalar(a) (!_finite(PetscAbsScalar(a)) || _isnan(PetscAbsScalar(a)))
-#define PetscIsInfOrNanReal(a) (!_finite(a) || _isnan(a))
+PETSC_STATIC_INLINE PetscErrorCode PetscIsInfOrNanScalar(PetscScalar a) {
+  return !_finite(PetscAbsScalar(a)) || _isnan(PetscAbsScalar(a));
+}
+PETSC_STATIC_INLINE PetscErrorCode PetscIsInfOrNanReal(PetscReal a) {
+  return !_finite(a) || _isnan(a);
+}
 #else
-#define PetscIsInfOrNanScalar(a) ((a - a) != 0.0)
-#define PetscIsInfOrNanReal(a) ((a - a) != 0.0)
+PETSC_STATIC_INLINE PetscErrorCode PetscIsInfOrNanScalar(PetscScalar a) {
+  return  ((a - a) != 0.0);
+}
+PETSC_STATIC_INLINE PetscErrorCode PetscIsInfOrNanReal(PetscReal a) {
+  return ((a - a) != 0.0);
+}
 #endif
 
 
@@ -387,6 +357,14 @@ typedef double PetscLogDouble;
 
 #define PassiveReal   PetscReal
 #define PassiveScalar PetscScalar
+
+/*
+    These macros are currently hardwired to match the regular data types, so there is no support for a different
+    MatScalar from PetscScalar. We left the MatScalar in the source just in case we use it again.
+ */
+#define MPIU_MATSCALAR MPIU_SCALAR
+typedef PetscScalar MatScalar;
+typedef PetscReal MatReal;
 
 
 PETSC_EXTERN_CXX_END
