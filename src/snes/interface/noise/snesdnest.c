@@ -1,7 +1,7 @@
 
 /* fnoise/snesdnest.F -- translated by f2c (version 20020314).
 */
-#include "petscsys.h"
+#include <petscsys.h>
 #define FALSE_ 0
 #define TRUE_ 1
 

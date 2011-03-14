@@ -1,6 +1,6 @@
 
-#include "private/pcimpl.h"
-#include "private/kspimpl.h"
+#include <private/pcimpl.h>
+#include <private/kspimpl.h>
 
 
 const char *PCSides[]          = {"LEFT","RIGHT","SYMMETRIC","PCSide","PC_",0};

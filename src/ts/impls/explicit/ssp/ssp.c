@@ -2,7 +2,7 @@
 /*
        Code for Timestepping with explicit SSP.
 */
-#include "private/tsimpl.h"                /*I   "petscts.h"   I*/
+#include <private/tsimpl.h>                /*I   "petscts.h"   I*/
 
 PetscFList TSSSPList = 0;
 #define TSSSPType char*

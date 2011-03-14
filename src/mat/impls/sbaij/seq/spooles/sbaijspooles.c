@@ -3,7 +3,7 @@
    Provides an interface to the Spooles serial sparse solver
 */
 
-#include "../src/mat/impls/aij/seq/spooles/spooles.h"
+#include <../src/mat/impls/aij/seq/spooles/spooles.h>
 
 extern PetscErrorCode MatDestroy_SeqSBAIJ(Mat);
 

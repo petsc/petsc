@@ -1,6 +1,6 @@
 
-#include "petscsys.h"
-#include "petscis.h"
+#include <petscsys.h>
+#include <petscis.h>
 
 #if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
@@ -8,7 +8,7 @@
 
 EXTERN_C_BEGIN
 
-#include "ad_deriv.h"
+#include <ad_deriv.h>
 
 void PetscADSetValueAndColor(DERIV_TYPE *vars,int n,ISColoringValue *colors,double *values)
 {

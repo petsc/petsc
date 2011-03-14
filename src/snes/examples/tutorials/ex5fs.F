@@ -20,7 +20,7 @@
 
       implicit none
 
-#include "finclude/petscsys.h"
+#include <finclude/petscsys.h>
       integer  ierr,mx,my
 
 !  Input/output variables:

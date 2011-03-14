@@ -1,5 +1,5 @@
 
-#include "petscdraw.h"     /*I "petscdraw.h"  I*/
+#include <petscdraw.h>     /*I "petscdraw.h"  I*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawZoom" 

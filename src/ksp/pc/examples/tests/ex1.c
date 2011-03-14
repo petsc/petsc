@@ -1,7 +1,7 @@
 
 static char help[] = "Tests the creation of a PC context.\n\n";
 
-#include "petscpc.h"
+#include <petscpc.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

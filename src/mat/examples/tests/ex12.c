@@ -2,7 +2,7 @@
 static char help[] = "Tests the use of MatZeroRows() for parallel matrices.\n\
 This example also tests the use of MatDuplicate() for both MPIAIJ and MPIBAIJ matrices";
 
-#include "petscmat.h"
+#include <petscmat.h>
 
 extern PetscErrorCode TestMatZeroRows_Basic(Mat,IS,PetscScalar);
 extern PetscErrorCode TestMatZeroRows_with_no_allocation(Mat,IS,PetscScalar);

@@ -2,7 +2,7 @@
 /*
    This file contains routines for Parallel vector operations.
  */
-#include "../src/vec/vec/impls/mpi/pvecimpl.h"   /*I  "petscvec.h"   I*/
+#include <../src/vec/vec/impls/mpi/pvecimpl.h>   /*I  "petscvec.h"   I*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecPointwiseMax_Seq"
@@ -70,7 +70,7 @@ static PetscErrorCode VecPointwiseMaxAbs_Seq(Vec win,Vec xin,Vec yin)
   PetscFunctionReturn(0);
 }
 
-#include "../src/vec/vec/impls/seq/ftn-kernels/fxtimesy.h"
+#include <../src/vec/vec/impls/seq/ftn-kernels/fxtimesy.h>
 #undef __FUNCT__  
 #define __FUNCT__ "VecPointwiseMult_Seq"
 static PetscErrorCode VecPointwiseMult_Seq(Vec win,Vec xin,Vec yin)
@@ -292,7 +292,7 @@ static PetscErrorCode VecCopy_Seq(Vec xin,Vec yin)
   PetscFunctionReturn(0);
 }
 
-#include "petscblaslapack.h"
+#include <petscblaslapack.h>
 #undef __FUNCT__  
 #define __FUNCT__ "VecSwap_Seq"
 static PetscErrorCode VecSwap_Seq(Vec xin,Vec yin)

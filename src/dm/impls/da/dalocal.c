@@ -3,14 +3,14 @@
   Code for manipulating distributed regular arrays in parallel.
 */
 
-#include "private/daimpl.h"    /*I   "petscdmda.h"   I*/
+#include <private/daimpl.h>    /*I   "petscdmda.h"   I*/
 
 /*
    This allows the DMDA vectors to properly tell MATLAB their dimensions
 */
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
-#include "engine.h"   /* MATLAB include file */
-#include "mex.h"      /* MATLAB include file */
+#include <engine.h>   /* MATLAB include file */
+#include <mex.h>      /* MATLAB include file */
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "VecMatlabEnginePut_DA2d"
@@ -280,7 +280,7 @@ PetscErrorCode  DMRestoreGlobalVector(DM dm,Vec* g)
 #if defined(PETSC_HAVE_ADIC)
 
 EXTERN_C_BEGIN
-#include "adic/ad_utils.h"
+#include <adic/ad_utils.h>
 EXTERN_C_END
 
 #undef __FUNCT__

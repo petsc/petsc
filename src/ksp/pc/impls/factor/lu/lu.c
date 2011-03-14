@@ -5,7 +5,7 @@
          a direct solver.
 */
 
-#include "../src/ksp/pc/impls/factor/lu/lu.h"  /*I "petscpc.h" I*/
+#include <../src/ksp/pc/impls/factor/lu/lu.h>  /*I "petscpc.h" I*/
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  

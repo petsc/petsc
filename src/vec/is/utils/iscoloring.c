@@ -1,5 +1,5 @@
 
-#include "petscis.h"    /*I "petscis.h"  I*/
+#include <petscis.h>    /*I "petscis.h"  I*/
 
 const char *ISColoringTypes[] = {"global","ghosted","ISColoringType","IS_COLORING_",0};
 

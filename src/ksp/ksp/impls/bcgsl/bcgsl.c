@@ -11,9 +11,9 @@
  * loops and the macros for block solvers converted from LINPACK; there is no way
  * calls to BLAS/LAPACK make sense for size 2, 3, 4, etc.
  */
-#include "private/kspimpl.h"              /*I   "petscksp.h" I*/
-#include "../src/ksp/ksp/impls/bcgsl/bcgslimpl.h"
-#include "petscblaslapack.h"
+#include <private/kspimpl.h>              /*I   "petscksp.h" I*/
+#include <../src/ksp/ksp/impls/bcgsl/bcgslimpl.h>
+#include <petscblaslapack.h>
 
 
 #undef __FUNCT__

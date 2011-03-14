@@ -1,10 +1,10 @@
 
 #if !defined(__MPISBAIJ_H)
 #define __MPISBAIJ_H
-#include "../src/mat/impls/baij/seq/baij.h"
-#include "../src/sys/ctable.h"
-#include "../src/mat/impls/sbaij/seq/sbaij.h"
-#include "../src/mat/impls/baij/mpi/mpibaij.h"
+#include <../src/mat/impls/baij/seq/baij.h>
+#include <../src/sys/ctable.h>
+#include <../src/mat/impls/sbaij/seq/sbaij.h>
+#include <../src/mat/impls/baij/mpi/mpibaij.h>
 
 typedef struct {
   MPIBAIJHEADER;

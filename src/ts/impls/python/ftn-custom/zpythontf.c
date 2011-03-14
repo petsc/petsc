@@ -1,5 +1,5 @@
-#include "private/fortranimpl.h"
-#include "petscts.h"
+#include <private/fortranimpl.h>
+#include <petscts.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define tspythonsettype_            TSPYTHONSETTYPE

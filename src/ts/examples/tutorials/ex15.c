@@ -24,8 +24,8 @@ Program usage:
         
 */
 
-#include "petscdmda.h"
-#include "petscts.h"
+#include <petscdmda.h>
+#include <petscts.h>
 
 /* 
    User-defined data structures and routines

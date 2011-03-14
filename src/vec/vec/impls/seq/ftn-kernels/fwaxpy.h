@@ -1,6 +1,6 @@
 
 #if !defined(__FWAXPY_H)
-#include "petscsys.h"
+#include <petscsys.h>
 #if defined(PETSC_USE_FORTRAN_KERNEL_WAXPY)
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define fortranwaxpy_ FORTRANWAXPY

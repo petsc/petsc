@@ -35,10 +35,10 @@ T*/
      petscviewer.h - viewers               petscpc.h  - preconditioners
      petscksp.h   - linear solvers
 */
-#include "petscdmda.h"
-#include "petscdmmg.h"
-#include "petscsnes.h"
-#include "../src/snes/impls/ls/lsimpl.h"
+#include <petscdmda.h>
+#include <petscdmmg.h>
+#include <petscsnes.h>
+#include <../src/snes/impls/ls/lsimpl.h>
 /* 
    User-defined application context - contains data needed by the 
    application-provided call-back routines, FormJacobianLocal() and

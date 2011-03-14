@@ -2,9 +2,9 @@
 
 #include <math.h>
 #include <queue>
-#include "private/pcimpl.h"   /*I "petscpc.h" I*/
-#include "boost/graph/adjacency_list.hpp"
-#include "boost/graph/subgraph.hpp"
+#include <private/pcimpl.h>   /*I "petscpc.h" I*/
+#include <boost/graph/adjacency_list.hpp>
+#include <boost/graph/subgraph.hpp>
 
 using namespace boost;
 

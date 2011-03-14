@@ -1,7 +1,7 @@
 #include <list>
 #include <Mesh.hh>
 #include <Distribution.hh>
-#include "petscmesh.h"
+#include <petscmesh.h>
 #include <stdlib.h>
 #include <string>
 #include <triangle.h>

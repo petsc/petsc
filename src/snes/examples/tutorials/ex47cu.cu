@@ -3,9 +3,9 @@ static char help[] = "Solves -Laplacian u - exp(u) = 0,  0 < x < 1 using GPU\n\n
    Same as ex47.c except it also uses the GPU to evaluate the function
 */
 
-#include "petscdmda.h"
-#include "petscsnes.h"
-#include "petsccusp.h"
+#include <petscdmda.h>
+#include <petscsnes.h>
+#include <petsccusp.h>
 
 extern PetscErrorCode ComputeFunction(SNES,Vec,Vec,void*), ComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 PetscBool  useCUSP = PETSC_FALSE;

@@ -26,8 +26,8 @@ T*/
      petscksp.h   - linear solvers
 */
 
-#include "petscdmda.h"
-#include "petscsnes.h"
+#include <petscdmda.h>
+#include <petscsnes.h>
 
 /* 
    User-defined routines.  Note that immediately before each routine below,

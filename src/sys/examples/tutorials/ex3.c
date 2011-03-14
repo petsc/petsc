@@ -18,7 +18,7 @@ T*/
 /* 
   Include "petscsys.h" so that we can use PETSc profiling routines.
 */
-#include "petscsys.h"
+#include <petscsys.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

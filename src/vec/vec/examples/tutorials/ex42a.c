@@ -1,7 +1,7 @@
 
 static char help[] = "Sends a PETSc vector to a socket connection, receives it back, within a loop. Works with ex42.c.\n";
 
-#include "petscvec.h"
+#include <petscvec.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

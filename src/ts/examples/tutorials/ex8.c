@@ -13,7 +13,7 @@ static char help[] = "Nonlinear DAE.\n";
      petscviewer.h - viewers               petscpc.h  - preconditioners
      petscksp.h   - linear solvers
 */
-#include "petscts.h"
+#include <petscts.h>
 
 typedef struct _Problem *Problem;
 struct _Problem {

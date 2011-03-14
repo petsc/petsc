@@ -3,7 +3,7 @@
      Provides the interface functions for vector operations that have PetscScalar/PetscReal in the signature
    These are the vector functions the user calls.
 */
-#include "private/vecimpl.h"    /*I "petscvec.h" I*/
+#include <private/vecimpl.h>    /*I "petscvec.h" I*/
 
 #define PetscCheckSameSizeVec(x,y) \
   if ((x)->map->N != (y)->map->N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths"); \

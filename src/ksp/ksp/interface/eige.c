@@ -1,6 +1,6 @@
 
-#include "private/kspimpl.h"   /*I "petscksp.h" I*/
-#include "petscblaslapack.h"
+#include <private/kspimpl.h>   /*I "petscksp.h" I*/
+#include <petscblaslapack.h>
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPComputeExplicitOperator"

@@ -14,7 +14,7 @@
  * Contributed by Victor Eijkhout 2003.
  */
 
-#include "petscksp.h"
+#include <petscksp.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

@@ -1,7 +1,7 @@
 static char help[] = "Testing MatCreateMPIAIJWithSplitArrays().\n\n";
 
-#include "petscmat.h"
-#include "../src/mat/impls/aij/mpi/mpiaij.h"
+#include <petscmat.h>
+#include <../src/mat/impls/aij/mpi/mpiaij.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

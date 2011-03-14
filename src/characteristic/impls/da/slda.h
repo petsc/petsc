@@ -1,7 +1,7 @@
 #if !defined(_CHARACTERISTIC_DA_)
 #define _CHARACTERISTIC_DA_
 
-#include "../src/characteristic/characteristicimpl.h"        /*I "characteristic.h" I*/
+#include <../src/characteristic/characteristicimpl.h>        /*I "characteristic.h" I*/
 
 typedef struct {
   PetscInt dummy;

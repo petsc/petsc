@@ -3,7 +3,7 @@
         Provides an interface to the LUSOL package of ....
 
 */
-#include "../src/mat/impls/aij/seq/aij.h"
+#include <../src/mat/impls/aij/seq/aij.h>
 
 #if defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define LU1FAC   lu1fac_

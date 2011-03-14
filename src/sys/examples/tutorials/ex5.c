@@ -5,8 +5,8 @@ static char help[] = "Demonstrates using the PetscBag Object\n\n";
    Concepts: bags;
    Processors: n
 T*/
-#include "petscsys.h"
-#include "petscbag.h"
+#include <petscsys.h>
+#include <petscbag.h>
 
 /*
   Enum variables can be stored in a bag but require a string array

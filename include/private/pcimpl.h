@@ -2,8 +2,8 @@
 #ifndef _PCIMPL_H
 #define _PCIMPL_H
 
-#include "petscksp.h"
-#include "petscpc.h"
+#include <petscksp.h>
+#include <petscpc.h>
 
 typedef struct _PCOps *PCOps;
 struct _PCOps {

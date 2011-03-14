@@ -1,4 +1,4 @@
-#include "private/viewerimpl.h"    /*I   "petscsys.h"   I*/
+#include <private/viewerimpl.h>    /*I   "petscsys.h"   I*/
 #include <hdf5.h>
 
 typedef struct GroupList {

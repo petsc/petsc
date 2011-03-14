@@ -1,7 +1,7 @@
 
 static char help[] = "Tests MatSeq(B)AIJSetColumnIndices().\n\n";
 
-#include "petscmat.h"
+#include <petscmat.h>
 
 /*
       Generate the following matrix:

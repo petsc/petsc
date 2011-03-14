@@ -1,9 +1,9 @@
  
-#include "petscdmda.h"      /*I      "petscdmda.h"    I*/
-#include "petscpcmg.h"      /*I      "petscpcmg.h"    I*/
-#include "petscdmmg.h"    /*I      "petscdmmg.h"  I*/
-#include "../src/mat/blockinvert.h"
-#include "../src/snes/impls/ls/lsimpl.h"
+#include <petscdmda.h>      /*I      "petscdmda.h"    I*/
+#include <petscpcmg.h>      /*I      "petscpcmg.h"    I*/
+#include <petscdmmg.h>    /*I      "petscdmmg.h"  I*/
+#include <../src/mat/blockinvert.h>
+#include <../src/snes/impls/ls/lsimpl.h>
 
 EXTERN_C_BEGIN
 extern PetscErrorCode  NLFRelax_DAAD(NLF,MatSORType,PetscInt,Vec);
@@ -87,7 +87,7 @@ PetscErrorCode  SNESDAComputeJacobianWithAdic(SNES snes,Vec X,Mat *J,Mat *B,MatS
   PetscFunctionReturn(0);
 }
 
-#include "../src/ksp/pc/impls/mg/mgimpl.h"                    /*I "petscpcmg.h" I*/
+#include <../src/ksp/pc/impls/mg/mgimpl.h>                    /*I "petscpcmg.h" I*/
 /*
           This is pre-beta FAS code. It's design should not be taken seriously!
 
@@ -328,7 +328,7 @@ PetscErrorCode DMMGSolveFASb(DMMG *dmmg,PetscInt level)
 }
 
 EXTERN_C_BEGIN
-#include "adic/ad_utils.h"
+#include <adic/ad_utils.h>
 EXTERN_C_END
 
 #undef __FUNCT__  

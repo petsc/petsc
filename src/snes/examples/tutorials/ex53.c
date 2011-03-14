@@ -1,6 +1,6 @@
 
-#include "petscsnes.h"
-#include "../src/snes/impls/vi/viimpl.h"
+#include <petscsnes.h>
+#include <../src/snes/impls/vi/viimpl.h>
 
 typedef struct {
   Vec         q,zz,lb,ub;

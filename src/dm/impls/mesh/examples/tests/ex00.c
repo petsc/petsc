@@ -3,7 +3,7 @@ static char help[] = "Tests basic ALE memory management and logging.\n\n";
 #include <Sifter.hh>
 #include <iostream>
 
-#include "petscmesh.h"
+#include <petscmesh.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "MemTest"

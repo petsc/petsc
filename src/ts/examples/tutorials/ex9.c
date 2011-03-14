@@ -30,10 +30,10 @@ static const char help[] = "1D periodic Finite Volume solver in slope-limiter fo
 /* To get isfinite in math.h */
 #define _XOPEN_SOURCE 600
 
-#include "petscts.h"
-#include "petscdmda.h"
+#include <petscts.h>
+#include <petscdmda.h>
 
-#include "../src/mat/blockinvert.h" /* For the Kernel_*_gets_* stuff for BAIJ */
+#include <../src/mat/blockinvert.h> /* For the Kernel_*_gets_* stuff for BAIJ */
 
 static inline PetscReal Sgn(PetscReal a) { return (a<0) ? -1 : 1; }
 static inline PetscReal Abs(PetscReal a) { return (a<0) ? 0 : a; }

@@ -1,7 +1,7 @@
 
 #include <stdio.h>
-#include "petscsys.h"
-#include "../src/sys/viewer/impls/socket/socket.h"
+#include <petscsys.h>
+#include <../src/sys/viewer/impls/socket/socket.h>
 
 
 /*

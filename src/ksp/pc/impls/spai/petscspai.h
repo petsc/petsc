@@ -5,7 +5,7 @@
 */
 #ifndef __SPAI_PACKAGE
 #define __SPAI_PACKAGE
-#include "petscpc.h"
+#include <petscpc.h>
 
 extern int  MatDumpSPAI(Mat,FILE *);
 extern int  VecDumpSPAI(Vec,FILE *);

@@ -20,7 +20,7 @@ File Description:
 
 ************************************gs.c**************************************/
 
-#include "../src/ksp/pc/impls/tfs/tfs.h"
+#include <../src/ksp/pc/impls/tfs/tfs.h>
 
 /* default length of number of items via tree - doubles if exceeded */
 #define TREE_BUF_SZ 2048;

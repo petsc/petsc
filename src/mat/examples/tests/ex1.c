@@ -2,7 +2,7 @@
 static char help[] = "Tests LU, Cholesky factorization and MatMatSolve() for a sequential dense matrix. \n\
                       For MATSEQDENSE matrix, the factorization is just a thin wrapper to LAPACK \n\n";
 
-#include "petscmat.h"
+#include <petscmat.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

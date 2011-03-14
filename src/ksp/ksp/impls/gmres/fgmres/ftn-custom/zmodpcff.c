@@ -1,5 +1,5 @@
-#include "private/fortranimpl.h"
-#include "petscksp.h"
+#include <private/fortranimpl.h>
+#include <petscksp.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define kspfgmressetmodifypc_      KSPFGMRESSETMODIFYPC

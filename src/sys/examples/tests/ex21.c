@@ -1,7 +1,7 @@
 
 static char help[] = "Tests PetscTreeProcess()";
 
-#include "petscsys.h"
+#include <petscsys.h>
 
 /*
                           2              6

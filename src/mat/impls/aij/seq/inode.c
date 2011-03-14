@@ -3,7 +3,7 @@
   This file provides high performance routines for the Inode format (compressed sparse row)
   by taking advantage of rows with identical nonzero structure (I-nodes).
 */
-#include "../src/mat/impls/aij/seq/aij.h"
+#include <../src/mat/impls/aij/seq/aij.h>
 
 #undef __FUNCT__  
 #define __FUNCT__ "Mat_CreateColInode"
@@ -2754,7 +2754,7 @@ PetscErrorCode MatColoringPatch_SeqAIJ_Inode(Mat mat,PetscInt ncolors,PetscInt n
   PetscFunctionReturn(0);
 }
 
-#include "../src/mat/blockinvert.h"
+#include <../src/mat/blockinvert.h>
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSOR_SeqAIJ_Inode"

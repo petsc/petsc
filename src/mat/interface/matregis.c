@@ -1,5 +1,5 @@
 
-#include "petscmat.h"  /*I "petscmat.h" I*/
+#include <petscmat.h>  /*I "petscmat.h" I*/
 
 EXTERN_C_BEGIN
 extern PetscErrorCode  MatCreate_MFFD(Mat);

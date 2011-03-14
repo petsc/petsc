@@ -1,7 +1,7 @@
 
 static char help[] = "Tests binary I/O of matrices and illustrates user-defined event logging.\n\n";
 
-#include "petscmat.h"
+#include <petscmat.h>
 
 /* Note:  Most applications would not read and write the same matrix within
   the same program.  This example is intended only to demonstrate

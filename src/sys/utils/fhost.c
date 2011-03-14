@@ -2,7 +2,7 @@
 /*
       Code for manipulating files.
 */
-#include "petscsys.h"
+#include <petscsys.h>
 #if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif

@@ -1,5 +1,5 @@
 
-#include "../src/mat/impls/dense/seq/dense.h"
+#include <../src/mat/impls/dense/seq/dense.h>
 
   /*  Data stuctures for basic parallel dense matrix  */
 

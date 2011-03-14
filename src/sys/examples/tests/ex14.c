@@ -3,7 +3,7 @@
    Tests PetscOptionsGetScalar() for complex numbers
  */
 
-#include "petscsys.h"
+#include <petscsys.h>
 
 
 #undef __FUNCT__

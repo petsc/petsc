@@ -15,7 +15,7 @@
 #if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
-#include "petscdraw.h"
+#include <petscdraw.h>
 
 /* Nodes that record mouse actions when needed */
 typedef struct _p_MouseNode *MouseNode;

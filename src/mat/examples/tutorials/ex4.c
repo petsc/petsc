@@ -9,7 +9,7 @@ static char help[] = "Reads U and V matrices from a file and performs y = V*U'*x
      petscmat.h    - matrices
      petscis.h     - index sets            petscviewer.h - viewers               
 */
-#include "petscmat.h"
+#include <petscmat.h>
 extern PetscErrorCode LowRankUpdate(Mat,Mat,Vec,Vec,Vec,Vec,PetscInt);
 
 
@@ -89,7 +89,7 @@ int main(int argc,char **args)
   return 0;
 }
 
-#include "../src/mat/impls/dense/mpi/mpidense.h"
+#include <../src/mat/impls/dense/mpi/mpidense.h>
 
 #undef __FUNCT__  
 #define __FUNCT__ "LowRankUpdate"

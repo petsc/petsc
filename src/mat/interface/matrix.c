@@ -3,8 +3,8 @@
    This is where the abstract matrix operations are defined
 */
 
-#include "private/matimpl.h"        /*I "petscmat.h" I*/
-#include "private/vecimpl.h"  
+#include <private/matimpl.h>        /*I "petscmat.h" I*/
+#include <private/vecimpl.h>  
 
 /* Logging support */
 PetscClassId  MAT_CLASSID;
@@ -767,7 +767,7 @@ PetscErrorCode  MatView(Mat mat,PetscViewer viewer)
 }
 
 #if defined(PETSC_USE_DEBUG)
-#include "../src/sys/totalview/tv_data_display.h"
+#include <../src/sys/totalview/tv_data_display.h>
 PETSC_UNUSED static int TV_display_type(const struct _p_Mat *mat)
 {
   TV_add_row("Local rows", "int", &mat->rmap->n);

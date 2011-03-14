@@ -4,8 +4,8 @@
 */
 
 
-#include "../src/mat/impls/aij/mpi/mpiaij.h"
-#include "../src/mat/impls/aij/seq/spooles/spooles.h"
+#include <../src/mat/impls/aij/mpi/mpiaij.h>
+#include <../src/mat/impls/aij/seq/spooles/spooles.h>
 
 /* Note the Petsc r and c permutations are ignored */
 #undef __FUNCT__  

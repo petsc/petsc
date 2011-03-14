@@ -3,10 +3,10 @@
     Creates hypre ijvector from PETSc vector
 */
 
-#include "private/vecimpl.h"          /*I "petscvec.h" I*/
+#include <private/vecimpl.h>          /*I "petscvec.h" I*/
 EXTERN_C_BEGIN
-#include "HYPRE.h"
-#include "HYPRE_parcsr_ls.h"
+#include <HYPRE.h>
+#include <HYPRE_parcsr_ls.h>
 EXTERN_C_END
 
 #undef __FUNCT__

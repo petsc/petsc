@@ -30,14 +30,14 @@
       MODULE barry_mod
       IMPLICIT NONE
 
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscdmda.h"
-#include "finclude/petscmat.h"
-#include "finclude/petscis.h"
-#include "finclude/petscao.h"
-#include "finclude/petscviewer.h"
-#include "finclude/petscdraw.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscdmda.h>
+#include <finclude/petscmat.h>
+#include <finclude/petscis.h>
+#include <finclude/petscao.h>
+#include <finclude/petscviewer.h>
+#include <finclude/petscdraw.h>
 
       TYPE :: fa_type
       MPI_Comm, DIMENSION(0:2) :: comm

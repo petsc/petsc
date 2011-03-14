@@ -2,7 +2,7 @@
 /*
    This file contains routines for sorting integers. Values are sorted in place.
  */
-#include "petscsys.h"                /*I  "petscsys.h"  I*/
+#include <petscsys.h>                /*I  "petscsys.h"  I*/
 
 #define SWAP(a,b,t) {t=a;a=b;b=t;}
 

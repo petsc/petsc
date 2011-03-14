@@ -16,7 +16,7 @@ T*/
      petscis.h     - index sets            petscksp.h - Krylov subspace methods
      petscviewer.h - viewers               petscpc.h  - preconditioners
 */
-#include "petscksp.h"
+#include <petscksp.h>
 
 /*
     User-defined context that contains all the data structures used

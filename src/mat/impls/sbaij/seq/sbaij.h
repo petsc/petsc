@@ -1,8 +1,8 @@
 
 #if !defined(__SBAIJ_H)
 #define __SBAIJ_H
-#include "private/matimpl.h"
-#include "../src/mat/impls/baij/seq/baij.h"
+#include <private/matimpl.h>
+#include <../src/mat/impls/baij/seq/baij.h>
 
 /*  
   MATSEQSBAIJ format - Block compressed row storage. The i[] and j[] 

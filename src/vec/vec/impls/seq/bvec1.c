@@ -4,9 +4,9 @@
   and sequential vectors.
 */
 
-#include "private/vecimpl.h" 
-#include "../src/vec/vec/impls/dvecimpl.h" 
-#include "petscblaslapack.h"
+#include <private/vecimpl.h> 
+#include <../src/vec/vec/impls/dvecimpl.h> 
+#include <petscblaslapack.h>
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecDot_Seq"

@@ -1,6 +1,6 @@
 
-#include "petscmat.h"
-#include "../src/mat/order/order.h"
+#include <petscmat.h>
+#include <../src/mat/order/order.h>
 
 EXTERN_C_BEGIN
 /*

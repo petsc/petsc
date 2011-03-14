@@ -3,7 +3,7 @@ static char help[] = "Solves a linear system with KSP.  The matrix uses simple\n
 bilinear elements on the unit square. Input arguments are:\n\
   -m <size> : problem size\n\n";
 
-#include "petscksp.h"
+#include <petscksp.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "FormatElementStiffness"

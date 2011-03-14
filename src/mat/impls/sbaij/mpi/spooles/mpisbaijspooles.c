@@ -3,8 +3,8 @@
    Provides an interface to the Spooles parallel sparse solver (MPI SPOOLES)
 */
 
-#include "../src/mat/impls/aij/seq/spooles/spooles.h"
-#include "../src/mat/impls/sbaij/mpi/mpisbaij.h"
+#include <../src/mat/impls/aij/seq/spooles/spooles.h>
+#include <../src/mat/impls/sbaij/mpi/mpisbaij.h>
 
 #if !defined(PETSC_USE_COMPLEX)
 /* 

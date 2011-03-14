@@ -4,7 +4,7 @@
   used for finite difference computations of Jacobians using coloring.
 */
 
-#include "private/matimpl.h"        /*I "petscmat.h" I*/
+#include <private/matimpl.h>        /*I "petscmat.h" I*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatFDColoringSetF"

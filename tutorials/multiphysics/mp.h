@@ -1,5 +1,5 @@
 
-#include "petscdmmg.h"
+#include <petscdmmg.h>
 #include <petscdmcomposite.h>
 
 typedef struct {

@@ -3,7 +3,7 @@
     Provides a general mechanism to allow one to register new routines in
     dynamic libraries for many of the PETSc objects (including, e.g., KSP and PC).
 */
-#include "petscsys.h"           /*I "petscsys.h" I*/
+#include <petscsys.h>           /*I "petscsys.h" I*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscFListGetPathAndFunction"

@@ -4,7 +4,7 @@ static char help[] = "This example is intended for showing how subvectors can\n\
                       and VecPlaceArray() routines so that vector operations done\n\
                       on the subvectors automatically modify the values in the main vector.\n\n";
 
-#include "petscvec.h"
+#include <petscvec.h>
 
 /* This example shares the array pointers of vectors X,Y,and F with subvectors
    X1,X2,Y1,Y2,F1,F2 and does vector addition on the subvectors F1 = X1 + Y1, F2 = X2 + Y2 so

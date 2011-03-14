@@ -4,8 +4,8 @@
  * This example tests the functionality of MatSolve.
  */
 #include <stdlib.h>
-#include "petscmat.h"
-#include "petscksp.h"
+#include <petscmat.h>
+#include <petscksp.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

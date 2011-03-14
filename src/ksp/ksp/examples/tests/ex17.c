@@ -2,7 +2,7 @@
 static char help[] = "Solves a linear system with KSP.  This problem is\n\
 intended to test the complex numbers version of various solvers.\n\n";
 
-#include "petscksp.h"
+#include <petscksp.h>
 
 typedef enum {TEST_1,TEST_2,TEST_3,HELMHOLTZ_1,HELMHOLTZ_2} TestType;
 extern PetscErrorCode FormTestMatrix(Mat,PetscInt,TestType);

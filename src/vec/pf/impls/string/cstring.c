@@ -1,5 +1,5 @@
 
-#include "../src/vec/pf/pfimpl.h"            /*I "petscpf.h" I*/
+#include <../src/vec/pf/pfimpl.h>            /*I "petscpf.h" I*/
 
 /*
         Ths PF generates a function on the fly and loads it into the running 

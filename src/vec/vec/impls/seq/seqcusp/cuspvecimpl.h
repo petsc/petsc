@@ -1,7 +1,7 @@
 #ifndef __CUSPVECIMPL
 #define __CUSPVECIMPL
 
-#include "private/vecimpl.h"
+#include <private/vecimpl.h>
 #include <cublas.h>
 #include <cusp/blas.h>
 #include <thrust/device_vector.h>

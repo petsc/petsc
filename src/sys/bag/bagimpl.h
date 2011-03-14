@@ -1,6 +1,6 @@
 #if !defined(__BAGIMPL)
 #define __BAGIMPL
-#include "petscbag.h"
+#include <petscbag.h>
 
 #define PETSC_BAG_NAME_LENGTH 64
 #define PETSC_BAG_HELP_LENGTH 128

@@ -19,7 +19,7 @@
            insure that the user calls the routines in the correct order
 */
 
-#include "private/vecimpl.h"                              /*I   "petscvec.h"   I*/
+#include <private/vecimpl.h>                              /*I   "petscvec.h"   I*/
 
 #define STATE_BEGIN 0
 #define STATE_END   1

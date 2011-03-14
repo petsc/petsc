@@ -1,4 +1,4 @@
-#include "petscconf.h"
+#include <petscconf.h>
 #if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif

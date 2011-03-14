@@ -9,7 +9,7 @@
   CRL stands for constant row length (that is the same number of columns
   is kept (padded with zeros) for each row of the sparse matrix.
 */
-#include "../src/mat/impls/aij/seq/crl/crl.h"
+#include <../src/mat/impls/aij/seq/crl/crl.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "MatDestroy_SeqAIJCRL"
@@ -88,7 +88,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJCRL(Mat A, MatAssemblyType mode)
   PetscFunctionReturn(0);
 }
 
-#include "../src/mat/impls/aij/seq/crl/ftn-kernels/fmultcrl.h"
+#include <../src/mat/impls/aij/seq/crl/ftn-kernels/fmultcrl.h>
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMult_AIJCRL"

@@ -1,8 +1,8 @@
 
-#include "../src/mat/impls/baij/seq/baij.h" 
-#include "../src/mat/impls/sbaij/seq/sbaij.h"
-#include "../src/mat/blockinvert.h"
-#include "petscis.h"
+#include <../src/mat/impls/baij/seq/baij.h> 
+#include <../src/mat/impls/sbaij/seq/sbaij.h>
+#include <../src/mat/blockinvert.h>
+#include <petscis.h>
 
 /* 
   input:
@@ -212,8 +212,8 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ_MSR(Mat F,Mat A,IS perm,const 
     Symbolic U^T*D*U factorization for SBAIJ format. 
     See MatICCFactorSymbolic_SeqAIJ() for description of its data structure.
 */
-#include "petscbt.h"
-#include "../src/mat/utils/freespace.h"
+#include <petscbt.h>
+#include <../src/mat/utils/freespace.h>
 #undef __FUNCT__  
 #define __FUNCT__ "MatCholeskyFactorSymbolic_SeqSBAIJ"
 PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ(Mat fact,Mat A,IS perm,const MatFactorInfo *info)

@@ -1,7 +1,7 @@
 
-#include "../src/mat/impls/aij/seq/aij.h"
-#include "../src/mat/impls/sbaij/seq/sbaij.h"
-#include "../src/mat/impls/aij/seq/bas/spbas.h"
+#include <../src/mat/impls/aij/seq/aij.h>
+#include <../src/mat/impls/sbaij/seq/sbaij.h>
+#include <../src/mat/impls/aij/seq/bas/spbas.h>
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatICCFactorSymbolic_SeqAIJ_Bas"

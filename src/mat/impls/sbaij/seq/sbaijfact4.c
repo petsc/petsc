@@ -1,6 +1,6 @@
 
-#include "../src/mat/impls/sbaij/seq/sbaij.h"
-#include "../src/mat/blockinvert.h"
+#include <../src/mat/impls/sbaij/seq/sbaij.h>
+#include <../src/mat/blockinvert.h>
 
 /*
       Version for when blocks are 3 by 3 Using natural ordering

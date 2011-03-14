@@ -1,8 +1,8 @@
 
       module MyModule
-#include "finclude/petscsysdef.h"
-#include "finclude/petscbagdef.h"
-#include "finclude/petscviewerdef.h"
+#include <finclude/petscsysdef.h>
+#include <finclude/petscbagdef.h>
+#include <finclude/petscviewerdef.h>
 !   Data structure used to contain information about the problem
 !   You can add physical values etc here
 
@@ -31,9 +31,9 @@
       use MyModule
       use MyInterface
       implicit none
-#include "finclude/petscsys.h"
-#include "finclude/petscbag.h"
-#include "finclude/petscviewer.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscbag.h>
+#include <finclude/petscviewer.h>
 
       PetscBag bag
       PetscErrorCode ierr

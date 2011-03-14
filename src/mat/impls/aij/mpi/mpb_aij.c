@@ -1,4 +1,4 @@
-#include "../src/mat/impls/aij/mpi/mpiaij.h"
+#include <../src/mat/impls/aij/mpi/mpiaij.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetMultiProcBlock_MPIAIJ"

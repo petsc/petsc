@@ -3,8 +3,8 @@
    Routines to compute overlapping regions of a parallel MPI matrix
   and to find submatrices that were shared across processors.
 */
-#include "../src/mat/impls/baij/mpi/mpibaij.h"
-#include "petscbt.h"
+#include <../src/mat/impls/baij/mpi/mpibaij.h>
+#include <petscbt.h>
 
 static PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Once(Mat,PetscInt,IS *);
 static PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Local(Mat,PetscInt,char **,PetscInt*,PetscInt**);

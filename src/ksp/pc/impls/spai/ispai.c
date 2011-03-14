@@ -18,7 +18,7 @@
 
 */
 
-#include "private/pcimpl.h"        /*I "petscpc.h" I*/
+#include <private/pcimpl.h>        /*I "petscpc.h" I*/
 #include "petscspai.h"
 
 /*
@@ -26,8 +26,8 @@
 */
 EXTERN_C_BEGIN
 #define MPI /* required for setting SPAI_Comm correctly in basics.h */
-#include "spai.h"
-#include "matrix.h"
+#include <spai.h>
+#include <matrix.h>
 EXTERN_C_END
 
 extern PetscErrorCode ConvertMatToMatrix(MPI_Comm,Mat,Mat,matrix**);

@@ -3,7 +3,7 @@
    Default and runtime options used by seq and MPI Spooles' interface for both aij and sbaij mat objects
 */
 
-#include "../src/mat/impls/aij/seq/spooles/spooles.h"
+#include <../src/mat/impls/aij/seq/spooles/spooles.h>
 
 /* Set Spooles' default and runtime options */
 #undef __FUNCT__  

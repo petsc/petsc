@@ -2,7 +2,7 @@
 !
 !    Fortran kernel for sparse matrix-vector product in the AIJ format
 !
-#include "finclude/petscsysdef.h"
+#include <finclude/petscsysdef.h>
 !
       subroutine FortranMultAddAIJ(n,x,ii,jj,a,y,z)
       implicit none

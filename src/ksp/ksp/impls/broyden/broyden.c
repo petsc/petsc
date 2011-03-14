@@ -1,5 +1,5 @@
 
-#include "../src/ksp/ksp/impls/broyden/broydenimpl.h"       /*I "petscksp.h" I*/
+#include <../src/ksp/ksp/impls/broyden/broydenimpl.h>       /*I "petscksp.h" I*/
 
 
 /*

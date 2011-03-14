@@ -2,7 +2,7 @@
 !    Fortran kernel for gemv() BLAS operation. This version supports
 !  matrix array stored in single precision but vectors in double
 !
-#include "finclude/petscsysdef.h"
+#include <finclude/petscsysdef.h>
 !
       subroutine MSGemv(bs,ncols,A,x,y)
       implicit none

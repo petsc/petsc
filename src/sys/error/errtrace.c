@@ -1,6 +1,6 @@
 
-#include "petscsys.h"        /*I "petscsys.h" I*/
-#include "petscconfiginfo.h"
+#include <petscsys.h>        /*I "petscsys.h" I*/
+#include <petscconfiginfo.h>
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscIgnoreErrorHandler" 

@@ -14,7 +14,7 @@ T*/
      petscsys.h       - base PETSc routines   petscis.h     - index sets
      petscviewer.h - viewers
 */
-#include "petscvec.h"
+#include <petscvec.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

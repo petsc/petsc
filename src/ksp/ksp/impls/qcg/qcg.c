@@ -1,6 +1,6 @@
 
-#include "private/kspimpl.h"             /*I "petscksp.h" I*/
-#include "../src/ksp/ksp/impls/qcg/qcgimpl.h"
+#include <private/kspimpl.h>             /*I "petscksp.h" I*/
+#include <../src/ksp/ksp/impls/qcg/qcgimpl.h>
 
 static PetscErrorCode QuadraticRoots_Private(Vec,Vec,PetscReal*,PetscReal*,PetscReal*);
 

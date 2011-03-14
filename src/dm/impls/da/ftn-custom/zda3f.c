@@ -1,6 +1,6 @@
 
-#include "private/fortranimpl.h"
-#include "petscdmda.h"
+#include <private/fortranimpl.h>
+#include <petscdmda.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define dmdacreate3d_                  DMDACREATE3D

@@ -2,8 +2,8 @@
 /*
     Factorization code for BAIJ format. 
 */
-#include "../src/mat/impls/baij/seq/baij.h"
-#include "../src/mat/blockinvert.h"
+#include <../src/mat/impls/baij/seq/baij.h>
+#include <../src/mat/blockinvert.h>
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_2"
@@ -706,7 +706,7 @@ PetscErrorCode MatLUFactor_SeqBAIJ(Mat A,IS row,IS col,const MatFactorInfo *info
   PetscFunctionReturn(0);
 }
 
-#include "../src/mat/impls/sbaij/seq/sbaij.h"
+#include <../src/mat/impls/sbaij/seq/sbaij.h>
 #undef __FUNCT__  
 #define __FUNCT__ "MatCholeskyFactorNumeric_SeqBAIJ_N"
 PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N(Mat C,Mat A,const MatFactorInfo *info)
@@ -958,8 +958,8 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N_NaturalOrdering(Mat C,Mat A,co
   PetscFunctionReturn(0);
 }
 
-#include "petscbt.h"
-#include "../src/mat/utils/freespace.h"
+#include <petscbt.h>
+#include <../src/mat/utils/freespace.h>
 #undef __FUNCT__  
 #define __FUNCT__ "MatICCFactorSymbolic_SeqBAIJ"
 PetscErrorCode MatICCFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS perm,const MatFactorInfo *info)

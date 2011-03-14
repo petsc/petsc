@@ -9,7 +9,7 @@ Input parameters include:\n\
   -m <mesh_x>       : number of mesh points in x-direction\n\
   -n <mesh_n>       : number of mesh points in y-direction\n\n";
 
-#include "petscksp.h"
+#include <petscksp.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

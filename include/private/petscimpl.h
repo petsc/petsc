@@ -5,7 +5,7 @@
 
 #if !defined(_PETSCHEAD_H)
 #define _PETSCHEAD_H
-#include "petscsys.h"  
+#include <petscsys.h>  
 PETSC_EXTERN_CXX_BEGIN
 
 /*

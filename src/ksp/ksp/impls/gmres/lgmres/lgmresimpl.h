@@ -6,7 +6,7 @@
 #if !defined(__LGMRES)
 #define __LGMRES
 
-#include "private/kspimpl.h" /*includes petscksp.h */
+#include <private/kspimpl.h> /*includes petscksp.h */
 
   typedef struct {
     /* Hessenberg matrix and orthogonalization information. */ 

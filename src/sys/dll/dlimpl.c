@@ -3,7 +3,7 @@
    Low-level routines for managing dynamic link libraries (DLLs).
 */
 
-#include "../src/sys/dll/dlimpl.h"
+#include <../src/sys/dll/dlimpl.h>
 
 /* XXX Should be done better !!!*/
 #if !defined(PETSC_HAVE_DYNAMIC_LIBRARIES)

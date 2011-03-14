@@ -2,7 +2,7 @@
 static char help[]= "Scatters from a parallel vector to a sequential vector.\n\
 uses block index sets\n\n";
 
-#include "petscvec.h"
+#include <petscvec.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

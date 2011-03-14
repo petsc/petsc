@@ -3,8 +3,8 @@
    Provides an interface to the Spooles serial sparse solver
 */
 
-#include "../src/mat/impls/aij/seq/spooles/spooles.h"
-#include "../src/mat/impls/aij/seq/aij.h"
+#include <../src/mat/impls/aij/seq/spooles/spooles.h>
+#include <../src/mat/impls/aij/seq/aij.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "MatView_Spooles"

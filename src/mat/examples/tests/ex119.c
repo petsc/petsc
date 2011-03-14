@@ -1,6 +1,6 @@
 static char help[] = "Tests binary MatView() for MPIDENSE matrices \n\n";
 
-#include "petscmat.h"
+#include <petscmat.h>
 
 
 #undef __FUNCT__

@@ -17,8 +17,8 @@ T*/
 static char help[] = "Generates, partitions, and outputs an unstructured mesh.\n\n";
 
 #include <Mesh.hh>
-#include "petscmesh.h"
-#include "petscviewer.h"
+#include <petscmesh.h>
+#include <petscviewer.h>
 #include <values.h>
 
 extern PetscErrorCode  MeshView_Sieve_Newer(ALE::Obj<ALE::Mesh> mesh, PetscViewer viewer);

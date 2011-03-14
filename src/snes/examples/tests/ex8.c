@@ -1,6 +1,6 @@
-#include "petscsnes.h"
-#include "../src/snes/impls/vi/viimpl.h"
-#include "petscdmda.h"
+#include <petscsnes.h>
+#include <../src/snes/impls/vi/viimpl.h>
+#include <petscdmda.h>
 
 static char  help[] = "Parallel version of the minimum surface area problem using DMs.\n\
 See ex10.c for the serial version. It solves a system of nonlinear equations in mixed\n\

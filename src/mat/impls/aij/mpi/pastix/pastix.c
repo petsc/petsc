@@ -2,10 +2,10 @@
 /* 
     Provides an interface to the PaStiX sparse solver
 */
-#include "../src/mat/impls/aij/seq/aij.h"
-#include "../src/mat/impls/aij/mpi/mpiaij.h"
-#include "../src/mat/impls/sbaij/seq/sbaij.h"
-#include "../src/mat/impls/sbaij/mpi/mpisbaij.h"
+#include <../src/mat/impls/aij/seq/aij.h>
+#include <../src/mat/impls/aij/mpi/mpiaij.h>
+#include <../src/mat/impls/sbaij/seq/sbaij.h>
+#include <../src/mat/impls/sbaij/mpi/mpisbaij.h>
 
 #if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
@@ -15,7 +15,7 @@
 #endif
 
 EXTERN_C_BEGIN 
-#include "pastix.h"
+#include <pastix.h>
 EXTERN_C_END  
 
 typedef struct Mat_Pastix_ {

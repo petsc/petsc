@@ -25,8 +25,8 @@ static char help[] ="Solvers Laplacian with multigrid, bad way.\n\
            -mg_fine_ksp_max_it 10
 */
 
-#include "petscksp.h"
-#include "petscdmda.h"
+#include <petscksp.h>
+#include <petscdmda.h>
 
 /* User-defined application contexts */
 typedef struct {

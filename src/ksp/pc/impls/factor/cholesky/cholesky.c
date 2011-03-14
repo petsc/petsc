@@ -4,7 +4,7 @@
    Note: this need not be consided a preconditioner since it supplies
          a direct solver.
 */
-#include "../src/ksp/pc/impls/factor/factor.h"         /*I "petscpc.h" I*/
+#include <../src/ksp/pc/impls/factor/factor.h>         /*I "petscpc.h" I*/
 
 typedef struct {
   PC_Factor        hdr;

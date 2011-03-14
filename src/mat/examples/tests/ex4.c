@@ -1,7 +1,7 @@
 
 static char help[] = "Creates a matrix, inserts some values, and tests MatGetSubMatrices() and MatZeroEntries().\n\n";
 
-#include "petscmat.h"
+#include <petscmat.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

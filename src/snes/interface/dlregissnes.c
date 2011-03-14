@@ -1,5 +1,5 @@
 
-#include "private/snesimpl.h"
+#include <private/snesimpl.h>
 
 static PetscBool  SNESPackageInitialized = PETSC_FALSE;
 #undef __FUNCT__  

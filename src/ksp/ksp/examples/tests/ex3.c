@@ -5,7 +5,7 @@ matrix assembly, the matrix is intentionally laid out across processors\n\
 differently from the way it is assembled.  Input arguments are:\n\
   -m <size> : problem size\n\n";
 
-#include "petscksp.h"
+#include <petscksp.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "FormElementStiffness"

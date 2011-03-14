@@ -1,7 +1,7 @@
 
 static char help[] = "KSP on an operator with a null space.\n\n";
 
-#include "petscksp.h"
+#include <petscksp.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

@@ -1,7 +1,7 @@
 
 static char help[] = "Demonstrates use of PetscDrawZoom()\n";
 
-#include "petscsys.h"
+#include <petscsys.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "zoomfunction"

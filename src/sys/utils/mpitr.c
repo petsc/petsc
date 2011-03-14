@@ -4,7 +4,7 @@
   nonblocking messages that are not correctly waited for, etc.
 */
 
-#include "petscsys.h"           /*I "petscsys.h" I*/
+#include <petscsys.h>           /*I "petscsys.h" I*/
 
 #if defined(PETSC_USE_LOG) && !defined(__MPIUNI_H)
 

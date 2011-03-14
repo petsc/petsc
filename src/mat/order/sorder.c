@@ -3,8 +3,8 @@
      Provides the code that allows PETSc users to register their own
   sequential matrix Ordering routines.
 */
-#include "private/matimpl.h"
-#include "petscmat.h"  /*I "petscmat.h" I*/
+#include <private/matimpl.h>
+#include <petscmat.h>  /*I "petscmat.h" I*/
 
 PetscFList      MatOrderingList = 0;
 PetscBool  MatOrderingRegisterAllCalled = PETSC_FALSE;
@@ -130,7 +130,7 @@ PetscErrorCode  MatOrderingRegisterDestroy(void)
   PetscFunctionReturn(0);
 }
 
-#include "../src/mat/impls/aij/mpi/mpiaij.h"
+#include <../src/mat/impls/aij/mpi/mpiaij.h>
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetOrdering"
 /*@C

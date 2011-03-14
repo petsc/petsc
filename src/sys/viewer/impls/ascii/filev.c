@@ -1,5 +1,5 @@
 
-#include "../src/sys/viewer/impls/ascii/asciiimpl.h"  /*I     "petscsys.h"   I*/
+#include <../src/sys/viewer/impls/ascii/asciiimpl.h>  /*I     "petscsys.h"   I*/
 #include <stdarg.h>
 
 #define QUEUESTRINGSIZE 8192
@@ -366,7 +366,7 @@ PetscErrorCode  PetscViewerASCIIUseTabs(PetscViewer viewer,PetscBool  flg)
 
 /* ----------------------------------------------------------------------- */
 
-#include "../src/sys/fileio/mprint.h" /* defines the queue datastructures and variables */
+#include <../src/sys/fileio/mprint.h> /* defines the queue datastructures and variables */
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerASCIIPrintf" 

@@ -4,10 +4,10 @@
           C = A * B
 */
 
-#include "../src/mat/impls/aij/seq/aij.h" /*I "petscmat.h" I*/
-#include "../src/mat/utils/freespace.h"
-#include "petscbt.h"
-#include "../src/mat/impls/dense/seq/dense.h" /*I "petscmat.h" I*/
+#include <../src/mat/impls/aij/seq/aij.h> /*I "petscmat.h" I*/
+#include <../src/mat/utils/freespace.h>
+#include <petscbt.h>
+#include <../src/mat/impls/dense/seq/dense.h> /*I "petscmat.h" I*/
 
 EXTERN_C_BEGIN
 #undef __FUNCT__

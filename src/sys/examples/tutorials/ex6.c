@@ -6,7 +6,7 @@ static char help[] = "Example of using PetscLikely() and PetscUnlikely().\n\n";
    Processors: n
 T*/
 
-#include "petscsys.h"
+#include <petscsys.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

@@ -12,7 +12,7 @@
 */
 #if !defined(__ILU_H)
 #define __ILU_H
-#include "petscblaslapack.h"
+#include <petscblaslapack.h>
 
 /*
       These are C kernels,they are contained in 
@@ -316,7 +316,7 @@ extern PetscErrorCode Kernel_A_gets_inverse_A_15(MatScalar *,PetscInt*,MatScalar
    code is used.
 */
 
-#include "../src/mat/ftn-kernels/sgemv.h"
+#include <../src/mat/ftn-kernels/sgemv.h>
 
 /*
       A = A * B   A_gets_A_times_B

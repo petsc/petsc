@@ -20,12 +20,12 @@
 !     petscmat.h - matrices
 !     petscksp.h    - Krylov subspace methods  petscpc.h  - preconditioners
 
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscmat.h"
-#include "finclude/petscpc.h"
-#include "finclude/petscksp.h"
-#include "finclude/petscdmda.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscmat.h>
+#include <finclude/petscpc.h>
+#include <finclude/petscksp.h>
+#include <finclude/petscdmda.h>
       DMMG             dmmg
       PetscErrorCode   ierr
       DM               da
@@ -62,9 +62,9 @@
       subroutine ComputeRHS(dmmg,b,ierr)
       implicit none
 
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscdmda.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscdmda.h>
 
       PetscErrorCode  ierr
       PetscInt mx,my,mz
@@ -90,10 +90,10 @@
       subroutine ComputeJacobian(dmmg,JJ,jac,ierr)
       implicit none
 
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscmat.h"
-#include "finclude/petscdmda.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscmat.h>
+#include <finclude/petscdmda.h>
 
       DMMG         dmmg
       Mat          jac,JJ

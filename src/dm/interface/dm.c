@@ -1,5 +1,5 @@
  
-#include "private/dmimpl.h"     /*I      "petscdm.h"     I*/
+#include <private/dmimpl.h>     /*I      "petscdm.h"     I*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMCreate"
@@ -1262,7 +1262,7 @@ PetscErrorCode  DMRegisterDestroy(void)
 }
 
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
-#include "mex.h"
+#include <mex.h>
 
 typedef struct {char *funcname; char *jacname; mxArray *ctx;} DMMatlabContext;
 

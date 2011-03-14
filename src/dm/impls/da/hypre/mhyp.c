@@ -2,10 +2,10 @@
 /*
     Creates hypre ijmatrix from PETSc matrix
 */
-#include "petscsys.h"
-#include "private/matimpl.h"          /*I "petscmat.h" I*/
-#include "petscdmda.h"                /*I "petscdmda.h" I*/
-#include "../src/dm/impls/da/hypre/mhyp.h"
+#include <petscsys.h>
+#include <private/matimpl.h>          /*I "petscmat.h" I*/
+#include <petscdmda.h>                /*I "petscdmda.h" I*/
+#include <../src/dm/impls/da/hypre/mhyp.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "MatHYPRE_IJMatrixPreallocate"
@@ -146,9 +146,9 @@ PetscErrorCode MatHYPRE_IJMatrixCopy(Mat A,HYPRE_IJMatrix ij)
     data structure without calls to MatGetRow() or hypre's set values.
 
 */
-#include "_hypre_IJ_mv.h"
-#include "HYPRE_IJ_mv.h"
-#include "../src/mat/impls/aij/mpi/mpiaij.h"
+#include <_hypre_IJ_mv.h>
+#include <HYPRE_IJ_mv.h>
+#include <../src/mat/impls/aij/mpi/mpiaij.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "MatHYPRE_IJMatrixFastCopy_SeqAIJ"
@@ -248,8 +248,8 @@ PetscErrorCode MatHYPRE_IJMatrixFastCopy_MPIAIJ(Mat A,HYPRE_IJMatrix ij)
     This is UNFINISHED and does NOT work! The problem is that hypre puts the diagonal entry first
     which will corrupt the PETSc data structure if we did this. Need a work around to this problem.
 */
-#include "_hypre_IJ_mv.h"
-#include "HYPRE_IJ_mv.h"
+#include <_hypre_IJ_mv.h>
+#include <HYPRE_IJ_mv.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "MatHYPRE_IJMatrixLink"

@@ -1,8 +1,8 @@
       
 static char help[] = "Tests MatSetValuesBlockedStencil() in 3d.\n\n";
 
-#include "petscmat.h"
-#include "petscdmda.h"
+#include <petscmat.h>
+#include <petscdmda.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

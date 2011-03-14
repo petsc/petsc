@@ -16,8 +16,8 @@ T*/
      petscmat.h    - matrices
      petscis.h     - index sets            petscviewer.h - viewers               
 */
-#include "petscmat.h"
-#include "../src/mat/impls/aij/seq/aij.h"
+#include <petscmat.h>
+#include <../src/mat/impls/aij/seq/aij.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "PadMatrix"

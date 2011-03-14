@@ -5,11 +5,11 @@ static char help[] = "\n";
    where u & w are time-independent & analytically prescribed. 
    phi is advected explicitly.
    - - - - - - - - - - - - - - - - - - - - - - - - */
-#include "petscsnes.h"
-#include "petscdmda.h"
-#include "petscdmmg.h"
-#include "petscbag.h"
-#include "characteristic.h"
+#include <petscsnes.h>
+#include <petscdmda.h>
+#include <petscdmmg.h>
+#include <petscbag.h>
+#include <characteristic.h>
 
 #define SHEAR_CELL     0
 #define SOLID_BODY     1

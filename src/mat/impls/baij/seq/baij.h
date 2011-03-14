@@ -1,9 +1,9 @@
 
 #if !defined(__BAIJ_H)
 #define __BAIJ_H
-#include "private/matimpl.h"
-#include "../src/mat/impls/aij/seq/aij.h"
-#include "../src/mat/impls/baij/seq/ftn-kernels/fsolvebaij.h"
+#include <private/matimpl.h>
+#include <../src/mat/impls/aij/seq/aij.h>
+#include <../src/mat/impls/baij/seq/ftn-kernels/fsolvebaij.h>
 
 /*  
   MATSEQBAIJ format - Block compressed row storage. The i[] and j[] 

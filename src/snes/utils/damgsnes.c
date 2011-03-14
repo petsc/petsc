@@ -1,9 +1,9 @@
 
-#include "petscdmda.h"      /*I      "petscdmda.h"    I*/
-#include "private/daimpl.h" 
+#include <petscdmda.h>      /*I      "petscdmda.h"    I*/
+#include <private/daimpl.h> 
 /* It appears that preprocessor directives are not respected by bfort */
-#include "petscpcmg.h"      /*I      "petscpcmg.h"    I*/
-#include "petscdmmg.h"    /*I      "petscdmmg.h"  I*/
+#include <petscpcmg.h>      /*I      "petscpcmg.h"    I*/
+#include <petscdmmg.h>    /*I      "petscdmmg.h"  I*/
 
 #if defined(PETSC_HAVE_ADIC)
 extern PetscErrorCode DMMGComputeJacobianWithAdic(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
@@ -338,7 +338,7 @@ PetscErrorCode  SNESDAFormFunction(SNES snes,Vec X,Vec F,void *ptr)
 } 
 
 /* ------------------------------------------------------------------------------*/
-#include "private/matimpl.h"        /*I "petscmat.h" I*/
+#include <private/matimpl.h>        /*I "petscmat.h" I*/
 #undef __FUNCT__
 #define __FUNCT__ "DMMGComputeJacobianWithFD"
 PetscErrorCode DMMGComputeJacobianWithFD(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag,void *ctx)

@@ -1,6 +1,6 @@
  
-#include "petscmat.h"
-#include "../src/mat/color/color.h"
+#include <petscmat.h>
+#include <../src/mat/color/color.h>
 
 EXTERN_C_BEGIN
 extern PetscErrorCode  MatGetColoring_Natural(Mat,MatColoringType,ISColoring*);

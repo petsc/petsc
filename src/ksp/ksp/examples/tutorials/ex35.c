@@ -13,10 +13,10 @@ Subduction Zone Benchmark
 
 static char help[] = "Subduction Zone Benchmark\n\n";
 
-#include "petscmesh.h"
-#include "petscksp.h"
-#include "petscpcmg.h"
-#include "petscdmmg.h"
+#include <petscmesh.h>
+#include <petscksp.h>
+#include <petscpcmg.h>
+#include <petscdmmg.h>
 
 PetscErrorCode MeshView_Sieve_Newer(ALE::Obj<ALE::Two::Mesh>, PetscViewer);
 PetscErrorCode CreateZoneBoundary(ALE::Obj<ALE::Two::Mesh>);

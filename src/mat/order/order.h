@@ -1,4 +1,4 @@
-#include "petscmat.h"
+#include <petscmat.h>
 /*
    Defines the interface to the SparsePack routines, translated into C.
 */

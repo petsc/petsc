@@ -12,7 +12,7 @@
    options database until it has already processed the input.
 */
 
-#include "petscsys.h"        /*I  "petscsys.h"   I*/
+#include <petscsys.h>        /*I  "petscsys.h"   I*/
 #if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
@@ -20,7 +20,7 @@
 #include <malloc.h>
 #endif
 #if defined(PETSC_HAVE_SYS_PARAM_H)
-#include "sys/param.h"
+#include <sys/param.h>
 #endif
 
 /* 

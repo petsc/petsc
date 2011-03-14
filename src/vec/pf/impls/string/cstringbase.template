@@ -1,6 +1,6 @@
 #define PETSCVEC_DLL
 /*$Id: cstringbase.c,v 1.2 2000/02/04 21:37:18 bsmith Exp $*/
-#include "petscsys.h"
+#include <petscsys.h>
 
 #define NOTLIKELY -1.234567890123
 

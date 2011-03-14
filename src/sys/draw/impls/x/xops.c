@@ -3,7 +3,7 @@
     Defines the operations for the X PetscDraw implementation.
 */
 
-#include "../src/sys/draw/impls/x/ximpl.h"         /*I  "petscsys.h" I*/
+#include <../src/sys/draw/impls/x/ximpl.h>         /*I  "petscsys.h" I*/
 
 /*
      These macros transform from the users coordinates to the 

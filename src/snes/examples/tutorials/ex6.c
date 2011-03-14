@@ -24,7 +24,7 @@ T*/
      petscviewer.h - viewers               petscpc.h  - preconditioners
      petscksp.h   - linear solvers
 */
-#include "petscsnes.h"
+#include <petscsnes.h>
 
 /* 
    User-defined routines

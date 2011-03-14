@@ -4,7 +4,7 @@ static char help[] = "Tests Cholesky factorization and Matview() for a SBAIJ mat
   This code is modified from the code contributed by JUNWANG@uwm.edu on Apr 13, 2007
 */
 
-#include "petscmat.h"
+#include <petscmat.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

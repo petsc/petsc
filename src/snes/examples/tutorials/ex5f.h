@@ -29,14 +29,14 @@
 !  In addition, we need the following for use of distributed arrays
 !     petscdmda.h     - distributed arrays (DMDAs)
 
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscdmda.h"
-#include "finclude/petscis.h"
-#include "finclude/petscmat.h"
-#include "finclude/petscksp.h"
-#include "finclude/petscpc.h"
-#include "finclude/petscsnes.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscdmda.h>
+#include <finclude/petscis.h>
+#include <finclude/petscmat.h>
+#include <finclude/petscksp.h>
+#include <finclude/petscpc.h>
+#include <finclude/petscsnes.h>
 
 !  Common blocks:
 !  In this example we use common blocks to store data needed by the 

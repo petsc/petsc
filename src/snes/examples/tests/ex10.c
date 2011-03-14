@@ -1,5 +1,5 @@
-#include "petscsnes.h"
-#include "../src/snes/impls/vi/viimpl.h"
+#include <petscsnes.h>
+#include <../src/snes/impls/vi/viimpl.h>
 
 static char  help[] =
 "This example is copied from the TAO package\n\

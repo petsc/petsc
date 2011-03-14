@@ -10,7 +10,7 @@ static char help[] = "Reads in a PETSc binary matrix and saves in Harwell-Boeing
 
   This code is buggy! What is it doing here?
 */
-#include "../src/mat/impls/aij/seq/aij.h"
+#include <../src/mat/impls/aij/seq/aij.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

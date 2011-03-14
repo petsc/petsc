@@ -2,7 +2,7 @@
 #ifndef __PETSCRANDOMIMPL_H
 #define __PETSCRANDOMIMPL_H
 
-#include "petscsys.h"
+#include <petscsys.h>
 
 typedef struct _PetscRandomOps *PetscRandomOps;
 struct _PetscRandomOps {

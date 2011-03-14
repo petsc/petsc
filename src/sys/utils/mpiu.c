@@ -1,5 +1,5 @@
 
-#include "petscsys.h"        /*I  "petscsys.h"  I*/
+#include <petscsys.h>        /*I  "petscsys.h"  I*/
 /*
     Note that tag of 0 is ok because comm is a private communicator
   generated below just for these routines.

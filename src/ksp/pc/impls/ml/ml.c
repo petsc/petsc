@@ -4,10 +4,10 @@
    Note: Something non-obvious breaks -pc_mg_type ADDITIVE for parallel runs
                                     Jed Brown, see [PETSC #18321, #18449]. 
 */
-#include "private/pcimpl.h"   /*I "petscpc.h" I*/
-#include "../src/ksp/pc/impls/mg/mgimpl.h"                    /*I "petscpcmg.h" I*/
-#include "../src/mat/impls/aij/seq/aij.h"
-#include "../src/mat/impls/aij/mpi/mpiaij.h"
+#include <private/pcimpl.h>   /*I "petscpc.h" I*/
+#include <../src/ksp/pc/impls/mg/mgimpl.h>                    /*I "petscpcmg.h" I*/
+#include <../src/mat/impls/aij/seq/aij.h>
+#include <../src/mat/impls/aij/mpi/mpiaij.h>
 
 #include <math.h>
 EXTERN_C_BEGIN
@@ -15,7 +15,7 @@ EXTERN_C_BEGIN
 #if !defined(HAVE_CONFIG_H)
 #define HAVE_CONFIG_H
 #endif
-#include "ml_include.h"
+#include <ml_include.h>
 EXTERN_C_END
 
 /* The context (data structure) at each grid level */

@@ -1,8 +1,8 @@
 
-#include "../src/mat/impls/baij/seq/baij.h"
-#include "../src/mat/blockinvert.h"
-#include "petscbt.h"
-#include "petscblaslapack.h"
+#include <../src/mat/impls/baij/seq/baij.h>
+#include <../src/mat/blockinvert.h>
+#include <petscbt.h>
+#include <petscblaslapack.h>
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatIncreaseOverlap_SeqBAIJ"

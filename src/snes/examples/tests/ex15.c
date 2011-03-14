@@ -1,6 +1,6 @@
-#include "petscsnes.h"
-#include "petscdmda.h"
-#include "../src/snes/impls/vi/viimpl.h"
+#include <petscsnes.h>
+#include <petscdmda.h>
+#include <../src/snes/impls/vi/viimpl.h>
 #include <math.h>  /* for cos() sin(0), and atan() */
 
 static  char help[]=

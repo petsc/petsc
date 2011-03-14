@@ -1,4 +1,4 @@
-#include "private/pcimpl.h"   /*I "petscpc.h" I*/
+#include <private/pcimpl.h>   /*I "petscpc.h" I*/
 
 typedef struct {
   Mat        K;        /* K, the (0,0) block, is [M x M] */

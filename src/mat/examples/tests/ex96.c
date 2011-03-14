@@ -12,9 +12,9 @@ static char help[] ="Tests sequential and parallel DMGetMatrix(), MatMatMult() a
     Example of usage: mpiexec -n 3 ex96 -Mx 10 -My 10 -Mz 10
 */
 
-#include "petscdmda.h"
-#include "../src/mat/impls/aij/seq/aij.h"
-#include "../src/mat/impls/aij/mpi/mpiaij.h"
+#include <petscdmda.h>
+#include <../src/mat/impls/aij/seq/aij.h>
+#include <../src/mat/impls/aij/mpi/mpiaij.h>
 
 /* User-defined application contexts */
 typedef struct {

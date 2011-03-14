@@ -1,4 +1,4 @@
-#include "private/tsimpl.h"          /*I "petscts.h" I*/
+#include <private/tsimpl.h>          /*I "petscts.h" I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "TSPythonSetType"

@@ -3,7 +3,7 @@ Reads PETSc matrix A and P, then comput Pt*A*P \n\
 Input parameters include\n\
   -fA <input_file> -fP <input_file>: second files to load (projection) \n\n";
 
-#include "petscmat.h"
+#include <petscmat.h>
 
 #undef WRITEFILE
 #undef __FUNCT__

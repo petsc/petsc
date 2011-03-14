@@ -11,5 +11,5 @@ struct _n_PetscTable {
   PetscInt head;
 };
 
-#include "petscctable.h"
+#include <petscctable.h>
 #endif

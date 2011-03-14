@@ -9,7 +9,7 @@ static char help[] = "Introductory example that illustrates printing.\n\n";
    Processors: n
 T*/
  
-#include "petscsys.h"
+#include <petscsys.h>
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;

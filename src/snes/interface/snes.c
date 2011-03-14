@@ -1,5 +1,5 @@
 
-#include "private/snesimpl.h"      /*I "petscsnes.h"  I*/
+#include <private/snesimpl.h>      /*I "petscsnes.h"  I*/
 
 PetscBool  SNESRegisterAllCalled = PETSC_FALSE;
 PetscFList SNESList              = PETSC_NULL;
@@ -2129,8 +2129,8 @@ PetscErrorCode  SNESSetConvergenceHistory(SNES snes,PetscReal a[],PetscInt its[]
 }
 
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
-#include "engine.h"   /* MATLAB include file */
-#include "mex.h"      /* MATLAB include file */
+#include <engine.h>   /* MATLAB include file */
+#include <mex.h>      /* MATLAB include file */
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "SNESGetConvergenceHistoryMatlab"
@@ -3121,7 +3121,7 @@ PetscErrorCode  SNESGetDM(SNES snes,DM *dm)
 }
 
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
-#include "mex.h"
+#include <mex.h>
 
 typedef struct {char *funcname; mxArray *ctx;} SNESMatlabContext;
 

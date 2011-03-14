@@ -1,7 +1,7 @@
 
 static char help[] = "Scatters from a parallel vector to a parallel vector.\n\n";
 
-#include "petscvec.h"
+#include <petscvec.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

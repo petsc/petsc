@@ -7,7 +7,7 @@ static char help[] = "Test procedural KSPSetFromOptions() or at runtime.\n\n";
    Concepts: KSP^basic parallel example;
    Processors: n
 T*/
-#include "petscksp.h"
+#include <petscksp.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

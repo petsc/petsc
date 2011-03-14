@@ -1,7 +1,7 @@
 #if !defined(_MAIJ_H)
 #define _MAIJ_H
 
-#include "../src/mat/impls/aij/mpi/mpiaij.h"
+#include <../src/mat/impls/aij/mpi/mpiaij.h>
 
 typedef struct {
   PetscInt   dof;         /* number of components */

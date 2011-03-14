@@ -1,15 +1,15 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "knr-compat.h"
+#include <knr-compat.h>
 #include "report-once.h"
 
 #define ADINTRINSICS_C
-#include "adintrinsics.h"
+#include <adintrinsics.h>
 
 /* Global Variable */
 /* Variable initialized in automatically generated file */
 /* double ADIntr_Partials[ADINTR_FUNC_MAX][ADINTR_PARTIALS_MAX]; */
-#include "initcommon.h"
+#include <initcommon.h>
 
 #if defined(__cplusplus)
 extern "C" {

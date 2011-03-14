@@ -4,7 +4,7 @@
 
     Do NOT use this, use ../ex5.c instead, it is MUCH more memory efficient
 */
-#include "petscmat.h"
+#include <petscmat.h>
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv)

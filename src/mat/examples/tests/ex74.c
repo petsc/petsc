@@ -1,7 +1,7 @@
 
 static char help[] = "Tests the various sequential routines in MatSBAIJ format.\n";
 
-#include "petscmat.h"
+#include <petscmat.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

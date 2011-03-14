@@ -5,7 +5,7 @@
    of overhead in calling the comparision routines.
 
  */
-#include "petscsys.h"                /*I  "petscsys.h"  I*/
+#include <petscsys.h>                /*I  "petscsys.h"  I*/
 
 #define SWAP(a,b,t) {t=a;a=b;b=t;}
    

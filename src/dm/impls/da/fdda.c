@@ -1,7 +1,7 @@
  
-#include "private/daimpl.h" /*I      "petscdmda.h"     I*/
-#include "petscmat.h"         /*I      "petscmat.h"    I*/
-#include "private/matimpl.h"
+#include <private/daimpl.h> /*I      "petscdmda.h"     I*/
+#include <petscmat.h>         /*I      "petscmat.h"    I*/
+#include <private/matimpl.h>
 
 extern PetscErrorCode DMGetColoring_DA_1d_MPIAIJ(DM,ISColoringType,ISColoring *);
 extern PetscErrorCode DMGetColoring_DA_2d_MPIAIJ(DM,ISColoringType,ISColoring *);

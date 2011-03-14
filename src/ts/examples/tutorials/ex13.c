@@ -14,8 +14,8 @@ Program usage:
          mpiexec -n 2 ./ex13 -drawcontours -ts_type sundials -ts_sundials_monitor_steps
 */
 
-#include "petscdmda.h"
-#include "petscts.h"
+#include <petscdmda.h>
+#include <petscts.h>
 
 /* 
    User-defined data structures and routines

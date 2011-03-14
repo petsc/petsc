@@ -2,13 +2,13 @@
 #if !defined(_MHYP_H)
 #define _MHYP_H
 
-#include "petscdmda.h"   /*I "petscdmda.h" I*/
-#include "HYPRE_struct_mv.h"
-#include "HYPRE_struct_ls.h"
-#include "_hypre_struct_mv.h"
-#include "HYPRE_sstruct_mv.h"
-#include "HYPRE_sstruct_ls.h"
-#include "_hypre_sstruct_mv.h"
+#include <petscdmda.h>   /*I "petscdmda.h" I*/
+#include <HYPRE_struct_mv.h>
+#include <HYPRE_struct_ls.h>
+#include <_hypre_struct_mv.h>
+#include <HYPRE_sstruct_mv.h>
+#include <HYPRE_sstruct_ls.h>
+#include <_hypre_sstruct_mv.h>
 
 typedef struct {
   MPI_Comm            hcomm;

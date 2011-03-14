@@ -12,8 +12,8 @@
    See src/mat/impls/aij/seq/crl/crl.c for the sequential version
 */
 
-#include "../src/mat/impls/aij/mpi/mpiaij.h"
-#include "../src/mat/impls/aij/seq/crl/crl.h"
+#include <../src/mat/impls/aij/mpi/mpiaij.h>
+#include <../src/mat/impls/aij/seq/crl/crl.h>
 
 extern PetscErrorCode MatDestroy_MPIAIJ(Mat);
 

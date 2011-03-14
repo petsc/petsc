@@ -26,8 +26,8 @@ T*/
 
 static char help[] = "Constructs, completes, and views a simple 'hat' Sieve.\n\n";
 
-#include "petscmesh.h"
-#include "petscviewer.h"
+#include <petscmesh.h>
+#include <petscviewer.h>
 #include <stdlib.h>
 #include <string.h>
 

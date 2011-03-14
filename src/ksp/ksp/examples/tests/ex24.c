@@ -1,7 +1,7 @@
 
 static char help[] = "Tests CG, MINRES and SYMMLQ on symmetric matrices with SBAIJ format. The preconditioner ICC only works on sequential SBAIJ format. \n\n";
 
-#include "petscksp.h"
+#include <petscksp.h>
 
 
 #undef __FUNCT__

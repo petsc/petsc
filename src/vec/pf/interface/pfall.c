@@ -1,5 +1,5 @@
 
-#include "petscpf.h"          /*I   "petscpf.h"   I*/
+#include <petscpf.h>          /*I   "petscpf.h"   I*/
 
 EXTERN_C_BEGIN
 extern PetscErrorCode  PFCreate_Constant(PF,void*);

@@ -14,18 +14,18 @@
 /*
      Defines the data structure for the base matrix type (SeqAIJ)
 */
-#include "../src/mat/impls/aij/seq/aij.h"    /*I "petscmat.h" I*/
+#include <../src/mat/impls/aij/seq/aij.h>    /*I "petscmat.h" I*/
 
 /*
      SuperLU include files
 */
 EXTERN_C_BEGIN
 #if defined(PETSC_USE_COMPLEX)
-#include "slu_zdefs.h"
+#include <slu_zdefs.h>
 #else
-#include "slu_ddefs.h"
+#include <slu_ddefs.h>
 #endif  
-#include "slu_util.h"
+#include <slu_util.h>
 EXTERN_C_END
 
 /*

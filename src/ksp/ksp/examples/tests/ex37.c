@@ -6,7 +6,7 @@ Reads a PETSc matrix and vector from a file and solves a linear system.\n\n";
   mpiexec -n 4 ./ex37 -f <input_file> -nsubcomm 2 -subcomm_view -subcomm_type <1 or 2>
 */
 
-#include "petscksp.h"
+#include <petscksp.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

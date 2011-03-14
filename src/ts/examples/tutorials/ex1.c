@@ -30,7 +30,7 @@ static char help[] ="Solves the time dependent Bratu problem using pseudo-timest
     this file automatically includes "petscsys.h" and other lower-level
     PETSc include files.
 */
-#include "petscts.h"
+#include <petscts.h>
 
 /*
   Create an application context to contain data needed by the 

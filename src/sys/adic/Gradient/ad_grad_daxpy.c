@@ -9,8 +9,8 @@
 
 #include <string.h>
 #include <stdarg.h>
-#include "ad_grad.h"
-#include "ad_grad_daxpy.h"
+#include <ad_grad.h>
+#include <ad_grad_daxpy.h>
 void ad_grad_daxpy_init(void) { 
     ad_adic_deriv_init( ad_grad_size*sizeof(double), 0 );
 }

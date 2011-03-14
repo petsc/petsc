@@ -7,7 +7,7 @@ static char help[] = "Test sequential FFTW interface \n\n";
 
 */
 
-#include "petscmat.h"
+#include <petscmat.h>
 #undef __FUNCT__
 #define __FUNCT__ "main"
 PetscInt main(PetscInt argc,char **args)

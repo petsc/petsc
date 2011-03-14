@@ -5,7 +5,7 @@
   keeps the entire ordering on each processor.
 */
 
-#include "../src/dm/ao/aoimpl.h"          /*I  "petscao.h" I*/
+#include <../src/dm/ao/aoimpl.h>          /*I  "petscao.h" I*/
 
 typedef struct {
   PetscInt N;

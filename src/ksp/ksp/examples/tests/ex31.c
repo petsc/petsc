@@ -10,7 +10,7 @@ This   Input parameters include\n\
 T*/
 
 
-#include "petscksp.h"
+#include <petscksp.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

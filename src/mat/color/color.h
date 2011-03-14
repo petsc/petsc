@@ -1,7 +1,7 @@
 
 #if !defined(_MINPACK_COLOR_H)
 #define _MINPACK_COLOR_H
-#include "petscmat.h"
+#include <petscmat.h>
 
 /*
      Prototypes for Minpack coloring routines 

@@ -10,7 +10,7 @@
   Eventually a variety of permutations may be supported.
 */
 
-#include "../src/mat/impls/aij/seq/aij.h"
+#include <../src/mat/impls/aij/seq/aij.h>
 
 #define NDIM 512
     /* NDIM specifies how many rows at a time we should work with when 

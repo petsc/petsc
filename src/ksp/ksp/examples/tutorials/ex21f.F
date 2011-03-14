@@ -23,11 +23,11 @@
 !     petscmat.h - matrices
 !     petscksp.h    - Krylov subspace methods  petscpc.h  - preconditioners
 
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscmat.h"
-#include "finclude/petscpc.h"
-#include "finclude/petscksp.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscmat.h>
+#include <finclude/petscpc.h>
+#include <finclude/petscksp.h>
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations
@@ -275,9 +275,9 @@
 
       implicit none
 
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscmat.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscmat.h>
 
       PC      pc
       Vec     x
@@ -332,9 +332,9 @@
 
       implicit none
 
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscpc.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscpc.h>
 
       PC      pc
       Vec     x,y

@@ -3,10 +3,10 @@
         Provides an interface for the MATLAB engine sparse solver
 
 */
-#include "../src/mat/impls/aij/seq/aij.h"
+#include <../src/mat/impls/aij/seq/aij.h>
 
-#include "engine.h"   /* MATLAB include file */
-#include "mex.h"      /* MATLAB include file */
+#include <engine.h>   /* MATLAB include file */
+#include <mex.h>      /* MATLAB include file */
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  

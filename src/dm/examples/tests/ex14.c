@@ -1,7 +1,7 @@
 
 static char help[] = "Tests saving DM vectors to files.\n\n";
 
-#include "petscdmda.h"
+#include <petscdmda.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

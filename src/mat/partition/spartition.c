@@ -1,5 +1,5 @@
 
-#include "petscmat.h"
+#include <petscmat.h>
 
 EXTERN_C_BEGIN
 extern PetscErrorCode  MatPartitioningCreate_Current(MatPartitioning);

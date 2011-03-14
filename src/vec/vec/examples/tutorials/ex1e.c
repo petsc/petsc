@@ -22,7 +22,7 @@ T*/
 */
 #define PETSC_UNDERSCORE_CHKERR
 
-#include "petscvec.h"
+#include <petscvec.h>
 
 #if defined(PETSC_USE_SCALAR_SINGLE)
 #define PETSC_EPS 1.e-5

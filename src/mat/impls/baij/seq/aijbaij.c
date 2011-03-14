@@ -1,5 +1,5 @@
 
-#include "../src/mat/impls/baij/seq/baij.h"
+#include <../src/mat/impls/baij/seq/baij.h>
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
@@ -60,7 +60,7 @@ PetscErrorCode  MatConvert_SeqBAIJ_SeqAIJ(Mat A, MatType newtype,MatReuse reuse,
 }
 EXTERN_C_END
 
-#include "../src/mat/impls/aij/seq/aij.h"
+#include <../src/mat/impls/aij/seq/aij.h>
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  

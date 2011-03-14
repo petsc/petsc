@@ -1,5 +1,5 @@
-#include "petscsys.h" 
-#include "petsctime.h"
+#include <petscsys.h> 
+#include <petsctime.h>
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscGetTime"
@@ -14,7 +14,7 @@
 
    Usage: 
 .vb
-      #include "petsctime.h"
+      #include <petsctime.h>
 
       PetscLogDouble v1,v2,elapsed_time;
       ierr = PetscGetTime(&v1);CHKERRQ(ierr);

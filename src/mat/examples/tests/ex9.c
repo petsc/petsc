@@ -1,7 +1,7 @@
 
 static char help[] = "Tests MPI parallel matrix creation.\n\n";
 
-#include "petscmat.h"
+#include <petscmat.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

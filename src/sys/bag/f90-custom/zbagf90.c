@@ -1,7 +1,7 @@
-#include "../src/sys/f90-src/f90impl.h"
-#include "private/fortranimpl.h"
-#include "petscbag.h"
-#include "../src/sys/bag/bagimpl.h"
+#include <../src/sys/f90-src/f90impl.h>
+#include <private/fortranimpl.h>
+#include <petscbag.h>
+#include <../src/sys/bag/bagimpl.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define petscbagdestroy_ PETSCBAGDESTROY

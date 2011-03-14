@@ -7,7 +7,7 @@ static char help[] = "Appends to an ASCII file.\n\n";
    Concepts: Viewer, append
 T*/
 
-#include "petscviewer.h"
+#include <petscviewer.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

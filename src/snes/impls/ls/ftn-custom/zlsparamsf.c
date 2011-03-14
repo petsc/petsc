@@ -1,5 +1,5 @@
-#include "private/fortranimpl.h"
-#include "petscsnes.h"
+#include <private/fortranimpl.h>
+#include <petscsnes.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define sneslinesearchgetparams_         SNESLINESEARCHGETPARAMS

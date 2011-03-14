@@ -42,8 +42,8 @@
 /*
   This defines the data structures for the smoothed aggregation procedure
 */
-#include "../src/ksp/pc/impls/asa/asa.h"
-#include "petscblaslapack.h"
+#include <../src/ksp/pc/impls/asa/asa.h>
+#include <petscblaslapack.h>
 
 /* -------------------------------------------------------------------------- */
 

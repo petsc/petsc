@@ -22,8 +22,8 @@
 !     petscsys.h       - base PETSc routines
 !     petscvec.h    - vectors
 
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 !                   Macro definitions

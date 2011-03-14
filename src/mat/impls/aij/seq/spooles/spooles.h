@@ -1,14 +1,14 @@
 
 #if !defined(__SPOOLES_H)
 #define __SPOOLES_H
-#include "private/matimpl.h"
+#include <private/matimpl.h>
 
 
 EXTERN_C_BEGIN
-#include "misc.h"
-#include "FrontMtx.h"
-#include "SymbFac.h"
-#include "MPI/spoolesMPI.h" 
+#include <misc.h>
+#include <FrontMtx.h>
+#include <SymbFac.h>
+#include <MPI/spoolesMPI.h>
 EXTERN_C_END
 
 typedef struct {

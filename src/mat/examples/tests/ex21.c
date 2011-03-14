@@ -2,7 +2,7 @@
 static char help[] = "Tests converting a parallel AIJ formatted matrix to the parallel Row format.\n\
  This also tests MatGetRow() and MatRestoreRow() for the parallel case.\n\n";
 
-#include "petscmat.h"
+#include <petscmat.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

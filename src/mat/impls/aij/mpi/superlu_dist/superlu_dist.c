@@ -3,10 +3,10 @@
         Provides an interface to the SuperLU_DIST_2.2 sparse solver
 */
 
-#include "../src/mat/impls/aij/seq/aij.h"
-#include "../src/mat/impls/aij/mpi/mpiaij.h"
+#include <../src/mat/impls/aij/seq/aij.h>
+#include <../src/mat/impls/aij/mpi/mpiaij.h>
 #if defined(PETSC_HAVE_STDLIB_H) /* This is to get around weird problem with SuperLU on cray */
-#include "stdlib.h"
+#include <stdlib.h>
 #endif
 
 #if defined(PETSC_USE_64BIT_INDICES)
@@ -16,9 +16,9 @@
 
 EXTERN_C_BEGIN 
 #if defined(PETSC_USE_COMPLEX)
-#include "superlu_zdefs.h"
+#include <superlu_zdefs.h>
 #else
-#include "superlu_ddefs.h"
+#include <superlu_ddefs.h>
 #endif
 EXTERN_C_END 
 

@@ -1,6 +1,6 @@
 static char help[] = "Test sequential MatMatMult() and MatPtAP() for AIJ matrices.\n\n";
 
-#include "petscmat.h"
+#include <petscmat.h>
 
 extern PetscErrorCode testPTAPRectangular(void);
 

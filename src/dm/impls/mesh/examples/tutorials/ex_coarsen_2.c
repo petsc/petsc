@@ -2,7 +2,7 @@
 
 #include "Coarsener.h"
 //#include "tree_mis.h"
-#include "../src/dm/mesh/meshvtk.h"
+#include <../src/dm/mesh/meshvtk.h>
 #include "fast_coarsen.h"
 
 using ALE::Obj;

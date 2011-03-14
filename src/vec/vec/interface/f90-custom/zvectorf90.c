@@ -1,6 +1,6 @@
 
-#include "petscvec.h"
-#include "../src/sys/f90-src/f90impl.h"
+#include <petscvec.h>
+#include <../src/sys/f90-src/f90impl.h>
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define vecgetarrayf90_            VECGETARRAYF90

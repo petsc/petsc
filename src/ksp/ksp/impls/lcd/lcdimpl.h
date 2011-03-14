@@ -14,7 +14,7 @@
 /*
         Defines the basic KSP object
 */
-#include "private/kspimpl.h"
+#include <private/kspimpl.h>
 
 typedef struct {
   PetscInt  restart;

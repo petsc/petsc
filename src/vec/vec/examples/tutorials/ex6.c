@@ -1,7 +1,7 @@
 
 static char help[] = "Writes an array to a file, then reads an array from a file, then forms a vector.\n\n";
 
-#include "petscvec.h"
+#include <petscvec.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

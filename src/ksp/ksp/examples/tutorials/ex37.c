@@ -59,10 +59,10 @@ This uses multigrid to solve the linear system on a 2D radially-symmetric channe
 
 static char help[] = "Solves 2D inhomogeneous Laplacian using multigrid in an ion channel.\n\n";
 
-#include "petscmesh.h"
-#include "petscksp.h"
-#include "petscpcmg.h"
-#include "petscdmmg.h"
+#include <petscmesh.h>
+#include <petscksp.h>
+#include <petscpcmg.h>
+#include <petscdmmg.h>
 
 PetscErrorCode MeshView_Sieve_Newer(ALE::Obj<ALE::Mesh>, PetscViewer);
 PetscErrorCode CreateMeshBoundary(ALE::Obj<ALE::Mesh>);

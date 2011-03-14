@@ -1,7 +1,7 @@
 /*
       Utilites routines to add simple ASCII IO capability.
 */
-#include "../src/sys/fileio/mprint.h"
+#include <../src/sys/fileio/mprint.h>
 /*
    If petsc_history is on, then all Petsc*Printf() results are saved
    if the appropriate (usually .petschistory) file.
@@ -671,7 +671,7 @@ PetscErrorCode  PetscSynchronizedFGets(MPI_Comm comm,FILE* fp,size_t len,char st
 }
 
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
-#include "mex.h" 
+#include <mex.h> 
 #undef __FUNCT__
 #define __FUNCT__ "PetscVFPrintf_Matlab" 
 PetscErrorCode  PetscVFPrintf_Matlab(FILE *fd,const char format[],va_list Argp)

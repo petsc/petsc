@@ -49,10 +49,10 @@ T*/
         without a preconditioner due to ill-conditioning).
 
   ------------------------------------------------------------------------- */
-#include "petscsnes.h"
-#include "petscdmda.h"
-#include "petscdmcomposite.h"
-#include "petscdmmg.h"
+#include <petscsnes.h>
+#include <petscdmda.h>
+#include <petscdmcomposite.h>
+#include <petscdmmg.h>
 
 /* User-defined routines and data structure */
 typedef struct {

@@ -21,7 +21,7 @@ Special options:\n\
 Example:\n\
 mpirun -np 2 ./driver_fiedler -matrix my_matrix.bin -n_eigs 3 -tol 1e-6 -itr 20\n";
 
-#include "petscksp.h"
+#include <petscksp.h>
 #include <assert.h>
 #include "fortran_matrix.h"
 #include "fortran_interpreter.h"
@@ -30,7 +30,7 @@ mpirun -np 2 ./driver_fiedler -matrix my_matrix.bin -n_eigs 3 -tol 1e-6 -itr 20\
 #ifdef BLOPEX_DIR
 #include "petsc-interface.h"
 #else
-#include "../src/contrib/blopex/petsc-interface/petsc-interface.h"
+#include <../src/contrib/blopex/petsc-interface/petsc-interface.h>
 #endif
 
 #include "interpreter.h"

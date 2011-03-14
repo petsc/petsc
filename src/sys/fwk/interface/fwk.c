@@ -1,6 +1,6 @@
 
-#include "petscsys.h"
-#include "petscfwk.h"
+#include <petscsys.h>
+#include <petscfwk.h>
 
 /* FIX: is it okay to include this directly? */
 #include <ctype.h>

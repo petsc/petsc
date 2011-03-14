@@ -3,10 +3,10 @@
   Code for manipulating distributed regular arrays in parallel.
 */
 
-#include "private/daimpl.h"    /*I   "petscdmda.h"   I*/
+#include <private/daimpl.h>    /*I   "petscdmda.h"   I*/
 
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
-#include "mat.h"   /* MATLAB include file */
+#include <mat.h>   /* MATLAB include file */
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMView_DA_Matlab"

@@ -1,11 +1,11 @@
 
-#include "private/viewerimpl.h"
-#include "petscsys.h"
+#include <private/viewerimpl.h>
+#include <petscsys.h>
 #if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
 
-#include "ams.h"
+#include <ams.h>
 typedef struct {
   char       *ams_name;
   AMS_Comm   ams_comm;

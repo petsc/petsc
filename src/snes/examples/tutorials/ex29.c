@@ -40,10 +40,10 @@ T*/
      petscviewer.h - viewers               petscpc.h  - preconditioners
      petscksp.h   - linear solvers 
 */
-#include "petscsnes.h"
-#include "petscdmda.h"
-#include "petscpcmg.h"
-#include "petscdmmg.h"
+#include <petscsnes.h>
+#include <petscdmda.h>
+#include <petscpcmg.h>
+#include <petscdmmg.h>
 
 #ifdef HAVE_DA_HDF
 PetscInt DMDAVecHDFOutput(DM,Vec,char*);

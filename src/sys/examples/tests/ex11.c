@@ -1,7 +1,7 @@
 
 static char help[] = "Tests PetscSynchronizedPrintf() and PetscSynchronizedFPrintf().\n\n";
 
-#include "petscsys.h"
+#include <petscsys.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

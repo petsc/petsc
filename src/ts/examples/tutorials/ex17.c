@@ -22,8 +22,8 @@ Program usage:
          ./ex17 -da_grid_x 100 -drawcontours -draw_pause 1 -ts_type gl -ts_adapt_type none -ts_max_steps 2 
 */
 
-#include "petscdmda.h"
-#include "petscts.h"
+#include <petscdmda.h>
+#include <petscts.h>
 
 enum JacEvalType {JAC_EXACT,JAC_COLOR,JAC_FD};
 

@@ -1,5 +1,5 @@
 
-#include "private/daimpl.h"    /*I   "petscdmda.h"   I*/
+#include <private/daimpl.h>    /*I   "petscdmda.h"   I*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMView_DA_2d"
@@ -860,7 +860,7 @@ PetscErrorCode DMDAGetDiagonal_MFFD(DM da,Vec U,Vec a)
 
 #if defined(PETSC_HAVE_ADIC)
 EXTERN_C_BEGIN
-#include "adic/ad_utils.h"
+#include <adic/ad_utils.h>
 EXTERN_C_END
 
 #undef __FUNCT__

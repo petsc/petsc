@@ -30,7 +30,7 @@ T*/
 */
 #include <iostream>
 using namespace std;
-#include "petscsnes.h"
+#include <petscsnes.h>
 
 struct AppCtx{int testint;};
 

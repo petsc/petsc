@@ -1,6 +1,6 @@
 
-#include "private/fortranimpl.h"
-#include "petscdmmg.h"
+#include <private/fortranimpl.h>
+#include <petscdmmg.h>
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define dmmggetda_               DMMGGETDA

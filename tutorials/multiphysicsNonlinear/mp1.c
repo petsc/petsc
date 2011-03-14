@@ -10,7 +10,7 @@ static char help[] = "Model nonlinear multi-physics solver. Modified from mp.c \
 
       ./mp1 -snes_monitor -mp_max_it 14 -grashof 1000.0
   ----------------------------------------------------------------------------------------- */
-#include "petsctime.h"
+#include <petsctime.h>
 #include "mp1.h"
 #include "../src/sys/plog/logimpl.h"
 

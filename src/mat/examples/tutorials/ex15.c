@@ -6,7 +6,7 @@ static char help[] = "Example of using graph partitioning to segment an image\n\
    Processors: n
 T*/
 
-#include "petscmat.h"
+#include <petscmat.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

@@ -1,7 +1,7 @@
 
-#include "../src/snes/impls/vi/viimpl.h" /*I "petscsnes.h" I*/
-#include "../include/private/kspimpl.h"
-#include "../include/private/matimpl.h"
+#include <../src/snes/impls/vi/viimpl.h> /*I "petscsnes.h" I*/
+#include <../include/private/kspimpl.h>
+#include <../include/private/matimpl.h>
 
 #undef __FUNCT__  
 #define __FUNCT__ "SNESMonitorVI"

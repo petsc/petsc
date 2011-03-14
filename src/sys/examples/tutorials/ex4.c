@@ -7,7 +7,7 @@ static char help[] = "Introductory example that illustrates running PETSc on a s
    Concepts: process^subset set PETSC_COMM_WORLD
    Processors: 2
 T*/
- #include "petscsys.h"
+ #include <petscsys.h>
 
 int main(int argc, char *argv[])
 {

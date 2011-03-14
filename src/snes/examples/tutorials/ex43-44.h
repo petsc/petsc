@@ -6,7 +6,7 @@
   Counts residual entries as small if they are less then .2 times the maximum
   Decides to solve a reduced problem if the number of large entries is less than 20 percent of all entries (and this has been true for criteria_reduce iterations)
 */
-#include "petscsnes.h"
+#include <petscsnes.h>
 
 extern PetscErrorCode FormFunctionSub(SNES,Vec,Vec,void*);
 extern PetscErrorCode FormJacobianSub(SNES,Vec,Mat*,Mat*,MatStructure*,void*);

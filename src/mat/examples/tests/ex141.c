@@ -1,7 +1,7 @@
 
 static char help[] = "Tests converting a SBAIJ matrix to BAIJ format with MatCovert. Modified from ex55.c\n\n";
 
-#include "petscmat.h"
+#include <petscmat.h>
 /* Usage: ./ex141 -mat_view */
 
 #undef __FUNCT__

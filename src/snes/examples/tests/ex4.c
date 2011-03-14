@@ -33,7 +33,7 @@ is solved.  The command line options are:\n\
     nonlinear equations. 
 */
 
-#include "petscsnes.h"
+#include <petscsnes.h>
 
 typedef struct {
       PetscReal   param;        /* test problem parameter */

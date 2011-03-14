@@ -3,8 +3,8 @@
    Implements the sequential vectors.
 */
 
-#include "private/vecimpl.h"          /*I  "petscvec.h"   I*/
-#include "../src/vec/vec/impls/dvecimpl.h" 
+#include <private/vecimpl.h>          /*I  "petscvec.h"   I*/
+#include <../src/vec/vec/impls/dvecimpl.h> 
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecCreateSeq"

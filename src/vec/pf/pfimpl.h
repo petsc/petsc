@@ -2,7 +2,7 @@
 #ifndef _PFIMPL
 #define _PFIMPL
 
-#include "petscpf.h"
+#include <petscpf.h>
 
 typedef struct _PFOps *PFOps;
 struct _PFOps {

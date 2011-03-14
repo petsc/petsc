@@ -4,7 +4,7 @@
 ! This ONLY works for factorizations in the NATURAL ORDERING, i.e.
 ! with MatSolve_SeqBAIJ_4_NaturalOrdering()
 !
-#include "finclude/petscsysdef.h"
+#include <finclude/petscsysdef.h>
 !
 
       subroutine FortranSolveBAIJ4Unroll(n,x,ai,aj,adiag,a,b)

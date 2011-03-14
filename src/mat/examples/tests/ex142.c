@@ -5,8 +5,8 @@ static char help[] = "Test sequential r2c/c2r FFTW interface \n\n";
       This code uses the real numbers version of PETSc
 */
 
-#include "petscmat.h"
-#include "fftw3.h"
+#include <petscmat.h>
+#include <fftw3.h>
 
 
 #undef __FUNCT__

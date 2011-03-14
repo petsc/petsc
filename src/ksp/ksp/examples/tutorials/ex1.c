@@ -18,7 +18,7 @@ T*/
 
   Note:  The corresponding parallel example is ex23.c
 */
-#include "petscksp.h"
+#include <petscksp.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

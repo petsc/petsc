@@ -1,7 +1,7 @@
 /*
       Demonstrates the use of the "extra", polymorphic versions of many functions
 */
-#include "petscmat.h"
+#include <petscmat.h>
 
 int main(int argc,char **args)
 {

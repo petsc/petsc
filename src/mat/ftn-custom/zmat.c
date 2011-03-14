@@ -1,6 +1,6 @@
 
-#include "private/fortranimpl.h"
-#include "petscmat.h"
+#include <private/fortranimpl.h>
+#include <petscmat.h>
 
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS

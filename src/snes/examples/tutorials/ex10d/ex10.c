@@ -50,8 +50,8 @@ T*/
      petscviewer.h - viewers               petscpc.h  - preconditioners
      petscksp.h   - linear solvers
 */
-#include "petscao.h"
-#include "petscsnes.h"
+#include <petscao.h>
+#include <petscsnes.h>
 
 
 #define MAX_ELEM      500  /* Maximum number of elements */

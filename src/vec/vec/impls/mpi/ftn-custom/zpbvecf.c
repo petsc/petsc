@@ -1,5 +1,5 @@
-#include "private/fortranimpl.h"
-#include "petscvec.h"
+#include <private/fortranimpl.h>
+#include <petscvec.h>
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define veccreatempiwitharray_        VECCREATEMPIWITHARRAY
 #define veccreateghostblockwitharray_ VECCREATEGHOSTBLOCKWITHARRAY

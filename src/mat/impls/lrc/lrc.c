@@ -1,6 +1,6 @@
 
-#include "private/matimpl.h"          /*I "petscmat.h" I*/
-#include "../src/mat/impls/dense/seq/dense.h"
+#include <private/matimpl.h>          /*I "petscmat.h" I*/
+#include <../src/mat/impls/dense/seq/dense.h>
 
 typedef struct {
   Mat         A,U,V;

@@ -1,5 +1,5 @@
 
-#include "private/viewerimpl.h"  /*I "petscsys.h" I*/  
+#include <private/viewerimpl.h>  /*I "petscsys.h" I*/  
 
 EXTERN_C_BEGIN
 extern PetscErrorCode PetscViewerCreate_Socket(PetscViewer);

@@ -13,7 +13,7 @@ T*/
      petscmat.h    - matrices
      petscis.h     - index sets            petscviewer.h - viewers               
 */
-#include "petscmat.h"
+#include <petscmat.h>
 
 
 #undef __FUNCT__

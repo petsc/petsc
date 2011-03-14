@@ -33,8 +33,8 @@ the rank of the process owning each cell.
 static char help[] = "Reads, partitions, and outputs an unstructured mesh.\n\n";
 
 #include <Mesh.hh>
-#include "petscmesh.h"
-#include "petscviewer.h"
+#include <petscmesh.h>
+#include <petscviewer.h>
 #include <stdlib.h>
 #include <string.h>
 #include <values.h>

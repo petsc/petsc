@@ -57,8 +57,8 @@ T*/
      petscis.h     - index sets            petscksp.h - Krylov subspace methods
      petscviewer.h - viewers               petscpc.h  - preconditioners
 */
-#include "petscdmda.h"
-#include "petscksp.h"
+#include <petscdmda.h>
+#include <petscksp.h>
 
 /* 
    User-defined application context - contains data needed by the 

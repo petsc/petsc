@@ -2,7 +2,7 @@
 /*
     The PC (preconditioner) interface routines, callable by users.
 */
-#include "private/pcimpl.h"            /*I "petscksp.h" I*/
+#include <private/pcimpl.h>            /*I "petscksp.h" I*/
 
 /* Logging support */
 PetscClassId   PC_CLASSID;

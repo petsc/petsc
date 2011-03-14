@@ -6,7 +6,7 @@
     VecMDot() arguments within the code MUST remain in the order
     given for correct computation of inner products.
 */
-#include "../src/ksp/ksp/impls/gmres/gmresimpl.h"
+#include <../src/ksp/ksp/impls/gmres/gmresimpl.h>
 
 /*@C
      KSPGMRESClassicalGramSchmidtOrthogonalization -  This is the basic orthogonalization routine 

@@ -1,5 +1,5 @@
-#include "petscksp.h"
-#include "mathlink.h"
+#include <petscksp.h>
+#include <mathlink.h>
 
 typedef enum {MATHEMATICA_LINK_CREATE, MATHEMATICA_LINK_CONNECT, MATHEMATICA_LINK_LAUNCH} LinkMode;
 

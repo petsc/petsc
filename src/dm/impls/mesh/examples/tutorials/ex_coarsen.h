@@ -2,10 +2,10 @@
  
 #include <list>
 #include <Distribution.hh>
-#include "petscmesh.h"
-#include "petscviewer.h"
-#include "../src/dm/mesh/meshpcice.h"
-#include "../src/dm/mesh/meshpylith.h"
+#include <petscmesh.h>
+#include <petscviewer.h>
+#include <../src/dm/mesh/meshpcice.h>
+#include <../src/dm/mesh/meshpylith.h>
 #include <stdlib.h>
 #include <string.h>
 #include <string>

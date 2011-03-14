@@ -1,6 +1,6 @@
 static char help[] = "Testing MatCreateSeqBAIJWithArrays() and MatCreateSeqSBAIJWithArrays().\n\n";
 
-#include "petscmat.h"
+#include <petscmat.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

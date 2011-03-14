@@ -1,7 +1,7 @@
 
 static char help[] = "Tests cholesky, icc factorization and solve on sequential aij, baij and sbaij matrices. \n";
 
-#include "petscmat.h"
+#include <petscmat.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

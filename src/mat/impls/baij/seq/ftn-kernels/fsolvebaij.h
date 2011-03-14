@@ -1,6 +1,6 @@
 
 #if !defined(__FSOLVEBAIJ_H)
-#include "petscsys.h"
+#include <petscsys.h>
 #if defined(PETSC_USE_FORTRAN_KERNEL_SOLVEBAIJ)
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define fortransolvebaij4_         FORTRANSOLVEBAIJ4

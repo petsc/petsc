@@ -1,6 +1,6 @@
 !
       module mex12f90
-#include "finclude/petsc.h90"
+#include <finclude/petsc.h90>
 
 !   Data structure used to contain information about the problem
 !   You can add physical values etc here

@@ -6,15 +6,15 @@
     was cloned off of Mat_DAAD I'm leaving it here until I have a better place
 
 */
-#include "petscsys.h"
-#include "petscdm.h"
+#include <petscsys.h>
+#include <petscdm.h>
 
 EXTERN_C_BEGIN
-#include "adic/ad_utils.h"
+#include <adic/ad_utils.h>
 EXTERN_C_END
 
-#include "private/daimpl.h"
-#include "../src/mat/blockinvert.h"
+#include <private/daimpl.h>
+#include <../src/mat/blockinvert.h>
 
 struct NLF_DAAD {
   DM         da;

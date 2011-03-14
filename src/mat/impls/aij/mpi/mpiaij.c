@@ -1,6 +1,6 @@
 
-#include "../src/mat/impls/aij/mpi/mpiaij.h"   /*I "petscmat.h" I*/
-#include "petscblaslapack.h"
+#include <../src/mat/impls/aij/mpi/mpiaij.h>   /*I "petscmat.h" I*/
+#include <petscblaslapack.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "MatFindNonZeroRows_MPIAIJ"
@@ -4360,8 +4360,8 @@ PetscErrorCode  MatDestroy_MPIAIJ_SeqsToMPI(Mat A)
   PetscFunctionReturn(0);
 }
 
-#include "../src/mat/utils/freespace.h"
-#include "petscbt.h"
+#include <../src/mat/utils/freespace.h>
+#include <petscbt.h>
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMerge_SeqsToMPINumeric"
@@ -5555,7 +5555,7 @@ PetscErrorCode  MatCreateMPIAIJWithSplitArrays(MPI_Comm comm,PetscInt m,PetscInt
 /*
     Special version for direct calls from Fortran 
 */
-#include "private/fortranimpl.h"
+#include <private/fortranimpl.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define matsetvaluesmpiaij_ MATSETVALUESMPIAIJ

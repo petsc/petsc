@@ -23,11 +23,11 @@ where u^- is the solution at the old time, u^+ is
 the solution at the new time, and u^* is the solution
 at the old time advected to the new time.
 - - - - - - - - - - - - - - - - - - - - - - - - */
-#include "petscsnes.h"
-#include "petscdmda.h"
-#include "petscdmmg.h"
-#include "petscbag.h"
-#include "characteristic.h"
+#include <petscsnes.h>
+#include <petscdmda.h>
+#include <petscdmmg.h>
+#include <petscbag.h>
+#include <characteristic.h>
 
 #define EXAMPLE_NUMBER 1
 #define SHEAR_CELL     0

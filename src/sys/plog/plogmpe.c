@@ -2,9 +2,9 @@
 /*
       PETSc code to log PETSc events using MPE
 */
-#include "petscsys.h"        /*I    "petscsys.h"   I*/
+#include <petscsys.h>        /*I    "petscsys.h"   I*/
 #if defined(PETSC_USE_LOG) && defined (PETSC_HAVE_MPE)
-#include "mpe.h"
+#include <mpe.h>
 
 PetscBool  UseMPE = PETSC_FALSE;
 PetscBool  PetscBeganMPE = PETSC_FALSE;

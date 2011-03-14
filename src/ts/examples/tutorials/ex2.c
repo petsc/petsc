@@ -41,8 +41,8 @@ timestepping.  Runtime options include:\n\
    Include the "petscdmda.h" to allow us to use the distributed array data 
    structures to manage the parallel grid.
 */
-#include "petscts.h"
-#include "petscdmda.h"
+#include <petscts.h>
+#include <petscdmda.h>
 
 /* 
    User-defined application context - contains data needed by the 

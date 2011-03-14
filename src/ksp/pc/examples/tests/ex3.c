@@ -3,8 +3,8 @@ static char help[] = "Demonstrates the use of fast Richardson for SOR. And\n\
 also tests the MatSOR() routines.  Input parameters are:\n\
  -n <n> : problem dimension\n\n";
 
-#include "petscksp.h"
-#include "petscpc.h"
+#include <petscksp.h>
+#include <petscpc.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

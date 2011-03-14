@@ -4,7 +4,7 @@ static char help[] = "Tests PLAPACK interface.\n\n";
      mpiexec -n 4 ./ex107 -M 50 -mat_plapack_nprows 2 -mat_plapack_npcols 2 -mat_plapack_nb 1 
  */
 
-#include "petscmat.h"
+#include <petscmat.h>
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **args)

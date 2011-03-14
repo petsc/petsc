@@ -4,9 +4,9 @@
     Testing examples can be found in ~src/mat/examples/tests
 */
 
-#include "../src/mat/impls/fft/fft.h"   /*I "petscmat.h" I*/
+#include <../src/mat/impls/fft/fft.h>   /*I "petscmat.h" I*/
 EXTERN_C_BEGIN 
-#include "fftw3-mpi.h"
+#include <fftw3-mpi.h>
 EXTERN_C_END 
 
 typedef struct {
@@ -236,7 +236,7 @@ PetscErrorCode MatDestroy_FFTW(Mat A)
   PetscFunctionReturn(0);
 }
 
-#include "../src/vec/vec/impls/mpi/pvecimpl.h"   /*I  "petscvec.h"   I*/
+#include <../src/vec/vec/impls/mpi/pvecimpl.h>   /*I  "petscvec.h"   I*/
 #undef __FUNCT__
 #define __FUNCT__ "VecDestroy_MPIFFTW"
 PetscErrorCode VecDestroy_MPIFFTW(Vec v)

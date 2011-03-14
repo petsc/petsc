@@ -5,7 +5,7 @@
 
 static char help[] = "Tests IS stride routines.\n\n";
 
-#include "petscis.h"
+#include <petscis.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

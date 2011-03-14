@@ -3,7 +3,7 @@
 #if !defined(_FORTRANIMPL_H)
 #define _FORTRANIMPL_H
 
-#include "petscsys.h"
+#include <petscsys.h>
 
 /* PETSC_STDCALL is defined on some Microsoft Windows systems and is used for functions compiled by the Fortran compiler */
 #if !defined(PETSC_STDCALL)

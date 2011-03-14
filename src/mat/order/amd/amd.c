@@ -1,6 +1,6 @@
 
-#include "petscmat.h"
-#include "../src/mat/order/order.h"
+#include <petscmat.h>
+#include <../src/mat/order/order.h>
 #define UF_long long long
 #define UF_long_max LONG_LONG_MAX
 #define UF_long_id "%lld"

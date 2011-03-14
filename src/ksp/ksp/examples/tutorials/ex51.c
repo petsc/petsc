@@ -9,7 +9,7 @@ differently from the way it is assembled.  Input arguments are:\n\
    based on src/ksp/ksp/examples/tutorials/ex3.c
  */
 
-#include "petscksp.h"
+#include <petscksp.h>
 
 /* Declare user-defined routines */
 static PetscReal      src(PetscReal,PetscReal);

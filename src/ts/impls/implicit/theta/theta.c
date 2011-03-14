@@ -17,7 +17,7 @@
 
   is interpreted as a formula for X'_i in terms of X_i and known stuff (X'_j, j<i)
 */
-#include "private/tsimpl.h"                /*I   "petscts.h"   I*/
+#include <private/tsimpl.h>                /*I   "petscts.h"   I*/
 
 typedef struct {
   Vec X,Xdot;                   /* Storage for one stage */

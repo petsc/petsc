@@ -2,11 +2,11 @@
 /*
    This file contains routines for Parallel vector operations.
  */
-#include "petscconf.h"
+#include <petscconf.h>
 PETSC_CUDA_EXTERN_C_BEGIN
-#include "../src/vec/vec/impls/mpi/pvecimpl.h"   /*I  "petscvec.h"   I*/
+#include <../src/vec/vec/impls/mpi/pvecimpl.h>   /*I  "petscvec.h"   I*/
 PETSC_CUDA_EXTERN_C_END
-#include "../src/vec/vec/impls/seq/seqcusp/cuspvecimpl.h"
+#include <../src/vec/vec/impls/seq/seqcusp/cuspvecimpl.h>
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecDestroy_MPICUSP"

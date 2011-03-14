@@ -1,6 +1,6 @@
 
-#include "engine.h"   /* Matlab include file */
-#include "petscsys.h" 
+#include <engine.h>   /* Matlab include file */
+#include <petscsys.h> 
 #include <stdarg.h>
 
 struct  _p_PetscMatlabEngine {

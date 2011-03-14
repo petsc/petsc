@@ -1,7 +1,7 @@
 
-#include "private/kspimpl.h"             /*I "petscksp.h" I*/
-#include "../src/ksp/ksp/impls/cg/gltr/gltrimpl.h"
-#include "petscblaslapack.h"
+#include <private/kspimpl.h>             /*I "petscksp.h" I*/
+#include <../src/ksp/ksp/impls/cg/gltr/gltrimpl.h>
+#include <petscblaslapack.h>
 
 #define GLTR_PRECONDITIONED_DIRECTION   0
 #define GLTR_UNPRECONDITIONED_DIRECTION 1

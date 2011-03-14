@@ -42,8 +42,8 @@ T*/
      petscviewer.h - viewers               petscpc.h  - preconditioners
      petscksp.h   - linear solvers
 */
-#include "petscdmda.h"
-#include "petscsnes.h"
+#include <petscdmda.h>
+#include <petscsnes.h>
 
 
 /* 

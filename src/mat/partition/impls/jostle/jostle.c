@@ -1,5 +1,5 @@
 
-#include "../src/mat/impls/adj/mpi/mpiadj.h"       /*I "petscmat.h" I*/
+#include <../src/mat/impls/adj/mpi/mpiadj.h>       /*I "petscmat.h" I*/
 
 #ifdef PETSC_HAVE_UNISTD_H
 #include <unistd.h>
@@ -11,7 +11,7 @@
 
 EXTERN_C_BEGIN
 
-#include "jostle.h"
+#include <jostle.h>
 /* this function is not declared in 'jostle.h' */
 extern void pjostle_comm(MPI_Comm * comm);
 

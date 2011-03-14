@@ -1,5 +1,5 @@
 
-#include "private/kspimpl.h"  /*I "petscksp.h" I*/
+#include <private/kspimpl.h>  /*I "petscksp.h" I*/
 
 EXTERN_C_BEGIN
 extern PetscErrorCode  KSPCreate_Richardson(KSP);

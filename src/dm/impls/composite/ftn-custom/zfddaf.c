@@ -1,6 +1,6 @@
 
-#include "private/fortranimpl.h"
-#include "petscdmcomposite.h"
+#include <private/fortranimpl.h>
+#include <petscdmcomposite.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define dmgetmatrix_                 DMGETMATRIX

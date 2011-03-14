@@ -1,6 +1,6 @@
 
-#include "private/pcimpl.h"   /*I "petscpc.h" I*/
-#include "petscblaslapack.h"
+#include <private/pcimpl.h>   /*I "petscpc.h" I*/
+#include <petscblaslapack.h>
 
 /* 
    Private context (data structure) for the SVD preconditioner.  

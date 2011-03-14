@@ -3,7 +3,7 @@ static char help[] = "Scatters from a parallel vector to a sequential vector.\n\
 This does case when we are merely selecting the local part of the\n\
 parallel vector.\n\n";
 
-#include "petscvec.h"
+#include <petscvec.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

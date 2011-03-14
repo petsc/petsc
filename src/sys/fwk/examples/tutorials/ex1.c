@@ -27,7 +27,7 @@ T*/
   automatically includes:
      petscfwk.h    - PetscFwk routines
 */
-#include "petscsys.h"
+#include <petscsys.h>
 
 
 #undef __FUNCT__

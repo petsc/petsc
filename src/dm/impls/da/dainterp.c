@@ -3,8 +3,8 @@
   Code for interpolating between grids represented by DMDAs
 */
 
-#include "private/daimpl.h"    /*I   "petscdmda.h"   I*/
-#include "petscpcmg.h"
+#include <private/daimpl.h>    /*I   "petscdmda.h"   I*/
+#include <petscpcmg.h>
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMGetInterpolationScale"

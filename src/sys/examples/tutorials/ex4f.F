@@ -13,7 +13,7 @@
 
       program main
       implicit none
-#include "finclude/petscsys.h"
+#include <finclude/petscsys.h>
       PetscErrorCode ierr
       PetscMPIInt    rank, size
 

@@ -1,8 +1,8 @@
 
-#include "../src/mat/impls/aij/seq/aij.h"
-#include "../src/mat/impls/sbaij/seq/sbaij.h"
-#include "petscbt.h"
-#include "../src/mat/utils/freespace.h"
+#include <../src/mat/impls/aij/seq/aij.h>
+#include <../src/mat/impls/sbaij/seq/sbaij.h>
+#include <petscbt.h>
+#include <../src/mat/utils/freespace.h>
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
@@ -1197,7 +1197,7 @@ PetscErrorCode MatSolve_SeqAIJ_InplaceWithPerm(Mat A,Vec bb,Vec xx)
 }
 
 /* ----------------------------------------------------------- */
-#include "../src/mat/impls/aij/seq/ftn-kernels/fsolve.h"
+#include <../src/mat/impls/aij/seq/ftn-kernels/fsolve.h>
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolve_SeqAIJ_NaturalOrdering_inplace"
 PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)

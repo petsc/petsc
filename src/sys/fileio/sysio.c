@@ -3,7 +3,7 @@
    This file contains simple binary read/write routines.
  */
 
-#include "petscsys.h"
+#include <petscsys.h>
 #include <errno.h>
 #include <fcntl.h>
 #if defined(PETSC_HAVE_UNISTD_H)
@@ -12,7 +12,7 @@
 #if defined (PETSC_HAVE_IO_H)
 #include <io.h>
 #endif
-#include "petscbt.h"
+#include <petscbt.h>
 
 #if !defined(PETSC_WORDS_BIGENDIAN)
 

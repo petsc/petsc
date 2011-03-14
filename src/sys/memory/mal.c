@@ -2,7 +2,7 @@
 /*
     Code that allows a user to dictate what malloc() PETSc uses.
 */
-#include "petscsys.h"             /*I   "petscsys.h"   I*/
+#include <petscsys.h>             /*I   "petscsys.h"   I*/
 #if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif

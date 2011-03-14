@@ -1,5 +1,5 @@
 
-#include "petscksp.h"  /*I "petscksp.h" I*/
+#include <petscksp.h>  /*I "petscksp.h" I*/
 #undef __FUNCT__  
 #define __FUNCT__ "KSPFGMRESSetModifyPC"
 /*@C

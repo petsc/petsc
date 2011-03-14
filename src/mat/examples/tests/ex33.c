@@ -2,7 +2,7 @@
 static char help[] = "Writes a matrix using the PETSc sparse format. Input arguments are:\n\
    -fout <file> : output file name\n\n";
 
-#include "petscmat.h"
+#include <petscmat.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

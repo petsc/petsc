@@ -1,5 +1,5 @@
 
-#include "../src/sys/draw/utils/lgimpl.h"
+#include <../src/sys/draw/utils/lgimpl.h>
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawLGAddPoint" 

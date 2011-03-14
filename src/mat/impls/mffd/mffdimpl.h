@@ -12,7 +12,7 @@
 #if !defined(__MFFD_H__)
 #define __MFFD_H__
 
-#include "petscmat.h"         /*I  "petscmat.h"   I*/
+#include <petscmat.h>         /*I  "petscmat.h"   I*/
 
 /*
     Table of functions that manage the computation and understanding

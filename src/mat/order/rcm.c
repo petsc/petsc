@@ -1,7 +1,7 @@
 
 /* rcm.f -- translated by f2c (version 19931217).*/
 
-#include "petscsys.h"
+#include <petscsys.h>
 
 /*****************************************************************/
 /*********     RCM ..... REVERSE CUTHILL-MCKEE ORDERING   *******/

@@ -22,11 +22,11 @@
 !     petscksp.h    - Krylov subspace methods
 !     petscpc.h     - preconditioners
 !
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscmat.h"
-#include "finclude/petscksp.h"
-#include "finclude/petscpc.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscmat.h>
+#include <finclude/petscksp.h>
+#include <finclude/petscpc.h>
 
 !    User-defined context that contains all the data structures used
 !    in the linear solution process.
@@ -168,11 +168,11 @@
 
       implicit none
 
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscmat.h"
-#include "finclude/petscksp.h"
-#include "finclude/petscpc.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscmat.h>
+#include <finclude/petscksp.h>
+#include <finclude/petscpc.h>
 
       PetscInt m,n
       PetscErrorCode ierr
@@ -234,11 +234,11 @@
 
       implicit none
 
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscmat.h"
-#include "finclude/petscksp.h"
-#include "finclude/petscpc.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscmat.h>
+#include <finclude/petscksp.h>
+#include <finclude/petscpc.h>
 
       PetscErrorCode ierr
       PetscFortranAddr userctx(*)
@@ -369,11 +369,11 @@
 
       implicit none
 
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscmat.h"
-#include "finclude/petscksp.h"
-#include "finclude/petscpc.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscmat.h>
+#include <finclude/petscksp.h>
+#include <finclude/petscpc.h>
 
       PetscErrorCode ierr
       PetscFortranAddr userctx(*)

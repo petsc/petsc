@@ -1,14 +1,14 @@
 
 #define USE_FAST_MAT_SET_VALUES
 
-#include "petscsys.h"
-#include "petscviewer.h"
+#include <petscsys.h>
+#include <petscviewer.h>
 
 #if defined(USE_FAST_MAT_SET_VALUES)
-#include "../src/mat/impls/aij/mpi/mpiaij.h"
+#include <../src/mat/impls/aij/mpi/mpiaij.h>
 #define MatSetValues MatSetValues_MPIAIJ
 #else 
-#include "petscmat.h"
+#include <petscmat.h>
 #endif
 
 

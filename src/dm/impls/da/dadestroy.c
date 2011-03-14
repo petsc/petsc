@@ -3,7 +3,7 @@
   Code for manipulating distributed regular arrays in parallel.
 */
 
-#include "private/daimpl.h"    /*I   "petscdmda.h"   I*/
+#include <private/daimpl.h>    /*I   "petscdmda.h"   I*/
 
 /* Logging support */
 PetscClassId  DM_CLASSID;

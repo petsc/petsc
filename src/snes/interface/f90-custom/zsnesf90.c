@@ -1,6 +1,6 @@
 
-#include "petscsnes.h"
-#include "../src/sys/f90-src/f90impl.h"
+#include <petscsnes.h>
+#include <../src/sys/f90-src/f90impl.h>
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define snesgetconvergencehistoryf90_     SNESGETCONVERGENCEHISTORYF90

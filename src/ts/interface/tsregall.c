@@ -1,5 +1,5 @@
 
-#include "private/tsimpl.h"     /*I  "petscts.h"  I*/
+#include <private/tsimpl.h>     /*I  "petscts.h"  I*/
 EXTERN_C_BEGIN
 extern PetscErrorCode  TSCreate_Euler(TS);
 extern PetscErrorCode  TSCreate_BEuler(TS);

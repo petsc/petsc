@@ -1,7 +1,7 @@
 
 static char help[] = "Demonstrates using 3 DMDA's to manage a slightly non-trivial grid";
 
-#include "petscdmda.h"
+#include <petscdmda.h>
 
 struct _p_FA {
   MPI_Comm   comm[3];
@@ -516,7 +516,7 @@ PetscErrorCode FACreate(FA *infa)
 }
 
 /* Crude graphics to test that the ghost points are properly updated */
-#include "petscdraw.h"
+#include <petscdraw.h>
 
 typedef struct {
   PetscInt     m[3],n[3];

@@ -4,7 +4,7 @@
 
 #ifndef __SNES_PICARD_H
 #define __SNES_PICARD_H
-#include "private/snesimpl.h"
+#include <private/snesimpl.h>
 
 typedef struct {
   int type; /* Type of Picard iteration */

@@ -4,8 +4,8 @@
 
 #define SWAP(a,b,c) { c = a; a = b; b = c; }
 
-#include "private/kspimpl.h"
-#include "../src/ksp/ksp/impls/lsqr/lsqr.h"
+#include <private/kspimpl.h>
+#include <../src/ksp/ksp/impls/lsqr/lsqr.h>
 
 typedef struct {
   PetscInt   nwork_n,nwork_m; 

@@ -2,7 +2,7 @@
 #ifndef __TSIMPL_H
 #define __TSIMPL_H
 
-#include "petscts.h"
+#include <petscts.h>
 
 /*
     Timesteping context.

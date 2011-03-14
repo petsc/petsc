@@ -3,9 +3,9 @@
 */
 #if !defined(__MG_IMPL)
 #define __MG_IMPL
-#include "private/pcimpl.h"
-#include "petscpcmg.h"
-#include "petscksp.h"
+#include <private/pcimpl.h>
+#include <petscpcmg.h>
+#include <petscksp.h>
 
 /*
      Each level has its own copy of this data.

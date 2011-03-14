@@ -1,7 +1,7 @@
 
 static char help[] = "Tests MatGetColumnNorms() for matrix read from file.";
 
-#include "petscmat.h"
+#include <petscmat.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

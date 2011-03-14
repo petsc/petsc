@@ -1,5 +1,5 @@
 
-#include "../src/vec/vec/impls/mpi/pvecimpl.h"   /*I  "petscvec.h"   I*/
+#include <../src/vec/vec/impls/mpi/pvecimpl.h>   /*I  "petscvec.h"   I*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecGhostStateSync_Private"

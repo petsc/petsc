@@ -13,7 +13,7 @@ Providence, RI 02912
 Last Modification: 
 11.21.97
 *********************************bit_mask.c***********************************/
-#include "../src/ksp/pc/impls/tfs/tfs.h"
+#include <../src/ksp/pc/impls/tfs/tfs.h>
 
 
 /*********************************bit_mask.c***********************************/

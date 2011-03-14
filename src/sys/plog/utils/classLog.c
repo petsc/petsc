@@ -5,7 +5,7 @@
    in the public PETSc include files.
 
 */
-#include "../src/sys/plog/logimpl.h" /*I    "petscsys.h"   I*/
+#include <../src/sys/plog/logimpl.h> /*I    "petscsys.h"   I*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "ClassRegLogCreate"

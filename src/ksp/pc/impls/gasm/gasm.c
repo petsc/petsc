@@ -8,7 +8,7 @@
        n    - actual number of subdomains on this processor
        nmax - maximum number of subdomains per processor
 */
-#include "private/pcimpl.h"     /*I "petscpc.h" I*/
+#include <private/pcimpl.h>     /*I "petscpc.h" I*/
 
 typedef struct {
   PetscInt   N,n,nmax;

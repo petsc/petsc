@@ -1,5 +1,5 @@
 
-#include "../src/mat/impls/aij/mpi/mpiaij.h"   /*I "petscmat.h" I*/
+#include <../src/mat/impls/aij/mpi/mpiaij.h>   /*I "petscmat.h" I*/
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  

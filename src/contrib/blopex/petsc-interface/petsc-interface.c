@@ -4,11 +4,11 @@
 /* @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ */
 /* This code was developed by Merico Argentati, Andrew Knyazev, Ilya Lashuk and Evgueni Ovtchinnikov */
 
-#include "petscsys.h"
-#include "petscvec.h"
-#include "petscmat.h"
+#include <petscsys.h>
+#include <petscvec.h>
+#include <petscmat.h>
 #include <assert.h>
-#include "petscblaslapack.h"
+#include <petscblaslapack.h>
 #include "interpreter.h"
 #include "temp_multivector.h"
 

@@ -5,7 +5,7 @@ the matrix across processors differently from the way it is assembled.\n\
 This example uses bilinear elements on the unit square.  Input arguments are:\n\
   -m <size> : problem size\n\n";
 
-#include "petscmat.h"
+#include <petscmat.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "FormElementStiffness"

@@ -1,5 +1,5 @@
 
-#include "petscsys.h"           /*I "petscsys.h" I*/
+#include <petscsys.h>           /*I "petscsys.h" I*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscMPIAbortErrorHandler" 

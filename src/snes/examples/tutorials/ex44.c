@@ -22,7 +22,7 @@ Input arguments are:\n\
    Processors: 1
 T*/
 
-#include "petscsnes.h"
+#include <petscsnes.h>
 
 /* User-defined routines */
 PetscErrorCode FormFunction(SNES,Vec,Vec,void*);

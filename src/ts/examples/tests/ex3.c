@@ -10,8 +10,8 @@ Input arguments are\n\
   We thank Chris Cox <clcox@clemson.edu> for contributing the original code
 ----------------------------------------------------------------------------*/
 
-#include "petscksp.h"
-#include "petscts.h"
+#include <petscksp.h>
+#include <petscts.h>
 
 /* special variable - max size of all arrays  */
 #define num_z 60

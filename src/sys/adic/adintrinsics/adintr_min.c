@@ -9,8 +9,8 @@
   */
 
 #include <stdarg.h>
-#include "adintrinsics.h"
-#include "knr-compat.h"
+#include <adintrinsics.h>
+#include <knr-compat.h>
 #if defined(__cplusplus)
 extern "C" {
 #endif

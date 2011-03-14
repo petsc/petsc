@@ -5,7 +5,7 @@ static char help[] = "Test MatAXPY(), and illustrate how to reduce number of mal
   Example: ./ex132 -mat_view_info
 */
 
-#include "petscmat.h"
+#include <petscmat.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

@@ -2,7 +2,7 @@
 #ifndef __CHARACTERISTICIMPL_H
 #define __CHARACTERISTICIMPL_H
 
-#include "characteristic.h"
+#include <characteristic.h>
 
 #define MAX_COMPONENTS 10
 

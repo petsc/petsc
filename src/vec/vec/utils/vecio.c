@@ -5,10 +5,10 @@
    VecView (with viewer types PETSCVIEWERBINARY)
  */
 
-#include "petscsys.h"
-#include "petscvec.h"         /*I  "petscvec.h"  I*/
-#include "private/vecimpl.h"
-#include "petscmat.h" /* so that MAT_FILE_CLASSID is defined */
+#include <petscsys.h>
+#include <petscvec.h>         /*I  "petscvec.h"  I*/
+#include <private/vecimpl.h>
+#include <petscmat.h> /* so that MAT_FILE_CLASSID is defined */
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerBinaryReadVecHeader_Private"

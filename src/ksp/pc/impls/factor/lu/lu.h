@@ -4,7 +4,7 @@
 #if !defined(__LU_H)
 #define __LU_H
 
-#include "../src/ksp/pc/impls/factor/factor.h"
+#include <../src/ksp/pc/impls/factor/factor.h>
 
 typedef struct {
   PC_Factor   hdr;

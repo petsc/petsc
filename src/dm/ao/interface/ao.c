@@ -2,7 +2,7 @@
 /*  
    Defines the abstract operations on AO (application orderings) 
 */
-#include "../src/dm/ao/aoimpl.h"      /*I "petscao.h" I*/
+#include <../src/dm/ao/aoimpl.h>      /*I "petscao.h" I*/
 
 /* Logging support */
 PetscClassId  AO_CLASSID;
@@ -82,7 +82,7 @@ PetscErrorCode  AODestroy(AO ao)
 }
 
 
-#include "../src/vec/is/impls/general/general.h"
+#include <../src/vec/is/impls/general/general.h>
 /* ---------------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "AOPetscToApplicationIS" 

@@ -7,7 +7,7 @@
   plot we only use from PETSC_DRAW_BASIC_COLORS to 240 since the ones beyond that are too dark.
 
 */
-#include "../src/sys/draw/impls/x/ximpl.h"
+#include <../src/sys/draw/impls/x/ximpl.h>
 #include <X11/Xatom.h>
 
 static const char *(colornames[PETSC_DRAW_BASIC_COLORS]) = { "white",

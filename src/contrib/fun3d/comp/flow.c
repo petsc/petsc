@@ -6,10 +6,10 @@ and ported into PETSc framework by D. K. Kaushik, ODU and ICASE.\n\n";
 #include <stdio.h>
 #include <math.h>
 #include <assert.h>
-#include "petscsnes.h"
-#include "petscdraw.h"
-#include "petscao.h"
-#include "petscis.h"
+#include <petscsnes.h>
+#include <petscdraw.h>
+#include <petscao.h>
+#include <petscis.h>
 #include "user.h"
 
 typedef struct {

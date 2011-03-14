@@ -1,8 +1,8 @@
 
-#include "petscvec.h"    /*I "petscvec.h" I*/
+#include <petscvec.h>    /*I "petscvec.h" I*/
 
-#include "engine.h"   /* MATLAB include file */
-#include "mex.h"      /* MATLAB include file */
+#include <engine.h>   /* MATLAB include file */
+#include <mex.h>      /* MATLAB include file */
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "VecMatlabEnginePut_Default"

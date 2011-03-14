@@ -18,10 +18,10 @@
 !     petscmat.h    - matrices
 !     petscmat.h90  - to allow access to Fortran 90 features of matrices
 
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscmat.h"
-#include "finclude/petscmat.h90"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscmat.h>
+#include <finclude/petscmat.h90>
 
       Mat A
       PetscErrorCode ierr

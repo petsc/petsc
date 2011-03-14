@@ -1,5 +1,5 @@
 
-#include "../src/sys/viewer/impls/ascii/asciiimpl.h"  /*I     "petscsys.h"   I*/
+#include <../src/sys/viewer/impls/ascii/asciiimpl.h>  /*I     "petscsys.h"   I*/
 
 /* ---------------------------------------------------------------------*/
 /*

@@ -1,5 +1,5 @@
 
-#include "../src/mat/impls/aij/mpi/mpiaij.h"
+#include <../src/mat/impls/aij/mpi/mpiaij.h>
 
 extern PetscErrorCode CreateColmap_MPIAIJ_Private(Mat);
 

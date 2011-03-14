@@ -1,7 +1,7 @@
 
 static char help[] = "Tests binary I/O of vectors and illustrates the use of user-defined event logging.\n\n";
 
-#include "petscvec.h"
+#include <petscvec.h>
 
 /* Note:  Most applications would not read and write a vector within
   the same program.  This example is intended only to demonstrate

@@ -25,7 +25,7 @@ It is copied and intended to move dirty codes from ksp/examples/tutorials/ex10.c
    Processors: n
 T*/
 
-#include "petscksp.h"
+#include <petscksp.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

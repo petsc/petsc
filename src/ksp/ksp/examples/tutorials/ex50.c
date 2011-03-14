@@ -20,12 +20,12 @@
 
 static char help[] = "Solves 2D Poisson equation using multigrid.\n\n";
 
-#include "petscdmda.h"
-#include "petscksp.h"
-#include "petscpcmg.h"
-#include "petscdmmg.h"
-#include "petscsys.h"
-#include "petscvec.h"
+#include <petscdmda.h>
+#include <petscksp.h>
+#include <petscpcmg.h>
+#include <petscdmmg.h>
+#include <petscsys.h>
+#include <petscvec.h>
 
 extern PetscErrorCode ComputeJacobian(DMMG,Mat,Mat);
 extern PetscErrorCode ComputeRHS(DMMG,Vec);

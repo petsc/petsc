@@ -2,8 +2,8 @@
 /*
      Code for some of the parallel vector primatives.
 */
-#include "../src/vec/vec/impls/mpi/pvecimpl.h" 
-#include "petscblaslapack.h"
+#include <../src/vec/vec/impls/mpi/pvecimpl.h> 
+#include <petscblaslapack.h>
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecMDot_MPI"
@@ -43,7 +43,7 @@ PetscErrorCode VecMTDot_MPI(Vec xin,PetscInt nv,const Vec y[],PetscScalar *z)
   PetscFunctionReturn(0);
 }
 
-#include "../src/vec/vec/impls/seq/ftn-kernels/fnorm.h"
+#include <../src/vec/vec/impls/seq/ftn-kernels/fnorm.h>
 #undef __FUNCT__  
 #define __FUNCT__ "VecNorm_MPI"
 PetscErrorCode VecNorm_MPI(Vec xin,NormType type,PetscReal *z)

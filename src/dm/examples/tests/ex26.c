@@ -2,8 +2,8 @@
 static char help[] = "Tests error message in DMGetColoring() with periodic boundary conditions. \n\n";
 
 
-#include "petscdmda.h"
-#include "petscmat.h"
+#include <petscdmda.h>
+#include <petscmat.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

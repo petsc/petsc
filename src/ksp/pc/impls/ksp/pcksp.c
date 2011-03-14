@@ -1,6 +1,6 @@
 
-#include "private/pcimpl.h"   /*I "petscpc.h" I*/
-#include "petscksp.h"            /*I "petscksp.h" I*/
+#include <private/pcimpl.h>   /*I "petscpc.h" I*/
+#include <petscksp.h>            /*I "petscksp.h" I*/
 
 typedef struct {
   PetscBool  use_true_matrix;       /* use mat rather than pmat in inner linear solve */

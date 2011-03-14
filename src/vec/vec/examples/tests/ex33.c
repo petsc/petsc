@@ -2,7 +2,7 @@
 
 static char help[] = "Tests the routines VecScatterCreateToAll(), VecScatterCreateToZero()\n\n";
 
-#include "petscvec.h"
+#include <petscvec.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

@@ -2,7 +2,7 @@
 static char help[] = "Tests MatSolve and MatMatSolve (interface to superlu_dist).\n\
 Example: mpiexec -n <np> ./ex125 -f <matrix binary file> -nrhs 4 \n\n";
 
-#include "petscmat.h"
+#include <petscmat.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

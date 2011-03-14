@@ -2,8 +2,8 @@
 /*
     Factorization code for BAIJ format. 
 */
-#include "../src/mat/impls/baij/seq/baij.h"
-#include "../src/mat/blockinvert.h"
+#include <../src/mat/impls/baij/seq/baij.h>
+#include <../src/mat/blockinvert.h>
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSeqBAIJSetNumericFactorization"
@@ -177,8 +177,8 @@ PetscErrorCode MatSeqBAIJSetNumericFactorization_inplace(Mat inA,PetscBool  natu
   except for very small changes since this is now a SeqBAIJ datastructure.
   NOT good code reuse.
 */
-#include "petscbt.h"
-#include "../src/mat/utils/freespace.h"
+#include <petscbt.h>
+#include <../src/mat/utils/freespace.h>
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorSymbolic_SeqBAIJ"

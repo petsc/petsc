@@ -1,5 +1,5 @@
 #define PETSCDM_DLL
-#include "private/meshimpl.h"    /*I   "petscdmmesh.h"   I*/
+#include <private/meshimpl.h>    /*I   "petscdmmesh.h"   I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "DMSetFromOptions_Mesh"

@@ -6,8 +6,8 @@
 #if !defined(__DGMRES)
 #define __DGMRES
 
-#include "private/kspimpl.h"        /*I "petscksp.h" I*/
-#include "petscblaslapack.h"
+#include <private/kspimpl.h>        /*I "petscksp.h" I*/
+#include <petscblaslapack.h>
 #if defined(PETSC_BLASLAPACK_UNDERSCORE)
 #include "petscdgmresblaslapack_uscore.h"
 #elif defined(PETSC_BLASLAPACK_CAPS)

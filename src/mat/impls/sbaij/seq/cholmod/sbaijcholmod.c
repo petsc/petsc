@@ -9,8 +9,8 @@
 
 */
 
-#include "../src/mat/impls/sbaij/seq/sbaij.h"
-#include "../src/mat/impls/sbaij/seq/cholmod/cholmodimpl.h"
+#include <../src/mat/impls/sbaij/seq/sbaij.h>
+#include <../src/mat/impls/sbaij/seq/cholmod/cholmodimpl.h>
 
 /*
    This is a terrible hack, but it allows the error handler to retain a context.

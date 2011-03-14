@@ -2,7 +2,7 @@
 !
 !    Fortran kernel for the MDot() vector routine
 !
-#include "finclude/petscsysdef.h"
+#include <finclude/petscsysdef.h>
 !
       subroutine FortranMDot4(x,y1,y2,y3,y4,n,sum1,sum2,sum3,sum4)
       implicit none

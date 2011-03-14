@@ -96,7 +96,7 @@ static double	bytes[4] = {
 
 extern double second();
 
-#include "mpi.h"
+#include <mpi.h>
 
 int main(int argc,char **args)
    {

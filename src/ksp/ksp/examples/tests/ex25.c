@@ -5,7 +5,7 @@ static char help[] =
 Runtime options: ex25 -fload ~petsc/matrices/indefinite/afiro -pc_type jacobi -pc_jacobi_rowmax\n\
 See ~petsc/matrices/indefinite/readme \n\n";
 
-#include "petscksp.h"
+#include <petscksp.h>
 
 #undef __FUNC__
 #define __FUNC__ "main"

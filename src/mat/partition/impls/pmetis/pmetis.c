@@ -1,12 +1,12 @@
  
-#include "../src/mat/impls/adj/mpi/mpiadj.h"    /*I "petscmat.h" I*/
+#include <../src/mat/impls/adj/mpi/mpiadj.h>    /*I "petscmat.h" I*/
 
 /* 
    Currently using ParMetis-2.0. The following include file has
    to be changed to par_kmetis.h for ParMetis-1.0
 */
 EXTERN_C_BEGIN
-#include "parmetis.h"
+#include <parmetis.h>
 EXTERN_C_END
 
 /*

@@ -64,8 +64,8 @@ Options: \n\
 
 /* Contributed by Dave May */
 
-#include "petscksp.h"
-#include "petscdmda.h"
+#include <petscksp.h>
+#include <petscdmda.h>
 
 static PetscErrorCode DMDABCApplyCompression(DM,Mat,Vec);
 static PetscErrorCode DMDABCApplySymmetricCompression(DM elas_da,Mat A,Vec f,IS *dofs,Mat *AA,Vec *ff);

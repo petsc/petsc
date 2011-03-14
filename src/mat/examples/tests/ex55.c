@@ -1,7 +1,7 @@
 
 static char help[] = "Tests converting a matrix to another format with MatConvert().\n\n";
 
-#include "petscmat.h"
+#include <petscmat.h>
 /* Usage: mpiexec -n <np> ex55 -display <0 or 1> */
 
 #undef __FUNCT__

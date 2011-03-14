@@ -4,7 +4,7 @@
    implementation of the graphics functionality in PETSc.
 */
 
-#include "../src/sys/draw/drawimpl.h"
+#include <../src/sys/draw/drawimpl.h>
 
 #if !defined(_XIMPL_H)
 #define _XIMPL_H

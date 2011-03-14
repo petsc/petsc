@@ -1,5 +1,5 @@
 
-#include "private/snesimpl.h"     /*I  "petscsnes.h"  I*/
+#include <private/snesimpl.h>     /*I  "petscsnes.h"  I*/
 
 EXTERN_C_BEGIN
 extern PetscErrorCode  SNESCreate_LS(SNES);

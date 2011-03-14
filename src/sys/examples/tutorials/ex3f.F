@@ -19,8 +19,8 @@
 !
 !  The following include statements are required for using PetscLog Routines
 !
-#include "finclude/petscsys.h"
-#include "finclude/petsclog.h"
+#include <finclude/petscsys.h>
+#include <finclude/petsclog.h>
 !
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations

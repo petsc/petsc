@@ -18,8 +18,8 @@ T*/
 
 static char help[] = "Constructs the doublet Sieve bottom-up and top-down, viewing the resulting stratum structure each time.\n\n";
 
-#include "petscdmmesh.h"
-#include "petscviewer.h"
+#include <petscdmmesh.h>
+#include <petscviewer.h>
 #include <stdlib.h>
 #include <string.h>
 

@@ -2,7 +2,7 @@
 static char help[] = "Tests VecSetValues and VecSetValuesBlocked() on MPI vectors.\n\
 Where atleast a couple of mallocs will occur in the stash code.\n\n";
 
-#include "petscvec.h"
+#include <petscvec.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

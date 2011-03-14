@@ -3,8 +3,8 @@
 */
 #if !defined(__ASA_IMPL)
 #define __ASA_IMPL
-#include "private/pcimpl.h"
-#include "petscasa.h"
+#include <private/pcimpl.h>
+#include <petscpcasa.h>
 
 /*
      Structure for adaptive smoothed aggregation solver. 

@@ -1,6 +1,6 @@
 
-#include "petscvec.h"
-#include "petscpf.h"
+#include <petscvec.h>
+#include <petscpf.h>
 
 static PetscBool  ISPackageInitialized = PETSC_FALSE;
 #undef __FUNCT__  

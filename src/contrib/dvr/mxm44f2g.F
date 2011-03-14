@@ -5,7 +5,7 @@ c-----------------------------------------------------------------------
 c
 c     unrolled loop routine written by paul fischer
 c
-#include "finclude/petscsys.h"      
+#include <finclude/petscsys.h>      
       double precision a(n1,n2),b(n2,n3),c(n1,n3)
 C
       if (n2.le.8) then

@@ -15,7 +15,7 @@ T*/
     Include petscis.h so we can use PETSc IS objects. Note that this automatically 
   includes petscsys.h.
 */
-#include "petscis.h"
+#include <petscis.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

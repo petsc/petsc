@@ -1,6 +1,6 @@
 
-#include "private/pcimpl.h"     /*I "petscpc.h" I*/
-#include "petscksp.h"
+#include <private/pcimpl.h>     /*I "petscpc.h" I*/
+#include <petscksp.h>
 
 typedef struct {
   MatStructure flag;               /* pc->flag */

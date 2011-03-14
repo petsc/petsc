@@ -2,12 +2,12 @@
       program main
        implicit none
 
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscmat.h"
-#include "finclude/petscpc.h"
-#include "finclude/petscksp.h"
-#include "finclude/petscviewer.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscmat.h>
+#include <finclude/petscpc.h>
+#include <finclude/petscksp.h>
+#include <finclude/petscviewer.h>
 !
 !  This example is the Fortran version of ex6.c.  The program reads a PETSc matrix
 !  and vector from a file and solves a linear system.  Input arguments are:

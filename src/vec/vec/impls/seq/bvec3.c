@@ -3,8 +3,8 @@
    Implements the sequential vectors.
 */
 
-#include "private/vecimpl.h"          /*I "petscvec.h" I*/
-#include "../src/vec/vec/impls/dvecimpl.h"
+#include <private/vecimpl.h>          /*I "petscvec.h" I*/
+#include <../src/vec/vec/impls/dvecimpl.h>
 
 /*MC
    VECSEQ - VECSEQ = "seq" - The basic sequential vector

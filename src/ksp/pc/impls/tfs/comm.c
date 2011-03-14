@@ -13,7 +13,7 @@ Providence, RI 02912
 Last Modification: 
 11.21.97
 ***********************************comm.c*************************************/
-#include "../src/ksp/pc/impls/tfs/tfs.h"
+#include <../src/ksp/pc/impls/tfs/tfs.h>
 
 
 /* global program control variables - explicitly exported */

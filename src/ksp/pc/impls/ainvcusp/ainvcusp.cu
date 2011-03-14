@@ -6,14 +6,14 @@
      pcimpl.h - private include file intended for use by all preconditioners
 */
 
-#include "private/pcimpl.h"   /*I "petscpc.h" I*/
-#include "../src/mat/impls/aij/seq/aij.h"
+#include <private/pcimpl.h>   /*I "petscpc.h" I*/
+#include <../src/mat/impls/aij/seq/aij.h>
 #include <cusp/monitor.h>
 #undef VecType
 #include <cusp/precond/ainv.h>
 #define VecType char*
-#include "../src/vec/vec/impls/dvecimpl.h"
-#include "../src/mat/impls/aij/seq/seqcusp/cuspmatimpl.h"
+#include <../src/vec/vec/impls/dvecimpl.h>
+#include <../src/mat/impls/aij/seq/seqcusp/cuspmatimpl.h>
 
 #define cuspainvprecondscaled cusp::precond::scaled_bridson_ainv<PetscScalar,cusp::device_memory>
 #define cuspainvprecond cusp::precond::bridson_ainv<PetscScalar,cusp::device_memory>

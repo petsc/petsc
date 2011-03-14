@@ -3,10 +3,10 @@
     Defines parallel vector scatters.
 */
 
-#include "private/isimpl.h"
-#include "private/vecimpl.h"         /*I "petscvec.h" I*/
-#include "../src/vec/vec/impls/dvecimpl.h"
-#include "../src/vec/vec/impls/mpi/pvecimpl.h"
+#include <private/isimpl.h>
+#include <private/vecimpl.h>         /*I "petscvec.h" I*/
+#include <../src/vec/vec/impls/dvecimpl.h>
+#include <../src/vec/vec/impls/mpi/pvecimpl.h>
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecScatterView_MPI"
@@ -1453,23 +1453,23 @@ PETSC_STATIC_INLINE void Scatter_12(PetscInt n,const PetscInt *indicesx,const Pe
 
 /* Create the VecScatterBegin/End_P for our chosen block sizes */
 #define BS 1
-#include "../src/vec/vec/utils/vpscat.h"
+#include <../src/vec/vec/utils/vpscat.h>
 #define BS 2
-#include "../src/vec/vec/utils/vpscat.h"
+#include <../src/vec/vec/utils/vpscat.h>
 #define BS 3
-#include "../src/vec/vec/utils/vpscat.h"
+#include <../src/vec/vec/utils/vpscat.h>
 #define BS 4
-#include "../src/vec/vec/utils/vpscat.h"
+#include <../src/vec/vec/utils/vpscat.h>
 #define BS 5
-#include "../src/vec/vec/utils/vpscat.h"
+#include <../src/vec/vec/utils/vpscat.h>
 #define BS 6
-#include "../src/vec/vec/utils/vpscat.h"
+#include <../src/vec/vec/utils/vpscat.h>
 #define BS 7
-#include "../src/vec/vec/utils/vpscat.h"
+#include <../src/vec/vec/utils/vpscat.h>
 #define BS 8
-#include "../src/vec/vec/utils/vpscat.h"
+#include <../src/vec/vec/utils/vpscat.h>
 #define BS 12
-#include "../src/vec/vec/utils/vpscat.h"
+#include <../src/vec/vec/utils/vpscat.h>
 
 /* ==========================================================================================*/
 

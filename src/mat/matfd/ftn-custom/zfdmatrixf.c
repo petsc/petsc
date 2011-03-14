@@ -1,6 +1,6 @@
-#include "private/fortranimpl.h"
-#include "private/matimpl.h"
-#include "petscts.h"
+#include <private/fortranimpl.h>
+#include <private/matimpl.h>
+#include <petscts.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define matfdcoloringsetfunctionts_      MATFDCOLORINGSETFUNCTIONTS

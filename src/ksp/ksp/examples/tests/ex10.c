@@ -5,7 +5,7 @@ elasticity. This also demonstrates use of  block\n\
 diagonal data structure.  Input arguments are:\n\
   -m : problem size\n\n";
 
-#include "petscksp.h"
+#include <petscksp.h>
 
 /* This code is not intended as an efficient implementation, it is only
    here to produce an interesting sparse matrix quickly.

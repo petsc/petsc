@@ -5,9 +5,9 @@
 
 static char help[] = "Used for Solving a linear system where the matrix has all zeros.\n\n";
 
-#include "petscdmda.h"
-#include "petscksp.h"
-#include "petscpcmg.h"
+#include <petscdmda.h>
+#include <petscksp.h>
+#include <petscpcmg.h>
 
 extern PetscErrorCode ComputeMatrix(DM,Mat);
 extern PetscErrorCode ComputeRHS(DM,Vec);

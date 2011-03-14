@@ -7,7 +7,7 @@ static char help[] = "Test MatGetInertia() for Hermitian matrix. \n\n";
   This example is modified from src/mat/examples/tests/ex127.c
 */
 
-#include "petscksp.h"
+#include <petscksp.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

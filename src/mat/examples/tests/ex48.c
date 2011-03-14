@@ -1,7 +1,7 @@
 
 static char help[] = "Tests the vatious routines in MatSeqBAIJ format.\n";
 
-#include "petscmat.h"
+#include <petscmat.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

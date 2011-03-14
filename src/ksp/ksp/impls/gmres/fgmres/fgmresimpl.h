@@ -7,7 +7,7 @@
 #if !defined(__FGMRES)
 #define __FGMRES
 
-#include "private/kspimpl.h"
+#include <private/kspimpl.h>
 
 typedef struct {
     /* Hessenberg matrix and orthogonalization information. */ 

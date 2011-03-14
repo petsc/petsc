@@ -1,8 +1,8 @@
 
-#include "../src/mat/impls/baij/mpi/mpibaij.h"    /*I "petscmat.h" I*/
-#include "../src/mat/impls/sbaij/mpi/mpisbaij.h"
-#include "../src/mat/impls/sbaij/seq/sbaij.h"
-#include "petscblaslapack.h"
+#include <../src/mat/impls/baij/mpi/mpibaij.h>    /*I "petscmat.h" I*/
+#include <../src/mat/impls/sbaij/mpi/mpisbaij.h>
+#include <../src/mat/impls/sbaij/seq/sbaij.h>
+#include <petscblaslapack.h>
 
 extern PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat); 
 extern PetscErrorCode MatSetUpMultiply_MPISBAIJ_2comm(Mat); 

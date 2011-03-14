@@ -4,10 +4,10 @@
       subroutine mymatgetvecs(A,x,y,ierr)
       implicit none
 
-#include "finclude/petscsys.h"
-#include "finclude/petscis.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscmat.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscis.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscmat.h>
       PetscErrorCode ierr
       Mat A
       Vec x,y
@@ -26,11 +26,11 @@
       program main
       implicit none
 
-#include "finclude/petscsys.h"
-#include "finclude/petscis.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscmat.h"
-#include "finclude/petscviewer.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscis.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscmat.h>
+#include <finclude/petscviewer.h>
 
       PetscErrorCode ierr
       Vec     x,y

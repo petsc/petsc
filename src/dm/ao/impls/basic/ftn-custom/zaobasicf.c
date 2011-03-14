@@ -1,6 +1,6 @@
 
-#include "private/fortranimpl.h"
-#include "petscao.h"
+#include <private/fortranimpl.h>
+#include <petscao.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define aocreatebasic_   AOCREATEBASIC

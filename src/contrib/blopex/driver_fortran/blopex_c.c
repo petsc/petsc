@@ -34,18 +34,18 @@ Contains C routines for the interface with BLOPEX compiled with PETSc.
 
 /* include files for PETSc and BLOPEX */
 
-#include "petscvec.h"
-#include "petscksp.h"
+#include <petscvec.h>
+#include <petscksp.h>
 #include <assert.h>
 #include "fortran_matrix.h"
 #include "fortran_interpreter.h"
-#include "petscdm.h"
+#include <petscdm.h>
 #include "lobpcg.h"
 
 #ifdef BLOPEX_DIR
 #include "petsc-interface.h"
 #else
-#include "../src/contrib/blopex/petsc-interface/petsc-interface.h"
+#include <../src/contrib/blopex/petsc-interface/petsc-interface.h>
 #endif
 
 #include "interpreter.h"

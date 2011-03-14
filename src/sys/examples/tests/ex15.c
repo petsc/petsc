@@ -3,7 +3,7 @@
    Demonstrates PetscPopUpSelect()
  */
 
-#include "petscsys.h"
+#include <petscsys.h>
 
 
 #undef __FUNCT__

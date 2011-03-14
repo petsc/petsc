@@ -1,6 +1,6 @@
 
-#include "private/viewerimpl.h"
-#include "mat.h"
+#include <private/viewerimpl.h>
+#include <mat.h>
 
 /*MC
    PETSCVIEWERMATLAB - A viewer that saves the variables into a MATLAB .mat file that may be read into MATLAB

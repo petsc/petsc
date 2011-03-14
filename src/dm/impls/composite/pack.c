@@ -1266,7 +1266,7 @@ PetscErrorCode  DMRefine_Composite(DM dmi,MPI_Comm comm,DM *fine)
   PetscFunctionReturn(0);
 }
 
-#include "petscmat.h"
+#include <petscmat.h>
 
 struct MatPackLink {
   Mat                A;

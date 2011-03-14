@@ -19,16 +19,16 @@
 !  routines in a Fortran program, e.g.,
 !     petscis.h     - index sets
 
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscdmda.h"
-#include "finclude/petscmat.h"
-#include "finclude/petscksp.h"
-#include "finclude/petscpc.h"
-#include "finclude/petscsnes.h"
-#include "finclude/petscts.h"
-#include "finclude/petscviewer.h"
-#include "finclude/petscdraw.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscdmda.h>
+#include <finclude/petscmat.h>
+#include <finclude/petscksp.h>
+#include <finclude/petscpc.h>
+#include <finclude/petscsnes.h>
+#include <finclude/petscts.h>
+#include <finclude/petscviewer.h>
+#include <finclude/petscdraw.h>
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 !

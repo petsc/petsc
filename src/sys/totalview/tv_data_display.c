@@ -31,8 +31,8 @@
  *
  */
 
-#include "../src/sys/totalview/tv_data_display.h"
-#include "petscconf.h"
+#include <../src/sys/totalview/tv_data_display.h>
+#include <petscconf.h>
 
 #include <errno.h>
 #include <stdlib.h>

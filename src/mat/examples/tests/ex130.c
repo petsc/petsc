@@ -2,7 +2,7 @@
 static char help[] = "Tests external direct solvers. Simplified from ex125.c\n\
 Example: mpiexec -n <np> ./ex130 -f <matrix binary file> -mat_solver_package 1 -mat_superlu_equil \n\n";
 
-#include "petscmat.h"
+#include <petscmat.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

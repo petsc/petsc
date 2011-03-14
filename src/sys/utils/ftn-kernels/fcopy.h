@@ -1,7 +1,7 @@
 
 #if !defined(__fcopy_h)
 
-#include "petscsys.h"
+#include <petscsys.h>
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define fortrancopy_ FORTRANCOPY
 #define fortranzero_ FORTRANZERO

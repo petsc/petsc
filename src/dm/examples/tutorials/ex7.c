@@ -4,9 +4,9 @@ static char help[] = "Demonstrates using the PetscViewerBinaryMatlab viewer\n\n"
    Concepts: viewers; bags;
    Processors: n
 T*/
-#include "petscsys.h"
-#include "petscdmda.h"
-#include "petscbag.h"
+#include <petscsys.h>
+#include <petscdmda.h>
+#include <petscbag.h>
 
 typedef struct {
   char          filename[PETSC_MAX_PATH_LEN];

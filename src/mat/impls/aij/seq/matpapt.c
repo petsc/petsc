@@ -4,8 +4,8 @@
           C = P * A * P^T
 */
 
-#include "../src/mat/impls/aij/seq/aij.h"
-#include "../src/mat/utils/freespace.h"
+#include <../src/mat/impls/aij/seq/aij.h>
+#include <../src/mat/utils/freespace.h>
 
 
 /*

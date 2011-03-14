@@ -39,10 +39,10 @@ T*/
  
 */
 
-#include "petscsnes.h"
-#include "petscdmda.h"
-#include "petscpcmg.h"
-#include "petscdmmg.h"
+#include <petscsnes.h>
+#include <petscdmda.h>
+#include <petscpcmg.h>
+#include <petscdmmg.h>
 
 /* User-defined application context */
 

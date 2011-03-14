@@ -20,9 +20,9 @@ static char help[] ="Solvers Laplacian with multigrid, bad way.\n\
     system of equations.
 */
 
-#include "petscksp.h"
-#include "petscdmda.h"
-#include "petscpcmg.h"
+#include <petscksp.h>
+#include <petscdmda.h>
+#include <petscpcmg.h>
 
 /* User-defined application contexts */
 

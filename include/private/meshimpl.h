@@ -1,7 +1,7 @@
 #if !defined(_MESHIMPL_H)
 #define _MESHIMPL_H
 
-#include "petscmat.h"    /*I      "petscmat.h"    I*/
+#include <petscmat.h>    /*I      "petscmat.h"    I*/
 #include "private/dmimpl.h"
 
 typedef struct {

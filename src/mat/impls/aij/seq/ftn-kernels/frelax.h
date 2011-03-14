@@ -1,6 +1,6 @@
 
 #if !defined(__FRELAX_H)
-#include "petscsys.h"
+#include <petscsys.h>
 #if defined(PETSC_USE_FORTRAN_KERNEL_RELAXAIJ)
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define fortranrelaxaijforward_   FORTRANRELAXAIJFORWARD

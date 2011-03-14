@@ -1,5 +1,5 @@
 
-#include "../src/snes/impls/ls/lsimpl.h"
+#include <../src/snes/impls/ls/lsimpl.h>
 
 /*
      Checks if J^T F = 0 which implies we've found a local minimum of the norm of the function,

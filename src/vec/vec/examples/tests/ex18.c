@@ -5,7 +5,7 @@ static char help[] = "Compares BLAS dots on different machines. Input\n\
 arguments are\n\
   -n <length> : local vector length\n\n";
 
-#include "petscvec.h"
+#include <petscvec.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

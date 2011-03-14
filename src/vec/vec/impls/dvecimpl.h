@@ -9,7 +9,7 @@
 #ifndef __DVECIMPL 
 #define __DVECIMPL
 
-#include "private/vecimpl.h"
+#include <private/vecimpl.h>
 
 typedef struct { 
   VECHEADER

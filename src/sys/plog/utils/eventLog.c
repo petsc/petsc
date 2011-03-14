@@ -5,7 +5,7 @@
    in the public PETSc include files.
 
 */
-#include "../src/sys/plog/logimpl.h"  /*I    "petscsys.h"   I*/
+#include <../src/sys/plog/logimpl.h>  /*I    "petscsys.h"   I*/
 
 /* Variables for the tracing logger */
 extern FILE          *tracefile;
@@ -574,7 +574,7 @@ PetscErrorCode PetscLogEventZeroFlops(PetscLogEvent event)
 #include <CHUD/CHUD.h>
 #endif
 #if defined(PETSC_HAVE_PAPI)
-#include "papi.h"
+#include <papi.h>
 extern int PAPIEventSet;
 #endif
 

@@ -2,7 +2,7 @@
 #if !defined(__AIJ_H)
 #define __AIJ_H
 
-#include "private/matimpl.h"
+#include <private/matimpl.h>
 
 /*  
     Struct header shared by SeqAIJ, SeqBAIJ and SeqSBAIJ matrix formats

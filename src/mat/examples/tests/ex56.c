@@ -1,7 +1,7 @@
 
 static char help[] = "Test the use of MatSetValuesBlocked(), MatZeroRows() for rectangular MatBAIJ matrix, test MatSetValuesBlocked() for MatSBAIJ matrix (-test_mat_sbaij).";
 
-#include "petscmat.h"
+#include <petscmat.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

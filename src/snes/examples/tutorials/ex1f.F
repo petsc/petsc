@@ -29,12 +29,12 @@
 !     petscviewer.h - viewers
 !     petscis.h     - index sets
 !
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscmat.h"
-#include "finclude/petscksp.h"
-#include "finclude/petscpc.h"
-#include "finclude/petscsnes.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscmat.h>
+#include <finclude/petscksp.h>
+#include <finclude/petscpc.h>
+#include <finclude/petscsnes.h>
 !
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations
@@ -200,9 +200,9 @@
       subroutine FormFunction(snes,x,f,dummy,ierr)
       implicit none
 
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscsnes.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscsnes.h>
 
       SNES     snes
       Vec      x,f
@@ -257,11 +257,11 @@
       subroutine FormJacobian(snes,X,jac,B,flag,dummy,ierr)
       implicit none
 
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscmat.h"
-#include "finclude/petscpc.h"
-#include "finclude/petscsnes.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscmat.h>
+#include <finclude/petscpc.h>
+#include <finclude/petscsnes.h>
 
       SNES         snes
       Vec          X
@@ -312,12 +312,12 @@
 
       subroutine MyLineSearch(snes,lctx,x,f,g,y,w,fnorm,ynorm,gnorm,     &
      &                        flag,ierr)
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscmat.h"
-#include "finclude/petscksp.h"
-#include "finclude/petscpc.h"
-#include "finclude/petscsnes.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscmat.h>
+#include <finclude/petscksp.h>
+#include <finclude/petscpc.h>
+#include <finclude/petscsnes.h>
 
       SNES              snes
       integer           lctx

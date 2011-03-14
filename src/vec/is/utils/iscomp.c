@@ -1,5 +1,5 @@
 
-#include "petscis.h"    /*I "petscis.h"  I*/
+#include <petscis.h>    /*I "petscis.h"  I*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISEqual"

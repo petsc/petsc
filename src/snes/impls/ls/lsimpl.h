@@ -5,7 +5,7 @@
 
 #ifndef __SNES_LS_H
 #define __SNES_LS_H
-#include "private/snesimpl.h"
+#include <private/snesimpl.h>
 
 typedef struct {
   PetscErrorCode           (*LineSearch)(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal*,PetscReal*,PetscBool *);

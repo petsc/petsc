@@ -58,15 +58,15 @@
 !     viewer.h - viewers
 !     is.h     - index sets
 !
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscis.h"
-#include "finclude/petscdraw.h"
-#include "finclude/petscmat.h"
-#include "finclude/petscksp.h"
-#include "finclude/petscpc.h"
-#include "finclude/petscsnes.h"
-#include "finclude/petscviewer.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscis.h>
+#include <finclude/petscdraw.h>
+#include <finclude/petscmat.h>
+#include <finclude/petscksp.h>
+#include <finclude/petscpc.h>
+#include <finclude/petscsnes.h>
+#include <finclude/petscviewer.h>
 
 #include "comd.h"
 #include "tube.h"
@@ -1302,9 +1302,9 @@ array.
 !
       implicit none
 
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscsnes.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscsnes.h>
 
 !  Input/output variables:
       SNES             snes
@@ -1394,9 +1394,9 @@ c
 !
       implicit none
 
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscsnes.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscsnes.h>
 
 !  Input/output variables:
       SNES             snes
@@ -1456,10 +1456,10 @@ c
 !
       implicit none
 
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscmat.h"
-#include "finclude/petscsnes.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscmat.h>
+#include <finclude/petscsnes.h>
 
 !  Input/output variables:
       Vec      x
@@ -1515,9 +1515,9 @@ c
 !
       implicit none
 
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscsnes.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscsnes.h>
 
 !  Input/output variables:
       SNES             snes
@@ -1584,10 +1584,10 @@ c
 !
       implicit none
 
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscmat.h"
-#include "finclude/petscsnes.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscmat.h>
+#include <finclude/petscsnes.h>
 
 #include "comd.h"
 #include "tube.h"
@@ -1802,10 +1802,10 @@ c
 !
       implicit none
 
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscmat.h"
-#include "finclude/petscsnes.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscmat.h>
+#include <finclude/petscsnes.h>
 
 !  Input/output variables:
       Vec      x
@@ -1854,10 +1854,10 @@ c
 !
       implicit none
 
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscmat.h"
-#include "finclude/petscsnes.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscmat.h>
+#include <finclude/petscsnes.h>
 
 !  Input/output variables:
       Vec      x
@@ -1912,8 +1912,8 @@ c
 
       implicit none
 
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
 
 #include "comd.h"
 c
@@ -2027,9 +2027,9 @@ c
 
       implicit none
 
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscmat.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscmat.h>
 
 #include "comd.h"
 c
@@ -2080,9 +2080,9 @@ CVAM  call PCSetType(ctx(1),PCJACOBI,ierr)
 
       implicit none
 
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscmat.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscmat.h>
 !  Common blocks:
 #include "comd.h"
 #include "tube.h"

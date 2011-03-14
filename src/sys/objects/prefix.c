@@ -2,7 +2,7 @@
 /*
      Provides utility routines for manulating any type of PETSc object.
 */
-#include "petscsys.h"  /*I   "petscsys.h"    I*/
+#include <petscsys.h>  /*I   "petscsys.h"    I*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscObjectSetOptionsPrefix"

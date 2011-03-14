@@ -5,9 +5,9 @@
   they are broken.
 
 */
-#include "petscsys.h"        /*I  "petscsys.h"   I*/
-#include "petscbt.h"
-#include "../src/sys/utils/ftn-kernels/fcopy.h"
+#include <petscsys.h>        /*I  "petscsys.h"   I*/
+#include <petscbt.h>
+#include <../src/sys/utils/ftn-kernels/fcopy.h>
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscMemcmp"

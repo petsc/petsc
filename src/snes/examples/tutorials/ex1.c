@@ -14,7 +14,7 @@ T*/
      petscviewer.h - viewers               petscpc.h  - preconditioners
      petscksp.h   - linear solvers
 */
-#include "petscsnes.h"
+#include <petscsnes.h>
 
 typedef struct {
   Vec         xloc,rloc;    /* local solution, residual vectors */

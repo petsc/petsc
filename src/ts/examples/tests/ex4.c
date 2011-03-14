@@ -15,7 +15,7 @@
 
 static char help[] = "Solve the convection-diffusion equation. \n\n";
 
-#include "petscts.h"
+#include <petscts.h>
 
 typedef struct 
 {

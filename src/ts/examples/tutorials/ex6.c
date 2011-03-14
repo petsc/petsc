@@ -61,7 +61,7 @@ Input parameters include:\n\
      snes.h - nonlinear solvers
 */
 
-#include "petscts.h"
+#include <petscts.h>
 
 /* 
    User-defined application context - contains data needed by the 

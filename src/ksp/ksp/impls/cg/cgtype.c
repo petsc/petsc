@@ -1,5 +1,5 @@
 
-#include "../src/ksp/ksp/impls/cg/cgimpl.h"       /*I "petscksp.h" I*/
+#include <../src/ksp/ksp/impls/cg/cgimpl.h>       /*I "petscksp.h" I*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPCGSetType" 

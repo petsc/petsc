@@ -6,8 +6,8 @@
     complex numbers version, so most probably some are incorrect.
 */
 
-#include "private/kspimpl.h"
-#include "../src/ksp/ksp/impls/tcqmr/tcqmrimpl.h"
+#include <private/kspimpl.h>
+#include <../src/ksp/ksp/impls/tcqmr/tcqmrimpl.h>
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSolve_TCQMR"

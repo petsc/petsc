@@ -2,8 +2,8 @@
 /*
       Defines a preconditioner that can consist of a collection of PCs
 */
-#include "private/pcimpl.h"   /*I "petscpc.h" I*/
-#include "petscksp.h"            /*I "petscksp.h" I*/
+#include <private/pcimpl.h>   /*I "petscpc.h" I*/
+#include <petscksp.h>            /*I "petscksp.h" I*/
 
 typedef struct _PC_CompositeLink *PC_CompositeLink;
 struct _PC_CompositeLink {

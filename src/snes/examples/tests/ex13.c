@@ -27,8 +27,8 @@ options are:\n\
     system of equations.
 */
 
-#include "petscsnes.h"
-#include "petscdmda.h"
+#include <petscsnes.h>
+#include <petscdmda.h>
 
 /* User-defined application context */
 typedef struct {

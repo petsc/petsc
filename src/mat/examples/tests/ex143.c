@@ -10,8 +10,8 @@ static char help[] = "Illustrate how to use mpi FFTW and PETSc-FFTW interface \n
    mpiexec -n <np> ./ex143 -use_FFTW_interface YES
 */
 
-#include "petscmat.h"
-#include "fftw3-mpi.h"
+#include <petscmat.h>
+#include <fftw3-mpi.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

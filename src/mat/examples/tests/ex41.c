@@ -6,7 +6,7 @@ is similar to ex40.c; here the index sets used are random. Input arguments are:\
   -nd <size>      : > 0  no of domains per processor \n\
   -ov <overlap>   : >=0  amount of overlap between domains\n\n";
 
-#include "petscksp.h"
+#include <petscksp.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

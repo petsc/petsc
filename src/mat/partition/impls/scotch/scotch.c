@@ -1,5 +1,5 @@
 
-#include "../src/mat/impls/adj/mpi/mpiadj.h"       /*I "petscmat.h" I*/
+#include <../src/mat/impls/adj/mpi/mpiadj.h>       /*I "petscmat.h" I*/
 
 #ifdef PETSC_HAVE_UNISTD_H
 #include <unistd.h>
@@ -13,7 +13,7 @@
    Currently using Scotch-3.4
 */
 EXTERN_C_BEGIN
-#include "scotch.h"
+#include <scotch.h>
 EXTERN_C_END
 
 /*************************************

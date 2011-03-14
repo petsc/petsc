@@ -1,5 +1,5 @@
 
-#include "../src/snes/impls/ls/lsimpl.h"  /*I "petscsnes.h" I*/
+#include <../src/snes/impls/ls/lsimpl.h>  /*I "petscsnes.h" I*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "SNESLineSearchSetParams"

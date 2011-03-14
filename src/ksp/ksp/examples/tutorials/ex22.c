@@ -14,9 +14,9 @@ with boundary conditions
 
 static char help[] = "Solves 3D Laplacian using multigrid.\n\n";
 
-#include "petscdmda.h"
-#include "petscksp.h"
-#include "petscdmmg.h"
+#include <petscdmda.h>
+#include <petscksp.h>
+#include <petscdmmg.h>
 
 extern PetscErrorCode ComputeMatrix(DMMG,Mat,Mat);
 extern PetscErrorCode ComputeRHS(DMMG,Vec);

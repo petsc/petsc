@@ -9,7 +9,7 @@ static char help[] = "Demonstrates creating a blocked index set.\n\n";
     and then destroys it.
 T*/
 
-#include "petscis.h"
+#include <petscis.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

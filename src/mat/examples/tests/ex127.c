@@ -5,7 +5,7 @@ static char help[] = "Test MatMult() for Hermitian matrix.\n\n";
     mpiexec -n 2 ./ex127 
 */
 
-#include "petscmat.h"
+#include <petscmat.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

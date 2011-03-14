@@ -14,7 +14,7 @@
   Method" ASME Journal of Applied Mechanics, 60, 371:375, 1993.
 
 */
-#include "private/tsimpl.h"                /*I   "petscts.h"   I*/
+#include <private/tsimpl.h>                /*I   "petscts.h"   I*/
 
 typedef PetscErrorCode (*TSAlphaAdaptFunction)(TS,PetscReal,Vec,Vec,PetscReal*,PetscBool*,void*);
 

@@ -1,5 +1,5 @@
 
-#include "petscsys.h"        /*I    "petscsys.h"   I*/
+#include <petscsys.h>        /*I    "petscsys.h"   I*/
 
 /*
      If true then every PETSc object will be published with the AMS

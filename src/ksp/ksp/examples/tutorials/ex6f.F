@@ -22,11 +22,11 @@
 !     petscis.h     - index sets
 !
       program main
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscmat.h"
-#include "finclude/petscpc.h"
-#include "finclude/petscksp.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscmat.h>
+#include <finclude/petscpc.h>
+#include <finclude/petscksp.h>
 
 !  Variables:
 !
@@ -149,11 +149,11 @@
 !
       subroutine solve1(ksp,A,x,b,u,count,nsteps,ierr)
 
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscmat.h"
-#include "finclude/petscpc.h"
-#include "finclude/petscksp.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscmat.h>
+#include <finclude/petscpc.h>
+#include <finclude/petscksp.h>
 
 !
 !   solve1 - This routine is used for repeated linear system solves.

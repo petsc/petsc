@@ -4,8 +4,8 @@
   create their own preconditioner without writing much interface code.
 */
 
-#include "private/pcimpl.h"        /*I "petscpc.h" I*/
-#include "private/vecimpl.h"  
+#include <private/pcimpl.h>        /*I "petscpc.h" I*/
+#include <private/vecimpl.h>  
 
 EXTERN_C_BEGIN 
 typedef struct {

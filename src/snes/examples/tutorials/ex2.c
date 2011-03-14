@@ -19,7 +19,7 @@ T*/
      petscksp.h   - linear solvers
 */
 
-#include "petscsnes.h"
+#include <petscsnes.h>
 
 /* 
    User-defined routines

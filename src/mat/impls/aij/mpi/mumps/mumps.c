@@ -3,14 +3,14 @@
     Provides an interface to the MUMPS sparse solver
 */
 
-#include "../src/mat/impls/aij/mpi/mpiaij.h" /*I  "petscmat.h"  I*/
-#include "../src/mat/impls/sbaij/mpi/mpisbaij.h"
+#include <../src/mat/impls/aij/mpi/mpiaij.h> /*I  "petscmat.h"  I*/
+#include <../src/mat/impls/sbaij/mpi/mpisbaij.h>
 
 EXTERN_C_BEGIN 
 #if defined(PETSC_USE_COMPLEX)
-#include "zmumps_c.h"
+#include <zmumps_c.h>
 #else
-#include "dmumps_c.h" 
+#include <dmumps_c.h> 
 #endif
 EXTERN_C_END 
 #define JOB_INIT -1

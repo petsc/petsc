@@ -1,6 +1,6 @@
 
 
-#include "petscsys.h"        /*I  "petscsys.h"   I*/
+#include <petscsys.h>        /*I  "petscsys.h"   I*/
 
 static MPI_Comm saved_PETSC_COMM_WORLD = 0;
 MPI_Comm PETSC_COMM_LOCAL_WORLD        = 0;           /* comm for a single node (local set of processes) */

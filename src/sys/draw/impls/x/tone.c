@@ -2,7 +2,7 @@
 /*
     Code for drawing color interpolated triangles using X-windows.
 */
-#include "../src/sys/draw/impls/x/ximpl.h"
+#include <../src/sys/draw/impls/x/ximpl.h>
 
 #define SHIFT_VAL 6
 

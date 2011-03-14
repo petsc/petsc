@@ -1,5 +1,5 @@
  
-#include "../src/snes/impls/tr/trimpl.h"                /*I   "petscsnes.h"   I*/
+#include <../src/snes/impls/tr/trimpl.h>                /*I   "petscsnes.h"   I*/
 
 typedef struct {
   void *ctx;

@@ -1,5 +1,5 @@
 
-#include "private/pcimpl.h"          /*I   "petscpc.h"   I*/
+#include <private/pcimpl.h>          /*I   "petscpc.h"   I*/
 
 EXTERN_C_BEGIN
 extern PetscErrorCode  PCCreate_Jacobi(PC);

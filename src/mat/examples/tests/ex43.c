@@ -1,7 +1,7 @@
 
 static char help[] = "Saves a dense matrix in a dense format (binary).\n\n";
 
-#include "petscmat.h"
+#include <petscmat.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

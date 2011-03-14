@@ -3,8 +3,8 @@ static char help[] = "FUN3D - 3-D, Unstructured Incompressible Euler Solver.\n\
 originally written by W. K. Anderson of NASA Langley, \n\
 and ported into PETSc by D. K. Kaushik, ODU and ICASE.\n\n";
 
-#include "petscsnes.h"
-#include "petscao.h"
+#include <petscsnes.h>
+#include <petscao.h>
 #include "user.h"
 #if defined(_OPENMP)
 #include "omp.h"

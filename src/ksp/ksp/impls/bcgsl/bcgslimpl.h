@@ -4,7 +4,7 @@
 */
 #if !defined(__BCGSL)
 #define __BCGSL
-#include "petscsys.h"
+#include <petscsys.h>
 
 typedef struct {
   PetscInt        ell;		/* Number of search directions. */

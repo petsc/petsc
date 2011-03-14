@@ -1,11 +1,11 @@
 
 static char help[] = "Solves PDE optimization problem.\n\n";
 
-#include "petscdmda.h"
+#include <petscdmda.h>
 #include <petscdmcomposite.h>
-#include "petscpf.h"
-#include "petscsnes.h"
-#include "petscdmmg.h"
+#include <petscpf.h>
+#include <petscsnes.h>
+#include <petscdmmg.h>
 
 /*
 

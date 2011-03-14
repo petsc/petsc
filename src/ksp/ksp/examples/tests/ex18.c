@@ -6,8 +6,8 @@ Input arguments are:\n\
   -f <input_file> : file to load.  For a 5X5 example of the 5-pt. stencil,\n\
                     use the file petsc/src/mat/examples/matbinary.ex\n\n";
 
-#include "petscmat.h"
-#include "petscksp.h"
+#include <petscmat.h>
+#include <petscksp.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

@@ -21,8 +21,8 @@ T*/
      petscis.h     - index sets            petscksp.h - Krylov subspace methods
      petscviewer.h - viewers               petscpc.h  - preconditioners
 */
-#include "petscdmda.h"
-#include "petscksp.h"
+#include <petscdmda.h>
+#include <petscksp.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

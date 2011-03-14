@@ -1,7 +1,7 @@
 #if !defined(_FreeSpace_h_)
 #define _FreeSpace_h_
 
-#include "petscsys.h"
+#include <petscsys.h>
 
 typedef struct _Space *PetscFreeSpaceList;
 

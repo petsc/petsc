@@ -1,5 +1,5 @@
 
-#include "../src/ksp/pc/impls/mg/mgimpl.h"       /*I "petscksp.h" I*/
+#include <../src/ksp/pc/impls/mg/mgimpl.h>       /*I "petscksp.h" I*/
                           /*I "petscpcmg.h"   I*/
 
 #undef __FUNCT__  

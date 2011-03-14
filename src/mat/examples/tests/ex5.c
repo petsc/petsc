@@ -2,7 +2,7 @@
 static char help[] = "Tests MatMult(), MatMultAdd(), MatMultTranspose().\n\
 Also MatMultTransposeAdd(), MatScale(), MatGetDiagonal(), and MatDiagonalScale().\n\n";
 
-#include "petscmat.h"
+#include <petscmat.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

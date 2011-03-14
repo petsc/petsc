@@ -4,7 +4,7 @@ static char help[] = "Reads a matrix and vector from a file and writes to anothe
                       use the file matbinary.ex.\n\
   -fout <output_file> : file for saving output matrix and vector\n\n";
 
-#include "petscmat.h"
+#include <petscmat.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

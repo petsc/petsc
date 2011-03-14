@@ -7,9 +7,9 @@
 #if !defined(__PETSCSUNDIALS_H)
 #define __PETSCSUNDIALS_H
 
-#include "private/tsimpl.h"       /*I   "petscts.h"   I*/
-#include "private/pcimpl.h"               /*I   "petscpc.h"   I*/
-#include "private/matimpl.h"
+#include <private/tsimpl.h>       /*I   "petscts.h"   I*/
+#include <private/pcimpl.h>               /*I   "petscpc.h"   I*/
+#include <private/matimpl.h>
 
 /*
    Include files specific for SUNDIALS
@@ -17,9 +17,9 @@
 #if defined(PETSC_HAVE_SUNDIALS)
 
 EXTERN_C_BEGIN
-#include "cvode/cvode.h"                  /* prototypes for CVODE fcts. */
-#include "cvode/cvode_spgmr.h"            /* prototypes and constants for CVSPGMR solver */
-#include "nvector/nvector_parallel.h"     /* definition N_Vector and macro NV_DATA_P  */
+#include <cvode/cvode.h>                  /* prototypes for CVODE fcts. */
+#include <cvode/cvode_spgmr.h>            /* prototypes and constants for CVSPGMR solver */
+#include <nvector/nvector_parallel.h>     /* definition N_Vector and macro NV_DATA_P  */
 EXTERN_C_END
 
 typedef struct {

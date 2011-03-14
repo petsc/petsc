@@ -14,7 +14,7 @@
 
 */
 
-#include "../src/ksp/ksp/impls/gmres/fgmres/fgmresimpl.h"       /*I  "petscksp.h"  I*/
+#include <../src/ksp/ksp/impls/gmres/fgmres/fgmresimpl.h>       /*I  "petscksp.h"  I*/
 #define FGMRES_DELTA_DIRECTIONS 10
 #define FGMRES_DEFAULT_MAXK     30
 static PetscErrorCode FGMRESGetNewVectors(KSP,PetscInt);

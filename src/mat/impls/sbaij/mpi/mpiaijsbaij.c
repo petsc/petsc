@@ -1,8 +1,8 @@
 
-#include "../src/mat/impls/sbaij/mpi/mpisbaij.h" /*I "petscmat.h" I*/
-#include "../src/mat/impls/aij/mpi/mpiaij.h"
-#include "private/matimpl.h"
-#include "petscmat.h"
+#include <../src/mat/impls/sbaij/mpi/mpisbaij.h> /*I "petscmat.h" I*/
+#include <../src/mat/impls/aij/mpi/mpiaij.h>
+#include <private/matimpl.h>
+#include <petscmat.h>
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  

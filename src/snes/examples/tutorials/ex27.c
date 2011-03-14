@@ -76,9 +76,9 @@ T*/
      petscviewer.h - viewers               petscpc.h  - preconditioners
      petscksp.h   - linear solvers 
 */
-#include "petscsnes.h"
-#include "petscdmda.h"
-#include "petscdmmg.h"
+#include <petscsnes.h>
+#include <petscdmda.h>
+#include <petscdmmg.h>
 
 /* 
    User-defined routines and data structures

@@ -3,7 +3,7 @@
     Routines to set PC methods and options.
 */
 
-#include "private/pcimpl.h"      /*I "petscpc.h" I*/
+#include <private/pcimpl.h>      /*I "petscpc.h" I*/
 
 PetscBool  PCRegisterAllCalled = PETSC_FALSE;
 /*

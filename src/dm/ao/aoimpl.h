@@ -5,7 +5,7 @@
 #ifndef __AOIMPL 
 #define __AOIMPL
 
-#include "petscao.h"
+#include <petscao.h>
 
 /*
     Defines the abstract AO operations

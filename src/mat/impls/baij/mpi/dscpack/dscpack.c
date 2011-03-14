@@ -3,11 +3,11 @@
         Provides an interface to the DSCPACK (Domain-Separator Codes) sparse direct solver
 */
 
-#include "../src/mat/impls/baij/seq/baij.h"
-#include "../src/mat/impls/baij/mpi/mpibaij.h"
+#include <../src/mat/impls/baij/seq/baij.h>
+#include <../src/mat/impls/baij/mpi/mpibaij.h>
 
 EXTERN_C_BEGIN
-#include "dscmain.h"
+#include <dscmain.h>
 EXTERN_C_END
 
 typedef struct {

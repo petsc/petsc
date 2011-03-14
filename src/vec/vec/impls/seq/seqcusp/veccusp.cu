@@ -3,12 +3,12 @@
    Implements the sequential cusp vectors.
 */
 
-#include "petscconf.h"
+#include <petscconf.h>
 PETSC_CUDA_EXTERN_C_BEGIN
-#include "private/vecimpl.h"          /*I "petscvec.h" I*/
-#include "../src/vec/vec/impls/dvecimpl.h"
+#include <private/vecimpl.h>          /*I "petscvec.h" I*/
+#include <../src/vec/vec/impls/dvecimpl.h>
 PETSC_CUDA_EXTERN_C_END
-#include "../src/vec/vec/impls/seq/seqcusp/cuspvecimpl.h"
+#include <../src/vec/vec/impls/seq/seqcusp/cuspvecimpl.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "VecCopy_Seq"

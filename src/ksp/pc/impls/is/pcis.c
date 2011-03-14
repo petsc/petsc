@@ -1,5 +1,5 @@
 
-#include "../src/ksp/pc/impls/is/pcis.h"
+#include <../src/ksp/pc/impls/is/pcis.h>
 
 /* -------------------------------------------------------------------------- */
 /*

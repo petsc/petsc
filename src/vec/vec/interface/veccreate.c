@@ -1,5 +1,5 @@
 
-#include "private/vecimpl.h"      /*I "petscvec.h" I*/
+#include <private/vecimpl.h>      /*I "petscvec.h" I*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecCreate"

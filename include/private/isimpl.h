@@ -7,7 +7,7 @@ and matrices.
 #if !defined(_IS_H)
 #define _IS_H
 
-#include "petscis.h"
+#include <petscis.h>
 
 struct _ISOps {
   PetscErrorCode (*getsize)(IS,PetscInt*);

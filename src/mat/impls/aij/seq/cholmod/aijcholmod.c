@@ -1,6 +1,6 @@
 
-#include "../src/mat/impls/aij/seq/aij.h"
-#include "../src/mat/impls/sbaij/seq/cholmod/cholmodimpl.h"
+#include <../src/mat/impls/aij/seq/aij.h>
+#include <../src/mat/impls/sbaij/seq/cholmod/cholmodimpl.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "MatWrapCholmod_seqaij"

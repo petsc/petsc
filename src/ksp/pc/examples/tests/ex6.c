@@ -3,7 +3,7 @@ static char help[] = "Creates a matrix using 9 pt stensil, and uses it to test M
   -m <size>       : problem size\n\
   -x1, -x2 <size> : no of subdomains in x and y directions\n\n";
 
-#include "petscksp.h"
+#include <petscksp.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "FormElementStiffness"

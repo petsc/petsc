@@ -4,7 +4,7 @@ them using the PETSc sparse format. Input parameters are:\n\
   -fin <filename> : input file\n\
   -fout <filename> : output file\n\n";
 
-#include "petscmat.h"
+#include <petscmat.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

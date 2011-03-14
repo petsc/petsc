@@ -1,5 +1,5 @@
 
-#include "../src/ksp/ksp/impls/gmres/lgmres/lgmresimpl.h"   /*I petscksp.h I*/
+#include <../src/ksp/ksp/impls/gmres/lgmres/lgmresimpl.h>   /*I petscksp.h I*/
 
 #define LGMRES_DELTA_DIRECTIONS 10
 #define LGMRES_DEFAULT_MAXK     30

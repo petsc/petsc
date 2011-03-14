@@ -2,7 +2,7 @@
 static char help[] = "Tests vector scatter-gather operations.  Input arguments are\n\
   -n <length> : vector length\n\n";
 
-#include "petscvec.h"
+#include <petscvec.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

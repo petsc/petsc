@@ -1,5 +1,5 @@
-#include "private/fortranimpl.h"
-#include "petscdmmesh.h"
+#include <private/fortranimpl.h>
+#include <petscdmmesh.h>
 
 #ifdef PETSC_USE_POINTER_CONVERSION
 #if defined(__cplusplus)

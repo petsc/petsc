@@ -4,8 +4,8 @@
 /*
     Private data for block Jacobi and block Gauss-Seidel preconditioner.
 */
-#include "petscksp.h"
-#include "private/pcimpl.h"
+#include <petscksp.h>
+#include <private/pcimpl.h>
 
 /*
        This data is general for all implementations

@@ -2,7 +2,7 @@
  * Test file for norm caching
  */
 
-#include "petscvec.h"
+#include <petscvec.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

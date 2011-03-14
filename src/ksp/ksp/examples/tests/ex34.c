@@ -2,8 +2,8 @@
 
 static char help[] = "Demonstrates PetscOpenMPMerge() usage\n\n";
 
-#include "petscmat.h"
-#include "petscksp.h"
+#include <petscmat.h>
+#include <petscksp.h>
 
 typedef struct {
   MPI_Comm   comm;

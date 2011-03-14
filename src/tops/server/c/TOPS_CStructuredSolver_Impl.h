@@ -61,7 +61,7 @@
 #if defined(HAVE_LONG_LONG)
 #undef HAVE_LONG_LONG
 #endif
-#include "petscdmmg.h"
+#include <petscdmmg.h>
 #include "TOPS.hxx"
 #include "gov_cca_ports_ParameterPortFactory.h"
 #include "gov_cca_ports_ParameterPort.h"

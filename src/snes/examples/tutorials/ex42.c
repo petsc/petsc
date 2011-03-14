@@ -14,7 +14,7 @@ T*/
      petscviewer.h - viewers               petscpc.h  - preconditioners
      petscksp.h   - linear solvers
 */
-#include "petscsnes.h"
+#include <petscsnes.h>
 
 extern PetscErrorCode FormJacobian1(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 extern PetscErrorCode FormFunction1(SNES,Vec,Vec,void*);

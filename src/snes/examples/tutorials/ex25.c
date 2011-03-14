@@ -28,10 +28,10 @@ T*/
  
 */
 
-#include "petscsnes.h"
-#include "petscdmda.h"
-#include "petscpcmg.h"
-#include "petscdmmg.h"
+#include <petscsnes.h>
+#include <petscdmda.h>
+#include <petscpcmg.h>
+#include <petscdmmg.h>
 
 extern PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
 extern PetscErrorCode FormFunctionLocal(DMDALocalInfo*,PetscScalar**,PetscScalar**,void*);

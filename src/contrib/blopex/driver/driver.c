@@ -26,8 +26,8 @@ mpirun -np 2 driver -n_eigs 3 -tol 1e-6 -itr 20\n";
      petscviewer.h - viewers               petscpc.h  - preconditioners
 */
 
-#include "petscksp.h"
-#include "petscdmda.h"
+#include <petscksp.h>
+#include <petscdmda.h>
 #include <assert.h>
 
 #include "fortran_matrix.h"
@@ -37,7 +37,7 @@ mpirun -np 2 driver -n_eigs 3 -tol 1e-6 -itr 20\n";
 #ifdef BLOPEX_DIR
 #include "petsc-interface.h"
 #else
-#include "../src/contrib/blopex/petsc-interface/petsc-interface.h"
+#include <../src/contrib/blopex/petsc-interface/petsc-interface.h>
 #endif
 
 #include "interpreter.h"

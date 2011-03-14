@@ -1,4 +1,4 @@
-#include "private/snesimpl.h"          /*I "petscsnes.h" I*/
+#include <private/snesimpl.h>          /*I "petscsnes.h" I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESPythonSetType"

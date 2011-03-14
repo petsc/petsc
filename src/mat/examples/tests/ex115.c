@@ -1,7 +1,7 @@
 
 static char help[] = "Test memory leak when user switches from one matrix type to another\n\n";
 
-#include "petscmat.h"
+#include <petscmat.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

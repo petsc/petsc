@@ -5,9 +5,9 @@
    the TS component will eventually be incorporated as part of
    the base PETSc libraries.
 */
-#include "private/tsimpl.h"
-#include "private/snesimpl.h"
-#include "private/fortranimpl.h"
+#include <private/tsimpl.h>
+#include <private/snesimpl.h>
+#include <private/fortranimpl.h>
 
 PetscErrorCode RHSFunction(TS,PetscReal,Vec,Vec,void*);
 PetscErrorCode RHSJacobianFD(TS,PetscReal,Vec,Mat*,Mat*,MatStructure *,void*);

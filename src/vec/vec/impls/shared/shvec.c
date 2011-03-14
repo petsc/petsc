@@ -2,7 +2,7 @@
 /*
    This file contains routines for Parallel vector operations that use shared memory
  */
-#include "../src/vec/vec/impls/mpi/pvecimpl.h"   /*I  "petscvec.h"   I*/
+#include <../src/vec/vec/impls/mpi/pvecimpl.h>   /*I  "petscvec.h"   I*/
 
 #if defined(PETSC_USE_SHARED_MEMORY) 
 
@@ -70,7 +70,7 @@ EXTERN_C_END
 /* ----------------------------------------------------------------------------------------
      Code to manage shared memory allocation using standard Unix shared memory
 */
-#include "petscsys.h"
+#include <petscsys.h>
 #if defined(PETSC_HAVE_PWD_H)
 #include <pwd.h>
 #endif

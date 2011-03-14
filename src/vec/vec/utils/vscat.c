@@ -5,8 +5,8 @@
   some special cases for parallel scatters.
 */
 
-#include "private/isimpl.h"              /*I "petscis.h" I*/
-#include "private/vecimpl.h"             /*I "petscvec.h" I*/
+#include <private/isimpl.h>              /*I "petscis.h" I*/
+#include <private/vecimpl.h>             /*I "petscvec.h" I*/
 
 /* Logging support */
 PetscClassId  VEC_SCATTER_CLASSID;

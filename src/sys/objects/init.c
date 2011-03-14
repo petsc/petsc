@@ -7,7 +7,7 @@
   what malloc is being used until it has already processed the input.
 */
 
-#include "petscsys.h"        /*I  "petscsys.h"   I*/
+#include <petscsys.h>        /*I  "petscsys.h"   I*/
 #if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
@@ -47,7 +47,7 @@ MPI_Datatype   MPIU_2INT = 0;
 /*
      These are needed by petscbt.h
 */
-#include "petscbt.h"
+#include <petscbt.h>
 char      _BT_mask = ' ';
 char      _BT_c = ' ';
 PetscInt  _BT_idx  = 0;

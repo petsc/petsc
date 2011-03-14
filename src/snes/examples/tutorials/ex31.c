@@ -43,7 +43,7 @@ static char help[] = "Model multi-physics solver\n\n";
 
 */
 
-#include "petscdmmg.h"
+#include <petscdmmg.h>
 #include <petscdmcomposite.h>
 
 typedef struct {                  

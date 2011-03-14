@@ -1,5 +1,5 @@
  
-#include "petscdmda.h"    /*I   "petscdmda.h"   I*/
+#include <petscdmda.h>    /*I   "petscdmda.h"   I*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMDAVecGetArray"

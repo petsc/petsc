@@ -2,7 +2,7 @@
 #ifndef _KSPIMPL_H
 #define _KSPIMPL_H
 
-#include "petscksp.h"
+#include <petscksp.h>
 
 typedef struct _KSPOps *KSPOps;
 

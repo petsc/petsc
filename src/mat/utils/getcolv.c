@@ -1,5 +1,5 @@
 
-#include "private/matimpl.h"  /*I   "petscmat.h"  I*/
+#include <private/matimpl.h>  /*I   "petscmat.h"  I*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetColumnVector"
@@ -74,7 +74,7 @@ PetscErrorCode  MatGetColumnVector(Mat A,Vec yy,PetscInt col)
   PetscFunctionReturn(0);
 }
 
-#include "../src/mat/impls/aij/seq/aij.h"
+#include <../src/mat/impls/aij/seq/aij.h>
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetColumnNorms_SeqAIJ"
@@ -107,7 +107,7 @@ PetscErrorCode MatGetColumnNorms_SeqAIJ(Mat A,NormType type,PetscReal *norms)
   PetscFunctionReturn(0);
 }
 
-#include "../src/mat/impls/aij/mpi/mpiaij.h"
+#include <../src/mat/impls/aij/mpi/mpiaij.h>
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetColumnNorms_MPIAIJ"
@@ -199,7 +199,7 @@ PetscErrorCode MatGetColumnNorms_SeqDense(Mat A,NormType type,PetscReal *norms)
   PetscFunctionReturn(0);
 }
 
-#include "../src/mat/impls/dense/mpi/mpidense.h"
+#include <../src/mat/impls/dense/mpi/mpidense.h>
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetColumnNorms_MPIDense"
 PetscErrorCode MatGetColumnNorms_MPIDense(Mat A,NormType type,PetscReal *norms)

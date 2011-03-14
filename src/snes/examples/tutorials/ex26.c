@@ -28,8 +28,8 @@ T*/
     be computed as accurately with a finer grid.
   ------------------------------------------------------------------------- */
 
-#include "petscdmda.h"
-#include "petscsnes.h"
+#include <petscdmda.h>
+#include <petscsnes.h>
 
 /* 
    User-defined application context - contains data needed by the 

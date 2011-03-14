@@ -1,7 +1,7 @@
 
 static char help[] = "Tests imbedding DMComposites inside DMComposites.\n\n";
 
-#include "petscdmda.h"
+#include <petscdmda.h>
 #include <petscdmcomposite.h>
 
 typedef struct {

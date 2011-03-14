@@ -53,14 +53,14 @@
 !     petscviewer.h - viewers
 !     petscis.h     - index sets
 !
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscis.h"
-#include "finclude/petscdraw.h"
-#include "finclude/petscmat.h"
-#include "finclude/petscksp.h"
-#include "finclude/petscpc.h"
-#include "finclude/petscsnes.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscis.h>
+#include <finclude/petscdraw.h>
+#include <finclude/petscmat.h>
+#include <finclude/petscksp.h>
+#include <finclude/petscpc.h>
+#include <finclude/petscsnes.h>
 !
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 !                   Variable declarations
@@ -303,10 +303,10 @@
       subroutine FormInitialGuess(X,ierr)
       implicit none
 
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscmat.h"
-#include "finclude/petscsnes.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscmat.h>
+#include <finclude/petscsnes.h>
 
 !  Input/output variables:
       Vec           X
@@ -419,9 +419,9 @@
       subroutine FormFunction(snes,X,F,dummy,ierr)
       implicit none
 
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscsnes.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscsnes.h>
 
 !  Input/output variables:
       SNES              snes
@@ -552,11 +552,11 @@
       subroutine FormJacobian(snes,X,jac,jac_prec,flag,dummy,ierr)
       implicit none
 
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscmat.h"
-#include "finclude/petscpc.h"
-#include "finclude/petscsnes.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscmat.h>
+#include <finclude/petscpc.h>
+#include <finclude/petscsnes.h>
 
 !  Input/output variables:
       SNES          snes
@@ -632,11 +632,11 @@
       subroutine ApplicationJacobian(x,jac,jac_prec,ierr)
       implicit none
 
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscmat.h"
-#include "finclude/petscpc.h"
-#include "finclude/petscsnes.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscmat.h>
+#include <finclude/petscpc.h>
+#include <finclude/petscsnes.h>
 
 !  Common blocks:
       PetscReal    lambda

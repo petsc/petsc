@@ -4,7 +4,7 @@ Input arguments are:\n\
   -f <input_file>  : file to load\n\n";
 /* e.g., mpiexec -n 3 ./ex113 -f <file> */
 
-#include "petscmat.h"
+#include <petscmat.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

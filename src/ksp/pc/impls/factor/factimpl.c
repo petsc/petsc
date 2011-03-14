@@ -1,5 +1,5 @@
 
-#include "../src/ksp/pc/impls/factor/factor.h"     /*I "petscpc.h"  I*/
+#include <../src/ksp/pc/impls/factor/factor.h>     /*I "petscpc.h"  I*/
 
 /* ------------------------------------------------------------------------------------------*/
 

@@ -1,6 +1,6 @@
 static const char help[] = "Tests MatGetSchurComplement\n";
 
-#include "petscksp.h"
+#include <petscksp.h>
 
 
 #undef __FUNCT__

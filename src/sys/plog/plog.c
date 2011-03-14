@@ -8,10 +8,10 @@
       accessible to users. The private API is defined in logimpl.h and the utils directory.
 
 */
-#include "petscsys.h"        /*I    "petscsys.h"   I*/
-#include "petsctime.h"
+#include <petscsys.h>        /*I    "petscsys.h"   I*/
+#include <petsctime.h>
 #if defined(PETSC_HAVE_MPE)
-#include "mpe.h"
+#include <mpe.h>
 #endif
 #include <stdarg.h>
 #include <sys/types.h>
@@ -21,7 +21,7 @@
 #if defined(PETSC_HAVE_MALLOC_H)
 #include <malloc.h>
 #endif
-#include "../src/sys/plog/logimpl.h"
+#include <../src/sys/plog/logimpl.h>
 
 PetscLogEvent  PETSC_LARGEST_EVENT  = PETSC_EVENT;
 
@@ -31,8 +31,8 @@ std::map<std::string,PETSc::LogStage> PETSc::Log::stage_registry;
 #endif
 
 #if defined(PETSC_USE_LOG)
-#include "petscmachineinfo.h"
-#include "petscconfiginfo.h"
+#include <petscmachineinfo.h>
+#include <petscconfiginfo.h>
 
 /* used in the MPI_XXX() count macros in petsclog.h */
 
@@ -180,7 +180,7 @@ PetscErrorCode  PetscLogSet(PetscErrorCode (*b)(PetscLogEvent, int, PetscObject,
 #include <CHUD/CHUD.h>
 #endif
 #if defined(PETSC_HAVE_PAPI)
-#include "papi.h"
+#include <papi.h>
 int PAPIEventSet = PAPI_NULL;
 #endif
 
@@ -2061,7 +2061,7 @@ M*/
 
 M*/
 
-#include "../src/sys/viewer/impls/ascii/asciiimpl.h"  /*I     "petscsys.h"   I*/
+#include <../src/sys/viewer/impls/ascii/asciiimpl.h>  /*I     "petscsys.h"   I*/
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLogViewPython"
 /*@ 

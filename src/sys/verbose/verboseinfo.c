@@ -3,7 +3,7 @@
       PetscInfo() is contained in a different file from the other profiling to 
    allow it to be replaced at link time by an alternative routine.
 */
-#include "petscsys.h"        /*I    "petscsys.h"   I*/
+#include <petscsys.h>        /*I    "petscsys.h"   I*/
 #include <stdarg.h>
 #include <sys/types.h>
 #if defined(PETSC_HAVE_STDLIB_H)

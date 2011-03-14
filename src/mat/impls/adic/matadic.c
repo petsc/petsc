@@ -3,11 +3,11 @@
     ADIC matrix-free matrix implementation
 */
 
-#include "private/matimpl.h"
-#include "petscdmda.h"          /*I   "petscdmda.h"    I*/
-#include "petscsnes.h"        /*I   "petscsnes.h"  I*/
+#include <private/matimpl.h>
+#include <petscdmda.h>          /*I   "petscdmda.h"    I*/
+#include <petscsnes.h>        /*I   "petscsnes.h"  I*/
 EXTERN_C_BEGIN
-#include "adic/ad_utils.h"
+#include <adic/ad_utils.h>
 EXTERN_C_END
 
 typedef struct {
@@ -54,7 +54,7 @@ PetscErrorCode MatMult_DAAD(Mat A,Vec xx,Vec yy)
   PetscFunctionReturn(0);
 }
 
-#include "../src/dm/da/daimpl.h"
+#include <../src/dm/da/daimpl.h>
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetDiagonal_DAAD"

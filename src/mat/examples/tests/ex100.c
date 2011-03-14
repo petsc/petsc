@@ -1,7 +1,7 @@
 
 static char help[] = "Tests vatious routines in MatMAIJ format.\n";
 
-#include "petscmat.h"
+#include <petscmat.h>
 #define IMAX 15 
 #undef __FUNCT__
 #define __FUNCT__ "main"

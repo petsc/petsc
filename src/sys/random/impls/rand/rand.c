@@ -1,5 +1,5 @@
 
-#include "../src/sys/random/randomimpl.h"
+#include <../src/sys/random/randomimpl.h>
 #if defined (PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif

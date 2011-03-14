@@ -1,6 +1,6 @@
 static char help[] = "Tests DMSliced operations\n\n";
 
-#include "petscdmsliced.h"
+#include <petscdmsliced.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

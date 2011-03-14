@@ -7,10 +7,10 @@
 !
       program main
       implicit none
-#include "finclude/petscsys.h"
-#include "finclude/petscmat.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscviewer.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscmat.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscviewer.h>
       PetscErrorCode ierr
       PetscInt row,col,ten
       PetscMPIInt rank

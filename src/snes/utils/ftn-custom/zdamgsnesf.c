@@ -1,7 +1,7 @@
-#include "private/fortranimpl.h"
-#include "private/daimpl.h"
-#include "petscsnes.h"
-#include "petscdmmg.h"
+#include <private/fortranimpl.h>
+#include <private/daimpl.h>
+#include <petscsnes.h>
+#include <petscdmmg.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define dmmgsetsnes_                     DMMGSETSNES

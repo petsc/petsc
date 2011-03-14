@@ -5,9 +5,9 @@
 */
 
 
-#include "../src/mat/impls/aij/seq/aij.h"          /*I "petscmat.h" I*/
-#include "petscblaslapack.h"
-#include "petscbt.h"
+#include <../src/mat/impls/aij/seq/aij.h>          /*I "petscmat.h" I*/
+#include <petscblaslapack.h>
+#include <petscbt.h>
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatFindZeroDiagonals_SeqAIJ"
@@ -997,7 +997,7 @@ PetscErrorCode MatGetDiagonal_SeqAIJ(Mat A,Vec v)
   PetscFunctionReturn(0);
 }
 
-#include "../src/mat/impls/aij/seq/ftn-kernels/fmult.h"
+#include <../src/mat/impls/aij/seq/ftn-kernels/fmult.h>
 #undef __FUNCT__  
 #define __FUNCT__ "MatMultTransposeAdd_SeqAIJ"
 PetscErrorCode MatMultTransposeAdd_SeqAIJ(Mat A,Vec xx,Vec zz,Vec yy)
@@ -1059,7 +1059,7 @@ PetscErrorCode MatMultTranspose_SeqAIJ(Mat A,Vec xx,Vec yy)
   PetscFunctionReturn(0);
 }
 
-#include "../src/mat/impls/aij/seq/ftn-kernels/fmult.h"
+#include <../src/mat/impls/aij/seq/ftn-kernels/fmult.h>
 #undef __FUNCT__  
 #define __FUNCT__ "MatMult_SeqAIJ"
 PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
@@ -1120,7 +1120,7 @@ PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
   PetscFunctionReturn(0);
 }
 
-#include "../src/mat/impls/aij/seq/ftn-kernels/fmultadd.h"
+#include <../src/mat/impls/aij/seq/ftn-kernels/fmultadd.h>
 #undef __FUNCT__  
 #define __FUNCT__ "MatMultAdd_SeqAIJ"
 PetscErrorCode MatMultAdd_SeqAIJ(Mat A,Vec xx,Vec yy,Vec zz)
@@ -1293,7 +1293,7 @@ PetscErrorCode  MatInvertDiagonal_SeqAIJ(Mat A,PetscScalar omega,PetscScalar fsh
 }
 EXTERN_C_END
 
-#include "../src/mat/impls/aij/seq/ftn-kernels/frelax.h"
+#include <../src/mat/impls/aij/seq/ftn-kernels/frelax.h>
 #undef __FUNCT__  
 #define __FUNCT__ "MatSOR_SeqAIJ"
 PetscErrorCode MatSOR_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
@@ -3311,8 +3311,8 @@ PetscErrorCode  MatSeqAIJSetPreallocationCSR_SeqAIJ(Mat B,const PetscInt Ii[],co
 }
 EXTERN_C_END
 
-#include "../src/mat/impls/dense/seq/dense.h"
-#include "private/petscaxpy.h"
+#include <../src/mat/impls/dense/seq/dense.h>
+#include <private/petscaxpy.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMatMultNumeric_SeqDense_SeqAIJ"
@@ -3880,7 +3880,7 @@ PetscErrorCode MatSetColoring_SeqAIJ(Mat A,ISColoring coloring)
 
 #if defined(PETSC_HAVE_ADIC)
 EXTERN_C_BEGIN
-#include "adic/ad_utils.h"
+#include <adic/ad_utils.h>
 EXTERN_C_END
 
 #undef __FUNCT__  
@@ -3937,7 +3937,7 @@ PetscErrorCode MatSetValuesAdifor_SeqAIJ(Mat A,PetscInt nl,void *advalues)
 /*
     Special version for direct calls from Fortran 
 */
-#include "private/fortranimpl.h"
+#include <private/fortranimpl.h>
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define matsetvaluesseqaij_ MATSETVALUESSEQAIJ
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)

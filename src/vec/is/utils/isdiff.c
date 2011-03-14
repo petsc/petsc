@@ -1,6 +1,6 @@
 
-#include "petscis.h"                    /*I "petscis.h"  I*/
-#include "petscbt.h"
+#include <petscis.h>                    /*I "petscis.h"  I*/
+#include <petscbt.h>
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISDifference"

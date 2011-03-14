@@ -1,5 +1,5 @@
 
-#include "../src/sys/random/randomimpl.h"
+#include <../src/sys/random/randomimpl.h>
 #if defined (PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
@@ -7,7 +7,7 @@
 #define USE_MPI
 #define SIMPLE_SPRNG
 EXTERN_C_BEGIN
-#include "sprng.h"
+#include <sprng.h>
 EXTERN_C_END
 
 #undef __FUNCT__  

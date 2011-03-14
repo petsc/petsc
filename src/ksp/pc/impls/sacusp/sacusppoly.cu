@@ -6,16 +6,16 @@
      pcimpl.h - private include file intended for use by all preconditioners 
 */
 
-#include "private/pcimpl.h"   /*I "petscpc.h" I*/
-#include "../src/mat/impls/aij/seq/aij.h"
+#include <private/pcimpl.h>   /*I "petscpc.h" I*/
+#include <../src/mat/impls/aij/seq/aij.h>
 #include <cusp/monitor.h>
 #undef VecType
 #define USE_POLY_SMOOTHER 1
 #include <cusp/precond/smoothed_aggregation.h>
 #undef USE_POLY_SMOOTHER
 #define VecType char*
-#include "../src/vec/vec/impls/dvecimpl.h"
-#include "../src/mat/impls/aij/seq/seqcusp/cuspmatimpl.h"
+#include <../src/vec/vec/impls/dvecimpl.h>
+#include <../src/mat/impls/aij/seq/seqcusp/cuspmatimpl.h>
 
 #define cuspsaprecond cusp::precond::smoothed_aggregation<PetscInt,PetscScalar,cusp::device_memory>
 

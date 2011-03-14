@@ -4,7 +4,7 @@
    running with CG. Note this only works for symmetric real and Hermitian
    matrices (not complex matrices that are symmetric).
 */
-#include "../src/ksp/ksp/impls/cg/cgimpl.h"
+#include <../src/ksp/ksp/impls/cg/cgimpl.h>
 static PetscErrorCode LINPACKcgtql1(PetscInt*,PetscReal *,PetscReal *,PetscInt *);
 
 #undef __FUNCT__  

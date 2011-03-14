@@ -1,8 +1,8 @@
 
-#include "private/viewerimpl.h"   /* "petscsys.h" */
-#include "private/pcimpl.h"
-#include "../src/mat/impls/aij/seq/aij.h"
-#include "mathematica.h"
+#include <private/viewerimpl.h>   /* "petscsys.h" */
+#include <private/pcimpl.h>
+#include <../src/mat/impls/aij/seq/aij.h>
+#include <mathematica.h>
 
 #if defined (PETSC_HAVE__SNPRINTF) && !defined(PETSC_HAVE_SNPRINTF)
 #define snprintf _snprintf

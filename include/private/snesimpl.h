@@ -2,7 +2,7 @@
 #ifndef __SNESIMPL_H
 #define __SNESIMPL_H
 
-#include "petscsnes.h"
+#include <petscsnes.h>
 
 typedef struct _SNESOps *SNESOps;
 

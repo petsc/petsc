@@ -2,7 +2,7 @@
 /*
      Additive Multigrid V Cycle routine    
 */
-#include "../src/ksp/pc/impls/mg/mgimpl.h"
+#include <../src/ksp/pc/impls/mg/mgimpl.h>
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCMGACycle_Private"

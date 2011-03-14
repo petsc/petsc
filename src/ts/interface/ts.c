@@ -1,5 +1,5 @@
 
-#include "private/tsimpl.h"        /*I "petscts.h"  I*/
+#include <private/tsimpl.h>        /*I "petscts.h"  I*/
 
 /* Logging support */
 PetscClassId  TS_CLASSID;
@@ -2264,7 +2264,7 @@ PetscErrorCode  SNESTSFormJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *f
 }
 
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
-#include "mex.h"
+#include <mex.h>
 
 typedef struct {char *funcname; mxArray *ctx;} TSMatlabContext;
 

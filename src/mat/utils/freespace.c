@@ -1,5 +1,5 @@
 
-#include "../src/mat/utils/freespace.h"
+#include <../src/mat/utils/freespace.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscFreeSpaceGet"

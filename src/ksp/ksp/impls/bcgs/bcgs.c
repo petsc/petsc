@@ -1,5 +1,5 @@
 
-#include "private/kspimpl.h"
+#include <private/kspimpl.h>
 
 typedef struct {
   Vec guess;        /* if using right preconditioning with nonzero initial guess must keep that around to "fix" solution */

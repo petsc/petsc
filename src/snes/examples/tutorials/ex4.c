@@ -35,11 +35,11 @@ T*/
      petscviewer.h - viewers               petscpc.h  - preconditioners
      petscksp.h   - linear solvers
 */
-#include "petscsys.h"
-#include "petscbag.h"
-#include "petscdmda.h"
-#include "petscdmmg.h"
-#include "petscsnes.h"
+#include <petscsys.h>
+#include <petscbag.h>
+#include <petscdmda.h>
+#include <petscdmmg.h>
+#include <petscsnes.h>
 
 /* 
    User-defined application context - contains data needed by the 

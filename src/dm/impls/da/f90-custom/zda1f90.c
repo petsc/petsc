@@ -1,5 +1,5 @@
-#include "../src/sys/f90-src/f90impl.h"
-#include "petscdmda.h"
+#include <../src/sys/f90-src/f90impl.h>
+#include <petscdmda.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define dmdagetlocalinfof90_           DMDAGETLOCALINFOF90

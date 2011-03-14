@@ -2,7 +2,7 @@
 /*
      Provides utility routines for manipulating any type of PETSc object.
 */
-#include "petscsys.h"  /*I   "petscsys.h"    I*/
+#include <petscsys.h>  /*I   "petscsys.h"    I*/
 
 PetscObject *PetscObjects = 0;
 PetscInt    PetscObjectsCounts = 0, PetscObjectsMaxCounts = 0;

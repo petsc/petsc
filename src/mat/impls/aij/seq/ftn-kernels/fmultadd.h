@@ -1,6 +1,6 @@
 
 #if !defined(__FMULTADD_H)
-#include "petscsys.h"
+#include <petscsys.h>
 #if defined(PETSC_USE_FORTRAN_KERNEL_MULTADDAIJ)
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define fortranmultaddaij_ FORTRANMULTADDAIJ

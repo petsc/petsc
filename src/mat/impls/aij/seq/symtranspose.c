@@ -12,7 +12,7 @@
 
 */
 
-#include "../src/mat/impls/aij/seq/aij.h"
+#include <../src/mat/impls/aij/seq/aij.h>
 
 
 #undef __FUNCT__

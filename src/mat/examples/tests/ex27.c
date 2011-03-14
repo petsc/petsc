@@ -2,7 +2,7 @@
 static char help[] = "Tests repeated use of assembly for matrices.\n\
  does nasty case where matrix must be rebuilt.\n\n";
 
-#include "petscmat.h"
+#include <petscmat.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

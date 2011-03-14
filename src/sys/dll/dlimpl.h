@@ -1,7 +1,7 @@
 #if !defined(_DLIMPL_H)
 #define _DLIMPL_H
 
-#include "petscsys.h"
+#include <petscsys.h>
 
 typedef void* PetscDLHandle;
 

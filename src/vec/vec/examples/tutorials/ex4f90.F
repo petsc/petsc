@@ -24,9 +24,9 @@
 !     petscvec.h    - vectors
 !     petscvec.h90  - to allow access to Fortran90 features of vectors
 
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscvec.h90"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscvec.h90>
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                 Beginning of program

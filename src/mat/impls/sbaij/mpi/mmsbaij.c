@@ -2,7 +2,7 @@
 /*
    Support for the parallel SBAIJ matrix vector multiply
 */
-#include "../src/mat/impls/sbaij/mpi/mpisbaij.h"
+#include <../src/mat/impls/sbaij/mpi/mpisbaij.h>
 
 extern PetscErrorCode MatSetValues_SeqSBAIJ(Mat,PetscInt,const PetscInt [],PetscInt,const PetscInt [],const PetscScalar [],InsertMode);
 

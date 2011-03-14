@@ -1,6 +1,6 @@
-#include "petscsnes.h"
-#include "../src/snes/impls/vi/viimpl.h"
-#include "petscdmda.h"
+#include <petscsnes.h>
+#include <../src/snes/impls/vi/viimpl.h>
+#include <petscdmda.h>
 
 static  char help[]= 
 "This example is an implementation of minimal surface area with \n\

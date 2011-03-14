@@ -1,5 +1,5 @@
 
-#include "petscsys.h"              /*I "petscsys.h" I*/
+#include <petscsys.h>              /*I "petscsys.h" I*/
 
 /*
     Set up a color map, using uniform separation in hue space.

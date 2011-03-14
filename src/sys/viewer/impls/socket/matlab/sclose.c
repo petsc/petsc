@@ -4,8 +4,8 @@
 	 Updated by Richard Katz, katz@ldeo.columbia.edu 9/28/03
 */
 
-#include "petscsys.h"
-#include "../src/sys/viewer/impls/socket/socket.h"
+#include <petscsys.h>
+#include <../src/sys/viewer/impls/socket/socket.h>
 
 #include <errno.h>
 #if defined(PETSC_HAVE_STDLIB_H)
@@ -44,7 +44,7 @@ extern int close(int);
 #endif
 EXTERN_C_END
 
-#include "mex.h"
+#include <mex.h>
 #define PETSC_MEX_ERROR(a) {mexErrMsgTxt(a); return ;}
 typedef struct { int onoff; int time; } Linger;
 /*-----------------------------------------------------------------*/

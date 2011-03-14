@@ -39,8 +39,8 @@ T*/
      petscviewer.h - viewers               petscpc.h  - preconditioners
      petscksp.h   - linear solvers
 */
-#include "petscdmmg.h"
-#include "petscsnes.h"
+#include <petscdmmg.h>
+#include <petscsnes.h>
 
 /* 
    User-defined application context - contains data needed by the 

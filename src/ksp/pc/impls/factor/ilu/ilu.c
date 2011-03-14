@@ -2,7 +2,7 @@
 /*
    Defines a ILU factorization preconditioner for any Mat implementation
 */
-#include "../src/ksp/pc/impls/factor/ilu/ilu.h"     /*I "petscpc.h"  I*/
+#include <../src/ksp/pc/impls/factor/ilu/ilu.h>     /*I "petscpc.h"  I*/
 
 /* ------------------------------------------------------------------------------------------*/
 EXTERN_C_BEGIN

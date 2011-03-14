@@ -1,7 +1,7 @@
 
 static char help[] = "Tests string options with spaces";
 
-#include "petscsys.h"
+#include <petscsys.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

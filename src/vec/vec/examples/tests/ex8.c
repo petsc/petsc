@@ -1,7 +1,7 @@
 
 static char help[] = "Demonstrates scattering with strided index sets.\n\n";
 
-#include "petscvec.h"
+#include <petscvec.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

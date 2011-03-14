@@ -7,7 +7,7 @@
       subroutine PetscSetCommonBlock(c1,c2)
       implicit none
 
-#include      "../../../include/finclude/petscsys.h"
+#include      <finclude/petscsys.h>
 
       integer c1,c2
 
@@ -24,7 +24,7 @@
 
       subroutine PetscGetCommonCOMM(c1)
       implicit none
-#include      "../../../include/finclude/petscsys.h"
+#include      <finclude/petscsys.h>
       integer c1
 
       c1 = PETSC_COMM_WORLD

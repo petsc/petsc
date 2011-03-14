@@ -5,7 +5,7 @@
    the registry system, we provide a way to load only the truely necessary
    files) 
  */
-#include "private/kspimpl.h"   /*I "petscksp.h" I*/
+#include <private/kspimpl.h>   /*I "petscksp.h" I*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPGetResidualNorm"

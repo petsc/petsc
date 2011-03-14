@@ -2,7 +2,7 @@
 /*
        Provides the registration process for PETSc PetscDraw routines
 */
-#include "../src/sys/draw/drawimpl.h"  /*I "petscdraw.h" I*/
+#include <../src/sys/draw/drawimpl.h>  /*I "petscdraw.h" I*/
 
 /*
    Contains the list of registered PetscDraw routines

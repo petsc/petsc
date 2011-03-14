@@ -17,8 +17,8 @@ static char help[] = "Nonlinear, time-dependent PDE in 2d.\n";
    Compare to snes/examples/tutorials/ex50.c and ksp/examples/tutorials/ex45.c
 
 */
-#include "petscdmda.h"
-#include "petscts.h"
+#include <petscdmda.h>
+#include <petscts.h>
 
 
 /* 

@@ -14,7 +14,7 @@ Last Modification:
 6.21.97
 ***********************************ivec.c*************************************/
 
-#include "../src/ksp/pc/impls/tfs/tfs.h"
+#include <../src/ksp/pc/impls/tfs/tfs.h>
 
 /* sorting args ivec.c ivec.c ... */
 #define   SORT_OPT	6     

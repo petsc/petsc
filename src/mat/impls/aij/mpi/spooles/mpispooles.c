@@ -3,12 +3,12 @@
    Provides an interface to the Spooles parallel sparse solver (MPI SPOOLES)
 */
 
-#include "../src/mat/impls/aij/seq/aij.h"
-#include "../src/mat/impls/sbaij/seq/sbaij.h"
-#include "../src/mat/impls/baij/seq/baij.h"
-#include "../src/mat/impls/aij/mpi/mpiaij.h"
-#include "../src/mat/impls/sbaij/mpi/mpisbaij.h"
-#include "../src/mat/impls/aij/seq/spooles/spooles.h"
+#include <../src/mat/impls/aij/seq/aij.h>
+#include <../src/mat/impls/sbaij/seq/sbaij.h>
+#include <../src/mat/impls/baij/seq/baij.h>
+#include <../src/mat/impls/aij/mpi/mpiaij.h>
+#include <../src/mat/impls/sbaij/mpi/mpisbaij.h>
+#include <../src/mat/impls/aij/seq/spooles/spooles.h>
 
 extern int SetSpoolesOptions(Mat, Spooles_options *);
 extern PetscErrorCode MatDestroy_MPIAIJ(Mat);

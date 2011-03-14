@@ -2,7 +2,7 @@
 /*
        Provides the calling sequences for all the basic PetscDraw routines.
 */
-#include "../src/sys/draw/drawimpl.h"  /*I "petscdraw.h" I*/
+#include <../src/sys/draw/drawimpl.h>  /*I "petscdraw.h" I*/
   
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawLine" 

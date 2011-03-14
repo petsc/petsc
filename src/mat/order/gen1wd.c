@@ -1,7 +1,7 @@
 
 /* gen1wd.f -- translated by f2c (version 19931217).*/
 
-#include "petscsys.h"
+#include <petscsys.h>
 
 extern PetscErrorCode SPARSEPACKfn1wd(PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
 extern PetscErrorCode SPARSEPACKrevrse(PetscInt*,PetscInt*),SPARSEPACKrootls(PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*);

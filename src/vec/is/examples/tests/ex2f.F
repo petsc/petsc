@@ -3,8 +3,8 @@
 !
       program main
       implicit none
-#include "finclude/petscsys.h"
-#include "finclude/petscis.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscis.h>
 
       PetscErrorCode ierr
       PetscInt  i,n,ii(1),start

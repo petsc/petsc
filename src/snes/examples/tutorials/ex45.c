@@ -17,7 +17,7 @@ Input arguments are:\n\
   ./ex45 -n 10 -snes_jacobian_default -fd_jacobian_coloring -my_jacobian_struct -log_summary |grep SNESFunctionEval 
  */
 
-#include "petscsnes.h"
+#include <petscsnes.h>
 
 /* 
    User-defined routines

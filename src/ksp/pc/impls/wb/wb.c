@@ -1,7 +1,7 @@
 
-#include "petscpcmg.h"   /*I "petscpcmg.h" I*/
-#include "petscdmda.h"   /*I "petscdmda.h" I*/
-#include "../src/ksp/pc/impls/mg/mgimpl.h"
+#include <petscpcmg.h>   /*I "petscpcmg.h" I*/
+#include <petscdmda.h>   /*I "petscdmda.h" I*/
+#include <../src/ksp/pc/impls/mg/mgimpl.h>
 
 typedef struct {
   PCExoticType type;

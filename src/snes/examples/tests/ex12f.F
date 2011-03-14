@@ -25,11 +25,11 @@
       program main
       implicit none
 
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscdmda.h"
-#include "finclude/petscmat.h"
-#include "finclude/petscsnes.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscdmda.h>
+#include <finclude/petscmat.h>
+#include <finclude/petscsnes.h>
 
       PetscFortranAddr ctx(6)
       PetscMPIInt rank,size
@@ -139,11 +139,11 @@
       PetscErrorCode ierr
       PetscOffset      ixx,iff,iF2
       PetscScalar      h,d,vf2(1),vxx(1),vff(1)
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscdmda.h"
-#include "finclude/petscmat.h"
-#include "finclude/petscsnes.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscdmda.h>
+#include <finclude/petscmat.h>
+#include <finclude/petscsnes.h>
 
 
       rank  = ctx(4)
@@ -211,9 +211,9 @@
 
       subroutine FormInitialGuess(snes,x,ierr)
       implicit none
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscsnes.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscsnes.h>
       PetscErrorCode   ierr
       Vec              x
       SNES             snes
@@ -228,11 +228,11 @@
 
       subroutine FormJacobian(snes,x,jac,B,flag,ctx,ierr)
       implicit none
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscdmda.h"
-#include "finclude/petscmat.h"
-#include "finclude/petscsnes.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscdmda.h>
+#include <finclude/petscmat.h>
+#include <finclude/petscsnes.h>
       SNES             snes
       Vec              x
       Mat              jac,B

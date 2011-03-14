@@ -4,7 +4,7 @@
    This file was created by Peter Mell   6/30/95    
 */
 
-#include "private/daimpl.h"     /*I  "petscdmda.h"   I*/
+#include <private/daimpl.h>     /*I  "petscdmda.h"   I*/
 
 const char *DMDABoundaryTypes[] = {"BOUNDARY_NONE","BOUNDARY_GHOSTED","BOUNDARY_PERIODIC","DMDA_",0};
 

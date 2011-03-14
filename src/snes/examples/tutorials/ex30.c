@@ -50,9 +50,9 @@ static char help[] =
 
   ------------------------------------------------------------------------- */
 
-#include "petscsnes.h"
-#include "petscdmda.h"
-#include "petscdmmg.h"
+#include <petscsnes.h>
+#include <petscdmda.h>
+#include <petscdmmg.h>
 
 #define VISC_CONST   0
 #define VISC_DIFN    1

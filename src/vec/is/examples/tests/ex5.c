@@ -1,7 +1,7 @@
 
 static char help[] = "Tests ISLocalToGlobalMappingGetInfo.()\n\n";
 
-#include "petscis.h"
+#include <petscis.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

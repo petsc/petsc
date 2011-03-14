@@ -1,4 +1,4 @@
-#include "petsc.h"
+#include <petsc.h>
 
 #undef  __FUNCT__ 
 #define __FUNCT__ "TestACall"

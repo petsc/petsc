@@ -2,7 +2,7 @@
 !
 !    Fortran kernel for the Norm() vector routine
 !
-#include "finclude/petscsysdef.h"
+#include <finclude/petscsysdef.h>
 !
       subroutine FortranNormSqr(x,n,sum1)
       implicit none

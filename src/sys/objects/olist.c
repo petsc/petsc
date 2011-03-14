@@ -3,7 +3,7 @@
          Provides a general mechanism to maintain a linked list of PETSc objects.
      This is used to allow PETSc objects to carry a list of "composed" objects
 */
-#include "petscsys.h"
+#include <petscsys.h>
 
 struct _n_PetscOList {
     char        name[256];

@@ -62,9 +62,9 @@ T*/
   since the bit arrays are freed before the vectors and matrices are
   created.
 */
-#include "petscmat.h"
-#include "petscao.h"
-#include "petscbt.h"
+#include <petscmat.h>
+#include <petscao.h>
+#include <petscbt.h>
 
 /* 
     This is the user-defined grid data context 

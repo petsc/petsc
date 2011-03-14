@@ -11,7 +11,7 @@
 #define T3DMPI_FORTRAN
 #define T3EMPI_FORTRAN
 
-#include "private/fortranimpl.h" 
+#include <private/fortranimpl.h> 
 
 extern  PetscBool  PetscBeganMPI;
 

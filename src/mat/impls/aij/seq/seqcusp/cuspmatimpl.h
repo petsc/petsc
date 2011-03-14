@@ -1,7 +1,7 @@
 #ifndef __CUSPMATIMPL 
 #define __CUSPMATIMPL
 
-#include "../src/vec/vec/impls/seq/seqcusp/cuspvecimpl.h"
+#include <../src/vec/vec/impls/seq/seqcusp/cuspvecimpl.h>
 #include <cusp/csr_matrix.h>
 #include <cusp/multiply.h>
 

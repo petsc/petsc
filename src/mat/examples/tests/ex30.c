@@ -8,7 +8,7 @@ Note that most users should employ the KSP interface to the\n\
 linear solvers instead of using the factorization routines\n\
 directly.\n\n";
 
-#include "petscmat.h"
+#include <petscmat.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

@@ -20,8 +20,8 @@ T*/
 static char help[] = "Generates, partitions, and outputs an unstructured mesh with a scalar field.\n\n";
 
 #include <Mesh.hh>
-#include "petscmesh.h"
-#include "petscviewer.h"
+#include <petscmesh.h>
+#include <petscviewer.h>
 
 extern PetscErrorCode  MeshView_Sieve_Newer(ALE::Obj<ALE::Two::Mesh> mesh, PetscViewer viewer);
 PetscErrorCode CreateMeshBoundary(ALE::Obj<ALE::Two::Mesh>);

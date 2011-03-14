@@ -5,9 +5,9 @@ static char help[] = "Lattice Gauge 2D model.\n"
 "-beta b          controls the randomness of the gauge field\n"
 "-rho r           the quark mass (?)";
 
-#include "petscksp.h"
-#include "petscasa.h"
-#include "petscdm.h"
+#include <petscksp.h>
+#include <petscpcasa.h>
+#include <petscdm.h>
 
 PetscErrorCode computeMinEigVal(Mat A, PetscInt its, PetscScalar *eig);
 

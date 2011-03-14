@@ -5,7 +5,7 @@
  method. But it requires actually solving the preconditioned problem 
  with both left and right preconditioning. 
 */
-#include "private/pcimpl.h"           /*I "petscpc.h" I*/
+#include <private/pcimpl.h>           /*I "petscpc.h" I*/
 
 typedef struct {
   Mat        shell,A;

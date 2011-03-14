@@ -3,7 +3,7 @@
   Code for manipulating distributed regular arrays in parallel.
 */
 
-#include "private/daimpl.h"    /*I   "petscdmda.h"   I*/
+#include <private/daimpl.h>    /*I   "petscdmda.h"   I*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMDALocalToLocalCreate"

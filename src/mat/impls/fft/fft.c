@@ -3,7 +3,7 @@
     Provides an interface to the FFT packages.
 */
 
-#include "../src/mat/impls/fft/fft.h"   /*I "petscmat.h" I*/
+#include <../src/mat/impls/fft/fft.h>   /*I "petscmat.h" I*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatDestroy_FFT"

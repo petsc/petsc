@@ -1,5 +1,5 @@
 
-#include "../src/sys/viewer/impls/draw/vdraw.h" /*I "petscdraw.h" I*/
+#include <../src/sys/viewer/impls/draw/vdraw.h> /*I "petscdraw.h" I*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerDestroy_Draw" 

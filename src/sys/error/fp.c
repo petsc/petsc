@@ -16,7 +16,7 @@
 #define _GNU_SOURCE
 #endif
 
-#include "petscsys.h"           /*I  "petscsys.h"  I*/
+#include <petscsys.h>           /*I  "petscsys.h"  I*/
 #include <signal.h>
 #if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>

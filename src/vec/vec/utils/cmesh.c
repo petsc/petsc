@@ -1,5 +1,5 @@
 
-#include "petscvec.h"        /*I "petscvec.h" I*/
+#include <petscvec.h>        /*I "petscvec.h" I*/
 
 
 #undef __FUNCT__  

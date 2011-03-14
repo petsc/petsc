@@ -4,7 +4,7 @@
      pcimpl.h - private include file intended for use by all preconditioners 
 */
 
-#include "private/pcimpl.h"   /*I "petscpc.h" I*/
+#include <private/pcimpl.h>   /*I "petscpc.h" I*/
 
 /* 
    Private context (data structure) for the PBJacobi preconditioner.  
@@ -18,8 +18,8 @@ typedef struct {
    Currently only implemented for baij matrices and directly access baij
   data structures.
 */
-#include "../src/mat/impls/baij/mpi/mpibaij.h"
-#include "../src/mat/blockinvert.h"
+#include <../src/mat/impls/baij/mpi/mpibaij.h>
+#include <../src/mat/blockinvert.h>
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCApply_PBJacobi_2"

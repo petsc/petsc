@@ -2,7 +2,7 @@
 /*
      Provides utility routines for split MPI communicator.
 */
-#include "petscsys.h"    /*I   "petscsys.h"    I*/
+#include <petscsys.h>    /*I   "petscsys.h"    I*/
 
 extern PetscErrorCode PetscSubcommCreate_contiguous(PetscSubcomm);
 extern PetscErrorCode PetscSubcommCreate_interlaced(PetscSubcomm);

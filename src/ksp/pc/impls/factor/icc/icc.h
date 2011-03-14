@@ -2,7 +2,7 @@
 #if !defined(__ICC_H)
 #define __ICC_H
 
-#include "../src/ksp/pc/impls/factor/factor.h"
+#include <../src/ksp/pc/impls/factor/factor.h>
 
 /* Incomplete Cholesky factorization context */
 

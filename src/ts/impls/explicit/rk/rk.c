@@ -8,8 +8,8 @@
  * http://asbjorn.aarrestad.com/
  * 
  */
-#include "private/tsimpl.h"                /*I   "petscts.h"   I*/
-#include "time.h"
+#include <private/tsimpl.h>                /*I   "petscts.h"   I*/
+#include <time.h>
 
 typedef struct {
    Vec          y1,y2;  /* work wectors for the two rk permuations */

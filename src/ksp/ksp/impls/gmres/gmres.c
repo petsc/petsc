@@ -28,7 +28,7 @@
     of an unsuccessful gmres iteration always be the solution x.
  */
 
-#include "../src/ksp/ksp/impls/gmres/gmresimpl.h"       /*I  "petscksp.h"  I*/
+#include <../src/ksp/ksp/impls/gmres/gmresimpl.h>       /*I  "petscksp.h"  I*/
 #define GMRES_DELTA_DIRECTIONS 10
 #define GMRES_DEFAULT_MAXK     30
 static PetscErrorCode    GMRESGetNewVectors(KSP,PetscInt);

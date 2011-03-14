@@ -1,5 +1,5 @@
 
-#include "../src/mat/impls/aij/mpi/mpiaij.h"
+#include <../src/mat/impls/aij/mpi/mpiaij.h>
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  

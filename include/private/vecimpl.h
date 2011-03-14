@@ -8,7 +8,7 @@
 #ifndef __VECIMPL_H
 #define __VECIMPL_H
 
-#include "petscvec.h"
+#include <petscvec.h>
 PETSC_EXTERN_CXX_BEGIN
 
 /*S

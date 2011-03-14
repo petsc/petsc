@@ -14,7 +14,7 @@ T*/
      petscsys.h       - base PETSc routines   petscis.h     - index sets
      petscviewer.h - viewers
 */
-#include "petscvec.h"
+#include <petscvec.h>
 
 PetscScalar func(PetscScalar a){return 2*a/(1+a*a);}
 

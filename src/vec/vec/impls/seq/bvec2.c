@@ -3,10 +3,10 @@
    Implements the sequential vectors.
 */
 
-#include "private/vecimpl.h"          /*I "petscvec.h" I*/
-#include "../src/vec/vec/impls/dvecimpl.h"
-#include "../src/vec/vec/impls/mpi/pvecimpl.h" /* For VecView_MPI_HDF5 */
-#include "petscblaslapack.h"
+#include <private/vecimpl.h>          /*I "petscvec.h" I*/
+#include <../src/vec/vec/impls/dvecimpl.h>
+#include <../src/vec/vec/impls/mpi/pvecimpl.h> /* For VecView_MPI_HDF5 */
+#include <petscblaslapack.h>
 
 #if defined(PETSC_HAVE_HDF5)
 extern PetscErrorCode VecView_MPI_HDF5(Vec,PetscViewer);
@@ -78,7 +78,7 @@ static PetscErrorCode VecPointwiseMaxAbs_Seq(Vec win,Vec xin,Vec yin)
   PetscFunctionReturn(0);
 }
 
-#include "../src/vec/vec/impls/seq/ftn-kernels/fxtimesy.h"
+#include <../src/vec/vec/impls/seq/ftn-kernels/fxtimesy.h>
 #undef __FUNCT__  
 #define __FUNCT__ "VecPointwiseMult_Seq"
 static PetscErrorCode VecPointwiseMult_Seq(Vec win,Vec xin,Vec yin)
@@ -223,7 +223,7 @@ static PetscErrorCode VecSwap_Seq(Vec xin,Vec yin)
   PetscFunctionReturn(0);
 }
 
-#include "../src/vec/vec/impls/seq/ftn-kernels/fnorm.h"
+#include <../src/vec/vec/impls/seq/ftn-kernels/fnorm.h>
 #undef __FUNCT__  
 #define __FUNCT__ "VecNorm_Seq"
 PetscErrorCode VecNorm_Seq(Vec xin,NormType type,PetscReal* z)
@@ -587,7 +587,7 @@ static PetscErrorCode VecView_Seq_Binary(Vec xin,PetscViewer viewer)
 }
 
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
-#include "mat.h"   /* MATLAB include file */
+#include <mat.h>   /* MATLAB include file */
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "VecView_Seq_Matlab"

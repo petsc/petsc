@@ -3,8 +3,8 @@
      Defines the basic matrix operations for sequential dense.
 */
 
-#include "../src/mat/impls/dense/seq/dense.h"
-#include "petscblaslapack.h"
+#include <../src/mat/impls/dense/seq/dense.h>
+#include <petscblaslapack.h>
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatAXPY_SeqDense"

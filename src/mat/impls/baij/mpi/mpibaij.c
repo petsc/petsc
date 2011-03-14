@@ -1,6 +1,6 @@
 
-#include "../src/mat/impls/baij/mpi/mpibaij.h"   /*I  "petscmat.h"  I*/
-#include "petscblaslapack.h"
+#include <../src/mat/impls/baij/mpi/mpibaij.h>   /*I  "petscmat.h"  I*/
+#include <petscblaslapack.h>
 
 extern PetscErrorCode MatSetUpMultiply_MPIBAIJ(Mat); 
 extern PetscErrorCode DisAssemble_MPIBAIJ(Mat);
@@ -3117,7 +3117,7 @@ PetscErrorCode  MatConvert_MPIBAIJ_MPIAdj(Mat B, const MatType newtype,MatReuse 
 }
 EXTERN_C_END
 
-#include "../src/mat/impls/aij/mpi/mpiaij.h"
+#include <../src/mat/impls/aij/mpi/mpiaij.h>
 EXTERN_C_BEGIN
 PetscErrorCode  MatConvert_SeqBAIJ_SeqAIJ(Mat,const MatType,MatReuse,Mat*);
 EXTERN_C_END

@@ -34,10 +34,10 @@ This uses multigrid to solve the linear system
 
 static char help[] = "Solves 2D inhomogeneous Laplacian using multigrid.\n\n";
 
-#include "petscdmda.h"
-#include "petscksp.h"
-#include "petscpcmg.h"
-#include "petscdmmg.h"
+#include <petscdmda.h>
+#include <petscksp.h>
+#include <petscpcmg.h>
+#include <petscdmmg.h>
 
 extern PetscErrorCode CreateStructures(DMMG);
 extern PetscErrorCode DestroyStructures(DMMG);

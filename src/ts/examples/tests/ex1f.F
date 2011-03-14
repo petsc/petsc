@@ -9,16 +9,16 @@
 
       program main
       implicit none
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscmat.h"
-#include "finclude/petscdmda.h"
-#include "finclude/petscpc.h"
-#include "finclude/petscksp.h"
-#include "finclude/petscsnes.h"
-#include "finclude/petscts.h"
-#include "finclude/petscdraw.h"
-#include "finclude/petscviewer.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscmat.h>
+#include <finclude/petscdmda.h>
+#include <finclude/petscpc.h>
+#include <finclude/petscksp.h>
+#include <finclude/petscsnes.h>
+#include <finclude/petscts.h>
+#include <finclude/petscdraw.h>
+#include <finclude/petscviewer.h>
 
 #include "ex1f.h"
 
@@ -269,15 +269,15 @@
  
       subroutine Initial(global,ctx,ierr)
       implicit none
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscmat.h"
-#include "finclude/petscdmda.h"
-#include "finclude/petscpc.h"
-#include "finclude/petscksp.h"
-#include "finclude/petscsnes.h"
-#include "finclude/petscts.h"
-#include "finclude/petscviewer.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscmat.h>
+#include <finclude/petscdmda.h>
+#include <finclude/petscpc.h>
+#include <finclude/petscksp.h>
+#include <finclude/petscsnes.h>
+#include <finclude/petscts.h>
+#include <finclude/petscviewer.h>
 
 #include "ex1f.h"
 
@@ -310,15 +310,15 @@
 !  
       subroutine Solution(t,sol,ctx)
       implicit none
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscmat.h"
-#include "finclude/petscdmda.h"
-#include "finclude/petscpc.h"
-#include "finclude/petscksp.h"
-#include "finclude/petscsnes.h"
-#include "finclude/petscts.h"
-#include "finclude/petscviewer.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscmat.h>
+#include <finclude/petscdmda.h>
+#include <finclude/petscpc.h>
+#include <finclude/petscksp.h>
+#include <finclude/petscsnes.h>
+#include <finclude/petscts.h>
+#include <finclude/petscviewer.h>
 
 #include "ex1f.h"
 
@@ -353,16 +353,16 @@
 
       subroutine Monitor(ts,step,time,global,ctx,ierr)
       implicit none
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscmat.h"
-#include "finclude/petscdmda.h"
-#include "finclude/petscpc.h"
-#include "finclude/petscksp.h"
-#include "finclude/petscsnes.h"
-#include "finclude/petscts.h"
-#include "finclude/petscdraw.h"
-#include "finclude/petscviewer.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscmat.h>
+#include <finclude/petscdmda.h>
+#include <finclude/petscpc.h>
+#include <finclude/petscksp.h>
+#include <finclude/petscsnes.h>
+#include <finclude/petscts.h>
+#include <finclude/petscdraw.h>
+#include <finclude/petscviewer.h>
 
 #include "ex1f.h"
       TS                ts
@@ -398,15 +398,15 @@
 
       subroutine RHSMatrixFree(mat,x,y,ierr)
       implicit none
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscmat.h"
-#include "finclude/petscdmda.h"
-#include "finclude/petscpc.h"
-#include "finclude/petscksp.h"
-#include "finclude/petscsnes.h"
-#include "finclude/petscts.h"
-#include "finclude/petscviewer.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscmat.h>
+#include <finclude/petscdmda.h>
+#include <finclude/petscpc.h>
+#include <finclude/petscksp.h>
+#include <finclude/petscsnes.h>
+#include <finclude/petscts.h>
+#include <finclude/petscviewer.h>
       Mat              mat
       Vec              x,y
       PetscErrorCode          ierr
@@ -425,15 +425,15 @@
 
       subroutine RHSFunctionHeat(ts,t,globalin,globalout,ctx,ierr)
       implicit none
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscmat.h"
-#include "finclude/petscdmda.h"
-#include "finclude/petscpc.h"
-#include "finclude/petscksp.h"
-#include "finclude/petscsnes.h"
-#include "finclude/petscts.h"
-#include "finclude/petscviewer.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscmat.h>
+#include <finclude/petscdmda.h>
+#include <finclude/petscpc.h>
+#include <finclude/petscksp.h>
+#include <finclude/petscsnes.h>
+#include <finclude/petscts.h>
+#include <finclude/petscviewer.h>
 
 #include "ex1f.h"
       TS               ts
@@ -487,15 +487,15 @@
 
       subroutine RHSMatrixHeat(ts,t,AA,BB,str,ctx,ierr)
       implicit none
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscmat.h"
-#include "finclude/petscdmda.h"
-#include "finclude/petscpc.h"
-#include "finclude/petscksp.h"
-#include "finclude/petscsnes.h"
-#include "finclude/petscts.h"
-#include "finclude/petscviewer.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscmat.h>
+#include <finclude/petscdmda.h>
+#include <finclude/petscpc.h>
+#include <finclude/petscksp.h>
+#include <finclude/petscsnes.h>
+#include <finclude/petscts.h>
+#include <finclude/petscviewer.h>
 
 #include "ex1f.h"
       Mat              AA,BB
@@ -556,15 +556,15 @@
 
       subroutine RHSJacobianHeat(ts,t,x,AA,BB,str,ctx,ierr)
       implicit none
-#include "finclude/petscsys.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscmat.h"
-#include "finclude/petscdmda.h"
-#include "finclude/petscpc.h"
-#include "finclude/petscksp.h"
-#include "finclude/petscsnes.h"
-#include "finclude/petscts.h"
-#include "finclude/petscviewer.h"
+#include <finclude/petscsys.h>
+#include <finclude/petscvec.h>
+#include <finclude/petscmat.h>
+#include <finclude/petscdmda.h>
+#include <finclude/petscpc.h>
+#include <finclude/petscksp.h>
+#include <finclude/petscsnes.h>
+#include <finclude/petscts.h>
+#include <finclude/petscviewer.h>
       TS               ts
       double precision t
       Vec              x

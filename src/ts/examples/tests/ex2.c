@@ -14,8 +14,8 @@
 
 static char help[] = "Solves a nonlinear ODE. \n\n";
 
-#include "petscts.h"
-#include "petscpc.h"
+#include <petscts.h>
+#include <petscpc.h>
 
 extern PetscErrorCode RHSFunction(TS,PetscReal,Vec,Vec,void*);
 extern PetscErrorCode RHSJacobian(TS,PetscReal,Vec,Mat*,Mat*,MatStructure *,void*);

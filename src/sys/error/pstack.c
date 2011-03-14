@@ -1,5 +1,5 @@
 
-#include "petscsys.h"        /*I  "petscsys.h"   I*/
+#include <petscsys.h>        /*I  "petscsys.h"   I*/
 
 #if defined(PETSC_USE_DEBUG)  && !defined(PETSC_USE_PTHREAD)
 

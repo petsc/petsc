@@ -3,10 +3,10 @@
     Factorization code for BAIJ format. 
 */
 
-#include "../src/mat/impls/baij/seq/baij.h"
-#include "../src/mat/blockinvert.h"
-#include "petscbt.h"
-#include "../src/mat/utils/freespace.h"
+#include <../src/mat/impls/baij/seq/baij.h>
+#include <../src/mat/blockinvert.h>
+#include <petscbt.h>
+#include <../src/mat/utils/freespace.h>
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolveTranspose_SeqBAIJ_1_NaturalOrdering"
