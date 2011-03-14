@@ -38,14 +38,17 @@ PetscErrorCode TaoSolverDestroy_NM(TaoSolver tao)
   TAO_NelderMead *nm = (TAO_NelderMead*)tao->data;
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = VecDestroyVecs(nm->simplex,nm->N+1); CHKERRQ(ierr);
-  ierr = VecDestroy(nm->Xmuc); CHKERRQ(ierr);
-  ierr = VecDestroy(nm->Xmue); CHKERRQ(ierr);
-  ierr = VecDestroy(nm->Xmur); CHKERRQ(ierr);
-  ierr = VecDestroy(nm->Xbar); CHKERRQ(ierr);
-
+  if (tao->setupcalled) {
+    ierr = VecDestroyVecs(nm->N+1,&nm->simplex); CHKERRQ(ierr);
+    ierr = VecDestroy(nm->Xmuc); CHKERRQ(ierr);
+    ierr = VecDestroy(nm->Xmue); CHKERRQ(ierr);
+    ierr = VecDestroy(nm->Xmur); CHKERRQ(ierr);
+    ierr = VecDestroy(nm->Xbar); CHKERRQ(ierr);
+  }
   ierr = PetscFree(nm->indices); CHKERRQ(ierr);
   ierr = PetscFree(nm->f_values); CHKERRQ(ierr);
+  ierr = PetscFree(tao->data);
+  tao->data = 0;
   PetscFunctionReturn(0);
 }
 
@@ -76,19 +79,24 @@ PetscErrorCode TaoSolverSetFromOptions_NM(TaoSolver tao)
 /*------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "TaoSolverView_NM"
-PetscErrorCode TaoSolverView_NM(TaoSolver tao,PetscViewer pv)
+PetscErrorCode TaoSolverView_NM(TaoSolver tao,PetscViewer viewer)
 {
   TAO_NelderMead *nm = (TAO_NelderMead*)tao->data;
-  MPI_Comm comm;
+  PetscBool isascii;
   PetscErrorCode ierr;
   
   PetscFunctionBegin;
-  comm = ((PetscObject)tao)->comm;
-  ierr = PetscPrintf(comm,"  expansions: %d\n",nm->nexpand); CHKERRQ(ierr);
-  ierr = PetscPrintf(comm,"  reflections: %d\n",nm->nreflect); CHKERRQ(ierr);
-  ierr = PetscPrintf(comm,"  inside contractions: %d\n",nm->nincontract); CHKERRQ(ierr);
-  ierr = PetscPrintf(comm,"  outside contractionss: %d\n",nm->noutcontract); CHKERRQ(ierr);
-  ierr = PetscPrintf(comm,"  Shrink steps: %d\n",nm->nshrink); CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
+  if (isascii) {
+    ierr = PetscViewerASCIIPrintf(viewer,"  expansions: %d\n",nm->nexpand); CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  reflections: %d\n",nm->nreflect); CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  inside contractions: %d\n",nm->nincontract); CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  outside contractionss: %d\n",nm->noutcontract); CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Shrink steps: %d\n",nm->nshrink); CHKERRQ(ierr);
+  } else {
+    SETERRQ1(((PetscObject)tao)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for TAO NelderMead",((PetscObject)viewer)->type_name);
+  }
+
   PetscFunctionReturn(0);
 }
 
@@ -115,6 +123,9 @@ PetscErrorCode TaoSolverSolve_NM(TaoSolver tao)
   nm->noutcontract = 0;
   nm->nexpand =      0;
   
+  if (tao->XL || tao->XU || tao->ops->computebounds) {
+    ierr = PetscPrintf(((PetscObject)tao)->comm,"WARNING: Variable bounds have been set but will be ignored by NelderMead algorithm\n"); CHKERRQ(ierr);
+  }
 
   ierr = VecCopy(tao->solution,nm->simplex[0]); CHKERRQ(ierr);
   ierr = TaoSolverComputeObjective(tao,nm->simplex[0],&nm->f_values[0]); CHKERRQ(ierr);

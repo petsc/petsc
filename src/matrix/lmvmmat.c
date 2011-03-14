@@ -247,18 +247,31 @@ extern PetscErrorCode MatDestroy_LMVM(Mat M)
     PetscFunctionBegin;
 
     ierr = MatShellGetContext(M,(void**)&ctx); CHKERRQ(ierr);
+    if (ctx->allocated) {
+      ierr = PetscObjectDereference((PetscObject)ctx->Xprev); CHKERRQ(ierr);
+      ierr = PetscObjectDereference((PetscObject)ctx->Gprev); CHKERRQ(ierr);
 
-    ierr = VecDestroyVecs(ctx->S, ctx->lm+1); CHKERRQ(ierr);
-    ierr = VecDestroyVecs(ctx->Y, ctx->lm+1); CHKERRQ(ierr);
-    ierr = VecDestroy(ctx->D); CHKERRQ(ierr);
-    ierr = VecDestroy(ctx->U); CHKERRQ(ierr);
-    ierr = VecDestroy(ctx->V); CHKERRQ(ierr);
-    ierr = VecDestroy(ctx->W); CHKERRQ(ierr);
-    ierr = VecDestroy(ctx->P); CHKERRQ(ierr);
-    ierr = VecDestroy(ctx->Q); CHKERRQ(ierr);
-    ierr = VecDestroy(ctx->Xprev); CHKERRQ(ierr);
-    ierr = VecDestroy(ctx->Gprev); CHKERRQ(ierr);
-    
+      ierr = VecDestroyVecs(ctx->lm+1,&ctx->S); CHKERRQ(ierr);
+      ierr = VecDestroyVecs(ctx->lm+1,&ctx->Y); CHKERRQ(ierr);
+      ierr = VecDestroy(ctx->D); CHKERRQ(ierr);
+      ierr = VecDestroy(ctx->U); CHKERRQ(ierr);
+      ierr = VecDestroy(ctx->V); CHKERRQ(ierr);
+      ierr = VecDestroy(ctx->W); CHKERRQ(ierr);
+      ierr = VecDestroy(ctx->P); CHKERRQ(ierr);
+      ierr = VecDestroy(ctx->Q); CHKERRQ(ierr);
+      if (ctx->scale) {
+	ierr = VecDestroy(ctx->scale); CHKERRQ(ierr);
+      }
+    }
+    ierr = PetscFree(ctx->rho); CHKERRQ(ierr);
+    ierr = PetscFree(ctx->beta); CHKERRQ(ierr);
+    ierr = PetscFree(ctx->yy_history); CHKERRQ(ierr);
+    ierr = PetscFree(ctx->ys_history); CHKERRQ(ierr);
+    ierr = PetscFree(ctx->ss_history); CHKERRQ(ierr);
+    ierr = PetscFree(ctx->yy_rhistory); CHKERRQ(ierr);
+    ierr = PetscFree(ctx->ys_rhistory); CHKERRQ(ierr);
+    ierr = PetscFree(ctx->ss_rhistory); CHKERRQ(ierr);
+
     ierr = PetscFree(ctx); CHKERRQ(ierr);
 
     PetscFunctionReturn(0);
@@ -871,7 +884,6 @@ extern PetscErrorCode MatLMVMAllocateVectors(Mat m, Vec v)
     
 
     // Perform allocations
-    
     ierr = VecDuplicateVecs(v,ctx->lm+1,&ctx->S); CHKERRQ(ierr);
     ierr = VecDuplicateVecs(v,ctx->lm+1,&ctx->Y); CHKERRQ(ierr);
     ierr = VecDuplicate(v,&ctx->D); CHKERRQ(ierr);
@@ -880,9 +892,8 @@ extern PetscErrorCode MatLMVMAllocateVectors(Mat m, Vec v)
     ierr = VecDuplicate(v,&ctx->W); CHKERRQ(ierr);
     ierr = VecDuplicate(v,&ctx->P); CHKERRQ(ierr);
     ierr = VecDuplicate(v,&ctx->Q); CHKERRQ(ierr);
-    ierr = VecDuplicate(v,&ctx->Xprev); CHKERRQ(ierr);
-    ierr = VecDuplicate(v,&ctx->Gprev); CHKERRQ(ierr);
     ctx->allocated = PETSC_TRUE;
+
     PetscFunctionReturn(0);
 }
 
