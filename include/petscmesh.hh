@@ -1,7 +1,7 @@
 #if !defined(__PETSCMESH_HH)
 #define __PETSCMESH_HH
 
-#include <petscdm.h>
+#include <petscdmmesh.h>
 #include <functional>
 
 using ALE::Obj;
