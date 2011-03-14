@@ -1259,7 +1259,7 @@ PetscErrorCode DMMeshDistributeByFace(DM serialMesh, const char partitioner[], D
 .keywords: mesh, elements
 .seealso: MeshCreate(), MeshRefine()
 @*/
-PetscErrorCode MeshGenerate(DM boundary, PetscBool  interpolate, DM *mesh)
+PetscErrorCode DMMeshGenerate(DM boundary, PetscBool  interpolate, DM *mesh)
 {
   ALE::Obj<PETSC_MESH_TYPE> mB;
   PetscErrorCode      ierr;

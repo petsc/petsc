@@ -922,7 +922,8 @@ PetscErrorCode DMMGSetSNESLocal_Private(DMMG *dmmg,DMDALocalFunction1 function,D
 {
   PetscErrorCode ierr;
   PetscInt       i,nlevels = dmmg[0]->nlevels;
-  PetscClassId   classid;
+  const char    *typeName;
+  PetscBool      ismesh;
   PetscErrorCode (*computejacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*) = 0;
 
 
@@ -932,27 +933,9 @@ PetscErrorCode DMMGSetSNESLocal_Private(DMMG *dmmg,DMDALocalFunction1 function,D
   else if (ad_function) computejacobian = DMMGComputeJacobianWithAdic;
 #endif
   CHKMEMQ;
-  ierr = PetscObjectGetClassId((PetscObject) dmmg[0]->dm,&classid);CHKERRQ(ierr);
-  if (classid == DM_CLASSID) {
-    PetscBool  flag;
-    /* it makes no sense to use an option to decide on ghost, it depends on whether the 
-       formfunctionlocal computes ghost values in F or not. */
-    ierr = PetscOptionsHasName(PETSC_NULL, "-dmmg_form_function_ghost", &flag);CHKERRQ(ierr);
-    if (flag) {
-      ierr = DMMGSetSNES(dmmg,DMMGFormFunctionGhost,computejacobian);CHKERRQ(ierr);
-    } else {
-      ierr = DMMGSetSNES(dmmg,DMMGFormFunction,computejacobian);CHKERRQ(ierr);
-    }
-    for (i=0; i<nlevels; i++) {
-      dmmg[i]->isctype  = IS_COLORING_GHOSTED;   /* switch to faster version since have local function evaluation */
-      ierr = DMDASetLocalFunction(dmmg[i]->dm,function);CHKERRQ(ierr);
-      dmmg[i]->lfj = (PetscErrorCode (*)(void))function;
-      ierr = DMDASetLocalJacobian(dmmg[i]->dm,jacobian);CHKERRQ(ierr);
-      ierr = DMDASetLocalAdicFunction(dmmg[i]->dm,ad_function);CHKERRQ(ierr);
-      ierr = DMDASetLocalAdicMFFunction(dmmg[i]->dm,admf_function);CHKERRQ(ierr);
-    }
-    CHKMEMQ;
-  } else {
+  ierr = PetscObjectGetType((PetscObject) dmmg[0]->dm, &typeName);CHKERRQ(ierr);
+  ierr = PetscStrcmp(typeName, DMMESH, &ismesh);CHKERRQ(ierr);
+  if (ismesh) {
 #ifdef PETSC_HAVE_SIEVE
     ierr = DMMGSetSNES(dmmg, DMMGFormFunctionMesh, DMMGComputeJacobianMesh);CHKERRQ(ierr);
     for (i=0; i<nlevels; i++) {
@@ -972,10 +955,27 @@ PetscErrorCode DMMGSetSNESLocal_Private(DMMG *dmmg,DMDALocalFunction1 function,D
         ierr = SectionRealDestroy(constantSec);CHKERRQ(ierr);
       }
     }
-    CHKMEMQ;
 #else
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Unstructured grids only supported when Sieve is enabled.\nReconfigure with --with-sieve.");
 #endif
+  } else {
+    PetscBool  flag;
+    /* it makes no sense to use an option to decide on ghost, it depends on whether the 
+       formfunctionlocal computes ghost values in F or not. */
+    ierr = PetscOptionsHasName(PETSC_NULL, "-dmmg_form_function_ghost", &flag);CHKERRQ(ierr);
+    if (flag) {
+      ierr = DMMGSetSNES(dmmg,DMMGFormFunctionGhost,computejacobian);CHKERRQ(ierr);
+    } else {
+      ierr = DMMGSetSNES(dmmg,DMMGFormFunction,computejacobian);CHKERRQ(ierr);
+    }
+    for (i=0; i<nlevels; i++) {
+      dmmg[i]->isctype  = IS_COLORING_GHOSTED;   /* switch to faster version since have local function evaluation */
+      ierr = DMDASetLocalFunction(dmmg[i]->dm,function);CHKERRQ(ierr);
+      dmmg[i]->lfj = (PetscErrorCode (*)(void))function;
+      ierr = DMDASetLocalJacobian(dmmg[i]->dm,jacobian);CHKERRQ(ierr);
+      ierr = DMDASetLocalAdicFunction(dmmg[i]->dm,ad_function);CHKERRQ(ierr);
+      ierr = DMDASetLocalAdicMFFunction(dmmg[i]->dm,admf_function);CHKERRQ(ierr);
+    }
   }
   CHKMEMQ;
   PetscFunctionReturn(0);
