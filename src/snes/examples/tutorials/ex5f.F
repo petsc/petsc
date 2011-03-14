@@ -58,7 +58,7 @@
       Mat                    J,A
       PetscInt                its,i1,i4
       PetscErrorCode ierr
-      double precision       lambda_max,lambda_min
+      PetscReal       lambda_max,lambda_min
       PetscBool              flg
 #if defined(PETSC_HAVE_ADIFOR)
       ISColoring             coloring

@@ -62,7 +62,7 @@
       PetscInt ys,ye,ym,gys,gye,gym
       PetscInt mx,my
       PetscMPIInt rank,size
-      double precision lambda
+      PetscReal lambda
 
       common /params/ lambda,mx,my
       common /pdata/  xs,xe,xm,gxs,gxe,gxm

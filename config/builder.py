@@ -786,7 +786,7 @@ class PETScMaker(script.Script):
    objects   = []
    for language in ['C', 'Cxx', 'Fortran', 'Cuda']:
      if sourceMap[language]:
-       self.logPrint('Compiling %s files %s' % (language, str(sourceMap['C'])))
+       self.logPrint('Compiling %s files %s' % (language, str(sourceMap[language])))
        objects.extend(getattr(self, 'compile'+language)(sourceMap[language], objDir))
    os.chdir(oldDir)
    return objects
