@@ -3,12 +3,7 @@
 #include <petscmesh_formats.hh>
 
 /* Logging support */
-PetscClassId  MESH_CLASSID;
-PetscLogEvent  Mesh_View, Mesh_GetGlobalScatter, Mesh_restrictVector, Mesh_assembleVector,
-            Mesh_assembleVectorComplete, Mesh_assembleMatrix, Mesh_updateOperator;
-
-PetscBool  MeshRegisterAllCalled = PETSC_FALSE;
-PetscFList MeshList;
+PetscLogEvent Mesh_View, Mesh_GetGlobalScatter, Mesh_restrictVector, Mesh_assembleVector, Mesh_assembleVectorComplete, Mesh_assembleMatrix, Mesh_updateOperator;
 
 ALE::MemoryLogger Petsc_MemoryLogger;
 
@@ -32,8 +27,8 @@ PetscMPIInt Mesh_DelTag(MPI_Comm comm,PetscMPIInt keyval,void* attr_val,void* ex
 EXTERN_C_END
 
 #undef __FUNCT__
-#define __FUNCT__ "MeshFinalize"
-PetscErrorCode MeshFinalize()
+#define __FUNCT__ "DMMeshFinalize"
+PetscErrorCode DMMeshFinalize()
 {
   PetscFunctionBegin;
   PETSC_MESH_TYPE::MeshNumberingFactory::singleton(0, 0, true);
@@ -123,46 +118,6 @@ PetscErrorCode DMMeshView_Sieve_Ascii(const ALE::Obj<PETSC_MESH_TYPE>& mesh, Pet
     ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_VTK_CELL);CHKERRQ(ierr);
     ierr = SectionView_Sieve_Ascii(mesh, p, "Partition", viewer);CHKERRQ(ierr);
     ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-  } else if (format == PETSC_VIEWER_ASCII_PYLITH) {
-    char *filename;
-    char  connectFilename[2048];
-    char  coordFilename[2048];
-
-    ierr = PetscViewerFileGetName(viewer, &filename);CHKERRQ(ierr);
-    ierr = PetscViewerFileSetMode(viewer, FILE_MODE_WRITE);CHKERRQ(ierr);
-    ierr = PetscStrcpy(connectFilename, filename);CHKERRQ(ierr);
-    ierr = PetscStrcat(connectFilename, ".connect");CHKERRQ(ierr);
-    ierr = PetscViewerFileSetName(viewer, connectFilename);CHKERRQ(ierr);
-    ierr = ALE::PyLith::Viewer::writeElements(mesh, mesh->getIntSection("material"), viewer);CHKERRQ(ierr);
-    ierr = PetscStrcpy(coordFilename, filename);CHKERRQ(ierr);
-    ierr = PetscStrcat(coordFilename, ".coord");CHKERRQ(ierr);
-    ierr = PetscViewerFileSetName(viewer, coordFilename);CHKERRQ(ierr);
-    ierr = ALE::PyLith::Viewer::writeVertices(mesh, viewer);CHKERRQ(ierr);
-    ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);CHKERRQ(ierr);
-    ierr = PetscViewerFileSetName(viewer, filename);CHKERRQ(ierr);
-  } else if (format == PETSC_VIEWER_ASCII_PYLITH_LOCAL) {
-    PetscViewer connectViewer, coordViewer;
-    char       *filename;
-    char        localFilename[2048];
-    int         rank = mesh->commRank();
-
-    ierr = PetscViewerFileGetName(viewer, &filename);CHKERRQ(ierr);
-
-    sprintf(localFilename, "%s.%d.connect", filename, rank);
-    ierr = PetscViewerCreate(PETSC_COMM_SELF, &connectViewer);CHKERRQ(ierr);
-    ierr = PetscViewerSetType(connectViewer, PETSCVIEWERASCII);CHKERRQ(ierr);
-    ierr = PetscViewerSetFormat(connectViewer, PETSC_VIEWER_ASCII_PYLITH);CHKERRQ(ierr);
-    ierr = PetscViewerFileSetName(connectViewer, localFilename);CHKERRQ(ierr);
-    ierr = ALE::PyLith::Viewer::writeElementsLocal(mesh, mesh->getIntSection("material"), connectViewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(connectViewer);CHKERRQ(ierr);
-
-    sprintf(localFilename, "%s.%d.coord", filename, rank);
-    ierr = PetscViewerCreate(PETSC_COMM_SELF, &coordViewer);CHKERRQ(ierr);
-    ierr = PetscViewerSetType(coordViewer, PETSCVIEWERASCII);CHKERRQ(ierr);
-    ierr = PetscViewerSetFormat(coordViewer, PETSC_VIEWER_ASCII_PYLITH);CHKERRQ(ierr);
-    ierr = PetscViewerFileSetName(coordViewer, localFilename);CHKERRQ(ierr);
-    ierr = ALE::PyLith::Viewer::writeVerticesLocal(mesh, coordViewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(coordViewer);CHKERRQ(ierr);
   } else if (format == PETSC_VIEWER_ASCII_PCICE) {
     char      *filename;
     char       coordFilename[2048];
@@ -430,7 +385,7 @@ PetscErrorCode DMCreateGlobalVector_Mesh(DM dm, Vec *gvec)
   Level: advanced
 
   Notes: The vector can safely be destroyed using VecDestroy().
-.seealso DMMeshCreate(), MeshGetGlobalIndices()
+.seealso DMMeshCreate()
 @*/
 PetscErrorCode DMMeshCreateVector(DM mesh, SectionReal section, Vec *vec)
 {
@@ -467,31 +422,6 @@ PetscErrorCode DMCreateLocalVector_Mesh(DM dm, Vec *lvec)
   ierr = VecSetSizes(*lvec, size, size);CHKERRQ(ierr);
   ierr = VecSetFromOptions(*lvec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMMeshGetGlobalIndices"
-/*@C
-  DMMeshGetGlobalIndices - Gets the global indices for all the local entries
-
-  Collective on Mesh
-
-  Input Parameter:
-. mesh - the mesh object
-
-  Output Parameters:
-. idx - the individual indices for each packed vector/array
-
-  Level: advanced
-
-  Notes:
-  The idx parameters should be freed by the calling routine with PetscFree()
-
-.seealso DMCreateGlobalVector(), DMMeshCreate()
-@*/
-PetscErrorCode MeshGetGlobalIndices(DM dm, PetscInt *idx[])
-{
-  SETERRQ(((PetscObject) dm)->comm,PETSC_ERR_SUP, "Still too lazy");
 }
 
 #undef __FUNCT__
@@ -989,7 +919,7 @@ PetscErrorCode assembleMatrix(Mat A, DM dm, SectionReal section, PetscInt e, Pet
 .keywords: mesh, ExodusII
 .seealso: MeshCreateExodus()
 @*/
-PetscErrorCode MeshGetLabelSize(DM dm, const char name[], PetscInt *size)
+PetscErrorCode DMMeshGetLabelSize(DM dm, const char name[], PetscInt *size)
 {
   ALE::Obj<PETSC_MESH_TYPE> m;
   PetscErrorCode            ierr;
@@ -1192,7 +1122,7 @@ PetscErrorCode DMMeshGetCoordinates(DM dm, PetscBool  columnMajor, PetscInt *num
 .keywords: mesh, elements
 .seealso: MeshCreate()
 @*/
-PetscErrorCode MeshGetElements(DM dm, PetscBool  columnMajor, PetscInt *numElements, PetscInt *numCorners, PetscInt *vertices[])
+PetscErrorCode DMMeshGetElements(DM dm, PetscBool  columnMajor, PetscInt *numElements, PetscInt *numCorners, PetscInt *vertices[])
 {
   ALE::Obj<PETSC_MESH_TYPE> m;
   PetscErrorCode      ierr;
@@ -1258,7 +1188,7 @@ PetscErrorCode DMMeshGetCone(DM dm, PetscInt p, PetscInt *numPoints, PetscInt *p
 
 .seealso: MeshCreate(), MeshDistributeByFace()
 @*/
-PetscErrorCode MeshDistribute(DM serialMesh, const char partitioner[], DM *parallelMesh)
+PetscErrorCode DMMeshDistribute(DM serialMesh, const char partitioner[], DM *parallelMesh)
 {
   ALE::Obj<PETSC_MESH_TYPE> oldMesh;
   PetscErrorCode      ierr;

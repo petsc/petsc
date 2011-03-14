@@ -2,9 +2,6 @@
 #include "petscdm.h"      /*I      "petscdm.h"    I*/
 #include "private/daimpl.h" 
 /* It appears that preprocessor directives are not respected by bfort */
-#ifdef PETSC_HAVE_SIEVE
-#include "petscmesh.h"
-#endif
 #include "petscmg.h"      /*I      "petscmg.h"    I*/
 #include "petscdmmg.h"    /*I      "petscdmmg.h"  I*/
 
@@ -170,7 +167,7 @@ PetscErrorCode DMMGFormFunctionGhost(SNES snes,Vec X,Vec F,void *ptr)
 #ifdef PETSC_HAVE_SIEVE
 #undef __FUNCT__
 #define __FUNCT__ "DMMGFormFunctionMesh"
-/* 
+/*
    DMMGFormFunctionMesh - This is a universal global FormFunction used by the DMMG code
    when the user provides a local function.
 
@@ -186,24 +183,24 @@ PetscErrorCode DMMGFormFunctionGhost(SNES snes,Vec X,Vec F,void *ptr)
 PetscErrorCode DMMGFormFunctionMesh(SNES snes, Vec X, Vec F, void *ptr)
 {
   DMMG           dmmg = (DMMG) ptr;
-  Mesh           mesh = (Mesh) dmmg->dm;
+  DM             mesh = dmmg->dm;
   SectionReal    sectionF, section;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MeshGetSectionReal(mesh, "default", &section);CHKERRQ(ierr);
+  ierr = DMMeshGetSectionReal(mesh, "default", &section);CHKERRQ(ierr);
   ierr = SectionRealDuplicate(section, &sectionF);CHKERRQ(ierr);
   ierr = SectionRealToVec(section, mesh, SCATTER_REVERSE, X);CHKERRQ(ierr);
-  ierr = MeshFormFunction(mesh, section, sectionF, dmmg->user);CHKERRQ(ierr);
+  ierr = DMMeshFormFunction(mesh, section, sectionF, dmmg->user);CHKERRQ(ierr);
   ierr = SectionRealToVec(sectionF, mesh, SCATTER_FORWARD, F);CHKERRQ(ierr);
   ierr = SectionRealDestroy(sectionF);CHKERRQ(ierr);
   ierr = SectionRealDestroy(section);CHKERRQ(ierr);
-  PetscFunctionReturn(0); 
-} 
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMGComputeJacobianMesh"
-/* 
+/*
    DMMGComputeJacobianMesh - This is a universal global FormJacobian used by the DMMG code
    when the user provides a local function.
 
@@ -219,14 +216,14 @@ PetscErrorCode DMMGFormFunctionMesh(SNES snes, Vec X, Vec F, void *ptr)
 PetscErrorCode DMMGComputeJacobianMesh(SNES snes, Vec X, Mat *J, Mat *B, MatStructure *flag, void *ptr)
 {
   DMMG           dmmg = (DMMG) ptr;
-  Mesh           mesh = (Mesh) dmmg->dm;
+  DM             mesh = dmmg->dm;
   SectionReal    sectionX;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MeshGetSectionReal(mesh, "default", &sectionX);CHKERRQ(ierr);
+  ierr = DMMeshGetSectionReal(mesh, "default", &sectionX);CHKERRQ(ierr);
   ierr = SectionRealToVec(sectionX, mesh, SCATTER_REVERSE, X);CHKERRQ(ierr);
-  ierr = MeshFormJacobian(mesh, sectionX, *B, dmmg->user);CHKERRQ(ierr);
+  ierr = DMMeshFormJacobian(mesh, sectionX, *B, dmmg->user);CHKERRQ(ierr);
   /* Assemble true Jacobian; if it is different */
   if (*J != *B) {
     ierr  = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -235,8 +232,8 @@ PetscErrorCode DMMGComputeJacobianMesh(SNES snes, Vec X, Mat *J, Mat *B, MatStru
   ierr  = MatSetOption(*B, MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   *flag = SAME_NONZERO_PATTERN;
   ierr  = SectionRealDestroy(sectionX);CHKERRQ(ierr);
-  PetscFunctionReturn(0); 
-} 
+  PetscFunctionReturn(0);
+}
 #endif
 
 #undef __FUNCT__
@@ -874,8 +871,8 @@ PetscErrorCode DMMGGetSNESLocal(DMMG *dmmg,DMDALocalFunction1 *function, DMDALoc
     ierr = DMDAGetLocalJacobian( dmmg[0]->dm, jacobian);CHKERRQ(ierr);
   } else {
 #ifdef PETSC_HAVE_SIEVE
-    ierr = MeshGetLocalFunction((Mesh) dmmg[0]->dm, (PetscErrorCode (**)(Mesh,SectionReal,SectionReal,void*)) function);CHKERRQ(ierr);
-    ierr = MeshGetLocalJacobian((Mesh) dmmg[0]->dm, (PetscErrorCode (**)(Mesh,SectionReal,Mat,void*)) jacobian);CHKERRQ(ierr);
+    ierr = DMMeshGetLocalFunction(dmmg[0]->dm, (PetscErrorCode (**)(DM,SectionReal,SectionReal,void*)) function);CHKERRQ(ierr);
+    ierr = DMMeshGetLocalJacobian(dmmg[0]->dm, (PetscErrorCode (**)(DM,SectionReal,Mat,void*)) jacobian);CHKERRQ(ierr);
 #else
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Unstructured grids only supported when Sieve is enabled.\nReconfigure with --with-sieve.");
 #endif
@@ -949,7 +946,7 @@ PetscErrorCode DMMGSetSNESLocal_Private(DMMG *dmmg,DMDALocalFunction1 function,D
     for (i=0; i<nlevels; i++) {
       dmmg[i]->isctype  = IS_COLORING_GHOSTED;   /* switch to faster version since have local function evaluation */
       ierr = DMDASetLocalFunction(dmmg[i]->dm,function);CHKERRQ(ierr);
-      dmmg[i]->lfj = (PetscErrorCode (*)(void))function; 
+      dmmg[i]->lfj = (PetscErrorCode (*)(void))function;
       ierr = DMDASetLocalJacobian(dmmg[i]->dm,jacobian);CHKERRQ(ierr);
       ierr = DMDASetLocalAdicFunction(dmmg[i]->dm,ad_function);CHKERRQ(ierr);
       ierr = DMDASetLocalAdicMFFunction(dmmg[i]->dm,admf_function);CHKERRQ(ierr);
@@ -959,19 +956,19 @@ PetscErrorCode DMMGSetSNESLocal_Private(DMMG *dmmg,DMDALocalFunction1 function,D
 #ifdef PETSC_HAVE_SIEVE
     ierr = DMMGSetSNES(dmmg, DMMGFormFunctionMesh, DMMGComputeJacobianMesh);CHKERRQ(ierr);
     for (i=0; i<nlevels; i++) {
-      ierr = MeshSetLocalFunction((Mesh) dmmg[i]->dm, (PetscErrorCode (*)(Mesh,SectionReal,SectionReal,void*)) function);CHKERRQ(ierr);
-      dmmg[i]->lfj = (PetscErrorCode (*)(void)) function; 
-      ierr = MeshSetLocalJacobian((Mesh) dmmg[i]->dm, (PetscErrorCode (*)(Mesh,SectionReal,Mat,void*)) jacobian);CHKERRQ(ierr);
+      ierr = DMMeshSetLocalFunction(dmmg[i]->dm, (PetscErrorCode (*)(DM,SectionReal,SectionReal,void*)) function);CHKERRQ(ierr);
+      dmmg[i]->lfj = (PetscErrorCode (*)(void)) function;
+      ierr = DMMeshSetLocalJacobian(dmmg[i]->dm, (PetscErrorCode (*)(DM,SectionReal,Mat,void*)) jacobian);CHKERRQ(ierr);
       // Setup a work section
       SectionReal defaultSec, constantSec;
       PetscBool   hasConstant;
 
-      ierr = MeshGetSectionReal((Mesh) dmmg[i]->dm, "default", &defaultSec);CHKERRQ(ierr);
-      ierr = MeshHasSectionReal((Mesh) dmmg[i]->dm, "constant", &hasConstant);CHKERRQ(ierr);
+      ierr = DMMeshGetSectionReal(dmmg[i]->dm, "default", &defaultSec);CHKERRQ(ierr);
+      ierr = DMMeshHasSectionReal(dmmg[i]->dm, "constant", &hasConstant);CHKERRQ(ierr);
       if (!hasConstant) {
         ierr = SectionRealDuplicate(defaultSec, &constantSec);CHKERRQ(ierr);
         ierr = PetscObjectSetName((PetscObject) constantSec, "constant");CHKERRQ(ierr);
-        ierr = MeshSetSectionReal((Mesh) dmmg[i]->dm, constantSec);CHKERRQ(ierr);
+        ierr = DMMeshSetSectionReal(dmmg[i]->dm, constantSec);CHKERRQ(ierr);
         ierr = SectionRealDestroy(constantSec);CHKERRQ(ierr);
       }
     }

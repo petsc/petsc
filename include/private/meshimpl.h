@@ -2,7 +2,6 @@
 #define _MESHIMPL_H
 
 #include "petscmat.h"    /*I      "petscmat.h"    I*/
-#include "petscmesh.h"   /*I      "petscmesh.h"   I*/
 #include "private/dmimpl.h"
 
 typedef struct {
@@ -16,8 +15,6 @@ typedef struct {
 typedef struct {
   ALE::Obj<ALE::CartesianMesh> m;
 } DM_Cartesian;
-
-extern PetscLogEvent Mesh_View, Mesh_GetGlobalScatter, Mesh_restrictVector, Mesh_assembleVector, Mesh_assembleVectorComplete, Mesh_assembleMatrix, Mesh_updateOperator;
 
 typedef struct _SectionRealOps *SectionRealOps;
 struct _SectionRealOps {

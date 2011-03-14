@@ -44,6 +44,44 @@ extern PetscErrorCode  PetscLayoutGetBlockSize(PetscLayout,PetscInt*);
 extern PetscErrorCode  PetscLayoutGetRange(PetscLayout,PetscInt *,PetscInt *);
 extern PetscErrorCode  PetscLayoutGetRanges(PetscLayout,const PetscInt *[]);
 
+#undef __FUNCT__
+#define __FUNCT__ "PetscLayoutFindOwner"
+/*@C
+     PetscLayoutFindOwner - Find the owning rank for a global index
+
+    Not Collective
+
+   Input Parameters:
++    map - the layout
+-    idx - global index to find the owner of
+
+   Output Parameter:
+.    owner - the owning rank
+
+   Level: developer
+
+    Fortran Notes:
+      Not available from Fortran
+
+@*/
+PETSC_STATIC_INLINE PetscErrorCode PetscLayoutFindOwner(PetscLayout map,PetscInt idx,PetscInt *owner)
+{
+  PetscErrorCode ierr;
+  PetscMPIInt lo = 0,hi,t;
+
+  PetscFunctionBegin;
+  if (!((map->n >= 0) && (map->N >= 0) && (map->range))) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"PetscLayoutSetUp() must be called first");
+  if (idx < 0 || idx > map->N) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Index %D is out of range",idx);
+  ierr = MPI_Comm_size(map->comm,&hi);CHKERRQ(ierr);
+  while (hi - lo > 1) {
+    t = lo + (hi - lo) / 2;
+    if (idx < map->range[t]) hi = t;
+    else                     lo = t;
+  }
+  *owner = lo;
+  PetscFunctionReturn(0);
+}
+
 /* ----------------------------------------------------------------------------*/
 
 typedef struct _VecOps *VecOps;

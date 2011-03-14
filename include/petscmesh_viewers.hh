@@ -530,7 +530,7 @@ class VTKViewer {
     int totalpoints = 0;
     int embedDim = -1;
     for(int i = 0; i < nlevels; i++) {
-      ierr = MeshGetMesh((Mesh)dmmg[i]->dm, mesh);CHKERRQ(ierr);
+      ierr = DMMeshGetMesh(dmmg[i]->dm, mesh);CHKERRQ(ierr);
       if (embedDim == -1) {
         embedDim = mesh->getDimension();
       }
@@ -538,7 +538,7 @@ class VTKViewer {
     }
     ierr = PetscViewerASCIIPrintf(viewer, "POINTS %d double\n", totalpoints);CHKERRQ(ierr);
     for (int i = 0; i < nlevels; i++) {
-      ierr = MeshGetMesh((Mesh)dmmg[i]->dm, mesh);CHKERRQ(ierr);
+      ierr = DMMeshGetMesh(dmmg[i]->dm, mesh);CHKERRQ(ierr);
       Obj<PETSC_MESH_TYPE::label_sequence> vertices = mesh->depthStratum(0);
       Obj<PETSC_MESH_TYPE::real_section_type> coordinates = mesh->getRealSection("coordinates");
       for(PETSC_MESH_TYPE::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
@@ -572,7 +572,7 @@ class VTKViewer {
     int nlevels = dmmg[0]->nlevels;
     //PetscPrintf(PETSC_COMM_WORLD, "LEVELS: %d\n", nlevels);
     for(int i = 0; i < nlevels; i++) {
-      ierr = MeshGetMesh((Mesh)dmmg[i]->dm, mesh);CHKERRQ(ierr);
+      ierr = DMMeshGetMesh(dmmg[i]->dm, mesh);CHKERRQ(ierr);
       if (embedDim == -1) {
         embedDim = mesh->getDimension();
       }
@@ -586,7 +586,7 @@ class VTKViewer {
     ierr = PetscViewerASCIIPrintf(viewer,"CELLS %d %d\n", numElements, numElements*(corners+1));CHKERRQ(ierr);
     if (mesh->commRank() == 0) {
       for(int i = 0; i < nlevels; i++) {
-        ierr = MeshGetMesh((Mesh)dmmg[i]->dm, mesh);CHKERRQ(ierr);
+        ierr = DMMeshGetMesh(dmmg[i]->dm, mesh);CHKERRQ(ierr);
         Obj<PETSC_MESH_TYPE::sieve_type>     sieve      = mesh->getSieve();
         Obj<PETSC_MESH_TYPE::label_sequence> elements   = mesh->heightStratum(0);
         Obj<PETSC_MESH_TYPE::numbering_type> vNumbering = mesh->getFactory()->getLocalNumbering(mesh, 0);

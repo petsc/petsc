@@ -418,20 +418,19 @@ class QuadratureGenerator(script.Script):
     else:
       rank    = 1
     code      = []
-    meshVar   = self.Cxx.getVar('mesh')
+    dmVar     = self.Cxx.getVar('dm')
     numBCVar  = self.Cxx.getVar('numBC')
     markerVar = self.Cxx.getVar('markers')
     bcVar     = self.Cxx.getVar('bcFuncs')
     exactVar  = self.Cxx.getVar('exactFunc')
     decls = []
-    decls.append(self.Cxx.getDeclaration(meshVar, self.Cxx.getType('Mesh'), self.Cxx.castToType('dm', self.Cxx.getType('Mesh'))))
     decls.append(self.Cxx.getDeclaration('m', self.Cxx.getType('ALE::Obj<'+self.getMeshType()+'>'), isForward=1))
     decls.append(self.Cxx.getDeclaration('ierr', self.Cxx.getType('PetscErrorCode')))
     for i in range(rank):
       funcName  = 'CreateProblem_gen_'+str(n+i)
       stmts = []
       stmts.append(self.Cxx.getExpStmt(self.Cxx.getVar('PetscFunctionBegin')))
-      stmts.extend(self.Cxx.getPetscCheck(self.Cxx.getFunctionCall('MeshGetMesh', [meshVar, 'm'])))
+      stmts.extend(self.Cxx.getPetscCheck(self.Cxx.getFunctionCall('DMMeshGetMesh', [dmVar, 'm'])))
       cmpd = CompoundStatement()
       cmpd.declarations = [self.Cxx.getDeclaration('d', self.Cxx.getType('ALE::Obj<ALE::Discretization>&', isConst=1),
                                                    self.Cxx.getFunctionCall('new ALE::Discretization',
