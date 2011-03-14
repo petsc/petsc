@@ -802,7 +802,7 @@ PetscErrorCode updateOperator(Mat A, const ALE::Obj<PETSC_MESH_TYPE>& m, const A
   typedef ALE::ISieveVisitor::IndicesVisitor<PETSC_MESH_TYPE::real_section_type,PETSC_MESH_TYPE::order_type,PetscInt> visitor_type;
   visitor_type iV(*section, *globalOrder, (int) pow((double) m->getSieve()->getMaxConeSize(), m->depth())*m->getMaxDof(), m->depth() > 1);
 
-  updateOperator(A, *m->getSieve(), iV, e, array, mode);CHKERRQ(ierr);
+  ierr = updateOperator(A, *m->getSieve(), iV, e, array, mode);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

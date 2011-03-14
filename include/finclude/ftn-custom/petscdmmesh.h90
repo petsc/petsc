@@ -9,8 +9,8 @@
 #define SECTIONREAL_HIDE type(SectionReal)
 #define SECTIONINT_HIDE type(SectionInt)
 #elif !defined(SECTIONREAL_HIDE)
-#define SECTIONREAL_HIDE VecScatter
-#define SECTIONINT_HIDE VecScatter
+#define SECTIONREAL_HIDE SectionReal
+#define SECTIONINT_HIDE SectionInt
 #endif
 
       Interface

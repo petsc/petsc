@@ -9,6 +9,10 @@
 #include <sieve/SieveBuilder.hh>
 #endif
 
+#ifndef  included_ALE_Mesh_hh
+#include <sieve/Mesh.hh>
+#endif
+
 namespace ALE {
   template<typename Mesh_>
   class Selection {

@@ -1,5 +1,6 @@
-#include <petscpcmg.h>      /*I      "petscpcmg.h"    I*/
-#include <petscdmmg.h>    /*I      "petscdmmg.h"  I*/
+#include <petscpcmg.h>      /*I "petscpcmg.h"   I*/
+#include <petscdmmg.h>      /*I "petscdmmg.h"   I*/
+#include <petscdmmesh.h>    /*I "petscdmmesh.h" I*/
 #include <Selection.hh>
 
 /* Just to set iterations */

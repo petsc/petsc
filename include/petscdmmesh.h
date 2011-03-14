@@ -4,6 +4,8 @@
 #if !defined(__PETSCDMMESH_H)
 #define __PETSCDMMESH_H
 
+#include <petscdm.h>
+
 #if defined(PETSC_HAVE_SIEVE) && defined(__cplusplus)
 
 #include <sieve/Mesh.hh>
