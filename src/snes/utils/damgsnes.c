@@ -1,5 +1,6 @@
 
 #include <petscdmda.h>      /*I      "petscdmda.h"    I*/
+#include <petscdmmesh.h>    /*I      "petscdmmesh.h"  I*/
 #include <private/daimpl.h> 
 /* It appears that preprocessor directives are not respected by bfort */
 #include <petscpcmg.h>      /*I      "petscpcmg.h"    I*/
