@@ -83,8 +83,6 @@ extern PetscErrorCode  DMDASetSizes(DM,PetscInt,PetscInt,PetscInt);
 extern PetscErrorCode     DMDACreate1d(MPI_Comm,DMDABoundaryType,PetscInt,PetscInt,PetscInt,const PetscInt[],DM *);
 extern PetscErrorCode     DMDACreate2d(MPI_Comm,DMDABoundaryType,DMDABoundaryType,DMDAStencilType,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],const PetscInt[],DM*);
 extern PetscErrorCode     DMDACreate3d(MPI_Comm,DMDABoundaryType,DMDABoundaryType,DMDABoundaryType,DMDAStencilType,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],const PetscInt[],const PetscInt[],DM*);
-extern PetscErrorCode  DMSetOptionsPrefix(DM,const char []);
-extern PetscErrorCode  DMSetVecType(DM,const VecType);
 
 extern PetscErrorCode     DMDAGlobalToNaturalBegin(DM,Vec,InsertMode,Vec);
 extern PetscErrorCode     DMDAGlobalToNaturalEnd(DM,Vec,InsertMode,Vec);
