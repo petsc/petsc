@@ -30,6 +30,9 @@ extern PetscErrorCode  AOInitializePackage(const char[]);
 extern PetscErrorCode  AOCreateBasic(MPI_Comm,PetscInt,const PetscInt[],const PetscInt[],AO*);
 extern PetscErrorCode  AOCreateBasicIS(IS,IS,AO*);
 
+extern PetscErrorCode  AOCreateBasicMemoryScalable(MPI_Comm,PetscInt,const PetscInt[],const PetscInt[],AO*);
+extern PetscErrorCode  AOCreateBasicMemoryScalableIS(IS,IS,AO*);
+
 extern PetscErrorCode  AOCreateMapping(MPI_Comm,PetscInt,const PetscInt[],const PetscInt[],AO*);
 extern PetscErrorCode  AOCreateMappingIS(IS,IS,AO*);
 
