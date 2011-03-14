@@ -35,10 +35,10 @@ int main(int argc,char **argv)
   ierr = PetscOptionsHasName(PETSC_NULL,"-2d",&flg2);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-3d",&flg3);CHKERRQ(ierr);
   if (flg2) {
-    ierr = DMDACreate2d(PETSC_COMM_WORLD,periodic,stencil_type,M,N,m,n,dof,stencil_width,
+    ierr = DMDACreate2d(PETSC_COMM_WORLD,periodic,periodic,stencil_type,M,N,m,n,dof,stencil_width,
                       PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
   } else if (flg3) {
-    ierr = DMDACreate3d(PETSC_COMM_WORLD,periodic,stencil_type,M,N,P,m,n,p,dof,stencil_width,
+    ierr = DMDACreate3d(PETSC_COMM_WORLD,periodic,periodic,periodic,stencil_type,M,N,P,m,n,p,dof,stencil_width,
                       PETSC_NULL,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
   }
   else {
