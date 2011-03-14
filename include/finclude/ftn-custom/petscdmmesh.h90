@@ -13,9 +13,15 @@
 #define SECTIONINT_HIDE SectionInt
 #endif
 
+#if defined(PETSC_USE_FORTRAN_DATATYPES) && !defined(USE_DMMESH_HIDE)
+#  define USE_DMMESH_HIDE use petscdmmeshdef
+#elif !defined(USE_DMMESH_HIDE)
+#  define USE_DMMESH_HIDE
+#endif
+
       Interface
         Subroutine MeshGetCoordinatesF90(m,array,ierr)
-          USE_DM_HIDE
+          USE_DMMESH_HIDE
           PetscReal, pointer :: array(:,:)
           PetscErrorCode ierr
           DM_HIDE m
@@ -24,7 +30,7 @@
 
       Interface
         Subroutine MeshRestoreCoordinatesF90(m,array,ierr)
-          USE_DM_HIDE
+          USE_DMMESH_HIDE
           PetscReal, pointer :: array(:,:)
           PetscErrorCode ierr
           DM_HIDE m
@@ -33,7 +39,7 @@
 
       Interface
         Subroutine MeshGetElementsF90(m,array,ierr)
-          USE_DM_HIDE
+          USE_DMMESH_HIDE
           PetscInt, pointer :: array(:,:)
           PetscErrorCode ierr
           DM_HIDE m
@@ -42,7 +48,7 @@
 
       Interface
         Subroutine MeshRestoreElementsF90(m,array,ierr)
-          USE_DM_HIDE
+          USE_DMMESH_HIDE
           PetscInt, pointer :: array(:,:)
           PetscErrorCode ierr
           DM_HIDE m
@@ -51,7 +57,7 @@
 
       Interface
         Subroutine MeshGetConeF90(m,p,array,ierr)
-          USE_DM_HIDE
+          USE_DMMESH_HIDE
           PetscInt, pointer :: array(:,:)
           PetscInt p
           PetscErrorCode ierr
@@ -61,7 +67,7 @@
 
       Interface
         Subroutine MeshRestoreConeF90(m,p,array,ierr)
-          USE_DM_HIDE
+          USE_DMMESH_HIDE
           PetscInt, pointer :: array(:,:)
           PetscInt p
           PetscErrorCode ierr
@@ -71,7 +77,7 @@
 
       Interface
         Subroutine SectionGetArrayF90(m,name,array,ierr)
-          USE_DM_HIDE
+          USE_DMMESH_HIDE
           CHARACTER*80 name
           PetscReal, pointer :: array(:,:)
           PetscErrorCode ierr
@@ -81,7 +87,7 @@
 
       Interface
         Subroutine SectionGetArray1DF90(m,name,array,ierr)
-          USE_DM_HIDE
+          USE_DMMESH_HIDE
           CHARACTER*80 name
           PetscReal, pointer :: array(:)
           PetscErrorCode ierr
@@ -91,7 +97,7 @@
 
       Interface
         Subroutine BCSectionGetArrayF90(m,name,array,ierr)
-          USE_DM_HIDE
+          USE_DMMESH_HIDE
           CHARACTER*80 name
           PetscInt, pointer :: array(:,:)
           PetscErrorCode ierr
@@ -101,7 +107,7 @@
 
       Interface
         Subroutine BCSectionGetArray1DF90(m,name,array,ierr)
-          USE_DM_HIDE
+          USE_DMMESH_HIDE
           CHARACTER*80 name
           PetscInt, pointer :: array(:)
           PetscErrorCode ierr
@@ -111,7 +117,7 @@
 
       Interface
         Subroutine BCSectionRealGetArrayF90(m,name,array,ierr)
-          USE_DM_HIDE
+          USE_DMMESH_HIDE
           CHARACTER*80 name
           PetscReal, pointer :: array(:,:)
           PetscErrorCode ierr
@@ -121,7 +127,7 @@
 
       Interface
         Subroutine BCFUNCGetArrayF90(m,array,ierr)
-          USE_DM_HIDE
+          USE_DMMESH_HIDE
           PetscReal, pointer :: array(:,:)
           PetscErrorCode ierr
           DM_HIDE m
@@ -130,7 +136,7 @@
 
       Interface
         Subroutine MeshGetLabelIds(m,name,array,ierr)
-          USE_DM_HIDE
+          USE_DMMESH_HIDE
           PetscErrorCode ierr
           PetscInt, pointer :: array(:)
           CHARACTER*80 name
@@ -140,7 +146,7 @@
 
       Interface
         Subroutine MeshGetStratum(m,name,value,array,ierr)
-          USE_DM_HIDE
+          USE_DMMESH_HIDE
           PetscErrorCode ierr
           PetscInt, pointer :: array(:)
           PetscInt value
@@ -151,7 +157,7 @@
 
       Interface
         Subroutine SectionRealRestrict(section,e,values,ierr)
-          USE_DM_HIDE
+          USE_DMMESH_HIDE
           PetscErrorCode ierr
           PetscScalar, pointer :: values(:)
           PetscInt e
@@ -161,7 +167,7 @@
 
       Interface
         Subroutine SectionIntRestrict(section,e,values,ierr)
-          USE_DM_HIDE
+          USE_DMMESH_HIDE
           PetscErrorCode ierr
           PetscInt, pointer :: values(:)
           PetscInt e
@@ -171,7 +177,7 @@
 
       Interface
         Subroutine SectionRealRestore(section,e,values,ierr)
-          USE_DM_HIDE
+          USE_DMMESH_HIDE
           PetscErrorCode ierr
           PetscScalar, pointer :: values(:)
           PetscInt e
@@ -181,7 +187,7 @@
 
       Interface
         Subroutine SectionIntRestore(section,e,values,ierr)
-          USE_DM_HIDE
+          USE_DMMESH_HIDE
           PetscErrorCode ierr
           PetscInt, pointer :: values(:)
           PetscInt e
@@ -191,7 +197,7 @@
 
       Interface
         Subroutine SectionRealRestrictClosure(section,m,e,n,values,ierr)
-          USE_DM_HIDE
+          USE_DMMESH_HIDE
           PetscErrorCode ierr
           PetscScalar, pointer :: values(:)
           PetscInt n, e
@@ -202,7 +208,7 @@
 
       Interface
         Subroutine SectionIntRestrictClosure(section,m,e,n,values,ierr)
-          USE_DM_HIDE
+          USE_DMMESH_HIDE
           PetscErrorCode ierr
           PetscInt, pointer :: values(:)
           PetscInt n, e
@@ -213,7 +219,7 @@
 
       Interface
         Subroutine SectionRealUpdate(section,e,values,mode,ierr)
-          USE_DM_HIDE
+          USE_DMMESH_HIDE
           PetscErrorCode ierr
           PetscScalar, pointer :: values(:)
           PetscInt e
@@ -224,7 +230,7 @@
 
       Interface
         Subroutine SectionIntUpdate(section,e,values,mode,ierr)
-          USE_DM_HIDE
+          USE_DMMESH_HIDE
           PetscErrorCode ierr
           PetscInt, pointer :: values(:)
           PetscInt e
@@ -236,7 +242,7 @@
       Interface
         Subroutine SectionRealUpdateClosure(section,m,e,values,mode,    &
      &ierr)
-          USE_DM_HIDE
+          USE_DMMESH_HIDE
           PetscErrorCode ierr
           PetscScalar, pointer :: values(:)
           PetscInt e
@@ -248,7 +254,7 @@
 
       Interface
         Subroutine SectionIntUpdateClosure(section,m,e,values,mode,ierr)
-          USE_DM_HIDE
+          USE_DMMESH_HIDE
           PetscErrorCode ierr
           PetscInt, pointer :: values(:)
           PetscInt e
