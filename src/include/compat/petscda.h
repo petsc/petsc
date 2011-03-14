@@ -1,10 +1,8 @@
 #ifndef _COMPAT_PETSC_DA_H
 #define _COMPAT_PETSC_DA_H
 
-#if !PETSC_VERSION_(3,1,0) && \
-    !PETSC_VERSION_(3,0,0)
-#include <petscdm.h>
-#else
+#if (PETSC_VERSION_(3,1,0) || \
+     PETSC_VERSION_(3,0,0))
 #include <petscda.h>
 #endif
 
