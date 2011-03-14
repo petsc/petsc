@@ -133,7 +133,7 @@ cdef class DM(Object):
         return dm
 
     def refineHierarchy(self, nlevels):
-        cdef PetscInt n = nlevels
+        cdef PetscInt n = asInt(nlevels)
         cdef PetscDM *newdmf = NULL
         cdef object tmp = oarray_p(empty_p(n), NULL, <void**>&newdmf)
         CHKERR( DMRefineHierarchy(self.dm[0], n, newdmf) )
@@ -146,7 +146,7 @@ cdef class DM(Object):
         return hierarchy
 
     def coarsenHierarchy(self, nlevels):
-        cdef PetscInt n = nlevels
+        cdef PetscInt n = asInt(nlevels)
         cdef PetscDM *newdmc = NULL
         cdef object tmp = oarray_p(empty_p(n),NULL, <void**>&newdmc)
         CHKERR( DMCoarsenHierarchy(self.dm[0], n, newdmc) )
