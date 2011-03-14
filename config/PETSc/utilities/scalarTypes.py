@@ -20,7 +20,7 @@ class Configure(config.base.Configure):
     
   def setupHelp(self, help):
     import nargs
-    help.addArgument('PETSc', '-with-precision=<single,double,longdouble,matsingle>', nargs.Arg(None, 'double', 'Specify numerical precision'))    
+    help.addArgument('PETSc', '-with-precision=<single,double,longdouble>', nargs.Arg(None, 'double', 'Specify numerical precision'))    
     help.addArgument('PETSc', '-with-scalar-type=<real or complex>', nargs.Arg(None, 'real', 'Specify real or complex numbers'))
     help.addArgument('PETSc', '-with-mixed-precision=<bool>', nargs.ArgBool(None, 0, 'Allow single precision linear solve'))
     return
@@ -76,8 +76,6 @@ class Configure(config.base.Configure):
     self.precision = self.framework.argDB['with-precision'].lower()
     if self.precision == 'single':
       self.addDefine('USE_SCALAR_SINGLE', '1')
-    elif self.precision == 'matsingle':
-      self.addDefine('USE_SCALAR_MAT_SINGLE', '1')
     elif self.precision == 'longdouble':
       self.pushLanguage('C')
       if config.setCompilers.Configure.isIntel(self.compilers.getCompiler()):
@@ -87,8 +85,10 @@ class Configure(config.base.Configure):
         self.addDefine('USE_SCALAR__QUAD', '1')        
       self.popLanguage()
       self.addDefine('USE_SCALAR_LONG_DOUBLE', '1')
-    elif not self.precision == 'double':
-      raise RuntimeError('--with-precision must be single, double, longdouble, or matsingle')
+    elif self.precision == 'double':
+      self.addDefine('USE_SCALAR_DOUBLE', '1')
+    else:
+      raise RuntimeError('--with-precision must be single, double, longdouble')
     self.framework.logPrint('Precision is '+str(self.precision))
     if self.framework.argDB['with-mixed-precision']:
       self.addDefine('USE_MIXED_PRECISION', '1')      

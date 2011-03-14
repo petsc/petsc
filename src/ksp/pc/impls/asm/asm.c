@@ -683,8 +683,7 @@ EXTERN_C_END
 #undef __FUNCT__  
 #define __FUNCT__ "PCASMSetLocalSubdomains"
 /*@C
-    PCASMSetLocalSubdomains - Sets the local subdomains (for this processor
-    only) for the additive Schwarz preconditioner. 
+    PCASMSetLocalSubdomains - Sets the local subdomains (for this processor only) for the additive Schwarz preconditioner. 
 
     Collective on PC 
 
@@ -697,7 +696,7 @@ EXTERN_C_END
          (or PETSC_NULL to use the default of 1 subdomain per process)
 
     Notes:
-    The IS numbering is in the parallel, global numbering of the vector.
+    The IS numbering is in the parallel, global numbering of the vector for both is and is_local
 
     By default the ASM preconditioner uses 1 block per processor.  
 
@@ -751,6 +750,8 @@ PetscErrorCode  PCASMSetLocalSubdomains(PC pc,PetscInt n,IS is[],IS is_local[])
     linear solves for which the ASM preconditioner is being used.
 
     Use PCASMSetLocalSubdomains() to set local subdomains.
+
+    The IS numbering is in the parallel, global numbering of the vector for both is and is_local
 
     Level: advanced
 

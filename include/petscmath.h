@@ -26,11 +26,12 @@ extern  MPI_Datatype  MPIU_2INT;
 
 #define PetscExpPassiveScalar(a) PetscExpScalar()
 
+/*
+    Complex number definitions
+ */
 #if defined(PETSC_USE_COMPLEX)
 #if defined(PETSC_CLANGUAGE_CXX)
-/*
-   C++ support of complex numbers: Original support
-*/
+/* C++ support of complex number */
 #include <complex>
 
 #define PetscRealPart(a)      (a).real()
@@ -46,17 +47,15 @@ extern  MPI_Datatype  MPIU_2INT;
 
 #if defined(PETSC_USE_SCALAR_SINGLE)
 typedef std::complex<float> PetscScalar;
+#elif defined(PETSC_USE_SCALAR_DOUBLE)
+typedef std::complex<double> PetscScalar;
 #elif defined(PETSC_USE_SCALAR_LONG_DOUBLE)
 typedef std::complex<long double> PetscScalar;
-#else
-typedef std::complex<double> PetscScalar;
 #endif
-#else
-#include <complex.h>
 
-/* 
-   C support of complex numbers: Requires C99 compliant compiler
- */
+#else
+/*  C support of complex numbers: Requires C99 compliant compiler*/
+#include <complex.h>
 
 #if defined(PETSC_USE_SCALAR_SINGLE)
 typedef float complex PetscScalar;
@@ -71,6 +70,21 @@ typedef float complex PetscScalar;
 #define PetscLogScalar(a)     clogf(a)
 #define PetscSinScalar(a)     csinf(a)
 #define PetscCosScalar(a)     ccosf(a)
+
+#elif defined(PETSC_USE_SCALAR_DOUBLE)
+typedef double complex PetscScalar;
+
+#define PetscRealPart(a)      creal(a)
+#define PetscImaginaryPart(a) cimag(a)
+#define PetscAbsScalar(a)     cabs(a)
+#define PetscConj(a)          conj(a)
+#define PetscSqrtScalar(a)    csqrt(a)
+#define PetscPowScalar(a,b)   cpow(a,b)
+#define PetscExpScalar(a)     cexp(a)
+#define PetscLogScalar(a)     clog(a)
+#define PetscSinScalar(a)     csin(a)
+#define PetscCosScalar(a)     ccos(a)
+
 #elif defined(PETSC_USE_SCALAR_LONG_DOUBLE)
 typedef long double complex PetscScalar;
 
@@ -85,19 +99,6 @@ typedef long double complex PetscScalar;
 #define PetscSinScalar(a)     csinl(a)
 #define PetscCosScalar(a)     ccosl(a)
 
-#else
-typedef double complex PetscScalar;
-
-#define PetscRealPart(a)      creal(a)
-#define PetscImaginaryPart(a) cimag(a)
-#define PetscAbsScalar(a)     cabs(a)
-#define PetscConj(a)          conj(a)
-#define PetscSqrtScalar(a)    csqrt(a)
-#define PetscPowScalar(a,b)   cpow(a,b)
-#define PetscExpScalar(a)     cexp(a)
-#define PetscLogScalar(a)     clog(a)
-#define PetscSinScalar(a)     csin(a)
-#define PetscCosScalar(a)     ccos(a)
 #endif
 #endif
 
@@ -107,58 +108,53 @@ extern  MPI_Datatype  MPI_C_COMPLEX;
 #endif
 
 #if defined(PETSC_USE_SCALAR_SINGLE)
-#define MPIU_SCALAR         MPI_C_COMPLEX
-#else
-#define MPIU_SCALAR         MPI_C_DOUBLE_COMPLEX
+#define MPIU_SCALAR MPI_C_COMPLEX
+#elif defined(PETSC_USE_SCALAR_DOUBLE)
+#define MPIU_SCALAR MPI_C_DOUBLE_COMPLEX
+#elif defined(PETSC_USE_SCALAR_LONG_DOUBLE)
+#define MPIU_SCALAR error
 #endif
 
-/* Compiling for real numbers only */
+/*
+    real number definitions
+ */
 #else
-#  if defined(PETSC_USE_SCALAR_SINGLE)
-#    define MPIU_SCALAR           MPI_FLOAT
-#  elif defined(PETSC_USE_SCALAR_LONG_DOUBLE)
-#    define MPIU_SCALAR           MPI_LONG_DOUBLE
-#  else
-#    define MPIU_SCALAR           MPI_DOUBLE
-#  endif
-#  define PetscRealPart(a)      (a)
-#  define PetscImaginaryPart(a) (0.)
-#  define PetscAbsScalar(a)     (((a)<0.0)   ? -(a) : (a))
-#  define PetscConj(a)          (a)
-#  define PetscSqrtScalar(a)    sqrt(a)
-#  define PetscPowScalar(a,b)   pow(a,b)
-#  define PetscExpScalar(a)     exp(a)
-#  define PetscLogScalar(a)     log(a)
-#  define PetscSinScalar(a)     sin(a)
-#  define PetscCosScalar(a)     cos(a)
+#if defined(PETSC_USE_SCALAR_SINGLE)
+#define MPIU_SCALAR           MPI_FLOAT
+typedef float PetscScalar;
+#elif defined(PETSC_USE_SCALAR_DOUBLE)
+#define MPIU_SCALAR           MPI_DOUBLE
+typedef double PetscScalar;
+#elif defined(PETSC_USE_SCALAR_LONG_DOUBLE)
+#define MPIU_SCALAR           MPI_LONG_DOUBLE
+typedef long double PetscScalar;
+#endif
+#define PetscRealPart(a)      (a)
+#define PetscImaginaryPart(a) (0.)
+#define PetscAbsScalar(a)     (((a)<0.0)   ? -(a) : (a))
+#define PetscConj(a)          (a)
+#define PetscSqrtScalar(a)    sqrt(a)
+#define PetscPowScalar(a,b)   pow(a,b)
+#define PetscExpScalar(a)     exp(a)
+#define PetscLogScalar(a)     log(a)
+#define PetscSinScalar(a)     sin(a)
+#define PetscCosScalar(a)     cos(a)
 
-#  if defined(PETSC_USE_SCALAR_SINGLE)
-  typedef float PetscScalar;
-#  elif defined(PETSC_USE_SCALAR_LONG_DOUBLE)
-  typedef long double PetscScalar;
-#  else
-  typedef double PetscScalar;
-#  endif
 #endif
 
 #if defined(PETSC_USE_SCALAR_SINGLE)
-#  define MPIU_REAL   MPI_FLOAT
+#define MPIU_REAL   MPI_FLOAT
+typedef float PetscReal;
+#elif defined(PETSC_USE_SCALAR_DOUBLE)
+#define MPIU_REAL   MPI_DOUBLE
+typedef double PetscReal;
 #elif defined(PETSC_USE_SCALAR_LONG_DOUBLE)
-#  define MPIU_REAL   MPI_LONG_DOUBLE
-#else
-#  define MPIU_REAL   MPI_DOUBLE
+#define MPIU_REAL   MPI_LONG_DOUBLE
+typedef long double PetscReal;
 #endif
 
 #define PetscSign(a) (((a) >= 0) ? ((a) == 0 ? 0 : 1) : -1)
 #define PetscAbs(a)  (((a) >= 0) ? (a) : -(a))
-
-#if defined(PETSC_USE_SCALAR_SINGLE)
-  typedef float PetscReal;
-#elif defined(PETSC_USE_SCALAR_LONG_DOUBLE)
-  typedef long double PetscReal;
-#else 
-  typedef double PetscReal;
-#endif
 
 /* --------------------------------------------------------------------------*/
 
