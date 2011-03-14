@@ -32,7 +32,7 @@
 
 #include "finclude/petscsys.h"
 #include "finclude/petscvec.h"
-#include "finclude/petscdm.h"
+#include "finclude/petscdmda.h"
 #include "finclude/petscmat.h"
 #include "finclude/petscis.h"
 #include "finclude/petscao.h"

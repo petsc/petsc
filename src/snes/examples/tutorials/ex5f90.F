@@ -75,7 +75,7 @@
 
 #include "finclude/petscsys.h"
 #include "finclude/petscvec.h"
-#include "finclude/petscdm.h"
+#include "finclude/petscdmda.h"
 #include "finclude/petscis.h"
 #include "finclude/petscmat.h"
 #include "finclude/petscksp.h"
@@ -160,14 +160,14 @@
 !
 #include "finclude/petscsys.h"
 #include "finclude/petscvec.h"
-#include "finclude/petscdm.h"
+#include "finclude/petscdmda.h"
 #include "finclude/petscis.h"
 #include "finclude/petscmat.h"
 #include "finclude/petscksp.h"
 #include "finclude/petscpc.h"
 #include "finclude/petscsnes.h"
 #include "finclude/petscvec.h90"
-#include "finclude/petscdm.h90"
+#include "finclude/petscdmda.h90"
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 !                   Variable declarations
@@ -379,7 +379,7 @@
 #include "finclude/petscvec.h90"
 #include "finclude/petscsys.h"
 #include "finclude/petscvec.h"
-#include "finclude/petscdm.h"
+#include "finclude/petscdmda.h"
 #include "finclude/petscis.h"
 #include "finclude/petscmat.h"
 #include "finclude/petscksp.h"
@@ -444,7 +444,7 @@
 
 #include "finclude/petscsys.h"
 #include "finclude/petscvec.h"
-#include "finclude/petscdm.h"
+#include "finclude/petscdmda.h"
 #include "finclude/petscis.h"
 #include "finclude/petscmat.h"
 #include "finclude/petscksp.h"
@@ -600,7 +600,7 @@
 
 #include "finclude/petscsys.h"
 #include "finclude/petscvec.h"
-#include "finclude/petscdm.h"
+#include "finclude/petscdmda.h"
 #include "finclude/petscis.h"
 #include "finclude/petscmat.h"
 #include "finclude/petscksp.h"
@@ -725,7 +725,7 @@
 
 #include "finclude/petscsys.h"
 #include "finclude/petscvec.h"
-#include "finclude/petscdm.h"
+#include "finclude/petscdmda.h"
 #include "finclude/petscis.h"
 #include "finclude/petscmat.h"
 #include "finclude/petscksp.h"

@@ -28,7 +28,7 @@ T*/
     be computed as accurately with a finer grid.
   ------------------------------------------------------------------------- */
 
-#include "petscdm.h"
+#include "petscdmda.h"
 #include "petscsnes.h"
 
 /* 

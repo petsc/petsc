@@ -5,7 +5,7 @@
 
 static char help[] = "Used for Solving a linear system where the matrix has all zeros.\n\n";
 
-#include "petscdm.h"
+#include "petscdmda.h"
 #include "petscksp.h"
 #include "petscpcmg.h"
 

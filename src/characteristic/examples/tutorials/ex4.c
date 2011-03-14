@@ -24,7 +24,7 @@ the solution at the new time, and u^* is the solution
 at the old time advected to the new time.
 - - - - - - - - - - - - - - - - - - - - - - - - */
 #include "petscsnes.h"
-#include "petscdm.h"
+#include "petscdmda.h"
 #include "petscdmmg.h"
 #include "petscbag.h"
 #include "characteristic.h"

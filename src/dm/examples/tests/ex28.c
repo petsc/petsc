@@ -10,7 +10,7 @@ static char help[] = "Test sequential USFFT interface on a 3-dof field over a un
 #define DOF 3
 
 #include "petscmat.h"
-#include "petscdm.h"
+#include "petscdmda.h"
 #undef __FUNCT__
 #define __FUNCT__ "main"
 PetscInt main(PetscInt argc,char **args)

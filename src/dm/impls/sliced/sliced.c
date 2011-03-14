@@ -1,7 +1,6 @@
- 
-#include "petscdm.h"     /*I      "petscdm.h"     I*/
-#include "petscmat.h"    /*I      "petscmat.h"    I*/
-#include "private/dmimpl.h"    /*I      "petscmat.h"    I*/
+#include "petscdmsliced.h"      /*I      "petscdmsliced.h"     I*/
+#include "petscmat.h"           /*I      "petscmat.h"    I*/
+#include "private/dmimpl.h"     /*I      "petscmat.h"    I*/
 
 /* CSR storage of the nonzero structure of a bs*bs matrix */
 typedef struct {

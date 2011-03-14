@@ -44,6 +44,7 @@ static char help[] = "Model multi-physics solver\n\n";
 */
 
 #include "petscdmmg.h"
+#include <petscdmcomposite.h>
 
 typedef struct {                  
   PetscScalar pri,ugi,ufi,agi,vgi,vfi;              /* initial conditions for fluid variables */

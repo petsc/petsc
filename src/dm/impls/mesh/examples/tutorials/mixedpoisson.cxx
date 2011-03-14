@@ -14,7 +14,7 @@ static char help[] = "This example solves the Mixed Poisson problem.\n\n";
 // ---------------------------------------------------------------------------------------------------------------------
 // Top level Includes and Data
 
-#include <petscdm.h>
+#include <petscdmmesh.h>
 #include <petscmesh.h>
 #include <petscdmmg.h>
 

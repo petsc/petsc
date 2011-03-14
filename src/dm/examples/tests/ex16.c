@@ -1,7 +1,8 @@
 
 static char help[] = "Tests DMComposite routines.\n\n";
 
-#include "petscdm.h"
+#include "petscdmda.h"
+#include "petscdmcomposite.h"
 #include "petscpf.h"
 
 #undef __FUNCT__

@@ -29,7 +29,7 @@ T*/
   ------------------------------------------------------------------------- */
 
 /* 
-   Include "petscdm.h" so that we can use distributed arrays (DMDAs).
+   Include "petscdmda.h" so that we can use distributed arrays (DMDAs).
    Include "petscsnes.h" so that we can use SNES solvers.  Note that this
    file automatically includes:
      petscsys.h       - base PETSc routines   petscvec.h - vectors
@@ -40,7 +40,7 @@ T*/
 */
 #include "petscsys.h"
 #include "petscbag.h"
-#include "petscdm.h"
+#include "petscdmda.h"
 #include "petscdmmg.h"
 #include "petscsnes.h"
 

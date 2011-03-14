@@ -24,13 +24,14 @@
 #include "finclude/petscksp.h90"
         end module
 
-        module petscmgdef
+        module petscpcmgdef
         use petsckspdef
 #include "finclude/petscpcmg.h"
         end module
 
-        module petscmg
-        use petscmgdef
+        module petscpcmg
+        use petscpcmgdef
         use petscksp
+#include "finclude/petscpcmg.h90"
         end module
 

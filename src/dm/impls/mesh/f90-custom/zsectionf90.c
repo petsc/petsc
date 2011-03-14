@@ -1,5 +1,5 @@
 #include "private/fortranimpl.h"
-#include "petscdm.h"
+#include "petscdmmesh.h"
 #include "../src/sys/f90-src/f90impl.h"
 
 #ifdef PETSC_USE_POINTER_CONVERSION

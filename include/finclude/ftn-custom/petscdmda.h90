@@ -1,0 +1,90 @@
+#if !defined(PETSC_USE_FORTRAN_MODULES) 
+#include "finclude/ftn-custom/petscdmdef.h90"
+#endif
+#include "finclude/ftn-custom/petscvechide.h90"
+#include "finclude/ftn-custom/petscdmhide.h90"
+
+      Interface 
+        Subroutine DMDAGetGlobalIndicesF90(v,n,array,ierr)
+          USE_DM_HIDE
+          PetscInt, pointer :: array(:)
+          PetscInt  n
+          PetscErrorCode ierr
+          DM_HIDE   v
+        End Subroutine
+      End Interface
+
+
+      type DMDALocalInfof90
+        PetscInt ::       dim,dof,sw
+        PetscInt ::       mx,my,mz
+        PetscInt ::       xs,ys,zs
+        PetscInt ::       xm,ym,zm
+        PetscInt ::       gxs,gys,gzs
+        PetscInt ::       gxm,gym,gzm
+        DMDABoundaryType :: pt
+        DMDAStencilType  :: st
+        DM_HIDE ::        da
+      end type DMDALocalInfof90
+
+      Interface DMDAVecGetArrayF90
+        Subroutine DMDAVecGetArrayF901(da1, v,d1,ierr)
+          USE_DM_HIDE
+          DM_HIDE da1
+          VEC_HIDE v
+          PetscScalar,pointer :: d1(:)
+          PetscErrorCode ierr
+        End Subroutine
+        Subroutine DMDAVecGetArrayF902(da1, v,d1,ierr)
+          USE_DM_HIDE
+          DM_HIDE da1
+          VEC_HIDE v
+          PetscScalar,pointer :: d1(:,:)
+          PetscErrorCode ierr
+        End Subroutine
+        Subroutine DMDAVecGetArrayF903(da1, v,d1,ierr)
+          USE_DM_HIDE
+          DM_HIDE da1
+          VEC_HIDE v
+          PetscScalar,pointer :: d1(:,:,:)
+          PetscErrorCode ierr
+        End Subroutine
+        Subroutine DMDAVecGetArrayF904(da1, v,d1,ierr)
+          USE_DM_HIDE
+          DM_HIDE da1
+          VEC_HIDE v
+          PetscScalar,pointer :: d1(:,:,:,:)
+          PetscErrorCode ierr
+        End Subroutine
+      End Interface DMDAVecGetArrayF90
+
+      Interface DMDAVecRestoreArrayF90
+        Subroutine DMDAVecRestoreArrayF901(da1, v,d1,ierr)
+          USE_DM_HIDE
+          DM_HIDE da1
+          VEC_HIDE v
+          PetscScalar,pointer :: d1(:)
+          PetscErrorCode ierr
+        End Subroutine
+        Subroutine DMDAVecRestoreArrayF902(da1, v,d1,ierr)
+          USE_DM_HIDE
+          DM_HIDE da1
+          VEC_HIDE v
+          PetscScalar,pointer :: d1(:,:)
+          PetscErrorCode ierr
+        End Subroutine
+        Subroutine DMDAVecRestoreArrayF903(da1, v,d1,ierr)
+          USE_DM_HIDE
+          DM_HIDE da1
+          VEC_HIDE v
+          PetscScalar,pointer :: d1(:,:,:)
+          PetscErrorCode ierr
+        End Subroutine
+        Subroutine DMDAVecRestoreArrayF904(da1, v,d1,ierr)
+          USE_DM_HIDE
+          DM_HIDE da1
+          VEC_HIDE v
+          PetscScalar,pointer :: d1(:,:,:,:)
+          PetscErrorCode ierr
+        End Subroutine
+      End Interface DMDAVecRestoreArrayF90

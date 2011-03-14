@@ -2,7 +2,7 @@ static const char help[] = "Test DMGetInjection for mapping coordinates in 3D";
 
 #include <petscvec.h>
 #include <petscmat.h>
-#include <petscdm.h>
+#include <petscdmda.h>
 
 #undef __FUNCT__  
 #define __FUNCT__ "test1_DAInjection3d"

@@ -3,7 +3,7 @@
   Code for manipulating distributed regular arrays in parallel.
 */
 
-#include "private/daimpl.h"    /*I   "petscdm.h"   I*/
+#include "private/daimpl.h"    /*I   "petscdmda.h"   I*/
 
 /*
    This allows the DMDA vectors to properly tell MATLAB their dimensions

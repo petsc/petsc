@@ -1,7 +1,6 @@
 
-#include "petscpc.h"   /*I "petscpc.h" I*/
 #include "petscpcmg.h"   /*I "petscpcmg.h" I*/
-#include "petscdm.h"   /*I "petscdm.h" I*/
+#include "petscdmda.h"   /*I "petscdmda.h" I*/
 #include "../src/ksp/pc/impls/mg/mgimpl.h"
 
 typedef struct {

@@ -4,7 +4,7 @@
 */
 #include "petscsys.h"
 #include "private/matimpl.h"          /*I "petscmat.h" I*/
-#include "petscdm.h"                  /*I "petscdm.h" I*/
+#include "petscdmda.h"                /*I "petscdmda.h" I*/
 #include "../src/dm/impls/da/hypre/mhyp.h"
 
 #undef __FUNCT__

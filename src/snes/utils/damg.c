@@ -6,13 +6,13 @@
 #include "private/pcimpl.h"     /*I "petscpc.h"   I*/
 
 /*
-   Code for almost fully managing multigrid/multi-level linear solvers for DMDA grids
+   Code for almost fully managing multigrid/multi-level linear solvers for DM grids
 */
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMMGCreate"
 /*@C
-    DMMGCreate - Creates a DMDA based multigrid solver object. This allows one to 
+    DMMGCreate - Creates a DM based multigrid solver object. This allows one to 
       easily implement MG methods on regular grids.
 
     Collective on MPI_Comm
@@ -136,7 +136,7 @@ PetscErrorCode  DMMGSetOptionsPrefix(DMMG *dmmg,const char prefix[])
 #undef __FUNCT__  
 #define __FUNCT__ "DMMGDestroy"
 /*@C
-    DMMGDestroy - Destroys a DMDA based multigrid solver object. 
+    DMMGDestroy - Destroys a DM based multigrid solver object. 
 
     Collective on DMMG
 
@@ -510,7 +510,7 @@ PetscErrorCode  DMMGSetKSP(DMMG *dmmg,PetscErrorCode (*rhs)(DMMG,Vec),PetscError
 #undef __FUNCT__  
 #define __FUNCT__ "DMMGView"
 /*@C
-    DMMGView - prints information on a DMDA based multi-level preconditioner
+    DMMGView - prints information on a DM based multi-level preconditioner
 
     Collective on DMMG and PetscViewer
 

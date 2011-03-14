@@ -1,5 +1,5 @@
 
-#include "private/daimpl.h"    /*I   "petscdm.h"   I*/
+#include "private/daimpl.h"    /*I   "petscdmda.h"   I*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMView_DA_2d"

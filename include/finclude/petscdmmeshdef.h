@@ -2,19 +2,14 @@
 !
 !  Include file for Fortran use of the Mesh package in PETSc
 !
-#if !defined (__PETSCMESHDEF_H)
-#define __PETSCMESHDEF_H
+#if !defined (__PETSCDMMESHDEF_H)
+#define __PETSCDMMESHDEF_H
 
 #include "finclude/petscdmdef.h"
 
 #if !defined(PETSC_USE_FORTRAN_DATATYPES)
-#define Mesh PetscFortranAddr
 #define SectionReal PetscFortranAddr
 #define SectionInt  PetscFortranAddr
 #endif
-
-#define MeshType character*(80)
-
-#define MESHSIEVE 'sieve'
 
 #endif

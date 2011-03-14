@@ -5,7 +5,7 @@ static char help[] = "This example solves the Stokes problem.\n\n";
         \nabla \cdot u = 0
 */
 
-#include <petscdm.h>
+#include <petscdmmesh.h>
 #include <petscmesh.h>
 #include <petscdmmg.h>
 

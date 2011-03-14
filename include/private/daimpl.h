@@ -5,6 +5,7 @@
 #if !defined(_DAIMPL_H)
 #define _DAIMPL_H
 
+#include <petscdmda.h>
 #include "private/dmimpl.h"
 
 typedef struct {

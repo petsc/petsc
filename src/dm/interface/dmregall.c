@@ -1,5 +1,5 @@
 
-#include "private/daimpl.h"     /*I  "petscdm.h"  I*/
+#include <petscdm.h>     /*I  "petscdm.h"  I*/
 EXTERN_C_BEGIN
 extern PetscErrorCode  DMCreate_DA(DM);
 extern PetscErrorCode  DMCreate_Composite(DM);

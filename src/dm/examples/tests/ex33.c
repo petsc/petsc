@@ -1,7 +1,7 @@
 
 static char help[] = "Tests VecView()/VecLoad() for DMDA vectors (this tests DMDAGlobalToNatural()).\n\n";
 
-#include "petscdm.h"
+#include "petscdmda.h"
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

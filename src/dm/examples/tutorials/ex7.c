@@ -5,7 +5,7 @@ static char help[] = "Demonstrates using the PetscViewerBinaryMatlab viewer\n\n"
    Processors: n
 T*/
 #include "petscsys.h"
-#include "petscdm.h"
+#include "petscdmda.h"
 #include "petscbag.h"
 
 typedef struct {

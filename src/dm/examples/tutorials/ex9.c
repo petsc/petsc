@@ -5,7 +5,7 @@ static char help[] = "Demonstrates HD5 vector input/ouput\n\n";
    Processors: n
 T*/
 #include "petscsys.h"
-#include "petscdm.h"
+#include "petscdmda.h"
 
 
 #undef __FUNCT__

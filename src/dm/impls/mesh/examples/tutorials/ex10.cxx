@@ -1,6 +1,6 @@
 static char help[] = "This example demonstrates partitioning/distributed hexes by face.\n\n";
 
-#include <petscdm.h>
+#include <petscdmmesh.h>
 #include <petscmesh.h>
 
 using ALE::Obj;

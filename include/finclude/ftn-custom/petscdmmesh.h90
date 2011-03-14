@@ -1,159 +1,157 @@
 
 #if !defined(PETSC_USE_FORTRAN_MODULES)
-#include "finclude/ftn-custom/petscmeshdef.h90"
+#include "finclude/ftn-custom/petscdmmeshdef.h90"
 #endif
 
-#if defined(PETSC_USE_FORTRAN_DATATYPES) && !defined(MESH_HIDE)
-#define MESH_HIDE type(Mesh)
+#include "finclude/ftn-custom/petscdmhide.h90"
+
+#if defined(PETSC_USE_FORTRAN_DATATYPES) && !defined(SECTIONREAL_HIDE)
 #define SECTIONREAL_HIDE type(SectionReal)
 #define SECTIONINT_HIDE type(SectionInt)
-#define USE_MESH_HIDE use petscmeshdef
-#elif !defined(MESH_HIDE)
-#define MESH_HIDE Mesh
+#elif !defined(SECTIONREAL_HIDE)
 #define SECTIONREAL_HIDE VecScatter
 #define SECTIONINT_HIDE VecScatter
-#define USE_MESH_HIDE
 #endif
 
       Interface
         Subroutine MeshGetCoordinatesF90(m,array,ierr)
-          USE_MESH_HIDE
+          USE_DM_HIDE
           PetscReal, pointer :: array(:,:)
           PetscErrorCode ierr
-          MESH_HIDE m
+          DM_HIDE m
         End Subroutine
       End Interface
 
       Interface
         Subroutine MeshRestoreCoordinatesF90(m,array,ierr)
-          USE_MESH_HIDE
+          USE_DM_HIDE
           PetscReal, pointer :: array(:,:)
           PetscErrorCode ierr
-          MESH_HIDE m
+          DM_HIDE m
         End Subroutine
       End Interface
 
       Interface
         Subroutine MeshGetElementsF90(m,array,ierr)
-          USE_MESH_HIDE
+          USE_DM_HIDE
           PetscInt, pointer :: array(:,:)
           PetscErrorCode ierr
-          MESH_HIDE m
+          DM_HIDE m
         End Subroutine
       End Interface
 
       Interface
         Subroutine MeshRestoreElementsF90(m,array,ierr)
-          USE_MESH_HIDE
+          USE_DM_HIDE
           PetscInt, pointer :: array(:,:)
           PetscErrorCode ierr
-          MESH_HIDE m
+          DM_HIDE m
         End Subroutine
       End Interface
 
       Interface
         Subroutine MeshGetConeF90(m,p,array,ierr)
-          USE_MESH_HIDE
+          USE_DM_HIDE
           PetscInt, pointer :: array(:,:)
           PetscInt p
           PetscErrorCode ierr
-          MESH_HIDE m
+          DM_HIDE m
         End Subroutine
       End Interface
 
       Interface
         Subroutine MeshRestoreConeF90(m,p,array,ierr)
-          USE_MESH_HIDE
+          USE_DM_HIDE
           PetscInt, pointer :: array(:,:)
           PetscInt p
           PetscErrorCode ierr
-          MESH_HIDE m
+          DM_HIDE m
         End Subroutine
       End Interface
 
       Interface
         Subroutine SectionGetArrayF90(m,name,array,ierr)
-          USE_MESH_HIDE
+          USE_DM_HIDE
           CHARACTER*80 name
           PetscReal, pointer :: array(:,:)
           PetscErrorCode ierr
-          MESH_HIDE m
+          DM_HIDE m
         End Subroutine
       End Interface
 
       Interface
         Subroutine SectionGetArray1DF90(m,name,array,ierr)
-          USE_MESH_HIDE
+          USE_DM_HIDE
           CHARACTER*80 name
           PetscReal, pointer :: array(:)
           PetscErrorCode ierr
-          MESH_HIDE m
+          DM_HIDE m
         End Subroutine
       End Interface
 
       Interface
         Subroutine BCSectionGetArrayF90(m,name,array,ierr)
-          USE_MESH_HIDE
+          USE_DM_HIDE
           CHARACTER*80 name
           PetscInt, pointer :: array(:,:)
           PetscErrorCode ierr
-          MESH_HIDE m
+          DM_HIDE m
         End Subroutine
       End Interface
 
       Interface
         Subroutine BCSectionGetArray1DF90(m,name,array,ierr)
-          USE_MESH_HIDE
+          USE_DM_HIDE
           CHARACTER*80 name
           PetscInt, pointer :: array(:)
           PetscErrorCode ierr
-          MESH_HIDE m
+          DM_HIDE m
         End Subroutine
       End Interface
 
       Interface
         Subroutine BCSectionRealGetArrayF90(m,name,array,ierr)
-          USE_MESH_HIDE
+          USE_DM_HIDE
           CHARACTER*80 name
           PetscReal, pointer :: array(:,:)
           PetscErrorCode ierr
-          MESH_HIDE m
+          DM_HIDE m
         End Subroutine
       End Interface
 
       Interface
         Subroutine BCFUNCGetArrayF90(m,array,ierr)
-          USE_MESH_HIDE
+          USE_DM_HIDE
           PetscReal, pointer :: array(:,:)
           PetscErrorCode ierr
-          MESH_HIDE m
+          DM_HIDE m
         End Subroutine
       End Interface
 
       Interface
         Subroutine MeshGetLabelIds(m,name,array,ierr)
-          USE_MESH_HIDE
+          USE_DM_HIDE
           PetscErrorCode ierr
           PetscInt, pointer :: array(:)
           CHARACTER*80 name
-          MESH_HIDE m
+          DM_HIDE m
         End Subroutine
       End Interface
 
       Interface
         Subroutine MeshGetStratum(m,name,value,array,ierr)
-          USE_MESH_HIDE
+          USE_DM_HIDE
           PetscErrorCode ierr
           PetscInt, pointer :: array(:)
           PetscInt value
           CHARACTER*80 name
-          MESH_HIDE m
+          DM_HIDE m
         End Subroutine
       End Interface
 
       Interface
         Subroutine SectionRealRestrict(section,e,values,ierr)
-          USE_MESH_HIDE
+          USE_DM_HIDE
           PetscErrorCode ierr
           PetscScalar, pointer :: values(:)
           PetscInt e
@@ -163,7 +161,7 @@
 
       Interface
         Subroutine SectionIntRestrict(section,e,values,ierr)
-          USE_MESH_HIDE
+          USE_DM_HIDE
           PetscErrorCode ierr
           PetscInt, pointer :: values(:)
           PetscInt e
@@ -173,7 +171,7 @@
 
       Interface
         Subroutine SectionRealRestore(section,e,values,ierr)
-          USE_MESH_HIDE
+          USE_DM_HIDE
           PetscErrorCode ierr
           PetscScalar, pointer :: values(:)
           PetscInt e
@@ -183,7 +181,7 @@
 
       Interface
         Subroutine SectionIntRestore(section,e,values,ierr)
-          USE_MESH_HIDE
+          USE_DM_HIDE
           PetscErrorCode ierr
           PetscInt, pointer :: values(:)
           PetscInt e
@@ -193,29 +191,29 @@
 
       Interface
         Subroutine SectionRealRestrictClosure(section,m,e,n,values,ierr)
-          USE_MESH_HIDE
+          USE_DM_HIDE
           PetscErrorCode ierr
           PetscScalar, pointer :: values(:)
           PetscInt n, e
           SECTIONREAL_HIDE section
-          MESH_HIDE m
+          DM_HIDE m
         End Subroutine
       End Interface
 
       Interface
         Subroutine SectionIntRestrictClosure(section,m,e,n,values,ierr)
-          USE_MESH_HIDE
+          USE_DM_HIDE
           PetscErrorCode ierr
           PetscInt, pointer :: values(:)
           PetscInt n, e
           SECTIONINT_HIDE section
-          MESH_HIDE m
+          DM_HIDE m
         End Subroutine
       End Interface
 
       Interface
         Subroutine SectionRealUpdate(section,e,values,mode,ierr)
-          USE_MESH_HIDE
+          USE_DM_HIDE
           PetscErrorCode ierr
           PetscScalar, pointer :: values(:)
           PetscInt e
@@ -226,7 +224,7 @@
 
       Interface
         Subroutine SectionIntUpdate(section,e,values,mode,ierr)
-          USE_MESH_HIDE
+          USE_DM_HIDE
           PetscErrorCode ierr
           PetscInt, pointer :: values(:)
           PetscInt e
@@ -238,24 +236,24 @@
       Interface
         Subroutine SectionRealUpdateClosure(section,m,e,values,mode,    &
      &ierr)
-          USE_MESH_HIDE
+          USE_DM_HIDE
           PetscErrorCode ierr
           PetscScalar, pointer :: values(:)
           PetscInt e
           InsertMode mode
           SECTIONREAL_HIDE section
-          MESH_HIDE m
+          DM_HIDE m
         End Subroutine
       End Interface
 
       Interface
         Subroutine SectionIntUpdateClosure(section,m,e,values,mode,ierr)
-          USE_MESH_HIDE
+          USE_DM_HIDE
           PetscErrorCode ierr
           PetscInt, pointer :: values(:)
           PetscInt e
           InsertMode mode
           SECTIONINT_HIDE section
-          MESH_HIDE m
+          DM_HIDE m
         End Subroutine
       End Interface

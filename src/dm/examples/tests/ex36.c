@@ -4,7 +4,7 @@ static char help[] = "Checks the functionality of DMDAGetInterpolation on deform
 #include <petsc.h>
 #include <petscvec.h>
 #include <petscmat.h>
-#include <petscdm.h>
+#include <petscdmda.h>
 
 typedef struct _n_CCmplx CCmplx;
 struct _n_CCmplx {

@@ -13,7 +13,7 @@ static char help[] = "Nonlinear, time-dependent PDE in 2d.\n";
     u_t -     v    = 0    so that     F(u,v).u = -v
     v_t - \Delta u = 0    so that     F(u,v).v = -Delta u
 
-   Include "petscdm.h" so that we can use distributed arrays (DMDAs).
+   Include "petscdmda.h" so that we can use distributed arrays (DMDAs).
    Include "petscts.h" so that we can use SNES solvers.  Note that this
    file automatically includes:
      petscsys.h       - base PETSc routines   petscvec.h - vectors
@@ -22,7 +22,7 @@ static char help[] = "Nonlinear, time-dependent PDE in 2d.\n";
      petscviewer.h - viewers               petscpc.h  - preconditioners
      petscksp.h   - linear solvers
 */
-#include "petscdm.h"
+#include "petscdmda.h"
 #include "petscts.h"
 
 

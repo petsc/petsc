@@ -1,7 +1,8 @@
 #if !defined(_ADDA_H)
 #define _ADDA_H
 
-#include "private/dmimpl.h"
+#include <petscdmadda.h>
+#include <private/dmimpl.h>
 
 /* vector was allocated and never referenced, clearly some task was not finished */
 #define ADDA_HAS_LOCAL_VECTOR 0

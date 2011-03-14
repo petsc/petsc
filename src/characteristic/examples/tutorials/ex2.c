@@ -8,7 +8,7 @@ static char help[] = "\n";
    fields.
    - - - - - - - - - - - - - - - - - - - - - - - - */
 #include "petscsnes.h"
-#include "petscdm.h"
+#include "petscdmda.h"
 #include "petscdmmg.h"
 #include "petscbag.h"
 #include "characteristic.h"

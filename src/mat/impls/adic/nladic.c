@@ -13,7 +13,7 @@ EXTERN_C_BEGIN
 #include "adic/ad_utils.h"
 EXTERN_C_END
 
-#include "../src/dm/da/daimpl.h"
+#include "private/daimpl.h"
 #include "../src/mat/blockinvert.h"
 
 struct NLF_DAAD {

@@ -7,7 +7,7 @@
 T*/
 static char help[] = "Generates, partitions, and outputs an unstructured 2D mesh of a radially-symmetric simple ion channel.\n\n";
 
-#include <petscdm.h>
+#include <petscdmmesh.h>
 #include <petscmesh.h>
 
 using ALE::Obj;

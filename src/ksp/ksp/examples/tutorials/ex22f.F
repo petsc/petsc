@@ -25,7 +25,7 @@
 #include "finclude/petscmat.h"
 #include "finclude/petscpc.h"
 #include "finclude/petscksp.h"
-#include "finclude/petscdm.h"
+#include "finclude/petscdmda.h"
       DMMG             dmmg
       PetscErrorCode   ierr
       DM               da
@@ -64,7 +64,7 @@
 
 #include "finclude/petscsys.h"
 #include "finclude/petscvec.h"
-#include "finclude/petscdm.h"
+#include "finclude/petscdmda.h"
 
       PetscErrorCode  ierr
       PetscInt mx,my,mz
@@ -93,7 +93,7 @@
 #include "finclude/petscsys.h"
 #include "finclude/petscvec.h"
 #include "finclude/petscmat.h"
-#include "finclude/petscdm.h"
+#include "finclude/petscdmda.h"
 
       DMMG         dmmg
       Mat          jac,JJ

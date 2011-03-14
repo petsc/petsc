@@ -1,5 +1,6 @@
 
 #include "private/pcimpl.h"     /*I "petscpc.h" I*/
+#include <petscdmcomposite.h>   /*I "petscdmcomposite.h" I*/
 
 const char *const PCFieldSplitSchurPreTypes[] = {"SELF","DIAG","USER","PCFieldSplitSchurPreType","PC_FIELDSPLIT_SCHUR_PRE_",0};
 const char *const PCFieldSplitSchurFactorizationTypes[] = {"DIAG","LOWER","UPPER","FULL","PCFieldSplitSchurFactorizationType","PC_FIELDSPLIT_SCHUR_FACTORIZATION_",0};

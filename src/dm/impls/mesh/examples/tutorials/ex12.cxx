@@ -3,7 +3,7 @@
   a cell-centered mesh, providing access to the mesh information from 
   Fortran 90.
 */
-#include "petscdm.h"
+#include "petscdmmesh.h"
 #include "petscmesh.h"
 
 #include "Distribution.hh"

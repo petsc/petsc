@@ -30,7 +30,7 @@ Options: \n\
 /* Contributed by Dave May */
 
 #include "petscksp.h"
-#include "petscdm.h"
+#include "petscdmda.h"
 
 /* A Maple-generated exact solution created by Mirko Velic (mirko.velic@sci.monash.edu.au) */
 #include "ex43-solCx.h"

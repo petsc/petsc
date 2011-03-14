@@ -4,7 +4,7 @@
 */
 
 #include "private/matimpl.h"
-#include "petscdm.h"          /*I   "petscdm.h"    I*/
+#include "petscdmda.h"          /*I   "petscdmda.h"    I*/
 #include "petscsnes.h"        /*I   "petscsnes.h"  I*/
 EXTERN_C_BEGIN
 #include "adic/ad_utils.h"

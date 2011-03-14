@@ -11,7 +11,7 @@ OBJSC    = da2.o da1.o da3.o daghost.o dacorn.o dagtol.o daltol.o \
            daindex.o dascatter.o dacreate.o dadestroy.o dalocal.o \
            dadist.o daview.o dasub.o gr1.o gr2.o daload.o dagtona.o \
 	   dainterp.o dapf.o dagetarray.o dagetelem.o da.o dareg.o fdda.o
-SOURCEH  = ../../../../include/private/daimpl.h ../../../../include/petscdm.h 
+SOURCEH  = ../../../../include/private/daimpl.h ../../../../include/petscdmda.h 
 LIBBASE  = libpetscdm
 DIRS     = usfft utils hypre
 LOCDIR   = src/dm/impls/da/

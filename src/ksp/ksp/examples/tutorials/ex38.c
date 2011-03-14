@@ -3,7 +3,7 @@ static char help[] = "Tests the aSA multigrid code.\n"
 "Parameters:\n"
 "-n n          to use a matrix size of n\n";
 
-#include "petscdm.h"
+#include "petscdmda.h"
 #include "petscksp.h"
 #include "petscasa.h"
 

@@ -1,5 +1,5 @@
 #include "private/fortranimpl.h"
-#include "petscdm.h"
+#include "petscdmmesh.h"
 /* mesh.c */
 /* Fortran interface file */
 

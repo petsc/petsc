@@ -1,7 +1,7 @@
 
 static char help[] = "Solves PDE problem from ex22.c\n\n";
 
-#include "petscdm.h"
+#include "petscdmda.h"
 #include "petscpf.h"
 #include "petscsnes.h"
 #include "petscdmmg.h"

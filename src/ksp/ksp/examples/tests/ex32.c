@@ -10,7 +10,7 @@
 
 static char help[] = "Solves 3D Laplacian using wirebasket based multigrid.\n\n";
 
-#include "petscdm.h"
+#include "petscdmda.h"
 #include "petscksp.h"
 #include "petscpcmg.h"
 

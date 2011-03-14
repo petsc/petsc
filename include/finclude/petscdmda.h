@@ -2,8 +2,7 @@
 !
 !  Include file for Fortran use of the DM (distributed array) package in PETSc
 !
-#include "finclude/petscdmdef.h"
-
+#include "finclude/petscdmdadef.h"
 
 !
 !  Types of stencils

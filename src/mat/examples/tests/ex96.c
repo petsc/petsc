@@ -12,9 +12,7 @@ static char help[] ="Tests sequential and parallel DMGetMatrix(), MatMatMult() a
     Example of usage: mpiexec -n 3 ex96 -Mx 10 -My 10 -Mz 10
 */
 
-#include "petscksp.h"
-#include "petscdm.h"
-#include "petscpcmg.h"
+#include "petscdmda.h"
 #include "../src/mat/impls/aij/seq/aij.h"
 #include "../src/mat/impls/aij/mpi/mpiaij.h"
 
@@ -29,7 +27,6 @@ typedef struct {
 typedef struct {
    GridCtx     fine;
    GridCtx     coarse;
-   KSP         ksp_coarse;
    PetscInt    ratio;
    Mat         Ii;              /* interpolation from coarse to fine */
 } AppCtx;

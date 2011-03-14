@@ -16,13 +16,16 @@
 ! The all encompassing petsc module
 
         module petscdef
-        use petscmeshdef
-        use petscmgdef
+        use petscdmdadef
+        use petscdmmeshdef
         use petsctsdef
         end module
 
         module petsc
-        use petscmesh
-        use petscmg
+        use petscdmda
+        use petscdmadda
+        use petscdmcomposite
+        use petscdmmesh
+        use petscpcmg
         use petscts
         end module

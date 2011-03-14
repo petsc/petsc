@@ -1,4 +1,4 @@
-#include "private/daimpl.h"    /*I   "petscdm.h"   I*/
+#include "private/daimpl.h"    /*I   "petscdmda.h"   I*/
 
 
 #undef __FUNCT__  

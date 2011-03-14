@@ -6,7 +6,7 @@ static char help[] = "\n";
    phi is advected explicitly.
    - - - - - - - - - - - - - - - - - - - - - - - - */
 #include "petscsnes.h"
-#include "petscdm.h"
+#include "petscdmda.h"
 #include "petscdmmg.h"
 #include "petscbag.h"
 #include "characteristic.h"

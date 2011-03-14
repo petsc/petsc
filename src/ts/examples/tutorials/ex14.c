@@ -45,6 +45,7 @@ use compatible domain decomposition relative to the 3D DMDAs.
 
 #include <petscts.h>
 #include <petscdmmg.h>
+#include <petscdmcomposite.h>
 #include <ctype.h>              /* toupper() */
 
 #if defined __SSE2__
@@ -1608,7 +1609,7 @@ static PetscErrorCode THICreateDM3d(THI thi,DM *dm3d)
     ierr = PetscOptionsInt("-P","Number of elements in z-direction on coarse level","",P,&P,NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  ierr = DMDACreate3d(comm,DMDA_YZPERIODIC,DMDA_STENCIL_BOX,P,N,M,1,PETSC_DETERMINE,PETSC_DETERMINE,sizeof(Node)/sizeof(PetscScalar),1,0,0,0,&da);CHKERRQ(ierr);
+  ierr = DMDACreate3d(comm,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC,DMDA_STENCIL_BOX,P,N,M,1,PETSC_DETERMINE,PETSC_DETERMINE,sizeof(Node)/sizeof(PetscScalar),1,0,0,0,&da);CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,0,"x-velocity");CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,1,"y-velocity");CHKERRQ(ierr);
   *dm3d = da;
@@ -1664,7 +1665,7 @@ int main(int argc,char *argv[])
     PetscInt Mx,My,mx,my,s;
     DMDAStencilType st;
     ierr = DMDAGetInfo(da3,0, 0,&My,&Mx, 0,&my,&mx, 0,&s,0,0,0,&st);CHKERRQ(ierr);
-    ierr = DMDACreate2d(((PetscObject)thi)->comm,DMDA_XYPERIODIC,st,My,Mx,my,mx,sizeof(PrmNode)/sizeof(PetscScalar),s,0,0,&da2);CHKERRQ(ierr);
+    ierr = DMDACreate2d(((PetscObject)thi)->comm,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC,st,My,Mx,my,mx,sizeof(PrmNode)/sizeof(PetscScalar),s,0,0,&da2);CHKERRQ(ierr);
   }
 
   ierr = PetscObjectSetName((PetscObject)da3,"3D_Velocity");CHKERRQ(ierr);

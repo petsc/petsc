@@ -38,11 +38,11 @@ timestepping.  Runtime options include:\n\
    this file automatically includes "petscsys.h" and other lower-level
    PETSc include files.
 
-   Include the "petscdm.h" to allow us to use the distributed array data 
+   Include the "petscdmda.h" to allow us to use the distributed array data 
    structures to manage the parallel grid.
 */
 #include "petscts.h"
-#include "petscdm.h"
+#include "petscdmda.h"
 
 /* 
    User-defined application context - contains data needed by the 

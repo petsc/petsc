@@ -5,7 +5,7 @@
 */
 
 #include "private/matimpl.h"          /*I "petscmat.h" I*/
-#include "petscdm.h"                  /*I "petscdm.h"  I*/ /* Unlike equispaced FFT, USFFT requires geometric information encoded by a DMDA */
+#include "petscdmda.h"                  /*I "petscdmda.h"  I*/ /* Unlike equispaced FFT, USFFT requires geometric information encoded by a DMDA */
 #include "fftw3.h"
 
 typedef struct {

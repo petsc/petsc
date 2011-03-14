@@ -1,7 +1,8 @@
 
 static char help[] = "Tests imbedding DMComposites inside DMComposites.\n\n";
 
-#include "petscdm.h"
+#include "petscdmda.h"
+#include <petscdmcomposite.h>
 
 typedef struct {
   DM load;
@@ -13,9 +14,9 @@ PetscErrorCode LoadCreate(PetscInt n1, PetscInt n2, Load *load)
   PetscErrorCode ierr;
 
   ierr = PetscNew(Load,&load);CHKERRQ(ierr);
-  ierr = DMDACreate1d(PETSC_COMM_SELF,DMDA_BOUNDARY_NONE,n1,1,1,PETSC_NULL,(DM*)&load->L1);CHKERRQ(ierr);
-  ierr = DMDACreate1d(PETSC_COMM_SELF,DMDA_BOUNDARY_NONE,n1,1,1,PETSC_NULL,(DM*)&load->L2);CHKERRQ(ierr);
-  ierr = DMCompositeCreate(PETSC_COMM_SELF,(DMComposite*)&load->load);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_SELF,DMDA_BOUNDARY_NONE,n1,1,1,PETSC_NULL,&load->L1);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_SELF,DMDA_BOUNDARY_NONE,n1,1,1,PETSC_NULL,&load->L2);CHKERRQ(ierr);
+  ierr = DMCompositeCreate(PETSC_COMM_SELF,&load->load);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

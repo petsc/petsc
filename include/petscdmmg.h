@@ -4,7 +4,7 @@
 #ifndef __PETSCDMMG_H
 #define __PETSCDMMG_H
 #include "petscsnes.h"
-#include "petscdm.h"
+#include "petscdmda.h"
 PETSC_EXTERN_CXX_BEGIN
 
 /*S

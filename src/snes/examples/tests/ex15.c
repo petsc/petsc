@@ -1,5 +1,5 @@
 #include "petscsnes.h"
-#include "petscdm.h"
+#include "petscdmda.h"
 #include "../src/snes/impls/vi/viimpl.h"
 #include <math.h>  /* for cos() sin(0), and atan() */
 

@@ -1,6 +1,7 @@
 #if !defined(_packimpl_h)
 #define _packimpl_h
 
+#include <petscdmcomposite.h>    /*I "petscdmcomposite.h" I*/
 #include <private/dmimpl.h>      /*I      "petscdm.h"     I*/
 
 /*

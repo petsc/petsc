@@ -1,0 +1,14 @@
+!
+!
+!  Additional KSP include file for use of PETSc with Fortran 90/HPF
+!
+#include "finclude/ftn-custom/petscpc.h90"
+#if defined(PETSC_USE_FORTRAN_INTERFACES)
+      interface
+#include "finclude/petscpcmgdef.h"
+! It would make more sense to include petscpcmg.h90, but I don't know
+! how to make bfort put the PCMG-spcific stuff there
+! #include "finclude/ftn-auto/petscpcmg.h90"
+      end interface
+#endif
+

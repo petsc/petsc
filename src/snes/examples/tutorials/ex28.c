@@ -24,6 +24,8 @@ static const char help[] = "Uses analytic Jacobians to solve individual problems
  */
 
 #include <petscsnes.h>
+#include <petscdmda.h>
+#include <petscdmcomposite.h>
 
 PetscErrorCode DMDACreateOwnershipRanges(DM); /* Import an internal function */
 

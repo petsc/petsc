@@ -24,7 +24,7 @@ Program usage:
         
 */
 
-#include "petscdm.h"
+#include "petscdmda.h"
 #include "petscts.h"
 
 /* 

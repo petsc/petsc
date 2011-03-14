@@ -1,5 +1,6 @@
 
 #include "petscdmmg.h"
+#include <petscdmcomposite.h>
 
 typedef struct {
   PetscScalar u,v,omega;

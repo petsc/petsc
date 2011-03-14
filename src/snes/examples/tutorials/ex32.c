@@ -50,7 +50,8 @@ T*/
 
   ------------------------------------------------------------------------- */
 #include "petscsnes.h"
-#include "petscdm.h"
+#include "petscdmda.h"
+#include "petscdmcomposite.h"
 #include "petscdmmg.h"
 
 /* User-defined routines and data structure */

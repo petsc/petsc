@@ -1,5 +1,5 @@
  
-#include "petscdm.h"      /*I      "petscdm.h"    I*/
+#include "petscdmda.h"      /*I      "petscdmda.h"    I*/
 #include "petscpcmg.h"      /*I      "petscpcmg.h"    I*/
 #include "petscdmmg.h"    /*I      "petscdmmg.h"  I*/
 #include "../src/mat/blockinvert.h"
