@@ -374,6 +374,7 @@ extern PetscErrorCode  PCFieldSplitSetFields(PC,const char[],PetscInt,const Pets
 extern PetscErrorCode  PCFieldSplitSetType(PC,PCCompositeType);
 extern PetscErrorCode  PCFieldSplitSetBlockSize(PC,PetscInt);
 extern PetscErrorCode  PCFieldSplitSetIS(PC,const char[],IS);
+extern PetscErrorCode  PCFieldSplitGetIS(PC,const char[],IS*);
 
 /*E
     PCFieldSplitSchurPreType - Determines how to precondition Schur complement

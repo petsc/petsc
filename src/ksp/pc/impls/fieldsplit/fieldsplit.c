@@ -1046,6 +1046,51 @@ PetscErrorCode  PCFieldSplitSetIS(PC pc,const char splitname[],IS is)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "PCFieldSplitGetIS"
+/*@
+    PCFieldSplitGetIS - Retrieves the elements for a field as an IS
+
+    Logically Collective on PC
+
+    Input Parameters:
++   pc  - the preconditioner context
+-   splitname - name of this split
+
+    Output Parameter:
+-   is - the index set that defines the vector elements in this field, or PETSC_NULL if the field is not found
+
+    Level: intermediate
+
+.seealso: PCFieldSplitGetSubKSP(), PCFIELDSPLIT, PCFieldSplitSetIS()
+
+@*/
+PetscErrorCode PCFieldSplitGetIS(PC pc,const char splitname[],IS *is)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidCharPointer(splitname,2);
+  PetscValidPointer(is,3);
+  {
+    PC_FieldSplit    *jac   = (PC_FieldSplit *) pc->data;
+    PC_FieldSplitLink ilink = jac->head;
+    PetscBool         found;
+
+    *is = PETSC_NULL;
+    while(ilink) {
+      ierr = PetscStrcmp(ilink->splitname, splitname, &found);CHKERRQ(ierr);
+      if (found) {
+        *is = ilink->is;
+        break;
+      }
+      ilink = ilink->next;
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "PCFieldSplitSetBlockSize"
 /*@
