@@ -135,7 +135,6 @@ static PetscErrorCode PCApply_AINVCUSP(PC pc,Vec x,Vec y)
 static PetscErrorCode PCReset_AINVCUSP(PC pc)
 {
   PC_AINVCUSP    *ainv  = (PC_AINVCUSP*)pc->data;
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   if (ainv->AINVCUSP) {
