@@ -169,7 +169,7 @@ static PetscErrorCode PCDestroy_AINVCUSP(PC pc)
   PetscErrorCode  ierr;
 
   PetscFunctionBegin; 
-  PCReset_AINVCUSP(pc);CHKERRQ(ierr);
+  ierr = PCReset_AINVCUSP(pc);CHKERRQ(ierr);
 
   /*
       Free the private data structure that was hanging off the PC
