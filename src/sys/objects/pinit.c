@@ -666,6 +666,11 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   */
   ierr = MPI_Op_create(PetscMaxSum_Local,1,&PetscMaxSum_Op);CHKERRQ(ierr);
 
+#if defined(PETSC_USE_SCALAR___FLOAT128)
+  ierr = MPI_Type_contiguous(2,MPI_DOUBLE,&MPIU___FLOAT128);CHKERRQ(ierr);
+  ierr = MPI_Type_commit(&MPIU___FLOAT128);CHKERRQ(ierr);
+#endif
+
   ierr = MPI_Type_contiguous(2,MPIU_SCALAR,&MPIU_2SCALAR);CHKERRQ(ierr);
   ierr = MPI_Type_commit(&MPIU_2SCALAR);CHKERRQ(ierr);
   ierr = MPI_Op_create(PetscADMax_Local,1,&PetscADMax_Op);CHKERRQ(ierr);
@@ -1071,6 +1076,10 @@ PetscErrorCode  PetscFinalize(void)
 
   PetscGlobalArgc = 0;
   PetscGlobalArgs = 0;
+
+#if defined(PETSC_USE_SCALAR___FLOAT128)
+  ierr = MPI_Type_free(&MPIU___FLOAT128);CHKERRQ(ierr);
+#endif
 
 #if defined(PETSC_USE_COMPLEX)
 #if !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)

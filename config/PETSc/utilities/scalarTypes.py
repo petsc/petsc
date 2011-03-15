@@ -30,6 +30,7 @@ class Configure(config.base.Configure):
     self.types     = framework.require('config.types', self)
     self.languages = framework.require('PETSc.utilities.languages', self)
     self.compilers = framework.require('config.compilers', self)
+    self.libraries = framework.require('config.libraries',self)
     return
 
 
@@ -86,6 +87,7 @@ class Configure(config.base.Configure):
       self.addDefine('USE_SCALAR_DOUBLE', '1')
     elif self.precision == '__float128':
       self.addDefine('USE_SCALAR___FLOAT128', '1')
+      self.libraries.add('quadmath','logq',prototype='#include <quadmath.h>',call='__float128 f; logq(f);')
     else:
       raise RuntimeError('--with-precision must be single, double, longdouble')
     self.framework.logPrint('Precision is '+str(self.precision))

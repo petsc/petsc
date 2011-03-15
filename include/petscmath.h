@@ -15,6 +15,7 @@ PETSC_EXTERN_CXX_BEGIN
 
 extern  MPI_Datatype  MPIU_2SCALAR;
 extern  MPI_Datatype  MPIU_2INT;
+
 /*
 
      Defines operations that are different for complex and real numbers;
@@ -129,7 +130,8 @@ typedef double PetscScalar;
 #define MPIU_SCALAR           MPI_LONG_DOUBLE
 typedef long double PetscScalar;
 #elif defined(PETSC_USE_SCALAR___FLOAT128)
-extern MPI_Datatype MPIU_SCALAR;
+extern MPI_Datatype MPIU___FLOAT128;
+#define MPIU_SCALAR MPIU___FLOAT128
 typedef __float128 PetscScalar;
 #endif
 #define PetscRealPart(a)      (a)
@@ -165,7 +167,7 @@ typedef double PetscReal;
 #define MPIU_REAL   MPI_LONG_DOUBLE
 typedef long double PetscReal;
 #elif defined(PETSC_USE_SCALAR___FLOAT128)
-extern MPI_Datatype MPIU_REAL;
+#define MPIU_REAL MPIU___FLOAT128
 typedef __float128 PetscReal;
 #endif
 
