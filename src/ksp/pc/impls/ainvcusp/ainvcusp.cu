@@ -135,7 +135,6 @@ static PetscErrorCode PCApply_AINVCUSP(PC pc,Vec x,Vec y)
 static PetscErrorCode PCReset_AINVCUSP(PC pc)
 {
   PC_AINVCUSP    *ainv  = (PC_AINVCUSP*)pc->data;
-  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   if (ainv->AINVCUSP) {
@@ -170,7 +169,7 @@ static PetscErrorCode PCDestroy_AINVCUSP(PC pc)
   PetscErrorCode  ierr;
 
   PetscFunctionBegin; 
-  PCReset_AINVCUSP(pc);CHKERRQ(ierr);
+  ierr = PCReset_AINVCUSP(pc);CHKERRQ(ierr);
 
   /*
       Free the private data structure that was hanging off the PC
