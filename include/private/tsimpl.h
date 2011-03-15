@@ -39,7 +39,7 @@ struct _p_TS {
   PETSCHEADER(struct _TSOps);
   DM            dm;
   TSProblemType problem_type;
-  Vec           vec_sol,vec_sol_always;
+  Vec           vec_sol;
 
   /* ---------------- User (or PETSc) Provided stuff ---------------------*/
   PetscErrorCode (*monitor[MAXTSMONITORS])(TS,PetscInt,PetscReal,Vec,void*); /* returns control to user after */

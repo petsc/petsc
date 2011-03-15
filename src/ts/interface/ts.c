@@ -1067,7 +1067,7 @@ PetscErrorCode  TSGetSolution(TS ts,Vec *v)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidPointer(v,2);
-  *v = ts->vec_sol_always;
+  *v = ts->vec_sol;
   PetscFunctionReturn(0);
 }
 
@@ -1199,7 +1199,7 @@ PetscErrorCode  TSDestroy(TS ts)
 
   /* if memory was published with AMS then destroy it */
   ierr = PetscObjectDepublish(ts);CHKERRQ(ierr);
-
+  if (ts->vec_sol) {ierr = VecDestroy(ts->vec_sol);CHKERRQ(ierr);}
   if (ts->dm) {ierr = DMDestroy(ts->dm);CHKERRQ(ierr);}
   if (ts->A) {ierr = MatDestroy(ts->A);CHKERRQ(ierr);}
   if (ts->ksp) {ierr = KSPDestroy(ts->ksp);CHKERRQ(ierr);}
@@ -1371,10 +1371,14 @@ PetscErrorCode  TSSetDuration(TS ts,PetscInt maxsteps,PetscReal maxtime)
 @*/
 PetscErrorCode  TSSetSolution(TS ts,Vec x)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidHeaderSpecific(x,VEC_CLASSID,2);
-  ts->vec_sol        = ts->vec_sol_always = x;
+  ierr = PetscObjectReference((PetscObject)x);CHKERRQ(ierr);
+  if (ts->vec_sol) {ierr = VecDestroy(ts->vec_sol);CHKERRQ(ierr);}
+  ts->vec_sol = x;
   PetscFunctionReturn(0);
 }
 
