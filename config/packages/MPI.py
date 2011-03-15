@@ -155,7 +155,7 @@ class Configure(config.package.Package):
       self.mpiexec = 'Not_appropriate_for_batch_systems'
       self.addMakeMacro('MPIEXEC',self.mpiexec)
       return
-    mpiexecs = ['mpiexec -n 1', 'mpirun -n 1', 'mprun -n 1', 'mpiexec', 'mpirun', 'mprun', '/bin/false']
+    mpiexecs = ['mpiexec -n 1', 'mpirun -n 1', 'mprun -n 1', 'mpiexec', 'mpirun', 'mprun']
     path    = []
     if 'with-mpi-dir' in self.framework.argDB:
       path.append(os.path.join(os.path.abspath(self.framework.argDB['with-mpi-dir']), 'bin'))
@@ -172,7 +172,8 @@ class Configure(config.package.Package):
       path.append(os.path.dirname(self.getCompiler()))
     self.popLanguage()
     if not self.getExecutable(mpiexecs, path = path, useDefaultPath = 1, resultName = 'mpiexec',setMakeMacro=0):
-      raise RuntimeError('Could not locate MPIEXEC - please specify --with-mpiexec option')
+      if not self.getExecutable('/bin/false', path = [], useDefaultPath = 0, resultName = 'mpiexec',setMakeMacro=0):
+        raise RuntimeError('Could not locate MPIEXEC - please specify --with-mpiexec option')
     self.mpiexec = self.mpiexec.replace(' -n 1','').replace(' ', '\\ ')
     self.addMakeMacro('MPIEXEC', self.mpiexec)
     return
