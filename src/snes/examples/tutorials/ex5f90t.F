@@ -36,9 +36,9 @@
 !
 
       module f90module
+#include <finclude/petscdmdef.h>
       use petscdmdef
       type userctx
-#include <finclude/petscsysdef.h>
         type(DM) da
         PetscInt xs,xe,xm,gxs,gxe,gxm
         PetscInt ys,ye,ym,gys,gye,gym
@@ -70,8 +70,8 @@
 !  the local vector data via VecGetArrayF90() and VecRestoreArrayF90().
 !
       subroutine FormFunction(snesIn,X,F,user,ierr)
-      use petscvecdef
-      use petscsnesdef
+#include <finclude/petscsnesdef.h>
+      use petscsnes
 
 !  Input/output variables:
       type(SNES)     snesIn
@@ -126,8 +126,9 @@
 
       Interface SNESSetApplicationContext
         Subroutine SNESSetApplicationContext(snesIn,ctx,ierr)
-        use f90module
+#include <finclude/petscsnesdef.h>
         use petscsnes
+        use f90module
           type(SNES)    snesIn
           type(userctx) ctx
           PetscErrorCode ierr
@@ -136,8 +137,9 @@
 
       Interface SNESGetApplicationContext
         Subroutine SNESGetApplicationContext(snesIn,ctx,ierr)
-        use f90module
+#include <finclude/petscsnesdef.h>
         use petscsnes
+        use f90module
           type(SNES)     snesIn
           type(userctx), pointer :: ctx
           PetscErrorCode ierr
@@ -146,10 +148,12 @@
       end module f90moduleinterfaces
 
       program main
+#include <finclude/petscdmdef.h>
+#include <finclude/petscsnesdef.h>
+      use petscdm
+      use petscsnes
       use f90module
       use f90moduleinterfaces
-      use petscsnes
-      use petscdm
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -283,8 +287,7 @@
       call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-snes_mf',         &
      &     matrix_free,ierr)
       if (.not. matrix_free) then
-!        call DMGetMatrix(user%da,MATAIJ,J,ierr)
-        call DMGetMatrix(user%da,"aij",J,ierr)
+        call DMGetMatrix(user%da,MATAIJ,J,ierr)
         call SNESSetJacobian(mysnes,J,J,FormJacobian,user,ierr)
       endif
 
@@ -349,9 +352,10 @@
 !  the local vector data via VecGetArrayF90() and VecRestoreArrayF90().
 !
       subroutine FormInitialGuess(mysnes,X,ierr)
+#include <finclude/petscsnesdef.h>
+      use petscsnes
       use f90module
       use f90moduleinterfaces
-      use petscsnes
 !  Input/output variables:
       type(SNES)     mysnes
       type(userctx), pointer:: puser
@@ -405,8 +409,9 @@
 !  This routine uses standard Fortran-style computations over a 2-dim array.
 !
       subroutine InitialGuessLocal(user,x,ierr)
-      use f90module
+#include <finclude/petscsysdef.h>
       use petscsys
+      use f90module
 !  Input/output variables:
       type (userctx)         user
       PetscScalar  x(user%gxs:user%gxe,                                 &
@@ -458,8 +463,9 @@
 !  This routine uses standard Fortran-style computations over a 2-dim array.
 !
       subroutine FormFunctionLocal(x,f,user,ierr)
-      use f90module
+#include <finclude/petscsysdef.h>
       use petscsys
+      use f90module
 !  Input/output variables:
       type (userctx) user
       PetscScalar  x(user%gxs:user%gxe,                                         &
@@ -497,7 +503,7 @@
             endif
  10      continue
  20   continue
-
+      ierr = 0
       return
       end
 
@@ -549,9 +555,9 @@
 !  used in this example.
 !
       subroutine FormJacobian(mysnes,X,jac,jac_prec,flag,user,ierr)
-      use f90module
+#include <finclude/petscsnesdef.h>
       use petscsnes
-#include <finclude/petscmatdef.h>
+      use f90module
 !  Input/output variables:
       type(SNES)     mysnes
       type(Vec)      X
@@ -663,8 +669,9 @@
 !  used in this example.
 !
       subroutine FormJacobianLocal(x,jac_prec,user,ierr)
-      use f90module
+#include <finclude/petscmatdef.h>
       use petscmat
+      use f90module
 !  Input/output variables:
       type (userctx) user
       PetscScalar    x(user%gxs:user%gxe,                                      &
@@ -730,7 +737,6 @@
             endif
  10      continue
  20   continue
-
       return
       end
 
