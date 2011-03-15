@@ -65,6 +65,9 @@ ex5s: chkopts
 ex5f90: ex5f90.o  chkopts
 	-${FLINKER} -o ex5f90 ex5f90.o ${PETSC_SNES_LIB}
 	${RM} ex5f90.o
+ex5f90t: ex5f90t.o  chkopts
+	-${FLINKER} -o ex5f90t ex5f90t.o ${PETSC_SNES_LIB}
+	${RM} ex5f90t.o
 ex6: ex6.o  chkopts
 	-${CLINKER} -o ex6 ex6.o ${PETSC_SNES_LIB}
 	${RM} ex6.o
@@ -388,6 +391,11 @@ runex5f90_5:
 	   if (${DIFF} output/ex5f90_5.out ex5f90_5.tmp) then true; \
 	   else echo "Possible problem with ex5f90_5, diffs above"; fi; \
 	   ${RM} -f ex5f90_5.tmp
+runex5f90t:
+	-@${MPIEXEC} -n 4 ./ex5f90t -snes_mf -da_processors_x 4 -da_processors_y 1 -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex5f90t_1.tmp 2>&1; \
+	   if (${DIFF} output/ex5f90_1.out ex5f90t_1.tmp) then true; \
+	   else echo "Possible problem with ex5f90t_1, diffs above"; fi; \
+	   ${RM} -f ex5f90t_1.tmp
 runex6:
 	-@${MPIEXEC} -n 1 ./ex6 -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex6_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex6_1.out ex6_1.tmp) then true; \
