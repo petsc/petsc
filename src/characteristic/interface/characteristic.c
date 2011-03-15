@@ -388,10 +388,6 @@ PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
 
       /* Check for Periodic boundaries and move all periodic points back onto the domain */
       ierr = DMDAMapCoordsToPeriodicDomain(da,&(Qi.x),&(Qi.y));CHKERRQ(ierr);
-
-      if (Qi.proc && verbose) {
-        printf("[%d]Remote point (%d) at n+1/2 to neighbor %d: (i:%d, j:%d) (x:%g, y:%g)\n", rank, (int)c->queueSize+1, Qi.proc, Qi.i, Qi.j, Qi.x, Qi.y);
-      }
       ierr = CharacteristicAddPoint(c, &Qi);CHKERRQ(ierr);
     }
   }
@@ -476,9 +472,6 @@ PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
     /* Check for Periodic boundaries and move all periodic points back onto the domain */
     ierr = DMDAMapCoordsToPeriodicDomain(da,&(Qi.x),&(Qi.y));CHKERRQ(ierr);
 
-    if (Qi.proc && verbose) {
-      printf("[%d]Remote point (%d) at n to neighbor %d: (i:%d, j:%d) (x:%g, y:%g)\n", rank, (int)n, Qi.proc, Qi.i, Qi.j, Qi.x, Qi.y);
-    }
     c->queue[n] = Qi;
   }
   ierr = PetscLogEventEnd(CHARACTERISTIC_FullTimeLocal,0,0,0,0);CHKERRQ(ierr);
@@ -520,7 +513,6 @@ PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
   ierr = PetscLogEventBegin(CHARACTERISTIC_FullTimeRemote,0,0,0,0);CHKERRQ(ierr);
   ierr = PetscInfo1(PETSC_NULL, "Calculating %d remote field points at t_{n}\n", c->queueRemoteSize);CHKERRQ(ierr);
   for(n = 0; n < c->queueRemoteSize; n++) {
-    if (verbose) printf("[%d]Remote point: (i:%d, j:%d) (c0:%g, c1:%g)\n", rank, c->queueRemote[n].i, c->queueRemote[n].j, c->queueRemote[n].x, c->queueRemote[n].y);
     interpIndices[0] = c->queueRemote[n].x;
     interpIndices[1] = c->queueRemote[n].y;
 
@@ -529,7 +521,6 @@ PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
       PetscScalar im = interpIndices[0]; PetscScalar jm = interpIndices[1];
 
       if (( im < (PetscScalar) is - 1.) || (im > (PetscScalar) ie) || (jm < (PetscScalar)  js - 1.) || (jm > (PetscScalar) je)) {
-        printf("[%d]Bounds: I (%d, %d) J (%d, %d)\n", rank, (int)is, (int)ie, (int)js, (int)je);
         SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_LIB, "Nonlocal point: (%g,%g)", im, jm);
       }
     }

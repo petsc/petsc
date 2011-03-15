@@ -20,7 +20,7 @@ class Configure(config.base.Configure):
     
   def setupHelp(self, help):
     import nargs
-    help.addArgument('PETSc', '-with-precision=<single,double,longdouble>', nargs.Arg(None, 'double', 'Specify numerical precision'))    
+    help.addArgument('PETSc', '-with-precision=<single,double,longdouble,__float128>', nargs.Arg(None, 'double', 'Specify numerical precision'))    
     help.addArgument('PETSc', '-with-scalar-type=<real or complex>', nargs.Arg(None, 'real', 'Specify real or complex numbers'))
     help.addArgument('PETSc', '-with-mixed-precision=<bool>', nargs.ArgBool(None, 0, 'Allow single precision linear solve'))
     return
@@ -76,16 +76,16 @@ class Configure(config.base.Configure):
     if self.precision == 'single':
       self.addDefine('USE_SCALAR_SINGLE', '1')
     elif self.precision == 'longdouble':
-      self.pushLanguage('C')
-      if config.setCompilers.Configure.isIntel(self.compilers.getCompiler()):
-        # Intel's C long double is 80 bits, so does not match Fortran's real*16, but
-        # Intel C has a _Quad that is 128 bits
-        self.precision = 'quad'
-        self.addDefine('USE_SCALAR__QUAD', '1')        
-      self.popLanguage()
       self.addDefine('USE_SCALAR_LONG_DOUBLE', '1')
+    elif self.precision == '_quad':
+      self.pushLanguage('C')
+      if not config.setCompilers.Configure.isIntel(self.compilers.getCompiler()): raise RuntimeError('Only Intel compiler supports _quad')
+      self.popLanguage()
+      self.addDefine('USE_SCALAR__QUAD', '1')        
     elif self.precision == 'double':
       self.addDefine('USE_SCALAR_DOUBLE', '1')
+    elif self.precision == '__float128':
+      self.addDefine('USE_SCALAR___FLOAT128', '1')
     else:
       raise RuntimeError('--with-precision must be single, double, longdouble')
     self.framework.logPrint('Precision is '+str(self.precision))

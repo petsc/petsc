@@ -128,17 +128,30 @@ typedef double PetscScalar;
 #elif defined(PETSC_USE_SCALAR_LONG_DOUBLE)
 #define MPIU_SCALAR           MPI_LONG_DOUBLE
 typedef long double PetscScalar;
+#elif defined(PETSC_USE_SCALAR___FLOAT128)
+extern MPI_Datatype MPIU_SCALAR;
+typedef __float128 PetscScalar;
 #endif
 #define PetscRealPart(a)      (a)
 #define PetscImaginaryPart(a) (0.)
 #define PetscAbsScalar(a)     (((a)<0.0)   ? -(a) : (a))
 #define PetscConj(a)          (a)
+#if !defined(PETSC_USE_SCALAR___FLOAT128)
 #define PetscSqrtScalar(a)    sqrt(a)
 #define PetscPowScalar(a,b)   pow(a,b)
 #define PetscExpScalar(a)     exp(a)
 #define PetscLogScalar(a)     log(a)
 #define PetscSinScalar(a)     sin(a)
 #define PetscCosScalar(a)     cos(a)
+#else
+#include <quadmath.h>
+#define PetscSqrtScalar(a)    sqrtq(a)
+#define PetscPowScalar(a,b)   powq(a,b)
+#define PetscExpScalar(a)     expq(a)
+#define PetscLogScalar(a)     logq(a)
+#define PetscSinScalar(a)     sinq(a)
+#define PetscCosScalar(a)     cosq(a)
+#endif
 
 #endif
 
@@ -151,6 +164,9 @@ typedef double PetscReal;
 #elif defined(PETSC_USE_SCALAR_LONG_DOUBLE)
 #define MPIU_REAL   MPI_LONG_DOUBLE
 typedef long double PetscReal;
+#elif defined(PETSC_USE_SCALAR___FLOAT128)
+extern MPI_Datatype MPIU_REAL;
+typedef __float128 PetscReal;
 #endif
 
 #define PetscSign(a) (((a) >= 0) ? ((a) == 0 ? 0 : 1) : -1)
