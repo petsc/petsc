@@ -402,6 +402,19 @@ PetscErrorCode MatDestroy_SeqAIJCUSP(Mat A)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "MatLoad_SeqAIJCUSP"
+PetscErrorCode MatLoad_SeqAIJCUSP(Mat newMat, PetscViewer viewer)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+
+  ierr = MatLoad_SeqAIJ(newMat,viewer);CHKERRQ(ierr);
+  newMat->valid_GPU_matrix = PETSC_CUSP_GPU; /* MatLoad allocates the CPU and then copies to GPU so GPU is valid but both are allocated */
+  PetscFunctionReturn(0);
+}
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreate_SeqAIJCUSP"
