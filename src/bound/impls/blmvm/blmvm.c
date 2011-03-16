@@ -14,7 +14,6 @@ static PetscErrorCode TaoSolverSolve_BLMVM(TaoSolver tao)
   TaoSolverTerminationReason reason = TAO_CONTINUE_ITERATING;
   TaoLineSearchTerminationReason ls_status = TAOLINESEARCH_CONTINUE_ITERATING;
 
-  Vec Xold,Gold;
   PetscReal f, fold, gdx, gnorm;
   PetscReal stepsize = 1.0,delta;
 
@@ -22,8 +21,6 @@ static PetscErrorCode TaoSolverSolve_BLMVM(TaoSolver tao)
   
 
   PetscFunctionBegin;
-  ierr = VecDuplicate(tao->solution,&Xold); CHKERRQ(ierr);
-  ierr = VecDuplicate(tao->solution,&Gold); CHKERRQ(ierr);
   
   // Project initial point onto bounds
   ierr = VecMedian(tao->XL,tao->solution,tao->XU,tao->solution); CHKERRQ(ierr);
@@ -86,8 +83,8 @@ static PetscErrorCode TaoSolverSolve_BLMVM(TaoSolver tao)
 
     // Perform the linesearch
     fold = f;
-    ierr = VecCopy(tao->solution, Xold); CHKERRQ(ierr);
-    ierr = VecCopy(blmP->unprojected_gradient, Gold); CHKERRQ(ierr);
+    ierr = VecCopy(tao->solution, blmP->Xold); CHKERRQ(ierr);
+    ierr = VecCopy(blmP->unprojected_gradient, blmP->Gold); CHKERRQ(ierr);
     ierr = TaoLineSearchSetInitialStepLength(tao->linesearch,1.0); CHKERRQ(ierr);
     ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &f, blmP->unprojected_gradient, tao->stepdirection, &stepsize, &ls_status); CHKERRQ(ierr);
 
@@ -97,8 +94,8 @@ static PetscErrorCode TaoSolverSolve_BLMVM(TaoSolver tao)
       ++blmP->reset;
 
       f = fold;
-      ierr = VecCopy(Xold, tao->solution); CHKERRQ(ierr);
-      ierr = VecCopy(Gold, blmP->unprojected_gradient); CHKERRQ(ierr);
+      ierr = VecCopy(blmP->Xold, tao->solution); CHKERRQ(ierr);
+      ierr = VecCopy(blmP->Gold, blmP->unprojected_gradient); CHKERRQ(ierr);
 
       if (f != 0.0) {
 	delta = 2.0* PetscAbsScalar(f) / (gnorm*gnorm);
@@ -150,10 +147,11 @@ static PetscErrorCode TaoSolverSetup_BLMVM(TaoSolver tao)
 
   PetscFunctionBegin;
   /* Existence of tao->solution checked in TaoSolverSetup() */
-  if (!blmP->unprojected_gradient) {
-      ierr = VecDuplicate(tao->solution, &blmP->unprojected_gradient);
-      CHKERRQ(ierr);
-  }
+  
+  ierr = VecDuplicate(tao->solution,&blmP->Xold); CHKERRQ(ierr);
+  ierr = VecDuplicate(tao->solution,&blmP->Gold); CHKERRQ(ierr);
+  ierr = VecDuplicate(tao->solution, &blmP->unprojected_gradient);
+
   if (!tao->stepdirection) {
       ierr = VecDuplicate(tao->solution, &tao->stepdirection);
       CHKERRQ(ierr);
@@ -188,19 +186,14 @@ static PetscErrorCode TaoSolverDestroy_BLMVM(TaoSolver tao)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (blmP->M) {
+  if (tao->setupcalled) {
     ierr = MatDestroy(blmP->M); CHKERRQ(ierr);
+    ierr = VecDestroy(blmP->unprojected_gradient); CHKERRQ(ierr);
+    ierr = VecDestroy(blmP->Xold); CHKERRQ(ierr);
+    ierr = VecDestroy(blmP->Gold); CHKERRQ(ierr);
   }
-  if (tao->data) {
-    ierr = PetscFree(tao->data); CHKERRQ(ierr);
-  }
-  if (tao->linesearch) {
-    ierr = TaoLineSearchDestroy(tao->linesearch); CHKERRQ(ierr);
-  }
-  
-  tao->linesearch = PETSC_NULL;
+  ierr = PetscFree(tao->data); CHKERRQ(ierr);
   tao->data = PETSC_NULL;
-
 
   PetscFunctionReturn(0);
 }
@@ -240,6 +233,8 @@ static int TaoSolverView_BLMVM(TaoSolver tao, PetscViewer viewer)
     ierr = PetscTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii); CHKERRQ(ierr);
     if (isascii) {
 	ierr = PetscViewerASCIIPrintf(viewer, "  Gradient steps: %d\n", lmP->grad); CHKERRQ(ierr);
+    } else {
+      SETERRQ1(((PetscObject)tao)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for TAO BLMVM",((PetscObject)viewer)->type_name);
     }
     PetscFunctionReturn(0);
 }

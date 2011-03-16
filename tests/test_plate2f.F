@@ -104,8 +104,8 @@
 ! derives from an elliptic PDE on a two-dimensional domain.  From the 
 ! distributed array, create the vectors
 
-      call DMDACreate2d(MPI_COMM_WORLD,DMDA_NONPERIODIC,                      &
-     &     DMDA_STENCIL_BOX,                                                  &
+      call DMDACreate2d(MPI_COMM_WORLD,DMDA_BOUNDARY_NONE,                    &
+     &     DMDA_BOUNDARY_NONE, DMDA_STENCIL_BOX,                              &
      &     mx,my,Nx,Ny,i1,i1,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,           &
      &     dm,ierr)
       CHKERRQ(ierr)

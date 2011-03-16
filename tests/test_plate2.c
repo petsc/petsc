@@ -109,8 +109,9 @@ int main( int argc, char **argv )
      which derives from an elliptic PDE on two dimensional domain.  From
      the distributed array, Create the vectors.
   */
-  ierr = DMDACreate2d(MPI_COMM_WORLD,DMDA_NONPERIODIC,DMDA_STENCIL_BOX,user.mx,
-                    user.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&user.dm); CHKERRQ(ierr);
+  ierr = DMDACreate2d(MPI_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,
+		      DMDA_STENCIL_BOX,user.mx,user.my,Nx,Ny,1,1,
+		      PETSC_NULL,PETSC_NULL,&user.dm); CHKERRQ(ierr);
 
   /*
      Extract global and local vectors from DM; The local vectors are

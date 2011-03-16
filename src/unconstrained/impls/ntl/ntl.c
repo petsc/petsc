@@ -112,6 +112,10 @@ static PetscErrorCode TaoSolverSolve_NTL(TaoSolver tao)
 
   PetscFunctionBegin;
 
+  if (tao->XL || tao->XU || tao->ops->computebounds) {
+    ierr = PetscPrintf(((PetscObject)tao)->comm,"WARNING: Variable bounds have been set but will be ignored by ntl algorithm\n"); CHKERRQ(ierr);
+  }
+
   /* Initialize trust-region radius */
   /* TODO
   ierr = TaoGetInitialTrustRegionRadius(tao, &radius); CHKERRQ(ierr);
@@ -906,27 +910,22 @@ static PetscErrorCode TaoSolverDestroy_NTL(TaoSolver tao)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (tl->W) {
+  if (tao->setupcalled) {
     ierr = VecDestroy(tl->W); CHKERRQ(ierr);
-  }
-  if (tl->Xold) {
     ierr = VecDestroy(tl->Xold); CHKERRQ(ierr);
-  }
-  if (tl->Gold) {
     ierr = VecDestroy(tl->Gold); CHKERRQ(ierr);
   }
   if (tl->Diag) {
     ierr = VecDestroy(tl->Diag); CHKERRQ(ierr);
+    tl->Diag = PETSC_NULL;
   }
   if (tl->M) {
     ierr = MatDestroy(tl->M); CHKERRQ(ierr);
+    tl->M = PETSC_NULL;
   }
+
   ierr = PetscFree(tao->data); CHKERRQ(ierr);
-  tao->gradient=0;
-  tao->stepdirection=0;
-  tao->linesearch=0;
-  tao->data=0;
-  tao->ksp=0;
+  tao->data = PETSC_NULL;
   
   PetscFunctionReturn(0);
 }
@@ -995,20 +994,25 @@ static PetscErrorCode TaoSolverView_NTL(TaoSolver tao, PetscViewer viewer)
 {
   TAO_NTL *tl = (TAO_NTL *)tao->data;
   PetscInt nrejects;
-  MPI_Comm comm;
+  PetscBool isascii;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  comm = ((PetscObject)tao)->comm;
-  if (NTL_PC_BFGS == tl->pc_type && tl->M) {
-    ierr = MatLMVMGetRejects(tl->M, &nrejects); CHKERRQ(ierr);
-    ierr = PetscPrintf(comm, "  Rejected matrix updates: %d\n", &nrejects); CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
+  if (isascii) {
+    if (NTL_PC_BFGS == tl->pc_type && tl->M) {
+      ierr = MatLMVMGetRejects(tl->M, &nrejects); CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer, "  Rejected matrix updates: %d\n", &nrejects); CHKERRQ(ierr);
+    }
+
+    ierr = PetscViewerASCIIPrintf(viewer, "  Trust-region steps: %d\n", tl->trust); CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "  Newton search steps: %d\n", tl->newt); CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "  BFGS search steps: %d\n", tl->bfgs); CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "  Scaled gradient search steps: %d\n", tl->sgrad); CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "  Gradient search steps: %d\n", tl->grad); CHKERRQ(ierr);
+  } else {
+    SETERRQ1(((PetscObject)tao)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for TAO NTL",((PetscObject)viewer)->type_name);
   }
-  ierr = PetscPrintf(comm, "  Trust-region steps: %d\n", tl->trust); CHKERRQ(ierr);
-  ierr = PetscPrintf(comm, "  Newton search steps: %d\n", tl->newt); CHKERRQ(ierr);
-  ierr = PetscPrintf(comm, "  BFGS search steps: %d\n", tl->bfgs); CHKERRQ(ierr);
-  ierr = PetscPrintf(comm, "  Scaled gradient search steps: %d\n", tl->sgrad); CHKERRQ(ierr);
-  ierr = PetscPrintf(comm, "  Gradient search steps: %d\n", tl->grad); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1100,7 +1104,6 @@ PetscErrorCode TaoSolverCreate_NTL(TaoSolver tao)
   ierr = TaoLineSearchUseTaoSolverRoutines(tao->linesearch, tao); CHKERRQ(ierr);
 
   ierr = KSPCreate(((PetscObject)tao)->comm, &tao->ksp); CHKERRQ(ierr);
-  ierr = KSPSetOptionsPrefix(tao->ksp, "tao_"); CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

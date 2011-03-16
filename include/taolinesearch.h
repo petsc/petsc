@@ -33,7 +33,8 @@ extern PetscClassId TAOLINESEARCH_CLASSID;
 extern PetscErrorCode TaoLineSearchCreate(MPI_Comm,TaoLineSearch*);
 extern PetscErrorCode TaoLineSearchSetFromOptions(TaoLineSearch);
 extern PetscErrorCode TaoLineSearchSetUp(TaoLineSearch);
-extern PetscErrorCode TaoLineSearchDestroy(TaoLineSearch);
+extern PetscErrorCode TaoLineSearchDestroy_(TaoLineSearch);
+#define TaoLineSearchDestroy(a) (TaoLineSearchDestroy_(a) || (((a)=0),0))
 extern PetscErrorCode TaoLineSearchView(TaoLineSearch,PetscViewer);
 extern PetscErrorCode TaoLineSearchSetOptionsPrefix(TaoLineSearch);
 extern PetscErrorCode TaoLineSearchApply(TaoLineSearch,Vec,PetscReal *,Vec,Vec, PetscReal *, TaoLineSearchTerminationReason *);

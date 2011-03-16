@@ -109,6 +109,10 @@ static PetscErrorCode TaoSolverSolve_NTR(TaoSolver tao)
 
   PetscFunctionBegin;
 
+  if (tao->XL || tao->XU || tao->ops->computebounds) {
+    ierr = PetscPrintf(((PetscObject)tao)->comm,"WARNING: Variable bounds have been set but will be ignored by ntr algorithm\n"); CHKERRQ(ierr);
+  }
+
   /*// Get the initial trust-region radius
     TODO
   ierr = TaoGetInitialTrustRegionRadius(tao, &radius); CHKERRQ(ierr);
@@ -668,18 +672,19 @@ static PetscErrorCode TaoSolverDestroy_NTR(TaoSolver tao)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (tr->W) {
+  if (tao->setupcalled) {
     ierr = VecDestroy(tr->W); CHKERRQ(ierr);
   }
-
-  if (tr->Diag) {
-    ierr = VecDestroy(tr->Diag); CHKERRQ(ierr);
-  }
-
   if (tr->M) {
     ierr = MatDestroy(tr->M); CHKERRQ(ierr);
+    tr->M = PETSC_NULL;
+  }
+  if (tr->Diag) {
+    ierr = VecDestroy(tr->Diag); CHKERRQ(ierr);
+    tr->Diag = PETSC_NULL;
   }
   ierr = PetscFree(tao->data); CHKERRQ(ierr);
+  tao->data = PETSC_NULL;
 
   PetscFunctionReturn(0);
 }
@@ -738,13 +743,17 @@ static PetscErrorCode TaoSolverView_NTR(TaoSolver tao, PetscViewer viewer)
   TAO_NTR *tr = (TAO_NTR *)tao->data;
   PetscErrorCode ierr;
   PetscInt nrejects;
-  MPI_Comm comm;
-
+  PetscBool isascii;
   PetscFunctionBegin;
-  comm = ((PetscObject)tao)->comm;
-  if (NTR_PC_BFGS == tr->pc_type && tr->M) {
-    ierr = MatLMVMGetRejects(tr->M, &nrejects); CHKERRQ(ierr);
-    ierr = PetscPrintf(comm, "  Rejected matrix updates: %d\n", nrejects); CHKERRQ(ierr);
+  
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
+  if (isascii) {
+    if (NTR_PC_BFGS == tr->pc_type && tr->M) {
+      ierr = MatLMVMGetRejects(tr->M, &nrejects); CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer, "  Rejected matrix updates: %d\n", nrejects); CHKERRQ(ierr);
+    }
+  } else {
+    SETERRQ1(((PetscObject)tao)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for TAO NTR",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

@@ -616,7 +616,7 @@ PetscErrorCode  TaoDMView(TaoDM *taodm,PetscViewer viewer)
   PetscInt       i,nlevels = taodm[0]->nlevels;
   PetscMPIInt    flag;
   MPI_Comm       comm1,comm2;
-  PetscBool      iascii,isbinary;
+  PetscBool      isascii,isbinary;
 
   PetscFunctionBegin;
   PetscValidPointer(taodm,1);
@@ -628,14 +628,14 @@ PetscErrorCode  TaoDMView(TaoDM *taodm,PetscViewer viewer)
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMECOMM,"Different communicators in the TaoDM and the PetscViewer");
   }
 
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   if (isbinary) {
     for (i=0; i<nlevels; i++) {
       ierr = MatView(taodm[i]->hessian,viewer);CHKERRQ(ierr);
     }
   } else {
-    if (iascii) {
+    if (isascii) {
       ierr = PetscViewerASCIIPrintf(viewer,"TaoDM Object with %D levels\n",nlevels);CHKERRQ(ierr);
       /*
       if (taodm[0]->isctype == IS_COLORING_GLOBAL) {
@@ -649,7 +649,7 @@ PetscErrorCode  TaoDMView(TaoDM *taodm,PetscViewer viewer)
       ierr = DMView(taodm[i]->dm,viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     }
-    if (iascii) {
+    if (isascii) {
       ierr = PetscViewerASCIIPrintf(viewer,"Using matrix type %s\n",taodm[nlevels-1]->mtype);CHKERRQ(ierr);
     }
     

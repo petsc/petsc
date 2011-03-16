@@ -26,6 +26,10 @@ static PetscErrorCode TaoSolverSolve_LMVM(TaoSolver tao)
 
   PetscFunctionBegin;
 
+  if (tao->XL || tao->XU || tao->ops->computebounds) {
+    ierr = PetscPrintf(((PetscObject)tao)->comm,"WARNING: Variable bounds have been set but will be ignored by lmvm algorithm\n"); CHKERRQ(ierr);
+  }
+
   // Check convergence criteria
   ierr = TaoSolverComputeObjectiveAndGradient(tao, tao->solution, &f, tao->gradient); CHKERRQ(ierr);
   ierr = VecNorm(tao->gradient,NORM_2,&gnorm); CHKERRQ(ierr);
@@ -219,30 +223,16 @@ static PetscErrorCode TaoSolverDestroy_LMVM(TaoSolver tao)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (lmP->Xold) {
+  if (tao->setupcalled) {
     ierr = VecDestroy(lmP->Xold); CHKERRQ(ierr);
-  }
-  if (lmP->Gold) {
     ierr = VecDestroy(lmP->Gold); CHKERRQ(ierr);
-  }
-  if (lmP->M) {
+    ierr = VecDestroy(lmP->D); CHKERRQ(ierr);
     ierr = MatDestroy(lmP->M); CHKERRQ(ierr);
   }
-  if (tao->data) {
-    ierr = PetscFree(tao->data); CHKERRQ(ierr);
-  }
-  if (tao->linesearch) {
-    ierr = TaoLineSearchDestroy(tao->linesearch); CHKERRQ(ierr);
-  }
-
-  tao->gradient=PETSC_NULL;
-  tao->stepdirection=PETSC_NULL;
-  tao->linesearch = PETSC_NULL;
+  ierr = PetscFree(tao->data); CHKERRQ(ierr);
   tao->data = PETSC_NULL;
 
-
   PetscFunctionReturn(0); 
-
 }
 
 /*------------------------------------------------------------*/
@@ -275,11 +265,13 @@ static PetscErrorCode TaoSolverView_LMVM(TaoSolver tao, PetscViewer viewer)
 
     PetscFunctionBegin;
     ierr = PetscTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii); CHKERRQ(ierr);
-//    if (isascii) {
+    if (isascii) {
 	ierr = PetscViewerASCIIPrintf(viewer, "  BFGS steps: %d\n", lm->bfgs); CHKERRQ(ierr);
 	ierr = PetscViewerASCIIPrintf(viewer, "  Scaled gradient steps: %d\n", lm->sgrad); CHKERRQ(ierr);
 	ierr = PetscViewerASCIIPrintf(viewer, "  Gradient steps: %d\n", lm->grad); CHKERRQ(ierr);
-//    }
+    } else {
+      SETERRQ1(((PetscObject)tao)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for TAO LMVM",((PetscObject)viewer)->type_name);
+    }
     PetscFunctionReturn(0);
 }
 
@@ -321,45 +313,3 @@ PetscErrorCode TaoSolverCreate_LMVM(TaoSolver tao)
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
-
-// Todd: do not delete; they are needed for the component version
-// of the code.
-
-/* ---------------------------------------------------------- */
-#undef __FUNCT__  
-#define __FUNCT__ "TaoLMVMGetX0"
-int TaoLMVMGetX0(TaoSolver tao, Vec x0)
-{
-    /*
-  TAO_LMVM *lm;
-  int info;
-
-  TaoFunctionBegin;
-  info=TaoGetSolverContext(tao, "tao_lmvm", (void **)&lm); CHKERRQ(info);
-  if (lm && lm->M) {
-    info=lm->M->GetX0(x0); CHKERRQ(info);
-  }
-  TaoFunctionReturn(0);
-  */
-      return -1;
-}
-
-/* ---------------------------------------------------------- */
-#undef __FUNCT__  
-#define __FUNCT__ "TaoInitializeLMVMmatrix"
-int TaoInitializeLMVMmatrix(TaoSolver tao, Vec HV)
-{
-    /*
-  TAO_LMVM *lm;
-  int info;
-  
-  TaoFunctionBegin;
-  info = TaoGetSolverContext(tao, "tao_lmvm", (void **)&lm); CHKERRQ(info);
-  if (lm && lm->M) {
-    info = lm->M->InitialApproximation(HV); CHKERRQ(info);
-  }
-  TaoFunctionReturn(0);
-    */
-    return -1;
-}
-

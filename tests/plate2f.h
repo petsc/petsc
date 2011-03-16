@@ -31,6 +31,7 @@
 #include "finclude/petscksp.h"
 #include "finclude/petscpc.h"
 #include "finclude/petscsnes.h"
+#include "finclude/petscdmda.h"
 #include "finclude/petscdm.h"
 #include "finclude/petscis.h"
 #include "finclude/taosolver.h"

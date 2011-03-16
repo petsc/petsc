@@ -94,9 +94,10 @@ int main(int argc, char **argv)
     PetscPrintf(PETSC_COMM_WORLD,"mx: %d     my: %d   \n\n",user.mx,user.my);  
 
     /* Set up distributed array */
-    ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,DMDA_STENCIL_STAR,
-		      user.mx,user.my,Nx,Ny,1,1,TAO_NULL,TAO_NULL,
-		      &user.dm); CHKERRQ(ierr);
+    ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,
+			DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,
+			user.mx,user.my,Nx,Ny,1,1,TAO_NULL,TAO_NULL,
+			&user.dm); CHKERRQ(ierr);
 
     /* Create vectors */
     ierr = DMCreateGlobalVector(user.dm,&x); CHKERRQ(ierr);

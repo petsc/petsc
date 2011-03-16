@@ -14,9 +14,9 @@ if __name__=="__main__":
     if examples is None:
         sys.stderr.write('No examples match arguments:\n%s\n' % str(sys.argv[1:]))
         sys.exit(0)
-    for e in examples.list:
-        print(e.name)
-    sys.exit(0)
+    #for e in examples.list:
+    #    print(e.name)
+    #sys.exit(0)
     for ex in examples.list: #.withTag("eptorsion"):
         sys.stdout.write("\n\n*** Example %s ***\n" % ex.name)
 
@@ -25,8 +25,10 @@ if __name__=="__main__":
         (r,o,e) = examples.execute(['rm','-f',ex.executableName()])
         (r,o,e) = examples.execute(ex.buildCommand(),cwd=cwd,echo=True)
         sys.stdout.write(o)
+        sys.stdout.write(e)
 
         (r,o1,e) = examples.execute(ex.runCommand(),cwd=cwd,echo=True)
         sys.stdout.write(o1)
+        sys.stdout.write(e)
 
                          

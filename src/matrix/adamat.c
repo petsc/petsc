@@ -155,12 +155,24 @@ PetscErrorCode MatDestroy_ADA(Mat mat)
 
   PetscFunctionBegin;
   info=MatShellGetContext(mat,(void **)&ctx);CHKERRQ(info);
-  info=VecDestroy(ctx->W);CHKERRQ(info);
-  info=VecDestroy(ctx->W2);CHKERRQ(info);
-  info=VecDestroy(ctx->ADADiag);CHKERRQ(info);
-  info=MatDestroy(ctx->A);CHKERRQ(info);
-  info=VecDestroy(ctx->D1);CHKERRQ(info);
-  info=VecDestroy(ctx->D2);CHKERRQ(info);
+  if (ctx->W) {
+    info=VecDestroy(ctx->W);CHKERRQ(info);
+  }
+  if (ctx->W2) {
+    info=VecDestroy(ctx->W2);CHKERRQ(info);
+  }
+  if (ctx->ADADiag) {
+    info=VecDestroy(ctx->ADADiag);CHKERRQ(info);
+  }
+  if (ctx->A) {
+    info=MatDestroy(ctx->A);CHKERRQ(info);
+  }
+  if (ctx->D1) {
+    info=VecDestroy(ctx->D1);CHKERRQ(info);
+  }
+  if (ctx->D2) {
+    info=VecDestroy(ctx->D2);CHKERRQ(info);
+  }
   info = PetscFree(ctx); CHKERRQ(info);
   PetscFunctionReturn(0);
 }

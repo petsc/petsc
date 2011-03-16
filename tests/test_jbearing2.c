@@ -108,7 +108,7 @@ int main( int argc, char **argv )
      which derives from an elliptic PDE on two dimensional domain.  From
      the distributed array, Create the vectors.
   */
-  info = DMDACreate2d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,DMDA_STENCIL_STAR,
+  info = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,
 		      user.nx,user.ny,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,
 		      &user.dm); CHKERRQ(info);
 
@@ -175,8 +175,6 @@ int main( int argc, char **argv )
   if (reason <= 0)
     PetscPrintf(PETSC_COMM_WORLD,"Try a different TAO method, adjust some parameters, or check the function evaluation routines\n");
 
-  /* Free TAO data structures */
-  info = TaoSolverDestroy(tao); CHKERRQ(info);
 
   /* Free PETSc data structures */
   info = VecDestroy(x); CHKERRQ(info); 
@@ -184,6 +182,9 @@ int main( int argc, char **argv )
   info = VecDestroy(xu); CHKERRQ(info); 
   info = MatDestroy(user.A); CHKERRQ(info);
   info = VecDestroy(user.B); CHKERRQ(info); 
+  /* Free TAO data structures */
+  info = TaoSolverDestroy(tao); CHKERRQ(info);
+
   info = DMDestroy(user.dm); CHKERRQ(info);
 
   TaoFinalize();
@@ -338,8 +339,7 @@ PetscErrorCode FormFunctionGradient(TaoSolver tao, Vec X, PetscReal *fcn,Vec G,v
   info = VecDot(user->B,X,&f2); CHKERRQ(info);
   info = VecAXPY(G, one, user->B); CHKERRQ(info);
   *fcn = f1/2.0 + f2;
-  VecNorm(G,NORM_2,&f2);
-  PetscPrintf(PETSC_COMM_SELF,"fcn=%f\t gnorm=%f\n",*fcn,f2);
+  
 
   info = PetscLogFlops((91 + 10*ym) * xm); CHKERRQ(info);
   return 0;

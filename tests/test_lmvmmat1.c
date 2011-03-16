@@ -29,8 +29,10 @@ int main(int argc, char *argv[])
 //    ierr = MatView(lmvm_mat,PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
     ierr = MatDestroy(lmvm_mat); CHKERRQ(ierr);
 
-    ierr = VecDestroyVecs(v,50); CHKERRQ(ierr);
+    ierr = VecDestroyVecs(&v,50); CHKERRQ(ierr);
+
     ierr = VecDestroy(y); CHKERRQ(ierr);
+
     TaoFinalize();
     PetscFinalize();
     return 0;
@@ -55,13 +57,12 @@ PetscErrorCode initializevecs(Vec **vv, PetscInt numvecs, PetscInt size)
     PetscInt l,h;
     int i,j;
     Vec *v;
-    PetscReal **xarr,*x;
+    PetscReal *x;
     Vec tmp;
     PetscFunctionBegin;
     if (numvecs*size > length) {
 	SETERRQ(PETSC_COMM_SELF,1,"data set not large enough.\n");
     }
-    ierr = PetscMalloc(sizeof(Vec)*numvecs,&v); CHKERRQ(ierr);
 
     ierr = VecCreate(PETSC_COMM_WORLD,&tmp); CHKERRQ(ierr);
     ierr = VecSetSizes(tmp,PETSC_DECIDE,size); CHKERRQ(ierr);

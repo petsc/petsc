@@ -91,7 +91,6 @@ PetscErrorCode main(int argc,char **argv)
   Mat         H;                   /* Hessian matrix */
   TaoSolverTerminationReason reason;        
   KSP         ksp;                 /* PETSc Krylov subspace solver */
-  PC          pc;                  /* PETSc preconditioner */
   AppCtx      user;                /* application context */
   PetscMPIInt size;                /* number of processes */
   PetscScalar one=1.0;

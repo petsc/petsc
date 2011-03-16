@@ -91,7 +91,8 @@ int main( int argc, char **argv )
   Nx = PETSC_DECIDE; Ny = PETSC_DECIDE;
 
   /* Create distributed array (DM) to manage parallel grid and vectors  */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,DMDA_STENCIL_BOX,
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,
+		      DMDA_STENCIL_BOX,
 		      user.mx, user.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,
 		      &user.dm); CHKERRQ(ierr);
   

@@ -31,26 +31,38 @@ static PetscErrorCode TaoSolverDestroy_GPCG(TaoSolver tao)
   /* Free allocated memory in GPCG structure */
   PetscFunctionBegin;
   
-  ierr = VecDestroy(gpcg->X_New);CHKERRQ(ierr);
-  ierr = VecDestroy(gpcg->G_New);CHKERRQ(ierr);
-  ierr = VecDestroy(gpcg->Work);CHKERRQ(ierr);
-  ierr = VecDestroy(gpcg->DXFree);CHKERRQ(ierr);
-  ierr = VecDestroy(gpcg->R);CHKERRQ(ierr);
-  ierr = VecDestroy(gpcg->B);CHKERRQ(ierr);
-  ierr = VecDestroy(gpcg->PG);CHKERRQ(ierr);
+  if (gpcg->X_New) {
+    ierr = VecDestroy(gpcg->X_New);CHKERRQ(ierr);
+  }
+  if (gpcg->G_New) {
+    ierr = VecDestroy(gpcg->G_New);CHKERRQ(ierr);
+  }
+  if (gpcg->Work) {
+    ierr = VecDestroy(gpcg->Work);CHKERRQ(ierr);
+  }
+  if (gpcg->DXFree) {
+    ierr = VecDestroy(gpcg->DXFree);CHKERRQ(ierr);
+  }
+  if (gpcg->R) {
+    ierr = VecDestroy(gpcg->R);CHKERRQ(ierr);
+  }
+  if (gpcg->B) {
+    ierr = VecDestroy(gpcg->B);CHKERRQ(ierr);
+  }
+  if (gpcg->PG) {
+    ierr = VecDestroy(gpcg->PG);CHKERRQ(ierr);
+  }
   
   if (tao->ksp) {
-      ierr = KSPDestroy(tao->ksp); CHKERRQ(ierr);
-      tao->ksp = PETSC_NULL;
+    ierr = KSPDestroy(tao->ksp); CHKERRQ(ierr);
+    tao->ksp = 0;
   }
-  ierr = ISDestroy(gpcg->Free_Local);CHKERRQ(ierr);
-
+  if (gpcg->Free_Local) {
+    ierr = ISDestroy(gpcg->Free_Local);CHKERRQ(ierr);
+  }
   ierr = PetscFree(tao->data); CHKERRQ(ierr);
-  tao->gradient = PETSC_NULL;
-  tao->stepdirection=PETSC_NULL;
-  tao->linesearch = PETSC_NULL;
   tao->data = PETSC_NULL;
-  ierr = TaoSolverSetVariableBounds(tao,0,0); CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }
 
@@ -91,16 +103,19 @@ static PetscErrorCode TaoSolverSetFromOptions_GPCG(TaoSolver tao)
 static PetscErrorCode TaoSolverView_GPCG(TaoSolver tao, PetscViewer viewer)
 {
   TAO_GPCG *gpcg = (TAO_GPCG *)tao->data;
+  PetscBool           isascii;
   PetscErrorCode      ierr;
-  MPI_Comm comm;
 
   PetscFunctionBegin;
-  comm = ((PetscObject)tao)->comm;
-  ierr = PetscPrintf(comm," Total PG its: %d,",gpcg->total_gp_its);CHKERRQ(ierr);
-  ierr = PetscPrintf(comm," PG tolerance: %4.3f \n",gpcg->pg_ftol);CHKERRQ(ierr);
-  ierr = PetscPrintf(comm," KSP type: %s\n",GPCG_KSP[gpcg->ksp_type]); CHKERRQ(ierr);
-  ierr = PetscPrintf(comm," Subset type: %s\n", TAOSUBSET[gpcg->subset_type]); CHKERRQ(ierr);
-		     
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
+  if (isascii) {
+    ierr = PetscViewerASCIIPrintf(viewer," Total PG its: %d,",gpcg->total_gp_its);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer," PG tolerance: %4.3f \n",gpcg->pg_ftol);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer," KSP type: %s\n",GPCG_KSP[gpcg->ksp_type]); CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer," Subset type: %s\n", TAOSUBSET[gpcg->subset_type]); CHKERRQ(ierr);
+  } else {
+    SETERRQ1(((PetscObject)tao)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for TAO GPCG",((PetscObject)viewer)->type_name);
+  }
 
   ierr = TaoLineSearchView(tao->linesearch,viewer);CHKERRQ(ierr);
 
@@ -225,9 +240,8 @@ static PetscErrorCode TaoSolverSolve_GPCG(TaoSolver tao)
     f=gpcg->f; gnorm=gpcg->gnorm; 
 
     if (gpcg->subset_type != TAOSUBSET_REDISTRIBUTE) {
-      if (tao->ksp != PETSC_NULL) {
+      if (tao->ksp) {
 	ierr = KSPDestroy(tao->ksp); CHKERRQ(ierr);
-	tao->ksp = PETSC_NULL;
       }
       ierr = KSPCreate(((PetscObject)tao)->comm, &tao->ksp); CHKERRQ(ierr);
 
@@ -268,7 +282,6 @@ static PetscErrorCode TaoSolverSolve_GPCG(TaoSolver tao)
 	  // Need to create ksp each time  (really only if size changes...)
 	  if (tao->ksp) {
 	      ierr = KSPDestroy(tao->ksp); CHKERRQ(ierr);
-	      tao->ksp = PETSC_NULL;
 	  }
 	  ierr = KSPCreate(((PetscObject)tao)->comm, &tao->ksp); CHKERRQ(ierr);
 
@@ -291,6 +304,7 @@ static PetscErrorCode TaoSolverSolve_GPCG(TaoSolver tao)
       ierr = PetscObjectDereference((PetscObject)gpcg->Hsub_pre); CHKERRQ(ierr);
 
       ierr = KSPSolve(tao->ksp,gpcg->R,gpcg->DXFree); CHKERRQ(ierr);
+
       ierr = KSPDestroy(tao->ksp); CHKERRQ(ierr);
       tao->ksp = PETSC_NULL;
 

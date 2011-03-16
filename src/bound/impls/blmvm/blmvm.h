@@ -11,7 +11,9 @@ typedef struct {
   Mat M;
 
   Vec unprojected_gradient;
-  
+  Vec Xold;
+  Vec Gold;
+
   PetscInt n_free;
   PetscInt n_bind;
 

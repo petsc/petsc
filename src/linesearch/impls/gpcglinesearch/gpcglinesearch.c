@@ -11,10 +11,17 @@ static PetscErrorCode TaoLineSearchDestroy_GPCG(TaoLineSearch ls)
   TAOLINESEARCH_GPCG_CTX *ctx = (TAOLINESEARCH_GPCG_CTX *)ls->data;
 
   PetscFunctionBegin;
-  if (ctx->W1) {
-      ierr = VecDestroy(ctx->W1);CHKERRQ(ierr);
-      ierr = VecDestroy(ctx->W2);CHKERRQ(ierr);
-      ierr = VecDestroy(ctx->Gold);CHKERRQ(ierr);
+  if (ctx->W1) { 
+    ierr = VecDestroy(ctx->W1);CHKERRQ(ierr);
+  }
+  if (ctx->W2) {
+    ierr = VecDestroy(ctx->W2);CHKERRQ(ierr);
+  }
+  if (ctx->Gold) {
+    ierr = VecDestroy(ctx->Gold);CHKERRQ(ierr);
+  }
+  if (ctx->x) {
+    ierr = PetscObjectDereference((PetscObject)ctx->x); CHKERRQ(ierr);
   }
 
   ierr = PetscFree(ctx);CHKERRQ(ierr);
@@ -26,13 +33,19 @@ static PetscErrorCode TaoLineSearchDestroy_GPCG(TaoLineSearch ls)
 /*------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "TaoLineSearchView_GPCG"
-static PetscErrorCode TaoLineSearchView_GPCG(TaoLineSearch ls, PetscViewer pv)
+static PetscErrorCode TaoLineSearchView_GPCG(TaoLineSearch ls, PetscViewer viewer)
 {
+  PetscBool                 isascii;
   PetscErrorCode            ierr;
-  MPI_Comm                  comm;
   PetscFunctionBegin;
-  comm = ((PetscObject)ls)->comm;
-  ierr = PetscPrintf(comm," GPCG Line search"); CHKERRQ(ierr);
+
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
+
+  if (isascii) {
+    ierr = PetscViewerASCIIPrintf(viewer," GPCG Line search"); CHKERRQ(ierr);
+  } else {
+    SETERRQ1(((PetscObject)ls)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for GPCG LineSearch",((PetscObject)viewer)->type_name);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -64,7 +77,7 @@ static PetscErrorCode TaoLineSearchApply_GPCG(TaoLineSearch ls, Vec x,
       ierr = VecDuplicate(x,&neP->W1); CHKERRQ(ierr);
       ierr = VecDuplicate(x,&neP->Gold); CHKERRQ(ierr);
       neP->x = x;
-      ierr = PetscObjectReference((PetscObject)x); CHKERRQ(ierr);
+      ierr = PetscObjectReference((PetscObject)neP->x); CHKERRQ(ierr);
   }
 
   /* If X has changed, remake work vectors */
@@ -76,8 +89,9 @@ static PetscErrorCode TaoLineSearchApply_GPCG(TaoLineSearch ls, Vec x,
       ierr = VecDuplicate(x,&neP->W1); CHKERRQ(ierr);
       ierr = VecDuplicate(x,&neP->W2); CHKERRQ(ierr);
       ierr = VecDuplicate(x,&neP->Gold); CHKERRQ(ierr);
+      ierr = PetscObjectDereference((PetscObject)neP->x); CHKERRQ(ierr);
       neP->x = x;
-      ierr = PetscObjectReference((PetscObject)x); CHKERRQ(ierr);
+      ierr = PetscObjectReference((PetscObject)neP->x); CHKERRQ(ierr);
   }
 
   ierr = VecDot(g,s,&gdx); CHKERRQ(ierr);

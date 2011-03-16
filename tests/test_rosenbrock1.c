@@ -1,6 +1,7 @@
 /* Program usage: mpirun -np 1 rosenbrock1 [-help] [all TAO options] */
 
 /*  Include "tao.h" so we can use TAO solvers.  */
+#include "petsc.h"
 #include "petscvec.h"
 #include "petscmat.h"
 #include "tao.h"

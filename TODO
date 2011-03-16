@@ -3,7 +3,10 @@ LineSearch
 
 TaoSolver
 * Check lower bound <= than upper bound
-* Check bounds for bounded methods, give warning for unbounded methods
+
+
+TRON using MatDiagonalSet -- mpiaij doesn't implement this
+
 
 MANSEC - do we need more than 1?
 
@@ -11,6 +14,8 @@ SetOptionsPrefix for all objects
 
 finite differences
    add to tests (-tao_fd, -tao_fdgrad, -tao_fd_delta)
+
+fd_test memory leak
 
 Mesh Refinement
  TaoDMSetUpLevel
@@ -30,8 +35,6 @@ BNLS?
 
 tabs for view()
 
-mv src/sys/util to src/util
-
 
 Decisions to make:
  - what to #include in applications
@@ -48,13 +51,34 @@ finish examples
   minsurf3
   - generate output
 Check documentation on examples
-
+MT linesearch view
 Check memory (esp. on MT line search!)
+  -lmvm             OK
+  -ntr              OK
+  -nls              BAD
+  -ntl              BAD
+  -cg               OK
+  -neldermead       BAD
+  -pounder          BAD
+
+  -blmvm            BAD
+  -tron             BAD
+  -bqpip            OK
+  -bnls             ??
+  -gpcg             BAD
+
+  -pounders         BAD
+
+Set KSP Monitors
+LMVM options
+What's up with eptorsion2?
+jbearing2_2 -- is bqpip not setting residual right, or fcn comp. wrong?
+
 Check fortran stubs 
 test examples script/make target
 test output against tao-1.10.1
 automatic testing, coverage
- - add keyword recognition to runExamples
+
 
 
 documentation

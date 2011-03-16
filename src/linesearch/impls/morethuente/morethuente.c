@@ -24,11 +24,13 @@ static PetscErrorCode TaoLineSearchDestroy_MT(TaoLineSearch ls)
   PetscValidHeaderSpecific(ls,TAOLINESEARCH_CLASSID,1);
   mt = (TAOLINESEARCH_MT_CTX*)(ls->data);
   if (mt->x) {
-    ierr = VecDestroy(mt->x); CHKERRQ(ierr); 
+    ierr = PetscObjectDereference((PetscObject)mt->x); CHKERRQ(ierr); 
   }
   if (mt->work) {
     ierr = VecDestroy(mt->work); CHKERRQ(ierr);
   }
+  ierr = PetscFree(ls->data);
+  ls->data = PETSC_NULL;
   PetscFunctionReturn(0);
 }
 
@@ -109,15 +111,15 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
     if (!mt->work) {
       ierr = VecDuplicate(x,&mt->work); CHKERRQ(ierr);
       mt->x = x;
-      ierr = PetscObjectReference((PetscObject)x); CHKERRQ(ierr);
+      ierr = PetscObjectReference((PetscObject)mt->x); CHKERRQ(ierr);
     }
     /* If x has changed, then recreate work */
     else if (x != mt->x) { 
-      ierr = VecDestroy(mt->x); CHKERRQ(ierr);
       ierr = VecDestroy(mt->work); CHKERRQ(ierr);
       ierr = VecDuplicate(x,&mt->work); CHKERRQ(ierr);
+      ierr = PetscObjectDereference((PetscObject)mt->x); CHKERRQ(ierr);
       mt->x = x;
-      ierr = PetscObjectReference((PetscObject)x); CHKERRQ(ierr);
+      ierr = PetscObjectReference((PetscObject)mt->x); CHKERRQ(ierr);
     }
 
 

@@ -155,10 +155,18 @@ PetscErrorCode MatDestroy_SMF(Mat mat)
   ierr =MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
   //  ierr =ISDestroy(ctx->Row);CHKERRQ(ierr);
   //  ierr =ISDestroy(ctx->Col);CHKERRQ(ierr);
-  ierr =MatDestroy(ctx->A);CHKERRQ(ierr);
-  ierr =ISDestroy(ctx->RowComplement);CHKERRQ(ierr);
-  ierr =ISDestroy(ctx->ColComplement);CHKERRQ(ierr);
-  ierr =VecDestroy(ctx->VC);CHKERRQ(ierr);
+  if (ctx->A) {
+    ierr =MatDestroy(ctx->A);CHKERRQ(ierr);
+  }
+  if (ctx->RowComplement) {
+    ierr =ISDestroy(ctx->RowComplement);CHKERRQ(ierr);
+  }
+  if (ctx->ColComplement) {
+    ierr =ISDestroy(ctx->ColComplement);CHKERRQ(ierr);
+  }
+  if (ctx->VC) {
+    ierr =VecDestroy(ctx->VC);CHKERRQ(ierr);
+  }
   ierr = PetscFree(ctx); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -57,7 +57,7 @@ PetscErrorCode TaoSolverCreate(MPI_Comm comm, TaoSolver *newtao)
     ierr = TaoSolverInitializePackage(PETSC_NULL); CHKERRQ(ierr);
 #endif
 
-    ierr = PetscHeaderCreate(tao,_p_TaoSolver, struct _TaoSolverOps, TAOSOLVER_CLASSID,0,"TaoSolver",comm,TaoSolverDestroy,TaoSolverView); CHKERRQ(ierr);
+    ierr = PetscHeaderCreate(tao,_p_TaoSolver, struct _TaoSolverOps, TAOSOLVER_CLASSID,0,"TaoSolver",comm,TaoSolverDestroy_,TaoSolverView); CHKERRQ(ierr);
     
     tao->ops->computeobjective=0;
     tao->ops->computeobjectiveandgradient=0;
@@ -219,9 +219,9 @@ PetscErrorCode TaoSolverSetUp(TaoSolver tao)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TaoSolverDestroy"
+#define __FUNCT__ "TaoSolverDestroy_"
 /*@ 
-  TaoSolverDestroy - Destroys the TAO context that was created with 
+  TaoSolverDestroy_ - Destroys the TAO context that was created with 
   TaoSolverCreate()
 
   Collective on TaoSolver
@@ -233,11 +233,13 @@ PetscErrorCode TaoSolverSetUp(TaoSolver tao)
 
 .seealse: TaoSolverCreate(), TaoSolverSolve()
 @*/
-PetscErrorCode TaoSolverDestroy(TaoSolver tao)
+PetscErrorCode TaoSolverDestroy_(TaoSolver tao)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
+
+  if (--((PetscObject)tao)->refct > 0) PetscFunctionReturn(0);
 
   ierr = PetscObjectDepublish(tao); CHKERRQ(ierr);
   
@@ -245,43 +247,53 @@ PetscErrorCode TaoSolverDestroy(TaoSolver tao)
       ierr = (*tao->ops->destroy)(tao); CHKERRQ(ierr);
   }
 //  ierr = TaoSolverMonitorCancel(tao); CHKERRQ(ierr);
+  if (tao->ksp) {
+    ierr = KSPDestroy(tao->ksp); CHKERRQ(ierr);
+    tao->ksp = PETSC_NULL;
+  }
+  if (tao->linesearch) {
+    ierr = TaoLineSearchDestroy(tao->linesearch); CHKERRQ(ierr);
+    tao->linesearch = PETSC_NULL;
+  }
   if (tao->ops->convergencedestroy) {
       ierr = (*tao->ops->convergencedestroy)(tao->cnvP); CHKERRQ(ierr);
   }
   if (tao->solution) {
     ierr = VecDestroy(tao->solution); CHKERRQ(ierr);
+    tao->solution = PETSC_NULL;
   }
   if (tao->gradient) {
     ierr = VecDestroy(tao->gradient); CHKERRQ(ierr);
+    tao->gradient = PETSC_NULL;
   }
   if (tao->XL) {
-      ierr = VecDestroy(tao->XL); CHKERRQ(ierr);
+    ierr = VecDestroy(tao->XL); CHKERRQ(ierr);
+    tao->XL = PETSC_NULL;
   }
   if (tao->XU) {
-      ierr = VecDestroy(tao->XU); CHKERRQ(ierr);
+    ierr = VecDestroy(tao->XU); CHKERRQ(ierr);
+    tao->XU = PETSC_NULL;
   }
   if (tao->stepdirection) {
-      ierr = VecDestroy(tao->stepdirection); CHKERRQ(ierr);
-  }
-  if (tao->ksp) {
-      ierr = KSPDestroy(tao->ksp); CHKERRQ(ierr);
-  }
-  if (tao->linesearch) {
-      ierr = TaoLineSearchDestroy(tao->linesearch); CHKERRQ(ierr);
+    ierr = VecDestroy(tao->stepdirection); CHKERRQ(ierr);
+    tao->stepdirection = PETSC_NULL;
   }
   if (tao->hessian_pre) {
-      ierr = MatDestroy(tao->hessian_pre); CHKERRQ(ierr);
+    ierr = MatDestroy(tao->hessian_pre); CHKERRQ(ierr);
+    tao->hessian_pre = PETSC_NULL;
   }
   if (tao->hessian) {
-      ierr = MatDestroy(tao->hessian); CHKERRQ(ierr);
+    ierr = MatDestroy(tao->hessian); CHKERRQ(ierr);
+    tao->hessian = PETSC_NULL;
   }
-
-  tao->gradient = PETSC_NULL;
-  tao->XL = PETSC_NULL;
-  tao->XU = PETSC_NULL;
-  tao->stepdirection = PETSC_NULL;
-  tao->ksp = PETSC_NULL;
-  tao->linesearch = PETSC_NULL;
+  if (tao->jacobian_pre) {
+    ierr = MatDestroy(tao->jacobian_pre); CHKERRQ(ierr);
+    tao->jacobian_pre = PETSC_NULL;
+  }
+  if (tao->jacobian) {
+    ierr = MatDestroy(tao->jacobian); CHKERRQ(ierr);
+    tao->jacobian = PETSC_NULL;
+  }
   ierr = PetscHeaderDestroy(tao); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -447,6 +459,9 @@ PetscErrorCode TaoSolverView(TaoSolver tao, PetscViewer viewer)
     TaoSolverType type;
     PetscFunctionBegin;
     PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
+    if (!viewer) {
+      ierr = PetscViewerASCIIGetStdout(((PetscObject)tao)->comm,&viewer); CHKERRQ(ierr);
+    }
     PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
     PetscCheckSameComm(tao,1,viewer,2);
 
@@ -1265,7 +1280,23 @@ PetscErrorCode TaoSolverSetType(TaoSolver tao, const TaoSolverType type)
     if (tao->ops->destroy) {
 	ierr = (*tao->ops->destroy)(tao); CHKERRQ(ierr);
     }
-    
+    if (tao->ksp) {
+      ierr = KSPDestroy(tao->ksp); CHKERRQ(ierr);
+      tao->ksp = PETSC_NULL;
+    }
+    if (tao->linesearch) {
+      ierr = TaoLineSearchDestroy(tao->linesearch); CHKERRQ(ierr);
+      tao->linesearch = PETSC_NULL;
+    }
+    if (tao->gradient) {
+      ierr = VecDestroy(tao->gradient); CHKERRQ(ierr);
+      tao->gradient = PETSC_NULL;
+    }
+    if (tao->stepdirection) {
+      ierr = VecDestroy(tao->stepdirection); CHKERRQ(ierr);
+      tao->stepdirection = PETSC_NULL;
+    }
+
     tao->ops->setup = 0;
     tao->ops->solve = 0;
     tao->ops->view  = 0;

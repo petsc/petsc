@@ -28,6 +28,10 @@ static PetscErrorCode TaoSolverSolve_CG(TaoSolver tao)
     
     PetscFunctionBegin;
 
+    if (tao->XL || tao->XU || tao->ops->computebounds) {
+      ierr = PetscPrintf(((PetscObject)tao)->comm,"WARNING: Variable bounds have been set but will be ignored by cg algorithm\n"); CHKERRQ(ierr);
+    }
+
     // Check convergence criteria
     ierr = TaoSolverComputeObjectiveAndGradient(tao, tao->solution, &f, tao->gradient); CHKERRQ(ierr);
     ierr = VecNorm(tao->gradient,NORM_2,&gnorm); CHKERRQ(ierr);
@@ -223,30 +227,17 @@ static PetscErrorCode TaoSolverDestroy_CG(TaoSolver tao)
     PetscErrorCode ierr;
 
     PetscFunctionBegin;
-    
-    if (tao->gradient) {
-	ierr = VecDestroy(tao->gradient); CHKERRQ(ierr);
+
+    if (tao->setupcalled) {
+      ierr = VecDestroy(cgP->X_old); CHKERRQ(ierr);
+      ierr = VecDestroy(cgP->G_old); CHKERRQ(ierr);
     }
-    if (tao->stepdirection) {
-	ierr = VecDestroy(tao->stepdirection); CHKERRQ(ierr);
-    }
-    if (cgP->X_old) {
-	ierr = VecDestroy(cgP->X_old); CHKERRQ(ierr);
-    }
-    if (cgP->G_old) {
-	ierr = VecDestroy(cgP->G_old); CHKERRQ(ierr);
-    }
-    
     if (tao->linesearch) {
-	ierr = TaoLineSearchDestroy(tao->linesearch); CHKERRQ(ierr);
-    }
-    if (tao->data) {
-	ierr = PetscFree(tao->data); CHKERRQ(ierr);
+      ierr = TaoLineSearchDestroy(tao->linesearch); CHKERRQ(ierr);
+      tao->linesearch = PETSC_NULL;
     }
 
-    tao->gradient = PETSC_NULL;
-    tao->stepdirection = PETSC_NULL;
-    tao->linesearch = PETSC_NULL;
+    ierr = PetscFree(tao->data); CHKERRQ(ierr);
     tao->data = PETSC_NULL;
 	
     PetscFunctionReturn(0);
@@ -286,6 +277,8 @@ static PetscErrorCode TaoSolverView_CG(TaoSolver tao, PetscViewer viewer)
 	ierr = PetscViewerASCIIPrintf(viewer, "  CG Type: %s\n", CG_Table[cgP->cg_type]); CHKERRQ(ierr);
 	ierr = PetscViewerASCIIPrintf(viewer, "  Gradient steps: %d\n", cgP->ngradsteps); CHKERRQ(ierr);
 	ierr= PetscViewerASCIIPrintf(viewer, "  Reset steps: %d\n", cgP->nresetsteps); CHKERRQ(ierr);
+    } else {
+      SETERRQ1(((PetscObject)tao)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for TAO CG",((PetscObject)viewer)->type_name);
     }
     PetscFunctionReturn(0);
 }

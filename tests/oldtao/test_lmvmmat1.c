@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
     ierr = y->View(); CHKERRQ(ierr);
 
 
-    ierr = VecDestroyVecs(v,50); CHKERRQ(ierr);
+    ierr = VecDestroyVecs(&v,50); CHKERRQ(ierr);
     delete lmvm_mat;
     for (i=0;i<50;i++) {
 	delete tv[i];

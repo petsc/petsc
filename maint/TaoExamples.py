@@ -27,10 +27,11 @@ class Example:
 
         
     def runCommand(self,version=2):
+        c = ["mpiexec","-np","%s" %self.nprocs]
         if version==1:
-            c = [os.path.join('.',self.example)]
+            c.extend( [os.path.join('.',self.example)])
         elif version==2:
-            c = [os.path.join('.','test_%s'%(self.example))]
+            c.extend([os.path.join('.','test_%s'%(self.example))])
         else:
             return "Bad TAO version (%d)" % version
         c.extend(self.options)
@@ -112,7 +113,16 @@ class ExampleList:
     def setWithTags(self,taglist):
         negtags = []
         retlist = []
-
+        
+        # First check for names
+        for t in taglist:
+            for e in self.list:
+                if e.name == t:
+                    retlist.append(e)
+        if len(retlist)>0:
+            self.list = retlist
+            return
+            
         for t in taglist:
             if t.startswith('-'):
                 negtags.append(t[1:])

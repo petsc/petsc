@@ -97,8 +97,9 @@ int main(int argc, char **argv) {
   ierr = TaoDMCreate(PETSC_COMM_WORLD,4,&user,&taodm); CHKERRQ(ierr);
   ierr = TaoDMSetSolverType(taodm,"tao_blmvm"); CHKERRQ(ierr);
   
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,DMDA_STENCIL_BOX,user.mx,
-                    user.my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&dm); CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,
+		      DMDA_STENCIL_BOX,user.mx,user.my,Nx,Ny,1,1,
+		      PETSC_NULL,PETSC_NULL,&dm); CHKERRQ(ierr);
   ierr = TaoDMSetDM(taodm,dm); CHKERRQ(ierr);
   ierr = DMDestroy(dm); CHKERRQ(ierr);
   ierr = TaoDMSetTolerances(taodm,0,0,0,0,0);

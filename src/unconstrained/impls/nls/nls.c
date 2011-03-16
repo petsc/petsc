@@ -111,6 +111,10 @@ static PetscErrorCode TaoSolverSolve_NLS(TaoSolver tao)
 
   PetscFunctionBegin;
 
+  if (tao->XL || tao->XU || tao->ops->computebounds) {
+    ierr = PetscPrintf(((PetscObject)tao)->comm,"WARNING: Variable bounds have been set but will be ignored by nls algorithm\n"); CHKERRQ(ierr);
+  }
+
   // Initialized variables
   pert = nlsP->sval;
 
@@ -1054,16 +1058,10 @@ static PetscErrorCode TaoSolverDestroy_NLS(TaoSolver tao)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (nlsP->D) {
+  if (tao->setupcalled) {
     ierr = VecDestroy(nlsP->D); CHKERRQ(ierr);
-  }
-  if (nlsP->W) {
     ierr = VecDestroy(nlsP->W); CHKERRQ(ierr);
-  }
-  if (nlsP->Xold) {
     ierr = VecDestroy(nlsP->Xold); CHKERRQ(ierr);
-  }
-  if (nlsP->Gold) {
     ierr = VecDestroy(nlsP->Gold); CHKERRQ(ierr);
   }
   if (nlsP->Diag) {
@@ -1072,12 +1070,8 @@ static PetscErrorCode TaoSolverDestroy_NLS(TaoSolver tao)
   if (nlsP->M) {
     ierr = MatDestroy(nlsP->M); CHKERRQ(ierr);
   }
+
   ierr = PetscFree(tao->data); CHKERRQ(ierr);
-
-
-  tao->gradient=PETSC_NULL;
-  tao->stepdirection=PETSC_NULL;
-  tao->linesearch = PETSC_NULL;
   tao->data = PETSC_NULL;
 
   PetscFunctionReturn(0);
@@ -1158,27 +1152,32 @@ static PetscErrorCode TaoSolverView_NLS(TaoSolver tao, PetscViewer viewer)
 {
   TAO_NLS *nlsP = (TAO_NLS *)tao->data;
   PetscInt nrejects;
-  MPI_Comm comm;
+  PetscBool isascii;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  comm = ((PetscObject)tao)->comm;
-  if (NLS_PC_BFGS == nlsP->pc_type && nlsP->M) {
-    ierr = MatLMVMGetRejects(nlsP->M,&nrejects); CHKERRQ(ierr);
-    ierr = PetscPrintf(comm, "  Rejected matrix updates: %d\n",nrejects); CHKERRQ(ierr);
-  }
-  ierr = PetscPrintf(comm, "  Newton steps: %d\n", nlsP->newt); CHKERRQ(ierr);
-  ierr = PetscPrintf(comm, "  BFGS steps: %d\n", nlsP->bfgs); CHKERRQ(ierr);
-  ierr = PetscPrintf(comm, "  Scaled gradient steps: %d\n", nlsP->sgrad); CHKERRQ(ierr);
-  ierr = PetscPrintf(comm, "  Gradient steps: %d\n", nlsP->grad); CHKERRQ(ierr);
 
-  ierr = PetscPrintf(comm, "  nls ksp atol: %d\n", nlsP->ksp_atol); CHKERRQ(ierr);
-  ierr = PetscPrintf(comm, "  nls ksp rtol: %d\n", nlsP->ksp_rtol); CHKERRQ(ierr);
-  ierr = PetscPrintf(comm, "  nls ksp ctol: %d\n", nlsP->ksp_ctol); CHKERRQ(ierr);
-  ierr = PetscPrintf(comm, "  nls ksp negc: %d\n", nlsP->ksp_negc); CHKERRQ(ierr);
-  ierr = PetscPrintf(comm, "  nls ksp dtol: %d\n", nlsP->ksp_dtol); CHKERRQ(ierr);
-  ierr = PetscPrintf(comm, "  nls ksp iter: %d\n", nlsP->ksp_iter); CHKERRQ(ierr);
-  ierr = PetscPrintf(comm, "  nls ksp othr: %d\n", nlsP->ksp_othr); CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
+  if (isascii) {
+    if (NLS_PC_BFGS == nlsP->pc_type && nlsP->M) {
+      ierr = MatLMVMGetRejects(nlsP->M,&nrejects); CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer, "  Rejected matrix updates: %d\n",nrejects); CHKERRQ(ierr);
+    }
+    ierr = PetscViewerASCIIPrintf(viewer, "  Newton steps: %d\n", nlsP->newt); CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "  BFGS steps: %d\n", nlsP->bfgs); CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "  Scaled gradient steps: %d\n", nlsP->sgrad); CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "  Gradient steps: %d\n", nlsP->grad); CHKERRQ(ierr);
+
+    ierr = PetscViewerASCIIPrintf(viewer, "  nls ksp atol: %d\n", nlsP->ksp_atol); CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "  nls ksp rtol: %d\n", nlsP->ksp_rtol); CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "  nls ksp ctol: %d\n", nlsP->ksp_ctol); CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "  nls ksp negc: %d\n", nlsP->ksp_negc); CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "  nls ksp dtol: %d\n", nlsP->ksp_dtol); CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "  nls ksp iter: %d\n", nlsP->ksp_iter); CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "  nls ksp othr: %d\n", nlsP->ksp_othr); CHKERRQ(ierr);
+  } else {
+    SETERRQ1(((PetscObject)tao)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for TAO NLS",((PetscObject)viewer)->type_name);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -1284,7 +1283,6 @@ PetscErrorCode TaoSolverCreate_NLS(TaoSolver tao)
 
   // Set linear solver to default for symmetric matrices
   ierr = KSPCreate(((PetscObject)tao)->comm,&tao->ksp); CHKERRQ(ierr);
-  ierr = KSPSetOptionsPrefix(tao->ksp,"tao_"); CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
