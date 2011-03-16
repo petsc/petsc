@@ -58,6 +58,7 @@ E*/
 #define PCPBJACOBI        "pbjacobi"
 #define PCMAT             "mat"
 #define PCHYPRE           "hypre"
+#define PCPARMS           "parms"
 #define PCFIELDSPLIT      "fieldsplit"
 #define PCTFS             "tfs"
 #define PCML              "ml"
@@ -408,6 +409,32 @@ extern PetscErrorCode  PCAINVCUSPSetDropTolerance(PC,PetscReal);
 extern PetscErrorCode  PCAINVCUSPUseScaling(PC,PetscBool);
 extern PetscErrorCode  PCAINVCUSPSetNonzeros(PC,PetscInt);
 extern PetscErrorCode  PCAINVCUSPSetLinParameter(PC,PetscInt);
+/*E
+    PCPARMSGlobalType - Determines the global preconditioner method in PARMS
+
+    Level: intermediate
+
+.seealso: PCPARMSSetGlobal()
+E*/
+typedef enum {PC_PARMS_GLOBAL_RAS,PC_PARMS_GLOBAL_SCHUR,PC_PARMS_GLOBAL_BJ} PCPARMSGlobalType;
+extern const char *PCPARMSGlobalTypes[];
+/*E
+    PCPARMSLocalType - Determines the local preconditioner method in PARMS
+
+    Level: intermediate
+
+.seealso: PCPARMSSetLocal()
+E*/
+typedef enum {PC_PARMS_LOCAL_ILU0,PC_PARMS_LOCAL_ILUK,PC_PARMS_LOCAL_ILUT,PC_PARMS_LOCAL_ARMS} PCPARMSLocalType;
+extern const char *PCPARMSLocalTypes[];
+
+extern PetscErrorCode PCPARMSSetGlobal(PC pc,PCPARMSGlobalType type);
+extern PetscErrorCode PCPARMSSetLocal(PC pc,PCPARMSLocalType type);
+extern PetscErrorCode PCPARMSSetSolveTolerances(PC pc,PetscReal tol,PetscInt maxits);
+extern PetscErrorCode PCPARMSSetSolveRestart(PC pc,PetscInt restart);
+extern PetscErrorCode PCPARMSSetNonsymPerm(PC pc,PetscBool nonsym);
+extern PetscErrorCode PCPARMSSetFill(PC pc,PetscInt lfil0,PetscInt lfil1,PetscInt lfil2);
+
 PETSC_EXTERN_CXX_END
 
 #endif /* __PETSCPC_H */

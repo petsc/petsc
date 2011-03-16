@@ -3,10 +3,11 @@ import PETSc.package
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
-    self.download  = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/pARMS_3.tar.gz']
-    self.functions = ['parms_VecCreate']
+    self.download  = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/pARMS_3.2.tar.gz']
+    self.functions = ['parms_PCCreate']
     self.includes  = ['parms.h']
     self.liblist   = [['libparms.a']]
+    self.complex   = 1
     self.license   = 'http://www-users.cs.umn.edu/~saad/software/pARMS/pARMS.html'
     return
 
@@ -32,7 +33,11 @@ class Configure(PETSc.package.NewPackage):
     # C compiler
     self.setCompilers.pushLanguage('C')
     g.write('CC         = '+self.setCompilers.getCompiler()+'\n')
-    g.write('CFLAGS     = '+self.setCompilers.getCompilerFlags()+'-DUSE_MPI -DREAL=double -DDBL -DHAS_BLAS -DGCC3\n')
+    g.write('CFLAGS     = '+self.setCompilers.getCompilerFlags()+'-DUSE_MPI -DREAL=double -DHAS_BLAS ')
+    if self.scalartypes.scalartype == 'complex':
+      g.write('-DDBL_CMPLX\n')
+    else:
+      g.write('-DDBL\n')
     self.setCompilers.popLanguage()
     
     # FORTRAN compiler
@@ -82,7 +87,7 @@ class Configure(PETSc.package.NewPackage):
     if self.installNeeded('makefile.in'):
       try:
         self.logPrintBox('Compiling pARMS; this may take several minutes')
-        output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && PARMS_INSTALL_DIR='+self.installDir+' && export PARMS_INSTALL_DIR && mkdir '+os.path.join(self.installDir,self.libdir)+' && make clean && make && cp -f include/*.h '+os.path.join(self.installDir,self.includedir)+'/.', timeout=2500, log = self.framework.log)
+        output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && PARMS_INSTALL_DIR='+self.installDir+' && export PARMS_INSTALL_DIR && make cleanall && make && cp -f include/*.h '+os.path.join(self.installDir,self.includedir)+'/. && cp lib/* '+os.path.join(self.installDir,self.libdir), timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on pARMS: '+str(e))
       self.postInstall(output+err,'makefile.in')
