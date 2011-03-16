@@ -20,9 +20,9 @@
       PetscEnum DMDA_BOUNDARY_PERIODIC
 
       parameter (DMDA_BOUNDARY_NONE = 0)
-      parameter (DMDA_BOUNDARY_GHOSTED = 0)
-      parameter (DMDA_BOUNDARY_MIRROR = 0)
-      parameter (DMDA_BOUNDARY_PERIODIC = 0)
+      parameter (DMDA_BOUNDARY_GHOSTED = 1)
+      parameter (DMDA_BOUNDARY_MIRROR = 2)
+      parameter (DMDA_BOUNDARY_PERIODIC = 3)
 
 !
 ! DMDAInterpolationType

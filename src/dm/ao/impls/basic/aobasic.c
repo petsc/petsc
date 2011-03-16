@@ -151,7 +151,7 @@ PetscErrorCode AOMap_BasicMemoryScalable_private(AO ao,PetscInt n,PetscInt *ia,P
 {
   PetscErrorCode ierr;
   AO_Basic       *aobasic = (AO_Basic*)ao->data;
-  PetscInt       *app_loc = maploc; //aobasic->app_loc;  
+  PetscInt       *app_loc = maploc; 
   MPI_Comm       comm=((PetscObject)ao)->comm;
   PetscMPIInt    rank,size,tag1,tag2;
   PetscInt       *owner,*start,*nprocs,nsends,nreceives;
@@ -287,8 +287,7 @@ PetscErrorCode AOMap_BasicMemoryScalable_private(AO ao,PetscInt n,PetscInt *ia,P
     count=0;
     for (i=0; i<n; i++){
       if (source == owner[i]) ia[i] = rbuf[count++]; 
-    }
-    //printf("[%d] 2nd recv %d maps from [%d]: %d %d\n",rank,nindices,source,rbuf[0],rbuf[1]);    
+    }    
   }
 
   ierr = PetscFree(start);CHKERRQ(ierr);
@@ -579,6 +578,142 @@ PetscErrorCode  AOCreateBasic(MPI_Comm comm,PetscInt napp,const PetscInt myapp[]
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "AOCreateBasicMemoryScalable_private" 
+PetscErrorCode  AOCreateBasicMemoryScalable_private(MPI_Comm comm,PetscInt napp,const PetscInt from_array[],const PetscInt to_array[],AO ao, PetscInt *aomap_loc)
+{
+  PetscErrorCode ierr;
+  AO_Basic       *aobasic=(AO_Basic*)ao->data;
+  PetscLayout    map=aobasic->map;
+  PetscInt       n_local = map->n,i,j;
+  PetscMPIInt    rank,size,tag;
+  PetscInt       *owner,*start,*nprocs,nsends,nreceives;
+  PetscInt       nmax,count,*sindices,*rindices,idx,lastidx;
+  PetscInt       *owners = aobasic->map->range;
+  MPI_Request    *send_waits,*recv_waits;
+  MPI_Status     recv_status;
+  PetscMPIInt    nindices,source;
+  PetscInt       *rbuf;
+  PetscInt       n=napp,ip,ia;
+  PetscInt       *app_loc;
+
+  PetscFunctionBegin;
+  app_loc = aomap_loc;
+  ierr = PetscMemzero(app_loc,n_local*sizeof(PetscInt));CHKERRQ(ierr);
+
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  
+  /*  first count number of contributors (of from_array[]) to each processor */
+  ierr   = PetscMalloc(2*size*sizeof(PetscInt),&nprocs);CHKERRQ(ierr);
+  ierr   = PetscMemzero(nprocs,2*size*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr   = PetscMalloc(n*sizeof(PetscInt),&owner);CHKERRQ(ierr);
+ 
+  j       = 0;
+  lastidx = -1;
+  for (i=0; i<n; i++) {
+    /* if indices are NOT locally sorted, need to start search at the beginning */
+    if (lastidx > (idx = from_array[i])) j = 0; 
+    lastidx = idx;
+    for (; j<size; j++) {
+      if (idx >= owners[j] && idx < owners[j+1]) {
+        nprocs[2*j]  += 2; /* num of indices to be sent */
+        nprocs[2*j+1] = 1; /* send to proc[j] */
+        owner[i] = j; 
+        break;
+      }
+    }
+  }
+  nprocs[2*rank]=nprocs[2*rank+1]=0; /* do not receive from self! */
+  nsends = 0;  
+  for (i=0; i<size; i++) nsends += nprocs[2*i+1];  
+
+  /* inform other processors of number of messages and max length*/
+  ierr = PetscMaxSum(comm,nprocs,&nmax,&nreceives);CHKERRQ(ierr);
+
+  /* post receives: 
+     since we don't know how long each individual message is we 
+     allocate the largest needed buffer for each receive. Potentially 
+     this is a lot of wasted space.
+  */
+  ierr = PetscObjectGetNewTag((PetscObject)ao,&tag);CHKERRQ(ierr);
+
+  ierr = PetscMalloc(nreceives*nmax*sizeof(PetscInt),&rindices);CHKERRQ(ierr);
+  ierr = PetscMalloc(nreceives*sizeof(MPI_Request),&recv_waits);CHKERRQ(ierr);
+
+  for (i=0,count=0; i<nreceives; i++) {  
+    ierr = MPI_Irecv(rindices+nmax*i,nmax,MPIU_INT,MPI_ANY_SOURCE,tag,comm,recv_waits+count++);CHKERRQ(ierr);
+  }
+
+  /* do sends:
+      1) starts[i] gives the starting index in svalues for stuff going to 
+         the ith processor
+  */
+  ierr = PetscMalloc(n*sizeof(PetscInt),&sindices);CHKERRQ(ierr);
+  ierr = PetscMalloc(nsends*sizeof(MPI_Request),&send_waits);CHKERRQ(ierr);
+  ierr = PetscMalloc(size*sizeof(PetscInt),&start);CHKERRQ(ierr);
+  
+  start[0] = 0;
+  for (i=1; i<size; i++) start[i] = start[i-1] + nprocs[2*i-2];
+  for (i=0; i<n; i++) {
+    j = owner[i];
+    if (j != rank){
+      ip = from_array[i];
+      ia = to_array[i];
+      sindices[start[j]++]  = ip; sindices[start[j]++]  = ia; 
+    } else { /* compute my own map */
+      ip = from_array[i] -owners[rank];
+      ia = to_array[i];
+      app_loc[ip] = ia; 
+    }
+  }
+
+  start[0] = 0;
+  for (i=1; i<size; i++) { start[i] = start[i-1] + nprocs[2*i-2];} 
+  for (i=0,count=0; i<size; i++) {
+    if (nprocs[2*i+1]) {
+      ierr = MPI_Isend(sindices+start[i],nprocs[2*i],MPIU_INT,i,tag,comm,send_waits+count);CHKERRQ(ierr);
+      count++;
+    }
+  }
+  if (nsends != count) SETERRQ2(comm,PETSC_ERR_SUP,"nsends %d != count %d",nsends,count);
+
+  /* wait on sends */
+  if (nsends) {
+    MPI_Status     *send_status;
+    ierr = PetscMalloc(nsends*sizeof(MPI_Status),&send_status);CHKERRQ(ierr);
+    ierr = MPI_Waitall(nsends,send_waits,send_status);CHKERRQ(ierr);
+    ierr = PetscFree(send_status);CHKERRQ(ierr);
+  }
+
+  /* recvs */
+  count=0;
+  for (j= nreceives; j>0; j--){
+    ierr = MPI_Waitany(nreceives,recv_waits,&i,&recv_status);CHKERRQ(ierr);
+    ierr = MPI_Get_count(&recv_status,MPIU_INT,&nindices);CHKERRQ(ierr);
+    rbuf = rindices+nmax*i; /* global index */
+    source = recv_status.MPI_SOURCE;
+    /* compute local mapping */
+    for (i=0; i<nindices; i+=2){ /* pack app_loc */
+      ip = rbuf[i] - owners[rank]; /* local index */
+      ia = rbuf[i+1];
+      app_loc[ip] = ia;
+    }
+    count++;
+  }
+
+  ierr = PetscFree(start);CHKERRQ(ierr);
+  ierr = PetscFree(send_waits);CHKERRQ(ierr);
+  ierr = PetscFree(sindices);CHKERRQ(ierr);
+  ierr = PetscFree(recv_waits);CHKERRQ(ierr);
+  
+  
+  ierr = PetscFree(rindices);CHKERRQ(ierr);
+  ierr = PetscFree(owner);CHKERRQ(ierr);
+  ierr = PetscFree(nprocs);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "AOCreateBasicMemoryScalable" 
 PetscErrorCode  AOCreateBasicMemoryScalable(MPI_Comm comm,PetscInt napp,const PetscInt myapp[],const PetscInt mypetsc[],AO *aoout)
 {
@@ -586,12 +721,51 @@ PetscErrorCode  AOCreateBasicMemoryScalable(MPI_Comm comm,PetscInt napp,const Pe
   AO             ao;
   AO_Basic       *aobasic;
   PetscLayout    map;
-  PetscInt       n_local,i,j;
+  PetscInt       n_local;
   PetscBool      opt;
 
   PetscFunctionBegin;
-  // not done yet!
-  ierr = AOCreateBasic(comm,napp,myapp,mypetsc,&ao);CHKERRQ(ierr);
+  /* copied from AOCreateBasic(comm,napp,myapp,mypetsc,&ao) */
+  PetscMPIInt    *lens,size,rank,nnapp,*disp;
+  PetscInt       N,i,*petsc,start;
+
+  PetscValidPointer(aoout,5);
+  *aoout = 0;
+#ifndef PETSC_USE_DYNAMIC_LIBRARIES
+  ierr = AOInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+#endif
+
+  ierr = PetscHeaderCreate(ao, _p_AO, struct _AOOps, AO_CLASSID, AO_BASIC, "AO", comm, AODestroy, AOView);CHKERRQ(ierr);
+  ierr = PetscNewLog(ao, AO_Basic, &aobasic);CHKERRQ(ierr);
+
+  ierr = PetscMemcpy(ao->ops, &AOops, sizeof(AOops));CHKERRQ(ierr);
+  ao->data = (void*) aobasic;
+  /* transmit all lengths to all processors */
+  ierr  = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
+  ierr  = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr  = PetscMalloc2(size,PetscMPIInt, &lens,size,PetscMPIInt,&disp);CHKERRQ(ierr);
+  nnapp = napp;
+  ierr  = MPI_Allgather(&nnapp, 1, MPI_INT, lens, 1, MPI_INT, comm);CHKERRQ(ierr);
+  N    =  0;
+  for(i = 0; i < size; i++) {
+    disp[i] = N;
+    N += lens[i];
+  }
+  aobasic->N = N;
+
+  /*
+     If mypetsc is 0 then use "natural" numbering 
+  */
+  if (napp && !mypetsc) {
+    start = disp[rank];
+    ierr  = PetscMalloc((napp+1) * sizeof(PetscInt), &petsc);CHKERRQ(ierr);
+    for (i=0; i<napp; i++) {
+      petsc[i] = start + i;
+    }
+  } else {
+    petsc = (PetscInt*)mypetsc;
+  }
+  /* -------------------------------- */
   ao->ops->view               = AOView_BasicMemoryScalable;
   ao->ops->destroy            = AODestroy_BasicMemoryScalable;
   ao->ops->petsctoapplication = AOPetscToApplication_BasicMemoryScalable;
@@ -604,17 +778,19 @@ PetscErrorCode  AOCreateBasicMemoryScalable(MPI_Comm comm,PetscInt napp,const Pe
   
   ierr = PetscLayoutSetUp(map);CHKERRQ(ierr);
   aobasic->map = map;
-  
+
   n_local = map->n;
   ierr   = PetscMalloc2(n_local,PetscInt, &aobasic->app_loc,n_local,PetscInt,&aobasic->petsc_loc);CHKERRQ(ierr);
-  // copy app and petsc to app_loc and petsc_loc
-  j = map->rstart;
-  for (i=0; i<n_local; i++){
-    aobasic->app_loc[i]   = aobasic->app[j];
-    aobasic->petsc_loc[i] = aobasic->petsc[j];
-    j++;
-  }
 
+  /* get app_loc: petsc -> app */
+  ierr = AOCreateBasicMemoryScalable_private(comm,napp,petsc,myapp,ao,aobasic->app_loc);CHKERRQ(ierr);
+
+  /* get petsc_loc: app -> petsc */
+  ierr = AOCreateBasicMemoryScalable_private(comm,napp,myapp,petsc,ao,aobasic->petsc_loc);CHKERRQ(ierr);
+
+  if (napp && !mypetsc) {ierr = PetscFree(petsc);CHKERRQ(ierr);}
+  ierr  = PetscFree2(lens,disp);CHKERRQ(ierr);
+ 
   opt = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL, "-ao_view", &opt,PETSC_NULL);CHKERRQ(ierr);
   if (opt) {

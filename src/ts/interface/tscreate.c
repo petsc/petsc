@@ -50,7 +50,6 @@ PetscErrorCode  TSCreate(MPI_Comm comm, TS *ts) {
   /* General TS description */
   t->problem_type       = TS_LINEAR;
   t->vec_sol            = PETSC_NULL;
-  t->vec_sol_always     = PETSC_NULL;
   t->numbermonitors     = 0;
   t->ksp                = PETSC_NULL;
   t->A                  = PETSC_NULL;

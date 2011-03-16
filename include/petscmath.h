@@ -52,9 +52,9 @@ typedef std::complex<float> PetscScalar;
 typedef std::complex<double> PetscScalar;
 #elif defined(PETSC_USE_SCALAR_LONG_DOUBLE)
 typedef std::complex<long double> PetscScalar;
-#endif
+#endif /* PETSC_USE_SCALAR_* */
 
-#else
+#else /* PETSC_CLANGUAGE_CXX */
 /*  C support of complex numbers: Requires C99 compliant compiler*/
 #include <complex.h>
 
@@ -100,13 +100,13 @@ typedef long double complex PetscScalar;
 #define PetscSinScalar(a)     csinl(a)
 #define PetscCosScalar(a)     ccosl(a)
 
-#endif
-#endif
+#endif /* PETSC_USE_SCALAR_* */
+#endif /* PETSC_CLANGUAGE_CXX */
 
 #if !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)
 extern  MPI_Datatype  MPI_C_DOUBLE_COMPLEX;
 extern  MPI_Datatype  MPI_C_COMPLEX;
-#endif
+#endif /* PETSC_HAVE_MPI_C_DOUBLE_COMPLEX */
 
 #if defined(PETSC_USE_SCALAR_SINGLE)
 #define MPIU_SCALAR MPI_C_COMPLEX
@@ -114,12 +114,12 @@ extern  MPI_Datatype  MPI_C_COMPLEX;
 #define MPIU_SCALAR MPI_C_DOUBLE_COMPLEX
 #elif defined(PETSC_USE_SCALAR_LONG_DOUBLE)
 #define MPIU_SCALAR error
-#endif
+#endif /* PETSC_USE_SCALAR_* */
 
 /*
     real number definitions
  */
-#else
+#else /* PETSC_USE_COMPLEX */
 #if defined(PETSC_USE_SCALAR_SINGLE)
 #define MPIU_SCALAR           MPI_FLOAT
 typedef float PetscScalar;
@@ -133,7 +133,7 @@ typedef long double PetscScalar;
 extern MPI_Datatype MPIU___FLOAT128;
 #define MPIU_SCALAR MPIU___FLOAT128
 typedef __float128 PetscScalar;
-#endif
+#endif /* PETSC_USE_SCALAR_* */
 #define PetscRealPart(a)      (a)
 #define PetscImaginaryPart(a) (0.)
 #define PetscAbsScalar(a)     (((a)<0.0)   ? -(a) : (a))
@@ -145,7 +145,7 @@ typedef __float128 PetscScalar;
 #define PetscLogScalar(a)     log(a)
 #define PetscSinScalar(a)     sin(a)
 #define PetscCosScalar(a)     cos(a)
-#else
+#else /* PETSC_USE_SCALAR___FLOAT128 */
 #include <quadmath.h>
 #define PetscSqrtScalar(a)    sqrtq(a)
 #define PetscPowScalar(a,b)   powq(a,b)
@@ -153,9 +153,9 @@ typedef __float128 PetscScalar;
 #define PetscLogScalar(a)     logq(a)
 #define PetscSinScalar(a)     sinq(a)
 #define PetscCosScalar(a)     cosq(a)
-#endif
+#endif /* PETSC_USE_SCALAR___FLOAT128 */
 
-#endif
+#endif /* PETSC_USE_COMPLEX */
 
 #if defined(PETSC_USE_SCALAR_SINGLE)
 #define MPIU_REAL   MPI_FLOAT
@@ -169,7 +169,7 @@ typedef long double PetscReal;
 #elif defined(PETSC_USE_SCALAR___FLOAT128)
 #define MPIU_REAL MPIU___FLOAT128
 typedef __float128 PetscReal;
-#endif
+#endif /* PETSC_USE_SCALAR_* */
 
 #define PetscSign(a) (((a) >= 0) ? ((a) == 0 ? 0 : 1) : -1)
 #define PetscAbs(a)  (((a) >= 0) ? (a) : -(a))

@@ -1073,17 +1073,17 @@ PetscErrorCode  SNESSetFunction(SNES snes,Vec r,PetscErrorCode (*func)(SNES,Vec,
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  if (r) PetscValidHeaderSpecific(r,VEC_CLASSID,2);
-  if (r) PetscCheckSameComm(snes,1,r,2);
-  if (!r && snes->dm) {
-    ierr = DMCreateGlobalVector(snes->dm,&r);CHKERRQ(ierr);
-  } else {
-    ierr = PetscObjectReference((PetscObject)r);CHKERRQ(ierr); 
+  if (r) {
+    PetscValidHeaderSpecific(r,VEC_CLASSID,2);
+    PetscCheckSameComm(snes,1,r,2);
+    ierr = PetscObjectReference((PetscObject)r);CHKERRQ(ierr);
+    if (snes->vec_func) {ierr = VecDestroy(snes->vec_func);CHKERRQ(ierr);}
+    snes->vec_func = r;
+  } else if (!snes->vec_func && snes->dm) {
+    ierr = DMCreateGlobalVector(snes->dm,&snes->vec_func);CHKERRQ(ierr);
   }
-  if (snes->vec_func) { ierr = VecDestroy(snes->vec_func);CHKERRQ(ierr); }
-  snes->ops->computefunction = func; 
-  snes->vec_func             = r;
-  snes->funP                 = ctx;
+  if (func) snes->ops->computefunction = func;
+  if (ctx)  snes->funP                 = ctx;
   PetscFunctionReturn(0);
 }
 

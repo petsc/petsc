@@ -1,51 +1,67 @@
 Number of elements in ordering 15
 PETSc->App  App->PETSc
   0    0      0    0
-  1    5      1    3
-  2   10      2    6
-  3    1      3    9
-  4    6      4   12
-  5   11      5    1
-  6    2      6    4
+  1    3      1    5
+  2    6      2   10
+  3    9      3    1
+  4   12      4    6
+  5    1      5   11
+  6    4      6    2
   7    7      7    7
-  8   12      8   10
-  9    3      9   13
- 10    8     10    2
- 11   13     11    5
- 12    4     12    8
- 13    9     13   11
+  8   10      8   12
+  9   13      9    3
+ 10    2     10    8
+ 11    5     11   13
+ 12    8     12    4
+ 13   11     13    9
  14   14     14   14
-[0] 2,1,9,7 PetscToApplication 10 5 3 7
-[0] 0,3,4 ApplicationToPetsc 0 9 12
-[1] 2,1,9,7 PetscToApplication 10 5 3 7
-[1] 0,3,4 ApplicationToPetsc 0 9 12
-[2] 2,1,9,7 PetscToApplication 10 5 3 7
-[2] 0,3,4 ApplicationToPetsc 0 9 12
+[0] 2,1,9,7 PetscToApplication 6 3 13 7
+[0] 0,3,4 ApplicationToPetsc 0 1 6
+[1] 2,1,9,7 PetscToApplication 6 3 13 7
+[1] 0,3,4 ApplicationToPetsc 0 1 6
+[2] 2,1,9,7 PetscToApplication 6 3 13 7
+[2] 0,3,4 ApplicationToPetsc 0 1 6
 
-Test AOCreateBasicMemoryScalable ... 
+Test AOCreateBasicMemoryScalable: 
 Number of elements in ordering 15
 PETSc->App  App->PETSc
 Process [0]
   0    0      0    0
-  1    5      1    3
-  2   10      2    6
-  3    1      3    9
-  4    6      4   12
+  1    3      1    5
+  2    6      2   10
+  3    9      3    1
+  4   12      4    6
 Process [1]
-  5   11      5    1
-  6    2      6    4
+  5    1      5   11
+  6    4      6    2
   7    7      7    7
-  8   12      8   10
-  9    3      9   13
+  8   10      8   12
+  9   13      9    3
 Process [2]
- 10    8     10    2
- 11   13     11    5
- 12    4     12    8
- 13    9     13   11
+ 10    2     10    8
+ 11    5     11   13
+ 12    8     12    4
+ 13   11     13    9
  14   14     14   14
-[0] 2,1,9,7 PetscToApplication 10 5 3 7
-[0] 0,3,4 ApplicationToPetsc 0 9 12
-[1] 2,1,9,7 PetscToApplication 10 5 3 7
-[1] 0,3,4 ApplicationToPetsc 0 9 12
-[2] 2,1,9,7 PetscToApplication 10 5 3 7
-[2] 0,3,4 ApplicationToPetsc 0 9 12
+
+Test AOCreateBasicMemoryScalable with ispetsc=PETSC_NULL:
+Number of elements in ordering 15
+PETSc->App  App->PETSc
+Process [0]
+  0    0      0    0
+  1    3      1    5
+  2    6      2   10
+  3    9      3    1
+  4   12      4    6
+Process [1]
+  5    1      5   11
+  6    4      6    2
+  7    7      7    7
+  8   10      8   12
+  9   13      9    3
+Process [2]
+ 10    2     10    8
+ 11    5     11   13
+ 12    8     12    4
+ 13   11     13    9
+ 14   14     14   14
