@@ -1,36 +1,48 @@
 Number of elements in ordering 10
 PETSc->App  App->PETSc
   0    0      0    0
-  1    5      1    2
-  2    1      2    4
+  1    2      1    5
+  2    4      2    1
   3    6      3    6
-  4    2      4    8
-  5    7      5    1
+  4    8      4    2
+  5    1      5    7
   6    3      6    3
-  7    8      7    5
-  8    4      8    7
+  7    5      7    8
+  8    7      8    4
   9    9      9    9
-[0] 2,1,9,7 PetscToApplication 1 5 9 8
-[0] 0,3,4 ApplicationToPetsc 0 6 8
-[1] 2,1,9,7 PetscToApplication 1 5 9 8
-[1] 0,3,4 ApplicationToPetsc 0 6 8
+[0] 2,1,9,7 PetscToApplication 4 2 9 5
+[0] 0,3,4 ApplicationToPetsc 0 6 2
+[1] 2,1,9,7 PetscToApplication 4 2 9 5
+[1] 0,3,4 ApplicationToPetsc 0 6 2
 
-Test AOCreateBasicMemoryScalable ... 
+Test AOCreateBasicMemoryScalable: 
 Number of elements in ordering 10
 PETSc->App  App->PETSc
 Process [0]
   0    0      0    0
-  1    5      1    2
-  2    1      2    4
+  1    2      1    5
+  2    4      2    1
   3    6      3    6
-  4    2      4    8
+  4    8      4    2
 Process [1]
-  5    7      5    1
+  5    1      5    7
   6    3      6    3
-  7    8      7    5
-  8    4      8    7
+  7    5      7    8
+  8    7      8    4
   9    9      9    9
-[0] 2,1,9,7 PetscToApplication 1 5 9 8
-[0] 0,3,4 ApplicationToPetsc 0 6 8
-[1] 2,1,9,7 PetscToApplication 1 5 9 8
-[1] 0,3,4 ApplicationToPetsc 0 6 8
+
+Test AOCreateBasicMemoryScalable with ispetsc=PETSC_NULL:
+Number of elements in ordering 10
+PETSc->App  App->PETSc
+Process [0]
+  0    0      0    0
+  1    2      1    5
+  2    4      2    1
+  3    6      3    6
+  4    8      4    2
+Process [1]
+  5    1      5    7
+  6    3      6    3
+  7    5      7    8
+  8    7      8    4
+  9    9      9    9
