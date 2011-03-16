@@ -58,6 +58,9 @@ extern PetscErrorCode  PCCreate_SACUSP(PC);
 extern PetscErrorCode  PCCreate_BiCGStabCUSP(PC);
 extern PetscErrorCode  PCCreate_AINVCUSP(PC);
 #endif
+#if defined(PETSC_HAVE_PARMS)
+extern PetscErrorCode  PCCreate_PARMS(PC);
+#endif
 
 EXTERN_C_END
 
@@ -138,6 +141,9 @@ PetscErrorCode  PCRegisterAll(const char path[])
   ierr = PCRegisterDynamic(PCAINVCUSP     ,path,"PCCreate_AINVCUSP",PCCreate_AINVCUSP);CHKERRQ(ierr);
   ierr = PCRegisterDynamic(PCBICGSTABCUSP ,path,"PCCreate_BiCGStabCUSP",PCCreate_BiCGStabCUSP);CHKERRQ(ierr);
   /* ierr = PCRegisterDynamic(PCSACUSPPOLY    ,path,"PCCreateSACUSPPoly",PCCreate_SACUSPPoly);CHKERRQ(ierr); */
+#endif
+#if defined(PETSC_HAVE_PARMS)
+  ierr = PCRegisterDynamic(PCPARMS   ,path,"PCCreate_PARMS",PCCreate_PARMS);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }

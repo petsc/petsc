@@ -439,6 +439,7 @@ class PETScConfigureInfo(object):
     self.fortrancpp      = self.framework.require('PETSc.utilities.fortranCPP', None)
     self.debuggers       = self.framework.require('PETSc.utilities.debuggers', None)
     self.sharedLibraries = self.framework.require('PETSc.utilities.sharedLibraries', None)
+    self.sowing          = self.framework.require('PETSc.packages.sowing', None)
     return
 
 class PETScMaker(script.Script):
@@ -542,7 +543,7 @@ class PETScMaker(script.Script):
    confDir = self.petscConfDir
    self.cleanupLog(self, confDir)
    if self.argDB['dependencies']:
-     if len(self.sourceDatabase):
+     if hasattr(self, 'sourceDatabase') and len(self.sourceDatabase):
        import cPickle
        with file(self.sourceDBFilename, 'wb') as f:
          cPickle.dump(self.sourceDatabase, f)
@@ -1001,14 +1002,13 @@ class PETScMaker(script.Script):
    sys.path = oldPath
    return
 
- def builFortranStubs(self):
+ def buildFortranStubs(self):
    oldPath = sys.path
    sys.path.append(os.path.join(self.petscDir, 'bin', 'maint'))
    from generatefortranstubs import main, processf90interfaces
    for d in os.listdir(os.path.join(self.petscDir, 'include', 'finclude', 'ftn-auto')):
      if d.endswith('-tmpdir'): shutil.rmtree(os.path.join(self.petscDir, 'include', 'finclude', 'ftn-auto', d))
-   #TODO: Read BFORT from configure
-   #main(self.petscDir, BFORT, os.getcwd())
+   main(self.petscDir, self.configInfo.sowing.bfort, os.getcwd())
    processf90interfaces(self.petscDir)
    for d in os.listdir(os.path.join(self.petscDir, 'include', 'finclude', 'ftn-auto')):
      if d.endswith('-tmpdir'): shutil.rmtree(os.path.join(self.petscDir, 'include', 'finclude', 'ftn-auto', d))
