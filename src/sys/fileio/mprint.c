@@ -67,11 +67,14 @@ PetscErrorCode  PetscFormatConvert(const char *format,char *newformat,size_t siz
       i += 3;
     } else if (format[i] == '%' && format[i+1] == 'G') {
       newformat[j++] = '%';
-#if !defined(PETSC_USE_SCALAR_LONG_DOUBLE)
+#if defined(PETSC_USE_SCALAR_DOUBLE) || defined(PETSC_USE_SCALAR_SINGLE)
       newformat[j++] = 'g';
-#else
+#elif defined(PETSC_USE_SCALAR_LONG_DOUBLE)
       newformat[j++] = 'L';
       newformat[j++] = 'g';
+#elif defined(PETSC_USE_SCALAR___FLOAT128)
+      newformat[j++] = 'Q';
+      newformat[j++] = 'e';
 #endif
       i += 2;
     }else {

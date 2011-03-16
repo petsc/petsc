@@ -173,8 +173,8 @@ PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
       min -= 1.e-5;
       max += 1.e-5;
     }
-    ierr = MPI_Reduce(&min,&ymin,1,MPIU_REAL,MPI_MIN,0,comm);CHKERRQ(ierr);
-    ierr = MPI_Reduce(&max,&ymax,1,MPIU_REAL,MPI_MAX,0,comm);CHKERRQ(ierr);
+    ierr = MPI_Reduce(&min,&ymin,1,MPIU_REAL,MPIU_MIN,0,comm);CHKERRQ(ierr);
+    ierr = MPI_Reduce(&max,&ymax,1,MPIU_REAL,MPIU_MAX,0,comm);CHKERRQ(ierr);
 
     ierr = PetscDrawSynchronizedClear(draw);CHKERRQ(ierr);
     ierr = PetscViewerDrawGetDrawAxis(v,j,&axis);CHKERRQ(ierr);

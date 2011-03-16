@@ -162,9 +162,9 @@ PetscErrorCode  PetscSplitReductionApply(PetscSplitReduction *sr)
         complex case we max both the real and imaginary parts, the imaginary part
         is just ignored later
       */
-      ierr = MPI_Allreduce(lvalues,gvalues,2*numops,MPIU_REAL,MPI_MAX,comm);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(lvalues,gvalues,2*numops,MPIU_REAL,MPIU_MAX,comm);CHKERRQ(ierr);
 #else
-      ierr = MPI_Allreduce(lvalues,gvalues,numops,MPIU_REAL,MPI_MAX,comm);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(lvalues,gvalues,numops,MPIU_REAL,MPIU_MAX,comm);CHKERRQ(ierr);
 #endif
     } else if (min_flg) {
 #if defined(PETSC_USE_COMPLEX)
@@ -172,9 +172,9 @@ PetscErrorCode  PetscSplitReductionApply(PetscSplitReduction *sr)
         complex case we min both the real and imaginary parts, the imaginary part
         is just ignored later
       */
-      ierr = MPI_Allreduce(lvalues,gvalues,2*numops,MPIU_REAL,MPI_MIN,comm);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(lvalues,gvalues,2*numops,MPIU_REAL,MPIU_MIN,comm);CHKERRQ(ierr);
 #else
-      ierr = MPI_Allreduce(lvalues,gvalues,numops,MPIU_REAL,MPI_MIN,comm);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(lvalues,gvalues,numops,MPIU_REAL,MPIU_MIN,comm);CHKERRQ(ierr);
 #endif
     } else {
       ierr = MPI_Allreduce(lvalues,gvalues,numops,MPIU_SCALAR,MPIU_SUM,comm);CHKERRQ(ierr);

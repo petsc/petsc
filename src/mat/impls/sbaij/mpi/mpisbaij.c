@@ -421,7 +421,7 @@ PetscErrorCode MatNorm_MPISBAIJ(Mat mat,NormType type,PetscReal *norm)
       *lnorm2 = (*lnorm2)*(*lnorm2); lnorm2++;            /* squar power of norm(A) */
       ierr =  MatNorm(baij->B,type,lnorm2);CHKERRQ(ierr);
       *lnorm2 = (*lnorm2)*(*lnorm2); lnorm2--;             /* squar power of norm(B) */
-      ierr = MPI_Allreduce(lnorm2,&sum,2,MPIU_REAL,MPI_SUM,((PetscObject)mat)->comm);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(lnorm2,&sum,2,MPIU_REAL,MPIU_SUM,((PetscObject)mat)->comm);CHKERRQ(ierr);
       *norm = sqrt(sum[0] + 2*sum[1]);
       ierr = PetscFree(lnorm2);CHKERRQ(ierr);
     } else if (type == NORM_INFINITY || type == NORM_1) { /* max row/column sum */
@@ -467,7 +467,7 @@ PetscErrorCode MatNorm_MPISBAIJ(Mat mat,NormType type,PetscReal *norm)
           }
         }
       }
-      ierr = MPI_Allreduce(rsum,rsum2,mat->cmap->N,MPIU_REAL,MPI_SUM,((PetscObject)mat)->comm);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(rsum,rsum2,mat->cmap->N,MPIU_REAL,MPIU_SUM,((PetscObject)mat)->comm);CHKERRQ(ierr);
       *norm = 0.0;
       for (col=0; col<mat->cmap->N; col++) {
         if (rsum2[col] > *norm) *norm = rsum2[col];
@@ -1163,14 +1163,14 @@ PetscErrorCode MatGetInfo_MPISBAIJ(Mat matin,MatInfoType flag,MatInfo *info)
     info->memory       = isend[3];
     info->mallocs      = isend[4];
   } else if (flag == MAT_GLOBAL_MAX) {
-    ierr = MPI_Allreduce(isend,irecv,5,MPIU_REAL,MPI_MAX,((PetscObject)matin)->comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(isend,irecv,5,MPIU_REAL,MPIU_MAX,((PetscObject)matin)->comm);CHKERRQ(ierr);
     info->nz_used      = irecv[0];
     info->nz_allocated = irecv[1];
     info->nz_unneeded  = irecv[2];
     info->memory       = irecv[3];
     info->mallocs      = irecv[4];
   } else if (flag == MAT_GLOBAL_SUM) {
-    ierr = MPI_Allreduce(isend,irecv,5,MPIU_REAL,MPI_SUM,((PetscObject)matin)->comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(isend,irecv,5,MPIU_REAL,MPIU_SUM,((PetscObject)matin)->comm);CHKERRQ(ierr);
     info->nz_used      = irecv[0];
     info->nz_allocated = irecv[1];
     info->nz_unneeded  = irecv[2];

@@ -1137,7 +1137,7 @@ static PetscErrorCode FVRHSFunction(TS ts,PetscReal time,Vec X,Vec F,void *vctx)
   ierr = DMDARestoreArray(ctx->da,PETSC_TRUE,&slope);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(ctx->da,&Xloc);CHKERRQ(ierr);
 
-  ierr = MPI_Allreduce(&cfl_idt,&ctx->cfl_idt,1,MPIU_REAL,MPI_MAX,((PetscObject)ctx->da)->comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&cfl_idt,&ctx->cfl_idt,1,MPIU_REAL,MPIU_MAX,((PetscObject)ctx->da)->comm);CHKERRQ(ierr);
   if (0) {
     /* We need to a way to inform the TS of a CFL constraint, this is a debugging fragment */
     PetscReal dt,tnow;
@@ -1209,7 +1209,7 @@ static PetscErrorCode SolutionStatsView(DM da,Vec X,PetscViewer viewer)
     for (i=xs; i<xs+xm; i++) {
       for (j=0; j<dof; j++) tvsum += PetscAbsScalar(x[i*dof+j] - x[(i-1)*dof+j]);
     }
-    ierr = MPI_Allreduce(&tvsum,&tvgsum,1,MPIU_REAL,MPI_MAX,((PetscObject)da)->comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(&tvsum,&tvgsum,1,MPIU_REAL,MPIU_MAX,((PetscObject)da)->comm);CHKERRQ(ierr);
     ierr = DMDAVecRestoreArray(da,Xloc,&x);CHKERRQ(ierr);
     ierr = DMRestoreLocalVector(da,&Xloc);CHKERRQ(ierr);
 

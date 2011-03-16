@@ -545,8 +545,8 @@ PetscErrorCode  VecView_MPI_Draw(Vec xin,PetscViewer viewer)
     xmin -= 1.e-5;
     xmax += 1.e-5;
   }
-  ierr = MPI_Reduce(&xmin,&ymin,1,MPIU_REAL,MPI_MIN,0,((PetscObject)xin)->comm);CHKERRQ(ierr);
-  ierr = MPI_Reduce(&xmax,&ymax,1,MPIU_REAL,MPI_MAX,0,((PetscObject)xin)->comm);CHKERRQ(ierr);
+  ierr = MPI_Reduce(&xmin,&ymin,1,MPIU_REAL,MPIU_MIN,0,((PetscObject)xin)->comm);CHKERRQ(ierr);
+  ierr = MPI_Reduce(&xmax,&ymax,1,MPIU_REAL,MPIU_MAX,0,((PetscObject)xin)->comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(((PetscObject)xin)->comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(((PetscObject)xin)->comm,&rank);CHKERRQ(ierr);
   ierr = PetscDrawAxisCreate(draw,&axis);CHKERRQ(ierr);
@@ -798,7 +798,7 @@ PetscErrorCode VecView_MPI(Vec xin,PetscViewer viewer)
 #if defined(PETSC_HAVE_HDF5)
   PetscBool      ishdf5;
 #endif
-#if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SCALAR_SINGLE) && !defined(PETSC_USE_SCALAR_MAT_SINGLE)
+#if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SCALAR_SINGLE) && !defined(PETSC_USE_SCALAR___FLOAT128)
   PetscBool      ismatlab;
 #endif
 
@@ -812,7 +812,7 @@ PetscErrorCode VecView_MPI(Vec xin,PetscViewer viewer)
 #if defined(PETSC_HAVE_HDF5)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERHDF5,&ishdf5);CHKERRQ(ierr);
 #endif
-#if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SCALAR_SINGLE) && !defined(PETSC_USE_SCALAR_MAT_SINGLE)
+#if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SCALAR_SINGLE) && !defined(PETSC_USE_SCALAR___FLOAT128)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERMATLAB,&ismatlab);CHKERRQ(ierr);
 #endif
   if (iascii){
@@ -836,7 +836,7 @@ PetscErrorCode VecView_MPI(Vec xin,PetscViewer viewer)
   } else if (ishdf5) {
     ierr = VecView_MPI_HDF5(xin,viewer);CHKERRQ(ierr);
 #endif
-#if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SCALAR_SINGLE) && !defined(PETSC_USE_SCALAR_MAT_SINGLE)
+#if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SCALAR_SINGLE) && !defined(PETSC_USE_SCALAR___FLOAT128)
   } else if (ismatlab) {
     ierr = VecView_MPI_Matlab(xin,viewer);CHKERRQ(ierr);
 #endif

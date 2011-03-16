@@ -100,7 +100,12 @@ PETSC_BOOL, PetscOptionsTruth to PetscOptionsBool, etc.</li>
 PetscLogCloseHistory() to PetscOpenHistory(), PetscCloseHistory()
 because "log" is reserved for related to the performance logging</li>
         <li>Changed PetscOptionsPrint() to PetscOptionsView()</li>
-        <li>Changed PetscLogPrintSummary() to PetscLogView()<br>
+        <li>Changed PetscLogPrintSummary() to PetscLogView()</li>
+        <li>Using gcc 4.6 you can now ./configure
+--with-precision=__float128 --download-qblaslapack to get computations
+in quad precision. Fortran is not yet support and some of the PETSc
+printing of these numbers in some place will print garbage. I haven't
+figured out a way to handle the %G format.<br>
         </li>
       </ul>
       <u><b>Logging:<br>
@@ -228,7 +233,8 @@ Default is still preonly for KSP and LU for PC so default behavior is
 the same but now you can use for example -redundant_ksp_gmres.
 PCRedundantGetPC() is now changed to PCRedundantGetKSP()<br>
         </li>
-        <li>The header "petscmg.h" is renamed to "petscpcmg.h", "petscasa.h" is renamed to "petscpcasa.h".</li>
+        <li>The header "petscmg.h" is renamed to "petscpcmg.h",
+"petscasa.h" is renamed to "petscpcasa.h".</li>
       </ul>
       <p><u><b>KSP:<br>
       </b></u></p>
@@ -292,7 +298,8 @@ parameters are passed to the DM object to actually construct the data
 structures; replace all calls to DASetType() with calls to DMSetUp()</li>
         <li>DAXXX() routines are now either DMXXX() or DMDAXXX() see
 petscdmda.h for details</li>
-        <li>petscda.h, petscdadef.h and petscda.h90 are now petscdmda.h,
+        <li>petscda.h, petscdadef.h and petscda.h90 are now
+petscdmda.h,
 petscdmdadef.h, and petscdmda.h90<br>
         </li>
         <li>DAGetISLocalToGlobalMapping() and
@@ -300,15 +307,15 @@ DAGetISLocalToGlobalMappingBlck() are now DMGetLocalToGlobalMapping()
 and DMGetLocalToGlobalMappingBlock() and are collective since they may
 be constructed lazily.</li>
         <li>DMGetBlockSize() is added.</li>
-	<li>Changed DMDAPeriodicType to DMDABoundaryType, and changed
-this enum to only specify one boundary (one for each dimension).  This
+        <li>Changed DMDAPeriodicType to DMDABoundaryType, and changed
+this enum to only specify one boundary (one for each dimension). This
 enum is now one of DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_GHOSTED, or
-DMDA_BOUNDARY_PERIODIC.  See DMDABoundaryType man page for more.</li>
+DMDA_BOUNDARY_PERIODIC. See DMDABoundaryType man page for more.</li>
         <li>DMDASetPeriodicity() is now DMDASetBoundaryType(), and API
 is changed to take three DMDABoundaryType arguments.</li>
         <li>Changed API for DMDACreate*D(), DMDAGetInfo() to take the
 correct number of DMDABoundaryType enums for the dimension.</li>
-	<li>DMDASetGhostedCoordinates() is added to set coordinates of
+        <li>DMDASetGhostedCoordinates() is added to set coordinates of
 non-periodic ghost cells.</li>
       </ul>
       <p><u><b>DMMG:</b></u></p>

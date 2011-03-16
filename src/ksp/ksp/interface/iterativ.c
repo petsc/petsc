@@ -106,11 +106,11 @@ PetscErrorCode  KSPMonitorSingularValue(KSP ksp,PetscInt n,PetscReal rnorm,void 
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   if (!dummy) {ierr = PetscViewerASCIIMonitorCreate(((PetscObject)ksp)->comm,"stdout",0,&viewer);CHKERRQ(ierr);}
   if (!ksp->calc_sings) {
-    ierr = PetscViewerASCIIMonitorPrintf(viewer,"%3D KSP Residual norm %14.12e \n",n,rnorm);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIMonitorPrintf(viewer,"%3D KSP Residual norm %14.12e \n",n,(double)rnorm);CHKERRQ(ierr);
   } else {
     ierr = KSPComputeExtremeSingularValues(ksp,&emax,&emin);CHKERRQ(ierr);
     c = emax/emin;
-    ierr = PetscViewerASCIIMonitorPrintf(viewer,"%3D KSP Residual norm %14.12e %% max %G min %G max/min %G\n",n,rnorm,emax,emin,c);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIMonitorPrintf(viewer,"%3D KSP Residual norm %14.12e %% max %G min %G max/min %G\n",n,(double)rnorm,emax,emin,c);CHKERRQ(ierr);
   }
   if (!dummy) {ierr = PetscViewerASCIIMonitorDestroy(viewer);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
@@ -188,7 +188,7 @@ PetscErrorCode  KSPMonitorDefault(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy
   if (n == 0 && ((PetscObject)ksp)->prefix) {
     ierr = PetscViewerASCIIMonitorPrintf(viewer,"  Residual norms for %s solve.\n",((PetscObject)ksp)->prefix);CHKERRQ(ierr);
   }
-  ierr = PetscViewerASCIIMonitorPrintf(viewer,"%3D KSP Residual norm %14.12e \n",n,rnorm);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIMonitorPrintf(viewer,"%3D KSP Residual norm %14.12e \n",n,(double)rnorm);CHKERRQ(ierr);
   if (!dummy) {ierr = PetscViewerASCIIMonitorDestroy(viewer);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
@@ -246,7 +246,7 @@ PetscErrorCode  KSPMonitorTrueResidualNorm(KSP ksp,PetscInt n,PetscReal rnorm,vo
   ierr = VecNorm(work,NORM_2,&scnorm);CHKERRQ(ierr);
   ierr = VecDestroy(work);CHKERRQ(ierr);
   ierr = VecNorm(ksp->vec_rhs,NORM_2,&bnorm);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIMonitorPrintf(viewer,"%3D KSP preconditioned resid norm %14.12e true resid norm %14.12e ||r(i)||/||b|| %14.12e\n",n,rnorm,scnorm,scnorm/bnorm);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIMonitorPrintf(viewer,"%3D KSP preconditioned resid norm %14.12e true resid norm %14.12e ||r(i)||/||b|| %14.12e\n",n,(double)rnorm,(double)scnorm,(double)scnorm/bnorm);CHKERRQ(ierr);
   if (!dummy) {ierr = PetscViewerASCIIMonitorDestroy(viewer);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
@@ -329,7 +329,7 @@ PetscErrorCode  KSPMonitorRange(KSP ksp,PetscInt it,PetscReal rnorm,void *dummy)
 
   rel  = (prev - rnorm)/prev;
   prev = rnorm;
-  ierr = PetscViewerASCIIMonitorPrintf(viewer,"%3D KSP preconditioned resid norm %14.12e Percent values above 20 percent of maximum %5.2f relative decrease %5.2e ratio %5.2e \n",it,rnorm,100.0*perc,rel,rel/perc);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIMonitorPrintf(viewer,"%3D KSP preconditioned resid norm %14.12e Percent values above 20 percent of maximum %5.2f relative decrease %5.2e ratio %5.2e \n",it,(double)rnorm,(double)100.0*perc,(double)rel,(double)rel/perc);CHKERRQ(ierr);
   if (!dummy) {ierr = PetscViewerASCIIMonitorDestroy(viewer);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
@@ -354,7 +354,7 @@ PetscErrorCode  KSPMonitorDefaultShort(KSP ksp,PetscInt its,PetscReal fnorm,void
   if (fnorm > 1.e-9) {
     ierr = PetscViewerASCIIMonitorPrintf(viewer,"%3D KSP Residual norm %G \n",its,fnorm);CHKERRQ(ierr);
   } else if (fnorm > 1.e-11){
-    ierr = PetscViewerASCIIMonitorPrintf(viewer,"%3D KSP Residual norm %5.3e \n",its,fnorm);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIMonitorPrintf(viewer,"%3D KSP Residual norm %5.3e \n",its,(double)fnorm);CHKERRQ(ierr);
   } else {
     ierr = PetscViewerASCIIMonitorPrintf(viewer,"%3D KSP Residual norm < 1.e-11\n",its);CHKERRQ(ierr);
   }

@@ -1681,14 +1681,14 @@ PetscErrorCode MatGetInfo_MPIAIJ(Mat matin,MatInfoType flag,MatInfo *info)
     info->memory       = isend[3];
     info->mallocs      = isend[4];
   } else if (flag == MAT_GLOBAL_MAX) {
-    ierr = MPI_Allreduce(isend,irecv,5,MPIU_REAL,MPI_MAX,((PetscObject)matin)->comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(isend,irecv,5,MPIU_REAL,MPIU_MAX,((PetscObject)matin)->comm);CHKERRQ(ierr);
     info->nz_used      = irecv[0];
     info->nz_allocated = irecv[1];
     info->nz_unneeded  = irecv[2];
     info->memory       = irecv[3];
     info->mallocs      = irecv[4];
   } else if (flag == MAT_GLOBAL_SUM) {
-    ierr = MPI_Allreduce(isend,irecv,5,MPIU_REAL,MPI_SUM,((PetscObject)matin)->comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(isend,irecv,5,MPIU_REAL,MPIU_SUM,((PetscObject)matin)->comm);CHKERRQ(ierr);
     info->nz_used      = irecv[0];
     info->nz_allocated = irecv[1];
     info->nz_unneeded  = irecv[2];
@@ -1884,7 +1884,7 @@ PetscErrorCode MatNorm_MPIAIJ(Mat mat,NormType type,PetscReal *norm)
         sum += (*v)*(*v); v++;
 #endif
       }
-      ierr = MPI_Allreduce(&sum,norm,1,MPIU_REAL,MPI_SUM,((PetscObject)mat)->comm);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(&sum,norm,1,MPIU_REAL,MPIU_SUM,((PetscObject)mat)->comm);CHKERRQ(ierr);
       *norm = sqrt(*norm);
     } else if (type == NORM_1) { /* max column norm */
       PetscReal *tmp,*tmp2;
@@ -1901,7 +1901,7 @@ PetscErrorCode MatNorm_MPIAIJ(Mat mat,NormType type,PetscReal *norm)
       for (j=0; j<bmat->nz; j++) {
         tmp[garray[*jj++]] += PetscAbsScalar(*v); v++;
       }
-      ierr = MPI_Allreduce(tmp,tmp2,mat->cmap->N,MPIU_REAL,MPI_SUM,((PetscObject)mat)->comm);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(tmp,tmp2,mat->cmap->N,MPIU_REAL,MPIU_SUM,((PetscObject)mat)->comm);CHKERRQ(ierr);
       for (j=0; j<mat->cmap->N; j++) {
         if (tmp2[j] > *norm) *norm = tmp2[j];
       }
@@ -1921,7 +1921,7 @@ PetscErrorCode MatNorm_MPIAIJ(Mat mat,NormType type,PetscReal *norm)
         }
         if (sum > ntemp) ntemp = sum;
       }
-      ierr = MPI_Allreduce(&ntemp,norm,1,MPIU_REAL,MPI_MAX,((PetscObject)mat)->comm);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(&ntemp,norm,1,MPIU_REAL,MPIU_MAX,((PetscObject)mat)->comm);CHKERRQ(ierr);
     } else {
       SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_SUP,"No support for two norm");
     }

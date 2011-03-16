@@ -33,7 +33,7 @@ PetscErrorCode  SNESMonitorVI(SNES snes,PetscInt its,PetscReal fgnorm,void *dumm
   ierr = VecRestoreArrayRead(vi->xl,&xl);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(vi->xu,&xu);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(snes->vec_sol,&x);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&rnorm,&fnorm,1,MPIU_REAL,MPI_SUM,((PetscObject)snes)->comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&rnorm,&fnorm,1,MPIU_REAL,MPIU_SUM,((PetscObject)snes)->comm);CHKERRQ(ierr);
   fnorm = sqrt(fnorm);
   ierr = PetscViewerASCIIMonitorPrintf(viewer,"%3D SNES VI Function norm %14.12e Active constraints %D\n",its,fnorm,act);CHKERRQ(ierr);
   if (!dummy) {
@@ -739,7 +739,7 @@ PetscErrorCode SNESVIComputeInactiveSetFnorm(SNES snes,Vec F,Vec X,PetscScalar *
   ierr = VecRestoreArrayRead(vi->xl,&xl);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(vi->xu,&xu);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&rnorm,fnorm,1,MPIU_REAL,MPI_SUM,((PetscObject)snes)->comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&rnorm,fnorm,1,MPIU_REAL,MPIU_SUM,((PetscObject)snes)->comm);CHKERRQ(ierr);
   *fnorm = sqrt(*fnorm);
   PetscFunctionReturn(0);
 }

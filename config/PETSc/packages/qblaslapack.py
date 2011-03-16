@@ -79,8 +79,7 @@ class Configure(PETSc.package.NewPackage):
     f.close()
     g.close()
 
-    if not self.installNeeded('tmpmakefile'):
-      return libdir
+    if not self.installNeeded('tmpmakefile'): return self.installDir
 
     try:
       self.logPrintBox('Compiling QBLASLAPACK; this may take several minutes')
@@ -96,8 +95,18 @@ class Configure(PETSc.package.NewPackage):
       output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+blasDir+' && cp -f tmpmakefile '+os.path.join(self.confDir, self.name), timeout=30, log = self.framework.log)
     except RuntimeError, e:
       raise RuntimeError('Error copying configure file')
-    return libdir
+    return self.installDir
 
+  #
+  # When BlasLapack.py is cleaned and the downloads in it put elsewhere then this will be tested in there and not needed here
+  #
   def consistencyChecks(self):
     PETSc.package.NewPackage.consistencyChecks(self)
     self.addDefine('BLASLAPACK_UNDERSCORE',1)
+    for baseName in ['gges', 'tgsen', 'gesvd','getrf','getrs','geev','gelss','syev','syevx','sygv','sygvx','getrf','potrf','getrs','potrs','stebz','pttrf','pttrs','stein','orgqr','stebz']:
+      routine = 'd'+baseName+'_'
+      oldLibs = self.compilers.LIBS
+      if not self.libraries.check(self.lib, routine):
+        self.addDefine('MISSING_LAPACK_'+baseName.upper(), 1)
+      self.compilers.LIBS = oldLibs
+    return

@@ -469,7 +469,7 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
     }
 
     /* -----------------------------------------------------------------------*/
-   ierr = PetscOptionsEList("-ksp_preconditioner_side","KSP preconditioner side","KSPSetPCSide",PCSides,3,PCSides[ksp->pc_side],&indx,&flg);CHKERRQ(ierr);
+   ierr = PetscOptionsEList("-ksp_pc_side","KSP preconditioner side","KSPSetPCSide",PCSides,3,PCSides[ksp->pc_side],&indx,&flg);CHKERRQ(ierr);
    if (flg) {ierr = KSPSetPCSide(ksp,(PCSide)indx);CHKERRQ(ierr);}
 
     flg  = PETSC_FALSE;

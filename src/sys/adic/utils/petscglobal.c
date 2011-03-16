@@ -25,7 +25,7 @@
 @*/
 PetscErrorCode  PetscGlobalMax(MPI_Comm comm,const PetscReal* local,PetscReal* result)
 {
-  return MPI_Allreduce((void*)local,result,1,MPIU_REAL,MPI_MAX,comm);
+  return MPI_Allreduce((void*)local,result,1,MPIU_REAL,MPIU_MAX,comm);
 }
 
 #undef __FUNCT__  
@@ -52,7 +52,7 @@ PetscErrorCode  PetscGlobalMax(MPI_Comm comm,const PetscReal* local,PetscReal* r
 @*/
 PetscErrorCode  PetscGlobalMin(MPI_Comm comm,const PetscReal* local,PetscReal* result)
 {
-  return MPI_Allreduce((void*)local,result,1,MPIU_REAL,MPI_MIN,comm);
+  return MPI_Allreduce((void*)local,result,1,MPIU_REAL,MPIU_MIN,comm);
 }
 
 #undef __FUNCT__  

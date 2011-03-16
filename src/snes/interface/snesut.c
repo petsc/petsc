@@ -146,7 +146,7 @@ PetscErrorCode  SNESMonitorDefault(SNES snes,PetscInt its,PetscReal fgnorm,void 
   if (!dummy) {
     ierr = PetscViewerASCIIMonitorCreate(((PetscObject)snes)->comm,"stdout",0,&viewer);CHKERRQ(ierr);
   }
-  ierr = PetscViewerASCIIMonitorPrintf(viewer,"%3D SNES Function norm %14.12e \n",its,fgnorm);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIMonitorPrintf(viewer,"%3D SNES Function norm %14.12e \n",its,(double)fgnorm);CHKERRQ(ierr);
   if (!dummy) {
     ierr = PetscViewerASCIIMonitorDestroy(viewer);CHKERRQ(ierr);
   }
@@ -216,7 +216,7 @@ PetscErrorCode  SNESMonitorRange(SNES snes,PetscInt it,PetscReal rnorm,void *dum
 
   rel  = (prev - rnorm)/prev;
   prev = rnorm;
-  ierr = PetscViewerASCIIMonitorPrintf(viewer,"%3D SNES preconditioned resid norm %14.12e Percent values above 20 percent of maximum %5.2f relative decrease %5.2e ratio %5.2e \n",it,rnorm,100.0*perc,rel,rel/perc);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIMonitorPrintf(viewer,"%3D SNES preconditioned resid norm %14.12e Percent values above 20 percent of maximum %5.2f relative decrease %5.2e ratio %5.2e \n",it,(double)rnorm,(double)100.0*perc,(double)rel,(double)rel/perc);CHKERRQ(ierr);
   if (!dummy) {ierr = PetscViewerASCIIMonitorDestroy(viewer);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
@@ -256,10 +256,10 @@ PetscErrorCode  SNESMonitorRatio(SNES snes,PetscInt its,PetscReal fgnorm,void *d
   PetscFunctionBegin;
   ierr = SNESGetConvergenceHistory(snes,&history,PETSC_NULL,&len);CHKERRQ(ierr);
   if (!its || !history || its > len) {
-    ierr = PetscViewerASCIIMonitorPrintf(ctx->viewer,"%3D SNES Function norm %14.12e \n",its,fgnorm);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIMonitorPrintf(ctx->viewer,"%3D SNES Function norm %14.12e \n",its,(double)fgnorm);CHKERRQ(ierr);
   } else {
     PetscReal ratio = fgnorm/history[its-1];
-    ierr = PetscViewerASCIIMonitorPrintf(ctx->viewer,"%3D SNES Function norm %14.12e %G \n",its,fgnorm,ratio);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIMonitorPrintf(ctx->viewer,"%3D SNES Function norm %14.12e %G \n",its,(double)fgnorm,(double)ratio);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

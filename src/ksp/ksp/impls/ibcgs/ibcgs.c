@@ -238,7 +238,7 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
 
     if (!ksp->lagnorm && ksp->chknorm < ksp->its) {
       ierr = PetscLogEventBarrierBegin(VEC_ReduceBarrier,0,0,0,0,((PetscObject)ksp)->comm);CHKERRQ(ierr);
-      ierr = MPI_Allreduce(&rnormin,&rnorm,1,MPIU_REAL,MPI_SUM,((PetscObject)ksp)->comm);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(&rnormin,&rnorm,1,MPIU_REAL,MPIU_SUM,((PetscObject)ksp)->comm);CHKERRQ(ierr);
       ierr = PetscLogEventBarrierEnd(VEC_ReduceBarrier,0,0,0,0,((PetscObject)ksp)->comm);CHKERRQ(ierr);
       rnorm = sqrt(rnorm);
     } 

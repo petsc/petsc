@@ -85,7 +85,7 @@ int main(int argc,char **argv)
 
   ierr = VecAXPY(local_copy,-1.0,local);CHKERRQ(ierr);
   ierr = VecNorm(local_copy,NORM_MAX,&work);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&work,&norm,1,MPIU_REAL,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&work,&norm,1,MPIU_REAL,MPIU_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of difference %G should be zero\n",norm);CHKERRQ(ierr);
    
   ierr = VecDestroy(local_copy);CHKERRQ(ierr);

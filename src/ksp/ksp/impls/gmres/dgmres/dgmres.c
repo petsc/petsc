@@ -872,8 +872,10 @@ PetscErrorCode  KSPDGMRESComputeDeflationData_DGMRES (KSP ksp)
         ierr=PetscMalloc (bmax*sizeof (PetscInt), &INVP);
         CHKERRQ (ierr);
     }
+#if !defined(PETSC_MISSING_LAPACK_GETRF) 
     LAPACKgetrf_ (&r, &r, TTF, &bmax, INVP, &info);
     if (info) SETERRQ1 (((PetscObject)ksp)->comm, PETSC_ERR_LIB,"Error in LAPACK routine XGETRF INFO=%d", (int) info);
+#endif
 
     /* Save X in U and MX in MU for the next cycles and increase the size of the invariant subspace */
     if (!UU) {
@@ -939,9 +941,11 @@ PetscErrorCode  KSPDGMRESComputeSchurForm_DGMRES (KSP ksp, PetscInt *neig) {
     /* copy the Hessenberg matrix to work space */
     ierr = PetscMemcpy (A, dgmres->hes_origin, ldA*ldA*sizeof (PetscReal));    CHKERRQ (ierr);
     /* Compute eigenvalues with the Schur form */
+#if !defined(PETSC_MISSING_LAPACK_HESQR) 
     LAPACKhseqr_ ("S", "I", &bn, &ilo, &ihi, A, &ldA, wr, wi, Q, &ldQ, work, &lwork, &info);
     if (info) SETERRQ1 (((PetscObject)ksp)->comm, PETSC_ERR_LIB,"Error in LAPACK routine XHSEQR %d", (int) info);
-	ierr = PetscFree(work); CHKERRQ(ierr);
+#endif
+    ierr = PetscFree(work); CHKERRQ(ierr);
 
     /* sort the eigenvalues */
     for (i=0; i<n; i++)  {
@@ -950,8 +954,7 @@ PetscErrorCode  KSPDGMRESComputeSchurForm_DGMRES (KSP ksp, PetscInt *neig) {
     for (i=0; i<n; i++) {
         perm[i] = i;
     }
-    ierr = PetscSortRealWithPermutation (n, modul, perm);
-    CHKERRQ (ierr);
+    ierr = PetscSortRealWithPermutation (n, modul, perm);CHKERRQ (ierr);
     /* save the complex modulus of the largest eigenvalue in magnitude */
     if (dgmres->lambdaN < modul[perm[n-1]]) {
         dgmres->lambdaN=modul[perm[n-1]];
@@ -988,11 +991,11 @@ PetscErrorCode  KSPDGMRESComputeSchurForm_DGMRES (KSP ksp, PetscInt *neig) {
 	liwork = MAX(1, 2 * NbrEig * (bn-NbrEig));
 	ierr = PetscMalloc(lwork * sizeof(PetscScalar), &work);	CHKERRQ(ierr);
 	ierr = PetscMalloc(liwork * sizeof(PetscInt), &iwork);	CHKERRQ(ierr);
+#if !defined(PETSC_MISSING_LAPACK_TRSEN) 
 	LAPACKtrsen_("B", "V", select, &bn, A, &ldA, Q, &ldQ, wr, wi, &NbrEig, &CondEig, &CondSub, work, &lwork, iwork, &liwork, &info);
-	if (info == 1)
-	{
-	  SETERRQ(((PetscObject)ksp)->comm, PETSC_ERR_LIB, "UNABLE TO REORDER THE EIGENVALUES WITH THE LAPACK ROUTINE : ILL-CONDITIONED PROBLEM");
-	}
+	if (info == 1) SETERRQ(((PetscObject)ksp)->comm, PETSC_ERR_LIB, "UNABLE TO REORDER THE EIGENVALUES WITH THE LAPACK ROUTINE : ILL-CONDITIONED PROBLEM");
+#endif
+
 	/* Extract the Schur vectors */
 	for (j = 0; j < NbrEig; j++)
 	{
@@ -1043,16 +1046,20 @@ PetscErrorCode  KSPDGMRESApplyDeflation_DGMRES (KSP ksp, Vec x, Vec y) {
 
     /* Solve T*X1=X2 for X1*/
     ierr = PetscMemcpy (X2, X1, br*sizeof (PetscReal));    CHKERRQ (ierr);
+#if !defined(PETSC_MISSING_LAPACK_GETRS) 
     LAPACKgetrs_ ("N", &br, &nrhs, TTF, &bmax, INVP, X1, &bmax, &info);
     if (info) SETERRQ1 (((PetscObject)ksp)->comm, PETSC_ERR_LIB,"Error in LAPACK routine XGETRS %d", (int) info);
+#endif
     /* Iterative refinement -- is it really necessary ?? */
     if (!WORK) {
         ierr=PetscMalloc (3*bmax*sizeof (PetscReal), &WORK);        CHKERRQ (ierr);
         ierr=PetscMalloc (bmax*sizeof (PetscInt), &IWORK);        CHKERRQ (ierr);
     }
+#if !defined(PETSC_MISSING_LAPACK_GERFS) 
     LAPACKgerfs_ ("N", &br, &nrhs, TT, &bmax, TTF, &bmax, INVP, X2, &bmax,
                   X1, &bmax, &ferr, &berr, WORK, IWORK, &info);
     if (info) SETERRQ1 (((PetscObject)ksp)->comm, PETSC_ERR_LIB,"Error in LAPACK routine XGERFS %d", (int) info);
+#endif
 
     for (i = 0; i < r; i++) {
         X2[i] =  X1[i]/lambda - X2[i];
@@ -1152,10 +1159,10 @@ PetscErrorCode  KSPDGMRESImproveEig_DGMRES (KSP ksp, PetscInt neig)
 	ierr = PetscMalloc (N*N*sizeof (PetscReal), &Q);    CHKERRQ (ierr);
 	ierr = PetscMalloc (N*N*sizeof (PetscReal), &Z);    CHKERRQ (ierr);
 	ierr = PetscMalloc (lwork*sizeof (PetscReal), &work);    CHKERRQ (ierr);
+#if !defined(PETSC_MISSING_LAPACK_GGES) 
 	LAPACKgges_ ("V", "V", "N", NULL, &N, AUAU, &ldA, AUU, &ldA, &i, wr, wi, beta, Q, &N, Z, &N, work, &lwork, NULL, &info);
-	if (info) {
-	  SETERRQ1 (((PetscObject)ksp)->comm, PETSC_ERR_LIB,"Error in LAPACK routine XGGES %d", (int) info);
-	}
+	if (info) SETERRQ1 (((PetscObject)ksp)->comm, PETSC_ERR_LIB,"Error in LAPACK routine XGGES %d", (int) info);
+#endif
 	for (i=0; i<N; i++) {
 		if (beta[i] !=0.0) {
 			wr[i] /=beta[i];
@@ -1209,11 +1216,10 @@ PetscErrorCode  KSPDGMRESImproveEig_DGMRES (KSP ksp, PetscInt neig)
 	ierr = PetscFree(work); CHKERRQ(ierr);
 	ierr = PetscMalloc(lwork * sizeof(PetscReal), &work);	CHKERRQ(ierr);
 	ierr = PetscMalloc(liwork * sizeof(PetscBLASInt), &iwork);	CHKERRQ(ierr);
+#if !defined(PETSC_MISSING_LAPACK_TGSEN) 
 	LAPACKtgsen_(&ijob, &wantQ, &wantZ, select, &N, AUAU, &ldA, AUU, &ldA, wr, wi, beta, Q, &N, Z, &N, &NbrEig, NULL, NULL, & (Dif[0]), work, &lwork, iwork, &liwork, &ierr);
-	if (info == 1)
-	{
-	  SETERRQ(((PetscObject)ksp)->comm, -1, "UNABLE TO REORDER THE EIGENVALUES WITH THE LAPACK ROUTINE : ILL-CONDITIONED PROBLEM");
-	}
+	if (info == 1) SETERRQ(((PetscObject)ksp)->comm, -1, "UNABLE TO REORDER THE EIGENVALUES WITH THE LAPACK ROUTINE : ILL-CONDITIONED PROBLEM");
+#endif
 		
 	
 	for (j=0; j<r; j++) {
@@ -1238,8 +1244,10 @@ PetscErrorCode  KSPDGMRESImproveEig_DGMRES (KSP ksp, PetscInt neig)
 	}
 	/* Factorize T */
 	ierr=PetscMemcpy (TTF, TT, bmax*r*sizeof (PetscReal));    CHKERRQ (ierr);
+#if !defined(PETSC_MISSING_LAPACK_GETRF) 
 	LAPACKgetrf_ (&r, &r, TTF, &bmax, INVP, &info);    
 	if (info) SETERRQ1 (((PetscObject)ksp)->comm, PETSC_ERR_LIB,"Error in LAPACK routine XGETRF INFO=%d", (int) info);
+#endif
 	/* Free Memory */
 	PetscFree (wr);    PetscFree (wi);    PetscFree (beta);
 	PetscFree (modul);    PetscFree (perm);

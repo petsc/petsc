@@ -58,25 +58,25 @@ PetscErrorCode VecNorm_MPI(Vec xin,NormType type,PetscReal *z)
   if (type == NORM_2 || type == NORM_FROBENIUS) {
     work  = BLASnrm2_(&bn,xx,&one);
     work *= work;
-    ierr = MPI_Allreduce(&work,&sum,1,MPIU_REAL,MPI_SUM,((PetscObject)xin)->comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(&work,&sum,1,MPIU_REAL,MPIU_SUM,((PetscObject)xin)->comm);CHKERRQ(ierr);
     *z = sqrt(sum);
     ierr = PetscLogFlops(2.0*xin->map->n);CHKERRQ(ierr);
   } else if (type == NORM_1) {
     /* Find the local part */
     ierr = VecNorm_Seq(xin,NORM_1,&work);CHKERRQ(ierr);
     /* Find the global max */
-    ierr = MPI_Allreduce(&work,z,1,MPIU_REAL,MPI_SUM,((PetscObject)xin)->comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(&work,z,1,MPIU_REAL,MPIU_SUM,((PetscObject)xin)->comm);CHKERRQ(ierr);
   } else if (type == NORM_INFINITY) {
     /* Find the local max */
     ierr = VecNorm_Seq(xin,NORM_INFINITY,&work);CHKERRQ(ierr);
     /* Find the global max */
-    ierr = MPI_Allreduce(&work,z,1,MPIU_REAL,MPI_MAX,((PetscObject)xin)->comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(&work,z,1,MPIU_REAL,MPIU_MAX,((PetscObject)xin)->comm);CHKERRQ(ierr);
   } else if (type == NORM_1_AND_2) {
     PetscReal temp[2];
     ierr = VecNorm_Seq(xin,NORM_1,temp);CHKERRQ(ierr);
     ierr = VecNorm_Seq(xin,NORM_2,temp+1);CHKERRQ(ierr);
     temp[1] = temp[1]*temp[1];
-    ierr = MPI_Allreduce(temp,z,2,MPIU_REAL,MPI_SUM,((PetscObject)xin)->comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(temp,z,2,MPIU_REAL,MPIU_SUM,((PetscObject)xin)->comm);CHKERRQ(ierr);
     z[1] = sqrt(z[1]);
   }
   PetscFunctionReturn(0);
@@ -147,7 +147,7 @@ PetscErrorCode VecMax_MPI(Vec xin,PetscInt *idx,PetscReal *z)
 
   /* Find the global max */
   if (!idx) {
-    ierr = MPI_Allreduce(&work,z,1,MPIU_REAL,MPI_MAX,((PetscObject)xin)->comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(&work,z,1,MPIU_REAL,MPIU_MAX,((PetscObject)xin)->comm);CHKERRQ(ierr);
   } else {
     PetscReal work2[2],z2[2];
     PetscInt  rstart;
@@ -174,7 +174,7 @@ PetscErrorCode VecMin_MPI(Vec xin,PetscInt *idx,PetscReal *z)
 
   /* Find the global Min */
   if (!idx) {
-    ierr = MPI_Allreduce(&work,z,1,MPIU_REAL,MPI_MIN,((PetscObject)xin)->comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(&work,z,1,MPIU_REAL,MPIU_MIN,((PetscObject)xin)->comm);CHKERRQ(ierr);
   } else {
     PetscReal work2[2],z2[2];
     PetscInt  rstart;

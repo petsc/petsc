@@ -254,8 +254,12 @@ PetscErrorCode PetscOptionsGetFromTextInput()
         if (str[0]) {
 #if defined(PETSC_USE_SCALAR_SINGLE)
           sscanf(str,"%e",&ir);
-#else
+#elif defined(PETSC_USE_SCALAR_DOUBLE)
           sscanf(str,"%le",&ir);
+#elif defined(PETSC_USE_SCALAR___FLOAT128)
+          ir = strtoflt128(str,0);
+#else
+          SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Unknown scalar type");
 #endif
           next->set = PETSC_TRUE;
           *((PetscReal*)next->data) = ir;

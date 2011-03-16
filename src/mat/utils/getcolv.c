@@ -148,9 +148,9 @@ PetscErrorCode MatGetColumnNorms_MPIAIJ(Mat A,NormType type,PetscReal *norms)
 
   } else SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONG,"Unknown NormType");
   if (type == NORM_INFINITY) {
-    ierr = MPI_Allreduce(work,norms,n,MPIU_REAL,MPI_MAX,A->hdr.comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(work,norms,n,MPIU_REAL,MPIU_MAX,A->hdr.comm);CHKERRQ(ierr);
   } else {
-    ierr = MPI_Allreduce(work,norms,n,MPIU_REAL,MPI_SUM,A->hdr.comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(work,norms,n,MPIU_REAL,MPIU_SUM,A->hdr.comm);CHKERRQ(ierr);
   }
   ierr = PetscFree(work);CHKERRQ(ierr);
   if (type == NORM_2) {
@@ -217,9 +217,9 @@ PetscErrorCode MatGetColumnNorms_MPIDense(Mat A,NormType type,PetscReal *norms)
     for (i=0; i<n; i++) work[i] *= work[i];
   }
   if (type == NORM_INFINITY) {
-    ierr = MPI_Allreduce(work,norms,n,MPIU_REAL,MPI_MAX,A->hdr.comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(work,norms,n,MPIU_REAL,MPIU_MAX,A->hdr.comm);CHKERRQ(ierr);
   } else {
-    ierr = MPI_Allreduce(work,norms,n,MPIU_REAL,MPI_SUM,A->hdr.comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(work,norms,n,MPIU_REAL,MPIU_SUM,A->hdr.comm);CHKERRQ(ierr);
   }
   ierr = PetscFree(work);CHKERRQ(ierr);
   if (type == NORM_2) {

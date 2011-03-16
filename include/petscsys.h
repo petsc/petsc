@@ -1203,6 +1203,13 @@ extern  MPI_Op MPIU_SUM;
 #else
 #define MPIU_SUM MPI_SUM
 #endif
+#if defined(PETSC_USE_SCALAR___FLOAT128)
+extern  MPI_Op MPIU_MAX;
+extern  MPI_Op MPIU_MIN;
+#else
+#define MPIU_MAX MPI_MAX
+#define MPIU_MIN MPI_MIN
+#endif
 extern PetscErrorCode  PetscMaxSum(MPI_Comm,const PetscInt[],PetscInt*,PetscInt*);
 
 /*S

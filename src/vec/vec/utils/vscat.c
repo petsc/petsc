@@ -83,7 +83,7 @@ PetscErrorCode VecScatterBegin_MPI_ToAll(VecScatter ctx,Vec x,Vec y,InsertMode a
         }
         ierr = MPI_Gatherv(yv,yy_n,MPIU_SCALAR,xvt2,scat->count,disply,MPIU_SCALAR,0,((PetscObject)ctx)->comm);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
-        ierr = MPI_Reduce(xv,xvt,2*xx_n,MPIU_REAL,MPI_SUM,0,((PetscObject)ctx)->comm);CHKERRQ(ierr);
+        ierr = MPI_Reduce(xv,xvt,2*xx_n,MPIU_REAL,MPIU_SUM,0,((PetscObject)ctx)->comm);CHKERRQ(ierr);
 #else
         ierr = MPI_Reduce(xv,xvt,xx_n,MPIU_SCALAR,MPI_SUM,0,((PetscObject)ctx)->comm);CHKERRQ(ierr);
 #endif
@@ -102,7 +102,7 @@ PetscErrorCode VecScatterBegin_MPI_ToAll(VecScatter ctx,Vec x,Vec y,InsertMode a
       } else {
         ierr = MPI_Gatherv(yv,yy_n,MPIU_SCALAR,0, 0,0,MPIU_SCALAR,0,((PetscObject)ctx)->comm);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
-        ierr = MPI_Reduce(xv,xvt,2*xx_n,MPIU_REAL,MPI_SUM,0,((PetscObject)ctx)->comm);CHKERRQ(ierr);
+        ierr = MPI_Reduce(xv,xvt,2*xx_n,MPIU_REAL,MPIU_SUM,0,((PetscObject)ctx)->comm);CHKERRQ(ierr);
 #else
         ierr = MPI_Reduce(xv,xvt,xx_n,MPIU_SCALAR,MPI_SUM,0,((PetscObject)ctx)->comm);CHKERRQ(ierr);
 #endif

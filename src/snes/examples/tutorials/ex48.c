@@ -867,8 +867,8 @@ static PetscErrorCode THISurfaceStatistics(DM da,Vec X,PetscReal *min,PetscReal 
     }
   }
   ierr = DMDAVecRestoreArray(da,X,&x);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&umin,min,1,MPIU_REAL,MPI_MIN,((PetscObject)da)->comm);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&umax,max,1,MPIU_REAL,MPI_MAX,((PetscObject)da)->comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&umin,min,1,MPIU_REAL,MPIU_MIN,((PetscObject)da)->comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&umax,max,1,MPIU_REAL,MPIU_MAX,((PetscObject)da)->comm);CHKERRQ(ierr);
   ierr = MPI_Allreduce(&usum,&gusum,1,MPIU_SCALAR,MPIU_SUM,((PetscObject)da)->comm);CHKERRQ(ierr);
   *mean = PetscRealPart(gusum) / (mx*my);
   PetscFunctionReturn(0);
@@ -911,8 +911,8 @@ static PetscErrorCode THISolveStatistics(THI thi,DMMG *dmmg,PetscInt coarsened,c
       tmax[2] = PetscMax(c,tmax[2]);
     }
     ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
-    ierr = MPI_Allreduce(tmin,min,3,MPIU_REAL,MPI_MIN,((PetscObject)thi)->comm);CHKERRQ(ierr);
-    ierr = MPI_Allreduce(tmax,max,3,MPIU_REAL,MPI_MAX,((PetscObject)thi)->comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(tmin,min,3,MPIU_REAL,MPIU_MIN,((PetscObject)thi)->comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(tmax,max,3,MPIU_REAL,MPIU_MAX,((PetscObject)thi)->comm);CHKERRQ(ierr);
     /* Dimensionalize to meters/year */
     nrm2 *= thi->units->year / thi->units->meter;
     for (j=0; j<3; j++) {

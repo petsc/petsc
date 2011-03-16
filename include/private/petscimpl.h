@@ -327,7 +327,7 @@ valid
   do {                                                                  \
     PetscErrorCode _7_ierr;                                             \
     PetscReal b1[2] = {-PetscRealPart(b),PetscRealPart(b)},b2[2];       \
-    _7_ierr = MPI_Allreduce(b1,b2,2,MPIU_REAL,MPI_MAX,((PetscObject)a)->comm);CHKERRQ(_7_ierr); \
+    _7_ierr = MPI_Allreduce(b1,b2,2,MPIU_REAL,MPIU_MAX,((PetscObject)a)->comm);CHKERRQ(_7_ierr); \
     if (-b2[0] != b2[1]) SETERRQ1(((PetscObject)a)->comm,PETSC_ERR_ARG_WRONG,"Scalar value must be same on all processes, argument # %d",c); \
   } while (0)
 
@@ -335,7 +335,7 @@ valid
   do {                                                                  \
     PetscErrorCode _7_ierr;                                             \
     PetscReal b1[2] = {-b,b},b2[2];                                     \
-    _7_ierr = MPI_Allreduce(b1,b2,2,MPIU_REAL,MPI_MAX,((PetscObject)a)->comm);CHKERRQ(_7_ierr); \
+    _7_ierr = MPI_Allreduce(b1,b2,2,MPIU_REAL,MPIU_MAX,((PetscObject)a)->comm);CHKERRQ(_7_ierr); \
     if (-b2[0] != b2[1]) SETERRQ1(((PetscObject)a)->comm,PETSC_ERR_ARG_WRONG,"Real value must be same on all processes, argument # %d",c); \
   } while (0)
 

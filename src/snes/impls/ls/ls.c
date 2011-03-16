@@ -625,7 +625,7 @@ PetscErrorCode  SNESLineSearchCubic(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec 
     if (lambda <= minlambda) { 
       if (neP->monitor) {
 	ierr = PetscViewerASCIIMonitorPrintf(neP->monitor,"    Line search: unable to find good step length! After %D tries \n",count);CHKERRQ(ierr);
-	ierr = PetscViewerASCIIMonitorPrintf(neP->monitor,"    Line search: fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, minlambda=%18.16e, lambda=%18.16e, initial slope=%18.16e\n",fnorm,*gnorm,*ynorm,minlambda,lambda,initslope);CHKERRQ(ierr);
+	ierr = PetscViewerASCIIMonitorPrintf(neP->monitor,"    Line search: fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, minlambda=%18.16e, lambda=%18.16e, initial slope=%18.16e\n",(double)fnorm,(double)*gnorm,(double)*ynorm,(double)minlambda,(double)lambda,(double)initslope);CHKERRQ(ierr);
       }
       *flag = PETSC_FALSE; 
       break;
@@ -663,12 +663,12 @@ PetscErrorCode  SNESLineSearchCubic(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec 
     if (PetscIsInfOrNanReal(*gnorm)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
     if (.5*(*gnorm)*(*gnorm) < .5*fnorm*fnorm + lambda*neP->alpha*initslope) { /* is reduction enough? */
       if (neP->monitor) {
-	ierr = PetscPrintf(comm,"    Line search: Cubically determined step, current gnorm %G lambda=%18.16e\n",*gnorm,lambda);CHKERRQ(ierr);
+	ierr = PetscPrintf(comm,"    Line search: Cubically determined step, current gnorm %G lambda=%18.16e\n",*gnorm,(double)lambda);CHKERRQ(ierr);
       }
       break;
     } else {
       if (neP->monitor) {
-        ierr = PetscPrintf(comm,"    Line search: Cubic step no good, shrinking lambda, current gnorm %G lambda=%18.16e\n",*gnorm,lambda);CHKERRQ(ierr);
+        ierr = PetscPrintf(comm,"    Line search: Cubic step no good, shrinking lambda, current gnorm %G lambda=%18.16e\n",*gnorm,(double)lambda);CHKERRQ(ierr);
       }
     }
     count++;
@@ -827,7 +827,7 @@ PetscErrorCode  SNESLineSearchQuadratic(SNES snes,void *lsctx,Vec x,Vec f,Vec g,
     ierr = VecWAXPY(w,-lambda,y,x);CHKERRQ(ierr);
     if (snes->nfuncs >= snes->max_funcs) {
       ierr  = PetscInfo1(snes,"Exceeded maximum function evaluations, while looking for good step length! %D \n",count);CHKERRQ(ierr);
-      ierr  = PetscInfo5(snes,"fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, lambda=%18.16e, initial slope=%18.16e\n",fnorm,*gnorm,*ynorm,lambda,initslope);CHKERRQ(ierr);
+      ierr  = PetscInfo5(snes,"fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, lambda=%18.16e, initial slope=%18.16e\n",(double)fnorm,(double)*gnorm,(double)*ynorm,(double)lambda,(double)initslope);CHKERRQ(ierr);
       *flag = PETSC_FALSE;
       snes->reason = SNES_DIVERGED_FUNCTION_COUNT;
       break;

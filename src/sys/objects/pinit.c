@@ -329,6 +329,53 @@ void  PetscSum_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
 EXTERN_C_END
 #endif
 
+#if defined(PETSC_USE_SCALAR___FLOAT128)
+MPI_Op MPIU_MAX = 0;
+MPI_Op MPIU_MIN = 0;
+
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "PetscMax_Local"
+void  PetscMax_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
+{
+  PetscScalar *xin = (PetscScalar *)in,*xout = (PetscScalar*)out;
+  PetscInt    i,count = *cnt;
+
+  PetscFunctionBegin;
+  if (*datatype != MPIU_SCALAR) {
+    (*PetscErrorPrintf)("Can only handle MPIU_SCALAR data (i.e. double or complex) types");
+    MPI_Abort(MPI_COMM_WORLD,1);
+  }
+
+  for (i=0; i<count; i++) {
+    xout[i] += PetscMax(xout[i],xin[i]); 
+  }
+  PetscFunctionReturnVoid();
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "PetscMin_Local"
+void  PetscMin_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
+{
+  PetscScalar *xin = (PetscScalar *)in,*xout = (PetscScalar*)out;
+  PetscInt    i,count = *cnt;
+
+  PetscFunctionBegin;
+  if (*datatype != MPIU_SCALAR) {
+    (*PetscErrorPrintf)("Can only handle MPIU_SCALAR data (i.e. double or complex) types");
+    MPI_Abort(MPI_COMM_WORLD,1);
+  }
+
+  for (i=0; i<count; i++) {
+    xout[i] += PetscMin(xout[i],xin[i]); 
+  }
+  PetscFunctionReturnVoid();
+}
+EXTERN_C_END
+#endif
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "Petsc_DelCounter"
@@ -664,6 +711,8 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   ierr = MPI_Type_contiguous(2,MPI_DOUBLE,&MPIU___FLOAT128);CHKERRQ(ierr);
   ierr = MPI_Type_commit(&MPIU___FLOAT128);CHKERRQ(ierr);
   ierr = MPI_Op_create(PetscSum_Local,1,&MPIU_SUM);CHKERRQ(ierr);
+  ierr = MPI_Op_create(PetscMax_Local,1,&MPIU_MAX);CHKERRQ(ierr);
+  ierr = MPI_Op_create(PetscMin_Local,1,&MPIU_MIN);CHKERRQ(ierr);
 #endif
 
   ierr = MPI_Type_contiguous(2,MPIU_SCALAR,&MPIU_2SCALAR);CHKERRQ(ierr);
@@ -1075,6 +1124,8 @@ PetscErrorCode  PetscFinalize(void)
 #if defined(PETSC_USE_SCALAR___FLOAT128)
   ierr = MPI_Type_free(&MPIU___FLOAT128);CHKERRQ(ierr);
   ierr = MPI_Op_free(&MPIU_SUM);CHKERRQ(ierr);
+  ierr = MPI_Op_free(&MPIU_MAX);CHKERRQ(ierr);
+  ierr = MPI_Op_free(&MPIU_MIN);CHKERRQ(ierr);
 #endif
 
 #if defined(PETSC_USE_COMPLEX)

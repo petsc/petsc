@@ -487,7 +487,7 @@ int Update(SNES snes,void *ctx)
   ierr = PetscGetTime(&time2);CHKERRQ(ierr);
   cpuloc = time2-time1;            
   cpuglo = 0.0;
-  ierr = MPI_Allreduce(&cpuloc,&cpuglo,1,MPIU_REAL,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&cpuloc,&cpuglo,1,MPIU_REAL,MPIU_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
   c_info->tot = cpuglo;    /* Total CPU time used upto this time step */
   
   ierr = VecScatterBegin(scatter,grid->qnode,localX,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);

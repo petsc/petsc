@@ -340,8 +340,8 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar *x,PetscScalar 
   ierr = PetscGlobalMax(PETSC_COMM_WORLD,&max,&psi_a);CHKERRQ(ierr);
   ierr = PetscGlobalMin(PETSC_COMM_WORLD,&min,&psi_0);CHKERRQ(ierr);
 #else
-  ierr = MPI_Allreduce(&max,&psi_a,1,MPIU_REAL,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&min,&psi_0,1,MPIU_REAL,MPI_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&max,&psi_a,1,MPIU_REAL,MPIU_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&min,&psi_0,1,MPIU_REAL,MPIU_MIN,PETSC_COMM_WORLD);CHKERRQ(ierr);
 #endif
 
   hx     = 1.0/(PetscReal)(info->mx-1);  dhx    = 1.0/hx;

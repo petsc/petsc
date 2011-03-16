@@ -129,14 +129,14 @@ PetscErrorCode  VecStrideNorm(Vec v,PetscInt start,NormType ntype,PetscReal *nrm
       sum += x[i]*(PetscConj(x[i]));
     }
     tnorm  = PetscRealPart(sum);
-    ierr   = MPI_Allreduce(&tnorm,nrm,1,MPIU_REAL,MPI_SUM,comm);CHKERRQ(ierr);
+    ierr   = MPI_Allreduce(&tnorm,nrm,1,MPIU_REAL,MPIU_SUM,comm);CHKERRQ(ierr);
     *nrm = sqrt(*nrm);
   } else if (ntype == NORM_1) {
     tnorm = 0.0;
     for (i=0; i<n; i+=bs) {
       tnorm += PetscAbsScalar(x[i]);
     }
-    ierr   = MPI_Allreduce(&tnorm,nrm,1,MPIU_REAL,MPI_SUM,comm);CHKERRQ(ierr);
+    ierr   = MPI_Allreduce(&tnorm,nrm,1,MPIU_REAL,MPIU_SUM,comm);CHKERRQ(ierr);
   } else if (ntype == NORM_INFINITY) {
     PetscReal tmp;
     tnorm = 0.0;
@@ -146,7 +146,7 @@ PetscErrorCode  VecStrideNorm(Vec v,PetscInt start,NormType ntype,PetscReal *nrm
       /* check special case of tmp == NaN */
       if (tmp != tmp) {tnorm = tmp; break;}
     } 
-    ierr   = MPI_Allreduce(&tnorm,nrm,1,MPIU_REAL,MPI_MAX,comm);CHKERRQ(ierr);
+    ierr   = MPI_Allreduce(&tnorm,nrm,1,MPIU_REAL,MPIU_MAX,comm);CHKERRQ(ierr);
   } else {
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown norm type");
   }
@@ -235,7 +235,7 @@ PetscErrorCode  VecStrideMax(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
 
   if (!idex) {
-    ierr   = MPI_Allreduce(&max,nrm,1,MPIU_REAL,MPI_MAX,comm);CHKERRQ(ierr);
+    ierr   = MPI_Allreduce(&max,nrm,1,MPIU_REAL,MPIU_MAX,comm);CHKERRQ(ierr);
   } else {
     PetscReal in[2],out[2];
     PetscInt  rstart;
@@ -331,7 +331,7 @@ PetscErrorCode  VecStrideMin(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
 
   if (!idex) {
-    ierr   = MPI_Allreduce(&min,nrm,1,MPIU_REAL,MPI_MIN,comm);CHKERRQ(ierr);
+    ierr   = MPI_Allreduce(&min,nrm,1,MPIU_REAL,MPIU_MIN,comm);CHKERRQ(ierr);
   } else {
     PetscReal in[2],out[2];
     PetscInt  rstart;
@@ -458,7 +458,7 @@ PetscErrorCode  VecStrideNormAll(Vec v,NormType ntype,PetscReal nrm[])
     for (j=0; j<bs; j++) {
       tnorm[j]  = PetscRealPart(sum[j]);
     }
-    ierr   = MPI_Allreduce(tnorm,nrm,bs,MPIU_REAL,MPI_SUM,comm);CHKERRQ(ierr);
+    ierr   = MPI_Allreduce(tnorm,nrm,bs,MPIU_REAL,MPIU_SUM,comm);CHKERRQ(ierr);
     for (j=0; j<bs; j++) {
       nrm[j] = sqrt(nrm[j]);
     }
@@ -471,7 +471,7 @@ PetscErrorCode  VecStrideNormAll(Vec v,NormType ntype,PetscReal nrm[])
 	tnorm[j] += PetscAbsScalar(x[i+j]);
       }
     }
-    ierr   = MPI_Allreduce(tnorm,nrm,bs,MPIU_REAL,MPI_SUM,comm);CHKERRQ(ierr);
+    ierr   = MPI_Allreduce(tnorm,nrm,bs,MPIU_REAL,MPIU_SUM,comm);CHKERRQ(ierr);
   } else if (ntype == NORM_INFINITY) {
     PetscReal tmp;
     for (j=0; j<bs; j++) {
@@ -485,7 +485,7 @@ PetscErrorCode  VecStrideNormAll(Vec v,NormType ntype,PetscReal nrm[])
 	if (tmp != tmp) {tnorm[j] = tmp; break;}
       }
     } 
-    ierr   = MPI_Allreduce(tnorm,nrm,bs,MPIU_REAL,MPI_MAX,comm);CHKERRQ(ierr);
+    ierr   = MPI_Allreduce(tnorm,nrm,bs,MPIU_REAL,MPIU_MAX,comm);CHKERRQ(ierr);
   } else {
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown norm type");
   }
@@ -566,7 +566,7 @@ PetscErrorCode  VecStrideMaxAll(Vec v,PetscInt idex[],PetscReal nrm[])
       }
     }
   }
-  ierr   = MPI_Allreduce(max,nrm,bs,MPIU_REAL,MPI_MAX,comm);CHKERRQ(ierr);
+  ierr   = MPI_Allreduce(max,nrm,bs,MPIU_REAL,MPIU_MAX,comm);CHKERRQ(ierr);
 
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -644,7 +644,7 @@ PetscErrorCode  VecStrideMinAll(Vec v,PetscInt idex[],PetscReal nrm[])
       }
     }
   }
-  ierr   = MPI_Allreduce(min,nrm,bs,MPIU_REAL,MPI_MIN,comm);CHKERRQ(ierr);
+  ierr   = MPI_Allreduce(min,nrm,bs,MPIU_REAL,MPIU_MIN,comm);CHKERRQ(ierr);
 
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
