@@ -13,10 +13,10 @@ class Configure(config.base.Configure):
 
   def __str__(self):
     return ''
-    
+
   def setupHelp(self, help):
     import nargs
-    help.addArgument('PETSc', '-with-log=<bool>',              nargs.ArgBool(None, 1, 'Activate logging code in PETSc'))    
+    help.addArgument('PETSc', '-with-log=<bool>',              nargs.ArgBool(None, 1, 'Activate logging code in PETSc'))
     help.addArgument('PETSc', '-with-info=<bool>',             nargs.ArgBool(None, 1, 'Activate PetscInfo() (i.e. -info)  code in PETSc'))
     help.addArgument('PETSc', '-with-ctable=<bool>',           nargs.ArgBool(None, 1, 'Activate CTABLE hashing for certain search functions - to conserve memory'))
     help.addArgument('PETSc', '-with-fortran-kernels=<bool>',  nargs.ArgBool(None, 0, 'Use Fortran for linear algebra kernels'))
@@ -35,13 +35,15 @@ class Configure(config.base.Configure):
 
   def isBGL(self):
     '''Returns true if compiler is IBM cross compiler for BGL'''
-    self.logPrint('**********Checking if running on BGL/IBM detected')
-    if (self.libraries.check('', 'bgl_perfctr_void') or self.libraries.check('','ADIOI_BGL_Open')) and self.libraries.check('', '_xlqadd'):
-      self.logPrint('*********BGL/IBM detected')
-      return 1
-    else:
-      self.logPrint('*********BGL/IBM test failure')
-      return 0
+    if not hasattr(self, '_isBGL'):
+      self.logPrint('**********Checking if running on BGL/IBM detected')
+      if (self.libraries.check('', 'bgl_perfctr_void') or self.libraries.check('','ADIOI_BGL_Open')) and self.libraries.check('', '_xlqadd'):
+        self.logPrint('*********BGL/IBM detected')
+        self._isBGL = 1
+      else:
+        self.logPrint('*********BGL/IBM test failure')
+        self._isBGL = 0
+    return self._isBGL
 
   def configureLibraryOptions(self):
     '''Sets PETSC_USE_DEBUG, PETSC_USE_INFO, PETSC_USE_LOG, PETSC_USE_CTABLE and PETSC_USE_FORTRAN_KERNELS'''
@@ -52,7 +54,6 @@ class Configure(config.base.Configure):
     if self.debugging.debugging:
       self.addDefine('USE_DEBUG', '1')
 
-      
     self.useInfo   = self.framework.argDB['with-info']
     self.addDefine('USE_INFO',   self.useInfo)
 
@@ -73,7 +74,7 @@ class Configure(config.base.Configure):
         self.addDefine('AssertAlignx(a,b)','call ALIGNX(a,b)')
       else:
         self.addDefine('AssertAlignx(a,b)','  ')
-      
+
     if self.isBGL():
       self.addDefine('Alignx(a,b)','__alignx(a,b)')
     else:
@@ -104,7 +105,7 @@ class Configure(config.base.Configure):
     self.framework.addDefine('IS_COLORING_MAX',max)
     self.addDefine('IS_COLOR_VALUE_TYPE', self.isColorValueType)
     return
-  
+
   def configure(self):
     self.executeTest(self.configureLibraryOptions)
     self.executeTest(self.configureISColorValueType)

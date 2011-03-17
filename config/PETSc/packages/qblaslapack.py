@@ -41,7 +41,7 @@ class Configure(PETSc.package.NewPackage):
     blasDir = self.packageDir
 
     g = open(os.path.join(blasDir,'tmpmakefile'),'w')
-    f = open(os.path.join(blasDir,'makefile'),'r')    
+    f = open(os.path.join(blasDir,'makefile'),'r')
     line = f.readline()
     while line:
       if line.startswith('CC  '):
@@ -70,7 +70,6 @@ class Configure(PETSc.package.NewPackage):
         line = 'RANLIB = '+self.setCompilers.RANLIB+'\n'
       if line.startswith('RM  '):
         line = 'RM = '+self.programs.RM+'\n'
-      
 
       if line.startswith('include'):
         line = '\n'
@@ -102,11 +101,12 @@ class Configure(PETSc.package.NewPackage):
   #
   def consistencyChecks(self):
     PETSc.package.NewPackage.consistencyChecks(self)
-    self.addDefine('BLASLAPACK_UNDERSCORE',1)
-    for baseName in ['gges', 'tgsen', 'gesvd','getrf','getrs','geev','gelss','syev','syevx','sygv','sygvx','getrf','potrf','getrs','potrs','stebz','pttrf','pttrs','stein','orgqr','stebz']:
-      routine = 'd'+baseName+'_'
-      oldLibs = self.compilers.LIBS
-      if not self.libraries.check(self.lib, routine):
-        self.addDefine('MISSING_LAPACK_'+baseName.upper(), 1)
-      self.compilers.LIBS = oldLibs
+    if self.framework.argDB['with-'+self.package]:
+      self.addDefine('BLASLAPACK_UNDERSCORE', 1)
+      for baseName in ['gges', 'tgsen', 'gesvd','getrf','getrs','geev','gelss','syev','syevx','sygv','sygvx','getrf','potrf','getrs','potrs','stebz','pttrf','pttrs','stein','orgqr','stebz']:
+        routine = 'd'+baseName+'_'
+        oldLibs = self.compilers.LIBS
+        if not self.libraries.check(self.lib, routine):
+          self.addDefine('MISSING_LAPACK_'+baseName.upper(), 1)
+        self.compilers.LIBS = oldLibs
     return
