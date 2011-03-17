@@ -263,19 +263,19 @@ PetscErrorCode PCSetUp_BFBt(PC pc)
 {
   PC_BFBt       *ctx = (PC_BFBt*) pc->data;
   MPI_Comm       comm;
-  PetscBool      hasPmat;
+  PetscBool      hasmat;
   PetscErrorCode ierr;
 
   ierr = PetscObjectGetComm((PetscObject) pc, &comm);CHKERRQ(ierr);
-  ierr = PCGetOperatorsSet(pc, PETSC_NULL, &hasPmat);CHKERRQ(ierr);
-  if (hasPmat) {
-    Mat        pmat;
+  ierr = PCGetOperatorsSet(pc, &hasmat, PETSC_NULL);CHKERRQ(ierr);
+  if (hasmat) {
+    Mat        mat,pmat;
     PetscBool  isSchur;
 
-    ierr = PCGetOperators(pc, PETSC_NULL, &pmat, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscTypeCompare((PetscObject) pmat, MATSCHURCOMPLEMENT, &isSchur);CHKERRQ(ierr);
+    ierr = PCGetOperators(pc, &mat, &pmat, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscTypeCompare((PetscObject) mat, MATSCHURCOMPLEMENT, &isSchur);CHKERRQ(ierr);
     if (isSchur) {
-      ierr = MatSchurComplementGetSubmatrices(pmat, &ctx->K, PETSC_NULL, &ctx->G, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+		  ierr = MatSchurComplementGetSubmatrices(mat, &ctx->K, PETSC_NULL, &ctx->G, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
     }
   }
   if (!ctx->K) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_SUP, "bfbt: K matrix not set");
