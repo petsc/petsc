@@ -5,7 +5,7 @@
 #include <sieve/ALE.hh>
 #endif
 
-extern "C" PetscMPIInt Mesh_DelTag(MPI_Comm comm,PetscMPIInt keyval,void* attr_val,void* extra_state);
+extern "C" PetscMPIInt DMMesh_DelTag(MPI_Comm comm,PetscMPIInt keyval,void* attr_val,void* extra_state);
 
 namespace ALE {
   // TODO: Check status of Waits
@@ -101,7 +101,7 @@ namespace ALE {
 
       if (tagKeyval == MPI_KEYVAL_INVALID) {
         tagvalp = (int *) malloc(sizeof(int));
-        ierr = MPI_Keyval_create(MPI_NULL_COPY_FN, Mesh_DelTag, &tagKeyval, (void *) NULL);CHKERRXX(ierr);
+        ierr = MPI_Keyval_create(MPI_NULL_COPY_FN, DMMesh_DelTag, &tagKeyval, (void *) NULL);CHKERRXX(ierr);
         ierr = MPI_Attr_put(this->comm(), tagKeyval, tagvalp);CHKERRXX(ierr);
         tagvalp[0] = 0;
       }

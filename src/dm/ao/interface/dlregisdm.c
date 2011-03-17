@@ -147,19 +147,19 @@ PetscErrorCode  DMInitializePackage(const char path[])
   /* Register Constructors */
   ierr = DMRegisterAll(path);CHKERRQ(ierr);
   /* Register Events */
-  ierr = PetscLogEventRegister("DMGlobalToLocal",      DM_CLASSID,&DMDA_GlobalToLocal);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMLocalToGlobal",      DM_CLASSID,&DMDA_LocalToGlobal);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMDALocalADFunc",      DM_CLASSID,&DMDA_LocalADFunction);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DMGlobalToLocal",        DM_CLASSID,&DMDA_GlobalToLocal);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DMLocalToGlobal",        DM_CLASSID,&DMDA_LocalToGlobal);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DMDALocalADFunc",        DM_CLASSID,&DMDA_LocalADFunction);CHKERRQ(ierr);
 #ifdef PETSC_HAVE_SIEVE
-  ierr = PetscLogEventRegister("MeshView",             DM_CLASSID,&Mesh_View);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MeshGetGlobalScatter", DM_CLASSID,&Mesh_GetGlobalScatter);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MeshRestrictVector",   DM_CLASSID,&Mesh_restrictVector);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MeshAssembleVector",   DM_CLASSID,&Mesh_assembleVector);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MeshAssemVecComplete", DM_CLASSID,&Mesh_assembleVectorComplete);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MeshAssembleMatrix",   DM_CLASSID,&Mesh_assembleMatrix);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MeshUpdateOperator",   DM_CLASSID,&Mesh_updateOperator);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("SectionRealView",      SECTIONREAL_CLASSID,&SectionReal_View);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("SectionIntView",       SECTIONINT_CLASSID,&SectionInt_View);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DMMeshView",             DM_CLASSID,&DMMesh_View);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DMMeshGetGlobalScatter", DM_CLASSID,&DMMesh_GetGlobalScatter);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DMMeshRestrictVector",   DM_CLASSID,&DMMesh_restrictVector);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DMMeshAssembleVector",   DM_CLASSID,&DMMesh_assembleVector);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DMMeshAssemVecComplete", DM_CLASSID,&DMMesh_assembleVectorComplete);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DMMeshAssembleMatrix",   DM_CLASSID,&DMMesh_assembleMatrix);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DMMeshUpdateOperator",   DM_CLASSID,&DMMesh_updateOperator);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("SectionRealView",        SECTIONREAL_CLASSID,&SectionReal_View);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("SectionIntView",         SECTIONINT_CLASSID,&SectionInt_View);CHKERRQ(ierr);
 #endif
   /* Process info exclusions */
   ierr = PetscOptionsGetString(PETSC_NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);

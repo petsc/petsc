@@ -1,4 +1,4 @@
-#include <petscmesh_formats.hh>   /*I      "petscmesh.h"   I*/
+#include <petscdmmesh_formats.hh>   /*I      "petscmesh.h"   I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "WritePCICEVertices"
@@ -36,7 +36,7 @@ PetscErrorCode WritePCICERestart(DM dm, PetscViewer viewer)
 #undef __FUNCT__
 #define __FUNCT__ "DMMeshCreatePCICE"
 /*@C
-  DMMeshCreatePCICE - Create a Mesh from PCICE files.
+  DMMeshCreatePCICE - Create a DMMesh from PCICE files.
 
   Not Collective
 
@@ -50,7 +50,7 @@ PetscErrorCode WritePCICERestart(DM dm, PetscViewer viewer)
 - numBdVertices - The number of boundary vertices
 
   Output Parameter:
-. mesh - The Mesh object
+. mesh - The DMMesh object
 
   Level: beginner
 
@@ -85,14 +85,14 @@ PetscErrorCode DMMeshCreatePCICE(MPI_Comm comm, const int dim, const char coordF
 /*@C
   PCICERenumberBoundary - Change global element names into offsets
 
-  Collective on Mesh
+  Collective on DMMesh
 
   Input Parameters:
 . mesh - the mesh
 
   Level: advanced
 
-  .seealso: MeshCreate()
+  .seealso: DMMeshCreate()
 @*/
 PetscErrorCode  PCICERenumberBoundary(DM dm)
 {
@@ -117,7 +117,7 @@ PetscErrorCode  PCICERenumberBoundary(DM dm)
   Not Collective
 
   Input Parameters:
-+ mesh - The Mesh object
++ mesh - The DMMesh object
 - name - The section name
 
   Output Parameters:
@@ -128,7 +128,7 @@ PetscErrorCode  PCICERenumberBoundary(DM dm)
   Level: intermediate
 
 .keywords: mesh, elements
-.seealso: MeshCreate()
+.seealso: DMMeshCreate()
 @*/
 PetscErrorCode BCSectionGetArray(DM dm, const char name[], PetscInt *numElements, PetscInt *fiberDim, PetscInt *array[])
 {
@@ -172,14 +172,14 @@ PetscErrorCode BCSectionGetArray(DM dm, const char name[], PetscInt *numElements
   Not Collective
 
   Input Parameters:
-+ mesh - The Mesh object
++ mesh - The DMMesh object
 . name - The section name
 - fiberDim - The number of values per element
 
   Level: intermediate
 
 .keywords: mesh, elements
-.seealso: MeshCreate()
+.seealso: DMMeshCreate()
 @*/
 PetscErrorCode BCSectionRealCreate(DM dm, const char name[], PetscInt fiberDim)
 {
@@ -207,7 +207,7 @@ PetscErrorCode BCSectionRealCreate(DM dm, const char name[], PetscInt fiberDim)
   Not Collective
 
   Input Parameters:
-+ mesh - The Mesh object
++ mesh - The DMMesh object
 - name - The section name
 
   Output Parameters:
@@ -218,7 +218,7 @@ PetscErrorCode BCSectionRealCreate(DM dm, const char name[], PetscInt fiberDim)
   Level: intermediate
 
 .keywords: mesh, elements
-.seealso: MeshCreate()
+.seealso: DMMeshCreate()
 @*/
 PetscErrorCode BCSectionRealGetArray(DM dm, const char name[], PetscInt *numElements, PetscInt *fiberDim, PetscReal *array[])
 {
@@ -502,7 +502,7 @@ namespace ALE {
     };
 #else
     Obj<PETSC_MESH_TYPE> Builder::readMesh(MPI_Comm comm, const int dim, const std::string& coordFilename, const std::string& adjFilename, const bool useZeroBase = true, const bool interpolate = true, const int debug = 0) {
-      Obj<Mesh>          mesh     = new Mesh(comm, dim, debug);
+      Obj<Mesh>          mesh     = new DMMesh(comm, dim, debug);
       Obj<sieve_type>    sieve    = new sieve_type(comm, debug);
       int    *cells = NULL;
       double *coordinates = NULL;
@@ -581,7 +581,7 @@ namespace ALE {
       mesh->allocate(ibfcon);
       mesh->allocate(bl);
       mesh->allocate(bnvec);
-      const Mesh::int_section_type::chart_type& chart = ibc->getChart();
+      const DMMesh::int_section_type::chart_type& chart = ibc->getChart();
       int num = 1;
 
       for(Mesh::int_section_type::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
@@ -623,7 +623,7 @@ namespace ALE {
       for(int bc = 0; bc < numBcFunc; bc++) {
 #if 0
         const char *x = strtok(fgets(buf, 2048, f), " ");
-        Mesh::bc_value_type value;
+        DMMesh::bc_value_type value;
 
         // Ignore function number
         x = strtok(NULL, " ");
@@ -696,7 +696,7 @@ namespace ALE {
 
       ierr = PetscMalloc(vertices->size()*embedDim * sizeof(double), &coords);
       for(Mesh::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
-        const Mesh::real_section_type::value_type *array = coordSec->restrictPoint(*v_iter);
+        const DMMesh::real_section_type::value_type *array = coordSec->restrictPoint(*v_iter);
         const int                                  row   = vNumbering->getIndex(*v_iter);
 
         if (columnMajor) {
@@ -733,8 +733,8 @@ namespace ALE {
       ierr = PetscMalloc(elements->size()*corners * sizeof(int), &v);
       for(Mesh::label_sequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
         const Obj<Mesh::sieve_type::traits::coneSequence> cone  = sieve->cone(*e_iter);
-        Mesh::sieve_type::traits::coneSequence::iterator  begin = cone->begin();
-        Mesh::sieve_type::traits::coneSequence::iterator  end   = cone->end();
+        DMMesh::sieve_type::traits::coneSequence::iterator  begin = cone->begin();
+        DMMesh::sieve_type::traits::coneSequence::iterator  end   = cone->end();
 
         const int row = eNumbering->getIndex(*e_iter);
         int       c   = -1;
@@ -757,7 +757,7 @@ namespace ALE {
     PetscErrorCode Viewer::writeVertices(const ALE::Obj<Mesh>& mesh, PetscViewer viewer) {
       ALE::Obj<Mesh::real_section_type> coordinates = mesh->getRealSection("coordinates");
 #if 0
-      Mesh::field_type::patch_type patch;
+      DMMesh::field_type::patch_type patch;
       const double  *array = coordinates->restrict(patch);
       int            numVertices;
       PetscErrorCode ierr;
@@ -843,7 +843,7 @@ namespace ALE {
       ALE::Obj<Mesh::bundle_type> vertexBundle = mesh->getBundle(0);
       ALE::Obj<Mesh::bundle_type> globalVertex = vertexBundle->getGlobalOrder();
       ALE::Obj<Mesh::bundle_type> globalElement = elementBundle->getGlobalOrder();
-      Mesh::bundle_type::patch_type patch;
+      DMMesh::bundle_type::patch_type patch;
       std::string    orderName("element");
       int            dim  = mesh->getDimension();
       int            corners = topology->nCone(*elements->begin(), topology->depth())->size();
@@ -930,7 +930,7 @@ namespace ALE {
       PetscFunctionBegin;
       ierr = PetscViewerASCIIPrintf(viewer, "%D\n", vertices->size());CHKERRQ(ierr);
       for(Mesh::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
-        const Mesh::real_section_type::value_type *array = coordinates->restrictPoint(*v_iter);
+        const DMMesh::real_section_type::value_type *array = coordinates->restrictPoint(*v_iter);
 
         PetscViewerASCIIPrintf(viewer, "%7D   ", vNumbering->getIndex(*v_iter)+1);
         for(int d = 0; d < embedDim; d++) {
@@ -968,9 +968,9 @@ namespace ALE {
 
         for(Mesh::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
           if (vNumbering->isLocal(*v_iter)) {
-            const Mesh::real_section_type::value_type *veln = velocity->restrictPoint(*v_iter);
-            const Mesh::real_section_type::value_type *pn   = pressure->restrictPoint(*v_iter);
-            const Mesh::real_section_type::value_type *tn   = temperature->restrictPoint(*v_iter);
+            const DMMesh::real_section_type::value_type *veln = velocity->restrictPoint(*v_iter);
+            const DMMesh::real_section_type::value_type *pn   = pressure->restrictPoint(*v_iter);
+            const DMMesh::real_section_type::value_type *tn   = temperature->restrictPoint(*v_iter);
 
             ierr = PetscViewerASCIIPrintf(viewer, "%6d% 16.8E% 16.8E% 16.8E% 16.8E\n", *v_iter-numCells+1, veln[0], veln[1], pn[0], tn[0]);CHKERRQ(ierr);
           }
@@ -996,9 +996,9 @@ namespace ALE {
         ierr = PetscMalloc(numLocalElements * sizeof(RestartType), &localValues);CHKERRQ(ierr);
         for(Mesh::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
           if (vNumbering->isLocal(*v_iter)) {
-            const Mesh::real_section_type::value_type *veln = velocity->restrictPoint(*v_iter);
-            const Mesh::real_section_type::value_type *pn   = pressure->restrictPoint(*v_iter);
-            const Mesh::real_section_type::value_type *tn   = temperature->restrictPoint(*v_iter);
+            const DMMesh::real_section_type::value_type *veln = velocity->restrictPoint(*v_iter);
+            const DMMesh::real_section_type::value_type *pn   = pressure->restrictPoint(*v_iter);
+            const DMMesh::real_section_type::value_type *tn   = temperature->restrictPoint(*v_iter);
 
             localValues[k].vertex = *v_iter;
             localValues[k].veln_x = veln[0];

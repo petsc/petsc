@@ -1,4 +1,4 @@
-#include<petscmesh_formats.hh>   /*I      "petscmesh.h"   I*/
+#include<petscdmmesh_formats.hh>   /*I      "petscmesh.h"   I*/
 
 #ifdef PETSC_HAVE_EXODUSII
 
@@ -216,7 +216,7 @@ PetscErrorCode PetscReadExodusII(MPI_Comm comm, const char filename[], ALE::Obj<
 #undef __FUNCT__
 #define __FUNCT__ "DMMeshCreateExodus"
 /*@C
-  DMMeshCreateExodus - Create a Mesh from an ExodusII file.
+  DMMeshCreateExodus - Create a DMMesh from an ExodusII file.
 
   Not Collective
 
@@ -225,12 +225,12 @@ PetscErrorCode PetscReadExodusII(MPI_Comm comm, const char filename[], ALE::Obj<
 - filename - The ExodusII filename
 
   Output Parameter:
-. dm - The Mesh object
+. dm - The DMMesh object
 
   Level: beginner
 
 .keywords: mesh, ExodusII
-.seealso: MeshCreate()
+.seealso: DMMeshCreate()
 @*/
 PetscErrorCode DMMeshCreateExodus(MPI_Comm comm, const char filename[], DM *dm)
 {
@@ -260,7 +260,7 @@ PetscErrorCode DMMeshCreateExodus(MPI_Comm comm, const char filename[], DM *dm)
   Not Collective
 
   Input Parameter:
-. dm - The Mesh object
+. dm - The DMMesh object
 
   Output Parameters:
 + dim - The mesh dimension
@@ -272,7 +272,7 @@ PetscErrorCode DMMeshCreateExodus(MPI_Comm comm, const char filename[], DM *dm)
   Level: beginner
 
 .keywords: mesh, ExodusII
-.seealso: MeshCreateExodus()
+.seealso: DMMeshCreateExodus()
 @*/
 PetscErrorCode DMMeshExodusGetInfo(DM dm, PetscInt *dim, PetscInt *numVertices, PetscInt *numCells, PetscInt *numCellBlocks, PetscInt *numVertexSets)
 {

@@ -1,4 +1,4 @@
-#include <petscmesh.hh>
+#include <petscdmmesh.hh>
 
 extern "C" {
 #ifdef PETSC_HAVE_ZOLTAN

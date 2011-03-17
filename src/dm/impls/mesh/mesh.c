@@ -1,15 +1,15 @@
 #include <private/meshimpl.h>   /*I      "petscdmmesh.h"   I*/
-#include <petscmesh_viewers.hh>
-#include <petscmesh_formats.hh>
+#include <petscdmmesh_viewers.hh>
+#include <petscdmmesh_formats.hh>
 
 /* Logging support */
-PetscLogEvent Mesh_View, Mesh_GetGlobalScatter, Mesh_restrictVector, Mesh_assembleVector, Mesh_assembleVectorComplete, Mesh_assembleMatrix, Mesh_updateOperator;
+PetscLogEvent DMMesh_View, DMMesh_GetGlobalScatter, DMMesh_restrictVector, DMMesh_assembleVector, DMMesh_assembleVectorComplete, DMMesh_assembleMatrix, DMMesh_updateOperator;
 
 ALE::MemoryLogger Petsc_MemoryLogger;
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
-#define __FUNCT__ "Mesh_DelTag"
+#define __FUNCT__ "DMMesh_DelTag"
 /*
    Private routine to delete internal tag storage when a communicator is freed.
 
@@ -19,7 +19,7 @@ EXTERN_C_BEGIN
 
          we do not use PetscFree() since it is unsafe after PetscFinalize()
 */
-PetscMPIInt Mesh_DelTag(MPI_Comm comm,PetscMPIInt keyval,void* attr_val,void* extra_state)
+PetscMPIInt DMMesh_DelTag(MPI_Comm comm,PetscMPIInt keyval,void* attr_val,void* extra_state)
 {
   free(attr_val);
   return(MPI_SUCCESS);
@@ -182,7 +182,7 @@ PetscErrorCode DMMeshView_Sieve(const ALE::Obj<PETSC_MESH_TYPE>& mesh, PetscView
   } else if (isbinary) {
     ierr = DMMeshView_Sieve_Binary(mesh, viewer);CHKERRQ(ierr);
   } else if (isdraw){
-    SETERRQ(((PetscObject)viewer)->comm,PETSC_ERR_SUP, "Draw viewer not implemented for Mesh");
+    SETERRQ(((PetscObject)viewer)->comm,PETSC_ERR_SUP, "Draw viewer not implemented for DMMesh");
   } else {
     SETERRQ1(((PetscObject)viewer)->comm,PETSC_ERR_SUP,"Viewer type %s not supported by this mesh object", ((PetscObject)viewer)->type_name);
   }
@@ -216,7 +216,7 @@ PetscErrorCode DMView_Mesh(DM dm, PetscViewer viewer)
 
   Level: advanced
 
-.seealso MeshView()
+.seealso DMView()
 @*/
 PetscErrorCode DMMeshLoad(PetscViewer viewer, DM dm)
 {
@@ -243,7 +243,7 @@ PetscErrorCode DMMeshLoad(PetscViewer viewer, DM dm)
   DMMeshCreateMatrix - Creates a matrix with the correct parallel layout required for
     computing the Jacobian on a function defined using the information in the Section.
 
-  Collective on Mesh
+  Collective on DMMesh
 
   Input Parameters:
 + mesh    - the mesh object
@@ -272,7 +272,7 @@ PetscErrorCode DMMeshCreateMatrix(DM dm, SectionReal section, MatType mtype, Mat
   ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
   ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
   try {
-    ierr = MeshCreateMatrix(m, s, mtype, J);CHKERRQ(ierr);
+    ierr = DMMeshCreateMatrix(m, s, mtype, J);CHKERRQ(ierr);
   } catch(ALE::Exception e) {
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB, e.message());
   }
@@ -330,7 +330,7 @@ PetscErrorCode DMGetMatrix_Mesh(DM dm, const MatType mtype, Mat *J)
   ierr = DMMeshHasSectionReal(dm, "default", &flag);CHKERRQ(ierr);
   if (!flag) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONGSTATE, "Must set default section");
   ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
-  ierr = MeshCreateMatrix(m, m->getRealSection("default"), mtype, J);CHKERRQ(ierr);
+  ierr = DMMeshCreateMatrix(m, m->getRealSection("default"), mtype, J);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject) *J, "DMMesh", (PetscObject) dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -373,10 +373,10 @@ PetscErrorCode DMCreateGlobalVector_Mesh(DM dm, Vec *gvec)
 /*@
   DMMeshCreateVector - Creates a global vector matching the input section
 
-  Collective on Mesh
+  Collective on DMMesh
 
   Input Parameters:
-+ mesh - the Mesh
++ mesh - the DMMesh
 - section - the Section
 
   Output Parameter:
@@ -430,7 +430,7 @@ PetscErrorCode DMCreateLocalVector_Mesh(DM dm, Vec *lvec)
   DMMeshCreateGlobalScatter - Create a VecScatter which maps from local, overlapping
   storage in the Section to a global Vec
 
-  Collective on Mesh
+  Collective on DMMesh
 
   Input Parameters:
 + mesh - the mesh object
@@ -441,7 +441,7 @@ PetscErrorCode DMCreateLocalVector_Mesh(DM dm, Vec *lvec)
 
   Level: advanced
 
-.seealso MeshDestroy(), MeshCreateGlobalVector(), DMMeshCreate()
+.seealso DMDestroy(), DMMeshCreateGlobalRealVector(), DMMeshCreate()
 @*/
 PetscErrorCode DMMeshCreateGlobalScatter(DM dm, SectionReal section, VecScatter *scatter)
 {
@@ -452,7 +452,7 @@ PetscErrorCode DMMeshCreateGlobalScatter(DM dm, SectionReal section, VecScatter 
   PetscFunctionBegin;
   ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
   ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
-  ierr = MeshCreateGlobalScatter(m, s, scatter);CHKERRQ(ierr);
+  ierr = DMMeshCreateGlobalScatter(m, s, scatter);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -461,7 +461,7 @@ PetscErrorCode DMMeshCreateGlobalScatter(DM dm, SectionReal section, VecScatter 
 /*@
   DMMeshGetGlobalScatter - Retrieve the VecScatter which maps from local, overlapping storage in the default Section to a global Vec
 
-  Collective on Mesh
+  Collective on DMMesh
 
   Input Parameters:
 . mesh - the mesh object
@@ -471,7 +471,7 @@ PetscErrorCode DMMeshCreateGlobalScatter(DM dm, SectionReal section, VecScatter 
 
   Level: advanced
 
-.seealso MeshDestroy(), MeshCreateGlobalVector(), DMMeshCreate()
+.seealso MeshDestroy(), DMMeshCreateGlobalrealVector(), DMMeshCreate()
 @*/
 PetscErrorCode DMMeshGetGlobalScatter(DM dm, VecScatter *scatter)
 {
@@ -624,7 +624,7 @@ PetscErrorCode DMMeshInterpolatePoints(DM dm, SectionReal section, int numPoints
   Collective on mesh
 
   Input Parameter:
-. mesh - The Mesh
+. mesh - The DMMesh
 
   Output Parameter:
 . maxDegree - The maximum number of edges at any vertex
@@ -677,7 +677,7 @@ PetscErrorCode restrictVector(Vec g, Vec l, InsertMode mode)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscLogEventBegin(Mesh_restrictVector,0,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(DMMesh_restrictVector,0,0,0,0);CHKERRQ(ierr);
   ierr = PetscObjectQuery((PetscObject) g, "injection", (PetscObject *) &injection);CHKERRQ(ierr);
   if (injection) {
     ierr = VecScatterBegin(injection, g, l, mode, SCATTER_REVERSE);
@@ -689,7 +689,7 @@ PetscErrorCode restrictVector(Vec g, Vec l, InsertMode mode)
       ierr = VecAXPY(l, 1.0, g);CHKERRQ(ierr);
     }
   }
-  ierr = PetscLogEventEnd(Mesh_restrictVector,0,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(DMMesh_restrictVector,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -717,7 +717,7 @@ PetscErrorCode assembleVectorComplete(Vec g, Vec l, InsertMode mode)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscLogEventBegin(Mesh_assembleVectorComplete,0,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(DMMesh_assembleVectorComplete,0,0,0,0);CHKERRQ(ierr);
   ierr = PetscObjectQuery((PetscObject) g, "injection", (PetscObject *) &injection);CHKERRQ(ierr);
   if (injection) {
     ierr = VecScatterBegin(injection, l, g, mode, SCATTER_FORWARD);CHKERRQ(ierr);
@@ -729,7 +729,7 @@ PetscErrorCode assembleVectorComplete(Vec g, Vec l, InsertMode mode)
       ierr = VecAXPY(g, 1.0, l);CHKERRQ(ierr);
     }
   }
-  ierr = PetscLogEventEnd(Mesh_assembleVectorComplete,0,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(DMMesh_assembleVectorComplete,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -774,7 +774,7 @@ PetscErrorCode assembleVector(Vec b, DM dm, SectionReal section, PetscInt e, Pet
   PetscErrorCode            ierr;
 
   PetscFunctionBegin;
-  ierr = PetscLogEventBegin(Mesh_assembleVector,0,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(DMMesh_assembleVector,0,0,0,0);CHKERRQ(ierr);
   ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
   ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
   //firstElement = elementBundle->getLocalSizes()[bundle->getCommRank()];
@@ -788,7 +788,7 @@ PetscErrorCode assembleVector(Vec b, DM dm, SectionReal section, PetscInt e, Pet
     m->updateAdd(s, PETSC_MESH_TYPE::point_type(e + firstElement), v);
   }
 #endif
-  ierr = PetscLogEventEnd(Mesh_assembleVector,0,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(DMMesh_assembleVector,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -827,7 +827,7 @@ PetscErrorCode updateOperatorGeneral(Mat A, const ALE::Obj<PETSC_MESH_TYPE>& row
 
   Input Parameters:
 + A - the matrix
-. mesh - Mesh needed for orderings
+. mesh - DMMesh needed for orderings
 . section - A Section which describes the layout
 . e - The element number
 . v - The values
@@ -861,7 +861,7 @@ PetscErrorCode DMMeshSetMaxDof(DM dm, PetscInt maxDof)
 
   Input Parameters:
 + A - the matrix
-. dm - Mesh needed for orderings
+. dm - DMMesh needed for orderings
 . section - A Section which describes the layout
 . e - The element
 . v - The values
@@ -878,7 +878,7 @@ PetscErrorCode assembleMatrix(Mat A, DM dm, SectionReal section, PetscInt e, Pet
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscLogEventBegin(Mesh_assembleMatrix,0,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(DMMesh_assembleMatrix,0,0,0,0);CHKERRQ(ierr);
   try {
     Obj<PETSC_MESH_TYPE> m;
     Obj<PETSC_MESH_TYPE::real_section_type> s;
@@ -894,7 +894,7 @@ PetscErrorCode assembleMatrix(Mat A, DM dm, SectionReal section, PetscInt e, Pet
   } catch (ALE::Exception e) {
     std::cout << e.msg() << std::endl;
   }
-  ierr = PetscLogEventEnd(Mesh_assembleMatrix,0,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(DMMesh_assembleMatrix,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -908,7 +908,7 @@ PetscErrorCode assembleMatrix(Mat A, DM dm, SectionReal section, PetscInt e, Pet
   Not Collective
 
   Input Parameters:
-+ dm   - The Mesh object
++ dm   - The DMMesh object
 - name - The label name
 
   Output Parameter:
@@ -917,7 +917,7 @@ PetscErrorCode assembleMatrix(Mat A, DM dm, SectionReal section, PetscInt e, Pet
   Level: beginner
 
 .keywords: mesh, ExodusII
-.seealso: MeshCreateExodus()
+.seealso: DMMeshCreateExodus()
 @*/
 PetscErrorCode DMMeshGetLabelSize(DM dm, const char name[], PetscInt *size)
 {
@@ -938,7 +938,7 @@ PetscErrorCode DMMeshGetLabelSize(DM dm, const char name[], PetscInt *size)
   Not Collective
 
   Input Parameters:
-+ mesh - The Mesh object
++ mesh - The DMMesh object
 . name - The label name
 - ids - The id storage array
 
@@ -948,7 +948,7 @@ PetscErrorCode DMMeshGetLabelSize(DM dm, const char name[], PetscInt *size)
   Level: beginner
 
 .keywords: mesh, ExodusII
-.seealso: MeshCreateExodus()
+.seealso: DMMeshCreateExodus()
 @*/
 PetscErrorCode DMMeshGetLabelIds(DM dm, const char name[], PetscInt *ids)
 {
@@ -975,7 +975,7 @@ PetscErrorCode DMMeshGetLabelIds(DM dm, const char name[], PetscInt *ids)
   Not Collective
 
   Input Parameters:
-+ dm - The Mesh object
++ dm - The DMMesh object
 . name - The label name
 - value - The stratum value
 
@@ -985,7 +985,7 @@ PetscErrorCode DMMeshGetLabelIds(DM dm, const char name[], PetscInt *ids)
   Level: beginner
 
 .keywords: mesh, ExodusII
-.seealso: MeshCreateExodus()
+.seealso: DMMeshCreateExodus()
 @*/
 PetscErrorCode DMMeshGetStratumSize(DM dm, const char name[], PetscInt value, PetscInt *size)
 {
@@ -1006,7 +1006,7 @@ PetscErrorCode DMMeshGetStratumSize(DM dm, const char name[], PetscInt value, Pe
   Not Collective
 
   Input Parameters:
-+ dm - The Mesh object
++ dm - The DMMesh object
 . name - The label name
 . value - The stratum value
 - points - The stratum points storage array
@@ -1017,7 +1017,7 @@ PetscErrorCode DMMeshGetStratumSize(DM dm, const char name[], PetscInt value, Pe
   Level: beginner
 
 .keywords: mesh, ExodusII
-.seealso: MeshCreateExodus()
+.seealso: DMMeshCreateExodus()
 @*/
 PetscErrorCode DMMeshGetStratum(DM dm, const char name[], PetscInt value, PetscInt *points)
 {
@@ -1077,7 +1077,7 @@ PetscErrorCode WriteVTKElements(DM dm, PetscViewer viewer)
   Not Collective
 
   Input Parameter:
-+ dm - The Mesh object
++ dm - The DMMesh object
 - columnMajor - Flag for column major order
 
   Output Parameter:
@@ -1088,7 +1088,7 @@ PetscErrorCode WriteVTKElements(DM dm, PetscViewer viewer)
   Level: intermediate
 
 .keywords: mesh, coordinates
-.seealso: MeshCreate()
+.seealso: DMMeshCreate()
 @*/
 PetscErrorCode DMMeshGetCoordinates(DM dm, PetscBool  columnMajor, PetscInt *numVertices, PetscInt *dim, PetscReal *coords[])
 {
@@ -1109,7 +1109,7 @@ PetscErrorCode DMMeshGetCoordinates(DM dm, PetscBool  columnMajor, PetscInt *num
   Not Collective
 
   Input Parameters:
-+ dm - The Mesh object
++ dm - The DMMesh object
 - columnMajor - Flag for column major order
 
   Output Parameters:
@@ -1120,7 +1120,7 @@ PetscErrorCode DMMeshGetCoordinates(DM dm, PetscBool  columnMajor, PetscInt *num
   Level: intermediate
 
 .keywords: mesh, elements
-.seealso: MeshCreate()
+.seealso: DMMeshCreate()
 @*/
 PetscErrorCode DMMeshGetElements(DM dm, PetscBool  columnMajor, PetscInt *numElements, PetscInt *numCorners, PetscInt *vertices[])
 {
@@ -1141,7 +1141,7 @@ PetscErrorCode DMMeshGetElements(DM dm, PetscBool  columnMajor, PetscInt *numEle
   Not Collective
 
   Input Parameters:
-+ dm - The Mesh object
++ dm - The DMMesh object
 - p - The mesh point
 
   Output Parameters:
@@ -1151,7 +1151,7 @@ PetscErrorCode DMMeshGetElements(DM dm, PetscBool  columnMajor, PetscInt *numEle
   Level: intermediate
 
 .keywords: mesh, cone
-.seealso: MeshCreate()
+.seealso: DMMeshCreate()
 @*/
 PetscErrorCode DMMeshGetCone(DM dm, PetscInt p, PetscInt *numPoints, PetscInt *points[])
 {
@@ -1176,17 +1176,17 @@ PetscErrorCode DMMeshGetCone(DM dm, PetscInt p, PetscInt *numPoints, PetscInt *p
   Not Collective
 
   Input Parameter:
-+ serialMesh  - The original Mesh object
++ serialMesh  - The original DMMesh object
 - partitioner - The partitioning package, or NULL for the default
 
   Output Parameter:
-. parallelMesh - The distributed Mesh object
+. parallelMesh - The distributed DMMesh object
 
   Level: intermediate
 
 .keywords: mesh, elements
 
-.seealso: MeshCreate(), MeshDistributeByFace()
+.seealso: DMMeshCreate(), DMMeshDistributeByFace()
 @*/
 PetscErrorCode DMMeshDistribute(DM serialMesh, const char partitioner[], DM *parallelMesh)
 {
@@ -1213,17 +1213,17 @@ PetscErrorCode DMMeshDistribute(DM serialMesh, const char partitioner[], DM *par
   Not Collective
 
   Input Parameter:
-+ serialMesh  - The original Mesh object
++ serialMesh  - The original DMMesh object
 - partitioner - The partitioning package, or NULL for the default
 
   Output Parameter:
-. parallelMesh - The distributed Mesh object
+. parallelMesh - The distributed DMMesh object
 
   Level: intermediate
 
 .keywords: mesh, elements
 
-.seealso: MeshCreate(), MeshDistribute()
+.seealso: DMMeshCreate(), DMMeshDistribute()
 @*/
 PetscErrorCode DMMeshDistributeByFace(DM serialMesh, const char partitioner[], DM *parallelMesh)
 {
@@ -1248,16 +1248,16 @@ PetscErrorCode DMMeshDistributeByFace(DM serialMesh, const char partitioner[], D
   Not Collective
 
   Input Parameters:
-+ boundary - The Mesh boundary object
++ boundary - The DMMesh boundary object
 - interpolate - Flag to create intermediate mesh elements
 
   Output Parameter:
-. mesh - The Mesh object
+. mesh - The DMMesh object
 
   Level: intermediate
 
 .keywords: mesh, elements
-.seealso: MeshCreate(), MeshRefine()
+.seealso: DMMeshCreate(), DMMeshRefine()
 @*/
 PetscErrorCode DMMeshGenerate(DM boundary, PetscBool  interpolate, DM *mesh)
 {
@@ -1280,17 +1280,17 @@ PetscErrorCode DMMeshGenerate(DM boundary, PetscBool  interpolate, DM *mesh)
   Not Collective
 
   Input Parameters:
-+ mesh - The original Mesh object
++ mesh - The original DMMesh object
 . refinementLimit - The maximum size of any cell
 - interpolate - Flag to create intermediate mesh elements
 
   Output Parameter:
-. refinedMesh - The refined Mesh object
+. refinedMesh - The refined DMMesh object
 
   Level: intermediate
 
 .keywords: mesh, elements
-.seealso: MeshCreate(), MeshGenerate()
+.seealso: DMMeshCreate(), DMMeshGenerate()
 @*/
 PetscErrorCode DMMeshRefine(DM mesh, double refinementLimit, PetscBool  interpolate, DM *refinedMesh)
 {
@@ -1349,16 +1349,16 @@ PetscErrorCode DMGetInterpolation_Mesh(DM dmCoarse, DM dmFine, Mat *interpolatio
   Not Collective
 
   Input Parameters:
-+ mesh - The Mesh object
++ mesh - The DMMesh object
 - name - The section name
 
   Output Parameter:
-. flag - True if the SectionReal is present in the Mesh
+. flag - True if the SectionReal is present in the DMMesh
 
   Level: intermediate
 
 .keywords: mesh, elements
-.seealso: MeshCreate()
+.seealso: DMMeshCreate()
 @*/
 PetscErrorCode DMMeshHasSectionReal(DM dm, const char name[], PetscBool  *flag)
 {
@@ -1374,12 +1374,12 @@ PetscErrorCode DMMeshHasSectionReal(DM dm, const char name[], PetscBool  *flag)
 #undef __FUNCT__
 #define __FUNCT__ "DMMeshGetSectionReal"
 /*@C
-  DMMeshGetSectionReal - Returns a SectionReal of the given name from the Mesh.
+  DMMeshGetSectionReal - Returns a SectionReal of the given name from the DMMesh.
 
-  Collective on Mesh
+  Collective on DMMesh
 
   Input Parameters:
-+ mesh - The Mesh object
++ mesh - The DMMesh object
 - name - The section name
 
   Output Parameter:
@@ -1390,7 +1390,7 @@ PetscErrorCode DMMeshHasSectionReal(DM dm, const char name[], PetscBool  *flag)
   Level: intermediate
 
 .keywords: mesh, elements
-.seealso: MeshCreate()
+.seealso: DMMeshCreate()
 @*/
 PetscErrorCode DMMeshGetSectionReal(DM dm, const char name[], SectionReal *section)
 {
@@ -1414,12 +1414,12 @@ PetscErrorCode DMMeshGetSectionReal(DM dm, const char name[], SectionReal *secti
 #undef __FUNCT__
 #define __FUNCT__ "DMMeshSetSectionReal"
 /*@C
-  DMMeshSetSectionReal - Puts a SectionReal of the given name into the Mesh.
+  DMMeshSetSectionReal - Puts a SectionReal of the given name into the DMMesh.
 
-  Collective on Mesh
+  Collective on DMMesh
 
   Input Parameters:
-+ mesh - The Mesh object
++ mesh - The DMMesh object
 - section - The SectionReal
 
   Note: This takes the section name from the PETSc object
@@ -1427,7 +1427,7 @@ PetscErrorCode DMMeshGetSectionReal(DM dm, const char name[], SectionReal *secti
   Level: intermediate
 
 .keywords: mesh, elements
-.seealso: MeshCreate()
+.seealso: DMMeshCreate()
 @*/
 PetscErrorCode DMMeshSetSectionReal(DM dm, SectionReal section)
 {
@@ -1452,18 +1452,18 @@ PetscErrorCode DMMeshSetSectionReal(DM dm, SectionReal section)
   Not Collective
 
   Input Parameters:
-+ mesh - The Mesh object
++ mesh - The DMMesh object
 - name - The section name
 
   Output Parameter:
-. flag - True if the SectionInt is present in the Mesh
+. flag - True if the SectionInt is present in the DMMesh
 
   Level: intermediate
 
 .keywords: mesh, elements
-.seealso: MeshCreate()
+.seealso: DMMeshCreate()
 @*/
-PetscErrorCode MeshHasSectionInt(DM dm, const char name[], PetscBool  *flag)
+PetscErrorCode DMMeshHasSectionInt(DM dm, const char name[], PetscBool  *flag)
 {
   ALE::Obj<PETSC_MESH_TYPE> m;
   PetscErrorCode ierr;
@@ -1477,12 +1477,12 @@ PetscErrorCode MeshHasSectionInt(DM dm, const char name[], PetscBool  *flag)
 #undef __FUNCT__
 #define __FUNCT__ "DMMeshGetSectionInt"
 /*@C
-  DMMeshGetSectionInt - Returns a SectionInt of the given name from the Mesh.
+  DMMeshGetSectionInt - Returns a SectionInt of the given name from the DMMesh.
 
-  Collective on Mesh
+  Collective on DMMesh
 
   Input Parameters:
-+ mesh - The Mesh object
++ mesh - The DMMesh object
 - name - The section name
 
   Output Parameter:
@@ -1493,7 +1493,7 @@ PetscErrorCode MeshHasSectionInt(DM dm, const char name[], PetscBool  *flag)
   Level: intermediate
 
 .keywords: mesh, elements
-.seealso: MeshCreate()
+.seealso: DMMeshCreate()
 @*/
 PetscErrorCode DMMeshGetSectionInt(DM dm, const char name[], SectionInt *section)
 {
@@ -1517,12 +1517,12 @@ PetscErrorCode DMMeshGetSectionInt(DM dm, const char name[], SectionInt *section
 #undef __FUNCT__
 #define __FUNCT__ "DMMeshSetSectionInt"
 /*@C
-  DMMeshSetSectionInt - Puts a SectionInt of the given name into the Mesh.
+  DMMeshSetSectionInt - Puts a SectionInt of the given name into the DMMesh.
 
-  Collective on Mesh
+  Collective on DMMesh
 
   Input Parameters:
-+ mesh - The Mesh object
++ mesh - The DMMesh object
 - section - The SectionInt
 
   Note: This takes the section name from the PETSc object
@@ -1530,7 +1530,7 @@ PetscErrorCode DMMeshGetSectionInt(DM dm, const char name[], SectionInt *section
   Level: intermediate
 
 .keywords: mesh, elements
-.seealso: MeshCreate()
+.seealso: DMMeshCreate()
 @*/
 PetscErrorCode DMMeshSetSectionInt(DM dm, SectionInt section)
 {
@@ -1555,7 +1555,7 @@ PetscErrorCode DMMeshSetSectionInt(DM dm, SectionInt section)
   Not Collective
 
   Input Parameters:
-+ mesh - The Mesh object
++ mesh - The DMMesh object
 - name - The section name
 
   Output Parameters:
@@ -1566,7 +1566,7 @@ PetscErrorCode DMMeshSetSectionInt(DM dm, SectionInt section)
   Level: intermediate
 
 .keywords: mesh, elements
-.seealso: MeshCreate()
+.seealso: DMMeshCreate()
 @*/
 PetscErrorCode SectionGetArray(DM dm, const char name[], PetscInt *numElements, PetscInt *fiberDim, PetscScalar *array[])
 {

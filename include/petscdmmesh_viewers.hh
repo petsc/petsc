@@ -1,7 +1,7 @@
-#if !defined(__PETSCMESH_VIEWERS_HH)
-#define __PETSCMESH_VIEWERS_HH
+#if !defined(__PETSCDMMESH_VIEWERS_HH)
+#define __PETSCDMMESH_VIEWERS_HH
 
-#include <petscmesh.hh>
+#include <petscdmmesh.hh>
 #include <petscdmmg.h>
 #include <iomanip>
 
@@ -975,9 +975,9 @@ template<typename Bundle, typename Section>
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MeshView_Sieve_Ascii"
+#define __FUNCT__ "DMMeshView_Sieve_Ascii"
 template<typename Mesh, typename Section>
-PetscErrorCode MeshView_Sieve_Ascii(const Obj<Mesh>& mesh, const Obj<Section>& partition, PetscViewer viewer)
+PetscErrorCode DMMeshView_Sieve_Ascii(const Obj<Mesh>& mesh, const Obj<Section>& partition, PetscViewer viewer)
 {
   typedef ALE::IUniformSection<typename Mesh::point_type, typename Section::point_type> partitionMap_type;
   const int      numLocalPoints = partition->size();
@@ -997,4 +997,4 @@ PetscErrorCode MeshView_Sieve_Ascii(const Obj<Mesh>& mesh, const Obj<Section>& p
   PetscFunctionReturn(0);
 }
 
-#endif // __PETSCMESH_VIEWERS_HH
+#endif // __PETSCDMMESH_VIEWERS_HH
