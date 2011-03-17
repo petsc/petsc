@@ -1026,12 +1026,16 @@ class PETScMaker(script.Script):
 
  def clean(self, libname):
    self.logWrite('Cleaning build\n', debugSection = 'screen', forceScroll = True)
-   shutil.rmtree(self.sourceDBFilename)
+   if os.path.isfile(self.sourceDBFilename):
+     os.remove(self.sourceDBFilename)
+     self.logPrint('Removed '+self.sourceDBFilename)
    shutil.rmtree(self.getObjDir(libname))
+   self.logPrint('Removed '+self.getObjDir(libname))
    return
 
  def run(self):
    self.setup()
+   #self.buildFortranStubs()
    self.updateDependencies('libpetsc', self.rootDir)
    if self.buildLibraries('libpetsc', self.rootDir):
      # This is overkill, but right now it is cheap
