@@ -1294,22 +1294,6 @@ TSSetUseFDColoring(TS ts,PetscBool flag)
 /* ---------------------------------------------------------------- */
 
 #undef __FUNCT__
-#define __FUNCT__ "TSSolve_Custom"
-static PetscErrorCode
-TSSolve_Custom(TS ts, Vec x)
-{
-  PetscErrorCode ierr;
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
-  ierr = TSSetSolution(ts, x);CHKERRQ(ierr);
-  ierr = TSSolve(ts,x);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-#undef  TSSolve
-#define TSSolve TSSolve_Custom
-
-#undef __FUNCT__
 #define __FUNCT__ "TSSetTimeStepNumber"
 static PetscErrorCode
 TSSetTimeStepNumber(TS ts, PetscInt step)

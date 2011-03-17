@@ -8,6 +8,40 @@
 #define TSRK TSRUNGE_KUTTA
 #endif
 
+#if (PETSC_VERSION_(3,1,0) || \
+     PETSC_VERSION_(3,0,0))
+#undef __FUNCT__
+#define __FUNCT__ "TSSetSolution_Compat"
+static PetscErrorCode
+TSSetSolution_Compat(TS ts, Vec u)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidHeaderSpecific(u,VEC_CLASSID,2);
+  ierr = PetscObjectCompose((PetscObject)ts,"__solvec__",(PetscObject)u);CHKERRQ(ierr);
+  ierr = TSSetSolution(ts,u);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#define TSSetSolution TSSetSolution_Compat
+#undef __FUNCT__
+#define __FUNCT__ "TSSolve_Compat"
+static PetscErrorCode
+TSSolve_Compat(TS ts, Vec x)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  if (x) PetscValidHeaderSpecific(x,VEC_CLASSID,1);
+  if (x) {ierr = TSSetSolution(ts, x);CHKERRQ(ierr);}
+  ierr = TSSolve(ts,x);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#undef  TSSolve
+#define TSSolve TSSolve_Compat
+#endif
+
+
 #if (PETSC_VERSION_(3,0,0))
 #define TSEULER           TS_EULER
 #define TSBEULER          TS_BEULER
