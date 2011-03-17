@@ -336,6 +336,7 @@ PetscErrorCode  PCCreate(MPI_Comm comm,PC *newpc)
   pc->diagonalscale        = PETSC_FALSE;
   pc->diagonalscaleleft    = 0;
   pc->diagonalscaleright   = 0;
+  pc->reuse                = 0;
 
   pc->modifysubmatrices   = 0;
   pc->modifysubmatricesP  = 0;

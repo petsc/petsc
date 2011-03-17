@@ -41,6 +41,7 @@ struct _p_PC {
   PetscErrorCode (*modifysubmatrices)(PC,PetscInt,const IS[],const IS[],Mat[],void*); /* user provided routine */
   void           *modifysubmatricesP; /* context for user routine */
   void           *data;
+  PetscInt       reuse; /* flag for reusing the numerical factorization */
 };
 
 extern PetscLogEvent  PC_SetUp, PC_SetUpOnBlocks, PC_Apply, PC_ApplyCoarse, PC_ApplyMultiple, PC_ApplySymmetricLeft;
