@@ -518,9 +518,9 @@ extern PetscErrorCode DMGetMatrix_DA_2d_MPISBAIJ(DM,Mat);
 extern PetscErrorCode DMGetMatrix_DA_3d_MPISBAIJ(DM,Mat);
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSetDA"
+#define __FUNCT__ "MatSetDM"
 /*@
-   MatSetDA - Sets the DMDA that is to be used by the HYPRE_StructMatrix PETSc matrix
+   MatSetDM - Sets the DMDA that is to be used by the HYPRE_StructMatrix PETSc matrix
 
    Logically Collective on Mat
 
@@ -531,14 +531,14 @@ extern PetscErrorCode DMGetMatrix_DA_3d_MPISBAIJ(DM,Mat);
    Level: intermediate
 
 @*/
-PetscErrorCode  MatSetDA(Mat mat,DM da)
+PetscErrorCode  MatSetDM(Mat mat,DM da)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
-  ierr = PetscTryMethod(mat,"MatSetDA_C",(Mat,DM),(mat,da));CHKERRQ(ierr);
+  ierr = PetscTryMethod(mat,"MatSetDM_C",(Mat,DM),(mat,da));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -674,7 +674,7 @@ PetscErrorCode  DMGetMatrix_DA(DM da, const MatType mtype,Mat *J)
   ierr = MatCreate(comm,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,dof*nx*ny*nz,dof*nx*ny*nz,dof*M*N*P,dof*M*N*P);CHKERRQ(ierr);
   ierr = MatSetType(A,(const MatType)ttype);CHKERRQ(ierr); 
-  ierr = MatSetDA(A,da);CHKERRQ(ierr);
+  ierr = MatSetDM(A,da);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatGetType(A,&Atype);CHKERRQ(ierr);
   /*

@@ -303,7 +303,7 @@ PetscErrorCode MatHYPRE_IJMatrixLink(Mat A,HYPRE_IJMatrix *ij)
 
           The matrix needs a DMDA associated with it by either a call to MatSetDM() or if the matrix is obtained from DMGetMatrix()
 
-.seealso: MatCreate(), PCPFMG, MatSetDA(), DMGetMatrix()
+.seealso: MatCreate(), PCPFMG, MatSetDM(), DMGetMatrix()
 M*/
 
 
@@ -390,8 +390,8 @@ PetscErrorCode MatZeroEntries_HYPREStruct_3d(Mat mat)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSetDA_HYPREStruct"
-PetscErrorCode  MatSetDA_HYPREStruct(Mat mat,DM da)
+#define __FUNCT__ "MatSetDM_HYPREStruct"
+PetscErrorCode  MatSetDM_HYPREStruct(Mat mat,DM da)
 {
   PetscErrorCode  ierr;
   Mat_HYPREStruct *ex = (Mat_HYPREStruct*) mat->data;
@@ -589,7 +589,7 @@ PetscErrorCode  MatCreate_HYPREStruct(Mat B)
   ex->needsinitialization = PETSC_TRUE;
 
   ierr = MPI_Comm_dup(((PetscObject)B)->comm,&(ex->hcomm));CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSetDA_C","MatSetDA_HYPREStruct",MatSetDA_HYPREStruct);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSetDM_C","MatSetDM_HYPREStruct",MatSetDM_HYPREStruct);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATHYPRESTRUCT);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -609,7 +609,7 @@ EXTERN_C_END
           Unlike the more general support for parts and blocks in hypre this allows only one part, and one block per process and requires the block
           be defined by a DMDA.
   
-          The matrix needs a DMDA associated with it by either a call to MatSetDA() or if the matrix is obtained from DMGetMatrix()
+          The matrix needs a DMDA associated with it by either a call to MatSetDM() or if the matrix is obtained from DMGetMatrix()
   
 M*/
 
@@ -830,8 +830,8 @@ PetscErrorCode MatZeroEntries_HYPRESStruct_3d(Mat mat)
 
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSetDA_HYPRESStruct"
-PetscErrorCode  MatSetDA_HYPRESStruct(Mat mat,DM da)
+#define __FUNCT__ "MatSetDM_HYPRESStruct"
+PetscErrorCode  MatSetDM_HYPRESStruct(Mat mat,DM da)
 {
   PetscErrorCode    ierr;
   Mat_HYPRESStruct *ex = (Mat_HYPRESStruct*) mat->data;
@@ -1127,7 +1127,7 @@ PetscErrorCode  MatCreate_HYPRESStruct(Mat B)
   ex->needsinitialization = PETSC_TRUE;
   
   ierr = MPI_Comm_dup(((PetscObject)B)->comm,&(ex->hcomm));CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSetDA_C","MatSetDA_HYPRESStruct",MatSetDA_HYPRESStruct);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSetDM_C","MatSetDM_HYPRESStruct",MatSetDM_HYPRESStruct);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATHYPRESSTRUCT);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

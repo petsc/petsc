@@ -270,7 +270,7 @@ extern PetscErrorCode   DMDAGetLocalJacobian(DM,DMDALocalFunction1*);
 extern PetscErrorCode   DMDASetLocalJacobian(DM,DMDALocalFunction1);
 extern PetscErrorCode   DMDASetLocalAdicFunction_Private(DM,DMDALocalFunction1);
 
-extern PetscErrorCode MatSetDA(Mat,DM);
+extern PetscErrorCode MatSetDM(Mat,DM);
 extern PetscErrorCode MatRegisterDAAD(void);
 extern PetscErrorCode MatCreateDAAD(DM,Mat*);
 extern PetscErrorCode MatCreateSeqUSFFT(Vec,DM,Mat*);
