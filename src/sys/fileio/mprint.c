@@ -654,7 +654,7 @@ PetscErrorCode  PetscHelpPrintfDefault(MPI_Comm comm,const char format[],...)
 
     Level: intermediate
 
-.seealso: PetscSynchronizedPrintf(), PetscSynchronizedFlush(), 
+.seealso: PetscSynchronizedPrintf(), PetscSynchronizedFlush(),
           PetscFOpen(), PetscViewerASCIISynchronizedPrintf(), PetscViewerASCIIPrintf()
 
 @*/
@@ -665,18 +665,26 @@ PetscErrorCode  PetscSynchronizedFGets(MPI_Comm comm,FILE* fp,size_t len,char st
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  
+
   if (!rank) {
-    (void) fgets(string,len,fp); /* Not very useful error behavior, but what is desired behavior for attempt to read at EOF? */
+    char *ptr = fgets(string, len, fp);
+
+    if (!ptr) {
+      if (feof(fp)) {
+        len = 0;
+      } else {
+        SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_FILE_READ, "Error reading from file: %d", errno);
+      }
+    }
   }
   ierr = MPI_Bcast(string,len,MPI_BYTE,0,comm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
-#include <mex.h> 
+#include <mex.h>
 #undef __FUNCT__
-#define __FUNCT__ "PetscVFPrintf_Matlab" 
+#define __FUNCT__ "PetscVFPrintf_Matlab"
 PetscErrorCode  PetscVFPrintf_Matlab(FILE *fd,const char format[],va_list Argp)
 {
   PetscErrorCode ierr;

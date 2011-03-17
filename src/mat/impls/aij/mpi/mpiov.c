@@ -60,7 +60,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once(Mat C,PetscInt imax,IS is[]
   PetscInt       *n,**data,len;
   PetscErrorCode ierr;
   PetscMPIInt    size,rank,tag1,tag2;
-  PetscInt       m,i,j,k,**rbuf,row,proc,nrqs,msz,**outdat,**ptr;
+  PetscInt       m,i,j,k,**rbuf,row,proc = 0,nrqs,msz,**outdat,**ptr;
   PetscInt       *ctr,*pa,*tmp,*isz,*isz1,**xdata,**rbuf2;
   PetscBT        *table;
   MPI_Comm       comm;

@@ -1370,7 +1370,7 @@ PetscErrorCode  PCGASMCreateSubdomains2D(PC pc, PetscInt M,PetscInt N,PetscInt M
   PetscMPIInt color;
   MPI_Comm comm, subcomm;
 
-  IS **iis;
+  IS **iis = PETSC_NULL;
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)pc, &comm);     CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);                     CHKERRQ(ierr);
