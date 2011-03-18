@@ -41,8 +41,10 @@ class Configure(PETSc.package.NewPackage):
       g.write('CFDEFS     = -DFORTRAN_UNDERSCORE\n')
     elif self.blasLapack.mangling == 'caps':
       g.write('CFDEFS     = -DFORTRAN_CAPS\n')
+    elif self.blasLapack.mangling == 'unchanged':
+      g.write('CFDEFS     = \n')
     else:
-      g.write('CFDEFS     = -DFORTRAN_DOUBLE_UNDERSCORE\n')
+      raise RuntimeError('Unknown blas mangling: cannot proceed with pARMS: '+str(self.blasLapack.mangling))
     g.write('CFFLAGS    = ${CFDEFS} -DVOID_POINTER_SIZE_'+str(self.types.sizes['known-sizeof-void-p'])+'\n')
 
     g.write('RM         = rm\n')
@@ -69,7 +71,7 @@ class Configure(PETSc.package.NewPackage):
         incDir = os.path.join(self.installDir, self.includedir)
         if not os.path.isdir(libDir):
           os.mkdir(libDir)
-        output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && PARMS_INSTALL_DIR='+self.installDir+' && export PARMS_INSTALL_DIR && make cleanall && make && cp -f include/*.h '+incDir+'/. && cp lib/* '+libDir, timeout=2500, log = self.framework.log)
+        output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && PARMS_INSTALL_DIR='+self.installDir+' && export PARMS_INSTALL_DIR && make cleanall && make OBJ3="" && cp -f include/*.h '+incDir+'/. && cp lib/* '+libDir, timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on pARMS: '+str(e))
       self.postInstall(output+err,'makefile.in')
