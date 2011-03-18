@@ -301,7 +301,7 @@ runex2_4:
 	   else echo "Possible problem with ex2_4, diffs above"; fi; \
 	   ${RM} -f ex2_4.tmp
 runex2_5:
-	-@${MPIEXEC} -n 2 ./ex2 -ksp_monitor_short -m 5 -n 5 -mat_view_draw -ksp_gmres_cgs_refinement_type refine_always   > ex2_5.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex2 -ksp_monitor_short -m 5 -n 5 -mat_view_draw -ksp_gmres_cgs_refinement_type refine_always -nox  > ex2_5.tmp 2>&1; \
 	   if (${DIFF} output/ex2_2.out ex2_5.tmp) then true; \
 	   else echo "Possible problem with ex2_5, diffs above"; fi; \
 	   ${RM} -f ex2_5.tmp
