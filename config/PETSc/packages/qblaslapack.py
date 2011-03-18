@@ -3,7 +3,7 @@ import PETSc.package
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
-    self.download  = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/qblaslapack.gz']
+    self.download  = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/qblaslapack.tar.gz']
     self.functions = ['ddot_']
     self.includes  = []
     self.liblist   = [['libqlapack.a','libqblas.a']]
