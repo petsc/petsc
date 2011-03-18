@@ -33,13 +33,13 @@ PetscErrorCode SNESSolve_Test(SNES snes)
   }
 
   for (i=0; i<3; i++) {
+    static const char *const loc[] = {"user-defined state","constant state -1.0","constant state 1.0"};
     if (i == 1) {ierr = VecSet(x,-1.0);CHKERRQ(ierr);}
     else if (i == 2) {ierr = VecSet(x,1.0);CHKERRQ(ierr);}
 
     /* evaluate the function at this point because SNESDefaultComputeJacobianColor() assumes that the function has been evaluated and put into snes->vec_func */
     ierr = SNESComputeFunction(snes,x,f);CHKERRQ(ierr);
     if (snes->domainerror) {
-      const char *const loc[] = {"user-defined state","constant state -1.0","constant state 1.0"};
       ierr = PetscPrintf(((PetscObject)snes)->comm,"Domain error at %s\n",loc[i]);CHKERRQ(ierr);
       snes->domainerror = PETSC_FALSE;
       continue;
@@ -52,7 +52,7 @@ PetscErrorCode SNESSolve_Test(SNES snes)
     if (neP->complete_print) {
       MPI_Comm    comm;
       PetscViewer viewer;
-      ierr = PetscPrintf(((PetscObject)snes)->comm,"Finite difference Jacobian\n");CHKERRQ(ierr);
+      ierr = PetscPrintf(((PetscObject)snes)->comm,"Finite difference Jacobian (%s)\n",loc[i]);CHKERRQ(ierr);
       ierr = PetscObjectGetComm((PetscObject)B,&comm);CHKERRQ(ierr);
       ierr = PetscViewerASCIIGetStdout(comm,&viewer);CHKERRQ(ierr);
       ierr = MatView(B,viewer);CHKERRQ(ierr);
@@ -64,15 +64,15 @@ PetscErrorCode SNESSolve_Test(SNES snes)
     if (neP->complete_print) {
       MPI_Comm    comm;
       PetscViewer viewer;
-      ierr = PetscPrintf(((PetscObject)snes)->comm,"Hand-coded Jacobian\n");CHKERRQ(ierr);
+      ierr = PetscPrintf(((PetscObject)snes)->comm,"Hand-coded Jacobian (%s)\n",loc[i]);CHKERRQ(ierr);
       ierr = PetscObjectGetComm((PetscObject)B,&comm);CHKERRQ(ierr);
       ierr = PetscViewerASCIIGetStdout(comm,&viewer);CHKERRQ(ierr);
       ierr = MatView(A,viewer);CHKERRQ(ierr);
-      ierr = PetscPrintf(((PetscObject)snes)->comm,"Hand-coded minus finite difference Jacobian\n");CHKERRQ(ierr);
+      ierr = PetscPrintf(((PetscObject)snes)->comm,"Hand-coded minus finite difference Jacobian (%s)\n",loc[i]);CHKERRQ(ierr);
       ierr = MatView(B,viewer);CHKERRQ(ierr);
     }
     if (!gnorm) gnorm = 1; /* just in case */
-    ierr = PetscPrintf(((PetscObject)snes)->comm,"Norm of matrix ratio %G difference %G\n",nrm/gnorm,nrm);CHKERRQ(ierr);
+    ierr = PetscPrintf(((PetscObject)snes)->comm,"Norm of matrix ratio %G difference %G (%s)\n",nrm/gnorm,nrm,loc[i]);CHKERRQ(ierr);
   }
   ierr = MatDestroy(B);CHKERRQ(ierr);
   /*
