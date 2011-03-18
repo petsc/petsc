@@ -368,7 +368,7 @@ EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCPARMSSetGlobal"
-/*@C
+/*@
    PCPARMSSetGlobal - Sets the global preconditioner to be used in PARMS.
 
    Collective on PC
@@ -421,7 +421,7 @@ EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCPARMSSetLocal"
-/*@C
+/*@
    PCPARMSSetLocal - Sets the local preconditioner to be used in PARMS.
 
    Collective on PC
@@ -485,7 +485,7 @@ EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCPARMSSetSolveTolerances"
-/*@C
+/*@
    PCPARMSSetSolveTolerances - Sets the convergence tolerance and the maximum iterations for the
    inner GMRES solver, when the Schur global preconditioner is used.
 
@@ -537,7 +537,7 @@ EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCPARMSSetSolveRestart"
-/*@C
+/*@
    PCPARMSSetSolveRestart - Sets the number of iterations at which the
    inner GMRES solver restarts.
 
@@ -575,7 +575,7 @@ PetscErrorCode PCPARMSSetNonsymPerm_PARMS(PC pc,PetscBool nonsym)
   PC_PARMS *parms = (PC_PARMS*)pc->data;
 
   PetscFunctionBegin;
-  if ((nonsym && !parms->nonsymperm) || (nonsym && !parms->nonsymperm)) {
+  if ((nonsym && !parms->nonsymperm) || (!nonsym && parms->nonsymperm)) {
     parms->nonsymperm = nonsym;
     pc->setupcalled = 0;
   }
@@ -585,7 +585,7 @@ EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCPARMSSetNonsymPerm"
-/*@C
+/*@
    PCPARMSSetNonsymPerm - Sets the type of permutation for the ARMS preconditioner: the standard
    symmetric ARMS or the non-symmetric ARMS (ARMS-ddPQ).
 
@@ -642,7 +642,7 @@ EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCPARMSSetFill"
-/*@C
+/*@
    PCPARMSSetFill - Sets the fill-in parameters for ILUT, ILUK and ARMS preconditioners.
    Consider the original matrix A = [B F; E C] and the approximate version
    M = [LB 0; E/UB I]*[UB LB\F; 0 S].

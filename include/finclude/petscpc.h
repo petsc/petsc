@@ -57,5 +57,25 @@
       parameter (PC_FIELDSPLIT_SCHUR_PRE_DIAG=1)
       parameter (PC_FIELDSPLIT_SCHUR_PRE_USER=2)
 !
+! PCPARMSGlobalType
+!
+      PetscEnum PC_PARMS_GLOBAL_RAS
+      PetscEnum PC_PARMS_GLOBAL_SCHUR
+      PetscEnum PC_PARMS_GLOBAL_BJ
+      parameter (PC_PARMS_GLOBAL_RAS=0)
+      parameter (PC_PARMS_GLOBAL_SCHUR=1)
+      parameter (PC_PARMS_GLOBAL_BJ=2)
+!
+! PCPARMSLocalType
+!
+      PetscEnum PC_PARMS_LOCAL_ILU0
+      PetscEnum PC_PARMS_LOCAL_ILUK
+      PetscEnum PC_PARMS_LOCAL_ILUT
+      PetscEnum PC_PARMS_LOCAL_ARMS
+      parameter (PC_PARMS_LOCAL_ILU0=0)
+      parameter (PC_PARMS_LOCAL_ILUK=1)
+      parameter (PC_PARMS_LOCAL_ILUT=2)
+      parameter (PC_PARMS_LOCAL_ARMS=3)
+!
 !  End of Fortran include file for the PC package in PETSc
 

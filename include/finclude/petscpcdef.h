@@ -17,6 +17,8 @@
 #define PCRichardsonConvergedReason PetscEnum 
 #define PCType character*(80)
 #define PCFieldSplitSchurPreType PetscEnum
+#define PCPARMSGlobalType PetscEnum
+#define PCPARMSLocalType PetscEnum
 !
 !  Various preconditioners
 !
@@ -41,6 +43,7 @@
 #define PCPBJACOBI 'pbjacobi'
 #define PCMAT 'mat'
 #define PCHYPRE 'hypre'
+#define PCPARMS 'parms'
 #define PCFIELDSPLIT 'fieldsplit'
 #define PCTFS 'tfs'
 #define PCML 'ml'
