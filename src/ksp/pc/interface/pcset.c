@@ -186,7 +186,7 @@ PetscErrorCode  PCSetFromOptions(PC pc)
     ierr = PCSetType(pc,def);CHKERRQ(ierr);
   } 
   
-  ierr = PetscOptionsInt("-pc_reuse","Reuse the factored matrix",PETSC_NULL,pc->reuse,&pc->reuse,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(((PetscObject)pc)->prefix,"-pc_reuse",&pc->reuse,PETSC_NULL);CHKERRQ(ierr);
   
   if (pc->ops->setfromoptions) {
     ierr = (*pc->ops->setfromoptions)(pc);CHKERRQ(ierr);
