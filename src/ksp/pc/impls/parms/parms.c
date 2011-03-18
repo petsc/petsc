@@ -729,13 +729,13 @@ PetscErrorCode PCCreate_PARMS(PC pc)
   parms->map  = 0;
   parms->A    = 0;
   parms->pc   = 0;
-  parms->global = PC_PARMS_GLOBAL_SCHUR;
+  parms->global = PC_PARMS_GLOBAL_RAS;
   parms->local = PC_PARMS_LOCAL_ARMS;
   parms->levels = 10;
   parms->nonsymperm = PETSC_TRUE; 
   parms->blocksize = 250;
-  parms->maxdim = 5;
-  parms->maxits = 5;
+  parms->maxdim = 0;
+  parms->maxits = 0;
   parms->meth[0] = PETSC_TRUE;
   parms->meth[1] = PETSC_TRUE;
   parms->meth[2] = PETSC_TRUE;
