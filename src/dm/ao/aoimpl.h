@@ -10,6 +10,7 @@
 /*
     Defines the abstract AO operations
 */
+typedef struct _AOOps *AOOps;
 struct _AOOps {
   /* Generic Operations */
   PetscErrorCode (*view)(AO, PetscViewer);
@@ -25,8 +26,10 @@ struct _AOOps {
 
 struct _p_AO {
   PETSCHEADER(struct _AOOps);
-  void          *data;                   /* implementation-specific data */
-  PetscInt      N,n;                    /* global, local vector size */
+  PetscInt      N,n;             /* global, local ao size */
+  IS            isapp;           /* index set that defines an application ordering */
+  IS            ispetsc;         /* index set that defines petsc ordering */
+  void          *data;           /* implementation-specific data */
 };
 
 extern PetscLogEvent  AO_PetscToApplication, AO_ApplicationToPetsc;

@@ -10,7 +10,7 @@ typedef struct {
   PetscInt N;
   PetscInt *app,*petsc;  /* app[i] is the partner for the ith PETSc slot */
                          /* petsc[j] is the partner for the jth app slot */
-  /* for destributed AO */
+  /* for BasicMemoryScalable AO */
   PetscInt    *app_loc,*petsc_loc;
   PetscLayout map;
 } AO_Basic;
@@ -430,7 +430,7 @@ PetscErrorCode AOApplicationToPetscPermuteReal_Basic(AO ao, PetscInt block, Pets
   PetscFunctionReturn(0);
 }
 
-static struct _AOOps AOops = {AOView_Basic,
+static struct _AOOps AOOps_Basic = {AOView_Basic,
                               AODestroy_Basic,
                               AOPetscToApplication_Basic,
                               AOApplicationToPetsc_Basic,
@@ -438,6 +438,16 @@ static struct _AOOps AOops = {AOView_Basic,
                               AOApplicationToPetscPermuteInt_Basic,
                               AOPetscToApplicationPermuteReal_Basic,
                               AOApplicationToPetscPermuteReal_Basic};
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "AOCreate_Basic" 
+PetscErrorCode  AOCreate_Basic(AO ao)
+{
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "AOCreateBasic" 
@@ -484,10 +494,10 @@ PetscErrorCode  AOCreateBasic(MPI_Comm comm,PetscInt napp,const PetscInt myapp[]
   ierr = AOInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
-  ierr = PetscHeaderCreate(ao, _p_AO, struct _AOOps, AO_CLASSID, AO_BASIC, "AO", comm, AODestroy, AOView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(ao,_p_AO,struct _AOOps,AO_CLASSID,AO_BASIC,"AO",comm,AODestroy_,AOView);CHKERRQ(ierr);
   ierr = PetscNewLog(ao, AO_Basic, &aobasic);CHKERRQ(ierr);
 
-  ierr = PetscMemcpy(ao->ops, &AOops, sizeof(AOops));CHKERRQ(ierr);
+  ierr = PetscMemcpy(ao->ops,&AOOps_Basic,sizeof(struct _AOOps));CHKERRQ(ierr);
   ao->data = (void*) aobasic;
 
   /* transmit all lengths to all processors */
@@ -576,6 +586,15 @@ PetscErrorCode  AOCreateBasic(MPI_Comm comm,PetscInt napp,const PetscInt myapp[]
   *aoout = ao;
   PetscFunctionReturn(0);
 }
+
+static struct _AOOps AOOps_BasicMemoryScalable = {AOView_BasicMemoryScalable,
+                              AODestroy_BasicMemoryScalable,
+                              AOPetscToApplication_BasicMemoryScalable,
+                              AOApplicationToPetsc_BasicMemoryScalable,
+                              0,
+                              0,
+                              0,
+                              0};
 
 #undef __FUNCT__  
 #define __FUNCT__ "AOCreateBasicMemoryScalable_private" 
@@ -713,6 +732,17 @@ PetscErrorCode  AOCreateBasicMemoryScalable_private(MPI_Comm comm,PetscInt napp,
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "AOCreate_BasicMemoryScalable" 
+PetscErrorCode AOCreate_BasicMemoryScalable(AO ao)
+{
+  PetscFunctionBegin;
+  printf("AOCreate_BasicMemoryScalable\n");
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
 #undef __FUNCT__  
 #define __FUNCT__ "AOCreateBasicMemoryScalable" 
 PetscErrorCode  AOCreateBasicMemoryScalable(MPI_Comm comm,PetscInt napp,const PetscInt myapp[],const PetscInt mypetsc[],AO *aoout)
@@ -735,10 +765,10 @@ PetscErrorCode  AOCreateBasicMemoryScalable(MPI_Comm comm,PetscInt napp,const Pe
   ierr = AOInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
-  ierr = PetscHeaderCreate(ao, _p_AO, struct _AOOps, AO_CLASSID, AO_BASIC, "AO", comm, AODestroy, AOView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(ao, _p_AO, struct _AOOps, AO_CLASSID, AO_BASIC, "AO", comm, AODestroy_, AOView);CHKERRQ(ierr);
   ierr = PetscNewLog(ao, AO_Basic, &aobasic);CHKERRQ(ierr);
 
-  ierr = PetscMemcpy(ao->ops, &AOops, sizeof(AOops));CHKERRQ(ierr);
+  ierr = PetscMemcpy(ao->ops,&AOOps_BasicMemoryScalable,sizeof(struct _AOOps));CHKERRQ(ierr);
   ao->data = (void*) aobasic;
   /* transmit all lengths to all processors */
   ierr  = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
@@ -766,10 +796,6 @@ PetscErrorCode  AOCreateBasicMemoryScalable(MPI_Comm comm,PetscInt napp,const Pe
     petsc = (PetscInt*)mypetsc;
   }
   /* -------------------------------- */
-  ao->ops->view               = AOView_BasicMemoryScalable;
-  ao->ops->destroy            = AODestroy_BasicMemoryScalable;
-  ao->ops->petsctoapplication = AOPetscToApplication_BasicMemoryScalable;
-  ao->ops->applicationtopetsc = AOApplicationToPetsc_BasicMemoryScalable;
   aobasic = (AO_Basic*)ao->data;
    
   ierr = PetscLayoutCreate(comm,&map);CHKERRQ(ierr);

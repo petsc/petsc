@@ -49,9 +49,9 @@ PetscErrorCode  AOView(AO ao,PetscViewer viewer)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "AODestroy" 
+#define __FUNCT__ "AODestroy_" 
 /*@
-   AODestroy - Destroys an application ordering set.
+   AODestroy - Destroys an application ordering.
 
    Collective on AO
 
@@ -62,9 +62,9 @@ PetscErrorCode  AOView(AO ao,PetscViewer viewer)
 
 .keywords: destroy, application ordering
 
-.seealso: AOCreateBasic()
+.seealso: AOCreate()
 @*/
-PetscErrorCode  AODestroy(AO ao)
+PetscErrorCode  AODestroy_(AO ao)
 {
   PetscErrorCode ierr;
 
@@ -388,5 +388,71 @@ PetscErrorCode  AOApplicationToPetscPermuteReal(AO ao, PetscInt block, PetscReal
   PetscValidHeaderSpecific(ao, AO_CLASSID,1);
   PetscValidIntPointer(array,3);
   ierr = (*ao->ops->applicationtopetscpermutereal)(ao, block, array);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "AOSetFromOptions" 
+/*@C
+.seealso: AOCreate(), AODestroy(), AOPetscToApplication(), AOApplicationToPetsc()
+@*/
+PetscErrorCode AOSetFromOptions(AO ao)
+{
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "AOSetIS" 
+/*@C
+.seealso: AOCreate(), AODestroy(), AOPetscToApplication(), AOApplicationToPetsc()
+@*/
+PetscErrorCode AOSetIS(AO ao,IS isapp,IS ispetsc)
+{
+  PetscFunctionBegin;
+  printf("AOSetIS...\n");
+  ao->isapp   = isapp;
+  ao->ispetsc = ispetsc;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "AOCreate" 
+/*@C
+   AOCreate - Creates an application ordering.
+
+   Collective on MPI_Comm
+
+   Input Parameters:
+.  comm - MPI communicator that is to share AO
+
+   Output Parameter:
+.  ao - the new application ordering
+
+   Options Database Key:
+.   -ao_view - call AOView() at the conclusion of AOCreate()
+
+   Level: beginner
+
+.keywords: AO, create
+
+.seealso: AOSetIS(), AODestroy(), AOPetscToApplication(), AOApplicationToPetsc()
+@*/
+PetscErrorCode  AOCreate(MPI_Comm comm,AO *ao)
+{
+  PetscErrorCode ierr;
+  AO             aonew;
+
+  PetscFunctionBegin;
+  printf("AOCreate ...\n");
+  PetscValidPointer(ao,2);
+  *ao = PETSC_NULL;
+#ifndef PETSC_USE_DYNAMIC_LIBRARIES
+  ierr = AOInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+#endif
+
+  ierr = PetscHeaderCreate(aonew,_p_AO,struct _AOOps,AO_CLASSID,-1,"AO",comm,AODestroy_,AOView);CHKERRQ(ierr);
+  ierr = PetscMemzero(aonew->ops, sizeof(struct _AOOps));CHKERRQ(ierr);
+  *ao = aonew;
   PetscFunctionReturn(0);
 }

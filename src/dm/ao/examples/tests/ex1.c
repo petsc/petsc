@@ -27,6 +27,13 @@ int main(int argc,char **argv)
   ierr = ISCreateStride(PETSC_COMM_WORLD,n,n*rank,1,&ispetsc);CHKERRQ(ierr); /* natural numbering */
 
   /* create the application ordering */
+#if defined(NEW)
+  AO ao3;
+  ierr = AOCreate(PETSC_COMM_WORLD,&ao3);CHKERRQ(ierr);
+  ierr = AOSetIS(ao3,isapp,ispetsc);CHKERRQ(ierr);
+  ierr = AOSetType(ao3,AOBASICMEMORYSCALABLE);CHKERRQ(ierr);
+  ierr = AODestroy(ao3);CHKERRQ(ierr);
+#endif
   ierr = AOCreateBasicIS(isapp,ispetsc,&ao);CHKERRQ(ierr);
   ierr = AOView(ao,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
