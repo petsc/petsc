@@ -50,7 +50,7 @@ PetscErrorCode  AOView(AO ao,PetscViewer viewer)
 
 #undef __FUNCT__  
 #define __FUNCT__ "AODestroy_" 
-/*@
+/*@C
    AODestroy - Destroys an application ordering.
 
    Collective on AO
