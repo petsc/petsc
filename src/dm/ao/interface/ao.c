@@ -410,7 +410,6 @@ PetscErrorCode AOSetFromOptions(AO ao)
 PetscErrorCode AOSetIS(AO ao,IS isapp,IS ispetsc)
 {
   PetscFunctionBegin;
-  printf("AOSetIS...\n");
   ao->isapp   = isapp;
   ao->ispetsc = ispetsc;
   PetscFunctionReturn(0);
@@ -444,7 +443,6 @@ PetscErrorCode  AOCreate(MPI_Comm comm,AO *ao)
   AO             aonew;
 
   PetscFunctionBegin;
-  printf("AOCreate ...\n");
   PetscValidPointer(ao,2);
   *ao = PETSC_NULL;
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES

@@ -34,7 +34,6 @@ PetscErrorCode  AOSetType(AO ao, const AOType method)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  printf("AOSetType ..\n");
   PetscValidHeaderSpecific(ao, AO_CLASSID,1);
   ierr = PetscTypeCompare((PetscObject)ao, method, &match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
