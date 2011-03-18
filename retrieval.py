@@ -55,7 +55,7 @@ class Retriever(logger.Logger):
     elif url.endswith(".zip") or url.endswith('.ZIP'):
       archiveZip = archive+'.zip'
     else:
-      raise RuntimeError('Unknown comression type in URL: '+ url)
+      raise RuntimeError('Unknown compression type in URL: '+ url)
     localFile  = os.path.join(root, archiveZip)
 
     self.logPrint('Downloading '+url+' to '+localFile)
