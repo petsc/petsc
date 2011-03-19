@@ -60,6 +60,8 @@ struct _p_DM {
   void          *data;
 };
 
+extern PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal;
+
 /*
 
           Composite Vectors 

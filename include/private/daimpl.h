@@ -111,6 +111,6 @@ extern PetscErrorCode DMView_DA_Matlab(DM,PetscViewer);
 extern PetscErrorCode DMView_DA_Binary(DM,PetscViewer);
 extern PetscErrorCode DMView_DA_VTK(DM,PetscViewer);
 
-extern PetscLogEvent  DMDA_GlobalToLocal, DMDA_LocalToGlobal, DMDA_LocalADFunction;
+extern PetscLogEvent  DMDA_LocalADFunction;
 
 #endif

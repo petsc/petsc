@@ -1,6 +1,8 @@
  
 #include <private/dmimpl.h>     /*I      "petscdm.h"     I*/
 
+PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal;
+
 #undef __FUNCT__  
 #define __FUNCT__ "DMCreate"
 /*@
@@ -1214,6 +1216,101 @@ PetscErrorCode  DMGetType(DM dm, const DMType *type)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "DMConvert"
+/*@C
+  DMConvert - Converts a DM to another DM, either of the same or different type.
+
+  Collective on DM
+
+  Input Parameters:
++ dm - the DM
+- newtype - new DM type (use "same" for the same type)
+
+  Output Parameter:
+. M - pointer to new DM
+
+  Notes:
+  Cannot be used to convert a sequential DM to parallel or parallel to sequential,
+  the MPI communicator of the generated DM is always the same as the communicator
+  of the input DM.
+
+  Level: intermediate
+
+.seealso: DMCreate()
+@*/
+PetscErrorCode DMConvert(DM dm, const DMType newtype, DM *M)
+{
+  DM             B;
+  char           convname[256];
+  PetscBool      sametype, issame;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidType(dm,1);
+  PetscValidPointer(M,3);
+  ierr = PetscTypeCompare((PetscObject) dm, newtype, &sametype);CHKERRQ(ierr);
+  ierr = PetscStrcmp(newtype, "same", &issame);CHKERRQ(ierr);
+  {
+    PetscErrorCode (*conv)(DM, const DMType, DM *) = PETSC_NULL;
+
+    /*
+       Order of precedence:
+       1) See if a specialized converter is known to the current DM.
+       2) See if a specialized converter is known to the desired DM class.
+       3) See if a good general converter is registered for the desired class
+       4) See if a good general converter is known for the current matrix.
+       5) Use a really basic converter.
+    */
+
+    /* 1) See if a specialized converter is known to the current DM and the desired class */
+    ierr = PetscStrcpy(convname,"DMConvert_");CHKERRQ(ierr);
+    ierr = PetscStrcat(convname,((PetscObject) dm)->type_name);CHKERRQ(ierr);
+    ierr = PetscStrcat(convname,"_");CHKERRQ(ierr);
+    ierr = PetscStrcat(convname,newtype);CHKERRQ(ierr);
+    ierr = PetscStrcat(convname,"_C");CHKERRQ(ierr);
+    ierr = PetscObjectQueryFunction((PetscObject)dm,convname,(void (**)(void))&conv);CHKERRQ(ierr);
+    if (conv) goto foundconv;
+
+    /* 2)  See if a specialized converter is known to the desired DM class. */
+    ierr = DMCreate(((PetscObject) dm)->comm, &B);CHKERRQ(ierr);
+    ierr = DMSetType(B, newtype);CHKERRQ(ierr);
+    ierr = PetscStrcpy(convname,"DMConvert_");CHKERRQ(ierr);
+    ierr = PetscStrcat(convname,((PetscObject) dm)->type_name);CHKERRQ(ierr);
+    ierr = PetscStrcat(convname,"_");CHKERRQ(ierr);
+    ierr = PetscStrcat(convname,newtype);CHKERRQ(ierr);
+    ierr = PetscStrcat(convname,"_C");CHKERRQ(ierr);
+    ierr = PetscObjectQueryFunction((PetscObject)B,convname,(void (**)(void))&conv);CHKERRQ(ierr);
+    if (conv) {
+      ierr = DMDestroy(B);CHKERRQ(ierr);
+      goto foundconv;
+    }
+
+#if 0
+    /* 3) See if a good general converter is registered for the desired class */
+    conv = B->ops->convertfrom;
+    ierr = DMDestroy(B);CHKERRQ(ierr);
+    if (conv) goto foundconv;
+
+    /* 4) See if a good general converter is known for the current matrix */
+    if (dm->ops->convert) {
+      conv = dm->ops->convert;
+    }
+    if (conv) goto foundconv;
+#endif
+
+    /* 5) Use a really basic converter. */
+    SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_SUP, "No conversion possible between DM types %s and %s", ((PetscObject) dm)->type_name, newtype);
+
+    foundconv:
+    ierr = PetscLogEventBegin(DM_Convert,dm,0,0,0);CHKERRQ(ierr);
+    ierr = (*conv)(dm,newtype,M);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(DM_Convert,dm,0,0,0);CHKERRQ(ierr);
+  }
+  ierr = PetscObjectStateIncrease((PetscObject) *M);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 /*--------------------------------------------------------------------------------------------------------------------*/
 

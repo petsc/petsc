@@ -134,7 +134,7 @@ PetscErrorCode  DMInitializePackage(const char path[])
   if (DMPackageInitialized) PetscFunctionReturn(0);
   DMPackageInitialized = PETSC_TRUE;
   /* Register Classes */
-  ierr = PetscClassIdRegister("Distributed array",&DM_CLASSID);CHKERRQ(ierr);
+  ierr = PetscClassIdRegister("Distributed Mesh",&DM_CLASSID);CHKERRQ(ierr);
 #ifdef PETSC_HAVE_SIEVE
   ierr = PetscClassIdRegister("SectionReal",&SECTIONREAL_CLASSID);CHKERRQ(ierr);
   ierr = PetscClassIdRegister("SectionInt",&SECTIONINT_CLASSID);CHKERRQ(ierr);
@@ -147,9 +147,12 @@ PetscErrorCode  DMInitializePackage(const char path[])
   /* Register Constructors */
   ierr = DMRegisterAll(path);CHKERRQ(ierr);
   /* Register Events */
-  ierr = PetscLogEventRegister("DMGlobalToLocal",        DM_CLASSID,&DMDA_GlobalToLocal);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("DMLocalToGlobal",        DM_CLASSID,&DMDA_LocalToGlobal);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DMConvert",              DM_CLASSID,&DM_Convert);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DMGlobalToLocal",        DM_CLASSID,&DM_GlobalToLocal);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DMLocalToGlobal",        DM_CLASSID,&DM_LocalToGlobal);CHKERRQ(ierr);
+
   ierr = PetscLogEventRegister("DMDALocalADFunc",        DM_CLASSID,&DMDA_LocalADFunction);CHKERRQ(ierr);
+
 #ifdef PETSC_HAVE_SIEVE
   ierr = PetscLogEventRegister("DMMeshView",             DM_CLASSID,&DMMesh_View);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("DMMeshGetGlobalScatter", DM_CLASSID,&DMMesh_GetGlobalScatter);CHKERRQ(ierr);
