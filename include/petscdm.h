@@ -4,7 +4,6 @@
 #if !defined(__PETSCDM_H)
 #define __PETSCDM_H
 #include "petscmat.h"
-#include "petscao.h"
 PETSC_EXTERN_CXX_BEGIN
 
 extern PetscErrorCode  DMInitializePackage(const char[]);
