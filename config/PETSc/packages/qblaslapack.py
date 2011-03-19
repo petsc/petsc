@@ -3,7 +3,7 @@ import PETSc.package
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
-    self.download  = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/qblaslapack.gz']
+    self.download  = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/qblaslapack.tar.gz']
     self.functions = ['ddot_']
     self.includes  = []
     self.liblist   = [['libqlapack.a','libqblas.a']]
@@ -100,8 +100,8 @@ class Configure(PETSc.package.NewPackage):
   #
   # When BlasLapack.py is cleaned and the downloads in it put elsewhere then this will be tested in there and not needed here
   #
-  def consistencyChecks(self):
-    PETSc.package.NewPackage.consistencyChecks(self)
+  def configureLibrary(self):
+    PETSc.package.NewPackage.configureLibrary(self)
     self.addDefine('BLASLAPACK_UNDERSCORE',1)
     for baseName in ['gges', 'tgsen', 'gesvd','getrf','getrs','geev','gelss','syev','syevx','sygv','sygvx','getrf','potrf','getrs','potrs','stebz','pttrf','pttrs','stein','orgqr','stebz']:
       routine = 'd'+baseName+'_'

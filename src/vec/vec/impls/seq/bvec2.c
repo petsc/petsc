@@ -265,8 +265,8 @@ PetscErrorCode VecNorm_Seq(Vec xin,NormType type,PetscReal* z)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "VecView_Seq_File"
-static PetscErrorCode VecView_Seq_File(Vec xin,PetscViewer viewer)
+#define __FUNCT__ "VecView_Seq_ASCII"
+static PetscErrorCode VecView_Seq_ASCII(Vec xin,PetscViewer viewer)
 {
   PetscErrorCode    ierr;
   PetscInt          i,n = xin->map->n;
@@ -290,7 +290,7 @@ static PetscErrorCode VecView_Seq_File(Vec xin,PetscViewer viewer)
         ierr = PetscViewerASCIIPrintf(viewer,"%18.16e\n",PetscRealPart(xv[i]));CHKERRQ(ierr);
       }
 #else
-      ierr = PetscViewerASCIIPrintf(viewer,"%18.16e\n",xv[i]);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"%18.16e\n",(double) xv[i]);CHKERRQ(ierr);
 #endif
     }
     ierr = PetscViewerASCIIPrintf(viewer,"];\n");CHKERRQ(ierr);
@@ -443,7 +443,7 @@ static PetscErrorCode VecView_Seq_File(Vec xin,PetscViewer viewer)
         ierr = PetscViewerASCIIPrintf(viewer,"%G\n",PetscRealPart(xv[i]));CHKERRQ(ierr);
       }
 #else
-      ierr = PetscViewerASCIIPrintf(viewer,"%G\n",xv[i]);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"%e\n",(double) xv[i]);CHKERRQ(ierr);
 #endif
     }
   }
@@ -642,7 +642,7 @@ static PetscErrorCode VecView_Seq(Vec xin,PetscViewer viewer)
   if (isdraw){ 
     ierr = VecView_Seq_Draw(xin,viewer);CHKERRQ(ierr);
   } else if (iascii){
-    ierr = VecView_Seq_File(xin,viewer);CHKERRQ(ierr);
+    ierr = VecView_Seq_ASCII(xin,viewer);CHKERRQ(ierr);
   } else if (isbinary) {
     ierr = VecView_Seq_Binary(xin,viewer);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MATHEMATICA)
@@ -653,17 +653,11 @@ static PetscErrorCode VecView_Seq(Vec xin,PetscViewer viewer)
   } else if (ishdf5) {
     ierr = VecView_MPI_HDF5(xin,viewer);CHKERRQ(ierr); /* Reusing VecView_MPI_HDF5 ... don't want code duplication*/
 #endif
-#if defined(PETSC_HAVE_HDF5)
-  } else if (ishdf5) {
-    ierr = VecView_MPI_HDF5(xin,viewer);CHKERRQ(ierr); /* Reusing VecView_MPI_HDF5 ... don't want code duplication*/
-#endif
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
   } else if (ismatlab) {
     ierr = VecView_Seq_Matlab(xin,viewer);CHKERRQ(ierr);
 #endif
-  } else {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported by this vector object",((PetscObject)viewer)->type_name);
-  }
+  } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported by this vector object",((PetscObject)viewer)->type_name);
   PetscFunctionReturn(0);
 }
 

@@ -54,8 +54,8 @@ static PetscErrorCode PCSetUp_Galerkin(PC pc)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCDestroy_Galerkin"
-static PetscErrorCode PCDestroy_Galerkin(PC pc)
+#define __FUNCT__ "PCReset_Galerkin"
+static PetscErrorCode PCReset_Galerkin(PC pc)
 {
   PC_Galerkin     *jac = (PC_Galerkin*)pc->data;
   PetscErrorCode   ierr;
@@ -65,6 +65,19 @@ static PetscErrorCode PCDestroy_Galerkin(PC pc)
   if (jac->P) {ierr = MatDestroy(jac->P);CHKERRQ(ierr);}
   if (jac->x) {ierr = VecDestroy(jac->x);CHKERRQ(ierr);}
   if (jac->b) {ierr = VecDestroy(jac->b);CHKERRQ(ierr);}
+  ierr = KSPReset(jac->ksp);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PCDestroy_Galerkin"
+static PetscErrorCode PCDestroy_Galerkin(PC pc)
+{
+  PC_Galerkin     *jac = (PC_Galerkin*)pc->data;
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  ierr = PCDestroy_Galerkin(pc);CHKERRQ(ierr);
   ierr = KSPDestroy(jac->ksp);CHKERRQ(ierr);
   ierr = PetscFree(pc->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -259,6 +272,7 @@ PetscErrorCode  PCCreate_Galerkin(PC pc)
   ierr = PetscNewLog(pc,PC_Galerkin,&jac);CHKERRQ(ierr);
   pc->ops->apply              = PCApply_Galerkin;
   pc->ops->setup              = PCSetUp_Galerkin;
+  pc->ops->reset              = PCReset_Galerkin;
   pc->ops->destroy            = PCDestroy_Galerkin;
   pc->ops->view               = PCView_Galerkin;
   pc->ops->applyrichardson    = 0;

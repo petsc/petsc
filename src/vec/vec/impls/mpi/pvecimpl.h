@@ -24,8 +24,6 @@ extern PetscErrorCode VecNorm_MPI(Vec,NormType,PetscReal *);
 extern PetscErrorCode VecMax_MPI(Vec,PetscInt *,PetscReal *);
 extern PetscErrorCode VecMin_MPI(Vec,PetscInt *,PetscReal *);
 extern PetscErrorCode VecDestroy_MPI(Vec);
-extern PetscErrorCode VecView_MPI_File(Vec,PetscViewer);
-extern PetscErrorCode VecView_MPI_Files(Vec,PetscViewer);
 extern PetscErrorCode VecView_MPI_Binary(Vec,PetscViewer);
 extern PetscErrorCode VecView_MPI_Netcdf(Vec,PetscViewer);
 extern PetscErrorCode VecView_MPI_Draw_LG(Vec,PetscViewer);

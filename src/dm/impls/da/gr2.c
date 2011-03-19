@@ -626,9 +626,7 @@ PetscErrorCode  VecLoad_Default_DA(Vec xin, PetscViewer viewer)
   } else if (ishdf5) {
     ierr = VecLoad_HDF5_DA(xin,viewer);CHKERRQ(ierr);
 #endif
-  } else {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for vector loading", ((PetscObject)viewer)->type_name);
-  }
+  } SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for vector loading", ((PetscObject)viewer)->type_name);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

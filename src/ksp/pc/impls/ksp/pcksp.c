@@ -82,6 +82,18 @@ static PetscErrorCode PCSetUp_KSP(PC pc)
 
 /* Default destroy, if it has never been setup */
 #undef __FUNCT__  
+#define __FUNCT__ "PCReset_KSP"
+static PetscErrorCode PCReset_KSP(PC pc)
+{
+  PC_KSP         *jac = (PC_KSP*)pc->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (jac->ksp) {ierr = KSPReset(jac->ksp);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "PCDestroy_KSP"
 static PetscErrorCode PCDestroy_KSP(PC pc)
 {
@@ -89,6 +101,7 @@ static PetscErrorCode PCDestroy_KSP(PC pc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PCReset_KSP(pc);CHKERRQ(ierr);
   if (jac->ksp) {ierr = KSPDestroy(jac->ksp);CHKERRQ(ierr);}
   ierr = PetscFree(pc->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -277,6 +290,7 @@ PetscErrorCode  PCCreate_KSP(PC pc)
   pc->ops->apply              = PCApply_KSP;
   pc->ops->applytranspose     = PCApplyTranspose_KSP;
   pc->ops->setup              = PCSetUp_KSP;
+  pc->ops->reset              = PCReset_KSP;
   pc->ops->destroy            = PCDestroy_KSP;
   pc->ops->setfromoptions     = PCSetFromOptions_KSP;
   pc->ops->view               = PCView_KSP;

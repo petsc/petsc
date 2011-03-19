@@ -495,19 +495,18 @@ static PetscErrorCode PCApplyTranspose_GASM(PC pc,Vec x,Vec y)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCDestroy_GASM"
-static PetscErrorCode PCDestroy_GASM(PC pc)
+#define __FUNCT__ "PCReset_GASM"
+static PetscErrorCode PCReset_GASM(PC pc)
 {
-  PC_GASM         *osm = (PC_GASM*)pc->data;
+  PC_GASM        *osm = (PC_GASM*)pc->data;
   PetscErrorCode ierr;
   PetscInt       i;
 
   PetscFunctionBegin;
   if (osm->ksp) {
     for (i=0; i<osm->n; i++) {
-      ierr = KSPDestroy(osm->ksp[i]);CHKERRQ(ierr);
+      ierr = KSPReset(osm->ksp[i]);CHKERRQ(ierr);
     }
-    ierr = PetscFree(osm->ksp);CHKERRQ(ierr);
   }
   if (osm->pmat) {
     if (osm->n > 0) {
@@ -518,8 +517,6 @@ static PetscErrorCode PCDestroy_GASM(PC pc)
     ierr = VecDestroy(osm->x[i]);CHKERRQ(ierr);
     ierr = VecDestroy(osm->y[i]);CHKERRQ(ierr);
   }
-  ierr = PetscFree(osm->x);CHKERRQ(ierr);
-  ierr = PetscFree(osm->y);CHKERRQ(ierr);
   ierr = VecDestroy(osm->gx); CHKERRQ(ierr);
   ierr = VecDestroy(osm->gy); CHKERRQ(ierr);
   
@@ -530,12 +527,33 @@ static PetscErrorCode PCDestroy_GASM(PC pc)
     ierr = PCGASMDestroySubdomains(osm->n,osm->is,osm->is_local);CHKERRQ(ierr);
   }
 
-  if(osm->gis) {
+  if (osm->gis) {
     ierr = ISDestroy(osm->gis); CHKERRQ(ierr);
   }
-  if(osm->gis_local) {
+  if (osm->gis_local) {
     ierr = ISDestroy(osm->gis_local); CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PCDestroy_GASM"
+static PetscErrorCode PCDestroy_GASM(PC pc)
+{
+  PC_GASM         *osm = (PC_GASM*)pc->data;
+  PetscErrorCode ierr;
+  PetscInt       i;
+
+  PetscFunctionBegin;
+  ierr = PCReset_GASM(pc);CHKERRQ(ierr);
+  if (osm->ksp) {
+    for (i=0; i<osm->n; i++) {
+      ierr = KSPDestroy(osm->ksp[i]);CHKERRQ(ierr);
+    }
+    ierr = PetscFree(osm->ksp);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(osm->x);CHKERRQ(ierr);
+  ierr = PetscFree(osm->y);CHKERRQ(ierr);
   ierr = PetscFree(pc->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1046,6 +1064,7 @@ PetscErrorCode  PCCreate_GASM(PC pc)
   pc->ops->apply             = PCApply_GASM;
   pc->ops->applytranspose    = PCApplyTranspose_GASM;
   pc->ops->setup             = PCSetUp_GASM;
+  pc->ops->reset             = PCReset_GASM;
   pc->ops->destroy           = PCDestroy_GASM;
   pc->ops->setfromoptions    = PCSetFromOptions_GASM;
   pc->ops->setuponblocks     = PCSetUpOnBlocks_GASM;

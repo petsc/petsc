@@ -453,8 +453,8 @@ static PetscErrorCode MatWrapML_MPIAIJ(ML_Operator *mlmat,Mat *newmat)
 
 /* -----------------------------------------------------------------------------*/
 #undef __FUNCT__  
-#define __FUNCT__ "PCDestroy_ML_Private"
-PetscErrorCode PCDestroy_ML_Private(void *ptr)
+#define __FUNCT__ "PCReset_ML"
+PetscErrorCode PCReset_ML(void *ptr)
 {
   PetscErrorCode  ierr;
   PC_ML           *pc_ml = (PC_ML*)ptr;
@@ -498,7 +498,7 @@ PetscErrorCode PCDestroy_ML_Private(void *ptr)
    the user, but instead is called by PCApply() if necessary.
 */
 extern PetscErrorCode PCSetFromOptions_MG(PC);
-extern PetscErrorCode PCDestroy_MG_Private(PC);
+extern PetscErrorCode PCReset_MG(PC);
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetUp_ML"
@@ -522,8 +522,8 @@ PetscErrorCode PCSetUp_ML(PC pc)
   PetscFunctionBegin;
   if (pc->setupcalled){
     /* since ML can change the size of vectors/matrices at any level we must destroy everything */
-    ierr = PCDestroy_ML_Private(pc_ml);CHKERRQ(ierr);
-    ierr = PCDestroy_MG_Private(pc);CHKERRQ(ierr);
+    ierr = PCReset_ML(pc_ml);CHKERRQ(ierr);
+    ierr = PCReset_MG(pc);CHKERRQ(ierr);
   }
   
   /* setup special features of PCML */
@@ -717,7 +717,7 @@ PetscErrorCode PCDestroy_ML(PC pc)
   PC_ML           *pc_ml= (PC_ML*)mg->innerctx;
 
   PetscFunctionBegin;
-  ierr = PCDestroy_ML_Private(pc_ml);CHKERRQ(ierr);
+  ierr = PCReset_ML(pc_ml);CHKERRQ(ierr);
   ierr = PetscFree(pc_ml);CHKERRQ(ierr); 
   ierr = PCDestroy_MG(pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -866,6 +866,7 @@ PetscErrorCode  PCCreate_ML(PC pc)
   /* overwrite the pointers of PCMG by the functions of PCML */
   pc->ops->setfromoptions = PCSetFromOptions_ML;
   pc->ops->setup          = PCSetUp_ML;
+  pc->ops->reset          = PCReset_ML;
   pc->ops->destroy        = PCDestroy_ML;
   PetscFunctionReturn(0);
 }

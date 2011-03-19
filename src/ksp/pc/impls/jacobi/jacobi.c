@@ -304,6 +304,19 @@ static PetscErrorCode PCApplySymmetricLeftOrRight_Jacobi(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
+#undef __FUNCT__  
+#define __FUNCT__ "PCReset_Jacobi"
+static PetscErrorCode PCReset_Jacobi(PC pc)
+{
+  PC_Jacobi      *jac = (PC_Jacobi*)pc->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (jac->diag)     {ierr = VecDestroy(jac->diag);CHKERRQ(ierr);}
+  if (jac->diagsqrt) {ierr = VecDestroy(jac->diagsqrt);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
 /*
    PCDestroy_Jacobi - Destroys the private context for the Jacobi preconditioner
    that was created with PCCreate_Jacobi().
@@ -321,8 +334,7 @@ static PetscErrorCode PCDestroy_Jacobi(PC pc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (jac->diag)     {ierr = VecDestroy(jac->diag);CHKERRQ(ierr);}
-  if (jac->diagsqrt) {ierr = VecDestroy(jac->diagsqrt);CHKERRQ(ierr);}
+  ierr = PCReset_Jacobi(pc);CHKERRQ(ierr);
 
   /*
       Free the private data structure that was hanging off the PC
@@ -421,6 +433,7 @@ PetscErrorCode  PCCreate_Jacobi(PC pc)
   pc->ops->apply               = PCApply_Jacobi;
   pc->ops->applytranspose      = PCApply_Jacobi;
   pc->ops->setup               = PCSetUp_Jacobi;
+  pc->ops->reset               = PCReset_Jacobi;
   pc->ops->destroy             = PCDestroy_Jacobi;
   pc->ops->setfromoptions      = PCSetFromOptions_Jacobi;
   pc->ops->view                = 0;

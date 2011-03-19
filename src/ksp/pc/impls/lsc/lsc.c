@@ -92,8 +92,8 @@ static PetscErrorCode PCApply_LSC(PC pc,Vec x,Vec y)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCDestroy_LSC"
-static PetscErrorCode PCDestroy_LSC(PC pc)
+#define __FUNCT__ "PCReset_LSC"
+static PetscErrorCode PCReset_LSC(PC pc)
 {
   PC_LSC         *lsc = (PC_LSC*)pc->data;
   PetscErrorCode ierr;
@@ -105,6 +105,18 @@ static PetscErrorCode PCDestroy_LSC(PC pc)
   if (lsc->scale) {ierr = VecDestroy(lsc->scale);CHKERRQ(ierr);}
   if (lsc->kspL)  {ierr = KSPDestroy(lsc->kspL);CHKERRQ(ierr);}
   if (lsc->L)     {ierr = MatDestroy(lsc->L);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PCDestroy_LSC"
+static PetscErrorCode PCDestroy_LSC(PC pc)
+{
+  PC_LSC         *lsc = (PC_LSC*)pc->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PCReset_LSC(pc);CHKERRQ(ierr);
   ierr = PetscFree(pc->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -218,6 +230,7 @@ PetscErrorCode  PCCreate_LSC(PC pc)
   pc->ops->apply               = PCApply_LSC;
   pc->ops->applytranspose      = 0;
   pc->ops->setup               = PCSetUp_LSC;
+  pc->ops->reset               = PCReset_LSC;
   pc->ops->destroy             = PCDestroy_LSC;
   pc->ops->setfromoptions      = PCSetFromOptions_LSC;
   pc->ops->view                = PCView_LSC;

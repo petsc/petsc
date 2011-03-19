@@ -330,7 +330,14 @@ extern PetscErrorCode  PetscGlobalSum(MPI_Comm, const PetscScalar*,PetscScalar*)
      Level: beginner
 
 M*/
-#if defined(PETSC_HAVE_ISINF) && defined(PETSC_HAVE_ISNAN)
+#if defined(PETSC_USE_SCALAR___FLOAT128)
+PETSC_STATIC_INLINE PetscErrorCode PetscIsInfOrNanScalar(PetscScalar a) {
+  return isinfq(PetscAbsScalar(a)) || isnanq(PetscAbsScalar(a));
+}
+PETSC_STATIC_INLINE PetscErrorCode PetscIsInfOrNanReal(PetscReal a) {
+  return isinfq(a) || isnanq(a);
+}
+#elif defined(PETSC_HAVE_ISINF) && defined(PETSC_HAVE_ISNAN)
 PETSC_STATIC_INLINE PetscErrorCode PetscIsInfOrNanScalar(PetscScalar a) {
   return isinf(PetscAbsScalar(a)) || isnan(PetscAbsScalar(a));
 }

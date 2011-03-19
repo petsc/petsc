@@ -103,9 +103,10 @@ because "log" is reserved for related to the performance logging</li>
         <li>Changed PetscLogPrintSummary() to PetscLogView()</li>
         <li>Using gcc 4.6 you can now ./configure
 --with-precision=__float128 --download-qblaslapack to get computations
-in quad precision. Fortran is not yet support and some of the PETSc
-printing of these numbers in some place will print garbage. I haven't
-figured out a way to handle the %G format.<br>
+in quad precision. gfortran 4.6 is also supported. Warning some of the
+PETSc
+printing of numbers in some places will print garbage. I haven't
+figured out a way to handle the %G format. Can be run in parallel :-)<br>
         </li>
       </ul>
       <u><b>Logging:<br>

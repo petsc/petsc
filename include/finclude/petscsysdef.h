@@ -87,7 +87,7 @@
 #if defined (PETSC_USE_FORTRANKIND)
 #define PetscFortranFloat real(kind=selected_real_kind(5))
 #define PetscFortranDouble real(kind=selected_real_kind(10))
-#define PetscFortranLongDouble real(kind=selected_real_kind(16))
+#define PetscFortranLongDouble real(kind=selected_real_kind(19))
 #if defined(PETSC_USE_SCALAR_SINGLE)
 #define PetscFortranComplex complex(kind=selected_real_kind(5))
 #else
@@ -111,9 +111,9 @@
 #else
 #if defined(PETSC_USE_SCALAR_SINGLE)
 #define PETSC_SCALAR PETSC_FLOAT
-#elif defined(PETSC_USE_SCALAR_LONG_DOUBLE)
+#elif defined(PETSC_USE_SCALAR_LONG_DOUBLE) || defined(PETSC_USE_SCALAR___FLOAT128)
 #define PETSC_SCALAR PETSC_LONG_DOUBLE
-#else
+#elif defined(PETSC_USE_SCALAR_DOUBLE)
 #define PETSC_SCALAR PETSC_DOUBLE
 #endif     
 #endif
@@ -137,9 +137,9 @@
 #else
 #if defined (PETSC_USE_SCALAR_SINGLE)
 #define PetscScalar PetscFortranFloat
-#elif defined(PETSC_USE_SCALAR_LONG_DOUBLE)
+#elif defined(PETSC_USE_SCALAR_LONG_DOUBLE) || defined(PETSC_USE_SCALAR___FLOAT128)
 #define PetscScalar PetscFortranLongDouble
-#else
+#elif defined(PETSC_USE_SCALAR_DOUBLE)
 #define PetscScalar PetscFortranDouble
 #endif
 #define PetscRealPart(a) a
@@ -149,9 +149,9 @@
 
 #if defined (PETSC_USE_SCALAR_SINGLE)
 #define PetscReal PetscFortranFloat
-#elif defined(PETSC_USE_SCALAR_LONG_DOUBLE)
+#elif defined(PETSC_USE_SCALAR_LONG_DOUBLE) || defined(PETSC_USE_SCALAR___FLOAT128)
 #define PetscReal PetscFortranLongDouble
-#else
+#elif defined(PETSC_USE_SCALAR_DOUBLE)
 #define PetscReal PetscFortranDouble
 #endif
 
@@ -159,13 +159,7 @@
 !    Allows the matrix Fortran Kernels to work with single precision
 !    matrix data structures
 !
-#if defined(PETSC_USE_COMPLEX)
 #define MatScalar PetscScalar 
-#elif defined(PETSC_USE_SCALAR_MAT_SINGLE)
-#define MatScalar real*4
-#else
-#define MatScalar PetscScalar
-#endif
 !
 !     PetscLogDouble variables are used to contain double precision numbers
 !     that are not used in the numerical computations, but rather in logging,

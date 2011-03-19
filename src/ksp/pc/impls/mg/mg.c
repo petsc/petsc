@@ -211,8 +211,8 @@ PetscErrorCode  PCMGSetLevels(PC pc,PetscInt levels,MPI_Comm *comms)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCDestroy_MG_Private"
-PetscErrorCode PCDestroy_MG_Private(PC pc)
+#define __FUNCT__ "PCReset_MG"
+PetscErrorCode PCReset_MG(PC pc)
 {
   PC_MG          *mg = (PC_MG*)pc->data;
   PC_MG_Levels   **mglevels = mg->levels;
@@ -232,14 +232,11 @@ PetscErrorCode PCDestroy_MG_Private(PC pc)
 
     for (i=0; i<n; i++) {
       if (mglevels[i]->smoothd != mglevels[i]->smoothu) {
-	ierr = KSPDestroy(mglevels[i]->smoothd);CHKERRQ(ierr);
+	ierr = KSPReset(mglevels[i]->smoothd);CHKERRQ(ierr);
       }
-      ierr = KSPDestroy(mglevels[i]->smoothu);CHKERRQ(ierr);
-      ierr = PetscFree(mglevels[i]);CHKERRQ(ierr);
+      ierr = KSPReset(mglevels[i]->smoothu);CHKERRQ(ierr);
     }
-    ierr = PetscFree(mg->levels);CHKERRQ(ierr);
   }
-  mg->nlevels = -1;
   PetscFunctionReturn(0);
 }
 
@@ -248,9 +245,23 @@ PetscErrorCode PCDestroy_MG_Private(PC pc)
 PetscErrorCode PCDestroy_MG(PC pc)
 {
   PetscErrorCode ierr;
+  PC_MG          *mg = (PC_MG*)pc->data;
+  PC_MG_Levels   **mglevels = mg->levels;
+  PetscInt       i,n;
 
   PetscFunctionBegin;
-  ierr = PCDestroy_MG_Private(pc);CHKERRQ(ierr);
+  ierr = PCReset_MG(pc);CHKERRQ(ierr);
+  if (mglevels) {
+    n = mglevels[0]->levels;
+    for (i=0; i<n; i++) {
+      if (mglevels[i]->smoothd != mglevels[i]->smoothu) {
+	ierr = KSPDestroy(mglevels[i]->smoothd);CHKERRQ(ierr);
+      }
+      ierr = KSPDestroy(mglevels[i]->smoothu);CHKERRQ(ierr);
+      ierr = PetscFree(mglevels[i]);CHKERRQ(ierr);
+    }
+    ierr = PetscFree(mg->levels);CHKERRQ(ierr);
+  }
   ierr = PetscFree(pc->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1019,6 +1030,7 @@ PetscErrorCode  PCCreate_MG(PC pc)
 
   pc->ops->apply          = PCApply_MG;
   pc->ops->setup          = PCSetUp_MG;
+  pc->ops->reset          = PCReset_MG;
   pc->ops->destroy        = PCDestroy_MG;
   pc->ops->setfromoptions = PCSetFromOptions_MG;
   pc->ops->view           = PCView_MG;

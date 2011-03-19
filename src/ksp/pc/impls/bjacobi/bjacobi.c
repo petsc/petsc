@@ -1250,6 +1250,7 @@ static PetscErrorCode PCDestroy_BJacobi_Multiproc(PC pc)
   PetscErrorCode       ierr;
 
   PetscFunctionBegin;
+  ierr = PCReset_BJacobi_Multiproc(pc);CHKERRQ(ierr);
   if (mpjac->ksp){ierr = KSPDestroy(mpjac->ksp);CHKERRQ(ierr);}
   if (mpjac->psubcomm){ierr = PetscSubcommDestroy(mpjac->psubcomm);CHKERRQ(ierr);}
 
