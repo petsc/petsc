@@ -14,31 +14,33 @@ import logger, script
 regressionRequirements = {'src/vec/vec/examples/tests/ex31':  set(['Matlab'])
                           }
 
-regressionParameters = {'src/vec/vec/examples/tests/ex1_2':  {'numProcs': 2},
-                        'src/vec/vec/examples/tests/ex3':    {'numProcs': 2},
-                        'src/vec/vec/examples/tests/ex4':    {'numProcs': 2},
-                        'src/vec/vec/examples/tests/ex5':    {'numProcs': 2},
-                        'src/vec/vec/examples/tests/ex9':    {'numProcs': 2},
-                        'src/vec/vec/examples/tests/ex10':   {'numProcs': 2},
-                        'src/vec/vec/examples/tests/ex11':   {'numProcs': 2},
-                        'src/vec/vec/examples/tests/ex12':   {'numProcs': 2},
-                        'src/vec/vec/examples/tests/ex13':   {'numProcs': 2},
-                        'src/vec/vec/examples/tests/ex14':   {'numProcs': 2},
-                        'src/vec/vec/examples/tests/ex16':   {'numProcs': 2},
-                        'src/vec/vec/examples/tests/ex17':   {'numProcs': 2},
-                        'src/vec/vec/examples/tests/ex17f':  {'numProcs': 3},
-                        'src/vec/vec/examples/tests/ex21_2': {'numProcs': 2},
-                        'src/vec/vec/examples/tests/ex22':   {'numProcs': 4},
-                        'src/vec/vec/examples/tests/ex23':   {'numProcs': 2},
-                        'src/vec/vec/examples/tests/ex24':   {'numProcs': 3},
-                        'src/vec/vec/examples/tests/ex25':   {'numProcs': 3},
-                        'src/vec/vec/examples/tests/ex26':   {'numProcs': 4},
-                        'src/vec/vec/examples/tests/ex28':   {'numProcs': 3},
-                        'src/vec/vec/examples/tests/ex29':   {'numProcs': 3, 'args': '-n 126'},
-                        'src/vec/vec/examples/tests/ex30f':  {'numProcs': 4},
-                        'src/vec/vec/examples/tests/ex33':   {'numProcs': 4},
-                        'src/vec/vec/examples/tests/ex36':   {'numProcs': 2, 'args': '-set_option_negidx -set_values_negidx -get_values_negidx'},
-                        'src/snes/examples/tutorials/ex5':   {'numProcs': 4, 'args': '-snes_mf -da_processors_x 4 -da_processors_y 1 -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always'}
+regressionParameters = {'src/vec/vec/examples/tests/ex1_2':    {'numProcs': 2},
+                        'src/vec/vec/examples/tests/ex3':      {'numProcs': 2},
+                        'src/vec/vec/examples/tests/ex4':      {'numProcs': 2},
+                        'src/vec/vec/examples/tests/ex5':      {'numProcs': 2},
+                        'src/vec/vec/examples/tests/ex9':      {'numProcs': 2},
+                        'src/vec/vec/examples/tests/ex10':     {'numProcs': 2},
+                        'src/vec/vec/examples/tests/ex11':     {'numProcs': 2},
+                        'src/vec/vec/examples/tests/ex12':     {'numProcs': 2},
+                        'src/vec/vec/examples/tests/ex13':     {'numProcs': 2},
+                        'src/vec/vec/examples/tests/ex14':     {'numProcs': 2},
+                        'src/vec/vec/examples/tests/ex16':     {'numProcs': 2},
+                        'src/vec/vec/examples/tests/ex17':     {'numProcs': 2},
+                        'src/vec/vec/examples/tests/ex17f':    {'numProcs': 3},
+                        'src/vec/vec/examples/tests/ex21_2':   {'numProcs': 2},
+                        'src/vec/vec/examples/tests/ex22':     {'numProcs': 4},
+                        'src/vec/vec/examples/tests/ex23':     {'numProcs': 2},
+                        'src/vec/vec/examples/tests/ex24':     {'numProcs': 3},
+                        'src/vec/vec/examples/tests/ex25':     {'numProcs': 3},
+                        'src/vec/vec/examples/tests/ex26':     {'numProcs': 4},
+                        'src/vec/vec/examples/tests/ex28':     {'numProcs': 3},
+                        'src/vec/vec/examples/tests/ex29':     {'numProcs': 3, 'args': '-n 126'},
+                        'src/vec/vec/examples/tests/ex30f':    {'numProcs': 4},
+                        'src/vec/vec/examples/tests/ex33':     {'numProcs': 4},
+                        'src/vec/vec/examples/tests/ex36':     {'numProcs': 2, 'args': '-set_option_negidx -set_values_negidx -get_values_negidx'},
+                        'src/snes/examples/tutorials/ex5':     {'numProcs': 4, 'args': '-snes_mf -da_processors_x 4 -da_processors_y 1 -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always'},
+                        'src/snes/examples/tutorials/ex5f90':  {'numProcs': 4, 'args': '-snes_mf -da_processors_x 4 -da_processors_y 1 -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always'},
+                        'src/snes/examples/tutorials/ex5f90t': {'numProcs': 4, 'args': '-snes_mf -da_processors_x 4 -da_processors_y 1 -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always'}
                         }
 
 def noCheckCommand(command, status, output, error):
@@ -584,6 +586,7 @@ class PETScMaker(script.Script):
    return packageIncludes, packageLibs
 
  def storeObjects(self, objects):
+   presentObjects = []
    for obj in objects:
      locObj = os.path.basename(obj)
      self.logPrint('Moving %s to %s' % (locObj, obj))
@@ -593,7 +596,10 @@ class PETScMaker(script.Script):
          self.operationFailed = True
        else:
          shutil.move(locObj, obj)
-   return
+         presentObjects.append(obj)
+     else:
+       presentObjects.append(obj)
+   return presentObjects
 
  def compile(self, language, source, objDir = None):
    if not len(source):
@@ -621,8 +627,8 @@ class PETScMaker(script.Script):
        self.logPrint('ERROR IN %s COMPILE ******************************' % language, debugSection='screen')
        self.logPrint(output+error, debugSection='screen')
    self.configInfo.setCompilers.popLanguage()
-   self.storeObjects(objects)
-   deps = [os.path.splitext(o)[0]+'.d' for o in objects if os.path.isfile(os.path.splitext(os.path.basename(o))[0]+'.d')]
+   objects = self.storeObjects(objects)
+   deps    = [os.path.splitext(o)[0]+'.d' for o in objects if os.path.isfile(os.path.splitext(os.path.basename(o))[0]+'.d')]
    self.storeObjects(deps)
    return objects
 
