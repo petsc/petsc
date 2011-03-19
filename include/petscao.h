@@ -9,7 +9,7 @@
 #include "petscmat.h"
 PETSC_EXTERN_CXX_BEGIN
 
-typedef enum {AO_BASIC=0, AO_ADVANCED=1, AO_MAPPING=2, AO_BASICMEMORYSCALABLE=3} AOType;
+typedef enum {AO_BASIC=0, AO_ADVANCED=1, AO_MAPPING=2, AO_MEMORYSCALABLE=3} AOType;
 
 /*S
      AO - Abstract PETSc object that manages mapping between different global numbering
@@ -34,7 +34,7 @@ E*/
 #define AOBASIC               "basic"
 #define AOADVANCED            "advanced"
 #define AOMAPPING             "mapping"
-#define AOBASICMEMORYSCALABLE "basicmemoryscalable"
+#define AOMEMORYSCALABLE      "memoryscalable"
 
 /* Logging support */
 extern PetscClassId  AO_CLASSID;
@@ -47,8 +47,8 @@ extern PetscErrorCode  AOSetFromOptions(AO);
 
 extern PetscErrorCode  AOCreateBasic(MPI_Comm,PetscInt,const PetscInt[],const PetscInt[],AO*);
 extern PetscErrorCode  AOCreateBasicIS(IS,IS,AO*);
-extern PetscErrorCode  AOCreateBasicMemoryScalable(MPI_Comm,PetscInt,const PetscInt[],const PetscInt[],AO*);
-extern PetscErrorCode  AOCreateBasicMemoryScalableIS(IS,IS,AO*);
+extern PetscErrorCode  AOCreateMemoryScalable(MPI_Comm,PetscInt,const PetscInt[],const PetscInt[],AO*);
+extern PetscErrorCode  AOCreateMemoryScalableIS(IS,IS,AO*);
 extern PetscErrorCode  AOCreateMapping(MPI_Comm,PetscInt,const PetscInt[],const PetscInt[],AO*);
 extern PetscErrorCode  AOCreateMappingIS(IS,IS,AO*);
 

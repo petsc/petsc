@@ -20,7 +20,7 @@ PetscBool  AORegisterAllCalled          = PETSC_FALSE;
                      of available types
 
   Notes:
-  See "petsc/include/petscao.h" for available AO types (for instance, AOBASIC and AOBASICMEMORYSCALABLE).
+  See "petsc/include/petscao.h" for available AO types (for instance, AOBASIC and AOMEMORYSCALABLE).
 
   Level: intermediate
 
