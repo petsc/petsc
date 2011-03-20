@@ -77,6 +77,7 @@ PetscErrorCode  AODestroy_(AO ao)
   if (ao->ops->destroy) {
     ierr = (*ao->ops->destroy)(ao);CHKERRQ(ierr);
   }
+  ierr = PetscFree(ao->data);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(ao);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -220,6 +221,9 @@ PetscErrorCode  AOPetscToApplication(AO ao,PetscInt n,PetscInt ia[])
 +  ao - the application ordering context
 .  n - the number of integers
 -  ia - the integers; these are replaced with their mapped value
+
+   Output Parameter:
+.   ia - the mapped interges
 
    Level: beginner
 

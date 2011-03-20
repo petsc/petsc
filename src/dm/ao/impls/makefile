@@ -1,7 +1,7 @@
 
 ALL: lib
 
-DIRS     = basic mapping
+DIRS     = basic mapping memscalable
 LOCDIR   = src/dm/ao/impls/
 MANSEC   = DA
 
