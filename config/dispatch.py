@@ -14,6 +14,8 @@ import mercurial.hook as hook
 import mercurial.util as util
 import mercurial.ui as uimod
 
+program = 'builder'
+
 # Copied verbatim from mercurial.dispatch
 def run():
     "run the command in sys.argv"
@@ -32,10 +34,10 @@ def dispatch(args):
         return -1
     except error.ParseError, inst:
         if len(inst.args) > 1:
-            sys.stderr.write(_("hg: parse error at %s: %s\n") %
-                             (inst.args[1], inst.args[0]))
+            sys.stderr.write(_("%s: parse error at %s: %s\n") %
+                             (program, inst.args[1], inst.args[0]))
         else:
-            sys.stderr.write(_("hg: parse error: %s\n") % inst.args[0])
+            sys.stderr.write(_("%s: parse error: %s\n") % (program, inst.args[0]))
         return -1
     return _runcatch(u, args)
 
@@ -55,8 +57,7 @@ def _runcatch(ui, args):
         try:
             # enter the debugger before command execution
             if '--debugger' in args:
-                ui.warn(_("entering debugger - "
-                        "type c to continue starting hg or h for help\n"))
+                ui.warn(_ ("entering debugger - type c to continue starting %s or h for help\n" % program))
                 pdb.set_trace()
             try:
                 return _dispatch(ui, args)
@@ -73,14 +74,12 @@ def _runcatch(ui, args):
     # Global exception handling, alphabetically
     # Mercurial-specific first, followed by built-in and library exceptions
     except error.AmbiguousCommand, inst:
-        ui.warn(_("hg: command '%s' is ambiguous:\n    %s\n") %
-                (inst.args[0], " ".join(inst.args[1])))
+        ui.warn(_("%s: command '%s' is ambiguous:\n    %s\n") % (program, inst.args[0], " ".join(inst.args[1])))
     except error.ParseError, inst:
         if len(inst.args) > 1:
-            ui.warn(_("hg: parse error at %s: %s\n") %
-                             (inst.args[1], inst.args[0]))
+            ui.warn(_("%s: parse error at %s: %s\n") % (program, inst.args[1], inst.args[0]))
         else:
-            ui.warn(_("hg: parse error: %s\n") % inst.args[0])
+            ui.warn(_("%s: parse error: %s\n") % (program, inst.args[0]))
         return -1
     except error.LockHeld, inst:
         if inst.errno == errno.ETIMEDOUT:
@@ -93,10 +92,10 @@ def _runcatch(ui, args):
                (inst.desc or inst.filename, inst.strerror))
     except error.CommandError, inst:
         if inst.args[0]:
-            ui.warn(_("hg %s: %s\n") % (inst.args[0], inst.args[1]))
+            ui.warn(_("%s %s: %s\n") % (program, inst.args[0], inst.args[1]))
             commands.help_(ui, inst.args[0])
         else:
-            ui.warn(_("hg: %s\n") % inst.args[1])
+            ui.warn(_("%s: %s\n") % (program, inst.args[1]))
             commands.help_(ui, 'shortlist')
     except error.RepoError, inst:
         ui.warn(_("abort: %s!\n") % inst)
@@ -113,7 +112,7 @@ def _runcatch(ui, args):
     except error.SignalInterrupt:
         ui.warn(_("killed!\n"))
     except error.UnknownCommand, inst:
-        ui.warn(_("hg: unknown command '%s'\n") % inst.args[0])
+        ui.warn(_("%s: unknown command '%s'\n") % (program, inst.args[0]))
         try:
             # check if the command is in a disabled extension
             # (but don't check for extensions themselves)
@@ -223,7 +222,7 @@ class cmdalias(object):
         if self.definition.startswith('!'):
             self.shell = True
             def fn(ui, *args):
-                env = {'HG_ARGS': ' '.join((self.name,) + args)}
+                env = {program.upper()+'_ARGS': ' '.join((self.name,) + args)}
                 def _checkvar(m):
                     if int(m.groups()[0]) <= len(args):
                         return m.group()
@@ -264,7 +263,7 @@ class cmdalias(object):
             self.args = aliasargs(self.fn) + args
             if cmd not in commands.norepo.split(' '):
                 self.norepo = False
-            if self.help.startswith("hg " + cmd):
+            if self.help.startswith(program + " " + cmd):
                 # drop prefix in old-style help lines so hg shows the alias
                 self.help = self.help[4 + len(cmd):]
             self.__doc__ = self.fn.__doc__

@@ -29,26 +29,31 @@ def check(ui, repo, *pats, **opts):
   '''Check that build is functional'''
   maker = builder.PETScMaker()
   maker.setup()
-  exampleDir = os.path.join(maker.petscDir, 'src', 'snes', 'examples', 'tutorials')
   # C test
-  objects    = maker.buildFile(os.path.join(exampleDir, 'ex5.c'), maker.getObjDir('libpetsc'))
-  executable = os.path.splitext(objects[0])[0]
-  paramKey   = os.path.join(os.path.relpath(exampleDir, maker.petscDir), os.path.basename(executable))
-  if paramKey in builder.regressionRequirements:
-    if not builder.regressionRequirements[paramKey].issubset(packageNames):
-      raise RuntimeError('This test requires packages: %s' % builder.regressionRequirements[paramKey])
-  maker.link(executable, objects, maker.configInfo.languages.clanguage)
-  if maker.runTest(exampleDir, executable, 1, **builder.regressionParameters.get(paramKey, {})):
-    print 'TEST FAILED (check make.log for details)'
-    return 1
+  examples = [os.path.join(maker.petscDir, 'src', 'snes', 'examples', 'tutorials', 'ex10.c')]
   # Fortran test
   if hasattr(maker.configInfo.compilers, 'FC'):
     if maker.configInfo.fortrancpp.fortranDatatypes:
-      pass
+      examples.append(os.path.join(maker.petscDir, 'src', 'snes', 'examples', 'tutorials', 'ex5f90t.F'))
     elif self.configInfo.compilers.fortranIsF90:
-      pass
+      examples.append(os.path.join(maker.petscDir, 'src', 'snes', 'examples', 'tutorials', 'ex5f90.F'))
     else:
-      pass
+      examples.append(os.path.join(maker.petscDir, 'src', 'snes', 'examples', 'tutorials', 'ex5f.F'))
+  for ex in examples:
+    exampleDir = os.path.dirname(ex)
+    objects    = maker.buildFile(ex, maker.getObjDir('libpetsc'))
+    if not len(objects):
+      print 'TEST FAILED (check make.log for details)'
+      return 1
+    executable = os.path.splitext(objects[0])[0]
+    paramKey   = os.path.join(os.path.relpath(exampleDir, maker.petscDir), os.path.basename(executable))
+    if paramKey in builder.regressionRequirements:
+      if not builder.regressionRequirements[paramKey].issubset(packageNames):
+        raise RuntimeError('This test requires packages: %s' % builder.regressionRequirements[paramKey])
+    maker.link(executable, objects, maker.configInfo.languages.clanguage)
+    if maker.runTest(exampleDir, executable, 1, **builder.regressionParameters.get(paramKey, {})):
+      print 'TEST FAILED (check make.log for details)'
+      return 1
   print 'All tests pass'
   maker.cleanup()
   return 0
@@ -57,7 +62,7 @@ def clean(ui, repo, *pats, **opts):
   '''Remove source database and all objects'''
   maker = builder.PETScMaker()
   maker.setup()
-  maker.clean()
+  maker.clean('libpetsc')
   maker.cleanup()
   return 0
 
@@ -359,6 +364,16 @@ def help_(ui, name=None, with_version=False, unknowncmd=False):
             else:
                 ui.write("%s\n" % opt)
 
+def version_(ui):
+    '''Output version and copyright information'''
+    ui.write(_("BuildSystem Configuration and Build (version %s)\n") % util.version())
+    ui.status(_(
+        "(see http://www.mcs.anl.gov/petsc/petsc-as/documentation/copyright.html for more information)\n"
+        "Permission to use, reproduce, prepare derivative works, and to redistribute to others this software\n"
+        "and its documentation is hereby granted, provided that this notice is retained thereon and on all copies\n"
+        "or modifications. UChicago Argonne, LLC and all other contributors make no representations as to the\n"
+        "suitability and operability of this software for any purpose. It is provided \"as is\" without express or implied warranty.\n"))
+
 globalopts = [('', 'config', [], _('set/override config option (use \'section.name=value\')'), _('CONFIG')),
               ('', 'cwd',    '', _('change working directory'), _('DIR')),
               ('', 'debug', None, _('enable debugging output')),
@@ -377,10 +392,12 @@ globalopts = [('', 'config', [], _('set/override config option (use \'section.na
 dryrunopts = [('n', 'dry-run', None, _('do not perform actions, just print output'))]
 
 # Leading ^ puts command on the 'shortlist'
-table = {'^build': (build, dryrunopts, _('[DIR]')),
-         '^check': (check, [], ''),
-         '^clean': (clean, [], ''),
-         '^stubs': (stubs, [], _('LANGUAGE...'))}
+table = {'^build':  (build, dryrunopts, _('[DIR]')),
+         '^check':  (check, [], ''),
+         '^clean':  (clean, [], ''),
+         'help':    (help_, [], _('[TOPIC]')),
+         '^stubs':  (stubs, [], _('LANGUAGE...')),
+         'version': (version_, [])}
 
-norepo = ("")
+norepo = ("help")
 optionalrepo = ("")
