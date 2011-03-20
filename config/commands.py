@@ -43,7 +43,10 @@ def check(ui, repo, *pats, **opts):
   for ex in examples:
     exampleName = os.path.splitext(os.path.basename(ex))[0]
     exampleDir  = os.path.dirname(ex)
-    objects     = maker.buildFile(ex, maker.getObjDir(exampleName))
+    objDir      = maker.getObjDir(exampleName)
+    if os.path.isdir(objDir): shutil.rmtree(objDir)
+    os.mkdir(objDir)
+    objects     = maker.buildFile(ex, objDir)
     if not len(objects):
       print 'TEST FAILED (check make.log for details)'
       return 1
@@ -56,6 +59,7 @@ def check(ui, repo, *pats, **opts):
     if maker.runTest(exampleDir, executable, 1, **builder.regressionParameters.get(paramKey, {})):
       print 'TEST FAILED (check make.log for details)'
       return 1
+    if os.path.isdir(objDir): shutil.rmtree(objDir)
   print 'All tests pass'
   maker.cleanup()
   return 0
