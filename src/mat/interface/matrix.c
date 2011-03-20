@@ -7292,7 +7292,7 @@ PetscErrorCode  MatNullSpaceAttach(Mat mat,MatNullSpace nullsp)
   PetscValidHeaderSpecific(nullsp,MAT_NULLSPACE_CLASSID,2);
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
   ierr = PetscObjectReference((PetscObject)nullsp);CHKERRQ(ierr);
-  if (mat->nullsp) { ierr = MatNullSpaceDestroy(mat->nullsp);CHKERRQ(ierr); }
+  if (mat->nullsp) { ierr = MatNullSpaceDestroy(&mat->nullsp);CHKERRQ(ierr); }
   mat->nullsp = nullsp;
   PetscFunctionReturn(0);
 }

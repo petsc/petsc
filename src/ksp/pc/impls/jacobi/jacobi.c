@@ -330,7 +330,6 @@ static PetscErrorCode PCReset_Jacobi(PC pc)
 #define __FUNCT__ "PCDestroy_Jacobi"
 static PetscErrorCode PCDestroy_Jacobi(PC pc)
 {
-  PC_Jacobi      *jac = (PC_Jacobi*)pc->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

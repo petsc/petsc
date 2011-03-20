@@ -625,7 +625,7 @@ PetscErrorCode  DMMGSetNullSpace(DMMG *dmmg,PetscBool  has_cnst,PetscInt n,Petsc
         ierr = KSPSetNullSpace(iksp, nullsp);CHKERRQ(ierr);
       }
     }
-    ierr = MatNullSpaceDestroy(nullsp);CHKERRQ(ierr);
+    ierr = MatNullSpaceDestroy(&nullsp);CHKERRQ(ierr);
     if (n) {
       ierr = VecDestroyVecs(n,&nulls);CHKERRQ(ierr);
     }

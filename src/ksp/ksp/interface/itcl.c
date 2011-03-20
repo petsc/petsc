@@ -368,7 +368,7 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
 
       ierr = MatNullSpaceCreate(((PetscObject)ksp)->comm,PETSC_TRUE,0,0,&nsp);CHKERRQ(ierr);
       ierr = KSPSetNullSpace(ksp,nsp);CHKERRQ(ierr);
-      ierr = MatNullSpaceDestroy(nsp);CHKERRQ(ierr);
+      ierr = MatNullSpaceDestroy(&nsp);CHKERRQ(ierr);
     }
 
     /* option is actually checked in KSPSetUp(), just here so goes into help message */

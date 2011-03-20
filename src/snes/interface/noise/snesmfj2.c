@@ -34,7 +34,7 @@ PetscErrorCode SNESMatrixFreeDestroy2_Private(Mat mat)
   PetscFunctionBegin;
   ierr = MatShellGetContext(mat,(void **)&ctx);
   ierr = VecDestroy(ctx->w);CHKERRQ(ierr);
-  if (ctx->sp) {ierr = MatNullSpaceDestroy(ctx->sp);CHKERRQ(ierr);}
+  if (ctx->sp) {ierr = MatNullSpaceDestroy(&ctx->sp);CHKERRQ(ierr);}
   if (ctx->jorge || ctx->compute_err) {ierr = DiffParameterDestroy_More(ctx->data);CHKERRQ(ierr);}
   ierr = PetscFree(ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);

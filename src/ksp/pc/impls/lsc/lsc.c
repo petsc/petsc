@@ -112,7 +112,6 @@ static PetscErrorCode PCReset_LSC(PC pc)
 #define __FUNCT__ "PCDestroy_LSC"
 static PetscErrorCode PCDestroy_LSC(PC pc)
 {
-  PC_LSC         *lsc = (PC_LSC*)pc->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

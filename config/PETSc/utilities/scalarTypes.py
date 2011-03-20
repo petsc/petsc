@@ -20,7 +20,7 @@ class Configure(config.base.Configure):
     
   def setupHelp(self, help):
     import nargs
-    help.addArgument('PETSc', '-with-precision=<single,double,longdouble,__float128>', nargs.Arg(None, 'double', 'Specify numerical precision'))    
+    help.addArgument('PETSc', '-with-precision=<single,double,longdouble(not supported),__float128>', nargs.Arg(None, 'double', 'Specify numerical precision'))    
     help.addArgument('PETSc', '-with-scalar-type=<real or complex>', nargs.Arg(None, 'real', 'Specify real or complex numbers'))
     help.addArgument('PETSc', '-with-mixed-precision=<bool>', nargs.ArgBool(None, 0, 'Allow single precision linear solve'))
     return
@@ -78,14 +78,14 @@ class Configure(config.base.Configure):
       self.addDefine('USE_SCALAR_SINGLE', '1')
     elif self.precision == 'longdouble':
       self.addDefine('USE_SCALAR_LONG_DOUBLE', '1')
-    elif self.precision == '_quad':
+    elif self.precision == '_quad': # source code currently does not support this
       self.pushLanguage('C')
       if not config.setCompilers.Configure.isIntel(self.compilers.getCompiler()): raise RuntimeError('Only Intel compiler supports _quad')
       self.popLanguage()
       self.addDefine('USE_SCALAR__QUAD', '1')        
     elif self.precision == 'double':
       self.addDefine('USE_SCALAR_DOUBLE', '1')
-    elif self.precision == '__float128':
+    elif self.precision == '__float128':  # supported by gcc 4.6
       self.addDefine('USE_SCALAR___FLOAT128', '1')
       self.libraries.add('quadmath','logq',prototype='#include <quadmath.h>',call='__float128 f; logq(f);')
     else:

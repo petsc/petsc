@@ -83,6 +83,8 @@ error indicating "new remote branches" might be created when I try to
 push?</a></li>
       <li><a href="faq.html#gpus">Can PETSc use GPUs to speed up the
 computation time?</a></li>
+      <li><a href="faq.html#precision">Can I run PETSc with extended
+precision?</a></li>
       <li><a href="faq.html#qd">Why doesn't PETSc use QD to implement
 support for extended precision?</a></li>
       </menu>
@@ -180,6 +182,7 @@ can I understand what is really happening within my program? </a></li>
 large sparse matrices takes a long time. What can I do make this
 process faster? or MatSetValues() is <span style="font-weight: bold;">so
 slow,
+
 
 
 
@@ -324,7 +327,8 @@ sockets so that each process uses a different memory bus:
  href="http://wiki.mcs.anl.gov/mpich2/index.php/Using_the_Hydra_Process_Manager#Process-core_Binding">MPICH2
 binding
 with
-the Hydra process manager</a></dt>
+the
+Hydra process manager</a></dt>
             <dd>mpiexec.hydra -n 4 --binding cpu:sockets</dd>
             <dt><a
  href="http://www.open-mpi.org/doc/v1.5/man1/mpiexec.1.php#sect8">Open
@@ -501,8 +505,16 @@ problem, we could do with some help for these. The example <a
 demonstates how the&nbsp; nonlinear function evaluation can be done on
 the GPU.<br>
       </p>
-      <p><a><font><a name="qd"><font color="#ff0000">Why doesn't PETSc
-use QD to implement support for exended precision</font></a></font></a></p>
+      <p><font><a name="precision"><font color="#ff0000">Can I run
+PETSc with exended precision</font></a></font> <a><font>Yes, with gcc
+4.6 and later (and gfortran 4.6 and later) ./configure PETSc using the
+options --with-precision=__float128 --download-qblaslapack.</font></a>
+External packages cannot be used in this mode and some print statements
+in PETSc (those that use the %G format) will not print correctly.<br>
+      </p>
+      <p><a><font></font></a><font><a name="qd"><font color="#ff0000">Why
+doesn't PETSc
+use QD to implement support for exended precision</font></a></font></p>
       <p><a><font>We tried really hard but could not. The problem is
 that the QD c++ classes, though they try to implement the built-in data
 types of double etc are not native types and cannot "just be used" in a
@@ -923,7 +935,8 @@ XXXSetType(obj,type) and hardwire the type at that point.<br>
             <a name="makefiles"></a><span style="color: rgb(255, 0, 0);">Can
 I
 use
-my own makefiles or rules for
+my
+own makefiles or rules for
 compiling code, instead of using PETSc's?</span><br>
             <br>
 Yes, see the section of the <a
@@ -932,7 +945,8 @@ manual</a> called Makefiles <br>
             <br>
             <a name="cmake"></a><span style="color: rgb(255, 0, 0);">Can
 I
-use CMake to build my own project that depends on PETSc? </span><br>
+use
+CMake to build my own project that depends on PETSc? </span><br>
             <br>
 Use the FindPETSc.cmake module from <a
  href="https://github.com/jedbrown/cmake-modules/">this repository</a>.
@@ -1115,7 +1129,8 @@ results
 in
 a
 non-symmetric
-system. How can I apply Dirichlet boundary conditions
+system.
+How can I apply Dirichlet boundary conditions
 but&nbsp; keep the
 matrix symmetric?<br>
             <br>
@@ -1181,7 +1196,8 @@ for
 access
 from
 the
-MATLAB side.</li>
+MATLAB
+side.</li>
               <li>You can save PETSc Vecs (not Mats) with the <a
  href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-dev/docs/manualpages/Viewer/PetscViewerMatlabOpen.html">PetscViewerMatlabOpen</a>()
 viewer
@@ -1208,7 +1224,8 @@ I
 get
 started
 with
-Cython so that I can extend petsc4py?<br>
+Cython
+so that I can extend petsc4py?<br>
             </span><br>
 Steps I used:
             <ol>
@@ -1222,7 +1239,8 @@ also
 the
 next
 comment
-that shows how to create numpy arrays in the
+that
+shows how to create numpy arrays in the
 Cython and pass them back.</li>
               <li>Check out <a
  href="http://docs.cython.org/src/tutorial/numpy.html">this page</a>
@@ -1407,6 +1425,7 @@ in
 
 
 
+
           <a href="faq.html#slow">generating the
 matrix</a> or some other operation.</li>
         <li>There must be enough work for each process to
@@ -1442,6 +1461,7 @@ consider
 multigrid
 preconditioners
 like
+
 
 
 
@@ -1658,7 +1678,8 @@ global
 sizes
 that
 do
-not make
+not
+make
 sense for the correct number of processors. For example if you pass in
 a local size of 2 and a global size of 100 and run on two processors,
 this cannot work since the sum of the local sizes is 4, not 100.</span></font><br>
@@ -1687,6 +1708,7 @@ problem.<br>
 &nbsp; <br>
 If -malloc_debug does not help: on GNU/Linux and Apple Mac OS X
 machines - you can try using&nbsp;<a href="http://valgrind.org/">http://valgrind.org
+
 
 
 

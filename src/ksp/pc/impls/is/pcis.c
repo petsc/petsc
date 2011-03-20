@@ -175,7 +175,7 @@ PetscErrorCode  PCISSetUp(PC pc)
 	  MatNullSpace nullsp;
 	  ierr = MatNullSpaceCreate(PETSC_COMM_SELF,PETSC_TRUE,0,PETSC_NULL,&nullsp);CHKERRQ(ierr);
 	  ierr = KSPSetNullSpace(pcis->ksp_N,nullsp);CHKERRQ(ierr);
-	  ierr = MatNullSpaceDestroy(nullsp);CHKERRQ(ierr);
+	  ierr = MatNullSpaceDestroy(&nullsp);CHKERRQ(ierr);
 	}
       } else {  /* fixed subdomain */
 	if (damp_fixed) {
@@ -186,7 +186,7 @@ PetscErrorCode  PCISSetUp(PC pc)
 	  MatNullSpace nullsp;
 	  ierr = MatNullSpaceCreate(PETSC_COMM_SELF,PETSC_TRUE,0,PETSC_NULL,&nullsp);CHKERRQ(ierr);
 	  ierr = KSPSetNullSpace(pcis->ksp_N,nullsp);CHKERRQ(ierr);
-	  ierr = MatNullSpaceDestroy(nullsp);CHKERRQ(ierr);
+	  ierr = MatNullSpaceDestroy(&nullsp);CHKERRQ(ierr);
 	}
       }
     }

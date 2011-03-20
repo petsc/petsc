@@ -676,7 +676,7 @@ PetscErrorCode  KSPSetNullSpace(KSP ksp,MatNullSpace nullsp)
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidHeaderSpecific(nullsp,MAT_NULLSPACE_CLASSID,2);
   ierr = PetscObjectReference((PetscObject)nullsp);CHKERRQ(ierr);
-  if (ksp->nullsp) { ierr = MatNullSpaceDestroy(ksp->nullsp);CHKERRQ(ierr); }
+  if (ksp->nullsp) { ierr = MatNullSpaceDestroy(&ksp->nullsp);CHKERRQ(ierr); }
   ksp->nullsp = nullsp;
   PetscFunctionReturn(0);
 }

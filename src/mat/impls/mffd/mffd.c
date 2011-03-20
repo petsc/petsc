@@ -225,7 +225,7 @@ PetscErrorCode MatDestroy_MFFD(Mat mat)
     ierr = VecDestroy(ctx->current_f);
   }
   if (ctx->ops->destroy) {ierr = (*ctx->ops->destroy)(ctx);CHKERRQ(ierr);}
-  if (ctx->sp) {ierr = MatNullSpaceDestroy(ctx->sp);CHKERRQ(ierr);}
+  if (ctx->sp) {ierr = MatNullSpaceDestroy(&ctx->sp);CHKERRQ(ierr);}
   ierr = PetscHeaderDestroy(ctx);CHKERRQ(ierr);
 
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMFFDSetBase_C","",PETSC_NULL);CHKERRQ(ierr);
@@ -1012,7 +1012,7 @@ PetscErrorCode  MatMFFDAddNullSpace(Mat J,MatNullSpace nullsp)
 
   PetscFunctionBegin;
   ierr = PetscObjectReference((PetscObject)nullsp);CHKERRQ(ierr);
-  if (ctx->sp) { ierr = MatNullSpaceDestroy(ctx->sp);CHKERRQ(ierr); }
+  if (ctx->sp) { ierr = MatNullSpaceDestroy(&ctx->sp);CHKERRQ(ierr); }
   ctx->sp = nullsp;
   PetscFunctionReturn(0);
 }

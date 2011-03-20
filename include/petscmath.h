@@ -288,25 +288,42 @@ M*/
 
 /* ----------------------------------------------------------------------------*/
 /*
-     Basic constants - These should be done much better
+     Basic constants 
 */
+#if defined(PETSC_USE_SCALAR___FLOAT128)
+#define PETSC_PI                 M_PIq
+#elif defined(M_PI)
+#define PETSC_PI                 M_PI
+#else
 #define PETSC_PI                 3.14159265358979323846264
-#define PETSC_DEGREES_TO_RADIANS 0.01745329251994
+#endif
+
+
 #define PETSC_MAX_INT            2147483647
 #define PETSC_MIN_INT            -2147483647
 
 #if defined(PETSC_USE_SCALAR_SINGLE)
+#if defined(MAXFLOAT)
+#  define PETSC_MAX                     MAXFLOAT
+#else
 #  define PETSC_MAX                     1.e30
-#  define PETSC_MIN                    -1.e30
+#endif
+#  define PETSC_MIN                    -PETSC_MAX
 #  define PETSC_MACHINE_EPSILON         1.e-7
 #  define PETSC_SQRT_MACHINE_EPSILON    3.e-4
 #  define PETSC_SMALL                   1.e-5
-#else
+#elif defined(PETSC_USE_SCALAR_DOUBLE)
 #  define PETSC_MAX                     1.e300
-#  define PETSC_MIN                    -1.e300
+#  define PETSC_MIN                    -PETSC_MAX
 #  define PETSC_MACHINE_EPSILON         1.e-14
 #  define PETSC_SQRT_MACHINE_EPSILON    1.e-7
 #  define PETSC_SMALL                   1.e-10
+#elif defined(PETSC_USE_SCALAR___FLOAT128)
+#  define PETSC_MAX                     FLT128_MAX
+#  define PETSC_MIN                     -FLT128_MAX
+#  define PETSC_MACHINE_EPSILON         FLT128_EPSILON
+#  define PETSC_SQRT_MACHINE_EPSILON    1.38777878078e-17
+#  define PETSC_SMALL                   1.e-20
 #endif
 
 #if defined PETSC_HAVE_ADIC

@@ -44,59 +44,59 @@ static PetscErrorCode  PCGASMPrintSubdomains(PC pc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(((PetscObject)pc)->comm, &size); CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(((PetscObject)pc)->comm, &rank); CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)pc)->comm, &size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(((PetscObject)pc)->comm, &rank);CHKERRQ(ierr);
   ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
   ierr = PetscOptionsGetString(prefix,"-pc_gasm_print_subdomains",fname,PETSC_MAX_PATH_LEN,&found);CHKERRQ(ierr);
   if (!found) { ierr = PetscStrcpy(fname,"stdout");CHKERRQ(ierr); };
   for (i=0;i<osm->n;++i) {
     ierr = PetscViewerASCIIOpen(((PetscObject)((osm->is)[i]))->comm,fname,&viewer);CHKERRQ(ierr);
-    ierr = ISGetLocalSize(osm->is[i], &nidx); CHKERRQ(ierr);
+    ierr = ISGetLocalSize(osm->is[i], &nidx);CHKERRQ(ierr);
     /* 
      No more than 15 characters per index plus a space.
      PetscViewerStringSPrintf requires a string of size at least 2, so use (nidx+1) instead of nidx, 
      in case nidx == 0. That will take care of the space for the trailing '\0' as well. 
      For nidx == 0, the whole string 16 '\0'.
      */
-    ierr = PetscMalloc(sizeof(char)*(16*(nidx+1)+1), &cidx); CHKERRQ(ierr);  
-    ierr = ISGetIndices(osm->is[i], &idx);    CHKERRQ(ierr);
-    ierr = PetscViewerStringOpen(((PetscObject)(osm->is[i]))->comm, cidx, 16*(nidx+1), &sviewer); CHKERRQ(ierr);
+    ierr = PetscMalloc(sizeof(char)*(16*(nidx+1)+1), &cidx);CHKERRQ(ierr);  
+    ierr = ISGetIndices(osm->is[i], &idx);CHKERRQ(ierr);
+    ierr = PetscViewerStringOpen(((PetscObject)(osm->is[i]))->comm, cidx, 16*(nidx+1), &sviewer);CHKERRQ(ierr);
     for(j = 0; j < nidx; ++j) {
-      ierr = PetscViewerStringSPrintf(sviewer, "%D ", idx[j]); CHKERRQ(ierr);
+      ierr = PetscViewerStringSPrintf(sviewer, "%D ", idx[j]);CHKERRQ(ierr);
     }
-    ierr = PetscViewerDestroy(sviewer); CHKERRQ(ierr);
-    ierr = ISRestoreIndices(osm->is[i],&idx); CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(sviewer);CHKERRQ(ierr);
+    ierr = ISRestoreIndices(osm->is[i],&idx);CHKERRQ(ierr);
 
-    ierr = PetscViewerASCIIPrintf(viewer, "Subdomain with overlap\n"); CHKERRQ(ierr);
-    ierr = PetscViewerASCIISynchronizedPrintf(viewer, "%s", cidx); CHKERRQ(ierr);
-    ierr = PetscViewerFlush(viewer); CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer, "\n"); CHKERRQ(ierr);
-    ierr = PetscFree(cidx); CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(viewer); CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "Subdomain with overlap\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIISynchronizedPrintf(viewer, "%s", cidx);CHKERRQ(ierr);
+    ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
+    ierr = PetscFree(cidx);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
     if (osm->is_local) {
       ierr = PetscViewerASCIIOpen(((PetscObject)((osm->is)[i]))->comm,fname,&viewer);CHKERRQ(ierr);
-      ierr = ISGetLocalSize(osm->is_local[i], &nidx); CHKERRQ(ierr);
+      ierr = ISGetLocalSize(osm->is_local[i], &nidx);CHKERRQ(ierr);
       /* 
        No more than 15 characters per index plus a space.
        PetscViewerStringSPrintf requires a string of size at least 2, so use (nidx+1) instead of nidx, 
        in case nidx == 0. That will take care of the space for the trailing '\0' as well. 
        For nidx == 0, the whole string 16 '\0'.
        */
-      ierr = PetscMalloc(sizeof(char)*(16*(nidx+1)+1), &cidx); CHKERRQ(ierr);  
-      ierr = ISGetIndices(osm->is_local[i], &idx);    CHKERRQ(ierr);
-      ierr = PetscViewerStringOpen(((PetscObject)(osm->is_local[i]))->comm, cidx, 16*(nidx+1), &sviewer); CHKERRQ(ierr);
+      ierr = PetscMalloc(sizeof(char)*(16*(nidx+1)+1), &cidx);CHKERRQ(ierr);  
+      ierr = ISGetIndices(osm->is_local[i], &idx);CHKERRQ(ierr);
+      ierr = PetscViewerStringOpen(((PetscObject)(osm->is_local[i]))->comm, cidx, 16*(nidx+1), &sviewer);CHKERRQ(ierr);
       for(j = 0; j < nidx; ++j) {
-        ierr = PetscViewerStringSPrintf(sviewer, "%D ", idx[j]); CHKERRQ(ierr);
+        ierr = PetscViewerStringSPrintf(sviewer, "%D ", idx[j]);CHKERRQ(ierr);
       }
-      ierr = PetscViewerDestroy(sviewer); CHKERRQ(ierr);
-      ierr = ISRestoreIndices(osm->is_local[i],&idx); CHKERRQ(ierr);
+      ierr = PetscViewerDestroy(sviewer);CHKERRQ(ierr);
+      ierr = ISRestoreIndices(osm->is_local[i],&idx);CHKERRQ(ierr);
 
-      ierr = PetscViewerASCIIPrintf(viewer, "Subdomain without overlap\n"); CHKERRQ(ierr);
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer, "%s", cidx); CHKERRQ(ierr);
-      ierr = PetscViewerFlush(viewer); CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer, "\n"); CHKERRQ(ierr);
-      ierr = PetscFree(cidx); CHKERRQ(ierr);
-      ierr = PetscViewerDestroy(viewer); CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer, "Subdomain without overlap\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer, "%s", cidx);CHKERRQ(ierr);
+      ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
+      ierr = PetscFree(cidx);CHKERRQ(ierr);
+      ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -117,8 +117,8 @@ static PetscErrorCode PCView_GASM(PC pc,PetscViewer viewer)
 
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(((PetscObject)pc)->comm, &size); CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(((PetscObject)pc)->comm, &rank); CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)pc)->comm, &size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(((PetscObject)pc)->comm, &rank);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
   ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
@@ -128,7 +128,7 @@ static PetscErrorCode PCView_GASM(PC pc,PetscViewer viewer)
     if (osm->overlap >= 0) {ierr = PetscSNPrintf(overlaps,sizeof overlaps,"amount of overlap = %D",osm->overlap);CHKERRQ(ierr);}
     if (osm->nmax > 0)     {ierr = PetscSNPrintf(subdomains,sizeof subdomains,"max number of local subdomains = %D",osm->nmax);CHKERRQ(ierr);}
     ierr = PetscViewerASCIISynchronizedPrintf(viewer,"  [%d:%d] number of locally-supported subdomains = %D\n",(int)rank,(int)size,osm->n);CHKERRQ(ierr);
-    ierr = PetscViewerFlush(viewer); CHKERRQ(ierr);
+    ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Generalized additive Schwarz: %s, %s\n",subdomains,overlaps);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Generalized additive Schwarz: restriction/interpolation type - %s\n",PCGASMTypes[osm->type]);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(((PetscObject)pc)->comm,&rank);CHKERRQ(ierr);
@@ -169,9 +169,9 @@ static PetscErrorCode PCView_GASM(PC pc,PetscViewer viewer)
   } else {
     SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for PCGASM",((PetscObject)viewer)->type_name);
   }
-  ierr = PetscViewerFlush(viewer); CHKERRQ(ierr);
+  ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   if(print_subdomains) {
-    ierr = PCGASMPrintSubdomains(pc); CHKERRQ(ierr);
+    ierr = PCGASMPrintSubdomains(pc);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -270,26 +270,26 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
     /* Restriction ISs. */
     ddn = 0;
     for (i=0; i<osm->n; i++) {
-      ierr = ISGetLocalSize(osm->is[i],&dn);          CHKERRQ(ierr);
+      ierr = ISGetLocalSize(osm->is[i],&dn);CHKERRQ(ierr);
       ddn += dn;
     }
-    ierr = PetscMalloc(ddn*sizeof(PetscInt), &ddidx); CHKERRQ(ierr);
+    ierr = PetscMalloc(ddn*sizeof(PetscInt), &ddidx);CHKERRQ(ierr);
     ddn = 0;
     for (i=0; i<osm->n; i++) {
-      ierr = ISGetLocalSize(osm->is[i],&dn); CHKERRQ(ierr);
-      ierr = ISGetIndices(osm->is[i],&didx); CHKERRQ(ierr);
-      ierr = PetscMemcpy(ddidx+ddn, didx, sizeof(PetscInt)*dn); CHKERRQ(ierr);
-      ierr = ISRestoreIndices(osm->is[i], &didx); CHKERRQ(ierr);
+      ierr = ISGetLocalSize(osm->is[i],&dn);CHKERRQ(ierr);
+      ierr = ISGetIndices(osm->is[i],&didx);CHKERRQ(ierr);
+      ierr = PetscMemcpy(ddidx+ddn, didx, sizeof(PetscInt)*dn);CHKERRQ(ierr);
+      ierr = ISRestoreIndices(osm->is[i], &didx);CHKERRQ(ierr);
       ddn += dn;
     }
-    ierr = ISCreateGeneral(((PetscObject)(pc))->comm, ddn, ddidx, PETSC_OWN_POINTER, &osm->gis); CHKERRQ(ierr);
+    ierr = ISCreateGeneral(((PetscObject)(pc))->comm, ddn, ddidx, PETSC_OWN_POINTER, &osm->gis);CHKERRQ(ierr);
     ierr = MatGetVecs(pc->pmat,&x,&y);CHKERRQ(ierr);
-    ierr = VecCreateMPI(((PetscObject)pc)->comm, ddn, PETSC_DECIDE, &osm->gx); CHKERRQ(ierr);
-    ierr = VecDuplicate(osm->gx,&osm->gy);                                     CHKERRQ(ierr);
-    ierr = VecGetOwnershipRange(osm->gx, &gfirst, &glast);                     CHKERRQ(ierr);
-    ierr = ISCreateStride(((PetscObject)pc)->comm,ddn,gfirst,1, &gid);              CHKERRQ(ierr);
-    ierr = VecScatterCreate(x,osm->gis,osm->gx,gid, &(osm->grestriction));     CHKERRQ(ierr);
-    ierr = ISDestroy(gid);                                                     CHKERRQ(ierr);
+    ierr = VecCreateMPI(((PetscObject)pc)->comm, ddn, PETSC_DECIDE, &osm->gx);CHKERRQ(ierr);
+    ierr = VecDuplicate(osm->gx,&osm->gy);CHKERRQ(ierr);
+    ierr = VecGetOwnershipRange(osm->gx, &gfirst, &glast);CHKERRQ(ierr);
+    ierr = ISCreateStride(((PetscObject)pc)->comm,ddn,gfirst,1, &gid);CHKERRQ(ierr);
+    ierr = VecScatterCreate(x,osm->gis,osm->gx,gid, &(osm->grestriction));CHKERRQ(ierr);
+    ierr = ISDestroy(gid);CHKERRQ(ierr);
     /* Prolongation ISs */
     { PetscInt       dn_local;       /* Number of indices in the local part of a single domain assigned to this processor. */
       const PetscInt *didx_local;    /* Global indices from the local part of a single domain assigned to this processor. */
@@ -303,39 +303,39 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
       PetscInt               j;
       ddn_local = 0;
       for (i=0; i<osm->n; i++) {
-	ierr = ISGetLocalSize(osm->is_local[i],&dn_local); CHKERRQ(ierr);
+	ierr = ISGetLocalSize(osm->is_local[i],&dn_local);CHKERRQ(ierr);
 	ddn_local += dn_local;
       }
-      ierr = PetscMalloc(ddn_local*sizeof(PetscInt), &ddidx_local); CHKERRQ(ierr);
+      ierr = PetscMalloc(ddn_local*sizeof(PetscInt), &ddidx_local);CHKERRQ(ierr);
       ddn_local = 0;
       for (i=0; i<osm->n; i++) {
-	ierr = ISGetLocalSize(osm->is_local[i],&dn_local); CHKERRQ(ierr);
-	ierr = ISGetIndices(osm->is_local[i],&didx_local); CHKERRQ(ierr);
-	ierr = PetscMemcpy(ddidx_local+ddn_local, didx_local, sizeof(PetscInt)*dn_local); CHKERRQ(ierr);
-	ierr = ISRestoreIndices(osm->is_local[i], &didx_local); CHKERRQ(ierr);
+	ierr = ISGetLocalSize(osm->is_local[i],&dn_local);CHKERRQ(ierr);
+	ierr = ISGetIndices(osm->is_local[i],&didx_local);CHKERRQ(ierr);
+	ierr = PetscMemcpy(ddidx_local+ddn_local, didx_local, sizeof(PetscInt)*dn_local);CHKERRQ(ierr);
+	ierr = ISRestoreIndices(osm->is_local[i], &didx_local);CHKERRQ(ierr);
 	ddn_local += dn_local;
       }
-      ierr = PetscMalloc(sizeof(PetscInt)*ddn_local, &ddidx_llocal); CHKERRQ(ierr);
-      ierr = ISCreateGeneral(((PetscObject)pc)->comm, ddn_local, ddidx_local, PETSC_OWN_POINTER, &(osm->gis_local)); CHKERRQ(ierr);
+      ierr = PetscMalloc(sizeof(PetscInt)*ddn_local, &ddidx_llocal);CHKERRQ(ierr);
+      ierr = ISCreateGeneral(((PetscObject)pc)->comm, ddn_local, ddidx_local, PETSC_OWN_POINTER, &(osm->gis_local));CHKERRQ(ierr);
       ierr = ISLocalToGlobalMappingCreateIS(osm->gis,&ltog);CHKERRQ(ierr);
       ierr = ISGlobalToLocalMappingApply(ltog,IS_GTOLM_DROP,ddn_local,ddidx_local,&ddn_llocal,ddidx_llocal);CHKERRQ(ierr);
       ierr = ISLocalToGlobalMappingDestroy(ltog);CHKERRQ(ierr);
       if (ddn_llocal != ddn_local) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"gis_local contains %D indices outside of gis", ddn_llocal - ddn_local);
       /* Now convert these localized indices into the global indices into the merged output vector. */
-      ierr = VecGetOwnershipRange(osm->gy, &gfirst, &glast); CHKERRQ(ierr);
+      ierr = VecGetOwnershipRange(osm->gy, &gfirst, &glast);CHKERRQ(ierr);
       for(j=0; j < ddn_llocal; ++j) {
 	ddidx_llocal[j] += gfirst;
       }
-      ierr = ISCreateGeneral(PETSC_COMM_SELF,ddn_llocal,ddidx_llocal,PETSC_OWN_POINTER,&gis_llocal); CHKERRQ(ierr);
-      ierr = VecScatterCreate(y,osm->gis_local,osm->gy,gis_llocal,&osm->gprolongation);              CHKERRQ(ierr);
+      ierr = ISCreateGeneral(PETSC_COMM_SELF,ddn_llocal,ddidx_llocal,PETSC_OWN_POINTER,&gis_llocal);CHKERRQ(ierr);
+      ierr = VecScatterCreate(y,osm->gis_local,osm->gy,gis_llocal,&osm->gprolongation);CHKERRQ(ierr);
       ierr = ISDestroy(gis_llocal);CHKERRQ(ierr);
     }
     /* Create the subdomain work vectors. */
     ierr = PetscMalloc(osm->n*sizeof(Vec),&osm->x);CHKERRQ(ierr);
     ierr = PetscMalloc(osm->n*sizeof(Vec),&osm->y);CHKERRQ(ierr);
     ierr = VecGetOwnershipRange(osm->gx, &gfirst, &glast);CHKERRQ(ierr);
-    ierr = VecGetArray(osm->gx, &gxarray);                                     CHKERRQ(ierr);
-    ierr = VecGetArray(osm->gy, &gyarray);                                     CHKERRQ(ierr);
+    ierr = VecGetArray(osm->gx, &gxarray);CHKERRQ(ierr);
+    ierr = VecGetArray(osm->gy, &gyarray);CHKERRQ(ierr);
     for (i=0, ddn=0; i<osm->n; ++i, ddn += dn) {
       PetscInt dN;
       ierr = ISGetLocalSize(osm->is[i],&dn);CHKERRQ(ierr);
@@ -343,10 +343,10 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
       ierr = VecCreateMPIWithArray(((PetscObject)(osm->is[i]))->comm,dn,dN,gxarray+ddn,&osm->x[i]);CHKERRQ(ierr); 
       ierr = VecCreateMPIWithArray(((PetscObject)(osm->is[i]))->comm,dn,dN,gyarray+ddn,&osm->y[i]);CHKERRQ(ierr);
     }
-    ierr = VecRestoreArray(osm->gx, &gxarray); CHKERRQ(ierr);
-    ierr = VecRestoreArray(osm->gy, &gyarray); CHKERRQ(ierr);
-    ierr = VecDestroy(x); CHKERRQ(ierr);
-    ierr = VecDestroy(y); CHKERRQ(ierr);
+    ierr = VecRestoreArray(osm->gx, &gxarray);CHKERRQ(ierr);
+    ierr = VecRestoreArray(osm->gy, &gyarray);CHKERRQ(ierr);
+    ierr = VecDestroy(x);CHKERRQ(ierr);
+    ierr = VecDestroy(y);CHKERRQ(ierr);
     /* Create the local solvers */
     ierr = PetscMalloc(osm->n*sizeof(KSP *),&osm->ksp);CHKERRQ(ierr);
     for (i=0; i<osm->n; i++) { /* KSPs are local */
@@ -438,7 +438,7 @@ static PetscErrorCode PCApply_GASM(PC pc,Vec x,Vec y)
   if (!(osm->type & PC_GASM_RESTRICT)) {
     forward = SCATTER_FORWARD_LOCAL;
     /* have to zero the work RHS since scatter may leave some slots empty */
-    ierr = VecZeroEntries(osm->gx); CHKERRQ(ierr);
+    ierr = VecZeroEntries(osm->gx);CHKERRQ(ierr);
   }
   if (!(osm->type & PC_GASM_INTERPOLATE)) {
     reverse = SCATTER_REVERSE_LOCAL;
@@ -513,26 +513,20 @@ static PetscErrorCode PCReset_GASM(PC pc)
       ierr = MatDestroyMatrices(osm->n,&osm->pmat);CHKERRQ(ierr);
     }
   }
-  for (i=0; i<osm->n; i++) {
-    ierr = VecDestroy(osm->x[i]);CHKERRQ(ierr);
-    ierr = VecDestroy(osm->y[i]);CHKERRQ(ierr);
+  if (osm->x) {
+    for (i=0; i<osm->n; i++) {
+      if (osm->x[i]) {ierr = VecDestroy(osm->x[i]);CHKERRQ(ierr);}
+      if (osm->y[i]) {ierr = VecDestroy(osm->y[i]);CHKERRQ(ierr);}
+    }
   }
-  ierr = VecDestroy(osm->gx); CHKERRQ(ierr);
-  ierr = VecDestroy(osm->gy); CHKERRQ(ierr);
+  if (osm->gx) {ierr = VecDestroy(osm->gx);CHKERRQ(ierr);}
+  if (osm->gy) {ierr = VecDestroy(osm->gy);CHKERRQ(ierr);}
   
-  ierr = VecScatterDestroy(osm->grestriction); CHKERRQ(ierr);
-  ierr = VecScatterDestroy(osm->gprolongation); CHKERRQ(ierr);
-
-  if (osm->is) {
-    ierr = PCGASMDestroySubdomains(osm->n,osm->is,osm->is_local);CHKERRQ(ierr);
-  }
-
-  if (osm->gis) {
-    ierr = ISDestroy(osm->gis); CHKERRQ(ierr);
-  }
-  if (osm->gis_local) {
-    ierr = ISDestroy(osm->gis_local); CHKERRQ(ierr);
-  }
+  if (osm->grestriction) {ierr = VecScatterDestroy(osm->grestriction);CHKERRQ(ierr);}
+  if (osm->gprolongation) {ierr = VecScatterDestroy(osm->gprolongation);CHKERRQ(ierr);}
+  if (osm->is) {ierr = PCGASMDestroySubdomains(osm->n,osm->is,osm->is_local);CHKERRQ(ierr); osm->is = 0;}
+  if (osm->gis) {ierr = ISDestroy(osm->gis);CHKERRQ(ierr);}
+  if (osm->gis_local) {ierr = ISDestroy(osm->gis_local);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -1376,29 +1370,28 @@ PetscErrorCode  PCGASMDestroySubdomains(PetscInt n, IS is[], IS is_local[])
 PetscErrorCode  PCGASMCreateSubdomains2D(PC pc, PetscInt M,PetscInt N,PetscInt Mdomains,PetscInt Ndomains,PetscInt dof,PetscInt overlap, PetscInt *nsub,IS **is,IS **is_local)
 {
   PetscErrorCode ierr;
-  PetscMPIInt size, rank;
-  PetscInt i, j;
-  PetscInt maxheight, maxwidth;
-  PetscInt xstart, xleft, xright, xleft_loc, xright_loc;
-  PetscInt ystart, ylow,  yhigh,  ylow_loc,  yhigh_loc;
-  PetscInt x[2][2], y[2][2], n[2];
-  PetscInt first, last;
-  PetscInt nidx, *idx;
-  PetscInt ii,jj,s,q,d;
-  PetscInt k,kk;
-  PetscMPIInt color;
-  MPI_Comm comm, subcomm;
+  PetscMPIInt    size, rank;
+  PetscInt       i, j;
+  PetscInt       maxheight, maxwidth;
+  PetscInt       xstart, xleft, xright, xleft_loc, xright_loc;
+  PetscInt       ystart, ylow,  yhigh,  ylow_loc,  yhigh_loc;
+  PetscInt       x[2][2], y[2][2], n[2];
+  PetscInt       first, last;
+  PetscInt       nidx, *idx;
+  PetscInt       ii,jj,s,q,d;
+  PetscInt       k,kk;
+  PetscMPIInt    color;
+  MPI_Comm       comm, subcomm;
+  IS             **iis;
 
-  IS **iis;
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)pc, &comm);     CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm, &size);                     CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm, &rank);                     CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange(pc->pmat, &first, &last);  CHKERRQ(ierr);
-  if(first%dof || last%dof) {
-    SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Matrix row partitioning unsuitable for domain decomposition: local row range (%D,%D) "
+  ierr = PetscObjectGetComm((PetscObject)pc, &comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = MatGetOwnershipRange(pc->pmat, &first, &last);CHKERRQ(ierr);
+  if (first%dof || last%dof) SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Matrix row partitioning unsuitable for domain decomposition: local row range (%D,%D) "
 	     "does not respect the number of degrees of freedom per grid point %D", first, last, dof);
-  }
+
   /* Determine the number of domains with nonzero intersections with the local ownership range. */
   s = 0;
   ystart = 0;
@@ -1428,8 +1421,8 @@ PetscErrorCode  PCGASMCreateSubdomains2D(PC pc, PetscInt M,PetscInt N,PetscInt M
   }/* for(j = 0; j < Ndomains; ++j) */
   /* Now we can allocate the necessary number of ISs. */
   *nsub = s;
-  ierr = PetscMalloc((*nsub)*sizeof(IS*),is);         CHKERRQ(ierr);
-  ierr = PetscMalloc((*nsub)*sizeof(IS*),is_local);   CHKERRQ(ierr);
+  ierr = PetscMalloc((*nsub)*sizeof(IS*),is);CHKERRQ(ierr);
+  ierr = PetscMalloc((*nsub)*sizeof(IS*),is_local);CHKERRQ(ierr);
   s = 0;
   ystart = 0;
   for (j=0; j<Ndomains; ++j) {
@@ -1473,33 +1466,31 @@ PetscErrorCode  PCGASMCreateSubdomains2D(PC pc, PetscInt M,PetscInt N,PetscInt M
          while the domain without an overlap might not.  Hence, the decision to participate
          in the subcommunicator must be based on the domain with an overlap.
          */
-	if(q == 0) {
+	if (q == 0) {
 	  if(nidx) {
 	    color = 1;
-	  }
-	  else {
+	  } else {
 	    color = MPI_UNDEFINED;
 	  }
-	  ierr = MPI_Comm_split(comm, color, rank, &subcomm); CHKERRQ(ierr);
+	  ierr = MPI_Comm_split(comm, color, rank, &subcomm);CHKERRQ(ierr);
 	}
         /*
          Proceed only if the number of local indices *with an overlap* is nonzero.
          */
-        if(n[0]) {
+        if (n[0]) {
           if(q == 0) {
             iis = is;
           }
-          if(q == 1) {
+          if (q == 1) {
             /* 
              The IS for the no-overlap subdomain shares a communicator with the overlapping domain.
              Moreover, if the overlap is zero, the two ISs are identical.
              */
-            if(overlap == 0) {
+            if (overlap == 0) {
               (*is_local)[s] = (*is)[s];
               ierr = PetscObjectReference((PetscObject)(*is)[s]);CHKERRQ(ierr);
               continue;
-            }
-            else {
+            } else {
               iis = is_local;
               subcomm = ((PetscObject)(*is)[s])->comm;
             }

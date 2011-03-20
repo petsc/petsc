@@ -720,7 +720,7 @@ PetscErrorCode  KSPReset(KSP ksp)
   if (ksp->vec_sol) {ierr = VecDestroy(ksp->vec_sol);CHKERRQ(ierr);}
   if (ksp->diagonal) {ierr = VecDestroy(ksp->diagonal);CHKERRQ(ierr);}
   if (ksp->truediagonal) {ierr = VecDestroy(ksp->truediagonal);CHKERRQ(ierr);}
-  if (ksp->nullsp) {ierr = MatNullSpaceDestroy(ksp->nullsp);CHKERRQ(ierr);}
+  if (ksp->nullsp) {ierr = MatNullSpaceDestroy(&ksp->nullsp);CHKERRQ(ierr);}
   ksp->setupstage = KSP_SETUP_NEW;
   PetscFunctionReturn(0);
 }

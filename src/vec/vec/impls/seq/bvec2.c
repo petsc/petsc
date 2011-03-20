@@ -443,7 +443,7 @@ static PetscErrorCode VecView_Seq_ASCII(Vec xin,PetscViewer viewer)
         ierr = PetscViewerASCIIPrintf(viewer,"%G\n",PetscRealPart(xv[i]));CHKERRQ(ierr);
       }
 #else
-      ierr = PetscViewerASCIIPrintf(viewer,"%e\n",(double) xv[i]);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"%G\n",(double) xv[i]);CHKERRQ(ierr);
 #endif
     }
   }

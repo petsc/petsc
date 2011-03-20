@@ -335,7 +335,6 @@ PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
   PetscInt                gx, gy;
   PetscInt                n, is, ie, js, je, comp;
   PetscErrorCode          ierr;
-  PetscBool               verbose = PETSC_FALSE;
 
   PetscFunctionBegin;
   c->queueSize = 0;

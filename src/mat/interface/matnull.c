@@ -86,7 +86,8 @@ PetscErrorCode  MatNullSpaceCreate(MPI_Comm comm,PetscBool  has_cnst,PetscInt n,
   ierr = MatInitializePackage(PETSC_NULL);CHKERRQ(ierr); 
 #endif 
 
-  ierr = PetscHeaderCreate(sp,_p_MatNullSpace,int,MAT_NULLSPACE_CLASSID,0,"MatNullSpace",comm,MatNullSpaceDestroy,0);CHKERRQ(ierr);
+  /* cannot use MatNullSpaceDestroy() as generic destroy function because it takes pointer to the object */
+  ierr = PetscHeaderCreate(sp,_p_MatNullSpace,int,MAT_NULLSPACE_CLASSID,0,"MatNullSpace",comm,0,0);CHKERRQ(ierr);
 
   sp->has_cnst = has_cnst;
   sp->n        = n;
@@ -127,18 +128,19 @@ PetscErrorCode  MatNullSpaceCreate(MPI_Comm comm,PetscBool  has_cnst,PetscInt n,
 
 .seealso: MatNullSpaceCreate(), MatNullSpaceRemove(), MatNullSpaceSetFunction()
 @*/
-PetscErrorCode  MatNullSpaceDestroy(MatNullSpace sp)
+PetscErrorCode  MatNullSpaceDestroy(MatNullSpace *sp)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(sp,MAT_NULLSPACE_CLASSID,1); 
-  if (--((PetscObject)sp)->refct > 0) PetscFunctionReturn(0);
+  PetscValidHeaderSpecific((*sp),MAT_NULLSPACE_CLASSID,1); 
+  if (--((PetscObject)(*sp))->refct > 0) {*sp = 0; PetscFunctionReturn(0);}
 
-  if (sp->vec)  { ierr = VecDestroy(sp->vec);CHKERRQ(ierr); }
-  if (sp->vecs) { ierr = VecDestroyVecs(sp->n,&sp->vecs);CHKERRQ(ierr); }
-  ierr = PetscFree(sp->alpha);CHKERRQ(ierr);
-  ierr = PetscHeaderDestroy(sp);CHKERRQ(ierr);
+  if ((*sp)->vec)  { ierr = VecDestroy((*sp)->vec);CHKERRQ(ierr); }
+  if ((*sp)->vecs) { ierr = VecDestroyVecs((*sp)->n,&(*sp)->vecs);CHKERRQ(ierr); }
+  ierr = PetscFree((*sp)->alpha);CHKERRQ(ierr);
+  ierr = PetscHeaderDestroy((*sp));CHKERRQ(ierr);
+  (*sp)  = 0;
   PetscFunctionReturn(0);
 }
 

@@ -82,7 +82,7 @@ int main(int argc,char **args)
   if (flg) {
     ierr = MatNullSpaceCreate(PETSC_COMM_WORLD,PETSC_TRUE,0,PETSC_NULL,&nullsp);CHKERRQ(ierr);
     ierr = KSPSetNullSpace(ksp,nullsp);CHKERRQ(ierr);
-    ierr = MatNullSpaceDestroy(nullsp);CHKERRQ(ierr);
+    ierr = MatNullSpaceDestroy(&nullsp);CHKERRQ(ierr);
   }
   ierr = KSPSolve(ksp,b,u);CHKERRQ(ierr);
 

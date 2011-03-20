@@ -126,7 +126,6 @@
       PetscFortranDouble PETSC_MIN
 
       parameter (PETSC_PI = 3.14159265358979323846264d0)
-      parameter (PETSC_DEGREES_TO_RADIANS = 0.01745329251994d0)
       parameter (PETSC_MAX = 1.d300,PETSC_MIN = -1.d300)
 
       PetscFortranDouble PETSC_MACHINE_EPSILON
