@@ -47,7 +47,8 @@ class ArgumentProcessor(object):
         import os
         import sys
 
-        ArgumentProcessor.defaultDB = RDict.RDict(parentDirectory = os.path.dirname(os.path.abspath(sys.modules['RDict'].__file__)))
+        # Changed this to assume RDict is independent
+        ArgumentProcessor.defaultDB = RDict.RDict(load = 0, autoShutdown = 0)
       argDB = ArgumentProcessor.defaultDB
     return argDB
 
