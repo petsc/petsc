@@ -8,7 +8,7 @@ PETSc->App  App->PETSc
 [0] 2,1,9,7 PetscToApplication 2 1 0 0
 [0] 0,3,4 ApplicationToPetsc 0 3 4
 
-Test AOCreateBasicMemoryScalable: 
+Test AOCreateMemoryScalable: 
 Number of elements in ordering 5
 PETSc->App  App->PETSc
 Process [0]
@@ -18,7 +18,7 @@ Process [0]
   3    3      3    3
   4    4      4    4
 
-Test AOCreateBasicMemoryScalable with ispetsc=PETSC_NULL:
+Test AOCreateMemoryScalable with ispetsc=PETSC_NULL:
 Number of elements in ordering 5
 PETSc->App  App->PETSc
 Process [0]

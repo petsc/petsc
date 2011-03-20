@@ -13,7 +13,7 @@
 #include <sieve/Distribution.hh>
 #include <sieve/Generator.hh>
 
-extern PetscLogEvent Mesh_View, Mesh_GetGlobalScatter, Mesh_restrictVector, Mesh_assembleVector, Mesh_assembleVectorComplete, Mesh_assembleMatrix, Mesh_updateOperator;
+extern PetscLogEvent DMMesh_View, DMMesh_GetGlobalScatter, DMMesh_restrictVector, DMMesh_assembleVector, DMMesh_assembleVectorComplete, DMMesh_assembleMatrix, DMMesh_updateOperator;
 
 extern PetscErrorCode DMMeshCreate(MPI_Comm, DM*);
 extern PetscErrorCode DMMeshGetMesh(DM, ALE::Obj<PETSC_MESH_TYPE>&);

@@ -16,6 +16,7 @@ PetscErrorCode MatConvert_Basic(Mat mat, const MatType newtype,MatReuse reuse,Ma
   PetscErrorCode     ierr;
   PetscInt           i,nz,m,n,rstart,rend,lm,ln;
   const PetscInt     *cwork;
+  PetscBool          isseqsbaij,ismpisbaij;
 
   PetscFunctionBegin;
   ierr = MatGetSize(mat,&m,&n);CHKERRQ(ierr);
@@ -26,6 +27,9 @@ PetscErrorCode MatConvert_Basic(Mat mat, const MatType newtype,MatReuse reuse,Ma
   ierr = MatCreate(((PetscObject)mat)->comm,&M);CHKERRQ(ierr);
   ierr = MatSetSizes(M,lm,ln,m,n);CHKERRQ(ierr);
   ierr = MatSetType(M,newtype);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)M,MATSEQSBAIJ,&isseqsbaij);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)M,MATMPISBAIJ,&ismpisbaij);CHKERRQ(ierr);
+  if (isseqsbaij || ismpisbaij) {ierr = MatSetOption(M,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);}
 
   ierr = MatGetOwnershipRange(mat,&rstart,&rend);CHKERRQ(ierr);
   for (i=rstart; i<rend; i++) {

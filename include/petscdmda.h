@@ -3,6 +3,7 @@
 
 #include "petscdm.h"
 #include "petscpf.h"
+#include "petscao.h"
 
 /*E
     DMDAStencilType - Determines if the stencil extends only along the coordinate directions, or also

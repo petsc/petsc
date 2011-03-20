@@ -7,13 +7,14 @@
 #include <../src/dm/ao/aoimpl.h>          /*I  "petscao.h"   I*/
 
 typedef struct {
-  PetscInt N;
-  PetscInt *app,*petsc;  /* app[i] is the partner for the ith PETSc slot */
-                         /* petsc[j] is the partner for the jth app slot */
-  /* for destributed AO */
-  PetscInt    *app_loc,*petsc_loc;
-  PetscLayout map;
+  PetscInt  *app;    /* app[i] is the partner for the ith PETSc slot */
+  PetscInt  *petsc;  /* petsc[j] is the partner for the jth app slot */
 } AO_Basic;
+
+typedef struct {
+  PetscInt     *app_loc,*petsc_loc;
+  PetscLayout  map;
+} AO_MemoryScalable;
 
 /*
        All processors have the same data so processor 1 prints it
@@ -33,9 +34,9 @@ PetscErrorCode AOView_Basic(AO ao,PetscViewer viewer)
   if (!rank){
     ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
     if (iascii) { 
-      ierr = PetscViewerASCIIPrintf(viewer,"Number of elements in ordering %D\n",aodebug->N);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"Number of elements in ordering %D\n",ao->N);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,  "PETSc->App  App->PETSc\n");CHKERRQ(ierr);
-      for (i=0; i<aodebug->N; i++) {
+      for (i=0; i<ao->N; i++) {
         ierr = PetscViewerASCIIPrintf(viewer,"%3D  %3D    %3D  %3D\n",i,aodebug->app[i],i,aodebug->petsc[i]);CHKERRQ(ierr);
       }
     } else {
@@ -47,13 +48,13 @@ PetscErrorCode AOView_Basic(AO ao,PetscViewer viewer)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "AOView_BasicMemoryScalable" 
-PetscErrorCode AOView_BasicMemoryScalable(AO ao,PetscViewer viewer)
+#define __FUNCT__ "AOView_MemoryScalable" 
+PetscErrorCode AOView_MemoryScalable(AO ao,PetscViewer viewer)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank,size;
   PetscInt       i,j;
-  AO_Basic       *aobasic = (AO_Basic*)ao->data;
+  AO_MemoryScalable *aobasic = (AO_MemoryScalable*)ao->data;
   PetscBool      iascii;
   PetscMPIInt    tag_app,tag_petsc;
   PetscLayout    map = aobasic->map;
@@ -71,7 +72,7 @@ PetscErrorCode AOView_BasicMemoryScalable(AO ao,PetscViewer viewer)
   ierr   = PetscObjectGetNewTag((PetscObject)ao,&tag_petsc);CHKERRQ(ierr);
 
   if (!rank){
-    ierr = PetscViewerASCIIPrintf(viewer,"Number of elements in ordering %D\n",aobasic->N);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"Number of elements in ordering %D\n",ao->N);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,  "PETSc->App  App->PETSc\n");CHKERRQ(ierr);
 
     ierr = PetscMalloc2(map->N,PetscInt,&app,map->N,PetscInt,&petsc);CHKERRQ(ierr);
@@ -119,15 +120,16 @@ PetscErrorCode AODestroy_Basic(AO ao)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "AODestroy_BasicMemoryScalable" 
-PetscErrorCode AODestroy_BasicMemoryScalable(AO ao)
+#define __FUNCT__ "AODestroy_MemoryScalable" 
+PetscErrorCode AODestroy_MemoryScalable(AO ao)
 {
-  AO_Basic       *aobasic = (AO_Basic*)ao->data;
+  AO_MemoryScalable *aobasic = (AO_MemoryScalable*)ao->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscFree2(aobasic->app_loc,aobasic->petsc_loc);CHKERRQ(ierr);
   ierr = PetscLayoutDestroy(aobasic->map);CHKERRQ(ierr);
+  
  
   ierr = AODestroy_Basic(ao);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -146,11 +148,11 @@ PetscErrorCode AOBasicGetIndices_Private(AO ao,PetscInt **app,PetscInt **petsc)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "AOMap_BasicMemoryScalable_private"  
-PetscErrorCode AOMap_BasicMemoryScalable_private(AO ao,PetscInt n,PetscInt *ia,PetscInt *maploc)
+#define __FUNCT__ "AOMap_MemoryScalable_private"  
+PetscErrorCode AOMap_MemoryScalable_private(AO ao,PetscInt n,PetscInt *ia,PetscInt *maploc)
 {
   PetscErrorCode ierr;
-  AO_Basic       *aobasic = (AO_Basic*)ao->data;
+  AO_MemoryScalable *aobasic = (AO_MemoryScalable*)ao->data;
   PetscInt       *app_loc = maploc; 
   MPI_Comm       comm=((PetscObject)ao)->comm;
   PetscMPIInt    rank,size,tag1,tag2;
@@ -301,15 +303,15 @@ PetscErrorCode AOMap_BasicMemoryScalable_private(AO ao,PetscInt n,PetscInt *ia,P
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "AOPetscToApplication_BasicMemoryScalable"  
-PetscErrorCode AOPetscToApplication_BasicMemoryScalable(AO ao,PetscInt n,PetscInt *ia)
+#define __FUNCT__ "AOPetscToApplication_MemoryScalable"  
+PetscErrorCode AOPetscToApplication_MemoryScalable(AO ao,PetscInt n,PetscInt *ia)
 {
   PetscErrorCode ierr;
-  AO_Basic       *aobasic = (AO_Basic*)ao->data;
+  AO_MemoryScalable *aobasic = (AO_MemoryScalable*)ao->data;
   PetscInt       *app_loc = aobasic->app_loc;
 
   PetscFunctionBegin;
-  ierr = AOMap_BasicMemoryScalable_private(ao,n,ia,app_loc);CHKERRQ(ierr);
+  ierr = AOMap_MemoryScalable_private(ao,n,ia,app_loc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -328,15 +330,15 @@ PetscErrorCode AOPetscToApplication_Basic(AO ao,PetscInt n,PetscInt *ia)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "AOApplicationToPetsc_BasicMemoryScalable" 
-PetscErrorCode AOApplicationToPetsc_BasicMemoryScalable(AO ao,PetscInt n,PetscInt *ia)
+#define __FUNCT__ "AOApplicationToPetsc_MemoryScalable" 
+PetscErrorCode AOApplicationToPetsc_MemoryScalable(AO ao,PetscInt n,PetscInt *ia)
 {
   PetscErrorCode ierr;
-  AO_Basic       *aobasic = (AO_Basic*)ao->data;
+  AO_MemoryScalable *aobasic = (AO_MemoryScalable*)ao->data;
   PetscInt       *petsc_loc = aobasic->petsc_loc;
 
   PetscFunctionBegin;
-  ierr = AOMap_BasicMemoryScalable_private(ao,n,ia,petsc_loc);CHKERRQ(ierr);
+  ierr = AOMap_MemoryScalable_private(ao,n,ia,petsc_loc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -364,11 +366,11 @@ PetscErrorCode AOPetscToApplicationPermuteInt_Basic(AO ao, PetscInt block, Petsc
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(aodebug->N*block * sizeof(PetscInt), &temp);CHKERRQ(ierr);
-  for(i = 0; i < aodebug->N; i++) {
+  ierr = PetscMalloc(ao->N*block * sizeof(PetscInt), &temp);CHKERRQ(ierr);
+  for(i = 0; i < ao->N; i++) {
     for(j = 0; j < block; j++) temp[i*block+j] = array[aodebug->petsc[i]*block+j];
   }
-  ierr = PetscMemcpy(array, temp, aodebug->N*block * sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMemcpy(array, temp, ao->N*block * sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscFree(temp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -383,11 +385,11 @@ PetscErrorCode AOApplicationToPetscPermuteInt_Basic(AO ao, PetscInt block, Petsc
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(aodebug->N*block * sizeof(PetscInt), &temp);CHKERRQ(ierr);
-  for(i = 0; i < aodebug->N; i++) {
+  ierr = PetscMalloc(ao->N*block * sizeof(PetscInt), &temp);CHKERRQ(ierr);
+  for(i = 0; i < ao->N; i++) {
     for(j = 0; j < block; j++) temp[i*block+j] = array[aodebug->app[i]*block+j];
   }
-  ierr = PetscMemcpy(array, temp, aodebug->N*block * sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMemcpy(array, temp, ao->N*block * sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscFree(temp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -402,11 +404,11 @@ PetscErrorCode AOPetscToApplicationPermuteReal_Basic(AO ao, PetscInt block, Pets
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(aodebug->N*block * sizeof(PetscReal), &temp);CHKERRQ(ierr);
-  for(i = 0; i < aodebug->N; i++) {
+  ierr = PetscMalloc(ao->N*block * sizeof(PetscReal), &temp);CHKERRQ(ierr);
+  for(i = 0; i < ao->N; i++) {
     for(j = 0; j < block; j++) temp[i*block+j] = array[aodebug->petsc[i]*block+j];
   }
-  ierr = PetscMemcpy(array, temp, aodebug->N*block * sizeof(PetscReal));CHKERRQ(ierr);
+  ierr = PetscMemcpy(array, temp, ao->N*block * sizeof(PetscReal));CHKERRQ(ierr);
   ierr = PetscFree(temp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -421,16 +423,16 @@ PetscErrorCode AOApplicationToPetscPermuteReal_Basic(AO ao, PetscInt block, Pets
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(aodebug->N*block * sizeof(PetscReal), &temp);CHKERRQ(ierr);
-  for(i = 0; i < aodebug->N; i++) {
+  ierr = PetscMalloc(ao->N*block * sizeof(PetscReal), &temp);CHKERRQ(ierr);
+  for(i = 0; i < ao->N; i++) {
     for(j = 0; j < block; j++) temp[i*block+j] = array[aodebug->app[i]*block+j];
   }
-  ierr = PetscMemcpy(array, temp, aodebug->N*block * sizeof(PetscReal));CHKERRQ(ierr);
+  ierr = PetscMemcpy(array, temp, ao->N*block * sizeof(PetscReal));CHKERRQ(ierr);
   ierr = PetscFree(temp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-static struct _AOOps AOops = {AOView_Basic,
+static struct _AOOps AOOps_Basic = {AOView_Basic,
                               AODestroy_Basic,
                               AOPetscToApplication_Basic,
                               AOApplicationToPetsc_Basic,
@@ -438,6 +440,16 @@ static struct _AOOps AOops = {AOView_Basic,
                               AOApplicationToPetscPermuteInt_Basic,
                               AOPetscToApplicationPermuteReal_Basic,
                               AOApplicationToPetscPermuteReal_Basic};
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "AOCreate_Basic" 
+PetscErrorCode  AOCreate_Basic(AO ao)
+{
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "AOCreateBasic" 
@@ -484,10 +496,10 @@ PetscErrorCode  AOCreateBasic(MPI_Comm comm,PetscInt napp,const PetscInt myapp[]
   ierr = AOInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
-  ierr = PetscHeaderCreate(ao, _p_AO, struct _AOOps, AO_CLASSID, AO_BASIC, "AO", comm, AODestroy, AOView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(ao,_p_AO,struct _AOOps,AO_CLASSID,AO_BASIC,"AO",comm,AODestroy_,AOView);CHKERRQ(ierr);
   ierr = PetscNewLog(ao, AO_Basic, &aobasic);CHKERRQ(ierr);
 
-  ierr = PetscMemcpy(ao->ops, &AOops, sizeof(AOops));CHKERRQ(ierr);
+  ierr = PetscMemcpy(ao->ops,&AOOps_Basic,sizeof(struct _AOOps));CHKERRQ(ierr);
   ao->data = (void*) aobasic;
 
   /* transmit all lengths to all processors */
@@ -501,7 +513,7 @@ PetscErrorCode  AOCreateBasic(MPI_Comm comm,PetscInt napp,const PetscInt myapp[]
     disp[i] = N;
     N += lens[i];
   }
-  aobasic->N = N;
+  ao->N = N;
 
   /*
      If mypetsc is 0 then use "natural" numbering 
@@ -577,12 +589,21 @@ PetscErrorCode  AOCreateBasic(MPI_Comm comm,PetscInt napp,const PetscInt myapp[]
   PetscFunctionReturn(0);
 }
 
+static struct _AOOps AOOps_MemoryScalable = {AOView_MemoryScalable,
+                              AODestroy_MemoryScalable,
+                              AOPetscToApplication_MemoryScalable,
+                              AOApplicationToPetsc_MemoryScalable,
+                              0,
+                              0,
+                              0,
+                              0};
+
 #undef __FUNCT__  
-#define __FUNCT__ "AOCreateBasicMemoryScalable_private" 
-PetscErrorCode  AOCreateBasicMemoryScalable_private(MPI_Comm comm,PetscInt napp,const PetscInt from_array[],const PetscInt to_array[],AO ao, PetscInt *aomap_loc)
+#define __FUNCT__ "AOCreateMemoryScalable_private" 
+PetscErrorCode  AOCreateMemoryScalable_private(MPI_Comm comm,PetscInt napp,const PetscInt from_array[],const PetscInt to_array[],AO ao, PetscInt *aomap_loc)
 {
   PetscErrorCode ierr;
-  AO_Basic       *aobasic=(AO_Basic*)ao->data;
+  AO_MemoryScalable *aobasic=(AO_MemoryScalable*)ao->data;
   PetscLayout    map=aobasic->map;
   PetscInt       n_local = map->n,i,j;
   PetscMPIInt    rank,size,tag;
@@ -713,119 +734,121 @@ PetscErrorCode  AOCreateBasicMemoryScalable_private(MPI_Comm comm,PetscInt napp,
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "AOCreateBasicMemoryScalable" 
-PetscErrorCode  AOCreateBasicMemoryScalable(MPI_Comm comm,PetscInt napp,const PetscInt myapp[],const PetscInt mypetsc[],AO *aoout)
+#define __FUNCT__ "AOCreate_MemoryScalable" 
+PetscErrorCode AOCreate_MemoryScalable(AO ao)
 {
-  PetscErrorCode ierr;
-  AO             ao;
-  AO_Basic       *aobasic;
-  PetscLayout    map;
-  PetscInt       n_local;
-  PetscBool      opt;
-
+  PetscErrorCode    ierr;
+  IS                isapp=ao->isapp,ispetsc=ao->ispetsc;
+  const PetscInt    *mypetsc,*myapp;
+  PetscInt          napp;
+  MPI_Comm          comm;
+  AO_MemoryScalable *aomems;
+  PetscLayout       map;
+  PetscBool         opt;
+  PetscMPIInt       *lens,size,rank,*disp;
+  PetscInt          n_local,N,i,start,*petsc;
+  
   PetscFunctionBegin;
-  /* copied from AOCreateBasic(comm,napp,myapp,mypetsc,&ao) */
-  PetscMPIInt    *lens,size,rank,nnapp,*disp;
-  PetscInt       N,i,*petsc,start;
+  /* create special struct aomems */
+  ierr = PetscNewLog(ao, AO_MemoryScalable, &aomems);CHKERRQ(ierr);
+  ao->data = (void*) aomems;
+  ierr = PetscMemcpy(ao->ops,&AOOps_MemoryScalable,sizeof(struct _AOOps));CHKERRQ(ierr);
 
-  PetscValidPointer(aoout,5);
-  *aoout = 0;
-#ifndef PETSC_USE_DYNAMIC_LIBRARIES
-  ierr = AOInitializePackage(PETSC_NULL);CHKERRQ(ierr);
-#endif
+  /* transmit all local lengths of isapp to all processors */
+  ierr = PetscObjectGetComm((PetscObject)isapp,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr = PetscMalloc2(size,PetscMPIInt, &lens,size,PetscMPIInt,&disp);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(isapp,&napp);CHKERRQ(ierr);
+  ierr = MPI_Allgather(&napp, 1, MPI_INT, lens, 1, MPI_INT, comm);CHKERRQ(ierr);
 
-  ierr = PetscHeaderCreate(ao, _p_AO, struct _AOOps, AO_CLASSID, AO_BASIC, "AO", comm, AODestroy, AOView);CHKERRQ(ierr);
-  ierr = PetscNewLog(ao, AO_Basic, &aobasic);CHKERRQ(ierr);
-
-  ierr = PetscMemcpy(ao->ops, &AOops, sizeof(AOops));CHKERRQ(ierr);
-  ao->data = (void*) aobasic;
-  /* transmit all lengths to all processors */
-  ierr  = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
-  ierr  = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr  = PetscMalloc2(size,PetscMPIInt, &lens,size,PetscMPIInt,&disp);CHKERRQ(ierr);
-  nnapp = napp;
-  ierr  = MPI_Allgather(&nnapp, 1, MPI_INT, lens, 1, MPI_INT, comm);CHKERRQ(ierr);
-  N    =  0;
+  N = 0;
   for(i = 0; i < size; i++) {
     disp[i] = N;
-    N += lens[i];
-  }
-  aobasic->N = N;
+    N      += lens[i];
+  } 
 
-  /*
-     If mypetsc is 0 then use "natural" numbering 
-  */
-  if (napp && !mypetsc) {
+  /* If ispetsc is 0 then use "natural" numbering */
+  if (napp && !ispetsc) {
     start = disp[rank];
     ierr  = PetscMalloc((napp+1) * sizeof(PetscInt), &petsc);CHKERRQ(ierr);
-    for (i=0; i<napp; i++) {
-      petsc[i] = start + i;
-    }
+    for (i=0; i<napp; i++) petsc[i] = start + i;
   } else {
+    ierr = ISGetIndices(ispetsc,&mypetsc);CHKERRQ(ierr);
     petsc = (PetscInt*)mypetsc;
   }
-  /* -------------------------------- */
-  ao->ops->view               = AOView_BasicMemoryScalable;
-  ao->ops->destroy            = AODestroy_BasicMemoryScalable;
-  ao->ops->petsctoapplication = AOPetscToApplication_BasicMemoryScalable;
-  ao->ops->applicationtopetsc = AOApplicationToPetsc_BasicMemoryScalable;
-  aobasic = (AO_Basic*)ao->data;
-   
+  
+  /* create a map with global size N - used to determine the local sizes of ao */
   ierr = PetscLayoutCreate(comm,&map);CHKERRQ(ierr);
   map->bs = 1;
-  map->N  = aobasic->N;
-  
+  map->N  = N;
   ierr = PetscLayoutSetUp(map);CHKERRQ(ierr);
-  aobasic->map = map;
 
+  ao->N       = N;
+  ao->n       = map->n;
+  aomems->map = map;
+
+  /* get app_loc: petsc->app and petsc_loc: app->petsc */
   n_local = map->n;
-  ierr   = PetscMalloc2(n_local,PetscInt, &aobasic->app_loc,n_local,PetscInt,&aobasic->petsc_loc);CHKERRQ(ierr);
+  ierr   = PetscMalloc2(n_local,PetscInt, &aomems->app_loc,n_local,PetscInt,&aomems->petsc_loc);CHKERRQ(ierr);
+  ierr = ISGetIndices(isapp,&myapp);CHKERRQ(ierr);
 
-  /* get app_loc: petsc -> app */
-  ierr = AOCreateBasicMemoryScalable_private(comm,napp,petsc,myapp,ao,aobasic->app_loc);CHKERRQ(ierr);
+  ierr = AOCreateMemoryScalable_private(comm,napp,petsc,myapp,ao,aomems->app_loc);CHKERRQ(ierr);
+  ierr = AOCreateMemoryScalable_private(comm,napp,myapp,petsc,ao,aomems->petsc_loc);CHKERRQ(ierr);
 
-  /* get petsc_loc: app -> petsc */
-  ierr = AOCreateBasicMemoryScalable_private(comm,napp,myapp,petsc,ao,aobasic->petsc_loc);CHKERRQ(ierr);
-
-  if (napp && !mypetsc) {ierr = PetscFree(petsc);CHKERRQ(ierr);}
+  ierr = ISRestoreIndices(isapp,&myapp);CHKERRQ(ierr);
+  if (ispetsc){
+    ierr = ISRestoreIndices(ispetsc,&mypetsc);CHKERRQ(ierr);
+  } else if (napp && !ispetsc) {
+    ierr = PetscFree(petsc);CHKERRQ(ierr);
+  }
   ierr  = PetscFree2(lens,disp);CHKERRQ(ierr);
- 
+
   opt = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL, "-ao_view", &opt,PETSC_NULL);CHKERRQ(ierr);
   if (opt) {
-    ierr = AOView_BasicMemoryScalable(ao, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = AOView_MemoryScalable(ao, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
-  
-  *aoout = ao;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+#undef __FUNCT__  
+#define __FUNCT__ "AOCreateMemoryScalable" 
+PetscErrorCode AOCreateMemoryScalable(MPI_Comm comm,PetscInt napp,const PetscInt myapp[],const PetscInt mypetsc[],AO *aoout)
+{
+  PetscErrorCode ierr;
+  IS             isapp,ispetsc;
+  const PetscInt *app=myapp,*petsc=mypetsc;
+
+  PetscFunctionBegin;
+  ierr = ISCreateGeneral(comm,napp,app,PETSC_USE_POINTER,&isapp);CHKERRQ(ierr);
+  if (mypetsc){
+    ierr = ISCreateGeneral(comm,napp,petsc,PETSC_USE_POINTER,&ispetsc);CHKERRQ(ierr);
+  } else {
+    ispetsc = PETSC_NULL;
+  }
+  ierr = AOCreateMemoryScalableIS(isapp,ispetsc,aoout);CHKERRQ(ierr);
+  ierr = ISDestroy(isapp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "AOCreateBasicMemoryScalableIS" 
-PetscErrorCode  AOCreateBasicMemoryScalableIS(IS isapp,IS ispetsc,AO *aoout)
+#define __FUNCT__ "AOCreateMemoryScalableIS" 
+PetscErrorCode  AOCreateMemoryScalableIS(IS isapp,IS ispetsc,AO *aoout)
 {
   PetscErrorCode ierr;
-  const PetscInt *mypetsc = 0,*myapp;
-  PetscInt       napp,npetsc;
   MPI_Comm       comm;
+  AO             ao;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)isapp,&comm);CHKERRQ(ierr);
-  ierr = ISGetLocalSize(isapp,&napp);CHKERRQ(ierr);
-  if (ispetsc) {
-    ierr = ISGetLocalSize(ispetsc,&npetsc);CHKERRQ(ierr);
-    if (napp != npetsc) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local IS lengths must match");
-    ierr = ISGetIndices(ispetsc,&mypetsc);CHKERRQ(ierr);
-  }
-  ierr = ISGetIndices(isapp,&myapp);CHKERRQ(ierr);
-
-  ierr = AOCreateBasicMemoryScalable(comm,napp,myapp,mypetsc,aoout);CHKERRQ(ierr);
-
-  ierr = ISRestoreIndices(isapp,&myapp);CHKERRQ(ierr);
-  if (ispetsc) {
-    ierr = ISRestoreIndices(ispetsc,&mypetsc);CHKERRQ(ierr);
-  }
+  ierr = AOCreate(comm,&ao);CHKERRQ(ierr);
+  ierr = AOSetIS(ao,isapp,ispetsc);CHKERRQ(ierr);
+  ierr = AOSetType(ao,AOMEMORYSCALABLE);CHKERRQ(ierr);
+  *aoout = ao;
   PetscFunctionReturn(0);
 }
 

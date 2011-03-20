@@ -1,5 +1,5 @@
 #include <private/meshimpl.h>   /*I      "petscdmmesh.h"   I*/
-#include <petscmesh_viewers.hh>
+#include <petscdmmesh_viewers.hh>
 
 /* Logging support */
 PetscClassId  SECTIONREAL_CLASSID;
@@ -310,7 +310,7 @@ PetscErrorCode  SectionRealDestroy(SectionReal section)
 
   Input Parameters:
 + serialSection - The original Section object
-- parallelMesh - The parallel Mesh
+- parallelMesh - The parallel DMMesh
 
   Output Parameter:
 . parallelSection - The distributed Section object
@@ -318,7 +318,7 @@ PetscErrorCode  SectionRealDestroy(SectionReal section)
   Level: intermediate
 
 .keywords: mesh, section, distribute
-.seealso: MeshCreate()
+.seealso: DMMeshCreate()
 @*/
 PetscErrorCode SectionRealDistribute(SectionReal serialSection, DM parallelMesh, SectionReal *parallelSection)
 {
@@ -418,7 +418,7 @@ PetscErrorCode  SectionRealUpdate(SectionReal section, PetscInt point, const Pet
 
   Input Parameters:
 + section - The section
-. mesh    - The Mesh object
+. mesh    - The DMMesh object
 - point   - The sieve point
 
   Output Parameter:
@@ -427,7 +427,7 @@ PetscErrorCode  SectionRealUpdate(SectionReal section, PetscInt point, const Pet
   Level: intermediate
 
 .keywords: mesh, elements
-.seealso: MeshCreate()
+.seealso: DMMeshCreate()
 @*/
 PetscErrorCode SectionRealRestrictClosure(SectionReal section, DM dm, PetscInt point, const PetscScalar *values[])
 {
@@ -455,7 +455,7 @@ PetscErrorCode SectionRealRestrictClosure(SectionReal section, DM dm, PetscInt p
 
   Input Parameters:
 + section - The section
-. mesh    - The Mesh object
+. mesh    - The DMMesh object
 . point   - The sieve point
 . n       - The array size
 - array   - The array to fill up
@@ -466,7 +466,7 @@ PetscErrorCode SectionRealRestrictClosure(SectionReal section, DM dm, PetscInt p
   Level: intermediate
 
 .keywords: mesh, elements
-.seealso: MeshCreate()
+.seealso: DMMeshCreate()
 @*/
 PetscErrorCode SectionRealRestrictClosure(SectionReal section, DM dm, PetscInt point, PetscInt n, PetscScalar values[])
 {
@@ -494,7 +494,7 @@ PetscErrorCode SectionRealRestrictClosure(SectionReal section, DM dm, PetscInt p
 
   Input Parameters:
 + section - The section
-. mesh    - The Mesh object
+. mesh    - The DMMesh object
 . point   - The sieve point
 . array   - The array to fill up
 - mode    - The insertion mode
@@ -505,7 +505,7 @@ PetscErrorCode SectionRealRestrictClosure(SectionReal section, DM dm, PetscInt p
   Level: intermediate
 
 .keywords: mesh, elements
-.seealso: MeshCreate()
+.seealso: DMMeshCreate()
 @*/
 PetscErrorCode SectionRealUpdateClosure(SectionReal section, DM dm, PetscInt point, PetscScalar values[], InsertMode mode)
 {
@@ -717,7 +717,7 @@ PetscErrorCode  SectionRealAllocate(SectionReal section)
 /*@
   SectionRealCreateLocalVector - Creates a vector with the local piece of the Section
 
-  Collective on Mesh
+  Collective on DMMesh
 
   Input Parameter:
 . section - the Section  
@@ -728,7 +728,7 @@ PetscErrorCode  SectionRealAllocate(SectionReal section)
   Level: advanced
 
   Notes: The vector can safely be destroyed using VecDestroy().
-.seealso MeshDestroy(), MeshCreate()
+.seealso DMMeshDestroy(), DMMeshCreate()
 @*/
 PetscErrorCode  SectionRealCreateLocalVector(SectionReal section, Vec *localVec)
 {
@@ -750,7 +750,7 @@ PetscErrorCode  SectionRealCreateLocalVector(SectionReal section, Vec *localVec)
 /*@
   SectionRealAddSpace - Add another field to this section
 
-  Collective on Mesh
+  Collective on DMMesh
 
   Input Parameter:
 . section - the Section
@@ -775,7 +775,7 @@ PetscErrorCode  SectionRealAddSpace(SectionReal section)
 /*@C
   SectionRealGetFibration - Creates a section for only the data associated with the given field
 
-  Collective on Mesh
+  Collective on DMMesh
 
   Input Parameter:
 + section - the Section
@@ -816,7 +816,7 @@ PetscErrorCode  SectionRealGetFibration(SectionReal section, const PetscInt fiel
 
   Input Parameters:
 + section - the real Section
-- mesh - The Mesh
+- mesh - The DMMesh
 
   Output Parameter:
 . vec - the Vec
@@ -1027,10 +1027,10 @@ PetscErrorCode  SectionRealAXPY(SectionReal section, DM dm, PetscScalar alpha, S
 /*@C
   DMMeshGetVertexSectionReal - Create a Section over the vertices with the specified fiber dimension
 
-  Collective on Mesh
+  Collective on DMMesh
 
   Input Parameters:
-+ mesh - The Mesh object
++ mesh - The DMMesh object
 - fiberDim - The number of degrees of freedom per vertex
 
   Output Parameter:
@@ -1039,7 +1039,7 @@ PetscErrorCode  SectionRealAXPY(SectionReal section, DM dm, PetscScalar alpha, S
   Level: intermediate
 
 .keywords: mesh, section, vertex
-.seealso: MeshCreate(), SectionRealCreate()
+.seealso: DMMeshCreate(), SectionRealCreate()
 @*/
 PetscErrorCode DMMeshGetVertexSectionReal(DM dm, const char name[], PetscInt fiberDim, SectionReal *section)
 {
@@ -1065,10 +1065,10 @@ PetscErrorCode DMMeshGetVertexSectionReal(DM dm, const char name[], PetscInt fib
 /*@C
   DMMeshGetCellSectionReal - Create a Section over the cells with the specified fiber dimension
 
-  Collective on Mesh
+  Collective on DMMesh
 
   Input Parameters:
-+ mesh - The Mesh object
++ mesh - The DMMesh object
 - fiberDim - The section name
 
   Output Parameter:
@@ -1077,7 +1077,7 @@ PetscErrorCode DMMeshGetVertexSectionReal(DM dm, const char name[], PetscInt fib
   Level: intermediate
 
 .keywords: mesh, section, cell
-.seealso: MeshCreate(), SectionRealCreate()
+.seealso: DMMeshCreate(), SectionRealCreate()
 @*/
 PetscErrorCode DMMeshGetCellSectionReal(DM dm, const char name[], PetscInt fiberDim, SectionReal *section)
 {
@@ -1103,7 +1103,7 @@ PetscErrorCode DMMeshGetCellSectionReal(DM dm, const char name[], PetscInt fiber
 /*@C
   DMMeshCreateGlobalRealVector - Creates a vector of the correct size to be gathered into by the mesh.
 
-  Collective on Mesh
+  Collective on DMMesh
 
   Input Parameters:
 + mesh - the mesh object
@@ -1114,7 +1114,7 @@ PetscErrorCode DMMeshGetCellSectionReal(DM dm, const char name[], PetscInt fiber
 
   Level: advanced
 
-.seealso MeshDestroy(), MeshCreate(), MeshCreateGlobalVector()
+.seealso DMMeshDestroy(), DMMeshCreate(), DMMeshCreateGlobalRealVector()
 @*/
 PetscErrorCode DMMeshCreateGlobalRealVector(DM dm, SectionReal section, Vec *gvec)
 {
@@ -1400,7 +1400,7 @@ PetscErrorCode  SectionIntDestroy(SectionInt section)
 
   Input Parameters:
 + serialSection - The original Section object
-- parallelMesh - The parallel Mesh
+- parallelMesh - The parallel DMMesh
 
   Output Parameter:
 . parallelSection - The distributed Section object
@@ -1408,7 +1408,7 @@ PetscErrorCode  SectionIntDestroy(SectionInt section)
   Level: intermediate
 
 .keywords: mesh, section, distribute
-.seealso: MeshCreate()
+.seealso: DMMeshCreate()
 @*/
 PetscErrorCode SectionIntDistribute(SectionInt serialSection, DM parallelMesh, SectionInt *parallelSection)
 {
@@ -1504,7 +1504,7 @@ PetscErrorCode  SectionIntUpdate(SectionInt section, PetscInt point, const Petsc
 
   Input Parameters:
 + section - The section
-. mesh    - The Mesh object
+. mesh    - The DMMesh object
 . point   - The sieve point
 . n       - The array size
 - array   - The array to fill up
@@ -1515,7 +1515,7 @@ PetscErrorCode  SectionIntUpdate(SectionInt section, PetscInt point, const Petsc
   Level: intermediate
 
 .keywords: mesh, elements
-.seealso: MeshCreate()
+.seealso: DMMeshCreate()
 @*/
 PetscErrorCode SectionIntRestrictClosure(SectionInt section, DM dm, PetscInt point, PetscInt n, PetscInt values[])
 {
@@ -1539,7 +1539,7 @@ PetscErrorCode SectionIntRestrictClosure(SectionInt section, DM dm, PetscInt poi
 
   Input Parameters:
 + section - The section
-. mesh    - The Mesh object
+. mesh    - The DMMesh object
 . point   - The sieve point
 . array   - The array to fill up
 - mode    - The insertion mode
@@ -1550,7 +1550,7 @@ PetscErrorCode SectionIntRestrictClosure(SectionInt section, DM dm, PetscInt poi
   Level: intermediate
 
 .keywords: mesh, elements
-.seealso: MeshCreate()
+.seealso: DMMeshCreate()
 @*/
 PetscErrorCode SectionIntUpdateClosure(SectionInt section, DM dm, PetscInt point, PetscInt values[], InsertMode mode)
 {
@@ -1806,7 +1806,7 @@ PetscErrorCode  SectionIntSet(SectionInt section, PetscInt val)
 /*@
   SectionIntAddSpace - Add another field to this section
 
-  Collective on Mesh
+  Collective on DMMesh
 
   Input Parameter:
 . section - the Section
@@ -1831,7 +1831,7 @@ PetscErrorCode  SectionIntAddSpace(SectionInt section)
 /*@C
   SectionIntGetFibration - Creates a section for only the data associated with the given field
 
-  Collective on Mesh
+  Collective on DMMesh
 
   Input Parameter:
 + section - the Section
@@ -1868,10 +1868,10 @@ PetscErrorCode  SectionIntGetFibration(SectionInt section, const PetscInt field,
 /*@C
   DMMeshGetVertexSectionInt - Create a Section over the vertices with the specified fiber dimension
 
-  Collective on Mesh
+  Collective on DMMesh
 
   Input Parameters:
-+ mesh - The Mesh object
++ mesh - The DMMesh object
 - fiberDim - The section name
 
   Output Parameter:
@@ -1880,7 +1880,7 @@ PetscErrorCode  SectionIntGetFibration(SectionInt section, const PetscInt field,
   Level: intermediate
 
 .keywords: mesh, section, vertex
-.seealso: MeshCreate(), SectionIntCreate()
+.seealso: DMMeshCreate(), SectionIntCreate()
 @*/
 PetscErrorCode DMMeshGetVertexSectionInt(DM dm, const char name[], PetscInt fiberDim, SectionInt *section)
 {
@@ -1908,10 +1908,10 @@ PetscErrorCode DMMeshGetVertexSectionInt(DM dm, const char name[], PetscInt fibe
 /*@C
   DMMeshGetCellSectionInt - Create a Section over the cells with the specified fiber dimension
 
-  Collective on Mesh
+  Collective on DMMesh
 
   Input Parameters:
-+ mesh - The Mesh object
++ mesh - The DMMesh object
 - fiberDim - The section name
 
   Output Parameter:
@@ -1920,7 +1920,7 @@ PetscErrorCode DMMeshGetVertexSectionInt(DM dm, const char name[], PetscInt fibe
   Level: intermediate
 
 .keywords: mesh, section, cell
-.seealso: MeshCreate(), SectionIntCreate()
+.seealso: DMMeshCreate(), SectionIntCreate()
 @*/
 PetscErrorCode DMMeshGetCellSectionInt(DM dm, const char name[], PetscInt fiberDim, SectionInt *section)
 {

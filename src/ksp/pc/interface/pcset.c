@@ -173,25 +173,27 @@ PetscErrorCode  PCSetFromOptions(PC pc)
 
   if (!PCRegisterAllCalled) {ierr = PCRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
   ierr = PetscOptionsBegin(((PetscObject)pc)->comm,((PetscObject)pc)->prefix,"Preconditioner (PC) Options","PC");CHKERRQ(ierr);
-    if (!((PetscObject)pc)->type_name) {
-      ierr = PCGetDefaultType_Private(pc,&def);CHKERRQ(ierr);
-    } else {
-      def = ((PetscObject)pc)->type_name;
-    }
-
-    ierr = PetscOptionsList("-pc_type","Preconditioner","PCSetType",PCList,def,type,256,&flg);CHKERRQ(ierr);
-    if (flg) {
-      ierr = PCSetType(pc,type);CHKERRQ(ierr);
-    } else if (!((PetscObject)pc)->type_name){
-      ierr = PCSetType(pc,def);CHKERRQ(ierr);
-    } 
-
-    if (pc->ops->setfromoptions) {
-      ierr = (*pc->ops->setfromoptions)(pc);CHKERRQ(ierr);
-    }
-
-    /* process any options handlers added with PetscObjectAddOptionsHandler() */
-    ierr = PetscObjectProcessOptionsHandlers((PetscObject)pc);CHKERRQ(ierr);
+  if (!((PetscObject)pc)->type_name) {
+    ierr = PCGetDefaultType_Private(pc,&def);CHKERRQ(ierr);
+  } else {
+    def = ((PetscObject)pc)->type_name;
+  }
+  
+  ierr = PetscOptionsList("-pc_type","Preconditioner","PCSetType",PCList,def,type,256,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PCSetType(pc,type);CHKERRQ(ierr);
+  } else if (!((PetscObject)pc)->type_name){
+    ierr = PCSetType(pc,def);CHKERRQ(ierr);
+  } 
+  
+  ierr = PetscOptionsGetInt(((PetscObject)pc)->prefix,"-pc_reuse",&pc->reuse,PETSC_NULL);CHKERRQ(ierr);
+  
+  if (pc->ops->setfromoptions) {
+    ierr = (*pc->ops->setfromoptions)(pc);CHKERRQ(ierr);
+  }
+  
+  /* process any options handlers added with PetscObjectAddOptionsHandler() */
+  ierr = PetscObjectProcessOptionsHandlers((PetscObject)pc);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   pc->setfromoptionscalled++;
   PetscFunctionReturn(0);

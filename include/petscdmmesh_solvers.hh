@@ -1,7 +1,7 @@
-#if !defined(__PETSCMESH_SOLVERS_HH)
-#define __PETSCMESH_SOLVERS_HH
+#if !defined(__PETSCDMMESH_SOLVERS_HH)
+#define __PETSCDMMESH_SOLVERS_HH
 
-#include <petscmesh.hh>
+#include <petscdmmesh.hh>
 #include <petscpc.h>
 
 using ALE::Obj;
@@ -86,5 +86,5 @@ void constructFieldSplit(const Obj<Section>& section, const Obj<Order>& globalOr
   ierr = PetscFree(spaceSize);CHKERRXX(ierr);
 };
 
-#endif // __PETSCMESH_SOLVERS_HH
+#endif // __PETSCDMMESH_SOLVERS_HH
 							    

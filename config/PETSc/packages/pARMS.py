@@ -25,10 +25,6 @@ class Configure(PETSc.package.NewPackage):
     g.write('SHELL =	/bin/sh\n')
     g.write('.SUFFIXES:\n')
     g.write('.SUFFIXES: .c .o .f .F\n')
-    g.write('PARMS_ROOT = '+self.packageDir+'\n')
-
-    # path of the header files of pARMS
-    g.write('IFLAGS     = -I${PARMS_ROOT}/include\n')
 
     # C compiler
     self.setCompilers.pushLanguage('C')
@@ -40,24 +36,16 @@ class Configure(PETSc.package.NewPackage):
       g.write('-DDBL\n')
     self.setCompilers.popLanguage()
 
-    # FORTRAN compiler
-    if hasattr(self.compilers, 'FC'):
-      self.setCompilers.pushLanguage('FC')
-      g.write('FC         = '+self.setCompilers.getCompiler()+'\n')
-      g.write('FFLAGS     = '+self.setCompilers.getCompilerFlags()+' -DVOID_POINTER_SIZE_'+str(self.types.sizes['known-sizeof-void-p'])+'\n')
-      # this mangling information is for both BLAS and the Fortran compiler so cannot use the BlasLapack mangling flag
-      # set fortran name mangling
-      if self.compilers.fortranMangling == 'underscore':
-        g.write('CFDEFS     = -DFORTRAN_UNDERSCORE\n')
-      elif self.compilers.fortranMangling == 'caps':
-        g.write('CFDEFS     = -DFORTRAN_CAPS\n')
-      else:
-        g.write('CFDEFS     = -DFORTRAN_DOUBLE_UNDERSCORE\n')
-      g.write('CFFLAGS    = ${CFDEFS} -DVOID_POINTER_SIZE_'+str(self.types.sizes['known-sizeof-void-p'])+'\n')
-      self.setCompilers.popLanguage()
-
+    # BLAS mangling
+    if self.blasLapack.mangling == 'underscore':
+      g.write('CFDEFS     = -DFORTRAN_UNDERSCORE\n')
+    elif self.blasLapack.mangling == 'caps':
+      g.write('CFDEFS     = -DFORTRAN_CAPS\n')
+    elif self.blasLapack.mangling == 'unchanged':
+      g.write('CFDEFS     = \n')
     else:
-      raise RuntimeError('pARMS requires a fortran compiler! No fortran compiler configured!')
+      raise RuntimeError('Unknown blas mangling: cannot proceed with pARMS: '+str(self.blasLapack.mangling))
+    g.write('CFFLAGS    = ${CFDEFS} -DVOID_POINTER_SIZE_'+str(self.types.sizes['known-sizeof-void-p'])+'\n')
 
     g.write('RM         = rm\n')
     g.write('RMFLAGS    = -rf\n')
@@ -73,14 +61,6 @@ class Configure(PETSc.package.NewPackage):
     g.write('LIBFLAGS   = -L${LIBDIR}\n')
     g.write('PARMS_LIBS = -lparms\n')
 
-    g.write('.c.o:  \n')
-    g.write('	${CC} ${IFLAGS} ${ISRCINC} ${XIFLAGS} $(COPTFLAGS)  ${CFLAGS} ${CFFLAGS} $< -c -o $@\n')
-
-    g.write('.F.o: \n')
-    g.write('	${FC} -FR ${IFLAGS} ${FFLAGS} $< -c -o $(@F) \n')
-
-    g.write('.f.o: \n')
-    g.write('	${FC} ${FFLAGS} $< -c -o $(@F) \n')
     #-----------------------------------------
     g.close()
 
@@ -91,7 +71,7 @@ class Configure(PETSc.package.NewPackage):
         incDir = os.path.join(self.installDir, self.includedir)
         if not os.path.isdir(libDir):
           os.mkdir(libDir)
-        output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && PARMS_INSTALL_DIR='+self.installDir+' && export PARMS_INSTALL_DIR && make cleanall && make && cp -f include/*.h '+incDir+'/. && cp lib/* '+libDir, timeout=2500, log = self.framework.log)
+        output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && PARMS_INSTALL_DIR='+self.installDir+' && export PARMS_INSTALL_DIR && make cleanall && make OBJ3="" && cp -f include/*.h '+incDir+'/. && cp lib/* '+libDir, timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on pARMS: '+str(e))
       self.postInstall(output+err,'makefile.in')

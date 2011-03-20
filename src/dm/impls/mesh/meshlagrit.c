@@ -1,4 +1,4 @@
-#include <petscmesh_formats.hh>   /*I      "petscmesh.h"   I*/
+#include <petscdmmesh_formats.hh>   /*I      "petscmesh.h"   I*/
 
 #if 0
 
@@ -43,9 +43,9 @@ void FlipCellOrientation(pylith::int_array * const cells, const int numCells, co
       m->stratify();
       ALE::SieveBuilder<PETSC_MESH_TYPE>::buildCoordinates(m, dim, const_cast<double*>(&coordinates[0]));
 
-      ierr = MeshCreate(comm, &mesh);CHKERRQ(ierr);
-      ierr = MeshSetMesh(mesh, m);CHKERRQ(ierr);
-      ierr = MeshIDBoundary(mesh);CHKERRQ(ierr);
+      ierr = DMMeshCreate(comm, &mesh);CHKERRQ(ierr);
+      ierr = DMMeshSetMesh(mesh, m);CHKERRQ(ierr);
+      ierr = DMMeshIDBoundary(mesh);CHKERRQ(ierr);
 #endif
 
 namespace ALE {

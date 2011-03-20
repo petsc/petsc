@@ -1,17 +1,17 @@
-#if !defined(__PETSCMESH_HH)
-#define __PETSCMESH_HH
+#if !defined(__PETSCDMMESH_HH)
+#define __PETSCDMMESH_HH
 
 #include <petscdmmesh.h>
 #include <functional>
 
 using ALE::Obj;
 
-PetscErrorCode MeshView_Sieve(const ALE::Obj<PETSC_MESH_TYPE>& mesh, PetscViewer viewer);
+PetscErrorCode DMMeshView_Sieve(const ALE::Obj<PETSC_MESH_TYPE>& mesh, PetscViewer viewer);
 
 #undef __FUNCT__
-#define __FUNCT__ "MeshCreateMatrix"
+#define __FUNCT__ "DMMeshCreateMatrix"
 template<typename Mesh, typename Section>
-PetscErrorCode  MeshCreateMatrix(const Obj<Mesh>& mesh, const Obj<Section>& section, const MatType mtype, Mat *J, int bs = -1)
+PetscErrorCode  DMMeshCreateMatrix(const Obj<Mesh>& mesh, const Obj<Section>& section, const MatType mtype, Mat *J, int bs = -1)
 {
   const ALE::Obj<typename Mesh::order_type>& order = mesh->getFactory()->getGlobalOrder(mesh, section->getName(), section);
   int            localSize  = order->getLocalSize();
@@ -61,41 +61,41 @@ PetscErrorCode  MeshCreateMatrix(const Obj<Mesh>& mesh, const Obj<Section>& sect
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MeshCreateGlobalScatter"
+#define __FUNCT__ "DMMeshCreateGlobalScatter"
 template<typename Mesh, typename Section>
-PetscErrorCode  MeshCreateGlobalScatter(const ALE::Obj<Mesh>& m, const ALE::Obj<Section>& s, VecScatter *scatter)
+PetscErrorCode  DMMeshCreateGlobalScatter(const ALE::Obj<Mesh>& m, const ALE::Obj<Section>& s, VecScatter *scatter)
 {
   const ALE::Obj<typename Mesh::order_type>& globalOrder = m->getFactory()->getGlobalOrder(m, s->getName(), s);
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MeshCreateGlobalScatter(m, s, globalOrder, scatter);CHKERRQ(ierr);
+  ierr = DMMeshCreateGlobalScatter(m, s, globalOrder, scatter);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MeshCreateGlobalScatter"
+#define __FUNCT__ "DMMeshCreateGlobalScatter"
 template<typename Mesh, typename Section>
-PetscErrorCode  MeshCreateGlobalScatter(const ALE::Obj<Mesh>& m, const std::string& name, const typename Section::chart_type& points, const ALE::Obj<Section>& s, VecScatter *scatter)
+PetscErrorCode  DMMeshCreateGlobalScatter(const ALE::Obj<Mesh>& m, const std::string& name, const typename Section::chart_type& points, const ALE::Obj<Section>& s, VecScatter *scatter)
 {
   const ALE::Obj<typename Mesh::order_type>& globalOrder = m->getFactory()->getGlobalOrder(m, name, points, s);
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MeshCreateGlobalScatter(m, s, globalOrder, scatter);CHKERRQ(ierr);
+  ierr = DMMeshCreateGlobalScatter(m, s, globalOrder, scatter);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MeshCreateGlobalScatter"
+#define __FUNCT__ "DMMeshCreateGlobalScatter"
 template<typename Mesh, typename Section>
-PetscErrorCode  MeshCreateGlobalScatter(const ALE::Obj<Mesh>& m, const ALE::Obj<Section>& s, const ALE::Obj<typename Mesh::order_type>& globalOrder, VecScatter *scatter)
+PetscErrorCode  DMMeshCreateGlobalScatter(const ALE::Obj<Mesh>& m, const ALE::Obj<Section>& s, const ALE::Obj<typename Mesh::order_type>& globalOrder, VecScatter *scatter)
 {
   typedef typename Mesh::real_section_type::index_type index_type;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscLogEventBegin(Mesh_GetGlobalScatter,0,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(DMMesh_GetGlobalScatter,0,0,0,0);CHKERRQ(ierr);
   const typename Mesh::order_type::chart_type& chart = globalOrder->getChart();
   int *localIndices, *globalIndices;
   int  localSize   = globalOrder->getLocalSize();
@@ -139,7 +139,7 @@ PetscErrorCode  MeshCreateGlobalScatter(const ALE::Obj<Mesh>& m, const ALE::Obj<
   ierr = ISDestroy(localIS);CHKERRQ(ierr);
   ierr = VecDestroy(localVec);CHKERRQ(ierr);
   ierr = VecDestroy(globalVec);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(Mesh_GetGlobalScatter,0,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(DMMesh_GetGlobalScatter,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1110,7 +1110,7 @@ PetscErrorCode updateOperator(Mat A, const Sieve& sieve, Visitor& iV, const PETS
   const int       numIndices = iV.getSize();
   PetscErrorCode  ierr;
 
-  ierr = PetscLogEventBegin(Mesh_updateOperator,0,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(DMMesh_updateOperator,0,0,0,0);CHKERRQ(ierr);
   if (sieve.debug()) {
     ierr = PetscPrintf(PETSC_COMM_SELF, "[%d]mat for element %d\n", sieve.commRank(), e);CHKERRQ(ierr);
     for(int i = 0; i < numIndices; i++) {
@@ -1137,7 +1137,7 @@ PetscErrorCode updateOperator(Mat A, const Sieve& sieve, Visitor& iV, const PETS
     }
     CHKERRQ(ierr);
   }
-  ierr = PetscLogEventEnd(Mesh_updateOperator,0,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(DMMesh_updateOperator,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1155,7 +1155,7 @@ PetscErrorCode updateOperator(Mat A, const Sieve& rowSieve, Visitor& iVr, const 
   const int       numColIndices = iVc.getSize();
   PetscErrorCode  ierr;
 
-  ierr = PetscLogEventBegin(Mesh_updateOperator,0,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(DMMesh_updateOperator,0,0,0,0);CHKERRQ(ierr);
   if (rowSieve.debug()) {
     ierr = PetscPrintf(PETSC_COMM_SELF, "[%d]mat for element %d,%d\n", rowSieve.commRank(), rowE, colE);CHKERRQ(ierr);
     for(int i = 0; i < numRowIndices; i++) {
@@ -1188,8 +1188,8 @@ PetscErrorCode updateOperator(Mat A, const Sieve& rowSieve, Visitor& iVr, const 
     }
     CHKERRQ(ierr);
   }
-  ierr = PetscLogEventEnd(Mesh_updateOperator,0,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(DMMesh_updateOperator,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#endif // __PETSCMESH_HH
+#endif // __PETSCDMMESH_HH

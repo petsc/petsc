@@ -1,5 +1,6 @@
 #define PETSCDM_DLL
 #include <private/meshimpl.h>    /*I   "petscdmmesh.h"   I*/
+#include <petscdmda.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "DMSetFromOptions_Mesh"
@@ -38,8 +39,68 @@ extern PetscErrorCode DMView_Mesh(DM dm, PetscViewer viewer);
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
+#define __FUNCT__ "DMConvert_DA_Mesh"
+PetscErrorCode DMConvert_DA_Mesh(DM dm, const DMType newtype, DM *dmNew)
+{
+  typedef ALE::Mesh<PetscInt,PetscScalar> FlexMesh;
+  DM             cda;
+  Vec            coordinates;
+  PetscScalar   *coords;
+  PetscInt       dim, M;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMDAGetInfo(dm, &dim, &M, 0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  if (dim > 1) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Currently, only 1D DMDAs can be converted to DMMeshes.");
+  ierr = DMDAGetCoordinateDA(dm, &cda);CHKERRQ(ierr);
+  ierr = DMDAGetCoordinates(dm, &coordinates);CHKERRQ(ierr);
+  ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
+
+  ierr = DMMeshCreate(((PetscObject) dm)->comm, dmNew);CHKERRQ(ierr);
+  ALE::Obj<PETSC_MESH_TYPE>              mesh  = new PETSC_MESH_TYPE(((PetscObject) dm)->comm, dim, 0);
+  ALE::Obj<PETSC_MESH_TYPE::sieve_type>  sieve = new PETSC_MESH_TYPE::sieve_type(((PetscObject) dm)->comm, 0);
+  ALE::Obj<FlexMesh>                     m     = new FlexMesh(((PetscObject) dm)->comm, dim, 0);
+  ALE::Obj<FlexMesh::sieve_type>         s     = new FlexMesh::sieve_type(((PetscObject) dm)->comm, 0);
+  PETSC_MESH_TYPE::renumbering_type      renumbering;
+
+  m->setSieve(s);
+  {
+    /* M edges if its periodic */
+    const int             numEdges    = M-1;
+    const int             numVertices = M;
+    FlexMesh::point_type *vertices    = new FlexMesh::point_type[numVertices];
+    const ALE::Obj<FlexMesh::label_type>& markers = m->createLabel("marker");
+
+    if (m->commRank() == 0) {
+      /* Create sieve and ordering */
+      for(int v = numEdges; v < numEdges+numVertices; v++) {
+        vertices[v-numEdges] = FlexMesh::point_type(v);
+      }
+      for(int e = 0; e < numEdges; ++e) {
+        FlexMesh::point_type edge(e);
+        int order = 0;
+
+        sieve->addArrow(vertices[e],                 edge, order++);
+        sieve->addArrow(vertices[(e+1)%numVertices], edge, order++);
+      }
+    }
+    m->stratify();
+    delete [] vertices;
+    /* Onyl do this if its not periodic */
+    m->setValue(markers, vertices[0], 1);
+    m->setValue(markers, vertices[M-1], 1);
+  }
+  ALE::SieveBuilder<FlexMesh>::buildCoordinates(m, dim, coords);
+  mesh->setSieve(sieve);
+  ALE::ISieveConverter::convertMesh(*m, *mesh, renumbering, false);
+  ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
+  ierr = DMMeshSetMesh(*dmNew, m);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMCreate_Mesh"
-PetscErrorCode  DMCreate_Mesh(DM dm)
+PetscErrorCode DMCreate_Mesh(DM dm)
 {
   DM_Mesh       *mesh;
   PetscErrorCode ierr;
@@ -76,6 +137,8 @@ PetscErrorCode  DMCreate_Mesh(DM dm)
   dm->ops->view               = DMView_Mesh;
   dm->ops->setfromoptions     = DMSetFromOptions_Mesh;
   dm->ops->setup              = 0;
+
+  ierr = PetscObjectComposeFunction((PetscObject) dm, "DMConvert_da_mesh_C", "DMConvert_DA_Mesh", (void (*)(void)) DMConvert_DA_Mesh);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

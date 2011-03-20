@@ -14,30 +14,33 @@ import logger, script
 regressionRequirements = {'src/vec/vec/examples/tests/ex31':  set(['Matlab'])
                           }
 
-regressionParameters = {'src/vec/vec/examples/tests/ex1_2':  {'numProcs': 2},
-                        'src/vec/vec/examples/tests/ex3':    {'numProcs': 2},
-                        'src/vec/vec/examples/tests/ex4':    {'numProcs': 2},
-                        'src/vec/vec/examples/tests/ex5':    {'numProcs': 2},
-                        'src/vec/vec/examples/tests/ex9':    {'numProcs': 2},
-                        'src/vec/vec/examples/tests/ex10':   {'numProcs': 2},
-                        'src/vec/vec/examples/tests/ex11':   {'numProcs': 2},
-                        'src/vec/vec/examples/tests/ex12':   {'numProcs': 2},
-                        'src/vec/vec/examples/tests/ex13':   {'numProcs': 2},
-                        'src/vec/vec/examples/tests/ex14':   {'numProcs': 2},
-                        'src/vec/vec/examples/tests/ex16':   {'numProcs': 2},
-                        'src/vec/vec/examples/tests/ex17':   {'numProcs': 2},
-                        'src/vec/vec/examples/tests/ex17f':  {'numProcs': 3},
-                        'src/vec/vec/examples/tests/ex21_2': {'numProcs': 2},
-                        'src/vec/vec/examples/tests/ex22':   {'numProcs': 4},
-                        'src/vec/vec/examples/tests/ex23':   {'numProcs': 2},
-                        'src/vec/vec/examples/tests/ex24':   {'numProcs': 3},
-                        'src/vec/vec/examples/tests/ex25':   {'numProcs': 3},
-                        'src/vec/vec/examples/tests/ex26':   {'numProcs': 4},
-                        'src/vec/vec/examples/tests/ex28':   {'numProcs': 3},
-                        'src/vec/vec/examples/tests/ex29':   {'numProcs': 3, 'args': '-n 126'},
-                        'src/vec/vec/examples/tests/ex30f':  {'numProcs': 4},
-                        'src/vec/vec/examples/tests/ex33':   {'numProcs': 4},
-                        'src/vec/vec/examples/tests/ex36':   {'numProcs': 2, 'args': '-set_option_negidx -set_values_negidx -get_values_negidx'}
+regressionParameters = {'src/vec/vec/examples/tests/ex1_2':    {'numProcs': 2},
+                        'src/vec/vec/examples/tests/ex3':      {'numProcs': 2},
+                        'src/vec/vec/examples/tests/ex4':      {'numProcs': 2},
+                        'src/vec/vec/examples/tests/ex5':      {'numProcs': 2},
+                        'src/vec/vec/examples/tests/ex9':      {'numProcs': 2},
+                        'src/vec/vec/examples/tests/ex10':     {'numProcs': 2},
+                        'src/vec/vec/examples/tests/ex11':     {'numProcs': 2},
+                        'src/vec/vec/examples/tests/ex12':     {'numProcs': 2},
+                        'src/vec/vec/examples/tests/ex13':     {'numProcs': 2},
+                        'src/vec/vec/examples/tests/ex14':     {'numProcs': 2},
+                        'src/vec/vec/examples/tests/ex16':     {'numProcs': 2},
+                        'src/vec/vec/examples/tests/ex17':     {'numProcs': 2},
+                        'src/vec/vec/examples/tests/ex17f':    {'numProcs': 3},
+                        'src/vec/vec/examples/tests/ex21_2':   {'numProcs': 2},
+                        'src/vec/vec/examples/tests/ex22':     {'numProcs': 4},
+                        'src/vec/vec/examples/tests/ex23':     {'numProcs': 2},
+                        'src/vec/vec/examples/tests/ex24':     {'numProcs': 3},
+                        'src/vec/vec/examples/tests/ex25':     {'numProcs': 3},
+                        'src/vec/vec/examples/tests/ex26':     {'numProcs': 4},
+                        'src/vec/vec/examples/tests/ex28':     {'numProcs': 3},
+                        'src/vec/vec/examples/tests/ex29':     {'numProcs': 3, 'args': '-n 126'},
+                        'src/vec/vec/examples/tests/ex30f':    {'numProcs': 4},
+                        'src/vec/vec/examples/tests/ex33':     {'numProcs': 4},
+                        'src/vec/vec/examples/tests/ex36':     {'numProcs': 2, 'args': '-set_option_negidx -set_values_negidx -get_values_negidx'},
+                        'src/snes/examples/tutorials/ex5':     {'numProcs': 4, 'args': '-snes_mf -da_processors_x 4 -da_processors_y 1 -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always'},
+                        'src/snes/examples/tutorials/ex5f90':  {'numProcs': 4, 'args': '-snes_mf -da_processors_x 4 -da_processors_y 1 -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always'},
+                        'src/snes/examples/tutorials/ex5f90t': {'numProcs': 4, 'args': '-snes_mf -da_processors_x 4 -da_processors_y 1 -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always'}
                         }
 
 def noCheckCommand(command, status, output, error):
@@ -583,6 +586,7 @@ class PETScMaker(script.Script):
    return packageIncludes, packageLibs
 
  def storeObjects(self, objects):
+   presentObjects = []
    for obj in objects:
      locObj = os.path.basename(obj)
      self.logPrint('Moving %s to %s' % (locObj, obj))
@@ -592,7 +596,10 @@ class PETScMaker(script.Script):
          self.operationFailed = True
        else:
          shutil.move(locObj, obj)
-   return
+         presentObjects.append(obj)
+     else:
+       presentObjects.append(obj)
+   return presentObjects
 
  def compile(self, language, source, objDir = None):
    if not len(source):
@@ -620,8 +627,8 @@ class PETScMaker(script.Script):
        self.logPrint('ERROR IN %s COMPILE ******************************' % language, debugSection='screen')
        self.logPrint(output+error, debugSection='screen')
    self.configInfo.setCompilers.popLanguage()
-   self.storeObjects(objects)
-   deps = [os.path.splitext(o)[0]+'.d' for o in objects if os.path.isfile(os.path.splitext(os.path.basename(o))[0]+'.d')]
+   objects = self.storeObjects(objects)
+   deps    = [os.path.splitext(o)[0]+'.d' for o in objects if os.path.isfile(os.path.splitext(os.path.basename(o))[0]+'.d')]
    self.storeObjects(deps)
    return objects
 
@@ -763,22 +770,22 @@ class PETScMaker(script.Script):
  def link(self, executable, objects, language):
    '''${CLINKER} -o $@ $^ ${PETSC_LIB}
       ${DSYMUTIL} $@'''
-   self.compilers.pushLanguage(language)
-   cmd = self.compilers.getFullLinkerCmd(objects+' -lpetsc', executable)
-   self.logWrite(cmd+'\n', debugSection = self.debugSection, forceScroll = True)
+   self.logWrite('Linking object '+str(objects)+' into '+executable+'\n', debugSection = self.debugSection, forceScroll = True)
+   self.configInfo.compilers.pushLanguage(language)
+   cmd = self.configInfo.compilers.getFullLinkerCmd(' '.join(objects)+' -lpetsc', executable)
    if not self.dryRun:
      (output, error, status) = self.executeShellCommand(cmd, checkCommand = noCheckCommand, log=self.log)
      if status:
        self.logPrint("ERROR IN LINK ******************************", debugSection='screen')
        self.logPrint(output+error, debugSection='screen')
      # TODO: Move dsymutil stuff from PETSc.utilities.debuggers to config.compilers
-     if hasattr(self.debuggers, 'dsymutil'):
-       (output, error, status) = self.executeShellCommand(self.debuggers.dsymutil+' '+executable, checkCommand = noCheckCommand, log=self.log)
+     if hasattr(self.configInfo.debuggers, 'dsymutil'):
+       (output, error, status) = self.executeShellCommand(self.configInfo.debuggers.dsymutil+' '+executable, checkCommand = noCheckCommand, log=self.log)
        if status:
          self.operationFailed = True
          self.logPrint("ERROR IN LINK ******************************", debugSection='screen')
          self.logPrint(output+error, debugSection='screen')
-   self.compilers.popLanguage()
+   self.configInfo.compilers.popLanguage()
    return [executable]
 
  def buildDir(self, dirname, files, objDir):
@@ -905,36 +912,39 @@ class PETScMaker(script.Script):
        os.remove(fname)
    return
 
- def checkTestOutput(self, executable, output, testNum):
-   outputName = os.path.abspath(os.path.join('output', executable+'_'+str(testNum)+'.out'))
+ def checkTestOutput(self, testDir, executable, output, testNum):
+   outputName = os.path.join(testDir, 'output', os.path.basename(executable)+'_'+str(testNum)+'.out')
+   ret        = 0
    if not os.path.isfile(outputName):
      self.logPrint("MISCONFIGURATION: Regression output file %s (test %d) is missing" % (outputName, testNum), debugSection='screen')
    else:
      with file(outputName) as f:
        validOutput = f.read()
        if not validOutput == output:
-         self.logPrint("TEST ERROR: Regression output for %s (test %d) does not match" % (executable, testNum), debugSection='screen')
-         self.logPrint(validOutput, debugSection='screen')
-         self.logPrint(output, debugSection='screen')
+         self.logPrint("TEST ERROR: Regression output for %s (test %d) does not match" % (executable, testNum))
+         self.logPrint(validOutput, indent = 0)
+         self.logPrint(output, indent = 0)
+         ret = -1
        else:
-         self.logPrint("TEST SUCCESS: Regression output for %s (test %d) matches" % (executable, testNum), debugSection='screen')
-   return
+         self.logPrint("TEST SUCCESS: Regression output for %s (test %d) matches" % (executable, testNum))
+   return ret
 
- def runTest(self, executable, testNum, **params):
+ def runTest(self, testDir, executable, testNum, **params):
    numProcs = params.get('numProcs', 1)
    args     = params.get('args', '')
    # TODO: Take this line out when configure is fixed
    # mpiexec = self.mpi.mpiexec.replace(' -n 1','').replace(' ', '\\ ')
-   cmd = ' '.join([self.mpi.mpiexec, '-n', str(numProcs), os.path.abspath(executable), args])
-   self.logWrite('Running test for '+executable+'\n'+cmd+'\n', debugSection = self.debugSection, forceScroll = True)
+   cmd = ' '.join([self.configInfo.mpi.mpiexec, '-n', str(numProcs), os.path.abspath(executable), args])
+   self.logPrint('Running test for '+executable)
    if not self.dryRun:
      (output, error, status) = self.executeShellCommand(cmd, checkCommand = noCheckCommand, log=self.log)
      if status:
-       self.logPrint("TEST ERROR: Failed to execute %s\n" % executable, debugSection = 'screen', forceScroll = True)
-       self.logPrint(output+error, debugSection='screen', indent = 0, forceScroll = True)
+       self.logPrint("TEST ERROR: Failed to execute %s\n" % executable)
+       self.logPrint(output+error, indent = 0)
+       ret = -2
      else:
-       self.checkTestOutput(executable, output+error, testNum)
-   return
+       ret = self.checkTestOutput(testDir, executable, output+error, testNum)
+   return ret
 
  def regressionTestsDir(self, dirname, dummy):
    ''' This is run in a PETSc source directory'''
@@ -967,10 +977,10 @@ class PETScMaker(script.Script):
          self.link(executable, obj, 'FC')
        else:
          self.link(executable, obj, self.languages.clanguage)
-       self.runTest(executable, testNum, **regressionParameters.get(paramKey, {}))
+       self.runTest(dirname, executable, testNum, **regressionParameters.get(paramKey, {}))
        testNum += 1
        while '%s_%d' % (paramKey, testNum) in regressionParameters:
-         self.runTest(executable, testNum, **regressionParameters.get('%s_%d' % (paramKey, testNum), {}))
+         self.runTest(dirname, executable, testNum, **regressionParameters.get('%s_%d' % (paramKey, testNum), {}))
          testNum += 1
        self.cleanupTest(dirname, executable)
    return
@@ -1003,6 +1013,7 @@ class PETScMaker(script.Script):
    return
 
  def buildFortranStubs(self):
+   self.logWrite('Building Fortran stubs\n', debugSection = 'screen', forceScroll = True)
    oldPath = sys.path
    sys.path.append(os.path.join(self.petscDir, 'bin', 'maint'))
    from generatefortranstubs import main, processf90interfaces
@@ -1015,13 +1026,22 @@ class PETScMaker(script.Script):
    sys.path = oldPath
    return
 
+ def check(self):
+   self.logWrite('Checking build\n', debugSection = 'screen', forceScroll = True)
+   return
+
  def clean(self, libname):
-   shutil.rmtree(self.sourceDBFilename)
+   self.logWrite('Cleaning build\n', debugSection = 'screen', forceScroll = True)
+   if os.path.isfile(self.sourceDBFilename):
+     os.remove(self.sourceDBFilename)
+     self.logPrint('Removed '+self.sourceDBFilename)
    shutil.rmtree(self.getObjDir(libname))
+   self.logPrint('Removed '+self.getObjDir(libname))
    return
 
  def run(self):
    self.setup()
+   #self.buildFortranStubs()
    self.updateDependencies('libpetsc', self.rootDir)
    if self.buildLibraries('libpetsc', self.rootDir):
      # This is overkill, but right now it is cheap

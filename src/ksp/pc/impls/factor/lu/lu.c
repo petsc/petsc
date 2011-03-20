@@ -156,7 +156,9 @@ static PetscErrorCode PCSetUp_LU(PC pc)
       dir->actualfill = info.fill_ratio_needed;
       ierr = PetscLogObjectParent(pc,((PC_Factor*)dir)->fact);CHKERRQ(ierr);
     }
-    ierr = MatLUFactorNumeric(((PC_Factor*)dir)->fact,pc->pmat,&((PC_Factor*)dir)->info);CHKERRQ(ierr);
+    if((!pc->setupcalled) || (pc->setupcalled && !pc->reuse)) {
+      ierr = MatLUFactorNumeric(((PC_Factor*)dir)->fact,pc->pmat,&((PC_Factor*)dir)->info);CHKERRQ(ierr);
+    }
   }
   PetscFunctionReturn(0);
 }

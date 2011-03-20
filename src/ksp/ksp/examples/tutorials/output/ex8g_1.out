@@ -1,4 +1,4 @@
-PC Object:
+PC Object: 1 MPI processes
   type: gasm
     [0:1] number of locally-supported subdomains = 3
     Generalized additive Schwarz: total subdomains set, user-defined overlap
@@ -16,7 +16,7 @@ Subdomain with overlap
 Subdomain without overlap
 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 
   linear system matrix = precond matrix:
-  Matrix Object:  
+  Matrix Object:   1 MPI processes  
     type: seqaij
     rows=63, cols=63
     total: nonzeros=283, allocated nonzeros=315

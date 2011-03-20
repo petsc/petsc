@@ -103,9 +103,9 @@ namespace ALE {
           SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Dimension not supported: %d", dim);
         }
         ALE::ISieveConverter::convertMesh(*mB, *meshBd, renumbering, false);
-        ierr = MeshSetMesh(boundary, meshBd);CHKERRQ(ierr);
-        ierr = MeshGenerate(boundary, (PetscBool) interpolate, &mesh);CHKERRQ(ierr);
-        ierr = MeshDestroy(boundary);CHKERRQ(ierr);
+        ierr = DMMeshSetMesh(boundary, meshBd);CHKERRQ(ierr);
+        ierr = DMMeshGenerate(boundary, (PetscBool) interpolate, &mesh);CHKERRQ(ierr);
+        ierr = DMDestroy(boundary);CHKERRQ(ierr);
         *dm = (DM) mesh;
       }
       PetscFunctionReturn(0);
@@ -144,8 +144,8 @@ namespace ALE {
         SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Dimension not supported: %d", dim);
       }
       ALE::ISieveConverter::convertMesh(*mB, *meshBd, renumbering, false);
-      ierr = MeshSetMesh(boundary, meshBd);CHKERRQ(ierr);
-      ierr = MeshGenerate(boundary, (PetscBool) interpolate, &mesh);CHKERRQ(ierr);
+      ierr = DMMeshSetMesh(boundary, meshBd);CHKERRQ(ierr);
+      ierr = DMMeshGenerate(boundary, (PetscBool) interpolate, &mesh);CHKERRQ(ierr);
       ierr = MeshDestroy(boundary);CHKERRQ(ierr);
       *dm = (DM) mesh;
       PetscFunctionReturn(0);
@@ -173,8 +173,8 @@ namespace ALE {
         SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Dimension not supported: %d", dim);
       }
       ALE::ISieveConverter::convertMesh(*mB, *meshBd, renumbering, false);
-      ierr = MeshSetMesh(boundary, meshBd);CHKERRQ(ierr);
-      ierr = MeshGenerate(boundary, (PetscBool) interpolate, &mesh);CHKERRQ(ierr);
+      ierr = DMMeshSetMesh(boundary, meshBd);CHKERRQ(ierr);
+      ierr = DMMeshGenerate(boundary, (PetscBool) interpolate, &mesh);CHKERRQ(ierr);
       ierr = MeshDestroy(boundary);CHKERRQ(ierr);
       *dm = (DM) mesh;
       PetscFunctionReturn(0);
@@ -202,8 +202,8 @@ namespace ALE {
         SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Dimension not supported: %d", dim);
       }
       ALE::ISieveConverter::convertMesh(*mB, *meshBd, renumbering, false);
-      ierr = MeshSetMesh(boundary, meshBd);CHKERRQ(ierr);
-      ierr = MeshGenerate(boundary, (PetscBool) interpolate, &mesh);CHKERRQ(ierr);
+      ierr = DMMeshSetMesh(boundary, meshBd);CHKERRQ(ierr);
+      ierr = DMMeshGenerate(boundary, (PetscBool) interpolate, &mesh);CHKERRQ(ierr);
       ierr = MeshDestroy(boundary);CHKERRQ(ierr);
       *dm = (DM) mesh;
       PetscFunctionReturn(0);

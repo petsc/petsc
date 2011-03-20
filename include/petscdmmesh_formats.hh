@@ -1,7 +1,7 @@
-#if !defined(__PETSCMESH_FORMATS_HH)
-#define __PETSCMESH_FORMATS_HH
+#if !defined(__PETSCDMMESH_FORMATS_HH)
+#define __PETSCDMMESH_FORMATS_HH
 
-#include <petscmesh.hh>
+#include <petscdmmesh.hh>
 
 namespace ALE {
   namespace PyLith {
@@ -298,4 +298,4 @@ namespace ALE {
   };
 };
 
-#endif // __PETSCMESH_FORMATS_HH
+#endif // __PETSCDMMESH_FORMATS_HH

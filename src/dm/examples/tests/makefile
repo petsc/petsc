@@ -158,29 +158,29 @@ runex1:
 	   else echo "Possible problem with ex1_1, diffs above"; fi; \
 	   ${RM} -f ex1_1.tmp
 runex2:
-	-@${MPIEXEC} -n 2 ./ex2 > ex2_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 2 ./ex2 -nox > ex2_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex2_1.out ex2_1.tmp) then true; \
 	   else echo "Possible problem with ex2_1, diffs above"; fi; \
 	   ${RM} -f ex2_1.tmp
 runex2_2:
-	-@${MPIEXEC} -n 3 ./ex2 -wrap nonperiodic -local_print > ex2_2.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 3 ./ex2 -wrap nonperiodic -local_print -nox > ex2_2.tmp 2>&1;	  \
 	   if (${DIFF} output/ex2_2.out ex2_2.tmp) then true; \
 	   else echo "Possible problem with ex2_2, diffs above"; fi; \
 	   ${RM} -f ex2_2.tmp
 runex2_3:
-	-@${MPIEXEC} -n 3 ./ex2 -wrap xyzghosted -local_print > ex2_3.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 3 ./ex2 -wrap xyzghosted -local_print -nox > ex2_3.tmp 2>&1;	  \
 	   if (${DIFF} output/ex2_3.out ex2_3.tmp) then true; \
 	   else echo "Possible problem with ex2_3, diffs above"; fi; \
 	   ${RM} -f ex2_3.tmp
 runex3:
-	-@${MPIEXEC} -n 3 ./ex3 -time 50
+	-@${MPIEXEC} -n 3 ./ex3 -time 50 -nox
 runex4:
 	-@${MPIEXEC} -n 4 ./ex4  -nox > ex4_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex4_1.out ex4_1.tmp) then true; \
 	   else echo "Possible problem with ex4_1, diffs above"; fi; \
 	   ${RM} -f ex4_1.tmp
 runex5:
-	-@${MPIEXEC} -n 3 ./ex5 -time 50
+	-@${MPIEXEC} -n 3 ./ex5 -time 50 -nox
 runex6:
 	-@${MPIEXEC} -n 6 ./ex6 -test_order
 runex12:

@@ -8,7 +8,7 @@
 /* Logging support */
 PetscClassId  DM_CLASSID;
 PetscClassId  ADDA_CLASSID;
-PetscLogEvent  DMDA_GlobalToLocal, DMDA_LocalToGlobal, DMDA_LocalADFunction;
+PetscLogEvent DMDA_LocalADFunction;
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMDestroy_Private"

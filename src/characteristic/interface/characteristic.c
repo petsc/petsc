@@ -344,7 +344,7 @@ PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
   /* global and local grid info */
   ierr = DMDAGetInfo(da, &dim, &gx, &gy, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);CHKERRQ(ierr);
   ierr = DMDAGetLocalInfo(da, &info);CHKERRQ(ierr);
-  is   = info.xs;          ie   = info.xs+info.xm; 
+  is   = info.xs;          ie   = info.xs+info.xm;
   js   = info.ys;          je   = info.ys+info.ym;
   /* Allocation */
   ierr = PetscMalloc(dim*sizeof(PetscScalar),                &interpIndices);CHKERRQ(ierr);
@@ -354,7 +354,7 @@ PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
   ierr = PetscLogEventBegin(CHARACTERISTIC_Solve,0,0,0,0);CHKERRQ(ierr);
 
   /* -----------------------------------------------------------------------
-     PART 1, AT t-dt/2 
+     PART 1, AT t-dt/2
      -----------------------------------------------------------------------*/
   ierr = PetscLogEventBegin(CHARACTERISTIC_QueueSetup,0,0,0,0);CHKERRQ(ierr);
   /* GET POSITION AT HALF TIME IN THE PAST */
@@ -369,7 +369,7 @@ PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
     ierr = DMDAVecGetArray(c->velocityDA, velocityLocalOld, &velocityArrayOld);CHKERRQ(ierr);
   }
   ierr = PetscInfo(PETSC_NULL, "Calculating position at t_{n - 1/2}\n");CHKERRQ(ierr);
-  for(Qi.j = js; Qi.j < je; Qi.j++) { 
+  for(Qi.j = js; Qi.j < je; Qi.j++) {
     for(Qi.i = is; Qi.i < ie; Qi.i++) {
       interpIndices[0] = Qi.i;
       interpIndices[1] = Qi.j;
@@ -382,7 +382,7 @@ PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
       Qi.y = Qi.j - velocityValues[1]*dt/2.0;
 
       /* Determine whether the position at t - dt/2 is local */
-      Qi.proc = DMDAGetNeighborRelative(da, Qi.x, Qi.y); 
+      Qi.proc = DMDAGetNeighborRelative(da, Qi.x, Qi.y);
 
       /* Check for Periodic boundaries and move all periodic points back onto the domain */
       ierr = DMDAMapCoordsToPeriodicDomain(da,&(Qi.x),&(Qi.y));CHKERRQ(ierr);
@@ -453,7 +453,7 @@ PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
   ierr = PetscLogEventEnd(CHARACTERISTIC_HalfTimeExchange,0,0,0,0);CHKERRQ(ierr);
 
   /* -----------------------------------------------------------------------
-     PART 2, AT t-dt 
+     PART 2, AT t-dt
      -----------------------------------------------------------------------*/
 
   /* GET POSITION AT t_n (local values) */

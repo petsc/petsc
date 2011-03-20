@@ -41,7 +41,7 @@ class Configure(PETSc.package.NewPackage):
     blasDir = self.packageDir
 
     g = open(os.path.join(blasDir,'tmpmakefile'),'w')
-    f = open(os.path.join(blasDir,'makefile'),'r')    
+    f = open(os.path.join(blasDir,'makefile'),'r')
     line = f.readline()
     while line:
       if line.startswith('CC  '):
@@ -70,7 +70,6 @@ class Configure(PETSc.package.NewPackage):
         line = 'RANLIB = '+self.setCompilers.RANLIB+'\n'
       if line.startswith('RM  '):
         line = 'RM = '+self.programs.RM+'\n'
-      
 
       if line.startswith('include'):
         line = '\n'
