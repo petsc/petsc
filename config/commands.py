@@ -18,6 +18,7 @@ def build(ui, repo, *pats, **opts):
   # TODO: Make rootDir an option (this should really be a filter for sourceDB)
   # TODO: Make library a pat
   maker = builder.PETScMaker()
+  maker.setup()
   maker.updateDependencies('libpetsc', maker.rootDir)
   if maker.buildLibraries('libpetsc', maker.rootDir):
     # This is overkill, but right now it is cheap
@@ -40,8 +41,9 @@ def check(ui, repo, *pats, **opts):
     else:
       examples.append(os.path.join(maker.petscDir, 'src', 'snes', 'examples', 'tutorials', 'ex5f.F'))
   for ex in examples:
-    exampleDir = os.path.dirname(ex)
-    objects    = maker.buildFile(ex, maker.getObjDir('libpetsc'))
+    exampleName = os.path.splitext(os.path.basename(ex))[0]
+    exampleDir  = os.path.dirname(ex)
+    objects     = maker.buildFile(ex, maker.getObjDir(exampleName))
     if not len(objects):
       print 'TEST FAILED (check make.log for details)'
       return 1
