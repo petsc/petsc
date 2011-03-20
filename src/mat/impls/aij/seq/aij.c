@@ -3411,7 +3411,7 @@ EXTERN_C_BEGIN
 #if defined(PETSC_HAVE_PASTIX)
 extern PetscErrorCode MatGetFactor_seqaij_pastix(Mat,MatFactorType,Mat*);
 #endif
-#if defined(PETSC_HAVE_ESSL) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SCALAR_SINGLE) && !defined(PETSC_USE_SCALAR___FLOAT128)
+#if defined(PETSC_HAVE_ESSL) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_REAL_SINGLE) && !defined(PETSC_USE_REAL___FLOAT128)
 extern PetscErrorCode MatGetFactor_seqaij_essl(Mat,MatFactorType,Mat *);
 #endif
 extern PetscErrorCode  MatConvert_SeqAIJ_SeqAIJCRL(Mat,MatType,MatReuse,Mat*);
@@ -3494,7 +3494,7 @@ PetscErrorCode  MatCreate_SeqAIJ(Mat B)
 #if defined(PETSC_HAVE_PASTIX)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_pastix_C","MatGetFactor_seqaij_pastix",MatGetFactor_seqaij_pastix);CHKERRQ(ierr);
 #endif
-#if defined(PETSC_HAVE_ESSL) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SCALAR_SINGLE) && !defined(PETSC_USE_SCALAR___FLOAT128)
+#if defined(PETSC_HAVE_ESSL) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_REAL_SINGLE) && !defined(PETSC_USE_REAL___FLOAT128)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_essl_C","MatGetFactor_seqaij_essl",MatGetFactor_seqaij_essl);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_SUPERLU)

@@ -2,7 +2,7 @@
 #define _DGMRESBLASLAPACK_CAPS_H
 
 #if !defined(PETSC_USE_COMPLEX)
-# if defined(PETSC_USE_SCALAR_SINGLE)
+# if defined(PETSC_USE_REAL_SINGLE)
 #  define LAPACKhseqr_ SHSEQR
 #  define LAPACKhgeqz_ SHGEQZ
 #  define LAPACKgerfs_ SGERFS
@@ -17,7 +17,7 @@
 #  define LAPACKtgsen_ DTGSEN
 # endif
 # else
-# if defined(PETSC_USE_SCALAR_SINGLE)
+# if defined(PETSC_USE_REAL_SINGLE)
 #  define LAPACKhseqr_ CHSEQR
 #  define LAPACKhgeqz_ CHGEQZ
 #  define LAPACKgerfs_ CGERFS

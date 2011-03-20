@@ -2,7 +2,7 @@
 #define _DGMRESBLASLAPACK_USCORE_H
 
 #if !defined(PETSC_USE_COMPLEX)
-# if defined(PETSC_USE_SCALAR_SINGLE)
+# if defined(PETSC_USE_REAL_SINGLE)
 #  define LAPACKhseqr_ shseqr_
 #  define LAPACKhgeqz_ shgeqz_
 #  define LAPACKgerfs_ sgerfs_
@@ -18,7 +18,7 @@
 #  define LAPACKtgsen_ dtgsen_
 # endif
 # else
-# if defined(PETSC_USE_SCALAR_SINGLE)
+# if defined(PETSC_USE_REAL_SINGLE)
 #  define LAPACKhseqr_ chseqr_
 #  define LAPACKhgeqz_ chgeqz_
 #  define LAPACKgerfs_ cgerfs_

@@ -65,8 +65,8 @@ PetscErrorCode  PetscDrawHGCreate(PetscDraw draw, int bins, PetscDrawHG *hist) {
   h->win         = draw;
   ierr = PetscObjectReference((PetscObject) draw);CHKERRQ(ierr);
   h->color       = PETSC_DRAW_GREEN;
-  h->xmin        = PETSC_MAX;
-  h->xmax        = PETSC_MIN;
+  h->xmin        = PETSC_REAL_MAX;
+  h->xmax        = PETSC_MIN_REAL;
   h->ymin        = 0.;
   h->ymax        = 1.;
   h->numBins     = bins;
@@ -139,8 +139,8 @@ PetscErrorCode  PetscDrawHGReset(PetscDrawHG hist)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(hist, DRAWHG_CLASSID,1);
-  hist->xmin      = PETSC_MAX;
-  hist->xmax      = PETSC_MIN;
+  hist->xmin      = PETSC_REAL_MAX;
+  hist->xmax      = PETSC_MIN_REAL;
   hist->ymin      = 0.0;
   hist->ymax      = 0.0;
   hist->numValues = 0;

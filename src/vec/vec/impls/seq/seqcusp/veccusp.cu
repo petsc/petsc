@@ -1059,7 +1059,7 @@ PetscErrorCode VecSwap_SeqCUSP(Vec xin,Vec yin)
   if (xin != yin) {
     ierr = VecCUSPGetArrayReadWrite(xin,&xarray);CHKERRQ(ierr);
     ierr = VecCUSPGetArrayReadWrite(yin,&yarray);CHKERRQ(ierr);
-#if defined(PETSC_USE_SCALAR_SINGLE)
+#if defined(PETSC_USE_REAL_SINGLE)
     cublasSswap(bn,VecCUSPCastToRawPtr(*xarray),one,VecCUSPCastToRawPtr(*yarray),one);
 #else
     cublasDswap(bn,VecCUSPCastToRawPtr(*xarray),one,VecCUSPCastToRawPtr(*yarray),one);
@@ -1293,7 +1293,7 @@ PetscErrorCode VecNorm_SeqCUSP(Vec xin,NormType type,PetscReal* z)
     *z   = max;
   } else if (type == NORM_1) {
     ierr = VecCUSPGetArrayRead(xin,&xarray);CHKERRQ(ierr);
-#if defined(PETSC_USE_SCALAR_SINGLE)
+#if defined(PETSC_USE_REAL_SINGLE)
     *z = cublasSasum(bn,VecCUSPCastToRawPtr(*xarray),one);
 #else
     *z = cublasDasum(bn,VecCUSPCastToRawPtr(*xarray),one);

@@ -489,7 +489,7 @@ PetscErrorCode  KSPCreate_QCG(KSP ksp)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPQCGSetTrustRegionRadius_C",
                                     "KSPQCGSetTrustRegionRadius_QCG",
                                      KSPQCGSetTrustRegionRadius_QCG);CHKERRQ(ierr);
-  cgP->delta = PETSC_MAX; /* default trust region radius is infinite */ 
+  cgP->delta = PETSC_REAL_MAX; /* default trust region radius is infinite */ 
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

@@ -778,7 +778,7 @@ PetscErrorCode MatDestroy_MPISBAIJ(Mat mat)
   if (baij->diag) {ierr = VecDestroy(baij->diag);CHKERRQ(ierr);}
   if (baij->bb1) {ierr = VecDestroy(baij->bb1);CHKERRQ(ierr);}
   if (baij->xx1) {ierr = VecDestroy(baij->xx1);CHKERRQ(ierr);}
-#if defined(PETSC_USE_SCALAR_MAT_SINGLE)
+#if defined(PETSC_USE_REAL_MAT_SINGLE)
   ierr = PetscFree(baij->setvaluescopy);CHKERRQ(ierr);
 #endif
   ierr = PetscFree(baij->in_loc);CHKERRQ(ierr);

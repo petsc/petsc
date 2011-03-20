@@ -304,7 +304,7 @@ void  MPIAPI PetscADMin_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *
 EXTERN_C_END
 /* ---------------------------------------------------------------------------------------*/
 
-#if (defined(PETSC_USE_COMPLEX) && !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)) || defined(PETSC_USE_SCALAR___FLOAT128)
+#if (defined(PETSC_USE_COMPLEX) && !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)) || defined(PETSC_USE_REAL___FLOAT128)
 MPI_Op MPIU_SUM = 0;
 
 EXTERN_C_BEGIN
@@ -329,7 +329,7 @@ void  PetscSum_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
 EXTERN_C_END
 #endif
 
-#if defined(PETSC_USE_SCALAR___FLOAT128)
+#if defined(PETSC_USE_REAL___FLOAT128)
 MPI_Op MPIU_MAX = 0;
 MPI_Op MPIU_MIN = 0;
 
@@ -707,7 +707,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   */
   ierr = MPI_Op_create(PetscMaxSum_Local,1,&PetscMaxSum_Op);CHKERRQ(ierr);
 
-#if defined(PETSC_USE_SCALAR___FLOAT128)
+#if defined(PETSC_USE_REAL___FLOAT128)
   ierr = MPI_Type_contiguous(2,MPI_DOUBLE,&MPIU___FLOAT128);CHKERRQ(ierr);
   ierr = MPI_Type_commit(&MPIU___FLOAT128);CHKERRQ(ierr);
   ierr = MPI_Op_create(PetscSum_Local,1,&MPIU_SUM);CHKERRQ(ierr);
@@ -1121,7 +1121,7 @@ PetscErrorCode  PetscFinalize(void)
   PetscGlobalArgc = 0;
   PetscGlobalArgs = 0;
 
-#if defined(PETSC_USE_SCALAR___FLOAT128)
+#if defined(PETSC_USE_REAL___FLOAT128)
   ierr = MPI_Type_free(&MPIU___FLOAT128);CHKERRQ(ierr);
   ierr = MPI_Op_free(&MPIU_SUM);CHKERRQ(ierr);
   ierr = MPI_Op_free(&MPIU_MAX);CHKERRQ(ierr);

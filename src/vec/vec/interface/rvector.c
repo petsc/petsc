@@ -284,7 +284,7 @@ PetscErrorCode  VecNormalize(Vec x,PetscReal *val)
 -  p - the location of val (pass PETSC_NULL if you don't want this)
 
    Notes:
-   Returns the value PETSC_MIN and p = -1 if the vector is of length 0.
+   Returns the value PETSC_MIN_REAL and p = -1 if the vector is of length 0.
 
    Returns the smallest index with the maximum value
    Level: intermediate
@@ -325,7 +325,7 @@ PetscErrorCode  VecMax(Vec x,PetscInt *p,PetscReal *val)
    Level: intermediate
 
    Notes:
-   Returns the value PETSC_MAX and p = -1 if the vector is of length 0.
+   Returns the value PETSC_REAL_MAX and p = -1 if the vector is of length 0.
 
    This returns the smallest index with the minumum value
 

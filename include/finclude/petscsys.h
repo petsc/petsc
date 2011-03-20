@@ -84,9 +84,9 @@
       PetscEnum PETSC_BOOL
       PetscEnum PETSC_LONG_DOUBLE
 
-#if defined(PETSC_USE_SCALAR_SINGLE)
+#if defined(PETSC_USE_REAL_SINGLE)
 #define PETSC_REAL PETSC_FLOAT
-#elif defined(PETSC_USE_SCALAR_LONG_DOUBLE)
+#elif defined(PETSC_USE_REAL_LONG_DOUBLE)
 #define PETSC_REAL PETSC_LONG_DOUBLE
 #else
 #define PETSC_REAL PETSC_DOUBLE
@@ -122,17 +122,17 @@
 ! 
       PetscFortranDouble PETSC_PI
       PetscFortranDouble PETSC_DEGREES_TO_RADIANS
-      PetscFortranDouble PETSC_MAX
-      PetscFortranDouble PETSC_MIN
+      PetscFortranDouble PETSC_REAL_MAX
+      PetscFortranDouble PETSC_MIN_REAL
 
       parameter (PETSC_PI = 3.14159265358979323846264d0)
-      parameter (PETSC_MAX = 1.d300,PETSC_MIN = -1.d300)
+      parameter (PETSC_REAL_MAX = 1.d300,PETSC_MIN_REAL = -1.d300)
 
       PetscFortranDouble PETSC_MACHINE_EPSILON
       PetscFortranDouble PETSC_SQRT_MACHINE_EPSILON
       PetscFortranDouble PETSC_SMALL
 
-#if defined(PETSC_USE_SCALAR_SINGLE)
+#if defined(PETSC_USE_REAL_SINGLE)
       parameter (PETSC_MACHINE_EPSILON = 1.e-7)
       parameter (PETSC_SQRT_MACHINE_EPSILON = 3.e-4)
       parameter (PETSC_SMALL = 1.e-5)
@@ -147,15 +147,15 @@
 !
       integer MPIU_SCALAR 
 #if defined(PETSC_USE_COMPLEX)
-#if defined (PETSC_USE_SCALAR_SINGLE)
+#if defined (PETSC_USE_REAL_SINGLE)
       parameter(MPIU_SCALAR = MPI_COMPLEX)
 #else
       parameter(MPIU_SCALAR = MPI_DOUBLE_COMPLEX)
 #endif
 #else
-#if defined (PETSC_USE_SCALAR_SINGLE)
+#if defined (PETSC_USE_REAL_SINGLE)
       parameter (MPIU_SCALAR = MPI_REAL)
-#elif defined(PETSC_USE_SCALAR_LONG_DOUBLE)
+#elif defined(PETSC_USE_REAL_LONG_DOUBLE)
       parameter(MPIU_SCALAR = MPI_2DOUBLE_PRECISION)
 #else
       parameter(MPIU_SCALAR = MPI_DOUBLE_PRECISION)

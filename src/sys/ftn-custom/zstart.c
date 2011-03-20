@@ -109,13 +109,13 @@ extern void PXFGETARG(int*,_fcd,int*,int*);
 #endif
 EXTERN_C_END
 
-#if (defined(PETSC_USE_COMPLEX) && !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)) || defined(PETSC_USE_SCALAR__FLOAT128)
+#if (defined(PETSC_USE_COMPLEX) && !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)) || defined(PETSC_USE_REAL__FLOAT128)
 extern MPI_Op MPIU_SUM;
 EXTERN_C_BEGIN
 extern void  MPIAPI PetscSum_Local(void*,void *,PetscMPIInt *,MPI_Datatype *);
 EXTERN_C_END
 #endif
-#if defined(PETSC_USE_SCALAR___FLOAT128)
+#if defined(PETSC_USE_REAL___FLOAT128)
 void  MPIAPI PetscSum_Local(void *,void *,PetscMPIInt *,MPI_Datatype *);
 void  MPIAPI PetscMax_Local(void *,void *,PetscMPIInt *,MPI_Datatype *);
 void  MPIAPI PetscMin_Local(void *,void *,PetscMPIInt *,MPI_Datatype *);
@@ -342,7 +342,7 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),PetscErro
 
 #endif
 
-#if defined(PETSC_USE_SCALAR___FLOAT128)
+#if defined(PETSC_USE_REAL___FLOAT128)
   *ierr = MPI_Type_contiguous(2,MPI_DOUBLE,&MPIU___FLOAT128);
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI types\n");return;}
   *ierr = MPI_Type_commit(&MPIU___FLOAT128);

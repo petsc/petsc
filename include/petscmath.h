@@ -46,19 +46,19 @@ extern  MPI_Datatype  MPIU_2INT;
 #define PetscSinScalar(a)     std::sin(a)
 #define PetscCosScalar(a)     std::cos(a)
 
-#if defined(PETSC_USE_SCALAR_SINGLE)
+#if defined(PETSC_USE_REAL_SINGLE)
 typedef std::complex<float> PetscScalar;
-#elif defined(PETSC_USE_SCALAR_DOUBLE)
+#elif defined(PETSC_USE_REAL_DOUBLE)
 typedef std::complex<double> PetscScalar;
-#elif defined(PETSC_USE_SCALAR_LONG_DOUBLE)
+#elif defined(PETSC_USE_REAL_LONG_DOUBLE)
 typedef std::complex<long double> PetscScalar;
-#endif /* PETSC_USE_SCALAR_* */
+#endif /* PETSC_USE_REAL_* */
 
 #else /* PETSC_CLANGUAGE_CXX */
 /*  C support of complex numbers: Requires C99 compliant compiler*/
 #include <complex.h>
 
-#if defined(PETSC_USE_SCALAR_SINGLE)
+#if defined(PETSC_USE_REAL_SINGLE)
 typedef float complex PetscScalar;
 
 #define PetscRealPart(a)      crealf(a)
@@ -72,7 +72,7 @@ typedef float complex PetscScalar;
 #define PetscSinScalar(a)     csinf(a)
 #define PetscCosScalar(a)     ccosf(a)
 
-#elif defined(PETSC_USE_SCALAR_DOUBLE)
+#elif defined(PETSC_USE_REAL_DOUBLE)
 typedef double complex PetscScalar;
 
 #define PetscRealPart(a)      creal(a)
@@ -86,7 +86,7 @@ typedef double complex PetscScalar;
 #define PetscSinScalar(a)     csin(a)
 #define PetscCosScalar(a)     ccos(a)
 
-#elif defined(PETSC_USE_SCALAR_LONG_DOUBLE)
+#elif defined(PETSC_USE_REAL_LONG_DOUBLE)
 typedef long double complex PetscScalar;
 
 #define PetscRealPart(a)      creall(a)
@@ -100,7 +100,7 @@ typedef long double complex PetscScalar;
 #define PetscSinScalar(a)     csinl(a)
 #define PetscCosScalar(a)     ccosl(a)
 
-#endif /* PETSC_USE_SCALAR_* */
+#endif /* PETSC_USE_REAL_* */
 #endif /* PETSC_CLANGUAGE_CXX */
 
 #if !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)
@@ -108,44 +108,44 @@ extern  MPI_Datatype  MPI_C_DOUBLE_COMPLEX;
 extern  MPI_Datatype  MPI_C_COMPLEX;
 #endif /* PETSC_HAVE_MPI_C_DOUBLE_COMPLEX */
 
-#if defined(PETSC_USE_SCALAR_SINGLE)
+#if defined(PETSC_USE_REAL_SINGLE)
 #define MPIU_SCALAR MPI_C_COMPLEX
-#elif defined(PETSC_USE_SCALAR_DOUBLE)
+#elif defined(PETSC_USE_REAL_DOUBLE)
 #define MPIU_SCALAR MPI_C_DOUBLE_COMPLEX
-#elif defined(PETSC_USE_SCALAR_LONG_DOUBLE)
+#elif defined(PETSC_USE_REAL_LONG_DOUBLE)
 #define MPIU_SCALAR error
-#endif /* PETSC_USE_SCALAR_* */
+#endif /* PETSC_USE_REAL_* */
 
 /*
     real number definitions
  */
 #else /* PETSC_USE_COMPLEX */
-#if defined(PETSC_USE_SCALAR_SINGLE)
+#if defined(PETSC_USE_REAL_SINGLE)
 #define MPIU_SCALAR           MPI_FLOAT
 typedef float PetscScalar;
-#elif defined(PETSC_USE_SCALAR_DOUBLE)
+#elif defined(PETSC_USE_REAL_DOUBLE)
 #define MPIU_SCALAR           MPI_DOUBLE
 typedef double PetscScalar;
-#elif defined(PETSC_USE_SCALAR_LONG_DOUBLE)
+#elif defined(PETSC_USE_REAL_LONG_DOUBLE)
 #define MPIU_SCALAR           MPI_LONG_DOUBLE
 typedef long double PetscScalar;
-#elif defined(PETSC_USE_SCALAR___FLOAT128)
+#elif defined(PETSC_USE_REAL___FLOAT128)
 extern MPI_Datatype MPIU___FLOAT128;
 #define MPIU_SCALAR MPIU___FLOAT128
 typedef __float128 PetscScalar;
-#endif /* PETSC_USE_SCALAR_* */
+#endif /* PETSC_USE_REAL_* */
 #define PetscRealPart(a)      (a)
 #define PetscImaginaryPart(a) (0.)
 #define PetscAbsScalar(a)     (((a)<0.0)   ? -(a) : (a))
 #define PetscConj(a)          (a)
-#if !defined(PETSC_USE_SCALAR___FLOAT128)
+#if !defined(PETSC_USE_REAL___FLOAT128)
 #define PetscSqrtScalar(a)    sqrt(a)
 #define PetscPowScalar(a,b)   pow(a,b)
 #define PetscExpScalar(a)     exp(a)
 #define PetscLogScalar(a)     log(a)
 #define PetscSinScalar(a)     sin(a)
 #define PetscCosScalar(a)     cos(a)
-#else /* PETSC_USE_SCALAR___FLOAT128 */
+#else /* PETSC_USE_REAL___FLOAT128 */
 #include <quadmath.h>
 #define PetscSqrtScalar(a)    sqrtq(a)
 #define PetscPowScalar(a,b)   powq(a,b)
@@ -153,23 +153,23 @@ typedef __float128 PetscScalar;
 #define PetscLogScalar(a)     logq(a)
 #define PetscSinScalar(a)     sinq(a)
 #define PetscCosScalar(a)     cosq(a)
-#endif /* PETSC_USE_SCALAR___FLOAT128 */
+#endif /* PETSC_USE_REAL___FLOAT128 */
 
 #endif /* PETSC_USE_COMPLEX */
 
-#if defined(PETSC_USE_SCALAR_SINGLE)
+#if defined(PETSC_USE_REAL_SINGLE)
 #define MPIU_REAL   MPI_FLOAT
 typedef float PetscReal;
-#elif defined(PETSC_USE_SCALAR_DOUBLE)
+#elif defined(PETSC_USE_REAL_DOUBLE)
 #define MPIU_REAL   MPI_DOUBLE
 typedef double PetscReal;
-#elif defined(PETSC_USE_SCALAR_LONG_DOUBLE)
+#elif defined(PETSC_USE_REAL_LONG_DOUBLE)
 #define MPIU_REAL   MPI_LONG_DOUBLE
 typedef long double PetscReal;
-#elif defined(PETSC_USE_SCALAR___FLOAT128)
+#elif defined(PETSC_USE_REAL___FLOAT128)
 #define MPIU_REAL MPIU___FLOAT128
 typedef __float128 PetscReal;
-#endif /* PETSC_USE_SCALAR_* */
+#endif /* PETSC_USE_REAL_* */
 
 #define PetscSign(a) (((a) >= 0) ? ((a) == 0 ? 0 : 1) : -1)
 #define PetscAbs(a)  (((a) >= 0) ? (a) : -(a))
@@ -290,7 +290,7 @@ M*/
 /*
      Basic constants 
 */
-#if defined(PETSC_USE_SCALAR___FLOAT128)
+#if defined(PETSC_USE_REAL___FLOAT128)
 #define PETSC_PI                 M_PIq
 #elif defined(M_PI)
 #define PETSC_PI                 M_PI
@@ -302,25 +302,25 @@ M*/
 #define PETSC_MAX_INT            2147483647
 #define PETSC_MIN_INT            -2147483647
 
-#if defined(PETSC_USE_SCALAR_SINGLE)
+#if defined(PETSC_USE_REAL_SINGLE)
 #if defined(MAXFLOAT)
-#  define PETSC_MAX                     MAXFLOAT
+#  define PETSC_REAL_MAX                 MAXFLOAT
 #else
-#  define PETSC_MAX                     1.e30
+#  define PETSC_REAL_MAX                1.e30
 #endif
-#  define PETSC_MIN                    -PETSC_MAX
+#  define PETSC_MIN_REAL                -PETSC_REAL_MAX
 #  define PETSC_MACHINE_EPSILON         1.e-7
 #  define PETSC_SQRT_MACHINE_EPSILON    3.e-4
 #  define PETSC_SMALL                   1.e-5
-#elif defined(PETSC_USE_SCALAR_DOUBLE)
-#  define PETSC_MAX                     1.e300
-#  define PETSC_MIN                    -PETSC_MAX
+#elif defined(PETSC_USE_REAL_DOUBLE)
+#  define PETSC_REAL_MAX                1.e300
+#  define PETSC_MIN_REAL                -PETSC_REAL_MAX
 #  define PETSC_MACHINE_EPSILON         1.e-14
 #  define PETSC_SQRT_MACHINE_EPSILON    1.e-7
 #  define PETSC_SMALL                   1.e-10
-#elif defined(PETSC_USE_SCALAR___FLOAT128)
-#  define PETSC_MAX                     FLT128_MAX
-#  define PETSC_MIN                     -FLT128_MAX
+#elif defined(PETSC_USE_REAL___FLOAT128)
+#  define PETSC_REAL_MAX                FLT128_MAX
+#  define PETSC_MIN_REAL                -FLT128_MAX
 #  define PETSC_MACHINE_EPSILON         FLT128_EPSILON
 #  define PETSC_SQRT_MACHINE_EPSILON    1.38777878078e-17
 #  define PETSC_SMALL                   1.e-20
@@ -347,7 +347,7 @@ extern PetscErrorCode  PetscGlobalSum(MPI_Comm, const PetscScalar*,PetscScalar*)
      Level: beginner
 
 M*/
-#if defined(PETSC_USE_SCALAR___FLOAT128)
+#if defined(PETSC_USE_REAL___FLOAT128)
 PETSC_STATIC_INLINE PetscErrorCode PetscIsInfOrNanScalar(PetscScalar a) {
   return isinfq(PetscAbsScalar(a)) || isnanq(PetscAbsScalar(a));
 }

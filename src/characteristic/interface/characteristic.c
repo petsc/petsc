@@ -34,8 +34,7 @@ PetscErrorCode CharacteristicView(Characteristic c, PetscViewer viewer)
   PetscCheckSameComm(c, 1, viewer, 2);
 
   ierr = PetscTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
-  if (iascii) {
-  } else {
+  if (!iascii) {
     if (c->ops->view) {
       ierr = (*c->ops->view)(c, viewer);CHKERRQ(ierr);
     }

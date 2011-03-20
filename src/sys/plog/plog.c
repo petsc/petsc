@@ -1700,13 +1700,13 @@ PetscErrorCode  PetscLogView(PetscViewer viewer)
 #else
   ierr = PetscFPrintf(comm, fd, "Compiled without FORTRAN kernels\n");CHKERRQ(ierr);
 #endif
-#if defined(PETSC_USE_SCALAR_SINGLE)
+#if defined(PETSC_USE_REAL_SINGLE)
   ierr = PetscFPrintf(comm, fd, "Compiled with single precision PetscScalar and PetscReal\n");CHKERRQ(ierr);
 #elif defined(PETSC_USE_LONGDOUBLE)
   ierr = PetscFPrintf(comm, fd, "Compiled with long double precision PetscScalar and PetscReal\n");CHKERRQ(ierr);
 #endif
 
-#if defined(PETSC_USE_SCALAR_MAT_SINGLE)
+#if defined(PETSC_USE_REAL_MAT_SINGLE)
   ierr = PetscFPrintf(comm, fd, "Compiled with single precision matrices\n");CHKERRQ(ierr);
 #else
   ierr = PetscFPrintf(comm, fd, "Compiled with full precision matrices (default)\n");CHKERRQ(ierr);

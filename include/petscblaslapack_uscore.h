@@ -5,7 +5,7 @@
 #define _BLASLAPACK_USCORE_H
 
 #if !defined(PETSC_USE_COMPLEX)
-# if defined(PETSC_USE_SCALAR_SINGLE)
+# if defined(PETSC_USE_REAL_SINGLE)
 /* Real single precision with no character string arguments */
 #  define LAPACKgeqrf_ sgeqrf_
 #  define LAPACKungqr_ sorgqr_
@@ -73,7 +73,7 @@
 #  define LAPACKstebz_ dstebz_
 # endif
 #else
-# if defined(PETSC_USE_SCALAR_SINGLE)
+# if defined(PETSC_USE_REAL_SINGLE)
 /* Complex single precision with no character string arguments */
 #  define LAPACKgeqrf_ cgeqrf_
 #  define LAPACKungqr_ cungqr_

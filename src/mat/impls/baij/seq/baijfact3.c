@@ -91,7 +91,7 @@ PetscErrorCode MatSeqBAIJSetNumericFactorization_inplace(Mat inA,PetscBool  natu
       inA->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering_inplace;
       break; 
     case 4:
-#if defined(PETSC_USE_SCALAR_MAT_SINGLE)
+#if defined(PETSC_USE_REAL_MAT_SINGLE)
       {
         PetscBool   sse_enabled_local;
         PetscErrorCode ierr;

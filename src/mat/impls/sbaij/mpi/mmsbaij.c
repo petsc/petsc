@@ -292,12 +292,12 @@ PetscErrorCode DisAssemble_MPISBAIJ(Mat A)
   PetscInt       k,bs=A->rmap->bs,bs2=baij->bs2,*rvals,*nz,ec,m=A->rmap->n;
   MatScalar      *a = Bbaij->a;
   PetscScalar    *atmp;
-#if defined(PETSC_USE_SCALAR_MAT_SINGLE)
+#if defined(PETSC_USE_REAL_MAT_SINGLE)
   PetscInt       l;
 #endif
 
   PetscFunctionBegin;
-#if defined(PETSC_USE_SCALAR_MAT_SINGLE)
+#if defined(PETSC_USE_REAL_MAT_SINGLE)
   ierr = PetscMalloc(A->rmap->bs*sizeof(PetscScalar),&atmp);
 #endif
   /* free stuff related to matrix-vec multiply */
@@ -347,7 +347,7 @@ PetscErrorCode DisAssemble_MPISBAIJ(Mat A)
     for (j=Bbaij->i[i]; j<Bbaij->i[i+1]; j++) {
       col = garray[Bbaij->j[j]]*bs;
       for (k=0; k<bs; k++) {
-#if defined(PETSC_USE_SCALAR_MAT_SINGLE)
+#if defined(PETSC_USE_REAL_MAT_SINGLE)
         for (l=0; l<bs; l++) atmp[l] = a[j*bs2+l];
 #else
         atmp = a+j*bs2 + k*bs;
@@ -357,7 +357,7 @@ PetscErrorCode DisAssemble_MPISBAIJ(Mat A)
       }
     }
   }
-#if defined(PETSC_USE_SCALAR_MAT_SINGLE)
+#if defined(PETSC_USE_REAL_MAT_SINGLE)
   ierr = PetscFree(atmp);CHKERRQ(ierr);
 #endif
   ierr = PetscFree(baij->garray);CHKERRQ(ierr);

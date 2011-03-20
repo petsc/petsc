@@ -216,7 +216,7 @@ PetscErrorCode  VecStrideMax(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
 
   id = -1;
   if (!n) {
-    max = PETSC_MIN;
+    max = PETSC_MIN_REAL;
   } else {
     id  = 0;
 #if defined(PETSC_USE_COMPLEX)
@@ -312,7 +312,7 @@ PetscErrorCode  VecStrideMin(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
 
   id = -1;
   if (!n) {
-    min = PETSC_MAX;
+    min = PETSC_REAL_MAX;
   } else {
     id = 0;
 #if defined(PETSC_USE_COMPLEX)
@@ -546,7 +546,7 @@ PetscErrorCode  VecStrideMaxAll(Vec v,PetscInt idex[],PetscReal nrm[])
 
   if (!n) {
     for (j=0; j<bs; j++) {
-      max[j] = PETSC_MIN;
+      max[j] = PETSC_MIN_REAL;
     }
   } else {
     for (j=0; j<bs; j++) {
@@ -624,7 +624,7 @@ PetscErrorCode  VecStrideMinAll(Vec v,PetscInt idex[],PetscReal nrm[])
 
   if (!n) {
     for (j=0; j<bs; j++) {
-      min[j] = PETSC_MAX;
+      min[j] = PETSC_REAL_MAX;
     }
   } else {
     for (j=0; j<bs; j++) {

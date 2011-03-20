@@ -24,7 +24,7 @@ T*/
 
 #include <petscvec.h>
 
-#if defined(PETSC_USE_SCALAR_SINGLE)
+#if defined(PETSC_USE_REAL_SINGLE)
 #define PETSC_EPS 1.e-5
 #else
 #define PETSC_EPS 1.e-10

@@ -422,11 +422,8 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck_nz(const MatFactorInfo *info,Fa
   PetscFunctionBegin;
   if (PetscAbsScalar(sctx->pv) <= _zero){
     /* force |diag| > zeropivot*rs */
-    if (!sctx->nshift) { 
-      sctx->shift_amount = info->shiftamount;
-    } else { 
-      sctx->shift_amount *= 2.0;
-    }
+    if (!sctx->nshift) sctx->shift_amount = info->shiftamount;
+    else sctx->shift_amount *= 2.0;
     sctx->newshift = PETSC_TRUE;
     (sctx->nshift)++;
   } else {

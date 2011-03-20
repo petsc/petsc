@@ -380,7 +380,7 @@ class Configure(config.base.Configure):
           if k.startswith('USE_'):
             cmakeset(fd,'PETSC_' + k, v)
       cmakeset(fd,'PETSC_USE_COMPLEX', self.scalartypes.scalartype == 'complex')
-      cmakeset(fd,'PETSC_USE_SCALAR_' + self.scalartypes.precision.upper())
+      cmakeset(fd,'PETSC_USE_REAL_' + self.scalartypes.precision.upper())
       cmakeset(fd,'PETSC_CLANGUAGE_'+self.languages.clanguage)
       if hasattr(self.compilers, 'FC'):
         cmakeset(fd,'PETSC_HAVE_FORTRAN')

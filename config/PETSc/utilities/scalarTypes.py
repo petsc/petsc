@@ -75,18 +75,18 @@ class Configure(config.base.Configure):
     '''Set the default real number precision for PETSc objects'''
     self.precision = self.framework.argDB['with-precision'].lower()
     if self.precision == 'single':
-      self.addDefine('USE_SCALAR_SINGLE', '1')
+      self.addDefine('USE_REAL_SINGLE', '1')
     elif self.precision == 'longdouble':
-      self.addDefine('USE_SCALAR_LONG_DOUBLE', '1')
+      self.addDefine('USE_REAL_LONG_DOUBLE', '1')
     elif self.precision == '_quad': # source code currently does not support this
       self.pushLanguage('C')
       if not config.setCompilers.Configure.isIntel(self.compilers.getCompiler()): raise RuntimeError('Only Intel compiler supports _quad')
       self.popLanguage()
-      self.addDefine('USE_SCALAR__QUAD', '1')        
+      self.addDefine('USE_REAL__QUAD', '1')        
     elif self.precision == 'double':
-      self.addDefine('USE_SCALAR_DOUBLE', '1')
+      self.addDefine('USE_REAL_DOUBLE', '1')
     elif self.precision == '__float128':  # supported by gcc 4.6
-      self.addDefine('USE_SCALAR___FLOAT128', '1')
+      self.addDefine('USE_REAL___FLOAT128', '1')
       self.libraries.add('quadmath','logq',prototype='#include <quadmath.h>',call='__float128 f; logq(f);')
     else:
       raise RuntimeError('--with-precision must be single, double, longdouble')

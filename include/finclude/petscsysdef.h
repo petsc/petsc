@@ -88,7 +88,7 @@
 #define PetscFortranFloat real(kind=selected_real_kind(5))
 #define PetscFortranDouble real(kind=selected_real_kind(10))
 #define PetscFortranLongDouble real(kind=selected_real_kind(19))
-#if defined(PETSC_USE_SCALAR_SINGLE)
+#if defined(PETSC_USE_REAL_SINGLE)
 #define PetscFortranComplex complex(kind=selected_real_kind(5))
 #else
 #define PetscFortranComplex complex(kind=selected_real_kind(10))
@@ -98,7 +98,7 @@
 #define PetscFortranFloat real*4
 #define PetscFortranDouble real*8
 #define PetscFortranLongDouble real*16
-#if defined(PETSC_USE_SCALAR_SINGLE)
+#if defined(PETSC_USE_REAL_SINGLE)
 #define PetscFortranComplex complex*8
 #else
 #define PetscFortranComplex complex*16
@@ -109,11 +109,11 @@
 #if defined(PETSC_USE_COMPLEX)
 #define PETSC_SCALAR PETSC_COMPLEX
 #else
-#if defined(PETSC_USE_SCALAR_SINGLE)
+#if defined(PETSC_USE_REAL_SINGLE)
 #define PETSC_SCALAR PETSC_FLOAT
-#elif defined(PETSC_USE_SCALAR_LONG_DOUBLE) || defined(PETSC_USE_SCALAR___FLOAT128)
+#elif defined(PETSC_USE_REAL_LONG_DOUBLE) || defined(PETSC_USE_REAL___FLOAT128)
 #define PETSC_SCALAR PETSC_LONG_DOUBLE
-#elif defined(PETSC_USE_SCALAR_DOUBLE)
+#elif defined(PETSC_USE_REAL_DOUBLE)
 #define PETSC_SCALAR PETSC_DOUBLE
 #endif     
 #endif
@@ -135,11 +135,11 @@
 #define PetscImaginaryPart(a) daimg(a)
 #endif
 #else
-#if defined (PETSC_USE_SCALAR_SINGLE)
+#if defined (PETSC_USE_REAL_SINGLE)
 #define PetscScalar PetscFortranFloat
-#elif defined(PETSC_USE_SCALAR_LONG_DOUBLE) || defined(PETSC_USE_SCALAR___FLOAT128)
+#elif defined(PETSC_USE_REAL_LONG_DOUBLE) || defined(PETSC_USE_REAL___FLOAT128)
 #define PetscScalar PetscFortranLongDouble
-#elif defined(PETSC_USE_SCALAR_DOUBLE)
+#elif defined(PETSC_USE_REAL_DOUBLE)
 #define PetscScalar PetscFortranDouble
 #endif
 #define PetscRealPart(a) a
@@ -147,11 +147,11 @@
 #define PetscImaginaryPart(a) a
 #endif
 
-#if defined (PETSC_USE_SCALAR_SINGLE)
+#if defined (PETSC_USE_REAL_SINGLE)
 #define PetscReal PetscFortranFloat
-#elif defined(PETSC_USE_SCALAR_LONG_DOUBLE) || defined(PETSC_USE_SCALAR___FLOAT128)
+#elif defined(PETSC_USE_REAL_LONG_DOUBLE) || defined(PETSC_USE_REAL___FLOAT128)
 #define PetscReal PetscFortranLongDouble
-#elif defined(PETSC_USE_SCALAR_DOUBLE)
+#elif defined(PETSC_USE_REAL_DOUBLE)
 #define PetscReal PetscFortranDouble
 #endif
 

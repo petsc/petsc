@@ -67,12 +67,12 @@ PetscErrorCode  PetscFormatConvert(const char *format,char *newformat,size_t siz
       i += 3;
     } else if (format[i] == '%' && format[i+1] == 'G') {
       newformat[j++] = '%';
-#if defined(PETSC_USE_SCALAR_DOUBLE) || defined(PETSC_USE_SCALAR_SINGLE)
+#if defined(PETSC_USE_REAL_DOUBLE) || defined(PETSC_USE_REAL_SINGLE)
       newformat[j++] = 'g';
-#elif defined(PETSC_USE_SCALAR_LONG_DOUBLE)
+#elif defined(PETSC_USE_REAL_LONG_DOUBLE)
       newformat[j++] = 'L';
       newformat[j++] = 'g';
-#elif defined(PETSC_USE_SCALAR___FLOAT128)
+#elif defined(PETSC_USE_REAL___FLOAT128)
       newformat[j++] = 'Q';
       newformat[j++] = 'e';
 #endif
@@ -565,7 +565,7 @@ PetscErrorCode  PetscPrintf(MPI_Comm comm,const char format[],...)
       ierr    = PetscStrstr(nformat,"%",&sub2);CHKERRQ(ierr);
       sub2[0] = 0;
       value   = va_arg(Argp,double);
-#if defined(PETSC_USE_SCALAR_SINGLE)
+#if defined(PETSC_USE_REAL_SINGLE)
       if (PetscAbsReal(value) < 1.e-6) {
         ierr    = PetscStrcat(nformat,"< 1.e-6");CHKERRQ(ierr);
 #else

@@ -1133,17 +1133,17 @@ extern const char *PetscDataTypes[];
 #if defined(PETSC_USE_COMPLEX)
 #define  PETSC_SCALAR  PETSC_COMPLEX
 #else
-#if defined(PETSC_USE_SCALAR_SINGLE)
+#if defined(PETSC_USE_REAL_SINGLE)
 #define  PETSC_SCALAR  PETSC_FLOAT
-#elif defined(PETSC_USE_SCALAR_LONG_DOUBLE)
+#elif defined(PETSC_USE_REAL_LONG_DOUBLE)
 #define  PETSC_SCALAR  PETSC_LONG_DOUBLE
 #else
 #define  PETSC_SCALAR  PETSC_DOUBLE
 #endif
 #endif
-#if defined(PETSC_USE_SCALAR_SINGLE)
+#if defined(PETSC_USE_REAL_SINGLE)
 #define  PETSC_REAL  PETSC_FLOAT
-#elif defined(PETSC_USE_SCALAR_LONG_DOUBLE)
+#elif defined(PETSC_USE_REAL_LONG_DOUBLE)
 #define  PETSC_REAL  PETSC_LONG_DOUBLE
 #else
 #define  PETSC_REAL  PETSC_DOUBLE
@@ -1198,12 +1198,12 @@ extern PetscErrorCode    PetscTokenDestroy(PetscToken);
    These are  MPI operations for MPI_Allreduce() etc
 */
 extern  MPI_Op PetscMaxSum_Op;
-#if (defined(PETSC_USE_COMPLEX) && !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)) || defined(PETSC_USE_SCALAR___FLOAT128)
+#if (defined(PETSC_USE_COMPLEX) && !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)) || defined(PETSC_USE_REAL___FLOAT128)
 extern  MPI_Op MPIU_SUM;
 #else
 #define MPIU_SUM MPI_SUM
 #endif
-#if defined(PETSC_USE_SCALAR___FLOAT128)
+#if defined(PETSC_USE_REAL___FLOAT128)
 extern  MPI_Op MPIU_MAX;
 extern  MPI_Op MPIU_MIN;
 #else

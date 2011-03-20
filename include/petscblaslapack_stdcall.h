@@ -13,7 +13,7 @@ PETSC_EXTERN_CXX_BEGIN
 EXTERN_C_BEGIN
 
 #if !defined(PETSC_USE_COMPLEX)
-# if defined(PETSC_USES_FORTRAN_SINGLE) || defined(PETSC_USE_SCALAR_SINGLE)
+# if defined(PETSC_USES_FORTRAN_SINGLE) || defined(PETSC_USE_REAL_SINGLE)
 /* Real single precision without character string arguments. */
 #  define LAPACKgeqrf_ SGEQRF
 #  define LAPACKungqr_ SORGQR
@@ -116,7 +116,7 @@ extern void PETSC_STDCALL                           DSTEBZ(const char*,int,const
 extern void PETSC_STDCALL                           DPTTRS(PetscBLASInt*,PetscBLASInt*,PetscReal*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
 # endif
 #else
-# if defined(PETSC_USES_FORTRAN_SINGLE) || defined(PETSC_USE_SCALAR_SINGLE)
+# if defined(PETSC_USES_FORTRAN_SINGLE) || defined(PETSC_USE_REAL_SINGLE)
 /* Complex single precision without character string arguments. */
 #  define LAPACKgeqrf_ CGEQRF
 #  define LAPACKungqr_ CUNGQR

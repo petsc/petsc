@@ -29,7 +29,7 @@ PetscErrorCode  PetscDataTypeToMPIDataType(PetscDataType ptype,MPI_Datatype* mty
   } else if (ptype == PETSC_DOUBLE) {
     *mtype = MPI_DOUBLE;
 #if defined(PETSC_USE_COMPLEX)
-#if defined(PETSC_USE_SCALAR_SINGLE)
+#if defined(PETSC_USE_REAL_SINGLE)
   } else if (ptype == PETSC_COMPLEX) {
     *mtype = MPI_C_COMPLEX;
 #else
@@ -86,7 +86,7 @@ PetscErrorCode  PetscMPIDataTypeToPetscDataType(MPI_Datatype mtype,PetscDataType
   } else if (mtype == MPI_DOUBLE) {
     *ptype = PETSC_DOUBLE;
 #if defined(PETSC_USE_COMPLEX)
-#if defined(PETSC_USE_SCALAR_SINGLE)
+#if defined(PETSC_USE_REAL_SINGLE)
   } else if (mtype == MPI_C_COMPLEX) {
     *ptype = PETSC_COMPLEX;
 #else
@@ -121,9 +121,9 @@ typedef enum {PETSC_INT_SIZE = sizeof(PetscInt),PETSC_DOUBLE_SIZE = sizeof(doubl
 #else
 #define PETSC_SCALAR_SIZE PETSC_DOUBLE_SIZE
 #endif
-#if defined(PETSC_USE_SCALAR_SINGLE)
+#if defined(PETSC_USE_REAL_SINGLE)
 #define PETSC_REAL_SIZE PETSC_FLOAT_SIZE
-#elif defined(PETSC_USE_SCALAR_LONG_DOUBLE)
+#elif defined(PETSC_USE_REAL_LONG_DOUBLE)
 #define PETSC_REAL_SIZE PETSC_LONG_DOUBLE_SIZE
 #else
 #define PETSC_REAL_SIZE PETSC_DOUBLE_SIZE

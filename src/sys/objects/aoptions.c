@@ -252,11 +252,11 @@ PetscErrorCode PetscOptionsGetFromTextInput()
         ierr = PetscPrintf(PETSC_COMM_WORLD,"-%s%s <%g>: %s (%s)",PetscOptionsObject.prefix?PetscOptionsObject.prefix:"",next->option+1,*(double*)next->data,next->text,next->man);CHKERRQ(ierr);
         ierr = PetscScanString(PETSC_COMM_WORLD,512,str);CHKERRQ(ierr);
         if (str[0]) {
-#if defined(PETSC_USE_SCALAR_SINGLE)
+#if defined(PETSC_USE_REAL_SINGLE)
           sscanf(str,"%e",&ir);
-#elif defined(PETSC_USE_SCALAR_DOUBLE)
+#elif defined(PETSC_USE_REAL_DOUBLE)
           sscanf(str,"%le",&ir);
-#elif defined(PETSC_USE_SCALAR___FLOAT128)
+#elif defined(PETSC_USE_REAL___FLOAT128)
           ir = strtoflt128(str,0);
 #else
           SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Unknown scalar type");
