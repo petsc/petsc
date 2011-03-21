@@ -1900,6 +1900,7 @@ namespace ALE {
           txt << "viewing IFSieve '" << name << "'" << std::endl;
         }
       }
+      PetscSynchronizedPrintf(comm, "Max sizes cone: %d support: %d\n", this->getMaxConeSize(), this->getMaxSupportSize());
       if(rank == 0) {
         txt << "cap --> base:" << std::endl;
       }
