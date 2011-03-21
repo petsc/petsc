@@ -162,11 +162,15 @@ class SourceDatabase(logger.Logger):
   def vertex(filename):
     return SourceNode(filename, SourceDatabase.marker(filename))
 
+  def hasNode(self, vertex):
+    return len([v for v in self.dependencyGraph.vertices if v[0] == vertex])
+
   def setNode(self, vertex, deps):
     self.dependencyGraph.addEdges(SourceDatabase.vertex(vertex), [SourceDatabase.vertex(dep) for dep in deps])
     return
 
   def updateNode(self, vertex):
+    # This currently makes no sense
     v = SourceDatabase.vertex(vertex)
     self.dependencyGraph.clearEdges(v, inOnly = True)
     self.dependencyGraph.addEdges([SourceDatabase.vertex(dep) for dep,mark in self.dependencyGraph.getEdges(v)[0]])
@@ -815,6 +819,7 @@ class PETScMaker(script.Script):
    return objects
 
  def buildLibraries(self, libname, rootDir):
+   '''TODO: If a file fails to build, it still must go in the source database'''
    if not self.argDB['buildLibraries']: return
    totalRebuild = rootDir == self.petscDir and not len(self.sourceDatabase)
    self.logPrint('Building Libraries')
