@@ -955,7 +955,6 @@ shared_darwin:
         if [ "${LIBNAME}" = "libpetscvec" ]; then OTHERLIBS="${HYPRE_LIB} ${PETSC_SYS_LIB_BASIC}"  ; fi;\
         if [ "${LIBNAME}" = "libpetscmat" ]; then OTHERLIBS="${PLAPACK_LIB} ${SCOTCH_LIB} ${PARTY_LIB} ${CHACO_LIB} ${JOSTLE_LIB} ${SUPERLU_LIB} ${SUPERLU_DIST_LIB} ${SPOOLES_LIB} ${MUMPS_LIB} ${SCALAPACK_LIB} ${BLACS_LIB} ${PARMETIS_LIB} ${UMFPACK_LIB} ${LUSOL_LIB} ${DSCPACK_LIB} ${PETSC_VEC_LIB_BASIC}"  ; fi;\
         if [ "${LIBNAME}" = "libpetscdm" ]; then OTHERLIBS="${TRIANGLE_LIB} ${TETGEN_LIB} ${HYPRE_LIB} ${PETSC_MAT_LIB_BASIC} ${MPI_LIB}"  ; fi;\
-        if [ "${LIBNAME}" = "libpetsccharacteristic" ]; then OTHERLIBS="${PETSC_DM_LIB_BASIC}"  ; fi;\
         if [ "${LIBNAME}" = "libpetscksp" ]; then OTHERLIBS="${HYPRE_LIB} ${PETSC_CHARACTERISTIC_LIB_BASIC}"  ; fi;\
         if [ "${LIBNAME}" = "libpetscsnes" ]; then OTHERLIBS="${PETSC_KSP_LIB_BASIC}"  ; fi;\
         if [ "${LIBNAME}" = "libpetscts" ]; then OTHERLIBS="${SUNDIALS_LIB} ${PETSC_SNES_LIB_BASIC}"  ; fi;\
