@@ -312,17 +312,22 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PetscSum_Local"
 void  PetscSum_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
 {
-  PetscScalar *xin = (PetscScalar *)in,*xout = (PetscScalar*)out;
   PetscInt    i,count = *cnt;
 
   PetscFunctionBegin;
-  if (*datatype != MPIU_SCALAR) {
-    (*PetscErrorPrintf)("Can only handle MPIU_SCALAR data (i.e. double or complex) types");
+  if (*datatype == MPIU_SCALAR) {
+    PetscScalar *xin = (PetscScalar *)in,*xout = (PetscScalar*)out;
+    for (i=0; i<count; i++) {
+      xout[i] += xin[i]; 
+    }
+  } else if (*datatype == MPIU_REAL) {
+    PetscReal *xin = (PetscReal *)in,*xout = (PetscReal*)out;
+    for (i=0; i<count; i++) {
+      xout[i] += xin[i]; 
+    }
+  } else {
+    (*PetscErrorPrintf)("Can only handle MPIU_REAL or MPIU_SCALAR data (i.e. double or complex) types");
     MPI_Abort(MPI_COMM_WORLD,1);
-  }
-
-  for (i=0; i<count; i++) {
-    xout[i] += xin[i]; 
   }
   PetscFunctionReturnVoid();
 }
