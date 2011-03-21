@@ -1382,7 +1382,7 @@ PetscErrorCode  PCGASMCreateSubdomains2D(PC pc, PetscInt M,PetscInt N,PetscInt M
   PetscInt       k,kk;
   PetscMPIInt    color;
   MPI_Comm       comm, subcomm;
-  IS             **iis;
+  IS             **iis = 0;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)pc, &comm);CHKERRQ(ierr);

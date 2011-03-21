@@ -3,7 +3,7 @@ import PETSc.package
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
-    self.download     = ['http://gforge.inria.fr/frs/download.php/21873/pastix_release_2200.tar.bz2']
+    self.download     = ['http://gforge.inria.fr/frs/download.php/28290/pastix_release_3184.tar.bz2']
     self.downloadname = self.name.lower()
     self.liblist      = [['libpastix.a'],
                          ['libpastix.a','libpthread.a','librt.a']]
@@ -24,7 +24,10 @@ class Configure(PETSc.package.NewPackage):
     import os
     g = open(os.path.join(os.path.join(self.packageDir,'src'),'config.in'),'w')
 
-    g.write('HOSTHARCH   = i686_pc_linux\n')
+    if self.setCompilers.isDarwin():    
+      g.write('HOSTARCH   = i686_mac\n')
+    else:
+      g.write('HOSTARCH   = i686_pc_linux\n')
     g.write('VERSIONBIT  = _32bit\n')
     g.write('EXEEXT      = \n')
     g.write('OBJEXT      = .o\n')
@@ -189,7 +192,10 @@ class Configure(PETSc.package.NewPackage):
 
     g.write('MAKE     = $(MKPROG)\n')
     g.write('CC       = $(MPCCPROG)\n')
-    g.write('CFLAGS   = $(CCFOPT) $(CCTYPES)\n')
+    if self.setCompilers.isDarwin():    
+      cflags = ' -DX_ARCHi686_mac    '
+    else: cflags = ''
+    g.write('CFLAGS   = $(CCFOPT) $(CCTYPES)'+cflags+'\n')
     g.write('FC       = $(MCFPROG)\n') 
     g.write('FFLAGS   = $(CCFOPT)\n')
     g.write('LDFLAGS  = $(EXTRALIB) $(BLASLIB)\n')
@@ -203,7 +209,7 @@ class Configure(PETSc.package.NewPackage):
         pass
       try:
         self.logPrintBox('Compiling PaStiX; this may take several minutes')
-        output,err,ret = PETSc.package.NewPackage.executeShellCommand('cd '+os.path.join(self.packageDir,'src')+' && make expor install',timeout=2500, log = self.framework.log)
+        output,err,ret = PETSc.package.NewPackage.executeShellCommand('cd '+os.path.join(self.packageDir,'src')+' && make all',timeout=2500, log = self.framework.log)
         libDir     = os.path.join(self.installDir, self.libdir)
         includeDir = os.path.join(self.installDir, self.includedir)
         output,err,ret = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && cp -f install/*.a '+libDir+'/. && cp -f install/*.h '+includeDir+'/.', timeout=2500, log = self.framework.log)
