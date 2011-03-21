@@ -5,7 +5,7 @@ CPPFLAGS  =
 FPPFLAGS  =
 LOCDIR    = src/ksp/ksp/examples/tests/
 NOADIC    = true
-EXAMPLESC       = ex1.c ex3.c ex4.c ex6.c ex7.c ex10.c \
+EXAMPLESC       = ex1.c ex3.c ex4.c ex6.c ex7.c ex10.c ex11.c \
 		  ex14.c ex15.c ex17.c ex18.c ex19.c ex20.c ex21.c ex22.c ex24.c ex25.c ex26.c ex27.c ex32.c ex34.c
 EXAMPLESCH      = 
 EXAMPLESF       = ex5f.F ex12f.F ex16f.F
@@ -262,10 +262,60 @@ runex10:
 	   else echo "Possible problem with ex10_1, diffs above"; fi; \
 	   ${RM} -f ex10_1.tmp
 runex11:
-	-@${MPIEXEC} -n 3  ./ex11 -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex11_1.tmp 2>&1; \
-	   if (${DIFF} output/ex11_1.out ex11_1.tmp) then true; \
-	   else echo "Possible problem with ex11_1, diffs above"; fi; \
+	-@${MPIEXEC} -n 1 ./ex11 -f ${DATAFILESPATH}/matrices/underworld32.gz \
+                -fc_ksp_view -fc_ksp_monitor_short \
+                -fc_ksp_type fgmres -fc_ksp_rtol 1.0e-10 -fc_ksp_max_it 4000 \
+                -fc_ksp_diagonal_scale \
+                -fc_pc_type fieldsplit \
+	        -fc_pc_fieldsplit_type SCHUR \
+		-fc_pc_fieldsplit_schur_factorization_type UPPER \
+                -fc_fieldsplit_velocity_pc_type lu \
+		-fc_fieldsplit_pressure_pc_type lsc \
+		-fc_fieldsplit_pressure_lsc_ksp_type fgmres \
+		-fc_fieldsplit_pressure_lsc_ksp_max_it 100 \
+		-fc_fieldsplit_pressure_lsc_ksp_constant_null_space \
+		-fc_fieldsplit_pressure_lsc_pc_type icc \
+		-fc_fieldsplit_pressure_lsc_ksp_converged_reason \
+                -fc_fieldsplit_pressure_ksp_max_it 100 \
+                -fc_fieldsplit_pressure_ksp_constant_null_space \
+                -fc_fieldsplit_pressure_ksp_monitor_short \
+                 > ex11_1.tmp 2>&1; \
+	   ${DIFF} output/ex11_1.out ex11_1.tmp || echo "Possible problem with ex11_1, diffs above";\
 	   ${RM} -f ex11_1.tmp
+
+runex11_2:
+	-@${MPIEXEC} -n 2 ./ex11 -f ${DATAFILESPATH}/matrices/underworld32.gz \
+                -fc_ksp_view \
+                -fc_ksp_monitor_short \
+                -fc_ksp_type fgmres \
+                -fc_ksp_rtol 1.0e-10 \
+                -fc_ksp_max_it 4000 \
+                -fc_ksp_diagonal_scale \
+                -fc_pc_type fieldsplit \
+                -fc_pc_fieldsplit_type SCHUR \
+                -fc_pc_fieldsplit_schur_factorization_type UPPER \
+                -fc_fieldsplit_velocity_ksp_type fgmres \
+                -fc_fieldsplit_velocity_ksp_rtol 1.0e-6 \
+                -fc_fieldsplit_velocity_pc_type bjacobi \
+                -fc_fieldsplit_velocity_sub_pc_type lu \
+                -fc_fieldsplit_pressure_pc_type lsc \
+                -fc_fieldsplit_pressure_lsc_ksp_type fgmres \
+                -fc_fieldsplit_pressure_lsc_ksp_rtol 1.0e-2 \
+                -fc_fieldsplit_pressure_lsc_ksp_max_it 10000 \
+                -fc_fieldsplit_pressure_lsc_ksp_constant_null_space \
+                -fc_fieldsplit_pressure_lsc_pc_type bjacobi \
+                -fc_fieldsplit_pressure_lsc_sub_pc_type icc \
+                -fc_fieldsplit_pressure_lsc_ksp_converged_reason \
+                -fc_fieldsplit_pressure_ksp_type fgmres \
+                -fc_fieldsplit_pressure_ksp_rtol 1.0e-5 \
+                -fc_fieldsplit_pressure_ksp_max_it 10000 \
+                -fc_fieldsplit_pressure_ksp_constant_null_space \
+                -fc_fieldsplit_pressure_ksp_monitor_short \
+                 > ex11_2.tmp 2>&1; \
+	   ${DIFF} output/ex11_2.out ex11_2.tmp || echo "Possible problem with ex11_2, diffs above";\
+	   ${RM} -f ex11_2.tmp
+
+
 runex12f:
 	-@${MPIEXEC} -n 1 ./ex12f  -f ../../../../mat/examples/matbinary.ex -options_left no > ex12f_1.tmp 2>&1; \
 	   if (${DIFF} output/ex12f_1.out ex12f_1.tmp) then true; \
