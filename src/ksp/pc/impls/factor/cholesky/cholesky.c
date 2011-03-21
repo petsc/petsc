@@ -316,7 +316,7 @@ PetscErrorCode  PCCreate_Cholesky(PC pc)
   ((PC_Factor*)dir)->info.fill          = 5.0;
   ((PC_Factor*)dir)->info.shifttype     = (PetscReal) MAT_SHIFT_NONE;
   ((PC_Factor*)dir)->info.shiftamount   = 0.0;
-  ((PC_Factor*)dir)->info.zeropivot     = 1.e-12;
+  ((PC_Factor*)dir)->info.zeropivot     = 100.0*PETSC_MACHINE_EPSILON;
   ((PC_Factor*)dir)->info.pivotinblocks = 1.0;
   dir->col                    = 0;
   dir->row                    = 0;

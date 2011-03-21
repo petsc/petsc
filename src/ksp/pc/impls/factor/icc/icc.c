@@ -196,8 +196,8 @@ PetscErrorCode  PCCreate_ICC(PC pc)
 
   ((PC_Factor*)icc)->info.dtcol       = PETSC_DEFAULT;
   ((PC_Factor*)icc)->info.shifttype   = (PetscReal) MAT_SHIFT_POSITIVE_DEFINITE;
-  ((PC_Factor*)icc)->info.shiftamount = 1.e-12;
-  ((PC_Factor*)icc)->info.zeropivot   = 1.e-12;
+  ((PC_Factor*)icc)->info.shiftamount = 100.0*PETSC_MACHINE_EPSILON;
+  ((PC_Factor*)icc)->info.zeropivot   = 100.0*PETSC_MACHINE_EPSILON;
 
   pc->data	               = (void*)icc;
   pc->ops->apply	       = PCApply_ICC;
