@@ -41,7 +41,11 @@ regressionParameters = {'src/vec/vec/examples/tests/ex1_2':    {'numProcs': 2},
                         'src/ksp/ksp/examples/tutorials/ex12': {'numProcs': 2, 'args': '-ksp_gmres_cgs_refinement_type refine_always'},
                         'src/snes/examples/tutorials/ex5':     {'numProcs': 4, 'args': '-snes_mf -da_processors_x 4 -da_processors_y 1 -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always'},
                         'src/snes/examples/tutorials/ex5f90':  {'numProcs': 4, 'args': '-snes_mf -da_processors_x 4 -da_processors_y 1 -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always'},
-                        'src/snes/examples/tutorials/ex5f90t': {'numProcs': 4, 'args': '-snes_mf -da_processors_x 4 -da_processors_y 1 -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always'}
+                        'src/snes/examples/tutorials/ex5f90t': {'numProcs': 4, 'args': '-snes_mf -da_processors_x 4 -da_processors_y 1 -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always'},
+#                        'src/snes/examples/tutorials/ex10':    {'numProcs': 3, 'args': '-da_grid_x 20 -snes_converged_reason -snes_monitor_short -problem_type 1'},
+#                        'src/snes/examples/tutorials/ex28':    {'numProcs': 3, 'args': '-da_grid_x 20 -snes_converged_reason -snes_monitor_short -problem_type 1'}
+                        'src/snes/examples/tutorials/ex10':    {'numProcs': 1, 'args': '-da_grid_x 5 -snes_converged_reason -snes_monitor_short -problem_type 1'},
+                        'src/snes/examples/tutorials/ex28':    {'numProcs': 1, 'args': '-da_grid_x 5 -snes_converged_reason -snes_monitor_short -problem_type 1'}
                         }
 
 def noCheckCommand(command, status, output, error):
@@ -392,7 +396,7 @@ class DependencyBuilder(logger.Logger):
 
   def buildDependencies(self, dirname, fnames):
     ''' This is run in a PETSc source directory'''
-    self.logWrite('Building dependencies in '+dirname+'\n', debugSection = 'screen', forceScroll = True)
+    self.logPrint('Building dependencies in '+dirname)
     oldDir = os.getcwd()
     os.chdir(dirname)
     sourceMap = self.sourceManager.sortSourceFiles(fnames, self.objDir)
@@ -870,7 +874,7 @@ class PETScMaker(script.Script):
    return len(objects)
 
  def rebuildDependencies(self, libname, rootDir):
-   self.logPrint('Rebuilding Dependencies')
+   self.logWrite('Rebuilding Dependencies\n', debugSection = 'screen', forceScroll = True)
    self.sourceDatabase = SourceDatabase(self.argDB, self.log)
    depBuilder          = DependencyBuilder(self.argDB, self.log, self.sourceManager, self.sourceDatabase, self.getObjDir(libname))
    walker              = DirectoryTreeWalker(self.argDB, self.log, self.configInfo)
