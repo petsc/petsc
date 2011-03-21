@@ -122,7 +122,7 @@ int main(int argc,char **argv)
      for principal unknowns (x) and governing residuals (f)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */ 
   ierr = DMMGCreate(comm,grid.mglevels,user,&user->dmmg);CHKERRQ(ierr); 
-  ierr = DMDACreate2d(comm,grid.periodic,grid.stencil,grid.ni,grid.nj,PETSC_DECIDE,PETSC_DECIDE,grid.dof,grid.stencil_width,0,0,&da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(comm,grid.periodic,grid.periodic,grid.stencil,grid.ni,grid.nj,PETSC_DECIDE,PETSC_DECIDE,grid.dof,grid.stencil_width,0,0,&da);CHKERRQ(ierr);
   ierr = DMMGSetDM(user->dmmg,(DM) da);CHKERRQ(ierr);
   ierr = DMDestroy(da);CHKERRQ(ierr);
   ierr = DMMGSetSNESLocal(user->dmmg,FormNewTimeFunctionLocal,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
@@ -210,7 +210,7 @@ int SetParams(AppCtx *user)
 
   grid->ni            = p->ni;
   grid->nj            = p->nj;
-  grid->periodic      = DMDA_XYPERIODIC;
+  grid->periodic      = DMDA_BOUNDARY_PERIODIC;
   grid->stencil       = DMDA_STENCIL_BOX;
   grid->dof           = 1;
   grid->stencil_width = 2;

@@ -101,7 +101,7 @@ int main(int argc,char **argv)
      for principal unknowns (x) and governing residuals (f)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */ 
   ierr = DMMGCreate(comm,user->grid.mglevels,user,&dmmg);CHKERRQ(ierr); 
-  ierr = DMDACreate2d(comm,user->grid.periodic,user->grid.stencil,user->grid.ni,user->grid.nj,PETSC_DECIDE,PETSC_DECIDE,user->grid.dof,user->grid.stencil_width,0,0,&da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(comm,user->grid.periodic,user->grid.periodic,user->grid.stencil,user->grid.ni,user->grid.nj,PETSC_DECIDE,PETSC_DECIDE,user->grid.dof,user->grid.stencil_width,0,0,&da);CHKERRQ(ierr);
   ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr);
   ierr = DMDestroy(da);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,&(param->pi),&(param->pj),PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
@@ -173,7 +173,7 @@ int SetParams(AppCtx *user)
   REG_TRUE(bag,&p->output_to_file,PETSC_FALSE   ,"do_output","<DO NOT SET> flag will be true if you specify an output file name");
   p->output_to_file = OptionsHasName("-output_file");
 
-  user->grid.periodic      = DMDA_XYPERIODIC;
+  user->grid.periodic      = DMDA_BOUNDARY_PERIODIC;
   user->grid.stencil       = DMDA_STENCIL_BOX;
   user->grid.dof           = 6;
   user->grid.stencil_width = 2;
