@@ -4,5 +4,5 @@ set MACH=grind
 set USR=petsc
 set LOC=/sandbox/petsc/petsc-dev
 set CONF=arch-linux-pkgs-cxx-mlib
-set PURL=http://petsc.cs.iit.edu/petsc/petsc-dev
+set PURL=http://petsc.cs.iit.edu/petsc/petsc-dev-3
 set BURL=http://petsc.cs.iit.edu/petsc/BuildSystem
