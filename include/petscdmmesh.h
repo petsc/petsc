@@ -103,6 +103,7 @@ extern PetscErrorCode DMMeshCreateVector(DM, SectionReal, Vec *);
 extern PetscErrorCode DMMeshCreateGlobalScatter(DM, SectionReal, VecScatter *);
 extern PetscErrorCode assembleVector(Vec, DM, SectionReal, PetscInt, PetscScalar [], InsertMode);
 extern PetscErrorCode assembleMatrix(Mat, DM, SectionReal, PetscInt, PetscScalar [], InsertMode);
+extern PetscErrorCode DMMeshSetupSection(DM, SectionReal);
 
 extern PetscErrorCode DMMeshCreateGlobalRealVector(DM, SectionReal, Vec *);
 extern PetscErrorCode DMMeshGetGlobalScatter(DM,VecScatter *);
@@ -194,7 +195,7 @@ extern PetscErrorCode DMWritePCICEElements(DM, PetscViewer);
 extern PetscErrorCode DMWritePyLithVertices(DM, PetscViewer);
 extern PetscErrorCode DMWritePyLithElements(DM, SectionReal, PetscViewer);
 extern PetscErrorCode DMWritePyLithVerticesLocal(DM, PetscViewer);
-extern PetscErrorCode WDMritePyLithElementsLocal(DM, SectionReal, PetscViewer);
+extern PetscErrorCode DMWritePyLithElementsLocal(DM, SectionReal, PetscViewer);
 
 typedef struct {
   int           numQuadPoints, numBasisFuncs;
