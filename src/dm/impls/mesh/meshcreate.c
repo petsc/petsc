@@ -28,6 +28,10 @@ PetscErrorCode  DMSetFromOptions_Mesh(DM dm)
 }
 
 /* External function declarations here */
+extern PetscErrorCode DMGlobalToLocalBegin_Mesh(DM dm, Vec g, InsertMode mode, Vec l);
+extern PetscErrorCode DMGlobalToLocalEnd_Mesh(DM dm, Vec g, InsertMode mode, Vec l);
+extern PetscErrorCode DMLocalToGlobalBegin_Mesh(DM dm, Vec l, InsertMode mode, Vec g);
+extern PetscErrorCode DMLocalToGlobalEnd_Mesh(DM dm, Vec l, InsertMode mode, Vec g);
 extern PetscErrorCode DMCreateGlobalVector_Mesh(DM dm, Vec *gvec);
 extern PetscErrorCode DMCreateLocalVector_Mesh(DM dm, Vec *lvec);
 extern PetscErrorCode DMGetInterpolation_Mesh(DM dmCoarse, DM dmFine, Mat *interpolation, Vec *scaling);
@@ -117,10 +121,10 @@ PetscErrorCode DMCreate_Mesh(DM dm)
   mesh->lj            = PETSC_NULL;
 
   ierr = PetscStrallocpy(VECSTANDARD, &dm->vectype);CHKERRQ(ierr);
-  dm->ops->globaltolocalbegin = 0;
-  dm->ops->globaltolocalend   = 0;
-  dm->ops->localtoglobalbegin = 0;
-  dm->ops->localtoglobalend   = 0;
+  dm->ops->globaltolocalbegin = DMGlobalToLocalBegin_Mesh;
+  dm->ops->globaltolocalend   = DMGlobalToLocalEnd_Mesh;
+  dm->ops->localtoglobalbegin = DMLocalToGlobalBegin_Mesh;
+  dm->ops->localtoglobalend   = DMLocalToGlobalEnd_Mesh;
   dm->ops->createglobalvector = DMCreateGlobalVector_Mesh;
   dm->ops->createlocalvector  = DMCreateLocalVector_Mesh;
   dm->ops->getinterpolation   = DMGetInterpolation_Mesh;

@@ -1656,7 +1656,7 @@ PetscErrorCode  VecCopy(Vec x,Vec y)
   PetscValidType(y,2);
   if (x == y) PetscFunctionReturn(0);
   if (x->stash.insertmode != NOT_SET_VALUES) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled vector");
-  if (x->map->n != y->map->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
+  if (x->map->n != y->map->n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths %d != %d", x->map->n, y->map->n);
 
 #if !defined(PETSC_USE_MIXED_PRECISION)
   for (i=0; i<4; i++) {
