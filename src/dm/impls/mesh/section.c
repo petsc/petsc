@@ -1942,3 +1942,34 @@ PetscErrorCode DMMeshGetCellSectionInt(DM dm, const char name[], PetscInt fiberD
   m->allocate(s);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "DMMeshSetupSection"
+/*@C
+  DMMeshSetupSection - Layout Section based upon discretization and boundary condition information in the Mesh
+
+  Collective on DMMesh
+
+  Input Parameters:
+. mesh - The DMMesh object
+
+  Output Parameter:
+. section - The section
+
+  Level: intermediate
+
+.keywords: mesh, section, cell
+.seealso: DMMeshCreate(), SectionRealCreate()
+@*/
+PetscErrorCode DMMeshSetupSection(DM dm, SectionReal section)
+{
+  ALE::Obj<PETSC_MESH_TYPE> m;
+  ALE::Obj<PETSC_MESH_TYPE::real_section_type> s;
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+  ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
+  ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
+  m->setupField(s);
+  PetscFunctionReturn(0);
+}

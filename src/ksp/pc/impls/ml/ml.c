@@ -454,10 +454,10 @@ static PetscErrorCode MatWrapML_MPIAIJ(ML_Operator *mlmat,Mat *newmat)
 /* -----------------------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "PCReset_ML"
-PetscErrorCode PCReset_ML(void *ptr)
+PetscErrorCode PCReset_ML(PC pc)
 {
   PetscErrorCode  ierr;
-  PC_ML           *pc_ml = (PC_ML*)ptr;
+  PC_ML           *pc_ml = (PC_ML*)pc->data;
   PetscInt        level,fine_level=pc_ml->Nlevels-1;
 
   PetscFunctionBegin; 
@@ -522,7 +522,7 @@ PetscErrorCode PCSetUp_ML(PC pc)
   PetscFunctionBegin;
   if (pc->setupcalled){
     /* since ML can change the size of vectors/matrices at any level we must destroy everything */
-    ierr = PCReset_ML(pc_ml);CHKERRQ(ierr);
+    ierr = PCReset_ML(pc);CHKERRQ(ierr);
     ierr = PCReset_MG(pc);CHKERRQ(ierr);
   }
   
@@ -717,7 +717,7 @@ PetscErrorCode PCDestroy_ML(PC pc)
   PC_ML           *pc_ml= (PC_ML*)mg->innerctx;
 
   PetscFunctionBegin;
-  ierr = PCReset_ML(pc_ml);CHKERRQ(ierr);
+  ierr = PCReset_ML(pc);CHKERRQ(ierr);
   ierr = PetscFree(pc_ml);CHKERRQ(ierr); 
   ierr = PCDestroy_MG(pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
