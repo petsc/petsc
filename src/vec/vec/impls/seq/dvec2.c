@@ -537,7 +537,7 @@ PetscErrorCode VecMin_Seq(Vec xin,PetscInt* idx,PetscReal * z)
   PetscFunctionBegin;
   ierr = VecGetArrayRead(xin,&xx);CHKERRQ(ierr);
   if (!n) {
-    min = PETSC_REAL_MAX;
+    min = PETSC_MAX_REAL;
     j   = -1;
   } else {
 #if defined(PETSC_USE_COMPLEX)

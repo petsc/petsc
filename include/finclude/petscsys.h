@@ -122,11 +122,11 @@
 ! 
       PetscFortranDouble PETSC_PI
       PetscFortranDouble PETSC_DEGREES_TO_RADIANS
-      PetscFortranDouble PETSC_REAL_MAX
+      PetscFortranDouble PETSC_MAX_REAL
       PetscFortranDouble PETSC_MIN_REAL
 
       parameter (PETSC_PI = 3.14159265358979323846264d0)
-      parameter (PETSC_REAL_MAX = 1.d300,PETSC_MIN_REAL = -1.d300)
+      parameter (PETSC_MAX_REAL = 1.d300,PETSC_MIN_REAL = -1.d300)
 
       PetscFortranDouble PETSC_MACHINE_EPSILON
       PetscFortranDouble PETSC_SQRT_MACHINE_EPSILON

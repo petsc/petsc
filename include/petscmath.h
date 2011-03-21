@@ -304,22 +304,22 @@ M*/
 
 #if defined(PETSC_USE_REAL_SINGLE)
 #if defined(MAXFLOAT)
-#  define PETSC_REAL_MAX                 MAXFLOAT
+#  define PETSC_MAX_REAL                 MAXFLOAT
 #else
-#  define PETSC_REAL_MAX                1.e30
+#  define PETSC_MAX_REAL                1.e30
 #endif
-#  define PETSC_MIN_REAL                -PETSC_REAL_MAX
+#  define PETSC_MIN_REAL                -PETSC_MAX_REAL
 #  define PETSC_MACHINE_EPSILON         1.e-7
 #  define PETSC_SQRT_MACHINE_EPSILON    3.e-4
 #  define PETSC_SMALL                   1.e-5
 #elif defined(PETSC_USE_REAL_DOUBLE)
-#  define PETSC_REAL_MAX                1.e300
-#  define PETSC_MIN_REAL                -PETSC_REAL_MAX
+#  define PETSC_MAX_REAL                1.e300
+#  define PETSC_MIN_REAL                -PETSC_MAX_REAL
 #  define PETSC_MACHINE_EPSILON         1.e-14
 #  define PETSC_SQRT_MACHINE_EPSILON    1.e-7
 #  define PETSC_SMALL                   1.e-10
 #elif defined(PETSC_USE_REAL___FLOAT128)
-#  define PETSC_REAL_MAX                FLT128_MAX
+#  define PETSC_MAX_REAL                FLT128_MAX
 #  define PETSC_MIN_REAL                -FLT128_MAX
 #  define PETSC_MACHINE_EPSILON         FLT128_EPSILON
 #  define PETSC_SQRT_MACHINE_EPSILON    1.38777878078e-17

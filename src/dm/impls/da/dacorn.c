@@ -384,7 +384,7 @@ PetscErrorCode  DMDAGetLocalBoundingBox(DM da,PetscReal lmin[],PetscReal lmax[])
   Vec               coords  = PETSC_NULL;
   PetscInt          dim,i,j;
   const PetscScalar *local_coords;
-  PetscReal         min[3]={PETSC_REAL_MAX,PETSC_REAL_MAX,PETSC_REAL_MAX},max[3]={PETSC_MIN_REAL,PETSC_MIN_REAL,PETSC_MIN_REAL};
+  PetscReal         min[3]={PETSC_MAX_REAL,PETSC_MAX_REAL,PETSC_MAX_REAL},max[3]={PETSC_MIN_REAL,PETSC_MIN_REAL,PETSC_MIN_REAL};
   PetscInt          N,Ni;
   DM_DA             *dd = (DM_DA*)da->data;
 

@@ -5521,12 +5521,8 @@ PetscErrorCode  MatCreateMPIAIJWithSplitArrays(MPI_Comm comm,PetscInt m,PetscInt
 
  PetscFunctionBegin;
   if (m < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"local number of rows (m) cannot be PETSC_DECIDE, or negative");
-  if (i[0]) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"i (row indices) must start with 0");
-  }
-  if (oi[0]) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"oi (row indices) must start with 0");
-  }
+  if (i[0]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"i (row indices) must start with 0");
+  if (oi[0]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"oi (row indices) must start with 0");
   ierr = MatCreate(comm,mat);CHKERRQ(ierr);
   ierr = MatSetSizes(*mat,m,n,M,N);CHKERRQ(ierr);
   ierr = MatSetType(*mat,MATMPIAIJ);CHKERRQ(ierr);
