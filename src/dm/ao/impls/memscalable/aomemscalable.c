@@ -118,7 +118,7 @@ PetscErrorCode AOMap_MemoryScalable_private(AO ao,PetscInt n,PetscInt *ia,PetscI
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
   /*  first count number of contributors to each processor */
-  ierr   = PetscMalloc2(2*size,sizeof(PetscInt),&nprocs,size,sizeof(PetscInt),&start);CHKERRQ(ierr);
+  ierr   = PetscMalloc2(2*size,PetscInt,&nprocs,size,PetscInt,&start);CHKERRQ(ierr);
   ierr   = PetscMemzero(nprocs,2*size*sizeof(PetscInt));CHKERRQ(ierr);
   ierr   = PetscMalloc(n*sizeof(PetscInt),&owner);CHKERRQ(ierr);
   
