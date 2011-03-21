@@ -80,13 +80,13 @@ PetscErrorCode DMConvert_DA_Mesh(DM dm, const DMType newtype, DM *dmNew)
         FlexMesh::point_type edge(e);
         int order = 0;
 
-        sieve->addArrow(vertices[e],                 edge, order++);
-        sieve->addArrow(vertices[(e+1)%numVertices], edge, order++);
+        s->addArrow(vertices[e],                 edge, order++);
+        s->addArrow(vertices[(e+1)%numVertices], edge, order++);
       }
     }
     m->stratify();
     delete [] vertices;
-    /* Onyl do this if its not periodic */
+    /* Only do this if its not periodic */
     m->setValue(markers, vertices[0], 1);
     m->setValue(markers, vertices[M-1], 1);
   }
@@ -94,7 +94,7 @@ PetscErrorCode DMConvert_DA_Mesh(DM dm, const DMType newtype, DM *dmNew)
   mesh->setSieve(sieve);
   ALE::ISieveConverter::convertMesh(*m, *mesh, renumbering, false);
   ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
-  ierr = DMMeshSetMesh(*dmNew, m);CHKERRQ(ierr);
+  ierr = DMMeshSetMesh(*dmNew, mesh);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
