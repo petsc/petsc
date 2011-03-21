@@ -28,10 +28,15 @@ def build(ui, repo, *pats, **opts):
 
 def check(ui, repo, *pats, **opts):
   '''Check that build is functional'''
+  import shutil
+
   maker = builder.PETScMaker()
   maker.setup()
   # C test
-  examples = [os.path.join(maker.petscDir, 'src', 'snes', 'examples', 'tutorials', 'ex10.c')]
+  if len(pats):
+    examples = [os.path.abspath(p) for p in pats]
+  else:
+    examples = [os.path.join(maker.petscDir, 'src', 'snes', 'examples', 'tutorials', 'ex5.c')]
   # Fortran test
   if hasattr(maker.configInfo.compilers, 'FC'):
     if maker.configInfo.fortrancpp.fortranDatatypes:
