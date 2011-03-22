@@ -1076,7 +1076,7 @@ cdef class NullSpace(Object):
         return ## XXX I should do something here
 
     def destroy(self):
-        CHKERR( MatNullSpaceDestroy(self.nsp) )
+        CHKERR( MatNullSpaceDestroy(&self.nsp) )
         self.nsp = NULL
         return self
 

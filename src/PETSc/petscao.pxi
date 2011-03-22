@@ -1,8 +1,8 @@
 cdef extern from * nogil:
 
-    ctypedef enum PetscAOType "AOType":
-        AO_BASIC
-        AO_MAPPING
+    ctypedef char* PetscAOType "const char*"
+    PetscAOType AOBASIC
+    PetscAOType AOMAPPING
 
     int AOView(PetscAO,PetscViewer)
     int AODestroy(PetscAO)

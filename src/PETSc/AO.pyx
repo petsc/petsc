@@ -1,8 +1,8 @@
 # --------------------------------------------------------------------
 
 class AOType(object):
-    BASIC   = AO_BASIC
-    MAPPING = AO_MAPPING
+    BASIC   = S_(AOBASIC)
+    MAPPING = S_(AOMAPPING)
 
 # --------------------------------------------------------------------
 
@@ -65,7 +65,7 @@ cdef class AO(Object):
         return self
 
     def getType(self):
-        cdef PetscAOType aotype = AO_BASIC
+        cdef PetscAOType aotype = AOBASIC
         CHKERR( AOGetType(self.ao, &aotype) )
         return aotype
 
