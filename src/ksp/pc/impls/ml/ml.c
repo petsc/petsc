@@ -457,7 +457,8 @@ static PetscErrorCode MatWrapML_MPIAIJ(ML_Operator *mlmat,Mat *newmat)
 PetscErrorCode PCReset_ML(PC pc)
 {
   PetscErrorCode  ierr;
-  PC_ML           *pc_ml = (PC_ML*)pc->data;
+  PC_MG           *mg    = (PC_MG *) pc->data;
+  PC_ML           *pc_ml = (PC_ML *) mg->innerctx;
   PetscInt        level,fine_level=pc_ml->Nlevels-1;
 
   PetscFunctionBegin; 
