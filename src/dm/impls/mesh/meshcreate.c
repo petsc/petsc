@@ -92,7 +92,7 @@ PetscErrorCode DMConvert_DA_Mesh(DM dm, const DMType newtype, DM *dmNew)
     delete [] vertices;
     /* Only do this if its not periodic */
     m->setValue(markers, vertices[0], 1);
-    m->setValue(markers, vertices[M-1], 1);
+    m->setValue(markers, vertices[M-1], 2);
   }
   ALE::SieveBuilder<FlexMesh>::buildCoordinates(m, dim, coords);
   mesh->setSieve(sieve);
