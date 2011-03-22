@@ -48,96 +48,132 @@ struct _UserCtx {
 
 #undef __FUNCT__
 #define __FUNCT__ "FormFunctionLocal_U"
-static PetscErrorCode FormFunctionLocal_U(User user,DMDALocalInfo *info,const PetscScalar u[],const PetscScalar k[],PetscScalar f[])
+static PetscErrorCode FormFunctionLocal_U(DM dmu, SectionReal sectionU, SectionReal sectionK, SectionReal sectionF)
 {
-  PetscReal hx = 1./info->mx;
-  PetscInt i;
+  ALE::Obj<PETSC_MESH_TYPE> meshU;
+  SectionReal    coordinatesU;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  for (i=info->xs; i<info->xs+info->xm; i++) {
-    if (i == 0) f[i] = hx*u[i];
-    else if (i == info->mx-1) f[i] = hx*(u[i] - 1.0);
-    else f[i] = hx*((k[i-1]*(u[i]-u[i-1]) - k[i]*(u[i+1]-u[i]))/(hx*hx) - 1.0);
+  ierr = DMMeshGetMesh(dmu, meshU);CHKERRQ(ierr);
+  ierr = DMMeshGetSectionReal(dmu, "coordinates", &coordinatesU);CHKERRQ(ierr);
+  const ALE::Obj<PETSC_MESH_TYPE::label_sequence>& verticesU = meshU->depthStratum(0);
+  PetscReal hx = 1.0/verticesU->size();
+
+  for(PETSC_MESH_TYPE::label_sequence::iterator v_iter = verticesU->begin(); v_iter != verticesU->end(); ++v_iter) {
+    const PetscInt marker = meshU->getValue(meshU->getLabel("marker"), *v_iter, 0);
+    PetscScalar    values[1];
+    PetscScalar   *coords;
+    PetscScalar   *u, *k;
+
+    ierr = SectionRealRestrict(coordinatesU, *v_iter, &coords);CHKERRQ(ierr);
+    ierr = SectionRealRestrict(sectionU, *v_iter, &u);CHKERRQ(ierr);
+    ierr = SectionRealRestrict(sectionK, *v_iter, &k);CHKERRQ(ierr);
+    if (marker == 1) {
+      values[0] = hx*u[0];
+    } else if (marker == 2) {
+      values[0] = hx*(u[0] - 1.0);
+    } else {
+      PetscScalar *ul, *ur, *kl;
+
+      ierr = SectionRealRestrict(sectionU, *v_iter+1, &ur);CHKERRQ(ierr);
+      ierr = SectionRealRestrict(sectionU, *v_iter-1, &ul);CHKERRQ(ierr);
+      ierr = SectionRealRestrict(sectionK, *v_iter-1, &kl);CHKERRQ(ierr);
+      values[0] = hx*((kl[0]*(u[0]-ul[0]) - k[0]*(ur[0]-u[0]))/(hx*hx) - 1.0);
+    }
+    ierr = SectionRealUpdate(sectionF, *v_iter, values, INSERT_VALUES);CHKERRQ(ierr);
   }
+  ierr = SectionRealDestroy(coordinatesU);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "FormFunctionLocal_K"
-static PetscErrorCode FormFunctionLocal_K(User user,DMDALocalInfo *info,const PetscScalar u[],const PetscScalar k[],PetscScalar f[])
+static PetscErrorCode FormFunctionLocal_K(DM dmk, SectionReal sectionU, SectionReal sectionK, SectionReal sectionF)
 {
-  PetscReal hx = 1./info->mx;
-  PetscInt  i;
+  ALE::Obj<PETSC_MESH_TYPE> meshK;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  for (i=info->xs; i<info->xs+info->xm; i++) {
-    const PetscScalar
-      ubar = 0.5*(u[i+1]+u[i]),
-      gradu = (u[i+1]-u[i])/hx,
-      g = 1. + gradu*gradu,
-      w = 1./(1.+ubar) + 1./g;
-    f[i] = hx*(PetscExpScalar(k[i]-1.0) + k[i] - 1./w);
+  ierr = DMMeshGetMesh(dmk, meshK);CHKERRQ(ierr);
+  const ALE::Obj<PETSC_MESH_TYPE::label_sequence>& verticesK = meshK->depthStratum(0);
+  PetscReal hx = 1.0/verticesK->size();
+
+  for(PETSC_MESH_TYPE::label_sequence::iterator v_iter = verticesK->begin(); v_iter != verticesK->end(); ++v_iter) {
+    PetscScalar    values[1];
+    PetscScalar   *u, *ur, *k;
+
+    ierr = SectionRealRestrict(sectionU, *v_iter, &u);CHKERRQ(ierr);
+    ierr = SectionRealRestrict(sectionK, *v_iter, &k);CHKERRQ(ierr);
+    ierr = SectionRealRestrict(sectionU, *v_iter+1, &ur);CHKERRQ(ierr);
+    const PetscScalar ubar  = 0.5*(ur[0] + u[0]);
+    const PetscScalar gradu = (ur[0] - u[0])/hx;
+    const PetscScalar g     = 1.0 + gradu*gradu;
+    const PetscScalar w     = 1.0/(1.0 + ubar) + 1.0/g;
+
+    values[0] = hx*(PetscExpScalar(k[0]-1.0) + k[0] - 1.0/w);
+    ierr = SectionRealUpdate(sectionF, *v_iter, values, INSERT_VALUES);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "FormFunction_All"
-static PetscErrorCode FormFunction_All(SNES snes,Vec X,Vec F,void *ctx)
+static PetscErrorCode FormFunction_All(SNES snes, Vec X, Vec F, void *ctx)
 {
-  User              user = (User)ctx;
-  DM                dau,dak;
-  DMDALocalInfo     infou,infok;
-  const PetscScalar *u,*k;
-  PetscScalar       *fu,*fk;
-  PetscErrorCode    ierr;
-  Vec               Uloc,Kloc,Fu,Fk;
+  User           user = (User) ctx;
+  DM             dmu, dmk;
+  Vec            Uloc, Kloc, Fu, Fk, vecFu, vecFk, vecU, vecK;
+  SectionReal    sectionU, sectionK, sectionFu, sectionFk;
+  PetscErrorCode ierr;
+
+  TODO: The X and F that come in are not global, except in case 2
 
   PetscFunctionBegin;
-  ierr = DMCompositeGetEntries(user->pack,&dau,&dak);CHKERRQ(ierr);
-  ierr = DMDAGetLocalInfo(dau,&infou);CHKERRQ(ierr);
-  ierr = DMDAGetLocalInfo(dak,&infok);CHKERRQ(ierr);
-  ierr = DMCompositeGetLocalVectors(user->pack,&Uloc,&Kloc);CHKERRQ(ierr);
+  ierr = DMCompositeGetEntries(user->pack, &dmu, &dmk);CHKERRQ(ierr);
+  ierr = DMCompositeGetLocalVectors(user->pack, &Uloc, &Kloc);CHKERRQ(ierr);
+  ierr = DMCompositeGetLocalVectors(user->pack, &Fu,   &Fk);CHKERRQ(ierr);
+  ierr = DMCompositeScatter(user->pack, X, Uloc, Kloc);CHKERRQ(ierr);
+  ierr = DMMeshGetSectionReal(dmu, "default", &sectionU);CHKERRQ(ierr);
+  ierr = SectionRealDuplicate(sectionU, &sectionFu);CHKERRQ(ierr);
+  ierr = DMMeshGetSectionReal(dmk, "default", &sectionK);CHKERRQ(ierr);
+  ierr = SectionRealDuplicate(sectionK, &sectionFk);CHKERRQ(ierr);
+  ierr = SectionRealCreateLocalVector(sectionU, &vecU);CHKERRQ(ierr);
+  ierr = SectionRealCreateLocalVector(sectionK, &vecK);CHKERRQ(ierr);
+  ierr = VecCopy(Uloc, vecU);CHKERRQ(ierr);
+  ierr = VecCopy(Kloc, vecK);CHKERRQ(ierr);
+  ierr = VecDestroy(vecU);CHKERRQ(ierr);
+  ierr = VecDestroy(vecK);CHKERRQ(ierr);
   switch (user->ptype) {
   case 0:
-    ierr = DMGlobalToLocalBegin(dau,X,INSERT_VALUES,Uloc);CHKERRQ(ierr);
-    ierr = DMGlobalToLocalEnd  (dau,X,INSERT_VALUES,Uloc);CHKERRQ(ierr);
-    ierr = DMDAVecGetArray(dau,Uloc,&u);CHKERRQ(ierr);
-    ierr = DMDAVecGetArray(dak,user->Kloc,&k);CHKERRQ(ierr);
-    ierr = DMDAVecGetArray(dau,F,&fu);CHKERRQ(ierr);
-    ierr = FormFunctionLocal_U(user,&infou,u,k,fu);CHKERRQ(ierr);
-    ierr = DMDAVecRestoreArray(dau,F,&fu);CHKERRQ(ierr);
-    ierr = DMDAVecRestoreArray(dau,Uloc,&u);CHKERRQ(ierr);
-    ierr = DMDAVecRestoreArray(dak,user->Kloc,&k);CHKERRQ(ierr);
+    ierr = FormFunctionLocal_U(dmu, sectionU, sectionK, sectionFu);CHKERRQ(ierr);
+    ierr = SectionRealCreateLocalVector(sectionFu, &vecFu);CHKERRQ(ierr);
+    ierr = VecCopy(vecFu, Fu);CHKERRQ(ierr);
+    ierr = VecDestroy(vecFu);CHKERRQ(ierr);
     break;
   case 1:
-    ierr = DMGlobalToLocalBegin(dak,X,INSERT_VALUES,Kloc);CHKERRQ(ierr);
-    ierr = DMGlobalToLocalEnd  (dak,X,INSERT_VALUES,Kloc);CHKERRQ(ierr);
-    ierr = DMDAVecGetArray(dau,user->Uloc,&u);CHKERRQ(ierr);
-    ierr = DMDAVecGetArray(dak,Kloc,&k);CHKERRQ(ierr);
-    ierr = DMDAVecGetArray(dak,F,&fk);CHKERRQ(ierr);
-    ierr = FormFunctionLocal_K(user,&infok,u,k,fk);CHKERRQ(ierr);
-    ierr = DMDAVecRestoreArray(dak,F,&fk);CHKERRQ(ierr);
-    ierr = DMDAVecRestoreArray(dau,user->Uloc,&u);CHKERRQ(ierr);
-    ierr = DMDAVecRestoreArray(dak,Kloc,&k);CHKERRQ(ierr);
+    ierr = FormFunctionLocal_K(dmk, sectionU, sectionK, sectionFk);CHKERRQ(ierr);
+    ierr = SectionRealCreateLocalVector(sectionFk, &vecFk);CHKERRQ(ierr);
+    ierr = VecCopy(vecFk, Fk);CHKERRQ(ierr);
+    ierr = VecDestroy(vecFk);CHKERRQ(ierr);
     break;
   case 2:
-    ierr = DMCompositeScatter(user->pack,X,Uloc,Kloc);CHKERRQ(ierr);
-    ierr = DMDAVecGetArray(dau,Uloc,&u);CHKERRQ(ierr);
-    ierr = DMDAVecGetArray(dak,Kloc,&k);CHKERRQ(ierr);
-    ierr = DMCompositeGetAccess(user->pack,F,&Fu,&Fk);CHKERRQ(ierr);
-    ierr = DMDAVecGetArray(dau,Fu,&fu);CHKERRQ(ierr);
-    ierr = DMDAVecGetArray(dak,Fk,&fk);CHKERRQ(ierr);
-    ierr = FormFunctionLocal_U(user,&infou,u,k,fu);CHKERRQ(ierr);
-    ierr = FormFunctionLocal_K(user,&infok,u,k,fk);CHKERRQ(ierr);
-    ierr = DMDAVecRestoreArray(dau,Fu,&fu);CHKERRQ(ierr);
-    ierr = DMDAVecRestoreArray(dak,Fk,&fk);CHKERRQ(ierr);
-    ierr = DMCompositeRestoreAccess(user->pack,F,&Fu,&Fk);CHKERRQ(ierr);
-    ierr = DMDAVecRestoreArray(dau,Uloc,&u);CHKERRQ(ierr);
-    ierr = DMDAVecRestoreArray(dak,Kloc,&k);CHKERRQ(ierr);
+    ierr = FormFunctionLocal_U(dmu, sectionU, sectionK, sectionFu);CHKERRQ(ierr);
+    ierr = FormFunctionLocal_K(dmk, sectionU, sectionK, sectionFk);CHKERRQ(ierr);
+    ierr = SectionRealCreateLocalVector(sectionFu, &vecFu);CHKERRQ(ierr);
+    ierr = VecCopy(vecFu, Fu);CHKERRQ(ierr);
+    ierr = VecDestroy(vecFu);CHKERRQ(ierr);
+    ierr = SectionRealCreateLocalVector(sectionFk, &vecFk);CHKERRQ(ierr);
+    ierr = VecCopy(vecFk, Fk);CHKERRQ(ierr);
+    ierr = VecDestroy(vecFk);CHKERRQ(ierr);
     break;
   }
-  ierr = DMCompositeRestoreLocalVectors(user->pack,&Uloc,&Kloc);CHKERRQ(ierr);
+  ierr = SectionRealDestroy(sectionU);CHKERRQ(ierr);
+  ierr = SectionRealDestroy(sectionFu);CHKERRQ(ierr);
+  ierr = SectionRealDestroy(sectionK);CHKERRQ(ierr);
+  ierr = SectionRealDestroy(sectionFk);CHKERRQ(ierr);
+  ierr = DMCompositeGather(user->pack, F, INSERT_VALUES, Fu, Fk);CHKERRQ(ierr);
+  ierr = DMCompositeRestoreLocalVectors(user->pack, &Uloc, &Kloc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
