@@ -58,6 +58,7 @@ extern PetscErrorCode MatDestroy_SuperLU(Mat);
 extern PetscErrorCode MatView_SuperLU(Mat,PetscViewer);
 extern PetscErrorCode MatAssemblyEnd_SuperLU(Mat,MatAssemblyType);
 extern PetscErrorCode MatSolve_SuperLU(Mat,Vec,Vec);
+extern PetscErrorCode MatMatSolve_SuperLU(Mat,Mat,Mat);
 extern PetscErrorCode MatSolveTranspose_SuperLU(Mat,Vec,Vec);
 extern PetscErrorCode MatLUFactorSymbolic_SuperLU(Mat,Mat,IS,IS,const MatFactorInfo*);
 extern PetscErrorCode MatDuplicate_SuperLU(Mat, MatDuplicateOption, Mat *);
@@ -202,6 +203,7 @@ PetscErrorCode MatLUFactorNumeric_SuperLU(Mat F,Mat A,const MatFactorInfo *info)
   lu->flg = SAME_NONZERO_PATTERN;
   F->ops->solve          = MatSolve_SuperLU;
   F->ops->solvetranspose = MatSolveTranspose_SuperLU;
+  F->ops->matsolve       = MatMatSolve_SuperLU;
   PetscFunctionReturn(0);
 }
 
@@ -375,6 +377,18 @@ PetscErrorCode MatSolveTranspose_SuperLU(Mat A,Vec b,Vec x)
   PetscFunctionBegin;
   lu->options.Trans = NOTRANS;
   ierr = MatSolve_SuperLU_Private(A,b,x);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatMatSolve_SuperLU"
+PetscErrorCode MatMatSolve_SuperLU(Mat A,Mat B,Mat X)
+{
+  Mat_SuperLU    *lu = (Mat_SuperLU*)A->spptr;
+
+  PetscFunctionBegin;
+  lu->options.Trans = TRANS;
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatMatSolve_SuperLU() is not implemented yet");
   PetscFunctionReturn(0);
 }
 
