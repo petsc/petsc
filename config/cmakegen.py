@@ -149,7 +149,6 @@ def main(petscdir):
                  ('vec'            , 'sys'),
                  ('mat'            , 'vec sys'),
                  ('dm'             , 'mat vec sys'),
-                 ('characteristic' , 'dm vec sys'),
                  ('ksp'            , 'dm mat vec sys'),
                  ('snes'           , 'ksp dm mat vec sys'),
                  ('ts'             , 'snes ksp dm mat vec sys')]
