@@ -22,20 +22,13 @@ class Configure(PETSc.package.NewPackage):
     
     self.framework.pushLanguage('C')
     args.append('CFLAGS="'+self.framework.getCompilerFlags()+'"')
+    args.append('MPI_CFLAGS="'+self.framework.getCompilerFlags()+'"')
     args.append('CC="'+self.framework.getCompiler()+'"')
     self.framework.popLanguage()
 
     args.append('--disable-f77')
-    if self.mpi.include:
-      args.append('MPI_INC="'+self.headers.toString(self.mpi.include)+'"')
-    if self.mpi.lib:
-      libdir = os.path.dirname(self.mpi.lib[0])
-      libs = []
-      for l in self.mpi.lib:
-        ll = os.path.basename(l)
-        libs.append('-l'+ll[3:-2])
-      libs = ' '.join(libs)
-      args.append('MPI_LIBS="'+'-L'+libdir+' '+libs+'"')
+    args.append('MPI_INC="'+self.headers.toString(self.mpi.include)+'"')
+    args.append('MPI_LIBS="'+self.libraries.toStringNoDupes(self.mpi.lib)+'"')
 
     args = ' '.join(args)
     
