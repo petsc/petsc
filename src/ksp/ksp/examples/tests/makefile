@@ -263,28 +263,33 @@ runex10:
 	   ${RM} -f ex10_1.tmp
 runex11:
 	-@${MPIEXEC} -n 1 ./ex11 -f ${DATAFILESPATH}/matrices/underworld32.gz \
-                -fc_ksp_view -fc_ksp_monitor_short \
-                -fc_ksp_type fgmres -fc_ksp_rtol 1.0e-10 -fc_ksp_max_it 4000 \
+                -fc_ksp_view \
+                -fc_ksp_monitor_short \
+                -fc_ksp_type fgmres \
+                -fc_ksp_rtol 1.0e-10 \
+                -fc_ksp_max_it 4000 \
                 -fc_ksp_diagonal_scale \
                 -fc_pc_type fieldsplit \
 	        -fc_pc_fieldsplit_type SCHUR \
 		-fc_pc_fieldsplit_schur_factorization_type UPPER \
-                -fc_fieldsplit_velocity_pc_type lu \
-		-fc_fieldsplit_pressure_pc_type lsc \
-		-fc_fieldsplit_pressure_lsc_ksp_type fgmres \
-		-fc_fieldsplit_pressure_lsc_ksp_max_it 100 \
-		-fc_fieldsplit_pressure_lsc_ksp_constant_null_space \
-		-fc_fieldsplit_pressure_lsc_pc_type icc \
-		-fc_fieldsplit_pressure_lsc_ksp_converged_reason \
+                -fc_fieldsplit_velocity_ksp_type cg \
+                -fc_fieldsplit_velocity_pc_type cholesky \
+                -fc_fieldsplit_velocity_pc_factor_mat_ordering_type nd \
                 -fc_fieldsplit_pressure_ksp_max_it 100 \
                 -fc_fieldsplit_pressure_ksp_constant_null_space \
                 -fc_fieldsplit_pressure_ksp_monitor_short \
+		-fc_fieldsplit_pressure_pc_type lsc \
+		-fc_fieldsplit_pressure_lsc_ksp_type cg \
+		-fc_fieldsplit_pressure_lsc_ksp_max_it 100 \
+		-fc_fieldsplit_pressure_lsc_ksp_constant_null_space \
+		-fc_fieldsplit_pressure_lsc_ksp_converged_reason \
+		-fc_fieldsplit_pressure_lsc_pc_type icc \
                  > ex11_1.tmp 2>&1; \
 	   ${DIFF} output/ex11_1.out ex11_1.tmp || echo "Possible problem with ex11_1, diffs above";\
 	   ${RM} -f ex11_1.tmp
 
 runex11_2:
-	-@${MPIEXEC} -n 2 ./ex11 -f ${DATAFILESPATH}/matrices/underworld32.gz \
+	-@${MPIEXEC} -n 4 ./ex11 -f ${DATAFILESPATH}/matrices/underworld32.gz \
                 -fc_ksp_view \
                 -fc_ksp_monitor_short \
                 -fc_ksp_type fgmres \
@@ -294,23 +299,21 @@ runex11_2:
                 -fc_pc_type fieldsplit \
                 -fc_pc_fieldsplit_type SCHUR \
                 -fc_pc_fieldsplit_schur_factorization_type UPPER \
-                -fc_fieldsplit_velocity_ksp_type fgmres \
+                -fc_fieldsplit_velocity_ksp_type cg \
                 -fc_fieldsplit_velocity_ksp_rtol 1.0e-6 \
                 -fc_fieldsplit_velocity_pc_type bjacobi \
-                -fc_fieldsplit_velocity_sub_pc_type lu \
-                -fc_fieldsplit_pressure_pc_type lsc \
-                -fc_fieldsplit_pressure_lsc_ksp_type fgmres \
-                -fc_fieldsplit_pressure_lsc_ksp_rtol 1.0e-2 \
-                -fc_fieldsplit_pressure_lsc_ksp_max_it 10000 \
-                -fc_fieldsplit_pressure_lsc_ksp_constant_null_space \
-                -fc_fieldsplit_pressure_lsc_pc_type bjacobi \
-                -fc_fieldsplit_pressure_lsc_sub_pc_type icc \
-                -fc_fieldsplit_pressure_lsc_ksp_converged_reason \
+                -fc_fieldsplit_velocity_sub_pc_type cholesky \
+                -fc_fieldsplit_velocity_sub_pc_factor_mat_ordering_type nd \
                 -fc_fieldsplit_pressure_ksp_type fgmres \
-                -fc_fieldsplit_pressure_ksp_rtol 1.0e-5 \
-                -fc_fieldsplit_pressure_ksp_max_it 10000 \
                 -fc_fieldsplit_pressure_ksp_constant_null_space \
                 -fc_fieldsplit_pressure_ksp_monitor_short \
+                -fc_fieldsplit_pressure_pc_type lsc \
+                -fc_fieldsplit_pressure_lsc_ksp_type cg \
+                -fc_fieldsplit_pressure_lsc_ksp_rtol 1.0e-2 \
+                -fc_fieldsplit_pressure_lsc_ksp_constant_null_space \
+                -fc_fieldsplit_pressure_lsc_ksp_converged_reason \
+                -fc_fieldsplit_pressure_lsc_pc_type bjacobi \
+                -fc_fieldsplit_pressure_lsc_sub_pc_type icc \
                  > ex11_2.tmp 2>&1; \
 	   ${DIFF} output/ex11_2.out ex11_2.tmp || echo "Possible problem with ex11_2, diffs above";\
 	   ${RM} -f ex11_2.tmp
@@ -791,7 +794,8 @@ TESTEXAMPLES_FORTRAN_MPIUNI    = ex12f.PETSc ex12f.rm
 TESTEXAMPLES_C_X11_MPIUNI      = ex3.PETSc runex3 ex3.rm ex4.PETSc runex4 ex4.rm
 TESTEXAMPLES_C_COMPLEX	       = ex17.PETSc runex17 ex17.rm
 TESTEXAMPLES_C_COMPLEX_MPIUNI  = ex17.PETSc runex17 ex17.rm
-TESTEXAMPLES_DATAFILESPATH     = ex6.PETSc runex6 runex6_2 runex6_3 ex6.r ex25.PETSc runex25 runex25_2 ex25.rm ex27.PETSc runex27 ex25.rm \
+TESTEXAMPLES_DATAFILESPATH     = ex6.PETSc runex6 runex6_2 runex6_3 ex6.rm ex11.PETSc runex11 runex11_2 ex11.rm \
+                                 ex25.PETSc runex25 runex25_2 ex25.rm ex27.PETSc runex27 ex25.rm \
                                  ex30.PETSc runex30_shift runex30_shift_cholesky_aij runex30_shift_cholesky_sbaij ex30.rm \
                                  ex31.PETSc runex31 ex31.rm \
                                  ex34.PETSc runex34 ex34.rm ex37.PETSc runex37 runex37_2 ex37.rm

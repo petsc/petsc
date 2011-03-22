@@ -1,100 +1,160 @@
-[0] lnu = 1023 | lnp = 512 
-[0] s_u = 0 | e_u = 1023 
-[0] s_p = 0 | e_p = 512 
+[0] lnu = 512 | lnp = 256 
+[0] s_u = 0 | e_u = 512 
+[0] s_p = 0 | e_p = 256 
 [0] is_u (offset) = 0 
-[0] is_p (offset) = 1023 
-[1] lnu = 1023 | lnp = 512 
-[1] s_u = 1023 | e_u = 2046 
-[1] s_p = 512 | e_p = 1024 
-[1] is_u (offset) = 1535 
-[1] is_p (offset) = 2558 
+[0] is_p (offset) = 512 
+[1] lnu = 512 | lnp = 256 
+[1] s_u = 512 | e_u = 1024 
+[1] s_p = 256 | e_p = 512 
+[1] is_u (offset) = 768 
+[1] is_p (offset) = 1280 
+[2] lnu = 511 | lnp = 256 
+[2] s_u = 1024 | e_u = 1535 
+[2] s_p = 512 | e_p = 768 
+[2] is_u (offset) = 1536 
+[2] is_p (offset) = 2047 
+[3] lnu = 511 | lnp = 256 
+[3] s_u = 1535 | e_u = 2046 
+[3] s_p = 768 | e_p = 1024 
+[3] is_u (offset) = 2303 
+[3] is_p (offset) = 2814 
   0 KSP Residual norm 0.145891 
   1 KSP Residual norm 0.0413945 
     0 KSP Residual norm 1 
-    Linear solve converged due to CONVERGED_RTOL iterations 14
-    Linear solve converged due to CONVERGED_RTOL iterations 14
-    1 KSP Residual norm 0.548379 
+    Linear solve converged due to CONVERGED_RTOL iterations 16
     Linear solve converged due to CONVERGED_RTOL iterations 15
-    Linear solve converged due to CONVERGED_RTOL iterations 14
-    2 KSP Residual norm 0.195855 
-    Linear solve converged due to CONVERGED_RTOL iterations 18
+    1 KSP Residual norm 0.542365 
+    Linear solve converged due to CONVERGED_RTOL iterations 23
     Linear solve converged due to CONVERGED_RTOL iterations 15
-    3 KSP Residual norm 0.0545114 
-    Linear solve converged due to CONVERGED_RTOL iterations 19
-    Linear solve converged due to CONVERGED_RTOL iterations 14
-    4 KSP Residual norm 0.011191 
+    2 KSP Residual norm 0.219772 
+    Linear solve converged due to CONVERGED_RTOL iterations 28
     Linear solve converged due to CONVERGED_RTOL iterations 18
-    Linear solve converged due to CONVERGED_RTOL iterations 11
-    5 KSP Residual norm 0.00225151 
-    Linear solve converged due to CONVERGED_RTOL iterations 18
-    Linear solve converged due to CONVERGED_RTOL iterations 9
-    6 KSP Residual norm 0.000214553 
-    Linear solve converged due to CONVERGED_RTOL iterations 18
-    Linear solve converged due to CONVERGED_RTOL iterations 9
-    7 KSP Residual norm 2.84264e-05 
-    Linear solve converged due to CONVERGED_RTOL iterations 14
-    Linear solve converged due to CONVERGED_RTOL iterations 8
-    8 KSP Residual norm 2.42524e-06 
-  2 KSP Residual norm 1.3718e-07 
-    0 KSP Residual norm 0.789727 
-    Linear solve converged due to CONVERGED_RTOL iterations 17
-    Linear solve converged due to CONVERGED_RTOL iterations 8
-    1 KSP Residual norm 0.137351 
-    Linear solve converged due to CONVERGED_RTOL iterations 18
-    Linear solve converged due to CONVERGED_RTOL iterations 13
-    2 KSP Residual norm 0.106648 
-    Linear solve converged due to CONVERGED_RTOL iterations 22
+    3 KSP Residual norm 0.0566767 
+    Linear solve converged due to CONVERGED_RTOL iterations 27
     Linear solve converged due to CONVERGED_RTOL iterations 15
-    3 KSP Residual norm 0.0558072 
+    4 KSP Residual norm 0.0143373 
+    Linear solve converged due to CONVERGED_RTOL iterations 27
+    Linear solve converged due to CONVERGED_RTOL iterations 12
+    5 KSP Residual norm 0.0021517 
     Linear solve converged due to CONVERGED_RTOL iterations 21
-    Linear solve converged due to CONVERGED_RTOL iterations 15
-    4 KSP Residual norm 0.0294323 
+    Linear solve converged due to CONVERGED_RTOL iterations 9
+    6 KSP Residual norm 0.000294117 
     Linear solve converged due to CONVERGED_RTOL iterations 21
-    Linear solve converged due to CONVERGED_RTOL iterations 15
-    5 KSP Residual norm 0.00792939 
-    Linear solve converged due to CONVERGED_RTOL iterations 18
+    Linear solve converged due to CONVERGED_RTOL iterations 12
+    7 KSP Residual norm 5.72045e-05 
+    Linear solve converged due to CONVERGED_RTOL iterations 21
     Linear solve converged due to CONVERGED_RTOL iterations 10
-    6 KSP Residual norm 0.00108565 
-    Linear solve converged due to CONVERGED_RTOL iterations 17
-    Linear solve converged due to CONVERGED_RTOL iterations 11
-    7 KSP Residual norm 0.000140993 
-    Linear solve converged due to CONVERGED_RTOL iterations 19
-    Linear solve converged due to CONVERGED_RTOL iterations 11
-    8 KSP Residual norm 1.40465e-05 
-    Linear solve converged due to CONVERGED_RTOL iterations 18
-    Linear solve converged due to CONVERGED_RTOL iterations 10
-    9 KSP Residual norm 4.11339e-06 
-  3 KSP Residual norm 3.07618e-09 
-    0 KSP Residual norm 0.998834 
-    Linear solve converged due to CONVERGED_RTOL iterations 15
+    8 KSP Residual norm 3.68237e-06 
+  2 KSP Residual norm 8.15484e-07 
+    0 KSP Residual norm 0.209052 
     Linear solve converged due to CONVERGED_RTOL iterations 14
-    1 KSP Residual norm 0.697044 
-    Linear solve converged due to CONVERGED_RTOL iterations 18
-    Linear solve converged due to CONVERGED_RTOL iterations 15
-    2 KSP Residual norm 0.0819951 
-    Linear solve converged due to CONVERGED_RTOL iterations 19
-    Linear solve converged due to CONVERGED_RTOL iterations 11
-    3 KSP Residual norm 0.052404 
-    Linear solve converged due to CONVERGED_RTOL iterations 21
-    Linear solve converged due to CONVERGED_RTOL iterations 14
-    4 KSP Residual norm 0.0196832 
-    Linear solve converged due to CONVERGED_RTOL iterations 17
-    Linear solve converged due to CONVERGED_RTOL iterations 13
-    5 KSP Residual norm 0.00511681 
-    Linear solve converged due to CONVERGED_RTOL iterations 17
-    Linear solve converged due to CONVERGED_RTOL iterations 9
-    6 KSP Residual norm 0.000874044 
+    Linear solve converged due to CONVERGED_RTOL iterations 6
+    1 KSP Residual norm 0.0334117 
+    Linear solve converged due to CONVERGED_RTOL iterations 12
+    Linear solve converged due to CONVERGED_RTOL iterations 4
+    2 KSP Residual norm 0.0185075 
+    Linear solve converged due to CONVERGED_RTOL iterations 12
+    Linear solve converged due to CONVERGED_RTOL iterations 4
+    3 KSP Residual norm 0.0116486 
     Linear solve converged due to CONVERGED_RTOL iterations 16
     Linear solve converged due to CONVERGED_RTOL iterations 12
-    7 KSP Residual norm 0.000136891 
-    Linear solve converged due to CONVERGED_RTOL iterations 17
-    Linear solve converged due to CONVERGED_RTOL iterations 11
-    8 KSP Residual norm 1.19391e-05 
+    4 KSP Residual norm 0.00823444 
+    Linear solve converged due to CONVERGED_RTOL iterations 12
+    Linear solve converged due to CONVERGED_RTOL iterations 4
+    5 KSP Residual norm 0.00549928 
+    Linear solve converged due to CONVERGED_RTOL iterations 10
+    Linear solve converged due to CONVERGED_RTOL iterations 4
+    6 KSP Residual norm 0.00232252 
+    Linear solve converged due to CONVERGED_RTOL iterations 10
+    Linear solve converged due to CONVERGED_RTOL iterations 4
+    7 KSP Residual norm 0.00109302 
+    Linear solve converged due to CONVERGED_RTOL iterations 9
+    Linear solve converged due to CONVERGED_RTOL iterations 4
+    8 KSP Residual norm 0.000457367 
+    Linear solve converged due to CONVERGED_RTOL iterations 12
+    Linear solve converged due to CONVERGED_RTOL iterations 4
+    9 KSP Residual norm 0.000393394 
+    Linear solve converged due to CONVERGED_RTOL iterations 9
+    Linear solve converged due to CONVERGED_RTOL iterations 4
+   10 KSP Residual norm 0.000164953 
+    Linear solve converged due to CONVERGED_RTOL iterations 9
+    Linear solve converged due to CONVERGED_RTOL iterations 4
+   11 KSP Residual norm 8.01212e-05 
+    Linear solve converged due to CONVERGED_RTOL iterations 4
+    Linear solve converged due to CONVERGED_RTOL iterations 4
+   12 KSP Residual norm 4.63833e-05 
+    Linear solve converged due to CONVERGED_RTOL iterations 4
+    Linear solve converged due to CONVERGED_RTOL iterations 4
+   13 KSP Residual norm 3.09627e-05 
+    Linear solve converged due to CONVERGED_RTOL iterations 4
+    Linear solve converged due to CONVERGED_RTOL iterations 4
+   14 KSP Residual norm 1.92262e-05 
+    Linear solve converged due to CONVERGED_RTOL iterations 4
+    Linear solve converged due to CONVERGED_RTOL iterations 4
+   15 KSP Residual norm 1.16141e-05 
+    Linear solve converged due to CONVERGED_RTOL iterations 4
+    Linear solve converged due to CONVERGED_RTOL iterations 4
+   16 KSP Residual norm 5.33869e-06 
+    Linear solve converged due to CONVERGED_RTOL iterations 4
+    Linear solve converged due to CONVERGED_RTOL iterations 4
+   17 KSP Residual norm 2.72645e-06 
+    Linear solve converged due to CONVERGED_RTOL iterations 4
+    Linear solve converged due to CONVERGED_RTOL iterations 4
+   18 KSP Residual norm 1.09577e-06 
+  3 KSP Residual norm 1.49647e-08 
+    0 KSP Residual norm 0.999176 
+    Linear solve converged due to CONVERGED_RTOL iterations 21
+    Linear solve converged due to CONVERGED_RTOL iterations 7
+    1 KSP Residual norm 0.199486 
+    Linear solve converged due to CONVERGED_RTOL iterations 27
+    Linear solve converged due to CONVERGED_RTOL iterations 19
+    2 KSP Residual norm 0.125199 
+    Linear solve converged due to CONVERGED_RTOL iterations 24
     Linear solve converged due to CONVERGED_RTOL iterations 18
-    Linear solve converged due to CONVERGED_RTOL iterations 11
-    9 KSP Residual norm 8.11542e-07 
-  4 KSP Residual norm < 1.e-11
-KSP Object:(fc_) 2 MPI processes
+    3 KSP Residual norm 0.0911001 
+    Linear solve converged due to CONVERGED_RTOL iterations 31
+    Linear solve converged due to CONVERGED_RTOL iterations 15
+    4 KSP Residual norm 0.0250606 
+    Linear solve converged due to CONVERGED_RTOL iterations 21
+    Linear solve converged due to CONVERGED_RTOL iterations 12
+    5 KSP Residual norm 0.00393383 
+    Linear solve converged due to CONVERGED_RTOL iterations 21
+    Linear solve converged due to CONVERGED_RTOL iterations 9
+    6 KSP Residual norm 0.00065741 
+    Linear solve converged due to CONVERGED_RTOL iterations 20
+    Linear solve converged due to CONVERGED_RTOL iterations 12
+    7 KSP Residual norm 0.000122053 
+    Linear solve converged due to CONVERGED_RTOL iterations 21
+    Linear solve converged due to CONVERGED_RTOL iterations 10
+    8 KSP Residual norm 2.04244e-05 
+    Linear solve converged due to CONVERGED_RTOL iterations 25
+    Linear solve converged due to CONVERGED_RTOL iterations 10
+    9 KSP Residual norm 2.17897e-06 
+  4 KSP Residual norm 9.456e-11 
+    0 KSP Residual norm 0.999983 
+    Linear solve converged due to CONVERGED_RTOL iterations 21
+    Linear solve converged due to CONVERGED_RTOL iterations 18
+    1 KSP Residual norm 0.120117 
+    Linear solve converged due to CONVERGED_RTOL iterations 26
+    Linear solve converged due to CONVERGED_RTOL iterations 15
+    2 KSP Residual norm 0.0913282 
+    Linear solve converged due to CONVERGED_RTOL iterations 23
+    Linear solve converged due to CONVERGED_RTOL iterations 15
+    3 KSP Residual norm 0.0163947 
+    Linear solve converged due to CONVERGED_RTOL iterations 27
+    Linear solve converged due to CONVERGED_RTOL iterations 15
+    4 KSP Residual norm 0.0031777 
+    Linear solve converged due to CONVERGED_RTOL iterations 27
+    Linear solve converged due to CONVERGED_RTOL iterations 12
+    5 KSP Residual norm 0.00039371 
+    Linear solve converged due to CONVERGED_RTOL iterations 21
+    Linear solve converged due to CONVERGED_RTOL iterations 9
+    6 KSP Residual norm 3.84559e-05 
+    Linear solve converged due to CONVERGED_RTOL iterations 22
+    Linear solve converged due to CONVERGED_RTOL iterations 10
+    7 KSP Residual norm 7.60788e-06 
+  5 KSP Residual norm < 1.e-11
+KSP Object:(fc_) 4 MPI processes
   type: fgmres
     GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
     GMRES: happy breakdown tolerance 1e-30
@@ -103,24 +163,22 @@ KSP Object:(fc_) 2 MPI processes
   right preconditioning
   diagonally scaled system
   using UNPRECONDITIONED norm type for convergence test
-PC Object:(fc_) 2 MPI processes
+PC Object:(fc_) 4 MPI processes
   type: fieldsplit
     FieldSplit with Schur preconditioner, blocksize = 2, factorization UPPER
     Split info:
     Split number 0 Defined by IS
     Split number 1 Defined by IS
     KSP solver for A00 block 
-      KSP Object:      (fc_fieldsplit_velocity_)       2 MPI processes      
-        type: fgmres
-          GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
-          GMRES: happy breakdown tolerance 1e-30
+      KSP Object:      (fc_fieldsplit_velocity_)       4 MPI processes      
+        type: cg
         maximum iterations=10000, initial guess is zero
         tolerances:  relative=1e-06, absolute=1e-50, divergence=10000
-        right preconditioning
-        using UNPRECONDITIONED norm type for convergence test
-      PC Object:      (fc_fieldsplit_velocity_)       2 MPI processes      
+        left preconditioning
+        using PRECONDITIONED norm type for convergence test
+      PC Object:      (fc_fieldsplit_velocity_)       4 MPI processes      
         type: bjacobi
-          block Jacobi: number of blocks = 2
+          block Jacobi: number of blocks = 4
           Local solve is same for all blocks, in the following KSP and PC objects:
         KSP Object:        (fc_fieldsplit_velocity_sub_)         1 MPI processes        
           type: preonly
@@ -129,35 +187,35 @@ PC Object:(fc_) 2 MPI processes
           left preconditioning
           using PRECONDITIONED norm type for convergence test
         PC Object:        (fc_fieldsplit_velocity_sub_)         1 MPI processes        
-          type: lu
-            LU: out-of-place factorization
+          type: cholesky
+            Cholesky: out-of-place factorization
             tolerance for zero pivot 1e-12
             matrix ordering: nd
-            factor fill ratio given 5, needed 3.85313
+            factor fill ratio given 5, needed 2.84512
               Factored matrix follows:
                 Matrix Object:                 1 MPI processes                
-                  type: seqaij
-                  rows=1023, cols=1023
+                  type: seqsbaij
+                  rows=512, cols=512
                   package used to perform factorization: petsc
-                  total: nonzeros=65877, allocated nonzeros=65877
+                  total: nonzeros=12308, allocated nonzeros=12308
                   total number of mallocs used during MatSetValues calls =0
-                    using I-node routines: found 503 nodes, limit used is 5
+                      block size is 1
           linear system matrix = precond matrix:
           Matrix Object:           1 MPI processes          
             type: seqaij
-            rows=1023, cols=1023
-            total: nonzeros=17097, allocated nonzeros=17097
+            rows=512, cols=512
+            total: nonzeros=8140, allocated nonzeros=8140
             total number of mallocs used during MatSetValues calls =0
-              using I-node routines: found 543 nodes, limit used is 5
+              using I-node routines: found 279 nodes, limit used is 5
         linear system matrix = precond matrix:
-        Matrix Object:         2 MPI processes        
+        Matrix Object:         4 MPI processes        
           type: mpiaij
           rows=2046, cols=2046
           total: nonzeros=34952, allocated nonzeros=34952
           total number of mallocs used during MatSetValues calls =0
-            using I-node (on process 0) routines: found 543 nodes, limit used is 5
+            using I-node (on process 0) routines: found 279 nodes, limit used is 5
     KSP solver for S = A11 - A10 inv(A00) A01 
-      KSP Object:      (fc_fieldsplit_pressure_)       2 MPI processes      
+      KSP Object:      (fc_fieldsplit_pressure_)       4 MPI processes      
         type: fgmres
           GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
           GMRES: happy breakdown tolerance 1e-30
@@ -166,20 +224,18 @@ PC Object:(fc_) 2 MPI processes
         right preconditioning
         has attached null space
         using UNPRECONDITIONED norm type for convergence test
-      PC Object:      (fc_fieldsplit_pressure_)       2 MPI processes      
+      PC Object:      (fc_fieldsplit_pressure_)       4 MPI processes      
         type: lsc
-          KSP Object:          (fc_fieldsplit_pressure_lsc_)           2 MPI processes          
-            type: fgmres
-              GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
-              GMRES: happy breakdown tolerance 1e-30
+          KSP Object:          (fc_fieldsplit_pressure_lsc_)           4 MPI processes          
+            type: cg
             maximum iterations=10000, initial guess is zero
             tolerances:  relative=0.01, absolute=1e-50, divergence=10000
-            right preconditioning
+            left preconditioning
             has attached null space
-            using UNPRECONDITIONED norm type for convergence test
-          PC Object:          (fc_fieldsplit_pressure_lsc_)           2 MPI processes          
+            using PRECONDITIONED norm type for convergence test
+          PC Object:          (fc_fieldsplit_pressure_lsc_)           4 MPI processes          
             type: bjacobi
-              block Jacobi: number of blocks = 2
+              block Jacobi: number of blocks = 4
               Local solve is same for all blocks, in the following KSP and PC objects:
             KSP Object:            (fc_fieldsplit_pressure_lsc_sub_)             1 MPI processes            
               type: preonly
@@ -197,56 +253,54 @@ PC Object:(fc_) 2 MPI processes
                   Factored matrix follows:
                     Matrix Object:                     1 MPI processes                    
                       type: seqsbaij
-                      rows=512, cols=512
+                      rows=256, cols=256
                       package used to perform factorization: petsc
-                      total: nonzeros=2418, allocated nonzeros=2418
+                      total: nonzeros=1162, allocated nonzeros=1162
                       total number of mallocs used during MatSetValues calls =0
                           block size is 1
               linear system matrix = precond matrix:
               Matrix Object:               1 MPI processes              
                 type: seqaij
-                rows=512, cols=512
-                total: nonzeros=4324, allocated nonzeros=4324
+                rows=256, cols=256
+                total: nonzeros=2068, allocated nonzeros=2068
                 total number of mallocs used during MatSetValues calls =0
                   not using I-node routines
             linear system matrix = precond matrix:
-            Matrix Object:             2 MPI processes            
+            Matrix Object:             4 MPI processes            
               type: mpiaij
               rows=1024, cols=1024
               total: nonzeros=8836, allocated nonzeros=8836
               total number of mallocs used during MatSetValues calls =0
                 not using I-node (on process 0) routines
         linear system matrix followed by preconditioner matrix:
-        Matrix Object:         2 MPI processes        
+        Matrix Object:         4 MPI processes        
           type: schurcomplement
           rows=1024, cols=1024
             Schur complement A11 - A10 inv(A00) A01
             A11
-              Matrix Object:               2 MPI processes              
+              Matrix Object:               4 MPI processes              
                 type: mpiaij
                 rows=1024, cols=1024
                 total: nonzeros=1024, allocated nonzeros=1024
                 total number of mallocs used during MatSetValues calls =0
                   not using I-node (on process 0) routines
             A10
-              Matrix Object:               2 MPI processes              
+              Matrix Object:               4 MPI processes              
                 type: mpiaij
                 rows=1024, cols=2046
                 total: nonzeros=7936, allocated nonzeros=7936
                 total number of mallocs used during MatSetValues calls =0
                   not using I-node (on process 0) routines
             KSP of A00
-              KSP Object:              (fc_fieldsplit_velocity_)               2 MPI processes              
-                type: fgmres
-                  GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
-                  GMRES: happy breakdown tolerance 1e-30
+              KSP Object:              (fc_fieldsplit_velocity_)               4 MPI processes              
+                type: cg
                 maximum iterations=10000, initial guess is zero
                 tolerances:  relative=1e-06, absolute=1e-50, divergence=10000
-                right preconditioning
-                using UNPRECONDITIONED norm type for convergence test
-              PC Object:              (fc_fieldsplit_velocity_)               2 MPI processes              
+                left preconditioning
+                using PRECONDITIONED norm type for convergence test
+              PC Object:              (fc_fieldsplit_velocity_)               4 MPI processes              
                 type: bjacobi
-                  block Jacobi: number of blocks = 2
+                  block Jacobi: number of blocks = 4
                   Local solve is same for all blocks, in the following KSP and PC objects:
                 KSP Object:                (fc_fieldsplit_velocity_sub_)                 1 MPI processes                
                   type: preonly
@@ -255,48 +309,48 @@ PC Object:(fc_) 2 MPI processes
                   left preconditioning
                   using PRECONDITIONED norm type for convergence test
                 PC Object:                (fc_fieldsplit_velocity_sub_)                 1 MPI processes                
-                  type: lu
-                    LU: out-of-place factorization
+                  type: cholesky
+                    Cholesky: out-of-place factorization
                     tolerance for zero pivot 1e-12
                     matrix ordering: nd
-                    factor fill ratio given 5, needed 3.85313
+                    factor fill ratio given 5, needed 2.84512
                       Factored matrix follows:
                         Matrix Object:                         1 MPI processes                        
-                          type: seqaij
-                          rows=1023, cols=1023
+                          type: seqsbaij
+                          rows=512, cols=512
                           package used to perform factorization: petsc
-                          total: nonzeros=65877, allocated nonzeros=65877
+                          total: nonzeros=12308, allocated nonzeros=12308
                           total number of mallocs used during MatSetValues calls =0
-                            using I-node routines: found 503 nodes, limit used is 5
+                              block size is 1
                   linear system matrix = precond matrix:
                   Matrix Object:                   1 MPI processes                  
                     type: seqaij
-                    rows=1023, cols=1023
-                    total: nonzeros=17097, allocated nonzeros=17097
+                    rows=512, cols=512
+                    total: nonzeros=8140, allocated nonzeros=8140
                     total number of mallocs used during MatSetValues calls =0
-                      using I-node routines: found 543 nodes, limit used is 5
+                      using I-node routines: found 279 nodes, limit used is 5
                 linear system matrix = precond matrix:
-                Matrix Object:                 2 MPI processes                
+                Matrix Object:                 4 MPI processes                
                   type: mpiaij
                   rows=2046, cols=2046
                   total: nonzeros=34952, allocated nonzeros=34952
                   total number of mallocs used during MatSetValues calls =0
-                    using I-node (on process 0) routines: found 543 nodes, limit used is 5
+                    using I-node (on process 0) routines: found 279 nodes, limit used is 5
             A01
-              Matrix Object:               2 MPI processes              
+              Matrix Object:               4 MPI processes              
                 type: mpiaij
                 rows=2046, cols=1024
                 total: nonzeros=7936, allocated nonzeros=7936
                 total number of mallocs used during MatSetValues calls =0
-                  using I-node (on process 0) routines: found 543 nodes, limit used is 5
-        Matrix Object:         2 MPI processes        
+                  using I-node (on process 0) routines: found 279 nodes, limit used is 5
+        Matrix Object:         4 MPI processes        
           type: mpiaij
           rows=1024, cols=1024
           total: nonzeros=1024, allocated nonzeros=1024
           total number of mallocs used during MatSetValues calls =0
             not using I-node (on process 0) routines
   linear system matrix = precond matrix:
-  Matrix Object:   2 MPI processes  
+  Matrix Object:   4 MPI processes  
     type: nest
     rows=3070, cols=3070
       Matrix object: 
@@ -312,12 +366,12 @@ PC Object:(fc_) 2 MPI processes
   Norm(u) = 0.249724 
   Sum(u)  = 0.189536 
 -- pressure vector values --
-  Min(p)  = -6.260662 [loc=844]
-  Max(p)  = 4.615591 [loc=16]
-  Norm(p) = 94.391341 
-  Sum(p)  = -226.327817 
+  Min(p)  = -6.039639 [loc=844]
+  Max(p)  = 4.836615 [loc=16]
+  Norm(p) = 94.125988 
+  Sum(p)  = -0.000000 
 -- Full vector values --
-  Min(u,p)  = -6.260662 [loc=2890]
-  Max(u,p)  = 4.615591 [loc=1039]
-  Norm(u,p) = 94.391671 
-  Sum(u,p)  = -226.138280 
+  Min(u,p)  = -6.039639 [loc=2890]
+  Max(u,p)  = 4.836615 [loc=528]
+  Norm(u,p) = 94.126319 
+  Sum(u,p)  = 0.189536 
