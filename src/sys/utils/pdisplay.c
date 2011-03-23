@@ -135,8 +135,8 @@ PetscErrorCode  PetscSetDisplay(void)
       ierr = PetscStrlen(display,&len);CHKERRQ(ierr);
       ierr = PetscStrncat(display,str,sizeof display-len-1);CHKERRQ(ierr);
     }
-    ierr = MPI_Bcast(display,sizeof display,MPI_CHAR,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
   }
+  ierr = MPI_Bcast(display,sizeof display,MPI_CHAR,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
   ierr = PetscMemcpy(PetscDisplay,display,sizeof PetscDisplay);CHKERRQ(ierr);
   PetscDisplay[sizeof PetscDisplay-1] = 0;
   PetscFunctionReturn(0);
