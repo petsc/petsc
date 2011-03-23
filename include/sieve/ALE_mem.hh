@@ -27,7 +27,7 @@ namespace ALE {
     struct Log {
       long long num;
       long long total;
-      std::map<std::string, int> items;
+      std::map<std::string, long long> items;
 
       Log(): num(0), total(0) {};
     };
@@ -105,14 +105,14 @@ namespace ALE {
       stages[stage].second.items[className] += bytes;
     };
   public:
-    int getNumAllocations() {return getNumAllocations(stageNames.front());};
-    int getNumAllocations(const std::string& stage) {return stages[stage].first.num;};
-    int getNumDeallocations() {return getNumDeallocations(stageNames.front());};
-    int getNumDeallocations(const std::string& stage) {return stages[stage].second.num;};
-    int getAllocationTotal() {return getAllocationTotal(stageNames.front());};
-    int getAllocationTotal(const std::string& stage) {return stages[stage].first.total;};
-    int getDeallocationTotal() {return getDeallocationTotal(stageNames.front());};
-    int getDeallocationTotal(const std::string& stage) {return stages[stage].second.total;};
+    long long getNumAllocations() {return getNumAllocations(stageNames.front());};
+    long long getNumAllocations(const std::string& stage) {return stages[stage].first.num;};
+    long long getNumDeallocations() {return getNumDeallocations(stageNames.front());};
+    long long getNumDeallocations(const std::string& stage) {return stages[stage].second.num;};
+    long long getAllocationTotal() {return getAllocationTotal(stageNames.front());};
+    long long getAllocationTotal(const std::string& stage) {return stages[stage].first.total;};
+    long long getDeallocationTotal() {return getDeallocationTotal(stageNames.front());};
+    long long getDeallocationTotal(const std::string& stage) {return stages[stage].second.total;};
   public:
     void show() {
       std::cout << "["<<rank<<"]Memory Stages:" << std::endl;
