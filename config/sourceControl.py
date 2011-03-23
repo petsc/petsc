@@ -25,6 +25,7 @@ class Configure(config.base.Configure):
     if 'with-hg' in self.framework.argDB and self.framework.argDB['with-hg'] == '0':
       return
     self.getExecutable(self.framework.argDB['with-hg'], resultName = 'hg')
+    self.hgversion = self.executeShellCommand(self.hg + ' version -q')
     return
 
   def configureCVS(self):
