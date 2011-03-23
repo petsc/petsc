@@ -577,6 +577,7 @@ PetscErrorCode  PetscBagLoad(PetscViewer view,PetscBag *bag)
   PetscInt       classid,bagsizecount[2],i,offsetdtype[2],msize;
   char           name[PETSC_BAG_NAME_LENGTH],help[PETSC_BAG_HELP_LENGTH],**list;
   PetscBagItem   nitem;
+  MPI_Comm       comm;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)view,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
@@ -588,6 +589,9 @@ PetscErrorCode  PetscBagLoad(PetscViewer view,PetscBag *bag)
   ierr = PetscMalloc(bagsizecount[0],bag);CHKERRQ(ierr);
   ierr = PetscMemzero(*bag,bagsizecount[0]);CHKERRQ(ierr);
   (*bag)->bagsize = bagsizecount[0];
+  ierr = PetscObjectGetComm((PetscObject)view,&comm);CHKERRQ(ierr);
+  (*bag)->bagcomm        = comm;
+  (*bag)->structlocation = (void*)(((char*)(*bag)) + sizeof(PetscScalar)*(sizeof(struct _n_PetscBag)/sizeof(PetscScalar)) + sizeof(PetscScalar));
 
   ierr = PetscViewerBinaryRead(view,(*bag)->bagname,PETSC_BAG_NAME_LENGTH,PETSC_CHAR);CHKERRQ(ierr);
   ierr = PetscViewerBinaryRead(view,(*bag)->baghelp,PETSC_BAG_HELP_LENGTH,PETSC_CHAR);CHKERRQ(ierr);
@@ -665,10 +669,11 @@ PetscErrorCode PetscBagCreate(MPI_Comm comm, size_t bagsize, PetscBag *bag)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(bagsize+sizeof(struct _n_PetscBag),bag);CHKERRQ(ierr);
-  ierr = PetscMemzero(*bag,bagsize+sizeof(struct _n_PetscBag));CHKERRQ(ierr);
-  (*bag)->bagsize = bagsize+sizeof(struct _n_PetscBag);
-  (*bag)->bagcomm = comm;
+  ierr = PetscMalloc(bagsize+sizeof(struct _n_PetscBag)+sizeof(PetscScalar),bag);CHKERRQ(ierr);
+  ierr = PetscMemzero(*bag,bagsize+sizeof(struct _n_PetscBag)+sizeof(PetscScalar));CHKERRQ(ierr);
+  (*bag)->bagsize        = bagsize+sizeof(struct _n_PetscBag)+sizeof(PetscScalar);
+  (*bag)->bagcomm        = comm;
+  (*bag)->structlocation = (void*)(((char*)(*bag)) + sizeof(PetscScalar)*(sizeof(struct _n_PetscBag)/sizeof(PetscScalar)) + sizeof(PetscScalar));
   PetscFunctionReturn(0);
 }  
   
@@ -749,6 +754,6 @@ PetscErrorCode PetscBagGetName(PetscBag bag, char **name)
 PetscErrorCode PetscBagGetData(PetscBag bag, void **data)
 {
   PetscFunctionBegin;
-  *data = (char*)bag + sizeof(struct _n_PetscBag);
+  *data = bag->structlocation;
   PetscFunctionReturn(0);
 }

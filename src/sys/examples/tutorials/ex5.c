@@ -31,13 +31,13 @@ typedef struct {
   Define a C struct that will contain my program's parameters.
 */
 typedef struct {
-  char          filename[PETSC_MAX_PATH_LEN];
-  PetscReal     rho;
   PetscScalar   W;
+  PetscReal     rho;
+  TwoVec        pos; 
   PetscInt      Ii;
   PetscBool     T;
-  TwoVec        pos; 
   PetscDataType dt;
+  char          filename[PETSC_MAX_PATH_LEN];
   YourChoice    which;
 } Parameter;
  
@@ -93,7 +93,7 @@ int main(int argc,char **argv)
 
   /* reuse the parameter struct */
   ierr   = PetscBagGetData(bag,(void**)&params);CHKERRQ(ierr);
-  PetscPrintf(PETSC_COMM_WORLD,"The value of rho after loading is: %f\n",params->rho);
+  PetscPrintf(PETSC_COMM_WORLD,"The value of rho after loading is: %f\n",(double)params->rho);
 
 #if defined(PETSC_USE_SOCKET_VIEWER)
   {

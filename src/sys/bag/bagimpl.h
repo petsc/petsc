@@ -19,6 +19,7 @@ struct _n_PetscBagItem {
 struct _n_PetscBag {
   MPI_Comm     bagcomm;
   PetscInt     bagsize;
+  void*        structlocation;
   PetscInt     count;
   char         bagname[PETSC_BAG_NAME_LENGTH];
   char         baghelp[PETSC_BAG_HELP_LENGTH];
