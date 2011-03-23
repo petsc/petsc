@@ -1,38 +1,55 @@
 static char help[] = "\n";
 /* - - - - - - - - - - - - - - - - - - - - - - - - 
-   ex2.c
-   Explicit semi-Lagrangian advection of a set of 
-   passive tracers. DM has 7 dof: u,w,c1,c2,c3,c4
-   where u & w are time-independent & analytically prescribed. 
-   This is identical to ex1 but with more advected
-   fields.
-   - - - - - - - - - - - - - - - - - - - - - - - - */
+   ex4.c
+   Advection-diffusion equation
+
+   Du
+   -- - \nabla^2 u = 0
+   dt 
+
+which we discretize using Crank-Nicholson
+
+   u^+ - u^*  1 /                                 \
+   -------- - - | (\nabla^2 u)^+ + (\nabla^2 u)^* | = 0
+   \Delta t   2 \                                 /
+
+which gives, collecting terms
+
+         \Delta t                        \Delta t
+   u^+ - -------- (\nabla^2 u)^+ = u^* + -------- (\nabla^2 u)^*
+             2                              2
+
+where u^- is the solution at the old time, u^+ is
+the solution at the new time, and u^* is the solution
+at the old time advected to the new time.
+- - - - - - - - - - - - - - - - - - - - - - - - */
 #include <petscsnes.h>
 #include <petscdmda.h>
 #include <petscdmmg.h>
 #include <petscbag.h>
 #include <characteristic.h>
 
+#define EXAMPLE_NUMBER 1
 #define SHEAR_CELL     0
 #define SOLID_BODY     1
 #define FNAME_LENGTH   60
 
 typedef struct field_s {
-  PetscReal      u,w,c1,c2,c3,c4;
+  PetscReal phi;
 } Field;
 
-typedef PetscReal FieldArr[6];
-
 typedef struct parameter_s {
-  int            ni, nj, pi, pj;
-  PetscReal      sigma,xctr,zctr,L1,L2,LINF;
-  int            flow_type;
+  int            ni, nj,pi,pj;          /* number of grid points, number of procs */ 
+  PassiveScalar  amp,sigma,xctr,zctr,L1,L2,LINF; /* parameters for gaussian Initial Condition */
+  PassiveScalar  Pe, theta, ct, st, diffScale;   /* parameters for velocity field and diffusion length */
+  int            flow_type, sl_event;
   PetscBool      param_test, output_to_file;
   char           output_filename[FNAME_LENGTH];
   /* timestep stuff */
-  PetscReal      t; /* the time */
+  PassiveScalar  t; /* the time */
   int            n; /* the time step */
-  PetscReal      t_max, dt, cfl, t_output_interval;
+  PassiveScalar  dtAdvection, dtDiffusion; /* minimal advection and diffusion time steps */
+  PassiveScalar  t_max, dt, cfl, t_output_interval;
   int            N_steps;
 } Parameter;
 
@@ -40,13 +57,14 @@ typedef struct gridinfo_s {
   DMDABoundaryType periodic;
   DMDAStencilType  stencil;
   int            ni,nj,dof,stencil_width,mglevels;
-  PetscReal      dx,dz;
+  PassiveScalar  dx,dz;
 } GridInfo;
 
 typedef struct appctx_s {
+  DMMG        *dmmg;
   Vec          Xold;
   PetscBag     bag;
-  GridInfo     grid;
+  GridInfo     *grid;
 } AppCtx;
 
 /* Main routines */
@@ -55,14 +73,16 @@ int ReportParams         (AppCtx*);
 int Initialize           (DMMG*);
 int DoSolve              (DMMG*);
 int DoOutput             (DMMG*, int);
-int DMDASetFieldNames      (const char*,const char*,const char*,const char*,const char*,const char*,DM);
-PetscReal BiCubicInterp  (FieldArr**, PetscReal, PetscReal, int);
+PetscReal BiCubicInterp  (Field**, PetscReal, PetscReal);
 PetscReal CubicInterp    (PetscReal, PetscReal, PetscReal, PetscReal, PetscReal);
 PetscBool  OptionsHasName(const char*);
 
 /* characteristic call-backs (static interface) */
 PetscErrorCode InterpVelocity2D(void*, PetscReal[], PetscInt, PetscInt[], PetscReal[], void*);
 PetscErrorCode InterpFields2D  (void*, PetscReal[], PetscInt, PetscInt[], PetscReal[], void*);
+
+PetscErrorCode FormOldTimeFunctionLocal(DMDALocalInfo *, PetscScalar **, PetscScalar **, AppCtx *);
+PetscErrorCode FormNewTimeFunctionLocal(DMDALocalInfo *, PetscScalar **, PetscScalar **, AppCtx *);
 
 /* a few macros for convenience */
 #define REG_REAL(A,B,C,D,E)   ierr=PetscBagRegisterReal(A,B,C,D,E);CHKERRQ(ierr)
@@ -77,12 +97,12 @@ PetscErrorCode InterpFields2D  (void*, PetscReal[], PetscInt, PetscInt[], PetscR
 int main(int argc,char **argv)
 /*-----------------------------------------------------------------------*/
 {
-  DMMG           *dmmg;               /* multilevel grid structure */
   AppCtx         *user;               /* user-defined work context */
   Parameter      *param;
-  int            ierr,result = 0;
-  MPI_Comm       comm;
-  DM             da;
+  DM              da;
+  GridInfo        grid;
+  MPI_Comm        comm;
+  PetscErrorCode  ierr;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   comm = PETSC_COMM_WORLD;
@@ -92,6 +112,7 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */ 
   ierr = PetscMalloc(sizeof(AppCtx),&user);CHKERRQ(ierr);
   ierr = PetscBagCreate(comm,sizeof(Parameter),&(user->bag));CHKERRQ(ierr);
+  user->grid = &grid;
   ierr = SetParams(user);CHKERRQ(ierr);
   ierr = ReportParams(user);CHKERRQ(ierr);
   ierr = PetscBagGetData(user->bag,(void**)&param);CHKERRQ(ierr);
@@ -100,34 +121,36 @@ int main(int argc,char **argv)
      Create distributed array multigrid object (DMMG) to manage parallel grid and vectors
      for principal unknowns (x) and governing residuals (f)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */ 
-  ierr = DMMGCreate(comm,user->grid.mglevels,user,&dmmg);CHKERRQ(ierr); 
-  ierr = DMDACreate2d(comm,user->grid.periodic,user->grid.stencil,user->grid.ni,user->grid.nj,PETSC_DECIDE,PETSC_DECIDE,user->grid.dof,user->grid.stencil_width,0,0,&da);CHKERRQ(ierr);
-  ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr);
+  ierr = DMMGCreate(comm,grid.mglevels,user,&user->dmmg);CHKERRQ(ierr); 
+  ierr = DMDACreate2d(comm,grid.periodic,grid.periodic,grid.stencil,grid.ni,grid.nj,PETSC_DECIDE,PETSC_DECIDE,grid.dof,grid.stencil_width,0,0,&da);CHKERRQ(ierr);
+  ierr = DMMGSetDM(user->dmmg,(DM) da);CHKERRQ(ierr);
   ierr = DMDestroy(da);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(da,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,&(param->pi),&(param->pj),PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMMGSetSNESLocal(user->dmmg,FormNewTimeFunctionLocal,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMMGSetFromOptions(user->dmmg);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(DMMGGetDM(user->dmmg),PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,&(param->pi),&(param->pj),PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   REG_INTG(user->bag,&param->pi,param->pi ,"procs_x","<DO NOT SET> Processors in the x-direction");
   REG_INTG(user->bag,&param->pj,param->pj ,"procs_y","<DO NOT SET> Processors in the y-direction");
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create user context, set problem data, create vector data structures.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */   
-  ierr = DMGetGlobalVector(da, &(user->Xold));CHKERRQ(ierr);
+  ierr = DMGetGlobalVector(DMMGGetDM(user->dmmg), &(user->Xold));CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize and solve the nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = Initialize(dmmg);CHKERRQ(ierr);
-  ierr = DoSolve(dmmg);CHKERRQ(ierr);
+  ierr = Initialize(user->dmmg);CHKERRQ(ierr);
+  ierr = DoSolve(user->dmmg);CHKERRQ(ierr);
   
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space. 
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMRestoreGlobalVector(da, &(user->Xold));CHKERRQ(ierr);
+  ierr = DMRestoreGlobalVector(DMMGGetDM(user->dmmg), &(user->Xold));CHKERRQ(ierr);
   ierr = PetscBagDestroy(user->bag);CHKERRQ(ierr); 
+  ierr = DMMGDestroy(user->dmmg);CHKERRQ(ierr);
   ierr = PetscFree(user);CHKERRQ(ierr);
-  ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  return result;
+  return 0;
 }
 
 /*---------------------------------------------------------------------*/
@@ -138,25 +161,35 @@ int SetParams(AppCtx *user)
 {
   PetscBag   bag = user->bag;
   Parameter  *p;
+  GridInfo   *grid = user->grid;
   int        ierr, ierr_out=0;
-  ierr = PetscBagGetData(bag,(void**)&p);CHKERRQ(ierr);
+  PetscReal  PI = 3.14159265358979323846;
 
-  /* give the bag a name */
-  ierr = PetscBagSetName(bag,"ex1_params","Parameter bag for ex1.c");CHKERRQ(ierr);
+  ierr = PetscBagGetData(bag,(void**)&p);CHKERRQ(ierr);
 
   /* domain geometry & grid size */
   REG_INTG(bag,&p->ni,40                  ,"ni","Grid points in x-dir");
   REG_INTG(bag,&p->nj,40                  ,"nj","Grid points in y-dir");
-  user->grid.dx = 1.0/((double)(p->ni - 1));
-  user->grid.dz = 1.0/((double)(p->nj - 1));
-  user->grid.ni = p->ni;
-  user->grid.nj = p->nj;
+  grid->ni = p->ni;
+  grid->nj = p->nj;
+  grid->dx = 1.0/((double)(grid->ni - 1));
+  grid->dz = 1.0/((double)(grid->nj - 1));
 
   /* initial conditions */
-  REG_INTG(bag,&p->flow_type,SHEAR_CELL   ,"flow_type","Flow field mode: 0=shear cell, 1=translation");
+  REG_INTG(bag,&p->flow_type,SOLID_BODY   ,"flow_type","Flow field mode: 0=shear cell, 1=translation");
+  REG_REAL(bag,&p->amp,1                  ,"amp","Amplitude of the gaussian IC");
   REG_REAL(bag,&p->sigma,0.07             ,"sigma","Standard deviation of the gaussian IC");
   REG_REAL(bag,&p->xctr,0.5               ,"xctr","x-position of the center of the gaussian IC");
-  REG_REAL(bag,&p->zctr,0.75              ,"zctr","z-position of the center of the gaussian IC");
+  REG_REAL(bag,&p->zctr,0.5               ,"zctr","z-position of the center of the gaussian IC");
+
+  /* Velocity field */
+  REG_REAL(bag,&p->Pe,10                   ,"Pe","Peclet number");
+  REG_REAL(bag,&p->theta,-90                ,"theta","velocity angle (degrees)");
+  REG_REAL(bag,&p->ct,cos(p->theta*PI/180),"cosTheta","<DO NOT SET> cosine velocity angle");
+  REG_REAL(bag,&p->st,sin(p->theta*PI/180),"sinTheta","<DO NOT SET> sine velocity angle");
+  
+  /* diffusion LengthScale for time stepping */
+  REG_REAL(bag,&p->diffScale,2,            "diffScale","diffusion length scale (number of grid points for stable diffusion)");
 
   /* time stepping */  
   REG_REAL(bag,&p->t_max,1                ,"t_max","Maximum dimensionless time");
@@ -165,7 +198,9 @@ int SetParams(AppCtx *user)
   REG_INTG(bag,&p->N_steps,1000           ,"nsteps","Maximum time-steps");
   REG_INTG(bag,&p->n,1                    ,"nsteps","<DO NOT SET> current time-step");
   REG_REAL(bag,&p->t,0.0                  ,"time","<DO NOT SET> initial time");
-  REG_REAL(bag,&p->dt,p->cfl*PetscMin(user->grid.dx,user->grid.dz),"dt","<DO NOT SET> time-step size");
+  REG_REAL(bag,&p->dtAdvection,1./p->Pe/(sqrt(pow(p->ct/grid->dx,2)+pow(p->st/grid->dz,2))),"dtAdvection","<DO NOT SET> CFL limited advection time step");
+  REG_REAL(bag,&p->dtDiffusion,1./(1./grid->dx/grid->dx+1./grid->dz/grid->dz),"dtDiffusion","<DO NOT SET> grid-space limited diffusion time step");
+  REG_REAL(bag,&p->dt,PetscMin(p->cfl*p->dtAdvection,pow(p->diffScale,2)*p->dtDiffusion),"dt","<DO NOT SET> time-step size");
 
   /* output options */
   REG_TRUE(bag,&p->param_test     ,PETSC_FALSE  ,"test","Run parameter test only (T/F)");
@@ -173,11 +208,13 @@ int SetParams(AppCtx *user)
   REG_TRUE(bag,&p->output_to_file,PETSC_FALSE   ,"do_output","<DO NOT SET> flag will be true if you specify an output file name");
   p->output_to_file = OptionsHasName("-output_file");
 
-  user->grid.periodic      = DMDA_XYPERIODIC;
-  user->grid.stencil       = DMDA_STENCIL_BOX;
-  user->grid.dof           = 6;
-  user->grid.stencil_width = 2;
-  user->grid.mglevels      = 1;
+  grid->ni            = p->ni;
+  grid->nj            = p->nj;
+  grid->periodic      = DMDA_BOUNDARY_PERIODIC;
+  grid->stencil       = DMDA_STENCIL_BOX;
+  grid->dof           = 1;
+  grid->stencil_width = 2;
+  grid->mglevels      = 1;
   return ierr_out;
 }
 
@@ -188,7 +225,7 @@ int ReportParams(AppCtx *user)
 /*---------------------------------------------------------------------*/
 {
   Parameter  *param;
-  GridInfo   grid = user->grid;
+  GridInfo   *grid = user->grid;
   int        ierr, ierr_out=0;
   ierr = PetscBagGetData(user->bag,(void**)&param);CHKERRQ(ierr);
 
@@ -200,11 +237,12 @@ int ReportParams(AppCtx *user)
     PetscPrintf(PETSC_COMM_WORLD,"Flow_type: %d (shear cell).\n\n",param->flow_type); 
   }
   if (param->flow_type == 1) {
-    PetscPrintf(PETSC_COMM_WORLD,"Flow_type: %d (rigid body rotation).\n\n",param->flow_type); 
+    PetscPrintf(PETSC_COMM_WORLD,"Flow_type: %d (translation).\n\n",param->flow_type); 
   }
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"  [ni,nj] = %d, %d   [dx,dz] = %5.4g, %5.4g\n",grid.ni,grid.nj,grid.dx,grid.dz);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"  [ni,nj] = %d, %d   [dx,dz] = %5.4g, %5.4g\n",grid->ni,grid->nj,grid->dx,grid->dz);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"  t_max = %g, cfl = %g, dt = %5.4g,",param->t_max,param->cfl,param->dt);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD," t_output = %g\n",param->t_output_interval);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD," dt_advection= %g, dt_diffusion= %g\n",param->dtAdvection,param->dtDiffusion);CHKERRQ(ierr);
   if (param->output_to_file) {
     PetscPrintf(PETSC_COMM_WORLD,"Output File:       Binary file \"%s\"\n",param->output_filename);
   }
@@ -224,36 +262,31 @@ int Initialize(DMMG *dmmg)
   AppCtx    *user  = (AppCtx*)dmmg[0]->user;
   Parameter *param;
   DM        da;
-  PetscReal PI = 3.14159265358979323846;
-  PetscReal sigma,xc,zc;
-  PetscReal dx=user->grid.dx,dz=user->grid.dz;
+  PetscReal amp, sigma, xc, zc ;
+  PetscReal dx=user->grid->dx,dz=user->grid->dz;
   int       i,j,ierr,is,js,im,jm;
   Field     **x;
   ierr = PetscBagGetData(user->bag,(void**)&param);CHKERRQ(ierr);
-  sigma=param->sigma; xc=param->xctr; zc=param->zctr;
+  
+  amp = param->amp;
+  sigma = param->sigma;
+  xc = param->xctr; zc = param->zctr;
 
   /* Get the DM and grid */
-  da = (dmmg[0]->dm); 
+  da = DMMGGetDM(dmmg); 
   ierr = DMDAGetCorners(da,&is,&js,PETSC_NULL,&im,&jm,PETSC_NULL);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,user->Xold,(void**)&x);CHKERRQ(ierr);
 
   for (j=js; j<js+jm; j++) {
     for (i=is; i<is+im; i++) {
-      if (param->flow_type == SHEAR_CELL) {
-        x[j][i].u = -sin(PI*i*dx)*cos(PI*j*dz)/dx;
-        x[j][i].w =  sin(PI*j*dz)*cos(PI*i*dx)/dz;
-      } else {
-	x[j][i].u =  0.0;
-	x[j][i].w = -1.0/dz; 
-      }
-      x[j][i].c1 = 100*exp(-0.5*((i*dx-xc)*(i*dx-xc)+(j*dz-zc)*(j*dz-zc))/sigma/sigma);
-      x[j][i].c2 = x[j][i].c3 = x[j][i].c4 = x[j][i].c1;
+      x[j][i].phi = param->amp*exp(-0.5*((i*dx-xc)*(i*dx-xc)+(j*dz-zc)*(j*dz-zc))/sigma/sigma);
     }
   }
   
   /* restore the grid to it's vector */
   ierr = DMDAVecRestoreArray(da,user->Xold,(void**)&x);CHKERRQ(ierr);
   ierr = VecCopy(user->Xold, DMMGGetx(dmmg));CHKERRQ(ierr);
+
   return 0;
 }
 
@@ -266,7 +299,7 @@ int DoSolve(DMMG *dmmg)
   AppCtx         *user  = (AppCtx*)dmmg[0]->user;
   Parameter      *param;
   PetscReal      t_output = 0.0;
-  int            ierr, i, n_plot = 0, Ncomponents, components[5];
+  int            ierr, n_plot = 0, Ncomponents, components[3];
   DM             da = DMMGGetDM(dmmg);
   Vec            Xstar;
   Characteristic c;
@@ -277,10 +310,10 @@ int DoSolve(DMMG *dmmg)
   /*------------ BEGIN CHARACTERISTIC SETUP ---------------*/
   ierr = CharacteristicCreate(PETSC_COMM_WORLD, &c);CHKERRQ(ierr);
   /* set up the velocity interpolation system */
-  Ncomponents = 2; for (i=0;i<Ncomponents;i++) {components[i] = i;}
+  Ncomponents = 2; components[0] = 0; components[1] = 0;
   ierr = CharacteristicSetVelocityInterpolationLocal(c, da, DMMGGetx(dmmg), user->Xold, Ncomponents, components, InterpVelocity2D, user);CHKERRQ(ierr);
   /* set up the fields interpolation system */
-  Ncomponents = 4; for (i=0;i<Ncomponents;i++) {components[i] = i+2;}
+  Ncomponents = 1; components[0] = 0;
   ierr = CharacteristicSetFieldInterpolationLocal(c, da, user->Xold, Ncomponents, components, InterpFields2D, user);CHKERRQ(ierr);
   /*------------ END CHARACTERISTIC SETUP ----------------*/
 
@@ -299,27 +332,24 @@ int DoSolve(DMMG *dmmg)
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
        Solve at time t & copy solution into solution vector.
        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-    /* Copy in the velocities to Xstar */
-    ierr = VecCopy(DMMGGetx(dmmg), Xstar);CHKERRQ(ierr);
-    /* Put \phi_* into Xstar */
+    /* Evaluate operator (I + \Delta t/2 L) u^-  = X^- */
+    ierr = DMDAFormFunctionLocal(da, (DMDALocalFunction1) FormOldTimeFunctionLocal, DMMGGetx(dmmg), user->Xold, user);CHKERRQ(ierr);
+    /* Advect Xold into Xstar */
     ierr = CharacteristicSolve(c, param->dt, Xstar);CHKERRQ(ierr);
-    /* Copy the advected field into the solution \phi_t = \phi_* */
-    ierr = VecCopy(Xstar, DMMGGetx(dmmg));CHKERRQ(ierr);
+    /* Xstar -> Xold */
+    ierr = VecCopy(Xstar, user->Xold);CHKERRQ(ierr);
+    /* Solve u^+ = (I - \Delta t/2 L)^-1 Xstar which could be F(u^+) = Xstar */
+    ierr = DMMGSolve(dmmg);CHKERRQ(ierr);
 
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-       Copy new solution to old solution in prep for the next timestep.
-       - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-    ierr = VecCopy(DMMGGetx(dmmg), user->Xold);CHKERRQ(ierr);
-
-    /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-       Timestep complete, report and update counter.
+       report step and update counter.
        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
     PetscPrintf(PETSC_COMM_WORLD," Step: %d, Time: %5.4g\n", param->n, param->t);
     param->n++;
 
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-       Make output.
-       - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+       Output variables.
+       - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
     if (param->t >= t_output) {
       ierr = DoOutput(dmmg,n_plot);CHKERRQ(ierr); 
       t_output += param->t_output_interval; n_plot++;
@@ -333,7 +363,7 @@ int DoSolve(DMMG *dmmg)
 /*---------------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "InterpVelocity2D"
-/* uses analytic velocity fields */
+/* linear interpolation, ir: [0, ni], jr: [0, nj] */
 PetscErrorCode InterpVelocity2D(void *f, PetscReal ij_real[], PetscInt numComp, 
 				PetscInt components[], PetscReal velocity[], 
 				void *ctx)
@@ -341,17 +371,18 @@ PetscErrorCode InterpVelocity2D(void *f, PetscReal ij_real[], PetscInt numComp,
 {
   AppCtx    *user = (AppCtx *) ctx;
   Parameter *param;
-  PetscReal dx=user->grid.dx, dz=user->grid.dz;
+  PetscReal dx=user->grid->dx, dz=user->grid->dz;
   PetscReal PI = 3.14159265358979323846;
   int       ierr;
   ierr = PetscBagGetData(user->bag,(void**)&param);CHKERRQ(ierr);
 
+  /* remember: must be coordinate velocities not true velocities */
   if (param->flow_type == SHEAR_CELL) {
     velocity[0] = -sin(PI*ij_real[0]*dx)*cos(PI*ij_real[1]*dz)/dx;
     velocity[1] =  sin(PI*ij_real[1]*dz)*cos(PI*ij_real[0]*dx)/dz;
   } else {
-    velocity[0] = 0.;
-    velocity[1] = -1./dz;
+    velocity[0] = param->Pe*param->ct/dx; 
+    velocity[1] = param->Pe*param->st/dz;
   }
   return 0;
 }
@@ -359,32 +390,29 @@ PetscErrorCode InterpVelocity2D(void *f, PetscReal ij_real[], PetscInt numComp,
 /*---------------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "InterpFields2D"
-/* uses bicubic interpolation */
 PetscErrorCode InterpFields2D(void *f, PetscReal ij_real[], PetscInt numComp, 
 			      PetscInt components[], PetscReal field[], 
 			      void *ctx)
 /*---------------------------------------------------------------------*/
 {
   AppCtx    *user = (AppCtx*)ctx;
-  FieldArr **x   = (FieldArr**)f;
-  int       c, ni=user->grid.ni, nj=user->grid.nj;
+  Field     **x   = (Field**)f;
+  int       ni=user->grid->ni, nj=user->grid->nj;
+  int       ierr;
   PetscReal ir=ij_real[0], jr=ij_real[1];
 
-  for (c=0;c<numComp;c++) {
-    /* boundary condition: set to zero if characteristic begins outside the domain */
-    if ( ir < 0 || ir > ni-1 || jr < 0 || jr> nj-1 ) { 
-      field[c] = 0.0;
-    }  else {
-      field[c] = BiCubicInterp(x, ir, jr, components[c]);
-    }
-  }
+  /* map back to periodic domain if out of bounds */
+  if ( ir < 0 || ir > ni-1 || jr < 0 || jr> nj-1 ) { 
+    ierr = DMDAMapCoordsToPeriodicDomain(DMMGGetDM(user->dmmg), &ir, &jr);CHKERRQ(ierr);
+  } 
+  field[0] = BiCubicInterp(x, ir, jr);
   return 0;
 }
 
 /*---------------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "BiCubicInterp"
-PetscReal BiCubicInterp(FieldArr **x, PetscReal ir, PetscReal jr, int c)
+PetscReal BiCubicInterp(Field **x, PetscReal ir, PetscReal jr)
 /*---------------------------------------------------------------------*/
 {
   int        im, jm, imm,jmm,ip,jp,ipp,jpp;
@@ -393,10 +421,10 @@ PetscReal BiCubicInterp(FieldArr **x, PetscReal ir, PetscReal jr, int c)
   il = ir - im + 1.0; jl = jr - jm + 1.0;
   imm = im-1; ip = im+1; ipp = im+2;
   jmm = jm-1; jp = jm+1; jpp = jm+2;
-  row1 = CubicInterp(il,x[jmm][imm][c],x[jmm][im][c],x[jmm][ip][c],x[jmm][ipp][c]);
-  row2 = CubicInterp(il,x[jm] [imm][c],x[jm] [im][c],x[jm] [ip][c],x[jm] [ipp][c]);
-  row3 = CubicInterp(il,x[jp] [imm][c],x[jp] [im][c],x[jp] [ip][c],x[jp] [ipp][c]);
-  row4 = CubicInterp(il,x[jpp][imm][c],x[jpp][im][c],x[jpp][ip][c],x[jpp][ipp][c]);
+  row1 = CubicInterp(il,x[jmm][imm].phi,x[jmm][im].phi,x[jmm][ip].phi,x[jmm][ipp].phi);
+  row2 = CubicInterp(il,x[jm] [imm].phi,x[jm] [im].phi,x[jm] [ip].phi,x[jm] [ipp].phi);
+  row3 = CubicInterp(il,x[jp] [imm].phi,x[jp] [im].phi,x[jp] [ip].phi,x[jp] [ipp].phi);
+  row4 = CubicInterp(il,x[jpp][imm].phi,x[jpp][im].phi,x[jpp][ip].phi,x[jpp][ipp].phi);
   return CubicInterp(jl,row1,row2,row3,row4);
 }
 
@@ -437,28 +465,10 @@ int DoOutput(DMMG *dmmg, int n_plot)
     /* make output files */
     ierr = PetscViewerBinaryMatlabOpen(PETSC_COMM_WORLD,filename,&viewer);CHKERRQ(ierr);
     ierr = PetscViewerBinaryMatlabOutputBag(viewer,"par",user->bag);CHKERRQ(ierr);
-    ierr = DMDASetFieldNames("u","v","c1","c2","c3","c4",da);CHKERRQ(ierr);
+    ierr = DMDASetFieldName(da,0,"phi");CHKERRQ(ierr);
     ierr = PetscViewerBinaryMatlabOutputVecDA(viewer,"field",DMMGGetx(dmmg),da);CHKERRQ(ierr);
     ierr = PetscViewerBinaryMatlabDestroy(viewer);CHKERRQ(ierr);
   }  
-  return 0;
-}
-
-/* ------------------------------------------------------------------- */
-#undef __FUNCT__
-#define __FUNCT__ "DMDASetFieldNames"
-int DMDASetFieldNames(const char n0[], const char n1[], const char n2[], 
-		    const char n3[], const char n4[], const char n5[], 
-		    DM da)
-/* ------------------------------------------------------------------- */
-{
-  int ierr;
-  ierr = DMDASetFieldName(da,0,n0);CHKERRQ(ierr);
-  ierr = DMDASetFieldName(da,1,n1);CHKERRQ(ierr);
-  ierr = DMDASetFieldName(da,2,n2);CHKERRQ(ierr);
-  ierr = DMDASetFieldName(da,3,n3);CHKERRQ(ierr);
-  ierr = DMDASetFieldName(da,4,n4);CHKERRQ(ierr);
-  ierr = DMDASetFieldName(da,5,n5);CHKERRQ(ierr);
   return 0;
 }
 
@@ -474,3 +484,78 @@ PetscBool  OptionsHasName(const char name[])
   return retval;
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "FormNewTimeFunctionLocal"
+/* 
+  FormNewTimeFunctionLocal - Evaluates f = (I - \Delta t/2 L) x - f(u^-)^*.
+
+  Note: We get f(u^-)^* from Xold in the user context.
+
+  Process adiC(36): FormNewTimeFunctionLocal
+*/
+PetscErrorCode FormNewTimeFunctionLocal(DMDALocalInfo *info, PetscScalar **x, PetscScalar **f, AppCtx *user)
+{
+  DM             da = DMMGGetDM(user->dmmg);
+  PetscScalar  **fold;
+  Parameter     *param;
+  PetscScalar    u,uxx,uyy;
+  PetscReal      hx,hy,hxdhy,hydhx;
+  PetscInt       i,j;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  hx     = 1.0/(PetscReal)(info->mx-1);
+  hy     = 1.0/(PetscReal)(info->my-1);
+  hxdhy  = hx/hy; 
+  hydhx  = hy/hx;
+
+  ierr = PetscBagGetData(user->bag, (void**) &param);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da, user->Xold, &fold);CHKERRQ(ierr);
+  for (j=info->ys; j<info->ys+info->ym; j++) {
+    for (i=info->xs; i<info->xs+info->xm; i++) {
+      u       = x[j][i];
+      uxx     = (2.0*u - x[j][i-1] - x[j][i+1])*hydhx;
+      uyy     = (2.0*u - x[j-1][i] - x[j+1][i])*hxdhy;
+      f[j][i] = u*hx*hy + param->dt*0.5*(uxx + uyy) - fold[j][i];
+    }
+  }
+  ierr = DMDAVecRestoreArray(da, user->Xold, &fold);CHKERRQ(ierr);
+
+  ierr = PetscLogFlops(13.0*info->ym*info->xm);CHKERRQ(ierr);
+  PetscFunctionReturn(0); 
+} 
+
+#undef __FUNCT__
+#define __FUNCT__ "FormOldTimeFunctionLocal"
+/* 
+  FormOldTimeFunctionLocal - Evaluates f = (I + \Delta t/2 L) x.
+
+  Process adiC(36): FormOldTimeFunctionLocal
+*/
+PetscErrorCode FormOldTimeFunctionLocal(DMDALocalInfo *info, PetscScalar **x, PetscScalar **f, AppCtx *user)
+{
+  Parameter     *param;
+  PetscScalar    u,uxx,uyy;
+  PetscReal      hx,hy,hxdhy,hydhx;
+  PetscInt       i,j;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  hx     = 1.0/(PetscReal)(info->mx-1);
+  hy     = 1.0/(PetscReal)(info->my-1);
+  hxdhy  = hx/hy; 
+  hydhx  = hy/hx;
+
+  ierr = PetscBagGetData(user->bag, (void**) &param);CHKERRQ(ierr);
+  for (j=info->ys; j<info->ys+info->ym; j++) {
+    for (i=info->xs; i<info->xs+info->xm; i++) {
+      u       = x[j][i];
+      uxx     = (2.0*u - x[j][i-1] - x[j][i+1])*hydhx;
+      uyy     = (2.0*u - x[j-1][i] - x[j+1][i])*hxdhy;
+      f[j][i] = u*hx*hy - param->dt*0.5*(uxx + uyy);
+    }
+  }
+
+  ierr = PetscLogFlops(12.0*info->ym*info->xm);CHKERRQ(ierr);
+  PetscFunctionReturn(0); 
+} 

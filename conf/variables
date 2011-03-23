@@ -58,8 +58,7 @@ PETSC_SYS_LIB_BASIC            = -lpetscsys
 PETSC_VEC_LIB_BASIC            = -lpetscvec ${PETSC_SYS_LIB_BASIC}
 PETSC_MAT_LIB_BASIC            = -lpetscmat ${PETSC_VEC_LIB_BASIC}
 PETSC_DM_LIB_BASIC             = -lpetscdm ${PETSC_MAT_LIB_BASIC}
-PETSC_CHARACTERISTIC_LIB_BASIC = -lpetsccharacteristic ${PETSC_DM_LIB_BASIC}
-PETSC_KSP_LIB_BASIC            = -lpetscksp ${PETSC_CHARACTERISTIC_LIB_BASIC}
+PETSC_KSP_LIB_BASIC            = -lpetscksp ${PETSC_DM_LIB_BASIC}
 PETSC_SNES_LIB_BASIC           = -lpetscsnes ${PETSC_KSP_LIB_BASIC}
 PETSC_TS_LIB_BASIC             = -lpetscts ${PETSC_SNES_LIB_BASIC}
 PETSC_LIB_BASIC                = ${PETSC_TS_LIB_BASIC}
@@ -69,7 +68,6 @@ PETSC_SYS_LIB            = ${C_SH_LIB_PATH} -L${PETSC_LIB_DIR} ${PETSC_SYS_LIB_B
 PETSC_VEC_LIB            = ${C_SH_LIB_PATH} -L${PETSC_LIB_DIR} ${PETSC_VEC_LIB_BASIC}  ${PETSC_EXTERNAL_LIB_BASIC}
 PETSC_MAT_LIB            = ${C_SH_LIB_PATH} -L${PETSC_LIB_DIR} ${PETSC_MAT_LIB_BASIC}  ${PETSC_EXTERNAL_LIB_BASIC}
 PETSC_DM_LIB             = ${C_SH_LIB_PATH} -L${PETSC_LIB_DIR} ${PETSC_DM_LIB_BASIC}   ${PETSC_EXTERNAL_LIB_BASIC}
-PETSC_CHARACTERISTIC_LIB = ${C_SH_LIB_PATH} -L${PETSC_LIB_DIR} ${PETSC_CHARACTERISTIC_LIB_BASIC}  ${PETSC_EXTERNAL_LIB_BASIC}
 PETSC_KSP_LIB            = ${C_SH_LIB_PATH} -L${PETSC_LIB_DIR} ${PETSC_KSP_LIB_BASIC}  ${PETSC_EXTERNAL_LIB_BASIC}
 PETSC_SNES_LIB           = ${C_SH_LIB_PATH} -L${PETSC_LIB_DIR} ${PETSC_SNES_LIB_BASIC} ${PETSC_EXTERNAL_LIB_BASIC}
 PETSC_TS_LIB             = ${C_SH_LIB_PATH} -L${PETSC_LIB_DIR} ${PETSC_TS_LIB_BASIC}   ${PETSC_EXTERNAL_LIB_BASIC}
@@ -89,7 +87,7 @@ PETSC_MAKE_STOP_ON_ERROR = -
 PETSC_ADIC_LIB  = -L${PETSC_LIB_DIR} ${PETSC_LIB_BASIC} -lpetscblas -lmpiuni  ${EXTERNAL_LIB_BASIC}
 #
 # Some variables used to build shared libraries
-SHLIBS   = libpetscsys libpetscvec libpetscmat libpetscdm libpetsccharacteristic libpetscksp libpetscsnes libpetscts libpetsccontrib
+SHLIBS   = libpetscsys libpetscvec libpetscmat libpetscdm libpetscksp libpetscsnes libpetscts libpetsccontrib
 #
 # The following include files set customized site, optimization, and version
 # options.

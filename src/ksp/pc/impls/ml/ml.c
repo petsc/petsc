@@ -457,7 +457,8 @@ static PetscErrorCode MatWrapML_MPIAIJ(ML_Operator *mlmat,Mat *newmat)
 PetscErrorCode PCReset_ML(PC pc)
 {
   PetscErrorCode  ierr;
-  PC_ML           *pc_ml = (PC_ML*)pc->data;
+  PC_MG           *mg = (PC_MG*)pc->data;
+  PC_ML           *pc_ml = (PC_ML*)mg->innerctx;
   PetscInt        level,fine_level=pc_ml->Nlevels-1;
 
   PetscFunctionBegin; 
@@ -472,13 +473,15 @@ PetscErrorCode PCReset_ML(PC pc)
   }
   ierr = PetscFree(pc_ml->PetscMLdata);CHKERRQ(ierr);
 
-  for (level=0; level<fine_level; level++){
-    if (pc_ml->gridctx[level].A){ierr = MatDestroy(pc_ml->gridctx[level].A);CHKERRQ(ierr);}
-    if (pc_ml->gridctx[level].P){ierr = MatDestroy(pc_ml->gridctx[level].P);CHKERRQ(ierr);}
-    if (pc_ml->gridctx[level].R){ierr = MatDestroy(pc_ml->gridctx[level].R);CHKERRQ(ierr);}
-    if (pc_ml->gridctx[level].x){ierr = VecDestroy(pc_ml->gridctx[level].x);CHKERRQ(ierr);}
-    if (pc_ml->gridctx[level].b){ierr = VecDestroy(pc_ml->gridctx[level].b);CHKERRQ(ierr);}
-    if (pc_ml->gridctx[level+1].r){ierr = VecDestroy(pc_ml->gridctx[level+1].r);CHKERRQ(ierr);}
+  if (pc_ml->gridctx) {
+    for (level=0; level<fine_level; level++){
+      if (pc_ml->gridctx[level].A){ierr = MatDestroy(pc_ml->gridctx[level].A);CHKERRQ(ierr);}
+      if (pc_ml->gridctx[level].P){ierr = MatDestroy(pc_ml->gridctx[level].P);CHKERRQ(ierr);}
+      if (pc_ml->gridctx[level].R){ierr = MatDestroy(pc_ml->gridctx[level].R);CHKERRQ(ierr);}
+      if (pc_ml->gridctx[level].x){ierr = VecDestroy(pc_ml->gridctx[level].x);CHKERRQ(ierr);}
+      if (pc_ml->gridctx[level].b){ierr = VecDestroy(pc_ml->gridctx[level].b);CHKERRQ(ierr);}
+      if (pc_ml->gridctx[level+1].r){ierr = VecDestroy(pc_ml->gridctx[level+1].r);CHKERRQ(ierr);}
+    }
   }
   ierr = PetscFree(pc_ml->gridctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);

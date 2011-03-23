@@ -493,6 +493,58 @@ PetscErrorCode DMMeshGetGlobalScatter(DM dm, VecScatter *scatter)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMGlobalToLocalBegin_Mesh"
+PetscErrorCode  DMGlobalToLocalBegin_Mesh(DM dm, Vec g, InsertMode mode, Vec l)
+{
+  VecScatter     injection;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMMeshGetGlobalScatter(dm, &injection);CHKERRQ(ierr);
+  ierr = VecScatterBegin(injection, g, l, mode, SCATTER_REVERSE);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMGlobalToLocalEnd_Mesh"
+PetscErrorCode  DMGlobalToLocalEnd_Mesh(DM dm, Vec g, InsertMode mode, Vec l)
+{
+  VecScatter     injection;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMMeshGetGlobalScatter(dm, &injection);CHKERRQ(ierr);
+  ierr = VecScatterEnd(injection, g, l, mode, SCATTER_REVERSE);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMLocalToGlobalBegin_Mesh"
+PetscErrorCode  DMLocalToGlobalBegin_Mesh(DM dm, Vec l, InsertMode mode, Vec g)
+{
+  VecScatter     injection;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMMeshGetGlobalScatter(dm, &injection);CHKERRQ(ierr);
+  ierr = VecScatterBegin(injection, l, g, mode, SCATTER_FORWARD);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMLocalToGlobalEnd_Mesh"
+PetscErrorCode  DMLocalToGlobalEnd_Mesh(DM dm, Vec l, InsertMode mode, Vec g)
+{
+  VecScatter     injection;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMMeshGetGlobalScatter(dm, &injection);CHKERRQ(ierr);
+  ierr = VecScatterEnd(injection, l, g, mode, SCATTER_FORWARD);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMMeshGetLocalFunction"
 PetscErrorCode DMMeshGetLocalFunction(DM dm, PetscErrorCode (**lf)(DM, SectionReal, SectionReal, void *))
 {

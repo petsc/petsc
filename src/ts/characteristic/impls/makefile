@@ -1,8 +1,8 @@
 
-ALL:
+ALL: lib
 
-LOCDIR	 = src/characteristic/examples/
-DIRS	 = tutorials
+DIRS     = da
+LOCDIR   = src/ts/characteristic/impls/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

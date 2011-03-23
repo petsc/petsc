@@ -369,7 +369,11 @@ PetscErrorCode  SectionRealRestrict(SectionReal section, PetscInt point, PetscSc
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section, SECTIONREAL_CLASSID, 1);
   PetscValidScalarPointer(values,3);
-  *values = (PetscScalar *) section->s->restrictPoint(point);
+  try {
+    *values = (PetscScalar *) section->s->restrictPoint(point);
+  } catch(ALE::Exception e) {
+    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid argument: %s", e.message());
+  }
   PetscFunctionReturn(0);
 }
 
@@ -398,12 +402,16 @@ PetscErrorCode  SectionRealUpdate(SectionReal section, PetscInt point, const Pet
 #ifdef PETSC_USE_COMPLEX
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "SectionReal does not support complex updates");
 #else
-  if (mode == INSERT_VALUES) {
-    section->b->update(section->s, point, values);
-  } else if (mode == ADD_VALUES) {
-    section->b->updateAdd(section->s, point, values);
-  } else {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Invalid insertion mode: %d", mode);
+  try {
+    if (mode == INSERT_VALUES) {
+      section->b->update(section->s, point, values);
+    } else if (mode == ADD_VALUES) {
+      section->b->updateAdd(section->s, point, values);
+    } else {
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Invalid insertion mode: %d", mode);
+    }
+  } catch(ALE::Exception e) {
+    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid argument: %s", e.message());
   }
 #endif
   PetscFunctionReturn(0);
@@ -441,7 +449,11 @@ PetscErrorCode SectionRealRestrictClosure(SectionReal section, DM dm, PetscInt p
 #ifdef PETSC_USE_COMPLEX
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "SectionReal does not support complex restriction");
 #else
-  *values = m->restrictClosure(s, point);
+  try {
+    *values = m->restrictClosure(s, point);
+  } catch(ALE::Exception e) {
+    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid argument: %s", e.message());
+  }
 #endif
   PetscFunctionReturn(0);
 }
@@ -480,7 +492,11 @@ PetscErrorCode SectionRealRestrictClosure(SectionReal section, DM dm, PetscInt p
 #ifdef PETSC_USE_COMPLEX
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "SectionReal does not support complex restriction");
 #else
-  m->restrictClosure(s, point, values, n);
+  try {
+    m->restrictClosure(s, point, values, n);
+  } catch(ALE::Exception e) {
+    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid argument: %s", e.message());
+  }
 #endif
   PetscFunctionReturn(0);
 }
@@ -519,12 +535,16 @@ PetscErrorCode SectionRealUpdateClosure(SectionReal section, DM dm, PetscInt poi
 #ifdef PETSC_USE_COMPLEX
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "SectionReal does not support complex update");
 #else
-  if (mode == INSERT_VALUES) {
-    m->update(s, point, values);
-  } else if (mode == ADD_VALUES) {
-    m->updateAdd(s, point, values);
-  } else {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Invalid insertion mode: %d", mode);
+  try {
+    if (mode == INSERT_VALUES) {
+      m->update(s, point, values);
+    } else if (mode == ADD_VALUES) {
+      m->updateAdd(s, point, values);
+    } else {
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG, "Invalid insertion mode: %d", mode);
+    }
+  } catch(ALE::Exception e) {
+    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid argument: %s", e.message());
   }
 #endif
   PetscFunctionReturn(0);

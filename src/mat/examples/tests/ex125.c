@@ -77,6 +77,8 @@ int main(int argc,char **args)
 
   /* Test LU Factorization */
   ierr = MatGetOrdering(A,MATORDERINGND,&perm,&iperm);CHKERRQ(ierr);
+  //ierr = ISView(perm,PETSC_VIEWER_STDOUT_WORLD);
+  //ierr = ISView(perm,PETSC_VIEWER_STDOUT_SELF);
   
   ierr = PetscOptionsGetInt(PETSC_NULL,"-mat_solver_package",&ipack,PETSC_NULL);CHKERRQ(ierr);
   switch (ipack){
@@ -97,9 +99,9 @@ int main(int argc,char **args)
     if (!rank) printf(" MUMPS LU:\n");
     ierr = MatGetFactor(A,MATSOLVERMUMPS,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
     {
-    /* test mumps options */
-    PetscInt icntl_7 = 5;
-    ierr = MatMumpsSetIcntl(F,7,icntl_7);CHKERRQ(ierr);
+      /* test mumps options */
+      PetscInt icntl_7 = 5;
+      ierr = MatMumpsSetIcntl(F,7,icntl_7);CHKERRQ(ierr);
     }
     break;
 #endif
@@ -116,6 +118,10 @@ int main(int argc,char **args)
     ierr = MatLUFactorNumeric(F,A,&info);CHKERRQ(ierr);
 
     /* Test MatMatSolve() */
+    if ((ipack == 0 || ipack == 2) && testMatMatSolve){
+      printf("   MaMattSolve() is not implemented for this package. Skip the testing.\n");
+      testMatMatSolve = PETSC_FALSE;
+    }
     if (testMatMatSolve){
       if (!nfact){
         ierr = MatMatMult(A,C,MAT_INITIAL_MATRIX,2.0,&RHS);CHKERRQ(ierr);

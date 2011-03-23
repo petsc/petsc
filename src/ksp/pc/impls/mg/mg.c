@@ -146,9 +146,10 @@ PetscErrorCode  PCMGSetLevels(PC pc,PetscInt levels,MPI_Comm *comms)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  PetscValidLogicalCollectiveInt(pc,levels,2);
+  if (mg->nlevels == levels) PetscFunctionReturn(0);
   if (mg->nlevels > -1) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ORDER,"Number levels already set for MG\n  make sure that you call PCMGSetLevels() before KSPSetFromOptions()");
   if (mg->levels) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Internal error in PETSc, this array should not yet exist");
-  PetscValidLogicalCollectiveInt(pc,levels,2);
 
   mg->nlevels      = levels;
   mg->galerkin     = PETSC_FALSE;

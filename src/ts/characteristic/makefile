@@ -2,9 +2,9 @@
 
 ALL: lib
 
-SOURCEH  = characteristicimpl.h ../../include/characteristic.h
+SOURCEH  = characteristicimpl.h ../../../include/characteristic.h
 DIRS     = interface impls examples
-LOCDIR   = src/characteristic/
+LOCDIR   = src/ts/characteristic/
 MANSEC   = SemiLagrange
 
 include ${PETSC_DIR}/conf/variables

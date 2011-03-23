@@ -1,5 +1,5 @@
 
-#include <../src/characteristic/characteristicimpl.h> /*I "characteristic.h" I*/
+#include <../src/ts/characteristic/characteristicimpl.h> /*I "characteristic.h" I*/
 
 PetscClassId CHARACTERISTIC_CLASSID;
 PetscLogEvent  CHARACTERISTIC_SetUp, CHARACTERISTIC_Solve, CHARACTERISTIC_QueueSetup, CHARACTERISTIC_DAUpdate;

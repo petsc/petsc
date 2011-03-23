@@ -9,10 +9,10 @@ SOURCEF  =
 SOURCEH  = 
 OBJSC    = characteristic.o mocregis.o slregis.o
 OBJSF    =
-LIBBASE  = libpetsccharacteristic
+LIBBASE  = libpetscts
 MANSEC   = SemiLagrange
 DIRS     = 
-LOCDIR   = src/characteristic/interface/
+LOCDIR   = src/ts/characteristic/interface/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

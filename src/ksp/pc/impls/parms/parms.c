@@ -691,11 +691,11 @@ PetscErrorCode PCPARMSSetFill(PC pc,PetscInt lfil0,PetscInt lfil1,PetscInt lfil2
 .  -pc_parms_ind_tol - set the tolerance for independent sets
 .  -pc_parms_max_dim - set the inner krylov dimension
 .  -pc_parms_max_it - set the maximum number of inner iterations
-.  -pc_parms_inter_nonsymmetric_perm - set the use of symmetric permutation for interlevel blocks
+.  -pc_parms_inter_nonsymmetric_perm - set the use of nonsymmetric permutation for interlevel blocks
 .  -pc_parms_inter_column_perm - set the use of column permutation for interlevel blocks
 .  -pc_parms_inter_row_scaling - set the use of row scaling for interlevel blocks
 .  -pc_parms_inter_column_scaling - set the use of column scaling for interlevel blocks
-.  -pc_parms_last_nonsymmetric_perm - set the use of symmetric permutation for last level blocks
+.  -pc_parms_last_nonsymmetric_perm - set the use of nonsymmetric permutation for last level blocks
 .  -pc_parms_last_column_perm - set the use of column permutation for last level blocks
 .  -pc_parms_last_row_scaling - set the use of row scaling for last level blocks
 .  -pc_parms_last_column_scaling - set the use of column scaling for last level blocks
@@ -736,14 +736,14 @@ PetscErrorCode PCCreate_PARMS(PC pc)
   parms->blocksize = 250;
   parms->maxdim = 0;
   parms->maxits = 0;
-  parms->meth[0] = PETSC_TRUE;
-  parms->meth[1] = PETSC_TRUE;
-  parms->meth[2] = PETSC_TRUE;
-  parms->meth[3] = PETSC_TRUE;
-  parms->meth[4] = PETSC_TRUE;
-  parms->meth[5] = PETSC_TRUE;
-  parms->meth[6] = PETSC_TRUE;
-  parms->meth[7] = PETSC_TRUE;
+  parms->meth[0] = PETSC_FALSE;
+  parms->meth[1] = PETSC_FALSE;
+  parms->meth[2] = PETSC_FALSE;
+  parms->meth[3] = PETSC_FALSE;
+  parms->meth[4] = PETSC_FALSE;
+  parms->meth[5] = PETSC_FALSE;
+  parms->meth[6] = PETSC_FALSE;
+  parms->meth[7] = PETSC_FALSE;
   parms->solvetol = 0.01;
   parms->indtol = 0.4;
   parms->lfil[0] = parms->lfil[1] = parms->lfil[2] = parms->lfil[3] = 20;

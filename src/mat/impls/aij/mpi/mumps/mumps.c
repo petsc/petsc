@@ -488,6 +488,7 @@ PetscErrorCode MatDestroy_MUMPS(Mat A)
     if (lu->b_seq) {ierr = VecDestroy(lu->b_seq);CHKERRQ(ierr);}
     if (lu->nSolve && lu->scat_sol){ierr = VecScatterDestroy(lu->scat_sol);CHKERRQ(ierr);}
     if (lu->nSolve && lu->x_seq){ierr = VecDestroy(lu->x_seq);CHKERRQ(ierr);}
+    if (lu->id.perm_in){ierr=PetscFree(lu->id.perm_in);CHKERRQ(ierr);}
 
     ierr = PetscFree(lu->irn);CHKERRQ(ierr); 
     lu->id.job=JOB_END; 
@@ -576,6 +577,15 @@ PetscErrorCode MatSolveTranspose_MUMPS(Mat A,Vec b,Vec x)
   lu->id.ICNTL(9) = 0;
   ierr = MatSolve_MUMPS(A,b,x);
   lu->id.ICNTL(9) = 1;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatMatSolve_MUMPS"
+PetscErrorCode MatMatSolve_MUMPS(Mat A,Mat B,Mat X) 
+{
+  PetscFunctionBegin;
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatMatSolve_MUMPS() is not implemented yet");
   PetscFunctionReturn(0);
 }
 
@@ -727,12 +737,13 @@ PetscErrorCode PetscSetMUMPSOptions(Mat F, Mat A)
   icntl=-1;
   ierr = PetscOptionsInt("-mat_mumps_icntl_7","ICNTL(7): sequential matrix ordering (0 to 7) 3 = Scotch, 5 = Metis","None",lu->id.ICNTL(7),&icntl,&flg);CHKERRQ(ierr);
   if (flg) {
-    if (icntl== 1){
+    if (icntl== 1 && lu->size > 1){
       SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"pivot order be set by the user in PERM_IN -- not supported by the PETSc/MUMPS interface\n");
     } else {
       lu->id.ICNTL(7) = icntl;
     }
   } 
+  
   ierr = PetscOptionsInt("-mat_mumps_icntl_8","ICNTL(8): scaling strategy (-2 to 7 or 77)","None",lu->id.ICNTL(8),&lu->id.ICNTL(8),PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-mat_mumps_icntl_10","ICNTL(10): max num of refinements","None",lu->id.ICNTL(10),&lu->id.ICNTL(10),PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-mat_mumps_icntl_11","ICNTL(11): statistics related to the linear system solved (via -ksp_view)","None",lu->id.ICNTL(11),&lu->id.ICNTL(11),PETSC_NULL);CHKERRQ(ierr);
@@ -827,6 +838,17 @@ PetscErrorCode MatLUFactorSymbolic_AIJMUMPS(Mat F,Mat A,IS r,IS c,const MatFacto
         lu->id.a = lu->val; 
 #endif
       }
+      if (lu->id.ICNTL(7) == 1){ /* use user-provide matrix ordering */
+        if (!lu->myid) {
+          const PetscInt *idx;
+          PetscInt i,*perm_in;
+          ierr = PetscMalloc(M*sizeof(PetscInt),&perm_in);CHKERRQ(ierr);
+          ierr = ISGetIndices(r,&idx);CHKERRQ(ierr);
+          lu->id.perm_in = perm_in;
+          for (i=0; i<M; i++) perm_in[i] = idx[i]+1; /* perm_in[]: start from 1, not 0! */
+          ierr = ISRestoreIndices(r,&idx);CHKERRQ(ierr);
+        }
+      }
     }
     break;
   case 3:  /* distributed assembled matrix input (size>1) */ 
@@ -866,6 +888,7 @@ PetscErrorCode MatLUFactorSymbolic_AIJMUMPS(Mat F,Mat A,IS r,IS c,const MatFacto
   F->ops->lufactornumeric  = MatFactorNumeric_MUMPS;
   F->ops->solve            = MatSolve_MUMPS;
   F->ops->solvetranspose   = MatSolveTranspose_MUMPS;
+  F->ops->matsolve         = MatMatSolve_MUMPS;
   PetscFunctionReturn(0); 
 }
 
