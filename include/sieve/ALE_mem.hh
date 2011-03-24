@@ -118,7 +118,13 @@ namespace ALE {
       std::cout << "["<<rank<<"]Memory Stages:" << std::endl;
       for(stageLog::const_iterator s_iter = stages.begin(); s_iter != stages.end(); ++s_iter) {
         std::cout << "["<<rank<<"]  " << s_iter->first << ": " << s_iter->second.first.num  << " acalls  " << s_iter->second.first.total  << " bytes" << std::endl;
+        for(Log::const_iterator i_iter = s_iter->second.first.items.begin(); i_iter != s_iter->second.first.items.end(); ++i_iter) {
+          std::cout << "["<<rank<<"]    " << i_iter->first << ": " << i_iter->second << " bytes" << std::endl;
+        }
         std::cout << "["<<rank<<"]  " << s_iter->first << ": " << s_iter->second.second.num << " dcalls  " << s_iter->second.second.total << " bytes" << std::endl;
+        for(Log::const_iterator i_iter = s_iter->second.second.items.begin(); i_iter != s_iter->second.second.items.end(); ++i_iter) {
+          std::cout << "["<<rank<<"]    " << i_iter->first << ": " << i_iter->second << " bytes" << std::endl;
+        }
       }
     };
   public:
