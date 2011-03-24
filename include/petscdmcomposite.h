@@ -3,6 +3,7 @@
 #define __PETSCDMCOMPOSITE_H
 
 #include "petscdm.h"
+PETSC_EXTERN_CXX_BEGIN
 
 extern PetscErrorCode   DMCompositeCreate(MPI_Comm,DM*);
 extern PetscErrorCode   DMCompositeAddArray(DM,PetscMPIInt,PetscInt);
@@ -23,4 +24,5 @@ extern PetscErrorCode   DMCompositeGetGlobalISs(DM,IS*[]);
 extern PetscErrorCode   DMCompositeGetLocalISs(DM,IS**);
 extern PetscErrorCode   DMCompositeGetISLocalToGlobalMappings(DM,ISLocalToGlobalMapping**);
 
+PETSC_EXTERN_CXX_END
 #endif
