@@ -1,8 +1,10 @@
 # --------------------------------------------------------------------
 
 class AOType(object):
-    BASIC   = S_(AOBASIC)
-    MAPPING = S_(AOMAPPING)
+    BASIC          = S_(AOBASIC)
+    ADVANCED       = S_(AOADVANCED)
+    MAPPING        = S_(AOMAPPING)
+    MEMORYSCALABLE = S_(AOMEMORYSCALABLE)
 
 # --------------------------------------------------------------------
 
@@ -65,9 +67,9 @@ cdef class AO(Object):
         return self
 
     def getType(self):
-        cdef PetscAOType aotype = AOBASIC
-        CHKERR( AOGetType(self.ao, &aotype) )
-        return aotype
+        cdef PetscAOType cval = NULL
+        CHKERR( AOGetType(self.ao, &cval) )
+        return bytes2str(cval)
 
     def app2petsc(self, indices):
         cdef PetscIS iset = NULL

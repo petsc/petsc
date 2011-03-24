@@ -2,7 +2,9 @@ cdef extern from * nogil:
 
     ctypedef char* PetscAOType "const char*"
     PetscAOType AOBASIC
+    PetscAOType AOADVANCED
     PetscAOType AOMAPPING
+    PetscAOType AOMEMORYSCALABLE
 
     int AOView(PetscAO,PetscViewer)
     int AODestroy(PetscAO)

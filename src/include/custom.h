@@ -942,9 +942,13 @@ SNESSetUseMFFD(SNES snes,PetscBool flag)
   }
   ierr = MatCreateSNESMF(snes,&J);CHKERRQ(ierr);
   ierr = SNESGetOptionsPrefix(snes,&prefix);CHKERRQ(ierr);
+#if (PETSC_VERSION_(3,1,0) || PETSC_VERSION_(3,0,0))
   ierr = MatMFFDSetOptionsPrefix(J,prefix);CHKERRQ(ierr);
   ierr = MatMFFDSetFromOptions(J);CHKERRQ(ierr);
-
+#else
+  ierr = MatSetOptionsPrefix(J,prefix);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(J);CHKERRQ(ierr);
+#endif
   if (B == PETSC_NULL) {
     ierr = SNESSetJacobian(snes,J,J,MatMFFDComputeJacobian,jacP);CHKERRQ(ierr);
     ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
@@ -1313,20 +1317,6 @@ TSMonitorCall(TS ts,PetscInt step,PetscReal ptime,Vec x)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   ierr = TSMonitor(ts,step,ptime,x);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-/* ---------------------------------------------------------------- */
-
-#undef __FUNCT__
-#define __FUNCT__ "AOGetType"
-static PetscErrorCode
-AOGetType(AO ao, AOType *aotype)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ao,AO_CLASSID,1);
-  PetscValidPointer(aotype,3);
-  *aotype = (AOType) ((PetscObject)ao)->type;
   PetscFunctionReturn(0);
 }
 
