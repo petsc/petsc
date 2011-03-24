@@ -1625,7 +1625,6 @@ extern PetscErrorCode  MatMFFDSetFunctionError(Mat,PetscReal);
 extern PetscErrorCode  MatMFFDSetPeriod(Mat,PetscInt);
 extern PetscErrorCode  MatMFFDGetH(Mat,PetscScalar *);
 extern PetscErrorCode  MatMFFDSetOptionsPrefix(Mat,const char[]);
-extern PetscErrorCode  MatMFFDSetFromOptions(Mat);
 extern PetscErrorCode  MatMFFDCheckPositivity(void*,Vec,Vec,PetscScalar*);
 extern PetscErrorCode  MatMFFDSetCheckh(Mat,PetscErrorCode (*)(void*,Vec,Vec,PetscScalar*),void*);
 

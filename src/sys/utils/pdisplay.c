@@ -89,9 +89,9 @@ static char PetscDisplay[256];
 static PetscErrorCode PetscWorldIsSingleHost(PetscBool  *onehost)
 {
   PetscErrorCode ierr;
-  char hostname[256],roothostname[256];
-  PetscMPIInt localmatch,allmatch;
-  PetscBool  flag;
+  char           hostname[256],roothostname[256];
+  PetscMPIInt    localmatch,allmatch;
+  PetscBool      flag;
 
   PetscFunctionBegin;
   ierr = PetscGetHostName(hostname,256);CHKERRQ(ierr);

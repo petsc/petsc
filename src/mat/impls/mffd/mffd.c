@@ -322,7 +322,7 @@ PetscErrorCode MatMult_MFFD(Mat mat,Vec a,Vec y)
   */
   if (!ctx->ops->compute) {
     ierr = MatMFFDSetType(mat,MATMFFD_WP);CHKERRQ(ierr);
-    ierr = MatMFFDSetFromOptions(mat);CHKERRQ(ierr);
+    ierr = MatSetFromOptions(mat);CHKERRQ(ierr);
   }
   ierr = (*ctx->ops->compute)(ctx,U,a,&h,&zeroa);CHKERRQ(ierr);
   if (zeroa) {
@@ -562,7 +562,7 @@ EXTERN_C_END
 
 .keywords: SNES, matrix-free, parameters
 
-.seealso: MatMFFDSetFromOptions(), MatCreateSNESMF()
+.seealso: MatSetFromOptions(), MatCreateSNESMF()
 @*/
 PetscErrorCode  MatMFFDSetOptionsPrefix(Mat mat,const char prefix[])
 
@@ -577,28 +577,8 @@ PetscErrorCode  MatMFFDSetOptionsPrefix(Mat mat,const char prefix[])
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatMFFDSetFromOptions"
-/*@
-   MatMFFDSetFromOptions - Sets the MatMFFD options from the command line
-   parameter.
-
-   Collective on Mat
-
-   Input Parameters:
-.  mat - the matrix obtained with MatCreateMFFD() or MatCreateSNESMF()
-
-   Options Database Keys:
-+  -mat_mffd_type - wp or ds (see MATMFFD_WP or MATMFFD_DS)
--  -mat_mffd_err - square root of estimated relative error in function evaluation
--  -mat_mffd_period - how often h is recomputed, defaults to 1, everytime
-
-   Level: advanced
-
-.keywords: SNES, matrix-free, parameters
-
-.seealso: MatCreateSNESMF(),MatMFFDSetHHistory(), MatMFFDResetHHistory()
-@*/
-PetscErrorCode  MatMFFDSetFromOptions(Mat mat)
+#define __FUNCT__ "MatSetFromOptions_MFFD"
+PetscErrorCode  MatSetFromOptions_MFFD(Mat mat)
 {
   MatMFFD        mfctx = (MatMFFD)mat->data;
   PetscErrorCode ierr;
@@ -690,7 +670,7 @@ PetscErrorCode  MatCreate_MFFD(Mat A)
   A->ops->shift          = MatShift_MFFD;
   A->ops->diagonalscale  = MatDiagonalScale_MFFD;
   A->ops->diagonalset    = MatDiagonalSet_MFFD;
-  A->ops->setfromoptions = MatMFFDSetFromOptions;
+  A->ops->setfromoptions = MatSetFromOptions_MFFD;
   A->assembled = PETSC_TRUE;
 
   ierr = PetscLayoutSetBlockSize(A->rmap,1);CHKERRQ(ierr);
@@ -729,6 +709,12 @@ EXTERN_C_END
 
    Output Parameter:
 .  J - the matrix-free matrix
+
+   Options Database Keys: call MatSetFromOptions() to trigger these
++  -mat_mffd_type - wp or ds (see MATMFFD_WP or MATMFFD_DS)
+-  -mat_mffd_err - square root of estimated relative error in function evaluation
+-  -mat_mffd_period - how often h is recomputed, defaults to 1, everytime
+
 
    Level: advanced
 

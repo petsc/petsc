@@ -4,6 +4,7 @@
 #include "petscdm.h"
 #include "petscpf.h"
 #include "petscao.h"
+PETSC_EXTERN_CXX_BEGIN
 
 /*E
     DMDAStencilType - Determines if the stencil extends only along the coordinate directions, or also
@@ -356,4 +357,5 @@ extern PetscErrorCode   admf_DARestoreArray(DM,PetscBool ,void*);
 
 extern PetscErrorCode   DMDACreatePF(DM,PF*);
 
+PETSC_EXTERN_CXX_END
 #endif

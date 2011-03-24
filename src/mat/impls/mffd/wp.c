@@ -109,9 +109,7 @@ static PetscErrorCode MatMFFDView_WP(MatMFFD ctx,PetscViewer viewer)
   if (iascii) {
     if (hctx->computenormU){ierr =  PetscViewerASCIIPrintf(viewer,"    Computes normU\n");CHKERRQ(ierr);}  
     else                   {ierr =  PetscViewerASCIIPrintf(viewer,"    Does not compute normU\n");CHKERRQ(ierr);}  
-  } else {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for SNES matrix-free WP",((PetscObject)viewer)->type_name);
-  }    
+  } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for SNES matrix-free WP",((PetscObject)viewer)->type_name);
   PetscFunctionReturn(0);
 }
 
@@ -132,8 +130,7 @@ static PetscErrorCode MatMFFDSetFromOptions_WP(MatMFFD ctx)
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("Walker-Pernice options");CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-mat_mffd_compute_normu","Compute the norm of u","MatMFFDWPSetComputeNormU",
-                          hctx->computenormU,&hctx->computenormU,0);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-mat_mffd_compute_normu","Compute the norm of u","MatMFFDWPSetComputeNormU", hctx->computenormU,&hctx->computenormU,0);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -235,9 +232,7 @@ PetscErrorCode  MatCreateMFFD_WP(MatMFFD ctx)
   ctx->ops->view           = MatMFFDView_WP;  
   ctx->ops->setfromoptions = MatMFFDSetFromOptions_WP;  
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ctx->mat,"MatMFFDWPSetComputeNormU_C",
-                            "MatMFFDWPSetComputeNormU_P",
-                             MatMFFDWPSetComputeNormU_P);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ctx->mat,"MatMFFDWPSetComputeNormU_C","MatMFFDWPSetComputeNormU_P",MatMFFDWPSetComputeNormU_P);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
