@@ -10,7 +10,7 @@ class Configure(PETSc.package.NewPackage):
     self.double    = 0   # 1 means requires double precision 
     self.cxx       = 0
 
-    self.CUDAVersion   = '4.0'
+    self.CUDAVersion   = '3020' # Version 3.2
     self.CUSPVersion   = '200' #Version 0.2.0
     self.ThrustVersion = '100400' #Version 1.4.0
 #
@@ -23,6 +23,7 @@ class Configure(PETSc.package.NewPackage):
     # Get Thrust from hg clone https://thrust.googlecode.com/hg/ thrust
     # Get CUSP from hg clone https://cusp-library.googlecode.com/hg/
 
+    self.CUDAVersionStr = str(int(self.CUDAVersion)/1000) + '.' + str(int(self.CUDAVersion)%100)
     self.ThrustVersionStr = str(int(self.ThrustVersion)/100000) + '.' + str(int(self.ThrustVersion)/100%1000) + '.' + str(int(self.ThrustVersion)%100)
     self.CUSPVersionStr   = str(int(self.CUSPVersion)/100000) + '.' + str(int(self.CUSPVersion)/100%1000) + '.' + str(int(self.CUSPVersion)%100)
     return
@@ -92,8 +93,13 @@ class Configure(PETSc.package.NewPackage):
     return
 
   def checkCUDAVersion(self):
-    if self.setCompilers.compilerVersionCUDA != self.CUDAVersion:
-      raise RuntimeError('CUDA Error: PETSc currently requires nvcc version '+self.CUDAVersion+' (you have '+self.setCompilers.compilerVersionCUDA+')')
+    self.pushLanguage('CUDA')
+    oldFlags = self.compilers.CUDAPPFLAGS
+    self.compilers.CUDAPPFLAGS += ' '+self.headers.toString(self.thrust.include)
+    if not self.checkRun('#include <cuda.h>\n#include <stdio.h>', 'if (CUDA_VERSION < ' + self.CUDAVersion +') {printf("Invalid version %d\\n", CUDA_VERSION); return 1;}'):
+      raise RuntimeError('CUDA version error: PETSC currently requires CUDA version '+self.CUDAVersionStr+' when compiling with CUDA')
+    self.compilers.CUDAPPFLAGS = oldFlags
+    self.popLanguage()
     return
 
   def checkThrustVersion(self):
