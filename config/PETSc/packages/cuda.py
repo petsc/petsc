@@ -81,6 +81,12 @@ class Configure(PETSc.package.NewPackage):
           raise RuntimeError('CUDA Error: specified CUDA architecture invalid.  Example of valid architecture: \'-with-cuda-arch=sm_13\'')
         else:
           self.setCompilers.addCompilerFlag('-arch='+ self.framework.argDB['with-cuda-arch'])
+      elif self.scalartypes.precision == 'double':
+        #default to sm_13 for double precision
+        self.setCompilers.addCompilerFlag('-arch=sm_13')
+      elif self.scalartypes.precision == 'single':
+        #default to sm_10 for single precision
+        self.setCompilers.addCompilerFlag('-arch=sm_10')
       self.setCompilers.popLanguage()
     self.checkSizeofVoidP()
     return
