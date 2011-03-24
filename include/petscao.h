@@ -9,8 +9,6 @@
 #include "petscmat.h"
 PETSC_EXTERN_CXX_BEGIN
 
-typedef enum {AO_BASIC=0, AO_ADVANCED=1, AO_MAPPING=2, AO_MEMORYSCALABLE=3} AOType;
-
 /*S
      AO - Abstract PETSc object that manages mapping between different global numbering
 
