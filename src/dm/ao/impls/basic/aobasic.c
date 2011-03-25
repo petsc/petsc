@@ -234,7 +234,7 @@ PetscErrorCode  AOCreateBasic(MPI_Comm comm,PetscInt napp,const PetscInt myapp[]
   ierr = AOInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
-  ierr = PetscHeaderCreate(ao,_p_AO,struct _AOOps,AO_CLASSID,AO_BASIC,"AO",comm,AODestroy_,AOView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(ao,_p_AO,struct _AOOps,AO_CLASSID,-1,"AO",comm,AODestroy_,AOView);CHKERRQ(ierr);
   ierr = PetscNewLog(ao, AO_Basic, &aobasic);CHKERRQ(ierr);
 
   ierr = PetscMemcpy(ao->ops,&AOOps_Basic,sizeof(struct _AOOps));CHKERRQ(ierr);
