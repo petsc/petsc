@@ -1088,7 +1088,6 @@ struct VecCUSPAX
 PetscErrorCode VecAXPBY_SeqCUSP(Vec yin,PetscScalar alpha,PetscScalar beta,Vec xin)
 {
   PetscErrorCode    ierr;
-  PetscInt          n = yin->map->n;
   PetscScalar       a = alpha,b = beta;
   CUSPARRAY         *xarray,*yarray;
 
