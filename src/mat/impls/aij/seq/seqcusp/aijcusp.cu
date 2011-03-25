@@ -87,12 +87,9 @@ extern PetscErrorCode MatGetFactor_seqaij_petsc(Mat,MatFactorType,Mat*);
 #define __FUNCT__ "MatGetFactor_seqaij_petsccusp"
 PetscErrorCode MatGetFactor_seqaij_petsccusp(Mat A,MatFactorType ftype,Mat *B)
 {
-  PetscInt           n = A->rmap->n;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  ierr = MatCreate(((PetscObject)A)->comm,B);CHKERRQ(ierr);
-  ierr = MatSetSizes(*B,n,n,n,n);CHKERRQ(ierr);
   ierr = MatGetFactor_seqaij_petsc(A,ftype,B);CHKERRQ(ierr);
 
   if (ftype == MAT_FACTOR_LU || ftype == MAT_FACTOR_ILU || ftype == MAT_FACTOR_ILUDT){
@@ -119,7 +116,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJCUSP(Mat fact,Mat A,IS isrow,IS iscol,
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatLUFactorNumeric_SeqAIJCUSP"
+#define __FUNCT__ "MatLUFactorSymbolic_SeqAIJCUSP"
 PetscErrorCode MatLUFactorSymbolic_SeqAIJCUSP(Mat B,Mat A,IS isrow,IS iscol,const MatFactorInfo *info)
 {
   PetscErrorCode     ierr;
@@ -616,33 +613,26 @@ PetscErrorCode MatCUSPUnravelOrderingToLevelSchedulerAndCopyToGPU(Mat A)
 #define __FUNCT__ "MatLUFactorNumeric_SeqAIJCUSP"
 PetscErrorCode MatLUFactorNumeric_SeqAIJCUSP(Mat B,Mat A,const MatFactorInfo *info)
 {
-  PetscErrorCode     ierr;
-
-  Mat_SeqAIJ *b=(Mat_SeqAIJ *)B->data;
+  PetscErrorCode   ierr;
+  Mat_SeqAIJ       *b=(Mat_SeqAIJ *)B->data;
   IS               isrow = b->row,iscol = b->col;
   PetscBool        row_identity,col_identity;
-  const PetscInt   *r,*c;
+
   PetscFunctionBegin;
   
   ierr = MatLUFactorNumeric_SeqAIJ(B,A,info); CHKERRQ(ierr);
   
   // determine which version of MatSolve needs to be used.
-  ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
-  ierr = ISGetIndices(iscol,&c);CHKERRQ(ierr);
   ierr = ISIdentity(isrow,&row_identity);CHKERRQ(ierr);
   ierr = ISIdentity(iscol,&col_identity);CHKERRQ(ierr);
-  if (row_identity && col_identity)
-    B->ops->solve = MatSolve_SeqAIJCUSP_NaturalOrdering;    
-  else {
-    B->ops->solve = MatSolve_SeqAIJCUSP; 
-  }
+  if (row_identity && col_identity) B->ops->solve = MatSolve_SeqAIJCUSP_NaturalOrdering;    
+  else                              B->ops->solve = MatSolve_SeqAIJCUSP; 
 
   // get the triangular factors
   if (GPU_TRI_SOLVE_ALGORITHM!="none") {
     if (GPU_TRI_SOLVE_ALGORITHM=="levelScheduler") {
       ierr = MatCUSPUnravelOrderingToLevelSchedulerAndCopyToGPU(B);CHKERRQ(ierr);
-    }
-    else {
+    } else {
       ierr = MatCUSPUnravelOrderingAndCopyToGPU(B);CHKERRQ(ierr);
     }
   }
@@ -735,12 +725,10 @@ PetscErrorCode MatSolve_SeqAIJCUSP(Mat A,Vec bb,Vec xx)
     ierr = VecCUSPRestoreArrayWrite(xx,&xGPU);CHKERRQ(ierr);
     ierr = WaitForGPU();CHKERRCUSP(ierr);
     ierr = PetscLogFlops(2.0*a->nz - A->cmap->n);CHKERRQ(ierr);
-  }
-  else { 
+  } else { 
 
     // Revert to the CPU solve if a GPU algorithm is not found!
-    ierr = MatSolve_SeqAIJ(A,bb,xx); CHKERRQ(ierr);	
-
+    ierr = MatSolve_SeqAIJ(A,bb,xx); CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -752,12 +740,12 @@ PetscErrorCode MatSolve_SeqAIJCUSP(Mat A,Vec bb,Vec xx)
 #define __FUNCT__ "MatSolve_SeqAIJCUSP_NaturalOrdering"
 PetscErrorCode MatSolve_SeqAIJCUSP_NaturalOrdering(Mat A,Vec bb,Vec xx)
 {
-  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
-  PetscErrorCode ierr;
-  PetscBool      usecprow    = a->compressedrow.use;
-  PetscScalar *x;
+  Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
+  PetscErrorCode    ierr;
+  PetscBool         usecprow    = a->compressedrow.use;
+  PetscScalar       *x;
   const PetscScalar *b;
-  CUSPARRAY      *xGPU, *bGPU;
+  CUSPARRAY         *xGPU, *bGPU;
 
   PetscFunctionBegin;
   if (GPU_TRI_SOLVE_ALGORITHM!="none") {
@@ -811,8 +799,7 @@ PetscErrorCode MatSolve_SeqAIJCUSP_NaturalOrdering(Mat A,Vec bb,Vec xx)
 								      thrust::raw_pointer_cast(xGPU->data())); CHKERRCUSP(ierr);
 	  
 	  
-	}
-	else {
+	} else {
 	  // Get the CPU pointers
 	  ierr = VecGetArrayRead(bb,&b);CHKERRQ(ierr);
 	  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
@@ -850,12 +837,10 @@ PetscErrorCode MatSolve_SeqAIJCUSP_NaturalOrdering(Mat A,Vec bb,Vec xx)
     ierr = VecCUSPRestoreArrayWrite(xx,&xGPU);CHKERRQ(ierr);
     ierr = WaitForGPU();CHKERRCUSP(ierr);
     ierr = PetscLogFlops(2.0*a->nz - A->cmap->n);CHKERRQ(ierr);
-  }
-  else { 
+  } else { 
 
     // Revert to the CPU solve if a GPU algorithm is not found!
     ierr = MatSolve_SeqAIJ_NaturalOrdering(A,bb,xx); CHKERRQ(ierr);	
-
   }
   
   PetscFunctionReturn(0);
@@ -946,8 +931,9 @@ PetscErrorCode MatCUSPCopyToGPU(Mat A)
     A->valid_GPU_matrix = PETSC_CUSP_BOTH;
     ierr = PetscLogEventEnd(MAT_CUSPCopyToGPU,A,0,0,0);CHKERRQ(ierr);
   }
-    PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
+
 #undef __FUNCT__
 #define __FUNCT__ "MatGetVecs_SeqAIJCUSP"
 PetscErrorCode MatGetVecs_SeqAIJCUSP(Mat mat, Vec *right, Vec *left)
@@ -1016,9 +1002,9 @@ PetscErrorCode MatMult_SeqAIJCUSP(Mat A,Vec xx,Vec yy)
 PetscErrorCode MatInodeCUSPCopyToGPU(Mat A)
 {
   Mat_SeqAIJCUSPInode *cuspstruct  = (Mat_SeqAIJCUSPInode*)A->spptr;
-  Mat_SeqAIJ      *a          = (Mat_SeqAIJ*)A->data;
-  PetscErrorCode  ierr;
-  bool success=0;
+  Mat_SeqAIJ          *a          = (Mat_SeqAIJ*)A->data;
+  PetscErrorCode      ierr;
+  bool                success=0;
 
   PetscFunctionBegin;
   if (A->valid_GPU_matrix == PETSC_CUSP_UNALLOCATED || A->valid_GPU_matrix == PETSC_CUSP_CPU){
@@ -1133,15 +1119,14 @@ PetscErrorCode MatInodeCUSPCopyToGPU(Mat A)
 #define __FUNCT__ "MatMult_SeqAIJCUSP_Inode"
 PetscErrorCode MatMult_SeqAIJCUSP_Inode(Mat A,Vec xx,Vec yy)
 {
-  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
-  PetscErrorCode ierr;
-  PetscInt       nonzerorow=0;
-  PetscBool      usecprow    = a->compressedrow.use;
+  Mat_SeqAIJ                *a = (Mat_SeqAIJ*)A->data;
+  PetscErrorCode            ierr;
+  PetscInt                  nonzerorow=0;
+  PetscBool                 usecprow    = a->compressedrow.use;
   const Mat_SeqAIJCUSPInode *cuspstruct = (Mat_SeqAIJCUSPInode *)A->spptr;
-  CUSPARRAY      *xarray, *yarray;
+  CUSPARRAY                 *xarray, *yarray;
 
   PetscFunctionBegin;
-
   if (!a->inode.size) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"Missing Inode Structure");
 
   ierr = MatInodeCUSPCopyToGPU(A);CHKERRQ(ierr);
@@ -1261,8 +1246,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJCUSP(Mat A,MatAssemblyType mode)
 {
   PetscErrorCode  ierr;
 #ifdef PETSC_HAVE_TXPETSCGPU
-  Mat_SeqAIJ     *aij;
-  aij             = (Mat_SeqAIJ*)A->data;
+  Mat_SeqAIJ      *aij = (Mat_SeqAIJ*)A->data;
 #endif // PETSC_HAVE_TXPETSCGPU
   
   PetscFunctionBegin;
@@ -1273,17 +1257,11 @@ PetscErrorCode MatAssemblyEnd_SeqAIJCUSP(Mat A,MatAssemblyType mode)
   }
 
 #ifdef PETSC_HAVE_TXPETSCGPU
-  // Overload this at the last possible opportunity
-  if (aij->inode.use)
-    A->ops->mult    = MatMult_SeqAIJCUSP_Inode;
-  
+  if (aij->inode.use)  A->ops->mult    = MatMult_SeqAIJCUSP_Inode;
 #endif // PETSC_HAVE_TXPETSCGPU
 
   PetscFunctionReturn(0);
 }
-
-
-
 
 /* --------------------------------------------------------------------------------*/
 #undef __FUNCT__  
@@ -1353,15 +1331,13 @@ PetscErrorCode  MatCreateSeqAIJCUSP(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt
 #define __FUNCT__ "MatDestroy_SeqAIJCUSP"
 PetscErrorCode MatDestroy_SeqAIJCUSP(Mat A)
 {
-  PetscErrorCode ierr;
-  Mat_SeqAIJCUSP *cuspstruct = (Mat_SeqAIJCUSP*)A->spptr;
+  PetscErrorCode      ierr;
+  Mat_SeqAIJCUSP      *cuspstruct = (Mat_SeqAIJCUSP*)A->spptr;
   Mat_SeqAIJCUSPInode *cuspstructInode = (Mat_SeqAIJCUSPInode*)A->spptr;
-  Mat_SeqAIJ      *a          = (Mat_SeqAIJ*)A->data;
-
-  cudaError_t err;
+  Mat_SeqAIJ          *a          = (Mat_SeqAIJ*)A->data;
+  cudaError_t         err;
 
   PetscFunctionBegin;
-
   if (A->factortype==MAT_FACTOR_NONE) {
     // The regular matrices
     try {
@@ -1377,8 +1353,7 @@ PetscErrorCode MatDestroy_SeqAIJCUSP(Mat A)
 	if (cuspstruct->indices!=0)
 	  delete cuspstruct->indices;
 	delete cuspstruct;
-      }
-      else {
+      } else {
 	if (cuspstructInode->tempvec!=0)
 	  delete cuspstructInode->tempvec;
 	if (cuspstructInode->inodes!=0)
@@ -1389,8 +1364,7 @@ PetscErrorCode MatDestroy_SeqAIJCUSP(Mat A)
     } catch(char* ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
     } 
-  }
-  else {
+  } else {
     // The triangular factors
     if (GPU_TRI_SOLVE_ALGORITHM!="none") {
       try {
@@ -1435,15 +1409,14 @@ PetscErrorCode MatDestroy_SeqAIJCUSP(Mat A)
 	  cuspTriFactors->loTriFactorPtr = 0;
 	  cuspTriFactors->upTriFactorPtr = 0;    
 	  
-	}
-	else {
+	} else {
 	  
-	  Mat_SeqAIJCUSPTriFactors *cuspTriFactors  = (Mat_SeqAIJCUSPTriFactors*)A->spptr;
+	  Mat_SeqAIJCUSPTriFactors      *cuspTriFactors  = (Mat_SeqAIJCUSPTriFactors*)A->spptr;
 	  Mat_SeqAIJCUSPTriFactorHybrid *cuspstructLo = (Mat_SeqAIJCUSPTriFactorHybrid *)cuspTriFactors->loTriFactorPtr;
 	  Mat_SeqAIJCUSPTriFactorHybrid *cuspstructUp = (Mat_SeqAIJCUSPTriFactorHybrid *)cuspTriFactors->upTriFactorPtr;
 	  
 	  // the Lower factor
-	  if (cuspstructLo->cpuMat!=0) {
+	  if (cuspstructLo->cpuMat) {
 	    ierr = PetscFree(cuspstructLo->nnzPerRowInDiagBlock); CHKERRQ(ierr);
 	    err = cudaFreeHost(cuspstructLo->tempvecCPU1); CHKERRCUSP(err);
 	    err = cudaFreeHost(cuspstructLo->tempvecCPU2); CHKERRCUSP(err);
@@ -1452,14 +1425,14 @@ PetscErrorCode MatDestroy_SeqAIJCUSP(Mat A)
 	    err = cudaFreeHost(cuspstructLo->cpuMat->values); CHKERRCUSP(err);
 	    delete (CSRMATRIXCPU *)(cuspstructLo->cpuMat);
 	  }
-	  if (cuspstructLo->gpuMat!=0)
+	  if (cuspstructLo->gpuMat)
 	    delete (CSRMATRIXGPU *)(cuspstructLo->gpuMat);
-	  if (cuspstructLo->tempvecGPU!=0)
+	  if (cuspstructLo->tempvecGPU)
 	    delete cuspstructLo->tempvecGPU;
 	  delete cuspstructLo;
 	  
 	  // the Upper factor
-	  if (cuspstructUp->cpuMat!=0) {
+	  if (cuspstructUp->cpuMat) {
 	    ierr = PetscFree(cuspstructUp->nnzPerRowInDiagBlock); CHKERRQ(ierr);
 	    err = cudaFreeHost(cuspstructUp->tempvecCPU1); CHKERRCUSP(err);
 	    err = cudaFreeHost(cuspstructUp->tempvecCPU2); CHKERRCUSP(err);
@@ -1468,9 +1441,9 @@ PetscErrorCode MatDestroy_SeqAIJCUSP(Mat A)
 	    err = cudaFreeHost(cuspstructUp->cpuMat->values); CHKERRCUSP(err);
 	    delete (CSRMATRIXCPU *)(cuspstructUp->cpuMat);
 	  }
-	  if (cuspstructUp->gpuMat!=0)
+	  if (cuspstructUp->gpuMat)
 	    delete (CSRMATRIXGPU *)(cuspstructUp->gpuMat);
-	  if (cuspstructUp->tempvecGPU!=0)
+	  if (cuspstructUp->tempvecGPU)
 	    delete cuspstructUp->tempvecGPU;
 	  delete cuspstructUp;
 	  
@@ -1525,21 +1498,23 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatCreate_SeqAIJCUSP"
 PetscErrorCode  MatCreate_SeqAIJCUSP(Mat B)
 {
+  Mat_SeqAIJ     *b = (Mat_SeqAIJ*)B->data;
   PetscErrorCode ierr;
+
   PetscFunctionBegin;
   ierr            = MatCreate_SeqAIJ(B);CHKERRQ(ierr);
+  b = (Mat_SeqAIJ*)B->data;
   B->ops->mult    = MatMult_SeqAIJCUSP;
   B->ops->multadd = MatMultAdd_SeqAIJCUSP;
-  Mat_SeqAIJ      *b          = (Mat_SeqAIJ*)B->data;
 
   if (B->factortype==MAT_FACTOR_NONE) {
+    /* you cannot check the inode.use flag here since the matrix was just created.*/
     if (!b->inode.use) {
       B->spptr        = new Mat_SeqAIJCUSP;
       ((Mat_SeqAIJCUSP *)B->spptr)->mat = 0;
       ((Mat_SeqAIJCUSP *)B->spptr)->tempvec = 0;
       ((Mat_SeqAIJCUSP *)B->spptr)->indices = 0;
-    }
-    else {
+    } else {
       B->spptr        = new Mat_SeqAIJCUSPInode;
       ((Mat_SeqAIJCUSPInode *)B->spptr)->mat = 0;
       ((Mat_SeqAIJCUSPInode *)B->spptr)->tempvec = 0;
@@ -1547,25 +1522,23 @@ PetscErrorCode  MatCreate_SeqAIJCUSP(Mat B)
       ((Mat_SeqAIJCUSPInode *)B->spptr)->nnzPerRowMax = 0;
       ((Mat_SeqAIJCUSPInode *)B->spptr)->nodeMax = 0;
     }
-  }
-  else {
+  } else {
     // Get the tri solve algorithm
     PetscBool found;
-    char input[20];
+    char      input[20];
     ierr = PetscOptionsGetString(PETSC_NULL, "-gpu_tri_solve_algorithm", input, 20, &found);CHKERRQ(ierr);
-    if(found == PETSC_TRUE) {
+    if (found) {
       GPU_TRI_SOLVE_ALGORITHM.assign(input);
       if(GPU_TRI_SOLVE_ALGORITHM!="levelScheduler" && GPU_TRI_SOLVE_ALGORITHM!="hybrid")
 	printf("Bad argument to -gpu_tri_solve_algorithm. Must be either 'hybrid' or 'levelScheduler'\n");
-    }
-    else {
+    } else {
       GPU_TRI_SOLVE_ALGORITHM = "none";
     }
     
     if (GPU_TRI_SOLVE_ALGORITHM!="none") {    
+      Mat_SeqAIJCUSPTriFactors *cuspTriFactors  = (Mat_SeqAIJCUSPTriFactors*)B->spptr;
       /* NEXT, set the pointers to the triangular factors */
       B->spptr = new Mat_SeqAIJCUSPTriFactors;
-      Mat_SeqAIJCUSPTriFactors *cuspTriFactors  = (Mat_SeqAIJCUSPTriFactors*)B->spptr;
       cuspTriFactors->loTriFactorPtr = 0;
       cuspTriFactors->upTriFactorPtr = 0;
       
@@ -1591,8 +1564,7 @@ PetscErrorCode  MatCreate_SeqAIJCUSP(Mat B)
 	((Mat_SeqAIJCUSPTriFactorLevelScheduler *)cuspTriFactors->upTriFactorPtr)->nLevels = 0;
 	((Mat_SeqAIJCUSPTriFactorLevelScheduler *)cuspTriFactors->upTriFactorPtr)->maxNumUnknownsAtSameLevel = 0;
 	((Mat_SeqAIJCUSPTriFactorLevelScheduler *)cuspTriFactors->upTriFactorPtr)->levelSum = 0;
-      }
-      else {
+      } else {
 	cuspTriFactors->loTriFactorPtr        = new Mat_SeqAIJCUSPTriFactorHybrid;
 	((Mat_SeqAIJCUSPTriFactorHybrid *)cuspTriFactors->loTriFactorPtr)->cpuMat = 0;
 	((Mat_SeqAIJCUSPTriFactorHybrid *)cuspTriFactors->loTriFactorPtr)->gpuMat = 0;
