@@ -496,13 +496,13 @@ PetscErrorCode VecWAXPY_SeqCUSP(Vec win,PetscScalar alpha,Vec xin, Vec yin)
               thrust::make_tuple(
 		warray->begin(),
 		yarray->begin(),
-		thrust::make_constant_iterator(alpha,0),
+		thrust::make_constant_iterator(alpha),
 		xarray->begin())),
             thrust::make_zip_iterator(
               thrust::make_tuple(
 		warray->end(),
 		yarray->end(),
-		thrust::make_constant_iterator(alpha,win->map->n),
+		thrust::make_constant_iterator(alpha),
 		xarray->end())),
             VecCUSPWAXPY());
         } catch(char* ex) {
@@ -578,20 +578,20 @@ PetscErrorCode VecMAXPY_SeqCUSP(Vec xin, PetscInt nv,const PetscScalar *alpha,Ve
 	thrust::make_zip_iterator(
 	    thrust::make_tuple(
 		xarray->begin(),
-		thrust::make_constant_iterator(alpha0,0),
+		thrust::make_constant_iterator(alpha0),
 		yy0->begin(),
-		thrust::make_constant_iterator(alpha1,0),
+		thrust::make_constant_iterator(alpha1),
 		yy1->begin(),
-		thrust::make_constant_iterator(alpha2,0),
+		thrust::make_constant_iterator(alpha2),
 		yy2->begin())),
 	thrust::make_zip_iterator(
 	    thrust::make_tuple(
 		xarray->end(),
-		thrust::make_constant_iterator(alpha0,n),
+		thrust::make_constant_iterator(alpha0),
 		yy0->end(),
-		thrust::make_constant_iterator(alpha1,n),
+		thrust::make_constant_iterator(alpha1),
 		yy1->end(),
-		thrust::make_constant_iterator(alpha2,n),
+		thrust::make_constant_iterator(alpha2),
 		yy2->end())),
 	VecCUSPMAXPY3());
     } catch(char* ex) {
@@ -613,16 +613,16 @@ PetscErrorCode VecMAXPY_SeqCUSP(Vec xin, PetscInt nv,const PetscScalar *alpha,Ve
 	thrust::make_zip_iterator(
 	    thrust::make_tuple(
 		xarray->begin(),
-		thrust::make_constant_iterator(alpha0,0),
+		thrust::make_constant_iterator(alpha0),
 		yy0->begin(),
-		thrust::make_constant_iterator(alpha1,0),
+		thrust::make_constant_iterator(alpha1),
 		yy1->begin())),
 	thrust::make_zip_iterator(
 	    thrust::make_tuple(
 		xarray->end(),
-		thrust::make_constant_iterator(alpha0,n),
+		thrust::make_constant_iterator(alpha0),
 		yy0->end(),
-		thrust::make_constant_iterator(alpha1,n),
+		thrust::make_constant_iterator(alpha1),
 		yy1->end())),
 	VecCUSPMAXPY2());
     } catch(char* ex) {
@@ -651,24 +651,24 @@ PetscErrorCode VecMAXPY_SeqCUSP(Vec xin, PetscInt nv,const PetscScalar *alpha,Ve
 	thrust::make_zip_iterator(
 	    thrust::make_tuple(
 		xarray->begin(),
-		thrust::make_constant_iterator(alpha0,0),
+		thrust::make_constant_iterator(alpha0),
 		yy0->begin(),
-		thrust::make_constant_iterator(alpha1,0),
+		thrust::make_constant_iterator(alpha1),
 		yy1->begin(),
-		thrust::make_constant_iterator(alpha2,0),
+		thrust::make_constant_iterator(alpha2),
 		yy2->begin(),
-		thrust::make_constant_iterator(alpha3,0),
+		thrust::make_constant_iterator(alpha3),
 		yy3->begin())),
 	thrust::make_zip_iterator(
 	    thrust::make_tuple(
 		xarray->end(),
-		thrust::make_constant_iterator(alpha0,n),
+		thrust::make_constant_iterator(alpha0),
 		yy0->end(),
-		thrust::make_constant_iterator(alpha1,n),
+		thrust::make_constant_iterator(alpha1),
 		yy1->end(),
-		thrust::make_constant_iterator(alpha2,n),
+		thrust::make_constant_iterator(alpha2),
 		yy2->end(),
-		thrust::make_constant_iterator(alpha3,n),
+		thrust::make_constant_iterator(alpha3),
 		yy3->end())),
 	VecCUSPMAXPY4());
     } catch(char* ex) {
@@ -1107,12 +1107,12 @@ PetscErrorCode VecAXPBY_SeqCUSP(Vec yin,PetscScalar alpha,PetscScalar beta,Vec x
 	thrust::make_zip_iterator(
 	    thrust::make_tuple(
                 yarray->begin(),
-		thrust::make_constant_iterator(a,0),
+		thrust::make_constant_iterator(a),
 		xarray->begin())),
 	thrust::make_zip_iterator(
 	    thrust::make_tuple(
 		yarray->end(),
-		thrust::make_constant_iterator(a,n),
+		thrust::make_constant_iterator(a),
 		xarray->end())),
 	VecCUSPAX());
     } catch(char* ex) {
@@ -1178,17 +1178,17 @@ PetscErrorCode VecAXPBYPCZ_SeqCUSP(Vec zin,PetscScalar alpha,PetscScalar beta,Pe
 	thrust::make_zip_iterator(
 	    thrust::make_tuple(
 		zarray->begin(),
-		thrust::make_constant_iterator(gamma,0),
+		thrust::make_constant_iterator(gamma),
 		xarray->begin(),
 		yarray->begin(),
-		thrust::make_constant_iterator(beta,0))),
+		thrust::make_constant_iterator(beta))),
 	thrust::make_zip_iterator(
 	    thrust::make_tuple(
 		zarray->end(),
-		thrust::make_constant_iterator(gamma,n),
+		thrust::make_constant_iterator(gamma),
 		xarray->end(),
 		yarray->end(),
-		thrust::make_constant_iterator(beta,n))),
+		thrust::make_constant_iterator(beta))),
 	VecCUSPXPBYPCZ());
     } catch(char* ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
@@ -1201,16 +1201,16 @@ PetscErrorCode VecAXPBYPCZ_SeqCUSP(Vec zin,PetscScalar alpha,PetscScalar beta,Pe
 	    thrust::make_tuple(
 		zarray->begin(),
 		xarray->begin(),
-		thrust::make_constant_iterator(alpha,0),
+		thrust::make_constant_iterator(alpha),
 		yarray->begin(),
-		thrust::make_constant_iterator(beta,0))),
+		thrust::make_constant_iterator(beta))),
 	thrust::make_zip_iterator(
 	    thrust::make_tuple(
 		zarray->end(),
 		xarray->end(),
-		thrust::make_constant_iterator(alpha,n),
+		thrust::make_constant_iterator(alpha),
 		yarray->end(),
-		thrust::make_constant_iterator(beta,n))),
+		thrust::make_constant_iterator(beta))),
 	VecCUSPAXPBYPZ());
     } catch(char* ex) {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
