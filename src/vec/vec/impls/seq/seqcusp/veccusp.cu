@@ -1101,7 +1101,7 @@ PetscErrorCode VecAXPBY_SeqCUSP(Vec yin,PetscScalar alpha,PetscScalar beta,Vec x
     ierr = VecAYPX_SeqCUSP(yin,beta,xin);CHKERRQ(ierr);
   } else if (b == 0.0) {
     ierr = VecCUSPGetArrayRead(xin,&xarray);CHKERRQ(ierr);
-    ierr = VecCUSPRestoreArrayReadWrite(yin,&yarray);CHKERRQ(ierr);
+    ierr = VecCUSPGetArrayReadWrite(yin,&yarray);CHKERRQ(ierr);
     try {
       thrust::for_each(
 	thrust::make_zip_iterator(

@@ -363,7 +363,7 @@ extern int    MPI_Finalized(int*);
      (MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (a),\
       MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (b),\
       MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (c),\
-      MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (d),\
+      MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (d),(*c = 0), \
       MPI_SUCCESS)
 #define MPI_Testany(a,b,c,d,e) \
      (MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (a),\
