@@ -66,7 +66,7 @@ class Info(logger.Logger):
       for name in names[1]:
         f.write(format % (name.split('@')[0], self.getDescription(section, name)))
     return
-  
+
 class Help(Info):
   '''Help provides a simple help system for RDict'''
   def __init__(self, argDB):

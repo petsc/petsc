@@ -82,7 +82,11 @@ class Script(logger.Logger):
     logger.Logger.setup(self)
     self._setup = 1
     if self.hasHelpFlag():
-      self.help.output(sections = self.argDB.target)
+      if self.argDB.target == ['default']:
+        sections = None
+      else:
+        sections = self.argDB.target
+      self.help.output(sections = sections)
       sys.exit()
     return
 
