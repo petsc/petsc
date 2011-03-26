@@ -104,11 +104,12 @@ class Help(Info):
     self.argDB.setType(self.getArgName(name), argType, forceLocal = 1)
     return
 
-  def output(self, f = None):
+  def output(self, f = None, sections = None):
     '''Print a help screen with all the argument information.'''
     if f is  None:
       import sys
       f = sys.stdout
+    if sections: sections = [s.lower() for s in sections]
     self.printBanner(f)
     (nameLen, descLen) = self.getTextSizes()
 #    format    = '  -%-'+str(nameLen)+'s: %s\n'
@@ -118,6 +119,7 @@ class Help(Info):
     items = self.sections.items()
     items.sort(lambda a, b: a[1][0].__cmp__(b[1][0]))
     for section, names in items:
+      if sections and not section.lower() in sections: continue
       f.write(section+':\n')
       for name in names[1]:
         argName = self.getArgName(name)

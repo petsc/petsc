@@ -82,7 +82,7 @@ class Script(logger.Logger):
     logger.Logger.setup(self)
     self._setup = 1
     if self.hasHelpFlag():
-      self.help.output()
+      self.help.output(sections = self.argDB.target)
       sys.exit()
     return
 
