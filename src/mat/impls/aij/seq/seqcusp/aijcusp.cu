@@ -1525,15 +1525,12 @@ PetscErrorCode  MatCreate_SeqAIJCUSP(Mat B)
   } else {
     // Get the tri solve algorithm
     PetscBool found;
-    char      input[20];
+    char      input[20] = "hybrid";
+
     ierr = PetscOptionsGetString(PETSC_NULL, "-gpu_tri_solve_algorithm", input, 20, &found);CHKERRQ(ierr);
-    if (found) {
-      GPU_TRI_SOLVE_ALGORITHM.assign(input);
-      if(GPU_TRI_SOLVE_ALGORITHM!="levelScheduler" && GPU_TRI_SOLVE_ALGORITHM!="hybrid")
-	printf("Bad argument to -gpu_tri_solve_algorithm. Must be either 'hybrid' or 'levelScheduler'\n");
-    } else {
-      GPU_TRI_SOLVE_ALGORITHM = "none";
-    }
+    GPU_TRI_SOLVE_ALGORITHM.assign(input);
+    if(GPU_TRI_SOLVE_ALGORITHM!="levelScheduler" && GPU_TRI_SOLVE_ALGORITHM!="hybrid") SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Bad argument to -gpu_tri_solve_algorithm. Must be either 'hybrid' or 'levelScheduler'\n");
+
     
     if (GPU_TRI_SOLVE_ALGORITHM!="none") {    
       Mat_SeqAIJCUSPTriFactors *cuspTriFactors  = (Mat_SeqAIJCUSPTriFactors*)B->spptr;
