@@ -1211,6 +1211,11 @@ static PetscErrorCode SNESSetFromOptions_LS(SNES snes)
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+EXTERN_C_BEGIN
+extern PetscErrorCode  SNESLineSearchSetParams_LS(SNES,PetscReal,PetscReal,PetscReal);
+EXTERN_C_END
+
 /* -------------------------------------------------------------------------- */
 /*MC
       SNESLS - Newton based nonlinear solver that uses a line search
@@ -1260,6 +1265,7 @@ PetscErrorCode  SNESCreate_LS(SNES snes)
   neP->precheck         = PETSC_NULL;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESLineSearchSetMonitor_C","SNESLineSearchSetMonitor_LS",SNESLineSearchSetMonitor_LS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESLineSearchSetParams_C","SNESLineSearchSetParams_LS",SNESLineSearchSetParams_LS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESLineSearchSet_C","SNESLineSearchSet_LS",SNESLineSearchSet_LS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESLineSearchSetPostCheck_C","SNESLineSearchSetPostCheck_LS",SNESLineSearchSetPostCheck_LS);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESLineSearchSetPreCheck_C","SNESLineSearchSetPreCheck_LS",SNESLineSearchSetPreCheck_LS);CHKERRQ(ierr);

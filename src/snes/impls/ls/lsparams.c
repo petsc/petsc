@@ -30,6 +30,22 @@
 @*/
 PetscErrorCode  SNESLineSearchSetParams(SNES snes,PetscReal alpha,PetscReal maxstep,PetscReal minlambda)
 {
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidLogicalCollectiveReal(snes,alpha,2);
+  PetscValidLogicalCollectiveReal(snes,maxstep,3);
+  PetscValidLogicalCollectiveReal(snes,minlambda,4);
+
+  ierr = PetscTryMethod(snes,"SNESLineSearchSetParams_C",(SNES,PetscReal,PetscReal,PetscReal),(snes,alpha,maxstep,minlambda));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "SNESLineSearchSetParams_LS"
+PetscErrorCode  SNESLineSearchSetParams_LS(SNES snes,PetscReal alpha,PetscReal maxstep,PetscReal minlambda)
+{
   SNES_LS *ls = (SNES_LS*)snes->data;
 
   PetscFunctionBegin;
@@ -43,6 +59,7 @@ PetscErrorCode  SNESLineSearchSetParams(SNES snes,PetscReal alpha,PetscReal maxs
   if (minlambda >= 0.0) ls->minlambda = minlambda;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "SNESLineSearchGetParams"
