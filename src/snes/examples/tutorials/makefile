@@ -355,7 +355,7 @@ testex5f: ex5f.PETSc
 	@if [ "${PETSC_WITH_BATCH}" != "" ]; then \
            echo "Running with batch filesystem; to test run src/snes/examples/tutorials/ex5f with" ; \
            echo "your systems batch system"; \
-        elif [ "${MPIEXEC}" == "/bin/false" ]; then \
+        elif [ "${MPIEXEC}" = "/bin/false" ]; then \
            echo "*mpiexec not found*. Please run src/snes/examples/tutorials/ex5f manually"; \
         elif [ -f ex5f ]; then \
 	   ${MPIEXEC} -n 1 ./ex5f > ex5f_1.tmp 2>&1; \
@@ -561,7 +561,7 @@ testex19: ex19.PETSc
 	-@if [ "${PETSC_WITH_BATCH}" != "" ]; then \
            echo "Running with batch filesystem; to test run src/snes/examples/tutorials/ex19 with" ; \
            echo "your systems batch system"; \
-        elif [ "${MPIEXEC}" == "/bin/false" ]; then \
+        elif [ "${MPIEXEC}" = "/bin/false" ]; then \
            echo "*mpiexec not found*. Please run src/snes/examples/tutorials/ex19 manually"; \
 	elif [ -f ex19 ]; then \
            ${MPIEXEC} -n 1 ./ex19 -dmmg_nlevels 4  > ex19_1.tmp 2>&1; \
@@ -584,7 +584,7 @@ testx11ex19: ex19.PETSc
 	-@if [ "${PETSC_WITH_BATCH}" != "" ]; then \
            echo "Running with batch filesystem; to test run src/snes/examples/tutorials/ex19 with" ; \
            echo "your systems batch system"; \
-        elif [ "${MPIEXEC}" == "/bin/false" ]; then \
+        elif [ "${MPIEXEC}" = "/bin/false" ]; then \
            echo "*mpiexec not found*. Please run src/snes/examples/tutorials/ex19 manually"; \
 	elif [ -f ex19 ]; then \
           D2=`grep "#define PETSC_HAVE_X11 1" ${PETSC_DIR}/${PETSC_ARCH}/include/petscconf.h`; \
