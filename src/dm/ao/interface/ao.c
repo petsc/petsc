@@ -398,17 +398,61 @@ PetscErrorCode  AOApplicationToPetscPermuteReal(AO ao, PetscInt block, PetscReal
 #undef __FUNCT__  
 #define __FUNCT__ "AOSetFromOptions" 
 /*@C
-.seealso: AOCreate(), AODestroy(), AOPetscToApplication(), AOApplicationToPetsc()
+    AOSetFromOptions - Sets AO options from the options database.
+
+   Collective on AO
+
+   Input Parameter:
+.  ao - the application ordering
+
+   Level: beginner
+
+.keywords: AO, options, database
+
+.seealso: AOCreate(), AOSetType(), AODestroy(), AOPetscToApplication(), AOApplicationToPetsc()
 @*/
 PetscErrorCode AOSetFromOptions(AO ao)
 {
+  PetscErrorCode ierr;
+  char           type[256];
+  const char     *def=AOMEMORYSCALABLE;
+  PetscBool      flg;
+
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(ao,AO_CLASSID,1);
+
+  ierr = PetscOptionsBegin(((PetscObject)ao)->comm,((PetscObject)ao)->prefix,"Application Ordering (AO) Options","AO");CHKERRQ(ierr);
+    ierr = PetscOptionsList("-ao_type","AO type","AOSetType",AOList,def,type,256,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = AOSetType(ao,type);CHKERRQ(ierr);
+    } else if (!((PetscObject)ao)->type_name){
+      ierr = AOSetType(ao,def);CHKERRQ(ierr);
+    } 
+ 
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
 #define __FUNCT__ "AOSetIS" 
 /*@C
+   AOSetIS - Sets the IS associated with the application ordering.
+
+   Collective on MPI_Comm
+
+   Input Parameters:
++  ao - the application ordering
+.  isapp -  index set that defines an ordering
+-  ispetsc - index set that defines another ordering (may be PETSC_NULL to use the
+             natural ordering)
+
+   Notes: 
+   The index sets isapp and ispetsc are used only for creation of ao.
+
+   Level: beginner
+
+.keywords: AO, create
+
 .seealso: AOCreate(), AODestroy(), AOPetscToApplication(), AOApplicationToPetsc()
 @*/
 PetscErrorCode AOSetIS(AO ao,IS isapp,IS ispetsc)
@@ -441,7 +485,8 @@ PetscErrorCode AOSetIS(AO ao,IS isapp,IS ispetsc)
 .  ao - the new application ordering
 
    Options Database Key:
-.   -ao_view - call AOView() at the conclusion of AOCreate()
++   -ao_type <aotype> - create ao with particular format
+-   -ao_view - call AOView() at the conclusion of AOCreate()
 
    Level: beginner
 

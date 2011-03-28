@@ -418,6 +418,7 @@ PetscErrorCode AOCreate_MemoryScalable(AO ao)
   ierr = PetscNewLog(ao, AO_MemoryScalable, &aomems);CHKERRQ(ierr);
   ao->data = (void*) aomems;
   ierr = PetscMemcpy(ao->ops,&AOOps_MemoryScalable,sizeof(struct _AOOps));CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)ao,AOMEMORYSCALABLE);CHKERRQ(ierr);
 
   /* transmit all local lengths of isapp to all processors */
   ierr = PetscObjectGetComm((PetscObject)isapp,&comm);CHKERRQ(ierr);
