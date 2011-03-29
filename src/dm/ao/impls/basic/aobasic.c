@@ -21,7 +21,7 @@ PetscErrorCode AOView_Basic(AO ao,PetscViewer viewer)
   PetscErrorCode ierr;
   PetscMPIInt    rank;
   PetscInt       i;
-  AO_Basic       *aodebug = (AO_Basic*)ao->data;
+  AO_Basic       *aobasic = (AO_Basic*)ao->data;
   PetscBool      iascii;
 
   PetscFunctionBegin;
@@ -32,7 +32,7 @@ PetscErrorCode AOView_Basic(AO ao,PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer,"Number of elements in ordering %D\n",ao->N);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,  "PETSc->App  App->PETSc\n");CHKERRQ(ierr);
       for (i=0; i<ao->N; i++) {
-        ierr = PetscViewerASCIIPrintf(viewer,"%3D  %3D    %3D  %3D\n",i,aodebug->app[i],i,aodebug->petsc[i]);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"%3D  %3D    %3D  %3D\n",i,aobasic->app[i],i,aobasic->petsc[i]);CHKERRQ(ierr);
       }
     } else {
       SETERRQ1(((PetscObject)viewer)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for AO basic",((PetscObject)viewer)->type_name);
@@ -71,12 +71,16 @@ PetscErrorCode AOBasicGetIndices_Private(AO ao,PetscInt **app,PetscInt **petsc)
 #define __FUNCT__ "AOPetscToApplication_Basic"  
 PetscErrorCode AOPetscToApplication_Basic(AO ao,PetscInt n,PetscInt *ia)
 {
-  PetscInt i;
-  AO_Basic *aodebug = (AO_Basic*)ao->data;
+  PetscInt i,N=ao->N;
+  AO_Basic *aobasic = (AO_Basic*)ao->data;
 
   PetscFunctionBegin;
   for (i=0; i<n; i++) {
-    if (ia[i] >= 0) {ia[i] = aodebug->app[ia[i]];}
+    if (ia[i] >= 0 && ia[i] < N ) {
+      ia[i] = aobasic->app[ia[i]];
+    } else {
+      ia[i] = -1;
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -85,12 +89,16 @@ PetscErrorCode AOPetscToApplication_Basic(AO ao,PetscInt n,PetscInt *ia)
 #define __FUNCT__ "AOApplicationToPetsc_Basic" 
 PetscErrorCode AOApplicationToPetsc_Basic(AO ao,PetscInt n,PetscInt *ia)
 {
-  PetscInt i;
-  AO_Basic *aodebug = (AO_Basic*)ao->data;
+  PetscInt i,N=ao->N;
+  AO_Basic *aobasic = (AO_Basic*)ao->data;
 
   PetscFunctionBegin;
   for (i=0; i<n; i++) {
-    if (ia[i] >= 0) {ia[i] = aodebug->petsc[ia[i]];}
+    if (ia[i] >= 0 && ia[i] < N) {
+      ia[i] = aobasic->petsc[ia[i]];
+    } else {
+      ia[i] = -1;
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -99,7 +107,7 @@ PetscErrorCode AOApplicationToPetsc_Basic(AO ao,PetscInt n,PetscInt *ia)
 #define __FUNCT__ "AOPetscToApplicationPermuteInt_Basic"
 PetscErrorCode AOPetscToApplicationPermuteInt_Basic(AO ao, PetscInt block, PetscInt *array)
 {
-  AO_Basic       *aodebug = (AO_Basic *) ao->data;
+  AO_Basic       *aobasic = (AO_Basic *) ao->data;
   PetscInt       *temp;
   PetscInt       i, j;
   PetscErrorCode ierr;
@@ -107,7 +115,7 @@ PetscErrorCode AOPetscToApplicationPermuteInt_Basic(AO ao, PetscInt block, Petsc
   PetscFunctionBegin;
   ierr = PetscMalloc(ao->N*block * sizeof(PetscInt), &temp);CHKERRQ(ierr);
   for(i = 0; i < ao->N; i++) {
-    for(j = 0; j < block; j++) temp[i*block+j] = array[aodebug->petsc[i]*block+j];
+    for(j = 0; j < block; j++) temp[i*block+j] = array[aobasic->petsc[i]*block+j];
   }
   ierr = PetscMemcpy(array, temp, ao->N*block * sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscFree(temp);CHKERRQ(ierr);
@@ -118,7 +126,7 @@ PetscErrorCode AOPetscToApplicationPermuteInt_Basic(AO ao, PetscInt block, Petsc
 #define __FUNCT__ "AOApplicationToPetscPermuteInt_Basic"
 PetscErrorCode AOApplicationToPetscPermuteInt_Basic(AO ao, PetscInt block, PetscInt *array)
 {
-  AO_Basic       *aodebug = (AO_Basic *) ao->data;
+  AO_Basic       *aobasic = (AO_Basic *) ao->data;
   PetscInt       *temp;
   PetscInt       i, j;
   PetscErrorCode ierr;
@@ -126,7 +134,7 @@ PetscErrorCode AOApplicationToPetscPermuteInt_Basic(AO ao, PetscInt block, Petsc
   PetscFunctionBegin;
   ierr = PetscMalloc(ao->N*block * sizeof(PetscInt), &temp);CHKERRQ(ierr);
   for(i = 0; i < ao->N; i++) {
-    for(j = 0; j < block; j++) temp[i*block+j] = array[aodebug->app[i]*block+j];
+    for(j = 0; j < block; j++) temp[i*block+j] = array[aobasic->app[i]*block+j];
   }
   ierr = PetscMemcpy(array, temp, ao->N*block * sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscFree(temp);CHKERRQ(ierr);
@@ -137,7 +145,7 @@ PetscErrorCode AOApplicationToPetscPermuteInt_Basic(AO ao, PetscInt block, Petsc
 #define __FUNCT__ "AOPetscToApplicationPermuteReal_Basic"
 PetscErrorCode AOPetscToApplicationPermuteReal_Basic(AO ao, PetscInt block, PetscReal *array)
 {
-  AO_Basic       *aodebug = (AO_Basic *) ao->data;
+  AO_Basic       *aobasic = (AO_Basic *) ao->data;
   PetscReal      *temp;
   PetscInt       i, j;
   PetscErrorCode ierr;
@@ -145,7 +153,7 @@ PetscErrorCode AOPetscToApplicationPermuteReal_Basic(AO ao, PetscInt block, Pets
   PetscFunctionBegin;
   ierr = PetscMalloc(ao->N*block * sizeof(PetscReal), &temp);CHKERRQ(ierr);
   for(i = 0; i < ao->N; i++) {
-    for(j = 0; j < block; j++) temp[i*block+j] = array[aodebug->petsc[i]*block+j];
+    for(j = 0; j < block; j++) temp[i*block+j] = array[aobasic->petsc[i]*block+j];
   }
   ierr = PetscMemcpy(array, temp, ao->N*block * sizeof(PetscReal));CHKERRQ(ierr);
   ierr = PetscFree(temp);CHKERRQ(ierr);
@@ -156,7 +164,7 @@ PetscErrorCode AOPetscToApplicationPermuteReal_Basic(AO ao, PetscInt block, Pets
 #define __FUNCT__ "AOApplicationToPetscPermuteReal_Basic"
 PetscErrorCode AOApplicationToPetscPermuteReal_Basic(AO ao, PetscInt block, PetscReal *array)
 {
-  AO_Basic       *aodebug = (AO_Basic *) ao->data;
+  AO_Basic       *aobasic = (AO_Basic *) ao->data;
   PetscReal      *temp;
   PetscInt       i, j;
   PetscErrorCode ierr;
@@ -164,7 +172,7 @@ PetscErrorCode AOApplicationToPetscPermuteReal_Basic(AO ao, PetscInt block, Pets
   PetscFunctionBegin;
   ierr = PetscMalloc(ao->N*block * sizeof(PetscReal), &temp);CHKERRQ(ierr);
   for(i = 0; i < ao->N; i++) {
-    for(j = 0; j < block; j++) temp[i*block+j] = array[aodebug->app[i]*block+j];
+    for(j = 0; j < block; j++) temp[i*block+j] = array[aobasic->app[i]*block+j];
   }
   ierr = PetscMemcpy(array, temp, ao->N*block * sizeof(PetscReal));CHKERRQ(ierr);
   ierr = PetscFree(temp);CHKERRQ(ierr);
@@ -225,7 +233,6 @@ PetscErrorCode  AOCreate_Basic(AO ao)
      If mypetsc is 0 then use "natural" numbering 
   */
   if (napp && !ispetsc) {
-    printf("malloc petsc...\n");
     start = disp[rank];
     ierr  = PetscMalloc((napp+1) * sizeof(PetscInt), &petsc);CHKERRQ(ierr);
     for (i=0; i<napp; i++) {
