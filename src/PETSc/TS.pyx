@@ -10,6 +10,7 @@ class TSType(object):
     RK       = S_(TSRK)
     PYTHON   = S_(TSPYTHON)
     THETA    = S_(TSTHETA)
+    ALPHA    = S_(TSALPHA)
     GL       = S_(TSGL)
     SSP      = S_(TSSSP)
     #

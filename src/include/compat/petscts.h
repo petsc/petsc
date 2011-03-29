@@ -10,6 +10,11 @@
 
 #if (PETSC_VERSION_(3,1,0) || \
      PETSC_VERSION_(3,0,0))
+#define TSALPHA "alpha"
+#endif
+
+#if (PETSC_VERSION_(3,1,0) || \
+     PETSC_VERSION_(3,0,0))
 #undef __FUNCT__
 #define __FUNCT__ "TSSetSolution_Compat"
 static PetscErrorCode

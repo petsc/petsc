@@ -9,6 +9,7 @@ cdef extern from * nogil:
     PetscTSType TSRK
     #PetscTSType TSPYTHON
     PetscTSType TSTHETA
+    PetscTSType TSALPHA
     PetscTSType TSGL
     PetscTSType TSSSP
 
