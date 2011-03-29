@@ -83,6 +83,7 @@ PetscErrorCode AODestroy_MemoryScalable(AO ao)
   PetscFunctionBegin;
   ierr = PetscFree2(aomems->app_loc,aomems->petsc_loc);CHKERRQ(ierr);
   ierr = PetscLayoutDestroy(aomems->map);CHKERRQ(ierr);
+  ierr = PetscFree(aomems);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

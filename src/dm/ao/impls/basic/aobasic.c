@@ -51,6 +51,7 @@ PetscErrorCode AODestroy_Basic(AO ao)
 
   PetscFunctionBegin;
   ierr = PetscFree2(aobasic->app,aobasic->petsc);CHKERRQ(ierr);
+  ierr = PetscFree(aobasic);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -170,21 +171,134 @@ PetscErrorCode AOApplicationToPetscPermuteReal_Basic(AO ao, PetscInt block, Pets
   PetscFunctionReturn(0);
 }
 
-static struct _AOOps AOOps_Basic = {AOView_Basic,
-                              AODestroy_Basic,
-                              AOPetscToApplication_Basic,
-                              AOApplicationToPetsc_Basic,
-                              AOPetscToApplicationPermuteInt_Basic,
-                              AOApplicationToPetscPermuteInt_Basic,
-                              AOPetscToApplicationPermuteReal_Basic,
-                              AOApplicationToPetscPermuteReal_Basic};
+static struct _AOOps AOOps_Basic = {
+       AOView_Basic,
+       AODestroy_Basic,
+       AOPetscToApplication_Basic,
+       AOApplicationToPetsc_Basic,
+       AOPetscToApplicationPermuteInt_Basic,
+       AOApplicationToPetscPermuteInt_Basic,
+       AOPetscToApplicationPermuteReal_Basic,
+       AOApplicationToPetscPermuteReal_Basic};
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "AOCreate_Basic" 
 PetscErrorCode  AOCreate_Basic(AO ao)
 {
+  AO_Basic       *aobasic;
+  PetscMPIInt    *lens,size,rank,nnapp,*disp;
+  PetscInt       *allpetsc,*allapp,ip,ia,N,i,*petsc,start;
+  PetscBool      opt;
+  PetscErrorCode ierr;
+  IS             isapp=ao->isapp,ispetsc=ao->ispetsc;
+  MPI_Comm       comm;
+  PetscInt       napp;
+  const PetscInt *myapp,*mypetsc;
+
   PetscFunctionBegin;
+  /* create special struct aobasic */
+  ierr = PetscNewLog(ao, AO_Basic, &aobasic);CHKERRQ(ierr);
+  ao->data = (void*) aobasic;
+  ierr = PetscMemcpy(ao->ops,&AOOps_Basic,sizeof(struct _AOOps));CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)ao,AOBASIC);CHKERRQ(ierr);
+
+  /* transmit all lengths to all processors */
+  ierr = PetscObjectGetComm((PetscObject)isapp,&comm);CHKERRQ(ierr);
+
+  ierr = ISGetLocalSize(isapp,&napp);CHKERRQ(ierr);
+  ierr = ISGetIndices(isapp,&myapp);CHKERRQ(ierr);
+
+  ierr  = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
+  ierr  = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  ierr  = PetscMalloc2(size,PetscMPIInt, &lens,size,PetscMPIInt,&disp);CHKERRQ(ierr);
+  nnapp = napp;
+  ierr  = MPI_Allgather(&nnapp, 1, MPI_INT, lens, 1, MPI_INT, comm);CHKERRQ(ierr);
+  N    =  0;
+  for(i = 0; i < size; i++) {
+    disp[i] = N;
+    N += lens[i];
+  }
+  ao->N = N;
+
+  /*
+     If mypetsc is 0 then use "natural" numbering 
+  */
+  if (napp && !ispetsc) {
+    printf("malloc petsc...\n");
+    start = disp[rank];
+    ierr  = PetscMalloc((napp+1) * sizeof(PetscInt), &petsc);CHKERRQ(ierr);
+    for (i=0; i<napp; i++) {
+      petsc[i] = start + i;
+    }
+  } else {
+    ierr = ISGetIndices(ispetsc,&mypetsc);CHKERRQ(ierr);
+    petsc = (PetscInt*)mypetsc;
+  }
+
+  /* get all indices on all processors */
+  ierr   = PetscMalloc2(N,PetscInt, &allpetsc,N,PetscInt,&allapp);CHKERRQ(ierr);
+  ierr   = MPI_Allgatherv(petsc, napp, MPIU_INT, allpetsc, lens, disp, MPIU_INT, comm);CHKERRQ(ierr);
+  ierr   = MPI_Allgatherv((void*)myapp, napp, MPIU_INT, allapp, lens, disp, MPIU_INT, comm);CHKERRQ(ierr);
+  ierr   = PetscFree2(lens,disp);CHKERRQ(ierr);
+
+#if defined(PETSC_USE_DEBUG)
+  {
+    PetscInt *sorted;
+    ierr = PetscMalloc(N*sizeof(PetscInt),&sorted);CHKERRQ(ierr);
+
+    ierr = PetscMemcpy(sorted,allpetsc,N*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscSortInt(N,sorted);CHKERRQ(ierr);
+    for (i=0; i<N; i++) {
+      if (sorted[i] != i) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"PETSc ordering requires a permutation of numbers 0 to N-1\n it is missing %D has %D",i,sorted[i]);
+    }
+
+    ierr = PetscMemcpy(sorted,allapp,N*sizeof(PetscInt));CHKERRQ(ierr);
+    ierr = PetscSortInt(N,sorted);CHKERRQ(ierr);
+    for (i=0; i<N; i++) {
+      if (sorted[i] != i) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Application ordering requires a permutation of numbers 0 to N-1\n it is missing %D has %D",i,sorted[i]);
+    }
+
+    ierr = PetscFree(sorted);CHKERRQ(ierr);
+  }
+#endif
+
+  /* generate a list of application and PETSc node numbers */
+  ierr = PetscMalloc2(N,PetscInt, &aobasic->app,N,PetscInt,&aobasic->petsc);CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory(ao,2*N*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMemzero(aobasic->app, N*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMemzero(aobasic->petsc, N*sizeof(PetscInt));CHKERRQ(ierr);
+  for(i = 0; i < N; i++) {
+    ip = allpetsc[i];
+    ia = allapp[i];
+    /* check there are no duplicates */
+    if (aobasic->app[ip]) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Duplicate in PETSc ordering at position %d. Already mapped to %d, not %d.", i, aobasic->app[ip]-1, ia);
+    aobasic->app[ip] = ia + 1;
+    if (aobasic->petsc[ia]) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Duplicate in Application ordering at position %d. Already mapped to %d, not %d.", i, aobasic->petsc[ia]-1, ip);
+    aobasic->petsc[ia] = ip + 1;
+  }
+  if (!mypetsc) {
+    ierr = PetscFree(petsc);CHKERRQ(ierr);
+  }
+  ierr = PetscFree2(allpetsc,allapp);CHKERRQ(ierr);
+  /* shift indices down by one */
+  for(i = 0; i < N; i++) {
+    aobasic->app[i]--;
+    aobasic->petsc[i]--;
+  }
+
+  ierr = ISRestoreIndices(isapp,&myapp);CHKERRQ(ierr);
+  if (ispetsc){
+    ierr = ISRestoreIndices(ispetsc,&mypetsc);CHKERRQ(ierr);
+  } else if (napp && !ispetsc) {
+    ierr = PetscFree(petsc);CHKERRQ(ierr);
+  }
+
+  opt = PETSC_FALSE;
+  ierr = PetscOptionsGetBool(PETSC_NULL, "-ao_view", &opt,PETSC_NULL);CHKERRQ(ierr);
+  if (opt) {
+    ierr = AOView(ao, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

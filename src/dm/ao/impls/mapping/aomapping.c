@@ -24,6 +24,7 @@ PetscErrorCode AODestroy_Mapping(AO ao)
 
   PetscFunctionBegin;
   ierr = PetscFree4(aomap->app,aomap->appPerm,aomap->petsc,aomap->petscPerm);CHKERRQ(ierr);
+  ierr = PetscFree(aomap);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
