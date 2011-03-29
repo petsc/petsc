@@ -32,7 +32,7 @@ static PetscErrorCode KSPReset_Compat(KSP ksp)
   if (ksp->vec_sol) {ierr = VecDestroy(ksp->vec_sol);CHKERRQ(ierr);}
   if (ksp->diagonal) {ierr = VecDestroy(ksp->diagonal);CHKERRQ(ierr);}
   if (ksp->truediagonal) {ierr = VecDestroy(ksp->truediagonal);CHKERRQ(ierr);}
-  if (ksp->nullsp) {ierr = MatNullSpaceDestroy(ksp->nullsp);CHKERRQ(ierr);}
+  if (ksp->nullsp) {ierr = MatNullSpaceDestroy(&ksp->nullsp);CHKERRQ(ierr);}
   /*if (ksp->ops->reset) {ierr = (*ksp->ops->reset)(ksp);CHKERRQ(ierr);}*/
   ksp->guess = PETSC_NULL;
   ksp->vec_rhs = 0;
