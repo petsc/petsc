@@ -161,6 +161,18 @@ PetscErrorCode  MatMFFDSetFunctioni_MFFD(Mat mat,FCN2 funci)
 }
 EXTERN_C_END
 
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "MatMFFDResetHHistory_MFFD"
+PetscErrorCode  MatMFFDResetHHistory_MFFD(Mat J)
+{
+  MatMFFD ctx = (MatMFFD)J->data;
+
+  PetscFunctionBegin;
+  ctx->ncurrenth    = 0;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMFFDRegister"
@@ -200,6 +212,22 @@ PetscErrorCode  MatMFFDRegisterDestroy(void)
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "MatMFFDAddNullSpace_MFFD"
+PetscErrorCode  MatMFFDAddNullSpace_MFFD(Mat J,MatNullSpace nullsp)
+{
+  PetscErrorCode ierr;
+  MatMFFD      ctx = (MatMFFD)J->data;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectReference((PetscObject)nullsp);CHKERRQ(ierr);
+  if (ctx->sp) { ierr = MatNullSpaceDestroy(&ctx->sp);CHKERRQ(ierr); }
+  ctx->sp = nullsp;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
 /* ----------------------------------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "MatDestroy_MFFD"
@@ -231,7 +259,12 @@ PetscErrorCode MatDestroy_MFFD(Mat mat)
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMFFDSetBase_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMFFDSetFunctioniBase_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMFFDSetFunctioni_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMFFDSetFunction_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMFFDSetFunctionError_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMFFDSetCheckh_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMFFDSetPeriod_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMFFDResetHHistory_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMFFDAddNullSpace_C","",PETSC_NULL);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -609,6 +642,48 @@ PetscErrorCode  MatSetFromOptions_MFFD(Mat mat)
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "MatMFFDSetPeriod_MFFD"
+PetscErrorCode  MatMFFDSetPeriod_MFFD(Mat mat,PetscInt period)
+{
+  MatMFFD ctx = (MatMFFD)mat->data;
+
+  PetscFunctionBegin;
+  PetscValidLogicalCollectiveInt(mat,period,2);
+  ctx->recomputeperiod = period;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "MatMFFDSetFunction_MFFD"
+PetscErrorCode  MatMFFDSetFunction_MFFD(Mat mat,PetscErrorCode (*func)(void*,Vec,Vec),void *funcctx)
+{
+  MatMFFD ctx = (MatMFFD)mat->data;
+
+  PetscFunctionBegin;
+  ctx->func    = func;
+  ctx->funcctx = funcctx;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "MatMFFDSetFunctionError_MFFD"
+PetscErrorCode  MatMFFDSetFunctionError_MFFD(Mat mat,PetscReal error)
+{
+  MatMFFD ctx = (MatMFFD)mat->data;
+
+  PetscFunctionBegin;
+  PetscValidLogicalCollectiveReal(mat,error,2);
+  if (error != PETSC_DEFAULT) ctx->error_rel = error;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
 /*MC
   MATMFFD - MATMFFD = "mffd" - A matrix free matrix type.
 
@@ -681,7 +756,12 @@ PetscErrorCode  MatCreate_MFFD(Mat A)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatMFFDSetBase_C","MatMFFDSetBase_MFFD",MatMFFDSetBase_MFFD);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatMFFDSetFunctioniBase_C","MatMFFDSetFunctioniBase_MFFD",MatMFFDSetFunctioniBase_MFFD);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatMFFDSetFunctioni_C","MatMFFDSetFunctioni_MFFD",MatMFFDSetFunctioni_MFFD);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatMFFDSetFunction_C","MatMFFDSetFunction_MFFD",MatMFFDSetFunction_MFFD);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatMFFDSetCheckh_C","MatMFFDSetCheckh_MFFD",MatMFFDSetCheckh_MFFD);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatMFFDSetPeriod_C","MatMFFDSetPeriod_MFFD",MatMFFDSetPeriod_MFFD);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatMFFDSetFunctionError_C","MatMFFDSetFunctionError_MFFD",MatMFFDSetFunctionError_MFFD);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatMFFDResetHHistory_C","MatMFFDResetHHistory_MFFD",MatMFFDResetHHistory_MFFD);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatMFFDAddNullSpace_C","MatMFFDAddNullSpace_MFFD",MatMFFDAddNullSpace_MFFD);CHKERRQ(ierr);
   mfctx->mat = A;
   ierr = PetscObjectChangeTypeName((PetscObject)A,MATMFFD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -786,13 +866,17 @@ PetscErrorCode  MatCreateMFFD(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,Pet
 @*/
 PetscErrorCode  MatMFFDGetH(Mat mat,PetscScalar *h)
 {
-  MatMFFD ctx = (MatMFFD)mat->data;
+  MatMFFD        ctx = (MatMFFD)mat->data;
+  PetscErrorCode ierr;
+  PetscBool      match;
 
   PetscFunctionBegin;
+  ierr = PetscTypeCompare((PetscObject)mat,MATMFFD,&match);CHKERRQ(ierr);
+  if (!match) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONG,"Not a MFFD matrix");
+
   *h = ctx->currenth;
   PetscFunctionReturn(0);
 }
-
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMFFDSetFunction"
@@ -821,11 +905,10 @@ PetscErrorCode  MatMFFDGetH(Mat mat,PetscScalar *h)
 @*/
 PetscErrorCode  MatMFFDSetFunction(Mat mat,PetscErrorCode (*func)(void*,Vec,Vec),void *funcctx)
 {
-  MatMFFD ctx = (MatMFFD)mat->data;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ctx->func    = func;
-  ctx->funcctx = funcctx;
+  ierr = PetscTryMethod(mat,"MatMFFDSetFunction_C",(Mat,PetscErrorCode (*)(void*,Vec,Vec),void*),(mat,func,funcctx));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -896,7 +979,6 @@ PetscErrorCode  MatMFFDSetFunctioniBase(Mat mat,PetscErrorCode (*func)(void*,Vec
   PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__  
 #define __FUNCT__ "MatMFFDSetPeriod"
 /*@
@@ -921,11 +1003,10 @@ PetscErrorCode  MatMFFDSetFunctioniBase(Mat mat,PetscErrorCode (*func)(void*,Vec
 @*/
 PetscErrorCode  MatMFFDSetPeriod(Mat mat,PetscInt period)
 {
-  MatMFFD ctx = (MatMFFD)mat->data;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidLogicalCollectiveInt(mat,period,2);
-  ctx->recomputeperiod = period;
+  ierr = PetscTryMethod(mat,"MatMFFDSetPeriod_C",(Mat,PetscInt),(mat,period));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -962,11 +1043,10 @@ PetscErrorCode  MatMFFDSetPeriod(Mat mat,PetscInt period)
 @*/
 PetscErrorCode  MatMFFDSetFunctionError(Mat mat,PetscReal error)
 {
-  MatMFFD ctx = (MatMFFD)mat->data;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidLogicalCollectiveReal(mat,error,2);
-  if (error != PETSC_DEFAULT) ctx->error_rel = error;
+  ierr = PetscTryMethod(mat,"MatMFFDSetFunctionError_C",(Mat,PetscReal),(mat,error));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -994,12 +1074,9 @@ PetscErrorCode  MatMFFDSetFunctionError(Mat mat,PetscReal error)
 PetscErrorCode  MatMFFDAddNullSpace(Mat J,MatNullSpace nullsp)
 {
   PetscErrorCode ierr;
-  MatMFFD      ctx = (MatMFFD)J->data;
 
   PetscFunctionBegin;
-  ierr = PetscObjectReference((PetscObject)nullsp);CHKERRQ(ierr);
-  if (ctx->sp) { ierr = MatNullSpaceDestroy(&ctx->sp);CHKERRQ(ierr); }
-  ctx->sp = nullsp;
+  ierr = PetscTryMethod(J,"MatMFFDAddNullSpace_C",(Mat,MatNullSpace),(J,nullsp));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1031,14 +1108,19 @@ PetscErrorCode  MatMFFDAddNullSpace(Mat J,MatNullSpace nullsp)
 @*/
 PetscErrorCode  MatMFFDSetHHistory(Mat J,PetscScalar history[],PetscInt nhistory)
 {
-  MatMFFD ctx = (MatMFFD)J->data;
+  MatMFFD        ctx = (MatMFFD)J->data;
+  PetscErrorCode ierr;
+  PetscBool      match;
 
   PetscFunctionBegin;
+  ierr = PetscTypeCompare((PetscObject)J,MATMFFD,&match);CHKERRQ(ierr);
+  if (!match) SETERRQ(((PetscObject)J)->comm,PETSC_ERR_ARG_WRONG,"Not a MFFD matrix");
   ctx->historyh    = history;
   ctx->maxcurrenth = nhistory;
   ctx->currenth    = 0.;
   PetscFunctionReturn(0);
 }
+
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMFFDResetHHistory"
@@ -1064,10 +1146,10 @@ PetscErrorCode  MatMFFDSetHHistory(Mat J,PetscScalar history[],PetscInt nhistory
 @*/
 PetscErrorCode  MatMFFDResetHHistory(Mat J)
 {
-  MatMFFD ctx = (MatMFFD)J->data;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ctx->ncurrenth    = 0;
+  ierr = PetscTryMethod(J,"MatMFFDResetHHistory_C",(Mat),(J));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
