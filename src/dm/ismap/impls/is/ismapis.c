@@ -732,7 +732,6 @@ PetscErrorCode ISMappingGetSupportSizeLocal_IS(ISMapping map, PetscInt *size)
 }
 
 
-EXTERN_C_BEGIN
 #undef  __FUNCT__
 #define __FUNCT__ "ISMappingISGetEdges"
 PetscErrorCode ISMappingISGetEdges(ISMapping map, IS *ix, IS *iy) {
@@ -758,7 +757,6 @@ PetscErrorCode ISMappingISGetEdges(ISMapping map, IS *ix, IS *iy) {
   ierr = ISCreateGeneral(map->ylayout->comm, len, iyidx, PETSC_USE_POINTER, iy); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }/* ISMappingISGetEdges() */
-EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISMappingGetOperator_IS"
@@ -823,7 +821,7 @@ static PetscErrorCode ISMappingInvert_IS(ISMapping map, ISMapping *imap)
   ISMappingCheckAssembled(map,PETSC_TRUE,1);
   ierr = ISMappingCreate(((PetscObject)map)->comm, imap); CHKERRQ(ierr);
   ierr = ISMappingSetSizes(*imap, map->xlayout->n, map->ylayout->n, map->xlayout->N, map->ylayout->N); CHKERRQ(ierr);
-  ierr = ISMappingGetEdges(map, &ix,&iy);    CHKERRQ(ierr);
+  ierr = ISMappingISGetEdges(map, &ix,&iy);  CHKERRQ(ierr);
   ierr = ISMappingISSetEdges(*imap,iy, ix);  CHKERRQ(ierr);
   ierr = ISDestroy(ix);                      CHKERRQ(ierr);
   ierr = ISDestroy(iy);                      CHKERRQ(ierr);
@@ -1037,6 +1035,7 @@ PetscErrorCode ISMappingDestroy_IS(ISMapping map) {
 }/* ISMappingDestroy_IS() */
 
 
+EXTERN_C_BEGIN
 #undef  __FUNCT__
 #define __FUNCT__ "ISMappingCreate_IS"
 PetscErrorCode ISMappingCreate_IS(ISMapping map) {
@@ -1074,4 +1073,4 @@ PetscErrorCode ISMappingCreate_IS(ISMapping map) {
   ierr = PetscObjectChangeTypeName((PetscObject)map, IS_MAPPING_IS); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }/* ISMappingCreate_IS() */
-
+EXTERN_C_END

@@ -130,6 +130,10 @@ PetscErrorCode  ISMappingRegisterDestroy(void)
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
+extern PetscErrorCode ISMappingCreate_IS(ISMapping);
+EXTERN_C_END
+
 #undef __FUNCT__  
 #define __FUNCT__ "ISMappingRegisterAll"
 /*@C

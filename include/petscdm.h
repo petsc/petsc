@@ -268,7 +268,7 @@ extern  PetscErrorCode ISMappingGetImageIS(ISMapping mapping, IS *image);
 extern  PetscErrorCode ISMappingGetSupportSizeLocal(ISMapping mapping, PetscInt *supp_size);
 extern  PetscErrorCode ISMappingGetImageSizeLocal(ISMapping mapping, PetscInt *image_size);
 extern  PetscErrorCode ISMappingGetMaxImageSizeLocal(ISMapping mapping, PetscInt *max_image_size);
-extern  PetscErrorCode ISMappingGetEdges(ISMapping mapping, IS *ix, IS *iy);
+extern  PetscErrorCode ISMappingISGetEdges(ISMapping mapping, IS *ix, IS *iy);
 
 extern  PetscErrorCode ISMappingMapIndicesLocal(ISMapping mapping, PetscInt insize, const PetscInt inidx[], PetscInt *outsize, PetscInt outidx[], PetscInt offsets[]);
 extern PetscErrorCode ISMappingMapValuesLocal(ISMapping map, PetscInt insize, const PetscInt inidx[], const PetscScalar invals[], PetscInt *outsize, PetscInt outidx[], PetscScalar outvals[], PetscInt offsets[]);
