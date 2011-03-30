@@ -195,13 +195,12 @@ EXTERN_C_BEGIN
 PetscErrorCode  AOCreate_Basic(AO ao)
 {
   AO_Basic       *aobasic;
-  PetscMPIInt    *lens,size,rank,nnapp,*disp;
+  PetscMPIInt    *lens,size,rank,napp,*disp;
   PetscInt       *allpetsc,*allapp,ip,ia,N,i,*petsc,start;
   PetscBool      opt;
   PetscErrorCode ierr;
   IS             isapp=ao->isapp,ispetsc=ao->ispetsc;
   MPI_Comm       comm;
-  PetscInt       napp;
   const PetscInt *myapp,*mypetsc;
 
   PetscFunctionBegin;
@@ -211,17 +210,15 @@ PetscErrorCode  AOCreate_Basic(AO ao)
   ierr = PetscMemcpy(ao->ops,&AOOps_Basic,sizeof(struct _AOOps));CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)ao,AOBASIC);CHKERRQ(ierr);
 
-  /* transmit all lengths to all processors */
-  ierr = PetscObjectGetComm((PetscObject)isapp,&comm);CHKERRQ(ierr);
-
   ierr = ISGetLocalSize(isapp,&napp);CHKERRQ(ierr);
   ierr = ISGetIndices(isapp,&myapp);CHKERRQ(ierr);
 
+  /* transmit all lengths to all processors */
+  ierr = PetscObjectGetComm((PetscObject)isapp,&comm);CHKERRQ(ierr);
   ierr  = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   ierr  = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr  = PetscMalloc2(size,PetscMPIInt, &lens,size,PetscMPIInt,&disp);CHKERRQ(ierr);
-  nnapp = napp;
-  ierr  = MPI_Allgather(&nnapp, 1, MPI_INT, lens, 1, MPI_INT, comm);CHKERRQ(ierr);
+  ierr  = MPI_Allgather(&napp, 1, MPI_INT, lens, 1, MPI_INT, comm);CHKERRQ(ierr);
   N    =  0;
   for(i = 0; i < size; i++) {
     disp[i] = N;
@@ -229,15 +226,11 @@ PetscErrorCode  AOCreate_Basic(AO ao)
   }
   ao->N = N;
 
-  /*
-     If mypetsc is 0 then use "natural" numbering 
-  */
+  /* If mypetsc is 0 then use "natural" numbering */
   if (napp && !ispetsc) {
     start = disp[rank];
     ierr  = PetscMalloc((napp+1) * sizeof(PetscInt), &petsc);CHKERRQ(ierr);
-    for (i=0; i<napp; i++) {
-      petsc[i] = start + i;
-    }
+    for (i=0; i<napp; i++) petsc[i] = start + i;
   } else {
     ierr = ISGetIndices(ispetsc,&mypetsc);CHKERRQ(ierr);
     petsc = (PetscInt*)mypetsc;
