@@ -65,11 +65,21 @@ contains
     type(gridinfo) grd
     PetscErrorCode ierr
     !
+#if PETSC_VERSION_(3,1,0)
     call DAGetInfo(da, PETSC_NULL_INTEGER, &
          &         grd%mx, grd%my, PETSC_NULL_INTEGER, &
          &         PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER, &
+         &         PETSC_NULL_INTEGER,PETSC_NULL_INTEGER, &
+         &         PETSC_NULL_INTEGER, &
+         &         PETSC_NULL_INTEGER,ierr); CHKERRQ(ierr)
+#else
+    call DAGetInfo(da, PETSC_NULL_INTEGER, &
+         &         grd%mx, grd%my, PETSC_NULL_INTEGER, &
+         &         PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER, &
+         &         PETSC_NULL_INTEGER,PETSC_NULL_INTEGER, &
          &         PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER, &
          &         PETSC_NULL_INTEGER,ierr); CHKERRQ(ierr)
+#endif
     call DAGetCorners(da, &
          &            grd%xs,grd%ys,PETSC_NULL_INTEGER, &
          &            grd%xm,grd%ym,PETSC_NULL_INTEGER,ierr); CHKERRQ(ierr)

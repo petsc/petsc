@@ -19,6 +19,11 @@
 
 #include "Bratu3Dimpl.h"
 
+#if PETSC_VERSION_(3,1,0)
+#define DAGetInfo(da,dim,M,N,P,m,n,p,dof,s,bx,by,bz,st) \
+        DAGetInfo(da,dim,M,N,P,m,n,p,dof,s,bx,st)
+#endif
+
 #if !PETSC_VERSION_(3,1,0)
 #define DAGetInfo            DMDAGetInfo
 #define DAGetCorners         DMDAGetCorners
@@ -27,7 +32,7 @@
 #define DAGetLocalVector     DMGetLocalVector
 #define DARestoreLocalVector DMRestoreLocalVector
 #define DAGlobalToLocalBegin DMGlobalToLocalBegin
-#define DAGlobalToLocalEnd   DMGlobalToLocalEnd   
+#define DAGlobalToLocalEnd   DMGlobalToLocalEnd
 #endif
 
 #undef  __FUNCT__
@@ -44,7 +49,9 @@ PetscErrorCode FormInitGuess(DA da, Vec X, Params *p)
   ierr = DAGetInfo(da,PETSC_IGNORE,
                    &Mx,&My,&Mz,
                    PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
-                   PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
+                   PETSC_IGNORE,PETSC_IGNORE,
+		   PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
+		   PETSC_IGNORE);
 
   lambda = p->lambda_;
   hx     = 1.0/(PetscReal)(Mx-1);
@@ -115,7 +122,9 @@ PetscErrorCode FormFunction(DA da, Vec X, Vec F, Params *p)
   ierr = DAGetInfo(da,PETSC_IGNORE,
                    &Mx,&My,&Mz,
                    PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
-                   PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
+                   PETSC_IGNORE,PETSC_IGNORE,
+                   PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
+                   PETSC_IGNORE);
 
   lambda = p->lambda_;
   hx     = 1.0/(PetscReal)(Mx-1);
@@ -204,8 +213,11 @@ PetscErrorCode FormJacobian(DA da, Vec X, Mat J, Params *p)
   PetscFunctionBegin;
 
   ierr = DAGetInfo(da,PETSC_IGNORE,
-                   &Mx,&My,&Mz,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
-                   PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
+                   &Mx,&My,&Mz,
+		   PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
+                   PETSC_IGNORE,PETSC_IGNORE,
+		   PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
+		   PETSC_IGNORE);
 
   lambda = p->lambda_;
   hx     = 1.0/(PetscReal)(Mx-1);
