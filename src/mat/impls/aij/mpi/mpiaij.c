@@ -4773,7 +4773,9 @@ PetscErrorCode  MatMerge_SeqsToMPI(MPI_Comm comm,Mat seqmat,PetscInt m,PetscInt 
 #undef __FUNCT__
 #define __FUNCT__ "MatGetLocalMat"
 /*@
-     MatGetLocalMat - Creates a SeqAIJ matrix by taking all its local rows
+     MatGetLocalMat - Creates a SeqAIJ from a MPIAIJ matrix by taking all its local rows and putting them into a sequential vector with
+          mlocal rows and n columns. Where mlocal is the row count obtained with MatGetLocalSize() and n is the global column count obtained
+          with MatGetSize()
 
     Not Collective
 
@@ -4786,6 +4788,8 @@ PetscErrorCode  MatMerge_SeqsToMPI(MPI_Comm comm,Mat seqmat,PetscInt m,PetscInt 
 
     Level: developer
 
+.seealso: MatGetOwnerShipRange()
+
 @*/
 PetscErrorCode  MatGetLocalMat(Mat A,MatReuse scall,Mat *A_loc) 
 {
@@ -4797,8 +4801,11 @@ PetscErrorCode  MatGetLocalMat(Mat A,MatReuse scall,Mat *A_loc)
   PetscScalar     *ca;
   PetscInt        am=A->rmap->n,i,j,k,cstart=A->cmap->rstart;
   PetscInt        *ci,*cj,col,ncols_d,ncols_o,jo;
+  PetscBool       match;
 
   PetscFunctionBegin;
+  ierr = PetscTypeCompare((PetscObject)A,MATMPIAIJ,&match);CHKERRQ(ierr);
+  if (!match) SETERRQ(((PetscObject)A)->comm, PETSC_ERR_SUP,"Requires MPIAIJ matrix as input");
   ierr = PetscLogEventBegin(MAT_Getlocalmat,A,0,0,0);CHKERRQ(ierr);
   if (scall == MAT_INITIAL_MATRIX){
     ierr = PetscMalloc((1+am)*sizeof(PetscInt),&ci);CHKERRQ(ierr);
@@ -4857,10 +4864,7 @@ PetscErrorCode  MatGetLocalMat(Mat A,MatReuse scall,Mat *A_loc)
         *cam++ = *ba++; bj++;
       }
     }
-  } else {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid MatReuse %d",(int)scall);
-  }
-
+  } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Invalid MatReuse %d",(int)scall);
   ierr = PetscLogEventEnd(MAT_Getlocalmat,A,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
