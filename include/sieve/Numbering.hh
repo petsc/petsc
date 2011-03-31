@@ -128,6 +128,7 @@ namespace ALE {
   protected:
     numberings_type   _localNumberings;
     numberings_type   _numberings;
+    orders_type       _localOrders;
     orders_type       _orders;
     orders_type       _ordersBC;
     const value_type  _unknownNumber;
@@ -154,6 +155,7 @@ namespace ALE {
     void clear() {
       this->_localNumberings.clear();
       this->_numberings.clear();
+      this->_localOrders.clear();
       this->_orders.clear();
       this->_ordersBC.clear();
     };
@@ -609,6 +611,22 @@ namespace ALE {
         if (this->_debug) {std::cout << "["<<bundle->commRank()<<"]Using old numbering: " << labelname << " value " << value << std::endl;}
       }
       return this->_numberings[bundle.ptr()][labelname][value];
+    };
+    template<typename ABundle_, typename Section_>
+    const Obj<order_type>& getLocalOrder(const Obj<ABundle_>& bundle, const std::string& name, const Obj<Section_>& section, const int space = -1) {
+      if ((this->_localOrders.find(bundle.ptr()) == this->_localOrders.end()) ||
+          (this->_localOrders[bundle.ptr()].find(name) == this->_localOrders[bundle.ptr()].end())) {
+        Obj<order_type>        order       = new order_type(bundle->comm(), bundle->debug());
+        Obj<send_overlap_type> sendOverlap = bundle->getSendOverlap();
+        Obj<recv_overlap_type> recvOverlap = bundle->getRecvOverlap();
+
+        if (this->_debug) {std::cout << "["<<bundle->commRank()<<"]Creating new local order: " << name << std::endl;}
+        this->constructLocalOrder(order, sendOverlap, section->getChart().begin(), section->getChart().end(), section, space);
+        this->_localOrders[bundle.ptr()][name] = order;
+      } else {
+        if (this->_debug) {std::cout << "["<<bundle->commRank()<<"]Using old local order: " << name << std::endl;}
+      }
+      return this->_localOrders[bundle.ptr()][name];
     };
     template<typename ABundle_, typename Section_>
     const Obj<order_type>& getGlobalOrder(const Obj<ABundle_>& bundle, const std::string& name, const Obj<Section_>& section, const int space = -1) {
