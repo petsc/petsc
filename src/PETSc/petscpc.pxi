@@ -84,6 +84,9 @@ cdef extern from * nogil:
     #int PCApplyTransposeExists(PetscPC,PetscBool*)
     #int PCApplyRichardsonExists(PetscPC,PetscBool*)
 
+    int PCGetDM(PetscPC,PetscDM*)
+    int PCSetDM(PetscPC,PetscDM)
+
     int PCSetOperators(PetscPC,PetscMat,PetscMat,PetscMatStructure)
     int PCGetOperators(PetscPC,PetscMat*,PetscMat*,PetscMatStructure*)
     int PCGetOperatorsSet(PetscPC,PetscBool*,PetscBool*)

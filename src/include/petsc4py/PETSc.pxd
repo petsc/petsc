@@ -54,7 +54,7 @@ cdef extern from "petsc.h":
     ctypedef _p_DM* PetscDM "DM"
 
     struct _p_DA
-    ctypedef _p_DA* PetscDA "DA"
+    ctypedef _p_DM* PetscDA "DM"
 
 # --------------------------------------------------------------------
 

@@ -251,6 +251,17 @@ cdef class TS(Object):
         PetscIncref(<PetscObject>ksp.ksp)
         return ksp
 
+    # --- discretization space ---
+
+    def getDM(self):
+        cdef DM dm = DM()
+        CHKERR( TSGetDM(self.ts, &dm.dm[0]) )
+        PetscIncref(<PetscObject>dm.dm)
+        return dm
+
+    def setDM(self, DM dm not None):
+        CHKERR( TSSetDM(self.ts, dm.dm[0]) )
+
     # --- finite diferences ---
 
     def setUseFD(self, flag=True):
@@ -438,6 +449,14 @@ cdef class TS(Object):
             return self.getAppCtx()
         def __set__(self, value):
             self.setAppCtx(value)
+
+    # --- discretization space ---
+
+    property dm:
+        def __get__(self):
+            return self.getDM()
+        def __set__(self, value):
+            self.setDM(value)
 
     # --- xxx ---
 

@@ -34,12 +34,13 @@ ode = CE(lambda_)
 
 J = PETSc.Mat().createDense([ode.n,ode.n], comm=ode.comm)
 x = PETSc.Vec().createSeq(ode.n, comm=ode.comm)
+f = x.duplicate()
 
 ts = PETSc.TS().create(comm=ode.comm)
 ts.setProblemType(ts.ProblemType.NONLINEAR)
 ts.setType(ts.Type.GL)
 
-ts.setIFunction(ode.evalFunction)
+ts.setIFunction(ode.evalFunction, f)
 ts.setIJacobian(ode.evalJacobian, J)
 
 ts.setTime(0.0)
@@ -65,4 +66,4 @@ ts.setFromOptions()
 ode.evalSolution(0.0, x)
 ts.solve(x)
 
-del ode, J, x, ts
+del ode, J, x, f, ts
