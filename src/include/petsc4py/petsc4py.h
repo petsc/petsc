@@ -15,14 +15,13 @@
 #define DA DM
 #endif
 
-#ifndef __PYX_HAVE_API__petsc4py__PETSc
 #include "petsc4py.PETSc_api.h"
+
 static int import_petsc4py(void) {
   if (import_petsc4py__PETSc() < 0) goto bad;
   return 0;
  bad:
   return -1;
 }
-#endif
 
 #endif /* !PETSC4PY_H */
