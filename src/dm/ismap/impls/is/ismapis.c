@@ -563,7 +563,6 @@ PetscErrorCode ISMappingSetUp_ISMapping(ISMapping map)
   PetscFunctionReturn(0);
 }/* ISMappingSetUp_ISMapping() */
 
-EXTERN_C_BEGIN
 #undef  __FUNCT__
 #define __FUNCT__ "ISMappingISSetEdges"
 PetscErrorCode ISMappingISSetEdges(ISMapping map, IS ix, IS iy) {
@@ -586,8 +585,6 @@ PetscErrorCode ISMappingISSetEdges(ISMapping map, IS ix, IS iy) {
   map->assembled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }/* ISMappingSetIS() */
-EXTERN_C_END
-
 
 #undef __FUNCT__
 #define __FUNCT__ "ISMappingAssemblyBegin_IS"
@@ -1033,7 +1030,6 @@ PetscErrorCode ISMappingDestroy_IS(ISMapping map) {
   ierr = PetscObjectComposeFunction((PetscObject)map,"ISMappingPushforward_is_is_C", "",PETSC_NULL); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }/* ISMappingDestroy_IS() */
-
 
 EXTERN_C_BEGIN
 #undef  __FUNCT__
