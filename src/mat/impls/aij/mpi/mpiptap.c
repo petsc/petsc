@@ -148,7 +148,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   /* get P_oth by taking rows of P (= non-zero cols of local A) from other processors */
   ierr = MatGetBrowsOfAoCols(A,P,MAT_INITIAL_MATRIX,&ap->startsj,&ap->startsj_r,&ap->bufa,&ap->B_oth);CHKERRQ(ierr);
   /* get P_loc by taking all local rows of P */
-  ierr = MatGetLocalMat(P,MAT_INITIAL_MATRIX,&ap->B_loc);CHKERRQ(ierr);
+  ierr = MatMPIAIJGetLocalMat(P,MAT_INITIAL_MATRIX,&ap->B_loc);CHKERRQ(ierr);
 
   p_loc = (Mat_SeqAIJ*)(ap->B_loc)->data; 
   p_oth = (Mat_SeqAIJ*)(ap->B_oth)->data;
@@ -520,7 +520,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
       ap->reuse = MAT_REUSE_MATRIX;
     } else { /* update numerical values of P_oth and P_loc */
       ierr = MatGetBrowsOfAoCols(A,P,MAT_REUSE_MATRIX,&ap->startsj,&ap->startsj_r,&ap->bufa,&ap->B_oth);CHKERRQ(ierr);  
-      ierr = MatGetLocalMat(P,MAT_REUSE_MATRIX,&ap->B_loc);CHKERRQ(ierr);
+      ierr = MatMPIAIJGetLocalMat(P,MAT_REUSE_MATRIX,&ap->B_loc);CHKERRQ(ierr);
     }
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Matrix P does not posses an object container");
 

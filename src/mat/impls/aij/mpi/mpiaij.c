@@ -4771,9 +4771,9 @@ PetscErrorCode  MatMerge_SeqsToMPI(MPI_Comm comm,Mat seqmat,PetscInt m,PetscInt 
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatGetLocalMat"
+#define __FUNCT__ "MatMPIAIJGetLocalMat"
 /*@
-     MatGetLocalMat - Creates a SeqAIJ from a MPIAIJ matrix by taking all its local rows and putting them into a sequential vector with
+     MatMPIAIJGetLocalMat - Creates a SeqAIJ from a MPIAIJ matrix by taking all its local rows and putting them into a sequential vector with
           mlocal rows and n columns. Where mlocal is the row count obtained with MatGetLocalSize() and n is the global column count obtained
           with MatGetSize()
 
@@ -4791,7 +4791,7 @@ PetscErrorCode  MatMerge_SeqsToMPI(MPI_Comm comm,Mat seqmat,PetscInt m,PetscInt 
 .seealso: MatGetOwnerShipRange()
 
 @*/
-PetscErrorCode  MatGetLocalMat(Mat A,MatReuse scall,Mat *A_loc) 
+PetscErrorCode  MatMPIAIJGetLocalMat(Mat A,MatReuse scall,Mat *A_loc) 
 {
   PetscErrorCode  ierr;
   Mat_MPIAIJ      *mpimat=(Mat_MPIAIJ*)A->data; 
@@ -4870,9 +4870,9 @@ PetscErrorCode  MatGetLocalMat(Mat A,MatReuse scall,Mat *A_loc)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatGetLocalMatCondensed"
+#define __FUNCT__ "MatMPIAIJGetLocalMatCondensed"
 /*@C
-     MatGetLocalMatCondensed - Creates a SeqAIJ matrix by taking all its local rows and NON-ZERO columns
+     MatMPIAIJGetLocalMatCondensed - Creates a SeqAIJ matrix by taking all its local rows and NON-ZERO columns
 
     Not Collective
 
@@ -4887,15 +4887,18 @@ PetscErrorCode  MatGetLocalMat(Mat A,MatReuse scall,Mat *A_loc)
     Level: developer
 
 @*/
-PetscErrorCode  MatGetLocalMatCondensed(Mat A,MatReuse scall,IS *row,IS *col,Mat *A_loc) 
+PetscErrorCode  MatMPIAIJGetLocalMatCondensed(Mat A,MatReuse scall,IS *row,IS *col,Mat *A_loc) 
 {
   Mat_MPIAIJ        *a=(Mat_MPIAIJ*)A->data;
   PetscErrorCode    ierr;
   PetscInt          i,start,end,ncols,nzA,nzB,*cmap,imark,*idx;
   IS                isrowa,iscola;
   Mat               *aloc;
+  PetscBool       match;
 
   PetscFunctionBegin;
+  ierr = PetscTypeCompare((PetscObject)A,MATMPIAIJ,&match);CHKERRQ(ierr);
+  if (!match) SETERRQ(((PetscObject)A)->comm, PETSC_ERR_SUP,"Requires MPIAIJ matrix as input");
   ierr = PetscLogEventBegin(MAT_Getlocalmatcondensed,A,0,0,0);CHKERRQ(ierr);
   if (!row){
     start = A->rmap->rstart; end = A->rmap->rend;
