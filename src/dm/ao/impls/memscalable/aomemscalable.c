@@ -410,13 +410,11 @@ PetscErrorCode AOCreate_MemoryScalable(AO ao)
   PetscErrorCode    ierr;
   IS                isapp=ao->isapp,ispetsc=ao->ispetsc;
   const PetscInt    *mypetsc,*myapp;
-  PetscInt          napp;
+  PetscInt          napp,n_local,N,i,start,*petsc;
   MPI_Comm          comm;
   AO_MemoryScalable *aomems;
   PetscLayout       map;
-  PetscBool         opt;
   PetscMPIInt       *lens,size,rank,*disp;
-  PetscInt          n_local,N,i,start,*petsc;
   
   PetscFunctionBegin;
   /* create special struct aomems */
@@ -449,7 +447,7 @@ PetscErrorCode AOCreate_MemoryScalable(AO ao)
     petsc = (PetscInt*)mypetsc;
   }
   
-  /* create a map with global size N - used to determine the local sizes of ao */
+  /* create a map with global size N - used to determine the local sizes of ao - shall we use local napp instead of N? */
   ierr = PetscLayoutCreate(comm,&map);CHKERRQ(ierr);
   map->bs = 1;
   map->N  = N;
@@ -459,7 +457,7 @@ PetscErrorCode AOCreate_MemoryScalable(AO ao)
   ao->n       = map->n;
   aomems->map = map;
 
-  /* get app_loc: petsc->app and petsc_loc: app->petsc */
+  /* create distributed indices app_loc: petsc->app and petsc_loc: app->petsc */
   n_local = map->n;
   ierr = PetscMalloc2(n_local,PetscInt, &aomems->app_loc,n_local,PetscInt,&aomems->petsc_loc);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory(ao,2*n_local*sizeof(PetscInt));CHKERRQ(ierr);
@@ -477,18 +475,37 @@ PetscErrorCode AOCreate_MemoryScalable(AO ao)
     ierr = PetscFree(petsc);CHKERRQ(ierr);
   }
   ierr  = PetscFree2(lens,disp);CHKERRQ(ierr);
-
-  opt = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL, "-ao_view", &opt,PETSC_NULL);CHKERRQ(ierr);
-  if (opt) {
-    ierr = AOView_MemoryScalable(ao, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "AOCreateMemoryScalable" 
+/*@C
+   AOCreateMemoryScalable - Creates a memory scalable application ordering using two integer arrays.
+
+   Collective on MPI_Comm
+
+   Input Parameters:
++  comm - MPI communicator that is to share AO
+.  napp - size of integer arrays
+.  myapp - integer array that defines an ordering
+-  mypetsc - integer array that defines another ordering (may be PETSC_NULL to 
+             indicate the natural ordering, that is 0,1,2,3,...)
+
+   Output Parameter:
+.  aoout - the new application ordering
+
+   Level: beginner
+
+    Notes: The arrays myapp and mypetsc must contain the all the integers 0 to napp-1 with no duplicates; that is there cannot be any "holes"  
+           in the indices. Use AOCreateMapping() or AOCreateMappingIS() if you wish to have "holes" in the indices.
+           Comparing with AOCreateBasic(), this routine trades memory with message communication.
+
+.keywords: AO, create
+
+.seealso: AOCreateMemoryScalableIS(), AODestroy(), AOPetscToApplication(), AOApplicationToPetsc()
+@*/
 PetscErrorCode AOCreateMemoryScalable(MPI_Comm comm,PetscInt napp,const PetscInt myapp[],const PetscInt mypetsc[],AO *aoout)
 {
   PetscErrorCode ierr;
@@ -504,11 +521,36 @@ PetscErrorCode AOCreateMemoryScalable(MPI_Comm comm,PetscInt napp,const PetscInt
   }
   ierr = AOCreateMemoryScalableIS(isapp,ispetsc,aoout);CHKERRQ(ierr);
   ierr = ISDestroy(isapp);CHKERRQ(ierr);
+  if (mypetsc){
+    ierr = ISDestroy(ispetsc);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
 #define __FUNCT__ "AOCreateMemoryScalableIS" 
+/*@C
+   AOCreateMemoryScalableIS - Creates a memory scalable application ordering using two index sets.
+
+   Collective on IS
+
+   Input Parameters:
++  isapp - index set that defines an ordering
+-  ispetsc - index set that defines another ordering (may be PETSC_NULL to use the
+             natural ordering)
+
+   Output Parameter:
+.  aoout - the new application ordering
+
+   Level: beginner
+
+    Notes: The index sets isapp and ispetsc must contain the all the integers 0 to napp-1 (where napp is the length of the index sets) with no duplicates; 
+           that is there cannot be any "holes".
+           Comparing with AOCreateBasicIS(), this routine trades memory with message communication.
+.keywords: AO, create
+
+.seealso: AOCreateMemoryScalable(),  AODestroy()
+@*/
 PetscErrorCode  AOCreateMemoryScalableIS(IS isapp,IS ispetsc,AO *aoout)
 {
   PetscErrorCode ierr;

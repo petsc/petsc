@@ -21,6 +21,9 @@ PetscLogEvent  AO_PetscToApplication, AO_ApplicationToPetsc;
 
    Level: intermediate
 
+    Options Database Key:
+.   -ao_view - calls AOView() at end of AOCreate()
+
    Note:
    The available visualization contexts include
 +     PETSC_VIEWER_STDOUT_SELF - standard output (default)
@@ -414,7 +417,7 @@ PetscErrorCode AOSetFromOptions(AO ao)
 {
   PetscErrorCode ierr;
   char           type[256];
-  const char     *def=AOMEMORYSCALABLE;
+  const char     *def=AOBASIC;
   PetscBool      flg;
 
   PetscFunctionBegin;
@@ -427,6 +430,9 @@ PetscErrorCode AOSetFromOptions(AO ao)
     } else if (!((PetscObject)ao)->type_name){
       ierr = AOSetType(ao,def);CHKERRQ(ierr);
     } 
+
+    /* not used here, but called so will go into help messaage */
+    ierr = PetscOptionsName("-ao_view","Print detailed information on AO used","AOView",0);CHKERRQ(ierr);
  
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -497,6 +503,7 @@ PetscErrorCode  AOCreate(MPI_Comm comm,AO *ao)
 {
   PetscErrorCode ierr;
   AO             aonew;
+  PetscBool      opt;
 
   PetscFunctionBegin;
   PetscValidPointer(ao,2);
@@ -508,5 +515,11 @@ PetscErrorCode  AOCreate(MPI_Comm comm,AO *ao)
   ierr = PetscHeaderCreate(aonew,_p_AO,struct _AOOps,AO_CLASSID,-1,"AO",comm,AODestroy_,AOView);CHKERRQ(ierr);
   ierr = PetscMemzero(aonew->ops, sizeof(struct _AOOps));CHKERRQ(ierr);
   *ao = aonew;
+
+  opt = PETSC_FALSE;
+  ierr = PetscOptionsGetBool(PETSC_NULL, "-ao_view", &opt,PETSC_NULL);CHKERRQ(ierr);
+  if (opt) {
+    ierr = AOView(aonew, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
