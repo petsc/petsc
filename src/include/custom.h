@@ -1349,6 +1349,7 @@ DACreateND(MPI_Comm comm,
 
 #if !(PETSC_VERSION_(3,1,0))
 
+#define _p_DA _p_DM
 #define DA DM
 
 #define DACreate           DMDACreate

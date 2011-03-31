@@ -15,6 +15,35 @@
 
 #if (PETSC_VERSION_(3,1,0) || \
      PETSC_VERSION_(3,0,0))
+#undef __FUNCT__  
+#define __FUNCT__ "TSSetDM"
+static PetscErrorCode TSSetDM(TS ts,DM dm)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
+  PetscValidHeaderSpecific(dm,DM_COOKIE,2);
+  ierr = PetscObjectCompose((PetscObject)ts, "__DM__",
+			    (PetscObject)dm);CHKERRQ(ierr);
+  if (ts->snes) { ierr = SNESSetDM(ts->snes,dm);CHKERRQ(ierr); }
+  if (ts->ksp)  { ierr = KSPSetDM(ts->ksp,dm);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+#undef __FUNCT__  
+#define __FUNCT__ "TSGetDM"
+static PetscErrorCode TSGetDM(TS ts,DM *dm)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
+  PetscValidPointer(dm,2);
+  ierr = PetscObjectQuery((PetscObject)ts, "__DM__",(PetscObject*)dm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#endif
+
+#if (PETSC_VERSION_(3,1,0) || \
+     PETSC_VERSION_(3,0,0))
 #undef __FUNCT__
 #define __FUNCT__ "TSSetSolution_Compat"
 static PetscErrorCode

@@ -11,6 +11,35 @@
 #define SNES_DIVERGED_LINE_SEARCH SNES_DIVERGED_LS_FAILURE
 #endif
 
+#if (PETSC_VERSION_(3,1,0) || \
+     PETSC_VERSION_(3,0,0))
+#undef __FUNCT__  
+#define __FUNCT__ "SNESSetDM"
+static PetscErrorCode SNESSetDM(SNES snes,DM dm)
+{
+  KSP            ksp;
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  PetscValidHeaderSpecific(dm,DM_COOKIE,2);
+  ierr = PetscObjectCompose((PetscObject)snes, "__DM__",(PetscObject)dm);CHKERRQ(ierr);
+  ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
+  ierr = KSPSetDM(ksp,dm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#undef __FUNCT__  
+#define __FUNCT__ "SNESGetDM"
+static PetscErrorCode SNESGetDM(SNES snes,DM *dm)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  PetscValidPointer(dm,2);
+  ierr = PetscObjectQuery((PetscObject)snes, "__DM__",(PetscObject*)dm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#endif
+
 #if (PETSC_VERSION_(3,0,0))
 #undef __FUNCT__
 #define __FUNCT__ "MatMFFDSetOptionsPrefix"

@@ -11,6 +11,32 @@
 #if (PETSC_VERSION_(3,1,0) || \
      PETSC_VERSION_(3,0,0))
 #undef __FUNCT__  
+#define __FUNCT__ "PCSetDM"
+static PetscErrorCode PCSetDM(PC pc,DM dm)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  PetscValidHeaderSpecific(dm,DM_COOKIE,2);
+  ierr = PetscObjectCompose((PetscObject)pc, "__DM__",(PetscObject)dm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#undef __FUNCT__  
+#define __FUNCT__ "PCGetDM"
+static PetscErrorCode PCGetDM(PC pc,DM *dm)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  PetscValidPointer(dm,2);
+  ierr = PetscObjectQuery((PetscObject)pc, "__DM__",(PetscObject*)dm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#endif
+
+#if (PETSC_VERSION_(3,1,0) || \
+     PETSC_VERSION_(3,0,0))
+#undef __FUNCT__  
 #define __FUNCT__ "PCReset"
 static PetscErrorCode PCReset_Compat(PC pc)
 {
