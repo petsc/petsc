@@ -158,9 +158,6 @@ PetscErrorCode  ISMappingRegisterAll(const char *path)
   PetscFunctionReturn(0);
 }
 
-
-
-EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "ISMappingMapIndicesLocal"
 /*@
@@ -199,9 +196,7 @@ PetscErrorCode ISMappingMapIndicesLocal(ISMapping map, PetscInt insize, const Pe
   ierr = PetscLogEventEnd(IS_MAPPING_Map,map,0,0,0); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "ISMappingMapIndices"
 /*@
@@ -241,10 +236,7 @@ PetscErrorCode ISMappingMapIndices(ISMapping map, PetscInt insize, const PetscIn
   ierr = PetscLogEventEnd(IS_MAPPING_Map,map,0,0,0); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-
-EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "ISMappingMapValuesLocal"
 /*@
@@ -288,9 +280,7 @@ PetscErrorCode ISMappingMapValuesLocal(ISMapping map, PetscInt insize, const Pet
   ierr = PetscLogEventBegin(IS_MAPPING_Map,map,0,0,0); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "ISMappingMapValues"
 /*@
@@ -336,10 +326,7 @@ PetscErrorCode ISMappingMapValues(ISMapping map, PetscInt insize, const PetscInt
   ierr = PetscLogEventEnd(IS_MAPPING_Map,map,0,0,0); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-
-EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "ISMappingBinIndicesLocal"
 /*@
@@ -381,10 +368,7 @@ PetscErrorCode ISMappingBinIndicesLocal(ISMapping map, PetscInt insize, const Pe
   ierr = PetscLogEventEnd(IS_MAPPING_Bin,map,0,0,0); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-
-EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "ISMappingBinIndices"
 /*@
@@ -427,9 +411,7 @@ PetscErrorCode ISMappingBinIndices(ISMapping map, PetscInt insize, const PetscIn
   ierr = PetscLogEventEnd(IS_MAPPING_Bin, map, 0,0,0); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "ISMappingBinValuesLocal"
 /*@
@@ -474,9 +456,7 @@ PetscErrorCode ISMappingBinValuesLocal(ISMapping map, PetscInt insize, const Pet
   ierr = PetscLogEventEnd(IS_MAPPING_Bin, map, 0,0,0); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "ISMappingBinValues"
 /*@
@@ -525,10 +505,7 @@ PetscErrorCode ISMappingBinValues(ISMapping map, PetscInt insize, const PetscInt
   ierr = PetscLogEventEnd(IS_MAPPING_Bin, map, 0,0,0); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-
-EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "ISMappingSetSizes"
 /*@
@@ -636,10 +613,7 @@ PetscErrorCode  ISMappingSetSizes(ISMapping map, PetscInt m, PetscInt n, PetscIn
   map->assembled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-
-EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "ISMappingGetSizes"
 PetscErrorCode  ISMappingGetSizes(ISMapping map, PetscInt *m, PetscInt *n, PetscInt *M, PetscInt *N)
@@ -652,9 +626,7 @@ PetscErrorCode  ISMappingGetSizes(ISMapping map, PetscInt *m, PetscInt *n, Petsc
   *N = map->ylayout->N;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "ISMappingSetUp"
 /*@
@@ -685,11 +657,7 @@ PetscErrorCode ISMappingSetUp(ISMapping map)
   map->setup = PETSC_TRUE;
   PetscFunctionReturn(0);
 }/* ISMappingGetSizes() */
-EXTERN_C_END
 
-
-
-EXTERN_C_BEGIN
 #undef  __FUNCT__
 #define __FUNCT__ "ISMappingAssemblyBegin"
 PetscErrorCode ISMappingAssemblyBegin(ISMapping map)
@@ -708,9 +676,7 @@ PetscErrorCode ISMappingAssemblyBegin(ISMapping map)
 
   PetscFunctionReturn(0);
 }/* ISMappingAssemblyBegin() */
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "ISMappingAssemblyEnd"
 PetscErrorCode ISMappingAssemblyEnd(ISMapping map)
@@ -724,11 +690,7 @@ PetscErrorCode ISMappingAssemblyEnd(ISMapping map)
   map->assembled = PETSC_TRUE;
   PetscFunctionReturn(0);
 }/* ISMappingAssemblyEnd() */
-EXTERN_C_END
 
-
-
-EXTERN_C_BEGIN
 #undef  __FUNCT__
 #define __FUNCT__ "ISMappingGetSupportIS"
 PetscErrorCode ISMappingGetSupportIS(ISMapping map, IS *supp) {
@@ -742,11 +704,7 @@ PetscErrorCode ISMappingGetSupportIS(ISMapping map, IS *supp) {
   ierr = (*(map->ops->getsupportis))(map,supp); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }/* ISMappingGetSupportIS() */
-EXTERN_C_END
 
-
-
-EXTERN_C_BEGIN
 #undef  __FUNCT__
 #define __FUNCT__ "ISMappingGetImageIS"
 PetscErrorCode ISMappingGetImageIS(ISMapping map, IS *image) {
@@ -760,10 +718,7 @@ PetscErrorCode ISMappingGetImageIS(ISMapping map, IS *image) {
   ierr = (*(map->ops->getimageis))(map,image); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }/* ISMappingGetImageIS() */
-EXTERN_C_END
 
-
-EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "ISMappingGetMaxImageSizeLocal"
 PetscErrorCode ISMappingGetMaxImageSizeLocal(ISMapping map, PetscInt *maxsize)
@@ -777,10 +732,7 @@ PetscErrorCode ISMappingGetMaxImageSizeLocal(ISMapping map, PetscInt *maxsize)
   ierr = (*map->ops->getmaximagesizelocal)(map,maxsize); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-
-EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "ISMappingGetImageSizeLocal"
 PetscErrorCode ISMappingGetImageSizeLocal(ISMapping map, PetscInt *size)
@@ -794,10 +746,7 @@ PetscErrorCode ISMappingGetImageSizeLocal(ISMapping map, PetscInt *size)
   ierr = (*map->ops->getimagesizelocal)(map,size); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-
-EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "ISMappingGetSupportSizeLocal"
 PetscErrorCode ISMappingGetSupportSizeLocal(ISMapping map, PetscInt *size)
@@ -811,9 +760,7 @@ PetscErrorCode ISMappingGetSupportSizeLocal(ISMapping map, PetscInt *size)
   ierr = (*map->ops->getsupportsizelocal)(map,size); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "ISMappingGetOperator"
 PetscErrorCode ISMappingGetOperator(ISMapping map, Mat *mat)
@@ -828,10 +775,7 @@ PetscErrorCode ISMappingGetOperator(ISMapping map, Mat *mat)
 
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
-
-EXTERN_C_BEGIN
 #undef  __FUNCT__
 #define __FUNCT__ "ISMappingView"
 PetscErrorCode ISMappingView(ISMapping map, PetscViewer v) 
@@ -844,9 +788,7 @@ PetscErrorCode ISMappingView(ISMapping map, PetscViewer v)
   ierr = (*(map->ops->view))(map,v); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }/* ISMappingView() */
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef  __FUNCT__
 #define __FUNCT__ "ISMappingInvert"
 PetscErrorCode ISMappingInvert(ISMapping map, ISMapping *imap) 
@@ -861,10 +803,6 @@ PetscErrorCode ISMappingInvert(ISMapping map, ISMapping *imap)
   ierr = PetscLogEventEnd(IS_MAPPING_Invert, map, 0,0,0); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
-
-
-
 
 #undef __FUNCT__
 #define __FUNCT__ "ISMappingPullback"
@@ -963,9 +901,6 @@ PetscErrorCode  ISMappingPushforward(ISMapping A,ISMapping B, ISMapping *C)
   PetscFunctionReturn(0);
 } 
 
-
-
-EXTERN_C_BEGIN
 #undef  __FUNCT__
 #define __FUNCT__ "ISMappingSetType"
 PetscErrorCode ISMappingSetType(ISMapping map, const ISMappingType maptype) {
@@ -993,9 +928,7 @@ PetscErrorCode ISMappingSetType(ISMapping map, const ISMappingType maptype) {
   ierr = (*ctor)(map); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }/* ISMappingSetType() */
-EXTERN_C_END
 
-EXTERN_C_BEGIN
 #undef  __FUNCT__
 #define __FUNCT__ "ISMappingDestroy"
 PetscErrorCode ISMappingDestroy(ISMapping map) 
@@ -1016,13 +949,7 @@ PetscErrorCode ISMappingDestroy(ISMapping map)
   ierr = PetscHeaderDestroy(map); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }/* ISMappingDestroy() */
-EXTERN_C_END
 
-
-
-
-
-EXTERN_C_BEGIN
 #undef  __FUNCT__
 #define __FUNCT__ "ISMappingCreate"
 PetscErrorCode ISMappingCreate(MPI_Comm comm, ISMapping *_map) 
@@ -1042,5 +969,4 @@ PetscErrorCode ISMappingCreate(MPI_Comm comm, ISMapping *_map)
   *_map = map;
   PetscFunctionReturn(0);
 }/* ISMappingCreate() */
-EXTERN_C_END
 
