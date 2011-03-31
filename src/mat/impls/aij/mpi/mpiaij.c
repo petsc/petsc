@@ -4788,7 +4788,7 @@ PetscErrorCode  MatMerge_SeqsToMPI(MPI_Comm comm,Mat seqmat,PetscInt m,PetscInt 
 
     Level: developer
 
-.seealso: MatGetOwnerShipRange()
+.seealso: MatGetOwnerShipRange(), MatMPIAIJGetLocalMatCondensed()
 
 @*/
 PetscErrorCode  MatMPIAIJGetLocalMat(Mat A,MatReuse scall,Mat *A_loc) 
@@ -4872,7 +4872,7 @@ PetscErrorCode  MatMPIAIJGetLocalMat(Mat A,MatReuse scall,Mat *A_loc)
 #undef __FUNCT__
 #define __FUNCT__ "MatMPIAIJGetLocalMatCondensed"
 /*@C
-     MatMPIAIJGetLocalMatCondensed - Creates a SeqAIJ matrix by taking all its local rows and NON-ZERO columns
+     MatMPIAIJGetLocalMatCondensed - Creates a SeqAIJ matrix from an MPIAIJ matrix by taking all its local rows and NON-ZERO columns
 
     Not Collective
 
@@ -4885,6 +4885,8 @@ PetscErrorCode  MatMPIAIJGetLocalMat(Mat A,MatReuse scall,Mat *A_loc)
 .    A_loc - the local sequential matrix generated
 
     Level: developer
+
+.seealso: MatGetOwnershipRange(), MatMPIAIJGetLocalMat()
 
 @*/
 PetscErrorCode  MatMPIAIJGetLocalMatCondensed(Mat A,MatReuse scall,IS *row,IS *col,Mat *A_loc) 
