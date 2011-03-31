@@ -121,26 +121,42 @@ PetscErrorCode DMCreate_Mesh(DM dm)
   mesh->lj            = PETSC_NULL;
 
   ierr = PetscStrallocpy(VECSTANDARD, &dm->vectype);CHKERRQ(ierr);
-  dm->ops->globaltolocalbegin = DMGlobalToLocalBegin_Mesh;
-  dm->ops->globaltolocalend   = DMGlobalToLocalEnd_Mesh;
-  dm->ops->localtoglobalbegin = DMLocalToGlobalBegin_Mesh;
-  dm->ops->localtoglobalend   = DMLocalToGlobalEnd_Mesh;
+  dm->ops->view               = DMView_Mesh;
+  dm->ops->setfromoptions     = DMSetFromOptions_Mesh;
+  dm->ops->setup              = 0;
   dm->ops->createglobalvector = DMCreateGlobalVector_Mesh;
   dm->ops->createlocalvector  = DMCreateLocalVector_Mesh;
-  dm->ops->getinterpolation   = DMGetInterpolation_Mesh;
+  dm->ops->createlocaltoglobalmapping      = DMCreateLocalToGlobalMapping_Mesh;
+  dm->ops->createlocaltoglobalmappingblock = 0;
+
   dm->ops->getcoloring        = 0;
-  dm->ops->getelements        = 0;
   dm->ops->getmatrix          = DMGetMatrix_Mesh;
+  dm->ops->getinterpolation   = DMGetInterpolation_Mesh;
+  dm->ops->getaggregates      = 0;
+  dm->ops->getinjection       = 0;
+
   dm->ops->refine             = DMRefine_Mesh;
   dm->ops->coarsen            = 0;
   dm->ops->refinehierarchy    = 0;
   dm->ops->coarsenhierarchy   = DMCoarsenHierarchy_Mesh;
-  dm->ops->getinjection       = 0;
-  dm->ops->getaggregates      = 0;
+
+  dm->ops->forminitialguess   = 0;
+  dm->ops->formfunction       = 0;
+
+  dm->ops->globaltolocalbegin = DMGlobalToLocalBegin_Mesh;
+  dm->ops->globaltolocalend   = DMGlobalToLocalEnd_Mesh;
+  dm->ops->localtoglobalbegin = DMLocalToGlobalBegin_Mesh;
+  dm->ops->localtoglobalend   = DMLocalToGlobalEnd_Mesh;
+
+  dm->ops->getelements        = 0;
+  dm->ops->restoreelements    = 0;
+
+  dm->ops->initialguess       = 0;
+  dm->ops->function           = 0;
+  dm->ops->functionj          = 0;
+  dm->ops->jacobian           = 0;
+
   dm->ops->destroy            = DMDestroy_Mesh;
-  dm->ops->view               = DMView_Mesh;
-  dm->ops->setfromoptions     = DMSetFromOptions_Mesh;
-  dm->ops->setup              = 0;
 
   ierr = PetscObjectComposeFunction((PetscObject) dm, "DMConvert_da_mesh_C", "DMConvert_DA_Mesh", (void (*)(void)) DMConvert_DA_Mesh);CHKERRQ(ierr);
   PetscFunctionReturn(0);

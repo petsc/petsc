@@ -313,9 +313,10 @@ PetscErrorCode DMMeshGetCellMatrix(DM dm, MatType mtype, Mat *J)
 PetscErrorCode DMGetMatrix_Mesh(DM dm, const MatType mtype, Mat *J)
 {
   ALE::Obj<PETSC_MESH_TYPE> m;
-  MatType        ttype[256];
-  PetscBool      flag;
-  PetscErrorCode ierr;
+  MatType                ttype[256];
+  ISLocalToGlobalMapping ltog;
+  PetscBool              flag;
+  PetscErrorCode         ierr;
 
   PetscFunctionBegin;
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
@@ -323,7 +324,7 @@ PetscErrorCode DMGetMatrix_Mesh(DM dm, const MatType mtype, Mat *J)
 #endif
   if (!mtype) mtype = MATAIJ;
   ierr = PetscStrcpy((char*)ttype,mtype);CHKERRQ(ierr);
-  ierr = PetscOptionsBegin(((PetscObject) dm)->comm, ((PetscObject) dm)->prefix, "DMMesh options", "Mat");CHKERRQ(ierr); 
+  ierr = PetscOptionsBegin(((PetscObject) dm)->comm, ((PetscObject) dm)->prefix, "DMMesh options", "Mat");CHKERRQ(ierr);
   ierr = PetscOptionsList("-dm_mat_type", "Matrix type", "MatSetType", MatList, mtype, (char *) ttype, 256, &flag);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
@@ -331,6 +332,9 @@ PetscErrorCode DMGetMatrix_Mesh(DM dm, const MatType mtype, Mat *J)
   if (!flag) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONGSTATE, "Must set default section");
   ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
   ierr = DMMeshCreateMatrix(m, m->getRealSection("default"), mtype, J);CHKERRQ(ierr);
+  ierr = DMGetLocalToGlobalMapping(dm, &ltog);CHKERRQ(ierr);
+  ierr = MatSetLocalToGlobalMapping(*J, ltog, ltog);CHKERRQ(ierr);
+  ierr = MatSetDM(*J, dm);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject) *J, "DMMesh", (PetscObject) dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -421,6 +425,39 @@ PetscErrorCode DMCreateLocalVector_Mesh(DM dm, Vec *lvec)
   ierr = VecCreate(PETSC_COMM_SELF, lvec);CHKERRQ(ierr);
   ierr = VecSetSizes(*lvec, size, size);CHKERRQ(ierr);
   ierr = VecSetFromOptions(*lvec);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMCreateLocalToGlobalMapping_Mesh"
+PetscErrorCode DMCreateLocalToGlobalMapping_Mesh(DM dm)
+{
+  ALE::Obj<PETSC_MESH_TYPE> m;
+  ALE::Obj<PETSC_MESH_TYPE::real_section_type> s;
+  SectionReal    section;
+  PetscBool      flag;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMMeshGetSectionReal(dm ,"default", &section);CHKERRQ(ierr);
+  if (!flag) SETERRQ(((PetscObject) dm)->comm,PETSC_ERR_ARG_WRONGSTATE, "Must set default section");
+  ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
+  ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
+  const ALE::Obj<typename Mesh::order_type>& globalOrder = m->getFactory()->getGlobalOrder(m, s->getName(), s);
+  const ALE::Obj<typename Mesh::order_type>& localOrder  = m->getFactory()->getLocalOrder(m, s->getName(), s);
+  PetscInt ltog;
+
+  ierr = PetscMalloc(localOrder->getLocalSize() * sizeof(PetscInt), &ltog);CHKERRQ(ierr);
+  for(PetscInt p = s->getChart()->min(); p <= s->getChart()->max(); ++p) {
+    PetscInt l = localOrder->getIndex(p);
+    PetscInt g = globalOrder->getIndex(p);
+
+    for(c = 0; c < s->getFiberDimension(p); ++c) {
+      ltog[l+c] = g+c;
+    }
+  }
+  ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF, localOrder->getLocalSize(), ltog, PETSC_OWN_POINTER, &dm->ltogmap);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent(dm, dm->ltogmap);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -841,6 +878,44 @@ PetscErrorCode assembleVector(Vec b, DM dm, SectionReal section, PetscInt e, Pet
   }
 #endif
   ierr = PetscLogEventEnd(DMMesh_assembleVector,0,0,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatSetValuesTopology"
+/*@C
+  MatSetValuesTopology - 
+
+  Not Collective
+
+  Input Parameters:
++ mat - the matrix
+. nrow, rowPoints - number of rows and their local Sieve points
+. ncol, colPoints - number of columns and their local Sieve points
+. v -  a logically two-dimensional array of values
+- mode - either ADD_VALUES or INSERT_VALUES, where
+   ADD_VALUES adds values to any existing entries, and
+   INSERT_VALUES replaces existing entries with new values
+
+   Level: intermediate
+
+.seealso: DMMeshCreate()
+@*/
+PetscErrorCode  MatSetValuesTopology(Mat mat, PetscInt nrow, const PetscInt rowPoints[], PetscInt ncol, const PetscInt colPoints[], const PetscScalar v[], InsertMode mode)
+{
+  ALE::Obj<PETSC_MESH_TYPE> mesh;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMMeshGetMesh(dm, mesh);CHKERRQ(ierr);
+  typedef ALE::ISieveVisitor::IndicesVisitor<PETSC_MESH_TYPE::real_section_type,PETSC_MESH_TYPE::order_type,PetscInt> visitor_type;
+  visitor_type iV(*section, *getLocalOrder(mesh, "default", m->getRealSection("default")), (int) pow((double) mesh->getSieve()->getMaxConeSize(), mesh->depth())*mesh->getMaxDof(), mesh->depth() > 1);
+
+  ALE::ISieveTraversal<Sieve>::orientedClosure(*mesh->getSieve(), e, iV);
+  const PetscInt *indices    = iV.getValues();
+  const int       numIndices = iV.getSize();
+
+  ierr = MatSetValuesLocal(A, numIndices, indices, numIndices, indices, array, mode);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
