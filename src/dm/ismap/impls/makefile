@@ -1,8 +1,8 @@
 
 ALL: lib
 
-DIRS     = ao ismap impls f90-mod interface examples
-LOCDIR   = src/dm/
+DIRS     = is
+LOCDIR   = src/dm/ismap/impls
 MANSEC   = DM
 
 include ${PETSC_DIR}/conf/variables

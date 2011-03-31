@@ -65,3 +65,11 @@ Process [2]
  12    8     12    4
  13   11     13    9
  14   14     14   14
+
+Test general API: 
+[0] 2,1,9,7 PetscToApplication 6 3 13 7
+[0] 0,3,4 ApplicationToPetsc 0 1 6
+[1] 2,1,9,7 PetscToApplication 6 3 13 7
+[1] 0,3,4 ApplicationToPetsc 0 1 6
+[2] 2,1,9,7 PetscToApplication 6 3 13 7
+[2] 0,3,4 ApplicationToPetsc 0 1 6

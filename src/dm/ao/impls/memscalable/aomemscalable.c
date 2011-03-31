@@ -175,7 +175,11 @@ PetscErrorCode AOMap_MemoryScalable_private(AO ao,PetscInt n,PetscInt *ia,PetscI
     if (j != rank){
       sindices[start[j]++]  = ia[i];
     } else { /* compute my own map */
-      ia[i] = maploc[ia[i]-owners[rank]];
+      if (ia[i] >= owners[rank] && ia[i] < owners[rank+1] ) {
+        ia[i] = maploc[ia[i]-owners[rank]];
+      } else {
+        ia[i] = -1 ; /* ia[i] is not in the range of 0 and N-1, maps it to -1 */
+      }
     }
   }
 
@@ -315,7 +319,7 @@ PetscErrorCode  AOCreateMemoryScalable_private(MPI_Comm comm,PetscInt napp,const
     lastidx = idx;
     for (; j<size; j++) {
       if (idx >= owners[j] && idx < owners[j+1]) {
-        nprocs[2*j]  += 2; /* num of indices to be sent */
+        nprocs[2*j]  += 2; /* num of indices to be sent - in pairs (ip,ia) */
         nprocs[2*j+1] = 1; /* send to proc[j] */
         owner[i] = j; 
         break;
@@ -332,7 +336,7 @@ PetscErrorCode  AOCreateMemoryScalable_private(MPI_Comm comm,PetscInt napp,const
   /* allocate arrays */
   ierr = PetscObjectGetNewTag((PetscObject)ao,&tag);CHKERRQ(ierr);
   ierr = PetscMalloc2(nreceives*nmax,PetscInt,&rindices,nreceives,MPI_Request,&recv_waits);CHKERRQ(ierr);
-  ierr = PetscMalloc3(n,PetscInt,&sindices,nsends,MPI_Request,&send_waits,nsends,MPI_Status,&send_status);CHKERRQ(ierr);
+  ierr = PetscMalloc3(2*n,PetscInt,&sindices,nsends,MPI_Request,&send_waits,nsends,MPI_Status,&send_status);CHKERRQ(ierr);
   ierr = PetscMalloc(size*sizeof(PetscInt),&start);CHKERRQ(ierr);
  
   /* post receives: */
@@ -457,7 +461,10 @@ PetscErrorCode AOCreate_MemoryScalable(AO ao)
 
   /* get app_loc: petsc->app and petsc_loc: app->petsc */
   n_local = map->n;
-  ierr   = PetscMalloc2(n_local,PetscInt, &aomems->app_loc,n_local,PetscInt,&aomems->petsc_loc);CHKERRQ(ierr);
+  ierr = PetscMalloc2(n_local,PetscInt, &aomems->app_loc,n_local,PetscInt,&aomems->petsc_loc);CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory(ao,2*n_local*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMemzero(aomems->app_loc,n_local*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMemzero(aomems->petsc_loc,n_local*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = ISGetIndices(isapp,&myapp);CHKERRQ(ierr);
 
   ierr = AOCreateMemoryScalable_private(comm,napp,petsc,myapp,ao,aomems->app_loc);CHKERRQ(ierr);

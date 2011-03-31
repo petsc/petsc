@@ -38,6 +38,12 @@ runex1_3:
 	   if (${DIFF} output/ex1_3.out ex1_3.tmp) then true ;  \
 	   else echo "Possible problem with ex1_3, diffs above"; fi ;\
 	   ${RM} -f ex1_3.tmp
+runex1_4:
+	-@${MPIEXEC}  -n 3 ./ex1 -ao_type basic > ex1_3.tmp 2>&1;\
+	   if (${DIFF} output/ex1_3.out ex1_3.tmp) then true ;  \
+	   else echo "Possible problem with ex1_4, diffs above"; fi ;\
+	   ${RM} -f ex1_3.tmp
+
 runex2:
 	-@${MPIEXEC} -n 1  ./ex2 > ex2_1.tmp 2>&1;\
 	   if (${DIFF} output/ex2_1.out ex2_1.tmp) then true; \
