@@ -135,6 +135,17 @@ cdef class KSP(Object):
     def getAppCtx(self):
         return self.get_attr('__appctx__')
 
+    # --- discretization space ---
+
+    def getDM(self):
+        cdef DM dm = DM()
+        CHKERR( KSPGetDM(self.ksp, &dm.dm[0]) )
+        PetscIncref(<PetscObject>dm.dm)
+        return dm
+
+    def setDM(self, DM dm not None):
+        CHKERR( KSPSetDM(self.ksp, dm.dm[0]) )
+
     # --- operators and preconditioner ---
 
     def setOperators(self, Mat A=None, Mat P=None, structure=None):
@@ -440,6 +451,14 @@ cdef class KSP(Object):
             return self.getAppCtx()
         def __set__(self, value):
             self.setAppCtx(value)
+
+    # --- discretization space ---
+
+    property dm:
+        def __get__(self):
+            return self.getDM()
+        def __set__(self, value):
+            self.setDM(value)
 
     # --- vectors ---
 

@@ -125,6 +125,9 @@ cdef extern from * nogil:
     int KSPSetPC(PetscKSP,PetscPC)
     int KSPGetPC(PetscKSP,PetscPC*)
 
+    int KSPGetDM(PetscKSP,PetscDM*)
+    int KSPSetDM(PetscKSP,PetscDM)
+
     int KSPSetUp(PetscKSP)
     int KSPReset(PetscKSP)
     int KSPSetUpOnBlocks(PetscKSP)

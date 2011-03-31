@@ -90,6 +90,17 @@ cdef class SNES(Object):
     def getAppCtx(self):
         return self.get_attr('__appctx__')
 
+    # --- discretization space ---
+
+    def getDM(self):
+        cdef DM dm = DM()
+        CHKERR( SNESGetDM(self.snes, &dm.dm[0]) )
+        PetscIncref(<PetscObject>dm.dm)
+        return dm
+
+    def setDM(self, DM dm not None):
+        CHKERR( SNESSetDM(self.snes, dm.dm[0]) )
+
     # --- user Function/Jacobian routines ---
 
     def setFunction(self, function, Vec f not None, args=None, kargs=None):
@@ -464,6 +475,14 @@ cdef class SNES(Object):
             return self.getAppCtx()
         def __set__(self, value):
             self.setAppCtx(value)
+
+    # --- discretization space ---
+
+    property dm:
+        def __get__(self):
+            return self.getDM()
+        def __set__(self, value):
+            self.setDM(value)
 
     # --- vectors ---
 

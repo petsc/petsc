@@ -72,6 +72,9 @@ cdef extern from * nogil:
     int SNESGetKSP(PetscSNES,PetscKSP*)
     int SNESSetKSP(PetscSNES,PetscKSP)
 
+    int SNESGetDM(PetscSNES,PetscDM*)
+    int SNESSetDM(PetscSNES,PetscDM)
+
     int SNESGetRhs(PetscSNES,PetscVec*)
     int SNESGetSolution(PetscSNES,PetscVec*)
     int SNESGetSolutionUpdate(PetscSNES,PetscVec*)

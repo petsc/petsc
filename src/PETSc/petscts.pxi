@@ -95,6 +95,9 @@ cdef extern from * nogil:
     int TSGetKSP(PetscTS,PetscKSP*)
     int TSGetSNES(PetscTS,PetscSNES*)
 
+    int TSGetDM(PetscTS,PetscDM*)
+    int TSSetDM(PetscTS,PetscDM)
+
     int TSComputeRHSFunction(PetscTS,PetscReal,PetscVec,PetscVec)
     int TSComputeRHSJacobian(PetscTS,PetscReal,PetscVec,PetscMat*,PetscMat*,PetscMatStructure*)
     int TSComputeIFunction(PetscTS,PetscReal,PetscVec,PetscVec,PetscVec,)

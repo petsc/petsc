@@ -164,6 +164,17 @@ cdef class PC(Object):
     def applySymmetricRight(self, Vec x not None, Vec y not None):
         CHKERR( PCApplySymmetricRight(self.pc, x.vec, y.vec) )
 
+    # --- discretization space ---
+
+    def getDM(self):
+        cdef DM dm = DM()
+        CHKERR( PCGetDM(self.pc, &dm.dm[0]) )
+        PetscIncref(<PetscObject>dm.dm)
+        return dm
+
+    def setDM(self, DM dm not None):
+        CHKERR( PCSetDM(self.pc, dm.dm[0]) )
+
     # --- Python ---
 
     def createPython(self, context=None, comm=None):
