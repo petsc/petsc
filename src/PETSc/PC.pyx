@@ -167,8 +167,10 @@ cdef class PC(Object):
     # --- discretization space ---
 
     def getDM(self):
-        cdef DM dm = DM()
-        CHKERR( PCGetDM(self.pc, &dm.dm[0]) )
+        cdef PetscDM newdm = NULL
+        CHKERR( PCGetDM(self.pc, &newdm) )
+        cdef DM dm = subtype_DM(newdm)()
+        dm.dm[0] = newdm
         PetscIncref(<PetscObject>dm.dm)
         return dm
 

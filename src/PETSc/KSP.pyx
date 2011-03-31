@@ -138,8 +138,10 @@ cdef class KSP(Object):
     # --- discretization space ---
 
     def getDM(self):
-        cdef DM dm = DM()
-        CHKERR( KSPGetDM(self.ksp, &dm.dm[0]) )
+        cdef PetscDM newdm = NULL
+        CHKERR( KSPGetDM(self.ksp, &newdm) )
+        cdef DM dm = subtype_DM(newdm)()
+        dm.dm[0] = newdm
         PetscIncref(<PetscObject>dm.dm)
         return dm
 

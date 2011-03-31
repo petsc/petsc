@@ -93,8 +93,10 @@ cdef class SNES(Object):
     # --- discretization space ---
 
     def getDM(self):
-        cdef DM dm = DM()
-        CHKERR( SNESGetDM(self.snes, &dm.dm[0]) )
+        cdef PetscDM newdm = NULL
+        CHKERR( SNESGetDM(self.snes, &newdm) )
+        cdef DM dm = subtype_DM(newdm)()
+        dm.dm[0] = newdm
         PetscIncref(<PetscObject>dm.dm)
         return dm
 
