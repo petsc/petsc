@@ -56,7 +56,7 @@ static PetscErrorCode PetscSortIntWithPermutation_Private(const PetscInt v[],Pet
 
    Concepts: sorting^ints with permutation
 
-.seealso: PetscSortInt(), PetscSortRealWithPermutation()
+.seealso: PetscSortInt(), PetscSortRealWithPermutation(), PetscSortIntWithArray()
  @*/
 PetscErrorCode  PetscSortIntWithPermutation(PetscInt n,const PetscInt i[],PetscInt idx[])
 {
