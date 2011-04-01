@@ -72,20 +72,27 @@ extern PetscErrorCode TaoSolverSetObjectiveAndGradientRoutine(TaoSolver, PetscEr
 extern PetscErrorCode TaoSolverSetHessianMat(TaoSolver, Mat, Mat);
 extern PetscErrorCode TaoSolverSetHessianRoutine(TaoSolver,Mat,Mat, PetscErrorCode(*)(TaoSolver,Vec, Mat*, Mat*, MatStructure*, void*), void*);
 extern PetscErrorCode TaoSolverSetSeparableObjectiveRoutine(TaoSolver, Vec, PetscErrorCode(*)(TaoSolver, Vec, Vec, void*), void*);
+extern PetscErrorCode TaoSolverSetConstraintsRoutine(TaoSolver, Vec, PetscErrorCode(*)(TaoSolver, Vec, Vec, void*), void*);
 extern PetscErrorCode TaoSolverSetJacobianRoutine(TaoSolver,Mat,Mat, PetscErrorCode(*)(TaoSolver,Vec, Mat*, Mat*, MatStructure*, void*), void*);
+extern PetscErrorCode TaoSolverSetJacobianStateRoutine(TaoSolver,Mat,Mat, PetscErrorCode(*)(TaoSolver,Vec, Mat*, Mat*, MatStructure*, void*), void*);
+extern PetscErrorCode TaoSolverSetJacobianDesignRoutine(TaoSolver,Mat,Mat, PetscErrorCode(*)(TaoSolver,Vec, Mat*, Mat*, MatStructure*, void*), void*);
+
 
 extern PetscErrorCode TaoSolverComputeObjective(TaoSolver, Vec, PetscReal*);
 extern PetscErrorCode TaoSolverComputeSeparableObjective(TaoSolver, Vec, Vec);
 extern PetscErrorCode TaoSolverComputeGradient(TaoSolver, Vec, Vec);
 extern PetscErrorCode TaoSolverComputeObjectiveAndGradient(TaoSolver, Vec, PetscReal*, Vec);
+extern PetscErrorCode TaoSolverComputeConstraints(TaoSolver, Vec, Vec);
 extern PetscErrorCode TaoSolverDefaultComputeGradient(TaoSolver, Vec, Vec, void*);
 
 extern PetscErrorCode TaoSolverComputeHessian(TaoSolver, Vec, Mat*, Mat*, MatStructure*);
+extern PetscErrorCode TaoSolverComputeJacobian(TaoSolver, Vec, Mat*, Mat*, MatStructure*);
+extern PetscErrorCode TaoSolverComputeJacobianState(TaoSolver, Vec, Mat*, Mat*, MatStructure*);
+extern PetscErrorCode TaoSolverComputeJacobianDesign(TaoSolver, Vec, Mat*, Mat*, MatStructure*);
 
 extern PetscErrorCode TaoSolverDefaultComputeHessian(TaoSolver, Vec, Mat*, Mat*, MatStructure*, void*);
 
 extern PetscErrorCode TaoSolverDefaultComputeHessianColor(TaoSolver, Vec, Mat*, Mat*, MatStructure*, void*);
-
 extern PetscErrorCode TaoSolverComputeDualVariables(TaoSolver, Vec, Vec);
 extern PetscErrorCode TaoSolverSetVariableBounds(TaoSolver, Vec, Vec);
 extern PetscErrorCode TaoSolverGetVariableBounds(TaoSolver, Vec*, Vec*);
@@ -106,6 +113,7 @@ extern PetscErrorCode TaoSolverDefaultConvergenceTest(TaoSolver,void*);
 extern PetscErrorCode TaoSolverSetMonitor(TaoSolver, PetscErrorCode (*)(TaoSolver,void*),void *);
 extern PetscErrorCode TaoSolverDefaultMonitor(TaoSolver, void*);
 extern PetscErrorCode TaoSolverDefaultSMonitor(TaoSolver, void*);
+extern PetscErrorCode TaoSolverRSQNSetStateIS(TaoSolver, IS);
 PetscErrorCode TaoSolverMonitor(TaoSolver, PetscInt, PetscReal, PetscReal, PetscReal, PetscReal, TaoSolverTerminationReason*); 
 
 

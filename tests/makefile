@@ -113,6 +113,9 @@ test_chwirut1f: test_chwirut1f.o tao_chkopts
 	-${FLINKER} -o  test_chwirut1f test_chwirut1f.o ${TAO_LIB} ${PETSC_LIB}
 	${RM} test_chwirut1f.o
 
+test_toy: test_toy.o tao_chkopts
+	-${CLINKER} -o test_toy test_toy.o ${TAO_LIB} ${PETSC_LIB}
+	${RM} test_toy.o
 
 runtest_link1: 
 	-@${MPIEXEC} -np 1 ./test_link1 > test_link1_1.tmp 2>&1; \

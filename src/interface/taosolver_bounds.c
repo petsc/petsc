@@ -136,3 +136,86 @@ PetscErrorCode TaoSolverComputeVariableBounds(TaoSolver tao)
     PetscFunctionReturn(0);
 }
 
+
+#undef __FUNCT__
+#define __FUNCT__ "TaoSolverComputeConstraints"
+/*@C
+   TaoSolverComputeConstraints - Compute the variable bounds using the
+   routine set by TaoSolverSetConstraintsRoutine(). 
+
+   Collective on TaoSolver
+
+   Input Parameters:
+.  tao - the TaoSolver context
+
+   Level: developer
+
+.seealso: TaoSolverSetConstraintsRoutine(), TaoSolverComputeJacobian()
+@*/
+
+PetscErrorCode TaoSolverComputeConstraints(TaoSolver tao, Vec X, Vec C)
+{
+    PetscErrorCode ierr;
+
+    PetscFunctionBegin;
+    PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
+    PetscValidHeaderSpecific(X,VEC_CLASSID,2);
+    PetscValidHeaderSpecific(C,VEC_CLASSID,2);
+    PetscCheckSameComm(tao,1,X,2);
+    PetscCheckSameComm(tao,1,C,3);
+
+    if (tao->ops->computeconstraints == PETSC_NULL) {
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"TaoSolverSetConstraintsRoutine() has not been called");
+    }
+    if (tao->solution == PETSC_NULL) {
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"TaoSolverSetInitialVector must be called before TaoSolverComputeConstraints");
+    }
+    ierr = PetscLogEventBegin(TaoSolver_ConstraintsEval,tao,X,C,PETSC_NULL); CHKERRQ(ierr);
+    PetscStackPush("TaoSolver constraints evaluation routine");
+    CHKMEMQ;
+    ierr = (*tao->ops->computeconstraints)(tao,X,C,tao->user_conP);
+    CHKERRQ(ierr);
+    CHKMEMQ;
+    PetscStackPop;
+    ierr = PetscLogEventEnd(TaoSolver_ConstraintsEval,tao,X,C,PETSC_NULL); CHKERRQ(ierr);
+    tao->nconstraints++;
+    PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "TaoSolverSetConstraintsRoutine"
+/*@C
+  TaoSolverSetConstraintsRoutine - Sets a function to be used to compute constraints.  TAO only handles constraints under certain conditions, see manual for details
+
+  Collective on TaoSolver
+
+  Input Parameters:
++ tao - the TaoSolver context
+. c   - A vector that will be used to store constraint evaluation 
+. func - the bounds computation routine
+- ctx - [optional] user-defined context for private data for the constraints computation (may be PETSC_NULL)
+ 
+  Calling sequence of func:
+$      func (TaoSolver tao, Vec x, Vec c);
+
++ tao - the TaoSolver
+. x   - point to evaluate constraints
+. c   - vector constraints evaluated at x
+- ctx - the (optional) user-defined function context
+
+  Level: beginner
+
+.seealso: TaoSolverSetObjectiveRoutine(), TaoSolverSetHessianRoutine() TaoSolverSetObjectiveAndGradientRoutine(), TaoSolverSetVariableBounds()
+
+@*/
+PetscErrorCode TaoSolverSetConstraintsRoutine(TaoSolver tao, Vec c, PetscErrorCode (*func)(TaoSolver, Vec, Vec, void*), void *ctx)
+{
+    PetscFunctionBegin;
+    PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
+    tao->constraints = c;
+    tao->user_conP = ctx;
+    tao->ops->computeconstraints = func;
+    PetscFunctionReturn(0);
+}
+

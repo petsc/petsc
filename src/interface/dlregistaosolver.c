@@ -39,6 +39,7 @@ PetscErrorCode TaoSolverInitializePackage(const char path[])
   ierr = PetscLogEventRegister("TaoSolverObjectiveEval",TAOSOLVER_CLASSID,&TaoSolver_ObjectiveEval); CHKERRQ(ierr);
   ierr = PetscLogEventRegister("TaoSolverGradientEval",TAOSOLVER_CLASSID,&TaoSolver_GradientEval); CHKERRQ(ierr);
   ierr = PetscLogEventRegister("TaoSolverHessianEval",TAOSOLVER_CLASSID,&TaoSolver_HessianEval); CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("TaoSolverConstraintsEval",TAOSOLVER_CLASSID,&TaoSolver_ConstraintsEval); CHKERRQ(ierr);
   ierr = PetscLogEventRegister("TaoSolverJacobianEval",TAOSOLVER_CLASSID,&TaoSolver_JacobianEval); CHKERRQ(ierr);
 
 

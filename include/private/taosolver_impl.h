@@ -13,7 +13,10 @@ struct _TaoSolverOps {
     PetscErrorCode (*computegradient)(TaoSolver, Vec, Vec, void*);
     PetscErrorCode (*computehessian)(TaoSolver, Vec, Mat*, Mat*, MatStructure*, void*);
     PetscErrorCode (*computeseparableobjective)(TaoSolver, Vec, Vec, void*);
+    PetscErrorCode (*computeconstraints)(TaoSolver, Vec, Vec, void*);
     PetscErrorCode (*computejacobian)(TaoSolver, Vec, Mat*, Mat*, MatStructure*, void*);
+    PetscErrorCode (*computejacobianstate)(TaoSolver, Vec, Mat*, Mat*, MatStructure*, void*);
+    PetscErrorCode (*computejacobiandesign)(TaoSolver, Vec, Mat*, Mat*, MatStructure*, void*);
     PetscErrorCode (*computebounds)(TaoSolver, Vec, Vec, void*);
 
     PetscErrorCode (*convergencetest)(TaoSolver,void*);
@@ -36,7 +39,10 @@ struct _p_TaoSolver {
     void *user_gradP;
     void *user_hessP;
     void *user_sepobjP;
+    void *user_conP;
     void *user_jacP;
+    void *user_jac_stateP;
+    void *user_jac_designP;
     void *user_boundsP;
 
     PetscErrorCode (*monitor[MAXTAOMONITORS])(TaoSolver,void*);
@@ -57,8 +63,13 @@ struct _p_TaoSolver {
     Mat hessian;
     Mat hessian_pre;
     Vec sep_objective;
+    Vec constraints;
     Mat jacobian;
     Mat jacobian_pre;
+    Mat jacobian_state;
+    Mat jacobian_design;
+    Mat jacobian_state_pre;
+    Mat jacobian_design_pre;
     PetscReal step;
     PetscReal residual;
     PetscReal gnorm0;
@@ -77,6 +88,9 @@ struct _p_TaoSolver {
     PetscInt  niter;
     PetscInt  nconstraints;
     PetscInt  njac;
+    PetscInt  njac_state;
+    PetscInt  njac_design;
+ 
 
     
     TaoLineSearch linesearch;
@@ -98,7 +112,7 @@ struct _p_TaoSolver {
     PetscBool viewtao;
     PetscBool viewsolution;
     PetscBool viewgradient;
-    PetscBool viewconstraint;
+    PetscBool viewconstraints;
     PetscBool viewhessian;
     PetscBool viewjacobian;
 
@@ -108,13 +122,15 @@ struct _p_TaoSolver {
     PetscInt *conv_hist_fgeval; /* Number of func/grad evals at each iteration */
     PetscInt *conv_hist_geval; /* Number of grad evals at each iteration */
     PetscInt *conv_hist_heval; /* Number of hess evals at each iteration */
+    PetscInt *conv_hist_ceval;
+    PetscInt *conv_hist_jeval;
     PetscInt conv_hist_len;
     PetscBool conv_hist_reset;
 
     
 };
 
-extern PetscLogEvent TaoSolver_Solve, TaoSolver_ObjectiveEval, TaoSolver_ObjGradientEval, TaoSolver_GradientEval, TaoSolver_HessianEval, TaoSolver_JacobianEval;
+extern PetscLogEvent TaoSolver_Solve, TaoSolver_ObjectiveEval, TaoSolver_ObjGradientEval, TaoSolver_GradientEval, TaoSolver_HessianEval, TaoSolver_ConstraintsEval, TaoSolver_JacobianEval;
     
 
 

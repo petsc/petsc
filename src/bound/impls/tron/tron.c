@@ -351,7 +351,7 @@ PetscErrorCode TronSetupKSP(TaoSolver tao, TAO_TRON*tron)
   PetscBool flg;
   KSP newksp;
   PC pc;
-
+  IS fullis;
   PetscFunctionBegin;
 
   if (tron->subset_type == TRON_SUBSET_SUBMAT) {
@@ -365,8 +365,8 @@ PetscErrorCode TronSetupKSP(TaoSolver tao, TAO_TRON*tron)
     }
     ierr = VecCreate(((PetscObject)tao)->comm,&tron->R); CHKERRQ(ierr);
     ierr = VecCreate(((PetscObject)tao)->comm,&tron->DXFree); CHKERRQ(ierr);
-    ierr = VecSetSizes(tron->R, tron->n_free, PETSC_DECIDE); CHKERRQ(ierr);
-    ierr = VecSetSizes(tron->DXFree, tron->n_free, PETSC_DECIDE); CHKERRQ(ierr);
+    ierr = VecSetSizes(tron->R, PETSC_DECIDE, tron->n_free); CHKERRQ(ierr);
+    ierr = VecSetSizes(tron->DXFree, PETSC_DECIDE, tron->n_free); CHKERRQ(ierr);
     ierr = VecSetType(tron->R,((PetscObject)(tao->solution))->type_name); CHKERRQ(ierr);
     ierr = VecSetType(tron->DXFree,((PetscObject)(tao->solution))->type_name); CHKERRQ(ierr);
     ierr = VecSetFromOptions(tron->R); CHKERRQ(ierr);
@@ -376,8 +376,13 @@ PetscErrorCode TronSetupKSP(TaoSolver tao, TAO_TRON*tron)
       ierr = VecScatterDestroy(tron->scatter); CHKERRQ(ierr);
       tron->scatter = PETSC_NULL;
     }
-      
-    ierr = VecScatterCreate(tao->gradient,tron->Free_Local,tron->R,PETSC_NULL,&tron->scatter); CHKERRQ(ierr);
+    ierr = VecGetOwnershipRange(tron->R,&low,&high); CHKERRQ(ierr);
+    ierr = ISCreateStride(((PetscObject)tron->R)->comm,high-low,low,1,&fullis); CHKERRQ(ierr);
+
+    ierr = VecScatterCreate(tao->gradient,tron->Free_Local,tron->R,fullis,&tron->scatter); CHKERRQ(ierr);
+
+    ierr = ISDestroy(fullis); CHKERRQ(ierr);
+
     ierr = VecScatterBegin(tron->scatter, tao->gradient, tron->R, INSERT_VALUES, SCATTER_FORWARD); CHKERRQ(ierr);
     ierr = VecScatterEnd(tron->scatter, tao->gradient, tron->R, INSERT_VALUES, SCATTER_FORWARD); CHKERRQ(ierr);
     ierr = VecScale(tron->R, -1.0); CHKERRQ(ierr);

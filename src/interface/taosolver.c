@@ -6,7 +6,7 @@ PetscBool TaoSolverRegisterAllCalled = PETSC_FALSE;
 PetscFList TaoSolverList = PETSC_NULL;
 
 PetscClassId TAOSOLVER_CLASSID;
-PetscLogEvent TaoSolver_Solve, TaoSolver_ObjectiveEval, TaoSolver_GradientEval, TaoSolver_ObjGradientEval, TaoSolver_HessianEval, TaoSolver_JacobianEval;
+PetscLogEvent TaoSolver_Solve, TaoSolver_ObjectiveEval, TaoSolver_GradientEval, TaoSolver_ObjGradientEval, TaoSolver_HessianEval, TaoSolver_ConstraintsEval, TaoSolver_JacobianEval;
 
 
 #undef __FUNCT__
@@ -64,6 +64,7 @@ PetscErrorCode TaoSolverCreate(MPI_Comm comm, TaoSolver *newtao)
     tao->ops->computegradient=0;
     tao->ops->computehessian=0;
     tao->ops->computeseparableobjective=0;
+    tao->ops->computeconstraints=0;
     tao->ops->computejacobian=0;
     tao->ops->convergencetest=TaoSolverDefaultConvergenceTest;
     tao->ops->convergencedestroy=0;
@@ -76,7 +77,13 @@ PetscErrorCode TaoSolverCreate(MPI_Comm comm, TaoSolver *newtao)
 
     tao->solution=PETSC_NULL;
     tao->gradient=PETSC_NULL;
+    tao->sep_objective = PETSC_NULL;
+    tao->constraints=PETSC_NULL;
     tao->stepdirection=PETSC_NULL;
+    tao->XL = PETSC_NULL;
+    tao->XU = PETSC_NULL;
+    tao->hessian = PETSC_NULL;
+    tao->jacobian = PETSC_NULL;
 
     tao->max_its     = 10000;
     tao->max_funcs   = 10000;
@@ -98,13 +105,15 @@ PetscErrorCode TaoSolverCreate(MPI_Comm comm, TaoSolver *newtao)
     tao->conv_hist_fgeval = PETSC_NULL;
     tao->conv_hist_geval = PETSC_NULL;
     tao->conv_hist_heval = PETSC_NULL;
+    tao->conv_hist_ceval = PETSC_NULL;
+    tao->conv_hist_jeval = PETSC_NULL;
 
     tao->numbermonitors=0;
     tao->viewsolution=PETSC_FALSE;
     tao->viewhessian=PETSC_FALSE;
     tao->viewgradient=PETSC_FALSE;
     tao->viewjacobian=PETSC_FALSE;
-    tao->viewconstraint = PETSC_FALSE;
+    tao->viewconstraints = PETSC_FALSE;
     tao->viewtao = PETSC_FALSE;
     
     ierr = TaoSolverResetStatistics(tao); CHKERRQ(ierr);
