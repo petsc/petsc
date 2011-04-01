@@ -66,9 +66,16 @@ def check(ui, repo, *pats, **opts):
       if not builder.regressionRequirements[paramKey].issubset(packageNames):
         raise RuntimeError('This test requires packages: %s' % builder.regressionRequirements[paramKey])
     maker.link(executable, objects, maker.configInfo.languages.clanguage)
-    if maker.runTest(exampleDir, executable, 1, **builder.regressionParameters.get(paramKey, {})):
-      print 'TEST FAILED (check make.log for details)'
-      return 1
+    params = builder.regressionParameters.get(paramKey, {})
+    if isinstance(params, list):
+      for testnum, param in enumerate(params):
+        if maker.runTest(exampleDir, executable, testnum, **param):
+          print 'TEST FAILED (check make.log for details)'
+          return 1
+    else:
+      if maker.runTest(exampleDir, executable, 1, **params):
+        print 'TEST FAILED (check make.log for details)'
+        return 1
     if os.path.isdir(objDir): shutil.rmtree(objDir)
   print 'All tests pass'
   maker.cleanup()
