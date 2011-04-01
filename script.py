@@ -257,33 +257,6 @@ class Script(logger.Logger):
     return (output, error, status)
   executeShellCommand = staticmethod(executeShellCommand)
 
-  def getDebugger(self, className = 'PETSc.DebugI.GDB.Debugger'):
-    if not hasattr(self, '_debugger'):
-      try:
-        import SIDL.Loader
-      except ImportError, e:
-        self.logPrint('Cannot locate a functional SIDL loader: '+str(e))
-        return
-      try:
-        import PETSc.Debug.Debugger
-      except ImportError, e:
-        self.logPrint('Could not load Petsc debugger module: '+str(e))
-        return
-      debugger = PETSc.Debug.Debugger.Debugger(SIDL.Loader.createClass(className))
-      if not debugger:
-        self.logPrint('Could not load debugger: '+cls)
-        return
-      debugger.setProgram('/usr/local/python/bin/python')
-      debugger.setUseXterm(1)
-      debugger.setDebugger('/usr/local/gdb/bin/gdb')
-      debugger.attach()
-      self._debugger = debugger
-    return self._debugger
-  def setDebugger(self, debugger):
-    self._debugger = debugger
-    return
-  debugger = property(getDebugger, setDebugger, doc = 'The debugger')
-
   def loadConfigure(self, argDB = None):
     if argDB is None:
       argDB = self.argDB
