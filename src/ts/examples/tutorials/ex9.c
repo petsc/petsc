@@ -1303,7 +1303,7 @@ int main(int argc,char *argv[])
     ierr = PetscOptionsInt("-initial","Initial condition (depends on the physics)","",ctx.initial,&ctx.initial,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-exact","Compare errors with exact solution","",ctx.exact,&ctx.exact,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-cfl","CFL number to time step at","",ctx.cfl,&ctx.cfl,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsEnum("-bc_type","Boundary condition","",FVBCTypes,ctx.bctype,(PetscEnum*)&ctx.bctype,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsEnum("-bc_type","Boundary condition","",FVBCTypes,(PetscEnum)ctx.bctype,(PetscEnum*)&ctx.bctype,PETSC_NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
