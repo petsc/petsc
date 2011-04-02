@@ -8,7 +8,7 @@ import os
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.download  = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/UMFPACK-5.4.tar.gz']
+    self.download  = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/UMFPACK-5.5.1.tar.gz']
     self.liblist   = [['libumfpack.a','libamd.a']]
     self.functions = ['umfpack_di_report_info'] 
     self.includes  = ['umfpack.h']
@@ -32,7 +32,7 @@ class Configure(config.package.Package):
       ulong_max = 'ULONG_MAX'
     else:
       ulong_max = '9223372036854775807LL'
-    g.write('CFLAGS       = '+self.setCompilers.getCompilerFlags()+''' -DUF_long="long long" -DUF_long_max=''' + ulong_max + ''' -DUF_long_id='"%lld"' \n''')
+    g.write('CFLAGS       = '+self.setCompilers.getCompilerFlags()+''' -DUF_long="long long" -DUF_long_max=''' + ulong_max + ''' -DUF_long_id='"%lld"' -DNCHOLMOD \n''')
     self.setCompilers.popLanguage()
     g.write('RANLIB       = '+self.setCompilers.RANLIB+'\n')
     g.write('AR = ar cr\n')
