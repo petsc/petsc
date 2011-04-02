@@ -80,24 +80,15 @@ PetscErrorCode  DMCompositeGetContext(DM dm,void **ctx)
   PetscFunctionReturn(0);
 }
 
-
-
-extern PetscErrorCode DMDestroy_Private(DM,PetscBool *);
-
 #undef __FUNCT__  
 #define __FUNCT__ "DMDestroy_Composite"
 PetscErrorCode  DMDestroy_Composite(DM dm)
 {
   PetscErrorCode         ierr;
   struct DMCompositeLink *next, *prev;
-  PetscBool              done;
   DM_Composite           *com = (DM_Composite *)dm->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  ierr = DMDestroy_Private((DM)dm,&done);CHKERRQ(ierr);
-  if (!done) PetscFunctionReturn(0);
-
   next = com->next;
   while (next) {
     prev = next;
@@ -108,8 +99,6 @@ PetscErrorCode  DMDestroy_Composite(DM dm)
     ierr = PetscFree(prev->grstarts);CHKERRQ(ierr);
     ierr = PetscFree(prev);CHKERRQ(ierr);
   }
-  ierr = PetscFree(com);CHKERRQ(ierr);
-  ierr = PetscHeaderDestroy(dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -154,8 +154,7 @@ static PetscErrorCode DMGetMatrix_Composite_AIJ(DM dm,const MatType mtype,Mat *J
   ierr = MatSeqAIJSetPreallocation(*J,0,dnz);CHKERRQ(ierr);
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetBool(((PetscObject)dm)->prefix,"-dmcomposite_preallocate_only",&prealloc_only,PETSC_NULL);CHKERRQ(ierr);
-  if (prealloc_only) PetscFunctionReturn(0);
+  if (dm->prealloc_only) PetscFunctionReturn(0);
 
   next = com->next;
   while (next) {

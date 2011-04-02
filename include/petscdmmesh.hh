@@ -11,7 +11,7 @@ PetscErrorCode DMMeshView_Sieve(const ALE::Obj<PETSC_MESH_TYPE>& mesh, PetscView
 #undef __FUNCT__
 #define __FUNCT__ "DMMeshCreateMatrix"
 template<typename Mesh, typename Section>
-PetscErrorCode  DMMeshCreateMatrix(const Obj<Mesh>& mesh, const Obj<Section>& section, const MatType mtype, Mat *J, int bs = -1)
+PetscErrorCode  DMMeshCreateMatrix(const Obj<Mesh>& mesh, const Obj<Section>& section, const MatType mtype, Mat *J, int bs = -1, bool fillMatrix = false)
 {
   const ALE::Obj<typename Mesh::order_type>& order = mesh->getFactory()->getGlobalOrder(mesh, section->getName(), section);
   int            localSize  = order->getLocalSize();
@@ -54,7 +54,7 @@ PetscErrorCode  DMMeshCreateMatrix(const Obj<Mesh>& mesh, const Obj<Section>& se
       }
     }
     ierr = PetscMalloc2(localSize/bs, PetscInt, &dnz, localSize/bs, PetscInt, &onz);CHKERRQ(ierr);
-    ierr = preallocateOperatorNew(mesh, bs, section->getAtlas(), order, dnz, onz, isSymmetric, *J);CHKERRQ(ierr);
+    ierr = preallocateOperatorNew(mesh, bs, section->getAtlas(), order, dnz, onz, isSymmetric, *J, fillMatrix);CHKERRQ(ierr);
     ierr = PetscFree2(dnz, onz);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -887,7 +887,7 @@ PetscErrorCode preallocateOperator(const ALE::Obj<ALE::Mesh<PetscInt,PetscScalar
 #undef __FUNCT__
 #define __FUNCT__ "preallocateOperatorNew"
 template<typename Mesh, typename Atlas>
-PetscErrorCode preallocateOperatorNew(const ALE::Obj<Mesh>& mesh, const int bs, const ALE::Obj<Atlas>& atlas, const ALE::Obj<typename Mesh::order_type>& globalOrder, PetscInt dnz[], PetscInt onz[], PetscBool  isSymmetric, Mat A)
+PetscErrorCode preallocateOperatorNew(const ALE::Obj<Mesh>& mesh, const int bs, const ALE::Obj<Atlas>& atlas, const ALE::Obj<typename Mesh::order_type>& globalOrder, PetscInt dnz[], PetscInt onz[], PetscBool  isSymmetric, Mat A, bool fillMatrix = false)
 {
   typedef ALE::Mesh<PetscInt,PetscScalar> FlexMesh;
   typedef typename Mesh::sieve_type        sieve_type;
@@ -1025,9 +1025,9 @@ PetscErrorCode preallocateOperatorNew(const ALE::Obj<Mesh>& mesh, const int bs, 
 
     if (globalOrder->isLocal(point)) {
       const ALE::Obj<typename FlexMesh::sieve_type::traits::coneSequence>& adj   = adjGraph->cone(point);
-      const typename Mesh::order_type::value_type&                          rIdx  = globalOrder->restrictPoint(point)[0];
-      const int                                                             row   = rIdx.prefix;
-      const int                                                             rSize = rIdx.index/bs;
+      const typename Mesh::order_type::value_type&                         rIdx  = globalOrder->restrictPoint(point)[0];
+      const int                                                            row   = rIdx.prefix;
+      const int                                                            rSize = rIdx.index/bs;
 
       if ((mesh->debug() > 1) && ((bs == 1) || (rIdx.index%bs == 0))) std::cout << "["<<adjGraph->commRank()<<"]: row "<<row<<": size " << rIdx.index << " bs "<<bs<<std::endl;
       if (rSize == 0) continue;
@@ -1060,6 +1060,53 @@ PetscErrorCode preallocateOperatorNew(const ALE::Obj<Mesh>& mesh, const int bs, 
   ierr = MatSeqSBAIJSetPreallocation(A, bs, 0, dnz);CHKERRQ(ierr);
   ierr = MatMPISBAIJSetPreallocation(A, bs, 0, dnz, 0, onz);CHKERRQ(ierr);
   ierr = MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
+  // Fill matrix with zeros
+  if (fillMatrix) {
+    int maxRowLen = 0;
+    for(int r = 0; r < numLocalRows/bs; ++r) {
+      maxRowLen = std::max(maxRowLen, dnz[r] + onz[r]);
+    }
+    PetscInt    *cols   = new PetscInt[maxRowLen];
+    PetscScalar *values = new PetscScalar[maxRowLen];
+
+    ierr = PetscMemzero((void *) values, maxRowLen * sizeof(PetscScalar));CHKERRQ(ierr);
+    for(typename Atlas::chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+      const typename Atlas::point_type& point  = *c_iter;
+      int                               rowLen = 0;
+
+      if (globalOrder->isLocal(point)) {
+        const ALE::Obj<typename FlexMesh::sieve_type::traits::coneSequence>& adj   = adjGraph->cone(point);
+        const typename Mesh::order_type::value_type&                         rIdx  = globalOrder->restrictPoint(point)[0];
+        const int                                                            row   = rIdx.prefix;
+        const int                                                            rSize = rIdx.index/bs;
+
+        if (rSize == 0) continue;
+        for(typename FlexMesh::sieve_type::traits::coneSequence::iterator v_iter = adj->begin(); v_iter != adj->end(); ++v_iter) {
+          const typename Mesh::point_type&             neighbor = *v_iter;
+          const typename Mesh::order_type::value_type& cIdx     = globalOrder->restrictPoint(neighbor)[0];
+          const int                                    col      = cIdx.prefix>=0 ? cIdx.prefix : -(cIdx.prefix+1);
+          const int&                                   cSize    = cIdx.index/bs;
+
+          if (cSize > 0) {
+            if (isSymmetric && (col < row)) {
+              continue;
+            }
+            cols[rowLen++] = col;
+          }
+        }
+        for(int r = 0; r < rSize; ++r) {
+          PetscInt fullRow = row + r;
+
+          assert(rowLen == dnz[(row - firstRow)/bs+r]+onz[(row - firstRow)/bs+r]);
+          ierr = MatSetValues(A, 1, &fullRow, rowLen, cols, values, INSERT_VALUES);CHKERRQ(ierr);
+        }
+      }
+    }
+    delete [] cols;
+    delete [] values;
+    ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

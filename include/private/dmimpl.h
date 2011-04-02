@@ -57,6 +57,7 @@ struct _p_DM {
   VecType       vectype;  /* type of vector created with DMCreateLocalVector() and DMCreateGlobalVector() */
   PetscInt      bs;
   ISLocalToGlobalMapping ltogmap,ltogmapb;
+  PetscBool     prealloc_only; /* Flag indicating the DMGetMatrix() should only preallocate, not fill the matrix */
   void          *data;
 };
 

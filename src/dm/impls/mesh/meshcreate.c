@@ -34,6 +34,7 @@ extern PetscErrorCode DMLocalToGlobalBegin_Mesh(DM dm, Vec l, InsertMode mode, V
 extern PetscErrorCode DMLocalToGlobalEnd_Mesh(DM dm, Vec l, InsertMode mode, Vec g);
 extern PetscErrorCode DMCreateGlobalVector_Mesh(DM dm, Vec *gvec);
 extern PetscErrorCode DMCreateLocalVector_Mesh(DM dm, Vec *lvec);
+extern PetscErrorCode DMCreateLocalToGlobalMapping_Mesh(DM dm);
 extern PetscErrorCode DMGetInterpolation_Mesh(DM dmCoarse, DM dmFine, Mat *interpolation, Vec *scaling);
 extern PetscErrorCode DMGetMatrix_Mesh(DM dm, const MatType mtype, Mat *J);
 extern PetscErrorCode DMRefine_Mesh(DM dm, MPI_Comm comm, DM *dmRefined);
@@ -89,10 +90,10 @@ PetscErrorCode DMConvert_DA_Mesh(DM dm, const DMType newtype, DM *dmNew)
       }
     }
     m->stratify();
-    delete [] vertices;
     /* Only do this if its not periodic */
     m->setValue(markers, vertices[0], 1);
     m->setValue(markers, vertices[M-1], 2);
+    delete [] vertices;
   }
   ALE::SieveBuilder<FlexMesh>::buildCoordinates(m, dim, coords);
   mesh->setSieve(sieve);

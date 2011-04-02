@@ -44,9 +44,37 @@ regressionParameters = {'src/vec/vec/examples/tests/ex1_2':    {'numProcs': 2},
                         'src/snes/examples/tutorials/ex5f90t': {'numProcs': 4, 'args': '-snes_mf -da_processors_x 4 -da_processors_y 1 -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always'},
 #                        'src/snes/examples/tutorials/ex10':    {'numProcs': 3, 'args': '-da_grid_x 20 -snes_converged_reason -snes_monitor_short -problem_type 1'},
 #                        'src/snes/examples/tutorials/ex28':    {'numProcs': 3, 'args': '-da_grid_x 20 -snes_converged_reason -snes_monitor_short -problem_type 1'}
-                        'src/snes/examples/tutorials/ex10':    {'numProcs': 1, 'args': '-da_grid_x 5 -snes_converged_reason -snes_monitor_short -problem_type 1'},
-                        'src/snes/examples/tutorials/ex28':    {'numProcs': 1, 'args': '-da_grid_x 5 -snes_converged_reason -snes_monitor_short -problem_type 1'}
+                        'src/snes/examples/tutorials/ex10':   [{'numProcs': 1, 'args': '-da_grid_x 20 -snes_converged_reason -snes_monitor_short -problem_type 0'},
+                                                               {'numProcs': 1, 'args': '-da_grid_x 20 -snes_converged_reason -snes_monitor_short -problem_type 1'},
+                                                               {'numProcs': 1, 'args': '-da_grid_x 20 -snes_converged_reason -snes_monitor_short -problem_type 2'},
+                                                               {'numProcs': 1, 'args': '-da_grid_x 20 -snes_converged_reason -snes_monitor_short -ksp_monitor_short -problem_type 2 \
+-snes_mf_operator -pack_dm_mat_type aij -pc_type fieldsplit -pc_fieldsplit_type additive -fieldsplit_u_ksp_type gmres -fieldsplit_k_pc_type jacobi'},
+                                                               {'numProcs': 1, 'args': '-da_grid_x 20 -snes_converged_reason -snes_monitor_short -ksp_monitor_short -problem_type 2 \
+-snes_mf_operator -pack_dm_mat_type nest -pc_type fieldsplit -pc_fieldsplit_type additive -fieldsplit_u_ksp_type gmres -fieldsplit_k_pc_type jacobi'}],
+                        'src/snes/examples/tutorials/ex28':   [{'numProcs': 1, 'args': '-da_grid_x 20 -snes_converged_reason -snes_monitor_short -problem_type 0'},
+                                                               {'numProcs': 1, 'args': '-da_grid_x 20 -snes_converged_reason -snes_monitor_short -problem_type 1'},
+                                                               {'numProcs': 1, 'args': '-da_grid_x 20 -snes_converged_reason -snes_monitor_short -problem_type 2'},
+                                                               {'numProcs': 1, 'args': '-da_grid_x 20 -snes_converged_reason -snes_monitor_short -ksp_monitor_short -problem_type 2 \
+-snes_mf_operator -pack_dm_mat_type aij -pc_type fieldsplit -pc_fieldsplit_type additive -fieldsplit_u_ksp_type gmres -fieldsplit_k_pc_type jacobi'},
+                                                               {'numProcs': 1, 'args': '-da_grid_x 20 -snes_converged_reason -snes_monitor_short -ksp_monitor_short -problem_type 2 \
+-snes_mf_operator -pack_dm_mat_type nest -pc_type fieldsplit -pc_fieldsplit_type additive -fieldsplit_u_ksp_type gmres -fieldsplit_k_pc_type jacobi'}]
                         }
+
+#runex28_0:
+#	-@${MPIEXEC} -n 3 ./ex28 -da_grid_x 20 -snes_converged_reason -snes_monitor_short -problem_type 0 > ex28_0.tmp 2>&1; \
+#	  ${DIFF} output/ex28_0.out ex28_0.tmp || echo "Possible problem with ex28_0, diffs above"; ${RM} -f ex28_0.tmp
+#runex28_1:
+#	-@${MPIEXEC} -n 3 ./ex28 -da_grid_x 20 -snes_converged_reason -snes_monitor_short -problem_type 1 > ex28_1.tmp 2>&1; \
+#	  ${DIFF} output/ex28_1.out ex28_1.tmp || echo "Possible problem with ex28_1, diffs above"; ${RM} -f ex28_1.tmp
+#runex28_2:
+#	-@${MPIEXEC} -n 3 ./ex28 -da_grid_x 20 -snes_converged_reason -snes_monitor_short -problem_type 2 > ex28_2.tmp 2>&1; \
+#	  ${DIFF} output/ex28_2.out ex28_2.tmp || echo "Possible problem with ex28_2, diffs above"; ${RM} -f ex28_2.tmp
+#runex28_3:
+#	-@for mtype in aij nest; do \
+#	    ${MPIEXEC} -n 3 ./ex28 -da_grid_x 20 -snes_converged_reason -snes_monitor_short -ksp_monitor_short -problem_type 2 -snes_mf_operator \
+#	    -pack_dm_mat_type $$mtype -pc_type fieldsplit -pc_fieldsplit_type additive -fieldsplit_u_ksp_type gmres -fieldsplit_k_pc_type jacobi > ex28_3.tmp 2>&1; \
+#	    ${DIFF} output/ex28_3.out ex28_3.tmp || echo "Possible problem with ex28_3 mtype=$${mtype}; diffs above"; ${RM} -f ex28_3.tmp; \
+#	  done
 
 def noCheckCommand(command, status, output, error):
   ''' Do no check result'''
@@ -941,7 +969,7 @@ class PETScMaker(script.Script):
 
  def runTest(self, testDir, executable, testNum, **params):
    numProcs = params.get('numProcs', 1)
-   args     = params.get('args', '')
+   args     = params.get('args', '') #+' -malloc_dump'
    # TODO: Take this line out when configure is fixed
    # mpiexec = self.mpi.mpiexec.replace(' -n 1','').replace(' ', '\\ ')
    cmd = ' '.join([self.configInfo.mpi.mpiexec, '-n', str(numProcs), os.path.abspath(executable), args])

@@ -44,11 +44,14 @@ static PetscErrorCode FormFunctionLocal_U(User user,DMDALocalInfo *info,const Pe
   PetscInt i;
 
   PetscFunctionBegin;
+  //PetscErrorCode ierr = PetscPrintf(PETSC_COMM_WORLD, "Starting U residual\n");CHKERRQ(ierr);
   for (i=info->xs; i<info->xs+info->xm; i++) {
     if (i == 0) f[i] = hx*u[i];
     else if (i == info->mx-1) f[i] = hx*(u[i] - 1.0);
     else f[i] = hx*((k[i-1]*(u[i]-u[i-1]) - k[i]*(u[i+1]-u[i]))/(hx*hx) - 1.0);
+    //ierr = PetscPrintf(PETSC_COMM_WORLD, "  vu %d hx: %g ul %g u %g ur %g kl %g k %g f %g\n", i, hx, u[i-1], u[i], u[i+1], k[i-1], k[i], f[i]);CHKERRQ(ierr);
   }
+  //ierr = PetscPrintf(PETSC_COMM_WORLD, "Ending U residual\n");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -58,8 +61,10 @@ static PetscErrorCode FormFunctionLocal_K(User user,DMDALocalInfo *info,const Pe
 {
   PetscReal hx = 1./info->mx;
   PetscInt  i;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  //ierr = PetscPrintf(PETSC_COMM_WORLD, "Starting K residual\n");CHKERRQ(ierr);
   for (i=info->xs; i<info->xs+info->xm; i++) {
     const PetscScalar
       ubar = 0.5*(u[i+1]+u[i]),
@@ -67,7 +72,9 @@ static PetscErrorCode FormFunctionLocal_K(User user,DMDALocalInfo *info,const Pe
       g = 1. + gradu*gradu,
       w = 1./(1.+ubar) + 1./g;
     f[i] = hx*(PetscExpScalar(k[i]-1.0) + k[i] - 1./w);
+    //ierr = PetscPrintf(PETSC_COMM_WORLD, "  vertex %d: ubar %g gradu %g g %g w %g f %g\n", i, ubar, gradu, g, w, f[i]);CHKERRQ(ierr);
   }
+  //ierr = PetscPrintf(PETSC_COMM_WORLD, "Ending K residual\n");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -292,6 +299,7 @@ static PetscErrorCode FormJacobian_All(SNES snes,Vec X,Mat *J,Mat *B,MatStructur
     ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd  (*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
+  //ierr = MatView(*B, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   *mstr = DIFFERENT_NONZERO_PATTERN;
   PetscFunctionReturn(0);
 }
@@ -314,8 +322,9 @@ static PetscErrorCode FormInitial_Coupled(User user,Vec X)
   ierr = DMDAVecGetArray(dak,Xk,&k);CHKERRQ(ierr);
   ierr = DMDAGetLocalInfo(dau,&infou);CHKERRQ(ierr);
   ierr = DMDAGetLocalInfo(dak,&infok);CHKERRQ(ierr);
-  hx = 1./(infok.mx);
+  hx = 1./(infou.mx-1);
   for (i=infou.xs; i<infou.xs+infou.xm; i++) u[i] = (PetscScalar)i*hx * (1.-(PetscScalar)i*hx);
+  hx = 1./(infok.mx-1);
   for (i=infok.xs; i<infok.xs+infok.xm; i++) k[i] = 1.0 + 0.5*(PetscScalar)sin((double)2*PETSC_PI*i*hx);
   ierr = DMDAVecRestoreArray(dau,Xu,&u);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(dak,Xk,&k);CHKERRQ(ierr);
