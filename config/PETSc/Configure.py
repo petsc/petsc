@@ -349,6 +349,7 @@ class Configure(config.base.Configure):
       return os.path.dirname(lib)
     def cleanlib(lib):
       'Returns a library name if that is what this item provides, else "" which will be cleaned out later'
+      if not isinstance(lib,str): return ''
       if lib.startswith('-l'):  return lib[2:]
       if lib.startswith('-Wl') or lib.startswith('-L'): return ''
       lib = os.path.splitext(os.path.basename(lib))[0]
