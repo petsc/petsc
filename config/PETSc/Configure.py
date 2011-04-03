@@ -22,6 +22,8 @@ class Configure(config.base.Configure):
     desc.append('xxx=========================================================================xxx')
     desc.append('   Configure stage complete. Now build PETSc libraries with:')
     desc.append('   make PETSC_DIR='+self.petscdir.dir+' PETSC_ARCH='+self.arch.arch+' all')
+    desc.append(' or:')
+    desc.append('   PETSC_DIR='+self.petscdir.dir+' PETSC_ARCH='+self.arch.arch+' ./config/builder.py')
     desc.append('xxx=========================================================================xxx')
     return '\n'.join(desc)+'\n'
 
