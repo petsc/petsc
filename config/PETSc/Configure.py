@@ -337,6 +337,7 @@ class Configure(config.base.Configure):
         return [a]
     def libpath(lib):
       'Returns a search path if that is what this item provides, else "" which will be cleaned out later'
+      if not isinstance(lib,str): return ''
       if lib.startswith('-L'): return lib[2:]
       if lib.startswith('-R'): return lib[2:]
       if lib.startswith('-Wl,-rpath,'):
