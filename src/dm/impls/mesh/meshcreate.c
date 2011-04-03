@@ -73,6 +73,7 @@ PetscErrorCode DMConvert_DA_Mesh(DM dm, const DMType newtype, DM *dmNew)
 
   m->setSieve(s);
   {
+    /* WE MUST PUT IN HALO VERTICES, BUT MARK THEM SO WE CAN AVOID THEM WHEN ITERATING */
     /* M edges if its periodic */
     /* Edges are numbered     0..M-2
        Vertices are numbered: M-1..2M-2
