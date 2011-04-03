@@ -569,12 +569,9 @@ int main(int argc, char *argv[])
   const PetscInt *lxu;
   PetscInt       *lxk, m, nprocs;
   PetscBool       view_draw;
-  PetscMPIInt     size;
   PetscErrorCode  ierr;
 
   ierr = PetscInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRQ(ierr);
-  if (size > 1) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "This example does not yet work in parallel");
   /* Create meshes */
   ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,-10,1,1,PETSC_NULL,&dau);CHKERRQ(ierr);
   ierr = DMDACreateOwnershipRanges(dau);CHKERRQ(ierr); /* Ensure that the ownership ranges agree so that we can get a compatible grid for the coefficient */
@@ -591,6 +588,15 @@ int main(int argc, char *argv[])
   ierr = DMConvert(dak, DMMESH, &dmk);CHKERRQ(ierr);
   ierr = DMDestroy(dau);CHKERRQ(ierr);
   ierr = DMDestroy(dak);CHKERRQ(ierr);
+
+#if 1
+  {
+    ALE::Obj<PETSC_MESH_TYPE> m;
+    ierr = DMMeshGetMesh(dmu, m);CHKERRQ(ierr);
+    m->view("Mesh");
+    m->getLabel("marker")->view("Marker");
+  }
+#endif
 
   ierr = PetscNew(struct _UserCtx, &user);CHKERRQ(ierr);
   user->bcType = NEUMANN;

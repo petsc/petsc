@@ -1990,6 +1990,10 @@ PetscErrorCode DMMeshSetupSection(DM dm, SectionReal section)
   PetscFunctionBegin;
   ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
   ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
-  m->setupField(s);
+  try {
+    m->setupField(s);
+  } catch(ALE::Exception e) {
+    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "%s", e.message());
+  }
   PetscFunctionReturn(0);
 }
