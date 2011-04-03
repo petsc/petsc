@@ -60,7 +60,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once(Mat C,PetscInt imax,IS is[]
   PetscInt       *n,**data,len;
   PetscErrorCode ierr;
   PetscMPIInt    size,rank,tag1,tag2;
-  PetscInt       m,i,j,k,**rbuf,row,proc = 0,nrqs,msz,**outdat,**ptr;
+  PetscInt       M,i,j,k,**rbuf,row,proc = 0,nrqs,msz,**outdat,**ptr; 
   PetscInt       *ctr,*pa,*tmp,*isz,*isz1,**xdata,**rbuf2;
   PetscBT        *table;
   MPI_Comm       comm;
@@ -71,13 +71,13 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once(Mat C,PetscInt imax,IS is[]
   comm   = ((PetscObject)C)->comm;
   size   = c->size;
   rank   = c->rank;
-  m      = C->rmap->N;
+  M      = C->rmap->N;
 
   ierr = PetscObjectGetNewTag((PetscObject)C,&tag1);CHKERRQ(ierr);
   ierr = PetscObjectGetNewTag((PetscObject)C,&tag2);CHKERRQ(ierr);
  
   ierr = PetscMalloc2(imax,PetscInt*,&idx,imax,PetscInt,&n);CHKERRQ(ierr);
-   
+
   for (i=0; i<imax; i++) {
     ierr = ISGetIndices(is[i],&idx[i]);CHKERRQ(ierr);
     ierr = ISGetLocalSize(is[i],&n[i]);CHKERRQ(ierr);
@@ -162,16 +162,16 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once(Mat C,PetscInt imax,IS is[]
 
     /* should replace with PetscMallocN() */
     ierr  = PetscMalloc((imax)*(sizeof(PetscBT) + sizeof(PetscInt*)+ sizeof(PetscInt)) + 
-      (m)*imax*sizeof(PetscInt)  + (m/PETSC_BITS_PER_BYTE+1)*imax*sizeof(char) + 1,&table);CHKERRQ(ierr);
+      M*imax*sizeof(PetscInt)  + (M/PETSC_BITS_PER_BYTE+1)*imax*sizeof(char) + 1,&table);CHKERRQ(ierr);
     ierr  = PetscMemzero(table,(imax)*(sizeof(PetscBT) + sizeof(PetscInt*)+ sizeof(PetscInt)) + 
-      (m)*imax*sizeof(PetscInt)  + (m/PETSC_BITS_PER_BYTE+1)*imax*sizeof(char) + 1);CHKERRQ(ierr);
+      M*imax*sizeof(PetscInt)  + (M/PETSC_BITS_PER_BYTE+1)*imax*sizeof(char) + 1);CHKERRQ(ierr);
     data  = (PetscInt **)(table + imax);
     isz   = (PetscInt  *)(data  + imax);
     d_p   = (PetscInt  *)(isz   + imax);
-    t_p   = (char *)(d_p   + m*imax);
+    t_p   = (char *)(d_p   + M*imax);
     for (i=0; i<imax; i++) {
-      table[i] = t_p + (m/PETSC_BITS_PER_BYTE+1)*i;
-      data[i]  = d_p + (m)*i;
+      table[i] = t_p + (M/PETSC_BITS_PER_BYTE+1)*i;
+      data[i]  = d_p + M*i;
     }
   }
 
