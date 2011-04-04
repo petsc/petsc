@@ -2,7 +2,6 @@
 
 #include <petscsys.h>
 #include <petsctime.h>
-#include <petsclog.h>
 
 /* A simple stack */
 struct _n_IntStack {

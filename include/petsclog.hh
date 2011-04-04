@@ -3,6 +3,7 @@
 
 #if defined(PETSC_CLANGUAGE_CXX) && !defined(PETSC_USE_EXTERN_CXX)
 #include<map>
+#include <private/logimpl.h>
 
 namespace PETSc {
   class LogStage {
@@ -45,6 +46,18 @@ namespace PETSc {
       PetscErrorCode ierr = PetscLogEventBarrierEnd(this->id, o1, o2, o3, o4, comm); CHKERRXX(ierr);
     };
     PetscLogEvent getId() {return this->id;};
+    PetscLogDouble time() {
+      PetscInt       stage = 0;
+      StageLog       stageLog;
+      EventPerfLog   eventLog;
+      PetscErrorCode ierr;
+
+      ierr = PetscLogGetStageLog(&stageLog);CHKERRXX(ierr);
+      ierr = StageLogGetEventPerfLog(stageLog, stage, &eventLog);CHKERRXX(ierr);
+      EventPerfInfo eventInfo = eventLog->eventInfo[this->id];
+
+      return eventInfo.time;
+    };
   };
 
   class Log {
