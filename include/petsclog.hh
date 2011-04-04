@@ -3,7 +3,6 @@
 
 #if defined(PETSC_CLANGUAGE_CXX) && !defined(PETSC_USE_EXTERN_CXX)
 #include<map>
-#include <private/logimpl.h>
 
 namespace PETSc {
   class LogStage {

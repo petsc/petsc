@@ -1701,6 +1701,8 @@ extern PetscErrorCode  PetscScalarView(PetscInt,const PetscScalar[],PetscViewer)
 #include <stdint.h>
 #endif
 
+#undef __FUNCT__
+#define __FUNCT__ "PetscMemcpy"
 /*@C
    PetscMemcpy - Copies n bytes, beginning at location b, to the space
    beginning at location a. The two memory regions CANNOT overlap, use
