@@ -207,6 +207,8 @@ extern PetscErrorCode  ISLocalToGlobalMappingRestoreIndices(ISLocalToGlobalMappi
 extern PetscErrorCode  ISLocalToGlobalMappingBlock(ISLocalToGlobalMapping,PetscInt,ISLocalToGlobalMapping*);
 extern PetscErrorCode  ISLocalToGlobalMappingUnBlock(ISLocalToGlobalMapping,PetscInt,ISLocalToGlobalMapping*);
 
+#undef __FUNCT__
+#define __FUNCT__ "ISLocalToGlobalMappingApply"
 PETSC_STATIC_INLINE PetscErrorCode ISLocalToGlobalMappingApply(ISLocalToGlobalMapping mapping,PetscInt N,const PetscInt in[],PetscInt out[])
 {
   PetscInt       i,Nmax = mapping->n;
