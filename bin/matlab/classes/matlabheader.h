@@ -50,7 +50,7 @@ int ISCreate(MPI_Comm,IS *);
 int ISSetType(IS,const char*);
 int ISGeneralSetIndices(IS,int,const int[],CopyMode);
 int ISView(IS,PetscViewer);
-int ISDestroy(IS);
+int ISDestroy_(IS);
 
 typedef PetscPointer Vec;
 int VecCreate(MPI_Comm,Vec *);
@@ -103,7 +103,7 @@ int DMDestroy(DM);
 int DMView(DM,PetscViewer);
 int DMSetFunctionMatlab(DM,const char*);
 int DMSetJacobianMatlab(DM,const char*);
-int DMDASetBoundaryType(DM, DMDABoundaryType);
+int DMDASetBoundaryType(DM, DMDABoundaryType,DMDABoundaryType,DMDABoundaryType);
 int DMDASetDof(DM, int);
 int DMSetUp(DM);
 int DMDASetStencilWidth(DM, int);
@@ -134,7 +134,7 @@ int KSPSolve(KSP,Vec,Vec);
 int KSPSetUp(KSP);
 int KSPGetSolution(KSP,Vec*);
 int KSPView(KSP,PetscViewer);
-int KSPDestroy(KSP);
+int KSPDestroy_(KSP);
 
 typedef PetscPointer SNES;
 int SNESCreate(MPI_Comm,SNES *);

@@ -82,7 +82,7 @@ mat.Destroy();
 b.Destroy();
 x.Destroy();
 
-da = PetscDMDACreate1d(PetscDM.NONPERIODIC,10,1,1);
+da = PetscDMDACreate1d(PetscDM.BOUNDARY_NONE,10,1,1);
 da.View(viewer);
 
 ksp = PetscKSP();

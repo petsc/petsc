@@ -4,7 +4,7 @@ function [da,err] = PetscDMDACreate1d(wrap,M,dof,s,lx)
   end
   da = PetscDM();
   err = da.SetType('da'); 
-  da.SetPeriodicity(wrap);
+  da.SetBoundaryType(wrap,0,0);
   da.SetSizes([M 1 1]);
   da.SetDof(dof);
   da.SetStencilWidth(s);

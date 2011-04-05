@@ -33,7 +33,7 @@ end
 if (nargin < 2) 
   argfile = '';
 end
-if (nargin < 3) 
+if (nargin < 3)
   arghelp = '';
 end
 if (ischar(args)) 
@@ -43,13 +43,13 @@ end
 % append any options in the options variable
 global options
 if (length(options) > 0)
-  args = cellcat(args,options)
+  args = [args,options];
   disp('Using additional options')
   disp(options)
 end
 
 % first argument should be program name, use matlab for this
-arg = cellcat('matlab',args);
+arg = ['matlab',args];
 %
 % If the user forgot to PetscFinalize() we do it for them, before restarting PETSc
 %
