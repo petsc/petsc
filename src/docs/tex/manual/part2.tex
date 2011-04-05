@@ -7521,6 +7521,94 @@ command
   PCDestroy(PC pc);
 \end{tabbing}
 
+%------------------------------------------------------------------
+
+\cleardoublepage
+\chapter{Unstructured Grids in PETSc}
+\label{ch_unstructured}
+
+This chapter introduces the DMMesh subclass of DM, which allows the user to handle unstructured grids using the generic
+DM interface for hierarchy and multi-physics. The underlying implementation is written in C++, and thus requires PETSc
+to be build using --with-clanguage=c++. More advanced features will also require direct C++ access in the user code,
+however much can be done using only the C/F77/F90 interface.
+
+\medskip \medskip
+
+\section{Sections: Vectors on Unstructured Grids} \sindex{sections}
+
+\subsection{Defining Sections}
+
+The sequence for setting up any Section is the following:
+\begin{enumerate}
+  \item Specify the chart
+  \item Specify the fiber dimensions
+  \item Allocate
+  \item Specify the values
+\end{enumerate}
+We will expand on each item in turn.
+
+First, you specify the chart, which is the domain for the Section. For any Section retrieved from the Mesh, for instance
+using MeshGetSectionReal(), this is done automatically.
+
+Second, you determine sizes for both values and constraints at the same time:
+\begin{lstlisting}[language=C++]
+for(loop over points) {
+  section->setFiberDimension(p, dof);
+}
+for(loop over boundary points) {
+  section->setConstraintDimension(p, numConstraints);
+}
+\end{lstlisting}
+
+Third, we allocate storage for this section
+\begin{lstlisting}[language=C++]
+  section->allocatePoint()
+\end{lstlisting}
+which also creates storage for the boundary conditions.
+
+Now you can input values and constraints whenever you want
+\begin{lstlisting}[language=C++]
+for(loop over points) {
+  section->updatePoint(p, values);
+}
+for(loop over boundary points) {
+  /* Here we constrain the x and y values */
+  int dofs[2] = {0, 1};
+
+  section->setConstraintDof(p, dofs);
+}
+\end{lstlisting}
+Notice that the input to setConstraintDofs() are the local dofs which are fixed.
+
+\subsection{Updating Values}
+There are many kinds of update*() functions since users want different ways of setting values. As an
+example, we will take a point p with 3 degrees of freedom (u,v,w), and we constrain v, so the fiber
+dimension is 3, the constraint dimension is 1, and the constraint dof is [1]. Now, the simplest update is
+
+   section->updatePoint(p, [a, b, c])
+
+which will set the values 'a' and 'c', ignoring 'b' since it is constrained. The function updateAddPoint() does
+the same thing but adds the values. We have a similar function
+
+  section->updateFreePoint(p, [a, c])
+
+which updates the unconstrained values, and only takes those values as input. If you want to update
+constrained values, you could use
+
+  section->updatePointBC(p, [b])
+
+which updates the values of constrained unknowns, and takes only the constraint values. You could also use
+
+  section->updatePointBCFull(p, [a, b, c])
+
+which takes all the values, but only updates the constraint 'b'. Finally,
+
+  section->updatePointAll(p, [a, b, c])
+
+takes the all values and updates all of them, ignoring constraints.
+
+%------------------------------------------------------------------
+
 \cleardoublepage
 \addtocounter{chapter}{1}
 \addcontentsline{toc}{chapter}{Index}
