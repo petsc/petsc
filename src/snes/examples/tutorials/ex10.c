@@ -41,7 +41,7 @@ struct _UserCtx {
   DM       pack;
   Vec      Uloc,Kloc;
 
-  PetscReal     hx;
+  PetscReal     hxu, hxk;
   BCType        bcType;                      // The type of boundary conditions
   PetscScalar (*exactFunc)(const double []); // The exact solution function
   double (*integrate)(const double *, const double *, const int, double (*)(const double *)); // Basis functional application
@@ -64,7 +64,7 @@ static PetscErrorCode FormFunctionLocal_U(DM dmu, DM dmk, SectionReal sectionU, 
   PETSC_MESH_TYPE::point_type ulp = -1;
   PETSC_MESH_TYPE::point_type urp = *(++vur_iter);
   PETSC_MESH_TYPE::point_type klp = -1;
-  PetscReal hx = user->hx;
+  PetscReal hx = user->hxu;
 
   ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "Starting U residual\n");CHKERRQ(ierr);
   for(PETSC_MESH_TYPE::label_sequence::iterator vu_iter = verticesU->begin(), vk_iter = verticesK->begin(); vu_iter != verticesU->end(); ++vu_iter,  ++vk_iter) {
@@ -118,7 +118,7 @@ static PetscErrorCode FormFunctionLocal_K(DM dmu, DM dmk, SectionReal sectionU, 
   PETSC_MESH_TYPE::label_sequence::iterator vu_iter = verticesU->begin();
   PETSC_MESH_TYPE::point_type               up      = *vu_iter;
   PETSC_MESH_TYPE::point_type               urp;
-  PetscReal hx = user->hx;
+  PetscReal hx = user->hxk;
 
   //ierr = PetscPrintf(PETSC_COMM_WORLD, "Starting K residual\n");CHKERRQ(ierr);
   for(PETSC_MESH_TYPE::label_sequence::iterator vk_iter = verticesK->begin(); vk_iter != verticesK->end(); ++vk_iter) {
@@ -253,7 +253,7 @@ static PetscErrorCode FormJacobianLocal_U(DM dmu, DM dmk, SectionReal sectionU, 
   PETSC_MESH_TYPE::point_type klp = -1;
   PETSC_MESH_TYPE::point_type ulp = -1;
   PETSC_MESH_TYPE::point_type urp = *(++vur_iter);
-  PetscReal hx = user->hx;
+  PetscReal hx = user->hxu;
 
   for(PETSC_MESH_TYPE::label_sequence::iterator vu_iter = verticesU->begin(), vk_iter = verticesK->begin(); vu_iter != verticesU->end(); ++vu_iter,  ++vk_iter) {
     PETSC_MESH_TYPE::point_type up = *vu_iter;
@@ -301,7 +301,7 @@ static PetscErrorCode FormJacobianLocal_K(DM dmu, DM dmk, SectionReal sectionU, 
   ierr = DMMeshGetMesh(dmu, meshU);CHKERRQ(ierr);
   ierr = DMMeshGetMesh(dmk, meshK);CHKERRQ(ierr);
   const ALE::Obj<PETSC_MESH_TYPE::label_sequence>& verticesK = meshK->depthStratum(0);
-  PetscReal hx = user->hx;
+  PetscReal hx = user->hxk;
 
   for(PETSC_MESH_TYPE::label_sequence::iterator vk_iter = verticesK->begin(); vk_iter != verticesK->end(); ++vk_iter) {
     PETSC_MESH_TYPE::point_type kp = *vk_iter;
@@ -333,7 +333,7 @@ static PetscErrorCode FormJacobianLocal_UK(DM dmu, DM dmk, SectionReal sectionU,
   PETSC_MESH_TYPE::point_type ulp = -1;
   PETSC_MESH_TYPE::point_type urp = *(++vur_iter);
   PETSC_MESH_TYPE::point_type klp = -1;
-  PetscReal hx = user->hx;
+  PetscReal hx = user->hxu;
 
   for(PETSC_MESH_TYPE::label_sequence::iterator vu_iter = verticesU->begin(), vk_iter = verticesK->begin(); vu_iter != verticesU->end(); ++vu_iter, ++vk_iter) {
     PETSC_MESH_TYPE::point_type up = *vu_iter;
@@ -381,7 +381,7 @@ static PetscErrorCode FormJacobianLocal_KU(DM dmu, DM dmk, SectionReal sectionU,
   PETSC_MESH_TYPE::label_sequence::iterator vur_iter = verticesU->begin();
   PETSC_MESH_TYPE::label_sequence::iterator vkr_iter = verticesK->begin();
   PETSC_MESH_TYPE::point_type urp = *(++vur_iter);
-  PetscReal hx = user->hx;
+  PetscReal hx = user->hxk;
 
   for(PETSC_MESH_TYPE::label_sequence::iterator vk_iter = verticesK->begin(), vu_iter = verticesU->begin(); vk_iter != verticesK->end(); ++vk_iter,  ++vu_iter) {
     PETSC_MESH_TYPE::point_type up      = *vu_iter;
@@ -604,7 +604,8 @@ int main(int argc, char *argv[])
 #endif
 
   ierr = PetscNew(struct _UserCtx, &user);CHKERRQ(ierr);
-  user->hx = 1.0/(m-1);
+  user->hxu = 1.0/m;
+  user->hxk = 1.0/(m-1);
   user->bcType = NEUMANN;
   /* Setup dof layout.
    For a DMDA, this is automatic given the number of dof at each vertex. However,
