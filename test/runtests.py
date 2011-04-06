@@ -111,14 +111,15 @@ def getpackageinfo(pkg):
 
 def writeln(message='', endl='\n'):
     from petsc4py.PETSc import Sys
-    rank, name = getprocessorinfo()
-    Sys.syncPrint(("[%d@%s] " % (rank, name))+message, flush=True)
+    Sys.syncPrint(message, endl=endl, flush=True)
 
 def print_banner(options, package):
+    r, n = getprocessorinfo()
+    fmt = "[%d@%s] %s"
     if options.verbose:
-        writeln(getpythoninfo())
-        writeln(getlibraryinfo())
-        writeln(getpackageinfo(package))
+        writeln(fmt % (r, n, getpythoninfo()))
+        writeln(fmt % (r, n, getlibraryinfo()))
+        writeln(fmt % (r, n, getpackageinfo(package)))
 
 def load_tests(options, args):
     from glob import glob
@@ -172,7 +173,7 @@ def run_tests_leaks(options, testsuite):
         run_tests(options, testsuite)
         collect()
         r2 = gettotalrefcount()
-        writeln('refleaks:  (%d - %d) --> %d'
+        writeln('[%d@%s] refleaks:  (%d - %d) --> %d'
                 % (rank, name, r2, r1, r2-r1))
 
 def main(args=None):
