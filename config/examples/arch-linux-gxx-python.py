@@ -7,8 +7,9 @@ if __name__ == '__main__':
   configure_options = [
     '--download-f-blas-lapack=1',
     '--download-mpich=1',
-    '--with-cc=g++',
-    '--with-clanguage=c++',
+    '--with-cc=gcc',
+    '--with-cxx=g++',
+    '--with-clanguage=cxx',
     '--with-scalar-type=complex',
     '--with-dynamic-loading=1',
     '--with-shared-libraries=1',
