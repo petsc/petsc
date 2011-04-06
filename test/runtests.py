@@ -175,20 +175,21 @@ def run_tests_leaks(options, testsuite):
         writeln('refleaks:  (%d - %d) --> %d'
                 % (rank, name, r2, r1, r2-r1))
 
-def main(pkgname):
+def main(args=None):
+    pkgname = 'petsc4py'
     parser = getoptionparser()
-    (options, args) = parser.parse_args()
+    (options, args) = parser.parse_args(args)
     setup_python(options)
     setup_unittest(options)
     package = import_package(options, pkgname)
     print_banner(options, package)
     testsuite = load_tests(options, args)
     success = run_tests(options, testsuite)
-    if hasattr(sys, 'gettotalrefcount'):
+    if success and hasattr(sys, 'gettotalrefcount'):
         run_tests_leaks(options, testsuite)
-    sys.exit(not success)
+    return not success
 
 if __name__ == '__main__':
     import sys
     sys.dont_write_bytecode = True
-    main('petsc4py')
+    sys.exit(main())

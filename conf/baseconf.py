@@ -4,7 +4,7 @@ __all__ = ['PetscConfig',
            'setup', 'Extension',
            'log', 'config',
            'build', 'build_src', 'build_ext',
-           'sdist',
+           'test', 'sdist',
            ]
 
 # --------------------------------------------------------------------
@@ -493,6 +493,19 @@ PETSC_ARCH = %(PETSC_ARCH)s
                 outputs.append(outfile)
         outputs = list(set(outputs))
         return outputs
+
+class test(Command):
+    description = "run the test suite"
+    user_options = [('args=', None, "options")]
+    def initialize_options(self):
+        self.args = None
+    def finalize_options(self):
+        if self.args:
+            self.args = split_quoted(self.args)
+        else:
+            self.args = []
+    def run(self):
+        pass
 
 class sdist(_sdist):
     def run(self):
