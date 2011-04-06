@@ -1207,14 +1207,30 @@ PetscErrorCode SNESSolveVI_RS2(SNES snes)
       ierr = MatSetSizes(J_aug,X->map->n+nkept,X->map->n+nkept,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
       ierr = MatSetFromOptions(J_aug);CHKERRQ(ierr);
       
-      /* set preallocation info..will add this later */
 
-      /* Set values in the augmented matrix...Doing only sequential case first*/
+      /* Preallocate augmented matrix and set values in it...Doing only sequential case first*/
       PetscInt          ncols;
       const PetscInt    *cols;
       const PetscScalar *vals;
       PetscScalar        value=1.0;
       PetscInt           row,col;
+      PetscInt           *d_nnz;
+
+      ierr = PetscMalloc((X->map->n+nkept)*sizeof(PetscInt),&d_nnz);CHKERRQ(ierr);
+      ierr = PetscMemzero(d_nnz,(X->map->n+nkept)*sizeof(PetscInt));CHKERRQ(ierr);
+      for(row=0;row<snes->jacobian->rmap->n;row++) {
+        ierr = MatGetRow(snes->jacobian,row,&ncols,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+        d_nnz[row] += ncols;
+        ierr = MatRestoreRow(snes->jacobian,row,&ncols,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+      }
+
+      for(k=0;k<nkept;k++) {
+        d_nnz[idx_actkept[k]] += 1;
+        d_nnz[snes->jacobian->rmap->n+k] += 1;
+      }
+      ierr = MatSeqAIJSetPreallocation(J_aug,PETSC_NULL,d_nnz);CHKERRQ(ierr);
+      
+      ierr = PetscFree(d_nnz);CHKERRQ(ierr);
 
       /* Set the original jacobian matrix in J_aug */
       for(row=0;row<snes->jacobian->rmap->n;row++) {
