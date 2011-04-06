@@ -66,7 +66,7 @@ classdef PetscKSP < PetscObject
       pc = PetscPC(pid,'pobj');
     end
     function err = Destroy(obj)
-      err = calllib('libpetsc', 'KSPDestroy', obj.pobj);PetscCHKERRQ(err);
+      err = calllib('libpetsc', 'KSPDestroy_', obj.pobj);PetscCHKERRQ(err);
     end
   end
 end

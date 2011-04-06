@@ -805,7 +805,6 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
   MPI_Status     *r_status3,*r_status4,*s_status4;
   MPI_Comm       comm;
   PetscScalar    **rbuf4,**sbuf_aa,*vals,*mat_a,*sbuf_aa_i;
-  PetscBool      sorted;
   PetscMPIInt    *onodes1,*olengths1;
   PetscMPIInt    idex,idex2,end;
 
@@ -820,13 +819,6 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
   ierr = PetscObjectGetNewTag((PetscObject)C,&tag2);CHKERRQ(ierr);
   ierr = PetscObjectGetNewTag((PetscObject)C,&tag3);CHKERRQ(ierr);
 
-    /* Check if the col indices are sorted */
-  for (i=0; i<ismax; i++) {
-    ierr = ISSorted(isrow[i],&sorted);CHKERRQ(ierr);
-    /*if (!sorted) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"isrow is not sorted");*/
-    ierr = ISSorted(iscol[i],&sorted);CHKERRQ(ierr);
-    /*    if (!sorted) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"iscol is not sorted"); */
-  }
   ierr = PetscMalloc4(ismax,const PetscInt*,&irow,ismax,const PetscInt*,&icol,ismax,PetscInt,&nrow,ismax,PetscInt,&ncol);CHKERRQ(ierr);
 
   for (i=0; i<ismax; i++) { 
@@ -1124,7 +1116,7 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
   ierr = PetscFree(rbuf1);CHKERRQ(ierr);
 
   /* Form the matrix */
-  /* create col map */
+  /* create col map: global col of C -> local col of submatrices */
   {
     const PetscInt *icol_i;
 #if defined (PETSC_USE_CTABLE)
@@ -1187,7 +1179,7 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
     }
   }
   
-  /* Create row map*/
+  /* Create row map: global row of C -> local row of submatrices */
 #if defined (PETSC_USE_CTABLE)
   ierr = PetscMalloc((1+ismax)*sizeof(PetscTable),&rmap);CHKERRQ(ierr);
     for (i=0; i<ismax; i++) {

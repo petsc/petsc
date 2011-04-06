@@ -26,10 +26,26 @@ static const char help[] = "Uses analytic Jacobians to solve individual problems
 #include <petscsnes.h>
 #include <petscdmmesh.h>
 #include <petscdmcomposite.h>
+#include <petscdmda.h>
 
-  #include <petscdmda.h>
+#undef __FUNCT__
+#define __FUNCT__ "CreateProblem_gen_0"
+PetscErrorCode CreateProblem_gen_0(DM dm, const char *name)
+{
+  ALE::Obj<PETSC_MESH_TYPE> m;
+  PetscErrorCode ierr = 0;
 
-#include "ex10_quadrature.h"
+  PetscFunctionBegin;
+  ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
+  {
+    const ALE::Obj<ALE::Discretization>& d = new ALE::Discretization(m->comm(), m->debug());
+
+    d->setNumDof(0, 1);
+    d->setNumDof(1, 0);
+    m->setDiscretization(name, d);
+  }
+  PetscFunctionReturn(0);
+}
 
 typedef enum {NEUMANN, DIRICHLET} BCType;
 
@@ -37,14 +53,10 @@ PetscErrorCode DMDACreateOwnershipRanges(DM); /* Import an internal function */
 
 typedef struct _UserCtx *User;
 struct _UserCtx {
-  PetscInt ptype;
-  DM       pack;
-  Vec      Uloc,Kloc;
-
-  PetscReal     hxu, hxk;
-  BCType        bcType;                      // The type of boundary conditions
-  PetscScalar (*exactFunc)(const double []); // The exact solution function
-  double (*integrate)(const double *, const double *, const int, double (*)(const double *)); // Basis functional application
+  PetscInt  ptype;
+  DM        pack;
+  Vec       Uloc,Kloc;
+  PetscReal hxu, hxk;
 };
 
 #undef __FUNCT__
@@ -606,20 +618,13 @@ int main(int argc, char *argv[])
   ierr = PetscNew(struct _UserCtx, &user);CHKERRQ(ierr);
   user->hxu = 1.0/m;
   user->hxk = 1.0/(m-1);
-  user->bcType = NEUMANN;
   /* Setup dof layout.
-   For a DMDA, this is automatic given the number of dof at each vertex. However,
-   for a DMMesh, we need to specify this.
+   For a DMDA, this is automatic given the number of dof at each vertex. However, for a DMMesh, we need to specify this.
   */
   {
     /* There is perhaps a better way to do this that does not rely on the Discretization/BoundaryCondition objects in Mesh.hh */
-    int      numBC      = (user->bcType == DIRICHLET) ? 1 : 0;
-    int      markers[1] = {1};
-    double (*funcs[1])(const double *coords) = {user->exactFunc};
-
-    ierr = CreateProblem_gen_0(dmu, "u", numBC, markers, funcs, user->exactFunc);CHKERRQ(ierr);
-    ierr = CreateProblem_gen_0(dmk, "k", numBC, markers, funcs, user->exactFunc);CHKERRQ(ierr);
-    user->integrate = IntegrateDualBasis_gen_0;
+    ierr = CreateProblem_gen_0(dmu, "u");CHKERRQ(ierr);
+    ierr = CreateProblem_gen_0(dmk, "k");CHKERRQ(ierr);
   }
   SectionReal defaultSection;
 

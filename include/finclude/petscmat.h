@@ -46,7 +46,7 @@
       PetscEnum MAT_USE_INODES
       PetscEnum MAT_HERMITIAN
       PetscEnum MAT_SYMMETRY_ETERNAL
-      PetscEnum MAT_USE_COMPRESSEDROW
+      PetscEnum MAT_CHECK_COMPRESSED_ROW
       PetscEnum MAT_IGNORE_LOWER_TRIANGULAR
       PetscEnum MAT_ERROR_LOWER_TRIANGULAR
       PetscEnum MAT_GETROW_UPPERTRIANGULAR
@@ -58,7 +58,8 @@
 
       parameter (MAT_ROW_ORIENTED=0)
       parameter (MAT_NEW_NONZERO_LOCATIONS=1)
-      parameter (MAT_SYMMETRIC=2,MAT_STRUCTURALLY_SYMMETRIC=3)
+      parameter (MAT_SYMMETRIC=2)
+      parameter (MAT_STRUCTURALLY_SYMMETRIC=3)
       parameter (MAT_NEW_DIAGONALS=4)
       parameter (MAT_IGNORE_OFF_PROC_ENTRIES=5)
       parameter (MAT_NEW_NONZERO_LOCATION_ERR=6)
@@ -69,7 +70,7 @@
       parameter (MAT_USE_INODES=11)
       parameter (MAT_HERMITIAN=12)
       parameter (MAT_SYMMETRY_ETERNAL=13)
-      parameter (MAT_USE_COMPRESSEDROW=14)
+      parameter (MAT_CHECK_COMPRESSED_ROW=14)
       parameter (MAT_IGNORE_LOWER_TRIANGULAR=15)
       parameter (MAT_ERROR_LOWER_TRIANGULAR=16)
       parameter (MAT_GETROW_UPPERTRIANGULAR=17)
@@ -77,8 +78,7 @@
       parameter (MAT_SPD=19)
       parameter (MAT_NO_OFF_PROC_ENTRIES=20)
       parameter (MAT_NO_OFF_PROC_ZERO_ROWS=21)
-      parameter (NUM_MAT_OPTIONS=20)
- 
+      parameter (NUM_MAT_OPTIONS=22)
 !
 !  MatFactorShiftType
 !

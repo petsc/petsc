@@ -7,7 +7,7 @@ class Configure(PETSc.package.NewPackage):
     self.functions = ['MPE_Log_event']
     self.includes  = ['mpe.h']
     #self.liblist   = [['libmpe_f2cmpi.a','liblmpe.a','libmpe.a']] # log mpi events aswell? provide another configure opton? how?
-    self.liblist   = [['libmpe.a']]
+    self.liblist   = [[],['libmpe.a']]
     self.complex   = 1
     return
 

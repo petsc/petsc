@@ -227,13 +227,15 @@ PetscErrorCode  AOCreate_Basic(AO ao)
   ao->n = N;
 
   /* If mypetsc is 0 then use "natural" numbering */
-  if (napp && !ispetsc) {
-    start = disp[rank];
-    ierr  = PetscMalloc((napp+1) * sizeof(PetscInt), &petsc);CHKERRQ(ierr);
-    for (i=0; i<napp; i++) petsc[i] = start + i;
-  } else {
-    ierr = ISGetIndices(ispetsc,&mypetsc);CHKERRQ(ierr);
-    petsc = (PetscInt*)mypetsc;
+  if (napp){
+    if (!ispetsc) {
+      start = disp[rank];
+      ierr  = PetscMalloc((napp+1) * sizeof(PetscInt), &petsc);CHKERRQ(ierr);
+      for (i=0; i<napp; i++) petsc[i] = start + i;
+    } else {
+      ierr = ISGetIndices(ispetsc,&mypetsc);CHKERRQ(ierr);
+      petsc = (PetscInt*)mypetsc;
+    }
   }
 
   /* get all indices on all processors */
