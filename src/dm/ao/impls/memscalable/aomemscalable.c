@@ -438,13 +438,15 @@ PetscErrorCode AOCreate_MemoryScalable(AO ao)
   } 
 
   /* If ispetsc is 0 then use "natural" numbering */
-  if (napp && !ispetsc) {
-    start = disp[rank];
-    ierr  = PetscMalloc((napp+1) * sizeof(PetscInt), &petsc);CHKERRQ(ierr);
-    for (i=0; i<napp; i++) petsc[i] = start + i;
-  } else {
-    ierr = ISGetIndices(ispetsc,&mypetsc);CHKERRQ(ierr);
-    petsc = (PetscInt*)mypetsc;
+  if (napp) {
+    if (!ispetsc) {
+      start = disp[rank];
+      ierr  = PetscMalloc((napp+1) * sizeof(PetscInt), &petsc);CHKERRQ(ierr);
+      for (i=0; i<napp; i++) petsc[i] = start + i;
+    } else {
+      ierr = ISGetIndices(ispetsc,&mypetsc);CHKERRQ(ierr);
+      petsc = (PetscInt*)mypetsc;
+    }
   }
   
   /* create a map with global size N - used to determine the local sizes of ao - shall we use local napp instead of N? */
