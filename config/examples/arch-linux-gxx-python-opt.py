@@ -13,6 +13,7 @@ if __name__ == '__main__':
     '--with-dynamic-loading=1',
     '--with-shared-libraries=1',
     '--with-python=1',
-    '--with-debugging=0'
+    '--with-debugging=0',
+    '--PETSC_ARCH=arch-linux-gxx-python-opt'
     ]
   configure.petsc_configure(configure_options)

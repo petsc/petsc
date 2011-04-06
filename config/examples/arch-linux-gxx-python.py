@@ -12,6 +12,7 @@ if __name__ == '__main__':
     '--with-scalar-type=complex',
     '--with-dynamic-loading=1',
     '--with-shared-libraries=1',
-    '--with-python=1'
+    '--with-python=1',
+    '--PETSC_ARCH=arch-linux-gxx-python'
     ]
   configure.petsc_configure(configure_options)
