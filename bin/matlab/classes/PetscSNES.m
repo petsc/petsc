@@ -41,6 +41,12 @@ classdef PetscSNES < PetscObject
     function err = VISetVariableBounds(obj,xl,xb)
       err = calllib('libpetsc', 'SNESVISetVariableBounds', obj.pobj,xl.pobj,xb.pobj);PetscCHKERRQ(err);
     end
+    function err = VISetRedundancyCheck(obj,func,arg)
+      if (nargin < 3)
+          arg = 0;
+      end
+      err = callib('libpetsc','SNESVISetRedundancyCheckMatlab',obj.pobj,func,arg);PetscCHKERRQ(err);
+    end
     function err = SetFunction(obj,f,func,arg)
       if (nargin < 4) 
         arg = 0;

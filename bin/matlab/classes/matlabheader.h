@@ -153,6 +153,7 @@ int SNESMonitorSetMatlab(SNES,const char*,mxArray*);
 int SNESSetConvergenceHistory(SNES,double[],int[],int,PetscBool);
 mxArray* SNESGetConvergenceHistoryMatlab(SNES);
 int SNESGetKSP(SNES,KSP*);
+int SNESVISetRedundancyCheckMatlab(SNES,const char*,mxArray*);
 
 typedef PetscPointer TS;
 int TSCreate(MPI_Comm,TS *);
