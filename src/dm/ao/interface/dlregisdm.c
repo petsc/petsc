@@ -134,9 +134,6 @@ PetscErrorCode  DMInitializePackage(const char path[])
   if (DMPackageInitialized) PetscFunctionReturn(0);
   DMPackageInitialized = PETSC_TRUE;
 
-  /* Initialize subpackages */
-  ierr = ISMappingInitializePackage(PETSC_NULL); CHKERRQ(ierr);
-
   /* Register Classes */
   ierr = PetscClassIdRegister("Distributed Mesh",&DM_CLASSID);CHKERRQ(ierr);
 #ifdef PETSC_HAVE_SIEVE
@@ -228,6 +225,7 @@ PetscErrorCode  PetscDLLibraryRegister_petscdm(const char path[])
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = ISMappingInitializePackage(PETSC_NULL); CHKERRQ(ierr);
   ierr = AOInitializePackage(path);CHKERRQ(ierr);
   ierr = DMInitializePackage(path);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -1,7 +1,7 @@
 #if !defined(__ISMAPIMPL_H)
 #define __ISMAPIMPL_H
 
-#include <petscdm.h>
+#include <petscmap.h>
 
 /* --------------------------------------------------------------------------*/
 struct _ISMappingOps {
@@ -119,3 +119,29 @@ do{                                                                             
   }                             \
 }
 #endif
+
+struct _n_ISArrayHunk {
+  PetscInt              refcnt;
+  PetscInt              mask;
+  PetscInt              length;
+  const PetscInt        *i, *j;
+  const PetscScalar     *w;
+  PetscCopyMode          imode, jmode, wmode;  
+  struct _n_ISArrayHunk  *next;
+  struct _n_ISArrayHunk  *parent;
+};
+typedef struct _n_ISArrayHunk *ISArrayHunk;
+
+struct _n_ISArray {
+  ISArrayHunk first,last;
+};
+
+extern PetscErrorCode ISArrayHunkCreate(PetscInt length, PetscInt mask, ISArrayHunk *_newhunk);
+extern PetscErrorCode ISArrayHunkCreateWithArrays(PetscInt length, const PetscInt *i, PetscCopyMode imode, const PetscScalar *w, PetscCopyMode wmode, const PetscInt *j, PetscCopyMode jmode, ISArrayHunk *_newhunk);
+extern PetscErrorCode ISArrayHunkGetSubHunk(ISArrayHunk hunk, PetscInt submask, PetscInt offset, PetscInt length, ISArrayHunk *_subhunk);
+extern PetscErrorCode ISArrayHunkDestroy(ISArrayHunk hunk);
+extern PetscErrorCode ISArrayHunkDestroyHunks(ISArrayHunk hunks);
+extern PetscErrorCode ISArrayHunkMergeHunks(ISArrayHunk hunk, ISArrayHunk *_merged);
+
+extern PetscErrorCode ISArrayAddHunk(ISArray array, ISArrayHunk hunk);
+extern PetscErrorCode ISArrayAssemble(ISArray chain, PetscInt mask, PetscLayout layout, ISArray *_achain);
