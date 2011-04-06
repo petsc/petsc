@@ -9,6 +9,8 @@
 #define dmdavecrestorearrayf902_       DMDAVECRESTOREARRAYF902
 #define dmdavecgetarrayf903_           DMDAVECGETARRAYF903
 #define dmdavecrestorearrayf903_       DMDAVECRESTOREARRAYF903
+#define dmdavecgetarrayf904_           DMDAVECGETARRAYF904
+#define dmdavecrestorearrayf904_       DMDAVECRESTOREARRAYF904
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define dmdagetlocalinfof90_           dmdagetlocalinfof90
 #define dmdavecgetarrayf901_           dmdavecgetarrayf901
@@ -17,6 +19,8 @@
 #define dmdavecrestorearrayf902_       dmdavecrestorearrayf902
 #define dmdavecgetarrayf903_           dmdavecgetarrayf903
 #define dmdavecrestorearrayf903_       dmdavecrestorearrayf903
+#define dmdavecgetarrayf904_           dmdavecgetarrayf904
+#define dmdavecrestorearrayf904_       dmdavecrestorearrayf904
 #endif
 
 EXTERN_C_BEGIN

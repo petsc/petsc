@@ -21,7 +21,7 @@
 #if defined(PETSC_HAVE_MALLOC_H)
 #include <malloc.h>
 #endif
-#include <../src/sys/plog/logimpl.h>
+#include <private/logimpl.h>
 
 PetscLogEvent  PETSC_LARGEST_EVENT  = PETSC_EVENT;
 

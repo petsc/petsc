@@ -34,17 +34,18 @@ struct _p_ISMapping{
 #if defined(PETSC_USE_DEBUG)
 #define ISMappingCheckMethod(map,method,name)                                                                  \
 do {                                                                                                    \
-  if(!(method)) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "ISMapping doesn't implement %s", name); \
+  if(!(method)) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "ISMapping doesn't implement %s", (name)); \
 } while(0)
-#define ISMappingCheckType(map,maptype,arg)                                                                  \
-do{                                                                                                          \
-   PetscBool sametype;                                                                                       \
-   PetscValidHeaderSpecific((map), IS_MAPPING_CLASSID, 1);                                                   \
-   ierr = PetscTypeCompare((PetscObject)(map),(maptype),&sametype); CHKERRQ(ierr);                           \
-   if(!sametype) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Expected ISMapping of type %s", (maptype)); \
-} while(0)
-#else 
-#define ISMappingCheckMethod(map,arg) do {} while(0)
+#define ISMappingCheckType(map,maptype,arg)                             \
+  do {                                                                   \
+    PetscBool _9_sametype;                                              \
+    PetscErrorCode _9_ierr;                                             \
+    PetscValidHeaderSpecific((map), IS_MAPPING_CLASSID, 1);             \
+    _9_ierr = PetscTypeCompare((PetscObject)(map),(maptype),&_9_sametype); CHKERRQ(_9_ierr); \
+    if(!_9_sametype) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Expected ISMapping of type %s", (maptype)); \
+  } while(0)
+#else
+#define ISMappingCheckMethod(map,method,name) do {} while(0)
 #define ISMappingCheckType(map,maptype,arg) do {} while(0)
 #endif
 

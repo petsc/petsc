@@ -22,6 +22,8 @@ class Configure(config.base.Configure):
     desc.append('xxx=========================================================================xxx')
     desc.append('   Configure stage complete. Now build PETSc libraries with:')
     desc.append('   make PETSC_DIR='+self.petscdir.dir+' PETSC_ARCH='+self.arch.arch+' all')
+    desc.append(' or:')
+    desc.append('   PETSC_DIR='+self.petscdir.dir+' PETSC_ARCH='+self.arch.arch+' ./config/builder.py')
     desc.append('xxx=========================================================================xxx')
     return '\n'.join(desc)+'\n'
 
@@ -337,6 +339,7 @@ class Configure(config.base.Configure):
         return [a]
     def libpath(lib):
       'Returns a search path if that is what this item provides, else "" which will be cleaned out later'
+      if not isinstance(lib,str): return ''
       if lib.startswith('-L'): return lib[2:]
       if lib.startswith('-R'): return lib[2:]
       if lib.startswith('-Wl,-rpath,'):
@@ -348,17 +351,22 @@ class Configure(config.base.Configure):
       return os.path.dirname(lib)
     def cleanlib(lib):
       'Returns a library name if that is what this item provides, else "" which will be cleaned out later'
+      if not isinstance(lib,str): return ''
       if lib.startswith('-l'):  return lib[2:]
       if lib.startswith('-Wl') or lib.startswith('-L'): return ''
       lib = os.path.splitext(os.path.basename(lib))[0]
       if lib.startswith('lib'): return lib[3:]
       return lib
     def nub(lst):
+      'Return a list containing the first occurrence of each unique element'
       unique = []
       for elem in lst:
         if elem not in unique and elem != '':
           unique.append(elem)
       return unique
+    def nublast(lst):
+      'Return a list containing the last occurrence of each unique entry in a list'
+      return reversed(nub(reversed(lst)))
     def cmakeexpand(varname):
       return r'"${' + varname + r'}"'
     def uniqextend(lst,new):
@@ -389,21 +397,26 @@ class Configure(config.base.Configure):
       if self.sharedlibraries.useShared:
         cmakeset(fd,'BUILD_SHARED_LIBS')
     def writeBuildFlags(fd):
+      def extendby(lib):
+        libs = ensurelist(lib)
+        lib_paths.extend(map(libpath,libs))
+        lib_libs.extend(map(cleanlib,libs))
+        uniqextend(includes,pkg.include)
       lib_paths = []
       lib_libs  = []
       includes  = []
       libvars   = []
       for pkg in self.framework.packages:
-        libs = ensurelist(pkg.lib)
-        lib_paths.extend(map(libpath,libs))
-        lib_libs.extend(map(cleanlib,libs))
-        uniqextend(includes,pkg.include)
-      if self.libraries.math: lib_libs.extend(map(cleanlib,self.libraries.math))
-      if self.libraries.rt: lib_libs.extend(map(cleanlib,self.libraries.rt))
-      for libname in nub(lib_libs):
+        extendby(pkg.lib)
+      extendby(self.libraries.math)
+      extendby(self.libraries.rt)
+      extendby(self.compilers.flibs)
+      extendby(self.compilers.cxxlibs)
+      extendby(self.compilers.LIBS.split())
+      for libname in nublast(lib_libs):
         libvar = 'PETSC_' + libname.upper() + '_LIB'
         addpath = ''
-        for lpath in nub(lib_paths):
+        for lpath in nublast(lib_paths):
           addpath += '"' + str(lpath) + '" '
         fd.write('find_library (' + libvar + ' ' + libname + ' HINTS ' + addpath + ')\n')
         libvars.append(libvar)

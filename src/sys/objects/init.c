@@ -485,7 +485,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   }
 #if defined(PETSC_HAVE_MPE)
   flg1 = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-log_mpe",&flg1,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-log_mpe",&flg1);CHKERRQ(ierr);
   if (flg1) PetscLogMPEBegin();
 #endif
   flg1 = PETSC_FALSE;

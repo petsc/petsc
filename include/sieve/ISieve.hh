@@ -2040,41 +2040,25 @@ namespace ALE {
       typename ISection::point_type       max   = *chart.begin();
 
       for(typename Section::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
-        min = std::min(min, *p_iter);
-        max = std::max(max, *p_iter);
+        min = std::min(min, renumbering[*p_iter]);
+        max = std::max(max, renumbering[*p_iter]);
       }
       icoordinates.setChart(typename ISection::chart_type(min, max+1));
       for(typename Section::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
-        icoordinates.setFiberDimension(*p_iter, coordinates.getFiberDimension(*p_iter));
+        icoordinates.setFiberDimension(renumbering[*p_iter], coordinates.getFiberDimension(*p_iter));
       }
       icoordinates.allocatePoint();
       for(typename Section::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
-        icoordinates.updatePoint(*p_iter, coordinates.restrictPoint(*p_iter));
+        icoordinates.updatePoint(renumbering[*p_iter], coordinates.restrictPoint(*p_iter));
       }
     }
-    template<typename IMesh, typename Label>
-    static void convertLabel(IMesh& imesh, const std::string& name, const Obj<Label>& oldLabel) {
-      const Obj<typename IMesh::label_type>&        label = imesh.createLabel(name);
-      const typename IMesh::sieve_type::chart_type& chart = imesh.getSieve()->getChart();
-      int                                           size  = 0;
-
-      label->setChart(chart);
-      for(typename IMesh::point_type p = chart.min(); p < chart.max(); ++p) {
-        const int coneSize = oldLabel->cone(p)->size();
-
-        label->setConeSize(p, coneSize);
-        size += coneSize;
-      }
-      if (size) {label->setSupportSize(0, size);}
-      label->allocate();
-      for(typename IMesh::point_type p = chart.min(); p < chart.max(); ++p) {
-        const Obj<typename Label::coneSequence>& cone = oldLabel->cone(p);
-
-        if (cone->size()) {
-          label->setCone(*cone->begin(), p);
+    template<typename Label, typename Renumbering>
+    static void convertLabel(const Obj<Label>& newLabel, const Obj<Label>& oldLabel, Renumbering& renumbering) {
+      for(typename Renumbering::const_iterator p = renumbering.begin(); p != renumbering.end(); ++p) {
+        if (oldLabel->getConeSize(p->first)) {
+          newLabel->setCone(*oldLabel->cone(p->first)->begin(), p->second);
         }
       }
-      label->recalculateLabel();
     }
     template<typename Mesh, typename IMesh, typename Renumbering>
     static void convertMesh(Mesh& mesh, IMesh& imesh, Renumbering& renumbering, bool renumber = true) {
@@ -2095,7 +2079,11 @@ namespace ALE {
           convertLabel(imesh, l_iter->first, l_iter->second);
         }
 #else
-        imesh.setLabel(l_iter->first, l_iter->second);
+        if (renumber) {
+          convertLabel(imesh.createLabel(l_iter->first), l_iter->second, renumbering);
+        } else {
+          imesh.setLabel(l_iter->first, l_iter->second);
+        }
 #endif
       }
     }

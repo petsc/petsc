@@ -85,6 +85,7 @@ PetscErrorCode ISMappingIS_LocateIndices(PetscInt tablen, const PetscInt table[]
 }/* ISMappingIS_LocateIndices() */
 
 
+#if defined(PETSC_USE_DEBUG)
 /*
      Checks if any indices are within [imin,imax) and generate an error, if they are not and 
      if outOfBoundsError == PETSC_TRUE.  Return the result in flag.
@@ -159,6 +160,7 @@ static PetscErrorCode ISMappingIS_CheckISRange(IS is, PetscInt imin, PetscInt im
   if(flag) *flag = inBounds;
   PetscFunctionReturn(0);
 }
+#endif
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISMappingMapLocal_IS"
@@ -302,9 +304,11 @@ static PetscErrorCode ISMappingIS_AssembleMPI(ISMapping map, PetscInt len, const
   PetscInt    *rvalues = PETSC_NULL, *svalues = PETSC_NULL, *rsvalues, *values = PETSC_NULL;
   MPI_Request *recv_waits, *send_waits;
   MPI_Status  recv_status, *send_status;
-  PetscBool found;
   PetscInt *aixidx, *aiyidx;
-    
+#if defined(PETSC_USE_DEBUG)
+  PetscBool found;
+#endif
+
   ierr = PetscObjectGetNewTag((PetscObject)map, &tag);CHKERRQ(ierr);
   comm = ((PetscObject)map)->comm;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
@@ -591,9 +595,9 @@ PetscErrorCode ISMappingISSetEdges(ISMapping map, IS ix, IS iy) {
 static PetscErrorCode ISMappingAssemblyBegin_IS(ISMapping map)
 {
   ISMapping_IS   *mapis  = (ISMapping_IS*)(map->data);
-  PetscInt       nix, niy;
   PetscErrorCode ierr;
   PetscMPIInt    xsize;
+
   PetscFunctionBegin;
   /*
       if input or output vertices are not defined, assume they are the total domain or range.
@@ -607,11 +611,14 @@ static PetscErrorCode ISMappingAssemblyBegin_IS(ISMapping map)
 #if defined(PETSC_USE_DEBUG)
   /* Consistency checks. */
   /* Make sure the IS sizes are compatible */
-  ierr = ISGetLocalSize(mapis->ix,&nix);CHKERRQ(ierr);
-  ierr = ISGetLocalSize(mapis->iy,&niy);CHKERRQ(ierr);
-  if (nix != niy) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local IS sizes don't match");
-  ierr = ISMappingIS_CheckISRange(mapis->ix, 0, map->xlayout->N, PETSC_TRUE, PETSC_NULL); CHKERRQ(ierr);
-  ierr = ISMappingIS_CheckISRange(mapis->iy, 0, map->ylayout->N, PETSC_TRUE, PETSC_NULL); CHKERRQ(ierr);
+  {
+    PetscInt nix, niy;
+    ierr = ISGetLocalSize(mapis->ix,&nix);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(mapis->iy,&niy);CHKERRQ(ierr);
+    if (nix != niy) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local IS sizes don't match");
+    ierr = ISMappingIS_CheckISRange(mapis->ix, 0, map->xlayout->N, PETSC_TRUE, PETSC_NULL); CHKERRQ(ierr);
+    ierr = ISMappingIS_CheckISRange(mapis->iy, 0, map->ylayout->N, PETSC_TRUE, PETSC_NULL); CHKERRQ(ierr);
+  }
 #endif
 
   if(mapis->supp) {
@@ -695,7 +702,6 @@ PetscErrorCode ISMappingGetImageIS_IS(ISMapping map, IS *image) {
 #define __FUNCT__ "ISMappingGetMaxImageSizeLocal_IS"
 PetscErrorCode ISMappingGetMaxImageSizeLocal_IS(ISMapping map, PetscInt *maxsize)
 {
-  PetscErrorCode ierr;
   ISMapping_IS *mapis = (ISMapping_IS *)(map->data);
   PetscFunctionBegin;
   ISMappingCheckType(map,IS_MAPPING_IS,1);
@@ -707,7 +713,6 @@ PetscErrorCode ISMappingGetMaxImageSizeLocal_IS(ISMapping map, PetscInt *maxsize
 #define __FUNCT__ "ISMappingGetImageSizeLocal_IS"
 PetscErrorCode ISMappingGetImageSizeLocal_IS(ISMapping map, PetscInt *size)
 {
-  PetscErrorCode ierr;
   ISMapping_IS *mapis = (ISMapping_IS *)(map->data);
   PetscFunctionBegin;
   ISMappingCheckType(map,IS_MAPPING_IS,1);
@@ -720,7 +725,6 @@ PetscErrorCode ISMappingGetImageSizeLocal_IS(ISMapping map, PetscInt *size)
 #define __FUNCT__ "ISMappingGetSupportSizeLocal_IS"
 PetscErrorCode ISMappingGetSupportSizeLocal_IS(ISMapping map, PetscInt *size)
 {
-  PetscErrorCode ierr;
   ISMapping_IS *mapis = (ISMapping_IS *)(map->data);
   PetscFunctionBegin;
   ISMappingCheckType(map,IS_MAPPING_IS,1);
@@ -798,7 +802,6 @@ PetscErrorCode ISMappingGetOperator_IS(ISMapping map, Mat *mat)
 #define __FUNCT__ "ISMappingView_IS"
 static PetscErrorCode ISMappingView_IS(ISMapping map, PetscViewer v) 
 {
-  PetscErrorCode ierr;
   PetscFunctionBegin;
   ISMappingCheckType(map,IS_MAPPING_IS,1);
   /* FIX: actually implement this */

@@ -4,6 +4,10 @@
 #if !defined(__PETSCERROR_H)
 #define __PETSCERROR_H
 
+#if defined(PETSC_HAVE_STRING_H)
+#include <string.h> /* for strcmp */
+#endif
+
 PETSC_EXTERN_CXX_BEGIN
 
 /*

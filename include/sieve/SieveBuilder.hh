@@ -783,14 +783,16 @@ namespace ALE {
       delete [] vertexOffset;
       ALE_LOG_EVENT_END;
     };
-    static void buildCoordinatesMultiple(const Obj<Bundle_>& bundle, const int embedDim, const double coords[]) {
+    static void buildCoordinatesMultiple(const Obj<Bundle_>& bundle, const int embedDim, const double coords[], int numGlobalCells = -1) {
       const Obj<typename Bundle_::real_section_type>& coordinates = bundle->getRealSection("coordinates");
       const Obj<typename Bundle_::label_sequence>&    vertices    = bundle->depthStratum(0);
       const int numCells = bundle->heightStratum(0)->size(), numVertices = vertices->size();
       const int debug    = bundle->debug();
-      int       numGlobalCells, offset;
+      int       offset;
 
-      MPI_Allreduce((void *) &numCells, &numGlobalCells, 1, MPI_INT, MPI_SUM, bundle->comm());
+      if (numGlobalCells < 0) {
+        MPI_Allreduce((void *) &numCells, &numGlobalCells, 1, MPI_INT, MPI_SUM, bundle->comm());
+      }
       MPI_Scan((void *) &numVertices, &offset, 1, MPI_INT, MPI_SUM, bundle->comm());
       offset += numGlobalCells - numVertices;
       coordinates->setFiberDimension(vertices, embedDim);

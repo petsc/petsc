@@ -103,8 +103,7 @@ int main(int argc,char **argv)
   }
   ierr = AOCreate(PETSC_COMM_WORLD,&ao);CHKERRQ(ierr);
   ierr = AOSetIS(ao,isapp,ispetsc);CHKERRQ(ierr);
-  //ierr = AOSetType(ao,AOMEMORYSCALABLE);CHKERRQ(ierr);
-  ierr = AOSetType(ao,AOBASIC);CHKERRQ(ierr);
+  ierr = AOSetType(ao,AOMEMORYSCALABLE);CHKERRQ(ierr);
   ierr = AOSetFromOptions(ao);CHKERRQ(ierr);
 
   /* ispetsc and isapp are nolonger used. */

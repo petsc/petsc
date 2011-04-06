@@ -5,7 +5,7 @@
    in the public PETSc include files.
 
 */
-#include <../src/sys/plog/logimpl.h>  /*I    "petscsys.h"   I*/
+#include <private/logimpl.h>  /*I    "petscsys.h"   I*/
 
 /* Variables for the tracing logger */
 extern FILE          *tracefile;

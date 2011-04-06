@@ -451,6 +451,117 @@ extern PetscErrorCode  PetscLogObjectState(PetscObject,const char[],...);
 
 #endif   /* PETSC_USE_LOG */
 
+extern PetscErrorCode StackCreate(IntStack *);
+extern PetscErrorCode StackDestroy(IntStack);
+extern PetscErrorCode StackPush(IntStack, int);
+extern PetscErrorCode StackPop(IntStack, int *);
+extern PetscErrorCode StackTop(IntStack, int *);
+extern PetscErrorCode StackEmpty(IntStack, PetscBool  *);
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscLogGetStageLog"
+/*@C
+  PetscLogGetStageLog - This function returns the default stage logging object.
+
+  Not collective
+
+  Output Parameter:
+. stageLog - The default StageLog
+
+  Level: developer
+
+  Developer Notes: Inline since called for EACH PetscEventLogBeginDefault() and PetscEventLogEndDefault()
+
+.keywords: log, stage
+.seealso: StageLogCreate()
+@*/
+PETSC_STATIC_INLINE PetscErrorCode  PetscLogGetStageLog(StageLog *stageLog)
+{
+  PetscFunctionBegin;
+  PetscValidPointer(stageLog,1);
+  if (!_stageLog) {
+    fprintf(stderr, "PETSC ERROR: Logging has not been enabled.\nYou might have forgotten to call PetscInitialize().\n");
+    MPI_Abort(MPI_COMM_WORLD, PETSC_ERR_SUP);
+  }
+  *stageLog = _stageLog;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "StageLogGetCurrent"
+/*@C
+  StageLogGetCurrent - This function returns the stage from the top of the stack.
+
+  Not Collective
+
+  Input Parameter:
+. stageLog - The StageLog
+
+  Output Parameter:
+. stage    - The current stage
+
+  Notes:
+  If no stage is currently active, stage is set to -1.
+
+  Level: developer
+
+  Developer Notes: Inline since called for EACH PetscEventLogBeginDefault() and PetscEventLogEndDefault()
+
+.keywords: log, stage
+.seealso: StageLogPush(), StageLogPop(), PetscLogGetStageLog()
+@*/
+PETSC_STATIC_INLINE PetscErrorCode  StageLogGetCurrent(StageLog stageLog, int *stage)
+{
+  PetscBool      empty;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = StackEmpty(stageLog->stack, &empty);CHKERRQ(ierr);
+  if (empty) {
+    *stage = -1;
+  } else {
+    ierr = StackTop(stageLog->stack, stage);CHKERRQ(ierr);
+  }
+#ifdef PETSC_USE_DEBUG
+  if (*stage != stageLog->curStage) {
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB, "Inconsistency in stage log: stage %d should be %d", *stage, stageLog->curStage);
+  }
+#endif
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "StageLogGetEventPerfLog"
+/*@C
+  StageLogGetEventPerfLog - This function returns the EventPerfLog for the given stage.
+
+  Not Collective
+
+  Input Parameters:
++ stageLog - The StageLog
+- stage    - The stage
+
+  Output Parameter:
+. eventLog - The EventPerfLog
+
+  Level: developer
+
+  Developer Notes: Inline since called for EACH PetscEventLogBeginDefault() and PetscEventLogEndDefault()
+
+.keywords: log, stage
+.seealso: StageLogPush(), StageLogPop(), PetscLogGetStageLog()
+@*/
+PETSC_STATIC_INLINE PetscErrorCode  StageLogGetEventPerfLog(StageLog stageLog, int stage, EventPerfLog *eventLog)
+{
+  PetscFunctionBegin;
+  PetscValidPointer(eventLog,3);
+  if ((stage < 0) || (stage >= stageLog->numStages)) {
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE, "Invalid stage %d should be in [0,%d)", stage, stageLog->numStages);
+  }
+  *eventLog = stageLog->stageInfo[stage].eventLog;
+  PetscFunctionReturn(0);
+}
+
 /* Special support for C++ */
 #include "petsclog.hh"
 
