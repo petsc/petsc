@@ -450,7 +450,13 @@ class Configure(config.package.Package):
     args.append('CC="'+self.getCompiler()+'"')
     args.append('CFLAGS="'+self.getCompilerFlags()+'"')
     self.popLanguage()
-    args.append('--disable-cxx')
+    if hasattr(self.compilers, 'CXX'):
+      self.pushLanguage('Cxx')
+      args.append('CXX="'+self.getCompiler()+'"')
+      args.append('CXXFLAGS="'+self.getCompilerFlags()+'"')
+      self.popLanguage()
+    else:
+      args.append('--disable-cxx')
     if hasattr(self.compilers, 'FC'):
       self.pushLanguage('FC')
       fc = self.getCompiler()
