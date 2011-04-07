@@ -1,7 +1,7 @@
 
 #include <petscsys.h>
 #include <../src/sys/draw/drawimpl.h>
-#include <win32draw.h>
+#include <../src/sys/draw/impls/win32/win32draw.h>
 
 #define IDC_FOUR       109
 #define IDI_FOUR       107

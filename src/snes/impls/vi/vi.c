@@ -1208,6 +1208,7 @@ PetscErrorCode SNESSolveVI_RS2(SNES snes)
       ierr = MatSetFromOptions(J_aug);CHKERRQ(ierr);
       
 
+      { /* local vars */
       /* Preallocate augmented matrix and set values in it...Doing only sequential case first*/
       PetscInt          ncols;
       const PetscInt    *cols;
@@ -1249,7 +1250,7 @@ PetscErrorCode SNESSolveVI_RS2(SNES snes)
       ierr = MatAssemblyEnd(J_aug,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
       /* Only considering prejac = jac for now */
       Jpre_aug = J_aug;
-
+      } /* local vars*/
     } else {
       F_aug = F; J_aug = snes->jacobian; Y_aug = Y; Jpre_aug = snes->jacobian_pre;
     }

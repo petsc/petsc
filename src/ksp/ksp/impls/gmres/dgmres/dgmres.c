@@ -916,8 +916,11 @@ PetscErrorCode  KSPDGMRESComputeSchurForm_DGMRES (KSP ksp, PetscInt *neig) {
     PetscInt	    i, j;
     PetscInt		NbrEig; 	/* Number of eigenvalues really extracted */
     PetscReal		*wr, *wi, *modul; 	/* Real and imaginary part and modul of the eigenvalues of A*/
-	PetscReal 		CondEig; /* lower bound on the reciprocal condition number for the selected cluster of eigenvalues */
-	PetscReal 		CondSub; /* estimated reciprocal condition number of the specified invariant subspace. */
+    PetscReal 		CondEig; /* lower bound on the reciprocal condition number for the selected cluster of eigenvalues */
+    PetscReal 		CondSub; /* estimated reciprocal condition number of the specified invariant subspace. */
+    PetscInt *select;
+    PetscInt *iwork;
+    PetscInt liwork;
 
     PetscFunctionBegin;
     bn=PetscBLASIntCast (n);
@@ -969,9 +972,6 @@ PetscErrorCode  KSPDGMRESComputeSchurForm_DGMRES (KSP ksp, PetscInt *neig) {
 		NbrEig += 1;
 	}
 	/* Reorder the Schur decomposition so that the cluster of smallest eigenvalues appears in the leading diagonal blocks of A */
-	PetscInt *select;
-	PetscInt *iwork;
-	PetscInt liwork;
 
 	ierr = PetscMalloc(n * sizeof(PetscInt), &select);	CHKERRQ(ierr);
 	ierr = PetscMemzero(select, n * sizeof(PetscInt));	CHKERRQ(ierr);
@@ -1101,6 +1101,13 @@ PetscErrorCode  KSPDGMRESImproveEig_DGMRES (KSP ksp, PetscInt neig)
 	PetscBLASInt 	*perm;		/* Permutation vector to sort eigenvalues */
 	PetscReal		*wr, *wi, *beta, *modul; 	/* Real and imaginary part and modul of the eigenvalues of A*/
 	PetscInt		ierr;
+	PetscInt NbrEig = 0;
+	PetscBLASInt *select;
+
+	PetscBLASInt wantQ = 1, wantZ = 1;
+	PetscBLASInt liwork, *iwork; 
+	PetscBLASInt ijob = 2;
+	PetscReal Dif[2];
 
 	PetscFunctionBegin;
 	/* Block construction of the matrices AUU=(AU)'*U and (AU)'*AU*/
@@ -1184,7 +1191,6 @@ PetscErrorCode  KSPDGMRESImproveEig_DGMRES (KSP ksp, PetscInt neig)
 		ierr=PetscMalloc (aug1*bmax*sizeof (PetscReal), &SR2);        CHKERRQ (ierr);
 	}
 	/* count the number of extracted eigenvalues ( complex conjugates count as 2) */
-	PetscInt NbrEig = 0;
 	while (NbrEig < bmax) {
 		if (wi[perm[NbrEig]] == 0) NbrEig += 1;
 		else NbrEig += 2;
@@ -1194,7 +1200,6 @@ PetscErrorCode  KSPDGMRESImproveEig_DGMRES (KSP ksp, PetscInt neig)
 	dgmres->r = r = NbrEig;
 	
 	/* Select the eigenvalues to reorder */
-	PetscBLASInt *select;
 	ierr = PetscMalloc(N * sizeof(PetscBLASInt), &select);	CHKERRQ(ierr);
 	if (dgmres->GreatestEig == PETSC_FALSE)
 	{
@@ -1207,10 +1212,6 @@ PetscErrorCode  KSPDGMRESImproveEig_DGMRES (KSP ksp, PetscInt neig)
 			select[perm[N-j-1]] = 1;
 	}
 	/* Reorder and extract the new <r> schur vectors */
-	PetscBLASInt wantQ = 1, wantZ = 1;
-	PetscBLASInt liwork, *iwork; 
-	PetscBLASInt ijob = 2;
-	PetscReal Dif[2];
 	lwork  = MAX(4 * N + 16,  2 * NbrEig * (N - NbrEig) );
 	liwork = MAX(N + 6,  2 * NbrEig * (N - NbrEig) );
 	ierr = PetscFree(work); CHKERRQ(ierr);
