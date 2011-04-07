@@ -987,8 +987,8 @@ PetscErrorCode  KSPDGMRESComputeSchurForm_DGMRES (KSP ksp, PetscInt *neig) {
 			select[perm[n-j-1]] = 1;
 	}
 	/* call Lapack dtrsen */
-	lwork  =  MAX(1, 4 * NbrEig * (bn-NbrEig));
-	liwork = MAX(1, 2 * NbrEig * (bn-NbrEig));
+	lwork  =  PetscMax(1, 4 * NbrEig * (bn-NbrEig));
+	liwork = PetscMax(1, 2 * NbrEig * (bn-NbrEig));
 	ierr = PetscMalloc(lwork * sizeof(PetscScalar), &work);	CHKERRQ(ierr);
 	ierr = PetscMalloc(liwork * sizeof(PetscInt), &iwork);	CHKERRQ(ierr);
 #if !defined(PETSC_MISSING_LAPACK_TRSEN) 
@@ -1212,8 +1212,8 @@ PetscErrorCode  KSPDGMRESImproveEig_DGMRES (KSP ksp, PetscInt neig)
 			select[perm[N-j-1]] = 1;
 	}
 	/* Reorder and extract the new <r> schur vectors */
-	lwork  = MAX(4 * N + 16,  2 * NbrEig * (N - NbrEig) );
-	liwork = MAX(N + 6,  2 * NbrEig * (N - NbrEig) );
+	lwork  = PetscMax(4 * N + 16,  2 * NbrEig * (N - NbrEig) );
+	liwork = PetscMax(N + 6,  2 * NbrEig * (N - NbrEig) );
 	ierr = PetscFree(work); CHKERRQ(ierr);
 	ierr = PetscMalloc(lwork * sizeof(PetscReal), &work);	CHKERRQ(ierr);
 	ierr = PetscMalloc(liwork * sizeof(PetscBLASInt), &iwork);	CHKERRQ(ierr);
