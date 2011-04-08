@@ -87,13 +87,16 @@ static PetscErrorCode FormFunctionLocal_U(DM dmu, DM dmk, SectionReal sectionU, 
     PetscScalar   *u;
 
     ierr = SectionRealRestrict(sectionU, up, &u);CHKERRQ(ierr);
-    if (marker == 1) {
+    if (marker == 1) { /* Left end */
       values[0] = hx*u[0];
       ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "  Left  End vu %d hx: %g f %g\n", up, hx, values[0]);CHKERRQ(ierr);
       urp  = *(++vur_iter);
-    } else if (marker == 2) {
+    } else if (marker == 2) { /* Right end */
       values[0] = hx*(u[0] - 1.0);
       ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "  Right End vu %d hx: %g f %g\n", up, hx, values[0]);CHKERRQ(ierr);
+    } else if (marker == 3) { /* Left Ghost */
+      urp  = *(++vur_iter);
+    } else if (marker == 4) { /* Right Ghost */
     } else {
       PetscScalar *ul, *ur, *k, *kl;
 
@@ -659,6 +662,7 @@ int main(int argc, char *argv[])
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   ierr = FormInitial_Coupled(user,X);CHKERRQ(ierr);
+  ierr = VecView(X, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
   switch (user->ptype) {
