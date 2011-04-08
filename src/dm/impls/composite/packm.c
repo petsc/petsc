@@ -64,7 +64,7 @@ static PetscErrorCode DMGetMatrix_Composite_AIJ(DM dm,const MatType mtype,Mat *J
   PetscInt               m,*dnz,*onz,i,j,mA;
   Mat                    Atmp;
   PetscMPIInt            rank;
-  PetscBool              dense = PETSC_FALSE,prealloc_only = PETSC_FALSE;
+  PetscBool              dense = PETSC_FALSE; 
 
   PetscFunctionBegin;
   /* use global vector to determine layout needed for matrix */

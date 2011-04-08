@@ -737,7 +737,6 @@ PetscErrorCode DMGetMatrix_DA_2d_MPIAIJ(DM da,Mat J)
   DMDABoundaryType       bx,by;
   ISLocalToGlobalMapping ltog,ltogb;
   DMDAStencilType        st;
-  DM_DA                  *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   /*     
@@ -974,7 +973,6 @@ PetscErrorCode DMGetMatrix_DA_3d_MPIAIJ(DM da,Mat J)
   DMDABoundaryType       bx,by,bz;
   ISLocalToGlobalMapping ltog,ltogb;
   DMDAStencilType        st;
-  DM_DA                  *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   /*     
@@ -1089,7 +1087,6 @@ PetscErrorCode DMGetMatrix_DA_1d_MPIAIJ(DM da,Mat J)
   PetscScalar            *values;
   DMDABoundaryType       bx;
   ISLocalToGlobalMapping ltog,ltogb;
-  DM_DA                  *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   /*     
@@ -1156,7 +1153,6 @@ PetscErrorCode DMGetMatrix_DA_2d_MPIBAIJ(DM da,Mat J)
   DMDABoundaryType       bx,by;
   DMDAStencilType        st;
   ISLocalToGlobalMapping ltog,ltogb;
-  DM_DA                  *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   /*     
@@ -1251,7 +1247,6 @@ PetscErrorCode DMGetMatrix_DA_3d_MPIBAIJ(DM da,Mat J)
   DMDABoundaryType       bx,by,bz;
   DMDAStencilType        st;
   ISLocalToGlobalMapping ltog,ltogb;
-  DM_DA                  *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   /*     
@@ -1383,7 +1378,6 @@ PetscErrorCode DMGetMatrix_DA_2d_MPISBAIJ(DM da,Mat J)
   DMDABoundaryType       bx,by;
   DMDAStencilType        st;
   ISLocalToGlobalMapping ltog,ltogb;
-  DM_DA                  *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   /*     
@@ -1482,7 +1476,6 @@ PetscErrorCode DMGetMatrix_DA_3d_MPISBAIJ(DM da,Mat J)
   DMDABoundaryType       bx,by,bz;
   DMDAStencilType        st;
   ISLocalToGlobalMapping ltog,ltogb;
-  DM_DA                  *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   /*     
