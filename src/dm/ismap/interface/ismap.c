@@ -828,6 +828,7 @@ PetscErrorCode  ISMappingPullback(ISMapping A,ISMapping B, ISMapping *C)
 {
   PetscErrorCode ierr;
   PetscErrorCode (*pullback)(ISMapping,ISMapping,ISMapping*);
+  char  pullbackname[256];
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,IS_MAPPING_CLASSID,1);
@@ -839,7 +840,6 @@ PetscErrorCode  ISMappingPullback(ISMapping A,ISMapping B, ISMapping *C)
   PetscValidPointer(C,3);
 
   /* dispatch based on the type of A and B */
-  char  pullbackname[256];
   ierr = PetscStrcpy(pullbackname,"ISMappingPullback_");CHKERRQ(ierr);
   ierr = PetscStrcat(pullbackname,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = PetscStrcat(pullbackname,"_");    CHKERRQ(ierr);
@@ -876,6 +876,7 @@ PetscErrorCode  ISMappingPushforward(ISMapping A,ISMapping B, ISMapping *C)
 {
   PetscErrorCode ierr;
   PetscErrorCode (*pushforward)(ISMapping,ISMapping,ISMapping*);
+  char  pushforwardname[256];
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,IS_MAPPING_CLASSID,1);
@@ -887,7 +888,6 @@ PetscErrorCode  ISMappingPushforward(ISMapping A,ISMapping B, ISMapping *C)
   PetscValidPointer(C,3);
 
   /* dispatch based on the type of A and B */
-  char  pushforwardname[256];
   ierr = PetscStrcpy(pushforwardname,"ISMappingPushforward_");CHKERRQ(ierr);
   ierr = PetscStrcat(pushforwardname,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = PetscStrcat(pushforwardname,"_");    CHKERRQ(ierr);
@@ -957,7 +957,7 @@ PetscErrorCode ISMappingCreate(MPI_Comm comm, ISMapping *_map)
   ISMapping map;
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidPointer(map,2);
+  PetscValidPointer(_map,2);
   *_map = PETSC_NULL;
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
   ierr = ISMappingInitializePackage(PETSC_NULL);CHKERRQ(ierr);

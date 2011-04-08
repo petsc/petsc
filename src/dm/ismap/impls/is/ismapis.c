@@ -291,9 +291,9 @@ static PetscErrorCode ISMappingBin_IS(ISMapping map, PetscInt insize, const Pets
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISMappingIS_AssembleMPI"
-static PetscErrorCode ISMappingIS_AssembleMPI(ISMapping map, PetscInt len, const PetscInt ixidx[], const PetscInt iyidx[], PetscInt *_alen, PetscInt *_aixidx[], PetscInt *_aiyidx[]){
+static PetscErrorCode ISMappingIS_AssembleMPI(ISMapping map, PetscInt len, const PetscInt ixidx[], const PetscInt iyidx[], PetscInt *_alen, PetscInt *_aixidx[], PetscInt *_aiyidx[])
+{
   PetscErrorCode ierr;
-  PetscFunctionBegin;
   MPI_Comm comm;
   PetscMPIInt size, rank, tag, imdex, n;
   PetscInt idx, lastidx;
@@ -309,6 +309,7 @@ static PetscErrorCode ISMappingIS_AssembleMPI(ISMapping map, PetscInt len, const
   PetscBool found;
 #endif
 
+  PetscFunctionBegin;
   ierr = PetscObjectGetNewTag((PetscObject)map, &tag);CHKERRQ(ierr);
   comm = ((PetscObject)map)->comm;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
