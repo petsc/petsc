@@ -77,7 +77,7 @@ static PetscErrorCode PCDestroy_Galerkin(PC pc)
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  ierr = PCDestroy_Galerkin(pc);CHKERRQ(ierr);
+  ierr = PCReset_Galerkin(pc);CHKERRQ(ierr);
   ierr = KSPDestroy(jac->ksp);CHKERRQ(ierr);
   ierr = PetscFree(pc->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
