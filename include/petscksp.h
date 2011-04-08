@@ -601,6 +601,8 @@ extern PetscErrorCode  MatSchurComplementUpdate(Mat,Mat,Mat,Mat,Mat,Mat,MatStruc
 extern PetscErrorCode  MatSchurComplementGetSubmatrices(Mat,Mat*,Mat*,Mat*,Mat*,Mat*);
 extern PetscErrorCode  MatGetSchurComplement(Mat,IS,IS,IS,IS,MatReuse,Mat *,MatReuse,Mat *);
 
+extern PetscErrorCode  MatGetSchurComplement_Basic(Mat mat,IS isrow0,IS iscol0,IS isrow1,IS iscol1,MatReuse mreuse,Mat *newmat,MatReuse preuse,Mat *newpmat);
+
 extern PetscErrorCode  KSPSetDM(KSP,DM);
 extern PetscErrorCode  KSPSetDMActive(KSP,PetscBool );
 extern PetscErrorCode  KSPGetDM(KSP,DM*);
