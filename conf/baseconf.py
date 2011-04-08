@@ -350,10 +350,13 @@ class build_src(Command):
         ('force', 'f',
          "forcibly build everything (ignore file timestamps)"),
         ]
+    boolean_options = ['force']
     def initialize_options(self):
         self.force = False
     def finalize_options(self):
-        pass
+        self.set_undefined_options('build',
+                                   ('force', 'force'),
+                                   )
     def run(self):
         pass
 
