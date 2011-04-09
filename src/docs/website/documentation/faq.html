@@ -10,7 +10,7 @@
   <tbody>
     <tr>
       <td valign="top" width="25%">
-      <h1><font size="7" color="#ff0000">PETSc</font></h1>
+      <h1><font color="#ff0000" size="7">PETSc</font></h1>
       <ul>
         <li><a href="../index.html"><strong>Home</strong></a></li>
       </ul>
@@ -21,7 +21,7 @@
     </tr>
     <tr>
       <td colspan="2" width="100%">
-      <hr size="4" color="#ff5b5b"> </td>
+      <hr color="#ff5b5b" size="4"> </td>
     </tr>
     <tr>
       <td valign="top" width="25%">
@@ -59,6 +59,9 @@ Site</strong></a></li>
       <menu>
       <li><a href="faq.html#petsc-mailing-list">How
 can I subscribe to the PETSc&nbsp;mailing lists?</a></li>
+      <li><a href="faq.html#book">Any useful books on numerical
+computing?</a><br>
+      </li>
       <li><a href="faq.html#computers">What kind of
 parallel computers or clusters are needed
 to use PETSc?</a></li>
@@ -199,6 +202,7 @@ slow,
 
 
 
+
         </span>what can I do to make it
 faster?</a></li>
       <li><a href="faq.html#log-summary">How can I
@@ -296,7 +300,16 @@ with dynamic libraries (and difference with shared libraries)</a></li>
 can I subscribe to the
 PETSc&nbsp;mailing lists?</font> </a></p>
       <p>See <a
- href="http://www.mcs.anl.gov/petsc/petsc-as/miscellaneous/mailing-lists.html">http://www.mcs.anl.gov/petsc/petsc-as/miscellaneous/mailing-lists.html</a></p>
+ href="http://www.mcs.anl.gov/petsc/petsc-as/miscellaneous/mailing-lists.html">http://www.mcs.anl.gov/petsc/petsc-as/miscellaneous/mailing-lists.html</a><br>
+      <span style="font-weight: bold;"><br>
+      </span></p>
+      <h3 style="font-weight: normal;"><small><font><a
+ name="petsc-mailing-list"><font color="#ff0000">Any useful books on
+numerical computing?</font></a></font></small></h3>
+      <p><a
+ href="http://ebooks.cambridge.org/ebook.jsf?bid=CBO9780511617973">Writing
+Scientific Software: A Guide to Good Style</a><br>
+      </p>
       <p><a name="computers"><font color="#ff0000">What kind of
 parallel computers or clusters
 are needed to use PETSc?</font><br>
@@ -328,7 +341,8 @@ sockets so that each process uses a different memory bus:
 binding
 with
 the
-Hydra process manager</a></dt>
+Hydra
+process manager</a></dt>
             <dd>mpiexec.hydra -n 4 --binding cpu:sockets</dd>
             <dt><a
  href="http://www.open-mpi.org/doc/v1.5/man1/mpiexec.1.php#sect8">Open
@@ -513,7 +527,8 @@ External packages cannot be used in this mode and some print statements
 in PETSc (those that use the %G format) will not print correctly.<br>
       </p>
       <p><a><font></font></a><font><a name="qd"><font color="#ff0000">Why
-doesn't PETSc
+doesn't
+PETSc
 use QD to implement support for exended precision</font></a></font></p>
       <p><a><font>We tried really hard but could not. The problem is
 that the QD c++ classes, though they try to implement the built-in data
@@ -936,7 +951,8 @@ XXXSetType(obj,type) and hardwire the type at that point.<br>
 I
 use
 my
-own makefiles or rules for
+own
+makefiles or rules for
 compiling code, instead of using PETSc's?</span><br>
             <br>
 Yes, see the section of the <a
@@ -946,7 +962,8 @@ manual</a> called Makefiles <br>
             <a name="cmake"></a><span style="color: rgb(255, 0, 0);">Can
 I
 use
-CMake to build my own project that depends on PETSc? </span><br>
+CMake
+to build my own project that depends on PETSc? </span><br>
             <br>
 Use the FindPETSc.cmake module from <a
  href="https://github.com/jedbrown/cmake-modules/">this repository</a>.
@@ -1130,7 +1147,8 @@ in
 a
 non-symmetric
 system.
-How can I apply Dirichlet boundary conditions
+How
+can I apply Dirichlet boundary conditions
 but&nbsp; keep the
 matrix symmetric?<br>
             <br>
@@ -1225,7 +1243,8 @@ get
 started
 with
 Cython
-so that I can extend petsc4py?<br>
+so
+that I can extend petsc4py?<br>
             </span><br>
 Steps I used:
             <ol>
@@ -1240,7 +1259,8 @@ the
 next
 comment
 that
-shows how to create numpy arrays in the
+shows
+how to create numpy arrays in the
 Cython and pass them back.</li>
               <li>Check out <a
  href="http://docs.cython.org/src/tutorial/numpy.html">this page</a>
@@ -1426,6 +1446,7 @@ in
 
 
 
+
           <a href="faq.html#slow">generating the
 matrix</a> or some other operation.</li>
         <li>There must be enough work for each process to
@@ -1461,6 +1482,7 @@ consider
 multigrid
 preconditioners
 like
+
 
 
 
@@ -1680,7 +1702,8 @@ that
 do
 not
 make
-sense for the correct number of processors. For example if you pass in
+sense
+for the correct number of processors. For example if you pass in
 a local size of 2 and a global size of 100 and run on two processors,
 this cannot work since the sum of the local sizes is 4, not 100.</span></font><br>
       <br>
@@ -1708,6 +1731,7 @@ problem.<br>
 &nbsp; <br>
 If -malloc_debug does not help: on GNU/Linux and Apple Mac OS X
 machines - you can try using&nbsp;<a href="http://valgrind.org/">http://valgrind.org
+
 
 
 
@@ -2022,7 +2046,7 @@ moved to a different location after they are built. </p>
     </tr>
     <tr>
       <td colspan="2" width="100%">
-      <hr size="4" color="#ff5b5b"> </td>
+      <hr color="#ff5b5b" size="4"> </td>
     </tr>
   </tbody>
 </table>
