@@ -343,7 +343,10 @@ namespace ALE {
           for(typename send_overlap_type::traits::supportSequence::iterator p_iter = sendPatches->begin(); p_iter != sendPatches->end(); ++p_iter) {
             if (*p_iter < minRank) minRank = *p_iter;
           }
-          if (minRank < sendOverlap->commRank()) {
+          bool remotePoint = minRank < sendOverlap->commRank();
+          /* Put in a marker check */
+
+          if (remotePoint) {
             if (debug) {std::cout << "["<<order->commRank()<<"]     remote point, on proc " << minRank << std::endl;}
             val = this->_unknownOrder;
           } else {
