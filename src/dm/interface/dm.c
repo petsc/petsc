@@ -1234,7 +1234,7 @@ PetscErrorCode  DMSetType(DM dm, const DMType method)
   if (match) PetscFunctionReturn(0);
 
   if (!DMRegisterAllCalled) {ierr = DMRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
-  ierr = PetscFListFind(DMList, ((PetscObject)dm)->comm, method,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr = PetscFListFind(DMList, ((PetscObject)dm)->comm, method,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown DM type: %s", method);
 
   if (dm->ops->destroy) {

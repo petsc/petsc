@@ -1458,7 +1458,7 @@ extern PetscErrorCode  PetscOListDuplicate(PetscOList,PetscOList *);
 */
 extern PetscErrorCode  PetscFListAdd(PetscFList*,const char[],const char[],void (*)(void));
 extern PetscErrorCode  PetscFListDestroy(PetscFList*);
-extern PetscErrorCode  PetscFListFind(PetscFList,MPI_Comm,const char[],void (**)(void));
+extern PetscErrorCode  PetscFListFind(PetscFList,MPI_Comm,const char[],PetscBool,void (**)(void));
 extern PetscErrorCode  PetscFListPrintTypes(MPI_Comm,FILE*,const char[],const char[],const char[],const char[],PetscFList,const char[]);
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
 #define    PetscFListAddDynamic(a,b,p,c) PetscFListAdd(a,b,p,0)

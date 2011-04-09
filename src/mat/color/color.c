@@ -496,7 +496,7 @@ PetscErrorCode  MatGetColoring(Mat mat,const MatColoringType type,ISColoring *is
   if (flag) { type = tname; }
 
   ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr); 
-  ierr = PetscFListFind(MatColoringList,comm, type,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr = PetscFListFind(MatColoringList,comm, type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(((PetscObject)mat)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Unknown or unregistered type: %s",type);
 
   ierr = PetscLogEventBegin(MAT_GetColoring,mat,0,0,0);CHKERRQ(ierr);

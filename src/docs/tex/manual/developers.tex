@@ -743,7 +743,7 @@ PetscErrorCode PetscObjectQueryFunction\_Petsc(PetscObject obj,char *name,void *
   PetscErrorCode ierr;\\
 \\
   PetscFunctionBegin;\\
-  ierr = PetscFListFind(obj-$>$qlist,obj-$>$comm,name,( int(**)(void *)) ptr);CHKERRQ(ierr);\\
+  ierr = PetscFListFind(obj-$>$qlist,obj-$>$comm,name,PETSC_FALSE,( int(**)(void *)) ptr);CHKERRQ(ierr);\\
   PetscFunctionReturn(0);\\
 \}
 \end{tabbing}

@@ -711,7 +711,7 @@ PetscErrorCode  TSGLSetType_GL(TS ts,const TSGLType type)
     ierr = (*gl->Destroy)(gl);CHKERRQ(ierr);
   }
 
-  ierr = PetscFListFind(TSGLList,((PetscObject)ts)->comm,type,(PetscVoidStarFunction)&r);CHKERRQ(ierr);
+  ierr = PetscFListFind(TSGLList,((PetscObject)ts)->comm,type,PETSC_TRUE,(PetscVoidStarFunction)&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown TSGL type \"%s\" given",type);
   ierr = (*r)(ts);CHKERRQ(ierr);
   ierr = PetscStrcpy(gl->type_name,type);CHKERRQ(ierr);
@@ -727,7 +727,7 @@ PetscErrorCode  TSGLSetAcceptType_GL(TS ts,const TSGLAcceptType type)
   TS_GL *gl = (TS_GL*)ts->data;
 
   PetscFunctionBegin;
-  ierr = PetscFListFind(TSGLAcceptList,((PetscObject)ts)->comm,type,(PetscVoidStarFunction)&r);CHKERRQ(ierr);
+  ierr = PetscFListFind(TSGLAcceptList,((PetscObject)ts)->comm,type,PETSC_TRUE,(PetscVoidStarFunction)&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown TSGLAccept type \"%s\" given",type);
   gl->Accept = r;
   ierr = PetscStrncpy(gl->accept_name,type,sizeof(gl->accept_name));CHKERRQ(ierr);

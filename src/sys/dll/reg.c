@@ -328,7 +328,8 @@ PetscErrorCode  PetscFListDestroyAll(void)
     Input Parameters:
 +   fl   - pointer to list
 .   comm - processors looking for routine
--   name - name string
+.   name - name string
+-   searchlibraries - if not found in the list then search the dynamic libraries and executable for the symbol
 
     Output Parameters:
 .   r - the routine
@@ -337,7 +338,7 @@ PetscErrorCode  PetscFListDestroyAll(void)
 
 .seealso: PetscFListAddDynamic(), PetscFList
 @*/
-PetscErrorCode  PetscFListFind(PetscFList fl,MPI_Comm comm,const char name[],void (**r)(void))
+PetscErrorCode  PetscFListFind(PetscFList fl,MPI_Comm comm,const char name[],PetscBool searchlibraries,void (**r)(void))
 {
   PetscFList     entry = fl;
   PetscErrorCode ierr;
@@ -416,11 +417,13 @@ PetscErrorCode  PetscFListFind(PetscFList fl,MPI_Comm comm,const char name[],voi
   }
 
 #if defined(PETSC_HAVE_DYNAMIC_LIBRARIES)
-  /* Function never registered; try for it anyway */
-  ierr = PetscDLLibrarySym(comm,&DLLibrariesLoaded,path,function,(void **)r);CHKERRQ(ierr);
-  ierr = PetscFree(path);CHKERRQ(ierr);
-  if (*r) {
-    ierr = PetscFListAdd(&fl,name,name,*r);CHKERRQ(ierr);
+  if (searchlibraries) {
+    /* Function never registered; try for it anyway */
+    ierr = PetscDLLibrarySym(comm,&DLLibrariesLoaded,path,function,(void **)r);CHKERRQ(ierr);
+    ierr = PetscFree(path);CHKERRQ(ierr);
+    if (*r) {
+      ierr = PetscFListAdd(&fl,name,name,*r);CHKERRQ(ierr);
+    }
   }
 #endif
   ierr = PetscFree(function);CHKERRQ(ierr);

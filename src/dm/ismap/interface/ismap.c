@@ -915,7 +915,7 @@ PetscErrorCode ISMappingSetType(ISMapping map, const ISMappingType maptype) {
   if(!ISMappingRegisterAllCalled) {
     ierr = ISMappingRegisterAll(PETSC_NULL); CHKERRQ(ierr);
   }
-  ierr =  PetscFListFind(ISList,((PetscObject)map)->comm,maptype,(void(**)(void))&ctor);CHKERRQ(ierr);
+  ierr =  PetscFListFind(ISList,((PetscObject)map)->comm,maptype,PETSC_TRUE,(void(**)(void))&ctor);CHKERRQ(ierr);
   if(!ctor) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unrecognized ISMapping type: %s", maptype); 
 
   /* destroy the old implementation, if it existed */

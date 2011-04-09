@@ -144,7 +144,7 @@ PetscErrorCode  TSGLAdaptSetType(TSGLAdapt adapt,const TSGLAdaptType type)
   PetscErrorCode ierr,(*r)(TSGLAdapt);
 
   PetscFunctionBegin;
-  ierr = PetscFListFind(TSGLAdaptList,((PetscObject)adapt)->comm,type,(void(**)(void))&r);CHKERRQ(ierr);
+  ierr = PetscFListFind(TSGLAdaptList,((PetscObject)adapt)->comm,type,PETSC_TRUE,(void(**)(void))&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown TSGLAdapt type \"%s\" given",type);
   if (((PetscObject)adapt)->type_name) {ierr = (*adapt->ops->destroy)(adapt);CHKERRQ(ierr);}
   ierr = (*r)(adapt);CHKERRQ(ierr);
