@@ -5312,6 +5312,8 @@ PetscErrorCode MatSolve_SeqBAIJ_2_NaturalOrdering(Mat A,Vec bb,Vec xx)
        nz   = ai[i+1] - ai[i];
        idx  = 2*i;
        s1   = b[idx];s2 = b[1+idx];
+       PetscPrefetchBlock(vi+nz,nz,0,PETSC_PREFETCH_HINT_NTA);
+       PetscPrefetchBlock(v+4*nz,4*nz,0,PETSC_PREFETCH_HINT_NTA);
       for(k=0;k<nz;k++){
          jdx   = 2*vi[k];
           x1    = x[jdx];x2 = x[1+jdx];
@@ -5330,6 +5332,8 @@ PetscErrorCode MatSolve_SeqBAIJ_2_NaturalOrdering(Mat A,Vec bb,Vec xx)
      nz  = adiag[i] - adiag[i+1]-1;
      idt = 2*i;
      s1 = x[idt];  s2 = x[1+idt];
+     PetscPrefetchBlock(vi+nz,nz,0,PETSC_PREFETCH_HINT_NTA);
+     PetscPrefetchBlock(v+4*nz,4*nz,0,PETSC_PREFETCH_HINT_NTA);
      for(k=0;k<nz;k++){	     
       idx   = 2*vi[k];
        x1    = x[idx];   x2 = x[1+idx];
