@@ -679,12 +679,14 @@ namespace ALE {
         }
       }
     };
-    static void buildCoordinates(const Obj<Bundle_>& bundle, const int embedDim, const PetscReal coords[]) {
+    static void buildCoordinates(const Obj<Bundle_>& bundle, const int embedDim, const PetscReal coords[], int numCells = -1) {
       const Obj<typename Bundle_::real_section_type>& coordinates = bundle->getRealSection("coordinates");
       const Obj<typename Bundle_::label_sequence>&    vertices    = bundle->depthStratum(0);
-      const int numCells = bundle->heightStratum(0)->size();
-      const int debug    = bundle->debug();
+      const int                                       debug       = bundle->debug();
 
+      if (numCells < 0) {
+        numCells = bundle->heightStratum(0)->size();
+      }
       bundle->setupCoordinates(coordinates);
       coordinates->setFiberDimension(vertices, embedDim);
       bundle->allocate(coordinates);

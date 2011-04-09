@@ -61,8 +61,9 @@ PetscErrorCode DMConvert_DA_Mesh(DM dm, const DMType newtype, DM *dmNew)
   if (info.dim > 1) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Currently, only 1D DMDAs can be converted to DMMeshes.");
   if (info.sw  > 1) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Currently, only DMDAs with unti stencil width can be converted to DMMeshes.");
   ierr = DMDAGetCoordinateDA(dm, &cda);CHKERRQ(ierr);
-  ierr = DMDAGetCoordinates(dm, &coordinates);CHKERRQ(ierr);
-  ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
+  ierr = DMDAGetGhostedCoordinates(dm, &coordinates);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(dm, coordinates, &coords);CHKERRQ(ierr);
+  //ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
 
   ierr = DMMeshCreate(((PetscObject) dm)->comm, dmNew);CHKERRQ(ierr);
   ALE::Obj<PETSC_MESH_TYPE>              mesh  = new PETSC_MESH_TYPE(((PetscObject) dm)->comm, info.dim, 0);
@@ -82,43 +83,42 @@ PetscErrorCode DMConvert_DA_Mesh(DM dm, const DMType newtype, DM *dmNew)
        Edge i connects vertex (i+M-1) to vertex (i+M), do we add info.xs
     */
     const PetscInt        numGlobalEdges = M-1;
-    const PetscInt        numVertices    = info.xm;
-    const PetscInt        numEdges       = numVertices-1 + (info.gxs < info.xs) + (info.gxs+info.gxm > info.xs+info.xm);
+    const PetscInt        numVertices    = info.gxm;
+    const PetscInt        numEdges       = numVertices-1; /* Do not include edge attached to ghost vertex */
     FlexMesh::point_type *vertices       = new FlexMesh::point_type[numVertices];
     const ALE::Obj<FlexMesh::label_type>& markers = m->createLabel("marker");
 
-    /* Create sieve and ordering */
-    for(int v = info.xs; v < info.xs+info.xm; ++v) {
-      vertices[v-info.xs] = FlexMesh::point_type(v+numGlobalEdges);
+    /* Create vertices */
+    for(int v = info.gxs; v < info.gxs+info.gxm; ++v) {
+      vertices[v-info.gxs] = FlexMesh::point_type(v+numGlobalEdges);
     }
+    /* Create edges */
     int order = 0;
 
-    if (info.gxs < info.xs) {
-      FlexMesh::point_type edge(info.gxs);
-
-      s->addArrow(vertices[0],                 edge, order++);
-    }
     for(int e = 0; e < numVertices-1; ++e) {
-      FlexMesh::point_type edge(info.xs+e);
+      FlexMesh::point_type edge(info.gxs+e);
 
       s->addArrow(vertices[e],                 edge, order++);
-      s->addArrow(vertices[(e+1)%numVertices], edge, order++);
-    }
-    if (info.gxs+info.gxm > info.xs+info.xm) {
-      FlexMesh::point_type edge(info.xs+info.xm-1);
-
-      s->addArrow(vertices[numVertices-1],     edge, order++);
+      s->addArrow(vertices[(e+1)%numVertices], edge, order++); /* This must be corrected for periodicity */
     }
     m->stratify();
-    /* Only do this if its not periodic */
+    /* Mark domain endpoints -- only do this if its not periodic */
     if (vertices[0] == M-1) {
       m->setValue(markers, vertices[0], 1);
     }
     if (vertices[numVertices-1] == 2*M-2) {
       m->setValue(markers, vertices[numVertices-1], 2);
     }
+    /* Mark ghost nodes */
+    for(int v = info.gxs; v < info.xs; ++v) {
+      m->setValue(markers, vertices[v-info.gxs], 3);
+    }
+    for(int v = info.xs+info.xm; v < info.gxs+info.gxm; ++v) {
+      m->setValue(markers, vertices[v-info.gxs], 4);
+    }
     delete [] vertices;
-    ALE::SieveBuilder<FlexMesh>::buildCoordinatesMultiple(m, info.dim, coords, numGlobalEdges);
+    // vertexNumber - (numGlobalEdges - numVertices)
+    ALE::SieveBuilder<FlexMesh>::buildCoordinates(m, info.dim, coords, numGlobalEdges);
   }
   mesh->setSieve(sieve);
   m->view("Flexible Mesh");
@@ -132,6 +132,8 @@ PetscErrorCode DMConvert_DA_Mesh(DM dm, const DMType newtype, DM *dmNew)
     ALE::SetFromMap<std::map<point_type,point_type> > globalPoints(renumbering);
 
     ALE::OverlapBuilder<>::constructOverlap(globalPoints, renumbering, sendParallelMeshOverlap, recvParallelMeshOverlap);
+    sendParallelMeshOverlap->view("Send Overlap");
+    recvParallelMeshOverlap->view("Recieve Overlap");
     mesh->setCalculatedOverlap(true);
     PETSc::Log::Event("CreateOverlap").end();
   }
