@@ -47,6 +47,7 @@ class Configure(config.base.Configure):
         raise RuntimeError('Cxx compiler provided does not support std::complex')
     elif not self.scalartype == 'real':
       raise RuntimeError('--with-scalar-type must be real or complex')
+    self.addDefine('USE_SCALAR_'+self.scalartype.upper(), '1')
     self.framework.logPrint('Scalar type is '+str(self.scalartype))
     # On apple isinf() and isnan() do not work when <complex> is included
     self.pushLanguage(self.languages.clanguage)
