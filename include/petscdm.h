@@ -43,6 +43,7 @@ E*/
 #define DMSLICED    "sliced"
 #define DMMESH      "mesh"
 #define DMCARTESIAN "cartesian"
+#define DMIGA       "iga"
 
 extern PetscFList DMList;
 extern PetscBool  DMRegisterAllCalled;
