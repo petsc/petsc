@@ -53,6 +53,8 @@ extern PetscErrorCode  DMGetType(DM, const DMType *);
 extern PetscErrorCode  DMRegister(const char[],const char[],const char[],PetscErrorCode (*)(DM));
 extern PetscErrorCode  DMRegisterAll(const char []);
 extern PetscErrorCode  DMRegisterDestroy(void);
+extern PetscErrorCode  DMIGACreate(MPI_Comm,DM*);
+
 
 /*MC
   DMRegisterDynamic - Adds a new DM component implementation
