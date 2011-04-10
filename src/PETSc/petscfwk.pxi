@@ -33,8 +33,8 @@ __fwk_cache__ = fwk_cache
 
 cdef extern from "Python.h":
     object PyModule_New(char *)
-    void Py_XINCREF(object o)
-    void Py_XDECREF(object o)
+    void Py_XINCREF(void *)
+    void Py_XDECREF(void *)
 
 cdef int Fwk_Call(
     PetscFwk   component_p,
@@ -88,8 +88,8 @@ cdef int Fwk_LoadVTable(
             raise
     #
     cdef object vtable = getattr(module, name)
-    Py_XINCREF(vtable)
     vtable_p[0] = <void*>vtable
+    Py_XINCREF(vtable_p[0])
     return 0
 
 cdef int Fwk_ClearVTable(
@@ -99,7 +99,7 @@ cdef int Fwk_ClearVTable(
     assert component_p != NULL
     assert vtable_p    != NULL
     #
-    Py_XDECREF(<object>vtable_p[0])
+    Py_XDECREF(vtable_p[0])
     vtable_p[0] = NULL
     return 0
 
