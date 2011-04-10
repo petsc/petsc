@@ -1097,7 +1097,9 @@ PetscErrorCode preallocateOperatorNew(const ALE::Obj<Mesh>& mesh, const int bs, 
         for(int r = 0; r < rSize; ++r) {
           PetscInt fullRow = row + r;
 
-          assert(rowLen == dnz[(row - firstRow)/bs+r]+onz[(row - firstRow)/bs+r]);
+          if (rowLen != dnz[(row - firstRow)/bs+r]+onz[(row - firstRow)/bs+r]) {
+            SETERRQ5(mesh->comm(), PETSC_ERR_ARG_WRONG, "Invalid row length %d, should be dnz[%d]: %d + onz[%d]: %d", rowLen, (row - firstRow)/bs+r, dnz[(row - firstRow)/bs+r], (row - firstRow)/bs+r, onz[(row - firstRow)/bs+r]);
+          }
           ierr = MatSetValues(A, 1, &fullRow, rowLen, cols, values, INSERT_VALUES);CHKERRQ(ierr);
         }
       }
