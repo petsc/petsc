@@ -252,20 +252,6 @@ PetscLogEventFindName(PetscLogEvent eventid,
 
 /* ---------------------------------------------------------------- */
 
-#undef __FUNCT__
-#define __FUNCT__ "PetscObjectGetClassName"
-static PetscErrorCode
-PetscObjectGetClassName(PetscObject obj, const char *class_name[])
-{
-  PetscFunctionBegin;
-  PetscValidHeader(obj,1);
-  PetscValidPointer(class_name,2);
-  *class_name = obj->class_name;
-  PetscFunctionReturn(0);
-}
-
-/* ---------------------------------------------------------------- */
-
 typedef PetscErrorCode (*PetscFwkPythonCallFunction)
   (PetscFwk, const char *message, void *vtable);
 typedef PetscErrorCode (*PetscFwkPythonLoadVTableFunction)

@@ -12,6 +12,21 @@ static StageLog _v_stageLog = 0;
 #define _stageLog (PetscLogGetStageLog(&_v_stageLog),_v_stageLog)
 #endif
 
+#if (PETSC_VERSION_(3,1,0) || \
+     PETSC_VERSION_(3,0,0))
+#undef __FUNCT__
+#define __FUNCT__ "PetscObjectGetClassName"
+static PetscErrorCode
+PetscObjectGetClassName(PetscObject obj, const char *class_name[])
+{
+  PetscFunctionBegin;
+  PetscValidHeader(obj,1);
+  PetscValidPointer(class_name,2);
+  *class_name = obj->class_name;
+  PetscFunctionReturn(0);
+}
+#endif
+
 #if (PETSC_VERSION_(3,0,0))
 #undef __FUNCT__
 #define __FUNCT__ "PetscOptionsHasName"
