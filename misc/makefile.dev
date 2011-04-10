@@ -6,9 +6,9 @@ MPIEXEC  =
 VALGRIND =
 PYTHON   = python
 
-PETSC_30=/usr/local/petsc/3.0.0
-PETSC_31=/usr/local/petsc/3.1
-PETSC_DEV=/usr/local/petsc/dev
+PETSC_30=/home/devel/petsc/3.0
+PETSC_31=/home/devel/petsc/3.1
+PETSC_DEV=/home/devel/petsc/dev
 
 PETSC_ARCH=linux-gnu
 
@@ -33,6 +33,7 @@ test:
 	${RM} -r build
 	PYTHONPATH=${TEST_DIR}/lib64/python:${TEST_DIR}/lib/python \
 	${MPIEXEC} ${VALGRIND} ${PYTHON} test/runtests.py --summary
+	${RM} conf/*.py[co]
 	${RM} tests/*.py[co]
 	${RM} -r ${TEST_DIR}/lib/python/petsc4py*
 	${RM} -r ${TEST_DIR}/lib64/python/petsc4py*
