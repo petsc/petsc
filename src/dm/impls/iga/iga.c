@@ -20,6 +20,31 @@ PetscErrorCode DMDestroy_IGA(DM dm)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMView_IGA"
+PetscErrorCode DMView_IGA(DM dm, PetscViewer viewer)
+{
+  DM_IGA        *iga = (DM_IGA *) dm->data;
+  PetscBool      iascii;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
+
+  if (iascii){
+    ierr = PetscViewerASCIIPrintf(viewer, "IGA:\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "  number of elements: %d %d %d\n", iga->Nx, iga->Ny, iga->Nz);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "  polynomial order: %d %d %d\n", iga->px, iga->py, iga->pz);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "  Data DM:\n");CHKERRQ(ierr);
+    ierr = DMView(iga->da_dof, viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "  Geometry DM:\n");CHKERRQ(ierr);
+    ierr = DMView(iga->da_geometry, viewer);CHKERRQ(ierr);
+  } else {
+    SETERRQ1(((PetscObject)viewer)->comm,PETSC_ERR_SUP,"Viewer type %s not supported by this mesh object", ((PetscObject)viewer)->type_name);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMIGAInitializeUniform3d"
 PetscErrorCode DMIGAInitializeUniform3d(DM dm,PetscBool IsRational,PetscInt NumDerivatives,PetscInt ndof,
                                         PetscInt px,PetscInt Nx,PetscInt Cx,PetscScalar Ux0, PetscScalar Uxf,PetscBool IsPeriodicX,PetscInt ngx,
