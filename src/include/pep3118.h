@@ -7,24 +7,25 @@
 # define _PyPetsc_FMT_PETSC_INT     "i"
 #endif
 
-#if   defined(PETSC_USE_SCALAR_SINGLE) || defined(PETSC_USE_SINGLE)
+#if   defined(PETSC_USE_REAL_SINGLE)
 # define _PyPetsc_FMT_PETSC_REAL    "f"
 # define _PyPetsc_FMT_PETSC_COMPLEX "Zf"
-#elif defined(PETSC_USE_SCALAR_LONG_DOUBLE) ||defined(PETSC_USE_LONG_DOUBLE)
-# define _PyPetsc_FMT_PETSC_REAL    "g"
-# define _PyPetsc_FMT_PETSC_COMPLEX "Zg"
-#elif defined(PETSC_USE_SCALAR_INT) || defined(PETSC_USE_INT)
-# define _PyPetsc_FMT_PETSC_REAL    "i"
-# define _PyPetsc_FMT_PETSC_COMPLEX "Zi"
-#else    /*  (PETSC_USE_SCALAR_DOUBLE) || (PETSC_USE_DOUBLE)  */
+#elif defined(PETSC_USE_REAL_DOUBLE)
 # define _PyPetsc_FMT_PETSC_REAL    "d"
 # define _PyPetsc_FMT_PETSC_COMPLEX "Zd"
+#elif defined(PETSC_USE_REAL_LONG_DOUBLE)
+# define _PyPetsc_FMT_PETSC_REAL    "g"
+# define _PyPetsc_FMT_PETSC_COMPLEX "Zg"
+#else
+# error "unsupported precision"
 #endif
 
-#if defined(PETSC_USE_COMPLEX)
+#if   defined(PETSC_USE_SCALAR_COMPLEX)
 # define _PyPetsc_FMT_PETSC_SCALAR  _PyPetsc_FMT_PETSC_COMPLEX
-#else    /* PETSC_USE_REAL */
+#elif defined(PETSC_USE_SCALAR_REAL)
 # define _PyPetsc_FMT_PETSC_SCALAR  _PyPetsc_FMT_PETSC_REAL
+#else
+# error "unsupported scalar type"
 #endif
 
 static int PyPetscBuffer_FillInfo(Py_buffer *view,

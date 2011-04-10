@@ -1,6 +1,37 @@
 #ifndef _COMPAT_PETSC_H
 #define _COMPAT_PETSC_H
 
+#if PETSC_VERSION_(3,1,0)
+#  if defined(PETSC_USE_SCALAR_SINGLE)
+#    define PETSC_USE_REAL_SINGLE 1
+#  elif defined(PETSC_USE_SCALAR_LONG_DOUBLE)
+#    define PETSC_USE_REAL_LONG_DOUBLE 1
+#  else
+#    define PETSC_USE_REAL_DOUBLE 1
+#  endif
+#  if defined(PETSC_USE_COMPLEX)
+#    define PETSC_USE_SCALAR_COMPLEX 1
+#  else
+#    define PETSC_USE_SCALAR_REAL 1
+#  endif
+#endif
+
+#if PETSC_VERSION_(3,0,0)
+#    if defined(PETSC_USE_SINGLE)
+#        define PETSC_USE_REAL_SINGLE 1
+#    elif defined(PETSC_USE_LONG_DOUBLE)
+#        define PETSC_USE_REAL_LONG_DOUBLE 1
+#    else
+#        define PETSC_USE_REAL_DOUBLE 1
+#    endif
+#  if defined(PETSC_USE_COMPLEX)
+#    define PETSC_USE_SCALAR_COMPLEX 1
+#  else
+#    define PETSC_USE_SCALAR_REAL 1
+#  endif
+#endif
+
+
 #if (PETSC_VERSION_(3,1,0) || \
      PETSC_VERSION_(3,0,0))
 typedef PetscTruth PetscBool;
@@ -42,25 +73,6 @@ typedef PetscCookie PetscClassId;
 #define PetscObjectGetClassId PetscObjectGetCookie
 #define PetscClassIdRegister  PetscCookieRegister
 
-static StageLog _v_stageLog = 0;
-#define _stageLog (PetscLogGetStageLog(&_v_stageLog),_v_stageLog)
-
-#endif
-
-#if (PETSC_VERSION_(3,0,0))
-#undef __FUNCT__
-#define __FUNCT__ "PetscOptionsHasName"
-static PetscErrorCode PetscOptionsHasName_Compat(const char pre[],
-                                                 const char name[],
-                                                 PetscTruth *flg)
-{
-  char dummy[2] = { 0, 0 };
-  PetscErrorCode ierr;
-  PetscFunctionBegin;
-  ierr = PetscOptionsGetString(pre,name,dummy,1,flg);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-#define PetscOptionsHasName PetscOptionsHasName_Compat
 #endif
 
 #endif /* _COMPAT_PETSC_H */

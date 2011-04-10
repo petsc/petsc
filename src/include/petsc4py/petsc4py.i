@@ -9,7 +9,7 @@
 /* ---------------------------------------------------------------- */
 
 %runtime %{
-SWIGINTERNINLINE PyObject* 
+SWIGINTERNINLINE PyObject*
 SWIG_getattr_this(PyObject* obj) {
   if (!obj) return NULL;
   obj = PyObject_GetAttr(obj, SWIG_This());
@@ -38,13 +38,13 @@ SWIG_convert_ptr(PyObject *obj, void **ptr, swig_type_info *ty, int flags) {
   "in method '" name"', argument "argn" of type '"type"'"
 #define SWIG_ArgNullRef_Fmt(type, name, argn) \
   "invalid null reference "SWIG_ArgFail_Fmt(type, name, argn)
-#define SWIG_ArgOut_Fail_Fmt(type, name)		\
+#define SWIG_ArgOut_Fail_Fmt(type, name) \
   "in method '"name"', output value of type '"type"'"
-#define SWIG_ArgIn_Fail(code, name, type, argn)	\
+#define SWIG_ArgIn_Fail(code, name, type, argn) \
   SWIG_exception_fail(SWIG_ArgError(code),SWIG_ArgFail_Fmt(type, name, argn))
 #define SWIG_ArgNullRef_Fail(type, name, argn) \
   SWIG_exception_fail(SWIG_ValueError,SWIG_ArgNullRef_Fmt(type, name, argn))
-#define SWIG_ArgOut_Fail(code,  type, name)				\
+#define SWIG_ArgOut_Fail(code,  type, name) \
   SWIG_exception_fail(SWIG_ArgError(code), SWIG_ArgOut_Fail_Fmt(type, name))
 %}
 
@@ -53,9 +53,12 @@ SWIG_convert_ptr(PyObject *obj, void **ptr, swig_type_info *ty, int flags) {
 #undef  %argout_fail
 #undef  %clear_output
 
-#define %argument_fail(code,_type,_name,_argn) SWIG_ArgIn_Fail(code,`_type`,`_name`,`_argn`)
-#define %argument_nullref(_type, _name, _argn) SWIG_ArgNullRef_Fail(`_type`,`_name`,`_argn`)
-#define %argout_fail(code,_type,_name) SWIG_ArgOut_Fail(code,`_name`,`_type`)
+#define %argument_fail(code,_type,_name,_argn) \
+  SWIG_ArgIn_Fail(code,`_type`,`_name`,`_argn`)
+#define %argument_nullref(_type, _name, _argn) \
+  SWIG_ArgNullRef_Fail(`_type`,`_name`,`_argn`)
+#define %argout_fail(code,_type,_name) \
+  SWIG_ArgOut_Fail(code,`_name`,`_type`)
 #define %clear_output() Py_CLEAR($result)
 
 /* ---------------------------------------------------------------- */
@@ -69,12 +72,12 @@ SWIG_convert_ptr(PyObject *obj, void **ptr, swig_type_info *ty, int flags) {
 
 %wrapper %{
 #ifndef Py##Pkg##_ChkErrQ
-#define Py##Pkg##_ChkErrQ(ierr)				\
-    do {						\
-      if (ierr != 0) {					\
-	Py##Pkg##PyType##_Set((ierr)); SWIG_fail;	\
-      }							\
-    } while (0)						
+#define Py##Pkg##_ChkErrQ(ierr)                         \
+    do {                                                \
+      if (ierr != 0) {                                  \
+        Py##Pkg##PyType##_Set((ierr)); SWIG_fail;       \
+      }                                                 \
+    } while (0)
 #endif /* defined Py##Pkg##_ChkErrQ */
 %}
 
@@ -91,6 +94,37 @@ Py##Pkg##_ChkErrQ($1); %set_output(VOID_Object);
 /* ---------------------------------------------------------------- */
 /* Numeric Types                                                    */
 /* ---------------------------------------------------------------- */
+
+%header %{
+#if PETSC_VERSION_(3,1,0)
+#  if defined(PETSC_USE_SCALAR_SINGLE)
+#    define PETSC_USE_REAL_SINGLE 1
+#  elif defined(PETSC_USE_SCALAR_LONG_DOUBLE)
+#    define PETSC_USE_REAL_LONG_DOUBLE 1
+#  else
+#    define PETSC_USE_REAL_DOUBLE 1
+#  endif
+#  if defined(PETSC_USE_COMPLEX)
+#    define PETSC_USE_SCALAR_COMPLEX 1
+#  else
+#    define PETSC_USE_SCALAR_REAL 1
+#  endif
+#endif
+#if PETSC_VERSION_(3,0,0)
+#    if defined(PETSC_USE_SINGLE)
+#        define PETSC_USE_REAL_SINGLE 1
+#    elif defined(PETSC_USE_LONG_DOUBLE)
+#        define PETSC_USE_REAL_LONG_DOUBLE 1
+#    else
+#        define PETSC_USE_REAL_DOUBLE 1
+#    endif
+#  if defined(PETSC_USE_COMPLEX)
+#    define PETSC_USE_SCALAR_COMPLEX 1
+#  else
+#    define PETSC_USE_SCALAR_REAL 1
+#  endif
+#endif
+%}
 
 %define SWIG_TYPECHECK_PETSC_INT      SWIG_TYPECHECK_INT32   %enddef
 %define SWIG_TYPECHECK_PETSC_REAL     SWIG_TYPECHECK_DOUBLE  %enddef
@@ -109,7 +143,6 @@ Py##Pkg##_ChkErrQ($1); %set_output(VOID_Object);
 %define_as(SWIG_From(PetscInt), SWIG_From(int))
 %#endif
 }
-
 %fragment(SWIG_AsVal_frag(PetscInt),"header",
           fragment=SWIG_AsVal_frag(long long),
           fragment=SWIG_AsVal_frag(int))
@@ -131,9 +164,8 @@ SWIG_From_dec(long double)(long double val) {
   return SWIG_From(double)((double)val);
 }
 }
-
 %fragment(SWIG_AsVal_frag(long double),"header",
-          fragment=SWIG_AsVal_frag(double)) 
+          fragment=SWIG_AsVal_frag(double))
 {
 SWIGINTERN int
 SWIG_AsVal_dec(long double)(SWIG_Object obj, long double *val) {
@@ -142,38 +174,30 @@ SWIG_AsVal_dec(long double)(SWIG_Object obj, long double *val) {
   return res;
 }
 }
-
 %fragment(SWIG_From_frag(PetscReal),"header",
           fragment=SWIG_From_frag(long double),
           fragment=SWIG_From_frag(double),
-          fragment=SWIG_From_frag(float),
-	  fragment=SWIG_From_frag(int))
+          fragment=SWIG_From_frag(float))
 {
-%#if   defined(PETSC_USE_SCALAR_SINGLE) || defined(PETSC_USE_SINGLE)
+%#if   defined(PETSC_USE_REAL_SINGLE)
 %define_as(SWIG_From(PetscReal), SWIG_From(float))
-%#elif defined(PETSC_USE_SCALAR_LONG_DOUBLE) || defined(PETSC_USE_LONG_DOUBLE)
-%define_as(SWIG_From(PetscReal), SWIG_From(long double))
-%#elif defined(PETSC_USE_SCALAR_INT) || defined(PETSC_USE_INT)
-%define_as(SWIG_From(PetscReal), SWIG_From(int))
-%#else /* (PETSC_USE_SCALAR_DOUBLE) || (PETSC_USE_DOUBLE) */
+%#elif defined(PETSC_USE_REAL_DOUBLE)
 %define_as(SWIG_From(PetscReal), SWIG_From(double))
+%#elif defined(PETSC_USE_REAL_LONG_DOUBLE)
+%define_as(SWIG_From(PetscReal), SWIG_From(long double))
 %#endif
 }
-
 %fragment(SWIG_AsVal_frag(PetscReal),"header",
           fragment=SWIG_AsVal_frag(long double),
           fragment=SWIG_AsVal_frag(double),
-          fragment=SWIG_AsVal_frag(float),
-	  fragment=SWIG_AsVal_frag(int))
+          fragment=SWIG_AsVal_frag(float))
 {
-%#if   defined(PETSC_USE_SINGLE)
+%#if   defined(PETSC_USE_REAL_SINGLE)
 %define_as(SWIG_AsVal(PetscReal),  SWIG_AsVal(float))
-%#elif defined(PETSC_USE_LONG_DOUBLE)
-%define_as(SWIG_AsVal(PetscReal),  SWIG_AsVal(long double))
-%#elif defined(PETSC_USE_INT)
-%define_as(SWIG_AsVal(PetscReal),  SWIG_AsVal(int))
-%#else
+%#elif defined(PETSC_USE_REAL_DOUBLE)
 %define_as(SWIG_AsVal(PetscReal),  SWIG_AsVal(double))
+%#elif defined(PETSC_USE_REAL_LONG_DOUBLE)
+%define_as(SWIG_AsVal(PetscReal),  SWIG_AsVal(long double))
 %#endif
 }
 
@@ -182,9 +206,13 @@ SWIG_AsVal_dec(long double)(SWIG_Object obj, long double *val) {
 %include complex.i
 %fragment(SWIG_From_frag(PetscComplex),"header",
 #ifdef __cplusplus
-          fragment=SWIG_From_frag(std::complex<double>))
+          fragment=SWIG_From_frag(std::complex<long double>),
+          fragment=SWIG_From_frag(std::complex<double>),
+          fragment=SWIG_From_frag(std::complex<float>))
 #else
-          fragment=SWIG_From_frag(double complex))
+          fragment=SWIG_From_frag(long double complex),
+          fragment=SWIG_From_frag(double complex),
+          fragment=SWIG_From_frag(float complex))
 #endif
 {
 %#if defined(PETSC_CLANGUAGE_CXX)
@@ -196,9 +224,13 @@ SWIG_AsVal_dec(long double)(SWIG_Object obj, long double *val) {
 
 %fragment(SWIG_AsVal_frag(PetscComplex),"header",
 #ifdef __cplusplus
-          fragment=SWIG_AsVal_frag(std::complex<double>))
+          fragment=SWIG_AsVal_frag(std::complex<long double>),
+          fragment=SWIG_AsVal_frag(std::complex<double>),
+          fragment=SWIG_AsVal_frag(std::complex<float>))
 #else
-          fragment=SWIG_AsVal_frag(double complex))
+          fragment=SWIG_AsVal_frag(long double complex),
+          fragment=SWIG_AsVal_frag(double complex),
+          fragment=SWIG_AsVal_frag(float complex))
 #endif
 {
 %#if defined(PETSC_CLANGUAGE_CXX)
@@ -214,20 +246,19 @@ SWIG_AsVal_dec(long double)(SWIG_Object obj, long double *val) {
           fragment=SWIG_From_frag(PetscReal),
           fragment=SWIG_From_frag(PetscComplex))
 {
-%#if defined(PETSC_USE_COMPLEX)
+%#if   defined(PETSC_USE_SCALAR_COMPLEX)
 %define_as(SWIG_From(PetscScalar), SWIG_From(PetscComplex))
-%#else
+%#elif defined(PETSC_USE_SCALAR_REAL)
 %define_as(SWIG_From(PetscScalar), SWIG_From(PetscReal))
 %#endif
 }
-
 %fragment(SWIG_AsVal_frag(PetscScalar), "header",
           fragment=SWIG_AsVal_frag(PetscReal),
           fragment=SWIG_AsVal_frag(PetscComplex))
 {
-%#if defined(PETSC_USE_COMPLEX)
+%#if   defined(PETSC_USE_SCALAR_COMPLEX)
 %define_as(SWIG_AsVal(PetscScalar), SWIG_AsVal(PetscComplex))
-%#else
+%#elif defined(PETSC_USE_SCALAR_REAL)
 %define_as(SWIG_AsVal(PetscScalar), SWIG_AsVal(PetscReal))
 %#endif
 }
@@ -236,7 +267,9 @@ SWIG_AsVal_dec(long double)(SWIG_Object obj, long double *val) {
 %types(Type,Type*);
 %typemaps_primitive(%checkcode(CheckCode), Type);
 /* INPUT value typemap*/
-%typemap(typecheck,precedence=%checkcode(CheckCode),fragment=SWIG_AsVal_frag(Type)) 
+%typemap(typecheck,
+         precedence=%checkcode(CheckCode),
+         fragment=SWIG_AsVal_frag(Type))
 Type, const Type & {
   int res = SWIG_AsVal(Type)($input, 0);
   $1 = SWIG_CheckState(res);
@@ -256,28 +289,30 @@ const Type & ($*ltype temp, Type val, int ecode = 0) {
 }
 %typemap(freearg) Type, const Type & "";
 /* INPUT pointer/reference typemap */
-%typemap(typecheck,precedence=%checkcode(CheckCode),fragment=SWIG_AsVal_frag(Type)) 
+%typemap(typecheck,
+         precedence=%checkcode(CheckCode),
+         fragment=SWIG_AsVal_frag(Type))
 Type *INPUT, Type &INPUT {
   int res = SWIG_AsVal(Type)($input, 0);
   $1 = SWIG_CheckState(res);
 }
-%typemap(in,noblock=1,fragment=SWIG_AsVal_frag(Type)) 
+%typemap(in,noblock=1,fragment=SWIG_AsVal_frag(Type))
 Type *INPUT ($*ltype temp, int res = 0) {
   res = SWIG_AsVal(Type)($input, &temp);
   if (!SWIG_IsOK(res)) %argument_fail(res, "$*ltype",$symname, $argnum);
-  $1 = &temp; 
+  $1 = &temp;
 }
-%typemap(in,noblock=1,fragment=SWIG_AsVal_frag(Type)) 
+%typemap(in,noblock=1,fragment=SWIG_AsVal_frag(Type))
 Type &INPUT ($*ltype temp, int res = 0) {
   res = SWIG_AsVal(Type)($input, &temp);
   if (!SWIG_IsOK(res)) %argument_fail(res, "$*ltype",$symname, $argnum);
-  $1 = &temp; 
+  $1 = &temp;
 }
 %typemap(freearg) Type *INPUT, Type &INPUT "";
 /* OUTPUT pointer/reference typemap */
-%typemap(in,numinputs=0,nooblock=1) 
+%typemap(in,numinputs=0,noblock=1)
  Type *OUTPUT ($*ltype temp=0) "$1 = &temp;";
-%typemap(in,numinputs=0,nooblock=1) 
+%typemap(in,numinputs=0,noblock=1)
 Type &OUTPUT ($*ltype temp=0)  "$1 = &temp;";
 %typemap(argout,noblock=1,fragment=SWIG_From_frag(Type))
 Type* OUTPUT, Type &OUTPUT { %append_output(SWIG_From(Type)((*$1))); }
@@ -306,7 +341,7 @@ Type* OUTPUT, Type &OUTPUT { %append_output(SWIG_From(Type)((*$1))); }
 %define SWIG_TYPECHECK_PETSC_ENUM SWIG_TYPECHECK_INT32 %enddef
 
 %fragment(SWIG_From_frag(PetscEnum),"header",
-          fragment=SWIG_From_frag(int)) 
+          fragment=SWIG_From_frag(int))
 {
 SWIGINTERN SWIG_Object
 SWIG_From_dec(PetscEnum)(PetscEnum val) {
@@ -314,7 +349,7 @@ SWIG_From_dec(PetscEnum)(PetscEnum val) {
 }
 }
 %fragment(SWIG_AsVal_frag(PetscEnum),"header",
-          fragment=SWIG_AsVal_frag(int)) 
+          fragment=SWIG_AsVal_frag(int))
 {
 SWIGINTERN int
 SWIG_AsVal_dec(PetscEnum)(SWIG_Object obj, PetscEnum *val) {
@@ -348,7 +383,8 @@ PetscEnum *OUTPUT { %append_output(SWIG_From(PetscEnum)(%static_cast(*$1,PetscEn
 %define %petsc4py_fragments(Pkg, PyType, Type, OBJECT_DEFAULT)
 /* AsVal */
 /* ----- */
-%fragment(SWIG_AsVal_frag(Type),"header") {
+%fragment(SWIG_AsVal_frag(Type),"header")
+{
 SWIGINTERN int
 SWIG_AsVal_dec(Type)(SWIG_Object input, Type *v) {
   if (input == Py_None) {
@@ -369,7 +405,9 @@ SWIG_AsVal_dec(Type)(SWIG_Object input, Type *v) {
 }
 /* AsPtr */
 /* ----- */
-%fragment(SWIG_AsPtr_frag(Type),"header",fragment=%fragment_name(GetPtr,Type)) {
+%fragment(SWIG_AsPtr_frag(Type),"header",
+          fragment=%fragment_name(GetPtr,Type))
+{
 SWIGINTERN int
 SWIG_AsPtr_dec(Type)(SWIG_Object input, Type **p) {
   if (input == Py_None) {
@@ -455,7 +493,7 @@ SWIG_From_dec(Type)(Type v) {
 /* pointer type */
 %types(Type*); /* XXX find better way */
 /* fragments */
-%fragment(%fragment_name(GetPtr,Type),"header") 
+%fragment(%fragment_name(GetPtr,Type),"header")
 { /* XXX implement this better*/
 %define_as(Py##Pkg##PyType##_GetPtr(ob), (Type *)PyPetscObject_GetPtr(ob))
 }
@@ -469,7 +507,7 @@ SWIG_From_dec(Type)(Type v) {
 
 /*  check */
 %typemap(check,noblock=1) Type {
-  if ($1 == OBJECT_NULL) 
+  if ($1 == OBJECT_NULL)
     %argument_nullref("$type", $symname, $argnum);
 }
 %typemap(check,noblock=1) Type*, Type& {
@@ -522,7 +560,7 @@ SWIG_From_dec(Type)(Type v) {
     %argument_nullref("$type",$symname,$argnum);
 }
 
-%typemap(in,numinputs=0) Type* OUTREF, Type* OUTNEW 
+%typemap(in,numinputs=0) Type* OUTREF, Type* OUTNEW
 ($*ltype temp = OBJECT_NULL) "$1 = &temp;";
 %typemap(freearg) Type* OUTREF, Type* OUTNEW  "";
 %typemap(check) Type* OUTREF, Type* OUTNEW  "";
@@ -530,17 +568,17 @@ SWIG_From_dec(Type)(Type v) {
   SWIG_Object o = Py##Pkg##PyType##_New(*$1);
   %append_output(o);
 }
-%typemap(argout) Type* OUTNEW { 
+%typemap(argout) Type* OUTNEW {
   SWIG_Object o = Py##Pkg##PyType##_New(*$1);
   if (o!=NULL) PetscObjectDereference((PetscObject)(*$1));
   %append_output(o);
 }
 
 
-%apply Type  OPTIONAL { Type  MAYBE }
-%apply Type& OPTIONAL { Type& MAYBE }
-%apply Type* OUTNEW { Type* NEWOBJ }
-%apply Type* OUTREF { Type* NEWREF }
+%apply Type  OPTIONAL { Type  MAYBE  }
+%apply Type& OPTIONAL { Type& MAYBE  }
+%apply Type* OUTNEW   { Type* NEWOBJ }
+%apply Type* OUTREF   { Type* NEWREF }
 
 %enddef /* %petsc4py_objt */
 
@@ -551,15 +589,12 @@ SWIG_From_dec(Type)(Type v) {
 
 %petsc4py_errt( Petsc, Error , PetscErrorCode )
 
-
 %petsc4py_numt( Petsc , Int     , PetscInt     , PETSC_INT     , 0 )
 %petsc4py_numt( Petsc , Real    , PetscReal    , PETSC_REAL    , 0 )
 %petsc4py_numt( Petsc , Complex , PetscComplex , PETSC_COMPLEX , 0 )
 %petsc4py_numt( Petsc , Scalar  , PetscScalar  , PETSC_SCALAR  , 0 )
 
-
 %petsc4py_comm( Petsc, Comm , MPI_Comm , MPI_COMM , MPI_COMM_NULL )
-
 
 %petsc4py_objt( Petsc , Object    , PetscObject            , PETSC_OBJECT        , PETSC_NULL )
 %petsc4py_objt( Petsc , Viewer    , PetscViewer            , PETSC_VIEWER        , PETSC_NULL )
