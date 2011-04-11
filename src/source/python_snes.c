@@ -8,8 +8,8 @@
 #define SNESPYTHON "python"
 
 PETSC_EXTERN_CXX_BEGIN
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESPythonSetContext(SNES,void*);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESPythonGetContext(SNES,void**);
+extern PetscErrorCode SNESPythonSetContext(SNES,void*);
+extern PetscErrorCode SNESPythonGetContext(SNES,void**);
 PETSC_EXTERN_CXX_END
 
 /*  -------------------------------------------------------------------- */
@@ -434,7 +434,7 @@ static PetscErrorCode SNESSetUp_Python(SNES snes)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "SNESPythonSetType_PYTHON"
-PetscErrorCode PETSCSNES_DLLEXPORT SNESPythonSetType_PYTHON(SNES snes,const char pyname[])
+PetscErrorCode SNESPythonSetType_PYTHON(SNES snes,const char pyname[])
 {
   PyObject       *self = NULL;
   PetscErrorCode ierr;
@@ -556,7 +556,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "SNESCreate_Python"
-PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_Python(SNES snes)
+PetscErrorCode SNESCreate_Python(SNES snes)
 {
   SNES_Py        *py;
   PetscErrorCode ierr;
@@ -623,7 +623,7 @@ EXTERN_C_END
 
 .seealso: SNES, SNESCreate(), SNESSetType(), SNESPYTHON
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT SNESPythonGetContext(SNES snes,void **ctx)
+PetscErrorCode SNESPythonGetContext(SNES snes,void **ctx)
 {
   SNES_Py        *py;
   PetscBool      ispython;
@@ -656,7 +656,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESPythonGetContext(SNES snes,void **ctx)
 
 .seealso: SNES, SNESCreate(), SNESSetType(), SNESPYTHON
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT SNESPythonSetContext(SNES snes,void *ctx)
+PetscErrorCode SNESPythonSetContext(SNES snes,void *ctx)
 {
   SNES_Py        *py;
   PyObject       *old, *self = (PyObject *) ctx;
@@ -688,7 +688,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESPythonSetContext(SNES snes,void *ctx)
 #if 0
 
 PETSC_EXTERN_CXX_BEGIN
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESPythonSetType(SNES,const char[]);
+extern PetscErrorCode SNESPythonSetType(SNES,const char[]);
 PETSC_EXTERN_CXX_END
 
 #undef __FUNCT__
@@ -711,7 +711,7 @@ PETSC_EXTERN_CXX_END
 
 .seealso: SNESCreate(), SNESSetType(), SNESPYTHON, PetscPythonInitialize()
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT SNESPythonSetType(SNES snes,const char pyname[])
+PetscErrorCode SNESPythonSetType(SNES snes,const char pyname[])
 {
   PetscErrorCode (*f)(SNES, const char[]) = 0;
   PetscErrorCode ierr;

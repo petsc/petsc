@@ -8,8 +8,8 @@
 #define PCPYTHON "python"
 
 PETSC_EXTERN_CXX_BEGIN
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCPythonSetContext(PC,void*);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCPythonGetContext(PC,void**);
+extern PetscErrorCode PCPythonSetContext(PC,void*);
+extern PetscErrorCode PCPythonGetContext(PC,void**);
 PETSC_EXTERN_CXX_END
 
 /* -------------------------------------------------------------------------- */
@@ -68,7 +68,7 @@ typedef struct {
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCPythonSetType_PYTHON"
-PetscErrorCode PETSCKSP_DLLEXPORT PCPythonSetType_PYTHON(PC pc,const char pyname[])
+PetscErrorCode PCPythonSetType_PYTHON(PC pc,const char pyname[])
 {
   PyObject       *self = NULL;
   PetscErrorCode ierr;
@@ -340,7 +340,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_Python"
-PetscErrorCode PETSCTS_DLLEXPORT PCCreate_Python(PC pc)
+PetscErrorCode PCCreate_Python(PC pc)
 {
   PC_Py          *py;
   PetscErrorCode ierr;
@@ -400,7 +400,7 @@ EXTERN_C_END
 
 .seealso: PC, PCCreate(), PCSetType(), PCPYTHON
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCPythonGetContext(PC pc,void **ctx)
+PetscErrorCode PCPythonGetContext(PC pc,void **ctx)
 {
   PC_Py          *py;
   PetscBool      ispython;
@@ -433,7 +433,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCPythonGetContext(PC pc,void **ctx)
 
 .seealso: PC, PCCreate(), PCSetType(), PCPYTHON
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCPythonSetContext(PC pc,void *ctx)
+PetscErrorCode PCPythonSetContext(PC pc,void *ctx)
 {
   PC_Py          *py;
   PyObject       *old, *self = (PyObject *) ctx;
@@ -465,11 +465,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCPythonSetContext(PC pc,void *ctx)
 #if 0
 
 PETSC_EXTERN_CXX_BEGIN
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT PCPythonSetType(PC,const char[]);
+extern PetscErrorCode PCPythonSetType(PC,const char[]);
 PETSC_EXTERN_CXX_END
 
 PETSC_EXTERN_CXX_BEGIN
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCPythonSetType(PC,const char[]);
+extern PetscErrorCode PCPythonSetType(PC,const char[]);
 PETSC_EXTERN_CXX_END
 
 #undef __FUNCT__
@@ -492,7 +492,7 @@ PETSC_EXTERN_CXX_END
 
 .seealso: PCCreate(), PCSetType(), PCPYTHON, PetscPythonInitialize()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCPythonSetType(PC pc,const char pyname[])
+PetscErrorCode PCPythonSetType(PC pc,const char pyname[])
 {
   PetscErrorCode (*f)(PC, const char[]) = 0;
   PetscErrorCode ierr;

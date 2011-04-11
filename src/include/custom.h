@@ -309,11 +309,9 @@ VecRestoreArrayC(Vec v, PetscScalar *a[])
 #if PETSC_VERSION_(3,0,0)
 typedef PetscMap* PetscLayout;
 #define PetscLayoutSetUp PetscMapSetUp
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT
-PetscMapSetBlockSize(PetscMap*,PetscInt);
+extern PetscErrorCode PetscMapSetBlockSize(PetscMap*,PetscInt);
 #define PetscLayoutSetBlockSize PetscMapSetBlockSize
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT
-PetscMapGetBlockSize(PetscMap*,PetscInt*);
+extern PetscErrorCode PetscMapGetBlockSize(PetscMap*,PetscInt*);
 #define PetscLayoutGetBlockSize PetscMapGetBlockSize
 #endif
 

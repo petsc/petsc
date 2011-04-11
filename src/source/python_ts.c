@@ -17,8 +17,8 @@
 #define TSPYTHON  "python"
 
 PETSC_EXTERN_CXX_BEGIN
-EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSPythonSetContext(TS,void*);
-EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSPythonGetContext(TS,void**);
+extern PetscErrorCode TSPythonSetContext(TS,void*);
+extern PetscErrorCode TSPythonGetContext(TS,void**);
 PETSC_EXTERN_CXX_END
 
 /* -------------------------------------------------------------------------- */
@@ -113,7 +113,7 @@ typedef struct {
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSPythonSetType_PYTHON"
-PetscErrorCode PETSCTS_DLLEXPORT TSPythonSetType_PYTHON(TS ts,const char pyname[])
+PetscErrorCode TSPythonSetType_PYTHON(TS ts,const char pyname[])
 {
   PyObject       *self = NULL;
   PetscErrorCode ierr;
@@ -578,7 +578,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSCreate_Python"
-PetscErrorCode PETSCTS_DLLEXPORT TSCreate_Python(TS ts)
+PetscErrorCode TSCreate_Python(TS ts)
 {
   TS_Py          *py;
   PetscErrorCode ierr;
@@ -661,7 +661,7 @@ EXTERN_C_END
 
 .seealso: TS, TSCreate(), TSSetType(), TSPYTHON
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSPythonGetContext(TS ts,void **ctx)
+PetscErrorCode TSPythonGetContext(TS ts,void **ctx)
 {
   TS_Py         *py;
   PetscBool      ispython;
@@ -694,7 +694,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSPythonGetContext(TS ts,void **ctx)
 
 .seealso: TS, TSCreate(), TSSetType(), TSPYTHON
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSPythonSetContext(TS ts,void *ctx)
+PetscErrorCode TSPythonSetContext(TS ts,void *ctx)
 {
   TS_Py          *py;
   PyObject       *old, *self = (PyObject *) ctx;
@@ -726,11 +726,11 @@ PetscErrorCode PETSCTS_DLLEXPORT TSPythonSetContext(TS ts,void *ctx)
 #if 0
 
 PETSC_EXTERN_CXX_BEGIN
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT TSPythonSetType(TS,const char[]);
+extern PetscErrorCode TSPythonSetType(TS,const char[]);
 PETSC_EXTERN_CXX_END
 
 PETSC_EXTERN_CXX_BEGIN
-EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSPythonSetType(TS,const char[]);
+extern PetscErrorCode TSPythonSetType(TS,const char[]);
 PETSC_EXTERN_CXX_END
 
 #undef __FUNCT__
@@ -753,7 +753,7 @@ PETSC_EXTERN_CXX_END
 
 .seealso: TSCreate(), TSSetType(), TS_PYTHON, PetscPythonInitialize()
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSPythonSetType(TS ts,const char pyname[])
+PetscErrorCode TSPythonSetType(TS ts,const char pyname[])
 {
   PetscErrorCode (*f)(TS, const char[]) = 0;
   PetscErrorCode ierr;

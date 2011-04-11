@@ -8,8 +8,8 @@
 #define KSPPYTHON "python"
 
 PETSC_EXTERN_CXX_BEGIN
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPPythonSetContext(KSP,void*);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPPythonGetContext(KSP,void**);
+extern PetscErrorCode KSPPythonSetContext(KSP,void*);
+extern PetscErrorCode KSPPythonGetContext(KSP,void**);
 PETSC_EXTERN_CXX_END
 
 /* -------------------------------------------------------------------------- */
@@ -67,7 +67,7 @@ typedef struct {
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "KSPPythonSetType_PYTHON"
-PetscErrorCode PETSCKSP_DLLEXPORT KSPPythonSetType_PYTHON(KSP ksp,const char pyname[])
+PetscErrorCode KSPPythonSetType_PYTHON(KSP ksp,const char pyname[])
 {
   PyObject       *self = NULL;
   PetscErrorCode ierr;
@@ -256,7 +256,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "KSPCreate_Python"
-PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_Python(KSP ksp)
+PetscErrorCode KSPCreate_Python(KSP ksp)
 {
   KSP_Py         *py;
   PetscErrorCode ierr;
@@ -313,7 +313,7 @@ EXTERN_C_END
 
 .seealso: KSP, KSPCreate(), KSPSetType(), KSPPYTHON
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPPythonGetContext(KSP ksp,void **ctx)
+PetscErrorCode KSPPythonGetContext(KSP ksp,void **ctx)
 {
   KSP_Py         *py;
   PetscBool      ispython;
@@ -346,7 +346,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPPythonGetContext(KSP ksp,void **ctx)
 
 .seealso: KSP, KSPCreate(), KSPSetType(), KSPPYTHON
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPPythonSetContext(KSP ksp,void *ctx)
+PetscErrorCode KSPPythonSetContext(KSP ksp,void *ctx)
 {
   KSP_Py         *py;
   PyObject       *old, *self = (PyObject *) ctx;
@@ -384,7 +384,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPPythonSetContext(KSP ksp,void *ctx)
 #if 0
 
 PETSC_EXTERN_CXX_BEGIN
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPPythonSetType(KSP,const char[]);
+extern PetscErrorCode KSPPythonSetType(KSP,const char[]);
 PETSC_EXTERN_CXX_END
 
 #undef __FUNCT__
@@ -407,7 +407,7 @@ PETSC_EXTERN_CXX_END
 
 .seealso: KSPCreate(), KSPSetType(), KSPPYTHON, PetscPythonInitialize()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPPythonSetType(KSP ksp,const char pyname[])
+PetscErrorCode KSPPythonSetType(KSP ksp,const char pyname[])
 {
   PetscErrorCode (*f)(KSP, const char[]) = 0;
   PetscErrorCode ierr;

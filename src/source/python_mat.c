@@ -8,8 +8,8 @@
 #define MATPYTHON "python"
 
 PETSC_EXTERN_CXX_BEGIN
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPythonSetContext(Mat,void*);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPythonGetContext(Mat,void**);
+extern PetscErrorCode MatPythonSetContext(Mat,void*);
+extern PetscErrorCode MatPythonGetContext(Mat,void**);
 PETSC_EXTERN_CXX_END
 
 /* -------------------------------------------------------------------------- */
@@ -95,7 +95,7 @@ static PetscErrorCode MatPythonFillOperations(Mat mat)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatPythonSetType_PYTHON"
-PetscErrorCode PETSCMAT_DLLEXPORT MatPythonSetType_PYTHON(Mat mat,const char pyname[])
+PetscErrorCode MatPythonSetType_PYTHON(Mat mat,const char pyname[])
 {
   PyObject       *self = NULL;
   PetscErrorCode ierr;
@@ -188,10 +188,10 @@ static PetscErrorCode MatSetOption_Python(Mat mat,MatOption op,PetscBool flag)
 #if PETSC_VERSION_(3,0,0)
 typedef PetscMap* PetscLayout;
 #define PetscLayoutSetUp PetscMapSetUp
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT 
+extern PetscErrorCode 
 PetscMapSetBlockSize(PetscMap*,PetscInt);
 #define PetscLayoutSetBlockSize PetscMapSetBlockSize
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT 
+extern PetscErrorCode 
 PetscMapGetBlockSize(PetscMap*,PetscInt*);
 #define PetscLayoutGetBlockSize PetscMapGetBlockSize
 #endif
@@ -760,7 +760,7 @@ M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_Python"
-PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Python(Mat mat)
+PetscErrorCode MatCreate_Python(Mat mat)
 {
   Mat_Py      *py;
   PetscErrorCode ierr;
@@ -854,7 +854,7 @@ EXTERN_C_END
 
 .seealso: Mat, MatCreate(), MAtSetType(), MATPYTHON
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatPythonGetContext(Mat mat,void **ctx)
+PetscErrorCode MatPythonGetContext(Mat mat,void **ctx)
 {
   Mat_Py         *py;
   PetscBool      ispython;
@@ -887,7 +887,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPythonGetContext(Mat mat,void **ctx)
 
 .seealso: Mat, MatCreate(), MAtSetType(), MATPYTHON
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatPythonSetContext(Mat mat,void *ctx)
+PetscErrorCode MatPythonSetContext(Mat mat,void *ctx)
 {
   Mat_Py         *py;
   PyObject       *old, *self = (PyObject *) ctx;
@@ -918,7 +918,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPythonSetContext(Mat mat,void *ctx)
 #if 0
 
 PETSC_EXTERN_CXX_BEGIN
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPythonSetType(Mat,const char[]);
+extern PetscErrorCode MatPythonSetType(Mat,const char[]);
 PETSC_EXTERN_CXX_END
 
 #undef __FUNCT__
@@ -941,7 +941,7 @@ PETSC_EXTERN_CXX_END
 
 .seealso: MATPYTHON, MatCreatePython(), PetscPythonInitialize()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatPythonSetType(Mat mat,const char pyname[])
+PetscErrorCode MatPythonSetType(Mat mat,const char pyname[])
 {
   PetscErrorCode (*f)(Mat, const char[]) = 0;
   PetscErrorCode ierr;
