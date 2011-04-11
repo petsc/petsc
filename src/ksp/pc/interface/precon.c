@@ -111,10 +111,13 @@ PetscErrorCode  PCDestroy(PC pc)
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   if (--((PetscObject)pc)->refct > 0) PetscFunctionReturn(0);
 
+  /* if memory was published with AMS then destroy it */
   ierr = PetscObjectDepublish(pc);CHKERRQ(ierr);
+  if (pc->ops->destroy) {ierr = (*pc->ops->destroy)(pc);CHKERRQ(ierr);}
+
   ierr = PCReset(pc);CHKERRQ(ierr);
-  if (pc->ops->destroy) {ierr =  (*pc->ops->destroy)(pc);CHKERRQ(ierr);}
   if (pc->dm) {ierr = DMDestroy(pc->dm);CHKERRQ(ierr);}
+
   ierr = PetscHeaderDestroy(pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

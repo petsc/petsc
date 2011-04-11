@@ -1472,8 +1472,8 @@ PetscErrorCode  SNESDestroy(SNES snes)
 
   /* if memory was published with AMS then destroy it */
   ierr = PetscObjectDepublish(snes);CHKERRQ(ierr);
-
   if (snes->ops->destroy) {ierr = (*(snes)->ops->destroy)(snes);CHKERRQ(ierr);}
+
   if (snes->dm) {ierr = DMDestroy(snes->dm);CHKERRQ(ierr);}
   if (snes->vec_rhs) {ierr = VecDestroy(snes->vec_rhs);CHKERRQ(ierr);}
   if (snes->vec_sol) {ierr = VecDestroy(snes->vec_sol);CHKERRQ(ierr);}
@@ -1484,13 +1484,14 @@ PetscErrorCode  SNESDestroy(SNES snes)
   if (snes->ksp) {ierr = KSPDestroy(snes->ksp);CHKERRQ(ierr);}
   if (snes->work) {ierr = VecDestroyVecs(snes->nwork,&snes->work);CHKERRQ(ierr);}
   if (snes->vwork) {ierr = VecDestroyVecs(snes->nvwork,&snes->vwork);CHKERRQ(ierr);}
-  ierr = SNESMonitorCancel(snes);CHKERRQ(ierr);
   ierr = PetscFree(snes->kspconvctx);CHKERRQ(ierr);
   if (snes->ops->convergeddestroy) {ierr = (*snes->ops->convergeddestroy)(snes->cnvP);CHKERRQ(ierr);}
   if (snes->conv_malloc) {
     ierr = PetscFree(snes->conv_hist);CHKERRQ(ierr);
     ierr = PetscFree(snes->conv_hist_its);CHKERRQ(ierr);
   }
+  ierr = SNESMonitorCancel(snes);CHKERRQ(ierr);
+
   ierr = PetscHeaderDestroy(snes);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

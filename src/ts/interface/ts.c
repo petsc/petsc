@@ -1199,13 +1199,15 @@ PetscErrorCode  TSDestroy(TS ts)
 
   /* if memory was published with AMS then destroy it */
   ierr = PetscObjectDepublish(ts);CHKERRQ(ierr);
+  if (ts->ops->destroy) {ierr = (*(ts)->ops->destroy)(ts);CHKERRQ(ierr);}
+
   if (ts->vec_sol) {ierr = VecDestroy(ts->vec_sol);CHKERRQ(ierr);}
   if (ts->dm) {ierr = DMDestroy(ts->dm);CHKERRQ(ierr);}
   if (ts->A) {ierr = MatDestroy(ts->A);CHKERRQ(ierr);}
   if (ts->ksp) {ierr = KSPDestroy(ts->ksp);CHKERRQ(ierr);}
   if (ts->snes) {ierr = SNESDestroy(ts->snes);CHKERRQ(ierr);}
-  if (ts->ops->destroy) {ierr = (*(ts)->ops->destroy)(ts);CHKERRQ(ierr);}
   ierr = TSMonitorCancel(ts);CHKERRQ(ierr);
+
   ierr = PetscHeaderDestroy(ts);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
