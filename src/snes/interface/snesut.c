@@ -476,3 +476,28 @@ PetscErrorCode  SNESSkipConverged(SNES snes,PetscInt it,PetscReal xnorm,PetscRea
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "SNESDefaultGetWork"
+/*
+  SNESDefaultGetWork - Gets a number of work vectors.
+
+  Input Parameters:
+. snes  - the SNES context
+. nw - number of work vectors to allocate
+
+   Level: developer
+
+  Notes:
+  Call this only if no work vectors have been allocated
+ */
+PetscErrorCode SNESDefaultGetWork(SNES snes,PetscInt nw)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (snes->work) {ierr = VecDestroyVecs(snes->nwork,&snes->work);CHKERRQ(ierr);}
+  snes->nwork = nw;
+  ierr = VecDuplicateVecs(snes->vec_sol,snes->nwork,&snes->work);CHKERRQ(ierr);
+  ierr = PetscLogObjectParents(snes,nw,snes->work);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}

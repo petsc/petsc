@@ -53,13 +53,9 @@ static PetscErrorCode SNESSolve_KSPONLY(SNES snes)
 #define __FUNCT__ "SNESSetUp_KSPONLY"
 static PetscErrorCode SNESSetUp_KSPONLY(SNES snes)
 {
-  PetscErrorCode ierr;
+  /*PetscErrorCode ierr;*/
 
   PetscFunctionBegin;
-  if (!snes->vec_sol_update) {
-    ierr = VecDuplicate(snes->vec_sol,&snes->vec_sol_update);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent(snes,snes->vec_sol_update);CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
 
@@ -67,13 +63,9 @@ static PetscErrorCode SNESSetUp_KSPONLY(SNES snes)
 #define __FUNCT__ "SNESDestroy_KSPONLY"
 static PetscErrorCode SNESDestroy_KSPONLY(SNES snes)
 {
-  PetscErrorCode ierr;
+  /*PetscErrorCode ierr;*/
 
   PetscFunctionBegin;
-  if (snes->vec_sol_update) {
-    ierr = VecDestroy(snes->vec_sol_update);CHKERRQ(ierr);
-    snes->vec_sol_update = PETSC_NULL;
-  }
   PetscFunctionReturn(0);
 }
 

@@ -141,6 +141,8 @@ typedef struct {
 	  } \
 	}
 
+extern PetscErrorCode SNESDefaultGetWork(SNES,PetscInt);
+
 PetscErrorCode SNES_KSPSolve(SNES,KSP,Vec,Vec);
 PetscErrorCode SNESScaleStep_Private(SNES,Vec,PetscReal*,PetscReal*,PetscReal*,PetscReal*);
 

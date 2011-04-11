@@ -1004,8 +1004,10 @@ PetscErrorCode  SNESCreate(MPI_Comm comm,SNES *outsnes)
   snes->data              = 0;
   snes->setupcalled       = PETSC_FALSE;
   snes->ksp_ewconv        = PETSC_FALSE;
-  snes->vwork             = 0;
   snes->nwork             = 0;
+  snes->work              = 0;
+  snes->nvwork            = 0;
+  snes->vwork             = 0;
   snes->conv_hist_len     = 0;
   snes->conv_hist_max     = 0;
   snes->conv_hist         = PETSC_NULL;
@@ -1372,7 +1374,7 @@ PetscErrorCode  SNESGetJacobian(SNES snes,Mat *A,Mat *B,PetscErrorCode (**func)(
 
 /* ----- Routines to initialize and destroy a nonlinear solver ---- */
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESSetUp"
 /*@
    SNESSetUp - Sets up the internal data structures for the later use
@@ -1388,7 +1390,7 @@ PetscErrorCode  SNESGetJacobian(SNES snes,Mat *A,Mat *B,PetscErrorCode (**func)(
    SNESSetUp(), since these actions will automatically occur during
    the call to SNESSolve().  However, if one wishes to control this
    phase separately, SNESSetUp() should be called after SNESCreate()
-   and optional routines of the form SNESSetXXX(), but before SNESSolve().  
+   and optional routines of the form SNESSetXXX(), but before SNESSolve().
 
    Level: advanced
 
@@ -1411,6 +1413,16 @@ PetscErrorCode  SNESSetUp(SNES snes)
   if (!snes->vec_func && !snes->vec_rhs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call SNESSetFunction() first");
   if (!snes->ops->computefunction && !snes->vec_rhs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call SNESSetFunction() first");
   if (snes->vec_func == snes->vec_sol) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_IDN,"Solution vector cannot be function vector");
+  if (snes->vec_rhs  == snes->vec_sol) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_IDN,"Solution vector cannot be right hand side vector");
+
+  if (!snes->vec_func && snes->vec_rhs) {
+    ierr = VecDuplicate(snes->vec_rhs, &snes->vec_func);CHKERRQ(ierr);
+  }
+  if (!snes->vec_sol_update /* && snes->vec_sol */) {
+    ierr = VecDuplicate(snes->vec_sol,&snes->vec_sol_update);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent(snes,snes->vec_sol_update);CHKERRQ(ierr);
+  }
+
   if (!snes->ops->computejacobian && snes->dm) {
     Mat           J;
     ISColoring    coloring;
@@ -1424,15 +1436,16 @@ PetscErrorCode  SNESSetUp(SNES snes)
     ierr = ISColoringDestroy(coloring);CHKERRQ(ierr);
   }
   if (!snes->ksp) {ierr = SNESGetKSP(snes, &snes->ksp);CHKERRQ(ierr);}
-  
+
   if (snes->ops->setup) {
     ierr = (*snes->ops->setup)(snes);CHKERRQ(ierr);
   }
+
   snes->setupcalled = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESDestroy"
 /*@
    SNESDestroy - Destroys the nonlinear solver context that was created
@@ -1460,23 +1473,24 @@ PetscErrorCode  SNESDestroy(SNES snes)
   /* if memory was published with AMS then destroy it */
   ierr = PetscObjectDepublish(snes);CHKERRQ(ierr);
 
-  if (snes->conv_malloc) {
-    ierr = PetscFree(snes->conv_hist);CHKERRQ(ierr);
-    ierr = PetscFree(snes->conv_hist_its);CHKERRQ(ierr);
-  }
-  if (snes->dm) {ierr = DMDestroy(snes->dm);CHKERRQ(ierr);}
   if (snes->ops->destroy) {ierr = (*(snes)->ops->destroy)(snes);CHKERRQ(ierr);}
-  
+  if (snes->dm) {ierr = DMDestroy(snes->dm);CHKERRQ(ierr);}
   if (snes->vec_rhs) {ierr = VecDestroy(snes->vec_rhs);CHKERRQ(ierr);}
   if (snes->vec_sol) {ierr = VecDestroy(snes->vec_sol);CHKERRQ(ierr);}
+  if (snes->vec_sol_update) {ierr = VecDestroy(snes->vec_sol_update);CHKERRQ(ierr);}
   if (snes->vec_func) {ierr = VecDestroy(snes->vec_func);CHKERRQ(ierr);}
   if (snes->jacobian) {ierr = MatDestroy(snes->jacobian);CHKERRQ(ierr);}
   if (snes->jacobian_pre) {ierr = MatDestroy(snes->jacobian_pre);CHKERRQ(ierr);}
   if (snes->ksp) {ierr = KSPDestroy(snes->ksp);CHKERRQ(ierr);}
-  ierr = PetscFree(snes->kspconvctx);CHKERRQ(ierr);
+  if (snes->work) {ierr = VecDestroyVecs(snes->nwork,&snes->work);CHKERRQ(ierr);}
   if (snes->vwork) {ierr = VecDestroyVecs(snes->nvwork,&snes->vwork);CHKERRQ(ierr);}
   ierr = SNESMonitorCancel(snes);CHKERRQ(ierr);
+  ierr = PetscFree(snes->kspconvctx);CHKERRQ(ierr);
   if (snes->ops->convergeddestroy) {ierr = (*snes->ops->convergeddestroy)(snes->cnvP);CHKERRQ(ierr);}
+  if (snes->conv_malloc) {
+    ierr = PetscFree(snes->conv_hist);CHKERRQ(ierr);
+    ierr = PetscFree(snes->conv_hist_its);CHKERRQ(ierr);
+  }
   ierr = PetscHeaderDestroy(snes);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -2346,10 +2360,6 @@ PetscErrorCode  SNESSolve(SNES snes,Vec b,Vec x)
   if (b) { ierr = PetscObjectReference((PetscObject)b);CHKERRQ(ierr); }
   if (snes->vec_rhs) { ierr = VecDestroy(snes->vec_rhs);CHKERRQ(ierr); }
   snes->vec_rhs = b;
-  
-  if (!snes->vec_func && snes->vec_rhs) {
-    ierr = VecDuplicate(b, &snes->vec_func);CHKERRQ(ierr);
-  }
 
   ierr = SNESSetUp(snes);CHKERRQ(ierr);
 
@@ -2362,13 +2372,13 @@ PetscErrorCode  SNESSolve(SNES snes,Vec b,Vec x)
   if (snes->domainerror){
     snes->reason      = SNES_DIVERGED_FUNCTION_DOMAIN;
     snes->domainerror = PETSC_FALSE;
-  } 
+  }
   if (!snes->reason) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Internal error, solver returned without setting converged reason");
-  
+
   ierr = PetscOptionsGetString(((PetscObject)snes)->prefix,"-snes_view",filename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   if (flg && !PetscPreLoadingOn) {
     ierr = PetscViewerASCIIOpen(((PetscObject)snes)->comm,filename,&viewer);CHKERRQ(ierr);
-    ierr = SNESView(snes,viewer);CHKERRQ(ierr); 
+    ierr = SNESView(snes,viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
   }
 
