@@ -709,12 +709,10 @@ PetscErrorCode  KSPReset(KSP ksp)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  if (ksp->guess) {
-    ierr = KSPFischerGuessDestroy(&ksp->guess);CHKERRQ(ierr);
-  }  
   if (ksp->ops->reset) {
     ierr = (*ksp->ops->reset)(ksp);CHKERRQ(ierr);
   }
+  if (ksp->guess) {ierr = KSPFischerGuessDestroy(&ksp->guess);CHKERRQ(ierr);}
   if (ksp->pc) {ierr = PCReset(ksp->pc);CHKERRQ(ierr);}
   if (ksp->vec_rhs) {ierr = VecDestroy(ksp->vec_rhs);CHKERRQ(ierr);}
   if (ksp->vec_sol) {ierr = VecDestroy(ksp->vec_sol);CHKERRQ(ierr);}
@@ -725,7 +723,7 @@ PetscErrorCode  KSPReset(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPDestroy_"
 /*@C
    KSPDestroy - Destroys KSP context.
@@ -749,11 +747,12 @@ PetscErrorCode  KSPDestroy_(KSP ksp)
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   if (--((PetscObject)ksp)->refct > 0) PetscFunctionReturn(0);
 
+  ierr = KSPReset(ksp);CHKERRQ(ierr);
+
   /* if memory was published with AMS then destroy it */
   ierr = PetscObjectDepublish(ksp);CHKERRQ(ierr);
   if (ksp->ops->destroy) {ierr = (*ksp->ops->destroy)(ksp);CHKERRQ(ierr);}
 
-  ierr = KSPReset(ksp);CHKERRQ(ierr);
   if (ksp->dm) {ierr = DMDestroy(ksp->dm);CHKERRQ(ierr);}
   if (ksp->pc) {ierr = PCDestroy(ksp->pc);CHKERRQ(ierr);}
   ierr = PetscFree(ksp->res_hist_alloc);CHKERRQ(ierr);
