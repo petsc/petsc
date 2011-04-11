@@ -439,14 +439,14 @@ PetscErrorCode AOCreate_MemoryScalable(AO ao)
 
   /* If ispetsc is 0 then use "natural" numbering */
   if (napp) {
-    if (!ispetsc) {
+    if (ispetsc){
+      ierr = ISGetIndices(ispetsc,&mypetsc);CHKERRQ(ierr);
+      petsc = (PetscInt*)mypetsc;
+    } else {
       start = disp[rank];
       ierr  = PetscMalloc((napp+1) * sizeof(PetscInt), &petsc);CHKERRQ(ierr);
       for (i=0; i<napp; i++) petsc[i] = start + i;
-    } else {
-      ierr = ISGetIndices(ispetsc,&mypetsc);CHKERRQ(ierr);
-      petsc = (PetscInt*)mypetsc;
-    }
+    } 
   }
   
   /* create a map with global size N - used to determine the local sizes of ao - shall we use local napp instead of N? */
@@ -471,10 +471,12 @@ PetscErrorCode AOCreate_MemoryScalable(AO ao)
   ierr = AOCreateMemoryScalable_private(comm,napp,myapp,petsc,ao,aomems->petsc_loc);CHKERRQ(ierr);
 
   ierr = ISRestoreIndices(isapp,&myapp);CHKERRQ(ierr);
-  if (ispetsc){
-    ierr = ISRestoreIndices(ispetsc,&mypetsc);CHKERRQ(ierr);
-  } else if (napp && !ispetsc) {
-    ierr = PetscFree(petsc);CHKERRQ(ierr);
+  if (napp){
+    if (ispetsc){
+      ierr = ISRestoreIndices(ispetsc,&mypetsc);CHKERRQ(ierr);
+    } else {
+      ierr = PetscFree(petsc);CHKERRQ(ierr);
+    }
   }
   ierr  = PetscFree2(lens,disp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
