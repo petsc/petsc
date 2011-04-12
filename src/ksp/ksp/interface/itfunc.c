@@ -687,10 +687,10 @@ PetscErrorCode  KSPSolveTranspose(KSP ksp,Vec b,Vec x)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPReset"
 /*@
-   KSPReset - Resets a PC context to the kspsetupcalled = 0 state and removes any allocated Vecs and Mats
+   KSPReset - Resets a KSP context to the kspsetupcalled = 0 state and removes any allocated Vecs and Mats
 
    Collective on KSP
 
