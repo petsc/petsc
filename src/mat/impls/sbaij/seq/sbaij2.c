@@ -13,7 +13,7 @@ PetscErrorCode MatIncreaseOverlap_SeqSBAIJ(Mat A,PetscInt is_max,IS is[],PetscIn
   PetscErrorCode ierr;
   PetscInt       brow,i,j,k,l,mbs,n,*nidx,isz,bcol,bcol_max,start,end,*ai,*aj,bs,*nidx2;
   const PetscInt *idx;
-  PetscBT        table,table0; 
+  PetscBT        table_out,table_in; 
 
   PetscFunctionBegin;
   if (ov < 0)  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative overlap specified");
@@ -21,25 +21,25 @@ PetscErrorCode MatIncreaseOverlap_SeqSBAIJ(Mat A,PetscInt is_max,IS is[],PetscIn
   ai  = a->i;
   aj  = a->j;
   bs  = A->rmap->bs;
-  ierr = PetscBTCreate(mbs,table);CHKERRQ(ierr);
+  ierr = PetscBTCreate(mbs,table_out);CHKERRQ(ierr);
   ierr = PetscMalloc((mbs+1)*sizeof(PetscInt),&nidx);CHKERRQ(ierr); 
   ierr = PetscMalloc((A->rmap->N+1)*sizeof(PetscInt),&nidx2);CHKERRQ(ierr);
-  ierr = PetscBTCreate(mbs,table0);CHKERRQ(ierr);
+  ierr = PetscBTCreate(mbs,table_in);CHKERRQ(ierr);
 
   for (i=0; i<is_max; i++) { /* for each is */
     isz  = 0;
-    ierr = PetscBTMemzero(mbs,table);CHKERRQ(ierr);
+    ierr = PetscBTMemzero(mbs,table_out);CHKERRQ(ierr);
    
     /* Extract the indices, assume there can be duplicate entries */
     ierr = ISGetIndices(is[i],&idx);CHKERRQ(ierr);
     ierr = ISGetLocalSize(is[i],&n);CHKERRQ(ierr);
 
-    /* Enter these into the temp arrays i.e mark table[brow], enter brow into new index */
+    /* Enter these into the temp arrays i.e mark table_out[brow], enter brow into new index */
     bcol_max = 0;
     for (j=0; j<n ; ++j){
       brow = idx[j]/bs; /* convert the indices into block indices */
       if (brow >= mbs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"index greater than mat-dim");
-      if(!PetscBTLookupSet(table,brow)) { 
+      if(!PetscBTLookupSet(table_out,brow)) { 
         nidx[isz++] = brow;
         if (bcol_max < brow) bcol_max = brow;
       }
@@ -49,17 +49,17 @@ PetscErrorCode MatIncreaseOverlap_SeqSBAIJ(Mat A,PetscInt is_max,IS is[],PetscIn
     
     k = 0;
     for (j=0; j<ov; j++){ /* for each overlap */
-      /* set table0 for lookup - only mark entries that are added onto nidx in (j-1)-th overlap */
-      ierr = PetscBTMemzero(mbs,table0);CHKERRQ(ierr);
-      for (l=k; l<isz; l++) { ierr = PetscBTSet(table0,nidx[l]);CHKERRQ(ierr); }
+      /* set table_in for lookup - only mark entries that are added onto nidx in (j-1)-th overlap */
+      ierr = PetscBTMemzero(mbs,table_in);CHKERRQ(ierr);
+      for (l=k; l<isz; l++) { ierr = PetscBTSet(table_in,nidx[l]);CHKERRQ(ierr); }
 
       n = isz;  /* length of the updated is[i] */
       for (brow=0; brow<mbs; brow++){ 
         start = ai[brow]; end   = ai[brow+1];
-        if (PetscBTLookup(table0,brow)){ /* brow is on nidx - row search: collect all bcol in this brow */
+        if (PetscBTLookup(table_in,brow)){ /* brow is on nidx - row search: collect all bcol in this brow */
           for (l = start; l<end ; l++){
             bcol = aj[l];
-            if (!PetscBTLookupSet(table,bcol)) {nidx[isz++] = bcol;}
+            if (!PetscBTLookupSet(table_out,bcol)) {nidx[isz++] = bcol;}
           }
           k++;
           if (k >= n) break; /* for (brow=0; brow<mbs; brow++) */
@@ -67,8 +67,8 @@ PetscErrorCode MatIncreaseOverlap_SeqSBAIJ(Mat A,PetscInt is_max,IS is[],PetscIn
           for (l = start; l<end ; l++){
             bcol = aj[l];
             if (bcol > bcol_max) break; 
-            if (PetscBTLookup(table0,bcol)){
-              if (!PetscBTLookupSet(table,brow)) {nidx[isz++] = brow;}
+            if (PetscBTLookup(table_in,bcol)){
+              if (!PetscBTLookupSet(table_out,brow)) {nidx[isz++] = brow;}
               break; /* for l = start; l<end ; l++) */
             }
           } 
@@ -83,10 +83,10 @@ PetscErrorCode MatIncreaseOverlap_SeqSBAIJ(Mat A,PetscInt is_max,IS is[],PetscIn
     }
     ierr = ISCreateGeneral(PETSC_COMM_SELF,isz*bs,nidx2,PETSC_COPY_VALUES,is+i);CHKERRQ(ierr);
   }
-  ierr = PetscBTDestroy(table);CHKERRQ(ierr);
+  ierr = PetscBTDestroy(table_out);CHKERRQ(ierr);
   ierr = PetscFree(nidx);CHKERRQ(ierr); 
   ierr = PetscFree(nidx2);CHKERRQ(ierr); 
-  ierr = PetscBTDestroy(table0);CHKERRQ(ierr); 
+  ierr = PetscBTDestroy(table_in);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
 }
 

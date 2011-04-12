@@ -1182,6 +1182,7 @@ runex92:
 	if (${DIFF} output/ex92_1.out ex92_1.tmp) then true; \
 	else echo "Possible problem with ex92_1, diffs above"; fi; \
 	${RM} -f ex92_1.tmp
+
 runex93:
 	-@${MPIEXEC} -n 1 ./ex93 > ex93_1.tmp 2>&1; \
 	   if (${DIFF} output/ex93_1.out ex93_1.tmp) then true; \
