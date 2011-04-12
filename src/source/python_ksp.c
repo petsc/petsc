@@ -235,8 +235,13 @@ static PetscErrorCode KSPBuildResidual_Python(KSP ksp, Vec t, Vec v, Vec *V)
 #define __FUNCT__ "KSPReset_Python"
 static PetscErrorCode KSPReset_Python(KSP ksp)
 {
+  PetscObject obj;
   PetscFunctionBegin;
+  obj = (PetscObject)ksp;
+  if (obj->refct != 0) obj = 0;
+  if (obj) obj->refct++;
   KSP_PYTHON_CALL(ksp, "reset", ("O&", PyPetscKSP_New,  ksp));
+  if (obj) obj->refct--;
   PetscFunctionReturn(0);
 }
 #endif

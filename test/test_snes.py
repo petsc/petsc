@@ -213,6 +213,13 @@ class BaseTestSNES(object):
         reason = self.snes.callConvergenceTest(1, 0, 0, 0)
         self.assertTrue(reason > 0)
 
+    def testResetAndSolve(self):
+        self.snes.reset()
+        self.testSolve()
+        self.snes.reset()
+        self.testSolve()
+        self.snes.reset()
+
     def testSetMonitor(self):
         reshist = {}
         def monitor(snes, its, fgnorm):
@@ -396,6 +403,9 @@ class MySNES(object):
 
     def setUp(self, snes):
         self._log('setUp', snes)
+
+    def reset(self, snes):
+        self._log('reset', snes)
 
     def preSolve(self, snes):
         self._log('preSolve', snes)

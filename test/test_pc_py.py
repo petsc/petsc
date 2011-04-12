@@ -9,6 +9,8 @@ from sys import getrefcount
 class BaseMyPC(object):
     def setup(self, pc):
         pass
+    def reset(self, pc):
+        pass
     def apply(self, pc, x, y):
         raise NotImplementedError
     def applyT(self, pc, x, y):
@@ -31,6 +33,9 @@ class MyPCJacobi(BaseMyPC):
         A, P, ms = pc.getOperators()
         self.diag = P.getDiagonal()
         self.diag.reciprocal()
+    def reset(self, pc):
+        self.diag.destroy()
+        del self.diag
     def apply(self, pc, x, y):
         y.pointwiseMult(self.diag, x)
     def applyS(self, pc, x, y):
@@ -51,6 +56,8 @@ class PC_PYTHON_CLASS(object):
     def destroy(self):
         self._log('destroy')
         self.impl = None
+    def reset(self, pc):
+        self._log('reset', pc)
     def view(self, pc, vw):
         self._log('view', pc, vw)
         assert isinstance(pc, PETSc.PC)
@@ -154,8 +161,15 @@ class TestPCPYTHON(unittest.TestCase):
     def _applyMeth(self, meth):
         A, x, y = self._prepare()
         getattr(self.pc, meth)(x,y)
-        assert self._getCtx().log['setUp'] == 1
-        assert self._getCtx().log[meth] == 1
+        if 'reset' not in self._getCtx().log:
+            assert self._getCtx().log['setUp'] == 1
+            assert self._getCtx().log[meth] == 1
+        else:
+            nreset = self._getCtx().log['reset']
+            nsetup = self._getCtx().log['setUp']
+            nmeth  = self._getCtx().log[meth] 
+            assert (nreset == nsetup)
+            assert (nreset == nmeth)
         if isinstance(self._getCtx().impl, MyPCNone):
             self.assertTrue(y.equal(x))
     def testApply(self):
@@ -182,6 +196,13 @@ class TestPCPYTHON(unittest.TestCase):
     ##     module = __name__
     ##     factory = 'self._getCtx()'
     ##     assert '.'.join([module, factory]) in s
+
+    def testResetAndApply(self):
+        self.pc.reset()
+        self.testApply()
+        self.pc.reset()
+        self.testApply()
+        self.pc.reset()
 
     def testKSPSolve(self):
         A, x, y = self._prepare()

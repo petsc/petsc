@@ -105,6 +105,7 @@ cdef extern from * nogil:
     int SNESMonitorCancel(PetscSNES)
 
     int SNESSetUp(PetscSNES)
+    int SNESReset(PetscSNES)
     int SNESSolve(PetscSNES,PetscVec,PetscVec)
 
     int SNESSetConvergedReason(PetscSNES,PetscSNESConvergedReason)

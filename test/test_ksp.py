@@ -140,6 +140,13 @@ class BaseTestKSP(object):
         self.assertEqual(len(rh), 0)
         del A, x, b
 
+    def testResetAndSolve(self):
+        self.ksp.reset()
+        self.testSolve()
+        self.ksp.reset()
+        self.testSolve()
+        self.ksp.reset()
+
     def testSetMonitor(self):
         reshist = {}
         def monitor(ksp, its, rnorm):
@@ -228,6 +235,11 @@ class MyKSP(object):
 
     def setUp(self, ksp):
         self.work[:] = ksp.getWorkVecs(right=2, left=None)
+
+    def reset(self, ksp):
+        for v in self.work:
+            v.destroy()
+        del self.work[:]
 
     def loop(self, ksp, r):
         its = ksp.getIterationNumber()

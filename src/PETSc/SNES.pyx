@@ -312,6 +312,9 @@ cdef class SNES(Object):
     def setUp(self):
         CHKERR( SNESSetUp(self.snes) )
 
+    def reset(self):
+        CHKERR( SNESReset(self.snes) )
+
     def solve(self, Vec b, Vec x not None):
         cdef PetscVec rhs = NULL
         if b is not None: rhs = (<Vec>b).vec

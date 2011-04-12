@@ -510,6 +510,22 @@ static PetscErrorCode SNESSetFromOptions_Python(SNES snes)
   PetscFunctionReturn(0);
 }
 
+#if !(PETSC_VERSION_(3,1,0) || PETSC_VERSION_(3,0,0))
+#undef __FUNCT__
+#define __FUNCT__ "SNESReset_Python"
+static PetscErrorCode SNESReset_Python(SNES snes)
+{
+  PetscObject obj;
+  PetscFunctionBegin;
+  obj = (PetscObject)snes;
+  if (obj->refct != 0) obj = 0;
+  if (obj) obj->refct++;
+  SNES_PYTHON_CALL(snes, "reset", ("O&", PyPetscSNES_New,  snes));
+  if (obj) obj->refct--;
+  PetscFunctionReturn(0);
+}
+#endif
+
 /*
    SNESDestroy_Python - Destroys the private SNES_Py context that was created
    with SNESCreate_Python().
@@ -595,6 +611,9 @@ PetscErrorCode SNESCreate_Python(SNES snes)
   snes->ops->view            = SNESView_Python;
   snes->ops->setup           = SNESSetUp_Python;
   snes->ops->solve           = SNESSolve_Python;
+#if !(PETSC_VERSION_(3,1,0) || PETSC_VERSION_(3,0,0))
+  snes->ops->reset           = SNESReset_Python;
+#endif
 
   ierr = PetscObjectComposeFunction((PetscObject)snes,
                                     "SNESPythonSetType_C","SNESPythonSetType_PYTHON",

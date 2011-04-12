@@ -55,6 +55,9 @@ static PetscErrorCode KSPReset_Compat(KSP ksp)
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  /*if (ksp->ops->reset) {
+      ierr = (*ksp->ops->reset)(ksp);CHKERRQ(ierr);
+  }*/
   if (ksp->guess) {ierr = KSPFischerGuessDestroy(ksp->guess);CHKERRQ(ierr);}
   if (ksp->pc) {ierr = PCReset(ksp->pc);CHKERRQ(ierr);}
   if (ksp->vec_rhs) {ierr = VecDestroy(ksp->vec_rhs);CHKERRQ(ierr);}
@@ -62,7 +65,6 @@ static PetscErrorCode KSPReset_Compat(KSP ksp)
   if (ksp->diagonal) {ierr = VecDestroy(ksp->diagonal);CHKERRQ(ierr);}
   if (ksp->truediagonal) {ierr = VecDestroy(ksp->truediagonal);CHKERRQ(ierr);}
   if (ksp->nullsp) {ierr = MatNullSpaceDestroy(&ksp->nullsp);CHKERRQ(ierr);}
-  /*if (ksp->ops->reset) {ierr = (*ksp->ops->reset)(ksp);CHKERRQ(ierr);}*/
   ksp->guess = PETSC_NULL;
   ksp->vec_rhs = 0;
   ksp->vec_sol = 0;
