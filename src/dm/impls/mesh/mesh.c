@@ -485,7 +485,11 @@ PetscErrorCode DMMeshCreateGlobalScatter(DM dm, SectionReal section, VecScatter 
   PetscFunctionBegin;
   ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
   ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
-  ierr = DMMeshCreateGlobalScatter(m, s, scatter);CHKERRQ(ierr);
+  if (m->hasLabel("marker")) {
+    ierr = DMMeshCreateGlobalScatter(m, s, m->getLabel("marker"), scatter);CHKERRQ(ierr);
+  } else {
+    ierr = DMMeshCreateGlobalScatter(m, s, scatter);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

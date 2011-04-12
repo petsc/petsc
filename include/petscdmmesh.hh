@@ -69,7 +69,20 @@ PetscErrorCode  DMMeshCreateGlobalScatter(const ALE::Obj<Mesh>& m, const ALE::Ob
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMMeshCreateGlobalScatter(m, s, globalOrder, scatter);CHKERRQ(ierr);
+  ierr = DMMeshCreateGlobalScatter(m, s, globalOrder, false, scatter);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMMeshCreateGlobalScatter"
+template<typename Mesh, typename Section>
+PetscErrorCode  DMMeshCreateGlobalScatter(const ALE::Obj<Mesh>& m, const ALE::Obj<Section>& s, const ALE::Obj<typename Mesh::label_type>& label, VecScatter *scatter)
+{
+  const ALE::Obj<typename Mesh::order_type>& globalOrder = m->getFactory()->getGlobalOrder(m, s->getName(), s, -1, label);
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMMeshCreateGlobalScatter(m, s, globalOrder, false, scatter);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -82,14 +95,14 @@ PetscErrorCode  DMMeshCreateGlobalScatter(const ALE::Obj<Mesh>& m, const std::st
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMMeshCreateGlobalScatter(m, s, globalOrder, scatter);CHKERRQ(ierr);
+  ierr = DMMeshCreateGlobalScatter(m, s, globalOrder, false, scatter);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMeshCreateGlobalScatter"
 template<typename Mesh, typename Section>
-PetscErrorCode  DMMeshCreateGlobalScatter(const ALE::Obj<Mesh>& m, const ALE::Obj<Section>& s, const ALE::Obj<typename Mesh::order_type>& globalOrder, VecScatter *scatter)
+PetscErrorCode  DMMeshCreateGlobalScatter(const ALE::Obj<Mesh>& m, const ALE::Obj<Section>& s, const ALE::Obj<typename Mesh::order_type>& globalOrder, bool includeConstraints, VecScatter *scatter)
 {
   typedef typename Mesh::real_section_type::index_type index_type;
   PetscErrorCode ierr;
@@ -112,8 +125,13 @@ PetscErrorCode  DMMeshCreateGlobalScatter(const ALE::Obj<Mesh>& m, const ALE::Ob
   ierr = PetscMalloc(overlapSize*sizeof(int), &globalIndices);CHKERRQ(ierr);
   for(typename Mesh::order_type::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
     // Map local indices to global indices
-    s->getIndices(*p_iter, localIndices, &localIndx, 0, true, true);
-    s->getIndices(*p_iter, globalOrder, globalIndices, &globalIndx, 0, true, false);
+    if (includeConstraints) {
+      s->getIndicesRaw(*p_iter, localIndices, &localIndx, 0);
+      s->getIndicesRaw(*p_iter, globalOrder, globalIndices, &globalIndx, 0);
+    } else {
+      s->getIndices(*p_iter, localIndices, &localIndx, 0, true, true);
+      s->getIndices(*p_iter, globalOrder, globalIndices, &globalIndx, 0, true, false);
+    }
     //numConstraints += s->getConstraintDimension(*p_iter);
   }
   // Local arrays also have constraints, which are not mapped
