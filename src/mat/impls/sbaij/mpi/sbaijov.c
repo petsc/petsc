@@ -824,22 +824,18 @@ PetscErrorCode MatIncreaseOverlap_MPISBAIJ(Mat C,PetscInt is_max,IS is[],PetscIn
   Mat_MPISBAIJ  *c = (Mat_MPISBAIJ*)C->data;
   PetscMPIInt   rank=c->rank;
 
-  
   ierr = PetscMalloc((Mbs+1)*sizeof(PetscInt),&nidx);CHKERRQ(ierr); 
 
   /* Create is_row */
   ierr = PetscMalloc(is_max*sizeof(IS **),&is_row);CHKERRQ(ierr);
-  for (i=0; i<is_max; i++){
-    ierr = ISCreateStride(PETSC_COMM_SELF,Mbs,0,1,is_row+i);CHKERRQ(ierr); 
-  }
-
+  ierr = ISCreateStride(PETSC_COMM_SELF,Mbs,0,1,&is_row[0]);CHKERRQ(ierr); 
+  for (i=1; i<is_max; i++) is_row[i] = is_row[0]; /* reuse is_row[0] */
+  
   for (iov=0; iov<ov; ++iov) {
-    /* Get submats for column search - replace with MatGetSubMatrices_MPIBAIJ_IJ() */
-    // copied from MatGetSubMatrices_MPIBAIJ() ----------------
+    /* Get submats for column search - Modified from MatGetSubMatrices_MPIBAIJ() */
+
     /* Allocate memory to hold all the submatrices */
-    //if (scall != MAT_REUSE_MATRIX) {
     ierr = PetscMalloc((is_max+1)*sizeof(Mat),&submats);CHKERRQ(ierr);
-    //}
     /* Determine the number of stages through which submatrices are done */
     PetscInt nmax,nstages_local,nstages,max_no,pos;
     nmax          = 20*1000000 / (c->Nbs * sizeof(PetscInt));
@@ -853,16 +849,13 @@ PetscErrorCode MatIncreaseOverlap_MPISBAIJ(Mat C,PetscInt is_max,IS is[],PetscIn
       else if (pos == is_max) max_no = 0;
       else                   max_no = is_max-pos;
      
-      //ierr = MatGetSubMatrices_MPIBAIJ_local(C,max_no,is_row+pos,is_new+pos,MAT_INITIAL_MATRIX,submats+pos);CHKERRQ(ierr);
       ierr = MatGetSubMatrices_MPIBAIJ_local_ijonly(C,max_no,is_row+pos,is_new+pos,MAT_INITIAL_MATRIX,submats+pos);CHKERRQ(ierr);
       if (rank == 10 && !i){
         printf("submats[0]:\n");
         ierr = MatView(submats[0],PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
       }
-
       pos += max_no;
     }
-    // end of copy -----------------------------------
    
     /* Row search */
     ierr = MatIncreaseOverlap_MPIBAIJ_Once(C,is_max,is_new);CHKERRQ(ierr);
@@ -905,18 +898,11 @@ PetscErrorCode MatIncreaseOverlap_MPISBAIJ(Mat C,PetscInt is_max,IS is[],PetscIn
     /* Free tmp spaces */
     ierr = PetscBTDestroy(table);CHKERRQ(ierr);
     for (i=0; i<is_max; i++){
-      if (rank == 10 && !i){
-        printf("submats[0]:\n");
-        ierr = MatView(submats[0],PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-      }
       ierr = MatDestroy(submats[i]);CHKERRQ(ierr);
     }
     ierr = PetscFree(submats);CHKERRQ(ierr);
   } 
-
-  for (i=0; i<is_max; i++){
-    ierr = ISDestroy(is_row[i]);CHKERRQ(ierr);
-  }
+  ierr = ISDestroy(is_row[0]);CHKERRQ(ierr);
   ierr = PetscFree(is_row);CHKERRQ(ierr);
   ierr = PetscFree(nidx);CHKERRQ(ierr);
   } 
