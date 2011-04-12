@@ -401,11 +401,12 @@ PetscErrorCode  SNESCreate_Picard(SNES snes)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  snes->ops->destroy	    = SNESDestroy_Picard;
-  snes->ops->setup	        = SNESSetUp_Picard;
-  snes->ops->setfromoptions = SNESSetFromOptions_Picard;
-  snes->ops->view           = SNESView_Picard;
-  snes->ops->solve	        = SNESSolve_Picard;
+  snes->ops->destroy	     = SNESDestroy_Picard;
+  snes->ops->setup	     = SNESSetUp_Picard;
+  snes->ops->setfromoptions  = SNESSetFromOptions_Picard;
+  snes->ops->view            = SNESView_Picard;
+  snes->ops->solve	     = SNESSolve_Picard;
+  snes->ops->reset           = 0;
 
   ierr = PetscNewLog(snes, SNES_Picard, &neP);CHKERRQ(ierr);
   snes->data = (void*) neP;

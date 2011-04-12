@@ -86,9 +86,12 @@ PetscErrorCode  SNESCreate_KSPONLY(SNES snes)
 {
 
   PetscFunctionBegin;
-  snes->ops->setup   = SNESSetUp_KSPONLY;
-  snes->ops->solve   = SNESSolve_KSPONLY;
-  snes->ops->destroy = SNESDestroy_KSPONLY;
+  snes->ops->setup           = SNESSetUp_KSPONLY;
+  snes->ops->solve           = SNESSolve_KSPONLY;
+  snes->ops->destroy         = SNESDestroy_KSPONLY;
+  snes->ops->setfromoptions  = 0;
+  snes->ops->view            = 0;
+  snes->ops->reset           = 0;
 
   snes->data = 0;
   PetscFunctionReturn(0);

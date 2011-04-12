@@ -18,6 +18,7 @@ struct _SNESOps {
   PetscErrorCode (*view)(SNES,PetscViewer);
   PetscErrorCode (*setfromoptions)(SNES);    /* sets options from database */
   PetscErrorCode (*destroy)(SNES);
+  PetscErrorCode (*reset)(SNES);
 };
 
 /*

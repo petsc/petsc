@@ -2140,6 +2140,7 @@ PetscErrorCode  SNESCreate_VI(SNES snes)
   snes->ops->destroy	     = SNESDestroy_VI;
   snes->ops->setfromoptions  = SNESSetFromOptions_VI;
   snes->ops->view            = SNESView_VI;
+  snes->ops->reset           = 0; /* XXX Implement!!! */
   snes->ops->converged       = SNESDefaultConverged_VI;
 
   ierr                   = PetscNewLog(snes,SNES_VI,&vi);CHKERRQ(ierr);

@@ -1446,6 +1446,45 @@ PetscErrorCode  SNESSetUp(SNES snes)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "SNESReset"
+/*@
+   SNESReset - Resets a SNES context to the snessetupcalled = 0 state and removes any allocated Vecs and Mats
+
+   Collective on SNES
+
+   Input Parameter:
+.  snes - iterative context obtained from SNESCreate()
+
+   Level: beginner
+
+.keywords: SNES, destroy
+
+.seealso: SNESCreate(), SNESSetUp(), SNESSolve()
+@*/
+PetscErrorCode  SNESReset(SNES snes)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  if (snes->ops->reset) {
+    ierr = (*snes->ops->reset)(snes);CHKERRQ(ierr);
+  }
+  if (snes->ksp) {ierr = KSPReset(snes->ksp);CHKERRQ(ierr);}
+  if (snes->vec_rhs) {ierr = VecDestroy(snes->vec_rhs);CHKERRQ(ierr);}
+  if (snes->vec_sol) {ierr = VecDestroy(snes->vec_sol);CHKERRQ(ierr);}
+  if (snes->vec_sol_update) {ierr = VecDestroy(snes->vec_sol_update);CHKERRQ(ierr);}
+  if (snes->vec_func) {ierr = VecDestroy(snes->vec_func);CHKERRQ(ierr);}
+  if (snes->jacobian) {ierr = MatDestroy(snes->jacobian);CHKERRQ(ierr);}
+  if (snes->jacobian_pre) {ierr = MatDestroy(snes->jacobian_pre);CHKERRQ(ierr);}
+  if (snes->work) {ierr = VecDestroyVecs(snes->nwork,&snes->work);CHKERRQ(ierr);}
+  if (snes->vwork) {ierr = VecDestroyVecs(snes->nvwork,&snes->vwork);CHKERRQ(ierr);}
+  snes->nwork = snes->nvwork = 0;
+  snes->setupcalled = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "SNESDestroy"
 /*@
    SNESDestroy - Destroys the nonlinear solver context that was created
