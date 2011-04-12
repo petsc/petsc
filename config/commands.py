@@ -31,6 +31,24 @@ def build(ui, repo, *pats, **opts):
   maker.cleanup()
   return 0
 
+def buildParallel(ui, repo, *pats, **opts):
+  '''Compile all out of date source and generate a new shared library
+  Any files specified will be added to the source database if not already present'''
+  # TODO: Make rootDir an option (this should really be a filter for sourceDB)
+  maker = builder.PETScMaker()
+  maker.setup()
+  maker.updateDependencies('libpetsc', maker.rootDir)
+  for p in pats:
+    filename = os.path.abspath(p)
+    if not maker.sourceDatabase.hasNode(filename):
+      maker.logPrint('Adding %s to the source database' % filename)
+      maker.sourceDatabase.setNode(filename, [])
+  if maker.buildLibraries('libpetsc', maker.rootDir, True):
+    # This is overkill, but right now it is cheap
+    maker.rebuildDependencies('libpetsc', maker.rootDir)
+  maker.cleanup()
+  return 0
+
 def check(ui, repo, *pats, **opts):
   '''Check that build is functional'''
   import shutil
@@ -86,6 +104,18 @@ def clean(ui, repo, *pats, **opts):
   maker = builder.PETScMaker()
   maker.setup()
   maker.clean('libpetsc')
+  maker.cleanup()
+  return 0
+
+def purge(ui, repo, *pats, **opts):
+  '''Remove a sets of files from the source database'''
+  maker = builder.PETScMaker()
+  maker.setup()
+  maker.updateDependencies('libpetsc', maker.rootDir)
+  for p in pats:
+    filename = os.path.abspath(p)
+    maker.logPrint('Removing %s from the source database' % filename)
+    maker.sourceDatabase.removeNode(filename)
   maker.cleanup()
   return 0
 
@@ -416,9 +446,11 @@ dryrunopts = [('n', 'dry-run', None, _('do not perform actions, just print outpu
 
 # Leading ^ puts command on the 'shortlist'
 table = {'^build':  (build, dryrunopts, _('[FILE]')),
+         'buildParallel':  (buildParallel, dryrunopts, _('[FILE]')),
          '^check':  (check, [], ''),
          '^clean':  (clean, [], ''),
          'help':    (help_, [], _('[TOPIC]')),
+         '^purge':  (purge, [], _('FILE...')),
          '^stubs':  (stubs, [], _('LANGUAGE...')),
          'version': (version_, [])}
 
