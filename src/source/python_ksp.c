@@ -38,15 +38,9 @@ typedef struct {
   KSP_PYTHON_CALL_TAIL(ksp, PyMethod)        \
 /**/
 
-#define KSP_PYTHON_CALL_NOARGS(ksp, PyMethod) \
-  KSP_PYTHON_CALL_HEAD(ksp, PyMethod);        \
-  KSP_PYTHON_CALL_BODY(ksp, ("", NULL));      \
-  KSP_PYTHON_CALL_TAIL(ksp, PyMethod)         \
-/**/
-
 #define KSP_PYTHON_CALL_KSPARG(ksp, PyMethod)             \
   KSP_PYTHON_CALL_HEAD(ksp, PyMethod);                    \
-  KSP_PYTHON_CALL_BODY(ksp, ("O&", PyPetscKSP_New, ksp)); \
+  KSP_PYTHON_CALL_BODY(ksp, ("O&",PyPetscKSP_New,ksp));   \
   KSP_PYTHON_CALL_TAIL(ksp, PyMethod)                     \
 /**/
 
@@ -89,7 +83,9 @@ static PetscErrorCode KSPDestroy_Python(KSP ksp)
   PetscErrorCode ierr;
   PetscFunctionBegin;
   if (Py_IsInitialized()) {
-    KSP_PYTHON_CALL_NOARGS(ksp, "destroy");
+    PETSC_PYTHON_INCREF(ksp);
+    KSP_PYTHON_CALL_KSPARG(ksp, "destroy");
+    PETSC_PYTHON_DECREF(ksp);
     py->self = NULL; Py_DecRef(self);
   }
   ierr = PetscFree(py->pyname);CHKERRQ(ierr);
@@ -237,7 +233,7 @@ static PetscErrorCode KSPReset_Python(KSP ksp)
 {
   PetscFunctionBegin;
   PETSC_PYTHON_INCREF(ksp);
-  KSP_PYTHON_CALL(ksp, "reset", ("O&", PyPetscKSP_New,  ksp));
+  KSP_PYTHON_CALL_KSPARG(ksp, "reset");
   PETSC_PYTHON_DECREF(ksp);
   PetscFunctionReturn(0);
 }
@@ -364,7 +360,7 @@ PetscErrorCode KSPPythonSetContext(KSP ksp,void *ctx)
   if (self == Py_None) self = NULL;
   if (py->self == self) PetscFunctionReturn(0);
   /* del previous Python context in the KSP object */
-  KSP_PYTHON_CALL_NOARGS(ksp, "destroy");
+  KSP_PYTHON_CALL_KSPARG(ksp, "destroy");
   old = py->self; py->self = NULL; Py_DecRef(old);
   /* set current Python context in the KSP object  */
   py->self = (PyObject *) self; Py_IncRef(py->self);

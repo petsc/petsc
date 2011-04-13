@@ -229,7 +229,7 @@ class MyKSP(object):
     def create(self, ksp):
         self.work = []
 
-    def destroy(self):
+    def destroy(self, ksp):
         for v in self.work:
             v.destroy()
 

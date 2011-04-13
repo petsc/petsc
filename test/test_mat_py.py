@@ -12,7 +12,7 @@ class Matrix(object):
     def create(self, mat):
         pass
 
-    def destroy(self):
+    def destroy(self, mat):
         pass
 
 class Identity(Matrix):
@@ -29,9 +29,9 @@ class Diagonal(Matrix):
         super(Diagonal,self).create(mat)
         self.D = mat.createVecLeft()
 
-    def destroy(self):
+    def destroy(self, mat):
         self.D.destroy()
-        super(Diagonal,self).destroy()
+        super(Diagonal,self).destroy(mat)
 
     def scale(self, mat, a):
         self.D.scale(a)

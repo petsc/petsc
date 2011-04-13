@@ -72,12 +72,6 @@ typedef struct {
   TS_PYTHON_CALL_TAIL(ts, PyMethod)                     \
 /**/
 
-#define TS_PYTHON_CALL_NOARGS(ts, PyMethod)             \
-  TS_PYTHON_CALL_HEAD(ts, PyMethod);                    \
-  TS_PYTHON_CALL_BODY(ts, ("", NULL));                  \
-  TS_PYTHON_CALL_TAIL(ts, PyMethod)                     \
-/**/
-
 #define TS_PYTHON_CALL_TSARG(ts, PyMethod)              \
   TS_PYTHON_CALL_HEAD(ts, PyMethod);                    \
   TS_PYTHON_CALL_BODY(ts, ("O&",PyPetscTS_New,ts));     \
@@ -136,7 +130,9 @@ static PetscErrorCode TSDestroy_Python(TS ts)
 
   PetscFunctionBegin;
   if (Py_IsInitialized()) {
-    TS_PYTHON_CALL_NOARGS(ts, "destroy");
+    PETSC_PYTHON_INCREF(ts);
+    TS_PYTHON_CALL_TSARG(ts, "destroy");
+    PETSC_PYTHON_DECREF(ts);
     py->self = NULL; Py_DecRef(self);
   }
   if (py->update)   {ierr = VecDestroy(py->update);CHKERRQ(ierr);}
@@ -283,8 +279,7 @@ static PetscErrorCode TSPyJacobian(SNES snes,Vec x,Mat *A,Mat *B,MatStructure *f
 static PetscErrorCode TSPreSolve_Python(TS ts)
 {
   PetscFunctionBegin;
-  TS_PYTHON_CALL(ts, "preSolve", ("O&",
-                                  PyPetscTS_New, ts ));
+  TS_PYTHON_CALL_TSARG(ts, "preSolve");
   PetscFunctionReturn(0);
 }
 
@@ -293,8 +288,7 @@ static PetscErrorCode TSPreSolve_Python(TS ts)
 static PetscErrorCode TSPostSolve_Python(TS ts)
 {
   PetscFunctionBegin;
-  TS_PYTHON_CALL(ts, "postSolve", ("O&",
-                                   PyPetscTS_New, ts ));
+  TS_PYTHON_CALL_TSARG(ts, "postSolve");
   PetscFunctionReturn(0);
 }
 
@@ -710,7 +704,7 @@ PetscErrorCode TSPythonSetContext(TS ts,void *ctx)
   if (self == Py_None) self = NULL;
   if (py->self == self) PetscFunctionReturn(0);
   /* del previous Python context in the TS object */
-  TS_PYTHON_CALL_NOARGS(ts, "destroy");
+  TS_PYTHON_CALL_TSARG(ts, "destroy");
   old = py->self; py->self = NULL; Py_DecRef(old);
   /* set current Python context in the TS object  */
   py->self = (PyObject *) self; Py_IncRef(py->self);

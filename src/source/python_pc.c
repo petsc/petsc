@@ -39,12 +39,6 @@ typedef struct {
   PC_PYTHON_CALL_TAIL(pc, PyMethod)                     \
 /**/
 
-#define PC_PYTHON_CALL_NOARGS(pc, PyMethod)             \
-  PC_PYTHON_CALL_HEAD(pc, PyMethod);                    \
-  PC_PYTHON_CALL_BODY(pc, ("", NULL));                  \
-  PC_PYTHON_CALL_TAIL(pc, PyMethod)                     \
-/**/
-
 #define PC_PYTHON_CALL_PCARG(pc, PyMethod)              \
   PC_PYTHON_CALL_HEAD(pc, PyMethod);                    \
   PC_PYTHON_CALL_BODY(pc, ("O&",PyPetscPC_New,pc));     \
@@ -52,10 +46,10 @@ typedef struct {
 /**/
 
 #define PC_PYTHON_CALL_MAYBE(pc, PyMethod, ARGS, LABEL) \
-  PC_PYTHON_CALL_HEAD(pc, PyMethod);                            \
-  PC_PYTHON_CALL_JUMP(pc, LABEL);                               \
-  PC_PYTHON_CALL_BODY(pc, ARGS);                                \
-  PC_PYTHON_CALL_TAIL(pc, PyMethod)                             \
+  PC_PYTHON_CALL_HEAD(pc, PyMethod);                    \
+  PC_PYTHON_CALL_JUMP(pc, LABEL);                       \
+  PC_PYTHON_CALL_BODY(pc, ARGS);                        \
+  PC_PYTHON_CALL_TAIL(pc, PyMethod)                     \
 /**/
 
 #define PC_PYTHON_SETERRSUP(pc, PyMethod)    \
@@ -90,7 +84,9 @@ static PetscErrorCode PCDestroy_Python(PC pc)
   PetscErrorCode ierr;
   PetscFunctionBegin;
   if (Py_IsInitialized()) {
-    PC_PYTHON_CALL_NOARGS(pc, "destroy");
+    PETSC_PYTHON_INCREF(pc);
+    PC_PYTHON_CALL_PCARG(pc, "destroy");
+    PETSC_PYTHON_DECREF(pc);
     py->self = NULL; Py_DecRef(self);
   }
   ierr = PetscFree(py->pyname);CHKERRQ(ierr);
@@ -323,7 +319,7 @@ static PetscErrorCode PCReset_Python(PC pc)
 {
   PetscFunctionBegin;
   PETSC_PYTHON_INCREF(pc);
-  PC_PYTHON_CALL(pc, "reset", ("O&", PyPetscPC_New,  pc));
+  PC_PYTHON_CALL_PCARG(pc, "reset");
   PETSC_PYTHON_DECREF(pc);
   PetscFunctionReturn(0);
 }
@@ -451,7 +447,7 @@ PetscErrorCode PCPythonSetContext(PC pc,void *ctx)
   if (self == Py_None) self = NULL;
   if (py->self == self) PetscFunctionReturn(0);
   /* del previous Python context in the PC object */
-  PC_PYTHON_CALL_NOARGS(pc, "destroy");
+  PC_PYTHON_CALL_PCARG(pc, "destroy");
   old = py->self; py->self = NULL; Py_DecRef(old);
   /* set current Python context in the PC object  */
   py->self = (PyObject *) self; Py_IncRef(py->self);

@@ -57,16 +57,10 @@ typedef struct {
   SNES_PYTHON_CALL_TAIL(snes, PyMethod)                 \
 /**/
 
-#define SNES_PYTHON_CALL_NOARGS(snes, PyMethod)                 \
-  SNES_PYTHON_CALL_HEAD(snes, PyMethod);                        \
-  SNES_PYTHON_CALL_BODY(snes, ("", NULL));                      \
-  SNES_PYTHON_CALL_TAIL(snes, PyMethod)                         \
-  /**/
-
-#define SNES_PYTHON_CALL_SNESARG(snes, PyMethod)                \
-  SNES_PYTHON_CALL_HEAD(snes, PyMethod);                        \
-  SNES_PYTHON_CALL_BODY(snes, ("O&",PyPetscSNES_New,snes));     \
-  SNES_PYTHON_CALL_TAIL(snes, PyMethod)                         \
+#define SNES_PYTHON_CALL_SNESARG(snes, PyMethod)            \
+  SNES_PYTHON_CALL_HEAD(snes, PyMethod);                    \
+  SNES_PYTHON_CALL_BODY(snes, ("O&",PyPetscSNES_New,snes)); \
+  SNES_PYTHON_CALL_TAIL(snes, PyMethod)                     \
 /**/
 
 #define SNES_PYTHON_CALL_MAYBE(snes, PyMethod, ARGS, LABEL) \
@@ -517,7 +511,7 @@ static PetscErrorCode SNESReset_Python(SNES snes)
 {
   PetscFunctionBegin;
   PETSC_PYTHON_INCREF(snes);
-  SNES_PYTHON_CALL(snes, "reset", ("O&", PyPetscSNES_New,  snes));
+  SNES_PYTHON_CALL_SNESARG(snes, "reset");
   PETSC_PYTHON_DECREF(snes);
   PetscFunctionReturn(0);
 }
@@ -541,7 +535,9 @@ static PetscErrorCode SNESDestroy_Python(SNES snes)
   PetscErrorCode ierr;
   PetscFunctionBegin;
   if (Py_IsInitialized()) {
-    SNES_PYTHON_CALL_NOARGS(snes, "destroy");
+    PETSC_PYTHON_INCREF(snes);
+    SNES_PYTHON_CALL_SNESARG(snes, "destroy");
+    PETSC_PYTHON_DECREF(snes);
     py->self = NULL; Py_DecRef(self);
   }
   if (snes->vec_sol_update) {
@@ -688,7 +684,7 @@ PetscErrorCode SNESPythonSetContext(SNES snes,void *ctx)
   if (self == Py_None) self = NULL;
   if (py->self == self) PetscFunctionReturn(0);
   /* del previous Python context in the SNES object */
-  SNES_PYTHON_CALL_NOARGS(snes, "destroy");
+  SNES_PYTHON_CALL_SNESARG(snes, "destroy");
   old = py->self; py->self = NULL; Py_DecRef(old);
   /* set current Python context in the SNES object  */
   py->self = (PyObject *) self; Py_IncRef(py->self);

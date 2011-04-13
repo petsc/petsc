@@ -40,30 +40,22 @@ typedef struct {
   MAT_PYTHON_CALL_TAIL(mat, PyMethod)           \
 /**/
 
-#define MAT_PYTHON_CALL_MAYBE(mat, PyMethod, ARGS, LABEL)       \
-  MAT_PYTHON_CALL_HEAD(mat, PyMethod);                          \
-  MAT_PYTHON_CALL_JUMP(mat, LABEL);                             \
-  MAT_PYTHON_CALL_BODY(mat, ARGS);                              \
-  MAT_PYTHON_CALL_TAIL(mat, PyMethod)                           \
+#define MAT_PYTHON_CALL_MAYBE(mat, PyMethod, ARGS, LABEL) \
+  MAT_PYTHON_CALL_HEAD(mat, PyMethod);                    \
+  MAT_PYTHON_CALL_JUMP(mat, LABEL);                       \
+  MAT_PYTHON_CALL_BODY(mat, ARGS);                        \
+  MAT_PYTHON_CALL_TAIL(mat, PyMethod)                     \
 /**/
 
-#define MAT_PYTHON_CALL_NOARGS(mat, PyMethod)                           \
-  MAT_PYTHON_CALL_HEAD(mat, PyMethod);                                  \
-  MAT_PYTHON_CALL_BODY(mat, ("", NULL));                                \
-  MAT_PYTHON_CALL_TAIL(mat, PyMethod)                                   \
+#define MAT_PYTHON_CALL_MATARG(mat, PyMethod)           \
+  MAT_PYTHON_CALL_HEAD(mat, PyMethod);                  \
+  MAT_PYTHON_CALL_BODY(mat, ("O&",PyPetscMat_New,mat)); \
+  MAT_PYTHON_CALL_TAIL(mat, PyMethod)                   \
 /**/
 
-#define MAT_PYTHON_MATARG(mat) ("O&",PyPetscMat_New,mat)
-
-#define MAT_PYTHON_CALL_MATARG(mat, PyMethod)                           \
-  MAT_PYTHON_CALL_HEAD(mat, PyMethod);                                  \
-  MAT_PYTHON_CALL_BODY(mat, ("O&", PyPetscMat_New, mat));               \
-  MAT_PYTHON_CALL_TAIL(mat, PyMethod)                                   \
-/**/
-
-#define MAT_PYTHON_SETERRSUP(mat, PyMethod)                             \
-  PETSC_PYTHON_NOTIMPLEMENTED(mat, PyMethod);                           \
-  PetscFunctionReturn(PETSC_ERR_SUP)                                    \
+#define MAT_PYTHON_SETERRSUP(mat, PyMethod)   \
+  PETSC_PYTHON_NOTIMPLEMENTED(mat, PyMethod); \
+  PetscFunctionReturn(PETSC_ERR_SUP)          \
 /**/
 
 /* -------------------------------------------------------------------------- */
@@ -117,7 +109,9 @@ static PetscErrorCode MatDestroy_Python(Mat mat)
   PetscErrorCode ierr;
   PetscFunctionBegin;
   if (Py_IsInitialized()) {
-    MAT_PYTHON_CALL_NOARGS(mat, "destroy");
+    PETSC_PYTHON_INCREF(mat);
+    MAT_PYTHON_CALL_MATARG(mat, "destroy");
+    PETSC_PYTHON_DECREF(mat);
     py->self = NULL; Py_DecRef(self);
   }
   ierr = PetscFree(py->pyname);CHKERRQ(ierr);
@@ -256,7 +250,7 @@ static PetscErrorCode MatZeroEntries_Python(Mat mat)
   Mat_Py *py = (Mat_Py *) mat->data;
   PetscFunctionBegin;
   MAT_PYTHON_CALL_MAYBE(mat, "zeroEntries",
-                        MAT_PYTHON_MATARG(mat),
+                        ("O&",PyPetscMat_New,mat),
                         notimplemented);
   py->scale = PETSC_FALSE; py->vscale = 1;
   py->shift = PETSC_FALSE; py->vshift = 0;
@@ -270,19 +264,15 @@ static PetscErrorCode MatZeroEntries_Python(Mat mat)
 static PetscErrorCode MatScale_Python(Mat mat,PetscScalar a)
 {
   Mat_Py *py = (Mat_Py *) mat->data;
-#if defined(PETSC_USE_COMPLEX)
-  Py_complex ca;
-#endif
   PetscFunctionBegin;
-#if defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_USE_SCALAR_COMPLEX) || defined(PETSC_USE_COMPLEX)
+  {Py_complex ca;
   ca.real = PetscRealPart(a);
   ca.imag = PetscImaginaryPart(a);
-#endif
-#if defined(PETSC_USE_COMPLEX)
   MAT_PYTHON_CALL_MAYBE(mat, "scale", ("O&D",
                                        PyPetscMat_New, mat,
                                        ca),
-                        scale);
+                        scale);}
 #else
   MAT_PYTHON_CALL_MAYBE(mat, "scale", ("O&d",
                                        PyPetscMat_New, mat,
@@ -303,19 +293,15 @@ static PetscErrorCode MatScale_Python(Mat mat,PetscScalar a)
 static PetscErrorCode MatShift_Python(Mat mat,PetscScalar a)
 {
   Mat_Py *py = (Mat_Py *) mat->data;
-#if defined(PETSC_USE_COMPLEX)
-  Py_complex ca;
-#endif
   PetscFunctionBegin;
-#if defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_USE_SCALAR_COMPLEX) || defined(PETSC_USE_COMPLEX)
+  {Py_complex ca;
   ca.real = PetscRealPart(a);
   ca.imag = PetscImaginaryPart(a);
-#endif
-#if defined(PETSC_USE_COMPLEX)
   MAT_PYTHON_CALL_MAYBE(mat, "shift", ("O&D",
                                        PyPetscMat_New, mat,
                                        ca),
-                        shift);
+                        shift);}
 #else
   MAT_PYTHON_CALL_MAYBE(mat, "shift", ("O&d",
                                        PyPetscMat_New, mat,
@@ -712,7 +698,7 @@ static PetscErrorCode MatRealPart_Python(Mat mat)
 {
   PetscFunctionBegin;
   MAT_PYTHON_CALL_MAYBE(mat, "realPart",
-                        MAT_PYTHON_MATARG(mat),
+                        ("O&",PyPetscMat_New,mat),
                         notimplemented);
   PetscFunctionReturn(0);
  notimplemented: /* MatRealPart */
@@ -725,7 +711,7 @@ static PetscErrorCode MatImaginaryPart_Python(Mat mat)
 {
   PetscFunctionBegin;
   MAT_PYTHON_CALL_MAYBE(mat, "imagPart",
-                        MAT_PYTHON_MATARG(mat),
+                        ("O&",PyPetscMat_New,mat),
                         notimplemented);
   PetscFunctionReturn(0);
  notimplemented: /* MatImaginaryPart */
@@ -738,7 +724,7 @@ static PetscErrorCode MatConjugate_Python(Mat mat)
 {
   PetscFunctionBegin;
   MAT_PYTHON_CALL_MAYBE(mat, "conjugate",
-                        MAT_PYTHON_MATARG(mat),
+                        ("O&",PyPetscMat_New,mat),
                         notimplemented);
   PetscFunctionReturn(0);
  notimplemented: /* MatConjugate */
@@ -903,7 +889,7 @@ PetscErrorCode MatPythonSetContext(Mat mat,void *ctx)
   if (self == Py_None) self = NULL;
   if (py->self == self) PetscFunctionReturn(0);
   /* del previous Python context in the Mat object */
-  MAT_PYTHON_CALL_NOARGS(mat, "destroy");
+  MAT_PYTHON_CALL_MATARG(mat, "destroy");
   old = py->self; py->self = NULL; Py_DecRef(old);
   /* set current Python context in the Mat object  */
   py->self = self; Py_IncRef(py->self);

@@ -53,7 +53,7 @@ class PC_PYTHON_CLASS(object):
         self.log[method] += 1
     def create(self, pc):
         self._log('create', pc)
-    def destroy(self):
+    def destroy(self, pc):
         self._log('destroy')
         self.impl = None
     def reset(self, pc):
