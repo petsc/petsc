@@ -1384,7 +1384,7 @@ PetscErrorCode  TSSetSolution(TS ts,Vec x)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSSetPreStep"
 /*@C
   TSSetPreStep - Sets the general-purpose function
@@ -1411,7 +1411,7 @@ PetscErrorCode  TSSetPreStep(TS ts, PetscErrorCode (*func)(TS))
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSPreStep"
 /*@C
   TSPreStep - Runs the user-defined pre-step function.
@@ -1443,27 +1443,7 @@ PetscErrorCode  TSPreStep(TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "TSDefaultPreStep"
-/*@
-  TSDefaultPreStep - The default pre-stepping function which does nothing.
-
-  Collective on TS
-
-  Input Parameters:
-. ts  - The TS context obtained from TSCreate()
-
-  Level: developer
-
-.keywords: TS, timestep
-@*/
-PetscErrorCode  TSDefaultPreStep(TS ts)
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSSetPostStep"
 /*@C
   TSSetPostStep - Sets the general-purpose function
@@ -1490,7 +1470,7 @@ PetscErrorCode  TSSetPostStep(TS ts, PetscErrorCode (*func)(TS))
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSPostStep"
 /*@C
   TSPostStep - Runs the user-defined post-step function.
@@ -1519,26 +1499,6 @@ PetscErrorCode  TSPostStep(TS ts)
     ierr = (*ts->ops->poststep)(ts);CHKERRQ(ierr);
     PetscStackPop;
   }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "TSDefaultPostStep"
-/*@
-  TSDefaultPostStep - The default post-stepping function which does nothing.
-
-  Collective on TS
-
-  Input Parameters:
-. ts  - The TS context obtained from TSCreate()
-
-  Level: developer
-
-.keywords: TS, timestep
-@*/
-PetscErrorCode  TSDefaultPostStep(TS ts)
-{
-  PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
