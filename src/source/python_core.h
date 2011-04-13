@@ -32,6 +32,25 @@
 
 /* -------------------------------------------------------------------------- */
 
+#if !defined(PETSC_VERSION_)
+#define PETSC_VERSION_(MAJOR,MINOR,SUBMINOR)   \
+       (PETSC_VERSION_MAJOR    == MAJOR    && \
+	PETSC_VERSION_MINOR    == MINOR    && \
+	PETSC_VERSION_SUBMINOR == SUBMINOR && \
+	PETSC_VERSION_RELEASE  == 1)
+#endif
+
+#if (PETSC_VERSION_(3,1,0) || \
+     PETSC_VERSION_(3,0,0))
+#define IS_CLASSID    IS_COOKIE
+#define VEC_CLASSID   VEC_COOKIE
+#define MAT_CLASSID   MAT_COOKIE
+#define KSP_CLASSID   KSP_COOKIE
+#define PC_CLASSID    PC_COOKIE
+#define SNES_CLASSID  SNES_COOKIE
+#define TS_CLASSID    TS_COOKIE
+#endif
+
 #if (PETSC_VERSION_(3,1,0) || \
      PETSC_VERSION_(3,0,0))
 typedef PetscTruth PetscBool;
@@ -88,10 +107,10 @@ typedef PetscTruth PetscBool;
 
 #if PY_VERSION_HEX < 0x02050000
 #define PetscPyImportModule(modname) PyImport_ImportModule((char *)(modname));
-#define PetscPyObjectGetAttrStr(ob,attr) PyObject_GetAttrString((ob),(char *)(attr))
+#define PetscPyGetAttrStr(ob,attr) PyObject_GetAttrString((ob),(char *)(attr))
 #else
 #define PetscPyImportModule(modname) PyImport_ImportModule((modname));
-#define PetscPyObjectGetAttrStr(ob,attr) PyObject_GetAttrString((ob),(attr))
+#define PetscPyGetAttrStr(ob,attr) PyObject_GetAttrString((ob),(attr))
 #endif
 
 #if PY_VERSION_HEX < 0x02050000
@@ -152,7 +171,7 @@ do {                                                                    \
   }                                                                     \
   do {                                                                  \
     if (_self != NULL && _self != Py_None) {                            \
-      _call = PetscPyObjectGetAttrStr(_self, _meth);                    \
+      _call = PetscPyGetAttrStr(_self, _meth);                          \
       if      (_call == NULL)    { PyErr_Clear(); }                     \
       else if (_call == Py_None) { Py_DecRef(_call); _call = NULL; }    \
     }                                                                   \
@@ -255,7 +274,7 @@ static PetscErrorCode PetscCreatePythonObject(const char fullname[],
   }
   if (!clsname) goto done;
   /* get the Python module/class/callable */
-  self = cls = PetscPyObjectGetAttrStr(mod,clsname);
+  self = cls = PetscPyGetAttrStr(mod,clsname);
   Py_DecRef(mod);
   if (cls == NULL) {
     const char *excname = PetscPythonHandleError();
@@ -307,17 +326,17 @@ static PetscErrorCode PetscPythonGetFullName(PyObject *self, char *pyname[])
   if (self == NULL) PetscFunctionReturn(0);
   /* --- */
   if (PyModule_Check(self)) {
-    omodname = PetscPyObjectGetAttrStr(self,"__name__");
+    omodname = PetscPyGetAttrStr(self,"__name__");
     omodname = PetscPythonAsString(omodname, &ModName);
     if (!omodname) PyErr_Clear();
   } else {
-    cls = PetscPyObjectGetAttrStr(self,"__class__");
+    cls = PetscPyGetAttrStr(self,"__class__");
     if (!cls) PyErr_Clear();
     else {
-      omodname = PetscPyObjectGetAttrStr(cls,"__module__");
+      omodname = PetscPyGetAttrStr(cls,"__module__");
       omodname = PetscPythonAsString(omodname, &ModName);
       if (!omodname) PyErr_Clear();
-      oclsname = PetscPyObjectGetAttrStr(cls,"__name__");
+      oclsname = PetscPyGetAttrStr(cls,"__name__");
       oclsname = PetscPythonAsString(oclsname, &ClsName);
       if (!oclsname) PyErr_Clear();
     }

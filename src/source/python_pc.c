@@ -261,7 +261,7 @@ static int PCPythonHasOperation(PC pc, const char operation[])
   PC_Py    *py = (PC_Py *)pc->data;
   PyObject *attr = NULL;
   if (py->self == NULL || py->self == Py_None) return 0;
-  attr = PetscPyObjectGetAttrStr(py->self, operation);
+  attr = PetscPyGetAttrStr(py->self, operation);
   if      (attr == NULL)    { PyErr_Clear();   return 0; }
   else if (attr == Py_None) { Py_DecRef(attr); return 0; }
   else                      { Py_DecRef(attr); return 1; }
