@@ -321,13 +321,10 @@ static PetscErrorCode PCSetUp_Python(PC pc)
 #define __FUNCT__ "PCReset_Python"
 static PetscErrorCode PCReset_Python(PC pc)
 {
-  PetscObject obj;
   PetscFunctionBegin;
-  obj = (PetscObject)pc;
-  if (obj->refct != 0) obj = 0;
-  if (obj) obj->refct++;
+  PETSC_PYTHON_INCREF(pc);
   PC_PYTHON_CALL(pc, "reset", ("O&", PyPetscPC_New,  pc));
-  if (obj) obj->refct--;
+  PETSC_PYTHON_DECREF(pc);
   PetscFunctionReturn(0);
 }
 #endif

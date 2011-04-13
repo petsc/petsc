@@ -515,13 +515,10 @@ static PetscErrorCode SNESSetFromOptions_Python(SNES snes)
 #define __FUNCT__ "SNESReset_Python"
 static PetscErrorCode SNESReset_Python(SNES snes)
 {
-  PetscObject obj;
   PetscFunctionBegin;
-  obj = (PetscObject)snes;
-  if (obj->refct != 0) obj = 0;
-  if (obj) obj->refct++;
+  PETSC_PYTHON_INCREF(snes);
   SNES_PYTHON_CALL(snes, "reset", ("O&", PyPetscSNES_New,  snes));
-  if (obj) obj->refct--;
+  PETSC_PYTHON_DECREF(snes);
   PetscFunctionReturn(0);
 }
 #endif

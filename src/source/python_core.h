@@ -198,6 +198,16 @@ do {                                                                    \
             "method %s() not implemented",PyMethod);                    \
 /**/
 
+#define PETSC_PYTHON_INCREF(h) \
+  {PetscObject _1_obj = (PetscObject)(h); \
+  if (_1_obj && _1_obj->refct != 0) _1_obj = 0; \
+  if (_1_obj) _1_obj->refct++; \
+/**/
+
+#define PETSC_PYTHON_DECREF(h) \
+  if (_1_obj) _1_obj->refct--;} \
+/**/
+
 /* -------------------------------------------------------------------------- */
 
 #undef __FUNCT__
