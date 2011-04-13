@@ -453,5 +453,13 @@ class TestSNESPython(BaseTestSNES, unittest.TestCase):
 
 # --------------------------------------------------------------------
 
+v = PETSc.Sys.getVersion()
+i = PETSc.Sys.getVersionInfo()
+petsc_dev = v <  (3, 1, 0) or (v == (3, 1, 0) and i['release'])
+if petsc_dev:
+    del BaseTestSNES.testResetAndSolve
+
+# --------------------------------------------------------------------
+
 if __name__ == '__main__':
     unittest.main()

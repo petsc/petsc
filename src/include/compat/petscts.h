@@ -44,6 +44,20 @@ static PetscErrorCode TSGetDM(TS ts,DM *dm)
 
 #if (PETSC_VERSION_(3,1,0) || \
      PETSC_VERSION_(3,0,0))
+#undef __FUNCT__  
+#define __FUNCT__ "TSReset"
+static PetscErrorCode TSReset_Compat(TS ts)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  SETERRQ(PETSC_ERR_SUP,"not supported in this PETSc version");
+  PetscFunctionReturn(0);
+}
+#define TSReset TSReset_Compat
+#endif
+
+#if (PETSC_VERSION_(3,1,0) || \
+     PETSC_VERSION_(3,0,0))
 #undef __FUNCT__
 #define __FUNCT__ "TSSetSolution_Compat"
 static PetscErrorCode
