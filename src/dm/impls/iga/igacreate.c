@@ -79,10 +79,10 @@ PetscErrorCode DMCreate_IGA(DM dm)
   dm->ops->forminitialguess   = 0;
   dm->ops->formfunction       = 0;
 
-  dm->ops->globaltolocalbegin = 0 /*DMGlobalToLocalBegin_IGA*/;
-  dm->ops->globaltolocalend   = 0 /*DMGlobalToLocalEnd_IGA*/;
-  dm->ops->localtoglobalbegin = 0 /*DMLocalToGlobalBegin_IGA*/;
-  dm->ops->localtoglobalend   = 0 /*DMLocalToGlobalEnd_IGA*/;
+  dm->ops->globaltolocalbegin = DMGlobalToLocalBegin_IGA;
+  dm->ops->globaltolocalend   = DMGlobalToLocalEnd_IGA;
+  dm->ops->localtoglobalbegin = DMLocalToGlobalBegin_IGA;
+  dm->ops->localtoglobalend   = DMLocalToGlobalEnd_IGA;
 
   dm->ops->getelements        = 0;
   dm->ops->restoreelements    = 0;

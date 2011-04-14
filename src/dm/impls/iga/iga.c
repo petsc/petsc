@@ -184,7 +184,7 @@ PetscErrorCode DMIGAGetNumQuadraturePoints(DM dm, PetscInt *nx, PetscInt *ny, Pe
 .keywords: distributed array, get, information
 .seealso: DMCreate()
 @*/
-PetscErrorCode DMIGAGetNumQuadraturePoints(DM dm, BD *bdX, BD *bdY, BD *bdZ)
+PetscErrorCode DMIGAGetBasisData(DM dm, BD *bdX, BD *bdY, BD *bdZ)
 {
   DM_IGA        *iga = (DM_IGA *) dm->data;
   PetscErrorCode ierr;
@@ -207,7 +207,7 @@ PetscErrorCode DMIGAGetNumQuadraturePoints(DM dm, BD *bdX, BD *bdY, BD *bdZ)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMIGAASetFieldName"
+#define __FUNCT__ "DMIGASetFieldName"
 /*@C
   DMIGASetFieldName - Sets the names of individual field components in multicomponent vectors associated with a IGA.
 
@@ -230,7 +230,7 @@ PetscErrorCode DMIGASetFieldName(DM dm, PetscInt nf, const char name[])
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  ierr = DMIGASetFieldName(iga->da_dof, nf, name);CHKERRQ(ierr);
+  ierr = DMDASetFieldName(iga->da_dof, nf, name);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -261,7 +261,7 @@ PetscErrorCode DMIGAGetFieldName(DM dm, PetscInt nf, const char **name)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(name, 3);
-  ierr = DMIGAGetFieldName(iga->da_dof, nf, name);CHKERRQ(ierr);
+  ierr = DMDAGetFieldName(iga->da_dof, nf, name);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
