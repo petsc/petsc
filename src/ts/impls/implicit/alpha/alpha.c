@@ -1,4 +1,3 @@
-
 /*
   Code for timestepping with implicit generalized-\alpha method
   for first order systems.
@@ -377,7 +376,7 @@ EXTERN_C_END
 +  ts - timestepping context
 .  adapt - user-defined adapt routine
 -  ctx  - [optional] user-defined context for private data for the
-	 adapt routine (may be PETSC_NULL)
+         adapt routine (may be PETSC_NULL)
 
    Calling sequence of adapt:
 $    adapt (TS ts,PetscReal t,Vec X,Vec Xdot,
@@ -445,7 +444,7 @@ PetscErrorCode  TSAlphaAdaptDefault(TS ts,PetscReal t,Vec X,Vec Xdot, PetscReal 
 #define __FUNCT__ "TSAlphaSetRadius"
 /*@
   TSAlphaSetRadius - sets the desired spectral radius of the method
-		     (i.e. high-frequency numerical damping)
+                     (i.e. high-frequency numerical damping)
 
   Logically Collective on TS
 

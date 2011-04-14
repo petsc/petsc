@@ -18,7 +18,7 @@
 
 .keywords: Mat, Python
 
-.seealso: MATPYTHON, MatCreatePython(), PetscPythonInitialize()
+.seealso: MatCreate(), MatSetType(), MATPYTHON, PetscPythonInitialize()
 @*/
 PetscErrorCode  MatPythonSetType(Mat mat,const char pyname[])
 {

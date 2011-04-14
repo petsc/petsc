@@ -1,4 +1,3 @@
-
 /*
   Code for timestepping with implicit Theta method
 
@@ -27,21 +26,21 @@ typedef struct {
   PetscReal stage_time;
 } TS_Theta;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSStep_Theta"
 static PetscErrorCode TSStep_Theta(TS ts,PetscInt *steps,PetscReal *ptime)
 {
   TS_Theta       *th = (TS_Theta*)ts->data;
-  PetscInt       i,max_steps = ts->max_steps,its,lits;
+  PetscInt       i,its,lits;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   *steps = -ts->steps;
-  *ptime = ts->ptime;
+  *ptime =  ts->ptime;
 
   ierr = TSMonitor(ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
 
-  for (i=0; i<max_steps; i++) {
+  for (i=0; i<ts->max_steps; i++) {
     if (ts->ptime + ts->time_step > ts->max_time) break;
     ierr = TSPreStep(ts);CHKERRQ(ierr);
 
@@ -73,7 +72,7 @@ static PetscErrorCode TSStep_Theta(TS ts,PetscInt *steps,PetscReal *ptime)
 }
 
 /*------------------------------------------------------------*/
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSReset_Theta"
 static PetscErrorCode TSReset_Theta(TS ts)
 {
@@ -86,7 +85,7 @@ static PetscErrorCode TSReset_Theta(TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSDestroy_Theta"
 static PetscErrorCode TSDestroy_Theta(TS ts)
 {
@@ -102,7 +101,7 @@ static PetscErrorCode TSDestroy_Theta(TS ts)
   This defines the nonlinear equation that is to be solved with SNES
   G(U) = F[t0+Theta*dt, U, (U-U0)*shift] = 0
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESTSFormFunction_Theta"
 static PetscErrorCode SNESTSFormFunction_Theta(SNES snes,Vec x,Vec y,TS ts)
 {
@@ -115,7 +114,7 @@ static PetscErrorCode SNESTSFormFunction_Theta(SNES snes,Vec x,Vec y,TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESTSFormJacobian_Theta"
 static PetscErrorCode SNESTSFormJacobian_Theta(SNES snes,Vec x,Mat *A,Mat *B,MatStructure *str,TS ts)
 {
@@ -129,7 +128,7 @@ static PetscErrorCode SNESTSFormJacobian_Theta(SNES snes,Vec x,Mat *A,Mat *B,Mat
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSSetUp_Theta"
 static PetscErrorCode TSSetUp_Theta(TS ts)
 {
@@ -160,7 +159,7 @@ static PetscErrorCode TSSetUp_Theta(TS ts)
 }
 /*------------------------------------------------------------*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSSetFromOptions_Theta"
 static PetscErrorCode TSSetFromOptions_Theta(TS ts)
 {
@@ -177,7 +176,7 @@ static PetscErrorCode TSSetFromOptions_Theta(TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSView_Theta"
 static PetscErrorCode TSView_Theta(TS ts,PetscViewer viewer)
 {
@@ -197,7 +196,7 @@ static PetscErrorCode TSView_Theta(TS ts,PetscViewer viewer)
 }
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSThetaGetTheta_Theta"
 PetscErrorCode  TSThetaGetTheta_Theta(TS ts,PetscReal *theta)
 {
@@ -208,7 +207,7 @@ PetscErrorCode  TSThetaGetTheta_Theta(TS ts,PetscReal *theta)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSThetaSetTheta_Theta"
 PetscErrorCode  TSThetaSetTheta_Theta(TS ts,PetscReal theta)
 {
@@ -231,7 +230,7 @@ EXTERN_C_END
 
 M*/
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSCreate_Theta"
 PetscErrorCode  TSCreate_Theta(TS ts)
 {
@@ -264,7 +263,7 @@ PetscErrorCode  TSCreate_Theta(TS ts)
 }
 EXTERN_C_END
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSThetaGetTheta"
 /*@
   TSThetaGetTheta - Get the abscissa of the stage in (0,1].
@@ -295,7 +294,7 @@ PetscErrorCode  TSThetaGetTheta(TS ts,PetscReal *theta)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSThetaSetTheta"
 /*@
   TSThetaSetTheta - Set the abscissa of the stage in (0,1].
