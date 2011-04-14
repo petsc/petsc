@@ -280,6 +280,18 @@ PetscErrorCode SNESSetUp_LS(SNES snes)
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESReset_LS"
+PetscErrorCode SNESReset_LS(SNES snes)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (snes->work) {ierr = VecDestroyVecs(snes->nwork,&snes->work);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
 /*
    SNESDestroy_LS - Destroys the private SNES_LS context that was created
    with SNESCreate_LS().
@@ -297,6 +309,7 @@ PetscErrorCode SNESDestroy_LS(SNES snes)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = SNESReset_LS(snes);CHKERRQ(ierr);
   if (ls->monitor) {
     ierr = PetscViewerASCIIMonitorDestroy(ls->monitor);CHKERRQ(ierr);
   }
@@ -1238,7 +1251,7 @@ PetscErrorCode  SNESCreate_LS(SNES snes)
   snes->ops->destroy	     = SNESDestroy_LS;
   snes->ops->setfromoptions  = SNESSetFromOptions_LS;
   snes->ops->view            = SNESView_LS;
-  snes->ops->reset           = 0;
+  snes->ops->reset           = SNESReset_LS;
 
   ierr                  = PetscNewLog(snes,SNES_LS,&neP);CHKERRQ(ierr);
   snes->data    	= (void*)neP;

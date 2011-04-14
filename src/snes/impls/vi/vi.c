@@ -2135,18 +2135,18 @@ PetscErrorCode  SNESCreate_VI(SNES snes)
   SNES_VI      *vi;
 
   PetscFunctionBegin;
-  snes->ops->setup	     = SNESSetUp_VI;
-  snes->ops->solve	     = SNESSolveVI_SS;
-  snes->ops->destroy	     = SNESDestroy_VI;
+  snes->ops->setup           = SNESSetUp_VI;
+  snes->ops->solve           = SNESSolveVI_SS;
+  snes->ops->destroy         = SNESDestroy_VI;
   snes->ops->setfromoptions  = SNESSetFromOptions_VI;
   snes->ops->view            = SNESView_VI;
   snes->ops->reset           = 0; /* XXX Implement!!! */
   snes->ops->converged       = SNESDefaultConverged_VI;
 
-  ierr                   = PetscNewLog(snes,SNES_VI,&vi);CHKERRQ(ierr);
-  snes->data    	 = (void*)vi;
-  vi->alpha		 = 1.e-4;
-  vi->maxstep		 = 1.e8;
+  ierr                  = PetscNewLog(snes,SNES_VI,&vi);CHKERRQ(ierr);
+  snes->data            = (void*)vi;
+  vi->alpha             = 1.e-4;
+  vi->maxstep           = 1.e8;
   vi->minlambda         = 1.e-12;
   vi->LineSearch        = SNESLineSearchNo_VI;
   vi->lsP               = PETSC_NULL;

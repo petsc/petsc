@@ -1,6 +1,17 @@
 
 #include <../src/snes/impls/picard/picard.h>
 
+#undef __FUNCT__
+#define __FUNCT__ "SNESReset_Picard"
+PetscErrorCode SNESReset_Picard(SNES snes)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (snes->work) {ierr = VecDestroyVecs(snes->nwork,&snes->work);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
 /*
   SNESDestroy_Picard - Destroys the private SNES_Picard context that was created with SNESCreate_Picard().
 
@@ -16,6 +27,7 @@ PetscErrorCode SNESDestroy_Picard(SNES snes)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = SNESReset_Picard(snes);CHKERRQ(ierr);
   ierr = PetscFree(snes->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -406,7 +418,7 @@ PetscErrorCode  SNESCreate_Picard(SNES snes)
   snes->ops->setfromoptions  = SNESSetFromOptions_Picard;
   snes->ops->view            = SNESView_Picard;
   snes->ops->solve	     = SNESSolve_Picard;
-  snes->ops->reset           = 0;
+  snes->ops->reset           = SNESReset_Picard;
 
   ierr = PetscNewLog(snes, SNES_Picard, &neP);CHKERRQ(ierr);
   snes->data = (void*) neP;

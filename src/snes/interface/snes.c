@@ -1509,22 +1509,19 @@ PetscErrorCode  SNESDestroy(SNES snes)
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   if (--((PetscObject)snes)->refct > 0) PetscFunctionReturn(0);
 
+  ierr = SNESReset(snes);CHKERRQ(ierr);
+
   /* if memory was published with AMS then destroy it */
   ierr = PetscObjectDepublish(snes);CHKERRQ(ierr);
   if (snes->ops->destroy) {ierr = (*(snes)->ops->destroy)(snes);CHKERRQ(ierr);}
 
-  if (snes->dm) {ierr = DMDestroy(snes->dm);CHKERRQ(ierr);}
-  if (snes->vec_rhs) {ierr = VecDestroy(snes->vec_rhs);CHKERRQ(ierr);}
-  if (snes->vec_sol) {ierr = VecDestroy(snes->vec_sol);CHKERRQ(ierr);}
-  if (snes->vec_sol_update) {ierr = VecDestroy(snes->vec_sol_update);CHKERRQ(ierr);}
-  if (snes->vec_func) {ierr = VecDestroy(snes->vec_func);CHKERRQ(ierr);}
-  if (snes->jacobian) {ierr = MatDestroy(snes->jacobian);CHKERRQ(ierr);}
-  if (snes->jacobian_pre) {ierr = MatDestroy(snes->jacobian_pre);CHKERRQ(ierr);}
+  if (snes->dm)  {ierr = DMDestroy(snes->dm);CHKERRQ(ierr);}
   if (snes->ksp) {ierr = KSPDestroy(snes->ksp);CHKERRQ(ierr);}
-  if (snes->work) {ierr = VecDestroyVecs(snes->nwork,&snes->work);CHKERRQ(ierr);}
-  if (snes->vwork) {ierr = VecDestroyVecs(snes->nvwork,&snes->vwork);CHKERRQ(ierr);}
+
   ierr = PetscFree(snes->kspconvctx);CHKERRQ(ierr);
-  if (snes->ops->convergeddestroy) {ierr = (*snes->ops->convergeddestroy)(snes->cnvP);CHKERRQ(ierr);}
+  if (snes->ops->convergeddestroy) {
+    ierr = (*snes->ops->convergeddestroy)(snes->cnvP);CHKERRQ(ierr);
+  }
   if (snes->conv_malloc) {
     ierr = PetscFree(snes->conv_hist);CHKERRQ(ierr);
     ierr = PetscFree(snes->conv_hist_its);CHKERRQ(ierr);
