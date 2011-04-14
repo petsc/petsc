@@ -94,8 +94,6 @@ class Configure(config.base.Configure):
     self.headers.headers.extend(headersC)
     self.functions.functions.extend(functions)
     self.libraries.libraries.extend(libraries1)
-    if self.checkCompile('#include <<dlfcn.h>\n void *ptr =  RTLD_DEFAULT;'):
-      self.addDefine('RTLD_DEFAULT','1')
 
     return
 
@@ -580,6 +578,9 @@ class Configure(config.base.Configure):
     elif self.languages.clanguage == 'Cxx':
       self.addDefine('STATIC_INLINE', self.compilers.cxxStaticInlineKeyword)
       self.addDefine('RESTRICT', self.compilers.cxxRestrict)
+
+    if self.checkCompile('#include <dlfcn.h>\n void *ptr =  RTLD_DEFAULT;'):
+      self.addDefine('RTLD_DEFAULT','1')
     return
 
   def configureSolaris(self):
@@ -664,6 +665,7 @@ class Configure(config.base.Configure):
       self.addDefine('PATH_SEPARATOR','\':\'')
       self.addDefine('REPLACE_DIR_SEPARATOR','\'\\\\\'')
       self.addDefine('DIR_SEPARATOR','\'/\'')
+
     return
 
 #-----------------------------------------------------------------------------------------------------
