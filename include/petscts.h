@@ -67,6 +67,7 @@ extern PetscErrorCode   TSAppendOptionsPrefix(TS,const char[]);
 extern PetscErrorCode   TSGetOptionsPrefix(TS,const char *[]);
 extern PetscErrorCode   TSSetFromOptions(TS);
 extern PetscErrorCode   TSSetUp(TS);
+extern PetscErrorCode   TSReset(TS);
 
 extern PetscErrorCode   TSSetSolution(TS,Vec);
 extern PetscErrorCode   TSGetSolution(TS,Vec*);

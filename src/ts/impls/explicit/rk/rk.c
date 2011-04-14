@@ -403,24 +403,30 @@ static PetscErrorCode TSStep_RK(TS ts,PetscInt *steps,PetscReal *ptime)
 
 /*------------------------------------------------------------*/
 #undef __FUNCT__  
-#define __FUNCT__ "TSDestroy_RK"
-static PetscErrorCode TSDestroy_RK(TS ts)
+#define __FUNCT__ "TSReset_RK"
+static PetscErrorCode TSReset_RK(TS ts)
 {
   TS_RK          *rk = (TS_RK*)ts->data;
   PetscErrorCode ierr;
-  PetscInt       i;
 
-  /* REMEMBER TO DESTROY ALL */
-  
   PetscFunctionBegin;
-  if (rk->y1) {ierr = VecDestroy(rk->y1);CHKERRQ(ierr);}
-  if (rk->y2) {ierr = VecDestroy(rk->y2);CHKERRQ(ierr);}
-  if (rk->tmp) {ierr = VecDestroy(rk->tmp);CHKERRQ(ierr);}
+  if (rk->y1)    {ierr = VecDestroy(rk->y1);CHKERRQ(ierr);}
+  if (rk->y2)    {ierr = VecDestroy(rk->y2);CHKERRQ(ierr);}
+  if (rk->tmp)   {ierr = VecDestroy(rk->tmp);CHKERRQ(ierr);}
   if (rk->tmp_y) {ierr = VecDestroy(rk->tmp_y);CHKERRQ(ierr);}
-  for(i=0;i<rk->s;i++){
-     if (rk->k[i]) {ierr = VecDestroy(rk->k[i]);CHKERRQ(ierr);}
-  }
-  ierr = PetscFree(rk);CHKERRQ(ierr);
+  if (rk->k)     {ierr = VecDestroyVecs(rk->s,&rk->k);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSDestroy_RK"
+static PetscErrorCode TSDestroy_RK(TS ts)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = TSReset_RK(ts);CHKERRQ(ierr);
+  ierr = PetscFree(ts->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /*------------------------------------------------------------*/

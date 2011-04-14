@@ -5,7 +5,7 @@
 #include <private/tsimpl.h>                /*I   "petscts.h"   I*/
 
 typedef struct {
-  Vec  update;         /* work vector where new solution is formed */
+  Vec  update;         /* solution update */
   Vec  func;           /* work vector where F(t[i],u[i]) is stored */
   Vec  rhsfunc, rhsfunc_old; /* work vectors to hold rhs function provided by user */
   Vec  rhs;            /* work vector for RHS; vec_sol/dt */
@@ -113,9 +113,9 @@ static PetscErrorCode TSStep_CN_Linear_Constant_Matrix(TS ts,PetscInt *steps,Pet
 {
   TS_CN          *cn = (TS_CN*)ts->data;
   Vec            sol = ts->vec_sol,update = cn->update,rhs = cn->rhs;
-  PetscErrorCode ierr;
   PetscInt       i,max_steps = ts->max_steps,its;
   PetscScalar    mdt = 1.0/ts->time_step;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   *steps = -ts->steps;
@@ -159,11 +159,11 @@ static PetscErrorCode TSStep_CN_Linear_Variable_Matrix(TS ts,PetscInt *steps,Pet
 {
   TS_CN          *cn = (TS_CN*)ts->data;
   Vec            sol = ts->vec_sol,update = cn->update,rhs = cn->rhs;
-  PetscErrorCode ierr;
   PetscInt       i,max_steps = ts->max_steps,its;
   PetscScalar    mdt = 1.0/ts->time_step;
   PetscReal      t_mid;
   MatStructure   str;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   *steps = -ts->steps;
@@ -221,10 +221,10 @@ static PetscErrorCode TSStep_CN_Linear_Variable_Matrix(TS ts,PetscInt *steps,Pet
 #define __FUNCT__ "TSStep_CN_Nonlinear"
 static PetscErrorCode TSStep_CN_Nonlinear(TS ts,PetscInt *steps,PetscReal *ptime)
 {
-  Vec            sol = ts->vec_sol;
-  PetscErrorCode ierr;
-  PetscInt       i,max_steps = ts->max_steps,its,lits;
   TS_CN          *cn = (TS_CN*)ts->data;
+  Vec            sol = ts->vec_sol, update = cn->update;
+  PetscInt       i,max_steps = ts->max_steps,its,lits;
+  PetscErrorCode ierr;
   
   PetscFunctionBegin;
   *steps = -ts->steps;
@@ -235,12 +235,12 @@ static PetscErrorCode TSStep_CN_Nonlinear(TS ts,PetscInt *steps,PetscReal *ptime
     ierr = TSPreStep(ts);CHKERRQ(ierr);
     ts->ptime += ts->time_step;
    
-    ierr = VecCopy(sol,cn->update);CHKERRQ(ierr);
-    ierr = SNESSolve(ts->snes,PETSC_NULL,cn->update);CHKERRQ(ierr);
+    ierr = VecCopy(sol,update);CHKERRQ(ierr);
+    ierr = SNESSolve(ts->snes,PETSC_NULL,update);CHKERRQ(ierr);
     ierr = SNESGetIterationNumber(ts->snes,&its);CHKERRQ(ierr);
     ierr = SNESGetLinearSolveIterations(ts->snes,&lits);CHKERRQ(ierr);
     ts->nonlinear_its += its; ts->linear_its += lits;
-    ierr = VecCopy(cn->update,sol);CHKERRQ(ierr);
+    ierr = VecCopy(update,sol);CHKERRQ(ierr);
     ts->steps++;
     ierr = TSPostStep(ts);CHKERRQ(ierr);
     ierr = TSMonitor(ts,ts->steps,ts->ptime,sol);CHKERRQ(ierr);
@@ -253,18 +253,30 @@ static PetscErrorCode TSStep_CN_Nonlinear(TS ts,PetscInt *steps,PetscReal *ptime
 
 /*------------------------------------------------------------*/
 #undef __FUNCT__  
-#define __FUNCT__ "TSDestroy_CN"
-static PetscErrorCode TSDestroy_CN(TS ts)
+#define __FUNCT__ "TSReset_CN"
+static PetscErrorCode TSReset_CN(TS ts)
 {
   TS_CN          *cn = (TS_CN*)ts->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (cn->update) {ierr = VecDestroy(cn->update);CHKERRQ(ierr);}
+  if (cn->rhs) {ierr = VecDestroy(cn->rhs);CHKERRQ(ierr);}
   if (cn->func) {ierr = VecDestroy(cn->func);CHKERRQ(ierr);}
   if (cn->rhsfunc) {ierr = VecDestroy(cn->rhsfunc);CHKERRQ(ierr);}
   if (cn->rhsfunc_old) {ierr = VecDestroy(cn->rhsfunc_old);CHKERRQ(ierr);}
-  if (cn->rhs) {ierr = VecDestroy(cn->rhs);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__  
+#define __FUNCT__ "TSDestroy_CN"
+static PetscErrorCode TSDestroy_CN(TS ts)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = TSReset_CN(ts);CHKERRQ(ierr);
   ierr = PetscFree(ts->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -418,7 +430,7 @@ static PetscErrorCode TSSetUp_CN_Nonlinear(TS ts)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecDuplicate(ts->vec_sol,&cn->update);CHKERRQ(ierr);  
+  ierr = VecDuplicate(ts->vec_sol,&cn->update);CHKERRQ(ierr);
   ierr = VecDuplicate(ts->vec_sol,&cn->func);CHKERRQ(ierr);  
   ierr = VecDuplicate(ts->vec_sol,&cn->rhsfunc);CHKERRQ(ierr); 
   ierr = VecDuplicate(ts->vec_sol,&cn->rhsfunc_old);CHKERRQ(ierr); 
@@ -428,9 +440,10 @@ static PetscErrorCode TSSetUp_CN_Nonlinear(TS ts)
   cn->rhsfunc_old_time = -100.0;
   PetscFunctionReturn(0);
 }
+
 /*------------------------------------------------------------*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSSetFromOptions_CN_Linear"
 static PetscErrorCode TSSetFromOptions_CN_Linear(TS ts)
 {
@@ -438,7 +451,7 @@ static PetscErrorCode TSSetFromOptions_CN_Linear(TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSSetFromOptions_CN_Nonlinear"
 static PetscErrorCode TSSetFromOptions_CN_Nonlinear(TS ts)
 {
@@ -446,7 +459,7 @@ static PetscErrorCode TSSetFromOptions_CN_Nonlinear(TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSView_CN"
 static PetscErrorCode TSView_CN(TS ts,PetscViewer viewer)
 {
@@ -464,7 +477,7 @@ static PetscErrorCode TSView_CN(TS ts,PetscViewer viewer)
 
 M*/
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSCreate_CN"
 PetscErrorCode  TSCreate_CN(TS ts)
 {
@@ -472,16 +485,17 @@ PetscErrorCode  TSCreate_CN(TS ts)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ts->ops->reset   = TSReset_CN;
   ts->ops->destroy = TSDestroy_CN;
   ts->ops->view    = TSView_CN;
 
   if (ts->problem_type == TS_LINEAR) {
     if (!ts->Arhs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must set rhs matrix for linear problem");
-    if (!ts->ops->rhsmatrix) {     
+    if (!ts->ops->rhsmatrix) {
       ts->ops->setup = TSSetUp_CN_Linear_Constant_Matrix;
       ts->ops->step  = TSStep_CN_Linear_Constant_Matrix;
     } else {
-      ts->ops->setup = TSSetUp_CN_Linear_Variable_Matrix;  
+      ts->ops->setup = TSSetUp_CN_Linear_Variable_Matrix;
       ts->ops->step  = TSStep_CN_Linear_Variable_Matrix;
     }
     ts->ops->setfromoptions = TSSetFromOptions_CN_Linear;
@@ -489,7 +503,7 @@ PetscErrorCode  TSCreate_CN(TS ts)
     ierr = PetscObjectIncrementTabLevel((PetscObject)ts->ksp,(PetscObject)ts,1);CHKERRQ(ierr);
     ierr = KSPSetInitialGuessNonzero(ts->ksp,PETSC_TRUE);CHKERRQ(ierr);
   } else if (ts->problem_type == TS_NONLINEAR) {
-    ts->ops->setup          = TSSetUp_CN_Nonlinear;  
+    ts->ops->setup          = TSSetUp_CN_Nonlinear;
     ts->ops->step           = TSStep_CN_Nonlinear;
     ts->ops->setfromoptions = TSSetFromOptions_CN_Nonlinear;
     ierr = SNESCreate(((PetscObject)ts)->comm,&ts->snes);CHKERRQ(ierr);

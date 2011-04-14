@@ -574,23 +574,28 @@ $     func(TS ts,PetscReal t,Mat *A,Mat *B,PetscInt *flag,void *ctx);
 @*/
 PetscErrorCode  TSSetMatrices(TS ts,Mat Arhs,PetscErrorCode (*frhs)(TS,PetscReal,Mat*,Mat*,MatStructure*,void*),Mat Alhs,PetscErrorCode (*flhs)(TS,PetscReal,Mat*,Mat*,MatStructure*,void*),MatStructure flag,void *ctx)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  if (frhs) ts->ops->rhsmatrix = frhs;
+  if (flhs) ts->ops->lhsmatrix = flhs;
+  if (ctx)  ts->jacP           = ctx;
   if (Arhs){
     PetscValidHeaderSpecific(Arhs,MAT_CLASSID,2);
     PetscCheckSameComm(ts,1,Arhs,2);
-    ts->Arhs           = Arhs;
-    ts->ops->rhsmatrix = frhs;
+    ierr = PetscObjectReference((PetscObject)Arhs);CHKERRQ(ierr);
+    if (ts->Arhs) {ierr = MatDestroy(ts->Arhs);CHKERRQ(ierr);}
+    ts->Arhs = Arhs;
   }
   if (Alhs){
     PetscValidHeaderSpecific(Alhs,MAT_CLASSID,4);
     PetscCheckSameComm(ts,1,Alhs,4);
-    ts->Alhs           = Alhs;
-    ts->ops->lhsmatrix = flhs;
+    ierr = PetscObjectReference((PetscObject)Alhs);CHKERRQ(ierr);
+    if (ts->Alhs) {ierr = MatDestroy(ts->Alhs);CHKERRQ(ierr);}
+    ts->Alhs = Alhs;
   }
-  
-  ts->jacP           = ctx;
-  ts->matflg         = flag;
+  ts->matflg = flag;
   PetscFunctionReturn(0);
 }
 
@@ -677,18 +682,28 @@ $     func (TS ts,PetscReal t,Vec u,Mat *A,Mat *B,MatStructure *flag,void *ctx);
 @*/
 PetscErrorCode  TSSetRHSJacobian(TS ts,Mat A,Mat B,PetscErrorCode (*f)(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*),void *ctx)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  PetscValidHeaderSpecific(A,MAT_CLASSID,2);
-  PetscValidHeaderSpecific(B,MAT_CLASSID,3);
-  PetscCheckSameComm(ts,1,A,2);
-  PetscCheckSameComm(ts,1,B,3);
+  if (A) PetscValidHeaderSpecific(A,MAT_CLASSID,2);
+  if (B) PetscValidHeaderSpecific(B,MAT_CLASSID,3);
+  if (A) PetscCheckSameComm(ts,1,A,2);
+  if (B) PetscCheckSameComm(ts,1,B,3);
   if (ts->problem_type != TS_NONLINEAR) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not for linear problems; use TSSetMatrices()");
 
-  ts->ops->rhsjacobian = f;
-  ts->jacP             = ctx;
-  ts->Arhs             = A;
-  ts->B                = B;
+  if (f)   ts->ops->rhsjacobian = f;
+  if (ctx) ts->jacP             = ctx;
+  if (A) {
+    ierr = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
+    if (ts->Arhs) {ierr = MatDestroy(ts->Arhs);CHKERRQ(ierr);}
+    ts->Arhs = A;
+  }
+  if (B) {
+    ierr = PetscObjectReference((PetscObject)B);CHKERRQ(ierr);
+    if (ts->B) {ierr = MatDestroy(ts->B);CHKERRQ(ierr);}
+    ts->B = B;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -784,23 +799,17 @@ PetscErrorCode  TSSetIJacobian(TS ts,Mat A,Mat B,TSIJacobian f,void *ctx)
   if (A) PetscCheckSameComm(ts,1,A,2);
   if (B) PetscCheckSameComm(ts,1,B,3);
   if (f)   ts->ops->ijacobian = f;
-  if (ctx) ts->jacP             = ctx;
+  if (ctx) ts->jacP           = ctx;
   if (A) {
     ierr = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
     if (ts->A) {ierr = MatDestroy(ts->A);CHKERRQ(ierr);}
     ts->A = A;
   }
-#if 0
-  /* The sane and consistent alternative */
   if (B) {
     ierr = PetscObjectReference((PetscObject)B);CHKERRQ(ierr);
     if (ts->B) {ierr = MatDestroy(ts->B);CHKERRQ(ierr);}
     ts->B = B;
   }
-#else
-  /* Don't reference B because TSDestroy() doesn't destroy it.  These ownership semantics are awkward and inconsistent. */
-  if (B) ts->B = B;
-#endif
   PetscFunctionReturn(0);
 }
 
@@ -1163,16 +1172,60 @@ PetscErrorCode  TSSetUp(TS ts)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  if (!ts->vec_sol) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TSSetSolution() first");
+  if (ts->setupcalled) PetscFunctionReturn(0);
+
   if (!((PetscObject)ts)->type_name) {
     ierr = TSSetType(ts,TSEULER);CHKERRQ(ierr);
   }
-  ierr = (*ts->ops->setup)(ts);CHKERRQ(ierr);
-  ts->setupcalled = 1;
+
+  if (!ts->vec_sol) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TSSetSolution() first");
+
+  if (ts->ops->setup) {
+    ierr = (*ts->ops->setup)(ts);CHKERRQ(ierr);
+  }
+
+  ts->setupcalled = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
+#define __FUNCT__ "TSReset"
+/*@
+   TSReset - Resets a TS context and removes any allocated Vecs and Mats.
+
+   Collective on TS
+
+   Input Parameter:
+.  ts - the TS context obtained from TSCreate()
+
+   Level: beginner
+
+.keywords: TS, timestep, reset
+
+.seealso: TSCreate(), TSSetup(), TSDestroy()
+@*/
+PetscErrorCode  TSReset(TS ts)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  if (ts->ops->reset) {
+    ierr = (*ts->ops->reset)(ts);CHKERRQ(ierr);
+  }
+  if (ts->snes) {ierr = SNESReset(ts->snes);CHKERRQ(ierr);}
+  if (ts->ksp)  {ierr = KSPReset(ts->ksp);CHKERRQ(ierr);}
+  if (ts->A)    {ierr = MatDestroy(ts->A);CHKERRQ(ierr);}
+  if (ts->B)    {ierr = MatDestroy(ts->B);CHKERRQ(ierr);}
+  if (ts->Arhs) {ierr = MatDestroy(ts->Arhs);CHKERRQ(ierr);}
+  if (ts->Alhs) {ierr = MatDestroy(ts->Alhs);CHKERRQ(ierr);}
+  if (ts->vec_sol) {ierr = VecDestroy(ts->vec_sol);CHKERRQ(ierr);}
+  if (ts->work) {ierr = VecDestroyVecs(ts->nwork,&ts->work);CHKERRQ(ierr);}
+  ts->setupcalled = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "TSDestroy"
 /*@
    TSDestroy - Destroys the timestepper context that was created
@@ -1197,15 +1250,15 @@ PetscErrorCode  TSDestroy(TS ts)
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (--((PetscObject)ts)->refct > 0) PetscFunctionReturn(0);
 
+  ierr = TSReset(ts);CHKERRQ(ierr);
+
   /* if memory was published with AMS then destroy it */
   ierr = PetscObjectDepublish(ts);CHKERRQ(ierr);
-  if (ts->ops->destroy) {ierr = (*(ts)->ops->destroy)(ts);CHKERRQ(ierr);}
+  if (ts->ops->destroy) {ierr = (*ts->ops->destroy)(ts);CHKERRQ(ierr);}
 
-  if (ts->vec_sol) {ierr = VecDestroy(ts->vec_sol);CHKERRQ(ierr);}
-  if (ts->dm) {ierr = DMDestroy(ts->dm);CHKERRQ(ierr);}
-  if (ts->A) {ierr = MatDestroy(ts->A);CHKERRQ(ierr);}
-  if (ts->ksp) {ierr = KSPDestroy(ts->ksp);CHKERRQ(ierr);}
   if (ts->snes) {ierr = SNESDestroy(ts->snes);CHKERRQ(ierr);}
+  if (ts->ksp)  {ierr = KSPDestroy(ts->ksp);CHKERRQ(ierr);}
+  if (ts->dm)   {ierr = DMDestroy(ts->dm);CHKERRQ(ierr);}
   ierr = TSMonitorCancel(ts);CHKERRQ(ierr);
 
   ierr = PetscHeaderDestroy(ts);CHKERRQ(ierr);
@@ -1640,9 +1693,8 @@ PetscErrorCode  TSStep(TS ts,PetscInt *steps,PetscReal *ptime)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID,1);
-  if (!ts->setupcalled) {
-    ierr = TSSetUp(ts);CHKERRQ(ierr);
-  }
+
+  ierr = TSSetUp(ts);CHKERRQ(ierr);
 
   ierr = PetscLogEventBegin(TS_Step, ts, 0, 0, 0);CHKERRQ(ierr);
   ierr = (*ts->ops->step)(ts, steps, ptime);CHKERRQ(ierr);

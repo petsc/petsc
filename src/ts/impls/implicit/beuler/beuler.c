@@ -45,7 +45,7 @@ PetscErrorCode TSSetKSPOperators_BEuler(TS ts)
 static PetscErrorCode TSStep_BEuler_Linear_Constant_Matrix(TS ts,PetscInt *steps,PetscReal *ptime)
 {
   TS_BEuler      *beuler = (TS_BEuler*)ts->data;
-  Vec            sol = ts->vec_sol,update = beuler->update;
+  Vec            sol = ts->vec_sol, update = beuler->update;
   Vec            rhs = beuler->rhs;
   PetscErrorCode ierr;
   PetscInt       i,max_steps = ts->max_steps,its;
@@ -158,11 +158,11 @@ static PetscErrorCode TSStep_BEuler_Linear_Variable_Matrix(TS ts,PetscInt *steps
 #define __FUNCT__ "TSStep_BEuler_Nonlinear"
 static PetscErrorCode TSStep_BEuler_Nonlinear(TS ts,PetscInt *steps,PetscReal *ptime)
 {
-  Vec            sol = ts->vec_sol;
+  TS_BEuler      *beuler = (TS_BEuler*)ts->data;
+  Vec            sol = ts->vec_sol, update = beuler->update;
   PetscErrorCode ierr;
   PetscInt       i,max_steps = ts->max_steps,its,lits;
-  TS_BEuler      *beuler = (TS_BEuler*)ts->data;
-  
+
   PetscFunctionBegin;
   *steps = -ts->steps;
   ierr = TSMonitor(ts,ts->steps,ts->ptime,sol);CHKERRQ(ierr);
@@ -171,12 +171,12 @@ static PetscErrorCode TSStep_BEuler_Nonlinear(TS ts,PetscInt *steps,PetscReal *p
     if (ts->ptime + ts->time_step > ts->max_time) break;
     ierr = TSPreStep(ts);CHKERRQ(ierr);
     ts->ptime += ts->time_step;
-    ierr = VecCopy(sol,beuler->update);CHKERRQ(ierr);
-    ierr = SNESSolve(ts->snes,PETSC_NULL,beuler->update);CHKERRQ(ierr);
+    ierr = VecCopy(sol,update);CHKERRQ(ierr);
+    ierr = SNESSolve(ts->snes,PETSC_NULL,update);CHKERRQ(ierr);
     ierr = SNESGetLinearSolveIterations(ts->snes,&lits);CHKERRQ(ierr);
     ierr = SNESGetIterationNumber(ts->snes,&its);CHKERRQ(ierr);
     ts->nonlinear_its += its; ts->linear_its += lits;
-    ierr = VecCopy(beuler->update,sol);CHKERRQ(ierr);
+    ierr = VecCopy(update,sol);CHKERRQ(ierr);
     ts->steps++;
     ierr = TSPostStep(ts);CHKERRQ(ierr);
     ierr = TSMonitor(ts,ts->steps,ts->ptime,sol);CHKERRQ(ierr);
@@ -188,17 +188,30 @@ static PetscErrorCode TSStep_BEuler_Nonlinear(TS ts,PetscInt *steps,PetscReal *p
 }
 
 /*------------------------------------------------------------*/
-#undef __FUNCT__  
-#define __FUNCT__ "TSDestroy_BEuler"
-static PetscErrorCode TSDestroy_BEuler(TS ts)
+
+#undef __FUNCT__
+#define __FUNCT__ "TSReset_BEuler"
+static PetscErrorCode TSReset_BEuler(TS ts)
 {
   TS_BEuler      *beuler = (TS_BEuler*)ts->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (beuler->update) {ierr = VecDestroy(beuler->update);CHKERRQ(ierr);}
-  if (beuler->func) {ierr = VecDestroy(beuler->func);CHKERRQ(ierr);}
-  if (beuler->rhs) {ierr = VecDestroy(beuler->rhs);CHKERRQ(ierr);}
+  if (beuler->rhs)    {ierr = VecDestroy(beuler->rhs);CHKERRQ(ierr);}
+  if (beuler->func)   {ierr = VecDestroy(beuler->func);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "TSDestroy_BEuler"
+static PetscErrorCode TSDestroy_BEuler(TS ts)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = TSReset_BEuler(ts);CHKERRQ(ierr);
   ierr = PetscFree(ts->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -303,6 +316,7 @@ static PetscErrorCode TSSetUp_BEuler_Nonlinear(TS ts)
   ierr = SNESSetJacobian(ts->snes,ts->Arhs,ts->B,SNESTSFormJacobian,ts);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
 /*------------------------------------------------------------*/
 
 #undef __FUNCT__  
@@ -347,8 +361,10 @@ PetscErrorCode  TSCreate_BEuler(TS ts)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ts->ops->reset   = TSReset_BEuler;
   ts->ops->destroy = TSDestroy_BEuler;
   ts->ops->view    = TSView_BEuler;
+
 
   if (ts->problem_type == TS_LINEAR) {
     if (!ts->Arhs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must set rhs matrix for linear problem");

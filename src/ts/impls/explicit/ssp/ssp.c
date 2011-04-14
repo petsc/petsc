@@ -14,7 +14,6 @@ PetscFList TSSSPList = 0;
 typedef struct {
   PetscErrorCode (*onestep)(TS,PetscReal,PetscReal,Vec);
   PetscInt nstages;
-  Vec xdot;
   Vec *work;
   PetscInt nwork;
   PetscBool  workout;
@@ -204,7 +203,21 @@ static PetscErrorCode TSStep_SSP(TS ts,PetscInt *steps,PetscReal *ptime)
   PetscFunctionReturn(0);
 }
 /*------------------------------------------------------------*/
-#undef __FUNCT__  
+#undef __FUNCT__
+#define __FUNCT__ "TSReset_SSP"
+static PetscErrorCode TSReset_SSP(TS ts)
+{
+  TS_SSP         *ssp = (TS_SSP*)ts->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (ssp->work) {ierr = VecDestroyVecs(ssp->nwork,&ssp->work);CHKERRQ(ierr);}
+  ssp->nwork = 0;
+  ssp->workout = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "TSDestroy_SSP"
 static PetscErrorCode TSDestroy_SSP(TS ts)
 {
@@ -212,7 +225,7 @@ static PetscErrorCode TSDestroy_SSP(TS ts)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (ssp->work) {ierr = VecDestroyVecs(ssp->nwork,&ssp->work);CHKERRQ(ierr);}
+  ierr = TSReset_SSP(ts);CHKERRQ(ierr);
   ierr = PetscFree(ts->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -319,6 +332,7 @@ PetscErrorCode  TSCreate_SSP(TS ts)
 
   ts->ops->setup           = TSSetUp_SSP;
   ts->ops->step            = TSStep_SSP;
+  ts->ops->reset           = TSReset_SSP;
   ts->ops->destroy         = TSDestroy_SSP;
   ts->ops->setfromoptions  = TSSetFromOptions_SSP;
   ts->ops->view            = TSView_SSP;

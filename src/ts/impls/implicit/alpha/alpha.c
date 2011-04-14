@@ -102,8 +102,8 @@ static PetscErrorCode TSStep_Alpha(TS ts,PetscInt *steps,PetscReal *ptime)
 
 /*------------------------------------------------------------*/
 #undef __FUNCT__
-#define __FUNCT__ "TSDestroy_Alpha"
-static PetscErrorCode TSDestroy_Alpha(TS ts)
+#define __FUNCT__ "TSReset_Alpha"
+static PetscErrorCode TSReset_Alpha(TS ts)
 {
   TS_Alpha       *th = (TS_Alpha*)ts->data;
   PetscErrorCode  ierr;
@@ -117,7 +117,18 @@ static PetscErrorCode TSDestroy_Alpha(TS ts)
   if (th->V1) {ierr = VecDestroy(th->V1);CHKERRQ(ierr);}
   if (th->R)  {ierr = VecDestroy(th->R);CHKERRQ(ierr);}
   if (th->E)  {ierr = VecDestroy(th->E);CHKERRQ(ierr);}
-  ierr = PetscFree(th);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSDestroy_Alpha"
+static PetscErrorCode TSDestroy_Alpha(TS ts)
+{
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = TSReset_Alpha(ts);CHKERRQ(ierr);
+  ierr = PetscFree(ts->data);CHKERRQ(ierr);
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSAlphaSetRadius_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSAlphaSetParams_C","",PETSC_NULL);CHKERRQ(ierr);
@@ -317,6 +328,7 @@ PetscErrorCode  TSCreate_Alpha(TS ts)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ts->ops->reset          = TSReset_Alpha;
   ts->ops->destroy        = TSDestroy_Alpha;
   ts->ops->view           = TSView_Alpha;
   ts->ops->setup          = TSSetUp_Alpha;
