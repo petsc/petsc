@@ -293,7 +293,7 @@ PetscErrorCode DMIGAGetFieldName(DM dm, PetscInt nf, const char **name)
 .keywords: distributed array, get, corners, nodes, local indices, coordinates
 .seealso: DMIGAVecRestoreArray(), VecGetArray(), VecRestoreArray(), DMDAVecRestoreArray(), DMDAVecGetArray()
 @*/
-PetscErrorCode  DMDAVecGetArray(DM dm, Vec vec, void *array)
+PetscErrorCode DMIGAVecGetArray(DM dm, Vec vec, void *array)
 {
   DM_IGA        *iga = (DM_IGA *) dm->data;
   PetscErrorCode ierr;
