@@ -120,6 +120,7 @@ cdef extern from * nogil:
     int TSSetPostStep(PetscTS, PetscTSPostStepFunction)
 
     int TSSetUp(PetscTS)
+    int TSReset(PetscTS)
     int TSStep(PetscTS,PetscInt*,PetscReal*)
     int TSSolve(PetscTS,PetscVec)
 

@@ -54,6 +54,9 @@ class MyTS:
     def setUp(self, ts, *args):
         self._log('setUp', ts, *args)
 
+    def reset(self, ts, *args):
+        self._log('reset', ts, *args)
+
     def computeRHSFunction(self, ts, *args):
         self._log('computeRHSFunction', ts, *args)
         return ts.computeRHSFunction(*args)
@@ -107,7 +110,7 @@ class TestTSPython(unittest.TestCase):
         self.assertEqual(ctx.log['destroy'], 1)
         self.assertEqual(getrefcount(ctx),   2)
 
-    def testSolve(self):
+    def testSolve(self, nsolve=1):
         ts = self.ts
         ode = MyODE()
         J = PETSc.Mat().create(ts.comm)
@@ -134,8 +137,8 @@ class TestTSPython(unittest.TestCase):
 
         ctx = self.ts.getPythonContext()
         self.assertEqual(getrefcount(ctx), 3)
-        self.assertTrue(ctx.log['preSolve']  ==  1)
-        self.assertTrue(ctx.log['postSolve'] ==  1)
+        self.assertTrue(ctx.log['preSolve']  ==  nsolve)
+        self.assertTrue(ctx.log['postSolve'] ==  nsolve)
         self.assertTrue(ctx.log['preStep']    >  1)
         self.assertTrue(ctx.log['postStep']   >  1)
         self.assertTrue(ctx.log['startStep']  >  1)
@@ -173,6 +176,23 @@ class TestTSPython(unittest.TestCase):
         ode.jacobian(ts, 0,u,J,J)
         ts.setUseFD(True)
         ts.solve(u)
+
+    def testResetAndSolve(self):
+        self.ts.reset()
+        self.testSolve(nsolve=1)
+        self.ts.reset()
+        self.testFDColor()#self.testSolve(nsolve=2)
+        self.ts.reset()
+        self.testSolve(nsolve=3)
+        self.ts.reset()
+
+# --------------------------------------------------------------------
+
+v = PETSc.Sys.getVersion()
+i = PETSc.Sys.getVersionInfo()
+petsc_dev = v <  (3, 1, 0) or (v == (3, 1, 0) and i['release'])
+if petsc_dev:
+    del TestTSPython.testResetAndSolve
 
 # --------------------------------------------------------------------
 

@@ -125,6 +125,21 @@ class TestTSNonlinear(unittest.TestCase):
         ts.setUseFD(True)
         ts.solve(u)
 
+    def testResetAndSolve(self):
+        self.ts.reset()
+        self.testSolve()
+        self.ts.reset()
+        self.testSolve()
+        self.ts.reset()
+
+# --------------------------------------------------------------------
+
+v = PETSc.Sys.getVersion()
+i = PETSc.Sys.getVersionInfo()
+petsc_dev = v <  (3, 1, 0) or (v == (3, 1, 0) and i['release'])
+if petsc_dev:
+    del TestTSNonlinear.testResetAndSolve
+
 # --------------------------------------------------------------------
 
 if __name__ == '__main__':

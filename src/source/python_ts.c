@@ -120,6 +120,29 @@ PetscErrorCode TSPythonSetType_PYTHON(TS ts,const char pyname[])
 }
 EXTERN_C_END
 
+#if !(PETSC_VERSION_(3,1,0) || PETSC_VERSION_(3,0,0))
+#undef __FUNCT__
+#define __FUNCT__ "TSReset_Python"
+static PetscErrorCode TSReset_Python(TS ts)
+{
+  TS_Py          *py   = (TS_Py *)ts->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+
+  PETSC_PYTHON_INCREF(ts);
+  TS_PYTHON_CALL_TSARG(ts, "reset");
+  PETSC_PYTHON_DECREF(ts);
+
+  if (py->update)   {ierr = VecDestroy(py->update);CHKERRQ(ierr);}
+  if (py->vec_func) {ierr = VecDestroy(py->vec_func);CHKERRQ(ierr);}
+  if (py->vec_rhs)  {ierr = VecDestroy(py->vec_rhs);CHKERRQ(ierr);}
+  py->update = py->vec_func = py->vec_rhs = 0;
+
+  PetscFunctionReturn(0);
+}
+#endif
+
 #undef __FUNCT__
 #define __FUNCT__ "TSDestroy_Python"
 static PetscErrorCode TSDestroy_Python(TS ts)
@@ -135,12 +158,15 @@ static PetscErrorCode TSDestroy_Python(TS ts)
     PETSC_PYTHON_DECREF(ts);
     py->self = NULL; Py_DecRef(self);
   }
+
   if (py->update)   {ierr = VecDestroy(py->update);CHKERRQ(ierr);}
   if (py->vec_func) {ierr = VecDestroy(py->vec_func);CHKERRQ(ierr);}
   if (py->vec_rhs)  {ierr = VecDestroy(py->vec_rhs);CHKERRQ(ierr);}
+
   ierr = PetscFree(py->pyname);CHKERRQ(ierr);
   ierr = PetscFree(ts->data);CHKERRQ(ierr);
   ts->data = PETSC_NULL;
+
   ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPythonSetType_C",
                                     "",PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -607,6 +633,9 @@ PetscErrorCode TSCreate_Python(TS ts)
   ts->ops->view            = TSView_Python;
   ts->ops->setup           = TSSetUp_Python;
   ts->ops->step            = TSSolve_Python;
+#if !(PETSC_VERSION_(3,1,0) || PETSC_VERSION_(3,0,0))
+  ts->ops->reset           = TSReset_Python;
+#endif
 
   py->update   = PETSC_NULL;
   py->vec_func = PETSC_NULL;
