@@ -28,11 +28,11 @@ PetscErrorCode TSPrecond_Sundials(realtype tn,N_Vector y,N_Vector fy,
   PetscScalar    one = 1.0,gm;
   MatStructure   str = DIFFERENT_NONZERO_PATTERN;
   PetscScalar    *y_data;
-  
+
   PetscFunctionBegin;
   /* This allows us to construct preconditioners in-place if we like */
   ierr = MatSetUnfactored(Jac);CHKERRQ(ierr);
-  
+
   /* jok - TRUE means reuse current Jacobian else recompute Jacobian */
   if (jok) {
     ierr     = MatCopy(cvode->pmat,Jac,str);CHKERRQ(ierr);
@@ -55,19 +55,19 @@ PetscErrorCode TSPrecond_Sundials(realtype tn,N_Vector y,N_Vector fy,
     }
     *jcurPtr = TRUE;
   }
-  
+
   /* construct I-gamma*Jac  */
   gm   = -_gamma;
   ierr = MatScale(Jac,gm);CHKERRQ(ierr);
   ierr = MatShift(Jac,one);CHKERRQ(ierr);
-  
+
   ierr = PCSetOperators(pc,Jac,Jac,str);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 /*
      TSPSolve_Sundials -  routine that we provide to Sundials that applies the preconditioner.
-*/    
+*/
 #undef __FUNCT__
 #define __FUNCT__ "TSPSolve_Sundials"
 PetscErrorCode TSPSolve_Sundials(realtype tn,N_Vector y,N_Vector fy,N_Vector r,N_Vector z,
@@ -233,6 +233,25 @@ PetscErrorCode TSStep_Sundials_Nonlinear(TS ts,int *steps,double *time)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "TSReset_Sundials"
+PetscErrorCode TSReset_Sundials(TS ts)
+{
+  TS_Sundials    *cvode = (TS_Sundials*)ts->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (cvode->pc)     {ierr = PCReset(cvode->pc);CHKERRQ(ierr);}
+  if (cvode->pmat)   {ierr = MatDestroy(cvode->pmat);CHKERRQ(ierr);}
+  if (cvode->update) {ierr = VecDestroy(cvode->update);CHKERRQ(ierr);}
+  if (cvode->func)   {ierr = VecDestroy(cvode->func);CHKERRQ(ierr);}
+  if (cvode->rhs)    {ierr = VecDestroy(cvode->rhs);CHKERRQ(ierr);}
+  if (cvode->w1)     {ierr = VecDestroy(cvode->w1);CHKERRQ(ierr);}
+  if (cvode->w2)     {ierr = VecDestroy(cvode->w2);CHKERRQ(ierr);}
+  if (cvode->mem)    {CVodeFree(&cvode->mem);}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "TSDestroy_Sundials"
 PetscErrorCode TSDestroy_Sundials(TS ts)
 {
@@ -240,16 +259,10 @@ PetscErrorCode TSDestroy_Sundials(TS ts)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (cvode->pmat)   {ierr = MatDestroy(cvode->pmat);CHKERRQ(ierr);} 
-  if (cvode->pc)     {ierr = PCDestroy(cvode->pc);CHKERRQ(ierr);} 
-  if (cvode->update) {ierr = VecDestroy(cvode->update);CHKERRQ(ierr);}
-  if (cvode->func)   {ierr = VecDestroy(cvode->func);CHKERRQ(ierr);}
-  if (cvode->rhs)    {ierr = VecDestroy(cvode->rhs);CHKERRQ(ierr);}
-  if (cvode->w1)     {ierr = VecDestroy(cvode->w1);CHKERRQ(ierr);}
-  if (cvode->w2)     {ierr = VecDestroy(cvode->w2);CHKERRQ(ierr);}
+  ierr = TSReset_Sundials(ts);CHKERRQ(ierr);
+  if (cvode->pc) {ierr = PCDestroy(cvode->pc);CHKERRQ(ierr);} 
   ierr = MPI_Comm_free(&(cvode->comm_sundials));CHKERRQ(ierr);
-  if (cvode->mem) {CVodeFree(&cvode->mem);}
-  ierr = PetscFree(cvode);CHKERRQ(ierr);
+  ierr = PetscFree(ts->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -983,9 +996,10 @@ PetscErrorCode  TSCreate_Sundials(TS ts)
 
   PetscFunctionBegin;
   if (ts->problem_type != TS_NONLINEAR) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only support for nonlinear problems");
+  ts->ops->reset          = TSReset_Sundials;
   ts->ops->destroy        = TSDestroy_Sundials;
   ts->ops->view           = TSView_Sundials;
-  ts->ops->setup          = TSSetUp_Sundials_Nonlinear;  
+  ts->ops->setup          = TSSetUp_Sundials_Nonlinear;
   ts->ops->step           = TSStep_Sundials_Nonlinear;
   ts->ops->setfromoptions = TSSetFromOptions_Sundials_Nonlinear;
 

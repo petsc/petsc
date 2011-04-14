@@ -66,6 +66,7 @@ PetscErrorCode  TSSetType(TS ts,const TSType type)
   if (ts->ops->destroy) {
     ierr = (*(ts)->ops->destroy)(ts);CHKERRQ(ierr);
   }
+  ts->setupcalled = PETSC_FALSE;
   ierr = (*r)(ts);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)ts, type);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_AMS)

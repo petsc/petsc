@@ -141,17 +141,17 @@ PetscErrorCode  TSPseudoVerifyTimeStep(TS ts,Vec update,PetscReal *dt,PetscBool 
 #define __FUNCT__ "TSStep_Pseudo"
 static PetscErrorCode TSStep_Pseudo(TS ts,PetscInt *steps,PetscReal *ptime)
 {
-  Vec            sol = ts->vec_sol;
+  TS_Pseudo      *pseudo = (TS_Pseudo*)ts->data;
+  Vec            sol = ts->vec_sol, update = pseudo->update;
   PetscErrorCode ierr;
   PetscInt       i,max_steps = ts->max_steps,its,lits;
   PetscBool      ok;
-  TS_Pseudo      *pseudo = (TS_Pseudo*)ts->data;
   PetscReal      current_time_step;
   
   PetscFunctionBegin;
   *steps = -ts->steps;
 
-  ierr = VecCopy(sol,pseudo->update);CHKERRQ(ierr);
+  ierr = VecCopy(sol,update);CHKERRQ(ierr);
   for (i=0; i<max_steps && ts->ptime < ts->max_time; i++) {
     ierr = TSPseudoComputeTimeStep(ts,&ts->time_step);CHKERRQ(ierr);
     ierr = TSMonitor(ts,ts->steps,ts->ptime,sol);CHKERRQ(ierr);
@@ -159,16 +159,16 @@ static PetscErrorCode TSStep_Pseudo(TS ts,PetscInt *steps,PetscReal *ptime)
     ierr = TSPreStep(ts);CHKERRQ(ierr);
     while (PETSC_TRUE) {
       ts->ptime  += current_time_step;
-      ierr = SNESSolve(ts->snes,PETSC_NULL,pseudo->update);CHKERRQ(ierr);
+      ierr = SNESSolve(ts->snes,PETSC_NULL,update);CHKERRQ(ierr);
       ierr = SNESGetLinearSolveIterations(ts->snes,&lits);CHKERRQ(ierr);
       ierr = SNESGetIterationNumber(ts->snes,&its);CHKERRQ(ierr);
       ts->nonlinear_its += its; ts->linear_its += lits;
-      ierr = TSPseudoVerifyTimeStep(ts,pseudo->update,&ts->time_step,&ok);CHKERRQ(ierr);
+      ierr = TSPseudoVerifyTimeStep(ts,update,&ts->time_step,&ok);CHKERRQ(ierr);
       if (ok) break;
       ts->ptime        -= current_time_step;
       current_time_step = ts->time_step;
     }
-    ierr = VecCopy(pseudo->update,sol);CHKERRQ(ierr);
+    ierr = VecCopy(update,sol);CHKERRQ(ierr);
     ts->steps++;
     ierr = TSPostStep(ts);CHKERRQ(ierr);
   }
@@ -184,20 +184,30 @@ static PetscErrorCode TSStep_Pseudo(TS ts,PetscInt *steps,PetscReal *ptime)
 
 /*------------------------------------------------------------*/
 #undef __FUNCT__  
-#define __FUNCT__ "TSDestroy_Pseudo"
-static PetscErrorCode TSDestroy_Pseudo(TS ts)
+#define __FUNCT__ "TSReset_Pseudo"
+static PetscErrorCode TSReset_Pseudo(TS ts)
 {
   TS_Pseudo      *pseudo = (TS_Pseudo*)ts->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (pseudo->update) {ierr = VecDestroy(pseudo->update);CHKERRQ(ierr);}
-  if (pseudo->func) {ierr = VecDestroy(pseudo->func);CHKERRQ(ierr);}
-  if (pseudo->xdot) {ierr = VecDestroy(pseudo->xdot);CHKERRQ(ierr);}
-  ierr = PetscFree(ts->data);CHKERRQ(ierr);
+  if (pseudo->func)   {ierr = VecDestroy(pseudo->func);CHKERRQ(ierr);}
+  if (pseudo->xdot)   {ierr = VecDestroy(pseudo->xdot);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "TSDestroy_Pseudo"
+static PetscErrorCode TSDestroy_Pseudo(TS ts)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = TSReset_Pseudo(ts);CHKERRQ(ierr);
+  ierr = PetscFree(ts->data);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 /*------------------------------------------------------------*/
 
@@ -471,7 +481,7 @@ PetscErrorCode  TSPseudoIncrementDtFromInitialDt(TS ts)
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSPseudoSetTimeStep"
 /*@C
    TSPseudoSetTimeStep - Sets the user-defined routine to be
@@ -623,6 +633,7 @@ PetscErrorCode  TSCreate_Pseudo(TS ts)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ts->ops->reset           = TSReset_Pseudo;
   ts->ops->destroy         = TSDestroy_Pseudo;
   ts->ops->view            = TSView_Pseudo;
 

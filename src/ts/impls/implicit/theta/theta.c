@@ -21,7 +21,7 @@
 
 typedef struct {
   Vec X,Xdot;                   /* Storage for one stage */
-  PetscBool  extrapolate;
+  PetscBool extrapolate;
   PetscReal Theta;
   PetscReal shift;
   PetscReal stage_time;
@@ -74,8 +74,8 @@ static PetscErrorCode TSStep_Theta(TS ts,PetscInt *steps,PetscReal *ptime)
 
 /*------------------------------------------------------------*/
 #undef __FUNCT__  
-#define __FUNCT__ "TSDestroy_Theta"
-static PetscErrorCode TSDestroy_Theta(TS ts)
+#define __FUNCT__ "TSReset_Theta"
+static PetscErrorCode TSReset_Theta(TS ts)
 {
   TS_Theta       *th = (TS_Theta*)ts->data;
   PetscErrorCode  ierr;
@@ -83,7 +83,18 @@ static PetscErrorCode TSDestroy_Theta(TS ts)
   PetscFunctionBegin;
   if (th->X)    {ierr = VecDestroy(th->X);CHKERRQ(ierr);}
   if (th->Xdot) {ierr = VecDestroy(th->Xdot);CHKERRQ(ierr);}
-  ierr = PetscFree(th);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "TSDestroy_Theta"
+static PetscErrorCode TSDestroy_Theta(TS ts)
+{
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = TSReset_Theta(ts);CHKERRQ(ierr);
+  ierr = PetscFree(ts->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -228,6 +239,7 @@ PetscErrorCode  TSCreate_Theta(TS ts)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ts->ops->reset          = TSReset_Theta;
   ts->ops->destroy        = TSDestroy_Theta;
   ts->ops->view           = TSView_Theta;
   ts->ops->setup          = TSSetUp_Theta;

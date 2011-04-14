@@ -35,6 +35,7 @@ struct _TSOps {
   PetscErrorCode (*setfromoptions)(TS);
   PetscErrorCode (*destroy)(TS);
   PetscErrorCode (*view)(TS,PetscViewer);
+  PetscErrorCode (*reset)(TS);
 };
 
 struct _p_TS {

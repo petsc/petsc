@@ -239,7 +239,18 @@ static PetscErrorCode SNESSetUp_TR(SNES snes)
   ierr = SNESDefaultGetWork(snes,3);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-/*------------------------------------------------------------*/
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESReset_TR"
+PetscErrorCode SNESReset_TR(SNES snes)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (snes->work) {ierr = VecDestroyVecs(snes->nwork,&snes->work);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "SNESDestroy_TR"
 static PetscErrorCode SNESDestroy_TR(SNES snes)
@@ -247,6 +258,7 @@ static PetscErrorCode SNESDestroy_TR(SNES snes)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = SNESReset_TR(snes);CHKERRQ(ierr);
   ierr = PetscFree(snes->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -332,7 +344,7 @@ PetscErrorCode  SNESCreate_TR(SNES snes)
   snes->ops->destroy	     = SNESDestroy_TR;
   snes->ops->setfromoptions  = SNESSetFromOptions_TR;
   snes->ops->view            = SNESView_TR;
-  snes->ops->reset           = 0;
+  snes->ops->reset           = SNESReset_TR;
 
   ierr			= PetscNewLog(snes,SNES_TR,&neP);CHKERRQ(ierr);
   snes->data	        = (void*)neP;
