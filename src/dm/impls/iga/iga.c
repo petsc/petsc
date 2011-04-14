@@ -64,7 +64,7 @@ PetscErrorCode DMCreateLocalVector_IGA(DM dm, Vec *lvec)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMCreateGlobalVector(iga->da_dof, lvec);CHKERRQ(ierr);
+  ierr = DMCreateLocalVector(iga->da_dof, lvec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -77,6 +77,54 @@ PetscErrorCode DMGetMatrix_IGA(DM dm, const MatType mtype, Mat *J)
 
   PetscFunctionBegin;
   ierr = DMGetMatrix(iga->da_dof, mtype, J);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMGlobalToLocalBegin_IGA"
+PetscErrorCode DMGlobalToLocalBegin_IGA(DM dm, Vec gv, InsertMode mode, Vec lv)
+{
+  DM_IGA        *iga = (DM_IGA *) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGlobalToLocalBegin(iga->da_dof, gv, mode, lv);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMGlobalToLocalEnd_IGA"
+PetscErrorCode DMGlobalToLocalEnd_IGA(DM dm, Vec gv, InsertMode mode, Vec lv)
+{
+  DM_IGA        *iga = (DM_IGA *) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGlobalToLocalEnd(iga->da_dof, gv, mode, lv);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMLocalToGlobalBegin_IGA"
+PetscErrorCode DMLocalToGlobalBegin_IGA(DM dm, Vec lv, InsertMode mode, Vec gv)
+{
+  DM_IGA        *iga = (DM_IGA *) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMLocalToGlobalBegin(iga->da_dof, lv, mode, gv);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMLocalToGlobalEnd_IGA"
+PetscErrorCode DMLocalToGlobalEnd_IGA(DM dm, Vec lv, InsertMode mode, Vec gv)
+{
+  DM_IGA        *iga = (DM_IGA *) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMLocalToGlobalEnd(iga->da_dof, lv, mode, gv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

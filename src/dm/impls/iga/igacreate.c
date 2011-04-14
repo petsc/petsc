@@ -28,11 +28,11 @@ PetscErrorCode  DMSetFromOptions_IGA(DM dm)
 extern PetscErrorCode DMCreateGlobalVector_IGA(DM dm, Vec *gvec);
 extern PetscErrorCode DMCreateLocalVector_IGA(DM dm, Vec *lvec);
 extern PetscErrorCode DMGetMatrix_IGA(DM dm, const MatType mtype, Mat *J);
-#if 0
 extern PetscErrorCode DMGlobalToLocalBegin_IGA(DM dm, Vec g, InsertMode mode, Vec l);
 extern PetscErrorCode DMGlobalToLocalEnd_IGA(DM dm, Vec g, InsertMode mode, Vec l);
 extern PetscErrorCode DMLocalToGlobalBegin_IGA(DM dm, Vec l, InsertMode mode, Vec g);
 extern PetscErrorCode DMLocalToGlobalEnd_IGA(DM dm, Vec l, InsertMode mode, Vec g);
+#if 0
 extern PetscErrorCode DMCreateLocalToGlobalMapping_IGA(DM dm);
 extern PetscErrorCode DMGetInterpolation_IGA(DM dmCoarse, DM dmFine, Mat *interpolation, Vec *scaling);
 #endif
