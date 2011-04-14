@@ -57,7 +57,8 @@ regressionParameters = {'src/vec/vec/examples/tests/ex1_2':    {'numProcs': 2},
                                                                {'numProcs': 1, 'args': '-da_grid_x 20 -snes_converged_reason -snes_monitor_short -ksp_monitor_short -problem_type 2 \
 -snes_mf_operator -pack_dm_mat_type aij -pc_type fieldsplit -pc_fieldsplit_type additive -fieldsplit_u_ksp_type gmres -fieldsplit_k_pc_type jacobi'},
                                                                {'numProcs': 1, 'args': '-da_grid_x 20 -snes_converged_reason -snes_monitor_short -ksp_monitor_short -problem_type 2 \
--snes_mf_operator -pack_dm_mat_type nest -pc_type fieldsplit -pc_fieldsplit_type additive -fieldsplit_u_ksp_type gmres -fieldsplit_k_pc_type jacobi'}]
+-snes_mf_operator -pack_dm_mat_type nest -pc_type fieldsplit -pc_fieldsplit_type additive -fieldsplit_u_ksp_type gmres -fieldsplit_k_pc_type jacobi'}],
+                        'src/ts/examples/tutorials/ex18':      {'numProcs': 1, 'args': '-snes_mf'},
                         }
 
 def noCheckCommand(command, status, output, error):
