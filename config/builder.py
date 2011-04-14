@@ -43,6 +43,7 @@ regressionParameters = {'src/vec/vec/examples/tests/ex1_2':    {'numProcs': 2},
                         'src/snes/examples/tutorials/ex5':     {'numProcs': 4, 'args': '-snes_mf -da_processors_x 4 -da_processors_y 1 -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always'},
                         'src/snes/examples/tutorials/ex5f90':  {'numProcs': 4, 'args': '-snes_mf -da_processors_x 4 -da_processors_y 1 -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always'},
                         'src/snes/examples/tutorials/ex5f90t': {'numProcs': 4, 'args': '-snes_mf -da_processors_x 4 -da_processors_y 1 -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always'},
+                        'src/snes/examples/tutorials/ex19':    {'numProcs': 2, 'args': '-dmmg_nlevels 4 -snes_monitor_short'},
                         'src/snes/examples/tutorials/ex10':   [{'numProcs': 2, 'args': '-da_grid_x 5 -snes_converged_reason -snes_monitor_short -problem_type 0'},
                                                                {'numProcs': 1, 'args': '-da_grid_x 20 -snes_converged_reason -snes_monitor_short -problem_type 1'},
                                                                {'numProcs': 1, 'args': '-da_grid_x 20 -snes_converged_reason -snes_monitor_short -problem_type 2'},
@@ -64,10 +65,11 @@ def noCheckCommand(command, status, output, error):
   return
 
 class Future(logger.Logger):
-  def __init__(self, argDB, log, pipe, errorMsg = '', func = None):
+  def __init__(self, argDB, log, pipe, cmd, errorMsg = '', func = None):
     logger.Logger.__init__(self, argDB = argDB, log = log)
     self.setup()
     self.pipe     = pipe
+    self.cmd      = cmd
     self.errorMsg = errorMsg
     self.funcs    = [func]
     self.cwd      = os.getcwd()
@@ -83,6 +85,7 @@ class Future(logger.Logger):
     if ret:
       #[os.remove(o) for o in objects if os.path.isfile(o)]
       self.logPrint(self.errorMsg, debugSection = 'screen')
+      self.logPrint(cmd,           debugSection = 'screen')
       self.logPrint(out+err,       debugSection = 'screen')
     else:
       self.logPrint('Successful execution')
@@ -733,6 +736,8 @@ class PETScMaker(script.Script):
    cmd      = ' '.join([compiler]+['-c']+includes+[packageIncludes]+flags+source)
    if not self.dryRun:
      pipe = self.runShellCommandParallel(cmd)
+   else:
+     pipe = None
    self.configInfo.setCompilers.popLanguage()
 
    def store():
@@ -740,7 +745,7 @@ class PETScMaker(script.Script):
      deps = [os.path.splitext(o)[0]+'.d' for o in objs if os.path.isfile(os.path.splitext(os.path.basename(o))[0]+'.d')]
      self.storeObjects(deps)
      return objs
-   return [Future(self.argDB, self.log, pipe, 'ERROR IN %s COMPILE ******************************' % language, store)]
+   return [Future(self.argDB, self.log, pipe, cmd, 'ERROR IN %s COMPILE ******************************' % language, store)]
 
  def compileCParallel(self, source, objDir = None):
    return self.compileParallel(self.configInfo.languages.clanguage, source, objDir)
@@ -982,7 +987,6 @@ class PETScMaker(script.Script):
        dirs = [rootDir]
      if parallel:
        futures = []
-       dirs = map(lambda d: os.path.join(rootDir, 'src', d), ['vec'])
        for d in dirs:
          for root, files in walker.walk(d):
            futures += self.buildDirParallel(root, files, objDir)
