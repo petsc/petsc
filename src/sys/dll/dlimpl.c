@@ -246,7 +246,7 @@ PetscErrorCode  PetscDLSym(PetscDLHandle handle,const char symbol[],void **value
   */  
 #if defined(PETSC_HAVE_WINDOWS_H) 
 #if defined(PETSC_HAVE_GETPROCADDRESS)
-  if (handle != PETSC_NULL)
+  if (handle)
     dlhandle = (dlhandle_t) handle;
   else
     dlhandle = (dlhandle_t) GetCurrentProcess();
@@ -261,11 +261,10 @@ PetscErrorCode  PetscDLSym(PetscDLHandle handle,const char symbol[],void **value
   */  
 #elif defined(PETSC_HAVE_DLFCN_H)
 #if defined(PETSC_HAVE_DLSYM)
-  if (handle != PETSC_NULL) {
+  if (handle) {
     dlhandle = (dlhandle_t) handle;
-  }
-  else {
-    dlhandle = (dlhandle_t) 0;
+  } else {
+
     
 #if defined(PETSC_HAVE_DLOPEN) && defined(PETSC_USE_DYNAMIC_LIBRARIES)
     /* Attempt to retrieve the main executable's dlhandle. */
@@ -273,7 +272,7 @@ PetscErrorCode  PetscDLSym(PetscDLHandle handle,const char symbol[],void **value
 #if defined(PETSC_HAVE_RTLD_LAZY)
       dlflags1 = RTLD_LAZY;
 #endif
-      if(!dlflags1) {
+      if (!dlflags1) {
 #if defined(PETSC_HAVE_RTLD_NOW)
         dlflags1 = RTLD_NOW;
 #endif
@@ -288,23 +287,25 @@ PetscErrorCode  PetscDLSym(PetscDLHandle handle,const char symbol[],void **value
       }
 #if defined(PETSC_HAVE_DLERROR)
 #if defined(PETSC_HAVE_VALGRIND)
-    if (!(RUNNING_ON_VALGRIND)) {
+      if (!(RUNNING_ON_VALGRIND)) {
 #endif
-      dlerror(); /* clear any previous error; valgrind does not like this */
+        dlerror(); /* clear any previous error; valgrind does not like this */
 #if defined(PETSC_HAVE_VALGRIND)
-    }
+      }
 #endif
 #endif
       /* Attempt to open the main executable as a dynamic library. */
+#if defined(PETSC_HAVE_RTDL_DEFAULT)
+      dlhandle = RTLD_DEFAULT;
+#else
       dlhandle = dlopen(0, dlflags1|dlflags2); 
-    }
 #if defined(PETSC_HAVE_DLERROR)
-    { const char *e = (const char*) dlerror();
-      if(e){
-        SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Error opening main executable as a dynamic library:\n  Error message from dlopen(): '%s'\n", e);
+      { const char *e = (const char*) dlerror();
+        if (e) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Error opening main executable as a dynamic library:\n  Error message from dlopen(): '%s'\n", e);
       }
-    }
 #endif
+#endif
+    }
 #endif /* PETSC_HAVE_DLOPEN && PETSC_USE_DYNAMIC_LIBRARIES */
   }
 #if defined(PETSC_HAVE_DLERROR)
@@ -312,10 +313,9 @@ PetscErrorCode  PetscDLSym(PetscDLHandle handle,const char symbol[],void **value
 #endif
   dlsymbol = (dlsymbol_t) dlsym(dlhandle,symbol);
 #if defined(PETSC_HAVE_DLERROR)
-/*   e = dlerror(); */
-/*   if(e){ */
-/*     SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG,"Error obtaining symbol '%s' from dynamic library:\n  Error message from dlsym(): '%s'\n", symbol, e); */
-/*   } */
+  { const char *e = dlerror(); 
+    if (e) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG,"Error obtaining symbol '%s' from dynamic library:\n  Error message from dlsym(): '%s'\n", symbol, e); 
+  }
 #endif
 #endif /* !PETSC_HAVE_DLSYM */
 

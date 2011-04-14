@@ -94,6 +94,9 @@ class Configure(config.base.Configure):
     self.headers.headers.extend(headersC)
     self.functions.functions.extend(functions)
     self.libraries.libraries.extend(libraries1)
+    if self.checkCompile('#include <<dlfcn.h>\n void *ptr =  RTLD_DEFAULT;'):
+      self.addDefine('RTLD_DEFAULT','1')
+
     return
 
   def Dump(self):

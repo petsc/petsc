@@ -22,7 +22,7 @@
        PetscLayoutSetBlockSize(PetscLayout,1);
        PetscLayoutSetSize(PetscLayout,n) or PetscLayoutSetLocalSize(PetscLayout,N);
        PetscLayoutSetUp(PetscLayout);
-       PetscLayoutGetSize(PetscLayout,PetscInt *);
+       PetscLayoutGetSize(PetscLayout,PetscInt *); or PetscLayoutGetLocalSize(PetscLayout,PetscInt *;)
        PetscLayoutDestroy(PetscLayout);
 
       The PetscLayout object and methods are intended to be used in the PETSc Vec and Mat implementions; it is 
