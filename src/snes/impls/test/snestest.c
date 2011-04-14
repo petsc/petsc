@@ -132,6 +132,7 @@ PetscErrorCode  SNESCreate_Test(SNES  snes)
   snes->ops->destroy	     = SNESDestroy_Test;
   snes->ops->setfromoptions  = SNESSetFromOptions_Test;
   snes->ops->view            = 0;
+  snes->ops->reset           = 0;
 
   ierr			= PetscNewLog(snes,SNES_Test,&neP);CHKERRQ(ierr);
   snes->data    	= (void*)neP;

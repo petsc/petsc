@@ -104,8 +104,6 @@ extern PetscErrorCode   TSDefaultComputeJacobian(TS,PetscReal,Vec,Mat*,Mat*,MatS
 
 extern PetscErrorCode   TSSetPreStep(TS, PetscErrorCode (*)(TS));
 extern PetscErrorCode   TSSetPostStep(TS, PetscErrorCode (*)(TS));
-extern PetscErrorCode   TSDefaultPreStep(TS);
-extern PetscErrorCode   TSDefaultPostStep(TS);
 extern PetscErrorCode   TSPreStep(TS);
 extern PetscErrorCode   TSPostStep(TS);
 

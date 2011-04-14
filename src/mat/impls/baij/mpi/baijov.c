@@ -6,7 +6,6 @@
 #include <../src/mat/impls/baij/mpi/mpibaij.h>
 #include <petscbt.h>
 
-static PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Once(Mat,PetscInt,IS *);
 static PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Local(Mat,PetscInt,char **,PetscInt*,PetscInt**);
 static PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Receive(Mat,PetscInt,PetscInt **,PetscInt**,PetscInt*);
 extern PetscErrorCode MatGetRow_MPIBAIJ(Mat,PetscInt,PetscInt*,PetscInt**,PetscScalar**);
@@ -60,7 +59,7 @@ PetscErrorCode MatIncreaseOverlap_MPIBAIJ(Mat C,PetscInt imax,IS is[],PetscInt o
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatIncreaseOverlap_MPIBAIJ_Once"
-static PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Once(Mat C,PetscInt imax,IS is[])
+PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Once(Mat C,PetscInt imax,IS is[])
 {
   Mat_MPIBAIJ    *c = (Mat_MPIBAIJ*)C->data;
   const PetscInt **idx,*idx_i;

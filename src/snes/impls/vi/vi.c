@@ -1408,15 +1408,8 @@ PetscErrorCode SNESSetUp_VI(SNES snes)
   PetscInt       i_start[3],i_end[3];
 
   PetscFunctionBegin;
-  if (!snes->vec_sol_update) {
-    ierr = VecDuplicate(snes->vec_sol,&snes->vec_sol_update);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent(snes,snes->vec_sol_update);CHKERRQ(ierr);
-  }
-  if (!snes->work) {
-    snes->nwork = 3;
-    ierr = VecDuplicateVecs(snes->vec_sol,snes->nwork,&snes->work);CHKERRQ(ierr);
-    ierr = PetscLogObjectParents(snes,snes->nwork,snes->work);CHKERRQ(ierr);
-  }
+
+  ierr = SNESDefaultGetWork(snes,3);CHKERRQ(ierr);
 
   /* If the lower and upper bound on variables are not set, set it to
      -Inf and Inf */
@@ -1475,13 +1468,6 @@ PetscErrorCode SNESDestroy_VI(SNES snes)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (snes->vec_sol_update) {
-    ierr = VecDestroy(snes->vec_sol_update);CHKERRQ(ierr);
-    snes->vec_sol_update = PETSC_NULL;
-  }
-  if (snes->work) {
-    ierr = VecDestroyVecs(snes->nwork,&snes->work);CHKERRQ(ierr);
-  }
   if (snes->ops->solve != SNESSolveVI_SS) {
     ierr = ISDestroy(vi->IS_inact_prev);
   }
@@ -2154,6 +2140,7 @@ PetscErrorCode  SNESCreate_VI(SNES snes)
   snes->ops->destroy	     = SNESDestroy_VI;
   snes->ops->setfromoptions  = SNESSetFromOptions_VI;
   snes->ops->view            = SNESView_VI;
+  snes->ops->reset           = 0; /* XXX Implement!!! */
   snes->ops->converged       = SNESDefaultConverged_VI;
 
   ierr                   = PetscNewLog(snes,SNES_VI,&vi);CHKERRQ(ierr);

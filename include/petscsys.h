@@ -1349,6 +1349,7 @@ extern PetscErrorCode  PetscObjectCreateGeneric(MPI_Comm, PetscClassId, const ch
 extern PetscErrorCode  PetscObjectDestroy(PetscObject);
 extern PetscErrorCode  PetscObjectGetComm(PetscObject,MPI_Comm *);
 extern PetscErrorCode  PetscObjectGetClassId(PetscObject,PetscClassId *);
+extern PetscErrorCode  PetscObjectGetClassName(PetscObject,const char *[]);
 extern PetscErrorCode  PetscObjectSetType(PetscObject,const char []);
 extern PetscErrorCode  PetscObjectSetPrecision(PetscObject,PetscPrecision);
 extern PetscErrorCode  PetscObjectGetType(PetscObject,const char *[]);

@@ -228,14 +228,14 @@ PetscErrorCode  AOCreate_Basic(AO ao)
 
   /* If mypetsc is 0 then use "natural" numbering */
   if (napp){
-    if (!ispetsc) {
+    if (ispetsc){
+      ierr = ISGetIndices(ispetsc,&mypetsc);CHKERRQ(ierr);
+      petsc = (PetscInt*)mypetsc;
+    } else {
       start = disp[rank];
       ierr  = PetscMalloc((napp+1) * sizeof(PetscInt), &petsc);CHKERRQ(ierr);
       for (i=0; i<napp; i++) petsc[i] = start + i;
-    } else {
-      ierr = ISGetIndices(ispetsc,&mypetsc);CHKERRQ(ierr);
-      petsc = (PetscInt*)mypetsc;
-    }
+    } 
   }
 
   /* get all indices on all processors */
@@ -290,10 +290,12 @@ PetscErrorCode  AOCreate_Basic(AO ao)
   }
 
   ierr = ISRestoreIndices(isapp,&myapp);CHKERRQ(ierr);
-  if (ispetsc){
-    ierr = ISRestoreIndices(ispetsc,&mypetsc);CHKERRQ(ierr);
-  } else if (napp && !ispetsc) {
-    ierr = PetscFree(petsc);CHKERRQ(ierr);
+  if (napp){
+    if (ispetsc){
+      ierr = ISRestoreIndices(ispetsc,&mypetsc);CHKERRQ(ierr);
+    } else {
+      ierr = PetscFree(petsc);CHKERRQ(ierr);
+    }
   }
   PetscFunctionReturn(0);
 }

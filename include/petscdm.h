@@ -54,6 +54,7 @@ extern PetscErrorCode  DMRegister(const char[],const char[],const char[],PetscEr
 extern PetscErrorCode  DMRegisterAll(const char []);
 extern PetscErrorCode  DMRegisterDestroy(void);
 
+
 /*MC
   DMRegisterDynamic - Adds a new DM component implementation
 

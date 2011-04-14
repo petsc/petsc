@@ -1,3 +1,4 @@
+#requiresprecision double
 ALL: lib
 
 CFLAGS   =

@@ -25,6 +25,7 @@ PetscErrorCode  DMSetFromOptions_IGA(DM dm)
 }
 
 /* External function declarations here */
+#if 0
 extern PetscErrorCode DMGlobalToLocalBegin_IGA(DM dm, Vec g, InsertMode mode, Vec l);
 extern PetscErrorCode DMGlobalToLocalEnd_IGA(DM dm, Vec g, InsertMode mode, Vec l);
 extern PetscErrorCode DMLocalToGlobalBegin_IGA(DM dm, Vec l, InsertMode mode, Vec g);
@@ -34,8 +35,9 @@ extern PetscErrorCode DMCreateLocalVector_IGA(DM dm, Vec *lvec);
 extern PetscErrorCode DMCreateLocalToGlobalMapping_IGA(DM dm);
 extern PetscErrorCode DMGetInterpolation_IGA(DM dmCoarse, DM dmFine, Mat *interpolation, Vec *scaling);
 extern PetscErrorCode DMGetMatrix_IGA(DM dm, const MatType mtype, Mat *J);
-extern PetscErrorCode DMDestroy_IGA(DM dm);
+#endif
 extern PetscErrorCode DMView_IGA(DM dm, PetscViewer viewer);
+extern PetscErrorCode DMDestroy_IGA(DM dm);
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
@@ -58,14 +60,14 @@ PetscErrorCode DMCreate_IGA(DM dm)
   dm->ops->view               = DMView_IGA;
   dm->ops->setfromoptions     = DMSetFromOptions_IGA;
   dm->ops->setup              = 0;
-  dm->ops->createglobalvector = DMCreateGlobalVector_IGA;
-  dm->ops->createlocalvector  = DMCreateLocalVector_IGA;
-  dm->ops->createlocaltoglobalmapping      = DMCreateLocalToGlobalMapping_IGA;
+  dm->ops->createglobalvector = 0 /*DMCreateGlobalVector_IGA*/;
+  dm->ops->createlocalvector  = 0 /*DMCreateLocalVector_IGA*/;
+  dm->ops->createlocaltoglobalmapping      = 0 /*DMCreateLocalToGlobalMapping_IGA*/;
   dm->ops->createlocaltoglobalmappingblock = 0;
 
   dm->ops->getcoloring        = 0;
-  dm->ops->getmatrix          = DMGetMatrix_IGA;
-  dm->ops->getinterpolation   = DMGetInterpolation_IGA;
+  dm->ops->getmatrix          = 0 /*DMGetMatrix_IGA*/;
+  dm->ops->getinterpolation   = 0 /*DMGetInterpolation_IGA*/;
   dm->ops->getaggregates      = 0;
   dm->ops->getinjection       = 0;
 
@@ -77,10 +79,10 @@ PetscErrorCode DMCreate_IGA(DM dm)
   dm->ops->forminitialguess   = 0;
   dm->ops->formfunction       = 0;
 
-  dm->ops->globaltolocalbegin = DMGlobalToLocalBegin_IGA;
-  dm->ops->globaltolocalend   = DMGlobalToLocalEnd_IGA;
-  dm->ops->localtoglobalbegin = DMLocalToGlobalBegin_IGA;
-  dm->ops->localtoglobalend   = DMLocalToGlobalEnd_IGA;
+  dm->ops->globaltolocalbegin = 0 /*DMGlobalToLocalBegin_IGA*/;
+  dm->ops->globaltolocalend   = 0 /*DMGlobalToLocalEnd_IGA*/;
+  dm->ops->localtoglobalbegin = 0 /*DMLocalToGlobalBegin_IGA*/;
+  dm->ops->localtoglobalend   = 0 /*DMLocalToGlobalEnd_IGA*/;
 
   dm->ops->getelements        = 0;
   dm->ops->restoreelements    = 0;

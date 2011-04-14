@@ -44,9 +44,6 @@ PetscErrorCode  TSCreate(MPI_Comm comm, TS *ts) {
   ierr = PetscHeaderCreate(t, _p_TS, struct _TSOps, TS_CLASSID, -1, "TS", comm, TSDestroy, TSView);CHKERRQ(ierr);
   ierr = PetscMemzero(t->ops, sizeof(struct _TSOps));CHKERRQ(ierr);
 
-  t->ops->prestep       = TSDefaultPreStep;
-  t->ops->poststep      = TSDefaultPostStep;
-
   /* General TS description */
   t->problem_type       = TS_LINEAR;
   t->vec_sol            = PETSC_NULL;

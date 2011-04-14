@@ -18,6 +18,7 @@ struct _SNESOps {
   PetscErrorCode (*view)(SNES,PetscViewer);
   PetscErrorCode (*setfromoptions)(SNES);    /* sets options from database */
   PetscErrorCode (*destroy)(SNES);
+  PetscErrorCode (*reset)(SNES);
 };
 
 /*
@@ -140,6 +141,8 @@ typedef struct {
             _ierr = (*snes->monitor[_i])(snes,it,rnorm,snes->monitorcontext[_i]);CHKERRQ(_ierr); \
 	  } \
 	}
+
+extern PetscErrorCode SNESDefaultGetWork(SNES,PetscInt);
 
 PetscErrorCode SNES_KSPSolve(SNES,KSP,Vec,Vec);
 PetscErrorCode SNESScaleStep_Private(SNES,Vec,PetscReal*,PetscReal*,PetscReal*,PetscReal*);

@@ -52,11 +52,9 @@ def bootstrap():
     # Generate package __init__.py file
     from distutils.dir_util import mkpath
     pkgdir = os.path.join('config', 'pypi')
+    if not os.path.exists(pkgdir): mkpath(pkgdir)
     pkgfile = os.path.join(pkgdir, '__init__.py')
-    if not os.path.exists(pkgdir):
-        mkpath(pkgdir)
-    if not os.path.exists(pkgfile):
-        open(pkgfile, 'wt').write(init_py)
+    open(pkgfile, 'wt').write(init_py)
     # Simple-minded lookup for MPI and mpi4py
     mpi4py = mpicc = None
     try:

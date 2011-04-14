@@ -22,7 +22,7 @@ class Laplace1D(object):
         M, N = A.getSize()
         assert M == N
 
-    def destroy(self):
+    def destroy(self, A):
         LOG('Laplace1D.destroy()')
 
     def view(self, A, vw):
@@ -70,7 +70,7 @@ class Jacobi(object):
         LOG('Jacobi.create()')
         self.diag = None
 
-    def destroy(self):
+    def destroy(self, pc):
         LOG('Jacobi.destroy()')
         if self.diag:
             self.diag.destroy()
@@ -102,7 +102,7 @@ class ConjGrad(object):
         LOG('ConjGrad.create()')
         self.work = []
 
-    def destroy(self):
+    def destroy(self, ksp):
         LOG('ConjGrad.destroy()')
         for vec in self.work:
             if vec:
