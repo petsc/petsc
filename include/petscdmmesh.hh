@@ -1109,7 +1109,9 @@ PetscErrorCode preallocateOperatorNew(const ALE::Obj<Mesh>& mesh, const int bs, 
             if (isSymmetric && (col < row)) {
               continue;
             }
-            cols[rowLen++] = col;
+            for(int c = col; c < col+cSize; ++c) {
+              cols[rowLen++] = c;
+            }
           }
         }
         for(int r = 0; r < rSize; ++r) {
