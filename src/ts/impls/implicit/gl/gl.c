@@ -1000,7 +1000,6 @@ static PetscErrorCode TSReset_GL(TS ts)
 static PetscErrorCode TSDestroy_GL(TS ts)
 {
   TS_GL          *gl = (TS_GL*)ts->data;
-  PetscInt        max_r,max_s;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;

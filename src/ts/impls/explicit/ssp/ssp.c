@@ -223,7 +223,6 @@ static PetscErrorCode TSReset_SSP(TS ts)
 #define __FUNCT__ "TSDestroy_SSP"
 static PetscErrorCode TSDestroy_SSP(TS ts)
 {
-  TS_SSP         *ssp = (TS_SSP*)ts->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
