@@ -151,7 +151,6 @@ PetscErrorCode DMLocalToGlobalEnd_IGA(DM dm, Vec lv, InsertMode mode, Vec gv)
 PetscErrorCode DMIGAGetPolynomialOrder(DM dm, PetscInt *px, PetscInt *py, PetscInt *pz)
 {
   DM_IGA        *iga = (DM_IGA *) dm->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
@@ -193,7 +192,6 @@ PetscErrorCode DMIGAGetPolynomialOrder(DM dm, PetscInt *px, PetscInt *py, PetscI
 PetscErrorCode DMIGAGetNumQuadraturePoints(DM dm, PetscInt *nx, PetscInt *ny, PetscInt *nz)
 {
   DM_IGA        *iga = (DM_IGA *) dm->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
@@ -235,7 +233,6 @@ PetscErrorCode DMIGAGetNumQuadraturePoints(DM dm, PetscInt *nx, PetscInt *ny, Pe
 PetscErrorCode DMIGAGetBasisData(DM dm, BD *bdX, BD *bdY, BD *bdZ)
 {
   DM_IGA        *iga = (DM_IGA *) dm->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
