@@ -193,6 +193,7 @@ static PetscErrorCode TaoSolverSolve_RSQN(TaoSolver tao)
   ierr = TaoSolverComputeObjectiveAndGradient(tao,tao->solution,&f,tao->gradient); CHKERRQ(ierr);
   ierr = TaoSolverComputeConstraints(tao,tao->solution, tao->constraints); CHKERRQ(ierr);
   ierr = TaoSolverComputeJacobianState(tao,tao->solution, &tao->jacobian_state, &tao->jacobian_state_pre, &rsqnP->statematflag); CHKERRQ(ierr);
+  ierr = TaoSolverComputeJacobianDesign(tao,tao->solution, &tao->jacobian_design, &tao->jacobian_design_pre, &rsqnP->statematflag); CHKERRQ(ierr);
   
   /* Scatter gradient to GU,GV */
   ierr = VecScatterBegin(rsqnP->state_scatter, tao->gradient, rsqnP->GU, INSERT_VALUES, SCATTER_FORWARD); CHKERRQ(ierr);
@@ -209,15 +210,19 @@ static PetscErrorCode TaoSolverSolve_RSQN(TaoSolver tao)
     rsqnP->Jpre_U = rsqnP->JU;
     ierr = PetscObjectReference((PetscObject)rsqnP->Jpre_U); CHKERRQ(ierr);
     }*/
+  CHKMEMQ;
+  void *ptr;
+  ierr = MatShellGetContext(tao->jacobian_state,&ptr); CHKERRQ(ierr); //for debugging
 
   ierr = KSPSetOperators(tao->ksp, tao->jacobian_state, tao->jacobian_state_pre, rsqnP->statematflag); CHKERRQ(ierr);
   ierr = KSPSolveTranspose(tao->ksp,  rsqnP->GU, rsqnP->LM); CHKERRQ(ierr);
-
+  CHKMEMQ;
   /* Evaluate Lagrangian gradient norm */
 
   ierr = MatMultTranspose(tao->jacobian_state,rsqnP->LM, rsqnP->WU); CHKERRQ(ierr);
   ierr = MatMultTranspose(tao->jacobian_design,rsqnP->LM, rsqnP->WV); CHKERRQ(ierr);
 
+  CHKMEMQ;
   ierr = VecScatterBegin(rsqnP->state_scatter, rsqnP->WU, rsqnP->GL, INSERT_VALUES, SCATTER_REVERSE); CHKERRQ(ierr);
   ierr = VecScatterEnd(rsqnP->state_scatter, rsqnP->WU, rsqnP->GL, INSERT_VALUES, SCATTER_REVERSE); CHKERRQ(ierr);
   ierr = VecScatterBegin(rsqnP->design_scatter, rsqnP->WV, rsqnP->GL, INSERT_VALUES, SCATTER_REVERSE); CHKERRQ(ierr);
@@ -237,7 +242,7 @@ static PetscErrorCode TaoSolverSolve_RSQN(TaoSolver tao)
     
     /* update reduced hessian */
     ierr = MatLMVMUpdate(rsqnP->M, rsqnP->V, rsqnP->GV); CHKERRQ(ierr);
-
+    CHKMEMQ;
     /* compute reduced gradient */
     ierr = MatMultTranspose(tao->jacobian_design, rsqnP->LM, rsqnP->Gr); CHKERRQ(ierr);
     ierr = VecAYPX(rsqnP->Gr, -1.0, rsqnP->GV); CHKERRQ(ierr);
@@ -246,6 +251,7 @@ static PetscErrorCode TaoSolverSolve_RSQN(TaoSolver tao)
     ierr = MatLMVMSolve(rsqnP->M, rsqnP->Gr, rsqnP->DV); CHKERRQ(ierr);
     ierr = VecScale(rsqnP->DV, -1.0); CHKERRQ(ierr);
 
+    CHKMEMQ;
     /* Compute DU */
     ierr = MatMult(tao->jacobian_design, rsqnP->DV, rsqnP->WU); CHKERRQ(ierr);
     ierr = VecAYPX(rsqnP->WU, 1.0, tao->constraints); CHKERRQ(ierr);
@@ -253,6 +259,7 @@ static PetscErrorCode TaoSolverSolve_RSQN(TaoSolver tao)
     ierr = KSPSolve(tao->ksp,  rsqnP->WU, rsqnP->DU); CHKERRQ(ierr);
     ierr = VecScale(rsqnP->DU, -1.0); CHKERRQ(ierr);
 
+    CHKMEMQ;
     /* Assemble Big D */
     ierr = VecScatterBegin(rsqnP->state_scatter, rsqnP->DU, tao->stepdirection, INSERT_VALUES, SCATTER_REVERSE); CHKERRQ(ierr);
     ierr = VecScatterEnd(rsqnP->state_scatter, rsqnP->DU, tao->stepdirection, INSERT_VALUES, SCATTER_REVERSE); CHKERRQ(ierr);
