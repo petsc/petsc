@@ -206,17 +206,17 @@ int main(int Argc,char **Args)
 
 /*   ierr = VecView(xvec, PETSC_VIEWER_STDOUT_(PETSC_COMM_WORLD));CHKERRQ(ierr); */
 
-  ierr = KSPDestroy(kspmg);CHKERRQ(ierr);
-  ierr = VecDestroy(xvec);CHKERRQ(ierr);
+  ierr = KSPDestroy(&kspmg);CHKERRQ(ierr);
+  ierr = VecDestroy(&xvec);CHKERRQ(ierr);
 
   /*   seems to be destroyed by KSPDestroy */
-  ierr = VecDestroy(b);CHKERRQ(ierr);
-  ierr = VecDestroy(Htb);CHKERRQ(ierr);
-  ierr = MatDestroy(HtH);CHKERRQ(ierr);
-  ierr = MatDestroy(H);CHKERRQ(ierr);
+  ierr = VecDestroy(&b);CHKERRQ(ierr);
+  ierr = VecDestroy(&Htb);CHKERRQ(ierr);
+  ierr = MatDestroy(&HtH);CHKERRQ(ierr);
+  ierr = MatDestroy(&H);CHKERRQ(ierr);
 
-  ierr = DMDestroy(da);CHKERRQ(ierr);
-  ierr = PetscRandomDestroy(rctx);CHKERRQ(ierr);
+  ierr = DMDestroy(&da);CHKERRQ(ierr);
+  ierr = PetscRandomDestroy(&rctx);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }
@@ -249,9 +249,9 @@ PetscErrorCode computeMaxEigVal(Mat A, PetscInt its, PetscScalar *eig) {
 
   *eig = lambda_its_1/lambda_its;
 
-  ierr = VecDestroy(x0);CHKERRQ(ierr);
-  ierr = VecDestroy(x);CHKERRQ(ierr);
-  ierr = VecDestroy(x_1);CHKERRQ(ierr);
+  ierr = VecDestroy(&x0);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = VecDestroy(&x_1);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

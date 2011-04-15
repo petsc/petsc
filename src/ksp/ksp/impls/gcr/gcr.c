@@ -174,7 +174,7 @@ PetscErrorCode KSPReset_GCR( KSP ksp )
         
   PetscFunctionBegin;
   if (ctx) {
-    if (ctx->R) {ierr = VecDestroy( ctx->R );CHKERRQ(ierr);}
+    if (ctx->R) {ierr = VecDestroy(& ctx->R );CHKERRQ(ierr);}
     if (ctx->VV) {ierr = VecDestroyVecs(ctx->restart,&ctx->VV);CHKERRQ(ierr);}
     if (ctx->SS) {ierr = VecDestroyVecs(ctx->restart,&ctx->SS);CHKERRQ(ierr);}
     if (ctx->modifypc_destroy) {
@@ -187,13 +187,13 @@ PetscErrorCode KSPReset_GCR( KSP ksp )
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPDestroy_GCR"
-PetscErrorCode KSPDestroy_GCR( KSP ksp )
+PetscErrorCode KSPDestroy_GCR( KSP *ksp )
 {
   PetscErrorCode ierr;
-  KSP_GCR        *ctx = (KSP_GCR*)ksp->data;
+  KSP_GCR        *ctx = (KSP_GCR*)(*ksp)->data;
         
   PetscFunctionBegin;
-  ierr = KSPReset_GCR(ksp);CHKERRQ(ierr);
+  ierr = KSPReset_GCR(*ksp);CHKERRQ(ierr);
   ierr = PetscFree( ctx->val );CHKERRQ(ierr);
   ierr = KSPDefaultDestroy(ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);

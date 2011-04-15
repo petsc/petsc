@@ -53,10 +53,10 @@ int main(int argc,char **args)
   }
 
   /* Free data structures */
-  ierr = MatDestroy(mat);CHKERRQ(ierr);
-  ierr = PCDestroy(pc);CHKERRQ(ierr);
-  ierr = VecDestroy(u);CHKERRQ(ierr);
-  ierr = VecDestroy(b);CHKERRQ(ierr); 
+  ierr = MatDestroy(&mat);CHKERRQ(ierr);
+  ierr = PCDestroy(&pc);CHKERRQ(ierr);
+  ierr = VecDestroy(&u);CHKERRQ(ierr);
+  ierr = VecDestroy(&b);CHKERRQ(ierr); 
   ierr = PetscFinalize();
   return 0;
 }

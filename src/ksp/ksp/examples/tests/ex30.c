@@ -106,7 +106,7 @@ int main(int argc,char **args)
       flg = PETSC_FALSE;
       ierr = PetscOptionsGetString(PETSC_NULL,"-rhs",file[2],PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
       if (flg){ /* rhs is stored in a separate file */
-        ierr = PetscViewerDestroy(fd);CHKERRQ(ierr); 
+        ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr); 
         ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[2],FILE_MODE_READ,&fd);CHKERRQ(ierr);
       } else {
         /* if file contains no RHS, then use a vector of all ones */
@@ -119,7 +119,7 @@ int main(int argc,char **args)
         ierr = PetscObjectSetName((PetscObject)b, "Rhs vector");CHKERRQ(ierr);
       }
     }
-    ierr = PetscViewerDestroy(fd);CHKERRQ(ierr); 
+    ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr); 
 
     /* Test MatDuplicate() */
     if (Test_MatDuplicate){
@@ -128,7 +128,7 @@ int main(int argc,char **args)
       if (!flg){
         PetscPrintf(PETSC_COMM_WORLD,"  A != B \n");CHKERRQ(ierr);
       } 
-      ierr = MatDestroy(B);CHKERRQ(ierr); 
+      ierr = MatDestroy(&B);CHKERRQ(ierr); 
     }
 
     /* Add a shift to A */
@@ -140,7 +140,7 @@ int main(int argc,char **args)
         ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[2],FILE_MODE_READ,&fd);CHKERRQ(ierr);
 	ierr = MatCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
 	ierr = MatLoad(B,fd);CHKERRQ(ierr);
-        ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
+        ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
         ierr = MatAXPY(A,sigma,B,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr); /* A <- sigma*B + A */  
       } else {
         ierr = MatShift(A,sigma);CHKERRQ(ierr); 
@@ -184,7 +184,7 @@ int main(int argc,char **args)
       } else {
         PetscPrintf(PETSC_COMM_WORLD,"A is non-symmetric \n");CHKERRQ(ierr);
       }
-      ierr = MatDestroy(Atrans);CHKERRQ(ierr);
+      ierr = MatDestroy(&Atrans);CHKERRQ(ierr);
     }
 
     /* 
@@ -212,7 +212,7 @@ int main(int argc,char **args)
         ierr  = VecSetValues(tmp,1,&indx,bold+j,INSERT_VALUES);CHKERRQ(ierr);
       }
       ierr = VecRestoreArray(b,&bold);CHKERRQ(ierr);
-      ierr = VecDestroy(b);CHKERRQ(ierr);
+      ierr = VecDestroy(&b);CHKERRQ(ierr);
       ierr = VecAssemblyBegin(tmp);CHKERRQ(ierr);
       ierr = VecAssemblyEnd(tmp);CHKERRQ(ierr);
       b = tmp;
@@ -247,19 +247,19 @@ int main(int argc,char **args)
       /* ierr = MatPartitioningSetVertexWeights(mpart, weight);CHKERRQ(ierr); */
       ierr = MatPartitioningSetFromOptions(mpart);CHKERRQ(ierr);
       ierr = MatPartitioningApply(mpart, &mis);CHKERRQ(ierr);
-      ierr = MatPartitioningDestroy(mpart);CHKERRQ(ierr);
+      ierr = MatPartitioningDestroy(&mpart);CHKERRQ(ierr);
       ierr = ISPartitioningToNumbering(mis,&nis);CHKERRQ(ierr);
       ierr = ISPartitioningCount(mis,size,count);CHKERRQ(ierr);
-      ierr = ISDestroy(mis);CHKERRQ(ierr);
+      ierr = ISDestroy(&mis);CHKERRQ(ierr);
       ierr = ISInvertPermutation(nis, count[rank], &is);CHKERRQ(ierr);
       ierr = PetscFree(count);CHKERRQ(ierr);
-      ierr = ISDestroy(nis);CHKERRQ(ierr);
+      ierr = ISDestroy(&nis);CHKERRQ(ierr);
       ierr = ISSort(is);CHKERRQ(ierr);
       ierr = MatGetSubMatrix(A,is,is,MAT_INITIAL_MATRIX,&BB);CHKERRQ(ierr);
 
       /* need to move the vector also */
-      ierr = ISDestroy(is);CHKERRQ(ierr);
-      ierr = MatDestroy(A);CHKERRQ(ierr);
+      ierr = ISDestroy(&is);CHKERRQ(ierr);
+      ierr = MatDestroy(&A);CHKERRQ(ierr);
       A    = BB;
     }
 
@@ -314,7 +314,7 @@ int main(int argc,char **args)
         ierr = VecAssemblyBegin(scale);CHKERRQ(ierr);
         ierr = VecAssemblyEnd(scale);CHKERRQ(ierr);
         ierr = PCSetDiagonalScale(pc,scale);CHKERRQ(ierr);
-        ierr = VecDestroy(scale);CHKERRQ(ierr);
+        ierr = VecDestroy(&scale);CHKERRQ(ierr);
       }
 
       /* - - - - - - - - - - - New Stage - - - - - - - - - - - - -
@@ -380,7 +380,7 @@ int main(int argc,char **args)
         /*
           Destroy the viewer
         */
-        ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+        ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
       } 
 
       ierr = PetscOptionsGetString(PETSC_NULL,"-solution",file[3],PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
@@ -394,15 +394,15 @@ int main(int argc,char **args)
         ierr = VecAXPY(xstar, -1.0, x);CHKERRQ(ierr);
         ierr = VecNorm(xstar, NORM_2, &enorm);CHKERRQ(ierr);
         ierr = PetscPrintf(PETSC_COMM_WORLD, "Error norm %A\n", enorm);CHKERRQ(ierr);
-        ierr = VecDestroy(xstar);CHKERRQ(ierr);
-        ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+        ierr = VecDestroy(&xstar);CHKERRQ(ierr);
+        ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
       }
       if (outputSoln) {
         PetscViewer viewer;
 
         ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"solution.petsc",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
         ierr = VecView(x, viewer);CHKERRQ(ierr);
-        ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+        ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
       }
 
       flg  = PETSC_FALSE;
@@ -419,11 +419,11 @@ int main(int argc,char **args)
        Free work space.  All PETSc objects should be destroyed when they
        are no longer needed.
     */
-    ierr = MatDestroy(A);CHKERRQ(ierr); ierr = VecDestroy(b);CHKERRQ(ierr);
-    ierr = VecDestroy(u);CHKERRQ(ierr); ierr = VecDestroy(x);CHKERRQ(ierr);
-    ierr = VecDestroy(b2);CHKERRQ(ierr);
-    ierr = KSPDestroy(ksp);CHKERRQ(ierr); 
-    if (flgB) { ierr = MatDestroy(B);CHKERRQ(ierr); }
+    ierr = MatDestroy(&A);CHKERRQ(ierr); ierr = VecDestroy(&b);CHKERRQ(ierr);
+    ierr = VecDestroy(&u);CHKERRQ(ierr); ierr = VecDestroy(&x);CHKERRQ(ierr);
+    ierr = VecDestroy(&b2);CHKERRQ(ierr);
+    ierr = KSPDestroy(&ksp);CHKERRQ(ierr); 
+    if (flgB) { ierr = MatDestroy(&B);CHKERRQ(ierr); }
   PreLoadEnd();
   /* -----------------------------------------------------------
                       End of linear solver loop

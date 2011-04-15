@@ -106,8 +106,8 @@ PetscErrorCode DMView_DA_Binary(DM da,PetscViewer viewer)
     ierr = DMDAGlobalToNaturalBegin(dac,dd->coordinates,INSERT_VALUES,natural);CHKERRQ(ierr);
     ierr = DMDAGlobalToNaturalEnd(dac,dd->coordinates,INSERT_VALUES,natural);CHKERRQ(ierr);
     ierr = VecView(natural,viewer);CHKERRQ(ierr);
-    ierr = VecDestroy(natural);CHKERRQ(ierr);
-    ierr = DMDestroy(dac);CHKERRQ(ierr);
+    ierr = VecDestroy(&natural);CHKERRQ(ierr);
+    ierr = DMDestroy(&dac);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -143,7 +143,7 @@ PetscErrorCode DMView_DA_VTK(DM da, PetscViewer viewer)
     ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_VTK_COORDS);CHKERRQ(ierr);
     ierr = VecView(natural, viewer);CHKERRQ(ierr);
     ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-    ierr = VecDestroy(natural);CHKERRQ(ierr);
+    ierr = VecDestroy(&natural);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

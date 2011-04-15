@@ -335,7 +335,7 @@ namespace ALE {
         }
         cellCount++;
       }
-      ierr = PetscViewerDestroy(viewer);
+      ierr = PetscViewerDestroy(&viewer);
       numElements = numCells;
       *vertices = verts;
     };
@@ -375,7 +375,7 @@ namespace ALE {
         }
         vertexCount++;
       }
-      ierr = PetscViewerDestroy(viewer);
+      ierr = PetscViewerDestroy(&viewer);
       numVertices = numVerts;
       *coordinates = coords;
     };
@@ -669,7 +669,7 @@ namespace ALE {
         values[4] = 0;
         ibndfs->updatePoint(values[0]-1+numElements, values);
       }
-      ierr = PetscViewerDestroy(viewer);
+      ierr = PetscViewerDestroy(&viewer);
       // Create BNNV[NBN,2]
       const int dim = mesh->getDimension();
 

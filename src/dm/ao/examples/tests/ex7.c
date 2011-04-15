@@ -35,10 +35,10 @@ int main(int argc,char **argv)
   ierr = ISView(ispetsc,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
 
-  ierr = ISDestroy(ispetsc);CHKERRQ(ierr);
-  ierr = ISDestroy(isapp);CHKERRQ(ierr);
+  ierr = ISDestroy(&ispetsc);CHKERRQ(ierr);
+  ierr = ISDestroy(&isapp);CHKERRQ(ierr);
 
-  ierr = AODestroy(ao);CHKERRQ(ierr);
+  ierr = AODestroy(&ao);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

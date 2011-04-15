@@ -67,18 +67,18 @@ PetscErrorCode  AOView(AO ao,PetscViewer viewer)
 
 .seealso: AOCreate()
 @*/
-PetscErrorCode  AODestroy_(AO ao)
+PetscErrorCode  AODestroy(AO *ao)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ao,AO_CLASSID,1);
-  if (--((PetscObject)ao)->refct > 0) PetscFunctionReturn(0);
+  PetscValidHeaderSpecific((*ao),AO_CLASSID,1);
+  if (--((PetscObject)(*ao))->refct > 0) PetscFunctionReturn(0);
   /* if memory was published with AMS then destroy it */
-  ierr = PetscObjectDepublish(ao);CHKERRQ(ierr);
+  ierr = PetscObjectDepublish((*ao));CHKERRQ(ierr);
   /* destroy the internal part */
-  if (ao->ops->destroy) {
-    ierr = (*ao->ops->destroy)(ao);CHKERRQ(ierr);
+  if ((*ao)->ops->destroy) {
+    ierr = (*(*ao)->ops->destroy)(ao);CHKERRQ(ierr);
   }
   ierr = PetscHeaderDestroy(ao);CHKERRQ(ierr);
   PetscFunctionReturn(0);

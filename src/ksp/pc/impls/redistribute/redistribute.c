@@ -268,12 +268,12 @@ static PetscErrorCode PCDestroy_Redistribute(PC pc)
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  if (red->scatter)  {ierr = VecScatterDestroy(red->scatter);CHKERRQ(ierr);}
-  if (red->is)       {ierr = ISDestroy(red->is);CHKERRQ(ierr);}
-  if (red->b)        {ierr = VecDestroy(red->b);CHKERRQ(ierr);}
-  if (red->x)        {ierr = VecDestroy(red->x);CHKERRQ(ierr);}
-  if (red->ksp)      {ierr = KSPDestroy(red->ksp);CHKERRQ(ierr);}
-  if (red->work)     {ierr = VecDestroy(red->work);CHKERRQ(ierr);}
+  ierr = VecScatterDestroy(&red->scatter);CHKERRQ(ierr);
+  ierr = ISDestroy(&red->is);CHKERRQ(ierr);
+  ierr = VecDestroy(&red->b);CHKERRQ(ierr);
+  ierr = VecDestroy(&red->x);CHKERRQ(ierr);
+  ierr = KSPDestroy(&red->ksp);CHKERRQ(ierr);
+  ierr = VecDestroy(&red->work);CHKERRQ(ierr);
   ierr = PetscFree(red->drows);
   ierr = PetscFree(red->diag);
   ierr = PetscFree(pc->data);CHKERRQ(ierr);

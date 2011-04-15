@@ -79,8 +79,8 @@ PetscErrorCode Laplacian_2D_MF(Mat A, Vec x, Vec y)
   ierr = SectionRealComplete(Y);CHKERRQ(ierr);
 
   ierr = SectionRealToVec(Y, mesh, SCATTER_FORWARD, y);CHKERRQ(ierr);
-  ierr = SectionRealDestroy(X);CHKERRQ(ierr);
-  ierr = SectionRealDestroy(Y);CHKERRQ(ierr);
+  ierr = SectionRealDestroy(&X);CHKERRQ(ierr);
+  ierr = SectionRealDestroy(&Y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -161,8 +161,8 @@ PetscErrorCode Laplacian_2D_MF2(Mat A, Vec x, Vec y)
   ierr = SectionRealComplete(Y);CHKERRQ(ierr);
 
   ierr = SectionRealToVec(Y, mesh, SCATTER_FORWARD, y);CHKERRQ(ierr);
-  ierr = SectionRealDestroy(X);CHKERRQ(ierr);
-  ierr = SectionRealDestroy(Y);CHKERRQ(ierr);
+  ierr = SectionRealDestroy(&X);CHKERRQ(ierr);
+  ierr = SectionRealDestroy(&Y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

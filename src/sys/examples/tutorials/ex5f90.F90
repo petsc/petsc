@@ -63,6 +63,7 @@
       call PetscBagRegisterBool(bag,ctx%t ,PETSC_TRUE,'t','t boolean help message',ierr)
       call PetscBagRegisterString(bag,ctx%c,'hello','c','string help message',ierr)
       call PetscBagRegisterReal(bag,ctx%y ,-11.0d0,'y','y variable help message',ierr)
+      call PetscBagSetName(bag,'demo parameters','super secret demo parameters in a bag',ierr)
       ctx%nxc = 23
       ctx%x   = 155.4
       ctx%c   = 'a whole new string'

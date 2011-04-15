@@ -42,7 +42,7 @@ EXTERN_C_BEGIN
 
 void PETSC_STDCALL  kspdestroy_(KSP *ksp, int *__ierr )
 {
-  *__ierr = KSPDestroy(*ksp);
+  *__ierr = KSPDestroy(ksp);
 }
 
 /*

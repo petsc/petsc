@@ -300,7 +300,7 @@ PetscErrorCode KSPDestroy_CG(KSP ksp)
   if (ksp->calc_sings) {
     ierr = PetscFree4(cg->e,cg->d,cg->ee,cg->dd);CHKERRQ(ierr);
   }
-  ierr = KSPDefaultDestroy(ksp);CHKERRQ(ierr);
+  ierr = KSPDefaultDestroy(&ksp);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPCGSetType_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPCGUseSingleReduction_C","",PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);

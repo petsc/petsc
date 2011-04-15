@@ -109,8 +109,8 @@ static PetscErrorCode PCSetUp_LU(PC pc)
   if (dir->reusefill && pc->setupcalled) ((PC_Factor*)dir)->info.fill = dir->actualfill;
 
   if (dir->inplace) {
-    if (dir->row && dir->col && dir->row != dir->col) {ierr = ISDestroy(dir->row);CHKERRQ(ierr);}
-    if (dir->col) {ierr = ISDestroy(dir->col);CHKERRQ(ierr);}
+    if (dir->row && dir->col && dir->row != dir->col) {ierr = ISDestroy(&dir->row);CHKERRQ(ierr);}
+    ierr = ISDestroy(&dir->col);CHKERRQ(ierr);
     ierr = MatGetOrdering(pc->pmat,((PC_Factor*)dir)->ordering,&dir->row,&dir->col);CHKERRQ(ierr);
     if (dir->row) {
       ierr = PetscLogObjectParent(pc,dir->row);CHKERRQ(ierr); 
@@ -138,8 +138,8 @@ static PetscErrorCode PCSetUp_LU(PC pc)
       ierr = PetscLogObjectParent(pc,((PC_Factor*)dir)->fact);CHKERRQ(ierr);
     } else if (pc->flag != SAME_NONZERO_PATTERN) {
       if (!dir->reuseordering) {
-        if (dir->row && dir->col && dir->row != dir->col) {ierr = ISDestroy(dir->row);CHKERRQ(ierr);}
-        if (dir->col) {ierr = ISDestroy(dir->col);CHKERRQ(ierr);}
+        if (dir->row && dir->col && dir->row != dir->col) {ierr = ISDestroy(&dir->row);CHKERRQ(ierr);}
+        ierr = ISDestroy(&dir->col);CHKERRQ(ierr);
         ierr = MatGetOrdering(pc->pmat,((PC_Factor*)dir)->ordering,&dir->row,&dir->col);CHKERRQ(ierr);
         if (dir->nonzerosalongdiagonal) {
           ierr = MatReorderForNonzeroDiagonal(pc->pmat,dir->nonzerosalongdiagonaltol,dir->row,dir->col);CHKERRQ(ierr);
@@ -172,8 +172,8 @@ static PetscErrorCode PCReset_LU(PC pc)
 
   PetscFunctionBegin;
   if (!dir->inplace && ((PC_Factor*)dir)->fact) {ierr = MatDestroy(((PC_Factor*)dir)->fact);CHKERRQ(ierr);}
-  if (dir->row && dir->col && dir->row != dir->col) {ierr = ISDestroy(dir->row);CHKERRQ(ierr);}
-  if (dir->col) {ierr = ISDestroy(dir->col);CHKERRQ(ierr);}
+  if (dir->row && dir->col && dir->row != dir->col) {ierr = ISDestroy(&dir->row);CHKERRQ(ierr);}
+  ierr = ISDestroy(&dir->col);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -74,11 +74,11 @@ int main(int argc,char **args)
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A, Number of iterations %D\n",norm,its);CHKERRQ(ierr);
 
   /* Free work space */
-  ierr = KSPDestroy(ksp);CHKERRQ(ierr);
-  ierr = VecDestroy(u);CHKERRQ(ierr);
-  ierr = VecDestroy(x);CHKERRQ(ierr);
-  ierr = VecDestroy(b);CHKERRQ(ierr);
-  ierr = MatDestroy(mat);CHKERRQ(ierr);
+  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
+  ierr = VecDestroy(&u);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = VecDestroy(&b);CHKERRQ(ierr);
+  ierr = MatDestroy(&mat);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
   return 0;
@@ -162,14 +162,14 @@ PetscErrorCode GetElasticityMatrix(PetscInt m,Mat *newmat)
   submat = *submatb; 
   ierr = PetscFree(submatb);CHKERRQ(ierr);
   ierr = PetscFree(rowkeep);CHKERRQ(ierr);
-  ierr = ISDestroy(iskeep);CHKERRQ(ierr);
-  ierr = MatDestroy(mat);CHKERRQ(ierr);
+  ierr = ISDestroy(&iskeep);CHKERRQ(ierr);
+  ierr = MatDestroy(&mat);CHKERRQ(ierr);
 
   /* Convert storage formats -- just to demonstrate conversion to various
      formats (in particular, block diagonal storage).  This is NOT the
      recommended means to solve such a problem.  */
   ierr = MatConvert(submat,type,MAT_INITIAL_MATRIX,newmat);CHKERRQ(ierr);
-  ierr = MatDestroy(submat);CHKERRQ(ierr);
+  ierr = MatDestroy(&submat);CHKERRQ(ierr);
 
   ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
   ierr = MatView(*newmat,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);

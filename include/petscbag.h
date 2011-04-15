@@ -34,7 +34,7 @@ typedef struct _n_PetscBag*     PetscBag;
 typedef struct _n_PetscBagItem* PetscBagItem;
 
 extern PetscErrorCode  PetscBagCreate(MPI_Comm,size_t,PetscBag*);
-extern PetscErrorCode  PetscBagDestroy(PetscBag);
+extern PetscErrorCode  PetscBagDestroy(PetscBag*);
 extern PetscErrorCode  PetscBagGetData(PetscBag,void **);
 extern PetscErrorCode  PetscBagRegisterReal(PetscBag,void*,PetscReal, const char*, const char*);
 extern PetscErrorCode  PetscBagRegisterString(PetscBag,void*,PetscInt,const char*, const char*, const char*);

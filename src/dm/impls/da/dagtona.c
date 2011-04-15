@@ -54,10 +54,10 @@ PetscErrorCode  DMDAGlobalToNaturalAllCreate(DM da,VecScatter *scatter)
   ierr = VecSetBlockSize(tmplocal,dd->w);CHKERRQ(ierr);
   ierr = VecSetBlockSize(global,dd->w);CHKERRQ(ierr);
   ierr = VecScatterCreate(global,from,tmplocal,to,scatter);CHKERRQ(ierr);
-  ierr = VecDestroy(tmplocal);CHKERRQ(ierr);  
-  ierr = VecDestroy(global);CHKERRQ(ierr);  
-  ierr = ISDestroy(from);CHKERRQ(ierr);
-  ierr = ISDestroy(to);CHKERRQ(ierr);
+  ierr = VecDestroy(&tmplocal);CHKERRQ(ierr);  
+  ierr = VecDestroy(&global);CHKERRQ(ierr);  
+  ierr = ISDestroy(&from);CHKERRQ(ierr);
+  ierr = ISDestroy(&to);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -107,10 +107,10 @@ PetscErrorCode  DMDANaturalAllToGlobalCreate(DM da,VecScatter *scatter)
   ierr = VecSetBlockSize(tmplocal,dd->w);CHKERRQ(ierr);
   ierr = VecSetBlockSize(global,dd->w);CHKERRQ(ierr);
   ierr = VecScatterCreate(tmplocal,from,global,to,scatter);CHKERRQ(ierr);
-  ierr = VecDestroy(tmplocal);CHKERRQ(ierr);  
-  ierr = VecDestroy(global);CHKERRQ(ierr);  
-  ierr = ISDestroy(from);CHKERRQ(ierr);
-  ierr = ISDestroy(to);CHKERRQ(ierr);
+  ierr = VecDestroy(&tmplocal);CHKERRQ(ierr);  
+  ierr = VecDestroy(&global);CHKERRQ(ierr);  
+  ierr = ISDestroy(&from);CHKERRQ(ierr);
+  ierr = ISDestroy(&to);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

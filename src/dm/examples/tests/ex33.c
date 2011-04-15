@@ -77,7 +77,7 @@ int main(int argc,char **argv)
     SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Invalid Viewer : Run with -binary or -hdf5 option\n");
   }
   ierr = VecView(global1,viewer);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Global vector written to temp file is \n");CHKERRQ(ierr);
   ierr = VecView(global1,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
@@ -104,7 +104,7 @@ int main(int argc,char **argv)
   ierr = DMCreateGlobalVector(da2,&global2);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)global2,"Test_Vec");CHKERRQ(ierr);
   ierr = VecLoad(global2,viewer);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Global vector read from temp file is \n");CHKERRQ(ierr);
   ierr = VecView(global2,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
@@ -118,11 +118,11 @@ int main(int argc,char **argv)
     ierr = PetscPrintf(PETSC_COMM_WORLD,"  dimension %d\n",1 + (int) flg2 + (int) flg3);CHKERRQ(ierr);
   }
 
-  ierr = PetscRandomDestroy(rdm);CHKERRQ(ierr);
-  ierr = DMDestroy(da);CHKERRQ(ierr);
-  ierr = DMDestroy(da2);CHKERRQ(ierr);
-  ierr = VecDestroy(global1);CHKERRQ(ierr);
-  ierr = VecDestroy(global2);CHKERRQ(ierr);
+  ierr = PetscRandomDestroy(&rdm);CHKERRQ(ierr);
+  ierr = DMDestroy(&da);CHKERRQ(ierr);
+  ierr = DMDestroy(&da2);CHKERRQ(ierr);
+  ierr = VecDestroy(&global1);CHKERRQ(ierr);
+  ierr = VecDestroy(&global2);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

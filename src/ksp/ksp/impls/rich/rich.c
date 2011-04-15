@@ -207,13 +207,13 @@ PetscErrorCode KSPSetFromOptions_Richardson(KSP ksp)
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPDestroy_Richardson"
-PetscErrorCode KSPDestroy_Richardson(KSP ksp)
+PetscErrorCode KSPDestroy_Richardson(KSP *ksp)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)*ksp,"KSPRichardsonSetScale_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = KSPDefaultDestroy(ksp);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPRichardsonSetScale_C","",PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -59,7 +59,7 @@ int main(int argc,char **args)
   ierr = PetscRandomCreate(PETSC_COMM_SELF,&r);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(r);CHKERRQ(ierr);
   ierr = VecSetRandom(u,r);CHKERRQ(ierr);
-  ierr = PetscRandomDestroy(r);CHKERRQ(ierr); 
+  ierr = PetscRandomDestroy(&r);CHKERRQ(ierr); 
   ierr = MatMult(C,u,b);CHKERRQ(ierr); 
 
   for (k=0; k<3; k++){
@@ -110,18 +110,18 @@ int main(int argc,char **args)
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %A;",res_norm);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"  Error norm %A.\n",err_norm);CHKERRQ(ierr);
 
-    ierr = KSPDestroy(ksp);CHKERRQ(ierr);
+    ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
   }
    
   /* 
        Free work space.  All PETSc objects should be destroyed when they
        are no longer needed.
   */
-  ierr = VecDestroy(b);CHKERRQ(ierr);
-  ierr = VecDestroy(u);CHKERRQ(ierr); 
-  ierr = VecDestroy(x);CHKERRQ(ierr);
-  ierr = VecDestroy(u_tmp);CHKERRQ(ierr);  
-  ierr = MatDestroy(C);CHKERRQ(ierr);
+  ierr = VecDestroy(&b);CHKERRQ(ierr);
+  ierr = VecDestroy(&u);CHKERRQ(ierr); 
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = VecDestroy(&u_tmp);CHKERRQ(ierr);  
+  ierr = MatDestroy(&C);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
   return 0;

@@ -51,9 +51,7 @@ extern PetscErrorCode  AOCreateMapping(MPI_Comm,PetscInt,const PetscInt[],const 
 extern PetscErrorCode  AOCreateMappingIS(IS,IS,AO*);
 
 extern PetscErrorCode  AOView(AO,PetscViewer);
-
-extern PetscErrorCode  AODestroy_(AO);
-#define AODestroy(a)  (AODestroy_(a) || (((a) = 0),0))
+extern PetscErrorCode  AODestroy(AO*);
 
 /* Dynamic creation and loading functions */
 extern PetscFList AOList;

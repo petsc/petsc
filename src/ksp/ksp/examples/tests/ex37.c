@@ -37,7 +37,7 @@ int main(int argc,char **args)
   /* Load the matrix; then destroy the viewer.*/
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatLoad(A,fd);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(fd);CHKERRQ(ierr); 
+  ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr); 
 
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
@@ -140,14 +140,14 @@ int main(int argc,char **args)
   ierr = VecRestoreArray(x,&xarray);CHKERRQ(ierr);
   ierr = VecRestoreArray(b,&barray);CHKERRQ(ierr);
   ierr = VecRestoreArray(u,&uarray);CHKERRQ(ierr);
-  ierr = MatDestroy(subA);CHKERRQ(ierr);
-  ierr = VecDestroy(subb);CHKERRQ(ierr);
-  ierr = VecDestroy(subx);CHKERRQ(ierr);
-  ierr = VecDestroy(subu);CHKERRQ(ierr);
-  ierr = KSPDestroy(subksp);CHKERRQ(ierr);
-  ierr = PetscSubcommDestroy(psubcomm);CHKERRQ(ierr);
-  ierr = MatDestroy(A);CHKERRQ(ierr); ierr = VecDestroy(b);CHKERRQ(ierr);
-  ierr = VecDestroy(u);CHKERRQ(ierr); ierr = VecDestroy(x);CHKERRQ(ierr);
+  ierr = MatDestroy(&subA);CHKERRQ(ierr);
+  ierr = VecDestroy(&subb);CHKERRQ(ierr);
+  ierr = VecDestroy(&subx);CHKERRQ(ierr);
+  ierr = VecDestroy(&subu);CHKERRQ(ierr);
+  ierr = KSPDestroy(&subksp);CHKERRQ(ierr);
+  ierr = PetscSubcommDestroy(&psubcomm);CHKERRQ(ierr);
+  ierr = MatDestroy(&A);CHKERRQ(ierr); ierr = VecDestroy(&b);CHKERRQ(ierr);
+  ierr = VecDestroy(&u);CHKERRQ(ierr); ierr = VecDestroy(&x);CHKERRQ(ierr);
   
   ierr = PetscFinalize();
   return 0;

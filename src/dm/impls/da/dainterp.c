@@ -36,7 +36,7 @@ PetscErrorCode  DMGetInterpolationScale(DM dac,DM daf,Mat mat,Vec *scale)
   ierr = DMCreateGlobalVector(dac,scale);CHKERRQ(ierr);
   ierr = VecSet(fine,one);CHKERRQ(ierr);
   ierr = MatRestrict(mat,fine,*scale);CHKERRQ(ierr);
-  ierr = VecDestroy(fine);CHKERRQ(ierr);
+  ierr = VecDestroy(&fine);CHKERRQ(ierr);
   ierr = VecReciprocal(*scale);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -175,7 +175,7 @@ PetscErrorCode DMGetInterpolation_DA_1D_Q1(DM dac,DM daf,Mat *A)
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatCreateMAIJ(mat,dof,A);CHKERRQ(ierr);
-  ierr = MatDestroy(mat);CHKERRQ(ierr);
+  ierr = MatDestroy(&mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -246,7 +246,7 @@ PetscErrorCode DMGetInterpolation_DA_1D_Q0(DM dac,DM daf,Mat *A)
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatCreateMAIJ(mat,dof,A);CHKERRQ(ierr);
-  ierr = MatDestroy(mat);CHKERRQ(ierr);
+  ierr = MatDestroy(&mat);CHKERRQ(ierr);
   ierr = PetscLogFlops(5.0*m_f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -484,7 +484,7 @@ PetscErrorCode DMGetInterpolation_DA_2D_Q1(DM dac,DM daf,Mat *A)
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatCreateMAIJ(mat,dof,A);CHKERRQ(ierr);
-  ierr = MatDestroy(mat);CHKERRQ(ierr);
+  ierr = MatDestroy(&mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -594,7 +594,7 @@ PetscErrorCode DMGetInterpolation_DA_2D_Q0(DM dac,DM daf,Mat *A)
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatCreateMAIJ(mat,dof,A);CHKERRQ(ierr);
-  ierr = MatDestroy(mat);CHKERRQ(ierr);
+  ierr = MatDestroy(&mat);CHKERRQ(ierr);
   ierr = PetscLogFlops(13.0*m_f*n_f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -716,7 +716,7 @@ PetscErrorCode DMGetInterpolation_DA_3D_Q0(DM dac,DM daf,Mat *A)
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatCreateMAIJ(mat,dof,A);CHKERRQ(ierr);
-  ierr = MatDestroy(mat);CHKERRQ(ierr);
+  ierr = MatDestroy(&mat);CHKERRQ(ierr);
   ierr = PetscLogFlops(13.0*m_f*n_f*p_f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1012,7 +1012,7 @@ PetscErrorCode DMGetInterpolation_DA_3D_Q1(DM dac,DM daf,Mat *A)
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   
   ierr = MatCreateMAIJ(mat,dof,A);CHKERRQ(ierr);
-  ierr = MatDestroy(mat);CHKERRQ(ierr);
+  ierr = MatDestroy(&mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1132,7 +1132,7 @@ PetscErrorCode DMGetInjection_DA_2D(DM dac,DM daf,VecScatter *inject)
   ierr = VecScatterCreate(vecf,isf,vecc,PETSC_NULL,inject);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(dac,&vecc);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(daf,&vecf);CHKERRQ(ierr);
-  ierr = ISDestroy(isf);CHKERRQ(ierr);
+  ierr = ISDestroy(&isf);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1215,7 +1215,7 @@ PetscErrorCode DMGetInjection_DA_3D(DM dac,DM daf,VecScatter *inject)
   ierr = VecScatterCreate(vecf,isf,vecc,PETSC_NULL,inject);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(dac,&vecc);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(daf,&vecf);CHKERRQ(ierr);
-  ierr = ISDestroy(isf);CHKERRQ(ierr);
+  ierr = ISDestroy(&isf);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

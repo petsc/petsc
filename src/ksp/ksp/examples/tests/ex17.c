@@ -81,10 +81,10 @@ int main(int argc,char **args)
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A,Iterations %D\n",norm,its);CHKERRQ(ierr);
 
   /* Free work space */
-  ierr = VecDestroy(x);CHKERRQ(ierr); ierr = VecDestroy(u);CHKERRQ(ierr);
-  ierr = VecDestroy(b);CHKERRQ(ierr); ierr = MatDestroy(A);CHKERRQ(ierr);
-  if (use_random) {ierr = PetscRandomDestroy(rctx);CHKERRQ(ierr);}
-  ierr = KSPDestroy(ksp);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr); ierr = VecDestroy(&u);CHKERRQ(ierr);
+  ierr = VecDestroy(&b);CHKERRQ(ierr); ierr = MatDestroy(&A);CHKERRQ(ierr);
+  if (use_random) {ierr = PetscRandomDestroy(&rctx);CHKERRQ(ierr);}
+  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }
@@ -171,7 +171,7 @@ PetscErrorCode FormTestMatrix(Mat A,PetscInt n,TestType type)
       *val = 4.0 - sigma1*h2 + sigma2*h2;
       ierr = MatSetValues(A,1,&Ii,1,&Ii,val,ADD_VALUES);CHKERRQ(ierr);
     }
-    ierr = PetscRandomDestroy(rctx);CHKERRQ(ierr);
+    ierr = PetscRandomDestroy(&rctx);CHKERRQ(ierr);
   }
   else if (type == HELMHOLTZ_2) {
     /* Problem domain: unit square: (0,1) x (0,1)

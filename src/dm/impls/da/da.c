@@ -106,7 +106,7 @@ PetscErrorCode  DMDASetNumProcs(DM da, PetscInt m, PetscInt n, PetscInt p)
   Level: intermediate
 
 .keywords:  distributed array, periodicity
-.seealso: DMDACreate(), DMDestroy(), DMDA, DMDABoundaryType
+.seealso: DMDACreate(), DMDestroy(&), DMDA, DMDABoundaryType
 @*/
 PetscErrorCode  DMDASetBoundaryType(DM da,DMDABoundaryType bx,DMDABoundaryType by,DMDABoundaryType bz)
 {
@@ -137,7 +137,7 @@ PetscErrorCode  DMDASetBoundaryType(DM da,DMDABoundaryType bx,DMDABoundaryType b
   Level: intermediate
 
 .keywords:  distributed array, degrees of freedom
-.seealso: DMDACreate(), DMDestroy(), DMDA
+.seealso: DMDACreate(), DMDestroy(&), DMDA
 @*/
 PetscErrorCode  DMDASetDof(DM da, int dof)
 {
@@ -164,7 +164,7 @@ PetscErrorCode  DMDASetDof(DM da, int dof)
   Level: intermediate
 
 .keywords:  distributed array, stencil
-.seealso: DMDACreate(), DMDestroy(), DMDA
+.seealso: DMDACreate(), DMDestroy(&), DMDA
 @*/
 PetscErrorCode  DMDASetStencilType(DM da, DMDAStencilType stype)
 {
@@ -191,7 +191,7 @@ PetscErrorCode  DMDASetStencilType(DM da, DMDAStencilType stype)
   Level: intermediate
 
 .keywords:  distributed array, stencil
-.seealso: DMDACreate(), DMDestroy(), DMDA
+.seealso: DMDACreate(), DMDestroy(&), DMDA
 @*/
 PetscErrorCode  DMDASetStencilWidth(DM da, PetscInt width)
 {
@@ -233,7 +233,7 @@ static PetscErrorCode DMDACheckOwnershipRanges_Private(DM da,PetscInt M,PetscInt
   Level: intermediate
 
 .keywords:  distributed array
-.seealso: DMDACreate(), DMDestroy(), DMDA
+.seealso: DMDACreate(), DMDestroy(&), DMDA
 @*/
 PetscErrorCode  DMDASetOwnershipRanges(DM da, const PetscInt lx[], const PetscInt ly[], const PetscInt lz[])
 {
@@ -323,7 +323,7 @@ PetscErrorCode  DMDACreateOwnershipRanges(DM da)
 
 .keywords:  distributed array, interpolation
 
-.seealso: DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMDestroy(), DMDA, DMDAInterpolationType
+.seealso: DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMDestroy(&), DMDA, DMDAInterpolationType
 @*/
 PetscErrorCode  DMDASetInterpolationType(DM da,DMDAInterpolationType ctype)
 {
@@ -815,7 +815,7 @@ PetscErrorCode  DMRefine_DA(DM da,MPI_Comm comm,DM *daref)
     ierr = DMDAGetCoordinates(da2,&coordsf);CHKERRQ(ierr);
     ierr = DMGetInterpolation(cdac,cdaf,&II,PETSC_NULL);CHKERRQ(ierr);
     ierr = MatInterpolate(II,coordsc,coordsf);CHKERRQ(ierr);
-    ierr = MatDestroy(II);CHKERRQ(ierr);
+    ierr = MatDestroy(&II);CHKERRQ(ierr);
   }
   *daref = da2;
   PetscFunctionReturn(0);
@@ -914,7 +914,7 @@ PetscErrorCode  DMCoarsen_DA(DM da, MPI_Comm comm,DM *daref)
     ierr = DMGetInjection(cdac,cdaf,&inject);CHKERRQ(ierr);
     ierr = VecScatterBegin(inject,coordsf,coordsc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(inject  ,coordsf,coordsc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterDestroy(inject);CHKERRQ(ierr);
+    ierr = VecScatterDestroy(&inject);CHKERRQ(ierr);
   }
   *daref = da2;
   PetscFunctionReturn(0);

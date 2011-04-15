@@ -102,7 +102,7 @@ M*/
 #endif
 
 extern PetscErrorCode   DMView(DM,PetscViewer);
-extern PetscErrorCode   DMDestroy(DM);
+extern PetscErrorCode   DMDestroy(DM*);
 extern PetscErrorCode   DMCreateGlobalVector(DM,Vec*);
 extern PetscErrorCode   DMCreateLocalVector(DM,Vec*);
 extern PetscErrorCode   DMGetLocalVector(DM,Vec *);
@@ -114,6 +114,7 @@ extern PetscErrorCode   DMGetLocalToGlobalMappingBlock(DM,ISLocalToGlobalMapping
 extern PetscErrorCode   DMGetBlockSize(DM,PetscInt*);
 extern PetscErrorCode   DMGetColoring(DM,ISColoringType,const MatType,ISColoring*);
 extern PetscErrorCode   DMGetMatrix(DM, const MatType,Mat*);
+extern PetscErrorCode   DMSetMatrixPreallocateOnly(DM,PetscBool);
 extern PetscErrorCode   DMGetInterpolation(DM,DM,Mat*,Vec*);
 extern PetscErrorCode   DMGetInjection(DM,DM,VecScatter*);
 extern PetscErrorCode   DMRefine(DM,MPI_Comm,DM*);
@@ -254,7 +255,7 @@ extern PetscErrorCode  ISMappingRegisterDestroy(void);
 
 extern  PetscErrorCode ISMappingCreate(MPI_Comm comm, ISMapping *mapping);
 extern  PetscErrorCode ISMappingView(ISMapping mapping, PetscViewer viewer);
-extern  PetscErrorCode ISMappingDestroy(ISMapping mapping);
+extern  PetscErrorCode ISMappingDestroy(ISMapping *mapping);
 extern  PetscErrorCode ISMappingSetType(ISMapping mapping, const ISMappingType maptype); 
 extern  PetscErrorCode ISMappingSetSizes(ISMapping mapping, PetscInt m, PetscInt n, PetscInt M, PetscInt N);
 extern  PetscErrorCode ISMappingGetSizes(ISMapping mapping, PetscInt *m, PetscInt *n, PetscInt *M, PetscInt *N);

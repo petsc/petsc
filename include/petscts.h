@@ -55,7 +55,7 @@ extern PetscClassId  TS_CLASSID;
 extern PetscErrorCode   TSInitializePackage(const char[]);
 
 extern PetscErrorCode   TSCreate(MPI_Comm,TS*);
-extern PetscErrorCode   TSDestroy(TS);
+extern PetscErrorCode   TSDestroy(TS*);
 
 extern PetscErrorCode   TSSetProblemType(TS,TSProblemType);
 extern PetscErrorCode   TSGetProblemType(TS,TSProblemType*);
@@ -195,7 +195,7 @@ extern PetscErrorCode   TSGetApplicationContext(TS,void **);
 
 extern PetscErrorCode   TSMonitorLGCreate(const char[],const char[],int,int,int,int,PetscDrawLG *);
 extern PetscErrorCode   TSMonitorLG(TS,PetscInt,PetscReal,Vec,void *);
-extern PetscErrorCode   TSMonitorLGDestroy(PetscDrawLG);
+extern PetscErrorCode   TSMonitorLGDestroy(PetscDrawLG*);
 
 /*S
    TSGLAdapt - Abstract object that manages time-step adaptivity
@@ -278,7 +278,7 @@ extern PetscErrorCode  TSGLAdaptSetOptionsPrefix(TSGLAdapt,const char[]);
 extern PetscErrorCode  TSGLAdaptChoose(TSGLAdapt,PetscInt,const PetscInt[],const PetscReal[],const PetscReal[],PetscInt,PetscReal,PetscReal,PetscInt*,PetscReal*,PetscBool *);
 extern PetscErrorCode  TSGLAdaptView(TSGLAdapt,PetscViewer);
 extern PetscErrorCode  TSGLAdaptSetFromOptions(TSGLAdapt);
-extern PetscErrorCode  TSGLAdaptDestroy(TSGLAdapt);
+extern PetscErrorCode  TSGLAdaptDestroy(TSGLAdapt*);
 
 /*E
     TSGLAcceptType - String with the name of TSGLAccept scheme or the function

@@ -212,13 +212,13 @@ int main(int argc,char **args)
   ierr = PetscFree(gllNode);CHKERRQ(ierr);
   ierr = PetscFree(gllWgts);CHKERRQ(ierr);
 
-  ierr = KSPDestroy(ksp);CHKERRQ(ierr);
-  ierr = VecDestroy(u);CHKERRQ(ierr);
-  ierr = VecDestroy(b);CHKERRQ(ierr);
-  ierr = VecDestroy(q);CHKERRQ(ierr);
-  ierr = VecDestroy(ustar);CHKERRQ(ierr);
-  ierr = MatDestroy(A);CHKERRQ(ierr);
-  ierr = MatDestroy(Mass);CHKERRQ(ierr);
+  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
+  ierr = VecDestroy(&u);CHKERRQ(ierr);
+  ierr = VecDestroy(&b);CHKERRQ(ierr);
+  ierr = VecDestroy(&q);CHKERRQ(ierr);
+  ierr = VecDestroy(&ustar);CHKERRQ(ierr);
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  ierr = MatDestroy(&Mass);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
   return 0;

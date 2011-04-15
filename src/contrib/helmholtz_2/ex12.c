@@ -320,14 +320,14 @@ int main(int argc,char **args)
   /*
       Destroy all the PETSc objects created
   */
-  ierr = VecDestroy(user.phi);CHKERRA(ierr);
-  ierr = VecDestroy(b);CHKERRA(ierr);
-  ierr = VecDestroy(b2);CHKERRA(ierr);
-  ierr = MatDestroy(A);CHKERRA(ierr);
-  ierr = SLESDestroy(sles);CHKERRA(ierr);
+  ierr = VecDestroy(&user.phi);CHKERRA(ierr);
+  ierr = VecDestroy(&b);CHKERRA(ierr);
+  ierr = VecDestroy(&b2);CHKERRA(ierr);
+  ierr = MatDestroy(&A);CHKERRA(ierr);
+  ierr = SLESDestroy(&sles);CHKERRA(ierr);
   ierr = DMCreateLocalVector(user.da,&localv);CHKERRA(ierr);
-  ierr = VecDestroy(localv);CHKERRA(ierr);
-  ierr = DMDestroy(user.da);CHKERRA(ierr);
+  ierr = VecDestroy(&localv);CHKERRA(ierr);
+  ierr = DMDestroy(&user.da);CHKERRA(ierr);
 
   /*
      Always call PetscFinalize() before exiting a program.  This routine
@@ -815,7 +815,7 @@ int ModifySubmatrices1(PC pc,int nsub,IS *row,IS *col,Mat *submat,void *dummy)
     */
     ierr = ISCreateGeneral(PETSC_COMM_SELF,1,&m,PETSC_COPY_VALUES,&is);CHKERRQ(ierr);
     ierr = MatZeroRowsIS(submat[i],is,&one,0,0);CHKERRQ(ierr);
-    ierr = ISDestroy(is);CHKERRQ(ierr);
+    ierr = ISDestroy(&is);CHKERRQ(ierr);
 
     /*
        Reassemble the submatrix 

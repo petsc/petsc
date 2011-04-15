@@ -78,8 +78,8 @@ PetscErrorCode  KSPSolve_Broyden(KSP ksp)
     ierr = MatMult(Amat,Pold,y);CHKERRQ(ierr);
     ierr = KSP_PCApplyBAorAB(ksp,Pold,y,w);CHKERRQ(ierr);      /* y = BAp */
     ierr  = VecDotNorm2(Pold,y,&rdot,&abr);CHKERRQ(ierr);   /*   rdot = (p)^T(BAp); abr = (BAp)^T (BAp) */
-    ierr = VecDestroy(y);CHKERRQ(ierr);
-    ierr = VecDestroy(w);CHKERRQ(ierr);
+    ierr = VecDestroy(&y);CHKERRQ(ierr);
+    ierr = VecDestroy(&w);CHKERRQ(ierr);
     A0 = rdot/abr;
     ierr = VecAXPY(X,A0,Pold);CHKERRQ(ierr);             /*   x  <- x + scale p */
   } else {
@@ -129,8 +129,8 @@ PetscErrorCode  KSPSolve_Broyden(KSP ksp)
         ierr = MatMult(Amat,P,y);CHKERRQ(ierr);
     ierr = KSP_PCApplyBAorAB(ksp,P,y,w);CHKERRQ(ierr);      /* y = BAp */
 	ierr  = VecDotNorm2(P,y,&rdot,&abr);CHKERRQ(ierr);   /*   rdot = (p)^T(BAp); abr = (BAp)^T (BAp) */
-        ierr = VecDestroy(y);CHKERRQ(ierr);
-        ierr = VecDestroy(w);CHKERRQ(ierr);
+        ierr = VecDestroy(&y);CHKERRQ(ierr);
+        ierr = VecDestroy(&w);CHKERRQ(ierr);
 	ierr = VecAXPY(X,rdot/abr,P);CHKERRQ(ierr);             /*   x  <- x + scale p */
       } else {
         ierr = VecAXPY(X,1.0,P);CHKERRQ(ierr);                    /* x = x + p */
@@ -160,12 +160,12 @@ PetscErrorCode KSPReset_Broyden(KSP ksp)
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPDestroy_Broyden" 
-PetscErrorCode KSPDestroy_Broyden(KSP ksp)
+PetscErrorCode KSPDestroy_Broyden(KSP *ksp)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = KSPReset_Broyden(ksp);CHKERRQ(ierr);
+  ierr = KSPReset_Broyden(*ksp);CHKERRQ(ierr);
   ierr = KSPDefaultDestroy(ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

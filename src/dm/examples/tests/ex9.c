@@ -64,12 +64,12 @@ int main(int argc,char **argv)
   ierr = DMCreateLocalVector(da,&lvec);CHKERRQ(ierr);
 
   /* Free memory */
-  ierr = MatFDColoringDestroy(fdcoloring);CHKERRQ(ierr);
-  ierr = VecDestroy(dvec);CHKERRQ(ierr);
-  ierr = VecDestroy(lvec);CHKERRQ(ierr);
-  ierr = MatDestroy(mat);CHKERRQ(ierr); 
-  ierr = ISColoringDestroy(coloring);CHKERRQ(ierr); 
-  ierr = DMDestroy(da);CHKERRQ(ierr);
+  ierr = MatFDColoringDestroy(&fdcoloring);CHKERRQ(ierr);
+  ierr = VecDestroy(&dvec);CHKERRQ(ierr);
+  ierr = VecDestroy(&lvec);CHKERRQ(ierr);
+  ierr = MatDestroy(&mat);CHKERRQ(ierr); 
+  ierr = ISColoringDestroy(&coloring);CHKERRQ(ierr); 
+  ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

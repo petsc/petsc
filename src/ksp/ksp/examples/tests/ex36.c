@@ -81,7 +81,7 @@ PetscInt main(PetscInt argc,char **args)
     ierr = MatTranspose(A,MAT_INITIAL_MATRIX, &Trans);
     ierr = MatEqual(A, Trans, &flg);
     if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"A is not symmetric");
-    ierr = MatDestroy(Trans);CHKERRQ(ierr);
+    ierr = MatDestroy(&Trans);CHKERRQ(ierr);
   } 
   ierr = MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
 
@@ -120,7 +120,7 @@ PetscInt main(PetscInt argc,char **args)
     }
     ierr = MatEqual(A, Hermit, &flg);
     if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_USER,"A is not Hermitian");
-    ierr = MatDestroy(Hermit);CHKERRQ(ierr);
+    ierr = MatDestroy(&Hermit);CHKERRQ(ierr);
   }
   ierr = MatSetOption(A,MAT_HERMITIAN,PETSC_TRUE);CHKERRQ(ierr);
   
@@ -149,10 +149,10 @@ PetscInt main(PetscInt argc,char **args)
   }
 
   /* Free spaces */
-  ierr = KSPDestroy(ksp);CHKERRQ(ierr);
-  if (use_random) {ierr = PetscRandomDestroy(rctx);CHKERRQ(ierr);}
-  ierr = MatDestroy(A);CHKERRQ(ierr);
-  ierr = MatDestroy(As);CHKERRQ(ierr);
+  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
+  if (use_random) {ierr = PetscRandomDestroy(&rctx);CHKERRQ(ierr);}
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  ierr = MatDestroy(&As);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

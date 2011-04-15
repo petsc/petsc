@@ -35,11 +35,11 @@ PetscErrorCode  DMDASetCoordinates(DM da,Vec c)
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   PetscValidHeaderSpecific(c,VEC_CLASSID,2);
   ierr = PetscObjectReference((PetscObject)c);CHKERRQ(ierr);
-  if (dd->coordinates) {ierr = VecDestroy(dd->coordinates);CHKERRQ(ierr);}
+  if (dd->coordinates) {ierr = VecDestroy(&dd->coordinates);CHKERRQ(ierr);}
   dd->coordinates = c;
   ierr = VecSetBlockSize(c,dd->dim);CHKERRQ(ierr);
   if (dd->ghosted_coordinates) { /* The ghosted coordinates are no longer valid */
-    ierr = VecDestroy(dd->ghosted_coordinates);CHKERRQ(ierr);
+    ierr = VecDestroy(&dd->ghosted_coordinates);CHKERRQ(ierr);
     dd->ghosted_coordinates = PETSC_NULL;
   }
   PetscFunctionReturn(0);
@@ -79,7 +79,7 @@ PetscErrorCode  DMDASetGhostedCoordinates(DM da,Vec c)
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   PetscValidHeaderSpecific(c,VEC_CLASSID,2);
   ierr = PetscObjectReference((PetscObject)c);CHKERRQ(ierr);
-  if (dd->ghosted_coordinates) {ierr = VecDestroy(dd->ghosted_coordinates);CHKERRQ(ierr);}
+  if (dd->ghosted_coordinates) {ierr = VecDestroy(&dd->ghosted_coordinates);CHKERRQ(ierr);}
   dd->ghosted_coordinates = c;
   ierr = VecSetBlockSize(c,dd->dim);CHKERRQ(ierr);
   PetscFunctionReturn(0);

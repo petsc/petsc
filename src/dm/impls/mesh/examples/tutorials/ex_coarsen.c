@@ -229,7 +229,7 @@ PetscErrorCode OutputVTK(ALE::Obj<ALE::Mesh> mesh, Options *options, std::string
     ierr = VTKViewer::writeElements(mesh, viewer);
 //    ierr = VTKViewer::writeHierarchyVertices(mesh, viewer, options->zScale);CHKERRQ(ierr);
 //    ierr = VTKViewer::writeHierarchyElements(mesh, viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     //const ALE::Mesh::topology_type::sheaf_type& patches = mesh->getTopology()->getPatches();
     ALE::LogStagePop(stage);
   }

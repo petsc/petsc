@@ -150,16 +150,16 @@ static PetscErrorCode KSPSetFromOptions_SpecEst(KSP ksp)
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPDestroy_SpecEst"
-static PetscErrorCode KSPDestroy_SpecEst(KSP ksp)
+static PetscErrorCode KSPDestroy_SpecEst(KSP *ksp)
 {
   PetscErrorCode ierr;
-  KSP_SpecEst    *spec = (KSP_SpecEst*)ksp->data;
+  KSP_SpecEst    *spec = (KSP_SpecEst*)(*ksp)->data;
 
   PetscFunctionBegin;
   ierr = KSPDestroy(spec->kspest);CHKERRQ(ierr);
   ierr = KSPDestroy(spec->kspcheap);CHKERRQ(ierr);
   ierr = PCDestroy(spec->pcnone);CHKERRQ(ierr);
-  ierr = PetscFree(ksp->data);CHKERRQ(ierr);
+  ierr = PetscFree((*ksp)->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

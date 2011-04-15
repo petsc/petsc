@@ -94,14 +94,12 @@ static PetscErrorCode PCSetUp_Cholesky(PC pc)
   
   if (dir->inplace) {
     if (dir->row && dir->col && (dir->row != dir->col)) {
-      ierr = ISDestroy(dir->row);CHKERRQ(ierr);
+      ierr = ISDestroy(&dir->row);CHKERRQ(ierr);
     }
-    if (dir->col) {
-      ierr = ISDestroy(dir->col);CHKERRQ(ierr);
-    }
+    ierr = ISDestroy(&dir->col);CHKERRQ(ierr);
     ierr = MatGetOrdering(pc->pmat,((PC_Factor*)dir)->ordering,&dir->row,&dir->col);CHKERRQ(ierr);
     if (dir->col && (dir->row != dir->col)) {  /* only use row ordering for SBAIJ */
-      ierr = ISDestroy(dir->col);CHKERRQ(ierr);
+      ierr = ISDestroy(&dir->col);CHKERRQ(ierr);
     }
     if (dir->row) {ierr = PetscLogObjectParent(pc,dir->row);CHKERRQ(ierr);}
     ierr = MatCholeskyFactor(pc->pmat,dir->row,&((PC_Factor*)dir)->info);CHKERRQ(ierr);
@@ -113,7 +111,7 @@ static PetscErrorCode PCSetUp_Cholesky(PC pc)
       /* check if dir->row == dir->col */
       ierr = ISEqual(dir->row,dir->col,&flg);CHKERRQ(ierr);
       if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"row and column permutations must equal");
-      ierr = ISDestroy(dir->col);CHKERRQ(ierr); /* only pass one ordering into CholeskyFactor */
+      ierr = ISDestroy(&dir->col);CHKERRQ(ierr); /* only pass one ordering into CholeskyFactor */
 
       flg  = PETSC_FALSE;
       ierr = PetscOptionsGetBool(((PetscObject)pc)->prefix,"-pc_factor_nonzeros_along_diagonal",&flg,PETSC_NULL);CHKERRQ(ierr);
@@ -133,14 +131,12 @@ static PetscErrorCode PCSetUp_Cholesky(PC pc)
     } else if (pc->flag != SAME_NONZERO_PATTERN) {
       if (!dir->reuseordering) {
         if (dir->row && dir->col && (dir->row != dir->col)) {
-          ierr = ISDestroy(dir->row);CHKERRQ(ierr);
+          ierr = ISDestroy(&dir->row);CHKERRQ(ierr);
         }
-        if (dir->col) {
-          ierr = ISDestroy(dir->col);CHKERRQ(ierr);
-        }
+        ierr = ISDestroy(&dir->col);CHKERRQ(ierr);
         ierr = MatGetOrdering(pc->pmat,((PC_Factor*)dir)->ordering,&dir->row,&dir->col);CHKERRQ(ierr);
         if (dir->col && (dir->row != dir->col)) {  /* only use row ordering for SBAIJ */
-          ierr = ISDestroy(dir->col);CHKERRQ(ierr);
+          ierr = ISDestroy(&dir->col);CHKERRQ(ierr);
         }
         flg  = PETSC_FALSE;
         ierr = PetscOptionsGetBool(((PetscObject)pc)->prefix,"-pc_factor_nonzeros_along_diagonal",&flg,PETSC_NULL);CHKERRQ(ierr);
@@ -172,8 +168,8 @@ static PetscErrorCode PCReset_Cholesky(PC pc)
 
   PetscFunctionBegin;
   if (!dir->inplace && ((PC_Factor*)dir)->fact) {ierr = MatDestroy(((PC_Factor*)dir)->fact);CHKERRQ(ierr);}
-  if (dir->row) {ierr = ISDestroy(dir->row);CHKERRQ(ierr);}
-  if (dir->col) {ierr = ISDestroy(dir->col);CHKERRQ(ierr);}
+  ierr = ISDestroy(&dir->row);CHKERRQ(ierr);
+  ierr = ISDestroy(&dir->col);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

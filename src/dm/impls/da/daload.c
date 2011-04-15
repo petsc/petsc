@@ -85,10 +85,10 @@ PetscErrorCode  DMDALoad(PetscViewer viewer,PetscInt M,PetscInt N,PetscInt P,DM 
     ierr = VecGetLocalSize(tmpglobal,&mlocal);CHKERRQ(ierr);
     ierr = VecCreateMPI(comm,mlocal,PETSC_DETERMINE,&global);CHKERRQ(ierr);
     ierr = VecCopy(tmpglobal,global);CHKERRQ(ierr);
-    ierr = VecDestroy(tmpglobal);CHKERRQ(ierr); 
-    ierr = DMDestroy(dac);CHKERRQ(ierr);
+    ierr = VecDestroy(&tmpglobal);CHKERRQ(ierr); 
+    ierr = DMDestroy(&dac);CHKERRQ(ierr);
     ierr = DMDASetCoordinates(*da,global);CHKERRQ(ierr);
-    ierr = VecDestroy(global);CHKERRQ(ierr);
+    ierr = VecDestroy(&global);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

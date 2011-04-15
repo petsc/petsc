@@ -82,7 +82,7 @@ PetscErrorCode AODestroy_MemoryScalable(AO ao)
 
   PetscFunctionBegin;
   ierr = PetscFree2(aomems->app_loc,aomems->petsc_loc);CHKERRQ(ierr);
-  ierr = PetscLayoutDestroy(aomems->map);CHKERRQ(ierr);
+  ierr = PetscLayoutDestroy(&aomems->map);CHKERRQ(ierr);
   ierr = PetscFree(aomems);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -438,13 +438,15 @@ PetscErrorCode AOCreate_MemoryScalable(AO ao)
   } 
 
   /* If ispetsc is 0 then use "natural" numbering */
-  if (napp && !ispetsc) {
-    start = disp[rank];
-    ierr  = PetscMalloc((napp+1) * sizeof(PetscInt), &petsc);CHKERRQ(ierr);
-    for (i=0; i<napp; i++) petsc[i] = start + i;
-  } else {
-    ierr = ISGetIndices(ispetsc,&mypetsc);CHKERRQ(ierr);
-    petsc = (PetscInt*)mypetsc;
+  if (napp) {
+    if (!ispetsc) {
+      start = disp[rank];
+      ierr  = PetscMalloc((napp+1) * sizeof(PetscInt), &petsc);CHKERRQ(ierr);
+      for (i=0; i<napp; i++) petsc[i] = start + i;
+    } else {
+      ierr = ISGetIndices(ispetsc,&mypetsc);CHKERRQ(ierr);
+      petsc = (PetscInt*)mypetsc;
+    }
   }
   
   /* create a map with global size N - used to determine the local sizes of ao - shall we use local napp instead of N? */
@@ -520,9 +522,9 @@ PetscErrorCode AOCreateMemoryScalable(MPI_Comm comm,PetscInt napp,const PetscInt
     ispetsc = PETSC_NULL;
   }
   ierr = AOCreateMemoryScalableIS(isapp,ispetsc,aoout);CHKERRQ(ierr);
-  ierr = ISDestroy(isapp);CHKERRQ(ierr);
+  ierr = ISDestroy(&isapp);CHKERRQ(ierr);
   if (mypetsc){
-    ierr = ISDestroy(ispetsc);CHKERRQ(ierr);
+    ierr = ISDestroy(&ispetsc);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

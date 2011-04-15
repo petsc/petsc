@@ -6,7 +6,8 @@ class Configure(PETSc.package.NewPackage):
     self.download  = ['ftp://ftp.mcs.anl.gov/pub/mpi/mpe/mpe2.tar.gz']
     self.functions = ['MPE_Log_event']
     self.includes  = ['mpe.h']
-    self.liblist   = [['libmpe.a']]
+    #self.liblist   = [['libmpe_f2cmpi.a','liblmpe.a','libmpe.a']] # log mpi events aswell? provide another configure opton? how?
+    self.liblist   = [[],['libmpe.a']]
     self.complex   = 1
     return
 
@@ -24,9 +25,19 @@ class Configure(PETSc.package.NewPackage):
     args.append('CFLAGS="'+self.framework.getCompilerFlags()+'"')
     args.append('MPI_CFLAGS="'+self.framework.getCompilerFlags()+'"')
     args.append('CC="'+self.framework.getCompiler()+'"')
+    args.append('MPI_CC="'+self.framework.getCompiler()+'"')
     self.framework.popLanguage()
 
-    args.append('--disable-f77')
+    if hasattr(self.compilers, 'FC'):
+      self.framework.pushLanguage('FC')
+      args.append('FFLAGS="'+self.framework.getCompilerFlags()+'"')
+      args.append('MPI_FFLAGS="'+self.framework.getCompilerFlags()+'"')
+      args.append('F77="'+self.framework.getCompiler()+'"')
+      args.append('MPI_F77="'+self.framework.getCompiler()+'"')
+      self.framework.popLanguage()
+    else:
+      args.append('--disable-f77')
+
     args.append('MPI_INC="'+self.headers.toString(self.mpi.include)+'"')
     args.append('MPI_LIBS="'+self.libraries.toStringNoDupes(self.mpi.lib)+'"')
 

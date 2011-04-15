@@ -223,7 +223,7 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
           char splitname[8];
           ierr = PetscSNPrintf(splitname,sizeof splitname,"%D",i);CHKERRQ(ierr);
           ierr = PCFieldSplitSetIS(pc,splitname,fields[i]);CHKERRQ(ierr);
-          ierr = ISDestroy(fields[i]);CHKERRQ(ierr);
+          ierr = ISDestroy(&fields[i]);CHKERRQ(ierr);
         }
         ierr = PetscFree(fields);CHKERRQ(ierr);
       }
@@ -247,8 +247,8 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
         ierr = ISComplement(zerodiags,nmin,nmax,&rest);CHKERRQ(ierr);
         ierr = PCFieldSplitSetIS(pc,"0",rest);CHKERRQ(ierr);
         ierr = PCFieldSplitSetIS(pc,"1",zerodiags);CHKERRQ(ierr);
-        ierr = ISDestroy(zerodiags);CHKERRQ(ierr);
-        ierr = ISDestroy(rest);CHKERRQ(ierr);
+        ierr = ISDestroy(&zerodiags);CHKERRQ(ierr);
+        ierr = ISDestroy(&rest);CHKERRQ(ierr);
       } else {
         if (!flg) {
           /* Allow user to set fields from command line,  if bs was known at the time of PCSetFromOptions_FieldSplit()
@@ -275,7 +275,7 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
       ierr = MatGetOwnershipRange(pc->mat,&nmin,&nmax);CHKERRQ(ierr);
       ierr = ISComplement(ilink->is,nmin,nmax,&is2);CHKERRQ(ierr);
       ierr = PCFieldSplitSetIS(pc,"1",is2);CHKERRQ(ierr);
-      ierr = ISDestroy(is2);CHKERRQ(ierr);
+      ierr = ISDestroy(&is2);CHKERRQ(ierr);
     } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Must provide at least two sets of fields to PCFieldSplit()");
   }
   if (jac->nsplits < 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unhandled case, must have at least two fields");
@@ -394,11 +394,11 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       ilink = jac->head;
       ierr  = ISComplement(ilink->is,rstart,rend,&ccis);CHKERRQ(ierr);
       ierr  = MatGetSubMatrix(pc->mat,ilink->is,ccis,MAT_REUSE_MATRIX,&jac->B);CHKERRQ(ierr);
-      ierr  = ISDestroy(ccis);CHKERRQ(ierr);
+      ierr  = ISDestroy(&ccis);CHKERRQ(ierr);
       ilink = ilink->next;
       ierr  = ISComplement(ilink->is,rstart,rend,&ccis);CHKERRQ(ierr);
       ierr  = MatGetSubMatrix(pc->mat,ilink->is,ccis,MAT_REUSE_MATRIX,&jac->C);CHKERRQ(ierr);
-      ierr  = ISDestroy(ccis);CHKERRQ(ierr);
+      ierr  = ISDestroy(&ccis);CHKERRQ(ierr);
       ierr  = MatSchurComplementUpdate(jac->schur,jac->mat[0],jac->pmat[0],jac->B,jac->C,jac->pmat[1],pc->flag);CHKERRQ(ierr);
       ierr  = KSPSetOperators(jac->kspschur,jac->schur,FieldSplitSchurPre(jac),pc->flag);CHKERRQ(ierr);
 
@@ -410,11 +410,11 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       ilink = jac->head;
       ierr  = ISComplement(ilink->is,rstart,rend,&ccis);CHKERRQ(ierr);
       ierr  = MatGetSubMatrix(pc->mat,ilink->is,ccis,MAT_INITIAL_MATRIX,&jac->B);CHKERRQ(ierr);
-      ierr  = ISDestroy(ccis);CHKERRQ(ierr);
+      ierr  = ISDestroy(&ccis);CHKERRQ(ierr);
       ilink = ilink->next;
       ierr  = ISComplement(ilink->is,rstart,rend,&ccis);CHKERRQ(ierr);
       ierr  = MatGetSubMatrix(pc->mat,ilink->is,ccis,MAT_INITIAL_MATRIX,&jac->C);CHKERRQ(ierr);
-      ierr  = ISDestroy(ccis);CHKERRQ(ierr);
+      ierr  = ISDestroy(&ccis);CHKERRQ(ierr);
       /* Better would be to use 'mat[0]' (diagonal block of the real matrix) preconditioned by pmat[0] */
       ierr  = MatCreateSchurComplement(jac->mat[0],jac->pmat[0],jac->B,jac->C,jac->mat[1],&jac->schur);CHKERRQ(ierr);
       /* set tabbing and options prefix of KSP inside the MatSchur */
@@ -733,10 +733,10 @@ static PetscErrorCode PCReset_FieldSplit(PC pc)
   PetscFunctionBegin;
   while (ilink) {
     ierr = KSPReset(ilink->ksp);CHKERRQ(ierr);
-    if (ilink->x) {ierr = VecDestroy(ilink->x);CHKERRQ(ierr);}
-    if (ilink->y) {ierr = VecDestroy(ilink->y);CHKERRQ(ierr);}
-    if (ilink->sctx) {ierr = VecScatterDestroy(ilink->sctx);CHKERRQ(ierr);}
-    if (ilink->is) {ierr = ISDestroy(ilink->is);CHKERRQ(ierr);}
+    ierr = VecDestroy(&ilink->x);CHKERRQ(ierr);
+    ierr = VecDestroy(&ilink->y);CHKERRQ(ierr);
+    ierr = VecScatterDestroy(&ilink->sctx);CHKERRQ(ierr);
+    ierr = ISDestroy(&ilink->is);CHKERRQ(ierr);
     next = ilink->next;
     ilink = next;
   }

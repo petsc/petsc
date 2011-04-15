@@ -13,6 +13,7 @@
 #define petscbagregisterstring_ PETSCBAGREGISTERSTRING
 #define petscbagregisterreal_ PETSCBAGREGISTERREAL
 #define petscbagregisterbool_ PETSCBAGREGISTERBOOL
+#define petscbagsetname_ PETSCBAGSETNAME
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define petscbagdestroy_ petscbagdestroy
 #define petscbagview_ petscbagview
@@ -23,6 +24,7 @@
 #define petscbagregisterstring_ petscbagregisterstring
 #define petscbagregisterreal_ petscbagregisterreal
 #define petscbagregisterbool_ petscbagregisterbool
+#define petscbagsetname_ petscbagsetname
 #endif
 
 EXTERN_C_BEGIN
@@ -112,6 +114,16 @@ void PETSC_STDCALL petscbagregisterstring_(PetscBag *bag,CHAR p PETSC_MIXED_LEN(
 void PETSC_STDCALL petscbaggetdata_(PetscBag *bag,void **data,PetscErrorCode *ierr)
 {
   *ierr = PetscBagGetData(*bag,data);
+}
+
+void PETSC_STDCALL petscbagsetname_(PetscBag *bag,CHAR ns PETSC_MIXED_LEN(nl),CHAR hs PETSC_MIXED_LEN(hl), PetscErrorCode *ierr PETSC_END_LEN(nl) PETSC_END_LEN(hl))
+{
+  char *nt,*ht;
+  FIXCHAR(ns,nl,nt);
+  FIXCHAR(hs,hl,ht);
+  *ierr = PetscBagSetName(*bag,nt,ht);
+  FREECHAR(ns,nt);
+  FREECHAR(hs,ht);
 }
 
 EXTERN_C_END

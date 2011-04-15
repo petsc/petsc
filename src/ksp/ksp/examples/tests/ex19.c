@@ -142,7 +142,7 @@ int main(int argc,char **argv)
     ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rdm);CHKERRQ(ierr);
     ierr = PetscRandomSetFromOptions(rdm);CHKERRQ(ierr);
     ierr = VecSetRandom(user.fine.b,rdm);CHKERRQ(ierr);
-    ierr = PetscRandomDestroy(rdm);CHKERRQ(ierr);
+    ierr = PetscRandomDestroy(&rdm);CHKERRQ(ierr);
   }
 
   /* Set options, then solve nonlinear system */
@@ -153,23 +153,23 @@ int main(int argc,char **argv)
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %D\n",its);CHKERRQ(ierr);
 
   /* Free data structures */
-  ierr = MatDestroy(user.fine.J);CHKERRQ(ierr);
-  ierr = VecDestroy(user.fine.x);CHKERRQ(ierr);
-  ierr = VecDestroy(user.fine.r);CHKERRQ(ierr);
-  ierr = VecDestroy(user.fine.b);CHKERRQ(ierr);
-  ierr = DMDestroy(user.fine.da);CHKERRQ(ierr);
-  ierr = VecDestroy(user.fine.localX);CHKERRQ(ierr);
-  ierr = VecDestroy(user.fine.localF);CHKERRQ(ierr);
+  ierr = MatDestroy(&user.fine.J);CHKERRQ(ierr);
+  ierr = VecDestroy(&user.fine.x);CHKERRQ(ierr);
+  ierr = VecDestroy(&user.fine.r);CHKERRQ(ierr);
+  ierr = VecDestroy(&user.fine.b);CHKERRQ(ierr);
+  ierr = DMDestroy(&user.fine.da);CHKERRQ(ierr);
+  ierr = VecDestroy(&user.fine.localX);CHKERRQ(ierr);
+  ierr = VecDestroy(&user.fine.localF);CHKERRQ(ierr);
 
-  ierr = MatDestroy(user.coarse.J);CHKERRQ(ierr);
-  ierr = VecDestroy(user.coarse.x);CHKERRQ(ierr);
-  ierr = VecDestroy(user.coarse.b);CHKERRQ(ierr);
-  ierr = DMDestroy(user.coarse.da);CHKERRQ(ierr);
-  ierr = VecDestroy(user.coarse.localX);CHKERRQ(ierr);
-  ierr = VecDestroy(user.coarse.localF);CHKERRQ(ierr);
+  ierr = MatDestroy(&user.coarse.J);CHKERRQ(ierr);
+  ierr = VecDestroy(&user.coarse.x);CHKERRQ(ierr);
+  ierr = VecDestroy(&user.coarse.b);CHKERRQ(ierr);
+  ierr = DMDestroy(&user.coarse.da);CHKERRQ(ierr);
+  ierr = VecDestroy(&user.coarse.localX);CHKERRQ(ierr);
+  ierr = VecDestroy(&user.coarse.localF);CHKERRQ(ierr);
 
-  ierr = KSPDestroy(ksp);CHKERRQ(ierr);
-  ierr = MatDestroy(user.Ii);CHKERRQ(ierr); 
+  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
+  ierr = MatDestroy(&user.Ii);CHKERRQ(ierr); 
   ierr = PetscFinalize();
 
   return 0;

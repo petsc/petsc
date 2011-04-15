@@ -187,7 +187,7 @@ PetscErrorCode  ISSetPermutation(IS is)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "ISDestroy_" 
+#define __FUNCT__ "ISDestroy" 
 /*@C
    ISDestroy - Destroys an index set.
 
@@ -200,25 +200,26 @@ PetscErrorCode  ISSetPermutation(IS is)
 
 .seealso: ISCreateGeneral(), ISCreateStride(), ISCreateBlocked()
 @*/
-PetscErrorCode  ISDestroy_(IS is)
+PetscErrorCode  ISDestroy(IS *is)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_CLASSID,1);
-  if (--((PetscObject)is)->refct > 0) PetscFunctionReturn(0);
-  if(is->complement) {
+  if (!*is) PetscFunctionReturn(0);
+  if (--((PetscObject)(*is))->refct > 0) PetscFunctionReturn(0);
+  if ((*is)->complement) {
     PetscInt refcnt;
-    ierr = PetscObjectGetReference((PetscObject)(is->complement), &refcnt); CHKERRQ(ierr);
-    if(refcnt > 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Nonlocal IS has not been restored");
-    ierr = ISDestroy(is->complement); CHKERRQ(ierr);
+    ierr = PetscObjectGetReference((PetscObject)((*is)->complement), &refcnt); CHKERRQ(ierr);
+    if (refcnt > 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Nonlocal IS has not been restored");
+    ierr = ISDestroy((*is)->complement); CHKERRQ(ierr);
   }
-  if (is->ops->destroy) {
-    ierr = (*is->ops->destroy)(is);CHKERRQ(ierr);
+  if ((*is)->ops->destroy) {
+    ierr = (*(*is)->ops->destroy)(is);CHKERRQ(ierr);
   }
   /* Destroy local representations of offproc data. */
-  ierr = PetscFree(is->total); CHKERRQ(ierr);
-  ierr = PetscFree(is->nonlocal); CHKERRQ(ierr);
+  ierr = PetscFree((*is)->total); CHKERRQ(ierr);
+  ierr = PetscFree((*is)->nonlocal); CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(is);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

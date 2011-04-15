@@ -23,8 +23,8 @@ void PETSC_STDCALL dmcompositegetaccessvpvp_(DM *dm,Vec *v,Vec *v1,F90Array1d *p
 void PETSC_STDCALL dmcompositerestoreaccessvpvp_(DM *dm,Vec *v,Vec *v1,F90Array1d *p1,Vec *v2,F90Array1d *p2,PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd1) PETSC_F90_2PTR_PROTO(ptrd2))
 {
   *ierr = DMCompositeRestoreAccess(*dm,*v,v1,0,v2,0);
-  *ierr = F90Array1dDestroy(p1,PETSC_SCALAR PETSC_F90_2PTR_PARAM(ptrd1));
-  *ierr = F90Array1dDestroy(p2,PETSC_SCALAR PETSC_F90_2PTR_PARAM(ptrd2));
+  *ierr = F90Array1dDestroy(&p1,PETSC_SCALAR PETSC_F90_2PTR_PARAM(ptrd1));
+  *ierr = F90Array1dDestroy(&p2,PETSC_SCALAR PETSC_F90_2PTR_PARAM(ptrd2));
 }
 
 EXTERN_C_END

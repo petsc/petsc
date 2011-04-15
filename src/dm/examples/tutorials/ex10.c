@@ -66,9 +66,9 @@ int main(int argc,char **argv)
   ierr = VecView(gauss,H5viewer);CHKERRQ(ierr);	
   
   // Cleaning stage
-  ierr = PetscViewerDestroy(H5viewer);CHKERRQ(ierr);
-  ierr = VecDestroy(gauss);CHKERRQ(ierr);
-  ierr = DMDestroy(da2D);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&H5viewer);CHKERRQ(ierr);
+  ierr = VecDestroy(&gauss);CHKERRQ(ierr);
+  ierr = DMDestroy(&da2D);CHKERRQ(ierr);
   ierr = PetscFinalize();
     return 0;
 }

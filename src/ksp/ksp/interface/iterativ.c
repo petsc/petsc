@@ -112,7 +112,7 @@ PetscErrorCode  KSPMonitorSingularValue(KSP ksp,PetscInt n,PetscReal rnorm,void 
     c = emax/emin;
     ierr = PetscViewerASCIIMonitorPrintf(viewer,"%3D KSP Residual norm %14.12e %% max %G min %G max/min %G\n",n,(double)rnorm,emax,emin,c);CHKERRQ(ierr);
   }
-  if (!dummy) {ierr = PetscViewerASCIIMonitorDestroy(viewer);CHKERRQ(ierr);}
+  if (!dummy) {ierr = PetscViewerASCIIMonitorDestroy(&viewer);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -189,7 +189,7 @@ PetscErrorCode  KSPMonitorDefault(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy
     ierr = PetscViewerASCIIMonitorPrintf(viewer,"  Residual norms for %s solve.\n",((PetscObject)ksp)->prefix);CHKERRQ(ierr);
   }
   ierr = PetscViewerASCIIMonitorPrintf(viewer,"%3D KSP Residual norm %14.12e \n",n,(double)rnorm);CHKERRQ(ierr);
-  if (!dummy) {ierr = PetscViewerASCIIMonitorDestroy(viewer);CHKERRQ(ierr);}
+  if (!dummy) {ierr = PetscViewerASCIIMonitorDestroy(&viewer);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -244,10 +244,10 @@ PetscErrorCode  KSPMonitorTrueResidualNorm(KSP ksp,PetscInt n,PetscReal rnorm,vo
     ierr = MatUnScaleSystem(A,work,PETSC_NULL);CHKERRQ(ierr);
   }
   ierr = VecNorm(work,NORM_2,&scnorm);CHKERRQ(ierr);
-  ierr = VecDestroy(work);CHKERRQ(ierr);
+  ierr = VecDestroy(&work);CHKERRQ(ierr);
   ierr = VecNorm(ksp->vec_rhs,NORM_2,&bnorm);CHKERRQ(ierr);
   ierr = PetscViewerASCIIMonitorPrintf(viewer,"%3D KSP preconditioned resid norm %14.12e true resid norm %14.12e ||r(i)||/||b|| %14.12e\n",n,(double)rnorm,(double)scnorm,(double)scnorm/bnorm);CHKERRQ(ierr);
-  if (!dummy) {ierr = PetscViewerASCIIMonitorDestroy(viewer);CHKERRQ(ierr);}
+  if (!dummy) {ierr = PetscViewerASCIIMonitorDestroy(&viewer);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -287,7 +287,7 @@ PetscErrorCode  KSPMonitorRange_Private(KSP ksp,PetscInt it,PetscReal *per)
   }
   ierr = MPI_Allreduce(&pwork,per,1,MPIU_REAL,MPIU_SUM,((PetscObject)ksp)->comm);CHKERRQ(ierr);
   ierr = VecRestoreArray(work,&r);CHKERRQ(ierr);
-  ierr = VecDestroy(work);CHKERRQ(ierr);
+  ierr = VecDestroy(&work);CHKERRQ(ierr);
   *per  = *per/N;
   PetscFunctionReturn(0);
 }
@@ -330,7 +330,7 @@ PetscErrorCode  KSPMonitorRange(KSP ksp,PetscInt it,PetscReal rnorm,void *dummy)
   rel  = (prev - rnorm)/prev;
   prev = rnorm;
   ierr = PetscViewerASCIIMonitorPrintf(viewer,"%3D KSP preconditioned resid norm %14.12e Percent values above 20 percent of maximum %5.2f relative decrease %5.2e ratio %5.2e \n",it,(double)rnorm,(double)100.0*perc,(double)rel,(double)rel/perc);CHKERRQ(ierr);
-  if (!dummy) {ierr = PetscViewerASCIIMonitorDestroy(viewer);CHKERRQ(ierr);}
+  if (!dummy) {ierr = PetscViewerASCIIMonitorDestroy(&viewer);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -358,7 +358,7 @@ PetscErrorCode  KSPMonitorDefaultShort(KSP ksp,PetscInt its,PetscReal fnorm,void
   } else {
     ierr = PetscViewerASCIIMonitorPrintf(viewer,"%3D KSP Residual norm < 1.e-11\n",its);CHKERRQ(ierr);
   }
-  if (!dummy) {ierr = PetscViewerASCIIMonitorDestroy(viewer);CHKERRQ(ierr);}
+  if (!dummy) {ierr = PetscViewerASCIIMonitorDestroy(&viewer);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -655,7 +655,7 @@ PetscErrorCode  KSPDefaultConvergedDestroy(void *ctx)
   KSPDefaultConvergedCtx *cctx = (KSPDefaultConvergedCtx*) ctx;
 
   PetscFunctionBegin;
-  if (cctx->work) {ierr = VecDestroy(cctx->work);CHKERRQ(ierr);}
+  ierr = VecDestroy(&cctx->work);CHKERRQ(ierr);
   ierr = PetscFree(ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -787,7 +787,7 @@ PetscErrorCode KSPGetVecs(KSP ksp,PetscInt rightn, Vec **right,PetscInt leftn,Ve
       if (ksp->dm) {
         ierr = DMRestoreGlobalVector(ksp->dm,&vecr);CHKERRQ(ierr);
       } else {
-	ierr = VecDestroy(vecr);CHKERRQ(ierr);
+	ierr = VecDestroy(&vecr);CHKERRQ(ierr);
       }
     }
   }
@@ -809,7 +809,7 @@ PetscErrorCode KSPGetVecs(KSP ksp,PetscInt rightn, Vec **right,PetscInt leftn,Ve
       if (ksp->dm) {
         ierr = DMRestoreGlobalVector(ksp->dm,&vecl);CHKERRQ(ierr);
       } else {
-	ierr = VecDestroy(vecl);CHKERRQ(ierr);
+	ierr = VecDestroy(&vecl);CHKERRQ(ierr);
       }
     }
   }
@@ -870,14 +870,14 @@ PetscErrorCode KSPDefaultReset(KSP ksp)
   Input Parameter: 
 . ksp - the iterative context
 */
-PetscErrorCode KSPDefaultDestroy(KSP ksp)
+PetscErrorCode KSPDefaultDestroy(KSP *ksp)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  ierr = KSPDefaultReset(ksp);CHKERRQ(ierr);
-  ierr = PetscFree(ksp->data);CHKERRQ(ierr);
+  PetscValidHeaderSpecific(*ksp,KSP_CLASSID,1);
+  ierr = KSPDefaultReset(*ksp);CHKERRQ(ierr);
+  ierr = PetscFree((*ksp)->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -954,7 +954,7 @@ PetscErrorCode  KSPSetDM(KSP ksp,DM dm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   ierr = PetscObjectReference((PetscObject)dm);CHKERRQ(ierr);
-  if (ksp->dm) {ierr = DMDestroy(ksp->dm);CHKERRQ(ierr);}
+  ierr = DMDestroy(&ksp->dm);CHKERRQ(ierr);
   ksp->dm = dm;
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
   ierr = PCSetDM(pc,dm);CHKERRQ(ierr);

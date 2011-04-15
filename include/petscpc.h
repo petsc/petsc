@@ -180,7 +180,7 @@ M*/
 #endif
 
 extern PetscErrorCode  PCReset(PC);
-extern PetscErrorCode  PCDestroy(PC);
+extern PetscErrorCode  PCDestroy(PC*);
 extern PetscErrorCode  PCSetFromOptions(PC);
 extern PetscErrorCode  PCGetType(PC,const PCType*);
 
@@ -235,7 +235,7 @@ extern PetscErrorCode  PCShellSetApplyTranspose(PC,PetscErrorCode (*)(PC,Vec,Vec
 extern PetscErrorCode  PCShellSetSetUp(PC,PetscErrorCode (*)(PC));
 extern PetscErrorCode  PCShellSetApplyRichardson(PC,PetscErrorCode (*)(PC,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,PetscInt,PetscBool ,PetscInt*,PCRichardsonConvergedReason*));
 extern PetscErrorCode  PCShellSetView(PC,PetscErrorCode (*)(PC,PetscViewer));
-extern PetscErrorCode  PCShellSetDestroy(PC,PetscErrorCode (*)(PC));
+extern PetscErrorCode  PCShellSetDestroy(PC,PetscErrorCode (*)(PC*));
 extern PetscErrorCode  PCShellGetContext(PC,void**);
 extern PetscErrorCode  PCShellSetContext(PC,void*);
 extern PetscErrorCode  PCShellSetName(PC,const char[]);

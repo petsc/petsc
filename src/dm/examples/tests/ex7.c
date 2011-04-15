@@ -80,7 +80,7 @@ int main(int argc,char **argv)
     ierr = VecView(local,viewer);CHKERRQ(ierr);
     fprintf(file,"Vector with correct ghost points\n");
     ierr = VecView(local_copy,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
 
   ierr = VecAXPY(local_copy,-1.0,local);CHKERRQ(ierr);
@@ -88,10 +88,10 @@ int main(int argc,char **argv)
   ierr = MPI_Allreduce(&work,&norm,1,MPIU_REAL,MPIU_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of difference %G should be zero\n",norm);CHKERRQ(ierr);
    
-  ierr = VecDestroy(local_copy);CHKERRQ(ierr);
-  ierr = VecDestroy(local);CHKERRQ(ierr);
-  ierr = VecDestroy(global);CHKERRQ(ierr);
-  ierr = DMDestroy(da);CHKERRQ(ierr);
+  ierr = VecDestroy(&local_copy);CHKERRQ(ierr);
+  ierr = VecDestroy(&local);CHKERRQ(ierr);
+  ierr = VecDestroy(&global);CHKERRQ(ierr);
+  ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

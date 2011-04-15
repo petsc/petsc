@@ -108,7 +108,7 @@ namespace ALE {
         }
       }
       *vertices = verts;
-      ierr = PetscViewerDestroy(viewer);
+      ierr = PetscViewerDestroy(&viewer);
     };
     Obj<Builder::Mesh> Builder::readMesh(MPI_Comm comm, const int dim, const std::string& filename, const bool interpolate = false, const int debug = 0) {
       typedef ALE::Mesh<PetscInt,PetscScalar> FlexMesh;
@@ -187,7 +187,7 @@ namespace ALE {
         }
         fault->allocatePoint();
       }
-      ierr = PetscViewerDestroy(viewer);
+      ierr = PetscViewerDestroy(&viewer);
     };
 #endif
   }

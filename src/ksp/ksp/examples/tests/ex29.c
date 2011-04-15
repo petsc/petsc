@@ -104,13 +104,13 @@ int main(int argc,char **argv)
   }
 
   /* free data structures */
-  ierr = VecDestroy(fine_ctx.x);CHKERRQ(ierr);
-  ierr = VecDestroy(fine_ctx.b);CHKERRQ(ierr);
-  ierr = DMDestroy(fine_ctx.da);CHKERRQ(ierr);
-  ierr = VecDestroy(fine_ctx.localX);CHKERRQ(ierr);
-  ierr = VecDestroy(fine_ctx.localF);CHKERRQ(ierr);
-  ierr = MatDestroy(A);CHKERRQ(ierr); 
-  ierr = KSPDestroy(ksp);CHKERRQ(ierr);
+  ierr = VecDestroy(&fine_ctx.x);CHKERRQ(ierr);
+  ierr = VecDestroy(&fine_ctx.b);CHKERRQ(ierr);
+  ierr = DMDestroy(&fine_ctx.da);CHKERRQ(ierr);
+  ierr = VecDestroy(&fine_ctx.localX);CHKERRQ(ierr);
+  ierr = VecDestroy(&fine_ctx.localF);CHKERRQ(ierr);
+  ierr = MatDestroy(&A);CHKERRQ(ierr); 
+  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

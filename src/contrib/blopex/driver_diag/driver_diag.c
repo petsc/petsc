@@ -344,7 +344,7 @@ int main(int argc,char **args)
         PetscViewerBinaryOpen(PETSC_COMM_WORLD, tmp_str, FILE_MODE_WRITE, &fd);
         /* PetscViewerSetFormat(fd,PETSC_VIEWER_ASCII_MATLAB); */
         ierr = VecView((Vec)(raw_eigenvectors->vector)[j],fd); CHKERRQ(ierr);
-        ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
+        ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
       }
 
    }
@@ -353,9 +353,9 @@ int main(int argc,char **args)
       Free work space.  All PETSc objects should be destroyed when they
       are no longer needed.
    */
-   ierr = VecDestroy(u);CHKERRQ(ierr);
-   ierr = MatDestroy(A);CHKERRQ(ierr);
-   ierr = KSPDestroy(ksp);CHKERRQ(ierr);
+   ierr = VecDestroy(&u);CHKERRQ(ierr);
+   ierr = MatDestroy(&A);CHKERRQ(ierr);
+   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
 
    LOBPCG_DestroyRandomContext();
    mv_MultiVectorDestroy(eigenvectors);

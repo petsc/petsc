@@ -60,7 +60,7 @@ int main(int argc,char **argv)
   ierr = DMMGCreate(PETSC_COMM_WORLD,3,PETSC_NULL,&dmmg);CHKERRQ(ierr);
   ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-3,-3,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,&da);CHKERRQ(ierr);  
   ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr);
-  ierr = DMDestroy(da);CHKERRQ(ierr);
+  ierr = DMDestroy(&da);CHKERRQ(ierr);
   for (l = 0; l < DMMGGetLevels(dmmg); l++) {
     ierr = DMMGSetUser(dmmg,l,&user);CHKERRQ(ierr);
   }
@@ -91,7 +91,7 @@ int main(int argc,char **argv)
   ierr = VecView_VTK(DMMGGetRHS(dmmg), "rhs.vtk", bcTypes[user.bcType]);CHKERRQ(ierr);
   ierr = VecView_VTK(DMMGGetx(dmmg), "solution.vtk", bcTypes[user.bcType]);CHKERRQ(ierr);
 
-  ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
+  ierr = DMMGDestroy(&dmmg);CHKERRQ(ierr);
   ierr = PetscFinalize();
 
   return 0;
@@ -290,6 +290,6 @@ PetscErrorCode VecView_VTK(Vec x, const char filename[], const char bcName[])
   }
   ierr = VecRestoreArray(x, &array);CHKERRQ(ierr);
   ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

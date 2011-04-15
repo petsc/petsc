@@ -150,7 +150,7 @@ int main(int argc,char **argv)
     ierr = MeshSetMesh(petscMesh, mesh);CHKERRQ(ierr);
     ierr = DMMGCreate(comm,3,PETSC_NULL,&dmmg);CHKERRQ(ierr);
     ierr = DMMGSetDM(dmmg, (DM) petscMesh);CHKERRQ(ierr);
-    ierr = MeshDestroy(petscMesh);CHKERRQ(ierr);
+    ierr = MeshDestroy(&petscMesh);CHKERRQ(ierr);
     for (l = 0; l < DMMGGetLevels(dmmg); l++) {
       ierr = DMMGSetUser(dmmg,l,&user);CHKERRQ(ierr);
     }
@@ -180,10 +180,10 @@ int main(int argc,char **argv)
     ierr = MeshView_Sieve_Newer(mesh, viewer);CHKERRQ(ierr);
     //ierr = VecView(DMMGGetRHS(dmmg), viewer);CHKERRQ(ierr);
     ierr = VecView(DMMGGetx(dmmg), viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     ALE::LogStagePop(stage);
 
-    ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
+    ierr = DMMGDestroy(&dmmg);CHKERRQ(ierr);
   } catch (ALE::Exception e) {
     std::cout << e << std::endl;
   }
@@ -1120,7 +1120,7 @@ PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, field->getSize(patch), field->restrict(patch), &locB);CHKERRQ(ierr);
   ierr = VecScatterBegin(user->injection, locB, b, ADD_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(user->injection, locB, b, ADD_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecDestroy(locB);CHKERRQ(ierr);
+  ierr = VecDestroy(&locB);CHKERRQ(ierr);
 
   /* force right hand side to be consistent for singular matrix */
   /* note this is really a hack, normally the model would provide you with a consistent right handside */

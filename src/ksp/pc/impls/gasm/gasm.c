@@ -289,7 +289,7 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
     ierr = VecGetOwnershipRange(osm->gx, &gfirst, &glast);CHKERRQ(ierr);
     ierr = ISCreateStride(((PetscObject)pc)->comm,ddn,gfirst,1, &gid);CHKERRQ(ierr);
     ierr = VecScatterCreate(x,osm->gis,osm->gx,gid, &(osm->grestriction));CHKERRQ(ierr);
-    ierr = ISDestroy(gid);CHKERRQ(ierr);
+    ierr = ISDestroy(&gid);CHKERRQ(ierr);
     /* Prolongation ISs */
     { PetscInt       dn_local;       /* Number of indices in the local part of a single domain assigned to this processor. */
       const PetscInt *didx_local;    /* Global indices from the local part of a single domain assigned to this processor. */
@@ -328,7 +328,7 @@ static PetscErrorCode PCSetUp_GASM(PC pc)
       }
       ierr = ISCreateGeneral(PETSC_COMM_SELF,ddn_llocal,ddidx_llocal,PETSC_OWN_POINTER,&gis_llocal);CHKERRQ(ierr);
       ierr = VecScatterCreate(y,osm->gis_local,osm->gy,gis_llocal,&osm->gprolongation);CHKERRQ(ierr);
-      ierr = ISDestroy(gis_llocal);CHKERRQ(ierr);
+      ierr = ISDestroy(&gis_llocal);CHKERRQ(ierr);
     }
     /* Create the subdomain work vectors. */
     ierr = PetscMalloc(osm->n*sizeof(Vec),&osm->x);CHKERRQ(ierr);
@@ -515,18 +515,18 @@ static PetscErrorCode PCReset_GASM(PC pc)
   }
   if (osm->x) {
     for (i=0; i<osm->n; i++) {
-      if (osm->x[i]) {ierr = VecDestroy(osm->x[i]);CHKERRQ(ierr);}
-      if (osm->y[i]) {ierr = VecDestroy(osm->y[i]);CHKERRQ(ierr);}
+      ierr = VecDestroy(&osm->x[i]);CHKERRQ(ierr);
+      ierr = VecDestroy(&osm->y[i]);CHKERRQ(ierr);
     }
   }
-  if (osm->gx) {ierr = VecDestroy(osm->gx);CHKERRQ(ierr);}
-  if (osm->gy) {ierr = VecDestroy(osm->gy);CHKERRQ(ierr);}
+  ierr = VecDestroy(&osm->gx);CHKERRQ(ierr);}
+  ierr = VecDestroy(&osm->gy);CHKERRQ(ierr);}
   
-  if (osm->grestriction) {ierr = VecScatterDestroy(osm->grestriction);CHKERRQ(ierr);}
-  if (osm->gprolongation) {ierr = VecScatterDestroy(osm->gprolongation);CHKERRQ(ierr);}
+  ierr = VecScatterDestroy(&osm->grestriction);CHKERRQ(ierr);}
+  ierr = VecScatterDestroy(&osm->gprolongation);CHKERRQ(ierr);}
   if (osm->is) {ierr = PCGASMDestroySubdomains(osm->n,osm->is,osm->is_local);CHKERRQ(ierr); osm->is = 0;}
-  if (osm->gis) {ierr = ISDestroy(osm->gis);CHKERRQ(ierr);}
-  if (osm->gis_local) {ierr = ISDestroy(osm->gis_local);CHKERRQ(ierr);}
+  ierr = ISDestroy(&osm->gis);CHKERRQ(ierr);
+  ierr = ISDestroy(&osm->gis_local);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1261,8 +1261,8 @@ PetscErrorCode  PCGASMCreateSubdomains(Mat A, PetscInt n, IS* outis[])
 
     ierr = PetscFree(count);
     ierr = PetscFree(indices);
-    ierr = ISDestroy(isnumb);CHKERRQ(ierr);
-    ierr = ISDestroy(ispart);CHKERRQ(ierr);
+    ierr = ISDestroy(&isnumb);CHKERRQ(ierr);
+    ierr = ISDestroy(&ispart);CHKERRQ(ierr);
   }
   
   PetscFunctionReturn(0);
@@ -1295,11 +1295,11 @@ PetscErrorCode  PCGASMDestroySubdomains(PetscInt n, IS is[], IS is_local[])
   PetscFunctionBegin;
   if (n <= 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"n must be > 0: n = %D",n);
   PetscValidPointer(is,2);
-  for (i=0; i<n; i++) { ierr = ISDestroy(is[i]);CHKERRQ(ierr); }
+  for (i=0; i<n; i++) { ierr = ISDestroy(&is[i]);CHKERRQ(ierr); }
   ierr = PetscFree(is);CHKERRQ(ierr);
   if (is_local) {
     PetscValidPointer(is_local,3);
-    for (i=0; i<n; i++) { ierr = ISDestroy(is_local[i]);CHKERRQ(ierr); }
+    for (i=0; i<n; i++) { ierr = ISDestroy(&is_local[i]);CHKERRQ(ierr); }
     ierr = PetscFree(is_local);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

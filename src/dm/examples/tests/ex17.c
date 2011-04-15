@@ -45,11 +45,11 @@ int main(int argc,char **argv)
   ierr = MatRestrict(I,v_f,v_c);CHKERRQ(ierr);
   ierr = VecView(v_c,PETSC_VIEWER_STDOUT_(comm_c));CHKERRQ(ierr);
 
-  ierr = MatDestroy(I);CHKERRQ(ierr);
-  ierr = VecDestroy(v_c);CHKERRQ(ierr);
-  ierr = DMDestroy(da_c);CHKERRQ(ierr);
-  ierr = VecDestroy(v_f);CHKERRQ(ierr);
-  ierr = DMDestroy(da_f);CHKERRQ(ierr);
+  ierr = MatDestroy(&I);CHKERRQ(ierr);
+  ierr = VecDestroy(&v_c);CHKERRQ(ierr);
+  ierr = DMDestroy(&da_c);CHKERRQ(ierr);
+  ierr = VecDestroy(&v_f);CHKERRQ(ierr);
+  ierr = DMDestroy(&da_f);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

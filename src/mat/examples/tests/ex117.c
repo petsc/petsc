@@ -60,7 +60,7 @@ int main(int argc,char **args)
 
    // begin cholesky factorization
   ierr = MatGetOrdering(mat,MATORDERINGNATURAL,&perm,&colp);CHKERRQ(ierr);
-  ierr = ISDestroy(colp);CHKERRQ(ierr);    
+  ierr = ISDestroy(&colp);CHKERRQ(ierr);    
   info.fill=1.0; 
   ierr = MatGetFactor(mat,MATSOLVERPETSC,MAT_FACTOR_CHOLESKY,&fact);CHKERRQ(ierr);
   ierr = MatCholeskyFactorSymbolic(fact,mat,perm,&info);CHKERRQ(ierr);
@@ -68,10 +68,10 @@ int main(int argc,char **args)
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Chol factor: \n");
   ierr = MatView(fact, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
 
-  ierr = ISDestroy(perm);CHKERRQ(ierr);
-  ierr = MatDestroy(mat);CHKERRQ(ierr);
-  ierr = MatDestroy(fact);CHKERRQ(ierr);
-  ierr = MatDestroy(B);CHKERRQ(ierr);
+  ierr = ISDestroy(&perm);CHKERRQ(ierr);
+  ierr = MatDestroy(&mat);CHKERRQ(ierr);
+  ierr = MatDestroy(&fact);CHKERRQ(ierr);
+  ierr = MatDestroy(&B);CHKERRQ(ierr);
   PetscFinalize();
   return 0;
 }

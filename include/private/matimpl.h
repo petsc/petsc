@@ -209,7 +209,7 @@ struct _MatStashSpace {
 
 extern PetscErrorCode PetscMatStashSpaceGet(PetscInt,PetscInt,PetscMatStashSpace *);
 extern PetscErrorCode PetscMatStashSpaceContiguous(PetscInt,PetscMatStashSpace *,PetscScalar *,PetscInt *,PetscInt *);
-extern PetscErrorCode PetscMatStashSpaceDestroy(PetscMatStashSpace);
+extern PetscErrorCode PetscMatStashSpaceDestroy(PetscMatStashSpace*);
 
 typedef struct {
   PetscInt      nmax;                   /* maximum stash size */

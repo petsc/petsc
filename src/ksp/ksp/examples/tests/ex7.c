@@ -58,7 +58,7 @@ int main(int argc,char **args)
   ierr = MatConvert(A,MATSAME,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
   ierr = VecLoad(b,fd);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
 
   /* 
        If the loaded matrix is larger than the vector (due to being padded 
@@ -82,7 +82,7 @@ int main(int argc,char **args)
         ierr  = VecSetValues(tmp,1,&idx,bold+j,INSERT_VALUES);CHKERRQ(ierr);
       }
       ierr = VecRestoreArray(b,&bold);CHKERRQ(ierr);
-      ierr = VecDestroy(b);CHKERRQ(ierr);
+      ierr = VecDestroy(&b);CHKERRQ(ierr);
       ierr = VecAssemblyBegin(tmp);CHKERRQ(ierr);
       ierr = VecAssemblyEnd(tmp);CHKERRQ(ierr);
       b = tmp;
@@ -127,11 +127,11 @@ int main(int argc,char **args)
        Free work space.  All PETSc objects should be destroyed when they
        are no longer needed.
   */
-  ierr = MatDestroy(A);CHKERRQ(ierr); 
-  ierr = MatDestroy(B);CHKERRQ(ierr); 
-  ierr = VecDestroy(b);CHKERRQ(ierr);
-  ierr = VecDestroy(u);CHKERRQ(ierr); ierr = VecDestroy(x);CHKERRQ(ierr);
-  ierr = KSPDestroy(ksp);CHKERRQ(ierr); 
+  ierr = MatDestroy(&A);CHKERRQ(ierr); 
+  ierr = MatDestroy(&B);CHKERRQ(ierr); 
+  ierr = VecDestroy(&b);CHKERRQ(ierr);
+  ierr = VecDestroy(&u);CHKERRQ(ierr); ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = KSPDestroy(&ksp);CHKERRQ(ierr); 
 
 
   ierr = PetscFinalize();

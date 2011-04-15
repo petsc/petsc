@@ -81,8 +81,8 @@ PetscErrorCode  KSPSolve_NGMRES(KSP ksp)
   ierr = MatMult(Amat,Pold,y);CHKERRQ(ierr);
   /*ierr = KSP_PCApplyBAorAB(ksp,Pold,y,w);CHKERRQ(ierr);  */    /* y = BAp */
   ierr  = VecDotNorm2(Pold,y,&rdot,&abr);CHKERRQ(ierr);   /*   rdot = (p)^T(BAp); abr = (BAp)^T (BAp) */
-  ierr = VecDestroy(y);CHKERRQ(ierr);
-  ierr = VecDestroy(w);CHKERRQ(ierr);
+  ierr = VecDestroy(&y);CHKERRQ(ierr);
+  ierr = VecDestroy(&w);CHKERRQ(ierr);
   A0 = rdot/abr;
   ierr = VecAXPY(X,A0,Pold);CHKERRQ(ierr);             /*   x  <- x + scale p */
 
@@ -135,7 +135,6 @@ PetscErrorCode KSPReset_NGMRES(KSP ksp)
   PetscFunctionBegin;
   ierr = VecDestroyVecs(cg->msize,&cg->v);CHKERRQ(ierr);
   ierr = VecDestroyVecs(cg->msize,&cg->w);CHKERRQ(ierr);
-  ierr = KSPDefaultDestroy(ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -145,12 +144,12 @@ PetscErrorCode KSPReset_NGMRES(KSP ksp)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "KSPDestroy_NGMRES" 
-PetscErrorCode KSPDestroy_NGMRES(KSP ksp)
+PetscErrorCode KSPDestroy_NGMRES(KSP *ksp)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = KSPReset_NGMRES(ksp);CHKERRQ(ierr);
+  ierr = KSPReset_NGMRES(*ksp);CHKERRQ(ierr);
   ierr = KSPDefaultDestroy(ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

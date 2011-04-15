@@ -47,7 +47,7 @@ int main(int argc,char **argv)
   ierr = PFCreate(PETSC_COMM_WORLD,1,1,&pf);CHKERRQ(ierr);
   ierr = PFSetType(pf,PFIDENTITY,PETSC_NULL);CHKERRQ(ierr);
   ierr = PFApplyVec(pf,PETSC_NULL,global);CHKERRQ(ierr);
-  ierr = PFDestroy(pf);CHKERRQ(ierr);
+  ierr = PFDestroy(&pf);CHKERRQ(ierr);
   ierr = VecView(global,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   ierr = DMCompositeScatter(packer,global,redundant1,local1,redundant2,local2);CHKERRQ(ierr);
@@ -82,15 +82,15 @@ int main(int argc,char **argv)
   ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_WORLD,"Local to global mapping of local2 vector\n");CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingView(ltog[3],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-  for (i=0; i<4; i++) {ierr = ISLocalToGlobalMappingDestroy(ltog[i]);CHKERRQ(ierr);}
+  for (i=0; i<4; i++) {ierr = ISLocalToGlobalMappingDestroy(&ltog[i]);CHKERRQ(ierr);}
   ierr = PetscFree(ltog);CHKERRQ(ierr);
 
-  ierr = DMDestroy(da1);CHKERRQ(ierr);
-  ierr = DMDestroy(da2);CHKERRQ(ierr);
-  ierr = VecDestroy(local1);CHKERRQ(ierr);
-  ierr = VecDestroy(local2);CHKERRQ(ierr);
-  ierr = VecDestroy(global);CHKERRQ(ierr);
-  ierr = DMDestroy(packer);CHKERRQ(ierr);
+  ierr = DMDestroy(&da1);CHKERRQ(ierr);
+  ierr = DMDestroy(&da2);CHKERRQ(ierr);
+  ierr = VecDestroy(&local1);CHKERRQ(ierr);
+  ierr = VecDestroy(&local2);CHKERRQ(ierr);
+  ierr = VecDestroy(&global);CHKERRQ(ierr);
+  ierr = DMDestroy(&packer);CHKERRQ(ierr);
   ierr = PetscFree(redundant1);CHKERRQ(ierr);
   ierr = PetscFree(redundant2);CHKERRQ(ierr);
   ierr = PetscFinalize();

@@ -35,7 +35,7 @@ PetscErrorCode test_solve( void )
   ierr = MatMPIAIJSetPreallocation( A11, np, PETSC_NULL,np, PETSC_NULL );CHKERRQ(ierr);
   ierr = MatDiagonalSet( A11, diag, INSERT_VALUES );CHKERRQ(ierr);
 
-  ierr = VecDestroy( diag );CHKERRQ(ierr);
+  ierr = VecDestroy(& diag );CHKERRQ(ierr);
 
   /* A12 */
   ierr = MatCreate( PETSC_COMM_WORLD, &A12 );CHKERRQ(ierr);
@@ -102,16 +102,16 @@ PetscErrorCode test_solve( void )
   PetscViewerSetFormat( PETSC_VIEWER_STDOUT_WORLD, PETSC_VIEWER_ASCII_INFO_DETAIL );
   ierr = VecView( x2, PETSC_VIEWER_STDOUT_WORLD );CHKERRQ(ierr);
 
-  ierr = KSPDestroy( ksp );CHKERRQ(ierr);
-  ierr = VecDestroy( x );CHKERRQ(ierr);
-  ierr = VecDestroy( b );CHKERRQ(ierr);
-  ierr = MatDestroy( A11 );CHKERRQ(ierr);
-  ierr = MatDestroy( A12 );CHKERRQ(ierr);
-  ierr = MatDestroy( A21 );CHKERRQ(ierr);
-  ierr = VecDestroy( f );CHKERRQ(ierr);
-  ierr = VecDestroy( h );CHKERRQ(ierr);
+  ierr = KSPDestroy(& ksp );CHKERRQ(ierr);
+  ierr = VecDestroy(& x );CHKERRQ(ierr);
+  ierr = VecDestroy(& b );CHKERRQ(ierr);
+  ierr = MatDestroy(& A11 );CHKERRQ(ierr);
+  ierr = MatDestroy(& A12 );CHKERRQ(ierr);
+  ierr = MatDestroy(& A21 );CHKERRQ(ierr);
+  ierr = VecDestroy(& f );CHKERRQ(ierr);
+  ierr = VecDestroy(& h );CHKERRQ(ierr);
 
-  ierr = MatDestroy( A );CHKERRQ(ierr);
+  ierr = MatDestroy(& A );CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -151,7 +151,7 @@ PetscErrorCode test_solve_matgetvecs( void )
   ierr = MatMPIAIJSetPreallocation( A11, np, PETSC_NULL,np, PETSC_NULL );CHKERRQ(ierr);
   ierr = MatDiagonalSet( A11, diag, INSERT_VALUES );CHKERRQ(ierr);
 
-  ierr = VecDestroy( diag );CHKERRQ(ierr);
+  ierr = VecDestroy(& diag );CHKERRQ(ierr);
 
   /* A12 */
   ierr = MatCreate( PETSC_COMM_WORLD, &A12 );CHKERRQ(ierr);
@@ -210,14 +210,14 @@ PetscErrorCode test_solve_matgetvecs( void )
   ierr = PetscViewerSetFormat( PETSC_VIEWER_STDOUT_WORLD, PETSC_VIEWER_ASCII_INFO_DETAIL );CHKERRQ(ierr);
   ierr = VecView( x2, PETSC_VIEWER_STDOUT_WORLD );CHKERRQ(ierr);
 
-  ierr = KSPDestroy( ksp );CHKERRQ(ierr);
-  ierr = VecDestroy( x );CHKERRQ(ierr);
-  ierr = VecDestroy( b );CHKERRQ(ierr);
-  ierr = MatDestroy( A11 );CHKERRQ(ierr);
-  ierr = MatDestroy( A12 );CHKERRQ(ierr);
-  ierr = MatDestroy( A21 );CHKERRQ(ierr);
+  ierr = KSPDestroy(& ksp );CHKERRQ(ierr);
+  ierr = VecDestroy(& x );CHKERRQ(ierr);
+  ierr = VecDestroy(& b );CHKERRQ(ierr);
+  ierr = MatDestroy(& A11 );CHKERRQ(ierr);
+  ierr = MatDestroy(& A12 );CHKERRQ(ierr);
+  ierr = MatDestroy(& A21 );CHKERRQ(ierr);
 
-  ierr = MatDestroy( A );CHKERRQ(ierr);
+  ierr = MatDestroy(& A );CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

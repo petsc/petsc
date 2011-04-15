@@ -14,7 +14,7 @@ static PetscErrorCode CompareGhostedCoords(Vec gc1,Vec gc2)
   ierr = VecNorm(tmp,NORM_INFINITY,&nrm);CHKERRQ(ierr);
   ierr = MPI_Allreduce(&nrm,&gnrm,1,MPIU_REAL,MPIU_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"norm of difference of ghosted coordinates %8.2e\n",gnrm);CHKERRQ(ierr);
-  ierr = VecDestroy(tmp);CHKERRQ(ierr);
+  ierr = VecDestroy(&tmp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -54,8 +54,8 @@ static PetscErrorCode TestQ2Q1DA( void )
   ierr = DMDAGetGhostedCoordinates(Q1_da,&gcoords2);CHKERRQ(ierr);
   ierr = CompareGhostedCoords(gcoords,gcoords2);CHKERRQ(ierr);
 
-  ierr = DMDestroy(Q2_da);CHKERRQ(ierr);
-  ierr = DMDestroy(Q1_da);CHKERRQ(ierr);
+  ierr = DMDestroy(&Q2_da);CHKERRQ(ierr);
+  ierr = DMDestroy(&Q1_da);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -169,7 +169,7 @@ differs slightly.
 When a vector is no longer needed, it should be destroyed with the 
 command 
 \begin{tabbing}
-  VecDestroy(Vec x);
+  VecDestroy(Vec *x);
 \end{tabbing}
 To destroy an array of vectors, use the command 
 \begin{tabbing}
@@ -412,7 +412,7 @@ will map index sets (IS objects) between orderings. Both the \trl{AOXxxToYyy()} 
 \trl{AOXxxToYyyIS()} routines can be used regardless of whether the AO was 
 created with a AOCreateBasic() or AOCreateBasicIS().
 
-The AO context should be destroyed with AODestroy(AO ao)
+The AO context should be destroyed with AODestroy(AO *ao)
 and viewed with AOView(AO ao,PetscViewer viewer).
 
 Although we refer to the two orderings as ``PETSc'' and
@@ -442,7 +442,7 @@ the PETSc global numbering scheme. This is done via the following routines
   ISLocalToGlobalMappingCreate(MPI\_Comm comm,int N,int* globalnum,PetscCopyMode mode,ISLocalToGlobalMapping* ctx);\\
   ISLocalToGlobalMappingApply(ISLocalToGlobalMapping ctx,int n,int *in,int *out);\\
   ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping ctx,IS isin,IS* isout);\\
-  ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping ctx);
+  ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping *ctx);
 \end{tabbing}
 Here \trl{N} denotes the number of local indices, \trl{globalnum} contains the
 global number of each local number, and ISLocalToGlobalMapping is the 
@@ -852,7 +852,7 @@ stride (\trl{step}), \sindex{stride} and can be created with the command
 
 Index sets can be destroyed with the command 
 \begin{tabbing}
-  ISDestroy(IS is); 
+  ISDestroy(IS &is); 
 \end{tabbing}
 
 On rare occasions the user may need to access information directly 
@@ -903,7 +903,7 @@ to another, one uses the following set of commands:
   VecScatterCreate(Vec x,IS ix,Vec y,IS iy,VecScatter *ctx);\\
   VecScatterBegin(VecScatter ctx,Vec x,Vec y,INSERT_VALUES,SCATTER_FORWARD);\\
   VecScatterEnd(VecScatter ctx,Vec x,Vec y,INSERT_VALUES,SCATTER_FORWARD);\\
-  VecScatterDestroy(VecScatter ctx);
+  VecScatterDestroy(VecScatter *ctx);
 \end{tabbing} 
 Here \trl{ix} denotes the index set of the first vector, while \trl{
 iy} indicates the index set of the destination vector.  The vectors
@@ -985,9 +985,9 @@ elements it needed, or none by creating an index set with no entries.
    VecScatterBegin(scatter,p,x,INSERT_VALUES,SCATTER_FORWARD);\\
    VecScatterEnd(scatter,p,x,INSERT_VALUES,SCATTER_FORWARD);\\
    VecGetArray(x,\&values);\\
-   ISDestroy(from);\\
-   ISDestroy(to); \\
-   VecScatterDestroy(scatter);
+   ISDestroy(&from);\\
+   ISDestroy(&to); \\
+   VecScatterDestroy(&scatter);
 \end{tabbing}
 \caption{Example Code for Vector Scatters}
 \label{fig_vecscatter}
@@ -1888,8 +1888,8 @@ generate the renumbering required for the new partition
  MatPartitioningSetAdjacency(MatPartitioning part,Mat Adj);\\
  MatPartitioningSetFromOptions(MatPartitioning part);\\
  MatPartitioningApply(MatPartitioning part,IS *is);\\
- MatPartitioningDestroy(MatPartitioning part); \\
- MatDestroy(Mat Adj);\\
+ MatPartitioningDestroy(MatPartitioning *part); \\
+ MatDestroy(Mat *Adj);\\
  ISPartitioningToNumbering(IS is,IS *isg);
 \end{tabbing}
 The resulting \trl{isg} contains for each local node the new global
@@ -2027,7 +2027,7 @@ convergence testing. Note that multiple linear solves can be performed by
 the same KSP context. Once the KSP context is no longer needed, it should be
 destroyed with the command 
 \begin{tabbing}
-  KSPDestroy(KSP ksp);
+  KSPDestroy(KSP *ksp);
 \end{tabbing}
 
 The above procedure is sufficient for general use of the KSP package.
@@ -2353,7 +2353,7 @@ commands
 When no longer needed, the line graph should be destroyed 
 with the command
 \begin{tabbing}
-  KSPMonitorLGDestroy(PetscDrawLG lg);
+  KSPMonitorLGDestroy(PetscDrawLG *lg);
 \end{tabbing}
 The user can change aspects of the graphs with the \trl{PetscDrawLG*()} and 
 \trl{PetscDrawAxis*()} routines. \findex{PetscDrawAxis*()} \findex{PetscDrawLG*()}
@@ -3537,7 +3537,7 @@ zero by calling VecSet().  Finally, after solving the nonlinear
 system (or several systems), the user should destroy the SNES context
 with
 \begin{tabbing}
-  SNESDestroy(SNES snes);
+  SNESDestroy(SNES *snes);
 \end{tabbing}
 
 %----------------------------------------------------------------------
@@ -4091,7 +4091,7 @@ A code fragment that demonstrates this process is given below.
        to compute the actual Jacobians via finite differences.\\
    \trl{*/}\\
    MatFDColoringCreate(J,iscoloring,\&fdcoloring);\\
-   ISColoringDestroy(iscoloring);\\
+   ISColoringDestroy(&iscoloring);\\
    MatFDColoringSetFromOptions(fdcoloring);\\
 
    \trl{/*}\\
@@ -4169,7 +4169,7 @@ DMGetColoring().
    DMGetColoring(da,IS\_COLORING\_GHOSTED,\&iscoloring);\\
    MatFDColoringCreate(J,iscoloring,\&fdcoloring); \\
    MatFDColoringSetFromOptions(fdcoloring);\\
-   ISColoringDestroy(iscoloring);
+   ISColoringDestroy(&iscoloring);
 \end{tabbing}
 
 Note that the routine MatFDColoringCreate() currently is only 
@@ -4318,7 +4318,7 @@ this can be done explicitly with
 \end{tabbing}
 One destroys the context with
 \begin{tabbing}
- TSDestroy(TS ts);
+ TSDestroy(TS *ts);
 \end{tabbing}
 and views it with 
 \begin{tabbing}
@@ -4645,8 +4645,8 @@ to guide your development. We give a short summary here.
   /*  One can access the solution with */\\
   soln = DMMGGetx(dmmg);\\
 
-  ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);\\
-  ierr = DMDestroy(da);CHKERRQ(ierr);\\
+  ierr = DMMGDestroy(&dmmg);CHKERRQ(ierr);\\
+  ierr = DMDestroy(&da);CHKERRQ(ierr);\\
 \end{tabbing}
 The option \trl{-ksp_monitor} \findex{-ksp_monitor} and \trl{-mg_levels_ksp_monitor} and optionally \trl{-mg_coarse_ksp_monitor} 
  causes the DMMG code to print the residual norms for each level of the solver to the screen so that
@@ -6864,7 +6864,7 @@ The line graph is drawn (or redrawn) with the command
 A line graph that is no longer needed can be destroyed with the 
 command 
 \begin{tabbing}
-  PetscDrawLGDestroy(PetscDrawLG ctx);
+  PetscDrawLGDestroy(PetscDrawLG *ctx);
 \end{tabbing}
 To plot new curves, one can reset a linegraph with the
 command 
@@ -7431,7 +7431,7 @@ Solving a linear system is done with the command
 \end{tabbing}
 Finally, the KSP context should be destroyed with
 \begin{tabbing}
-  KSPDestroy(KSP ksp);
+  KSPDestroy(KSP *ksp);
 \end{tabbing}
 
 It may seem strange to put the matrix in the preconditioner rather
@@ -7518,8 +7518,96 @@ efficiency for certain Krylov subspace methods.
 A PC context that is no longer needed can be destroyed with the 
 command
 \begin{tabbing}
-  PCDestroy(PC pc);
+  PCDestroy(PC *pc);
 \end{tabbing}
+
+%------------------------------------------------------------------
+
+\cleardoublepage
+\chapter{Unstructured Grids in PETSc}
+\label{ch_unstructured}
+
+This chapter introduces the DMMesh subclass of DM, which allows the user to handle unstructured grids using the generic
+DM interface for hierarchy and multi-physics. The underlying implementation is written in C++, and thus requires PETSc
+to be build using --with-clanguage=c++. More advanced features will also require direct C++ access in the user code,
+however much can be done using only the C/F77/F90 interface.
+
+\medskip \medskip
+
+\section{Sections: Vectors on Unstructured Grids} \sindex{sections}
+
+\subsection{Defining Sections}
+
+The sequence for setting up any Section is the following:
+\begin{enumerate}
+  \item Specify the chart
+  \item Specify the fiber dimensions
+  \item Allocate
+  \item Specify the values
+\end{enumerate}
+We will expand on each item in turn.
+
+First, you specify the chart, which is the domain for the Section. For any Section retrieved from the Mesh, for instance
+using MeshGetSectionReal(), this is done automatically.
+
+Second, you determine sizes for both values and constraints at the same time:
+\begin{lstlisting}[language=C++]
+for(loop over points) {
+  section->setFiberDimension(p, dof);
+}
+for(loop over boundary points) {
+  section->setConstraintDimension(p, numConstraints);
+}
+\end{lstlisting}
+
+Third, we allocate storage for this section
+\begin{lstlisting}[language=C++]
+  section->allocatePoint()
+\end{lstlisting}
+which also creates storage for the boundary conditions.
+
+Now you can input values and constraints whenever you want
+\begin{lstlisting}[language=C++]
+for(loop over points) {
+  section->updatePoint(p, values);
+}
+for(loop over boundary points) {
+  /* Here we constrain the x and y values */
+  int dofs[2] = {0, 1};
+
+  section->setConstraintDof(p, dofs);
+}
+\end{lstlisting}
+Notice that the input to setConstraintDofs() are the local dofs which are fixed.
+
+\subsection{Updating Values}
+There are many kinds of update*() functions since users want different ways of setting values. As an
+example, we will take a point p with 3 degrees of freedom (u,v,w), and we constrain v, so the fiber
+dimension is 3, the constraint dimension is 1, and the constraint dof is [1]. Now, the simplest update is
+
+   section->updatePoint(p, [a, b, c])
+
+which will set the values 'a' and 'c', ignoring 'b' since it is constrained. The function updateAddPoint() does
+the same thing but adds the values. We have a similar function
+
+  section->updateFreePoint(p, [a, c])
+
+which updates the unconstrained values, and only takes those values as input. If you want to update
+constrained values, you could use
+
+  section->updatePointBC(p, [b])
+
+which updates the values of constrained unknowns, and takes only the constraint values. You could also use
+
+  section->updatePointBCFull(p, [a, b, c])
+
+which takes all the values, but only updates the constraint 'b'. Finally,
+
+  section->updatePointAll(p, [a, b, c])
+
+takes the all values and updates all of them, ignoring constraints.
+
+%------------------------------------------------------------------
 
 \cleardoublepage
 \addtocounter{chapter}{1}

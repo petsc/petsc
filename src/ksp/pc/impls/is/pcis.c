@@ -211,29 +211,29 @@ PetscErrorCode  PCISDestroy(PC pc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (pcis->is_B_local)  {ierr = ISDestroy(pcis->is_B_local);CHKERRQ(ierr);}
-  if (pcis->is_I_local)  {ierr = ISDestroy(pcis->is_I_local);CHKERRQ(ierr);}
-  if (pcis->is_B_global) {ierr = ISDestroy(pcis->is_B_global);CHKERRQ(ierr);}
-  if (pcis->is_I_global) {ierr = ISDestroy(pcis->is_I_global);CHKERRQ(ierr);}
-  if (pcis->A_II)        {ierr = MatDestroy(pcis->A_II);CHKERRQ(ierr);}
-  if (pcis->A_IB)        {ierr = MatDestroy(pcis->A_IB);CHKERRQ(ierr);}
-  if (pcis->A_BI)        {ierr = MatDestroy(pcis->A_BI);CHKERRQ(ierr);}
-  if (pcis->A_BB)        {ierr = MatDestroy(pcis->A_BB);CHKERRQ(ierr);}
-  if (pcis->D)           {ierr = VecDestroy(pcis->D);CHKERRQ(ierr);}
-  if (pcis->ksp_N)      {ierr = KSPDestroy(pcis->ksp_N);CHKERRQ(ierr);}
-  if (pcis->ksp_D)      {ierr = KSPDestroy(pcis->ksp_D);CHKERRQ(ierr);}
-  if (pcis->vec1_N)      {ierr = VecDestroy(pcis->vec1_N);CHKERRQ(ierr);}
-  if (pcis->vec2_N)      {ierr = VecDestroy(pcis->vec2_N);CHKERRQ(ierr);}
-  if (pcis->vec1_D)      {ierr = VecDestroy(pcis->vec1_D);CHKERRQ(ierr);}
-  if (pcis->vec2_D)      {ierr = VecDestroy(pcis->vec2_D);CHKERRQ(ierr);}
-  if (pcis->vec3_D)      {ierr = VecDestroy(pcis->vec3_D);CHKERRQ(ierr);}
-  if (pcis->vec1_B)      {ierr = VecDestroy(pcis->vec1_B);CHKERRQ(ierr);}
-  if (pcis->vec2_B)      {ierr = VecDestroy(pcis->vec2_B);CHKERRQ(ierr);}
-  if (pcis->vec3_B)      {ierr = VecDestroy(pcis->vec3_B);CHKERRQ(ierr);}
-  if (pcis->vec1_global) {ierr = VecDestroy(pcis->vec1_global);CHKERRQ(ierr);}
-  if (pcis->global_to_D) {ierr = VecScatterDestroy(pcis->global_to_D);CHKERRQ(ierr);}
-  if (pcis->N_to_B)      {ierr = VecScatterDestroy(pcis->N_to_B);CHKERRQ(ierr);}
-  if (pcis->global_to_B) {ierr = VecScatterDestroy(pcis->global_to_B);CHKERRQ(ierr);}
+  ierr = ISDestroy(&pcis->is_B_local);CHKERRQ(ierr);
+  ierr = ISDestroy(&pcis->is_I_local);CHKERRQ(ierr);
+  ierr = ISDestroy(&pcis->is_B_global);CHKERRQ(ierr);
+  ierr = ISDestroy(&pcis->is_I_global);CHKERRQ(ierr);
+  ierr = MatDestroy(&pcis->A_II);CHKERRQ(ierr);
+  ierr = MatDestroy(&pcis->A_IB);CHKERRQ(ierr);
+  ierr = MatDestroy(&pcis->A_BI);CHKERRQ(ierr);
+  ierr = MatDestroy(&pcis->A_BB);CHKERRQ(ierr);
+  ierr = VecDestroy(&pcis->D);CHKERRQ(ierr);
+  ierr = KSPDestroy(&pcis->ksp_N);CHKERRQ(ierr);
+  ierr = KSPDestroy(&pcis->ksp_D);CHKERRQ(ierr);
+  ierr = VecDestroy(&pcis->vec1_N);CHKERRQ(ierr);
+  ierr = VecDestroy(&pcis->vec2_N);CHKERRQ(ierr);
+  ierr = VecDestroy(&pcis->vec1_D);CHKERRQ(ierr);
+  ierr = VecDestroy(&pcis->vec2_D);CHKERRQ(ierr);
+  ierr = VecDestroy(&pcis->vec3_D);CHKERRQ(ierr);
+  ierr = VecDestroy(&pcis->vec1_B);CHKERRQ(ierr);
+  ierr = VecDestroy(&pcis->vec2_B);CHKERRQ(ierr);
+  ierr = VecDestroy(&pcis->vec3_B);CHKERRQ(ierr);
+  ierr = VecDestroy(&pcis->vec1_global);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&pcis->global_to_D);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&pcis->N_to_B);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&pcis->global_to_B);CHKERRQ(ierr);
   ierr = PetscFree(pcis->work_N);CHKERRQ(ierr);
   if (pcis->ISLocalToGlobalMappingGetInfoWasCalled) {
     ierr = ISLocalToGlobalMappingRestoreInfo((ISLocalToGlobalMapping)0,&(pcis->n_neigh),&(pcis->neigh),&(pcis->n_shared),&(pcis->shared));CHKERRQ(ierr);

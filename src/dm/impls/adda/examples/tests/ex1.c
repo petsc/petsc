@@ -18,7 +18,7 @@ int main(int argc,char **argv)
   ierr = DMADDACreate(PETSC_COMM_WORLD, 4, nodes, PETSC_NULL, 2, periodic, &adda);CHKERRQ(ierr);
 
   /* Free memory */
-  ierr = DMDestroy(adda);CHKERRQ(ierr);
+  ierr = DMDestroy(&adda);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

@@ -116,9 +116,7 @@ PetscErrorCode  KSPSetUseFischerGuess(KSP ksp,PetscInt model,PetscInt size)
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidLogicalCollectiveInt(ksp,model,2);
   PetscValidLogicalCollectiveInt(ksp,model,3);
-  if (ksp->guess) {
-    ierr = KSPFischerGuessDestroy(&ksp->guess);CHKERRQ(ierr);
-  }
+  ierr = KSPFischerGuessDestroy(&ksp->guess);CHKERRQ(ierr);
   if (model == 1 || model == 2) {
     ierr = KSPFischerGuessCreate(ksp,model,size,&ksp->guess);CHKERRQ(ierr);
     ierr = KSPFischerGuessSetFromOptions(ksp->guess);CHKERRQ(ierr);
@@ -154,9 +152,7 @@ PetscErrorCode  KSPSetFischerGuess(KSP ksp,KSPFischerGuess guess)
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  if (ksp->guess) {
-    ierr = KSPFischerGuessDestroy(&ksp->guess);CHKERRQ(ierr);
-  }
+  ierr = KSPFischerGuessDestroy(&ksp->guess);CHKERRQ(ierr);
   ksp->guess = guess;
   if (guess) guess->refcnt++;
   PetscFunctionReturn(0);

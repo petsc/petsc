@@ -34,6 +34,7 @@ extern PetscErrorCode DMLocalToGlobalBegin_Mesh(DM dm, Vec l, InsertMode mode, V
 extern PetscErrorCode DMLocalToGlobalEnd_Mesh(DM dm, Vec l, InsertMode mode, Vec g);
 extern PetscErrorCode DMCreateGlobalVector_Mesh(DM dm, Vec *gvec);
 extern PetscErrorCode DMCreateLocalVector_Mesh(DM dm, Vec *lvec);
+extern PetscErrorCode DMCreateLocalToGlobalMapping_Mesh(DM dm);
 extern PetscErrorCode DMGetInterpolation_Mesh(DM dmCoarse, DM dmFine, Mat *interpolation, Vec *scaling);
 extern PetscErrorCode DMGetMatrix_Mesh(DM dm, const MatType mtype, Mat *J);
 extern PetscErrorCode DMRefine_Mesh(DM dm, MPI_Comm comm, DM *dmRefined);
@@ -48,55 +49,92 @@ PetscErrorCode DMConvert_DA_Mesh(DM dm, const DMType newtype, DM *dmNew)
 {
   typedef ALE::Mesh<PetscInt,PetscScalar> FlexMesh;
   DM             cda;
+  DMDALocalInfo  info;
   Vec            coordinates;
   PetscScalar   *coords;
-  PetscInt       dim, M;
+  PetscInt       M;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMDAGetInfo(dm, &dim, &M, 0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
-  if (dim > 1) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Currently, only 1D DMDAs can be converted to DMMeshes.");
+  ierr = DMDAGetInfo(dm, 0, &M, 0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetLocalInfo(dm, &info);CHKERRQ(ierr);
+  if (info.dim > 1) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Currently, only 1D DMDAs can be converted to DMMeshes.");
+  if (info.sw  > 1) SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_SUP, "Currently, only DMDAs with unti stencil width can be converted to DMMeshes.");
   ierr = DMDAGetCoordinateDA(dm, &cda);CHKERRQ(ierr);
   ierr = DMDAGetCoordinates(dm, &coordinates);CHKERRQ(ierr);
   ierr = VecGetArray(coordinates, &coords);CHKERRQ(ierr);
 
   ierr = DMMeshCreate(((PetscObject) dm)->comm, dmNew);CHKERRQ(ierr);
-  ALE::Obj<PETSC_MESH_TYPE>              mesh  = new PETSC_MESH_TYPE(((PetscObject) dm)->comm, dim, 0);
+  ALE::Obj<PETSC_MESH_TYPE>              mesh  = new PETSC_MESH_TYPE(((PetscObject) dm)->comm, info.dim, 0);
   ALE::Obj<PETSC_MESH_TYPE::sieve_type>  sieve = new PETSC_MESH_TYPE::sieve_type(((PetscObject) dm)->comm, 0);
-  ALE::Obj<FlexMesh>                     m     = new FlexMesh(((PetscObject) dm)->comm, dim, 0);
+  ALE::Obj<FlexMesh>                     m     = new FlexMesh(((PetscObject) dm)->comm, info.dim, 0);
   ALE::Obj<FlexMesh::sieve_type>         s     = new FlexMesh::sieve_type(((PetscObject) dm)->comm, 0);
   PETSC_MESH_TYPE::renumbering_type      renumbering;
 
   m->setSieve(s);
   {
+    /* WE MUST PUT IN HALO VERTICES, BUT MARK THEM SO WE CAN AVOID THEM WHEN ITERATING */
     /* M edges if its periodic */
-    const int             numEdges    = M-1;
-    const int             numVertices = M;
-    FlexMesh::point_type *vertices    = new FlexMesh::point_type[numVertices];
+    /* Edges are numbered     0..M-2
+       Vertices are numbered: M-1..2M-2
+
+       For vertex names, we just add M-1
+       Edge i connects vertex (i+M-1) to vertex (i+M), do we add info.xs
+    */
+    const PetscInt        numGlobalEdges = M-1;
+    const PetscInt        numVertices    = info.xm;
+    const PetscInt        numEdges       = numVertices-1 + (info.gxs < info.xs) + (info.gxs+info.gxm > info.xs+info.xm);
+    FlexMesh::point_type *vertices       = new FlexMesh::point_type[numVertices];
     const ALE::Obj<FlexMesh::label_type>& markers = m->createLabel("marker");
 
-    if (m->commRank() == 0) {
-      /* Create sieve and ordering */
-      for(int v = numEdges; v < numEdges+numVertices; v++) {
-        vertices[v-numEdges] = FlexMesh::point_type(v);
-      }
-      for(int e = 0; e < numEdges; ++e) {
-        FlexMesh::point_type edge(e);
-        int order = 0;
+    /* Create sieve and ordering */
+    for(int v = info.xs; v < info.xs+info.xm; ++v) {
+      vertices[v-info.xs] = FlexMesh::point_type(v+numGlobalEdges);
+    }
+    int order = 0;
 
-        s->addArrow(vertices[e],                 edge, order++);
-        s->addArrow(vertices[(e+1)%numVertices], edge, order++);
-      }
+    if (info.gxs < info.xs) {
+      FlexMesh::point_type edge(info.gxs);
+
+      s->addArrow(vertices[0],                 edge, order++);
+    }
+    for(int e = 0; e < numVertices-1; ++e) {
+      FlexMesh::point_type edge(info.xs+e);
+
+      s->addArrow(vertices[e],                 edge, order++);
+      s->addArrow(vertices[(e+1)%numVertices], edge, order++);
+    }
+    if (info.gxs+info.gxm > info.xs+info.xm) {
+      FlexMesh::point_type edge(info.xs+info.xm-1);
+
+      s->addArrow(vertices[numVertices-1],     edge, order++);
     }
     m->stratify();
-    delete [] vertices;
     /* Only do this if its not periodic */
-    m->setValue(markers, vertices[0], 1);
-    m->setValue(markers, vertices[M-1], 2);
+    if (vertices[0] == M-1) {
+      m->setValue(markers, vertices[0], 1);
+    }
+    if (vertices[numVertices-1] == 2*M-2) {
+      m->setValue(markers, vertices[numVertices-1], 2);
+    }
+    delete [] vertices;
+    ALE::SieveBuilder<FlexMesh>::buildCoordinatesMultiple(m, info.dim, coords, numGlobalEdges);
   }
-  ALE::SieveBuilder<FlexMesh>::buildCoordinates(m, dim, coords);
   mesh->setSieve(sieve);
-  ALE::ISieveConverter::convertMesh(*m, *mesh, renumbering, false);
+  m->view("Flexible Mesh");
+  ALE::ISieveConverter::convertMesh(*m, *mesh, renumbering, true);
+  {
+    typedef PETSC_MESH_TYPE::point_type point_type;
+    PETSc::Log::Event("CreateOverlap").begin();
+    ALE::Obj<PETSC_MESH_TYPE::send_overlap_type> sendParallelMeshOverlap = mesh->getSendOverlap();
+    ALE::Obj<PETSC_MESH_TYPE::recv_overlap_type> recvParallelMeshOverlap = mesh->getRecvOverlap();
+    //   Can I figure this out in a nicer way?
+    ALE::SetFromMap<std::map<point_type,point_type> > globalPoints(renumbering);
+
+    ALE::OverlapBuilder<>::constructOverlap(globalPoints, renumbering, sendParallelMeshOverlap, recvParallelMeshOverlap);
+    mesh->setCalculatedOverlap(true);
+    PETSc::Log::Event("CreateOverlap").end();
+  }
   ierr = VecRestoreArray(coordinates, &coords);CHKERRQ(ierr);
   ierr = DMMeshSetMesh(*dmNew, mesh);CHKERRQ(ierr);
   PetscFunctionReturn(0);

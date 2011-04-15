@@ -487,10 +487,10 @@ PetscErrorCode OutputVTK(Mesh mesh, Options *options)
       ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_VTK_CELL);CHKERRQ(ierr);
       ierr = MeshGetSectionInt(mesh, "partition", &partition);CHKERRQ(ierr);
       ierr = SectionIntView(partition, viewer);CHKERRQ(ierr);
-      ierr = SectionIntDestroy(partition);CHKERRQ(ierr);
+      ierr = SectionIntDestroy(&partition);CHKERRQ(ierr);
       ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
     }
-    ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     ALE::LogStagePop(stage);
   }
   PetscFunctionReturn(0);
@@ -520,7 +520,7 @@ PetscErrorCode CreatePartition(Mesh mesh)
   for(ALE::Mesh::topology_type::label_sequence::iterator c_iter = cells->begin(); c_iter != end; ++c_iter) {
     ierr = SectionIntUpdate(partition, *c_iter, &rank);CHKERRQ(ierr);
   }
-  ierr = SectionIntDestroy(partition);CHKERRQ(ierr);
+  ierr = SectionIntDestroy(&partition);CHKERRQ(ierr);
   ALE_LOG_EVENT_END;
   PetscFunctionReturn(0);
 }

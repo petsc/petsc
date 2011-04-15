@@ -12,12 +12,13 @@ struct _p_GenericObject {
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscObjectDestroy_GenericObject"
-PetscErrorCode PetscObjectDestroy_GenericObject(GenericObject obj)
+PetscErrorCode PetscObjectDestroy_GenericObject(GenericObject *obj)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
-  if (--((PetscObject)obj)->refct > 0) PetscFunctionReturn(0);
+  if (!*obj) PetscFunctionReturn(0);
+  if (--((PetscObject)*obj)->refct > 0) PetscFunctionReturn(0);
   ierr = PetscHeaderDestroy(obj);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -155,8 +156,8 @@ PetscErrorCode  PetscObjectCreateGeneric(MPI_Comm comm, PetscClassId classid, co
 
    Input Parameter:
 .  obj - any PETSc object, for example a Vec, Mat or KSP.
-         This must be cast with a (PetscObject), for example, 
-         PetscObjectDestroy((PetscObject)mat);
+         This must be cast with a (PetscObject*), for example, 
+         PetscObjectDestroy((PetscObject*)&mat);
 
    Level: beginner
 
@@ -165,15 +166,15 @@ PetscErrorCode  PetscObjectCreateGeneric(MPI_Comm comm, PetscClassId classid, co
     Concepts: deleting object
 
 @*/
-PetscErrorCode  PetscObjectDestroy(PetscObject obj)
+PetscErrorCode  PetscObjectDestroy(PetscObject *obj)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
-  if (obj->bops->destroy) {
-    ierr = (*obj->bops->destroy)(obj);CHKERRQ(ierr);
-  } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"This PETSc object of class %s does not have a generic destroy routine",obj->class_name);
+  if (*obj && (*obj)->bops->destroy) {
+    ierr = (*(*obj)->bops->destroy)(obj);CHKERRQ(ierr);
+  } else if (*obj) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"This PETSc object of class %s does not have a generic destroy routine",obj->class_name);
   PetscFunctionReturn(0);
 }
 
@@ -222,7 +223,7 @@ PetscErrorCode  PetscObjectView(PetscObject obj,PetscViewer viewer)
    Input Parameters:
 +  obj - any PETSc object, for example a Vec, Mat or KSP.
          This must be cast with a (PetscObject), for example, 
-         PetscObjectDestroy((PetscObject)mat);
+         PetscTypeCompare((PetscObject)mat);
 -  type_name - string containing a type name
 
    Output Parameter:
@@ -314,7 +315,7 @@ PetscErrorCode  PetscObjectRegisterDestroyAll(void)
 
   PetscFunctionBegin;
   for (i=0; i<PetscObjectRegisterDestroy_Count; i++) {
-    ierr = PetscObjectDestroy(PetscObjectRegisterDestroy_Objects[i]);CHKERRQ(ierr);
+    ierr = PetscObjectDestroy(&PetscObjectRegisterDestroy_Objects[i]);CHKERRQ(ierr);
   }
   PetscObjectRegisterDestroy_Count = 0;
   PetscFunctionReturn(0);

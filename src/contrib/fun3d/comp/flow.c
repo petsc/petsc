@@ -275,25 +275,25 @@ int main(int argc,char **args)
      ierr = PetscMemoryShowUsage(PETSC_VIEWER_STDOUT_WORLD,"Memory usage before destroying\n");CHKERRQ(ierr);
    }
 
-   ierr = VecDestroy(user.grid->qnode);CHKERRQ(ierr);
-   ierr = VecDestroy(user.grid->qnodeLoc);CHKERRQ(ierr);
-   ierr = VecDestroy(user.tsCtx->qold);CHKERRQ(ierr);
-   ierr = VecDestroy(user.tsCtx->func);CHKERRQ(ierr);
-   ierr = VecDestroy(user.grid->res);CHKERRQ(ierr);
-   ierr = VecDestroy(user.grid->grad);CHKERRQ(ierr);
-   ierr = VecDestroy(user.grid->gradLoc);CHKERRQ(ierr);
-   ierr = MatDestroy(user.grid->A);CHKERRQ(ierr);
+   ierr = VecDestroy(&user.grid->qnode);CHKERRQ(ierr);
+   ierr = VecDestroy(&user.grid->qnodeLoc);CHKERRQ(ierr);
+   ierr = VecDestroy(&user.tsCtx->qold);CHKERRQ(ierr);
+   ierr = VecDestroy(&user.tsCtx->func);CHKERRQ(ierr);
+   ierr = VecDestroy(&user.grid->res);CHKERRQ(ierr);
+   ierr = VecDestroy(&user.grid->grad);CHKERRQ(ierr);
+   ierr = VecDestroy(&user.grid->gradLoc);CHKERRQ(ierr);
+   ierr = MatDestroy(&user.grid->A);CHKERRQ(ierr);
    ierr = PetscOptionsHasName(PETSC_NULL,"-matrix_free",&flg);CHKERRQ(ierr);
-   if (flg) { ierr = MatDestroy(Jpc);CHKERRQ(ierr);}
-   ierr = SNESDestroy(snes);CHKERRQ(ierr);
-   ierr = VecScatterDestroy(user.grid->scatter);CHKERRQ(ierr);
-   ierr = VecScatterDestroy(user.grid->gradScatter);CHKERRQ(ierr);
+   if (flg) { ierr = MatDestroy(&Jpc);CHKERRQ(ierr);}
+   ierr = SNESDestroy(&snes);CHKERRQ(ierr);
+   ierr = VecScatterDestroy(&user.grid->scatter);CHKERRQ(ierr);
+   ierr = VecScatterDestroy(&user.grid->gradScatter);CHKERRQ(ierr);
    ierr = PetscOptionsHasName(PETSC_NULL,"-mem_use",&flg);CHKERRQ(ierr);
    if (flg) {
      ierr = PetscMemoryShowUsage(PETSC_VIEWER_STDOUT_WORLD,"Memory usage after destroying\n");CHKERRQ(ierr);
    }
    PreLoadEnd();
-   ierr = AODestroy(user.grid->ao);CHKERRQ(ierr);
+   ierr = AODestroy(&user.grid->ao);CHKERRQ(ierr);
    PetscPrintf(MPI_COMM_WORLD, "Time taken in gradient calculation is %g sec.\n",grad_time);
    PetscFinalize();
    return 0;
@@ -737,7 +737,7 @@ int ComputeTimeStep(SNES snes, int iter, void *ctx)
   tsCtx->cfl = PetscMin(newcfl, tsCtx->cfl_max);*/
   /*PetscPrintf(MPI_COMM_WORLD,"In ComputeTimeStep - fnorm, and cfl are  %g %g\n", 
                 fnorm,tsCtx->cfl);*/
-  /*ierr = VecDestroy(func);CHKERRQ(ierr);*/
+  /*ierr = VecDestroy(&func);CHKERRQ(ierr);*/
   return 0;
 }
 
@@ -1022,7 +1022,7 @@ int GetLocalOrdering(GRID *grid)
   for (i = 0; i < nnz; i++)
    grid->ja[i] = l2a[grid->ja[i] - 1];
   ierr = AOApplicationToPetsc(grid->ao,nnz,grid->ja);CHKERRQ(ierr);
-  /*ierr = AODestroy(ao);CHKERRQ(ierr);*/
+  /*ierr = AODestroy(&ao);CHKERRQ(ierr);*/
 
  /* Renumber unit normals of dual face (from node1 to node2)
      and the area of the dual mesh face */
@@ -1824,8 +1824,8 @@ int SetPetscDS(GRID *grid, TstepCtx *tsCtx)
    ierr = PetscFree(svertices);CHKERRQ(ierr);
    ierr = VecScatterCreate(grid->qnode,isglobal,grid->qnodeLoc,islocal,
                            &grid->scatter);CHKERRQ(ierr);
-   ierr = ISDestroy(isglobal);CHKERRQ(ierr);
-   ierr = ISDestroy(islocal);CHKERRQ(ierr);
+   ierr = ISDestroy(&isglobal);CHKERRQ(ierr);
+   ierr = ISDestroy(&islocal);CHKERRQ(ierr);
 
 /* Now create scatter for gradient vector of qnode */
    ierr = ISCreateStride(MPI_COMM_SELF,3*bs*nvertices,0,1,&islocal);CHKERRQ(ierr);
@@ -1852,8 +1852,8 @@ int SetPetscDS(GRID *grid, TstepCtx *tsCtx)
    ierr = PetscFree(svertices);CHKERRQ(ierr);
    ierr = VecScatterCreate(grid->grad,isglobal,grid->gradLoc,islocal,
                            &grid->gradScatter);CHKERRQ(ierr);
-   ierr = ISDestroy(isglobal);CHKERRQ(ierr);
-   ierr = ISDestroy(islocal);CHKERRQ(ierr);
+   ierr = ISDestroy(&isglobal);CHKERRQ(ierr);
+   ierr = ISDestroy(&islocal);CHKERRQ(ierr);
 
 /* Store the number of non-zeroes per row */
 #if defined(INTERLACING)
@@ -1944,14 +1944,14 @@ int SetPetscDS(GRID *grid, TstepCtx *tsCtx)
    /*ierr = MatSetLocalToGlobalMapping(grid->A,bs*nvertices,svertices);CHKERRQ(ierr);*/
    ierr = ISLocalToGlobalMappingCreate(MPI_COMM_SELF,bs*nvertices,svertices,PETSC_COPY_VALUES,&isl2g);CHKERRQ(ierr);
    ierr = MatSetLocalToGlobalMapping(grid->A,isl2g);CHKERRQ(ierr);
-   ISLocalToGlobalMappingDestroy(isl2g);
+   ISLocalToGlobalMappingDestroy(&isl2g);
 
 /* Now set the blockwise local to global mapping */
 #if defined(BLOCKING)
    /*ierr = MatSetLocalToGlobalMappingBlocked(grid->A,nvertices,loc2pet);CHKERRQ(ierr);*/
    ierr = ISLocalToGlobalMappingCreate(MPI_COMM_SELF,nvertices,loc2pet,PETSC_COPY_VALUES,&isl2g);CHKERRQ(ierr);
    ierr = MatSetLocalToGlobalMappingBlock(grid->A,isl2g,isl2g);CHKERRQ(ierr);
-   ISLocalToGlobalMappingDestroy(isl2g);
+   ISLocalToGlobalMappingDestroy(&isl2g);
 #endif
    ierr = PetscFree(svertices);CHKERRQ(ierr);
 #endif
@@ -2020,11 +2020,11 @@ int FieldOutput(GRID *grid, int timeStep)
   }
   ierr = VecScatterCreate(grid->qnode,isglobal,qnodeLoc,islocal,
                           &scatter);CHKERRQ(ierr);
-  ierr = ISDestroy(isglobal);CHKERRQ(ierr);
-  ierr = ISDestroy(islocal);CHKERRQ(ierr);
+  ierr = ISDestroy(&isglobal);CHKERRQ(ierr);
+  ierr = ISDestroy(&islocal);CHKERRQ(ierr);
   ierr = VecScatterBegin(scatter,grid->qnode,qnodeLoc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(scatter,grid->qnode,qnodeLoc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(scatter);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&scatter);CHKERRQ(ierr);
   /* Get the coordinates */
   ierr = VecCreateMPI(MPI_COMM_WORLD,3*nnodesLoc,3*nnodes,&xyzGlo);CHKERRQ(ierr);
   ierr = VecGetArray(xyzGlo, &xyz);CHKERRQ(ierr);
@@ -2054,11 +2054,11 @@ int FieldOutput(GRID *grid, int timeStep)
   }
   ierr = VecScatterCreate(xyzGlo,isglobal,xyzLoc,islocal,
                           &scatter);CHKERRQ(ierr);
-  ierr = ISDestroy(isglobal);CHKERRQ(ierr);
-  ierr = ISDestroy(islocal);CHKERRQ(ierr);
+  ierr = ISDestroy(&isglobal);CHKERRQ(ierr);
+  ierr = ISDestroy(&islocal);CHKERRQ(ierr);
   ierr = VecScatterBegin(scatter,xyzGlo,xyzLoc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(scatter,xyzGlo,xyzLoc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(scatter);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&scatter);CHKERRQ(ierr);
   if (rank == 0) {
    ierr = VecGetArray(xyzLoc, &xyz);CHKERRQ(ierr);
    FCALLOC(nsnode, &x);
@@ -2092,8 +2092,8 @@ int FieldOutput(GRID *grid, int timeStep)
    ierr = PetscFree(y);CHKERRQ(ierr);
    ierr = PetscFree(z);CHKERRQ(ierr);
   }
-  ierr = VecDestroy(xyzLoc);CHKERRQ(ierr);
-  ierr = VecDestroy(qnodeLoc);CHKERRQ(ierr);
+  ierr = VecDestroy(&xyzLoc);CHKERRQ(ierr);
+  ierr = VecDestroy(&qnodeLoc);CHKERRQ(ierr);
   PetscPrintf(MPI_COMM_WORLD, "Inviscid boundaries written\n");
 
   /* Next write the viscous boundaries */
@@ -2131,11 +2131,11 @@ int FieldOutput(GRID *grid, int timeStep)
   }
   ierr = VecScatterCreate(grid->qnode,isglobal,qnodeLoc,islocal,
                           &scatter);CHKERRQ(ierr);
-  ierr = ISDestroy(isglobal);CHKERRQ(ierr);
-  ierr = ISDestroy(islocal);CHKERRQ(ierr);
+  ierr = ISDestroy(&isglobal);CHKERRQ(ierr);
+  ierr = ISDestroy(&islocal);CHKERRQ(ierr);
   ierr = VecScatterBegin(scatter,grid->qnode,qnodeLoc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(scatter,grid->qnode,qnodeLoc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(scatter);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&scatter);CHKERRQ(ierr);
   /* Get the coordinates */
   if (rank == 0) {
     ierr = VecCreateSeq(MPI_COMM_SELF,3*nvnode,&xyzLoc);
@@ -2155,11 +2155,11 @@ int FieldOutput(GRID *grid, int timeStep)
   }
   ierr = VecScatterCreate(xyzGlo,isglobal,xyzLoc,islocal,
                           &scatter);CHKERRQ(ierr);
-  ierr = ISDestroy(isglobal);CHKERRQ(ierr);
-  ierr = ISDestroy(islocal);CHKERRQ(ierr);
+  ierr = ISDestroy(&isglobal);CHKERRQ(ierr);
+  ierr = ISDestroy(&islocal);CHKERRQ(ierr);
   ierr = VecScatterBegin(scatter,xyzGlo,xyzLoc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(scatter,xyzGlo,xyzLoc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(scatter);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&scatter);CHKERRQ(ierr);
   if (rank == 0) {
    ierr = VecGetArray(xyzLoc, &xyz);CHKERRQ(ierr);
    FCALLOC(nvnode, &x);
@@ -2193,8 +2193,8 @@ int FieldOutput(GRID *grid, int timeStep)
    ierr = PetscFree(y);CHKERRQ(ierr);
    ierr = PetscFree(z);CHKERRQ(ierr);
   }
-  ierr = VecDestroy(xyzLoc);CHKERRQ(ierr);
-  ierr = VecDestroy(qnodeLoc);CHKERRQ(ierr);
+  ierr = VecDestroy(&xyzLoc);CHKERRQ(ierr);
+  ierr = VecDestroy(&qnodeLoc);CHKERRQ(ierr);
   PetscPrintf(MPI_COMM_WORLD, "Viscous boundaries written\n");
   }
 
@@ -2235,11 +2235,11 @@ int FieldOutput(GRID *grid, int timeStep)
   }
   ierr = VecScatterCreate(grid->qnode,isglobal,qnodeLoc,islocal,
                           &scatter);CHKERRQ(ierr);
-  ierr = ISDestroy(isglobal);CHKERRQ(ierr);
-  ierr = ISDestroy(islocal);CHKERRQ(ierr);
+  ierr = ISDestroy(&isglobal);CHKERRQ(ierr);
+  ierr = ISDestroy(&islocal);CHKERRQ(ierr);
   ierr = VecScatterBegin(scatter,grid->qnode,qnodeLoc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(scatter,grid->qnode,qnodeLoc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(scatter);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&scatter);CHKERRQ(ierr);
   /* Get the coordinates */
   if (rank == 0) {
     ierr = VecCreateSeq(MPI_COMM_SELF,3*nfnode,&xyzLoc);
@@ -2259,12 +2259,12 @@ int FieldOutput(GRID *grid, int timeStep)
   }
   ierr = VecScatterCreate(xyzGlo,isglobal,xyzLoc,islocal,
                           &scatter);CHKERRQ(ierr);
-  ierr = ISDestroy(isglobal);CHKERRQ(ierr);
-  ierr = ISDestroy(islocal);CHKERRQ(ierr);
+  ierr = ISDestroy(&isglobal);CHKERRQ(ierr);
+  ierr = ISDestroy(&islocal);CHKERRQ(ierr);
   ierr = VecScatterBegin(scatter,xyzGlo,xyzLoc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(scatter,xyzGlo,xyzLoc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(scatter);CHKERRQ(ierr);
-  ierr = VecDestroy(xyzGlo);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&scatter);CHKERRQ(ierr);
+  ierr = VecDestroy(&xyzGlo);CHKERRQ(ierr);
   if (rank == 0) {
    ierr = VecGetArray(xyzLoc, &xyz);CHKERRQ(ierr);
    FCALLOC(nfnode, &x);
@@ -2298,8 +2298,8 @@ int FieldOutput(GRID *grid, int timeStep)
    ierr = PetscFree(y);CHKERRQ(ierr);
    ierr = PetscFree(z);CHKERRQ(ierr);
   }
-  ierr = VecDestroy(xyzLoc);CHKERRQ(ierr);
-  ierr = VecDestroy(qnodeLoc);CHKERRQ(ierr);
+  ierr = VecDestroy(&xyzLoc);CHKERRQ(ierr);
+  ierr = VecDestroy(&qnodeLoc);CHKERRQ(ierr);
   PetscPrintf(MPI_COMM_WORLD, "Free boundaries written\n");
 
   return 0;
@@ -2362,11 +2362,11 @@ int WriteRestartFile(GRID *grid, int timeStep)
   ierr = PetscFree(svertices);CHKERRQ(ierr);
   ierr = VecScatterCreate(grid->qnode,isglobal,qnodeLoc,islocal,
                           &scatter);CHKERRQ(ierr);
-  ierr = ISDestroy(isglobal);CHKERRQ(ierr);
-  ierr = ISDestroy(islocal);CHKERRQ(ierr);
+  ierr = ISDestroy(&isglobal);CHKERRQ(ierr);
+  ierr = ISDestroy(&islocal);CHKERRQ(ierr);
   ierr = VecScatterBegin(scatter,grid->qnode,qnodeLoc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(scatter,grid->qnode,qnodeLoc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(scatter);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&scatter);CHKERRQ(ierr);
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-par_io",&flgIO);CHKERRQ(ierr);
   if (flgIO) {
@@ -2491,7 +2491,7 @@ int WriteRestartFile(GRID *grid, int timeStep)
     }
    }
   }
-  ierr = VecDestroy(qnodeLoc);CHKERRQ(ierr);
+  ierr = VecDestroy(&qnodeLoc);CHKERRQ(ierr);
   return 0;
 }
 
@@ -2553,13 +2553,13 @@ int ReadRestartFile(GRID *grid)
   ierr = PetscFree(loc2pet);CHKERRQ(ierr);
   ierr = VecScatterCreate(qnodeLoc,islocal,grid->qnode,isglobal,
                           &scatter);CHKERRQ(ierr);
-  ierr = ISDestroy(isglobal);CHKERRQ(ierr);
-  ierr = ISDestroy(islocal);CHKERRQ(ierr);
+  ierr = ISDestroy(&isglobal);CHKERRQ(ierr);
+  ierr = ISDestroy(&islocal);CHKERRQ(ierr);
   ierr = VecScatterBegin(scatter,qnodeLoc,grid->qnode,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(scatter,qnodeLoc,grid->qnode,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(scatter);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&scatter);CHKERRQ(ierr);
 
-  ierr = VecDestroy(qnodeLoc);CHKERRQ(ierr);
+  ierr = VecDestroy(&qnodeLoc);CHKERRQ(ierr);
   return 0;
 }
 

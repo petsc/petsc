@@ -390,7 +390,7 @@ PetscErrorCode CreateMaterialField(Mesh mesh, Options *options, SectionInt *mate
     ierr = SectionIntUpdate(*material, *c_iter, &mat);CHKERRQ(ierr);
   }
   delete [] centroid;
-  ierr = SectionRealDestroy(coordinates);CHKERRQ(ierr);
+  ierr = SectionRealDestroy(&coordinates);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -416,9 +416,9 @@ PetscErrorCode ViewMesh(Mesh mesh, const char filename[], Options *options)
   ierr = SectionIntView(partition, viewer);CHKERRQ(ierr);
   ierr = SectionIntView(material, viewer);CHKERRQ(ierr);
   ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-  ierr = SectionIntDestroy(partition);CHKERRQ(ierr);
-  ierr = SectionIntDestroy(material);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+  ierr = SectionIntDestroy(&partition);CHKERRQ(ierr);
+  ierr = SectionIntDestroy(&material);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -442,9 +442,9 @@ PetscErrorCode ViewSection(Mesh mesh, SectionReal section, const char filename[]
   ierr = CreatePartition(mesh, &partition);CHKERRQ(ierr);
   ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_VTK_CELL);CHKERRQ(ierr);
   ierr = SectionIntView(partition, viewer);CHKERRQ(ierr);
-  ierr = SectionIntDestroy(partition);CHKERRQ(ierr);
+  ierr = SectionIntDestroy(&partition);CHKERRQ(ierr);
   ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -465,14 +465,14 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
     Mesh parallelMesh;
 
     ierr = MeshDistributeByFace(mesh, options->partitioner, &parallelMesh);CHKERRQ(ierr);
-    ierr = MeshDestroy(mesh);CHKERRQ(ierr);
+    ierr = MeshDestroy(&mesh);CHKERRQ(ierr);
     mesh = parallelMesh;
   }
   if (options->refinementLimit > 0.0) {
     Mesh refinedMesh;
 
     ierr = MeshRefine(mesh, options->refinementLimit, options->interpolate, &refinedMesh);CHKERRQ(ierr);
-    ierr = MeshDestroy(mesh);CHKERRQ(ierr);
+    ierr = MeshDestroy(&mesh);CHKERRQ(ierr);
     mesh = refinedMesh;
   }
   ALE::Obj<ALE::Mesh> m;
@@ -496,7 +496,7 @@ PetscErrorCode DestroyMesh(DM dm, Options *options)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MeshDestroy((Mesh) dm);CHKERRQ(ierr);
+  ierr = MeshDestroy(&(Mesh) dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -534,7 +534,7 @@ PetscErrorCode CreateSlabLabel(Mesh mesh, Options *options)
     }
   }
   delete [] centroid;
-  ierr = SectionRealDestroy(coordinates);CHKERRQ(ierr);
+  ierr = SectionRealDestroy(&coordinates);CHKERRQ(ierr);
   m->setLabel("exclude-v", slabLabel);
   const Obj<ALE::Mesh::label_sequence>&     exclusion = m->getLabelStratum("exclude-u", 1);
   const ALE::Mesh::label_sequence::iterator eEnd      = exclusion->end();
@@ -1005,7 +1005,7 @@ PetscErrorCode Solve(DMMG *dmmg, Options *options)
     velocityY->view("Y-Velocity Solution");
     temperature->view("Temperature Solution");
   }
-  ierr = SectionRealDestroy(solution);CHKERRQ(ierr);
+  ierr = SectionRealDestroy(&solution);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1028,7 +1028,7 @@ int main(int argc, char *argv[])
     ierr = CreateProblem(dm, &options);CHKERRQ(ierr);
     ierr = CreateSolver(dm, &dmmg, &options);CHKERRQ(ierr);
     ierr = Solve(dmmg, &options);CHKERRQ(ierr);
-    ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
+    ierr = DMMGDestroy(&dmmg);CHKERRQ(ierr);
     ierr = DestroyMesh(dm, &options);CHKERRQ(ierr);
   } catch(ALE::Exception e) {
     std::cout << "ERROR: " << e.msg() << std::endl;

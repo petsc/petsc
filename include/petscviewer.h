@@ -141,7 +141,7 @@ extern PetscErrorCode  PetscViewerMatlabOpen(MPI_Comm,const char[],PetscFileMode
 
 extern PetscErrorCode  PetscViewerGetType(PetscViewer,const PetscViewerType*);
 extern PetscErrorCode  PetscViewerSetType(PetscViewer,const PetscViewerType);
-extern PetscErrorCode  PetscViewerDestroy(PetscViewer);
+extern PetscErrorCode  PetscViewerDestroy(PetscViewer*);
 extern PetscErrorCode  PetscViewerGetSingleton(PetscViewer,PetscViewer*);
 extern PetscErrorCode  PetscViewerRestoreSingleton(PetscViewer,PetscViewer*);
 extern PetscErrorCode  PetscViewerGetSubcomm(PetscViewer,MPI_Comm,PetscViewer*);
@@ -216,7 +216,7 @@ struct _n_PetscViewerASCIIMonitor {
 typedef struct _n_PetscViewerASCIIMonitor* PetscViewerASCIIMonitor;
 
 extern PetscErrorCode  PetscViewerASCIIMonitorCreate(MPI_Comm,const char *,PetscInt,PetscViewerASCIIMonitor*);
-extern PetscErrorCode  PetscViewerASCIIMonitorDestroy(PetscViewerASCIIMonitor);
+extern PetscErrorCode  PetscViewerASCIIMonitorDestroy(PetscViewerASCIIMonitor*);
 extern PetscErrorCode  PetscViewerASCIIMonitorPrintf(PetscViewerASCIIMonitor,const char[],...);
 
 /*
@@ -412,7 +412,7 @@ extern PetscErrorCode  PetscViewerMatlabPutVariable(PetscViewer,const char*,void
 S*/
 typedef struct _n_PetscViewers* PetscViewers;
 extern PetscErrorCode  PetscViewersCreate(MPI_Comm,PetscViewers*);
-extern PetscErrorCode  PetscViewersDestroy(PetscViewers);
+extern PetscErrorCode  PetscViewersDestroy(PetscViewers*);
 extern PetscErrorCode  PetscViewersGetViewer(PetscViewers,PetscInt,PetscViewer*);
 
 #if defined(PETSC_HAVE_AMS)

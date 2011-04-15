@@ -11,7 +11,11 @@
 #define T3DMPI_FORTRAN
 #define T3EMPI_FORTRAN
 
-#include <private/fortranimpl.h> 
+#include <private/fortranimpl.h>
+
+#if defined(PETSC_HAVE_CUSP)
+#include <cublas.h>
+#endif
 
 extern  PetscBool  PetscBeganMPI;
 
@@ -415,6 +419,10 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),PetscErro
   if (*ierr) { (*PetscErrorPrintf)("PetscInitialize:Calling PetscInfo()\n");return;}  
   *ierr = PetscOptionsCheckInitial_Components(); 
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Checking initial options\n");return;}
+
+#if defined(PETSC_HAVE_CUDA)
+  cublasInit();
+#endif
 }
 
 void PETSC_STDCALL petscfinalize_(PetscErrorCode *ierr)

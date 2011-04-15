@@ -50,33 +50,6 @@ static PetscErrorCode DMDASetBlockFills_Private(PetscInt *dfill,PetscInt w,Petsc
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DMDASetMatPreallocateOnly"
-/*@
-    DMDASetMatPreallocateOnly - When DMGetMatrix() is called the matrix will be properly
-       preallocated but the nonzero structure and zero values will not be set.
-
-    Logically Collective on DMDA
-
-    Input Parameter:
-+   da - the distributed array
--   only - PETSC_TRUE if only want preallocation
-
-
-    Level: developer
-
-.seealso DMGetMatrix(), DMDASetGetMatrix(), DMDASetBlockSize(), DMDASetBlockFills()
-
-@*/
-PetscErrorCode  DMDASetMatPreallocateOnly(DM da,PetscBool  only)
-{
-  DM_DA *dd = (DM_DA*)da->data;
-
-  PetscFunctionBegin;
-  dd->prealloc_only = only;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
 #define __FUNCT__ "DMDASetBlockFills"
 /*@
     DMDASetBlockFills - Sets the fill pattern in each block for a multi-component problem
@@ -570,12 +543,12 @@ PetscErrorCode  MatView_MPI_DA(Mat A,PetscViewer viewer)
 
   /* call viewer on natural ordering */
   ierr = MatGetSubMatrix(A,is,is,MAT_INITIAL_MATRIX,&Anatural);CHKERRQ(ierr);
-  ierr = ISDestroy(is);CHKERRQ(ierr);
+  ierr = ISDestroy(&is);CHKERRQ(ierr);
   ierr = PetscObjectGetOptionsPrefix((PetscObject)A,&prefix);CHKERRQ(ierr);
   ierr = PetscObjectSetOptionsPrefix((PetscObject)Anatural,prefix);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)Anatural,((PetscObject)A)->name);CHKERRQ(ierr);
   ierr = MatView(Anatural,viewer);CHKERRQ(ierr);
-  ierr = MatDestroy(Anatural);CHKERRQ(ierr);
+  ierr = MatDestroy(&Anatural);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -615,8 +588,8 @@ PetscErrorCode  MatLoad_MPI_DA(Mat A,PetscViewer viewer)
   /* Do permutation and replace header */
   ierr = MatGetSubMatrix(Anatural,is,is,MAT_INITIAL_MATRIX,&Aapp);CHKERRQ(ierr);
   ierr = MatHeaderReplace(A,Aapp);CHKERRQ(ierr);
-  ierr = ISDestroy(is);CHKERRQ(ierr);
-  ierr = MatDestroy(Anatural);CHKERRQ(ierr);
+  ierr = ISDestroy(&is);CHKERRQ(ierr);
+  ierr = MatDestroy(&Anatural);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -764,7 +737,6 @@ PetscErrorCode DMGetMatrix_DA_2d_MPIAIJ(DM da,Mat J)
   DMDABoundaryType       bx,by;
   ISLocalToGlobalMapping ltog,ltogb;
   DMDAStencilType        st;
-  DM_DA                  *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   /*     
@@ -822,7 +794,7 @@ PetscErrorCode DMGetMatrix_DA_2d_MPIAIJ(DM da,Mat J)
     that includes the ghost points) then MatSetValuesLocal() maps those indices to the global
     PETSc ordering.
   */
-  if (!dd->prealloc_only) {
+  if (!da->prealloc_only) {
     ierr = PetscMalloc(col*col*nc*nc*sizeof(PetscScalar),&values);CHKERRQ(ierr);
     ierr = PetscMemzero(values,col*col*nc*nc*sizeof(PetscScalar));CHKERRQ(ierr);
     for (i=xs; i<xs+nx; i++) {
@@ -939,7 +911,7 @@ PetscErrorCode DMGetMatrix_DA_2d_MPIAIJ_Fill(DM da,Mat J)
     that includes the ghost points) then MatSetValuesLocal() maps those indices to the global
     PETSc ordering.
   */
-  if (!dd->prealloc_only) {
+  if (!da->prealloc_only) {
     ierr = PetscMalloc(col*col*nc*nc*sizeof(PetscScalar),&values);CHKERRQ(ierr);
     ierr = PetscMemzero(values,col*col*nc*nc*sizeof(PetscScalar));CHKERRQ(ierr);
     for (i=xs; i<xs+nx; i++) {
@@ -1001,7 +973,6 @@ PetscErrorCode DMGetMatrix_DA_3d_MPIAIJ(DM da,Mat J)
   DMDABoundaryType       bx,by,bz;
   ISLocalToGlobalMapping ltog,ltogb;
   DMDAStencilType        st;
-  DM_DA                  *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   /*     
@@ -1063,7 +1034,7 @@ PetscErrorCode DMGetMatrix_DA_3d_MPIAIJ(DM da,Mat J)
     that includes the ghost points) then MatSetValuesLocal() maps those indices to the global
     PETSc ordering.
   */
-  if (!dd->prealloc_only) {
+  if (!da->prealloc_only) {
     ierr = PetscMalloc(col*col*col*nc*nc*nc*sizeof(PetscScalar),&values);CHKERRQ(ierr);
     ierr = PetscMemzero(values,col*col*col*nc*nc*nc*sizeof(PetscScalar));CHKERRQ(ierr);
     for (i=xs; i<xs+nx; i++) {
@@ -1116,7 +1087,6 @@ PetscErrorCode DMGetMatrix_DA_1d_MPIAIJ(DM da,Mat J)
   PetscScalar            *values;
   DMDABoundaryType       bx;
   ISLocalToGlobalMapping ltog,ltogb;
-  DM_DA                  *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   /*     
@@ -1145,7 +1115,7 @@ PetscErrorCode DMGetMatrix_DA_1d_MPIAIJ(DM da,Mat J)
     that includes the ghost points) then MatSetValuesLocal() maps those indices to the global
     PETSc ordering.
   */
-  if (!dd->prealloc_only) {
+  if (!da->prealloc_only) {
     ierr = PetscMalloc(col*nc*nc*sizeof(PetscScalar),&values);CHKERRQ(ierr);
     ierr = PetscMemzero(values,col*nc*nc*sizeof(PetscScalar));CHKERRQ(ierr);
     for (i=xs; i<xs+nx; i++) {
@@ -1183,7 +1153,6 @@ PetscErrorCode DMGetMatrix_DA_2d_MPIBAIJ(DM da,Mat J)
   DMDABoundaryType       bx,by;
   DMDAStencilType        st;
   ISLocalToGlobalMapping ltog,ltogb;
-  DM_DA                  *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   /*     
@@ -1236,7 +1205,7 @@ PetscErrorCode DMGetMatrix_DA_2d_MPIBAIJ(DM da,Mat J)
     that includes the ghost points) then MatSetValuesLocal() maps those indices to the global
     PETSc ordering.
   */
-  if (!dd->prealloc_only) {
+  if (!da->prealloc_only) {
     ierr = PetscMalloc(col*col*nc*nc*sizeof(PetscScalar),&values);CHKERRQ(ierr);
     ierr = PetscMemzero(values,col*col*nc*nc*sizeof(PetscScalar));CHKERRQ(ierr);
     for (i=xs; i<xs+nx; i++) {
@@ -1278,7 +1247,6 @@ PetscErrorCode DMGetMatrix_DA_3d_MPIBAIJ(DM da,Mat J)
   DMDABoundaryType       bx,by,bz;
   DMDAStencilType        st;
   ISLocalToGlobalMapping ltog,ltogb;
-  DM_DA                  *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   /*     
@@ -1339,7 +1307,7 @@ PetscErrorCode DMGetMatrix_DA_3d_MPIBAIJ(DM da,Mat J)
     that includes the ghost points) then MatSetValuesLocal() maps those indices to the global
     PETSc ordering.
   */
-  if (!dd->prealloc_only) {
+  if (!da->prealloc_only) {
     ierr  = PetscMalloc(col*col*col*nc*nc*sizeof(PetscScalar),&values);CHKERRQ(ierr);
     ierr  = PetscMemzero(values,col*col*col*nc*nc*sizeof(PetscScalar));CHKERRQ(ierr);
     for (i=xs; i<xs+nx; i++) {
@@ -1410,7 +1378,6 @@ PetscErrorCode DMGetMatrix_DA_2d_MPISBAIJ(DM da,Mat J)
   DMDABoundaryType       bx,by;
   DMDAStencilType        st;
   ISLocalToGlobalMapping ltog,ltogb;
-  DM_DA                  *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   /*     
@@ -1464,7 +1431,7 @@ PetscErrorCode DMGetMatrix_DA_2d_MPISBAIJ(DM da,Mat J)
     that includes the ghost points) then MatSetValuesLocal() maps those indices to the global
     PETSc ordering.
   */
-  if (!dd->prealloc_only) {
+  if (!da->prealloc_only) {
     ierr = PetscMalloc(col*col*nc*nc*sizeof(PetscScalar),&values);CHKERRQ(ierr);
     ierr = PetscMemzero(values,col*col*nc*nc*sizeof(PetscScalar));CHKERRQ(ierr);
     for (i=xs; i<xs+nx; i++) {
@@ -1509,7 +1476,6 @@ PetscErrorCode DMGetMatrix_DA_3d_MPISBAIJ(DM da,Mat J)
   DMDABoundaryType       bx,by,bz;
   DMDAStencilType        st;
   ISLocalToGlobalMapping ltog,ltogb;
-  DM_DA                  *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   /*     
@@ -1571,7 +1537,7 @@ PetscErrorCode DMGetMatrix_DA_3d_MPISBAIJ(DM da,Mat J)
     that includes the ghost points) then MatSetValuesLocal() maps those indices to the global
     PETSc ordering.
   */
-  if (!dd->prealloc_only) {
+  if (!da->prealloc_only) {
     ierr = PetscMalloc(col*col*col*nc*nc*sizeof(PetscScalar),&values);CHKERRQ(ierr);
     ierr = PetscMemzero(values,col*col*col*nc*nc*sizeof(PetscScalar));CHKERRQ(ierr);
     for (i=xs; i<xs+nx; i++) {
@@ -1711,7 +1677,7 @@ PetscErrorCode DMGetMatrix_DA_3d_MPIAIJ_Fill(DM da,Mat J)
     that includes the ghost points) then MatSetValuesLocal() maps those indices to the global
     PETSc ordering.
   */
-  if (!dd->prealloc_only) {
+  if (!da->prealloc_only) {
     ierr = PetscMalloc(col*col*col*nc*nc*nc*sizeof(PetscScalar),&values);CHKERRQ(ierr);
     ierr = PetscMemzero(values,col*col*col*nc*nc*nc*sizeof(PetscScalar));CHKERRQ(ierr);
     for (i=xs; i<xs+nx; i++) {

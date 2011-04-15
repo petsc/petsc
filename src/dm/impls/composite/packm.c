@@ -44,11 +44,11 @@ static PetscErrorCode DMGetMatrix_Composite_Nest(DM dm,const MatType mtype,Mat *
   ierr = MatCreateNest(((PetscObject)dm)->comm,n,isg,n,isg,submats,J);CHKERRQ(ierr);
 
   /* Disown references */
-  for (i=0; i<n; i++) {ierr = ISDestroy(isg[i]);CHKERRQ(ierr);}
+  for (i=0; i<n; i++) {ierr = ISDestroy(&isg[i]);CHKERRQ(ierr);}
   ierr = PetscFree(isg);CHKERRQ(ierr);
 
   for (i=0; i<n*n; i++) {
-    if (submats[i]) {ierr = MatDestroy(submats[i]);CHKERRQ(ierr);}
+    if (submats[i]) {ierr = MatDestroy(&submats[i]);CHKERRQ(ierr);}
   }
   ierr = PetscFree(submats);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -64,7 +64,7 @@ static PetscErrorCode DMGetMatrix_Composite_AIJ(DM dm,const MatType mtype,Mat *J
   PetscInt               m,*dnz,*onz,i,j,mA;
   Mat                    Atmp;
   PetscMPIInt            rank;
-  PetscBool              dense = PETSC_FALSE,prealloc_only = PETSC_FALSE;
+  PetscBool              dense = PETSC_FALSE; 
 
   PetscFunctionBegin;
   /* use global vector to determine layout needed for matrix */
@@ -141,7 +141,7 @@ static PetscErrorCode DMGetMatrix_Composite_AIJ(DM dm,const MatType mtype,Mat *J
         ierr = MatRestoreRow(Atmp,rstart+i,&nc,&cols,PETSC_NULL);CHKERRQ(ierr);
       }
       ierr = PetscFree(ccols);CHKERRQ(ierr);
-      ierr = MatDestroy(Atmp);CHKERRQ(ierr);
+      ierr = MatDestroy(&Atmp);CHKERRQ(ierr);
     } else {
       SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_SUP,"Cannot handle that object type yet");
     }
@@ -154,8 +154,7 @@ static PetscErrorCode DMGetMatrix_Composite_AIJ(DM dm,const MatType mtype,Mat *J
   ierr = MatSeqAIJSetPreallocation(*J,0,dnz);CHKERRQ(ierr);
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetBool(((PetscObject)dm)->prefix,"-dmcomposite_preallocate_only",&prealloc_only,PETSC_NULL);CHKERRQ(ierr);
-  if (prealloc_only) PetscFunctionReturn(0);
+  if (dm->prealloc_only) PetscFunctionReturn(0);
 
   next = com->next;
   while (next) {
@@ -196,7 +195,7 @@ static PetscErrorCode DMGetMatrix_Composite_AIJ(DM dm,const MatType mtype,Mat *J
         ierr = MatRestoreRow(Atmp,rstart+i,&nc,(const PetscInt **)&cols,&values);CHKERRQ(ierr);
       }
       ierr = PetscFree(ccols);CHKERRQ(ierr);
-      ierr = MatDestroy(Atmp);CHKERRQ(ierr);
+      ierr = MatDestroy(&Atmp);CHKERRQ(ierr);
     } else {
       SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_SUP,"Cannot handle that object type yet");
     }

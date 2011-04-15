@@ -692,7 +692,7 @@ PetscErrorCode  DMDAFormFunctioniTest1(DM da,void *w)
   ierr = PetscRandomCreate(PETSC_COMM_SELF,&rnd);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rnd);CHKERRQ(ierr);
   ierr = VecSetRandom(vu,rnd);CHKERRQ(ierr);
-  ierr = PetscRandomDestroy(rnd);CHKERRQ(ierr);
+  ierr = PetscRandomDestroy(&rnd);CHKERRQ(ierr);
 
   ierr = DMGetGlobalVector(da,&fu);CHKERRQ(ierr);
   ierr = DMGetGlobalVector(da,&fui);CHKERRQ(ierr);
@@ -905,7 +905,7 @@ PetscErrorCode  DMDAComputeJacobian1WithAdic(DM da,Vec vu,Mat J,void *w)
   PetscADSetValueAndColor(ad_ustart,gtdof,iscoloring->colors,ustart);
 
   ierr = VecRestoreArray(vu,&ustart);CHKERRQ(ierr);
-  ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
+  ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
   ierr = PetscADIncrementTotalGradSize(iscoloring->n);CHKERRQ(ierr);
   PetscADSetIndepDone();
 
@@ -1067,7 +1067,7 @@ PetscErrorCode  DMDAComputeJacobian1WithAdifor(DM da,Vec vu,Mat J,void *w)
     p_u[*color++] = 1.0;
     p_u          += Nc;
   }
-  ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
+  ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
   ierr = PetscMalloc2(Nc*info.xm*info.ym*info.zm*info.dof,PetscScalar,&g_f,info.xm*info.ym*info.zm*info.dof,PetscScalar,&f);CHKERRQ(ierr);
 
   /* Seed the input array g_u with coloring information */
@@ -1406,8 +1406,8 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
   ierr = ISCreateBlock(comm,dof,count,idx,PETSC_OWN_POINTER,&from);CHKERRQ(ierr);
   ierr = VecScatterCreate(local,from,global,to,&ltog);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(dd,ltog);CHKERRQ(ierr);
-  ierr = ISDestroy(from);CHKERRQ(ierr);
-  ierr = ISDestroy(to);CHKERRQ(ierr);
+  ierr = ISDestroy(&from);CHKERRQ(ierr);
+  ierr = ISDestroy(&to);CHKERRQ(ierr);
 
   /* global to local must include ghost points within the domain,
      but not ghost points outside the domain that aren't periodic */
@@ -1615,8 +1615,8 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
   ierr = ISCreateBlock(comm,dof,nn,idx,PETSC_COPY_VALUES,&from);CHKERRQ(ierr);
   ierr = VecScatterCreate(global,from,local,to,&gtol);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(da,gtol);CHKERRQ(ierr);
-  ierr = ISDestroy(to);CHKERRQ(ierr);
-  ierr = ISDestroy(from);CHKERRQ(ierr);
+  ierr = ISDestroy(&to);CHKERRQ(ierr);
+  ierr = ISDestroy(&from);CHKERRQ(ierr);
 
   if (stencil_type == DMDA_STENCIL_STAR) {
     n0 = sn0; n2 = sn2; n6 = sn6; n8 = sn8;
@@ -1720,7 +1720,7 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
   ierr = ISRestoreIndices(ltogis, &idx_full);
   ierr = ISLocalToGlobalMappingCreateIS(ltogis,&da->ltogmap);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(da,da->ltogmap);CHKERRQ(ierr);
-  ierr = ISDestroy(ltogis);CHKERRQ(ierr);
+  ierr = ISDestroy(&ltogis);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingBlock(da->ltogmap,dd->w,&da->ltogmapb);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(da,da->ltogmap);CHKERRQ(ierr);
 
@@ -1730,8 +1730,8 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
   dd->xs = xs*dof; dd->xe = xe*dof; dd->ys = ys; dd->ye = ye; dd->zs = 0; dd->ze = 1;
   dd->Xs = Xs*dof; dd->Xe = Xe*dof; dd->Ys = Ys; dd->Ye = Ye; dd->Zs = 0; dd->Ze = 1;
 
-  ierr = VecDestroy(local);CHKERRQ(ierr);
-  ierr = VecDestroy(global);CHKERRQ(ierr);
+  ierr = VecDestroy(&local);CHKERRQ(ierr);
+  ierr = VecDestroy(&global);CHKERRQ(ierr);
 
   dd->gtol      = gtol;
   dd->ltog      = ltog;

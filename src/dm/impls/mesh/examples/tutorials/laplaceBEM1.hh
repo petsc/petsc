@@ -302,7 +302,7 @@ public:
     ierr = VTKViewer::writeElements(mesh, viewer);CHKERRXX(ierr);
     ierr = PetscViewerASCIIPrintf(viewer, "CELL_DATA %d\n", cNumbering->getGlobalSize());CHKERRXX(ierr);
     ierr = VTKViewer::writeField(potential, "Potential", fiberDim, cNumbering, viewer);CHKERRXX(ierr);
-    ierr = PetscViewerDestroy(viewer);CHKERRXX(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRXX(ierr);
   };
 
   void testLaplaceBEMSphere(void) {

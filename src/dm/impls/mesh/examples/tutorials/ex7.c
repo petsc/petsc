@@ -77,7 +77,7 @@ try {
       ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
       ierr = PetscViewerFileSetName(viewer, "testBoundary.vtk");CHKERRQ(ierr);
       ierr = MeshView_Sieve_Newer(meshBoundary, viewer);CHKERRQ(ierr);
-      ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     }
     mesh = ALE::Generator::generate(meshBoundary, interpolate);
     ALE::Obj<ALE::Mesh::sieve_type> topology = mesh->getTopology();
@@ -128,7 +128,7 @@ try {
     ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK_CELL);CHKERRQ(ierr);
     ierr = VecView(partition, viewer);CHKERRQ(ierr);
     ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     //ALE::LogStagePop(stage);
   } catch (ALE::Exception e) {
     std::cout << e.msg() << std::endl;
@@ -497,7 +497,7 @@ PetscErrorCode CreateFieldVector(ALE::Obj<ALE::Mesh> mesh, const char fieldName[
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, field->getSize(patch), field->restrict(patch), &locField);CHKERRQ(ierr);
   ierr = VecScatterBegin(injection,locField, *fieldVec, INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(injection,locField, *fieldVec, INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecDestroy(locField);CHKERRQ(ierr);
+  ierr = VecDestroy(&locField);CHKERRQ(ierr);
   ALE_LOG_EVENT_END;
   PetscFunctionReturn(0);
 }

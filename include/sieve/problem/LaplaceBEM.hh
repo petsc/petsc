@@ -35,7 +35,7 @@ namespace ALE {
       ~LaplaceBEM() {
         PetscErrorCode ierr;
 
-        if (this->_dmmg)                 {ierr = DMMGDestroy(this->_dmmg);CHKERRXX(ierr);}
+        if (this->_dmmg)                 {ierr = DMMGDestroy(&this->_dmmg);CHKERRXX(ierr);}
         if (this->_options.exactSol.vec) {ierr = this->destroyExactSolution(this->_options.exactSol);CHKERRXX(ierr);}
         if (this->_options.error.vec)    {ierr = this->destroyExactSolution(this->_options.error);CHKERRXX(ierr);}
         if (this->_dm)                   {ierr = this->destroyMesh();CHKERRXX(ierr);}
@@ -177,7 +177,7 @@ namespace ALE {
           ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
           ierr = PetscViewerFileSetName(viewer, "bratu.vtk");CHKERRQ(ierr);
           ierr = MeshView((::Mesh) this->_dm, viewer);CHKERRQ(ierr);
-          ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+          ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
         }
         ierr = PetscOptionsHasName(PETSC_NULL, "-mesh_view", &view);CHKERRQ(ierr);
         if (view) {this->_mesh->view("Mesh");}
@@ -224,7 +224,7 @@ namespace ALE {
 
         PetscFunctionBegin;
         if (structured()) {
-          ierr = DMDestroy( this->_dm);CHKERRQ(ierr);
+          ierr = DMDestroy(& this->_dm);CHKERRQ(ierr);
         } else {
           ierr = MeshDestroy((::Mesh) this->_dm);CHKERRQ(ierr);
         }
@@ -408,7 +408,7 @@ namespace ALE {
             ierr = PetscViewerFileSetName(viewer, "exact_sol.vtk");CHKERRQ(ierr);
             ierr = MeshView((::Mesh) this->_dm, viewer);CHKERRQ(ierr);
             ierr = SectionRealView(exactSolution().section, viewer);CHKERRQ(ierr);
-            ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+            ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
           }
           ierr = MeshGetSectionReal(mesh, "error", &this->_options.error.section);CHKERRQ(ierr);
           const Obj<PETSC_MESH_TYPE::real_section_type>& e = this->_mesh->getRealSection("error");
@@ -425,9 +425,9 @@ namespace ALE {
 
         PetscFunctionBegin;
         if (structured()) {
-          ierr = VecDestroy(sol.vec);CHKERRQ(ierr);
+          ierr = VecDestroy(&sol.vec);CHKERRQ(ierr);
         } else {
-          ierr = SectionRealDestroy(sol.section);CHKERRQ(ierr);
+          ierr = SectionRealDestroy(&sol.section);CHKERRQ(ierr);
         }
         PetscFunctionReturn(0);
       };
@@ -521,7 +521,7 @@ namespace ALE {
             ierr = PetscViewerFileSetName(viewer, "sol.vtk");CHKERRQ(ierr);
             ierr = MeshView((::Mesh) this->_dm, viewer);CHKERRQ(ierr);
             ierr = SectionRealView(solution, viewer);CHKERRQ(ierr);
-            ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+            ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 
             ierr = PetscViewerCreate(comm(), &viewer);CHKERRQ(ierr);
             ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);CHKERRQ(ierr);
@@ -530,7 +530,7 @@ namespace ALE {
             ierr = MeshView((::Mesh) this->_dm, viewer);CHKERRQ(ierr);
             ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK_CELL);CHKERRQ(ierr);
             ierr = SectionRealView(this->_options.error.section, viewer);CHKERRQ(ierr);
-            ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+            ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
           }
           ierr = PetscOptionsHasName(PETSC_NULL, "-vec_view", &flag);CHKERRQ(ierr);
           if (flag) {sol->view("Solution");}
@@ -547,9 +547,9 @@ namespace ALE {
             ierr = VTKViewer::writeHeader(viewer);CHKERRQ(ierr);
             ierr = VTKViewer::writeHierarchyVertices(this->_dmmg, viewer, offset);CHKERRQ(ierr);
             ierr = VTKViewer::writeHierarchyElements(this->_dmmg, viewer);CHKERRQ(ierr);
-            ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+            ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
           }
-          ierr = SectionRealDestroy(solution);CHKERRQ(ierr);
+          ierr = SectionRealDestroy(&solution);CHKERRQ(ierr);
         }
         PetscFunctionReturn(0);
       };
@@ -673,7 +673,7 @@ namespace ALE {
           ierr = ALE::Problem::Functions::RhsBd_Unstructured(mesh, sol.section, residual, &this->_options);CHKERRQ(ierr);
           if (flag) {ierr = SectionRealView(residual, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
           ierr = SectionRealNorm(residual, mesh, NORM_2, &norm);CHKERRQ(ierr);
-          ierr = SectionRealDestroy(residual);CHKERRQ(ierr);
+          ierr = SectionRealDestroy(&residual);CHKERRQ(ierr);
           ierr = PetscObjectGetName((PetscObject) sol.section, &name);CHKERRQ(ierr);
         }
         PetscPrintf(comm(), "Residual for trial solution %s: %g\n", name, norm);

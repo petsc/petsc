@@ -89,12 +89,12 @@ int main(int argc,char **argv)
 
   /* Free memory */
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
-  ierr = PetscViewerDestroy(mviewer);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&mviewer);CHKERRQ(ierr);
 #endif
-  ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
-  ierr = VecDestroy(local);CHKERRQ(ierr);
-  ierr = VecDestroy(global);CHKERRQ(ierr);
-  ierr = DMDestroy(da);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  ierr = VecDestroy(&local);CHKERRQ(ierr);
+  ierr = VecDestroy(&global);CHKERRQ(ierr);
+  ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

@@ -91,7 +91,7 @@ PetscErrorCode  DMDASetUniformCoordinates(DM da,PetscReal xmin,PetscReal xmax,Pe
   }
   ierr = DMDASetCoordinates(da,xcoor);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(da,xcoor);CHKERRQ(ierr);
-  ierr = VecDestroy(xcoor);CHKERRQ(ierr);
+  ierr = VecDestroy(&xcoor);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

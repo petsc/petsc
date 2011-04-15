@@ -91,7 +91,7 @@ PetscErrorCode OutputVTK(const Obj<ALE::Mesh>& mesh, std::string filename, std::
     else {ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);}
     ierr = FieldView_Sieve(mesh, field.c_str(), viewer);CHKERRQ(ierr);
     ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     ALE::LogStagePop(stage);
   PetscFunctionReturn(0);
 }
@@ -115,7 +115,7 @@ PetscErrorCode OutputMesh(const Obj<ALE::Mesh>& mesh)
     ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);CHKERRQ(ierr);
     ierr = PetscViewerFileSetName(viewer, "testMesh");CHKERRQ(ierr);
     ierr = MeshView_Sieve(mesh, viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     ALE::LogStagePop(stage);
   PetscFunctionReturn(0);
 }

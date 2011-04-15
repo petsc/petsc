@@ -163,18 +163,17 @@ static PetscErrorCode PCReset_AINVCUSP(PC pc)
 */
 #undef __FUNCT__
 #define __FUNCT__ "PCDestroy_AINVCUSP"
-static PetscErrorCode PCDestroy_AINVCUSP(PC pc)
+static PetscErrorCode PCDestroy_AINVCUSP(PC *pc)
 {
-  PC_AINVCUSP    *ainv  = (PC_AINVCUSP*)pc->data;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin; 
-  ierr = PCReset_AINVCUSP(pc);CHKERRQ(ierr);
+  ierr = PCReset_AINVCUSP(*pc);CHKERRQ(ierr);
 
   /*
       Free the private data structure that was hanging off the PC
   */
-  ierr = PetscFree(ainv);CHKERRQ(ierr);
+  ierr = PetscFree((*pc)->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

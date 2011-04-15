@@ -26,10 +26,26 @@ static const char help[] = "Uses analytic Jacobians to solve individual problems
 #include <petscsnes.h>
 #include <petscdmmesh.h>
 #include <petscdmcomposite.h>
+#include <petscdmda.h>
 
-  #include <petscdmda.h>
+#undef __FUNCT__
+#define __FUNCT__ "CreateProblem_gen_0"
+PetscErrorCode CreateProblem_gen_0(DM dm, const char *name)
+{
+  ALE::Obj<PETSC_MESH_TYPE> m;
+  PetscErrorCode ierr = 0;
 
-#include "ex10_quadrature.h"
+  PetscFunctionBegin;
+  ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
+  {
+    const ALE::Obj<ALE::Discretization>& d = new ALE::Discretization(m->comm(), m->debug());
+
+    d->setNumDof(0, 1);
+    d->setNumDof(1, 0);
+    m->setDiscretization(name, d);
+  }
+  PetscFunctionReturn(0);
+}
 
 typedef enum {NEUMANN, DIRICHLET} BCType;
 
@@ -37,62 +53,70 @@ PetscErrorCode DMDACreateOwnershipRanges(DM); /* Import an internal function */
 
 typedef struct _UserCtx *User;
 struct _UserCtx {
-  PetscInt ptype;
-  DM       pack;
-  Vec      Uloc,Kloc;
-
-  BCType        bcType;                      // The type of boundary conditions
-  PetscScalar (*exactFunc)(const double []); // The exact solution function
-  double (*integrate)(const double *, const double *, const int, double (*)(const double *)); // Basis functional application
+  PetscInt  ptype;
+  DM        pack;
+  Vec       Uloc,Kloc;
+  PetscReal hxu, hxk;
 };
 
 #undef __FUNCT__
 #define __FUNCT__ "FormFunctionLocal_U"
-static PetscErrorCode FormFunctionLocal_U(DM dmu, DM dmk, SectionReal sectionU, SectionReal sectionK, SectionReal sectionF)
+static PetscErrorCode FormFunctionLocal_U(DM dmu, DM dmk, SectionReal sectionU, SectionReal sectionK, SectionReal sectionF, User user)
 {
   ALE::Obj<PETSC_MESH_TYPE> meshU;
   ALE::Obj<PETSC_MESH_TYPE> meshK;
-  SectionReal    coordinatesU;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = DMMeshGetMesh(dmu, meshU);CHKERRQ(ierr);
   ierr = DMMeshGetMesh(dmk, meshK);CHKERRQ(ierr);
-  ierr = DMMeshGetSectionReal(dmu, "coordinates", &coordinatesU);CHKERRQ(ierr);
   const ALE::Obj<PETSC_MESH_TYPE::label_sequence>& verticesU = meshU->depthStratum(0);
   const ALE::Obj<PETSC_MESH_TYPE::label_sequence>& verticesK = meshK->depthStratum(0);
-  PetscReal hx = 1.0/verticesU->size();
+  PETSC_MESH_TYPE::label_sequence::iterator vur_iter = verticesU->begin();
+  PETSC_MESH_TYPE::point_type ulp = -1;
+  PETSC_MESH_TYPE::point_type urp = *(++vur_iter);
+  PETSC_MESH_TYPE::point_type klp = -1;
+  PetscReal hx = user->hxu;
 
-  for(PETSC_MESH_TYPE::label_sequence::iterator vu_iter = verticesU->begin(), vk_iter = verticesK->begin(); vu_iter != verticesU->end(); ++vu_iter) {
+  ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "Starting U residual\n");CHKERRQ(ierr);
+  for(PETSC_MESH_TYPE::label_sequence::iterator vu_iter = verticesU->begin(), vk_iter = verticesK->begin(); vu_iter != verticesU->end(); ++vu_iter,  ++vk_iter) {
+    PETSC_MESH_TYPE::point_type up = *vu_iter;
+    PETSC_MESH_TYPE::point_type kp = *vk_iter;
     const PetscInt marker = meshU->getValue(meshU->getLabel("marker"), *vu_iter, 0);
     PetscScalar    values[1];
-    PetscScalar   *coords;
-    PetscScalar   *u, *k;
+    PetscScalar   *u;
 
-    ierr = SectionRealRestrict(coordinatesU, *vu_iter, &coords);CHKERRQ(ierr);
-    ierr = SectionRealRestrict(sectionU, *vu_iter, &u);CHKERRQ(ierr);
-    ierr = SectionRealRestrict(sectionK, *vk_iter, &k);CHKERRQ(ierr);
+    ierr = SectionRealRestrict(sectionU, up, &u);CHKERRQ(ierr);
     if (marker == 1) {
       values[0] = hx*u[0];
+      ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "  Left  End vu %d hx: %g f %g\n", up, hx, values[0]);CHKERRQ(ierr);
+      urp  = *(++vur_iter);
     } else if (marker == 2) {
       values[0] = hx*(u[0] - 1.0);
+      ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "  Right End vu %d hx: %g f %g\n", up, hx, values[0]);CHKERRQ(ierr);
     } else {
-      PetscScalar *ul, *ur, *kl;
+      PetscScalar *ul, *ur, *k, *kl;
 
-      ierr = SectionRealRestrict(sectionU, *vu_iter+1, &ur);CHKERRQ(ierr);
-      ierr = SectionRealRestrict(sectionU, *vu_iter-1, &ul);CHKERRQ(ierr);
-      ierr = SectionRealRestrict(sectionK, *vk_iter-1, &kl);CHKERRQ(ierr);
+      ierr = SectionRealRestrict(sectionU, urp, &ur);CHKERRQ(ierr);
+      ierr = SectionRealRestrict(sectionU, ulp, &ul);CHKERRQ(ierr);
+      ierr = SectionRealRestrict(sectionK, kp,  &k);CHKERRQ(ierr);
+      ierr = SectionRealRestrict(sectionK, klp, &kl);CHKERRQ(ierr);
       values[0] = hx*((kl[0]*(u[0]-ul[0]) - k[0]*(ur[0]-u[0]))/(hx*hx) - 1.0);
+      ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "  vu %d hx: %g ul %g u %g ur %g kl %g k %g f %g\n", up, hx, ul[0], u[0], ur[0], kl[0], k[0], values[0]);CHKERRQ(ierr);
+      urp  = *(++vur_iter);
     }
-    ierr = SectionRealUpdate(sectionF, *vu_iter, values, INSERT_VALUES);CHKERRQ(ierr);
+    ierr = SectionRealUpdate(sectionF, up, values, INSERT_VALUES);CHKERRQ(ierr);
+    ulp  = up;
+    klp  = kp;
   }
-  ierr = SectionRealDestroy(coordinatesU);CHKERRQ(ierr);
+  ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "Ending U residual\n");CHKERRQ(ierr);
+  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "FormFunctionLocal_K"
-static PetscErrorCode FormFunctionLocal_K(DM dmu, DM dmk, SectionReal sectionU, SectionReal sectionK, SectionReal sectionF)
+static PetscErrorCode FormFunctionLocal_K(DM dmu, DM dmk, SectionReal sectionU, SectionReal sectionK, SectionReal sectionF, User user)
 {
   ALE::Obj<PETSC_MESH_TYPE> meshU;
   ALE::Obj<PETSC_MESH_TYPE> meshK;
@@ -106,9 +130,9 @@ static PetscErrorCode FormFunctionLocal_K(DM dmu, DM dmk, SectionReal sectionU, 
   PETSC_MESH_TYPE::label_sequence::iterator vu_iter = verticesU->begin();
   PETSC_MESH_TYPE::point_type               up      = *vu_iter;
   PETSC_MESH_TYPE::point_type               urp;
-  PetscReal hx = 1.0/verticesK->size();
+  PetscReal hx = user->hxk;
 
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "Starting K residual\n");CHKERRQ(ierr);
+  //ierr = PetscPrintf(PETSC_COMM_WORLD, "Starting K residual\n");CHKERRQ(ierr);
   for(PETSC_MESH_TYPE::label_sequence::iterator vk_iter = verticesK->begin(); vk_iter != verticesK->end(); ++vk_iter) {
     PetscScalar    values[1];
     PetscScalar   *u, *ur, *k;
@@ -123,12 +147,12 @@ static PetscErrorCode FormFunctionLocal_K(DM dmu, DM dmk, SectionReal sectionU, 
     const PetscScalar w     = 1.0/(1.0 + ubar) + 1.0/g;
 
     values[0] = hx*(PetscExpScalar(k[0]-1.0) + k[0] - 1.0/w);
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "  vk %d vu %d vur %d: ubar %g gradu %g g %g w %g f %g\n", *vk_iter, up, urp, ubar, gradu, g, w, values[0]);CHKERRQ(ierr);
+    //ierr = PetscPrintf(PETSC_COMM_WORLD, "  vk %d vu %d vur %d: ubar %g gradu %g g %g w %g f %g\n", *vk_iter, up, urp, ubar, gradu, g, w, values[0]);CHKERRQ(ierr);
     ierr = SectionRealUpdate(sectionF, *vk_iter, values, INSERT_VALUES);CHKERRQ(ierr);
 
     up = urp;
   }
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "Ending K residual\n");CHKERRQ(ierr);
+  //ierr = PetscPrintf(PETSC_COMM_WORLD, "Ending K residual\n");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -159,7 +183,7 @@ static PetscErrorCode FormFunction_All(SNES snes, Vec X, Vec F, void *ctx)
 
     ierr = SectionRealDuplicate(sectionU, &sectionFu);CHKERRQ(ierr);
 
-    ierr = FormFunctionLocal_U(dmu, dmk, sectionU, sectionK, sectionFu);CHKERRQ(ierr);
+    ierr = FormFunctionLocal_U(dmu, dmk, sectionU, sectionK, sectionFu, user);CHKERRQ(ierr);
     ierr = SectionRealCreateLocalVector(sectionFu, &vecFu);CHKERRQ(ierr);
     ierr = DMLocalToGlobalBegin(dmu, vecFu, INSERT_VALUES, F);CHKERRQ(ierr);
     ierr = DMLocalToGlobalEnd(dmu, vecFu, INSERT_VALUES, F);CHKERRQ(ierr);
@@ -180,7 +204,7 @@ static PetscErrorCode FormFunction_All(SNES snes, Vec X, Vec F, void *ctx)
 
     ierr = SectionRealDuplicate(sectionK, &sectionFk);CHKERRQ(ierr);
 
-    ierr = FormFunctionLocal_K(dmu, dmk, sectionU, sectionK, sectionFk);CHKERRQ(ierr);
+    ierr = FormFunctionLocal_K(dmu, dmk, sectionU, sectionK, sectionFk, user);CHKERRQ(ierr);
     ierr = SectionRealCreateLocalVector(sectionFk, &vecFk);CHKERRQ(ierr);
     ierr = DMLocalToGlobalBegin(dmk, vecFk, INSERT_VALUES, F);CHKERRQ(ierr);
     ierr = DMLocalToGlobalEnd(dmk, vecFk, INSERT_VALUES, F);CHKERRQ(ierr);
@@ -205,8 +229,8 @@ static PetscErrorCode FormFunction_All(SNES snes, Vec X, Vec F, void *ctx)
     ierr = SectionRealDuplicate(sectionU, &sectionFu);CHKERRQ(ierr);
     ierr = SectionRealDuplicate(sectionK, &sectionFk);CHKERRQ(ierr);
 
-    ierr = FormFunctionLocal_U(dmu, dmk, sectionU, sectionK, sectionFu);CHKERRQ(ierr);
-    ierr = FormFunctionLocal_K(dmu, dmk, sectionU, sectionK, sectionFk);CHKERRQ(ierr);
+    ierr = FormFunctionLocal_U(dmu, dmk, sectionU, sectionK, sectionFu, user);CHKERRQ(ierr);
+    ierr = FormFunctionLocal_K(dmu, dmk, sectionU, sectionK, sectionFk, user);CHKERRQ(ierr);
     ierr = DMCompositeGetLocalVectors(user->pack, &Fu, &Fk);CHKERRQ(ierr);
     ierr = SectionRealCreateLocalVector(sectionFu, &vecFu);CHKERRQ(ierr);
     ierr = VecCopy(vecFu, Fu);CHKERRQ(ierr);
@@ -226,7 +250,7 @@ static PetscErrorCode FormFunction_All(SNES snes, Vec X, Vec F, void *ctx)
 
 #undef __FUNCT__
 #define __FUNCT__ "FormJacobianLocal_U"
-static PetscErrorCode FormJacobianLocal_U(DM dmu, DM dmk, SectionReal sectionU, SectionReal sectionK, Mat Buu)
+static PetscErrorCode FormJacobianLocal_U(DM dmu, DM dmk, SectionReal sectionU, SectionReal sectionK, Mat Buu, User user)
 {
   ALE::Obj<PETSC_MESH_TYPE> meshU;
   ALE::Obj<PETSC_MESH_TYPE> meshK;
@@ -241,9 +265,9 @@ static PetscErrorCode FormJacobianLocal_U(DM dmu, DM dmk, SectionReal sectionU, 
   PETSC_MESH_TYPE::point_type klp = -1;
   PETSC_MESH_TYPE::point_type ulp = -1;
   PETSC_MESH_TYPE::point_type urp = *(++vur_iter);
-  PetscReal hx = 1.0/verticesU->size();
+  PetscReal hx = user->hxu;
 
-  for(PETSC_MESH_TYPE::label_sequence::iterator vu_iter = verticesU->begin(), vk_iter = verticesK->begin(); vu_iter != verticesU->end(); ++vu_iter) {
+  for(PETSC_MESH_TYPE::label_sequence::iterator vu_iter = verticesU->begin(), vk_iter = verticesK->begin(); vu_iter != verticesU->end(); ++vu_iter,  ++vk_iter) {
     PETSC_MESH_TYPE::point_type up = *vu_iter;
     PETSC_MESH_TYPE::point_type kp = *vk_iter;
     const PetscInt marker = meshU->getValue(meshU->getLabel("marker"), *vu_iter, 0);
@@ -251,20 +275,24 @@ static PetscErrorCode FormJacobianLocal_U(DM dmu, DM dmk, SectionReal sectionU, 
 
     if (marker == 1) {
       values[0] = hx;
-      ierr = MatSetValuesTopology(Buu, 1, &up, 1, &up, values, INSERT_VALUES);CHKERRQ(ierr);
+      std::cout << "["<<meshU->commRank()<<"]: row " << up << " Left BC" << std::endl;
+      ierr = MatSetValuesTopology(Buu, dmu, 1, &up, dmu, 1, &up, values, INSERT_VALUES);CHKERRQ(ierr);
+      urp  = *(++vur_iter);
     } else if (marker == 2) {
       values[0] = hx;
-      ierr = MatSetValuesTopology(Buu, 1, &up, 1, &up, values, INSERT_VALUES);CHKERRQ(ierr);
+      std::cout << "["<<meshU->commRank()<<"]: row " << up << " Right BC" << std::endl;
+      ierr = MatSetValuesTopology(Buu, dmu, 1, &up, dmu, 1, &up, values, INSERT_VALUES);CHKERRQ(ierr);
     } else {
       PetscScalar *k, *kl;
-      PetscInt     cols[3] = {ul, up, ur};
+      PetscInt     cols[3] = {ulp, up, urp};
 
       ierr = SectionRealRestrict(sectionK, kp,  &k);CHKERRQ(ierr);
       ierr = SectionRealRestrict(sectionK, klp, &kl);CHKERRQ(ierr);
       values[0] = -kl[0]/hx;
       values[1] = (kl[0]+k[0])/hx;
       values[2] = -k[0]/hx;
-      ierr = MatSetValuesTopology(Buu, 1, &up, 3, cols, values, INSERT_VALUES);CHKERRQ(ierr);
+      std::cout << "["<<meshU->commRank()<<"]: row " << up << " cols " << cols[0] <<", "<< cols[1] <<", "<< cols[2] << std::endl;
+      ierr = MatSetValuesTopology(Buu, dmu, 1, &up, dmu, 3, cols, values, INSERT_VALUES);CHKERRQ(ierr);
       urp  = *(++vur_iter);
     }
     ulp = up;
@@ -275,145 +303,217 @@ static PetscErrorCode FormJacobianLocal_U(DM dmu, DM dmk, SectionReal sectionU, 
 
 #undef __FUNCT__
 #define __FUNCT__ "FormJacobianLocal_K"
-static PetscErrorCode FormJacobianLocal_K(User user,DMDALocalInfo *info,const PetscScalar u[],const PetscScalar k[],Mat Bkk)
+static PetscErrorCode FormJacobianLocal_K(DM dmu, DM dmk, SectionReal sectionU, SectionReal sectionK, Mat Bkk, User user)
 {
   ALE::Obj<PETSC_MESH_TYPE> meshU;
   ALE::Obj<PETSC_MESH_TYPE> meshK;
-  PetscReal      hx = 1./info->mx;
   PetscErrorCode ierr;
-  PetscInt       i;
 
   PetscFunctionBegin;
-  for (i=info->xs; i<info->xs+info->xm; i++) {
-    PetscInt row = i-info->gxs;
-    PetscScalar vals[] = {hx*(PetscExpScalar(k[i]-1.)+1.)};
-    ierr = MatSetValuesLocal(Bkk,1,&row,1,&row,vals,INSERT_VALUES);CHKERRQ(ierr);
+  ierr = DMMeshGetMesh(dmu, meshU);CHKERRQ(ierr);
+  ierr = DMMeshGetMesh(dmk, meshK);CHKERRQ(ierr);
+  const ALE::Obj<PETSC_MESH_TYPE::label_sequence>& verticesK = meshK->depthStratum(0);
+  PetscReal hx = user->hxk;
+
+  for(PETSC_MESH_TYPE::label_sequence::iterator vk_iter = verticesK->begin(); vk_iter != verticesK->end(); ++vk_iter) {
+    PETSC_MESH_TYPE::point_type kp = *vk_iter;
+    PetscScalar                 values[1];
+    PetscScalar                *k;
+
+    ierr = SectionRealRestrict(sectionK, kp,  &k);CHKERRQ(ierr);
+    values[0] = hx*(PetscExpScalar(k[0] - 1.0) + 1.0);
+    ierr = MatSetValuesTopology(Bkk, dmk, 1, &kp, dmk, 1, &kp, values, INSERT_VALUES);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "FormJacobianLocal_UK"
-static PetscErrorCode FormJacobianLocal_UK(User user,DMDALocalInfo *info,DMDALocalInfo *infok,const PetscScalar u[],const PetscScalar k[],Mat Buk)
+static PetscErrorCode FormJacobianLocal_UK(DM dmu, DM dmk, SectionReal sectionU, SectionReal sectionK, Mat Buk, User user)
 {
-  PetscReal hx = 1./info->mx;
+  ALE::Obj<PETSC_MESH_TYPE> meshU;
+  ALE::Obj<PETSC_MESH_TYPE> meshK;
   PetscErrorCode ierr;
-  PetscInt       i;
 
   PetscFunctionBegin;
   if (!Buk) PetscFunctionReturn(0); /* Not assembling this block */
-  for (i=info->xs; i<info->xs+info->xm; i++) {
-    if (i == 0 || i == info->mx-1) continue;
-    PetscInt row = i-info->gxs,cols[] = {i-1-infok->gxs,i-infok->gxs};
-    PetscScalar vals[] = {(u[i]-u[i-1])/hx,(u[i]-u[i+1])/hx};
-    ierr = MatSetValuesLocal(Buk,1,&row,2,cols,vals,INSERT_VALUES);CHKERRQ(ierr);
+  ierr = DMMeshGetMesh(dmu, meshU);CHKERRQ(ierr);
+  ierr = DMMeshGetMesh(dmk, meshK);CHKERRQ(ierr);
+  const ALE::Obj<PETSC_MESH_TYPE::label_sequence>& verticesU = meshU->depthStratum(0);
+  const ALE::Obj<PETSC_MESH_TYPE::label_sequence>& verticesK = meshK->depthStratum(0);
+  PETSC_MESH_TYPE::label_sequence::iterator vur_iter = verticesU->begin();
+  PETSC_MESH_TYPE::point_type ulp = -1;
+  PETSC_MESH_TYPE::point_type urp = *(++vur_iter);
+  PETSC_MESH_TYPE::point_type klp = -1;
+  PetscReal hx = user->hxu;
+
+  for(PETSC_MESH_TYPE::label_sequence::iterator vu_iter = verticesU->begin(), vk_iter = verticesK->begin(); vu_iter != verticesU->end(); ++vu_iter, ++vk_iter) {
+    PETSC_MESH_TYPE::point_type up = *vu_iter;
+    PETSC_MESH_TYPE::point_type kp = *vk_iter;
+    const PetscInt marker = meshU->getValue(meshU->getLabel("marker"), *vu_iter, 0);
+    PetscScalar    values[3];
+
+    if (marker == 1) {
+      ulp = up;
+      urp = *(++vur_iter);
+      klp = kp;
+      continue;
+    }
+    if (marker == 2) continue;
+    PetscInt     cols[3] = {klp, kp};
+    PetscScalar *u, *ul, *ur;
+
+    ierr = SectionRealRestrict(sectionU, up,  &u);CHKERRQ(ierr);
+    ierr = SectionRealRestrict(sectionU, ulp, &ul);CHKERRQ(ierr);
+    ierr = SectionRealRestrict(sectionU, urp, &ur);CHKERRQ(ierr);
+    values[0] = (u[0]-ul[0])/hx;
+    values[1] = (u[0]-ur[0])/hx;
+    ierr = MatSetValuesTopology(Buk, dmu, 1, &up, dmk, 2, cols, values, INSERT_VALUES);CHKERRQ(ierr);
+    ulp  = up;
+    urp  = *(++vur_iter);
+    klp  = kp;
   }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "FormJacobianLocal_KU"
-static PetscErrorCode FormJacobianLocal_KU(User user,DMDALocalInfo *info,DMDALocalInfo *infok,const PetscScalar u[],const PetscScalar k[],Mat Bku)
+static PetscErrorCode FormJacobianLocal_KU(DM dmu, DM dmk, SectionReal sectionU, SectionReal sectionK, Mat Bku, User user)
 {
+  ALE::Obj<PETSC_MESH_TYPE> meshU;
+  ALE::Obj<PETSC_MESH_TYPE> meshK;
   PetscErrorCode ierr;
-  PetscInt       i;
-  PetscReal      hx = 1./(info->mx-1);
 
   PetscFunctionBegin;
   if (!Bku) PetscFunctionReturn(0); /* Not assembling this block */
-  for (i=infok->xs; i<infok->xs+infok->xm; i++) {
-    PetscInt row = i-infok->gxs,cols[] = {i-info->gxs,i+1-info->gxs};
+  ierr = DMMeshGetMesh(dmu, meshU);CHKERRQ(ierr);
+  ierr = DMMeshGetMesh(dmk, meshK);CHKERRQ(ierr);
+  const ALE::Obj<PETSC_MESH_TYPE::label_sequence>& verticesU = meshU->depthStratum(0);
+  const ALE::Obj<PETSC_MESH_TYPE::label_sequence>& verticesK = meshK->depthStratum(0);
+  PETSC_MESH_TYPE::label_sequence::iterator vur_iter = verticesU->begin();
+  PETSC_MESH_TYPE::label_sequence::iterator vkr_iter = verticesK->begin();
+  PETSC_MESH_TYPE::point_type urp = *(++vur_iter);
+  PetscReal hx = user->hxk;
+
+  for(PETSC_MESH_TYPE::label_sequence::iterator vk_iter = verticesK->begin(), vu_iter = verticesU->begin(); vk_iter != verticesK->end(); ++vk_iter,  ++vu_iter) {
+    PETSC_MESH_TYPE::point_type up      = *vu_iter;
+    PETSC_MESH_TYPE::point_type kp      = *vk_iter;
+    PetscInt                    cols[2] = {up, urp};
+    PetscScalar                 values[2];
+    PetscScalar                *u, *ur;
+
+    ierr = SectionRealRestrict(sectionU, up,  &u);CHKERRQ(ierr);
+    ierr = SectionRealRestrict(sectionU, urp, &ur);CHKERRQ(ierr);
     const PetscScalar
-      ubar     = 0.5*(u[i]+u[i+1]),
+      ubar     = 0.5*(u[0]+ur[0]),
       ubar_L   = 0.5,
       ubar_R   = 0.5,
-      gradu    = (u[i+1]-u[i])/hx,
-      gradu_L  = -1./hx,
-      gradu_R  = 1./hx,
-      g        = 1. + PetscSqr(gradu),
-      g_gradu  = 2.*gradu,
-      w        = 1./(1.+ubar) + 1./g,
+      gradu    = (ur[0]-u[0])/hx,
+      gradu_L  = -1.0/hx,
+      gradu_R  = 1.0/hx,
+      g        = 1.0 + PetscSqr(gradu),
+      g_gradu  = 2.0*gradu,
+      w        = 1.0/(1.0+ubar) + 1.0/g,
       w_ubar   = -1./PetscSqr(1.+ubar),
       w_gradu  = -g_gradu/PetscSqr(g),
-      iw       = 1./w,
+      iw       = 1.0/w,
       iw_ubar  = -w_ubar * PetscSqr(iw),
-      iw_gradu = -w_gradu * PetscSqr(iw),
-      vals[]   = {-hx*(iw_ubar*ubar_L + iw_gradu*gradu_L),
-                  -hx*(iw_ubar*ubar_R + iw_gradu*gradu_R)};
-    ierr = MatSetValuesLocal(Bku,1,&row,2,cols,vals,INSERT_VALUES);CHKERRQ(ierr);
+      iw_gradu = -w_gradu * PetscSqr(iw);
+
+    values[0]  = -hx*(iw_ubar*ubar_L + iw_gradu*gradu_L);
+    values[1]  = -hx*(iw_ubar*ubar_R + iw_gradu*gradu_R);
+    ierr = MatSetValuesTopology(Bku, dmk, 1, &kp, dmu, 2, cols, values, INSERT_VALUES);CHKERRQ(ierr);
+    urp  = *(++vur_iter);
   }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "FormJacobian_All"
-static PetscErrorCode FormJacobian_All(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *mstr,void *ctx)
+static PetscErrorCode FormJacobian_All(SNES snes, Vec X, Mat *J, Mat *B, MatStructure *mstr, void *ctx)
 {
-  User              user = (User)ctx;
-  DM                dau,dak;
-  DMDALocalInfo     infou,infok;
-  const PetscScalar *u,*k;
-  PetscErrorCode    ierr;
-  Vec               Uloc,Kloc;
+  User           user = (User) ctx;
+  DM             dmu, dmk;
+  Vec            Uloc, Kloc, vecU, vecK;
+  SectionReal    sectionU, sectionK;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMCompositeGetEntries(user->pack,&dau,&dak);CHKERRQ(ierr);
-  ierr = DMDAGetLocalInfo(dau,&infou);CHKERRQ(ierr);
-  ierr = DMDAGetLocalInfo(dak,&infok);CHKERRQ(ierr);
-  ierr = DMCompositeGetLocalVectors(user->pack,&Uloc,&Kloc);CHKERRQ(ierr);
+  ierr = DMCompositeGetEntries(user->pack, &dmu, &dmk);CHKERRQ(ierr);
   switch (user->ptype) {
   case 0:
-    ierr = DMGlobalToLocalBegin(dau,X,INSERT_VALUES,Uloc);CHKERRQ(ierr);
-    ierr = DMGlobalToLocalEnd  (dau,X,INSERT_VALUES,Uloc);CHKERRQ(ierr);
-    ierr = DMDAVecGetArray(dau,Uloc,&u);CHKERRQ(ierr);
-    ierr = DMDAVecGetArray(dak,user->Kloc,&k);CHKERRQ(ierr);
-    ierr = FormJacobianLocal_U(user,&infou,u,k,*B);CHKERRQ(ierr);
-    ierr = DMDAVecRestoreArray(dau,Uloc,&u);CHKERRQ(ierr);
-    ierr = DMDAVecRestoreArray(dak,user->Kloc,&k);CHKERRQ(ierr);
+    ierr = DMMeshGetSectionReal(dmu, "default", &sectionU);CHKERRQ(ierr);
+    ierr = SectionRealCreateLocalVector(sectionU, &vecU);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalBegin(dmu, X, INSERT_VALUES, vecU);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalEnd(dmu, X, INSERT_VALUES, vecU);CHKERRQ(ierr);
+    ierr = VecDestroy(vecU);CHKERRQ(ierr);
+
+    ierr = DMMeshGetSectionReal(dmk, "default", &sectionK);CHKERRQ(ierr);
+    ierr = SectionRealCreateLocalVector(sectionK, &vecK);CHKERRQ(ierr);
+    ierr = VecCopy(user->Kloc, vecK);CHKERRQ(ierr);
+    ierr = VecDestroy(vecK);CHKERRQ(ierr);
+
+    ierr = FormJacobianLocal_U(dmu, dmk, sectionU, sectionK, *B, user);CHKERRQ(ierr);
     break;
   case 1:
-    ierr = DMGlobalToLocalBegin(dak,X,INSERT_VALUES,Kloc);CHKERRQ(ierr);
-    ierr = DMGlobalToLocalEnd  (dak,X,INSERT_VALUES,Kloc);CHKERRQ(ierr);
-    ierr = DMDAVecGetArray(dau,user->Uloc,&u);CHKERRQ(ierr);
-    ierr = DMDAVecGetArray(dak,Kloc,&k);CHKERRQ(ierr);
-    ierr = FormJacobianLocal_K(user,&infok,u,k,*B);CHKERRQ(ierr);
-    ierr = DMDAVecRestoreArray(dau,user->Uloc,&u);CHKERRQ(ierr);
-    ierr = DMDAVecRestoreArray(dak,Kloc,&k);CHKERRQ(ierr);
+    ierr = DMMeshGetSectionReal(dmk, "default", &sectionK);CHKERRQ(ierr);
+    ierr = SectionRealCreateLocalVector(sectionK, &vecK);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalBegin(dmk, X, INSERT_VALUES, vecK);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalEnd(dmk, X, INSERT_VALUES, vecK);CHKERRQ(ierr);
+    ierr = VecDestroy(vecK);CHKERRQ(ierr);
+
+    ierr = DMMeshGetSectionReal(dmu, "default", &sectionU);CHKERRQ(ierr);
+    ierr = SectionRealCreateLocalVector(sectionU, &vecU);CHKERRQ(ierr);
+    ierr = VecCopy(user->Uloc, vecU);CHKERRQ(ierr);
+    ierr = VecDestroy(vecU);CHKERRQ(ierr);
+
+    ierr = FormJacobianLocal_K(dmu, dmk, sectionU, sectionK, *B, user);CHKERRQ(ierr);
     break;
   case 2: {
     Mat Buu,Buk,Bku,Bkk;
-    IS  *is;
-    ierr = DMCompositeScatter(user->pack,X,Uloc,Kloc);CHKERRQ(ierr);
-    ierr = DMDAVecGetArray(dau,Uloc,&u);CHKERRQ(ierr);
-    ierr = DMDAVecGetArray(dak,Kloc,&k);CHKERRQ(ierr);
-    ierr = DMCompositeGetLocalISs(user->pack,&is);CHKERRQ(ierr);
-    ierr = MatGetLocalSubMatrix(*B,is[0],is[0],&Buu);CHKERRQ(ierr);
-    ierr = MatGetLocalSubMatrix(*B,is[0],is[1],&Buk);CHKERRQ(ierr);
-    ierr = MatGetLocalSubMatrix(*B,is[1],is[0],&Bku);CHKERRQ(ierr);
-    ierr = MatGetLocalSubMatrix(*B,is[1],is[1],&Bkk);CHKERRQ(ierr);
-    ierr = FormJacobianLocal_U(user,&infou,u,k,Buu);CHKERRQ(ierr);
-    ierr = FormJacobianLocal_UK(user,&infou,&infok,u,k,Buk);CHKERRQ(ierr);
-    ierr = FormJacobianLocal_KU(user,&infou,&infok,u,k,Bku);CHKERRQ(ierr);
-    ierr = FormJacobianLocal_K(user,&infok,u,k,Bkk);CHKERRQ(ierr);
-    ierr = MatRestoreLocalSubMatrix(*B,is[0],is[0],&Buu);CHKERRQ(ierr);
-    ierr = MatRestoreLocalSubMatrix(*B,is[0],is[1],&Buk);CHKERRQ(ierr);
-    ierr = MatRestoreLocalSubMatrix(*B,is[1],is[0],&Bku);CHKERRQ(ierr);
-    ierr = MatRestoreLocalSubMatrix(*B,is[1],is[1],&Bkk);CHKERRQ(ierr);
-    ierr = DMDAVecRestoreArray(dau,Uloc,&u);CHKERRQ(ierr);
-    ierr = DMDAVecRestoreArray(dak,Kloc,&k);CHKERRQ(ierr);
+    IS *is;
+
+    ierr = DMCompositeGetLocalVectors(user->pack, &Uloc, &Kloc);CHKERRQ(ierr);
+    ierr = DMCompositeScatter(user->pack, X, Uloc, Kloc);CHKERRQ(ierr);
+
+    ierr = DMMeshGetSectionReal(dmu, "default", &sectionU);CHKERRQ(ierr);
+    ierr = SectionRealCreateLocalVector(sectionU, &vecU);CHKERRQ(ierr);
+    ierr = VecCopy(Uloc, vecU);CHKERRQ(ierr);
+    ierr = VecDestroy(vecU);CHKERRQ(ierr);
+
+    ierr = DMMeshGetSectionReal(dmk, "default", &sectionK);CHKERRQ(ierr);
+    ierr = SectionRealCreateLocalVector(sectionK, &vecK);CHKERRQ(ierr);
+    ierr = VecCopy(Kloc, vecK);CHKERRQ(ierr);
+    ierr = VecDestroy(vecK);CHKERRQ(ierr);
+
+    ierr = DMCompositeRestoreLocalVectors(user->pack, &Uloc, &Kloc);CHKERRQ(ierr);
+
+    ierr = DMCompositeGetLocalISs(user->pack, &is);CHKERRQ(ierr);
+    ierr = MatGetLocalSubMatrix(*B, is[0], is[0], &Buu);CHKERRQ(ierr);
+    ierr = MatGetLocalSubMatrix(*B, is[0], is[1], &Buk);CHKERRQ(ierr);
+    ierr = MatGetLocalSubMatrix(*B, is[1], is[0], &Bku);CHKERRQ(ierr);
+    ierr = MatGetLocalSubMatrix(*B, is[1], is[1], &Bkk);CHKERRQ(ierr);
+    ierr = FormJacobianLocal_U (dmu, dmk, sectionU, sectionK, Buu, user);CHKERRQ(ierr);
+    ierr = FormJacobianLocal_UK(dmu, dmk, sectionU, sectionK, Buk, user);CHKERRQ(ierr);
+    ierr = FormJacobianLocal_KU(dmu, dmk, sectionU, sectionK, Bku, user);CHKERRQ(ierr);
+    ierr = FormJacobianLocal_K (dmu, dmk, sectionU, sectionK, Bkk, user);CHKERRQ(ierr);
+    ierr = MatRestoreLocalSubMatrix(*B, is[0], is[0], &Buu);CHKERRQ(ierr);
+    ierr = MatRestoreLocalSubMatrix(*B, is[0], is[1], &Buk);CHKERRQ(ierr);
+    ierr = MatRestoreLocalSubMatrix(*B, is[1], is[0], &Bku);CHKERRQ(ierr);
+    ierr = MatRestoreLocalSubMatrix(*B, is[1], is[1], &Bkk);CHKERRQ(ierr);
 
     ierr = ISDestroy(is[0]);CHKERRQ(ierr);
     ierr = ISDestroy(is[1]);CHKERRQ(ierr);
     ierr = PetscFree(is);CHKERRQ(ierr);
   } break;
   }
-  ierr = DMCompositeRestoreLocalVectors(user->pack,&Uloc,&Kloc);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd  (*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(*B, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd  (*B, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   if (*J != *B) {
-    ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd  (*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyBegin(*J, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd  (*J, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
+  //ierr = MatView(*B, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   *mstr = DIFFERENT_NONZERO_PATTERN;
   PetscFunctionReturn(0);
 }
@@ -467,10 +567,7 @@ static PetscErrorCode FormInitial_Coupled(User user,Vec X)
   ierr = SectionRealDestroy(coordinatesK);CHKERRQ(ierr);
   ierr = SectionRealDestroy(sectionU);CHKERRQ(ierr);
   ierr = SectionRealDestroy(sectionK);CHKERRQ(ierr);
-  ierr = VecView(user->Uloc,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = VecView(user->Kloc,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = DMCompositeGather(user->pack, X, INSERT_VALUES, user->Uloc, user->Kloc);CHKERRQ(ierr);
-  ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -489,12 +586,9 @@ int main(int argc, char *argv[])
   const PetscInt *lxu;
   PetscInt       *lxk, m, nprocs;
   PetscBool       view_draw;
-  PetscMPIInt     size;
   PetscErrorCode  ierr;
 
   ierr = PetscInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRQ(ierr);
-  if (size > 1) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "This example does not yet work in parallel");
   /* Create meshes */
   ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,-10,1,1,PETSC_NULL,&dau);CHKERRQ(ierr);
   ierr = DMDACreateOwnershipRanges(dau);CHKERRQ(ierr); /* Ensure that the ownership ranges agree so that we can get a compatible grid for the coefficient */
@@ -512,21 +606,25 @@ int main(int argc, char *argv[])
   ierr = DMDestroy(dau);CHKERRQ(ierr);
   ierr = DMDestroy(dak);CHKERRQ(ierr);
 
-  ierr = PetscNew(struct _UserCtx,&user);CHKERRQ(ierr);
-  user->bcType = NEUMANN;
+#if 1
+  {
+    ALE::Obj<PETSC_MESH_TYPE> m;
+    ierr = DMMeshGetMesh(dmu, m);CHKERRQ(ierr);
+    m->view("Mesh");
+    m->getLabel("marker")->view("Marker");
+  }
+#endif
+
+  ierr = PetscNew(struct _UserCtx, &user);CHKERRQ(ierr);
+  user->hxu = 1.0/m;
+  user->hxk = 1.0/(m-1);
   /* Setup dof layout.
-   For a DMDA, this is automatic given the number of dof at each vertex. However,
-   for a DMMesh, we need to specify this.
+   For a DMDA, this is automatic given the number of dof at each vertex. However, for a DMMesh, we need to specify this.
   */
   {
     /* There is perhaps a better way to do this that does not rely on the Discretization/BoundaryCondition objects in Mesh.hh */
-    int      numBC      = (user->bcType == DIRICHLET) ? 1 : 0;
-    int      markers[1] = {1};
-    double (*funcs[1])(const double *coords) = {user->exactFunc};
-
-    ierr = CreateProblem_gen_0(dmu, "u", numBC, markers, funcs, user->exactFunc);CHKERRQ(ierr);
-    ierr = CreateProblem_gen_0(dmk, "k", numBC, markers, funcs, user->exactFunc);CHKERRQ(ierr);
-    user->integrate = IntegrateDualBasis_gen_0;
+    ierr = CreateProblem_gen_0(dmu, "u");CHKERRQ(ierr);
+    ierr = CreateProblem_gen_0(dmk, "k");CHKERRQ(ierr);
   }
   SectionReal defaultSection;
 
@@ -638,6 +736,7 @@ int main(int argc, char *argv[])
   ierr = DMDestroy(dmk);CHKERRQ(ierr);
   ierr = DMDestroy(pack);CHKERRQ(ierr);
   ierr = SNESDestroy(snes);CHKERRQ(ierr);
+  ierr = PetscFree(user);CHKERRQ(ierr);
   PetscFinalize();
   return 0;
 }

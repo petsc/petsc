@@ -282,10 +282,10 @@ int main(int argc,char **argv)
      are no longer needed.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = MatDestroy(J);CHKERRQ(ierr);           ierr = VecDestroy(Y);CHKERRQ(ierr);
-  ierr = VecDestroy(user.localX);CHKERRQ(ierr); ierr = VecDestroy(X);CHKERRQ(ierr);
-  ierr = VecDestroy(user.localF);CHKERRQ(ierr); ierr = VecDestroy(F);CHKERRQ(ierr);      
-  ierr = KSPDestroy(ksp);CHKERRQ(ierr);  ierr = DMDestroy(user.da);CHKERRQ(ierr);
+  ierr = MatDestroy(&J);CHKERRQ(ierr);           ierr = VecDestroy(&Y);CHKERRQ(ierr);
+  ierr = VecDestroy(&user.localX);CHKERRQ(ierr); ierr = VecDestroy(&X);CHKERRQ(ierr);
+  ierr = VecDestroy(&user.localF);CHKERRQ(ierr); ierr = VecDestroy(&F);CHKERRQ(ierr);      
+  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);  ierr = DMDestroy(&user.da);CHKERRQ(ierr);
   ierr = PetscFinalize();
 
   return 0;

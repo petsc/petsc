@@ -31,7 +31,7 @@ struct _n_PetscLayout{
 
 extern PetscErrorCode PetscLayoutCreate(MPI_Comm,PetscLayout*);
 extern PetscErrorCode PetscLayoutSetUp(PetscLayout);
-extern PetscErrorCode PetscLayoutDestroy(PetscLayout);
+extern PetscErrorCode PetscLayoutDestroy(PetscLayout*);
 extern PetscErrorCode PetscLayoutCopy(PetscLayout,PetscLayout*);
 extern PetscErrorCode  PetscLayoutSetLocalSize(PetscLayout,PetscInt);
 extern PetscErrorCode  PetscLayoutGetLocalSize(PetscLayout,PetscInt *);
@@ -67,7 +67,8 @@ extern PetscErrorCode  PetscLayoutGetRanges(PetscLayout,const PetscInt *[]);
 PETSC_STATIC_INLINE PetscErrorCode PetscLayoutFindOwner(PetscLayout map,PetscInt idx,PetscInt *owner)
 {
   PetscErrorCode ierr;
-  PetscMPIInt lo = 0,hi,t;
+  PetscMPIInt    lo = 0,hi,t;
+  PetscInt       bs = map->bs;
 
   PetscFunctionBegin;
   if (!((map->n >= 0) && (map->N >= 0) && (map->range))) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"PetscLayoutSetUp() must be called first");
@@ -75,7 +76,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLayoutFindOwner(PetscLayout map,PetscInt
   ierr = MPI_Comm_size(map->comm,&hi);CHKERRQ(ierr);
   while (hi - lo > 1) {
     t = lo + (hi - lo) / 2;
-    if (idx < map->range[t]) hi = t;
+    if (idx < map->range[t]/bs) hi = t;
     else                     lo = t;
   }
   *owner = lo;

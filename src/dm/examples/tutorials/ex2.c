@@ -71,12 +71,12 @@ int main(int argc,char **argv)
   ierr = VecView(global,viewer);CHKERRQ(ierr);
 
   /* Free memory */
-  ierr = VecScatterDestroy(tolocalall);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(fromlocalall);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
-  ierr = VecDestroy(localall);CHKERRQ(ierr);
-  ierr = VecDestroy(global);CHKERRQ(ierr);
-  ierr = DMDestroy(da);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&tolocalall);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&fromlocalall);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  ierr = VecDestroy(&localall);CHKERRQ(ierr);
+  ierr = VecDestroy(&global);CHKERRQ(ierr);
+  ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

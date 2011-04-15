@@ -173,19 +173,19 @@ PetscErrorCode KSPReset_BCGS(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (cg->guess) {ierr = VecDestroy(cg->guess);CHKERRQ(ierr);}
+  ierr = VecDestroy(&cg->guess);CHKERRQ(ierr);
   ierr = KSPDefaultReset(ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPDestroy_BCGS" 
-PetscErrorCode KSPDestroy_BCGS(KSP ksp)
+PetscErrorCode KSPDestroy_BCGS(KSP *ksp)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = KSPReset_BCGS(ksp);CHKERRQ(ierr);
+  ierr = KSPReset_BCGS(*ksp);CHKERRQ(ierr);
   ierr = KSPDefaultDestroy(ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

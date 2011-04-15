@@ -35,7 +35,7 @@ PETSC_EXTERN_CXX_BEGIN
 typedef struct {
    PetscErrorCode (*getcomm)(PetscObject,MPI_Comm *);
    PetscErrorCode (*view)(PetscObject,PetscViewer);
-   PetscErrorCode (*destroy)(PetscObject);
+   PetscErrorCode (*destroy)(PetscObject*);
    PetscErrorCode (*compose)(PetscObject,const char[],PetscObject);
    PetscErrorCode (*query)(PetscObject,const char[],PetscObject *);
    PetscErrorCode (*composefunction)(PetscObject,const char[],const char[],void (*)(void));
@@ -143,11 +143,11 @@ extern PetscErrorCode  PetscHeaderCreate_Private(PetscObject,PetscClassId,PetscI
 .seealso: PetscHeaderCreate()
 @*/ 
 #define PetscHeaderDestroy(h)			   \
-  (PetscLogObjectDestroy((PetscObject)(h)) ||	   \
-   PetscComposedQuantitiesDestroy((PetscObject)h) || \
-   PetscHeaderDestroy_Private((PetscObject)(h)) || \
-   PetscFree((h)->ops) ||			   \
-   PetscFree(h))
+  (PetscLogObjectDestroy((PetscObject)(*h)) ||	   \
+   PetscComposedQuantitiesDestroy((PetscObject)*h) || \
+   PetscHeaderDestroy_Private((PetscObject)(*h)) || \
+   PetscFree((*h)->ops) ||			   \
+   PetscFree(*h))
 
 extern PetscErrorCode  PetscHeaderDestroy_Private(PetscObject);
 

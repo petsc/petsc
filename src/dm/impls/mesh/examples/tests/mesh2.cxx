@@ -68,7 +68,7 @@ PetscErrorCode ViewMesh(const Obj<ALE::Mesh>& m, const char filename[])
   ierr = CreatePartition(m, partition);CHKERRQ(ierr);
   ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_VTK_CELL);CHKERRQ(ierr);
   ierr = VTKViewer::writeField(partition, partition->getName(), 1, m->getFactory()->getNumbering(m, m->depth()), viewer);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

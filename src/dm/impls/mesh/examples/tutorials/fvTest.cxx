@@ -192,7 +192,7 @@ PetscErrorCode ReadMesh(MPI_Comm comm, PFLOTRANMesh *data, Options *options)
   status = H5Dread(dataset_id, H5T_IEEE_F64LE, H5S_ALL, H5S_ALL, H5P_DEFAULT, data->upZ);
   status = H5Dclose(dataset_id);
   /* Cleanup */
-  ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   data->numCells = dims[0];
   data->numFaces = dims[1];
   for(int c = 0; c < data->numCells; ++c) {
@@ -314,7 +314,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
 
     // TODO: Need different partitioning
     ierr = MeshDistribute(mesh, PETSC_NULL, &parallelMesh);CHKERRQ(ierr);
-    ierr = MeshDestroy(mesh);CHKERRQ(ierr);
+    ierr = MeshDestroy(&mesh);CHKERRQ(ierr);
     mesh = parallelMesh;
   }
   ierr = PetscOptionsHasName(PETSC_NULL, "-mesh_view", &view);CHKERRQ(ierr);
@@ -337,7 +337,7 @@ PetscErrorCode DestroyMesh(DM dm, Options *options)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MeshDestroy((Mesh) dm);CHKERRQ(ierr);
+  ierr = MeshDestroy(&(Mesh) dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

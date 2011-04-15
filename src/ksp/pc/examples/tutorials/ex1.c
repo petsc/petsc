@@ -115,11 +115,11 @@ int main(int argc,char **argv)
   }
   printf("\n");
 
-  ierr = VecDestroy(X);CHKERRQ(ierr);
-  ierr = VecDestroy(B);CHKERRQ(ierr);
-  ierr = VecDestroy(D);CHKERRQ(ierr);
-  ierr = MatDestroy(A);CHKERRQ(ierr);
-  ierr = KSPDestroy(solver);CHKERRQ(ierr);
+  ierr = VecDestroy(&X);CHKERRQ(ierr);
+  ierr = VecDestroy(&B);CHKERRQ(ierr);
+  ierr = VecDestroy(&D);CHKERRQ(ierr);
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  ierr = KSPDestroy(&solver);CHKERRQ(ierr);
   PetscFinalize();
   return 0;
 }

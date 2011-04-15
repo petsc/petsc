@@ -101,7 +101,7 @@ PetscInt main(PetscInt argc,char **args)
     ierr = PetscRandomCreate(PETSC_COMM_SELF, &rdm);CHKERRQ(ierr);
     ierr = PetscRandomSetFromOptions(rdm);CHKERRQ(ierr);
     ierr = VecSetRandom(x, rdm);CHKERRQ(ierr);
-    ierr = PetscRandomDestroy(rdm);CHKERRQ(ierr);
+    ierr = PetscRandomDestroy(&rdm);CHKERRQ(ierr);
   } 
   else if (function == CONSTANT) {
     ierr = VecSet(x, 1.0);CHKERRQ(ierr);
@@ -192,8 +192,8 @@ PetscInt main(PetscInt argc,char **args)
   ierr = DMRestoreGlobalVector(da,&yy);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(da,&z);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(da,&zz);CHKERRQ(ierr);
-  ierr = VecDestroy(coords);CHKERRQ(ierr);
-  ierr = DMDestroy(da);CHKERRQ(ierr);
+  ierr = VecDestroy(&coords);CHKERRQ(ierr);
+  ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

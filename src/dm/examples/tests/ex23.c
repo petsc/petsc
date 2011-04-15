@@ -60,12 +60,12 @@ int main(int argc,char **argv)
   ierr = VecView(global1,viewer);CHKERRQ(ierr);
   ierr = VecSetRandom(global3,rdm);CHKERRQ(ierr);
   ierr = VecView(global3,viewer);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"temp",FILE_MODE_READ,&viewer);CHKERRQ(ierr);
   ierr = VecLoad(global2,viewer);CHKERRQ(ierr);
   ierr = VecLoad(global4,viewer);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 
   ierr = VecAXPY(global2,mone,global1);CHKERRQ(ierr);
   ierr = VecNorm(global2,NORM_MAX,&norm);CHKERRQ(ierr);
@@ -89,12 +89,12 @@ int main(int argc,char **argv)
   }
 
 
-  ierr = PetscRandomDestroy(rdm);CHKERRQ(ierr);
-  ierr = DMDestroy(da);CHKERRQ(ierr);
-  ierr = VecDestroy(global1);CHKERRQ(ierr);
-  ierr = VecDestroy(global2);CHKERRQ(ierr);
-  ierr = VecDestroy(global3);CHKERRQ(ierr);
-  ierr = VecDestroy(global4);CHKERRQ(ierr);
+  ierr = PetscRandomDestroy(&rdm);CHKERRQ(ierr);
+  ierr = DMDestroy(&da);CHKERRQ(ierr);
+  ierr = VecDestroy(&global1);CHKERRQ(ierr);
+  ierr = VecDestroy(&global2);CHKERRQ(ierr);
+  ierr = VecDestroy(&global3);CHKERRQ(ierr);
+  ierr = VecDestroy(&global4);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

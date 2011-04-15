@@ -82,7 +82,7 @@ int main(int argc,char **args)
   ierr = MatCreate(PETSC_COMM_WORLD,&ctx.A);CHKERRQ(ierr);
   ierr = MatSetType(ctx.A,MATMPIAIJ);CHKERRQ(ierr);
   ierr = MatLoad(ctx.A,fd);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
 
   /* Create work vectors for matrix-vector product */
   ierr = MatGetVecs(ctx.A,&ctx.x,&ctx.y);CHKERRQ(ierr);
@@ -96,7 +96,7 @@ int main(int argc,char **args)
   ierr = VecGetOwnershipRange(ctx.x,&rstart,PETSC_NULL);CHKERRQ(ierr);
   ierr = ISCreateStride(PETSC_COMM_WORLD,ns[rank],rstart,1,&is);CHKERRQ(ierr);
   ierr = VecScatterCreate(ctx.xr,is,ctx.x,is,&ctx.sct);CHKERRQ(ierr);
-  ierr = ISDestroy(is);CHKERRQ(ierr);
+  ierr = ISDestroy(&is);CHKERRQ(ierr);
 
   /* 
      The master nodes call the function MySubsolver() while the worker nodes wait for requests to call functions
@@ -105,12 +105,12 @@ int main(int argc,char **args)
   ierr = PetscOpenMPMerge(nodesize,(PetscErrorCode (*)(void*))MySubsolver,&ctx);CHKERRQ(ierr);
 
   ierr = PetscOpenMPFinalize();CHKERRQ(ierr);
-  ierr = MatDestroy(ctx.A);CHKERRQ(ierr);
-  ierr = VecDestroy(ctx.x);CHKERRQ(ierr);
-  ierr = VecDestroy(ctx.y);CHKERRQ(ierr);
-  ierr = VecDestroy(ctx.xr);CHKERRQ(ierr);
-  ierr = VecDestroy(ctx.yr);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(ctx.sct);CHKERRQ(ierr);
+  ierr = MatDestroy(&ctx.A);CHKERRQ(ierr);
+  ierr = VecDestroy(&ctx.x);CHKERRQ(ierr);
+  ierr = VecDestroy(&ctx.y);CHKERRQ(ierr);
+  ierr = VecDestroy(&ctx.xr);CHKERRQ(ierr);
+  ierr = VecDestroy(&ctx.yr);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&ctx.sct);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
   return 0;

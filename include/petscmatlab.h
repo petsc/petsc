@@ -21,7 +21,7 @@ S*/
 typedef struct _p_PetscMatlabEngine* PetscMatlabEngine;
 
 extern PetscErrorCode  PetscMatlabEngineCreate(MPI_Comm,const char[],PetscMatlabEngine*);
-extern PetscErrorCode  PetscMatlabEngineDestroy(PetscMatlabEngine);
+extern PetscErrorCode  PetscMatlabEngineDestroy(PetscMatlabEngine*);
 extern PetscErrorCode  PetscMatlabEngineEvaluate(PetscMatlabEngine,const char[],...);
 extern PetscErrorCode  PetscMatlabEngineGetOutput(PetscMatlabEngine,char **);
 extern PetscErrorCode  PetscMatlabEnginePrintOutput(PetscMatlabEngine,FILE*);

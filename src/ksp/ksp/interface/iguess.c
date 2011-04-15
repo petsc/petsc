@@ -50,7 +50,7 @@ PetscErrorCode  KSPFischerGuessDestroy_Method1(KSPFischerGuess_Method1 *itg)
   ierr = PetscFree(itg->alpha);CHKERRQ(ierr);
   ierr = VecDestroyVecs(itg->maxl,&itg->btilde);CHKERRQ(ierr);
   ierr = VecDestroyVecs(itg->maxl,&itg->xtilde);CHKERRQ(ierr);
-  ierr = VecDestroy(itg->guess);CHKERRQ(ierr);
+  ierr = VecDestroy(&itg->guess);CHKERRQ(ierr);
   ierr = PetscFree(itg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -172,8 +172,8 @@ PetscErrorCode  KSPFischerGuessDestroy_Method2(KSPFischerGuess_Method2 *itg)
   PetscFunctionBegin;
   ierr = PetscFree(itg->alpha);CHKERRQ(ierr);
   ierr = VecDestroyVecs(itg->maxl,&itg->xtilde);CHKERRQ(ierr);
-  ierr = VecDestroy(itg->Ax);CHKERRQ(ierr);
-  ierr = VecDestroy(itg->guess);CHKERRQ(ierr);
+  ierr = VecDestroy(&itg->Ax);CHKERRQ(ierr);
+  ierr = VecDestroy(&itg->guess);CHKERRQ(ierr);
   ierr = PetscFree(itg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

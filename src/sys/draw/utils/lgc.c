@@ -265,7 +265,7 @@ PetscErrorCode  PetscDrawLGReset(PetscDrawLG lg)
 
 .seealso:  PetscDrawLGCreate()
 @*/
-PetscErrorCode  PetscDrawLGDestroy(PetscDrawLG lg)
+PetscErrorCode  PetscDrawLGDestroy(PetscDrawLG *lg)
 {
   PetscErrorCode ierr;
 
@@ -276,7 +276,7 @@ PetscErrorCode  PetscDrawLGDestroy(PetscDrawLG lg)
 
   if (--((PetscObject)lg)->refct > 0) PetscFunctionReturn(0);
   if (lg && ((PetscObject)lg)->classid == PETSC_DRAW_CLASSID) {
-    ierr = PetscObjectDestroy((PetscObject)lg);CHKERRQ(ierr);
+    ierr = PetscObjectDestroy((PetscObject*)lg);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
   ierr = PetscDrawAxisDestroy(lg->axis);CHKERRQ(ierr);

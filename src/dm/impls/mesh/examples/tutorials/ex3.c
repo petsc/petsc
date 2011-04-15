@@ -76,7 +76,7 @@ int main(int argc, char *argv[])
       ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
       ierr = PetscViewerFileSetName(viewer, "testBoundary.vtk");CHKERRQ(ierr);
       ierr = MeshView_Sieve_Newer(meshBoundary, viewer);CHKERRQ(ierr);
-      ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     }
     mesh = ALE::Two::Generator::generate(meshBoundary, interpolate);
     ALE::Obj<ALE::Two::Mesh::sieve_type> topology = mesh->getTopology();
@@ -168,7 +168,7 @@ int main(int argc, char *argv[])
     ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK_CELL);CHKERRQ(ierr);
     ierr = VecView(partition, viewer);CHKERRQ(ierr);
     ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     ALE::LogStagePop(stage);
   } catch (ALE::Exception e) {
     std::cout << e.msg() << std::endl;

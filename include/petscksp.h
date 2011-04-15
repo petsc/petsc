@@ -70,8 +70,7 @@ extern PetscErrorCode  KSPSetUpOnBlocks(KSP);
 extern PetscErrorCode  KSPSolve(KSP,Vec,Vec);
 extern PetscErrorCode  KSPSolveTranspose(KSP,Vec,Vec);
 extern PetscErrorCode  KSPReset(KSP);
-extern PetscErrorCode  KSPDestroy_(KSP);
-#define KSPDestroy(a)  (KSPDestroy_(a) || (((a) = 0),0))
+extern PetscErrorCode  KSPDestroy(KSP*);
 
 extern PetscFList KSPList;
 extern PetscBool  KSPRegisterAllCalled;
@@ -570,13 +569,13 @@ extern PetscErrorCode  PCPostSolve(PC,KSP);
 
 extern PetscErrorCode  KSPMonitorLGCreate(const char[],const char[],int,int,int,int,PetscDrawLG*);
 extern PetscErrorCode  KSPMonitorLG(KSP,PetscInt,PetscReal,void*);
-extern PetscErrorCode  KSPMonitorLGDestroy(PetscDrawLG);
+extern PetscErrorCode  KSPMonitorLGDestroy(PetscDrawLG*);
 extern PetscErrorCode  KSPMonitorLGTrueResidualNormCreate(MPI_Comm,const char[],const char[],int,int,int,int,PetscDrawLG*);
 extern PetscErrorCode  KSPMonitorLGTrueResidualNorm(KSP,PetscInt,PetscReal,void*);
-extern PetscErrorCode  KSPMonitorLGTrueResidualNormDestroy(PetscDrawLG);
+extern PetscErrorCode  KSPMonitorLGTrueResidualNormDestroy(PetscDrawLG*);
 extern PetscErrorCode  KSPMonitorLGRangeCreate(const char[],const char[],int,int,int,int,PetscDrawLG*);
 extern PetscErrorCode  KSPMonitorLGRange(KSP,PetscInt,PetscReal,void*);
-extern PetscErrorCode  KSPMonitorLGRangeDestroy(PetscDrawLG);
+extern PetscErrorCode  KSPMonitorLGRangeDestroy(PetscDrawLG*);
 
 extern PetscErrorCode  PCShellSetPreSolve(PC,PetscErrorCode (*)(PC,KSP,Vec,Vec));
 extern PetscErrorCode  PCShellSetPostSolve(PC,PetscErrorCode (*)(PC,KSP,Vec,Vec));
@@ -600,6 +599,8 @@ extern PetscErrorCode  MatSchurComplementGetKSP(Mat,KSP*);
 extern PetscErrorCode  MatSchurComplementUpdate(Mat,Mat,Mat,Mat,Mat,Mat,MatStructure);
 extern PetscErrorCode  MatSchurComplementGetSubmatrices(Mat,Mat*,Mat*,Mat*,Mat*,Mat*);
 extern PetscErrorCode  MatGetSchurComplement(Mat,IS,IS,IS,IS,MatReuse,Mat *,MatReuse,Mat *);
+
+extern PetscErrorCode  MatGetSchurComplement_Basic(Mat mat,IS isrow0,IS iscol0,IS isrow1,IS iscol1,MatReuse mreuse,Mat *newmat,MatReuse preuse,Mat *newpmat);
 
 extern PetscErrorCode  KSPSetDM(KSP,DM);
 extern PetscErrorCode  KSPSetDMActive(KSP,PetscBool );

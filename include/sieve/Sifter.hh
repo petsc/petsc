@@ -15,7 +15,7 @@
 #include <sieve/ALE.hh>
 #endif
 
-extern PetscErrorCode PetscObjectDestroy_PetscObject(PetscObject);
+extern PetscErrorCode PetscObjectDestroy_PetscObject(PetscObject*);
 
 namespace ALE {
 
@@ -684,8 +684,7 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
 #ifdef USE_PETSC_OBJ
       if (this->_petscObj) {
         PetscErrorCode ierr;
-        ierr = PetscObjectDestroy(this->_petscObj);CHKERROR(ierr, "Failed in PetscObjectDestroy");
-        this->_petscObj = NULL;
+        ierr = PetscObjectDestroy(&this->_petscObj);CHKERROR(ierr, "Failed in PetscObjectDestroy");
       }
 #endif
     };

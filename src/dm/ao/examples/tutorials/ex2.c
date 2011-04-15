@@ -436,7 +436,7 @@ PetscErrorCode DataPartitionElements(GridData *gdata)
   ierr = MatPartitioningSetAdjacency(part,Adj);CHKERRQ(ierr);
   ierr = MatPartitioningSetFromOptions(part);CHKERRQ(ierr);
   ierr = MatPartitioningApply(part,&isnewproc);CHKERRQ(ierr);
-  ierr = MatPartitioningDestroy(part);CHKERRQ(ierr);
+  ierr = MatPartitioningDestroy(&part);CHKERRQ(ierr);
 
   /*
        isnewproc - indicates for each local element the new processor it is assigned to
@@ -448,7 +448,7 @@ PetscErrorCode DataPartitionElements(GridData *gdata)
   /*
       Free the adjacency graph data structures
   */
-  ierr = MatDestroy(Adj);CHKERRQ(ierr);
+  ierr = MatDestroy(&Adj);CHKERRQ(ierr);
 
 
   PetscFunctionReturn(0);
@@ -499,7 +499,7 @@ PetscErrorCode DataMoveElements(GridData *gdata)
       Create an index set from the isnewproc index set to indicate the mapping TO 
   */
   ierr = ISPartitioningToNumbering(gdata->isnewproc,&isnum);CHKERRQ(ierr);
-  ierr = ISDestroy(gdata->isnewproc);
+  ierr = ISDestroy(&gdata->isnewproc);
   /* 
       There are three data items per cell (element), the integer vertex numbers of its three 
     coordinates (we convert to double to use the scatter) (one can think 
@@ -513,7 +513,7 @@ PetscErrorCode DataMoveElements(GridData *gdata)
   ierr = ISCreateBlock(PETSC_COMM_WORLD,3,gdata->mlocal_ele,tidx,PETSC_COPY_VALUES,&isscat);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isnum,&idx);CHKERRQ(ierr);
   ierr = PetscFree(tidx);CHKERRQ(ierr);
-  ierr = ISDestroy(isnum);CHKERRQ(ierr);
+  ierr = ISDestroy(&isnum);CHKERRQ(ierr);
 
   /* 
      Create a vector to contain the original vertex information for each element 
@@ -529,11 +529,11 @@ PetscErrorCode DataMoveElements(GridData *gdata)
      Scatter the element vertex information (still in the original vertex ordering) to the correct processor
   */
   ierr = VecScatterCreate(veleold,PETSC_NULL,vele,isscat,&vecscat);CHKERRQ(ierr);
-  ierr = ISDestroy(isscat);CHKERRQ(ierr);
+  ierr = ISDestroy(&isscat);CHKERRQ(ierr);
   ierr = VecScatterBegin(vecscat,veleold,vele,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(vecscat,veleold,vele,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(vecscat);CHKERRQ(ierr);
-  ierr = VecDestroy(veleold);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&vecscat);CHKERRQ(ierr);
+  ierr = VecDestroy(&veleold);CHKERRQ(ierr);
 
   /* 
      Put the element vertex data into a new allocation of the gdata->ele 
@@ -547,7 +547,7 @@ PetscErrorCode DataMoveElements(GridData *gdata)
     gdata->ele[i] = (int)PetscRealPart(array[i]);
   }
   ierr = VecRestoreArray(vele,&array);CHKERRQ(ierr);
-  ierr = VecDestroy(vele);CHKERRQ(ierr);
+  ierr = VecDestroy(&vele);CHKERRQ(ierr);
 
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Old vertex numbering in new element ordering\n");CHKERRQ(ierr);
   ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"Processor %d\n",rank);CHKERRQ(ierr);
@@ -719,7 +719,7 @@ PetscErrorCode DataMoveVertices(GridData *gdata)
   /*
      Destroy the AO that is no longer needed
   */
-  ierr = AODestroy(ao);CHKERRQ(ierr);
+  ierr = AODestroy(&ao);CHKERRQ(ierr);
 
   /* --------------------------------------------------------------------
       Finally ship the vertex coordinate information to its owning process
@@ -743,12 +743,12 @@ PetscErrorCode DataMoveVertices(GridData *gdata)
       Scatter the element vertex information to the correct processor
   */
   ierr = VecScatterCreate(overt,isscat,vert,PETSC_NULL,&vecscat);CHKERRQ(ierr);
-  ierr = ISDestroy(isscat);CHKERRQ(ierr);
+  ierr = ISDestroy(&isscat);CHKERRQ(ierr);
   ierr = VecScatterBegin(vecscat,overt,vert,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(vecscat,overt,vert,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(vecscat);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&vecscat);CHKERRQ(ierr);
 
-  ierr = VecDestroy(overt);CHKERRQ(ierr);
+  ierr = VecDestroy(&overt);CHKERRQ(ierr);
   ierr = PetscFree(gdata->vert);CHKERRQ(ierr);
  
   /*
@@ -759,7 +759,7 @@ PetscErrorCode DataMoveVertices(GridData *gdata)
   ierr = PetscMemcpy(gdata->vert,avert,2*gdata->nlocal*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = VecRestoreArray(vert,&avert);CHKERRQ(ierr);
   gdata->mlocal_vert = gdata->nlocal;
-  ierr = VecDestroy(vert);CHKERRQ(ierr);
+  ierr = VecDestroy(&vert);CHKERRQ(ierr);
 
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Vertex coordinates in new numbering\n");CHKERRQ(ierr);
   for (i=0; i<gdata->mlocal_vert; i++) {

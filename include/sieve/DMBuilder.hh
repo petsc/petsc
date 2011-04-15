@@ -105,7 +105,7 @@ namespace ALE {
         ALE::ISieveConverter::convertMesh(*mB, *meshBd, renumbering, false);
         ierr = DMMeshSetMesh(boundary, meshBd);CHKERRQ(ierr);
         ierr = DMMeshGenerate(boundary, (PetscBool) interpolate, &mesh);CHKERRQ(ierr);
-        ierr = DMDestroy(boundary);CHKERRQ(ierr);
+        ierr = DMDestroy(&boundary);CHKERRQ(ierr);
         *dm = (DM) mesh;
       }
       PetscFunctionReturn(0);
@@ -146,7 +146,7 @@ namespace ALE {
       ALE::ISieveConverter::convertMesh(*mB, *meshBd, renumbering, false);
       ierr = DMMeshSetMesh(boundary, meshBd);CHKERRQ(ierr);
       ierr = DMMeshGenerate(boundary, (PetscBool) interpolate, &mesh);CHKERRQ(ierr);
-      ierr = MeshDestroy(boundary);CHKERRQ(ierr);
+      ierr = MeshDestroy(&boundary);CHKERRQ(ierr);
       *dm = (DM) mesh;
       PetscFunctionReturn(0);
     };
@@ -175,7 +175,7 @@ namespace ALE {
       ALE::ISieveConverter::convertMesh(*mB, *meshBd, renumbering, false);
       ierr = DMMeshSetMesh(boundary, meshBd);CHKERRQ(ierr);
       ierr = DMMeshGenerate(boundary, (PetscBool) interpolate, &mesh);CHKERRQ(ierr);
-      ierr = MeshDestroy(boundary);CHKERRQ(ierr);
+      ierr = MeshDestroy(&boundary);CHKERRQ(ierr);
       *dm = (DM) mesh;
       PetscFunctionReturn(0);
     };
@@ -204,7 +204,7 @@ namespace ALE {
       ALE::ISieveConverter::convertMesh(*mB, *meshBd, renumbering, false);
       ierr = DMMeshSetMesh(boundary, meshBd);CHKERRQ(ierr);
       ierr = DMMeshGenerate(boundary, (PetscBool) interpolate, &mesh);CHKERRQ(ierr);
-      ierr = MeshDestroy(boundary);CHKERRQ(ierr);
+      ierr = MeshDestroy(&boundary);CHKERRQ(ierr);
       *dm = (DM) mesh;
       PetscFunctionReturn(0);
     };

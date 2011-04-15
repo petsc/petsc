@@ -21,7 +21,7 @@ void PETSC_STDCALL aoview_(AO *ao,PetscViewer *viewer, PetscErrorCode *ierr)
 
 void PETSC_STDCALL aodestroy_(AO *ao, int *__ierr )
 {
-  *__ierr = AODestroy(*ao);
+  *__ierr = AODestroy(ao);
 }
 
 EXTERN_C_END

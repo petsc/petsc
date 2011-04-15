@@ -1016,6 +1016,66 @@ PetscErrorCode SNESVISetRedundancyCheck(SNES snes,PetscErrorCode (*func)(SNES,IS
   PetscFunctionReturn(0);
 }
 
+#if defined(PETSC_HAVE_MATLAB_ENGINE)
+#include <engine.h>
+#include <mex.h>
+typedef struct {char *funcname; mxArray *ctx;} SNESVIMatlabContext;
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESVIRedundancyCheck_Matlab"
+PetscErrorCode SNESVIRedundancyCheck_Matlab(SNES snes,IS is_act,IS* is_redact,void* ctx)
+{
+  PetscErrorCode      ierr;
+  SNESVIMatlabContext *sctx = (SNESVIMatlabContext*)ctx;
+  int                 nlhs = 2, nrhs = 4;
+  mxArray             *plhs[2], *prhs[4];
+  long long int       l1 = 0,ls = 0;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  PetscValidHeaderSpecific(is_act,IS_CLASSID,2);
+  PetscValidPointer(is_redact,3);
+  PetscCheckSameComm(snes,1,is_act,2);
+
+  /* call Matlab function in ctx with arguments is_act */
+  ierr = PetscMemcpy(&ls,&snes,sizeof(snes));CHKERRQ(ierr);
+  ierr = PetscMemcpy(&l1,&is_act,sizeof(is_act));CHKERRQ(ierr);
+  prhs[0] = mxCreateDoubleScalar((double)ls);
+  prhs[1] = mxCreateDoubleScalar((double)l1);
+  prhs[2] = mxCreateString(sctx->funcname);
+  prhs[3] = sctx->ctx;
+  ierr    = mexCallMATLAB(nlhs,plhs,nrhs,prhs,"PetscSNESVIRedundancyCheckInternal");CHKERRQ(ierr);
+  ierr    = mxGetScalar(plhs[0]);CHKERRQ(ierr);
+  *is_redact = (IS)mxGetPr(plhs[1]);
+  mxDestroyArray(prhs[0]);
+  mxDestroyArray(prhs[1]);
+  mxDestroyArray(prhs[2]);
+  mxDestroyArray(prhs[3]);
+  mxDestroyArray(plhs[0]);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESVISetRedundancyCheckMatlab"
+PetscErrorCode SNESVISetRedundancyCheckMatlab(SNES snes,const char* func,mxArray* ctx)
+{
+  PetscErrorCode      ierr;
+  SNESVIMatlabContext *sctx;
+  SNES_VI             *vi = (SNES_VI*)snes->data;
+
+  PetscFunctionBegin;
+  /* currently sctx is memory bleed */
+  ierr = PetscMalloc(sizeof(SNESVIMatlabContext),&sctx);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(func,&sctx->funcname);CHKERRQ(ierr);
+
+  sctx->ctx = mxDuplicateArray(ctx);
+  vi->checkredundancy = SNESVIRedundancyCheck_Matlab;
+  PetscFunctionReturn(0);
+}
+  
+#endif
+
+
 /* Variational Inequality solver using augmented space method. It does the opposite of the
    reduced space method i.e. it identifies the active set variables and instead of discarding
    them it augments the original system by introducing additional equality 
@@ -1147,14 +1207,31 @@ PetscErrorCode SNESSolveVI_RS2(SNES snes)
       ierr = MatSetSizes(J_aug,X->map->n+nkept,X->map->n+nkept,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
       ierr = MatSetFromOptions(J_aug);CHKERRQ(ierr);
       
-      /* set preallocation info..will add this later */
 
-      /* Set values in the augmented matrix...Doing only sequential case first*/
+      { /* local vars */
+      /* Preallocate augmented matrix and set values in it...Doing only sequential case first*/
       PetscInt          ncols;
       const PetscInt    *cols;
       const PetscScalar *vals;
       PetscScalar        value=1.0;
       PetscInt           row,col;
+      PetscInt           *d_nnz;
+
+      ierr = PetscMalloc((X->map->n+nkept)*sizeof(PetscInt),&d_nnz);CHKERRQ(ierr);
+      ierr = PetscMemzero(d_nnz,(X->map->n+nkept)*sizeof(PetscInt));CHKERRQ(ierr);
+      for(row=0;row<snes->jacobian->rmap->n;row++) {
+        ierr = MatGetRow(snes->jacobian,row,&ncols,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+        d_nnz[row] += ncols;
+        ierr = MatRestoreRow(snes->jacobian,row,&ncols,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+      }
+
+      for(k=0;k<nkept;k++) {
+        d_nnz[idx_actkept[k]] += 1;
+        d_nnz[snes->jacobian->rmap->n+k] += 1;
+      }
+      ierr = MatSeqAIJSetPreallocation(J_aug,PETSC_NULL,d_nnz);CHKERRQ(ierr);
+      
+      ierr = PetscFree(d_nnz);CHKERRQ(ierr);
 
       /* Set the original jacobian matrix in J_aug */
       for(row=0;row<snes->jacobian->rmap->n;row++) {
@@ -1173,7 +1250,7 @@ PetscErrorCode SNESSolveVI_RS2(SNES snes)
       ierr = MatAssemblyEnd(J_aug,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
       /* Only considering prejac = jac for now */
       Jpre_aug = J_aug;
-
+      } /* local vars*/
     } else {
       F_aug = F; J_aug = snes->jacobian; Y_aug = Y; Jpre_aug = snes->jacobian_pre;
     }

@@ -166,7 +166,7 @@ PetscErrorCode  DMRestoreLocalVector(DM dm,Vec* g)
       }
     }
   }
-  ierr = VecDestroy(*g);CHKERRQ(ierr);
+  ierr = VecDestroy(g);CHKERRQ(ierr);
   alldone:
   PetscFunctionReturn(0);
 }
@@ -271,7 +271,7 @@ PetscErrorCode  DMRestoreGlobalVector(DM dm,Vec* g)
       }
     }
   }
-  ierr = VecDestroy(*g);CHKERRQ(ierr);
+  ierr = VecDestroy(g);CHKERRQ(ierr);
   alldone:
   PetscFunctionReturn(0);
 }

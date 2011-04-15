@@ -138,13 +138,13 @@ PetscErrorCode FAGlobalToLocal(FA fa,Vec g,Vec l)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode FADestroy(FA fa)
+PetscErrorCode FADestroy(FA *fa)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = VecDestroy(fa->g);CHKERRQ(ierr);
-  ierr = VecDestroy(fa->l);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(fa->vscat);CHKERRQ(ierr);
+  ierr = VecDestroy(&fa->g);CHKERRQ(ierr);
+  ierr = VecDestroy(&fa->l);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&fa->vscat);CHKERRQ(ierr);
   ierr = PetscFree(fa);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -413,10 +413,10 @@ PetscErrorCode FACreate(FA *infa)
   ierr = VecCreateMPI(PETSC_COMM_WORLD,tonglobal,PETSC_DETERMINE,&tovec);CHKERRQ(ierr);
   ierr = VecCreateMPI(PETSC_COMM_WORLD,fromnglobal,PETSC_DETERMINE,&globalvec);CHKERRQ(ierr);
   ierr = VecScatterCreate(globalvec,globalis,tovec,tois,&vscat);CHKERRQ(ierr);
-  ierr = ISDestroy(tois);CHKERRQ(ierr);
-  ierr = ISDestroy(globalis);CHKERRQ(ierr);
-  ierr = AODestroy(globalao);CHKERRQ(ierr);
-  ierr = AODestroy(toao);CHKERRQ(ierr);
+  ierr = ISDestroy(&tois);CHKERRQ(ierr);
+  ierr = ISDestroy(&globalis);CHKERRQ(ierr);
+  ierr = AODestroy(&globalao);CHKERRQ(ierr);
+  ierr = AODestroy(&toao);CHKERRQ(ierr);
 
   /* fill up global vector without redundant values with PETSc global numbering */
   ierr = VecGetArray(globalvec,&globalarray);CHKERRQ(ierr);
@@ -477,8 +477,8 @@ PetscErrorCode FACreate(FA *infa)
   ierr = VecRestoreArray(tovec,&toarray);CHKERRQ(ierr);
 
   /* no longer need the redundant vector and VecScatter to it */
-  ierr = VecScatterDestroy(vscat);CHKERRQ(ierr);
-  ierr = VecDestroy(tovec);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&vscat);CHKERRQ(ierr);
+  ierr = VecDestroy(&tovec);CHKERRQ(ierr);
 
   /* Create final scatter that goes directly from globalvec to localvec */
   /* this is the one to be used in the application code */
@@ -495,21 +495,21 @@ PetscErrorCode FACreate(FA *infa)
   ierr = VecCreateMPI(PETSC_COMM_WORLD,2*fromnglobal,PETSC_DETERMINE,&fa->g);CHKERRQ(ierr);
 
   ierr = VecScatterCreate(fa->g,is,fa->l,PETSC_NULL,&fa->vscat);CHKERRQ(ierr);
-  ierr = ISDestroy(is);CHKERRQ(ierr);
+  ierr = ISDestroy(&is);CHKERRQ(ierr);
 
-  ierr = VecDestroy(globalvec);CHKERRQ(ierr);
-  ierr = VecDestroy(localvec);CHKERRQ(ierr);
+  ierr = VecDestroy(&globalvec);CHKERRQ(ierr);
+  ierr = VecDestroy(&localvec);CHKERRQ(ierr);
   if (fa->comm[0]) {
     ierr = DMRestoreLocalVector(da1,&vl1);CHKERRQ(ierr);
-    ierr = DMDestroy(da1);CHKERRQ(ierr);
+    ierr = DMDestroy(&da1);CHKERRQ(ierr);
   }
   if (fa->comm[1]) {
     ierr = DMRestoreLocalVector(da2,&vl2);CHKERRQ(ierr);
-    ierr = DMDestroy(da2);CHKERRQ(ierr);
+    ierr = DMDestroy(&da2);CHKERRQ(ierr);
   }
   if (fa->comm[2]) {
     ierr = DMRestoreLocalVector(da3,&vl3);CHKERRQ(ierr);
-    ierr = DMDestroy(da3);CHKERRQ(ierr);
+    ierr = DMDestroy(&da3);CHKERRQ(ierr);
   }
   *infa = fa;
   PetscFunctionReturn(0);
@@ -598,7 +598,7 @@ PetscErrorCode DrawFA(FA fa,Vec v)
   ierr = PetscDrawSetCoordinates(draw,xmin,ymin,xmax,ymax);CHKERRQ(ierr);
   ierr = PetscDrawZoom(draw,DrawPatch,&zctx);CHKERRQ(ierr);
   ierr = VecRestoreArray(v,&va);CHKERRQ(ierr);
-  ierr = PetscDrawDestroy(draw);CHKERRQ(ierr);
+  ierr = PetscDrawDestroy(&draw);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }
@@ -734,8 +734,8 @@ PetscErrorCode FATest(FA fa)
       ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
     }
   }
-  ierr = VecDestroy(g);CHKERRQ(ierr);
-  ierr = VecDestroy(l);CHKERRQ(ierr);
+  ierr = VecDestroy(&g);CHKERRQ(ierr);
+  ierr = VecDestroy(&l);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -763,9 +763,9 @@ int main(int argc,char **argv)
   ierr = DrawFA(fa,g);CHKERRQ(ierr);
   ierr = DrawFA(fa,l);CHKERRQ(ierr);
 
-  ierr = VecDestroy(g);CHKERRQ(ierr);
-  ierr = VecDestroy(l);CHKERRQ(ierr);
-  ierr = FADestroy(fa);CHKERRQ(ierr);
+  ierr = VecDestroy(&g);CHKERRQ(ierr);
+  ierr = VecDestroy(&l);CHKERRQ(ierr);
+  ierr = FADestroy(&fa);CHKERRQ(ierr);
 
   PetscFinalize();
   return 0;

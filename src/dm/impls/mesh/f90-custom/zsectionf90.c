@@ -73,14 +73,14 @@ void PETSC_STDCALL sectionrealrestore_(SectionReal section, int *point,F90Array1
   PetscScalar *c;
 
   *ierr = F90Array1dAccess(ptr,PETSC_SCALAR,(void**)&c PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
-  *ierr = F90Array1dDestroy(ptr,PETSC_SCALAR PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
+  *ierr = F90Array1dDestroy(&ptr,PETSC_SCALAR PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
 }
 void PETSC_STDCALL sectionintrestore_(SectionInt section, int *point,F90Array1d *ptr,int *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscInt *c;
 
   *ierr = F90Array1dAccess(ptr,PETSC_SCALAR,(void**)&c PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
-  *ierr = F90Array1dDestroy(ptr,PETSC_INT PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
+  *ierr = F90Array1dDestroy(&ptr,PETSC_INT PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
 }
 void PETSC_STDCALL sectionrealrestrictclosure_(SectionReal section, DM dm, int *point,int *size,F90Array1d *ptr,int *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {

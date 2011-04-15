@@ -979,9 +979,9 @@ PetscErrorCode PCReset_BJacobi_Multiblock(PC pc)
   for (i=0; i<jac->n_local; i++) {
     ierr = KSPReset(jac->ksp[i]);CHKERRQ(ierr);
     if (bjac && bjac->x) {
-      ierr = VecDestroy(bjac->x[i]);CHKERRQ(ierr);
-      ierr = VecDestroy(bjac->y[i]);CHKERRQ(ierr);
-      ierr = ISDestroy(bjac->is[i]);CHKERRQ(ierr);
+      ierr = VecDestroy(&bjac->x[i]);CHKERRQ(ierr);
+      ierr = VecDestroy(&bjac->y[i]);CHKERRQ(ierr);
+      ierr = ISDestroy(&bjac->is[i]);CHKERRQ(ierr);
     }
   }
   if (bjac) {

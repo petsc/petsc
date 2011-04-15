@@ -46,7 +46,7 @@ PetscErrorCode PCReset_ILU(PC pc)
   PetscFunctionBegin;
   if (!ilu->inplace && ((PC_Factor*)ilu)->fact) {ierr = MatDestroy(((PC_Factor*)ilu)->fact);CHKERRQ(ierr);}
   if (ilu->row && ilu->col && ilu->row != ilu->col) {ierr = ISDestroy(ilu->row);CHKERRQ(ierr);}
-  if (ilu->col) {ierr = ISDestroy(ilu->col);CHKERRQ(ierr);}
+  ierr = ISDestroy(&ilu->col);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -220,8 +220,8 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
     } else if (pc->flag != SAME_NONZERO_PATTERN) { 
       if (!ilu->reuseordering) {
         /* compute a new ordering for the ILU */
-        ierr = ISDestroy(ilu->row);CHKERRQ(ierr);
-        ierr = ISDestroy(ilu->col);CHKERRQ(ierr);
+        ierr = ISDestroy(&ilu->row);CHKERRQ(ierr);
+        ierr = ISDestroy(&ilu->col);CHKERRQ(ierr);
         ierr = MatGetOrdering(pc->pmat,((PC_Factor*)ilu)->ordering,&ilu->row,&ilu->col);CHKERRQ(ierr);
         if (ilu->row) {ierr = PetscLogObjectParent(pc,ilu->row);CHKERRQ(ierr);}
         if (ilu->col) {ierr = PetscLogObjectParent(pc,ilu->col);CHKERRQ(ierr);}

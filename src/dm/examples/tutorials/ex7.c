@@ -72,13 +72,13 @@ int main(int argc,char **argv)
   ierr = DMDASetFieldName(da,0,"field1");CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,1,"field2");CHKERRQ(ierr);
   ierr = PetscViewerBinaryMatlabOutputVecDA(viewer,"da1",global,da);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryMatlabDestroy(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryMatlabDestroy(&viewer);CHKERRQ(ierr);
   
   /* clean up and exit */
-  ierr = PetscBagDestroy(bag);CHKERRQ(ierr);
-  ierr = DMDestroy(da);CHKERRQ(ierr);
-  ierr = VecDestroy(local);CHKERRQ(ierr);
-  ierr = VecDestroy(global);CHKERRQ(ierr);
+  ierr = PetscBagDestroy(&bag);CHKERRQ(ierr);
+  ierr = DMDestroy(&da);CHKERRQ(ierr);
+  ierr = VecDestroy(&local);CHKERRQ(ierr);
+  ierr = VecDestroy(&global);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;  
 }

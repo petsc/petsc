@@ -216,7 +216,7 @@ int main(int Argc,char **Args)
   ierr = KSPSetOperators(kspmg, HtH, HtH, DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
 
   ierr = PCASASetDM(pcmg, (DM) adda);CHKERRQ(ierr);
-  ierr = DMDestroy(adda);CHKERRQ(ierr);
+  ierr = DMDestroy(&adda);CHKERRQ(ierr);
 
   ierr = PCASASetTolerances(pcmg, 1.e-6, 1.e-10,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
 
@@ -231,15 +231,15 @@ int main(int Argc,char **Args)
 
 /*   ierr = VecView(xvec, PETSC_VIEWER_STDOUT_(PETSC_COMM_WORLD));CHKERRQ(ierr); */
 
-  ierr = KSPDestroy(kspmg);CHKERRQ(ierr);
+  ierr = KSPDestroy(&kspmg);CHKERRQ(ierr);
 
-  ierr = VecDestroy(xvec);CHKERRQ(ierr);
-  ierr = VecDestroy(b);CHKERRQ(ierr);
-  ierr = VecDestroy(Htb);CHKERRQ(ierr);
-  ierr = MatDestroy(H);CHKERRQ(ierr);
-  ierr = MatDestroy(HtH);CHKERRQ(ierr);
+  ierr = VecDestroy(&xvec);CHKERRQ(ierr);
+  ierr = VecDestroy(&b);CHKERRQ(ierr);
+  ierr = VecDestroy(&Htb);CHKERRQ(ierr);
+  ierr = MatDestroy(&H);CHKERRQ(ierr);
+  ierr = MatDestroy(&HtH);CHKERRQ(ierr);
 
-  ierr = PetscRandomDestroy(rctx);CHKERRQ(ierr);
+  ierr = PetscRandomDestroy(&rctx);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }
@@ -281,11 +281,11 @@ PetscErrorCode computeMinEigVal(Mat A, PetscInt its, PetscScalar *eig) {
 
   *eig = norm*(1.-lambda_its_1/lambda_its);
 
-  ierr = VecDestroy(x0);CHKERRQ(ierr);
-  ierr = VecDestroy(x);CHKERRQ(ierr);
-  ierr = VecDestroy(x_1);CHKERRQ(ierr);
-  ierr = PetscRandomDestroy(rctx);CHKERRQ(ierr);
-  ierr = MatDestroy(G);CHKERRQ(ierr);
+  ierr = VecDestroy(&x0);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = VecDestroy(&x_1);CHKERRQ(ierr);
+  ierr = PetscRandomDestroy(&rctx);CHKERRQ(ierr);
+  ierr = MatDestroy(&G);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

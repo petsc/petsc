@@ -89,7 +89,7 @@ int main(int argc,char **argv)
     ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rdm);CHKERRQ(ierr);
     ierr = PetscRandomSetFromOptions(rdm);CHKERRQ(ierr);
     ierr = VecSetRandom(fine_ctx.b,rdm);CHKERRQ(ierr);
-    ierr = PetscRandomDestroy(rdm);CHKERRQ(ierr);
+    ierr = PetscRandomDestroy(&rdm);CHKERRQ(ierr);
   }
 
   /* set options, then solve system */
@@ -100,13 +100,13 @@ int main(int argc,char **argv)
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %D\n",its);CHKERRQ(ierr);
 
   /* free data structures */
-  ierr = VecDestroy(fine_ctx.x);CHKERRQ(ierr);
-  ierr = VecDestroy(fine_ctx.b);CHKERRQ(ierr);
-  ierr = DMDestroy(fine_ctx.da);CHKERRQ(ierr);
-  ierr = VecDestroy(fine_ctx.localX);CHKERRQ(ierr);
-  ierr = VecDestroy(fine_ctx.localF);CHKERRQ(ierr);
-  ierr = MatDestroy(A);CHKERRQ(ierr); 
-  ierr = KSPDestroy(ksp);CHKERRQ(ierr);
+  ierr = VecDestroy(&fine_ctx.x);CHKERRQ(ierr);
+  ierr = VecDestroy(&fine_ctx.b);CHKERRQ(ierr);
+  ierr = DMDestroy(&fine_ctx.da);CHKERRQ(ierr);
+  ierr = VecDestroy(&fine_ctx.localX);CHKERRQ(ierr);
+  ierr = VecDestroy(&fine_ctx.localF);CHKERRQ(ierr);
+  ierr = MatDestroy(&A);CHKERRQ(ierr); 
+  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
   return 0;

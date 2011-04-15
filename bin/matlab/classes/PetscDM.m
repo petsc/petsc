@@ -5,7 +5,7 @@ classdef PetscDM < PetscObject
 %   Creation:
 %     da = PetscDM();
 %       da.SetType('da'); 
-%       da.SetPeriodicity(PetscDM.NONPERIODIC);
+%       da.SetBoundaryType(PetscDM.NONPERIODIC);
 %       da.SetSizes([M 1 1]);
 %       da.SetDof(dof);
 %       da.SetStencilWidth(s);
@@ -18,15 +18,10 @@ classdef PetscDM < PetscObject
     STENCIL_STAR = 0;
     STENCIL_BOX = 1;
 
-    NONPERIODIC = 0;
-    XPERIODIC   = 1;
-    YPERIODIC   = 2;
-    XYPERIODIC  = 3;
-    XYZPERIODIC = 4;
-    XZPERIODIC  = 5;
-    YZPERIODIC  = 6;
-    ZPERIODIC   = 7;
-    XYZGHOSTED  = 8;
+    BOUNDARY_NONE      = 0;
+    BOUNDARY_GHOSTED   = 1;
+    BOUNDARY_MIRROR    = 2;
+    BOUNDARY_PERIODIC  = 3;
 
     Q0 = 0;
     Q1 = 1;
@@ -67,8 +62,8 @@ classdef PetscDM < PetscObject
     function err = SetVecType(obj,vtype)
       err = calllib('libpetsc', 'DMSetVecType', obj.pobj,vtype);PetscCHKERRQ(err);
     end
-    function err = SetPeriodicity(obj,periodicity)
-      err = calllib('libpetsc', 'DMDASetPeriodicity', obj.pobj,periodicity);PetscCHKERRQ(err);
+    function err = SetBoundaryType(obj,periodicityx,periodicityy,periodicityz)
+      err = calllib('libpetsc', 'DMDASetBoundaryType', obj.pobj,periodicityx,periodicityy,periodicityz);PetscCHKERRQ(err);
     end
     function err = SetDof(obj,dof)
       err = calllib('libpetsc', 'DMDASetDof', obj.pobj,dof);PetscCHKERRQ(err);

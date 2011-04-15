@@ -106,7 +106,12 @@ because "log" is reserved for related to the performance logging</li>
 in quad precision. gfortran 4.6 is also supported. Warning some of the
 PETSc
 printing of numbers in some places will print garbage. I haven't
-figured out a way to handle the %G format. Can be run in parallel :-)<br>
+figured out a way to handle the %G format. Can be run in parallel :-)</li>
+        <li>PetscFListFind() now takes a searchlibraries flag, if this
+is set and the function is NOT found in the function list then the
+libraries and executable are searched (when shared or dynamic libraries
+are used). Previously it always search the libraries and executables if
+not found in the list.<br>
         </li>
       </ul>
       <u><b>Logging:<br>
@@ -225,7 +230,9 @@ the MatType, call MatSetFromOptions() first if you wish to check it.</li>
         <li>Removed MatMFFDSetFromOptions() since one can call
 MatSetFromOptions()</li>
         <li>MatGetLocalMat() and MatGetLocalMatCondensed() are now
-MatMPIAIJGetLocalMat() and MatMPIAIJGetLocalMatCondensed()<br>
+MatMPIAIJGetLocalMat() and MatMPIAIJGetLocalMatCondensed()</li>
+        <li>MatOption MAT_USE_COMPRESSEDROW changed to
+MAT_CHECK_COMPRESSED_ROW<br>
         </li>
       </ul>
       <u><b>PC:</b></u>

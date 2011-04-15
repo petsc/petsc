@@ -58,7 +58,7 @@ int main(int argc,char **argv)
   ierr = MatTranspose(A,MAT_INITIAL_MATRIX,&Atrans);CHKERRQ(ierr);
   ierr = MatAXPY(A,1.0,Atrans,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = MatScale(A,0.5);CHKERRQ(ierr);
-  ierr = MatDestroy(Atrans);CHKERRQ(ierr);
+  ierr = MatDestroy(&Atrans);CHKERRQ(ierr);
 
   /* Test sbaij matrix */
   flg  = PETSC_FALSE;
@@ -66,7 +66,7 @@ int main(int argc,char **argv)
   if (flg){
     Mat sA;
     ierr = MatConvert(A,MATSBAIJ,MAT_INITIAL_MATRIX,&sA);CHKERRQ(ierr);
-    ierr = MatDestroy(A);CHKERRQ(ierr);
+    ierr = MatDestroy(&A);CHKERRQ(ierr);
     A = sA;
   }
 
@@ -94,14 +94,14 @@ int main(int argc,char **argv)
     ierr = VecAXPY(b1,-1.0,b);CHKERRQ(ierr);
     ierr = VecNorm(b1,NORM_2,&norm);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Final residual %g\n",norm);CHKERRQ(ierr);
-    ierr = VecDestroy(b1);CHKERRQ(ierr);
+    ierr = VecDestroy(&b1);CHKERRQ(ierr);
   }
    
-  ierr = KSPDestroy(ksp);CHKERRQ(ierr);
-  ierr = VecDestroy(x);CHKERRQ(ierr);
-  ierr = VecDestroy(b);CHKERRQ(ierr);
-  ierr = MatDestroy(A);CHKERRQ(ierr);
-  ierr = DMDestroy(da);CHKERRQ(ierr);
+  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = VecDestroy(&b);CHKERRQ(ierr);
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

@@ -248,7 +248,7 @@ int main(int argc, char *argv[])
     }
     PetscPrintf(comm, "Writing stokesDM\n");
     ierr = WriteSolution(stokesDM, &options);CHKERRQ(ierr);
-    ierr = DMMGDestroy(stokes);CHKERRQ(ierr);
+    ierr = DMMGDestroy(&stokes);CHKERRQ(ierr);
     ierr = DestroyMesh(stokesDM, transportDM, &options);CHKERRQ(ierr);
   } catch(ALE::Exception e) {
     std::cerr << e << std::endl;
@@ -308,12 +308,12 @@ PetscErrorCode SolveStokes(DMMG *dmmg, Options *options)
     ierr = MeshGetSectionReal(mesh, "default", &sol);CHKERRQ(ierr);
     if (options->debug) {ierr = SectionRealView(sol, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
     ierr = CheckError((DM) mesh, sol, options);CHKERRQ(ierr);
-    ierr = SectionRealDestroy(sol);CHKERRQ(ierr);
+    ierr = SectionRealDestroy(&sol);CHKERRQ(ierr);
     ierr = IterateStokes(dmmg, options);CHKERRQ(ierr);
     ierr = MeshGetSectionReal((Mesh) options->paramDM, "default", &sol);CHKERRQ(ierr);
     if (options->debug) {ierr = SectionRealView(sol, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
     ierr = CheckError(options->paramDM, sol, options);CHKERRQ(ierr);
-    ierr = SectionRealDestroy(sol);CHKERRQ(ierr);
+    ierr = SectionRealDestroy(&sol);CHKERRQ(ierr);
     ierr = CheckStokesConvergence(dmmg, &iterate, options);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -418,7 +418,7 @@ PetscErrorCode CheckStokesConvergence(DMMG *dmmg, PetscBool  *iterate, Options *
   PetscFunctionBegin;
   ierr = MeshGetSectionReal(mesh, "default", &u);CHKERRQ(ierr);
   ierr = DivNorm_L2(mesh, u, &error, options);CHKERRQ(ierr);
-  ierr = SectionRealDestroy(u);CHKERRQ(ierr);
+  ierr = SectionRealDestroy(&u);CHKERRQ(ierr);
   PetscPrintf(dmmg[0]->comm, "Checking Stokes convergence: div_error = %g\n", error);
   if (error < tol) {
     *iterate = PETSC_FALSE;
@@ -572,7 +572,7 @@ PetscErrorCode WriteSolution(DM dm, Options *options)
     velocityX->view("X-Velocity Solution");
     velocityY->view("Y-Velocity Solution");
   }
-  ierr = SectionRealDestroy(solution);CHKERRQ(ierr);
+  ierr = SectionRealDestroy(&solution);CHKERRQ(ierr);
   PetscFunctionReturn(0);
   PetscFunctionReturn(0);
 }
@@ -702,8 +702,8 @@ PetscErrorCode ViewMesh(Mesh mesh, const char filename[])
   ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_VTK_CELL);CHKERRQ(ierr);
   ierr = SectionIntView(partition, viewer);CHKERRQ(ierr);
   ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-  ierr = SectionIntDestroy(partition);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+  ierr = SectionIntDestroy(&partition);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #undef __FUNCT__
@@ -726,9 +726,9 @@ PetscErrorCode ViewSection(Mesh mesh, SectionReal section, const char filename[]
   ierr = CreatePartition(mesh, &partition);CHKERRQ(ierr);
   ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_VTK_CELL);CHKERRQ(ierr);
   ierr = SectionIntView(partition, viewer);CHKERRQ(ierr);
-  ierr = SectionIntDestroy(partition);CHKERRQ(ierr);
+  ierr = SectionIntDestroy(&partition);CHKERRQ(ierr);
   ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -783,14 +783,14 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *stokesDM, DM *paramDM, DM *transpor
     Mesh parallelMesh;
 
     ierr = MeshDistribute(stokesMesh, PETSC_NULL, &parallelMesh);CHKERRQ(ierr);
-    ierr = MeshDestroy(stokesMesh);CHKERRQ(ierr);
+    ierr = MeshDestroy(&stokesMesh);CHKERRQ(ierr);
     stokesMesh = parallelMesh;
   }
   if (options->refinementLimit > 0.0) {
     Mesh refinedMesh;
 
     ierr = MeshRefine(stokesMesh, options->refinementLimit, options->interpolate, &refinedMesh);CHKERRQ(ierr);
-    ierr = MeshDestroy(stokesMesh);CHKERRQ(ierr);
+    ierr = MeshDestroy(&stokesMesh);CHKERRQ(ierr);
     stokesMesh = refinedMesh;
   }
   Obj<ALE::Mesh> sM;
@@ -840,8 +840,8 @@ PetscErrorCode DestroyMesh(DM stokesDM, DM transportDM, Options *options)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MeshDestroy((Mesh) stokesDM);CHKERRQ(ierr);
-  ierr = MeshDestroy((Mesh) transportDM);CHKERRQ(ierr);
+  ierr = MeshDestroy(&(Mesh) stokesDM);CHKERRQ(ierr);
+  ierr = MeshDestroy(&(Mesh) transportDM);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1106,7 +1106,7 @@ PetscErrorCode CheckStokesResidual(DM dm, SectionReal sol, const std::string& pa
   options->paramName = oldParamName;
   if (flag) {ierr = SectionRealView(residual, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
   ierr = SectionRealNorm(residual, mesh, NORM_2, &norm);CHKERRQ(ierr);
-  ierr = SectionRealDestroy(residual);CHKERRQ(ierr);
+  ierr = SectionRealDestroy(&residual);CHKERRQ(ierr);
   ierr = PetscObjectGetName((PetscObject) sol, &name);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject) sol, &comm);CHKERRQ(ierr);
   PetscPrintf(comm, "Residual for trial solution %s: %g\n", name, norm);

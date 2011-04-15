@@ -131,10 +131,10 @@ int main(int argc,char *argv[])
     ierr = VecGhostRestoreLocalForm(b,&lf);CHKERRQ(ierr);
   }
 
-  ierr = DMDestroy(slice);CHKERRQ(ierr);
-  ierr = VecDestroy(x);CHKERRQ(ierr);
-  ierr = VecDestroy(b);CHKERRQ(ierr);
-  ierr = MatDestroy(A);CHKERRQ(ierr);
+  ierr = DMDestroy(&slice);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = VecDestroy(&b);CHKERRQ(ierr);
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

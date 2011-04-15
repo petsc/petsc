@@ -49,8 +49,8 @@ int main(int argc,char **argv)
 
   /* Free memory */
   ierr = PetscFree(values);CHKERRQ(ierr);
-  ierr = MatDestroy(mat);CHKERRQ(ierr); 
-  ierr = DMDestroy(da);CHKERRQ(ierr);
+  ierr = MatDestroy(&mat);CHKERRQ(ierr); 
+  ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

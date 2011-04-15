@@ -149,21 +149,21 @@ int main(int Argc,char **Args)
   ierr = PetscPrintf(PETSC_COMM_SELF,"its %D l_2 error %G max error %G resi %G\n",its,e[0],e[1],e[2]);CHKERRQ(ierr);
 
   ierr = PetscFree(N);CHKERRQ(ierr);
-  ierr = VecDestroy(solution);CHKERRQ(ierr);
+  ierr = VecDestroy(&solution);CHKERRQ(ierr);
 
   /* note we have to keep a list of all vectors allocated, this is 
      not ideal, but putting it in MGDestroy is not so good either*/
   for (i=0; i<levels; i++) {
-    ierr = VecDestroy(X[i]);CHKERRQ(ierr);
-    ierr = VecDestroy(B[i]);CHKERRQ(ierr);
-    if(i){ierr = VecDestroy(R[i]);CHKERRQ(ierr);}
+    ierr = VecDestroy(&X[i]);CHKERRQ(ierr);
+    ierr = VecDestroy(&B[i]);CHKERRQ(ierr);
+    if(i){ierr = VecDestroy(&R[i]);CHKERRQ(ierr);}
   }
   for (i=0; i<levels-1; i++) {
-    ierr = MatDestroy(mat[i]);CHKERRQ(ierr);
+    ierr = MatDestroy(&mat[i]);CHKERRQ(ierr);
   }
-  ierr = MatDestroy(cmat);CHKERRQ(ierr);
-  ierr = MatDestroy(fmat);CHKERRQ(ierr);
-  ierr = KSPDestroy(kspmg);CHKERRQ(ierr);
+  ierr = MatDestroy(&cmat);CHKERRQ(ierr);
+  ierr = MatDestroy(&fmat);CHKERRQ(ierr);
+  ierr = KSPDestroy(&kspmg);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

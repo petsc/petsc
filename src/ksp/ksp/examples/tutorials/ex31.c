@@ -83,7 +83,7 @@ int main(int argc,char **argv)
   ierr = DMMGCreate(PETSC_COMM_WORLD,3,PETSC_NULL,&dmmg);CHKERRQ(ierr);
   ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,3,3,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,&da);CHKERRQ(ierr);  
   ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr);
-  ierr = DMDestroy(da);CHKERRQ(ierr);
+  ierr = DMDestroy(&da);CHKERRQ(ierr);
   for (l = 0; l < DMMGGetLevels(dmmg); l++) {
     ierr = DMMGSetUser(dmmg,l,&user);CHKERRQ(ierr);
   }
@@ -106,7 +106,7 @@ int main(int argc,char **argv)
   ierr = ComputeCorrector(DMMGGetFine(dmmg), DMMGGetx(dmmg), DMMGGetr(dmmg));
 
   ierr = DestroyStructures(DMMGGetFine(dmmg));
-  ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
+  ierr = DMMGDestroy(&dmmg);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }
@@ -157,26 +157,26 @@ PetscErrorCode DestroyStructures(DMMG dmmg)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecDestroy(user->sol_n.rho);CHKERRQ(ierr);
-  ierr = VecDestroy(user->sol_n.rho_u);CHKERRQ(ierr);
-  ierr = VecDestroy(user->sol_n.rho_v);CHKERRQ(ierr);
-  ierr = VecDestroy(user->sol_n.rho_e);CHKERRQ(ierr);
-  ierr = VecDestroy(user->sol_n.p);CHKERRQ(ierr);
-  ierr = VecDestroy(user->sol_n.u);CHKERRQ(ierr);
-  ierr = VecDestroy(user->sol_n.v);CHKERRQ(ierr);
-  ierr = VecDestroy(user->sol_phi.rho_u);CHKERRQ(ierr);
-  ierr = VecDestroy(user->sol_phi.rho_v);CHKERRQ(ierr);
-  ierr = VecDestroy(user->sol_phi.u);CHKERRQ(ierr);
-  ierr = VecDestroy(user->sol_phi.v);CHKERRQ(ierr);
-  ierr = VecDestroy(user->sol_np1.rho);CHKERRQ(ierr);
-  ierr = VecDestroy(user->sol_np1.rho_u);CHKERRQ(ierr);
-  ierr = VecDestroy(user->sol_np1.rho_v);CHKERRQ(ierr);
-  ierr = VecDestroy(user->sol_np1.rho_e);CHKERRQ(ierr);
-  ierr = VecDestroy(user->sol_np1.p);CHKERRQ(ierr);
-  ierr = VecDestroy(user->sol_np1.u);CHKERRQ(ierr);
-  ierr = VecDestroy(user->sol_np1.v);CHKERRQ(ierr);
-  ierr = VecDestroy(user->mu);CHKERRQ(ierr);
-  ierr = VecDestroy(user->kappa);CHKERRQ(ierr);
+  ierr = VecDestroy(&user->sol_n.rho);CHKERRQ(ierr);
+  ierr = VecDestroy(&user->sol_n.rho_u);CHKERRQ(ierr);
+  ierr = VecDestroy(&user->sol_n.rho_v);CHKERRQ(ierr);
+  ierr = VecDestroy(&user->sol_n.rho_e);CHKERRQ(ierr);
+  ierr = VecDestroy(&user->sol_n.p);CHKERRQ(ierr);
+  ierr = VecDestroy(&user->sol_n.u);CHKERRQ(ierr);
+  ierr = VecDestroy(&user->sol_n.v);CHKERRQ(ierr);
+  ierr = VecDestroy(&user->sol_phi.rho_u);CHKERRQ(ierr);
+  ierr = VecDestroy(&user->sol_phi.rho_v);CHKERRQ(ierr);
+  ierr = VecDestroy(&user->sol_phi.u);CHKERRQ(ierr);
+  ierr = VecDestroy(&user->sol_phi.v);CHKERRQ(ierr);
+  ierr = VecDestroy(&user->sol_np1.rho);CHKERRQ(ierr);
+  ierr = VecDestroy(&user->sol_np1.rho_u);CHKERRQ(ierr);
+  ierr = VecDestroy(&user->sol_np1.rho_v);CHKERRQ(ierr);
+  ierr = VecDestroy(&user->sol_np1.rho_e);CHKERRQ(ierr);
+  ierr = VecDestroy(&user->sol_np1.p);CHKERRQ(ierr);
+  ierr = VecDestroy(&user->sol_np1.u);CHKERRQ(ierr);
+  ierr = VecDestroy(&user->sol_np1.v);CHKERRQ(ierr);
+  ierr = VecDestroy(&user->mu);CHKERRQ(ierr);
+  ierr = VecDestroy(&user->kappa);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -443,8 +443,8 @@ PetscErrorCode TaylorGalerkinStepIIMomentum(DM da, UserContext *user)
   ierr = KSPSetOperators(ksp, mat, mat, DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = KSPSolve(ksp, rhs_u, user->sol_np1.rho_u);CHKERRQ(ierr);
   ierr = KSPSolve(ksp, rhs_v, user->sol_np1.rho_v);CHKERRQ(ierr);
-  ierr = KSPDestroy(ksp);CHKERRQ(ierr);
-  ierr = MatDestroy(mat);CHKERRQ(ierr);
+  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
+  ierr = MatDestroy(&mat);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(da, &rhs_u);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(da, &rhs_v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -596,8 +596,8 @@ PetscErrorCode TaylorGalerkinStepIIMassEnergy(DM da, UserContext *user)
   ierr = KSPSetOperators(ksp, mat, mat, DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = KSPSolve(ksp, rhs_m, user->sol_np1.rho);CHKERRQ(ierr);
   ierr = KSPSolve(ksp, rhs_e, user->sol_np1.rho_e);CHKERRQ(ierr);
-  ierr = KSPDestroy(ksp);CHKERRQ(ierr);
-  ierr = MatDestroy(mat);CHKERRQ(ierr);
+  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
+  ierr = MatDestroy(&mat);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(da, &rhs_m);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(da, &rhs_e);CHKERRQ(ierr);
   PetscFunctionReturn(0);

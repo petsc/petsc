@@ -86,7 +86,7 @@ extern PetscErrorCode DMDestroy_Private(DM,PetscBool *);
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMDestroy_Composite"
-PetscErrorCode  DMDestroy_Composite(DM dm)
+PetscErrorCode  DMDestroy_Composite(DM *dm)
 {
   PetscErrorCode         ierr;
   struct DMCompositeLink *next, *prev;
@@ -94,8 +94,8 @@ PetscErrorCode  DMDestroy_Composite(DM dm)
   DM_Composite           *com = (DM_Composite *)dm->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  ierr = DMDestroy_Private((DM)dm,&done);CHKERRQ(ierr);
+  PetscValidHeaderSpecific(*dm,DM_CLASSID,1);
+  ierr = DMDestroy_Private((DM)*dm,&done);CHKERRQ(ierr);
   if (!done) PetscFunctionReturn(0);
 
   next = com->next;
@@ -103,7 +103,7 @@ PetscErrorCode  DMDestroy_Composite(DM dm)
     prev = next;
     next = next->next;
     if (prev->type == DMCOMPOSITE_DM) {
-      ierr = DMDestroy(prev->dm);CHKERRQ(ierr);
+      ierr = DMDestroy(&prev->dm);CHKERRQ(ierr);
     }
     ierr = PetscFree(prev->grstarts);CHKERRQ(ierr);
     ierr = PetscFree(prev);CHKERRQ(ierr);
@@ -166,7 +166,7 @@ PetscErrorCode  DMSetUp_Composite(DM dm)
   ierr = PetscLayoutSetUp(map);CHKERRQ(ierr);
   ierr = PetscLayoutGetSize(map,&com->N);CHKERRQ(ierr);
   ierr = PetscLayoutGetRange(map,&com->rstart,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscLayoutDestroy(map);CHKERRQ(ierr);
+  ierr = PetscLayoutDestroy(&map);CHKERRQ(ierr);
     
   /* now set the rstart for each linked array/vector */
   ierr = MPI_Comm_rank(((PetscObject)dm)->comm,&rank);CHKERRQ(ierr);
@@ -1435,7 +1435,7 @@ PetscErrorCode MatDestroy_Shell_Pack(Mat A)
   anext = mpack->next;
 
   while (anext) {
-    ierr     = MatDestroy(anext->A);CHKERRQ(ierr);
+    ierr     = MatDestroy(&anext->A);CHKERRQ(ierr);
     oldanext = anext;
     anext    = anext->next;
     ierr     = PetscFree(oldanext);CHKERRQ(ierr);
@@ -1471,8 +1471,8 @@ PetscErrorCode  DMGetInterpolation_Composite(DM coarse,DM fine,Mat *A,Vec *v)
   ierr = VecGetLocalSize(gfine,&m);CHKERRQ(ierr);
   ierr = VecGetSize(gcoarse,&N);CHKERRQ(ierr);
   ierr = VecGetSize(gfine,&M);CHKERRQ(ierr);
-  ierr = VecDestroy(gcoarse);CHKERRQ(ierr);
-  ierr = VecDestroy(gfine);CHKERRQ(ierr);
+  ierr = VecDestroy(&gcoarse);CHKERRQ(ierr);
+  ierr = VecDestroy(&gfine);CHKERRQ(ierr);
 
   ierr         = PetscNew(struct MatPack,&mpack);CHKERRQ(ierr);
   mpack->right = coarse;
@@ -1538,7 +1538,7 @@ static PetscErrorCode DMCreateLocalToGlobalMapping_Composite(DM dm)
     cnt += m;
   }
   ierr = ISLocalToGlobalMappingCreate(((PetscObject)dm)->comm,cnt,idx,PETSC_OWN_POINTER,&dm->ltogmap);CHKERRQ(ierr);
-  for (i=0; i<com->nDM+com->nredundant; i++) {ierr = ISLocalToGlobalMappingDestroy(ltogs[i]);CHKERRQ(ierr);}
+  for (i=0; i<com->nDM+com->nredundant; i++) {ierr = ISLocalToGlobalMappingDestroy(&ltogs[i]);CHKERRQ(ierr);}
   ierr = PetscFree(ltogs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1592,7 +1592,7 @@ PetscErrorCode  DMGetColoring_Composite(DM dm,ISColoringType ctype,const MatType
           colors[cnt++] = maxcol + lcoloring->colors[i];
         }
         maxcol += lcoloring->n;
-        ierr = ISColoringDestroy(lcoloring);CHKERRQ(ierr);
+        ierr = ISColoringDestroy(&lcoloring);CHKERRQ(ierr);
       } else {
         SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_SUP,"Cannot handle that object type yet");
       }

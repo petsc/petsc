@@ -75,8 +75,8 @@ PetscErrorCode  DMGetMatrix_Sliced(DM dm, const MatType mtype,Mat *J)
   ierr = ISLocalToGlobalMappingBlock(lmap,bs,&blmap);CHKERRQ(ierr);
   ierr = MatSetLocalToGlobalMapping(*J,lmap,lmap);CHKERRQ(ierr);
   ierr = MatSetLocalToGlobalMappingBlock(*J,blmap,blmap);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingDestroy(lmap);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingDestroy(blmap);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingDestroy(&lmap);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingDestroy(&blmap);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -233,12 +233,12 @@ PetscErrorCode  DMDestroy_Sliced(DM dm)
   ierr = DMDestroy_Private(dm,&done);CHKERRQ(ierr);
   if (!done) PetscFunctionReturn(0);
 
-  if (slice->globalvector) {ierr = VecDestroy(slice->globalvector);CHKERRQ(ierr);}
+  if (slice->globalvector) {ierr = VecDestroy(&slice->globalvector);CHKERRQ(ierr);}
   ierr = PetscFree(slice->ghosts);CHKERRQ(ierr);
   if (slice->dfill) {ierr = PetscFree3(slice->dfill,slice->dfill->i,slice->dfill->j);CHKERRQ(ierr);}
   if (slice->ofill) {ierr = PetscFree3(slice->ofill,slice->ofill->i,slice->ofill->j);CHKERRQ(ierr);}
   ierr = PetscFree(dm->data);CHKERRQ(ierr);
-  ierr = PetscHeaderDestroy(dm);CHKERRQ(ierr);
+  ierr = PetscHeaderDestroy(&dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -49,7 +49,7 @@ extern PetscErrorCode CharacteristicSetVelocityInterpolationLocal(Characteristic
 extern PetscErrorCode CharacteristicSetFieldInterpolation(Characteristic, DM, Vec, PetscInt, PetscInt[], PetscErrorCode (*)(Vec, PetscReal[], PetscInt, PetscInt[], PetscScalar[], void *), void *);
 extern PetscErrorCode CharacteristicSetFieldInterpolationLocal(Characteristic, DM, Vec, PetscInt, PetscInt[], PetscErrorCode (*)(void *, PetscReal[], PetscInt, PetscInt[], PetscScalar[], void *), void *);
 extern PetscErrorCode CharacteristicSolve(Characteristic, PetscReal, Vec);
-extern PetscErrorCode CharacteristicDestroy(Characteristic);
+extern PetscErrorCode CharacteristicDestroy(Characteristic*);
 
 extern PetscFList CharacteristicList;
 extern PetscErrorCode CharacteristicRegisterAll(const char[]);

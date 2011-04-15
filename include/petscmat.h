@@ -341,8 +341,7 @@ extern PetscErrorCode  MatCreatePython(MPI_Comm,PetscInt,PetscInt,PetscInt,Petsc
 extern PetscErrorCode  MatPythonSetType(Mat,const char[]);
 
 extern PetscErrorCode  MatSetUp(Mat);
-extern PetscErrorCode  MatDestroy_(Mat);
-#define MatDestroy(a)  (MatDestroy_(a) || (((a) = 0),0))
+extern PetscErrorCode  MatDestroy(Mat*);
 
 extern PetscErrorCode  MatConjugate(Mat);
 extern PetscErrorCode  MatRealPart(Mat);
@@ -1276,7 +1275,7 @@ S*/
 typedef struct _p_MatFDColoring* MatFDColoring;
 
 extern PetscErrorCode  MatFDColoringCreate(Mat,ISColoring,MatFDColoring *);
-extern PetscErrorCode  MatFDColoringDestroy(MatFDColoring);
+extern PetscErrorCode  MatFDColoringDestroy(MatFDColoring*);
 extern PetscErrorCode  MatFDColoringView(MatFDColoring,PetscViewer);
 extern PetscErrorCode  MatFDColoringSetFunction(MatFDColoring,PetscErrorCode (*)(void),void*);
 extern PetscErrorCode  MatFDColoringGetFunction(MatFDColoring,PetscErrorCode (**)(void),void**);
@@ -1328,7 +1327,7 @@ extern PetscErrorCode  MatPartitioningSetAdjacency(MatPartitioning,Mat);
 extern PetscErrorCode  MatPartitioningSetVertexWeights(MatPartitioning,const PetscInt[]);
 extern PetscErrorCode  MatPartitioningSetPartitionWeights(MatPartitioning,const PetscReal []);
 extern PetscErrorCode  MatPartitioningApply(MatPartitioning,IS*);
-extern PetscErrorCode  MatPartitioningDestroy(MatPartitioning);
+extern PetscErrorCode  MatPartitioningDestroy(MatPartitioning*);
 
 extern PetscErrorCode  MatPartitioningRegister(const char[],const char[],const char[],PetscErrorCode (*)(MatPartitioning));
 

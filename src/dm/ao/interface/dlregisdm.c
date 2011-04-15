@@ -134,9 +134,6 @@ PetscErrorCode  DMInitializePackage(const char path[])
   if (DMPackageInitialized) PetscFunctionReturn(0);
   DMPackageInitialized = PETSC_TRUE;
 
-  /* Initialize subpackages */
-  ierr = ISMappingInitializePackage(PETSC_NULL); CHKERRQ(ierr);
-
   /* Register Classes */
   ierr = PetscClassIdRegister("Distributed Mesh",&DM_CLASSID);CHKERRQ(ierr);
 #ifdef PETSC_HAVE_SIEVE
@@ -208,7 +205,9 @@ PetscErrorCode  DMInitializePackage(const char path[])
   PetscFunctionReturn(0);
 }
 
-
+#ifdef PETSC_HAVE_IS_MAPPING
+extern PetscErrorCode  ISMappingInitializePackage(const char path[]);
+#endif
 
 #ifdef PETSC_USE_DYNAMIC_LIBRARIES
 EXTERN_C_BEGIN
@@ -228,6 +227,9 @@ PetscErrorCode  PetscDLLibraryRegister_petscdm(const char path[])
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+#ifdef PETSC_HAVE_IS_MAPPING
+  ierr = ISMappingInitializePackage(path); CHKERRQ(ierr);
+#endif
   ierr = AOInitializePackage(path);CHKERRQ(ierr);
   ierr = DMInitializePackage(path);CHKERRQ(ierr);
   PetscFunctionReturn(0);

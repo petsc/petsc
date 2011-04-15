@@ -202,23 +202,23 @@ int main( int argc, char **argv )
 
   /* Free data structures on the levels */
   for (i=0; i<user.nlevels; i++) {
-    ierr = MatDestroy(user.grid[i].J);CHKERRA(ierr);
-    ierr = VecDestroy(user.grid[i].x);CHKERRA(ierr);
-    ierr = VecDestroy(user.grid[i].r);CHKERRA(ierr);
-    ierr = VecDestroy(user.grid[i].b);CHKERRA(ierr);
-    ierr = DMDestroy(user.grid[i].da);CHKERRA(ierr);
-    ierr = VecDestroy(user.grid[i].localX);CHKERRA(ierr);
-    ierr = VecDestroy(user.grid[i].localF);CHKERRA(ierr);
+    ierr = MatDestroy(&user.grid[i].J);CHKERRA(ierr);
+    ierr = VecDestroy(&user.grid[i].x);CHKERRA(ierr);
+    ierr = VecDestroy(&user.grid[i].r);CHKERRA(ierr);
+    ierr = VecDestroy(&user.grid[i].b);CHKERRA(ierr);
+    ierr = DMDestroy(&user.grid[i].da);CHKERRA(ierr);
+    ierr = VecDestroy(&user.grid[i].localX);CHKERRA(ierr);
+    ierr = VecDestroy(&user.grid[i].localF);CHKERRA(ierr);
   }
 
   /* Free interpolations between levels */
   for (i=1; i<user.nlevels; i++) {
-    ierr = MatDestroy(user.grid[i].R);CHKERRA(ierr); 
-    ierr = VecDestroy(user.grid[i].Rscale);CHKERRA(ierr); 
+    ierr = MatDestroy(&user.grid[i].R);CHKERRA(ierr); 
+    ierr = VecDestroy(&user.grid[i].Rscale);CHKERRA(ierr); 
   }
 
   /* free nonlinear solver object */
-  ierr = SNESDestroy(snes);CHKERRA(ierr);
+  ierr = SNESDestroy(&snes);CHKERRA(ierr);
   PetscFinalize();
 
 

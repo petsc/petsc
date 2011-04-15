@@ -274,17 +274,17 @@ int main(int argc,char **args)
 
   if (user_set_subdomains) {
     for (i=0; i<Nsub; i++) {
-      ierr = ISDestroy(is[i]);CHKERRQ(ierr);
-      ierr = ISDestroy(is_local[i]);CHKERRQ(ierr);
+      ierr = ISDestroy(&&is[i]);CHKERRQ(ierr);
+      ierr = ISDestroy(&&is_local[i]);CHKERRQ(ierr);
     }
     ierr = PetscFree(is);CHKERRQ(ierr);
     ierr = PetscFree(is_local);CHKERRQ(ierr);
   }
-  ierr = KSPDestroy(ksp);CHKERRQ(ierr);
-  ierr = VecDestroy(u);CHKERRQ(ierr);
-  ierr = VecDestroy(x);CHKERRQ(ierr);
-  ierr = VecDestroy(b);CHKERRQ(ierr);
-  ierr = MatDestroy(A);CHKERRQ(ierr);
+  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
+  ierr = VecDestroy(&u);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = VecDestroy(&b);CHKERRQ(ierr);
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

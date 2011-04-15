@@ -85,6 +85,7 @@ PetscErrorCode ISMappingIS_LocateIndices(PetscInt tablen, const PetscInt table[]
 }/* ISMappingIS_LocateIndices() */
 
 
+#if defined(PETSC_USE_DEBUG)
 /*
      Checks if any indices are within [imin,imax) and generate an error, if they are not and 
      if outOfBoundsError == PETSC_TRUE.  Return the result in flag.
@@ -159,6 +160,7 @@ static PetscErrorCode ISMappingIS_CheckISRange(IS is, PetscInt imin, PetscInt im
   if(flag) *flag = inBounds;
   PetscFunctionReturn(0);
 }
+#endif
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISMappingMapLocal_IS"
@@ -289,9 +291,9 @@ static PetscErrorCode ISMappingBin_IS(ISMapping map, PetscInt insize, const Pets
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISMappingIS_AssembleMPI"
-static PetscErrorCode ISMappingIS_AssembleMPI(ISMapping map, PetscInt len, const PetscInt ixidx[], const PetscInt iyidx[], PetscInt *_alen, PetscInt *_aixidx[], PetscInt *_aiyidx[]){
+static PetscErrorCode ISMappingIS_AssembleMPI(ISMapping map, PetscInt len, const PetscInt ixidx[], const PetscInt iyidx[], PetscInt *_alen, PetscInt *_aixidx[], PetscInt *_aiyidx[])
+{
   PetscErrorCode ierr;
-  PetscFunctionBegin;
   MPI_Comm comm;
   PetscMPIInt size, rank, tag, imdex, n;
   PetscInt idx, lastidx;
@@ -302,9 +304,12 @@ static PetscErrorCode ISMappingIS_AssembleMPI(ISMapping map, PetscInt len, const
   PetscInt    *rvalues = PETSC_NULL, *svalues = PETSC_NULL, *rsvalues, *values = PETSC_NULL;
   MPI_Request *recv_waits, *send_waits;
   MPI_Status  recv_status, *send_status;
-  PetscBool found;
   PetscInt *aixidx, *aiyidx;
-    
+#if defined(PETSC_USE_DEBUG)
+  PetscBool found;
+#endif
+
+  PetscFunctionBegin;
   ierr = PetscObjectGetNewTag((PetscObject)map, &tag);CHKERRQ(ierr);
   comm = ((PetscObject)map)->comm;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
@@ -572,14 +577,10 @@ PetscErrorCode ISMappingISSetEdges(ISMapping map, IS ix, IS iy) {
   PetscFunctionBegin;
   
   ISMappingCheckType(map, IS_MAPPING_IS,1);
-  if(mapis->ix) {
-    ierr = ISDestroy(mapis->ix); CHKERRQ(ierr);
-  }
+  ierr = ISDestroy(&mapis->ix); CHKERRQ(ierr);
   mapis->ix = ix; 
   if(ix) {ierr = PetscObjectReference((PetscObject)ix); CHKERRQ(ierr);}
-  if(mapis->iy) {
-    ierr = ISDestroy(mapis->iy); CHKERRQ(ierr);
-  }
+  ierr = ISDestroy(&mapis->iy); CHKERRQ(ierr);
   mapis->iy = iy; 
   if(iy){ierr = PetscObjectReference((PetscObject)iy); CHKERRQ(ierr);}
   map->assembled = PETSC_FALSE;
@@ -591,9 +592,9 @@ PetscErrorCode ISMappingISSetEdges(ISMapping map, IS ix, IS iy) {
 static PetscErrorCode ISMappingAssemblyBegin_IS(ISMapping map)
 {
   ISMapping_IS   *mapis  = (ISMapping_IS*)(map->data);
-  PetscInt       nix, niy;
   PetscErrorCode ierr;
   PetscMPIInt    xsize;
+
   PetscFunctionBegin;
   /*
       if input or output vertices are not defined, assume they are the total domain or range.
@@ -607,11 +608,14 @@ static PetscErrorCode ISMappingAssemblyBegin_IS(ISMapping map)
 #if defined(PETSC_USE_DEBUG)
   /* Consistency checks. */
   /* Make sure the IS sizes are compatible */
-  ierr = ISGetLocalSize(mapis->ix,&nix);CHKERRQ(ierr);
-  ierr = ISGetLocalSize(mapis->iy,&niy);CHKERRQ(ierr);
-  if (nix != niy) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local IS sizes don't match");
-  ierr = ISMappingIS_CheckISRange(mapis->ix, 0, map->xlayout->N, PETSC_TRUE, PETSC_NULL); CHKERRQ(ierr);
-  ierr = ISMappingIS_CheckISRange(mapis->iy, 0, map->ylayout->N, PETSC_TRUE, PETSC_NULL); CHKERRQ(ierr);
+  {
+    PetscInt nix, niy;
+    ierr = ISGetLocalSize(mapis->ix,&nix);CHKERRQ(ierr);
+    ierr = ISGetLocalSize(mapis->iy,&niy);CHKERRQ(ierr);
+    if (nix != niy) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Local IS sizes don't match");
+    ierr = ISMappingIS_CheckISRange(mapis->ix, 0, map->xlayout->N, PETSC_TRUE, PETSC_NULL); CHKERRQ(ierr);
+    ierr = ISMappingIS_CheckISRange(mapis->iy, 0, map->ylayout->N, PETSC_TRUE, PETSC_NULL); CHKERRQ(ierr);
+  }
 #endif
 
   if(mapis->supp) {
@@ -651,10 +655,8 @@ static PetscErrorCode ISMappingAssemblyBegin_IS(ISMapping map)
     ierr = ISRestoreIndices(mapis->ix, &ixidx); CHKERRQ(ierr);
     ierr = ISRestoreIndices(mapis->iy, &iyidx); CHKERRQ(ierr);
   }
-  ierr = ISDestroy(mapis->ix); CHKERRQ(ierr);
-  mapis->ix = PETSC_NULL;
-  ierr = ISDestroy(mapis->iy); CHKERRQ(ierr);
-  mapis->iy = PETSC_NULL;
+  ierr = ISDestroy(&mapis->ix); CHKERRQ(ierr);
+  ierr = ISDestroy(&mapis->iy); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }/* ISMappingAssemblyBegin_IS() */
 
@@ -695,7 +697,6 @@ PetscErrorCode ISMappingGetImageIS_IS(ISMapping map, IS *image) {
 #define __FUNCT__ "ISMappingGetMaxImageSizeLocal_IS"
 PetscErrorCode ISMappingGetMaxImageSizeLocal_IS(ISMapping map, PetscInt *maxsize)
 {
-  PetscErrorCode ierr;
   ISMapping_IS *mapis = (ISMapping_IS *)(map->data);
   PetscFunctionBegin;
   ISMappingCheckType(map,IS_MAPPING_IS,1);
@@ -707,7 +708,6 @@ PetscErrorCode ISMappingGetMaxImageSizeLocal_IS(ISMapping map, PetscInt *maxsize
 #define __FUNCT__ "ISMappingGetImageSizeLocal_IS"
 PetscErrorCode ISMappingGetImageSizeLocal_IS(ISMapping map, PetscInt *size)
 {
-  PetscErrorCode ierr;
   ISMapping_IS *mapis = (ISMapping_IS *)(map->data);
   PetscFunctionBegin;
   ISMappingCheckType(map,IS_MAPPING_IS,1);
@@ -720,7 +720,6 @@ PetscErrorCode ISMappingGetImageSizeLocal_IS(ISMapping map, PetscInt *size)
 #define __FUNCT__ "ISMappingGetSupportSizeLocal_IS"
 PetscErrorCode ISMappingGetSupportSizeLocal_IS(ISMapping map, PetscInt *size)
 {
-  PetscErrorCode ierr;
   ISMapping_IS *mapis = (ISMapping_IS *)(map->data);
   PetscFunctionBegin;
   ISMappingCheckType(map,IS_MAPPING_IS,1);
@@ -786,10 +785,10 @@ PetscErrorCode ISMappingGetOperator_IS(ISMapping map, Mat *mat)
   ierr = ISMappingISGetEdges(map, &ix, &iy);                   CHKERRQ(ierr);
   ierr = VecScatterCreate(x,ix, y,iy, &scatter);               CHKERRQ(ierr);
   ierr = MatCreateScatter(((PetscObject)mat)->comm, scatter, mat); CHKERRQ(ierr);
-  ierr = ISDestroy(ix); CHKERRQ(ierr);
-  ierr = ISDestroy(iy); CHKERRQ(ierr);
-  ierr = VecDestroy(x); CHKERRQ(ierr);
-  ierr = VecDestroy(y); CHKERRQ(ierr);
+  ierr = ISDestroy(&ix); CHKERRQ(ierr);
+  ierr = ISDestroy(&iy); CHKERRQ(ierr);
+  ierr = VecDestroy(&x); CHKERRQ(ierr);
+  ierr = VecDestroy(&y); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }/* ISMappingGetOperator_IS() */
 
@@ -798,7 +797,6 @@ PetscErrorCode ISMappingGetOperator_IS(ISMapping map, Mat *mat)
 #define __FUNCT__ "ISMappingView_IS"
 static PetscErrorCode ISMappingView_IS(ISMapping map, PetscViewer v) 
 {
-  PetscErrorCode ierr;
   PetscFunctionBegin;
   ISMappingCheckType(map,IS_MAPPING_IS,1);
   /* FIX: actually implement this */
@@ -820,8 +818,8 @@ static PetscErrorCode ISMappingInvert_IS(ISMapping map, ISMapping *imap)
   ierr = ISMappingSetSizes(*imap, map->xlayout->n, map->ylayout->n, map->xlayout->N, map->ylayout->N); CHKERRQ(ierr);
   ierr = ISMappingISGetEdges(map, &ix,&iy);  CHKERRQ(ierr);
   ierr = ISMappingISSetEdges(*imap,iy, ix);  CHKERRQ(ierr);
-  ierr = ISDestroy(ix);                      CHKERRQ(ierr);
-  ierr = ISDestroy(iy);                      CHKERRQ(ierr);
+  ierr = ISDestroy(&ix);                      CHKERRQ(ierr);
+  ierr = ISDestroy(&iy);                      CHKERRQ(ierr);
   ierr = ISMappingAssemblyBegin(*imap);      CHKERRQ(ierr);
   ierr = ISMappingAssemblyEnd(*imap);        CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -895,8 +893,8 @@ PetscErrorCode ISMappingPushforward_IS_IS(ISMapping map1, ISMapping map2, ISMapp
   }
   ierr = ISRestoreIndices(supp1,&supp1idx);     CHKERRQ(ierr);
   ierr = ISRestoreIndices(supp2,&supp2idx);     CHKERRQ(ierr);
-  ierr = ISDestroy(supp1);                      CHKERRQ(ierr);
-  ierr = ISDestroy(supp2);                      CHKERRQ(ierr);
+  ierr = ISDestroy(&supp1);                      CHKERRQ(ierr);
+  ierr = ISDestroy(&supp2);                      CHKERRQ(ierr);
        
   /* 
    Now allocate the image storage and map the supp3 to obtain the "up" (1) and "right" (2) images.
@@ -936,8 +934,8 @@ PetscErrorCode ISMappingPushforward_IS_IS(ISMapping map1, ISMapping map2, ISMapp
   ierr = ISMappingISSetEdges(map3,ix,iy); CHKERRQ(ierr);
   ierr = ISMappingAssemblyBegin(map3);    CHKERRQ(ierr);
   ierr = ISMappingAssemblyEnd(map3);      CHKERRQ(ierr);
-  ierr = ISDestroy(ix);                   CHKERRQ(ierr);
-  ierr = ISDestroy(iy);                   CHKERRQ(ierr);
+  ierr = ISDestroy(&ix);                   CHKERRQ(ierr);
+  ierr = ISDestroy(&iy);                   CHKERRQ(ierr);
 
   *_map3 = map3;
   PetscFunctionReturn(0);
@@ -1000,24 +998,12 @@ PetscErrorCode ISMappingDestroy_IS(ISMapping map) {
   
   PetscFunctionBegin;
   if(mapis) {
-    if(mapis->ijlen) {
-      ierr = PetscFree(mapis->ijlen); CHKERRQ(ierr);
-    }
-    if(mapis->ij) {
-      ierr = PetscFree(mapis->ij); CHKERRQ(ierr);
-    }    
-    if(mapis->image) {
-      ierr = PetscFree(mapis->image); CHKERRQ(ierr);
-    }
-    if(mapis->supp) {
-      ierr = PetscFree(mapis->supp); CHKERRQ(ierr);
-    }
-    if(mapis->ix) {
-      ierr = ISDestroy(mapis->ix);   CHKERRQ(ierr);
-    }
-    if(mapis->iy) {
-      ierr = ISDestroy(mapis->iy);   CHKERRQ(ierr);
-    }
+    ierr = PetscFree(mapis->ijlen); CHKERRQ(ierr);
+    ierr = PetscFree(mapis->ij); CHKERRQ(ierr);
+    ierr = PetscFree(mapis->image); CHKERRQ(ierr);
+    ierr = PetscFree(mapis->supp); CHKERRQ(ierr);
+    ierr = ISDestroy(&mapis->ix);   CHKERRQ(ierr);
+    ierr = ISDestroy(&mapis->iy);   CHKERRQ(ierr);
   }
   ierr = PetscFree(mapis); CHKERRQ(ierr);
   map->data = PETSC_NULL;

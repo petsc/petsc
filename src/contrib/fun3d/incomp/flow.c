@@ -214,19 +214,19 @@ int main(int argc,char **args)
       ierr = PetscMemoryShowUsage(PETSC_VIEWER_STDOUT_WORLD,"Memory usage before destroying\n");CHKERRQ(ierr);
     }
 
-    ierr = VecDestroy(user.grid->qnode);CHKERRQ(ierr);
-    ierr = VecDestroy(user.grid->qnodeLoc);CHKERRQ(ierr);
-    ierr = VecDestroy(user.tsCtx->qold);CHKERRQ(ierr);
-    ierr = VecDestroy(user.tsCtx->func);CHKERRQ(ierr);
-    ierr = VecDestroy(user.grid->res);CHKERRQ(ierr);
-    ierr = VecDestroy(user.grid->grad);CHKERRQ(ierr);
-    ierr = VecDestroy(user.grid->gradLoc);CHKERRQ(ierr);
-    ierr = MatDestroy(user.grid->A);CHKERRQ(ierr);
+    ierr = VecDestroy(&user.grid->qnode);CHKERRQ(ierr);
+    ierr = VecDestroy(&user.grid->qnodeLoc);CHKERRQ(ierr);
+    ierr = VecDestroy(&user.tsCtx->qold);CHKERRQ(ierr);
+    ierr = VecDestroy(&user.tsCtx->func);CHKERRQ(ierr);
+    ierr = VecDestroy(&user.grid->res);CHKERRQ(ierr);
+    ierr = VecDestroy(&user.grid->grad);CHKERRQ(ierr);
+    ierr = VecDestroy(&user.grid->gradLoc);CHKERRQ(ierr);
+    ierr = MatDestroy(&user.grid->A);CHKERRQ(ierr);
     ierr = PetscOptionsHasName(PETSC_NULL,"-matrix_free",&flg);CHKERRQ(ierr);
-    if (flg) { ierr = MatDestroy(Jpc);CHKERRQ(ierr);}
-    ierr = SNESDestroy(snes);CHKERRQ(ierr);
-    ierr = VecScatterDestroy(user.grid->scatter);CHKERRQ(ierr);
-    ierr = VecScatterDestroy(user.grid->gradScatter);CHKERRQ(ierr);
+    if (flg) { ierr = MatDestroy(&Jpc);CHKERRQ(ierr);}
+    ierr = SNESDestroy(&snes);CHKERRQ(ierr);
+    ierr = VecScatterDestroy(&user.grid->scatter);CHKERRQ(ierr);
+    ierr = VecScatterDestroy(&user.grid->gradScatter);CHKERRQ(ierr);
     ierr = PetscOptionsHasName(PETSC_NULL,"-mem_use",&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PetscMemoryShowUsage(PETSC_VIEWER_STDOUT_WORLD,"Memory usage after destroying\n");CHKERRQ(ierr);
@@ -407,7 +407,7 @@ int FormJacobian(SNES snes,Vec x,Mat *Jac,Mat *B,MatStructure *flag,void *dummy)
     sprintf(mat_file,"mat_bin.%d",tsCtx->itstep);
     ierr = PetscViewerBinaryOpen(MPI_COMM_WORLD,mat_file,FILE_MODE_WRITE,&viewer);
     ierr = MatView(pc_mat,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(viewer);
+    ierr = PetscViewerDestroy(&viewer);
     /*ierr = MPI_Abort(MPI_COMM_WORLD,1);*/
   }
 #endif
@@ -592,7 +592,7 @@ int ComputeTimeStep(SNES snes,int iter,void *ctx)
   }
   tsCtx->cfl = MIN(newcfl,tsCtx->cfl_max);*/
   /*printf("In ComputeTime Step - fnorm is %f\n",tsCtx->fnorm);*/
-  /*ierr = VecDestroy(func);CHKERRQ(ierr);*/
+  /*ierr = VecDestroy(&func);CHKERRQ(ierr);*/
   PetscFunctionReturn(0);
 }
 
@@ -1598,7 +1598,7 @@ int GetLocalOrdering(GRID *grid)
     grid->ja[i] = l2a[grid->ja[i] - 1];
   }
   ierr = AOApplicationToPetsc(ao,nnz,grid->ja);CHKERRQ(ierr);
-  ierr = AODestroy(ao);CHKERRQ(ierr);
+  ierr = AODestroy(&ao);CHKERRQ(ierr);
 
 /* Print the different mappings
  *
@@ -1833,8 +1833,8 @@ int SetPetscDS(GRID *grid,TstepCtx *tsCtx)
 #endif
    ierr = PetscFree(svertices);CHKERRQ(ierr);
    ierr = VecScatterCreate(grid->qnode,isglobal,grid->qnodeLoc,islocal,&grid->scatter);CHKERRQ(ierr);
-   ierr = ISDestroy(isglobal);CHKERRQ(ierr);
-   ierr = ISDestroy(islocal);CHKERRQ(ierr);
+   ierr = ISDestroy(&isglobal);CHKERRQ(ierr);
+   ierr = ISDestroy(&islocal);CHKERRQ(ierr);
 
 /* Now create scatter for gradient vector of qnode */
    ierr = ISCreateStride(MPI_COMM_SELF,3*bs*nvertices,0,1,&islocal);CHKERRQ(ierr);
@@ -1860,8 +1860,8 @@ int SetPetscDS(GRID *grid,TstepCtx *tsCtx)
 #endif
    ierr = PetscFree(svertices);
    ierr = VecScatterCreate(grid->grad,isglobal,grid->gradLoc,islocal,&grid->gradScatter);CHKERRQ(ierr);
-   ierr = ISDestroy(isglobal);CHKERRQ(ierr);
-   ierr = ISDestroy(islocal);CHKERRQ(ierr);
+   ierr = ISDestroy(&isglobal);CHKERRQ(ierr);
+   ierr = ISDestroy(&islocal);CHKERRQ(ierr);
 
 /* Store the number of non-zeroes per row */
 #if defined(INTERLACING)
@@ -1955,13 +1955,13 @@ int SetPetscDS(GRID *grid,TstepCtx *tsCtx)
    /*ierr = MatSetLocalToGlobalMapping(grid->A,bs*nvertices,svertices);CHKERRQ(ierr);*/
    ierr = ISLocalToGlobalMappingCreate(MPI_COMM_SELF,bs*nvertices,svertices,PETSC_COPY_VALUES,&isl2g);
    ierr = MatSetLocalToGlobalMapping(grid->A,isl2g);CHKERRQ(ierr);
-   ierr = ISLocalToGlobalMappingDestroy(isl2g);CHKERRQ(ierr);
+   ierr = ISLocalToGlobalMappingDestroy(&isl2g);CHKERRQ(ierr);
 
 /* Now set the blockwise local to global mapping */
 #if defined(BLOCKING)
    ierr = ISLocalToGlobalMappingCreate(MPI_COMM_SELF,nvertices,loc2pet,PETSC_COPY_VALUES,&isl2g);
    ierr = MatSetLocalToGlobalMappingBlock(grid->A,isl2g,isl2g);CHKERRQ(ierr);
-   ierr = ISLocalToGlobalMappingDestroy(isl2g);CHKERRQ(ierr);
+   ierr = ISLocalToGlobalMappingDestroy(&isl2g);CHKERRQ(ierr);
 #endif
    ierr = PetscFree(svertices);CHKERRQ(ierr);
 #endif

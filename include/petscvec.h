@@ -129,8 +129,7 @@ PetscPolymorphicSubroutine(VecCreateMPIWithArray,(PetscInt n,PetscInt N,PetscSca
 extern PetscErrorCode  VecCreateShared(MPI_Comm,PetscInt,PetscInt,Vec*);
 extern PetscErrorCode  VecSetFromOptions(Vec);
 extern PetscErrorCode  VecSetUp(Vec);
-extern PetscErrorCode  VecDestroy_(Vec);
-#define VecDestroy(a)  (VecDestroy_(a) || (((a) = 0),0))
+extern PetscErrorCode  VecDestroy(Vec);
 extern PetscErrorCode  VecZeroEntries(Vec);
 extern PetscErrorCode  VecSetOptionsPrefix(Vec,const char[]);
 extern PetscErrorCode  VecAppendOptionsPrefix(Vec,const char[]);
@@ -390,8 +389,7 @@ extern PetscErrorCode  VecScatterCreateEmpty(MPI_Comm,VecScatter *);
 extern PetscErrorCode  VecScatterCreateLocal(VecScatter,PetscInt,const PetscInt[],const PetscInt[],const PetscInt[],PetscInt,const PetscInt[],const PetscInt[],const PetscInt[],PetscInt);
 extern PetscErrorCode  VecScatterBegin(VecScatter,Vec,Vec,InsertMode,ScatterMode);
 extern PetscErrorCode  VecScatterEnd(VecScatter,Vec,Vec,InsertMode,ScatterMode); 
-extern PetscErrorCode  VecScatterDestroy_(VecScatter);
-#define VecScatterDestroy(a)  (VecScatterDestroy_(a) || (((a) = 0),0))
+extern PetscErrorCode  VecScatterDestroy(VecScatter*);
 extern PetscErrorCode  VecScatterCopy(VecScatter,VecScatter *);
 extern PetscErrorCode  VecScatterView(VecScatter,PetscViewer);
 extern PetscErrorCode  VecScatterRemap(VecScatter,PetscInt *,PetscInt*);
@@ -539,7 +537,7 @@ extern PetscErrorCode  PetscViewerMathematicaPutVector(PetscViewer, Vec);
 S*/
         struct _n_Vecs  {PetscInt n; Vec v;};
 typedef struct _n_Vecs* Vecs;
-#define VecsDestroy(x)            (VecDestroy((x)->v)         || PetscFree(x))
+#define VecsDestroy(x)            (VecDestroy(&(x)->v)         || PetscFree(x))
 #define VecsCreateSeq(comm,p,m,x) (PetscNew(struct _n_Vecs,x) || VecCreateSeq(comm,p*m,&(*(x))->v) || (-1 == ((*(x))->n = (m))))
 #define VecsCreateSeqWithArray(comm,p,m,a,x) (PetscNew(struct _n_Vecs,x) || VecCreateSeqWithArray(comm,p*m,a,&(*(x))->v) || (-1 == ((*(x))->n = (m))))
 #define VecsDuplicate(x,y)        (PetscNew(struct _n_Vecs,y) || VecDuplicate(x->v,&(*(y))->v) || (-1 == ((*(y))->n = (x)->n)))
@@ -547,7 +545,7 @@ typedef struct _n_Vecs* Vecs;
 #if defined(PETSC_HAVE_CUSP)
 typedef struct _p_PetscCUSPIndices* PetscCUSPIndices;
 extern PetscErrorCode PetscCUSPIndicesCreate(PetscInt,const PetscInt*,PetscCUSPIndices*);
-extern PetscErrorCode PetscCUSPIndicesDestroy(PetscCUSPIndices);
+extern PetscErrorCode PetscCUSPIndicesDestroy(PetscCUSPIndices*);
 extern PetscErrorCode VecCUSPCopyToGPUSome_Public(Vec,PetscCUSPIndices);
 extern PetscErrorCode VecCUSPCopyFromGPUSome_Public(Vec,PetscCUSPIndices);
 #endif

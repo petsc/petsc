@@ -160,8 +160,8 @@ PetscErrorCode DMDAGetWireBasketInterpolation(DM da,PC_Exotic *exotic,Mat Agloba
     ierr = MatFactorInfoInitialize(&info);CHKERRQ(ierr);
     ierr = MatGetOrdering(Aii,MATORDERINGND,&row,&col);CHKERRQ(ierr);
     ierr = MatLUFactorSymbolic(iAii,Aii,row,col,&info);CHKERRQ(ierr);
-    ierr = ISDestroy(row);CHKERRQ(ierr);
-    ierr = ISDestroy(col);CHKERRQ(ierr);
+    ierr = ISDestroy(&row);CHKERRQ(ierr);
+    ierr = ISDestroy(&col);CHKERRQ(ierr);
     ierr = MatLUFactorNumeric(iAii,Aii,&info);CHKERRQ(ierr);
     ierr = MatMatSolve(iAii,Xint_tmp,Xint);CHKERRQ(ierr);
     ierr = MatDestroy(iAii);CHKERRQ(ierr);
@@ -279,15 +279,15 @@ PetscErrorCode DMDAGetWireBasketInterpolation(DM da,PC_Exotic *exotic,Mat Agloba
   }
 #endif
     
-  ierr = MatDestroy(Aii);CHKERRQ(ierr);
-  ierr = MatDestroy(Ais);CHKERRQ(ierr);
-  ierr = MatDestroy(Asi);CHKERRQ(ierr);
-  ierr = MatDestroy(A);CHKERRQ(ierr);
-  ierr = ISDestroy(is);CHKERRQ(ierr);
-  ierr = ISDestroy(isint);CHKERRQ(ierr);
-  ierr = ISDestroy(issurf);CHKERRQ(ierr);
-  ierr = MatDestroy(Xint);CHKERRQ(ierr);
-  ierr = MatDestroy(Xsurf);CHKERRQ(ierr);
+  ierr = MatDestroy(&Aii);CHKERRQ(ierr);
+  ierr = MatDestroy(&Ais);CHKERRQ(ierr);
+  ierr = MatDestroy(&Asi);CHKERRQ(ierr);
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  ierr = ISDestroy(&is);CHKERRQ(ierr);
+  ierr = ISDestroy(&isint);CHKERRQ(ierr);
+  ierr = ISDestroy(&issurf);CHKERRQ(ierr);
+  ierr = MatDestroy(&Xint);CHKERRQ(ierr);
+  ierr = MatDestroy(&Xsurf);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -434,11 +434,11 @@ PetscErrorCode DMDAGetFaceInterpolation(DM da,PC_Exotic *exotic,Mat Aglobal,MatR
     ierr = MatFactorInfoInitialize(&info);CHKERRQ(ierr);
     ierr = MatGetOrdering(Aii,MATORDERINGND,&row,&col);CHKERRQ(ierr);
     ierr = MatLUFactorSymbolic(iAii,Aii,row,col,&info);CHKERRQ(ierr);
-    ierr = ISDestroy(row);CHKERRQ(ierr);
-    ierr = ISDestroy(col);CHKERRQ(ierr);
+    ierr = ISDestroy(&row);CHKERRQ(ierr);
+    ierr = ISDestroy(&col);CHKERRQ(ierr);
     ierr = MatLUFactorNumeric(iAii,Aii,&info);CHKERRQ(ierr);
     ierr = MatMatSolve(iAii,Xint_tmp,Xint);CHKERRQ(ierr);
-    ierr = MatDestroy(iAii);CHKERRQ(ierr);
+    ierr = MatDestroy(&iAii);CHKERRQ(ierr);
   } else {
     Vec         b,x;
     PetscScalar *xint_tmp;
@@ -550,15 +550,15 @@ PetscErrorCode DMDAGetFaceInterpolation(DM da,PC_Exotic *exotic,Mat Aglobal,MatR
   }
 #endif
     
-  ierr = MatDestroy(Aii);CHKERRQ(ierr);
-  ierr = MatDestroy(Ais);CHKERRQ(ierr);
-  ierr = MatDestroy(Asi);CHKERRQ(ierr);
-  ierr = MatDestroy(A);CHKERRQ(ierr);
-  ierr = ISDestroy(is);CHKERRQ(ierr);
-  ierr = ISDestroy(isint);CHKERRQ(ierr);
-  ierr = ISDestroy(issurf);CHKERRQ(ierr);
-  ierr = MatDestroy(Xint);CHKERRQ(ierr);
-  ierr = MatDestroy(Xsurf);CHKERRQ(ierr);
+  ierr = MatDestroy(&Aii);CHKERRQ(ierr);
+  ierr = MatDestroy(&Ais);CHKERRQ(ierr);
+  ierr = MatDestroy(&Asi);CHKERRQ(ierr);
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  ierr = ISDestroy(&is);CHKERRQ(ierr);
+  ierr = ISDestroy(&isint);CHKERRQ(ierr);
+  ierr = ISDestroy(&issurf);CHKERRQ(ierr);
+  ierr = MatDestroy(&Xint);CHKERRQ(ierr);
+  ierr = MatDestroy(&Xsurf);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -647,8 +647,8 @@ PetscErrorCode PCDestroy_Exotic(PC pc)
   PC_Exotic      *ctx = (PC_Exotic*) mg->innerctx;
 
   PetscFunctionBegin;
-  if (ctx->P) {ierr = MatDestroy(ctx->P);CHKERRQ(ierr);}
-  if (ctx->ksp) {ierr = KSPDestroy(ctx->ksp);CHKERRQ(ierr);}
+  ierr = MatDestroy(&ctx->P);CHKERRQ(ierr);
+  ierr = KSPDestroy(&ctx->ksp);CHKERRQ(ierr);
   ierr = PetscFree(ctx);CHKERRQ(ierr);
   ierr = PCDestroy_MG(pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);

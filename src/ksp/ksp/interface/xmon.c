@@ -89,14 +89,14 @@ PetscErrorCode  KSPMonitorLG(KSP ksp,PetscInt n,PetscReal rnorm,void *monctx)
 
 .seealso: KSPMonitorLGCreate(), KSPMonitorLGTrueResidualDestroy(), KSPMonitorSet()
 @*/
-PetscErrorCode  KSPMonitorLGDestroy(PetscDrawLG drawlg)
+PetscErrorCode  KSPMonitorLGDestroy(PetscDrawLG *drawlg)
 {
   PetscDraw      draw;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscDrawLGGetDraw(drawlg,&draw);CHKERRQ(ierr);
-  if (draw) { ierr = PetscDrawDestroy(draw);CHKERRQ(ierr);}
+  ierr = PetscDrawLGGetDraw(*drawlg,&draw);CHKERRQ(ierr);
+  ierr = PetscDrawDestroy(&draw);CHKERRQ(ierr);
   ierr = PetscDrawLGDestroy(drawlg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -232,14 +232,14 @@ PetscErrorCode  KSPMonitorLGRange(KSP ksp,PetscInt n,PetscReal rnorm,void *monct
 
 .seealso: KSPMonitorLGCreate(), KSPMonitorLGTrueResidualDestroy(), KSPMonitorSet()
 @*/
-PetscErrorCode  KSPMonitorLGRangeDestroy(PetscDrawLG drawlg)
+PetscErrorCode  KSPMonitorLGRangeDestroy(PetscDrawLG *drawlg)
 {
   PetscDraw      draw;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscDrawLGGetDraw(drawlg,&draw);CHKERRQ(ierr);
-  if (draw) { ierr = PetscDrawDestroy(draw);CHKERRQ(ierr);}
+  ierr = PetscDrawLGGetDraw(*drawlg,&draw);CHKERRQ(ierr);
+  ierr = PetscDrawDestroy(&draw);CHKERRQ(ierr);
   ierr = PetscDrawLGDestroy(drawlg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -323,7 +323,7 @@ PetscErrorCode  KSPMonitorLGTrueResidualNorm(KSP ksp,PetscInt n,PetscReal rnorm,
   ierr = VecDuplicate(ksp->vec_rhs,&work);CHKERRQ(ierr);
   ierr = KSPBuildResidual(ksp,0,work,&resid);CHKERRQ(ierr);
   ierr = VecNorm(resid,NORM_2,&scnorm);CHKERRQ(ierr);
-  ierr = VecDestroy(work);CHKERRQ(ierr);
+  ierr = VecDestroy(&work);CHKERRQ(ierr);
 
   if (!rank) {
     if (scnorm > 0.0) y[1] = log10(scnorm); else y[1] = -15.0;
@@ -352,14 +352,14 @@ PetscErrorCode  KSPMonitorLGTrueResidualNorm(KSP ksp,PetscInt n,PetscReal rnorm,
 
 .seealso: KSPMonitorLGTrueResidualNormCreate(), KSPMonitorSet()
 @*/
-PetscErrorCode  KSPMonitorLGTrueResidualNormDestroy(PetscDrawLG drawlg)
+PetscErrorCode  KSPMonitorLGTrueResidualNormDestroy(PetscDrawLG *drawlg)
 {
   PetscErrorCode ierr;
   PetscDraw      draw;
 
   PetscFunctionBegin;
-  ierr = PetscDrawLGGetDraw(drawlg,&draw);CHKERRQ(ierr);
-  ierr = PetscDrawDestroy(draw);CHKERRQ(ierr);
+  ierr = PetscDrawLGGetDraw(*drawlg,&draw);CHKERRQ(ierr);
+  ierr = PetscDrawDestroy(&draw);CHKERRQ(ierr);
   ierr = PetscDrawLGDestroy(drawlg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

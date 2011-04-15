@@ -105,9 +105,7 @@ extern PetscErrorCode    ISBlockSetIndices(IS,PetscInt,PetscInt,const PetscInt[]
 extern PetscErrorCode    ISCreateStride(MPI_Comm,PetscInt,PetscInt,PetscInt,IS *);
 extern PetscErrorCode    ISStrideSetStride(IS,PetscInt,PetscInt,PetscInt);
 
-extern PetscErrorCode    ISDestroy_(IS);
-#define ISDestroy(a)  (ISDestroy_(a) || (((a) = 0),0))
-
+extern PetscErrorCode    ISDestroy(IS*);
 extern PetscErrorCode    ISSetPermutation(IS);
 extern PetscErrorCode    ISPermutation(IS,PetscBool *); 
 extern PetscErrorCode    ISSetIdentity(IS);
@@ -196,7 +194,7 @@ typedef enum {IS_GTOLM_MASK,IS_GTOLM_DROP} ISGlobalToLocalMappingType;
 extern PetscErrorCode  ISLocalToGlobalMappingCreate(MPI_Comm,PetscInt,const PetscInt[],PetscCopyMode,ISLocalToGlobalMapping*);
 extern PetscErrorCode  ISLocalToGlobalMappingCreateIS(IS,ISLocalToGlobalMapping *);
 extern PetscErrorCode  ISLocalToGlobalMappingView(ISLocalToGlobalMapping,PetscViewer);
-extern PetscErrorCode  ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping);
+extern PetscErrorCode  ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping*);
 extern PetscErrorCode  ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping,IS,IS*);
 extern PetscErrorCode  ISGlobalToLocalMappingApply(ISLocalToGlobalMapping,ISGlobalToLocalMappingType,PetscInt,const PetscInt[],PetscInt*,PetscInt[]);
 extern PetscErrorCode  ISLocalToGlobalMappingGetSize(ISLocalToGlobalMapping,PetscInt*);
@@ -207,6 +205,8 @@ extern PetscErrorCode  ISLocalToGlobalMappingRestoreIndices(ISLocalToGlobalMappi
 extern PetscErrorCode  ISLocalToGlobalMappingBlock(ISLocalToGlobalMapping,PetscInt,ISLocalToGlobalMapping*);
 extern PetscErrorCode  ISLocalToGlobalMappingUnBlock(ISLocalToGlobalMapping,PetscInt,ISLocalToGlobalMapping*);
 
+#undef __FUNCT__
+#define __FUNCT__ "ISLocalToGlobalMappingApply"
 PETSC_STATIC_INLINE PetscErrorCode ISLocalToGlobalMappingApply(ISLocalToGlobalMapping mapping,PetscInt N,const PetscInt in[],PetscInt out[])
 {
   PetscInt       i,Nmax = mapping->n;
@@ -267,7 +267,7 @@ struct _n_ISColoring {
 typedef struct _n_ISColoring* ISColoring;
 
 extern PetscErrorCode  ISColoringCreate(MPI_Comm,PetscInt,PetscInt,const ISColoringValue[],ISColoring*);
-extern PetscErrorCode  ISColoringDestroy(ISColoring);
+extern PetscErrorCode  ISColoringDestroy(ISColoring*);
 extern PetscErrorCode  ISColoringView(ISColoring,PetscViewer);
 extern PetscErrorCode  ISColoringGetIS(ISColoring,PetscInt*,IS*[]);
 extern PetscErrorCode  ISColoringRestoreIS(ISColoring,IS*[]);

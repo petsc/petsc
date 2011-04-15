@@ -184,9 +184,9 @@ PetscErrorCode ViewSection(Mesh mesh, SectionReal section, const char filename[]
   ierr = CreatePartition(mesh, &partition);CHKERRQ(ierr);
   ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_VTK_CELL);CHKERRQ(ierr);
   ierr = SectionIntView(partition, viewer);CHKERRQ(ierr);
-  ierr = SectionIntDestroy(partition);CHKERRQ(ierr);
+  ierr = SectionIntDestroy(&partition);CHKERRQ(ierr);
   ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -210,8 +210,8 @@ PetscErrorCode ViewMesh(Mesh mesh, const char filename[])
   ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_VTK_CELL);CHKERRQ(ierr);
   ierr = SectionIntView(partition, viewer);CHKERRQ(ierr);
   ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-  ierr = SectionIntDestroy(partition);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+  ierr = SectionIntDestroy(&partition);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -396,7 +396,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Dimension not supported: %d", options->dim);
     }
     ierr = MeshGenerate(boundary, options->interpolate, &mesh);CHKERRQ(ierr);
-    ierr = MeshDestroy(boundary);CHKERRQ(ierr);
+    ierr = MeshDestroy(&boundary);CHKERRQ(ierr);
   } else {
     std::string baseFilename(options->baseFilename);
     std::string coordFile = baseFilename+".nodes";
@@ -409,14 +409,14 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
     Mesh parallelMesh;
 
     ierr = MeshDistribute(mesh, PETSC_NULL, &parallelMesh);CHKERRQ(ierr);
-    ierr = MeshDestroy(mesh);CHKERRQ(ierr);
+    ierr = MeshDestroy(&mesh);CHKERRQ(ierr);
     mesh = parallelMesh;
   }
   if (options->refinementLimit > 0.0) {
     Mesh refinedMesh;
 
     ierr = MeshRefine(mesh, options->refinementLimit, options->interpolate, &refinedMesh);CHKERRQ(ierr);
-    ierr = MeshDestroy(mesh);CHKERRQ(ierr);
+    ierr = MeshDestroy(&mesh);CHKERRQ(ierr);
     mesh = refinedMesh;
   }
   if (options->bcType == DIRICHLET) {
@@ -447,7 +447,7 @@ PetscErrorCode DestroyMesh(DM dm, Options *options)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MeshDestroy((Mesh) dm);CHKERRQ(ierr);
+  ierr = MeshDestroy(&(Mesh) dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -458,7 +458,7 @@ PetscErrorCode DestroyExactSolution(ExactSolType sol, Options *options)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = SectionRealDestroy(sol.section);CHKERRQ(ierr);
+  ierr = SectionRealDestroy(&sol.section);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -767,8 +767,8 @@ PetscErrorCode Laplacian_2D_MF(Mat A, Vec x, Vec y)
   ierr = SectionRealComplete(Y);CHKERRQ(ierr);
 
   ierr = SectionRealToVec(Y, mesh, SCATTER_FORWARD, y);CHKERRQ(ierr);
-  ierr = SectionRealDestroy(X);CHKERRQ(ierr);
-  ierr = SectionRealDestroy(Y);CHKERRQ(ierr);
+  ierr = SectionRealDestroy(&X);CHKERRQ(ierr);
+  ierr = SectionRealDestroy(&Y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -847,8 +847,8 @@ PetscErrorCode Laplacian_2D_MF2(Mat A, Vec x, Vec y)
   ierr = SectionRealComplete(Y);CHKERRQ(ierr);
 
   ierr = SectionRealToVec(Y, mesh, SCATTER_FORWARD, y);CHKERRQ(ierr);
-  ierr = SectionRealDestroy(X);CHKERRQ(ierr);
-  ierr = SectionRealDestroy(Y);CHKERRQ(ierr);
+  ierr = SectionRealDestroy(&X);CHKERRQ(ierr);
+  ierr = SectionRealDestroy(&Y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -1208,7 +1208,7 @@ PetscErrorCode CheckResidual(DM dm, ExactSolType sol, Options *options)
   ierr = Rhs_Unstructured(mesh, sol.section, residual, options);CHKERRQ(ierr);
   if (flag) {ierr = SectionRealView(residual, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
   ierr = SectionRealNorm(residual, mesh, NORM_2, &norm);CHKERRQ(ierr);
-  ierr = SectionRealDestroy(residual);CHKERRQ(ierr);
+  ierr = SectionRealDestroy(&residual);CHKERRQ(ierr);
   ierr = PetscObjectGetName((PetscObject) sol.section, &name);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject) sol.section, &comm);CHKERRQ(ierr);
   PetscPrintf(comm, "Residual for trial solution %s: %g\n", name, norm);
@@ -1242,17 +1242,17 @@ PetscErrorCode CheckJacobian(DM dm, ExactSolType sol, Options *options)
   ierr = SectionRealToVec(sol.section, mesh, SCATTER_FORWARD, x);CHKERRQ(ierr);
   ierr = MatMult(J, x, y);CHKERRQ(ierr);
   ierr = SectionRealToVec(Y, mesh, SCATTER_REVERSE, y);CHKERRQ(ierr);
-  ierr = VecDestroy(x);CHKERRQ(ierr);
-  ierr = VecDestroy(y);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = VecDestroy(&y);CHKERRQ(ierr);
   ierr = SectionRealDuplicate(sol.section, &L);CHKERRQ(ierr);
   ierr = SectionRealDuplicate(sol.section, &M);CHKERRQ(ierr);
   ierr = Rhs_Unstructured(mesh, M, L, options);CHKERRQ(ierr);
   ierr = SectionRealAXPY(Y, mesh, 1.0, L);CHKERRQ(ierr);
   ierr = SectionRealNorm(Y, mesh, NORM_2, &norm);CHKERRQ(ierr);
-  ierr = SectionRealDestroy(Y);CHKERRQ(ierr);
-  ierr = SectionRealDestroy(L);CHKERRQ(ierr);
-  ierr = SectionRealDestroy(M);CHKERRQ(ierr);
-  ierr = MatDestroy(J);CHKERRQ(ierr);
+  ierr = SectionRealDestroy(&Y);CHKERRQ(ierr);
+  ierr = SectionRealDestroy(&L);CHKERRQ(ierr);
+  ierr = SectionRealDestroy(&M);CHKERRQ(ierr);
+  ierr = MatDestroy(&J);CHKERRQ(ierr);
   ierr = PetscObjectGetName((PetscObject) sol.section, &name);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject) sol.section, &comm);CHKERRQ(ierr);
   PetscPrintf(comm, "Error for linear residual for trial solution %s: %g\n", name, norm);
@@ -1338,7 +1338,7 @@ PetscErrorCode Solve(DMMG *dmmg, Options *options)
     velocityX->view("X-Velocity Solution");
     velocityY->view("Y-Velocity Solution");
   }
-  ierr = SectionRealDestroy(solution);CHKERRQ(ierr);
+  ierr = SectionRealDestroy(&solution);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1367,7 +1367,7 @@ int main(int argc, char *argv[])
       ierr = CheckJacobian(dm, options.exactSol, &options);CHKERRQ(ierr);
       ierr = CreateSolver(dm, &dmmg, &options);CHKERRQ(ierr);
       ierr = Solve(dmmg, &options);CHKERRQ(ierr);
-      ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
+      ierr = DMMGDestroy(&dmmg);CHKERRQ(ierr);
       ierr = DestroyExactSolution(options.exactSol, &options);CHKERRQ(ierr);
     }
     ierr = DestroyMesh(dm, &options);CHKERRQ(ierr);

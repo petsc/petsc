@@ -129,7 +129,7 @@ int main(int argc,char **args)
 	  ierr = VecSetFromOptions(b);CHKERRQ(ierr);
 	  ierr = VecSet(b,one);CHKERRQ(ierr);
         } else {
-          ierr = PetscViewerDestroy(fd);CHKERRQ(ierr); 
+          ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr); 
           ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[2],FILE_MODE_READ,&fd);CHKERRQ(ierr);
           ierr = VecSetFromOptions(b);CHKERRQ(ierr);
           ierr = VecLoad(b,fd);CHKERRQ(ierr);
@@ -139,7 +139,7 @@ int main(int argc,char **args)
         ierr = VecLoad(b,fd);CHKERRQ(ierr);
       }
     }
-    ierr = PetscViewerDestroy(fd);CHKERRQ(ierr); 
+    ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr); 
 
     /* Make A singular for testing zero-pivot of ilu factorization        */
     /* Example: ./ex10 -f0 <datafile> -test_zeropivot -set_row_zero -pc_factor_shift_nonzero */
@@ -177,7 +177,7 @@ int main(int argc,char **args)
       } else {
         PetscPrintf(PETSC_COMM_WORLD,"Warning: A is non-symmetric \n");CHKERRQ(ierr);
       }
-      ierr = MatDestroy(Atrans);CHKERRQ(ierr);
+      ierr = MatDestroy(&Atrans);CHKERRQ(ierr);
     }
 
     /* 
@@ -205,7 +205,7 @@ int main(int argc,char **args)
         ierr  = VecSetValues(tmp,1,&indx,bold+j,INSERT_VALUES);CHKERRQ(ierr);
       }
       ierr = VecRestoreArray(b,&bold);CHKERRQ(ierr);
-      ierr = VecDestroy(b);CHKERRQ(ierr);
+      ierr = VecDestroy(&b);CHKERRQ(ierr);
       ierr = VecAssemblyBegin(tmp);CHKERRQ(ierr);
       ierr = VecAssemblyEnd(tmp);CHKERRQ(ierr);
       b = tmp;
@@ -216,7 +216,7 @@ int main(int argc,char **args)
       PetscViewer viewer2;
       ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,initialguessfilename,FILE_MODE_READ,&viewer2);CHKERRQ(ierr);
       ierr = VecLoad(x,viewer2);CHKERRQ(ierr);
-      ierr = PetscViewerDestroy(viewer2);CHKERRQ(ierr);
+      ierr = PetscViewerDestroy(&viewer2);CHKERRQ(ierr);
       initialguess = PETSC_TRUE;
     } else if (initialguess) {
       ierr = VecSet(x,1.0);CHKERRQ(ierr);
@@ -242,10 +242,10 @@ int main(int argc,char **args)
 
         ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD, "max.data", &viewer);CHKERRQ(ierr);
         ierr = VecView(max, viewer);CHKERRQ(ierr);
-        ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+        ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
         ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD, "min.data", &viewer);CHKERRQ(ierr);
         ierr = VecView(min, viewer);CHKERRQ(ierr);
-        ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+        ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
       }
       ierr = VecView(max, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
       ierr = VecMax(max, &idx, &val);CHKERRQ(ierr);
@@ -259,8 +259,8 @@ int main(int argc,char **args)
       ierr = VecMax(max, &idx, &val);CHKERRQ(ierr);
       ierr = PetscPrintf(PETSC_COMM_WORLD, "Largest row ratio %G at row %d\n", val, idx);CHKERRQ(ierr);
       ierr = VecView(max, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
-      ierr = VecDestroy(max);CHKERRQ(ierr);
-      ierr = VecDestroy(min);CHKERRQ(ierr);
+      ierr = VecDestroy(&max);CHKERRQ(ierr);
+      ierr = VecDestroy(&min);CHKERRQ(ierr);
     }
 
     //  ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
@@ -295,7 +295,7 @@ int main(int argc,char **args)
 	Mat BtB;
         ierr = MatMatMultTranspose(B,B,MAT_INITIAL_MATRIX,4,&BtB);CHKERRQ(ierr);
         ierr = KSPSetOperators(ksp,A,BtB,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-        ierr = MatDestroy(BtB);CHKERRQ(ierr);
+        ierr = MatDestroy(&BtB);CHKERRQ(ierr);
       } else {
         ierr = KSPSetOperators(ksp,A,B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
       }
@@ -384,7 +384,7 @@ int main(int argc,char **args)
         /*
           Destroy the viewer
         */
-        ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+        ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
       } else {
         ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3D\n",its);CHKERRQ(ierr);
         ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %A\n",norm);CHKERRQ(ierr);
@@ -401,15 +401,15 @@ int main(int argc,char **args)
         ierr = VecAXPY(xstar, -1.0, x);CHKERRQ(ierr);
         ierr = VecNorm(xstar, NORM_2, &norm);CHKERRQ(ierr);
         ierr = PetscPrintf(PETSC_COMM_WORLD, "Error norm %A\n", norm);CHKERRQ(ierr);
-        ierr = VecDestroy(xstar);CHKERRQ(ierr);
-        ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+        ierr = VecDestroy(&xstar);CHKERRQ(ierr);
+        ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
       }
       if (outputSoln) {
         PetscViewer viewer;
 
         ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"solution.petsc",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
         ierr = VecView(x, viewer);CHKERRQ(ierr);
-        ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+        ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
       }
 
       flg  = PETSC_FALSE;
@@ -426,10 +426,10 @@ int main(int argc,char **args)
        Free work space.  All PETSc objects should be destroyed when they
        are no longer needed.
     */
-    ierr = MatDestroy(A);CHKERRQ(ierr); ierr = VecDestroy(b);CHKERRQ(ierr);
-    ierr = VecDestroy(u);CHKERRQ(ierr); ierr = VecDestroy(x);CHKERRQ(ierr);
-    ierr = KSPDestroy(ksp);CHKERRQ(ierr); 
-    if (flgB) { ierr = MatDestroy(B);CHKERRQ(ierr); }
+    ierr = MatDestroy(&A);CHKERRQ(ierr); ierr = VecDestroy(&b);CHKERRQ(ierr);
+    ierr = VecDestroy(&u);CHKERRQ(ierr); ierr = VecDestroy(&x);CHKERRQ(ierr);
+    ierr = KSPDestroy(&ksp);CHKERRQ(ierr); 
+    if (flgB) { ierr = MatDestroy(&B);CHKERRQ(ierr); }
   PreLoadEnd();
   /* -----------------------------------------------------------
                       End of linear solver loop

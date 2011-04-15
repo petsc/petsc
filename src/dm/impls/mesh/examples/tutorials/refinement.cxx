@@ -106,9 +106,9 @@ PetscErrorCode ViewSection(Mesh mesh, SectionReal section, const char filename[]
   ierr = CreatePartition(mesh, &partition);CHKERRQ(ierr);
   ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_VTK_CELL);CHKERRQ(ierr);
   ierr = SectionIntView(partition, viewer);CHKERRQ(ierr);
-  ierr = SectionIntDestroy(partition);CHKERRQ(ierr);
+  ierr = SectionIntDestroy(&partition);CHKERRQ(ierr);
   ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -132,8 +132,8 @@ PetscErrorCode ViewMesh(Mesh mesh, const char filename[])
   ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_VTK_CELL);CHKERRQ(ierr);
   ierr = SectionIntView(partition, viewer);CHKERRQ(ierr);
   ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-  ierr = SectionIntDestroy(partition);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+  ierr = SectionIntDestroy(&partition);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -185,7 +185,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Dimension not supported: %d", options->dim);
     }
     ierr = MeshGenerate(boundary, options->interpolate, &mesh);CHKERRQ(ierr);
-    ierr = MeshDestroy(boundary);CHKERRQ(ierr);
+    ierr = MeshDestroy(&boundary);CHKERRQ(ierr);
   } else {
     Obj<ALE::Mesh>             m     = new ALE::Mesh(comm, options->dim, options->debug);
     Obj<ALE::Mesh::sieve_type> sieve = new ALE::Mesh::sieve_type(comm, options->debug);
@@ -226,7 +226,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
     Mesh parallelMesh;
 
     ierr = MeshDistribute(mesh, PETSC_NULL, &parallelMesh);CHKERRQ(ierr);
-    ierr = MeshDestroy(mesh);CHKERRQ(ierr);
+    ierr = MeshDestroy(&mesh);CHKERRQ(ierr);
     mesh = parallelMesh;
   }
   PetscBool  refine = PETSC_FALSE;
@@ -249,7 +249,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
     } else {
       ierr = MeshRefine(mesh, options->refinementLimit[rank], options->interpolate, &refinedMesh);CHKERRQ(ierr);
     }
-    ierr = MeshDestroy(mesh);CHKERRQ(ierr);
+    ierr = MeshDestroy(&mesh);CHKERRQ(ierr);
     mesh = refinedMesh;
   }
   ierr = PetscOptionsHasName(PETSC_NULL, "-mesh_view_vtk", &view);CHKERRQ(ierr);
@@ -274,7 +274,7 @@ PetscErrorCode DestroyMesh(DM dm, Options *options)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MeshDestroy((Mesh) dm);CHKERRQ(ierr);
+  ierr = MeshDestroy(&(Mesh) dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

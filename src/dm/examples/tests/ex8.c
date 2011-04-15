@@ -70,8 +70,8 @@ PetscErrorCode GenerateSliceScatter(DM da,VecScatter *scatter,Vec *vslice)
   /* This is to gather into the local vector */
   ierr = ISCreateStride(PETSC_COMM_SELF,nslice,0,1,&isto);CHKERRQ(ierr);
   ierr = VecScatterCreate(vglobal,isfrom,*vslice,isto,scatter);CHKERRQ(ierr);
-  ierr = ISDestroy(isfrom);CHKERRQ(ierr); 
-  ierr = ISDestroy(isto);CHKERRQ(ierr);
+  ierr = ISDestroy(&isfrom);CHKERRQ(ierr); 
+  ierr = ISDestroy(&isto);CHKERRQ(ierr);
   return 0;
 }
 
@@ -123,9 +123,9 @@ int main(int argc,char **argv)
 
   ierr = VecView(global,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
 
-  ierr = VecDestroy(local);CHKERRQ(ierr);
-  ierr = VecDestroy(global);CHKERRQ(ierr);
-  ierr = DMDestroy(da);CHKERRQ(ierr);
+  ierr = VecDestroy(&local);CHKERRQ(ierr);
+  ierr = VecDestroy(&global);CHKERRQ(ierr);
+  ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

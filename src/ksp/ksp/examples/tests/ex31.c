@@ -46,7 +46,7 @@ int main(int argc,char **args)
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatLoad(A,fd);CHKERRQ(ierr);  
-  ierr = PetscViewerDestroy(fd);CHKERRQ(ierr); 
+  ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr); 
   ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
   if (m != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%d, %d)", m, n);
 
@@ -80,7 +80,7 @@ int main(int argc,char **args)
     /* ierr = MatPartitioningSetVertexWeights(mpart, weight);CHKERRQ(ierr); */
     ierr = MatPartitioningSetFromOptions(mpart);CHKERRQ(ierr);
     ierr = MatPartitioningApply(mpart, &mis);CHKERRQ(ierr);
-    ierr = MatPartitioningDestroy(mpart);CHKERRQ(ierr);
+    ierr = MatPartitioningDestroy(&mpart);CHKERRQ(ierr);
     if (displayIS){
       ierr = PetscPrintf(PETSC_COMM_WORLD,"mis, new processor assignment:\n");CHKERRQ(ierr);
       ierr = ISView(mis,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
@@ -93,7 +93,7 @@ int main(int argc,char **args)
     }
 
     ierr = ISPartitioningCount(mis,size,count);CHKERRQ(ierr);
-    ierr = ISDestroy(mis);CHKERRQ(ierr);
+    ierr = ISDestroy(&mis);CHKERRQ(ierr);
     if (displayIS && !rank ) {
       PetscInt i;
       printf("[ %d ] count:\n",rank);
@@ -105,7 +105,7 @@ int main(int argc,char **args)
       
     ierr = ISInvertPermutation(nis, count[rank], &is);CHKERRQ(ierr);
     ierr = PetscFree(count);CHKERRQ(ierr);
-    ierr = ISDestroy(nis);CHKERRQ(ierr);
+    ierr = ISDestroy(&nis);CHKERRQ(ierr);
     ierr = ISSort(is);CHKERRQ(ierr);
     if (displayIS){
       ierr = PetscPrintf(PETSC_COMM_WORLD,"inverse of nis - maps new local rows to old global rows:\n");CHKERRQ(ierr);
@@ -119,8 +119,8 @@ int main(int argc,char **args)
     }
 
     /* need to move the vector also */
-    ierr = ISDestroy(is);CHKERRQ(ierr);
-    ierr = MatDestroy(A);CHKERRQ(ierr);
+    ierr = ISDestroy(&is);CHKERRQ(ierr);
+    ierr = MatDestroy(&A);CHKERRQ(ierr);
     A    = BB;
   }
 
@@ -150,9 +150,9 @@ int main(int argc,char **args)
   }
 
   /* Free work space.*/
-  ierr = MatDestroy(A);CHKERRQ(ierr); ierr = VecDestroy(b);CHKERRQ(ierr);
-  ierr = VecDestroy(u);CHKERRQ(ierr); ierr = VecDestroy(x);CHKERRQ(ierr);
-  ierr = KSPDestroy(ksp);CHKERRQ(ierr); 
+  ierr = MatDestroy(&A);CHKERRQ(ierr); ierr = VecDestroy(&b);CHKERRQ(ierr);
+  ierr = VecDestroy(&u);CHKERRQ(ierr); ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = KSPDestroy(&ksp);CHKERRQ(ierr); 
 
   ierr = PetscFinalize();
   return 0;

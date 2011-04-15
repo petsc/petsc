@@ -151,7 +151,7 @@ int main(int argc, char *argv[])
         ierr = VecView(material, viewer);CHKERRQ(ierr);
       }
       ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     }
 
     ierr = PetscPrintf(comm, "Creating original format mesh file\n");CHKERRQ(ierr);
@@ -172,7 +172,7 @@ int main(int argc, char *argv[])
       }
     }
     ierr = MeshView_Sieve_Newer(mesh, viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     ALE::LogStagePop(stage);
   } catch (ALE::Exception e) {
     std::cout << e << std::endl;
@@ -277,7 +277,7 @@ PetscErrorCode CreateFieldVector(ALE::Obj<ALE::Mesh> mesh, const char fieldName[
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, field->getSize(patch), field->restrict(patch), &locField);CHKERRQ(ierr);
   ierr = VecScatterBegin(injection, locField, *fieldVec, INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(injection, locField, *fieldVec, INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecDestroy(locField);CHKERRQ(ierr);
+  ierr = VecDestroy(&locField);CHKERRQ(ierr);
   ALE_LOG_EVENT_END;
   PetscFunctionReturn(0);
 }

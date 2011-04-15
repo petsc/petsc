@@ -93,7 +93,7 @@ PetscErrorCode SerialTetrahedronTest(const Options *options)
       ierr = VTKViewer::writeHeader(newMesh, viewer);CHKERRQ(ierr);
       ierr = VTKViewer::writeVertices(newMesh, viewer);CHKERRQ(ierr);
       ierr = VTKViewer::writeElements(newMesh, viewer);CHKERRQ(ierr);
-      ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     }
     for(int c = 0; c < pow(8, l+1); ++c) {
       newMesh->computeElementGeometry(newMesh->getRealSection("coordinates"), c, v0, J, invJ, detJ);
@@ -178,7 +178,7 @@ PetscErrorCode SerialSplitDoubletTetrahedronTest(const Options *options)
       ierr = VTKViewer::writeHeader(newMesh, viewer);CHKERRQ(ierr);
       ierr = VTKViewer::writeVertices(newMesh, viewer);CHKERRQ(ierr);
       ierr = VTKViewer::writeElements(newMesh, viewer);CHKERRQ(ierr);
-      ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     }
     for(int c = 0; c < pow(8, l+1); ++c) {
       newMesh->computeElementGeometry(newMesh->getRealSection("coordinates"), c, v0, J, invJ, detJ);
@@ -267,7 +267,7 @@ PetscErrorCode ParallelTetrahedronTest(const Options *options)
       ierr = VTKViewer::writeHeader(newMesh, viewer);CHKERRQ(ierr);
       ierr = VTKViewer::writeVertices(newMesh, viewer);CHKERRQ(ierr);
       ierr = VTKViewer::writeElements(newMesh, viewer);CHKERRQ(ierr);
-      ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     }
     for(int c = 0; c < pow(8, l+1); ++c) {
       newMesh->computeElementGeometry(newMesh->getRealSection("coordinates"), c, v0, J, invJ, detJ);

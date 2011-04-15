@@ -128,7 +128,7 @@ static PetscErrorCode PCASMPrintSubdomains(PC pc)
     }
   }
   ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -217,7 +217,7 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
       ierr = VecCreateSeq(PETSC_COMM_SELF,m,&osm->x[i]);CHKERRQ(ierr);
       ierr = ISCreateStride(PETSC_COMM_SELF,m,0,1,&isl);CHKERRQ(ierr);
       ierr = VecScatterCreate(vec,osm->is[i],osm->x[i],isl,&osm->restriction[i]);CHKERRQ(ierr);
-      ierr = ISDestroy(isl);CHKERRQ(ierr);
+      ierr = ISDestroy(&isl);CHKERRQ(ierr);
       ierr = VecDuplicate(osm->x[i],&osm->y[i]);CHKERRQ(ierr);
       if (osm->is_local) {
         ISLocalToGlobalMapping ltog;
@@ -230,17 +230,17 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
         ierr = ISGetIndices(osm->is_local[i], &idx_local);CHKERRQ(ierr);
         ierr = PetscMalloc(m_local*sizeof(PetscInt),&idx);CHKERRQ(ierr);
         ierr = ISGlobalToLocalMappingApply(ltog,IS_GTOLM_DROP,m_local,idx_local,&nout,idx);CHKERRQ(ierr);
-        ierr = ISLocalToGlobalMappingDestroy(ltog);CHKERRQ(ierr);
+        ierr = ISLocalToGlobalMappingDestroy(&ltog);CHKERRQ(ierr);
         if (nout != m_local) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"is_local not a subset of is");
         ierr = ISRestoreIndices(osm->is_local[i], &idx_local);CHKERRQ(ierr);
         ierr = ISCreateGeneral(PETSC_COMM_SELF,m_local,idx,PETSC_OWN_POINTER,&isll);CHKERRQ(ierr);
         ierr = ISCreateStride(PETSC_COMM_SELF,m_local,0,1,&isl);CHKERRQ(ierr);
         ierr = VecCreateSeq(PETSC_COMM_SELF,m_local,&osm->y_local[i]);CHKERRQ(ierr);
         ierr = VecScatterCreate(osm->y[i],isll,osm->y_local[i],isl,&osm->localization[i]);CHKERRQ(ierr);
-        ierr = ISDestroy(isll);CHKERRQ(ierr);
+        ierr = ISDestroy(&isll);CHKERRQ(ierr);
 
         ierr = VecScatterCreate(vec,osm->is_local[i],osm->y_local[i],isl,&osm->prolongation[i]);CHKERRQ(ierr);
-        ierr = ISDestroy(isl);CHKERRQ(ierr);
+        ierr = ISDestroy(&isl);CHKERRQ(ierr);
       } else {
         ierr = VecGetLocalSize(vec,&m_local);CHKERRQ(ierr);
         osm->y_local[i] = osm->y[i];
@@ -263,9 +263,9 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
         osm->prolongation[i] = osm->restriction[i];
         ierr = PetscObjectReference((PetscObject) osm->restriction[i]);CHKERRQ(ierr);
       }
-      ierr = ISDestroy(isl);CHKERRQ(ierr);
+      ierr = ISDestroy(&isl);CHKERRQ(ierr);
     }
-    ierr = VecDestroy(vec);CHKERRQ(ierr);
+    ierr = VecDestroy(&vec);CHKERRQ(ierr);
 
     /* Create the local solvers */
     ierr = PetscMalloc(osm->n_local_true*sizeof(KSP *),&osm->ksp);CHKERRQ(ierr);
@@ -460,12 +460,12 @@ static PetscErrorCode PCReset_ASM(PC pc)
   }
   if (osm->restriction) {
     for (i=0; i<osm->n_local; i++) {
-      ierr = VecScatterDestroy(osm->restriction[i]);CHKERRQ(ierr);
-      if (osm->localization) {ierr = VecScatterDestroy(osm->localization[i]);CHKERRQ(ierr);}
-      ierr = VecScatterDestroy(osm->prolongation[i]);CHKERRQ(ierr);
-      ierr = VecDestroy(osm->x[i]);CHKERRQ(ierr);
-      ierr = VecDestroy(osm->y[i]);CHKERRQ(ierr);
-      ierr = VecDestroy(osm->y_local[i]);CHKERRQ(ierr);
+      ierr = VecScatterDestroy(&osm->restriction[i]);CHKERRQ(ierr);
+      if (osm->localization) {ierr = VecScatterDestroy(&osm->localization[i]);CHKERRQ(ierr);}
+      ierr = VecScatterDestroy(&osm->prolongation[i]);CHKERRQ(ierr);
+      ierr = VecDestroy(&osm->x[i]);CHKERRQ(ierr);
+      ierr = VecDestroy(&osm->y[i]);CHKERRQ(ierr);
+      ierr = VecDestroy(&osm->y_local[i]);CHKERRQ(ierr);
     }
     ierr = PetscFree(osm->restriction);CHKERRQ(ierr);
     if (osm->localization) {ierr = PetscFree(osm->localization);CHKERRQ(ierr);}
@@ -494,7 +494,7 @@ static PetscErrorCode PCDestroy_ASM(PC pc)
   ierr = PCReset_ASM(pc);CHKERRQ(ierr);
   if (osm->ksp) {
     for (i=0; i<osm->n_local_true; i++) {
-      ierr = KSPDestroy(osm->ksp[i]);CHKERRQ(ierr);
+      ierr = KSPDestroy(&osm->ksp[i]);CHKERRQ(ierr);
     }
     ierr = PetscFree(osm->ksp);CHKERRQ(ierr);
   }
@@ -1147,14 +1147,14 @@ PetscErrorCode  PCASMCreateSubdomains(Mat A, PetscInt n, IS* outis[])
 	ierr = MatPartitioningSetNParts(mpart,n);CHKERRQ(ierr);
 	ierr = MatPartitioningApply(mpart,&ispart);CHKERRQ(ierr);
 	ierr = ISPartitioningToNumbering(ispart,&isnumb);CHKERRQ(ierr);
-	ierr = MatDestroy(adj);CHKERRQ(ierr);
+	ierr = MatDestroy(&adj);CHKERRQ(ierr);
 	foundpart = PETSC_TRUE;
       }
       ierr = MatRestoreRowIJ(Ad,0,PETSC_TRUE,isbaij,&na,&ia,&ja,&done);CHKERRQ(ierr);
     }
-    ierr = MatPartitioningDestroy(mpart);CHKERRQ(ierr);
+    ierr = MatPartitioningDestroy(&mpart);CHKERRQ(ierr);
   }
-  if (iscopy) {ierr = MatDestroy(Ad);CHKERRQ(ierr);}
+  if (iscopy) {ierr = MatDestroy(&Ad);CHKERRQ(ierr);}
   
   ierr = PetscMalloc(n*sizeof(IS),&is);CHKERRQ(ierr);
   *outis = is;
@@ -1211,8 +1211,8 @@ PetscErrorCode  PCASMCreateSubdomains(Mat A, PetscInt n, IS* outis[])
 
     ierr = PetscFree(count);
     ierr = PetscFree(indices);
-    ierr = ISDestroy(isnumb);CHKERRQ(ierr);
-    ierr = ISDestroy(ispart);CHKERRQ(ierr);
+    ierr = ISDestroy(&isnumb);CHKERRQ(ierr);
+    ierr = ISDestroy(&ispart);CHKERRQ(ierr);
 
   }
   
@@ -1246,11 +1246,11 @@ PetscErrorCode  PCASMDestroySubdomains(PetscInt n, IS is[], IS is_local[])
   PetscFunctionBegin;
   if (n <= 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"n must be > 0: n = %D",n);
   PetscValidPointer(is,2);
-  for (i=0; i<n; i++) { ierr = ISDestroy(is[i]);CHKERRQ(ierr); }
+  for (i=0; i<n; i++) { ierr = ISDestroy(&is[i]);CHKERRQ(ierr); }
   ierr = PetscFree(is);CHKERRQ(ierr);
   if (is_local) {
     PetscValidPointer(is_local,3);
-    for (i=0; i<n; i++) { ierr = ISDestroy(is_local[i]);CHKERRQ(ierr); }
+    for (i=0; i<n; i++) { ierr = ISDestroy(&is_local[i]);CHKERRQ(ierr); }
     ierr = PetscFree(is_local);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

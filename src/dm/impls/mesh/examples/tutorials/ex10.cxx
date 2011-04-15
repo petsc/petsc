@@ -92,8 +92,8 @@ PetscErrorCode ViewMesh(Mesh mesh, const char filename[])
   ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_VTK_CELL);CHKERRQ(ierr);
   ierr = SectionIntView(partition, viewer);CHKERRQ(ierr);
   ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-  ierr = SectionIntDestroy(partition);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+  ierr = SectionIntDestroy(&partition);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -246,14 +246,14 @@ PetscErrorCode CreateGlobalVector(DM dm, Options *options)
   VecScatter scatter;
 
   ierr = MeshCreateGlobalScatter(mesh, f, &scatter);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(scatter);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&scatter);CHKERRQ(ierr);
 
   const Obj<ALE::Mesh::order_type>& order = m->getFactory()->getGlobalOrder(m, "default", m->getRealSection("default"));
 
   ierr = VecCreate(m->comm(), &options->global);CHKERRQ(ierr);
   ierr = VecSetSizes(options->global, order->getLocalSize(), order->getGlobalSize());CHKERRQ(ierr);
   ierr = VecSetFromOptions(options->global);CHKERRQ(ierr);
-  ierr = SectionRealDestroy(f);CHKERRQ(ierr);
+  ierr = SectionRealDestroy(&f);CHKERRQ(ierr);
 
   ierr = MeshGetSectionReal(mesh, "u", &f);CHKERRQ(ierr);
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
@@ -264,7 +264,7 @@ PetscErrorCode CreateGlobalVector(DM dm, Options *options)
   m->setupField(s);
 
   ierr = VecCreateSeq(PETSC_COMM_SELF, s->size(), &options->local);CHKERRQ(ierr);
-  ierr = SectionRealDestroy(f);CHKERRQ(ierr);
+  ierr = SectionRealDestroy(&f);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -297,7 +297,7 @@ PetscErrorCode CreateField(DM dm, Options *options)
     ierr = SectionRealUpdate(f, *c_iter, &value);CHKERRQ(ierr);
   }
   ierr = SectionRealView(f, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = SectionRealDestroy(f);CHKERRQ(ierr);
+  ierr = SectionRealDestroy(&f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -331,7 +331,7 @@ PetscErrorCode UpdateGhosts(DM dm, Options *options)
   }
   ierr = SectionRealComplete(f);CHKERRQ(ierr);
   ierr = SectionRealView(f, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = SectionRealDestroy(f);CHKERRQ(ierr);
+  ierr = SectionRealDestroy(&f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -41,7 +41,7 @@ extern PetscClassId  SNES_CLASSID;
 extern PetscErrorCode  SNESInitializePackage(const char[]);
 
 extern PetscErrorCode  SNESCreate(MPI_Comm,SNES*);
-extern PetscErrorCode  SNESDestroy(SNES);
+extern PetscErrorCode  SNESDestroy(SNES*);
 extern PetscErrorCode  SNESSetType(SNES,const SNESType);
 extern PetscErrorCode  SNESMonitorSet(SNES,PetscErrorCode(*)(SNES,PetscInt,PetscReal,void*),void *,PetscErrorCode (*)(void*));
 extern PetscErrorCode  SNESMonitorCancel(SNES);
@@ -167,10 +167,10 @@ extern PetscErrorCode  SNESKSPGetParametersEW(SNES,PetscInt*,PetscReal*,PetscRea
 
 extern PetscErrorCode  SNESMonitorLGCreate(const char[],const char[],int,int,int,int,PetscDrawLG*);
 extern PetscErrorCode  SNESMonitorLG(SNES,PetscInt,PetscReal,void*);
-extern PetscErrorCode  SNESMonitorLGDestroy(PetscDrawLG);
+extern PetscErrorCode  SNESMonitorLGDestroy(PetscDrawLG*);
 extern PetscErrorCode  SNESMonitorLGRangeCreate(const char[],const char[],int,int,int,int,PetscDrawLG*);
 extern PetscErrorCode  SNESMonitorLGRange(SNES,PetscInt,PetscReal,void*);
-extern PetscErrorCode  SNESMonitorLGRangeDestroy(PetscDrawLG);
+extern PetscErrorCode  SNESMonitorLGRangeDestroy(PetscDrawLG*);
 
 extern PetscErrorCode  SNESSetApplicationContext(SNES,void *);
 extern PetscErrorCode  SNESGetApplicationContext(SNES,void **);

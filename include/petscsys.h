@@ -1346,7 +1346,7 @@ typedef PetscErrorCode (*PetscErrorCodeFunction)(void);
 */
 extern PetscErrorCode  PetscObjectCreate(MPI_Comm,PetscObject*);
 extern PetscErrorCode  PetscObjectCreateGeneric(MPI_Comm, PetscClassId, const char [], PetscObject *);
-extern PetscErrorCode  PetscObjectDestroy(PetscObject);
+extern PetscErrorCode  PetscObjectDestroy(PetscObject*);
 extern PetscErrorCode  PetscObjectGetComm(PetscObject,MPI_Comm *);
 extern PetscErrorCode  PetscObjectGetClassId(PetscObject,PetscClassId *);
 extern PetscErrorCode  PetscObjectSetType(PetscObject,const char []);
@@ -1446,7 +1446,7 @@ extern PetscErrorCode  PetscRegisterFinalizeAll(void);
 S*/
 typedef struct _n_PetscOList *PetscOList;
 
-extern PetscErrorCode  PetscOListDestroy(PetscOList);
+extern PetscErrorCode  PetscOListDestroy(PetscOList*);
 extern PetscErrorCode  PetscOListFind(PetscOList,const char[],PetscObject*);
 extern PetscErrorCode  PetscOListReverseFind(PetscOList,PetscObject,char**);
 extern PetscErrorCode  PetscOListAdd(PetscOList *,const char[],PetscObject);
@@ -1530,46 +1530,6 @@ $     PetscBool  flag = PetscNot(a)
 */
 #include "private/petscimpl.h"
 
-/*
-     Defines PETSc profiling.
-*/
-#include "petsclog.h"
-
-/*
-          For locking, unlocking and destroying AMS memories associated with  PETSc objects. ams.h is included in petscviewer.h
-*/
-#if defined(PETSC_HAVE_AMS)
-extern PetscBool  PetscAMSPublishAll;
-#define PetscObjectTakeAccess(obj)  ((((PetscObject)(obj))->amem == -1) ? 0 : AMS_Memory_take_access(((PetscObject)(obj))->amem))
-#define PetscObjectGrantAccess(obj) ((((PetscObject)(obj))->amem == -1) ? 0 : AMS_Memory_grant_access(((PetscObject)(obj))->amem))
-#define PetscObjectDepublish(obj)   ((((PetscObject)(obj))->amem == -1) ? 0 : AMS_Memory_destroy(((PetscObject)(obj))->amem));((PetscObject)(obj))->amem = -1;
-#else
-#define PetscObjectTakeAccess(obj)   0
-#define PetscObjectGrantAccess(obj)  0
-#define PetscObjectDepublish(obj)      0
-#endif
-
-/*
-      Simple PETSc parallel IO for ASCII printing
-*/
-extern PetscErrorCode   PetscFixFilename(const char[],char[]);
-extern PetscErrorCode   PetscFOpen(MPI_Comm,const char[],const char[],FILE**);
-extern PetscErrorCode   PetscFClose(MPI_Comm,FILE*);
-extern PetscErrorCode   PetscFPrintf(MPI_Comm,FILE*,const char[],...);
-extern PetscErrorCode   PetscPrintf(MPI_Comm,const char[],...);
-extern PetscErrorCode   PetscSNPrintf(char*,size_t,const char [],...);
-
-
-
-/* These are used internally by PETSc ASCII IO routines*/
-#include <stdarg.h>
-extern PetscErrorCode   PetscVSNPrintf(char*,size_t,const char[],size_t*,va_list);
-extern PetscErrorCode   (*PetscVFPrintf)(FILE*,const char[],va_list);
-extern PetscErrorCode   PetscVFPrintfDefault(FILE*,const char[],va_list);
-
-#if defined(PETSC_HAVE_MATLAB_ENGINE)
-extern PetscErrorCode  PetscVFPrintf_Matlab(FILE*,const char[],va_list);
-#endif
 
 /*MC
     PetscErrorPrintf - Prints error messages.
@@ -1636,6 +1596,47 @@ extern  PetscErrorCode (*PetscErrorPrintf)(const char[],...);
 M*/
 extern  PetscErrorCode  (*PetscHelpPrintf)(MPI_Comm,const char[],...);
 
+/*
+     Defines PETSc profiling.
+*/
+#include "petsclog.h"
+
+/*
+          For locking, unlocking and destroying AMS memories associated with  PETSc objects. ams.h is included in petscviewer.h
+*/
+#if defined(PETSC_HAVE_AMS)
+extern PetscBool  PetscAMSPublishAll;
+#define PetscObjectTakeAccess(obj)  ((((PetscObject)(obj))->amem == -1) ? 0 : AMS_Memory_take_access(((PetscObject)(obj))->amem))
+#define PetscObjectGrantAccess(obj) ((((PetscObject)(obj))->amem == -1) ? 0 : AMS_Memory_grant_access(((PetscObject)(obj))->amem))
+#define PetscObjectDepublish(obj)   ((((PetscObject)(obj))->amem == -1) ? 0 : AMS_Memory_destroy(((PetscObject)(obj))->amem));((PetscObject)(obj))->amem = -1;
+#else
+#define PetscObjectTakeAccess(obj)   0
+#define PetscObjectGrantAccess(obj)  0
+#define PetscObjectDepublish(obj)      0
+#endif
+
+/*
+      Simple PETSc parallel IO for ASCII printing
+*/
+extern PetscErrorCode   PetscFixFilename(const char[],char[]);
+extern PetscErrorCode   PetscFOpen(MPI_Comm,const char[],const char[],FILE**);
+extern PetscErrorCode   PetscFClose(MPI_Comm,FILE*);
+extern PetscErrorCode   PetscFPrintf(MPI_Comm,FILE*,const char[],...);
+extern PetscErrorCode   PetscPrintf(MPI_Comm,const char[],...);
+extern PetscErrorCode   PetscSNPrintf(char*,size_t,const char [],...);
+
+
+
+/* These are used internally by PETSc ASCII IO routines*/
+#include <stdarg.h>
+extern PetscErrorCode   PetscVSNPrintf(char*,size_t,const char[],size_t*,va_list);
+extern PetscErrorCode   (*PetscVFPrintf)(FILE*,const char[],va_list);
+extern PetscErrorCode   PetscVFPrintfDefault(FILE*,const char[],va_list);
+
+#if defined(PETSC_HAVE_MATLAB_ENGINE)
+extern PetscErrorCode  PetscVFPrintf_Matlab(FILE*,const char[],va_list);
+#endif
+
 extern PetscErrorCode  PetscErrorPrintfDefault(const char [],...);
 extern PetscErrorCode  PetscErrorPrintfNone(const char [],...);
 extern PetscErrorCode  PetscHelpPrintfDefault(MPI_Comm,const char [],...);
@@ -1666,7 +1667,7 @@ extern PetscClassId  PETSC_CONTAINER_CLASSID;
 typedef struct _p_PetscContainer*  PetscContainer;
 extern PetscErrorCode  PetscContainerGetPointer(PetscContainer,void **);
 extern PetscErrorCode  PetscContainerSetPointer(PetscContainer,void *);
-extern PetscErrorCode  PetscContainerDestroy(PetscContainer);
+extern PetscErrorCode  PetscContainerDestroy(PetscContainer*);
 extern PetscErrorCode  PetscContainerCreate(MPI_Comm,PetscContainer *);
 extern PetscErrorCode  PetscContainerSetUserDestroy(PetscContainer, PetscErrorCode (*)(void*));
 
@@ -1700,6 +1701,8 @@ extern PetscErrorCode  PetscScalarView(PetscInt,const PetscScalar[],PetscViewer)
 #include <stdint.h>
 #endif
 
+#undef __FUNCT__
+#define __FUNCT__ "PetscMemcpy"
 /*@C
    PetscMemcpy - Copies n bytes, beginning at location b, to the space
    beginning at location a. The two memory regions CANNOT overlap, use
@@ -2304,7 +2307,7 @@ extern PetscErrorCode  PetscRandomSetInterval(PetscRandom,PetscScalar,PetscScala
 extern PetscErrorCode  PetscRandomSetSeed(PetscRandom,unsigned long);
 extern PetscErrorCode  PetscRandomGetSeed(PetscRandom,unsigned long *);
 extern PetscErrorCode  PetscRandomSeed(PetscRandom);
-extern PetscErrorCode  PetscRandomDestroy(PetscRandom);
+extern PetscErrorCode  PetscRandomDestroy(PetscRandom*);
 
 extern PetscErrorCode  PetscGetFullPath(const char[],char[],size_t);
 extern PetscErrorCode  PetscGetRelativePath(const char[],char[],size_t);
@@ -2431,7 +2434,7 @@ typedef enum {PETSC_SUBCOMM_GENERAL=0,PETSC_SUBCOMM_CONTIGUOUS=1,PETSC_SUBCOMM_I
 extern const char *PetscSubcommTypes[];
 
 extern PetscErrorCode  PetscSubcommCreate(MPI_Comm,PetscSubcomm*);
-extern PetscErrorCode  PetscSubcommDestroy(PetscSubcomm);
+extern PetscErrorCode  PetscSubcommDestroy(PetscSubcomm*);
 extern PetscErrorCode  PetscSubcommSetNumber(PetscSubcomm,PetscInt);
 extern PetscErrorCode  PetscSubcommSetType(PetscSubcomm,const PetscSubcommType);
 extern PetscErrorCode  PetscSubcommSetTypeGeneral(PetscSubcomm,PetscMPIInt,PetscMPIInt,PetscMPIInt);

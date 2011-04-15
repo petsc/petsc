@@ -51,13 +51,13 @@ int main(int argc,char **argv)
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"daoutput",FILE_MODE_WRITE,&bviewer);CHKERRQ(ierr);
   ierr = DMView(da,bviewer);CHKERRQ(ierr);
   ierr = VecView(global,bviewer);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(bviewer);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&bviewer);CHKERRQ(ierr);
 
   /* Free memory */
-  ierr = VecDestroy(local);CHKERRQ(ierr);
-  ierr = VecDestroy(global);CHKERRQ(ierr);
-  ierr = VecDestroy(natural);CHKERRQ(ierr);
-  ierr = DMDestroy(da);CHKERRQ(ierr);
+  ierr = VecDestroy(&local);CHKERRQ(ierr);
+  ierr = VecDestroy(&global);CHKERRQ(ierr);
+  ierr = VecDestroy(&natural);CHKERRQ(ierr);
+  ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

@@ -76,14 +76,14 @@ int main(int argc,char **args)
       ierr = PetscPrintf(PETSC_COMM_SELF,"i =  %D,flg = %d \n",i,(int)flg);CHKERRQ(ierr);
       
     }
-    for (i=0; i<Nsub1; ++i) {ierr = ISDestroy(is1[i]);CHKERRQ(ierr);}
-    for (i=0; i<Nsub2; ++i) {ierr = ISDestroy(is2[i]);CHKERRQ(ierr);}
+    for (i=0; i<Nsub1; ++i) {ierr = ISDestroy(&&is1[i]);CHKERRQ(ierr);}
+    for (i=0; i<Nsub2; ++i) {ierr = ISDestroy(&&is2[i]);CHKERRQ(ierr);}
   
 
     ierr = PetscFree(is1);CHKERRQ(ierr);
     ierr = PetscFree(is2);CHKERRQ(ierr);
   }
-  ierr = MatDestroy(C);CHKERRQ(ierr);  
+  ierr = MatDestroy(&C);CHKERRQ(ierr);  
   ierr = PetscFinalize();
   return 0;
 }

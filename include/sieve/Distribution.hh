@@ -209,7 +209,7 @@ namespace ALE {
         ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);CHKERRXX(ierr);
         ierr = PetscViewerFileSetName(viewer, "mesh.vtk");CHKERRXX(ierr);
         ///TODO ierr = MeshView_Sieve_Ascii(mesh, cellPartition, viewer);CHKERRXX(ierr);
-        ierr = PetscViewerDestroy(viewer);CHKERRXX(ierr);
+        ierr = PetscViewerDestroy(&viewer);CHKERRXX(ierr);
       }
       // Close the partition over sieve points
       Partitioner::createPartitionClosure(mesh, cellPartition, partition, height);
@@ -281,7 +281,7 @@ namespace ALE {
         ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);CHKERRXX(ierr);
         ierr = PetscViewerFileSetName(viewer, "mesh.vtk");CHKERRXX(ierr);
         ///TODO ierr = MeshView_Sieve_Ascii(mesh, cellPartition, viewer);CHKERRXX(ierr);
-        ierr = PetscViewerDestroy(viewer);CHKERRXX(ierr);
+        ierr = PetscViewerDestroy(&viewer);CHKERRXX(ierr);
       }
       // Close the partition over sieve points
       Partitioner::createPartitionClosureV(mesh, cellPartition, partition, height);

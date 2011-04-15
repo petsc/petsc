@@ -269,16 +269,16 @@ PetscErrorCode ViewMesh(Mesh mesh, const char filename[], Options *options)
   ierr = CreatePartition(mesh, &partition);CHKERRQ(ierr);
   ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_VTK_CELL);CHKERRQ(ierr);
   ierr = SectionIntView(partition, viewer);CHKERRQ(ierr);
-  ierr = SectionIntDestroy(partition);CHKERRQ(ierr);
+  ierr = SectionIntDestroy(&partition);CHKERRQ(ierr);
   if (options->viewDielectric) {
     SectionReal dielectric;
 
     ierr = CreateDielectric(mesh, &dielectric);CHKERRQ(ierr);
     ierr = SectionRealView(dielectric, viewer);CHKERRQ(ierr);
-    ierr = SectionRealDestroy(dielectric);CHKERRQ(ierr);
+    ierr = SectionRealDestroy(&dielectric);CHKERRQ(ierr);
   }
   ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -450,21 +450,21 @@ PetscErrorCode CreateMesh(MPI_Comm comm, Mesh *mesh, Options *options)
   ierr = PetscOptionsHasName(PETSC_NULL, "-boundary_view_vtk", &view);CHKERRQ(ierr);
   if (view) {ierr = ViewMesh(boundary, "ionChannelBoundary.vtk", options);CHKERRQ(ierr);}
   ierr = MeshGenerate(boundary, options->interpolate, mesh);CHKERRQ(ierr);
-  ierr = MeshDestroy(boundary);CHKERRQ(ierr);
+  ierr = MeshDestroy(&boundary);CHKERRQ(ierr);
   if (options->refinementLimit > 0.0) {
     Mesh refinedMesh;
 
     // Need to put in nonuniform refinment
     //mesh = ALE::Two::Generator::refine(mesh, refineLimit, (void *) &refCtx, interpolate);
     ierr = MeshRefine(*mesh, options->refinementLimit, options->interpolate, &refinedMesh);CHKERRQ(ierr);
-    ierr = MeshDestroy(*mesh);CHKERRQ(ierr);
+    ierr = MeshDestroy(&*mesh);CHKERRQ(ierr);
     *mesh = refinedMesh;
   }
   if (size > 1) {
     Mesh parallelMesh;
 
     ierr = MeshDistribute(*mesh, PETSC_NULL, &parallelMesh);CHKERRQ(ierr);
-    ierr = MeshDestroy(*mesh);CHKERRQ(ierr);
+    ierr = MeshDestroy(&*mesh);CHKERRQ(ierr);
     *mesh = parallelMesh;
   }
   {
@@ -518,7 +518,7 @@ PetscErrorCode CreateField(DM dm, Options *options)
     ierr = SectionRealUpdate(f, *c_iter, &value);CHKERRQ(ierr);
   }
   ierr = SectionRealView(f, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = SectionRealDestroy(f);CHKERRQ(ierr);
+  ierr = SectionRealDestroy(&f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -537,7 +537,7 @@ int main(int argc, char *argv[])
     comm = PETSC_COMM_WORLD;
     ierr = ProcessOptions(comm, &options);CHKERRQ(ierr);
     ierr = CreateMesh(comm, &mesh, &options);CHKERRQ(ierr);
-    ierr = MeshDestroy(mesh);CHKERRQ(ierr);
+    ierr = MeshDestroy(&mesh);CHKERRQ(ierr);
   } catch(ALE::Exception e) {
     std::cout << "ERROR: " << e.msg() << std::endl;
   }

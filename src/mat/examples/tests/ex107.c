@@ -242,18 +242,18 @@ int main(int argc,char **args)
   ierr = MatDestroy(F);CHKERRQ(ierr); 
 
   /* Free data structures */
-  ierr = ISDestroy(perm);CHKERRQ(ierr);
-  ierr = ISDestroy(iperm);CHKERRQ(ierr);
+  ierr = ISDestroy(&perm);CHKERRQ(ierr);
+  ierr = ISDestroy(&iperm);CHKERRQ(ierr);
   
-  ierr = PetscRandomDestroy(rand);CHKERRQ(ierr);
-  ierr = VecDestroy(x);CHKERRQ(ierr); 
-  ierr = VecDestroy(b);CHKERRQ(ierr);
-  ierr = VecDestroy(bpla);CHKERRQ(ierr);
-  ierr = VecDestroy(u);CHKERRQ(ierr); 
+  ierr = PetscRandomDestroy(&rand);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr); 
+  ierr = VecDestroy(&b);CHKERRQ(ierr);
+  ierr = VecDestroy(&bpla);CHKERRQ(ierr);
+  ierr = VecDestroy(&u);CHKERRQ(ierr); 
   
-  ierr = MatDestroy(Cpetsc);CHKERRQ(ierr); 
-  ierr = MatDestroy(C);CHKERRQ(ierr);
-  ierr = MatDestroy(Csymm);CHKERRQ(ierr);
+  ierr = MatDestroy(&Cpetsc);CHKERRQ(ierr); 
+  ierr = MatDestroy(&C);CHKERRQ(ierr);
+  ierr = MatDestroy(&Csymm);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
   return 0;

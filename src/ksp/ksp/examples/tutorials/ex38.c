@@ -53,11 +53,11 @@ int main(int Argc,char **Args)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   ierr = KSPSolve(kspmg,b,x);CHKERRQ(ierr);
-  ierr = KSPDestroy(kspmg);CHKERRQ(ierr);
-  ierr = VecDestroy(x);CHKERRQ(ierr);
-  ierr = VecDestroy(b);CHKERRQ(ierr); 
-  ierr = MatDestroy(cmat);CHKERRQ(ierr); 
-  ierr = DMDestroy(da);CHKERRQ(ierr);
+  ierr = KSPDestroy(&kspmg);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = VecDestroy(&b);CHKERRQ(ierr); 
+  ierr = MatDestroy(&cmat);CHKERRQ(ierr); 
+  ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

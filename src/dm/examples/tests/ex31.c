@@ -20,11 +20,11 @@ int main(int argc,char *argv[])
 
   ierr = MatMult(M,x,y);CHKERRQ(ierr);
   ierr = MatMultTranspose(M,y,x);CHKERRQ(ierr);
-  ierr = DMDestroy(da);CHKERRQ(ierr);
-  ierr = DMDestroy(daf);CHKERRQ(ierr);
-  ierr = VecDestroy(x);CHKERRQ(ierr);
-  ierr = VecDestroy(y);CHKERRQ(ierr);
-  ierr = MatDestroy(M);CHKERRQ(ierr);
+  ierr = DMDestroy(&da);CHKERRQ(ierr);
+  ierr = DMDestroy(&daf);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = VecDestroy(&y);CHKERRQ(ierr);
+  ierr = MatDestroy(&M);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

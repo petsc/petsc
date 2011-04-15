@@ -121,10 +121,10 @@ static PetscErrorCode PCDestroy_NN(PC pc)
   PetscFunctionBegin;
   ierr = PCISDestroy(pc);CHKERRQ(ierr);
 
-  if (pcnn->coarse_mat)  {ierr = MatDestroy(pcnn->coarse_mat);CHKERRQ(ierr);}
-  if (pcnn->coarse_x)    {ierr = VecDestroy(pcnn->coarse_x);CHKERRQ(ierr);}
-  if (pcnn->coarse_b)    {ierr = VecDestroy(pcnn->coarse_b);CHKERRQ(ierr);}
-  if (pcnn->ksp_coarse) {ierr = KSPDestroy(pcnn->ksp_coarse);CHKERRQ(ierr);}
+  ierr = MatDestroy(&pcnn->coarse_mat);CHKERRQ(ierr);
+  ierr = VecDestroy(&pcnn->coarse_x);CHKERRQ(ierr);
+  ierr = VecDestroy(&pcnn->coarse_b);CHKERRQ(ierr);
+  ierr = KSPDestroy(&pcnn->ksp_coarse);CHKERRQ(ierr);
   if (pcnn->DZ_IN) {
     ierr = PetscFree(pcnn->DZ_IN[0]);CHKERRQ(ierr);
     ierr = PetscFree(pcnn->DZ_IN);CHKERRQ(ierr);

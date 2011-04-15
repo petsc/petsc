@@ -116,13 +116,13 @@ PetscErrorCode  ISStrideGetInfo(IS is,PetscInt *first,PetscInt *step)
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISDestroy_Stride" 
-PetscErrorCode ISDestroy_Stride(IS is)
+PetscErrorCode ISDestroy_Stride(IS *is)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)is,"ISStrideSetStride_C","",0);CHKERRQ(ierr);
-  ierr = PetscFree(is->data);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)(*is),"ISStrideSetStride_C","",0);CHKERRQ(ierr);
+  ierr = PetscFree((*is)->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -259,8 +259,8 @@ PetscErrorCode KSPDestroy_LSQR(KSP ksp)
   if (lsqr->vwork_m) {
     ierr = VecDestroyVecs(lsqr->nwork_m,&lsqr->vwork_m);CHKERRQ(ierr);
   }
-  if (lsqr->se_flg && lsqr->se){
-    ierr = VecDestroy(lsqr->se);CHKERRQ(ierr);
+  if (lsqr->se_flg){
+    ierr = VecDestroy(&lsqr->se);CHKERRQ(ierr);
   }
   ierr = PetscFree(ksp->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -274,9 +274,7 @@ PetscErrorCode  KSPLSQRSetStandardErrorVec( KSP ksp, Vec se )
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (lsqr->se) {
-    ierr = VecDestroy(lsqr->se);CHKERRQ(ierr);
-  }
+  ierr = VecDestroy(&lsqr->se);CHKERRQ(ierr);
   lsqr->se = se;
   PetscFunctionReturn(0);
 }
@@ -340,7 +338,7 @@ PetscErrorCode  KSPLSQRMonitorDefault(KSP ksp,PetscInt n,PetscReal rnorm,void *d
   } else {
     ierr = PetscViewerASCIIMonitorPrintf(viewer,"%3D KSP Residual norm %14.12e Residual norm normal equations %14.12e\n",n,rnorm,lsqr->arnorm);CHKERRQ(ierr);
   }
-  if (!dummy) {ierr = PetscViewerASCIIMonitorDestroy(viewer);CHKERRQ(ierr);}
+  if (!dummy) {ierr = PetscViewerASCIIMonitorDestroy(&viewer);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 

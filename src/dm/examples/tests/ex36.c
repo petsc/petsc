@@ -372,8 +372,8 @@ PetscErrorCode da_test_RefineCoords1D(PetscInt mx)
     
     ierr = DMGetInterpolation(cdac,cdaf,&II,&scale);CHKERRQ(ierr);
     ierr = MatInterpolate(II,coordsc,coordsf);CHKERRQ(ierr);
-    ierr = MatDestroy(II);CHKERRQ(ierr);
-    ierr = VecDestroy(scale);CHKERRQ(ierr);
+    ierr = MatDestroy(&II);CHKERRQ(ierr);
+    ierr = VecDestroy(&scale);CHKERRQ(ierr);
   }
   
   ierr = DMGetInterpolation(dac,daf,&INTERP,PETSC_NULL);CHKERRQ(ierr);
@@ -399,7 +399,7 @@ PetscErrorCode da_test_RefineCoords1D(PetscInt mx)
     ierr = VecNorm(afexact,NORM_2,&nrm);CHKERRQ(ierr);
     ierr = VecGetSize(afexact,&N);CHKERRQ(ierr);
     PetscPrintf(PETSC_COMM_WORLD,"%D=>%D, interp err = %1.4e\n",mx,Mx,nrm/sqrt((PetscScalar)N) );
-    ierr = VecDestroy(afexact);CHKERRQ(ierr);
+    ierr = VecDestroy(&afexact);CHKERRQ(ierr);
   }
   
   PetscOptionsGetBool(PETSC_NULL,"-output",&output,PETSC_NULL);CHKERRQ(ierr);
@@ -408,20 +408,20 @@ PetscErrorCode da_test_RefineCoords1D(PetscInt mx)
     ierr = PetscViewerSetFormat(vv, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
     ierr = DMView(dac, vv);CHKERRQ(ierr);
     ierr = VecView(ac, vv);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(vv);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&vv);CHKERRQ(ierr);
     
     ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD, "daf_1D.vtk", &vv);CHKERRQ(ierr);
     ierr = PetscViewerSetFormat(vv, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
     ierr = DMView(daf, vv);CHKERRQ(ierr);
     ierr = VecView(af, vv);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(vv);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&vv);CHKERRQ(ierr);
   }  
   
-  ierr = MatDestroy(INTERP);CHKERRQ(ierr);
-  ierr = DMDestroy(dac);CHKERRQ(ierr);
-  ierr = DMDestroy(daf);CHKERRQ(ierr);
-  ierr = VecDestroy(ac);CHKERRQ(ierr);
-  ierr = VecDestroy(af);CHKERRQ(ierr);
+  ierr = MatDestroy(&INTERP);CHKERRQ(ierr);
+  ierr = DMDestroy(&dac);CHKERRQ(ierr);
+  ierr = DMDestroy(&daf);CHKERRQ(ierr);
+  ierr = VecDestroy(&ac);CHKERRQ(ierr);
+  ierr = VecDestroy(&af);CHKERRQ(ierr);
   
   PetscFunctionReturn(0);
 }
@@ -475,8 +475,8 @@ PetscErrorCode da_test_RefineCoords2D(PetscInt mx,PetscInt my)
     
     ierr = DMGetInterpolation(cdac,cdaf,&II,&scale);CHKERRQ(ierr);
     ierr = MatInterpolate(II,coordsc,coordsf);CHKERRQ(ierr);
-    ierr = MatDestroy(II);CHKERRQ(ierr);
-    ierr = VecDestroy(scale);CHKERRQ(ierr);
+    ierr = MatDestroy(&II);CHKERRQ(ierr);
+    ierr = VecDestroy(&scale);CHKERRQ(ierr);
   }
   
   
@@ -503,7 +503,7 @@ PetscErrorCode da_test_RefineCoords2D(PetscInt mx,PetscInt my)
     ierr = VecNorm(afexact,NORM_2,&nrm);CHKERRQ(ierr);
     ierr = VecGetSize(afexact,&N);CHKERRQ(ierr);
     PetscPrintf(PETSC_COMM_WORLD,"[%D x %D]=>[%D x %D], interp err = %1.4e\n",mx,my,Mx,My,nrm/sqrt((PetscScalar)N) );
-    ierr = VecDestroy(afexact);CHKERRQ(ierr);
+    ierr = VecDestroy(&afexact);CHKERRQ(ierr);
   }
   
   PetscOptionsGetBool(PETSC_NULL,"-output",&output,PETSC_NULL);CHKERRQ(ierr);
@@ -512,20 +512,20 @@ PetscErrorCode da_test_RefineCoords2D(PetscInt mx,PetscInt my)
     ierr = PetscViewerSetFormat(vv, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
     ierr = DMView(dac, vv);CHKERRQ(ierr);
     ierr = VecView(ac, vv);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(vv);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&vv);CHKERRQ(ierr);
     
     ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD, "daf_2D.vtk", &vv);CHKERRQ(ierr);
     ierr = PetscViewerSetFormat(vv, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
     ierr = DMView(daf, vv);CHKERRQ(ierr);
     ierr = VecView(af, vv);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(vv);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&vv);CHKERRQ(ierr);
   }  
   
-  ierr = MatDestroy(INTERP);CHKERRQ(ierr);
-  ierr = DMDestroy(dac);CHKERRQ(ierr);
-  ierr = DMDestroy(daf);CHKERRQ(ierr);
-  ierr = VecDestroy(ac);CHKERRQ(ierr);
-  ierr = VecDestroy(af);CHKERRQ(ierr);
+  ierr = MatDestroy(&INTERP);CHKERRQ(ierr);
+  ierr = DMDestroy(&dac);CHKERRQ(ierr);
+  ierr = DMDestroy(&daf);CHKERRQ(ierr);
+  ierr = VecDestroy(&ac);CHKERRQ(ierr);
+  ierr = VecDestroy(&af);CHKERRQ(ierr);
   
   PetscFunctionReturn(0);
 }
@@ -581,8 +581,8 @@ PetscErrorCode da_test_RefineCoords3D(PetscInt mx,PetscInt my,PetscInt mz)
     
     ierr = DMGetInterpolation(cdac,cdaf,&II,&scale);CHKERRQ(ierr);
     ierr = MatInterpolate(II,coordsc,coordsf);CHKERRQ(ierr);
-    ierr = MatDestroy(II);CHKERRQ(ierr);
-    ierr = VecDestroy(scale);CHKERRQ(ierr);
+    ierr = MatDestroy(&II);CHKERRQ(ierr);
+    ierr = VecDestroy(&scale);CHKERRQ(ierr);
   }
   
   ierr = DMGetInterpolation(dac,daf,&INTERP,PETSC_NULL);CHKERRQ(ierr);
@@ -608,7 +608,7 @@ PetscErrorCode da_test_RefineCoords3D(PetscInt mx,PetscInt my,PetscInt mz)
     ierr = VecNorm(afexact,NORM_2,&nrm);CHKERRQ(ierr);
     ierr = VecGetSize(afexact,&N);CHKERRQ(ierr);
     PetscPrintf(PETSC_COMM_WORLD,"[%D x %D x %D]=>[%D x %D x %D], interp err = %1.4e\n",mx,my,mz,Mx,My,Mz,nrm/sqrt((PetscScalar)N) );
-    ierr = VecDestroy(afexact);CHKERRQ(ierr);
+    ierr = VecDestroy(&afexact);CHKERRQ(ierr);
   }
   
   PetscOptionsGetBool(PETSC_NULL,"-output",&output,PETSC_NULL);CHKERRQ(ierr);
@@ -617,20 +617,20 @@ PetscErrorCode da_test_RefineCoords3D(PetscInt mx,PetscInt my,PetscInt mz)
     ierr = PetscViewerSetFormat(vv, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
     ierr = DMView(dac, vv);CHKERRQ(ierr);
     ierr = VecView(ac, vv);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(vv);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&vv);CHKERRQ(ierr);
     
     ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD, "daf_3D.vtk", &vv);CHKERRQ(ierr);
     ierr = PetscViewerSetFormat(vv, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
     ierr = DMView(daf, vv);CHKERRQ(ierr);
     ierr = VecView(af, vv);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(vv);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&vv);CHKERRQ(ierr);
   }  
   
-  ierr = MatDestroy(INTERP);CHKERRQ(ierr);
-  ierr = DMDestroy(dac);CHKERRQ(ierr);
-  ierr = DMDestroy(daf);CHKERRQ(ierr);
-  ierr = VecDestroy(ac);CHKERRQ(ierr);
-  ierr = VecDestroy(af);CHKERRQ(ierr);
+  ierr = MatDestroy(&INTERP);CHKERRQ(ierr);
+  ierr = DMDestroy(&dac);CHKERRQ(ierr);
+  ierr = DMDestroy(&daf);CHKERRQ(ierr);
+  ierr = VecDestroy(&ac);CHKERRQ(ierr);
+  ierr = VecDestroy(&af);CHKERRQ(ierr);
   
   PetscFunctionReturn(0);
 }

@@ -44,7 +44,7 @@ int main(int argc,char **argv)
   }
   ierr = PetscFree2(ispetsc,isapp);CHKERRQ(ierr);
 
-  ierr = AODestroy(ao);CHKERRQ(ierr);
+  ierr = AODestroy(&ao);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

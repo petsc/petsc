@@ -31,7 +31,7 @@ typedef struct {
 extern PetscErrorCode SampleShellPCCreate(SampleShellPC**);
 extern PetscErrorCode SampleShellPCSetUp(PC,Mat,Vec);
 extern PetscErrorCode SampleShellPCApply(PC,Vec x,Vec y);
-extern PetscErrorCode SampleShellPCDestroy(PC);
+extern PetscErrorCode SampleShellPCDestroy(PC*);
 
 /* 
    User-defined routines.  Note that immediately before each routine below,
@@ -214,9 +214,9 @@ int main(int argc,char **args)
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */
-  ierr = KSPDestroy(ksp);CHKERRQ(ierr);
-  ierr = VecDestroy(u);CHKERRQ(ierr);  ierr = VecDestroy(x);CHKERRQ(ierr);
-  ierr = VecDestroy(b);CHKERRQ(ierr);  ierr = MatDestroy(A);CHKERRQ(ierr);
+  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
+  ierr = VecDestroy(&u);CHKERRQ(ierr);  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = VecDestroy(&b);CHKERRQ(ierr);  ierr = MatDestroy(&A);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
   return 0;
@@ -320,13 +320,13 @@ PetscErrorCode SampleShellPCApply(PC pc,Vec x,Vec y)
    Input Parameter:
 .  shell - user-defined preconditioner context
 */
-PetscErrorCode SampleShellPCDestroy(PC pc)
+PetscErrorCode SampleShellPCDestroy(PC *pc)
 {
   SampleShellPC *shell;
   PetscErrorCode ierr;
 
-  ierr = PCShellGetContext(pc,(void**)&shell);CHKERRQ(ierr);
-  ierr = VecDestroy(shell->diag);CHKERRQ(ierr);
+  ierr = PCShellGetContext(*pc,(void**)&shell);CHKERRQ(ierr);
+  ierr = VecDestroy((*shell)->diag);CHKERRQ(ierr);
   ierr = PetscFree(shell);CHKERRQ(ierr);
 
   return 0;

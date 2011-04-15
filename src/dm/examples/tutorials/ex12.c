@@ -45,7 +45,7 @@ int main(int argc,char **argv)
   ierr = DMRestoreGlobalVector(da,&global1);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(da,&global3);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(da,&global2);CHKERRQ(ierr);
-  ierr = DMDestroy(da);CHKERRQ(ierr);
+  ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

@@ -337,7 +337,6 @@ extern PetscErrorCode   DMDASetLocalAdicMFFunctionib_Private(DM,PetscErrorCode (
 extern PetscErrorCode   DMDAFormFunctioniTest1(DM,void*);
 extern PetscErrorCode   DMDASetGetMatrix(DM,PetscErrorCode (*)(DM, const MatType,Mat *));
 extern PetscErrorCode   DMDASetBlockFills(DM,PetscInt*,PetscInt*);
-extern PetscErrorCode   DMDASetMatPreallocateOnly(DM,PetscBool );
 extern PetscErrorCode   DMDASetRefinementFactor(DM,PetscInt,PetscInt,PetscInt);
 extern PetscErrorCode   DMDAGetRefinementFactor(DM,PetscInt*,PetscInt*,PetscInt*);
 

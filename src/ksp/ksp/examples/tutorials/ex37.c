@@ -230,7 +230,7 @@ int main(int argc,char **argv)
     ierr = MeshSetMesh(petscMesh, mesh);CHKERRQ(ierr);
     ierr = DMMGCreate(comm,3,PETSC_NULL,&dmmg);CHKERRQ(ierr);
     ierr = DMMGSetDM(dmmg, (DM) petscMesh);CHKERRQ(ierr);
-    ierr = MeshDestroy(petscMesh);CHKERRQ(ierr);
+    ierr = MeshDestroy(&petscMesh);CHKERRQ(ierr);
     for (l = 0; l < DMMGGetLevels(dmmg); l++) {
       ierr = DMMGSetUser(dmmg,l,&user);CHKERRQ(ierr);
     }
@@ -270,7 +270,7 @@ int main(int argc,char **argv)
       ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, u->getSize(patch), u->restrict(patch), &locU);CHKERRQ(ierr);
       ierr = VecScatterBegin(user.injection, DMMGGetx(dmmg), locU, INSERT_VALUES, SCATTER_REVERSE);CHKERRQ(ierr);
       ierr = VecScatterEnd(user.injection, DMMGGetx(dmmg), locU, INSERT_VALUES, SCATTER_REVERSE);CHKERRQ(ierr);
-      ierr = VecDestroy(locU);CHKERRQ(ierr);
+      ierr = VecDestroy(&locU);CHKERRQ(ierr);
 
       ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_VTK_CELL);CHKERRQ(ierr);
       ierr = CreateEnergyDensity(mesh, u, mesh->getField("epsilon"), &energy);CHKERRQ(ierr);
@@ -279,11 +279,11 @@ int main(int argc,char **argv)
     } else {
       ierr = VecView(DMMGGetx(dmmg), viewer);CHKERRQ(ierr);
     }
-    ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     ALE::LogStagePop(stage);
 
     ierr = PetscFree2(user.charge,user.chargeLocation);CHKERRQ(ierr);
-    ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
+    ierr = DMMGDestroy(&dmmg);CHKERRQ(ierr);
   } catch (ALE::Exception e) {
     std::cout << e << std::endl;
   }
@@ -849,7 +849,7 @@ PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, field->getSize(patch), field->restrict(patch), &locB);CHKERRQ(ierr);
   ierr = VecScatterBegin(user.injection, locB, b, ADD_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(user.injection, locB, b, ADD_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecDestroy(locB);CHKERRQ(ierr);
+  ierr = VecDestroy(&locB);CHKERRQ(ierr);
 
   {
     /* Zero out BC rows */
@@ -1275,7 +1275,7 @@ PetscErrorCode CreateEnergyDensity(ALE::Obj<ALE::Mesh> mesh, ALE::Obj<ALE::Mesh:
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, e2->getSize(patch), e2->restrict(patch), &locEnergy);CHKERRQ(ierr);
   ierr = VecScatterBegin(injection, locEnergy, *energy, INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(injection, locEnergy, *energy, INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecDestroy(locEnergy);CHKERRQ(ierr);
+  ierr = VecDestroy(&locEnergy);CHKERRQ(ierr);
   ALE_LOG_EVENT_END;
   PetscFunctionReturn(0);
 }

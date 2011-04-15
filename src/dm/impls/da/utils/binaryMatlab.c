@@ -66,19 +66,19 @@ PetscErrorCode PetscViewerBinaryMatlabOpen(MPI_Comm comm, const char fname[], Pe
 @*/
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerBinaryMatlabDestroy"
-PetscErrorCode PetscViewerBinaryMatlabDestroy(PetscViewer viewer)
+PetscErrorCode PetscViewerBinaryMatlabDestroy(PetscViewer *viewer)
 {
   FILE          *info;
   MPI_Comm       comm;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryGetInfoPointer(viewer,&info);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)*viewer,&comm);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryGetInfoPointer(*viewer,&info);CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,info,"%%--- begin code written by PetscViewerBinaryMatlabDestroy ---%\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,info,"%%$$ close(fd);\n");
   ierr = PetscFPrintf(comm,info,"%%--- end code written by PetscViewerBinaryMatlabDestroy ---%\n\n");CHKERRQ(ierr);
-  ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerFlush(*viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

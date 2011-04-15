@@ -41,6 +41,7 @@ extern PetscErrorCode DMMeshGetCoordinates(DM, PetscBool , PetscInt *, PetscInt 
 extern PetscErrorCode DMMeshGetElements(DM, PetscBool , PetscInt *, PetscInt *, PetscInt *[]);
 extern PetscErrorCode DMMeshGetCone(DM, PetscInt, PetscInt *, PetscInt *[]);
 
+extern PetscErrorCode MatSetValuesTopology(Mat, DM, PetscInt, const PetscInt [], DM, PetscInt, const PetscInt [], const PetscScalar [], InsertMode);
 extern PetscErrorCode restrictVector(Vec, Vec, InsertMode);
 extern PetscErrorCode assembleVectorComplete(Vec, Vec, InsertMode);
 extern PetscErrorCode assembleVector(Vec, PetscInt, PetscScalar [], InsertMode);
@@ -62,7 +63,7 @@ typedef struct _p_SectionReal* SectionReal;
 extern PetscClassId  SECTIONREAL_CLASSID;
 
 extern PetscErrorCode  SectionRealCreate(MPI_Comm,SectionReal*);
-extern PetscErrorCode  SectionRealDestroy(SectionReal);
+extern PetscErrorCode  SectionRealDestroy(SectionReal*);
 extern PetscErrorCode  SectionRealView(SectionReal,PetscViewer);
 extern PetscErrorCode  SectionRealDuplicate(SectionReal,SectionReal*);
 
@@ -98,7 +99,7 @@ extern PetscErrorCode  SectionRealUpdateClosure(SectionReal, DM, PetscInt, Petsc
 extern PetscErrorCode DMMeshHasSectionReal(DM, const char [], PetscBool  *);
 extern PetscErrorCode DMMeshGetSectionReal(DM, const char [], SectionReal *);
 extern PetscErrorCode DMMeshSetSectionReal(DM, SectionReal);
-extern PetscErrorCode DMMeshCreateMatrix(DM, SectionReal, MatType, Mat *);
+extern PetscErrorCode DMMeshCreateMatrix(DM, SectionReal, const MatType, Mat *);
 extern PetscErrorCode DMMeshCreateVector(DM, SectionReal, Vec *);
 extern PetscErrorCode DMMeshCreateGlobalScatter(DM, SectionReal, VecScatter *);
 extern PetscErrorCode assembleVector(Vec, DM, SectionReal, PetscInt, PetscScalar [], InsertMode);
@@ -131,7 +132,7 @@ typedef struct _p_SectionInt* SectionInt;
 extern PetscClassId  SECTIONINT_CLASSID;
 
 extern PetscErrorCode  SectionIntCreate(MPI_Comm,SectionInt*);
-extern PetscErrorCode  SectionIntDestroy(SectionInt);
+extern PetscErrorCode  SectionIntDestroy(SectionInt*);
 extern PetscErrorCode  SectionIntView(SectionInt,PetscViewer);
 
 extern PetscErrorCode  SectionIntGetSection(SectionInt,ALE::Obj<PETSC_MESH_TYPE::int_section_type>&);
@@ -170,12 +171,12 @@ extern PetscErrorCode DMMeshSetMaxDof(DM, PetscInt);
 extern PetscErrorCode SectionGetArray(DM, const char [], PetscInt *, PetscInt *, PetscScalar *[]);
 
 /* Helper functions for simple distributions */
-extern PetscErrorCode DMMeshGetVertexMatrix(DM, MatType, Mat *);
+extern PetscErrorCode DMMeshGetVertexMatrix(DM, const MatType, Mat *);
 extern PetscErrorCode DMMeshGetVertexSectionReal(DM, const char[], PetscInt, SectionReal *);
 PetscPolymorphicSubroutine(DMMeshGetVertexSectionReal,(DM dm, PetscInt fiberDim, SectionReal *section),(dm,"default",fiberDim,section))
 extern PetscErrorCode DMMeshGetVertexSectionInt(DM, const char[], PetscInt, SectionInt *);
 PetscPolymorphicSubroutine(DMMeshGetVertexSectionInt,(DM dm, PetscInt fiberDim, SectionInt *section),(dm,"default",fiberDim,section))
-extern PetscErrorCode DMMeshGetCellMatrix(DM, MatType, Mat *);
+extern PetscErrorCode DMMeshGetCellMatrix(DM, const MatType, Mat *);
 extern PetscErrorCode DMMeshGetCellSectionReal(DM, const char[], PetscInt, SectionReal *);
 PetscPolymorphicSubroutine(DMMeshGetCellSectionReal,(DM dm, PetscInt fiberDim, SectionReal *section),(dm,"default",fiberDim,section))
 extern PetscErrorCode DMMeshGetCellSectionInt(DM, const char[], PetscInt, SectionInt *);

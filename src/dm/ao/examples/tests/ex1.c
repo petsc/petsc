@@ -41,7 +41,7 @@ int main(int argc,char **argv)
   ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] 0,3,4 ApplicationToPetsc %D %D %D\n",
           rank,getpetsc[0],getpetsc[1],getpetsc[2]);CHKERRQ(ierr);
   ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
-  ierr = AODestroy(ao);CHKERRQ(ierr);
+  ierr = AODestroy(&ao);CHKERRQ(ierr);
 
   /* test MemoryScalable ao */
   /*-------------------------*/
@@ -60,7 +60,7 @@ int main(int argc,char **argv)
   for (i=0; i<3;i++)
     if (getpetsc1[i] != getpetsc[i]) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"getpetsc1 %d != getpetsc %d",getpetsc1[i],getpetsc[i]);
   
-  ierr = AODestroy(ao);CHKERRQ(ierr);
+  ierr = AODestroy(&ao);CHKERRQ(ierr);
 
   /* test MemoryScalable ao: ispetsc = PETSC_NULL */
   /*-----------------------------------------------*/
@@ -79,7 +79,7 @@ int main(int argc,char **argv)
     if (getapp2[i] != getapp[i]) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"getapp2 %d != getapp %d",getapp2[i],getapp[i]);
   for (i=0; i<3;i++)
     if (getpetsc2[i] != getpetsc[i]) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"getpetsc2 %d != getpetsc %d",getpetsc2[i],getpetsc[i]);
-  ierr = AODestroy(ao);CHKERRQ(ierr);
+  ierr = AODestroy(&ao);CHKERRQ(ierr);
 
   /* test AOCreateMemoryScalable() ao: */
   ierr = ISGetIndices(isapp,&app);CHKERRQ(ierr);
@@ -94,7 +94,7 @@ int main(int argc,char **argv)
     if (getapp4[i] != getapp[i]) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"getapp4 %d != getapp %d",getapp4[i],getapp[i]);
   for (i=0; i<3;i++)
     if (getpetsc4[i] != getpetsc[i]) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"getpetsc4 %d != getpetsc %d",getpetsc4[i],getpetsc[i]);
-  ierr = AODestroy(ao);CHKERRQ(ierr);
+  ierr = AODestroy(&ao);CHKERRQ(ierr);
 
   /* test general API */
   /*------------------*/
@@ -103,13 +103,12 @@ int main(int argc,char **argv)
   }
   ierr = AOCreate(PETSC_COMM_WORLD,&ao);CHKERRQ(ierr);
   ierr = AOSetIS(ao,isapp,ispetsc);CHKERRQ(ierr);
-  //ierr = AOSetType(ao,AOMEMORYSCALABLE);CHKERRQ(ierr);
-  ierr = AOSetType(ao,AOBASIC);CHKERRQ(ierr);
+  ierr = AOSetType(ao,AOMEMORYSCALABLE);CHKERRQ(ierr);
   ierr = AOSetFromOptions(ao);CHKERRQ(ierr);
 
   /* ispetsc and isapp are nolonger used. */
-  ierr = ISDestroy(ispetsc);CHKERRQ(ierr);
-  ierr = ISDestroy(isapp);CHKERRQ(ierr);
+  ierr = ISDestroy(&ispetsc);CHKERRQ(ierr);
+  ierr = ISDestroy(&isapp);CHKERRQ(ierr);
   
   ierr = AOPetscToApplication(ao,4,getapp3);CHKERRQ(ierr);
   ierr = AOApplicationToPetsc(ao,3,getpetsc3);CHKERRQ(ierr);
@@ -127,7 +126,7 @@ int main(int argc,char **argv)
   for (i=0; i<3;i++)
     if (getpetsc3[i] != getpetsc[i]) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER,"getpetsc3 %d != getpetsc %d",getpetsc3[i],getpetsc[i]);
 
-  ierr = AODestroy(ao);CHKERRQ(ierr);
+  ierr = AODestroy(&ao);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

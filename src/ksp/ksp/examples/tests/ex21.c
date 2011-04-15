@@ -55,9 +55,9 @@ PetscErrorCode Destroy(Mat A,IS is0,IS is1)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatDestroy(A);CHKERRQ(ierr);
-  ierr = ISDestroy(is0);CHKERRQ(ierr);
-  ierr = ISDestroy(is1);CHKERRQ(ierr);
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  ierr = ISDestroy(&is0);CHKERRQ(ierr);
+  ierr = ISDestroy(&is1);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -80,9 +80,9 @@ int main(int argc,char *argv[])
   ierr = MatComputeExplicitOperator(S,&Sexplicit);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"\nExplicit Schur complement of (0,0) in (1,1)\n");CHKERRQ(ierr);
   ierr = MatView(Sexplicit,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = Destroy(A,is0,is1);CHKERRQ(ierr);
-  ierr = MatDestroy(S);CHKERRQ(ierr);
-  ierr = MatDestroy(Sexplicit);CHKERRQ(ierr);
+  ierr = Destroy(&A,is0,is1);CHKERRQ(ierr);
+  ierr = MatDestroy(&S);CHKERRQ(ierr);
+  ierr = MatDestroy(&Sexplicit);CHKERRQ(ierr);
 
   /* And the other */
   ierr = Create(PETSC_COMM_WORLD,&A,&is0,&is1);CHKERRQ(ierr);
@@ -90,9 +90,9 @@ int main(int argc,char *argv[])
   ierr = MatComputeExplicitOperator(S,&Sexplicit);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"\nExplicit Schur complement of (1,1) in (0,0)\n");CHKERRQ(ierr);
   ierr = MatView(Sexplicit,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = Destroy(A,is0,is1);CHKERRQ(ierr);
-  ierr = MatDestroy(S);CHKERRQ(ierr);
-  ierr = MatDestroy(Sexplicit);CHKERRQ(ierr);
+  ierr = Destroy(&A,is0,is1);CHKERRQ(ierr);
+  ierr = MatDestroy(&S);CHKERRQ(ierr);
+  ierr = MatDestroy(&Sexplicit);CHKERRQ(ierr);
 
   /* This time just the preconditioner */
   ierr = Create(PETSC_COMM_WORLD,&A,&is0,&is1);CHKERRQ(ierr);
@@ -104,8 +104,8 @@ int main(int argc,char *argv[])
   ierr = MatGetSchurComplement(A,is0,is0,is1,is1,MAT_IGNORE_MATRIX,PETSC_NULL,MAT_REUSE_MATRIX,&S);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"\nAfter update\n");CHKERRQ(ierr);
   ierr = MatView(S,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = Destroy(A,is0,is1);CHKERRQ(ierr);
-  ierr = MatDestroy(S);CHKERRQ(ierr);
+  ierr = Destroy(&A,is0,is1);CHKERRQ(ierr);
+  ierr = MatDestroy(&S);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
   return 0;

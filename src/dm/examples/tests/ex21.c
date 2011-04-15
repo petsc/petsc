@@ -61,7 +61,7 @@ PetscErrorCode test1_DAInjection3d( PetscInt mx, PetscInt my, PetscInt mz )
 
     ierr = VecScatterBegin(inject,coordsf,coordsc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(inject  ,coordsf,coordsc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterDestroy(inject);CHKERRQ(ierr);
+    ierr = VecScatterDestroy(&inject);CHKERRQ(ierr);
 
     ierr = DMGetInterpolation(cdac,cdaf,&interp,PETSC_NULL);CHKERRQ(ierr);
     ierr = VecDuplicate(coordsf,&coordsf2);CHKERRQ(ierr);
@@ -70,8 +70,8 @@ PetscErrorCode test1_DAInjection3d( PetscInt mx, PetscInt my, PetscInt mz )
     ierr = VecNorm(coordsf2,NORM_MAX,&norm);CHKERRQ(ierr);
     /* The fine coordinates are only reproduced in certain cases */
     if (!bx && !by && !bz && norm > 1.e-10) {ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm %A\n",norm);CHKERRQ(ierr);}
-    ierr = VecDestroy(coordsf2);CHKERRQ(ierr);
-    ierr = MatDestroy(interp);CHKERRQ(ierr);
+    ierr = VecDestroy(&coordsf2);CHKERRQ(ierr);
+    ierr = MatDestroy(&interp);CHKERRQ(ierr);
   }
 
   if (0) {
@@ -85,18 +85,18 @@ PetscErrorCode test1_DAInjection3d( PetscInt mx, PetscInt my, PetscInt mz )
     ierr = PetscViewerSetFormat(vv, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
     ierr = DMView(dac, vv);CHKERRQ(ierr);
     ierr = VecView(ac, vv);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(vv);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&vv);CHKERRQ(ierr);
 
     ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD, "daf_7.vtk", &vv);CHKERRQ(ierr);
     ierr = PetscViewerSetFormat(vv, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
     ierr = DMView(daf, vv);CHKERRQ(ierr);
     ierr = VecView(af, vv);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(vv);CHKERRQ(ierr);
-    ierr = VecDestroy(ac);CHKERRQ(ierr);
-    ierr = VecDestroy(af);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&vv);CHKERRQ(ierr);
+    ierr = VecDestroy(&ac);CHKERRQ(ierr);
+    ierr = VecDestroy(&af);CHKERRQ(ierr);
   }
-  ierr = DMDestroy(dac);CHKERRQ(ierr);
-  ierr = DMDestroy(daf);CHKERRQ(ierr);
+  ierr = DMDestroy(&dac);CHKERRQ(ierr);
+  ierr = DMDestroy(&daf);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

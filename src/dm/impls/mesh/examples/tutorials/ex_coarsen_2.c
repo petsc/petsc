@@ -85,7 +85,7 @@ PetscErrorCode OutputVTK(const Obj<ALE::Mesh>& mesh, Options *options)
     ierr = VTKViewer::writeHeader(viewer);CHKERRQ(ierr);
     ierr = VTKViewer::writeHierarchyVertices(mesh, viewer, options->zScale);CHKERRQ(ierr);
     ierr = VTKViewer::writeHierarchyElements(mesh, viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     const ALE::Mesh::topology_type::sheaf_type& patches = mesh->getTopology()->getPatches();
 #if 0
     for(ALE::Mesh::topology_type::sheaf_type::iterator p_iter = patches.begin(); p_iter != patches.end(); ++p_iter) {
@@ -100,7 +100,7 @@ PetscErrorCode OutputVTK(const Obj<ALE::Mesh>& mesh, Options *options)
       ierr = VTKViewer::writeVertices(mesh, *p_iter, viewer);CHKERRQ(ierr);
       ierr = VTKViewer::writeElements(mesh, *p_iter, viewer);CHKERRQ(ierr);
       //ierr = FieldView_Sieve(mesh, "spacing", viewer);CHKERRQ(ierr);
-      ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     }
 #endif
   }

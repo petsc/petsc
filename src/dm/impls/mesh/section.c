@@ -289,14 +289,14 @@ PetscErrorCode  SectionRealCreate(MPI_Comm comm, SectionReal *section)
 
 .seealso SectionRealCreate(), SectionRealView()
 @*/
-PetscErrorCode  SectionRealDestroy(SectionReal section)
+PetscErrorCode  SectionRealDestroy(SectionReal *section)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(section, SECTIONREAL_CLASSID, 1);
-  if (--((PetscObject)section)->refct > 0) PetscFunctionReturn(0);
-  section->s = PETSC_NULL;
+  if (!*section) PetscFunctionReturn(0);
+  PetscValidHeaderSpecific(*section, SECTIONREAL_CLASSID, 1);
+  if (--((PetscObject)(*section))->refct > 0) PetscFunctionReturn(0);
   ierr = PetscHeaderDestroy(section);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -862,7 +862,7 @@ PetscErrorCode  SectionRealToVec(SectionReal section, DM dm, ScatterMode mode, V
     ierr = VecScatterBegin(scatter, vec, localVec, INSERT_VALUES, mode);CHKERRQ(ierr);
     ierr = VecScatterEnd(scatter, vec, localVec, INSERT_VALUES, mode);CHKERRQ(ierr);
   }
-  ierr = VecDestroy(localVec);CHKERRQ(ierr);
+  ierr = VecDestroy(&localVec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -898,7 +898,7 @@ PetscErrorCode  SectionRealToVec(SectionReal section, VecScatter scatter, Scatte
     ierr = VecScatterBegin(scatter, vec, localVec, INSERT_VALUES, mode);CHKERRQ(ierr);
     ierr = VecScatterEnd(scatter, vec, localVec, INSERT_VALUES, mode);CHKERRQ(ierr);
   }
-  ierr = VecDestroy(localVec);CHKERRQ(ierr);
+  ierr = VecDestroy(&localVec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -992,7 +992,7 @@ PetscErrorCode  SectionRealNorm(SectionReal section, DM dm, NormType type, Petsc
   ierr = VecSetFromOptions(v);CHKERRQ(ierr);
   ierr = SectionRealToVec(section, dm, SCATTER_FORWARD, v);CHKERRQ(ierr);
   ierr = VecNorm(v, type, val);CHKERRQ(ierr);
-  ierr = VecDestroy(v);CHKERRQ(ierr);
+  ierr = VecDestroy(&v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1037,8 +1037,8 @@ PetscErrorCode  SectionRealAXPY(SectionReal section, DM dm, PetscScalar alpha, S
   ierr = SectionRealToVec(X,       dm, SCATTER_FORWARD, x);CHKERRQ(ierr);
   ierr = VecAXPY(v, alpha, x);CHKERRQ(ierr);
   ierr = SectionRealToVec(section, dm, SCATTER_REVERSE, v);CHKERRQ(ierr);
-  ierr = VecDestroy(v);CHKERRQ(ierr);
-  ierr = VecDestroy(x);CHKERRQ(ierr);
+  ierr = VecDestroy(&v);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1399,14 +1399,14 @@ PetscErrorCode  SectionIntCreate(MPI_Comm comm, SectionInt *section)
 
 .seealso SectionIntCreate(), SectionIntView()
 @*/
-PetscErrorCode  SectionIntDestroy(SectionInt section)
+PetscErrorCode  SectionIntDestroy(SectionInt *section)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(section, SECTIONINT_CLASSID, 1);
-  if (--((PetscObject)section)->refct > 0) PetscFunctionReturn(0);
-  section->s = PETSC_NULL;
+  if (!*section) PetscFunctionReturn(0);
+  PetscValidHeaderSpecific(*section, SECTIONINT_CLASSID, 1);
+  if (--((PetscObject)(*section))->refct > 0) PetscFunctionReturn(0);
   ierr = PetscHeaderDestroy(section);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1990,6 +1990,10 @@ PetscErrorCode DMMeshSetupSection(DM dm, SectionReal section)
   PetscFunctionBegin;
   ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
   ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
-  m->setupField(s);
+  try {
+    m->setupField(s);
+  } catch(ALE::Exception e) {
+    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "%s", e.message());
+  }
   PetscFunctionReturn(0);
 }

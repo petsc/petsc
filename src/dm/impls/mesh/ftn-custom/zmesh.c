@@ -132,7 +132,7 @@ void PETSC_STDCALL  vertexsectionrealcreate_(DM mesh, CHAR name PETSC_MIXED_LEN(
   FIXCHAR(name,lenN,pN);
   *ierr = DMMeshGetVertexSectionReal((DM) PetscToPointer(mesh), pN, *fiberDim, &section);
   *ierr = DMMeshSetSectionReal((DM) PetscToPointer(mesh), section);
-  *ierr = SectionRealDestroy(section);
+  *ierr = SectionRealDestroy(&section);
   FREECHAR(name,pN);
 }
 void PETSC_STDCALL  vertexsectionintcreate_(DM mesh, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *fiberDim, int *ierr PETSC_END_LEN(lenN)){
@@ -141,7 +141,7 @@ void PETSC_STDCALL  vertexsectionintcreate_(DM mesh, CHAR name PETSC_MIXED_LEN(l
   FIXCHAR(name,lenN,pN);
   *ierr = DMMeshGetVertexSectionInt((DM) PetscToPointer(mesh), pN, *fiberDim, &section);
   *ierr = DMMeshSetSectionInt((DM) PetscToPointer(mesh), section);
-  *ierr = SectionIntDestroy(section);
+  *ierr = SectionIntDestroy(&section);
   FREECHAR(name,pN);
 }
 void PETSC_STDCALL  cellsectionrealcreate_(DM mesh, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *fiberDim, int *ierr PETSC_END_LEN(lenN)){
@@ -150,7 +150,7 @@ void PETSC_STDCALL  cellsectionrealcreate_(DM mesh, CHAR name PETSC_MIXED_LEN(le
   FIXCHAR(name,lenN,pN);
   *ierr = DMMeshGetCellSectionReal((DM) PetscToPointer(mesh), pN, *fiberDim, &section);
   *ierr = DMMeshSetSectionReal((DM) PetscToPointer(mesh), section);
-  *ierr = SectionRealDestroy(section);
+  *ierr = SectionRealDestroy(&section);
   FREECHAR(name,pN);
 }
 void PETSC_STDCALL  restrictvector_(Vec g,Vec l,InsertMode *mode, int *__ierr ){

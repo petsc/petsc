@@ -123,12 +123,13 @@ PetscErrorCode  DMSetOptionsPrefix(DM dm,const char prefix[])
 .seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix()
 
 @*/
-PetscErrorCode  DMDestroy(DM dm)
+PetscErrorCode  DMDestroy(DM *dm)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = (*dm->ops->destroy)(dm);CHKERRQ(ierr);
+  if (!*dm) PetscFunctionReturn(0);
+  ierr = (*(*dm)->ops->destroy)(dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1122,7 +1123,7 @@ PetscErrorCode  DMComputeJacobian(DM dm,Vec x,Mat A,Mat B,MatStructure *stflag)
 
     ierr = DMGetColoring(dm,IS_COLORING_GHOSTED,MATAIJ,&coloring);CHKERRQ(ierr);
     ierr = MatFDColoringCreate(B,coloring,&fd);CHKERRQ(ierr);
-    ierr = ISColoringDestroy(coloring);CHKERRQ(ierr);
+    ierr = ISColoringDestroy(&coloring);CHKERRQ(ierr);
     ierr = MatFDColoringSetFunction(fd,(PetscErrorCode (*)(void))dm->ops->functionj,dm);CHKERRQ(ierr);
     dm->fd = fd;
     dm->ops->jacobian = DMComputeJacobianDefault;
@@ -1283,14 +1284,14 @@ PetscErrorCode DMConvert(DM dm, const DMType newtype, DM *M)
     ierr = PetscStrcat(convname,"_C");CHKERRQ(ierr);
     ierr = PetscObjectQueryFunction((PetscObject)B,convname,(void (**)(void))&conv);CHKERRQ(ierr);
     if (conv) {
-      ierr = DMDestroy(B);CHKERRQ(ierr);
+      ierr = DMDestroy(&B);CHKERRQ(ierr);
       goto foundconv;
     }
 
 #if 0
     /* 3) See if a good general converter is registered for the desired class */
     conv = B->ops->convertfrom;
-    ierr = DMDestroy(B);CHKERRQ(ierr);
+    ierr = DMDestroy(&B);CHKERRQ(ierr);
     if (conv) goto foundconv;
 
     /* 4) See if a good general converter is known for the current matrix */

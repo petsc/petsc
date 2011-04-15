@@ -42,12 +42,12 @@ PetscErrorCode  DMDestroy_Private(DM dm,PetscBool  *done)
 
   for (i=0; i<DM_MAX_WORK_VECTORS; i++) {
     if (dm->localout[i]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Destroying a DM that has a local vector obtained with DMGetLocalVector()");
-    if (dm->localin[i]) {ierr = VecDestroy(dm->localin[i]);CHKERRQ(ierr);}
+    if (dm->localin[i]) {ierr = VecDestroy(&dm->localin[i]);CHKERRQ(ierr);}
     if (dm->globalout[i]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Destroying a DM that has a global vector obtained with DMGetGlobalVector()");
-    if (dm->globalin[i]) {ierr = VecDestroy(dm->globalin[i]);CHKERRQ(ierr);}
+    if (dm->globalin[i]) {ierr = VecDestroy(&dm->globalin[i]);CHKERRQ(ierr);}
   }
-  if (dm->ltogmap)  {ierr = ISLocalToGlobalMappingDestroy(dm->ltogmap);CHKERRQ(ierr);}
-  if (dm->ltogmapb) {ierr = ISLocalToGlobalMappingDestroy(dm->ltogmapb);CHKERRQ(ierr);}
+  if (dm->ltogmap)  {ierr = ISLocalToGlobalMappingDestroy(&dm->ltogmap);CHKERRQ(ierr);}
+  if (dm->ltogmapb) {ierr = ISLocalToGlobalMappingDestroy(&dm->ltogmapb);CHKERRQ(ierr);}
 
   *done = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -55,12 +55,12 @@ PetscErrorCode  DMDestroy_Private(DM dm,PetscBool  *done)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMDestroy_DA"
-PetscErrorCode  DMDestroy_DA(DM da)
+PetscErrorCode  DMDestroy_DA(DM *da)
 {
   PetscErrorCode ierr;
   PetscErrorCode i;
   PetscBool      done;
-  DM_DA          *dd = (DM_DA*)da->data;
+  DM_DA          *dd = (DM_DA*)(*da)->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
@@ -91,19 +91,12 @@ PetscErrorCode  DMDestroy_DA(DM da)
   /* if memory was published with AMS then destroy it */
   ierr = PetscObjectDepublish(da);CHKERRQ(ierr);
 
-  if (dd->ltog)   {ierr = VecScatterDestroy(dd->ltog);CHKERRQ(ierr);}
-  if (dd->gtol)   {ierr = VecScatterDestroy(dd->gtol);CHKERRQ(ierr);}
-  if (dd->ltol)   {ierr = VecScatterDestroy(dd->ltol);CHKERRQ(ierr);}
-  if (dd->natural){
-    ierr = VecDestroy(dd->natural);CHKERRQ(ierr);
-  }
-  if (dd->gton) {
-    ierr = VecScatterDestroy(dd->gton);CHKERRQ(ierr);
-  }
-
-  if (dd->ao) {
-    ierr = AODestroy(dd->ao);CHKERRQ(ierr);
-  }
+  ierr = VecScatterDestroy(&dd->ltog);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&dd->gtol);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&dd->ltol);CHKERRQ(ierr);
+  ierr = VecDestroy(&dd->natural);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&dd->gton);CHKERRQ(ierr);
+  ierr = AODestroy(&dd->ao);CHKERRQ(ierr);
 
   ierr = PetscFree(dd->idx);CHKERRQ(ierr);
   ierr = PetscFree(dd->lx);CHKERRQ(ierr);
@@ -117,17 +110,12 @@ PetscErrorCode  DMDestroy_DA(DM da)
     }
     ierr = PetscFree(dd->fieldname);CHKERRQ(ierr);
   }
+  ierr = ISColoringDestroy(&dd->localcoloring);CHKERRQ(ierr);
+  ierr = ISColoringDestroy(&dd->ghostedcoloring);CHKERRQ(ierr);
 
-  if (dd->localcoloring) {
-    ierr = ISColoringDestroy(dd->localcoloring);CHKERRQ(ierr);
-  }
-  if (dd->ghostedcoloring) {
-    ierr = ISColoringDestroy(dd->ghostedcoloring);CHKERRQ(ierr);
-  }
-
-  if (dd->coordinates) {ierr = VecDestroy(dd->coordinates);CHKERRQ(ierr);}
-  if (dd->ghosted_coordinates) {ierr = VecDestroy(dd->ghosted_coordinates);CHKERRQ(ierr);}
-  if (dd->da_coordinates && da != dd->da_coordinates) {ierr = DMDestroy(dd->da_coordinates);CHKERRQ(ierr);}
+  ierr = VecDestroy(&dd->coordinates);CHKERRQ(ierr);}
+  ierr = VecDestroy(&dd->ghosted_coordinates);CHKERRQ(ierr);}
+  if (dd->da_coordinates && da != dd->da_coordinates) {ierr = DMDestroy(&dd->da_coordinates);CHKERRQ(ierr);}
 
   ierr = PetscFree(dd->neighbors);CHKERRQ(ierr);
   ierr = PetscFree(dd->dfill);CHKERRQ(ierr);

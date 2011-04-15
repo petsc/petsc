@@ -160,8 +160,8 @@ PetscErrorCode  DMDAGetAO(DM da,AO *ao)
     ierr = ISCreateStride(((PetscObject)da)->comm,Nlocal,dd->base,1,&ispetsc);CHKERRQ(ierr);
     ierr = AOCreateBasicIS(isnatural,ispetsc,&dd->ao);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(da,dd->ao);CHKERRQ(ierr);
-    ierr = ISDestroy(ispetsc);CHKERRQ(ierr);
-    ierr = ISDestroy(isnatural);CHKERRQ(ierr);
+    ierr = ISDestroy(&ispetsc);CHKERRQ(ierr);
+    ierr = ISDestroy(&isnatural);CHKERRQ(ierr);
   }
   *ao = dd->ao;
   PetscFunctionReturn(0);

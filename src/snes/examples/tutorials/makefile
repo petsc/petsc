@@ -10,10 +10,10 @@ FPPFLAGS         =
 LOCDIR		 = src/snes/examples/tutorials/
 MANSEC           = SNES
 EXAMPLESC	 = ex1.c ex2.c ex3.c ex5.c ex5s.c ex6.c \
-                   ex14.c ex18.c ex19.c ex20.c ex21.c ex22.c \
+                   ex10.c ex14.c ex18.c ex19.c ex20.c ex21.c ex22.c \
                    ex23.c ex24.c ex25.c ex26.c ex27.c ex28.c ex29.c ex30.c ex31.c ex38.c ex42.c ex43.c \
                    ex44.c ex45.c ex48.c ex49.c ex50.c ex47cu.cu
-EXAMPLESF	 = ex1f.F ex5f.F ex5f90.F ex5fs.F ex33f.F 
+EXAMPLESF	 = ex1f.F ex5f.F ex5f90.F ex5fs.F 
 EXAMPLESCH	 = ex43-44.h
 EXAMPLESFH       = ex5f.h
 EXAMPLESMATLAB   = ex5m.m
@@ -80,6 +80,9 @@ ex8: ex8.o chkopts
 ex9: ex9.o chkopts
 	-${CLINKER} -o ex9 ex9.o ${PETSC_SNES_LIB}
 	${RM} ex9.o
+ex10: ex10.o chkopts
+	-${CLINKER} -o ex10 ex10.o ${PETSC_SNES_LIB}
+	${RM} ex10.o
 ex12: ex12.o chkopts
 	-${CLINKER} -o ex12 ex12.o ${PETSC_SNES_LIB}
 	${RM} ex12.o
@@ -146,9 +149,6 @@ ex31: ex31.o chkopts
 ex32: ex32.o chkopts
 	-${CLINKER} -o ex32 ex32.o ${PETSC_SNES_LIB}
 	${RM} ex32.o
-ex33f: ex33f.o  chkopts
-	-${FLINKER} -o ex33f ex33f.o ${PETSC_SNES_LIB}
-	${RM} ex33f.o
 ex38: ex38.o  chkopts
 	-${CLINKER} -o ex38 ex38.o ${PETSC_SNES_LIB}
 	${RM} ex38.o

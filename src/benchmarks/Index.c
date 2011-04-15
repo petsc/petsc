@@ -110,7 +110,7 @@ int test1(void)
   ierr = PetscFree(zi);CHKERRQ(ierr);
   ierr = PetscFree(x);CHKERRQ(ierr);
   ierr = PetscFree(y);CHKERRQ(ierr);
-  PetscRandomDestroy(r);
+  PetscRandomDestroy(&r);
   PetscFunctionReturn(0);
 }
 
@@ -184,7 +184,7 @@ int test2(void)
   fprintf(stdout,"%-27s : %e sec\n","x[z[i]] = y[zi[i]]",(t2-t1)/2000.0);
 
 
-  PetscRandomDestroy(r);
+  PetscRandomDestroy(&r);
   PetscFunctionReturn(0);
 }
 

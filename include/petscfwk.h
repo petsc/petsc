@@ -38,7 +38,7 @@ extern PetscErrorCode  PetscFwkRegisterComponentURL(PetscFwk fwk, const char key
 extern PetscErrorCode  PetscFwkGetComponent(PetscFwk fwk, const char key[], PetscFwk *component, PetscBool  *found);
 extern PetscErrorCode  PetscFwkGetParent(PetscFwk fwk, PetscFwk *parent);
 extern PetscErrorCode  PetscFwkVisit(PetscFwk fwk, const char *message);
-extern PetscErrorCode  PetscFwkDestroy(PetscFwk fwk);
+extern PetscErrorCode  PetscFwkDestroy(PetscFwk* fwk);
 
 
 

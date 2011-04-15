@@ -321,8 +321,8 @@ static PetscErrorCode DMDAGetElementOwnershipRanges2d(DM da,PetscInt **_lx,Petsc
     LX[i] = (PetscInt)PetscRealPart(_a[i]);
   }
   ierr = VecRestoreArray(V_SEQ,&_a);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(ctx);CHKERRQ(ierr);
-  ierr = VecDestroy(V_SEQ);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&ctx);CHKERRQ(ierr);
+  ierr = VecDestroy(&V_SEQ);CHKERRQ(ierr);
 
   ierr = VecScatterCreateToAll(vly,&ctx,&V_SEQ);CHKERRQ(ierr);
   ierr = VecScatterBegin(ctx,vly,V_SEQ,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -332,14 +332,14 @@ static PetscErrorCode DMDAGetElementOwnershipRanges2d(DM da,PetscInt **_lx,Petsc
     LY[i] = (PetscInt)PetscRealPart(_a[i]);
   }
   ierr = VecRestoreArray(V_SEQ,&_a);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(ctx);CHKERRQ(ierr);
-  ierr = VecDestroy(V_SEQ);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&ctx);CHKERRQ(ierr);
+  ierr = VecDestroy(&V_SEQ);CHKERRQ(ierr);
 
   *_lx = LX;
   *_ly = LY;
 
-  ierr = VecDestroy(vlx);CHKERRQ(ierr);
-  ierr = VecDestroy(vly);CHKERRQ(ierr);
+  ierr = VecDestroy(&vlx);CHKERRQ(ierr);
+  ierr = VecDestroy(&vly);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -447,7 +447,7 @@ static PetscErrorCode DMDAViewGnuplot2d(DM da,Vec fields,const char comment[],co
     }
   }
   ierr = VecRestoreArray(local_fields,&_fields);CHKERRQ(ierr);
-  ierr = VecDestroy(local_fields);CHKERRQ(ierr);
+  ierr = VecDestroy(&local_fields);CHKERRQ(ierr);
 
   ierr = DMDAVecRestoreArray(cda,coords,&_coords);CHKERRQ(ierr);
 
@@ -512,7 +512,7 @@ static PetscErrorCode DMDAViewCoefficientsGnuplot2d(DM da,Vec fields,const char 
     }
   }
   ierr = DMDAVecRestoreArray(da,local_fields,&_coefficients);CHKERRQ(ierr);
-  ierr = VecDestroy(local_fields);CHKERRQ(ierr);
+  ierr = VecDestroy(&local_fields);CHKERRQ(ierr);
 
   ierr = PetscFClose(PETSC_COMM_SELF,fp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -705,7 +705,7 @@ static PetscErrorCode AssembleA_Elasticity(Mat A,DM elas_da,DM properties_da,Vec
   ierr = DMDAVecRestoreArray(cda,coords,&_coords);CHKERRQ(ierr);
 
   ierr = DMDAVecRestoreArray(properties_da,local_properties,&props);CHKERRQ(ierr);
-  ierr = VecDestroy(local_properties);CHKERRQ(ierr);
+  ierr = VecDestroy(&local_properties);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -1094,12 +1094,12 @@ static PetscErrorCode solve_elasticity_2d(PetscInt mx,PetscInt my)
     ierr = VecScatterCreate(XX,PETSC_NULL,X,is,&scat);CHKERRQ(ierr);
     ierr = VecScatterBegin(scat,XX,X,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(scat,XX,X,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterDestroy(scat);CHKERRQ(ierr);
+    ierr = VecScatterDestroy(&scat);CHKERRQ(ierr);
 
-    ierr = MatDestroy(AA);CHKERRQ(ierr);
-    ierr = VecDestroy(ff);CHKERRQ(ierr);
-    ierr = VecDestroy(XX);CHKERRQ(ierr);
-    ierr = ISDestroy(is);CHKERRQ(ierr);
+    ierr = MatDestroy(&AA);CHKERRQ(ierr);
+    ierr = VecDestroy(&ff);CHKERRQ(ierr);
+    ierr = VecDestroy(&XX);CHKERRQ(ierr);
+    ierr = ISDestroy(&&is);CHKERRQ(ierr);
   } else {
     ierr = DMDABCApplyCompression(elas_da,A,f);CHKERRQ(ierr);
 
@@ -1110,17 +1110,17 @@ static PetscErrorCode solve_elasticity_2d(PetscInt mx,PetscInt my)
   }
 
   if (!no_view) {ierr = DMDAViewGnuplot2d(elas_da,X,"Displacement solution for elasticity eqn.","X");CHKERRQ(ierr);}
-  ierr = KSPDestroy(ksp_E);CHKERRQ(ierr);
+  ierr = KSPDestroy(&ksp_E);CHKERRQ(ierr);
 
-  ierr = VecDestroy(X);CHKERRQ(ierr);
-  ierr = VecDestroy(f);CHKERRQ(ierr);
-  ierr = MatDestroy(A);CHKERRQ(ierr);
+  ierr = VecDestroy(&X);CHKERRQ(ierr);
+  ierr = VecDestroy(&f);CHKERRQ(ierr);
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
 
-  ierr = DMDestroy(elas_da);CHKERRQ(ierr);
-  ierr = DMDestroy(da_prop);CHKERRQ(ierr);
+  ierr = DMDestroy(&elas_da);CHKERRQ(ierr);
+  ierr = DMDestroy(&da_prop);CHKERRQ(ierr);
 
-  ierr = VecDestroy(properties);CHKERRQ(ierr);
-  ierr = VecDestroy(l_properties);CHKERRQ(ierr);
+  ierr = VecDestroy(&properties);CHKERRQ(ierr);
+  ierr = VecDestroy(&l_properties);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -1355,9 +1355,9 @@ static PetscErrorCode DMDABCApplySymmetricCompression(DM elas_da,Mat A,Vec f,IS 
   ierr = VecScatterCreate(f,is,*ff,PETSC_NULL,&scat);CHKERRQ(ierr);
   ierr = VecScatterBegin(scat,f,*ff,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(scat,f,*ff,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(scat);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&scat);CHKERRQ(ierr);
 
   *dofs = is;
-  ierr = VecDestroy(x);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

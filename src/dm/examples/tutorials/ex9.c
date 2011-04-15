@@ -48,14 +48,14 @@ int main(int argc,char **argv)
   */
   ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD,"hdf5output",FILE_MODE_WRITE,&viewer); CHKERRQ(ierr);
   ierr = VecView(global,viewer);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
 
   ierr = VecDuplicate(global,&global2);CHKERRQ(ierr);
   ierr = VecCopy(global,global2);CHKERRQ(ierr);
   ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD,"hdf5output",FILE_MODE_READ,&viewer); CHKERRQ(ierr);
   ierr = VecLoad(global,viewer);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   ierr = VecEqual(global,global2,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Vectors are equal\n");CHKERRQ(ierr);
@@ -64,10 +64,10 @@ int main(int argc,char **argv)
   }
 
   /* clean up and exit */
-  ierr = DMDestroy(da);CHKERRQ(ierr);
-  ierr = VecDestroy(local);CHKERRQ(ierr);
-  ierr = VecDestroy(global);CHKERRQ(ierr);
-  ierr = VecDestroy(global2);CHKERRQ(ierr);
+  ierr = DMDestroy(&da);CHKERRQ(ierr);
+  ierr = VecDestroy(&local);CHKERRQ(ierr);
+  ierr = VecDestroy(&global);CHKERRQ(ierr);
+  ierr = VecDestroy(&global2);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;  
 }

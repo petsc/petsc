@@ -145,7 +145,7 @@ int main (int argc, char * argv[]) {
     VTKViewer::writeHeader(viewer);
     VTKViewer::writeVertices(m, viewer);
     VTKViewer::writeElements(m, viewer);
-    PetscViewerDestroy(viewer);
+    PetscViewerDestroy(&viewer);
     PetscFunctionReturn(0);
   } catch (ALE::Exception e) {
     std::cout << e << std::endl;

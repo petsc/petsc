@@ -137,7 +137,7 @@ extern PetscErrorCode  PetscDrawOpenPS(MPI_Comm,char *,PetscDraw *);
 #define PETSC_DRAW_QUARTER_SIZE -6
 
 extern PetscErrorCode  PetscDrawOpenNull(MPI_Comm,PetscDraw *);
-extern PetscErrorCode  PetscDrawDestroy(PetscDraw);
+extern PetscErrorCode  PetscDrawDestroy(PetscDraw*);
 extern PetscErrorCode  PetscDrawIsNull(PetscDraw,PetscBool *);
 
 extern PetscErrorCode  PetscDrawGetPopup(PetscDraw,PetscDraw*);
@@ -241,7 +241,7 @@ typedef struct _p_DrawAxis* PetscDrawAxis;
 extern PetscClassId DRAWAXIS_CLASSID;
 
 extern PetscErrorCode  PetscDrawAxisCreate(PetscDraw,PetscDrawAxis *);
-extern PetscErrorCode  PetscDrawAxisDestroy(PetscDrawAxis);
+extern PetscErrorCode  PetscDrawAxisDestroy(PetscDrawAxis*);
 extern PetscErrorCode  PetscDrawAxisDraw(PetscDrawAxis);
 extern PetscErrorCode  PetscDrawAxisSetLimits(PetscDrawAxis,PetscReal,PetscReal,PetscReal,PetscReal);
 extern PetscErrorCode  PetscDrawAxisSetHoldLimits(PetscDrawAxis,PetscBool );
@@ -262,7 +262,7 @@ typedef struct _p_DrawLG*   PetscDrawLG;
 extern PetscClassId DRAWLG_CLASSID;
 
 extern PetscErrorCode  PetscDrawLGCreate(PetscDraw,int,PetscDrawLG *);
-extern PetscErrorCode  PetscDrawLGDestroy(PetscDrawLG);
+extern PetscErrorCode  PetscDrawLGDestroy(PetscDrawLG*);
 extern PetscErrorCode  PetscDrawLGAddPoint(PetscDrawLG,PetscReal*,PetscReal*);
 extern PetscErrorCode  PetscDrawLGAddPoints(PetscDrawLG,int,PetscReal**,PetscReal**);
 extern PetscErrorCode  PetscDrawLGDraw(PetscDrawLG);
@@ -288,7 +288,7 @@ typedef struct _p_DrawSP*   PetscDrawSP;
 extern PetscClassId DRAWSP_CLASSID;
 
 extern PetscErrorCode  PetscDrawSPCreate(PetscDraw,int,PetscDrawSP *);
-extern PetscErrorCode  PetscDrawSPDestroy(PetscDrawSP);
+extern PetscErrorCode  PetscDrawSPDestroy(PetscDrawSP*);
 extern PetscErrorCode  PetscDrawSPAddPoint(PetscDrawSP,PetscReal*,PetscReal*);
 extern PetscErrorCode  PetscDrawSPAddPoints(PetscDrawSP,int,PetscReal**,PetscReal**);
 extern PetscErrorCode  PetscDrawSPDraw(PetscDrawSP);
@@ -313,7 +313,7 @@ typedef struct _p_DrawHG*   PetscDrawHG;
 extern PetscClassId DRAWHG_CLASSID;
 
 extern PetscErrorCode  PetscDrawHGCreate(PetscDraw,int,PetscDrawHG *);
-extern PetscErrorCode  PetscDrawHGDestroy(PetscDrawHG);
+extern PetscErrorCode  PetscDrawHGDestroy(PetscDrawHG*);
 extern PetscErrorCode  PetscDrawHGAddValue(PetscDrawHG,PetscReal);
 extern PetscErrorCode  PetscDrawHGDraw(PetscDrawHG);
 extern PetscErrorCode  PetscDrawHGPrint(PetscDrawHG);

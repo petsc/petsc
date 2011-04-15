@@ -30,10 +30,10 @@ PetscErrorCode  DMDestroy_ADDA(DM dm)
   ierr = PetscFree(dd->lge);CHKERRQ(ierr);
   ierr = PetscFree(dd->refine);CHKERRQ(ierr);
 
-  ierr = VecDestroy(dd->global);CHKERRQ(ierr);
+  ierr = VecDestroy(&dd->global);CHKERRQ(ierr);
 
   ierr = PetscFree(dd);CHKERRQ(ierr);
-  ierr = PetscHeaderDestroy(dm);CHKERRQ(ierr);
+  ierr = PetscHeaderDestroy(&dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

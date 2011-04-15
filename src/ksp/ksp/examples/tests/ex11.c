@@ -32,7 +32,7 @@ PetscErrorCode LSCLoadTestOperators(Mat *A11,Mat *A12,Mat *A21,Mat *A22,Vec *b1,
   ierr = MatLoad(*A22,viewer);CHKERRQ(ierr);
   ierr = VecLoad(*b1,viewer);CHKERRQ(ierr);
   ierr = VecLoad(*b2,viewer);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -95,15 +95,15 @@ PetscErrorCode LoadTestMatrices(Mat *_A,Vec *_x,Vec *_b,IS *_isu,IS *_isp)
 
   /* tidy up */
   for (i=0; i<2; i++) {
-    ierr = VecScatterDestroy(vscat[i]);CHKERRQ(ierr);
+    ierr = VecScatterDestroy(&vscat[i]);CHKERRQ(ierr);
   }
   ierr = PetscFree(vscat);CHKERRQ(ierr);
-  ierr = MatDestroy(Auu);CHKERRQ(ierr);
-  ierr = MatDestroy(Aup);CHKERRQ(ierr);
-  ierr = MatDestroy(Apu);CHKERRQ(ierr);
-  ierr = MatDestroy(App);CHKERRQ(ierr);
-  ierr = VecDestroy(f);CHKERRQ(ierr);
-  ierr = VecDestroy(h);CHKERRQ(ierr);
+  ierr = MatDestroy(&Auu);CHKERRQ(ierr);
+  ierr = MatDestroy(&Aup);CHKERRQ(ierr);
+  ierr = MatDestroy(&Apu);CHKERRQ(ierr);
+  ierr = MatDestroy(&App);CHKERRQ(ierr);
+  ierr = VecDestroy(&f);CHKERRQ(ierr);
+  ierr = VecDestroy(&h);CHKERRQ(ierr);
 
   *_isu = is_u;
   *_isp = is_p;
@@ -196,20 +196,20 @@ PetscErrorCode port_lsd_bfbt(void)
     ierr = VecSum(x,&sum);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"  Sum(u,p)  = %1.6F \n",PetscRealPart(sum));CHKERRQ(ierr);
 
-    ierr = VecScatterDestroy(uscat);CHKERRQ(ierr);
-    ierr = VecScatterDestroy(pscat);CHKERRQ(ierr);
-    ierr = VecDestroy(uvec);CHKERRQ(ierr);
-    ierr = VecDestroy(pvec);CHKERRQ(ierr);
-    ierr = MatDestroy(A11);CHKERRQ(ierr);
-    ierr = MatDestroy(A22);CHKERRQ(ierr);
+    ierr = VecScatterDestroy(&uscat);CHKERRQ(ierr);
+    ierr = VecScatterDestroy(&pscat);CHKERRQ(ierr);
+    ierr = VecDestroy(&uvec);CHKERRQ(ierr);
+    ierr = VecDestroy(&pvec);CHKERRQ(ierr);
+    ierr = MatDestroy(&A11);CHKERRQ(ierr);
+    ierr = MatDestroy(&A22);CHKERRQ(ierr);
   }
 
-  ierr = KSPDestroy(ksp_A);CHKERRQ(ierr);
-  ierr = MatDestroy(A);CHKERRQ(ierr);
-  ierr = VecDestroy(x);CHKERRQ(ierr);
-  ierr = VecDestroy(b);CHKERRQ(ierr);
-  ierr = ISDestroy(isu);CHKERRQ(ierr);
-  ierr = ISDestroy(isp);CHKERRQ(ierr);
+  ierr = KSPDestroy(&ksp_A);CHKERRQ(ierr);
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = VecDestroy(&b);CHKERRQ(ierr);
+  ierr = ISDestroy(&isu);CHKERRQ(ierr);
+  ierr = ISDestroy(&isp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

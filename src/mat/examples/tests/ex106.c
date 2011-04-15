@@ -137,10 +137,10 @@ int main(int argc,char **args)
       ierr = MatLUFactorNumeric(F,C,&factinfo);CHKERRQ(ierr);
     }
     ierr = MatSolve(F,b,x);CHKERRQ(ierr);
-    ierr = MatDestroy(F);CHKERRQ(ierr);
+    ierr = MatDestroy(&F);CHKERRQ(ierr);
   } 
-  ierr = ISDestroy(perm);CHKERRQ(ierr);
-  ierr = ISDestroy(iperm);CHKERRQ(ierr);
+  ierr = ISDestroy(&perm);CHKERRQ(ierr);
+  ierr = ISDestroy(&iperm);CHKERRQ(ierr);
 
   /* Check the error */
   ierr = VecAXPY(x,none,u);CHKERRQ(ierr);
@@ -148,10 +148,10 @@ int main(int argc,char **args)
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A\n",norm);CHKERRQ(ierr);
 
   /* Free work space. */
-  ierr = VecDestroy(u);CHKERRQ(ierr);
-  ierr = VecDestroy(x);CHKERRQ(ierr);
-  ierr = VecDestroy(b);CHKERRQ(ierr);
-  ierr = MatDestroy(C);CHKERRQ(ierr);
+  ierr = VecDestroy(&u);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = VecDestroy(&b);CHKERRQ(ierr);
+  ierr = MatDestroy(&C);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

@@ -86,7 +86,7 @@ PetscInt main(PetscInt argc,char **args)
 
   }
   ierr = DMDASetCoordinates(da, coords);CHKERRQ(ierr);
-  ierr = VecDestroy(coords);CHKERRQ(ierr);
+  ierr = VecDestroy(&coords);CHKERRQ(ierr);
 
   // Work vectors
   ierr = DMGetGlobalVector(da, &x);CHKERRQ(ierr);
@@ -124,7 +124,7 @@ PetscInt main(PetscInt argc,char **args)
     ierr = PetscRandomCreate(PETSC_COMM_SELF, &rdm);CHKERRQ(ierr);
     ierr = PetscRandomSetFromOptions(rdm);CHKERRQ(ierr);
     ierr = VecSetRandom(x, rdm);CHKERRQ(ierr);
-    ierr = PetscRandomDestroy(rdm);CHKERRQ(ierr);
+    ierr = PetscRandomDestroy(&rdm);CHKERRQ(ierr);
   } 
   else if (function == CONSTANT) {
     ierr = VecSet(x, 1.0);CHKERRQ(ierr);

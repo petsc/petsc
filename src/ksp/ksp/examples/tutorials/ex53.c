@@ -111,12 +111,12 @@ int main(int argc,char **args)
                      norm,its);CHKERRQ(ierr);
 
   /* Free work space. */
-  ierr = VecDestroy(x);CHKERRQ(ierr); 
-  ierr = VecDestroy(u);CHKERRQ(ierr);
-  ierr = VecDestroy(x2);CHKERRQ(ierr); 
-  ierr = VecDestroy(b);CHKERRQ(ierr); 
-  ierr = MatDestroy(A);CHKERRQ(ierr);
-  ierr = KSPDestroy(ksp);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr); 
+  ierr = VecDestroy(&u);CHKERRQ(ierr);
+  ierr = VecDestroy(&x2);CHKERRQ(ierr); 
+  ierr = VecDestroy(&b);CHKERRQ(ierr); 
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
   return 0;

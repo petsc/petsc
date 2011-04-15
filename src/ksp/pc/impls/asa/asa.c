@@ -204,28 +204,6 @@ PetscErrorCode  PCCreateLevel_ASA(PC_ASA_level **new_asa_lev, int level,MPI_Comm
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "SafeMatDestroy"
-PetscErrorCode SafeMatDestroy(Mat *m)
-{
-  PetscErrorCode ierr = 0;
-
-  PetscFunctionBegin;
-  if (m && *m) {ierr = MatDestroy(*m); *m=0;}
-  PetscFunctionReturn(ierr);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "SafeVecDestroy"
-PetscErrorCode SafeVecDestroy(Vec *v)
-{
-  PetscErrorCode ierr = 0;
-
-  PetscFunctionBegin;
-  if (v && *v) {ierr = VecDestroy(*v); *v=0;}
-  PetscFunctionReturn(ierr);
-}
-
-#undef __FUNCT__  
 #define __FUNCT__ "PrintResNorm"
 PetscErrorCode PrintResNorm(Mat A, Vec x, Vec b, Vec r)
 {
@@ -246,7 +224,7 @@ PetscErrorCode PrintResNorm(Mat A, Vec x, Vec b, Vec r)
   ierr = PetscPrintf(Acomm, "Residual norm is %f.\n", resnorm);CHKERRQ(ierr);
 
   if (destroyr) {
-    ierr = VecDestroy(r);CHKERRQ(ierr);
+    ierr = VecDestroy(&r);CHKERRQ(ierr);
   }
   
   PetscFunctionReturn(0);
@@ -271,8 +249,8 @@ PetscErrorCode PrintEnergyNormOfDiff(Mat A, Vec x, Vec y)
   dotabs = PetscAbsScalar(dotprod);
   ierr = PetscObjectGetComm((PetscObject) A, &Acomm);CHKERRQ(ierr);
   ierr = PetscPrintf(Acomm, "Energy norm %f.\n", dotabs);CHKERRQ(ierr);
-  ierr = VecDestroy(vecdiff);CHKERRQ(ierr);
-  ierr = VecDestroy(Avecdiff);CHKERRQ(ierr);
+  ierr = VecDestroy(&vecdiff);CHKERRQ(ierr);
+  ierr = VecDestroy(&Avecdiff);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -291,28 +269,28 @@ PetscErrorCode PCDestroyLevel_ASA(PC_ASA_level *asa_lev)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = SafeMatDestroy(&(asa_lev->A));CHKERRQ(ierr);
-  ierr = SafeMatDestroy(&(asa_lev->B));CHKERRQ(ierr);
-  ierr = SafeVecDestroy(&(asa_lev->x));CHKERRQ(ierr);
-  ierr = SafeVecDestroy(&(asa_lev->b));CHKERRQ(ierr);
-  ierr = SafeVecDestroy(&(asa_lev->r));CHKERRQ(ierr);
+  ierr = MatDestroy(&(asa_lev->A));CHKERRQ(ierr);
+  ierr = MatDestroy(&(asa_lev->B));CHKERRQ(ierr);
+  ierr = VecDestroy(&(asa_lev->x));CHKERRQ(ierr);
+  ierr = VecDestroy(&(asa_lev->b));CHKERRQ(ierr);
+  ierr = VecDestroy(&(asa_lev->r));CHKERRQ(ierr);
 
-  if (asa_lev->dm) {ierr = DMDestroy(asa_lev->dm);CHKERRQ(ierr);}
+  if (asa_lev->dm) {ierr = DMDestroy(&asa_lev->dm);CHKERRQ(ierr);}
 
-  ierr = SafeMatDestroy(&(asa_lev->agg));CHKERRQ(ierr);
+  ierr = MatDestroy(&(asa_lev->agg));CHKERRQ(ierr);
   ierr = PetscFree(asa_lev->loc_agg_dofs);CHKERRQ(ierr);
-  ierr = SafeMatDestroy(&(asa_lev->agg_corr));CHKERRQ(ierr);
-  ierr = SafeMatDestroy(&(asa_lev->bridge_corr));CHKERRQ(ierr);
+  ierr = MatDestroy(&(asa_lev->agg_corr));CHKERRQ(ierr);
+  ierr = MatDestroy(&(asa_lev->bridge_corr));CHKERRQ(ierr);
 
-  ierr = SafeMatDestroy(&(asa_lev->P));CHKERRQ(ierr);
-  ierr = SafeMatDestroy(&(asa_lev->Pt));CHKERRQ(ierr);
-  ierr = SafeMatDestroy(&(asa_lev->smP));CHKERRQ(ierr);
-  ierr = SafeMatDestroy(&(asa_lev->smPt));CHKERRQ(ierr);
+  ierr = MatDestroy(&(asa_lev->P));CHKERRQ(ierr);
+  ierr = MatDestroy(&(asa_lev->Pt));CHKERRQ(ierr);
+  ierr = MatDestroy(&(asa_lev->smP));CHKERRQ(ierr);
+  ierr = MatDestroy(&(asa_lev->smPt));CHKERRQ(ierr);
 
   if (asa_lev->smoothd != asa_lev->smoothu) {
-    if (asa_lev->smoothd) {ierr = KSPDestroy(asa_lev->smoothd);CHKERRQ(ierr);}
+    if (asa_lev->smoothd) {ierr = KSPDestroy(&asa_lev->smoothd);CHKERRQ(ierr);}
   }
-  if (asa_lev->smoothu) {ierr = KSPDestroy(asa_lev->smoothu);CHKERRQ(ierr);}
+  if (asa_lev->smoothu) {ierr = KSPDestroy(&asa_lev->smoothu);CHKERRQ(ierr);}
 
   ierr = PetscFree(asa_lev);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -406,11 +384,11 @@ PetscErrorCode PCSetupSmoothersOnLevel_ASA(PC_ASA *asa, PC_ASA_level *asa_lev, P
   PetscFunctionBegin;
   /* destroy old smoothers */
   if (asa_lev->smoothu && asa_lev->smoothu != asa_lev->smoothd) {
-    ierr = KSPDestroy(asa_lev->smoothu);CHKERRQ(ierr);
+    ierr = KSPDestroy(&asa_lev->smoothu);CHKERRQ(ierr);
   }
   asa_lev->smoothu = 0;
   if (asa_lev->smoothd) {
-    ierr = KSPDestroy(asa_lev->smoothd);CHKERRQ(ierr);
+    ierr = KSPDestroy(&asa_lev->smoothd);CHKERRQ(ierr);
   }
   asa_lev->smoothd = 0;
   /* create smoothers */
@@ -464,11 +442,11 @@ PetscErrorCode PCSetupDirectSolversOnLevel_ASA(PC_ASA *asa, PC_ASA_level *asa_le
 
   PetscFunctionBegin;
   if (asa_lev->smoothu && asa_lev->smoothu != asa_lev->smoothd) {
-    ierr = KSPDestroy(asa_lev->smoothu);CHKERRQ(ierr);
+    ierr = KSPDestroy(&asa_lev->smoothu);CHKERRQ(ierr);
   }
   asa_lev->smoothu = 0;
   if (asa_lev->smoothd) {
-    ierr = KSPDestroy(asa_lev->smoothd);CHKERRQ(ierr);
+    ierr = KSPDestroy(&asa_lev->smoothd);CHKERRQ(ierr);
     asa_lev->smoothd = 0;
   }
   ierr = PetscStrcmp(asa->ksptype_direct, KSPPREONLY, &flg);CHKERRQ(ierr);
@@ -635,8 +613,8 @@ PetscErrorCode PCCreateTransferOp_ASA(PC_ASA_level *asa_lev, PetscBool  construc
 
   /* destroy correlator matrices for next level, these will be rebuilt in this routine */
   if (asa_lev->next) {
-    ierr = SafeMatDestroy(&(asa_lev->next->agg_corr));CHKERRQ(ierr);
-    ierr = SafeMatDestroy(&(asa_lev->next->bridge_corr));CHKERRQ(ierr);
+    ierr = MatDestroy(&(asa_lev->next->agg_corr));CHKERRQ(ierr);
+    ierr = MatDestroy(&(asa_lev->next->bridge_corr));CHKERRQ(ierr);
   }
 
   /* find out the correct local row indices */
@@ -683,15 +661,15 @@ PetscErrorCode PCCreateTransferOp_ASA(PC_ASA_level *asa_lev, PetscBool  construc
        if (cand_vec_length[a] > max_cand_vec_length) { max_cand_vec_length = cand_vec_length[a]; }
   }
   /* destroy logical_agg, no longer needed */
-  ierr = SafeMatDestroy(&logical_agg);CHKERRQ(ierr);
+  ierr = MatDestroy(&logical_agg);CHKERRQ(ierr);
 
   /* get the entries for aggregate from B */
   ierr = MatGetSubMatrices(asa_lev->B, mat_agg_loc_size, idxm_is_B_arr, idxn_is_B_arr, MAT_INITIAL_MATRIX, &b_submat_arr);CHKERRQ(ierr);
   
   /* clean up all the index sets */
-  for (a=0; a<mat_agg_loc_size; a++) { ISDestroy(idxm_is_B_arr[a]);CHKERRQ(ierr); }
+  for (a=0; a<mat_agg_loc_size; a++) { ISDestroy(&idxm_is_B_arr[a]);CHKERRQ(ierr); }
   ierr = PetscFree(idxm_is_B_arr);CHKERRQ(ierr);
-  ierr = ISDestroy(idxn_is_B);CHKERRQ(ierr);
+  ierr = ISDestroy(&idxn_is_B);CHKERRQ(ierr);
   ierr = PetscFree(idxn_is_B_arr);CHKERRQ(ierr);
   
   /* storage for the values from each submatrix */
@@ -803,8 +781,8 @@ PetscErrorCode PCCreateTransferOp_ASA(PC_ASA_level *asa_lev, PetscBool  construc
   ierr = PetscFree(work);CHKERRQ(ierr);
 
   /* destroy old matrix P, Pt */
-  ierr = SafeMatDestroy(&(asa_lev->P));CHKERRQ(ierr);
-  ierr = SafeMatDestroy(&(asa_lev->Pt));CHKERRQ(ierr);
+  ierr = MatDestroy(&(asa_lev->P));CHKERRQ(ierr);
+  ierr = MatDestroy(&(asa_lev->Pt));CHKERRQ(ierr);
 
   ierr = MatGetLocalSize(asa_lev->A, &a_loc_m, &a_loc_n);CHKERRQ(ierr);
 
@@ -926,8 +904,8 @@ PetscErrorCode PCSmoothProlongator_ASA(PC_ASA_level *asa_lev)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = SafeMatDestroy(&(asa_lev->smP));CHKERRQ(ierr);
-  ierr = SafeMatDestroy(&(asa_lev->smPt));CHKERRQ(ierr);
+  ierr = MatDestroy(&(asa_lev->smP));CHKERRQ(ierr);
+  ierr = MatDestroy(&(asa_lev->smPt));CHKERRQ(ierr);
   /* compute prolongator I_{l+1}^l = S_l P_{l+1}^l */
   /* step 1: compute I_{l+1}^l = A_l P_{l+1}^l */
   ierr = MatMatMult(asa_lev->A, asa_lev->P, MAT_INITIAL_MATRIX, 1, &(asa_lev->smP));CHKERRQ(ierr);
@@ -973,7 +951,7 @@ PetscErrorCode PCCreateVcycle_ASA(PC_ASA *asa)
     ierr = PCCreateTransferOp_ASA(asa_lev, PETSC_FALSE);CHKERRQ(ierr);
 
     /* construct B_{l+1} */
-    ierr = SafeMatDestroy(&(asa_next_lev->B));CHKERRQ(ierr);
+    ierr = MatDestroy(&(asa_next_lev->B));CHKERRQ(ierr);
     ierr = MatMatMult(asa_lev->Pt, asa_lev->B, MAT_INITIAL_MATRIX, 1, &(asa_next_lev->B));CHKERRQ(ierr);
     asa_next_lev->cand_vecs = asa_lev->cand_vecs;
 
@@ -982,18 +960,18 @@ PetscErrorCode PCCreateVcycle_ASA(PC_ASA *asa)
     
     /* (d) construct coarse matrix */
     /* Define coarse matrix A_{l+1} = (I_{l+1}^l)^T A_l I_{l+1}^l */
-    ierr = SafeMatDestroy(&(asa_next_lev->A));CHKERRQ(ierr);
+    ierr = MatDestroy(&(asa_next_lev->A));CHKERRQ(ierr);
        ierr = MatMatMult(asa_lev->A, asa_lev->smP, MAT_INITIAL_MATRIX, 1.0, &AI);CHKERRQ(ierr);
      ierr = MatMatMult(asa_lev->smPt, AI, MAT_INITIAL_MATRIX, 1.0, &(asa_next_lev->A));CHKERRQ(ierr);
-     ierr = SafeMatDestroy(&AI);CHKERRQ(ierr); 
+     ierr = MatDestroy(&AI);CHKERRQ(ierr); 
     /*     ierr = MatPtAP(asa_lev->A, asa_lev->smP, MAT_INITIAL_MATRIX, 1, &(asa_next_lev->A));CHKERRQ(ierr); */
     ierr = MatGetSize(asa_next_lev->A, PETSC_NULL, &(asa_next_lev->size));CHKERRQ(ierr);
     ierr = PCComputeSpectralRadius_ASA(asa_next_lev);CHKERRQ(ierr);
     ierr = PCSetupSmoothersOnLevel_ASA(asa, asa_next_lev, asa->nu);CHKERRQ(ierr);
     /* create corresponding vectors x_{l+1}, b_{l+1}, r_{l+1} */
-    ierr = SafeVecDestroy(&(asa_next_lev->x));CHKERRQ(ierr);
-    ierr = SafeVecDestroy(&(asa_next_lev->b));CHKERRQ(ierr);
-    ierr = SafeVecDestroy(&(asa_next_lev->r));CHKERRQ(ierr);
+    ierr = VecDestroy(&(asa_next_lev->x));CHKERRQ(ierr);
+    ierr = VecDestroy(&(asa_next_lev->b));CHKERRQ(ierr);
+    ierr = VecDestroy(&(asa_next_lev->r));CHKERRQ(ierr);
     ierr = MatGetVecs(asa_next_lev->A, &(asa_next_lev->x), &(asa_next_lev->b));CHKERRQ(ierr);
     ierr = MatGetVecs(asa_next_lev->A, PETSC_NULL, &(asa_next_lev->r));CHKERRQ(ierr);
 
@@ -1051,7 +1029,7 @@ PetscErrorCode PCAddCandidateToB_ASA(Mat B, PetscInt col_idx, Vec x, Mat A)
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = VecRestoreArray(x, &vecarray);CHKERRQ(ierr);
-  ierr = VecDestroy(Ax);CHKERRQ(ierr);  
+  ierr = VecDestroy(&Ax);CHKERRQ(ierr);  
   PetscFunctionReturn(0);
 }
 
@@ -1109,21 +1087,21 @@ PetscErrorCode PCInitializationStage_ASA(PC_ASA *asa, Vec x)
 
   if (x) {
     /* use starting guess */
-    ierr = SafeVecDestroy(&(asa_lev->x));CHKERRQ(ierr);
+    ierr = VecDestroy(&(asa_lev->x));CHKERRQ(ierr);
     ierr = VecDuplicate(x, &(asa_lev->x));CHKERRQ(ierr);
     ierr = VecCopy(x, asa_lev->x);CHKERRQ(ierr);
   } else {
     /* select random starting vector */
-    ierr = SafeVecDestroy(&(asa_lev->x));CHKERRQ(ierr);
+    ierr = VecDestroy(&(asa_lev->x));CHKERRQ(ierr);
     ierr = MatGetVecs(asa_lev->A, &(asa_lev->x), 0);CHKERRQ(ierr);
     ierr = PetscRandomCreate(asa_lev->comm,&rctx);CHKERRQ(ierr);
     ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
     ierr = VecSetRandom(asa_lev->x, rctx);CHKERRQ(ierr);
-    ierr = PetscRandomDestroy(rctx);CHKERRQ(ierr);
+    ierr = PetscRandomDestroy(&rctx);CHKERRQ(ierr);
   }
 
   /* create right hand side */
-  ierr = SafeVecDestroy(&(asa_lev->b));CHKERRQ(ierr);
+  ierr = VecDestroy(&(asa_lev->b));CHKERRQ(ierr);
   ierr = MatGetVecs(asa_lev->A, &(asa_lev->b), 0);
   ierr = VecSet(asa_lev->b, 0.0);
 
@@ -1141,7 +1119,7 @@ PetscErrorCode PCInitializationStage_ASA(PC_ASA *asa, Vec x)
   ierr = MatMult(asa_lev->A, asa_lev->x, ax);CHKERRQ(ierr);
   ierr = VecDot(asa_lev->x, ax, &tmp);CHKERRQ(ierr);
   norm = PetscAbsScalar(tmp);
-  ierr = SafeVecDestroy(&(ax));CHKERRQ(ierr);
+  ierr = VecDestroy(&(ax));CHKERRQ(ierr);
   ierr = PetscPrintf(asa_lev->comm, "Residual norm of relaxation after %g %D relaxations: %g %g\n", asa->epsilon,asa->mu_initial, norm,prevnorm);CHKERRQ(ierr);
 
   /* Check if it already converges by itself */
@@ -1193,7 +1171,7 @@ PetscErrorCode PCInitializationStage_ASA(PC_ASA *asa, Vec x)
       /* (e) Define coarse matrix A_{l+1} = (I_{l+1}^l)^T A_l I_{l+1}^l */
             ierr = MatMatMult(asa_lev->A, asa_lev->smP, MAT_INITIAL_MATRIX, 1.0, &AI);CHKERRQ(ierr);
       ierr = MatMatMult(asa_lev->smPt, AI, MAT_INITIAL_MATRIX, 1.0, &(asa_next_lev->A));CHKERRQ(ierr);
-      ierr = SafeMatDestroy(&AI);CHKERRQ(ierr);
+      ierr = MatDestroy(&AI);CHKERRQ(ierr);
       /*      ierr = MatPtAP(asa_lev->A, asa_lev->smP, MAT_INITIAL_MATRIX, 1, &(asa_next_lev->A));CHKERRQ(ierr); */
       ierr = MatGetSize(asa_next_lev->A, PETSC_NULL, &(asa_next_lev->size));CHKERRQ(ierr);
       ierr = PCComputeSpectralRadius_ASA(asa_next_lev);CHKERRQ(ierr);
@@ -1210,7 +1188,7 @@ PetscErrorCode PCInitializationStage_ASA(PC_ASA *asa, Vec x)
 
       if (!skip_steps_f_i) {
 	/* (f) Set x_{l+1} = B_{l+1}, we just compute it again */
-        ierr = SafeVecDestroy(&(asa_next_lev->x));CHKERRQ(ierr);
+        ierr = VecDestroy(&(asa_next_lev->x));CHKERRQ(ierr);
 	ierr = MatGetVecs(asa_lev->P, &(asa_next_lev->x), 0);CHKERRQ(ierr);
 	ierr = MatMult(asa_lev->Pt, asa_lev->x, asa_next_lev->x);CHKERRQ(ierr);
 
@@ -1219,7 +1197,7 @@ PetscErrorCode PCInitializationStage_ASA(PC_ASA *asa, Vec x)
 /* 	ierr = VecCopy(asa_next_lev->x, xhat);CHKERRQ(ierr); */
 	
 	/* Create b_{l+1} */
-        ierr = SafeVecDestroy(&(asa_next_lev->b));CHKERRQ(ierr);
+        ierr = VecDestroy(&(asa_next_lev->b));CHKERRQ(ierr);
 	ierr = MatGetVecs(asa_next_lev->A, &(asa_next_lev->b), 0);
 	ierr = VecSet(asa_next_lev->b, 0.0);
 
@@ -1236,7 +1214,7 @@ PetscErrorCode PCInitializationStage_ASA(PC_ASA *asa, Vec x)
 	ierr = MatMult(asa_next_lev->A, asa_next_lev->x, ax);CHKERRQ(ierr);
 	ierr = VecDot(asa_next_lev->x, ax, &tmp);CHKERRQ(ierr);
 	norm = PetscAbsScalar(tmp);
-	ierr = SafeVecDestroy(&(ax));CHKERRQ(ierr);
+	ierr = VecDestroy(&(ax));CHKERRQ(ierr);
 	ierr = PetscPrintf(asa_next_lev->comm, "Residual norm after Richardson iteration  on level %D: %f\n", asa_next_lev->level, norm);CHKERRQ(ierr);
 	/* (i) Check if it already converges by itself */
 	if (norm/prevnorm <= pow(asa->epsilon, asa->mu)) {
@@ -1253,7 +1231,7 @@ PetscErrorCode PCInitializationStage_ASA(PC_ASA *asa, Vec x)
 
     /* Set up direct solvers on coarsest level */
     if (asa_next_lev->smoothd != asa_next_lev->smoothu) {
-      if (asa_next_lev->smoothu) { KSPDestroy(asa_next_lev->smoothu);CHKERRQ(ierr); }
+      if (asa_next_lev->smoothu) { KSPDestroy(&asa_next_lev->smoothu);CHKERRQ(ierr); }
     }
     ierr = KSPSetType(asa_next_lev->smoothd, asa->ksptype_direct);CHKERRQ(ierr);
     ierr = PetscTypeCompare((PetscObject)(asa_next_lev->smoothd), KSPRICHARDSON, &isrichardson);CHKERRQ(ierr);
@@ -1280,12 +1258,12 @@ PetscErrorCode PCInitializationStage_ASA(PC_ASA *asa, Vec x)
 	/* interpolate to higher level */
 	ierr = MatGetVecs(asa_lev->prev->smP, 0, &cand_vec_new);CHKERRQ(ierr);
 	ierr = MatMult(asa_lev->prev->smP, cand_vec, cand_vec_new);CHKERRQ(ierr);
-	ierr = SafeVecDestroy(&(cand_vec));CHKERRQ(ierr);
+	ierr = VecDestroy(&(cand_vec));CHKERRQ(ierr);
 	cand_vec = cand_vec_new;
 	
 	/* destroy all working vectors on the way */
-	ierr = SafeVecDestroy(&(asa_lev->x));CHKERRQ(ierr);
-	ierr = SafeVecDestroy(&(asa_lev->b));CHKERRQ(ierr);
+	ierr = VecDestroy(&(asa_lev->x));CHKERRQ(ierr);
+	ierr = VecDestroy(&(asa_lev->b));CHKERRQ(ierr);
 
 	/* move to next higher level */
 	asa_lev = asa_lev->prev;
@@ -1293,7 +1271,7 @@ PetscErrorCode PCInitializationStage_ASA(PC_ASA *asa, Vec x)
     }
     /* set the first column of B1 */
     ierr = PCAddCandidateToB_ASA(asa_lev->B, 0, cand_vec, asa_lev->A);CHKERRQ(ierr);
-    ierr = SafeVecDestroy(&(cand_vec));CHKERRQ(ierr);    
+    ierr = VecDestroy(&(cand_vec));CHKERRQ(ierr);    
 
     /* Step 6. Create V-cycle */
     ierr = PCCreateVcycle_ASA(asa);CHKERRQ(ierr);
@@ -1343,10 +1321,10 @@ PetscErrorCode PCApplyVcycleOnLevel_ASA(PC_ASA_level *asa_lev, PetscInt gamma)
       /* (c) correct solution x_l = x_l + I_{l+1}^l x_{l+1} */
       ierr = MatMultAdd(asa_lev->smP, asa_next_lev->x, asa_lev->x, asa_lev->x);CHKERRQ(ierr);
     }
-/*     ierr = SafeVecDestroy(&(asa_lev->r));CHKERRQ(ierr); */
+/*     ierr = VecDestroy(&(asa_lev->r));CHKERRQ(ierr); */
 /*     /\* discard x_{l+1}, b_{l+1} *\/ */
-/*     ierr = SafeVecDestroy(&(asa_next_lev->x));CHKERRQ(ierr); */
-/*     ierr = SafeVecDestroy(&(asa_next_lev->b));CHKERRQ(ierr); */
+/*     ierr = VecDestroy(&(asa_next_lev->x));CHKERRQ(ierr); */
+/*     ierr = VecDestroy(&(asa_next_lev->b));CHKERRQ(ierr); */
     
     /* 3. Postsmoothing */
     ierr = KSPSolve(asa_lev->smoothu, asa_lev->b, asa_lev->x);CHKERRQ(ierr);
@@ -1424,7 +1402,7 @@ PetscErrorCode PCGeneralSetupStage_ASA(PC_ASA *asa, Vec cand, PetscBool  *cand_a
   
   if (!cand) {
     /* 3. Select a random x_1 */
-    ierr = SafeVecDestroy(&(asa_lev->x));CHKERRQ(ierr);
+    ierr = VecDestroy(&(asa_lev->x));CHKERRQ(ierr);
     ierr = MatGetVecs(asa_lev->A, &(asa_lev->x), 0);
     ierr = PetscRandomCreate(asa_lev->comm,&rctx);CHKERRQ(ierr);
     ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
@@ -1436,15 +1414,15 @@ PetscErrorCode PCGeneralSetupStage_ASA(PC_ASA *asa, Vec cand, PetscBool  *cand_a
     }
     ierr = VecAssemblyBegin(asa_lev->x);CHKERRQ(ierr);
     ierr = VecAssemblyEnd(asa_lev->x);CHKERRQ(ierr);
-    ierr = PetscRandomDestroy(rctx);CHKERRQ(ierr);
+    ierr = PetscRandomDestroy(&rctx);CHKERRQ(ierr);
   } else {
-    ierr = SafeVecDestroy(&(asa_lev->x));CHKERRQ(ierr);
+    ierr = VecDestroy(&(asa_lev->x));CHKERRQ(ierr);
     ierr = VecDuplicate(cand, &(asa_lev->x));CHKERRQ(ierr);
     ierr = VecCopy(cand, asa_lev->x);CHKERRQ(ierr);
   }
 
   /* create right hand side */
-  ierr = SafeVecDestroy(&(asa_lev->b));CHKERRQ(ierr);
+  ierr = VecDestroy(&(asa_lev->b));CHKERRQ(ierr);
   ierr = MatGetVecs(asa_lev->A, &(asa_lev->b), 0);
   ierr = VecSet(asa_lev->b, 0.0);
   
@@ -1465,7 +1443,7 @@ PetscErrorCode PCGeneralSetupStage_ASA(PC_ASA *asa, Vec cand, PetscBool  *cand_a
     }
     prevnorm = norm;
   }
-  ierr = SafeVecDestroy(&(ax));CHKERRQ(ierr);
+  ierr = VecDestroy(&(ax));CHKERRQ(ierr);
 
   /* 4. If energy norm decreases sufficiently fast, then stop */
   if (nd_fast) {
@@ -1491,7 +1469,7 @@ PetscErrorCode PCGeneralSetupStage_ASA(PC_ASA *asa, Vec cand, PetscBool  *cand_a
     ierr = PCCreateTransferOp_ASA(asa_lev, PETSC_FALSE);CHKERRQ(ierr);
 
     /* construct B_{l+1} */
-    ierr = SafeMatDestroy(&(asa_next_lev->B));CHKERRQ(ierr);
+    ierr = MatDestroy(&(asa_next_lev->B));CHKERRQ(ierr);
     ierr = MatMatMult(asa_lev->Pt, asa_lev->B, MAT_INITIAL_MATRIX, 1.0, &(asa_next_lev->B));CHKERRQ(ierr);
     /* do not increase asa_next_lev->cand_vecs until step (j) */
     
@@ -1499,10 +1477,10 @@ PetscErrorCode PCGeneralSetupStage_ASA(PC_ASA *asa, Vec cand, PetscBool  *cand_a
     ierr = PCSmoothProlongator_ASA(asa_lev);CHKERRQ(ierr);
 							
     /* (c) construct coarse matrix A_{l+1} = (I_{l+1}^l)^T A_l I_{l+1}^l */
-    ierr = SafeMatDestroy(&(asa_next_lev->A));CHKERRQ(ierr);
+    ierr = MatDestroy(&(asa_next_lev->A));CHKERRQ(ierr);
        ierr = MatMatMult(asa_lev->A, asa_lev->smP, MAT_INITIAL_MATRIX, 1.0, &AI);CHKERRQ(ierr);
     ierr = MatMatMult(asa_lev->smPt, AI, MAT_INITIAL_MATRIX, 1.0, &(asa_next_lev->A));CHKERRQ(ierr);
-    ierr = SafeMatDestroy(&AI);CHKERRQ(ierr);
+    ierr = MatDestroy(&AI);CHKERRQ(ierr);
 				 /* ierr = MatPtAP(asa_lev->A, asa_lev->smP, MAT_INITIAL_MATRIX, 1, &(asa_next_lev->A));CHKERRQ(ierr); */
     ierr = MatGetSize(asa_next_lev->A, PETSC_NULL, &(asa_next_lev->size));CHKERRQ(ierr);
     ierr = PCComputeSpectralRadius_ASA(asa_next_lev);CHKERRQ(ierr);
@@ -1510,7 +1488,7 @@ PetscErrorCode PCGeneralSetupStage_ASA(PC_ASA *asa, Vec cand, PetscBool  *cand_a
 
     if (! skip_steps_d_j) {
       /* (d) get vector x_{l+1} from last column in B_{l+1} */
-      ierr = SafeVecDestroy(&(asa_next_lev->x));CHKERRQ(ierr);
+      ierr = VecDestroy(&(asa_next_lev->x));CHKERRQ(ierr);
       ierr = MatGetVecs(asa_next_lev->B, 0, &(asa_next_lev->x));CHKERRQ(ierr);
 
       ierr = VecGetOwnershipRange(asa_next_lev->x, &loc_vec_low, &loc_vec_high);CHKERRQ(ierr);
@@ -1543,12 +1521,12 @@ PetscErrorCode PCGeneralSetupStage_ASA(PC_ASA *asa, Vec cand, PetscBool  *cand_a
       ierr = MatMult(asa_next_lev->A, asa_next_lev->x, ax);CHKERRQ(ierr);
       ierr = VecDot(asa_next_lev->x, ax, &tmp);CHKERRQ(ierr);
       prevnorm = PetscAbsScalar(tmp);
-      ierr = SafeVecDestroy(&(ax));CHKERRQ(ierr);
+      ierr = VecDestroy(&(ax));CHKERRQ(ierr);
 
       /* (h) apply mu iterations of current V-cycle */
       /* set asa_next_lev->b */
-      ierr = SafeVecDestroy(&(asa_next_lev->b));CHKERRQ(ierr);
-      ierr = SafeVecDestroy(&(asa_next_lev->r));CHKERRQ(ierr);
+      ierr = VecDestroy(&(asa_next_lev->b));CHKERRQ(ierr);
+      ierr = VecDestroy(&(asa_next_lev->r));CHKERRQ(ierr);
       ierr = MatGetVecs(asa_next_lev->A, &(asa_next_lev->b), &(asa_next_lev->r));
       ierr = VecSet(asa_next_lev->b, 0.0);
       /* apply V-cycle */
@@ -1562,7 +1540,7 @@ PetscErrorCode PCGeneralSetupStage_ASA(PC_ASA *asa, Vec cand, PetscBool  *cand_a
       ierr = MatMult(asa_next_lev->A, asa_next_lev->x, ax);CHKERRQ(ierr);
       ierr = VecDot(asa_next_lev->x, ax, &tmp);CHKERRQ(ierr);
       norm = PetscAbsScalar(tmp);
-      ierr = SafeVecDestroy(&(ax));CHKERRQ(ierr);
+      ierr = VecDestroy(&(ax));CHKERRQ(ierr);
 
       if (norm/prevnorm <= pow(asa->epsilon, asa->mu)) skip_steps_d_j = PETSC_TRUE;
    
@@ -1587,12 +1565,12 @@ PetscErrorCode PCGeneralSetupStage_ASA(PC_ASA *asa, Vec cand, PetscBool  *cand_a
       /* interpolate to higher level */
       ierr = MatGetVecs(asa_lev->prev->smP, 0, &cand_vec_new);CHKERRQ(ierr);
       ierr = MatMult(asa_lev->prev->smP, cand_vec, cand_vec_new);CHKERRQ(ierr);
-      ierr = SafeVecDestroy(&(cand_vec));CHKERRQ(ierr);
+      ierr = VecDestroy(&(cand_vec));CHKERRQ(ierr);
       cand_vec = cand_vec_new;
 
       /* destroy all working vectors on the way */
-      ierr = SafeVecDestroy(&(asa_lev->x));CHKERRQ(ierr);
-      ierr = SafeVecDestroy(&(asa_lev->b));CHKERRQ(ierr);
+      ierr = VecDestroy(&(asa_lev->x));CHKERRQ(ierr);
+      ierr = VecDestroy(&(asa_lev->b));CHKERRQ(ierr);
 
       /* move to next higher level */
       asa_lev = asa_lev->prev;
@@ -1600,7 +1578,7 @@ PetscErrorCode PCGeneralSetupStage_ASA(PC_ASA *asa, Vec cand, PetscBool  *cand_a
   }
   /* 8. update B_1 by setting the last column of B_1 */
   ierr = PCAddCandidateToB_ASA(asa_lev->B, asa_lev->cand_vecs-1, cand_vec, asa_lev->A);CHKERRQ(ierr);
-  ierr = SafeVecDestroy(&(cand_vec));CHKERRQ(ierr);    
+  ierr = VecDestroy(&(cand_vec));CHKERRQ(ierr);    
 
   /* 9. create V-cycle */
   ierr = PCCreateVcycle_ASA(asa);CHKERRQ(ierr);
@@ -1677,7 +1655,7 @@ PetscErrorCode PCConstructMultigrid_ASA(PC pc)
   ierr = VecSetRandom(asa_lev->x,rctx);CHKERRQ(ierr);
 
   /* compute starting residual */
-  ierr = SafeVecDestroy(&(asa_lev->r));CHKERRQ(ierr);
+  ierr = VecDestroy(&(asa_lev->r));CHKERRQ(ierr);
   ierr = MatGetVecs(asa_lev->A, PETSC_NULL, &(asa_lev->r));CHKERRQ(ierr);
   ierr = MatMult(asa_lev->A, asa_lev->x, asa_lev->r);CHKERRQ(ierr);
   /* starting residual norm */
@@ -1724,9 +1702,9 @@ PetscErrorCode PCConstructMultigrid_ASA(PC pc)
     }
   }
 
-  ierr = SafeVecDestroy(&(asa_lev->x));CHKERRQ(ierr);
-  ierr = SafeVecDestroy(&(asa_lev->b));CHKERRQ(ierr);
-  ierr = PetscRandomDestroy(rctx);CHKERRQ(ierr);
+  ierr = VecDestroy(&(asa_lev->x));CHKERRQ(ierr);
+  ierr = VecDestroy(&(asa_lev->b));CHKERRQ(ierr);
+  ierr = PetscRandomDestroy(&rctx);CHKERRQ(ierr);
   asa->multigrid_constructed = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -1765,7 +1743,7 @@ PetscErrorCode PCApply_ASA(PC pc,Vec x,Vec y)
   ierr = VecDuplicate(x, &(asa->b));CHKERRQ(ierr);
   ierr = VecCopy(x, asa->b);CHKERRQ(ierr);
   /* set starting vector */
-  ierr = SafeVecDestroy(&(asa->x));CHKERRQ(ierr);
+  ierr = VecDestroy(&(asa->x));CHKERRQ(ierr);
   ierr = MatGetVecs(asa->A, &(asa->x), PETSC_NULL);CHKERRQ(ierr);
   ierr = VecSet(asa->x, 0.0);CHKERRQ(ierr);
   
@@ -1779,8 +1757,8 @@ PetscErrorCode PCApply_ASA(PC pc,Vec x,Vec y)
   ierr = VecCopy(asa->x, y);CHKERRQ(ierr);
 
   /* delete working vectors */
-  ierr = SafeVecDestroy(&(asa->x));CHKERRQ(ierr);
-  ierr = SafeVecDestroy(&(asa->b));CHKERRQ(ierr);
+  ierr = VecDestroy(&(asa->x));CHKERRQ(ierr);
+  ierr = VecDestroy(&(asa->b));CHKERRQ(ierr);
   asa_lev->x = PETSC_NULL;
   asa_lev->b = PETSC_NULL;
 
@@ -1832,7 +1810,7 @@ PetscErrorCode PCApplyRichardson_ASA(PC pc,Vec b,Vec x,Vec w,PetscReal rtol,Pets
   ierr = VecCopy(x, asa->x);CHKERRQ(ierr);
   
   /* compute starting residual */
-  ierr = SafeVecDestroy(&(asa->r));CHKERRQ(ierr);
+  ierr = VecDestroy(&(asa->r));CHKERRQ(ierr);
   ierr = MatGetVecs(asa->A, &(asa->r), PETSC_NULL);CHKERRQ(ierr);
   ierr = MatMult(asa->A, asa->x, asa->r);CHKERRQ(ierr);
   ierr = VecAYPX(asa->r, -1.0, asa->b);CHKERRQ(ierr);
@@ -1874,9 +1852,9 @@ PetscErrorCode PCApplyRichardson_ASA(PC pc,Vec b,Vec x,Vec w,PetscReal rtol,Pets
   }
 
   /* delete working vectors */
-  ierr = SafeVecDestroy(&(asa->x));CHKERRQ(ierr);
-  ierr = SafeVecDestroy(&(asa->b));CHKERRQ(ierr);
-  ierr = SafeVecDestroy(&(asa->r));CHKERRQ(ierr);
+  ierr = VecDestroy(&(asa->x));CHKERRQ(ierr);
+  ierr = VecDestroy(&(asa->b));CHKERRQ(ierr);
+  ierr = VecDestroy(&(asa->r));CHKERRQ(ierr);
   asa_lev->x = PETSC_NULL;
   asa_lev->b = PETSC_NULL;
   PetscFunctionReturn(0);
@@ -1914,13 +1892,13 @@ static PetscErrorCode PCDestroy_ASA(PC pc)
   ierr = PetscFree(asa->coarse_mat_type);CHKERRQ(ierr);
 
   /* this is destroyed by the levels below  */
-/*   ierr = SafeMatDestroy(&(asa->A));CHKERRQ(ierr); */
-  ierr = SafeVecDestroy(&(asa->invsqrtdiag));CHKERRQ(ierr);
-  ierr = SafeVecDestroy(&(asa->b));CHKERRQ(ierr);
-  ierr = SafeVecDestroy(&(asa->x));CHKERRQ(ierr);
-  ierr = SafeVecDestroy(&(asa->r));CHKERRQ(ierr);
+/*   ierr = MatDestroy(&(asa->A));CHKERRQ(ierr); */
+  ierr = VecDestroy(&(asa->invsqrtdiag));CHKERRQ(ierr);
+  ierr = VecDestroy(&(asa->b));CHKERRQ(ierr);
+  ierr = VecDestroy(&(asa->x));CHKERRQ(ierr);
+  ierr = VecDestroy(&(asa->r));CHKERRQ(ierr);
 
-  if (asa->dm) {ierr = DMDestroy(asa->dm);CHKERRQ(ierr);}
+  if (asa->dm) {ierr = DMDestroy(&asa->dm);CHKERRQ(ierr);}
 
   /* Destroy each of the levels */
   while(asa_lev) {

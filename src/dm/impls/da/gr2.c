@@ -124,7 +124,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
     ierr = DMCreateLocalVector(dac,&xlocal);CHKERRQ(ierr);
     if (dac != da) {
       /* don't keep any public reference of this DMDA, is is only available through xlocal */
-      ierr = DMDestroy(dac);CHKERRQ(ierr);
+      ierr = DMDestroy(&dac);CHKERRQ(ierr);
     } else {
       /* remove association between xlocal and da, because below we compose in the opposite
          direction and if we left this connect we'd get a loop, so the objects could 
@@ -176,7 +176,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
     ierr = PetscInfo(dag,"Creating auxilary DMDA for managing graphics coordinates ghost points\n");CHKERRQ(ierr);
     ierr = DMCreateLocalVector(dag,&xcoorl);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject)da,"GraphicsCoordinateGhosted",(PetscObject)xcoorl);CHKERRQ(ierr);
-    ierr = DMDestroy(dag);CHKERRQ(ierr);/* dereference dag */
+    ierr = DMDestroy(&dag);CHKERRQ(ierr);/* dereference dag */
     ierr = PetscObjectDereference((PetscObject)xcoorl);CHKERRQ(ierr);
   } else {
     ierr = PetscObjectQuery((PetscObject)xcoorl,"DMDA",(PetscObject*)&dag);CHKERRQ(ierr);
@@ -239,9 +239,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
 
     ierr = PetscDrawZoom(draw,VecView_MPI_Draw_DA2d_Zoom,&zctx);CHKERRQ(ierr);
   }
-  if (useports){
-    ierr = PetscDrawViewPortsDestroy(ports);CHKERRQ(ierr);
-  }
+  ierr = PetscDrawViewPortsDestroy(&ports);CHKERRQ(ierr);
 
   ierr = VecRestoreArray(xcoorl,&zctx.xy);CHKERRQ(ierr);
   ierr = VecRestoreArray(xlocal,&zctx.v);CHKERRQ(ierr);
@@ -461,7 +459,7 @@ PetscErrorCode  VecView_MPI_DA(Vec xin,PetscViewer viewer)
     ierr = DMDAGlobalToNaturalEnd(da,xin,INSERT_VALUES,natural);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject)natural,((PetscObject)xin)->name);CHKERRQ(ierr);
     ierr = VecView(natural,viewer);CHKERRQ(ierr);
-    ierr = VecDestroy(natural);CHKERRQ(ierr);
+    ierr = VecDestroy(&natural);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -590,7 +588,7 @@ PetscErrorCode VecLoad_Binary_DA(Vec xin, PetscViewer viewer)
   ierr = VecLoad_Binary(natural,viewer);CHKERRQ(ierr);
   ierr = DMDANaturalToGlobalBegin(da,natural,INSERT_VALUES,xin);CHKERRQ(ierr);
   ierr = DMDANaturalToGlobalEnd(da,natural,INSERT_VALUES,xin);CHKERRQ(ierr);
-  ierr = VecDestroy(natural);CHKERRQ(ierr);
+  ierr = VecDestroy(&natural);CHKERRQ(ierr);
   ierr = PetscInfo(xin,"Loading vector from natural ordering into DMDA\n");CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(((PetscObject)xin)->prefix,"-vecload_block_size",&bs,&flag);CHKERRQ(ierr);
   if (flag && bs != dd->w) {

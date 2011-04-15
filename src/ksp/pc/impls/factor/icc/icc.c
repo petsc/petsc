@@ -26,8 +26,8 @@ static PetscErrorCode PCSetup_ICC(PC pc)
   ierr = MatGetInfo(((PC_Factor*)icc)->fact,MAT_LOCAL,&info);CHKERRQ(ierr);
   icc->actualfill = info.fill_ratio_needed;
 
-  ierr = ISDestroy(cperm);CHKERRQ(ierr);
-  ierr = ISDestroy(perm);CHKERRQ(ierr);
+  ierr = ISDestroy(&cperm);CHKERRQ(ierr);
+  ierr = ISDestroy(&perm);CHKERRQ(ierr);
   ierr = MatCholeskyFactorNumeric(((PC_Factor*)icc)->fact,pc->pmat,&((PC_Factor*)icc)->info);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

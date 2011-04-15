@@ -49,7 +49,7 @@ void PETSC_STDCALL dmmeshrestorecoordinatesf90_(DM *x,F90Array2d *ptr,int *__ier
 {
   PetscReal *c;
   *__ierr = F90Array2dAccess(ptr,PETSC_REAL,(void**)&c PETSC_F90_2PTR_PARAM(ptrd));if (*__ierr) return;
-  *__ierr = F90Array2dDestroy(ptr,PETSC_REAL PETSC_F90_2PTR_PARAM(ptrd));if (*__ierr) return;
+  *__ierr = F90Array2dDestroy(&ptr,PETSC_REAL PETSC_F90_2PTR_PARAM(ptrd));if (*__ierr) return;
   *__ierr = PetscFree(c);
 }
 void PETSC_STDCALL dmmeshgetelementsf90_(DM *dm,F90Array2d *ptr,int *__ierr PETSC_F90_2PTR_PROTO(ptrd))
@@ -63,7 +63,7 @@ void PETSC_STDCALL dmmeshrestoreelementsf90_(DM *x,F90Array2d *ptr,int *__ierr P
 {
   PetscInt   *v;
   *__ierr = F90Array2dAccess(ptr,PETSC_INT,(void**)&v PETSC_F90_2PTR_PARAM(ptrd));if (*__ierr) return;
-  *__ierr = F90Array2dDestroy(ptr,PETSC_INT PETSC_F90_2PTR_PARAM(ptrd));if (*__ierr) return;
+  *__ierr = F90Array2dDestroy(&ptr,PETSC_INT PETSC_F90_2PTR_PARAM(ptrd));if (*__ierr) return;
   *__ierr = PetscFree(v);
 }
 void PETSC_STDCALL dmmeshgetconef90_(DM *dm,PetscInt *p,F90Array1d *ptr,int *__ierr PETSC_F90_2PTR_PROTO(ptrd))
@@ -74,7 +74,7 @@ void PETSC_STDCALL dmmeshgetconef90_(DM *dm,PetscInt *p,F90Array1d *ptr,int *__i
 }
 void PETSC_STDCALL dmmeshrestoreconef90_(DM *dm,F90Array1d *ptr,int *__ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
-  *__ierr = F90Array2dDestroy(ptr,PETSC_INT PETSC_F90_2PTR_PARAM(ptrd));if (*__ierr) return;
+  *__ierr = F90Array2dDestroy(&ptr,PETSC_INT PETSC_F90_2PTR_PARAM(ptrd));if (*__ierr) return;
 }
 
 #if 0
@@ -82,7 +82,7 @@ void PETSC_STDCALL dmmeshrestoreclosuref90_(DM dm,F90Array1d *ptr,int *__ierr PE
 {
   PetscReal *c;
   *__ierr = F90Array1dAccess(ptr,PETSC_REAL,(void**)&c PETSC_F90_2PTR_PARAM(ptrd));if (*__ierr) return;
-  *__ierr = F90Array1dDestroy(ptr,PETSC_REAL PETSC_F90_2PTR_PARAM(ptrd));if (*__ierr) return;
+  *__ierr = F90Array1dDestroy(&ptr,PETSC_REAL PETSC_F90_2PTR_PARAM(ptrd));if (*__ierr) return;
   *__ierr = PetscFree(c);
 }
 #endif

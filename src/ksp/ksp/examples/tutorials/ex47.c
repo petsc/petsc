@@ -41,7 +41,7 @@ int main(int argc,char **argv)
   ierr = DMMGCreate(PETSC_COMM_WORLD,3,PETSC_NULL,&dmmg);CHKERRQ(ierr);
   ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-3,-3,-3,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,0,&da);CHKERRQ(ierr);  
   ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr);
-  ierr = DMDestroy(da);CHKERRQ(ierr);
+  ierr = DMDestroy(&da);CHKERRQ(ierr);
 
   ierr = DMMGSetKSP(dmmg,(PetscErrorCode (*)(DMMG, Vec)) ComputeRHS,ComputeMatrix);CHKERRQ(ierr);
   //ierr = DMMGSetNullSpace(dmmg, PETSC_TRUE, 0, PETSC_NULL);CHKERRQ(ierr);
@@ -66,7 +66,7 @@ int main(int argc,char **argv)
     PetscPrintf(PETSC_COMM_WORLD, "FD RHS Homogeneity verification\n");
     PetscPrintf(PETSC_COMM_WORLD, "    std deviation   %g\n", s);
   }
-  ierr = VecDestroy(stddev);CHKERRQ(ierr);
+  ierr = VecDestroy(&stddev);CHKERRQ(ierr);
   ierr = CalculateXYStdDev(da, DMMGGetx(dmmg), &stddev);CHKERRQ(ierr);
   ierr = VecMax(stddev, &p, &s);CHKERRQ(ierr);
   if (s > 1.0e-5) {
@@ -75,7 +75,7 @@ int main(int argc,char **argv)
     PetscPrintf(PETSC_COMM_WORLD, "FD Solution Homogeneity verification\n");
     PetscPrintf(PETSC_COMM_WORLD, "    std deviation   %g\n", s);
   }
-  ierr = VecDestroy(stddev);CHKERRQ(ierr);
+  ierr = VecDestroy(&stddev);CHKERRQ(ierr);
   ierr = CalculateXYStdDev(da, phi, &stddev);CHKERRQ(ierr);
   ierr = VecMax(stddev, &p, &s);CHKERRQ(ierr);
   if (s > 1.0e-10) {
@@ -84,7 +84,7 @@ int main(int argc,char **argv)
     PetscPrintf(PETSC_COMM_WORLD, "FFT Solution Homogeneity verification\n");
     PetscPrintf(PETSC_COMM_WORLD, "    std deviation   %g\n", s);
   }
-  ierr = VecDestroy(stddev);CHKERRQ(ierr);
+  ierr = VecDestroy(&stddev);CHKERRQ(ierr);
 
   PetscInt N;
   Vec      tmp;
@@ -115,9 +115,9 @@ int main(int argc,char **argv)
   ierr = VecView(tmp, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
   ierr = VecViewCenterSingle(da, phi, PETSC_VIEWER_DRAW_WORLD, "Error", -1, -1);CHKERRQ(ierr);
   ierr = VecViewCenterSingle(da, phi, PETSC_VIEWER_STDOUT_WORLD, "Error", -1, -1);CHKERRQ(ierr);
-  ierr = VecDestroy(tmp);CHKERRQ(ierr);
+  ierr = VecDestroy(&tmp);CHKERRQ(ierr);
 
-  ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
+  ierr = DMMGDestroy(&dmmg);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }
@@ -269,7 +269,7 @@ PetscErrorCode Solve_FFT(DM da, Vec rhs, Vec phi)
   ierr = VecScale(phi, scale);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(da, &phiHat);CHKERRQ(ierr);
   ierr = DMRestoreGlobalVector(da, &rhsHat);CHKERRQ(ierr);
-  ierr = MatDestroy(F);CHKERRQ(ierr);
+  ierr = MatDestroy(&F);CHKERRQ(ierr);
 
   // Force potential in the bath to be 0
   PetscInt       bathIndex[3] = {0, 0, P/2};
@@ -355,6 +355,6 @@ PetscErrorCode VecViewCenterSingle(DM da, Vec v, PetscViewer viewer, const char 
   ierr = DMDAVecRestoreArray(da, v, &a);CHKERRQ(ierr);
   ierr = VecRestoreArray(c, &b);CHKERRQ(ierr);
   ierr = VecView(c, viewer);
-  ierr = VecDestroy(c);
+  ierr = VecDestroy(&c);
   PetscFunctionReturn(0);
 }

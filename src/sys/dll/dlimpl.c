@@ -267,7 +267,7 @@ PetscErrorCode  PetscDLSym(PetscDLHandle handle,const char symbol[],void **value
   else {
     dlhandle = (dlhandle_t) 0;
     
-#if defined(PETSC_HAVE_DLOPEN)
+#if defined(PETSC_HAVE_DLOPEN) && defined(PETSC_USE_DYNAMIC_LIBRARIES)
     /* Attempt to retrieve the main executable's dlhandle. */
     { int dlflags1 = 0, dlflags2 = 0;
 #if defined(PETSC_HAVE_RTLD_LAZY)
@@ -305,7 +305,7 @@ PetscErrorCode  PetscDLSym(PetscDLHandle handle,const char symbol[],void **value
       }
     }
 #endif
-#endif /* PETSC_HAVE_DLOPEN */
+#endif /* PETSC_HAVE_DLOPEN && PETSC_USE_DYNAMIC_LIBRARIES */
   }
 #if defined(PETSC_HAVE_DLERROR)
   dlerror(); /* clear any previous error */

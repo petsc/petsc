@@ -63,7 +63,7 @@ namespace ALE {
         x = strtok(NULL, " ");
       }
       *vertices = verts;
-      ierr = PetscViewerDestroy(viewer);
+      ierr = PetscViewerDestroy(&viewer);
     };
     Obj<Builder::Mesh> Builder::readMesh(MPI_Comm comm, const int dim, const std::string& filename, const bool interpolate = false, const int debug = 0) {
       typedef ALE::Mesh<PetscInt,PetscScalar> FlexMesh;

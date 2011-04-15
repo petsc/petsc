@@ -215,7 +215,7 @@ LOBPCG_DestroyRandomContext(void)
 {
     PetscErrorCode ierr;
 
-    ierr = PetscRandomDestroy(LOBPCG_RandomContext);
+    ierr = PetscRandomDestroy(&LOBPCG_RandomContext);
     CHKERRQ(ierr);
     return 0;
 }

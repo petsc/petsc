@@ -479,9 +479,9 @@ PetscErrorCode KSPSetUp_BCGSL(KSP ksp)
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPDestroy_BCGSL" 
-PetscErrorCode KSPDestroy_BCGSL(KSP ksp)
+PetscErrorCode KSPDestroy_BCGSL(KSP *ksp)
 {
-  KSP_BCGSL      *bcgsl = (KSP_BCGSL*)ksp->data;
+  KSP_BCGSL      *bcgsl = (KSP_BCGSL*)(*ksp)->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

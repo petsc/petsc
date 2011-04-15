@@ -101,7 +101,7 @@ PetscErrorCode OutputVTK(Mesh mesh, Options *options)
       ierr = SectionIntView(options->odd, viewer);CHKERRQ(ierr);
       ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
     }
-    ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     ALE::LogStagePop(stage);
   }
   PetscFunctionReturn(0);
@@ -139,7 +139,7 @@ PetscErrorCode OutputMesh(Mesh mesh, Options *options)
       }
     }
     ierr = MeshView(mesh, viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     ALE::LogStagePop(stage);
   }
   PetscFunctionReturn(0);
@@ -189,7 +189,7 @@ PetscErrorCode DistributeMesh(Mesh mesh, Options *options)
     Obj<PETSC_MESH_TYPE> m;
     ierr = MeshGetMesh(parallelMesh, m);CHKERRQ(ierr);
     ierr = MeshSetMesh(mesh, m);CHKERRQ(ierr);
-    ierr = MeshDestroy(parallelMesh);CHKERRQ(ierr);
+    ierr = MeshDestroy(&parallelMesh);CHKERRQ(ierr);
   }
   if (options->doPartition) {
     ierr = CreatePartition(mesh, &options->partition);CHKERRQ(ierr);
@@ -347,7 +347,7 @@ int main(int argc, char *argv[])
     ierr = OutputVTK(mesh, &options);CHKERRQ(ierr);
     //ierr = OutputMesh(mesh, &options);CHKERRQ(ierr);
     if (options.doPartition) {
-      ierr = SectionIntDestroy(options.partition);CHKERRQ(ierr);
+      ierr = SectionIntDestroy(&options.partition);CHKERRQ(ierr);
     }
     ierr = MeshDestroy(mesh);CHKERRQ(ierr);
   } catch (ALE::Exception e) {

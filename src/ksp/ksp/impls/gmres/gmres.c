@@ -274,9 +274,7 @@ PetscErrorCode KSPReset_GMRES(KSP ksp)
   ierr = PetscFree(gmres->user_work);CHKERRQ(ierr);
   ierr = PetscFree(gmres->mwork_alloc);CHKERRQ(ierr);
   ierr = PetscFree(gmres->nrs);CHKERRQ(ierr);
-  if (gmres->sol_temp) {
-    ierr = VecDestroy(gmres->sol_temp);CHKERRQ(ierr);
-  }
+  ierr = VecDestroy(&gmres->sol_temp);CHKERRQ(ierr);
   ierr = PetscFree(gmres->Rsvd);CHKERRQ(ierr);
   ierr = PetscFree(gmres->Dsvd);CHKERRQ(ierr);
   ierr = PetscFree(gmres->orthogwork);CHKERRQ(ierr);

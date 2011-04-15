@@ -19,6 +19,13 @@ ex2: ex2.o  chkopts
 	-${CLINKER} -o ex2 ex2.o ${PETSC_DM_LIB}
 	${RM} -f ex2.o
 
+ex4: ex4.o  chkopts
+	-${CLINKER} -o ex4 ex4.o ${PETSC_DM_LIB}
+	${RM} -f ex4.o
+ex4f: ex4f.o  chkopts
+	-${FLINKER} -o ex4f ex4f.o ${PETSC_DM_LIB}
+	${RM} -f ex4f.o
+
 ex7: ex7.o  chkopts
 	-${CLINKER} -o ex7 ex7.o  ${PETSC_DM_LIB}
 	${RM} -f ex7.o
@@ -60,13 +67,35 @@ runex2_3:
 	   else echo "Possible problem with ex2_3, diffs above"; fi;\
 	   ${RM} -f ex2_3.tmp
 
+runex4:
+	-@${MPIEXEC}  -n 1 ./ex4 > ex4.tmp 2>&1;\
+	   if (${DIFF} output/ex4.out ex4.tmp) then true; \
+	   else echo "Possible problem with ex4_1, diffs above"; fi;\
+	   ${RM} -f ex4.tmp
+runex4_2:
+	-@${MPIEXEC}  -n 2 ./ex4 > ex4.tmp 2>&1;\
+	   if (${DIFF} output/ex4.out ex4.tmp) then true; \
+	   else echo "Possible problem with ex4_2, diffs above"; fi;\
+	   ${RM} -f ex4.tmp
+
+runex4f:
+	-@${MPIEXEC}  -n 1 ./ex4f > ex4.tmp 2>&1;\
+	   if (${DIFF} output/ex4.out ex4.tmp) then true; \
+	   else echo "Possible problem with ex4f_1, diffs above"; fi;\
+	   ${RM} -f ex4.tmp
+runex4f_2:
+	-@${MPIEXEC}  -n 2 ./ex4f > ex4.tmp 2>&1;\
+	   if (${DIFF} output/ex4.out ex4.tmp) then true; \
+	   else echo "Possible problem with ex4f_2, diffs above"; fi;\
+	   ${RM} -f ex4.tmp
+
 runex7:
 	-@${MPIEXEC}  -n 2 ./ex7 > ex7_1.tmp 2>&1;\
 	   if (${DIFF} output/ex7_1.out ex7_1.tmp) then true ;  \
 	   else echo "Possible problem with ex7_1, diffs above"; fi ;\
 	   ${RM} -f ex7_1.tmp
 TESTEXAMPLES_C		  = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 ex2.rm \
-                            ex7.PETSc runex7 ex7.rm
+                            ex4.PETSc runex4 runex4_2 ex4.rm ex4f.PETSc runex4f runex4f_2 ex4f.rm ex7.PETSc runex7 ex7.rm
 TESTEXAMPLES_C_X11	  = 
 TESTEXAMPLES_FORTRAN	  = 
 TESTEXAMPLES_C_X11_MPIUNI = 
