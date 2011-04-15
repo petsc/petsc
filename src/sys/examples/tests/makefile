@@ -4,7 +4,7 @@ FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/sys/examples/tests/
-EXAMPLESC       = ex1.c ex2.c ex3.c ex9.c ex10.c ex11.c ex12.c \
+EXAMPLESC       = ex1.c ex2.c ex3.c ex7.c ex9.c ex10.c ex11.c ex12.c \
 		  ex14.c ex15.c ex16.c ex18.c ex19.c ex20.c ex21.c
 EXAMPLESF       = ex1f.F ex5f.F ex6f.F  ex17f.F
 MANSEC          = Sys
@@ -39,6 +39,10 @@ ex5f: ex5f.o chkopts
 ex6f: ex6f.o chkopts
 	-${FLINKER} -o ex6f ex6f.o  ${PETSC_SYS_LIB}
 	${RM} -f ex6f.o
+
+ex7: ex7.o chkopts
+	-${CLINKER} -o ex7 ex7.o  ${PETSC_SYS_LIB}
+	${RM} -f ex7.o
 
 ex9: ex9.o chkopts
 	-${CLINKER} -o ex9 ex9.o  ${PETSC_SYS_LIB}
@@ -97,6 +101,12 @@ runex3:
 	-@${MPIEXEC} -n 1 ./ex3 -fp_trap
 	-@echo "This is a contrived error to test error handling of floating point exceptions."
 
+runex7:
+	-@${MPIEXEC} -n 1 ./ex7 > ex7.tmp 2>&1;\
+	   if (${DIFF} output/ex7.out ex7.tmp) then true; \
+	   else echo "Possible problem with ex7_1, diffs above"; fi; \
+	   ${RM} -f ex7.tmp ex7.tmp
+
 runex10:
 	-@${MPIEXEC} -n 1 ./ex10 > ex10_1.tmp 2>&1;\
 	   if (${DIFF} output/ex10_1.out ex10_1.tmp) then true; \
@@ -122,7 +132,8 @@ runex20_3:
 	   ${RM} -f ex20_3.tmp
 
 
-TESTEXAMPLES_C		       = ex19.PETSc runex19 ex19.rm ex20.PETSc runex20 runex20_2 runex20_3 ex20.rm  ex21.PETSc ex21.rm
+TESTEXAMPLES_C		       = ex7.PETSc runex7 ex7.rm ex19.PETSc runex19 ex19.rm \
+                                 ex20.PETSc runex20 runex20_2 runex20_3 ex20.rm  ex21.PETSc ex21.rm
 TESTEXAMPLES_C_X11	       = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 ex3.rm 
 TESTEXAMPLES_FORTRAN	       = ex5f.PETSc ex5f.rm ex6f.PETSc ex6f.rm ex17f.PETSc ex17f.rm
 TESTEXAMPLES_FORTRAN_NOCOMPLEX = ex1f.PETSc runex1f ex1f.rm
