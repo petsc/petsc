@@ -711,7 +711,7 @@ PetscErrorCode  TSGLSetType_GL(TS ts,const TSGLType type)
     ierr = (*gl->Destroy)(gl);CHKERRQ(ierr);
   }
 
-  ierr = PetscFListFind(TSGLList,((PetscObject)ts)->comm,type,(PetscVoidStarFunction)&r);CHKERRQ(ierr);
+  ierr = PetscFListFind(TSGLList,((PetscObject)ts)->comm,type,PETSC_TRUE,(PetscVoidStarFunction)&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown TSGL type \"%s\" given",type);
   ierr = (*r)(ts);CHKERRQ(ierr);
   ierr = PetscStrcpy(gl->type_name,type);CHKERRQ(ierr);
@@ -727,7 +727,7 @@ PetscErrorCode  TSGLSetAcceptType_GL(TS ts,const TSGLAcceptType type)
   TS_GL *gl = (TS_GL*)ts->data;
 
   PetscFunctionBegin;
-  ierr = PetscFListFind(TSGLAcceptList,((PetscObject)ts)->comm,type,(PetscVoidStarFunction)&r);CHKERRQ(ierr);
+  ierr = PetscFListFind(TSGLAcceptList,((PetscObject)ts)->comm,type,PETSC_TRUE,(PetscVoidStarFunction)&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown TSGLAccept type \"%s\" given",type);
   gl->Accept = r;
   ierr = PetscStrncpy(gl->accept_name,type,sizeof(gl->accept_name));CHKERRQ(ierr);
@@ -805,7 +805,7 @@ static PetscErrorCode TSGLGetMaxSizes(TS ts,PetscInt *max_r,PetscInt *max_s)
 static PetscErrorCode TSStep_GL(TS ts,PetscInt *steps,PetscReal *ptime)
 {
   TS_GL          *gl = (TS_GL*)ts->data;
-  PetscInt       i,k,max_steps = ts->max_steps,its,lits,max_r,max_s;
+  PetscInt       i,k,its,lits,max_r,max_s;
   PetscBool      final_step,finish;
   PetscErrorCode ierr;
 
@@ -837,7 +837,7 @@ static PetscErrorCode TSStep_GL(TS ts,PetscInt *steps,PetscReal *ptime)
 
   if (gl->current_scheme < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"A starting scheme has not been provided");
 
-  for (k=0,final_step=PETSC_FALSE,finish=PETSC_FALSE; k<max_steps && !finish; k++) {
+  for (k=0,final_step=PETSC_FALSE,finish=PETSC_FALSE; k<ts->max_steps && !finish; k++) {
     PetscInt j,r,s,next_scheme = 0,rejections;
     PetscReal h,hmnorm[4],enorm[3],next_h;
     PetscBool  accept;
@@ -971,9 +971,10 @@ static PetscErrorCode TSStep_GL(TS ts,PetscInt *steps,PetscReal *ptime)
 }
 
 /*------------------------------------------------------------*/
-#undef __FUNCT__  
-#define __FUNCT__ "TSDestroy_GL"
-static PetscErrorCode TSDestroy_GL(TS ts)
+
+#undef __FUNCT__
+#define __FUNCT__ "TSReset_GL"
+static PetscErrorCode TSReset_GL(TS ts)
 {
   TS_GL          *gl = (TS_GL*)ts->data;
   PetscInt        max_r,max_s;
@@ -990,6 +991,19 @@ static PetscErrorCode TSDestroy_GL(TS ts)
     ierr = VecDestroy(gl->Y);CHKERRQ(ierr);
     ierr = VecDestroy(gl->Z);CHKERRQ(ierr);
   }
+  gl->setupcalled = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSDestroy_GL"
+static PetscErrorCode TSDestroy_GL(TS ts)
+{
+  TS_GL          *gl = (TS_GL*)ts->data;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = TSReset_GL(ts);CHKERRQ(ierr);
   if (gl->adapt) {ierr = TSGLAdaptDestroy(gl->adapt);CHKERRQ(ierr);}
   if (gl->Destroy) {ierr = (*gl->Destroy)(gl);CHKERRQ(ierr);}
   ierr = PetscFree(gl);CHKERRQ(ierr);
@@ -1409,6 +1423,7 @@ PetscErrorCode  TSCreate_GL(TS ts)
   ierr = PetscNewLog(ts,TS_GL,&gl);CHKERRQ(ierr);
   ts->data = (void*)gl;
 
+  ts->ops->reset          = TSReset_GL;
   ts->ops->destroy        = TSDestroy_GL;
   ts->ops->view           = TSView_GL;
   ts->ops->setup          = TSSetUp_GL;

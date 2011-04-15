@@ -16,8 +16,7 @@ PetscBool  AORegisterAllCalled          = PETSC_FALSE;
 - method - The name of the AO type
 
   Options Database Key:
-. -ao_type <type> - Sets the AO type; use -help for a list 
-                     of available types
+. -ao_type <type> - Sets the AO type; use -help for a list of available types
 
   Notes:
   See "petsc/include/petscao.h" for available AO types (for instance, AOBASIC and AOMEMORYSCALABLE).
@@ -39,7 +38,7 @@ PetscErrorCode  AOSetType(AO ao, const AOType method)
   if (match) PetscFunctionReturn(0);
 
   if (!AORegisterAllCalled) {ierr = AORegisterAll(PETSC_NULL);CHKERRQ(ierr);}
-  ierr = PetscFListFind(AOList, ((PetscObject)ao)->comm, method,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr = PetscFListFind(AOList, ((PetscObject)ao)->comm, method,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown AO type: %s", method);
   if (ao->ops->destroy) {
     ierr = (*ao->ops->destroy)(ao);CHKERRQ(ierr);

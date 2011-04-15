@@ -83,7 +83,7 @@ PetscErrorCode  PetscViewerSetType(PetscViewer viewer,const PetscViewerType type
   }
   ierr = PetscMemzero(viewer->ops,sizeof(struct _PetscViewerOps));CHKERRQ(ierr);
 
-  ierr =  PetscFListFind(PetscViewerList,((PetscObject)viewer)->comm,type,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr =  PetscFListFind(PetscViewerList,((PetscObject)viewer)->comm,type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown PetscViewer type given: %s",type);
 
   ierr = PetscObjectChangeTypeName((PetscObject)viewer,type);CHKERRQ(ierr);

@@ -370,12 +370,12 @@ PetscErrorCode PetscFwkCall_NONE(PetscFwk fwk, const char* message) {
   PetscFwkMessageFunction msg = PETSC_NULL;
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = PetscFListFind(((PetscObject)fwk)->qlist, ((PetscObject)fwk)->comm, message, (QueryFunction*)(&msg)); CHKERRQ(ierr);
+  ierr = PetscFListFind(((PetscObject)fwk)->qlist, ((PetscObject)fwk)->comm, message,PETSC_FALSE, (QueryFunction*)(&msg)); CHKERRQ(ierr);
   if(msg) {
     ierr = (*msg)(fwk); CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
-  ierr = PetscFListFind(((PetscObject)fwk)->qlist, ((PetscObject)fwk)->comm, "call", (QueryFunction*)(&call)); CHKERRQ(ierr);
+  ierr = PetscFListFind(((PetscObject)fwk)->qlist, ((PetscObject)fwk)->comm, "call",PETSC_FALSE, (QueryFunction*)(&call)); CHKERRQ(ierr);
   if(call) {
     ierr = (*call)(fwk, message); CHKERRQ(ierr);
     PetscFunctionReturn(0);

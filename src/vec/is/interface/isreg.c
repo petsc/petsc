@@ -80,7 +80,7 @@ PetscErrorCode  ISSetType(IS is, const ISType method)
   if (match) PetscFunctionReturn(0);
 
   if (!ISRegisterAllCalled) {ierr = ISRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
-  ierr = PetscFListFind(ISList, ((PetscObject)is)->comm, method,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr = PetscFListFind(ISList, ((PetscObject)is)->comm, method,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown IS type: %s", method);
   if (is->ops->destroy) {
     ierr = (*is->ops->destroy)(is);CHKERRQ(ierr);

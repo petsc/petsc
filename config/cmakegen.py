@@ -31,7 +31,7 @@ def cmakeconditional(key,val):
     if val == 'CONLY':
       return 'PETSC_CLANGUAGE_C'
     raise RuntimeError('Unexpected language: %r'%val)
-  raise RuntimeException('Unhandled case: %r=%r'%(key,val))
+  raise RuntimeError('Unhandled case: %r=%r'%(key,val))
 
 def pkgsources(pkg):
   '''

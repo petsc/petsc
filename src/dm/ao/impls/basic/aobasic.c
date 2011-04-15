@@ -290,10 +290,12 @@ PetscErrorCode  AOCreate_Basic(AO ao)
   }
 
   ierr = ISRestoreIndices(isapp,&myapp);CHKERRQ(ierr);
-  if (ispetsc){
-    ierr = ISRestoreIndices(ispetsc,&mypetsc);CHKERRQ(ierr);
-  } else if (napp && !ispetsc) {
-    ierr = PetscFree(petsc);CHKERRQ(ierr);
+  if (napp){
+    if (ispetsc){
+      ierr = ISRestoreIndices(ispetsc,&mypetsc);CHKERRQ(ierr);
+    } else {
+      ierr = PetscFree(petsc);CHKERRQ(ierr);
+    }
   }
   PetscFunctionReturn(0);
 }

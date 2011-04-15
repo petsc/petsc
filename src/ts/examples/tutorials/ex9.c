@@ -221,7 +221,7 @@ PetscErrorCode RiemannListFind(PetscFList flist,const char *name,RiemannFunction
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFListFind(flist,PETSC_COMM_WORLD,name,(void(**)(void))rsolve);CHKERRQ(ierr);
+  ierr = PetscFListFind(flist,PETSC_COMM_WORLD,name,PETSC_FALSE,(void(**)(void))rsolve);CHKERRQ(ierr);
   if (!*rsolve) SETERRQ1(PETSC_COMM_SELF,1,"Riemann solver \"%s\" could not be found",name);
   PetscFunctionReturn(0);
 }
@@ -244,7 +244,7 @@ PetscErrorCode ReconstructListFind(PetscFList flist,const char *name,Reconstruct
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFListFind(flist,PETSC_COMM_WORLD,name,(void(**)(void))r);CHKERRQ(ierr);
+  ierr = PetscFListFind(flist,PETSC_COMM_WORLD,name,PETSC_FALSE,(void(**)(void))r);CHKERRQ(ierr);
   if (!*r) SETERRQ1(PETSC_COMM_SELF,1,"Reconstruction \"%s\" could not be found",name);
   PetscFunctionReturn(0);
 }
@@ -1308,13 +1308,13 @@ int main(int argc,char *argv[])
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   /* Choose the limiter from the list of registered limiters */
-  ierr = PetscFListFind(limiters,comm,lname,(void(**)(void))&ctx.limit);CHKERRQ(ierr);
+  ierr = PetscFListFind(limiters,comm,lname,PETSC_FALSE,(void(**)(void))&ctx.limit);CHKERRQ(ierr);
   if (!ctx.limit) SETERRQ1(PETSC_COMM_SELF,1,"Limiter '%s' not found",lname);CHKERRQ(ierr);
 
   /* Choose the physics from the list of registered models */
   {
     PetscErrorCode (*r)(FVCtx*);
-    ierr = PetscFListFind(physics,comm,physname,(void(**)(void))&r);CHKERRQ(ierr);
+    ierr = PetscFListFind(physics,comm,physname,PETSC_FALSE,(void(**)(void))&r);CHKERRQ(ierr);
     if (!r) SETERRQ1(PETSC_COMM_SELF,1,"Physics '%s' not found",physname);CHKERRQ(ierr);
     /* Create the physics, will set the number of fields and their names */
     ierr = (*r)(&ctx);CHKERRQ(ierr);

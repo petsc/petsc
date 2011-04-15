@@ -1022,15 +1022,19 @@ PetscErrorCode  MatDestroy_(Mat A)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   if (--((PetscObject)A)->refct > 0) PetscFunctionReturn(0);
-  /* if no sizes were ever set in matrix then MatPreallocated() may generate an error, so set the sizes */
+
+ /* if no sizes were ever set in matrix then MatPreallocated()
+  may generate an error, so set the sizes.
+  This should be fixed elsewhere !! */
+
   if (A->rmap->n == -1 && A->rmap->N == -1) A->rmap->n = A->rmap->N = 0;
   if (A->cmap->n == -1 && A->cmap->N == -1) A->cmap->n = A->cmap->N = 0;
   ierr = MatPreallocated(A);CHKERRQ(ierr);
-  /* if memory was published with AMS then destroy it */
+
+ /* if memory was published with AMS then destroy it */
   ierr = PetscObjectDepublish(A);CHKERRQ(ierr);
-  if (A->ops->destroy) {
-    ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
-  }
+  if (A->ops->destroy) {ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);}
+
   if (A->rmapping) {ierr = ISLocalToGlobalMappingDestroy(A->rmapping);CHKERRQ(ierr);}
   if (A->cmapping) {ierr = ISLocalToGlobalMappingDestroy(A->cmapping);CHKERRQ(ierr);}
   if (A->rbmapping) {ierr = ISLocalToGlobalMappingDestroy(A->rbmapping);CHKERRQ(ierr);}
@@ -1039,6 +1043,7 @@ PetscErrorCode  MatDestroy_(Mat A)
   ierr = PetscFree(A->spptr);CHKERRQ(ierr);
   ierr = PetscLayoutDestroy(A->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutDestroy(A->cmap);CHKERRQ(ierr);
+
   ierr = PetscHeaderDestroy(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

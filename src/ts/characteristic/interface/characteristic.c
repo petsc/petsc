@@ -182,7 +182,7 @@ PetscErrorCode CharacteristicSetType(Characteristic c, const CharacteristicType 
     c->data = 0;
   }
 
-  ierr =  PetscFListFind(CharacteristicList, ((PetscObject)c)->comm,type, (void (**)(void)) &r);CHKERRQ(ierr);
+  ierr =  PetscFListFind(CharacteristicList, ((PetscObject)c)->comm,type,PETSC_TRUE, (void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown Characteristic type given: %s", type);
   c->setupcalled = 0;
   ierr = (*r)(c);CHKERRQ(ierr);

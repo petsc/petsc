@@ -39,10 +39,13 @@ regressionParameters = {'src/vec/vec/examples/tests/ex1_2':    {'numProcs': 2},
                         'src/vec/vec/examples/tests/ex33':     {'numProcs': 4},
                         'src/vec/vec/examples/tests/ex36':     {'numProcs': 2, 'args': '-set_option_negidx -set_values_negidx -get_values_negidx'},
                         'src/ksp/ksp/examples/tutorials/ex12': {'numProcs': 2, 'args': '-ksp_gmres_cgs_refinement_type refine_always'},
+                        'src/ksp/ksp/examples/tutorials/ex40': {'numProcs': 1, 'args': '-mat_no_inode -ksp_monitor_short'},
                         'src/snes/examples/tutorials/ex5':     {'numProcs': 4, 'args': '-snes_mf -da_processors_x 4 -da_processors_y 1 -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always'},
                         'src/snes/examples/tutorials/ex5f90':  {'numProcs': 4, 'args': '-snes_mf -da_processors_x 4 -da_processors_y 1 -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always'},
                         'src/snes/examples/tutorials/ex5f90t': {'numProcs': 4, 'args': '-snes_mf -da_processors_x 4 -da_processors_y 1 -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always'},
-                        'src/snes/examples/tutorials/ex10':   [{'numProcs': 3, 'args': '-da_grid_x 20 -snes_converged_reason -snes_monitor_short -problem_type 0'},
+                        'src/snes/examples/tutorials/ex9':    [{'numProcs': 1, 'args': '-snes_mf -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always'}],
+                        'src/snes/examples/tutorials/ex19':    {'numProcs': 2, 'args': '-dmmg_nlevels 4 -snes_monitor_short'},
+                        'src/snes/examples/tutorials/ex10':   [{'numProcs': 2, 'args': '-da_grid_x 5 -snes_converged_reason -snes_monitor_short -problem_type 0'},
                                                                {'numProcs': 1, 'args': '-da_grid_x 20 -snes_converged_reason -snes_monitor_short -problem_type 1'},
                                                                {'numProcs': 1, 'args': '-da_grid_x 20 -snes_converged_reason -snes_monitor_short -problem_type 2'},
                                                                {'numProcs': 1, 'args': '-da_grid_x 20 -snes_converged_reason -snes_monitor_short -ksp_monitor_short -problem_type 2 \
@@ -55,12 +58,49 @@ regressionParameters = {'src/vec/vec/examples/tests/ex1_2':    {'numProcs': 2},
                                                                {'numProcs': 1, 'args': '-da_grid_x 20 -snes_converged_reason -snes_monitor_short -ksp_monitor_short -problem_type 2 \
 -snes_mf_operator -pack_dm_mat_type aij -pc_type fieldsplit -pc_fieldsplit_type additive -fieldsplit_u_ksp_type gmres -fieldsplit_k_pc_type jacobi'},
                                                                {'numProcs': 1, 'args': '-da_grid_x 20 -snes_converged_reason -snes_monitor_short -ksp_monitor_short -problem_type 2 \
--snes_mf_operator -pack_dm_mat_type nest -pc_type fieldsplit -pc_fieldsplit_type additive -fieldsplit_u_ksp_type gmres -fieldsplit_k_pc_type jacobi'}]
+-snes_mf_operator -pack_dm_mat_type nest -pc_type fieldsplit -pc_fieldsplit_type additive -fieldsplit_u_ksp_type gmres -fieldsplit_k_pc_type jacobi'}],
+                        'src/ts/examples/tutorials/ex18':      {'numProcs': 1, 'args': '-snes_mf -ts_monitor_solution -ts_monitor -snes_monitor'},
                         }
 
 def noCheckCommand(command, status, output, error):
   ''' Do no check result'''
   return
+
+class Future(logger.Logger):
+  def __init__(self, argDB, log, pipe, cmd, errorMsg = '', func = None):
+    logger.Logger.__init__(self, argDB = argDB, log = log)
+    self.setup()
+    self.pipe     = pipe
+    self.cmd      = cmd
+    self.errorMsg = errorMsg
+    self.funcs    = [func]
+    self.cwd      = os.getcwd()
+    return
+
+  def addFunc(self, func):
+    self.funcs.append(func)
+    return
+
+  def finish(self):
+    (out, err) = self.pipe.communicate()
+    ret = self.pipe.returncode
+    if ret:
+      #[os.remove(o) for o in objects if os.path.isfile(o)]
+      self.logPrint(self.errorMsg, debugSection = 'screen')
+      self.logPrint(cmd,           debugSection = 'screen')
+      self.logPrint(out+err,       debugSection = 'screen')
+    else:
+      self.logPrint('Successful execution')
+      self.logPrint(out+err)
+    (self.out, self.store, self.ret) = (out, err, ret)
+    output = []
+    curDir = os.getcwd()
+    os.chdir(self.cwd)
+    for func in self.funcs:
+      if not func is None:
+        output += func()
+    os.chdir(curDir)
+    return output
 
 class NullSourceDatabase(object):
   def __init__(self, verbose = 0):
@@ -176,11 +216,15 @@ class SourceDatabase(logger.Logger):
   def vertex(filename):
     return SourceNode(filename, SourceDatabase.marker(filename))
 
-  def hasNode(self, vertex):
-    return len([v for v in self.dependencyGraph.vertices if v[0] == vertex])
+  def hasNode(self, filename):
+    return len([v for v in self.dependencyGraph.vertices if v[0] == filename])
 
   def setNode(self, vertex, deps):
     self.dependencyGraph.addEdges(SourceDatabase.vertex(vertex), [SourceDatabase.vertex(dep) for dep in deps])
+    return
+
+  def removeNode(self, filename):
+    self.dependencyGraph.removeVertex(self.vertex(filename))
     return
 
   def updateNode(self, vertex):
@@ -667,6 +711,63 @@ class PETScMaker(script.Script):
        shutil.move(locMod, mod)
    return objects
 
+ def runShellCommandParallel(self, command, cwd = None):
+   import subprocess
+
+   self.logWrite('Executing: %s\n' % (command,), debugSection = self.debugSection, forceScroll = True)
+   pipe = subprocess.Popen(command, cwd=cwd, stdin=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                           bufsize=-1, shell=True, universal_newlines=True)
+   return pipe
+
+ def compileParallel(self, language, source, objDir = None):
+   if not len(source):
+     self.logPrint('Nothing to build', debugSection = self.debugSection)
+     return
+   self.configInfo.setCompilers.pushLanguage(language)
+   packageIncludes, packageLibs = self.getPackageInfo()
+   compiler = self.configInfo.setCompilers.getCompiler()
+   objects  = [self.sourceManager.getObjectName(s, objDir) for s in source]
+   includes = ['-I'+inc for inc in [os.path.join(self.petscDir, self.petscArch, 'include'), os.path.join(self.petscDir, 'include')]]
+   flags    = []
+   flags.append(self.configInfo.setCompilers.getCompilerFlags())                        # Add PCC_FLAGS
+   flags.extend([self.configInfo.setCompilers.CPPFLAGS, self.configInfo.CHUD.CPPFLAGS]) # Add CPP_FLAGS
+   if self.configInfo.compilers.generateDependencies[language]:
+     flags.append(self.configInfo.compilers.dependenciesGenerationFlag[language])
+   if not language == 'FC':
+     flags.append('-D__INSDIR__='+os.getcwd().replace(self.petscDir, ''))               # Define __INSDIR__
+   cmd      = ' '.join([compiler]+['-c']+includes+[packageIncludes]+flags+source)
+   if not self.dryRun:
+     pipe = self.runShellCommandParallel(cmd)
+   else:
+     pipe = None
+   self.configInfo.setCompilers.popLanguage()
+
+   def store():
+     objs = self.storeObjects(objects)
+     deps = [os.path.splitext(o)[0]+'.d' for o in objs if os.path.isfile(os.path.splitext(os.path.basename(o))[0]+'.d')]
+     self.storeObjects(deps)
+     return objs
+   return [Future(self.argDB, self.log, pipe, cmd, 'ERROR IN %s COMPILE ******************************' % language, store)]
+
+ def compileCParallel(self, source, objDir = None):
+   return self.compileParallel(self.configInfo.languages.clanguage, source, objDir)
+
+ def compileCxxParallel(self, source, objDir = None):
+   return self.compileParallel('Cxx', source, objDir)
+
+ def compileFortranParallel(self, source, objDir = None):
+   futures = self.compileParallel('FC', source, objDir)
+   def func():
+     # Copy any module files produced into the include directory
+     for locMod in os.listdir(os.getcwd()):
+       if os.path.splitext(locMod)[1] == '.mod':
+         mod = os.path.join(self.petscDir, self.petscArch, 'include', locMod)
+         self.logPrint('Moving F90 module %s to %s' % (locMod, mod))
+         shutil.move(locMod, mod)
+     return []
+   futures[0].addFunc(func)
+   return futures
+
  def ranlib(self, library):
    '''${ranlib} ${LIBNAME} '''
    lib = os.path.splitext(library)[0]+'.'+self.configInfo.setCompilers.AR_LIB_SUFFIX
@@ -821,6 +922,20 @@ class PETScMaker(script.Script):
    os.chdir(oldDir)
    return objects
 
+ def buildDirParallel(self, dirname, files, objDir):
+   ''' This is run in a PETSc source directory'''
+   self.logWrite('Building in '+dirname+'\n', debugSection = 'screen', forceScroll = True)
+   oldDir = os.getcwd()
+   os.chdir(dirname)
+   sourceMap = self.sourceManager.sortSourceFiles(files, objDir)
+   futures   = []
+   for language in ['C', 'Cxx', 'Fortran', 'Cuda']:
+     if sourceMap[language]:
+       self.logPrint('Compiling %s files %s' % (language, str(sourceMap[language])))
+       futures.extend(getattr(self, 'compile'+language+'Parallel')(sourceMap[language], objDir))
+   os.chdir(oldDir)
+   return futures
+
  def buildFile(self, filename, objDir):
    ''' This is run in a PETSc source directory'''
    self.logWrite('Building '+filename+'\n', debugSection = 'screen', forceScroll = True)
@@ -832,7 +947,7 @@ class PETScMaker(script.Script):
        objects.extend(getattr(self, 'compile'+language)(sourceMap[language], objDir))
    return objects
 
- def buildLibraries(self, libname, rootDir):
+ def buildLibraries(self, libname, rootDir, parallel = False):
    '''TODO: If a file fails to build, it still must go in the source database'''
    if not self.argDB['buildLibraries']: return
    totalRebuild = rootDir == self.petscDir and not len(self.sourceDatabase)
@@ -869,13 +984,20 @@ class PETScMaker(script.Script):
    else:
      walker = DirectoryTreeWalker(self.argDB, self.log, self.configInfo)
      if totalRebuild:
-       dirs = map(lambda d: os.path.join(rootDir, 'src', d), ['inline', 'sys', 'vec', 'mat', 'dm', 'ksp', 'snes', 'ts', 'characteristic', 'docs', 'tops'])
+       dirs = map(lambda d: os.path.join(rootDir, 'src', d), ['inline', 'sys', 'vec', 'mat', 'dm', 'ksp', 'snes', 'ts', 'docs', 'tops'])
      else:
        dirs = [rootDir]
-     for d in dirs:
-       for root, files in walker.walk(d):
-         self.logPrint('Building directory '+root)
-         objects += self.buildDir(root, files, objDir)
+     if parallel:
+       futures = []
+       for d in dirs:
+         for root, files in walker.walk(d):
+           futures += self.buildDirParallel(root, files, objDir)
+       for future in futures:
+         objects += future.finish()
+     else:
+       for d in dirs:
+         for root, files in walker.walk(d):
+           objects += self.buildDir(root, files, objDir)
 
    if len(objects):
      if self.argDB['buildArchive']:

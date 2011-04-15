@@ -1,4 +1,3 @@
-
 /*
   Code for timestepping with implicit generalized-\alpha method
   for first order systems.
@@ -102,8 +101,8 @@ static PetscErrorCode TSStep_Alpha(TS ts,PetscInt *steps,PetscReal *ptime)
 
 /*------------------------------------------------------------*/
 #undef __FUNCT__
-#define __FUNCT__ "TSDestroy_Alpha"
-static PetscErrorCode TSDestroy_Alpha(TS ts)
+#define __FUNCT__ "TSReset_Alpha"
+static PetscErrorCode TSReset_Alpha(TS ts)
 {
   TS_Alpha       *th = (TS_Alpha*)ts->data;
   PetscErrorCode  ierr;
@@ -117,7 +116,18 @@ static PetscErrorCode TSDestroy_Alpha(TS ts)
   if (th->V1) {ierr = VecDestroy(th->V1);CHKERRQ(ierr);}
   if (th->R)  {ierr = VecDestroy(th->R);CHKERRQ(ierr);}
   if (th->E)  {ierr = VecDestroy(th->E);CHKERRQ(ierr);}
-  ierr = PetscFree(th);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSDestroy_Alpha"
+static PetscErrorCode TSDestroy_Alpha(TS ts)
+{
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = TSReset_Alpha(ts);CHKERRQ(ierr);
+  ierr = PetscFree(ts->data);CHKERRQ(ierr);
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSAlphaSetRadius_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSAlphaSetParams_C","",PETSC_NULL);CHKERRQ(ierr);
@@ -317,6 +327,7 @@ PetscErrorCode  TSCreate_Alpha(TS ts)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ts->ops->reset          = TSReset_Alpha;
   ts->ops->destroy        = TSDestroy_Alpha;
   ts->ops->view           = TSView_Alpha;
   ts->ops->setup          = TSSetUp_Alpha;
@@ -365,7 +376,7 @@ EXTERN_C_END
 +  ts - timestepping context
 .  adapt - user-defined adapt routine
 -  ctx  - [optional] user-defined context for private data for the
-	 adapt routine (may be PETSC_NULL)
+         adapt routine (may be PETSC_NULL)
 
    Calling sequence of adapt:
 $    adapt (TS ts,PetscReal t,Vec X,Vec Xdot,
@@ -433,7 +444,7 @@ PetscErrorCode  TSAlphaAdaptDefault(TS ts,PetscReal t,Vec X,Vec Xdot, PetscReal 
 #define __FUNCT__ "TSAlphaSetRadius"
 /*@
   TSAlphaSetRadius - sets the desired spectral radius of the method
-		     (i.e. high-frequency numerical damping)
+                     (i.e. high-frequency numerical damping)
 
   Logically Collective on TS
 

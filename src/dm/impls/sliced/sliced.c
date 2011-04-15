@@ -219,26 +219,18 @@ PetscErrorCode  DMSlicedSetBlockFills(DM dm,const PetscInt *dfill,const PetscInt
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode DMDestroy_Private(DM,PetscBool *);
-
 #undef __FUNCT__  
 #define __FUNCT__ "DMDestroy_Sliced"
 PetscErrorCode  DMDestroy_Sliced(DM dm)
 {
   PetscErrorCode ierr;
-  PetscBool      done;
   DM_Sliced      *slice = (DM_Sliced*)dm->data;
 
   PetscFunctionBegin;
-  ierr = DMDestroy_Private(dm,&done);CHKERRQ(ierr);
-  if (!done) PetscFunctionReturn(0);
-
-  if (slice->globalvector) {ierr = VecDestroy(&slice->globalvector);CHKERRQ(ierr);}
+  if (slice->globalvector) {ierr = VecDestroy(slice->globalvector);CHKERRQ(ierr);}
   ierr = PetscFree(slice->ghosts);CHKERRQ(ierr);
   if (slice->dfill) {ierr = PetscFree3(slice->dfill,slice->dfill->i,slice->dfill->j);CHKERRQ(ierr);}
   if (slice->ofill) {ierr = PetscFree3(slice->ofill,slice->ofill->i,slice->ofill->j);CHKERRQ(ierr);}
-  ierr = PetscFree(dm->data);CHKERRQ(ierr);
-  ierr = PetscHeaderDestroy(&dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

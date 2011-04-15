@@ -477,9 +477,21 @@ PetscErrorCode KSPSetUp_BCGSL(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "KSPDestroy_BCGSL" 
-PetscErrorCode KSPDestroy_BCGSL(KSP *ksp)
+#undef __FUNCT__
+#define __FUNCT__ "KSPReset_BCGSL"
+PetscErrorCode KSPReset_BCGSL(KSP ksp)
+{
+  KSP_BCGSL      *bcgsl = (KSP_BCGSL *)ksp->data;
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  ierr = KSPDefaultReset(ksp);CHKERRQ(ierr);
+  ierr = PetscFree5(AY0c,AYlc,AYtc,MZa,MZb);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "KSPDestroy_BCGSL"
+PetscErrorCode KSPDestroy_BCGSL(KSP ksp)
 {
   KSP_BCGSL      *bcgsl = (KSP_BCGSL*)(*ksp)->data;
   PetscErrorCode ierr;
@@ -542,7 +554,7 @@ PetscErrorCode  KSPCreate_BCGSL(KSP ksp)
   ksp->pc_side              = PC_LEFT;
   ksp->ops->setup           = KSPSetUp_BCGSL;
   ksp->ops->solve           = KSPSolve_BCGSL;
-  ksp->ops->reset           = KSPDefaultReset;
+  ksp->ops->reset           = KSPReset_BCGSL;
   ksp->ops->destroy         = KSPDestroy_BCGSL;
   ksp->ops->buildsolution   = KSPDefaultBuildSolution;
   ksp->ops->buildresidual   = KSPDefaultBuildResidual;

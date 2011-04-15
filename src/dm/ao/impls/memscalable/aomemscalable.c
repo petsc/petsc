@@ -471,10 +471,12 @@ PetscErrorCode AOCreate_MemoryScalable(AO ao)
   ierr = AOCreateMemoryScalable_private(comm,napp,myapp,petsc,ao,aomems->petsc_loc);CHKERRQ(ierr);
 
   ierr = ISRestoreIndices(isapp,&myapp);CHKERRQ(ierr);
-  if (ispetsc){
-    ierr = ISRestoreIndices(ispetsc,&mypetsc);CHKERRQ(ierr);
-  } else if (napp && !ispetsc) {
-    ierr = PetscFree(petsc);CHKERRQ(ierr);
+  if (napp){
+    if (ispetsc){
+      ierr = ISRestoreIndices(ispetsc,&mypetsc);CHKERRQ(ierr);
+    } else {
+      ierr = PetscFree(petsc);CHKERRQ(ierr);
+    }
   }
   ierr  = PetscFree2(lens,disp);CHKERRQ(ierr);
   PetscFunctionReturn(0);

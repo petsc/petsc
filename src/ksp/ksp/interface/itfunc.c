@@ -627,8 +627,7 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSolveTranspose"
 /*@
-   KSPSolveTranspose - Solves the transpose of a linear system. Usually
-   accessed through KSPSolveTranspose().
+   KSPSolveTranspose - Solves the transpose of a linear system. 
 
    Collective on KSP
 
@@ -637,9 +636,6 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
 .  b - right hand side vector
 -  x - solution vector
 
-   Note:
-   Currently only supported by KSPType of KSPPREONLY. This routine is usally 
-   only used internally by the BiCG solver on the subblocks in BJacobi and ASM.
 
    Level: developer
 
@@ -648,6 +644,7 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
 .seealso: KSPCreate(), KSPSetUp(), KSPDestroy(), KSPSetTolerances(), KSPDefaultConverged(),
           KSPSolve()
 @*/
+
 PetscErrorCode  KSPSolveTranspose(KSP ksp,Vec b,Vec x)
 {
   PetscErrorCode ierr;
@@ -687,10 +684,10 @@ PetscErrorCode  KSPSolveTranspose(KSP ksp,Vec b,Vec x)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPReset"
 /*@
-   KSPReset - Resets a PC context to the kspsetupcalled = 0 state and removes any allocated Vecs and Mats
+   KSPReset - Resets a KSP context to the kspsetupcalled = 0 state and removes any allocated Vecs and Mats
 
    Collective on KSP
 

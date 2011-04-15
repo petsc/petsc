@@ -250,7 +250,7 @@ extern PetscErrorCode  PetscViewerBinaryReadStringArray(PetscViewer,char***);
 extern PetscErrorCode  PetscViewerBinaryWriteStringArray(PetscViewer,char**);
 
 extern PetscErrorCode  PetscViewerFileSetName(PetscViewer,const char[]);
-extern PetscErrorCode  PetscViewerFileGetName(PetscViewer,char**);
+extern PetscErrorCode  PetscViewerFileGetName(PetscViewer,const char**);
 
 extern PetscErrorCode  PetscPLAPACKInitializePackage(MPI_Comm com);
 extern PetscErrorCode  PetscPLAPACKFinalizePackage(void);

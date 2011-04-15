@@ -337,7 +337,6 @@ extern PetscErrorCode  MatCreateSubMatrix(Mat,IS,IS,Mat*);
 extern PetscErrorCode  MatSubMatrixUpdate(Mat,Mat,IS,IS);
 extern PetscErrorCode  MatCreateLocalRef(Mat,IS,IS,Mat*);
 
-extern PetscErrorCode  MatCreatePython(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,const char[],Mat*);
 extern PetscErrorCode  MatPythonSetType(Mat,const char[]);
 
 extern PetscErrorCode  MatSetUp(Mat);

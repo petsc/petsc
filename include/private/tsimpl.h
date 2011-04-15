@@ -17,6 +17,8 @@
 */
 #define MAXTSMONITORS 5 
 
+typedef struct _TSOps *TSOps;
+
 struct _TSOps {
   PetscErrorCode (*snesfunction)(SNES,Vec,Vec,TS);
   PetscErrorCode (*snesjacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,TS);
@@ -33,6 +35,7 @@ struct _TSOps {
   PetscErrorCode (*setfromoptions)(TS);
   PetscErrorCode (*destroy)(TS);
   PetscErrorCode (*view)(TS,PetscViewer);
+  PetscErrorCode (*reset)(TS);
 };
 
 struct _p_TS {

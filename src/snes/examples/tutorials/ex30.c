@@ -222,7 +222,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set up the SNES solver with callback functions.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMMGSetSNESLocal(dmmg,FormFunctionLocal,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMMGSetSNESLocal(dmmg,FormFunctionLocal,0,0,0);CHKERRQ(ierr);
   ierr = DMMGSetFromOptions(dmmg);CHKERRQ(ierr);
   ierr = DMMGSetInitialGuess(dmmg,FormInitialGuess);CHKERRQ(ierr);
   ierr = SNESSetConvergenceTest(DMMGGetSNES(dmmg),SNESConverged_Interactive,(void*)user,PETSC_NULL);CHKERRQ(ierr);

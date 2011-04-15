@@ -42,11 +42,11 @@ int main(int argc,char **argv)
 
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
   ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-7,-7,-7,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,0,&da);CHKERRQ(ierr);  
-  ierr = DMSetInitialGuess((DM)da,ComputeInitialGuess);CHKERRQ(ierr);
-  ierr = DMSetFunction((DM)da,ComputeRHS);CHKERRQ(ierr);
-  ierr = DMSetJacobian((DM)da,ComputeMatrix);CHKERRQ(ierr);
-  ierr = KSPSetDM(ksp,(DM)da);CHKERRQ(ierr);
-  ierr = DMDestroy(&da);CHKERRQ(ierr);
+  ierr = DMSetInitialGuess(da,ComputeInitialGuess);CHKERRQ(ierr);
+  ierr = DMSetFunction(da,ComputeRHS);CHKERRQ(ierr);
+  ierr = DMSetJacobian(da,ComputeMatrix);CHKERRQ(ierr);
+  ierr = KSPSetDM(ksp,da);CHKERRQ(ierr);
+  ierr = DMDestroy(da);CHKERRQ(ierr);
 
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
   ierr = KSPSetUp(ksp);CHKERRQ(ierr);

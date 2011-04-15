@@ -10,6 +10,7 @@ class Configure(PETSc.package.NewPackage):
     self.functions    = ['pastix']
     self.includes     = ['pastix.h']
     self.complex      = 0
+    self.fc           = 1
     return
 
   def setupDependencies(self, framework):

@@ -1809,6 +1809,9 @@ PetscErrorCode  MatCreate_MPISBAIJ(Mat B)
   b->ht_total_ct  = 0;
   b->ht_insert_ct = 0;
 
+  /* stuff for MatGetSubMatrices_MPIBAIJ_local() */
+  b->ijonly       = PETSC_FALSE;
+
   b->in_loc       = 0;
   b->v_loc        = 0;
   b->n_loc        = 0;

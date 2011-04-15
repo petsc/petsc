@@ -40,7 +40,7 @@
 .keywords: distributed array, get, corners, nodes, local indices, coordinates
 
 .seealso: DMDAGetGhostCorners(), DMDAGetCorners(), VecGetArray(), VecRestoreArray(), DMDAVecRestoreArray(), DMDAVecRestoreArrayDOF()
-          DMDAVecGetarrayDOF()
+          DMDAVecGetArrayDOF()
 @*/
 PetscErrorCode  DMDAVecGetArray(DM da,Vec vec,void *array)
 {
@@ -48,6 +48,9 @@ PetscErrorCode  DMDAVecGetArray(DM da,Vec vec,void *array)
   PetscInt       xs,ys,zs,xm,ym,zm,gxs,gys,gzs,gxm,gym,gzm,N,dim,dof;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(da, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(vec, VEC_CLASSID, 2);
+  PetscValidPointer(array, 3);
   ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(da,&gxs,&gys,&gzs,&gxm,&gym,&gzm);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,&dim,0,0,0,0,0,0,&dof,0,0,0,0,0);CHKERRQ(ierr);
@@ -105,6 +108,9 @@ PetscErrorCode  DMDAVecRestoreArray(DM da,Vec vec,void *array)
   PetscInt       xs,ys,zs,xm,ym,zm,gxs,gys,gzs,gxm,gym,gzm,N,dim,dof;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(da, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(vec, VEC_CLASSID, 2);
+  PetscValidPointer(array, 3);
   ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
   ierr = DMDAGetGhostCorners(da,&gxs,&gys,&gzs,&gxm,&gym,&gzm);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,&dim,0,0,0,0,0,0,&dof,0,0,0,0,0);CHKERRQ(ierr);

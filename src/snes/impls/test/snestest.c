@@ -127,14 +127,15 @@ PetscErrorCode  SNESCreate_Test(SNES  snes)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  snes->ops->setup	     = 0;
-  snes->ops->solve	     = SNESSolve_Test;
-  snes->ops->destroy	     = SNESDestroy_Test;
+  snes->ops->solve           = SNESSolve_Test;
+  snes->ops->destroy         = SNESDestroy_Test;
   snes->ops->setfromoptions  = SNESSetFromOptions_Test;
   snes->ops->view            = 0;
+  snes->ops->setup           = 0;
+  snes->ops->reset           = 0;
 
-  ierr			= PetscNewLog(snes,SNES_Test,&neP);CHKERRQ(ierr);
-  snes->data    	= (void*)neP;
+  ierr                  = PetscNewLog(snes,SNES_Test,&neP);CHKERRQ(ierr);
+  snes->data            = (void*)neP;
   neP->complete_print   = PETSC_FALSE;
   PetscFunctionReturn(0);
 }

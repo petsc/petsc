@@ -354,7 +354,7 @@ PETSC_STATIC_INLINE PetscErrorCode PetscIsInfOrNanScalar(PetscScalar a) {
 PETSC_STATIC_INLINE PetscErrorCode PetscIsInfOrNanReal(PetscReal a) {
   return isinfq(a) || isnanq(a);
 }
-#elif defined(PETSC_HAVE_ISINF) && defined(PETSC_HAVE_ISNAN)
+#elif defined(PETSC_HAVE_ISINF) && defined(PETSC_HAVE_ISNAN) && !defined(_GLIBCXX_CMATH)
 PETSC_STATIC_INLINE PetscErrorCode PetscIsInfOrNanScalar(PetscScalar a) {
   return isinf(PetscAbsScalar(a)) || isnan(PetscAbsScalar(a));
 }

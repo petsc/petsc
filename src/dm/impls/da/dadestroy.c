@@ -6,7 +6,6 @@
 #include <private/daimpl.h>    /*I   "petscdmda.h"   I*/
 
 /* Logging support */
-PetscClassId  DM_CLASSID;
 PetscClassId  ADDA_CLASSID;
 PetscLogEvent DMDA_LocalADFunction;
 
@@ -63,11 +62,6 @@ PetscErrorCode  DMDestroy_DA(DM *da)
   DM_DA          *dd = (DM_DA*)(*da)->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
-
-  ierr = DMDestroy_Private((DM)da,&done);CHKERRQ(ierr);
-  if (!done) PetscFunctionReturn(0);
-
   /* destroy the external/common part */
   for (i=0; i<DMDA_MAX_AD_ARRAYS; i++) {
     ierr = PetscFree(dd->adstartghostedout[i]);CHKERRQ(ierr);
@@ -102,7 +96,6 @@ PetscErrorCode  DMDestroy_DA(DM *da)
   ierr = PetscFree(dd->lx);CHKERRQ(ierr);
   ierr = PetscFree(dd->ly);CHKERRQ(ierr);
   ierr = PetscFree(dd->lz);CHKERRQ(ierr);
-  ierr = PetscFree(da->vectype);CHKERRQ(ierr);
 
   if (dd->fieldname) {
     for (i=0; i<dd->w; i++) {
@@ -121,8 +114,5 @@ PetscErrorCode  DMDestroy_DA(DM *da)
   ierr = PetscFree(dd->dfill);CHKERRQ(ierr);
   ierr = PetscFree(dd->ofill);CHKERRQ(ierr);
   ierr = PetscFree(dd->e);CHKERRQ(ierr);
-
-  ierr = PetscFree(dd);CHKERRQ(ierr);
-  ierr = PetscHeaderDestroy(da);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -1,4 +1,3 @@
-
 /*
        Code for Timestepping with explicit SSP.
 */
@@ -14,14 +13,13 @@ PetscFList TSSSPList = 0;
 typedef struct {
   PetscErrorCode (*onestep)(TS,PetscReal,PetscReal,Vec);
   PetscInt nstages;
-  Vec xdot;
   Vec *work;
   PetscInt nwork;
   PetscBool  workout;
 } TS_SSP;
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SSPGetWorkVectors"
 static PetscErrorCode SSPGetWorkVectors(TS ts,PetscInt n,Vec **work)
 {
@@ -42,7 +40,7 @@ static PetscErrorCode SSPGetWorkVectors(TS ts,PetscInt n,Vec **work)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SSPRestoreWorkVectors"
 static PetscErrorCode SSPRestoreWorkVectors(TS ts,PetscInt n,Vec **work)
 {
@@ -57,7 +55,7 @@ static PetscErrorCode SSPRestoreWorkVectors(TS ts,PetscInt n,Vec **work)
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SSPStep_RK_2"
 /* Optimal second order SSP Runge-Kutta, low-storage, c_eff=(s-1)/s */
 /* Pseudocode 2 of Ketcheson 2008 */
@@ -83,7 +81,7 @@ static PetscErrorCode SSPStep_RK_2(TS ts,PetscReal t0,PetscReal dt,Vec sol)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SSPStep_RK_3"
 /* Optimal third order SSP Runge-Kutta, low-storage, c_eff=(sqrt(s)-1)/sqrt(s), where sqrt(s) is an integer */
 /* Pseudocode 2 of Ketcheson 2008 */
@@ -130,7 +128,7 @@ static PetscErrorCode SSPStep_RK_3(TS ts,PetscReal t0,PetscReal dt,Vec sol)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SSPStep_RK_10_4"
 /* Optimal fourth order SSP Runge-Kutta, low-storage (2N), c_eff=0.6 */
 /* SSPRK(10,4), Pseudocode 3 of Ketcheson 2008 */
@@ -163,7 +161,7 @@ static PetscErrorCode SSPStep_RK_10_4(TS ts,PetscReal t0,PetscReal dt,Vec sol)
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSSetUp_SSP"
 static PetscErrorCode TSSetUp_SSP(TS ts)
 {
@@ -174,29 +172,32 @@ static PetscErrorCode TSSetUp_SSP(TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSStep_SSP"
 static PetscErrorCode TSStep_SSP(TS ts,PetscInt *steps,PetscReal *ptime)
 {
   TS_SSP        *ssp = (TS_SSP*)ts->data;
   Vec            sol = ts->vec_sol;
+  PetscInt       i;
   PetscErrorCode ierr;
-  PetscInt       i,max_steps = ts->max_steps;
 
   PetscFunctionBegin;
   *steps = -ts->steps;
+  *ptime  = ts->ptime;
+
   ierr = TSMonitor(ts,ts->steps,ts->ptime,sol);CHKERRQ(ierr);
 
-  for (i=0; i<max_steps; i++) {
-    PetscReal dt = ts->time_step;
-
+  for (i=0; i<ts->max_steps; i++) {
+    if (ts->ptime + ts->time_step > ts->max_time) break;
     ierr = TSPreStep(ts);CHKERRQ(ierr);
-    ts->ptime += dt;
-    ierr = (*ssp->onestep)(ts,ts->ptime-dt,dt,sol);CHKERRQ(ierr);
+
+    ierr = (*ssp->onestep)(ts,ts->ptime,ts->time_step,sol);CHKERRQ(ierr);
+
+    ts->ptime += ts->time_step;
     ts->steps++;
+
     ierr = TSPostStep(ts);CHKERRQ(ierr);
     ierr = TSMonitor(ts,ts->steps,ts->ptime,sol);CHKERRQ(ierr);
-    if (ts->ptime > ts->max_time) break;
   }
 
   *steps += ts->steps;
@@ -204,21 +205,34 @@ static PetscErrorCode TSStep_SSP(TS ts,PetscInt *steps,PetscReal *ptime)
   PetscFunctionReturn(0);
 }
 /*------------------------------------------------------------*/
-#undef __FUNCT__  
-#define __FUNCT__ "TSDestroy_SSP"
-static PetscErrorCode TSDestroy_SSP(TS ts)
+#undef __FUNCT__
+#define __FUNCT__ "TSReset_SSP"
+static PetscErrorCode TSReset_SSP(TS ts)
 {
   TS_SSP         *ssp = (TS_SSP*)ts->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (ssp->work) {ierr = VecDestroyVecs(ssp->nwork,&ssp->work);CHKERRQ(ierr);}
+  ssp->nwork = 0;
+  ssp->workout = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSDestroy_SSP"
+static PetscErrorCode TSDestroy_SSP(TS ts)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = TSReset_SSP(ts);CHKERRQ(ierr);
   ierr = PetscFree(ts->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /*------------------------------------------------------------*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSSSPSetType"
 static PetscErrorCode TSSSPSetType(TS ts,const TSSSPType type)
 {
@@ -226,13 +240,13 @@ static PetscErrorCode TSSSPSetType(TS ts,const TSSSPType type)
   TS_SSP *ssp = (TS_SSP*)ts->data;
 
   PetscFunctionBegin;
-  ierr = PetscFListFind(TSSSPList,((PetscObject)ts)->comm,type,(void(**)(void))&r);CHKERRQ(ierr);
+  ierr = PetscFListFind(TSSSPList,((PetscObject)ts)->comm,type,PETSC_TRUE,(void(**)(void))&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown TS_SSP type %s given",type);
   ssp->onestep = r;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSSetFromOptions_SSP"
 static PetscErrorCode TSSetFromOptions_SSP(TS ts)
 {
@@ -254,7 +268,7 @@ static PetscErrorCode TSSetFromOptions_SSP(TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSView_SSP"
 static PetscErrorCode TSView_SSP(TS ts,PetscViewer viewer)
 {
@@ -303,7 +317,7 @@ static PetscErrorCode TSView_SSP(TS ts,PetscViewer viewer)
 
 M*/
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSCreate_SSP"
 PetscErrorCode  TSCreate_SSP(TS ts)
 {
@@ -319,6 +333,7 @@ PetscErrorCode  TSCreate_SSP(TS ts)
 
   ts->ops->setup           = TSSetUp_SSP;
   ts->ops->step            = TSStep_SSP;
+  ts->ops->reset           = TSReset_SSP;
   ts->ops->destroy         = TSDestroy_SSP;
   ts->ops->setfromoptions  = TSSetFromOptions_SSP;
   ts->ops->view            = TSView_SSP;
@@ -331,7 +346,3 @@ PetscErrorCode  TSCreate_SSP(TS ts)
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
-
-
-
-

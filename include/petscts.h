@@ -67,6 +67,7 @@ extern PetscErrorCode   TSAppendOptionsPrefix(TS,const char[]);
 extern PetscErrorCode   TSGetOptionsPrefix(TS,const char *[]);
 extern PetscErrorCode   TSSetFromOptions(TS);
 extern PetscErrorCode   TSSetUp(TS);
+extern PetscErrorCode   TSReset(TS);
 
 extern PetscErrorCode   TSSetSolution(TS,Vec);
 extern PetscErrorCode   TSGetSolution(TS,Vec*);
@@ -104,8 +105,6 @@ extern PetscErrorCode   TSDefaultComputeJacobian(TS,PetscReal,Vec,Mat*,Mat*,MatS
 
 extern PetscErrorCode   TSSetPreStep(TS, PetscErrorCode (*)(TS));
 extern PetscErrorCode   TSSetPostStep(TS, PetscErrorCode (*)(TS));
-extern PetscErrorCode   TSDefaultPreStep(TS);
-extern PetscErrorCode   TSDefaultPostStep(TS);
 extern PetscErrorCode   TSPreStep(TS);
 extern PetscErrorCode   TSPostStep(TS);
 

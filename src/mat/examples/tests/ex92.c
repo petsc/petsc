@@ -1,7 +1,7 @@
 
 static char help[] = "Tests MatIncreaseOverlap(), MatGetSubMatrices() for parallel MatSBAIJ format.\n";
 /* Example of usage:
-      mpiexec -n 2 ./ex92 -nd 1 -ov 1 -view_id 0
+      mpiexec -n 2 ./ex92 -nd 2 -ov 3 -mat_block_size 2 -view_id 0
 */
 #include <petscmat.h>
 
@@ -139,10 +139,6 @@ int main(int argc,char **args)
       for (k=1; k<bs; k++) idx[j*bs+k] = idx[j*bs]+k;
     }
 
-    // new test- for bs==1 !
-    //sz = 1;
-    //idx[0] = Mbs -1;
-
     ierr = ISCreateGeneral(PETSC_COMM_SELF,sz*bs,idx,PETSC_COPY_VALUES,is1+i);CHKERRQ(ierr);
     ierr = ISCreateGeneral(PETSC_COMM_SELF,sz*bs,idx,PETSC_COPY_VALUES,is2+i);CHKERRQ(ierr);
 
@@ -154,6 +150,7 @@ int main(int argc,char **args)
   ierr = PetscLogStageRegister("MatOv_SBAIJ",&stages[0]);
   ierr = PetscLogStageRegister("MatOv_BAIJ",&stages[1]);
 
+  /* Test MatIncreaseOverlap */
   ierr = PetscLogStagePush(stages[0]);CHKERRQ(ierr);
   ierr = MatIncreaseOverlap(sA,nd,is2,ov);CHKERRQ(ierr);
   ierr = PetscLogStagePop();CHKERRQ(ierr);
@@ -182,7 +179,7 @@ int main(int argc,char **args)
     }
   }
    
-  /* Now test MatGetSubmatrices */
+  /* Test MatGetSubmatrices */
   ierr = MatGetSubMatrices(A,nd,is1,is1,MAT_INITIAL_MATRIX,&submatA);CHKERRQ(ierr);
   ierr = MatGetSubMatrices(sA,nd,is2,is2,MAT_INITIAL_MATRIX,&submatsA);CHKERRQ(ierr);
 

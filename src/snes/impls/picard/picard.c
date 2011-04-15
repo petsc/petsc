@@ -1,6 +1,17 @@
 
 #include <../src/snes/impls/picard/picard.h>
 
+#undef __FUNCT__
+#define __FUNCT__ "SNESReset_Picard"
+PetscErrorCode SNESReset_Picard(SNES snes)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (snes->work) {ierr = VecDestroyVecs(snes->nwork,&snes->work);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
 /*
   SNESDestroy_Picard - Destroys the private SNES_Picard context that was created with SNESCreate_Picard().
 
@@ -16,12 +27,7 @@ PetscErrorCode SNESDestroy_Picard(SNES snes)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (snes->vec_sol_update) {
-    ierr = VecDestroy(snes->vec_sol_update);CHKERRQ(ierr);
-  }
-  if (snes->work) {
-    ierr = VecDestroyVecs(snes->nwork,&snes->work);CHKERRQ(ierr);
-  }
+  ierr = SNESReset_Picard(snes);CHKERRQ(ierr);
   ierr = PetscFree(snes->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -43,15 +49,7 @@ PetscErrorCode SNESSetUp_Picard(SNES snes)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!snes->vec_sol_update) {
-    ierr = VecDuplicate(snes->vec_sol, &snes->vec_sol_update);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent(snes, snes->vec_sol_update);CHKERRQ(ierr);
-  }
-  if (!snes->work) {
-    snes->nwork = 1;
-    ierr = VecDuplicateVecs(snes->vec_sol, snes->nwork, &snes->work);CHKERRQ(ierr);
-    ierr = PetscLogObjectParents(snes,snes->nwork, snes->work);CHKERRQ(ierr);
-  }
+  ierr = SNESDefaultGetWork(snes,1);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -415,11 +413,12 @@ PetscErrorCode  SNESCreate_Picard(SNES snes)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  snes->ops->destroy	    = SNESDestroy_Picard;
-  snes->ops->setup	        = SNESSetUp_Picard;
-  snes->ops->setfromoptions = SNESSetFromOptions_Picard;
-  snes->ops->view           = SNESView_Picard;
-  snes->ops->solve	        = SNESSolve_Picard;
+  snes->ops->destroy	     = SNESDestroy_Picard;
+  snes->ops->setup	     = SNESSetUp_Picard;
+  snes->ops->setfromoptions  = SNESSetFromOptions_Picard;
+  snes->ops->view            = SNESView_Picard;
+  snes->ops->solve	     = SNESSolve_Picard;
+  snes->ops->reset           = SNESReset_Picard;
 
   ierr = PetscNewLog(snes, SNES_Picard, &neP);CHKERRQ(ierr);
   snes->data = (void*) neP;

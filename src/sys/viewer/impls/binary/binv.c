@@ -829,7 +829,7 @@ PetscErrorCode  PetscViewerBinaryReadStringArray(PetscViewer viewer,char ***data
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerFileGetName_Binary"
-PetscErrorCode PetscViewerFileGetName_Binary(PetscViewer viewer,char **name)
+PetscErrorCode PetscViewerFileGetName_Binary(PetscViewer viewer,const char **name)
 {
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
 

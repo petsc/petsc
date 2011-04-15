@@ -1593,6 +1593,13 @@ namespace ALE {
       ((typename atlas_type::value_type *) this->_atlas->restrictPoint(p))->index = index;
     };
     void setIndexBC(const point_type& p, const typename index_type::index_type& index) {};
+    void getIndicesRaw(const point_type& p, PetscInt indices[], PetscInt *indx, const int orientation = 1) {
+      this->getIndicesRaw(p, this->getIndex(p), indices, indx, orientation);
+    };
+    template<typename Order_>
+    void getIndicesRaw(const point_type& p, const Obj<Order_>& order, PetscInt indices[], PetscInt *indx, const int orientation = 1) {
+      this->getIndicesRaw(p, order->getIndex(p), indices, indx, orientation);
+    }
     void getIndices(const point_type& p, PetscInt indices[], PetscInt *indx, const int orientation = 1, const bool freeOnly = false, const bool skipConstraints = true) {
       this->getIndices(p, this->getIndex(p), indices, indx, orientation, freeOnly, skipConstraints);
     };
@@ -1630,6 +1637,15 @@ namespace ALE {
         }
       }
     }
+    /*
+      p           - The Sieve point
+      start       - Offset for the set of indices on this point
+      indices     - Storage for the indices
+      indx        - Pointer to an offset into the indices argument (to allow composition of index sets)
+      orientation - A negative argument reverses the indices
+      freeOnly        - If false, include constrained dofs with negative indices, otherwise leave them out
+      skipConstraints - If true, when a constrained dof is encountered, increment the index (even though it is not placed in indices[])
+     */
     void getIndices(const point_type& p, const int start, PetscInt indices[], PetscInt *indx, const int orientation = 1, const bool freeOnly = false, const bool skipConstraints = false) {
       const int& cDim = this->getConstraintDimension(p);
 
@@ -1641,12 +1657,15 @@ namespace ALE {
           const typename bc_type::value_type *cDof = this->getConstraintDof(p);
           int                                 cInd = 0;
 
+          /* i is the returned index, k is the local dof number */
           for(int i = start, k = 0; k < dim; ++k) {
             if ((cInd < cDim) && (k == cDof[cInd])) {
+              /* Constrained dof */
               if (!freeOnly) indices[(*indx)++] = -(k+1);
               if (skipConstraints) ++i;
               ++cInd;
             } else {
+              /* Unconstrained dof */
               indices[(*indx)++] = i++;
             }
           }

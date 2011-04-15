@@ -58,7 +58,7 @@ PetscErrorCode PetscViewerFlush_VU(PetscViewer viewer)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerFileGetName_VU" 
-PetscErrorCode  PetscViewerFileGetName_VU(PetscViewer viewer, char **name)
+PetscErrorCode  PetscViewerFileGetName_VU(PetscViewer viewer, const char **name)
 {
   PetscViewer_VU *vu = (PetscViewer_VU *) viewer->data;
 

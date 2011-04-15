@@ -512,7 +512,7 @@ PetscErrorCode  MatPartitioningSetType(MatPartitioning part,const MatPartitionin
     part->setupcalled = 0;
   }
 
-  ierr =  PetscFListFind(MatPartitioningList,((PetscObject)part)->comm,type,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr =  PetscFListFind(MatPartitioningList,((PetscObject)part)->comm,type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
 
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown partitioning type %s",type);
 

@@ -222,7 +222,7 @@ PetscErrorCode  MatGetOrdering(Mat mat,const MatOrderingType type,IS *rperm,IS *
   if (mmat != nmat) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must be square matrix, rows %D columns %D",mmat,nmat);
 
   if (!MatOrderingRegisterAllCalled) {ierr = MatOrderingRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
-  ierr = PetscFListFind(MatOrderingList,((PetscObject)mat)->comm,type,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr = PetscFListFind(MatOrderingList,((PetscObject)mat)->comm,type,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Unknown or unregistered type: %s",type);
 
   ierr = PetscLogEventBegin(MAT_GetOrdering,mat,0,0,0);CHKERRQ(ierr);

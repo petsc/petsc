@@ -16,11 +16,6 @@ PetscErrorCode  DMDestroy_ADDA(DM dm)
   DM_ADDA        *dd = (DM_ADDA*)dm->data;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-
-  /* check reference count */
-  if(--((PetscObject)dm)->refct > 0) PetscFunctionReturn(0);
-
   /* destroy the allocated data */
   ierr = PetscFree(dd->nodes);CHKERRQ(ierr);
   ierr = PetscFree(dd->procs);CHKERRQ(ierr);
@@ -31,9 +26,6 @@ PetscErrorCode  DMDestroy_ADDA(DM dm)
   ierr = PetscFree(dd->refine);CHKERRQ(ierr);
 
   ierr = VecDestroy(&dd->global);CHKERRQ(ierr);
-
-  ierr = PetscFree(dd);CHKERRQ(ierr);
-  ierr = PetscHeaderDestroy(&dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

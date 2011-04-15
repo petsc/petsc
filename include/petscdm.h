@@ -43,6 +43,7 @@ E*/
 #define DMSLICED    "sliced"
 #define DMMESH      "mesh"
 #define DMCARTESIAN "cartesian"
+#define DMIGA       "iga"
 
 extern PetscFList DMList;
 extern PetscBool  DMRegisterAllCalled;
@@ -52,6 +53,7 @@ extern PetscErrorCode  DMGetType(DM, const DMType *);
 extern PetscErrorCode  DMRegister(const char[],const char[],const char[],PetscErrorCode (*)(DM));
 extern PetscErrorCode  DMRegisterAll(const char []);
 extern PetscErrorCode  DMRegisterDestroy(void);
+
 
 /*MC
   DMRegisterDynamic - Adds a new DM component implementation

@@ -1,6 +1,7 @@
  
 #include <private/dmimpl.h>     /*I      "petscdm.h"     I*/
 
+PetscClassId  DM_CLASSID;
 PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal;
 
 #undef __FUNCT__  
@@ -125,11 +126,42 @@ PetscErrorCode  DMSetOptionsPrefix(DM dm,const char prefix[])
 @*/
 PetscErrorCode  DMDestroy(DM *dm)
 {
+  PetscInt       i, cnt = 0;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!*dm) PetscFunctionReturn(0);
-  ierr = (*(*dm)->ops->destroy)(dm);CHKERRQ(ierr);
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  for (i=0; i<DM_MAX_WORK_VECTORS; i++) {
+    if (dm->localin[i])  {cnt++;}
+    if (dm->globalin[i]) {cnt++;}
+  }
+
+  if (--((PetscObject)dm)->refct - cnt > 0) PetscFunctionReturn(0);
+  /*
+     Need this test because the dm references the vectors that
+     reference the dm, so destroying the dm calls destroy on the
+     vectors that cause another destroy on the dm
+  */
+  if (((PetscObject)dm)->refct < 0) PetscFunctionReturn(0);
+  ((PetscObject) dm)->refct = 0;
+  for (i=0; i<DM_MAX_WORK_VECTORS; i++) {
+    if (dm->localout[i]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Destroying a DM that has a local vector obtained with DMGetLocalVector()");
+    if (dm->localin[i]) {ierr = VecDestroy(dm->localin[i]);CHKERRQ(ierr);}
+    if (dm->globalout[i]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Destroying a DM that has a global vector obtained with DMGetGlobalVector()");
+    if (dm->globalin[i]) {ierr = VecDestroy(dm->globalin[i]);CHKERRQ(ierr);}
+  }
+  if (dm->ltogmap)  {ierr = ISLocalToGlobalMappingDestroy(dm->ltogmap);CHKERRQ(ierr);}
+  if (dm->ltogmapb) {ierr = ISLocalToGlobalMappingDestroy(dm->ltogmapb);CHKERRQ(ierr);}
+
+  if (dm->vectype)  {ierr = PetscFree(dm->vectype);CHKERRQ(ierr);}
+
+  /* if memory was published with AMS then destroy it */
+  ierr = PetscObjectDepublish(dm);CHKERRQ(ierr);
+
+  ierr = (*dm->ops->destroy)(dm);CHKERRQ(ierr);
+  ierr = PetscFree(dm->data);CHKERRQ(ierr);
+
+  ierr = PetscHeaderDestroy(dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -169,6 +201,9 @@ PetscErrorCode  DMSetUp(DM dm)
     Input Parameter:
 .   dm - the DM object to set options for
 
+    Options Database:
+.   -dm_preallocate_only: Only preallocate the matrix for DMGetMatrix(), but do not fill it with zeros
+
     Level: developer
 
 .seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix()
@@ -179,6 +214,7 @@ PetscErrorCode  DMSetFromOptions(DM dm)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscOptionsGetBool(((PetscObject) dm)->prefix, "-dm_preallocate_only", &dm->prealloc_only, PETSC_NULL);CHKERRQ(ierr);
   if (dm->ops->setfromoptions) {
     ierr = (*dm->ops->setfromoptions)(dm);CHKERRQ(ierr);
   }
@@ -516,6 +552,29 @@ PetscErrorCode  DMGetMatrix(DM dm,const MatType mtype,Mat *mat)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "DMSetMatrixPreallocateOnly"
+/*@
+  DMSetMatrixPreallocateOnly - When DMGetMatrix() is called the matrix will be properly
+    preallocated but the nonzero structure and zero values will not be set.
+
+  Logically Collective on DMDA
+
+  Input Parameter:
++ dm - the DM
+- only - PETSC_TRUE if only want preallocation
+
+  Level: developer
+.seealso DMGetMatrix()
+@*/
+PetscErrorCode DMSetMatrixPreallocateOnly(DM dm, PetscBool only)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  dm->prealloc_only = only;
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "DMRefine"
 /*@
@@ -540,6 +599,7 @@ PetscErrorCode  DMRefine(DM dm,MPI_Comm comm,DM *dmf)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = (*dm->ops->refine)(dm,comm,dmf);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1174,7 +1234,7 @@ PetscErrorCode  DMSetType(DM dm, const DMType method)
   if (match) PetscFunctionReturn(0);
 
   if (!DMRegisterAllCalled) {ierr = DMRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
-  ierr = PetscFListFind(DMList, ((PetscObject)dm)->comm, method,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr = PetscFListFind(DMList, ((PetscObject)dm)->comm, method,PETSC_TRUE,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown DM type: %s", method);
 
   if (dm->ops->destroy) {
