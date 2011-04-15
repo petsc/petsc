@@ -40,7 +40,7 @@ PetscErrorCode  DMRegisterAll(const char path[])
   ierr = DMRegisterDynamic(DMSLICED,    path, "DMCreate_Sliced",    DMCreate_Sliced);CHKERRQ(ierr);
   ierr = DMRegisterDynamic(DMADDA,      path, "DMCreate_ADDA",      DMCreate_ADDA);CHKERRQ(ierr);
 #ifndef PETSC_USE_COMPLEX
-  ierr = DMRegisterDynamic(DMADDA,      path, "DMCreate_IGA",       DMCreate_IGA);CHKERRQ(ierr);
+  ierr = DMRegisterDynamic(DMIGA,       path, "DMCreate_IGA",       DMCreate_IGA);CHKERRQ(ierr);
 #endif
 #ifdef PETSC_HAVE_SIEVE
   ierr = DMRegisterDynamic(DMMESH,      path, "DMCreate_Mesh",      DMCreate_Mesh);CHKERRQ(ierr);

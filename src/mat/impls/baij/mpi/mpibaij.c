@@ -3189,7 +3189,6 @@ PetscErrorCode  MatCreate_MPIBAIJ(Mat B)
   ierr = PetscNewLog(B,Mat_MPIBAIJ,&b);CHKERRQ(ierr);
   B->data = (void*)b;
 
-
   ierr    = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
   B->assembled  = PETSC_FALSE;
 
@@ -3227,6 +3226,9 @@ PetscErrorCode  MatCreate_MPIBAIJ(Mat B)
   b->ht_fact      = 0;
   b->ht_total_ct  = 0;
   b->ht_insert_ct = 0;
+
+  /* stuff for MatGetSubMatrices_MPIBAIJ_local() */
+  b->ijonly       = PETSC_FALSE;
 
   ierr = PetscOptionsBegin(((PetscObject)B)->comm,PETSC_NULL,"Options for loading MPIBAIJ matrix 1","Mat");CHKERRQ(ierr);
     ierr = PetscOptionsBool("-mat_use_hash_table","Use hash table to save memory in constructing matrix","MatSetOption",PETSC_FALSE,&flg,PETSC_NULL);CHKERRQ(ierr);

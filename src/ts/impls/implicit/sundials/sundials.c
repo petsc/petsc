@@ -1,7 +1,6 @@
-
 /*
     Provides a PETSc interface to SUNDIALS/CVODE solver.
-    The interface to PVODE (old version of CVODE) was originally contributed 
+    The interface to PVODE (old version of CVODE) was originally contributed
     by Liyang Xu. It has been redone by Hong Zhang and Dinesh Kaushik.
 
     Reference: sundials-2.4.0/examples/cvode/parallel/cvDiurnal_kry_p.c
@@ -72,7 +71,7 @@ PetscErrorCode TSPrecond_Sundials(realtype tn,N_Vector y,N_Vector fy,
 #define __FUNCT__ "TSPSolve_Sundials"
 PetscErrorCode TSPSolve_Sundials(realtype tn,N_Vector y,N_Vector fy,N_Vector r,N_Vector z,
                                  realtype _gamma,realtype delta,int lr,void *P_data,N_Vector vtemp)
-{ 
+{
   TS              ts = (TS) P_data;
   TS_Sundials     *cvode = (TS_Sundials*)ts->data;
   PC              pc = cvode->pc;
@@ -96,8 +95,8 @@ PetscErrorCode TSPSolve_Sundials(realtype tn,N_Vector y,N_Vector fy,N_Vector r,N
 
 /*
         TSFunction_Sundials - routine that we provide to Sundials that applies the right hand side.
-*/  
-#undef __FUNCT__  
+*/
+#undef __FUNCT__
 #define __FUNCT__ "TSFunction_Sundials"
 int TSFunction_Sundials(realtype t,N_Vector y,N_Vector ydot,void *ctx)
 {
@@ -125,34 +124,36 @@ int TSFunction_Sundials(realtype t,N_Vector y,N_Vector ydot,void *ctx)
 /*
        TSStep_Sundials_Nonlinear - Calls Sundials to integrate the ODE.
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSStep_Sundials_Nonlinear"
 PetscErrorCode TSStep_Sundials_Nonlinear(TS ts,int *steps,double *time)
 {
   TS_Sundials    *cvode = (TS_Sundials*)ts->data;
   Vec            sol = ts->vec_sol;
   PetscErrorCode ierr;
-  PetscInt       i,max_steps = ts->max_steps,flag;
+  PetscInt       i,flag;
   long int       its,nsteps;
   realtype       t,tout;
   PetscScalar    *y_data;
   void           *mem;
- 
+
   PetscFunctionBegin;
   mem  = cvode->mem;
   tout = ts->max_time;
   ierr = VecGetArray(ts->vec_sol,&y_data);CHKERRQ(ierr);
   N_VSetArrayPointer((realtype *)y_data,cvode->y);
   ierr = VecRestoreArray(ts->vec_sol,PETSC_NULL);CHKERRQ(ierr);
-  for (i = 0; i < max_steps; i++) {
+
+  for (i = 0; i < ts->max_steps; i++) {
     if (ts->ptime >= ts->max_time) break;
     ierr = TSPreStep(ts);CHKERRQ(ierr);
-    if (cvode->monitorstep){
+
+    if (cvode->monitorstep) {
       flag = CVode(mem,tout,cvode->y,&t,CV_ONE_STEP);
     } else {
       flag = CVode(mem,tout,cvode->y,&t,CV_NORMAL);
     }
-   
+
     if (flag){ /* display error message */
       switch (flag){
       case CV_ILL_INPUT:
@@ -204,14 +205,12 @@ PetscErrorCode TSStep_Sundials_Nonlinear(TS ts,int *steps,double *time)
         SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVode() fails, flag %d",flag);
       }
     }
-  
-    if (t > ts->max_time && cvode->exact_final_time) { 
+
+    if (t > ts->max_time && cvode->exact_final_time) {
       /* interpolate to final requested time */
       ierr = CVodeGetDky(mem,tout,0,cvode->y);CHKERRQ(ierr);
       t = tout;
     }
-    ts->time_step = t - ts->ptime;
-    ts->ptime     = t; 
 
     /* copy the solution from cvode->y to cvode->update and sol */
     ierr = VecPlaceArray(cvode->w1,y_data); CHKERRQ(ierr);
@@ -219,20 +218,24 @@ PetscErrorCode TSStep_Sundials_Nonlinear(TS ts,int *steps,double *time)
     ierr = VecResetArray(cvode->w1); CHKERRQ(ierr);
     ierr = VecCopy(cvode->update,sol);CHKERRQ(ierr);
     ierr = CVodeGetNumNonlinSolvIters(mem,&its);CHKERRQ(ierr);
-    ts->nonlinear_its = its;
     ierr = CVSpilsGetNumLinIters(mem, &its);
-    ts->linear_its = its; 
+    ts->nonlinear_its = its; ts->linear_its = its;
+
+    ts->time_step = t - ts->ptime;
+    ts->ptime     = t;
     ts->steps++;
+
     ierr = TSPostStep(ts);CHKERRQ(ierr);
-    ierr = TSMonitor(ts,ts->steps,t,sol);CHKERRQ(ierr); 
+    ierr = TSMonitor(ts,ts->steps,t,sol);CHKERRQ(ierr);
   }
   ierr = CVodeGetNumSteps(mem,&nsteps);CHKERRQ(ierr);
-  *steps = nsteps;   
+
+  *steps = nsteps;
   *time  = t;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSReset_Sundials"
 PetscErrorCode TSReset_Sundials(TS ts)
 {
@@ -251,7 +254,7 @@ PetscErrorCode TSReset_Sundials(TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSDestroy_Sundials"
 PetscErrorCode TSDestroy_Sundials(TS ts)
 {
@@ -260,13 +263,13 @@ PetscErrorCode TSDestroy_Sundials(TS ts)
 
   PetscFunctionBegin;
   ierr = TSReset_Sundials(ts);CHKERRQ(ierr);
-  if (cvode->pc) {ierr = PCDestroy(cvode->pc);CHKERRQ(ierr);} 
+  if (cvode->pc) {ierr = PCDestroy(cvode->pc);CHKERRQ(ierr);}
   ierr = MPI_Comm_free(&(cvode->comm_sundials));CHKERRQ(ierr);
   ierr = PetscFree(ts->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSSetUp_Sundials_Nonlinear"
 PetscErrorCode TSSetUp_Sundials_Nonlinear(TS ts)
 {
@@ -296,14 +299,14 @@ PetscErrorCode TSSetUp_Sundials_Nonlinear(TS ts)
   for (i = 0; i < locsize; i++) y_data[i] = parray[i];
   /*ierr = PetscMemcpy(y_data,parray,locsize*sizeof(PETSC_SCALAR)); CHKERRQ(ierr);*/
   ierr = VecRestoreArray(ts->vec_sol,PETSC_NULL);CHKERRQ(ierr);
-  ierr = VecDuplicate(ts->vec_sol,&cvode->update);CHKERRQ(ierr);  
-  ierr = VecDuplicate(ts->vec_sol,&cvode->func);CHKERRQ(ierr);  
+  ierr = VecDuplicate(ts->vec_sol,&cvode->update);CHKERRQ(ierr);
+  ierr = VecDuplicate(ts->vec_sol,&cvode->func);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(ts,cvode->update);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(ts,cvode->func);CHKERRQ(ierr);
 
-  /* 
+  /*
     Create work vectors for the TSPSolve_Sundials() routine. Note these are
-    allocated with zero space arrays because the actual array space is provided 
+    allocated with zero space arrays because the actual array space is provided
     by Sundials and set using VecPlaceArray().
   */
   ierr = VecCreateMPIWithArray(((PetscObject)ts)->comm,locsize,PETSC_DECIDE,0,&cvode->w1);CHKERRQ(ierr);
@@ -312,7 +315,7 @@ PetscErrorCode TSSetUp_Sundials_Nonlinear(TS ts)
   ierr = PetscLogObjectParent(ts,cvode->w2);CHKERRQ(ierr);
 
   /* Call CVodeCreate to create the solver memory and the use of a Newton iteration */
-  mem = CVodeCreate(cvode->cvode_type, CV_NEWTON); 
+  mem = CVodeCreate(cvode->cvode_type, CV_NEWTON);
   if (!mem) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_MEM,"CVodeCreate() fails");
   cvode->mem = mem;
 
@@ -325,7 +328,7 @@ PetscErrorCode TSSetUp_Sundials_Nonlinear(TS ts)
   if (flag) SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_LIB,"CVodeSetInitStep() failed");
   if (cvode->mindt > 0) {
     flag = CVodeSetMinStep(mem,(realtype)cvode->mindt);
-    if (flag){ 
+    if (flag){
       if (flag == CV_MEM_NULL){
         SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_LIB,"CVodeSetMinStep() failed, cvode_mem pointer is NULL");
       } else if (flag == CV_ILL_INPUT){
@@ -356,7 +359,7 @@ PetscErrorCode TSSetUp_Sundials_Nonlinear(TS ts)
 
   /* Specify max num of steps to be taken by cvode in its attempt to reach the next output time */
   flag = CVodeSetMaxNumSteps(mem,ts->max_steps);
-  ierr = TSMonitor(ts,ts->steps,ts->ptime,sol);CHKERRQ(ierr); 
+  ierr = TSMonitor(ts,ts->steps,ts->ptime,sol);CHKERRQ(ierr);
 
   /* call CVSpgmr to use GMRES as the linear solver.        */
   /* setup the ode integrator with the given preconditioner */
@@ -369,7 +372,7 @@ PetscErrorCode TSSetUp_Sundials_Nonlinear(TS ts)
     flag  = CVSpgmr(mem,PREC_LEFT,0);
     if (flag) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVSpgmr() fails, flag %d",flag);
 
-    /* Set preconditioner and solve routines Precond and PSolve, 
+    /* Set preconditioner and solve routines Precond and PSolve,
      and the pointer to the user-defined block data */
     flag = CVSpilsSetPreconditioner(mem,TSPrecond_Sundials,TSPSolve_Sundials);
     if (flag) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVSpilsSetPreconditioner() fails, flag %d", flag);
@@ -385,7 +388,7 @@ const char *TSSundialsLmmTypes[] = {"","adams","bdf","TSSundialsLmmType","SUNDIA
 /* type of G-S orthogonalization used by CVODE linear solver */
 const char *TSSundialsGramSchmidtTypes[] = {"","modified","classical","TSSundialsGramSchmidtType","SUNDIALS_",0};
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSSetFromOptions_Sundials_Nonlinear"
 PetscErrorCode TSSetFromOptions_Sundials_Nonlinear(TS ts)
 {
@@ -416,8 +419,8 @@ PetscErrorCode TSSetFromOptions_Sundials_Nonlinear(TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "TSView_Sundials" 
+#undef __FUNCT__
+#define __FUNCT__ "TSView_Sundials"
 PetscErrorCode TSView_Sundials(TS ts,PetscViewer viewer)
 {
   TS_Sundials    *cvode = (TS_Sundials*)ts->data;
@@ -437,7 +440,7 @@ PetscErrorCode TSView_Sundials(TS ts,PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring);CHKERRQ(ierr);
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"Sundials integrater does not use SNES!\n");CHKERRQ(ierr); 
+    ierr = PetscViewerASCIIPrintf(viewer,"Sundials integrater does not use SNES!\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"Sundials integrater type %s\n",type);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"Sundials abs tol %g rel tol %g\n",cvode->abstol,cvode->reltol);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"Sundials linear solver tolerance factor %g\n",cvode->linear_tol);CHKERRQ(ierr);
@@ -496,7 +499,7 @@ EXTERN_C_BEGIN
 PetscErrorCode  TSSundialsSetType_Sundials(TS ts,TSSundialsLmmType type)
 {
   TS_Sundials *cvode = (TS_Sundials*)ts->data;
-  
+
   PetscFunctionBegin;
   cvode->cvode_type = type;
   PetscFunctionReturn(0);
@@ -509,7 +512,7 @@ EXTERN_C_BEGIN
 PetscErrorCode  TSSundialsSetGMRESRestart_Sundials(TS ts,int restart)
 {
   TS_Sundials *cvode = (TS_Sundials*)ts->data;
-  
+
   PetscFunctionBegin;
   cvode->restart = restart;
   PetscFunctionReturn(0);
@@ -522,7 +525,7 @@ EXTERN_C_BEGIN
 PetscErrorCode  TSSundialsSetLinearTolerance_Sundials(TS ts,double tol)
 {
   TS_Sundials *cvode = (TS_Sundials*)ts->data;
-  
+
   PetscFunctionBegin;
   cvode->linear_tol = tol;
   PetscFunctionReturn(0);
@@ -535,7 +538,7 @@ EXTERN_C_BEGIN
 PetscErrorCode  TSSundialsSetGramSchmidtType_Sundials(TS ts,TSSundialsGramSchmidtType type)
 {
   TS_Sundials *cvode = (TS_Sundials*)ts->data;
-  
+
   PetscFunctionBegin;
   cvode->gtype = type;
   PetscFunctionReturn(0);
@@ -548,7 +551,7 @@ EXTERN_C_BEGIN
 PetscErrorCode  TSSundialsSetTolerance_Sundials(TS ts,double aabs,double rel)
 {
   TS_Sundials *cvode = (TS_Sundials*)ts->data;
-  
+
   PetscFunctionBegin;
   if (aabs != PETSC_DECIDE) cvode->abstol = aabs;
   if (rel != PETSC_DECIDE)  cvode->reltol = rel;
@@ -583,10 +586,10 @@ PetscErrorCode  TSSundialsSetMaxTimeStep_Sundials(TS ts,PetscReal maxdt)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSSundialsGetPC_Sundials"
 PetscErrorCode  TSSundialsGetPC_Sundials(TS ts,PC *pc)
-{ 
+{
   TS_Sundials *cvode = (TS_Sundials*)ts->data;
 
   PetscFunctionBegin;
@@ -596,24 +599,24 @@ PetscErrorCode  TSSundialsGetPC_Sundials(TS ts,PC *pc)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSSundialsGetIterations_Sundials"
 PetscErrorCode  TSSundialsGetIterations_Sundials(TS ts,int *nonlin,int *lin)
-{ 
+{
   PetscFunctionBegin;
   if (nonlin) *nonlin = ts->nonlinear_its;
   if (lin)    *lin    = ts->linear_its;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
-  
+
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSSundialsSetExactFinalTime_Sundials"
 PetscErrorCode  TSSundialsSetExactFinalTime_Sundials(TS ts,PetscBool  s)
 {
   TS_Sundials *cvode = (TS_Sundials*)ts->data;
-  
+
   PetscFunctionBegin;
   cvode->exact_final_time = s;
   PetscFunctionReturn(0);
@@ -621,12 +624,12 @@ PetscErrorCode  TSSundialsSetExactFinalTime_Sundials(TS ts,PetscBool  s)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSSundialsMonitorInternalSteps_Sundials"
 PetscErrorCode  TSSundialsMonitorInternalSteps_Sundials(TS ts,PetscBool  s)
 {
   TS_Sundials *cvode = (TS_Sundials*)ts->data;
-  
+
   PetscFunctionBegin;
   cvode->monitorstep = s;
   PetscFunctionReturn(0);
@@ -664,7 +667,7 @@ EXTERN_C_END
 PetscErrorCode  TSSundialsGetIterations(TS ts,int *nonlin,int *lin)
 {
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   ierr = PetscUseMethod(ts,"TSSundialsGetIterations_C",(TS,int*,int*),(ts,nonlin,lin));CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -694,7 +697,7 @@ PetscErrorCode  TSSundialsGetIterations(TS ts,int *nonlin,int *lin)
 PetscErrorCode  TSSundialsSetType(TS ts,TSSundialsLmmType type)
 {
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   ierr = PetscTryMethod(ts,"TSSundialsSetType_C",(TS,TSSundialsLmmType),(ts,type));CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -703,7 +706,7 @@ PetscErrorCode  TSSundialsSetType(TS ts,TSSundialsLmmType type)
 #undef __FUNCT__
 #define __FUNCT__ "TSSundialsSetGMRESRestart"
 /*@
-   TSSundialsSetGMRESRestart - Sets the dimension of the Krylov space used by 
+   TSSundialsSetGMRESRestart - Sets the dimension of the Krylov space used by
        GMRES in the linear solver in SUNDIALS. SUNDIALS DOES NOT use restarted GMRES so
        this is ALSO the maximum number of GMRES steps that will be used.
 
@@ -717,7 +720,7 @@ PetscErrorCode  TSSundialsSetType(TS ts,TSSundialsLmmType type)
 
 .keywords: GMRES, restart
 
-.seealso: TSSundialsGetIterations(), TSSundialsSetType(), 
+.seealso: TSSundialsGetIterations(), TSSundialsSetType(),
           TSSundialsSetLinearTolerance(), TSSundialsSetGramSchmidtType(), TSSundialsSetTolerance(),
           TSSundialsGetIterations(), TSSundialsSetType(), TSSundialsSetGMRESRestart(),
           TSSundialsSetLinearTolerance(), TSSundialsSetTolerance(), TSSundialsGetPC(),
@@ -761,7 +764,7 @@ PetscErrorCode  TSSundialsSetGMRESRestart(TS ts,int restart)
 PetscErrorCode  TSSundialsSetLinearTolerance(TS ts,double tol)
 {
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   PetscValidLogicalCollectiveReal(ts,tol,2);
   ierr = PetscTryMethod(ts,"TSSundialsSetLinearTolerance_C",(TS,double),(ts,tol));CHKERRQ(ierr);
@@ -794,7 +797,7 @@ PetscErrorCode  TSSundialsSetLinearTolerance(TS ts,double tol)
 PetscErrorCode  TSSundialsSetGramSchmidtType(TS ts,TSSundialsGramSchmidtType type)
 {
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   ierr = PetscTryMethod(ts,"TSSundialsSetGramSchmidtType_C",(TS,TSSundialsGramSchmidtType),(ts,type));CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -803,14 +806,14 @@ PetscErrorCode  TSSundialsSetGramSchmidtType(TS ts,TSSundialsGramSchmidtType typ
 #undef __FUNCT__
 #define __FUNCT__ "TSSundialsSetTolerance"
 /*@
-   TSSundialsSetTolerance - Sets the absolute and relative tolerance used by 
+   TSSundialsSetTolerance - Sets the absolute and relative tolerance used by
                          Sundials for error control.
 
    Logically Collective on TS
 
    Input parameters:
 +    ts  - the time-step context
-.    aabs - the absolute tolerance  
+.    aabs - the absolute tolerance
 -    rel - the relative tolerance
 
      See the Cvode/Sundials users manual for exact details on these parameters. Essentially
@@ -821,7 +824,7 @@ PetscErrorCode  TSSundialsSetGramSchmidtType(TS ts,TSSundialsGramSchmidtType typ
 .keywords: Sundials, tolerance
 
 .seealso: TSSundialsGetIterations(), TSSundialsSetType(), TSSundialsSetGMRESRestart(),
-          TSSundialsSetLinearTolerance(), TSSundialsSetGramSchmidtType(), 
+          TSSundialsSetLinearTolerance(), TSSundialsSetGramSchmidtType(),
           TSSundialsGetIterations(), TSSundialsSetType(), TSSundialsSetGMRESRestart(),
           TSSundialsSetLinearTolerance(), TSSundialsSetTolerance(), TSSundialsGetPC(),
           TSSundialsSetExactFinalTime()
@@ -830,13 +833,13 @@ PetscErrorCode  TSSundialsSetGramSchmidtType(TS ts,TSSundialsGramSchmidtType typ
 PetscErrorCode  TSSundialsSetTolerance(TS ts,double aabs,double rel)
 {
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   ierr = PetscTryMethod(ts,"TSSundialsSetTolerance_C",(TS,double,double),(ts,aabs,rel));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSSundialsGetPC"
 /*@
    TSSundialsGetPC - Extract the PC context from a time-step context for Sundials.
@@ -855,7 +858,7 @@ PetscErrorCode  TSSundialsSetTolerance(TS ts,double aabs,double rel)
           TSSundialsSetLinearTolerance(), TSSundialsSetTolerance()
 @*/
 PetscErrorCode  TSSundialsGetPC(TS ts,PC *pc)
-{ 
+{
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -863,10 +866,10 @@ PetscErrorCode  TSSundialsGetPC(TS ts,PC *pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSSundialsSetExactFinalTime"
 /*@
-   TSSundialsSetExactFinalTime - Determines if Sundials interpolates solution to the 
+   TSSundialsSetExactFinalTime - Determines if Sundials interpolates solution to the
       exact final time requested by the user or just returns it at the final time
       it computed. (Defaults to true).
 
@@ -879,10 +882,10 @@ PetscErrorCode  TSSundialsGetPC(TS ts,PC *pc)
 .seealso:TSSundialsGetIterations(), TSSundialsSetType(), TSSundialsSetGMRESRestart(),
           TSSundialsSetLinearTolerance(), TSSundialsSetGramSchmidtType(), TSSundialsSetTolerance(),
           TSSundialsGetIterations(), TSSundialsSetType(), TSSundialsSetGMRESRestart(),
-          TSSundialsSetLinearTolerance(), TSSundialsSetTolerance(), TSSundialsGetPC() 
+          TSSundialsSetLinearTolerance(), TSSundialsSetTolerance(), TSSundialsGetPC()
 @*/
 PetscErrorCode  TSSundialsSetExactFinalTime(TS ts,PetscBool  ft)
-{ 
+{
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -890,7 +893,7 @@ PetscErrorCode  TSSundialsSetExactFinalTime(TS ts,PetscBool  ft)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSSundialsSetMinTimeStep"
 /*@
    TSSundialsSetMinTimeStep - Smallest time step to be chosen by the adaptive controller.
@@ -916,7 +919,7 @@ PetscErrorCode  TSSundialsSetMinTimeStep(TS ts,PetscReal mindt)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSSundialsSetMaxTimeStep"
 /*@
    TSSundialsSetMaxTimeStep - Largest time step to be chosen by the adaptive controller.
@@ -938,7 +941,7 @@ PetscErrorCode  TSSundialsSetMaxTimeStep(TS ts,PetscReal maxdt)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSSundialsMonitorInternalSteps"
 /*@
    TSSundialsMonitorInternalSteps - Monitor Sundials internal steps (Defaults to false).
@@ -952,10 +955,10 @@ PetscErrorCode  TSSundialsSetMaxTimeStep(TS ts,PetscReal maxdt)
 .seealso:TSSundialsGetIterations(), TSSundialsSetType(), TSSundialsSetGMRESRestart(),
           TSSundialsSetLinearTolerance(), TSSundialsSetGramSchmidtType(), TSSundialsSetTolerance(),
           TSSundialsGetIterations(), TSSundialsSetType(), TSSundialsSetGMRESRestart(),
-          TSSundialsSetLinearTolerance(), TSSundialsSetTolerance(), TSSundialsGetPC() 
+          TSSundialsSetLinearTolerance(), TSSundialsSetTolerance(), TSSundialsGetPC()
 @*/
 PetscErrorCode  TSSundialsMonitorInternalSteps(TS ts,PetscBool  ft)
-{ 
+{
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -971,7 +974,7 @@ PetscErrorCode  TSSundialsMonitorInternalSteps(TS ts,PetscBool  ft)
 .    -ts_sundials_gramschmidt_type <modified, classical> - type of orthogonalization inside GMRES
 .    -ts_sundials_atol <tol> - Absolute tolerance for convergence
 .    -ts_sundials_rtol <tol> - Relative tolerance for convergence
-.    -ts_sundials_linear_tolerance <tol> 
+.    -ts_sundials_linear_tolerance <tol>
 .    -ts_sundials_gmres_restart <restart> - Number of GMRES orthogonalization directions
 .    -ts_sundials_exact_final_time - Interpolate output to stop exactly at the final time
 -    -ts_sundials_monitor_steps - Monitor SUNDIALS internel steps
@@ -987,7 +990,7 @@ PetscErrorCode  TSSundialsMonitorInternalSteps(TS ts,PetscBool  ft)
 
 M*/
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSCreate_Sundials"
 PetscErrorCode  TSCreate_Sundials(TS ts)
 {

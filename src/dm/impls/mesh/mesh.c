@@ -124,7 +124,7 @@ PetscErrorCode DMMeshView_Sieve_Ascii(const ALE::Obj<PETSC_MESH_TYPE>& mesh, Pet
     PetscBool  isConnect;
     size_t     len;
 
-    ierr = PetscViewerFileGetName(viewer, &filename);CHKERRQ(ierr);
+    ierr = PetscViewerFileGetName(viewer, (const char **) &filename);CHKERRQ(ierr);
     ierr = PetscStrlen(filename, &len);CHKERRQ(ierr);
     ierr = PetscStrcmp(&(filename[len-5]), ".lcon", &isConnect);CHKERRQ(ierr);
     if (!isConnect) {
@@ -160,7 +160,7 @@ PetscErrorCode DMMeshView_Sieve_Binary(const ALE::Obj<PETSC_MESH_TYPE>& mesh, Pe
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = PetscViewerFileGetName(viewer, &filename);CHKERRQ(ierr);
+  ierr = PetscViewerFileGetName(viewer, (const char **) &filename);CHKERRQ(ierr);
   ALE::MeshSerializer::writeMesh(filename, *mesh);
   PetscFunctionReturn(0);
 }
@@ -232,7 +232,7 @@ PetscErrorCode DMMeshLoad(PetscViewer viewer, DM dm)
     ALE::Obj<PETSC_MESH_TYPE> m = new PETSC_MESH_TYPE(comm, 1);
     ierr = DMMeshSetMesh(dm, m);CHKERRQ(ierr);
   }
-  ierr = PetscViewerFileGetName(viewer, &filename);CHKERRQ(ierr);
+  ierr = PetscViewerFileGetName(viewer, (const char **) &filename);CHKERRQ(ierr);
   ALE::MeshSerializer::loadMesh(filename, *mesh->m);
   PetscFunctionReturn(0);
 }

@@ -805,7 +805,7 @@ static PetscErrorCode TSGLGetMaxSizes(TS ts,PetscInt *max_r,PetscInt *max_s)
 static PetscErrorCode TSStep_GL(TS ts,PetscInt *steps,PetscReal *ptime)
 {
   TS_GL          *gl = (TS_GL*)ts->data;
-  PetscInt       i,k,max_steps = ts->max_steps,its,lits,max_r,max_s;
+  PetscInt       i,k,its,lits,max_r,max_s;
   PetscBool      final_step,finish;
   PetscErrorCode ierr;
 
@@ -837,7 +837,7 @@ static PetscErrorCode TSStep_GL(TS ts,PetscInt *steps,PetscReal *ptime)
 
   if (gl->current_scheme < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"A starting scheme has not been provided");
 
-  for (k=0,final_step=PETSC_FALSE,finish=PETSC_FALSE; k<max_steps && !finish; k++) {
+  for (k=0,final_step=PETSC_FALSE,finish=PETSC_FALSE; k<ts->max_steps && !finish; k++) {
     PetscInt j,r,s,next_scheme = 0,rejections;
     PetscReal h,hmnorm[4],enorm[3],next_h;
     PetscBool  accept;
@@ -1000,7 +1000,6 @@ static PetscErrorCode TSReset_GL(TS ts)
 static PetscErrorCode TSDestroy_GL(TS ts)
 {
   TS_GL          *gl = (TS_GL*)ts->data;
-  PetscInt        max_r,max_s;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;

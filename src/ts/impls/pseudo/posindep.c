@@ -1,4 +1,3 @@
-
 /*
        Code for Timestepping with implicit backwards Euler.
 */
@@ -12,9 +11,9 @@ typedef struct {
   /* information used for Pseudo-timestepping */
 
   PetscErrorCode (*dt)(TS,PetscReal*,void*);              /* compute next timestep, and related context */
-  void           *dtctx;              
+  void           *dtctx;
   PetscErrorCode (*verify)(TS,Vec,void*,PetscReal*,PetscBool *); /* verify previous timestep and related context */
-  void           *verifyctx;     
+  void           *verifyctx;
 
   PetscReal  initial_fnorm,fnorm;                  /* original and current norm of F(u) */
   PetscReal  fnorm_previous;
@@ -25,7 +24,7 @@ typedef struct {
 
 /* ------------------------------------------------------------------------------*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSPseudoComputeTimeStep"
 /*@
     TSPseudoComputeTimeStep - Computes the next timestep for a currently running
@@ -63,7 +62,7 @@ PetscErrorCode  TSPseudoComputeTimeStep(TS ts,PetscReal *dt)
 
 
 /* ------------------------------------------------------------------------------*/
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSPseudoDefaultVerifyTimeStep"
 /*@C
    TSPseudoDefaultVerifyTimeStep - Default code to verify the quality of the last timestep.
@@ -82,10 +81,10 @@ PetscErrorCode  TSPseudoComputeTimeStep(TS ts,PetscReal *dt)
    Level: advanced
 
    Note:
-   This routine always returns a flag of 1, indicating an acceptable 
+   This routine always returns a flag of 1, indicating an acceptable
    timestep.
 
-.keywords: timestep, pseudo, default, verify 
+.keywords: timestep, pseudo, default, verify
 
 .seealso: TSPseudoSetVerifyTimeStep(), TSPseudoVerifyTimeStep()
 @*/
@@ -97,7 +96,7 @@ PetscErrorCode  TSPseudoDefaultVerifyTimeStep(TS ts,Vec update,void *dtctx,Petsc
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSPseudoVerifyTimeStep"
 /*@
     TSPseudoVerifyTimeStep - Verifies whether the last timestep was acceptable.
@@ -118,7 +117,7 @@ PetscErrorCode  TSPseudoDefaultVerifyTimeStep(TS ts,Vec update,void *dtctx,Petsc
     The routine to be called here to compute the timestep should be
     set by calling TSPseudoSetVerifyTimeStep().
 
-.keywords: timestep, pseudo, verify 
+.keywords: timestep, pseudo, verify
 
 .seealso: TSPseudoSetVerifyTimeStep(), TSPseudoDefaultVerifyTimeStep()
 @*/
@@ -137,22 +136,24 @@ PetscErrorCode  TSPseudoVerifyTimeStep(TS ts,Vec update,PetscReal *dt,PetscBool 
 
 /* --------------------------------------------------------------------------------*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSStep_Pseudo"
 static PetscErrorCode TSStep_Pseudo(TS ts,PetscInt *steps,PetscReal *ptime)
 {
   TS_Pseudo      *pseudo = (TS_Pseudo*)ts->data;
   Vec            sol = ts->vec_sol, update = pseudo->update;
   PetscErrorCode ierr;
-  PetscInt       i,max_steps = ts->max_steps,its,lits;
+  PetscInt       i,its,lits;
   PetscBool      ok;
   PetscReal      current_time_step;
-  
+
   PetscFunctionBegin;
   *steps = -ts->steps;
+  *ptime =  ts->ptime;
 
   ierr = VecCopy(sol,update);CHKERRQ(ierr);
-  for (i=0; i<max_steps && ts->ptime < ts->max_time; i++) {
+  for (i=0; i<ts->max_steps && ts->ptime < ts->max_time; i++) {
+
     ierr = TSPseudoComputeTimeStep(ts,&ts->time_step);CHKERRQ(ierr);
     ierr = TSMonitor(ts,ts->steps,ts->ptime,sol);CHKERRQ(ierr);
     current_time_step = ts->time_step;
@@ -183,7 +184,7 @@ static PetscErrorCode TSStep_Pseudo(TS ts,PetscInt *steps,PetscReal *ptime)
 }
 
 /*------------------------------------------------------------*/
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSReset_Pseudo"
 static PetscErrorCode TSReset_Pseudo(TS ts)
 {
@@ -197,7 +198,7 @@ static PetscErrorCode TSReset_Pseudo(TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSDestroy_Pseudo"
 static PetscErrorCode TSDestroy_Pseudo(TS ts)
 {
@@ -211,7 +212,7 @@ static PetscErrorCode TSDestroy_Pseudo(TS ts)
 
 /*------------------------------------------------------------*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSPseudoGetXdot"
 /*
     Compute Xdot = (X^{n+1}-X^n)/dt) = 0
@@ -238,7 +239,7 @@ static PetscErrorCode TSPseudoGetXdot(TS ts,Vec X,Vec *Xdot)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESTSFormFunction_Pseudo"
 /*
     The transient residual is
@@ -268,7 +269,7 @@ static PetscErrorCode SNESTSFormFunction_Pseudo(SNES snes,Vec X,Vec Y,TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESTSFormJacobian_Pseudo"
 /*
    This constructs the Jacobian needed for SNES.  For DAE, this is
@@ -291,7 +292,7 @@ static PetscErrorCode SNESTSFormJacobian_Pseudo(SNES snes,Vec X,Mat *AA,Mat *BB,
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSSetUp_Pseudo"
 static PetscErrorCode TSSetUp_Pseudo(TS ts)
 {
@@ -319,7 +320,7 @@ static PetscErrorCode TSSetUp_Pseudo(TS ts)
 }
 /*------------------------------------------------------------*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSPseudoMonitorDefault"
 PetscErrorCode TSPseudoMonitorDefault(TS ts,PetscInt step,PetscReal ptime,Vec v,void *ctx)
 {
@@ -338,7 +339,7 @@ PetscErrorCode TSPseudoMonitorDefault(TS ts,PetscInt step,PetscReal ptime,Vec v,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSSetFromOptions_Pseudo"
 static PetscErrorCode TSSetFromOptions_Pseudo(TS ts)
 {
@@ -364,7 +365,7 @@ static PetscErrorCode TSSetFromOptions_Pseudo(TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSView_Pseudo"
 static PetscErrorCode TSView_Pseudo(TS ts,PetscViewer viewer)
 {
@@ -373,10 +374,10 @@ static PetscErrorCode TSView_Pseudo(TS ts,PetscViewer viewer)
 }
 
 /* ----------------------------------------------------------------------------- */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSPseudoSetVerifyTimeStep"
 /*@C
-   TSPseudoSetVerifyTimeStep - Sets a user-defined routine to verify the quality of the 
+   TSPseudoSetVerifyTimeStep - Sets a user-defined routine to verify the quality of the
    last timestep.
 
    Logically Collective on TS
@@ -401,7 +402,7 @@ static PetscErrorCode TSView_Pseudo(TS ts,PetscViewer viewer)
    The routine set here will be called by TSPseudoVerifyTimeStep()
    during the timestepping process.
 
-.keywords: timestep, pseudo, set, verify 
+.keywords: timestep, pseudo, set, verify
 
 .seealso: TSPseudoDefaultVerifyTimeStep(), TSPseudoVerifyTimeStep()
 @*/
@@ -415,10 +416,10 @@ PetscErrorCode  TSPseudoSetVerifyTimeStep(TS ts,PetscErrorCode (*dt)(TS,Vec,void
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSPseudoSetTimeStepIncrement"
 /*@
-    TSPseudoSetTimeStepIncrement - Sets the scaling increment applied to 
+    TSPseudoSetTimeStepIncrement - Sets the scaling increment applied to
     dt when using the TSPseudoDefaultTimeStep() routine.
 
    Logically Collective on TS
@@ -447,12 +448,12 @@ PetscErrorCode  TSPseudoSetTimeStepIncrement(TS ts,PetscReal inc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSPseudoIncrementDtFromInitialDt"
 /*@
     TSPseudoIncrementDtFromInitialDt - Indicates that a new timestep
     is computed via the formula
-$         dt = initial_dt*initial_fnorm/current_fnorm 
+$         dt = initial_dt*initial_fnorm/current_fnorm
       rather than the default update,
 $         dt = current_dt*previous_fnorm/current_fnorm.
 
@@ -525,7 +526,7 @@ PetscErrorCode  TSPseudoSetTimeStep(TS ts,PetscErrorCode (*dt)(TS,PetscReal*,voi
 
 typedef PetscErrorCode (*FCN1)(TS,Vec,void*,PetscReal*,PetscBool *); /* force argument to next function to not be extern C*/
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSPseudoSetVerifyTimeStep_Pseudo"
 PetscErrorCode  TSPseudoSetVerifyTimeStep_Pseudo(TS ts,FCN1 dt,void* ctx)
 {
@@ -540,7 +541,7 @@ PetscErrorCode  TSPseudoSetVerifyTimeStep_Pseudo(TS ts,FCN1 dt,void* ctx)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSPseudoSetTimeStepIncrement_Pseudo"
 PetscErrorCode  TSPseudoSetTimeStepIncrement_Pseudo(TS ts,PetscReal inc)
 {
@@ -553,7 +554,7 @@ PetscErrorCode  TSPseudoSetTimeStepIncrement_Pseudo(TS ts,PetscReal inc)
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSPseudoIncrementDtFromInitialDt_Pseudo"
 PetscErrorCode  TSPseudoIncrementDtFromInitialDt_Pseudo(TS ts)
 {
@@ -567,7 +568,7 @@ EXTERN_C_END
 
 typedef PetscErrorCode (*FCN2)(TS,PetscReal*,void*); /* force argument to next function to not be extern C*/
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSPseudoSetTimeStep_Pseudo"
 PetscErrorCode  TSPseudoSetTimeStep_Pseudo(TS ts,FCN2 dt,void* ctx)
 {
@@ -625,7 +626,7 @@ $  Xdot = (Xpredicted - Xold)/dt = (Xold-Xold)/dt = 0
 
 M*/
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSCreate_Pseudo"
 PetscErrorCode  TSCreate_Pseudo(TS ts)
 {
@@ -638,7 +639,7 @@ PetscErrorCode  TSCreate_Pseudo(TS ts)
   ts->ops->view            = TSView_Pseudo;
 
   if (ts->problem_type == TS_LINEAR) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Only for nonlinear problems");
-  ts->ops->setup           = TSSetUp_Pseudo;  
+  ts->ops->setup           = TSSetUp_Pseudo;
   ts->ops->step            = TSStep_Pseudo;
   ts->ops->setfromoptions  = TSSetFromOptions_Pseudo;
   ts->ops->snesfunction    = SNESTSFormFunction_Pseudo;
@@ -671,7 +672,7 @@ PetscErrorCode  TSCreate_Pseudo(TS ts)
 }
 EXTERN_C_END
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSPseudoDefaultTimeStep"
 /*@C
    TSPseudoDefaultTimeStep - Default code to compute pseudo-timestepping.
@@ -708,7 +709,7 @@ PetscErrorCode  TSPseudoDefaultTimeStep(TS ts,PetscReal* newdt,void* dtctx)
     fnorm_previous        = pseudo->fnorm;
   }
   if (pseudo->fnorm == 0.0) {
-    *newdt = 1.e12*inc*ts->time_step; 
+    *newdt = 1.e12*inc*ts->time_step;
   } else if (pseudo->increment_dt_from_initial_dt) {
     *newdt = inc*ts->initial_time_step*pseudo->initial_fnorm/pseudo->fnorm;
   } else {

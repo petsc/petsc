@@ -45,6 +45,374 @@ PetscErrorCode DMView_IGA(DM dm, PetscViewer viewer)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMCreateGlobalVector_IGA"
+PetscErrorCode DMCreateGlobalVector_IGA(DM dm, Vec *gvec)
+{
+  DM_IGA        *iga = (DM_IGA *) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMCreateGlobalVector(iga->da_dof, gvec);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMCreateLocalVector_IGA"
+PetscErrorCode DMCreateLocalVector_IGA(DM dm, Vec *lvec)
+{
+  DM_IGA        *iga = (DM_IGA *) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMCreateLocalVector(iga->da_dof, lvec);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMGetMatrix_IGA"
+PetscErrorCode DMGetMatrix_IGA(DM dm, const MatType mtype, Mat *J)
+{
+  DM_IGA        *iga = (DM_IGA *) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGetMatrix(iga->da_dof, mtype, J);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMGlobalToLocalBegin_IGA"
+PetscErrorCode DMGlobalToLocalBegin_IGA(DM dm, Vec gv, InsertMode mode, Vec lv)
+{
+  DM_IGA        *iga = (DM_IGA *) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGlobalToLocalBegin(iga->da_dof, gv, mode, lv);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMGlobalToLocalEnd_IGA"
+PetscErrorCode DMGlobalToLocalEnd_IGA(DM dm, Vec gv, InsertMode mode, Vec lv)
+{
+  DM_IGA        *iga = (DM_IGA *) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGlobalToLocalEnd(iga->da_dof, gv, mode, lv);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMLocalToGlobalBegin_IGA"
+PetscErrorCode DMLocalToGlobalBegin_IGA(DM dm, Vec lv, InsertMode mode, Vec gv)
+{
+  DM_IGA        *iga = (DM_IGA *) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMLocalToGlobalBegin(iga->da_dof, lv, mode, gv);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMLocalToGlobalEnd_IGA"
+PetscErrorCode DMLocalToGlobalEnd_IGA(DM dm, Vec lv, InsertMode mode, Vec gv)
+{
+  DM_IGA        *iga = (DM_IGA *) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMLocalToGlobalEnd(iga->da_dof, lv, mode, gv);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMIGAGetPolynomialOrder"
+/*@C
+  DMIGAGetPolynomialOrder - Gets the polynomial order for each direction
+
+  Not Collective
+
+  Input Parameter:
+. dm - the IGA
+
+  Output Parameters:
++ px - polynomial order in X
+. py - polynomial order in Y
+- pz - polynomial order in Z
+
+  Level: beginner
+
+.keywords: distributed array, get, information
+.seealso: DMCreate()
+@*/
+PetscErrorCode DMIGAGetPolynomialOrder(DM dm, PetscInt *px, PetscInt *py, PetscInt *pz)
+{
+  DM_IGA        *iga = (DM_IGA *) dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (px) {
+    PetscValidPointer(px, 2);
+    *px = iga->px;
+  }
+  if (py) {
+    PetscValidPointer(py, 3);
+    *py = iga->py;
+  }
+  if (pz) {
+    PetscValidPointer(pz, 4);
+    *pz = iga->pz;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMIGAGetNumQuadraturePoints"
+/*@C
+  DMIGAGetNumQuadraturePoints - Gets the number of quadrature points for each direction
+
+  Not Collective
+
+  Input Parameter:
+. dm - the IGA
+
+  Output Parameters:
++ nx - number of quadrature points in X
+. ny - number of quadrature points in Y
+- nz - number of quadrature points in Z
+
+  Level: beginner
+
+.keywords: distributed array, get, information
+.seealso: DMCreate()
+@*/
+PetscErrorCode DMIGAGetNumQuadraturePoints(DM dm, PetscInt *nx, PetscInt *ny, PetscInt *nz)
+{
+  DM_IGA        *iga = (DM_IGA *) dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (nx) {
+    PetscValidPointer(nx, 2);
+    *nx = iga->ngx;
+  }
+  if (ny) {
+    PetscValidPointer(ny, 3);
+    *ny = iga->ngy;
+  }
+  if (nz) {
+    PetscValidPointer(nz, 4);
+    *nz = iga->ngz;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMIGAGetBasisData"
+/*@C
+  DMIGAGetBasisData - Gets the basis data at quadrature points for each direction
+
+  Not Collective
+
+  Input Parameter:
+. dm - the IGA
+
+  Output Parameters:
++ bdX - basis data in X
+. bdY - basis data in Y
+- bdZ - basis data in Z
+
+  Level: beginner
+
+.keywords: distributed array, get, information
+.seealso: DMCreate()
+@*/
+PetscErrorCode DMIGAGetBasisData(DM dm, BD *bdX, BD *bdY, BD *bdZ)
+{
+  DM_IGA        *iga = (DM_IGA *) dm->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (bdX) {
+    PetscValidPointer(bdX, 2);
+    *bdX = iga->bdX;
+  }
+  if (bdY) {
+    PetscValidPointer(bdY, 3);
+    *bdY = iga->bdY;
+  }
+  if (bdZ) {
+    PetscValidPointer(bdZ, 4);
+    *bdZ = iga->bdZ;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMIGASetFieldName"
+/*@C
+  DMIGASetFieldName - Sets the names of individual field components in multicomponent vectors associated with a IGA.
+
+  Not Collective
+
+  Input Parameters:
++ dm - the IGA
+. nf - field number for the IGA (0, 1, ... dof-1), where dof indicates the number of degrees of freedom per node within the IGA
+- names - the name of the field (component)
+
+  Level: intermediate
+
+.keywords: distributed array, get, component name
+.seealso: DMIGAGetFieldName()
+@*/
+PetscErrorCode DMIGASetFieldName(DM dm, PetscInt nf, const char name[])
+{
+  DM_IGA        *iga = (DM_IGA *) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = DMDASetFieldName(iga->da_dof, nf, name);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMIGAGetFieldName"
+/*@C
+  DMIGAGetFieldName - Gets the names of individual field components in multicomponent vectors associated with a IGA.
+
+  Not Collective
+
+  Input Parameters:
++ dm - the IGA
+- nf - field number for the IGA (0, 1, ... dof-1), where dof indicates the number of degrees of freedom per node within the IGA
+
+  Output Parameter:
+. names - the name of the field (component)
+
+  Level: intermediate
+
+.keywords: distributed array, get, component name
+.seealso: DMIGASetFieldName()
+@*/
+PetscErrorCode DMIGAGetFieldName(DM dm, PetscInt nf, const char **name)
+{
+  DM_IGA        *iga = (DM_IGA *) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(name, 3);
+  ierr = DMDAGetFieldName(iga->da_dof, nf, name);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMIGAVecGetArray"
+/*@C
+  DMIGAVecGetArray - Returns a multiple dimension array that shares data with the underlying vector and is indexed using the global dimensions.
+
+  Not Collective
+
+  Input Parameters:
++ dm - the IGA
+- vec - the vector, either a vector the same size as one obtained with DMCreateGlobalVector() or DMCreateLocalVector()
+
+  Output Parameter:
+. array - the array
+
+  Notes:
+    Call DMIGAVecRestoreArray() once you have finished accessing the vector entries.
+
+    In C, the indexing is "backwards" from what expects: array[k][j][i] NOT array[i][j][k]!
+
+    If vec is a local vector (obtained with DMCreateLocalVector() etc) then they ghost point locations are accessable. If it is
+    a global vector then the ghost points are not accessable. Of course with the local vector you will have had to do the
+    appropriate DMLocalToGlobalBegin() and DMLocalToGlobalEnd() to have correct values in the ghost locations.
+
+  Level: intermediate
+
+.keywords: distributed array, get, corners, nodes, local indices, coordinates
+.seealso: DMIGAVecRestoreArray(), VecGetArray(), VecRestoreArray(), DMDAVecRestoreArray(), DMDAVecGetArray()
+@*/
+PetscErrorCode DMIGAVecGetArray(DM dm, Vec vec, void *array)
+{
+  DM_IGA        *iga = (DM_IGA *) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(vec, VEC_CLASSID, 2);
+  PetscValidPointer(array, 3);
+  ierr = DMDAVecGetArray(iga->da_dof, vec, array);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMIGAVecRestoreArray"
+/*@
+  DMIGAVecRestoreArray - Restores a multiple dimension array obtained with DMIGAVecGetArray()
+
+  Not Collective
+
+  Input Parameters:
++ dm - the IGA
+. vec - the vector, either a vector the same size as one obtained with DMCreateGlobalVector() or DMCreateLocalVector()
+- array - the array
+
+  Level: intermediate
+
+.keywords: distributed array, get, corners, nodes, local indices, coordinates
+.seealso: DMIGAVecGetArray(), VecGetArray(), VecRestoreArray(), DMDAVecRestoreArray(), DMDAVecGetArray()
+@*/
+PetscErrorCode DMIGAVecRestoreArray(DM dm, Vec vec, void *array)
+{
+  DM_IGA        *iga = (DM_IGA *) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(vec, VEC_CLASSID, 2);
+  PetscValidPointer(array, 3);
+  ierr = DMDAVecRestoreArray(iga->da_dof, vec, array);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMIGAGetLocalInfo"
+/*@C
+  DMIGAGetLocalInfo - Gets information about a given IGA and this processors location in it
+
+  Not Collective
+
+  Input Parameter:
+. dm - the IGA
+
+  Output Parameter:
+. dainfo - structure containing the information
+
+  Level: beginner
+
+.keywords: distributed array, get, information
+.seealso: DMDAGetLocalInfo()
+@*/
+PetscErrorCode DMIGAGetLocalInfo(DM dm, DMDALocalInfo *info)
+{
+  DM_IGA        *iga = (DM_IGA *) dm->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(info, 2);
+  ierr = DMDAGetLocalInfo(iga->da_dof, info);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
 #define __FUNCT__ "DMIGAInitializeUniform3d"
 PetscErrorCode DMIGAInitializeUniform3d(DM dm,PetscBool IsRational,PetscInt NumDerivatives,PetscInt ndof,
                                         PetscInt px,PetscInt Nx,PetscInt Cx,PetscScalar Ux0, PetscScalar Uxf,PetscBool IsPeriodicX,PetscInt ngx,

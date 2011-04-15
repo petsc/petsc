@@ -7,6 +7,7 @@ static char help[] = "Lattice Gauge 2D model.\n"
 
 #include <petscksp.h>
 #include <petscpcasa.h>
+#include <petscdmda.h>
 
 PetscErrorCode computeMaxEigVal(Mat A, PetscInt its, PetscScalar *eig);
 
@@ -45,7 +46,7 @@ int main(int Argc,char **Args)
   rho *= 1./(2.*h);
   
   /* Geometry info */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_XYPERIODIC, DMDA_STENCIL_STAR, n, n,
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_PERIODIC,DMDA_BOUNDARY_PERIODIC, DMDA_STENCIL_STAR, n, n,
 		    PETSC_DECIDE, PETSC_DECIDE, 2 /* this is the # of dof's */,
 		    1, PETSC_NULL, PETSC_NULL, &da);CHKERRQ(ierr);
   

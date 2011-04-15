@@ -1,4 +1,3 @@
-
 /*
        Code for Timestepping with explicit Euler.
 */
@@ -14,24 +13,27 @@ static PetscErrorCode TSStep_Euler(TS ts,PetscInt *steps,PetscReal *ptime)
 {
   TS_Euler       *euler = (TS_Euler*)ts->data;
   Vec            sol = ts->vec_sol,update = euler->update;
-  PetscInt       i,max_steps = ts->max_steps;
+  PetscInt       i;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   *steps = -ts->steps;
+  *ptime  = ts->ptime;
+
   ierr = TSMonitor(ts,ts->steps,ts->ptime,sol);CHKERRQ(ierr);
 
-  for (i=0; i<max_steps; i++) {
-    PetscReal dt = ts->time_step;
-
+  for (i=0; i<ts->max_steps; i++) {
+    if (ts->ptime + ts->time_step > ts->max_time) break;
     ierr = TSPreStep(ts);CHKERRQ(ierr);
-    ts->ptime += dt;
+
     ierr = TSComputeRHSFunction(ts,ts->ptime,sol,update);CHKERRQ(ierr);
-    ierr = VecAXPY(sol,dt,update);CHKERRQ(ierr);
+
+    ierr = VecAXPY(sol,ts->time_step,update);CHKERRQ(ierr);
+    ts->ptime += ts->time_step;
     ts->steps++;
+
     ierr = TSPostStep(ts);CHKERRQ(ierr);
     ierr = TSMonitor(ts,ts->steps,ts->ptime,sol);CHKERRQ(ierr);
-    if (ts->ptime > ts->max_time) break;
   }
 
   *steps += ts->steps;
@@ -125,7 +127,3 @@ PetscErrorCode  TSCreate_Euler(TS ts)
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
-
-
-
-

@@ -503,20 +503,20 @@ PetscErrorCode  PetscViewerFileSetName(PetscViewer viewer,const char name[])
 .seealso: PetscViewerCreate(), PetscViewerSetType(), PetscViewerASCIIOpen(), PetscViewerBinaryOpen(), PetscViewerFileSetName()
 
 @*/
-PetscErrorCode  PetscViewerFileGetName(PetscViewer viewer,char **name)
+PetscErrorCode  PetscViewerFileGetName(PetscViewer viewer,const char **name)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
-  ierr = PetscTryMethod(viewer,"PetscViewerFileGetName_C",(PetscViewer,char **),(viewer,name));CHKERRQ(ierr);
+  ierr = PetscTryMethod(viewer,"PetscViewerFileGetName_C",(PetscViewer,const char **),(viewer,name));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerFileGetName_ASCII" 
-PetscErrorCode  PetscViewerFileGetName_ASCII(PetscViewer viewer,char **name)
+PetscErrorCode  PetscViewerFileGetName_ASCII(PetscViewer viewer,const char **name)
 {
   PetscViewer_ASCII *vascii = (PetscViewer_ASCII*)viewer->data;
 
