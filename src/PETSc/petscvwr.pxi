@@ -75,7 +75,7 @@ cdef extern from * nogil:
     int PetscViewerPushFormat(PetscViewer,PetscViewerFormat)
     int PetscViewerPopFormat(PetscViewer)
 
-    int PetscViewerFileGetName(PetscViewer,char**)
+    int PetscViewerFileGetName(PetscViewer,char*[])
     int PetscViewerFileSetName(PetscViewer,char[])
     int PetscViewerFileGetMode(PetscViewer,PetscFileMode*)
     int PetscViewerFileSetMode(PetscViewer,PetscFileMode)

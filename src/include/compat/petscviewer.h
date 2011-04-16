@@ -16,4 +16,10 @@
 #define PETSCVIEWERMATLAB       PETSC_VIEWER_MATLAB
 #endif
 
+#if (PETSC_VERSION_(3,1,0) || \
+     PETSC_VERSION_(3,0,0))
+#define PetscViewerFileGetName(v,n) \
+        PetscViewerFileGetName((v),(char**)(n))
+#endif
+
 #endif /* _COMPAT_PETSC_VIEWER_H */

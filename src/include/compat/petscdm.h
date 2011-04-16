@@ -127,7 +127,6 @@ static PetscErrorCode DMLocalToGlobalEnd(DM dm,Vec l,InsertMode mode,Vec g)
 static PetscErrorCode
 DMRefineHierarchy_Compat(DM dm,PetscInt nlevels,DM dmf[])
 {
-  PetscInt       i;
   DM             *dmftmp;
   PetscErrorCode ierr;
   PetscFunctionBegin;

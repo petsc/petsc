@@ -283,7 +283,7 @@ cdef class Viewer(Object):
 
     def getFileName(self):
         cdef const_char *cval = NULL
-        CHKERR( PetscViewerFileGetName(self.vwr, <char**>&cval) )
+        CHKERR( PetscViewerFileGetName(self.vwr, &cval) )
         return bytes2str(cval)
 
     # --- methods specific to draw viewers ---
