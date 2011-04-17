@@ -21,6 +21,7 @@ PetscErrorCode  MatConvert_MPIAIJ_MPISBAIJ(Mat A, MatType newtype,MatReuse reuse
   const PetscInt     *cwork;
 
   PetscFunctionBegin;
+  if (!A->symmetric) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_USER,"Matrix must be symmetric. Call MatSetOption(mat,MAT_SYMMETRIC,PETSC_TRUE)");
   ierr = MatGetSize(A,&m,&n);CHKERRQ(ierr);
   ierr = MatGetLocalSize(A,&lm,&ln);CHKERRQ(ierr);
   ierr = PetscMalloc2(lm*sizeof(PetscInt),PetscInt,&d_nnz,lm*sizeof(PetscInt),PetscInt,&o_nnz);CHKERRQ(ierr);

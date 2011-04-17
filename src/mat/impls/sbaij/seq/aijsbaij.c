@@ -128,6 +128,7 @@ PetscErrorCode  MatConvert_SeqAIJ_SeqSBAIJ(Mat A,const MatType newtype,MatReuse 
   MatScalar      *av,*bv;
 
   PetscFunctionBegin;
+  if (!A->symmetric) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_USER,"Matrix must be symmetric. Call MatSetOption(mat,MAT_SYMMETRIC,PETSC_TRUE)");
   if (n != m) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Matrix must be square");
 
   ierr = PetscMalloc(m*sizeof(PetscInt),&rowlengths);CHKERRQ(ierr);
@@ -283,6 +284,7 @@ PetscErrorCode  MatConvert_SeqBAIJ_SeqSBAIJ(Mat A, MatType newtype,MatReuse reus
   PetscBool      flg;
 
   PetscFunctionBegin;
+  if (!A->symmetric) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_USER,"Matrix must be symmetric. Call MatSetOption(mat,MAT_SYMMETRIC,PETSC_TRUE)"); 
   if (n != m) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Matrix must be square");
   ierr = MatMissingDiagonal_SeqBAIJ(A,&flg,&dd);CHKERRQ(ierr); /* check for missing diagonals, then mark diag */
   if (flg) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal %D",dd);
