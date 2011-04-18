@@ -36,14 +36,14 @@ PetscErrorCode PetscContainerDestroy_Mat_MatMatMultMPI(void *ptr)
   PetscFunctionBegin;
   ierr = PetscFree2(mult->startsj,mult->startsj_r);CHKERRQ(ierr);
   ierr = PetscFree(mult->bufa);CHKERRQ(ierr);
-  if (mult->isrowa){ierr = ISDestroy(mult->isrowa);CHKERRQ(ierr);}
-  if (mult->isrowb){ierr = ISDestroy(mult->isrowb);CHKERRQ(ierr);}
-  if (mult->iscolb){ierr = ISDestroy(mult->iscolb);CHKERRQ(ierr);}
-  if (mult->C_seq){ierr = MatDestroy(mult->C_seq);CHKERRQ(ierr);} 
-  if (mult->A_loc){ierr = MatDestroy(mult->A_loc);CHKERRQ(ierr); }
-  if (mult->B_seq){ierr = MatDestroy(mult->B_seq);CHKERRQ(ierr);}
-  if (mult->B_loc){ierr = MatDestroy(mult->B_loc);CHKERRQ(ierr);}
-  if (mult->B_oth){ierr = MatDestroy(mult->B_oth);CHKERRQ(ierr);}
+  ierr = ISDestroy(&mult->isrowa);CHKERRQ(ierr);
+  ierr = ISDestroy(&mult->isrowb);CHKERRQ(ierr);
+  ierr = ISDestroy(&mult->iscolb);CHKERRQ(ierr);
+  ierr = MatDestroy(&mult->C_seq);CHKERRQ(ierr);
+  ierr = MatDestroy(&mult->A_loc);CHKERRQ(ierr);
+  ierr = MatDestroy(&mult->B_seq);CHKERRQ(ierr);
+  ierr = MatDestroy(&mult->B_loc);CHKERRQ(ierr);
+  ierr = MatDestroy(&mult->B_oth);CHKERRQ(ierr);
   ierr = PetscFree(mult->abi);CHKERRQ(ierr);
   ierr = PetscFree(mult->abj);CHKERRQ(ierr);
   ierr = PetscFree(mult);CHKERRQ(ierr); 
@@ -67,7 +67,7 @@ PetscErrorCode MatDestroy_MPIAIJ_MatMatMult(Mat A)
   A->ops->destroy = mult->destroy;
   ierr = PetscObjectCompose((PetscObject)A,"Mat_MatMatMultMPI",0);CHKERRQ(ierr);
   ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
-  ierr = PetscContainerDestroy(container);CHKERRQ(ierr); 
+  ierr = PetscContainerDestroy(&container);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
 }
 
@@ -196,7 +196,7 @@ PetscErrorCode MPIAIJ_MPIDenseDestroy(void *ctx)
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  if (contents->workB) {ierr = MatDestroy(contents->workB);CHKERRQ(ierr);}
+  ierr = MatDestroy(&contents->workB);CHKERRQ(ierr);
   ierr = PetscFree4(contents->rvalues,contents->svalues,contents->rwaits,contents->swaits);CHKERRQ(ierr);
   ierr = PetscFree(contents);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -238,7 +238,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIDense(Mat A,Mat B,PetscReal fill,Mat
                       to->n,MPI_Request,&contents->swaits);CHKERRQ(ierr);
 
   ierr = PetscObjectCompose((PetscObject)(*C),"workB",(PetscObject)cont);CHKERRQ(ierr);
-  ierr = PetscContainerDestroy(cont);CHKERRQ(ierr);
+  ierr = PetscContainerDestroy(&cont);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

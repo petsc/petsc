@@ -35,12 +35,13 @@ PetscClassId  PETSC_RANDOM_CLASSID;
 
 .seealso: PetscRandomGetValue(), PetscRandomCreate(), VecSetRandom()
 @*/
-PetscErrorCode  PetscRandomDestroy(PetscRandom r)
+PetscErrorCode  PetscRandomDestroy(PetscRandom *r)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(r,PETSC_RANDOM_CLASSID,1);
-  if (--((PetscObject)r)->refct > 0) PetscFunctionReturn(0);
+  if (!*r) PetscFunctionReturn(0);
+  PetscValidHeaderSpecific(*r,PETSC_RANDOM_CLASSID,1);
+  if (--((PetscObject)(*r))->refct > 0) {*r = 0; PetscFunctionReturn(0);}
   ierr = PetscHeaderDestroy(r);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -286,7 +287,7 @@ PetscErrorCode  PetscRandomViewFromOptions(PetscRandom rnd, char *title)
       }
       ierr = PetscRandomView(rnd, viewer);CHKERRQ(ierr);
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     } else {    
       PetscViewer viewer;
       ierr = PetscViewerASCIIGetStdout(((PetscObject)rnd)->comm,&viewer);CHKERRQ(ierr);

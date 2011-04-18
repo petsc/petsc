@@ -35,9 +35,9 @@ PetscErrorCode MatSetUpMultiply_MPIDense(Mat mat)
   ierr = PetscLogObjectParent(mat,to);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(mat,gvec);CHKERRQ(ierr);
 
-  ierr = ISDestroy(to);CHKERRQ(ierr);
-  ierr = ISDestroy(from);CHKERRQ(ierr);
-  ierr = VecDestroy(gvec);CHKERRQ(ierr);
+  ierr = ISDestroy(&to);CHKERRQ(ierr);
+  ierr = ISDestroy(&from);CHKERRQ(ierr);
+  ierr = VecDestroy(&gvec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

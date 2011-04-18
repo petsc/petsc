@@ -14,19 +14,19 @@ typedef struct {
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISDestroy_Block" 
-PetscErrorCode ISDestroy_Block(IS *is)
+PetscErrorCode ISDestroy_Block(IS is)
 {
-  IS_Block       *is_block = (IS_Block*)(*is)->data;
+  IS_Block       *is_block = (IS_Block*)is->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscFree(is_block->idx);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)(*is),"ISBlockSetIndices_C","",0);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)(*is),"ISBlockGetIndices_C","",0);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)(*is),"ISBlockRestoreIndices_C","",0);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)(*is),"ISBlockGetSize_C","",0);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)(*is),"ISBlockGetLocalSize_C","",0);CHKERRQ(ierr);
-  ierr = PetscFree(is_block);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)is,"ISBlockSetIndices_C","",0);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)is,"ISBlockGetIndices_C","",0);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)is,"ISBlockRestoreIndices_C","",0);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)is,"ISBlockGetSize_C","",0);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)is,"ISBlockGetLocalSize_C","",0);CHKERRQ(ierr);
+  ierr = PetscFree(is->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

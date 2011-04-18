@@ -206,7 +206,7 @@ PetscErrorCode MatMatMultTransposeSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal f
   ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ(At,B,fill,C);CHKERRQ(ierr);
 
   /* clean up */
-  ierr = MatDestroy(At);CHKERRQ(ierr);
+  ierr = MatDestroy(&At);CHKERRQ(ierr);
   ierr = MatRestoreSymbolicTranspose_SeqAIJ(A,&ati,&atj);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

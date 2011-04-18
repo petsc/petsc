@@ -71,7 +71,7 @@ PetscErrorCode  MatCreate(MPI_Comm comm,Mat *A)
   ierr = MatInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
-  ierr = PetscHeaderCreate(B,_p_Mat,struct _MatOps,MAT_CLASSID,0,"Mat",comm,MatDestroy_,MatView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(B,_p_Mat,struct _MatOps,MAT_CLASSID,0,"Mat",comm,MatDestroy,MatView);CHKERRQ(ierr);
   ierr = PetscLayoutCreate(comm,&B->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutCreate(comm,&B->cmap);CHKERRQ(ierr);
   B->preallocated  = PETSC_FALSE;
@@ -269,15 +269,15 @@ PetscErrorCode MatHeaderMerge(Mat A,Mat C)
   ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
 
   ierr = PetscFree(C->spptr);CHKERRQ(ierr);
-  if (C->rmapping) {ierr = ISLocalToGlobalMappingDestroy(C->rmapping);CHKERRQ(ierr);}
-  if (C->cmapping) {ierr = ISLocalToGlobalMappingDestroy(C->cmapping);CHKERRQ(ierr);}
-  if (C->rbmapping) {ierr = ISLocalToGlobalMappingDestroy(C->rbmapping);CHKERRQ(ierr);}
-  if (C->cbmapping) {ierr = ISLocalToGlobalMappingDestroy(C->cbmapping);CHKERRQ(ierr);}
+  ierr = ISLocalToGlobalMappingDestroy(&C->rmapping);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingDestroy(&C->cmapping);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingDestroy(&C->rbmapping);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingDestroy(&C->cbmapping);CHKERRQ(ierr);
 
-  ierr = PetscLayoutDestroy(A->rmap);CHKERRQ(ierr);
-  ierr = PetscLayoutDestroy(A->cmap);CHKERRQ(ierr);
+  ierr = PetscLayoutDestroy(&A->rmap);CHKERRQ(ierr);
+  ierr = PetscLayoutDestroy(&A->cmap);CHKERRQ(ierr);
   ierr = PetscFListDestroy(&((PetscObject)A)->qlist);CHKERRQ(ierr);
-  ierr = PetscOListDestroy(((PetscObject)A)->olist);CHKERRQ(ierr);
+  ierr = PetscOListDestroy(&((PetscObject)A)->olist);CHKERRQ(ierr);
 
   /* copy C over to A */
   ierr  = PetscMemcpy(A,C,sizeof(struct _p_Mat));CHKERRQ(ierr);
@@ -297,7 +297,7 @@ PetscErrorCode MatHeaderMerge(Mat A,Mat C)
   /* since these two are copied into A we do not want them destroyed in C */
   ((PetscObject)C)->qlist = 0;
   ((PetscObject)C)->olist = 0;
-  ierr = PetscHeaderDestroy(C);CHKERRQ(ierr);
+  ierr = PetscHeaderDestroy(&C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /*
@@ -325,13 +325,13 @@ PetscErrorCode MatHeaderReplace(Mat A,Mat C)
   ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy_Private((PetscObject)A);CHKERRQ(ierr);
   ierr = PetscFree(A->ops);CHKERRQ(ierr);
-  ierr = PetscLayoutDestroy(A->rmap);CHKERRQ(ierr);
-  ierr = PetscLayoutDestroy(A->cmap);CHKERRQ(ierr);
+  ierr = PetscLayoutDestroy(&A->rmap);CHKERRQ(ierr);
+  ierr = PetscLayoutDestroy(&A->cmap);CHKERRQ(ierr);
   ierr = PetscFree(A->spptr);CHKERRQ(ierr);
-  if (A->rmapping) {ierr = ISLocalToGlobalMappingDestroy(A->rmapping);CHKERRQ(ierr);}
-  if (A->cmapping) {ierr = ISLocalToGlobalMappingDestroy(A->cmapping);CHKERRQ(ierr);}
-  if (A->rbmapping) {ierr = ISLocalToGlobalMappingDestroy(A->rbmapping);CHKERRQ(ierr);}
-  if (A->cbmapping) {ierr = ISLocalToGlobalMappingDestroy(A->cbmapping);CHKERRQ(ierr);}
+  ierr = ISLocalToGlobalMappingDestroy(&A->rmapping);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingDestroy(&A->cmapping);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingDestroy(&A->rbmapping);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingDestroy(&A->cbmapping);CHKERRQ(ierr);
 
   /* copy C over to A */
   refct = ((PetscObject)A)->refct;

@@ -123,14 +123,15 @@ PetscErrorCode  PetscSubcommSetTypeGeneral(PetscSubcomm psubcomm,PetscMPIInt col
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscSubcommDestroy"
-PetscErrorCode  PetscSubcommDestroy(PetscSubcomm psubcomm)
+PetscErrorCode  PetscSubcommDestroy(PetscSubcomm *psubcomm)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_free(&psubcomm->dupparent);CHKERRQ(ierr);
-  ierr = MPI_Comm_free(&psubcomm->comm);CHKERRQ(ierr);
-  ierr = PetscFree(psubcomm);CHKERRQ(ierr);
+  if (!*psubcomm) PetscFunctionReturn(0);
+  ierr = MPI_Comm_free(&(*psubcomm)->dupparent);CHKERRQ(ierr);
+  ierr = MPI_Comm_free(&(*psubcomm)->comm);CHKERRQ(ierr);
+  ierr = PetscFree((*psubcomm));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

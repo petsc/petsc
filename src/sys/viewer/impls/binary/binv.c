@@ -57,7 +57,7 @@ PetscErrorCode PetscViewerRestoreSingleton_Binary(PetscViewer viewer,PetscViewer
   ierr = MPI_Comm_rank(((PetscObject)viewer)->comm,&rank);CHKERRQ(ierr);
   if (!rank) {
     ierr = PetscFree((*outviewer)->data);CHKERRQ(ierr);
-    ierr = PetscHeaderDestroy(*outviewer);CHKERRQ(ierr);
+    ierr = PetscHeaderDestroy(outviewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

@@ -160,12 +160,12 @@ PetscErrorCode KSPReset_Broyden(KSP ksp)
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPDestroy_Broyden" 
-PetscErrorCode KSPDestroy_Broyden(KSP *ksp)
+PetscErrorCode KSPDestroy_Broyden(KSP ksp)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = KSPReset_Broyden(*ksp);CHKERRQ(ierr);
+  ierr = KSPReset_Broyden(ksp);CHKERRQ(ierr);
   ierr = KSPDefaultDestroy(ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

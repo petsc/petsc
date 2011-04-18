@@ -28,15 +28,9 @@ PetscErrorCode PCDestroy_TFS(PC pc)
   if (tfs->xyt) {
     ierr = XYT_free(tfs->xyt);CHKERRQ(ierr);
   }
-  if (tfs->b) {
-  ierr = VecDestroy(tfs->b);CHKERRQ(ierr);
-  }
-  if (tfs->xd) {
-  ierr = VecDestroy(tfs->xd);CHKERRQ(ierr);
-  }
-  if (tfs->xo) {
-  ierr = VecDestroy(tfs->xo);CHKERRQ(ierr);
-  }
+  ierr = VecDestroy(&tfs->b);CHKERRQ(ierr);
+  ierr = VecDestroy(&tfs->xd);CHKERRQ(ierr);
+  ierr = VecDestroy(&tfs->xo);CHKERRQ(ierr);
   ierr = PetscFree(pc->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -79,9 +79,9 @@ PetscErrorCode MatSetFromOptions_SchurComplement(Mat N)
  
 #undef __FUNCT__  
 #define __FUNCT__ "MatDestroy_SchurComplement"
-PetscErrorCode MatDestroy_SchurComplement(Mat *N)
+PetscErrorCode MatDestroy_SchurComplement(Mat N)
 {
-  Mat_SchurComplement  *Na = (Mat_SchurComplement*)(*N)->data;
+  Mat_SchurComplement  *Na = (Mat_SchurComplement*)N->data;
   PetscErrorCode       ierr;
 
   PetscFunctionBegin;
@@ -93,7 +93,7 @@ PetscErrorCode MatDestroy_SchurComplement(Mat *N)
   ierr = VecDestroy(&Na->work1);CHKERRQ(ierr);
   ierr = VecDestroy(&Na->work2);CHKERRQ(ierr);
   ierr = KSPDestroy(&Na->ksp);CHKERRQ(ierr);
-  ierr = PetscFree((*N)->data);CHKERRQ(ierr);
+  ierr = PetscFree(N->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -362,7 +362,7 @@ PetscErrorCode MatGetSchurComplement_Basic(Mat mat,IS isrow0,IS iscol0,IS isrow1
       ierr = MatSchurComplementGetSubmatrices(*newmat,&A,&Ap,&B,&C,&D);CHKERRQ(ierr);
       if (!A || !Ap || !B || !C) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONGSTATE,"Attempting to reuse matrix but Schur complement matrices unset");
       if (A != Ap) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONGSTATE,"Preconditioning matrix does not match operator");
-      ierr = MatDestroy(Ap);CHKERRQ(ierr); /* get rid of extra reference */
+      ierr = MatDestroy(&Ap);CHKERRQ(ierr); /* get rid of extra reference */
     }
     ierr = MatGetSubMatrix(mat,isrow0,iscol0,mreuse,&A);CHKERRQ(ierr);
     ierr = MatGetSubMatrix(mat,isrow0,iscol1,mreuse,&B);CHKERRQ(ierr);
@@ -413,20 +413,20 @@ PetscErrorCode MatGetSchurComplement_Basic(Mat mat,IS isrow0,IS iscol0,IS isrow1
     ierr = VecRestoreArray(diag,&x);CHKERRQ(ierr);
     ierr = MatAssemblyBegin(Ad,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(Ad,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = VecDestroy(diag);CHKERRQ(ierr);
+    ierr = VecDestroy(&diag);CHKERRQ(ierr);
 
     ierr = MatMatMult(Ad,B,MAT_INITIAL_MATRIX,1,&AdB);CHKERRQ(ierr);
     S = (preuse == MAT_REUSE_MATRIX) ? *newpmat : 0;
     ierr = MatMatMult(C,AdB,preuse,PETSC_DEFAULT,&S);CHKERRQ(ierr);
     ierr = MatAYPX(S,-1,D,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
     *newpmat = S;
-    ierr = MatDestroy(Ad);CHKERRQ(ierr);
-    ierr = MatDestroy(AdB);CHKERRQ(ierr);
+    ierr = MatDestroy(&Ad);CHKERRQ(ierr);
+    ierr = MatDestroy(&AdB);CHKERRQ(ierr);
   }
-  if (A) {ierr = MatDestroy(A);CHKERRQ(ierr);}
-  if (B) {ierr = MatDestroy(B);CHKERRQ(ierr);}
-  if (C) {ierr = MatDestroy(C);CHKERRQ(ierr);}
-  if (D) {ierr = MatDestroy(D);CHKERRQ(ierr);}
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  ierr = MatDestroy(&B);CHKERRQ(ierr);
+  ierr = MatDestroy(&C);CHKERRQ(ierr);
+  ierr = MatDestroy(&D);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

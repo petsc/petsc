@@ -626,7 +626,7 @@ PetscErrorCode KSPSetUp_NASH(KSP ksp)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPDestroy_NASH"
-PetscErrorCode KSPDestroy_NASH(KSP *ksp)
+PetscErrorCode KSPDestroy_NASH(KSP ksp)
 {
   PetscErrorCode ierr;
 
@@ -635,9 +635,9 @@ PetscErrorCode KSPDestroy_NASH(KSP *ksp)
   /* Clear composed functions                                                */
   /***************************************************************************/
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)*ksp,"KSPNASHSetRadius_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)*ksp,"KSPNASHGetNormD_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)*ksp,"KSPNASHGetObjFcn_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPNASHSetRadius_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPNASHGetNormD_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPNASHGetObjFcn_C","",PETSC_NULL);CHKERRQ(ierr);
 
   /***************************************************************************/
   /* Destroy KSP object.                                                     */

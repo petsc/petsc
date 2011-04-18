@@ -338,8 +338,8 @@ PetscErrorCode  MatComputeExplicitOperator(Mat inmat,Mat *mat)
 
   }
   ierr = PetscFree(rows);CHKERRQ(ierr);
-  ierr = VecDestroy(out);CHKERRQ(ierr);
-  ierr = VecDestroy(in);CHKERRQ(ierr);
+  ierr = VecDestroy(&out);CHKERRQ(ierr);
+  ierr = VecDestroy(&in);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(*mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);

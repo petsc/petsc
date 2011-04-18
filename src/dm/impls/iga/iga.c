@@ -8,14 +8,14 @@ PetscErrorCode DMDestroy_IGA(DM dm)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (iga->Ux  != NULL) {ierr = PetscFree(iga->Ux);CHKERRQ(ierr);}
-  if (iga->Uy  != NULL) {ierr = PetscFree(iga->Uy);CHKERRQ(ierr);}
-  if (iga->Uz  != NULL) {ierr = PetscFree(iga->Uz);CHKERRQ(ierr);}
-  if (iga->bdX != NULL) {ierr = BDDestroy(iga->bdX);CHKERRQ(ierr);}
-  if (iga->bdY != NULL) {ierr = BDDestroy(iga->bdY);CHKERRQ(ierr);}
-  if (iga->bdZ != NULL) {ierr = BDDestroy(iga->bdZ);CHKERRQ(ierr);}
-  ierr = DMDestroy(iga->da_dof);CHKERRQ(ierr);
-  ierr = DMDestroy(iga->da_geometry);CHKERRQ(ierr);
+  ierr = PetscFree(iga->Ux);CHKERRQ(ierr);
+  ierr = PetscFree(iga->Uy);CHKERRQ(ierr);
+  ierr = PetscFree(iga->Uz);CHKERRQ(ierr);
+  ierr = BDDestroy(&iga->bdX);CHKERRQ(ierr);
+  ierr = BDDestroy(&iga->bdY);CHKERRQ(ierr);
+  ierr = BDDestroy(&iga->bdZ);CHKERRQ(ierr);
+  ierr = DMDestroy(&iga->da_dof);CHKERRQ(ierr);
+  ierr = DMDestroy(&iga->da_geometry);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -517,6 +517,8 @@ PetscErrorCode DMIGAInitializeGeometry3d(DM dm,PetscInt ndof,PetscInt NumDerivat
   DM_IGA        *iga = (DM_IGA *) dm->data;
   FILE          *fp;
   PetscErrorCode ierr;
+  MPI_Comm       comm;
+  PetscViewer    viewer;
 
   PetscFunctionBegin;
   fp = fopen(FunctionSpaceFile, "r");
@@ -632,13 +634,10 @@ PetscErrorCode DMIGAInitializeGeometry3d(DM dm,PetscInt ndof,PetscInt NumDerivat
 
   // Read in the geometry
   ierr = DMCreateGlobalVector(iga->da_geometry,&iga->G);CHKERRQ(ierr);
-
-  MPI_Comm comm;
-  PetscViewer viewer;
   ierr = PetscObjectGetComm((PetscObject)(iga->G),&comm);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(comm,GeomFile,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
   ierr = VecLoad(iga->G,viewer);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(viewer);
+  ierr = PetscViewerDestroy(&viewer);
 
   PetscFunctionReturn(0);
 }
@@ -1008,20 +1007,20 @@ PetscErrorCode BDCreate(BD *bd,int numD,int p,int numGP,int numEl)
 
 #undef __FUNCT__
 #define __FUNCT__ "BDDestroy"
-PetscErrorCode BDDestroy(BD bd)
+PetscErrorCode BDDestroy(BD *bd)
 {
   PetscErrorCode ierr;
+  PetscInt       i,j;
   PetscFunctionBegin;
 
-  int i,j;
-  for(i=0;i<bd->numEl;i++){
-    for(j=0;j<bd->numGP;j++){
-      ierr = PetscFree(bd->data[i*bd->numGP+j].basis);CHKERRQ(ierr);
+  for(i=0;i<(*bd)->numEl;i++){
+    for(j=0;j<(*bd)->numGP;j++){
+      ierr = PetscFree((*bd)->data[i*(*bd)->numGP+j].basis);CHKERRQ(ierr);
     }
   }
 
-  ierr = PetscFree(bd->data); CHKERRQ(ierr);
-  ierr = PetscFree(bd); CHKERRQ(ierr);
+  ierr = PetscFree((*bd)->data); CHKERRQ(ierr);
+  ierr = PetscFree(*bd); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

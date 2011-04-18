@@ -180,12 +180,12 @@ PetscErrorCode KSPReset_BCGS(KSP ksp)
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPDestroy_BCGS" 
-PetscErrorCode KSPDestroy_BCGS(KSP *ksp)
+PetscErrorCode KSPDestroy_BCGS(KSP ksp)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = KSPReset_BCGS(*ksp);CHKERRQ(ierr);
+  ierr = KSPReset_BCGS(ksp);CHKERRQ(ierr);
   ierr = KSPDefaultDestroy(ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

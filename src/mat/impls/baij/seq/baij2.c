@@ -43,7 +43,7 @@ PetscErrorCode MatIncreaseOverlap_SeqBAIJ(Mat A,PetscInt is_max,IS is[],PetscInt
       if(!PetscBTLookupSet(table,ival)) { nidx[isz++] = ival;}
     }
     ierr = ISRestoreIndices(is[i],&idx);CHKERRQ(ierr);
-    ierr = ISDestroy(is[i]);CHKERRQ(ierr);
+    ierr = ISDestroy(&is[i]);CHKERRQ(ierr);
     
     k = 0;
     for (j=0; j<ov; j++){ /* for each overlap*/
@@ -198,8 +198,8 @@ PetscErrorCode MatGetSubMatrix_SeqBAIJ(Mat A,IS isrow,IS iscol,MatReuse scall,Ma
   ierr = PetscFree2(vary,iary);CHKERRQ(ierr);
 
   ierr = MatGetSubMatrix_SeqBAIJ_Private(A,is1,is2,scall,B);CHKERRQ(ierr);
-  ISDestroy(is1);
-  ISDestroy(is2);
+  ierr = ISDestroy(&is1);CHKERRQ(ierr);
+  ierr = ISDestroy(&is2);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -947,7 +947,8 @@ PetscErrorCode ISMappingPushforward_IS_IS(ISMapping map1, ISMapping map2, ISMapp
 PetscErrorCode ISMappingPullback_IS_IS(ISMapping map1, ISMapping map2, ISMapping *_map3) 
 {
   PetscErrorCode ierr;
-  ISMapping imap1,map3;
+  ISMapping      imap1,map3;
+
   PetscFunctionBegin;
   ISMappingCheckType(map1,IS_MAPPING_IS,1);
   ISMappingCheckType(map2,IS_MAPPING_IS,3);
@@ -983,7 +984,7 @@ PetscErrorCode ISMappingPullback_IS_IS(ISMapping map1, ISMapping map2, ISMapping
    */
   ierr = ISMappingInvert_IS(map1, &imap1);               CHKERRQ(ierr);
   ierr = ISMappingPushforward_IS_IS(imap1, map2, &map3); CHKERRQ(ierr);
-  ierr = ISMappingDestroy(imap1);                        CHKERRQ(ierr);
+  ierr = ISMappingDestroy(&imap1);                        CHKERRQ(ierr);
   *_map3 = map3;
   PetscFunctionReturn(0);
 }

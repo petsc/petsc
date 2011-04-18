@@ -104,8 +104,8 @@ static PetscErrorCode PCSetUp_HYPRE(PC pc)
     ierr = MatGetVecs(pc->pmat,&x,&b);CHKERRQ(ierr);
     ierr = VecHYPRE_IJVectorCreate(x,&jac->x);CHKERRQ(ierr);
     ierr = VecHYPRE_IJVectorCreate(b,&jac->b);CHKERRQ(ierr);
-    ierr = VecDestroy(x);CHKERRQ(ierr);
-    ierr = VecDestroy(b);CHKERRQ(ierr);
+    ierr = VecDestroy(&x);CHKERRQ(ierr);
+    ierr = VecDestroy(&b);CHKERRQ(ierr);
   }
 
   /* special case for BoomerAMG */

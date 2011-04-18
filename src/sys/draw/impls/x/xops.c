@@ -502,7 +502,7 @@ PetscErrorCode PetscDrawDestroy_X(PetscDraw draw)
   PetscFunctionBegin;
   XFreeGC(win->disp,win->gc.set);
   XCloseDisplay(win->disp);
-  if (draw->popup) {ierr = PetscDrawDestroy(draw->popup);CHKERRQ(ierr);}
+  ierr = PetscDrawDestroy(&draw->popup);CHKERRQ(ierr);
   ierr = PetscFree(win->font);CHKERRQ(ierr);
   ierr = PetscFree(win);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -589,12 +589,12 @@ static PetscErrorCode PetscDrawRestoreSingleton_X(PetscDraw draw,PetscDraw *sdra
   PetscFunctionBegin;
   XFreeGC(sXwin->disp,sXwin->gc.set);
   XCloseDisplay(sXwin->disp);
-  if ((*sdraw)->popup)   {ierr = PetscDrawDestroy((*sdraw)->popup);CHKERRQ(ierr);}
+  ierr = PetscDrawDestroy(&(*sdraw)->popup);CHKERRQ(ierr);
   ierr = PetscFree((*sdraw)->title);CHKERRQ(ierr);
   ierr = PetscFree((*sdraw)->display);CHKERRQ(ierr);
   ierr = PetscFree(sXwin->font);CHKERRQ(ierr);
   ierr = PetscFree(sXwin);CHKERRQ(ierr);
-  ierr = PetscHeaderDestroy(*sdraw);CHKERRQ(ierr);
+  ierr = PetscHeaderDestroy(sdraw);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

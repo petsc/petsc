@@ -49,8 +49,8 @@ PetscErrorCode MatDestroy_Scatter(Mat mat)
   Mat_Scatter    *scatter = (Mat_Scatter*)mat->data;
 
   PetscFunctionBegin;
-  if (scatter->scatter) {ierr = VecScatterDestroy(scatter->scatter);CHKERRQ(ierr);}
-  ierr = PetscFree(scatter);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&scatter->scatter);CHKERRQ(ierr);
+  ierr = PetscFree(mat->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -320,7 +320,7 @@ PetscErrorCode  MatScatterSetVecScatter(Mat mat,VecScatter scatter)
   if (mat->cmap->n != scatter->from_n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Number of local columns in matrix %D not equal local scatter size %D",mat->cmap->n,scatter->from_n);
 
   ierr = PetscObjectReference((PetscObject)scatter);CHKERRQ(ierr);
-  if (mscatter->scatter) {ierr = VecScatterDestroy(mscatter->scatter);CHKERRQ(ierr);}
+  ierr = VecScatterDestroy(&mscatter->scatter);CHKERRQ(ierr);
   mscatter->scatter = scatter;
   PetscFunctionReturn(0);
 }

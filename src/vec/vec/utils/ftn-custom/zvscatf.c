@@ -29,6 +29,6 @@ void PETSC_STDCALL vecscatterremap_(VecScatter *scat,PetscInt *rto,PetscInt *rfr
 
 void PETSC_STDCALL  vecscatterdestroy_(VecScatter *ctx, int *__ierr )
 {
-  *__ierr = VecScatterDestroy_(*ctx);
+  *__ierr = VecScatterDestroy(ctx);
 }
 EXTERN_C_END

@@ -54,12 +54,11 @@ PetscErrorCode  DMDestroy_Private(DM dm,PetscBool  *done)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMDestroy_DA"
-PetscErrorCode  DMDestroy_DA(DM *da)
+PetscErrorCode  DMDestroy_DA(DM da)
 {
   PetscErrorCode ierr;
   PetscErrorCode i;
-  PetscBool      done;
-  DM_DA          *dd = (DM_DA*)(*da)->data;
+  DM_DA          *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   /* destroy the external/common part */
@@ -106,9 +105,9 @@ PetscErrorCode  DMDestroy_DA(DM *da)
   ierr = ISColoringDestroy(&dd->localcoloring);CHKERRQ(ierr);
   ierr = ISColoringDestroy(&dd->ghostedcoloring);CHKERRQ(ierr);
 
-  ierr = VecDestroy(&dd->coordinates);CHKERRQ(ierr);}
-  ierr = VecDestroy(&dd->ghosted_coordinates);CHKERRQ(ierr);}
-  if (dd->da_coordinates && da != dd->da_coordinates) {ierr = DMDestroy(&dd->da_coordinates);CHKERRQ(ierr);}
+  ierr = VecDestroy(&dd->coordinates);CHKERRQ(ierr);
+  ierr = VecDestroy(&dd->ghosted_coordinates);CHKERRQ(ierr);
+  ierr = DMDestroy(&dd->da_coordinates);CHKERRQ(ierr);
 
   ierr = PetscFree(dd->neighbors);CHKERRQ(ierr);
   ierr = PetscFree(dd->dfill);CHKERRQ(ierr);

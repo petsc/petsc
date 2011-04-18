@@ -748,15 +748,18 @@ PetscErrorCode  PetscFwkRegisterDependence(PetscFwk fwk, const char clientkey[],
 #define __FUNCT__ "PetscFwkDestroy"
 PetscErrorCode  PetscFwkDestroy(PetscFwk *fwk)
 {
-  PetscInt i;
+  PetscInt       i;
   PetscErrorCode ierr;
-  PetscValidHeaderSpecific(fwk,PETSC_FWK_CLASSID,1);
-  if (--((PetscObject)fwk)->refct > 0) PetscFunctionReturn(0);
-  for(i = 0; i < fwk->N; ++i){
-    ierr = PetscObjectDestroy((PetscObject)&fwk->component[i]); CHKERRQ(ierr);
+  
+  PetscFunctionBegin;
+  if (!*fwk) PetscFunctionReturn(0);
+  PetscValidHeaderSpecific(*fwk,PETSC_FWK_CLASSID,1);
+  if (--((PetscObject)(*fwk))->refct > 0) PetscFunctionReturn(0);
+  for(i = 0; i < (*fwk)->N; ++i){
+    ierr = PetscObjectDestroy((PetscObject*)&(*fwk)->component[i]); CHKERRQ(ierr);
   }
-  ierr = PetscFree(fwk->component); CHKERRQ(ierr);
-  ierr = PetscFwkGraphDestroy(fwk->dep_graph); CHKERRQ(ierr);
+  ierr = PetscFree((*fwk)->component); CHKERRQ(ierr);
+  ierr = PetscFwkGraphDestroy((*fwk)->dep_graph); CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(fwk);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }/* PetscFwkDestroy()*/
@@ -808,11 +811,12 @@ PetscErrorCode  PetscFwkGetComponent(PetscFwk fwk, const char key[], PetscFwk *_
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscFwkFinalizePackage"
-PetscErrorCode PetscFwkFinalizePackage(void){
+PetscErrorCode PetscFwkFinalizePackage(void)
+{
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  if(defaultFwk) {
-    ierr = PetscFwkDestroy(defaultFwk); CHKERRQ(ierr);
+  if (defaultFwk) {
+    ierr = PetscFwkDestroy(&defaultFwk); CHKERRQ(ierr);
   }
   PetscFwkPackageInitialized = PETSC_FALSE;
   PetscFunctionReturn(0);

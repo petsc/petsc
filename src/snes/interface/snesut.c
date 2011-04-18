@@ -148,7 +148,7 @@ PetscErrorCode  SNESMonitorDefault(SNES snes,PetscInt its,PetscReal fgnorm,void 
   }
   ierr = PetscViewerASCIIMonitorPrintf(viewer,"%3D SNES Function norm %14.12e \n",its,(double)fgnorm);CHKERRQ(ierr);
   if (!dummy) {
-    ierr = PetscViewerASCIIMonitorDestroy(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIMonitorDestroy(&viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -217,7 +217,7 @@ PetscErrorCode  SNESMonitorRange(SNES snes,PetscInt it,PetscReal rnorm,void *dum
   rel  = (prev - rnorm)/prev;
   prev = rnorm;
   ierr = PetscViewerASCIIMonitorPrintf(viewer,"%3D SNES preconditioned resid norm %14.12e Percent values above 20 percent of maximum %5.2f relative decrease %5.2e ratio %5.2e \n",it,(double)rnorm,(double)100.0*perc,(double)rel,(double)rel/perc);CHKERRQ(ierr);
-  if (!dummy) {ierr = PetscViewerASCIIMonitorDestroy(viewer);CHKERRQ(ierr);}
+  if (!dummy) {ierr = PetscViewerASCIIMonitorDestroy(&viewer);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -276,7 +276,7 @@ PetscErrorCode SNESMonitorRatioDestroy(void *ct)
 
   PetscFunctionBegin;
   ierr = PetscFree(ctx->history);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIMonitorDestroy(ctx->viewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIMonitorDestroy(&ctx->viewer);CHKERRQ(ierr);
   ierr = PetscFree(ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -348,7 +348,7 @@ PetscErrorCode  SNESMonitorDefaultShort(SNES snes,PetscInt its,PetscReal fgnorm,
     ierr = PetscViewerASCIIMonitorPrintf(viewer,"%3D SNES Function norm < 1.e-11\n",its);CHKERRQ(ierr);
   }
   if (!dummy) {
-    ierr = PetscViewerASCIIMonitorDestroy(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIMonitorDestroy(&viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

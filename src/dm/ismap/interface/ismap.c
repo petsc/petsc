@@ -935,14 +935,14 @@ PetscErrorCode ISMappingDestroy(ISMapping *map)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  if (!*mat) PetscFunctionReturn(0);
+  if (!*map) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(*map,IS_MAPPING_CLASSID,1);
   if(--((PetscObject)(*map))->refct > 0) PetscFunctionReturn(0);
   if((*map)->ops->destroy) {
-    ierr = (*(*map)->ops->destroy)(map); CHKERRQ(ierr);
+    ierr = (*(*map)->ops->destroy)(*map); CHKERRQ(ierr);
   }
-  ierr = PetscLayoutDestroy((*map)->xlayout); CHKERRQ(ierr);
-  ierr = PetscLayoutDestroy((*map)->ylayout); CHKERRQ(ierr);
+  ierr = PetscLayoutDestroy(&(*map)->xlayout); CHKERRQ(ierr);
+  ierr = PetscLayoutDestroy(&(*map)->ylayout); CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(map); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }/* ISMappingDestroy() */

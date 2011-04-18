@@ -20,8 +20,8 @@ PetscErrorCode VecDestroy_MPI(Vec v)
 
   /* Destroy local representation of vector if it exists */
   if (x->localrep) {
-    ierr = VecDestroy(x->localrep);CHKERRQ(ierr);
-    if (x->localupdate) {ierr = VecScatterDestroy(x->localupdate);CHKERRQ(ierr);}
+    ierr = VecDestroy(&x->localrep);CHKERRQ(ierr);
+    ierr = VecScatterDestroy(&x->localupdate);CHKERRQ(ierr);
   }
   /* Destroy the stashes: note the order - so that the tags are freed properly */
   ierr = VecStashDestroy_Private(&v->bstash);CHKERRQ(ierr);
@@ -559,7 +559,7 @@ PetscErrorCode  VecView_MPI_Draw(Vec xin,PetscViewer viewer)
     ierr = PetscDrawAxisDraw(axis);CHKERRQ(ierr);
     ierr = PetscDrawGetCoordinates(draw,coors,coors+1,coors+2,coors+3);CHKERRQ(ierr);
   }
-  ierr = PetscDrawAxisDestroy(axis);CHKERRQ(ierr);
+  ierr = PetscDrawAxisDestroy(&axis);CHKERRQ(ierr);
   ierr = MPI_Bcast(coors,4,MPIU_REAL,0,((PetscObject)xin)->comm);CHKERRQ(ierr);
   if (rank) {ierr = PetscDrawSetCoordinates(draw,coors[0],coors[1],coors[2],coors[3]);CHKERRQ(ierr);}
   /* draw local part of vector */

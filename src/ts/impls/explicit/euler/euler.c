@@ -62,7 +62,7 @@ static PetscErrorCode TSReset_Euler(TS ts)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (euler->update) {ierr = VecDestroy(euler->update);CHKERRQ(ierr);}
+  ierr = VecDestroy(&euler->update);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

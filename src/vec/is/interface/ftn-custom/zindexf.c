@@ -18,7 +18,7 @@ EXTERN_C_BEGIN
 
 void PETSC_STDCALL  isdestroy_(IS *is, int *__ierr )
 {
-  *__ierr = ISDestroy_(*is);
+  *__ierr = ISDestroy(is);
 }
 
 void PETSC_STDCALL isview_(IS *is,PetscViewer *vin,PetscErrorCode *ierr)

@@ -483,12 +483,12 @@ PetscErrorCode MatDestroy_MUMPS(Mat A)
   PetscFunctionBegin;
   if (lu->CleanUpMUMPS) {
     /* Terminate instance, deallocate memories */
-    if (lu->id.sol_loc){ierr = PetscFree2(lu->id.sol_loc,lu->id.isol_loc);CHKERRQ(ierr);}
-    if (lu->scat_rhs){ierr = VecScatterDestroy(lu->scat_rhs);CHKERRQ(ierr);}
-    if (lu->b_seq) {ierr = VecDestroy(lu->b_seq);CHKERRQ(ierr);}
-    if (lu->nSolve && lu->scat_sol){ierr = VecScatterDestroy(lu->scat_sol);CHKERRQ(ierr);}
-    if (lu->nSolve && lu->x_seq){ierr = VecDestroy(lu->x_seq);CHKERRQ(ierr);}
-    if (lu->id.perm_in){ierr=PetscFree(lu->id.perm_in);CHKERRQ(ierr);}
+    ierr = PetscFree2(lu->id.sol_loc,lu->id.isol_loc);CHKERRQ(ierr);
+    ierr = VecScatterDestroy(&lu->scat_rhs);CHKERRQ(ierr);
+    ierr = VecDestroy(&lu->b_seq);CHKERRQ(ierr);
+    if (lu->nSolve && lu->scat_sol){ierr = VecScatterDestroy(&lu->scat_sol);CHKERRQ(ierr);}
+    if (lu->nSolve && lu->x_seq){ierr = VecDestroy(&lu->x_seq);CHKERRQ(ierr);}
+    ierr=PetscFree(lu->id.perm_in);CHKERRQ(ierr);
 
     ierr = PetscFree(lu->irn);CHKERRQ(ierr); 
     lu->id.job=JOB_END; 
@@ -556,8 +556,8 @@ PetscErrorCode MatSolve_MUMPS(Mat A,Vec b,Vec x)
       }
       ierr = ISCreateGeneral(PETSC_COMM_SELF,lu->id.lsol_loc,lu->id.isol_loc,PETSC_COPY_VALUES,&is_petsc);CHKERRQ(ierr);  /* to */
       ierr = VecScatterCreate(lu->x_seq,is_iden,x,is_petsc,&lu->scat_sol);CHKERRQ(ierr);
-      ierr = ISDestroy(is_iden);CHKERRQ(ierr);
-      ierr = ISDestroy(is_petsc);CHKERRQ(ierr);
+      ierr = ISDestroy(&is_iden);CHKERRQ(ierr);
+      ierr = ISDestroy(&is_petsc);CHKERRQ(ierr);
     }
     ierr = VecScatterBegin(lu->scat_sol,lu->x_seq,x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(lu->scat_sol,lu->x_seq,x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -675,9 +675,9 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat F,Mat A,const MatFactorInfo *info)
     }
     F_diag->assembled = PETSC_TRUE;
     if (lu->nSolve){
-      ierr = VecScatterDestroy(lu->scat_sol);CHKERRQ(ierr);  
+      ierr = VecScatterDestroy(&lu->scat_sol);CHKERRQ(ierr);  
       ierr = PetscFree2(lu->id.sol_loc,lu->id.isol_loc);CHKERRQ(ierr);
-      ierr = VecDestroy(lu->x_seq);CHKERRQ(ierr);
+      ierr = VecDestroy(&lu->x_seq);CHKERRQ(ierr);
     }
   }
   (F)->assembled   = PETSC_TRUE; 
@@ -874,8 +874,8 @@ PetscErrorCode MatLUFactorSymbolic_AIJMUMPS(Mat F,Mat A,IS r,IS c,const MatFacto
     ierr = VecSetFromOptions(b);CHKERRQ(ierr);
 
     ierr = VecScatterCreate(b,is_iden,lu->b_seq,is_iden,&lu->scat_rhs);CHKERRQ(ierr);
-    ierr = ISDestroy(is_iden);CHKERRQ(ierr);
-    ierr = VecDestroy(b);CHKERRQ(ierr);    
+    ierr = ISDestroy(&is_iden);CHKERRQ(ierr);
+    ierr = VecDestroy(&b);CHKERRQ(ierr);    
     break;
     }    
 #if defined(PETSC_USE_COMPLEX)
@@ -954,8 +954,8 @@ PetscErrorCode MatLUFactorSymbolic_BAIJMUMPS(Mat F,Mat A,IS r,IS c,const MatFact
     ierr = VecSetFromOptions(b);CHKERRQ(ierr);
 
     ierr = VecScatterCreate(b,is_iden,lu->b_seq,is_iden,&lu->scat_rhs);CHKERRQ(ierr);
-    ierr = ISDestroy(is_iden);CHKERRQ(ierr);
-    ierr = VecDestroy(b);CHKERRQ(ierr);    
+    ierr = ISDestroy(&is_iden);CHKERRQ(ierr);
+    ierr = VecDestroy(&b);CHKERRQ(ierr);    
     break;
     }    
 #if defined(PETSC_USE_COMPLEX)
@@ -1032,8 +1032,8 @@ PetscErrorCode MatCholeskyFactorSymbolic_MUMPS(Mat F,Mat A,IS r,const MatFactorI
     ierr = VecSetFromOptions(b);CHKERRQ(ierr);
 
     ierr = VecScatterCreate(b,is_iden,lu->b_seq,is_iden,&lu->scat_rhs);CHKERRQ(ierr);
-    ierr = ISDestroy(is_iden);CHKERRQ(ierr);
-    ierr = VecDestroy(b);CHKERRQ(ierr);    
+    ierr = ISDestroy(&is_iden);CHKERRQ(ierr);
+    ierr = VecDestroy(&b);CHKERRQ(ierr);    
     break;
     }    
 #if defined(PETSC_USE_COMPLEX)

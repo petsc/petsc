@@ -148,6 +148,7 @@ PetscErrorCode PetscCUSPIndicesDestroy(PetscCUSPIndices ci)
   } catch(char* ex) {
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
   }
+  ci = 0;
   PetscFunctionReturn(0);
 }
 

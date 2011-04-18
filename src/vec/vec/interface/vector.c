@@ -488,7 +488,7 @@ PetscErrorCode  VecDuplicate(Vec v,Vec *newv)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "VecDestroy_"
+#define __FUNCT__ "VecDestroy"
 /*@C
    VecDestroy_ - Destroys a vector.
 
@@ -501,25 +501,22 @@ PetscErrorCode  VecDuplicate(Vec v,Vec *newv)
 
 .seealso: VecDuplicate(), VecDestroyVecs()
 @*/
-PetscErrorCode  VecDestroy_(Vec v)
+PetscErrorCode  VecDestroy(Vec *v)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(v,VEC_CLASSID,1);
-  if (--((PetscObject)v)->refct > 0) PetscFunctionReturn(0);
+  if (!*v) PetscFunctionReturn(0);
+  PetscValidHeaderSpecific((*v),VEC_CLASSID,1);
+  if (--((PetscObject)(*v))->refct > 0) {*v = 0; PetscFunctionReturn(0);}
   /* destroy the internal part */
-  if (v->ops->destroy) {
-    ierr = (*v->ops->destroy)(v);CHKERRQ(ierr);
+  if ((*v)->ops->destroy) {
+    ierr = (*(*v)->ops->destroy)(*v);CHKERRQ(ierr);
   }
   /* destroy the external/common part */
-  if (v->mapping) {
-    ierr = ISLocalToGlobalMappingDestroy(v->mapping);CHKERRQ(ierr);
-  }
-  if (v->bmapping) {
-    ierr = ISLocalToGlobalMappingDestroy(v->bmapping);CHKERRQ(ierr);
-  }
-  ierr = PetscLayoutDestroy(v->map);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingDestroy(&(*v)->mapping);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingDestroy(&(*v)->bmapping);CHKERRQ(ierr);
+  ierr = PetscLayoutDestroy(&(*v)->map);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -588,9 +585,10 @@ PetscErrorCode  VecDestroyVecs(PetscInt m,Vec *vv[])
 
   PetscFunctionBegin;
   PetscValidPointer(vv,1);
+  if (!*vv) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(**vv,VEC_CLASSID,1);
   PetscValidType(**vv,1);
-  ierr = (*(**vv)->ops->destroyvecs)(m,*vv);CHKERRQ(ierr);
+  if (m < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Trying to destroy negative number of vectors %D",m);  ierr = (*(**vv)->ops->destroyvecs)(m,*vv);CHKERRQ(ierr);
   *vv = 0;
   PetscFunctionReturn(0);
 }
@@ -926,7 +924,7 @@ PetscErrorCode VecDestroyVecs_Default(PetscInt m,Vec v[])
   PetscFunctionBegin;
   PetscValidPointer(v,1);
   if (m <= 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"m must be > 0: m = %D",m);
-  for (i=0; i<m; i++) {ierr = VecDestroy(v[i]);CHKERRQ(ierr);}
+  for (i=0; i<m; i++) {ierr = VecDestroy(&v[i]);CHKERRQ(ierr);}
   ierr = PetscFree(v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1251,9 +1249,7 @@ PetscErrorCode  VecSetRandom(Vec x,PetscRandom rctx)
   ierr = (*x->ops->setrandom)(x,rctx);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(VEC_SetRandom,x,rctx,0,0);CHKERRQ(ierr);
 
-  if (randObj) {
-    ierr = PetscRandomDestroy(randObj);CHKERRQ(ierr);
-  }
+  ierr = PetscRandomDestroy(&randObj);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

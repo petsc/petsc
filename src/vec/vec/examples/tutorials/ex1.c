@@ -160,9 +160,9 @@ y
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */
-  ierr = VecDestroy(x);CHKERRQ(ierr);
-  ierr = VecDestroy(y);CHKERRQ(ierr);
-  ierr = VecDestroy(w);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = VecDestroy(&y);CHKERRQ(ierr);
+  ierr = VecDestroy(&w);CHKERRQ(ierr);
   ierr = VecDestroyVecs(3,&z);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;

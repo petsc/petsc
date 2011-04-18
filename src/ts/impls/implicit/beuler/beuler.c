@@ -207,9 +207,9 @@ static PetscErrorCode TSReset_BEuler(TS ts)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (beuler->update) {ierr = VecDestroy(beuler->update);CHKERRQ(ierr);}
-  if (beuler->rhs)    {ierr = VecDestroy(beuler->rhs);CHKERRQ(ierr);}
-  if (beuler->func)   {ierr = VecDestroy(beuler->func);CHKERRQ(ierr);}
+  ierr = VecDestroy(&beuler->update);CHKERRQ(ierr);
+  ierr = VecDestroy(&beuler->rhs);CHKERRQ(ierr);
+  ierr = VecDestroy(&beuler->func);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

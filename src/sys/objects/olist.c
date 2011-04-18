@@ -97,16 +97,16 @@ PetscErrorCode  PetscOListAdd(PetscOList *fl,const char name[],PetscObject obj)
     PetscOListDestroy - Destroy a list of objects
 
     Input Parameter:
-.   fl   - pointer to list
+.   ifl   - pointer to list
 
     Level: developer
 
 .seealso: PetscOListAdd(), PetscOListFind(), PetscOListDuplicate(), PetscOListReverseFind(), PetscOListDuplicate()
 
 @*/
-PetscErrorCode  PetscOListDestroy(PetscOList fl)
+PetscErrorCode  PetscOListDestroy(PetscOList *ifl)
 {
-  PetscOList     tmp;
+  PetscOList     tmp,fl = *ifl;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -116,6 +116,7 @@ PetscErrorCode  PetscOListDestroy(PetscOList fl)
     ierr  = PetscFree(fl);CHKERRQ(ierr);
     fl    = tmp;
   }
+  *ifl = PETSC_NULL;
   PetscFunctionReturn(0);
 }
 

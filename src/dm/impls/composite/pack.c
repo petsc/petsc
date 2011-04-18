@@ -82,7 +82,7 @@ PetscErrorCode  DMCompositeGetContext(DM dm,void **ctx)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMDestroy_Composite"
-PetscErrorCode  DMDestroy_Composite(DM *dm)
+PetscErrorCode  DMDestroy_Composite(DM dm)
 {
   PetscErrorCode         ierr;
   struct DMCompositeLink *next, *prev;

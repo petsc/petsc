@@ -52,7 +52,7 @@ PetscErrorCode  AOView(AO ao,PetscViewer viewer)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "AODestroy_" 
+#define __FUNCT__ "AODestroy" 
 /*@C
    AODestroy - Destroys an application ordering.
 
@@ -72,13 +72,14 @@ PetscErrorCode  AODestroy(AO *ao)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (!*ao) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*ao),AO_CLASSID,1);
-  if (--((PetscObject)(*ao))->refct > 0) PetscFunctionReturn(0);
+  if (--((PetscObject)(*ao))->refct > 0) {*ao = 0; PetscFunctionReturn(0);}
   /* if memory was published with AMS then destroy it */
   ierr = PetscObjectDepublish((*ao));CHKERRQ(ierr);
   /* destroy the internal part */
   if ((*ao)->ops->destroy) {
-    ierr = (*(*ao)->ops->destroy)(ao);CHKERRQ(ierr);
+    ierr = (*(*ao)->ops->destroy)(*ao);CHKERRQ(ierr);
   }
   ierr = PetscHeaderDestroy(ao);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -512,7 +513,7 @@ PetscErrorCode  AOCreate(MPI_Comm comm,AO *ao)
   ierr = AOInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
-  ierr = PetscHeaderCreate(aonew,_p_AO,struct _AOOps,AO_CLASSID,-1,"AO",comm,AODestroy_,AOView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(aonew,_p_AO,struct _AOOps,AO_CLASSID,-1,"AO",comm,AODestroy,AOView);CHKERRQ(ierr);
   ierr = PetscMemzero(aonew->ops, sizeof(struct _AOOps));CHKERRQ(ierr);
   *ao = aonew;
 

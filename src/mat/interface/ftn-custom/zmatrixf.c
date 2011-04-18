@@ -77,7 +77,7 @@ EXTERN_C_BEGIN
 
 void PETSC_STDCALL  matdestroy_(Mat *A, int *__ierr )
 {
-  *__ierr = MatDestroy(*A);
+  *__ierr = MatDestroy(A);
 }
 
 static PetscErrorCode ournullfunction(MatNullSpace sp,Vec x,void *ctx)
@@ -261,7 +261,7 @@ void PETSC_STDCALL matdestroymatrices_(Mat *mat,PetscInt *n,Mat *smat,PetscError
   PetscInt i;
 
   for (i=0; i<*n; i++) {
-    *ierr = MatDestroy(smat[i]);if (*ierr) return;
+    *ierr = MatDestroy(&smat[i]);if (*ierr) return;
   }
 }
 

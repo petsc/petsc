@@ -97,7 +97,7 @@ typedef struct _p_PetscObject {
 
 #define  PETSCFREEDHEADER -1
 
-typedef PetscErrorCode (*PetscObjectFunction)(PetscObject); /* force cast in next macro to NEVER use extern "C" style */
+typedef PetscErrorCode (*PetscObjectFunction)(PetscObject*); /* force cast in next macro to NEVER use extern "C" style */
 typedef PetscErrorCode (*PetscObjectViewerFunction)(PetscObject,PetscViewer); 
 
 /*@C
@@ -130,7 +130,7 @@ typedef PetscErrorCode (*PetscObjectViewerFunction)(PetscObject,PetscViewer);
    PetscLogObjectMemory(h, sizeof(struct tp) + sizeof(PetscOps) + sizeof(pops)))
 
 extern PetscErrorCode PetscComposedQuantitiesDestroy(PetscObject obj);
-extern PetscErrorCode  PetscHeaderCreate_Private(PetscObject,PetscClassId,PetscInt,const char[],MPI_Comm,PetscErrorCode (*)(PetscObject),PetscErrorCode (*)(PetscObject,PetscViewer));
+extern PetscErrorCode PetscHeaderCreate_Private(PetscObject,PetscClassId,PetscInt,const char[],MPI_Comm,PetscErrorCode (*)(PetscObject*),PetscErrorCode (*)(PetscObject,PetscViewer));
 
 /*@C
     PetscHeaderDestroy - Final step in destroying a PetscObject

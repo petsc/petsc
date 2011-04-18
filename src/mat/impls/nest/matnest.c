@@ -220,7 +220,7 @@ static PetscErrorCode MatNestDestroyISList(PetscInt n,IS **list)
 
   PetscFunctionBegin;
   if (!lst) PetscFunctionReturn(0);
-  for (i=0; i<n; i++) if (lst[i]) {ierr = ISDestroy(lst[i]);CHKERRQ(ierr);}
+  for (i=0; i<n; i++) if (lst[i]) {ierr = ISDestroy(&lst[i]);CHKERRQ(ierr);}
   ierr = PetscFree(lst);CHKERRQ(ierr);
   *list = PETSC_NULL;
   PetscFunctionReturn(0);
@@ -250,11 +250,7 @@ static PetscErrorCode MatDestroy_Nest(Mat A)
   if (vs->m) {
     for (i=0; i<vs->nr; i++) {
       for (j=0; j<vs->nc; j++) {
-
-        if (vs->m[i][j]) {
-          ierr = MatDestroy(vs->m[i][j]);CHKERRQ(ierr);
-          vs->m[i][j] = PETSC_NULL;
-        }
+        ierr = MatDestroy(&vs->m[i][j]);CHKERRQ(ierr);
       }
       ierr = PetscFree( vs->m[i] );CHKERRQ(ierr);
     }
@@ -433,9 +429,8 @@ static PetscErrorCode MatRestoreLocalSubMatrix_Nest(Mat A,IS isrow,IS iscol,Mat 
   if (*B != sub) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONGSTATE,"Local submatrix has not been gotten");
   if (sub) {
     if (((PetscObject)sub)->refct <= 1) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONGSTATE,"Local submatrix has had reference count decremented too many times");
-    ierr = MatDestroy(*B);CHKERRQ(ierr);
+    ierr = MatDestroy(B);CHKERRQ(ierr);
   }
-  *B = PETSC_NULL;
   PetscFunctionReturn(0);
 }
 
@@ -487,10 +482,10 @@ static PetscErrorCode MatGetDiagonal_Nest2(Mat A,Vec v)
     ierr = VecScatterEnd(vscat[i],bdiag[i],v,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   }
   for (i=0; i<bA->nr; i++) {
-    ierr = VecScatterDestroy(vscat[i]);CHKERRQ(ierr);
+    ierr = VecScatterDestroy(&vscat[i]);CHKERRQ(ierr);
   }
   ierr = PetscFree(vscat);CHKERRQ(ierr);
-  ierr = VecDestroy(diag);CHKERRQ(ierr);
+  ierr = VecDestroy(&diag);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -554,15 +549,15 @@ static PetscErrorCode MatDiagonalScale_Nest2(Mat A,Vec l,Vec r)
   ierr = MatDiagonalScale_Nest(A,bl,br);CHKERRQ(ierr);
 
   for (i=0; i<bA->nr; i++) {
-    ierr = VecScatterDestroy(vscatl[i]);CHKERRQ(ierr);
+    ierr = VecScatterDestroy(&vscatl[i]);CHKERRQ(ierr);
   }
   for (i=0; i<bA->nc; i++) {
-    ierr = VecScatterDestroy(vscatr[i]);CHKERRQ(ierr);
+    ierr = VecScatterDestroy(&vscatr[i]);CHKERRQ(ierr);
   }
   ierr = PetscFree(vscatl);CHKERRQ(ierr);
   ierr = PetscFree(vscatr);CHKERRQ(ierr);
-  ierr = VecDestroy(bl);CHKERRQ(ierr);
-  ierr = VecDestroy(br);CHKERRQ(ierr);
+  ierr = VecDestroy(&bl);CHKERRQ(ierr);
+  ierr = VecDestroy(&br);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -597,7 +592,7 @@ static PetscErrorCode MatGetVecs_Nest(Mat A,Vec *right,Vec *left)
     ierr = VecCreateNest(comm,bA->nc,bA->isglobal.col,R,right);CHKERRQ(ierr);
     /* hand back control to the nest vector */
     for (j=0; j<bA->nc; j++) {
-      ierr = VecDestroy(R[j]);CHKERRQ(ierr);
+      ierr = VecDestroy(&R[j]);CHKERRQ(ierr);
     }
     ierr = PetscFree(R);CHKERRQ(ierr);
   }
@@ -621,7 +616,7 @@ static PetscErrorCode MatGetVecs_Nest(Mat A,Vec *right,Vec *left)
 
     ierr = VecCreateNest(comm,bA->nr,bA->isglobal.row,L,left);CHKERRQ(ierr);
     for (i=0; i<bA->nr; i++) {
-      ierr = VecDestroy(L[i]);CHKERRQ(ierr);
+      ierr = VecDestroy(&L[i]);CHKERRQ(ierr);
     }
 
     ierr = PetscFree(L);CHKERRQ(ierr);
@@ -718,7 +713,7 @@ static PetscErrorCode MatDuplicate_Nest(Mat A,MatDuplicateOption op,Mat *B)
   ierr = MatCreateNest(((PetscObject)A)->comm,nr,bA->isglobal.row,nc,bA->isglobal.col,b,B);CHKERRQ(ierr);
   /* Give the new MatNest exclusive ownership */
   for (i=0; i<nr*nc; i++) {
-    if (b[i]) {ierr = MatDestroy(b[i]);CHKERRQ(ierr);}
+    ierr = MatDestroy(&b[i]);CHKERRQ(ierr);
   }
   ierr = PetscFree(b);CHKERRQ(ierr);
 

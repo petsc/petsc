@@ -226,12 +226,12 @@ PetscErrorCode KSPView_Chebychev(KSP ksp,PetscViewer viewer)
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPDestroy_Chebychev"
-PetscErrorCode KSPDestroy_Chebychev(KSP *ksp)
+PetscErrorCode KSPDestroy_Chebychev(KSP ksp)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)*ksp,"KSPChebychevSetEigenvalues_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPChebychevSetEigenvalues_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = KSPDefaultDestroy(ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

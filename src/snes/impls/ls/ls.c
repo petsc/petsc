@@ -34,7 +34,7 @@ PetscErrorCode SNESLSCheckLocalMin_Private(SNES snes,Mat A,Vec F,Vec W,PetscReal
     ierr = VecDuplicate(W,&work);CHKERRQ(ierr);
     ierr = MatMult(A,W,work);CHKERRQ(ierr);
     ierr = VecDot(F,work,&result);CHKERRQ(ierr);
-    ierr = VecDestroy(work);CHKERRQ(ierr);
+    ierr = VecDestroy(&work);CHKERRQ(ierr);
     a1   = PetscAbsScalar(result)/(fnorm*wnorm);
     ierr = PetscInfo1(snes,"(F^T J random)/(|| F ||*||random|| %G near zero implies found a local minimum\n",a1);CHKERRQ(ierr);
     if (a1 < 1.e-4) *ismin = PETSC_TRUE;
@@ -310,9 +310,7 @@ PetscErrorCode SNESDestroy_LS(SNES snes)
 
   PetscFunctionBegin;
   ierr = SNESReset_LS(snes);CHKERRQ(ierr);
-  if (ls->monitor) {
-    ierr = PetscViewerASCIIMonitorDestroy(ls->monitor);CHKERRQ(ierr);
-  }
+  ierr = PetscViewerASCIIMonitorDestroy(&ls->monitor);CHKERRQ(ierr);
   ierr = PetscFree(snes->data);CHKERRQ(ierr);
 
   /* clear composed functions */
@@ -1126,7 +1124,7 @@ PetscErrorCode  SNESLineSearchSetMonitor_LS(SNES snes,PetscBool  flg)
   if (flg && !ls->monitor) {
     ierr = PetscViewerASCIIMonitorCreate(((PetscObject)snes)->comm,"stdout",((PetscObject)snes)->tablevel,&ls->monitor);CHKERRQ(ierr);
   } else if (!flg && ls->monitor) {
-    ierr = PetscViewerASCIIMonitorDestroy(ls->monitor);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIMonitorDestroy(&ls->monitor);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

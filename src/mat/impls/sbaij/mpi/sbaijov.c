@@ -105,7 +105,7 @@ PetscErrorCode MatIncreaseOverlap_MPISBAIJ(Mat C,PetscInt is_max,IS is[],PetscIn
         }
       }
       ierr = ISRestoreIndices(is_new[i],&idx);CHKERRQ(ierr);
-      ierr = ISDestroy(is_new[i]);CHKERRQ(ierr);
+      ierr = ISDestroy(&is_new[i]);CHKERRQ(ierr);
 
       /* create updated is_new */
       ierr = ISCreateGeneral(PETSC_COMM_SELF,isz,nidx,PETSC_COPY_VALUES,is_new+i);CHKERRQ(ierr);
@@ -114,20 +114,20 @@ PetscErrorCode MatIncreaseOverlap_MPISBAIJ(Mat C,PetscInt is_max,IS is[],PetscIn
     /* Free tmp spaces */
     ierr = PetscBTDestroy(table);CHKERRQ(ierr);
     for (i=0; i<is_max; i++){
-      ierr = MatDestroy(submats[i]);CHKERRQ(ierr);
+      ierr = MatDestroy(&submats[i]);CHKERRQ(ierr);
     }
     ierr = PetscFree(submats);CHKERRQ(ierr);
   } 
-  ierr = ISDestroy(is_row[0]);CHKERRQ(ierr);
+  ierr = ISDestroy(&is_row[0]);CHKERRQ(ierr);
   ierr = PetscFree(is_row);CHKERRQ(ierr);
   ierr = PetscFree(nidx);CHKERRQ(ierr);
   } 
   //--------end of new----------
 
-  for (i=0; i<is_max; i++) {ierr = ISDestroy(is[i]);CHKERRQ(ierr);}
+  for (i=0; i<is_max; i++) {ierr = ISDestroy(&is[i]);CHKERRQ(ierr);}
   ierr = ISExpandIndicesGeneral(N,bs,is_max,is_new,is);CHKERRQ(ierr);
 
-  for (i=0; i<is_max; i++) {ierr = ISDestroy(is_new[i]);CHKERRQ(ierr);}
+  for (i=0; i<is_max; i++) {ierr = ISDestroy(&is_new[i]);CHKERRQ(ierr);}
   ierr = PetscFree(is_new);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -221,7 +221,7 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C,PetscInt is_max,IS 
   /* gather c->garray from all processors */
   ierr = ISCreateGeneral(comm,Bnbs,c->garray,PETSC_COPY_VALUES,&garray_local);CHKERRQ(ierr);
   ierr = ISAllGather(garray_local, &garray_gl);CHKERRQ(ierr);
-  ierr = ISDestroy(garray_local);CHKERRQ(ierr);
+  ierr = ISDestroy(&garray_local);CHKERRQ(ierr);
   ierr = MPI_Allgather(&Bnbs,1,MPIU_INT,Bowners+1,1,MPIU_INT,comm);CHKERRQ(ierr);
   Bowners[0] = 0;
   for (i=0; i<size; i++) Bowners[i+1] += Bowners[i];
@@ -246,7 +246,7 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C,PetscInt is_max,IS 
     }
     ierr = ISRestoreIndices(garray_gl,&idx_i);CHKERRQ(ierr);
   }  /* if (is_max) */
-  ierr = ISDestroy(garray_gl);CHKERRQ(ierr); 
+  ierr = ISDestroy(&garray_gl);CHKERRQ(ierr); 
 
   /* evaluate communication - mesg to who, length, and buffer space */
   for (i=0; i<size; i++) len_s[i] = 0;
@@ -299,7 +299,7 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C,PetscInt is_max,IS 
   }
 
   for (i=0; i<is_max; i++) { 
-    ierr = ISDestroy(is[i]);CHKERRQ(ierr); 
+    ierr = ISDestroy(&is[i]);CHKERRQ(ierr); 
   }
   ierr = PetscFree(n);CHKERRQ(ierr);
   ierr = PetscFree(ctable);CHKERRQ(ierr);

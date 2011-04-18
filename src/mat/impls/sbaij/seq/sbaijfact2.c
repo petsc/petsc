@@ -2361,12 +2361,8 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ_MSR(Mat B,Mat A,IS perm,const MatFa
   b->ilen = 0;
   b->imax = 0;
  
-  if (b->row) {
-    ierr = ISDestroy(b->row);CHKERRQ(ierr);
-  }
-  if (b->icol) {
-    ierr = ISDestroy(b->icol);CHKERRQ(ierr);
-  }
+  ierr = ISDestroy(&b->row);CHKERRQ(ierr);
+  ierr = ISDestroy(&b->icol);CHKERRQ(ierr);
   b->row  = perm;
   b->icol = perm;
   ierr    = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr); 

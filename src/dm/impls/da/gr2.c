@@ -239,7 +239,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
 
     ierr = PetscDrawZoom(draw,VecView_MPI_Draw_DA2d_Zoom,&zctx);CHKERRQ(ierr);
   }
-  ierr = PetscDrawViewPortsDestroy(&ports);CHKERRQ(ierr);
+  ierr = PetscDrawViewPortsDestroy(ports);CHKERRQ(ierr);
 
   ierr = VecRestoreArray(xcoorl,&zctx.xy);CHKERRQ(ierr);
   ierr = VecRestoreArray(xlocal,&zctx.v);CHKERRQ(ierr);

@@ -26,7 +26,6 @@ extern PetscErrorCode  PCCreate_OpenMP(PC);
 extern PetscErrorCode  PCCreate_Exotic(PC);
 extern PetscErrorCode  PCCreate_ASA(PC);
 extern PetscErrorCode  PCCreate_CP(PC);
-extern PetscErrorCode  PCCreate_BFBt(PC);
 extern PetscErrorCode  PCCreate_LSC(PC);
 extern PetscErrorCode  PCCreate_Redistribute(PC);
 extern PetscErrorCode  PCCreate_SVD(PC);
@@ -112,7 +111,6 @@ PetscErrorCode  PCRegisterAll(const char path[])
   ierr = PCRegisterDynamic(PCOPENMP       ,path,"PCCreate_OpenMP",PCCreate_OpenMP);CHKERRQ(ierr);
   ierr = PCRegisterDynamic(PCASA          ,path,"PCCreate_ASA",PCCreate_ASA);CHKERRQ(ierr);
   ierr = PCRegisterDynamic(PCCP           ,path,"PCCreate_CP",PCCreate_CP);CHKERRQ(ierr);
-  ierr = PCRegisterDynamic(PCBFBT         ,path,"PCCreate_BFBt",PCCreate_BFBt);CHKERRQ(ierr);
   ierr = PCRegisterDynamic(PCLSC          ,path,"PCCreate_LSC",PCCreate_LSC);CHKERRQ(ierr);
   ierr = PCRegisterDynamic(PCREDISTRIBUTE ,path,"PCCreate_Redistribute",PCCreate_Redistribute);CHKERRQ(ierr);
   ierr = PCRegisterDynamic(PCSVD          ,path,"PCCreate_SVD",PCCreate_SVD);CHKERRQ(ierr);

@@ -247,7 +247,7 @@ PetscErrorCode  MatGetOrdering(Mat mat,const MatOrderingType type,IS *rperm,IS *
     if (flg) {
       ierr = PetscViewerPopFormat(PETSC_VIEWER_DRAW_(((PetscObject)mat)->comm));CHKERRQ(ierr);
     }
-    ierr = MatDestroy(tmat);CHKERRQ(ierr);
+    ierr = MatDestroy(&tmat);CHKERRQ(ierr);
   }
 
   PetscFunctionReturn(0);

@@ -27,21 +27,20 @@ PetscErrorCode MatDestroy_Composite(Mat mat)
 
   PetscFunctionBegin;
   while (next) {
-    ierr = MatDestroy(next->mat);CHKERRQ(ierr);
+    ierr = MatDestroy(&next->mat);CHKERRQ(ierr);
     if (next->work && (!next->next || next->work != next->next->work)) {
-      ierr = VecDestroy(next->work);CHKERRQ(ierr);
+      ierr = VecDestroy(&next->work);CHKERRQ(ierr);
     }
     oldnext = next;
     next     = next->next;
     ierr     = PetscFree(oldnext);CHKERRQ(ierr);
   }
-  if (shell->work) {ierr = VecDestroy(shell->work);CHKERRQ(ierr);}
-  if (shell->left) {ierr = VecDestroy(shell->left);CHKERRQ(ierr);}
-  if (shell->right) {ierr = VecDestroy(shell->right);CHKERRQ(ierr);}
-  if (shell->leftwork) {ierr = VecDestroy(shell->leftwork);CHKERRQ(ierr);}
-  if (shell->rightwork) {ierr = VecDestroy(shell->rightwork);CHKERRQ(ierr);}
-  ierr      = PetscFree(shell);CHKERRQ(ierr);
-  mat->data = 0;
+  ierr = VecDestroy(&shell->work);CHKERRQ(ierr);
+  ierr = VecDestroy(&shell->left);CHKERRQ(ierr);
+  ierr = VecDestroy(&shell->right);CHKERRQ(ierr);
+  ierr = VecDestroy(&shell->leftwork);CHKERRQ(ierr);
+  ierr = VecDestroy(&shell->rightwork);CHKERRQ(ierr);
+  ierr = PetscFree(mat->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -577,7 +576,7 @@ PetscErrorCode  MatCompositeMerge(Mat mat)
     ierr = MatDuplicate(next->mat,MAT_COPY_VALUES,&tmat);CHKERRQ(ierr);
     while ((prev = prev->prev)) {
       ierr = MatMatMult(tmat,prev->mat,MAT_INITIAL_MATRIX,PETSC_DECIDE,&newmat);CHKERRQ(ierr);
-      ierr = MatDestroy(tmat);CHKERRQ(ierr);
+      ierr = MatDestroy(&tmat);CHKERRQ(ierr);
       tmat = newmat;
     }
   }

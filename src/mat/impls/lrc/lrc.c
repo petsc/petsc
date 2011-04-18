@@ -51,8 +51,8 @@ PetscErrorCode MatDestroy_LRC(Mat N)
   ierr = PetscObjectDereference((PetscObject)Na->A);CHKERRQ(ierr);
   ierr = PetscObjectDereference((PetscObject)Na->U);CHKERRQ(ierr);
   ierr = PetscObjectDereference((PetscObject)Na->V);CHKERRQ(ierr);
-  ierr = VecDestroy(Na->work1);CHKERRQ(ierr);
-  ierr = VecDestroy(Na->work2);CHKERRQ(ierr);
+  ierr = VecDestroy(&Na->work1);CHKERRQ(ierr);
+  ierr = VecDestroy(&Na->work2);CHKERRQ(ierr);
   ierr = PetscFree(Na);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -237,24 +237,16 @@ PetscErrorCode MatDestroy_MFFD(Mat mat)
   MatMFFD        ctx = (MatMFFD)mat->data;
 
   PetscFunctionBegin;
-  if (ctx->w) {
-    ierr = VecDestroy(ctx->w);CHKERRQ(ierr);
-  }
-  if (ctx->drscale) {
-    ierr = VecDestroy(ctx->drscale);CHKERRQ(ierr);
-  }
-  if (ctx->dlscale) {
-    ierr = VecDestroy(ctx->dlscale);CHKERRQ(ierr);
-  }
-  if (ctx->dshift) {
-    ierr = VecDestroy(ctx->dshift);CHKERRQ(ierr);
-  }
+  ierr = VecDestroy(&ctx->w);CHKERRQ(ierr);
+  ierr = VecDestroy(&ctx->drscale);CHKERRQ(ierr);
+  ierr = VecDestroy(&ctx->dlscale);CHKERRQ(ierr);
+  ierr = VecDestroy(&ctx->dshift);CHKERRQ(ierr);
   if (ctx->current_f_allocated) {
-    ierr = VecDestroy(ctx->current_f);
+    ierr = VecDestroy(&ctx->current_f);CHKERRQ(ierr);
   }
   if (ctx->ops->destroy) {ierr = (*ctx->ops->destroy)(ctx);CHKERRQ(ierr);}
-  if (ctx->sp) {ierr = MatNullSpaceDestroy(&ctx->sp);CHKERRQ(ierr);}
-  ierr = PetscHeaderDestroy(ctx);CHKERRQ(ierr);
+  ierr = MatNullSpaceDestroy(&ctx->sp);CHKERRQ(ierr);
+  ierr = PetscHeaderDestroy(&ctx);CHKERRQ(ierr);
 
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMFFDSetBase_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMFFDSetFunctioniBase_C","",PETSC_NULL);CHKERRQ(ierr);
@@ -546,7 +538,7 @@ PetscErrorCode  MatMFFDSetBase_MFFD(Mat J,Vec U,Vec F)
   ierr = MatMFFDResetHHistory(J);CHKERRQ(ierr);
   ctx->current_u = U;
   if (F) {
-    if (ctx->current_f_allocated) {ierr = VecDestroy(ctx->current_f);CHKERRQ(ierr);}
+    if (ctx->current_f_allocated) {ierr = VecDestroy(&ctx->current_f);CHKERRQ(ierr);}
     ctx->current_f           = F;
     ctx->current_f_allocated = PETSC_FALSE;
   } else if (!ctx->current_f_allocated) {

@@ -235,18 +235,18 @@ static PetscErrorCode MatDestroy_SubMatrix(Mat N)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = ISDestroy(Na->isrow);CHKERRQ(ierr);
-  ierr = ISDestroy(Na->iscol);CHKERRQ(ierr);
-  if (Na->left) {ierr = VecDestroy(Na->left);CHKERRQ(ierr);}
-  if (Na->right) {ierr = VecDestroy(Na->right);CHKERRQ(ierr);}
-  if (Na->olwork) {ierr = VecDestroy(Na->olwork);CHKERRQ(ierr);}
-  if (Na->orwork) {ierr = VecDestroy(Na->orwork);CHKERRQ(ierr);}
-  ierr = VecDestroy(Na->lwork);CHKERRQ(ierr);
-  ierr = VecDestroy(Na->rwork);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(Na->lrestrict);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(Na->rprolong);CHKERRQ(ierr);
-  ierr = MatDestroy(Na->A);CHKERRQ(ierr);
-  ierr = PetscFree(Na);CHKERRQ(ierr);
+  ierr = ISDestroy(&Na->isrow);CHKERRQ(ierr);
+  ierr = ISDestroy(&Na->iscol);CHKERRQ(ierr);
+  ierr = VecDestroy(&Na->left);CHKERRQ(ierr);
+  ierr = VecDestroy(&Na->right);CHKERRQ(ierr);
+  ierr = VecDestroy(&Na->olwork);CHKERRQ(ierr);
+  ierr = VecDestroy(&Na->orwork);CHKERRQ(ierr);
+  ierr = VecDestroy(&Na->lwork);CHKERRQ(ierr);
+  ierr = VecDestroy(&Na->rwork);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&Na->lrestrict);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&Na->rprolong);CHKERRQ(ierr);
+  ierr = MatDestroy(&Na->A);CHKERRQ(ierr);
+  ierr = PetscFree(N->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -327,8 +327,8 @@ PetscErrorCode  MatCreateSubMatrix(Mat A,IS isrow,IS iscol,Mat *newmat)
   ierr = VecSetUp(right);CHKERRQ(ierr);
   ierr = VecScatterCreate(Na->lwork,isrow,left,PETSC_NULL,&Na->lrestrict);CHKERRQ(ierr);
   ierr = VecScatterCreate(right,PETSC_NULL,Na->rwork,iscol,&Na->rprolong);CHKERRQ(ierr);
-  ierr = VecDestroy(left);CHKERRQ(ierr);
-  ierr = VecDestroy(right);CHKERRQ(ierr);
+  ierr = VecDestroy(&left);CHKERRQ(ierr);
+  ierr = VecDestroy(&right);CHKERRQ(ierr);
 
   *newmat = N;
   PetscFunctionReturn(0);
@@ -376,11 +376,11 @@ PetscErrorCode  MatSubMatrixUpdate(Mat N,Mat A,IS isrow,IS iscol)
   if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Cannot update submatrix with different column indices");
 
   ierr = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
-  ierr = MatDestroy(Na->A);CHKERRQ(ierr);
+  ierr = MatDestroy(&Na->A);CHKERRQ(ierr);
   Na->A = A;
 
   Na->scale = 1.0;
-  if (Na->left) {ierr = VecDestroy(Na->left);CHKERRQ(ierr);}
-  if (Na->right) {ierr = VecDestroy(Na->right);CHKERRQ(ierr);}
+  ierr = VecDestroy(&Na->left);CHKERRQ(ierr);
+  ierr = VecDestroy(&Na->right);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

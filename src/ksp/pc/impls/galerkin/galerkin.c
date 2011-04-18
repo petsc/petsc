@@ -61,10 +61,10 @@ static PetscErrorCode PCReset_Galerkin(PC pc)
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  if (jac->R) {ierr = MatDestroy(jac->R);CHKERRQ(ierr);}
-  if (jac->P) {ierr = MatDestroy(jac->P);CHKERRQ(ierr);}
-  if (jac->x) {ierr = VecDestroy(jac->x);CHKERRQ(ierr);}
-  if (jac->b) {ierr = VecDestroy(jac->b);CHKERRQ(ierr);}
+  ierr = MatDestroy(&jac->R);CHKERRQ(ierr);
+  ierr = MatDestroy(&jac->P);CHKERRQ(ierr);
+  ierr = VecDestroy(&jac->x);CHKERRQ(ierr);
+  ierr = VecDestroy(&jac->b);CHKERRQ(ierr);
   ierr = KSPReset(jac->ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -78,7 +78,7 @@ static PetscErrorCode PCDestroy_Galerkin(PC pc)
 
   PetscFunctionBegin;
   ierr = PCReset_Galerkin(pc);CHKERRQ(ierr);
-  ierr = KSPDestroy(jac->ksp);CHKERRQ(ierr);
+  ierr = KSPDestroy(&jac->ksp);CHKERRQ(ierr);
   ierr = PetscFree(pc->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -127,7 +127,7 @@ PetscErrorCode  PCGalerkinSetRestriction_Galerkin(PC pc,Mat R)
 
   PetscFunctionBegin;
   ierr = PetscObjectReference((PetscObject)R);CHKERRQ(ierr);
-  if (jac->R) {ierr = MatDestroy(jac->R);CHKERRQ(ierr);}
+  ierr = MatDestroy(&jac->R);CHKERRQ(ierr);
   jac->R = R;
   PetscFunctionReturn(0);
 }
@@ -143,7 +143,7 @@ PetscErrorCode  PCGalerkinSetInterpolation_Galerkin(PC pc,Mat P)
 
   PetscFunctionBegin;
   ierr = PetscObjectReference((PetscObject)P);CHKERRQ(ierr);
-  if (jac->P) {ierr = MatDestroy(jac->P);CHKERRQ(ierr);}
+  ierr = MatDestroy(&jac->P);CHKERRQ(ierr);
   jac->P = P;
   PetscFunctionReturn(0);
 }

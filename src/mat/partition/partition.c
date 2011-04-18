@@ -279,19 +279,20 @@ PetscErrorCode  MatPartitioningSetAdjacency(MatPartitioning part,Mat adj)
 
 .seealso: MatPartitioningCreate()
 @*/
-PetscErrorCode  MatPartitioningDestroy(MatPartitioning part)
+PetscErrorCode  MatPartitioningDestroy(MatPartitioning *part)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(part,MAT_PARTITIONING_CLASSID,1);
-  if (--((PetscObject)part)->refct > 0) PetscFunctionReturn(0);
+  if (!*part) PetscFunctionReturn(0);
+  PetscValidHeaderSpecific((*part),MAT_PARTITIONING_CLASSID,1);
+  if (--((PetscObject)(*part))->refct > 0) {*part = 0; PetscFunctionReturn(0);}
 
-  if (part->ops->destroy) {
-    ierr = (*part->ops->destroy)(part);CHKERRQ(ierr);
+  if ((*part)->ops->destroy) {
+    ierr = (*(*part)->ops->destroy)((*part));CHKERRQ(ierr);
   }
-  ierr = PetscFree(part->vertex_weights);CHKERRQ(ierr);
-  ierr = PetscFree(part->part_weights);CHKERRQ(ierr);
+  ierr = PetscFree((*part)->vertex_weights);CHKERRQ(ierr);
+  ierr = PetscFree((*part)->part_weights);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(part);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

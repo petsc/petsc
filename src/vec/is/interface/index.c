@@ -205,17 +205,17 @@ PetscErrorCode  ISDestroy(IS *is)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(is,IS_CLASSID,1);
   if (!*is) PetscFunctionReturn(0);
-  if (--((PetscObject)(*is))->refct > 0) PetscFunctionReturn(0);
+  PetscValidHeaderSpecific((*is),IS_CLASSID,1);
+  if (--((PetscObject)(*is))->refct > 0) {*is = 0; PetscFunctionReturn(0);}
   if ((*is)->complement) {
     PetscInt refcnt;
     ierr = PetscObjectGetReference((PetscObject)((*is)->complement), &refcnt); CHKERRQ(ierr);
     if (refcnt > 1) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, "Nonlocal IS has not been restored");
-    ierr = ISDestroy((*is)->complement); CHKERRQ(ierr);
+    ierr = ISDestroy(&(*is)->complement); CHKERRQ(ierr);
   }
   if ((*is)->ops->destroy) {
-    ierr = (*(*is)->ops->destroy)(is);CHKERRQ(ierr);
+    ierr = (*(*is)->ops->destroy)(*is);CHKERRQ(ierr);
   }
   /* Destroy local representations of offproc data. */
   ierr = PetscFree((*is)->total); CHKERRQ(ierr);

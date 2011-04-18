@@ -149,9 +149,9 @@ PetscErrorCode TSDefaultComputeJacobian(TS ts,PetscReal t,Vec xx1,Mat *J,Mat *B,
   }
   *flag =  DIFFERENT_NONZERO_PATTERN;
 
-  ierr = VecDestroy(f1);CHKERRQ(ierr);
-  ierr = VecDestroy(f2);CHKERRQ(ierr);
-  ierr = VecDestroy(xx2);CHKERRQ(ierr);
+  ierr = VecDestroy(&f1);CHKERRQ(ierr);
+  ierr = VecDestroy(&f2);CHKERRQ(ierr);
+  ierr = VecDestroy(&xx2);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

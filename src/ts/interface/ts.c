@@ -173,7 +173,7 @@ PetscErrorCode  TSViewFromOptions(TS ts,const char title[])
   if (opt && !PetscPreLoadingOn) {
     ierr = PetscViewerASCIIOpen(((PetscObject)ts)->comm,fileName,&viewer);CHKERRQ(ierr);
     ierr = TSView(ts, viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
   opt = PETSC_FALSE;
   ierr = PetscOptionsGetBool(((PetscObject)ts)->prefix, "-ts_view_draw", &opt,PETSC_NULL);CHKERRQ(ierr);
@@ -189,7 +189,7 @@ PetscErrorCode  TSViewFromOptions(TS ts,const char title[])
     ierr = TSView(ts, viewer);CHKERRQ(ierr);
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
     ierr = PetscDrawPause(draw);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -585,14 +585,14 @@ PetscErrorCode  TSSetMatrices(TS ts,Mat Arhs,PetscErrorCode (*frhs)(TS,PetscReal
     PetscValidHeaderSpecific(Arhs,MAT_CLASSID,2);
     PetscCheckSameComm(ts,1,Arhs,2);
     ierr = PetscObjectReference((PetscObject)Arhs);CHKERRQ(ierr);
-    if (ts->Arhs) {ierr = MatDestroy(ts->Arhs);CHKERRQ(ierr);}
+    ierr = MatDestroy(&ts->Arhs);CHKERRQ(ierr);
     ts->Arhs = Arhs;
   }
   if (Alhs){
     PetscValidHeaderSpecific(Alhs,MAT_CLASSID,4);
     PetscCheckSameComm(ts,1,Alhs,4);
     ierr = PetscObjectReference((PetscObject)Alhs);CHKERRQ(ierr);
-    if (ts->Alhs) {ierr = MatDestroy(ts->Alhs);CHKERRQ(ierr);}
+    ierr = MatDestroy(&ts->Alhs);CHKERRQ(ierr);
     ts->Alhs = Alhs;
   }
   ts->matflg = flag;
@@ -696,12 +696,12 @@ PetscErrorCode  TSSetRHSJacobian(TS ts,Mat A,Mat B,PetscErrorCode (*f)(TS,PetscR
   if (ctx) ts->jacP             = ctx;
   if (A) {
     ierr = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
-    if (ts->Arhs) {ierr = MatDestroy(ts->Arhs);CHKERRQ(ierr);}
+    ierr = MatDestroy(&ts->Arhs);CHKERRQ(ierr);
     ts->Arhs = A;
   }
   if (B) {
     ierr = PetscObjectReference((PetscObject)B);CHKERRQ(ierr);
-    if (ts->B) {ierr = MatDestroy(ts->B);CHKERRQ(ierr);}
+    ierr = MatDestroy(&ts->B);CHKERRQ(ierr);
     ts->B = B;
   }
   PetscFunctionReturn(0);
@@ -802,12 +802,12 @@ PetscErrorCode  TSSetIJacobian(TS ts,Mat A,Mat B,TSIJacobian f,void *ctx)
   if (ctx) ts->jacP           = ctx;
   if (A) {
     ierr = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
-    if (ts->A) {ierr = MatDestroy(ts->A);CHKERRQ(ierr);}
+    ierr = MatDestroy(&ts->A);CHKERRQ(ierr);
     ts->A = A;
   }
   if (B) {
     ierr = PetscObjectReference((PetscObject)B);CHKERRQ(ierr);
-    if (ts->B) {ierr = MatDestroy(ts->B);CHKERRQ(ierr);}
+    ierr = MatDestroy(&ts->B);CHKERRQ(ierr);
     ts->B = B;
   }
   PetscFunctionReturn(0);
@@ -1215,11 +1215,11 @@ PetscErrorCode  TSReset(TS ts)
   }
   if (ts->snes) {ierr = SNESReset(ts->snes);CHKERRQ(ierr);}
   if (ts->ksp)  {ierr = KSPReset(ts->ksp);CHKERRQ(ierr);}
-  if (ts->A)    {ierr = MatDestroy(ts->A);CHKERRQ(ierr);}
-  if (ts->B)    {ierr = MatDestroy(ts->B);CHKERRQ(ierr);}
-  if (ts->Arhs) {ierr = MatDestroy(ts->Arhs);CHKERRQ(ierr);}
-  if (ts->Alhs) {ierr = MatDestroy(ts->Alhs);CHKERRQ(ierr);}
-  if (ts->vec_sol) {ierr = VecDestroy(ts->vec_sol);CHKERRQ(ierr);}
+  ierr = MatDestroy(&ts->A);CHKERRQ(ierr);
+  ierr = MatDestroy(&ts->B);CHKERRQ(ierr);
+  ierr = MatDestroy(&ts->Arhs);CHKERRQ(ierr);
+  ierr = MatDestroy(&ts->Alhs);CHKERRQ(ierr);
+  ierr = VecDestroy(&ts->vec_sol);CHKERRQ(ierr);
   if (ts->work) {ierr = VecDestroyVecs(ts->nwork,&ts->work);CHKERRQ(ierr);}
   ts->setupcalled = PETSC_FALSE;
   PetscFunctionReturn(0);
@@ -1242,24 +1242,25 @@ PetscErrorCode  TSReset(TS ts)
 
 .seealso: TSCreate(), TSSetUp(), TSSolve()
 @*/
-PetscErrorCode  TSDestroy(TS ts)
+PetscErrorCode  TSDestroy(TS *ts)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  if (--((PetscObject)ts)->refct > 0) PetscFunctionReturn(0);
+  if (!*ts) PetscFunctionReturn(0);
+  PetscValidHeaderSpecific((*ts),TS_CLASSID,1);
+  if (--((PetscObject)(*ts))->refct > 0) {*ts = 0; PetscFunctionReturn(0);}
 
-  ierr = TSReset(ts);CHKERRQ(ierr);
+  ierr = TSReset((*ts));CHKERRQ(ierr);
 
   /* if memory was published with AMS then destroy it */
-  ierr = PetscObjectDepublish(ts);CHKERRQ(ierr);
-  if (ts->ops->destroy) {ierr = (*ts->ops->destroy)(ts);CHKERRQ(ierr);}
+  ierr = PetscObjectDepublish((*ts));CHKERRQ(ierr);
+  if ((*ts)->ops->destroy) {ierr = (*(*ts)->ops->destroy)((*ts));CHKERRQ(ierr);}
 
-  if (ts->snes) {ierr = SNESDestroy(ts->snes);CHKERRQ(ierr);}
-  if (ts->ksp)  {ierr = KSPDestroy(ts->ksp);CHKERRQ(ierr);}
-  if (ts->dm)   {ierr = DMDestroy(ts->dm);CHKERRQ(ierr);}
-  ierr = TSMonitorCancel(ts);CHKERRQ(ierr);
+  ierr = SNESDestroy(&(*ts)->snes);CHKERRQ(ierr);
+  ierr = KSPDestroy(&(*ts)->ksp);CHKERRQ(ierr);
+  ierr = DMDestroy(&(*ts)->dm);CHKERRQ(ierr);
+  ierr = TSMonitorCancel((*ts));CHKERRQ(ierr);
 
   ierr = PetscHeaderDestroy(ts);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1432,7 +1433,7 @@ PetscErrorCode  TSSetSolution(TS ts,Vec x)
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidHeaderSpecific(x,VEC_CLASSID,2);
   ierr = PetscObjectReference((PetscObject)x);CHKERRQ(ierr);
-  if (ts->vec_sol) {ierr = VecDestroy(ts->vec_sol);CHKERRQ(ierr);}
+  ierr = VecDestroy(&ts->vec_sol);CHKERRQ(ierr);
   ts->vec_sol = x;
   PetscFunctionReturn(0);
 }
@@ -1662,7 +1663,7 @@ PetscErrorCode TSMonitorDefault(TS ts,PetscInt step,PetscReal ptime,Vec v,void *
   }
   ierr = PetscViewerASCIIMonitorPrintf(viewer,"%D TS dt %G time %G\n",step,ts->time_step,ptime);CHKERRQ(ierr);
   if (!ctx) {
-    ierr = PetscViewerASCIIMonitorDestroy(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIMonitorDestroy(&viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1848,14 +1849,14 @@ PetscErrorCode TSMonitorLG(TS ts,PetscInt n,PetscReal ptime,Vec v,void *monctx)
 
 .seealso: TSMonitorLGCreate(),  TSMonitorSet(), TSMonitorLG();
 @*/
-PetscErrorCode  TSMonitorLGDestroy(PetscDrawLG drawlg)
+PetscErrorCode  TSMonitorLGDestroy(PetscDrawLG *drawlg)
 {
   PetscDraw      draw;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscDrawLGGetDraw(drawlg,&draw);CHKERRQ(ierr);
-  ierr = PetscDrawDestroy(draw);CHKERRQ(ierr);
+  ierr = PetscDrawLGGetDraw(*drawlg,&draw);CHKERRQ(ierr);
+  ierr = PetscDrawDestroy(&draw);CHKERRQ(ierr);
   ierr = PetscDrawLGDestroy(drawlg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -2164,7 +2165,7 @@ PetscErrorCode  TSSetDM(TS ts,DM dm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   ierr = PetscObjectReference((PetscObject)dm);CHKERRQ(ierr);
-  if (ts->dm) {ierr = DMDestroy(ts->dm);CHKERRQ(ierr);}
+  ierr = DMDestroy(&ts->dm);CHKERRQ(ierr);
   ts->dm = dm;
   if (ts->snes) {
     ierr = SNESSetDM(ts->snes,dm);CHKERRQ(ierr);

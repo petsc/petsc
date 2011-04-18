@@ -34,7 +34,7 @@ EXTERN_C_BEGIN
 
 void PETSC_STDCALL  vecdestroy_(Vec *v, int *__ierr )
 {
-  *__ierr = VecDestroy(*v);
+  *__ierr = VecDestroy(v);
 }
 
 void PETSC_STDCALL vecsetvalue_(Vec *v,PetscInt *i,PetscScalar *va,InsertMode *mode,PetscErrorCode *ierr)
@@ -147,7 +147,7 @@ void PETSC_STDCALL vecdestroyvecs_(PetscInt *m,Vec *vecs,PetscErrorCode *ierr)
 {
   PetscInt i;
   for (i=0; i<*m; i++) {
-    *ierr = VecDestroy(vecs[i]);if (*ierr) return;
+    *ierr = VecDestroy(&vecs[i]);if (*ierr) return;
   }
 }
 

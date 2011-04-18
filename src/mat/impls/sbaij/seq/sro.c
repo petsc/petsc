@@ -53,7 +53,7 @@ PetscErrorCode  MatReorderingSeqSBAIJ(Mat A,IS perm)
     if (rip[i] != riip[i]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Non-symmetric permutation, use symmetric permutation for symmetric matrices");
   }
   ierr = ISRestoreIndices(iperm,&riip);CHKERRQ(ierr);
-  ierr = ISDestroy(iperm);CHKERRQ(ierr);
+  ierr = ISDestroy(&iperm);CHKERRQ(ierr);
 
   if (!a->inew){ 
     ierr = PetscMalloc2(mbs+1,PetscInt,&ai, 2*a->i[mbs],PetscInt,&aj);CHKERRQ(ierr);
@@ -134,22 +134,17 @@ PetscErrorCode  MatReorderingSeqSBAIJ(Mat A,IS perm)
   a->inew = ai;
   a->jnew = aj;
 
-  if (a->row) {
-    ierr = ISDestroy(a->row);CHKERRQ(ierr);
-  }
-  if (a->icol) {
-    ierr = ISDestroy(a->icol);CHKERRQ(ierr);
-  }
+  ierr = ISDestroy(&a->row);CHKERRQ(ierr);
+  ierr = ISDestroy(&a->icol);CHKERRQ(ierr);
   ierr = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr);
-  if (a->row) { ierr = ISDestroy(a->row);CHKERRQ(ierr); }
+  ierr = ISDestroy(&a->row);CHKERRQ(ierr);
   a->row  = perm;
   ierr = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr);
-  if (a->icol) { ierr = ISDestroy(a->icol);CHKERRQ(ierr); }
+  ierr = ISDestroy(&a->icol);CHKERRQ(ierr);
   a->icol = perm;
 
   ierr = PetscFree(nzr);CHKERRQ(ierr); 
   ierr = PetscFree(r);CHKERRQ(ierr); 
-  
   PetscFunctionReturn(0);
 }
 

@@ -1395,9 +1395,9 @@ PetscErrorCode KSPSetUp_GLTR(KSP ksp)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPDestroy_GLTR"
-PetscErrorCode KSPDestroy_GLTR(KSP *ksp)
+PetscErrorCode KSPDestroy_GLTR(KSP ksp)
 {
-  KSP_GLTR       *cg = (KSP_GLTR *)(*ksp)->data;
+  KSP_GLTR       *cg = (KSP_GLTR *)ksp->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1414,11 +1414,11 @@ PetscErrorCode KSPDestroy_GLTR(KSP *ksp)
   /* Clear composed functions                                                */
   /***************************************************************************/
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)(*ksp),"KSPGLTRSetRadius_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)(*ksp),"KSPGLTRGetNormD_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)(*ksp),"KSPGLTRGetObjFcn_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)(*ksp),"KSPGLTRGetMinEig_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)(*ksp),"KSPGLTRGetLambda_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGLTRSetRadius_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGLTRGetNormD_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGLTRGetObjFcn_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGLTRGetMinEig_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGLTRGetLambda_C","",PETSC_NULL);CHKERRQ(ierr);
 
   /***************************************************************************/
   /* Destroy KSP object.                                                     */

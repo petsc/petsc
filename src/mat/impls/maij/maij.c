@@ -99,9 +99,7 @@ PetscErrorCode MatDestroy_SeqMAIJ(Mat A)
   Mat_SeqMAIJ    *b = (Mat_SeqMAIJ*)A->data;
 
   PetscFunctionBegin;
-  if (b->AIJ) {
-    ierr = MatDestroy(b->AIJ);CHKERRQ(ierr);
-  }
+  ierr = MatDestroy(&b->AIJ);CHKERRQ(ierr);
   ierr = PetscFree(b);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -116,7 +114,7 @@ PetscErrorCode MatView_SeqMAIJ(Mat A,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = MatConvert(A,MATSEQAIJ,MAT_INITIAL_MATRIX,&B);
   ierr = MatView(B,viewer);CHKERRQ(ierr);
-  ierr = MatDestroy(B);CHKERRQ(ierr);
+  ierr = MatDestroy(&B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -130,7 +128,7 @@ PetscErrorCode MatView_MPIMAIJ(Mat A,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = MatConvert(A,MATMPIAIJ,MAT_INITIAL_MATRIX,&B);
   ierr = MatView(B,viewer);CHKERRQ(ierr);
-  ierr = MatDestroy(B);CHKERRQ(ierr);
+  ierr = MatDestroy(&B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -142,21 +140,11 @@ PetscErrorCode MatDestroy_MPIMAIJ(Mat A)
   Mat_MPIMAIJ    *b = (Mat_MPIMAIJ*)A->data;
 
   PetscFunctionBegin;
-  if (b->AIJ) {
-    ierr = MatDestroy(b->AIJ);CHKERRQ(ierr);
-  }
-  if (b->OAIJ) {
-    ierr = MatDestroy(b->OAIJ);CHKERRQ(ierr);
-  }
-  if (b->A) {
-    ierr = MatDestroy(b->A);CHKERRQ(ierr);
-  }
-  if (b->ctx) {
-    ierr = VecScatterDestroy(b->ctx);CHKERRQ(ierr);
-  }
-  if (b->w) {
-    ierr = VecDestroy(b->w);CHKERRQ(ierr);
-  }
+  ierr = MatDestroy(&b->AIJ);CHKERRQ(ierr);
+  ierr = MatDestroy(&b->OAIJ);CHKERRQ(ierr);
+  ierr = MatDestroy(&b->A);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&b->ctx);CHKERRQ(ierr);
+  ierr = VecDestroy(&b->w);CHKERRQ(ierr);
   ierr = PetscFree(b);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)A,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -3498,9 +3486,9 @@ PetscErrorCode  MatCreateMAIJ(Mat A,PetscInt dof,Mat *maij)
       /* generate the scatter context */
       ierr = VecScatterCreate(gvec,from,b->w,to,&b->ctx);CHKERRQ(ierr);
 
-      ierr = ISDestroy(from);CHKERRQ(ierr);
-      ierr = ISDestroy(to);CHKERRQ(ierr);
-      ierr = VecDestroy(gvec);CHKERRQ(ierr);
+      ierr = ISDestroy(&from);CHKERRQ(ierr);
+      ierr = ISDestroy(&to);CHKERRQ(ierr);
+      ierr = VecDestroy(&gvec);CHKERRQ(ierr);
 
       B->ops->mult             = MatMult_MPIMAIJ_dof;
       B->ops->multtranspose    = MatMultTranspose_MPIMAIJ_dof;

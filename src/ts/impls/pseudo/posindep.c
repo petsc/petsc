@@ -192,9 +192,9 @@ static PetscErrorCode TSReset_Pseudo(TS ts)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (pseudo->update) {ierr = VecDestroy(pseudo->update);CHKERRQ(ierr);}
-  if (pseudo->func)   {ierr = VecDestroy(pseudo->func);CHKERRQ(ierr);}
-  if (pseudo->xdot)   {ierr = VecDestroy(pseudo->xdot);CHKERRQ(ierr);}
+  ierr = VecDestroy(&pseudo->update);CHKERRQ(ierr);
+  ierr = VecDestroy(&pseudo->func);CHKERRQ(ierr);
+  ierr = VecDestroy(&pseudo->xdot);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -334,7 +334,7 @@ PetscErrorCode TSPseudoMonitorDefault(TS ts,PetscInt step,PetscReal ptime,Vec v,
   }
   ierr = PetscViewerASCIIMonitorPrintf(viewer,"TS %D dt %G time %G fnorm %G\n",step,ts->time_step,ptime,pseudo->fnorm);CHKERRQ(ierr);
   if (!ctx) {
-    ierr = PetscViewerASCIIMonitorDestroy(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIMonitorDestroy(&viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

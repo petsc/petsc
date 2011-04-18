@@ -144,7 +144,7 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
       ierr = PetscFree2(idx1,idx2);CHKERRQ(ierr);
     }
   }
-  ierr = VecDestroy(vec);CHKERRQ(ierr);
+  ierr = VecDestroy(&vec);CHKERRQ(ierr);
 
   /* if pmatrix set by user is sequential then we do not need to gather the parallel matrix */
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
@@ -155,9 +155,7 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
   if (red->useparallelmat) {
     if (pc->setupcalled == 1 && pc->flag == DIFFERENT_NONZERO_PATTERN) {
       /* destroy old matrices */
-      if (red->pmats) {
-        ierr = MatDestroy(red->pmats);CHKERRQ(ierr);
-      }
+      ierr = MatDestroy(&red->pmats);CHKERRQ(ierr);
     } else if (pc->setupcalled == 1) {
       reuse = MAT_REUSE_MATRIX;
       str   = SAME_NONZERO_PATTERN;
@@ -221,17 +219,15 @@ static PetscErrorCode PCDestroy_Redundant(PC pc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (red->scatterin)  {ierr = VecScatterDestroy(red->scatterin);CHKERRQ(ierr);}
-  if (red->scatterout) {ierr = VecScatterDestroy(red->scatterout);CHKERRQ(ierr);}
-  if (red->ysub)       {ierr = VecDestroy(red->ysub);CHKERRQ(ierr);}
-  if (red->xsub)       {ierr = VecDestroy(red->xsub);CHKERRQ(ierr);}
-  if (red->xdup)       {ierr = VecDestroy(red->xdup);CHKERRQ(ierr);}
-  if (red->ydup)       {ierr = VecDestroy(red->ydup);CHKERRQ(ierr);}
-  if (red->pmats) {
-    ierr = MatDestroy(red->pmats);CHKERRQ(ierr);
-  }
-  if (red->ksp) {ierr = KSPDestroy(red->ksp);CHKERRQ(ierr);}
-  if (red->psubcomm) {ierr = PetscSubcommDestroy(red->psubcomm);CHKERRQ(ierr);}
+  ierr = VecScatterDestroy(&red->scatterin);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&red->scatterout);CHKERRQ(ierr);
+  ierr = VecDestroy(&red->ysub);CHKERRQ(ierr);
+  ierr = VecDestroy(&red->xsub);CHKERRQ(ierr);
+  ierr = VecDestroy(&red->xdup);CHKERRQ(ierr);
+  ierr = VecDestroy(&red->ydup);CHKERRQ(ierr);
+  ierr = MatDestroy(&red->pmats);CHKERRQ(ierr);
+  ierr = KSPDestroy(&red->ksp);CHKERRQ(ierr);
+  ierr = PetscSubcommDestroy(&red->psubcomm);CHKERRQ(ierr);
   ierr = PetscFree(pc->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -300,10 +296,10 @@ PetscErrorCode  PCRedundantSetScatter_Redundant(PC pc,VecScatter in,VecScatter o
 
   PetscFunctionBegin;
   ierr = PetscObjectReference((PetscObject)in);CHKERRQ(ierr);
-  if (red->scatterin) { ierr = VecScatterDestroy(red->scatterin);CHKERRQ(ierr); }
+  ierr = VecScatterDestroy(&red->scatterin);CHKERRQ(ierr); 
   red->scatterin  = in; 
   ierr = PetscObjectReference((PetscObject)out);CHKERRQ(ierr);
-  if (red->scatterout) { ierr = VecScatterDestroy(red->scatterout);CHKERRQ(ierr); }
+  ierr = VecScatterDestroy(&red->scatterout);CHKERRQ(ierr);
   red->scatterout = out;
   PetscFunctionReturn(0);
 }

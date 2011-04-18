@@ -17,24 +17,25 @@ const char *ISColoringTypes[] = {"global","ghosted","ISColoringType","IS_COLORIN
 
 .seealso: ISColoringView(), MatGetColoring()
 @*/
-PetscErrorCode  ISColoringDestroy(ISColoring iscoloring)
+PetscErrorCode  ISColoringDestroy(ISColoring *iscoloring)
 {
-  PetscInt i;
+  PetscInt       i;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidPointer(iscoloring,1);
-  if (--iscoloring->refct > 0) PetscFunctionReturn(0);
+  if (!*iscoloring) PetscFunctionReturn(0);
+  PetscValidPointer((*iscoloring),1);
+  if (--(*iscoloring)->refct > 0) {*iscoloring = 0; PetscFunctionReturn(0);}
 
-  if (iscoloring->is) {
-    for (i=0; i<iscoloring->n; i++) {
-      ierr = ISDestroy(iscoloring->is[i]);CHKERRQ(ierr);
+  if ((*iscoloring)->is) {
+    for (i=0; i<(*iscoloring)->n; i++) {
+      ierr = ISDestroy(&(*iscoloring)->is[i]);CHKERRQ(ierr);
     }
-    ierr = PetscFree(iscoloring->is);CHKERRQ(ierr);
+    ierr = PetscFree((*iscoloring)->is);CHKERRQ(ierr);
   }
-  ierr = PetscFree(iscoloring->colors);CHKERRQ(ierr);
-  PetscCommDestroy(&iscoloring->comm);
-  ierr = PetscFree(iscoloring);CHKERRQ(ierr);
+  ierr = PetscFree((*iscoloring)->colors);CHKERRQ(ierr);
+  ierr = PetscCommDestroy(&(*iscoloring)->comm);CHKERRQ(ierr);
+  ierr = PetscFree((*iscoloring));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

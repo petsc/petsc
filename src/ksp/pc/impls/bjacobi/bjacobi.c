@@ -125,9 +125,7 @@ static PetscErrorCode PCSetUp_BJacobi(PC pc)
             mat   = jac->tp_mat;
           }
         } else {
-          if (jac->tp_mat)  {
-            ierr = MatDestroy(jac->tp_mat);CHKERRQ(ierr);
-          }
+          ierr = MatDestroy(&jac->tp_mat);CHKERRQ(ierr);
         }
       }
       if (!f) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_SUP,"This matrix does not support getting diagonal block");
@@ -148,9 +146,7 @@ static PetscErrorCode PCSetUp_BJacobi(PC pc)
             pmat   = jac->tp_pmat;
           }
         } else {
-          if (jac->tp_pmat)  {
-            ierr = MatDestroy(jac->tp_pmat);CHKERRQ(ierr);
-          }
+          ierr = MatDestroy(&jac->tp_pmat);CHKERRQ(ierr);
         }
       }
       ierr = PetscObjectQueryFunction((PetscObject)pc->pmat,"MatGetDiagonalBlock_C",(void (**)(void))&f);CHKERRQ(ierr);
@@ -710,16 +706,12 @@ PetscErrorCode PCReset_BJacobi_Singleblock(PC pc)
         If the on processor block had to be generated via a MatGetDiagonalBlock()
      that creates a copy, this frees the space
   */
-  if (jac->tp_mat) {
-    ierr = MatDestroy(jac->tp_mat);CHKERRQ(ierr);
-  }
-  if (jac->tp_pmat) {
-    ierr = MatDestroy(jac->tp_pmat);CHKERRQ(ierr);
-  }
+  ierr = MatDestroy(&jac->tp_mat);CHKERRQ(ierr);
+  ierr = MatDestroy(&jac->tp_pmat);CHKERRQ(ierr);
 
   ierr = KSPReset(jac->ksp[0]);CHKERRQ(ierr);
-  if (bjac->x) {ierr = VecDestroy(bjac->x);CHKERRQ(ierr);}
-  if (bjac->y) {ierr = VecDestroy(bjac->y);CHKERRQ(ierr);}
+  ierr = VecDestroy(&bjac->x);CHKERRQ(ierr);
+  ierr = VecDestroy(&bjac->y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -733,7 +725,7 @@ PetscErrorCode PCDestroy_BJacobi_Singleblock(PC pc)
 
   PetscFunctionBegin;
   ierr = PCReset_BJacobi_Singleblock(pc);CHKERRQ(ierr);
-  ierr = KSPDestroy(jac->ksp[0]);CHKERRQ(ierr);
+  ierr = KSPDestroy(&jac->ksp[0]);CHKERRQ(ierr);
   ierr = PetscFree(jac->ksp);CHKERRQ(ierr);
   ierr = PetscFree(jac->l_lens);CHKERRQ(ierr);
   ierr = PetscFree(jac->g_lens);CHKERRQ(ierr);
@@ -969,12 +961,8 @@ PetscErrorCode PCReset_BJacobi_Multiblock(PC pc)
         If the on processor block had to be generated via a MatGetDiagonalBlock()
      that creates a copy, this frees the space
   */
-  if (jac->tp_mat) {
-    ierr = MatDestroy(jac->tp_mat);CHKERRQ(ierr);
-  }
-  if (jac->tp_pmat) {
-    ierr = MatDestroy(jac->tp_pmat);CHKERRQ(ierr);
-  }
+  ierr = MatDestroy(&jac->tp_mat);CHKERRQ(ierr);
+  ierr = MatDestroy(&jac->tp_pmat);CHKERRQ(ierr);
 
   for (i=0; i<jac->n_local; i++) {
     ierr = KSPReset(jac->ksp[i]);CHKERRQ(ierr);
@@ -1006,7 +994,7 @@ PetscErrorCode PCDestroy_BJacobi_Multiblock(PC pc)
   PetscFunctionBegin;
   ierr = PCReset_BJacobi_Multiblock(pc);CHKERRQ(ierr);
   for (i=0; i<jac->n_local; i++) {
-    ierr = KSPDestroy(jac->ksp[i]);CHKERRQ(ierr);
+    ierr = KSPDestroy(&jac->ksp[i]);CHKERRQ(ierr);
   }
   ierr = PetscFree(jac->ksp);CHKERRQ(ierr);
   ierr = PetscFree(pc->data);CHKERRQ(ierr);
@@ -1234,9 +1222,9 @@ static PetscErrorCode PCReset_BJacobi_Multiproc(PC pc)
   PetscErrorCode       ierr;
 
   PetscFunctionBegin;
-  if (mpjac->ysub){ierr = VecDestroy(mpjac->ysub);CHKERRQ(ierr);}
-  if (mpjac->xsub){ierr = VecDestroy(mpjac->xsub);CHKERRQ(ierr);}
-  if (mpjac->submats){ierr = MatDestroy(mpjac->submats);CHKERRQ(ierr);}
+  ierr = VecDestroy(&mpjac->ysub);CHKERRQ(ierr);
+  ierr = VecDestroy(&mpjac->xsub);CHKERRQ(ierr);
+  ierr = MatDestroy(&mpjac->submats);CHKERRQ(ierr);
   if (mpjac->ksp){ierr = KSPReset(mpjac->ksp);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
@@ -1251,8 +1239,8 @@ static PetscErrorCode PCDestroy_BJacobi_Multiproc(PC pc)
 
   PetscFunctionBegin;
   ierr = PCReset_BJacobi_Multiproc(pc);CHKERRQ(ierr);
-  if (mpjac->ksp){ierr = KSPDestroy(mpjac->ksp);CHKERRQ(ierr);}
-  if (mpjac->psubcomm){ierr = PetscSubcommDestroy(mpjac->psubcomm);CHKERRQ(ierr);}
+  ierr = KSPDestroy(&mpjac->ksp);CHKERRQ(ierr);
+  ierr = PetscSubcommDestroy(&mpjac->psubcomm);CHKERRQ(ierr);
 
   ierr = PetscFree(mpjac);CHKERRQ(ierr);
   ierr = PetscFree(pc->data);CHKERRQ(ierr);
@@ -1355,7 +1343,7 @@ static PetscErrorCode PCSetUp_BJacobi_Multiproc(PC pc)
   if (pc->setupcalled && pc->flag == DIFFERENT_NONZERO_PATTERN) {
     /* destroy old matrix blocks, then get new matrix blocks */
     if (mpjac->submats) {
-      ierr = MatDestroy(mpjac->submats);CHKERRQ(ierr);
+      ierr = MatDestroy(&mpjac->submats);CHKERRQ(ierr);
       subcomm = mpjac->psubcomm->comm;
       ierr = MatGetMultiProcBlock_MPIAIJ(pc->pmat,subcomm,&mpjac->submats);CHKERRQ(ierr);
       ierr = KSPSetOperators(mpjac->ksp,mpjac->submats,mpjac->submats,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);

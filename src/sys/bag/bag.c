@@ -372,10 +372,10 @@ PetscErrorCode PetscBagRegisterBool(PetscBag bag,void *addr,PetscBool  mdefault,
            PetscBagSetFromOptions(), PetscBagCreate(), PetscBagGetName(), PetscBagRegisterEnum()
 
 @*/
-PetscErrorCode  PetscBagDestroy(PetscBag bag)
+PetscErrorCode  PetscBagDestroy(PetscBag *bag)
 {
   PetscErrorCode ierr;
-  PetscBagItem   nitem = bag->bagitems,item;
+  PetscBagItem   nitem = (*bag)->bagitems,item;
 
   PetscFunctionBegin;
   while (nitem) {
@@ -387,7 +387,7 @@ PetscErrorCode  PetscBagDestroy(PetscBag bag)
     ierr  = PetscFree(nitem);CHKERRQ(ierr);
     nitem = item;
   }
-  ierr = PetscFree(bag);CHKERRQ(ierr);
+  ierr = PetscFree(*bag);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

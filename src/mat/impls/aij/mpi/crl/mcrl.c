@@ -26,12 +26,8 @@ PetscErrorCode MatDestroy_MPIAIJCRL(Mat A)
 
   /* Free everything in the Mat_AIJCRL data structure. */
   ierr = PetscFree2(aijcrl->acols,aijcrl->icols);CHKERRQ(ierr);
-  if (aijcrl->fwork) {
-    ierr = VecDestroy(aijcrl->fwork);CHKERRQ(ierr);
-  }
-  if (aijcrl->xwork) {
-    ierr = VecDestroy(aijcrl->xwork);CHKERRQ(ierr);
-  }
+  ierr = VecDestroy(&aijcrl->fwork);CHKERRQ(ierr);
+  ierr = VecDestroy(&aijcrl->xwork);CHKERRQ(ierr);
   ierr = PetscFree(aijcrl->array);CHKERRQ(ierr);
   ierr = PetscFree(A->spptr);CHKERRQ(ierr);
 
@@ -85,9 +81,9 @@ PetscErrorCode MPIAIJCRL_create_aijcrl(Mat A)
   ierr = PetscFree(aijcrl->array);CHKERRQ(ierr);
   ierr = PetscMalloc((a->B->cmap->n+nd)*sizeof(PetscScalar),&array);CHKERRQ(ierr);
   /* xwork array is actually B->n+nd long, but we define xwork this length so can copy into it */
-  if (aijcrl->xwork) {ierr = VecDestroy(aijcrl->xwork);CHKERRQ(ierr);}
+  ierr = VecDestroy(&aijcrl->xwork);CHKERRQ(ierr);
   ierr = VecCreateMPIWithArray(((PetscObject)A)->comm,nd,PETSC_DECIDE,array,&aijcrl->xwork);CHKERRQ(ierr);
-  if (aijcrl->fwork) {ierr = VecDestroy(aijcrl->fwork);CHKERRQ(ierr);}
+  ierr = VecDestroy(&aijcrl->fwork);CHKERRQ(ierr);
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,a->B->cmap->n,array+nd,&aijcrl->fwork);CHKERRQ(ierr);
   aijcrl->array = array;
   aijcrl->xscat = a->Mvctx;

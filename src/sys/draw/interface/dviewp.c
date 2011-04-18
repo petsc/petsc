@@ -271,15 +271,13 @@ PetscErrorCode  PetscDrawViewPortsDestroy(PetscDrawViewPorts *ports)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-
   if (!ports) PetscFunctionReturn(0);  
-  if (ports->draw) {ierr = PetscDrawDestroy(ports->draw);CHKERRQ(ierr);}
+  ierr = PetscDrawDestroy(&ports->draw);CHKERRQ(ierr);
   ierr = PetscFree(ports->xl);CHKERRQ(ierr);
   ierr = PetscFree(ports->xr);CHKERRQ(ierr);
   ierr = PetscFree(ports->yl);CHKERRQ(ierr);
   ierr = PetscFree(ports->yr);CHKERRQ(ierr);
   ierr = PetscFree(ports);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 

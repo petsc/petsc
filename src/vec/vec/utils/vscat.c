@@ -245,7 +245,6 @@ PetscErrorCode VecScatterDestroy_MPI_ToAll(VecScatter ctx)
   ierr = PetscFree(scat->work1);CHKERRQ(ierr);
   ierr = PetscFree(scat->work2);CHKERRQ(ierr);
   ierr = PetscFree3(ctx->todata,scat->count,scat->displx);CHKERRQ(ierr);
-  ierr = PetscHeaderDestroy(ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -258,7 +257,6 @@ PetscErrorCode VecScatterDestroy_SGtoSG(VecScatter ctx)
   PetscFunctionBegin;
   ierr = PetscFree2(((VecScatter_Seq_General*)ctx->todata)->vslots,((VecScatter_Seq_General*)ctx->fromdata)->vslots);CHKERRQ(ierr);
   ierr = PetscFree2(ctx->todata,ctx->fromdata);CHKERRQ(ierr);
-  ierr = PetscHeaderDestroy(ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -271,7 +269,6 @@ PetscErrorCode VecScatterDestroy_SGtoSS(VecScatter ctx)
   PetscFunctionBegin;
   ierr = PetscFree(((VecScatter_Seq_General*)ctx->fromdata)->vslots);CHKERRQ(ierr);
   ierr = PetscFree2(ctx->todata,ctx->fromdata);CHKERRQ(ierr);
-  ierr = PetscHeaderDestroy(ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -284,7 +281,6 @@ PetscErrorCode VecScatterDestroy_SStoSG(VecScatter ctx)
   PetscFunctionBegin;
   ierr = PetscFree(((VecScatter_Seq_General*)ctx->todata)->vslots);CHKERRQ(ierr);
   ierr = PetscFree2(ctx->todata,ctx->fromdata);CHKERRQ(ierr);
-  ierr = PetscHeaderDestroy(ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -296,7 +292,6 @@ PetscErrorCode VecScatterDestroy_SStoSS(VecScatter ctx)
 
   PetscFunctionBegin;
   ierr = PetscFree2(ctx->todata,ctx->fromdata);CHKERRQ(ierr);
-  ierr = PetscHeaderDestroy(ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -746,7 +741,7 @@ PetscErrorCode  VecScatterCreateEmpty(MPI_Comm comm,VecScatter *newctx)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscHeaderCreate(ctx,_p_VecScatter,int,VEC_SCATTER_CLASSID,0,"VecScatter",comm,VecScatterDestroy_,VecScatterView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(ctx,_p_VecScatter,int,VEC_SCATTER_CLASSID,0,"VecScatter",comm,VecScatterDestroy,VecScatterView);CHKERRQ(ierr);
   ctx->inuse               = PETSC_FALSE;
   ctx->beginandendtogether = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-vecscatter_merge",&ctx->beginandendtogether,PETSC_NULL);CHKERRQ(ierr);
@@ -863,7 +858,7 @@ PetscErrorCode  VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
 
   
   /* generate the Scatter context */
-  ierr = PetscHeaderCreate(ctx,_p_VecScatter,int,VEC_SCATTER_CLASSID,0,"VecScatter",comm,VecScatterDestroy_,VecScatterView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(ctx,_p_VecScatter,int,VEC_SCATTER_CLASSID,0,"VecScatter",comm,VecScatterDestroy,VecScatterView);CHKERRQ(ierr);
   ctx->inuse               = PETSC_FALSE;
 
   ctx->beginandendtogether = PETSC_FALSE;
@@ -1440,8 +1435,8 @@ PetscErrorCode  VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,VecScatter *newctx)
 
   functionend:
   *newctx = ctx;
-  if (tix) {ierr = ISDestroy(tix);CHKERRQ(ierr);}
-  if (tiy) {ierr = ISDestroy(tiy);CHKERRQ(ierr);}
+  ierr = ISDestroy(&tix);CHKERRQ(ierr);
+  ierr = ISDestroy(&tiy);CHKERRQ(ierr);
   flag = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-vecscatter_view_info",&flag,PETSC_NULL);CHKERRQ(ierr);
   if (flag) {
@@ -1629,7 +1624,7 @@ PetscErrorCode  VecScatterEnd(VecScatter ctx,Vec x,Vec y,InsertMode addv,Scatter
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "VecScatterDestroy_"
+#define __FUNCT__ "VecScatterDestroy"
 /*@C
    VecScatterDestroy - Destroys a scatter context created by 
    VecScatterCreate().
@@ -1643,19 +1638,21 @@ PetscErrorCode  VecScatterEnd(VecScatter ctx,Vec x,Vec y,InsertMode addv,Scatter
 
 .seealso: VecScatterCreate(), VecScatterCopy()
 @*/
-PetscErrorCode  VecScatterDestroy_(VecScatter ctx)
+PetscErrorCode  VecScatterDestroy(VecScatter *ctx)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ctx,VEC_SCATTER_CLASSID,1);
-  if (ctx->inuse) SETERRQ(((PetscObject)ctx)->comm,PETSC_ERR_ARG_WRONGSTATE,"Scatter context is in use");
-  if (--((PetscObject)ctx)->refct > 0) PetscFunctionReturn(0);
+  if (!*ctx) PetscFunctionReturn(0);
+  PetscValidHeaderSpecific(*ctx,VEC_SCATTER_CLASSID,1);
+  if ((*ctx)->inuse) SETERRQ(((PetscObject)(*ctx))->comm,PETSC_ERR_ARG_WRONGSTATE,"Scatter context is in use");
+  if (--((PetscObject)(*ctx))->refct > 0) {*ctx = 0; PetscFunctionReturn(0);}
 
   /* if memory was published with AMS then destroy it */
-  ierr = PetscObjectDepublish(ctx);CHKERRQ(ierr);
+  ierr = PetscObjectDepublish((*ctx));CHKERRQ(ierr);
 
-  ierr = (*ctx->destroy)(ctx);CHKERRQ(ierr);
+  ierr = (*(*ctx)->destroy)(*ctx);CHKERRQ(ierr);
+  ierr = PetscHeaderDestroy(ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1684,7 +1681,7 @@ PetscErrorCode  VecScatterCopy(VecScatter sctx,VecScatter *ctx)
   PetscValidHeaderSpecific(sctx,VEC_SCATTER_CLASSID,1);
   PetscValidPointer(ctx,2);
   if (!sctx->copy) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot copy this type");
-  ierr = PetscHeaderCreate(*ctx,_p_VecScatter,int,VEC_SCATTER_CLASSID,0,"VecScatter",((PetscObject)sctx)->comm,VecScatterDestroy_,VecScatterView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(*ctx,_p_VecScatter,int,VEC_SCATTER_CLASSID,0,"VecScatter",((PetscObject)sctx)->comm,VecScatterDestroy,VecScatterView);CHKERRQ(ierr);
   (*ctx)->to_n   = sctx->to_n;
   (*ctx)->from_n = sctx->from_n;
   ierr = (*sctx->copy)(sctx,*ctx);CHKERRQ(ierr);

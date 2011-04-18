@@ -43,8 +43,8 @@ PetscErrorCode MatConvert_Shell(Mat oldmat, const MatType newtype,MatReuse reuse
 
   }
   ierr = PetscFree(rows);CHKERRQ(ierr);
-  ierr = VecDestroy(in);CHKERRQ(ierr);
-  ierr = VecDestroy(out);CHKERRQ(ierr);
+  ierr = VecDestroy(&in);CHKERRQ(ierr);
+  ierr = VecDestroy(&out);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 

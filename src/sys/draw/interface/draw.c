@@ -250,21 +250,22 @@ PetscErrorCode  PetscDrawAppendTitle(PetscDraw draw,const char title[])
 .seealso: PetscDrawCreate()
 
 @*/
-PetscErrorCode  PetscDrawDestroy(PetscDraw draw)
+PetscErrorCode  PetscDrawDestroy(PetscDraw *draw)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
-  if (--((PetscObject)draw)->refct > 0) PetscFunctionReturn(0);
+  if (!*draw) PetscFunctionReturn(0);
+  PetscValidHeaderSpecific(*draw,PETSC_DRAW_CLASSID,1);
+  if (--((PetscObject)(*draw))->refct > 0) PetscFunctionReturn(0);
 
   /* if memory was published then destroy it */
-  ierr = PetscObjectDepublish(draw);CHKERRQ(ierr);
+  ierr = PetscObjectDepublish(*draw);CHKERRQ(ierr);
 
-  if (draw->ops->destroy) {
-    ierr = (*draw->ops->destroy)(draw);CHKERRQ(ierr);
+  if ((*draw)->ops->destroy) {
+    ierr = (*(*draw)->ops->destroy)(*draw);CHKERRQ(ierr);
   }
-  ierr = PetscFree(draw->title);CHKERRQ(ierr);
-  ierr = PetscFree(draw->display);CHKERRQ(ierr);
+  ierr = PetscFree((*draw)->title);CHKERRQ(ierr);
+  ierr = PetscFree((*draw)->display);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(draw);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

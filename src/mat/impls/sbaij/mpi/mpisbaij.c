@@ -714,7 +714,7 @@ static PetscErrorCode MatView_MPISBAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer v
       ierr = MatView(((Mat_MPISBAIJ*)(A->data))->A,sviewer);CHKERRQ(ierr);
     }
     ierr = PetscViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
-    ierr = MatDestroy(A);CHKERRQ(ierr);
+    ierr = MatDestroy(&A);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -752,32 +752,28 @@ PetscErrorCode MatDestroy_MPISBAIJ(Mat mat)
 #endif
   ierr = MatStashDestroy_Private(&mat->stash);CHKERRQ(ierr);
   ierr = MatStashDestroy_Private(&mat->bstash);CHKERRQ(ierr);
-  if (baij->A){ierr = MatDestroy(baij->A);CHKERRQ(ierr);}
-  if (baij->B){ierr = MatDestroy(baij->B);CHKERRQ(ierr);}
+  ierr = MatDestroy(&baij->A);CHKERRQ(ierr);
+  ierr = MatDestroy(&baij->B);CHKERRQ(ierr);
 #if defined (PETSC_USE_CTABLE)
   if (baij->colmap) {ierr = PetscTableDestroy(baij->colmap);CHKERRQ(ierr);}
 #else
   ierr = PetscFree(baij->colmap);CHKERRQ(ierr);
 #endif
   ierr = PetscFree(baij->garray);CHKERRQ(ierr);
-  if (baij->lvec)   {ierr = VecDestroy(baij->lvec);CHKERRQ(ierr);}
-  if (baij->Mvctx)  {ierr = VecScatterDestroy(baij->Mvctx);CHKERRQ(ierr);}
-  if (baij->slvec0) {
-    ierr = VecDestroy(baij->slvec0);CHKERRQ(ierr);
-    ierr = VecDestroy(baij->slvec0b);CHKERRQ(ierr); 
-  }
-  if (baij->slvec1) {
-    ierr = VecDestroy(baij->slvec1);CHKERRQ(ierr);
-    ierr = VecDestroy(baij->slvec1a);CHKERRQ(ierr);
-    ierr = VecDestroy(baij->slvec1b);CHKERRQ(ierr); 
-  }
-  if (baij->sMvctx)  {ierr = VecScatterDestroy(baij->sMvctx);CHKERRQ(ierr);} 
+  ierr = VecDestroy(&baij->lvec);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&baij->Mvctx);CHKERRQ(ierr);
+  ierr = VecDestroy(&baij->slvec0);CHKERRQ(ierr);
+  ierr = VecDestroy(&baij->slvec0b);CHKERRQ(ierr); 
+  ierr = VecDestroy(&baij->slvec1);CHKERRQ(ierr);
+  ierr = VecDestroy(&baij->slvec1a);CHKERRQ(ierr);
+  ierr = VecDestroy(&baij->slvec1b);CHKERRQ(ierr); 
+  ierr = VecScatterDestroy(&baij->sMvctx);CHKERRQ(ierr);
   ierr = PetscFree2(baij->rowvalues,baij->rowindices);CHKERRQ(ierr);
   ierr = PetscFree(baij->barray);CHKERRQ(ierr);
   ierr = PetscFree(baij->hd);CHKERRQ(ierr);
-  if (baij->diag) {ierr = VecDestroy(baij->diag);CHKERRQ(ierr);}
-  if (baij->bb1) {ierr = VecDestroy(baij->bb1);CHKERRQ(ierr);}
-  if (baij->xx1) {ierr = VecDestroy(baij->xx1);CHKERRQ(ierr);}
+  ierr = VecDestroy(&baij->diag);CHKERRQ(ierr);
+  ierr = VecDestroy(&baij->bb1);CHKERRQ(ierr);
+  ierr = VecDestroy(&baij->xx1);CHKERRQ(ierr);
 #if defined(PETSC_USE_REAL_MAT_SINGLE)
   ierr = PetscFree(baij->setvaluescopy);CHKERRQ(ierr);
 #endif
@@ -2647,7 +2643,7 @@ PetscErrorCode MatSOR_MPISBAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType flag,
       /* local diagonal sweep */
       ierr = (*mat->A->ops->sor)(mat->A,bb1,omega,SOR_SYMMETRIC_SWEEP,fshift,lits,lits,xx);CHKERRQ(ierr); 
     }
-    ierr = VecDestroy(bb1);CHKERRQ(ierr);
+    ierr = VecDestroy(&bb1);CHKERRQ(ierr);
   } else if ((flag & SOR_LOCAL_FORWARD_SWEEP) && (its == 1) && (flag & SOR_ZERO_INITIAL_GUESS)){
     ierr = (*mat->A->ops->sor)(mat->A,bb,omega,flag,fshift,lits,1,xx);CHKERRQ(ierr);
   } else if ((flag & SOR_LOCAL_BACKWARD_SWEEP) && (its == 1) && (flag & SOR_ZERO_INITIAL_GUESS)){
@@ -2767,11 +2763,9 @@ PetscErrorCode MatSOR_MPISBAIJ_2comm(Mat matin,Vec bb,PetscReal omega,MatSORType
       /* diagonal sweep */
       ierr = (*mat->A->ops->sor)(mat->A,bb1,omega,SOR_SYMMETRIC_SWEEP,fshift,lits,lits,xx);CHKERRQ(ierr); 
     }
-    ierr = VecDestroy(lvec1);CHKERRQ(ierr);
-    ierr = VecDestroy(bb1);CHKERRQ(ierr);
-  } else {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatSORType is not supported for SBAIJ matrix format");
-  }
+    ierr = VecDestroy(&lvec1);CHKERRQ(ierr);
+    ierr = VecDestroy(&bb1);CHKERRQ(ierr);
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatSORType is not supported for SBAIJ matrix format");
   PetscFunctionReturn(0);
 }
 

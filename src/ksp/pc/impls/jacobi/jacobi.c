@@ -312,8 +312,8 @@ static PetscErrorCode PCReset_Jacobi(PC pc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (jac->diag)     {ierr = VecDestroy(jac->diag);CHKERRQ(ierr);}
-  if (jac->diagsqrt) {ierr = VecDestroy(jac->diagsqrt);CHKERRQ(ierr);}
+  ierr = VecDestroy(&jac->diag);CHKERRQ(ierr);
+  ierr = VecDestroy(&jac->diagsqrt);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

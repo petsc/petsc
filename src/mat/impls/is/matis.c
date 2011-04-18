@@ -22,21 +22,11 @@ PetscErrorCode MatDestroy_IS(Mat A)
   Mat_IS         *b = (Mat_IS*)A->data;
 
   PetscFunctionBegin;
-  if (b->A) {
-    ierr = MatDestroy(b->A);CHKERRQ(ierr);
-  }
-  if (b->ctx) {
-    ierr = VecScatterDestroy(b->ctx);CHKERRQ(ierr);
-  }
-  if (b->x) {
-    ierr = VecDestroy(b->x);CHKERRQ(ierr);
-  }
-  if (b->y) {
-    ierr = VecDestroy(b->y);CHKERRQ(ierr);
-  }
-  if (b->mapping) {
-    ierr = ISLocalToGlobalMappingDestroy(b->mapping);CHKERRQ(ierr);
-  }
+  ierr = MatDestroy(&b->A);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&b->ctx);CHKERRQ(ierr);
+  ierr = VecDestroy(&b->x);CHKERRQ(ierr);
+  ierr = VecDestroy(&b->y);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingDestroy(&b->mapping);CHKERRQ(ierr);
   ierr = PetscFree(b);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)A,0);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatISGetLocalMat_C","",PETSC_NULL);CHKERRQ(ierr);
@@ -167,7 +157,7 @@ PetscErrorCode MatSetLocalToGlobalMapping_IS(Mat A,ISLocalToGlobalMapping rmappi
   PetscCheckSameComm(A,1,rmapping,2);
   if (rmapping != cmapping) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_INCOMP,"MATIS requires the row and column mappings to be identical");
   ierr = PetscObjectReference((PetscObject)rmapping);CHKERRQ(ierr);
-  if (is->mapping) { ierr = ISLocalToGlobalMappingDestroy(is->mapping);CHKERRQ(ierr); }
+  ierr = ISLocalToGlobalMappingDestroy(&is->mapping);CHKERRQ(ierr); 
   is->mapping = rmapping;
 
   /* Create the local matrix A */
@@ -186,9 +176,9 @@ PetscErrorCode MatSetLocalToGlobalMapping_IS(Mat A,ISLocalToGlobalMapping rmappi
   ierr = ISLocalToGlobalMappingApplyIS(rmapping,to,&from);CHKERRQ(ierr);
   ierr = VecCreateMPIWithArray(((PetscObject)A)->comm,A->cmap->n,A->cmap->N,PETSC_NULL,&global);CHKERRQ(ierr);
   ierr = VecScatterCreate(global,from,is->x,to,&is->ctx);CHKERRQ(ierr);
-  ierr = VecDestroy(global);CHKERRQ(ierr);
-  ierr = ISDestroy(to);CHKERRQ(ierr);
-  ierr = ISDestroy(from);CHKERRQ(ierr);
+  ierr = VecDestroy(&global);CHKERRQ(ierr);
+  ierr = ISDestroy(&to);CHKERRQ(ierr);
+  ierr = ISDestroy(&from);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -285,7 +275,7 @@ PetscErrorCode MatZeroRowsLocal_IS(Mat A,PetscInt n,const PetscInt rows[],PetscS
     ierr = VecScatterEnd  (is->ctx,is->x,counter,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     ierr = VecScatterBegin(is->ctx,counter,is->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd  (is->ctx,counter,is->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecDestroy(counter);CHKERRQ(ierr);
+    ierr = VecDestroy(&counter);CHKERRQ(ierr);
   }
   if (!n) {
     is->pure_neumann = PETSC_TRUE;

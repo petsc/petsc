@@ -49,8 +49,8 @@ PetscErrorCode MatSOR_BlockMat_Symmetric(Mat A,Vec bb,PetscReal omega,MatSORType
       ierr = MatGetOrdering(a->a[a->diag[i]], MATORDERINGND,&row,&col);CHKERRQ(ierr);
       ierr = MatCholeskyFactorSymbolic(a->diags[i],a->a[a->diag[i]],row,&info);CHKERRQ(ierr);
       ierr = MatCholeskyFactorNumeric(a->diags[i],a->a[a->diag[i]],&info);CHKERRQ(ierr);
-      ierr = ISDestroy(row);CHKERRQ(ierr);
-      ierr = ISDestroy(col);CHKERRQ(ierr);
+      ierr = ISDestroy(&row);CHKERRQ(ierr);
+      ierr = ISDestroy(&col);CHKERRQ(ierr);
     }
     ierr = VecDuplicate(bb,&a->workb);CHKERRQ(ierr);
   }
@@ -154,8 +154,8 @@ PetscErrorCode MatSOR_BlockMat(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
       ierr = MatGetOrdering(a->a[a->diag[i]], MATORDERINGND,&row,&col);CHKERRQ(ierr);
       ierr = MatLUFactorSymbolic(a->diags[i],a->a[a->diag[i]],row,col,&info);CHKERRQ(ierr);
       ierr = MatLUFactorNumeric(a->diags[i],a->a[a->diag[i]],&info);CHKERRQ(ierr);
-      ierr = ISDestroy(row);CHKERRQ(ierr);
-      ierr = ISDestroy(col);CHKERRQ(ierr);
+      ierr = ISDestroy(&row);CHKERRQ(ierr);
+      ierr = ISDestroy(&col);CHKERRQ(ierr);
     }
   }
   diag = a->diags;
@@ -456,26 +456,18 @@ PetscErrorCode MatDestroy_BlockMat(Mat mat)
   PetscInt       i;
 
   PetscFunctionBegin;
-  if (bmat->right) {
-    ierr = VecDestroy(bmat->right);CHKERRQ(ierr);
-  }
-  if (bmat->left) {
-    ierr = VecDestroy(bmat->left);CHKERRQ(ierr);
-  }
-  if (bmat->middle) {
-    ierr = VecDestroy(bmat->middle);CHKERRQ(ierr);
-  }
-  if (bmat->workb) {
-    ierr = VecDestroy(bmat->workb);CHKERRQ(ierr);
-  }
+  ierr = VecDestroy(&bmat->right);CHKERRQ(ierr);
+  ierr = VecDestroy(&bmat->left);CHKERRQ(ierr);
+  ierr = VecDestroy(&bmat->middle);CHKERRQ(ierr);
+  ierr = VecDestroy(&bmat->workb);CHKERRQ(ierr);
   if (bmat->diags) {
     for (i=0; i<mat->rmap->n/mat->rmap->bs; i++) {
-      if (bmat->diags[i]) {ierr = MatDestroy(bmat->diags[i]);CHKERRQ(ierr);}
+      ierr = MatDestroy(&bmat->diags[i]);CHKERRQ(ierr);
     }
   }
   if (bmat->a) {
     for (i=0; i<bmat->nz; i++) {
-      if (bmat->a[i]) {ierr = MatDestroy(bmat->a[i]);CHKERRQ(ierr);}
+      ierr = MatDestroy(&bmat->a[i]);CHKERRQ(ierr);
     }
   }
   ierr = MatSeqXAIJFreeAIJ(mat,(PetscScalar**)&bmat->a,&bmat->j,&bmat->i);CHKERRQ(ierr);

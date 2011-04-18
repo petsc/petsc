@@ -729,8 +729,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N(Mat C,Mat A,const MatFactorInf
       ierr = MatConvert(A,MATSEQSBAIJ,MAT_INITIAL_MATRIX,&a->sbaijMat);CHKERRQ(ierr); 
     } 
     ierr = (a->sbaijMat)->ops->choleskyfactornumeric(C,a->sbaijMat,info);CHKERRQ(ierr);
-    ierr = MatDestroy(a->sbaijMat);CHKERRQ(ierr);
-    a->sbaijMat = PETSC_NULL; 
+    ierr = MatDestroy(&a->sbaijMat);CHKERRQ(ierr);
     PetscFunctionReturn(0); 
   }
   

@@ -22,17 +22,18 @@ struct _n_PetscViewers {
 .seealso: PetscViewerSocketOpen(), PetscViewerASCIIOpen(), PetscViewerCreate(), PetscViewerDrawOpen(), PetscViewersCreate()
 
 @*/
-PetscErrorCode  PetscViewersDestroy(PetscViewers v)
+PetscErrorCode  PetscViewersDestroy(PetscViewers *v)
 {
-  int         i;
+  int            i;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  for (i=0; i<v->n; i++) {
-    if (v->viewer[i]) {ierr = PetscViewerDestroy(v->viewer[i]);CHKERRQ(ierr);}
+  if (!*v) PetscFunctionReturn(0);
+  for (i=0; i<(*v)->n; i++) {
+    ierr = PetscViewerDestroy(&(*v)->viewer[i]);CHKERRQ(ierr);
   }
-  ierr = PetscFree(v->viewer);CHKERRQ(ierr);
-  ierr = PetscFree(v);CHKERRQ(ierr);
+  ierr = PetscFree((*v)->viewer);CHKERRQ(ierr);
+  ierr = PetscFree(*v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

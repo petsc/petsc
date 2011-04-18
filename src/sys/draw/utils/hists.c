@@ -161,20 +161,19 @@ PetscErrorCode  PetscDrawHGReset(PetscDrawHG hist)
 
 .seealso:  PetscDrawHGCreate()
 @*/
-PetscErrorCode  PetscDrawHGDestroy(PetscDrawHG hist)
+PetscErrorCode  PetscDrawHGDestroy(PetscDrawHG *hist)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeader(hist,1);
+  if (!*hist) PetscFunctionReturn(0);
+  PetscValidHeader(*hist,1);
 
-  if (--((PetscObject)hist)->refct > 0) PetscFunctionReturn(0);
-  if (hist->axis) {
-    ierr = PetscDrawAxisDestroy(hist->axis);CHKERRQ(ierr);
-  }
-  ierr = PetscDrawDestroy(hist->win);CHKERRQ(ierr);
-  ierr = PetscFree(hist->bins);CHKERRQ(ierr);
-  ierr = PetscFree(hist->values);CHKERRQ(ierr);
+  if (--((PetscObject)(*hist))->refct > 0) PetscFunctionReturn(0);
+  ierr = PetscDrawAxisDestroy(&(*hist)->axis);CHKERRQ(ierr);
+  ierr = PetscDrawDestroy(&(*hist)->win);CHKERRQ(ierr);
+  ierr = PetscFree((*hist)->bins);CHKERRQ(ierr);
+  ierr = PetscFree((*hist)->values);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(hist);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

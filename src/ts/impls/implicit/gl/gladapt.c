@@ -188,14 +188,15 @@ PetscErrorCode  TSGLAdaptView(TSGLAdapt adapt,PetscViewer viewer)
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSGLAdaptDestroy"
-PetscErrorCode  TSGLAdaptDestroy(TSGLAdapt adapt)
+PetscErrorCode  TSGLAdaptDestroy(TSGLAdapt *adapt)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(adapt,TSGLADAPT_CLASSID,1);
-  if (--((PetscObject)adapt)->refct > 0) PetscFunctionReturn(0);
-  if (adapt->ops->destroy) {ierr = (*adapt->ops->destroy)(adapt);CHKERRQ(ierr);}
+  if (!*adapt) PetscFunctionReturn(0);
+  PetscValidHeaderSpecific(*adapt,TSGLADAPT_CLASSID,1);
+  if (--((PetscObject)(*adapt))->refct > 0) {*adapt = 0; PetscFunctionReturn(0);}
+  if ((*adapt)->ops->destroy) {ierr = (*(*adapt)->ops->destroy)(*adapt);CHKERRQ(ierr);}
   ierr = PetscHeaderDestroy(adapt);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

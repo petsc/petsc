@@ -58,7 +58,7 @@ PetscErrorCode  MatGetMultiProcBlock_MPIAIJ(Mat mat, MPI_Comm subComm, Mat* subM
   ierr = MatMPIAIJSetPreallocation(*(subMat),PETSC_NULL,PETSC_NULL,PETSC_NULL,nnz);CHKERRQ(ierr);
 
   /* reuse diag block with the new submat */
-  ierr = MatDestroy(((Mat_MPIAIJ*)((*subMat)->data))->A);CHKERRQ(ierr);
+  ierr = MatDestroy(&((Mat_MPIAIJ*)((*subMat)->data))->A);CHKERRQ(ierr);
   ((Mat_MPIAIJ*)((*subMat)->data))->A = aij->A;
   ierr = PetscObjectReference((PetscObject)aij->A);CHKERRQ(ierr);
 

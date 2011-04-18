@@ -710,12 +710,12 @@ PetscErrorCode  KSPReset(KSP ksp)
   if (ksp->ops->reset) {
     ierr = (*ksp->ops->reset)(ksp);CHKERRQ(ierr);
   }
-  if (ksp->pc) {ierr = PCReset(ksp->pc);CHKERRQ(ierr);
+  if (ksp->pc) {ierr = PCReset(ksp->pc);CHKERRQ(ierr);}
   ierr = VecDestroy(&ksp->vec_rhs);CHKERRQ(ierr);
   ierr = VecDestroy(&ksp->vec_sol);CHKERRQ(ierr);
   ierr = VecDestroy(&ksp->diagonal);CHKERRQ(ierr);
   ierr = VecDestroy(&ksp->truediagonal);CHKERRQ(ierr);
-  ierr = MatNullSpaceDestroy(&&ksp->nullsp);CHKERRQ(ierr);
+  ierr = MatNullSpaceDestroy(&ksp->nullsp);CHKERRQ(ierr);
   ksp->setupstage = KSP_SETUP_NEW;
   PetscFunctionReturn(0);
 }
@@ -741,15 +741,16 @@ PetscErrorCode  KSPDestroy(KSP *ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (!*ksp) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*ksp),KSP_CLASSID,1);
-  if (--((PetscObject)(*ksp))->refct > 0) PetscFunctionReturn(0);
+  if (--((PetscObject)(*ksp))->refct > 0) {*ksp = 0; PetscFunctionReturn(0);}
   ierr = KSPReset((*ksp));CHKERRQ(ierr);
   ierr = PetscObjectDepublish((*ksp));CHKERRQ(ierr);
   ierr = DMDestroy(&(*ksp)->dm);CHKERRQ(ierr);
   if ((*ksp)->ops->destroy) {
-    ierr = (*(*ksp)->ops->destroy)(ksp);CHKERRQ(ierr);
+    ierr = (*(*ksp)->ops->destroy)(*ksp);CHKERRQ(ierr);
   }
-  ierr = PCDestroy((*ksp)->pc);CHKERRQ(ierr);
+  ierr = PCDestroy(&(*ksp)->pc);CHKERRQ(ierr);
   ierr = PetscFree((*ksp)->res_hist_alloc);CHKERRQ(ierr);
   ierr = KSPMonitorCancel((*ksp));CHKERRQ(ierr);
   if ((*ksp)->convergeddestroy) {ierr = (*(*ksp)->convergeddestroy)((*ksp)->cnvP);CHKERRQ(ierr);}

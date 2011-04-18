@@ -932,7 +932,7 @@ PetscErrorCode  PetscFinalize(void)
     if (mname[0])  {
       ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,mname,&viewer);CHKERRQ(ierr);
       ierr = PetscLogView(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     } else {
       viewer = PETSC_VIEWER_STDOUT_WORLD;
       ierr = PetscLogView(viewer);CHKERRQ(ierr);
@@ -946,7 +946,7 @@ PetscErrorCode  PetscFinalize(void)
     if (mname[0])  {
       ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,mname,&viewer);CHKERRQ(ierr);
       ierr = PetscLogViewPython(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     } else {
       viewer = PETSC_VIEWER_STDOUT_WORLD;
       ierr = PetscLogViewPython(viewer);CHKERRQ(ierr);

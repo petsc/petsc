@@ -276,14 +276,15 @@ PetscErrorCode  ISLocalToGlobalMappingUnBlock(ISLocalToGlobalMapping inmap,Petsc
 
 .seealso: ISLocalToGlobalMappingCreate()
 @*/
-PetscErrorCode  ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping mapping)
+PetscErrorCode  ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping *mapping)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(mapping,IS_LTOGM_CLASSID,1);
-  if (--((PetscObject)mapping)->refct > 0) PetscFunctionReturn(0);
-  ierr = PetscFree(mapping->indices);CHKERRQ(ierr);
-  ierr = PetscFree(mapping->globals);CHKERRQ(ierr);
+  if (!*mapping) PetscFunctionReturn(0);
+  PetscValidHeaderSpecific((*mapping),IS_LTOGM_CLASSID,1);
+  if (--((PetscObject)(*mapping))->refct > 0) {*mapping = 0; PetscFunctionReturn(0);}
+  ierr = PetscFree((*mapping)->indices);CHKERRQ(ierr);
+  ierr = PetscFree((*mapping)->globals);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(mapping);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

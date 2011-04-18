@@ -132,7 +132,7 @@ PetscErrorCode PetscViewerRestoreSingleton_String(PetscViewer viewer,PetscViewer
   PetscFunctionBegin;
   vstr->head    = iviewer->head;  
   vstr->curlen += iviewer->curlen;  
-  ierr = PetscViewerDestroy(*sviewer);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(sviewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

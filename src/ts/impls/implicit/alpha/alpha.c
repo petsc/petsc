@@ -108,14 +108,14 @@ static PetscErrorCode TSReset_Alpha(TS ts)
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  if (th->X0) {ierr = VecDestroy(th->X0);CHKERRQ(ierr);}
-  if (th->Xa) {ierr = VecDestroy(th->Xa);CHKERRQ(ierr);}
-  if (th->X1) {ierr = VecDestroy(th->X1);CHKERRQ(ierr);}
-  if (th->V0) {ierr = VecDestroy(th->V0);CHKERRQ(ierr);}
-  if (th->Va) {ierr = VecDestroy(th->Va);CHKERRQ(ierr);}
-  if (th->V1) {ierr = VecDestroy(th->V1);CHKERRQ(ierr);}
-  if (th->R)  {ierr = VecDestroy(th->R);CHKERRQ(ierr);}
-  if (th->E)  {ierr = VecDestroy(th->E);CHKERRQ(ierr);}
+  ierr = VecDestroy(&th->X0);CHKERRQ(ierr);
+  ierr = VecDestroy(&th->Xa);CHKERRQ(ierr);
+  ierr = VecDestroy(&th->X1);CHKERRQ(ierr);
+  ierr = VecDestroy(&th->V0);CHKERRQ(ierr);
+  ierr = VecDestroy(&th->Va);CHKERRQ(ierr);
+  ierr = VecDestroy(&th->V1);CHKERRQ(ierr);
+  ierr = VecDestroy(&th->R);CHKERRQ(ierr);
+  ierr = VecDestroy(&th->E);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

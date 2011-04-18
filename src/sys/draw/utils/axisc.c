@@ -65,17 +65,17 @@ PetscErrorCode  PetscDrawAxisCreate(PetscDraw draw,PetscDrawAxis *axis)
     Level: advanced
 
 @*/
-PetscErrorCode  PetscDrawAxisDestroy(PetscDrawAxis axis)
+PetscErrorCode  PetscDrawAxisDestroy(PetscDrawAxis *axis)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!axis) PetscFunctionReturn(0);
-  if (--((PetscObject)axis)->refct > 0) PetscFunctionReturn(0);
+  if (!*axis) PetscFunctionReturn(0);
+  if (--((PetscObject)(*axis))->refct > 0) PetscFunctionReturn(0);
 
-  ierr = PetscFree(axis->toplabel);CHKERRQ(ierr);
-  ierr = PetscFree(axis->xlabel);CHKERRQ(ierr);
-  ierr = PetscFree(axis->ylabel);CHKERRQ(ierr);
+  ierr = PetscFree((*axis)->toplabel);CHKERRQ(ierr);
+  ierr = PetscFree((*axis)->xlabel);CHKERRQ(ierr);
+  ierr = PetscFree((*axis)->ylabel);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(axis);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

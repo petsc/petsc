@@ -155,14 +155,14 @@ PetscErrorCode  MatNullSpaceDestroy(MatNullSpace *sp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (!*sp) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*sp),MAT_NULLSPACE_CLASSID,1); 
   if (--((PetscObject)(*sp))->refct > 0) {*sp = 0; PetscFunctionReturn(0);}
 
-  if ((*sp)->vec)  { ierr = VecDestroy((*sp)->vec);CHKERRQ(ierr); }
-  if ((*sp)->vecs) { ierr = VecDestroyVecs((*sp)->n,&(*sp)->vecs);CHKERRQ(ierr); }
+  ierr = VecDestroy(&(*sp)->vec);CHKERRQ(ierr); 
+  ierr = VecDestroyVecs((*sp)->n,&(*sp)->vecs);CHKERRQ(ierr); 
   ierr = PetscFree((*sp)->alpha);CHKERRQ(ierr);
-  ierr = PetscHeaderDestroy((*sp));CHKERRQ(ierr);
-  (*sp)  = 0;
+  ierr = PetscHeaderDestroy(sp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -292,7 +292,7 @@ PetscErrorCode  MatNullSpaceTest(MatNullSpace sp,Mat mat,PetscBool  *isNull)
     ierr = PetscPrintf(((PetscObject)sp)->comm,"|| A * 1/N || = %G\n",nrm);CHKERRQ(ierr);
     if (nrm > 1.e-7 && flg1) {ierr = VecView(r,viewer);CHKERRQ(ierr);}
     if (nrm > 1.e-7 && flg2) {ierr = VecView(r,viewer);CHKERRQ(ierr);}
-    ierr = VecDestroy(r);CHKERRQ(ierr);
+    ierr = VecDestroy(&r);CHKERRQ(ierr);
   }
 
   for (j=0; j<n; j++) {

@@ -987,9 +987,9 @@ static PetscErrorCode TSReset_GL(TS ts)
     ierr = VecDestroyVecs(max_r,&gl->X);CHKERRQ(ierr);
     ierr = VecDestroyVecs(max_s,&gl->Ydot);CHKERRQ(ierr);
     ierr = VecDestroyVecs(3,&gl->himom);CHKERRQ(ierr);
-    ierr = VecDestroy(gl->W);CHKERRQ(ierr);
-    ierr = VecDestroy(gl->Y);CHKERRQ(ierr);
-    ierr = VecDestroy(gl->Z);CHKERRQ(ierr);
+    ierr = VecDestroy(&gl->W);CHKERRQ(ierr);
+    ierr = VecDestroy(&gl->Y);CHKERRQ(ierr);
+    ierr = VecDestroy(&gl->Z);CHKERRQ(ierr);
   }
   gl->setupcalled = PETSC_FALSE;
   PetscFunctionReturn(0);
@@ -1004,9 +1004,9 @@ static PetscErrorCode TSDestroy_GL(TS ts)
 
   PetscFunctionBegin;
   ierr = TSReset_GL(ts);CHKERRQ(ierr);
-  if (gl->adapt) {ierr = TSGLAdaptDestroy(gl->adapt);CHKERRQ(ierr);}
+  if (gl->adapt) {ierr = TSGLAdaptDestroy(&gl->adapt);CHKERRQ(ierr);}
   if (gl->Destroy) {ierr = (*gl->Destroy)(gl);CHKERRQ(ierr);}
-  ierr = PetscFree(gl);CHKERRQ(ierr);
+  ierr = PetscFree(ts->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1063,7 +1063,7 @@ static PetscErrorCode TSSetUp_GL(TS ts)
   ierr = VecDuplicate(ts->vec_sol,&gl->Z);CHKERRQ(ierr);
   ierr = VecDuplicate(ts->vec_sol,&res);CHKERRQ(ierr);
   ierr = SNESSetFunction(ts->snes,res,SNESTSFormFunction,ts);CHKERRQ(ierr);
-  ierr = VecDestroy(res);CHKERRQ(ierr); /* Give ownership to SNES */
+  ierr = VecDestroy(&res);CHKERRQ(ierr); /* Give ownership to SNES */
   /* This is nasty.  SNESSetFromOptions() is usually called in TSSetFromOptions().  With -snes_mf_operator, it will
   replace A and we don't want to mess with that.  With -snes_mf, A and B will be replaced as well as the function and
   context.  Note that SNESSetFunction() normally has not been called before SNESSetFromOptions(), so when -snes_mf sets

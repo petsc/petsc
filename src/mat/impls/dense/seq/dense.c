@@ -297,8 +297,12 @@ PetscErrorCode MatSolveAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
     if (info) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Bad solve");
 #endif
   }
-  if (tmp) {ierr = VecAXPY(yy,sone,tmp);CHKERRQ(ierr); ierr = VecDestroy(tmp);CHKERRQ(ierr);}
-  else     {ierr = VecAXPY(yy,sone,zz);CHKERRQ(ierr);}
+  if (tmp) {
+    ierr = VecAXPY(yy,sone,tmp);CHKERRQ(ierr); 
+    ierr = VecDestroy(&tmp);CHKERRQ(ierr);
+  } else {
+    ierr = VecAXPY(yy,sone,zz);CHKERRQ(ierr);
+  }
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   ierr = PetscLogFlops(2.0*A->cmap->n*A->cmap->n);CHKERRQ(ierr);
@@ -343,7 +347,7 @@ PetscErrorCode MatSolveTransposeAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
   }
   if (tmp) {
     ierr = VecAXPY(yy,sone,tmp);CHKERRQ(ierr);
-    ierr = VecDestroy(tmp);CHKERRQ(ierr);
+    ierr = VecDestroy(&tmp);CHKERRQ(ierr);
   } else {
     ierr = VecAXPY(yy,sone,zz);CHKERRQ(ierr);
   }

@@ -102,7 +102,7 @@ static PetscErrorCode PCDestroy_KSP(PC pc)
 
   PetscFunctionBegin;
   ierr = PCReset_KSP(pc);CHKERRQ(ierr);
-  if (jac->ksp) {ierr = KSPDestroy(jac->ksp);CHKERRQ(ierr);}
+  ierr = KSPDestroy(&jac->ksp);CHKERRQ(ierr);
   ierr = PetscFree(pc->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

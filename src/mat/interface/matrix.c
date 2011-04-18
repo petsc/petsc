@@ -128,7 +128,7 @@ PetscErrorCode  MatGetTrace(Mat mat,PetscScalar *trace)
    ierr = MatGetVecs(mat,&diag,PETSC_NULL);CHKERRQ(ierr);
    ierr = MatGetDiagonal(mat,diag);CHKERRQ(ierr);
    ierr = VecSum(diag,trace);CHKERRQ(ierr);
-   ierr = VecDestroy(diag);CHKERRQ(ierr);
+   ierr = VecDestroy(&diag);CHKERRQ(ierr);
    PetscFunctionReturn(0);
 }
 
@@ -1004,9 +1004,9 @@ PetscErrorCode  MatUseScaledForm(Mat mat,PetscBool  scaled)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatDestroy_"
+#define __FUNCT__ "MatDestroy"
 /*@C
-   MatDestroy_ - Frees space taken by a matrix.
+   MatDestroy - Frees space taken by a matrix.
   
    Collective on Mat
 
@@ -1016,33 +1016,35 @@ PetscErrorCode  MatUseScaledForm(Mat mat,PetscBool  scaled)
    Level: beginner
 
 @*/
-PetscErrorCode  MatDestroy_(Mat A)
+PetscErrorCode  MatDestroy(Mat *A)
 {
   PetscErrorCode ierr;
+
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
-  if (--((PetscObject)A)->refct > 0) PetscFunctionReturn(0);
+  if (!*A) PetscFunctionReturn(0);
+  PetscValidHeaderSpecific(*A,MAT_CLASSID,1);
+  if (--((PetscObject)(*A))->refct > 0) {*A = PETSC_NULL; PetscFunctionReturn(0);}
 
  /* if no sizes were ever set in matrix then MatPreallocated()
   may generate an error, so set the sizes.
   This should be fixed elsewhere !! */
 
-  if (A->rmap->n == -1 && A->rmap->N == -1) A->rmap->n = A->rmap->N = 0;
-  if (A->cmap->n == -1 && A->cmap->N == -1) A->cmap->n = A->cmap->N = 0;
-  ierr = MatPreallocated(A);CHKERRQ(ierr);
+  if ((*A)->rmap->n == -1 && (*A)->rmap->N == -1) (*A)->rmap->n = (*A)->rmap->N = 0;
+  if ((*A)->cmap->n == -1 && (*A)->cmap->N == -1) (*A)->cmap->n = (*A)->cmap->N = 0;
+  ierr = MatPreallocated(*A);CHKERRQ(ierr);
 
  /* if memory was published with AMS then destroy it */
-  ierr = PetscObjectDepublish(A);CHKERRQ(ierr);
-  if (A->ops->destroy) {ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);}
+  ierr = PetscObjectDepublish(*A);CHKERRQ(ierr);
+  if ((*A)->ops->destroy) {ierr = (*(*A)->ops->destroy)(*A);CHKERRQ(ierr);}
 
-  if (A->rmapping) {ierr = ISLocalToGlobalMappingDestroy(A->rmapping);CHKERRQ(ierr);}
-  if (A->cmapping) {ierr = ISLocalToGlobalMappingDestroy(A->cmapping);CHKERRQ(ierr);}
-  if (A->rbmapping) {ierr = ISLocalToGlobalMappingDestroy(A->rbmapping);CHKERRQ(ierr);}
-  if (A->cbmapping) {ierr = ISLocalToGlobalMappingDestroy(A->cbmapping);CHKERRQ(ierr);}
+  ierr = ISLocalToGlobalMappingDestroy(&(*A)->rmapping);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingDestroy(&(*A)->cmapping);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingDestroy(&(*A)->rbmapping);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingDestroy(&(*A)->cbmapping);CHKERRQ(ierr);
 
-  ierr = PetscFree(A->spptr);CHKERRQ(ierr);
-  ierr = PetscLayoutDestroy(A->rmap);CHKERRQ(ierr);
-  ierr = PetscLayoutDestroy(A->cmap);CHKERRQ(ierr);
+  ierr = PetscFree((*A)->spptr);CHKERRQ(ierr);
+  ierr = PetscLayoutDestroy(&(*A)->rmap);CHKERRQ(ierr);
+  ierr = PetscLayoutDestroy(&(*A)->cmap);CHKERRQ(ierr);
 
   ierr = PetscHeaderDestroy(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1730,10 +1732,10 @@ PetscErrorCode  MatSetLocalToGlobalMapping(Mat x,ISLocalToGlobalMapping rmapping
     ierr = (*x->ops->setlocaltoglobalmapping)(x,rmapping,cmapping);CHKERRQ(ierr);
   } else {
     ierr = PetscObjectReference((PetscObject)rmapping);CHKERRQ(ierr);
-    if (x->rmapping) { ierr = ISLocalToGlobalMappingDestroy(x->rmapping);CHKERRQ(ierr); }
+    ierr = ISLocalToGlobalMappingDestroy(&x->rmapping);CHKERRQ(ierr); 
     x->rmapping = rmapping;
     ierr = PetscObjectReference((PetscObject)cmapping);CHKERRQ(ierr);
-    if (x->cmapping) { ierr = ISLocalToGlobalMappingDestroy(x->cmapping);CHKERRQ(ierr); }
+    ierr = ISLocalToGlobalMappingDestroy(&x->cmapping);CHKERRQ(ierr); 
     x->cmapping = cmapping;
   }
   PetscFunctionReturn(0);
@@ -1772,10 +1774,10 @@ PetscErrorCode  MatSetLocalToGlobalMappingBlock(Mat x,ISLocalToGlobalMapping rma
   PetscValidHeaderSpecific(cmapping,IS_LTOGM_CLASSID,3);
   if (x->rbmapping) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Mapping already set for matrix");
   ierr = PetscObjectReference((PetscObject)rmapping);CHKERRQ(ierr);
-  if (x->rbmapping) { ierr = ISLocalToGlobalMappingDestroy(x->rbmapping);CHKERRQ(ierr); }
+  ierr = ISLocalToGlobalMappingDestroy(&x->rbmapping);CHKERRQ(ierr); 
   x->rbmapping = rmapping;
   ierr = PetscObjectReference((PetscObject)cmapping);CHKERRQ(ierr);
-  if (x->cbmapping) { ierr = ISLocalToGlobalMappingDestroy(x->cbmapping);CHKERRQ(ierr); }
+  ierr = ISLocalToGlobalMappingDestroy(&x->cbmapping);CHKERRQ(ierr); 
   x->cbmapping = cmapping;
   PetscFunctionReturn(0);
 }
@@ -3085,8 +3087,8 @@ PetscErrorCode  MatMatSolve_Basic(Mat A,Mat B,Mat X)
     ierr = VecResetArray(x);CHKERRQ(ierr);
     ierr = VecResetArray(b);CHKERRQ(ierr);
   }
-  ierr = VecDestroy(b);CHKERRQ(ierr);
-  ierr = VecDestroy(x);CHKERRQ(ierr);
+  ierr = VecDestroy(&b);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = MatRestoreArray(B,&bb);CHKERRQ(ierr);
   ierr = MatRestoreArray(X,&xx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -3348,7 +3350,7 @@ PetscErrorCode  MatSolveAdd(Mat mat,Vec b,Vec y,Vec x)
       ierr = VecCopy(x,tmp);CHKERRQ(ierr);
       ierr = MatSolve(mat,b,x);CHKERRQ(ierr);
       ierr = VecAXPY(x,one,tmp);CHKERRQ(ierr);
-      ierr = VecDestroy(tmp);CHKERRQ(ierr);
+      ierr = VecDestroy(&tmp);CHKERRQ(ierr);
     }
   }
   ierr = PetscLogEventEnd(MAT_SolveAdd,mat,b,x,y);CHKERRQ(ierr);
@@ -3475,7 +3477,7 @@ PetscErrorCode  MatSolveTransposeAdd(Mat mat,Vec b,Vec y,Vec x)
       ierr = VecCopy(x,tmp);CHKERRQ(ierr);
       ierr = MatSolveTranspose(mat,b,x);CHKERRQ(ierr);
       ierr = VecAXPY(x,one,tmp);CHKERRQ(ierr);
-      ierr = VecDestroy(tmp);CHKERRQ(ierr);
+      ierr = VecDestroy(&tmp);CHKERRQ(ierr);
     }
   }
   ierr = PetscLogEventEnd(MAT_SolveTransposeAdd,mat,b,x,y);CHKERRQ(ierr);
@@ -3654,15 +3656,15 @@ PetscErrorCode  MatCopy(Mat A,Mat B,MatStructure str)
   }
   if (A->rmapping) {
     if (B->rmapping) {
-      ierr = ISLocalToGlobalMappingDestroy(B->rmapping);CHKERRQ(ierr);B->rmapping = 0;
-      ierr = ISLocalToGlobalMappingDestroy(B->cmapping);CHKERRQ(ierr);B->cmapping = 0;
+      ierr = ISLocalToGlobalMappingDestroy(&B->rmapping);CHKERRQ(ierr);
+      ierr = ISLocalToGlobalMappingDestroy(&B->cmapping);CHKERRQ(ierr);
     }
     ierr = MatSetLocalToGlobalMapping(B,A->rmapping,A->cmapping);CHKERRQ(ierr);
   }
   if (A->rbmapping) {
     if (B->rbmapping) {
-      ierr = ISLocalToGlobalMappingDestroy(B->rbmapping);CHKERRQ(ierr);B->rbmapping = 0;
-      ierr = ISLocalToGlobalMappingDestroy(B->cbmapping);CHKERRQ(ierr);B->cbmapping = 0;
+      ierr = ISLocalToGlobalMappingDestroy(&B->rbmapping);CHKERRQ(ierr);
+      ierr = ISLocalToGlobalMappingDestroy(&B->cbmapping);CHKERRQ(ierr);
     }
     ierr = MatSetLocalToGlobalMappingBlock(B,A->rbmapping,A->cbmapping);CHKERRQ(ierr);
   }
@@ -3781,14 +3783,14 @@ PetscErrorCode  MatConvert(Mat mat, const MatType newtype,MatReuse reuse,Mat *M)
       ierr = PetscStrcat(convname,"_C");CHKERRQ(ierr);
       ierr = PetscObjectQueryFunction((PetscObject)B,convname,(void (**)(void))&conv);CHKERRQ(ierr);
       if (conv) {
-        ierr = MatDestroy(B);CHKERRQ(ierr);      
+        ierr = MatDestroy(&B);CHKERRQ(ierr);      
         goto foundconv;
       }
     }
 
     /* 3) See if a good general converter is registered for the desired class */
     conv = B->ops->convertfrom;
-    ierr = MatDestroy(B);CHKERRQ(ierr);
+    ierr = MatDestroy(&B);CHKERRQ(ierr);
     if (conv) goto foundconv;
 
     /* 4) See if a good general converter is known for the current matrix */
@@ -5570,8 +5572,8 @@ PetscErrorCode  MatZeroRowsLocal(Mat mat,PetscInt numRows,const PetscInt rows[],
     ierr = ISGetIndices(newis,&newRows);CHKERRQ(ierr);
     ierr = (*mat->ops->zerorows)(mat,numRows,newRows,diag,x,b);CHKERRQ(ierr);
     ierr = ISRestoreIndices(newis,&newRows);CHKERRQ(ierr);
-    ierr = ISDestroy(newis);CHKERRQ(ierr);
-    ierr = ISDestroy(is);CHKERRQ(ierr);
+    ierr = ISDestroy(&newis);CHKERRQ(ierr);
+    ierr = ISDestroy(&is);CHKERRQ(ierr);
   }
   ierr = PetscObjectStateIncrease((PetscObject)mat);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_CUSP)
@@ -5699,8 +5701,8 @@ PetscErrorCode  MatZeroRowsColumnsLocal(Mat mat,PetscInt numRows,const PetscInt 
     ierr = ISGetIndices(newis,&newRows);CHKERRQ(ierr);
     ierr = (*mat->ops->zerorowscolumns)(mat,numRows,newRows,diag,x,b);CHKERRQ(ierr);
     ierr = ISRestoreIndices(newis,&newRows);CHKERRQ(ierr);
-    ierr = ISDestroy(newis);CHKERRQ(ierr);
-    ierr = ISDestroy(is);CHKERRQ(ierr);
+    ierr = ISDestroy(&newis);CHKERRQ(ierr);
+    ierr = ISDestroy(&is);CHKERRQ(ierr);
   }
   ierr = PetscObjectStateIncrease((PetscObject)mat);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_CUSP)
@@ -6382,10 +6384,11 @@ PetscErrorCode  MatDestroyMatrices(PetscInt n,Mat *mat[])
   PetscInt       i;
 
   PetscFunctionBegin;
+  if (!*mat) PetscFunctionReturn(0);
   if (n < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Trying to destroy negative number of matrices %D",n);
   PetscValidPointer(mat,2);
   for (i=0; i<n; i++) {
-    ierr = MatDestroy((*mat)[i]);CHKERRQ(ierr);
+    ierr = MatDestroy(&(*mat)[i]);CHKERRQ(ierr);
   }
   /* memory is allocated even if n = 0 */
   ierr = PetscFree(*mat);CHKERRQ(ierr);
@@ -6452,7 +6455,7 @@ PetscErrorCode  MatDestroySeqNonzeroStructure(Mat *mat)
 
   PetscFunctionBegin;
   PetscValidPointer(mat,1);
-  ierr = MatDestroy(*mat);CHKERRQ(ierr);
+  ierr = MatDestroy(mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -7051,13 +7054,13 @@ PetscErrorCode  MatGetSubMatrix(Mat mat,IS isrow,IS iscol,MatReuse cll,Mat *newm
   /* if original matrix is on just one processor then use submatrix generated */
   if (mat->ops->getsubmatrices && !mat->ops->getsubmatrix && size == 1 && cll == MAT_REUSE_MATRIX) {
     ierr = MatGetSubMatrices(mat,1,&isrow,&iscoltmp,MAT_REUSE_MATRIX,&newmat);CHKERRQ(ierr);
-    if (!iscol) {ierr = ISDestroy(iscoltmp);CHKERRQ(ierr);}
+    if (!iscol) {ierr = ISDestroy(&iscoltmp);CHKERRQ(ierr);}
     PetscFunctionReturn(0);
   } else if (mat->ops->getsubmatrices && !mat->ops->getsubmatrix && size == 1) {
     ierr    = MatGetSubMatrices(mat,1,&isrow,&iscoltmp,MAT_INITIAL_MATRIX,&local);CHKERRQ(ierr);
     *newmat = *local;
     ierr    = PetscFree(local);CHKERRQ(ierr);
-    if (!iscol) {ierr = ISDestroy(iscoltmp);CHKERRQ(ierr);}
+    if (!iscol) {ierr = ISDestroy(&iscoltmp);CHKERRQ(ierr);}
     PetscFunctionReturn(0);
   } else if (!mat->ops->getsubmatrix) {
     /* Create a new matrix type that implements the operation using the full matrix */
@@ -7070,13 +7073,13 @@ PetscErrorCode  MatGetSubMatrix(Mat mat,IS isrow,IS iscol,MatReuse cll,Mat *newm
         break;
       default: SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Invalid MatReuse, must be either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX");
     }
-    if (!iscol) {ierr = ISDestroy(iscoltmp);CHKERRQ(ierr);}
+    if (!iscol) {ierr = ISDestroy(&iscoltmp);CHKERRQ(ierr);}
     PetscFunctionReturn(0);
   }
 
   if (!mat->ops->getsubmatrix) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
   ierr = (*mat->ops->getsubmatrix)(mat,isrow,iscoltmp,cll,newmat);CHKERRQ(ierr);
-  if (!iscol) {ierr = ISDestroy(iscoltmp);CHKERRQ(ierr);}
+  if (!iscol) {ierr = ISDestroy(&iscoltmp);CHKERRQ(ierr);}
   ierr = PetscObjectStateIncrease((PetscObject)*newmat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -7894,7 +7897,7 @@ PetscErrorCode  MatGetVecs(Mat mat,Vec *right,Vec *left)
       ierr = VecSetBlockSize(*right,mat->rmap->bs);CHKERRQ(ierr);
       if (size > 1) {
         /* New vectors uses Mat cmap and does not create a new one */
-	ierr = PetscLayoutDestroy((*right)->map);CHKERRQ(ierr);
+	ierr = PetscLayoutDestroy(&(*right)->map);CHKERRQ(ierr);
 	(*right)->map = mat->cmap;
 	mat->cmap->refcnt++;
 
@@ -7907,7 +7910,7 @@ PetscErrorCode  MatGetVecs(Mat mat,Vec *right,Vec *left)
       ierr = VecSetBlockSize(*left,mat->rmap->bs);CHKERRQ(ierr);
       if (size > 1) {
         /* New vectors uses Mat rmap and does not create a new one */
-	ierr = PetscLayoutDestroy((*left)->map);CHKERRQ(ierr);
+	ierr = PetscLayoutDestroy(&(*left)->map);CHKERRQ(ierr);
 	(*left)->map = mat->rmap;
 	mat->rmap->refcnt++;
 
@@ -8617,7 +8620,7 @@ PetscErrorCode  MatRestoreLocalSubMatrix(Mat mat,IS isrow,IS iscol,Mat *submat)
   if (mat->ops->restorelocalsubmatrix) {
     ierr = (*mat->ops->restorelocalsubmatrix)(mat,isrow,iscol,submat);CHKERRQ(ierr);
   } else {
-    ierr = MatDestroy(*submat);CHKERRQ(ierr);
+    ierr = MatDestroy(submat);CHKERRQ(ierr);
   }
   *submat = PETSC_NULL;
   PetscFunctionReturn(0);

@@ -84,11 +84,8 @@ PetscErrorCode MatStashDestroy_Private(MatStash *stash)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (stash->space_head){
-    ierr = PetscMatStashSpaceDestroy(stash->space_head);CHKERRQ(ierr);
-    stash->space_head = 0;
-    stash->space      = 0;
-  }
+  ierr = PetscMatStashSpaceDestroy(&stash->space_head);CHKERRQ(ierr);
+  stash->space = 0;
   ierr = PetscFree(stash->flg_v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -131,11 +128,8 @@ PetscErrorCode MatStashScatterEnd_Private(MatStash *stash)
   stash->n          = 0;
   stash->reallocs   = -1;
   stash->nprocessed = 0;
-  if (stash->space_head){
-    ierr = PetscMatStashSpaceDestroy(stash->space_head);CHKERRQ(ierr);
-    stash->space_head = 0;
-    stash->space      = 0;
-  }
+  ierr = PetscMatStashSpaceDestroy(&stash->space_head);CHKERRQ(ierr);
+  stash->space      = 0;
   ierr = PetscFree(stash->send_waits);CHKERRQ(ierr);
   ierr = PetscFree(stash->recv_waits);CHKERRQ(ierr);
   ierr = PetscFree2(stash->svalues,stash->sindices);CHKERRQ(ierr);

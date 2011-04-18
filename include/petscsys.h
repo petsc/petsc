@@ -1344,8 +1344,6 @@ typedef PetscErrorCode (*PetscErrorCodeFunction)(void);
 /*
     Functions that can act on any PETSc object.
 */
-extern PetscErrorCode  PetscObjectCreate(MPI_Comm,PetscObject*);
-extern PetscErrorCode  PetscObjectCreateGeneric(MPI_Comm, PetscClassId, const char [], PetscObject *);
 extern PetscErrorCode  PetscObjectDestroy(PetscObject*);
 extern PetscErrorCode  PetscObjectGetComm(PetscObject,MPI_Comm *);
 extern PetscErrorCode  PetscObjectGetClassId(PetscObject,PetscClassId *);

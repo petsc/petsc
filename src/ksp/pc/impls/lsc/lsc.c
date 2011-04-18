@@ -99,12 +99,12 @@ static PetscErrorCode PCReset_LSC(PC pc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (lsc->x0)    {ierr = VecDestroy(lsc->x0);CHKERRQ(ierr);}
-  if (lsc->y0)    {ierr = VecDestroy(lsc->y0);CHKERRQ(ierr);}
-  if (lsc->x1)    {ierr = VecDestroy(lsc->x1);CHKERRQ(ierr);}
-  if (lsc->scale) {ierr = VecDestroy(lsc->scale);CHKERRQ(ierr);}
-  if (lsc->kspL)  {ierr = KSPDestroy(lsc->kspL);CHKERRQ(ierr);}
-  if (lsc->L)     {ierr = MatDestroy(lsc->L);CHKERRQ(ierr);}
+  ierr = VecDestroy(&lsc->x0);CHKERRQ(ierr);
+  ierr = VecDestroy(&lsc->y0);CHKERRQ(ierr);
+  ierr = VecDestroy(&lsc->x1);CHKERRQ(ierr);
+  ierr = VecDestroy(&lsc->scale);CHKERRQ(ierr);
+  ierr = KSPDestroy(&lsc->kspL);CHKERRQ(ierr);
+  ierr = MatDestroy(&lsc->L);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

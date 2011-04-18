@@ -60,26 +60,27 @@ PetscErrorCode  PFSet(PF pf,PetscErrorCode (*apply)(void*,PetscInt,const PetscSc
 
 .seealso: PFCreate(), PFSet(), PFSetType()
 @*/
-PetscErrorCode  PFDestroy(PF pf)
+PetscErrorCode  PFDestroy(PF *pf)
 {
   PetscErrorCode ierr;
   PetscBool      flg = PETSC_FALSE;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pf,PF_CLASSID,1);
-  if (--((PetscObject)pf)->refct > 0) PetscFunctionReturn(0);
+  if (!*pf) PetscFunctionReturn(0);
+  PetscValidHeaderSpecific((*pf),PF_CLASSID,1);
+  if (--((PetscObject)(*pf))->refct > 0) PetscFunctionReturn(0);
 
-  ierr = PetscOptionsGetBool(((PetscObject)pf)->prefix,"-pf_view",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(((PetscObject)(*pf))->prefix,"-pf_view",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {
     PetscViewer viewer;
-    ierr = PetscViewerASCIIGetStdout(((PetscObject)pf)->comm,&viewer);CHKERRQ(ierr);
-    ierr = PFView(pf,viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIGetStdout(((PetscObject)(*pf))->comm,&viewer);CHKERRQ(ierr);
+    ierr = PFView((*pf),viewer);CHKERRQ(ierr);
   }
 
   /* if memory was published with AMS then destroy it */
-  ierr = PetscObjectDepublish(pf);CHKERRQ(ierr);
+  ierr = PetscObjectDepublish((*pf));CHKERRQ(ierr);
 
-  if (pf->ops->destroy) {ierr =  (*pf->ops->destroy)(pf->data);CHKERRQ(ierr);}
+  if ((*pf)->ops->destroy) {ierr =  (*(*pf)->ops->destroy)((*pf)->data);CHKERRQ(ierr);}
   ierr = PetscHeaderDestroy(pf);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -200,7 +201,7 @@ PetscErrorCode  PFApplyVec(PF pf,Vec x,Vec y)
     ierr = VecRestoreArray(y,&yy);CHKERRQ(ierr);
   }
   if (nox) {
-    ierr = VecDestroy(x);CHKERRQ(ierr);
+    ierr = VecDestroy(&x);CHKERRQ(ierr);
   } 
   PetscFunctionReturn(0);
 }

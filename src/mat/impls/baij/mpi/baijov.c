@@ -27,9 +27,9 @@ PetscErrorCode MatIncreaseOverlap_MPIBAIJ(Mat C,PetscInt imax,IS is[],PetscInt o
   for (i=0; i<ov; ++i) {
     ierr = MatIncreaseOverlap_MPIBAIJ_Once(C,imax,is_new);CHKERRQ(ierr);
   }
-  for (i=0; i<imax; i++) {ierr = ISDestroy(is[i]);CHKERRQ(ierr);}
+  for (i=0; i<imax; i++) {ierr = ISDestroy(&is[i]);CHKERRQ(ierr);}
   ierr = ISExpandIndicesGeneral(N,bs,imax,is_new,is);CHKERRQ(ierr);
-  for (i=0; i<imax; i++) {ierr = ISDestroy(is_new[i]);CHKERRQ(ierr);}
+  for (i=0; i<imax; i++) {ierr = ISDestroy(&is_new[i]);CHKERRQ(ierr);}
   ierr = PetscFree(is_new);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -230,7 +230,7 @@ PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Once(Mat C,PetscInt imax,IS is[])
   ierr = PetscFree2(idx,n);CHKERRQ(ierr);
 
   for (i=0; i<imax; ++i) {
-    ierr = ISDestroy(is[i]);CHKERRQ(ierr);
+    ierr = ISDestroy(&is[i]);CHKERRQ(ierr);
   }
   
   /* Do Local work*/
@@ -572,8 +572,8 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ(Mat C,PetscInt ismax,const IS isrow[],c
   }
   
   for (i=0; i<ismax; i++) {
-    ierr = ISDestroy(isrow_new[i]);CHKERRQ(ierr);
-    ierr = ISDestroy(iscol_new[i]);CHKERRQ(ierr);
+    ierr = ISDestroy(&isrow_new[i]);CHKERRQ(ierr);
+    ierr = ISDestroy(&iscol_new[i]);CHKERRQ(ierr);
   }
   ierr = PetscFree2(isrow_new,iscol_new);CHKERRQ(ierr);
   PetscFunctionReturn(0);

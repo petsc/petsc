@@ -156,7 +156,7 @@ typedef struct NLF_DAAD* NLF;
 #include "petscbag.h"
 
 extern PetscErrorCode  PetscViewerBinaryMatlabOpen(MPI_Comm, const char [], PetscViewer*);
-extern PetscErrorCode  PetscViewerBinaryMatlabDestroy(PetscViewer);
+extern PetscErrorCode  PetscViewerBinaryMatlabDestroy(PetscViewer*);
 extern PetscErrorCode  PetscViewerBinaryMatlabOutputBag(PetscViewer, const char [], PetscBag);
 extern PetscErrorCode  PetscViewerBinaryMatlabOutputVec(PetscViewer, const char [], Vec);
 extern PetscErrorCode  PetscViewerBinaryMatlabOutputVecDA(PetscViewer, const char [], Vec, DM);

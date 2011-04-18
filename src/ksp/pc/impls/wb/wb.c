@@ -164,7 +164,7 @@ PetscErrorCode DMDAGetWireBasketInterpolation(DM da,PC_Exotic *exotic,Mat Agloba
     ierr = ISDestroy(&col);CHKERRQ(ierr);
     ierr = MatLUFactorNumeric(iAii,Aii,&info);CHKERRQ(ierr);
     ierr = MatMatSolve(iAii,Xint_tmp,Xint);CHKERRQ(ierr);
-    ierr = MatDestroy(iAii);CHKERRQ(ierr);
+    ierr = MatDestroy(&iAii);CHKERRQ(ierr);
   } else {
     Vec         b,x;
     PetscScalar *xint_tmp;
@@ -183,10 +183,10 @@ PetscErrorCode DMDAGetWireBasketInterpolation(DM da,PC_Exotic *exotic,Mat Agloba
     }
     ierr = MatRestoreArray(Xint,&xint);CHKERRQ(ierr);
     ierr = MatRestoreArray(Xint_tmp,&xint_tmp);CHKERRQ(ierr);
-    ierr = VecDestroy(x);CHKERRQ(ierr);
-    ierr = VecDestroy(b);CHKERRQ(ierr);
+    ierr = VecDestroy(&x);CHKERRQ(ierr);
+    ierr = VecDestroy(&b);CHKERRQ(ierr);
   }
-  ierr = MatDestroy(Xint_tmp);CHKERRQ(ierr);
+  ierr = MatDestroy(&Xint_tmp);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_DEBUG_foo)
   ierr = MatGetArray(Xint,&xint);CHKERRQ(ierr);
@@ -457,10 +457,10 @@ PetscErrorCode DMDAGetFaceInterpolation(DM da,PC_Exotic *exotic,Mat Aglobal,MatR
     }
     ierr = MatRestoreArray(Xint,&xint);CHKERRQ(ierr);
     ierr = MatRestoreArray(Xint_tmp,&xint_tmp);CHKERRQ(ierr);
-    ierr = VecDestroy(x);CHKERRQ(ierr);
-    ierr = VecDestroy(b);CHKERRQ(ierr);
+    ierr = VecDestroy(&x);CHKERRQ(ierr);
+    ierr = VecDestroy(&b);CHKERRQ(ierr);
   }
-  ierr = MatDestroy(Xint_tmp);CHKERRQ(ierr);
+  ierr = MatDestroy(&Xint_tmp);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_DEBUG_foo)
   ierr = MatGetArray(Xint,&xint);CHKERRQ(ierr);

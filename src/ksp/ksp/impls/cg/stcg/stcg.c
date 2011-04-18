@@ -649,7 +649,7 @@ PetscErrorCode KSPSetUp_STCG(KSP ksp)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPDestroy_STCG"
-PetscErrorCode KSPDestroy_STCG(KSP *ksp)
+PetscErrorCode KSPDestroy_STCG(KSP ksp)
 {
   PetscErrorCode ierr;
 
@@ -659,9 +659,9 @@ PetscErrorCode KSPDestroy_STCG(KSP *ksp)
   /* Clear composed functions                                                */
   /***************************************************************************/
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)*ksp,"KSPSTCGSetRadius_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)*ksp,"KSPSTCGGetNormD_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)*ksp,"KSPSTCGGetObjFcn_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPSTCGSetRadius_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPSTCGGetNormD_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPSTCGGetObjFcn_C","",PETSC_NULL);CHKERRQ(ierr);
 
   /***************************************************************************/
   /* Destroy KSP object.                                                     */

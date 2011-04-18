@@ -111,7 +111,7 @@ static PetscErrorCode MatPartitioningApply_Parmetis(MatPartitioning part,IS *par
   }
 
   if (!flg) {
-    ierr = MatDestroy(mat);CHKERRQ(ierr);
+    ierr = MatDestroy(&mat);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

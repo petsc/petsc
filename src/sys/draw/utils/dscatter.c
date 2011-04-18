@@ -153,20 +153,21 @@ PetscErrorCode  PetscDrawSPReset(PetscDrawSP sp)
 
 .seealso:  PetscDrawSPCreate()
 @*/
-PetscErrorCode  PetscDrawSPDestroy(PetscDrawSP sp)
+PetscErrorCode  PetscDrawSPDestroy(PetscDrawSP *sp)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeader(sp,1);
+  if (!*sp) PetscFunctionReturn(0);
+  PetscValidHeader(*sp,1);
 
-  if (--((PetscObject)sp)->refct > 0) PetscFunctionReturn(0);
-  if (((PetscObject)sp)->classid == PETSC_DRAW_CLASSID){
-    ierr = PetscDrawDestroy((PetscDraw) sp);CHKERRQ(ierr);
+  if (--((PetscObject)(*sp))->refct > 0) PetscFunctionReturn(0);
+  if (((PetscObject)(*sp))->classid == PETSC_DRAW_CLASSID){
+    ierr = PetscDrawDestroy((PetscDraw*) sp);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
-  ierr = PetscDrawAxisDestroy(sp->axis);CHKERRQ(ierr);
-  ierr = PetscFree2(sp->x,sp->y);CHKERRQ(ierr);
+  ierr = PetscDrawAxisDestroy(&(*sp)->axis);CHKERRQ(ierr);
+  ierr = PetscFree2((*sp)->x,(*sp)->y);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(sp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

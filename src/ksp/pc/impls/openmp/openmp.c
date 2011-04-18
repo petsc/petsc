@@ -100,13 +100,13 @@ static PetscErrorCode PCSetUp_OpenMP_MP(MPI_Comm comm,void *ctx)
     ierr = VecDuplicate(red->xdummy,&red->ydummy);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
     if (!rank) {
-      ierr = VecDestroy(red->xdummy);CHKERRQ(ierr);
-      ierr = VecDestroy(red->ydummy);CHKERRQ(ierr);
+      ierr = VecDestroy(&red->xdummy);CHKERRQ(ierr);
+      ierr = VecDestroy(&red->ydummy);CHKERRQ(ierr);
     }
     scal = MAT_INITIAL_MATRIX;
   } else {
     if (red->flag == DIFFERENT_NONZERO_PATTERN) {
-      ierr = MatDestroy(red->mat);CHKERRQ(ierr);
+      ierr = MatDestroy(&red->mat);CHKERRQ(ierr);
       scal = MAT_INITIAL_MATRIX;
       CHKMEMQ;
     } else {
@@ -212,15 +212,15 @@ static PetscErrorCode PCDestroy_OpenMP_MP(MPI_Comm comm,void *ctx)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (red->scatter) {ierr = VecScatterDestroy(red->scatter);CHKERRQ(ierr);}
-  if (red->x) {ierr = VecDestroy(red->x);CHKERRQ(ierr);}
-  if (red->y) {ierr = VecDestroy(red->y);CHKERRQ(ierr);}
-  if (red->ksp) {ierr = KSPDestroy(red->ksp);CHKERRQ(ierr);}
-  if (red->mat) {ierr = MatDestroy(red->mat);CHKERRQ(ierr);}
+  ierr = VecScatterDestroy(&red->scatter);CHKERRQ(ierr);
+  ierr = VecDestroy(&red->x);CHKERRQ(ierr);
+  ierr = VecDestroy(&red->y);CHKERRQ(ierr);
+  ierr = KSPDestroy(&red->ksp);CHKERRQ(ierr);
+  ierr = MatDestroy(&red->mat);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (rank) {
-    if (red->xdummy) {ierr = VecDestroy(red->xdummy);CHKERRQ(ierr);}
-    if (red->ydummy) {ierr = VecDestroy(red->ydummy);CHKERRQ(ierr);}
+    ierr = VecDestroy(&red->xdummy);CHKERRQ(ierr);
+    ierr = VecDestroy(&red->ydummy);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

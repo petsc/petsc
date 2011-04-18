@@ -1437,25 +1437,21 @@ PetscErrorCode MatDestroy_SeqBAIJ(Mat A)
   PetscLogObjectState((PetscObject)A,"Rows=%D, Cols=%D, NZ=%D",A->rmap->N,A->cmap->n,a->nz);
 #endif
   ierr = MatSeqXAIJFreeAIJ(A,&a->a,&a->j,&a->i);CHKERRQ(ierr);
-  if (a->row) {
-    ierr = ISDestroy(a->row);CHKERRQ(ierr);
-  }
-  if (a->col) {
-    ierr = ISDestroy(a->col);CHKERRQ(ierr);
-  }
+  ierr = ISDestroy(&a->row);CHKERRQ(ierr);
+  ierr = ISDestroy(&a->col);CHKERRQ(ierr);
   if (a->free_diag) {ierr = PetscFree(a->diag);CHKERRQ(ierr);}
   ierr = PetscFree(a->idiag);CHKERRQ(ierr);
   if (a->free_imax_ilen) {ierr = PetscFree2(a->imax,a->ilen);CHKERRQ(ierr);}
   ierr = PetscFree(a->solve_work);CHKERRQ(ierr);
   ierr = PetscFree(a->mult_work);CHKERRQ(ierr);
   ierr = PetscFree(a->sor_work);CHKERRQ(ierr);
-  if (a->icol) {ierr = ISDestroy(a->icol);CHKERRQ(ierr);}
+  ierr = ISDestroy(&a->icol);CHKERRQ(ierr);
   ierr = PetscFree(a->saved_values);CHKERRQ(ierr);
   ierr = PetscFree(a->xtoy);CHKERRQ(ierr);
   ierr = PetscFree2(a->compressedrow.i,a->compressedrow.rindex);CHKERRQ(ierr);
 
-  if (a->sbaijMat) {ierr = MatDestroy(a->sbaijMat);CHKERRQ(ierr);}
-  if (a->parent) {ierr = MatDestroy(a->parent);CHKERRQ(ierr);}
+  ierr = MatDestroy(&a->sbaijMat);CHKERRQ(ierr);
+  ierr = MatDestroy(&a->parent);CHKERRQ(ierr);
   ierr = PetscFree(a);CHKERRQ(ierr);
 
   ierr = PetscObjectChangeTypeName((PetscObject)A,0);CHKERRQ(ierr);
@@ -1718,7 +1714,7 @@ static PetscErrorCode MatView_SeqBAIJ_ASCII(Mat A,PetscViewer viewer)
     Mat aij;
     ierr = MatConvert(A,MATSEQAIJ,MAT_INITIAL_MATRIX,&aij);CHKERRQ(ierr);
     ierr = MatView(aij,viewer);CHKERRQ(ierr);
-    ierr = MatDestroy(aij);CHKERRQ(ierr);
+    ierr = MatDestroy(&aij);CHKERRQ(ierr);
   } else if (format == PETSC_VIEWER_ASCII_FACTOR_INFO) {
      PetscFunctionReturn(0); 
   } else if (format == PETSC_VIEWER_ASCII_COMMON) {
@@ -1892,7 +1888,7 @@ PetscErrorCode MatView_SeqBAIJ(Mat A,PetscViewer viewer)
     Mat B;
     ierr = MatConvert(A,MATSEQAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
     ierr = MatView(B,viewer);CHKERRQ(ierr);
-    ierr = MatDestroy(B);CHKERRQ(ierr);
+    ierr = MatDestroy(&B);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -2419,17 +2415,15 @@ PetscErrorCode MatILUFactor_SeqBAIJ(Mat inA,IS row,IS col,const MatFactorInfo *i
   ierr = MatMarkDiagonal_SeqBAIJ(inA);CHKERRQ(ierr);
 
   ierr = PetscObjectReference((PetscObject)row);CHKERRQ(ierr);
-  if (a->row) { ierr = ISDestroy(a->row);CHKERRQ(ierr); }
+  ierr = ISDestroy(&a->row);CHKERRQ(ierr); 
   a->row = row;
   ierr = PetscObjectReference((PetscObject)col);CHKERRQ(ierr);
-  if (a->col) { ierr = ISDestroy(a->col);CHKERRQ(ierr); }
+  ierr = ISDestroy(&a->col);CHKERRQ(ierr); 
   a->col = col;
   
   /* Create the invert permutation so that it can be used in MatLUFactorNumeric() */
-  if (a->icol) {
-    ierr = ISDestroy(a->icol);CHKERRQ(ierr);
-  }
-  ierr = ISInvertPermutation(col,PETSC_DECIDE,&a->icol);CHKERRQ(ierr);
+  ierr = ISDestroy(&a->icol);CHKERRQ(ierr);
+   ierr = ISInvertPermutation(col,PETSC_DECIDE,&a->icol);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(inA,a->icol);CHKERRQ(ierr);
   
   ierr = MatSeqBAIJSetNumericFactorization_inplace(inA,(PetscBool)(row_identity && col_identity));CHKERRQ(ierr);
@@ -2608,7 +2602,7 @@ PetscErrorCode MatAXPY_SeqBAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
   } else if (str == SUBSET_NONZERO_PATTERN) { /* nonzeros of X is a subset of Y's */
     if (y->xtoy && y->XtoY != X) {
       ierr = PetscFree(y->xtoy);CHKERRQ(ierr);
-      ierr = MatDestroy(y->XtoY);CHKERRQ(ierr);
+      ierr = MatDestroy(&y->XtoY);CHKERRQ(ierr);
     }
     if (!y->xtoy) { /* get xtoy */
       ierr = MatAXPYGetxtoy_Private(x->mbs,x->i,x->j,PETSC_NULL, y->i,y->j,PETSC_NULL, &y->xtoy);CHKERRQ(ierr);

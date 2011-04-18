@@ -224,11 +224,11 @@ PetscErrorCode PCReset_MG(PC pc)
   if (mglevels) {
     n = mglevels[0]->levels;
     for (i=0; i<n-1; i++) {
-      if (mglevels[i+1]->r) {ierr = VecDestroy(mglevels[i+1]->r);CHKERRQ(ierr);}
-      if (mglevels[i]->b) {ierr = VecDestroy(mglevels[i]->b);CHKERRQ(ierr);}
-      if (mglevels[i]->x) {ierr = VecDestroy(mglevels[i]->x);CHKERRQ(ierr);}
-      if (mglevels[i+1]->restrct) {ierr = MatDestroy(mglevels[i+1]->restrct);CHKERRQ(ierr);}
-      if (mglevels[i+1]->interpolate) {ierr = MatDestroy(mglevels[i+1]->interpolate);CHKERRQ(ierr);}
+      ierr = VecDestroy(&mglevels[i+1]->r);CHKERRQ(ierr);
+      ierr = VecDestroy(&mglevels[i]->b);CHKERRQ(ierr);
+      ierr = VecDestroy(&mglevels[i]->x);CHKERRQ(ierr);
+      ierr = MatDestroy(&mglevels[i+1]->restrct);CHKERRQ(ierr);
+      ierr = MatDestroy(&mglevels[i+1]->interpolate);CHKERRQ(ierr);
     }
 
     for (i=0; i<n; i++) {
@@ -256,9 +256,9 @@ PetscErrorCode PCDestroy_MG(PC pc)
     n = mglevels[0]->levels;
     for (i=0; i<n; i++) {
       if (mglevels[i]->smoothd != mglevels[i]->smoothu) {
-	ierr = KSPDestroy(mglevels[i]->smoothd);CHKERRQ(ierr);
+	ierr = KSPDestroy(&mglevels[i]->smoothd);CHKERRQ(ierr);
       }
-      ierr = KSPDestroy(mglevels[i]->smoothu);CHKERRQ(ierr);
+      ierr = KSPDestroy(&mglevels[i]->smoothu);CHKERRQ(ierr);
       ierr = PetscFree(mglevels[i]);CHKERRQ(ierr);
     }
     ierr = PetscFree(mg->levels);CHKERRQ(ierr);
@@ -486,7 +486,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
       if (!mglevels[i+1]->interpolate) {
 	ierr = DMGetInterpolation(dms[i],dms[i+1],&p,PETSC_NULL);CHKERRQ(ierr);
 	ierr = PCMGSetInterpolation(pc,i+1,p);CHKERRQ(ierr);
-        ierr = MatDestroy(p);CHKERRQ(ierr);
+        ierr = MatDestroy(&p);CHKERRQ(ierr);
       }
     }
 
@@ -498,7 +498,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
     }
 
     for (i=n-2; i>-1; i--) {
-      ierr = DMDestroy(dms[i]);CHKERRQ(ierr);
+      ierr = DMDestroy(&dms[i]);CHKERRQ(ierr);
     }
     ierr = PetscFree(dms);CHKERRQ(ierr);
   }
@@ -565,18 +565,18 @@ PetscErrorCode PCSetUp_MG(PC pc)
         Vec *vec;
         ierr = KSPGetVecs(mglevels[i]->smoothd,1,&vec,0,PETSC_NULL);CHKERRQ(ierr);
         ierr = PCMGSetRhs(pc,i,*vec);CHKERRQ(ierr);
-        ierr = VecDestroy(*vec);CHKERRQ(ierr);
+        ierr = VecDestroy(vec);CHKERRQ(ierr);
         ierr = PetscFree(vec);CHKERRQ(ierr);
       }
       if (!mglevels[i]->r && i) {
         ierr = VecDuplicate(mglevels[i]->b,&tvec);CHKERRQ(ierr);
         ierr = PCMGSetR(pc,i,tvec);CHKERRQ(ierr);
-        ierr = VecDestroy(tvec);CHKERRQ(ierr);
+        ierr = VecDestroy(&tvec);CHKERRQ(ierr);
       }
       if (!mglevels[i]->x) {
         ierr = VecDuplicate(mglevels[i]->b,&tvec);CHKERRQ(ierr);
         ierr = PCMGSetX(pc,i,tvec);CHKERRQ(ierr);
-        ierr = VecDestroy(tvec);CHKERRQ(ierr);
+        ierr = VecDestroy(&tvec);CHKERRQ(ierr);
       }
     }
     if (n != 1 && !mglevels[n-1]->r) {
@@ -584,7 +584,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
       Vec *vec;
       ierr = KSPGetVecs(mglevels[n-1]->smoothd,1,&vec,0,PETSC_NULL);CHKERRQ(ierr);
       ierr = PCMGSetR(pc,n-1,*vec);CHKERRQ(ierr);
-      ierr = VecDestroy(*vec);CHKERRQ(ierr);
+      ierr = VecDestroy(vec);CHKERRQ(ierr);
       ierr = PetscFree(vec);CHKERRQ(ierr);
     }
   }

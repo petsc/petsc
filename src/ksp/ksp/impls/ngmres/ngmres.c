@@ -144,12 +144,12 @@ PetscErrorCode KSPReset_NGMRES(KSP ksp)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "KSPDestroy_NGMRES" 
-PetscErrorCode KSPDestroy_NGMRES(KSP *ksp)
+PetscErrorCode KSPDestroy_NGMRES(KSP ksp)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = KSPReset_NGMRES(*ksp);CHKERRQ(ierr);
+  ierr = KSPReset_NGMRES(ksp);CHKERRQ(ierr);
   ierr = KSPDefaultDestroy(ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -98,7 +98,7 @@ PetscErrorCode  MatGetDiagonalBlock_MPIDense(Mat A,PetscBool  *iscopy,MatReuse r
   if (A->rmap->N != A->cmap->N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only square matrices supported.");
 
   /* The reuse aspect is not implemented efficiently */
-  if (reuse) { ierr = MatDestroy(*B);CHKERRQ(ierr);}
+  if (reuse) { ierr = MatDestroy(B);CHKERRQ(ierr);}
 
   ierr = PetscObjectGetComm((PetscObject)(mdn->A),&comm);CHKERRQ(ierr);
   ierr = MatGetArray(mdn->A,&array);CHKERRQ(ierr);
@@ -564,9 +564,9 @@ PetscErrorCode MatDestroy_MPIDense(Mat mat)
   PetscLogObjectState((PetscObject)mat,"Rows=%D, Cols=%D",mat->rmap->N,mat->cmap->N);
 #endif
   ierr = MatStashDestroy_Private(&mat->stash);CHKERRQ(ierr);
-  ierr = MatDestroy(mdn->A);CHKERRQ(ierr);
-  if (mdn->lvec)   {ierr = VecDestroy(mdn->lvec);CHKERRQ(ierr);}
-  if (mdn->Mvctx)  {ierr = VecScatterDestroy(mdn->Mvctx);CHKERRQ(ierr);}
+  ierr = MatDestroy(&mdn->A);CHKERRQ(ierr);
+  ierr = VecDestroy(&mdn->lvec);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&mdn->Mvctx);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_PLAPACK)
   if (lu) {
     ierr = PLA_Obj_free(&lu->A);CHKERRQ(ierr);
@@ -764,7 +764,7 @@ static PetscErrorCode MatView_MPIDense_ASCIIorDraworSocket(Mat mat,PetscViewer v
     }
     ierr = PetscViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-    ierr = MatDestroy(A);CHKERRQ(ierr);
+    ierr = MatDestroy(&A);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

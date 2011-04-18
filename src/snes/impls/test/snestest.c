@@ -74,7 +74,7 @@ PetscErrorCode SNESSolve_Test(SNES snes)
     if (!gnorm) gnorm = 1; /* just in case */
     ierr = PetscPrintf(((PetscObject)snes)->comm,"Norm of matrix ratio %G difference %G (%s)\n",nrm/gnorm,nrm,loc[i]);CHKERRQ(ierr);
   }
-  ierr = MatDestroy(B);CHKERRQ(ierr);
+  ierr = MatDestroy(&B);CHKERRQ(ierr);
   /*
          Return error code cause Jacobian not good
   */

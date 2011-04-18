@@ -80,8 +80,8 @@ static PetscErrorCode TSReset_Theta(TS ts)
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  if (th->X)    {ierr = VecDestroy(th->X);CHKERRQ(ierr);}
-  if (th->Xdot) {ierr = VecDestroy(th->Xdot);CHKERRQ(ierr);}
+  ierr = VecDestroy(&th->X);CHKERRQ(ierr);
+  ierr = VecDestroy(&th->Xdot);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -142,7 +142,7 @@ static PetscErrorCode TSSetUp_Theta(TS ts)
   ierr = VecDuplicate(ts->vec_sol,&th->Xdot);CHKERRQ(ierr);
   ierr = VecDuplicate(ts->vec_sol,&res);CHKERRQ(ierr);
   ierr = SNESSetFunction(ts->snes,res,SNESTSFormFunction,ts);CHKERRQ(ierr);
-  ierr = VecDestroy(res);CHKERRQ(ierr);
+  ierr = VecDestroy(&res);CHKERRQ(ierr);
   /* This is nasty.  SNESSetFromOptions() is usually called in TSSetFromOptions().  With -snes_mf_operator, it will
   replace A and we don't want to mess with that.  With -snes_mf, A and B will be replaced as well as the function and
   context.  Note that SNESSetFunction() normally has not been called before SNESSetFromOptions(), so when -snes_mf sets

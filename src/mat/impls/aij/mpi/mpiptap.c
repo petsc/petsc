@@ -34,9 +34,9 @@ PetscErrorCode  MatDestroy_MPIAIJ_MatPtAP(Mat A)
     ierr = PetscFree(merge->coi);CHKERRQ(ierr);
     ierr = PetscFree(merge->coj);CHKERRQ(ierr);
     ierr = PetscFree(merge->owners_co);CHKERRQ(ierr);
-    ierr = PetscLayoutDestroy(merge->rowmap);CHKERRQ(ierr);
+    ierr = PetscLayoutDestroy(&merge->rowmap);CHKERRQ(ierr);
     
-    ierr = PetscContainerDestroy(container);CHKERRQ(ierr);
+    ierr = PetscContainerDestroy(&container);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject)A,"MatMergeSeqsToMPI",0);CHKERRQ(ierr);
   }
   ierr = merge->destroy(A);CHKERRQ(ierr);
@@ -128,7 +128,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
     P->ops->destroy   = ap->destroy;
     P->ops->duplicate = ap->duplicate;
     /* destroy container and contents */
-    ierr = PetscContainerDestroy(container);CHKERRQ(ierr); 
+    ierr = PetscContainerDestroy(&container);CHKERRQ(ierr); 
     ierr = PetscObjectCompose((PetscObject)P,"Mat_MatMatMultMPI",0);CHKERRQ(ierr);
   }
 

@@ -19,7 +19,7 @@ static PetscErrorCode PCSetup_ICC(PC pc)
     }
     ierr = MatICCFactorSymbolic(((PC_Factor*)icc)->fact,pc->pmat,perm,&((PC_Factor*)icc)->info);CHKERRQ(ierr);
   } else if (pc->flag != SAME_NONZERO_PATTERN) {
-    ierr = MatDestroy(((PC_Factor*)icc)->fact);CHKERRQ(ierr);
+    ierr = MatDestroy(&((PC_Factor*)icc)->fact);CHKERRQ(ierr);
     ierr = MatGetFactor(pc->pmat,MATSOLVERPETSC,MAT_FACTOR_ICC,&((PC_Factor*)icc)->fact);CHKERRQ(ierr);
     ierr = MatICCFactorSymbolic(((PC_Factor*)icc)->fact,pc->pmat,perm,&((PC_Factor*)icc)->info);CHKERRQ(ierr);
   }
@@ -40,7 +40,7 @@ static PetscErrorCode PCReset_ICC(PC pc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (((PC_Factor*)icc)->fact) {ierr = MatDestroy(((PC_Factor*)icc)->fact);CHKERRQ(ierr);}
+  ierr = MatDestroy(&((PC_Factor*)icc)->fact);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

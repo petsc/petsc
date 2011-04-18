@@ -112,9 +112,9 @@ static PetscErrorCode PCReset_Eisenstat(PC pc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (eis->b)     {ierr = VecDestroy(eis->b);CHKERRQ(ierr);}
-  if (eis->shell) {ierr = MatDestroy(eis->shell);CHKERRQ(ierr);}
-  if (eis->diag)  {ierr = VecDestroy(eis->diag);CHKERRQ(ierr);}
+  ierr = VecDestroy(&eis->b);CHKERRQ(ierr);
+  ierr = MatDestroy(&eis->shell);CHKERRQ(ierr);
+  ierr = VecDestroy(&eis->diag);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

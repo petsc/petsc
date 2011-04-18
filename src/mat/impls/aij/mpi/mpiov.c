@@ -222,7 +222,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once(Mat C,PetscInt imax,IS is[]
   ierr = PetscFree2(idx,n);CHKERRQ(ierr);
 
   for (i=0; i<imax; ++i) {
-    ierr = ISDestroy(is[i]);CHKERRQ(ierr);
+    ierr = ISDestroy(&is[i]);CHKERRQ(ierr);
   }
   
   /* Do Local work*/
@@ -1589,7 +1589,7 @@ PetscErrorCode MatGetSubMatricesParallel_MPIXAIJ(Mat C,PetscInt ismax,const IS i
     ierr = (*getsubmats_seq)(C,ismax,isrow, iscol,scall, &A); CHKERRQ(ierr);
     ierr = (*getsubmats_seq)(C,ismax_c,isrow_c, iscol_c,scall, &B); CHKERRQ(ierr);
     for(ii = 0; ii < ismax_c; ++ii) {
-      ierr = ISDestroy(iscol_c[ii]); CHKERRQ(ierr);
+      ierr = ISDestroy(&iscol_c[ii]); CHKERRQ(ierr);
     }
     ierr = PetscFree2(isrow_c, iscol_c); CHKERRQ(ierr);
     /* 

@@ -147,7 +147,7 @@ static PetscErrorCode PCSetUp_Cholesky(PC pc)
         }
         if (dir->row) {ierr = PetscLogObjectParent(pc,dir->row);CHKERRQ(ierr);}
       }
-      ierr = MatDestroy(((PC_Factor*)dir)->fact);CHKERRQ(ierr);
+      ierr = MatDestroy(&((PC_Factor*)dir)->fact);CHKERRQ(ierr);
       ierr = MatGetFactor(pc->pmat,((PC_Factor*)dir)->solvertype,MAT_FACTOR_CHOLESKY,&((PC_Factor*)dir)->fact);CHKERRQ(ierr);
       ierr = MatCholeskyFactorSymbolic(((PC_Factor*)dir)->fact,pc->pmat,dir->row,&((PC_Factor*)dir)->info);CHKERRQ(ierr);
       ierr = MatGetInfo(((PC_Factor*)dir)->fact,MAT_LOCAL,&info);CHKERRQ(ierr);
@@ -167,7 +167,7 @@ static PetscErrorCode PCReset_Cholesky(PC pc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!dir->inplace && ((PC_Factor*)dir)->fact) {ierr = MatDestroy(((PC_Factor*)dir)->fact);CHKERRQ(ierr);}
+  if (!dir->inplace && ((PC_Factor*)dir)->fact) {ierr = MatDestroy(&((PC_Factor*)dir)->fact);CHKERRQ(ierr);}
   ierr = ISDestroy(&dir->row);CHKERRQ(ierr);
   ierr = ISDestroy(&dir->col);CHKERRQ(ierr);
   PetscFunctionReturn(0);

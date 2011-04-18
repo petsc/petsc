@@ -187,13 +187,13 @@ PetscErrorCode KSPReset_GCR( KSP ksp )
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPDestroy_GCR"
-PetscErrorCode KSPDestroy_GCR( KSP *ksp )
+PetscErrorCode KSPDestroy_GCR( KSP ksp )
 {
   PetscErrorCode ierr;
-  KSP_GCR        *ctx = (KSP_GCR*)(*ksp)->data;
+  KSP_GCR        *ctx = (KSP_GCR*)ksp->data;
         
   PetscFunctionBegin;
-  ierr = KSPReset_GCR(*ksp);CHKERRQ(ierr);
+  ierr = KSPReset_GCR(ksp);CHKERRQ(ierr);
   ierr = PetscFree( ctx->val );CHKERRQ(ierr);
   ierr = KSPDefaultDestroy(ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);

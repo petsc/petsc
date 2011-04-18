@@ -44,9 +44,7 @@ static PetscErrorCode PCSetUp_SVD(PC pc)
     /* assume square matrices */
     ierr = MatGetVecs(pc->mat,&jac->diag,&jac->work);CHKERRQ(ierr);
   }
-  if (jac->A) {
-    ierr = MatDestroy(jac->A);CHKERRQ(ierr);
-  }
+  ierr = MatDestroy(&jac->A);CHKERRQ(ierr);
   ierr = MatConvert(pc->mat,MATSEQDENSE,MAT_INITIAL_MATRIX,&jac->A);CHKERRQ(ierr);
   if (!jac->U) {
     ierr = MatDuplicate(jac->A,MAT_DO_NOT_COPY_VALUES,&jac->U);CHKERRQ(ierr);
@@ -138,18 +136,10 @@ static PetscErrorCode PCDestroy_SVD(PC pc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (jac->A) {
-    ierr = MatDestroy(jac->A);CHKERRQ(ierr);
-  }
-  if (jac->U) {
-    ierr = MatDestroy(jac->U);CHKERRQ(ierr);
-  }
-  if (jac->V) {
-    ierr = MatDestroy(jac->V);CHKERRQ(ierr);
-  }
-  if (jac->diag) {
-    ierr = VecDestroy(jac->diag);CHKERRQ(ierr);
-  }
+  ierr = MatDestroy(&jac->A);CHKERRQ(ierr);
+  ierr = MatDestroy(&jac->U);CHKERRQ(ierr);
+  ierr = MatDestroy(&jac->V);CHKERRQ(ierr);
+  ierr = VecDestroy(&jac->diag);CHKERRQ(ierr);
   ierr = PetscFree(pc->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -12,9 +12,9 @@ PetscErrorCode PetscViewerDestroy_Draw(PetscViewer v)
   PetscFunctionBegin;
   if (vdraw->singleton_made) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"Destroying PetscViewer without first restoring singleton");
   for (i=0; i<vdraw->draw_max; i++) {
-    if (vdraw->drawaxis[i]) {ierr = PetscDrawAxisDestroy(vdraw->drawaxis[i]);CHKERRQ(ierr);}
-    if (vdraw->drawlg[i])   {ierr = PetscDrawLGDestroy(vdraw->drawlg[i]);CHKERRQ(ierr);}
-    if (vdraw->draw[i])     {ierr = PetscDrawDestroy(vdraw->draw[i]);CHKERRQ(ierr);}
+    ierr = PetscDrawAxisDestroy(&vdraw->drawaxis[i]);CHKERRQ(ierr);
+    ierr = PetscDrawLGDestroy(&vdraw->drawlg[i]);CHKERRQ(ierr);
+    ierr = PetscDrawDestroy(&vdraw->draw[i]);CHKERRQ(ierr);
   }
 
   ierr = PetscFree(vdraw->display);CHKERRQ(ierr);
@@ -394,7 +394,7 @@ PetscErrorCode PetscViewerRestoreSingleton_Draw(PetscViewer viewer,PetscViewer *
     }
     ierr = PetscFree3(vsdraw->draw,vsdraw->drawlg,vsdraw->drawaxis);CHKERRQ(ierr);
     ierr = PetscFree((*sviewer)->data);CHKERRQ(ierr);
-    ierr = PetscHeaderDestroy(*sviewer);CHKERRQ(ierr);
+    ierr = PetscHeaderDestroy(sviewer);CHKERRQ(ierr);
   }
   vdraw->singleton_made = PETSC_FALSE;
   PetscFunctionReturn(0);

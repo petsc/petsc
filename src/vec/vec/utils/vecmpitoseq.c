@@ -66,8 +66,8 @@ PetscErrorCode  VecScatterCreateToAll(Vec vin,VecScatter *ctx,Vec *vout)
   /* Create the VecScatter ctx with the communication info */
   ierr = ISCreateStride(PETSC_COMM_SELF,N,0,1,&is);CHKERRQ(ierr);
   ierr = VecScatterCreate(vin,is,*tmpv,is,ctx);CHKERRQ(ierr);
-  ierr = ISDestroy(is);CHKERRQ(ierr);
-  if (tmpvout) {ierr = VecDestroy(*tmpv);CHKERRQ(ierr);}
+  ierr = ISDestroy(&is);CHKERRQ(ierr);
+  if (tmpvout) {ierr = VecDestroy(tmpv);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -141,8 +141,8 @@ PetscErrorCode  VecScatterCreateToZero(Vec vin,VecScatter *ctx,Vec *vout)
   /* Create the VecScatter ctx with the communication info */
   ierr = ISCreateStride(PETSC_COMM_SELF,N,0,1,&is);CHKERRQ(ierr);
   ierr = VecScatterCreate(vin,is,*tmpv,is,ctx);CHKERRQ(ierr);
-  ierr = ISDestroy(is);CHKERRQ(ierr);
-  if (tmpvout) {ierr = VecDestroy(*tmpv);CHKERRQ(ierr);}
+  ierr = ISDestroy(&is);CHKERRQ(ierr);
+  if (tmpvout) {ierr = VecDestroy(tmpv);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 

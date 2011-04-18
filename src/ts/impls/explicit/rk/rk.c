@@ -414,11 +414,11 @@ static PetscErrorCode TSReset_RK(TS ts)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (rk->y1)    {ierr = VecDestroy(rk->y1);CHKERRQ(ierr);}
-  if (rk->y2)    {ierr = VecDestroy(rk->y2);CHKERRQ(ierr);}
-  if (rk->tmp)   {ierr = VecDestroy(rk->tmp);CHKERRQ(ierr);}
-  if (rk->tmp_y) {ierr = VecDestroy(rk->tmp_y);CHKERRQ(ierr);}
-  if (rk->k)     {ierr = VecDestroyVecs(rk->s,&rk->k);CHKERRQ(ierr);}
+  ierr = VecDestroy(&rk->y1);CHKERRQ(ierr);
+  ierr = VecDestroy(&rk->y2);CHKERRQ(ierr);
+  ierr = VecDestroy(&rk->tmp);CHKERRQ(ierr);
+  ierr = VecDestroy(&rk->tmp_y);CHKERRQ(ierr);
+  if (rk->k) {ierr = VecDestroyVecs(rk->s,&rk->k);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 

@@ -31,9 +31,7 @@ PetscErrorCode TSSetKSPOperators_CN_Matrix(TS ts)
   if (ts->Alhs){
     ierr = MatScale(ts->Alhs,mdt);CHKERRQ(ierr);
   }
-  if (ts->A){
-    ierr = MatDestroy(ts->A);CHKERRQ(ierr);
-  }
+  ierr = MatDestroy(&ts->A);CHKERRQ(ierr);
   ierr = MatDuplicate(ts->Arhs,MAT_COPY_VALUES,&ts->A);CHKERRQ(ierr);
 
   if (ts->Alhs){
@@ -91,9 +89,7 @@ PetscErrorCode TSSetKSPOperators_CN_No_Matrix(TS ts)
 
   cn->ts  = ts;
   cn->mdt = mdt;
-  if (ts->A) {
-    ierr = MatDestroy(ts->A);CHKERRQ(ierr);
-  }
+  ierr = MatDestroy(&ts->A);CHKERRQ(ierr);
   ierr = MatGetSize(Arhs,&M,&N);CHKERRQ(ierr);
   ierr = MatGetLocalSize(Arhs,&m,&n);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)Arhs,&comm);CHKERRQ(ierr);
@@ -270,11 +266,11 @@ static PetscErrorCode TSReset_CN(TS ts)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (cn->update) {ierr = VecDestroy(cn->update);CHKERRQ(ierr);}
-  if (cn->rhs) {ierr = VecDestroy(cn->rhs);CHKERRQ(ierr);}
-  if (cn->func) {ierr = VecDestroy(cn->func);CHKERRQ(ierr);}
-  if (cn->rhsfunc) {ierr = VecDestroy(cn->rhsfunc);CHKERRQ(ierr);}
-  if (cn->rhsfunc_old) {ierr = VecDestroy(cn->rhsfunc_old);CHKERRQ(ierr);}
+  ierr = VecDestroy(&cn->update);CHKERRQ(ierr);
+  ierr = VecDestroy(&cn->rhs);CHKERRQ(ierr);
+  ierr = VecDestroy(&cn->func);CHKERRQ(ierr);
+  ierr = VecDestroy(&cn->rhsfunc);CHKERRQ(ierr);
+  ierr = VecDestroy(&cn->rhsfunc_old);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

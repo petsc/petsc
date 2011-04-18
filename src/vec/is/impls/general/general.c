@@ -19,17 +19,17 @@ PetscErrorCode ISDuplicate_General(IS is,IS *newIS)
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISDestroy_General" 
-PetscErrorCode ISDestroy_General(IS *is)
+PetscErrorCode ISDestroy_General(IS is)
 {
-  IS_General     *is_general = (IS_General*)(*is)->data;
+  IS_General     *is_general = (IS_General*)is->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (is_general->allocated) {
     ierr = PetscFree(is_general->idx);CHKERRQ(ierr);
   }
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)(*is),"ISGeneralSetIndices_C","",0);CHKERRQ(ierr);
-  ierr = PetscFree((*is)->data);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)is,"ISGeneralSetIndices_C","",0);CHKERRQ(ierr);
+  ierr = PetscFree(is->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -198,7 +198,7 @@ PetscErrorCode ISInvertPermutation_General(IS is,PetscInt nlocal,IS *isout)
     ierr = ISAllGather(is,&istmp);CHKERRQ(ierr);
     ierr = ISSetPermutation(istmp);CHKERRQ(ierr);
     ierr = ISInvertPermutation(istmp,PETSC_DECIDE,&nistmp);CHKERRQ(ierr);
-    ierr = ISDestroy(istmp);CHKERRQ(ierr);
+    ierr = ISDestroy(&istmp);CHKERRQ(ierr);
     /* get the part we need */
     ierr    = MPI_Scan(&nlocal,&nstart,1,MPIU_INT,MPI_SUM,((PetscObject)is)->comm);CHKERRQ(ierr);
 #if defined(PETSC_USE_DEBUG)
@@ -214,7 +214,7 @@ PetscErrorCode ISInvertPermutation_General(IS is,PetscInt nlocal,IS *isout)
     ierr    = ISGetIndices(nistmp,&idx);CHKERRQ(ierr);
     ierr    = ISCreateGeneral(((PetscObject)is)->comm,nlocal,idx+nstart,PETSC_COPY_VALUES,isout);CHKERRQ(ierr);    
     ierr    = ISRestoreIndices(nistmp,&idx);CHKERRQ(ierr);
-    ierr    = ISDestroy(nistmp);CHKERRQ(ierr);
+    ierr    = ISDestroy(&nistmp);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

@@ -61,7 +61,7 @@ PetscErrorCode MatDestroy_Transpose(Mat N)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (Na->A) { ierr = MatDestroy(Na->A);CHKERRQ(ierr); }
+  ierr = MatDestroy(&Na->A);CHKERRQ(ierr);
   ierr = PetscFree(Na);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

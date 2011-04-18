@@ -38,7 +38,7 @@ PetscErrorCode  PCISSetUp(PC pc)
     ierr = VecScatterEnd  (matis->ctx,pcis->vec1_N,counter,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     ierr = VecScatterBegin(matis->ctx,counter,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd  (matis->ctx,counter,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecDestroy(counter);CHKERRQ(ierr);
+    ierr = VecDestroy(&counter);CHKERRQ(ierr);
   }
   /*
     Creating local and global index sets for interior and

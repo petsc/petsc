@@ -48,7 +48,7 @@ PetscErrorCode DiffParameterCreate_More(SNES snes,Vec x,void **outneP)
   ierr = PetscRandomCreate(((PetscObject)snes)->comm,&rctx);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
   ierr = VecSetRandom(w,rctx);CHKERRQ(ierr);
-  ierr = PetscRandomDestroy(rctx);CHKERRQ(ierr);
+  ierr = PetscRandomDestroy(&rctx);CHKERRQ(ierr);
 
   /* Open output file */
   ierr = PetscOptionsGetString(((PetscObject)snes)->prefix,"-snes_mf_noise_file",noise_file,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
@@ -262,7 +262,7 @@ PetscErrorCode JacMatMultCompare(SNES snes,Vec x,Vec p,double hopt)
     ierr = PetscViewerASCIIOpen(comm,"y1.out",&view2);CHKERRQ(ierr);
     ierr = PetscViewerSetFormat(view2,PETSC_VIEWER_ASCII_COMMON);CHKERRQ(ierr);
     ierr = VecView(yy1,view2);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(view2);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&view2);CHKERRQ(ierr);
   }
 
   /* Test Jacobian-vector product computation */
@@ -282,7 +282,7 @@ PetscErrorCode JacMatMultCompare(SNES snes,Vec x,Vec p,double hopt)
       ierr = PetscViewerASCIIOpen(comm,filename,&view2);CHKERRQ(ierr);
       ierr = PetscViewerSetFormat(view2,PETSC_VIEWER_ASCII_COMMON);CHKERRQ(ierr);
       ierr = VecView(yy2,view2);CHKERRQ(ierr);
-      ierr = PetscViewerDestroy(view2);CHKERRQ(ierr);
+      ierr = PetscViewerDestroy(&view2);CHKERRQ(ierr);
     }
 
     /* Compute relative error */

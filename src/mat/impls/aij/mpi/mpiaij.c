@@ -599,7 +599,7 @@ PetscErrorCode MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
   a->xtoy = 0; ((Mat_SeqAIJ *)aij->B->data)->xtoy = 0;  /* b->xtoy = 0 */
   a->XtoY = 0; ((Mat_SeqAIJ *)aij->B->data)->XtoY = 0;  /* b->XtoY = 0 */
 
-  if (aij->diag) {ierr = VecDestroy(aij->diag);CHKERRQ(ierr);aij->diag = 0;}
+  ierr = VecDestroy(&aij->diag);CHKERRQ(ierr);
   if (a->inode.size) mat->ops->multdiagonalblock = MatMultDiagonalBlock_MPIAIJ;
   PetscFunctionReturn(0);
 }
@@ -913,7 +913,7 @@ PetscErrorCode MatZeroRowsColumns_MPIAIJ(Mat A,PetscInt N,const PetscInt rows[],
   ierr = VecRestoreArray(xmask,&bb);CHKERRQ(ierr); 
   ierr = VecScatterBegin(l->Mvctx,xmask,lmask,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(l->Mvctx,xmask,lmask,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecDestroy(xmask);CHKERRQ(ierr);
+  ierr = VecDestroy(&xmask);CHKERRQ(ierr);
   ierr = VecScatterBegin(l->Mvctx,x,l->lvec,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(l->Mvctx,x,l->lvec,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecGetArrayRead(l->lvec,&xx);CHKERRQ(ierr);
@@ -966,7 +966,7 @@ PetscErrorCode MatZeroRowsColumns_MPIAIJ(Mat A,PetscInt N,const PetscInt rows[],
   ierr = VecRestoreArray(b,&bb);CHKERRQ(ierr);
   ierr = VecRestoreArray(lmask,&mask);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(l->lvec,&xx);CHKERRQ(ierr);
-  ierr = VecDestroy(lmask);CHKERRQ(ierr);
+  ierr = VecDestroy(&lmask);CHKERRQ(ierr);
   ierr = PetscFree(lrows);CHKERRQ(ierr);
 
   /* wait on sends */
@@ -1095,9 +1095,8 @@ PetscErrorCode  MatIsTranspose_MPIAIJ(Mat Amat,Mat Bmat,PetscReal tol,PetscBool 
   ierr = MatIsTranspose(Aoff,Boff,tol,f);CHKERRQ(ierr);
   ierr = MatDestroyMatrices(1,&Aoffs);CHKERRQ(ierr);
   ierr = MatDestroyMatrices(1,&Boffs);CHKERRQ(ierr);
-  ierr = ISDestroy(Me);CHKERRQ(ierr);
-  ierr = ISDestroy(Notme);CHKERRQ(ierr);
-
+  ierr = ISDestroy(&Me);CHKERRQ(ierr);
+  ierr = ISDestroy(&Notme);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -1164,17 +1163,17 @@ PetscErrorCode MatDestroy_MPIAIJ(Mat mat)
   PetscLogObjectState((PetscObject)mat,"Rows=%D, Cols=%D",mat->rmap->N,mat->cmap->N);
 #endif
   ierr = MatStashDestroy_Private(&mat->stash);CHKERRQ(ierr);
-  if (aij->diag) {ierr = VecDestroy(aij->diag);CHKERRQ(ierr);}
-  if (aij->A){ierr = MatDestroy(aij->A);CHKERRQ(ierr);}
-  if (aij->B){ierr = MatDestroy(aij->B);CHKERRQ(ierr);}
+  ierr = VecDestroy(&aij->diag);CHKERRQ(ierr);
+  ierr = MatDestroy(&aij->A);CHKERRQ(ierr);
+  ierr = MatDestroy(&aij->B);CHKERRQ(ierr);
 #if defined (PETSC_USE_CTABLE)
   if (aij->colmap) {ierr = PetscTableDestroy(aij->colmap);CHKERRQ(ierr);}
 #else
   ierr = PetscFree(aij->colmap);CHKERRQ(ierr);
 #endif
   ierr = PetscFree(aij->garray);CHKERRQ(ierr);
-  if (aij->lvec)   {ierr = VecDestroy(aij->lvec);CHKERRQ(ierr);}
-  if (aij->Mvctx)  {ierr = VecScatterDestroy(aij->Mvctx);CHKERRQ(ierr);}
+  ierr = VecDestroy(&aij->lvec);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&aij->Mvctx);CHKERRQ(ierr);
   ierr = PetscFree2(aij->rowvalues,aij->rowindices);CHKERRQ(ierr);
   ierr = PetscFree(aij->ld);CHKERRQ(ierr);
   ierr = PetscFree(aij);CHKERRQ(ierr);
@@ -1467,7 +1466,7 @@ PetscErrorCode MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
       ierr = MatView(((Mat_MPIAIJ*)(A->data))->A,sviewer);CHKERRQ(ierr);
     }
     ierr = PetscViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
-    ierr = MatDestroy(A);CHKERRQ(ierr);
+    ierr = MatDestroy(&A);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1585,12 +1584,10 @@ PetscErrorCode MatSOR_MPIAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType flag,Pe
     /* local sweep */
     ierr = (*mat->A->ops->sor)(mat->A,bb1,omega,(MatSORType)(SOR_ZERO_INITIAL_GUESS | SOR_LOCAL_FORWARD_SWEEP),fshift,lits,1,xx1);CHKERRQ(ierr);
     ierr = VecAXPY(xx,1.0,xx1);CHKERRQ(ierr);
-    ierr = VecDestroy(xx1);CHKERRQ(ierr);
-  } else {
-    SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_SUP,"Parallel SOR not supported");
-  }
+    ierr = VecDestroy(&xx1);CHKERRQ(ierr);
+  } else SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_SUP,"Parallel SOR not supported");
 
-  if (bb1) {ierr = VecDestroy(bb1);CHKERRQ(ierr);}
+  ierr = VecDestroy(&bb1);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 } 
 
@@ -1621,7 +1618,7 @@ PetscErrorCode MatPermute_MPIAIJ(Mat A,IS rowp,IS colp,Mat *B)
   ierr = ISAllGather(crowp,&growp);CHKERRQ(ierr);
   ierr = ISSetPermutation(growp);CHKERRQ(ierr);
   if (pcomm!=comm) {
-    ierr = ISDestroy(crowp);CHKERRQ(ierr);
+    ierr = ISDestroy(&crowp);CHKERRQ(ierr);
   }
   ierr = ISInvertPermutation(growp,PETSC_DECIDE,&irowp);CHKERRQ(ierr);
   /* get the local target indices */
@@ -1630,7 +1627,7 @@ PetscErrorCode MatPermute_MPIAIJ(Mat A,IS rowp,IS colp,Mat *B)
   ierr = ISGetIndices(irowp,&rows);CHKERRQ(ierr);
   ierr = ISCreateGeneral(MPI_COMM_SELF,local_size,rows+first,PETSC_COPY_VALUES,&lrowp);CHKERRQ(ierr);
   ierr = ISRestoreIndices(irowp,&rows);CHKERRQ(ierr);
-  ierr = ISDestroy(irowp);CHKERRQ(ierr);
+  ierr = ISDestroy(&irowp);CHKERRQ(ierr);
   /* the column permutation is so much easier;
      make a local version of 'colp' and invert it */
   ierr = PetscObjectGetComm((PetscObject)colp,&pcomm);CHKERRQ(ierr);
@@ -1647,13 +1644,13 @@ PetscErrorCode MatPermute_MPIAIJ(Mat A,IS rowp,IS colp,Mat *B)
   ierr = ISSetPermutation(icolp);CHKERRQ(ierr);
   if (size>1) {
     ierr = ISRestoreIndices(colp,&rows);CHKERRQ(ierr);
-    ierr = ISDestroy(lcolp);CHKERRQ(ierr);
+    ierr = ISDestroy(&lcolp);CHKERRQ(ierr);
   }
   /* now we just get the submatrix */
   ierr = MatGetSubMatrix_MPIAIJ_Private(A,lrowp,icolp,local_size,MAT_INITIAL_MATRIX,B);CHKERRQ(ierr);
   /* clean up */
-  ierr = ISDestroy(lrowp);CHKERRQ(ierr);
-  ierr = ISDestroy(icolp);CHKERRQ(ierr);
+  ierr = ISDestroy(&lrowp);CHKERRQ(ierr);
+  ierr = ISDestroy(&icolp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2144,7 +2141,7 @@ PetscErrorCode MatAXPY_MPIAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
     y = (Mat_SeqAIJ *)yy->B->data;
     if (y->xtoy && y->XtoY != xx->B) {
       ierr = PetscFree(y->xtoy);CHKERRQ(ierr);
-      ierr = MatDestroy(y->XtoY);CHKERRQ(ierr);
+      ierr = MatDestroy(&y->XtoY);CHKERRQ(ierr);
     }
     if (!y->xtoy) { /* get xtoy */
       ierr = MatAXPYGetxtoy_Private(xx->B->rmap->n,x->i,x->j,xx->garray,y->i,y->j,yy->garray,&y->xtoy);CHKERRQ(ierr);
@@ -2379,7 +2376,7 @@ PetscErrorCode MatDestroy_MatRedundant(Mat A)
   A->ops->destroy = redund->MatDestroy;
   ierr = PetscObjectCompose((PetscObject)A,"Mat_Redundant",0);CHKERRQ(ierr);
   ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
-  ierr = PetscContainerDestroy(container);CHKERRQ(ierr); 
+  ierr = PetscContainerDestroy(&container);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
 }
 
@@ -2742,7 +2739,7 @@ PetscErrorCode MatGetRowMaxAbs_MPIAIJ(Mat A, Vec v, PetscInt idx[])
   ierr = VecRestoreArray(v,&va);CHKERRQ(ierr); 
   ierr = VecRestoreArray(vtmp,&vb);CHKERRQ(ierr); 
   ierr = PetscFree(idxb);CHKERRQ(ierr);
-  ierr = VecDestroy(vtmp);CHKERRQ(ierr);
+  ierr = VecDestroy(&vtmp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2782,7 +2779,7 @@ PetscErrorCode MatGetRowMinAbs_MPIAIJ(Mat A, Vec v, PetscInt idx[])
   ierr = VecRestoreArray(v,&va);CHKERRQ(ierr); 
   ierr = VecRestoreArray(vtmp,&vb);CHKERRQ(ierr); 
   ierr = PetscFree(idxb);CHKERRQ(ierr);
-  ierr = VecDestroy(vtmp);CHKERRQ(ierr);
+  ierr = VecDestroy(&vtmp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2821,8 +2818,8 @@ PetscErrorCode MatGetRowMin_MPIAIJ(Mat A, Vec v, PetscInt idx[])
   ierr = VecRestoreArray(v,        &a);CHKERRQ(ierr);
   ierr = VecRestoreArray(diagV,    &diagA);CHKERRQ(ierr);
   ierr = VecRestoreArray(offdiagV, &offdiagA);CHKERRQ(ierr);
-  ierr = VecDestroy(diagV);CHKERRQ(ierr);
-  ierr = VecDestroy(offdiagV);CHKERRQ(ierr);
+  ierr = VecDestroy(&diagV);CHKERRQ(ierr);
+  ierr = VecDestroy(&offdiagV);CHKERRQ(ierr);
   ierr = PetscFree2(diagIdx, offdiagIdx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -2862,8 +2859,8 @@ PetscErrorCode MatGetRowMax_MPIAIJ(Mat A, Vec v, PetscInt idx[])
   ierr = VecRestoreArray(v,        &a);CHKERRQ(ierr);
   ierr = VecRestoreArray(diagV,    &diagA);CHKERRQ(ierr);
   ierr = VecRestoreArray(offdiagV, &offdiagA);CHKERRQ(ierr);
-  ierr = VecDestroy(diagV);CHKERRQ(ierr);
-  ierr = VecDestroy(offdiagV);CHKERRQ(ierr);
+  ierr = VecDestroy(&diagV);CHKERRQ(ierr);
+  ierr = VecDestroy(&offdiagV);CHKERRQ(ierr);
   ierr = PetscFree2(diagIdx, offdiagIdx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -3440,7 +3437,7 @@ PetscErrorCode MatGetSubMatrix_MPIAIJ(Mat mat,IS isrow,IS iscol,MatReuse call,Ma
   ierr = MatGetSubMatrix_MPIAIJ_Private(mat,isrow,iscol_local,csize,call,newmat);CHKERRQ(ierr);
   if (call == MAT_INITIAL_MATRIX) {
     ierr = PetscObjectCompose((PetscObject)*newmat,"ISAllGather",(PetscObject)iscol_local);CHKERRQ(ierr);
-    ierr = ISDestroy(iscol_local);CHKERRQ(ierr);
+    ierr = ISDestroy(&iscol_local);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -4143,7 +4140,7 @@ PetscErrorCode MatSetColoring_MPIAIJ(Mat A,ISColoring coloring)
     ierr = PetscFree(allcolors);CHKERRQ(ierr);
     ierr = ISColoringCreate(MPI_COMM_SELF,coloring->n,a->B->cmap->n,colors,&ocoloring);CHKERRQ(ierr);
     ierr = MatSetColoring_SeqAIJ(a->B,ocoloring);CHKERRQ(ierr);
-    ierr = ISColoringDestroy(ocoloring);CHKERRQ(ierr);
+    ierr = ISColoringDestroy(&ocoloring);CHKERRQ(ierr);
   } else if (coloring->ctype == IS_COLORING_GHOSTED) {
     ISColoringValue *colors;
     PetscInt        *larray;
@@ -4162,7 +4159,7 @@ PetscErrorCode MatSetColoring_MPIAIJ(Mat A,ISColoring coloring)
     ierr = PetscFree(larray);CHKERRQ(ierr);
     ierr = ISColoringCreate(PETSC_COMM_SELF,coloring->n,a->A->cmap->n,colors,&ocoloring);CHKERRQ(ierr);
     ierr = MatSetColoring_SeqAIJ(a->A,ocoloring);CHKERRQ(ierr);
-    ierr = ISColoringDestroy(ocoloring);CHKERRQ(ierr);
+    ierr = ISColoringDestroy(&ocoloring);CHKERRQ(ierr);
 
     /* set coloring for off-diagonal portion */
     ierr = PetscMalloc((a->B->cmap->n+1)*sizeof(PetscInt),&larray);CHKERRQ(ierr);
@@ -4174,10 +4171,8 @@ PetscErrorCode MatSetColoring_MPIAIJ(Mat A,ISColoring coloring)
     ierr = PetscFree(larray);CHKERRQ(ierr);
     ierr = ISColoringCreate(MPI_COMM_SELF,coloring->n,a->B->cmap->n,colors,&ocoloring);CHKERRQ(ierr);
     ierr = MatSetColoring_SeqAIJ(a->B,ocoloring);CHKERRQ(ierr);
-    ierr = ISColoringDestroy(ocoloring);CHKERRQ(ierr);
-  } else {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support ISColoringType %d",(int)coloring->ctype);
-  }
+    ierr = ISColoringDestroy(&ocoloring);CHKERRQ(ierr);
+  } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support ISColoringType %d",(int)coloring->ctype);
 
   PetscFunctionReturn(0);
 }
@@ -4274,7 +4269,7 @@ PetscErrorCode  MatMerge(MPI_Comm comm,Mat inmat,PetscInt n,MatReuse scall,Mat *
     ierr = MatSetValues(*outmat,1,&Ii,nnz,indx,values,INSERT_VALUES);CHKERRQ(ierr);
     ierr = MatRestoreRow_SeqAIJ(inmat,i,&nnz,&indx,&values);CHKERRQ(ierr);
   }
-  ierr = MatDestroy(inmat);CHKERRQ(ierr);
+  ierr = MatDestroy(&inmat);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(*outmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*outmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
@@ -4319,8 +4314,8 @@ PetscErrorCode MatFileSplit(Mat A,char *outfile)
   ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,name,FILE_MODE_APPEND,&out);CHKERRQ(ierr);
   ierr = PetscFree(name);
   ierr = MatView(B,out);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(out);CHKERRQ(ierr);
-  ierr = MatDestroy(B);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&out);CHKERRQ(ierr);
+  ierr = MatDestroy(&B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -4349,9 +4344,9 @@ PetscErrorCode  MatDestroy_MPIAIJ_SeqsToMPI(Mat A)
     ierr = PetscFree(merge->coi);CHKERRQ(ierr);
     ierr = PetscFree(merge->coj);CHKERRQ(ierr);
     ierr = PetscFree(merge->owners_co);CHKERRQ(ierr);
-    ierr = PetscLayoutDestroy(merge->rowmap);CHKERRQ(ierr);
+    ierr = PetscLayoutDestroy(&merge->rowmap);CHKERRQ(ierr);
     
-    ierr = PetscContainerDestroy(container);CHKERRQ(ierr);
+    ierr = PetscContainerDestroy(&container);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject)A,"MatMergeSeqsToMPI",0);CHKERRQ(ierr);
   }
   ierr = PetscFree(merge);CHKERRQ(ierr);
@@ -4934,10 +4929,10 @@ PetscErrorCode  MatMPIAIJGetLocalMatCondensed(Mat A,MatReuse scall,IS *row,IS *c
   *A_loc = aloc[0];
   ierr = PetscFree(aloc);CHKERRQ(ierr);
   if (!row){ 
-    ierr = ISDestroy(isrowa);CHKERRQ(ierr);
+    ierr = ISDestroy(&isrowa);CHKERRQ(ierr);
   } 
   if (!col){ 
-    ierr = ISDestroy(iscola);CHKERRQ(ierr);
+    ierr = ISDestroy(&iscola);CHKERRQ(ierr);
   } 
   ierr = PetscLogEventEnd(MAT_Getlocalmatcondensed,A,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -5004,12 +4999,12 @@ PetscErrorCode  MatGetBrowsOfAcols(Mat A,Mat B,MatReuse scall,IS *rowb,IS *colb,
   *B_seq = bseq[0];
   ierr = PetscFree(bseq);CHKERRQ(ierr);
   if (!rowb){ 
-    ierr = ISDestroy(isrowb);CHKERRQ(ierr);
+    ierr = ISDestroy(&isrowb);CHKERRQ(ierr);
   } else {
     *rowb = isrowb;
   }
   if (!colb){ 
-    ierr = ISDestroy(iscolb);CHKERRQ(ierr);
+    ierr = ISDestroy(&iscolb);CHKERRQ(ierr);
   } else {
     *colb = iscolb;
   }
@@ -5307,10 +5302,10 @@ PetscErrorCode MatMatMultNumeric_MPIDense_MPIAIJ(Mat A,Mat B,Mat C)
   ierr = MatTranspose(A,MAT_INITIAL_MATRIX,&At);CHKERRQ(ierr);
   ierr = MatTranspose(B,MAT_INITIAL_MATRIX,&Bt);CHKERRQ(ierr);
   ierr = MatMatMult(Bt,At,MAT_INITIAL_MATRIX,1.0,&Ct);CHKERRQ(ierr);
-  ierr = MatDestroy(At);CHKERRQ(ierr);
-  ierr = MatDestroy(Bt);CHKERRQ(ierr);
+  ierr = MatDestroy(&At);CHKERRQ(ierr);
+  ierr = MatDestroy(&Bt);CHKERRQ(ierr);
   ierr = MatTranspose(Ct,MAT_REUSE_MATRIX,&C);CHKERRQ(ierr);
-  ierr = MatDestroy(Ct);CHKERRQ(ierr);
+  ierr = MatDestroy(&Ct);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

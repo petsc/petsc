@@ -657,7 +657,7 @@ PetscErrorCode PetscViewerRestoreSingleton_ASCII(PetscViewer viewer,PetscViewer 
   ascii->sviewer             = 0;
   vascii->fd                 = PETSC_STDOUT;
   (*outviewer)->ops->destroy = PetscViewerDestroy_ASCII;
-  ierr                       = PetscViewerDestroy(*outviewer);CHKERRQ(ierr);
+  ierr                       = PetscViewerDestroy(outviewer);CHKERRQ(ierr);
   ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -715,7 +715,7 @@ PetscErrorCode PetscViewerRestoreSubcomm_ASCII(PetscViewer viewer,MPI_Comm subco
   ascii->sviewer             = 0;
   vascii->fd                 = PETSC_STDOUT;
   (*outviewer)->ops->destroy = PetscViewerDestroy_ASCII; 
-  ierr = PetscViewerDestroy(*outviewer);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(outviewer);CHKERRQ(ierr);
   ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -907,13 +907,14 @@ PetscErrorCode PetscViewerASCIIMonitorCreate(MPI_Comm comm,const char *filename,
 .seealso: KSPMonitorSet(), SNESMonitorSet(), TSMonitorSet(), KSPMonitorDefault(), PetscViewerASCIIMonitor, PetscViewerASCIIMonitorCreate()
 
 @*/
-PetscErrorCode PetscViewerASCIIMonitorDestroy(PetscViewerASCIIMonitor ctx)
+PetscErrorCode PetscViewerASCIIMonitorDestroy(PetscViewerASCIIMonitor *ctx)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr         = PetscViewerDestroy(ctx->viewer);CHKERRQ(ierr);
-  ierr         = PetscFree(ctx);CHKERRQ(ierr);
+  if (!*ctx) PetscFunctionReturn(0);
+  ierr         = PetscViewerDestroy(&(*ctx)->viewer);CHKERRQ(ierr);
+  ierr         = PetscFree(*ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

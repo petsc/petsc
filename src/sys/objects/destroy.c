@@ -4,24 +4,6 @@
 */
 #include <petscsys.h>  /*I   "petscsys.h"    I*/
 
-typedef struct _p_GenericObject* GenericObject;
-
-struct _p_GenericObject {
-  PETSCHEADER(int);
-};
-
-#undef __FUNCT__  
-#define __FUNCT__ "PetscObjectDestroy_GenericObject"
-PetscErrorCode PetscObjectDestroy_GenericObject(GenericObject *obj)
-{
-  PetscErrorCode ierr;
-  PetscFunctionBegin;
-  PetscValidHeader(obj,1);
-  if (!*obj) PetscFunctionReturn(0);
-  if (--((PetscObject)*obj)->refct > 0) PetscFunctionReturn(0);
-  ierr = PetscHeaderDestroy(obj);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscComposedQuantitiesDestroy"
@@ -62,92 +44,6 @@ PetscErrorCode PetscComposedQuantitiesDestroy(PetscObject obj)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscObjectCreate"
-/*@C
-   PetscObjectCreate - Creates a PetscObject
-
-   Collective on PetscObject
-
-   Input Parameter:
-.  comm - An MPI communicator
-
-   Output Parameter:
-.  obj - The object
-
-   Level: developer
-
-   Notes: This is a template intended as a starting point to cut and paste with PetscObjectDestroy_GenericObject()
-          to make new object classes.
-
-    Concepts: destroying object
-    Concepts: freeing object
-    Concepts: deleting object
-
-@*/
-PetscErrorCode  PetscObjectCreate(MPI_Comm comm, PetscObject *obj)
-{
-  GenericObject  o;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidPointer(obj,2);
-#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = PetscSysInitializePackage(PETSC_NULL);CHKERRQ(ierr);
-#endif
-  ierr = PetscHeaderCreate(o,_p_GenericObject,-1,PETSC_OBJECT_CLASSID,0,"PetscObject",comm,PetscObjectDestroy_GenericObject,0);CHKERRQ(ierr);
-  /* records not yet defined in PetscObject 
-  o->data        = 0;
-  o->setupcalled = 0;
-  */
-  *obj = (PetscObject)o;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "PetscObjectCreateGeneric"
-/*@C
-   PetscObjectCreateGeneric - Creates a PetscObject
-
-   Collective on PetscObject
-
-   Input Parameter:
-+  comm - An MPI communicator
-.  classid - The class classid
--  name - The class name
-
-   Output Parameter:
-.  obj - The object
-
-   Level: developer
-
-   Notes: This is a template intended as a starting point to cut and paste with PetscObjectDestroy_GenericObject()
-          to make new object classes.
-
-    Concepts: destroying object
-    Concepts: freeing object
-    Concepts: deleting object
-
-@*/
-PetscErrorCode  PetscObjectCreateGeneric(MPI_Comm comm, PetscClassId classid, const char name[], PetscObject *obj)
-{
-  GenericObject  o;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidPointer(obj,2);
-#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = PetscSysInitializePackage(PETSC_NULL);CHKERRQ(ierr);
-#endif
-  ierr = PetscHeaderCreate(o,_p_GenericObject,-1,classid,0,name,comm,PetscObjectDestroy_GenericObject,0);CHKERRQ(ierr);
-  /* records not yet defined in PetscObject 
-  o->data        = 0;
-  o->setupcalled = 0;
-  */
-  *obj = (PetscObject)o;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
 #define __FUNCT__ "PetscObjectDestroy"
 /*@
    PetscObjectDestroy - Destroys any PetscObject, regardless of the type. 
@@ -171,10 +67,11 @@ PetscErrorCode  PetscObjectDestroy(PetscObject *obj)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeader(obj,1);
+  if (!*obj) PetscFunctionReturn(0);
+  PetscValidHeader(*obj,1);
   if (*obj && (*obj)->bops->destroy) {
     ierr = (*(*obj)->bops->destroy)(obj);CHKERRQ(ierr);
-  } else if (*obj) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"This PETSc object of class %s does not have a generic destroy routine",obj->class_name);
+  } else if (*obj) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_PLIB,"This PETSc object of class %s does not have a generic destroy routine",(*obj)->class_name);
   PetscFunctionReturn(0);
 }
 

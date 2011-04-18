@@ -235,7 +235,6 @@ PetscErrorCode VecScatterDestroy_PtoP(VecScatter ctx)
 #if defined(PETSC_HAVE_CUSP)
   ierr = PetscCUSPIndicesDestroy((PetscCUSPIndices)ctx->spptr);CHKERRQ(ierr);
 #endif
-  ierr = PetscHeaderDestroy(ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

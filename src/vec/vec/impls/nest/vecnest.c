@@ -44,15 +44,12 @@ static PetscErrorCode VecDestroy_Nest(Vec v)
   PetscFunctionBegin;
   if (vs->v) {
     for (i=0; i<vs->nb; i++) {
-      if (vs->v[i]) {
-        ierr = VecDestroy(vs->v[i]);CHKERRQ(ierr);
-        vs->v[i] = PETSC_NULL;
-      }
+      ierr = VecDestroy(&vs->v[i]);CHKERRQ(ierr);
     }
     ierr = PetscFree(vs->v);CHKERRQ(ierr);
   }
   for (i=0; i<vs->nb; i++) {
-    ierr = ISDestroy(vs->is[i]);CHKERRQ(ierr);
+    ierr = ISDestroy(&vs->is[i]);CHKERRQ(ierr);
   }
   ierr = PetscFree(vs->is);CHKERRQ(ierr);
 
@@ -97,7 +94,7 @@ static PetscErrorCode VecDuplicate_Nest(Vec x,Vec *y)
   }
   ierr = VecCreateNest(((PetscObject)x)->comm,bx->nb,bx->is,sub,&Y);CHKERRQ(ierr);
   for (i=0; i<bx->nb; i++ ) {
-    ierr = VecDestroy(sub[i]);CHKERRQ(ierr);
+    ierr = VecDestroy(&sub[i]);CHKERRQ(ierr);
   }
   ierr = PetscFree(sub);CHKERRQ(ierr);
   *y = Y;

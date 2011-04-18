@@ -68,7 +68,7 @@ PetscErrorCode ISInvertPermutation_Stride(IS is,PetscInt nlocal,IS *perm)
     ierr = ISSetPermutation(tmp); CHKERRQ(ierr);
     ierr = ISRestoreIndices(is,&indices);CHKERRQ(ierr);
     ierr = ISInvertPermutation(tmp,nlocal,perm);CHKERRQ(ierr);
-    ierr = ISDestroy(tmp);CHKERRQ(ierr);
+    ierr = ISDestroy(&tmp);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -116,13 +116,13 @@ PetscErrorCode  ISStrideGetInfo(IS is,PetscInt *first,PetscInt *step)
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISDestroy_Stride" 
-PetscErrorCode ISDestroy_Stride(IS *is)
+PetscErrorCode ISDestroy_Stride(IS is)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)(*is),"ISStrideSetStride_C","",0);CHKERRQ(ierr);
-  ierr = PetscFree((*is)->data);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)is,"ISStrideSetStride_C","",0);CHKERRQ(ierr);
+  ierr = PetscFree(is->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

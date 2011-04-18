@@ -206,9 +206,9 @@ PetscErrorCode MatDestroy_Pastix(Mat A)
   if (lu->CleanUpPastix) {    
     /* Terminate instance, deallocate memories */
     if (size > 1){
-      ierr = VecScatterDestroy(lu->scat_rhs);CHKERRQ(ierr);
-      ierr = VecDestroy(lu->b_seq);CHKERRQ(ierr);
-      ierr = VecScatterDestroy(lu->scat_sol);CHKERRQ(ierr);
+      ierr = VecScatterDestroy(&lu->scat_rhs);CHKERRQ(ierr);
+      ierr = VecDestroy(&lu->b_seq);CHKERRQ(ierr);
+      ierr = VecScatterDestroy(&lu->scat_sol);CHKERRQ(ierr);
     }
     
     lu->iparm[IPARM_START_TASK]=API_TASK_CLEAN; 
@@ -387,7 +387,7 @@ PetscErrorCode MatFactorNumeric_PaStiX(Mat F,Mat A,const MatFactorInfo *info)
   /* convert mpi A to seq mat A */
   ierr = ISCreateStride(PETSC_COMM_SELF,M,0,1,&isrow);CHKERRQ(ierr);  
   ierr = MatGetSubMatrices(A,1,&isrow,&isrow,MAT_INITIAL_MATRIX,&tseq);CHKERRQ(ierr);
-  ierr = ISDestroy(isrow);CHKERRQ(ierr);
+  ierr = ISDestroy(&isrow);CHKERRQ(ierr);
 
   ierr = MatConvertToCSC(*tseq,valOnly, &lu->n, &lu->colptr, &lu->row, &lu->val);CHKERRQ(ierr);
   ierr = MatIsSymmetric(*tseq,0.0,&isSym);CHKERRQ(ierr);
@@ -420,8 +420,8 @@ PetscErrorCode MatFactorNumeric_PaStiX(Mat F,Mat A,const MatFactorInfo *info)
 	
 	ierr = VecScatterCreate(b,is_iden,lu->b_seq,is_iden,&lu->scat_rhs);CHKERRQ(ierr);
 	ierr = VecScatterCreate(lu->b_seq,is_iden,b,is_iden,&lu->scat_sol);CHKERRQ(ierr);
-	ierr = ISDestroy(is_iden);CHKERRQ(ierr);
-	ierr = VecDestroy(b);CHKERRQ(ierr);    
+	ierr = ISDestroy(&is_iden);CHKERRQ(ierr);
+	ierr = VecDestroy(&b);CHKERRQ(ierr);    
     }    
     lu->iparm[IPARM_START_TASK] = API_TASK_ORDERING;
     lu->iparm[IPARM_END_TASK]   = API_TASK_NUMFACT;

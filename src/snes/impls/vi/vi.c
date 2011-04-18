@@ -37,7 +37,7 @@ PetscErrorCode  SNESMonitorVI(SNES snes,PetscInt its,PetscReal fgnorm,void *dumm
   fnorm = sqrt(fnorm);
   ierr = PetscViewerASCIIMonitorPrintf(viewer,"%3D SNES VI Function norm %14.12e Active constraints %D\n",its,fnorm,act);CHKERRQ(ierr);
   if (!dummy) {
-    ierr = PetscViewerASCIIMonitorDestroy(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIMonitorDestroy(&viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -75,7 +75,7 @@ PetscErrorCode SNESVICheckLocalMin_Private(SNES snes,Mat A,Vec F,Vec W,PetscReal
     ierr = VecDuplicate(W,&work);CHKERRQ(ierr);
     ierr = MatMult(A,W,work);CHKERRQ(ierr);
     ierr = VecDot(F,work,&result);CHKERRQ(ierr);
-    ierr = VecDestroy(work);CHKERRQ(ierr);
+    ierr = VecDestroy(&work);CHKERRQ(ierr);
     a1   = PetscAbsScalar(result)/(fnorm*wnorm);
     ierr = PetscInfo1(snes,"(F^T J random)/(|| F ||*||random|| %G near zero implies found a local minimum\n",a1);CHKERRQ(ierr);
     if (a1 < 1.e-4) *ismin = PETSC_TRUE;
@@ -707,7 +707,7 @@ PetscErrorCode SNESVIResetPCandKSP(SNES snes,Mat Amat,Mat Pmat)
   ierr = PCSetOperators(kspnew->pc,Amat,Pmat,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = PCFactorGetMatSolverPackage(snesksp->pc,&stype);CHKERRQ(ierr);
   ierr = PCFactorSetMatSolverPackage(kspnew->pc,stype);CHKERRQ(ierr);
-  ierr = KSPDestroy(snesksp);CHKERRQ(ierr);
+  ierr = KSPDestroy(&snesksp);CHKERRQ(ierr);
   snes->ksp = kspnew;
   ierr = PetscLogObjectParent(snes,kspnew);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(kspnew);CHKERRQ(ierr);
@@ -827,8 +827,8 @@ PetscErrorCode SNESSolveVI_RS(SNES snes)
       const PetscInt *krows,*inact;
       PetscInt       rstart=jac_inact_inact->rmap->rstart;
 
-      ierr = MatDestroy(jac_inact_inact);CHKERRQ(ierr);
-      ierr = ISDestroy(IS_act);CHKERRQ(ierr);
+      ierr = MatDestroy(&jac_inact_inact);CHKERRQ(ierr);
+      ierr = ISDestroy(&IS_act);CHKERRQ(ierr);
 
       ierr = ISGetLocalSize(keptrows,&cnt);CHKERRQ(ierr);
       ierr = ISGetIndices(keptrows,&krows);CHKERRQ(ierr);
@@ -839,8 +839,8 @@ PetscErrorCode SNESSolveVI_RS(SNES snes)
       }
       ierr = ISRestoreIndices(keptrows,&krows);CHKERRQ(ierr);
       ierr = ISRestoreIndices(IS_inact,&inact);CHKERRQ(ierr);
-      ierr = ISDestroy(keptrows);CHKERRQ(ierr);
-      ierr = ISDestroy(IS_inact);CHKERRQ(ierr);
+      ierr = ISDestroy(&keptrows);CHKERRQ(ierr);
+      ierr = ISDestroy(&IS_inact);CHKERRQ(ierr);
      
       ierr = ISCreateGeneral(PETSC_COMM_WORLD,cnt,nrows,PETSC_OWN_POINTER,&IS_inact);CHKERRQ(ierr);
       ierr = ISComplement(IS_inact,F->map->rstart,F->map->rend,&IS_act);CHKERRQ(ierr);
@@ -931,20 +931,20 @@ PetscErrorCode SNESSolveVI_RS(SNES snes)
     ierr = VecScatterBegin(scat_inact,Y_inact,Y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     ierr = VecScatterEnd(scat_inact,Y_inact,Y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
 
-    ierr = VecDestroy(F_inact);CHKERRQ(ierr);
-    ierr = VecDestroy(Y_act);CHKERRQ(ierr);
-    ierr = VecDestroy(Y_inact);CHKERRQ(ierr);
-    ierr = VecScatterDestroy(scat_act);CHKERRQ(ierr);
-    ierr = VecScatterDestroy(scat_inact);CHKERRQ(ierr);
-    ierr = ISDestroy(IS_act);CHKERRQ(ierr);
+    ierr = VecDestroy(&F_inact);CHKERRQ(ierr);
+    ierr = VecDestroy(&Y_act);CHKERRQ(ierr);
+    ierr = VecDestroy(&Y_inact);CHKERRQ(ierr);
+    ierr = VecScatterDestroy(&scat_act);CHKERRQ(ierr);
+    ierr = VecScatterDestroy(&scat_inact);CHKERRQ(ierr);
+    ierr = ISDestroy(&IS_act);CHKERRQ(ierr);
     if (!isequal) {
-      ierr = ISDestroy(vi->IS_inact_prev);CHKERRQ(ierr);
+      ierr = ISDestroy(&vi->IS_inact_prev);CHKERRQ(ierr);
       ierr = ISDuplicate(IS_inact,&vi->IS_inact_prev);CHKERRQ(ierr);
     }
-    ierr = ISDestroy(IS_inact);CHKERRQ(ierr);
-    ierr = MatDestroy(jac_inact_inact);CHKERRQ(ierr);
+    ierr = ISDestroy(&IS_inact);CHKERRQ(ierr);
+    ierr = MatDestroy(&jac_inact_inact);CHKERRQ(ierr);
     if (snes->jacobian != snes->jacobian_pre) {
-      ierr = MatDestroy(prejac_inact_inact);CHKERRQ(ierr);
+      ierr = MatDestroy(&prejac_inact_inact);CHKERRQ(ierr);
     }
     ierr = KSPGetIterationNumber(snes->ksp,&lits);CHKERRQ(ierr);
     snes->linear_its += lits;
@@ -1313,17 +1313,17 @@ PetscErrorCode SNESSolveVI_RS2(SNES snes)
       ierr = VecRestoreArray(Y,&y1);CHKERRQ(ierr);
       ierr = VecRestoreArray(Y_aug,&y2);CHKERRQ(ierr);
 
-      ierr = VecDestroy(F_aug);CHKERRQ(ierr);
-      ierr = VecDestroy(Y_aug);CHKERRQ(ierr);
-      ierr = MatDestroy(J_aug);CHKERRQ(ierr);
+      ierr = VecDestroy(&F_aug);CHKERRQ(ierr);
+      ierr = VecDestroy(&Y_aug);CHKERRQ(ierr);
+      ierr = MatDestroy(&J_aug);CHKERRQ(ierr);
       ierr = PetscFree(idx_actkept);CHKERRQ(ierr);
     }
 	
     if (!isequal) {
-      ierr = ISDestroy(vi->IS_inact_prev);CHKERRQ(ierr);
+      ierr = ISDestroy(&vi->IS_inact_prev);CHKERRQ(ierr);
       ierr = ISDuplicate(IS_inact,&vi->IS_inact_prev);CHKERRQ(ierr);
     }
-    ierr = ISDestroy(IS_inact);CHKERRQ(ierr);
+    ierr = ISDestroy(&IS_inact);CHKERRQ(ierr);
 
     ierr = KSPGetIterationNumber(snes->ksp,&lits);CHKERRQ(ierr);
     snes->linear_its += lits;
@@ -1469,27 +1469,25 @@ PetscErrorCode SNESDestroy_VI(SNES snes)
 
   PetscFunctionBegin;
   if (snes->ops->solve != SNESSolveVI_SS) {
-    ierr = ISDestroy(vi->IS_inact_prev);
+    ierr = ISDestroy(&vi->IS_inact_prev);
   }
 
   if (snes->ops->solve == SNESSolveVI_SS) {
     /* clear vectors */
-    ierr = VecDestroy(vi->dpsi);CHKERRQ(ierr);
-    ierr = VecDestroy(vi->phi); CHKERRQ(ierr);
-    ierr = VecDestroy(vi->Da); CHKERRQ(ierr);
-    ierr = VecDestroy(vi->Db); CHKERRQ(ierr);
-    ierr = VecDestroy(vi->z); CHKERRQ(ierr);
-    ierr = VecDestroy(vi->t); CHKERRQ(ierr);
+    ierr = VecDestroy(&vi->dpsi);CHKERRQ(ierr);
+    ierr = VecDestroy(&vi->phi); CHKERRQ(ierr);
+    ierr = VecDestroy(&vi->Da); CHKERRQ(ierr);
+    ierr = VecDestroy(&vi->Db); CHKERRQ(ierr);
+    ierr = VecDestroy(&vi->z); CHKERRQ(ierr);
+    ierr = VecDestroy(&vi->t); CHKERRQ(ierr);
   }
  
   if (!vi->usersetxbounds) {
-    ierr = VecDestroy(vi->xl); CHKERRQ(ierr);
-    ierr = VecDestroy(vi->xu); CHKERRQ(ierr);
+    ierr = VecDestroy(&vi->xl); CHKERRQ(ierr);
+    ierr = VecDestroy(&vi->xu); CHKERRQ(ierr);
   }
  
-  if (vi->lsmonitor) {
-    ierr = PetscViewerASCIIMonitorDestroy(vi->lsmonitor);CHKERRQ(ierr);
-  } 
+  ierr = PetscViewerASCIIMonitorDestroy(&vi->lsmonitor);CHKERRQ(ierr);
   ierr = PetscFree(snes->data);CHKERRQ(ierr);
 
   /* clear composed functions */
@@ -1965,7 +1963,7 @@ PetscErrorCode  SNESLineSearchSetMonitor_VI(SNES snes,PetscBool flg)
   if (flg && !vi->lsmonitor) {
     ierr = PetscViewerASCIIMonitorCreate(((PetscObject)snes)->comm,"stdout",((PetscObject)snes)->tablevel,&vi->lsmonitor);CHKERRQ(ierr);
   } else if (!flg && vi->lsmonitor) {
-    ierr = PetscViewerASCIIMonitorDestroy(vi->lsmonitor);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIMonitorDestroy(&vi->lsmonitor);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

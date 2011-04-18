@@ -126,9 +126,9 @@ PetscErrorCode MatDestroy_SeqSBAIJ(Mat A)
 #endif
   ierr = MatSeqXAIJFreeAIJ(A,&a->a,&a->j,&a->i);CHKERRQ(ierr);
   if (a->free_diag){ierr = PetscFree(a->diag);CHKERRQ(ierr);}
-  if (a->row) {ierr = ISDestroy(a->row);CHKERRQ(ierr);}
-  if (a->col){ierr = ISDestroy(a->col);CHKERRQ(ierr);}
-  if (a->icol) {ierr = ISDestroy(a->icol);CHKERRQ(ierr);}
+  ierr = ISDestroy(&a->row);CHKERRQ(ierr);
+  ierr = ISDestroy(&a->col);CHKERRQ(ierr);
+  ierr = ISDestroy(&a->icol);CHKERRQ(ierr);
   ierr = PetscFree(a->idiag);CHKERRQ(ierr);
   ierr = PetscFree(a->inode.size);CHKERRQ(ierr);
   ierr = PetscFree(a->diag);CHKERRQ(ierr);
@@ -141,7 +141,7 @@ PetscErrorCode MatDestroy_SeqSBAIJ(Mat A)
   ierr = PetscFree(a->xtoy);CHKERRQ(ierr);
   if (a->free_jshort) {ierr = PetscFree(a->jshort);CHKERRQ(ierr);}
   ierr = PetscFree(a->inew);CHKERRQ(ierr);
-  if (a->parent) {ierr = MatDestroy(a->parent);CHKERRQ(ierr);}
+  ierr = MatDestroy(&a->parent);CHKERRQ(ierr);
   ierr = PetscFree(a);CHKERRQ(ierr);
 
   ierr = PetscObjectChangeTypeName((PetscObject)A,0);CHKERRQ(ierr);
@@ -365,7 +365,7 @@ static PetscErrorCode MatView_SeqSBAIJ_ASCII(Mat A,PetscViewer viewer)
     }
     ierr = MatConvert(A,MATSEQAIJ,MAT_INITIAL_MATRIX,&aij);CHKERRQ(ierr);
     ierr = MatView(aij,viewer);CHKERRQ(ierr);
-    ierr = MatDestroy(aij);CHKERRQ(ierr);
+    ierr = MatDestroy(&aij);CHKERRQ(ierr);
   } else if (format == PETSC_VIEWER_ASCII_COMMON) {
     ierr = PetscViewerASCIIUseTabs(viewer,PETSC_FALSE);CHKERRQ(ierr);
     for (i=0; i<a->mbs; i++) {
@@ -548,7 +548,7 @@ PetscErrorCode MatView_SeqSBAIJ(Mat A,PetscViewer viewer)
     Mat B;
     ierr = MatConvert(A,MATSEQAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
     ierr = MatView(B,viewer);CHKERRQ(ierr);
-    ierr = MatDestroy(B);CHKERRQ(ierr);
+    ierr = MatDestroy(&B);CHKERRQ(ierr);
     ierr = PetscViewerBinaryGetInfoPointer(viewer,&file);CHKERRQ(ierr);
     if (file) {
       fprintf(file,"-matload_block_size %d\n",(int)A->rmap->bs);
@@ -1049,10 +1049,10 @@ PetscErrorCode MatICCFactor_SeqSBAIJ(Mat inA,IS row,const MatFactorInfo *info)
   ierr = MatSeqSBAIJSetNumericFactorization_inplace(inA,row_identity);CHKERRQ(ierr);
 
   ierr   = PetscObjectReference((PetscObject)row);CHKERRQ(ierr);
-  if (a->row) { ierr = ISDestroy(a->row);CHKERRQ(ierr); }
+  ierr = ISDestroy(&a->row);CHKERRQ(ierr); 
   a->row = row;
   ierr   = PetscObjectReference((PetscObject)row);CHKERRQ(ierr);
-  if (a->col) { ierr = ISDestroy(a->col);CHKERRQ(ierr); }
+  ierr = ISDestroy(&a->col);CHKERRQ(ierr); 
   a->col = row;
     
   /* Create the invert permutation so that it can be used in MatCholeskyFactorNumeric() */
@@ -1192,7 +1192,7 @@ PetscErrorCode MatAXPY_SeqSBAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
   } else if (str == SUBSET_NONZERO_PATTERN) { /* nonzeros of X is a subset of Y's */
     if (y->xtoy && y->XtoY != X) {
       ierr = PetscFree(y->xtoy);CHKERRQ(ierr);
-      ierr = MatDestroy(y->XtoY);CHKERRQ(ierr);
+      ierr = MatDestroy(&y->XtoY);CHKERRQ(ierr);
     }
     if (!y->xtoy) { /* get xtoy */
       ierr = MatAXPYGetxtoy_Private(x->mbs,x->i,x->j,PETSC_NULL, y->i,y->j,PETSC_NULL, &y->xtoy);CHKERRQ(ierr);

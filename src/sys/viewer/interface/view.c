@@ -90,19 +90,21 @@ PetscErrorCode  PetscViewerInitializePackage(const char path[])
 .seealso: PetscViewerSocketOpen(), PetscViewerASCIIOpen(), PetscViewerCreate(), PetscViewerDrawOpen()
 
 @*/
-PetscErrorCode  PetscViewerDestroy(PetscViewer viewer)
+PetscErrorCode  PetscViewerDestroy(PetscViewer *viewer)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
-  ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-  if (--((PetscObject)viewer)->refct > 0) PetscFunctionReturn(0);
+  if (!*viewer) PetscFunctionReturn(0);
+  PetscValidHeaderSpecific(*viewer,PETSC_VIEWER_CLASSID,1);
 
-  ierr = PetscObjectDepublish(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerFlush(*viewer);CHKERRQ(ierr);
+  if (--((PetscObject)(*viewer))->refct > 0) PetscFunctionReturn(0);
 
-  if (viewer->ops->destroy) {
-    ierr = (*viewer->ops->destroy)(viewer);CHKERRQ(ierr);
+  ierr = PetscObjectDepublish(v*iewer);CHKERRQ(ierr);
+
+  if ((*viewer)->ops->destroy) {
+    ierr = (*(*viewer)->ops->destroy)(*viewer);CHKERRQ(ierr);
   }
   ierr = PetscHeaderDestroy(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);

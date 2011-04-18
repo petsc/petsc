@@ -79,10 +79,10 @@ PetscErrorCode  PCReset(PC pc)
   if (pc->ops->reset) {
     ierr = (*pc->ops->reset)(pc);
   }
-  if (pc->diagonalscaleright) {ierr = VecDestroy(pc->diagonalscaleright);CHKERRQ(ierr);}
-  if (pc->diagonalscaleleft)  {ierr = VecDestroy(pc->diagonalscaleleft);CHKERRQ(ierr);}
-  if (pc->pmat) {ierr = MatDestroy(pc->pmat);CHKERRQ(ierr);}
-  if (pc->mat) {ierr = MatDestroy(pc->mat);CHKERRQ(ierr);}
+  ierr = VecDestroy(&pc->diagonalscaleright);CHKERRQ(ierr);
+  ierr = VecDestroy(&pc->diagonalscaleleft);CHKERRQ(ierr);
+  ierr = MatDestroy(&pc->pmat);CHKERRQ(ierr);
+  ierr = MatDestroy(&pc->mat);CHKERRQ(ierr);
   pc->setupcalled = 0;
   PetscFunctionReturn(0);
 }
@@ -103,22 +103,21 @@ PetscErrorCode  PCReset(PC pc)
 
 .seealso: PCCreate(), PCSetUp()
 @*/
-PetscErrorCode  PCDestroy(PC pc)
+PetscErrorCode  PCDestroy(PC *pc)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  if (--((PetscObject)pc)->refct > 0) PetscFunctionReturn(0);
+  if (!*pc) PetscFunctionReturn(0);
+  PetscValidHeaderSpecific((*pc),PC_CLASSID,1);
+  if (--((PetscObject)(*pc))->refct > 0) {*pc = 0; PetscFunctionReturn(0);}
 
-  ierr = PCReset(pc);CHKERRQ(ierr);
+  ierr = PCReset(*pc);CHKERRQ(ierr);
 
   /* if memory was published with AMS then destroy it */
-  ierr = PetscObjectDepublish(pc);CHKERRQ(ierr);
-  if (pc->ops->destroy) {ierr = (*pc->ops->destroy)(pc);CHKERRQ(ierr);}
-
-  if (pc->dm) {ierr = DMDestroy(pc->dm);CHKERRQ(ierr);}
-
+  ierr = PetscObjectDepublish((*pc));CHKERRQ(ierr);
+  if ((*pc)->ops->destroy) {ierr = (*(*pc)->ops->destroy)((*pc));CHKERRQ(ierr);}
+  ierr = DMDestroy(&(*pc)->dm);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -189,13 +188,9 @@ PetscErrorCode  PCSetDiagonalScale(PC pc,Vec s)
   PetscValidHeaderSpecific(s,VEC_CLASSID,2);
   pc->diagonalscale     = PETSC_TRUE;
   ierr = PetscObjectReference((PetscObject)s);CHKERRQ(ierr);
-  if (pc->diagonalscaleleft) {
-    ierr = VecDestroy(pc->diagonalscaleleft);CHKERRQ(ierr);
-  }
+  ierr = VecDestroy(&pc->diagonalscaleleft);CHKERRQ(ierr);
   pc->diagonalscaleleft = s;
-  if (!pc->diagonalscaleright) {
-    ierr = VecDuplicate(s,&pc->diagonalscaleright);CHKERRQ(ierr);
-  }
+  ierr = VecDuplicate(s,&pc->diagonalscaleright);CHKERRQ(ierr);
   ierr = VecCopy(s,pc->diagonalscaleright);CHKERRQ(ierr);
   ierr = VecReciprocal(pc->diagonalscaleright);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -591,7 +586,7 @@ PetscErrorCode  PCApplyBAorAB(PC pc,PCSide side,Vec x,Vec y,Vec work)
       ierr = PCDiagonalScaleRight(pc,x,work2);CHKERRQ(ierr);
       ierr = (*pc->ops->applyBA)(pc,side,work2,y,work);CHKERRQ(ierr);
       ierr = PCDiagonalScaleLeft(pc,y,y);CHKERRQ(ierr);
-      ierr = VecDestroy(work2);CHKERRQ(ierr);
+      ierr = VecDestroy(&work2);CHKERRQ(ierr);
     } else if (side == PC_RIGHT) {
       ierr = PCDiagonalScaleRight(pc,x,y);CHKERRQ(ierr);
       ierr = PCApply(pc,y,work);CHKERRQ(ierr);
@@ -1034,21 +1029,17 @@ PetscErrorCode  PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
   if (pc->setupcalled && Amat && Pmat) {
     ierr = MatGetLocalSize(Amat,&m1,&n1);CHKERRQ(ierr);
     ierr = MatGetLocalSize(pc->mat,&m2,&n2);CHKERRQ(ierr);
-    if (m1 != m2 || n1 != n2) {
-      SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Cannot change local size of Amat after use old sizes %D %D new sizes %D %D",m2,n2,m1,n1);
-    }
+    if (m1 != m2 || n1 != n2) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Cannot change local size of Amat after use old sizes %D %D new sizes %D %D",m2,n2,m1,n1);
     ierr = MatGetLocalSize(Pmat,&m1,&n1);CHKERRQ(ierr);
     ierr = MatGetLocalSize(pc->pmat,&m2,&n2);CHKERRQ(ierr);
-    if (m1 != m2 || n1 != n2) {
-      SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Cannot change local size of Pmat after use old sizes %D %D new sizes %D %D",m2,n2,m1,n1);
-    }
+    if (m1 != m2 || n1 != n2) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Cannot change local size of Pmat after use old sizes %D %D new sizes %D %D",m2,n2,m1,n1);
   }
 
   /* reference first in case the matrices are the same */
   if (Amat) {ierr = PetscObjectReference((PetscObject)Amat);CHKERRQ(ierr);}
-  if (pc->mat) {ierr = MatDestroy(pc->mat);CHKERRQ(ierr);}
+  ierr = MatDestroy(&pc->mat);CHKERRQ(ierr);
   if (Pmat) {ierr = PetscObjectReference((PetscObject)Pmat);CHKERRQ(ierr);}
-  if (pc->pmat) {ierr = MatDestroy(pc->pmat);CHKERRQ(ierr);}
+  ierr = MatDestroy(&pc->pmat);CHKERRQ(ierr);
   pc->mat  = Amat;
   pc->pmat = Pmat;
 
@@ -1658,7 +1649,7 @@ PetscErrorCode  PCComputeExplicitOperator(PC pc,Mat *mat)
 
   }
   ierr = PetscFree(rows);CHKERRQ(ierr);
-  ierr = VecDestroy(out);CHKERRQ(ierr);
+  ierr = VecDestroy(&out);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(*mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);

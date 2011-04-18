@@ -163,12 +163,12 @@ PetscErrorCode MatDestroy_Normal(Mat N)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (Na->A) { ierr = MatDestroy(Na->A);CHKERRQ(ierr); }
-  if (Na->w) { ierr = VecDestroy(Na->w);CHKERRQ(ierr); }
-  if (Na->left) { ierr = VecDestroy(Na->left);CHKERRQ(ierr); }
-  if (Na->right) { ierr = VecDestroy(Na->right);CHKERRQ(ierr); }
-  if (Na->leftwork) { ierr = VecDestroy(Na->leftwork);CHKERRQ(ierr); }
-  if (Na->rightwork) { ierr = VecDestroy(Na->rightwork);CHKERRQ(ierr); }
+  ierr = MatDestroy(&Na->A);CHKERRQ(ierr); 
+  ierr = VecDestroy(&Na->w);CHKERRQ(ierr); 
+  ierr = VecDestroy(&Na->left);CHKERRQ(ierr);
+  ierr = VecDestroy(&Na->right);CHKERRQ(ierr);
+  ierr = VecDestroy(&Na->leftwork);CHKERRQ(ierr);
+  ierr = VecDestroy(&Na->rightwork);CHKERRQ(ierr);
   ierr = PetscFree(Na);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

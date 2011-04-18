@@ -142,7 +142,7 @@ PetscErrorCode  MatReorderForNonzeroDiagonal_SeqAIJ(Mat mat,PetscReal abstol,IS 
     }
     ierr = MatRestoreRow_SeqAIJ(mat,row[prow],&nz,&j,&v);CHKERRQ(ierr);
   }
-  ierr = ISDestroy(icis);CHKERRQ(ierr);
+  ierr = ISDestroy(&icis);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

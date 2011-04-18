@@ -1261,8 +1261,8 @@ PetscErrorCode  VecGetSubVector(Vec X,IS is,Vec *Y)
       ierr = VecSetType(Z,((PetscObject)X)->type_name);CHKERRQ(ierr);
       ierr = VecScatterCreate(X,is,Z,PETSC_NULL,&scatter);CHKERRQ(ierr);
       ierr = VecScatterBegin(scatter,X,Z,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-      ierr = VecScatterEnd  (scatter,X,Z,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-      ierr = VecScatterDestroy(scatter);CHKERRQ(ierr);
+      ierr = VecScatterEnd(scatter,X,Z,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterDestroy(&scatter);CHKERRQ(ierr);
       *Y = Z;
     }
   }
@@ -1297,7 +1297,7 @@ PetscErrorCode  VecRestoreSubVector(Vec X,IS is,Vec *Y)
   if (X->ops->restoresubvector) {
     ierr = (*X->ops->restoresubvector)(X,is,Y);CHKERRQ(ierr);
   } else {
-    ierr = VecDestroy(*Y);CHKERRQ(ierr);
+    ierr = VecDestroy(Y);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

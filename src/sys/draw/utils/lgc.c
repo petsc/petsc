@@ -270,17 +270,18 @@ PetscErrorCode  PetscDrawLGDestroy(PetscDrawLG *lg)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!lg || ((PetscObject)lg)->classid != PETSC_DRAW_CLASSID) {
-    PetscValidHeaderSpecific(lg,DRAWLG_CLASSID,1);
+  if (!*lg) PetscFunctionReturn(0);
+  if (((PetscObject)(*lg))->classid != PETSC_DRAW_CLASSID) {
+    PetscValidHeaderSpecific(*lg,DRAWLG_CLASSID,1);
   }
 
-  if (--((PetscObject)lg)->refct > 0) PetscFunctionReturn(0);
-  if (lg && ((PetscObject)lg)->classid == PETSC_DRAW_CLASSID) {
+  if (--((PetscObject)(*lg))->refct > 0) {*lg = 0; PetscFunctionReturn(0);}
+  if (((PetscObject)(*lg))->classid == PETSC_DRAW_CLASSID) {
     ierr = PetscObjectDestroy((PetscObject*)lg);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
-  ierr = PetscDrawAxisDestroy(lg->axis);CHKERRQ(ierr);
-  ierr = PetscFree2(lg->x,lg->y);CHKERRQ(ierr);
+  ierr = PetscDrawAxisDestroy(&(*lg)->axis);CHKERRQ(ierr);
+  ierr = PetscFree2((*lg)->x,(*lg)->y);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(lg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -3930,8 +3930,8 @@ PetscErrorCode  MatInodeAdjustForInodes_SeqAIJ_Inode(Mat A,IS *rperm,IS *cperm)
 
   ierr = PetscFree(ns_col);CHKERRQ(ierr);
   ierr = PetscFree2(permr,permc);CHKERRQ(ierr);
-  ierr = ISDestroy(cis);CHKERRQ(ierr);
-  ierr = ISDestroy(ris);CHKERRQ(ierr);
+  ierr = ISDestroy(&cis);CHKERRQ(ierr);
+  ierr = ISDestroy(&ris);CHKERRQ(ierr);
   ierr = PetscFree(tns);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
 }

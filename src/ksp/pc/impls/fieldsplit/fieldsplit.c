@@ -282,7 +282,6 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
   PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetUp_FieldSplit"
 static PetscErrorCode PCSetUp_FieldSplit(PC pc)
@@ -491,7 +490,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       ierr = VecScatterCreate(xtmp,ilink->is,jac->x[i],PETSC_NULL,&ilink->sctx);CHKERRQ(ierr);
       ilink = ilink->next;
     }
-    ierr = VecDestroy(xtmp);CHKERRQ(ierr);
+    ierr = VecDestroy(&xtmp);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -748,13 +747,13 @@ static PetscErrorCode PCReset_FieldSplit(PC pc)
   }
   if (jac->pmat) {ierr = MatDestroyMatrices(jac->nsplits,&jac->pmat);CHKERRQ(ierr);}
   if (jac->Afield) {ierr = MatDestroyMatrices(jac->nsplits,&jac->Afield);CHKERRQ(ierr);}
-  if (jac->w1) {ierr = VecDestroy(jac->w1);CHKERRQ(ierr);}
-  if (jac->w2) {ierr = VecDestroy(jac->w2);CHKERRQ(ierr);}
-  if (jac->schur) {ierr = MatDestroy(jac->schur);CHKERRQ(ierr);}
-  if (jac->schur_user) {ierr = MatDestroy(jac->schur_user);CHKERRQ(ierr);}
-  if (jac->kspschur) {ierr = KSPDestroy(jac->kspschur);CHKERRQ(ierr);}
-  if (jac->B) {ierr = MatDestroy(jac->B);CHKERRQ(ierr);}
-  if (jac->C) {ierr = MatDestroy(jac->C);CHKERRQ(ierr);}
+  ierr = VecDestroy(&jac->w1);CHKERRQ(ierr);
+  ierr = VecDestroy(&jac->w2);CHKERRQ(ierr);
+  ierr = MatDestroy(&jac->schur);CHKERRQ(ierr);
+  ierr = MatDestroy(&jac->schur_user);CHKERRQ(ierr);
+  ierr = KSPDestroy(&jac->kspschur);CHKERRQ(ierr);
+  ierr = MatDestroy(&jac->B);CHKERRQ(ierr);
+  ierr = MatDestroy(&jac->C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -769,7 +768,7 @@ static PetscErrorCode PCDestroy_FieldSplit(PC pc)
   PetscFunctionBegin;
   ierr = PCReset_FieldSplit(pc);CHKERRQ(ierr);
   while (ilink) {
-    ierr = KSPDestroy(ilink->ksp);CHKERRQ(ierr);
+    ierr = KSPDestroy(&ilink->ksp);CHKERRQ(ierr);
     next = ilink->next;
     ierr = PetscFree(ilink->splitname);CHKERRQ(ierr);
     ierr = PetscFree(ilink->fields);CHKERRQ(ierr);
@@ -1201,7 +1200,7 @@ PetscErrorCode  PCFieldSplitSchurPrecondition_FieldSplit(PC pc,PCFieldSplitSchur
   PetscFunctionBegin;
   jac->schurpre = ptype;
   if (pre) {
-    if (jac->schur_user) {ierr = MatDestroy(jac->schur_user);CHKERRQ(ierr);}
+    ierr = MatDestroy(&jac->schur_user);CHKERRQ(ierr);
     jac->schur_user = pre;
     ierr = PetscObjectReference((PetscObject)jac->schur_user);CHKERRQ(ierr);
   }

@@ -863,21 +863,17 @@ PetscErrorCode MatDestroy_SeqAIJ(Mat A)
   PetscLogObjectState((PetscObject)A,"Rows=%D, Cols=%D, NZ=%D",A->rmap->n,A->cmap->n,a->nz);
 #endif
   ierr = MatSeqXAIJFreeAIJ(A,&a->a,&a->j,&a->i);CHKERRQ(ierr);
-  if (a->row) {
-    ierr = ISDestroy(a->row);CHKERRQ(ierr);
-  }
-  if (a->col) {
-    ierr = ISDestroy(a->col);CHKERRQ(ierr);
-  }
+  ierr = ISDestroy(&a->row);CHKERRQ(ierr);
+  ierr = ISDestroy(&a->col);CHKERRQ(ierr);
   ierr = PetscFree(a->diag);CHKERRQ(ierr);
   ierr = PetscFree2(a->imax,a->ilen);CHKERRQ(ierr);
   ierr = PetscFree3(a->idiag,a->mdiag,a->ssor_work);CHKERRQ(ierr);
   ierr = PetscFree(a->solve_work);CHKERRQ(ierr);
-  if (a->icol) {ierr = ISDestroy(a->icol);CHKERRQ(ierr);}
+  ierr = ISDestroy(&a->icol);CHKERRQ(ierr);
   ierr = PetscFree(a->saved_values);CHKERRQ(ierr);
-  if (a->coloring) {ierr = ISColoringDestroy(a->coloring);CHKERRQ(ierr);}
+  ierr = ISColoringDestroy(&a->coloring);CHKERRQ(ierr);
   ierr = PetscFree(a->xtoy);CHKERRQ(ierr);
-  if (a->XtoY) {ierr = MatDestroy(a->XtoY);CHKERRQ(ierr);}
+  ierr = MatDestroy(&a->XtoY);CHKERRQ(ierr);
   ierr = PetscFree2(a->compressedrow.i,a->compressedrow.rindex);CHKERRQ(ierr);
 
   ierr = MatDestroy_SeqAIJ_Inode(A);CHKERRQ(ierr);
@@ -2059,14 +2055,14 @@ PetscErrorCode MatILUFactor_SeqAIJ(Mat inA,IS row,IS col,const MatFactorInfo *in
   outA              = inA; 
   outA->factortype  = MAT_FACTOR_LU;
   ierr = PetscObjectReference((PetscObject)row);CHKERRQ(ierr);
-  if (a->row) { ierr = ISDestroy(a->row);CHKERRQ(ierr);}
+  ierr = ISDestroy(&a->row);CHKERRQ(ierr);
   a->row = row;
   ierr = PetscObjectReference((PetscObject)col);CHKERRQ(ierr);
-  if (a->col) { ierr = ISDestroy(a->col);CHKERRQ(ierr);}
+  ierr = ISDestroy(&a->col);CHKERRQ(ierr);
   a->col = col;
 
   /* Create the inverse permutation so that it can be used in MatLUFactorNumeric() */
-  if (a->icol) {ierr = ISDestroy(a->icol);CHKERRQ(ierr);} /* need to remove old one */
+  ierr = ISDestroy(&a->icol);CHKERRQ(ierr);
   ierr = ISInvertPermutation(col,PETSC_DECIDE,&a->icol);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(inA,a->icol);CHKERRQ(ierr);
 
@@ -2152,7 +2148,7 @@ PetscErrorCode MatIncreaseOverlap_SeqAIJ(Mat A,PetscInt is_max,IS is[],PetscInt 
       if(!PetscBTLookupSet(table,idx[j])) { nidx[isz++] = idx[j];}
     }
     ierr = ISRestoreIndices(is[i],&idx);CHKERRQ(ierr);
-    ierr = ISDestroy(is[i]);CHKERRQ(ierr);
+    ierr = ISDestroy(&is[i]);CHKERRQ(ierr);
     
     k = 0;
     for (j=0; j<ov; j++){ /* for each overlap */
@@ -2218,8 +2214,8 @@ PetscErrorCode MatPermute_SeqAIJ(Mat A,IS rowp,IS colp,Mat *B)
   ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = ISRestoreIndices(irowp,&row);CHKERRQ(ierr);
   ierr = ISRestoreIndices(icolp,&col);CHKERRQ(ierr);
-  ierr = ISDestroy(irowp);CHKERRQ(ierr);
-  ierr = ISDestroy(icolp);CHKERRQ(ierr);
+  ierr = ISDestroy(&irowp);CHKERRQ(ierr);
+  ierr = ISDestroy(&icolp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2472,7 +2468,7 @@ PetscErrorCode MatAXPY_SeqAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
   } else if (str == SUBSET_NONZERO_PATTERN) { /* nonzeros of X is a subset of Y's */
     if (y->xtoy && y->XtoY != X) {
       ierr = PetscFree(y->xtoy);CHKERRQ(ierr);
-      ierr = MatDestroy(y->XtoY);CHKERRQ(ierr);
+      ierr = MatDestroy(&y->XtoY);CHKERRQ(ierr);
     }
     if (!y->xtoy) { /* get xtoy */
       ierr = MatAXPYGetxtoy_Private(X->rmap->n,x->i,x->j,PETSC_NULL, y->i,y->j,PETSC_NULL, &y->xtoy);CHKERRQ(ierr);

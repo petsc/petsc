@@ -20,7 +20,7 @@ extern PetscErrorCode PetscObjectQueryFunction_Petsc(PetscObject,const char[],vo
    in the default values.  Called by the macro PetscHeaderCreate().
 */
 PetscErrorCode  PetscHeaderCreate_Private(PetscObject h,PetscClassId classid,PetscInt type,const char class_name[],MPI_Comm comm,
-                                         PetscErrorCode (*des)(PetscObject),PetscErrorCode (*vie)(PetscObject,PetscViewer))
+                                         PetscErrorCode (*des)(PetscObject*),PetscErrorCode (*vie)(PetscObject,PetscViewer))
 {
   static PetscInt idcnt = 1;
   PetscErrorCode  ierr;
@@ -103,7 +103,7 @@ PetscErrorCode  PetscHeaderDestroy_Private(PetscObject h)
     h->python_destroy = 0;
     ierr = (*python_destroy)(python_context);CHKERRQ(ierr);
   }
-  ierr = PetscOListDestroy(h->olist);CHKERRQ(ierr);
+  ierr = PetscOListDestroy(&h->olist);CHKERRQ(ierr);
   ierr = PetscCommDestroy(&h->comm);CHKERRQ(ierr);
   /* next destroy other things */
   h->classid = PETSCFREEDHEADER;
@@ -383,6 +383,8 @@ PetscErrorCode  PetscObjectGetReference(PetscObject obj,PetscInt *cnt)
 .  obj - the PETSc object; this must be cast with (PetscObject), for example, 
          PetscObjectDereference((PetscObject)mat);
 
+   Notes: PetscObjectDestroy(PetscObject *obj)  sets the obj pointer to null after the call, this routine does not.
+
    Level: advanced
 
 .seealso: PetscObjectCompose(), PetscObjectReference()
@@ -394,7 +396,7 @@ PetscErrorCode  PetscObjectDereference(PetscObject obj)
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
   if (obj->bops->destroy) {
-    ierr = (*obj->bops->destroy)(obj);CHKERRQ(ierr);
+    ierr = (*obj->bops->destroy)(&obj);CHKERRQ(ierr);
   } else if (!--obj->refct) {
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"This PETSc object does not have a generic destroy routine");
   }
@@ -694,13 +696,14 @@ PetscErrorCode  PetscContainerSetPointer(PetscContainer obj,void *ptr)
 
 .seealso: PetscContainerCreate()
 @*/
-PetscErrorCode  PetscContainerDestroy(PetscContainer obj)
+PetscErrorCode  PetscContainerDestroy(PetscContainer *obj)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(obj,PETSC_CONTAINER_CLASSID,1);
-  if (--((PetscObject)obj)->refct > 0) PetscFunctionReturn(0);
-  if (obj->userdestroy) (*obj->userdestroy)(obj->ptr);
+  if (!*obj) PetscFunctionReturn(0);
+  PetscValidHeaderSpecific(*obj,PETSC_CONTAINER_CLASSID,1);
+  if (--((PetscObject)(*obj))->refct > 0) PetscFunctionReturn(0);
+  if ((*obj)->userdestroy) (*(*obj)->userdestroy)((*obj)->ptr);
   ierr = PetscHeaderDestroy(obj);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

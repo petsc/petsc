@@ -870,14 +870,14 @@ PetscErrorCode KSPDefaultReset(KSP ksp)
   Input Parameter: 
 . ksp - the iterative context
 */
-PetscErrorCode KSPDefaultDestroy(KSP *ksp)
+PetscErrorCode KSPDefaultDestroy(KSP ksp)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(*ksp,KSP_CLASSID,1);
-  ierr = KSPDefaultReset(*ksp);CHKERRQ(ierr);
-  ierr = PetscFree((*ksp)->data);CHKERRQ(ierr);
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  ierr = KSPDefaultReset(ksp);CHKERRQ(ierr);
+  ierr = PetscFree(ksp->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

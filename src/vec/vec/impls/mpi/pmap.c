@@ -73,15 +73,17 @@ PetscErrorCode  PetscLayoutCreate(MPI_Comm comm,PetscLayout *map)
 @*/
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLayoutDestroy"
-PetscErrorCode  PetscLayoutDestroy(PetscLayout map)
+PetscErrorCode  PetscLayoutDestroy(PetscLayout *map)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!map->refcnt--) {
-    ierr = PetscFree(map->range);CHKERRQ(ierr);
-    ierr = PetscFree(map);CHKERRQ(ierr);
+  if (!*map) PetscFunctionReturn(0);
+  if (!(*map)->refcnt--) {
+    ierr = PetscFree((*map)->range);CHKERRQ(ierr);
+    ierr = PetscFree((*map));CHKERRQ(ierr);
   }
+  *map = PETSC_NULL;
   PetscFunctionReturn(0);
 }
 
@@ -178,7 +180,7 @@ PetscErrorCode  PetscLayoutCopy(PetscLayout in,PetscLayout *out)
   MPI_Comm       comm = in->comm;
 
   PetscFunctionBegin;
-  if (*out) {ierr = PetscLayoutDestroy(*out);CHKERRQ(ierr);}
+  ierr = PetscLayoutDestroy(out);CHKERRQ(ierr);
   ierr = PetscLayoutCreate(comm,out);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = PetscMemcpy(*out,in,sizeof(struct _n_PetscLayout));CHKERRQ(ierr);

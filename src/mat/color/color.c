@@ -127,7 +127,7 @@ PetscErrorCode  MatGetColoring_SL_Minpack(Mat mat,MatColoringType name,ISColorin
     /* create a parallel iscoloring */ 
     nc=iscoloring_seq->n;
     ierr = ISColoringCreate(comm,nc,N_loc,colors_loc,iscoloring);CHKERRQ(ierr); 
-    ierr = ISColoringDestroy(iscoloring_seq);CHKERRQ(ierr);
+    ierr = ISColoringDestroy(&iscoloring_seq);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -216,7 +216,7 @@ PetscErrorCode  MatGetColoring_LF_Minpack(Mat mat,MatColoringType name,ISColorin
     /* create a parallel iscoloring */ 
     nc=iscoloring_seq->n;
     ierr = ISColoringCreate(comm,nc,N_loc,colors_loc,iscoloring);CHKERRQ(ierr); 
-    ierr = ISColoringDestroy(iscoloring_seq);CHKERRQ(ierr);
+    ierr = ISColoringDestroy(&iscoloring_seq);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -304,7 +304,7 @@ PetscErrorCode  MatGetColoring_ID_Minpack(Mat mat,MatColoringType name,ISColorin
     /* create a parallel iscoloring */ 
     nc=iscoloring_seq->n;
     ierr = ISColoringCreate(comm,nc,N_loc,colors_loc,iscoloring);CHKERRQ(ierr); 
-    ierr = ISColoringDestroy(iscoloring_seq);CHKERRQ(ierr);
+    ierr = ISColoringDestroy(&iscoloring_seq);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -374,7 +374,7 @@ PetscErrorCode  MatGetColoring_Natural(Mat mat,MatColoringType color, ISColoring
     /* create a parallel iscoloring */ 
     nc=iscoloring_seq->n;
     ierr = ISColoringCreate(comm,nc,N_loc,colors_loc,iscoloring);CHKERRQ(ierr); 
-    ierr = ISColoringDestroy(iscoloring_seq);CHKERRQ(ierr);
+    ierr = ISColoringDestroy(&iscoloring_seq);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

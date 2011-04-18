@@ -54,7 +54,7 @@ void PETSC_STDCALL vecdestroyvecsf90_(int *m,F90Array1d *ptr,int *__ierr PETSC_F
 
   *__ierr = F90Array1dAccess(ptr,PETSC_FORTRANADDR,(void**)&vecs PETSC_F90_2PTR_PARAM(ptrd));if (*__ierr) return;
   for (i=0; i<*m; i++) {
-    *__ierr = VecDestroy(vecs[i]);
+    *__ierr = VecDestroy(&vecs[i]);
     if (*__ierr) return;
   }
   *__ierr = F90Array1dDestroy(ptr,PETSC_FORTRANADDR PETSC_F90_2PTR_PARAM(ptrd));if (*__ierr) return;

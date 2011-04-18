@@ -157,26 +157,26 @@ PetscErrorCode  DMMGDestroy(DMMG *dmmg)
   if (!dmmg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Passing null as DMMG");
 
   for (i=1; i<nlevels; i++) {
-    if (dmmg[i]->R) {ierr = MatDestroy(dmmg[i]->R);CHKERRQ(ierr);}
+    ierr = MatDestroy(&dmmg[i]->R);CHKERRQ(ierr);
   }
   for (i=0; i<nlevels; i++) {
     ierr = PetscFree(dmmg[i]->prefix);CHKERRQ(ierr);
     ierr = PetscFree(dmmg[i]->mtype);CHKERRQ(ierr);
-    if (dmmg[i]->dm)      {ierr = DMDestroy(dmmg[i]->dm);CHKERRQ(ierr);}
-    if (dmmg[i]->x)       {ierr = VecDestroy(dmmg[i]->x);CHKERRQ(ierr);}
-    if (dmmg[i]->b)       {ierr = VecDestroy(dmmg[i]->b);CHKERRQ(ierr);}
-    if (dmmg[i]->r)       {ierr = VecDestroy(dmmg[i]->r);CHKERRQ(ierr);}
-    if (dmmg[i]->work1)   {ierr = VecDestroy(dmmg[i]->work1);CHKERRQ(ierr);}
-    if (dmmg[i]->w)       {ierr = VecDestroy(dmmg[i]->w);CHKERRQ(ierr);}
-    if (dmmg[i]->work2)   {ierr = VecDestroy(dmmg[i]->work2);CHKERRQ(ierr);}
-    if (dmmg[i]->lwork1)  {ierr = VecDestroy(dmmg[i]->lwork1);CHKERRQ(ierr);}
-    if (dmmg[i]->B)         {ierr = MatDestroy(dmmg[i]->B);CHKERRQ(ierr);}
-    if (dmmg[i]->J)         {ierr = MatDestroy(dmmg[i]->J);CHKERRQ(ierr);}
-    if (dmmg[i]->Rscale)    {ierr = VecDestroy(dmmg[i]->Rscale);CHKERRQ(ierr);}
-    if (dmmg[i]->fdcoloring){ierr = MatFDColoringDestroy(dmmg[i]->fdcoloring);CHKERRQ(ierr);}
-    if (dmmg[i]->ksp && !dmmg[i]->snes) {ierr = KSPDestroy(dmmg[i]->ksp);CHKERRQ(ierr);}
-    ierr = PetscObjectDestroy((PetscObject)&dmmg[i]->snes);CHKERRQ(ierr);
-    if (dmmg[i]->inject)    {ierr = VecScatterDestroy(dmmg[i]->inject);CHKERRQ(ierr);} 
+    ierr = DMDestroy(&dmmg[i]->dm);CHKERRQ(ierr);
+    ierr = VecDestroy(&dmmg[i]->x);CHKERRQ(ierr);
+    ierr = VecDestroy(&dmmg[i]->b);CHKERRQ(ierr);
+    ierr = VecDestroy(&dmmg[i]->r);CHKERRQ(ierr);
+    ierr = VecDestroy(&dmmg[i]->work1);CHKERRQ(ierr);
+    ierr = VecDestroy(&dmmg[i]->w);CHKERRQ(ierr);
+    ierr = VecDestroy(&dmmg[i]->work2);CHKERRQ(ierr);
+    ierr = VecDestroy(&dmmg[i]->lwork1);CHKERRQ(ierr);
+    ierr = MatDestroy(&dmmg[i]->B);CHKERRQ(ierr);
+    ierr = MatDestroy(&dmmg[i]->J);CHKERRQ(ierr);
+    ierr = VecDestroy(&dmmg[i]->Rscale);CHKERRQ(ierr);
+    ierr = MatFDColoringDestroy(&dmmg[i]->fdcoloring);CHKERRQ(ierr);
+    if (dmmg[i]->ksp && !dmmg[i]->snes) {ierr = KSPDestroy(&dmmg[i]->ksp);CHKERRQ(ierr);}
+    ierr = PetscObjectDestroy((PetscObject*)&dmmg[i]->snes);CHKERRQ(ierr);
+    ierr = VecScatterDestroy(&dmmg[i]->inject);CHKERRQ(ierr);
     ierr = PetscFree(dmmg[i]);CHKERRQ(ierr);
   }
   ierr = PetscFree(dmmg);CHKERRQ(ierr);
@@ -234,8 +234,8 @@ PetscErrorCode  DMMGSetDM(DMMG *dmmg, DM dm)
   ierr = PetscFree(hierarchy);CHKERRQ(ierr);
   /* Cleanup old structures (should use some private Destroy() instead) */
   for(i = 0; i < nlevels; ++i) {
-    if (dmmg[i]->B) {ierr = MatDestroy(dmmg[i]->B);CHKERRQ(ierr); dmmg[i]->B = PETSC_NULL;}
-    if (dmmg[i]->J) {ierr = MatDestroy(dmmg[i]->J);CHKERRQ(ierr); dmmg[i]->J = PETSC_NULL;}
+    ierr = MatDestroy(&dmmg[i]->B);CHKERRQ(ierr);
+    ierr = MatDestroy(&dmmg[i]->J);CHKERRQ(ierr);
   }
 
   /* Create work vectors and matrix for each level */

@@ -32,7 +32,7 @@ EXTERN_C_BEGIN
 
 void PETSC_STDCALL petscbagdestroy_(PetscBag *bag,PetscErrorCode *ierr)
 {
-  *ierr = PetscBagDestroy(*bag);
+  *ierr = PetscBagDestroy(bag);
 }
 
 void PETSC_STDCALL petscbagview_(PetscBag *bag,PetscViewer *viewer,PetscErrorCode *ierr)

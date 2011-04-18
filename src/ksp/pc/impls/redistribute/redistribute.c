@@ -196,17 +196,17 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
       ierr = PetscFree(send_status);CHKERRQ(ierr);
     }
     ierr = PetscFree3(svalues,send_waits,starts);CHKERRQ(ierr);
-    ierr = PetscLayoutDestroy(map);CHKERRQ(ierr);
-    ierr = PetscLayoutDestroy(nmap);CHKERRQ(ierr);
+    ierr = PetscLayoutDestroy(&map);CHKERRQ(ierr);
+    ierr = PetscLayoutDestroy(&nmap);CHKERRQ(ierr);
 
     ierr = VecCreateMPI(comm,slen,PETSC_DETERMINE,&red->b);CHKERRQ(ierr);
     ierr = VecDuplicate(red->b,&red->x);CHKERRQ(ierr);
     ierr = MatGetVecs(pc->pmat,&tvec,PETSC_NULL);CHKERRQ(ierr);
     ierr = VecScatterCreate(tvec,red->is,red->b,PETSC_NULL,&red->scatter);CHKERRQ(ierr);
-    ierr = VecDestroy(tvec);CHKERRQ(ierr);
+    ierr = VecDestroy(&tvec);CHKERRQ(ierr);
     ierr = MatGetSubMatrix(pc->pmat,red->is,red->is,MAT_INITIAL_MATRIX,&tmat);CHKERRQ(ierr);
     ierr = KSPSetOperators(red->ksp,tmat,tmat,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-    ierr = MatDestroy(tmat);CHKERRQ(ierr);
+    ierr = MatDestroy(&tmat);CHKERRQ(ierr);
   }
 
   /* get diagonal portion of matrix */
@@ -218,7 +218,7 @@ static PetscErrorCode PCSetUp_Redistribute(PC pc)
     red->diag[i] = 1.0/d[red->drows[i]];
   }
   ierr = VecRestoreArrayRead(diag,&d);CHKERRQ(ierr);
-  ierr = VecDestroy(diag);CHKERRQ(ierr);
+  ierr = VecDestroy(&diag);CHKERRQ(ierr);
   ierr = KSPSetUp(red->ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

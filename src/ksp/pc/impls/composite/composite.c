@@ -132,8 +132,8 @@ static PetscErrorCode PCReset_Composite(PC pc)
     ierr = PCReset(next->pc);CHKERRQ(ierr);
     next     = next->next;
   }
-  if (jac->work1) {ierr = VecDestroy(jac->work1);CHKERRQ(ierr);}
-  if (jac->work2) {ierr = VecDestroy(jac->work2);CHKERRQ(ierr);}
+  ierr = VecDestroy(&jac->work1);CHKERRQ(ierr);
+  ierr = VecDestroy(&jac->work2);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -148,7 +148,7 @@ static PetscErrorCode PCDestroy_Composite(PC pc)
   PetscFunctionBegin;
   ierr = PCReset_Composite(pc);CHKERRQ(ierr);
   while (next) {
-    ierr = PCDestroy(next->pc);CHKERRQ(ierr);
+    ierr = PCDestroy(&next->pc);CHKERRQ(ierr);
     next_tmp = next;
     next     = next->next;
     ierr = PetscFree(next_tmp);CHKERRQ(ierr);

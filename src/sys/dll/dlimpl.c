@@ -317,7 +317,6 @@ PetscErrorCode  PetscDLSym(PetscDLHandle handle,const char symbol[],void **value
   { const char *e = dlerror(); 
     if (e) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG,"Error obtaining symbol '%s' from dynamic library:\n  Error message from dlsym(): '%s'\n", symbol, e); 
   }
-#endif
 #endif /* !PETSC_HAVE_DLSYM */
 
   /* 

@@ -44,8 +44,8 @@ PetscErrorCode PCReset_ILU(PC pc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!ilu->inplace && ((PC_Factor*)ilu)->fact) {ierr = MatDestroy(((PC_Factor*)ilu)->fact);CHKERRQ(ierr);}
-  if (ilu->row && ilu->col && ilu->row != ilu->col) {ierr = ISDestroy(ilu->row);CHKERRQ(ierr);}
+  if (!ilu->inplace && ((PC_Factor*)ilu)->fact) {ierr = MatDestroy(&((PC_Factor*)ilu)->fact);CHKERRQ(ierr);}
+  if (ilu->row && ilu->col && ilu->row != ilu->col) {ierr = ISDestroy(&ilu->row);CHKERRQ(ierr);}
   ierr = ISDestroy(&ilu->col);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -230,7 +230,7 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
           ierr = MatReorderForNonzeroDiagonal(pc->pmat,ilu->nonzerosalongdiagonaltol,ilu->row,ilu->col);CHKERRQ(ierr);
         }
       }
-      ierr = MatDestroy(((PC_Factor*)ilu)->fact);CHKERRQ(ierr);
+      ierr = MatDestroy(&((PC_Factor*)ilu)->fact);CHKERRQ(ierr);
       ierr = MatGetFactor(pc->pmat,MATSOLVERPETSC,MAT_FACTOR_ILU,&((PC_Factor*)ilu)->fact);CHKERRQ(ierr);
       ierr = MatILUFactorSymbolic(((PC_Factor*)ilu)->fact,pc->pmat,ilu->row,ilu->col,&((PC_Factor*)ilu)->info);CHKERRQ(ierr);
       ierr = MatGetInfo(((PC_Factor*)ilu)->fact,MAT_LOCAL,&info);CHKERRQ(ierr);

@@ -44,29 +44,29 @@ PetscErrorCode CharacteristicView(Characteristic c, PetscViewer viewer)
 
 #undef __FUNCT__  
 #define __FUNCT__ "CharacteristicDestroy"
-PetscErrorCode CharacteristicDestroy(Characteristic c)
+PetscErrorCode CharacteristicDestroy(Characteristic *c)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(c, CHARACTERISTIC_CLASSID, 1);
-  if (--((PetscObject)c)->refct > 0) PetscFunctionReturn(0);
+  if (!*c) PetscFunctionReturn(0);
+  PetscValidHeaderSpecific(*c, CHARACTERISTIC_CLASSID, 1);
+  if (--((PetscObject)(*c))->refct > 0) PetscFunctionReturn(0);
 
-  if (c->ops->destroy) {
-    ierr = (*c->ops->destroy)(c);CHKERRQ(ierr);
+  if ((*c)->ops->destroy) {
+    ierr = (*(*c)->ops->destroy)((*c));CHKERRQ(ierr);
   }
-  ierr = MPI_Type_free(&c->itemType);CHKERRQ(ierr);
-  if (c->queue)         {ierr = PetscFree(c->queue);CHKERRQ(ierr);}
-  if (c->queueLocal)    {ierr = PetscFree(c->queueLocal);CHKERRQ(ierr);}
-  if (c->queueRemote)   {ierr = PetscFree(c->queueRemote);CHKERRQ(ierr);}
-  if (c->neighbors)     {ierr = PetscFree(c->neighbors);CHKERRQ(ierr);}
-  if (c->needCount)     {ierr = PetscFree(c->needCount);CHKERRQ(ierr);}
-  if (c->localOffsets)  {ierr = PetscFree(c->localOffsets);CHKERRQ(ierr);}
-  if (c->fillCount)     {ierr = PetscFree(c->fillCount);CHKERRQ(ierr);}
-  if (c->remoteOffsets) {ierr = PetscFree(c->remoteOffsets);CHKERRQ(ierr);}
-  if (c->request)       {ierr = PetscFree(c->request);CHKERRQ(ierr);}
-  if (c->status)        {ierr = PetscFree(c->status);CHKERRQ(ierr);}
-  ierr = PetscLogObjectDestroy(c);CHKERRQ(ierr);
+  ierr = MPI_Type_free(&(*c)->itemType);CHKERRQ(ierr);
+  ierr = PetscFree((*c)->queue);CHKERRQ(ierr);
+  ierr = PetscFree((*c)->queueLocal);CHKERRQ(ierr);
+  ierr = PetscFree((*c)->queueRemote);CHKERRQ(ierr);
+  ierr = PetscFree((*c)->neighbors);CHKERRQ(ierr);
+  ierr = PetscFree((*c)->needCount);CHKERRQ(ierr);
+  ierr = PetscFree((*c)->localOffsets);CHKERRQ(ierr);
+  ierr = PetscFree((*c)->fillCount);CHKERRQ(ierr);
+  ierr = PetscFree((*c)->remoteOffsets);CHKERRQ(ierr);
+  ierr = PetscFree((*c)->request);CHKERRQ(ierr);
+  ierr = PetscFree((*c)->status);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(c);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

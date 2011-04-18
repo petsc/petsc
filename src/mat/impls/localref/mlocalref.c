@@ -239,8 +239,8 @@ PetscErrorCode  MatCreateLocalRef(Mat A,IS isrow,IS iscol,Mat *newmat)
       ierr = ISL2GCompose(iscol,A->cmapping,&cltog);CHKERRQ(ierr);
     }
     ierr = MatSetLocalToGlobalMapping(B,rltog,cltog);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingDestroy(rltog);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingDestroy(cltog);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingDestroy(&rltog);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingDestroy(&cltog);CHKERRQ(ierr);
 
     ierr = MatGetBlockSize(A,&abs);CHKERRQ(ierr);
     ierr = ISGetBlockSize(isrow,&rbs);CHKERRQ(ierr);
@@ -262,8 +262,8 @@ PetscErrorCode  MatCreateLocalRef(Mat A,IS isrow,IS iscol,Mat *newmat)
           ierr = ISL2GComposeBlock(iscol,A->cbmapping,&cltog);CHKERRQ(ierr);
         }
         ierr = MatSetLocalToGlobalMappingBlock(B,rltog,cltog);CHKERRQ(ierr);
-        ierr = ISLocalToGlobalMappingDestroy(rltog);CHKERRQ(ierr);
-        ierr = ISLocalToGlobalMappingDestroy(cltog);CHKERRQ(ierr);
+        ierr = ISLocalToGlobalMappingDestroy(&rltog);CHKERRQ(ierr);
+        ierr = ISLocalToGlobalMappingDestroy(&cltog);CHKERRQ(ierr);
       }
     }
   }

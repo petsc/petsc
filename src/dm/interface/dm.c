@@ -130,37 +130,36 @@ PetscErrorCode  DMDestroy(DM *dm)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  if (!*dm) PetscFunctionReturn(0);
+  PetscValidHeaderSpecific((*dm),DM_CLASSID,1);
   for (i=0; i<DM_MAX_WORK_VECTORS; i++) {
-    if (dm->localin[i])  {cnt++;}
-    if (dm->globalin[i]) {cnt++;}
+    if ((*dm)->localin[i])  {cnt++;}
+    if ((*dm)->globalin[i]) {cnt++;}
   }
 
-  if (--((PetscObject)dm)->refct - cnt > 0) PetscFunctionReturn(0);
+  if (--((PetscObject)(*dm))->refct - cnt > 0) {*dm = 0; PetscFunctionReturn(0);}
   /*
      Need this test because the dm references the vectors that
      reference the dm, so destroying the dm calls destroy on the
      vectors that cause another destroy on the dm
   */
-  if (((PetscObject)dm)->refct < 0) PetscFunctionReturn(0);
-  ((PetscObject) dm)->refct = 0;
+  if (((PetscObject)(*dm))->refct < 0) PetscFunctionReturn(0);
+  ((PetscObject) (*dm))->refct = 0;
   for (i=0; i<DM_MAX_WORK_VECTORS; i++) {
-    if (dm->localout[i]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Destroying a DM that has a local vector obtained with DMGetLocalVector()");
-    if (dm->localin[i]) {ierr = VecDestroy(dm->localin[i]);CHKERRQ(ierr);}
-    if (dm->globalout[i]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Destroying a DM that has a global vector obtained with DMGetGlobalVector()");
-    if (dm->globalin[i]) {ierr = VecDestroy(dm->globalin[i]);CHKERRQ(ierr);}
+    if ((*dm)->localout[i]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Destroying a DM that has a local vector obtained with DMGetLocalVector()");
+    ierr = VecDestroy(&(*dm)->localin[i]);CHKERRQ(ierr);
+    if ((*dm)->globalout[i]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Destroying a DM that has a global vector obtained with DMGetGlobalVector()");
+    ierr = VecDestroy(&(*dm)->globalin[i]);CHKERRQ(ierr);
   }
-  if (dm->ltogmap)  {ierr = ISLocalToGlobalMappingDestroy(dm->ltogmap);CHKERRQ(ierr);}
-  if (dm->ltogmapb) {ierr = ISLocalToGlobalMappingDestroy(dm->ltogmapb);CHKERRQ(ierr);}
-
-  if (dm->vectype)  {ierr = PetscFree(dm->vectype);CHKERRQ(ierr);}
+  ierr = ISLocalToGlobalMappingDestroy(&(*dm)->ltogmap);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingDestroy(&(*dm)->ltogmapb);CHKERRQ(ierr);
+  ierr = PetscFree((*dm)->vectype);CHKERRQ(ierr);
 
   /* if memory was published with AMS then destroy it */
-  ierr = PetscObjectDepublish(dm);CHKERRQ(ierr);
+  ierr = PetscObjectDepublish(*dm);CHKERRQ(ierr);
 
-  ierr = (*dm->ops->destroy)(dm);CHKERRQ(ierr);
-  ierr = PetscFree(dm->data);CHKERRQ(ierr);
-
+  ierr = (*(*dm)->ops->destroy)(*dm);CHKERRQ(ierr);
+  ierr = PetscFree((*dm)->data);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -312,7 +312,8 @@ PetscErrorCode  KSPFischerGuessDestroy(KSPFischerGuess *ITG)
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  if (--(*ITG)->refcnt) PetscFunctionReturn(0);
+  if (!*ITG) PetscFunctionReturn(0);
+  if (--(*ITG)->refcnt) {*ITG = 0; PetscFunctionReturn(0);}
 
   if ((*ITG)->method == 1) {
     ierr = KSPFischerGuessDestroy_Method1((KSPFischerGuess_Method1 *)*ITG);CHKERRQ(ierr);

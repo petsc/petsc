@@ -291,7 +291,7 @@ PetscErrorCode  AOCreateMapping(MPI_Comm comm,PetscInt napp,const PetscInt myapp
   ierr = AOInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
-  ierr = PetscHeaderCreate(ao, _p_AO, struct _AOOps, AO_CLASSID, -1, "AO", comm, AODestroy_, AOView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(ao, _p_AO, struct _AOOps, AO_CLASSID, -1, "AO", comm, AODestroy, AOView);CHKERRQ(ierr);
   ierr = PetscNewLog(ao, AO_Mapping, &aomap);CHKERRQ(ierr);
   ierr = PetscMemcpy(ao->ops, &AOps, sizeof(AOps));CHKERRQ(ierr);
   ao->data = (void*) aomap;

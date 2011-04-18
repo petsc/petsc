@@ -52,7 +52,7 @@ typedef BasisData1D* BD;
 extern PetscErrorCode DMIGAGetBasisData(DM,BD*,BD*,BD*);
 
 extern PetscErrorCode BDCreate(BD *bd,int numD,int p,int numGP,int numEl);
-extern PetscErrorCode BDDestroy(BD bd);
+extern PetscErrorCode BDDestroy(BD *bd);
 extern PetscErrorCode BDGetBasis(BD bd, int iel, int igp, int ib, int ider, double *basis);
 extern PetscErrorCode BDSetBasis(BD bd, int iel, int igp, int ib, int ider, double basis);
 extern PetscErrorCode BDGetGaussPt(BD bd, int iel, int igp, double *gp);

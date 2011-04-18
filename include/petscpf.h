@@ -58,7 +58,7 @@ extern PetscErrorCode  PFRegister(const char[],const char[],const char[],PetscEr
 #define PFRegisterDynamic(a,b,c,d) PFRegister(a,b,c,d)
 #endif
 
-extern PetscErrorCode  PFDestroy(PF);
+extern PetscErrorCode  PFDestroy(PF*);
 extern PetscErrorCode  PFSetFromOptions(PF);
 extern PetscErrorCode  PFGetType(PF,const PFType*);
 
