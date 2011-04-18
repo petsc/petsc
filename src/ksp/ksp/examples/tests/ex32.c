@@ -65,6 +65,13 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetBool(PETSC_NULL, "-test_sbaij1", &flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg){
     Mat sA;
+    PetscBool issymm;
+    ierr = MatIsTranspose(A,A,0.0,&issymm);CHKERRQ(ierr);
+    if (issymm) {
+      ierr = MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
+    } else {
+      printf("Warning: A is non-symmetric\n");
+    }
     ierr = MatConvert(A,MATSBAIJ,MAT_INITIAL_MATRIX,&sA);CHKERRQ(ierr);
     ierr = MatDestroy(A);CHKERRQ(ierr);
     A = sA;

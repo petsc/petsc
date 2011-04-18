@@ -12,7 +12,6 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscInt       i,j,ntypes,bs,mbs,m,block,d_nz=6, o_nz=3,col[3],row,displ=0;
   PetscMPIInt    size,rank;
-  /* const MatType  type[9] = {MATMPIAIJ,MATMPIBAIJ};*/
   const MatType  type[9]; 
   char           file[PETSC_MAX_PATH_LEN];
   PetscViewer    fd;
@@ -100,6 +99,14 @@ int main(int argc,char **args)
  
   /* convert C to other formats */
   for (i=0; i<ntypes; i++) {
+    if (i == 2){ /* Check the symmetry of the matrix to be converted */
+      ierr = MatIsTranspose(C,C,0.0,&flg);CHKERRQ(ierr);
+      if (flg) {
+        ierr = MatSetOption(C,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
+      } else {
+        printf("Warning: C is non-symmetric\n");
+      }
+    }
     ierr = MatConvert(C,type[i],MAT_INITIAL_MATRIX,&A);CHKERRQ(ierr);
     ierr = MatMultEqual(A,C,10,&equal);CHKERRQ(ierr);
     if (!equal) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"Error in conversion from BAIJ to %s",type[i]);
@@ -107,7 +114,14 @@ int main(int argc,char **args)
       if (displ>0) {
         ierr = PetscPrintf(PETSC_COMM_WORLD," [%d] test conversion between %s and %s\n",rank,type[i],type[j]);CHKERRQ(ierr);
       }
-
+      if (j == 2){
+        ierr = MatIsTranspose(A,A,0.0,&flg);CHKERRQ(ierr);
+        if (flg) {
+          ierr = MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
+        } else {
+          printf("Warning: A is non-symmetric\n");
+        }
+      }
       ierr = MatConvert(A,type[j],MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
       ierr = MatConvert(B,type[i],MAT_INITIAL_MATRIX,&D);CHKERRQ(ierr); 
 
