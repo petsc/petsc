@@ -993,6 +993,28 @@ PetscErrorCode  ISGetBlockSize(IS is,PetscInt *size)
   PetscFunctionReturn(0);
 }
 
+#if defined(PETSC_HAVE_MATLAB_ENGINE)
+#include <engine.h>   /* MATLAB include file */
+#include <mex.h>      /* MATLAB include file */
+EXTERN_C_BEGIN
+#undef __FUNCT__ 
+#define __FUNCT__ "ISGetIndicesMatlab"
+PetscErrorCode ISGetIndicesMatlab(IS is, PetscInt idx[])
+{
+  PetscErrorCode ierr;
+  PetscInt       len,i;
+  const PetscInt *ptr;
+
+  PetscFunctionBegin;
+  ierr = ISGetSize(is,&len); CHKERRQ(ierr);
+  ierr = ISGetIndices(is,&ptr); CHKERRQ(ierr);
+  for(i=0;i<len;i++) idx[i] = ptr[i];
+  ierr = ISRestoreIndices(is,&ptr); CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+#endif
+
 /*MC
     ISGetIndicesF90 - Accesses the elements of an index set from Fortran90.
     The users should call ISRestoreIndicesF90() after having looked at the

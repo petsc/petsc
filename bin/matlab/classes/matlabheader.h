@@ -49,6 +49,8 @@ typedef PetscPointer IS;
 int ISCreate(MPI_Comm,IS *);
 int ISSetType(IS,const char*);
 int ISGeneralSetIndices(IS,int,const int[],CopyMode);
+int ISGetSize(IS,int*);
+int ISGetIndicesMatlab(IS,int*);
 int ISView(IS,PetscViewer);
 int ISDestroy_(IS);
 

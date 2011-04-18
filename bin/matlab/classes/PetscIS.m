@@ -24,9 +24,19 @@ classdef PetscIS < PetscObject
     function err = SetType(obj,name)
       err = calllib('libpetsc', 'ISSetType', obj.pobj,name);PetscCHKERRQ(err);
     end
-    function err = GeneralSetIndices(obj,indices)
+    function [n,err] = GetSize(obj)
+      n = 0;
+      [err,n] = calllib('libpetsc', 'ISGetSize', obj.pobj,n);PetscCHKERRQ(err);
+    end
+    function err = GeneralSetIndices(obj,indices)  
       indices = indices - 1;  
       err = calllib('libpetsc', 'ISGeneralSetIndices', obj.pobj,length(indices),indices,Petsc.COPY_VALUES);PetscCHKERRQ(err);
+    end
+    function [indices,err] = GetIndices(obj,idx)
+        [n,err] = GetSize(obj);
+        indices = zeros(n,1);
+        [err,indices] = calllib('libpetsc','ISGetIndicesMatlab',obj.pobj,indices);
+        indices = indices + 1;
     end
     function err = View(obj,viewer)
       if (nargin == 1)
@@ -37,6 +47,15 @@ classdef PetscIS < PetscObject
     end
     function err = Destroy(obj)
       err = calllib('libpetsc', 'ISDestroy_', obj.pobj);PetscCHKERRQ(err);
+    end
+    %
+%   The following overload a = x(idx)
+    function varargout = subsref(obj,S)
+      if (S(1).type == '.')
+        [varargout{1:nargout}] = builtin('subsref', obj, S);
+      else  
+        varargout = {obj.GetIndices(S.subs{1})};
+      end
     end
   end
 end

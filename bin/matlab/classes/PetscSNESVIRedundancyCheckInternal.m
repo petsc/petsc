@@ -7,3 +7,7 @@ err = 0;
 isact = PetscIS(pidis_act,'pobj');
 snes = PetscSNES(pidsnes,'pobj');
 [is_redact,err] = feval(funcname,snes,isact,ctx);
+pidis_redact = [];
+if(is_redact)
+    pidis_redact = is_redact.pobj;
+end
