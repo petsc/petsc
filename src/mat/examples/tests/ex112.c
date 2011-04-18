@@ -92,7 +92,7 @@ PetscInt main(PetscInt argc,char **args)
 
     /* apply FFTW_FORWARD and FFTW_BACKWARD several times on different x */
     for (i=0; i<3; i++){
-      ierr = VecDestroy(x);CHKERRQ(ierr); 
+      ierr = VecDestroy(&x);CHKERRQ(ierr); 
       ierr = VecCreateSeq(PETSC_COMM_SELF,N,&x);CHKERRQ(ierr);
       ierr = VecSetRandom(x, rdm);CHKERRQ(ierr);
 
@@ -111,12 +111,12 @@ PetscInt main(PetscInt argc,char **args)
     }
 
     /* free spaces */
-    ierr = VecDestroy(x);CHKERRQ(ierr);
-    ierr = VecDestroy(y);CHKERRQ(ierr);
-    ierr = VecDestroy(z);CHKERRQ(ierr);
-    ierr = MatDestroy(A);CHKERRQ(ierr);
+    ierr = VecDestroy(&x);CHKERRQ(ierr);
+    ierr = VecDestroy(&y);CHKERRQ(ierr);
+    ierr = VecDestroy(&z);CHKERRQ(ierr);
+    ierr = MatDestroy(&A);CHKERRQ(ierr);
   }
-  ierr = PetscRandomDestroy(rdm);CHKERRQ(ierr);
+  ierr = PetscRandomDestroy(&rdm);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

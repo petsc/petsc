@@ -41,7 +41,7 @@ int main(int argc,char **argv)
   ierr = VecNorm(DMMGGetr(dmmg),NORM_2,&norm);CHKERRQ(ierr);
   /* ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %G\n",norm);CHKERRQ(ierr); */
 
-  ierr = DMMGDestroy(&dmmg);CHKERRQ(ierr);
+  ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
   ierr = PetscFinalize();
 
   return 0;

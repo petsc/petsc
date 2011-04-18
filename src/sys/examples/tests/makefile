@@ -132,7 +132,7 @@ runex20_3:
 	   ${RM} -f ex20_3.tmp
 
 
-TESTEXAMPLES_C		       = ex7.PETSc runex7 ex7.rm ex19.PETSc runex19 ex19.rm \
+TESTEXAMPLES_C		       = ex19.PETSc runex19 ex19.rm \
                                  ex20.PETSc runex20 runex20_2 runex20_3 ex20.rm  ex21.PETSc ex21.rm
 TESTEXAMPLES_C_X11	       = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 ex3.rm 
 TESTEXAMPLES_FORTRAN	       = ex5f.PETSc ex5f.rm ex6f.PETSc ex6f.rm ex17f.PETSc ex17f.rm

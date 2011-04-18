@@ -50,7 +50,7 @@ int main(int argc,char **args)
   ex7f_(&vec,&fcomm);
 
   ierr = VecView(vec,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = VecDestroy(vec);CHKERRQ(ierr);
+  ierr = VecDestroy(&vec);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

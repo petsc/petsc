@@ -4645,7 +4645,7 @@ to guide your development. We give a short summary here.
   /*  One can access the solution with */\\
   soln = DMMGGetx(dmmg);\\
 
-  ierr = DMMGDestroy(&dmmg);CHKERRQ(ierr);\\
+  ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);\\
   ierr = DMDestroy(&da);CHKERRQ(ierr);\\
 \end{tabbing}
 The option \trl{-ksp_monitor} \findex{-ksp_monitor} and \trl{-mg_levels_ksp_monitor} and optionally \trl{-mg_coarse_ksp_monitor} 

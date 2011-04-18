@@ -123,7 +123,7 @@ int main(int argc,char **argv)
       ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))RHSFunction,&data);CHKERRQ(ierr);
       ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
       ierr = TSSetRHSJacobian(ts,J,J,TSDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr);
-      ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
+      ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
 
       PetscBool  view_J;
       ierr = PetscOptionsHasName(PETSC_NULL,"-view_J",&view_J);CHKERRQ(ierr);
@@ -176,7 +176,7 @@ int main(int argc,char **argv)
     ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,"out.m",&viewfile);CHKERRQ(ierr); 
     ierr = PetscViewerSetFormat(viewfile,PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
     ierr = VecView(global,viewfile);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(viewfile);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewfile);CHKERRQ(ierr);
   }
 
 #if defined(PETSC_HAVE_SUNDIALS)
@@ -187,21 +187,21 @@ int main(int argc,char **argv)
   if (sundials){
     ierr = PetscViewerStringOpen(PETSC_COMM_WORLD,tsinfo,120,&viewer);CHKERRQ(ierr);
     ierr = TSView(ts,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     ierr = PetscViewerStringOpen(PETSC_COMM_WORLD,pcinfo,120,&viewer);CHKERRQ(ierr);
     ierr = PCView(pc,viewer);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"%d Procs,%s TSType, %s Preconditioner\n",
                      size,tsinfo,pcinfo);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
 #endif
 
   /* free the memories */
-  ierr = TSDestroy(ts);CHKERRQ(ierr);
-  ierr = VecDestroy(global);CHKERRQ(ierr);
-  ierr = VecDestroy(x);CHKERRQ(ierr);
-  ierr= MatDestroy(J);CHKERRQ(ierr);
-  if (fd_jacobian_coloring){ierr = MatFDColoringDestroy(matfdcoloring);CHKERRQ(ierr);}
+  ierr = TSDestroy(&ts);CHKERRQ(ierr);
+  ierr = VecDestroy(&global);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr= MatDestroy(&J);CHKERRQ(ierr);
+  if (fd_jacobian_coloring){ierr = MatFDColoringDestroy(&matfdcoloring);CHKERRQ(ierr);}
   ierr = PetscFinalize();
   return 0;
 }
@@ -292,10 +292,10 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec global,void *ctx)
   ierr = VecRestoreArray(tmp_vec,&tmp);CHKERRQ(ierr);
 
   ierr = PetscFree(idx);CHKERRQ(ierr);
-  ierr = ISDestroy(from);CHKERRQ(ierr);
-  ierr = ISDestroy(to);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(scatter);CHKERRQ(ierr);
-  ierr = VecDestroy(tmp_vec);CHKERRQ(ierr);
+  ierr = ISDestroy(&from);CHKERRQ(ierr);
+  ierr = ISDestroy(&to);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&scatter);CHKERRQ(ierr);
+  ierr = VecDestroy(&tmp_vec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -438,7 +438,7 @@ PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec globalin,Vec globalout,void *ct
   ierr = VecScatterCreate(globalin,from,tmp_in,to,&scatter);CHKERRQ(ierr);
   ierr = VecScatterBegin(scatter,globalin,tmp_in,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(scatter,globalin,tmp_in,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(scatter);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&scatter);CHKERRQ(ierr);
 
   /*Extract income array - include ghost points */
   ierr = VecGetArray(tmp_in,&inptr);CHKERRQ(ierr);
@@ -479,11 +479,11 @@ PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec globalin,Vec globalout,void *ct
   ierr = VecScatterEnd(scatter,tmp_out,globalout,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
  
   /* Destroy idx aand scatter */
-  ierr = VecDestroy(tmp_in);CHKERRQ(ierr);
-  ierr = VecDestroy(tmp_out);CHKERRQ(ierr);
-  ierr = ISDestroy(from);CHKERRQ(ierr);
-  ierr = ISDestroy(to);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(scatter);CHKERRQ(ierr);
+  ierr = VecDestroy(&tmp_in);CHKERRQ(ierr);
+  ierr = VecDestroy(&tmp_out);CHKERRQ(ierr);
+  ierr = ISDestroy(&from);CHKERRQ(ierr);
+  ierr = ISDestroy(&to);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&scatter);CHKERRQ(ierr);
 
   ierr = PetscFree(idx);CHKERRQ(ierr);
   PetscFunctionReturn(0);

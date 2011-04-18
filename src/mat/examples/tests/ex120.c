@@ -92,7 +92,7 @@ PetscInt main(PetscInt argc,char **args)
   ierr = MatSetValues(A,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);
   v = -sigma2*h2;
   ierr = MatSetValues(A,1,&J,1,&Ii,&v,ADD_VALUES);CHKERRQ(ierr);
-  if (use_random) {ierr = PetscRandomDestroy(rctx);CHKERRQ(ierr);}
+  if (use_random) {ierr = PetscRandomDestroy(&rctx);CHKERRQ(ierr);}
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   m = n = dim;
@@ -104,7 +104,7 @@ PetscInt main(PetscInt argc,char **args)
     ierr = MatTranspose(A,MAT_INITIAL_MATRIX, &Trans);
     ierr = MatEqual(A, Trans, &isSymmetric);
     if (!isSymmetric) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"A must be symmetric");
-    ierr = MatDestroy(Trans);CHKERRQ(ierr);
+    ierr = MatDestroy(&Trans);CHKERRQ(ierr);
   }
 
   /* Convert aij matrix to MatSeqDense for LAPACK */
@@ -202,7 +202,7 @@ PetscInt main(PetscInt argc,char **args)
   
   tols[0] = 1.e-8;  tols[1] = 1.e-8;
   ierr = CkEigenSolutions(cklvl,A,il-1,iu-1,evals,evecs,tols);CHKERRQ(ierr);
-  for (i=0; i<nevs; i++){ ierr = VecDestroy(evecs[i]);CHKERRQ(ierr);}
+  for (i=0; i<nevs; i++){ ierr = VecDestroy(&evecs[i]);CHKERRQ(ierr);}
   ierr = PetscFree(evecs);CHKERRQ(ierr);
     
   /* Free work space. */
@@ -211,9 +211,9 @@ PetscInt main(PetscInt argc,char **args)
   }  
   ierr = PetscFree(evals);CHKERRQ(ierr);
   ierr = PetscFree(work);CHKERRQ(ierr);
-  ierr = MatDestroy(A_dense);CHKERRQ(ierr); 
-  ierr = MatDestroy(A);CHKERRQ(ierr);
-  ierr = MatDestroy(B);CHKERRQ(ierr);
+  ierr = MatDestroy(&A_dense);CHKERRQ(ierr); 
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  ierr = MatDestroy(&B);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }
@@ -295,7 +295,7 @@ PetscErrorCode CkEigenSolutions(PetscInt cklvl,Mat A,PetscInt il,PetscInt iu,Pet
   default:
     ierr = PetscPrintf(PETSC_COMM_SELF,"Error: cklvl=%d is not supported \n",cklvl);
   }
-  ierr = VecDestroy(vt2); 
-  ierr = VecDestroy(vt1);
+  ierr = VecDestroy(&vt2); 
+  ierr = VecDestroy(&vt1);
   PetscFunctionReturn(0);
 }

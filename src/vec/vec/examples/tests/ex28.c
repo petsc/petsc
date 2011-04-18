@@ -116,8 +116,8 @@ int main(int argc,char **argv)
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Error 1 and 2 norms: result[0] %G result[1] %G\n",result[0],result[1]);CHKERRQ(ierr);
   }
 
-  ierr = VecDestroy(x);CHKERRQ(ierr);
-  ierr = VecDestroy(y);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = VecDestroy(&y);CHKERRQ(ierr);
 
   /*
        Tests computing a large number of operations that require 
@@ -140,7 +140,7 @@ int main(int argc,char **argv)
     }
   } 
   for (i=0; i<40; i++) {
-    ierr = VecDestroy(vecs[i]);CHKERRQ(ierr);
+    ierr = VecDestroy(&vecs[i]);CHKERRQ(ierr);
   }
 
   ierr = PetscFinalize();

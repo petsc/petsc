@@ -171,7 +171,7 @@ int main(int argc,char **argv)
       to compute Jacobians.
     */
     ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobianColor,fdcoloring);CHKERRQ(ierr);  
-    ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
+    ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
   }
   /* 
      Set Jacobian matrix data structure and default Jacobian evaluation
@@ -240,14 +240,14 @@ int main(int argc,char **argv)
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   if (!matrix_free) {
-    ierr = MatDestroy(J);CHKERRQ(ierr);
+    ierr = MatDestroy(&J);CHKERRQ(ierr);
   }
   if (fd_coloring) {
-    ierr = MatFDColoringDestroy(fdcoloring);CHKERRQ(ierr);
+    ierr = MatFDColoringDestroy(&fdcoloring);CHKERRQ(ierr);
   }
-  ierr = VecDestroy(x);CHKERRQ(ierr);
-  ierr = VecDestroy(r);CHKERRQ(ierr);
-  ierr = SNESDestroy(snes);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = VecDestroy(&r);CHKERRQ(ierr);
+  ierr = SNESDestroy(&snes);CHKERRQ(ierr);
   ierr = PetscFinalize();
 
   return 0;

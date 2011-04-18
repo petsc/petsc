@@ -54,10 +54,10 @@ int main(int argc,char **argv) {
   if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"MatMult(A,As) are NOT equal"); 
   
   /* Free spaces */
-  ierr = PetscRandomDestroy(rctx);CHKERRQ(ierr);
-  ierr = MatDestroy(A);CHKERRQ(ierr);
-  ierr = MatDestroy(B);CHKERRQ(ierr);
-  ierr = MatDestroy(As);CHKERRQ(ierr);
+  ierr = PetscRandomDestroy(&rctx);CHKERRQ(ierr);
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  ierr = MatDestroy(&B);CHKERRQ(ierr);
+  ierr = MatDestroy(&As);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return(0);
 }

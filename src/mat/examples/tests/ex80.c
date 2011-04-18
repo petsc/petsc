@@ -66,16 +66,16 @@ int main(int argc,char **args)
   /* get new global number of each old global number */
   ierr = ISPartitioningToNumbering(is,&isn);CHKERRQ(ierr);
   ierr = ISView(isn,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = ISDestroy(is);CHKERRQ(ierr);
+  ierr = ISDestroy(&is);CHKERRQ(ierr);
 
-  ierr = ISDestroy(isn);CHKERRQ(ierr);
-  ierr = MatPartitioningDestroy(part);CHKERRQ(ierr);
+  ierr = ISDestroy(&isn);CHKERRQ(ierr);
+  ierr = MatPartitioningDestroy(&part);CHKERRQ(ierr);
 
   /*
        Free work space.  All PETSc objects should be destroyed when they
        are no longer needed.
   */
-  ierr = MatDestroy(A);CHKERRQ(ierr); 
+  ierr = MatDestroy(&A);CHKERRQ(ierr); 
 
 
   ierr = PetscFinalize();

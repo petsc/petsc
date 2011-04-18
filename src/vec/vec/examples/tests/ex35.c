@@ -28,7 +28,7 @@ int main(int argc,char **argv)
   }
   ierr = VecRestoreArray4d(x,m,n,p,q,0,0,0,0,&xx);CHKERRQ(ierr);
   ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = VecDestroy(x);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

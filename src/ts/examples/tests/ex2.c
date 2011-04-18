@@ -80,9 +80,9 @@ int main(int argc,char **argv)
 
   /* free the memories */
   
-  ierr = TSDestroy(ts);CHKERRQ(ierr);
-  ierr = VecDestroy(global);CHKERRQ(ierr);
-  ierr= MatDestroy(A);CHKERRQ(ierr);
+  ierr = TSDestroy(&ts);CHKERRQ(ierr);
+  ierr = VecDestroy(&global);CHKERRQ(ierr);
+  ierr= MatDestroy(&A);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
   return 0;
@@ -148,11 +148,11 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec global,void *ctx)
   ierr = PetscPrintf(PETSC_COMM_WORLD,"At t =%14.6e errors = %14.6e  %14.6e  %14.6e \n",
                      time,PetscRealPart(tmp[0]-solx(time)),PetscRealPart(tmp[1]-soly(time)),PetscRealPart(tmp[2]-solz(time)));CHKERRQ(ierr);
   ierr = VecRestoreArray(tmp_vec,&tmp);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(scatter);CHKERRQ(ierr);
-  ierr = ISDestroy(from);CHKERRQ(ierr);
-  ierr = ISDestroy(to);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&scatter);CHKERRQ(ierr);
+  ierr = ISDestroy(&from);CHKERRQ(ierr);
+  ierr = ISDestroy(&to);CHKERRQ(ierr);
   ierr = PetscFree(idx);CHKERRQ(ierr);
-  ierr = VecDestroy(tmp_vec);CHKERRQ(ierr);
+  ierr = VecDestroy(&tmp_vec);CHKERRQ(ierr);
   return 0;
 }
 
@@ -184,7 +184,7 @@ PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec globalin,Vec globalout,void *ct
   ierr = VecScatterCreate(globalin,from,tmp_in,to,&scatter);CHKERRQ(ierr);
   ierr = VecScatterBegin(scatter,globalin,tmp_in,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(scatter,globalin,tmp_in,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(scatter);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&scatter);CHKERRQ(ierr);
 
   /*Extract income array */ 
   ierr = VecGetArray(tmp_in,&inptr);CHKERRQ(ierr);
@@ -204,11 +204,11 @@ PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec globalin,Vec globalout,void *ct
   ierr = VecScatterEnd(scatter,tmp_out,globalout,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
   /* Destroy idx aand scatter */
-  ierr = ISDestroy(from);CHKERRQ(ierr);
-  ierr = ISDestroy(to);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(scatter);CHKERRQ(ierr);
-  ierr = VecDestroy(tmp_in);CHKERRQ(ierr);
-  ierr = VecDestroy(tmp_out);CHKERRQ(ierr);
+  ierr = ISDestroy(&from);CHKERRQ(ierr);
+  ierr = ISDestroy(&to);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&scatter);CHKERRQ(ierr);
+  ierr = VecDestroy(&tmp_in);CHKERRQ(ierr);
+  ierr = VecDestroy(&tmp_out);CHKERRQ(ierr);
   ierr = PetscFree(idx);CHKERRQ(ierr);
   return 0;
 }

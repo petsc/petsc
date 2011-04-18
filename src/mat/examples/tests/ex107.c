@@ -156,7 +156,7 @@ int main(int argc,char **args)
       }
     }
   } 
-  ierr = MatDestroy(F);CHKERRQ(ierr); 
+  ierr = MatDestroy(&F);CHKERRQ(ierr); 
   
   /* Test non-symmetric operations */
   /*-------------------------------*/
@@ -239,7 +239,7 @@ int main(int argc,char **args)
       }
     }
   }
-  ierr = MatDestroy(F);CHKERRQ(ierr); 
+  ierr = MatDestroy(&F);CHKERRQ(ierr); 
 
   /* Free data structures */
   ierr = ISDestroy(&perm);CHKERRQ(ierr);

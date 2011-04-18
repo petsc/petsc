@@ -44,7 +44,7 @@ int main(int argc,char **args)
   ierr = MatLoad(A,fd);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&b);CHKERRQ(ierr);
   ierr = VecLoad(b,fd);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
 
   /* save original matrix and vector for testing with MATLAB */
   ierr = VecView(b,PETSC_VIEWER_BINARY_WORLD);CHKERRQ(ierr);
@@ -77,10 +77,10 @@ int main(int argc,char **args)
   ierr = ISView(is,PETSC_VIEWER_BINARY_WORLD);CHKERRQ(ierr);
   ierr = VecView(b,PETSC_VIEWER_BINARY_WORLD);CHKERRQ(ierr);
   ierr = MatView(A,PETSC_VIEWER_BINARY_WORLD);CHKERRQ(ierr);
-  ierr = VecDestroy(x);CHKERRQ(ierr);
-  ierr = VecDestroy(b);CHKERRQ(ierr);
-  ierr = ISDestroy(is);CHKERRQ(ierr);
-  ierr = MatDestroy(A);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = VecDestroy(&b);CHKERRQ(ierr);
+  ierr = ISDestroy(&is);CHKERRQ(ierr);
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

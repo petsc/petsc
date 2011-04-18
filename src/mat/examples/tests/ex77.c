@@ -245,23 +245,23 @@ int main(int argc,char **args)
     ierr = PetscFree(nip_ptr);CHKERRQ(ierr);
 
     ierr = MatReorderingSeqSBAIJ(sA, ip);CHKERRQ(ierr);  
-    ierr = ISDestroy(nip);CHKERRQ(ierr);
+    ierr = ISDestroy(&nip);CHKERRQ(ierr);
     /* ierr = ISView(ip, VIEWER_STDOUT_SELF);CHKERRQ(ierr); 
        ierr = MatView(sA,VIEWER_DRAW_SELF);CHKERRQ(ierr); */
   }
   
-  ierr = ISDestroy(iscol);CHKERRQ(ierr);
-  /* ierr = ISDestroy(isrow);CHKERRQ(ierr);*/
+  ierr = ISDestroy(&iscol);CHKERRQ(ierr);
+  /* ierr = ISDestroy(&isrow);CHKERRQ(ierr);*/
 
-  ierr = ISDestroy(isrow);CHKERRQ(ierr);
-  ierr = MatDestroy(A);CHKERRQ(ierr);
-  ierr = MatDestroy(sA);CHKERRQ(ierr);
-  ierr = VecDestroy(x);CHKERRQ(ierr);
-  ierr = VecDestroy(y);CHKERRQ(ierr);
-  ierr = VecDestroy(s1);CHKERRQ(ierr);
-  ierr = VecDestroy(s2);CHKERRQ(ierr);
-  ierr = VecDestroy(b);CHKERRQ(ierr);
-  ierr = PetscRandomDestroy(rdm);CHKERRQ(ierr);
+  ierr = ISDestroy(&isrow);CHKERRQ(ierr);
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  ierr = MatDestroy(&sA);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = VecDestroy(&y);CHKERRQ(ierr);
+  ierr = VecDestroy(&s1);CHKERRQ(ierr);
+  ierr = VecDestroy(&s2);CHKERRQ(ierr);
+  ierr = VecDestroy(&b);CHKERRQ(ierr);
+  ierr = PetscRandomDestroy(&rdm);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
   return 0;

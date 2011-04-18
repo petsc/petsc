@@ -106,7 +106,7 @@ int main(int argc,char **argv)
   ierr = ComputeCorrector(DMMGGetFine(dmmg), DMMGGetx(dmmg), DMMGGetr(dmmg));
 
   ierr = DestroyStructures(DMMGGetFine(dmmg));
-  ierr = DMMGDestroy(&dmmg);CHKERRQ(ierr);
+  ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

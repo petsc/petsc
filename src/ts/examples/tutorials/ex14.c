@@ -472,7 +472,7 @@ static PetscErrorCode PRangeMinMax(PRange *p,PetscReal min,PetscReal max)
 
 #undef __FUNCT__  
 #define __FUNCT__ "THIDestroy"
-static PetscErrorCode THIDestroy(THI thi)
+static PetscErrorCode THIDestroy(&THI thi)
 {
   PetscErrorCode ierr;
 
@@ -481,7 +481,7 @@ static PetscErrorCode THIDestroy(THI thi)
   ierr = PetscFree(thi->units);CHKERRQ(ierr);
   ierr = PetscFree(thi->mattype);CHKERRQ(ierr);
   ierr = PetscFree(thi->monitor_basename);CHKERRQ(ierr);
-  ierr = PetscHeaderDestroy(thi);CHKERRQ(ierr);
+  ierr = PetscHeaderDestroy(&thi);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1408,8 +1408,8 @@ static PetscErrorCode THIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,M
   ierr = MatRestoreLocalSubMatrix(*B,isloc[0],isloc[1],&B12);CHKERRQ(ierr);
   ierr = MatRestoreLocalSubMatrix(*B,isloc[1],isloc[0],&B21);CHKERRQ(ierr);
   ierr = MatRestoreLocalSubMatrix(*B,isloc[1],isloc[1],&B22);CHKERRQ(ierr);
-  ierr = ISDestroy(isloc[0]);CHKERRQ(ierr);
-  ierr = ISDestroy(isloc[1]);CHKERRQ(ierr);
+  ierr = ISDestroy(&isloc[0]);CHKERRQ(ierr);
+  ierr = ISDestroy(&isloc[1]);CHKERRQ(ierr);
   ierr = PetscFree(isloc);CHKERRQ(ierr);
 
   ierr = DMCompositeRestoreLocalVectors(pack,&X3,&X2);CHKERRQ(ierr);
@@ -1566,8 +1566,8 @@ static PetscErrorCode THIDAVecView_VTK_XML(THI thi,DM pack,Vec X,const char file
   ierr = DMCompositeRestoreAccess(pack,X,&X3,&X2);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer3,"</VTKFile>\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer2,"</VTKFile>\n");CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(viewer3);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(viewer2);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&viewer3);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&viewer2);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1680,8 +1680,8 @@ int main(int argc,char *argv[])
   ierr = DMCompositeCreate(comm,&pack);CHKERRQ(ierr);
   ierr = DMCompositeAddDM(pack,da3);CHKERRQ(ierr);
   ierr = DMCompositeAddDM(pack,da2);CHKERRQ(ierr);
-  ierr = DMDestroy(da3);CHKERRQ(ierr);
-  ierr = DMDestroy(da2);CHKERRQ(ierr);
+  ierr = DMDestroy(&da3);CHKERRQ(ierr);
+  ierr = DMDestroy(&da2);CHKERRQ(ierr);
   ierr = DMSetUp(pack);CHKERRQ(ierr);
   ierr = DMGetMatrix(pack,PETSC_NULL,&B);CHKERRQ(ierr);
   ierr = MatSetOptionsPrefix(B,"thi_");CHKERRQ(ierr);
@@ -1739,10 +1739,10 @@ int main(int argc,char *argv[])
     }
   }
 
-  ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
-  ierr = DMDestroy(pack);CHKERRQ(ierr);
-  ierr = TSDestroy(ts);CHKERRQ(ierr);
-  ierr = THIDestroy(thi);CHKERRQ(ierr);
+  ierr = DMMGDestroy(&dmmg);CHKERRQ(ierr);
+  ierr = DMDestroy(&pack);CHKERRQ(ierr);
+  ierr = TSDestroy(&ts);CHKERRQ(ierr);
+  ierr = THIDestroy(&thi);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

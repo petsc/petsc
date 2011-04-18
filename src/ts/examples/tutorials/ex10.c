@@ -63,13 +63,13 @@ struct _n_RD {
 
 #undef __FUNCT__  
 #define __FUNCT__ "RDDestroy"
-static PetscErrorCode RDDestroy(RD rd)
+static PetscErrorCode RDDestroy(RD *rd)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMDestroy(rd->da);CHKERRQ(ierr);
-  ierr = PetscFree(rd);CHKERRQ(ierr);
+  ierr = DMDestroy((*rd)->da);CHKERRQ(ierr);
+  ierr = PetscFree(*rd);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -819,8 +819,8 @@ static PetscErrorCode RDView(RD rd,Vec X,PetscViewer viewer)
   ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
 
   ierr = VecView(Y,viewer);CHKERRQ(ierr);
-  ierr = VecDestroy(Y);CHKERRQ(ierr);
-  ierr = DMDestroy(da);CHKERRQ(ierr);
+  ierr = VecDestroy(&Y);CHKERRQ(ierr);
+  ierr = DMDestroy(&da);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1073,7 +1073,7 @@ int main(int argc, char *argv[])
     ISColoring     iscoloring;
     ierr = DMGetColoring(rd->da,IS_COLORING_GLOBAL,MATAIJ,&iscoloring);CHKERRQ(ierr);
     ierr = MatFDColoringCreate(B,iscoloring,&matfdcoloring);CHKERRQ(ierr);
-    ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
+    ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
     ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode(*)(void))SNESTSFormFunction,ts);CHKERRQ(ierr);
     ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,A,B,SNESDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr);
@@ -1095,14 +1095,14 @@ int main(int argc, char *argv[])
     PetscViewer viewer;
     ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,rd->view_binary,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
     ierr = RDView(rd,X,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
 
-  if (matfdcoloring) {ierr = MatFDColoringDestroy(matfdcoloring);CHKERRQ(ierr);}
-  ierr = VecDestroy(X);CHKERRQ(ierr);
-  ierr = MatDestroy(B);CHKERRQ(ierr);
-  ierr = RDDestroy(rd);CHKERRQ(ierr);
-  ierr = TSDestroy(ts);CHKERRQ(ierr);
+  if (matfdcoloring) {ierr = MatFDColoringDestroy(&matfdcoloring);CHKERRQ(ierr);}
+  ierr = VecDestroy(&X);CHKERRQ(ierr);
+  ierr = MatDestroy(&B);CHKERRQ(ierr);
+  ierr = RDDestroy(&rd);CHKERRQ(ierr);
+  ierr = TSDestroy(&ts);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

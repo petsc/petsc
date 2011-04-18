@@ -38,14 +38,14 @@ int main(int argc,char **args)
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatSetType(A,MATMPIAIJ);CHKERRQ(ierr);
   ierr = MatLoad(A,fd);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
 
   /* Read the matrix again as a sequential matrix */
   ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_SELF,&B);CHKERRQ(ierr);
   ierr = MatSetType(B,MATSEQAIJ);CHKERRQ(ierr);
   ierr = MatLoad(B,fd);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
   
   /* Create the IS corresponding to subdomains */
   ierr = PetscMalloc(nd*sizeof(IS **),&is1);CHKERRQ(ierr);
@@ -78,14 +78,14 @@ int main(int argc,char **args)
 
   /* Free allocated memory */
   for (i=0; i<nd; ++i) { 
-    ierr = ISDestroy(is1[i]);CHKERRQ(ierr);
-    ierr = ISDestroy(is2[i]);CHKERRQ(ierr);
+    ierr = ISDestroy(&is1[i]);CHKERRQ(ierr);
+    ierr = ISDestroy(&is2[i]);CHKERRQ(ierr);
   }
   ierr = PetscFree(is1);CHKERRQ(ierr);
   ierr = PetscFree(is2);CHKERRQ(ierr);
-  ierr = PetscRandomDestroy(r);CHKERRQ(ierr);
-  ierr = MatDestroy(A);CHKERRQ(ierr);
-  ierr = MatDestroy(B);CHKERRQ(ierr);
+  ierr = PetscRandomDestroy(&r);CHKERRQ(ierr);
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  ierr = MatDestroy(&B);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
 #endif

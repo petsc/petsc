@@ -159,8 +159,8 @@ int main(int argc,char **argv)
      are no longer needed.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   
-  ierr = DMDestroy(da);CHKERRQ(ierr);
-  ierr = SNESDestroy(snes);CHKERRQ(ierr);
+  ierr = DMDestroy(&da);CHKERRQ(ierr);
+  ierr = SNESDestroy(&snes);CHKERRQ(ierr);
   
   ierr = PetscFinalize();
   return 0;

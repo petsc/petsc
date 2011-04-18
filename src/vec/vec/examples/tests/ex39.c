@@ -81,15 +81,15 @@ int main(int argc,char **argv)
   ierr = PetscPrintf(PETSC_COMM_SELF,"F = X + Y\n");CHKERRQ(ierr);
   ierr = VecView(F,0);CHKERRQ(ierr);
   /* Destroy vectors */
-  ierr = VecDestroy(X);CHKERRQ(ierr);
-  ierr = VecDestroy(Y);CHKERRQ(ierr);
-  ierr = VecDestroy(F);CHKERRQ(ierr);
-  ierr = VecDestroy(X1);CHKERRQ(ierr);
-  ierr = VecDestroy(Y1);CHKERRQ(ierr);
-  ierr = VecDestroy(F1);CHKERRQ(ierr);
-  ierr = VecDestroy(X2);CHKERRQ(ierr);
-  ierr = VecDestroy(Y2);CHKERRQ(ierr);
-  ierr = VecDestroy(F2);CHKERRQ(ierr);
+  ierr = VecDestroy(&X);CHKERRQ(ierr);
+  ierr = VecDestroy(&Y);CHKERRQ(ierr);
+  ierr = VecDestroy(&F);CHKERRQ(ierr);
+  ierr = VecDestroy(&X1);CHKERRQ(ierr);
+  ierr = VecDestroy(&Y1);CHKERRQ(ierr);
+  ierr = VecDestroy(&F1);CHKERRQ(ierr);
+  ierr = VecDestroy(&X2);CHKERRQ(ierr);
+  ierr = VecDestroy(&Y2);CHKERRQ(ierr);
+  ierr = VecDestroy(&F2);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
   return 0;

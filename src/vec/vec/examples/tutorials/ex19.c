@@ -57,7 +57,7 @@ int main(int argc,char **argv)
   ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
   ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
   ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 
   ierr = VecCreate(PETSC_COMM_WORLD, &y1);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) y1, "TestVec");CHKERRQ(ierr);
@@ -83,7 +83,7 @@ int main(int argc,char **argv)
   ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
   ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
   ierr = PetscViewerHDF5PopGroup(viewer);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 
   ierr = VecEqual(x1, y1, &equal);CHKERRQ(ierr);
   if (!equal) {
@@ -98,12 +98,12 @@ int main(int argc,char **argv)
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB, "Error in HDF5 viewer");
   }
 
-  ierr = VecDestroy(x1);CHKERRQ(ierr);
-  ierr = VecDestroy(x2);CHKERRQ(ierr);
-  ierr = VecDestroy(y1);CHKERRQ(ierr);
-  ierr = VecDestroy(y2);CHKERRQ(ierr);
-  ierr = VecDestroy(y3);CHKERRQ(ierr);
-  ierr = VecDestroy(y4);CHKERRQ(ierr);
+  ierr = VecDestroy(&x1);CHKERRQ(ierr);
+  ierr = VecDestroy(&x2);CHKERRQ(ierr);
+  ierr = VecDestroy(&y1);CHKERRQ(ierr);
+  ierr = VecDestroy(&y2);CHKERRQ(ierr);
+  ierr = VecDestroy(&y3);CHKERRQ(ierr);
+  ierr = VecDestroy(&y4);CHKERRQ(ierr);
   ierr = PetscFinalize();
   PetscFunctionReturn(0);
 }

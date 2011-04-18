@@ -104,10 +104,10 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = VecDestroy(x);CHKERRQ(ierr);    
-  ierr = VecDestroy(r);CHKERRQ(ierr);
-  ierr = VecDestroy(F);CHKERRQ(ierr);     
-  ierr = SNESDestroy(snes);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);    
+  ierr = VecDestroy(&r);CHKERRQ(ierr);
+  ierr = VecDestroy(&F);CHKERRQ(ierr);     
+  ierr = SNESDestroy(&snes);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

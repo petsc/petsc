@@ -27,7 +27,7 @@ int main(int argc,char **argv)
   ierr = ISCreateGeneral(PETSC_COMM_SELF,0,&n,PETSC_COPY_VALUES,&is);CHKERRQ(ierr);
   ierr = ISGetSize(is,&n);CHKERRQ(ierr);
   if (n != 0) SETERRQ(PETSC_COMM_SELF,1,"ISGetSize");
-  ierr = ISDestroy(is);CHKERRQ(ierr);
+  ierr = ISDestroy(&is);CHKERRQ(ierr);
 
   /*
      Create large IS and test ISGetIndices()
@@ -79,7 +79,7 @@ int main(int argc,char **argv)
   ierr = PetscTypeCompare((PetscObject)is,ISBLOCK,&flg);CHKERRQ(ierr);
   if (flg) SETERRQ(PETSC_COMM_SELF,1,"ISBlock");
 
-  ierr = ISDestroy(is);CHKERRQ(ierr);
+  ierr = ISDestroy(&is);CHKERRQ(ierr);
 
   /*
      Inverting permutation
@@ -96,8 +96,8 @@ int main(int argc,char **argv)
     if (ii[i] != n - i - 1) SETERRQ(PETSC_COMM_SELF,1,"ISInvertPermutation");
   }
   ierr = ISRestoreIndices(newis,&ii);CHKERRQ(ierr);
-  ierr = ISDestroy(newis);CHKERRQ(ierr);
-  ierr = ISDestroy(is);CHKERRQ(ierr);
+  ierr = ISDestroy(&newis);CHKERRQ(ierr);
+  ierr = ISDestroy(&is);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

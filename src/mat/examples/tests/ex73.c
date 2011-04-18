@@ -60,7 +60,7 @@ int main(int argc,char **args)
   ierr = MatLoad(A,fd);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&xin);CHKERRQ(ierr);
   ierr = VecLoad(xin,fd);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
   if (viewMats){
     if (!rank) printf("Original matrix:\n");
     ierr = MatView(A,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
@@ -88,13 +88,13 @@ int main(int argc,char **args)
   /* get number of new vertices for each processor */
   ierr = PetscMalloc(size*sizeof(PetscInt),&nlocal);CHKERRQ(ierr);
   ierr = ISPartitioningCount(is,size,nlocal);CHKERRQ(ierr); 
-  ierr = ISDestroy(is);CHKERRQ(ierr);
+  ierr = ISDestroy(&is);CHKERRQ(ierr);
 
   /* get old global number of each new global number */
   ierr = ISInvertPermutation(isn,nlocal[rank],&is);CHKERRQ(ierr);
   ierr = PetscFree(nlocal);CHKERRQ(ierr);
-  ierr = ISDestroy(isn);CHKERRQ(ierr);
-  ierr = MatPartitioningDestroy(part);CHKERRQ(ierr);
+  ierr = ISDestroy(&isn);CHKERRQ(ierr);
+  ierr = MatPartitioningDestroy(&part);CHKERRQ(ierr);
   if (viewIS){
     if (!rank) printf("IS3=inv(IS2) - old global number of each new global number:\n");
     ierr = ISView(is,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
@@ -103,7 +103,7 @@ int main(int argc,char **args)
   /* move the matrix rows to the new processes they have been assigned to by the permutation */
   ierr = ISSort(is);CHKERRQ(ierr);
   ierr = MatGetSubMatrix(A,is,is,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
-  ierr = MatDestroy(A);CHKERRQ(ierr); 
+  ierr = MatDestroy(&A);CHKERRQ(ierr); 
 
   /* move the vector rows to the new processes they have been assigned to */
   ierr = MatGetLocalSize(B,&m,&n);CHKERRQ(ierr);
@@ -111,8 +111,8 @@ int main(int argc,char **args)
   ierr = VecScatterCreate(xin,PETSC_NULL,xout,is,&scat);CHKERRQ(ierr);
   ierr = VecScatterBegin(scat,xin,xout,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(scat,xin,xout,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(scat);CHKERRQ(ierr);
-  ierr = ISDestroy(is);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&scat);CHKERRQ(ierr);
+  ierr = ISDestroy(&is);CHKERRQ(ierr);
   if (viewMats){
     if (!rank) printf("Partitioned matrix:\n");
     ierr = MatView(B,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
@@ -163,7 +163,7 @@ int main(int argc,char **args)
       if (!rank) printf("Jacobian matrix structure:\n");
       ierr = MatView(J,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);    
     }
-    ierr = MatDestroy(J);CHKERRQ(ierr);
+    ierr = MatDestroy(&J);CHKERRQ(ierr);
     ierr = PetscFree2(ncols,nvals);CHKERRQ(ierr);
   }
   
@@ -171,9 +171,9 @@ int main(int argc,char **args)
        Free work space.  All PETSc objects should be destroyed when they
        are no longer needed.
   */
-  ierr = MatDestroy(B);CHKERRQ(ierr); 
-  ierr = VecDestroy(xin);CHKERRQ(ierr); 
-  ierr = VecDestroy(xout);CHKERRQ(ierr);
+  ierr = MatDestroy(&B);CHKERRQ(ierr); 
+  ierr = VecDestroy(&xin);CHKERRQ(ierr); 
+  ierr = VecDestroy(&xout);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

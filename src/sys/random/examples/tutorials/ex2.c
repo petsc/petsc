@@ -8,7 +8,7 @@ static char help[] = "Tests PetscRandom functions.\n\n";
 
 #include <petscsys.h>
 
-#define MAXBSIZE     40
+#define PETSC_MAXBSIZE     40
 #define PI           3.1415926535897
 #define DATAFILENAME "ex2_stock.txt"
 
@@ -121,7 +121,7 @@ int main(int argc, char *argv[])
     
     free(vol);
     free(eps);
-    ierr = PetscRandomDestroy(ran);CHKERRQ(ierr);
+    ierr = PetscRandomDestroy(&ran);CHKERRQ(ierr);
     PetscFinalize();   
     return 0;
 }
@@ -145,7 +145,7 @@ void stdNormalArray(double *eps, int size, PetscRandom ran)
 
 double basketPayoff(double vol[], double St0[], int n, double r,double dt, double eps[])
 {
-  double Stk[MAXBSIZE], temp;
+  double Stk[PETSC_MAXBSIZE], temp;
   double payoff;
   int    maxk,i,j;
   int    pointcount=0;
@@ -176,7 +176,7 @@ double basketPayoff(double vol[], double St0[], int n, double r,double dt, doubl
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "readData_"
+#define __FUNCT__ "readData"
 PetscErrorCode readData(MPI_Comm comm,himaInfo *hinfo)
 {
   int            i;

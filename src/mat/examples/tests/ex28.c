@@ -58,12 +58,12 @@ int main(int argc,char **args)
   ierr = MatSolve(LU,x,y);CHKERRQ(ierr);
   ierr = VecView(y,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
 
-  ierr = ISDestroy(rowperm);CHKERRQ(ierr);
-  ierr = ISDestroy(colperm);CHKERRQ(ierr);
-  ierr = MatDestroy(LU);CHKERRQ(ierr);
-  ierr = MatDestroy(A);CHKERRQ(ierr);
-  ierr = VecDestroy(x);CHKERRQ(ierr);
-  ierr = VecDestroy(y);CHKERRQ(ierr);
+  ierr = ISDestroy(&rowperm);CHKERRQ(ierr);
+  ierr = ISDestroy(&colperm);CHKERRQ(ierr);
+  ierr = MatDestroy(&LU);CHKERRQ(ierr);
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = VecDestroy(&y);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

@@ -49,14 +49,14 @@ int main(int argc,char **args)
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatView(A,fd);CHKERRQ(ierr);
-  ierr = MatDestroy(A);CHKERRQ(ierr);
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
 
   ierr = VecCreateSeq(PETSC_COMM_WORLD,12,&x);CHKERRQ(ierr);
   ierr = VecSet(x,one);CHKERRQ(ierr);
   ierr = VecView(x,fd);CHKERRQ(ierr);
-  ierr = VecDestroy(x);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
 
-  ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

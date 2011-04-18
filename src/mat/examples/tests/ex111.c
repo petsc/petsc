@@ -24,12 +24,12 @@ PetscInt main(PetscInt argc,char **args)
     ierr = PetscPrintf(PETSC_COMM_WORLD,"writing matrix A in binary to A.dat ...\n");CHKERRQ(ierr);
     ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"A.dat",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
     ierr = MatView(A,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 
     ierr = PetscPrintf(PETSC_COMM_WORLD,"writing matrix P in binary to P.dat ...\n");CHKERRQ(ierr);
     ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"P.dat",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
     ierr = MatView(P,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
  }
 #endif
 
@@ -43,19 +43,19 @@ PetscInt main(PetscInt argc,char **args)
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[0],FILE_MODE_READ,&fd);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatLoad(A,fd);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(fd);CHKERRQ(ierr); 
+  ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr); 
   /* ierr = MatGetSize(A,&m,&n);CHKERRQ(ierr); */
     
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[1],FILE_MODE_READ,&fd);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&P);CHKERRQ(ierr);
   ierr = MatLoad(P,fd);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
    
   ierr = MatPtAP(A,P,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
 
-  ierr = MatDestroy(C);CHKERRQ(ierr);
-  ierr = MatDestroy(P);CHKERRQ(ierr);
-  ierr = MatDestroy(A);CHKERRQ(ierr);
+  ierr = MatDestroy(&C);CHKERRQ(ierr);
+  ierr = MatDestroy(&P);CHKERRQ(ierr);
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

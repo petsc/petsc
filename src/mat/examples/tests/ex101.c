@@ -24,7 +24,7 @@ int main(int argc,char **argv) {
   ierr = MatAssemblyBegin(pA,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(pA,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatCreateMAIJ(pA,3,&P);CHKERRQ(ierr);
-  ierr = MatDestroy(pA);
+  ierr = MatDestroy(&pA);
 
   /* Create AIJ equivalent matrix, aijP, for comparison testing */
   ierr = MatConvert(P,MATSEQAIJ,MAT_INITIAL_MATRIX,&aijP);
@@ -60,11 +60,11 @@ int main(int argc,char **argv) {
   ierr = MatView(C,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
 
   /* Cleanup */
-  ierr = MatDestroy(P);
-  ierr = MatDestroy(aijP);
-  ierr = MatDestroy(A);
-  ierr = MatDestroy(C);
-  ierr = MatDestroy(mC);
+  ierr = MatDestroy(&P);
+  ierr = MatDestroy(&aijP);
+  ierr = MatDestroy(&A);
+  ierr = MatDestroy(&C);
+  ierr = MatDestroy(&mC);
   PetscFinalize();
   return(0);
 }

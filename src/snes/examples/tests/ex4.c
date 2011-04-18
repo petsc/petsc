@@ -113,9 +113,9 @@ int main(int argc, char **argv)
   ierr = VecRestoreArray(x,&xvalues);CHKERRQ(ierr);
 
   /* Free data structures */
-  ierr = VecDestroy(x);CHKERRQ(ierr);  ierr = VecDestroy(r);CHKERRQ(ierr);
-  ierr = MatDestroy(J);CHKERRQ(ierr);  ierr = SNESDestroy(snes);CHKERRQ(ierr);
-  ierr = PetscDrawDestroy(draw);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);  ierr = VecDestroy(&r);CHKERRQ(ierr);
+  ierr = MatDestroy(&J);CHKERRQ(ierr);  ierr = SNESDestroy(&snes);CHKERRQ(ierr);
+  ierr = PetscDrawDestroy(&draw);CHKERRQ(ierr);
   ierr = PetscFinalize();
 
   return 0;

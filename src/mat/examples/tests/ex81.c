@@ -46,7 +46,7 @@ int main(int argc,char **args)
   ierr = MatLoad(A,fd);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
   ierr = VecLoad(x,fd);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
 
   /* Format is in column storage so we print transpose matrix */
   ierr = MatTranspose(A,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
@@ -94,8 +94,8 @@ int main(int argc,char **args)
   ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
 
   fclose(file);
-  ierr = MatDestroy(A);CHKERRQ(ierr);
-  ierr = VecDestroy(x);CHKERRQ(ierr);
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
   return 0;

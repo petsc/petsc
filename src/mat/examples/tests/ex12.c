@@ -50,7 +50,7 @@ int main(int argc,char **args)
   ierr = TestMatZeroRows_with_no_allocation(A,is,0.0);CHKERRQ(ierr);
   ierr = TestMatZeroRows_with_no_allocation(A,is,diag);CHKERRQ(ierr);
 
-  ierr = MatDestroy(A);CHKERRQ(ierr);
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
 
   /* Now Create a rectangular matrix with five point stencil (app) 
    n+size is used so that this dimension is always divisible by size.
@@ -74,8 +74,8 @@ int main(int argc,char **args)
   ierr = TestMatZeroRows_Basic(A,is,0.0);CHKERRQ(ierr);
   ierr = TestMatZeroRows_Basic(A,is,diag);CHKERRQ(ierr);
 
-  ierr = MatDestroy(A);CHKERRQ(ierr);
-  ierr = ISDestroy(is);CHKERRQ(ierr); 
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  ierr = ISDestroy(&is);CHKERRQ(ierr); 
   ierr = PetscFinalize();
   return 0;
 }
@@ -98,7 +98,7 @@ PetscErrorCode TestMatZeroRows_Basic(Mat A,IS is,PetscScalar diag)
 
   ierr = MatZeroRowsIS(B,is,diag,0,0);CHKERRQ(ierr);
   ierr = MatView(B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); 
-  ierr = MatDestroy(B);CHKERRQ(ierr);
+  ierr = MatDestroy(&B);CHKERRQ(ierr);
   return 0;
 }
 
@@ -116,6 +116,6 @@ PetscErrorCode TestMatZeroRows_with_no_allocation(Mat A,IS is,PetscScalar diag)
 
   ierr = MatZeroRowsIS(B,is,diag,0,0);CHKERRQ(ierr);
   ierr = MatView(B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); 
-  ierr = MatDestroy(B);CHKERRQ(ierr);
+  ierr = MatDestroy(&B);CHKERRQ(ierr);
   return 0;
 }

@@ -1832,7 +1832,7 @@ int main(int argc, char *argv[])
       PetscPrintf(comm, "Creating solver...\n");
       ierr = CreateSolver(dm, &dmmg, &options);CHKERRQ(ierr);
       ierr = Solve(dmmg, &options);CHKERRQ(ierr);
-      ierr = DMMGDestroy(&dmmg);CHKERRQ(ierr);
+      ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
       ierr = DestroyExactSolution(options.exactSol, &options);CHKERRQ(ierr);
       ierr = DestroyExactSolution(options.error,    &options);CHKERRQ(ierr);
     }

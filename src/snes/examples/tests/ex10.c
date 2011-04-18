@@ -113,12 +113,12 @@ int main(int argc, char **argv)
   info = VecView(x,PETSC_VIEWER_STDOUT_SELF); CHKERRQ(info);
 
   /* Free memory */
-  info = VecDestroy(x); CHKERRQ(info);
-  info = VecDestroy(xl); CHKERRQ(info);
-  info = VecDestroy(xu); CHKERRQ(info);
-  info = VecDestroy(r); CHKERRQ(info);
-  info = MatDestroy(J); CHKERRQ(info);
-  info = SNESDestroy(snes); CHKERRQ(info);
+  info = VecDestroy(&x); CHKERRQ(info);
+  info = VecDestroy(&xl); CHKERRQ(info);
+  info = VecDestroy(&xu); CHKERRQ(info);
+  info = VecDestroy(&r); CHKERRQ(info);
+  info = MatDestroy(&J); CHKERRQ(info);
+  info = SNESDestroy(&snes); CHKERRQ(info);
 
   /* Free user-created data structures */
   info = PetscFree(user.bottom); CHKERRQ(info);

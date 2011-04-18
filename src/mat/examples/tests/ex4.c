@@ -50,10 +50,10 @@ int main(int argc,char **argv)
   ierr = MatZeroEntries(mat);CHKERRQ(ierr);
   ierr = MatView(mat,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-  ierr = ISDestroy(irkeep);CHKERRQ(ierr);
-  ierr = ISDestroy(ickeep);CHKERRQ(ierr);
-  ierr = MatDestroy(submat);CHKERRQ(ierr);
-  ierr = MatDestroy(mat);CHKERRQ(ierr);
+  ierr = ISDestroy(&irkeep);CHKERRQ(ierr);
+  ierr = ISDestroy(&ickeep);CHKERRQ(ierr);
+  ierr = MatDestroy(&submat);CHKERRQ(ierr);
+  ierr = MatDestroy(&mat);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

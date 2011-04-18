@@ -121,8 +121,8 @@ int main(int argc, char *argv[]) {
   ierr =  TSStep(ts,&steps,&ftime);CHKERRQ(ierr);
 
   // Cleanup
-  ierr = TSDestroy(ts);CHKERRQ(ierr);
-  ierr = DMDestroy(user.iga);CHKERRQ(ierr);
+  ierr = TSDestroy(&ts);CHKERRQ(ierr);
+  ierr = DMDestroy(&user.iga);CHKERRQ(ierr);
   ierr = PetscFinalize();
 
   return 0;
@@ -520,7 +520,7 @@ PetscErrorCode WriteSolution(Vec U, const char pattern[],int number)
   ierr = PetscViewerBinaryOpen(comm,filename,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
   ierr = VecView(U,viewer);CHKERRQ(ierr);
   ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

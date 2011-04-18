@@ -61,18 +61,18 @@ int main(int argc,char **argv)
 
   ierr = VecScatterCreate(x,isx,y,isy,&ctx);CHKERRQ(ierr);
   ierr = VecScatterCopy(ctx,&newctx);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(ctx);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&ctx);CHKERRQ(ierr);
 
   ierr = VecScatterBegin(newctx,y,x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecScatterEnd(newctx,y,x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(newctx);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&newctx);CHKERRQ(ierr);
 
   ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-  ierr = ISDestroy(isx);CHKERRQ(ierr);
-  ierr = ISDestroy(isy);CHKERRQ(ierr);
-  ierr = VecDestroy(x);CHKERRQ(ierr);
-  ierr = VecDestroy(y);CHKERRQ(ierr);
+  ierr = ISDestroy(&isx);CHKERRQ(ierr);
+  ierr = ISDestroy(&isy);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = VecDestroy(&y);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
   return 0;

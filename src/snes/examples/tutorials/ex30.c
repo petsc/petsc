@@ -189,7 +189,7 @@ int main(int argc,char **argv)
   ierr = DMMGCreate(comm,grid.mglevels,user,&dmmg);CHKERRQ(ierr); 
   ierr = DMDACreate2d(comm,grid.bx,grid.by,grid.stencil,grid.ni,grid.nj,PETSC_DECIDE,PETSC_DECIDE,grid.dof,grid.stencil_width,0,0,&da);CHKERRQ(ierr);
   ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr);
-  ierr = DMDestroy(da);CHKERRQ(ierr);
+  ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = DMDASetFieldName(DMMGGetDM(dmmg),0,"x-velocity");CHKERRQ(ierr);
   ierr = DMDASetFieldName(DMMGGetDM(dmmg),1,"y-velocity");CHKERRQ(ierr);
   ierr = DMDASetFieldName(DMMGGetDM(dmmg),2,"pressure");CHKERRQ(ierr);
@@ -203,7 +203,7 @@ int main(int argc,char **argv)
   ierr = DMMGCreate(comm,grid.mglevels,&user,&dmmg);CHKERRQ(ierr); 
   ierr = DMDACreate2d(comm,grid.bx,grid.by,grid.stencil,grid.ni,grid.nj,PETSC_DECIDE,PETSC_DECIDE,grid.dof,grid.stencil_width,0,0,&da);CHKERRQ(ierr);
   ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr);
-  ierr = DMDestroy(da);CHKERRQ(ierr);
+  ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = DMDASetFieldName(DMMGGetDM(dmmg),0,"x-velocity");CHKERRQ(ierr);
   ierr = DMDASetFieldName(DMMGGetDM(dmmg),1,"y-velocity");CHKERRQ(ierr);
   ierr = DMDASetFieldName(DMMGGetDM(dmmg),2,"pressure");CHKERRQ(ierr);
@@ -242,7 +242,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space. 
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = VecDestroy(user->Xguess);CHKERRQ(ierr);
+  ierr = VecDestroy(&user->Xguess);CHKERRQ(ierr);
   ierr = PetscFree(user);CHKERRQ(ierr);
   ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
   
@@ -1223,8 +1223,8 @@ PetscErrorCode DoOutput(DMMG *dmmg, PetscInt its)
     ierr = VecView(pars, viewer);CHKERRQ(ierr);
     
     /* destroy viewer and vector */
-    ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
-    ierr = VecDestroy(pars);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+    ierr = VecDestroy(&pars);CHKERRQ(ierr);
   } 
   
   param->ivisc = ivt;

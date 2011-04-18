@@ -156,20 +156,20 @@ int main(int argc,char **argv)
   ierr = PetscFree(x);CHKERRQ(ierr);
   ierr = PetscFree(y);CHKERRQ(ierr);
   ierr = PetscFree(z);CHKERRQ(ierr);
-  ierr = MatDestroy(A);CHKERRQ(ierr);
-  ierr = MatDestroy(A11);CHKERRQ(ierr);
-  ierr = MatDestroy(A12);CHKERRQ(ierr);
-  ierr = MatDestroy(A21);CHKERRQ(ierr);
-  ierr = MatDestroy(A22);CHKERRQ(ierr);
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  ierr = MatDestroy(&A11);CHKERRQ(ierr);
+  ierr = MatDestroy(&A12);CHKERRQ(ierr);
+  ierr = MatDestroy(&A21);CHKERRQ(ierr);
+  ierr = MatDestroy(&A22);CHKERRQ(ierr);
 
-  ierr = VecDestroy(X);CHKERRQ(ierr);
-  ierr = VecDestroy(Y);CHKERRQ(ierr);
-  ierr = VecDestroy(Z);CHKERRQ(ierr);
+  ierr = VecDestroy(&X);CHKERRQ(ierr);
+  ierr = VecDestroy(&Y);CHKERRQ(ierr);
+  ierr = VecDestroy(&Z);CHKERRQ(ierr);
 
-  ierr = VecDestroy(X1);CHKERRQ(ierr);
-  ierr = VecDestroy(X2);CHKERRQ(ierr);
-  ierr = VecDestroy(Z1);CHKERRQ(ierr);
-  ierr = VecDestroy(Z2);CHKERRQ(ierr);
+  ierr = VecDestroy(&X1);CHKERRQ(ierr);
+  ierr = VecDestroy(&X2);CHKERRQ(ierr);
+  ierr = VecDestroy(&Z1);CHKERRQ(ierr);
+  ierr = VecDestroy(&Z2);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
   return 0;

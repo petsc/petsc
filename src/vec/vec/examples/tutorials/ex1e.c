@@ -173,9 +173,9 @@ _ PetscPrintf(PETSC_COMM_WORLD,"VecMAXPY %G %G %G \n",v,v1,v2);___
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */
-_ VecDestroy(x);___
-_ VecDestroy(y);___
-_ VecDestroy(w);___
+_ VecDestroy(&x);___
+_ VecDestroy(&y);___
+_ VecDestroy(&w);___
 _ VecDestroyVecs(3,&z);___
 _ PetscFinalize();___
   return 0;

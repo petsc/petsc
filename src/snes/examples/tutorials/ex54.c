@@ -93,18 +93,18 @@ int main(int argc, char **argv)
     t = t + user.dt;
   }
 
-  ierr = VecDestroy(x);CHKERRQ(ierr);
-  ierr = VecDestroy(r);CHKERRQ(ierr);
-  ierr = VecDestroy(xl);CHKERRQ(ierr);
-  ierr = VecDestroy(xu);CHKERRQ(ierr);
-  ierr = VecDestroy(user.q);CHKERRQ(ierr);
-  ierr = VecDestroy(user.u);CHKERRQ(ierr);
-  ierr = VecDestroy(user.work1);CHKERRQ(ierr);
-  ierr = MatDestroy(user.M);CHKERRQ(ierr);
-  ierr = MatDestroy(user.M_0);CHKERRQ(ierr);
-  ierr = MatDestroy(J);CHKERRQ(ierr);
-  ierr = DMDestroy(user.da);CHKERRQ(ierr);
-  ierr = SNESDestroy(snes);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = VecDestroy(&r);CHKERRQ(ierr);
+  ierr = VecDestroy(&xl);CHKERRQ(ierr);
+  ierr = VecDestroy(&xu);CHKERRQ(ierr);
+  ierr = VecDestroy(&user.q);CHKERRQ(ierr);
+  ierr = VecDestroy(&user.u);CHKERRQ(ierr);
+  ierr = VecDestroy(&user.work1);CHKERRQ(ierr);
+  ierr = MatDestroy(&user.M);CHKERRQ(ierr);
+  ierr = MatDestroy(&user.M_0);CHKERRQ(ierr);
+  ierr = MatDestroy(&J);CHKERRQ(ierr);
+  ierr = DMDestroy(&user.da);CHKERRQ(ierr);
+  ierr = SNESDestroy(&snes);CHKERRQ(ierr);
   PetscFinalize();
 }
 
@@ -166,7 +166,7 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
   ierr = VecCopy(rand,user->u);
   ierr = VecShift(rand,-0.5);CHKERRQ(ierr);
   ierr = VecPointwiseMult(user->u,user->u,rand);CHKERRQ(ierr);
-  ierr = VecDestroy(rand);CHKERRQ(ierr);
+  ierr = VecDestroy(&rand);CHKERRQ(ierr);
   ierr = VecScale(user->u,0.05);CHKERRQ(ierr);
   ierr = VecShift(user->u,-0.4);CHKERRQ(ierr);
   
@@ -410,8 +410,8 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
   ierr = VecSetSizes(user->u,n/2,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(user->u);CHKERRQ(ierr);
   ierr = VecDuplicate(user->u,&user->work1);CHKERRQ(ierr);
-  ierr = ISDestroy(isrow);CHKERRQ(ierr);
-  ierr = ISDestroy(iscol);CHKERRQ(ierr);
+  ierr = ISDestroy(&isrow);CHKERRQ(ierr);
+  ierr = ISDestroy(&iscol);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

@@ -40,7 +40,7 @@ int main(int argc,char **args)
   ierr = PetscBinaryWrite(fd,array,m,PETSC_SCALAR,PETSC_FALSE);CHKERRQ(ierr);
 
   /* Destroy the output viewer and work array */
-  ierr = PetscViewerDestroy(view_out);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&view_out);CHKERRQ(ierr);
   ierr = PetscFree(array);CHKERRQ(ierr);
 
   /* ---------------------------------------------------------------------- */
@@ -69,8 +69,8 @@ int main(int argc,char **args)
   ierr = VecView(vec,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
 
   /* Free data structures */
-  ierr = VecDestroy(vec);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(view_in);CHKERRQ(ierr);
+  ierr = VecDestroy(&vec);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&view_in);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

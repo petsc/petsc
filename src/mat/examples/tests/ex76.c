@@ -147,7 +147,7 @@ int main(int argc,char **args)
   } else {
     ierr = MatGetOrdering(A,MATORDERINGNATURAL,&perm,&cperm);CHKERRQ(ierr);
   }
-  ierr = ISDestroy(cperm);CHKERRQ(ierr);
+  ierr = ISDestroy(&cperm);CHKERRQ(ierr);
 
   /* initialize factinfo */
   ierr = MatFactorInfoInitialize(&factinfo);CHKERRQ(ierr);
@@ -179,7 +179,7 @@ int main(int argc,char **args)
 
       ierr = MatMult(A,x,b);CHKERRQ(ierr);
       ierr = MatSolve(sC,b,y);CHKERRQ(ierr); 
-      ierr = MatDestroy(sC);CHKERRQ(ierr);
+      ierr = MatDestroy(&sC);CHKERRQ(ierr);
 
       /* Check the error */
       ierr = VecAXPY(y,neg_one,x);CHKERRQ(ierr);
@@ -208,7 +208,7 @@ int main(int argc,char **args)
 
       ierr = MatMult(A,x,b);CHKERRQ(ierr); 
       ierr = MatSolve(sC,b,y);CHKERRQ(ierr); 
-      ierr = MatDestroy(sC);CHKERRQ(ierr);
+      ierr = MatDestroy(&sC);CHKERRQ(ierr);
 
       /* Check the error */
       ierr = VecAXPY(y,neg_one,x);CHKERRQ(ierr);
@@ -243,7 +243,7 @@ int main(int argc,char **args)
         if (!equal){
           SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"in-place Cholesky factor != out-place Cholesky factor");
         }
-        ierr = MatDestroy(B);CHKERRQ(ierr);
+        ierr = MatDestroy(&B);CHKERRQ(ierr);
       */
     }
 
@@ -257,10 +257,10 @@ int main(int argc,char **args)
       ierr = VecsCreateSeq(PETSC_COMM_SELF,n,4,&xx);CHKERRQ(ierr);
       ierr = VecsDuplicate(xx,&bb);CHKERRQ(ierr);
       ierr = MatSolves(sC,bb,xx);CHKERRQ(ierr); 
-      ierr = VecsDestroy(xx);CHKERRQ(ierr); 
-      ierr = VecsDestroy(bb);CHKERRQ(ierr); 
+      ierr = VecsDestroy(&xx);CHKERRQ(ierr); 
+      ierr = VecsDestroy(&bb);CHKERRQ(ierr); 
     }
-    ierr = MatDestroy(sC);CHKERRQ(ierr);
+    ierr = MatDestroy(&sC);CHKERRQ(ierr);
 
     /* Check the error */
     ierr = VecAXPY(y,neg_one,x);CHKERRQ(ierr);
@@ -270,13 +270,13 @@ int main(int argc,char **args)
     if (err[i] > tol) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_USER," level: %d, err: %G\n", lvl,err[i]); 
   } 
 
-  ierr = ISDestroy(perm);CHKERRQ(ierr);
-  ierr = MatDestroy(A);CHKERRQ(ierr);
-  ierr = MatDestroy(sA);CHKERRQ(ierr);
-  ierr = VecDestroy(x);CHKERRQ(ierr);
-  ierr = VecDestroy(y);CHKERRQ(ierr);  
-  ierr = VecDestroy(b);CHKERRQ(ierr);
-  ierr = PetscRandomDestroy(rdm);CHKERRQ(ierr);
+  ierr = ISDestroy(&perm);CHKERRQ(ierr);
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  ierr = MatDestroy(&sA);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = VecDestroy(&y);CHKERRQ(ierr);  
+  ierr = VecDestroy(&b);CHKERRQ(ierr);
+  ierr = PetscRandomDestroy(&rdm);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
   return 0;

@@ -51,11 +51,11 @@ int main(int argc,char **args)
     ierr = VecNorm(e,NORM_2,&norm);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_SELF,"2-norm of error %G\n",norm);CHKERRQ(ierr);
   }
-  ierr = MatDestroy(C);CHKERRQ(ierr);
-  ierr = VecDestroy(x);CHKERRQ(ierr);
-  ierr = VecDestroy(b);CHKERRQ(ierr);
-  ierr = VecDestroy(u);CHKERRQ(ierr);
-  ierr = VecDestroy(e);CHKERRQ(ierr);
+  ierr = MatDestroy(&C);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = VecDestroy(&b);CHKERRQ(ierr);
+  ierr = VecDestroy(&u);CHKERRQ(ierr);
+  ierr = VecDestroy(&e);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

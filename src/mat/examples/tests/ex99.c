@@ -65,14 +65,14 @@ PetscInt main(PetscInt argc,char **args)
     ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
     ierr = MatSetType(A,MATSBAIJ);CHKERRQ(ierr);
     ierr = MatLoad(A,fd);CHKERRQ(ierr); 
-    ierr = PetscViewerDestroy(fd);CHKERRQ(ierr); 
+    ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr); 
     ierr = MatGetSize(A,&m,&n);CHKERRQ(ierr);
     if ((flgB && PreLoadIt) || (flgB && !preload)){
       ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[PreLoadIt+1],FILE_MODE_READ,&fd);CHKERRQ(ierr);
       ierr = MatCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
       ierr = MatSetType(B,MATSBAIJ);CHKERRQ(ierr);
       ierr = MatLoad(B,fd);CHKERRQ(ierr);
-      ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
+      ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
     } else { /* create B=I */
       ierr = MatCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
       ierr = MatSetSizes(B,PETSC_DECIDE,PETSC_DECIDE,m,n);CHKERRQ(ierr);
@@ -98,12 +98,12 @@ PetscInt main(PetscInt argc,char **args)
       ierr = MatTranspose(A,MAT_INITIAL_MATRIX, &Trans);
       ierr = MatEqual(A, Trans, &isSymmetric);
       if (!isSymmetric) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"A must be symmetric");
-      ierr = MatDestroy(Trans);CHKERRQ(ierr);
+      ierr = MatDestroy(&Trans);CHKERRQ(ierr);
       if (flgB && PreLoadIt){
         ierr = MatTranspose(B,MAT_INITIAL_MATRIX, &Trans);
         ierr = MatEqual(B, Trans, &isSymmetric);
         if (!isSymmetric) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"B must be symmetric");
-        ierr = MatDestroy(Trans);CHKERRQ(ierr);
+        ierr = MatDestroy(&Trans);CHKERRQ(ierr);
       }
     }
 
@@ -134,7 +134,7 @@ PetscInt main(PetscInt argc,char **args)
       ierr = MatAssemblyBegin(A_sp,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
       ierr = MatAssemblyEnd(A_sp,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr); 
 
-      ierr = MatDestroy(A_sp);CHKERRQ(ierr);
+      ierr = MatDestroy(&A_sp);CHKERRQ(ierr);
 
       ratio = (PetscReal)nzeros[0]/sbaij->nz;
       ierr = PetscPrintf(PETSC_COMM_SELF," %d matrix entries < %e, ratio %G of %d nonzeros\n",nzeros[0],tols[0],ratio,sbaij->nz);CHKERRQ(ierr);
@@ -202,7 +202,7 @@ PetscInt main(PetscInt argc,char **args)
       ierr = PetscLogStagePush(stages[1]);CHKERRQ(ierr);
       ierr = CkEigenSolutions(&cklvl,mats,evals,evecs,ievbd_loc,&offset,tols);CHKERRQ(ierr);
       ierr = PetscLogStagePop();CHKERRQ(ierr);
-      for (i=0; i<nevs; i++){ ierr = VecDestroy(evecs[i]);CHKERRQ(ierr);}
+      for (i=0; i<nevs; i++){ ierr = VecDestroy(&evecs[i]);CHKERRQ(ierr);}
       ierr = PetscFree(evecs);CHKERRQ(ierr);
     }
     
@@ -212,10 +212,10 @@ PetscInt main(PetscInt argc,char **args)
     ierr = PetscFree(evals);CHKERRQ(ierr);
     ierr = PetscFree(work);CHKERRQ(ierr);
 
-    ierr = MatDestroy(A_dense);CHKERRQ(ierr); 
-    ierr = MatDestroy(B_dense);CHKERRQ(ierr); 
-    ierr = MatDestroy(B);CHKERRQ(ierr);
-    ierr = MatDestroy(A);CHKERRQ(ierr);
+    ierr = MatDestroy(&A_dense);CHKERRQ(ierr); 
+    ierr = MatDestroy(&B_dense);CHKERRQ(ierr); 
+    ierr = MatDestroy(&B);CHKERRQ(ierr);
+    ierr = MatDestroy(&A);CHKERRQ(ierr);
 
   PreLoadEnd();
   ierr = PetscFinalize();
@@ -303,7 +303,7 @@ PetscErrorCode CkEigenSolutions(PetscInt *fcklvl,Mat *mats,
   default:
     ierr = PetscPrintf(PETSC_COMM_SELF,"Error: cklvl=%d is not supported \n",cklvl);
   }
-  ierr = VecDestroy(vt2); 
-  ierr = VecDestroy(vt1);
+  ierr = VecDestroy(&vt2); 
+  ierr = VecDestroy(&vt1);
   PetscFunctionReturn(0);
 }

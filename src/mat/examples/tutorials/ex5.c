@@ -138,8 +138,8 @@ int Mat_Parallel_Load(MPI_Comm comm,const char *name,Mat *newmat)
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   *newmat = A;
-  ierr = PetscViewerDestroy(viewer1);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(viewer2);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&viewer1);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&viewer2);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -154,7 +154,7 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetString(PETSC_NULL,"-f",name,1024,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_SELF,1,"Must pass in filename with -f option");
   ierr = Mat_Parallel_Load(PETSC_COMM_WORLD,name,&A);CHKERRQ(ierr);
-  ierr = MatDestroy(A);CHKERRQ(ierr);
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
   PetscFinalize();
   return 0;
 }

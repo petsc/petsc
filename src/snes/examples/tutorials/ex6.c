@@ -163,9 +163,9 @@ int main(int argc,char **argv)
      are no longer needed.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = VecDestroy(x);CHKERRQ(ierr);     ierr = VecDestroy(r);CHKERRQ(ierr);
-  ierr = VecDestroy(F);CHKERRQ(ierr);     ierr = MatDestroy(J);CHKERRQ(ierr);
-  ierr = MatDestroy(JPrec);CHKERRQ(ierr); ierr = SNESDestroy(snes);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);     ierr = VecDestroy(&r);CHKERRQ(ierr);
+  ierr = VecDestroy(&F);CHKERRQ(ierr);     ierr = MatDestroy(&J);CHKERRQ(ierr);
+  ierr = MatDestroy(&JPrec);CHKERRQ(ierr); ierr = SNESDestroy(&snes);CHKERRQ(ierr);
   ierr = PetscFinalize();
 
   return 0;

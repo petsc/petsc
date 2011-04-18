@@ -169,13 +169,13 @@ int main(int argc,char **argv)
   }
  
   /* free space */ 
-  ierr = TSDestroy(ts);CHKERRQ(ierr)
-  ierr = MatDestroy(appctx.Amat);CHKERRQ(ierr);
-  ierr = MatDestroy(Jmat);CHKERRQ(ierr);
-  ierr = VecDestroy(appctx.ksp_rhs);CHKERRQ(ierr);
-  ierr = VecDestroy(appctx.ksp_sol);CHKERRQ(ierr);
-  ierr = VecDestroy(init_sol);CHKERRQ(ierr);
-  ierr = VecDestroy(appctx.solution);CHKERRQ(ierr);
+  ierr = TSDestroy(&ts);CHKERRQ(ierr)
+  ierr = MatDestroy(&appctx.Amat);CHKERRQ(ierr);
+  ierr = MatDestroy(&Jmat);CHKERRQ(ierr);
+  ierr = VecDestroy(&appctx.ksp_rhs);CHKERRQ(ierr);
+  ierr = VecDestroy(&appctx.ksp_sol);CHKERRQ(ierr);
+  ierr = VecDestroy(&init_sol);CHKERRQ(ierr);
+  ierr = VecDestroy(&appctx.solution);CHKERRQ(ierr);
   ierr = PetscFree(z);CHKERRQ(ierr);
 
   PetscFinalize(); 
@@ -283,7 +283,7 @@ void  Petsc_KSPSolve(AppCtx *obj)
    /*get the linear system (ksp) solve*/
    ierr = KSPSolve(ksp,obj->ksp_rhs,obj->ksp_sol);
 
-   KSPDestroy(ksp);
+   KSPDestroy(&ksp);
    return;
 }
 

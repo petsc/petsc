@@ -74,7 +74,7 @@ int main(int argc,char **args)
     ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
     ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
     ierr = MatLoad(A,fd);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
 
 
     /* - - - - - - - - - - - New Stage - - - - - - - - - - - - -
@@ -87,9 +87,9 @@ int main(int argc,char **args)
        Free work space.  All PETSc objects should be destroyed when they
        are no longer needed.
     */
-    ierr = MatDestroy(A);CHKERRQ(ierr);
-    ierr = ISDestroy(isrow);CHKERRQ(ierr);
-    ierr = ISDestroy(iscol);CHKERRQ(ierr);
+    ierr = MatDestroy(&A);CHKERRQ(ierr);
+    ierr = ISDestroy(&isrow);CHKERRQ(ierr);
+    ierr = ISDestroy(&iscol);CHKERRQ(ierr);
   PreLoadEnd();
 
   ierr = PetscFinalize();

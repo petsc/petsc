@@ -140,18 +140,18 @@ int main(int argc,char **args)
   ierr = PetscPrintf(PETSC_COMM_WORLD,"MatMatSolve           : Error of norm %A\n",norm);CHKERRQ(ierr);
 
 
-  ierr = VecDestroy(x);CHKERRQ(ierr);
-  ierr = VecDestroy(b);CHKERRQ(ierr);
-  ierr = VecDestroy(b1);CHKERRQ(ierr);
-  ierr = VecDestroy(y);CHKERRQ(ierr);
-  ierr = MatDestroy(A);CHKERRQ(ierr);
-  ierr = MatDestroy(F);CHKERRQ(ierr);
-  ierr = MatDestroy(RHS);CHKERRQ(ierr);
-  ierr = MatDestroy(C1);CHKERRQ(ierr);
-  ierr = MatDestroy(X);CHKERRQ(ierr);
-  ierr = ISDestroy(perm);CHKERRQ(ierr);
-  ierr = ISDestroy(iperm);CHKERRQ(ierr);
-  ierr = DMDestroy(da);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = VecDestroy(&b);CHKERRQ(ierr);
+  ierr = VecDestroy(&b1);CHKERRQ(ierr);
+  ierr = VecDestroy(&y);CHKERRQ(ierr);
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  ierr = MatDestroy(&F);CHKERRQ(ierr);
+  ierr = MatDestroy(&RHS);CHKERRQ(ierr);
+  ierr = MatDestroy(&C1);CHKERRQ(ierr);
+  ierr = MatDestroy(&X);CHKERRQ(ierr);
+  ierr = ISDestroy(&perm);CHKERRQ(ierr);
+  ierr = ISDestroy(&iperm);CHKERRQ(ierr);
+  ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }
@@ -204,7 +204,7 @@ PetscErrorCode ComputeRHSMatrix(PetscInt m,PetscInt nrhs,Mat* C)
   ierr = MatAssemblyBegin(RHS,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(RHS,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   *C = RHS;
-  ierr = PetscRandomDestroy(rand);CHKERRQ(ierr);
+  ierr = PetscRandomDestroy(&rand);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -288,7 +288,7 @@ PetscErrorCode ComputeMatrix(DM da,Mat B)
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = PetscFree(v);CHKERRQ(ierr);
-  ierr = PetscRandomDestroy(rand);CHKERRQ(ierr);
+  ierr = PetscRandomDestroy(&rand);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -75,8 +75,8 @@ int main(int argc,char **args)
   ierr = VecView(u,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = VecView(b,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-  ierr = VecDestroy(u);CHKERRQ(ierr);
-  ierr = VecDestroy(b);CHKERRQ(ierr);
+  ierr = VecDestroy(&u);CHKERRQ(ierr);
+  ierr = VecDestroy(&b);CHKERRQ(ierr);
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-view_info",&flg);CHKERRQ(ierr);
   if (flg)  {ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);}
@@ -89,7 +89,7 @@ int main(int argc,char **args)
   ierr = PetscPrintf(PETSC_COMM_WORLD,"matrix information (global max):\n\
      nonzeros = %D, allocated nonzeros = %D\n",(PetscInt)info.nz_used,(PetscInt)info.nz_allocated);CHKERRQ(ierr);
 
-  ierr = MatDestroy(C);CHKERRQ(ierr);
+  ierr = MatDestroy(&C);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

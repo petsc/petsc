@@ -132,11 +132,11 @@ int main(int argc,char **argv)
   ierr = DMMGSolve(dmmg);CHKERRQ(ierr);
   ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
 
-  ierr = DMDestroy(da);CHKERRQ(ierr);
-  ierr = DMDestroy(packer);CHKERRQ(ierr);
+  ierr = DMDestroy(&da);CHKERRQ(ierr);
+  ierr = DMDestroy(&packer);CHKERRQ(ierr);
   if (use_monitor) {
-    ierr = PetscViewerDestroy(user.u_lambda_viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(user.fu_lambda_viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&user.u_lambda_viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&user.fu_lambda_viewer);CHKERRQ(ierr);
   }
 
   ierr = PetscFinalize();
@@ -249,7 +249,7 @@ PetscErrorCode ExactSolution(DM packer,Vec U)
   ierr = DMCompositeGetAccess(packer,U,&w,&u_global,0);CHKERRQ(ierr);
   if (w) w[0] = .25;
   ierr = PFApplyVec(pf,x,u_global);CHKERRQ(ierr);
-  ierr = PFDestroy(pf);CHKERRQ(ierr);
+  ierr = PFDestroy(&pf);CHKERRQ(ierr);
   ierr = DMCompositeRestoreAccess(packer,U,&w,&u_global,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -290,7 +290,7 @@ PetscErrorCode Monitor(SNES snes,PetscInt its,PetscReal rnorm,void *dummy)
   if (dw) ierr = PetscPrintf(dmmg->comm,"Norm of error %G Error at x = 0 %G\n",norm,PetscRealPart(dw[0]));CHKERRQ(ierr);
   ierr = VecView(u_lambda,user->fu_lambda_viewer);
   ierr = DMCompositeRestoreAccess(packer,Uexact,&dw,&u_lambda);CHKERRQ(ierr);
-  ierr = VecDestroy(Uexact);CHKERRQ(ierr);
+  ierr = VecDestroy(&Uexact);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

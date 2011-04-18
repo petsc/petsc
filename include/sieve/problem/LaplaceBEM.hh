@@ -35,7 +35,7 @@ namespace ALE {
       ~LaplaceBEM() {
         PetscErrorCode ierr;
 
-        if (this->_dmmg)                 {ierr = DMMGDestroy(&this->_dmmg);CHKERRXX(ierr);}
+        if (this->_dmmg)                 {ierr = DMMGDestroy(this->_dmmg);CHKERRXX(ierr);}
         if (this->_options.exactSol.vec) {ierr = this->destroyExactSolution(this->_options.exactSol);CHKERRXX(ierr);}
         if (this->_options.error.vec)    {ierr = this->destroyExactSolution(this->_options.error);CHKERRXX(ierr);}
         if (this->_dm)                   {ierr = this->destroyMesh();CHKERRXX(ierr);}

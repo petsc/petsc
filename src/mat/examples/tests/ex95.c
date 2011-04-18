@@ -46,8 +46,8 @@ int main(int argc,char **argv)
     ierr = MatMerge_SeqsToMPI(PETSC_COMM_WORLD,A,PETSC_DECIDE,PETSC_DECIDE,MAT_REUSE_MATRIX,&B);CHKERRQ(ierr);
   }
   ierr = MatView(B, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = MatDestroy(B);CHKERRQ(ierr);
-  ierr = MatDestroy(A);CHKERRQ(ierr);
+  ierr = MatDestroy(&B);CHKERRQ(ierr);
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
  
   PetscFinalize();
   return(0);

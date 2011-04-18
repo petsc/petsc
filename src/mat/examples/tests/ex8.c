@@ -39,7 +39,7 @@ int main(int argc,char **args)
   ierr = PetscPrintf(PETSC_COMM_SELF,"matrix nonzeros = %D, allocated nonzeros = %D\n",
     (PetscInt)info.nz_used,(PetscInt)info.nz_allocated);CHKERRQ(ierr);
 
-  ierr = MatDestroy(C);CHKERRQ(ierr);
+  ierr = MatDestroy(&C);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

@@ -34,7 +34,7 @@ int main(int argc,char **args)
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatLoad(A,fd);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(fd);CHKERRQ(ierr); 
+  ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr); 
   ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
   if (m != n) {
     SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%d, %d)", m, n);
@@ -192,20 +192,20 @@ int main(int argc,char **args)
   } 
   
   /* Free data structures */
-  ierr = MatDestroy(A);CHKERRQ(ierr); 
-  ierr = MatDestroy(C);CHKERRQ(ierr);
-  ierr = MatDestroy(F);CHKERRQ(ierr);
-  ierr = MatDestroy(X);CHKERRQ(ierr);
+  ierr = MatDestroy(&A);CHKERRQ(ierr); 
+  ierr = MatDestroy(&C);CHKERRQ(ierr);
+  ierr = MatDestroy(&F);CHKERRQ(ierr);
+  ierr = MatDestroy(&X);CHKERRQ(ierr);
   if (testMatMatSolve){
-    ierr = MatDestroy(RHS);CHKERRQ(ierr);
+    ierr = MatDestroy(&RHS);CHKERRQ(ierr);
   }
   
-  ierr = PetscRandomDestroy(rand);CHKERRQ(ierr);
-  ierr = ISDestroy(perm);CHKERRQ(ierr);
-  ierr = ISDestroy(iperm);CHKERRQ(ierr);
-  ierr = VecDestroy(x);CHKERRQ(ierr); 
-  ierr = VecDestroy(b);CHKERRQ(ierr);
-  ierr = VecDestroy(u);CHKERRQ(ierr); 
+  ierr = PetscRandomDestroy(&rand);CHKERRQ(ierr);
+  ierr = ISDestroy(&perm);CHKERRQ(ierr);
+  ierr = ISDestroy(&iperm);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr); 
+  ierr = VecDestroy(&b);CHKERRQ(ierr);
+  ierr = VecDestroy(&u);CHKERRQ(ierr); 
   ierr = PetscFinalize();
   return 0;
 }

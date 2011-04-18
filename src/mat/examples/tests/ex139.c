@@ -14,11 +14,11 @@ static PetscErrorCode GetLocalRef(Mat A,IS isrow,IS iscol,Mat *B)
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Extracting LocalRef with isrow:\n");CHKERRQ(ierr);
   ierr = ISOnComm(isrow,PETSC_COMM_WORLD,PETSC_COPY_VALUES,&istmp);CHKERRQ(ierr);
   ierr = ISView(istmp,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = ISDestroy(istmp);CHKERRQ(ierr);
+  ierr = ISDestroy(&istmp);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Extracting LocalRef with iscol (only rank=0 shown):\n");CHKERRQ(ierr);
   ierr = ISOnComm(iscol,PETSC_COMM_WORLD,PETSC_COPY_VALUES,&istmp);CHKERRQ(ierr);
   ierr = ISView(istmp,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = ISDestroy(istmp);CHKERRQ(ierr);
+  ierr = ISDestroy(&istmp);CHKERRQ(ierr);
 
   ierr = MatCreateLocalRef(A,isrow,iscol,B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -72,8 +72,8 @@ int main(int argc,char *argv[])
   ierr = MatSetLocalToGlobalMappingBlock(J,brmap,brmap);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingUnBlock(brmap,top_bs,&rmap);CHKERRQ(ierr);
   ierr = MatSetLocalToGlobalMapping(J,rmap,rmap);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingDestroy(brmap);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingDestroy(rmap);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingDestroy(&brmap);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingDestroy(&rmap);CHKERRQ(ierr);
 
   /* Create index sets for local submatrix */
   nrowblocks = (rend-rstart)/row_bs;
@@ -86,7 +86,7 @@ int main(int argc,char *argv[])
   ierr = PetscFree2(ridx,cidx);CHKERRQ(ierr);
 
   if (diag) {
-    ierr = ISDestroy(is1);CHKERRQ(ierr);
+    ierr = ISDestroy(&is1);CHKERRQ(ierr);
     ierr = PetscObjectReference((PetscObject)is0);CHKERRQ(ierr);
     is1 = is0;
     ncolblocks = nrowblocks;
@@ -120,10 +120,10 @@ int main(int argc,char *argv[])
 
   ierr = MatView(J,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-  ierr = ISDestroy(is0);CHKERRQ(ierr);
-  ierr = ISDestroy(is1);CHKERRQ(ierr);
-  ierr = MatDestroy(B);CHKERRQ(ierr);
-  ierr = MatDestroy(J);CHKERRQ(ierr);
+  ierr = ISDestroy(&is0);CHKERRQ(ierr);
+  ierr = ISDestroy(&is1);CHKERRQ(ierr);
+  ierr = MatDestroy(&B);CHKERRQ(ierr);
+  ierr = MatDestroy(&J);CHKERRQ(ierr);
   PetscFinalize();
   return 0;
 }

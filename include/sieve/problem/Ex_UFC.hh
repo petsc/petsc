@@ -357,7 +357,7 @@ namespace ALE {
       ~Ex_UFC() {
         PetscErrorCode ierr;
 
-        ierr = DMMGDestroy(&this->_dmmg);CHKERRXX(ierr);
+        ierr = DMMGDestroy(this->_dmmg);CHKERRXX(ierr);
         //ierr = this->destroyExactSolution(this->_options.exactSol);CHKERRXX(ierr);
         //ierr = this->destroyExactSolution(this->_options.error);CHKERRXX(ierr);
         ierr = this->destroyMesh();CHKERRXX(ierr);

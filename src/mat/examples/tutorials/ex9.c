@@ -48,7 +48,7 @@ int main(int argc,char **args)
     */
     ierr = MatCreate(PETSC_COMM_WORLD,&A[0]);CHKERRQ(ierr);
     ierr = MatLoad(A[0],fd);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
 
     ierr = MatDuplicate(A[0],MAT_COPY_VALUES,&A[1]);CHKERRQ(ierr);
     ierr = MatDuplicate(A[0],MAT_COPY_VALUES,&A[2]);CHKERRQ(ierr);
@@ -66,7 +66,7 @@ int main(int argc,char **args)
 
     ierr = MatCreateComposite(PETSC_COMM_WORLD,3,A,&B);CHKERRQ(ierr);
     ierr = MatMult(B,x,y);CHKERRQ(ierr);
-    ierr = MatDestroy(B);CHKERRQ(ierr);
+    ierr = MatDestroy(&B);CHKERRQ(ierr);
     ierr = VecAXPY(y,-1.0,y);CHKERRQ(ierr);
     ierr = VecNorm(y,NORM_2,&rnorm);CHKERRQ(ierr);
     if (rnorm > 1.e-10) {
@@ -76,7 +76,7 @@ int main(int argc,char **args)
     ierr = MatCreateComposite(PETSC_COMM_WORLD,3,A,&B);CHKERRQ(ierr);
     ierr = MatCompositeMerge(B);CHKERRQ(ierr);
     ierr = MatMult(B,x,y);CHKERRQ(ierr);
-    ierr = MatDestroy(B);CHKERRQ(ierr);
+    ierr = MatDestroy(&B);CHKERRQ(ierr);
     ierr = VecAXPY(y,-1.0,y);CHKERRQ(ierr);
     ierr = VecNorm(y,NORM_2,&rnorm);CHKERRQ(ierr);
     if (rnorm > 1.e-10) {
@@ -91,7 +91,7 @@ int main(int argc,char **args)
     ierr = MatCreateComposite(PETSC_COMM_WORLD,3,A,&B);CHKERRQ(ierr);
     ierr = MatCompositeSetType(B,MAT_COMPOSITE_MULTIPLICATIVE);CHKERRQ(ierr);
     ierr = MatMult(B,x,y);CHKERRQ(ierr);
-    ierr = MatDestroy(B);CHKERRQ(ierr);
+    ierr = MatDestroy(&B);CHKERRQ(ierr);
     ierr = VecAXPY(y,-1.0,y);CHKERRQ(ierr);
     ierr = VecNorm(y,NORM_2,&rnorm);CHKERRQ(ierr);
     if (rnorm > 1.e-10) {
@@ -102,7 +102,7 @@ int main(int argc,char **args)
     ierr = MatCompositeSetType(B,MAT_COMPOSITE_MULTIPLICATIVE);CHKERRQ(ierr);
     ierr = MatCompositeMerge(B);CHKERRQ(ierr);
     ierr = MatMult(B,x,y);CHKERRQ(ierr);
-    ierr = MatDestroy(B);CHKERRQ(ierr);
+    ierr = MatDestroy(&B);CHKERRQ(ierr);
     ierr = VecAXPY(y,-1.0,y);CHKERRQ(ierr);
     ierr = VecNorm(y,NORM_2,&rnorm);CHKERRQ(ierr);
     if (rnorm > 1.e-10) {
@@ -113,13 +113,13 @@ int main(int argc,char **args)
        Free work space.  All PETSc objects should be destroyed when they
        are no longer needed.
     */
-    ierr = VecDestroy(x);CHKERRQ(ierr);
-    ierr = VecDestroy(y);CHKERRQ(ierr);
-    ierr = VecDestroy(work);CHKERRQ(ierr);
-    ierr = VecDestroy(z);CHKERRQ(ierr);
-    ierr = MatDestroy(A[0]);CHKERRQ(ierr);
-    ierr = MatDestroy(A[1]);CHKERRQ(ierr);
-    ierr = MatDestroy(A[2]);CHKERRQ(ierr);
+    ierr = VecDestroy(&x);CHKERRQ(ierr);
+    ierr = VecDestroy(&y);CHKERRQ(ierr);
+    ierr = VecDestroy(&work);CHKERRQ(ierr);
+    ierr = VecDestroy(&z);CHKERRQ(ierr);
+    ierr = MatDestroy(&A[0]);CHKERRQ(ierr);
+    ierr = MatDestroy(&A[1]);CHKERRQ(ierr);
+    ierr = MatDestroy(&A[2]);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
   return 0;

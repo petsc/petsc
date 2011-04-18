@@ -39,7 +39,7 @@ int main(int argc,char **args)
       } 
   } else {
     ierr = VecLoad(x,fd);CHKERRQ(ierr);
-      ierr = PetscViewerDestroy(fd);CHKERRQ(ierr); 
+      ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr); 
   }
   ierr = VecDuplicate(x,&b);CHKERRQ(ierr);
   ierr = MatMult(A,x,b);CHKERRQ(ierr);
@@ -48,9 +48,9 @@ int main(int argc,char **args)
   ierr = MatView(A,0);CHKERRQ(ierr);
   ierr = VecView(b,0);CHKERRQ(ierr);
   /* Free data structures */
-  ierr = MatDestroy(A);CHKERRQ(ierr); 
-  ierr = VecDestroy(x);CHKERRQ(ierr); 
-  ierr = VecDestroy(b);CHKERRQ(ierr);
+  ierr = MatDestroy(&A);CHKERRQ(ierr); 
+  ierr = VecDestroy(&x);CHKERRQ(ierr); 
+  ierr = VecDestroy(&b);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

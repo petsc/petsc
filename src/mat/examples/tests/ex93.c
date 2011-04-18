@@ -35,8 +35,8 @@ int main(int argc,char **argv) {
   ierr = MatMatMultNumeric(C,A,D);CHKERRQ(ierr);
   ierr = MatView(D,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-  ierr = MatDestroy(B);CHKERRQ(ierr);
-  ierr = MatDestroy(C);CHKERRQ(ierr);
+  ierr = MatDestroy(&B);CHKERRQ(ierr);
+  ierr = MatDestroy(&C);CHKERRQ(ierr);
 
   ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   ierr = MatPtAP(A,B,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
@@ -44,8 +44,8 @@ int main(int argc,char **argv) {
   ierr = MatAXPY(D,none,C,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = MatView(D,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-  ierr = MatDestroy(C);CHKERRQ(ierr);
-  ierr = MatDestroy(D);CHKERRQ(ierr);
+  ierr = MatDestroy(&C);CHKERRQ(ierr);
+  ierr = MatDestroy(&D);CHKERRQ(ierr);
 
   /* Repeat PtAP to test symbolic/numeric separation for reuse of the symbolic product */
   ierr = MatPtAP(A,B,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
@@ -62,10 +62,10 @@ int main(int argc,char **argv) {
   /* A test contributed by Tobias Neckel <neckel@in.tum.de> */
   ierr = testPTAPRectangular();CHKERRQ(ierr);
 
-  ierr = MatDestroy(A);
-  ierr = MatDestroy(B);
-  ierr = MatDestroy(C);
-  ierr = MatDestroy(D);
+  ierr = MatDestroy(&A);
+  ierr = MatDestroy(&B);
+  ierr = MatDestroy(&C);
+  ierr = MatDestroy(&D);
   PetscFinalize();
   return(0);
 }
@@ -168,11 +168,11 @@ PetscErrorCode testPTAPRectangular(void)
   validateEqualsWithParams3(check, -1 , "testPTAPRectangular()", check, actualC(check), expectedC(check));
   */
   
-  _ierr = MatDestroy(A);
+  _ierr = MatDestroy(&A);
   PETSc_CHKERRQ(_ierr);
-  _ierr = MatDestroy(P);
+  _ierr = MatDestroy(&P);
   PETSc_CHKERRQ(_ierr);
-  _ierr = MatDestroy(C);
+  _ierr = MatDestroy(&C);
   PETSc_CHKERRQ(_ierr);
   PetscFunctionReturn(0);
 }

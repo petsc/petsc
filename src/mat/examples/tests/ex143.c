@@ -88,9 +88,9 @@ PetscInt main(PetscInt argc,char **args)
     /* Free spaces */
     fftw_destroy_plan(fplan);
     fftw_destroy_plan(bplan);
-    fftw_free(data_in);  ierr = VecDestroy(x);CHKERRQ(ierr);
-    fftw_free(data_out); ierr = VecDestroy(y);CHKERRQ(ierr);
-    fftw_free(data_out2);ierr = VecDestroy(z);CHKERRQ(ierr);
+    fftw_free(data_in);  ierr = VecDestroy(&x);CHKERRQ(ierr);
+    fftw_free(data_out); ierr = VecDestroy(&y);CHKERRQ(ierr);
+    fftw_free(data_out2);ierr = VecDestroy(&z);CHKERRQ(ierr);
 
   } else {
     /* Use PETSc-FFTW interface                  */
@@ -132,13 +132,13 @@ PetscInt main(PetscInt argc,char **args)
     }
 
     /* Free spaces */
-    ierr = VecDestroy(x);CHKERRQ(ierr);
-    ierr = VecDestroy(y);CHKERRQ(ierr);
-    ierr = VecDestroy(z);CHKERRQ(ierr);
-    ierr = MatDestroy(A);
+    ierr = VecDestroy(&x);CHKERRQ(ierr);
+    ierr = VecDestroy(&y);CHKERRQ(ierr);
+    ierr = VecDestroy(&z);CHKERRQ(ierr);
+    ierr = MatDestroy(&A);
   }
 
-  ierr = PetscRandomDestroy(rdm);CHKERRQ(ierr);
+  ierr = PetscRandomDestroy(&rdm);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

@@ -148,14 +148,14 @@ int main(int argc,char **argv)
   if (fd_jacobian) {
     ierr = DMGetColoring(user.da,IS_COLORING_GLOBAL,MATAIJ,&iscoloring);CHKERRQ(ierr);
     ierr = MatFDColoringCreate(J,iscoloring,&matfdcoloring);CHKERRQ(ierr);
-    ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
+    ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
     ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))SNESDAFormFunction,&user);CHKERRQ(ierr);
     ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,A,J,SNESDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr);
   } else if (fd_jacobian_ghosted) {
     ierr = DMGetColoring(user.da,IS_COLORING_GHOSTED,MATAIJ,&iscoloring);CHKERRQ(ierr);
     ierr = MatFDColoringCreate(J,iscoloring,&matfdcoloring);CHKERRQ(ierr);
-    ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
+    ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
     ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))SNESDAFormFunction,&user);CHKERRQ(ierr);
     ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
     /* now, call a customized SNESDefaultComputeJacobianColor() */
@@ -164,7 +164,7 @@ int main(int argc,char **argv)
   } else if (adic_jacobian) {
     ierr = DMGetColoring(user.da,IS_COLORING_GHOSTED,MATAIJ,&iscoloring);CHKERRQ(ierr);
     ierr = MatSetColoring(J,iscoloring);CHKERRQ(ierr);
-    ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
+    ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,A,J,SNESDAComputeJacobianWithAdic,&user);CHKERRQ(ierr);
 #endif
   } else {
@@ -234,7 +234,7 @@ int main(int argc,char **argv)
     ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
     ierr = DMView(user.da, viewer);CHKERRQ(ierr);
     ierr = VecView(x, viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -243,16 +243,16 @@ int main(int argc,char **argv)
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   if (A != J) {
-    ierr = MatDestroy(A);CHKERRQ(ierr);
+    ierr = MatDestroy(&A);CHKERRQ(ierr);
   }
-  ierr = MatDestroy(J);CHKERRQ(ierr);
+  ierr = MatDestroy(&J);CHKERRQ(ierr);
   if (matfdcoloring) {
-    ierr = MatFDColoringDestroy(matfdcoloring);CHKERRQ(ierr);
+    ierr = MatFDColoringDestroy(&matfdcoloring);CHKERRQ(ierr);
   }
-  ierr = VecDestroy(x);CHKERRQ(ierr);
-  ierr = VecDestroy(r);CHKERRQ(ierr);      
-  ierr = SNESDestroy(snes);CHKERRQ(ierr);
-  ierr = DMDestroy(user.da);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = VecDestroy(&r);CHKERRQ(ierr);      
+  ierr = SNESDestroy(&snes);CHKERRQ(ierr);
+  ierr = DMDestroy(&user.da);CHKERRQ(ierr);
   ierr = PetscFinalize();
 
   PetscFunctionReturn(0);

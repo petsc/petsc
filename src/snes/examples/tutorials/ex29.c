@@ -158,7 +158,7 @@ int main(int argc,char **argv)
     ierr = DMDASetBlockFills(da,dfill,ofill);CHKERRQ(ierr);
 
     ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr);
-    ierr = DMDestroy(da);CHKERRQ(ierr);
+    ierr = DMDestroy(&da);CHKERRQ(ierr);
 
     /* default physical parameters */
     param.nu    = 0;
@@ -290,8 +290,8 @@ int main(int argc,char **argv)
        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
     
     for (i=0; i<param.mglevels; i++) {
-      ierr = VecDestroy(user[i].Xoldold);CHKERRQ(ierr);
-      ierr = VecDestroy(user[i].Xold);CHKERRQ(ierr);
+      ierr = VecDestroy(&user[i].Xoldold);CHKERRQ(ierr);
+      ierr = VecDestroy(&user[i].Xold);CHKERRQ(ierr);
     }
     ierr = PetscFree(user);CHKERRQ(ierr);
     ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
@@ -367,7 +367,7 @@ PetscErrorCode Initialize(DMMG *dmmg)
     PetscViewer viewer;
     ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"binaryoutput",FILE_MODE_READ,&viewer);CHKERRQ(ierr);
     ierr = VecLoad(dmmg[param->mglevels-1]->x,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 
@@ -682,7 +682,7 @@ PetscErrorCode Update(DMMG *dmmg)
 
       ierr = MatView(mat, viewer);CHKERRQ(ierr);
 
-      ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
       SETERRQ(PETSC_COMM_SELF,1,"Done saving Jacobian");
     }
 

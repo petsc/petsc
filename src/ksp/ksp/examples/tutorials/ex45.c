@@ -46,7 +46,7 @@ int main(int argc,char **argv)
   ierr = DMSetFunction(da,ComputeRHS);CHKERRQ(ierr);
   ierr = DMSetJacobian(da,ComputeMatrix);CHKERRQ(ierr);
   ierr = KSPSetDM(ksp,da);CHKERRQ(ierr);
-  ierr = DMDestroy(da);CHKERRQ(ierr);
+  ierr = DMDestroy(&da);CHKERRQ(ierr);
 
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
   ierr = KSPSetUp(ksp);CHKERRQ(ierr);

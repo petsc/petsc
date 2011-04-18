@@ -53,12 +53,12 @@ int main(int argc,char **args)
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[2*PreLoadIt],FILE_MODE_READ,&viewer);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&A_save);CHKERRQ(ierr);
   ierr = MatLoad(A_save,viewer);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[2*PreLoadIt+1],FILE_MODE_READ,&viewer);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
   ierr = MatLoad(B,viewer);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 
   ierr = MatGetSize(B,&M,&N);CHKERRQ(ierr);
   nzp  = (PetscInt)(0.1*M);
@@ -115,13 +115,13 @@ int main(int argc,char **args)
       ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatMatMult(), |v1 - v2|: %G\n",norm);CHKERRQ(ierr);
     }
 
-    ierr = VecDestroy(x);CHKERRQ(ierr);
-    ierr = MatDestroy(A);CHKERRQ(ierr);
+    ierr = VecDestroy(&x);CHKERRQ(ierr);
+    ierr = MatDestroy(&A);CHKERRQ(ierr);
 
     /* Test MatDuplicate() of C */
     ierr = MatDuplicate(C,MAT_COPY_VALUES,&C1);CHKERRQ(ierr);
-    ierr = MatDestroy(C1);CHKERRQ(ierr);
-    ierr = MatDestroy(C);CHKERRQ(ierr); 
+    ierr = MatDestroy(&C1);CHKERRQ(ierr);
+    ierr = MatDestroy(&C);CHKERRQ(ierr); 
   } /* if (Test_MatMatMult) */
 
   /* Test MatMatMultTranspose() */
@@ -193,12 +193,12 @@ int main(int argc,char **args)
     if (norm >= tol) {
       ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatMatMultTr(), |v3 - v4|: %G\n",norm);CHKERRQ(ierr);
     }
-    ierr = MatDestroy(P);CHKERRQ(ierr);
-    ierr = MatDestroy(C);CHKERRQ(ierr);
-    ierr = VecDestroy(v3);CHKERRQ(ierr);
-    ierr = VecDestroy(v4);CHKERRQ(ierr);
-    ierr = VecDestroy(v5);CHKERRQ(ierr);
-    ierr = VecDestroy(x);CHKERRQ(ierr);
+    ierr = MatDestroy(&P);CHKERRQ(ierr);
+    ierr = MatDestroy(&C);CHKERRQ(ierr);
+    ierr = VecDestroy(&v3);CHKERRQ(ierr);
+    ierr = VecDestroy(&v4);CHKERRQ(ierr);
+    ierr = VecDestroy(&v5);CHKERRQ(ierr);
+    ierr = VecDestroy(&x);CHKERRQ(ierr);
   }
 
   /* Test MatPtAP() */
@@ -273,22 +273,22 @@ int main(int argc,char **args)
       ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatPtAP(), |v1 - v2|: %G\n",norm);CHKERRQ(ierr);
     }
   
-    ierr = MatDestroy(A);CHKERRQ(ierr);
-    ierr = MatDestroy(P);CHKERRQ(ierr);
-    ierr = MatDestroy(C);CHKERRQ(ierr);
-    ierr = VecDestroy(v3);CHKERRQ(ierr);
-    ierr = VecDestroy(v4);CHKERRQ(ierr);
-    ierr = VecDestroy(x);CHKERRQ(ierr);
+    ierr = MatDestroy(&A);CHKERRQ(ierr);
+    ierr = MatDestroy(&P);CHKERRQ(ierr);
+    ierr = MatDestroy(&C);CHKERRQ(ierr);
+    ierr = VecDestroy(&v3);CHKERRQ(ierr);
+    ierr = VecDestroy(&v4);CHKERRQ(ierr);
+    ierr = VecDestroy(&x);CHKERRQ(ierr);
   } /* if (Test_MatPtAP) */
 
   /* Destroy objects */
-  ierr = VecDestroy(v1);CHKERRQ(ierr);
-  ierr = VecDestroy(v2);CHKERRQ(ierr);
-  ierr = PetscRandomDestroy(rdm);CHKERRQ(ierr);
+  ierr = VecDestroy(&v1);CHKERRQ(ierr);
+  ierr = VecDestroy(&v2);CHKERRQ(ierr);
+  ierr = PetscRandomDestroy(&rdm);CHKERRQ(ierr);
   ierr = PetscFree(idxn);CHKERRQ(ierr);
   
-  ierr = MatDestroy(A_save);CHKERRQ(ierr);
-  ierr = MatDestroy(B);CHKERRQ(ierr);
+  ierr = MatDestroy(&A_save);CHKERRQ(ierr);
+  ierr = MatDestroy(&B);CHKERRQ(ierr);
 
   PreLoadEnd();
   ierr = PetscFinalize();

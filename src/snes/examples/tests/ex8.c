@@ -108,15 +108,15 @@ int main(int argc, char **argv)
   if (flg) { info = VecView(x,PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(info); }
 
   /* Free memory */
-  info = VecDestroy(x); CHKERRQ(info);
-  info = VecDestroy(xl); CHKERRQ(info);
-  info = VecDestroy(xu); CHKERRQ(info);
-  info = VecDestroy(r); CHKERRQ(info);
-  info = MatDestroy(J); CHKERRQ(info);
-  info = SNESDestroy(snes); CHKERRQ(info);
+  info = VecDestroy(&x); CHKERRQ(info);
+  info = VecDestroy(&xl); CHKERRQ(info);
+  info = VecDestroy(&xu); CHKERRQ(info);
+  info = VecDestroy(&r); CHKERRQ(info);
+  info = MatDestroy(&J); CHKERRQ(info);
+  info = SNESDestroy(&snes); CHKERRQ(info);
 
   /* Free user-created data structures */
-  info = DMDestroy(user.da);CHKERRQ(info);
+  info = DMDestroy(&user.da);CHKERRQ(info);
   info = PetscFree(user.bottom); CHKERRQ(info);
   info = PetscFree(user.top); CHKERRQ(info);
   info = PetscFree(user.left); CHKERRQ(info);

@@ -91,7 +91,7 @@ int main(int argc,char **argv)
   ierr = VecView_VTK(DMMGGetRHS(dmmg), "rhs.vtk", bcTypes[user.bcType]);CHKERRQ(ierr);
   ierr = VecView_VTK(DMMGGetx(dmmg), "solution.vtk", bcTypes[user.bcType]);CHKERRQ(ierr);
 
-  ierr = DMMGDestroy(&dmmg);CHKERRQ(ierr);
+  ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
   ierr = PetscFinalize();
 
   return 0;

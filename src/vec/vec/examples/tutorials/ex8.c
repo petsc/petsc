@@ -63,7 +63,7 @@ int main(int argc,char **argv)
     ISLocalToGlobalMapping ltog;
     ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF,ng,gindices,PETSC_COPY_VALUES,&ltog);CHKERRQ(ierr);
     ierr = VecSetLocalToGlobalMapping(x,ltog);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingDestroy(ltog);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingDestroy(&ltog);CHKERRQ(ierr);
   }
   ierr = PetscFree(gindices);CHKERRQ(ierr);
 
@@ -94,7 +94,7 @@ int main(int argc,char **argv)
       View the vector; then destroy it.
   */
   ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = VecDestroy(x);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
   return 0;

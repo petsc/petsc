@@ -283,7 +283,7 @@ int main(int argc,char **argv)
     ALE::LogStagePop(stage);
 
     ierr = PetscFree2(user.charge,user.chargeLocation);CHKERRQ(ierr);
-    ierr = DMMGDestroy(&dmmg);CHKERRQ(ierr);
+    ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
   } catch (ALE::Exception e) {
     std::cout << e << std::endl;
   }

@@ -20,14 +20,14 @@ int main(int argc,char **argv)
   ierr = MatCreate(PETSC_COMM_WORLD,&inmat);CHKERRQ(ierr);
   ierr = MatSetType(inmat,MATSEQAIJ);CHKERRQ(ierr);
   ierr = MatLoad(inmat,in);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(in);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&in);CHKERRQ(ierr);
 
   ierr = MatMerge(PETSC_COMM_WORLD,inmat,PETSC_DECIDE,MAT_INITIAL_MATRIX,&outmat);CHKERRQ(ierr);
 
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,outfile,FILE_MODE_WRITE,&out);CHKERRQ(ierr);
   ierr = MatView(outmat,out);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(out);CHKERRQ(ierr);
-  ierr = MatDestroy(outmat);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&out);CHKERRQ(ierr);
+  ierr = MatDestroy(&outmat);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
   return 0;

@@ -127,15 +127,15 @@ PetscInt main(PetscInt argc,char **args)
     }
 
     /* free spaces */
-    ierr = VecDestroy(x);CHKERRQ(ierr);
-    ierr = VecDestroy(y1);CHKERRQ(ierr);
-    ierr = VecDestroy(y2);CHKERRQ(ierr);
-    ierr = VecDestroy(z1);CHKERRQ(ierr);
-    ierr = VecDestroy(z2);CHKERRQ(ierr);
-    ierr = VecDestroy(w);CHKERRQ(ierr);
-    ierr = MatDestroy(A);CHKERRQ(ierr);
+    ierr = VecDestroy(&x);CHKERRQ(ierr);
+    ierr = VecDestroy(&y1);CHKERRQ(ierr);
+    ierr = VecDestroy(&y2);CHKERRQ(ierr);
+    ierr = VecDestroy(&z1);CHKERRQ(ierr);
+    ierr = VecDestroy(&z2);CHKERRQ(ierr);
+    ierr = VecDestroy(&w);CHKERRQ(ierr);
+    ierr = MatDestroy(&A);CHKERRQ(ierr);
   }
-  ierr = PetscRandomDestroy(rdm);CHKERRQ(ierr);
+  ierr = PetscRandomDestroy(&rdm);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

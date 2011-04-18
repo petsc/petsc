@@ -1634,7 +1634,7 @@ PetscErrorCode  TSMonitorCancel(TS ts)
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   for (i=0; i<ts->numbermonitors; i++) {
     if (ts->mdestroy[i]) {
-      ierr = (*ts->mdestroy[i])(ts->monitorcontext[i]);CHKERRQ(ierr);
+      ierr = (*ts->mdestroy[i])(&ts->monitorcontext[i]);CHKERRQ(ierr);
     }
   }
   ts->numbermonitors = 0;

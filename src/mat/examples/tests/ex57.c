@@ -38,7 +38,7 @@ int main(int argc,char **args)
   ierr = MatCreate(PETSC_COMM_SELF,&A);CHKERRQ(ierr);
   ierr = MatSetType(A,mtype);CHKERRQ(ierr);
   ierr = MatLoad(A,fdin);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(fdin);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&fdin);CHKERRQ(ierr);
   
   ierr = MatGetSize(A,&size,&size);CHKERRQ(ierr);
   size /= 2;
@@ -54,14 +54,14 @@ int main(int argc,char **args)
   ierr = VecSetSizes(b,PETSC_DECIDE,size);CHKERRQ(ierr);
   ierr = VecSetFromOptions(b);CHKERRQ(ierr);
   ierr = MatView(B[0],fdout);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(fdout);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&fdout);CHKERRQ(ierr);
 
-  ierr = MatDestroy(A);CHKERRQ(ierr);
-  ierr = MatDestroy(B[0]);CHKERRQ(ierr);
-  ierr = VecDestroy(b);CHKERRQ(ierr);
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  ierr = MatDestroy(&B[0]);CHKERRQ(ierr);
+  ierr = VecDestroy(&b);CHKERRQ(ierr);
   ierr = PetscFree(B);CHKERRQ(ierr);
-  ierr = ISDestroy(iscol);CHKERRQ(ierr);
-  ierr = ISDestroy(isrow);CHKERRQ(ierr);
+  ierr = ISDestroy(&iscol);CHKERRQ(ierr);
+  ierr = ISDestroy(&isrow);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

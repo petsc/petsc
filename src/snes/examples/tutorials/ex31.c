@@ -132,18 +132,18 @@ int main(int argc,char **argv)
     ierr = DMDASetFieldName(da,4,"velg");CHKERRQ(ierr);
     ierr = DMDASetFieldName(da,5,"velf");CHKERRQ(ierr);
     ierr = DMCompositeAddDM(app.pack,(DM)da);CHKERRQ(ierr);
-    ierr = DMDestroy(da);CHKERRQ(ierr);
+    ierr = DMDestroy(&da);CHKERRQ(ierr);
 
     ierr = DMDACreate2d(app.comm,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_PERIODIC,DMDA_STENCIL_STAR,app.nxv,app.nyv,PETSC_DETERMINE,1,1,1,0,0,&da);CHKERRQ(ierr);
     ierr = DMDASetFieldName(da,0,"Tempature");CHKERRQ(ierr);
     ierr = DMCompositeAddDM(app.pack,(DM)da);CHKERRQ(ierr);
-    ierr = DMDestroy(da);CHKERRQ(ierr);
+    ierr = DMDestroy(&da);CHKERRQ(ierr);
 
     ierr = DMDACreate2d(app.comm,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,app.nxv,app.nyvf,PETSC_DETERMINE,1,2,1,0,0,&da);CHKERRQ(ierr);
     ierr = DMDASetFieldName(da,0,"Phi");CHKERRQ(ierr);
     ierr = DMDASetFieldName(da,1,"Pre");CHKERRQ(ierr);
     ierr = DMCompositeAddDM(app.pack,(DM)da);CHKERRQ(ierr);
-    ierr = DMDestroy(da);CHKERRQ(ierr);
+    ierr = DMDestroy(&da);CHKERRQ(ierr);
    
     app.pri = 1.0135e+5;
     app.ugi = 2.5065e+6;
@@ -191,7 +191,7 @@ int main(int argc,char **argv)
       ierr = PCShellSetContext(pc,&app);CHKERRQ(ierr);
       ierr = PCShellSetSetUp(pc,MyPCSetUp);CHKERRQ(ierr);
       ierr = PCShellSetApply(pc,MyPCApply);CHKERRQ(ierr);
-      ierr = PCShellSetDestroy(pc,MyPCDestroy);CHKERRQ(ierr);
+      ierr = PCShellSetDestroy(&pc,MyPCDestroy);CHKERRQ(ierr);
     }
 
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -209,9 +209,9 @@ int main(int argc,char **argv)
        are no longer needed.
        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-    ierr = PetscViewerDestroy(v1);CHKERRQ(ierr);
-    ierr = DMDestroy(app.pack);CHKERRQ(ierr);
-    ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&v1);CHKERRQ(ierr);
+    ierr = DMDestroy(&app.pack);CHKERRQ(ierr);
+    ierr = DMMGDestroy(&dmmg);CHKERRQ(ierr);
   PreLoadEnd();
 
   ierr = PetscFinalize();
@@ -533,7 +533,7 @@ PetscErrorCode MyPCSetUp(PC pc)
   app->dx = DMMGGetRHS(app->fdmmg);
   app->dy = DMMGGetx(app->fdmmg);
   ierr = VecDuplicate(app->dy,&app->c);CHKERRQ(ierr);
-  ierr = DMDestroy(da);CHKERRQ(ierr);
+  ierr = DMDestroy(&da);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -628,14 +628,14 @@ PetscErrorCode MyPCApply(PC pc,Vec X,Vec Y)
 
 #undef __FUNCT__
 #define __FUNCT__ "MyPCDestroy"
-PetscErrorCode MyPCDestroy(PC pc)
+PetscErrorCode MyPCDestroy(&PC pc)
 {
   AppCtx         *app;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PCShellGetContext(pc,(void**)&app);CHKERRQ(ierr);
-  ierr = DMMGDestroy(app->fdmmg);CHKERRQ(ierr);
-  ierr = VecDestroy(app->c);CHKERRQ(ierr);
+  ierr = DMMGDestroy(&app->fdmmg);CHKERRQ(ierr);
+  ierr = VecDestroy(&app->c);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

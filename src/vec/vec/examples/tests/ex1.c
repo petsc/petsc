@@ -25,8 +25,8 @@ int main(int argc,char **argv)
   ierr = VecSet(x,one);CHKERRQ(ierr);
   ierr = VecSet(y,two);CHKERRQ(ierr);
 
-  ierr = VecDestroy(x);CHKERRQ(ierr);
-  ierr = VecDestroy(y);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = VecDestroy(&y);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
   return 0;

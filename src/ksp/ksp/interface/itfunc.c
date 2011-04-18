@@ -1496,7 +1496,7 @@ PetscErrorCode  KSPMonitorCancel(KSP ksp)
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   for (i=0; i<ksp->numbermonitors; i++) {
     if (ksp->monitordestroy[i]) {
-      ierr = (*ksp->monitordestroy[i])(ksp->monitorcontext[i]);CHKERRQ(ierr);
+      ierr = (*ksp->monitordestroy[i])(&ksp->monitorcontext[i]);CHKERRQ(ierr);
     }
   }
   ksp->numbermonitors = 0;

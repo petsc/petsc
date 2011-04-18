@@ -117,7 +117,7 @@ int main(int argc,char **argv)
                     1,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
   ierr = DMDASetFieldName(da, 0, "ooblek");CHKERRQ(ierr);
   ierr = DMMGSetDM(dmmg, (DM) da);CHKERRQ(ierr);
-  ierr = DMDestroy(da);CHKERRQ(ierr);
+  ierr = DMDestroy(&da);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set the discretization functions
@@ -150,8 +150,8 @@ int main(int argc,char **argv)
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
-  ierr = PetscBagDestroy(bag);CHKERRQ(ierr);
+  ierr = DMMGDestroy(&dmmg);CHKERRQ(ierr);
+  ierr = PetscBagDestroy(&bag);CHKERRQ(ierr);
   ierr = PetscFinalize();
   PetscFunctionReturn(0);
 }

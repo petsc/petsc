@@ -95,8 +95,8 @@ int main(int argc,char **argv)
   if (!flg) {
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"A != C"); 
   }
-  ierr = MatDestroy(C);CHKERRQ(ierr);
-  ierr = MatDestroy(A_tmp);CHKERRQ(ierr);
+  ierr = MatDestroy(&C);CHKERRQ(ierr);
+  ierr = MatDestroy(&A_tmp);CHKERRQ(ierr);
   
   /*------------------------------------------------------------*/
   
@@ -165,8 +165,8 @@ int main(int argc,char **argv)
     /*----------------------------*/
     ierr = MatDuplicate(C,MAT_COPY_VALUES,&C1);CHKERRQ(ierr);
     ierr = MatDuplicate(C1,MAT_COPY_VALUES,&C2);CHKERRQ(ierr);
-    ierr = MatDestroy(C1);CHKERRQ(ierr);
-    ierr = MatDestroy(C2);CHKERRQ(ierr);
+    ierr = MatDestroy(&C1);CHKERRQ(ierr);
+    ierr = MatDestroy(&C2);CHKERRQ(ierr);
 
     /* Create vector x that is compatible with P */
     ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
@@ -190,9 +190,9 @@ int main(int argc,char **argv)
       ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatMatMult(), |v1 - v2|/|v2|: %G\n",norm);CHKERRQ(ierr);
     }
     
-    ierr = VecDestroy(x);CHKERRQ(ierr);
-    ierr = MatDestroy(C);CHKERRQ(ierr);
-    ierr = MatDestroy(A_tmp);CHKERRQ(ierr);
+    ierr = VecDestroy(&x);CHKERRQ(ierr);
+    ierr = MatDestroy(&C);CHKERRQ(ierr);
+    ierr = MatDestroy(&A_tmp);CHKERRQ(ierr);
   }
 
   /* Test P^T * A * P - MatPtAP() */ 
@@ -213,8 +213,8 @@ int main(int argc,char **argv)
     /*----------------------------*/
     ierr = MatDuplicate(C,MAT_COPY_VALUES,&C1);CHKERRQ(ierr);
     ierr = MatDuplicate(C1,MAT_COPY_VALUES,&C2);CHKERRQ(ierr); 
-    ierr = MatDestroy(C1);CHKERRQ(ierr); 
-    ierr = MatDestroy(C2);CHKERRQ(ierr); 
+    ierr = MatDestroy(&C1);CHKERRQ(ierr); 
+    ierr = MatDestroy(&C2);CHKERRQ(ierr); 
 
     /* Create vector x that is compatible with P */
     ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
@@ -245,21 +245,21 @@ int main(int argc,char **argv)
       ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatPtAP(), |v3 - v4|/|v3|: %G\n",norm);CHKERRQ(ierr);
     }
   
-    ierr = MatDestroy(C);CHKERRQ(ierr);
-    ierr = VecDestroy(v3);CHKERRQ(ierr);
-    ierr = VecDestroy(v4);CHKERRQ(ierr);
-    ierr = VecDestroy(x);CHKERRQ(ierr);
+    ierr = MatDestroy(&C);CHKERRQ(ierr);
+    ierr = VecDestroy(&v3);CHKERRQ(ierr);
+    ierr = VecDestroy(&v4);CHKERRQ(ierr);
+    ierr = VecDestroy(&x);CHKERRQ(ierr);
  
   }
 
   /* Clean up */
-   ierr = MatDestroy(A);CHKERRQ(ierr);
-  ierr = PetscRandomDestroy(rdm);CHKERRQ(ierr);
-  ierr = VecDestroy(v1);CHKERRQ(ierr);
-  ierr = VecDestroy(v2);CHKERRQ(ierr);
-  ierr = DMDestroy(user.fine.da);CHKERRQ(ierr);
-  ierr = DMDestroy(user.coarse.da);CHKERRQ(ierr);
-  ierr = MatDestroy(P);CHKERRQ(ierr); 
+   ierr = MatDestroy(&A);CHKERRQ(ierr);
+  ierr = PetscRandomDestroy(&rdm);CHKERRQ(ierr);
+  ierr = VecDestroy(&v1);CHKERRQ(ierr);
+  ierr = VecDestroy(&v2);CHKERRQ(ierr);
+  ierr = DMDestroy(&user.fine.da);CHKERRQ(ierr);
+  ierr = DMDestroy(&user.coarse.da);CHKERRQ(ierr);
+  ierr = MatDestroy(&P);CHKERRQ(ierr); 
 
   ierr = PetscFinalize();
 

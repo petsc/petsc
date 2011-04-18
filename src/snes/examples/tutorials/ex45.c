@@ -125,7 +125,7 @@ int main(int argc,char **argv)
     
     /* Use SNESDefaultComputeJacobianColor() for Jacobian evaluation */
     ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr); 
-    ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
+    ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
   }
 
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
@@ -141,11 +141,11 @@ int main(int argc,char **argv)
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = VecDestroy(x);CHKERRQ(ierr);     ierr = VecDestroy(r);CHKERRQ(ierr);
-  ierr = VecDestroy(F);CHKERRQ(ierr);     ierr = MatDestroy(J);CHKERRQ(ierr);
-  ierr = MatDestroy(JPrec);CHKERRQ(ierr); ierr = SNESDestroy(snes);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);     ierr = VecDestroy(&r);CHKERRQ(ierr);
+  ierr = VecDestroy(&F);CHKERRQ(ierr);     ierr = MatDestroy(&J);CHKERRQ(ierr);
+  ierr = MatDestroy(&JPrec);CHKERRQ(ierr); ierr = SNESDestroy(&snes);CHKERRQ(ierr);
   if (fd_jacobian_coloring){
-    ierr = MatFDColoringDestroy(matfdcoloring);CHKERRQ(ierr);
+    ierr = MatFDColoringDestroy(&matfdcoloring);CHKERRQ(ierr);
   }
   ierr = PetscFinalize();
   return 0;

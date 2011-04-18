@@ -67,7 +67,7 @@ int main(int argc,char **args)
   ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"A is obtained with MatCopy(,,DIFFERENT_NONZERO_PATTERN):\n");CHKERRQ(ierr);
   ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = MatDestroy(A);CHKERRQ(ierr);
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
 
   /* test matrices with same nonzero pattern */
   ierr = MatDuplicate(C,MAT_DO_NOT_COPY_VALUES,&A);CHKERRQ(ierr);
@@ -91,8 +91,8 @@ int main(int argc,char **args)
     ierr = MatRetrieveValues(A);CHKERRQ(ierr);
   }
 
-  ierr = MatDestroy(C);CHKERRQ(ierr);
-  ierr = MatDestroy(A);CHKERRQ(ierr);
+  ierr = MatDestroy(&C);CHKERRQ(ierr);
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

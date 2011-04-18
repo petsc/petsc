@@ -58,8 +58,8 @@ int main(int argc,char **args)
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD, "matrix.dat", FILE_MODE_WRITE, &view);CHKERRQ(ierr);
   ierr = PetscViewerSetFormat(view,PETSC_VIEWER_NATIVE);CHKERRQ(ierr);
   ierr = MatView(A,view);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(view);CHKERRQ(ierr);
-  ierr = MatDestroy(A);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&view);CHKERRQ(ierr);
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
 
   /* 
      Now reload the matrix and view it
@@ -68,9 +68,9 @@ int main(int argc,char **args)
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatSetType(A,MATMPIDENSE);CHKERRQ(ierr);
   ierr = MatLoad(A,view);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(view);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&view);CHKERRQ(ierr);
   ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = MatDestroy(A);CHKERRQ(ierr);
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
   return 0;

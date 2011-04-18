@@ -39,7 +39,7 @@ int main(int argc,char **args)
   ierr = MatLoad(A,fd);CHKERRQ(ierr);
 
   ierr = MatConvert(A,MATAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
  
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rand);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
@@ -181,7 +181,7 @@ int main(int argc,char **args)
       ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Error in MatConvert: MatMult - Norm1=%16.14e Norm2=%16.14e bs = %D\n",rank,s1norm,s2norm,bs);CHKERRQ(ierr);  
     }
   }
-  ierr = MatDestroy(C);CHKERRQ(ierr);
+  ierr = MatDestroy(&C);CHKERRQ(ierr);
 
   /* Test MatTranspose() */
   ierr = MatTranspose(A,MAT_INITIAL_MATRIX,&At);CHKERRQ(ierr);
@@ -198,16 +198,16 @@ int main(int argc,char **args)
                   rank,s1norm,s2norm,bs);CHKERRQ(ierr);
     }
   }
-  ierr = MatDestroy(At);CHKERRQ(ierr);
-  ierr = MatDestroy(Bt);CHKERRQ(ierr);
+  ierr = MatDestroy(&At);CHKERRQ(ierr);
+  ierr = MatDestroy(&Bt);CHKERRQ(ierr);
 
-  ierr = MatDestroy(A);CHKERRQ(ierr); 
-  ierr = MatDestroy(B);CHKERRQ(ierr); 
-  ierr = VecDestroy(xx);CHKERRQ(ierr);
-  ierr = VecDestroy(yy);CHKERRQ(ierr);
-  ierr = VecDestroy(s1);CHKERRQ(ierr);
-  ierr = VecDestroy(s2);CHKERRQ(ierr);
-  ierr = PetscRandomDestroy(rand);CHKERRQ(ierr);
+  ierr = MatDestroy(&A);CHKERRQ(ierr); 
+  ierr = MatDestroy(&B);CHKERRQ(ierr); 
+  ierr = VecDestroy(&xx);CHKERRQ(ierr);
+  ierr = VecDestroy(&yy);CHKERRQ(ierr);
+  ierr = VecDestroy(&s1);CHKERRQ(ierr);
+  ierr = VecDestroy(&s2);CHKERRQ(ierr);
+  ierr = PetscRandomDestroy(&rand);CHKERRQ(ierr);
   ierr = PetscFinalize();
 #endif
   return 0;

@@ -29,7 +29,7 @@ int main(int argc,char **args)
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&fd);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatLoad(A,fd);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
 
   /* Get dof, then create maij matrix MA */
   ierr = PetscOptionsGetInt(PETSC_NULL,"-dof",&dof,PETSC_NULL);CHKERRQ(ierr);
@@ -66,9 +66,9 @@ int main(int argc,char **args)
     SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_CONV_FAILED,"Error: MatMulTransposeAdd() for MAIJ matrix");
   }
 
-  ierr = MatDestroy(MA);CHKERRQ(ierr);
-  ierr = MatDestroy(A);CHKERRQ(ierr); 
-  ierr = MatDestroy(B);CHKERRQ(ierr);  
+  ierr = MatDestroy(&MA);CHKERRQ(ierr);
+  ierr = MatDestroy(&A);CHKERRQ(ierr); 
+  ierr = MatDestroy(&B);CHKERRQ(ierr);  
   ierr = PetscFinalize();
 #endif
   return 0;

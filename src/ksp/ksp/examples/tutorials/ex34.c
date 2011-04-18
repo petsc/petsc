@@ -111,7 +111,7 @@ int main(int argc,char **argv)
   ierr = VecNorm(DMMGGetx(dmmg),NORM_2,&norm);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Error norm %g\n",norm/((PetscReal)(mx)*(PetscReal)(my)*(PetscReal)(mz)));CHKERRQ(ierr); 
 
-  ierr = DMMGDestroy(&dmmg);CHKERRQ(ierr);
+  ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

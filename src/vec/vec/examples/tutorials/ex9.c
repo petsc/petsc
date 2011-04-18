@@ -81,7 +81,7 @@ int main(int argc,char **argv)
       Test VecDuplicate()
   */
   ierr = VecDuplicate(gxs,&gx);CHKERRQ(ierr);
-  ierr = VecDestroy(gxs);CHKERRQ(ierr);
+  ierr = VecDestroy(&gxs);CHKERRQ(ierr);
 
   /*
      Access the local representation
@@ -113,7 +113,7 @@ int main(int argc,char **argv)
   ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
 
   ierr = VecGhostRestoreLocalForm(gx,&lx);CHKERRQ(ierr); 
-  ierr = VecDestroy(gx);CHKERRQ(ierr);
+  ierr = VecDestroy(&gx);CHKERRQ(ierr);
   if (flg) {ierr = PetscFree(tarray);CHKERRQ(ierr);}
   ierr = PetscFinalize();
   return 0;

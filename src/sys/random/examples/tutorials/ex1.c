@@ -62,7 +62,7 @@ int main(int argc,char **argv)
     if (values[i] < values[i-1]) SETERRQ(PETSC_COMM_SELF,1,"Values not sorted");
   }
   ierr = PetscFree(values);CHKERRQ(ierr);
-  ierr = PetscRandomDestroy(rnd);CHKERRQ(ierr);
+  ierr = PetscRandomDestroy(&rnd);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
   return 0;

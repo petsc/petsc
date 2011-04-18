@@ -922,7 +922,7 @@ int main(int argc, char *argv[])
       ierr = CheckJacobian(dm, options.exactSol, &options);CHKERRQ(ierr);
       ierr = CreateSolver(dm, &dmmg, &options);CHKERRQ(ierr);
       ierr = Solve(dmmg, &options);CHKERRQ(ierr);
-      ierr = DMMGDestroy(&dmmg);CHKERRQ(ierr);
+      ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
       ierr = DestroyExactSolution(options.exactSol, &options);CHKERRQ(ierr);
     }
     ierr = DestroyMesh(dm, &options);CHKERRQ(ierr);

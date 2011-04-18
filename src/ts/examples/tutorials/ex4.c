@@ -258,15 +258,15 @@ int main(int argc,char **argv)
      are no longer needed.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = TSDestroy(ts);CHKERRQ(ierr);
-  ierr = MatDestroy(A);CHKERRQ(ierr);
-  ierr = VecDestroy(u);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(appctx.viewer1);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(appctx.viewer2);CHKERRQ(ierr);
-  ierr = VecDestroy(appctx.localwork);CHKERRQ(ierr);
-  ierr = VecDestroy(appctx.solution);CHKERRQ(ierr);
-  ierr = VecDestroy(appctx.u_local);CHKERRQ(ierr);
-  ierr = DMDestroy(appctx.da);CHKERRQ(ierr);
+  ierr = TSDestroy(&ts);CHKERRQ(ierr);
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  ierr = VecDestroy(&u);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&appctx.viewer1);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&appctx.viewer2);CHKERRQ(ierr);
+  ierr = VecDestroy(&appctx.localwork);CHKERRQ(ierr);
+  ierr = VecDestroy(&appctx.solution);CHKERRQ(ierr);
+  ierr = VecDestroy(&appctx.u_local);CHKERRQ(ierr);
+  ierr = DMDestroy(&appctx.da);CHKERRQ(ierr);
 
   /*
      Always call PetscFinalize() before exiting a program.  This routine

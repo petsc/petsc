@@ -165,7 +165,7 @@ int main(int argc,char **argv)
   if (fd_jacobian) {
     ierr = DMGetColoring(user.da,IS_COLORING_GLOBAL,MATAIJ,&iscoloring);CHKERRQ(ierr);
     ierr = MatFDColoringCreate(user.J,iscoloring,&matfdcoloring);CHKERRQ(ierr);
-    ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
+    ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
     ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))SNESDAFormFunction,&user);CHKERRQ(ierr);
     ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,user.A,user.J,SNESDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr);
@@ -207,10 +207,10 @@ int main(int argc,char **argv)
     PetscViewer view_out;
     ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"psi.binary",FILE_MODE_WRITE,&view_out);CHKERRQ(ierr);
     ierr = VecView(user.psi,view_out);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(view_out);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&view_out);CHKERRQ(ierr);
     ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,"psi.out",&view_out);CHKERRQ(ierr);
     ierr = VecView(user.psi,view_out);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(view_out);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&view_out);CHKERRQ(ierr);
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -219,16 +219,16 @@ int main(int argc,char **argv)
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   if (user.A != user.J) {
-    ierr = MatDestroy(user.A);CHKERRQ(ierr);
+    ierr = MatDestroy(&user.A);CHKERRQ(ierr);
   }
-  ierr = MatDestroy(user.J);CHKERRQ(ierr);
+  ierr = MatDestroy(&user.J);CHKERRQ(ierr);
   if (matfdcoloring) {
-    ierr = MatFDColoringDestroy(matfdcoloring);CHKERRQ(ierr);
+    ierr = MatFDColoringDestroy(&matfdcoloring);CHKERRQ(ierr);
   }
-  ierr = VecDestroy(user.psi);CHKERRQ(ierr);
-  ierr = VecDestroy(user.r);CHKERRQ(ierr);      
-  ierr = SNESDestroy(snes);CHKERRQ(ierr);
-  ierr = DMDestroy(user.da);CHKERRQ(ierr);
+  ierr = VecDestroy(&user.psi);CHKERRQ(ierr);
+  ierr = VecDestroy(&user.r);CHKERRQ(ierr);      
+  ierr = SNESDestroy(&snes);CHKERRQ(ierr);
+  ierr = DMDestroy(&user.da);CHKERRQ(ierr);
   ierr = PetscFinalize();
 
   PetscFunctionReturn(0);
@@ -299,13 +299,13 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
       ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&view_in);CHKERRQ(ierr);
       ierr = VecCreate(PETSC_COMM_WORLD,&Y);CHKERRQ(ierr);
       ierr = VecLoad(Y,view_in);CHKERRQ(ierr);
-      ierr = PetscViewerDestroy(view_in);CHKERRQ(ierr);
+      ierr = PetscViewerDestroy(&view_in);CHKERRQ(ierr);
       ierr = VecMax(Y,PETSC_NULL,&user->psi_bdy);CHKERRQ(ierr);
       ierr = SNESDAFormFunction(PETSC_NULL,Y,user->r,(void*)user);CHKERRQ(ierr);
       ierr = VecNorm(user->r,NORM_2,&fnorm);CHKERRQ(ierr);
       ierr = PetscPrintf(PETSC_COMM_WORLD,"In initial guess: psi_bdy = %f, fnorm = %G.\n",user->psi_bdy,fnorm);CHKERRQ(ierr);
       ierr = VecCopy(Y,X);CHKERRQ(ierr);
-      ierr = VecDestroy(Y);CHKERRQ(ierr); 
+      ierr = VecDestroy(&Y);CHKERRQ(ierr); 
     }
   }
 

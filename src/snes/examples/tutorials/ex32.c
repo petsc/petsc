@@ -118,7 +118,7 @@ int main(int argc,char **argv)
   dof  = 4;
   ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,dof,1,0,0,&da);CHKERRQ(ierr);
   ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr);
-  ierr = DMDestroy(da);CHKERRQ(ierr);
+  ierr = DMDestroy(&da);CHKERRQ(ierr);
 
   ierr = DMDAGetInfo(DMMGGetDM(dmmg),0,&mx,&my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
                      PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
@@ -190,7 +190,7 @@ int main(int argc,char **argv)
   ierr = DMDASetFieldName(da,0,"x-velocity");CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,1,"y-velocity");CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,2,"Omega");CHKERRQ(ierr);
-  ierr = DMDestroy(da);CHKERRQ(ierr);
+  ierr = DMDestroy(&da);CHKERRQ(ierr);
 
   if (DoSubPhysics){
     ierr = DMMGSetSNESLocal(dmmg1,FormFunctionLocal1,0,ad_FormFunctionLocal,admf_FormFunctionLocal);CHKERRQ(ierr);
@@ -219,7 +219,7 @@ int main(int argc,char **argv)
   ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,dof,1,0,0,&da);CHKERRQ(ierr);
   ierr = DMMGSetDM(dmmg2,(DM)da);CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,0,"temperature");CHKERRQ(ierr);
-  ierr = DMDestroy(da);CHKERRQ(ierr);
+  ierr = DMDestroy(&da);CHKERRQ(ierr);
 
   if (DoSubPhysics){
     ierr = DMMGSetSNESLocal(dmmg2,FormFunctionLocal2,0,ad_FormFunctionLocal,admf_FormFunctionLocal);CHKERRQ(ierr);
@@ -275,12 +275,12 @@ int main(int argc,char **argv)
      Free spaces 
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = DMDAVecRestoreArray(DMMGGetDM(dmmg),solu_local,(Field **)&user.x);CHKERRQ(ierr);
-  ierr = VecDestroy(solu_local);CHKERRQ(ierr);
-  ierr = DMDestroy(user.pack);CHKERRQ(ierr);
-  ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
-  ierr = DMMGDestroy(dmmg1);CHKERRQ(ierr);
-  ierr = DMMGDestroy(dmmg2);CHKERRQ(ierr);
-  ierr = DMMGDestroy(dmmg_comp);CHKERRQ(ierr);
+  ierr = VecDestroy(&solu_local);CHKERRQ(ierr);
+  ierr = DMDestroy(&user.pack);CHKERRQ(ierr);
+  ierr = DMMGDestroy(&dmmg);CHKERRQ(ierr);
+  ierr = DMMGDestroy(&dmmg1);CHKERRQ(ierr);
+  ierr = DMMGDestroy(&dmmg2);CHKERRQ(ierr);
+  ierr = DMMGDestroy(&dmmg_comp);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

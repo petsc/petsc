@@ -39,8 +39,8 @@ int main(int argc,char **argv)
     ierr = ISView(newis,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   }
 
-  ierr = ISDestroy(newis);CHKERRQ(ierr);
-  ierr = ISDestroy(is);CHKERRQ(ierr);
+  ierr = ISDestroy(&newis);CHKERRQ(ierr);
+  ierr = ISDestroy(&is);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

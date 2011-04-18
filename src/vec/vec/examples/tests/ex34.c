@@ -154,8 +154,8 @@ int main(int argc,char **argv)
   ierr = VecNorm(W,NORM_INFINITY,&nrm4);CHKERRQ(ierr);
   ierr = PetscPrintf(comm,"swapped: F norm V=%e, F norm W=%e\n",nrm4,nrm3);CHKERRQ(ierr);
 
-  ierr = VecDestroy(V);CHKERRQ(ierr);
-  ierr = VecDestroy(W);CHKERRQ(ierr);
+  ierr = VecDestroy(&V);CHKERRQ(ierr);
+  ierr = VecDestroy(&W);CHKERRQ(ierr);
 
   PetscFinalize();
   PetscFunctionReturn(0);

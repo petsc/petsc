@@ -280,8 +280,8 @@ static PetscErrorCode FormJacobian_All(SNES snes,Vec X,Mat *J,Mat *B,MatStructur
     ierr = DMDAVecRestoreArray(dau,Uloc,&u);CHKERRQ(ierr);
     ierr = DMDAVecRestoreArray(dak,Kloc,&k);CHKERRQ(ierr);
 
-    ierr = ISDestroy(is[0]);CHKERRQ(ierr);
-    ierr = ISDestroy(is[1]);CHKERRQ(ierr);
+    ierr = ISDestroy(&is[0]);CHKERRQ(ierr);
+    ierr = ISDestroy(&is[1]);CHKERRQ(ierr);
     ierr = PetscFree(is);CHKERRQ(ierr);
   } break;
   }
@@ -439,23 +439,23 @@ int main(int argc, char *argv[])
     ierr = MatView(view_dup?D:B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     /* ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
     ierr = VecView(Y,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = MatDestroy(D);CHKERRQ(ierr);
-    ierr = VecDestroy(Y);CHKERRQ(ierr);
+    ierr = MatDestroy(&D);CHKERRQ(ierr);
+    ierr = VecDestroy(&Y);CHKERRQ(ierr);
   }
 
   ierr = DMCompositeRestoreLocalVectors(pack,&user->Uloc,&user->Kloc);CHKERRQ(ierr);
   ierr = PetscFree(user);CHKERRQ(ierr);
 
-  ierr = ISDestroy(isg[0]);CHKERRQ(ierr);
-  ierr = ISDestroy(isg[1]);CHKERRQ(ierr);
+  ierr = ISDestroy(&isg[0]);CHKERRQ(ierr);
+  ierr = ISDestroy(&isg[1]);CHKERRQ(ierr);
   ierr = PetscFree(isg);CHKERRQ(ierr);
-  ierr = VecDestroy(X);CHKERRQ(ierr);
-  ierr = VecDestroy(F);CHKERRQ(ierr);
-  ierr = MatDestroy(B);CHKERRQ(ierr);
-  ierr = DMDestroy(dau);CHKERRQ(ierr);
-  ierr = DMDestroy(dak);CHKERRQ(ierr);
-  ierr = DMDestroy(pack);CHKERRQ(ierr);
-  ierr = SNESDestroy(snes);CHKERRQ(ierr);
+  ierr = VecDestroy(&X);CHKERRQ(ierr);
+  ierr = VecDestroy(&F);CHKERRQ(ierr);
+  ierr = MatDestroy(&B);CHKERRQ(ierr);
+  ierr = DMDestroy(&dau);CHKERRQ(ierr);
+  ierr = DMDestroy(&dak);CHKERRQ(ierr);
+  ierr = DMDestroy(&pack);CHKERRQ(ierr);
+  ierr = SNESDestroy(&snes);CHKERRQ(ierr);
   PetscFinalize();
   return 0;
 }

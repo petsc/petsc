@@ -117,7 +117,7 @@ int main(int argc,char **argv)
   ierr = VecViewCenterSingle(da, phi, PETSC_VIEWER_STDOUT_WORLD, "Error", -1, -1);CHKERRQ(ierr);
   ierr = VecDestroy(&tmp);CHKERRQ(ierr);
 
-  ierr = DMMGDestroy(&dmmg);CHKERRQ(ierr);
+  ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

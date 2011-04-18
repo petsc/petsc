@@ -391,12 +391,13 @@ static PetscErrorCode PRangeMinMax(PRange *p,PetscReal min,PetscReal max)
 
 #undef __FUNCT__  
 #define __FUNCT__ "THIDestroy"
-static PetscErrorCode THIDestroy(THI thi)
+static PetscErrorCode THIDestroy(THI *thi)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (--((PetscObject)thi)->refct > 0) PetscFunctionReturn(0);
+  if (!*thi) PetscFunctionReturn(0);
+  if (--((PetscObject)thi)->refct > 0) {*thi = 0; PetscFunctionReturn(0);}
   ierr = PetscFree(thi->units);CHKERRQ(ierr);
   ierr = PetscFree(thi->mattype);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(thi);CHKERRQ(ierr);
@@ -597,8 +598,8 @@ static PetscErrorCode THISetDMMG(THI thi,DMMG *dmmg)
     ierr = THIInitializePrm(thi,da2prm,X);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject)da,"DMDA2Prm",(PetscObject)da2prm);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject)da,"DMDA2Prm_Vec",(PetscObject)X);CHKERRQ(ierr);
-    ierr = DMDestroy(da2prm);CHKERRQ(ierr);
-    ierr = VecDestroy(X);CHKERRQ(ierr);
+    ierr = DMDestroy(&da2prm);CHKERRQ(ierr);
+    ierr = VecDestroy(&X);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1313,7 +1314,7 @@ static PetscErrorCode DMGetInterpolation_DA_THI(DM dac,DM daf,Mat *A,Vec *scale)
     ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatCreateMAIJ(B,sizeof(Node)/sizeof(PetscScalar),A);CHKERRQ(ierr);
-    ierr = MatDestroy(B);CHKERRQ(ierr);
+    ierr = MatDestroy(&B);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1439,7 +1440,7 @@ static PetscErrorCode THIDAVecView_VTK_XML(THI thi,DM da,Vec X,const char filena
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"  </StructuredGrid>\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"</VTKFile>\n");CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1498,7 +1499,7 @@ int main(int argc,char *argv[])
     ierr = DMDASetFieldName(da,0,"x-velocity");CHKERRQ(ierr);
     ierr = DMDASetFieldName(da,1,"y-velocity");CHKERRQ(ierr);
     ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr);
-    ierr = DMDestroy(da);CHKERRQ(ierr);
+    ierr = DMDestroy(&da);CHKERRQ(ierr);
   }
   if (thi->tridiagonal) {
     (DMMGGetDM(dmmg))->ops->getmatrix = DMGetMatrix_THI_Tridiagonal;
@@ -1574,8 +1575,8 @@ int main(int argc,char *argv[])
     }
   }
 
-  ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
-  ierr = THIDestroy(thi);CHKERRQ(ierr);
+  ierr = DMMGDestroy(&dmmg);CHKERRQ(ierr);
+  ierr = THIDestroy(&thi);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

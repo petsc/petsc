@@ -139,12 +139,12 @@ int main(int argc,char **argv)
   ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,-5,1,1,PETSC_NULL,&da);CHKERRQ(ierr);
   ierr = DMCompositeAddDM(packer,(DM)da);CHKERRQ(ierr);
   ierr = DMCompositeAddDM(packer,(DM)da);CHKERRQ(ierr);
-  ierr = DMDestroy(da);CHKERRQ(ierr);
+  ierr = DMDestroy(&da);CHKERRQ(ierr);
 
   /* create nonlinear multi-level solver */
   ierr = DMMGCreate(PETSC_COMM_WORLD,2,PETSC_NULL,&dmmg);CHKERRQ(ierr);
   ierr = DMMGSetDM(dmmg,(DM)packer);CHKERRQ(ierr);
-  ierr = DMDestroy(packer);CHKERRQ(ierr);
+  ierr = DMDestroy(&packer);CHKERRQ(ierr);
 
   /* Create Jacobian of PDE function for each level */
   nlevels = DMMGGetLevels(dmmg);
@@ -155,7 +155,7 @@ int main(int argc,char **argv)
     ierr   = DMGetColoring(da,IS_COLORING_GHOSTED,MATAIJ,&iscoloring);CHKERRQ(ierr);
     ierr   = DMGetMatrix(da,MATAIJ,&appctx->J);CHKERRQ(ierr);
     ierr   = MatSetColoring(appctx->J,iscoloring);CHKERRQ(ierr);
-    ierr   = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
+    ierr   = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
     ierr   = DMDASetLocalFunction(da,(DMDALocalFunction1)PDEFormFunctionLocal);CHKERRQ(ierr);
     ierr   = DMDASetLocalAdicFunction(da,ad_PDEFormFunctionLocal);CHKERRQ(ierr);
     dmmg[i]->user = (void*)appctx;
@@ -192,8 +192,8 @@ int main(int argc,char **argv)
 
   for (i=0; i<nlevels; i++) {
     appctx = (AppCtx*)dmmg[i]->user;
-    ierr   = MatDestroy(appctx->J);CHKERRQ(ierr);
-    if (appctx->ksp) {ierr = KSPDestroy(appctx->ksp);CHKERRQ(ierr);}
+    ierr   = MatDestroy(&appctx->J);CHKERRQ(ierr);
+    if (appctx->ksp) {ierr = KSPDestroy(&appctx->ksp);CHKERRQ(ierr);}
     ierr   = PetscFree(appctx);CHKERRQ(ierr);  
   }
   ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);

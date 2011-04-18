@@ -225,15 +225,15 @@ int main(int argc,char **args)
     } 
   }
 
-  ierr = MatDestroy(A);CHKERRQ(ierr);
-  ierr = MatDestroy(B);CHKERRQ(ierr);
-  ierr = VecDestroy(xx);CHKERRQ(ierr);
-  ierr = VecDestroy(s1);CHKERRQ(ierr);
-  ierr = VecDestroy(s2);CHKERRQ(ierr);
-  ierr = VecDestroy(yy);CHKERRQ(ierr);
-  ierr = ISDestroy(is1);CHKERRQ(ierr);
-  ierr = ISDestroy(is2);CHKERRQ(ierr);
-  ierr = PetscRandomDestroy(rdm);CHKERRQ(ierr);
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  ierr = MatDestroy(&B);CHKERRQ(ierr);
+  ierr = VecDestroy(&xx);CHKERRQ(ierr);
+  ierr = VecDestroy(&s1);CHKERRQ(ierr);
+  ierr = VecDestroy(&s2);CHKERRQ(ierr);
+  ierr = VecDestroy(&yy);CHKERRQ(ierr);
+  ierr = ISDestroy(&is1);CHKERRQ(ierr);
+  ierr = ISDestroy(&is2);CHKERRQ(ierr);
+  ierr = PetscRandomDestroy(&rdm);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

@@ -280,7 +280,7 @@ int main(int argc,char **args)
 
   /* Test MatCholeskyFactor(), MatICCFactor() with natural ordering */
   ierr = MatGetOrdering(A,MATORDERINGNATURAL,&perm,&iscol);CHKERRQ(ierr); 
-  ierr = ISDestroy(iscol);CHKERRQ(ierr);
+  ierr = ISDestroy(&iscol);CHKERRQ(ierr);
   norm1 = tol;  
   inc   = bs;
 
@@ -327,7 +327,7 @@ int main(int argc,char **args)
 
     /* test MatSolve() */
     ierr = MatSolve(sC,b,y);CHKERRQ(ierr);
-    ierr = MatDestroy(sC);CHKERRQ(ierr);
+    ierr = MatDestroy(&sC);CHKERRQ(ierr);
     /* Check the error */
     ierr = VecAXPY(y,neg_one,x);CHKERRQ(ierr);
     ierr = VecNorm(y,NORM_2,&norm2);CHKERRQ(ierr);
@@ -339,17 +339,17 @@ int main(int argc,char **args)
     if (norm2 < tol && lf != -1) break;
   } 
 
-  ierr = ISDestroy(perm);CHKERRQ(ierr);
+  ierr = ISDestroy(&perm);CHKERRQ(ierr);
 
-  ierr = MatDestroy(A);CHKERRQ(ierr);
-  ierr = MatDestroy(sB);CHKERRQ(ierr); 
-  ierr = MatDestroy(sA);CHKERRQ(ierr);
-  ierr = VecDestroy(x);CHKERRQ(ierr);
-  ierr = VecDestroy(y);CHKERRQ(ierr);
-  ierr = VecDestroy(s1);CHKERRQ(ierr);
-  ierr = VecDestroy(s2);CHKERRQ(ierr);
-  ierr = VecDestroy(b);CHKERRQ(ierr);
-  ierr = PetscRandomDestroy(rdm);CHKERRQ(ierr);
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  ierr = MatDestroy(&sB);CHKERRQ(ierr); 
+  ierr = MatDestroy(&sA);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = VecDestroy(&y);CHKERRQ(ierr);
+  ierr = VecDestroy(&s1);CHKERRQ(ierr);
+  ierr = VecDestroy(&s2);CHKERRQ(ierr);
+  ierr = VecDestroy(&b);CHKERRQ(ierr);
+  ierr = PetscRandomDestroy(&rdm);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
   return 0;

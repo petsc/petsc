@@ -167,8 +167,8 @@ static PetscErrorCode assembled_system(void)
   are no longer needed.
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = VecDestroy(x);CHKERRQ(ierr); ierr = VecDestroy(r);CHKERRQ(ierr);
-  ierr = MatDestroy(J);CHKERRQ(ierr); ierr = SNESDestroy(snes);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr); ierr = VecDestroy(&r);CHKERRQ(ierr);
+  ierr = MatDestroy(&J);CHKERRQ(ierr); ierr = SNESDestroy(&snes);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /* ------------------------------------------------------------------- */
@@ -383,14 +383,14 @@ static int block_system(void)
   ierr = VecCreateNest(PETSC_COMM_WORLD,2,PETSC_NULL,bx,&x);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
-  ierr = VecDestroy(x1);CHKERRQ(ierr);
-  ierr = VecDestroy(x2);CHKERRQ(ierr);
+  ierr = VecDestroy(&x1);CHKERRQ(ierr);
+  ierr = VecDestroy(&x2);CHKERRQ(ierr);
 
   bx[0] = r1;
   bx[1] = r2;
   ierr = VecCreateNest(PETSC_COMM_WORLD,2,PETSC_NULL,bx,&r);CHKERRQ(ierr);
-  ierr = VecDestroy(r1);CHKERRQ(ierr);
-  ierr = VecDestroy(r2);CHKERRQ(ierr);
+  ierr = VecDestroy(&r1);CHKERRQ(ierr);
+  ierr = VecDestroy(&r2);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(r);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(r);CHKERRQ(ierr);
 
@@ -422,10 +422,10 @@ static int block_system(void)
   bA[1][1] = j22;
   ierr = MatCreateNest(PETSC_COMM_WORLD,2,PETSC_NULL,2,PETSC_NULL,&bA[0][0],&J);CHKERRQ(ierr);
   ierr = MatNestSetVecType(J,VECNEST);CHKERRQ(ierr);
-  ierr = MatDestroy(j11);CHKERRQ(ierr);
-  ierr = MatDestroy(j12);CHKERRQ(ierr);
-  ierr = MatDestroy(j21);CHKERRQ(ierr);
-  ierr = MatDestroy(j22);CHKERRQ(ierr);
+  ierr = MatDestroy(&j11);CHKERRQ(ierr);
+  ierr = MatDestroy(&j12);CHKERRQ(ierr);
+  ierr = MatDestroy(&j21);CHKERRQ(ierr);
+  ierr = MatDestroy(&j22);CHKERRQ(ierr);
 
   ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -510,8 +510,8 @@ static int block_system(void)
   Free work space.  All PETSc objects should be destroyed when they
   are no longer needed.
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = VecDestroy(x);CHKERRQ(ierr); ierr = VecDestroy(r);CHKERRQ(ierr);
-  ierr = MatDestroy(J);CHKERRQ(ierr); ierr = SNESDestroy(snes);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr); ierr = VecDestroy(&r);CHKERRQ(ierr);
+  ierr = MatDestroy(&J);CHKERRQ(ierr); ierr = SNESDestroy(&snes);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

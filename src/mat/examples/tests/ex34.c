@@ -28,7 +28,7 @@ int main(int argc,char **args)
   ierr = MatLoad(A,fd);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
   ierr = VecLoad(x,fd);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
 
   /* Write matrix and vector */
   ierr = PetscOptionsGetString(PETSC_NULL,"-fout",file,256,&flg);CHKERRQ(ierr);
@@ -38,9 +38,9 @@ int main(int argc,char **args)
   ierr = VecView(x,fd);CHKERRQ(ierr);
 
   /* Free data structures */
-  ierr = MatDestroy(A);CHKERRQ(ierr);
-  ierr = VecDestroy(x);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
   return 0;

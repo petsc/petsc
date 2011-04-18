@@ -146,13 +146,13 @@ int main(int argc,char **args)
     ierr = VecAXPY(u_tmp,-1.0,b);CHKERRQ(ierr);
     ierr = VecNorm(u_tmp,NORM_2,&res_norm);CHKERRQ(ierr);
     printf("\n Accuracy of the reading data: | b - A*u |_2 : %g \n",res_norm); 
-    ierr = VecDestroy(u_tmp);CHKERRQ(ierr);
+    ierr = VecDestroy(&u_tmp);CHKERRQ(ierr);
   }
 
-  ierr = MatDestroy(A);CHKERRQ(ierr);
-  if (flg_b) {ierr = VecDestroy(b);CHKERRQ(ierr);}
-  if (flg_u) {ierr = VecDestroy(u);CHKERRQ(ierr);}
-  ierr = PetscViewerDestroy(view);CHKERRQ(ierr);
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  if (flg_b) {ierr = VecDestroy(&b);CHKERRQ(ierr);}
+  if (flg_u) {ierr = VecDestroy(&u);CHKERRQ(ierr);}
+  ierr = PetscViewerDestroy(&view);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

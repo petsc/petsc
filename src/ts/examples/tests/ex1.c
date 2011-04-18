@@ -218,17 +218,17 @@ int main(int argc,char **argv)
     }
   }
 
-  ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
-  ierr = TSDestroy(ts);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(appctx.viewer1);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(appctx.viewer2);CHKERRQ(ierr);
-  ierr = VecDestroy(appctx.localwork);CHKERRQ(ierr);
-  ierr = VecDestroy(appctx.solution);CHKERRQ(ierr);
-  ierr = VecDestroy(appctx.local);CHKERRQ(ierr);
-  ierr = VecDestroy(appctx.global);CHKERRQ(ierr);
-  ierr = DMDestroy(appctx.da);CHKERRQ(ierr);
-  if (A) {ierr= MatDestroy(A);CHKERRQ(ierr);}
-  if (Alhs) {ierr= MatDestroy(Alhs);CHKERRQ(ierr);}
+  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  ierr = TSDestroy(&ts);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&appctx.viewer1);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&appctx.viewer2);CHKERRQ(ierr);
+  ierr = VecDestroy(&appctx.localwork);CHKERRQ(ierr);
+  ierr = VecDestroy(&appctx.solution);CHKERRQ(ierr);
+  ierr = VecDestroy(&appctx.local);CHKERRQ(ierr);
+  ierr = VecDestroy(&appctx.global);CHKERRQ(ierr);
+  ierr = DMDestroy(&appctx.da);CHKERRQ(ierr);
+  if (A) {ierr= MatDestroy(&A);CHKERRQ(ierr);}
+  if (Alhs) {ierr= MatDestroy(&Alhs);CHKERRQ(ierr);}
 
   ierr = PetscFinalize();
   return 0;

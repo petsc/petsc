@@ -313,16 +313,16 @@ int main(int argc,char **args)
     PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d], Error: MatDuplicate() or MatMultAdd(()\n",rank);
     PetscSynchronizedFlush(PETSC_COMM_WORLD);
   }
-  ierr = MatDestroy(sB);CHKERRQ(ierr); 
+  ierr = MatDestroy(&sB);CHKERRQ(ierr); 
   
-  ierr = VecDestroy(u);CHKERRQ(ierr);  
-  ierr = VecDestroy(x);CHKERRQ(ierr);
-  ierr = VecDestroy(y);CHKERRQ(ierr); 
-  ierr = VecDestroy(s1);CHKERRQ(ierr);
-  ierr = VecDestroy(s2);CHKERRQ(ierr);
-  ierr = MatDestroy(sA);CHKERRQ(ierr);
-  ierr = MatDestroy(A);CHKERRQ(ierr);
-  ierr = PetscRandomDestroy(rctx);CHKERRQ(ierr);
+  ierr = VecDestroy(&u);CHKERRQ(ierr);  
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = VecDestroy(&y);CHKERRQ(ierr); 
+  ierr = VecDestroy(&s1);CHKERRQ(ierr);
+  ierr = VecDestroy(&s2);CHKERRQ(ierr);
+  ierr = MatDestroy(&sA);CHKERRQ(ierr);
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  ierr = PetscRandomDestroy(&rctx);CHKERRQ(ierr);
  
   ierr = PetscFinalize();
   return 0;

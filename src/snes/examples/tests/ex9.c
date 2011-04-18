@@ -98,11 +98,11 @@ int main(int argc,char **argv)
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %D\n",its);CHKERRQ(ierr);
 
   /* Free data structures */
-  ierr = VecDestroy(user.localX);CHKERRQ(ierr);
-  ierr = VecDestroy(user.localF);CHKERRQ(ierr);
-  ierr = DMDestroy(user.da);CHKERRQ(ierr);
-  ierr = VecDestroy(x);CHKERRQ(ierr); ierr = VecDestroy(r);CHKERRQ(ierr);
-  ierr = MatDestroy(J);CHKERRQ(ierr); ierr = SNESDestroy(snes);CHKERRQ(ierr);
+  ierr = VecDestroy(&user.localX);CHKERRQ(ierr);
+  ierr = VecDestroy(&user.localF);CHKERRQ(ierr);
+  ierr = DMDestroy(&user.da);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr); ierr = VecDestroy(&r);CHKERRQ(ierr);
+  ierr = MatDestroy(&J);CHKERRQ(ierr); ierr = SNESDestroy(&snes);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
   return 0;

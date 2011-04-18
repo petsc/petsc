@@ -33,7 +33,7 @@ int main(int argc,char **argv) {
     }
   }
   ierr = MatRestoreArray(A,&array);CHKERRQ(ierr);
-  ierr = PetscRandomDestroy(r);CHKERRQ(ierr);
+  ierr = PetscRandomDestroy(&r);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
@@ -48,16 +48,16 @@ int main(int argc,char **argv) {
   }
   ierr = MatEqual(C,D,&equal);CHKERRQ(ierr);
   if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"C != D");
-  ierr = MatDestroy(D);CHKERRQ(ierr);
+  ierr = MatDestroy(&D);CHKERRQ(ierr);
 
   /* Test MatMatMultTranspose() */
   ierr = MatMatMultTranspose(A,A,MAT_INITIAL_MATRIX,fill,&D);CHKERRQ(ierr); /* D = A^T*A */
   if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"C != D");
-  ierr = MatDestroy(D);CHKERRQ(ierr);
+  ierr = MatDestroy(&D);CHKERRQ(ierr);
 
-  ierr = MatDestroy(C);CHKERRQ(ierr);
-  ierr = MatDestroy(B);
-  ierr = MatDestroy(A);
+  ierr = MatDestroy(&C);CHKERRQ(ierr);
+  ierr = MatDestroy(&B);
+  ierr = MatDestroy(&A);
   
   PetscFinalize();
   return(0);

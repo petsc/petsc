@@ -31,7 +31,7 @@ typedef struct {
 extern PetscErrorCode SampleShellPCCreate(SampleShellPC**);
 extern PetscErrorCode SampleShellPCSetUp(PC,Mat,Vec);
 extern PetscErrorCode SampleShellPCApply(PC,Vec x,Vec y);
-extern PetscErrorCode SampleShellPCDestroy(PC*);
+extern PetscErrorCode SampleShellPCDestroy(PC);
 
 /* 
    User-defined routines.  Note that immediately before each routine below,
@@ -320,12 +320,12 @@ PetscErrorCode SampleShellPCApply(PC pc,Vec x,Vec y)
    Input Parameter:
 .  shell - user-defined preconditioner context
 */
-PetscErrorCode SampleShellPCDestroy(PC *pc)
+PetscErrorCode SampleShellPCDestroy(PC pc)
 {
   SampleShellPC *shell;
   PetscErrorCode ierr;
 
-  ierr = PCShellGetContext(*pc,(void**)&shell);CHKERRQ(ierr);
+  ierr = PCShellGetContext(pc,(void**)&shell);CHKERRQ(ierr);
   ierr = VecDestroy((*shell)->diag);CHKERRQ(ierr);
   ierr = PetscFree(shell);CHKERRQ(ierr);
 

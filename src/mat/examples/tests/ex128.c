@@ -101,8 +101,8 @@ int main(int argc,char **args)
   } 
 
   ierr = MatSolve(sA,b,y);CHKERRQ(ierr);
-  ierr = MatDestroy(sC);CHKERRQ(ierr);
-  ierr = MatDestroy(sA);CHKERRQ(ierr);
+  ierr = MatDestroy(&sC);CHKERRQ(ierr);
+  ierr = MatDestroy(&sA);CHKERRQ(ierr);
   ierr = VecAXPY(y,-1.0,x);CHKERRQ(ierr);
   ierr = VecNorm(y,NORM_2,&norm2);CHKERRQ(ierr);
   if (lf == -1 && norm2 > 1.e-14){
@@ -110,14 +110,14 @@ int main(int argc,char **args)
   }
  
   /* Free data structures */
-  ierr = MatDestroy(C);CHKERRQ(ierr);
- ierr = ISDestroy(row);CHKERRQ(ierr);
-  ierr = ISDestroy(col);CHKERRQ(ierr);
-  ierr = PetscRandomDestroy(rdm);CHKERRQ(ierr);
-  ierr = VecDestroy(x);CHKERRQ(ierr);
-  ierr = VecDestroy(y);CHKERRQ(ierr);
-  ierr = VecDestroy(ytmp);CHKERRQ(ierr);
-  ierr = VecDestroy(b);CHKERRQ(ierr);
+  ierr = MatDestroy(&C);CHKERRQ(ierr);
+ ierr = ISDestroy(&row);CHKERRQ(ierr);
+  ierr = ISDestroy(&col);CHKERRQ(ierr);
+  ierr = PetscRandomDestroy(&rdm);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = VecDestroy(&y);CHKERRQ(ierr);
+  ierr = VecDestroy(&ytmp);CHKERRQ(ierr);
+  ierr = VecDestroy(&b);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

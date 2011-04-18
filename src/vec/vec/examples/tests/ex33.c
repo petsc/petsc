@@ -36,7 +36,7 @@ int main(int argc,char **argv)
   ierr = VecScatterCreateToAll(x,&toall,&y);CHKERRQ(ierr);
   ierr = VecScatterBegin(toall,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(toall,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(toall);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&toall);CHKERRQ(ierr);
 
   /* Cannot view the above vector with VecView(), so place it in an MPI Vec
      and do a VecView() */
@@ -44,26 +44,26 @@ int main(int argc,char **argv)
   ierr = VecGetLocalSize(y,&len);CHKERRQ(ierr);
   ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,len,PETSC_DECIDE,yy,&y_t);CHKERRQ(ierr);
   ierr = VecView(y_t,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = VecDestroy(y_t);
+  ierr = VecDestroy(&y_t);
   ierr = VecRestoreArray(y,&yy);CHKERRQ(ierr);
 
   ierr = VecScatterCreateToAll(x,&tozero,&z);CHKERRQ(ierr);
   ierr = VecScatterBegin(tozero,x,z,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(tozero,x,z,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(tozero);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&tozero);CHKERRQ(ierr);
   if (!rank) {
     ierr = VecView(z,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   }
-  ierr = VecDestroy(z);CHKERRQ(ierr);
+  ierr = VecDestroy(&z);CHKERRQ(ierr);
 
   ierr = VecScatterCreateToZero(x,&tozero,&z);CHKERRQ(ierr);
   ierr = VecScatterBegin(tozero,x,z,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(tozero,x,z,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(tozero);CHKERRQ(ierr);
-  ierr = VecDestroy(z);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&tozero);CHKERRQ(ierr);
+  ierr = VecDestroy(&z);CHKERRQ(ierr);
 
-  ierr = VecDestroy(x);CHKERRQ(ierr);
-  ierr = VecDestroy(y);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = VecDestroy(&y);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
   return 0;

@@ -232,12 +232,12 @@ int main(int argc,char **argv)
      are no longer needed.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = TSDestroy(ts);CHKERRQ(ierr);
-  ierr = MatDestroy(A);CHKERRQ(ierr);
-  ierr = VecDestroy(u);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(appctx.viewer1);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(appctx.viewer2);CHKERRQ(ierr);
-  ierr = VecDestroy(appctx.solution);CHKERRQ(ierr);
+  ierr = TSDestroy(&ts);CHKERRQ(ierr);
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  ierr = VecDestroy(&u);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&appctx.viewer1);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&appctx.viewer2);CHKERRQ(ierr);
+  ierr = VecDestroy(&appctx.solution);CHKERRQ(ierr);
 
   /*
      Always call PetscFinalize() before exiting a program.  This routine

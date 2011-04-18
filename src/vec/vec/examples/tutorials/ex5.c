@@ -48,8 +48,8 @@ int main(int argc,char **args)
   ierr = PetscPrintf(PETSC_COMM_WORLD,"writing vector in binary to vector.dat ...\n");CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"vector.dat",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
   ierr = VecView(u,viewer);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
-  ierr = VecDestroy(u);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  ierr = VecDestroy(&u);CHKERRQ(ierr);
   /*  ierr = PetscOptionsClear();CHKERRQ(ierr);*/
   ierr = PetscOptionsSetValue("-viewer_binary_mpiio","");CHKERRQ(ierr); 
 
@@ -64,12 +64,12 @@ int main(int argc,char **args)
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"vector.dat",FILE_MODE_READ,&viewer);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&u);CHKERRQ(ierr);
   ierr = VecLoad(u,viewer);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(VECTOR_READ,0,0,0,0);CHKERRQ(ierr);
   ierr = VecView(u,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* Free data structures */
-  ierr = VecDestroy(u);CHKERRQ(ierr);
+  ierr = VecDestroy(&u);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

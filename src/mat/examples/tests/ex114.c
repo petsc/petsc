@@ -103,10 +103,10 @@ int main(int argc,char **args)
     ierr = PetscIntView(5,imaxabs,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
 
-  ierr = VecDestroy(min);CHKERRQ(ierr);
-  ierr = VecDestroy(max);CHKERRQ(ierr);
-  ierr = VecDestroy(maxabs);CHKERRQ(ierr);
-  ierr = MatDestroy(A);CHKERRQ(ierr); 
+  ierr = VecDestroy(&min);CHKERRQ(ierr);
+  ierr = VecDestroy(&max);CHKERRQ(ierr);
+  ierr = VecDestroy(&maxabs);CHKERRQ(ierr);
+  ierr = MatDestroy(&A);CHKERRQ(ierr); 
   ierr = PetscFinalize();
   return 0;
 }

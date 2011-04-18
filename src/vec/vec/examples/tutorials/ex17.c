@@ -44,7 +44,7 @@ int main(int argc,char **args)
 #else
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
 #endif
-  ierr = VecDestroy(x);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
 
   PetscFinalize();
   return 0;

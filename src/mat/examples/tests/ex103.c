@@ -96,14 +96,14 @@ int main(int argc,char **args)
       }
     }
   }
-  ierr = MatDestroy(C1);CHKERRQ(ierr);
-  ierr = MatDestroy(F);CHKERRQ(ierr);
+  ierr = MatDestroy(&C1);CHKERRQ(ierr);
+  ierr = MatDestroy(&F);CHKERRQ(ierr);
 
   /* Test Cholesky Factorization */
   ierr = MatTranspose(C,MAT_INITIAL_MATRIX,&C1);CHKERRQ(ierr); /* C1 = C^T */
   ierr = MatAXPY(C,1.0,C1,SAME_NONZERO_PATTERN);CHKERRQ(ierr); /* make C symmetric: C <- C + C^T */
   ierr = MatShift(C,M);CHKERRQ(ierr);  /* make C positive definite */
-  ierr = MatDestroy(C1);CHKERRQ(ierr);
+  ierr = MatDestroy(&C1);CHKERRQ(ierr);
   
   ierr = MatSetOption(C,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
   ierr = MatSetOption(C,MAT_SYMMETRY_ETERNAL,PETSC_TRUE);CHKERRQ(ierr); 
@@ -141,7 +141,7 @@ int main(int argc,char **args)
       }
     }
   }
-  ierr = MatDestroy(F);CHKERRQ(ierr);
+  ierr = MatDestroy(&F);CHKERRQ(ierr);
 
   /* Free data structures */
   ierr = PetscRandomDestroy(&rand);CHKERRQ(ierr);

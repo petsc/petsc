@@ -120,9 +120,9 @@ PetscErrorCode RHSJacobianFD(TS ts,PetscReal t,Vec xx1,Mat *J,Mat *B,MatStructur
   ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   *flag =  DIFFERENT_NONZERO_PATTERN;
 
-  ierr = VecDestroy(jj1);CHKERRQ(ierr);
-  ierr = VecDestroy(jj2);CHKERRQ(ierr);
-  ierr = VecDestroy(xx2);CHKERRQ(ierr);
+  ierr = VecDestroy(&jj1);CHKERRQ(ierr);
+  ierr = VecDestroy(&jj2);CHKERRQ(ierr);
+  ierr = VecDestroy(&xx2);CHKERRQ(ierr);
 
   return 0;
 }

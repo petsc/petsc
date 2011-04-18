@@ -50,11 +50,11 @@ int main(int argc,char **args)
   ierr = MatPartitioningSetFromOptions(part);CHKERRQ(ierr);
   ierr = MatPartitioningApply(part,&is);CHKERRQ(ierr);
   ierr = ISView(is,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = ISDestroy(is);CHKERRQ(ierr);
-  ierr = MatPartitioningDestroy(part);CHKERRQ(ierr);
+  ierr = ISDestroy(&is);CHKERRQ(ierr);
+  ierr = MatPartitioningDestroy(&part);CHKERRQ(ierr);
 
-  ierr = MatDestroy(mesh);CHKERRQ(ierr);
-  ierr = MatDestroy(dual);CHKERRQ(ierr);
+  ierr = MatDestroy(&mesh);CHKERRQ(ierr);
+  ierr = MatDestroy(&dual);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

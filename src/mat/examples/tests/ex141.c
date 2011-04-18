@@ -30,7 +30,7 @@ int main(int argc,char **args)
     ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr); 
     ierr = MatSetType(C,MATSEQSBAIJ);CHKERRQ(ierr);
     ierr = MatLoad(C,fd);CHKERRQ(ierr);  
-    ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
   } else { /* Create a sbaij mat with bs>1  */
     mbs=8;
     ierr = PetscOptionsGetInt(PETSC_NULL,"-mbs",&mbs,PETSC_NULL);CHKERRQ(ierr);
@@ -74,8 +74,8 @@ int main(int argc,char **args)
   ierr = MatMultEqual(B,C,10,&equal);CHKERRQ(ierr);
   if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"MatConvert fails!");
 
-  ierr = MatDestroy(B);CHKERRQ(ierr);
-  ierr = MatDestroy(C);CHKERRQ(ierr);
+  ierr = MatDestroy(&B);CHKERRQ(ierr);
+  ierr = MatDestroy(&C);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

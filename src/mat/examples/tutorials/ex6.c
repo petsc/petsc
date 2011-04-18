@@ -33,10 +33,10 @@ int main(int argc,char **args)
   ierr = MatCreateSeqSBAIJ(PETSC_COMM_SELF,2,6,6,5,0,&mat);CHKERRQ(ierr);
 #endif
 
-  ierr = MatDestroy(mat);CHKERRQ(ierr);
-  ierr = MatDestroy(matb);CHKERRQ(ierr);
-  ierr = MatDestroy(matsb);CHKERRQ(ierr);
-  ierr = VecDestroy(x);CHKERRQ(ierr);
+  ierr = MatDestroy(&mat);CHKERRQ(ierr);
+  ierr = MatDestroy(&matb);CHKERRQ(ierr);
+  ierr = MatDestroy(&matsb);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
   PetscFinalize();
   return 0;
 }

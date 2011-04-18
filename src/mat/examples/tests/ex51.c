@@ -109,9 +109,9 @@ int main(int argc,char **args)
         ierr = PetscPrintf(PETSC_COMM_SELF,"Error:MatMult - Norm1=%16.14e Norm2=%16.14e\n",s1norm,s2norm);CHKERRQ(ierr);
       }
     }
-    ierr = VecDestroy(xx);CHKERRQ(ierr);
-    ierr = VecDestroy(s1);CHKERRQ(ierr);
-    ierr = VecDestroy(s2);CHKERRQ(ierr);
+    ierr = VecDestroy(&xx);CHKERRQ(ierr);
+    ierr = VecDestroy(&s1);CHKERRQ(ierr);
+    ierr = VecDestroy(&s2);CHKERRQ(ierr);
   } 
   /* Now test MatGetSubmatrices with MAT_REUSE_MATRIX option */
   ierr = MatGetSubMatrices(A,nd,is1,is1,MAT_REUSE_MATRIX,&submatA);CHKERRQ(ierr);
@@ -134,17 +134,17 @@ int main(int argc,char **args)
         ierr = PetscPrintf(PETSC_COMM_SELF,"Error:MatMult - Norm1=%16.14e Norm2=%16.14e\n",s1norm,s2norm);CHKERRQ(ierr);
       }
     }
-    ierr = VecDestroy(xx);CHKERRQ(ierr);
-    ierr = VecDestroy(s1);CHKERRQ(ierr);
-    ierr = VecDestroy(s2);CHKERRQ(ierr);
+    ierr = VecDestroy(&xx);CHKERRQ(ierr);
+    ierr = VecDestroy(&s1);CHKERRQ(ierr);
+    ierr = VecDestroy(&s2);CHKERRQ(ierr);
   } 
      
   /* Free allocated memory */
   for (i=0; i<nd; ++i) { 
-    ierr = ISDestroy(is1[i]);CHKERRQ(ierr);
-    ierr = ISDestroy(is2[i]);CHKERRQ(ierr);
-    ierr = MatDestroy(submatA[i]);CHKERRQ(ierr);
-    ierr = MatDestroy(submatB[i]);CHKERRQ(ierr);
+    ierr = ISDestroy(&is1[i]);CHKERRQ(ierr);
+    ierr = ISDestroy(&is2[i]);CHKERRQ(ierr);
+    ierr = MatDestroy(&submatA[i]);CHKERRQ(ierr);
+    ierr = MatDestroy(&submatB[i]);CHKERRQ(ierr);
  }
   ierr = PetscFree(is1);CHKERRQ(ierr);
   ierr = PetscFree(is2);CHKERRQ(ierr);
@@ -152,11 +152,11 @@ int main(int argc,char **args)
   ierr = PetscFree(rows);CHKERRQ(ierr);
   ierr = PetscFree(cols);CHKERRQ(ierr);
   ierr = PetscFree(vals);CHKERRQ(ierr);
-  ierr = MatDestroy(A);CHKERRQ(ierr);
-  ierr = MatDestroy(B);CHKERRQ(ierr);
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  ierr = MatDestroy(&B);CHKERRQ(ierr);
   ierr = PetscFree(submatA);CHKERRQ(ierr);
   ierr = PetscFree(submatB);CHKERRQ(ierr);
-  ierr = PetscRandomDestroy(rdm);CHKERRQ(ierr);
+  ierr = PetscRandomDestroy(&rdm);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

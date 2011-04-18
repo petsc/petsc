@@ -112,14 +112,14 @@ int main( int argc, char **argv )
   }
   
   /* Free memory */
-  info = VecDestroy(x); CHKERRQ(info); 
-  info = VecDestroy(xl);CHKERRQ(info);
-  info = VecDestroy(xu);CHKERRQ(info);
-  info = VecDestroy(r);CHKERRQ(info);
-  info = MatDestroy(user.A); CHKERRQ(info);
-  info = VecDestroy(user.B); CHKERRQ(info); 
-  info = DMDestroy(user.da); CHKERRQ(info);
-  info = SNESDestroy(snes);CHKERRQ(info);
+  info = VecDestroy(&x); CHKERRQ(info); 
+  info = VecDestroy(&xl);CHKERRQ(info);
+  info = VecDestroy(&xu);CHKERRQ(info);
+  info = VecDestroy(&r);CHKERRQ(info);
+  info = MatDestroy(&user.A); CHKERRQ(info);
+  info = VecDestroy(&user.B); CHKERRQ(info); 
+  info = DMDestroy(&user.da); CHKERRQ(info);
+  info = SNESDestroy(&snes);CHKERRQ(info);
 
   info = PetscFinalize();
 

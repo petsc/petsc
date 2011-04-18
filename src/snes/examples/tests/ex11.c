@@ -201,30 +201,30 @@ int main( int argc, char **argv )
 
   /* Free data structures */
   if (user.redundant_build) {
-    ierr = VecScatterDestroy(user.tolocalall);CHKERRQ(ierr);
-    ierr = VecScatterDestroy(user.fromlocalall);CHKERRQ(ierr);
-    ierr = VecDestroy(user.localall);CHKERRQ(ierr);
+    ierr = VecScatterDestroy(&user.tolocalall);CHKERRQ(ierr);
+    ierr = VecScatterDestroy(&user.fromlocalall);CHKERRQ(ierr);
+    ierr = VecDestroy(&user.localall);CHKERRQ(ierr);
   } else {
-    ierr = VecDestroy(user.coarse.localX);CHKERRQ(ierr);
-    ierr = VecDestroy(user.coarse.localF);CHKERRQ(ierr);
+    ierr = VecDestroy(&user.coarse.localX);CHKERRQ(ierr);
+    ierr = VecDestroy(&user.coarse.localF);CHKERRQ(ierr);
   }
 
-  ierr = MatDestroy(user.fine.J);CHKERRQ(ierr);
-  ierr = VecDestroy(user.fine.x);CHKERRQ(ierr);
-  ierr = VecDestroy(user.fine.r);CHKERRQ(ierr);
-  ierr = VecDestroy(user.fine.b);CHKERRQ(ierr);
-  ierr = DMDestroy(user.fine.da);CHKERRQ(ierr);
-  ierr = VecDestroy(user.fine.localX);CHKERRQ(ierr);
-  ierr = VecDestroy(user.fine.localF);CHKERRQ(ierr);
+  ierr = MatDestroy(&user.fine.J);CHKERRQ(ierr);
+  ierr = VecDestroy(&user.fine.x);CHKERRQ(ierr);
+  ierr = VecDestroy(&user.fine.r);CHKERRQ(ierr);
+  ierr = VecDestroy(&user.fine.b);CHKERRQ(ierr);
+  ierr = DMDestroy(&user.fine.da);CHKERRQ(ierr);
+  ierr = VecDestroy(&user.fine.localX);CHKERRQ(ierr);
+  ierr = VecDestroy(&user.fine.localF);CHKERRQ(ierr);
 
-  ierr = MatDestroy(user.coarse.J);CHKERRQ(ierr);
-  ierr = VecDestroy(user.coarse.x);CHKERRQ(ierr);
-  ierr = VecDestroy(user.coarse.b);CHKERRQ(ierr);
-  ierr = DMDestroy(user.coarse.da);CHKERRQ(ierr);
+  ierr = MatDestroy(&user.coarse.J);CHKERRQ(ierr);
+  ierr = VecDestroy(&user.coarse.x);CHKERRQ(ierr);
+  ierr = VecDestroy(&user.coarse.b);CHKERRQ(ierr);
+  ierr = DMDestroy(&user.coarse.da);CHKERRQ(ierr);
 
-  ierr = SNESDestroy(snes);CHKERRQ(ierr);
-  ierr = MatDestroy(user.R);CHKERRQ(ierr); 
-  ierr = VecDestroy(user.Rscale);CHKERRQ(ierr); 
+  ierr = SNESDestroy(&snes);CHKERRQ(ierr);
+  ierr = MatDestroy(&user.R);CHKERRQ(ierr); 
+  ierr = VecDestroy(&user.Rscale);CHKERRQ(ierr); 
   PetscFinalize();
 
   return 0;

@@ -87,7 +87,7 @@ int main(int argc,char **argv)
     ierr = DMGetColoring(da,IS_COLORING_GLOBAL,MATAIJ,&iscoloring);CHKERRQ(ierr);
     ierr = MatFDColoringCreate(J,iscoloring,&user.matfdcoloring);CHKERRQ(ierr);
     ierr = MatFDColoringSetFromOptions(user.matfdcoloring);CHKERRQ(ierr);
-    ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
+    ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
 
     ierr = MatFDColoringSetFunction(user.matfdcoloring,(PetscErrorCode (*)(void))RHSFunction,&user);CHKERRQ(ierr);
     ierr = TSSetRHSJacobian(ts,J,J,TSDefaultComputeJacobianColor,user.matfdcoloring);CHKERRQ(ierr);
@@ -118,13 +118,13 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = MatDestroy(J);CHKERRQ(ierr);
+  ierr = MatDestroy(&J);CHKERRQ(ierr);
   if (user.coloring){
-    ierr = MatFDColoringDestroy(user.matfdcoloring);CHKERRQ(ierr);
+    ierr = MatFDColoringDestroy(&user.matfdcoloring);CHKERRQ(ierr);
   }
-  ierr = VecDestroy(u);CHKERRQ(ierr);    
-  ierr = TSDestroy(ts);CHKERRQ(ierr);
-  ierr = DMDestroy(da);CHKERRQ(ierr);
+  ierr = VecDestroy(&u);CHKERRQ(ierr);    
+  ierr = TSDestroy(&ts);CHKERRQ(ierr);
+  ierr = DMDestroy(&da);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
   PetscFunctionReturn(0);

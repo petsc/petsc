@@ -109,7 +109,7 @@ int main(int argc,char **argv)
     ierr = VecDestroy(&p);CHKERRQ(ierr);
   }
    
-  ierr = DMMGDestroy(&dmmg);CHKERRQ(ierr);
+  ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
   ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }

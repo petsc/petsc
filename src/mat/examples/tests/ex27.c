@@ -65,9 +65,9 @@ int main(int argc,char **args)
   v = 1.0; ierr = VecSet(x,v);CHKERRQ(ierr);
   ierr = MatMult(C,x,y);CHKERRQ(ierr);
 
-  ierr = MatDestroy(C);CHKERRQ(ierr);
-  ierr = VecDestroy(x);CHKERRQ(ierr);
-  ierr = VecDestroy(y);CHKERRQ(ierr);
+  ierr = MatDestroy(&C);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = VecDestroy(&y);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

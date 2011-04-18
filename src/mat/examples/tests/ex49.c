@@ -83,8 +83,8 @@ int main(int argc,char **argv)
   }
 
   /* Free data structures */  
-  ierr = MatDestroy(tmat);CHKERRQ(ierr);
-  if (mat) {ierr = MatDestroy(mat);CHKERRQ(ierr);}
+  ierr = MatDestroy(&tmat);CHKERRQ(ierr);
+  if (mat) {ierr = MatDestroy(&mat);CHKERRQ(ierr);}
 
   ierr = PetscFinalize();
   return 0;

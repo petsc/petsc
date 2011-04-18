@@ -50,7 +50,7 @@ int main(int argc,char **args)
   }
 
   /* Free work space. */
-  ierr = MatDestroy(C);CHKERRQ(ierr);
+  ierr = MatDestroy(&C);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

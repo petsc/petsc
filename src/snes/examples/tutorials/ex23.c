@@ -73,9 +73,9 @@ int main(int argc,char **argv)
   ierr = DMMGSolve(dmmg);CHKERRQ(ierr);
   ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
 
-  ierr = DMDestroy(da);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(user.u_viewer);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(user.fu_viewer);CHKERRQ(ierr);
+  ierr = DMDestroy(&da);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&user.u_viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&user.fu_viewer);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
   return 0;

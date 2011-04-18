@@ -86,7 +86,7 @@ int main(int argc,char **argv)
     ierr = MatDuplicate(mat,MAT_COPY_VALUES,&C);CHKERRQ(ierr); 
     ierr = MatAXPY(C,alpha,mat,SAME_NONZERO_PATTERN);CHKERRQ(ierr); 
     ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); 
-    ierr = MatDestroy(C);CHKERRQ(ierr);
+    ierr = MatDestroy(&C);CHKERRQ(ierr);
   }
 
   {
@@ -112,12 +112,12 @@ int main(int argc,char **argv)
     ierr = PetscPrintf(PETSC_COMM_WORLD,"MatAXPY:  B = B + alpha * A, SUBSET_NONZERO_PATTERN\n");CHKERRQ(ierr);
     ierr = MatAXPY(mat,alpha,matB,SUBSET_NONZERO_PATTERN);CHKERRQ(ierr);
     ierr = MatView(mat,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = MatDestroy(matB);CHKERRQ(ierr);  
+    ierr = MatDestroy(&matB);CHKERRQ(ierr);  
   }
 
   /* Free data structures */  
-  if (mat)  {ierr = MatDestroy(mat);CHKERRQ(ierr);}
-  if (tmat) {ierr = MatDestroy(tmat);CHKERRQ(ierr);}
+  if (mat)  {ierr = MatDestroy(&mat);CHKERRQ(ierr);}
+  if (tmat) {ierr = MatDestroy(&tmat);CHKERRQ(ierr);}
 
   ierr = PetscFinalize();
   return 0;

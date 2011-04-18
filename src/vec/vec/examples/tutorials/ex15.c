@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
   /* Read new vector in binary format */
 #if 0
   ierr = PetscViewerMathematicaGetVector(viewer, u);                                                      CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(viewer);                                                                      CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&viewer);                                                                      CHKERRQ(ierr);
 #else
   ierr = PetscViewerMathematicaGetVector(PETSC_VIEWER_MATHEMATICA_WORLD, u);                              CHKERRQ(ierr);
 #endif
@@ -75,7 +75,7 @@ int main(int argc, char *argv[])
   ierr = VecView(u, PETSC_VIEWER_STDOUT_WORLD);                                                           CHKERRQ(ierr);
 
   /* Free data structures */
-  ierr = VecDestroy(u);                                                                                   CHKERRQ(ierr);
+  ierr = VecDestroy(&u);                                                                                   CHKERRQ(ierr);
   ierr = PetscFinalize();                                                                                 CHKERRQ(ierr);
   return 0;
 }

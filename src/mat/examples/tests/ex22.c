@@ -39,18 +39,18 @@ int main(int argc,char **args)
 
   ierr = MatGetOrdering(C,MATORDERINGND,&rperm,&cperm);CHKERRQ(ierr);
   ierr = ISView(rperm,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-  ierr = ISDestroy(rperm);CHKERRQ(ierr);
-  ierr = ISDestroy(cperm);CHKERRQ(ierr);
+  ierr = ISDestroy(&rperm);CHKERRQ(ierr);
+  ierr = ISDestroy(&cperm);CHKERRQ(ierr);
 
   ierr = MatGetOrdering(C,MATORDERINGRCM,&rperm,&cperm);CHKERRQ(ierr);
   ierr = ISView(rperm,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-  ierr = ISDestroy(rperm);CHKERRQ(ierr);
-  ierr = ISDestroy(cperm);CHKERRQ(ierr);
+  ierr = ISDestroy(&rperm);CHKERRQ(ierr);
+  ierr = ISDestroy(&cperm);CHKERRQ(ierr);
 
   ierr = MatGetOrdering(C,MATORDERINGQMD,&rperm,&cperm);CHKERRQ(ierr);
   ierr = ISView(rperm,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-  ierr = ISDestroy(rperm);CHKERRQ(ierr);
-  ierr = ISDestroy(cperm);CHKERRQ(ierr);
+  ierr = ISDestroy(&rperm);CHKERRQ(ierr);
+  ierr = ISDestroy(&cperm);CHKERRQ(ierr);
 
   /* create Cperm = rperm*C*icperm */
   ierr = PetscOptionsGetBool(PETSC_NULL,"-testmyordering",&TestMyorder,PETSC_NULL);CHKERRQ(ierr);
@@ -74,13 +74,13 @@ int main(int argc,char **args)
     ierr = ISRestoreIndices(rperm,&rperm_ptr);CHKERRQ(ierr);
     ierr = ISRestoreIndices(icperm,&cperm_ptr);CHKERRQ(ierr);
 
-    ierr = ISDestroy(rperm);CHKERRQ(ierr);
-    ierr = ISDestroy(cperm);CHKERRQ(ierr);
-    ierr = ISDestroy(icperm);CHKERRQ(ierr);
-    ierr = MatDestroy(Cperm);CHKERRQ(ierr);
+    ierr = ISDestroy(&rperm);CHKERRQ(ierr);
+    ierr = ISDestroy(&cperm);CHKERRQ(ierr);
+    ierr = ISDestroy(&icperm);CHKERRQ(ierr);
+    ierr = MatDestroy(&Cperm);CHKERRQ(ierr);
   }
 
-  ierr = MatDestroy(C);CHKERRQ(ierr);
+  ierr = MatDestroy(&C);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

@@ -183,7 +183,7 @@ int main(int argc,char **argv)
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     ALE::LogStagePop(stage);
 
-    ierr = DMMGDestroy(&dmmg);CHKERRQ(ierr);
+    ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
   } catch (ALE::Exception e) {
     std::cout << e << std::endl;
   }

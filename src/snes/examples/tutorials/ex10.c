@@ -177,12 +177,12 @@ static PetscErrorCode FormFunction_All(SNES snes, Vec X, Vec F, void *ctx)
     ierr = SectionRealCreateLocalVector(sectionU, &vecU);CHKERRQ(ierr);
     ierr = DMGlobalToLocalBegin(dmu, X, INSERT_VALUES, vecU);CHKERRQ(ierr);
     ierr = DMGlobalToLocalEnd(dmu, X, INSERT_VALUES, vecU);CHKERRQ(ierr);
-    ierr = VecDestroy(vecU);CHKERRQ(ierr);
+    ierr = VecDestroy(&vecU);CHKERRQ(ierr);
 
     ierr = DMMeshGetSectionReal(dmk, "default", &sectionK);CHKERRQ(ierr);
     ierr = SectionRealCreateLocalVector(sectionK, &vecK);CHKERRQ(ierr);
     ierr = VecCopy(user->Kloc, vecK);CHKERRQ(ierr);
-    ierr = VecDestroy(vecK);CHKERRQ(ierr);
+    ierr = VecDestroy(&vecK);CHKERRQ(ierr);
 
     ierr = SectionRealDuplicate(sectionU, &sectionFu);CHKERRQ(ierr);
 
@@ -190,20 +190,20 @@ static PetscErrorCode FormFunction_All(SNES snes, Vec X, Vec F, void *ctx)
     ierr = SectionRealCreateLocalVector(sectionFu, &vecFu);CHKERRQ(ierr);
     ierr = DMLocalToGlobalBegin(dmu, vecFu, INSERT_VALUES, F);CHKERRQ(ierr);
     ierr = DMLocalToGlobalEnd(dmu, vecFu, INSERT_VALUES, F);CHKERRQ(ierr);
-    ierr = VecDestroy(vecFu);CHKERRQ(ierr);
-    ierr = SectionRealDestroy(sectionFu);CHKERRQ(ierr);
+    ierr = VecDestroy(&vecFu);CHKERRQ(ierr);
+    ierr = SectionRealDestroy(&sectionFu);CHKERRQ(ierr);
     break;
   case 1:
     ierr = DMMeshGetSectionReal(dmk, "default", &sectionK);CHKERRQ(ierr);
     ierr = SectionRealCreateLocalVector(sectionK, &vecK);CHKERRQ(ierr);
     ierr = DMGlobalToLocalBegin(dmk, X, INSERT_VALUES, vecK);CHKERRQ(ierr);
     ierr = DMGlobalToLocalEnd(dmk, X, INSERT_VALUES, vecK);CHKERRQ(ierr);
-    ierr = VecDestroy(vecK);CHKERRQ(ierr);
+    ierr = VecDestroy(&vecK);CHKERRQ(ierr);
 
     ierr = DMMeshGetSectionReal(dmu, "default", &sectionU);CHKERRQ(ierr);
     ierr = SectionRealCreateLocalVector(sectionU, &vecU);CHKERRQ(ierr);
     ierr = VecCopy(user->Uloc, vecU);CHKERRQ(ierr);
-    ierr = VecDestroy(vecU);CHKERRQ(ierr);
+    ierr = VecDestroy(&vecU);CHKERRQ(ierr);
 
     ierr = SectionRealDuplicate(sectionK, &sectionFk);CHKERRQ(ierr);
 
@@ -211,8 +211,8 @@ static PetscErrorCode FormFunction_All(SNES snes, Vec X, Vec F, void *ctx)
     ierr = SectionRealCreateLocalVector(sectionFk, &vecFk);CHKERRQ(ierr);
     ierr = DMLocalToGlobalBegin(dmk, vecFk, INSERT_VALUES, F);CHKERRQ(ierr);
     ierr = DMLocalToGlobalEnd(dmk, vecFk, INSERT_VALUES, F);CHKERRQ(ierr);
-    ierr = VecDestroy(vecFk);CHKERRQ(ierr);
-    ierr = SectionRealDestroy(sectionFk);CHKERRQ(ierr);
+    ierr = VecDestroy(&vecFk);CHKERRQ(ierr);
+    ierr = SectionRealDestroy(&sectionFk);CHKERRQ(ierr);
     break;
   case 2:
     ierr = DMCompositeGetLocalVectors(user->pack, &Uloc, &Kloc);CHKERRQ(ierr);
@@ -221,12 +221,12 @@ static PetscErrorCode FormFunction_All(SNES snes, Vec X, Vec F, void *ctx)
     ierr = DMMeshGetSectionReal(dmu, "default", &sectionU);CHKERRQ(ierr);
     ierr = SectionRealCreateLocalVector(sectionU, &vecU);CHKERRQ(ierr);
     ierr = VecCopy(Uloc, vecU);CHKERRQ(ierr);
-    ierr = VecDestroy(vecU);CHKERRQ(ierr);
+    ierr = VecDestroy(&vecU);CHKERRQ(ierr);
 
     ierr = DMMeshGetSectionReal(dmk, "default", &sectionK);CHKERRQ(ierr);
     ierr = SectionRealCreateLocalVector(sectionK, &vecK);CHKERRQ(ierr);
     ierr = VecCopy(Kloc, vecK);CHKERRQ(ierr);
-    ierr = VecDestroy(vecK);CHKERRQ(ierr);
+    ierr = VecDestroy(&vecK);CHKERRQ(ierr);
 
     ierr = DMCompositeRestoreLocalVectors(user->pack, &Uloc, &Kloc);CHKERRQ(ierr);
     ierr = SectionRealDuplicate(sectionU, &sectionFu);CHKERRQ(ierr);
@@ -237,17 +237,17 @@ static PetscErrorCode FormFunction_All(SNES snes, Vec X, Vec F, void *ctx)
     ierr = DMCompositeGetLocalVectors(user->pack, &Fu, &Fk);CHKERRQ(ierr);
     ierr = SectionRealCreateLocalVector(sectionFu, &vecFu);CHKERRQ(ierr);
     ierr = VecCopy(vecFu, Fu);CHKERRQ(ierr);
-    ierr = VecDestroy(vecFu);CHKERRQ(ierr);
+    ierr = VecDestroy(&vecFu);CHKERRQ(ierr);
     ierr = SectionRealCreateLocalVector(sectionFk, &vecFk);CHKERRQ(ierr);
     ierr = VecCopy(vecFk, Fk);CHKERRQ(ierr);
-    ierr = VecDestroy(vecFk);CHKERRQ(ierr);
+    ierr = VecDestroy(&vecFk);CHKERRQ(ierr);
     ierr = DMCompositeGather(user->pack, F, INSERT_VALUES, Fu, Fk);CHKERRQ(ierr);
-    ierr = SectionRealDestroy(sectionFu);CHKERRQ(ierr);
-    ierr = SectionRealDestroy(sectionFk);CHKERRQ(ierr);
+    ierr = SectionRealDestroy(&sectionFu);CHKERRQ(ierr);
+    ierr = SectionRealDestroy(&sectionFk);CHKERRQ(ierr);
     break;
   }
-  ierr = SectionRealDestroy(sectionU);CHKERRQ(ierr);
-  ierr = SectionRealDestroy(sectionK);CHKERRQ(ierr);
+  ierr = SectionRealDestroy(&sectionU);CHKERRQ(ierr);
+  ierr = SectionRealDestroy(&sectionK);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -449,12 +449,12 @@ static PetscErrorCode FormJacobian_All(SNES snes, Vec X, Mat *J, Mat *B, MatStru
     ierr = SectionRealCreateLocalVector(sectionU, &vecU);CHKERRQ(ierr);
     ierr = DMGlobalToLocalBegin(dmu, X, INSERT_VALUES, vecU);CHKERRQ(ierr);
     ierr = DMGlobalToLocalEnd(dmu, X, INSERT_VALUES, vecU);CHKERRQ(ierr);
-    ierr = VecDestroy(vecU);CHKERRQ(ierr);
+    ierr = VecDestroy(&vecU);CHKERRQ(ierr);
 
     ierr = DMMeshGetSectionReal(dmk, "default", &sectionK);CHKERRQ(ierr);
     ierr = SectionRealCreateLocalVector(sectionK, &vecK);CHKERRQ(ierr);
     ierr = VecCopy(user->Kloc, vecK);CHKERRQ(ierr);
-    ierr = VecDestroy(vecK);CHKERRQ(ierr);
+    ierr = VecDestroy(&vecK);CHKERRQ(ierr);
 
     ierr = FormJacobianLocal_U(dmu, dmk, sectionU, sectionK, *B, user);CHKERRQ(ierr);
     break;
@@ -463,12 +463,12 @@ static PetscErrorCode FormJacobian_All(SNES snes, Vec X, Mat *J, Mat *B, MatStru
     ierr = SectionRealCreateLocalVector(sectionK, &vecK);CHKERRQ(ierr);
     ierr = DMGlobalToLocalBegin(dmk, X, INSERT_VALUES, vecK);CHKERRQ(ierr);
     ierr = DMGlobalToLocalEnd(dmk, X, INSERT_VALUES, vecK);CHKERRQ(ierr);
-    ierr = VecDestroy(vecK);CHKERRQ(ierr);
+    ierr = VecDestroy(&vecK);CHKERRQ(ierr);
 
     ierr = DMMeshGetSectionReal(dmu, "default", &sectionU);CHKERRQ(ierr);
     ierr = SectionRealCreateLocalVector(sectionU, &vecU);CHKERRQ(ierr);
     ierr = VecCopy(user->Uloc, vecU);CHKERRQ(ierr);
-    ierr = VecDestroy(vecU);CHKERRQ(ierr);
+    ierr = VecDestroy(&vecU);CHKERRQ(ierr);
 
     ierr = FormJacobianLocal_K(dmu, dmk, sectionU, sectionK, *B, user);CHKERRQ(ierr);
     break;
@@ -482,12 +482,12 @@ static PetscErrorCode FormJacobian_All(SNES snes, Vec X, Mat *J, Mat *B, MatStru
     ierr = DMMeshGetSectionReal(dmu, "default", &sectionU);CHKERRQ(ierr);
     ierr = SectionRealCreateLocalVector(sectionU, &vecU);CHKERRQ(ierr);
     ierr = VecCopy(Uloc, vecU);CHKERRQ(ierr);
-    ierr = VecDestroy(vecU);CHKERRQ(ierr);
+    ierr = VecDestroy(&vecU);CHKERRQ(ierr);
 
     ierr = DMMeshGetSectionReal(dmk, "default", &sectionK);CHKERRQ(ierr);
     ierr = SectionRealCreateLocalVector(sectionK, &vecK);CHKERRQ(ierr);
     ierr = VecCopy(Kloc, vecK);CHKERRQ(ierr);
-    ierr = VecDestroy(vecK);CHKERRQ(ierr);
+    ierr = VecDestroy(&vecK);CHKERRQ(ierr);
 
     ierr = DMCompositeRestoreLocalVectors(user->pack, &Uloc, &Kloc);CHKERRQ(ierr);
 
@@ -505,8 +505,8 @@ static PetscErrorCode FormJacobian_All(SNES snes, Vec X, Mat *J, Mat *B, MatStru
     ierr = MatRestoreLocalSubMatrix(*B, is[1], is[0], &Bku);CHKERRQ(ierr);
     ierr = MatRestoreLocalSubMatrix(*B, is[1], is[1], &Bkk);CHKERRQ(ierr);
 
-    ierr = ISDestroy(is[0]);CHKERRQ(ierr);
-    ierr = ISDestroy(is[1]);CHKERRQ(ierr);
+    ierr = ISDestroy(&is[0]);CHKERRQ(ierr);
+    ierr = ISDestroy(&is[1]);CHKERRQ(ierr);
     ierr = PetscFree(is);CHKERRQ(ierr);
   } break;
   }
@@ -564,12 +564,12 @@ static PetscErrorCode FormInitial_Coupled(User user,Vec X)
   ierr = SectionRealCreateLocalVector(sectionK, &vecK);CHKERRQ(ierr);
   ierr = VecCopy(vecU, user->Uloc);CHKERRQ(ierr);
   ierr = VecCopy(vecK, user->Kloc);CHKERRQ(ierr);
-  ierr = VecDestroy(vecU);CHKERRQ(ierr);
-  ierr = VecDestroy(vecK);CHKERRQ(ierr);
-  ierr = SectionRealDestroy(coordinatesU);CHKERRQ(ierr);
-  ierr = SectionRealDestroy(coordinatesK);CHKERRQ(ierr);
-  ierr = SectionRealDestroy(sectionU);CHKERRQ(ierr);
-  ierr = SectionRealDestroy(sectionK);CHKERRQ(ierr);
+  ierr = VecDestroy(&vecU);CHKERRQ(ierr);
+  ierr = VecDestroy(&vecK);CHKERRQ(ierr);
+  ierr = SectionRealDestroy(&coordinatesU);CHKERRQ(ierr);
+  ierr = SectionRealDestroy(&coordinatesK);CHKERRQ(ierr);
+  ierr = SectionRealDestroy(&sectionU);CHKERRQ(ierr);
+  ierr = SectionRealDestroy(&sectionK);CHKERRQ(ierr);
   ierr = DMCompositeGather(user->pack, X, INSERT_VALUES, user->Uloc, user->Kloc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -606,8 +606,8 @@ int main(int argc, char *argv[])
   ierr = DMDASetUniformCoordinates(dak, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);
   ierr = DMConvert(dau, DMMESH, &dmu);CHKERRQ(ierr);
   ierr = DMConvert(dak, DMMESH, &dmk);CHKERRQ(ierr);
-  ierr = DMDestroy(dau);CHKERRQ(ierr);
-  ierr = DMDestroy(dak);CHKERRQ(ierr);
+  ierr = DMDestroy(&dau);CHKERRQ(ierr);
+  ierr = DMDestroy(&dak);CHKERRQ(ierr);
 
 #if 1
   {
@@ -633,10 +633,10 @@ int main(int argc, char *argv[])
 
   ierr = DMMeshGetSectionReal(dmu, "default", &defaultSection);CHKERRQ(ierr);
   ierr = DMMeshSetupSection(dmu, defaultSection);CHKERRQ(ierr);
-  ierr = SectionRealDestroy(defaultSection);CHKERRQ(ierr);
+  ierr = SectionRealDestroy(&defaultSection);CHKERRQ(ierr);
   ierr = DMMeshGetSectionReal(dmk, "default", &defaultSection);CHKERRQ(ierr);
   ierr = DMMeshSetupSection(dmk, defaultSection);CHKERRQ(ierr);
-  ierr = SectionRealDestroy(defaultSection);CHKERRQ(ierr);
+  ierr = SectionRealDestroy(&defaultSection);CHKERRQ(ierr);
 
   ierr = DMCompositeCreate(PETSC_COMM_WORLD, &pack);CHKERRQ(ierr);
   ierr = DMCompositeAddDM(pack, dmu);CHKERRQ(ierr);
@@ -723,23 +723,23 @@ int main(int argc, char *argv[])
     ierr = MatView(view_dup?D:B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     /* ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
     ierr = VecView(Y,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = MatDestroy(D);CHKERRQ(ierr);
-    ierr = VecDestroy(Y);CHKERRQ(ierr);
+    ierr = MatDestroy(&D);CHKERRQ(ierr);
+    ierr = VecDestroy(&Y);CHKERRQ(ierr);
   }
 
   ierr = DMCompositeRestoreLocalVectors(pack,&user->Uloc,&user->Kloc);CHKERRQ(ierr);
   ierr = PetscFree(user);CHKERRQ(ierr);
 
-  ierr = ISDestroy(isg[0]);CHKERRQ(ierr);
-  ierr = ISDestroy(isg[1]);CHKERRQ(ierr);
+  ierr = ISDestroy(&isg[0]);CHKERRQ(ierr);
+  ierr = ISDestroy(&isg[1]);CHKERRQ(ierr);
   ierr = PetscFree(isg);CHKERRQ(ierr);
-  ierr = VecDestroy(X);CHKERRQ(ierr);
-  ierr = VecDestroy(F);CHKERRQ(ierr);
-  ierr = MatDestroy(B);CHKERRQ(ierr);
-  ierr = DMDestroy(dmu);CHKERRQ(ierr);
-  ierr = DMDestroy(dmk);CHKERRQ(ierr);
-  ierr = DMDestroy(pack);CHKERRQ(ierr);
-  ierr = SNESDestroy(snes);CHKERRQ(ierr);
+  ierr = VecDestroy(&X);CHKERRQ(ierr);
+  ierr = VecDestroy(&F);CHKERRQ(ierr);
+  ierr = MatDestroy(&B);CHKERRQ(ierr);
+  ierr = DMDestroy(&dmu);CHKERRQ(ierr);
+  ierr = DMDestroy(&dmk);CHKERRQ(ierr);
+  ierr = DMDestroy(&pack);CHKERRQ(ierr);
+  ierr = SNESDestroy(&snes);CHKERRQ(ierr);
   ierr = PetscFree(user);CHKERRQ(ierr);
   PetscFinalize();
   return 0;

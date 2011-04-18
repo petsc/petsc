@@ -229,8 +229,8 @@ PetscErrorCode  DMDestroy_Sliced(DM dm)
   PetscFunctionBegin;
   ierr = VecDestroy(&slice->globalvector);CHKERRQ(ierr);
   ierr = PetscFree(slice->ghosts);CHKERRQ(ierr);
-  ierr = PetscFree3(slice->dfill,slice->dfill->i,slice->dfill->j);CHKERRQ(ierr);
-  ierr = PetscFree3(slice->ofill,slice->ofill->i,slice->ofill->j);CHKERRQ(ierr);
+  if (slice->dfill) {ierr = PetscFree3(slice->dfill,slice->dfill->i,slice->dfill->j);CHKERRQ(ierr);}
+  if (slice->ofill) {ierr = PetscFree3(slice->ofill,slice->ofill->i,slice->ofill->j);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 

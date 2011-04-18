@@ -52,7 +52,7 @@ int main(int argc,char **argv)
   /*
      Free the space used by the local to global mapping
   */
-  ierr = ISLocalToGlobalMappingDestroy(mapping);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingDestroy(&mapping);CHKERRQ(ierr);
 
 
   ierr = PetscFinalize();

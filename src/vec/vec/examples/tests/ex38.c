@@ -41,9 +41,9 @@ int main(int argc, char *argv[])
   ierr = VecRestoreSubVector(X,is0,&Y);CHKERRQ(ierr);
   ierr = VecRestoreSubVector(X,is1,&Z);CHKERRQ(ierr);
 
-  ierr = ISDestroy(is0);CHKERRQ(ierr);
-  ierr = ISDestroy(is1);CHKERRQ(ierr);
-  ierr = VecDestroy(X);CHKERRQ(ierr);
+  ierr = ISDestroy(&is0);CHKERRQ(ierr);
+  ierr = ISDestroy(&is1);CHKERRQ(ierr);
+  ierr = VecDestroy(&X);CHKERRQ(ierr);
   PetscFinalize();
   return 0;
 }

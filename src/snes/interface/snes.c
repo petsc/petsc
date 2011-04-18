@@ -2042,7 +2042,7 @@ PetscErrorCode  SNESMonitorCancel(SNES snes)
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   for (i=0; i<snes->numbermonitors; i++) {
     if (snes->monitordestroy[i]) {
-      ierr = (*snes->monitordestroy[i])(snes->monitorcontext[i]);CHKERRQ(ierr);
+      ierr = (*snes->monitordestroy[i])(&snes->monitorcontext[i]);CHKERRQ(ierr);
     }
   }
   snes->numbermonitors = 0;

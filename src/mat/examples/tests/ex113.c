@@ -26,7 +26,7 @@ int main(int argc,char **args)
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatLoad(A,viewer);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);             
+  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);             
 
   ierr = MatDuplicate(A,MAT_COPY_VALUES,&A1);CHKERRQ(ierr);
   ierr = MatDuplicate(A,MAT_COPY_VALUES,&A2);CHKERRQ(ierr);
@@ -34,25 +34,25 @@ int main(int argc,char **args)
   /* dstMat = A*A1*A2 */
   ierr = MatMatMult(A1,A2,MAT_INITIAL_MATRIX,fill,&Mtmp);CHKERRQ(ierr);
   ierr = MatMatMult(A,Mtmp,MAT_INITIAL_MATRIX,fill,&dstMat);CHKERRQ(ierr); 
-  ierr = MatDestroy(Mtmp);CHKERRQ(ierr);
+  ierr = MatDestroy(&Mtmp);CHKERRQ(ierr);
 
   /* dstMat += A1*A2 */
   ierr = MatMatMult(A1,A2,MAT_INITIAL_MATRIX,fill,&Mtmp);CHKERRQ(ierr);
   ierr = MatAXPY(dstMat,1.0,Mtmp,SUBSET_NONZERO_PATTERN);CHKERRQ(ierr); 
-  ierr = MatDestroy(Mtmp);CHKERRQ(ierr); 
+  ierr = MatDestroy(&Mtmp);CHKERRQ(ierr); 
 
   /* dstMat += A*A1 */
   ierr = MatMatMult(A,A1,MAT_INITIAL_MATRIX,fill,&Mtmp);CHKERRQ(ierr);
   ierr = MatAXPY(dstMat, 1.0, Mtmp,SUBSET_NONZERO_PATTERN);CHKERRQ(ierr); 
-  ierr = MatDestroy(Mtmp);CHKERRQ(ierr);
+  ierr = MatDestroy(&Mtmp);CHKERRQ(ierr);
 
   /* dstMat += A */
   ierr = MatAXPY(dstMat, 1.0, A,SUBSET_NONZERO_PATTERN);CHKERRQ(ierr); 
 
-  ierr = MatDestroy(A);CHKERRQ(ierr); 
-  ierr = MatDestroy(A1);CHKERRQ(ierr);
-  ierr = MatDestroy(A2);CHKERRQ(ierr);  
-  ierr = MatDestroy(dstMat);CHKERRQ(ierr);
+  ierr = MatDestroy(&A);CHKERRQ(ierr); 
+  ierr = MatDestroy(&A1);CHKERRQ(ierr);
+  ierr = MatDestroy(&A2);CHKERRQ(ierr);  
+  ierr = MatDestroy(&dstMat);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

@@ -1239,7 +1239,7 @@ static PetscErrorCode SolutionErrorNorms(FVCtx *ctx,PetscReal t,Vec X,PetscReal 
   ierr = VecNorm(Y,NORM_1,nrm1);CHKERRQ(ierr);
   ierr = VecNorm(Y,NORM_INFINITY,nrmsup);CHKERRQ(ierr);
   *nrm1 /= Mx;
-  ierr = VecDestroy(Y);CHKERRQ(ierr);
+  ierr = VecDestroy(&Y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1385,7 +1385,7 @@ int main(int argc,char *argv[])
     ierr = FVSample(&ctx,ptime,Y);CHKERRQ(ierr);
     ierr = VecAYPX(Y,-1,X);CHKERRQ(ierr);
     ierr = VecView(Y,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
-    ierr = VecDestroy(Y);CHKERRQ(ierr);
+    ierr = VecDestroy(&Y);CHKERRQ(ierr);
   }
 
   if (view_final) {
@@ -1393,7 +1393,7 @@ int main(int argc,char *argv[])
     ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,final_fname,&viewer);CHKERRQ(ierr);
     ierr = PetscViewerSetFormat(viewer,PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
     ierr = VecView(X,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
 
   /* Clean up */
@@ -1401,10 +1401,10 @@ int main(int argc,char *argv[])
   for (i=0; i<ctx.physics.dof; i++) {ierr = PetscFree(ctx.physics.fieldname[i]);CHKERRQ(ierr);}
   ierr = PetscFree4(ctx.R,ctx.Rinv,ctx.cjmpLR,ctx.cslope);CHKERRQ(ierr);
   ierr = PetscFree2(ctx.uLR,ctx.flux);CHKERRQ(ierr);
-  ierr = VecDestroy(X);CHKERRQ(ierr);
-  ierr = VecDestroy(X0);CHKERRQ(ierr);
-  ierr = DMDestroy(ctx.da);CHKERRQ(ierr);
-  ierr = TSDestroy(ts);CHKERRQ(ierr);
+  ierr = VecDestroy(&X);CHKERRQ(ierr);
+  ierr = VecDestroy(&X0);CHKERRQ(ierr);
+  ierr = DMDestroy(&ctx.da);CHKERRQ(ierr);
+  ierr = TSDestroy(&ts);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

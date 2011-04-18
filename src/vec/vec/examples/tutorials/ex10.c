@@ -67,8 +67,8 @@ int main(int argc,char **args)
     SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"No data format specified, run with either -binary or -hdf5 option\n");
   }
   ierr = VecView(u,viewer);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
-  ierr = VecDestroy(u);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  ierr = VecDestroy(&u);CHKERRQ(ierr);
   /*  ierr = PetscOptionsClear();CHKERRQ(ierr); */
 
 
@@ -121,12 +121,12 @@ int main(int argc,char **args)
     ierr = VecSetType(u, VECMPI);CHKERRQ(ierr);
   }
   ierr = VecLoad(u,viewer);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(VECTOR_READ,0,0,0,0);CHKERRQ(ierr);
   ierr = VecView(u,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* Free data structures */
-  ierr = VecDestroy(u);CHKERRQ(ierr);
+  ierr = VecDestroy(&u);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

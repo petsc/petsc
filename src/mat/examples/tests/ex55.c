@@ -59,7 +59,7 @@ int main(int argc,char **args)
       ierr = MatSetType(C,MATMPIBAIJ);CHKERRQ(ierr);
       ierr = MatLoad(C,fd);CHKERRQ(ierr);
     }
-    ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
   } else { /* Create a baij mat with bs>1  */
     bs = 2; mbs=8;
     ierr = PetscOptionsGetInt(PETSC_NULL,"-mbs",&mbs,PETSC_NULL);CHKERRQ(ierr);
@@ -126,8 +126,8 @@ int main(int argc,char **args)
         ierr = MatMultEqual(A,B,10,&equal);CHKERRQ(ierr);
         if (!equal) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in conversion from %s to %s",type[i],type[j]);
       }
-      ierr = MatDestroy(B);CHKERRQ(ierr);
-      ierr = MatDestroy(D);CHKERRQ(ierr);
+      ierr = MatDestroy(&B);CHKERRQ(ierr);
+      ierr = MatDestroy(&D);CHKERRQ(ierr);
       B = PETSC_NULL;
       D = PETSC_NULL;
     }
@@ -138,9 +138,9 @@ int main(int argc,char **args)
     ierr = MatConvert(A,type[j],MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
     }
 
-    ierr = MatDestroy(A);CHKERRQ(ierr);
+    ierr = MatDestroy(&A);CHKERRQ(ierr);
   }
-  ierr = MatDestroy(C);CHKERRQ(ierr);
+  ierr = MatDestroy(&C);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
   return 0;

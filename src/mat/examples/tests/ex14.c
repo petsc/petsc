@@ -53,7 +53,7 @@ int main(int argc,char **args)
     ierr = MatRestoreRow(C,i,&nz,&idx,&values);CHKERRQ(ierr);
   }
 
-  ierr = MatDestroy(C);CHKERRQ(ierr);
+  ierr = MatDestroy(&C);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

@@ -248,7 +248,7 @@ int main(int argc, char *argv[])
     }
     PetscPrintf(comm, "Writing stokesDM\n");
     ierr = WriteSolution(stokesDM, &options);CHKERRQ(ierr);
-    ierr = DMMGDestroy(&stokes);CHKERRQ(ierr);
+    ierr = DMMGDestroy(stokes);CHKERRQ(ierr);
     ierr = DestroyMesh(stokesDM, transportDM, &options);CHKERRQ(ierr);
   } catch(ALE::Exception e) {
     std::cerr << e << std::endl;

@@ -1028,7 +1028,7 @@ int main(int argc, char *argv[])
     ierr = CreateProblem(dm, &options);CHKERRQ(ierr);
     ierr = CreateSolver(dm, &dmmg, &options);CHKERRQ(ierr);
     ierr = Solve(dmmg, &options);CHKERRQ(ierr);
-    ierr = DMMGDestroy(&dmmg);CHKERRQ(ierr);
+    ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
     ierr = DestroyMesh(dm, &options);CHKERRQ(ierr);
   } catch(ALE::Exception e) {
     std::cout << "ERROR: " << e.msg() << std::endl;

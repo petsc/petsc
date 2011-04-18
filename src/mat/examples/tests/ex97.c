@@ -51,7 +51,7 @@ static PetscErrorCode Compare2(Vec *X,const char *test)
     ierr = VecView(X[1],PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = VecView(Y,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
-  ierr = VecDestroy(Y);CHKERRQ(ierr);
+  ierr = VecDestroy(&Y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -158,18 +158,18 @@ int main(int argc, char *argv[])
     ierr = VecSet(Y1,4.0);CHKERRQ(ierr);
   }
   ierr = CheckMatrices(Asub,Bsub,left,right,X,Y,X1,Y1);CHKERRQ(ierr);
-  ierr = ISDestroy(isrow);CHKERRQ(ierr);
-  ierr = ISDestroy(iscol);CHKERRQ(ierr);
-  ierr = MatDestroy(A);CHKERRQ(ierr);
-  ierr = MatDestroy(B);CHKERRQ(ierr);
-  ierr = MatDestroy(Asub);CHKERRQ(ierr);
-  ierr = MatDestroy(Bsub);CHKERRQ(ierr);
-  ierr = VecDestroy(left);CHKERRQ(ierr);
-  ierr = VecDestroy(right);CHKERRQ(ierr);
-  ierr = VecDestroy(X);CHKERRQ(ierr);
-  ierr = VecDestroy(Y);CHKERRQ(ierr);
-  ierr = VecDestroy(X1);CHKERRQ(ierr);
-  ierr = VecDestroy(Y1);CHKERRQ(ierr);
+  ierr = ISDestroy(&isrow);CHKERRQ(ierr);
+  ierr = ISDestroy(&iscol);CHKERRQ(ierr);
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  ierr = MatDestroy(&B);CHKERRQ(ierr);
+  ierr = MatDestroy(&Asub);CHKERRQ(ierr);
+  ierr = MatDestroy(&Bsub);CHKERRQ(ierr);
+  ierr = VecDestroy(&left);CHKERRQ(ierr);
+  ierr = VecDestroy(&right);CHKERRQ(ierr);
+  ierr = VecDestroy(&X);CHKERRQ(ierr);
+  ierr = VecDestroy(&Y);CHKERRQ(ierr);
+  ierr = VecDestroy(&X1);CHKERRQ(ierr);
+  ierr = VecDestroy(&Y1);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

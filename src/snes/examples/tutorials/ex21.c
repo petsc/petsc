@@ -84,17 +84,17 @@ int main(int argc,char **argv)
   ierr = SNESMonitorSet(snes,Monitor,&user,0);CHKERRQ(ierr);
   ierr = SNESSolve(snes,PETSC_NULL,U);CHKERRQ(ierr);
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
-  ierr = SNESDestroy(snes);CHKERRQ(ierr);
+  ierr = SNESDestroy(&snes);CHKERRQ(ierr);
 
-  ierr = DMDestroy(user.da1);CHKERRQ(ierr);
-  ierr = DMDestroy(user.da2);CHKERRQ(ierr);
-  ierr = DMDestroy(user.packer);CHKERRQ(ierr);
-  ierr = VecDestroy(U);CHKERRQ(ierr);
-  ierr = VecDestroy(FU);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(user.u_viewer);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(user.lambda_viewer);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(user.fu_viewer);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(user.flambda_viewer);CHKERRQ(ierr);
+  ierr = DMDestroy(&user.da1);CHKERRQ(ierr);
+  ierr = DMDestroy(&user.da2);CHKERRQ(ierr);
+  ierr = DMDestroy(&user.packer);CHKERRQ(ierr);
+  ierr = VecDestroy(&U);CHKERRQ(ierr);
+  ierr = VecDestroy(&FU);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&user.u_viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&user.lambda_viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&user.fu_viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&user.flambda_viewer);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

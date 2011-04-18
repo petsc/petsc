@@ -133,7 +133,7 @@ int main(int argc,char **args)
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Matrix _after_ MatScaleUserImpl() operation\n");
   ierr = MatView(mat,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-  ierr = MatDestroy(mat);CHKERRQ(ierr);
+  ierr = MatDestroy(&mat);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

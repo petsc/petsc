@@ -139,10 +139,10 @@ int main(int argc,char **args)
     ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); 
   }
   /* Free data structures */
-  ierr = VecDestroy(u);CHKERRQ(ierr); ierr = VecDestroy(s);CHKERRQ(ierr); 
-  ierr = VecDestroy(w);CHKERRQ(ierr); ierr = VecDestroy(x);CHKERRQ(ierr);
-  ierr = VecDestroy(y);CHKERRQ(ierr); ierr = VecDestroy(z);CHKERRQ(ierr);
-  ierr = MatDestroy(C);CHKERRQ(ierr);
+  ierr = VecDestroy(&u);CHKERRQ(ierr); ierr = VecDestroy(&s);CHKERRQ(ierr); 
+  ierr = VecDestroy(&w);CHKERRQ(ierr); ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = VecDestroy(&y);CHKERRQ(ierr); ierr = VecDestroy(&z);CHKERRQ(ierr);
+  ierr = MatDestroy(&C);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
   return 0;

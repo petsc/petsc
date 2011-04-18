@@ -94,9 +94,9 @@ int main(int argc,char **args)
   ierr = MatGetInfo(C2,MAT_GLOBAL_SUM,&info);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD," C2: nz_allocated = %g; nz_used = %g; nz_unneeded = %g\n",info.nz_allocated,info.nz_used, info.nz_unneeded);
 
-  ierr = MatDestroy(C1);CHKERRQ(ierr);
-  ierr = MatDestroy(C2);CHKERRQ(ierr);
-  ierr = MatDestroy(C);CHKERRQ(ierr);
+  ierr = MatDestroy(&C1);CHKERRQ(ierr);
+  ierr = MatDestroy(&C2);CHKERRQ(ierr);
+  ierr = MatDestroy(&C);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
   return 0;

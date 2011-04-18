@@ -74,8 +74,8 @@ int main(int argc,char **argv)
     ierr = ISCreateStride(MPI_COMM_SELF,2,0,1,&islocal);CHKERRQ(ierr);
     ierr = ISCreateStride(MPI_COMM_SELF,2,0,1,&isglobal);CHKERRQ(ierr);
     ierr = VecScatterCreate(x,isglobal,user.xloc,islocal,&user.scatter);CHKERRQ(ierr);
-    ierr = ISDestroy(isglobal);CHKERRQ(ierr);
-    ierr = ISDestroy(islocal);CHKERRQ(ierr);
+    ierr = ISDestroy(&isglobal);CHKERRQ(ierr);
+    ierr = ISDestroy(&islocal);CHKERRQ(ierr);
   }
 
   /*
@@ -157,12 +157,12 @@ int main(int argc,char **argv)
      are no longer needed.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = VecDestroy(x);CHKERRQ(ierr); ierr = VecDestroy(r);CHKERRQ(ierr);
-  ierr = MatDestroy(J);CHKERRQ(ierr); ierr = SNESDestroy(snes);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr); ierr = VecDestroy(&r);CHKERRQ(ierr);
+  ierr = MatDestroy(&J);CHKERRQ(ierr); ierr = SNESDestroy(&snes);CHKERRQ(ierr);
   if (size > 1){
-    ierr = VecDestroy(user.xloc);CHKERRQ(ierr); 
-    ierr = VecDestroy(user.rloc);CHKERRQ(ierr);
-    ierr = VecScatterDestroy(user.scatter);CHKERRQ(ierr);
+    ierr = VecDestroy(&user.xloc);CHKERRQ(ierr); 
+    ierr = VecDestroy(&user.rloc);CHKERRQ(ierr);
+    ierr = VecScatterDestroy(&user.scatter);CHKERRQ(ierr);
   }
   ierr = PetscFinalize();
   return 0;

@@ -77,7 +77,7 @@ int main(int argc,char **argv)
      One should destroy any PETSc object once one is completely
     done with it.
   */
-  ierr = ISDestroy(is);CHKERRQ(ierr);
+  ierr = ISDestroy(&is);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

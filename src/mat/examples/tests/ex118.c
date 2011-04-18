@@ -104,9 +104,9 @@ int main(int argc,char **args)
 
   /* free space */
 
-  ierr = MatDestroy(T);CHKERRQ(ierr);
+  ierr = MatDestroy(&T);CHKERRQ(ierr);
 
-  for (i=0; i<nevs; i++){ ierr = VecDestroy(evecs[i]);CHKERRQ(ierr);}
+  for (i=0; i<nevs; i++){ ierr = VecDestroy(&evecs[i]);CHKERRQ(ierr);}
   ierr = PetscFree(evecs);CHKERRQ(ierr);
   ierr = PetscFree(D);CHKERRQ(ierr);
   ierr = PetscFree(work);CHKERRQ(ierr);
@@ -196,7 +196,7 @@ PetscErrorCode CkEigenSolutions(PetscInt cklvl,Mat A,PetscInt il,PetscInt iu,Pet
     ierr = PetscPrintf(PETSC_COMM_SELF,"Error: cklvl=%d is not supported \n",cklvl);
   }
 
-  ierr = VecDestroy(vt2); 
-  ierr = VecDestroy(vt1);
+  ierr = VecDestroy(&vt2); 
+  ierr = VecDestroy(&vt1);
   PetscFunctionReturn(0);
 }

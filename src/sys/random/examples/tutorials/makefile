@@ -3,7 +3,7 @@ CFLAGS	        =
 FFLAGS	        = 
 CPPFLAGS        =
 FPPFLAGS        =
-LOCDIR          = src/sys/random/examples/tutorials
+LOCDIR          = src/sys/random/examples/tutorials/
 EXAMPLESC       = ex1.c ex2.c
 EXAMPLESF       = 
 MANSEC          = Sys
@@ -29,7 +29,7 @@ runex1_2:
 runex2:
 	-@${MPIEXEC} -n 2 ./ex2
 
-TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 ex1.rm
+TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc runex2 ex2.rm
 TESTEXAMPLES_C_X11	       =
 TESTEXAMPLES_FORTRAN	       =
 TESTEXAMPLES_FORTRAN_NOCOMPLEX =
