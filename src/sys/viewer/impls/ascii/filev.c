@@ -246,7 +246,7 @@ PetscErrorCode  PetscViewerASCIISetTab(PetscViewer viewer,PetscInt tabs)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerASCIISynchronizedAllow" 
-/*@
+/*@C
     PetscViewerASCIISynchronizedAllow - Allows calls to PetscViewerASCIISynchronizedPrintf() for this viewer
 
     Collective on PetscViewer
