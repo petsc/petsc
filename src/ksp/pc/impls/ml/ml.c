@@ -541,7 +541,7 @@ PetscErrorCode PCSetUp_ML(PC pc)
     ierr = MatConvert_MPIAIJ_ML(A,PETSC_NULL,MAT_INITIAL_MATRIX,&Aloc);CHKERRQ(ierr);
   } else if (isSeq) {
     Aloc = A;
-  } else SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONG, "Invalid matrix type for ML. ML can only handle AIJ matrices.");
+  } else SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONG, "Matrix type '%s' cannot be used with ML. ML can only handle AIJ matrices.",((PetscObject)A)->type_name);
 
   /* create and initialize struct 'PetscMLdata' */
   ierr = PetscNewLog(pc,FineGridCtx,&PetscMLdata);CHKERRQ(ierr); 
