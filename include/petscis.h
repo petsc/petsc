@@ -285,6 +285,10 @@ extern PetscErrorCode  ISCompressIndicesGeneral(PetscInt,PetscInt,PetscInt,const
 extern PetscErrorCode  ISCompressIndicesSorted(PetscInt,PetscInt,PetscInt,const IS[],IS[]);
 extern PetscErrorCode  ISExpandIndicesGeneral(PetscInt,PetscInt,PetscInt,const IS[],IS[]);
 
-
 PETSC_EXTERN_CXX_END
+
+/* Reset __FUNCT__ in case the user does not define it themselves */
+#undef __FUNCT__
+#define __FUNCT__ "User provided function"
+
 #endif

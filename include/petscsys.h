@@ -2444,4 +2444,8 @@ extern PetscErrorCode  PetscSubcommSetTypeGeneral(PetscSubcomm,PetscMPIInt,Petsc
 
 PETSC_EXTERN_CXX_END
 
+/* Reset __FUNCT__ in case the user does not define it themselves */
+#undef __FUNCT__
+#define __FUNCT__ "User provided function"
+
 #endif
