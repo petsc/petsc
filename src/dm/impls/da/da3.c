@@ -304,7 +304,9 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
   x  = lx[rank % m];
   xs = 0;
   for (i=0; i<(rank%m); i++) { xs += lx[i];}
-  if (m > 1 && x < s) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column width is too thin for stencil! %D %D",x,s);
+  if ((x < s) && ((m > 1) || (bx == DMDA_BOUNDARY_PERIODIC))) {
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local x-width of domain x %D is smaller than stencil width s %D",x,s);
+  }
 
   if (!ly) {
     ierr = PetscMalloc(n*sizeof(PetscInt), &dd->ly);CHKERRQ(ierr);
@@ -314,7 +316,9 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
     }
   }
   y  = ly[(rank % (m*n))/m];
-  if (n > 1 && y < s) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Row width is too thin for stencil! %D %D",y,s);      
+  if ((y < s) && ((n > 1) || (by == DMDA_BOUNDARY_PERIODIC))) {
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local y-width of domain y %D is smaller than stencil width s %D",y,s);
+  }
   ys = 0;
   for (i=0; i<(rank % (m*n))/m; i++) { ys += ly[i];}
 
@@ -326,7 +330,10 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
     }
   }
   z  = lz[rank/(m*n)];
-  if (p > 1 && z < s) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Plane width is too thin for stencil! %D %D",z,s);      
+
+  if ((z < s) && ((p > 1) || bz == DMDA_BOUNDARY_PERIODIC)) {
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local z-width of domain z %D is smaller than stencil width s %D",z,s);
+  }
   zs = 0;
   for (i=0; i<(rank/(m*n)); i++) { zs += lz[i];}
   ye = ys + y;
