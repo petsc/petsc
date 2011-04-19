@@ -280,7 +280,9 @@ match the first </font></a></li>
 Krylov methods seem to print two residual norms per iteration?</a></font></font></li>
       <li><font face="Terminal"><a href="faq.html#dylib">Unable to
 locate PETSc dynamic library
-/home/balay/spetsc/lib/libg/linux/libpetsc </a><br>
+/home/balay/spetsc/lib/libg/linux/libpetsc</a></font></li>
+      <li><font face="Terminal"><a href="faq.html#bisect">How do I
+determine what update to PETSc broke my code? </a><br>
         </font></li>
       </menu>
       <h4><a href="faq.html#Shared%20Libraries">Shared
@@ -2013,11 +2015,106 @@ they are installed. This could also happen on clusters - where
 the paths are different on the (run) nodes - than on the
 (compile) front-end.<font color="#ff0000"> </font>Do
 not use dynamic libraries &amp; shared libraries. Run ./configure with
---with-shared-libraries=0 --with-dynamic-loading=0</p>
-      <p style="color: rgb(255, 0, 0);"> </p>
-      <p style="color: rgb(255, 0, 0);"> </p>
-      <p><span style="color: rgb(255, 0, 0);"></span></p>
-      <p><span style="color: rgb(255, 0, 0);"></span></p>
+--with-shared-libraries=0 --with-dynamic-loading=0<br>
+      </p>
+      <p><font face="Terminal">
+      <p style="color: rgb(0, 0, 0);"><font face="Terminal">
+      <p><font face="Terminal"><span style="color: rgb(255, 0, 0);"><a
+ name="bisect"></a></span></font><font face="Terminal"><a><span
+ style="color: rgb(255, 0, 0);">How do I determine what update to PETSc
+broke my code?</span></a></font><font face="Terminal"><span
+ style="color: rgb(255, 0, 0);"><br>
+      </span></font></p>
+      </font></p>
+      </font> </p>
+      <p>If at some point [in petsc code history] you had a working
+code - but the latest petsc code broke it, its possible to determine
+the petsc code change that might have caused this behavior. This is
+achieved by:<br>
+      </p>
+      <ul>
+        <li>using <a href="http://mercurial.selenic.com/">Mercurial</a>
+DVCS to access petsc-dev sources [and BuildSystem sources]</li>
+        <li>knowing the changeset number [in mercurial] for the <span
+ style="font-weight: bold;">known working</span> version of petsc</li>
+        <li>knowing the changeset number [in mercurial] for the <span
+ style="font-weight: bold;">known broken</span> version of petsc</li>
+        <li>using <a
+ href="http://mercurial.selenic.com/wiki/BisectExtension">bisect</a>
+functionality of mercurial</li>
+      </ul>
+This process can be as follows:<br>
+      <ul>
+        <li>get petsc-dev and BuildSystem sources<br>
+          <span style="color: rgb(153, 51, 153);">&nbsp; hg clone
+http://petsc.cs.iit.edu/petsc/petsc-dev</span><br>
+          <span style="color: rgb(153, 51, 153);">&nbsp; hg clone
+http://petsc.cs.iit.edu/petsc/BuildSystem petsc-dev/config/BuildSystem</span></li>
+        <li>Find the <span style="font-weight: bold;">good</span> and <span
+ style="font-weight: bold;">bad</span> markers to start the bisection
+process. This can be done either by checking 'hg log' or 'hg view' or<a
+ href="http://petsc.cs.iit.edu/petsc/petsc-dev">
+http://petsc.cs.iit.edu/petsc/petsc-dev</a> or <a
+ href="http://petsc.cs.iit.edu/petsc/BuildSystem">http://petsc.cs.iit.edu/petsc/BuildSystem</a>
+or the web history of petsc-release clones. Lets say the known bad
+changeset is&nbsp; 21af4baa815c and known good changeset is 5ae5ab319844<br>
+        </li>
+        <li>Now start the bisection process with these known revisions.
+[build PETSc, and test your code to confirm known good/bad behavior]<br>
+          <span style="color: rgb(153, 51, 153);">&nbsp; hg update -C
+21af4baa815c</span><br>
+          <span style="color: rgb(153, 51, 153);">&nbsp; hg update -C
+--date "&lt;`hg parent --template '{date|date}'`" -R config/BuildSystem</span><br>
+&nbsp; &lt;build/test/confirm-bad&gt;<br
+ style="color: rgb(153, 51, 153);">
+          <span style="color: rgb(153, 51, 153);">&nbsp; hg bisect --bad</span><br
+ style="color: rgb(153, 51, 153);">
+          <span style="color: rgb(153, 51, 153);">&nbsp; hg update -C
+5ae5ab319844</span><br>
+          <span style="color: rgb(153, 51, 153);">&nbsp; hg update -C
+--date "&lt;`hg parent --template '{date|date}'`" -R config/BuildSystem</span><br>
+&nbsp; &lt;build/test/confirm-good&gt;<br
+ style="color: rgb(153, 51, 153);">
+          <span style="color: rgb(153, 51, 153);">&nbsp; hg bisect
+--good</span><br>
+          <span style="color: rgb(153, 51, 153);">&nbsp; hg update -C
+--date "&lt;`hg parent --template '{date|date}'`" -R config/BuildSystem</span><br>
+        </li>
+        <li>&nbsp;Now until done - keep bisecting, building PETSc, and
+testing your code with it and determine if the code is working or not.
+i.e<br>
+&nbsp; if &lt;build&gt; broken:<br>
+&nbsp;&nbsp;&nbsp; <span style="color: rgb(153, 51, 153);">hg bisect
+--skip</span><br>
+          <span style="color: rgb(153, 51, 153);">&nbsp;&nbsp;&nbsp; hg
+update -C --date "&lt;`hg parent --template '{date|date}'`" -R
+config/BuildSystem</span><br>
+&nbsp; if &lt;test&gt; good:<br>
+&nbsp;&nbsp;&nbsp; <span style="color: rgb(153, 51, 153);">hg bisect
+--good</span><br>
+          <span style="color: rgb(153, 51, 153);">&nbsp;&nbsp;&nbsp; hg
+update -C --date "&lt;`hg parent --template '{date|date}'`" -R
+config/BuildSystem</span><br>
+&nbsp; elseif &lt;test&gt; bad:<br>
+&nbsp;&nbsp;&nbsp; <span style="color: rgb(153, 51, 153);">hg bisect
+--bad</span><br>
+          <span style="color: rgb(153, 51, 153);">&nbsp;&nbsp;&nbsp; hg
+update -C --date "&lt;`hg parent --template '{date|date}'`" -R
+config/BuildSystem</span><br>
+          <br>
+Notice the <span style="color: rgb(153, 51, 153);">hg update -C --date
+"&lt;`hg parent --template '{date|date}'`" -R config/BuildSystem</span>
+after each 'hg update' or 'hg bisect'. This is to update BuildSystem to
+be in sync to petsc-dev. If this is not done - and BuildSystem is out
+of sync with petsc-dev - configure will keep failing.</li>
+        <li>After something like 5-15 iterations - 'hg bisect' will
+pin-point the exact code change that resulted in the difference in
+application behavior<br>
+          <br>
+        </li>
+      </ul>
+      <p> </p>
+      <p> </p>
       <hr>
       <h3><a name="Shared Libraries">Shared Libraries</a></h3>
       <p><font color="#ff0000"><a name="install-shared">Can
