@@ -59,6 +59,7 @@ int main(int argc,char **argv)
   ierr = PetscViewerGetSingleton(PETSC_VIEWER_STDOUT_WORLD,&sviewer);CHKERRQ(ierr);
   ierr = VecView(local1,sviewer);CHKERRQ(ierr);
   ierr = PetscViewerRestoreSingleton(PETSC_VIEWER_STDOUT_WORLD,&sviewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIISynchronizedAllow(PETSC_VIEWER_STDOUT_WORLD,PETSC_TRUE);CHKERRQ(ierr);
   ierr = PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_WORLD,"[%d] My part of redundant2 array\n",rank);CHKERRQ(ierr);
   ierr = PetscScalarView(nredundant2,redundant2,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = PetscViewerASCIISynchronizedAllow(PETSC_VIEWER_STDOUT_WORLD,PETSC_TRUE);CHKERRQ(ierr);
