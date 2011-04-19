@@ -33,7 +33,10 @@ vec = PetscVec([2 3.1 4.5]);
 vec.View(viewer);
 vec.Destroy();
 
+% You can create an IS directly with a matlab array
 is = PetscIS([1 2 5]);
+% You can directly access all elements of an IS
+indices = is(:);
 is.View(viewer);
 is.Destroy();
 
