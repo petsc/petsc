@@ -87,7 +87,7 @@ Unable to download package %s from: %s
 * Alternatively, you can download the above URL manually, to /yourselectedlocation/%s
   and use the configure option:
   --download-%s=/yourselectedlocation/%s
-''' % (name, url, filename, name, filename)
+''' % (name, url, filename, name.lower(), filename)
       raise RuntimeError(failureMessage)
     self.logPrint('Uncompressing '+localFile)
     if not archiveZip.endswith(".zip"):
@@ -112,7 +112,7 @@ Unable to unzip downloaded package %s from: %s
 * Alternatively, you can download the above URL manually, to /yourselectedlocation/%s
   and use the configure option:
   --download-%s=/yourselectedlocation/%s
-''' % (name, url, filename, name, filename)
+''' % (name, url, filename, name.lower(), filename)
         raise RuntimeError(failureMessage)
       else:
         raise RuntimeError('Error unzipping '+archiveZip+': '+str(e))
