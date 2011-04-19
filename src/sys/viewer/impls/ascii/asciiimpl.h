@@ -12,6 +12,7 @@ typedef struct {
   char          *filename;
   PetscBool     storecompressed; 
   PetscBool     closefile;       
+  PetscBool     allowsynchronized; /* allow synchronized writes from any process to the viewer */
 } PetscViewer_ASCII;
 
 typedef struct PetscViewerLink_t PetscViewerLink;

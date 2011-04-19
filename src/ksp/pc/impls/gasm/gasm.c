@@ -67,9 +67,11 @@ static PetscErrorCode  PCGASMPrintSubdomains(PC pc)
     ierr = PetscViewerDestroy(sviewer);CHKERRQ(ierr);
     ierr = ISRestoreIndices(osm->is[i],&idx);CHKERRQ(ierr);
 
+    ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_TRUE);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer, "Subdomain with overlap\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedPrintf(viewer, "%s", cidx);CHKERRQ(ierr);
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_FALSE);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
     ierr = PetscFree(cidx);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
@@ -91,9 +93,11 @@ static PetscErrorCode  PCGASMPrintSubdomains(PC pc)
       ierr = PetscViewerDestroy(sviewer);CHKERRQ(ierr);
       ierr = ISRestoreIndices(osm->is_local[i],&idx);CHKERRQ(ierr);
 
+      ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_TRUE);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer, "Subdomain without overlap\n");CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(viewer, "%s", cidx);CHKERRQ(ierr);
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_FALSE);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
       ierr = PetscFree(cidx);CHKERRQ(ierr);
       ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
@@ -127,8 +131,10 @@ static PetscErrorCode PCView_GASM(PC pc,PetscViewer viewer)
     char overlaps[256] = "user-defined overlap",subdomains[256] = "total subdomains set";
     if (osm->overlap >= 0) {ierr = PetscSNPrintf(overlaps,sizeof overlaps,"amount of overlap = %D",osm->overlap);CHKERRQ(ierr);}
     if (osm->nmax > 0)     {ierr = PetscSNPrintf(subdomains,sizeof subdomains,"max number of local subdomains = %D",osm->nmax);CHKERRQ(ierr);}
+    ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_TRUE);CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedPrintf(viewer,"  [%d:%d] number of locally-supported subdomains = %D\n",(int)rank,(int)size,osm->n);CHKERRQ(ierr);
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_FALSE);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Generalized additive Schwarz: %s, %s\n",subdomains,overlaps);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Generalized additive Schwarz: restriction/interpolation type - %s\n",PCGASMTypes[osm->type]);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(((PetscObject)pc)->comm,&rank);CHKERRQ(ierr);
@@ -152,9 +158,12 @@ static PetscErrorCode PCView_GASM(PC pc,PetscViewer viewer)
         ierr = PetscViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
         if (i < osm->n) {
           ierr = ISGetLocalSize(osm->is[i],&bsz);CHKERRQ(ierr);
+          ierr = PetscViewerASCIISynchronizedAllow(sviewer,PETSC_TRUE);CHKERRQ(ierr);
           ierr = PetscViewerASCIISynchronizedPrintf(sviewer,"[%d:%d] local subdomain number %D, size = %D\n",(int)rank,(int)size,i,bsz);CHKERRQ(ierr);
           ierr = KSPView(osm->ksp[i],sviewer);CHKERRQ(ierr);
           ierr = PetscViewerASCIISynchronizedPrintf(sviewer,"- - - - - - - - - - - - - - - - - -\n");CHKERRQ(ierr);
+          ierr = PetscViewerFlush(sviewer);CHKERRQ(ierr);
+          ierr = PetscViewerASCIISynchronizedAllow(sviewer,PETSC_FALSE);CHKERRQ(ierr);
         }
         ierr = PetscViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
       }

@@ -335,7 +335,10 @@ non-periodic ghost cells.</li>
       <ul>
         <li>PETSC_VIEWER_XXX is now PETSCVIEWERXXX</li>
         <li>Added PetscViewerASCIIOpenWithFILE() and
-PetscViewerASCIISetFILE(</li>
+PetscViewerASCIISetFILE()</li>
+        <li>Added PetscViewerASCIISynchronizedAllow() which must be
+called before using PetscViewerASCIISynchronizedPrintf()<br>
+        </li>
       </ul>
       <ul>
       </ul>
@@ -346,7 +349,8 @@ PetscViewerASCIISetFILE(</li>
         <li> PetscOptionsAtoi(),PetscOptionsAtod(),PetscOptionsAtol()
 -&gt; PetscOptionsStringToInt(), PetscOptionsStringToReal(),
 PetscOptionsStringToBool()</li>
-        <li>PetscFListFind() takes an additional argument to look up the
+        <li>PetscFListFind() takes an additional argument to look up
+the
 symbol in dynamically loaded libraries if not already in the list.</li>
       </ul>
       <p><u><b>AO:<br>

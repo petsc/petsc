@@ -41,9 +41,11 @@ extern  PetscInt  _BT_idx;
   PetscInt __i; PetscErrorCode _8_ierr; \
   PetscViewer __viewer = viewer; \
   if (!__viewer) __viewer = PETSC_VIEWER_STDOUT_SELF;\
+  _8_ierr = PetscViewerASCIISynchronizedAllow(__viewer,PETSC_TRUE);CHKERRQ(_8_ierr);\
   for (__i=0; __i<m; __i++) { \
     _8_ierr = PetscViewerASCIISynchronizedPrintf(__viewer,"%D %d\n",__i,PetscBTLookup(bt,__i));CHKERRQ(_8_ierr);\
-  }  _8_ierr = PetscViewerFlush(__viewer);CHKERRQ(_8_ierr);}
+  }  _8_ierr = PetscViewerFlush(__viewer);CHKERRQ(_8_ierr);\
+  _8_ierr = PetscViewerASCIISynchronizedAllow(__viewer,PETSC_FALSE);CHKERRQ(_8_ierr);}
 
 #define PetscBTCreate(m,array)  \
   (PetscMalloc(((m)/PETSC_BITS_PER_BYTE+1)*sizeof(char),&(array)) || PetscBTMemzero(m,array))

@@ -228,6 +228,7 @@ extern PetscErrorCode  PetscViewerFileGetMode(PetscViewer,PetscFileMode*);
 extern PetscErrorCode  PetscViewerFileSetMode(PetscViewer,PetscFileMode);
 extern PetscErrorCode  PetscViewerASCIIPrintf(PetscViewer,const char[],...);
 extern PetscErrorCode  PetscViewerASCIISynchronizedPrintf(PetscViewer,const char[],...);
+extern PetscErrorCode  PetscViewerASCIISynchronizedAllow(PetscViewer,PetscBool);
 extern PetscErrorCode  PetscViewerASCIIPushTab(PetscViewer);
 extern PetscErrorCode  PetscViewerASCIIPopTab(PetscViewer);
 extern PetscErrorCode  PetscViewerASCIIUseTabs(PetscViewer,PetscBool );
