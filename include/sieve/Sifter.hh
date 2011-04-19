@@ -926,6 +926,8 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
       }
     }
     // A parallel viewer
+    #undef __FUNCT__
+    #define __FUNCT__ "view"
     PetscErrorCode view(const char* label = NULL, bool raw = false){
       PetscErrorCode ierr;
       ostringstream txt;
