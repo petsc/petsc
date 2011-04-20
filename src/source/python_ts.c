@@ -491,7 +491,7 @@ static PetscErrorCode TSSetUp_Python(TS ts)
   }
   /* create work vector for function evaluation  */
   if (py->vec_func == PETSC_NULL) {
-    ierr = PetscObjectQuery((PetscObject)ts,"__rhs_funcvec__",(PetscObject *)&py->vec_func);CHKERRQ(ierr);
+    ierr = PetscObjectQuery((PetscObject)ts,"__funvec__",(PetscObject *)&py->vec_func);CHKERRQ(ierr);
     if (py->vec_func) { ierr = PetscObjectReference((PetscObject)py->vec_func);CHKERRQ(ierr); }
   }
   if (py->vec_func == PETSC_NULL) {

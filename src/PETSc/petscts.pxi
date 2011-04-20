@@ -90,6 +90,7 @@ cdef extern from * nogil:
     int TSSetRHSJacobian(PetscTS,PetscMat,PetscMat,PetscTSJacobianFunction,void*)
     int TSSetIFunction(PetscTS,PetscVec,PetscTSIFunctionFunction,void*)
     int TSSetIJacobian(PetscTS,PetscMat,PetscMat,PetscTSIJacobianFunction,void*)
+    int TSGetIFunction(PetscTS,PetscVec*,PetscTSIFunctionFunction*,void*)
     int TSGetIJacobian(PetscTS,PetscMat*,PetscMat*,PetscTSIJacobianFunction*,void**)
 
     int TSGetKSP(PetscTS,PetscKSP*)

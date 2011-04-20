@@ -1098,24 +1098,22 @@ TSSetUpFunction_Private(TS ts,Vec r)
   if (r) {
     const TSType   ttype;
     TSProblemType  ptype;
-    SNES           snes;
-    Vec            fvec;
-    PetscErrorCode (*ffun)(SNES,Vec,Vec,void*);
-    void           *fctx;
+    SNES           snes = 0;
+    PetscErrorCode (*ffun)(SNES,Vec,Vec,void*) = 0;
+    void           *fctx = 0;
     ierr = TSGetType(ts,&ttype);CHKERRQ(ierr);
     ierr = TSGetProblemType(ts,&ptype);CHKERRQ(ierr);
     if (ttype && ptype == TS_NONLINEAR) {
       ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
-      ierr = SNESGetFunction(snes,&fvec,&ffun,&fctx);CHKERRQ(ierr);
-      if (!fvec) { fvec = r; }
+      ierr = SNESGetFunction(snes,0,&ffun,&fctx);CHKERRQ(ierr);
       #if !(PETSC_VERSION_(3,1,0) || PETSC_VERSION_(3,0,0))
       if (!ffun) { ffun = SNESTSFormFunction; fctx = ts; }
       #endif
-      ierr = SNESSetFunction(snes,fvec,ffun,fctx);CHKERRQ(ierr);
+      ierr = SNESSetFunction(snes,r,ffun,fctx);CHKERRQ(ierr);
     }
   }
   if (r) {
-    Vec svec;
+    Vec svec = 0;
     ierr = TSGetSolution(ts,&svec);CHKERRQ(ierr);
     if (!svec) {
       ierr = VecDuplicate(r,&svec);CHKERRQ(ierr);
@@ -1136,11 +1134,30 @@ TSSetIFunction_Custom(TS ts,Vec r,TSIFunction fun,void *ctx)
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (r) PetscValidHeaderSpecific(r,VEC_CLASSID,2);
   ierr = TSSetIFunction(ts,fun,ctx);CHKERRQ(ierr);
-  ierr = PetscObjectCompose((PetscObject)ts,"__ifunvec__",(PetscObject)r);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject)ts,"__funvec__",(PetscObject)r);CHKERRQ(ierr);
   ierr = TSSetUpFunction_Private(ts,r);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #define TSSetIFunction TSSetIFunction_Custom
+
+#undef __FUNCT__
+#define __FUNCT__ "TSGetIFunction_Custom"
+static PetscErrorCode
+TSGetIFunction_Custom(TS ts,Vec *f,TSIFunction *fun,void **ctx)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  if (f) {ierr = PetscObjectQuery((PetscObject)ts,"__funvec__",(PetscObject*)f);CHKERRQ(ierr);}
+  #if PETSC_VERSION_(3,0,0)
+  if (fun) *fun = NULL;
+  #else
+  if (fun) *fun = ts->ops->ifunction;
+  #endif
+  if (ctx) *ctx = ts->funP;
+  PetscFunctionReturn(0);
+}
+#define TSGetIFunction TSGetIFunction_Custom
 
 #undef __FUNCT__
 #define __FUNCT__ "TSSetRHSFunction_Custom"
@@ -1152,7 +1169,7 @@ TSSetRHSFunction_Custom(TS ts,Vec r,PetscErrorCode (*fun)(TS,PetscReal,Vec,Vec,v
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (r) PetscValidHeaderSpecific(r,VEC_CLASSID,2);
   ierr = TSSetRHSFunction(ts,fun,ctx);CHKERRQ(ierr);
-  ierr = PetscObjectCompose((PetscObject)ts,"__rhsfunvec__",(PetscObject)r);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject)ts,"__funvec__",(PetscObject)r);CHKERRQ(ierr);
   ierr = TSSetUpFunction_Private(ts,r);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1166,7 +1183,7 @@ TSGetRHSFunction_Custom(TS ts,Vec *f,PetscErrorCode (**fun)(TS,PetscReal,Vec,Vec
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  if (f) {ierr = PetscObjectQuery((PetscObject)ts, "__rhsfunvec__", (PetscObject*)f);CHKERRQ(ierr); }
+  if (f) {ierr = PetscObjectQuery((PetscObject)ts, "__funvec__", (PetscObject*)f);CHKERRQ(ierr);}
   if (fun) *fun = ts->ops->rhsfunction;
   if (ctx) *ctx = ts->funP;
   PetscFunctionReturn(0);

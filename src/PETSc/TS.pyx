@@ -215,8 +215,11 @@ cdef class TS(Object):
         return flag
 
     def getIFunction(self):
+        cdef Vec f = Vec()
+        CHKERR( TSGetIFunction(self.ts, &f.vec, NULL, NULL) )
+        PetscIncref(<PetscObject>f.vec)
         cdef object function = self.get_attr('__ifunction__')
-        return function
+        return (f, function)
 
     def getIJacobian(self):
         cdef Mat J = Mat(), P = Mat()
