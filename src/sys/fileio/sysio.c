@@ -106,7 +106,7 @@ PetscErrorCode  PetscByteSwapShort(short *buff,PetscInt n)
   for (j=0; j<n; j++) {
     ptr1 = (char*)(buff + j);
     for (i=0; i<(PetscInt) sizeof(short); i++) {
-      ptr2[i] = ptr1[sizeof(int)-1-i];
+      ptr2[i] = ptr1[sizeof(short)-1-i];
     }
     for (i=0; i<(PetscInt) sizeof(short); i++) {
       ptr1[i] = ptr2[i];
