@@ -53,6 +53,7 @@ def check(ui, repo, *pats, **opts):
   '''Check that build is functional'''
   import shutil
 
+  extraArgs = ' '+' '.join(opts['args'])
   maker = builder.PETScMaker()
   maker.setup()
   # C test
@@ -87,10 +88,12 @@ def check(ui, repo, *pats, **opts):
     params = builder.regressionParameters.get(paramKey, {})
     if isinstance(params, list):
       for testnum, param in enumerate(params):
+        param['args'] += extraArgs
         if maker.runTest(exampleDir, executable, testnum, **param):
           print 'TEST FAILED (check make.log for details)'
           return 1
     else:
+      params['args'] += extraArgs
       if maker.runTest(exampleDir, executable, 1, **params):
         print 'TEST FAILED (check make.log for details)'
         return 1
@@ -447,7 +450,7 @@ dryrunopts = [('n', 'dry-run', None, _('do not perform actions, just print outpu
 # Leading ^ puts command on the 'shortlist'
 table = {'^build':  (build, dryrunopts, _('[FILE]')),
          'buildParallel':  (buildParallel, dryrunopts, _('[FILE]')),
-         '^check':  (check, [], ''),
+         '^check':  (check, [('a', 'args', [], _('Extra arguments for execution'), _('ARGS'))], _('[SRC]')),
          '^clean':  (clean, [], ''),
          'help':    (help_, [], _('[TOPIC]')),
          '^purge':  (purge, [], _('FILE...')),
