@@ -382,10 +382,7 @@ class Package(config.base.Configure):
     else:
       self.headers.pushLanguage(self.defaultLanguage)
     ret = self.executeTest(self.headers.checkInclude, [incl, hfiles],{'otherIncludes' : otherIncludes, 'timeout': timeout})
-    if self.cxx:
-      self.headers.popLanguage()
-    else:
-      self.headers.pushLanguage(self.defaultLanguage)
+    self.headers.popLanguage()
     return ret
 
   def checkPackageLink(self, includes, body, cleanup = 1, codeBegin = None, codeEnd = None, shared = 0):
