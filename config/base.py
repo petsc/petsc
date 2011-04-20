@@ -462,6 +462,9 @@ class Configure(script.Script):
         if status: self.framework.log.write('ret = '+str(status)+'\n')
         if error: self.framework.log.write('error message = {'+error+'}\n')
         self.framework.log.write('Source:\n'+self.getCode(includes, body, codeBegin, codeEnd))
+      else:
+        self.framework.log.write('Successful compile:\n')
+        self.framework.log.write('Source:\n'+self.getCode(includes, body, codeBegin, codeEnd))
       return
 
     cleanup = cleanup and self.framework.doCleanup
