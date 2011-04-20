@@ -50,10 +50,6 @@ PetscErrorCode  MatConvert_MPIAIJ_MPISBAIJ(Mat A, MatType newtype,MatReuse reuse
   ierr = MatAssemblyBegin(M,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(M,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  if (A->hermitian){
-    ierr = MatSetOption(M,MAT_HERMITIAN,PETSC_TRUE);CHKERRQ(ierr);
-  }
-
   if (reuse == MAT_REUSE_MATRIX) {
     ierr = MatHeaderReplace(A,M);CHKERRQ(ierr);
   } else {
@@ -81,7 +77,6 @@ PetscErrorCode MatConvert_MPIBAIJ_MPISBAIJ(Mat A, MatType newtype,MatReuse reuse
   PetscFunctionBegin;
   ierr = MatGetSize(A,&m,&n);CHKERRQ(ierr);
   ierr = MatGetLocalSize(A,&lm,&ln);CHKERRQ(ierr);
-  printf(" --- in MatConvert_MPIBAIJ_MPISBAIJ, bs = %d m %d lm %d\n", bs,m,lm); 
   ierr = PetscMalloc2(lm/bs,PetscInt,&d_nnz,lm/bs,PetscInt,&o_nnz);CHKERRQ(ierr);
   
   ierr = MatMarkDiagonal_SeqBAIJ(mpimat->A);CHKERRQ(ierr);
@@ -97,8 +92,7 @@ PetscErrorCode MatConvert_MPIBAIJ_MPISBAIJ(Mat A, MatType newtype,MatReuse reuse
 
   ierr = PetscFree2(d_nnz,o_nnz);CHKERRQ(ierr);
 
-  ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
-  printf("--- rstart  %d end %d\n",rstart,rend); 
+  ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr); 
   for(i=rstart;i<rend;i++){
     ierr = MatGetRow(A,i,&nz,&cwork,&vwork);CHKERRQ(ierr);
     j = 0;
@@ -106,15 +100,9 @@ PetscErrorCode MatConvert_MPIBAIJ_MPISBAIJ(Mat A, MatType newtype,MatReuse reuse
     ierr = MatSetValues(M,1,&i,nz,cwork+j,vwork+j,INSERT_VALUES);CHKERRQ(ierr); // missing lower triangular entries in the diagonal blocks!!!
     ierr = MatRestoreRow(A,i,&nz,&cwork,&vwork);CHKERRQ(ierr);
   }
-  printf(" --- ok 2\n"); 
   ierr = MatAssemblyBegin(M,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(M,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  if (A->hermitian){
-    ierr = MatSetOption(M,MAT_HERMITIAN,PETSC_TRUE);CHKERRQ(ierr);
-  }
-
-  printf(" --- ok 3\n"); 
   if (reuse == MAT_REUSE_MATRIX) {
     ierr = MatHeaderReplace(A,M);CHKERRQ(ierr);
   } else {

@@ -39,9 +39,6 @@ PetscErrorCode MatConvert_Basic(Mat mat, const MatType newtype,MatReuse reuse,Ma
   }
   ierr = MatAssemblyBegin(M,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(M,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (mat->hermitian){
-    ierr = MatSetOption(M,MAT_HERMITIAN,PETSC_TRUE);CHKERRQ(ierr);
-  }
 
   if (reuse == MAT_REUSE_MATRIX) {
     ierr = MatHeaderReplace(mat,M);CHKERRQ(ierr);
