@@ -16,6 +16,7 @@ LIBBASE  = libpetscdm
 DIRS     = usfft utils hypre
 LOCDIR   = src/dm/impls/da/
 MANSEC   = DM
+SUBMANSEC= DMDA
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

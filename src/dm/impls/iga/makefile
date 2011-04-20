@@ -12,6 +12,7 @@ OBJSC    = iga.o igacreate.o
 OBJSF    =
 LIBBASE  = libpetscdm
 MANSEC   = DM
+SUBMANSEC= DMIGA
 LOCDIR   = src/dm/impls/iga
 
 include ${PETSC_DIR}/conf/variables

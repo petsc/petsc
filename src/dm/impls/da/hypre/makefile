@@ -10,6 +10,7 @@ OBJSC    = $(SOURCEC:.c=.o)
 OBJSF    =
 LIBBASE  = libpetscdm
 MANSEC   = DM
+SUBMANSEC= DMDA
 DIRS     =
 LOCDIR   = src/dm/impls/da/hypre/
 

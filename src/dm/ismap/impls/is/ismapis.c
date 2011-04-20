@@ -21,7 +21,7 @@ typedef struct {
 #define __FUNCT__ "ISMappingIS_LocateIndices"
 PetscErrorCode ISMappingIS_LocateIndices(PetscInt tablen, const PetscInt table[], PetscInt inlen, const PetscInt inidx[], PetscInt *outlen, PetscInt outidx[], PetscBool drop)
 {
-  PetscInt low, high,j,lastj;
+  PetscInt low, high,j = 0,lastj;
   PetscInt ind,last;
   PetscInt i, count;
   PetscFunctionBegin;
@@ -634,9 +634,9 @@ static PetscErrorCode ISMappingAssemblyBegin_IS(ISMapping map)
 
   ierr = MPI_Comm_size(map->xlayout->comm, &xsize); CHKERRQ(ierr);
   if(xsize > 1) {
-    PetscInt len, alen;
+    PetscInt len, alen = 0;
     const PetscInt *ixidx, *iyidx;
-    PetscInt *aixidx, *aiyidx;
+    PetscInt *aixidx = PETSC_NULL, *aiyidx = PETSC_NULL;
     ierr = ISGetLocalSize(mapis->ix, &len); CHKERRQ(ierr);
     ierr = ISGetIndices(mapis->ix, &ixidx); CHKERRQ(ierr);
     ierr = ISGetIndices(mapis->iy, &iyidx); CHKERRQ(ierr);

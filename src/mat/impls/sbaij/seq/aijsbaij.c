@@ -162,9 +162,6 @@ PetscErrorCode  MatConvert_SeqAIJ_SeqSBAIJ(Mat A,const MatType newtype,MatReuse 
   ierr = PetscFree(rowlengths);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (A->hermitian){
-    ierr = MatSetOption(B,MAT_HERMITIAN,PETSC_TRUE);CHKERRQ(ierr);
-  }
 
   if (reuse == MAT_REUSE_MATRIX) {
     ierr = MatHeaderReplace(A,B);CHKERRQ(ierr);
