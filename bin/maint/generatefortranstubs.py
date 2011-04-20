@@ -78,6 +78,8 @@ def FixDir(petscdir,dir):
         libbase = line
       elif line.find('LOCDIR') >=0:
         locdir = line.rstrip() + 'ftn-auto/'
+      elif line.find('SUBMANSEC') >=0:
+        mansec = line.split('=')[1].lower().strip()
       elif line.find('MANSEC') >=0:
         mansec = line.split('=')[1].lower().strip()
 
