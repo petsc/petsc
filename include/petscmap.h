@@ -20,27 +20,22 @@ extern PetscErrorCode  ISMappingInitializePackage(const char[]);
 S*/
 typedef struct _n_ISArray *ISArray;
 
-#define ISARRAY_I 1
-#define ISARRAY_J 2
+typedef enum{ISARRAY_I = 1, ISARRAY_J = 2} ISArrayIndex;
+typedef PetscInt ISArrayComponents;
 #define ISARRAY_W 4
 
-extern PetscErrorCode ISArrayCreate(ISArray *_chain);
+extern PetscErrorCode ISArrayCreate(ISArrayComponents mask, ISArray *_chain);
+extern PetscErrorCode ISArrayCreateArrays(PetscInt mask, PetscInt count, const PetscInt *lengths, ISArray **arrays);
 extern PetscErrorCode ISArrayClear(ISArray chain);
+extern PetscErrorCode ISArrayDuplicate(ISArray arr, ISArray *darr);
 extern PetscErrorCode ISArrayDestroy(ISArray chain);
-
-extern PetscErrorCode ISArrayAdd(ISArray chain, const PetscInt len, const PetscInt *ia, const PetscCopyMode imode, const PetscScalar *wa, PetscCopyMode wmode, const PetscInt *ja, PetscCopyMode jmode);
-extern PetscErrorCode ISArrayAddI(ISArray chain, const PetscInt len, PetscInt i, const PetscScalar* wa, PetscCopyMode wmode, const PetscInt *ja, PetscCopyMode jmode);
-extern PetscErrorCode ISArrayAddJ(ISArray chain, const PetscInt len, const PetscInt *ia, PetscCopyMode imode, const PetscScalar* wa, PetscCopyMode smode, PetscInt j);
-
-
-extern PetscErrorCode ISArrayGetComponents(ISArray chain, PetscInt *mask);
+extern PetscErrorCode ISArrayAddData(ISArray chain, const PetscInt len, const PetscInt *ia, const PetscScalar *wa, const PetscInt *ja);
+extern PetscErrorCode ISArrayAddI(ISArray chain, const PetscInt len, PetscInt i, const PetscScalar* wa, const PetscInt *ja);
+extern PetscErrorCode ISArrayAddJ(ISArray chain, const PetscInt len, const PetscInt *ia, const PetscScalar* wa, PetscInt j);
 extern PetscErrorCode ISArrayGetLength(ISArray chain, PetscInt *_length);
-extern PetscErrorCode ISArrayGetI(ISArray chain, const PetscInt *ia[]);
-extern PetscErrorCode ISArrayGetJ(ISArray chain, const PetscInt *ja[]);
-extern PetscErrorCode ISArrayGetW(ISArray chain, const PetscScalar *wa[]);
+extern PetscErrorCode ISArrayGetData(ISArray chain, const PetscInt *ia[], const PetscScalar *wa[], const PetscInt *ja[]);
 
-extern PetscErrorCode ISArrayJoinArrays(PetscInt len, ISArray chains[], ISArray *_jchain);
-extern PetscErrorCode ISArrayGetSubArray(ISArray chain, PetscInt submask, PetscInt sublength, PetscInt offset, ISArray *_subarray);
+
 
 
 /*-------------------------------------------------------------------------*/
@@ -130,11 +125,11 @@ extern PetscErrorCode  ISMappingRegisterAll(const char[]);
 extern PetscErrorCode  ISMappingRegisterDestroy(void);
 
 /* 
- Only one real type for now. 
+ Only one impl type for now. 
  Will wrap sparse Mat and VecScatter objects as ISMappings in the future. 
  */
 #define ISMappingType char*
-#define IS_MAPPING_IS      "ISMappingIS"
+#define IS_MAPPING_GRAPH     "ISMappingGraph"
 
 extern  PetscErrorCode ISMappingCreate(MPI_Comm comm, ISMapping *mapping);
 extern  PetscErrorCode ISMappingView(ISMapping mapping, PetscViewer viewer);
@@ -153,25 +148,28 @@ extern  PetscErrorCode ISMappingGetSupportSizeLocal(ISMapping mapping, PetscInt 
 extern  PetscErrorCode ISMappingGetImageSizeLocal(ISMapping mapping, PetscInt *image_size);
 extern  PetscErrorCode ISMappingGetMaxImageSizeLocal(ISMapping mapping, PetscInt *max_image_size);
 
-extern  PetscErrorCode ISMappingMapIndicesLocal(ISMapping mapping, PetscInt insize, const PetscInt inidx[], PetscInt *outsize, PetscInt outidx[], PetscInt offsets[]);
-extern PetscErrorCode ISMappingMapValuesLocal(ISMapping map, PetscInt insize, const PetscInt inidx[], const PetscScalar invals[], PetscInt *outsize, PetscInt outidx[], PetscScalar outvals[], PetscInt offsets[]);
-extern  PetscErrorCode ISMappingBinIndicesLocal(ISMapping mapping, PetscInt insize, const PetscInt inidx[], PetscInt *outsize, PetscInt outidx[], PetscInt offsets[]);
-extern PetscErrorCode ISMappingBinValuesLocal(ISMapping map, PetscInt insize, const PetscInt inidx[], const PetscScalar invals[], PetscInt *outsize, PetscInt outidx[], PetscScalar outvals[], PetscInt offsets[]);
+extern  PetscErrorCode ISMappingMapLocal(ISMapping mapping, ISArray inarr, ISArrayIndex index, ISArray outarr);
+extern  PetscErrorCode ISMappingBinLocal(ISMapping mapping, ISArray array, ISArrayIndex index, ISArray outarr);
+extern  PetscErrorCode ISMappingMap(ISMapping mapping, ISArray inarr, ISArrayIndex index, ISArray outarr);
+extern  PetscErrorCode ISMappingBin(ISMapping mapping, ISArray array, ISArrayIndex index, ISArray outarr);
 
-extern  PetscErrorCode ISMappingMapIndices(ISMapping mapping, PetscInt insize, const PetscInt inidx[], PetscInt *outsize, PetscInt outidx[], PetscInt offsets[], PetscBool drop);
-extern PetscErrorCode ISMappingMapValues(ISMapping map, PetscInt insize, const PetscInt inidx[], const PetscScalar invals[], PetscInt *outsize, PetscInt outidx[], PetscScalar outvals[], PetscInt offsets[], PetscBool drop);
-extern  PetscErrorCode ISMappingBinIndices(ISMapping mapping, PetscInt insize, const PetscInt inidx[], PetscInt *outsize, PetscInt outidx[], PetscInt offsets[], PetscBool drop);
-extern PetscErrorCode ISMappingBinValues(ISMapping map, PetscInt insize, const PetscInt inidx[], const PetscScalar invals[], PetscInt *outsize, PetscInt outidx[], PetscScalar outvals[], PetscInt offsets[], PetscBool drop);
+extern  PetscErrorCode ISMappingMapSplitLocal(ISMapping mapping, ISArray inarr, ISArrayIndex index, ISArray *arrs);
+extern  PetscErrorCode ISMappingBinSplitLocal(ISMapping mapping, ISArray array, ISArrayIndex index, ISArray *bins);
+extern  PetscErrorCode ISMappingMapSplit(ISMapping mapping, ISArray inarr, ISArrayIndex index, ISArray *arrs);
+extern  PetscErrorCode ISMappingBinSplit(ISMapping mapping, ISArray array, ISArrayIndex index, ISArray *bins);
 
-extern PetscErrorCode ISMappingInvert(ISMapping mapping, ISMapping *imapping);
-extern PetscErrorCode ISMappingPullback(ISMapping mapping1, ISMapping mapping2, ISMapping *mapping);
-extern PetscErrorCode ISMappingPushforward(ISMapping mapping1, ISMapping mapping2, ISMapping *mapping);
 
-extern PetscErrorCode ISMappingGetOperator(ISMapping mapping, Mat *op);
 
-/* IS_MAPPING_IS */
-extern  PetscErrorCode ISMappingISSetEdges(ISMapping mapping, IS ix, IS iy);
-extern  PetscErrorCode ISMappingISGetEdges(ISMapping mapping, IS *ix, IS *iy);
+extern  PetscErrorCode ISMappingInvert(ISMapping mapping, ISMapping *imapping);
+extern  PetscErrorCode ISMappingPullback(ISMapping mapping1, ISMapping mapping2, ISMapping *mapping);
+extern  PetscErrorCode ISMappingPushforward(ISMapping mapping1, ISMapping mapping2, ISMapping *mapping);
+
+extern  PetscErrorCode ISMappingGetOperator(ISMapping mapping, Mat *op);
+
+/* IS_MAPPING_GRAPH */
+extern  PetscErrorCode ISMappingGraphAddEdgeArray(ISMapping mapping, ISArray edges);
+extern  PetscErrorCode ISMappingGraphAddEdges(ISMapping mapping, PetscInt len, const PetscInt x[], const PetscInt y[]);
+extern  PetscErrorCode ISMappingGraphGetEdgeArray(ISMapping mapping, ISArray edges);
 
 
 PETSC_EXTERN_CXX_END
