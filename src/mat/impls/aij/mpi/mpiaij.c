@@ -1097,6 +1097,7 @@ PetscErrorCode  MatIsTranspose_MPIAIJ(Mat Amat,Mat Bmat,PetscReal tol,PetscBool 
   ierr = MatDestroyMatrices(1,&Boffs);CHKERRQ(ierr);
   ierr = ISDestroy(Me);CHKERRQ(ierr);
   ierr = ISDestroy(Notme);CHKERRQ(ierr);
+  ierr = PetscFree(notme);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
