@@ -9,7 +9,8 @@ SOURCEH  =
 OBJSC    = binaryMatlab.o
 OBJSF    =
 LIBBASE  = libpetscdm
-MANSEC   = DMDA
+MANSEC   = DM
+SUBMANSEC= DMDA
 DIRS     = 
 LOCDIR   = src/dm/impls/da/utils/
 

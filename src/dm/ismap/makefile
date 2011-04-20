@@ -3,7 +3,8 @@ ALL: lib
 
 DIRS     = interface impls
 LOCDIR   = src/dm/ismap
-MANSEC   = ISMAP
+MANSEC   = DM
+SUBMANSEC= ISMAP
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

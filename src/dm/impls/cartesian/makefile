@@ -13,7 +13,8 @@ OBJSC    = cartesian.o
 OBJSF    =
 DIRS     =
 LIBBASE  = libpetscdm
-MANSEC   = DMCARTESIAN
+MANSEC   = DM
+SUBMANSEC= DMCARTESIAN
 LOCDIR   = src/dm/impls/cartesian/
 
 include ${PETSC_DIR}/conf/variables

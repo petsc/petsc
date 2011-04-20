@@ -10,7 +10,8 @@ FFLAGS   =
 SOURCEC  = matusfft.c
 OBJSC    = matusfft.o
 LIBBASE  = libpetscdm
-MANSEC   = DMDA
+MANSEC   = DM
+SUBMANSEC= DMDA
 DIRS     =
 LOCDIR   = src/dm/da/src/usfft/
 
