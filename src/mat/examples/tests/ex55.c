@@ -19,7 +19,7 @@ int main(int argc,char **args)
   PetscScalar    value[3];
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-displ",&displ,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-display",&displ,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,PETSC_MAX_PATH_LEN,&flg_loadmat);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -39,7 +39,7 @@ int main(int argc,char **args)
     type[1] = MATSEQBAIJ;
     type[2] = MATSEQSBAIJ;
   } else {
-    ntypes = 2; 
+    ntypes = 3; 
     type[1] = MATMPIBAIJ;
     type[2] = MATMPISBAIJ; /* Matconvert from mpisbaij mat to other formats are not supported */
   }
@@ -98,7 +98,7 @@ int main(int argc,char **args)
   }
  
   /* convert C to other formats */
-  for (i=0; i<ntypes; i++) {
+  for (i=1; i<ntypes; i++) {
     if (i == 2){ /* Check the symmetry of the matrix to be converted */
       ierr = MatIsTranspose(C,C,0.0,&flg);CHKERRQ(ierr);
       if (flg) {
@@ -107,6 +107,7 @@ int main(int argc,char **args)
         printf("Warning: C is non-symmetric\n");
       }
     }
+    if (!rank) printf("\nConvert baij C to %s A\n",type[i]);
     ierr = MatConvert(C,type[i],MAT_INITIAL_MATRIX,&A);CHKERRQ(ierr);
     ierr = MatMultEqual(A,C,10,&equal);CHKERRQ(ierr);
     if (!equal) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"Error in conversion from BAIJ to %s",type[i]);
@@ -122,7 +123,10 @@ int main(int argc,char **args)
           printf("Warning: A is non-symmetric\n");
         }
       }
+      if (!rank) printf("Convert A to %s B\n",type[j]);
       ierr = MatConvert(A,type[j],MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
+      if (size == 1 || j != 2){
+      if (!rank) printf("Convert %s B to %s D\n",type[j],type[i]);
       ierr = MatConvert(B,type[i],MAT_INITIAL_MATRIX,&D);CHKERRQ(ierr); 
 
       if (bs == 1){
@@ -140,8 +144,9 @@ int main(int argc,char **args)
         ierr = MatMultEqual(A,B,10,&equal);CHKERRQ(ierr);
         if (!equal) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Error in conversion from %s to %s",type[i],type[j]);
       }
-      ierr = MatDestroy(B);CHKERRQ(ierr);
       ierr = MatDestroy(D);CHKERRQ(ierr);
+      }
+      ierr = MatDestroy(B);CHKERRQ(ierr);
       B = PETSC_NULL;
       D = PETSC_NULL;
     }
