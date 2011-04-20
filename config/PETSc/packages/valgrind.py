@@ -39,6 +39,7 @@ class Configure(PETSc.package.NewPackage):
       self.libraries.pushLanguage(self.defaultLanguage)
       try:
         self.executeTest(self.configureLibrary)
+        self.checkCompile('#include <valgrind/valgrind.h>','RUNNING_ON_VALGRIND;\n')
       except:
         if self.setCompilers.isDarwin() or self.setCompilers.isLinux():
           self.logPrintBox('It appears you do not have valgrind installed on your system.\n\
