@@ -628,7 +628,7 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const IS isr
   /* variables below are used for the matrix numerical values - case of !ijonly */
   MPI_Request    *r_waits4,*s_waits4;
   MPI_Status     *r_status4,*s_status4;
-  MatScalar      **rbuf4,**sbuf_aa,*vals,*mat_a,*sbuf_aa_i,*vworkA,*vworkB;
+  MatScalar      **rbuf4,**sbuf_aa,*vals,*mat_a = PETSC_NULL,*sbuf_aa_i,*vworkA = PETSC_NULL,*vworkB = PETSC_NULL;
   MatScalar      *a_a=a->a,*b_a=b->a;
 
 #if defined (PETSC_USE_CTABLE)
@@ -1151,7 +1151,7 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const IS isr
   /* First assemble the local rows */
   {
     PetscInt  ilen_row,*imat_ilen,*imat_j,*imat_i;
-    MatScalar *imat_a;
+    MatScalar *imat_a = PETSC_NULL;
   
     for (i=0; i<ismax; i++) {
       mat       = (Mat_SeqBAIJ*)submats[i]->data;
@@ -1256,7 +1256,7 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const IS isr
   {
     PetscInt    *sbuf1_i,*rbuf2_i,*rbuf3_i,*imat_ilen,ilen;
     PetscInt    *imat_j,*imat_i;
-    MatScalar   *imat_a,*rbuf4_i;
+    MatScalar   *imat_a = PETSC_NULL,*rbuf4_i = PETSC_NULL;
     PetscMPIInt ii;
 
     for (tmp2=0; tmp2<nrqs; tmp2++) {
