@@ -188,10 +188,14 @@ class TestTSPython(unittest.TestCase):
 
 # --------------------------------------------------------------------
 
-v = PETSc.Sys.getVersion()
+PETSC_VERSION = PETSc.Sys.getVersion()
+
 i = PETSc.Sys.getVersionInfo()
-petsc_dev = v <  (3, 1, 0) or (v == (3, 1, 0) and i['release'])
-if petsc_dev:
+if (PETSC_VERSION == (3, 1, 0) and
+    not i['release']):
+    PETSC_VERSION = (3, 2, 0)
+
+if  PETSC_VERSION < (3, 2, 0):
     del TestTSPython.testResetAndSolve
 
 # --------------------------------------------------------------------
