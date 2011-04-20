@@ -9,7 +9,7 @@ SOURCEH  = mhyp.h
 OBJSC    = $(SOURCEC:.c=.o)
 OBJSF    =
 LIBBASE  = libpetscdm
-MANSEC   = DM
+MANSEC   = DMDA
 DIRS     =
 LOCDIR   = src/dm/impls/da/hypre/
 

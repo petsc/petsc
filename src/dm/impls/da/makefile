@@ -15,7 +15,7 @@ SOURCEH  = ../../../../include/private/daimpl.h ../../../../include/petscdmda.h
 LIBBASE  = libpetscdm
 DIRS     = usfft utils hypre
 LOCDIR   = src/dm/impls/da/
-MANSEC   = DM
+MANSEC   = DMDA
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

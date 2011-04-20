@@ -9,7 +9,7 @@ SOURCEH  = packimpl.h
 OBJSC    = $(SOURCEC:.c=.o)
 OBJSF    =
 LIBBASE  = libpetscdm
-MANSEC   = DM
+MANSEC   = DMCOMPOSITE
 DIRS     =
 LOCDIR   = src/dm/impls/composite/
 

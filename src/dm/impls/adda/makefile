@@ -10,7 +10,7 @@ OBJSF    =
 LIBBASE  = libpetscdm
 DIRS     = examples
 LOCDIR   = src/dm/adda/
-MANSEC   = DM
+MANSEC   = DMADDA
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

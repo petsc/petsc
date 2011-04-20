@@ -3,7 +3,7 @@ ALL: lib
 
 DIRS     = basic mapping memscalable
 LOCDIR   = src/dm/ao/impls/
-MANSEC   = DA
+MANSEC   = AO
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

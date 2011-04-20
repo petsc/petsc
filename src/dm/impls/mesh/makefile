@@ -13,7 +13,7 @@ OBJSC    = ALE.o   meshcreate.o mesh.o section.o meshbardhan.o meshdolfin.o mesh
 OBJSF    =
 DIRS     =
 LIBBASE  = libpetscdm
-MANSEC   = DM
+MANSEC   = DMMESH
 LOCDIR   = src/dm/impls/mesh/
 
 include ${PETSC_DIR}/conf/variables
