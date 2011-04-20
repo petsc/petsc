@@ -174,7 +174,7 @@ class TestTSPython(unittest.TestCase):
 
         ts.setSolution(u)
         ode.jacobian(ts, 0,u,J,J)
-        ts.setUseFD(True)
+        ts.snes.setUseFD(True)
         ts.solve(u)
 
     def testResetAndSolve(self):

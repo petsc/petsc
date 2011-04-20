@@ -122,7 +122,7 @@ class TestTSNonlinear(unittest.TestCase):
 
         ts.setSolution(u)
         ode.rhsjacobian(ts,0,u,J,J)
-        ts.setUseFD(True)
+        ts.snes.setUseFD(True)
         ts.solve(u)
 
     def testResetAndSolve(self):

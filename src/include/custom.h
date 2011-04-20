@@ -949,19 +949,40 @@ SNESSetUseMFFD(SNES snes,PetscBool flag)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "SNESComputeJacobianFDColoring"
+static PetscErrorCode
+SNESComputeJacobianFDColoring(SNES snes,Vec x,Mat *J,Mat *B,MatStructure *flag,void *ctx)
+{
+  MatFDColoring  fdcoloring = PETSC_NULL;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
+  PetscValidPointer(J,2);
+  PetscValidPointer(B,3);
+  PetscValidPointer(flag,4);
+  ierr = PetscObjectQuery((PetscObject)snes,"fdcoloring",(PetscObject*)&fdcoloring);CHKERRQ(ierr);
+  if (!fdcoloring) SETERRQQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE,
+                            "SNESSetUseFDColoring() must be called first");
+  ierr = SNESDefaultComputeJacobianColor(snes,x,J,B,flag,fdcoloring);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "SNESGetUseFDColoring"
 static PetscErrorCode
 SNESGetUseFDColoring(SNES snes,PetscBool *flag)
 {
   PetscErrorCode (*jac)(SNES,Vec,Mat*,Mat*,MatStructure*,void*) = PETSC_NULL;
-  MatFDColoring  fdcoloring = PETSC_NULL;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   PetscValidPointer(flag,2);
   *flag = PETSC_FALSE;
-  ierr = SNESGetJacobian(snes,0,0,&jac,(void**)&fdcoloring);CHKERRQ(ierr);
+  ierr = SNESGetJacobian(snes,0,0,&jac,0);CHKERRQ(ierr);
   if (jac == SNESDefaultComputeJacobianColor) *flag = PETSC_TRUE;
+  if (jac == SNESComputeJacobianFDColoring)   *flag = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -976,7 +997,6 @@ SNESSetUseFDColoring(SNES snes,PetscBool flag)
   PetscErrorCode (*fun)(SNES,Vec,Vec,void*) = PETSC_NULL;
   void*          funP = PETSC_NULL;
   Mat            A = PETSC_NULL,B = PETSC_NULL,J = PETSC_NULL;
-  PetscErrorCode (*jac)(SNES,Vec,Mat*,Mat*,MatStructure*,void*) = PETSC_NULL;
   void*          jacP = PETSC_NULL;
   ISColoring     iscoloring = PETSC_NULL;
   MatFDColoring  fdcoloring = PETSC_NULL;
@@ -988,65 +1008,41 @@ SNESSetUseFDColoring(SNES snes,PetscBool flag)
   if ( flg &&  flag) PetscFunctionReturn(0);
   if (!flg && !flag) PetscFunctionReturn(0);
   if ( flg && !flag) {
-    SETERRQQ(PETSC_COMM_SELF,
-             PETSC_ERR_ARG_WRONGSTATE,
+    SETERRQQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,
              "cannot change colored finite diferences once it is set");
     PetscFunctionReturn(PETSC_ERR_ARG_WRONGSTATE);
   }
 
   ierr = SNESGetFunction(snes,&f,&fun,&funP);CHKERRQ(ierr);
-  ierr = SNESGetJacobian(snes,&A,&B,&jac,&jacP);CHKERRQ(ierr);
-  if (f == PETSC_NULL) {
-    SETERRQQ(PETSC_COMM_SELF,
-             PETSC_ERR_ARG_WRONGSTATE,
+  if (!f) {
+    SETERRQQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,
              "SNESSetFunction() must be called first");
     PetscFunctionReturn(PETSC_ERR_ARG_WRONGSTATE);
   }
-  if (A == PETSC_NULL && B == PETSC_NULL) {
-    SETERRQQ(PETSC_COMM_SELF,
-             PETSC_ERR_ARG_WRONGSTATE,
+
+  ierr = SNESGetJacobian(snes,&A,&B,0,&jacP);CHKERRQ(ierr);
+  if (!A && !B) {
+    SETERRQQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,
              "SNESSetJacobian() must be called first");
     PetscFunctionReturn(PETSC_ERR_ARG_WRONGSTATE);
   }
 
-  J = (B != PETSC_NULL) ? B : A;
-
+  J = B ? B : A;
+  ierr = MatGetOptionsPrefix(J,&prefix);CHKERRQ(ierr);
   ierr = MatGetColoring(J,MATCOLORINGSL,&iscoloring);CHKERRQ(ierr);
   ierr = MatFDColoringCreate(J,iscoloring,&fdcoloring);CHKERRQ(ierr);
   ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
-
   ierr = MatFDColoringSetFunction(fdcoloring,(PetscErrorCode (*)(void))fun,funP);
-  ierr = SNESGetOptionsPrefix(snes,&prefix);CHKERRQ(ierr);
   ierr = MatFDColoringSetOptionsPrefix(fdcoloring,prefix);CHKERRQ(ierr);
   ierr = MatFDColoringSetFromOptions(fdcoloring);CHKERRQ(ierr);
-
-  ierr = SNESSetJacobian(snes,A,B,SNESDefaultComputeJacobianColor,fdcoloring);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)snes,"fdcoloring",(PetscObject)fdcoloring);CHKERRQ(ierr);
   ierr = MatFDColoringDestroy(fdcoloring);CHKERRQ(ierr);
+  ierr = SNESSetJacobian(snes,A,B,SNESComputeJacobianFDColoring,jacP);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
 
 /* ---------------------------------------------------------------- */
-
-#undef __FUNCT__
-#define __FUNCT__ "TSSetMatrices_Custom"
-static PetscErrorCode
-TSSetMatrices_Custom(TS ts,Mat Arhs,PetscErrorCode (*frhs)(TS,PetscReal,Mat*,Mat*,MatStructure*,void*),Mat Alhs,PetscErrorCode (*flhs)(TS,PetscReal,Mat*,Mat*,MatStructure*,void*),MatStructure flag,void *ctx)
-{
-  PetscErrorCode ierr;
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  ierr = TSSetMatrices(ts,Arhs,frhs,Alhs,flhs,flag,ctx);CHKERRQ(ierr);
-  if (Arhs) {
-    ierr = PetscObjectCompose((PetscObject)ts,"__rhsmat__",(PetscObject)Arhs);CHKERRQ(ierr);
-  }
-  if (Alhs) {
-    ierr = PetscObjectCompose((PetscObject)ts,"__lhsmat__",(PetscObject)Alhs);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-#define TSSetMatrices TSSetMatrices_Custom
 
 #if 0
 #undef __FUNCT__
@@ -1093,22 +1089,6 @@ TSComputeRHSMatrix_Custom(TS ts,PetscReal t,Mat *Arhs,Mat *Prhs,MatStructure *st
 #endif
 
 #undef __FUNCT__
-#define __FUNCT__ "TSSetSolution_Custom"
-static PetscErrorCode
-TSSetSolution_Custom(TS ts, Vec u)
-{
-  PetscErrorCode ierr;
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  PetscValidHeaderSpecific(u,VEC_CLASSID,2);
-  ierr = PetscObjectCompose((PetscObject)ts,"__solvec__",(PetscObject)u);CHKERRQ(ierr);
-  ierr = TSSetSolution(ts,u);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-#undef  TSSetSolution
-#define TSSetSolution TSSetSolution_Custom
-
-#undef __FUNCT__
 #define __FUNCT__ "TSSetIFunction_Custom"
 static PetscErrorCode
 TSSetIFunction_Custom(TS ts,Vec r,TSIFunction fun,void *ctx)
@@ -1118,8 +1098,7 @@ TSSetIFunction_Custom(TS ts,Vec r,TSIFunction fun,void *ctx)
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (r) PetscValidHeaderSpecific(r,VEC_CLASSID,2);
   ierr = TSSetIFunction(ts,fun,ctx);CHKERRQ(ierr);
-  ierr = PetscObjectCompose((PetscObject)ts,
-                            "__ifunvec__",(PetscObject)r);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject)ts,"__ifunvec__",(PetscObject)r);CHKERRQ(ierr);
   if (r) {
     const TSType   ttype;
     TSProblemType  ptype;
@@ -1129,7 +1108,7 @@ TSSetIFunction_Custom(TS ts,Vec r,TSIFunction fun,void *ctx)
     void           *fctx;
     ierr = TSGetType(ts,&ttype);CHKERRQ(ierr);
     ierr = TSGetProblemType(ts,&ptype);CHKERRQ(ierr);
-    if (ptype == TS_NONLINEAR && ttype) {
+    if (ttype && ptype == TS_NONLINEAR) {
       ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
       ierr = SNESGetFunction(snes,&fvec,&ffun,&fctx);CHKERRQ(ierr);
       if (!fvec) { ierr = SNESSetFunction(snes,r,ffun,fctx);CHKERRQ(ierr); }
@@ -1158,7 +1137,22 @@ TSSetRHSFunction_Ex(TS ts,Vec r,PetscErrorCode (*fun)(TS,PetscReal,Vec,Vec,void*
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (r) PetscValidHeaderSpecific(r,VEC_CLASSID,2);
   ierr = TSSetRHSFunction(ts,fun,ctx);CHKERRQ(ierr);
-  ierr = PetscObjectCompose((PetscObject)ts,"__rhs_funcvec__",(PetscObject)r);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject)ts,"__rhsfunvec__",(PetscObject)r);CHKERRQ(ierr);
+  if (r) {
+    const TSType   ttype;
+    TSProblemType  ptype;
+    SNES           snes;
+    Vec            fvec;
+    PetscErrorCode (*ffun)(SNES,Vec,Vec,void*);
+    void           *fctx;
+    ierr = TSGetType(ts,&ttype);CHKERRQ(ierr);
+    ierr = TSGetProblemType(ts,&ptype);CHKERRQ(ierr);
+    if (ttype && ptype == TS_NONLINEAR) {
+      ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
+      ierr = SNESGetFunction(snes,&fvec,&ffun,&fctx);CHKERRQ(ierr);
+      if (!fvec) { ierr = SNESSetFunction(snes,r,ffun,fctx);CHKERRQ(ierr); }
+    }
+  }
   if (r) {
     Vec svec;
     ierr = TSGetSolution(ts,&svec);CHKERRQ(ierr);
@@ -1180,7 +1174,7 @@ TSGetRHSFunction_Ex(TS ts,Vec *f,PetscErrorCode (**fun)(TS,PetscReal,Vec,Vec,voi
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  if (f) {ierr = PetscObjectQuery((PetscObject)ts, "__rhs_funcvec__", (PetscObject*)f);CHKERRQ(ierr); }
+  if (f) {ierr = PetscObjectQuery((PetscObject)ts, "__rhsfunvec__", (PetscObject*)f);CHKERRQ(ierr); }
   if (fun) *fun = ts->ops->rhsfunction;
   if (ctx) *ctx = ts->funP;
   PetscFunctionReturn(0);
@@ -1200,86 +1194,6 @@ TSGetRHSJacobian_Ex(TS ts,Mat *A,Mat *B,PetscErrorCode (**jac)(TS,PetscReal,Vec,
   PetscFunctionReturn(0);
 }
 #define TSGetRHSJacobian TSGetRHSJacobian_Ex
-
-
-#undef __FUNCT__
-#define __FUNCT__ "TSGetUseFDColoring"
-static PetscErrorCode
-TSGetUseFDColoring(TS ts,PetscBool *flag)
-{
-  PetscErrorCode (*jac)(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*) = PETSC_NULL;
-  MatFDColoring  fdcoloring = PETSC_NULL;
-  PetscErrorCode ierr;
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  PetscValidPointer(flag,2);
-  *flag = PETSC_FALSE;
-  ierr = TSGetRHSJacobian(ts,0,0,&jac,(void**)&fdcoloring);CHKERRQ(ierr);
-  if (jac == TSDefaultComputeJacobianColor) *flag = PETSC_TRUE;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "TSSetUseFDColoring"
-static PetscErrorCode
-TSSetUseFDColoring(TS ts,PetscBool flag)
-{
-  const char*    prefix = PETSC_NULL;
-  PetscBool      flg = PETSC_FALSE;
-  Vec            f = PETSC_NULL;
-  PetscErrorCode (*fun)(TS,PetscReal,Vec,Vec,void*) = PETSC_NULL;
-  void*          funP = PETSC_NULL;
-  Mat            A = PETSC_NULL,B = PETSC_NULL,J = PETSC_NULL;
-  PetscErrorCode (*jac)(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*) = PETSC_NULL;
-  void*          jacP  = PETSC_NULL;
-  ISColoring     iscoloring = PETSC_NULL;
-  MatFDColoring  matfdcoloring = PETSC_NULL;
-  PetscErrorCode ierr;
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-
-  ierr = TSGetUseFDColoring(ts,&flg);CHKERRQ(ierr);
-  if ( flg &&  flag) PetscFunctionReturn(0);
-  if (!flg && !flag) PetscFunctionReturn(0);
-  if ( flg && !flag) {
-    SETERRQQ(PETSC_COMM_SELF,
-             PETSC_ERR_ARG_WRONGSTATE,
-             "cannot change colored finite deferences once it is set");
-    PetscFunctionReturn(PETSC_ERR_ARG_WRONGSTATE);
-  }
-  ierr = TSGetRHSFunction(ts,&f,&fun,&funP);CHKERRQ(ierr);
-  ierr = TSGetRHSJacobian(ts,&A,&B,&jac,&jacP);CHKERRQ(ierr);
-  if (fun == PETSC_NULL) {
-    SETERRQQ(PETSC_COMM_SELF,
-             PETSC_ERR_ARG_WRONGSTATE,
-             "TSSetRHSFunction() must be called first");
-    PetscFunctionReturn(PETSC_ERR_ARG_WRONGSTATE);
-  }
-  if (A == PETSC_NULL && B == PETSC_NULL) {
-    SETERRQQ(PETSC_COMM_SELF,
-             PETSC_ERR_ARG_WRONGSTATE,
-             "TSSetRHSJacobian() must be called first");
-    PetscFunctionReturn(PETSC_ERR_ARG_WRONGSTATE);
-  }
-
-  J = (B != PETSC_NULL) ? B : A;
-  ierr = MatGetColoring(J,MATCOLORINGSL,&iscoloring);CHKERRQ(ierr);
-  ierr = MatFDColoringCreate(J,iscoloring,&matfdcoloring);CHKERRQ(ierr);
-  ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
-
-  ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))fun,funP);
-  ierr = TSGetOptionsPrefix(ts,&prefix);CHKERRQ(ierr);
-  ierr = MatFDColoringSetOptionsPrefix(matfdcoloring,prefix);CHKERRQ(ierr);
-  ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
-
-  ierr = TSSetRHSJacobian(ts,A,B,TSDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr);
-  ierr = PetscObjectCompose((PetscObject)ts,"matfdcoloring",(PetscObject)matfdcoloring);CHKERRQ(ierr);
-  ierr = MatFDColoringDestroy(matfdcoloring);CHKERRQ(ierr);
-
-  PetscFunctionReturn(0);
-}
-
-/* ---------------------------------------------------------------- */
 
 #undef __FUNCT__
 #define __FUNCT__ "TSSetTimeStepNumber"

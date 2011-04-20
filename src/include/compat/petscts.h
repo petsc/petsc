@@ -67,8 +67,8 @@ TSSetSolution_Compat(TS ts, Vec u)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidHeaderSpecific(u,VEC_CLASSID,2);
-  ierr = PetscObjectCompose((PetscObject)ts,"__solvec__",(PetscObject)u);CHKERRQ(ierr);
   ierr = TSSetSolution(ts,u);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject)ts,"__solvec__",(PetscObject)u);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #define TSSetSolution TSSetSolution_Compat
@@ -89,6 +89,31 @@ TSSolve_Compat(TS ts, Vec x)
 #define TSSolve TSSolve_Compat
 #endif
 
+#if (PETSC_VERSION_(3,1,0) || \
+     PETSC_VERSION_(3,0,0))
+typedef PetscErrorCode (*TSMatrix)(TS,PetscReal,Mat*,Mat*,MatStructure*,void*);
+#undef __FUNCT__
+#define __FUNCT__ "TSSetMatrices_Compat"
+static PetscErrorCode
+TSSetMatrices_Compat(TS ts,
+                     Mat Arhs,TSMatrix frhs,
+                     Mat Alhs,TSMatrix flhs,
+                     MatStructure flag,void *ctx)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  ierr = TSSetMatrices(ts,Arhs,frhs,Alhs,flhs,flag,ctx);CHKERRQ(ierr);
+  if (Arhs) {
+    ierr = PetscObjectCompose((PetscObject)ts,"__rhsmat__",(PetscObject)Arhs);CHKERRQ(ierr);
+  }
+  if (Alhs) {
+    ierr = PetscObjectCompose((PetscObject)ts,"__lhsmat__",(PetscObject)Alhs);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+#define TSSetMatrices TSSetMatrices_Compat
+#endif
 
 #if (PETSC_VERSION_(3,0,0))
 #define TSEULER           TS_EULER

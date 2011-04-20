@@ -108,7 +108,6 @@ cdef extern from * nogil:
     int TSSetInitialTimeStep(PetscTS,PetscReal,PetscReal)
     int TSSetTimeStep(PetscTS,PetscReal)
     int TSGetTimeStep(PetscTS,PetscReal*)
-    int TSSetTimeStepNumber(PetscTS,PetscInt)
     int TSGetTimeStepNumber(PetscTS,PetscInt*)
     int TSSetDuration(PetscTS,PetscInt,PetscReal)
     int TSGetDuration(PetscTS,PetscInt*,PetscReal*)
@@ -128,8 +127,7 @@ cdef extern from * nogil:
     int TSThetaGetTheta(PetscTS,PetscReal*)
 
 cdef extern from "custom.h" nogil:
-    int TSSetUseFDColoring(PetscTS,PetscBool)
-    int TSGetUseFDColoring(PetscTS,PetscBool*)
+    int TSSetTimeStepNumber(PetscTS,PetscInt)
     int TSMonitorCall(PetscTS,PetscInt,PetscReal,PetscVec)
 
 cdef extern from "libpetsc4py.h":

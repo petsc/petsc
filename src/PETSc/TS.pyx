@@ -264,17 +264,6 @@ cdef class TS(Object):
     def setDM(self, DM dm not None):
         CHKERR( TSSetDM(self.ts, dm.dm[0]) )
 
-    # --- finite diferences ---
-
-    def setUseFD(self, flag=True):
-        cdef PetscBool cflag = flag
-        CHKERR( TSSetUseFDColoring(self.ts, cflag) )
-
-    def getUseFD(self):
-        cdef PetscBool flag = PETSC_FALSE
-        CHKERR( TSGetUseFDColoring(self.ts, &flag) )
-        return <bint> flag
-
     # --- customization ---
 
     def setTime(self, t):
@@ -514,14 +503,6 @@ cdef class TS(Object):
             return self.getMaxSteps()
         def __set__(self, value):
             self.setMaxSteps(value)
-
-    # --- finite diferences ---
-
-    property use_fd:
-        def __get__(self):
-            return self.getUseFD()
-        def __set__(self, value):
-            self.setUseFD(value)
 
 # -----------------------------------------------------------------------------
 
