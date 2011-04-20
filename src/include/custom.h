@@ -1089,6 +1089,44 @@ TSComputeRHSMatrix_Custom(TS ts,PetscReal t,Mat *Arhs,Mat *Prhs,MatStructure *st
 #endif
 
 #undef __FUNCT__
+#define __FUNCT__ "TSSetUpFunction_Private"
+static PetscErrorCode
+TSSetUpFunction_Private(TS ts,Vec r)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  if (r) {
+    const TSType   ttype;
+    TSProblemType  ptype;
+    SNES           snes;
+    Vec            fvec;
+    PetscErrorCode (*ffun)(SNES,Vec,Vec,void*);
+    void           *fctx;
+    ierr = TSGetType(ts,&ttype);CHKERRQ(ierr);
+    ierr = TSGetProblemType(ts,&ptype);CHKERRQ(ierr);
+    if (ttype && ptype == TS_NONLINEAR) {
+      ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
+      ierr = SNESGetFunction(snes,&fvec,&ffun,&fctx);CHKERRQ(ierr);
+      if (!fvec) { fvec = r; }
+      #if !(PETSC_VERSION_(3,1,0) || PETSC_VERSION_(3,0,0))
+      if (!ffun) { ffun = SNESTSFormFunction; fctx = ts; }
+      #endif
+      ierr = SNESSetFunction(snes,fvec,ffun,fctx);CHKERRQ(ierr);
+    }
+  }
+  if (r) {
+    Vec svec;
+    ierr = TSGetSolution(ts,&svec);CHKERRQ(ierr);
+    if (!svec) {
+      ierr = VecDuplicate(r,&svec);CHKERRQ(ierr);
+      ierr = TSSetSolution(ts,svec);CHKERRQ(ierr);
+      ierr = VecDestroy(svec);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "TSSetIFunction_Custom"
 static PetscErrorCode
 TSSetIFunction_Custom(TS ts,Vec r,TSIFunction fun,void *ctx)
@@ -1099,38 +1137,15 @@ TSSetIFunction_Custom(TS ts,Vec r,TSIFunction fun,void *ctx)
   if (r) PetscValidHeaderSpecific(r,VEC_CLASSID,2);
   ierr = TSSetIFunction(ts,fun,ctx);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)ts,"__ifunvec__",(PetscObject)r);CHKERRQ(ierr);
-  if (r) {
-    const TSType   ttype;
-    TSProblemType  ptype;
-    SNES           snes;
-    Vec            fvec;
-    PetscErrorCode (*ffun)(SNES,Vec,Vec,void*);
-    void           *fctx;
-    ierr = TSGetType(ts,&ttype);CHKERRQ(ierr);
-    ierr = TSGetProblemType(ts,&ptype);CHKERRQ(ierr);
-    if (ttype && ptype == TS_NONLINEAR) {
-      ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
-      ierr = SNESGetFunction(snes,&fvec,&ffun,&fctx);CHKERRQ(ierr);
-      if (!fvec) { ierr = SNESSetFunction(snes,r,ffun,fctx);CHKERRQ(ierr); }
-    }
-  }
-  if (r) {
-    Vec svec;
-    ierr = TSGetSolution(ts,&svec);CHKERRQ(ierr);
-    if (!svec) {
-      ierr = VecDuplicate(r,&svec);CHKERRQ(ierr);
-      ierr = TSSetSolution(ts,svec);CHKERRQ(ierr);
-      ierr = VecDestroy(svec);CHKERRQ(ierr);
-    }
-  }
+  ierr = TSSetUpFunction_Private(ts,r);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #define TSSetIFunction TSSetIFunction_Custom
 
 #undef __FUNCT__
-#define __FUNCT__ "TSSetRHSFunction_Ex"
+#define __FUNCT__ "TSSetRHSFunction_Custom"
 static PetscErrorCode
-TSSetRHSFunction_Ex(TS ts,Vec r,PetscErrorCode (*fun)(TS,PetscReal,Vec,Vec,void*),void *ctx)
+TSSetRHSFunction_Custom(TS ts,Vec r,PetscErrorCode (*fun)(TS,PetscReal,Vec,Vec,void*),void *ctx)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -1138,38 +1153,15 @@ TSSetRHSFunction_Ex(TS ts,Vec r,PetscErrorCode (*fun)(TS,PetscReal,Vec,Vec,void*
   if (r) PetscValidHeaderSpecific(r,VEC_CLASSID,2);
   ierr = TSSetRHSFunction(ts,fun,ctx);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)ts,"__rhsfunvec__",(PetscObject)r);CHKERRQ(ierr);
-  if (r) {
-    const TSType   ttype;
-    TSProblemType  ptype;
-    SNES           snes;
-    Vec            fvec;
-    PetscErrorCode (*ffun)(SNES,Vec,Vec,void*);
-    void           *fctx;
-    ierr = TSGetType(ts,&ttype);CHKERRQ(ierr);
-    ierr = TSGetProblemType(ts,&ptype);CHKERRQ(ierr);
-    if (ttype && ptype == TS_NONLINEAR) {
-      ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
-      ierr = SNESGetFunction(snes,&fvec,&ffun,&fctx);CHKERRQ(ierr);
-      if (!fvec) { ierr = SNESSetFunction(snes,r,ffun,fctx);CHKERRQ(ierr); }
-    }
-  }
-  if (r) {
-    Vec svec;
-    ierr = TSGetSolution(ts,&svec);CHKERRQ(ierr);
-    if (!svec) {
-      ierr = VecDuplicate(r,&svec);CHKERRQ(ierr);
-      ierr = TSSetSolution(ts,svec);CHKERRQ(ierr);
-      ierr = VecDestroy(svec);CHKERRQ(ierr);
-    }
-  }
+  ierr = TSSetUpFunction_Private(ts,r);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-#define TSSetRHSFunction TSSetRHSFunction_Ex
+#define TSSetRHSFunction TSSetRHSFunction_Custom
 
 #undef __FUNCT__
-#define __FUNCT__ "TSGetRHSFunction_Ex"
+#define __FUNCT__ "TSGetRHSFunction_Custom"
 static PetscErrorCode
-TSGetRHSFunction_Ex(TS ts,Vec *f,PetscErrorCode (**fun)(TS,PetscReal,Vec,Vec,void*),void **ctx)
+TSGetRHSFunction_Custom(TS ts,Vec *f,PetscErrorCode (**fun)(TS,PetscReal,Vec,Vec,void*),void **ctx)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -1179,12 +1171,12 @@ TSGetRHSFunction_Ex(TS ts,Vec *f,PetscErrorCode (**fun)(TS,PetscReal,Vec,Vec,voi
   if (ctx) *ctx = ts->funP;
   PetscFunctionReturn(0);
 }
-#define TSGetRHSFunction TSGetRHSFunction_Ex
+#define TSGetRHSFunction TSGetRHSFunction_Custom
 
 #undef __FUNCT__
-#define __FUNCT__ "TSGetRHSJacobian_Ex"
+#define __FUNCT__ "TSGetRHSJacobian_Custom"
 static PetscErrorCode
-TSGetRHSJacobian_Ex(TS ts,Mat *A,Mat *B,PetscErrorCode (**jac)(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*),void **ctx)
+TSGetRHSJacobian_Custom(TS ts,Mat *A,Mat *B,PetscErrorCode (**jac)(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*),void **ctx)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -1193,7 +1185,7 @@ TSGetRHSJacobian_Ex(TS ts,Mat *A,Mat *B,PetscErrorCode (**jac)(TS,PetscReal,Vec,
   if (jac) *jac = ts->ops->rhsjacobian;
   PetscFunctionReturn(0);
 }
-#define TSGetRHSJacobian TSGetRHSJacobian_Ex
+#define TSGetRHSJacobian TSGetRHSJacobian_Custom
 
 #undef __FUNCT__
 #define __FUNCT__ "TSSetTimeStepNumber"
