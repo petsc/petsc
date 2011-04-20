@@ -328,6 +328,7 @@ PetscErrorCode TaoSolverDestroy_(TaoSolver tao)
 . -tao_no_convergence_test
 . -tao_monitor
 . -tao_smonitor
+. -tao_cmonitor
 . -tao_vecmonitor
 . -tao_vecmonitor_update
 . -tao_view
@@ -424,6 +425,8 @@ PetscErrorCode TaoSolverSetFromOptions(TaoSolver tao)
 	}
 	ierr = PetscOptionsName("-tao_smonitor","Use short monitor","None",&flg);CHKERRQ(ierr);
 	if (flg) {ierr = TaoSolverSetMonitor(tao,TaoSolverDefaultSMonitor,PETSC_NULL);CHKERRQ(ierr);}
+	ierr = PetscOptionsName("-tao_cmonitor","Use constraint monitor","None",&flg);CHKERRQ(ierr);
+	if (flg) {ierr = TaoSolverSetMonitor(tao,TaoSolverDefaultCMonitor,PETSC_NULL);CHKERRQ(ierr);}
 /*	ierr = PetscOptionsName("-tao_vecmonitor","Plot solution vector at each iteration","TaoVecViewMonitor",&flg);CHKERRQ(ierr);
 	if (flg) {ierr = TaoSetMonitor(tao,TaoVecViewMonitor,PETSC_NULL);CHKERRQ(ierr);} 
 	ierr = PetscOptionsName("-tao_vecmonitor_update","plots step direction at each iteration","TaoVecViewMonitorUpdate",&flg);CHKERRQ(ierr);
@@ -961,6 +964,45 @@ PetscErrorCode TaoSolverDefaultSMonitor(TaoSolver tao, void *dummy)
   } else {
     ierr=PetscPrintf(((PetscObject)tao)->comm," Residual: < 1.0e-11 \n");CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "TaoSolverDefaultCMonitor"
+/*@C
+   TaoSolverDefaultCMonitor - Default routine for monitoring progress of the 
+
+   same as TaoDefaultMonitor() except
+   it prints the norm of the constraints function.
+   
+   Collective on TaoSolver
+
+   Input Parameters:
++  tao - the TaoSolver context
+-  dummy - unused context
+
+   Options Database Keys:
+.  -tao_cmonitor
+
+   Level: advanced
+
+.seealso: TaoSolverDefaultMonitor(), TaoSolverSetMonitor()
+@*/
+PetscErrorCode TaoSolverDefaultCMonitor(TaoSolver tao, void *dummy)
+{
+  PetscErrorCode ierr;
+  PetscInt its;
+  PetscScalar fct,gnorm;
+
+  PetscFunctionBegin;
+  its=tao->niter;
+  fct=tao->fc;
+  gnorm=tao->residual;
+  ierr=PetscPrintf(((PetscObject)tao)->comm,"iter = %d,",its); CHKERRQ(ierr);
+  ierr=PetscPrintf(((PetscObject)tao)->comm," Function value: %12.10e,",fct); CHKERRQ(ierr);
+  ierr=PetscPrintf(((PetscObject)tao)->comm,"  Residual: %12.10e ",gnorm);CHKERRQ(ierr);
+  ierr = PetscPrintf(((PetscObject)tao)->comm,"  Constraint: %12.10e \n",tao->cnorm); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1510,6 +1552,7 @@ PetscErrorCode TaoSolverMonitor(TaoSolver tao, PetscInt its, PetscReal f, PetscR
     PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
     tao->fc = f;
     tao->residual = res;
+    tao->cnorm = cnorm;
     tao->step = steplength;
     tao->niter=its;
     if (TaoInfOrNaN(f) || TaoInfOrNaN(res)) {

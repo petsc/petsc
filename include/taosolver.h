@@ -113,6 +113,7 @@ extern PetscErrorCode TaoSolverDefaultConvergenceTest(TaoSolver,void*);
 extern PetscErrorCode TaoSolverSetMonitor(TaoSolver, PetscErrorCode (*)(TaoSolver,void*),void *);
 extern PetscErrorCode TaoSolverDefaultMonitor(TaoSolver, void*);
 extern PetscErrorCode TaoSolverDefaultSMonitor(TaoSolver, void*);
+extern PetscErrorCode TaoSolverDefaultCMonitor(TaoSolver, void*);
 extern PetscErrorCode TaoSolverRSQNSetStateIS(TaoSolver, IS);
 PetscErrorCode TaoSolverMonitor(TaoSolver, PetscInt, PetscReal, PetscReal, PetscReal, PetscReal, TaoSolverTerminationReason*); 
 

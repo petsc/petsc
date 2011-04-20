@@ -180,8 +180,8 @@ static PetscErrorCode TaoSolverSolve_RSQN(TaoSolver tao)
   
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  /* Estimate initial X */
-  ierr = VecSet(tao->solution,1.0); CHKERRQ(ierr);
+  
+  
   
   /* Scatter to U,V */
   ierr = VecScatterBegin(rsqnP->state_scatter, tao->solution, rsqnP->U, INSERT_VALUES, SCATTER_FORWARD); CHKERRQ(ierr);
@@ -215,7 +215,7 @@ static PetscErrorCode TaoSolverSolve_RSQN(TaoSolver tao)
   ierr = MatShellGetContext(tao->jacobian_state,&ptr); CHKERRQ(ierr); //for debugging
 
   ierr = KSPSetOperators(tao->ksp, tao->jacobian_state, tao->jacobian_state_pre, rsqnP->statematflag); CHKERRQ(ierr);
-  ierr = KSPSolveTranspose(tao->ksp,  rsqnP->GU, rsqnP->LM); CHKERRQ(ierr);
+  ierr = KSPSolve(tao->ksp,  rsqnP->GU, rsqnP->LM); CHKERRQ(ierr);
   CHKMEMQ;
   /* Evaluate Lagrangian gradient norm */
 
@@ -238,7 +238,6 @@ static PetscErrorCode TaoSolverSolve_RSQN(TaoSolver tao)
   ierr = TaoSolverMonitor(tao, iter,f,mnorm,cnorm,step,&reason); CHKERRQ(ierr);
 
   while (reason == TAO_CONTINUE_ITERATING) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"========================ITER %3d========================\n", iter);
     
     /* update reduced hessian */
     ierr = MatLMVMUpdate(rsqnP->M, rsqnP->V, rsqnP->GV); CHKERRQ(ierr);
@@ -319,6 +318,7 @@ static PetscErrorCode TaoSolverSolve_RSQN(TaoSolver tao)
 */
     ierr = KSPSetOperators(tao->ksp, tao->jacobian_state, tao->jacobian_state_pre, rsqnP->statematflag); CHKERRQ(ierr);
     ierr = KSPSolveTranspose(tao->ksp,  rsqnP->GU, rsqnP->LM); CHKERRQ(ierr);
+    //ierr = KSPSolve(tao->ksp,  rsqnP->GU, rsqnP->LM); CHKERRQ(ierr);
 
     /* Evaluate Lagrangian gradient norm */
 

@@ -10,3 +10,10 @@ loadq: loadq.o tao_chkopts
 esqp: esqp.o tao_chkopts
 	-${CLINKER} -o esqp esqp.o ${TAO_LIB} ${PETSC_LIB}
 	${RM} esqp.o
+testksp: testksp.o tao_chkopts
+	-${CLINKER} -o testksp testksp.o ${TAO_LIB} ${PETSC_LIB}
+	${RM} testksp.o
+
+testksp2: testksp2.o tao_chkopts
+	-${CLINKER} -o testksp2 testksp2.o ${TAO_LIB} ${PETSC_LIB}
+	${RM} testksp2.o
