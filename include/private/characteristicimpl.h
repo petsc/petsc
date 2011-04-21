@@ -2,7 +2,7 @@
 #ifndef __CHARACTERISTICIMPL_H
 #define __CHARACTERISTICIMPL_H
 
-#include <characteristic.h>
+#include <petsccharacteristic.h>
 
 /* Logging support */
 extern PetscClassId CHARACTERISTIC_CLASSID;

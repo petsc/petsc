@@ -1,4 +1,4 @@
-#include <../src/ts/characteristic/impls/da/slda.h>       /*I  "characteristic.h"  I*/
+#include <../src/ts/characteristic/impls/da/slda.h>       /*I  "petsccharacteristic.h"  I*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "CharacteristicView_DA" 

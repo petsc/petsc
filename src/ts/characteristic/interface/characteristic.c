@@ -1,5 +1,5 @@
 
-#include <../src/ts/characteristic/characteristicimpl.h> /*I "characteristic.h" I*/
+#include <private/characteristicimpl.h> /*I "petsccharacteristic.h" I*/
 
 PetscClassId CHARACTERISTIC_CLASSID;
 PetscLogEvent  CHARACTERISTIC_SetUp, CHARACTERISTIC_Solve, CHARACTERISTIC_QueueSetup, CHARACTERISTIC_DAUpdate;
@@ -143,7 +143,7 @@ PetscErrorCode CharacteristicCreate(MPI_Comm comm, Characteristic *c)
     of available methods
 
    Notes:  
-   See "include/characteristic.h" for available methods
+   See "include/petsccharacteristic.h" for available methods
 
   Normally, it is best to use the CharacteristicSetFromOptions() command and
   then set the Characteristic type from the options database rather than by using

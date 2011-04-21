@@ -1,4 +1,4 @@
-#include <../src/ts/characteristic/characteristicimpl.h>  /*I "characteristic.h" I*/
+#include <private/characteristicimpl.h>  /*I "petsccharacteristic.h" I*/
 
 EXTERN_C_BEGIN
 extern PetscErrorCode CharacteristicCreate_DA(Characteristic);

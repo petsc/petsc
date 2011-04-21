@@ -11,7 +11,7 @@ static char help[] = "\n";
 #include <petscdmda.h>
 #include <petscdmmg.h>
 #include <petscbag.h>
-#include <characteristic.h>
+#include <petsccharacteristic.h>
 
 #define SHEAR_CELL     0
 #define SOLID_BODY     1

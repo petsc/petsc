@@ -1,4 +1,4 @@
-#include <../src/ts/characteristic/characteristicimpl.h>
+#include <private/characteristicimpl.h>
 
 static PetscBool  CharacteristicPackageInitialized = PETSC_FALSE;
 #undef __FUNCT__  
