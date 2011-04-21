@@ -1,11 +1,14 @@
 #---------------------------------------------------------------------
 
-cdef extern from * nogil:
-    int PyPetscINCREF"PetscObjectReference"(PetscObject)
+cdef inline int addref(void *o) except -1:
+    CHKERR( PetscINCREF(<PetscObject>o) )
+    return 0
 
-cdef int addref(void *o) except -1:
-    if o == NULL: return 0
-    CHKERR( PyPetscINCREF(<PetscObject>o) )
+cdef inline int setref(void *d, void *s) except -1:
+    cdef PetscObject *dest  = <PetscObject*> d
+    cdef PetscObject source = <PetscObject>  s
+    CHKERR( PetscINCREF(source) )
+    dest[0] = source
     return 0
 
 #---------------------------------------------------------------------
@@ -36,6 +39,11 @@ cdef api MPI_Comm* PyPetscComm_GetPtr(object arg) except NULL:
 
 # -- Object --
 
+## cdef api object PyPetscObject_New(PetscObject arg):
+##     cdef Object retv = Class()
+##     setref(&retv.obj[0], arg)
+##     return retv
+
 cdef api PetscObject PyPetscObject_Get(object arg) except ? NULL:
     cdef PetscObject retv = NULL
     cdef Object ob = <Object?> arg
@@ -52,7 +60,7 @@ cdef api PetscObject* PyPetscObject_GetPtr(object arg) except NULL:
 
 cdef api object PyPetscViewer_New(PetscViewer arg):
     cdef Viewer retv = Viewer()
-    addref(arg); retv.vwr = arg
+    setref(&retv.vwr, arg)
     return retv
 
 cdef api PetscViewer PyPetscViewer_Get(object arg) except ? NULL:
@@ -65,7 +73,7 @@ cdef api PetscViewer PyPetscViewer_Get(object arg) except ? NULL:
 
 cdef api object PyPetscRandom_New(PetscRandom arg):
     cdef Random retv = Random()
-    addref(arg); retv.rnd = arg
+    setref(&retv.rnd, arg)
     return retv
 
 cdef api PetscRandom PyPetscRandom_Get(object arg) except ? NULL:
@@ -78,7 +86,7 @@ cdef api PetscRandom PyPetscRandom_Get(object arg) except ? NULL:
 
 cdef api object PyPetscIS_New(PetscIS arg):
     cdef IS retv = IS()
-    addref(arg); retv.iset = arg
+    setref(&retv.iset, arg)
     return retv
 
 cdef api PetscIS PyPetscIS_Get(object arg) except? NULL:
@@ -91,7 +99,7 @@ cdef api PetscIS PyPetscIS_Get(object arg) except? NULL:
 
 cdef api object PyPetscLGMap_New(PetscLGMap arg):
     cdef LGMap retv = LGMap()
-    addref(arg); retv.lgm = arg
+    setref(&retv.lgm, arg)
     return retv
 
 cdef api PetscLGMap PyPetscLGMap_Get(object arg) except ? NULL:
@@ -104,7 +112,7 @@ cdef api PetscLGMap PyPetscLGMap_Get(object arg) except ? NULL:
 
 cdef api object PyPetscVec_New(PetscVec arg):
     cdef Vec retv = Vec()
-    addref(arg); retv.vec = arg
+    setref(&retv.vec, arg)
     return retv
 
 cdef api PetscVec PyPetscVec_Get(object arg) except ? NULL:
@@ -117,7 +125,7 @@ cdef api PetscVec PyPetscVec_Get(object arg) except ? NULL:
 
 cdef api object PyPetscScatter_New(PetscScatter arg):
     cdef Scatter retv = Scatter()
-    addref(arg); retv.sct = arg
+    setref(&retv.sct, arg)
     return retv
 
 cdef api PetscScatter PyPetscScatter_Get(object arg) except ? NULL:
@@ -130,7 +138,7 @@ cdef api PetscScatter PyPetscScatter_Get(object arg) except ? NULL:
 
 cdef api object PyPetscMat_New(PetscMat arg):
     cdef Mat retv = Mat()
-    addref(arg); retv.mat = arg
+    setref(&retv.mat, arg)
     return retv
 
 cdef api PetscMat PyPetscMat_Get(object arg) except ? NULL:
@@ -143,7 +151,7 @@ cdef api PetscMat PyPetscMat_Get(object arg) except ? NULL:
 
 cdef api object PyPetscPC_New(PetscPC arg):
     cdef PC retv = PC()
-    addref(arg); retv.pc = arg
+    setref(&retv.pc, arg)
     return retv
 
 cdef api PetscPC PyPetscPC_Get(object arg) except ? NULL:
@@ -156,7 +164,7 @@ cdef api PetscPC PyPetscPC_Get(object arg) except ? NULL:
 
 cdef api object PyPetscKSP_New(PetscKSP arg):
     cdef KSP retv = KSP()
-    addref(arg); retv.ksp = arg
+    setref(&retv.ksp, arg)
     return retv
 
 cdef api PetscKSP PyPetscKSP_Get(object arg) except ? NULL:
@@ -169,7 +177,7 @@ cdef api PetscKSP PyPetscKSP_Get(object arg) except ? NULL:
 
 cdef api object PyPetscSNES_New(PetscSNES arg):
     cdef SNES retv = SNES()
-    addref(arg); retv.snes = arg
+    setref(&retv.snes, arg)
     return retv
 
 cdef api PetscSNES PyPetscSNES_Get(object arg) except ? NULL:
@@ -182,7 +190,7 @@ cdef api PetscSNES PyPetscSNES_Get(object arg) except ? NULL:
 
 cdef api object PyPetscTS_New(PetscTS arg):
     cdef TS retv = TS()
-    addref(arg); retv.ts = arg
+    setref(&retv.ts, arg)
     return retv
 
 cdef api PetscTS PyPetscTS_Get(object arg) except ? NULL:
@@ -195,7 +203,7 @@ cdef api PetscTS PyPetscTS_Get(object arg) except ? NULL:
 
 cdef api object PyPetscAO_New(PetscAO arg):
     cdef AO retv = AO()
-    addref(arg); retv.ao = arg
+    setref(&retv.ao, arg)
     return retv
 
 cdef api PetscAO PyPetscAO_Get(object arg) except ? NULL:
@@ -208,7 +216,7 @@ cdef api PetscAO PyPetscAO_Get(object arg) except ? NULL:
 
 cdef api object PyPetscDM_New(PetscDM arg):
     cdef DM retv = subtype_DM(arg)()#DM()
-    addref(arg); retv.dm[0] = arg
+    setref(&retv.dm[0], arg)
     return retv
 
 cdef api PetscDM PyPetscDM_Get(object arg) except ? NULL:
@@ -221,7 +229,7 @@ cdef api PetscDM PyPetscDM_Get(object arg) except ? NULL:
 
 cdef api object PyPetscDA_New(PetscDA arg):
     cdef DA retv = DA()
-    addref(arg); retv.da = arg
+    setref(&retv.da, arg)
     return retv
 
 cdef api PetscDA PyPetscDA_Get(object arg) except ? NULL:

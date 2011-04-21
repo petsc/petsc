@@ -5,7 +5,7 @@ cdef extern from * nogil:
     ctypedef int PetscClassId
 
     int PetscObjectView(PetscObject,PetscViewer)
-    int PetscObjectDestroy(PetscObject)
+    int PetscObjectDestroy(PetscObject*)
     int PetscObjectGetReference(PetscObject,PetscInt*)
     int PetscObjectReference(PetscObject)
     int PetscObjectDereference(PetscObject)
@@ -33,42 +33,29 @@ cdef extern from "context.h":
 
 # --------------------------------------------------------------------
 
-cdef inline int PetscDEALLOC(PetscObject* obj):
+cdef inline int PetscINCREF(PetscObject obj) nogil:
     if obj == NULL: return 0
-    cdef PetscObject tmp = obj[0]
-    if tmp == NULL: return 0
-    obj[0] = NULL ## XXX
+    return PetscObjectReference(obj)
+
+cdef inline int PetscCLEAR(PetscObject* obj) nogil:
+    if obj    == NULL: return 0
+    if obj[0] == NULL: return 0
+    cdef PetscObject tmp
+    tmp = obj[0]; obj[0] = NULL
+    return PetscObjectDestroy(&tmp)
+
+cdef inline int PetscDEALLOC(PetscObject* obj) nogil:
+    if obj    == NULL: return 0
+    if obj[0] == NULL: return 0
+    cdef PetscObject tmp
+    tmp = obj[0]; obj[0] = NULL
     if not (<int>PetscInitializeCalled): return 0
-    if (<int>PetscFinalizeCalled): return 0
-    return PetscObjectDestroy(tmp)
-
-cdef inline int PetscCLEAR(PetscObject* obj):
-    if obj == NULL: return 0
-    cdef PetscObject tmp = obj[0]
-    if tmp == NULL: return 0
-    obj[0] = NULL
-    return PetscObjectDestroy(tmp)
-
-
-cdef inline PetscInt PetscRefct(PetscObject obj):
-    cdef PetscInt refct = 0
-    if obj != NULL:
-        PetscObjectGetReference(obj, &refct)
-    return refct
-
-cdef inline int PetscIncref(PetscObject obj):
-    if obj != NULL:
-        return PetscObjectReference(obj)
-    return 0
-
-cdef inline int PetscDecref(PetscObject obj):
-    if obj != NULL:
-        return PetscObjectDereference(obj)
-    return 0
+    if     (<int>PetscFinalizeCalled):   return 0
+    return PetscObjectDestroy(&tmp)
 
 # --------------------------------------------------------------------
 
-cdef inline long Object_toFortran(PetscObject o):
+cdef inline long Object_toFortran(PetscObject o) nogil:
     return <long> o
 
 # --------------------------------------------------------------------

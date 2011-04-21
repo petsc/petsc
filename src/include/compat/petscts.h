@@ -1,7 +1,10 @@
 #ifndef _COMPAT_PETSC_TS_H
 #define _COMPAT_PETSC_TS_H
 
+#if (PETSC_VERSION_(3,1,0) || \
+     PETSC_VERSION_(3,0,0))
 #include "private/tsimpl.h"
+#endif
 
 #if PETSC_VERSION_(3,1,0)
 #define TSCN TSCRANK_NICHOLSON

@@ -58,7 +58,7 @@ cdef extern from * nogil:
         PC_COMPOSITE_SCHUR
 
     int PCCreate(MPI_Comm,PetscPC*)
-    int PCDestroy(PetscPC)
+    int PCDestroy(PetscPC*)
     int PCView(PetscPC,PetscViewer)
 
     int PCSetType(PetscPC,PetscPCType)

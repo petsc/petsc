@@ -9,7 +9,7 @@ cdef class Object:
         self.obj = &self.oval
 
     def __dealloc__(self):
-        CHKERR( PetscDEALLOC(self.obj) )
+        CHKERR( PetscDEALLOC(&self.obj[0]) )
         self.obj = NULL
 
     def __richcmp__(self, other, int op):
@@ -84,8 +84,7 @@ cdef class Object:
         CHKERR( PetscObjectView(self.obj[0], vwr) )
 
     def destroy(self):
-        CHKERR( PetscObjectDestroy(self.obj[0]) )
-        self.obj[0] = NULL
+        CHKERR( PetscObjectDestroy(&self.obj[0]) )
         return self
 
     def getType(self):
@@ -161,7 +160,7 @@ cdef class Object:
         if classid == PETSC_DM_CLASSID:
             Class = subtype_DM(<PetscDM>cobj)
         cdef Object newobj = Class()
-        PetscIncref(cobj)
+        PetscINCREF(cobj)
         newobj.obj[0] = cobj
         return newobj
 

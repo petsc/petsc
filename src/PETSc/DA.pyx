@@ -38,8 +38,7 @@ cdef class DA(DM):
         CHKERR( DAView(self.da, cviewer) )
 
     def destroy(self):
-        CHKERR( DADestroy(self.da) )
-        self.da = NULL
+        CHKERR( DADestroy(&self.da) )
         return self
 
     def create(self, dim=None, dof=1,
@@ -306,19 +305,19 @@ cdef class DA(DM):
     def getCoordinates(self):
         cdef Vec c = Vec()
         CHKERR( DAGetCoordinates(self.da, &c.vec) )
-        PetscIncref(<PetscObject>c.vec)
+        PetscINCREF(<PetscObject>c.vec)
         return c
 
     def getCoordinateDA(self):
         cdef DA cda = DA()
         CHKERR( DAGetCoordinateDA(self.da, &cda.da) )
-        PetscIncref(<PetscObject>cda.da)
+        PetscINCREF(<PetscObject>cda.da)
         return cda
 
     def getGhostCoordinates(self):
         cdef Vec gc = Vec()
         CHKERR( DAGetGhostedCoordinates(self.da, &gc.vec) )
-        PetscIncref(<PetscObject>gc.vec)
+        PetscINCREF(<PetscObject>gc.vec)
         return gc
 
     #
@@ -391,19 +390,19 @@ cdef class DA(DM):
     def getAO(self):
         cdef AO ao = AO()
         CHKERR( DAGetAO(self.da, &ao.ao) )
-        PetscIncref(<PetscObject>ao.ao)
+        PetscINCREF(<PetscObject>ao.ao)
         return ao
 
     def getLGMap(self):
         cdef LGMap lgm = LGMap()
         CHKERR( DAGetLocalToGlobalMapping(self.da, &lgm.lgm) )
-        PetscIncref(<PetscObject>lgm.lgm)
+        PetscINCREF(<PetscObject>lgm.lgm)
         return lgm
 
     def getLGMapBlock(self):
         cdef LGMap lgm = LGMap()
         CHKERR( DAGetLocalToGlobalMappingBlock(self.da, &lgm.lgm) )
-        PetscIncref(<PetscObject>lgm.lgm)
+        PetscINCREF(<PetscObject>lgm.lgm)
         return lgm
 
     def getScatter(self):
@@ -411,9 +410,9 @@ cdef class DA(DM):
         cdef Scatter g2l = Scatter()
         cdef Scatter l2l = Scatter()
         CHKERR( DAGetScatter(self.da, &l2g.sct, &g2l.sct, &l2l.sct) )
-        PetscIncref(<PetscObject>l2g.sct)
-        PetscIncref(<PetscObject>g2l.sct)
-        PetscIncref(<PetscObject>l2l.sct)
+        PetscINCREF(<PetscObject>l2g.sct)
+        PetscINCREF(<PetscObject>g2l.sct)
+        PetscINCREF(<PetscObject>l2l.sct)
         return (l2g, g2l, l2l)
 
     #

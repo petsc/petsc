@@ -130,8 +130,7 @@ cdef class Vec(Object):
         CHKERR( VecView(self.vec, vwr) )
 
     def destroy(self):
-        CHKERR( VecDestroy(self.vec) )
-        self.vec = NULL
+        CHKERR( VecDestroy(&self.vec) )
         return self
 
     def create(self, comm=None):

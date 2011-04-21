@@ -52,7 +52,7 @@ cdef extern from * nogil:
     enum: PETSC_DRAW_QUARTER_SIZE
 
     int PetscViewerView(PetscViewer,PetscViewer)
-    int PetscViewerDestroy(PetscViewer)
+    int PetscViewerDestroy(PetscViewer*)
     int PetscViewerCreate(MPI_Comm,PetscViewer*)
     int PetscViewerSetType(PetscViewer,PetscViewerType)
     int PetscViewerGetType(PetscViewer,PetscViewerType*)

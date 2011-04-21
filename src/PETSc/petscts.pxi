@@ -66,7 +66,7 @@ cdef extern from * nogil:
     ctypedef int (*PetscTSPostStepFunction) (PetscTS) except PETSC_ERR_PYTHON
 
     int TSCreate(MPI_Comm comm,PetscTS*)
-    int TSDestroy(PetscTS)
+    int TSDestroy(PetscTS*)
     int TSView(PetscTS,PetscViewer)
 
     int TSSetProblemType(PetscTS,PetscTSProblemType)
@@ -141,7 +141,7 @@ cdef extern from "libpetsc4py.h":
 
 cdef inline TS ref_TS(PetscTS ts):
     cdef TS ob = <TS> TS()
-    PetscIncref(<PetscObject>ts)
+    PetscINCREF(<PetscObject>ts)
     ob.ts = ts
     return ob
 

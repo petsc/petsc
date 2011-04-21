@@ -75,7 +75,7 @@ cdef extern from * nogil:
                                             void*) except PETSC_ERR_PYTHON
 
     int KSPCreate(MPI_Comm,PetscKSP* CREATE)
-    int KSPDestroy(PetscKSP)
+    int KSPDestroy(PetscKSP*)
     int KSPView(PetscKSP,PetscViewer OPTIONAL)
 
     int KSPSetType(PetscKSP,PetscKSPType)
@@ -172,7 +172,7 @@ cdef extern from "libpetsc4py.h":
 
 cdef inline KSP ref_KSP(PetscKSP ksp):
     cdef KSP ob = <KSP> KSP()
-    PetscIncref(<PetscObject>ksp)
+    PetscINCREF(<PetscObject>ksp)
     ob.ksp = ksp
     return ob
 

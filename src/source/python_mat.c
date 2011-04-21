@@ -179,7 +179,7 @@ static PetscErrorCode MatSetOption_Python(Mat mat,MatOption op,PetscBool flag)
   PetscFunctionReturn(0);
 }
 
-#if PETSC_VERSION_(3,0,0)
+#if (PETSC_VERSION_(3,0,0))
 typedef PetscMap* PetscLayout;
 #define PetscLayoutSetUp PetscMapSetUp
 extern PetscErrorCode 

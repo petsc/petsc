@@ -134,9 +134,15 @@ static PetscErrorCode TSReset_Python(TS ts)
   TS_PYTHON_CALL_TSARG(ts, "reset");
   PETSC_PYTHON_DECREF(ts);
 
+#if (PETSC_VERSION_(3,1,0) || PETSC_VERSION_(3,0,0))
   if (py->update)   {ierr = VecDestroy(py->update);CHKERRQ(ierr);}
   if (py->vec_func) {ierr = VecDestroy(py->vec_func);CHKERRQ(ierr);}
   if (py->vec_rhs)  {ierr = VecDestroy(py->vec_rhs);CHKERRQ(ierr);}
+#else
+  if (py->update)   {ierr = VecDestroy(py->update);CHKERRQ(ierr);}
+  if (py->vec_func) {ierr = VecDestroy(py->vec_func);CHKERRQ(ierr);}
+  if (py->vec_rhs)  {ierr = VecDestroy(py->vec_rhs);CHKERRQ(ierr);}
+#endif
   py->update = py->vec_func = py->vec_rhs = 0;
 
   PetscFunctionReturn(0);
@@ -159,9 +165,15 @@ static PetscErrorCode TSDestroy_Python(TS ts)
     py->self = NULL; Py_DecRef(self);
   }
 
+#if (PETSC_VERSION_(3,1,0) || PETSC_VERSION_(3,0,0))
   if (py->update)   {ierr = VecDestroy(py->update);CHKERRQ(ierr);}
   if (py->vec_func) {ierr = VecDestroy(py->vec_func);CHKERRQ(ierr);}
   if (py->vec_rhs)  {ierr = VecDestroy(py->vec_rhs);CHKERRQ(ierr);}
+#else
+  if (py->update)   {ierr = VecDestroy(py->update);CHKERRQ(ierr);}
+  if (py->vec_func) {ierr = VecDestroy(py->vec_func);CHKERRQ(ierr);}
+  if (py->vec_rhs)  {ierr = VecDestroy(py->vec_rhs);CHKERRQ(ierr);}
+#endif
 
   ierr = PetscFree(py->pyname);CHKERRQ(ierr);
   ierr = PetscFree(ts->data);CHKERRQ(ierr);

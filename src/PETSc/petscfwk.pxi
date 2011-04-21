@@ -16,7 +16,7 @@ cdef extern from * nogil:
     int PetscFwkGetComponent(PetscFwk,char[],PetscFwk*,PetscBool*)
     int PetscFwkGetParent(PetscFwk,PetscFwk*)
     int PetscFwkVisit(PetscFwk, char[])
-    int PetscFwkDestroy(PetscFwk)
+    int PetscFwkDestroy(PetscFwk*)
     PetscFwk PETSC_FWK_DEFAULT_(MPI_Comm)
 
 
@@ -24,7 +24,7 @@ cdef extern from * nogil:
 
 cdef inline object ref_Fwk(PetscFwk fwk):
     cdef Fwk ob = <Fwk> Fwk()
-    PetscIncref(<PetscObject>fwk)
+    PetscINCREF(<PetscObject>fwk)
     ob.fwk = fwk
     return ob
 

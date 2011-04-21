@@ -31,6 +31,7 @@ DASetUp_Compat(DA da)
 #if PETSC_VERSION_(3,1,0)
 
 #include "private/daimpl.h"
+
 #undef DAGetElements
 #undef DARestoreElements
 

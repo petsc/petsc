@@ -25,8 +25,7 @@ cdef class Random(Object):
         CHKERR( PetscRandomView(self.rnd, vwr) )
 
     def destroy(self):
-        CHKERR( PetscRandomDestroy(self.rnd) )
-        self.rnd = NULL
+        CHKERR( PetscRandomDestroy(&self.rnd) )
         return self
 
     def create(self, comm=None):

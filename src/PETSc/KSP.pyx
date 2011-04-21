@@ -93,8 +93,7 @@ cdef class KSP(Object):
         CHKERR( KSPView(self.ksp, vwr) )
 
     def destroy(self):
-        CHKERR( KSPDestroy(self.ksp) )
-        self.ksp = NULL
+        CHKERR( KSPDestroy(&self.ksp) )
         return self
 
     def create(self, comm=None):
@@ -142,7 +141,7 @@ cdef class KSP(Object):
         CHKERR( KSPGetDM(self.ksp, &newdm) )
         cdef DM dm = subtype_DM(newdm)()
         dm.dm[0] = newdm
-        PetscIncref(<PetscObject>dm.dm)
+        PetscINCREF(<PetscObject>dm.dm)
         return dm
 
     def setDM(self, DM dm not None):
@@ -162,8 +161,8 @@ cdef class KSP(Object):
         cdef Mat A = Mat(), P = Mat()
         cdef PetscMatStructure flag = MAT_DIFFERENT_NONZERO_PATTERN
         CHKERR( KSPGetOperators(self.ksp, &A.mat, &P.mat, &flag) )
-        PetscIncref(<PetscObject>A.mat)
-        PetscIncref(<PetscObject>P.mat)
+        PetscINCREF(<PetscObject>A.mat)
+        PetscINCREF(<PetscObject>P.mat)
         return (A, P, flag)
 
     def setNullSpace(self, NullSpace nsp not None):
@@ -172,7 +171,7 @@ cdef class KSP(Object):
     def getNullSpace(self):
         cdef NullSpace nsp = NullSpace()
         CHKERR( KSPGetNullSpace(self.ksp, &nsp.nsp) )
-        PetscIncref(<PetscObject>nsp.nsp)
+        PetscINCREF(<PetscObject>nsp.nsp)
         return nsp
 
     def setPC(self, PC pc not None):
@@ -181,7 +180,7 @@ cdef class KSP(Object):
     def getPC(self):
         cdef PC pc = PC()
         CHKERR( KSPGetPC(self.ksp, &pc.pc) )
-        PetscIncref(<PetscObject>pc.pc)
+        PetscINCREF(<PetscObject>pc.pc)
         return pc
 
     # --- tolerances and convergence ---
@@ -374,13 +373,13 @@ cdef class KSP(Object):
     def getRhs(self):
         cdef Vec vec = Vec()
         CHKERR( KSPGetRhs(self.ksp, &vec.vec) )
-        PetscIncref(<PetscObject>vec.vec)
+        PetscINCREF(<PetscObject>vec.vec)
         return vec
 
     def getSolution(self):
         cdef Vec vec = Vec()
         CHKERR( KSPGetSolution(self.ksp, &vec.vec) )
-        PetscIncref(<PetscObject>vec.vec)
+        PetscINCREF(<PetscObject>vec.vec)
         return vec
 
     def getWorkVecs(self, right=None, left=None):

@@ -21,7 +21,7 @@ cdef extern from * nogil:
         DA_ELEMENT_Q1
 
     int DAView(PetscDA,PetscViewer)
-    int DADestroy(PetscDA)
+    int DADestroy(PetscDA*)
 
     int DACreateND(MPI_Comm,
                    PetscInt,PetscInt,                # dim, dof

@@ -6,7 +6,7 @@ cdef extern from * nogil:
     PetscISType ISBLOCK
 
     int ISView(PetscIS,PetscViewer)
-    int ISDestroy(PetscIS)
+    int ISDestroy(PetscIS*)
     int ISCreate(MPI_Comm,PetscIS*)
     int ISSetType(PetscIS,PetscISType)
     int ISGetType(PetscIS,PetscISType*)
@@ -63,7 +63,7 @@ cdef extern from * nogil:
     int ISLocalToGlobalMappingCreateIS(PetscIS,PetscLGMap*)
     int ISLocalToGlobalMappingBlock(PetscLGMap,PetscInt,PetscLGMap*)
     int ISLocalToGlobalMappingView(PetscLGMap,PetscViewer)
-    int ISLocalToGlobalMappingDestroy(PetscLGMap)
+    int ISLocalToGlobalMappingDestroy(PetscLGMap*)
     int ISLocalToGlobalMappingApplyIS(PetscLGMap,PetscIS,PetscIS*)
     int ISLocalToGlobalMappingGetSize(PetscLGMap,PetscInt*)
     int ISLocalToGlobalMappingGetIndices(PetscLGMap,const_PetscInt*[])
@@ -93,16 +93,15 @@ cdef class _IS_buffer:
 
     def __cinit__(self, IS iset not None):
         cdef PetscIS i = iset.iset
-        CHKERR( PetscIncref(<PetscObject>i) )
+        CHKERR( PetscINCREF(<PetscObject>i) )
         self.iset = i
         self.size = 0
         self.data = NULL
 
     def __dealloc__(self):
-        if self.iset != NULL:
-            if self.data != NULL:
-                CHKERR( ISRestoreIndices(self.iset, &self.data) )
-            CHKERR( ISDestroy(self.iset) )
+        if self.iset != NULL and self.data != NULL:
+            CHKERR( ISRestoreIndices(self.iset, &self.data) )
+        CHKERR( ISDestroy(&self.iset) )
 
     #
 

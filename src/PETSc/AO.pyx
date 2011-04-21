@@ -22,8 +22,7 @@ cdef class AO(Object):
         CHKERR( AOView(self.ao, cviewer) )
 
     def destroy(self):
-        CHKERR( AODestroy(self.ao) )
-        self.ao = NULL
+        CHKERR( AODestroy(&self.ao) )
         return self
 
     def createBasic(self, app, petsc=None, comm=None):

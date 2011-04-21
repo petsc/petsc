@@ -35,8 +35,7 @@ cdef class IS(Object):
         CHKERR( ISView(self.iset, cviewer) )
 
     def destroy(self):
-        CHKERR( ISDestroy(self.iset) )
-        self.iset = NULL
+        CHKERR( ISDestroy(&self.iset) )
         return self
 
     def create(self, comm=None):
@@ -335,8 +334,7 @@ cdef class LGMap(Object):
         CHKERR( ISLocalToGlobalMappingView(self.lgm, cviewer) )
 
     def destroy(self):
-        CHKERR( ISLocalToGlobalMappingDestroy(self.lgm) )
-        self.lgm = NULL
+        CHKERR( ISLocalToGlobalMappingDestroy(&self.lgm) )
         return self
 
     def create(self, indices, comm=None):

@@ -1,7 +1,10 @@
 #ifndef _COMPAT_PETSC_KSP_H
 #define _COMPAT_PETSC_KSP_H
 
+#if (PETSC_VERSION_(3,1,0) || \
+     PETSC_VERSION_(3,0,0))
 #include "private/kspimpl.h"
+#endif
 
 #if (PETSC_VERSION_(3,1,0) || \
      PETSC_VERSION_(3,0,0))

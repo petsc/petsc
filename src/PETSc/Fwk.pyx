@@ -14,8 +14,7 @@ cdef class Fwk(Object):
         CHKERR( PetscFwkView(self.fwk, vwr) )
 
     def destroy(self):
-        CHKERR( PetscFwkDestroy(self.fwk) )
-        self.fwk = NULL
+        CHKERR( PetscFwkDestroy(&self.fwk) )
         return self
 
     def create(self, comm=None):
@@ -63,7 +62,7 @@ cdef class Fwk(Object):
         CHKERR( PetscFwkGetComponent(self.fwk, _key, &component, &found) )
         if found == PETSC_FALSE or component == NULL: return None
         cdef Fwk fwk = Fwk()
-        PetscIncref(<PetscObject>component);
+        PetscINCREF(<PetscObject>component);
         fwk.fwk = component
         return fwk
 
@@ -77,7 +76,7 @@ cdef class Fwk(Object):
         CHKERR( PetscFwkGetParent(self.fwk, &parent) )
         if parent == NULL: return None
         cdef Fwk fwk = Fwk()
-        PetscIncref(<PetscObject>parent);
+        PetscINCREF(<PetscObject>parent);
         fwk.fwk = parent
         return fwk
 
@@ -111,7 +110,7 @@ cdef class Fwk(Object):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef Fwk fwk = Fwk()
         fwk.fwk = PETSC_FWK_DEFAULT_(ccomm)
-        PetscIncref(<PetscObject>(fwk.fwk))
+        PetscINCREF(<PetscObject>(fwk.fwk))
         return fwk
 
 # -----------------------------------------------------------------------------

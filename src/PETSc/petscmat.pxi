@@ -104,7 +104,7 @@ cdef extern from * nogil:
         MAT_GETROW_UPPERTRIANGULAR
 
     int MatView(PetscMat,PetscViewer)
-    int MatDestroy(PetscMat)
+    int MatDestroy(PetscMat*)
     int MatCreate(MPI_Comm,PetscMat*)
 
     int MatCreateIS(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscLGMap,PetscMat*)
@@ -316,7 +316,7 @@ cdef extern from * nogil:
 
 cdef inline NullSpace ref_NullSpace(PetscNullSpace nsp):
     cdef NullSpace ob = <NullSpace> NullSpace()
-    PetscIncref(<PetscObject>nsp)
+    PetscINCREF(<PetscObject>nsp)
     ob.nsp = nsp
     return ob
 
@@ -347,7 +347,7 @@ cdef int NullSpace_Function_OLD(PetscVec v, void* ctx) nogil:
 
 cdef inline Mat ref_Mat(PetscMat mat):
     cdef Mat ob = <Mat> Mat()
-    PetscIncref(<PetscObject>mat)
+    PetscINCREF(<PetscObject>mat)
     ob.mat = mat
     return ob
 

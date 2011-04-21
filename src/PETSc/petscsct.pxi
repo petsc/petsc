@@ -3,7 +3,7 @@
 cdef extern from * nogil:
 
     int VecScatterView(PetscScatter,PetscViewer)
-    int VecScatterDestroy(PetscScatter)
+    int VecScatterDestroy(PetscScatter*)
     int VecScatterCreate(PetscVec,PetscIS,PetscVec,PetscIS,PetscScatter*)
     int VecScatterCopy(PetscScatter, PetscScatter*)
     int VecScatterCreateToAll(PetscVec,PetscScatter*,PetscVec*)

@@ -1,11 +1,18 @@
 #ifndef _COMPAT_PETSC_PC_H
 #define _COMPAT_PETSC_PC_H
 
+#if (PETSC_VERSION_(3,1,0) || \
+     PETSC_VERSION_(3,0,0))
 #include "private/pcimpl.h"
+#endif
 
 #if (PETSC_VERSION_(3,1,0) || \
      PETSC_VERSION_(3,0,0))
-#define PCSACUSP "sacusp"
+#define PCSACUSP          "sacusp"
+#define PCSACUSPPOLY      "sacusppoly"
+#define PCBICGSTABCUSP    "bicgstabcusp"
+#define PCSVD             "svd"
+#define PCAINVCUSP        "ainvcusp"
 #endif
 
 #if (PETSC_VERSION_(3,1,0) || \

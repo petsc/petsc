@@ -1,7 +1,10 @@
 #ifndef _COMPAT_PETSC_VEC_H
 #define _COMPAT_PETSC_VEC_H
 
+#if (PETSC_VERSION_(3,1,0) || \
+     PETSC_VERSION_(3,0,0))
 #include "private/vecimpl.h"
+#endif
 
 #if (PETSC_VERSION_(3,1,0) || \
      PETSC_VERSION_(3,0,0))

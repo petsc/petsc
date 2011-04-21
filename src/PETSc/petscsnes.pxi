@@ -59,7 +59,7 @@ cdef extern from * nogil:
                                              void*) except PETSC_ERR_PYTHON
 
     int SNESCreate(MPI_Comm,PetscSNES*)
-    int SNESDestroy(PetscSNES)
+    int SNESDestroy(PetscSNES*)
     int SNESView(PetscSNES,PetscViewer)
 
     int SNESSetType(PetscSNES,PetscSNESType)
@@ -153,7 +153,7 @@ cdef extern from "libpetsc4py.h":
 
 cdef inline SNES ref_SNES(PetscSNES snes):
     cdef SNES ob = <SNES> SNES()
-    PetscIncref(<PetscObject>snes)
+    PetscINCREF(<PetscObject>snes)
     ob.snes = snes
     return ob
 

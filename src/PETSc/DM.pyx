@@ -11,8 +11,7 @@ cdef class DM(Object):
         CHKERR( DMView(self.dm[0], vwr) )
 
     def destroy(self):
-        CHKERR( DMDestroy(self.dm[0]) )
-        self.dm[0] = NULL
+        CHKERR( DMDestroy(&self.dm[0]) )
         return self
 
     def create(self, comm=None):
@@ -76,13 +75,13 @@ cdef class DM(Object):
     def getLGMap(self):
         cdef LGMap lgm = LGMap()
         CHKERR( DMGetLocalToGlobalMapping(self.dm[0], &lgm.lgm) )
-        PetscIncref(<PetscObject>lgm.lgm)
+        PetscINCREF(<PetscObject>lgm.lgm)
         return lgm
 
     def getLGMapBlock(self):
         cdef LGMap lgm = LGMap()
         CHKERR( DMGetLocalToGlobalMappingBlock(self.dm[0], &lgm.lgm) )
-        PetscIncref(<PetscObject>lgm.lgm)
+        PetscINCREF(<PetscObject>lgm.lgm)
         return lgm
 
     #

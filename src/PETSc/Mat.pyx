@@ -195,8 +195,7 @@ cdef class Mat(Object):
         CHKERR( MatView(self.mat, vwr) )
 
     def destroy(self):
-        CHKERR( MatDestroy(self.mat) )
-        self.mat = NULL
+        CHKERR( MatDestroy(&self.mat) )
         return self
 
     def create(self, comm=None):
@@ -844,7 +843,8 @@ cdef class Mat(Object):
         cdef PetscMatReuse reuse = MAT_INITIAL_MATRIX
         cdef Mat mat = Mat()
         CHKERR( MatGetDiagonalBlock(self.mat, &iscopy, reuse, &mat.mat) )
-        if iscopy == PETSC_FALSE: PetscIncref(<PetscObject>mat.mat)
+        if iscopy == PETSC_FALSE:
+            PetscINCREF(<PetscObject>mat.mat)
         return mat
 
     def getSubMatrix(self, IS isrow not None, IS iscol=None, Mat submat=None):
@@ -1077,7 +1077,6 @@ cdef class NullSpace(Object):
 
     def destroy(self):
         CHKERR( MatNullSpaceDestroy(&self.nsp) )
-        self.nsp = NULL
         return self
 
     def create(self, constant=False, vectors=(),  comm=None):

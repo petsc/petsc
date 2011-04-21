@@ -80,8 +80,7 @@ typedef struct {
 
 /* -------------------------------------------------------------------------- */
 
-#if (PETSC_VERSION_(3,1,0) || \
-     PETSC_VERSION_(3,0,0))
+#if (PETSC_VERSION_(3,1,0) || PETSC_VERSION_(3,0,0))
 #define SNES_DIVERGED_LINE_SEARCH SNES_DIVERGED_LS_FAILURE
 #endif
 
@@ -540,10 +539,12 @@ static PetscErrorCode SNESDestroy_Python(SNES snes)
     PETSC_PYTHON_DECREF(snes);
     py->self = NULL; Py_DecRef(self);
   }
+#if (PETSC_VERSION_(3,1,0) || PETSC_VERSION_(3,0,0))
   if (snes->vec_sol_update) {
     ierr = VecDestroy(snes->vec_sol_update);CHKERRQ(ierr);
     snes->vec_sol_update = PETSC_NULL;
   }
+#endif
   ierr = PetscFree(py->pyname);CHKERRQ(ierr);
   ierr = PetscFree(snes->data);CHKERRQ(ierr);
   snes->data = PETSC_NULL;

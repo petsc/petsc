@@ -7,7 +7,7 @@ cdef extern from * nogil:
     PetscAOType AOMEMORYSCALABLE
 
     int AOView(PetscAO,PetscViewer)
-    int AODestroy(PetscAO)
+    int AODestroy(PetscAO*)
     int AOCreateBasic(MPI_Comm,PetscInt,const_PetscInt[],const_PetscInt[],PetscAO*)
     int AOCreateBasicIS(PetscIS,PetscIS,PetscAO*)
     int AOCreateMapping(MPI_Comm,PetscInt,const_PetscInt[],const_PetscInt[],PetscAO*)

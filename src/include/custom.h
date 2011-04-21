@@ -1,12 +1,14 @@
 /* ---------------------------------------------------------------- */
 
-#include "compat.h"
-
 #include "private/vecimpl.h"
 #include "private/matimpl.h"
 #include "private/kspimpl.h"
+#include "private/pcimpl.h"
 #include "private/snesimpl.h"
 #include "private/tsimpl.h"
+
+#include "compat.h"
+#include "compat/destroy.h"
 
 /* ---------------------------------------------------------------- */
 
@@ -943,7 +945,7 @@ SNESSetUseMFFD(SNES snes,PetscBool flag)
     ierr = SNESSetJacobian(snes,J,0,0,0);CHKERRQ(ierr);
   }
 
-  ierr = MatDestroy(J);CHKERRQ(ierr);
+  ierr = MatDestroy(&J);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -1031,12 +1033,12 @@ SNESSetUseFDColoring(SNES snes,PetscBool flag)
   ierr = MatGetOptionsPrefix(J,&prefix);CHKERRQ(ierr);
   ierr = MatGetColoring(J,MATCOLORINGSL,&iscoloring);CHKERRQ(ierr);
   ierr = MatFDColoringCreate(J,iscoloring,&fdcoloring);CHKERRQ(ierr);
-  ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
+  ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
   ierr = MatFDColoringSetFunction(fdcoloring,(PetscErrorCode (*)(void))fun,funP);
   ierr = MatFDColoringSetOptionsPrefix(fdcoloring,prefix);CHKERRQ(ierr);
   ierr = MatFDColoringSetFromOptions(fdcoloring);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)snes,"fdcoloring",(PetscObject)fdcoloring);CHKERRQ(ierr);
-  ierr = MatFDColoringDestroy(fdcoloring);CHKERRQ(ierr);
+  ierr = MatFDColoringDestroy(&fdcoloring);CHKERRQ(ierr);
   ierr = SNESSetJacobian(snes,A,B,SNESComputeJacobianFDColoring,jacP);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
@@ -1118,7 +1120,7 @@ TSSetUpFunction_Private(TS ts,Vec r)
     if (!svec) {
       ierr = VecDuplicate(r,&svec);CHKERRQ(ierr);
       ierr = TSSetSolution(ts,svec);CHKERRQ(ierr);
-      ierr = VecDestroy(svec);CHKERRQ(ierr);
+      ierr = VecDestroy(&svec);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -1381,6 +1383,11 @@ DACreateND(MPI_Comm comm,
 
 #endif
 
+#if (PETSC_VERSION_(3,1,0) || PETSC_VERSION_(3,0,0))
+DESTROY(DA , DM_CLASSID)
+#undef  DADestroy
+#define DADestroy DADestroy_new
+#endif
 
 /* ---------------------------------------------------------------- */
 

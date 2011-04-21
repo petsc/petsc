@@ -21,8 +21,7 @@ cdef class Scatter(Object):
         CHKERR( VecScatterView(self.sct, vwr) )
 
     def destroy(self):
-        CHKERR( VecScatterDestroy(self.sct) )
-        self.sct = NULL
+        CHKERR( VecScatterDestroy(&self.sct) )
         return self
 
     def create(self, Vec vec_from not None, IS is_from,

@@ -40,8 +40,7 @@
 	PETSC_VERSION_RELEASE  == 1)
 #endif
 
-#if (PETSC_VERSION_(3,1,0) || \
-     PETSC_VERSION_(3,0,0))
+#if (PETSC_VERSION_(3,1,0) || PETSC_VERSION_(3,0,0))
 #define IS_CLASSID    IS_COOKIE
 #define VEC_CLASSID   VEC_COOKIE
 #define MAT_CLASSID   MAT_COOKIE
@@ -51,13 +50,11 @@
 #define TS_CLASSID    TS_COOKIE
 #endif
 
-#if (PETSC_VERSION_(3,1,0) || \
-     PETSC_VERSION_(3,0,0))
+#if (PETSC_VERSION_(3,1,0) || PETSC_VERSION_(3,0,0))
 typedef PetscTruth PetscBool;
 #endif
 
-#if (PETSC_VERSION_(3,1,0) || \
-     PETSC_VERSION_(3,0,0))
+#if (PETSC_VERSION_(3,1,0) || PETSC_VERSION_(3,0,0))
 #define PETSCVIEWERASCII  PETSC_VIEWER_ASCII
 #define PETSCVIEWERSTRING PETSC_VIEWER_STRING
 #endif
@@ -75,8 +72,7 @@ typedef PetscTruth PetscBool;
   return PetscError(comm,__LINE__,__FUNCT__,__FILE__,__SDIR__,\
                     n,PETSC_ERROR_INITIAL,s,a1,a2,a3)
 
-#if (PETSC_VERSION_(3,1,0) || \
-     PETSC_VERSION_(3,0,0))
+#if (PETSC_VERSION_(3,1,0) || PETSC_VERSION_(3,0,0))
 #undef SETERRQQ
 #define SETERRQQ(comm,n,s) \
   return PetscError(__LINE__,__FUNCT__,__FILE__,__SDIR__,n,1,s)

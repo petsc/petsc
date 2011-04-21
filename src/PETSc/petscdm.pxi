@@ -6,7 +6,7 @@ cdef extern from * nogil:
     
 
     int DMCreate(MPI_Comm,PetscDM*)
-    int DMDestroy(PetscDM)
+    int DMDestroy(PetscDM*)
     int DMView(PetscDM,PetscViewer)
     int DMSetType(PetscDM,PetscDMType)
     int DMGetType(PetscDM,PetscDMType*)

@@ -93,7 +93,7 @@ cdef class PC(Object):
         CHKERR( PCView(self.pc, vwr) )
 
     def destroy(self):
-        CHKERR( PCDestroy(self.pc) )
+        CHKERR( PCDestroy(&self.pc) )
         self.pc = NULL
         return self
 
@@ -139,8 +139,8 @@ cdef class PC(Object):
         cdef Mat A = Mat(), P = Mat()
         cdef PetscMatStructure flag = MAT_DIFFERENT_NONZERO_PATTERN
         CHKERR( PCGetOperators(self.pc, &A.mat, &P.mat, &flag) )
-        PetscIncref(<PetscObject>A.mat)
-        PetscIncref(<PetscObject>P.mat)
+        PetscINCREF(<PetscObject>A.mat)
+        PetscINCREF(<PetscObject>P.mat)
         return (A, P, flag)
 
     def setUp(self):
@@ -171,7 +171,7 @@ cdef class PC(Object):
         CHKERR( PCGetDM(self.pc, &newdm) )
         cdef DM dm = subtype_DM(newdm)()
         dm.dm[0] = newdm
-        PetscIncref(<PetscObject>dm.dm)
+        PetscINCREF(<PetscObject>dm.dm)
         return dm
 
     def setDM(self, DM dm not None):
