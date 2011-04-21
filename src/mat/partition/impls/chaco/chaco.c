@@ -95,8 +95,8 @@ static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part, IS *parti
         ierr = ISCreateStride(PETSC_COMM_SELF, M, 0, 1, &isrow);CHKERRQ(ierr);
         ierr = ISCreateStride(PETSC_COMM_SELF, N, 0, 1, &iscol);CHKERRQ(ierr);
         ierr = MatGetSubMatrices(mat, 1, &isrow, &iscol, MAT_INITIAL_MATRIX, &A);CHKERRQ(ierr);
-        ierr = ISDestroy(isrow);CHKERRQ(ierr);
-        ierr = ISDestroy(iscol);CHKERRQ(ierr);
+        ierr = ISDestroy(&isrow);CHKERRQ(ierr);
+        ierr = ISDestroy(&iscol);CHKERRQ(ierr);
         matSeq = *A;
         ierr   = PetscFree(A);CHKERRQ(ierr);
     } else
@@ -197,10 +197,10 @@ static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part, IS *parti
     /* destroy temporary objects */
     ierr = PetscFree(parttab);CHKERRQ(ierr);
     if (matSeq != mat) {
-        ierr = MatDestroy(matSeq);CHKERRQ(ierr); 
+        ierr = MatDestroy(&matSeq);CHKERRQ(ierr); 
     }
     if (matMPI != mat) {
-        ierr = MatDestroy(matMPI);CHKERRQ(ierr);
+        ierr = MatDestroy(&matMPI);CHKERRQ(ierr);
     }
     PetscFunctionReturn(0);
 }
