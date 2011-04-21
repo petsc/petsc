@@ -12,12 +12,10 @@ int main(int argc,char **args)
   Mat            A,Atrans,sA,*submatA,*submatsA;
   PetscErrorCode ierr;
   PetscMPIInt    size,rank;
-  PetscInt       bs=1,mbs=11,ov=1,i,j,k,*rows,*cols,nd=5,*idx,rstart,rend,sz,mm,M,N,Mbs;
+  PetscInt       bs=1,mbs=1,ov=1,i,j,k,*rows,*cols,nd=5,*idx,rstart,rend,sz,M,N,Mbs;
   PetscScalar    *vals,rval,one=1.0;
   IS             *is1,*is2;
   PetscRandom    rand;
-  Vec            xx,s1,s2;
-  PetscReal      s1norm,s2norm,rnorm,tol = 1.e-10;
   PetscBool      flg;
   PetscLogStage  stages[2];
   PetscInt       vid = -1;
@@ -31,9 +29,13 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-ov",&ov,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-nd",&nd,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-view_id",&vid,PETSC_NULL);CHKERRQ(ierr);
+  
+  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
+  ierr = MatSetSizes(A,mbs*bs,mbs*bs,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = MatSetType(A,MATBAIJ);CHKERRQ(ierr);
+  ierr = MatSeqBAIJSetPreallocation(A,bs,PETSC_DEFAULT,PETSC_NULL);
+  ierr = MatMPIBAIJSetPreallocation(A,bs,PETSC_DEFAULT,PETSC_NULL,PETSC_DEFAULT,PETSC_NULL);CHKERRQ(ierr);
 
-  ierr = MatCreateMPIBAIJ(PETSC_COMM_WORLD,bs,mbs*bs,mbs*bs,PETSC_DECIDE,PETSC_DECIDE,
-                          PETSC_DEFAULT,PETSC_NULL,PETSC_DEFAULT,PETSC_NULL,&A);CHKERRQ(ierr);
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rand);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
 
@@ -89,38 +91,19 @@ int main(int argc,char **args)
     SETERRQ(PETSC_COMM_SELF,1,"A+A^T is non-symmetric");
   }
   ierr = MatDestroy(&Atrans);CHKERRQ(ierr);
-  if (vid >= 0 && vid < size){
-    if (!rank) printf("A: \n");
-    ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); 
-  }
 
   /* create a SeqSBAIJ matrix sA (= A) */
   ierr = MatConvert(A,MATSBAIJ,MAT_INITIAL_MATRIX,&sA);CHKERRQ(ierr); 
-  /* ierr = MatView(sA,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
+  if (vid >= 0 && vid < size){
+    if (!rank) printf("A: \n");
+    ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); 
+    if (!rank) printf("sA: \n");
+    ierr = MatView(sA,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); 
+  }
 
   /* Test sA==A through MatMult() */
-  for (i=0; i<nd; i++) {
-    ierr = MatGetLocalSize(A, &mm,PETSC_NULL);
-    ierr = VecCreate(PETSC_COMM_WORLD,&xx);CHKERRQ(ierr);
-    ierr = VecSetSizes(xx,mm,PETSC_DECIDE);CHKERRQ(ierr);
-    ierr = VecSetFromOptions(xx);CHKERRQ(ierr); 
-    ierr = VecDuplicate(xx,&s1);CHKERRQ(ierr);
-    ierr = VecDuplicate(xx,&s2);CHKERRQ(ierr);
-    for (j=0; j<3; j++) {
-      ierr = VecSetRandom(xx,rand);CHKERRQ(ierr);
-      ierr = MatMult(A,xx,s1);CHKERRQ(ierr);
-      ierr = MatMult(sA,xx,s2);CHKERRQ(ierr);
-      ierr = VecNorm(s1,NORM_2,&s1norm);CHKERRQ(ierr);
-      ierr = VecNorm(s2,NORM_2,&s2norm);CHKERRQ(ierr);
-      rnorm = s2norm-s1norm;
-      if (rnorm<-tol || rnorm>tol) { 
-        ierr = PetscPrintf(PETSC_COMM_SELF,"Error:MatMult - Norm1=%16.14e Norm2=%16.14e\n",s1norm,s2norm);CHKERRQ(ierr);
-      }
-    }
-    ierr = VecDestroy(&xx);CHKERRQ(ierr);
-    ierr = VecDestroy(&s1);CHKERRQ(ierr);
-    ierr = VecDestroy(&s2);CHKERRQ(ierr);
-  } 
+  ierr = MatMultEqual(A,sA,10,&flg);CHKERRQ(ierr);
+  if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG ,"Error in MatConvert(): A != sA"); 
   
   /* Test MatIncreaseOverlap() */
   ierr = PetscMalloc(nd*sizeof(IS **),&is1);CHKERRQ(ierr);
@@ -145,7 +128,8 @@ int main(int argc,char **args)
     ierr = ISCreateGeneral(PETSC_COMM_SELF,sz*bs,idx,PETSC_COPY_VALUES,is2+i);CHKERRQ(ierr);
 
     if (rank == vid){
-      ierr = ISView(is1[0],PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+      printf("[%d] is2[%d]\n",rank,i);
+      ierr = ISView(is2[i],PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
     }
   }
 
@@ -171,7 +155,7 @@ int main(int argc,char **args)
   for (i=0; i<nd; ++i) { 
     ierr = ISEqual(is1[i],is2[i],&flg);CHKERRQ(ierr);
     if (!flg ){
-      if (rank == size){
+      if (rank == 0){
         ierr = ISSort(is1[i]);CHKERRQ(ierr);
         ISView(is1[i],PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
         ierr = ISSort(is2[i]);CHKERRQ(ierr); 

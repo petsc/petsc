@@ -39,16 +39,17 @@ typedef struct {
   PetscBool                usersetxbounds; /* flag to indicate whether the user 
                                               has set bounds on variables */
 
-  PetscScalar             norm_d;         /* two norm of the descent direction */
-  IS                      IS_inact_prev; /* Inctive set IS for the previous iteration 
+  PetscScalar              norm_d;         /* two norm of the descent direction */
+  IS                       IS_inact_prev; /* Inctive set IS for the previous iteration 
                                           or previous snes solve */
 
   /* Tolerance to check whether the constraint is satisfied */
-  PetscReal             const_tol;
+  PetscReal                const_tol;
   /* Copy of user supplied function evaluation routine  */
   PetscErrorCode (*computeuserfunction)(SNES,Vec,Vec,void*);
   /* user supplied function for checking redundant equations for SNESSolveVI_RS2 */
   PetscErrorCode (*checkredundancy)(SNES,IS,IS*,void*);
+  void                     *ctxP; /* user defined check redundancy context */
 } SNES_VI;
 
 #endif

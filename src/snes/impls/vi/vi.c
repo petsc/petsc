@@ -1006,30 +1006,31 @@ PetscErrorCode SNESSolveVI_RS(SNES snes)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESVISetRedundancyCheck"
-PetscErrorCode SNESVISetRedundancyCheck(SNES snes,PetscErrorCode (*func)(SNES,IS,IS*,void*))
+PetscErrorCode SNESVISetRedundancyCheck(SNES snes,PetscErrorCode (*func)(SNES,IS,IS*,void*),void *ctx)
 {
   SNES_VI         *vi = (SNES_VI*)snes->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   vi->checkredundancy = func;
+  vi->ctxP            = ctx;
   PetscFunctionReturn(0);
 }
 
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
 #include <engine.h>
 #include <mex.h>
-typedef struct {char *funcname; mxArray *ctx;} SNESVIMatlabContext;
+typedef struct {char *funcname; mxArray *ctx;} SNESMatlabContext;
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESVIRedundancyCheck_Matlab"
 PetscErrorCode SNESVIRedundancyCheck_Matlab(SNES snes,IS is_act,IS* is_redact,void* ctx)
 {
   PetscErrorCode      ierr;
-  SNESVIMatlabContext *sctx = (SNESVIMatlabContext*)ctx;
-  int                 nlhs = 2, nrhs = 4;
-  mxArray             *plhs[2], *prhs[4];
-  long long int       l1 = 0,ls = 0;
+  SNESMatlabContext   *sctx = (SNESMatlabContext*)ctx;
+  int                 nlhs = 1, nrhs = 5;
+  mxArray             *plhs[1], *prhs[5];
+  long long int       l1 = 0, l2 = 0,ls = 0;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
@@ -1037,20 +1038,27 @@ PetscErrorCode SNESVIRedundancyCheck_Matlab(SNES snes,IS is_act,IS* is_redact,vo
   PetscValidPointer(is_redact,3);
   PetscCheckSameComm(snes,1,is_act,2);
 
-  /* call Matlab function in ctx with arguments is_act */
+  /* Create IS for reduced active set, its size and indices will be set by the Matlab function */
+  ierr = ISCreate(((PetscObject)snes)->comm,is_redact);CHKERRQ(ierr);
+  /* call Matlab function in ctx */
   ierr = PetscMemcpy(&ls,&snes,sizeof(snes));CHKERRQ(ierr);
   ierr = PetscMemcpy(&l1,&is_act,sizeof(is_act));CHKERRQ(ierr);
+  ierr = PetscMemcpy(&l2,is_redact,sizeof(is_act));CHKERRQ(ierr);
   prhs[0] = mxCreateDoubleScalar((double)ls);
   prhs[1] = mxCreateDoubleScalar((double)l1);
-  prhs[2] = mxCreateString(sctx->funcname);
-  prhs[3] = sctx->ctx;
+  prhs[2] = mxCreateDoubleScalar((double)l2);
+  prhs[3] = mxCreateString(sctx->funcname);
+  prhs[4] = sctx->ctx;
   ierr    = mexCallMATLAB(nlhs,plhs,nrhs,prhs,"PetscSNESVIRedundancyCheckInternal");CHKERRQ(ierr);
   ierr    = mxGetScalar(plhs[0]);CHKERRQ(ierr);
-  *is_redact = (IS)mxGetPr(plhs[1]);
+  PetscInt n;
+  ierr = ISGetSize(*is_redact,&n);CHKERRQ(ierr);
+  PetscPrintf(PETSC_COMM_SELF,"IS_size = %d\n",n);
   mxDestroyArray(prhs[0]);
   mxDestroyArray(prhs[1]);
   mxDestroyArray(prhs[2]);
   mxDestroyArray(prhs[3]);
+  mxDestroyArray(prhs[4]);
   mxDestroyArray(plhs[0]);
   PetscFunctionReturn(0);
 }
@@ -1060,16 +1068,14 @@ PetscErrorCode SNESVIRedundancyCheck_Matlab(SNES snes,IS is_act,IS* is_redact,vo
 PetscErrorCode SNESVISetRedundancyCheckMatlab(SNES snes,const char* func,mxArray* ctx)
 {
   PetscErrorCode      ierr;
-  SNESVIMatlabContext *sctx;
-  SNES_VI             *vi = (SNES_VI*)snes->data;
+  SNESMatlabContext   *sctx;
 
   PetscFunctionBegin;
   /* currently sctx is memory bleed */
-  ierr = PetscMalloc(sizeof(SNESVIMatlabContext),&sctx);CHKERRQ(ierr);
+  ierr = PetscMalloc(sizeof(SNESMatlabContext),&sctx);CHKERRQ(ierr);
   ierr = PetscStrallocpy(func,&sctx->funcname);CHKERRQ(ierr);
-
   sctx->ctx = mxDuplicateArray(ctx);
-  vi->checkredundancy = SNESVIRedundancyCheck_Matlab;
+  ierr = SNESVISetRedundancyCheck(snes,SNESVIRedundancyCheck_Matlab,sctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
   
@@ -1138,13 +1144,13 @@ PetscErrorCode SNESSolveVI_RS2(SNES snes)
 
   for (i=0; i<maxits; i++) {
     IS             IS_act,IS_inact; /* _act -> active set _inact -> inactive set */
-    IS             IS_redact=PETSC_NULL; /* redundant active set */
+    IS             IS_redact; /* redundant active set */
     Mat            J_aug,Jpre_aug;
     Vec            F_aug,Y_aug;
     PetscInt       nis_redact,nis_act;
     const PetscInt *idx_redact,*idx_act;
     PetscInt       k;
-    PetscInt       *idx_actkept=PETSC_NULL,nkept=0; /* list of kept active set */
+    PetscInt       *idx_actkept=PETSC_NULL,nkept; /* list of kept active set */
     PetscScalar    *f,*f2;
     PetscBool      isequal;
     PetscInt       i1=0,j1=0;
@@ -1163,30 +1169,34 @@ PetscErrorCode SNESSolveVI_RS2(SNES snes)
     ierr = ISGetIndices(IS_act,&idx_act);CHKERRQ(ierr);
     if(nis_act) {
       if(vi->checkredundancy) {
-	(*vi->checkredundancy)(snes,IS_act,&IS_redact,snes->funP);
+	(*vi->checkredundancy)(snes,IS_act,&IS_redact,vi->ctxP);
       }
 
       if(!IS_redact) {
 	/* User called checkredundancy function but didn't create IS_redact because
            there were no redundant active set variables */
 	/* Copy over all active set indices to the list */
+        PetscPrintf(PETSC_COMM_SELF,"Came here 1\n");
 	ierr = PetscMalloc(nis_act*sizeof(PetscInt),&idx_actkept);CHKERRQ(ierr);
 	for(k=0;k < nis_act;k++) idx_actkept[k] = idx_act[k];
 	nkept = nis_act;
       } else {
+        PetscPrintf(PETSC_COMM_SELF,"Came here 2\n");
 	ierr = ISGetLocalSize(IS_redact,&nis_redact);CHKERRQ(ierr);
 	ierr = PetscMalloc((nis_act-nis_redact)*sizeof(PetscInt),&idx_actkept);CHKERRQ(ierr);
 
 	/* Create reduced active set list */ 
 	ierr = ISGetIndices(IS_act,&idx_act);CHKERRQ(ierr);
 	ierr = ISGetIndices(IS_redact,&idx_redact);CHKERRQ(ierr);
-	j1 = 0;
+	j1 = 0;nkept = 0;
 	for(k=0;k<nis_act;k++) {
 	  if(j1 < nis_redact && idx_act[k] == idx_redact[j1]) j1++;
 	  else idx_actkept[nkept++] = idx_act[k];
 	}
 	ierr = ISRestoreIndices(IS_act,&idx_act);CHKERRQ(ierr);
 	ierr = ISRestoreIndices(IS_redact,&idx_redact);CHKERRQ(ierr);
+
+        ierr = ISDestroy(&IS_redact);CHKERRQ(ierr);
       }
 
       /* Create augmented F and Y */
