@@ -2,7 +2,7 @@
 
 ALL: lib
 
-SOURCEH  = characteristicimpl.h ../../../include/characteristic.h
+SOURCEH  = ../../../include/private/characteristicimpl.h ../../../include/characteristic.h
 DIRS     = interface impls examples
 LOCDIR   = src/ts/characteristic/
 MANSEC   = SemiLagrange
