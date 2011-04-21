@@ -4,6 +4,7 @@
    These are the vector functions the user calls.
 */
 #include <private/vecimpl.h>    /*I "petscvec.h" I*/
+static PetscInt VecGetSubVectorSavedStateId = -1;
 
 #define PetscCheckSameSizeVec(x,y) \
   if ((x)->map->N != (y)->map->N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths"); \
@@ -1201,7 +1202,7 @@ PetscErrorCode  VecMAXPY(Vec y,PetscInt nv,const PetscScalar alpha[],Vec x[])
 /*@
    VecGetSubVector - Gets a vector representing part of another vector
 
-   Collective on Vec
+   Collective on IS (and Vec if nonlocal entries are needed)
 
    Input Arguments:
 + X - vector from which to extract a subvector
@@ -1223,19 +1224,21 @@ PetscErrorCode  VecMAXPY(Vec y,PetscInt nv,const PetscScalar alpha[],Vec x[])
 PetscErrorCode  VecGetSubVector(Vec X,IS is,Vec *Y)
 {
   PetscErrorCode ierr;
+  Vec            Z;
+  PetscInt       state;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(X,VEC_CLASSID,1);
   PetscValidHeaderSpecific(is,IS_CLASSID,2);
   PetscValidPointer(Y,3);
   if (X->ops->getsubvector) {
-    ierr = (*X->ops->getsubvector)(X,is,Y);CHKERRQ(ierr);
+    ierr = (*X->ops->getsubvector)(X,is,&Z);CHKERRQ(ierr);
   } else {                      /* Default implementation currently does no caching */
     PetscInt gstart,gend,start;
     PetscBool contiguous,gcontiguous;
     ierr = VecGetOwnershipRange(X,&gstart,&gend);CHKERRQ(ierr);
     ierr = ISContiguousLocal(is,gstart,gend,&start,&contiguous);CHKERRQ(ierr);
-    ierr = MPI_Allreduce(&contiguous,&gcontiguous,1,MPI_INT,MPI_LAND,((PetscObject)X)->comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(&contiguous,&gcontiguous,1,MPI_INT,MPI_LAND,((PetscObject)is)->comm);CHKERRQ(ierr);
     if (gcontiguous) {          /* We can do a no-copy implementation */
       PetscInt n,N;
       PetscScalar *x;
@@ -1244,14 +1247,13 @@ PetscErrorCode  VecGetSubVector(Vec X,IS is,Vec *Y)
       ierr = VecGetArray(X,&x);CHKERRQ(ierr);
       ierr = MPI_Comm_size(((PetscObject)X)->comm,&size);CHKERRQ(ierr);
       if (size == 1) {
-        ierr = VecCreateSeqWithArray(((PetscObject)X)->comm,n,x+start,Y);CHKERRQ(ierr);
+        ierr = VecCreateSeqWithArray(((PetscObject)X)->comm,n,x+start,&Z);CHKERRQ(ierr);
       } else {
         ierr = ISGetSize(is,&N);CHKERRQ(ierr);
-        ierr = VecCreateMPIWithArray(((PetscObject)X)->comm,n,N,x+start,Y);CHKERRQ(ierr);
+        ierr = VecCreateMPIWithArray(((PetscObject)X)->comm,n,N,x+start,&Z);CHKERRQ(ierr);
       }
       ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
     } else {                    /* Have to create a scatter and do a copy */
-      Vec        Z;
       VecScatter scatter;
       PetscInt   n,N;
       ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
@@ -1263,9 +1265,13 @@ PetscErrorCode  VecGetSubVector(Vec X,IS is,Vec *Y)
       ierr = VecScatterBegin(scatter,X,Z,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = VecScatterEnd(scatter,X,Z,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = VecScatterDestroy(&scatter);CHKERRQ(ierr);
-      *Y = Z;
     }
   }
+  /* Record the state when the subvector was gotten so we know whether its values need to be put back */
+  if (VecGetSubVectorSavedStateId < 0) {ierr = PetscObjectComposedDataRegister(&VecGetSubVectorSavedStateId);CHKERRQ(ierr);}
+  ierr = PetscObjectStateQuery((PetscObject)Z,&state);CHKERRQ(ierr);
+  ierr = PetscObjectComposedDataSetInt((PetscObject)Z,VecGetSubVectorSavedStateId,state);CHKERRQ(ierr);
+  *Y = Z;
   PetscFunctionReturn(0);
 }
 
@@ -1274,7 +1280,7 @@ PetscErrorCode  VecGetSubVector(Vec X,IS is,Vec *Y)
 /*@
    VecRestoreSubVector - Restores a subvector extracted using VecGetSubVector()
 
-   Collective on Vec
+   Collective on IS (and Vec if nonlocal entries need to be written)
 
    Input Arguments:
 + X - vector from which subvector was obtained
@@ -1297,6 +1303,19 @@ PetscErrorCode  VecRestoreSubVector(Vec X,IS is,Vec *Y)
   if (X->ops->restoresubvector) {
     ierr = (*X->ops->restoresubvector)(X,is,Y);CHKERRQ(ierr);
   } else {
+    PetscInt savedstate,newstate;
+    PetscBool valid;
+    ierr = PetscObjectComposedDataGetInt((PetscObject)*Y,VecGetSubVectorSavedStateId,savedstate,valid);CHKERRQ(ierr);
+    ierr = PetscObjectStateQuery((PetscObject)*Y,&newstate);CHKERRQ(ierr);
+    if (valid && savedstate < newstate) {
+      /* We might need to copy entries back, first check whether we have no-copy view */
+      PetscInt gstart,gend,start;
+      PetscBool contiguous,gcontiguous;
+      ierr = VecGetOwnershipRange(X,&gstart,&gend);CHKERRQ(ierr);
+      ierr = ISContiguousLocal(is,gstart,gend,&start,&contiguous);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(&contiguous,&gcontiguous,1,MPI_INT,MPI_LAND,((PetscObject)is)->comm);CHKERRQ(ierr);
+      if (!gcontiguous) SETERRQ(((PetscObject)is)->comm,PETSC_ERR_SUP,"Unhandled case, values have been changed and need to be copied back into X");
+    }
     ierr = VecDestroy(Y);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
