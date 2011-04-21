@@ -106,7 +106,7 @@ PetscErrorCode  PetscByteSwapShort(short *buff,PetscInt n)
   for (j=0; j<n; j++) {
     ptr1 = (char*)(buff + j);
     for (i=0; i<(PetscInt) sizeof(short); i++) {
-      ptr2[i] = ptr1[sizeof(int)-1-i];
+      ptr2[i] = ptr1[sizeof(short)-1-i];
     }
     for (i=0; i<(PetscInt) sizeof(short); i++) {
       ptr1[i] = ptr2[i];
@@ -168,6 +168,30 @@ PetscErrorCode  PetscByteSwapDouble(double *buff,PetscInt n)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "PetscByteSwapFloat"
+/*
+  PetscByteSwapFloat - Swap bytes in a float
+*/
+PetscErrorCode PetscByteSwapFloat(float *buff,PetscInt n)
+{
+  PetscInt i,j;
+  float   tmp,*buff1 = (float*)buff;
+  char     *ptr1,*ptr2 = (char*)&tmp;
+
+  PetscFunctionBegin;
+  for (j=0; j<n; j++) {
+    ptr1 = (char*)(buff1 + j);
+    for (i=0; i<(PetscInt) sizeof(float); i++) {
+      ptr2[i] = ptr1[sizeof(float)-1-i];
+    }
+    for (i=0; i<(PetscInt) sizeof(float); i++) {
+      ptr1[i] = ptr2[i];
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "PetscByteSwap"
 PetscErrorCode PetscByteSwap(void *data,PetscDataType pdtype,PetscInt count)
 {
@@ -179,6 +203,7 @@ PetscErrorCode PetscByteSwap(void *data,PetscDataType pdtype,PetscInt count)
   else if (pdtype == PETSC_BOOL)   {ierr = PetscByteSwapBool((PetscBool*)data,count);CHKERRQ(ierr);}
   else if (pdtype == PETSC_SCALAR) {ierr = PetscByteSwapScalar((PetscScalar*)data,count);CHKERRQ(ierr);}
   else if (pdtype == PETSC_DOUBLE) {ierr = PetscByteSwapDouble((double*)data,count);CHKERRQ(ierr);}
+  else if (pdtype == PETSC_FLOAT) {ierr = PetscByteSwapFloat((float*)data,count);CHKERRQ(ierr);}
   else if (pdtype == PETSC_SHORT)  {ierr = PetscByteSwapShort((short*)data,count);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
@@ -234,6 +259,7 @@ PetscErrorCode  PetscBinaryRead(int fd,void *p,PetscInt n,PetscDataType type)
   if (type == PETSC_INT)          m *= sizeof(PetscInt);
   else if (type == PETSC_SCALAR)  m *= sizeof(PetscScalar);
   else if (type == PETSC_DOUBLE)  m *= sizeof(double);
+  else if (type == PETSC_FLOAT)   m *= sizeof(float);
   else if (type == PETSC_SHORT)   m *= sizeof(short);
   else if (type == PETSC_CHAR)    m *= sizeof(char);
   else if (type == PETSC_ENUM)    m *= sizeof(PetscEnum);
@@ -316,6 +342,7 @@ PetscErrorCode  PetscBinaryWrite(int fd,void *p,PetscInt n,PetscDataType type,Pe
   if (type == PETSC_INT)          m *= sizeof(PetscInt);
   else if (type == PETSC_SCALAR)  m *= sizeof(PetscScalar);
   else if (type == PETSC_DOUBLE)  m *= sizeof(double);
+  else if (type == PETSC_FLOAT)   m *= sizeof(float);
   else if (type == PETSC_SHORT)   m *= sizeof(short);
   else if (type == PETSC_CHAR)    m *= sizeof(char);
   else if (type == PETSC_ENUM)    m *= sizeof(PetscEnum);
