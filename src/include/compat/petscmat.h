@@ -27,24 +27,6 @@
 #if (PETSC_VERSION_(3,1,0) || \
      PETSC_VERSION_(3,0,0))
 #undef __FUNCT__
-#define __FUNCT__ "MatNullSpaceDestroy"
-static PetscErrorCode
-MatNullSpaceDestroy_Compat(MatNullSpace *sp)
-{
-  PetscErrorCode ierr;
-  PetscFunctionBegin;
-  PetscValidPointer(sp,1); 
-  PetscValidHeaderSpecific((*sp),MAT_NULLSPACE_COOKIE,1); 
-  ierr = MatNullSpaceDestroy(*sp);CHKERRQ(ierr);
-  *sp = 0;
-  PetscFunctionReturn(0);
-}
-#define MatNullSpaceDestroy MatNullSpaceDestroy_Compat
-#endif
-
-#if (PETSC_VERSION_(3,1,0) || \
-     PETSC_VERSION_(3,0,0))
-#undef __FUNCT__
 #define __FUNCT__ "MatSetLocalToGlobalMapping"
 static PetscErrorCode MatSetLocalToGlobalMapping_Compat(Mat mat, 
                                                         ISLocalToGlobalMapping rmap,
