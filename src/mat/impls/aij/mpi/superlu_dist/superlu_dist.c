@@ -120,7 +120,7 @@ PetscErrorCode MatSolve_SuperLU_DIST(Mat A,Vec b_mpi,Vec x)
     ierr = VecCreateSeq(PETSC_COMM_SELF,N,&x_seq);CHKERRQ(ierr);
     ierr = ISCreateStride(PETSC_COMM_SELF,N,0,1,&iden);CHKERRQ(ierr);
     ierr = VecScatterCreate(b_mpi,iden,x_seq,iden,&scat);CHKERRQ(ierr);
-    ierr = ISDestroy(iden);CHKERRQ(ierr);
+    ierr = ISDestroy(&iden);CHKERRQ(ierr);
 
     ierr = VecScatterBegin(scat,b_mpi,x_seq,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(scat,b_mpi,x_seq,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -171,8 +171,8 @@ PetscErrorCode MatSolve_SuperLU_DIST(Mat A,Vec b_mpi,Vec x)
     ierr = VecRestoreArray(x_seq,&bptr);CHKERRQ(ierr);
     ierr = VecScatterBegin(scat,x_seq,x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     ierr = VecScatterEnd(scat,x_seq,x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-    ierr = VecScatterDestroy(scat);CHKERRQ(ierr);
-    ierr = VecDestroy(x_seq);CHKERRQ(ierr);
+    ierr = VecScatterDestroy(&scat);CHKERRQ(ierr);
+    ierr = VecDestroy(&x_seq);CHKERRQ(ierr);
   } else {
     ierr = VecRestoreArray(x,&bptr);CHKERRQ(ierr);
     lu->matsolve_iscalled    = PETSC_TRUE;
@@ -284,7 +284,7 @@ PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFactorInfo *
     if (size > 1) { /* convert mpi A to seq mat A */
       ierr = ISCreateStride(PETSC_COMM_SELF,M,0,1,&isrow);CHKERRQ(ierr);  
       ierr = MatGetSubMatrices(A,1,&isrow,&isrow,MAT_INITIAL_MATRIX,&tseq);CHKERRQ(ierr);
-      ierr = ISDestroy(isrow);CHKERRQ(ierr);
+      ierr = ISDestroy(&isrow);CHKERRQ(ierr);
    
       A_seq = *tseq;
       ierr = PetscFree(tseq);CHKERRQ(ierr);
@@ -427,7 +427,7 @@ PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFactorInfo *
   }
 
   if (lu->MatInputMode == GLOBAL && size > 1){
-    ierr = MatDestroy(A_seq);CHKERRQ(ierr);
+    ierr = MatDestroy(&A_seq);CHKERRQ(ierr);
   }
 
   if (lu->options.PrintStat) {

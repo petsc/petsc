@@ -276,8 +276,8 @@ static PetscErrorCode MatDestroy_ML(Mat A)
 
   PetscFunctionBegin;
   ierr = MatShellGetContext(A,(void **)&shell);CHKERRQ(ierr);
-  ierr = VecDestroy(shell->y);CHKERRQ(ierr);
-  if (shell->work) {ierr = VecDestroy(shell->work);CHKERRQ(ierr);}
+  ierr = VecDestroy(&shell->y);CHKERRQ(ierr);
+  if (shell->work) {ierr = VecDestroy(&shell->work);CHKERRQ(ierr);}
   ierr = PetscFree(shell);CHKERRQ(ierr); 
   ierr = MatDestroy_Shell(A);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)A,0);CHKERRQ(ierr);
@@ -467,20 +467,20 @@ PetscErrorCode PCReset_ML(PC pc)
 
   if (pc_ml->PetscMLdata) {
     ierr = PetscFree(pc_ml->PetscMLdata->pwork);CHKERRQ(ierr);
-    if (pc_ml->size > 1)      {ierr = MatDestroy(pc_ml->PetscMLdata->Aloc);CHKERRQ(ierr);} 
-    if (pc_ml->PetscMLdata->x){ierr = VecDestroy(pc_ml->PetscMLdata->x);CHKERRQ(ierr);}
-    if (pc_ml->PetscMLdata->y){ierr = VecDestroy(pc_ml->PetscMLdata->y);CHKERRQ(ierr);}
+    if (pc_ml->size > 1)      {ierr = MatDestroy(&pc_ml->PetscMLdata->Aloc);CHKERRQ(ierr);} 
+    if (pc_ml->PetscMLdata->x){ierr = VecDestroy(&pc_ml->PetscMLdata->x);CHKERRQ(ierr);}
+    if (pc_ml->PetscMLdata->y){ierr = VecDestroy(&pc_ml->PetscMLdata->y);CHKERRQ(ierr);}
   }
   ierr = PetscFree(pc_ml->PetscMLdata);CHKERRQ(ierr);
 
   if (pc_ml->gridctx) {
     for (level=0; level<fine_level; level++){
-      if (pc_ml->gridctx[level].A){ierr = MatDestroy(pc_ml->gridctx[level].A);CHKERRQ(ierr);}
-      if (pc_ml->gridctx[level].P){ierr = MatDestroy(pc_ml->gridctx[level].P);CHKERRQ(ierr);}
-      if (pc_ml->gridctx[level].R){ierr = MatDestroy(pc_ml->gridctx[level].R);CHKERRQ(ierr);}
-      if (pc_ml->gridctx[level].x){ierr = VecDestroy(pc_ml->gridctx[level].x);CHKERRQ(ierr);}
-      if (pc_ml->gridctx[level].b){ierr = VecDestroy(pc_ml->gridctx[level].b);CHKERRQ(ierr);}
-      if (pc_ml->gridctx[level+1].r){ierr = VecDestroy(pc_ml->gridctx[level+1].r);CHKERRQ(ierr);}
+      if (pc_ml->gridctx[level].A){ierr = MatDestroy(&pc_ml->gridctx[level].A);CHKERRQ(ierr);}
+      if (pc_ml->gridctx[level].P){ierr = MatDestroy(&pc_ml->gridctx[level].P);CHKERRQ(ierr);}
+      if (pc_ml->gridctx[level].R){ierr = MatDestroy(&pc_ml->gridctx[level].R);CHKERRQ(ierr);}
+      if (pc_ml->gridctx[level].x){ierr = VecDestroy(&pc_ml->gridctx[level].x);CHKERRQ(ierr);}
+      if (pc_ml->gridctx[level].b){ierr = VecDestroy(&pc_ml->gridctx[level].b);CHKERRQ(ierr);}
+      if (pc_ml->gridctx[level+1].r){ierr = VecDestroy(&pc_ml->gridctx[level+1].r);CHKERRQ(ierr);}
     }
   }
   ierr = PetscFree(pc_ml->gridctx);CHKERRQ(ierr);

@@ -33,12 +33,10 @@ PetscErrorCode MatDestroy_MPIAIJSpooles(Mat A)
     DenseMtx_free(lu->mtxX);
     DenseMtx_free(lu->mtxY);
     ierr = MPI_Comm_free(&(lu->comm_spooles));CHKERRQ(ierr);
-    if ( lu->scat ){
-      ierr = VecDestroy(lu->vec_spooles);CHKERRQ(ierr); 
-      ierr = ISDestroy(lu->iden);CHKERRQ(ierr); 
-      ierr = ISDestroy(lu->is_petsc);CHKERRQ(ierr);
-      ierr = VecScatterDestroy(lu->scat);CHKERRQ(ierr);
-    }
+    ierr = VecDestroy(&lu->vec_spooles);CHKERRQ(ierr);
+    ierr = ISDestroy(&lu->iden);CHKERRQ(ierr);
+    ierr = ISDestroy(&lu->is_petsc);CHKERRQ(ierr);
+    ierr = VecScatterDestroy(&lu->scat);CHKERRQ(ierr);
   }
   ierr = MatDestroy_MPIAIJ(A);CHKERRQ(ierr);
 
@@ -602,12 +600,10 @@ PetscErrorCode MatFactorNumeric_MPISpooles(Mat F,Mat A,const MatFactorInfo *info
     lu->rowindX = 0;
   }
 
-  if ( lu->scat ){
-    ierr = VecDestroy(lu->vec_spooles);CHKERRQ(ierr); 
-    ierr = ISDestroy(lu->iden);CHKERRQ(ierr); 
-    ierr = ISDestroy(lu->is_petsc);CHKERRQ(ierr);
-    ierr = VecScatterDestroy(lu->scat);CHKERRQ(ierr);
-  }
+  ierr = VecDestroy(&lu->vec_spooles);CHKERRQ(ierr);
+  ierr = ISDestroy(&lu->iden);CHKERRQ(ierr);
+  ierr = ISDestroy(&lu->is_petsc);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&lu->scat);CHKERRQ(ierr);
   lu->scat      = PETSC_NULL;  
   lu->flg       = SAME_NONZERO_PATTERN;
   F->ops->solve = MatSolve_MPISpooles;

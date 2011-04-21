@@ -237,7 +237,7 @@ PetscErrorCode MatDestroy_SuperLU(Mat A)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatSuperluSetILUDropTol_C","",PETSC_NULL);CHKERRQ(ierr);
 
   ierr = MatDestroy_SeqAIJ(A);CHKERRQ(ierr);
-  if (lu->A_dup){ierr = MatDestroy(lu->A_dup);CHKERRQ(ierr);}
+  ierr = MatDestroy(&lu->A_dup);CHKERRQ(ierr);
   ierr = PetscFree(lu->rhs_dup);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

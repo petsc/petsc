@@ -244,12 +244,12 @@ PetscErrorCode TSReset_Sundials(TS ts)
 
   PetscFunctionBegin;
   if (cvode->pc)     {ierr = PCReset(cvode->pc);CHKERRQ(ierr);}
-  if (cvode->pmat)   {ierr = MatDestroy(cvode->pmat);CHKERRQ(ierr);}
-  if (cvode->update) {ierr = VecDestroy(cvode->update);CHKERRQ(ierr);}
-  if (cvode->func)   {ierr = VecDestroy(cvode->func);CHKERRQ(ierr);}
-  if (cvode->rhs)    {ierr = VecDestroy(cvode->rhs);CHKERRQ(ierr);}
-  if (cvode->w1)     {ierr = VecDestroy(cvode->w1);CHKERRQ(ierr);}
-  if (cvode->w2)     {ierr = VecDestroy(cvode->w2);CHKERRQ(ierr);}
+  ierr = MatDestroy(&cvode->pmat);
+  ierr = VecDestroy(&cvode->update);
+  ierr = VecDestroy(&cvode->func);
+  ierr = VecDestroy(&cvode->rhs);
+  ierr = VecDestroy(&cvode->w1);
+  ierr = VecDestroy(&cvode->w2);
   if (cvode->mem)    {CVodeFree(&cvode->mem);}
   PetscFunctionReturn(0);
 }
@@ -263,7 +263,7 @@ PetscErrorCode TSDestroy_Sundials(TS ts)
 
   PetscFunctionBegin;
   ierr = TSReset_Sundials(ts);CHKERRQ(ierr);
-  if (cvode->pc) {ierr = PCDestroy(cvode->pc);CHKERRQ(ierr);}
+  ierr = PCDestroy(&cvode->pc);CHKERRQ(ierr);
   ierr = MPI_Comm_free(&(cvode->comm_sundials));CHKERRQ(ierr);
   ierr = PetscFree(ts->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -55,8 +55,6 @@ static PetscErrorCode MatNullSpaceView(MatNullSpace sp, PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode MatNullSpaceDestroy_WRAP(MatNullSpace sp) { return MatNullSpaceDestroy(&sp); }
-
 #undef __FUNCT__  
 #define __FUNCT__ "MatNullSpaceCreate"
 /*@
@@ -108,8 +106,7 @@ PetscErrorCode  MatNullSpaceCreate(MPI_Comm comm,PetscBool  has_cnst,PetscInt n,
   ierr = MatInitializePackage(PETSC_NULL);CHKERRQ(ierr); 
 #endif 
 
-  /* cannot use MatNullSpaceDestroy() as generic destroy function because it takes pointer to the object */
-  ierr = PetscHeaderCreate(sp,_p_MatNullSpace,int,MAT_NULLSPACE_CLASSID,0,"MatNullSpace",comm,MatNullSpaceDestroy_WRAP,MatNullSpaceView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(sp,_p_MatNullSpace,int,MAT_NULLSPACE_CLASSID,0,"MatNullSpace",comm,MatNullSpaceDestroy,MatNullSpaceView);CHKERRQ(ierr);
 
   sp->has_cnst = has_cnst;
   sp->n        = n;
