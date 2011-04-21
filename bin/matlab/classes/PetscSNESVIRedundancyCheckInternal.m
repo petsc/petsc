@@ -1,13 +1,11 @@
-function [err,pidis_redact] = PetscSNESVIRedundancyCheckInternal(pidsnes,pidis_act,funcname,ctx)
+function [err] = PetscSNESVIRedundancyCheckInternal(pidsnes,pidis_act,pidis_redact,funcname,ctx)
 %
 %   Used by SNESComputeJacobian_Matlab() to apply user Matlab Jacobian function
 %
 %
-err = 0;
-isact = PetscIS(pidis_act,'pobj');
-snes = PetscSNES(pidsnes,'pobj');
-[is_redact,err] = feval(funcname,snes,isact,ctx);
-pidis_redact = [];
-if(is_redact)
-    pidis_redact = is_redact.pobj;
-end
+err       = 0;
+snes      = PetscSNES(pidsnes,'pobj');
+isact     = PetscIS(pidis_act,'pobj');
+is_redact = PetscIS(pidis_redact,'pobj');
+
+[err] = feval(funcname,snes,isact,is_redact,ctx);

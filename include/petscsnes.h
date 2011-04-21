@@ -365,7 +365,7 @@ extern PetscErrorCode  SNESLineSearchSetMonitor(SNES,PetscBool );
 /* Routines for VI solver */
 extern PetscErrorCode  SNESVISetVariableBounds(SNES,Vec,Vec);
 extern PetscErrorCode  SNESVIGetActiveSetIS(SNES,Vec,Vec,IS*);
-extern PetscErrorCode  SNESVISetRedundancyCheck(SNES,PetscErrorCode(*)(SNES,IS,IS*,void*));
+extern PetscErrorCode  SNESVISetRedundancyCheck(SNES,PetscErrorCode(*)(SNES,IS,IS*,void*),void*);
 
 extern PetscErrorCode  SNESTestLocalMin(SNES);
 

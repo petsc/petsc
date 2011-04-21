@@ -10,7 +10,12 @@ classdef PetscIS < PetscObject
 %     is  = PetscIS(indices);
 % 
   methods
-    function obj = PetscIS(indices)
+    function obj = PetscIS(indices,flag)
+      if (nargin > 1) 
+        %  PetscIS(pid,'pobj') uses an already existing PETSc IS object
+        obj.pobj = indices;
+        return
+      end
       comm = PETSC_COMM_SELF();
       if (nargin == 1) 
         [err,obj.pobj] = calllib('libpetsc', 'ISCreate',comm ,0);PetscCHKERRQ(err);

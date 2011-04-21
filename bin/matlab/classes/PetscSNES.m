@@ -45,7 +45,7 @@ classdef PetscSNES < PetscObject
       if (nargin < 3)
           arg = 0;
       end
-      err = callib('libpetsc','SNESVISetRedundancyCheckMatlab',obj.pobj,func,arg);PetscCHKERRQ(err);
+      err = calllib('libpetsc','SNESVISetRedundancyCheckMatlab',obj.pobj,func,arg);PetscCHKERRQ(err);
     end
     function err = SetFunction(obj,f,func,arg)
       if (nargin < 4) 
