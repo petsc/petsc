@@ -1345,7 +1345,8 @@ PetscErrorCode ISArraySetBuffer(ISArray chain, ISArrayHunk buffer) {
  */
 #undef  __FUNCT__
 #define __FUNCT__ "ISArrayGetHunk"
-PetscErrorCode ISArrayGetHunk(ISArray chain, PetscInt length, ISArrayHunk *_hunk) {
+PetscErrorCode ISArrayGetHunk(ISArray chain, PetscInt length, ISArrayHunk *_hunk) 
+{
   PetscErrorCode ierr;
   ISArrayHunk hunk;
   PetscFunctionBegin;

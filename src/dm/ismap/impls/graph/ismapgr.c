@@ -74,7 +74,7 @@ typedef struct {
         }
 
 #define ISMappingGraphGetHunkPointers(hunk,mask,index,ii,ww,jj) \
-  if((index) = ISARRAY_I) { \
+  if((index) == ISARRAY_I) { \
     (ii) = (hunk)->i;       \
     if((mask) & ISARRAY_J){ \
       (jj) = (hunk)->j;     \
@@ -106,10 +106,10 @@ static PetscErrorCode ISMappingGraphMap_Private(ISMapping map, ISArray inarr, Pe
 
   if(offsets) offsets[0] = 0;
   j = 0;
-  hunk = inarr->hunk;
+  hunk = inarr->first;
   count = 0;
   while(hunk) {
-    ISMappingGraphGetHunkPointers(hunk,inarr-mask,index,inidxi,inval,inidxj);
+    ISMappingGraphGetHunkPointers(hunk,inarr->mask,index,inidxi,inval,inidxj);
     for(i = 0; i < hunk->length; ++i) {
       if(!local) {
         /* Convert to local by searching through mapg->supp. */
@@ -126,7 +126,7 @@ static PetscErrorCode ISMappingGraphMap_Private(ISMapping map, ISArray inarr, Pe
       }
       if(outidxi || (inval && outval) || (inidxj && outidxj) ) {
         for(k = mapg->ijlen[ind]; k < mapg->ijlen[ind+1]; ++k) {
-          if(outidxi)         outidxi[j] = mapis->image[mapg->ij[k]];
+          if(outidxi)         outidxi[j] = mapg->image[mapg->ij[k]];
           if(inidxj&&outidxj) outidxj[j] = inidxj[i];
           if(inval&&outval)   outval[j]  = inval[i];
           ++j;
@@ -138,6 +138,7 @@ static PetscErrorCode ISMappingGraphMap_Private(ISMapping map, ISArray inarr, Pe
       if(offsets) offsets[count+1] = offsets[count] + (mapg->ijlen[ind+1]-mapg->ijlen[ind]);
       ++count;
     }/* for(i = 0; i < hunk->length; ++i) */
+    hunk = hunk->next;
   }/* while(hunk) */
   if(outsize) *outsize = j;
   PetscFunctionReturn(0);
@@ -150,7 +151,6 @@ static PetscErrorCode ISMappingGraphMap_Private(ISMapping map, ISArray inarr, Pe
 static PetscErrorCode ISMappingMap_Graph(ISMapping map, ISArray inarr, ISArrayIndex index, ISArray outarr) 
 {
   PetscErrorCode ierr;
-  ISMapping_Graph *mapg = (ISMapping_Graph*)map->data;
   PetscInt outsize, *outidxi = PETSC_NULL, *outidxj = PETSC_NULL;
   PetscScalar *outval = PETSC_NULL;
   ISArrayHunk  outhunk;
@@ -162,10 +162,9 @@ static PetscErrorCode ISMappingMap_Graph(ISMapping map, ISArray inarr, ISArrayIn
     SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Index %D not present among ISArray components %D", index, inarr->mask);
   /* Determine the size of the output. */
   ierr = ISMappingGraphMap_Private(map,inarr,index,&outsize,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_FALSE,PETSC_FALSE); CHKERRQ(ierr);
-  /* Create a new array for the output. */
-  ierr = ISArrayCreate(inarr->mask,&outarr); CHKERRQ(ierr);
-  /* Get a place to put output to. */
-  ierr = ISArrayGetHunk(outarr,outsize,&ouhunk); CHKERRQ(ierr);
+  /* Get space for the output. */
+  ierr = ISArrayClear(outarr);                    CHKERRQ(ierr);
+  ierr = ISArrayGetHunk(outarr,outsize,&outhunk); CHKERRQ(ierr);
   ISMappingGraphGetHunkPointers(outhunk,outarr->mask,index,outidxi,outval,outidxj);
   ierr = ISMappingGraphMap_Private(map,inarr,index,PETSC_NULL,outidxi,outval,outidxj,PETSC_NULL,PETSC_FALSE,PETSC_FALSE); CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -177,7 +176,6 @@ static PetscErrorCode ISMappingMap_Graph(ISMapping map, ISArray inarr, ISArrayIn
 static PetscErrorCode ISMappingMapLocal_Graph(ISMapping map, ISArray inarr, ISArrayIndex index, ISArray outarr) 
 {
   PetscErrorCode ierr;
-  ISMapping_Graph *mapg = (ISMapping_Graph*)map->data;
   PetscInt outsize, *outidxi = PETSC_NULL, *outidxj = PETSC_NULL;
   PetscScalar *outval = PETSC_NULL;
   ISArrayHunk  outhunk;
@@ -189,10 +187,9 @@ static PetscErrorCode ISMappingMapLocal_Graph(ISMapping map, ISArray inarr, ISAr
     SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Index %D not present among ISArray components %D", index, inarr->mask);
   /* Determine the size of the output. */
   ierr = ISMappingGraphMap_Private(map,inarr,index,&outsize,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_TRUE,PETSC_FALSE); CHKERRQ(ierr);
-  /* Create a new array for the output. */
-  ierr = ISArrayCreate(inarr->mask,&outarr); CHKERRQ(ierr);
-  /* Get a place to put output to. */
-  ierr = ISArrayGetHunk(outarr,outsize,&ouhunk); CHKERRQ(ierr);
+  /* Get space for the output. */
+  ierr = ISArrayClear(outarr);                    CHKERRQ(ierr);
+  ierr = ISArrayGetHunk(outarr,outsize,&outhunk); CHKERRQ(ierr);
   ISMappingGraphGetHunkPointers(outhunk,outarr->mask,index,outidxi,outval,outidxj);
   ierr = ISMappingGraphMap_Private(map,inarr,index,PETSC_NULL,outidxi,outval,outidxj,PETSC_NULL,PETSC_TRUE,PETSC_FALSE); CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -201,7 +198,7 @@ static PetscErrorCode ISMappingMapLocal_Graph(ISMapping map, ISArray inarr, ISAr
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISMappingGraphBin_Private"
-static PetscErrorCode ISMappingGraphBin_Private(ISMapping map, ISArray inarr, PetscInt index, PetscInt *outsize, PetscInt outidxi[], PetscScalar outval[], PetscInt outidxj[], const PetscInt *offset[], PetscBool local, PetscBool drop) 
+static PetscErrorCode ISMappingGraphBin_Private(ISMapping map, ISArray inarr, PetscInt index, PetscInt *outsize, PetscInt outidxi[], PetscScalar outval[], PetscInt outidxj[], const PetscInt *offsets[], PetscBool local, PetscBool drop) 
 {
   PetscErrorCode ierr;
   ISMapping_Graph *mapg = (ISMapping_Graph*)map->data;
@@ -231,14 +228,14 @@ static PetscErrorCode ISMappingGraphBin_Private(ISMapping map, ISArray inarr, Pe
   binoff[mapg->n] = 0;
   /* Now compute bin offsets */
   count = 0;
-  hunk = inarr->hunk;
+  hunk = inarr->first;
   while(hunk) {
     ISMappingGraphGetHunkPointers(hunk,inarr->mask,index,inidxi,inval,inidxj);
     for(i = 0; i < hunk->length; ++i) {
       if(!local) {
         /* Convert to local by searching through mapg->supp. */
         ISMappingGraphLocalize(mapg->m,mapg->supp,inidxi[i],ind,found,count,last,low,high);
-        if(!found) indloc = -1;
+        if(!found) ind = -1;
       }/* if(!local) */
       else {
         ind = inidxi[i];
@@ -261,7 +258,7 @@ static PetscErrorCode ISMappingGraphBin_Private(ISMapping map, ISArray inarr, Pe
       bincount[j] = 0;
     }
     count = 0;
-    hunk = inarr->hunk;
+    hunk = inarr->first;
     while(hunk) {
       ISMappingGraphGetHunkPointers(hunk,inarr->mask,index,inidxi,inval,inidxj);
       for(i = 0; i < hunk->length; ++i) {
@@ -274,7 +271,7 @@ static PetscErrorCode ISMappingGraphBin_Private(ISMapping map, ISArray inarr, Pe
           ind = inidxi[i];
         }
         if((ind < 0 || ind > mapg->m)){
-          if(!drop) SETERRQ4(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Array index %D at %D not in the support",inidxi[i],count);
+          if(!drop) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Array index %D at %D not in the support",inidxi[i],count);
           else continue;
         }
         for(k = mapg->ijlen[ind]; k < mapg->ijlen[ind+1]; ++k) {
@@ -297,7 +294,6 @@ static PetscErrorCode ISMappingGraphBin_Private(ISMapping map, ISArray inarr, Pe
 static PetscErrorCode ISMappingBin_Graph(ISMapping map, ISArray inarr, ISArrayIndex index, ISArray outarr) 
 {
   PetscErrorCode ierr;
-  ISMapping_Graph *mapg = (ISMapping_Graph*)map->data;
   PetscInt outsize, *outidxi = PETSC_NULL, *outidxj = PETSC_NULL;
   PetscScalar *outval = PETSC_NULL;
   ISArrayHunk  outhunk;
@@ -309,10 +305,9 @@ static PetscErrorCode ISMappingBin_Graph(ISMapping map, ISArray inarr, ISArrayIn
     SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Index %D not present among ISArray components %D", index, inarr->mask);
   /* Determine the size of the output: it's the same as the size of the output for mapping inarr, which is faster than ISMappingGraphBin_Private. */
   ierr = ISMappingGraphMap_Private(map,inarr,index,&outsize,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_FALSE,PETSC_FALSE); CHKERRQ(ierr);
-  /* Create a new array for the output. */
-  ierr = ISArrayCreate(inarr->mask,&outarr); CHKERRQ(ierr);
-  /* Get a place to put output to. */
-  ierr = ISArrayGetHunk(outarr,outsize,&ouhunk); CHKERRQ(ierr);
+  /* Get space for the output. */
+  ierr = ISArrayClear(outarr);                    CHKERRQ(ierr);
+  ierr = ISArrayGetHunk(outarr,outsize,&outhunk); CHKERRQ(ierr);
   ISMappingGraphGetHunkPointers(outhunk,outarr->mask,index,outidxi,outval,outidxj);
   ierr = ISMappingGraphBin_Private(map,inarr,index,PETSC_NULL,outidxi,outval,outidxj,PETSC_NULL,PETSC_FALSE,PETSC_FALSE); CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -323,7 +318,6 @@ static PetscErrorCode ISMappingBin_Graph(ISMapping map, ISArray inarr, ISArrayIn
 static PetscErrorCode ISMappingBinLocal_Graph(ISMapping map, ISArray inarr, ISArrayIndex index, ISArray outarr) 
 {
   PetscErrorCode ierr;
-  ISMapping_Graph *mapg = (ISMapping_Graph*)map->data;
   PetscInt outsize, *outidxi = PETSC_NULL, *outidxj = PETSC_NULL;
   PetscScalar *outval = PETSC_NULL;
   ISArrayHunk  outhunk;
@@ -335,10 +329,9 @@ static PetscErrorCode ISMappingBinLocal_Graph(ISMapping map, ISArray inarr, ISAr
     SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Index %D not present among ISArray components %D", index, inarr->mask);
   /* Determine the size of the output: it's the same as the size of the output for mapping inarr, which is faster than ISMappingGraphBin_Private. */
   ierr = ISMappingGraphMap_Private(map,inarr,index,&outsize,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_TRUE,PETSC_FALSE); CHKERRQ(ierr);
-  /* Create a new array for the output. */
-  ierr = ISArrayCreate(inarr->mask,&outarr); CHKERRQ(ierr);
-  /* Get a place to put output to. */
-  ierr = ISArrayGetHunk(outarr,outsize,&ouhunk); CHKERRQ(ierr);
+  /* Get space for the output. */
+  ierr = ISArrayClear(outarr);                    CHKERRQ(ierr);
+  ierr = ISArrayGetHunk(outarr,outsize,&outhunk); CHKERRQ(ierr);
   ISMappingGraphGetHunkPointers(outhunk,outarr->mask,index,outidxi,outval,outidxj);
   ierr = ISMappingGraphBin_Private(map,inarr,index,PETSC_NULL,outidxi,outval,outidxj,PETSC_NULL,PETSC_TRUE,PETSC_FALSE); CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -347,14 +340,13 @@ static PetscErrorCode ISMappingBinLocal_Graph(ISMapping map, ISArray inarr, ISAr
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISMappingMapSplit_Graph"
-static PetscErrorCode ISMappingMapSplit_Graph(ISMapping map, ISArray inarr, ISArrayIndex index, ISArray *outarr) 
+static PetscErrorCode ISMappingMapSplit_Graph(ISMapping map, ISArray inarr, ISArrayIndex index, ISArray *outarrs) 
 {
   PetscErrorCode ierr;
-  ISMapping_Graph *mapg = (ISMapping_Graph*)map->data;
   PetscInt outsize, *outidxi = PETSC_NULL, *outidxj = PETSC_NULL;
   PetscScalar *outval = PETSC_NULL;
   ISArrayHunk  outhunk, subhunk;
-  PetscInt offsets[1024], *off;
+  PetscInt offsets[1024], *off, i;
   PetscFunctionBegin;
   ISMappingCheckType(map, IS_MAPPING_GRAPH, 1);
   if(index != ISARRAY_I && index != ISARRAY_J) 
@@ -372,12 +364,13 @@ static PetscErrorCode ISMappingMapSplit_Graph(ISMapping map, ISArray inarr, ISAr
   else {
     ierr = PetscMalloc(sizeof(PetscInt)*(inarr->length+1), &off); CHKERRQ(ierr);
   }
-  ISMappingGraphGetHunkPointers(outhunk,outarr->mask,index,outidxi,outval,outidxj);
+  ISMappingGraphGetHunkPointers(outhunk,inarr->mask,index,outidxi,outval,outidxj);
   ierr = ISMappingGraphMap_Private(map,inarr,index,PETSC_NULL,outidxi,outval,outidxj,off,PETSC_FALSE,PETSC_FALSE); CHKERRQ(ierr);
   /* Break output up into subarray.s */
   for(i = 0; i < inarr->length; ++i) {
+    ierr = ISArrayClear(outarrs[i]);                                   CHKERRQ(ierr);
     ierr = ISArrayHunkGetSubHunk(outhunk,off[i+1]-off[i],inarr->mask,&subhunk); CHKERRQ(ierr);
-    ierr = ISArrayAddHunk(outarr[i],subhunk);                                   CHKERRQ(ierr);
+    ierr = ISArrayAddHunk(outarrs[i],subhunk);                                   CHKERRQ(ierr);
   }
   if(off != offsets) {
     ierr = PetscFree(off); CHKERRQ(ierr);
@@ -388,14 +381,13 @@ static PetscErrorCode ISMappingMapSplit_Graph(ISMapping map, ISArray inarr, ISAr
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISMappingMapSplitLocal_Graph"
-static PetscErrorCode ISMappingMapSplitLocal_Graph(ISMapping map, ISArray inarr, ISArrayIndex index, ISArray *outarr) 
+static PetscErrorCode ISMappingMapSplitLocal_Graph(ISMapping map, ISArray inarr, ISArrayIndex index, ISArray *outarrs) 
 {
   PetscErrorCode ierr;
-  ISMapping_Graph *mapg = (ISMapping_Graph*)map->data;
   PetscInt outsize, *outidxi = PETSC_NULL, *outidxj = PETSC_NULL;
   PetscScalar *outval = PETSC_NULL;
   ISArrayHunk  outhunk, subhunk;
-  PetscInt offsets[1024], *off;
+  PetscInt offsets[1024], *off, i;
   PetscFunctionBegin;
   ISMappingCheckType(map, IS_MAPPING_GRAPH, 1);
   if(index != ISARRAY_I && index != ISARRAY_J) 
@@ -413,12 +405,13 @@ static PetscErrorCode ISMappingMapSplitLocal_Graph(ISMapping map, ISArray inarr,
   else {
     ierr = PetscMalloc(sizeof(PetscInt)*(inarr->length+1), &off); CHKERRQ(ierr);
   }
-  ISMappingGraphGetHunkPointers(outhunk,outarr->mask,index,outidxi,outval,outidxj);
+  ISMappingGraphGetHunkPointers(outhunk,inarr->mask,index,outidxi,outval,outidxj);
   ierr = ISMappingGraphMap_Private(map,inarr,index,PETSC_NULL,outidxi,outval,outidxj,off,PETSC_TRUE,PETSC_FALSE); CHKERRQ(ierr);
   /* Break output up into subarray.s */
   for(i = 0; i < inarr->length; ++i) {
+    ierr = ISArrayClear(outarrs[i]);                                            CHKERRQ(ierr);
     ierr = ISArrayHunkGetSubHunk(outhunk,off[i+1]-off[i],inarr->mask,&subhunk); CHKERRQ(ierr);
-    ierr = ISArrayAddHunk(outarr[i],subhunk);                                   CHKERRQ(ierr);
+    ierr = ISArrayAddHunk(outarrs[i],subhunk);                                   CHKERRQ(ierr);
   }
   if(off != offsets) {
     ierr = PetscFree(off); CHKERRQ(ierr);
@@ -429,30 +422,29 @@ static PetscErrorCode ISMappingMapSplitLocal_Graph(ISMapping map, ISArray inarr,
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISMappingBinSplit_Graph"
-static PetscErrorCode ISMappingBinSplit_Graph(ISMapping map, ISArray inarr, ISArrayIndex index, ISArray *outarr) 
+static PetscErrorCode ISMappingBinSplit_Graph(ISMapping map, ISArray inarr, ISArrayIndex index, ISArray *outarrs) 
 {
   PetscErrorCode ierr;
-  ISMapping_Graph *mapg = (ISMapping_Graph*)map->data;
   PetscInt outsize, *outidxi = PETSC_NULL, *outidxj = PETSC_NULL;
   PetscScalar *outval = PETSC_NULL;
   ISArrayHunk  outhunk, subhunk;
   const PetscInt *off;
+  PetscInt i;
   PetscFunctionBegin;
   ISMappingCheckType(map, IS_MAPPING_GRAPH, 1);
-  if(index != ISARRAY_I && index != ISARRAY_J) 
-    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid index %D", index);
-  if(!(inarr->mask & index)) 
-    SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Index %D not present among ISArray components %D", index, inarr->mask);
+  if(index != ISARRAY_I && index != ISARRAY_J) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid index %D", index);
+  if(!(inarr->mask & index)) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Index %D not present among ISArray components %D", index, inarr->mask);
   /* Determine the size of the output: it's the same as the size of the output for mapping inarr, which is faster than ISMappingGraphBin_Private. */
   ierr = ISMappingGraphMap_Private(map,inarr,index,&outsize,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_FALSE,PETSC_FALSE); CHKERRQ(ierr);
   /* Create a new hunk for the output: the hunk is then split into subhunks that go into individual subarrays. */
   ierr = ISArrayHunkCreate(outsize,inarr->mask,&outhunk); CHKERRQ(ierr);
-  ISMappingGraphGetHunkPointers(outhunk,outarr->mask,index,outidxi,outval,outidxj);
+  ISMappingGraphGetHunkPointers(outhunk,inarr->mask,index,outidxi,outval,outidxj);
   ierr = ISMappingGraphBin_Private(map,inarr,index,PETSC_NULL,outidxi,outval,outidxj,&off,PETSC_FALSE,PETSC_FALSE); CHKERRQ(ierr);
   /* Break output up into subarray.s */
   for(i = 0; i < inarr->length; ++i) {
+    ierr = ISArrayClear(outarrs[i]);                                            CHKERRQ(ierr);
     ierr = ISArrayHunkGetSubHunk(outhunk,off[i+1]-off[i],inarr->mask,&subhunk); CHKERRQ(ierr);
-    ierr = ISArrayAddHunk(outarr[i],subhunk);                                   CHKERRQ(ierr);
+    ierr = ISArrayAddHunk(outarrs[i],subhunk);                                  CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }/* ISMappingBinSplit_Graph() */
@@ -460,11 +452,10 @@ static PetscErrorCode ISMappingBinSplit_Graph(ISMapping map, ISArray inarr, ISAr
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISMappingBinSplitLocal_Graph"
-static PetscErrorCode ISMappingBinSplitLocal_Graph(ISMapping map, ISArray inarr, ISArrayIndex index, ISArray *outarr) 
+static PetscErrorCode ISMappingBinSplitLocal_Graph(ISMapping map, ISArray inarr, ISArrayIndex index, ISArray *outarrs) 
 {
   PetscErrorCode ierr;
-  ISMapping_Graph *mapg = (ISMapping_Graph*)map->data;
-  PetscInt outsize, *outidxi = PETSC_NULL, *outidxj = PETSC_NULL;
+  PetscInt outsize, *outidxi = PETSC_NULL, *outidxj = PETSC_NULL, i;
   PetscScalar *outval = PETSC_NULL;
   ISArrayHunk  outhunk, subhunk;
   const PetscInt *off;
@@ -478,12 +469,13 @@ static PetscErrorCode ISMappingBinSplitLocal_Graph(ISMapping map, ISArray inarr,
   ierr = ISMappingGraphMap_Private(map,inarr,index,&outsize,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_TRUE,PETSC_FALSE); CHKERRQ(ierr);
   /* Create a new hunk for the output: the hunk is then split into subhunks that go into individual subarrays. */
   ierr = ISArrayHunkCreate(outsize,inarr->mask,&outhunk); CHKERRQ(ierr);
-  ISMappingGraphGetHunkPointers(outhunk,outarr->mask,index,outidxi,outval,outidxj);
+  ISMappingGraphGetHunkPointers(outhunk,inarr->mask,index,outidxi,outval,outidxj);
   ierr = ISMappingGraphBin_Private(map,inarr,index,PETSC_NULL,outidxi,outval,outidxj,&off,PETSC_TRUE,PETSC_FALSE); CHKERRQ(ierr);
   /* Break output up into subarray.s */
   for(i = 0; i < inarr->length; ++i) {
+    ierr = ISArrayClear(outarrs[i]);                                            CHKERRQ(ierr);
     ierr = ISArrayHunkGetSubHunk(outhunk,off[i+1]-off[i],inarr->mask,&subhunk); CHKERRQ(ierr);
-    ierr = ISArrayAddHunk(outarr[i],subhunk);                                   CHKERRQ(ierr);
+    ierr = ISArrayAddHunk(outarrs[i],subhunk);                                  CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }/* ISMappingBinSplitLocal_Graph() */
@@ -499,8 +491,9 @@ static PetscErrorCode ISMappingBinSplitLocal_Graph(ISMapping map, ISArray inarr,
  in globals.
 */
 #undef __FUNCT__  
-#define __FUNCT__ "ISMappingGraph_AssembleLocal"
-static PetscErrorCode ISMappingGraph_AssembleLocal(ISMapping map, PetscInt len, const PetscInt ixidx_const[], const PetscInt iyidx_const[], ISMapping_Graph *mapg){
+#define __FUNCT__ "ISMappingGraphAssembleLocal_Private"
+static PetscErrorCode ISMappingGraphAssembleLocal_Private(ISMapping map, PetscInt len, const PetscInt ixidx_const[], const PetscInt iyidx_const[], ISMapping_Graph *mapg)
+{
   PetscErrorCode ierr;
   PetscInt *ixidx, *iyidx;
   PetscInt ind,start, end, i, j, totalnij,maxnij, nij, m,n;
