@@ -107,7 +107,7 @@ int main(int argc,char **args)
     } else {
       SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"C must be symmetric for this example");
     }
-    ierr = MatDestroy(Ctrans);CHKERRQ(ierr);
+    ierr = MatDestroy(&Ctrans);CHKERRQ(ierr);
   }
   //ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
  
@@ -140,7 +140,7 @@ int main(int argc,char **args)
         ierr = MatMultEqual(B,D,10,&equal);CHKERRQ(ierr);
         if (!equal) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"Error in conversion from %s to %s",type[j],type[i]);
 
-        ierr = MatDestroy(D);CHKERRQ(ierr);
+        ierr = MatDestroy(&D);CHKERRQ(ierr);
       }
       ierr = MatDestroy(&B);CHKERRQ(ierr);
       ierr = MatDestroy(&D);CHKERRQ(ierr);

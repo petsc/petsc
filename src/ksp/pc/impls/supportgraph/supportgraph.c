@@ -169,7 +169,7 @@ static PetscErrorCode PCDestroy_SupportGraph(PC pc)
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  if (sg->pre)     {ierr = MatDestroy(sg->pre);CHKERRQ(ierr);}
+  ierr = MatDestroy(&sg->pre);CHKERRQ(ierr);
   /*
       Free the private data structure that was hanging off the PC
   */

@@ -324,7 +324,7 @@ PetscErrorCode DMGetMatrix_Mesh(DM dm, const MatType mtype, Mat *J)
   ierr = DMMeshCreateMatrix(dm, section, mtype, J);CHKERRQ(ierr);
   ierr = DMGetLocalToGlobalMapping(dm, &ltog);CHKERRQ(ierr);
   ierr = MatSetLocalToGlobalMapping(*J, ltog, ltog);CHKERRQ(ierr);
-  ierr = SectionRealDestroy(section);CHKERRQ(ierr);
+  ierr = SectionRealDestroy(&section);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

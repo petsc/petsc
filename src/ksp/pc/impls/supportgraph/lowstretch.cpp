@@ -325,8 +325,8 @@ PetscErrorCode AugmentedLowStretchSpanningTree(Mat mat,Mat *prefact,PetscBool au
   ierr = ISDestroy(iperm);CHKERRQ(ierr);
   */
   ierr = MatLUFactor(*pre,rperm,cperm,&info);CHKERRQ(ierr);
-  ierr = ISDestroy(rperm);CHKERRQ(ierr);
-  ierr = ISDestroy(cperm);CHKERRQ(ierr);
+  ierr = ISDestroy(&rperm);CHKERRQ(ierr);
+  ierr = ISDestroy(&cperm);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }

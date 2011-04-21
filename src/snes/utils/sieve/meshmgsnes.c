@@ -44,7 +44,7 @@ PetscErrorCode CreateNullSpace(DMMG dmmg, Vec *nulls) {
   ierr = SectionRealToVec(nullSpace, mesh, SCATTER_FORWARD, nS);CHKERRQ(ierr);
   std::cout << "Null space:" << std::endl;
   ierr = VecView(nS, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-  ierr = SectionRealDestroy(nullSpace);CHKERRQ(ierr);
+  ierr = SectionRealDestroy(&nullSpace);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #endif
@@ -193,11 +193,11 @@ PetscErrorCode Relax_Mesh(DMMG *dmmg, DM mesh, MatSORType flag, int its, Vec X, 
 #endif
   sB->zero();
   ierr = SectionRealToVec(sectionX, mesh, SCATTER_FORWARD, X);CHKERRQ(ierr);
-  ierr = SectionRealDestroy(sectionX);CHKERRQ(ierr);
-  ierr = SectionRealDestroy(sectionB);CHKERRQ(ierr);
-  ierr = SectionRealDestroy(cellX);CHKERRQ(ierr);
+  ierr = SectionRealDestroy(&sectionX);CHKERRQ(ierr);
+  ierr = SectionRealDestroy(&sectionB);CHKERRQ(ierr);
+  ierr = SectionRealDestroy(&cellX);CHKERRQ(ierr);
   ierr = DMMGDestroy(smallDmmg);CHKERRQ(ierr);
-  ierr = DMDestroy(smallMesh);CHKERRQ(ierr);
+  ierr = DMDestroy(&smallMesh);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -292,7 +292,7 @@ PetscErrorCode DMMGSolveFAS_Mesh(DMMG *dmmg, PetscInt level)
 
         ierr = DMMeshGetSectionReal(dmmg[0]->dm, "default", &residual);CHKERRQ(ierr);
         ierr = SectionRealView(residual, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-        ierr = SectionRealDestroy(residual);CHKERRQ(ierr);
+        ierr = SectionRealDestroy(&residual);CHKERRQ(ierr);
       }
       ierr = VecAXPY(dmmg[0]->w,-1.0,dmmg[0]->r);CHKERRQ(ierr);
       ierr = VecNorm(dmmg[0]->w,NORM_2,&norm);CHKERRQ(ierr);

@@ -194,8 +194,8 @@ PetscErrorCode DMMGFormFunctionMesh(SNES snes, Vec X, Vec F, void *ptr)
   ierr = SectionRealToVec(section, mesh, SCATTER_REVERSE, X);CHKERRQ(ierr);
   ierr = DMMeshFormFunction(mesh, section, sectionF, dmmg->user);CHKERRQ(ierr);
   ierr = SectionRealToVec(sectionF, mesh, SCATTER_FORWARD, F);CHKERRQ(ierr);
-  ierr = SectionRealDestroy(sectionF);CHKERRQ(ierr);
-  ierr = SectionRealDestroy(section);CHKERRQ(ierr);
+  ierr = SectionRealDestroy(&sectionF);CHKERRQ(ierr);
+  ierr = SectionRealDestroy(&section);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -232,7 +232,7 @@ PetscErrorCode DMMGComputeJacobianMesh(SNES snes, Vec X, Mat *J, Mat *B, MatStru
   }
   ierr  = MatSetOption(*B, MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   *flag = SAME_NONZERO_PATTERN;
-  ierr  = SectionRealDestroy(sectionX);CHKERRQ(ierr);
+  ierr  = SectionRealDestroy(&sectionX);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #endif
@@ -714,7 +714,7 @@ PetscErrorCode  DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*function)(SNES,Vec,Vec,v
       ISColoring iscoloring;
       ierr = DMGetColoring(dmmg[i]->dm,IS_COLORING_GHOSTED,dmmg[i]->mtype,&iscoloring);CHKERRQ(ierr);
       ierr = MatSetColoring(dmmg[i]->B,iscoloring);CHKERRQ(ierr);
-      ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
+      ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
     }
 #endif
   }
@@ -953,7 +953,7 @@ PetscErrorCode DMMGSetSNESLocal_Private(DMMG *dmmg,DMDALocalFunction1 function,D
         ierr = SectionRealDuplicate(defaultSec, &constantSec);CHKERRQ(ierr);
         ierr = PetscObjectSetName((PetscObject) constantSec, "constant");CHKERRQ(ierr);
         ierr = DMMeshSetSectionReal(dmmg[i]->dm, constantSec);CHKERRQ(ierr);
-        ierr = SectionRealDestroy(constantSec);CHKERRQ(ierr);
+        ierr = SectionRealDestroy(&constantSec);CHKERRQ(ierr);
       }
     }
 #else
