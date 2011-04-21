@@ -682,10 +682,8 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
    }
     virtual ~ASifter() {
 #ifdef USE_PETSC_OBJ
-      if (this->_petscObj) {
-        PetscErrorCode ierr;
-        ierr = PetscObjectDestroy(&this->_petscObj);CHKERROR(ierr, "Failed in PetscObjectDestroy");
-      }
+      PetscErrorCode ierr;
+      ierr = PetscObjectDestroy(&this->_petscObj);CHKERROR(ierr, "Failed in PetscObjectDestroy");
 #endif
     };
     //

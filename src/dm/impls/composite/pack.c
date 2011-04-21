@@ -1582,9 +1582,7 @@ PetscErrorCode  DMGetColoring_Composite(DM dm,ISColoringType ctype,const MatType
         }
         maxcol += lcoloring->n;
         ierr = ISColoringDestroy(&lcoloring);CHKERRQ(ierr);
-      } else {
-        SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_SUP,"Cannot handle that object type yet");
-      }
+      } else SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_SUP,"Cannot handle that object type yet");
       next = next->next;
     }
   }
