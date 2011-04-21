@@ -326,7 +326,7 @@ PetscErrorCode SampleShellPCDestroy(PC pc)
   PetscErrorCode ierr;
 
   ierr = PCShellGetContext(pc,(void**)&shell);CHKERRQ(ierr);
-  ierr = VecDestroy((*shell)->diag);CHKERRQ(ierr);
+  ierr = VecDestroy(&shell->diag);CHKERRQ(ierr);
   ierr = PetscFree(shell);CHKERRQ(ierr);
 
   return 0;

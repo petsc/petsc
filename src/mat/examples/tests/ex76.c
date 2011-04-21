@@ -257,8 +257,8 @@ int main(int argc,char **args)
       ierr = VecsCreateSeq(PETSC_COMM_SELF,n,4,&xx);CHKERRQ(ierr);
       ierr = VecsDuplicate(xx,&bb);CHKERRQ(ierr);
       ierr = MatSolves(sC,bb,xx);CHKERRQ(ierr); 
-      ierr = VecsDestroy(&xx);CHKERRQ(ierr); 
-      ierr = VecsDestroy(&bb);CHKERRQ(ierr); 
+      ierr = VecsDestroy(xx);CHKERRQ(ierr); 
+      ierr = VecsDestroy(bb);CHKERRQ(ierr); 
     }
     ierr = MatDestroy(&sC);CHKERRQ(ierr);
 

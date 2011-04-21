@@ -275,8 +275,8 @@ int main(int argc,char **args)
 
   if (user_subdomains) {
     for (i=0; i<Nsub; i++) {
-      ierr = ISDestroy(&&is[i]);CHKERRQ(ierr);
-      ierr = ISDestroy(&&is_local[i]);CHKERRQ(ierr);
+      ierr = ISDestroy(&is[i]);CHKERRQ(ierr);
+      ierr = ISDestroy(&is_local[i]);CHKERRQ(ierr);
     }
     ierr = PetscFree(is);CHKERRQ(ierr);
     ierr = PetscFree(is_local);CHKERRQ(ierr);

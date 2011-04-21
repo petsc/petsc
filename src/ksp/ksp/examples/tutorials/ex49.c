@@ -1099,7 +1099,7 @@ static PetscErrorCode solve_elasticity_2d(PetscInt mx,PetscInt my)
     ierr = MatDestroy(&AA);CHKERRQ(ierr);
     ierr = VecDestroy(&ff);CHKERRQ(ierr);
     ierr = VecDestroy(&XX);CHKERRQ(ierr);
-    ierr = ISDestroy(&&is);CHKERRQ(ierr);
+    ierr = ISDestroy(&is);CHKERRQ(ierr);
   } else {
     ierr = DMDABCApplyCompression(elas_da,A,f);CHKERRQ(ierr);
 

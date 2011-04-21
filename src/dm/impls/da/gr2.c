@@ -85,7 +85,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
   DMDABoundaryType   bx,by;
   DMDAStencilType    st;
   ZoomCtx            zctx;
-  PetscDrawViewPorts *ports;
+  PetscDrawViewPorts *ports = PETSC_NULL;
   PetscViewerFormat  format;
 
   PetscFunctionBegin;
@@ -124,7 +124,8 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
     ierr = DMCreateLocalVector(dac,&xlocal);CHKERRQ(ierr);
     if (dac != da) {
       /* don't keep any public reference of this DMDA, is is only available through xlocal */
-      ierr = DMDestroy(&dac);CHKERRQ(ierr);
+      DM dacd = dac;
+      ierr = DMDestroy(&dacd);CHKERRQ(ierr);
     } else {
       /* remove association between xlocal and da, because below we compose in the opposite
          direction and if we left this connect we'd get a loop, so the objects could 
@@ -171,12 +172,14 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
   */
   ierr = PetscObjectQuery((PetscObject)da,"GraphicsCoordinateGhosted",(PetscObject*)&xcoorl);CHKERRQ(ierr);
   if (!xcoorl) {
+    DM dagd;
     /* create DMDA to get local version of graphics */
     ierr = DMDACreate2d(comm,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,M,N,zctx.m,zctx.n,2,1,lx,ly,&dag);CHKERRQ(ierr); 
     ierr = PetscInfo(dag,"Creating auxilary DMDA for managing graphics coordinates ghost points\n");CHKERRQ(ierr);
     ierr = DMCreateLocalVector(dag,&xcoorl);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject)da,"GraphicsCoordinateGhosted",(PetscObject)xcoorl);CHKERRQ(ierr);
-    ierr = DMDestroy(&dag);CHKERRQ(ierr);/* dereference dag */
+    dagd = dag;
+    ierr = DMDestroy(&dagd);CHKERRQ(ierr);/* dereference dag */
     ierr = PetscObjectDereference((PetscObject)xcoorl);CHKERRQ(ierr);
   } else {
     ierr = PetscObjectQuery((PetscObject)xcoorl,"DMDA",(PetscObject*)&dag);CHKERRQ(ierr);

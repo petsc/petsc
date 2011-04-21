@@ -277,10 +277,10 @@ int main(int argc,char **argv)
   ierr = DMDAVecRestoreArray(DMMGGetDM(dmmg),solu_local,(Field **)&user.x);CHKERRQ(ierr);
   ierr = VecDestroy(&solu_local);CHKERRQ(ierr);
   ierr = DMDestroy(&user.pack);CHKERRQ(ierr);
-  ierr = DMMGDestroy(&dmmg);CHKERRQ(ierr);
-  ierr = DMMGDestroy(&dmmg1);CHKERRQ(ierr);
-  ierr = DMMGDestroy(&dmmg2);CHKERRQ(ierr);
-  ierr = DMMGDestroy(&dmmg_comp);CHKERRQ(ierr);
+  ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
+  ierr = DMMGDestroy(dmmg1);CHKERRQ(ierr);
+  ierr = DMMGDestroy(dmmg2);CHKERRQ(ierr);
+  ierr = DMMGDestroy(dmmg_comp);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

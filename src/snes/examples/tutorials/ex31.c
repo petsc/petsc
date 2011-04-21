@@ -191,7 +191,7 @@ int main(int argc,char **argv)
       ierr = PCShellSetContext(pc,&app);CHKERRQ(ierr);
       ierr = PCShellSetSetUp(pc,MyPCSetUp);CHKERRQ(ierr);
       ierr = PCShellSetApply(pc,MyPCApply);CHKERRQ(ierr);
-      ierr = PCShellSetDestroy(&pc,MyPCDestroy);CHKERRQ(ierr);
+      ierr = PCShellSetDestroy(pc,MyPCDestroy);CHKERRQ(ierr);
     }
 
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -211,7 +211,7 @@ int main(int argc,char **argv)
 
     ierr = PetscViewerDestroy(&v1);CHKERRQ(ierr);
     ierr = DMDestroy(&app.pack);CHKERRQ(ierr);
-    ierr = DMMGDestroy(&dmmg);CHKERRQ(ierr);
+    ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
   PreLoadEnd();
 
   ierr = PetscFinalize();
@@ -628,14 +628,14 @@ PetscErrorCode MyPCApply(PC pc,Vec X,Vec Y)
 
 #undef __FUNCT__
 #define __FUNCT__ "MyPCDestroy"
-PetscErrorCode MyPCDestroy(&PC pc)
+PetscErrorCode MyPCDestroy(PC pc)
 {
   AppCtx         *app;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PCShellGetContext(pc,(void**)&app);CHKERRQ(ierr);
-  ierr = DMMGDestroy(&app->fdmmg);CHKERRQ(ierr);
+  ierr = DMMGDestroy(app->fdmmg);CHKERRQ(ierr);
   ierr = VecDestroy(&app->c);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -397,9 +397,9 @@ static PetscErrorCode THIDestroy(THI *thi)
 
   PetscFunctionBegin;
   if (!*thi) PetscFunctionReturn(0);
-  if (--((PetscObject)thi)->refct > 0) {*thi = 0; PetscFunctionReturn(0);}
-  ierr = PetscFree(thi->units);CHKERRQ(ierr);
-  ierr = PetscFree(thi->mattype);CHKERRQ(ierr);
+  if (--((PetscObject)(*thi))->refct > 0) {*thi = 0; PetscFunctionReturn(0);}
+  ierr = PetscFree((*thi)->units);CHKERRQ(ierr);
+  ierr = PetscFree((*thi)->mattype);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(thi);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1575,7 +1575,7 @@ int main(int argc,char *argv[])
     }
   }
 
-  ierr = DMMGDestroy(&dmmg);CHKERRQ(ierr);
+  ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
   ierr = THIDestroy(&thi);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;

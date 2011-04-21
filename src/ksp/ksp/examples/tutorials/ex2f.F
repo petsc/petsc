@@ -202,7 +202,7 @@
          call PetscRandomCreate(PETSC_COMM_WORLD,rctx,ierr)
          call PetscRandomSetFromOptions(rctx,ierr)
          call VecSetRandom(u,rctx,ierr)
-         call PetscRandomDestroy(&rctx,ierr)
+         call PetscRandomDestroy(rctx,ierr)
       else
          call VecSet(u,one,ierr)
       endif

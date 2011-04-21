@@ -49,8 +49,8 @@ int main(int argc,char **argv)
   ierr = PetscSleep(2);CHKERRQ(ierr);
 
   ierr = PetscDrawViewPortsDestroy(ports);CHKERRQ(ierr);
-  ierr = PetscDrawLGDestroy(lg);CHKERRQ(ierr);
-  ierr = PetscDrawDestroy(draw);CHKERRQ(ierr);
+  ierr = PetscDrawLGDestroy(&lg);CHKERRQ(ierr);
+  ierr = PetscDrawDestroy(&draw);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

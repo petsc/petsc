@@ -126,13 +126,13 @@ PetscErrorCode SolveSubproblem(SNES snes)
   ierr = VecScatterBegin(ctx.scatter,x,solution,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecScatterEnd(ctx.scatter,x,solution,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
 
-  ierr = ISDestroy(ctx.is);CHKERRQ(ierr);
-  ierr = VecDestroy(ctx.xwork);CHKERRQ(ierr);
-  ierr = VecDestroy(ctx.fwork);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(ctx.scatter);CHKERRQ(ierr);
-  ierr = VecDestroy(x);CHKERRQ(ierr);
-  ierr = VecDestroy(f);CHKERRQ(ierr);
-  ierr = SNESDestroy(snessub);CHKERRQ(ierr);
+  ierr = ISDestroy(&ctx.is);CHKERRQ(ierr);
+  ierr = VecDestroy(&ctx.xwork);CHKERRQ(ierr);
+  ierr = VecDestroy(&ctx.fwork);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&ctx.scatter);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = VecDestroy(&f);CHKERRQ(ierr);
+  ierr = SNESDestroy(&snessub);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -1739,7 +1739,7 @@ int main(int argc,char *argv[])
     }
   }
 
-  ierr = DMMGDestroy(&dmmg);CHKERRQ(ierr);
+  ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
   ierr = DMDestroy(&pack);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   ierr = THIDestroy(&thi);CHKERRQ(ierr);

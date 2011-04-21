@@ -68,7 +68,7 @@ static PetscErrorCode RDDestroy(RD *rd)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = DMDestroy((*rd)->da);CHKERRQ(ierr);
+  ierr = DMDestroy(&(*rd)->da);CHKERRQ(ierr);
   ierr = PetscFree(*rd);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

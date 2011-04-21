@@ -47,8 +47,8 @@ int main(int argc,char **argv)
   ierr = PetscDrawHGDraw(hist);CHKERRQ(ierr);
   ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
 
-  ierr = PetscDrawHGDestroy(hist);CHKERRQ(ierr);
-  ierr = PetscDrawDestroy(draw);CHKERRQ(ierr);
+  ierr = PetscDrawHGDestroy(&hist);CHKERRQ(ierr);
+  ierr = PetscDrawDestroy(&draw);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

@@ -109,15 +109,9 @@ int main(int argc, char *argv[])
 
     ierr = MPI_Reduce(&x, &totalx, 1, MPI_DOUBLE, MPI_SUM,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
     time(&stop);
-    if (myid == 0){        
-        payoff = exp(-r*dt*n)*(totalx/totalNumSim);
-        ierr = PetscPrintf(PETSC_COMM_SELF,"Option price = $%.3f "
-           "using %ds of %s computation with %d %s "
-           "for %d stocks, %d trading period per year, "
-           "%.2f%% interest rate\n",
-           payoff,(int)(stop - start),"parallel",np,"processors",n,
-           (int)(1/dt),r);CHKERRQ(ierr);
-    }
+    payoff = exp(-r*dt*n)*(totalx/totalNumSim);
+    /* ierr = PetscPrintf(PETSC_COMM_WORLD,"Option price = $%.3f using %ds of %s computation with %d %s for %d stocks, %d trading period per year, %.2f%% interest rate\n",
+     payoff,(int)(stop - start),"parallel",np,"processors",n,(int)(1/dt),r);CHKERRQ(ierr); */
     
     free(vol);
     free(eps);
