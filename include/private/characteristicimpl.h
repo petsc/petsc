@@ -4,6 +4,12 @@
 
 #include <characteristic.h>
 
+/* Logging support */
+extern PetscClassId CHARACTERISTIC_CLASSID;
+extern PetscLogEvent  CHARACTERISTIC_SetUp, CHARACTERISTIC_Solve, CHARACTERISTIC_QueueSetup, CHARACTERISTIC_DAUpdate;
+extern PetscLogEvent  CHARACTERISTIC_HalfTimeLocal, CHARACTERISTIC_HalfTimeRemote, CHARACTERISTIC_HalfTimeExchange;
+extern PetscLogEvent  CHARACTERISTIC_FullTimeLocal, CHARACTERISTIC_FullTimeRemote, CHARACTERISTIC_FullTimeExchange;
+
 #define MAX_COMPONENTS 10
 
 typedef struct _p_Item {
