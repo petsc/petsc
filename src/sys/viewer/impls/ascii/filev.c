@@ -255,10 +255,7 @@ PetscErrorCode  PetscViewerASCIISetTab(PetscViewer viewer,PetscInt tabs)
 +    viewer - optained with PetscViewerASCIIOpen()
 -    allow - PETSC_TRUE to allow the synchronized printing
 
-    Level: developer
-
-    Fortran Note:
-    This routine is not supported in Fortran.
+    Level: intermediate
 
   Concepts: PetscViewerASCII^formating
   Concepts: tab^setting
