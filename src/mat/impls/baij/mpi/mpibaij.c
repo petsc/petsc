@@ -967,6 +967,7 @@ static PetscErrorCode MatView_MPIBAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer vi
       MatInfo info;
       ierr = MPI_Comm_rank(((PetscObject)mat)->comm,&rank);CHKERRQ(ierr);
       ierr = MatGetInfo(mat,MAT_LOCAL,&info);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_TRUE);CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Local rows %D nz %D nz alloced %D bs %D mem %D\n",
              rank,mat->rmap->n,(PetscInt)info.nz_used,(PetscInt)info.nz_allocated,mat->rmap->bs,(PetscInt)info.memory);CHKERRQ(ierr);
       ierr = MatGetInfo(baij->A,MAT_LOCAL,&info);CHKERRQ(ierr);
@@ -974,6 +975,7 @@ static PetscErrorCode MatView_MPIBAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer vi
       ierr = MatGetInfo(baij->B,MAT_LOCAL,&info);CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] off-diagonal part: nz %D \n",rank,(PetscInt)info.nz_used);CHKERRQ(ierr);
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_FALSE);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"Information on VecScatter used in matrix-vector product: \n");CHKERRQ(ierr);
       ierr = VecScatterView(baij->Mvctx,viewer);CHKERRQ(ierr);
       PetscFunctionReturn(0); 
@@ -1311,6 +1313,7 @@ PetscErrorCode MatDestroy_MPIBAIJ(Mat mat)
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMPIBAIJSetPreallocationCSR_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDiagonalScaleLocal_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatSetHashTableFactor_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatConvert_mpibaij_mpisbaij_C","",PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3251,6 +3254,9 @@ PetscErrorCode  MatCreate_MPIBAIJ(Mat B)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_mpibaij_mpiaij_C",
                                      "MatConvert_MPIBAIJ_MPIAIJ",
                                       MatConvert_MPIBAIJ_MPIAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_mpibaij_mpisbaij_C",
+                                     "MatConvert_MPIBAIJ_MPISBAIJ",
+                                      MatConvert_MPIBAIJ_MPISBAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatStoreValues_C",
                                      "MatStoreValues_MPIBAIJ",
                                      MatStoreValues_MPIBAIJ);CHKERRQ(ierr);

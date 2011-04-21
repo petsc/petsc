@@ -12,6 +12,7 @@ OBJSF    =
 LIBBASE  = libpetscksp
 DIRS     = 
 MANSEC   = PC
+SUBMANSEC= PCGASM
 LOCDIR   = src/ksp/pc/impls/gasm/
 
 include ${PETSC_DIR}/conf/variables

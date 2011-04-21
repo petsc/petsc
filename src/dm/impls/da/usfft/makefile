@@ -11,6 +11,7 @@ SOURCEC  = matusfft.c
 OBJSC    = matusfft.o
 LIBBASE  = libpetscdm
 MANSEC   = DM
+SUBMANSEC= DMDA
 DIRS     =
 LOCDIR   = src/dm/da/src/usfft/
 

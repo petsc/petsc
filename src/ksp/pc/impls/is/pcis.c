@@ -412,13 +412,14 @@ PetscErrorCode  PCISApplyInvSchur (PC pc, Vec b, Vec x, Vec vec1_N, Vec vec2_N)
 
       ierr = VecSum(vec1_N,&average);CHKERRQ(ierr);
       average = average / ((PetscReal)pcis->n);
+      ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_TRUE);CHKERRQ(ierr);
       if (pcis->pure_neumann) {
-
         ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Subdomain %04d is floating. Average = % 1.14e\n",PetscGlobalRank,PetscAbsScalar(average));CHKERRQ(ierr);
       } else {
         ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Subdomain %04d is fixed.    Average = % 1.14e\n",PetscGlobalRank,PetscAbsScalar(average));CHKERRQ(ierr);
       }
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_FALSE);CHKERRQ(ierr);
     }
   }
   /* Solving the system for vec2_N */

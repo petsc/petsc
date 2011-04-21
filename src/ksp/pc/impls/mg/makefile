@@ -10,6 +10,7 @@ OBJSC    = mg.o fmg.o smg.o mgfunc.o
 OBJSF    =
 LIBBASE  = libpetscksp
 MANSEC   = PC
+SUBMANSEC= PCMG
 LOCDIR   = src/ksp/pc/impls/mg/
 DIRS     = 
 

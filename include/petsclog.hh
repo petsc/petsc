@@ -91,4 +91,8 @@ namespace PETSc {
 }
 #endif /* PETSC_CLANGUAGE_CXX */
 
+/* Reset __FUNCT__ in case the user does not define it themselves */
+#undef __FUNCT__
+#define __FUNCT__ "User provided function"
+
 #endif /* __PETSCLOG_HH */

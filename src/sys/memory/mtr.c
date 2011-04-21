@@ -365,6 +365,7 @@ PetscErrorCode  PetscMemoryShowUsage(PetscViewer viewer,const char message[])
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,message);CHKERRQ(ierr);
+  ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_TRUE);CHKERRQ(ierr);
   if (resident && residentmax && allocated) {
     ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d]Current space PetscMalloc()ed %g, max space PetscMalloced() %g\n[%d]Current process memory %g max process memory %g\n",rank,allocated,maximum,rank,resident,residentmax);CHKERRQ(ierr);
   } else if (resident && residentmax) {
@@ -377,6 +378,7 @@ PetscErrorCode  PetscMemoryShowUsage(PetscViewer viewer,const char message[])
     ierr = PetscViewerASCIIPrintf(viewer,"Run with -malloc to get statistics on PetscMalloc() calls\nOS cannot compute process memory\n");CHKERRQ(ierr);    
   }
   ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_FALSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

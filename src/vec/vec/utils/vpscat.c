@@ -44,6 +44,7 @@ PetscErrorCode VecScatterView_MPI(VecScatter ctx,PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer,"  Total data sent %D\n",(int)(alldata*to->bs*sizeof(PetscScalar)));CHKERRQ(ierr);
 
     } else { 
+      ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_TRUE);CHKERRQ(ierr);      
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Number sends = %D; Number to self = %D\n",rank,to->n,to->local.n);CHKERRQ(ierr);
       if (to->n) {
         for (i=0; i<to->n; i++){
@@ -74,10 +75,9 @@ PetscErrorCode VecScatterView_MPI(VecScatter ctx,PetscViewer viewer)
       }
 
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_FALSE);CHKERRQ(ierr);      
     }
-  } else {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for this scatter",((PetscObject)viewer)->type_name);
-  }
+  } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for this scatter",((PetscObject)viewer)->type_name);
   PetscFunctionReturn(0);
 }  
 

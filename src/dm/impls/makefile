@@ -2,7 +2,7 @@ ALL: lib
 
 DIRS     = da adda sliced composite mesh cartesian iga
 LOCDIR   = src/dm/impls
-MANSEC   = DA
+MANSEC   = DM
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

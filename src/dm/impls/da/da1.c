@@ -36,9 +36,11 @@ PetscErrorCode DMView_DA_1d(DM da,PetscViewer viewer)
     if (format != PETSC_VIEWER_ASCII_VTK && format != PETSC_VIEWER_ASCII_VTK_CELL) {
       DMDALocalInfo info;
       ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_TRUE);CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Processor [%d] M %D m %D w %D s %D\n",rank,dd->M,dd->m,dd->w,dd->s);CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"X range of indices: %D %D\n",info.xs,info.xs+info.xm);CHKERRQ(ierr);
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_FALSE);CHKERRQ(ierr);
     } else {
       ierr = DMView_DA_VTK(da, viewer);CHKERRQ(ierr);
     }
@@ -197,6 +199,14 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
       left += lx[i];
     }
     if (left != M) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Sum of lx across processors not equal to M %D %D",left,M);
+  }
+
+  /*
+   check if the scatter requires more than one process neighbor or wraps around
+   the domain more than once
+  */
+  if ((x < s) & ((M > 1) | (bx == DMDA_BOUNDARY_PERIODIC))) {
+    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Local x-width of domain x %D is smaller than stencil width s %D",x,s);
   }
 
   /* From now on x,xs,xe,Xs,Xe are the exact location in the array */

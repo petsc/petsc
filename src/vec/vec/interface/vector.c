@@ -1807,6 +1807,7 @@ PetscErrorCode  VecStashView(Vec v,PetscViewer viewer)
   s = &v->bstash;
 
   /* print block stash */
+  ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_TRUE);CHKERRQ(ierr);      
   ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d]Vector Block stash size %D block size %D\n",rank,s->n,s->bs);CHKERRQ(ierr);
   for (i=0; i<s->n; i++) {
     ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Element %D ",rank,s->idx[i]);CHKERRQ(ierr);
@@ -1835,6 +1836,7 @@ PetscErrorCode  VecStashView(Vec v,PetscViewer viewer)
 #endif
   }
   ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_FALSE);CHKERRQ(ierr);      
 
   ierr = PetscViewerASCIIUseTabs(viewer,PETSC_TRUE);CHKERRQ(ierr);
   PetscFunctionReturn(0);

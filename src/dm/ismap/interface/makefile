@@ -11,6 +11,7 @@ OBJSF	 =
 LIBBASE	 = libpetscdm
 DIRS	 = 
 MANSEC	 = DM
+SUBMANSEC= ISMAP
 LOCDIR	 = src/dm/ismap/interface/
 
 include ${PETSC_DIR}/conf/variables

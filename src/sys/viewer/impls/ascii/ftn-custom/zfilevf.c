@@ -4,10 +4,12 @@
 #define petscviewerfilesetname_                PETSCVIEWERFILESETNAME
 #define petscviewerasciiprintf_                PETSCVIEWERASCIIPRINTF
 #define petscviewerasciisynchronizedprintf_    PETSCVIEWERASCIISYNCHRONIZEDPRINTF
+#define petscviewerasciisynchronizedallow_     PETSCVIEWERASCIISYNCHRONIZEALLOW
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define petscviewerfilesetname_                petscviewerfilesetname
 #define petscviewerasciiprintf_                petscviewerasciiprintf
 #define petscviewerasciisynchronizedprintf_    petscviewerasciisynchronizedprintf
+#define petscviewerasciisynchronizedallow_     petscviewerasciisynchronizedallow
 #endif
 
 EXTERN_C_BEGIN
@@ -65,5 +67,12 @@ void PETSC_STDCALL petscviewerasciisynchronizedprintf_(PetscViewer *viewer,CHAR 
   FREECHAR(str,c1);
 }
 
+void PETSC_STDCALL petscviewerasciisynchronizedallow_(PetscViewer *viewer,PetscBool *allow,PetscErrorCode *ierr)
+{
+  PetscViewer v;
+
+  PetscPatchDefaultViewers_Fortran(viewer,v);
+  *ierr = PetscViewerASCIISynchronizedAllow(v,*allow);
+}
 
 EXTERN_C_END

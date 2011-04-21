@@ -119,10 +119,10 @@ PetscErrorCode PetscViewerFlush_ASCII(PetscViewer viewer)
     if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() call failed");
   }
 
-  /*
-     Also flush anything printed with PetscViewerASCIISynchronizedPrintf()
-  */
-  ierr = PetscSynchronizedFlush(((PetscObject)viewer)->comm);CHKERRQ(ierr);
+  if (vascii->allowsynchronized) {
+    /* Also flush anything printed with PetscViewerASCIISynchronizedPrintf()  */
+    ierr = PetscSynchronizedFlush(((PetscObject)viewer)->comm);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);  
 }
 
@@ -240,6 +240,44 @@ PetscErrorCode  PetscViewerASCIISetTab(PetscViewer viewer,PetscInt tabs)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     ascii->tab = tabs;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerASCIISynchronizedAllow" 
+/*@C
+    PetscViewerASCIISynchronizedAllow - Allows calls to PetscViewerASCIISynchronizedPrintf() for this viewer
+
+    Collective on PetscViewer
+
+    Input Parameters:
++    viewer - optained with PetscViewerASCIIOpen()
+-    allow - PETSC_TRUE to allow the synchronized printing
+
+    Level: developer
+
+    Fortran Note:
+    This routine is not supported in Fortran.
+
+  Concepts: PetscViewerASCII^formating
+  Concepts: tab^setting
+
+.seealso: PetscPrintf(), PetscSynchronizedPrintf(), PetscViewerASCIIPrintf(),
+          PetscViewerASCIIPopTab(), PetscViewerASCIISynchronizedPrintf(), PetscViewerASCIIOpen(),
+          PetscViewerCreate(), PetscViewerDestroy(), PetscViewerSetType(), PetscViewerASCIIGetPointer()
+@*/
+PetscErrorCode  PetscViewerASCIISynchronizedAllow(PetscViewer viewer,PetscBool allow)
+{
+  PetscViewer_ASCII *ascii = (PetscViewer_ASCII*)viewer->data;
+  PetscBool         iascii;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  if (iascii) {
+    ascii->allowsynchronized = allow;
   }
   PetscFunctionReturn(0);
 }
@@ -392,7 +430,7 @@ PetscErrorCode  PetscViewerASCIIUseTabs(PetscViewer viewer,PetscBool  flg)
 
 .seealso: PetscPrintf(), PetscSynchronizedPrintf(), PetscViewerASCIIOpen(),
           PetscViewerASCIIPushTab(), PetscViewerASCIIPopTab(), PetscViewerASCIISynchronizedPrintf(),
-          PetscViewerCreate(), PetscViewerDestroy(), PetscViewerSetType(), PetscViewerASCIIGetPointer()
+          PetscViewerCreate(), PetscViewerDestroy(), PetscViewerSetType(), PetscViewerASCIIGetPointer(), PetscViewerASCIISynchronizedAllow()
 @*/
 PetscErrorCode  PetscViewerASCIIPrintf(PetscViewer viewer,const char format[],...)
 {
@@ -780,12 +818,14 @@ EXTERN_C_END
 
     Level: intermediate
 
+    Notes: You must have previously called PetscViewerASCIISynchronizeAllow() to allow this routine to be called.
+
     Fortran Note:
       Can only print a single character* string
 
 .seealso: PetscSynchronizedPrintf(), PetscSynchronizedFlush(), PetscFPrintf(),
           PetscFOpen(), PetscViewerFlush(), PetscViewerASCIIGetPointer(), PetscViewerDestroy(), PetscViewerASCIIOpen(),
-          PetscViewerASCIIPrintf()
+          PetscViewerASCIIPrintf(), PetscViewerASCIISynchronizedAllow()
 
 @*/
 PetscErrorCode  PetscViewerASCIISynchronizedPrintf(PetscViewer viewer,const char format[],...)
@@ -804,6 +844,7 @@ PetscErrorCode  PetscViewerASCIISynchronizedPrintf(PetscViewer viewer,const char
   PetscValidCharPointer(format,2);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (!iascii) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not ASCII PetscViewer");
+  if (!vascii->allowsynchronized) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"First call PetscViewerASCIISynchronizedAllow() to allow this call");
 
   comm = ((PetscObject)viewer)->comm;
   fp   = vascii->fd;

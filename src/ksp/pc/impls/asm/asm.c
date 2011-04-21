@@ -63,6 +63,7 @@ static PetscErrorCode PCView_ASM(PC pc,PetscViewer viewer)
         ierr = PetscViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
       }
     } else {
+      ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_TRUE);CHKERRQ(ierr);
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"  [%d] number of local blocks = %D\n",(int)rank,osm->n_local_true);CHKERRQ(ierr);
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  Local solve info for each block is in the following KSP and PC objects:\n");CHKERRQ(ierr);
@@ -80,6 +81,7 @@ static PetscErrorCode PCView_ASM(PC pc,PetscViewer viewer)
       }
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_FALSE);CHKERRQ(ierr);
     }
   } else if (isstring) {
     ierr = PetscViewerStringSPrintf(viewer," blocks=%D, overlap=%D, type=%s",osm->n,osm->overlap,PCASMTypes[osm->type]);CHKERRQ(ierr);
@@ -109,6 +111,7 @@ static PetscErrorCode PCASMPrintSubdomains(PC pc)
   ierr = PetscOptionsGetString(prefix,"-pc_asm_print_subdomains",fname,PETSC_MAX_PATH_LEN,PETSC_NULL);CHKERRQ(ierr);
   if (fname[0] == 0) { ierr = PetscStrcpy(fname,"stdout");CHKERRQ(ierr); };
   ierr = PetscViewerASCIIOpen(((PetscObject)pc)->comm,fname,&viewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_TRUE);CHKERRQ(ierr);
   for (i=0;i<osm->n_local_true;i++) {
     ierr = ISGetLocalSize(osm->is[i],&nidx);CHKERRQ(ierr);
     ierr = ISGetIndices(osm->is[i],&idx);CHKERRQ(ierr);
@@ -128,6 +131,7 @@ static PetscErrorCode PCASMPrintSubdomains(PC pc)
     }
   }
   ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_FALSE);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -287,6 +287,7 @@ PetscErrorCode ISView_General(IS is,PetscViewer viewer)
     ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
     ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
+    ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_TRUE);CHKERRQ(ierr);      
     if (size > 1) {
       if (is->isperm) {
         ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Index set is permutation\n",rank);CHKERRQ(ierr);
@@ -305,11 +306,10 @@ PetscErrorCode ISView_General(IS is,PetscViewer viewer)
       }
     }
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_FALSE);CHKERRQ(ierr);      
   } else if (isbinary) {
     ierr = ISView_General_Binary(is,viewer);CHKERRQ(ierr);
-  } else {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for this object",((PetscObject)viewer)->type_name);
-  }
+  } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for this object",((PetscObject)viewer)->type_name);
   PetscFunctionReturn(0);
 }
 

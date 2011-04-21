@@ -11,6 +11,7 @@ OBJSF    =
 LIBBASE  = libpetscksp
 DIRS     = 
 MANSEC   = PC
+SUBMANSEC= PCExotic
 LOCDIR   = src/ksp/pc/impls/wb/
 
 include ${PETSC_DIR}/conf/variables

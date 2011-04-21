@@ -14,6 +14,7 @@ OBJSF    =
 DIRS     =
 LIBBASE  = libpetscdm
 MANSEC   = DM
+SUBMANSEC= DMMESH
 LOCDIR   = src/dm/impls/mesh/
 
 include ${PETSC_DIR}/conf/variables

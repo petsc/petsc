@@ -1742,10 +1742,12 @@ PETSC_STATIC_INLINE PetscErrorCode  PetscMemcpy(void *a,const void *b,size_t n)
 #if defined(PETSC_USE_DEBUG)
   unsigned long al = (unsigned long) a,bl = (unsigned long) b;
   unsigned long nl = (unsigned long) n;
+  PetscFunctionBegin;
   if (n > 0 && !b) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Trying to copy from a null pointer");
   if (n > 0 && !a) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"Trying to copy to a null pointer");
-#endif
+#else
   PetscFunctionBegin;
+#endif
   if (a != b) {
 #if defined(PETSC_USE_DEBUG)
     if ((al > bl && (al - bl) < nl) || (bl - al) < nl) {
@@ -2439,5 +2441,9 @@ extern PetscErrorCode  PetscSubcommSetType(PetscSubcomm,const PetscSubcommType);
 extern PetscErrorCode  PetscSubcommSetTypeGeneral(PetscSubcomm,PetscMPIInt,PetscMPIInt,PetscMPIInt);
 
 PETSC_EXTERN_CXX_END
+
+/* Reset __FUNCT__ in case the user does not define it themselves */
+#undef __FUNCT__
+#define __FUNCT__ "User provided function"
 
 #endif

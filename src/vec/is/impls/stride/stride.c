@@ -214,13 +214,15 @@ PetscErrorCode ISView_Stride(IS is,PetscViewer viewer)
     ierr = MPI_Comm_size(((PetscObject)is)->comm,&size);CHKERRQ(ierr);
     if (size == 1) {
       if (is->isperm) {
-        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Index set is permutation\n");CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"Index set is permutation\n");CHKERRQ(ierr);
       }
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Number of indices in (stride) set %D\n",n);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"Number of indices in (stride) set %D\n",n);CHKERRQ(ierr);
       for (i=0; i<n; i++) {
-        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%D %D\n",i,sub->first + i*sub->step);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"%D %D\n",i,sub->first + i*sub->step);CHKERRQ(ierr);
       }
+      ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
     } else {
+      ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_TRUE);CHKERRQ(ierr);      
       if (is->isperm) {
         ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] Index set is permutation\n",rank);CHKERRQ(ierr);
       }
@@ -228,11 +230,10 @@ PetscErrorCode ISView_Stride(IS is,PetscViewer viewer)
       for (i=0; i<n; i++) {
         ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%d] %D %D\n",rank,i,sub->first + i*sub->step);CHKERRQ(ierr);
       }
+      ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_FALSE);CHKERRQ(ierr);      
     }
-    ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-  } else {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for this object",((PetscObject)viewer)->type_name);
-  }
+  } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for this object",((PetscObject)viewer)->type_name);
   PetscFunctionReturn(0);
 }
   

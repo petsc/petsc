@@ -34,14 +34,23 @@ class Configure(PETSc.package.NewPackage):
   def configure(self):
     '''By default we look for valgrind, but do not stop if it is not found'''
     self.consistencyChecks()
+    found = 0
     if self.framework.argDB['with-'+self.package]:
-      # If clanguage is c++, test external packages with the c++ compiler
-      self.libraries.pushLanguage(self.defaultLanguage)
+      if self.cxx:
+        self.libraries.pushLanguage('C++')
+      else:
+        self.libraries.pushLanguage(self.defaultLanguage)
       try:
         self.executeTest(self.configureLibrary)
+        oldFlags = self.compilers.CPPFLAGS
+        self.compilers.CPPFLAGS += ' '+self.headers.toString(self.include)
+        if self.checkCompile('#include <valgrind/valgrind.h>', 'RUNNING_ON_VALGRIND;\n'):
+          found = 1
+        self.compilers.CPPFLAGS = oldFlags
       except:
-        if self.setCompilers.isDarwin() or self.setCompilers.isLinux():
-          self.logPrintBox('It appears you do not have valgrind installed on your system.\n\
+        pass
+      if not found and (self.setCompilers.isDarwin() or self.setCompilers.isLinux()):
+        self.logPrintBox('It appears you do not have valgrind installed on your system.\n\
 We HIGHLY recommend you install it from www.valgrind.org\n\
 Or install valgrind-devel or equivalent using your package manager.\n\
 Then rerun ./configure')

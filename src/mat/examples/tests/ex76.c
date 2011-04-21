@@ -122,6 +122,7 @@ int main(int argc,char **args)
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /* Test MatConvert */
+  ierr = MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr); 
   ierr = MatConvert(A,MATSEQSBAIJ,MAT_INITIAL_MATRIX,&sA);CHKERRQ(ierr); 
   ierr = MatMultEqual(A,sA,20,&equal);CHKERRQ(ierr);
   if (!equal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"A != sA");

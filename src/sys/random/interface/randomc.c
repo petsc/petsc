@@ -235,8 +235,10 @@ PetscErrorCode  PetscRandomView(PetscRandom rnd,PetscViewer viewer)
   if (iascii) {
     PetscMPIInt rank;
     ierr = MPI_Comm_rank(((PetscObject)rnd)->comm,&rank);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_TRUE);CHKERRQ(ierr);
     ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%D] Random type %s, seed %D\n",rank,((PetscObject)rnd)->type_name,rnd->seed);CHKERRQ(ierr); 
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_FALSE);CHKERRQ(ierr);
   } else {
     const char *tname;
     ierr = PetscObjectGetName((PetscObject)viewer,&tname);CHKERRQ(ierr);

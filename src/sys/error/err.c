@@ -412,6 +412,7 @@ PetscErrorCode  PetscIntView(PetscInt N,const PetscInt idx[],PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   if (iascii) {
+    ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_TRUE);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%D:",20*i);CHKERRQ(ierr);
       for (j=0; j<20; j++) {
@@ -425,6 +426,7 @@ PetscErrorCode  PetscIntView(PetscInt N,const PetscInt idx[],PetscViewer viewer)
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"\n");CHKERRQ(ierr);
     }
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_FALSE);CHKERRQ(ierr);
   } else if (isbinary) {
     PetscMPIInt rank,size,*sizes,Ntotal,*displs, NN = PetscMPIIntCast(N);
     PetscInt    *array;
@@ -497,6 +499,7 @@ PetscErrorCode  PetscRealView(PetscInt N,const PetscReal idx[],PetscViewer viewe
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   if (iascii) {
+    ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_TRUE);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%2d:",5*i);CHKERRQ(ierr);
       for (j=0; j<5; j++) {
@@ -510,6 +513,7 @@ PetscErrorCode  PetscRealView(PetscInt N,const PetscReal idx[],PetscViewer viewe
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"\n");CHKERRQ(ierr);
     }
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_FALSE);CHKERRQ(ierr);
   } else if (isbinary) {
     PetscMPIInt rank,size,*sizes,*displs, Ntotal,NN = PetscMPIIntCast(N);
     PetscReal   *array;
@@ -583,6 +587,7 @@ PetscErrorCode  PetscScalarView(PetscInt N,const PetscScalar idx[],PetscViewer v
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERBINARY,&isbinary);CHKERRQ(ierr);
   if (iascii) {
+    ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_TRUE);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"%2d:",3*i);CHKERRQ(ierr);
       for (j=0; j<3; j++) {
@@ -608,6 +613,7 @@ PetscErrorCode  PetscScalarView(PetscInt N,const PetscScalar idx[],PetscViewer v
       ierr = PetscViewerASCIISynchronizedPrintf(viewer,"\n");CHKERRQ(ierr);
     }
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISynchronizedAllow(viewer,PETSC_FALSE);CHKERRQ(ierr);
   } else if (isbinary) {
     PetscMPIInt size,rank,*sizes,Ntotal,*displs,NN = PetscMPIIntCast(N);
     PetscScalar *array;

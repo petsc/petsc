@@ -477,7 +477,10 @@ extern PetscErrorCode VecMatlabEngineGet_Default(PetscObject,void*);
 EXTERN_C_END
 #endif
 
-
 PETSC_EXTERN_CXX_END
-#endif
 
+/* Reset __FUNCT__ in case the user does not define it themselves */
+#undef __FUNCT__
+#define __FUNCT__ "User provided function"
+
+#endif

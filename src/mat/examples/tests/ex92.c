@@ -83,7 +83,9 @@ int main(int argc,char **args)
   ierr = MatDestroy(&Atrans);CHKERRQ(ierr);
   ierr = MatTranspose(A,MAT_INITIAL_MATRIX, &Atrans);
   ierr = MatEqual(A, Atrans, &flg);
-  if (!flg) {
+  if (flg) {
+    ierr = MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
+  } else {
     SETERRQ(PETSC_COMM_SELF,1,"A+A^T is non-symmetric");
   }
   ierr = MatDestroy(&Atrans);CHKERRQ(ierr);
