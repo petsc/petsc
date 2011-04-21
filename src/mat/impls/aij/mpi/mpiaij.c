@@ -1168,7 +1168,7 @@ PetscErrorCode MatDestroy_MPIAIJ(Mat mat)
   ierr = MatDestroy(&aij->A);CHKERRQ(ierr);
   ierr = MatDestroy(&aij->B);CHKERRQ(ierr);
 #if defined (PETSC_USE_CTABLE)
-  if (aij->colmap) {ierr = PetscTableDestroy(aij->colmap);CHKERRQ(ierr);}
+  ierr = PetscTableDestroy(&aij->colmap);CHKERRQ(ierr);
 #else
   ierr = PetscFree(aij->colmap);CHKERRQ(ierr);
 #endif
@@ -4502,6 +4502,8 @@ PetscErrorCode  MatMerge_SeqsToMPINumeric(Mat seqmat,Mat mpimat)
   ierr = PetscLogEventEnd(MAT_Seqstompinum,seqmat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+extern PetscErrorCode  MatDestroy_MPIAIJ_SeqsToMPI(Mat);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMerge_SeqsToMPISymbolic"

@@ -582,7 +582,6 @@ extern PetscErrorCode  MatMerge(MPI_Comm,Mat,PetscInt,MatReuse,Mat*);
 extern PetscErrorCode  MatMerge_SeqsToMPI(MPI_Comm,Mat,PetscInt,PetscInt,MatReuse,Mat*);
 extern PetscErrorCode  MatMerge_SeqsToMPISymbolic(MPI_Comm,Mat,PetscInt,PetscInt,Mat*);
 extern PetscErrorCode  MatMerge_SeqsToMPINumeric(Mat,Mat); 
-extern PetscErrorCode  MatDestroy_MPIAIJ_SeqsToMPI(Mat);
 extern PetscErrorCode  MatMPIAIJGetLocalMat(Mat,MatReuse,Mat*);
 extern PetscErrorCode  MatMPIAIJGetLocalMatCondensed(Mat,MatReuse,IS*,IS*,Mat*);
 extern PetscErrorCode  MatGetBrowsOfAcols(Mat,Mat,MatReuse,IS*,IS*,PetscInt*,Mat*);

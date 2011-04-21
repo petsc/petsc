@@ -240,7 +240,7 @@ PetscErrorCode DMDAGetWireBasketInterpolation(DM da,PC_Exotic *exotic,Mat Agloba
     ierr = PetscTableFind(ht,gl[i]+1,&gl[i]);CHKERRQ(ierr);
     gl[i]--;
   }
-  ierr = PetscTableDestroy(ht);CHKERRQ(ierr);
+  ierr = PetscTableDestroy(&ht);CHKERRQ(ierr);
   /* PetscIntView(26,gl,PETSC_VIEWER_STDOUT_WORLD); */
 
   /* construct global interpolation matrix */
@@ -510,7 +510,7 @@ PetscErrorCode DMDAGetFaceInterpolation(DM da,PC_Exotic *exotic,Mat Aglobal,MatR
     ierr = PetscTableFind(ht,gl[i]+1,&gl[i]);CHKERRQ(ierr);
     gl[i]--;
   }
-  ierr = PetscTableDestroy(ht);CHKERRQ(ierr);
+  ierr = PetscTableDestroy(&ht);CHKERRQ(ierr);
   /* PetscIntView(6,gl,PETSC_VIEWER_STDOUT_WORLD); */
 
   /* construct global interpolation matrix */

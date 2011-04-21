@@ -82,7 +82,7 @@ PetscErrorCode  ISCompressIndicesGeneral(PetscInt n,PetscInt bs,PetscInt imax,co
 #endif
   }
 #if defined (PETSC_USE_CTABLE)
-  ierr = PetscTableDestroy(gid1_lid1);CHKERRQ(ierr);
+  ierr = PetscTableDestroy(&gid1_lid1);CHKERRQ(ierr);
 #else
   ierr = PetscBTDestroy(table);CHKERRQ(ierr);
   ierr = PetscFree(nidx);CHKERRQ(ierr);

@@ -1292,7 +1292,7 @@ PetscErrorCode MatDestroy_MPIBAIJ(Mat mat)
   ierr = MatDestroy(&baij->A);CHKERRQ(ierr);
   ierr = MatDestroy(&baij->B);CHKERRQ(ierr);
 #if defined (PETSC_USE_CTABLE)
-  if (baij->colmap) {ierr = PetscTableDestroy(baij->colmap);CHKERRQ(ierr);}
+  ierr = PetscTableDestroy(&baij->colmap);CHKERRQ(ierr);
 #else
   ierr = PetscFree(baij->colmap);CHKERRQ(ierr);
 #endif

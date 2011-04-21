@@ -1425,8 +1425,8 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
   ierr = PetscFree(sbuf_aa);CHKERRQ(ierr);
 #if defined (PETSC_USE_CTABLE)
   for (i=0; i<ismax; i++) {
-    ierr = PetscTableDestroy((PetscTable)cmap[i]);CHKERRQ(ierr);
-    ierr = PetscTableDestroy((PetscTable)rmap[i]);CHKERRQ(ierr);
+    ierr = PetscTableDestroy((PetscTable*)&cmap[i]);CHKERRQ(ierr);
+    ierr = PetscTableDestroy((PetscTable*)&rmap[i]);CHKERRQ(ierr);
   }
 #else
   ierr = PetscFree(cmap[0]);CHKERRQ(ierr);

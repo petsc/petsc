@@ -9,7 +9,7 @@ typedef PetscInt* PetscTablePosition;
 
 extern PetscErrorCode  PetscTableCreate(const PetscInt,PetscTable*);
 extern PetscErrorCode  PetscTableCreateCopy(const PetscTable,PetscTable*);
-extern PetscErrorCode  PetscTableDestroy(PetscTable);
+extern PetscErrorCode  PetscTableDestroy(PetscTable*);
 extern PetscErrorCode  PetscTableGetCount(const PetscTable,PetscInt*);
 extern PetscErrorCode  PetscTableIsEmpty(const PetscTable,PetscInt*);
 extern PetscErrorCode  PetscTableAdd(PetscTable,const PetscInt,const PetscInt);

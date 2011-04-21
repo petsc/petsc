@@ -53,7 +53,7 @@ PetscErrorCode  PetscTableCreateCopy(const PetscTable intable,PetscTable *rta)
   ta->tablesize = intable->tablesize;
   ierr          = PetscMalloc(sizeof(PetscInt)*ta->tablesize,&ta->keytable);CHKERRQ(ierr);
   ierr          = PetscMalloc(sizeof(PetscInt)*ta->tablesize,&ta->table);CHKERRQ(ierr);
-  for(i = 0 ; i < ta->tablesize ; i++){
+  for(i = 0; i < ta->tablesize ; i++){
     ta->keytable[i] = intable->keytable[i]; 
     ta->table[i]    = intable->table[i];
 #if defined(PETSC_USE_DEBUG)    
@@ -72,14 +72,15 @@ PetscErrorCode  PetscTableCreateCopy(const PetscTable intable,PetscTable *rta)
  * 
  *
  */
-PetscErrorCode  PetscTableDestroy(PetscTable ta)
+PetscErrorCode  PetscTableDestroy(PetscTable *ta)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFree(ta->keytable);CHKERRQ(ierr);
-  ierr = PetscFree(ta->table);CHKERRQ(ierr);
-  ierr = PetscFree(ta);CHKERRQ(ierr);
+  if (!*ta) PetscFunctionReturn(0);
+  ierr = PetscFree((*ta)->keytable);CHKERRQ(ierr);
+  ierr = PetscFree((*ta)->table);CHKERRQ(ierr);
+  ierr = PetscFree(*ta);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 } 
 #undef __FUNCT__  

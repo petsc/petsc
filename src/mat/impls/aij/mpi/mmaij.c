@@ -63,7 +63,7 @@ PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
   }
   aij->B->cmap->n = aij->B->cmap->N = ec;
   ierr = PetscLayoutSetUp((aij->B->cmap));CHKERRQ(ierr);
-  ierr = PetscTableDestroy(gid1_lid1);CHKERRQ(ierr);
+  ierr = PetscTableDestroy(&gid1_lid1);CHKERRQ(ierr);
   /* Mark Adams */
 #else
   /* Make an array as long as the number of columns */
@@ -180,8 +180,7 @@ PetscErrorCode DisAssemble_MPIAIJ(Mat A)
   ierr = VecScatterDestroy(&aij->Mvctx);CHKERRQ(ierr); aij->Mvctx = 0;
   if (aij->colmap) {
 #if defined (PETSC_USE_CTABLE)
-    ierr = PetscTableDestroy(aij->colmap);CHKERRQ(ierr);
-    aij->colmap = 0;
+    ierr = PetscTableDestroy(&aij->colmap);CHKERRQ(ierr);
 #else
     ierr = PetscFree(aij->colmap);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory(A,-aij->B->cmap->n*sizeof(PetscInt));CHKERRQ(ierr);
