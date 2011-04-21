@@ -62,12 +62,10 @@ PetscErrorCode MatDestroy_MPISBAIJSpooles(Mat A)
     DenseMtx_free(lu->mtxX);
     DenseMtx_free(lu->mtxY);
     ierr = MPI_Comm_free(&(lu->comm_spooles));CHKERRQ(ierr);
-    if ( lu->scat ){
-      ierr = VecDestroy(lu->vec_spooles);CHKERRQ(ierr); 
-      ierr = ISDestroy(lu->iden);CHKERRQ(ierr); 
-      ierr = ISDestroy(lu->is_petsc);CHKERRQ(ierr);
-      ierr = VecScatterDestroy(lu->scat);CHKERRQ(ierr);
-    }
+    ierr = VecDestroy(&lu->vec_spooles);CHKERRQ(ierr); 
+    ierr = ISDestroy(&lu->iden);CHKERRQ(ierr); 
+    ierr = ISDestroy(&lu->is_petsc);CHKERRQ(ierr);
+    ierr = VecScatterDestroy(&lu->scat);CHKERRQ(ierr);
   }
   ierr = MatDestroy_MPISBAIJ(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
