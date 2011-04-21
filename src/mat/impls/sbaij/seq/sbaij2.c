@@ -59,7 +59,10 @@ PetscErrorCode MatIncreaseOverlap_SeqSBAIJ(Mat A,PetscInt is_max,IS is[],PetscIn
         if (PetscBTLookup(table_in,brow)){ /* brow is on nidx - row search: collect all bcol in this brow */
           for (l = start; l<end ; l++){
             bcol = aj[l];
-            if (!PetscBTLookupSet(table_out,bcol)) {nidx[isz++] = bcol;}
+            if (!PetscBTLookupSet(table_out,bcol)) {
+              nidx[isz++] = bcol;
+              if (bcol_max < bcol) bcol_max = bcol;
+            }
           }
           k++;
           if (k >= n) break; /* for (brow=0; brow<mbs; brow++) */

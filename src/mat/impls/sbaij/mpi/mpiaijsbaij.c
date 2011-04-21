@@ -93,11 +93,11 @@ PetscErrorCode MatConvert_MPIBAIJ_MPISBAIJ(Mat A, MatType newtype,MatReuse reuse
   ierr = PetscFree2(d_nnz,o_nnz);CHKERRQ(ierr);
 
   ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr); 
+  ierr = MatSetOption(M,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr); 
   for(i=rstart;i<rend;i++){
     ierr = MatGetRow(A,i,&nz,&cwork,&vwork);CHKERRQ(ierr);
     j = 0;
-    while (cwork[j] < i){ j++; nz--;}
-    ierr = MatSetValues(M,1,&i,nz,cwork+j,vwork+j,INSERT_VALUES);CHKERRQ(ierr); // missing lower triangular entries in the diagonal blocks!!!
+    ierr = MatSetValues(M,1,&i,nz,cwork+j,vwork+j,INSERT_VALUES);CHKERRQ(ierr); 
     ierr = MatRestoreRow(A,i,&nz,&cwork,&vwork);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(M,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

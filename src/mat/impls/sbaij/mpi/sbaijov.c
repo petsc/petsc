@@ -104,11 +104,9 @@ PetscErrorCode MatIncreaseOverlap_MPISBAIJ(Mat C,PetscInt is_max,IS is[],PetscIn
     }
 
     /* Free tmp spaces */
-    ierr = PetscBTDestroy(table);CHKERRQ(ierr);
     for (i=0; i<is_max; i++){
       ierr = MatDestroy(&submats[i]);CHKERRQ(ierr);
     }
-    ierr = PetscFree(submats);CHKERRQ(ierr);
   } 
 
   ierr = PetscBTDestroy(table);CHKERRQ(ierr);
@@ -118,7 +116,6 @@ PetscErrorCode MatIncreaseOverlap_MPISBAIJ(Mat C,PetscInt is_max,IS is[],PetscIn
   ierr = PetscFree(nidx);CHKERRQ(ierr);
 
   } 
-  //--------end of new----------
 
   for (i=0; i<is_max; i++) {ierr = ISDestroy(&is[i]);CHKERRQ(ierr);}
   ierr = ISExpandIndicesGeneral(N,bs,is_max,is_new,is);CHKERRQ(ierr);
