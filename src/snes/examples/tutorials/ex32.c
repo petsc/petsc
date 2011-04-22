@@ -848,11 +848,16 @@ PetscErrorCode MySolutionView(MPI_Comm comm,PetscInt phy_num,void *ctx)
   AppCtx         *user = (AppCtx*)ctx;
   DMMG           *dmmg = user->dmmg;
   DM             da=DMMGGetDM(dmmg);
+#if !defined(PETSC_USE_COMPLEX)
   Field          **x = user->x;
+#endif
   PetscInt       i,j,xs,ys,xm,ym;
   PetscMPIInt    size;
 
   PetscFunctionBegin;
+#if defined(PETSC_USE_COMPLEX)
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"This routine does not support for scalar type complex yet\n");
+#endif
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
   
@@ -863,7 +868,9 @@ PetscErrorCode MySolutionView(MPI_Comm comm,PetscInt phy_num,void *ctx)
       ierr = PetscPrintf(PETSC_COMM_SELF,"-----------------------------------\n");
       for (j=ys; j<ys+ym; j++) {
         for (i=xs; i<xs+xm; i++) {
+#if !defined(PETSC_USE_COMPLEX)
           ierr = PetscPrintf(PETSC_COMM_SELF,"x[%d,%d] = %g, %g, %g, %g\n",j,i,x[j][i].u,x[j][i].v,x[j][i].omega,x[j][i].temp);
+#endif
         }
       }    
     }
@@ -879,7 +886,9 @@ PetscErrorCode MySolutionView(MPI_Comm comm,PetscInt phy_num,void *ctx)
       ierr = DMDAVecGetArray(da,solu_true,&x1);CHKERRQ(ierr);
       for (j=ys; j<ys+ym; j++) {
         for (i=xs; i<xs+xm; i++) {
+#if !defined(PETSC_USE_COMPLEX)
           ierr = PetscPrintf(PETSC_COMM_SELF,"x[%d,%d] = %g, %g, %g\n",j,i,x1[j][i].u,x1[j][i].v,x1[j][i].omega);
+#endif
         }
       } 
       ierr = DMDAVecRestoreArray(da,solu_true,&x1);CHKERRQ(ierr);
@@ -896,7 +905,9 @@ PetscErrorCode MySolutionView(MPI_Comm comm,PetscInt phy_num,void *ctx)
       ierr = DMDAVecGetArray(da,solu_true,&x2);CHKERRQ(ierr);
       for (j=ys; j<ys+ym; j++) {
         for (i=xs; i<xs+xm; i++) {
+#if !defined(PETSC_USE_COMPLEX)
           ierr = PetscPrintf(PETSC_COMM_SELF,"x[%d,%d] = %g\n",j,i,x2[j][i].temp);
+#endif
         }
       } 
       ierr = DMDAVecRestoreArray(da,solu_true,&x2);CHKERRQ(ierr);
@@ -930,7 +941,9 @@ PetscErrorCode MySolutionView(MPI_Comm comm,PetscInt phy_num,void *ctx)
           err_tmp += PetscAbsScalar(x[j][i].temp-x2[j][i].temp);
           if (err < err_tmp) err = err_tmp; 
           if (phy_num == 3){
+#if !defined(PETSC_USE_COMPLEX)
             ierr = PetscPrintf(PETSC_COMM_SELF,"x[%d,%d] = %g, %g, %g, %g\n",j,i,x1[j][i].u,x1[j][i].v,x1[j][i].omega,x2[j][i].temp);
+#endif
           }
         }
       }

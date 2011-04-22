@@ -55,6 +55,9 @@ int main(int argc, char *argv[])
     PetscBool      flg;
 
     PetscInitialize(&argc,&argv,(char *)0,help);
+#if defined(PETSC_USE_COMPLEX)
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"This example does not work for scalar type complex\n");
+#endif
     time(&start);
     ierr = PetscRandomCreate(PETSC_COMM_WORLD,&ran);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_SPRNG)
@@ -64,13 +67,12 @@ int main(int argc, char *argv[])
 #endif
     ierr = PetscRandomSetFromOptions(ran);CHKERRQ(ierr);
 
-
     ierr = MPI_Comm_size(PETSC_COMM_WORLD, &np);CHKERRQ(ierr);     /* number of nodes */
     ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &myid);CHKERRQ(ierr);   /* my ranking */   
 
     ierr = PetscOptionsHasName(PETSC_NULL, "-check_generators", &flg);CHKERRQ(ierr);
     if (flg){
-      ierr = PetscRandomGetValue(ran,&r);
+      ierr = PetscRandomGetValue(ran,(PetscScalar *)&r);
       ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] rval: %g\n",myid,r);
       ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);
     }
@@ -127,8 +129,8 @@ void stdNormalArray(double *eps, int size, PetscRandom ran)
   PetscErrorCode ierr;
 
   for (i=0;i<size;i+=2){
-    ierr = PetscRandomGetValue(ran,&u1);
-    ierr = PetscRandomGetValue(ran,&u2);
+    ierr = PetscRandomGetValue(ran,(PetscScalar*)&u1);
+    ierr = PetscRandomGetValue(ran,(PetscScalar*)&u2);
     
     t = sqrt(-2*log(u1));
     eps[i] = t * cos(2*PI*u2);

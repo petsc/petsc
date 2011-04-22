@@ -60,12 +60,12 @@ PetscScalar CCmplxIm(CCmplx a)
 PetscErrorCode DAApplyConformalMapping(DM da,PetscInt idx)
 {
   PetscErrorCode ierr;
-  PetscInt i,n;
-  PetscInt sx,nx,sy,ny,sz,nz,dim;
-  Vec Gcoords;
-  PetscScalar *XX;
-  PetscScalar xx,yy,zz;
-  DM cda;
+  PetscInt       i,n;
+  PetscInt       sx,nx,sy,ny,sz,nz,dim;
+  Vec            Gcoords;
+  PetscScalar    *XX;
+  PetscScalar    xx,yy,zz;
+  DM             cda;
   
   PetscFunctionBegin;
   if (idx==0) {
@@ -203,12 +203,12 @@ PetscErrorCode DAApplyConformalMapping(DM da,PetscInt idx)
 PetscErrorCode DAApplyTrilinearMapping(DM da)
 {
   PetscErrorCode ierr;
-  PetscInt i,j,k;
-  PetscInt sx,nx,sy,ny,sz,nz;
-  Vec Gcoords;
-  DMDACoor3d ***XX;
-  PetscScalar xx,yy,zz;
-  DM cda;
+  PetscInt       i,j,k;
+  PetscInt       sx,nx,sy,ny,sz,nz;
+  Vec            Gcoords;
+  DMDACoor3d     ***XX;
+  PetscScalar    xx,yy,zz;
+  DM             cda;
   
   PetscFunctionBegin;
   ierr = DMDASetUniformCoordinates(da, -1.0,1.0, -1.0,1.0, -1.0,1.0 );CHKERRQ(ierr); 
@@ -228,7 +228,7 @@ PetscErrorCode DAApplyTrilinearMapping(DM da)
         PetscScalar xn[] = {0.0,2.0,0.2,3.5,   0.0,2.1,0.23,3.125  };
         PetscScalar yn[] = {-1.3,0.0,2.0,4.0,  -1.45,-0.1,2.24,3.79  };
         PetscScalar zn[] = {0.0,0.3,-0.1,0.123,  0.956,1.32,1.12,0.798  };
-        PetscInt p;
+        PetscInt    p;
         
         Ni[0] = 0.125*(1.0-xi)*(1.0-eta)*(1.0-zeta);
         Ni[1] = 0.125*(1.0+xi)*(1.0-eta)*(1.0-zeta);
@@ -261,12 +261,12 @@ PetscErrorCode DAApplyTrilinearMapping(DM da)
 PetscErrorCode DADefineXLinearField2D(DM da,Vec field)
 {
   PetscErrorCode ierr;
-  PetscInt i,j;
-  PetscInt sx,nx,sy,ny;
-  Vec Gcoords;
-  DMDACoor2d **XX;
-  PetscScalar **FF;
-  DM cda;
+  PetscInt       i,j;
+  PetscInt       sx,nx,sy,ny;
+  Vec            Gcoords;
+  DMDACoor2d     **XX;
+  PetscScalar    **FF;
+  DM             cda;
   
   PetscFunctionBegin;
   ierr = DMDAGetCoordinateDA(da,&cda);CHKERRQ(ierr);
@@ -294,12 +294,12 @@ PetscErrorCode DADefineXLinearField2D(DM da,Vec field)
 PetscErrorCode DADefineXLinearField3D(DM da,Vec field)
 {
   PetscErrorCode ierr;
-  PetscInt i,j,k;
-  PetscInt sx,nx,sy,ny,sz,nz;
-  Vec Gcoords;
-  DMDACoor3d ***XX;
-  PetscScalar ***FF;
-  DM cda;
+  PetscInt       i,j,k;
+  PetscInt       sx,nx,sy,ny,sz,nz;
+  Vec            Gcoords;
+  DMDACoor3d     ***XX;
+  PetscScalar    ***FF;
+  DM             cda;
   
   PetscFunctionBegin;
   ierr = DMDAGetCoordinateDA(da,&cda);CHKERRQ(ierr);
@@ -336,13 +336,13 @@ PetscErrorCode DADefineXLinearField3D(DM da,Vec field)
 PetscErrorCode da_test_RefineCoords1D(PetscInt mx)
 {
   PetscErrorCode ierr;
-  DM dac,daf;
-  PetscViewer vv;
-  Vec ac,af;
-  PetscInt Mx;
-  Mat II,INTERP;
-  Vec scale;
-  PetscBool output = PETSC_FALSE;
+  DM             dac,daf;
+  PetscViewer    vv;
+  Vec            ac,af;
+  PetscInt       Mx;
+  Mat            II,INTERP;
+  Vec            scale;
+  PetscBool      output = PETSC_FALSE;
   
   PetscFunctionBegin;
   ierr = DMDACreate1d( PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE,
@@ -361,7 +361,7 @@ PetscErrorCode da_test_RefineCoords1D(PetscInt mx)
   ierr = DMDASetUniformCoordinates(daf, -1.0,1.0, PETSC_DECIDE,PETSC_DECIDE, PETSC_DECIDE,PETSC_DECIDE );CHKERRQ(ierr); 
   
   {
-    DM cdaf,cdac;
+    DM  cdaf,cdac;
     Vec coordsc,coordsf;
     
     ierr = DMDAGetCoordinateDA(dac,&cdac);CHKERRQ(ierr);
@@ -388,9 +388,9 @@ PetscErrorCode da_test_RefineCoords1D(PetscInt mx)
   ierr = MatMult(INTERP,ac, af); CHKERRQ(ierr);
   
   {
-    Vec afexact;
+    Vec       afexact;
     PetscReal nrm;
-    PetscInt N;
+    PetscInt  N;
     
     ierr = DMCreateGlobalVector(daf,&afexact); CHKERRQ(ierr);
     ierr = VecZeroEntries(afexact);CHKERRQ(ierr);
@@ -398,7 +398,7 @@ PetscErrorCode da_test_RefineCoords1D(PetscInt mx)
     ierr = VecAXPY(afexact,-1.0,af);CHKERRQ(ierr); /* af <= af - afinterp */
     ierr = VecNorm(afexact,NORM_2,&nrm);CHKERRQ(ierr);
     ierr = VecGetSize(afexact,&N);CHKERRQ(ierr);
-    PetscPrintf(PETSC_COMM_WORLD,"%D=>%D, interp err = %1.4e\n",mx,Mx,nrm/sqrt((PetscScalar)N) );
+    PetscPrintf(PETSC_COMM_WORLD,"%D=>%D, interp err = %1.4e\n",mx,Mx,nrm/sqrt((PetscReal)N) );
     ierr = VecDestroy(&afexact);CHKERRQ(ierr);
   }
   
@@ -431,13 +431,13 @@ PetscErrorCode da_test_RefineCoords1D(PetscInt mx)
 PetscErrorCode da_test_RefineCoords2D(PetscInt mx,PetscInt my)
 {
   PetscErrorCode ierr;
-  DM dac,daf;
-  PetscViewer vv;
-  Vec ac,af;
-  PetscInt map_id,Mx,My;
-  Mat II,INTERP;
-  Vec scale;
-  PetscBool output = PETSC_FALSE;
+  DM             dac,daf;
+  PetscViewer    vv;
+  Vec            ac,af;
+  PetscInt       map_id,Mx,My;
+  Mat            II,INTERP;
+  Vec            scale;
+  PetscBool      output = PETSC_FALSE;
   
   PetscFunctionBegin;
   ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE, DMDA_STENCIL_BOX,
@@ -464,7 +464,7 @@ PetscErrorCode da_test_RefineCoords2D(PetscInt mx,PetscInt my)
   }
   
   {
-    DM cdaf,cdac;
+    DM  cdaf,cdac;
     Vec coordsc,coordsf;
     
     ierr = DMDAGetCoordinateDA(dac,&cdac);CHKERRQ(ierr);
@@ -492,9 +492,9 @@ PetscErrorCode da_test_RefineCoords2D(PetscInt mx,PetscInt my)
   ierr = MatMult(INTERP,ac, af); CHKERRQ(ierr);
   
   {
-    Vec afexact;
+    Vec       afexact;
     PetscReal nrm;
-    PetscInt N;
+    PetscInt  N;
     
     ierr = DMCreateGlobalVector(daf,&afexact); CHKERRQ(ierr);
     ierr = VecZeroEntries(afexact);CHKERRQ(ierr);
@@ -502,7 +502,7 @@ PetscErrorCode da_test_RefineCoords2D(PetscInt mx,PetscInt my)
     ierr = VecAXPY(afexact,-1.0,af);CHKERRQ(ierr); /* af <= af - afinterp */
     ierr = VecNorm(afexact,NORM_2,&nrm);CHKERRQ(ierr);
     ierr = VecGetSize(afexact,&N);CHKERRQ(ierr);
-    PetscPrintf(PETSC_COMM_WORLD,"[%D x %D]=>[%D x %D], interp err = %1.4e\n",mx,my,Mx,My,nrm/sqrt((PetscScalar)N) );
+    PetscPrintf(PETSC_COMM_WORLD,"[%D x %D]=>[%D x %D], interp err = %1.4e\n",mx,my,Mx,My,nrm/sqrt((PetscReal)N) );
     ierr = VecDestroy(&afexact);CHKERRQ(ierr);
   }
   
@@ -535,13 +535,13 @@ PetscErrorCode da_test_RefineCoords2D(PetscInt mx,PetscInt my)
 PetscErrorCode da_test_RefineCoords3D(PetscInt mx,PetscInt my,PetscInt mz)
 {
   PetscErrorCode ierr;
-  DM dac,daf;
-  PetscViewer vv;
-  Vec ac,af;
-  PetscInt map_id,Mx,My,Mz;
-  Mat II,INTERP;
-  Vec scale;
-  PetscBool output = PETSC_FALSE;
+  DM             dac,daf;
+  PetscViewer    vv;
+  Vec            ac,af;
+  PetscInt       map_id,Mx,My,Mz;
+  Mat            II,INTERP;
+  Vec            scale;
+  PetscBool      output = PETSC_FALSE;
   
   PetscFunctionBegin;
   ierr = DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,
@@ -570,7 +570,7 @@ PetscErrorCode da_test_RefineCoords3D(PetscInt mx,PetscInt my,PetscInt mz)
   }
   
   {
-    DM cdaf,cdac;
+    DM  cdaf,cdac;
     Vec coordsc,coordsf;
     
     ierr = DMDAGetCoordinateDA(dac,&cdac);CHKERRQ(ierr);
@@ -597,9 +597,9 @@ PetscErrorCode da_test_RefineCoords3D(PetscInt mx,PetscInt my,PetscInt mz)
   ierr = MatMult(INTERP,ac, af); CHKERRQ(ierr);
   
   {
-    Vec afexact;
+    Vec       afexact;
     PetscReal nrm;
-    PetscInt N;
+    PetscInt  N;
     
     ierr = DMCreateGlobalVector(daf,&afexact); CHKERRQ(ierr);
     ierr = VecZeroEntries(afexact);CHKERRQ(ierr);
@@ -607,7 +607,7 @@ PetscErrorCode da_test_RefineCoords3D(PetscInt mx,PetscInt my,PetscInt mz)
     ierr = VecAXPY(afexact,-1.0,af);CHKERRQ(ierr); /* af <= af - afinterp */
     ierr = VecNorm(afexact,NORM_2,&nrm);CHKERRQ(ierr);
     ierr = VecGetSize(afexact,&N);CHKERRQ(ierr);
-    PetscPrintf(PETSC_COMM_WORLD,"[%D x %D x %D]=>[%D x %D x %D], interp err = %1.4e\n",mx,my,mz,Mx,My,Mz,nrm/sqrt((PetscScalar)N) );
+    PetscPrintf(PETSC_COMM_WORLD,"[%D x %D x %D]=>[%D x %D x %D], interp err = %1.4e\n",mx,my,mz,Mx,My,Mz,nrm/sqrt((PetscReal)N) );
     ierr = VecDestroy(&afexact);CHKERRQ(ierr);
   }
   
@@ -640,7 +640,7 @@ PetscErrorCode da_test_RefineCoords3D(PetscInt mx,PetscInt my,PetscInt mz)
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
-  PetscInt mx,my,mz,l,nl,dim;
+  PetscInt       mx,my,mz,l,nl,dim;
   
   ierr = PetscInitialize(&argc,&argv,0,help);
 
