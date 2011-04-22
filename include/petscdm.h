@@ -149,8 +149,6 @@ extern PetscErrorCode   DMComputeInitialGuess(DM,Vec);
 extern PetscErrorCode   DMComputeFunction(DM,Vec,Vec);
 extern PetscErrorCode   DMComputeJacobian(DM,Vec,Mat,Mat,MatStructure *);
 extern PetscErrorCode   DMComputeJacobianDefault(DM,Vec,Mat,Mat,MatStructure *);
-/* function to wrap coordinates around boundary */
-extern PetscErrorCode   DMDAMapCoordsToPeriodicDomain(DM,PetscScalar*,PetscScalar*);
 
 extern PetscErrorCode   DMFinalizePackage(void);
 
