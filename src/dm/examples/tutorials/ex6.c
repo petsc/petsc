@@ -141,11 +141,12 @@ PetscErrorCode FAGlobalToLocal(FA fa,Vec g,Vec l)
 PetscErrorCode FADestroy(FA *fa)
 {
   PetscErrorCode ierr;
+
   PetscFunctionBegin;
-  ierr = VecDestroy(&fa->g);CHKERRQ(ierr);
-  ierr = VecDestroy(&fa->l);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(&fa->vscat);CHKERRQ(ierr);
-  ierr = PetscFree(fa);CHKERRQ(ierr);
+  ierr = VecDestroy(&(*fa)->g);CHKERRQ(ierr);
+  ierr = VecDestroy(&(*fa)->l);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&(*fa)->vscat);CHKERRQ(ierr);
+  ierr = PetscFree(*fa);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

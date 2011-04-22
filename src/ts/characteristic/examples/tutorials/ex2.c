@@ -103,7 +103,7 @@ int main(int argc,char **argv)
   ierr = DMMGCreate(comm,user->grid.mglevels,user,&dmmg);CHKERRQ(ierr); 
   ierr = DMDACreate2d(comm,user->grid.periodic,user->grid.periodic,user->grid.stencil,user->grid.ni,user->grid.nj,PETSC_DECIDE,PETSC_DECIDE,user->grid.dof,user->grid.stencil_width,0,0,&da);CHKERRQ(ierr);
   ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr);
-  ierr = DMDestroy(da);CHKERRQ(ierr);
+  ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,&(param->pi),&(param->pj),PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   REG_INTG(user->bag,&param->pi,param->pi ,"procs_x","<DO NOT SET> Processors in the x-direction");
   REG_INTG(user->bag,&param->pj,param->pj ,"procs_y","<DO NOT SET> Processors in the y-direction");
@@ -123,7 +123,7 @@ int main(int argc,char **argv)
      Free work space. 
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = DMRestoreGlobalVector(da, &(user->Xold));CHKERRQ(ierr);
-  ierr = PetscBagDestroy(user->bag);CHKERRQ(ierr); 
+  ierr = PetscBagDestroy(&user->bag);CHKERRQ(ierr); 
   ierr = PetscFree(user);CHKERRQ(ierr);
   ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
   ierr = PetscFinalize();
@@ -326,7 +326,7 @@ int DoSolve(DMMG *dmmg)
     }
   }
   ierr = DMRestoreGlobalVector(da, &Xstar);CHKERRQ(ierr);
-  ierr = CharacteristicDestroy(c);CHKERRQ(ierr);
+  ierr = CharacteristicDestroy(&c);CHKERRQ(ierr);
   return 0; 
 }
 
@@ -439,7 +439,7 @@ int DoOutput(DMMG *dmmg, int n_plot)
     ierr = PetscViewerBinaryMatlabOutputBag(viewer,"par",user->bag);CHKERRQ(ierr);
     ierr = DMDASetFieldNames("u","v","c1","c2","c3","c4",da);CHKERRQ(ierr);
     ierr = PetscViewerBinaryMatlabOutputVecDA(viewer,"field",DMMGGetx(dmmg),da);CHKERRQ(ierr);
-    ierr = PetscViewerBinaryMatlabDestroy(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryMatlabDestroy(&viewer);CHKERRQ(ierr);
   }  
   return 0;
 }

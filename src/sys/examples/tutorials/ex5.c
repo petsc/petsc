@@ -82,13 +82,13 @@ int main(int argc,char **argv)
   ierr = PetscBagView(bag,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"binaryoutput",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
   ierr = PetscBagView(bag,viewer);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
-  ierr = PetscBagDestroy(bag);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  ierr = PetscBagDestroy(&bag);CHKERRQ(ierr);
 
   /* load bag from file & write to stdio */
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"binaryoutput",FILE_MODE_READ,&viewer);CHKERRQ(ierr);
   ierr = PetscBagLoad(viewer,&bag);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   ierr = PetscBagView(bag,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* reuse the parameter struct */
@@ -107,7 +107,7 @@ int main(int argc,char **argv)
 #endif
 
   /* clean up and exit */
-  ierr = PetscBagDestroy(bag);CHKERRQ(ierr);
+  ierr = PetscBagDestroy(&bag);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

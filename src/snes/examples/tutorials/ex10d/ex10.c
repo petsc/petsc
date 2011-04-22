@@ -258,7 +258,7 @@ int main(int argc,char **argv)
   */
   ierr = AOApplicationToPetsc(ao,user.Nvlocal,user.locInd);CHKERRQ(ierr);
   ierr = AOApplicationToPetsc(ao,Nvneighborstotal,tmp);CHKERRQ(ierr);
-  ierr = AODestroy(ao);CHKERRQ(ierr);
+  ierr = AODestroy(&ao);CHKERRQ(ierr);
 
   ierr = PetscFPrintf(PETSC_COMM_SELF,fptr1,"After AOApplicationToPetsc, local indices are : \n");CHKERRQ(ierr);
   for (i=0; i < user.Nvlocal; i++) {
@@ -368,8 +368,8 @@ int main(int argc,char **argv)
   ierr = ISCreateStride(MPI_COMM_SELF,bs*nvertices,0,1,&islocal);CHKERRQ(ierr);
   ierr = ISCreateBlock(MPI_COMM_SELF,bs,nvertices,vertices,PETSC_COPY_VALUES,&isglobal);CHKERRQ(ierr);
   ierr = VecScatterCreate(x,isglobal,user.localX,islocal,&user.scatter);CHKERRQ(ierr);  
-  ierr = ISDestroy(isglobal);CHKERRQ(ierr); 
-  ierr = ISDestroy(islocal);CHKERRQ(ierr); 
+  ierr = ISDestroy(&isglobal);CHKERRQ(ierr); 
+  ierr = ISDestroy(&islocal);CHKERRQ(ierr); 
 
   /* 
      Create matrix data structure; Just to keep the example simple, we have not done any 
@@ -413,7 +413,7 @@ int main(int argc,char **argv)
      ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
      /* ierr = MatFDColoringView(matfdcoloring,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
      ierr = SNESSetJacobian(snes,Jac,Jac,SNESDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr); 
-     ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
+     ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
    }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -474,16 +474,16 @@ int main(int argc,char **argv)
   ierr = PetscFree(vertices);CHKERRQ(ierr);
   ierr = PetscFree(verticesmask);CHKERRQ(ierr);
   ierr = PetscFree(tmp);CHKERRQ(ierr);
-  ierr = VecScatterDestroy(user.scatter);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingDestroy(isl2g);CHKERRQ(ierr);
-  ierr = VecDestroy(x);CHKERRQ(ierr);  
-  ierr = VecDestroy(r);CHKERRQ(ierr);
-  ierr = VecDestroy(user.localX);CHKERRQ(ierr);  
-  ierr = VecDestroy(user.localF);CHKERRQ(ierr);
-  ierr = MatDestroy(Jac);CHKERRQ(ierr);  ierr = SNESDestroy(snes);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&user.scatter);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingDestroy(&isl2g);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);  
+  ierr = VecDestroy(&r);CHKERRQ(ierr);
+  ierr = VecDestroy(&user.localX);CHKERRQ(ierr);  
+  ierr = VecDestroy(&user.localF);CHKERRQ(ierr);
+  ierr = MatDestroy(&Jac);CHKERRQ(ierr);  ierr = SNESDestroy(&snes);CHKERRQ(ierr);
   /*ierr = PetscDrawDestroy(draw);CHKERRQ(ierr);*/
   if (fd_jacobian_coloring){
-    ierr = MatFDColoringDestroy(matfdcoloring);CHKERRQ(ierr);
+    ierr = MatFDColoringDestroy(&matfdcoloring);CHKERRQ(ierr);
   }
   ierr = PetscFinalize();
 
