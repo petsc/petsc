@@ -2,7 +2,7 @@
 static char help[] = "Tests converting a matrix to another format with MatConvert().\n\n";
 
 #include <petscmat.h>
-/* Usage: mpiexec -n <np> ex55 -display <0 or 1> */
+/* Usage: mpiexec -n <np> ex55 -verbose <0 or 1> */
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -10,7 +10,7 @@ int main(int argc,char **args)
 {
   Mat            C,A,B,D; 
   PetscErrorCode ierr;
-  PetscInt       i,j,ntypes,bs,mbs,m,block,d_nz=6, o_nz=3,col[3],row,displ=0;
+  PetscInt       i,j,ntypes,bs,mbs,m,block,d_nz=6, o_nz=3,col[3],row,verbose=0;
   PetscMPIInt    size,rank;
   const MatType  type[9]; 
   char           file[PETSC_MAX_PATH_LEN];
@@ -19,7 +19,7 @@ int main(int argc,char **args)
   PetscScalar    value[3];
 
   PetscInitialize(&argc,&args,(char *)0,help);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-display",&displ,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-verbose",&verbose,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetString(PETSC_NULL,"-f",file,PETSC_MAX_PATH_LEN,&flg_loadmat);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -117,11 +117,11 @@ int main(int argc,char **args)
     ierr = MatMultEqual(A,C,10,&equal);CHKERRQ(ierr);
     if (!equal) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"Error in conversion from BAIJ to %s",type[i]);
     for (j=i+1; j<ntypes; j++) { 
-      if (displ>0) {
+      if (verbose>0) {
         ierr = PetscPrintf(PETSC_COMM_WORLD," \n[%d] test conversion between %s and %s\n",rank,type[i],type[j]);CHKERRQ(ierr);
       }
       
-      if (!rank && displ) printf("Convert %s A to %s B\n",type[i],type[j]);
+      if (!rank && verbose) printf("Convert %s A to %s B\n",type[i],type[j]);
       ierr = MatConvert(A,type[j],MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
       /*
       if (j == 2){
@@ -135,7 +135,7 @@ int main(int argc,char **args)
       if (!equal) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"Error in conversion from %s to %s",type[i],type[j]);
 
       if (size == 1 || j != 2){ /* Matconvert from mpisbaij mat to other formats are not supported */
-        if (!rank && displ) printf("Convert %s B to %s D\n",type[j],type[i]);
+        if (!rank && verbose) printf("Convert %s B to %s D\n",type[j],type[i]);
         ierr = MatConvert(B,type[i],MAT_INITIAL_MATRIX,&D);CHKERRQ(ierr); 
         ierr = MatMultEqual(B,D,10,&equal);CHKERRQ(ierr);
         if (!equal) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_NOTSAMETYPE,"Error in conversion from %s to %s",type[j],type[i]);
