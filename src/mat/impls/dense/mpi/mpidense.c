@@ -574,9 +574,9 @@ PetscErrorCode MatDestroy_MPIDense(Mat mat)
     ierr = PLA_Temp_free(&lu->templ);CHKERRQ(ierr);
 
     if (lu->is_pla) {
-      ierr = ISDestroy(lu->is_pla);CHKERRQ(ierr);
-      ierr = ISDestroy(lu->is_petsc);CHKERRQ(ierr);
-      ierr = VecScatterDestroy(lu->ctx);CHKERRQ(ierr);
+      ierr = ISDestroy(&lu->is_pla);CHKERRQ(ierr);
+      ierr = ISDestroy(&lu->is_petsc);CHKERRQ(ierr);
+      ierr = VecScatterDestroy(&lu->ctx);CHKERRQ(ierr);
     }
   }
 #endif
@@ -1232,7 +1232,7 @@ PetscErrorCode MatSolve_MPIDense(Mat A,Vec b,Vec x)
   ierr = VecScatterEnd(lu->ctx,loc_x,x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   
   /* Free data */
-  ierr = VecDestroy(loc_x);CHKERRQ(ierr);
+  ierr = VecDestroy(&loc_x);CHKERRQ(ierr);
   PLA_Obj_free(&v_pla); 
 
   lu->pla_solved = PETSC_TRUE;
