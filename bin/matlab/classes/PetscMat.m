@@ -86,7 +86,7 @@ classdef PetscMat < PetscObject
       err = calllib('libpetsc', 'MatLoad', obj.pobj,viewer.pobj);PetscCHKERRQ(err);
     end
     function err = Destroy(obj)
-      err = calllib('libpetsc', 'MatDestroy_', obj.pobj);PetscCHKERRQ(err);
+      err = calllib('libpetsc', 'MatDestroy', obj.pobj);PetscCHKERRQ(err);
     end
     function err = SetValuesStencil(obj,row,col,values,insertmode)
       if (nargin < 5) 

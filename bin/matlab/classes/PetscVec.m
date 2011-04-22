@@ -109,7 +109,7 @@ classdef PetscVec < PetscObject
       end
     end
     function err = Destroy(obj)
-      err = calllib('libpetsc', 'VecDestroy_', obj.pobj);PetscCHKERRQ(err);
+      err = calllib('libpetsc', 'VecDestroy', obj.pobj);PetscCHKERRQ(err);
     end
 %
 %   The following overload a = x(idx)

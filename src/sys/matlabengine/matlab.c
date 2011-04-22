@@ -78,12 +78,13 @@ PetscErrorCode  PetscMatlabEngineCreate(MPI_Comm comm,const char machine[],Petsc
           PetscMatlabEngineEvaluate(), PetscMatlabEngineGetOutput(), PetscMatlabEnginePrintOutput(),
           PETSC_MATLAB_ENGINE_(), PetscMatlabEnginePutArray(), PetscMatlabEngineGetArray(), PetscMatlabEngine
 @*/
-PetscErrorCode  PetscMatlabEngineDestroy(PetscMatlabEngine v)
+PetscErrorCode  PetscMatlabEngineDestroy(PetscMatlabEngine *v)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(v,MATLABENGINE_CLASSID,1);
-  if (--((PetscObject)v)->refct > 0) PetscFunctionReturn(0);
+  if (!*v) PetscFunctionReturn(0);
+  PetscValidHeaderSpecific(*v,MATLABENGINE_CLASSID,1);
+  if (--((PetscObject)(*v))->refct > 0) PetscFunctionReturn(0);
   ierr = PetscHeaderDestroy(v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

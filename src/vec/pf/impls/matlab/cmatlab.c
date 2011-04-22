@@ -35,7 +35,7 @@ PetscErrorCode PFDestroy_Matlab(void *value)
 
   PetscFunctionBegin;
   ierr = PetscFree(matlab->string);CHKERRQ(ierr);
-  ierr = PetscMatlabEngineDestroy(matlab->mengine);CHKERRQ(ierr);
+  ierr = PetscMatlabEngineDestroy(&matlab->mengine);CHKERRQ(ierr);
   ierr = PetscFree(matlab);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
