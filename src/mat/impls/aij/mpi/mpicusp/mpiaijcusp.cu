@@ -66,7 +66,7 @@ PetscErrorCode  MatGetVecs_MPIAIJCUSP(Mat mat,Vec *right,Vec *left)
     ierr = VecSetBlockSize(*right,mat->rmap->bs);CHKERRQ(ierr);
     if (size > 1) {
       /* New vectors uses Mat cmap and does not create a new one */
-      ierr = PetscLayoutDestroy((*right)->map);CHKERRQ(ierr);
+      ierr = PetscLayoutDestroy(&(*right)->map);CHKERRQ(ierr);
       (*right)->map = mat->cmap;
       mat->cmap->refcnt++;
       ierr = VecSetType(*right,VECMPICUSP);CHKERRQ(ierr);
@@ -78,7 +78,7 @@ PetscErrorCode  MatGetVecs_MPIAIJCUSP(Mat mat,Vec *right,Vec *left)
     ierr = VecSetBlockSize(*left,mat->rmap->bs);CHKERRQ(ierr);
     if (size > 1) {
       /* New vectors uses Mat rmap and does not create a new one */
-      ierr = PetscLayoutDestroy((*left)->map);CHKERRQ(ierr);
+      ierr = PetscLayoutDestroy(&(*left)->map);CHKERRQ(ierr);
       (*left)->map = mat->rmap;
       mat->rmap->refcnt++;
       ierr = VecSetType(*left,VECMPICUSP);CHKERRQ(ierr);

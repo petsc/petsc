@@ -133,7 +133,7 @@ PetscErrorCode VecDuplicate_MPICUSP(Vec win,Vec *v)
   ierr = VecCreate(((PetscObject)win)->comm,v);CHKERRQ(ierr);
 
   /* use the map that exists aleady in win */
-  ierr = PetscLayoutDestroy((*v)->map);CHKERRQ(ierr);
+  ierr = PetscLayoutDestroy(&(*v)->map);CHKERRQ(ierr);
   (*v)->map = win->map;
   win->map->refcnt++;
 

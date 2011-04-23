@@ -139,16 +139,16 @@ PetscErrorCode PetscCUSPIndicesCreate(PetscInt n,const PetscInt *indices,PetscCU
 
 .seealso: PetscCUSPIndicesCreate(), VecCUSPCopyToGPUSome_Public()
 */
-PetscErrorCode PetscCUSPIndicesDestroy(PetscCUSPIndices ci)
+PetscErrorCode PetscCUSPIndicesDestroy(PetscCUSPIndices *ci)
 {
   PetscFunctionBegin;
   if (!ci) PetscFunctionReturn(0);
   try {
-    delete ci;
+    delete *ci;
   } catch(char* ex) {
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CUSP error: %s", ex);
   }
-  ci = 0;
+  *ci = 0;
   PetscFunctionReturn(0);
 }
 
