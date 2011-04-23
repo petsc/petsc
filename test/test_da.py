@@ -22,7 +22,6 @@ class BaseTestDA(object):
                                     comm=self.COMM)
 
     def tearDown(self):
-        self.da.destroy()
         self.da = None
 
     def testGetInfo(self):
@@ -79,26 +78,18 @@ class BaseTestDA(object):
         gc = self.da.getGhostCoordinates()
         gc.destroy()
 
-    def testCreateVec(self):
+    def testCreateVecMat(self):
         vn = self.da.createNaturalVec()
         vg = self.da.createGlobalVec()
         vl = self.da.createLocalVec()
-
-    def testCreateMat(self):
         mat = self.da.createMat()
         self.assertTrue(mat.getType() in ('aij', 'seqaij', 'mpiaij'))
 
-    def testGetScatter(self):
-        l2g, g2l, l2l = self.da.getScatter()
-
-    def testGetLGMap(self):
-        lgmap = self.da.getLGMap()
-
-    def testGetLGMapBlock(self):
-        lgmap = self.da.getLGMapBlock()
-
-    def testGetAO(self):
+    def testGetOther(self):
         ao = self.da.getAO()
+        lgmap = self.da.getLGMap()
+        lgmap = self.da.getLGMapBlock()
+        l2g, g2l, l2l = self.da.getScatter()
 
     def testRefineCoarsen(self):
         da = self.da
@@ -109,6 +100,8 @@ class BaseTestDA(object):
             self.assertEqual(da.getStencilType(),  rda.getStencilType())
         self.assertEqual(da.getStencilWidth(), rda.getStencilWidth())
         cda = rda.coarsen()
+        self.assertEqual(rda.getDim(), cda.getDim())
+        self.assertEqual(rda.getDof(), cda.getDof())
         for n1, n2 in zip(self.da.getSizes(), cda.getSizes()):
             self.assertTrue(abs(n1-n2)<=1)
 
@@ -147,7 +140,7 @@ class BaseTestDA(object):
     def testGetInjection(self):
         da = self.da
         if da.dim == 1: return
-        if (da.dim == 3 and 
+        if (da.dim == 3 and
             PETSc.Sys.getVersion() < (3, 2)): return
         rda = da.refine()
         scatter = da.getInjection(rda)
@@ -227,78 +220,116 @@ class TestDA_3D_GXYZ(TestDA_3D):
 
 # --------------------------------------------------------------------
 
-class TestDACreate(unittest.TestCase):
+DIM = (1,2,3,)
+DOF = (None,1,2,3,4,5,)
+BOUNDARY_TYPE = (
+    None,
+    "none",     (0,)*3,        0,
+    "ghosted",  (GHOSTED,)*3,  GHOSTED,
+    "periodic", (PERIODIC,)*3, PERIODIC,
+    )
+STENCIL_TYPE  = (None,"star","box")
+STENCIL_WIDTH = (None,0,1,2,3)
 
-    def testCreate(self):
-        da = PETSc.DA()
-        for dim in (1,2,3):
-            for dof in (None,1,2,3,4,5):
-                for boundary in (None, 
-                                 "none",     (0,)*dim,        0,
-                                 "ghosted",  (GHOSTED,)*dim,  GHOSTED,
-                                 "periodic", (PERIODIC,)*dim, PERIODIC):
-                    for stencil_type in (None,"star","box"):
-                        for stencil_width in (None,0,1,2,3):
-                            da.create([8*SCALE]*dim, dof=dof,
-                                      boundary_type=boundary,
-                                      stencil_type=stencil_type,
-                                      stencil_width=stencil_width)
+
+DIM           = (1,2,3)
+DOF           = (None,2,5)
+BOUNDARY_TYPE = (None,"periodic", "ghosted")
+STENCIL_TYPE  = (None,"box")
+STENCIL_WIDTH = (None,1,2)
+
+class TestDACreate(unittest.TestCase):
+    pass
+counter = 0
+for dim in DIM:
+    for dof in DOF:
+        for boundary in BOUNDARY_TYPE:
+            if isinstance(boundary, tuple):
+                boundary = boundary[:dim]
+            for stencil in STENCIL_TYPE:
+                for width in STENCIL_WIDTH:
+                    kargs = dict(sizes=[8*SCALE]*dim,
+                                 dim=dim, dof=dof,
+                                 boundary_type=boundary,
+                                 stencil_type=stencil,
+                                 stencil_width=width)
+                    def testCreate(self, kargs=kargs):
+                        da = PETSc.DA().create(**kargs)
                         da.destroy()
+                    setattr(TestDACreate,
+                            "testCreate%04d"%counter,
+                            testCreate)
+                    del testCreate, kargs
+                    counter += 1
+del counter, dim, dof, boundary, stencil, width
 
 class TestDADuplicate(unittest.TestCase):
+    pass
+counter = 0
+for dim in DIM:
+    for dof in DOF:
+        for boundary in BOUNDARY_TYPE:
+            if isinstance(boundary, tuple):
+                boundary = boundary[:dim]
+            for stencil in STENCIL_TYPE:
+                for width in STENCIL_WIDTH:
+                    kargs = dict(dim=dim, dof=dof,
+                                 boundary_type=boundary,
+                                 stencil_type=stencil,
+                                 stencil_width=width)
+                    def testDuplicate(self, kargs=kargs):
+                        dim = kargs.pop('dim')
+                        dof = kargs['dof']
+                        boundary = kargs['boundary_type']
+                        stencil = kargs['stencil_type']
+                        width = kargs['stencil_width']
+                        da = PETSc.DA().create([8*SCALE]*dim)
+                        newda = da.duplicate(**kargs)
+                        self.assertEqual(newda.dim, da.dim)
+                        self.assertEqual(newda.sizes, da.sizes)
+                        self.assertEqual(newda.proc_sizes,
+                                         da.proc_sizes)
+                        self.assertEqual(newda.ranges, da.ranges)
+                        self.assertEqual(newda.corners, da.corners)
+                        if (newda.boundary_type == da.boundary_type
+                            and
+                            newda.stencil_width == da.stencil_width):
+                            self.assertEqual(newda.ghost_ranges,
+                                             da.ghost_ranges)
+                            self.assertEqual(newda.ghost_corners,
+                                             da.ghost_corners)
+                        if dof is None:
+                            dof = da.dof
+                        if boundary is None:
+                            boundary = da.boundary_type
+                        elif boundary == "none":
+                            boundary = (0,) * dim
+                        elif boundary == "ghosted":
+                            boundary = (GHOSTED,) * dim
+                        elif boundary == "periodic":
+                            boundary = (PERIODIC,) * dim
+                        elif isinstance(boundary, int):
+                            boundary = (boundary,) * dim
+                        if stencil is None:
+                            stencil = da.stencil[0]
+                        if width is None:
+                            width = da.stencil_width
+                        self.assertEqual(newda.dof, dof)
+                        self.assertEqual(newda.boundary_type,
+                                         boundary)
+                        if dim == 1:
+                            if PETSc.Sys.getVersion() > (3,0,0):
+                                self.assertEqual(newda.stencil,
+                                                 (stencil, width))
+                        newda.destroy()
+                        da.destroy()
+                    setattr(TestDADuplicate,
+                            "testDuplicate%04d"%counter,
+                            testDuplicate)
+                    del testDuplicate, kargs
+                    counter += 1
+del counter, dim, dof, boundary, stencil, width
 
-    def testDuplicate(self):
-        da = PETSc.DA()
-        for dim in (1,2,3):
-            da.create([8*SCALE]*dim)
-            for dof in (None,1,2,3,4,5):
-                for boundary in (None, 
-                                 "none",     (0,)*dim,        0,
-                                 "ghosted",  (GHOSTED,)*dim,  GHOSTED,
-                                 "periodic", (PERIODIC,)*dim, PERIODIC):
-                    for stencil in (None, "box", "star"):
-                        for width in (None,0,1,2,3,4,5):
-                            newda = da.duplicate(
-                                dof=dof,
-                                boundary_type=boundary,
-                                stencil_type=stencil,
-                                stencil_width=width)
-                            self.assertEqual(newda.dim, da.dim)
-                            self.assertEqual(newda.sizes, da.sizes)
-                            self.assertEqual(newda.proc_sizes, da.proc_sizes)
-                            self.assertEqual(newda.ranges, da.ranges)
-                            self.assertEqual(newda.corners, da.corners)
-                            if (newda.boundary_type == da.boundary_type and
-                                newda.stencil_width == da.stencil_width):
-                                self.assertEqual(newda.ghost_ranges,
-                                                 da.ghost_ranges)
-                                self.assertEqual(newda.ghost_corners,
-                                                 da.ghost_corners)
-                            if dof is None: 
-                                dof = da.dof
-                            if boundary is None:
-                                boundary = da.boundary_type
-                            elif boundary == "none":
-                                boundary = (0,) * dim
-                            elif boundary == "ghosted":
-                                boundary = (GHOSTED,) * dim
-                            elif boundary == "periodic":
-                                boundary = (PERIODIC,) * dim
-                            elif isinstance(boundary, int):
-                                boundary = (boundary,) * dim
-                            if stencil is None:
-                                stencil = da.stencil[0]
-                            if width is None: 
-                                width = da.stencil_width
-                            self.assertEqual(newda.dof, dof)
-                            self.assertEqual(newda.boundary_type, boundary)
-                            if dim == 1:
-                                if PETSc.Sys.getVersion() > (3,0,0):
-                                    self.assertEqual(newda.stencil, 
-                                                     (stencil, width))
-                            newda.destroy()
-        da.destroy()
-        
 # --------------------------------------------------------------------
 
 if PETSc.Sys.getVersion() <= (3,0,0):
@@ -309,7 +340,7 @@ if PETSc.COMM_WORLD.getSize() > 1:
     del TestDA_1D_W0
     del TestDA_2D_W0, TestDA_2D_W0_N2
     del TestDA_3D_W0, TestDA_3D_W0_N2
-                        
+
 # --------------------------------------------------------------------
 
 if __name__ == '__main__':

@@ -140,12 +140,12 @@ cdef class KSP(Object):
         cdef PetscDM newdm = NULL
         CHKERR( KSPGetDM(self.ksp, &newdm) )
         cdef DM dm = subtype_DM(newdm)()
-        dm.dm[0] = newdm
+        dm.dm = newdm
         PetscINCREF(<PetscObject>dm.dm)
         return dm
 
     def setDM(self, DM dm not None):
-        CHKERR( KSPSetDM(self.ksp, dm.dm[0]) )
+        CHKERR( KSPSetDM(self.ksp, dm.dm) )
 
     # --- operators and preconditioner ---
 

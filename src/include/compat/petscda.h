@@ -1,37 +1,21 @@
 #ifndef _COMPAT_PETSC_DA_H
 #define _COMPAT_PETSC_DA_H
 
-#if (PETSC_VERSION_(3,1,0) || \
-     PETSC_VERSION_(3,0,0))
+#if PETSC_VERSION_(3,1,0) || PETSC_VERSION_(3,0,0)
 #include <petscda.h>
 #endif
 
-#if PETSC_VERSION_(3,1,0)
-#undef __FUNCT__
-#define __FUNCT__ "DASetUp"
-static PetscErrorCode
-DASetUp_Compat(DA da)
-{
-  PetscErrorCode ierr;
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_COOKIE,1);
-  ierr = DASetFromOptions(da);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-#define DASetUp DASetUp_Compat
-#endif
-
-#if (PETSC_VERSION_(3,1,0) || \
-     PETSC_VERSION_(3,0,0))
-#define DASetOwnershipRanges DASetVertexDivision
+#if PETSC_VERSION_(3,1,0) || PETSC_VERSION_(3,0,0)
+#define DASetOwnershipRanges           DASetVertexDivision
 #define DAGetLocalToGlobalMapping      DAGetISLocalToGlobalMapping
 #define DAGetLocalToGlobalMappingBlock DAGetISLocalToGlobalMappingBlck
 #endif
 
+/* ---------------------------------------------------------------- */
+
 #if PETSC_VERSION_(3,1,0)
 
 #include "private/daimpl.h"
-
 #undef DAGetElements
 #undef DARestoreElements
 
@@ -46,14 +30,13 @@ DASetElementType_Compat(DA da, DAElementType etype)
   if (da->elementtype != etype) {
     ierr = PetscFree(da->e);CHKERRQ(ierr);
     da->elementtype = etype;
-    da->ne          = 0; 
+    da->ne          = 0;
     da->e           = PETSC_NULL;
   }
   PetscFunctionReturn(0);
 }
 #define DASetElementType DASetElementType_Compat
-
-/*#undef __FUNCT__
+#undef __FUNCT__
 #define __FUNCT__ "DAGetElementType"
 static PetscErrorCode
 DAGetElementType_Compat(DA da, DAElementType *etype)
@@ -64,8 +47,7 @@ DAGetElementType_Compat(DA da, DAElementType *etype)
   *etype = da->elementtype;
   PetscFunctionReturn(0);
 }
-#define DAGetElementType DAGetElementType_Compat*/
-
+#define DAGetElementType DAGetElementType_Compat
 #undef __FUNCT__
 #define __FUNCT__ "DAGetElements_1D"
 static PetscErrorCode
@@ -91,10 +73,9 @@ DAGetElements_1D(DA da,PetscInt *nel,PetscInt *nen,const PetscInt *e[])
   *e   = da->e;
   PetscFunctionReturn(0);
 }
-
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DAGetElements_2D"
-static PetscErrorCode 
+static PetscErrorCode
 DAGetElements_2D(DA da,PetscInt *nel,PetscInt *nen,const PetscInt *e[])
 {
   PetscErrorCode ierr;
@@ -102,7 +83,7 @@ DAGetElements_2D(DA da,PetscInt *nel,PetscInt *nen,const PetscInt *e[])
   PetscInt       j,ys,ye,Ys,Ye;
   PetscInt       cnt=0, cell[4], ns=2, nn=3;
   PetscInt       c, split[] = {0,1,3,
-                               2,3,1};
+			       2,3,1};
   PetscFunctionBegin;
   if (!da->e) {
     if (da->elementtype == DA_ELEMENT_P1) {ns=2; nn=3;}
@@ -115,18 +96,18 @@ DAGetElements_2D(DA da,PetscInt *nel,PetscInt *nen,const PetscInt *e[])
     ierr = PetscMalloc((1 + nn*da->ne)*sizeof(PetscInt),&da->e);CHKERRQ(ierr);
     for (j=ys; j<ye-1; j++) {
       for (i=xs; i<xe-1; i++) {
-        cell[0] = (i-Xs  ) + (j-Ys  )*(Xe-Xs);
-        cell[1] = (i-Xs+1) + (j-Ys  )*(Xe-Xs);
-        cell[2] = (i-Xs+1) + (j-Ys+1)*(Xe-Xs);
-        cell[3] = (i-Xs  ) + (j-Ys+1)*(Xe-Xs);
-        if (da->elementtype == DA_ELEMENT_P1) {
-          for (c=0; c<ns*nn; c++)
-            da->e[cnt++] = cell[split[c]];
-        }
-        if (da->elementtype == DA_ELEMENT_Q1) {
-          for (c=0; c<ns*nn; c++)
-            da->e[cnt++] = cell[c];
-        }
+	cell[0] = (i-Xs  ) + (j-Ys  )*(Xe-Xs);
+	cell[1] = (i-Xs+1) + (j-Ys  )*(Xe-Xs);
+	cell[2] = (i-Xs+1) + (j-Ys+1)*(Xe-Xs);
+	cell[3] = (i-Xs  ) + (j-Ys+1)*(Xe-Xs);
+	if (da->elementtype == DA_ELEMENT_P1) {
+	  for (c=0; c<ns*nn; c++)
+	    da->e[cnt++] = cell[split[c]];
+	}
+	if (da->elementtype == DA_ELEMENT_Q1) {
+	  for (c=0; c<ns*nn; c++)
+	    da->e[cnt++] = cell[c];
+	}
       }
     }
   }
@@ -135,10 +116,9 @@ DAGetElements_2D(DA da,PetscInt *nel,PetscInt *nen,const PetscInt *e[])
   *e   = da->e;
   PetscFunctionReturn(0);
 }
-
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DAGetElements_3D"
-static PetscErrorCode 
+static PetscErrorCode
 DAGetElements_3D(DA da,PetscInt *nel,PetscInt *nen,const PetscInt *e[])
 {
   PetscErrorCode ierr;
@@ -147,11 +127,11 @@ DAGetElements_3D(DA da,PetscInt *nel,PetscInt *nen,const PetscInt *e[])
   PetscInt       k,zs,ze,Zs,Ze;
   PetscInt       cnt=0, cell[8], ns=6, nn=4;
   PetscInt       c, split[] = {0,1,3,7,
-                               0,1,7,4,
-                               1,2,3,7,
-                               1,2,7,6,
-                               1,4,5,7,
-                               1,5,6,7};
+			       0,1,7,4,
+			       1,2,3,7,
+			       1,2,7,6,
+			       1,4,5,7,
+			       1,5,6,7};
   PetscFunctionBegin;
   if (!da->e) {
     if (da->elementtype == DA_ELEMENT_P1) {ns=6; nn=4;}
@@ -165,24 +145,24 @@ DAGetElements_3D(DA da,PetscInt *nel,PetscInt *nen,const PetscInt *e[])
     ierr = PetscMalloc((1 + nn*da->ne)*sizeof(PetscInt),&da->e);CHKERRQ(ierr);
     for (k=zs; k<ze-1; k++) {
       for (j=ys; j<ye-1; j++) {
-        for (i=xs; i<xe-1; i++) {
-          cell[0] = (i-Xs  ) + (j-Ys  )*(Xe-Xs) + (k-Zs  )*(Xe-Xs)*(Ye-Ys);
-          cell[1] = (i-Xs+1) + (j-Ys  )*(Xe-Xs) + (k-Zs  )*(Xe-Xs)*(Ye-Ys);
-          cell[2] = (i-Xs+1) + (j-Ys+1)*(Xe-Xs) + (k-Zs  )*(Xe-Xs)*(Ye-Ys);
-          cell[3] = (i-Xs  ) + (j-Ys+1)*(Xe-Xs) + (k-Zs  )*(Xe-Xs)*(Ye-Ys);
-          cell[4] = (i-Xs  ) + (j-Ys  )*(Xe-Xs) + (k-Zs+1)*(Xe-Xs)*(Ye-Ys);
-          cell[5] = (i-Xs+1) + (j-Ys  )*(Xe-Xs) + (k-Zs+1)*(Xe-Xs)*(Ye-Ys);
-          cell[6] = (i-Xs+1) + (j-Ys+1)*(Xe-Xs) + (k-Zs+1)*(Xe-Xs)*(Ye-Ys);
-          cell[7] = (i-Xs  ) + (j-Ys+1)*(Xe-Xs) + (k-Zs+1)*(Xe-Xs)*(Ye-Ys);
-          if (da->elementtype == DA_ELEMENT_P1) {
-            for (c=0; c<ns*nn; c++)
-              da->e[cnt++] = cell[split[c]];
-          }
-          if (da->elementtype == DA_ELEMENT_Q1) {
-            for (c=0; c<ns*nn; c++)
-              da->e[cnt++] = cell[c];
-          }
-        }
+	for (i=xs; i<xe-1; i++) {
+	  cell[0] = (i-Xs  ) + (j-Ys  )*(Xe-Xs) + (k-Zs  )*(Xe-Xs)*(Ye-Ys);
+	  cell[1] = (i-Xs+1) + (j-Ys  )*(Xe-Xs) + (k-Zs  )*(Xe-Xs)*(Ye-Ys);
+	  cell[2] = (i-Xs+1) + (j-Ys+1)*(Xe-Xs) + (k-Zs  )*(Xe-Xs)*(Ye-Ys);
+	  cell[3] = (i-Xs  ) + (j-Ys+1)*(Xe-Xs) + (k-Zs  )*(Xe-Xs)*(Ye-Ys);
+	  cell[4] = (i-Xs  ) + (j-Ys  )*(Xe-Xs) + (k-Zs+1)*(Xe-Xs)*(Ye-Ys);
+	  cell[5] = (i-Xs+1) + (j-Ys  )*(Xe-Xs) + (k-Zs+1)*(Xe-Xs)*(Ye-Ys);
+	  cell[6] = (i-Xs+1) + (j-Ys+1)*(Xe-Xs) + (k-Zs+1)*(Xe-Xs)*(Ye-Ys);
+	  cell[7] = (i-Xs  ) + (j-Ys+1)*(Xe-Xs) + (k-Zs+1)*(Xe-Xs)*(Ye-Ys);
+	  if (da->elementtype == DA_ELEMENT_P1) {
+	    for (c=0; c<ns*nn; c++)
+	      da->e[cnt++] = cell[split[c]];
+	  }
+	  if (da->elementtype == DA_ELEMENT_Q1) {
+	    for (c=0; c<ns*nn; c++)
+	      da->e[cnt++] = cell[c];
+	  }
+	}
       }
     }
   }
@@ -191,7 +171,6 @@ DAGetElements_3D(DA da,PetscInt *nel,PetscInt *nen,const PetscInt *e[])
   *e   = da->e;
   PetscFunctionReturn(0);
 }
-
 #undef __FUNCT__
 #define __FUNCT__ "DAGetElements"
 static PetscErrorCode
@@ -217,7 +196,6 @@ DAGetElements_Compat(DA da,PetscInt *nel,PetscInt *nen,const PetscInt *e[])
   PetscFunctionReturn(0);
 }
 #define DAGetElements DAGetElements_Compat
-
 #undef __FUNCT__
 #define __FUNCT__ "DARestoreElements"
 static PetscErrorCode
@@ -232,11 +210,8 @@ DARestoreElements_Compat(DA da,PetscInt *nel,PetscInt *nen,const PetscInt *e[])
 }
 #define DARestoreElements DARestoreElements_Compat
 
-#endif
+#elif (PETSC_VERSION_(3,0,0))
 
-/* ---------------------------------------------------------------- */
-
-#if (PETSC_VERSION_(3,0,0))
 #undef __FUNCT__
 #define __FUNCT__ "DASetElementType"
 static PetscErrorCode
@@ -249,7 +224,7 @@ DASetElementType_Compat(DA da, DAElementType etype)
 }
 #define DASetElementType DASetElementType_Compat
 #undef __FUNCT__
-/*#define __FUNCT__ "DAGetElementType"
+#define __FUNCT__ "DAGetElementType"
 static PetscErrorCode
 DAGetElementType_Compat(DA da, DAElementType *etype)
 {
@@ -259,7 +234,7 @@ DAGetElementType_Compat(DA da, DAElementType *etype)
   SETERRQ(PETSC_ERR_SUP,__FUNCT__"() not supported in this PETSc version");
   PetscFunctionReturn(PETSC_ERR_SUP);
 }
-#define DAGetElementType DAGetElementType_Compat*/
+#define DAGetElementType DAGetElementType_Compat
 #undef __FUNCT__
 #define __FUNCT__ "DAGetElements"
 static PetscErrorCode
@@ -297,7 +272,9 @@ DARestoreElements_Compat(DA da,PetscInt *nel,PetscInt *nen,const PetscInt *e[])
 #define DARestoreElements DARestoreElements_Compat
 #endif
 
-#if (PETSC_VERSION_(3,0,0))
+/* ---------------------------------------------------------------- */
+
+#if PETSC_VERSION_(3,0,0)
 #undef __FUNCT__
 #define __FUNCT__ "DASetCoordinates"
 static PetscErrorCode DASetCoordinates_Compat(DA da,Vec c)
@@ -350,57 +327,49 @@ static PetscErrorCode DAGetGhostedCoordinates_Compat(DA da,Vec *c)
 #define DAGetGhostedCoordinates DAGetGhostedCoordinates_Compat
 #endif
 
-#if (PETSC_VERSION_(3,0,0))
-#undef __FUNCT__
-#define __FUNCT__ "DASetOptionsPrefix"
-static PetscErrorCode DASetOptionsPrefix(DA da,const char prefix[])
+#if PETSC_VERSION_(3,0,0)
+#undef __FUNCT__  
+#define __FUNCT__ "DAGetLocalBoundingBox"
+static PetscErrorCode DAGetLocalBoundingBox(DA da,PetscReal lmin[],PetscReal lmax[])
 {
-  PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_COOKIE,1);
-  ierr = PetscObjectSetOptionsPrefix((PetscObject)da,prefix);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
+  SETERRQ(PETSC_ERR_SUP,__FUNCT__"() not supported in this PETSc version");
+  PetscFunctionReturn(PETSC_ERR_SUP);
 }
-#undef __FUNCT__
-#define __FUNCT__ "DASetFromOptions"
-static PetscErrorCode DASetFromOptions(DA da) {
-  PetscErrorCode ierr;
+#undef __FUNCT__  
+#define __FUNCT__ "DAGetBoundingBox"
+PetscErrorCode  DAGetBoundingBox(DA da,PetscReal gmin[],PetscReal gmax[])
+{
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_COOKIE,1);
-  ierr = PetscOptionsBegin(((PetscObject)da)->comm,((PetscObject)da)->prefix,"DA Options","DA");CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  PetscFunctionReturn(0);
+  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  SETERRQ(PETSC_ERR_SUP,__FUNCT__"() not supported in this PETSc version");
+  PetscFunctionReturn(PETSC_ERR_SUP);
 }
 #endif
 
 /* ---------------------------------------------------------------- */
 
-#if (PETSC_VERSION_(3,1,0) || \
-     PETSC_VERSION_(3,0,0))
+#if PETSC_VERSION_(3,1,0) || PETSC_VERSION_(3,0,0)
 typedef enum {
   DA_BOUNDARY_NONE,
   DA_BOUNDARY_GHOSTED,
   DA_BOUNDARY_MIRROR,
   DA_BOUNDARY_PERIODIC,
 } DABoundaryType;
-#endif
-
-#if (PETSC_VERSION_(3,1,0) || \
-     PETSC_VERSION_(3,0,0))
 #undef __FUNCT__
 #define __FUNCT__ "DA_Boundary2Periodic"
 static PetscErrorCode
 DA_Boundary2Periodic(PetscInt dim,
-                     DABoundaryType x,DABoundaryType y,DABoundaryType z,
-                     DAPeriodicType *_ptype)
+		     DABoundaryType x,DABoundaryType y,DABoundaryType z,
+		     DAPeriodicType *_ptype)
 {
   DAPeriodicType ptype = DA_NONPERIODIC;
   PetscFunctionBegin;
-  /*  */ if (x==DA_BOUNDARY_NONE && 
+  /*  */ if (x==DA_BOUNDARY_NONE &&
 	     y==DA_BOUNDARY_NONE &&
 	     z==DA_BOUNDARY_NONE) {
     ptype = DA_NONPERIODIC;
-  } else if (x==DA_BOUNDARY_GHOSTED || 
+  } else if (x==DA_BOUNDARY_GHOSTED ||
 	     y==DA_BOUNDARY_GHOSTED ||
 	     y==DA_BOUNDARY_GHOSTED) {
     if ((dim==1 && (x==DA_BOUNDARY_GHOSTED)) ||
@@ -434,14 +403,14 @@ DA_Boundary2Periodic(PetscInt dim,
   } else if(z==DA_BOUNDARY_PERIODIC) {
     ptype = DA_ZPERIODIC;
   } else {
-    SETERRQ(PETSC_ERR_SUP,
-	    "Boundary type not supported in this PETSc version");
+    SETERRQ(PETSC_ERR_SUP,"Boundary type not supported in this PETSc version");
   }
   *_ptype = ptype;
   PetscFunctionReturn(0);
 }
 #endif
 
+/*
 #if PETSC_VERSION_(3,1,0)
 #undef __FUNCT__
 #define __FUNCT__ "DASetBoundaryType"
@@ -458,15 +427,14 @@ DASetBoundaryType(DA da,DABoundaryType x,DABoundaryType y,DABoundaryType z)
   ierr = DASetPeriodicity(da,ptype);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-#define DASetUp DASetUp_Compat
 #endif
+*/
 
-#if (PETSC_VERSION_(3,1,0) || \
-     PETSC_VERSION_(3,0,0))
+#if PETSC_VERSION_(3,1,0) || PETSC_VERSION_(3,0,0)
 #undef __FUNCT__
-#define __FUNCT__ "DAGetInfo_Compat"
+#define __FUNCT__ "DAGetInfo"
 static PetscErrorCode
-DAGetInfo_Compat(DA da, 
+DAGetInfo_Compat(DA da,
 		 PetscInt *dim,
 		 PetscInt *M,PetscInt *N,PetscInt *P,
 		 PetscInt *m,PetscInt *n,PetscInt *p,
@@ -502,6 +470,99 @@ DAGetInfo_Compat(DA da,
   PetscFunctionReturn(0);
 }
 #define DAGetInfo DAGetInfo_Compat
+#endif
+
+/* ---------------------------------------------------------------- */
+
+#if PETSC_VERSION_(3,1,0) || PETSC_VERSION_(3,0,0)
+#undef __FUNCT__
+#define __FUNCT__ "DAGetInterpolationType"
+static PetscErrorCode
+DAGetInterpolationType_Compat(DA da,DAInterpolationType *ctype)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DM_COOKIE,1);
+  PetscValidPointer(ctype,2);
+#if PETSC_VERSION_(3,1,0)
+  *ctype = da->interptype;
+#else
+  SETERRQ(PETSC_ERR_SUP,__FUNCT__"() not supported in this PETSc version");
+#endif
+  PetscFunctionReturn(0);
+}
+#define DAGetInterpolationType DAGetInterpolationType_Compat
+#endif
+
+/* ---------------------------------------------------------------- */
+
+#if PETSC_VERSION_(3,1,0) || PETSC_VERSION_(3,0,0)
+
+#define DMDABoundaryType           DABoundaryType
+#define DMDA_BOUNDARY_NONE         DA_BOUNDARY_NONE
+#define DMDA_BOUNDARY_GHOSTED      DA_BOUNDARY_GHOSTED
+#define DMDA_BOUNDARY_MIRROR       DA_BOUNDARY_MIRROR
+#define DMDA_BOUNDARY_PERIODIC     DA_BOUNDARY_PERIODIC
+
+#define DMDADirection              DADirection
+#define DMDA_X                     DA_X
+#define DMDA_Y                     DA_Y
+#define DMDA_Z                     DA_Z
+
+#define DMDAStencilType            DAStencilType
+#define DMDA_STENCIL_STAR          DA_STENCIL_STAR
+#define DMDA_STENCIL_BOX           DA_STENCIL_BOX
+
+#define DMDAInterpolationType      DAInterpolationType
+#define DMDA_Q0                    DA_Q0
+#define DMDA_Q1                    DA_Q1
+
+#define DMDAElementType            DAElementType
+#define DMDA_ELEMENT_P1            DA_ELEMENT_P1
+#define DMDA_ELEMENT_Q1            DA_ELEMENT_Q1
+
+#define DMDACreate(a,b)                          DACreate(a,(DA*)b)
+#define DMDASetDim(a,b)                          DASetDim((DA)a,b)
+#define DMDASetDof(a,b)                          DASetDof((DA)a,b)
+#define DMDASetSizes(a,x,y,z)                    DASetSizes((DA)a,x,y,z)
+#define DMDASetNumProcs(a,x,y,z)                 DASetNumProcs((DA)a,x,y,z)
+#define DMDASetOwnershipRanges(a,x,y,z)          DASetOwnershipRanges((DA)a,x,y,z)
+#define DMDASetBoundaryType(a,x,y,z)             DASetBoundaryType((DA)a,x,y,z)
+#define DMDASetStencilType(a,b)                  DASetStencilType((DA)a,b)
+#define DMDASetStencilWidth(a,b)                 DASetStencilWidth((DA)a,b)
+
+#define DMDAGetInfo(a,d,M,N,P,m,n,p,f,w,x,y,z,s) DAGetInfo((DA)a,d,M,N,P,m,n,p,f,w,x,y,z,s)
+#define DMDAGetCorners(a,x,y,z,u,v,w)            DAGetCorners((DA)a,x,y,z,u,v,w)
+#define DMDAGetGhostCorners(a,x,y,z,u,v,w)       DAGetGhostCorners((DA)a,x,y,z,u,v,w)
+#define DMDAGetOwnershipRanges(a,x,y,z)          DAGetOwnershipRanges((DA)a,x,y,z)
+
+#define DMDASetUniformCoordinates(a,x,y,z,u,v,w) DASetUniformCoordinates((DA)a,x,y,z,u,v,w)
+#define DMDASetCoordinates(a,b)                  DASetCoordinates((DA)a,b)
+#define DMDAGetCoordinates(a,b)                  DAGetCoordinates((DA)a,b)
+#define DMDAGetCoordinateDA(a,b)                 DAGetCoordinateDA((DA)a,(DA*)b)
+#define DMDAGetGhostedCoordinates(a,b)           DAGetGhostedCoordinates((DA)a,b)
+#define DMDAGetBoundingBox(a,b,c)                DAGetBoundingBox((DA)a,b,c)
+#define DMDAGetLocalBoundingBox(a,b,c)           DAGetLocalBoundingBox((DA)a,b,c)
+
+#define DMDACreateNaturalVector(a,b)             DACreateNaturalVector((DA)a,b)
+#define DMDAGlobalToNaturalBegin(a,b,c,d)        DAGlobalToNaturalBegin((DA)a,b,c,d)
+#define DMDAGlobalToNaturalEnd(a,b,c,d)          DAGlobalToNaturalEnd((DA)a,b,c,d)
+#define DMDANaturalToGlobalBegin(a,b,c,d)        DANaturalToGlobalBegin((DA)a,b,c,d)
+#define DMDANaturalToGlobalEnd(a,b,c,d)          DANaturalToGlobalEnd((DA)a,b,c,d)
+#define DMDALocalToLocalBegin(a,b,c,d)           DALocalToLocalBegin((DA)a,b,c,d)
+#define DMDALocalToLocalEnd(a,b,c,d)             DALocalToLocalEnd((DA)a,b,c,d)
+
+#define DMDAGetAO(a,b)                           DAGetAO((DA)a,b)
+#define DMDAGetScatter(a,b,c,d)                  DAGetScatter((DA)a,b,c,d)
+
+#define DMDASetRefinementFactor(a,x,y,z)         DASetRefinementFactor((DA)a,x,y,z)
+#define DMDAGetRefinementFactor(a,x,y,z)         DAGetRefinementFactor((DA)a,x,y,z)
+#define DMDASetInterpolationType(a,b)            DASetInterpolationType((DA)a,b)
+#define DMDAGetInterpolationType(a,b)            DAGetInterpolationType((DA)a,b)
+#define DMDASetElementType(a,b)                  DASetElementType((DA)a,b)
+#define DMDAGetElementType(a,b)                  DAGetElementType((DA)a,b)
+#define DMDAGetElements(a,b,c,d)                 DAGetElements((DA)a,b,c,d)
+#define DMDARestoreElements(a,b,c,d)             DARestoreElements((DA)a,b,c,d)
+
 #endif
 
 /* ---------------------------------------------------------------- */

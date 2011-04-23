@@ -7,12 +7,9 @@
 #include <Python.h>
 
 #include <petsc.h>
-
 #if PETSC_VERSION_(3,0,0)
 #include <petscts.h>
 #include <petscda.h>
-#elif !PETSC_VERSION_(3,1,0)
-#define DA DM
 #endif
 
 #include "petsc4py.PETSc_api.h"

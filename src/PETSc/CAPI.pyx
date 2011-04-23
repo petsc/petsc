@@ -215,27 +215,14 @@ cdef api PetscAO PyPetscAO_Get(object arg) except ? NULL:
 # -- DM --
 
 cdef api object PyPetscDM_New(PetscDM arg):
-    cdef DM retv = subtype_DM(arg)()#DM()
-    setref(&retv.dm[0], arg)
+    cdef DM retv = subtype_DM(arg)()
+    setref(&retv.dm, arg)
     return retv
 
 cdef api PetscDM PyPetscDM_Get(object arg) except ? NULL:
     cdef PetscDM retv = NULL
     cdef DM ob = <DM?> arg
-    retv = ob.dm[0]
-    return retv
-
-# -- DA --
-
-cdef api object PyPetscDA_New(PetscDA arg):
-    cdef DA retv = DA()
-    setref(&retv.da, arg)
-    return retv
-
-cdef api PetscDA PyPetscDA_Get(object arg) except ? NULL:
-    cdef PetscDA retv = NULL
-    cdef DA ob = <DA?> arg
-    retv = ob.da
+    retv = ob.dm
     return retv
 
 #---------------------------------------------------------------------

@@ -2,26 +2,25 @@
 
 cdef extern from * nogil:
 
-    ctypedef enum PetscDABoundaryType "DABoundaryType":
-        DA_BOUNDARY_NONE
-        DA_BOUNDARY_GHOSTED
-        DA_BOUNDARY_MIRROR
-        DA_BOUNDARY_PERIODIC
+    ctypedef PetscDM PetscDA "DM"
 
-    ctypedef enum PetscDAStencilType "DAStencilType":
-        DA_STENCIL_STAR
-        DA_STENCIL_BOX
+    ctypedef enum PetscDABoundaryType "DMDABoundaryType":
+        DA_BOUNDARY_NONE     "DMDA_BOUNDARY_NONE"
+        DA_BOUNDARY_GHOSTED  "DMDA_BOUNDARY_GHOSTED"
+        DA_BOUNDARY_MIRROR   "DMDA_BOUNDARY_MIRROR"
+        DA_BOUNDARY_PERIODIC "DMDA_BOUNDARY_PERIODIC"
 
-    ctypedef enum PetscDAInterpolationType "DAInterpolationType":
-        DA_INTERPOLATION_Q0 "DA_Q0"
-        DA_INTERPOLATION_Q1 "DA_Q1"
+    ctypedef enum PetscDAStencilType "DMDAStencilType":
+        DA_STENCIL_STAR "DMDA_STENCIL_STAR"
+        DA_STENCIL_BOX  "DMDA_STENCIL_BOX"
 
-    ctypedef enum PetscDAElementType "DAElementType":
-        DA_ELEMENT_P1
-        DA_ELEMENT_Q1
+    ctypedef enum PetscDAInterpolationType "DMDAInterpolationType":
+        DA_INTERPOLATION_Q0 "DMDA_Q0"
+        DA_INTERPOLATION_Q1 "DMDA_Q1"
 
-    int DAView(PetscDA,PetscViewer)
-    int DADestroy(PetscDA*)
+    ctypedef enum PetscDAElementType "DMDAElementType":
+        DA_ELEMENT_P1 "DMDA_ELEMENT_P1"
+        DA_ELEMENT_Q1 "DMDA_ELEMENT_Q1"
 
     int DACreateND(MPI_Comm,
                    PetscInt,PetscInt,                # dim, dof
@@ -35,13 +34,8 @@ cdef extern from * nogil:
                    PetscInt,                         # stencil width
                    PetscDA*)
 
-    int DASetOptionsPrefix(PetscDA,char[])
-    int DASetFromOptions(PetscDA)
-    int DASetInterpolationType(PetscDA,PetscDAInterpolationType)
-    int DAGetInterpolation(PetscDA,PetscDA,PetscMat*,PetscVec*)
-    int DAGetInjection(PetscDA,PetscDA,PetscScatter*)
-    int DAGetAggregates(PetscDA,PetscDA,PetscMat*)
-    int DAGetInfo(PetscDA,
+    int DAGetInfo"DMDAGetInfo"(
+                  PetscDA,
                   PetscInt*,
                   PetscInt*,PetscInt*,PetscInt*,
                   PetscInt*,PetscInt*,PetscInt*,
@@ -50,62 +44,54 @@ cdef extern from * nogil:
                   PetscDABoundaryType*,
                   PetscDABoundaryType*,
                   PetscDAStencilType*)
-    int DAGetOwnershipRanges(PetscDA,
+    int DAGetCorners"DMDAGetCorners"(
+                     PetscDA,
+                     PetscInt*,PetscInt*,PetscInt*,
+                     PetscInt*,PetscInt*,PetscInt*)
+    int DAGetGhostCorners"DMDAGetGhostCorners"(
+                          PetscDA,
+                          PetscInt*,PetscInt*,PetscInt*,
+                          PetscInt*,PetscInt*,PetscInt*)
+    int DAGetOwnershipRanges"DMDAGetOwnershipRanges"(
+                             PetscDA,
                              const_PetscInt*[],
                              const_PetscInt*[],
                              const_PetscInt*[])
 
-    int DAGetCorners(PetscDA,
-                     PetscInt*,PetscInt*,PetscInt*,
-                     PetscInt*,PetscInt*,PetscInt*)
-    int DAGetGhostCorners(PetscDA,
-                          PetscInt*,PetscInt*,PetscInt*,
-                          PetscInt*,PetscInt*,PetscInt*)
-
-    int DASetUniformCoordinates(PetscDA,
+    int DASetUniformCoordinates"DMDASetUniformCoordinates"(
+                                PetscDA,
                                 PetscReal,PetscReal,
                                 PetscReal,PetscReal,
                                 PetscReal,PetscReal)
-    int DASetCoordinates(PetscDA,PetscVec)
-    int DAGetCoordinates(PetscDA,PetscVec*)
-    int DAGetCoordinateDA(PetscDA,PetscDA*)
-    int DAGetGhostedCoordinates(PetscDA,PetscVec*)
+    int DASetCoordinates"DMDASetCoordinates"(PetscDA,PetscVec)
+    int DAGetCoordinates"DMDAGetCoordinates"(PetscDA,PetscVec*)
+    int DAGetCoordinateDA"DMDAGetCoordinateDA"(PetscDA,PetscDA*)
+    int DAGetGhostedCoordinates"DMDAGetGhostedCoordinates"(PetscDA,PetscVec*)
+    int DAGetBoundingBox"DMDAGetBoundingBox"(PetscDM,PetscReal[],PetscReal[])
+    int DAGetLocalBoundingBox"DMDAGetLocalBoundingBox"(PetscDM,PetscReal[],PetscReal[])
 
-    int DACreateGlobalVector(PetscDA,PetscVec*)
-    int DACreateNaturalVector(PetscDA,PetscVec*)
-    int DACreateLocalVector(PetscDA,PetscVec*)
+    int DACreateNaturalVector"DMDACreateNaturalVector"(PetscDA,PetscVec*)
+    int DAGlobalToNaturalBegin"DMDAGlobalToNaturalBegin"(PetscDA,PetscVec,PetscInsertMode,PetscVec)
+    int DAGlobalToNaturalEnd"DMDAGlobalToNaturalEnd"(PetscDA,PetscVec,PetscInsertMode,PetscVec)
+    int DANaturalToGlobalBegin"DMDANaturalToGlobalBegin"(PetscDA,PetscVec,PetscInsertMode,PetscVec)
+    int DANaturalToGlobalEnd"DMDANaturalToGlobalEnd"(PetscDA,PetscVec,PetscInsertMode,PetscVec)
+    int DALocalToLocalBegin"DMDALocalToLocalBegin"(PetscDA,PetscVec,PetscInsertMode,PetscVec)
+    int DALocalToLocalEnd"DMDALocalToLocalEnd"(PetscDA,PetscVec,PetscInsertMode,PetscVec)
 
-    int DAGlobalToLocalBegin(PetscDA,PetscVec,PetscInsertMode,PetscVec)
-    int DAGlobalToLocalEnd(PetscDA,PetscVec,PetscInsertMode,PetscVec)
-    int DAGlobalToNaturalBegin(PetscDA,PetscVec,PetscInsertMode,PetscVec)
-    int DAGlobalToNaturalEnd(PetscDA,PetscVec,PetscInsertMode,PetscVec)
-    int DANaturalToGlobalBegin(PetscDA,PetscVec,PetscInsertMode,PetscVec)
-    int DANaturalToGlobalEnd(PetscDA,PetscVec,PetscInsertMode,PetscVec)
-    int DALocalToLocalBegin(PetscDA,PetscVec,PetscInsertMode,PetscVec)
-    int DALocalToLocalEnd(PetscDA,PetscVec,PetscInsertMode,PetscVec)
-    int DALocalToGlobal(PetscDA,PetscVec,PetscInsertMode,PetscVec)
-    int DALocalToGlobalBegin(PetscDA,PetscVec,PetscVec)
-    int DALocalToGlobalEnd(PetscDA,PetscVec,PetscVec)
+    int DAGetAO"DMDAGetAO"(PetscDA,PetscAO*)
+    int DAGetScatter"DMDAGetScatter"(PetscDA,PetscScatter*,PetscScatter*,PetscScatter*)
 
-    int DAGetMatrix(PetscDA,PetscMatType,PetscMat*)
+    int DASetRefinementFactor"DMDASetRefinementFactor"(PetscDA,PetscInt,PetscInt,PetscInt)
+    int DAGetRefinementFactor"DMDAGetRefinementFactor"(PetscDA,PetscInt*,PetscInt*,PetscInt*)
+    int DASetInterpolationType"DMDASetInterpolationType"(PetscDA,PetscDAInterpolationType)
+    int DAGetInterpolationType"DMDAGetInterpolationType"(PetscDA,PetscDAInterpolationType*)
+    int DASetElementType"DMDASetElementType"(PetscDA,PetscDAElementType)
+    int DAGetElementType"DMDAGetElementType"(PetscDA,PetscDAElementType*)
+    int DAGetElements"DMDAGetElements"(PetscDA,PetscInt*,PetscInt*,const_PetscInt**)
+    int DARestoreElements"DMDARestoreElements"(PetscDA,PetscInt*,PetscInt*,const_PetscInt**)
 
-    int DAGetAO(PetscDA,PetscAO*)
-    int DAGetLocalToGlobalMapping(PetscDA,PetscLGMap*)
-    int DAGetLocalToGlobalMappingBlock(PetscDA,PetscLGMap*)
-    int DAGetScatter(PetscDA,PetscScatter*,PetscScatter*,PetscScatter*)
-
-    int DASetRefinementFactor(PetscDA,PetscInt,PetscInt,PetscInt)
-    int DAGetRefinementFactor(PetscDA,PetscInt*,PetscInt*,PetscInt*)
-    int DARefine(PetscDA,MPI_Comm,PetscDA*)
-    int DACoarsen(PetscDA,MPI_Comm,PetscDA*)
-
-    int DASetElementType(PetscDA,PetscDAElementType)
-    int DAGetElementType(PetscDA,PetscDAElementType*)
-    int DAGetElements(PetscDA,PetscInt*,PetscInt*,const_PetscInt**)
-    int DARestoreElements(PetscDA,PetscInt*,PetscInt*,const_PetscInt**)
-
-    #int DASetFieldName(PetscDA,PetscInt,const_char[])
-    #int DAGetFieldName(PetscDA,PetscInt,char**)
+    #int DASetFieldName"DMDASetFieldName"(PetscDA,PetscInt,const_char[])
+    #int DAGetFieldName"DMDAGetFieldName"(PetscDA,PetscInt,const_char*[])
 
 # --------------------------------------------------------------------
 
@@ -126,7 +112,7 @@ cdef inline PetscDABoundaryType asBoundaryType(object boundary) \
             raise ValueError("unknown boundary type: %s" % boundary)
     return boundary
 
-cdef inline int asBoundary(PetscInt dim, 
+cdef inline int asBoundary(PetscInt dim,
                            object boundary,
                            PetscDABoundaryType *_x,
                            PetscDABoundaryType *_y,
@@ -148,7 +134,7 @@ cdef inline int asBoundary(PetscInt dim,
     if dim >= 3: _z[0] = asBoundaryType(z)
     return 0
 
-cdef inline object toBoundary(PetscInt dim, 
+cdef inline object toBoundary(PetscInt dim,
                               PetscDABoundaryType x,
                               PetscDABoundaryType y,
                               PetscDABoundaryType z):
@@ -228,15 +214,15 @@ cdef class _DA_Vec_array(object):
     def __cinit__(self, DA da not None, Vec vec not None):
         #
         cdef PetscInt dim, dof
-        CHKERR( DAGetInfo(da.da,
+        CHKERR( DAGetInfo(da.dm,
                           &dim, NULL, NULL, NULL, NULL, NULL, NULL,
                           &dof, NULL, NULL, NULL, NULL, NULL) )
         cdef PetscInt lxs, lys, lzs, lxm, lym, lzm
-        CHKERR( DAGetCorners(da.da,
+        CHKERR( DAGetCorners(da.dm,
                              &lxs, &lys, &lzs,
                              &lxm, &lym, &lzm) )
         cdef PetscInt gxs, gys, gzs, gxm, gym, gzm
-        CHKERR( DAGetGhostCorners(da.da,
+        CHKERR( DAGetGhostCorners(da.dm,
                                   &gxs, &gys, &gzs,
                                   &gxm, &gym, &gzm) )
         #

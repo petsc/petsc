@@ -7,8 +7,10 @@
 #include "private/snesimpl.h"
 #include "private/tsimpl.h"
 
+#if PETSC_VERSION_(3,1,0) || PETSC_VERSION_(3,0,0)
 #include "compat.h"
 #include "compat/destroy.h"
+#endif
 
 /* ---------------------------------------------------------------- */
 
@@ -1231,129 +1233,73 @@ TSMonitorCall(TS ts,PetscInt step,PetscReal ptime,Vec x)
 
 /* ---------------------------------------------------------------- */
 
-#if (PETSC_VERSION_(3,0,0))
+#if PETSC_VERSION_(3,1,0)
+
 #undef __FUNCT__
 #define __FUNCT__ "DACreateND"
 static PetscErrorCode
-DACreateND(MPI_Comm comm,
-           PetscInt dim,PetscInt dof,
+DACreateND(MPI_Comm comm,PetscInt dim,PetscInt dof,
            PetscInt M,PetscInt N,PetscInt P,
            PetscInt m,PetscInt n,PetscInt p,
            const PetscInt lx[],const PetscInt ly[],const PetscInt lz[],
            DABoundaryType bx,DABoundaryType by,DABoundaryType bz,
            DAStencilType stencil_type,PetscInt stencil_width,
-           DA *da)
+           DM *dm)
 {
+  DA             da;
+  DAPeriodicType ptype = DA_NONPERIODIC;
+  const DAType   datype = 0;
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidPointer(dm,18);
+  ierr = DA_Boundary2Periodic(dim,bx,by,bz,&ptype);CHKERRQ(ierr);
+  ierr = DACreate(comm,&da);CHKERRQ(ierr);
+  ierr = DASetDim(da,dim);CHKERRQ(ierr);
+  ierr = DASetDof(da,dof);CHKERRQ(ierr);
+  ierr = DASetSizes(da,M,N,P);CHKERRQ(ierr);
+  ierr = DASetNumProcs(da,m,n,p);CHKERRQ(ierr);
+  ierr = DASetOwnershipRanges(da,lx,ly,lz);CHKERRQ(ierr);
+  ierr = DASetPeriodicity(da,ptype);CHKERRQ(ierr);
+  ierr = DASetStencilType(da,stencil_type);CHKERRQ(ierr);
+  ierr = DASetStencilWidth(da,stencil_width);CHKERRQ(ierr);
+  ierr = DASetFromOptions(da);CHKERRQ(ierr);
+  switch (dim) {
+  case 1: datype = DA1D; break;
+  case 2: datype = DA2D; break;
+  case 3: datype = DA3D; break;}
+  ierr = DASetType(da,datype);CHKERRQ(ierr);
+  *dm = (DM)da;
+  PetscFunctionReturn(0);
+}
+
+#elif PETSC_VERSION_(3,0,0)
+
+#undef __FUNCT__
+#define __FUNCT__ "DACreateND"
+static PetscErrorCode
+DACreateND(MPI_Comm comm,PetscInt dim,PetscInt dof,
+           PetscInt M,PetscInt N,PetscInt P,
+           PetscInt m,PetscInt n,PetscInt p,
+           const PetscInt lx[],const PetscInt ly[],const PetscInt lz[],
+           DABoundaryType bx,DABoundaryType by,DABoundaryType bz,
+           DAStencilType stencil_type,PetscInt stencil_width,
+           DM *dm)
+{
+  DA             da;
   DAPeriodicType ptype = DA_NONPERIODIC;
   PetscErrorCode ierr;
   PetscFunctionBegin;
+  PetscValidPointer(dm,18);
   ierr = DA_Boundary2Periodic(dim,bx,by,bz,&ptype);CHKERRQ(ierr);
   ierr = DACreate(comm,dim,ptype,stencil_type,
                   M,N,P,m,n,p,dof,stencil_width,
-                  lx,ly,lz,da);CHKERRQ(ierr);
+                  lx,ly,lz,&da);CHKERRQ(ierr);
+  *dm = (DM)da;
   PetscFunctionReturn(0);
 }
 
 #else
 
-#if !(PETSC_VERSION_(3,1,0))
-
-#define _p_DA _p_DM
-#define DA DM
-
-#define DACreate           DMDACreate
-#define DADestroy          DMDestroy
-#define DASetUp            DMSetUp
-#define DAView             DMView
-#define DASetOptionsPrefix DMSetOptionsPrefix
-#define DASetFromOptions   DMSetFromOptions
-
-#define DASetDim             DMDASetDim
-#define DASetDof             DMDASetDof
-#define DASetSizes           DMDASetSizes
-#define DASetNumProcs        DMDASetNumProcs
-#define DASetOwnershipRanges DMDASetOwnershipRanges
-#define DASetBoundaryType    DMDASetBoundaryType
-#define DASetStencilType     DMDASetStencilType
-#define DASetStencilWidth    DMDASetStencilWidth
-
-#define DABoundaryType       DMDABoundaryType
-#define DA_BOUNDARY_NONE     DMDA_BOUNDARY_NONE
-#define DA_BOUNDARY_GHOSTED  DMDA_BOUNDARY_GHOSTED
-#define DA_BOUNDARY_MIRROR   DMDA_BOUNDARY_MIRROR
-#define DA_BOUNDARY_PERIODIC DMDA_BOUNDARY_PERIODIC
-
-#define DADirection DMDADirection
-#define DA_X        DMDA_X
-#define DA_Y        DMDA_Y
-#define DA_Z        DMDA_Z
-
-#define DAStencilType   DMDAStencilType
-#define DA_STENCIL_STAR DMDA_STENCIL_STAR
-#define DA_STENCIL_BOX  DMDA_STENCIL_BOX
-
-#define DAInterpolationType DMDAInterpolationType
-#define DA_Q0 DMDA_Q0
-#define DA_Q1 DMDA_Q1
-#define DAElementType DMDAElementType
-#define DA_ELEMENT_P1 DMDA_ELEMENT_P1
-#define DA_ELEMENT_Q1 DMDA_ELEMENT_Q1
-
-#define DAGetOwnershipRanges DMDAGetOwnershipRanges
-#define DAGetCorners         DMDAGetCorners
-#define DAGetGhostCorners    DMDAGetGhostCorners
-#define DAGetInfo            DMDAGetInfo
-
-#define DASetUniformCoordinates DMDASetUniformCoordinates
-#define DASetCoordinates        DMDASetCoordinates
-#define DAGetCoordinates        DMDAGetCoordinates
-#define DAGetCoordinateDA       DMDAGetCoordinateDA
-#define DAGetGhostedCoordinates DMDAGetGhostedCoordinates
-
-#define DACreateNaturalVector DMDACreateNaturalVector
-#define DACreateGlobalVector  DMCreateGlobalVector
-#define DACreateLocalVector   DMCreateLocalVector
-#define DAGetMatrix           DMGetMatrix
-
-#define DAGlobalToNaturalBegin DMDAGlobalToNaturalBegin
-#define DAGlobalToNaturalEnd   DMDAGlobalToNaturalEnd
-#define DANaturalToGlobalBegin DMDANaturalToGlobalBegin
-#define DANaturalToGlobalEnd   DMDANaturalToGlobalEnd
-#define DALocalToLocalBegin    DMDALocalToLocalBegin
-#define DALocalToLocalEnd      DMDALocalToLocalEnd
-
-#define DAGlobalToLocalBegin   DMGlobalToLocalBegin
-#define DAGlobalToLocalEnd     DMGlobalToLocalEnd
-
-#define DALocalToGlobalBegin(da,l,g) \
-        DMLocalToGlobalBegin(da,l,ADD_VALUES,g)
-#define DALocalToGlobalEnd(da,l,g) \
-        DMLocalToGlobalEnd(da,l,ADD_VALUES,g)
-#define DALocalToGlobal(da,l,im,g) \
-        (DMLocalToGlobalBegin(da,l,INSERT_VALUES,g) || \
-         DMLocalToGlobalEnd(da,l,INSERT_VALUES,g))
-
-#define DAGetAO                         DMDAGetAO
-#define DAGetScatter                    DMDAGetScatter
-#define DAGetLocalToGlobalMapping       DMGetLocalToGlobalMapping
-#define DAGetLocalToGlobalMappingBlock  DMGetLocalToGlobalMappingBlock
-
-#define DASetRefinementFactor   DMDASetRefinementFactor
-#define DAGetRefinementFactor   DMDAGetRefinementFactor
-#define DARefine                DMRefine
-#define DACoarsen               DMCoarsen
-#define DASetInterpolationType  DMDASetInterpolationType
-#define DAGetInterpolation      DMGetInterpolation
-#define DAGetInjection          DMGetInjection
-#define DAGetAggregates         DMGetAggregates
-
-#define DASetElementType  DMDASetElementType
-#define DAGetElementType  DMDAGetElementType
-#define DAGetElements     DMGetElements
-#define DARestoreElements DMRestoreElements
-
-#endif
-
 #undef __FUNCT__
 #define __FUNCT__ "DACreateND"
 static PetscErrorCode
@@ -1362,31 +1308,28 @@ DACreateND(MPI_Comm comm,
            PetscInt M,PetscInt N,PetscInt P,
            PetscInt m,PetscInt n,PetscInt p,
            const PetscInt lx[],const PetscInt ly[],const PetscInt lz[],
-           DABoundaryType bx,DABoundaryType by,DABoundaryType bz,
-           DAStencilType stencil_type,PetscInt stencil_width,
-           DA *da)
+           DMDABoundaryType bx,DMDABoundaryType by,DMDABoundaryType bz,
+           DMDAStencilType stencil_type,PetscInt stencil_width,
+           DM *dm)
 {
+  DM             da;
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = DACreate(comm,da);CHKERRQ(ierr);
-  ierr = DASetDim(*da,dim);CHKERRQ(ierr);
-  ierr = DASetDof(*da,dof);CHKERRQ(ierr);
-  ierr = DASetSizes(*da,M,N,P);CHKERRQ(ierr);
-  ierr = DASetNumProcs(*da,m,n,p);CHKERRQ(ierr);
-  ierr = DASetOwnershipRanges(*da,lx,ly,lz);CHKERRQ(ierr);
-  ierr = DASetBoundaryType(*da,bx,by,bz);CHKERRQ(ierr);
-  ierr = DASetStencilType(*da,stencil_type);CHKERRQ(ierr);
-  ierr = DASetStencilWidth(*da,stencil_width);CHKERRQ(ierr);
-  ierr = DASetUp(*da);CHKERRQ(ierr);
+  PetscValidPointer(dm,18);
+  ierr = DMDACreate(comm,&da);CHKERRQ(ierr);
+  ierr = DMDASetDim(da,dim);CHKERRQ(ierr);
+  ierr = DMDASetDof(da,dof);CHKERRQ(ierr);
+  ierr = DMDASetSizes(da,M,N,P);CHKERRQ(ierr);
+  ierr = DMDASetNumProcs(da,m,n,p);CHKERRQ(ierr);
+  ierr = DMDASetOwnershipRanges(da,lx,ly,lz);CHKERRQ(ierr);
+  ierr = DMDASetBoundaryType(da,bx,by,bz);CHKERRQ(ierr);
+  ierr = DMDASetStencilType(da,stencil_type);CHKERRQ(ierr);
+  ierr = DMDASetStencilWidth(da,stencil_width);CHKERRQ(ierr);
+  ierr = DMSetUp(da);CHKERRQ(ierr);
+  *dm = (DM)da;
   PetscFunctionReturn(0);
 }
 
-#endif
-
-#if (PETSC_VERSION_(3,1,0) || PETSC_VERSION_(3,0,0))
-DESTROY(DA , DM_CLASSID)
-#undef  DADestroy
-#define DADestroy DADestroy_new
 #endif
 
 /* ---------------------------------------------------------------- */

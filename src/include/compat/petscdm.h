@@ -1,8 +1,7 @@
 #ifndef _COMPAT_PETSC_DM_H
 #define _COMPAT_PETSC_DM_H
 
-#if PETSC_VERSION_(3,1,0) || \
-    PETSC_VERSION_(3,0,0)
+#if PETSC_VERSION_(3,1,0) || PETSC_VERSION_(3,0,0)
 
 #include <petscda.h>
 
@@ -48,13 +47,30 @@ static PetscErrorCode DMGetType(DM dm, const char **method)
   PetscFunctionReturn(0);
 }
 
-#if !PETSC_VERSION_(3,0,0)
-#define DMSetOptionsPrefix(dm,p) DASetOptionsPrefix((DA)dm,p)
-#define DMSetFromOptions(dm)     DASetFromOptions((DA)dm)
-#else
-#define DMSetOptionsPrefix(dm,p) PetscObjectSetOptionsPrefix((PetscObject)dm,p)
-#define DMSetFromOptions(dm)     PetscObjectSetFromOptions((PetscObject)dm)
+#undef __FUNCT__
+#define __FUNCT__ "DMSetOptionsPrefix"
+static PetscErrorCode DMSetOptionsPrefix(DM dm,const char prefix[])
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_COOKIE,1);
+  ierr = PetscObjectSetOptionsPrefix((PetscObject)dm,prefix);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMSetFromOptions"
+static PetscErrorCode DMSetFromOptions(DM dm)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_COOKIE,1);
+#if PETSC_VERSION_(3,1,0)
+  ierr = DASetFromOptions((DA)dm);CHKERRQ(ierr);
 #endif
+  ierr = 0;CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "DMSetUp"
@@ -63,11 +79,24 @@ static PetscErrorCode DMSetUp(DM dm)
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_COOKIE,1);
-#if !PETSC_VERSION_(3,0,0)
+#if PETSC_VERSION_(3,1,0)
   ierr = DASetFromOptions((DA)dm);CHKERRQ(ierr);
-#else
-  ierr = 0;CHKERRQ(ierr);
 #endif
+  ierr = 0;CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMGetBlockSize"
+static PetscErrorCode DMGetBlockSize(DM dm, PetscInt *bs)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_COOKIE,1);
+  PetscValidIntPointer(bs,2);
+  ierr = DAGetInfo((DA)dm,0,
+		   0,0,0,0,0,0,
+		   bs,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

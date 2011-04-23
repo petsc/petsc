@@ -259,12 +259,12 @@ cdef class TS(Object):
         cdef PetscDM newdm = NULL
         CHKERR( TSGetDM(self.ts, &newdm) )
         cdef DM dm = subtype_DM(newdm)()
-        dm.dm[0] = newdm
+        dm.dm = newdm
         PetscINCREF(<PetscObject>dm.dm)
         return dm
 
     def setDM(self, DM dm not None):
-        CHKERR( TSSetDM(self.ts, dm.dm[0]) )
+        CHKERR( TSSetDM(self.ts, dm.dm) )
 
     # --- customization ---
 

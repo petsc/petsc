@@ -111,7 +111,7 @@ cdef class Mat(Object):
     #
 
     def __cinit__(self):
-        self.obj  = <PetscObject*> &self.mat
+        self.obj = <PetscObject*> &self.mat
         self.mat = NULL
 
     # unary operations

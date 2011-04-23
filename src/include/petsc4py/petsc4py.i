@@ -610,7 +610,7 @@ SWIG_From_dec(Type)(Type v) {
 %petsc4py_objt( Petsc , SNES      , SNES                   , PETSC_SNES          , PETSC_NULL )
 %petsc4py_objt( Petsc , TS        , TS                     , PETSC_TS            , PETSC_NULL )
 %petsc4py_objt( Petsc , AO        , AO                     , PETSC_AO            , PETSC_NULL )
-%petsc4py_objt( Petsc , DA        , DA                     , PETSC_DM            , PETSC_NULL )
+%petsc4py_objt( Petsc , DM        , DM                     , PETSC_DM            , PETSC_NULL )
 
 /* ---------------------------------------------------------------- */
 

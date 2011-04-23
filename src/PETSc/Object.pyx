@@ -135,6 +135,7 @@ cdef class Object:
         return bytes2str(cval)
 
     def getRefCount(self):
+        if self.obj[0] == NULL: return 0
         cdef PetscInt refcnt = 0
         CHKERR( PetscObjectGetReference(self.obj[0], &refcnt) )
         return toInt(refcnt)

@@ -14,6 +14,7 @@ cdef extern from * nogil:
     int DMSetFromOptions(PetscDM)
     int DMSetUp(PetscDM)
 
+    int DMGetBlockSize(PetscDM,PetscInt*)
     int DMCreateLocalVector(PetscDM,PetscVec*)
     int DMCreateGlobalVector(PetscDM,PetscVec*)
     int DMGetMatrix(PetscDM,PetscMatType,PetscMat*)
@@ -33,9 +34,6 @@ cdef extern from * nogil:
 
     int DMGetLocalToGlobalMapping(PetscDM,PetscLGMap*)
     int DMGetLocalToGlobalMappingBlock(PetscDM,PetscLGMap*)
-
-    int DMGetElements(PetscDM,PetscInt*,PetscInt*,const_PetscInt**)
-    int DMRestoreElements(PetscDM,PetscInt*,PetscInt*,const_PetscInt**)
 
 # --------------------------------------------------------------------
 

@@ -95,12 +95,12 @@ cdef class SNES(Object):
         cdef PetscDM newdm = NULL
         CHKERR( SNESGetDM(self.snes, &newdm) )
         cdef DM dm = subtype_DM(newdm)()
-        dm.dm[0] = newdm
+        dm.dm = newdm
         PetscINCREF(<PetscObject>dm.dm)
         return dm
 
     def setDM(self, DM dm not None):
-        CHKERR( SNESSetDM(self.snes, dm.dm[0]) )
+        CHKERR( SNESSetDM(self.snes, dm.dm) )
 
     # --- user Function/Jacobian routines ---
 
