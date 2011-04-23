@@ -131,8 +131,6 @@ extern PetscErrorCode   DMGlobalToLocalBegin(DM,Vec,InsertMode,Vec);
 extern PetscErrorCode   DMGlobalToLocalEnd(DM,Vec,InsertMode,Vec);
 extern PetscErrorCode   DMLocalToGlobalBegin(DM,Vec,InsertMode,Vec);
 extern PetscErrorCode   DMLocalToGlobalEnd(DM,Vec,InsertMode,Vec);
-extern PetscErrorCode   DMGetElements(DM,PetscInt *,PetscInt *,const PetscInt*[]);
-extern PetscErrorCode   DMRestoreElements(DM,PetscInt *,PetscInt *,const PetscInt*[]);
 extern PetscErrorCode   DMConvert(DM,const DMType,DM*);
 
 extern PetscErrorCode   DMSetOptionsPrefix(DM,const char []);

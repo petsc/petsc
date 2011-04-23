@@ -327,7 +327,7 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
   ierr = VecGetArrayRead(coords,&_coords);CHKERRQ(ierr);
 
   /* Get local element info */
-  ierr = DMGetElements(user->da,&nele,&nen,&ele);CHKERRQ(ierr);
+  ierr = DMDAGetElements(user->da,&nele,&nen,&ele);CHKERRQ(ierr);
   for(i=0;i < nele;i++) {
     idx[0] = ele[3*i]; idx[1] = ele[3*i+1]; idx[2] = ele[3*i+2];
     x[0] = _coords[2*idx[0]]; y[0] = _coords[2*idx[0]+1];
@@ -389,7 +389,7 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
     }
   }
 
-  ierr = DMRestoreElements(user->da,&nele,&nen,&ele);CHKERRQ(ierr);
+  ierr = DMDARestoreElements(user->da,&nele,&nen,&ele);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(coords,&_coords);CHKERRQ(ierr);
 
   ierr = MatAssemblyBegin(M,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

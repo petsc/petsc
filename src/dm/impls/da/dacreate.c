@@ -60,7 +60,6 @@ extern PetscErrorCode  DMLocalToGlobalBegin_DA(DM,Vec,InsertMode,Vec);
 extern PetscErrorCode  DMLocalToGlobalEnd_DA(DM,Vec,InsertMode,Vec);
 extern PetscErrorCode  DMGetInterpolation_DA(DM,DM,Mat*,Vec*);
 extern PetscErrorCode  DMGetColoring_DA(DM,ISColoringType,const MatType,ISColoring*);
-extern PetscErrorCode  DMGetElements_DA(DM,PetscInt*,PetscInt*,const PetscInt *[]);
 extern PetscErrorCode  DMGetMatrix_DA(DM,const MatType,Mat*);
 extern PetscErrorCode  DMRefine_DA(DM,MPI_Comm,DM*);
 extern PetscErrorCode  DMCoarsen_DA(DM,MPI_Comm,DM*);
@@ -131,7 +130,6 @@ PetscErrorCode  DMCreate_DA(DM da)
   da->ops->createlocalvector  = DMCreateLocalVector_DA;
   da->ops->getinterpolation   = DMGetInterpolation_DA;
   da->ops->getcoloring        = DMGetColoring_DA;
-  da->ops->getelements        = DMGetElements_DA;
   da->ops->getmatrix          = DMGetMatrix_DA;
   da->ops->refine             = DMRefine_DA;
   da->ops->coarsen            = DMCoarsen_DA;

@@ -34,9 +34,6 @@ struct _DMOps {
   PetscErrorCode (*localtoglobalbegin)(DM,Vec,InsertMode,Vec); 
   PetscErrorCode (*localtoglobalend)(DM,Vec,InsertMode,Vec); 
 
-  PetscErrorCode (*getelements)(DM,PetscInt*,PetscInt*,const PetscInt*[]);   
-  PetscErrorCode (*restoreelements)(DM,PetscInt*,PetscInt*,const PetscInt*[]); 
-
   PetscErrorCode (*initialguess)(DM,Vec); 
   PetscErrorCode (*function)(DM,Vec,Vec);			
   PetscErrorCode (*functionj)(DM,Vec,Vec);			
