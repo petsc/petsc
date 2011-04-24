@@ -16,10 +16,41 @@
 #define PETSCVIEWERMATLAB       PETSC_VIEWER_MATLAB
 #endif
 
-#if (PETSC_VERSION_(3,1,0) || \
-     PETSC_VERSION_(3,0,0))
+#if PETSC_VERSION_(3,1,0) || PETSC_VERSION_(3,0,0)
 #define PetscViewerFileGetName(v,n) \
         PetscViewerFileGetName((v),(char**)(n))
+#endif
+
+#if PETSC_VERSION_(3,1,0) || PETSC_VERSION_(3,0,0)
+#undef __FUNCT__
+#define __FUNCT__ "PetscObjectPrintClassNamePrefixType"
+static PetscErrorCode PetscObjectPrintClassNamePrefixType(PetscObject obj,PetscViewer viewer,const char string[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscViewerASCIIPrintf(viewer,"%s:",string);CHKERRQ(ierr);
+  if (obj->name) {
+    ierr = PetscViewerASCIIPrintf(viewer,"%s",obj->name);CHKERRQ(ierr);
+  }
+  if (obj->prefix) {
+    ierr = PetscViewerASCIIPrintf(viewer,"(%s)",obj->prefix);CHKERRQ(ierr);
+  }
+  /*{
+  MPI_Comm       comm;
+  PetscMPIInt    size;
+  ierr = PetscObjectGetComm(obj,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer," %d MPI processes",size);CHKERRQ(ierr);
+  }*/
+  ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
+  if (obj->type_name) {
+    ierr = PetscViewerASCIIPrintf(viewer,"  type: %s\n",obj->type_name);CHKERRQ(ierr);
+  } else {
+    ierr = PetscViewerASCIIPrintf(viewer,"  type not yet set\n");CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
 #endif
 
 #endif /* _COMPAT_PETSC_VIEWER_H */

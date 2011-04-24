@@ -1073,7 +1073,7 @@ cdef class NullSpace(Object):
     def view(self, Viewer viewer=None):
         cdef PetscViewer vwr = NULL
         if viewer is not None: vwr = viewer.vwr
-        return ## XXX I should do something here
+        CHKERR( MatNullSpaceView(self.nsp, vwr) )
 
     def destroy(self):
         CHKERR( MatNullSpaceDestroy(&self.nsp) )

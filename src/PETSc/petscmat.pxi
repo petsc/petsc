@@ -303,6 +303,7 @@ cdef extern from "libpetsc4py.h":
 
 cdef extern from * nogil:
     int MatNullSpaceDestroy(PetscNullSpace*)
+    int MatNullSpaceView(PetscNullSpace,PetscViewer)
     int MatNullSpaceCreate(MPI_Comm,PetscBool,PetscInt,PetscVec[],
                            PetscNullSpace*)
     int MatNullSpaceRemove(PetscNullSpace,PetscVec,PetscVec*)

@@ -190,6 +190,40 @@ static PetscErrorCode MatLoad_Compat(Mat mat,PetscViewer viewer)
 #define MATCOLORINGID       MATCOLORING_ID
 #endif
 
+#if PETSC_VERSION_(3,1,0) || PETSC_VERSION_(3,0,0)
+#undef __FUNCT__
+#define __FUNCT__ "MatNullSpaceView"
+static PetscErrorCode MatNullSpaceView(MatNullSpace sp,PetscViewer viewer)
+{
+  PetscErrorCode ierr;
+  PetscBool      iascii;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sp,MAT_NULLSPACE_COOKIE,1);
+  if (!viewer) viewer = PETSC_VIEWER_STDOUT_(((PetscObject)sp)->comm);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2);
+  PetscCheckSameComm(sp,1,viewer,2);
+
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+  if (iascii) {
+    PetscViewerFormat format;
+    PetscInt i;
+    ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
+    ierr = PetscObjectPrintClassNamePrefixType((PetscObject)sp,viewer,"MatNullSpace Object");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"Contains %D vector%s%s\n",sp->n,sp->n==1?"":"s",sp->has_cnst?" and the constant":"");CHKERRQ(ierr);
+    if (sp->remove) {ierr = PetscViewerASCIIPrintf(viewer,"Has user-provided removal function\n");CHKERRQ(ierr);}
+    if (!(format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL)) {
+      for (i=0; i<sp->n; i++) {
+        ierr = VecView(sp->vecs[i],viewer);CHKERRQ(ierr);
+      }
+    }
+    ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+#endif
+
 #if (PETSC_VERSION_(3,0,0))
 #define MATHYPRESTRUCT  "hyprestruct"
 #define MATHYPRESSTRUCT "hypresstruct"
