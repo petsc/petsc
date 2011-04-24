@@ -118,7 +118,7 @@ extern PetscErrorCode  SNESGetKSP(SNES,KSP*);
 extern PetscErrorCode  SNESSetKSP(SNES,KSP);
 extern PetscErrorCode  SNESGetSolution(SNES,Vec*);
 extern PetscErrorCode  SNESGetSolutionUpdate(SNES,Vec*);
-extern PetscErrorCode  SNESGetFunction(SNES,Vec*,PetscErrorCode(**)(SNES,Vec,Vec,void*),void**);
+extern PetscErrorCode  SNESGetRhs(SNES,Vec*);
 extern PetscErrorCode  SNESView(SNES,PetscViewer);
 
 extern PetscErrorCode  SNESSetOptionsPrefix(SNES,const char[]);
@@ -341,13 +341,15 @@ extern PetscErrorCode  SNESDAComputeJacobianWithAdifor(SNES,Vec,Mat*,Mat*,MatStr
 extern PetscErrorCode  SNESDAComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 
 /* --------- Solving systems of nonlinear equations --------------- */
-extern PetscErrorCode  SNESSetFunction(SNES,Vec,PetscErrorCode(*)(SNES,Vec,Vec,void*),void *);
+typedef PetscErrorCode (*SNESFunction)(SNES,Vec,Vec,void*);
+typedef PetscErrorCode (*SNESJacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode  SNESSetFunction(SNES,Vec,SNESFunction,void*);
+extern PetscErrorCode  SNESGetFunction(SNES,Vec*,SNESFunction*,void**);
 extern PetscErrorCode  SNESComputeFunction(SNES,Vec,Vec);
-extern PetscErrorCode  SNESSetJacobian(SNES,Mat,Mat,PetscErrorCode(*)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void *);
-extern PetscErrorCode  SNESGetJacobian(SNES,Mat*,Mat*,PetscErrorCode(**)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void **);
+extern PetscErrorCode  SNESSetJacobian(SNES,Mat,Mat,SNESJacobian,void*);
+extern PetscErrorCode  SNESGetJacobian(SNES,Mat*,Mat*,SNESJacobian*,void**);
 extern PetscErrorCode  SNESDefaultComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 extern PetscErrorCode  SNESDefaultComputeJacobianColor(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
-extern PetscErrorCode  SNESGetRhs(SNES,Vec*);
 
 /* --------- Routines specifically for line search methods --------------- */
 extern PetscErrorCode  SNESLineSearchSet(SNES,PetscErrorCode(*)(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal*,PetscReal*,PetscBool *),void*);
