@@ -286,19 +286,19 @@ cdef class DA(DM):
     def getCoordinates(self):
         cdef Vec c = Vec()
         CHKERR( DAGetCoordinates(self.dm, &c.vec) )
-        PetscINCREF(<PetscObject>c.vec)
+        PetscINCREF(c.obj)
         return c
 
     def getCoordinateDA(self):
         cdef DA cda = DA()
         CHKERR( DAGetCoordinateDA(self.dm, &cda.dm) )
-        PetscINCREF(<PetscObject>cda.dm)
+        PetscINCREF(cda.obj)
         return cda
 
     def getGhostCoordinates(self):
         cdef Vec gc = Vec()
         CHKERR( DAGetGhostedCoordinates(self.dm, &gc.vec) )
-        PetscINCREF(<PetscObject>gc.vec)
+        PetscINCREF(gc.obj)
         return gc
 
     def getBoundingBox(self):
@@ -344,7 +344,7 @@ cdef class DA(DM):
     def getAO(self):
         cdef AO ao = AO()
         CHKERR( DAGetAO(self.dm, &ao.ao) )
-        PetscINCREF(<PetscObject>ao.ao)
+        PetscINCREF(ao.obj)
         return ao
 
     def getScatter(self):
@@ -352,9 +352,9 @@ cdef class DA(DM):
         cdef Scatter g2l = Scatter()
         cdef Scatter l2l = Scatter()
         CHKERR( DAGetScatter(self.dm, &l2g.sct, &g2l.sct, &l2l.sct) )
-        PetscINCREF(<PetscObject>l2g.sct)
-        PetscINCREF(<PetscObject>g2l.sct)
-        PetscINCREF(<PetscObject>l2l.sct)
+        PetscINCREF(l2g.obj)
+        PetscINCREF(g2l.obj)
+        PetscINCREF(l2l.obj)
         return (l2g, g2l, l2l)
 
     #

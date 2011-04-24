@@ -62,8 +62,8 @@ cdef class Fwk(Object):
         CHKERR( PetscFwkGetComponent(self.fwk, _key, &component, &found) )
         if found == PETSC_FALSE or component == NULL: return None
         cdef Fwk fwk = Fwk()
-        PetscINCREF(<PetscObject>component);
         fwk.fwk = component
+        PetscINCREF(fwk.obj);
         return fwk
 
     def call(self, message):
@@ -76,8 +76,8 @@ cdef class Fwk(Object):
         CHKERR( PetscFwkGetParent(self.fwk, &parent) )
         if parent == NULL: return None
         cdef Fwk fwk = Fwk()
-        PetscINCREF(<PetscObject>parent);
         fwk.fwk = parent
+        PetscINCREF(fwk.obj);
         return fwk
 
     def visit(self, message):
@@ -110,7 +110,7 @@ cdef class Fwk(Object):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef Fwk fwk = Fwk()
         fwk.fwk = PETSC_FWK_DEFAULT_(ccomm)
-        PetscINCREF(<PetscObject>(fwk.fwk))
+        PetscINCREF(fwk.obj)
         return fwk
 
 # -----------------------------------------------------------------------------

@@ -141,7 +141,7 @@ cdef class KSP(Object):
         CHKERR( KSPGetDM(self.ksp, &newdm) )
         cdef DM dm = subtype_DM(newdm)()
         dm.dm = newdm
-        PetscINCREF(<PetscObject>dm.dm)
+        PetscINCREF(dm.obj)
         return dm
 
     def setDM(self, DM dm not None):
@@ -161,8 +161,8 @@ cdef class KSP(Object):
         cdef Mat A = Mat(), P = Mat()
         cdef PetscMatStructure flag = MAT_DIFFERENT_NONZERO_PATTERN
         CHKERR( KSPGetOperators(self.ksp, &A.mat, &P.mat, &flag) )
-        PetscINCREF(<PetscObject>A.mat)
-        PetscINCREF(<PetscObject>P.mat)
+        PetscINCREF(A.obj)
+        PetscINCREF(P.obj)
         return (A, P, flag)
 
     def setNullSpace(self, NullSpace nsp not None):
@@ -171,7 +171,7 @@ cdef class KSP(Object):
     def getNullSpace(self):
         cdef NullSpace nsp = NullSpace()
         CHKERR( KSPGetNullSpace(self.ksp, &nsp.nsp) )
-        PetscINCREF(<PetscObject>nsp.nsp)
+        PetscINCREF(nsp.obj)
         return nsp
 
     def setPC(self, PC pc not None):
@@ -180,7 +180,7 @@ cdef class KSP(Object):
     def getPC(self):
         cdef PC pc = PC()
         CHKERR( KSPGetPC(self.ksp, &pc.pc) )
-        PetscINCREF(<PetscObject>pc.pc)
+        PetscINCREF(pc.obj)
         return pc
 
     # --- tolerances and convergence ---
@@ -373,13 +373,13 @@ cdef class KSP(Object):
     def getRhs(self):
         cdef Vec vec = Vec()
         CHKERR( KSPGetRhs(self.ksp, &vec.vec) )
-        PetscINCREF(<PetscObject>vec.vec)
+        PetscINCREF(vec.obj)
         return vec
 
     def getSolution(self):
         cdef Vec vec = Vec()
         CHKERR( KSPGetSolution(self.ksp, &vec.vec) )
-        PetscINCREF(<PetscObject>vec.vec)
+        PetscINCREF(vec.obj)
         return vec
 
     def getWorkVecs(self, right=None, left=None):

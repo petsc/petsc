@@ -172,8 +172,8 @@ cdef extern from "libpetsc4py.h":
 
 cdef inline KSP ref_KSP(PetscKSP ksp):
     cdef KSP ob = <KSP> KSP()
-    PetscINCREF(<PetscObject>ksp)
     ob.ksp = ksp
+    PetscINCREF(ob.obj)
     return ob
 
 # -----------------------------------------------------------------------------

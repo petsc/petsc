@@ -1,13 +1,9 @@
 #---------------------------------------------------------------------
 
-cdef inline int addref(void *o) except -1:
-    CHKERR( PetscINCREF(<PetscObject>o) )
-    return 0
-
 cdef inline int setref(void *d, void *s) except -1:
     cdef PetscObject *dest  = <PetscObject*> d
     cdef PetscObject source = <PetscObject>  s
-    CHKERR( PetscINCREF(source) )
+    CHKERR( PetscINCREF(&source) )
     dest[0] = source
     return 0
 

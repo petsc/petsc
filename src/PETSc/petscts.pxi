@@ -141,8 +141,8 @@ cdef extern from "libpetsc4py.h":
 
 cdef inline TS ref_TS(PetscTS ts):
     cdef TS ob = <TS> TS()
-    PetscINCREF(<PetscObject>ts)
     ob.ts = ts
+    PetscINCREF(ob.obj)
     return ob
 
 # -----------------------------------------------------------------------------

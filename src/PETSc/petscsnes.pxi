@@ -153,8 +153,8 @@ cdef extern from "libpetsc4py.h":
 
 cdef inline SNES ref_SNES(PetscSNES snes):
     cdef SNES ob = <SNES> SNES()
-    PetscINCREF(<PetscObject>snes)
     ob.snes = snes
+    PetscINCREF(ob.obj)
     return ob
 
 # -----------------------------------------------------------------------------

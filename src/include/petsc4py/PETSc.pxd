@@ -70,8 +70,6 @@ ctypedef public api class Object [
     cdef __weakref__
     cdef PetscObject oval
     cdef PetscObject *obj
-    cdef long inc_ref(self) except -1
-    cdef long dec_ref(self) except -1
     cdef object get_attr(self, char name[])
     cdef object set_attr(self, char name[], object attr)
     cdef object get_dict(self)

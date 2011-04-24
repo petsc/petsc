@@ -93,7 +93,7 @@ cdef class _IS_buffer:
 
     def __cinit__(self, IS iset not None):
         cdef PetscIS i = iset.iset
-        CHKERR( PetscINCREF(<PetscObject>i) )
+        CHKERR( PetscINCREF(<PetscObject*>&i) )
         self.iset = i
         self.size = 0
         self.data = NULL

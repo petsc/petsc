@@ -82,13 +82,13 @@ cdef class DM(Object):
     def getLGMap(self):
         cdef LGMap lgm = LGMap()
         CHKERR( DMGetLocalToGlobalMapping(self.dm, &lgm.lgm) )
-        PetscINCREF(<PetscObject>lgm.lgm)
+        PetscINCREF(lgm.obj)
         return lgm
 
     def getLGMapBlock(self):
         cdef LGMap lgm = LGMap()
         CHKERR( DMGetLocalToGlobalMappingBlock(self.dm, &lgm.lgm) )
-        PetscINCREF(<PetscObject>lgm.lgm)
+        PetscINCREF(lgm.obj)
         return lgm
 
     #

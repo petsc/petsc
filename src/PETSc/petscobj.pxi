@@ -33,9 +33,10 @@ cdef extern from "context.h":
 
 # --------------------------------------------------------------------
 
-cdef inline int PetscINCREF(PetscObject obj) nogil:
-    if obj == NULL: return 0
-    return PetscObjectReference(obj)
+cdef inline int PetscINCREF(PetscObject *obj) nogil:
+    if obj    == NULL: return 0
+    if obj[0] == NULL: return 0
+    return PetscObjectReference(obj[0])
 
 cdef inline int PetscCLEAR(PetscObject* obj) nogil:
     if obj    == NULL: return 0

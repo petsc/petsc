@@ -160,15 +160,15 @@ cdef class TS(Object):
     def getRHSFunction(self):
         cdef Vec f = Vec()
         CHKERR( TSGetRHSFunction(self.ts, &f.vec, NULL, NULL) )
-        PetscINCREF(<PetscObject>f.vec)
+        PetscINCREF(f.obj)
         cdef object function = self.get_attr('__rhsfunction__')
         return (f, function)
 
     def getRHSJacobian(self):
         cdef Mat J = Mat(), P = Mat()
         CHKERR( TSGetRHSJacobian(self.ts, &J.mat, &P.mat, NULL, NULL) )
-        PetscINCREF(<PetscObject>J.mat)
-        PetscINCREF(<PetscObject>P.mat)
+        PetscINCREF(J.obj)
+        PetscINCREF(P.obj)
         cdef object jacobian = self.get_attr('__rhsjacobian__')
         return (J, P, jacobian)
 
@@ -216,15 +216,15 @@ cdef class TS(Object):
     def getIFunction(self):
         cdef Vec f = Vec()
         CHKERR( TSGetIFunction(self.ts, &f.vec, NULL, NULL) )
-        PetscINCREF(<PetscObject>f.vec)
+        PetscINCREF(f.obj)
         cdef object function = self.get_attr('__ifunction__')
         return (f, function)
 
     def getIJacobian(self):
         cdef Mat J = Mat(), P = Mat()
         CHKERR( TSGetIJacobian(self.ts, &J.mat, &P.mat, NULL, NULL) )
-        PetscINCREF(<PetscObject>J.mat)
-        PetscINCREF(<PetscObject>P.mat)
+        PetscINCREF(J.obj)
+        PetscINCREF(P.obj)
         cdef object jacobian = self.get_attr('__ijacobian__')
         return (J, P, jacobian)
 
@@ -236,7 +236,7 @@ cdef class TS(Object):
     def getSolution(self):
         cdef Vec u = Vec()
         CHKERR( TSGetSolution(self.ts, &u.vec) )
-        PetscINCREF(<PetscObject>u.vec)
+        PetscINCREF(u.obj)
         return u
 
     # --- inner solver ---
@@ -244,13 +244,13 @@ cdef class TS(Object):
     def getSNES(self):
         cdef SNES snes = SNES()
         CHKERR( TSGetSNES(self.ts, &snes.snes) )
-        PetscINCREF(<PetscObject>snes.snes)
+        PetscINCREF(snes.obj)
         return snes
 
     def getKSP(self):
         cdef KSP ksp = KSP()
         CHKERR( TSGetKSP(self.ts, &ksp.ksp) )
-        PetscINCREF(<PetscObject>ksp.ksp)
+        PetscINCREF(ksp.obj)
         return ksp
 
     # --- discretization space ---
@@ -260,7 +260,7 @@ cdef class TS(Object):
         CHKERR( TSGetDM(self.ts, &newdm) )
         cdef DM dm = subtype_DM(newdm)()
         dm.dm = newdm
-        PetscINCREF(<PetscObject>dm.dm)
+        PetscINCREF(dm.obj)
         return dm
 
     def setDM(self, DM dm not None):

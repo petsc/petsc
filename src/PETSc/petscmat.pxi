@@ -316,8 +316,8 @@ cdef extern from * nogil:
 
 cdef inline NullSpace ref_NullSpace(PetscNullSpace nsp):
     cdef NullSpace ob = <NullSpace> NullSpace()
-    PetscINCREF(<PetscObject>nsp)
     ob.nsp = nsp
+    PetscINCREF(ob.obj)
     return ob
 
 cdef int NullSpace_Function(PetscNullSpace n, PetscVec v, void *ctx) \
@@ -347,8 +347,8 @@ cdef int NullSpace_Function_OLD(PetscVec v, void* ctx) nogil:
 
 cdef inline Mat ref_Mat(PetscMat mat):
     cdef Mat ob = <Mat> Mat()
-    PetscINCREF(<PetscObject>mat)
     ob.mat = mat
+    PetscINCREF(ob.obj)
     return ob
 
 # -----------------------------------------------------------------------------

@@ -226,7 +226,7 @@ cdef class Viewer(Object):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef Viewer viewer = Viewer()
         viewer.vwr = PETSC_VIEWER_STDOUT_(ccomm)
-        PetscINCREF(<PetscObject>(viewer.vwr))
+        PetscINCREF(viewer.obj)
         return viewer
 
     @classmethod
@@ -234,7 +234,7 @@ cdef class Viewer(Object):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef Viewer viewer = Viewer()
         viewer.vwr = PETSC_VIEWER_STDERR_(ccomm)
-        PetscINCREF(<PetscObject>(viewer.vwr))
+        PetscINCREF(viewer.obj)
         return viewer
 
     @classmethod
@@ -251,7 +251,7 @@ cdef class Viewer(Object):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef Viewer viewer = Viewer()
         viewer.vwr = PETSC_VIEWER_BINARY_(ccomm)
-        PetscINCREF(<PetscObject>(viewer.vwr))
+        PetscINCREF(viewer.obj)
         return viewer
 
     @classmethod
@@ -259,7 +259,7 @@ cdef class Viewer(Object):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef Viewer viewer = Viewer()
         viewer.vwr = PETSC_VIEWER_DRAW_(ccomm)
-        PetscINCREF(<PetscObject>(viewer.vwr))
+        PetscINCREF(viewer.obj)
         return viewer
 
     # --- methods specific to file viewers ---

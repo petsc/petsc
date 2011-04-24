@@ -24,8 +24,8 @@ cdef extern from * nogil:
 
 cdef inline object ref_Fwk(PetscFwk fwk):
     cdef Fwk ob = <Fwk> Fwk()
-    PetscINCREF(<PetscObject>fwk)
     ob.fwk = fwk
+    PetscINCREF(ob.obj)
     return ob
 
 cdef dict fwk_cache = {}

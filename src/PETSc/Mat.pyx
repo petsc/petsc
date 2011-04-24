@@ -844,7 +844,7 @@ cdef class Mat(Object):
         cdef Mat mat = Mat()
         CHKERR( MatGetDiagonalBlock(self.mat, &iscopy, reuse, &mat.mat) )
         if iscopy == PETSC_FALSE:
-            PetscINCREF(<PetscObject>mat.mat)
+            PetscINCREF(mat.obj)
         return mat
 
     def getSubMatrix(self, IS isrow not None, IS iscol=None, Mat submat=None):

@@ -139,8 +139,8 @@ cdef class PC(Object):
         cdef Mat A = Mat(), P = Mat()
         cdef PetscMatStructure flag = MAT_DIFFERENT_NONZERO_PATTERN
         CHKERR( PCGetOperators(self.pc, &A.mat, &P.mat, &flag) )
-        PetscINCREF(<PetscObject>A.mat)
-        PetscINCREF(<PetscObject>P.mat)
+        PetscINCREF(A.obj)
+        PetscINCREF(P.obj)
         return (A, P, flag)
 
     def setUp(self):
@@ -171,7 +171,7 @@ cdef class PC(Object):
         CHKERR( PCGetDM(self.pc, &newdm) )
         cdef DM dm = subtype_DM(newdm)()
         dm.dm = newdm
-        PetscINCREF(<PetscObject>dm.dm)
+        PetscINCREF(dm.obj)
         return dm
 
     def setDM(self, DM dm not None):

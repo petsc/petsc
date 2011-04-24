@@ -39,27 +39,6 @@ cdef class Object:
             raise NotImplementedError
         return obj_copy()
 
-    # --- reference management ---
-
-    cdef long inc_ref(self) except -1:
-        cdef PetscObject obj = self.obj[0]
-        cdef PetscInt refct = 0
-        if obj != NULL:
-            CHKERR( PetscObjectReference(obj) )
-            CHKERR( PetscObjectGetReference(obj, &refct) )
-        return (<long>refct)
-
-
-    cdef long dec_ref(self) except -1:
-        cdef PetscObject obj = self.obj[0]
-        cdef PetscInt refct = 0
-        if obj != NULL:
-            CHKERR( PetscObjectGetReference(obj, &refct) )
-            if refct == 1: self.obj[0] = NULL
-            CHKERR( PetscObjectDereference(obj) )
-            refct -= 1
-        return (<long>refct)
-
     # --- attribute management ---
 
     cdef object get_attr(self, char name[]):
@@ -161,15 +140,27 @@ cdef class Object:
         if classid == PETSC_DM_CLASSID:
             Class = subtype_DM(<PetscDM>cobj)
         cdef Object newobj = Class()
-        PetscINCREF(cobj)
         newobj.obj[0] = cobj
+        PetscINCREF(newobj.obj)
         return newobj
 
     def incRef(self):
-        return self.inc_ref()
+        cdef PetscObject obj = self.obj[0]
+        cdef PetscInt refct = 0
+        if obj != NULL:
+            CHKERR( PetscObjectReference(obj) )
+            CHKERR( PetscObjectGetReference(obj, &refct) )
+        return (<long>refct)
 
     def decRef(self):
-        return self.dec_ref()
+        cdef PetscObject obj = self.obj[0]
+        cdef PetscInt refct = 0
+        if obj != NULL:
+            CHKERR( PetscObjectGetReference(obj, &refct) )
+            CHKERR( PetscObjectDereference(obj) )
+            if refct == 1: self.obj[0] = NULL
+            refct -= 1
+        return (<long>refct)
 
     def getAttr(self, name):
         cdef const_char *cval = NULL

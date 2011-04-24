@@ -96,7 +96,7 @@ cdef class SNES(Object):
         CHKERR( SNESGetDM(self.snes, &newdm) )
         cdef DM dm = subtype_DM(newdm)()
         dm.dm = newdm
-        PetscINCREF(<PetscObject>dm.dm)
+        PetscINCREF(dm.obj)
         return dm
 
     def setDM(self, DM dm not None):
@@ -113,7 +113,7 @@ cdef class SNES(Object):
     def getFunction(self):
         cdef Vec f = Vec()
         CHKERR( SNESGetFunction(self.snes, &f.vec, NULL, NULL) )
-        PetscINCREF(<PetscObject>f.vec)
+        PetscINCREF(f.obj)
         cdef object function = self.get_attr('__function__')
         return (f, function)
 
@@ -144,8 +144,8 @@ cdef class SNES(Object):
         cdef Mat J = Mat()
         cdef Mat P = Mat()
         CHKERR( SNESGetJacobian(self.snes, &J.mat, &P.mat, NULL, NULL) )
-        PetscINCREF(<PetscObject>J.mat)
-        PetscINCREF(<PetscObject>P.mat)
+        PetscINCREF(J.obj)
+        PetscINCREF(P.obj)
         cdef object jacobian = self.get_attr('__jacobian__')
         return (J, P, jacobian)
 
@@ -354,19 +354,19 @@ cdef class SNES(Object):
     def getRhs(self):
         cdef Vec vec = Vec()
         CHKERR( SNESGetRhs(self.snes, &vec.vec) )
-        PetscINCREF(<PetscObject>vec.vec)
+        PetscINCREF(vec.obj)
         return vec
 
     def getSolution(self):
         cdef Vec vec = Vec()
         CHKERR( SNESGetSolution(self.snes, &vec.vec) )
-        PetscINCREF(<PetscObject>vec.vec)
+        PetscINCREF(vec.obj)
         return vec
 
     def getSolutionUpdate(self):
         cdef Vec vec = Vec()
         CHKERR( SNESGetSolutionUpdate(self.snes, &vec.vec) )
-        PetscINCREF(<PetscObject>vec.vec)
+        PetscINCREF(vec.obj)
         return vec
 
     # --- linear solver ---
@@ -377,7 +377,7 @@ cdef class SNES(Object):
     def getKSP(self):
         cdef KSP ksp = KSP()
         CHKERR( SNESGetKSP(self.snes, &ksp.ksp) )
-        PetscINCREF(<PetscObject>ksp.ksp)
+        PetscINCREF(ksp.obj)
         return ksp
 
     def setUseEW(self, flag=True, *targs, **kargs):

@@ -139,8 +139,8 @@ cdef extern from * nogil:
 
 cdef inline Vec ref_Vec(PetscVec vec):
     cdef Vec ob = <Vec> Vec()
-    PetscINCREF(<PetscObject>vec)
     ob.vec = vec
+    PetscINCREF(ob.obj)
     return ob
 
 # --------------------------------------------------------------------
@@ -371,7 +371,7 @@ cdef class _Vec_buffer:
 
     def __cinit__(self, Vec vec not None):
         cdef PetscVec v = vec.vec
-        CHKERR( PetscINCREF(<PetscObject>v) )
+        CHKERR( PetscINCREF(<PetscObject*>&v) )
         self.vec = v
         self.size = 0
         self.data = NULL
