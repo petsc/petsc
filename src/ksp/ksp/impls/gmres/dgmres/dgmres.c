@@ -313,7 +313,7 @@ PetscErrorCode KSPSolve_DGMRES (KSP ksp) {
 
     PetscFunctionBegin;
     if (ksp->calc_sings && !dgmres->Rsvd) SETERRQ (((PetscObject)ksp)->comm, PETSC_ERR_ORDER,"Must call KSPSetComputeSingularValues() before KSPSetUp() is called");
-    if (ksp->normtype != KSP_NORM_PRECONDITIONED && ksp->pc_side != PC_RIGHT) SETERRQ (((PetscObject)ksp)->comm, PETSC_ERR_ARG_WRONGSTATE,"Use right preconditioning -ksp_pc_side right if want unpreconditioned norm)");
+    if (ksp->normtype != KSP_NORM_PRECONDITIONED && ksp->pc_side != PC_RIGHT) SETERRQ (((PetscObject)ksp)->comm, PETSC_ERR_ARG_WRONGSTATE,"Use right preconditioning -ksp_pc_side RIGHT if want -ksp_norm_type UNPRECONDITIONED");
 
     ierr     = PetscObjectTakeAccess (ksp);
     CHKERRQ (ierr);

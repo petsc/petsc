@@ -225,10 +225,10 @@ PetscErrorCode KSPSolve_GMRES(KSP ksp)
   if (ksp->calc_sings && !gmres->Rsvd) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_ORDER,"Must call KSPSetComputeSingularValues() before KSPSetUp() is called");
   switch (ksp->normtype) {
   case KSP_NORM_PRECONDITIONED:
-    if (ksp->pc_side != PC_LEFT) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_ARG_WRONGSTATE,"Use left preconditioning -ksp_pc_side right if want preconditioned norm)");
+    if (ksp->pc_side != PC_LEFT) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_ARG_WRONGSTATE,"Use left preconditioning -ksp_pc_side RIGHT if want -ksp_norm_type PRECONDITIONED");
     break;
   case KSP_NORM_UNPRECONDITIONED:
-    if (ksp->pc_side != PC_RIGHT) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_ARG_WRONGSTATE,"Use right preconditioning -ksp_pc_side left if want unpreconditioned norm)");
+    if (ksp->pc_side != PC_RIGHT) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_ARG_WRONGSTATE,"Use right preconditioning -ksp_pc_side LEFT if want -ksp_norm_type UNPRECONDITIONED");
     break;
   default: SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Choose -ksp_norm_type PRECONDITIONED or UNPRECONDITIONED");
   }
