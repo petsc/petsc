@@ -835,7 +835,7 @@ PetscErrorCode PCSetFromOptions_ML(PC pc)
 M*/
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCCreate_ML"
 PetscErrorCode  PCCreate_ML(PC pc)
 {
@@ -845,14 +845,14 @@ PetscErrorCode  PCCreate_ML(PC pc)
 
   PetscFunctionBegin;
   /* PCML is an inherited class of PCMG. Initialize pc as PCMG */
-  ierr = PetscObjectChangeTypeName((PetscObject)pc,PCML);CHKERRQ(ierr);
   ierr = PCSetType(pc,PCMG);CHKERRQ(ierr); /* calls PCCreate_MG() and MGCreate_Private() */
+  ierr = PetscObjectChangeTypeName((PetscObject)pc,PCML);CHKERRQ(ierr);
 
   /* create a supporting struct and attach it to pc */
   ierr = PetscNewLog(pc,PC_ML,&pc_ml);CHKERRQ(ierr);
   mg = (PC_MG*)pc->data;
   mg->innerctx = pc_ml;
-  
+
   pc_ml->ml_object     = 0;
   pc_ml->agg_object    = 0;
   pc_ml->gridctx       = 0;
@@ -860,9 +860,9 @@ PetscErrorCode  PCCreate_ML(PC pc)
   pc_ml->Nlevels       = -1;
   pc_ml->MaxNlevels    = 10;
   pc_ml->MaxCoarseSize = 1;
-  pc_ml->CoarsenScheme = 1; 
+  pc_ml->CoarsenScheme = 1;
   pc_ml->Threshold     = 0.0;
-  pc_ml->DampingFactor = 4.0/3.0; 
+  pc_ml->DampingFactor = 4.0/3.0;
   pc_ml->SpectralNormScheme_Anorm = PETSC_FALSE;
   pc_ml->size          = 0;
 

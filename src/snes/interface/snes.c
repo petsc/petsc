@@ -2500,8 +2500,8 @@ PetscErrorCode  SNESSetType(SNES snes,const SNESType type)
   snes->ops->destroy        = 0;
   /* Call the SNESCreate_XXX routine for this particular Nonlinear solver */
   snes->setupcalled = PETSC_FALSE;
-  ierr = (*r)(snes);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)snes,type);CHKERRQ(ierr);
+  ierr = (*r)(snes);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_AMS)
   if (PetscAMSPublishAll) {
     ierr = PetscObjectAMSPublish((PetscObject)snes);CHKERRQ(ierr);
