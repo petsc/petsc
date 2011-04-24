@@ -336,8 +336,38 @@ PetscErrorCode  DMDASetInterpolationType(DM da,DMDAInterpolationType ctype)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "DMDAGetInterpolationType"
+/*@
+       DMDAGetInterpolationType - Gets the type of interpolation that will be
+          used by DMGetInterpolation()
 
-#undef __FUNCT__  
+   Not Collective
+
+   Input Parameter:
+.  da - distributed array
+
+   Output Parameter:
+.  ctype - interpolation type (DMDA_Q1 and DMDA_Q0 are currently the only supported forms)
+
+   Level: intermediate
+
+.keywords:  distributed array, interpolation
+
+.seealso: DMDA, DMDAInterpolationType, DMDASetInterpolationType(), DMGetInterpolation()
+@*/
+PetscErrorCode  DMDAGetInterpolationType(DM da,DMDAInterpolationType *ctype)
+{
+  DM_DA *dd = (DM_DA*)da->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidPointer(ctype,2);
+  *ctype = dd->interptype;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMDAGetNeighbors"
 /*@C
       DMDAGetNeighbors - Gets an array containing the MPI rank of all the current
@@ -367,131 +397,6 @@ PetscErrorCode  DMDAGetNeighbors(DM da,const PetscMPIInt *ranks[])
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
   *ranks = dd->neighbors;
-  PetscFunctionReturn(0);
-}
-
-/*@C
-      DMDASetElementType - Sets the element type to be returned by DMGetElements()
-
-    Not Collective
-
-   Input Parameter:
-.     da - the DMDA object
-
-   Output Parameters:
-.     etype - the element type, currently either DMDA_ELEMENT_P1 or ELEMENT_Q1
-
-   Level: intermediate
-
-.seealso: DMDAElementType, DMDAGetElementType(), DMGetElements(), DMRestoreElements()
-@*/
-#undef __FUNCT__
-#define __FUNCT__ "DMDASetElementType"
-PetscErrorCode  DMDASetElementType(DM da, DMDAElementType etype)
-{
-  DM_DA          *dd = (DM_DA*)da->data;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
-  PetscValidLogicalCollectiveEnum(da,etype,2);
-  if (dd->elementtype != etype) {
-    ierr = PetscFree(dd->e);CHKERRQ(ierr);
-    dd->elementtype = etype;
-    dd->ne          = 0; 
-    dd->e           = PETSC_NULL;
-  }
-  PetscFunctionReturn(0);
-}
-
-/*@C
-      DMDAGetElementType - Gets the element type to be returned by DMGetElements()
-
-    Not Collective
-
-   Input Parameter:
-.     da - the DMDA object
-
-   Output Parameters:
-.     etype - the element type, currently either DMDA_ELEMENT_P1 or ELEMENT_Q1
-
-   Level: intermediate
-
-.seealso: DMDAElementType, DMDASetElementType(), DMGetElements(), DMRestoreElements()
-@*/
-#undef __FUNCT__
-#define __FUNCT__ "DMDAGetElementType"
-PetscErrorCode  DMDAGetElementType(DM da, DMDAElementType *etype)
-{
-  DM_DA *dd = (DM_DA*)da->data;
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DM_CLASSID,1);
-  PetscValidPointer(etype,2);
-  *etype = dd->elementtype;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "DMGetElements"
-/*@C
-      DMGetElements - Gets an array containing the indices (in local coordinates) 
-                 of all the local elements
-
-    Not Collective
-
-   Input Parameter:
-.     dm - the DM object
-
-   Output Parameters:
-+     nel - number of local elements
-.     nen - number of element nodes
--     e - the indices of the elements vertices
-
-   Level: intermediate
-
-.seealso: DMElementType, DMSetElementType(), DMRestoreElements()
-@*/
-PetscErrorCode  DMGetElements(DM dm,PetscInt *nel,PetscInt *nen,const PetscInt *e[])
-{
-  PetscErrorCode ierr;
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscValidIntPointer(nel,2);
-  PetscValidIntPointer(nen,3);
-  PetscValidPointer(e,4);
-  ierr = (dm->ops->getelements)(dm,nel,nen,e);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "DMRestoreElements"
-/*@C
-      DMRestoreElements - Returns an array containing the indices (in local coordinates) 
-                 of all the local elements obtained with DMGetElements()
-
-    Not Collective
-
-   Input Parameter:
-+     dm - the DM object
-.     nel - number of local elements
-.     nen - number of element nodes
--     e - the indices of the elements vertices
-
-   Level: intermediate
-
-.seealso: DMElementType, DMSetElementType(), DMGetElements()
-@*/
-PetscErrorCode  DMRestoreElements(DM dm,PetscInt *nel,PetscInt *nen,const PetscInt *e[])
-{
-  PetscErrorCode ierr;
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
-  PetscValidIntPointer(nel,2);
-  PetscValidIntPointer(nen,3);
-  PetscValidPointer(e,4);
-  if (dm->ops->restoreelements) {
-    ierr = (dm->ops->restoreelements)(dm,nel,nen,e);CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
 

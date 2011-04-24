@@ -1,9 +1,9 @@
- 
+
 #include <private/daimpl.h>     /*I  "petscdmda.h"   I*/
 
 #undef __FUNCT__
-#define __FUNCT__ "DMGetElements_DA_1D"
-static PetscErrorCode DMGetElements_DA_1D(DM dm,PetscInt *nel,PetscInt *nen,const PetscInt *e[])
+#define __FUNCT__ "DMDAGetElements_1D"
+static PetscErrorCode DMDAGetElements_1D(DM dm,PetscInt *nel,PetscInt *nen,const PetscInt *e[])
 {
   PetscErrorCode ierr;
   DM_DA          *da = (DM_DA*)dm->data;
@@ -27,9 +27,9 @@ static PetscErrorCode DMGetElements_DA_1D(DM dm,PetscInt *nel,PetscInt *nen,cons
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "DMGetElements_DA_2D"
-static PetscErrorCode DMGetElements_DA_2D(DM dm,PetscInt *nel,PetscInt *nen,const PetscInt *e[])
+#undef __FUNCT__
+#define __FUNCT__ "DMDAGetElements_2D"
+static PetscErrorCode DMDAGetElements_2D(DM dm,PetscInt *nel,PetscInt *nen,const PetscInt *e[])
 {
   PetscErrorCode ierr;
   DM_DA          *da = (DM_DA*)dm->data;
@@ -71,9 +71,9 @@ static PetscErrorCode DMGetElements_DA_2D(DM dm,PetscInt *nel,PetscInt *nen,cons
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "DMGetElements_DA_3D"
-static PetscErrorCode DMGetElements_DA_3D(DM dm,PetscInt *nel,PetscInt *nen,const PetscInt *e[])
+#undef __FUNCT__
+#define __FUNCT__ "DMDAGetElements_3D"
+static PetscErrorCode DMDAGetElements_3D(DM dm,PetscInt *nel,PetscInt *nen,const PetscInt *e[])
 {
   PetscErrorCode ierr;
   DM_DA          *da = (DM_DA*)dm->data;
@@ -127,9 +127,88 @@ static PetscErrorCode DMGetElements_DA_3D(DM dm,PetscInt *nel,PetscInt *nen,cons
   PetscFunctionReturn(0);
 }
 
+/*@C
+      DMDASetElementType - Sets the element type to be returned by DMDAGetElements()
+
+    Not Collective
+
+   Input Parameter:
+.     da - the DMDA object
+
+   Output Parameters:
+.     etype - the element type, currently either DMDA_ELEMENT_P1 or ELEMENT_Q1
+
+   Level: intermediate
+
+.seealso: DMDAElementType, DMDAGetElementType(), DMDAGetElements(), DMDARestoreElements()
+@*/
 #undef __FUNCT__
-#define __FUNCT__ "DMGetElements_DA"
-PetscErrorCode  DMGetElements_DA(DM dm,PetscInt *nel,PetscInt *nen,const PetscInt *e[])
+#define __FUNCT__ "DMDASetElementType"
+PetscErrorCode  DMDASetElementType(DM da, DMDAElementType etype)
+{
+  DM_DA          *dd = (DM_DA*)da->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidLogicalCollectiveEnum(da,etype,2);
+  if (dd->elementtype != etype) {
+    ierr = PetscFree(dd->e);CHKERRQ(ierr);
+    dd->elementtype = etype;
+    dd->ne          = 0;
+    dd->e           = PETSC_NULL;
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@C
+      DMDAGetElementType - Gets the element type to be returned by DMDAGetElements()
+
+    Not Collective
+
+   Input Parameter:
+.     da - the DMDA object
+
+   Output Parameters:
+.     etype - the element type, currently either DMDA_ELEMENT_P1 or ELEMENT_Q1
+
+   Level: intermediate
+
+.seealso: DMDAElementType, DMDASetElementType(), DMDAGetElements(), DMDARestoreElements()
+@*/
+#undef __FUNCT__
+#define __FUNCT__ "DMDAGetElementType"
+PetscErrorCode  DMDAGetElementType(DM da, DMDAElementType *etype)
+{
+  DM_DA *dd = (DM_DA*)da->data;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidPointer(etype,2);
+  *etype = dd->elementtype;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+      DMDAGetElements - Gets an array containing the indices (in local coordinates)
+                 of all the local elements
+
+    Not Collective
+
+   Input Parameter:
+.     dm - the DM object
+
+   Output Parameters:
++     nel - number of local elements
+.     nen - number of element nodes
+-     e - the indices of the elements vertices
+
+   Level: intermediate
+
+.seealso: DMDAElementType, DMDASetElementType(), DMDARestoreElements()
+@*/
+#undef __FUNCT__
+#define __FUNCT__ "DMDAGetElements"
+PetscErrorCode  DMDAGetElements(DM dm,PetscInt *nel,PetscInt *nen,const PetscInt *e[])
 {
   DM_DA          *da = (DM_DA*)dm->data;
   PetscErrorCode ierr;
@@ -137,14 +216,43 @@ PetscErrorCode  DMGetElements_DA(DM dm,PetscInt *nel,PetscInt *nen,const PetscIn
   if (da->dim==-1) {
     *nel = 0; *nen = 0; *e = PETSC_NULL;
   } else if (da->dim==1) {
-    ierr = DMGetElements_DA_1D(dm,nel,nen,e);CHKERRQ(ierr);
+    ierr = DMDAGetElements_1D(dm,nel,nen,e);CHKERRQ(ierr);
   } else if (da->dim==2) {
-    ierr = DMGetElements_DA_2D(dm,nel,nen,e);CHKERRQ(ierr);
+    ierr = DMDAGetElements_2D(dm,nel,nen,e);CHKERRQ(ierr);
   } else if (da->dim==3) {
-    ierr = DMGetElements_DA_3D(dm,nel,nen,e);CHKERRQ(ierr);
+    ierr = DMDAGetElements_3D(dm,nel,nen,e);CHKERRQ(ierr);
   } else {
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"DMDA dimension not 1, 2, or 3, it is %D\n",da->dim);
   }
 
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMDARestoreElements"
+/*@C
+      DMDARestoreElements - Returns an array containing the indices (in local coordinates)
+                 of all the local elements obtained with DMDAGetElements()
+
+    Not Collective
+
+   Input Parameter:
++     dm - the DM object
+.     nel - number of local elements
+.     nen - number of element nodes
+-     e - the indices of the elements vertices
+
+   Level: intermediate
+
+.seealso: DMDAElementType, DMDASetElementType(), DMDAGetElements()
+@*/
+PetscErrorCode  DMDARestoreElements(DM dm,PetscInt *nel,PetscInt *nen,const PetscInt *e[])
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  PetscValidIntPointer(nel,2);
+  PetscValidIntPointer(nen,3);
+  PetscValidPointer(e,4);
+  /* XXX */
   PetscFunctionReturn(0);
 }

@@ -505,15 +505,13 @@ PetscErrorCode  TSCreate_CN(TS ts)
       ts->ops->step  = TSStep_CN_Linear_Variable_Matrix;
     }
     ts->ops->setfromoptions = TSSetFromOptions_CN_Linear;
-    ierr = KSPCreate(((PetscObject)ts)->comm,&ts->ksp);CHKERRQ(ierr);
-    ierr = PetscObjectIncrementTabLevel((PetscObject)ts->ksp,(PetscObject)ts,1);CHKERRQ(ierr);
+    ierr = TSGetKSP(ts,&ts->ksp);CHKERRQ(ierr);
     ierr = KSPSetInitialGuessNonzero(ts->ksp,PETSC_TRUE);CHKERRQ(ierr);
   } else if (ts->problem_type == TS_NONLINEAR) {
     ts->ops->setup          = TSSetUp_CN_Nonlinear;
     ts->ops->step           = TSStep_CN_Nonlinear;
     ts->ops->setfromoptions = TSSetFromOptions_CN_Nonlinear;
-    ierr = SNESCreate(((PetscObject)ts)->comm,&ts->snes);CHKERRQ(ierr);
-    ierr = PetscObjectIncrementTabLevel((PetscObject)ts->snes,(PetscObject)ts,1);CHKERRQ(ierr);
+    ierr = TSGetSNES(ts,&ts->snes);CHKERRQ(ierr);
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"No such problem");
 
   ts->ops->snesfunction = SNESTSFormFunction_CN;

@@ -1433,8 +1433,7 @@ PetscErrorCode  TSCreate_GL(TS ts)
   ts->ops->snesjacobian   = SNESTSFormJacobian_GL;
 
   ts->problem_type = TS_NONLINEAR;
-  ierr = SNESCreate(((PetscObject)ts)->comm,&ts->snes);CHKERRQ(ierr);
-  ierr = PetscObjectIncrementTabLevel((PetscObject)ts->snes,(PetscObject)ts,1);CHKERRQ(ierr);
+  ierr = TSGetSNES(ts,&ts->snes);CHKERRQ(ierr);
 
   gl->max_step_rejections = 1;
   gl->min_order           = 1;

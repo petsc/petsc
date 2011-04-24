@@ -60,20 +60,23 @@ E*/
 typedef enum { DMDA_Q0, DMDA_Q1 } DMDAInterpolationType;
 
 extern PetscErrorCode   DMDASetInterpolationType(DM,DMDAInterpolationType);
+extern PetscErrorCode   DMDAGetInterpolationType(DM,DMDAInterpolationType*);
 
 /*E
     DMDAElementType - Defines the type of elements that will be returned by 
-       DMGetElements()
+       DMDAGetElements()
 
    Level: beginner
 
 .seealso: DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMGetInterpolation(), DMDASetInterpolationType(), 
-          DMDASetElementType(), DMGetElements(), DMRestoreElements(), DMDACreate()
+          DMDASetElementType(), DMDAGetElements(), DMDARestoreElements(), DMDACreate()
 E*/
 typedef enum { DMDA_ELEMENT_P1, DMDA_ELEMENT_Q1 } DMDAElementType;
 
 extern PetscErrorCode   DMDASetElementType(DM,DMDAElementType);
 extern PetscErrorCode   DMDAGetElementType(DM,DMDAElementType*);
+extern PetscErrorCode   DMDAGetElements(DM,PetscInt *,PetscInt *,const PetscInt*[]);
+extern PetscErrorCode   DMDARestoreElements(DM,PetscInt *,PetscInt *,const PetscInt*[]);
 
 typedef enum { DMDA_X,DMDA_Y,DMDA_Z } DMDADirection;
 

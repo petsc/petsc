@@ -573,8 +573,8 @@ PetscErrorCode  KSPSetType(KSP ksp, const KSPType type)
   ksp->ops->buildresidual = KSPDefaultBuildResidual;
   /* Call the KSPCreate_XXX routine for this particular Krylov solver */
   ksp->setupstage = KSP_SETUP_NEW;
-  ierr = (*r)(ksp);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)ksp,type);CHKERRQ(ierr);
+  ierr = (*r)(ksp);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_AMS)
   if (PetscAMSPublishAll) {
     ierr = PetscObjectAMSPublish((PetscObject)ksp);CHKERRQ(ierr);

@@ -1294,19 +1294,26 @@ PetscErrorCode  TSDestroy(TS *ts)
 @*/
 PetscErrorCode  TSGetSNES(TS ts,SNES *snes)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidPointer(snes,2);
   if (!((PetscObject)ts)->type_name) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"SNES is not created yet. Call TSSetType() first");
-  if (ts->problem_type == TS_LINEAR) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Nonlinear only; use TSGetKSP()");
+  if (ts->problem_type != TS_NONLINEAR) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Nonlinear only; use TSGetKSP()");
+  if (!ts->snes) {
+    ierr = SNESCreate(((PetscObject)ts)->comm,&ts->snes);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent(ts,ts->snes);CHKERRQ(ierr);
+    ierr = PetscObjectIncrementTabLevel((PetscObject)ts->snes,(PetscObject)ts,1);CHKERRQ(ierr);
+  }
   *snes = ts->snes;
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSGetKSP"
 /*@
-   TSGetKSP - Returns the KSP (linear solver) associated with 
+   TSGetKSP - Returns the KSP (linear solver) associated with
    a TS (timestepper) context.
 
    Not Collective, but KSP is parallel if TS is parallel
@@ -1319,7 +1326,7 @@ PetscErrorCode  TSGetSNES(TS ts,SNES *snes)
 
    Notes:
    The user can then directly manipulate the KSP context to set various
-   options, etc.  Likewise, the user can then extract and manipulate the 
+   options, etc.  Likewise, the user can then extract and manipulate the
    KSP and PC contexts as well.
 
    TSGetKSP() does not work for integrators that do not use KSP;
@@ -1331,11 +1338,18 @@ PetscErrorCode  TSGetSNES(TS ts,SNES *snes)
 @*/
 PetscErrorCode  TSGetKSP(TS ts,KSP *ksp)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidPointer(ksp,2);
   if (!((PetscObject)ts)->type_name) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_NULL,"KSP is not created yet. Call TSSetType() first");
   if (ts->problem_type != TS_LINEAR) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Linear only; use TSGetSNES()");
+  if (!ts->ksp) {
+    ierr = KSPCreate(((PetscObject)ts)->comm,&ts->ksp);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent(ts,ts->ksp);CHKERRQ(ierr);
+    ierr = PetscObjectIncrementTabLevel((PetscObject)ts->ksp,(PetscObject)ts,1);CHKERRQ(ierr);
+  }
   *ksp = ts->ksp;
   PetscFunctionReturn(0);
 }

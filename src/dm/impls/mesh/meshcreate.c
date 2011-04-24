@@ -199,9 +199,6 @@ PetscErrorCode DMCreate_Mesh(DM dm)
   dm->ops->localtoglobalbegin = DMLocalToGlobalBegin_Mesh;
   dm->ops->localtoglobalend   = DMLocalToGlobalEnd_Mesh;
 
-  dm->ops->getelements        = 0;
-  dm->ops->restoreelements    = 0;
-
   dm->ops->initialguess       = 0;
   dm->ops->function           = 0;
   dm->ops->functionj          = 0;
