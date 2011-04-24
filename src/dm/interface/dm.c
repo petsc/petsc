@@ -469,7 +469,7 @@ PetscErrorCode  DMGetInjection(DM dm1,DM dm2,VecScatter *ctx)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMGetColoring"
-/*@
+/*@C
     DMGetColoring - Gets coloring for a DMDA or DMComposite
 
     Collective on DM
@@ -486,7 +486,7 @@ PetscErrorCode  DMGetInjection(DM dm1,DM dm2,VecScatter *ctx)
 
 .seealso DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetMatrix()
 
-@*/
+C@*/
 PetscErrorCode  DMGetColoring(DM dm,ISColoringType ctype,const MatType mtype,ISColoring *coloring)
 {
   PetscErrorCode ierr;
