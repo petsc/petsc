@@ -66,7 +66,19 @@ PetscErrorCode MatNullSpaceView(MatNullSpace sp,PetscViewer viewer)
 
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
+    PetscViewerFormat format;
+    PetscInt i;
+    ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)sp,viewer,"MatNullSpace Object");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"Contains %D vector%s%s\n",sp->n,sp->n==1?"":"s",sp->has_cnst?" and the constant":"");CHKERRQ(ierr);
+    if (sp->remove) {ierr = PetscViewerASCIIPrintf(viewer,"Has user-provided removal function\n");CHKERRQ(ierr);}
+    if (!(format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL)) {
+      for (i=0; i<sp->n; i++) {
+        ierr = VecView(sp->vecs[i],viewer);CHKERRQ(ierr);
+      }
+    }
+    ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
