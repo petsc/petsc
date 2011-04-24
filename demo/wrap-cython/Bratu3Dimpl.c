@@ -20,24 +20,16 @@
 #include "Bratu3Dimpl.h"
 
 #if PETSC_VERSION_(3,1,0)
-#define DAGetInfo(da,dim,M,N,P,m,n,p,dof,s,bx,by,bz,st) \
-        DAGetInfo(da,dim,M,N,P,m,n,p,dof,s,bx,st)
-#endif
-
-#if !PETSC_VERSION_(3,1,0)
-#define DAGetInfo            DMDAGetInfo
-#define DAGetCorners         DMDAGetCorners
-#define DAVecGetArray        DMDAVecGetArray
-#define DAVecRestoreArray    DMDAVecRestoreArray
-#define DAGetLocalVector     DMGetLocalVector
-#define DARestoreLocalVector DMRestoreLocalVector
-#define DAGlobalToLocalBegin DMGlobalToLocalBegin
-#define DAGlobalToLocalEnd   DMGlobalToLocalEnd
+#define DMDAGetInfo(da,dim,M,N,P,m,n,p,dof,s,bx,by,bz,st) \
+        DAGetInfo((DA)da,dim,M,N,P,m,n,p,dof,s,bx,st)
+#define DMDAGetCorners(da,x,y,z,m,n,p) DAGetCorners((DA)da,x,y,z,m,n,p)
+#define DMDAVecGetArray(da,v,a)        DAVecGetArray((DA)da,v,a)
+#define DMDAVecRestoreArray(da,v,a)    DAVecRestoreArray((DA)da,v,a)
 #endif
 
 #undef  __FUNCT__
 #define __FUNCT__ "FormInitGuess"
-PetscErrorCode FormInitGuess(DA da, Vec X, Params *p)
+PetscErrorCode FormInitGuess(DM da, Vec X, Params *p)
 {
   PetscInt       i,j,k,Mx,My,Mz,xs,ys,zs,xm,ym,zm;
   PetscReal      lambda,temp1,hx,hy,hz,tempk,tempj;
@@ -46,12 +38,12 @@ PetscErrorCode FormInitGuess(DA da, Vec X, Params *p)
 
   PetscFunctionBegin;
 
-  ierr = DAGetInfo(da,PETSC_IGNORE,
-                   &Mx,&My,&Mz,
-                   PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
-                   PETSC_IGNORE,PETSC_IGNORE,
-		   PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
-		   PETSC_IGNORE);
+  ierr = DMDAGetInfo(da,PETSC_IGNORE,
+                     &Mx,&My,&Mz,
+                     PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
+                     PETSC_IGNORE,PETSC_IGNORE,
+                     PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
+                     PETSC_IGNORE);
 
   lambda = p->lambda_;
   hx     = 1.0/(PetscReal)(Mx-1);
@@ -69,7 +61,7 @@ PetscErrorCode FormInitGuess(DA da, Vec X, Params *p)
     - You MUST call VecRestoreArray() when you no longer need access
       to the array.
   */
-  ierr = DAVecGetArray(da,X,&x);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da,X,&x);CHKERRQ(ierr);
 
   /*
     Get local grid boundaries (for 3-dimensional DA):
@@ -78,7 +70,7 @@ PetscErrorCode FormInitGuess(DA da, Vec X, Params *p)
 
     - xm, ym, zm: widths of local grid (no ghost points)
   */
-  ierr = DAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
 
   /*
     Compute initial guess over the locally owned part of the grid
@@ -101,7 +93,7 @@ PetscErrorCode FormInitGuess(DA da, Vec X, Params *p)
   /*
     Restore vector
   */
-  ierr = DAVecRestoreArray(da,X,&x);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da,X,&x);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -109,7 +101,7 @@ PetscErrorCode FormInitGuess(DA da, Vec X, Params *p)
 
 #undef  __FUNCT__
 #define __FUNCT__ "FormFunction"
-PetscErrorCode FormFunction(DA da, Vec X, Vec F, Params *p)
+PetscErrorCode FormFunction(DM da, Vec X, Vec F, Params *p)
 {
   PetscInt       i,j,k,Mx,My,Mz,xs,ys,zs,xm,ym,zm;
   PetscReal      two = 2.0,lambda,hx,hy,hz,hxhzdhy,hyhzdhx,hxhydhz,sc;
@@ -119,12 +111,12 @@ PetscErrorCode FormFunction(DA da, Vec X, Vec F, Params *p)
 
   PetscFunctionBegin;
 
-  ierr = DAGetInfo(da,PETSC_IGNORE,
-                   &Mx,&My,&Mz,
-                   PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
-                   PETSC_IGNORE,PETSC_IGNORE,
-                   PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
-                   PETSC_IGNORE);
+  ierr = DMDAGetInfo(da,PETSC_IGNORE,
+                     &Mx,&My,&Mz,
+                     PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
+                     PETSC_IGNORE,PETSC_IGNORE,
+                     PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
+                     PETSC_IGNORE);
 
   lambda = p->lambda_;
   hx     = 1.0/(PetscReal)(Mx-1);
@@ -138,7 +130,7 @@ PetscErrorCode FormFunction(DA da, Vec X, Vec F, Params *p)
   /*
 
    */
-  ierr = DAGetLocalVector(da,&localX);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(da,&localX);CHKERRQ(ierr);
 
   /*
     Scatter ghost points to local vector,using the 2-step process
@@ -146,19 +138,19 @@ PetscErrorCode FormFunction(DA da, Vec X, Vec F, Params *p)
     between these two statements, computations can be done while
     messages are in transition.
   */
-  ierr = DAGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
 
   /*
     Get pointers to vector data.
   */
-  ierr = DAVecGetArray(da,localX,&x);CHKERRQ(ierr);
-  ierr = DAVecGetArray(da,F,&f);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da,localX,&x);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da,F,&f);CHKERRQ(ierr);
 
   /*
     Get local grid boundaries.
   */
-  ierr = DAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
 
   /*
     Compute function over the locally owned part of the grid.
@@ -190,9 +182,9 @@ PetscErrorCode FormFunction(DA da, Vec X, Vec F, Params *p)
   /*
     Restore vectors.
   */
-  ierr = DAVecRestoreArray(da,F,&f);CHKERRQ(ierr);
-  ierr = DAVecRestoreArray(da,localX,&x);CHKERRQ(ierr);
-  ierr = DARestoreLocalVector(da,&localX);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da,F,&f);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da,localX,&x);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
   ierr = PetscLogFlops(11.0*ym*xm);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
@@ -201,7 +193,7 @@ PetscErrorCode FormFunction(DA da, Vec X, Vec F, Params *p)
 
 #undef  __FUNCT__
 #define __FUNCT__ "FormJacobian"
-PetscErrorCode FormJacobian(DA da, Vec X, Mat J, Params *p)
+PetscErrorCode FormJacobian(DM da, Vec X, Mat J, Params *p)
 {
   PetscInt       i,j,k,Mx,My,Mz,xs,ys,zs,xm,ym,zm;
   PetscReal      lambda,hx,hy,hz,hxhzdhy,hyhzdhx,hxhydhz,sc;
@@ -212,12 +204,12 @@ PetscErrorCode FormJacobian(DA da, Vec X, Mat J, Params *p)
 
   PetscFunctionBegin;
 
-  ierr = DAGetInfo(da,PETSC_IGNORE,
-                   &Mx,&My,&Mz,
-		   PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
-                   PETSC_IGNORE,PETSC_IGNORE,
-		   PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
-		   PETSC_IGNORE);
+  ierr = DMDAGetInfo(da,PETSC_IGNORE,
+                     &Mx,&My,&Mz,
+                     PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
+                     PETSC_IGNORE,PETSC_IGNORE,
+                     PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
+                     PETSC_IGNORE);
 
   lambda = p->lambda_;
   hx     = 1.0/(PetscReal)(Mx-1);
@@ -231,7 +223,7 @@ PetscErrorCode FormJacobian(DA da, Vec X, Mat J, Params *p)
   /*
 
    */
-  ierr = DAGetLocalVector(da,&localX);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(da,&localX);CHKERRQ(ierr);
 
   /*
     Scatter ghost points to local vector, using the 2-step process
@@ -239,18 +231,18 @@ PetscErrorCode FormJacobian(DA da, Vec X, Mat J, Params *p)
     between these two statements, computations can be done while
     messages are in transition.
   */
-  ierr = DAGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
 
   /*
     Get pointer to vector data.
   */
-  ierr = DAVecGetArray(da,localX,&x);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da,localX,&x);CHKERRQ(ierr);
 
   /*
     Get local grid boundaries.
   */
-  ierr = DAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
 
   /*
     Compute entries for the locally owned part of the Jacobian.
@@ -289,8 +281,8 @@ PetscErrorCode FormJacobian(DA da, Vec X, Mat J, Params *p)
       }
     }
   }
-  ierr = DAVecRestoreArray(da,localX,&x);CHKERRQ(ierr);
-  ierr = DARestoreLocalVector(da,&localX);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da,localX,&x);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
 
   /*
     Assemble matrix, using the 2-step process: MatAssemblyBegin(),

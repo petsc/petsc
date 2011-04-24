@@ -1,5 +1,14 @@
-#include "del2mat.h"
+#include <petsc.h>
+#include <petscvec.h>
+#include <petscmat.h>
 #include <petscksp.h>
+#include "del2mat.h"
+
+#if PETSC_VERSION_(3,1,0)
+#define VecDestroy(o) ((*(o))?VecDestroy(*(o)):0)
+#define MatDestroy(o) ((*(o))?MatDestroy(*(o)):0)
+#define KSPDestroy(o) ((*(o))?KSPDestroy(*(o)):0)
+#endif
 
 #define DEL2MAT_MULT   ((void(*)(void))Del2Mat_mult)
 #define DEL2MAT_DIAG   ((void(*)(void))Del2Mat_diag)
@@ -47,10 +56,10 @@ int main(int argc,char **argv)
   VecScale(x, h*h);
   /* free memory and destroy objects */
   PetscFree(shell.F);
-  MatDestroy(A);
-  VecDestroy(x);
-  VecDestroy(b);
-  KSPDestroy(ksp);
+  VecDestroy(&x);
+  VecDestroy(&b);
+  MatDestroy(&A);
+  KSPDestroy(&ksp);
   /* finalize PETSc */ 
   PetscFinalize();
   return 0;

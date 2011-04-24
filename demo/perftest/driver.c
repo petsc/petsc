@@ -1,5 +1,10 @@
 #include <petsc.h>
 
+#if PETSC_VERSION_(3,1,0)
+#define VecDestroy(o) ((*(o))?VecDestroy(*(o)):0)
+#define TSDestroy(o)  ((*(o))?TSDestroy(*(o)):0)
+#endif
+
 EXTERN_C_BEGIN
 extern void formInitial(int*,int*,int*,double*,
                         double*,double*);
@@ -88,7 +93,7 @@ PetscErrorCode RunTest(int nx, int ny, int nz, int loops, double *wt)
     ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
     ierr = VecDuplicate(x,&f);CHKERRQ(ierr);
     ierr = SNESSetFunction(snes,f,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-    ierr = VecDestroy(f);CHKERRQ(ierr);
+    ierr = VecDestroy(&f);CHKERRQ(ierr);
     ierr = PetscOptionsSetValue("-snes_mf","1");CHKERRQ(ierr);
     ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
     ierr = KSPSetType(ksp,KSPCG);CHKERRQ(ierr);
@@ -105,8 +110,8 @@ PetscErrorCode RunTest(int nx, int ny, int nz, int loops, double *wt)
     *wt = PetscMin(*wt,t2-t1);
   }
 
-  ierr = VecDestroy(x);CHKERRQ(ierr);
-  ierr = TSDestroy(ts);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = TSDestroy(&ts);CHKERRQ(ierr);
   
   PetscFunctionReturn(0);
 }

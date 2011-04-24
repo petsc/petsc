@@ -47,18 +47,18 @@ da = PETSc.DA().create([N, N])
 app = App(da, lambda_)
 
 snes = PETSc.SNES().create()
-F = da.createGlobalVector()
+F = da.createGlobalVec()
 snes.setFunction(app.formFunction, F)
-J = da.getMatrix()
+J = da.createMat()
 snes.setJacobian(app.formJacobian, J)
 
 snes.setFromOptions()
 
-X = da.createGlobalVector()
+X = da.createGlobalVec()
 app.formInitGuess(snes, X)
 snes.solve(None, X)
 
-U = da.createNaturalVector()
+U = da.createNaturalVec()
 da.globalToNatural(X, U)
 
 def plot(da, U):

@@ -48,6 +48,8 @@ def configuration(parent_package='',top_path=None):
                          sources = ['Bratu2D.pyf',
                                     'Bratu2D.F90'],
                          depends = ['Bratu2Dmodule.h'],
+                         f2py_options=['--quiet'],
+                         define_macros=[('F2PY_REPORT_ON_ARRAY_COPY',1)],
                          include_dirs=INCLUDE_DIRS + [os.curdir],
                          libraries=LIBRARIES,
                          library_dirs=LIBRARY_DIRS,

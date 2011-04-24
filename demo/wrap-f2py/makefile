@@ -3,11 +3,6 @@
 MPIEXEC=
 PYTHON=python
 
-F2PY = f2py
-F2PY_FLAGS  = --quiet
-F2PY_FLAGS += --noarch
-F2PY_FLAGS += -DF2PY_REPORT_ON_ARRAY_COPY=1
-
 .PHONY:test
 test: run clean
 

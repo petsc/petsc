@@ -18,27 +18,19 @@
 ! --------------------------------------------------------------------
 
 #include "finclude/petscdef.h"
+#include "petscversion.h"
 
 #undef  CHKERRQ
 #define CHKERRQ(n) if ((n) .ne. 0) return;
 
-
-#include "petscversion.h"
 #if PETSC_VERSION_(3,1,0)
 #include "finclude/petscvecdef.h"
 #include "finclude/petscmatdef.h"
 #include "finclude/petscdadef.h"
-#else
-#define DA                   DM
-#define DAGetInfo            DMDAGetInfo
-#define DAGetCorners         DMDAGetCorners
-#define DAGetGhostCorners    DMDAGetGhostCorners
-#define DAVecGetArray        DMDAVecGetArray
-#define DAVecRestoreArray    DMDAVecRestoreArray
-#define DAGetLocalVector     DMGetLocalVector
-#define DARestoreLocalVector DMRestoreLocalVector
-#define DAGlobalToLocalBegin DMGlobalToLocalBegin
-#define DAGlobalToLocalEnd   DMGlobalToLocalEnd   
+#define DMDAGetCorners      DAGetCorners         
+#define DMDAGetGhostCorners DAGetGhostCorners    
+#define DMDAVecGetArray     DAVecGetArray        
+#define DMDAVecRestoreArray DAVecRestoreArray    
 #endif
 
 ! --------------------------------------------------------------------
@@ -61,7 +53,7 @@ contains
 
   subroutine GetGridInfo(da, grd, ierr)
     implicit none
-    DA             da
+    DM            da
     type(gridinfo) grd
     PetscErrorCode ierr
     !
@@ -73,19 +65,19 @@ contains
          &         PETSC_NULL_INTEGER, &
          &         PETSC_NULL_INTEGER,ierr); CHKERRQ(ierr)
 #else
-    call DAGetInfo(da, PETSC_NULL_INTEGER, &
-         &         grd%mx, grd%my, PETSC_NULL_INTEGER, &
-         &         PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER, &
-         &         PETSC_NULL_INTEGER,PETSC_NULL_INTEGER, &
-         &         PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER, &
-         &         PETSC_NULL_INTEGER,ierr); CHKERRQ(ierr)
+    call DMDAGetInfo(da, PETSC_NULL_INTEGER, &
+         &           grd%mx, grd%my, PETSC_NULL_INTEGER, &
+         &           PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER, &
+         &           PETSC_NULL_INTEGER,PETSC_NULL_INTEGER, &
+         &           PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,PETSC_NULL_INTEGER, &
+         &           PETSC_NULL_INTEGER,ierr); CHKERRQ(ierr)
 #endif
-    call DAGetCorners(da, &
-         &            grd%xs,grd%ys,PETSC_NULL_INTEGER, &
-         &            grd%xm,grd%ym,PETSC_NULL_INTEGER,ierr); CHKERRQ(ierr)
-    call DAGetGhostCorners(da, &
-         &                 grd%gxs,grd%gys,PETSC_NULL_INTEGER, &
-         &                 grd%gxm,grd%gym,PETSC_NULL_INTEGER,ierr); CHKERRQ(ierr)
+    call DMDAGetCorners(da, &
+         &              grd%xs,grd%ys,PETSC_NULL_INTEGER, &
+         &              grd%xm,grd%ym,PETSC_NULL_INTEGER,ierr); CHKERRQ(ierr)
+    call DMDAGetGhostCorners(da, &
+         &                   grd%gxs,grd%gys,PETSC_NULL_INTEGER, &
+         &                   grd%gxm,grd%gym,PETSC_NULL_INTEGER,ierr); CHKERRQ(ierr)
     !
     grd%xs  = grd%xs+1
     grd%ys  = grd%ys+1
@@ -225,7 +217,7 @@ end module Bratu2D
 subroutine FormInitGuess(da, X, lambda, ierr)
   use Bratu2D
   implicit none
-  DA  da
+  DM da
   Vec X
   PetscReal lambda
   PetscErrorCode ierr
@@ -246,7 +238,7 @@ end subroutine FormInitGuess
 subroutine FormFunction(da, X, F, lambda, ierr)
   use Bratu2D
   implicit none
-  DA  da
+  DM da
   Vec X
   Vec F
   PetscReal lambda
@@ -257,9 +249,9 @@ subroutine FormFunction(da, X, F, lambda, ierr)
   PetscScalar,pointer :: xx(:)
   PetscScalar,pointer :: ff(:)
   
-  call DAGetLocalVector(da,localX,ierr); CHKERRQ(ierr)
-  call DAGlobalToLocalBegin(da,X,INSERT_VALUES,localX,ierr); CHKERRQ(ierr)
-  call DAGlobalToLocalEnd(da,X,INSERT_VALUES,localX,ierr); CHKERRQ(ierr)
+  call DMGetLocalVector(da,localX,ierr); CHKERRQ(ierr)
+  call DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX,ierr); CHKERRQ(ierr)
+  call DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX,ierr); CHKERRQ(ierr)
 
   call VecGetArrayF90(localX,xx,ierr); CHKERRQ(ierr)
   call VecGetArrayF90(F,ff,ierr); CHKERRQ(ierr)
@@ -270,7 +262,7 @@ subroutine FormFunction(da, X, F, lambda, ierr)
   call VecRestoreArrayF90(F,ff,ierr); CHKERRQ(ierr)
   call VecRestoreArrayF90(localX,xx,ierr); CHKERRQ(ierr)
 
-  call DARestoreLocalVector(da,localX,ierr); CHKERRQ(ierr)
+  call DMRestoreLocalVector(da,localX,ierr); CHKERRQ(ierr)
   
 end subroutine FormFunction
 
@@ -278,7 +270,7 @@ end subroutine FormFunction
 subroutine FormJacobian(da, X, J, lambda, ierr)
   use Bratu2D
   implicit none
-  DA  da
+  DM da
   Vec X
   Mat J
   PetscReal lambda
@@ -288,16 +280,16 @@ subroutine FormJacobian(da, X, J, lambda, ierr)
   Vec                 :: localX
   PetscScalar,pointer :: xx(:)
 
-  call DAGetLocalVector(da,localX,ierr); CHKERRQ(ierr)
-  call DAGlobalToLocalBegin(da,X,INSERT_VALUES,localX,ierr); CHKERRQ(ierr)
-  call DAGlobalToLocalEnd(da,X,INSERT_VALUES,localX,ierr); CHKERRQ(ierr)
+  call DMGetLocalVector(da,localX,ierr); CHKERRQ(ierr)
+  call DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX,ierr); CHKERRQ(ierr)
+  call DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX,ierr); CHKERRQ(ierr)
   call VecGetArrayF90(localX,xx,ierr); CHKERRQ(ierr)
 
   call GetGridInfo(da,grd,ierr); CHKERRQ(ierr)
   call JacobianLocal(grd,xx,J,lambda,ierr); CHKERRQ(ierr)
 
   call VecRestoreArrayF90(localX,xx,ierr); CHKERRQ(ierr)
-  call DARestoreLocalVector(da,localX,ierr); CHKERRQ(ierr)
+  call DMRestoreLocalVector(da,localX,ierr); CHKERRQ(ierr)
 
   call MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY,ierr); CHKERRQ(ierr)
   call MatAssemblyEnd  (J,MAT_FINAL_ASSEMBLY,ierr); CHKERRQ(ierr)

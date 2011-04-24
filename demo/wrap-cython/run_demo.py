@@ -14,20 +14,20 @@ da = PETSc.DA().create([N, N, N])
 #app = App(da, lambda_)
 
 snes = PETSc.SNES().create()
-F = da.createGlobalVector()
+F = da.createGlobalVec()
 snes.setFunction(Bratu3D.formFunction, F,
                  args=(da, lambda_))
-J = da.getMatrix()
+J = da.createMat()
 snes.setJacobian(Bratu3D.formJacobian, J,
                  args=(da, lambda_))
 
 snes.setFromOptions()
 
-X = da.createGlobalVector()
+X = da.createGlobalVec()
 Bratu3D.formInitGuess(X, da, lambda_)
 snes.solve(None, X)
 
-U = da.createNaturalVector()
+U = da.createNaturalVec()
 da.globalToNatural(X, U)
 
 
