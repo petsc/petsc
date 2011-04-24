@@ -1596,6 +1596,7 @@ extern PetscErrorCode  MatNullSpaceDestroy(MatNullSpace*);
 extern PetscErrorCode  MatNullSpaceRemove(MatNullSpace,Vec,Vec*);
 extern PetscErrorCode  MatNullSpaceAttach(Mat,MatNullSpace);
 extern PetscErrorCode  MatNullSpaceTest(MatNullSpace,Mat,PetscBool  *);
+extern PetscErrorCode  MatNullSpaceView(MatNullSpace,PetscViewer);
 
 extern PetscErrorCode  MatReorderingSeqSBAIJ(Mat,IS);
 extern PetscErrorCode  MatMPISBAIJSetHashTableFactor(Mat,PetscReal);

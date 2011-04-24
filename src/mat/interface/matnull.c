@@ -37,7 +37,23 @@ PetscErrorCode  MatNullSpaceSetFunction(MatNullSpace sp, PetscErrorCode (*rem)(M
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatNullSpaceView"
-static PetscErrorCode MatNullSpaceView(MatNullSpace sp, PetscViewer viewer)
+/*@C
+   MatNullSpaceView - Visualizes a null space object.
+
+   Collective on MatNullSpace
+
+   Input Parameters:
++  matnull - the null space
+-  viewer - visualization context
+
+   Level: advanced
+
+   Fortran Note:
+   This routine is not supported in Fortran.
+
+.seealso: MatNullSpaceCreate(), PetscViewerASCIIOpen()
+@*/
+PetscErrorCode MatNullSpaceView(MatNullSpace sp,PetscViewer viewer)
 {
   PetscErrorCode ierr;
   PetscBool      iascii;
