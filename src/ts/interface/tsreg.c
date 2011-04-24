@@ -1,13 +1,12 @@
-
 #include <private/tsimpl.h>      /*I "petscts.h"  I*/
 
 PetscFList TSList                       = PETSC_NULL;
 PetscBool  TSRegisterAllCalled          = PETSC_FALSE;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSSetType"
 /*@C
-  TSSetType - Sets the method for the timestepping solver.  
+  TSSetType - Sets the method for the timestepping solver.
 
   Collective on TS
 
@@ -61,8 +60,8 @@ PetscErrorCode  TSSetType(TS ts,const TSType type)
     ierr = (*(ts)->ops->destroy)(ts);CHKERRQ(ierr);
   }
   ts->setupcalled = PETSC_FALSE;
-  ierr = (*r)(ts);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)ts, type);CHKERRQ(ierr);
+  ierr = (*r)(ts);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_AMS)
   if (PetscAMSPublishAll) {
     ierr = PetscObjectAMSPublish((PetscObject)ts);CHKERRQ(ierr);
@@ -71,7 +70,7 @@ PetscErrorCode  TSSetType(TS ts,const TSType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSGetType"
 /*@C
   TSGetType - Gets the TS method type (as a string).
@@ -100,7 +99,7 @@ PetscErrorCode  TSGetType(TS ts, const TSType *type)
 
 /*--------------------------------------------------------------------------------------------------------------------*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSRegister"
 /*@C
   TSRegister - See TSRegisterDynamic()
@@ -121,7 +120,7 @@ PetscErrorCode  TSRegister(const char sname[], const char path[], const char nam
 }
 
 /*-------------------------------------------------------------------------------------------------------------------*/
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSRegisterDestroy"
 /*@C
    TSRegisterDestroy - Frees the list of timestepping routines that were registered by TSRegister()/TSRegisterDynamic().
@@ -142,4 +141,3 @@ PetscErrorCode  TSRegisterDestroy(void)
   TSRegisterAllCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
-

@@ -300,6 +300,8 @@ static PetscErrorCode TSSetUp_Pseudo(TS ts)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (ts->problem_type != TS_NONLINEAR) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Only for nonlinear problems");
+
   ierr = VecDuplicate(ts->vec_sol,&pseudo->update);CHKERRQ(ierr);
   ierr = VecDuplicate(ts->vec_sol,&pseudo->func);CHKERRQ(ierr);
   ierr = VecDuplicate(ts->vec_sol,&pseudo->xdot);CHKERRQ(ierr);
@@ -638,7 +640,6 @@ PetscErrorCode  TSCreate_Pseudo(TS ts)
   ts->ops->destroy         = TSDestroy_Pseudo;
   ts->ops->view            = TSView_Pseudo;
 
-  if (ts->problem_type == TS_LINEAR) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Only for nonlinear problems");
   ts->ops->setup           = TSSetUp_Pseudo;
   ts->ops->step            = TSStep_Pseudo;
   ts->ops->setfromoptions  = TSSetFromOptions_Pseudo;
@@ -646,8 +647,8 @@ PetscErrorCode  TSCreate_Pseudo(TS ts)
   ts->ops->snesjacobian    = SNESTSFormJacobian_Pseudo;
 
   /* create the required nonlinear solver context */
-  ierr = SNESCreate(((PetscObject)ts)->comm,&ts->snes);CHKERRQ(ierr);
-  ierr = PetscObjectIncrementTabLevel((PetscObject)ts->snes,(PetscObject)ts,1);CHKERRQ(ierr);
+  ts->problem_type = TS_NONLINEAR;
+  ierr = TSGetSNES(ts,&ts->snes);CHKERRQ(ierr);
 
   ierr = PetscNewLog(ts,TS_Pseudo,&pseudo);CHKERRQ(ierr);
   ts->data = (void*)pseudo;

@@ -385,15 +385,13 @@ PetscErrorCode  TSCreate_BEuler(TS ts)
       ts->ops->step   = TSStep_BEuler_Linear_Variable_Matrix;
     }
     ts->ops->setfromoptions  = TSSetFromOptions_BEuler_Linear;
-    ierr = KSPCreate(((PetscObject)ts)->comm,&ts->ksp);CHKERRQ(ierr);
-    ierr = PetscObjectIncrementTabLevel((PetscObject)ts->ksp,(PetscObject)ts,1);CHKERRQ(ierr);
+    ierr = TSGetKSP(ts,&ts->ksp);CHKERRQ(ierr);
     ierr = KSPSetInitialGuessNonzero(ts->ksp,PETSC_TRUE);CHKERRQ(ierr);
   } else if (ts->problem_type == TS_NONLINEAR) {
     ts->ops->setup           = TSSetUp_BEuler_Nonlinear;
     ts->ops->step            = TSStep_BEuler_Nonlinear;
     ts->ops->setfromoptions  = TSSetFromOptions_BEuler_Nonlinear;
-    ierr = SNESCreate(((PetscObject)ts)->comm,&ts->snes);CHKERRQ(ierr);
-    ierr = PetscObjectIncrementTabLevel((PetscObject)ts->snes,(PetscObject)ts,1);CHKERRQ(ierr);
+    ierr = TSGetSNES(ts,&ts->snes);CHKERRQ(ierr);
     if (ts->dm) {
       ierr = SNESSetDM(ts->snes,ts->dm);CHKERRQ(ierr);
     }

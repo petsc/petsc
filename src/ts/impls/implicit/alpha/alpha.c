@@ -337,8 +337,7 @@ PetscErrorCode  TSCreate_Alpha(TS ts)
   ts->ops->snesjacobian   = SNESTSFormJacobian_Alpha;
 
   ts->problem_type = TS_NONLINEAR;
-  ierr = SNESCreate(((PetscObject)ts)->comm,&ts->snes);CHKERRQ(ierr);
-  ierr = PetscObjectIncrementTabLevel((PetscObject)ts->snes,(PetscObject)ts,1);CHKERRQ(ierr);
+  ierr = TSGetSNES(ts,&ts->snes);CHKERRQ(ierr);
 
   ierr = PetscNewLog(ts,TS_Alpha,&th);CHKERRQ(ierr);
   ts->data = (void*)th;
