@@ -313,12 +313,6 @@ PetscErrorCode  PetscDLSym(PetscDLHandle handle,const char symbol[],void **value
   dlerror(); /* clear any previous error */
 #endif
   dlsymbol = (dlsymbol_t) dlsym(dlhandle,symbol);
-#if defined(PETSC_HAVE_DLERROR)
-  { const char *e = dlerror(); 
-    if (e) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG,"Error obtaining symbol '%s' from dynamic library:\n  Error message from dlsym(): '%s'\n", symbol, e); 
-  }
-#endif /* !PETSC_HAVE_DLSYM */
-
   /* 
      --- unimplemented --- 
   */  
