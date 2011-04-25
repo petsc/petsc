@@ -892,7 +892,7 @@ class PETScMaker(script.Script):
       ${DSYMUTIL} $@'''
    self.logWrite('Linking object '+str(objects)+' into '+executable+'\n', debugSection = self.debugSection, forceScroll = True)
    self.configInfo.compilers.pushLanguage(language)
-   cmd = self.configInfo.compilers.getFullLinkerCmd(' '.join(objects)+' -lpetsc', executable)
+   cmd = self.configInfo.compilers.getFullLinkerCmd(' '.join(objects)+' -L'+self.petscLibDir+' -lpetsc', executable)
    if not self.dryRun:
      (output, error, status) = self.executeShellCommand(cmd, checkCommand = noCheckCommand, log=self.log)
      if status:
