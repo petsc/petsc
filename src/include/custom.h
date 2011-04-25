@@ -938,11 +938,13 @@ SNESSetUseMFFD(SNES snes,PetscBool flag)
   ierr = MatSetFromOptions(J);CHKERRQ(ierr);
 #endif
   if (B == PETSC_NULL) {
+    PetscBool shell,python;
     ierr = SNESSetJacobian(snes,J,J,MatMFFDComputeJacobian,jacP);CHKERRQ(ierr);
     ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
     ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-    ierr = PetscTypeCompare((PetscObject)pc,PCSHELL,&flg);CHKERRQ(ierr);
-    if (!flg) { ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr); }
+    ierr = PetscTypeCompare((PetscObject)pc,PCSHELL,&shell);CHKERRQ(ierr);
+    ierr = PetscTypeCompare((PetscObject)pc,PCPYTHON,&python);CHKERRQ(ierr);
+    if (!shell && !python) { ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr); }
   } else {
     ierr = SNESSetJacobian(snes,J,0,0,0);CHKERRQ(ierr);
   }
