@@ -147,12 +147,14 @@ cdef inline TS ref_TS(PetscTS ts):
 
 # -----------------------------------------------------------------------------
 
-cdef int TS_LHSMatrix(PetscTS ts,
-                      PetscReal t,
-                      PetscMat *A,
-                      PetscMat *B,
-                      PetscMatStructure* s,
-                      void* ctx) except PETSC_ERR_PYTHON with gil:
+cdef int TS_LHSMatrix(
+    PetscTS   ts,
+    PetscReal t,
+    PetscMat* A,
+    PetscMat* B,
+    PetscMatStructure* s,
+    void*     ctx,
+    ) except PETSC_ERR_PYTHON with gil:
     cdef TS   Ts   = ref_TS(ts)
     cdef Mat  Amat = ref_Mat(A[0])
     (lhsmatrix, args, kargs) = Ts.get_attr('__lhsmatrix__')
@@ -162,12 +164,14 @@ cdef int TS_LHSMatrix(PetscTS ts,
     Atmp = A[0]; A[0] = Amat.mat; Amat.mat = Atmp
     return 0
 
-cdef int TS_RHSMatrix(PetscTS ts,
-                      PetscReal t,
-                      PetscMat *A,
-                      PetscMat *B,
-                      PetscMatStructure* s,
-                      void* ctx) except PETSC_ERR_PYTHON with gil:
+cdef int TS_RHSMatrix(
+    PetscTS   ts,
+    PetscReal t,
+    PetscMat* A,
+    PetscMat* B,
+    PetscMatStructure* s,
+    void*     ctx,
+    ) except PETSC_ERR_PYTHON with gil:
     cdef TS   Ts   = ref_TS(ts)
     cdef Mat  Amat = ref_Mat(A[0])
     (rhsmatrix, args, kargs) = Ts.get_attr('__rhsmatrix__')
@@ -179,11 +183,13 @@ cdef int TS_RHSMatrix(PetscTS ts,
 
 # -----------------------------------------------------------------------------
 
-cdef int TS_RHSFunction(PetscTS ts,
-                        PetscReal t,
-                        PetscVec  x,
-                        PetscVec  f,
-                        void* ctx) except PETSC_ERR_PYTHON with gil:
+cdef int TS_RHSFunction(
+    PetscTS   ts,
+    PetscReal t,
+    PetscVec  x,
+    PetscVec  f,
+    void*     ctx,
+    ) except PETSC_ERR_PYTHON with gil:
     cdef TS  Ts   = ref_TS(ts)
     cdef Vec Xvec = ref_Vec(x)
     cdef Vec Fvec = ref_Vec(f)
@@ -191,13 +197,15 @@ cdef int TS_RHSFunction(PetscTS ts,
     function(Ts, toReal(t), Xvec, Fvec, *args, **kargs)
     return 0
 
-cdef int TS_RHSJacobian(PetscTS ts,
-                        PetscReal t,
-                        PetscVec  x,
-                        PetscMat  *J,
-                        PetscMat  *P,
-                        PetscMatStructure* s,
-                        void* ctx) except PETSC_ERR_PYTHON with gil:
+cdef int TS_RHSJacobian(
+    PetscTS   ts,
+    PetscReal t,
+    PetscVec  x,
+    PetscMat* J,
+    PetscMat* P,
+    PetscMatStructure* s,
+    void*     ctx,
+    ) except PETSC_ERR_PYTHON with gil:
     cdef TS   Ts   = ref_TS(ts)
     cdef Vec  Xvec = ref_Vec(x)
     cdef Mat  Jmat = ref_Mat(J[0])
@@ -212,12 +220,14 @@ cdef int TS_RHSJacobian(PetscTS ts,
 
 # -----------------------------------------------------------------------------
 
-cdef int TS_IFunction(PetscTS ts,
-                      PetscReal t,
-                      PetscVec  x,
-                      PetscVec  xdot,
-                      PetscVec  f,
-                      void* ctx) except PETSC_ERR_PYTHON with gil:
+cdef int TS_IFunction(
+    PetscTS   ts,
+    PetscReal t,
+    PetscVec  x,
+    PetscVec  xdot,
+    PetscVec  f,
+    void*     ctx,
+    ) except PETSC_ERR_PYTHON with gil:
     cdef TS  Ts    = ref_TS(ts)
     cdef Vec Xvec  = ref_Vec(x)
     cdef Vec XDvec = ref_Vec(xdot)
@@ -226,15 +236,17 @@ cdef int TS_IFunction(PetscTS ts,
     function(Ts, toReal(t), Xvec, XDvec, Fvec, *args, **kargs)
     return 0
 
-cdef int TS_IJacobian(PetscTS ts,
-                      PetscReal t,
-                      PetscVec  x,
-                      PetscVec  xdot,
-                      PetscReal a,
-                      PetscMat  *J,
-                      PetscMat  *P,
-                      PetscMatStructure* s,
-                      void* ctx) except PETSC_ERR_PYTHON with gil:
+cdef int TS_IJacobian(
+    PetscTS   ts,
+    PetscReal t,
+    PetscVec  x,
+    PetscVec  xdot,
+    PetscReal a,
+    PetscMat* J,
+    PetscMat* P,
+    PetscMatStructure* s,
+    void*     ctx,
+    ) except PETSC_ERR_PYTHON with gil:
     cdef TS   Ts    = ref_TS(ts)
     cdef Vec  Xvec  = ref_Vec(x)
     cdef Vec  XDvec = ref_Vec(xdot)
@@ -251,11 +263,13 @@ cdef int TS_IJacobian(PetscTS ts,
 
 # -----------------------------------------------------------------------------
 
-cdef int TS_Monitor(PetscTS    ts,
-                    PetscInt   step,
-                    PetscReal  time,
-                    PetscVec   u,
-                    void* ctx) except PETSC_ERR_PYTHON with gil:
+cdef int TS_Monitor(
+    PetscTS   ts,
+    PetscInt  step,
+    PetscReal time,
+    PetscVec  u,
+    void*     ctx,
+    ) except PETSC_ERR_PYTHON with gil:
     cdef TS  Ts = ref_TS(ts)
     cdef Vec Vu = ref_Vec(u)
     cdef object monitorlist = Ts.get_attr('__monitor__')
@@ -266,13 +280,17 @@ cdef int TS_Monitor(PetscTS    ts,
 
 # -----------------------------------------------------------------------------
 
-cdef int TS_PreStep(PetscTS ts) except PETSC_ERR_PYTHON with gil:
+cdef int TS_PreStep(
+    PetscTS ts,
+    ) except PETSC_ERR_PYTHON with gil:
     cdef TS Ts = ref_TS(ts)
     (prestep, args, kargs) = Ts.get_attr('__prestep__')
     prestep(Ts, *args, **kargs)
     return 0
 
-cdef int TS_PostStep(PetscTS ts) except PETSC_ERR_PYTHON with gil:
+cdef int TS_PostStep(
+    PetscTS ts,
+    ) except PETSC_ERR_PYTHON with gil:
     cdef TS Ts = ref_TS(ts)
     (poststep, args, kargs) = Ts.get_attr('__poststep__')
     poststep(Ts, *args, **kargs)

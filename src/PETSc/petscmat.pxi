@@ -321,8 +321,11 @@ cdef inline NullSpace ref_NullSpace(PetscNullSpace nsp):
     PetscINCREF(ob.obj)
     return ob
 
-cdef int NullSpace_Function(PetscNullSpace n, PetscVec v, void *ctx) \
-                            except PETSC_ERR_PYTHON with gil:
+cdef int NullSpace_Function(
+    PetscNullSpace n,
+    PetscVec       v,
+    void *         ctx,
+    ) except PETSC_ERR_PYTHON with gil:
     cdef NullSpace nsp = ref_NullSpace(n)
     cdef Vec vec = ref_Vec(v)
     (function, args, kargs) = nsp.get_attr('__function__')
@@ -338,7 +341,7 @@ cdef inline int MatNullSpaceSetFunctionPython(PetscNullSpace nsp) except -1:
                 nsp, <MatNullSpaceFunction*>NullSpace_Function_OLD, nsp) )
     else:
         CHKERR( MatNullSpaceSetFunction(
-                nsp, <MatNullSpaceFunction*>NullSpace_Function, nsp) )
+                nsp, <MatNullSpaceFunction*>NullSpace_Function, NULL) )
     return 0
 
 cdef int NullSpace_Function_OLD(PetscVec v, void* ctx) nogil:

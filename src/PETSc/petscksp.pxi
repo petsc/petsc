@@ -178,14 +178,16 @@ cdef inline KSP ref_KSP(PetscKSP ksp):
 
 # -----------------------------------------------------------------------------
 
-cdef int KSP_Converged(PetscKSP  ksp,
-                       PetscInt  its,
-                       PetscReal rn,
-                       PetscKSPConvergedReason *r,
-                        void* ctx) except PETSC_ERR_PYTHON with gil:
+cdef int KSP_Converged(
+    PetscKSP  ksp,
+    PetscInt  its,
+    PetscReal rnm,
+    PetscKSPConvergedReason *r,
+    void*     ctx,
+    ) except PETSC_ERR_PYTHON with gil:
     cdef KSP Ksp = ref_KSP(ksp)
     (converged, args, kargs) = Ksp.get_attr('__converged__')
-    reason = converged(Ksp, toInt(its), toReal(rn), *args, **kargs)
+    reason = converged(Ksp, toInt(its), toReal(rnm), *args, **kargs)
     if   reason is None:  r[0] = KSP_CONVERGED_ITERATING
     elif reason is False: r[0] = KSP_CONVERGED_ITERATING
     elif reason is True:  r[0] = KSP_CONVERGED_ITS # XXX ?
@@ -194,15 +196,17 @@ cdef int KSP_Converged(PetscKSP  ksp,
 
 # -----------------------------------------------------------------------------
 
-cdef int KSP_Monitor(PetscKSP  ksp,
-                     PetscInt   its,
-                     PetscReal  rnorm,
-                     void* ctx) except PETSC_ERR_PYTHON with gil:
+cdef int KSP_Monitor(
+    PetscKSP  ksp,
+    PetscInt  its,
+    PetscReal rnm,
+    void*     ctx,
+    ) except PETSC_ERR_PYTHON with gil:
     cdef KSP Ksp = ref_KSP(ksp)
     cdef object monitorlist = Ksp.get_attr('__monitor__')
     if monitorlist is None: return 0
     for (monitor, args, kargs) in monitorlist:
-        monitor(Ksp, toInt(its), toReal(rnorm), *args, **kargs)
+        monitor(Ksp, toInt(its), toReal(rnm), *args, **kargs)
     return 0
 
 # -----------------------------------------------------------------------------
