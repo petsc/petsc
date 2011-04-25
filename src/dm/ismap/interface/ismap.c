@@ -1015,7 +1015,8 @@ PetscErrorCode ISMappingCreate(MPI_Comm comm, ISMapping *_map)
 
 #undef  __FUNCT__
 #define __FUNCT__ "ISArrayHunkCreate"
-PetscErrorCode ISArrayHunkCreate(PetscInt maxlength, ISArrayComponents mask, ISArrayHunk *_hunk) {
+PetscErrorCode ISArrayHunkCreate(PetscInt maxlength, ISArrayComponents mask, ISArrayHunk *_hunk) 
+{
   PetscErrorCode ierr;
   ISArrayHunk hunk;
   PetscFunctionBegin;
@@ -1053,7 +1054,8 @@ PetscErrorCode ISArrayHunkCreate(PetscInt maxlength, ISArrayComponents mask, ISA
 
 #undef  __FUNCT__
 #define __FUNCT__ "ISArrayHunkAddData"
-PetscErrorCode ISArrayHunkAddData(ISArrayHunk hunk, PetscInt length, const PetscInt *i, const PetscScalar *w, const PetscInt *j) {
+PetscErrorCode ISArrayHunkAddData(ISArrayHunk hunk, PetscInt length, const PetscInt *i, const PetscScalar *w, const PetscInt *j) 
+{
   PetscErrorCode ierr;
   PetscInt mask;
   PetscFunctionBegin;
@@ -1109,44 +1111,14 @@ PetscErrorCode ISArrayHunkGetSubHunk(ISArrayHunk hunk, PetscInt maxlength, ISArr
   PetscFunctionReturn(0);
 }
 
-#undef  __FUNCT__
-#define __FUNCT__ "ISArrayHunkSetNext"
-PetscErrorCode ISArrayHunkSetNext(ISArrayHunk hunk, ISArrayHunk nexthunk) 
-{
-  PetscFunctionBegin;
-  PetscValidPointer(hunk,1);
-  PetscValidPointer(nexthunk,2);
-  if(hunk->next) {
-    --(hunk->next);
-  }
-  hunk->next = nexthunk;
-  if(hunk->next) {
-    ++(hunk->next);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef  __FUNCT__
-#define __FUNCT__ "ISArrayHunkDuplicate"
-PetscErrorCode ISArrayHunkDuplicate(ISArrayHunk hunk, ISArrayHunk *_dhunk) 
-{
-  PetscErrorCode ierr;
-  ISArrayHunk dhunk;
-  PetscFunctionBegin;
-  PetscValidPointer(hunk,1);
-  PetscValidPointer(_dhunk,2);
-  ierr = ISArrayHunkCreate(hunk->length, hunk->mask, &dhunk);           CHKERRQ(ierr);
-  ierr = ISArrayHunkAddData(dhunk,hunk->length,hunk->i,hunk->w,hunk->j); CHKERRQ(ierr);
-  *_dhunk = dhunk;
-  PetscFunctionReturn(0);
-}
 
 #undef  __FUNCT__
 #define __FUNCT__ "ISArrayHunkDestroy"
-PetscErrorCode ISArrayHunkDestroy(ISArrayHunk hunk) {
+PetscErrorCode ISArrayHunkDestroy(ISArrayHunk hunk) 
+{
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  if((hunk->refcnt)-- > 0) PetscFunctionReturn(0);
+  if((hunk->refcnt)--) PetscFunctionReturn(0);
   if(hunk->length && hunk->mode != PETSC_USE_POINTER) {
       ierr = PetscFree(hunk->i); CHKERRQ(ierr);
       ierr = PetscFree(hunk->w); CHKERRQ(ierr);
@@ -1156,233 +1128,139 @@ PetscErrorCode ISArrayHunkDestroy(ISArrayHunk hunk) {
   if(hunk->parent) {
     ierr = ISArrayHunkDestroy(hunk->parent); CHKERRQ(ierr);
   }
-  if(hunk->next) {
-    --(hunk->next->refcnt);
-  }
-  hunk->next = PETSC_NULL;
+  hunk->parent = PETSC_NULL;
   ierr = PetscFree(hunk); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 
 #undef  __FUNCT__
-#define __FUNCT__ "ISArrayHunkMergeHunks"
-PetscErrorCode ISArrayHunkMergeHunks(ISArrayHunk hunks, PetscInt mask, ISArrayHunk *_merged) {
-  PetscErrorCode ierr;
-  ISArrayHunk hunk, merged;
-  PetscInt    length;
-  PetscInt    count;
-  PetscFunctionBegin;
-  PetscValidPointer(hunks,1);
-  PetscValidPointer(_merged,2);
-
-  *_merged = PETSC_NULL;
-  /* Calculate the number of links in the chain and the length of the merged chain. */
-  hunk = hunks;
-  length = 0;
-  count = 0;
-  while(hunk) {
-    /* Determine the mask and perform a consistency check. */
-    if(mask & (~(hunk->mask)))
-      SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Hunk components %D in hunk %D incompatible with the merge mask %D", hunk->mask, count, mask);
-    length   += hunk->length;
-     hunk     = hunk->next;
-     ++count;
-  }
-  if(count == 1) PetscFunctionReturn(0);
-
-  if(length) {
-    ierr = ISArrayHunkCreate(length, mask, &merged); CHKERRQ(ierr);
-    /* Copy the indices and weights into the merged arrays. */
-    length = 0;
-    hunk = hunks;
-    while(hunk) {
-      if(mask & ISARRAY_I) {
-        ierr = PetscMemcpy(merged->i+length, hunk->i, sizeof(PetscInt)*hunk->length); CHKERRQ(ierr);
-      }
-      if(mask & ISARRAY_J) {
-        ierr = PetscMemcpy(merged->j+length, hunk->j, sizeof(PetscInt)*hunk->length); CHKERRQ(ierr);
-      }
-      if(mask & ISARRAY_W) {
-        ierr = PetscMemcpy(merged->w+length, hunk->w, sizeof(PetscScalar)*hunk->length); CHKERRQ(ierr);
-      }
-      length += hunk->length;
-    }
-  }/* if(length) */
-  merged->length = length;
-  *_merged = merged;
-  PetscFunctionReturn(0);
-}
-
-#undef  __FUNCT__
 #define __FUNCT__ "ISArrayCreate"
-PetscErrorCode ISArrayCreate(ISArrayComponents mask, ISArray *_chain) {
+PetscErrorCode ISArrayCreate(ISArrayComponents mask, ISArray *_arr) 
+{
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidPointer(_chain,2);
-  if(!(mask & ISARRAY_I) && !(mask & ISARRAY_J)) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "ISArrayComponents %D must contain at least one of the indices: I or J", mask);
-  ierr = PetscNew(struct _n_ISArray, _chain); CHKERRQ(ierr);
-  (*_chain)->mask = mask;
+  PetscValidPointer(_arr,2);
+  if(!(mask & ISARRAY_I) && !(mask & ISARRAY_J)) {
+    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "ISArrayComponents %D must contain at least one of the indices: I or J", mask);
+  }
+  ierr = PetscNew(struct _n_ISArray, _arr); CHKERRQ(ierr);
+  (*_arr)->mask = mask;
   PetscFunctionReturn(0);
 }
 
 #undef  __FUNCT__
 #define __FUNCT__ "ISArrayDuplicate"
-PetscErrorCode ISArrayDuplicate(ISArray arr, ISArray *_darr) {
+PetscErrorCode ISArrayDuplicate(ISArray arr, ISArray *_darr) 
+{
   PetscErrorCode ierr;
   ISArray darr;
-  ISArrayHunk hunk,dhunk;
+  ISArrayLink link;
   PetscFunctionBegin;
   PetscValidPointer(arr,1);
   PetscValidPointer(_darr,2);
   ierr = ISArrayCreate(arr->mask, &darr); CHKERRQ(ierr);
-  hunk = arr->first;
-  while(hunk) {
-    ierr = ISArrayHunkDuplicate(hunk, &dhunk); CHKERRQ(ierr);
-    ierr = ISArrayAddHunk(darr, dhunk);        CHKERRQ(ierr);
+  link  = arr->first;
+  while(link) {
+    ierr = ISArrayAddHunk(darr,link->hunk);  CHKERRQ(ierr);
   }
-  darr->length = arr->length;
   *_darr = arr;
   PetscFunctionReturn(0);
 }
 
 #undef  __FUNCT__
 #define __FUNCT__ "ISArrayCreateArrays"
-PetscErrorCode ISArrayCreateArrays(ISArrayComponents mask, PetscInt count, const PetscInt *lengths, ISArray **_arrays) {
+PetscErrorCode ISArrayCreateArrays(ISArrayComponents mask, PetscInt count, ISArray **_arrays) 
+{
   PetscErrorCode ierr;
-  ISArray *arrays;
-  PetscInt i,length;
-  ISArrayHunk buffer;
+  PetscInt i;
   PetscFunctionBegin;
-  PetscValidPointer(lengths,3);
-  PetscValidPointer(arrays,4);
+  PetscValidPointer(_arrays,3);
   if(!(mask & ISARRAY_I) && !(mask & ISARRAY_J)) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "ISArrayComponents %D must contain at least one of the indices: I or J", mask);
   if(count < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Negative array count: %D", count);
-  length = 0;
+  ierr = PetscMalloc(sizeof(ISArray), _arrays); CHKERRQ(ierr);
   for(i = 0; i < count; ++i) {
-    if(lengths[i] < 0) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Negative array length %D requested for array %D", lengths[i],i);
-    length += lengths[i];
+    ierr = ISArrayCreate(mask, *_arrays+i); CHKERRQ(ierr);
   }
-  ierr = ISArrayHunkCreate(mask, length, &buffer); CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(ISArray), &arrays); CHKERRQ(ierr);
-  for(i = 0; i < count; ++i) {
-    ierr = ISArrayCreate(mask, arrays+i); CHKERRQ(ierr);
-    ierr = ISArraySetBuffer(arrays[i],buffer); CHKERRQ(ierr);
-  }
-  *_arrays = arrays;
   PetscFunctionReturn(0);
 }
 
 #undef  __FUNCT__
 #define __FUNCT__ "ISArrayClear"
-PetscErrorCode ISArrayClear(ISArray chain) {
+PetscErrorCode ISArrayClear(ISArray arr) 
+{
   PetscErrorCode ierr;
-  PetscInt maxlength = 0;
-  ISArrayHunk hunk;
+  ISArrayLink    link;
   PetscFunctionBegin;
-  PetscValidPointer(chain,1);
-  hunk = chain->first;
-  while(hunk) {
-    ierr = ISArrayHunkDestroy(hunk); CHKERRQ(ierr);
+  PetscValidPointer(arr,1);
+  link = arr->first;
+  while(link) {
+    ierr = ISArrayHunkDestroy(link->hunk); CHKERRQ(ierr);
+    link = link->next;
   }
-  /* Unfortunately, we don't know how to handle the buffer at this point, other than the following. */
-  if(chain->buffer) {
-    maxlength = chain->buffer->maxlength;
-    ierr = ISArrayHunkDestroy(chain->buffer); CHKERRQ(ierr);
-  }
-  maxlength = PetscMax(maxlength, chain->length); 
-  ierr = ISArrayHunkCreate(maxlength, chain->mask, &(chain->buffer)); CHKERRQ(ierr);
-  chain->first = PETSC_NULL;
-  chain->last  = PETSC_NULL;
-  chain->length = 0;
+  arr->first = PETSC_NULL;
+  arr->last  = PETSC_NULL;
+  arr->length = 0;
   PetscFunctionReturn(0);
 }
 
 
 #undef  __FUNCT__
 #define __FUNCT__ "ISArrayDestroy"
-PetscErrorCode ISArrayDestroy(ISArray chain) {
+PetscErrorCode ISArrayDestroy(ISArray chain) 
+{
   PetscErrorCode ierr;
-  ISArrayHunk hunk;
   PetscFunctionBegin;
   PetscValidPointer(chain,1);
-  hunk = chain->first;
-  while(hunk) {
-    ierr = ISArrayHunkDestroy(hunk); CHKERRQ(ierr);
-  }
-  chain->length = 0;
+  ierr = ISArrayClear(chain); CHKERRQ(ierr);
   chain->mask   = 0;
-  ierr = PetscFree(chain);                 CHKERRQ(ierr);
+  ierr = PetscFree(chain);    CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-/*
- This is an advanced routine.
- There is real danger of messing things up when sharing a buffer among arrays.
- Use with caution.
- */
-#undef  __FUNCT__
-#define __FUNCT__ "ISArraySetBuffer"
-PetscErrorCode ISArraySetBuffer(ISArray chain, ISArrayHunk buffer) {
-  PetscErrorCode ierr;
-  PetscFunctionBegin;
-  PetscValidPointer(chain,1);
-  PetscValidPointer(buffer,2);
-  if(chain->mask & (~buffer->mask)) 
-    SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Buffer mask %D incompatible with array mask %D", buffer->mask, chain->mask);
-  if(chain->buffer) {
-    ierr = ISArrayHunkDestroy(chain->buffer); CHKERRQ(ierr);
-  }
-  chain->buffer = buffer;
-  PetscFunctionReturn(0);
-}
 
-/*
- This is an advanced routine.
- This will return a hunk that will be part of the array, 
- but the caller is responsible for actually setting the data
- and updating the hunk length, etc.
+/* 
+ Right now we merely allocate a new hunk.
+ In the future, this can manage a pool of hunks, use a buffer to draw subhunks from, etc.
  */
 #undef  __FUNCT__
 #define __FUNCT__ "ISArrayGetHunk"
 PetscErrorCode ISArrayGetHunk(ISArray chain, PetscInt length, ISArrayHunk *_hunk) 
 {
   PetscErrorCode ierr;
-  ISArrayHunk hunk;
   PetscFunctionBegin;
-  PetscValidPointer(chain,1);
-  PetscValidPointer(_hunk,2);
-  if(chain->buffer) {
-    ierr = ISArrayHunkGetSubHunk(chain->buffer, length, chain->mask, &hunk); CHKERRQ(ierr);
-  }
-  if(!hunk) {
-    ierr = ISArrayHunkCreate(length, chain->mask, &hunk); CHKERRQ(ierr);
-  }
-  ierr = ISArrayAddHunk(chain, hunk);                 CHKERRQ(ierr);
+  ierr = ISArrayHunkCreate(length, chain->mask, _hunk); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef  __FUNCT__
 #define __FUNCT__ "ISArrayAddHunk"
-PetscErrorCode ISArrayAddHunk(ISArray chain, ISArrayHunk hunk) {
+PetscErrorCode ISArrayAddHunk(ISArray chain, ISArrayHunk hunk) 
+{
   PetscErrorCode ierr;
+  ISArrayLink    link;
   PetscFunctionBegin;
-  if(chain->mask & (~(hunk->mask))) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Hunk mask %D incompatible with the array mask %D", hunk->mask, chain->mask);
+  if(chain->mask & (~(hunk->mask))) {
+    SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Hunk mask %D incompatible with the array mask %D", hunk->mask, chain->mask);
+  }
+  ierr = PetscMalloc(sizeof(struct _n_ISArrayLink), &link);
+  link->hunk = hunk;
+  ++(hunk->refcnt);
   if(chain->last) {
-    ierr = ISArrayHunkSetNext(chain->last, hunk); CHKERRQ(ierr);
+    chain->last->next = link;
+    chain->last =       link;
   }
   else {
-    chain->first = hunk;
+    chain->first = chain->last = link;
   }
-  chain->last = hunk;
   PetscFunctionReturn(0);
 }
 
 
-
 #undef  __FUNCT__
 #define __FUNCT__ "ISArrayAddData"
-PetscErrorCode ISArrayAddData(ISArray chain, PetscInt length, const PetscInt *i, const PetscScalar *w, const PetscInt *j) {
+PetscErrorCode ISArrayAddData(ISArray chain, PetscInt length, const PetscInt *i, const PetscScalar *w, const PetscInt *j) 
+{
   PetscErrorCode ierr;
   ISArrayHunk hunk;
   ISArrayComponents mask;
@@ -1390,17 +1268,17 @@ PetscErrorCode ISArrayAddData(ISArray chain, PetscInt length, const PetscInt *i,
   PetscValidPointer(chain,1);
   mask = (i != PETSC_NULL) | ((j != PETSC_NULL)<<1) | ((w != PETSC_NULL)<<2);
   if(mask != chain->mask) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Data components %D incompatible with the ISArrayComponents", mask,chain->mask);
-  /* Try obtaining a subhunk from the buffer (a memory pool), if any. */
-  hunk = PETSC_NULL;
-  ierr = ISArrayGetHunk(chain, length, &hunk);    CHKERRQ(ierr);
-  ierr = ISArrayHunkAddData(hunk, length, i,w,j); CHKERRQ(ierr);
+  ierr = ISArrayGetHunk(chain, length, &hunk);  CHKERRQ(ierr);
+  ierr = ISArrayHunkAddData(hunk, length, i,w,j);       CHKERRQ(ierr);
+  ierr = ISArrayAddHunk(chain, hunk); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 
 #undef  __FUNCT__
 #define __FUNCT__ "ISArrayAddI"
-PetscErrorCode ISArrayAddI(ISArray chain, PetscInt length, PetscInt i, const PetscScalar wa[], const PetscInt ja[]) {
+PetscErrorCode ISArrayAddI(ISArray chain, PetscInt length, PetscInt i, const PetscScalar wa[], const PetscInt ja[]) 
+{
   PetscErrorCode ierr;
   ISArrayHunk hunk;
   PetscInt mask;
@@ -1410,20 +1288,22 @@ PetscErrorCode ISArrayAddI(ISArray chain, PetscInt length, PetscInt i, const Pet
   mask = (ISARRAY_I | (ja != PETSC_NULL)<<1 | (wa != PETSC_NULL)<<2);
   if(mask & (~(chain->mask))) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Array components provided %D incompatible with array mask %D", mask, chain->mask);
   if(!length) PetscFunctionReturn(0);
-  ierr = ISArrayGetHunk(chain, length, &hunk); CHKERRQ(ierr);
+  ierr = ISArrayGetHunk(chain, length, &hunk);           CHKERRQ(ierr);
   for(k = 0; k < length; ++k) hunk->i[k] = i;
   if(ja) {
-    ierr = PetscMemcpy(hunk->j, ja, sizeof(PetscInt)*length); CHKERRQ(ierr);
+    ierr = PetscMemcpy(hunk->j, ja, sizeof(PetscInt)*length);    CHKERRQ(ierr);
   }
   if(wa) {
     ierr = PetscMemcpy(hunk->w, wa, sizeof(PetscScalar)*length); CHKERRQ(ierr);
   }
+  ierr = ISArrayAddHunk(chain, hunk);                            CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef  __FUNCT__
 #define __FUNCT__ "ISArrayAddJ"
-PetscErrorCode ISArrayAddJ(ISArray chain, PetscInt length, const PetscInt ia[], const PetscScalar wa[], PetscInt j) {
+PetscErrorCode ISArrayAddJ(ISArray chain, PetscInt length, const PetscInt ia[], const PetscScalar wa[], PetscInt j) 
+{
   PetscErrorCode ierr;
   ISArrayHunk hunk;
   PetscInt mask;
@@ -1433,36 +1313,71 @@ PetscErrorCode ISArrayAddJ(ISArray chain, PetscInt length, const PetscInt ia[], 
   mask = ((ia != PETSC_NULL) | ISARRAY_J | (wa != PETSC_NULL)<<2);
   if(mask & (~(chain->mask))) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Array components provided %D incompatible with array mask %D", mask, chain->mask);
   if(!length) PetscFunctionReturn(0);
-  ierr = ISArrayGetHunk(chain, length, &hunk); CHKERRQ(ierr);
+  ierr = ISArrayGetHunk(chain, length, &hunk);           CHKERRQ(ierr);
   for(k = 0; k < length; ++k) hunk->j[k] = j;
   if(ia) {
-    ierr = PetscMemcpy(hunk->i, ia, sizeof(PetscInt)*length); CHKERRQ(ierr);
+    ierr = PetscMemcpy(hunk->i, ia, sizeof(PetscInt)*length);    CHKERRQ(ierr);
   }
   if(wa) {
     ierr = PetscMemcpy(hunk->w, wa, sizeof(PetscScalar)*length); CHKERRQ(ierr);
   }
+  ierr = ISArrayAddHunk(chain, hunk);                            CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef  __FUNCT__
 #define __FUNCT__ "ISArrayMerge_Private"
-static PetscErrorCode ISArrayMerge_Private(ISArray chain) {
+static PetscErrorCode ISArrayMerge_Private(ISArray arr) 
+{
   PetscErrorCode ierr;
+  ISArrayLink link;
   ISArrayHunk merged;
+  PetscInt count, offset;
   PetscFunctionBegin;
-  PetscValidPointer(chain,1);
-  ierr = ISArrayHunkMergeHunks(chain->first, chain->mask, &merged); CHKERRQ(ierr);
-  if(merged) {
-    ierr = ISArrayHunkDestroy(chain->first); CHKERRQ(ierr);
-    chain->first = chain->last = PETSC_NULL;
-    ierr = ISArrayAddHunk(chain, merged);              CHKERRQ(ierr);
+  PetscValidPointer(arr,1);
+
+  /* Determine the number of links in the chain and perform the mask consistency check. */
+  link = arr->first;
+  count = 0;
+  while(link) {
+    /* Mask consistency check. */
+    if(arr->mask & (~(link->hunk->mask))) {
+      SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Hunk components %D in link %D incompatible with the merge mask %D", link->hunk->mask, count, arr->mask);
+    }
+    link     = link->next;
+    ++count;
   }
+  if(count == 1) PetscFunctionReturn(0);
+
+  if(arr->length) {
+    ierr = ISArrayHunkCreate(arr->length, arr->mask, &merged);                           CHKERRQ(ierr);
+    /* Copy the indices and weights into the merged arrays. */
+    offset = 0;
+    link = arr->first;
+    while(link) {
+      ISArrayHunk hunk = link->hunk;
+      if(arr->mask & ISARRAY_I) {
+        ierr = PetscMemcpy(merged->i+offset, hunk->i, sizeof(PetscInt)*hunk->length);    CHKERRQ(ierr);
+      }
+      if(arr->mask & ISARRAY_J) {
+        ierr = PetscMemcpy(merged->j+offset, hunk->j, sizeof(PetscInt)*hunk->length);    CHKERRQ(ierr);
+      }
+      if(arr->mask & ISARRAY_W) {
+        ierr = PetscMemcpy(merged->w+offset, hunk->w, sizeof(PetscScalar)*hunk->length); CHKERRQ(ierr);
+      }
+      offset += hunk->length;
+    }
+  }/* if(arr->length) */
+  merged->length = offset;
+  ierr = ISArrayClear(arr);            CHKERRQ(ierr);
+  ierr = ISArrayAddHunk(arr, merged);  CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef  __FUNCT__
 #define __FUNCT__ "ISArrayGetLength"
-PetscErrorCode ISArrayGetLength(ISArray chain, PetscInt *_length) {
+PetscErrorCode ISArrayGetLength(ISArray chain, PetscInt *_length) 
+{
   PetscFunctionBegin;
   PetscValidPointer(chain,1);
   PetscValidPointer(_length,2);
@@ -1472,24 +1387,44 @@ PetscErrorCode ISArrayGetLength(ISArray chain, PetscInt *_length) {
 
 #undef  __FUNCT__
 #define __FUNCT__ "ISArrayGetData"
-PetscErrorCode ISArrayGetData(ISArray chain, const PetscInt *_i[], const PetscScalar *_w[], const PetscInt *_j[]) {
+PetscErrorCode ISArrayGetData(ISArray chain, const PetscInt *_i[], const PetscScalar *_w[], const PetscInt *_j[]) 
+{
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidPointer(chain,1);
   ierr = ISArrayMerge_Private(chain); CHKERRQ(ierr);
   if(_i && (chain->mask&ISARRAY_I)) {
-    if(chain->first) *_i = chain->first->i;
+    if(chain->first) *_i = chain->first->hunk->i;
     else             *_i = PETSC_NULL;
   }
   if(_w && (chain->mask&ISARRAY_W)) {
-    if(chain->first) *_w = chain->first->w;
+    if(chain->first) *_w = chain->first->hunk->w;
     else             *_w = PETSC_NULL;
   }
   if(_j && (chain->mask&ISARRAY_J)) {
-    if(chain->first) *_j = chain->first->j;
+    if(chain->first) *_j = chain->first->hunk->j;
     else             *_j = PETSC_NULL;
   }
+  PetscFunctionReturn(0);
+}
 
+#undef  __FUNCT__
+#define __FUNCT__ "ISArrayAddArray"
+PetscErrorCode ISArrayAddArray(ISArray chain, ISArray chain2) 
+{
+  PetscErrorCode ierr;
+  ISArrayLink link;
+  PetscFunctionBegin;
+  PetscValidPointer(chain, 1);
+  PetscValidPointer(chain2,2);
+  if(chain->mask & (~(chain2->mask))) {
+    SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "New mask %D ncompatible with original %D", chain2->mask, chain->mask);
+  }
+  link = chain2->first;
+  while(link) {
+    ierr = ISArrayAddHunk(chain, link->hunk); CHKERRQ(ierr);
+    link = link->next;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -1578,10 +1513,10 @@ PetscErrorCode PetscCheckISRange(IS is, PetscInt imin, PetscInt imax, PetscBool 
  */
 #undef __FUNCT__  
 #define __FUNCT__ "ISArrayAssemble"
-PetscErrorCode ISArrayAssemble(ISArray chain, PetscInt mask, PetscLayout layout, ISArray *_achain) {
+PetscErrorCode ISArrayAssemble(ISArray chain, PetscInt mask, PetscLayout layout, ISArray *_achain) 
+{
   PetscErrorCode ierr;
   ISArray achain;
-  PetscInt chainmask;
   MPI_Comm comm = layout->comm;
   PetscMPIInt size, rank, tag_i, tag_v;
   PetscMPIInt chainmaskmpi, allchainmask;
@@ -1603,6 +1538,7 @@ PetscErrorCode ISArrayAssemble(ISArray chain, PetscInt mask, PetscLayout layout,
   PetscInt *aixidx, *aiyidx = PETSC_NULL;
   PetscScalar *aval = PETSC_NULL;
   const PetscScalar *val;
+  ISArrayLink link;
   ISArrayHunk hunk, ahunk;
 
   PetscFunctionBegin;
@@ -1610,9 +1546,8 @@ PetscErrorCode ISArrayAssemble(ISArray chain, PetscInt mask, PetscLayout layout,
   PetscValidPointer(_achain, 4);
 
   /* Make sure that at least one of the indices -- I or J -- is being assembled on, and that the index being assembled on is present in the ISArray. */
-  chainmask = chain->first->mask;
-  if((mask != ISARRAY_I && mask != ISARRAY_J)|| !(mask & chainmask))
-    SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot assemble ISArray with components %D on component %D", chainmask, mask);
+  if((mask != ISARRAY_I && mask != ISARRAY_J)|| !(mask & chain->mask))
+    SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot assemble ISArray with components %D on component %D", chain->mask, mask);
 
   /* Comm parameters */
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
@@ -1622,17 +1557,17 @@ PetscErrorCode ISArrayAssemble(ISArray chain, PetscInt mask, PetscLayout layout,
   if(size == 1) PetscFunctionReturn(0);
 
   /* Make sure that chain type is the same across the comm. */
-  chainmaskmpi = PetscMPIIntCast(chainmask);
+  chainmaskmpi = PetscMPIIntCast(chain->mask);
   ierr = MPI_Allreduce(&(chainmaskmpi), &allchainmask, 1, MPI_INT, MPI_BOR, comm); CHKERRQ(ierr);
   if(allchainmask^chainmaskmpi) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Chain mask must be the same across the communicator. Got %D globally and %D locally", allchainmask, chainmaskmpi);
 
   /* How many index arrays are being sent? One or two? */
   ni = 0;
-  ni += ((chainmask & ISARRAY_I) > 0);
-  ni += ((chainmask & ISARRAY_J) > 0);
+  ni += ((chain->mask & ISARRAY_I) > 0);
+  ni += ((chain->mask & ISARRAY_J) > 0);
 
   /* How many value arrays are being sent?  One or none? */
-  nv =  ((chainmask & ISARRAY_W) > 0);
+  nv =  ((chain->mask & ISARRAY_W) > 0);
 
 
   
@@ -1646,8 +1581,9 @@ PetscErrorCode ISArrayAssemble(ISArray chain, PetscInt mask, PetscLayout layout,
   lastidx = -1;
   count   = 0;
   p       = 0;
-  hunk = chain->first;
-  while(hunk) {
+  link = chain->first;
+  while(link) {
+    hunk = link->hunk;
     for (i=0; i<hunk->length; ++i) {
       if(mask == ISARRAY_I) {
         ixidx = hunk->i;
@@ -1676,7 +1612,7 @@ PetscErrorCode ISArrayAssemble(ISArray chain, PetscInt mask, PetscLayout layout,
 #endif
       ++count;
     }/* for(i=0; i < hunk->length; ++i) */
-    hunk = hunk->next;
+    link = link->next;
   }
   nsends = 0;  for (p=0; p<size; ++p) { nsends += (plengths[p] > 0);} 
     
@@ -1724,9 +1660,10 @@ PetscErrorCode ISArrayAssemble(ISArray chain, PetscInt mask, PetscLayout layout,
   }
 
   /* Now pack the indices and, possibly, values into the appropriate buffer segments. */
-  hunk = chain->first;
+  link = chain->first;
   count = 0;
-  while(hunk){
+  while(link){
+    hunk = link->hunk;
     if(mask == ISARRAY_I) {
       ixidx = hunk->i;
       iyidx = hunk->j;
@@ -1746,7 +1683,7 @@ PetscErrorCode ISArrayAssemble(ISArray chain, PetscInt mask, PetscLayout layout,
       ++plengths[p];
       ++count;
     }
-    hunk = hunk->next;
+    link = link->next;
   }
   /* Allocate send requests: for the indices, and possibly one more for the scalar values, hence +nv */
   ierr     = PetscMalloc((1+nv)*nsends*sizeof(MPI_Request),&send_reqs);  CHKERRQ(ierr);
@@ -1771,9 +1708,9 @@ PetscErrorCode ISArrayAssemble(ISArray chain, PetscInt mask, PetscLayout layout,
 
   alength = rstarts[nrecvs];
   /* Create a new ISArray for the received data segments */
-  ierr = ISArrayCreate(chainmask, &achain);                 CHKERRQ(ierr);
+  ierr = ISArrayCreate(chain->mask, &achain);               CHKERRQ(ierr);
   /* Get a hunk to pack the data into. */
-  ierr = ISArrayGetHunk(achain, alength, &ahunk);           CHKERRQ(ierr);
+  ierr = ISArrayGetHunk(achain, alength, &ahunk);   CHKERRQ(ierr);
   
   /* Use ahunk's data arrays as receive buffers. */
   if(mask == ISARRAY_I) {
@@ -1844,47 +1781,6 @@ PetscErrorCode ISArrayAssemble(ISArray chain, PetscInt mask, PetscLayout layout,
 }/* ISArrayAssemble() */
 
 
-#undef  __FUNCT__
-#define __FUNCT__ "ISArrayJoinArrays"
-PetscErrorCode ISArrayJoinArrays(PetscInt len, ISArray chains[], ISArray *_joined) {
-  PetscErrorCode ierr;
-  PetscInt i;
-  ISArrayHunk first,last,merged;
-  PetscInt mask = ISARRAY_I | ISARRAY_W | ISARRAY_J;
-  PetscFunctionBegin;
-  PetscValidPointer(chains,2);
-  PetscValidPointer(_joined,3);
-  *_joined = PETSC_NULL;
-  if(!len) PetscFunctionReturn(0);
-  if(len < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Negative array length: %D", len);
-
-  /* Temporarily link the chains. */
-  first = PETSC_NULL;
-  last  = PETSC_NULL;
-  for(i = 1; i < len; ++i) {
-    if(!chains[i] || !chains[i]->first) continue;
-    mask &= chains[i]->mask;
-    if(!last) {
-      first = chains[i]->first;
-      last = chains[i]->last;
-    }
-    else {
-      last->next = chains[i]->first;
-      last = chains[i]->last;
-    }
-  }
-  /* Merge the unified chain. */
-  ierr = ISArrayHunkMergeHunks(first, mask, &merged); CHKERRQ(ierr);
-  ierr = ISArrayCreate(mask, _joined);                CHKERRQ(ierr);
-  ierr = ISArrayAddHunk(*_joined, merged);            CHKERRQ(ierr);
-
-  /* Unlink the chains. */
-  for(i = 1; i < len; ++i) {
-    if(!chains[i] || !chains[i]->first) continue;
-    chains[i]->last->next = PETSC_NULL;
-  }
-  PetscFunctionReturn(0);
-}
 
 
 

@@ -76,61 +76,6 @@ extern PetscErrorCode PetscCheckIntArrayRange(PetscInt len, const PetscInt idx[]
 extern PetscErrorCode PetscCheckISRange(IS is, PetscInt imin, PetscInt imax, PetscBool outOfBoundsError, PetscBool *flag);
 
 
-/*
- Increment ii by the number of unique elements of segment a[0,i-1] of a SORTED array a.
- */
-#define PetscIntArrayCountUnique(a, i, ii)  \
-{                                           \
-  if(i) {                                   \
-    PetscInt k = 0;                         \
-    ++(ii);                                 \
-    while(++k < (i))                        \
-      if ((a)[k] != (a)[k-1]) {             \
-        ++ii;                               \
-      }                                     \
-  }                                         \
-}
-
-/*
- Copy unique elements of segment a[0,i-1] of a SORTED array a, to aa[ii0,ii1-1]:
- i is an input, and ii is an input (with value ii0) and output (ii1), counting 
- the number of unique elements copied.
- */
-#define PetscIntArrayCopyUnique(a, i, aa, ii)\
-{                               \
-  if(i) {                       \
-    PetscInt k = 0;             \
-    (aa)[(ii)] = (a)[k];        \
-    ++(ii);                     \
-    while (++k < (i))           \
-      if ((a)[k] != (a)[k-1]) { \
-        (aa)[(ii)] = (a)[k];    \
-        ++(ii);                 \
-      }                         \
-  }                             \
-}
-
-/*
- Copy unique elements of segment a[0,i-1] of a SORTED array a, to aa[ii0,ii1-1]:
- i is an input, and ii is an input (with value ii0) and output (ii1), counting 
- the number of unique elements copied.  For each copied a, copy the corresponding
- b to bb.
- */
-#define PetscIntArrayCopyUniqueWithScalar(a, b, i, aa, bb, ii)     \
-{                               \
-  if(i) {                       \
-    PetscInt k = 0;             \
-    (aa)[(ii)] = (a)[k];        \
-    ++(ii);                     \
-    while (++k < (i))           \
-      if ((a)[k] != (a)[k-1]) { \
-        (aa)[(ii)] = (a)[k];    \
-        (bb)[(ii)] = (b)[k];    \
-        ++(ii);                 \
-      }                         \
-  }                             \
-}
-#endif
 
 struct _n_ISArrayHunk {
   PetscInt              refcnt;
@@ -139,33 +84,32 @@ struct _n_ISArrayHunk {
   PetscInt             *i, *j;
   PetscScalar          *w;
   PetscCopyMode         mode;
-  struct _n_ISArrayHunk  *next;
   struct _n_ISArrayHunk  *parent;
 };
-
 typedef struct _n_ISArrayHunk *ISArrayHunk;
+
+struct _n_ISArrayLink {
+  ISArrayHunk            hunk;
+  struct _n_ISArrayLink *next;
+};
+typedef struct _n_ISArrayLink *ISArrayLink;
 
 struct _n_ISArray {
   ISArrayComponents mask;
   PetscInt          length;
-  ISArrayHunk       buffer,first,last;
+  ISArrayLink       first,last;
 };
 
 
 
 extern PetscErrorCode ISArrayHunkCreate(PetscInt length, PetscInt mask, ISArrayHunk *_newhunk);
-/* BEGIN: these methods do reference management. */
 extern PetscErrorCode ISArrayHunkGetSubHunk(ISArrayHunk hunk, PetscInt length, PetscInt mask, ISArrayHunk *_subhunk);
-extern PetscErrorCode ISArrayHunkSetNext(ISArrayHunk hunk, ISArrayHunk nexthunk);
 extern PetscErrorCode ISArrayHunkDestroy(ISArrayHunk hunk);
-/* END: these methods do reference management. */
-extern PetscErrorCode ISArrayHunkDuplicate(ISArrayHunk hunk, ISArrayHunk *dhunk);
 extern PetscErrorCode ISArrayHunkAddData(ISArrayHunk hunk, PetscInt length, const PetscInt *i, const PetscScalar *w, const PetscInt *j);
-extern PetscErrorCode ISArrayHunkMergeHunks(ISArrayHunk hunk, PetscInt mask, ISArrayHunk *_merged);
 
 
-extern PetscErrorCode ISArraySetBuffer(ISArray array, ISArrayHunk buffer);
-extern PetscErrorCode ISArrayGetHunk(ISArray chain, PetscInt length, ISArrayHunk *_hunk);
+extern PetscErrorCode ISArrayGetHunk(ISArray array, PetscInt length, ISArrayHunk *_hunk);
 extern PetscErrorCode ISArrayAddHunk(ISArray array, ISArrayHunk hunk);
 extern PetscErrorCode ISArrayAssemble(ISArray chain, PetscInt mask, PetscLayout layout, ISArray *_achain);
 
+#endif

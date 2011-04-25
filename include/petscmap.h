@@ -1,6 +1,5 @@
 /*
-      ISMapping and friends: Int-Scalar Mapping is conceptually a graph that maps integers (and attached scalars) to other integers (and scalars).
-      This is more basic than Mat, and can be thought of loosely as a (generally nonlinear) mapping of sparse vectors.
+      ISArray is a sparse array indexed by i, optionally by j, with an optional weight. ISMapping is a mapping of ISArrays.
 */
 #if !defined(__PETSCMAP_H)
 #define __PETSCMAP_H
@@ -24,11 +23,12 @@ typedef enum{ISARRAY_I = 1, ISARRAY_J = 2} ISArrayIndex;
 typedef PetscInt ISArrayComponents;
 #define ISARRAY_W 4
 
-extern PetscErrorCode ISArrayCreate(ISArrayComponents mask, ISArray *_chain);
-extern PetscErrorCode ISArrayCreateArrays(PetscInt mask, PetscInt count, const PetscInt *lengths, ISArray **arrays);
-extern PetscErrorCode ISArrayClear(ISArray chain);
+extern PetscErrorCode ISArrayCreate(ISArrayComponents mask, ISArray *_arr);
+extern PetscErrorCode ISArrayCreateArrays(PetscInt mask, PetscInt count, ISArray **arrays);
+extern PetscErrorCode ISArrayClear(ISArray arr);
 extern PetscErrorCode ISArrayDuplicate(ISArray arr, ISArray *darr);
 extern PetscErrorCode ISArrayDestroy(ISArray chain);
+extern PetscErrorCode ISArrayAddArray(ISArray chain, ISArray chain2);
 extern PetscErrorCode ISArrayAddData(ISArray chain, const PetscInt len, const PetscInt *ia, const PetscScalar *wa, const PetscInt *ja);
 extern PetscErrorCode ISArrayAddI(ISArray chain, const PetscInt len, PetscInt i, const PetscScalar* wa, const PetscInt *ja);
 extern PetscErrorCode ISArrayAddJ(ISArray chain, const PetscInt len, const PetscInt *ia, const PetscScalar* wa, PetscInt j);
@@ -142,8 +142,8 @@ extern  PetscErrorCode ISMappingSetUp(ISMapping mapping);
 extern  PetscErrorCode ISMappingAssemblyBegin(ISMapping mapping);
 extern  PetscErrorCode ISMappingAssemblyEnd(ISMapping mapping);
 
-extern  PetscErrorCode ISMappingGetSupportIS(ISMapping mapping, IS *supp);
-extern  PetscErrorCode ISMappingGetImageIS(ISMapping mapping, IS *image);
+extern  PetscErrorCode ISMappingGetSupport(ISMapping mapping, PetscInt *len, PetscInt *supp[]);
+extern  PetscErrorCode ISMappingGetImage(ISMapping mapping, PetscInt *len, PetscInt *image[]);
 extern  PetscErrorCode ISMappingGetSupportSizeLocal(ISMapping mapping, PetscInt *supp_size);
 extern  PetscErrorCode ISMappingGetImageSizeLocal(ISMapping mapping, PetscInt *image_size);
 extern  PetscErrorCode ISMappingGetMaxImageSizeLocal(ISMapping mapping, PetscInt *max_image_size);
@@ -167,9 +167,10 @@ extern  PetscErrorCode ISMappingPushforward(ISMapping mapping1, ISMapping mappin
 extern  PetscErrorCode ISMappingGetOperator(ISMapping mapping, Mat *op);
 
 /* IS_MAPPING_GRAPH */
-extern  PetscErrorCode ISMappingGraphAddEdgeArray(ISMapping mapping, ISArray edges);
+extern  PetscErrorCode ISMappingGraphAddEdgesISArray(ISMapping mapping, ISArray edges);
 extern  PetscErrorCode ISMappingGraphAddEdges(ISMapping mapping, PetscInt len, const PetscInt x[], const PetscInt y[]);
-extern  PetscErrorCode ISMappingGraphGetEdgeArray(ISMapping mapping, ISArray edges);
+extern  PetscErrorCode ISMappingGraphGetEdgesISArray(ISMapping mapping, ISArray edges);
+extern  PetscErrorCode ISMappingGraphGetEdges(ISMapping mapping, PetscInt *len, const PetscInt *x[], const PetscInt *y[]);
 
 
 PETSC_EXTERN_CXX_END

@@ -16,62 +16,150 @@ typedef struct {
   PetscInt *offset, *count; 
 } ISMapping_Graph;
 
-#define ISMappingGraphLocalize(tablen, table, i,ii,found,count,last,low,high) \
-        /* Convert to local by searching through mapg->supp. */               \
-        (found) = PETSC_FALSE;                                                \
-        if((count) > 0) {                                                     \
-          /* last and ii have valid previous values, that can be used to take \
-             advantage of the already known information about the table. */   \
-          if((i) > (last)) {                                                  \
-            /* lower bound is still valid, but the upper bound might not be.*/\
-            /*                                                                \
-             table is ordered, hence, is a subsequence of the integers.       \
-             Thus, the distance between ind and last in table is no greater   \
-             than the distance between them within the integers: ind - last.  \
-             Therefore, high raised by ind-last is a valid upper bound on ind.\
-             */                                                               \
-             (high) = PetscMin((mapg)->m, (high)+((i)-(last)));               \
-            /* ii is the largest index in the table whose value does not      \
-               exceed last; since i > last, i is located above ii within      \
-               table */                                                       \
-            (low) = (ii);                                                     \
-          }                                                                   \
-          if((i) < (last)) {                                                  \
-            /* upper bound is still valid, but the lower bound might not be.*/\
-            /*                                                                \
-             table is ordered, hence, is a subsequence of the integers.       \
-             Thus, the distance between i and last in table is no greater     \
-             than the distance between them within the integers: last - i.    \
-             Therefore, low lowered by i-last is a valid upper bound on i.    \
-             */                                                               \
-            (low) = PetscMax(0,(low)+((i)-last));                             \
-            /* ii is the largest index of the table entry not exceeding last; \
-              since i < last, i is located no higher than ii within table */  \
-            (high) = (ii);                                                    \
-          }                                                                   \
-        }/* if((count) > 0) */                                                \
-        else {                                                                \
-          (low) = 0;                                                          \
-          (high) = (tablen);                                                  \
-        }                                                                     \
-        (last) = (i);                                                         \
-        while((high) - (low) > 5) {                                           \
-          (ii) = ((high)+(low))/2;                                            \
-          if((i) < (table)[ii]) {                                             \
-            (high) = (ii);                                                    \
-          }                                                                   \
-          else {                                                              \
-            (low) = (ii);                                                     \
-          }                                                                   \
-        }                                                                     \
-        (ii) = (low);                                                         \
-        while((ii) < (high) && (table)[(ii)] <= (i)) {                        \
-          if((i) == (table)[(ii)]) {                                          \
-            (found) = PETSC_TRUE;                                             \
-            break;                                                            \
-          }                                                                   \
-          ++(ii);                                                             \
-        }
+/*
+ Increment ii by the number of unique elements of segment a[0,i-1] of a SORTED array a.
+ */
+#define PetscIntArrayCountUnique(a, i, ii)  \
+{                                           \
+  if(i) {                                   \
+    PetscInt k = 0;                         \
+    ++(ii);                                 \
+    while(++k < (i))                        \
+      if ((a)[k] != (a)[k-1]) {             \
+        ++ii;                               \
+      }                                     \
+  }                                         \
+}
+
+/*
+ Copy unique elements of segment a[0,i-1] of a SORTED array a, to aa[ii0,ii1-1]:
+ i is an input, and ii is an input (with value ii0) and output (ii1), counting 
+ the number of unique elements copied.
+ */
+#define PetscIntArrayCopyUnique(a, i, aa, ii)\
+{                               \
+  if(i) {                       \
+    PetscInt k = 0;             \
+    (aa)[(ii)] = (a)[k];        \
+    ++(ii);                     \
+    while (++k < (i))           \
+      if ((a)[k] != (a)[k-1]) { \
+        (aa)[(ii)] = (a)[k];    \
+        ++(ii);                 \
+      }                         \
+  }                             \
+}
+
+/*
+ Copy unique elements of segment a[0,i-1] of a SORTED array a, to aa[ii0,ii1-1]:
+ i is an input, and ii is an input (with value ii0) and output (ii1), counting 
+ the number of unique elements copied.  For each copied a, copy the corresponding
+ b to bb.
+ */
+#define PetscIntArrayCopyUniqueWithScalar(a, b, i, aa, bb, ii)     \
+{                               \
+  if(i) {                       \
+    PetscInt k = 0;             \
+    (aa)[(ii)] = (a)[k];        \
+    ++(ii);                     \
+    while (++k < (i))           \
+      if ((a)[k] != (a)[k-1]) { \
+        (aa)[(ii)] = (a)[k];    \
+        (bb)[(ii)] = (b)[k];    \
+        ++(ii);                 \
+      }                         \
+  }                             \
+}
+
+/*
+ Locate index i in the table table of length tablen.  If i is found in table,
+ ii is its index, between 0 and tablen; otherwise, ii == -1. 
+ count,last,low,high are auxiliary variables that help speed up the search when
+ it is carried out repeatedly (e.g., for all i in an array); these variables
+ should be passed back to this macro for each search iteration and not altered
+ between the macro invocations.
+ */
+#define ISMappingGraphLocalizeIndex(tablen, table, i,ii,count,last,low,high) \
+{                                                                       \
+  PetscBool _9_found = PETSC_FALSE;                                     \
+  /* Convert to local by searching through mapg->supp. */               \
+  if((count) > 0) {                                                     \
+    /* last and ii have valid previous values, that can be used to take \
+     advantage of the already known information about the table. */     \
+    if((i) > (last)) {                                                  \
+      /* lower bound is still valid, but the upper bound might not be.*/ \
+      /*                                                                \
+       table is ordered, hence, is a subsequence of the integers.       \
+       Thus, the distance between ind and last in table is no greater   \
+       than the distance between them within the integers: ind - last.  \
+       Therefore, high raised by ind-last is a valid upper bound on ind. \
+       */                                                               \
+      (high) = PetscMin((mapg)->m, (high)+((i)-(last)));                \
+      /* ii is the largest index in the table whose value does not      \
+       exceed last; since i > last, i is located above ii within        \
+       table */                                                         \
+      (low) = (ii);                                                     \
+    }                                                                   \
+    if((i) < (last)) {                                                  \
+      /* upper bound is still valid, but the lower bound might not be.*/ \
+      /*                                                                \
+       table is ordered, hence, is a subsequence of the integers.       \
+       Thus, the distance between i and last in table is no greater     \
+       than the distance between them within the integers: last - i.    \
+       Therefore, low lowered by i-last is a valid upper bound on i.    \
+       */                                                               \
+      (low) = PetscMax(0,(low)+((i)-last));                             \
+      /* ii is the largest index of the table entry not exceeding last; \
+       since i < last, i is located no higher than ii within table */   \
+      (high) = (ii);                                                    \
+    }                                                                   \
+  }/* if((count) > 0) */                                                \
+  else {                                                                \
+    (low) = 0;                                                          \
+    (high) = (tablen);                                                  \
+  }                                                                     \
+  (last) = (i);                                                         \
+  while((high) - (low) > 5) {                                           \
+    (ii) = ((high)+(low))/2;                                            \
+    if((i) < (table)[ii]) {                                             \
+      (high) = (ii);                                                    \
+    }                                                                   \
+    else {                                                              \
+      (low) = (ii);                                                     \
+    }                                                                   \
+  }                                                                     \
+  (ii) = (low);                                                         \
+  while((ii) < (high) && (table)[(ii)] <= (i)) {                        \
+    if((i) == (table)[(ii)]) {                                          \
+      _9_found = PETSC_TRUE;                                            \
+      break;                                                            \
+    }                                                                   \
+    ++(ii);                                                             \
+  }                                                                     \
+  if(!_9_found) (ii) = -1;                                              \
+}
+  
+
+/* 
+ Locate all integers from array iarr of length len in table of length tablen.
+ The indices of the located integers -- their locations in table -- are
+ stored in iiarr of length len.  
+ If drop == PETSC_TRUE:
+  - if an integer is not found in table, it is omitted and upon completion 
+    iilen has the number of located indices; iilen <= ilen in this case. 
+ If drop == PETSC_FALE:
+  - if an integer is not found in table, it is replaced by -1; iilen == ilen
+    upon completion.
+ */
+#define ISMappingGraphLocalizeIndices(tablen,table,ilen,iarr,iilen,iiarr,drop) \
+{                                                                       \
+  PetscInt _10_last,_10_low = 0,_10_high = (tablen), _10_k, _10_ind;    \
+  (iilen) = 0;                                                          \
+  for(_10_k = 0; _10_k < (ilen); ++_10_k) {                             \
+    ISMappingGraphLocalizeIndex((tablen),(table),(iarr)[_10_k],_10_ind,_10_k,_10_last,_10_low,_10_high); \
+    if(_10_ind != -1 && !(drop)) (iiarr)[(iilen)++]  = _10_ind;         \
+  }                                                                     \
+}
 
 #define ISMappingGraphGetHunkPointers(hunk,mask,index,ii,ww,jj) \
   if((index) == ISARRAY_I) { \
@@ -97,10 +185,8 @@ static PetscErrorCode ISMappingGraphMap_Private(ISMapping map, ISArray inarr, Pe
 {
   ISMapping_Graph *mapg = (ISMapping_Graph*)map->data;
   const PetscInt *inidxi, *inidxj = PETSC_NULL;
+  PetscInt i,j,k,count,last,low,high,ind;
   const PetscScalar *inval; 
-  PetscInt     i,j,k,count;
-  PetscBool    found;
-  PetscInt     last,low,high,ind;
   ISArrayHunk  hunk;
   PetscFunctionBegin;
 
@@ -113,8 +199,7 @@ static PetscErrorCode ISMappingGraphMap_Private(ISMapping map, ISArray inarr, Pe
     for(i = 0; i < hunk->length; ++i) {
       if(!local) {
         /* Convert to local by searching through mapg->supp. */
-        ISMappingGraphLocalize(mapg->m,mapg->supp,inidxi[i],ind,found,count,last,low,high);
-        if(!found) ind = -1;
+        ISMappingGraphLocalizeIndex(mapg->m,mapg->supp,inidxi[i],ind,count,last,low,high);
       }/* if(!local) */
       else {
         ind = inidxi[i];
@@ -202,12 +287,9 @@ static PetscErrorCode ISMappingGraphBin_Private(ISMapping map, ISArray inarr, Pe
 {
   PetscErrorCode ierr;
   ISMapping_Graph *mapg = (ISMapping_Graph*)map->data;
-  PetscInt      *binoff, *bincount;
+  PetscInt      *binoff, *bincount, i,j,k,count, last,low,high,ind;
   const PetscInt *inidxi, *inidxj = PETSC_NULL;
   const PetscScalar *inval;
-  PetscInt     i,j,k,count;
-  PetscInt     last,low,high,ind;
-  PetscBool    found;
   ISArrayHunk   hunk;
   PetscFunctionBegin;
 
@@ -234,8 +316,7 @@ static PetscErrorCode ISMappingGraphBin_Private(ISMapping map, ISArray inarr, Pe
     for(i = 0; i < hunk->length; ++i) {
       if(!local) {
         /* Convert to local by searching through mapg->supp. */
-        ISMappingGraphLocalize(mapg->m,mapg->supp,inidxi[i],ind,found,count,last,low,high);
-        if(!found) ind = -1;
+        ISMappingGraphLocalizeIndex(mapg->m,mapg->supp,inidxi[i],ind,count,last,low,high);
       }/* if(!local) */
       else {
         ind = inidxi[i];
@@ -264,8 +345,7 @@ static PetscErrorCode ISMappingGraphBin_Private(ISMapping map, ISArray inarr, Pe
       for(i = 0; i < hunk->length; ++i) {
         if(!local) {
           /* Convert to local by searching through mapg->supp. */
-          ISMappingGraphLocalize(mapg->m,mapg->supp,inidxi[i],ind,found,count,last,low,high);
-          if(!found) ind = -1;
+          ISMappingGraphLocalizeIndex(mapg->m,mapg->supp,inidxi[i],ind,count,last,low,high);
         }/* if(!local) */
         else {
           ind = inidxi[i];
@@ -496,7 +576,7 @@ static PetscErrorCode ISMappingGraphAssembleLocal_Private(ISMapping map, PetscIn
 {
   PetscErrorCode ierr;
   PetscInt *ixidx, *iyidx;
-  PetscInt ind,start, end, i, j, totalnij,maxnij, nij, m,n;
+  PetscInt ind,start, end, i, j, totalnij, totalnij2,maxnij, nij, m,n;
   PetscBool xincreasing;
   PetscInt *ij, *ijlen, *supp, *image;
   PetscFunctionBegin;
@@ -548,7 +628,7 @@ static PetscErrorCode ISMappingGraphAssembleLocal_Private(ISMapping map, PetscIn
       ierr = PetscSortInt(end-start,iyidx+start);CHKERRQ(ierr);
       /* count unique elements in iyidx[start,end-1] */
       nij = 0;
-      ISMapping_CountUnique(iyidx+start,end-start,nij);
+      PetscIntArrayCountUnique(iyidx+start,end-start,nij);
       totalnij += nij;
       maxnij = PetscMax(maxnij, nij);
     }
@@ -578,7 +658,7 @@ static PetscErrorCode ISMappingGraphAssembleLocal_Private(ISMapping map, PetscIn
     while (end < len && ixidx[end] == ixidx[start]) ++end;
     /* the relevant portion of iy is already sorted; copy unique iyind only. */
     nij = 0;
-    ISMapping_CopyUnique(iyidx+start,end-start,ij+j,nij);
+    PetscIntArrayCopyUnique(iyidx+start,end-start,ij+j,nij);
     supp[i] = ixidx[start]; /* if supp == ixidx this a harmless self-assignment. */
     j += nij;
     ++i;
@@ -595,10 +675,10 @@ static PetscErrorCode ISMappingGraphAssembleLocal_Private(ISMapping map, PetscIn
   /* (A) */
   ierr = PetscSortInt(len,iyidx); CHKERRQ(ierr);
   n = 0;
-  ISMapping_CountUnique(iyidx,len,n);
+  PetscIntArrayCountUnique(iyidx,len,n);
   ierr = PetscMalloc(sizeof(PetscInt)*n, &image);   CHKERRQ(ierr);
   n = 0;
-  ISMapping_CopyUnique(iyidx,len,image,n);
+  PetscIntArrayCopyUnique(iyidx,len,image,n);
   ierr = PetscFree(iyidx); CHKERRQ(ierr);
   /* (B) */
   ierr = PetscSortInt(n, image); CHKERRQ(ierr);
@@ -608,7 +688,12 @@ static PetscErrorCode ISMappingGraphAssembleLocal_Private(ISMapping map, PetscIn
    The result of the search is ind(k) -- the position of k in image. 
    Then ind(k) replace k in ij.
    */
-  ierr = ISMappingGraph_LocateIndices(n,image,totalnij,ij,&totalnij,ij,PETSC_TRUE); CHKERRQ(ierr);
+  totalnij2 = 0;
+  ISMappingGraphLocalizeIndices(n,image,totalnij,ij,totalnij2,ij,PETSC_TRUE); CHKERRQ(ierr);
+  if(totalnij!=totalnij2) {
+    SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Number of image indices befow %D and after %D localization don't match", totalnij,totalnij2);
+  }
+
   mapg->supp     = supp;
   mapg->m        = m;
   mapg->image    = image;
@@ -621,8 +706,8 @@ static PetscErrorCode ISMappingGraphAssembleLocal_Private(ISMapping map, PetscIn
 
 
 #undef  __FUNCT__
-#define __FUNCT__ "ISMappingGraphAddEdgeArray"
-PetscErrorCode ISMappingGraphAddEdgeArray(ISMapping map, ISArray edges) {
+#define __FUNCT__ "ISMappingGraphAddEdgesISArray"
+PetscErrorCode ISMappingGraphAddEdgesISArray(ISMapping map, ISArray edges) {
   ISMapping_Graph *mapg = (ISMapping_Graph*)(map->data);
   PetscErrorCode ierr;
   PetscFunctionBegin;
