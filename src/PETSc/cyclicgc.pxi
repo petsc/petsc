@@ -6,7 +6,6 @@ cdef extern from "stdio.h" nogil:
 cdef extern from "Python.h":
     ctypedef struct PyObject
     ctypedef struct PyTypeObject
-    PyTypeObject *Py_TYPE(PyObject *)
     ctypedef int visitproc(PyObject *, void *)
     ctypedef int traverseproc(PyObject *, visitproc, void *)
     ctypedef int inquiry(PyObject *)
@@ -14,6 +13,10 @@ cdef extern from "Python.h":
        char*        tp_name
        traverseproc tp_traverse
        inquiry      tp_clear
+    ctypedef struct PyGC_Head:
+       Py_ssize_t gc_refs"gc.gc_refs"
+    PyGC_Head *_Py_AS_GC(PyObject*)
+    ## PyTypeObject *Py_TYPE(PyObject *)
 
 cdef int traverse(PyObject *o, visitproc visit, void *arg):
     ## printf("%s.tp_traverse(%p)\n", Py_TYPE(o).tp_name, <void*>o)
@@ -22,6 +25,8 @@ cdef int traverse(PyObject *o, visitproc visit, void *arg):
     cdef PyObject *dct = NULL
     PetscObjectGetPyDict(p, PETSC_FALSE, <void**>&dct)
     if dct == NULL or dct == <PyObject*>None: return 0
+    cdef Py_ssize_t gc_refs = _Py_AS_GC(dct).gc_refs
+    if gc_refs == 0: return 0
     return visit(dct, arg)
 
 cdef int clear(PyObject *o):
