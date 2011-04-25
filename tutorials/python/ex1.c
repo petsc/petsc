@@ -2,21 +2,21 @@
 
 /* ------------------------------------------------------- */
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "RunTest"
 PetscErrorCode RunTest(void)
 {
   PetscInt       N    = 100;
   PetscBool      draw = PETSC_FALSE;
   PetscReal      rnorm;
-  Mat      	 A;
-  Vec      	 b,x,r;
-  KSP      	 ksp;
-  PC       	 pc;
+  Mat            A;
+  Vec            b,x,r;
+  KSP            ksp;
+  PC             pc;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  
+
   ierr = PetscOptionsGetInt(0,"-N",&N,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(0,"-draw",&draw,PETSC_NULL);CHKERRQ(ierr);
 
@@ -51,11 +51,11 @@ PetscErrorCode RunTest(void)
     ierr = PetscSleep(2);CHKERRQ(ierr);
   }
 
-  ierr = VecDestroy(x);CHKERRQ(ierr);
-  ierr = VecDestroy(b);CHKERRQ(ierr);
-  ierr = VecDestroy(r);CHKERRQ(ierr);
-  ierr = MatDestroy(A);CHKERRQ(ierr);
-  ierr = KSPDestroy(ksp);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = VecDestroy(&b);CHKERRQ(ierr);
+  ierr = VecDestroy(&r);CHKERRQ(ierr);
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -76,7 +76,7 @@ static char help[] = "Python-implemented Mat/KSP/PC.\n\n";
 #define PYTHON_LIB 0
 #endif
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc, char *argv[])
 {
