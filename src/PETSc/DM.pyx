@@ -104,7 +104,7 @@ cdef class DM(Object):
     def getInterpolation(self, DM dm not None):
         cdef Mat A = Mat()
         cdef Vec scale = Vec()
-        CHKERR( DMGetInterpolation(self.dm, dm.dm, 
+        CHKERR( DMGetInterpolation(self.dm, dm.dm,
                                    &A.mat, &scale.vec))
         return(A, scale)
 
@@ -163,5 +163,10 @@ cdef class DM(Object):
             dmc.dm = newdmc[i]
             hierarchy.append(dmc)
         return hierarchy
+
+    # backward compatibility
+    createGlobalVector = createGlobalVec
+    createLocalVector = createLocalVec
+    getMatrix = createMatrix = createMat
 
 # --------------------------------------------------------------------

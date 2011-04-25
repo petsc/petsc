@@ -469,6 +469,9 @@ cdef class DA(DM):
         def __get__(self):
             return self.getGhostCorners()
 
+    # backward compatibility
+    createNaturalVector = createNaturalVec
+
 # --------------------------------------------------------------------
 
 del DABoundaryType
