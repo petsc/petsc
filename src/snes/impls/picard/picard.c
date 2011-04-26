@@ -232,7 +232,7 @@ PetscErrorCode SNESSolve_Picard(SNES snes)
   snes->norm = fnorm;
   ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
   SNESLogConvHistory(snes,fnorm,0);
-  SNESMonitor(snes,0,fnorm);
+  ierr = SNESMonitor(snes,0,fnorm);CHKERRQ(ierr);
 
   /* set parameter for default relative tolerance convergence test */
   snes->ttol = fnorm*snes->rtol;
@@ -346,7 +346,7 @@ PetscErrorCode SNESSolve_Picard(SNES snes)
     snes->norm = fnorm;
     ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
     SNESLogConvHistory(snes,snes->norm,0);
-    SNESMonitor(snes,snes->iter,snes->norm);
+    ierr = SNESMonitor(snes,snes->iter,snes->norm);CHKERRQ(ierr);
     /* Test for convergence */
     ierr = (*snes->ops->converged)(snes,snes->iter,0.0,0.0,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
     if (snes->reason) break;

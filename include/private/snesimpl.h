@@ -135,12 +135,7 @@ typedef struct {
       snes->conv_hist_len++;\
     }}
 
-#define SNESMonitor(snes,it,rnorm) \
-        { PetscErrorCode _ierr; PetscInt _i,_im = snes->numbermonitors; \
-          for (_i=0; _i<_im; _i++) {\
-            _ierr = (*snes->monitor[_i])(snes,it,rnorm,snes->monitorcontext[_i]);CHKERRQ(_ierr); \
-	  } \
-	}
+extern PetscErrorCode SNESMonitor(SNES,PetscInt,PetscReal);
 
 extern PetscErrorCode SNESDefaultGetWork(SNES,PetscInt);
 

@@ -1930,6 +1930,23 @@ PetscErrorCode  SNESMonitorLGRangeDestroy(PetscDrawLG *draw)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "SNESMonitor"
+/*
+     Runs the user provided monitor routines, if they exists.
+*/
+PetscErrorCode  SNESMonitor(SNES snes,PetscInt iter,PetscReal rnorm)
+{
+  PetscErrorCode ierr;
+  PetscInt       i,n = snes->numbermonitors;
+
+  PetscFunctionBegin;
+  for (i=0; i<n; i++) {
+    ierr = (*snes->monitor[i])(snes,iter,rnorm,snes->monitorcontext[i]);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 /* ------------ Routines to set performance monitoring options ----------- */
 
 #undef __FUNCT__  

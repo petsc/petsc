@@ -1284,7 +1284,7 @@ PetscErrorCode DMMGSolveFAS_NCG(DMMG *dmmg, PetscInt level)
   snes->norm = fnorm;
   ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
   SNESLogConvHistory(snes,fnorm,0);
-  SNESMonitor(snes,0,fnorm);
+  ierr = SNESMonitor(snes,0,fnorm);CHKERRQ(ierr);
 
   if (fnorm < snes->abstol) {snes->reason = SNES_CONVERGED_FNORM_ABS; PetscFunctionReturn(0);}
 
@@ -1398,7 +1398,7 @@ PetscErrorCode DMMGSolveFAS_NCG(DMMG *dmmg, PetscInt level)
     snes->norm = fnorm;
     ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
     SNESLogConvHistory(snes,fnorm,lits);
-    SNESMonitor(snes,i+1,fnorm);
+    ierr = SNESMonitor(snes,i+1,fnorm);CHKERRQ(ierr);
     
      if (!lssucceed) { 
       PetscBool  ismin;
