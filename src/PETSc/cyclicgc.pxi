@@ -16,6 +16,7 @@ cdef extern from "Python.h":
     ctypedef struct PyGC_Head:
        Py_ssize_t gc_refs"gc.gc_refs"
     PyGC_Head *_Py_AS_GC(PyObject*)
+    enum: _PyGC_REFS_REACHABLE
     ## PyTypeObject *Py_TYPE(PyObject *)
 
 cdef int traverse(PyObject *o, visitproc visit, void *arg):
@@ -25,8 +26,8 @@ cdef int traverse(PyObject *o, visitproc visit, void *arg):
     cdef PyObject *dct = NULL
     PetscObjectGetPyDict(p, PETSC_FALSE, <void**>&dct)
     if dct == NULL or dct == <PyObject*>None: return 0
-    cdef Py_ssize_t gc_refs = _Py_AS_GC(dct).gc_refs
-    if gc_refs == 0: return 0
+    if arg == NULL and _Py_AS_GC(dct).gc_refs == 0:
+        _Py_AS_GC(dct).gc_refs = _PyGC_REFS_REACHABLE
     return visit(dct, arg)
 
 cdef int clear(PyObject *o):

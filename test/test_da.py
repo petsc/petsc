@@ -254,6 +254,7 @@ for dim in DIM:
                                  stencil_type=stencil,
                                  stencil_width=width)
                     def testCreate(self, kargs=kargs):
+                        kargs = dict(kargs)
                         da = PETSc.DA().create(**kargs)
                         da.destroy()
                     setattr(TestDACreate,
@@ -278,6 +279,7 @@ for dim in DIM:
                                  stencil_type=stencil,
                                  stencil_width=width)
                     def testDuplicate(self, kargs=kargs):
+                        kargs = dict(kargs)
                         dim = kargs.pop('dim')
                         dof = kargs['dof']
                         boundary = kargs['boundary_type']
