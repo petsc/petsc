@@ -62,7 +62,7 @@ PetscErrorCode  KSPSolve_BiCG(KSP ksp)
   } else {
     ierr = VecNorm(Rr,NORM_2,&dp);CHKERRQ(ierr);  /*    dp <- r'*r       */
   }
-  KSPMonitor(ksp,0,dp);
+  ierr = KSPMonitor(ksp,0,dp);CHKERRQ(ierr);
   ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
   ksp->its   = 0;
   ksp->rnorm = dp;
@@ -115,7 +115,7 @@ PetscErrorCode  KSPSolve_BiCG(KSP ksp)
      ksp->rnorm = dp;
      ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
      KSPLogResidualHistory(ksp,dp);
-     KSPMonitor(ksp,i+1,dp);
+     ierr = KSPMonitor(ksp,i+1,dp);CHKERRQ(ierr);
      ierr = (*ksp->converged)(ksp,i+1,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
      if (ksp->reason) break;
      if (ksp->normtype == KSP_NORM_UNPRECONDITIONED) {

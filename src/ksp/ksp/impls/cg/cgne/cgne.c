@@ -120,7 +120,7 @@ PetscErrorCode  KSPSolve_CGNE(KSP ksp)
     dp = sqrt(PetscAbsScalar(beta));
   } else dp = 0.0;
   KSPLogResidualHistory(ksp,dp);
-  KSPMonitor(ksp,0,dp);                              /* call any registered monitor routines */
+  ierr = KSPMonitor(ksp,0,dp);CHKERRQ(ierr);
   ksp->rnorm = dp;
   ierr = (*ksp->converged)(ksp,0,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);      /* test for convergence */
   if (ksp->reason) PetscFunctionReturn(0);
@@ -180,7 +180,7 @@ PetscErrorCode  KSPSolve_CGNE(KSP ksp)
      }
      ksp->rnorm = dp;
      KSPLogResidualHistory(ksp,dp);
-     KSPMonitor(ksp,i+1,dp);
+     ierr = KSPMonitor(ksp,i+1,dp);CHKERRQ(ierr);
      ierr = (*ksp->converged)(ksp,i+1,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
      if (ksp->reason) break;
      if (ksp->normtype != KSP_NORM_PRECONDITIONED) {

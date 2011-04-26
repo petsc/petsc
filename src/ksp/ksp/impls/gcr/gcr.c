@@ -68,7 +68,7 @@ PetscErrorCode KSPSolve_GCR_cycle( KSP ksp )
     ksp->rnorm = res;
 		
     KSPLogResidualHistory(ksp,res);
-    KSPMonitor(ksp,ksp->its,res);
+    ierr = KSPMonitor(ksp,ksp->its,res);CHKERRQ(ierr);
 		
     if( ksp->its > ksp->chknorm  ) {
       ierr = (*ksp->converged)(ksp,ksp->its,res,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
@@ -109,7 +109,7 @@ PetscErrorCode KSPSolve_GCR( KSP ksp )
   ksp->rnorm0 = norm_r;
         
   KSPLogResidualHistory(ksp,ksp->rnorm0);
-  KSPMonitor(ksp,ksp->its,ksp->rnorm0);
+  ierr = KSPMonitor(ksp,ksp->its,ksp->rnorm0);CHKERRQ(ierr);
   ierr = (*ksp->converged)(ksp,ksp->its,ksp->rnorm0,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
   if (ksp->reason) PetscFunctionReturn(0);
         

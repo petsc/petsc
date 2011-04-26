@@ -154,7 +154,7 @@ PetscErrorCode FGMREScycle(PetscInt *itcount,KSP ksp)
   while (!ksp->reason && loc_it < max_k && ksp->its < ksp->max_it) {
     if (loc_it) KSPLogResidualHistory(ksp,res_norm);
     fgmres->it = (loc_it - 1);
-    KSPMonitor(ksp,ksp->its,res_norm); 
+    ierr = KSPMonitor(ksp,ksp->its,res_norm);CHKERRQ(ierr);
 
     /* see if more space is needed for work vectors */
     if (fgmres->vv_allocated <= loc_it + VEC_OFFSET + 1) {
@@ -238,7 +238,7 @@ PetscErrorCode FGMREScycle(PetscInt *itcount,KSP ksp)
   /*
      Monitor if we know that we will not return for a restart */
   if (ksp->reason || ksp->its >= ksp->max_it) {
-    KSPMonitor(ksp,ksp->its,res_norm);
+    ierr = KSPMonitor(ksp,ksp->its,res_norm);CHKERRQ(ierr);
   }
 
   if (itcount) *itcount    = loc_it;

@@ -72,7 +72,7 @@ PetscErrorCode  KSPSolve_LCD(KSP ksp)
   ierr = KSP_PCApply(ksp,Z,R);CHKERRQ(ierr);                   /*     r <- M^-1z         */
   ierr = VecNorm(R,NORM_2,&rnorm);CHKERRQ(ierr);
   KSPLogResidualHistory(ksp,rnorm);
-  KSPMonitor(ksp,0,rnorm);                    /* call any registered monitor routines */
+  ierr = KSPMonitor(ksp,0,rnorm);CHKERRQ(ierr);
   ksp->rnorm = rnorm;
  
    /* test for convergence */
@@ -98,7 +98,7 @@ PetscErrorCode  KSPSolve_LCD(KSP ksp)
 
       ksp->rnorm = rnorm;
       KSPLogResidualHistory(ksp,rnorm);
-      KSPMonitor(ksp,ksp->its,rnorm);
+      ierr = KSPMonitor(ksp,ksp->its,rnorm);CHKERRQ(ierr);
       ierr = (*ksp->converged)(ksp,ksp->its,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
       
       if (ksp->reason) break;

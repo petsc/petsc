@@ -67,7 +67,7 @@ PetscErrorCode  KSPSolve_Broyden(KSP ksp)
     ierr = VecNorm(Pold,NORM_2,&gnorm);CHKERRQ(ierr);          
   } else SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"NormType not supported");
   KSPLogResidualHistory(ksp,gnorm);
-  KSPMonitor(ksp,0,gnorm);
+  ierr = KSPMonitor(ksp,0,gnorm);CHKERRQ(ierr);
   ierr = (*ksp->converged)(ksp,0,gnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr); 
 
   if (1) {
@@ -98,7 +98,7 @@ PetscErrorCode  KSPSolve_Broyden(KSP ksp)
         ierr = VecNorm(P,NORM_2,&gnorm);CHKERRQ(ierr);          
       } else SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"NormType not supported");
       KSPLogResidualHistory(ksp,gnorm);
-      KSPMonitor(ksp,(1+k+i),gnorm);
+      ierr = KSPMonitor(ksp,(1+k+i),gnorm);CHKERRQ(ierr);
       ierr = (*ksp->converged)(ksp,1+k+i,gnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr); 
       if (ksp->reason) PetscFunctionReturn(0);
 

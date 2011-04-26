@@ -119,12 +119,7 @@ typedef struct {
     {if (ksp->res_hist && ksp->res_hist_max > ksp->res_hist_len) \
      ksp->res_hist[ksp->res_hist_len++] = norm;}
 
-#define KSPMonitor(ksp,it,rnorm) \
-        { PetscErrorCode _ierr; PetscInt _i,_im = ksp->numbermonitors; \
-          for (_i=0; _i<_im; _i++) {\
-            _ierr = (*ksp->monitor[_i])(ksp,it,rnorm,ksp->monitorcontext[_i]);CHKERRQ(_ierr); \
-	  } \
-	}
+extern PetscErrorCode KSPMonitor(KSP,PetscInt,PetscReal);
 
 extern PetscErrorCode KSPDefaultDestroy(KSP);
 extern PetscErrorCode KSPDefaultReset(KSP);

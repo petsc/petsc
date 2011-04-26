@@ -99,7 +99,7 @@ PetscErrorCode  KSPSolve_MINRES(KSP ksp)
   ierr = VecNorm(Z,NORM_2,&np);CHKERRQ(ierr);      /*   np <- ||z||        */
 
   KSPLogResidualHistory(ksp,np);
-  KSPMonitor(ksp,0,np);            /* call any registered monitor routines */
+  ierr = KSPMonitor(ksp,0,np);CHKERRQ(ierr);
   ksp->rnorm = np;  
   ierr = (*ksp->converged)(ksp,0,np,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);  /* test for convergence */
   if (ksp->reason) PetscFunctionReturn(0);
@@ -179,7 +179,7 @@ PetscErrorCode  KSPSolve_MINRES(KSP ksp)
 
      ksp->rnorm = np;
      KSPLogResidualHistory(ksp,np);
-     KSPMonitor(ksp,i+1,np);
+     ierr = KSPMonitor(ksp,i+1,np);CHKERRQ(ierr);
      ierr = (*ksp->converged)(ksp,i+1,np,&ksp->reason,ksp->cnvP);CHKERRQ(ierr); /* test for convergence */
      if (ksp->reason) break;
      i++;

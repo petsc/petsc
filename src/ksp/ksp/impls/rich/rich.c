@@ -92,14 +92,14 @@ PetscErrorCode  KSPSolve_Richardson(KSP ksp)
       
       if (ksp->normtype == KSP_NORM_UNPRECONDITIONED) {
 	ierr = VecNorm(r,NORM_2,&rnorm);CHKERRQ(ierr); /*   rnorm <- r'*r     */
-	KSPMonitor(ksp,i,rnorm);
+	ierr = KSPMonitor(ksp,i,rnorm);CHKERRQ(ierr);
 	ksp->rnorm = rnorm;
 	KSPLogResidualHistory(ksp,rnorm);
 	ierr = (*ksp->converged)(ksp,i,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
 	if (ksp->reason) break;
       } else if (ksp->normtype == KSP_NORM_PRECONDITIONED) {
 	ierr = VecNorm(z,NORM_2,&rnorm);CHKERRQ(ierr); /*   rnorm <- z'*z     */
-	KSPMonitor(ksp,i,rnorm);
+	ierr = KSPMonitor(ksp,i,rnorm);CHKERRQ(ierr);
 	ksp->rnorm = rnorm;
 	KSPLogResidualHistory(ksp,rnorm);
 	ierr = (*ksp->converged)(ksp,i,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
@@ -119,7 +119,7 @@ PetscErrorCode  KSPSolve_Richardson(KSP ksp)
 
       if (ksp->normtype == KSP_NORM_UNPRECONDITIONED) {
 	ierr = VecNorm(r,NORM_2,&rnorm);CHKERRQ(ierr); /*   rnorm <- r'*r     */
-	KSPMonitor(ksp,i,rnorm);
+	ierr = KSPMonitor(ksp,i,rnorm);CHKERRQ(ierr);
 	ksp->rnorm = rnorm;
 	KSPLogResidualHistory(ksp,rnorm);
 	ierr = (*ksp->converged)(ksp,i,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
@@ -130,7 +130,7 @@ PetscErrorCode  KSPSolve_Richardson(KSP ksp)
 
       if (ksp->normtype == KSP_NORM_PRECONDITIONED) {
 	ierr = VecNorm(z,NORM_2,&rnorm);CHKERRQ(ierr); /*   rnorm <- z'*z     */
-	KSPMonitor(ksp,i,rnorm);
+	ierr = KSPMonitor(ksp,i,rnorm);CHKERRQ(ierr);
 	ksp->rnorm = rnorm;
 	KSPLogResidualHistory(ksp,rnorm);
 	ierr = (*ksp->converged)(ksp,i,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
@@ -154,7 +154,7 @@ PetscErrorCode  KSPSolve_Richardson(KSP ksp)
       }
       ksp->rnorm = rnorm;
       KSPLogResidualHistory(ksp,rnorm);
-      KSPMonitor(ksp,i,rnorm);
+      ierr = KSPMonitor(ksp,i,rnorm);CHKERRQ(ierr);
     }
     if (ksp->its >= ksp->max_it) {
       if (ksp->normtype != KSP_NORM_NONE) {

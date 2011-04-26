@@ -176,7 +176,7 @@ PetscErrorCode LGMREScycle(PetscInt *itcount,KSP ksp)
   while (!ksp->reason && loc_it < it_total && ksp->its < max_it) { /* LGMRES_MOD: changed to it_total */
      KSPLogResidualHistory(ksp,res);
      lgmres->it = (loc_it - 1);
-     KSPMonitor(ksp,ksp->its,res); 
+     ierr = KSPMonitor(ksp,ksp->its,res);CHKERRQ(ierr);
 
     /* see if more space is needed for work vectors */
     if (lgmres->vv_allocated <= loc_it + VEC_OFFSET + 1) {
@@ -252,7 +252,7 @@ PetscErrorCode LGMREScycle(PetscInt *itcount,KSP ksp)
 
   /* Monitor if we know that we will not return for a restart */
   if (ksp->reason || ksp->its >= max_it) {
-    KSPMonitor(ksp, ksp->its, res);
+    ierr = KSPMonitor(ksp, ksp->its, res);CHKERRQ(ierr);
   }
 
   if (itcount) *itcount    = loc_it;

@@ -60,7 +60,7 @@ static PetscErrorCode  KSPSolve_CGS(KSP ksp)
   ksp->rnorm = dp;
   ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
   KSPLogResidualHistory(ksp,dp);
-  KSPMonitor(ksp,0,dp);
+  ierr = KSPMonitor(ksp,0,dp);CHKERRQ(ierr);
   ierr = (*ksp->converged)(ksp,0,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
   if (ksp->reason) PetscFunctionReturn(0);
 
@@ -113,7 +113,7 @@ static PetscErrorCode  KSPSolve_CGS(KSP ksp)
     ksp->rnorm = dp;
     ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
     KSPLogResidualHistory(ksp,dp);
-    KSPMonitor(ksp,i+1,dp);
+    ierr = KSPMonitor(ksp,i+1,dp);CHKERRQ(ierr);
     ierr = (*ksp->converged)(ksp,i+1,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
     if (ksp->reason) break;
 

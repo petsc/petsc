@@ -46,7 +46,7 @@ static PetscErrorCode  KSPSolve_TFQMR(KSP ksp)
   ksp->rnorm  = dp;
   ksp->its    = 0;
   ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
-  KSPMonitor(ksp,0,dp);
+  ierr = KSPMonitor(ksp,0,dp);CHKERRQ(ierr);
   ierr = (*ksp->converged)(ksp,0,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
   if (ksp->reason) PetscFunctionReturn(0);
 
@@ -100,7 +100,7 @@ static PetscErrorCode  KSPSolve_TFQMR(KSP ksp)
       ksp->rnorm                                    = dpest;
       ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
       KSPLogResidualHistory(ksp,dpest);
-      KSPMonitor(ksp,i+1,dpest);
+      ierr = KSPMonitor(ksp,i+1,dpest);CHKERRQ(ierr);
       ierr = (*ksp->converged)(ksp,i+1,dpest,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
       if (ksp->reason) break;
 

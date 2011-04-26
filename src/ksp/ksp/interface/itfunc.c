@@ -1381,6 +1381,23 @@ PetscErrorCode  KSPGetPC(KSP ksp,PC *pc)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "KSPMonitor"
+/*
+     Runs the user provided monitor routines, if they exists.
+*/
+PetscErrorCode KSPMonitor(KSP ksp,PetscInt it,PetscReal rnorm)
+{
+  PetscInt       i, n = ksp->numbermonitors;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  for (i=0; i<n; i++) {
+    ierr = (*ksp->monitor[i])(ksp,it,rnorm,ksp->monitorcontext[i]);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "KSPMonitorSet"
 /*@C

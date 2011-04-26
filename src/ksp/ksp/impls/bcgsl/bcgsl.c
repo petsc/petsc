@@ -87,7 +87,7 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
     ksp->rnorm = zeta;
 
     KSPLogResidualHistory(ksp, zeta);
-    KSPMonitor(ksp, ksp->its, zeta);
+    ierr = KSPMonitor(ksp, ksp->its, zeta);CHKERRQ(ierr);
 
     ierr = (*ksp->converged)(ksp, k, zeta, &ksp->reason, ksp->cnvP);CHKERRQ(ierr);
     if (ksp->reason < 0) PetscFunctionReturn(0);

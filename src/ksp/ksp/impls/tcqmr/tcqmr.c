@@ -55,7 +55,7 @@ static PetscErrorCode KSPSolve_TCQMR(KSP ksp)
    */
   ierr = (*ksp->converged)(ksp,ksp->its,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
   while (!ksp->reason){
-    KSPMonitor(ksp,ksp->its,rnorm);
+    ierr = KSPMonitor(ksp,ksp->its,rnorm);CHKERRQ(ierr);
     ksp->its++;
 
     ierr   = KSP_PCApplyBAorAB(ksp,u,y,vtmp);CHKERRQ(ierr); /* y = A*u */
@@ -139,7 +139,7 @@ static PetscErrorCode KSPSolve_TCQMR(KSP ksp)
       break;
     }
   }
-  KSPMonitor(ksp,ksp->its,rnorm);
+  ierr = KSPMonitor(ksp,ksp->its,rnorm);CHKERRQ(ierr);
   ierr = KSPUnwindPreconditioner(ksp,x,vtmp);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);

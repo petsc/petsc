@@ -161,7 +161,7 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
     dp = sqrt(PetscAbsScalar(beta));                           /*    dp <- r'*z = r'*B*r = e'*A'*B*A*e */
   } else dp = 0.0;
   KSPLogResidualHistory(ksp,dp);
-  KSPMonitor(ksp,0,dp);                              /* call any registered monitor routines */
+  ierr = KSPMonitor(ksp,0,dp);CHKERRQ(ierr);
   ksp->rnorm = dp;
 
   ierr = (*ksp->converged)(ksp,0,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);      /* test for convergence */
@@ -255,7 +255,7 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
      }
      ksp->rnorm = dp;
      KSPLogResidualHistory(ksp,dp);
-     KSPMonitor(ksp,i+1,dp);
+     ierr = KSPMonitor(ksp,i+1,dp);CHKERRQ(ierr);
      ierr = (*ksp->converged)(ksp,i+1,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
      if (ksp->reason) break;
 

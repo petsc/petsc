@@ -94,7 +94,7 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
   ierr = KSPInitialResidual(ksp,Xn_1,Tn,Sn,Rn_1,B);CHKERRQ(ierr);
 
   ierr = VecNorm(Rn_1,NORM_2,&rnorm);CHKERRQ(ierr);
-  KSPMonitor(ksp,0,rnorm);
+  ierr = KSPMonitor(ksp,0,rnorm);CHKERRQ(ierr);
   ierr = (*ksp->converged)(ksp,0,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);   
   if (ksp->reason) PetscFunctionReturn(0);
 
@@ -244,7 +244,7 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
     } 
 
     /* Test for convergence */
-    KSPMonitor(ksp,ksp->its,rnorm);
+    ierr = KSPMonitor(ksp,ksp->its,rnorm);CHKERRQ(ierr);
     ierr = (*ksp->converged)(ksp,ksp->its,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);   
     if (ksp->reason) break;
  

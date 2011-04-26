@@ -63,7 +63,7 @@ static PetscErrorCode  KSPSolve_BCGS(KSP ksp)
   ksp->rnorm = dp;
   ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
   KSPLogResidualHistory(ksp,dp);
-  KSPMonitor(ksp,0,dp);
+  ierr = KSPMonitor(ksp,0,dp);CHKERRQ(ierr);
   ierr = (*ksp->converged)(ksp,0,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
   if (ksp->reason) PetscFunctionReturn(0);
 
@@ -103,7 +103,7 @@ static PetscErrorCode  KSPSolve_BCGS(KSP ksp)
       ksp->reason = KSP_CONVERGED_RTOL;
       ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
       KSPLogResidualHistory(ksp,dp);
-      KSPMonitor(ksp,i+1,0.0);
+      ierr = KSPMonitor(ksp,i+1,0.0);CHKERRQ(ierr);
       break;
     }
     omega = d1 / d2;                               /*   w <- (t's) / (t't) */
@@ -121,7 +121,7 @@ static PetscErrorCode  KSPSolve_BCGS(KSP ksp)
     ksp->rnorm = dp;
     ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
     KSPLogResidualHistory(ksp,dp);
-    KSPMonitor(ksp,i+1,dp);
+    ierr = KSPMonitor(ksp,i+1,dp);CHKERRQ(ierr);
     ierr = (*ksp->converged)(ksp,i+1,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
     if (ksp->reason) break;    
     if (rho == 0.0) {

@@ -269,7 +269,7 @@ PetscErrorCode KSPSolve_NASH(KSP ksp)
   }
 
   KSPLogResidualHistory(ksp, norm_r);
-  KSPMonitor(ksp, ksp->its, norm_r);
+  ierr = KSPMonitor(ksp, ksp->its, norm_r);CHKERRQ(ierr);
   ksp->rnorm = norm_r;
 
   ierr = (*ksp->converged)(ksp, ksp->its, norm_r, &ksp->reason, ksp->cnvP);CHKERRQ(ierr);
@@ -517,7 +517,7 @@ PetscErrorCode KSPSolve_NASH(KSP ksp)
     }
 
     KSPLogResidualHistory(ksp, norm_r);
-    KSPMonitor(ksp, ksp->its, norm_r);
+    ierr = KSPMonitor(ksp, ksp->its, norm_r);CHKERRQ(ierr);
     ksp->rnorm = norm_r;
   
     ierr = (*ksp->converged)(ksp, ksp->its, norm_r, &ksp->reason, ksp->cnvP);CHKERRQ(ierr);

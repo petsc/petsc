@@ -156,7 +156,7 @@ PetscErrorCode KSPSolve_Chebychev(KSP ksp)
       ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
       ksp->vec_sol = p[k]; 
       KSPLogResidualHistory(ksp,rnorm);
-      KSPMonitor(ksp,i,rnorm);
+      ierr = KSPMonitor(ksp,i,rnorm);CHKERRQ(ierr);
       ierr = (*ksp->converged)(ksp,i,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
       if (ksp->reason) break;
     }
@@ -186,7 +186,7 @@ PetscErrorCode KSPSolve_Chebychev(KSP ksp)
       ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
       ksp->vec_sol = p[k]; 
       KSPLogResidualHistory(ksp,rnorm);
-      KSPMonitor(ksp,i,rnorm);
+      ierr = KSPMonitor(ksp,i,rnorm);CHKERRQ(ierr);
     }
     if (ksp->its >= ksp->max_it) {
       if (ksp->normtype != KSP_NORM_NONE) {
