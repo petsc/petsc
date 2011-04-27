@@ -4369,12 +4369,18 @@ PetscErrorCode  MatIsTranspose(Mat A,Mat B,PetscReal tol,PetscBool  *flg)
   PetscValidPointer(flg,3);
   ierr = PetscObjectQueryFunction((PetscObject)A,"MatIsTranspose_C",(void (**)(void))&f);CHKERRQ(ierr);
   ierr = PetscObjectQueryFunction((PetscObject)B,"MatIsTranspose_C",(void (**)(void))&g);CHKERRQ(ierr);
+  *flg = PETSC_FALSE;
   if (f && g) {
-    if (f==g) {
+    if (f == g) {
       ierr = (*f)(A,B,tol,flg);CHKERRQ(ierr);
     } else {
       SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_NOTSAMETYPE,"Matrices do not have the same comparator for symmetry test");
     }
+  } else {
+    const MatType mattype;
+    if (!f) {ierr = MatGetType(A,&mattype);CHKERRQ(ierr);}
+    else    {ierr = MatGetType(B,&mattype);CHKERRQ(ierr);}
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Matrix of type <%s> does not support checking for transpose",mattype);
   }
   PetscFunctionReturn(0);
 }
