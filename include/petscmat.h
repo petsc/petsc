@@ -55,6 +55,11 @@ E*/
 #define MATSBAIJ           "sbaij"
 #define MATSEQSBAIJ          "seqsbaij"
 #define MATMPISBAIJ          "mpisbaij"
+
+#define MATSEQBSTRM        "seqbstrm"
+#define MATMPIBSTRM        "mpibstrm"
+#define MATBSTRM           "bstrm"
+
 #define MATDAAD            "daad"
 #define MATMFFD            "mffd"
 #define MATNORMAL          "normal"
@@ -100,6 +105,8 @@ E*/
 #define MATSOLVERPETSC        "petsc"
 #define MATSOLVERPLAPACK      "plapack"
 #define MATSOLVERBAS          "bas"
+
+#define MAT_SOLVER_BSTRM       "bstrm"
 
 /*E
     MatFactorType - indicates what type of factorization is requested
@@ -319,6 +326,10 @@ extern PetscErrorCode  MatCreateLRC(Mat,Mat,Mat,Mat*);
 extern PetscErrorCode  MatCreateIS(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,ISLocalToGlobalMapping,Mat*);
 extern PetscErrorCode  MatCreateSeqAIJCRL(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscInt[],Mat*);
 extern PetscErrorCode  MatCreateMPIAIJCRL(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscInt[],PetscInt,const PetscInt[],Mat*);
+
+extern PetscErrorCode  MatCreateSeqBSTRM(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],Mat*);
+extern PetscErrorCode  MatCreateMPIBSTRM(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],PetscInt,const PetscInt[],Mat*);
+
 extern PetscErrorCode  MatCreateScatter(MPI_Comm,VecScatter,Mat*);
 extern PetscErrorCode  MatScatterSetVecScatter(Mat,VecScatter);
 extern PetscErrorCode  MatScatterGetVecScatter(Mat,VecScatter*);

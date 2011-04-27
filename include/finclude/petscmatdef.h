@@ -83,6 +83,11 @@
 #define MATMPIADJ          'mpiadj'
 #define MATSEQSBAIJ        'seqsbaij'
 #define MATMPISBAIJ        'mpisbaij'
+
+#define MATSEQBSTRM        'seqbstrm'
+#define MATMPIBSTRM        'mpibstrm'
+#define MATBSTRM           'bstrm'
+
 #define MATSBAIJ           'sbaij'
 #define MATDAAD            'daad'
 #define MATMFFD            'mffd'
@@ -126,4 +131,5 @@
 #define MATSOLVERPETSC        'petsc'
 #define MATSOLVERPLAPACK      'plapack'
 #define MATSOLVERBAS          'bas'
+#define MAT_SOLVER_BSTRM      'bstrm'
 #endif

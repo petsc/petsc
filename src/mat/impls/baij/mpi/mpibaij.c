@@ -1314,6 +1314,7 @@ PetscErrorCode MatDestroy_MPIBAIJ(Mat mat)
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatDiagonalScaleLocal_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatSetHashTableFactor_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatConvert_mpibaij_mpisbaij_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatConvert_mpibaij_mpibstrm_C","",PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3180,6 +3181,10 @@ EXTERN_C_END
 M*/
 
 EXTERN_C_BEGIN
+extern PetscErrorCode MatConvert_MPIBAIJ_MPIBSTRM(Mat,const MatType,MatReuse,Mat*);
+EXTERN_C_END
+
+EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreate_MPIBAIJ"
 PetscErrorCode  MatCreate_MPIBAIJ(Mat B)
@@ -3278,6 +3283,9 @@ PetscErrorCode  MatCreate_MPIBAIJ(Mat B)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSetHashTableFactor_C",
                                      "MatSetHashTableFactor_MPIBAIJ",
                                      MatSetHashTableFactor_MPIBAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_mpibaij_mpibstrm_C",
+                                     "MatConvert_MPIBAIJ_MPIBSTRM",
+                                      MatConvert_MPIBAIJ_MPIBSTRM);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATMPIBAIJ);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

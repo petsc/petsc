@@ -1463,6 +1463,7 @@ PetscErrorCode MatDestroy_SeqBAIJ(Mat A)
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqbaij_seqsbaij_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatSeqBAIJSetPreallocation_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatSeqBAIJSetPreallocationCSR_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatConvert_seqbaij_seqbstrm_C","",PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -3306,6 +3307,9 @@ EXTERN_C_END
 .seealso: MatCreateSeqBAIJ()
 M*/
 
+EXTERN_C_BEGIN
+extern PetscErrorCode  MatConvert_SeqBAIJ_SeqBSTRM(Mat, MatType,MatReuse,Mat*);
+EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
@@ -3374,6 +3378,9 @@ PetscErrorCode  MatCreate_SeqBAIJ(Mat B)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSeqBAIJSetPreallocationCSR_C",
                                      "MatSeqBAIJSetPreallocationCSR_SeqBAIJ",
                                       MatSeqBAIJSetPreallocationCSR_SeqBAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqbaij_seqbstrm_C",
+                                     "MatConvert_SeqBAIJ_SeqBSTRM",
+                                      MatConvert_SeqBAIJ_SeqBSTRM);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQBAIJ);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
