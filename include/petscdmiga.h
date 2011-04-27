@@ -35,15 +35,15 @@ extern PetscErrorCode DMIGAInitializeGeometry3d(DM dm,PetscInt ndof,PetscInt Num
 extern PetscErrorCode DMIGAKnotRefine2d(DM dm,PetscInt kx,PetscScalar *Ux,PetscInt ky,PetscScalar *Uy,DM iga_new);
 extern PetscErrorCode DMIGAKnotRefine3d(DM dm,PetscInt kx,PetscScalar *Ux,PetscInt ky,PetscScalar *Uy,PetscInt kz,PetscScalar *Uz,DM iga_new);
 typedef struct {
-  PetscScalar *basis; // (p+1)x(numD+1)
+  PetscScalar *basis; /* (p+1)x(numD+1) */
   PetscScalar gx,gw;
   PetscInt offset;
 } GP;
 
 typedef struct {
   int numD,p,numGP,numEl;
-  int own_b, own_e;   // beginning/end of elements I 'own'
-  int cont_b, cont_e; // beginning/end of elements that contribute to dofs I own
+  int own_b, own_e;   /* beginning/end of elements I 'own' */
+  int cont_b, cont_e; /* beginning/end of elements that contribute to dofs I own */
   GP  *data;
 } BasisData1D;
 

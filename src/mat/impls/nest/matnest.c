@@ -444,8 +444,8 @@ static PetscErrorCode MatGetDiagonal_Nest(Mat A,Vec v)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-//  ierr = MatGetVecs_Nest(A,&diag,PETSC_NULL);CHKERRQ(ierr);
-//  ierr = VecNestGetSubVecs(diag,PETSC_NULL,&bdiag);CHKERRQ(ierr);
+  /*  ierr = MatGetVecs_Nest(A,&diag,PETSC_NULL);CHKERRQ(ierr); */
+  /*  ierr = VecNestGetSubVecs(diag,PETSC_NULL,&bdiag);CHKERRQ(ierr); */
   ierr = VecNestGetSubVecs(v,PETSC_NULL,&bdiag);CHKERRQ(ierr);
   for (i=0; i<bA->nr; i++) {
     if (bA->m[i][i]) {

@@ -20,17 +20,17 @@ PetscErrorCode CreateTaperSetOfPoints(PetscScalar Xbegin,PetscScalar Xend,PetscS
 PetscErrorCode CheckKnots(PetscInt m,PetscScalar *U,PetscInt k,PetscScalar *Uadd);
 
 typedef struct {
-  PetscInt   px,py,pz;     // polynomial order
-  PetscInt   ngx,ngy,ngz;  // number of gauss per element
-  PetscInt   nbx,nby,nbz;  // number of basis
-  PetscInt   Nx,Ny,Nz;     // number of elements
-  PetscInt   Cx,Cy,Cz;     // global continuity level (optional)
-  PetscInt   mx,my,mz;     // size of knot vectors
-  PetscReal *Ux, *Uy, *Uz; // knot vectors
-  BD         bdX,bdY,bdZ;  // stores precomputed 1D basis functions
-  PetscBool  IsPeriodicX,IsPeriodicY,IsPeriodicZ; // periodicity of knot vectors
+  PetscInt   px,py,pz;     /* polynomial order */
+  PetscInt   ngx,ngy,ngz;  /* number of gauss per element */
+  PetscInt   nbx,nby,nbz;  /* number of basis */
+  PetscInt   Nx,Ny,Nz;     /* number of elements */
+  PetscInt   Cx,Cy,Cz;     /* global continuity level (optional) */
+  PetscInt   mx,my,mz;     /* size of knot vectors */
+  PetscReal *Ux, *Uy, *Uz; /* knot vectors */
+  BD         bdX,bdY,bdZ;  /* stores precomputed 1D basis functions */
+  PetscBool  IsPeriodicX,IsPeriodicY,IsPeriodicZ; /* periodicity of knot vectors */
 
-  PetscInt   numD;         // number of 1D derivatives needed
+  PetscInt   numD;         /* number of 1D derivatives needed */
   PetscBool  IsRational,IsMapped;
 
   DM da_dof,da_geometry;

@@ -22,6 +22,7 @@ PetscErrorCode MatIncreaseOverlap_MPISBAIJ(Mat C,PetscInt is_max,IS is[],PetscIn
   PetscBT        table;
   PetscInt       *ai,brow,nz,nis,l,nmax,nstages_local,nstages,max_no,pos;
   const PetscInt *idx;
+  PetscBool      flg;
 
   PetscFunctionBegin;
   ierr = PetscMalloc(is_max*sizeof(IS),&is_new);CHKERRQ(ierr);
@@ -30,7 +31,7 @@ PetscErrorCode MatIncreaseOverlap_MPISBAIJ(Mat C,PetscInt is_max,IS is[],PetscIn
   if (ov < 0){ SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative overlap specified\n");}
   
   /* ----- previous non-scalable implementation ----- */
-  PetscBool flg=PETSC_FALSE;
+  flg=PETSC_FALSE;
   ierr = PetscOptionsHasName(PETSC_NULL, "-IncreaseOverlap_old", &flg);CHKERRQ(ierr);
   if (flg){ /* previous non-scalable implementation */
     printf("use previous non-scalable implementation...\n");

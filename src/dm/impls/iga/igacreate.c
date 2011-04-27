@@ -4,7 +4,7 @@
 #define __FUNCT__ "DMSetFromOptions_IGA"
 PetscErrorCode  DMSetFromOptions_IGA(DM dm)
 {
-  //DM_IGa       *iga = (DM_IGA *) dm->data;
+  /* DM_IGa       *iga = (DM_IGA *) dm->data; */
   char           typeName[256];
   PetscBool      flg;
   PetscErrorCode ierr;

@@ -26,6 +26,8 @@ PetscErrorCode MPIBSTRM_create_bstrm(Mat A)
 
   PetscInt      bs2,  rbs, cbs, slen, blen;
   PetscErrorCode ierr;
+  PetscScalar **asp;
+  PetscScalar **bsp;
 
   PetscFunctionBegin;
   printf(" --- in MPIBSTRM_create_bstrm, m=%d, nd=%d, bs=%d, MROW=%d\n", m,nd,bs,MROW); 
@@ -43,7 +45,6 @@ PetscErrorCode MPIBSTRM_create_bstrm(Mat A)
   bstrmA->rbs = bstrmA->cbs = bs;
   ierr  = PetscMalloc(bs2*blen*sizeof(PetscScalar), &bstrmA->as);CHKERRQ(ierr);
 
-  PetscScalar **asp;
   ierr  = PetscMalloc(rbs*sizeof(PetscScalar *), &asp);CHKERRQ(ierr);
 
   for(i=0;i<rbs;i++) asp[i] = bstrmA->as + i*slen;
@@ -72,7 +73,6 @@ PetscErrorCode MPIBSTRM_create_bstrm(Mat A)
   bstrmB->rbs = bstrmB->cbs = bs;
   ierr  = PetscMalloc(bs2*blen*sizeof(PetscScalar), &bstrmB->as);CHKERRQ(ierr);
 
-  PetscScalar **bsp;
   ierr  = PetscMalloc(rbs*sizeof(PetscScalar *), &bsp);CHKERRQ(ierr);
 
   for(i=0;i<rbs;i++) bsp[i] = bstrmB->as + i*slen;

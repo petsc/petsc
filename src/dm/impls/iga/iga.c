@@ -421,14 +421,19 @@ PetscErrorCode DMIGAInitializeUniform3d(DM dm,PetscBool IsRational,PetscInt NumD
 {
   DM_IGA        *iga = (DM_IGA *) dm->data;
   PetscErrorCode ierr;
+  DMDABoundaryType xptype = DMDA_BOUNDARY_NONE;
+  DMDABoundaryType yptype = DMDA_BOUNDARY_NONE;
+  DMDABoundaryType zptype = DMDA_BOUNDARY_NONE;
+  PetscInt   sw;
+  DMDALocalInfo       info_dof;
 
   PetscFunctionBegin;
-  // Test C < p
+  /* Test C < p */
   if(px <= Cx || py <= Cy || pz <= Cz){
     SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Discretization inconsistent: polynomial order must be greater than degree of continuity");
   }
 
-  // Load constants
+  /* Load constants */
   iga->px = px; iga->py = py; iga->pz = pz;
   iga->Nx = Nx; iga->Ny = Nx; iga->Nz = Nz;
   iga->Cx = Cx; iga->Cy = Cx; iga->Cz = Cx;
@@ -436,7 +441,7 @@ PetscErrorCode DMIGAInitializeUniform3d(DM dm,PetscBool IsRational,PetscInt NumD
   iga->IsPeriodicX = IsPeriodicX; iga->IsPeriodicY = IsPeriodicY; iga->IsPeriodicZ = IsPeriodicZ;
   iga->numD = NumDerivatives;
 
-  // Knot vector size
+  /* Knot vector size */
   iga->mx = 2*(iga->px+1);
   iga->my = 2*(iga->py+1);
   iga->mz = 2*(iga->pz+1);
@@ -444,12 +449,12 @@ PetscErrorCode DMIGAInitializeUniform3d(DM dm,PetscBool IsRational,PetscInt NumD
   iga->my += (iga->py-iga->Cy)*(iga->Ny-1);
   iga->mz += (iga->pz-iga->Cz)*(iga->Nz-1);
 
-  // number of basis functions
+  /* number of basis functions */
   iga->nbx = iga->mx-iga->px-1;
   iga->nby = iga->my-iga->py-1;
   iga->nbz = iga->mz-iga->pz-1;
 
-  // compute knot vectors
+  /* compute knot vectors */
   ierr = PetscMalloc(iga->mx*sizeof(PetscReal), &iga->Ux);CHKERRQ(ierr);
   ierr = PetscMalloc(iga->my*sizeof(PetscReal), &iga->Uy);CHKERRQ(ierr);
   ierr = PetscMalloc(iga->mz*sizeof(PetscReal), &iga->Uz);CHKERRQ(ierr);
@@ -473,19 +478,16 @@ PetscErrorCode DMIGAInitializeUniform3d(DM dm,PetscBool IsRational,PetscInt NumD
     ierr = CreateKnotVector(iga->Nz,iga->pz,iga->Cz,iga->mz,iga->Uz,Uz0,Uzf);CHKERRQ(ierr);
   }
 
-  // compute and store 1d basis functions at gauss points
+  /* compute and store 1d basis functions at gauss points */
   ierr = Compute1DBasisFunctions(iga->ngx, iga->numD, iga->Ux, iga->mx, iga->px, &iga->bdX);CHKERRQ(ierr);
   ierr = Compute1DBasisFunctions(iga->ngy, iga->numD, iga->Uy, iga->my, iga->py, &iga->bdY);CHKERRQ(ierr);
   ierr = Compute1DBasisFunctions(iga->ngz, iga->numD, iga->Uz, iga->mz, iga->pz, &iga->bdZ);CHKERRQ(ierr);
 
-  DMDABoundaryType xptype = DMDA_BOUNDARY_NONE;
-  DMDABoundaryType yptype = DMDA_BOUNDARY_NONE;
-  DMDABoundaryType zptype = DMDA_BOUNDARY_NONE;
   if (IsPeriodicX) xptype = DMDA_BOUNDARY_PERIODIC;
   if (IsPeriodicY) yptype = DMDA_BOUNDARY_PERIODIC;
   if (IsPeriodicZ) zptype = DMDA_BOUNDARY_PERIODIC;
 
-  PetscInt   sw = (iga->px>iga->py) ? iga->px : iga->py ; sw = (sw>iga->pz) ? sw : iga->pz ;
+  sw = (iga->px>iga->py) ? iga->px : iga->py ; sw = (sw>iga->pz) ? sw : iga->pz ;
   ierr = DMDACreate(PETSC_COMM_WORLD,&iga->da_dof); CHKERRQ(ierr);
   ierr = DMDASetDim(iga->da_dof, 3); CHKERRQ(ierr);
   ierr = DMDASetSizes(iga->da_dof,iga->nbx,iga->nby,iga->nbz); CHKERRQ(ierr);
@@ -498,8 +500,6 @@ PetscErrorCode DMIGAInitializeUniform3d(DM dm,PetscBool IsRational,PetscInt NumD
 
   /* Determine how the elements map to processors */
 
-
-  DMDALocalInfo       info_dof;
   ierr = DMDAGetLocalInfo(iga->da_dof,&info_dof);CHKERRQ(ierr);
   ierr = BDSetElementOwnership(iga->bdX,iga->Nx,info_dof.xs,info_dof.xs+info_dof.xm-1,iga->px);CHKERRQ(ierr);
   ierr = BDSetElementOwnership(iga->bdY,iga->Ny,info_dof.ys,info_dof.ys+info_dof.ym-1,iga->py);CHKERRQ(ierr);
@@ -519,6 +519,12 @@ PetscErrorCode DMIGAInitializeGeometry3d(DM dm,PetscInt ndof,PetscInt NumDerivat
   PetscErrorCode ierr;
   MPI_Comm       comm;
   PetscViewer    viewer;
+  PetscInt spatial_dim,count,i;
+  PetscReal Umax = 0.0;
+  PetscInt numEl;
+  DMDABoundaryType ptype;
+  PetscInt sw;
+  DMDALocalInfo       info_dof;
 
   PetscFunctionBegin;
   fp = fopen(FunctionSpaceFile, "r");
@@ -526,27 +532,25 @@ PetscErrorCode DMIGAInitializeGeometry3d(DM dm,PetscInt ndof,PetscInt NumDerivat
     SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_FILE_OPEN, "Cannot find geometry file");
   }
 
-  PetscInt spatial_dim,count,i;
   count = fscanf(fp, "%d", &spatial_dim);
   if(spatial_dim != 3){
     SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Geometry dimension != problem dimension");
   }
 
-  // Read in polynomial orders and number of basis functions
+  /* Read in polynomial orders and number of basis functions */
   count = fscanf(fp, "%d %d %d",&iga->px,&iga->py,&iga->pz);
   count = fscanf(fp, "%d %d %d",&iga->nbx,&iga->nby,&iga->nbz);
 
-  // Knot vector size
+  /* Knot vector size */
   iga->mx = iga->nbx + iga->px + 1;
   iga->my = iga->nby + iga->py + 1;
   iga->mz = iga->nbz + iga->pz + 1;
 
-  // Read in my knot vectors
+  /* Read in my knot vectors */
   ierr = PetscMalloc(iga->mx*sizeof(PetscReal), &iga->Ux);CHKERRQ(ierr);
   ierr = PetscMalloc(iga->my*sizeof(PetscReal), &iga->Uy);CHKERRQ(ierr);
   ierr = PetscMalloc(iga->mz*sizeof(PetscReal), &iga->Uz);CHKERRQ(ierr);
 
-  PetscReal Umax = 0.0;
   for(i=0;i<iga->mx;i++) {
     count = fscanf(fp, "%lf ",&iga->Ux[i]);
     if(iga->Ux[i] > Umax) Umax = iga->Ux[i];
@@ -567,8 +571,8 @@ PetscErrorCode DMIGAInitializeGeometry3d(DM dm,PetscInt ndof,PetscInt NumDerivat
   }
   for(i=0;i<iga->mz;i++) iga->Uz[i] /= Umax;
 
-  // count the number of elements
-  PetscInt numEl = 0;
+  /* count the number of elements */
+  numEl = 0;
   for(i = 0; i < iga->mx-1; ++i) {
     double du = (iga->Ux[i+1]-iga->Ux[i]);
     if(du > 1.0e-13) numEl++;
@@ -589,21 +593,21 @@ PetscErrorCode DMIGAInitializeGeometry3d(DM dm,PetscInt ndof,PetscInt NumDerivat
   }
   iga->Nz = numEl;
 
-  // Load constants
+  /* Load constants */
   iga->ngx = iga->px+1; iga->ngy = iga->py+1; iga->ngz = iga->pz+1;
   iga->numD = NumDerivatives;
   iga->IsRational = PETSC_TRUE;
   iga->IsMapped = PETSC_TRUE;
 
-  // compute and store 1d basis functions at gauss points
+  /* compute and store 1d basis functions at gauss points */
   ierr = Compute1DBasisFunctions(iga->ngx, iga->numD, iga->Ux, iga->mx, iga->px, &iga->bdX);CHKERRQ(ierr);
   ierr = Compute1DBasisFunctions(iga->ngy, iga->numD, iga->Uy, iga->my, iga->py, &iga->bdY);CHKERRQ(ierr);
   ierr = Compute1DBasisFunctions(iga->ngz, iga->numD, iga->Uz, iga->mz, iga->pz, &iga->bdZ);CHKERRQ(ierr);
 
-  DMDABoundaryType ptype = DMDA_BOUNDARY_NONE ;
-  PetscInt   sw = (iga->px>iga->py) ? iga->px : iga->py ; sw = (sw>iga->pz) ? sw : iga->pz ;
+  ptype = DMDA_BOUNDARY_NONE ;
+  sw = (iga->px>iga->py) ? iga->px : iga->py ; sw = (sw>iga->pz) ? sw : iga->pz ;
 
-  // DOF DA
+  /* DOF DA */
   ierr = DMDACreate(PETSC_COMM_WORLD,&iga->da_dof); CHKERRQ(ierr);
   ierr = DMDASetDim(iga->da_dof, 3); CHKERRQ(ierr);
   ierr = DMDASetSizes(iga->da_dof,iga->nbx,iga->nby,iga->nbz); CHKERRQ(ierr);
@@ -614,14 +618,13 @@ PetscErrorCode DMIGAInitializeGeometry3d(DM dm,PetscInt ndof,PetscInt NumDerivat
   ierr = DMSetFromOptions(iga->da_dof); CHKERRQ(ierr);
   ierr = DMSetUp(iga->da_dof);CHKERRQ(ierr);
 
-  // Determine how the elements map to processors
-  DMDALocalInfo       info_dof;
+  /* Determine how the elements map to processors */
   ierr = DMDAGetLocalInfo(iga->da_dof,&info_dof);CHKERRQ(ierr);
   ierr = BDSetElementOwnership(iga->bdX,iga->Nx,info_dof.xs,info_dof.xs+info_dof.xm-1,iga->px);CHKERRQ(ierr);
   ierr = BDSetElementOwnership(iga->bdY,iga->Ny,info_dof.ys,info_dof.ys+info_dof.ym-1,iga->py);CHKERRQ(ierr);
   ierr = BDSetElementOwnership(iga->bdZ,iga->Nz,info_dof.zs,info_dof.zs+info_dof.zm-1,iga->pz);CHKERRQ(ierr);
 
-  // Geometry DA
+  /* Geometry DA */
   ierr = DMDACreate(PETSC_COMM_WORLD,&iga->da_geometry); CHKERRQ(ierr);
   ierr = DMDASetDim(iga->da_geometry, 3); CHKERRQ(ierr);
   ierr = DMDASetSizes(iga->da_geometry,iga->nbx,iga->nby,iga->nbz); CHKERRQ(ierr);
@@ -632,7 +635,7 @@ PetscErrorCode DMIGAInitializeGeometry3d(DM dm,PetscInt ndof,PetscInt NumDerivat
   ierr = DMSetFromOptions(iga->da_geometry); CHKERRQ(ierr);
   ierr = DMSetUp(iga->da_geometry);CHKERRQ(ierr);
 
-  // Read in the geometry
+  /* Read in the geometry */
   ierr = DMCreateGlobalVector(iga->da_geometry,&iga->G);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)(iga->G),&comm);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(comm,GeomFile,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
@@ -652,14 +655,18 @@ PetscErrorCode DMIGAInitializeSymmetricTaper2d(DM dm,PetscBool IsRational,PetscI
 {
   DM_IGA        *iga = (DM_IGA *) dm->data;
   PetscErrorCode ierr;
+  DMDABoundaryType xptype = DMDA_BOUNDARY_NONE ;
+  DMDABoundaryType yptype = DMDA_BOUNDARY_NONE ;
+  PetscInt   sw;
+  DMDALocalInfo       info_dof;
 
   PetscFunctionBegin;
-  // Test C < p
+  /* Test C < p */
   if(px <= Cx || py <= Cy){
     SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Discretization inconsistent: polynomial order must be greater than degree of continuity");
   }
 
-  // Load constants
+  /* Load constants */
   iga->px = px; iga->py = py;
   iga->Nx = Nx; iga->Ny = Ny;
   iga->Cx = Cx; iga->Cy = Cy;
@@ -667,17 +674,17 @@ PetscErrorCode DMIGAInitializeSymmetricTaper2d(DM dm,PetscBool IsRational,PetscI
   iga->IsPeriodicX = IsPeriodicX; iga->IsPeriodicY = IsPeriodicY;
   iga->numD = NumDerivatives;
 
-  // Knot vector size
+  /* Knot vector size*/
   iga->mx = 2*(iga->px+1);
   iga->my = 2*(iga->py+1);
   iga->mx += (iga->px-iga->Cx)*(iga->Nx-1);
   iga->my += (iga->py-iga->Cy)*(iga->Ny-1);
 
-  // number of basis functions
+  /* number of basis functions */
   iga->nbx = iga->mx-iga->px-1;
   iga->nby = iga->my-iga->py-1;
 
-  // compute knot vectors
+  /* compute knot vectors */
   ierr = PetscMalloc(iga->mx*sizeof(PetscReal), &iga->Ux);CHKERRQ(ierr);
   ierr = PetscMalloc(iga->my*sizeof(PetscReal), &iga->Uy);CHKERRQ(ierr);
 
@@ -691,14 +698,15 @@ PetscErrorCode DMIGAInitializeSymmetricTaper2d(DM dm,PetscBool IsRational,PetscI
 
     PetscScalar *X1;
     PetscScalar *X2;
+    int i;
+    PetscScalar *X;
+
     ierr = PetscMalloc((Nx/2+1)*sizeof(PetscScalar),&X1);CHKERRQ(ierr);
     ierr = PetscMalloc((Nx/2+1)*sizeof(PetscScalar),&X2);CHKERRQ(ierr);
 
     CreateTaperSetOfPoints(Ux0,0.5*(Uxf+Ux0),fx,Nx/2+1,X1);
     CreateTaperSetOfPoints(Uxf,0.5*(Uxf+Ux0),fx,Nx/2+1,X2);
 
-    int i;
-    PetscScalar *X;
     ierr = PetscMalloc((Nx+1)*sizeof(PetscScalar),&X);CHKERRQ(ierr);
 
     if( Nx % 2 == 0){
@@ -735,14 +743,15 @@ PetscErrorCode DMIGAInitializeSymmetricTaper2d(DM dm,PetscBool IsRational,PetscI
 
     PetscScalar *X1;
     PetscScalar *X2;
+    int i;
+    PetscScalar *X;
+
     ierr = PetscMalloc((Ny/2+1)*sizeof(PetscScalar),&X1);CHKERRQ(ierr);
     ierr = PetscMalloc((Ny/2+1)*sizeof(PetscScalar),&X2);CHKERRQ(ierr);
 
     CreateTaperSetOfPoints(Uy0,0.5*(Uyf+Uy0),fy,Ny/2+1,X1);
     CreateTaperSetOfPoints(Uyf,0.5*(Uyf+Uy0),fy,Ny/2+1,X2);
 
-    int i;
-    PetscScalar *X;
     ierr = PetscMalloc((Ny+1)*sizeof(PetscScalar),&X);CHKERRQ(ierr);
 
     if( Ny % 2 == 0){
@@ -772,16 +781,14 @@ PetscErrorCode DMIGAInitializeSymmetricTaper2d(DM dm,PetscBool IsRational,PetscI
 
   }
 
-  // compute and store 1d basis functions at gauss points
+  /* compute and store 1d basis functions at gauss points */
   ierr = Compute1DBasisFunctions(iga->ngx, iga->numD, iga->Ux, iga->mx, iga->px, &iga->bdX);CHKERRQ(ierr);
   ierr = Compute1DBasisFunctions(iga->ngy, iga->numD, iga->Uy, iga->my, iga->py, &iga->bdY);CHKERRQ(ierr);
 
-  DMDABoundaryType xptype = DMDA_BOUNDARY_NONE ;
-  DMDABoundaryType yptype = DMDA_BOUNDARY_NONE ;
   if (IsPeriodicX) xptype = DMDA_BOUNDARY_PERIODIC;
   if (IsPeriodicY) yptype = DMDA_BOUNDARY_PERIODIC;
 
-  PetscInt   sw = (iga->px>iga->py) ? iga->px : iga->py ;
+  sw = (iga->px>iga->py) ? iga->px : iga->py ;
   ierr = DMDACreate(PETSC_COMM_WORLD,&iga->da_dof); CHKERRQ(ierr);
   ierr = DMDASetDim(iga->da_dof, 2); CHKERRQ(ierr);
   ierr = DMDASetSizes(iga->da_dof,iga->nbx,iga->nby,1); CHKERRQ(ierr);
@@ -794,7 +801,6 @@ PetscErrorCode DMIGAInitializeSymmetricTaper2d(DM dm,PetscBool IsRational,PetscI
 
   /* Determine how the elements map to processors */
 
-  DMDALocalInfo       info_dof;
   ierr = DMDAGetLocalInfo(iga->da_dof,&info_dof);CHKERRQ(ierr);
   ierr = BDSetElementOwnership(iga->bdX,iga->Nx,info_dof.xs,info_dof.xs+info_dof.xm-1,iga->px);CHKERRQ(ierr);
   ierr = BDSetElementOwnership(iga->bdY,iga->Ny,info_dof.ys,info_dof.ys+info_dof.ym-1,iga->py);CHKERRQ(ierr);
@@ -811,14 +817,18 @@ PetscErrorCode DMIGAInitializeUniform2d(DM dm,PetscBool IsRational,PetscInt NumD
 {
   DM_IGA        *iga = (DM_IGA *) dm->data;
   PetscErrorCode ierr;
+  DMDABoundaryType xptype = DMDA_BOUNDARY_NONE ;
+  DMDABoundaryType yptype = DMDA_BOUNDARY_NONE ;
+  PetscInt   sw;
+  DMDALocalInfo       info_dof;
 
   PetscFunctionBegin;
-  // Test C < p
+  /* Test C < p */
   if(px <= Cx || py <= Cy){
     SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Discretization inconsistent: polynomial order must be greater than degree of continuity");
   }
 
-  // Load constants
+  /* Load constants */
   iga->px = px; iga->py = py;
   iga->Nx = Nx; iga->Ny = Ny;
   iga->Cx = Cx; iga->Cy = Cy;
@@ -826,17 +836,17 @@ PetscErrorCode DMIGAInitializeUniform2d(DM dm,PetscBool IsRational,PetscInt NumD
   iga->IsPeriodicX = IsPeriodicX; iga->IsPeriodicY = IsPeriodicY;
   iga->numD = NumDerivatives;
 
-  // Knot vector size
+  /* Knot vector size */
   iga->mx = 2*(iga->px+1);
   iga->my = 2*(iga->py+1);
   iga->mx += (iga->px-iga->Cx)*(iga->Nx-1);
   iga->my += (iga->py-iga->Cy)*(iga->Ny-1);
 
-  // number of basis functions
+  /* number of basis functions */
   iga->nbx = iga->mx-iga->px-1;
   iga->nby = iga->my-iga->py-1;
 
-  // compute knot vectors
+  /* compute knot vectors */
   ierr = PetscMalloc(iga->mx*sizeof(PetscReal), &iga->Ux);CHKERRQ(ierr);
   ierr = PetscMalloc(iga->my*sizeof(PetscReal), &iga->Uy);CHKERRQ(ierr);
 
@@ -853,16 +863,14 @@ PetscErrorCode DMIGAInitializeUniform2d(DM dm,PetscBool IsRational,PetscInt NumD
     ierr = CreateKnotVector(iga->Ny,iga->py,iga->Cy,iga->my,iga->Uy,Uy0,Uyf);CHKERRQ(ierr);
   }
 
-  // compute and store 1d basis functions at gauss points
+  /* compute and store 1d basis functions at gauss points */
   ierr = Compute1DBasisFunctions(iga->ngx, iga->numD, iga->Ux, iga->mx, iga->px, &iga->bdX);CHKERRQ(ierr);
   ierr = Compute1DBasisFunctions(iga->ngy, iga->numD, iga->Uy, iga->my, iga->py, &iga->bdY);CHKERRQ(ierr);
 
-  DMDABoundaryType xptype = DMDA_BOUNDARY_NONE ;
-  DMDABoundaryType yptype = DMDA_BOUNDARY_NONE ;
   if (IsPeriodicX) xptype = DMDA_BOUNDARY_PERIODIC;
   if (IsPeriodicY) yptype = DMDA_BOUNDARY_PERIODIC;
 
-  PetscInt   sw = (iga->px>iga->py) ? iga->px : iga->py ;
+  sw = (iga->px>iga->py) ? iga->px : iga->py ;
   ierr = DMDACreate(PETSC_COMM_WORLD,&iga->da_dof); CHKERRQ(ierr);
   ierr = DMDASetDim(iga->da_dof, 2); CHKERRQ(ierr);
   ierr = DMDASetSizes(iga->da_dof,iga->nbx,iga->nby,1); CHKERRQ(ierr);
@@ -875,7 +883,6 @@ PetscErrorCode DMIGAInitializeUniform2d(DM dm,PetscBool IsRational,PetscInt NumD
 
   /* Determine how the elements map to processors */
 
-  DMDALocalInfo       info_dof;
   ierr = DMDAGetLocalInfo(iga->da_dof,&info_dof);CHKERRQ(ierr);
   ierr = BDSetElementOwnership(iga->bdX,iga->Nx,info_dof.xs,info_dof.xs+info_dof.xm-1,iga->px);CHKERRQ(ierr);
   ierr = BDSetElementOwnership(iga->bdY,iga->Ny,info_dof.ys,info_dof.ys+info_dof.ym-1,iga->py);CHKERRQ(ierr);
@@ -890,14 +897,17 @@ PetscErrorCode DMIGAInitializeUniform1d(DM dm,PetscBool IsRational,PetscInt NumD
 {
   DM_IGA        *iga = (DM_IGA *) dm->data;
   PetscErrorCode ierr;
+  DMDABoundaryType ptype = DMDA_BOUNDARY_NONE ;
+  PetscInt   sw;
+  DMDALocalInfo       info_dof;
 
   PetscFunctionBegin;
-  // Test C < p
+  /* Test C < p */
   if(px <= Cx){
     SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Discretization inconsistent: polynomial order must be greater than degree of continuity");
   }
 
-  // Load constants
+  /* Load constants */
   iga->px = px;
   iga->Nx = Nx;
   iga->Cx = Cx;
@@ -905,14 +915,14 @@ PetscErrorCode DMIGAInitializeUniform1d(DM dm,PetscBool IsRational,PetscInt NumD
   iga->IsPeriodicX = IsPeriodicX;
   iga->numD = NumDerivatives;
 
-  // Knot vector size
+  /* Knot vector size */
   iga->mx = 2*(iga->px+1);
   iga->mx += (iga->px-iga->Cx)*(iga->Nx-1);
 
-  // number of basis functions
+  /* number of basis functions */
   iga->nbx = iga->mx-iga->px-1;
 
-  // compute knot vectors
+  /* compute knot vectors */
   ierr = PetscMalloc(iga->mx*sizeof(PetscReal), &iga->Ux);CHKERRQ(ierr);
 
   if(IsPeriodicX){
@@ -922,13 +932,12 @@ PetscErrorCode DMIGAInitializeUniform1d(DM dm,PetscBool IsRational,PetscInt NumD
     ierr = CreateKnotVector(iga->Nx,iga->px,iga->Cx,iga->mx,iga->Ux,Ux0,Uxf);CHKERRQ(ierr);
   }
 
-  // compute and store 1d basis functions at gauss points
+  /* compute and store 1d basis functions at gauss points */
   ierr = Compute1DBasisFunctions(iga->ngx, iga->numD, iga->Ux, iga->mx, iga->px, &iga->bdX);CHKERRQ(ierr);
 
-  DMDABoundaryType ptype = DMDA_BOUNDARY_NONE ;
   if (IsPeriodicX) ptype = DMDA_BOUNDARY_PERIODIC;
 
-  PetscInt   sw = iga->px;
+  sw = iga->px;
   ierr = DMDACreate(PETSC_COMM_WORLD,&iga->da_dof); CHKERRQ(ierr);
   ierr = DMDASetDim(iga->da_dof, 1); CHKERRQ(ierr);
   ierr = DMDASetSizes(iga->da_dof,iga->nbx,1,1); CHKERRQ(ierr);
@@ -941,7 +950,6 @@ PetscErrorCode DMIGAInitializeUniform1d(DM dm,PetscBool IsRational,PetscInt NumD
 
   /* Determine how the elements map to processors */
 
-  DMDALocalInfo       info_dof;
   ierr = DMDAGetLocalInfo(iga->da_dof,&info_dof);CHKERRQ(ierr);
   ierr = BDSetElementOwnership(iga->bdX,iga->Nx,info_dof.xs,info_dof.xs+info_dof.xm-1,iga->px);CHKERRQ(ierr);
 
@@ -956,7 +964,7 @@ PetscErrorCode DMIGAKnotRefine3d(DM dm,PetscInt kx,PetscScalar *Ux,PetscInt ky,P
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  // are the knots you are trying to insert feasible?
+  /* are the knots you are trying to insert feasible? */
   ierr = CheckKnots(iga->mx,iga->Ux,kx,Ux);CHKERRQ(ierr);
   ierr = CheckKnots(iga->my,iga->Uy,ky,Uy);CHKERRQ(ierr);
   ierr = CheckKnots(iga->mz,iga->Uz,kz,Uz);CHKERRQ(ierr);
@@ -971,7 +979,7 @@ PetscErrorCode DMIGAKnotRefine2d(DM dm,PetscInt kx,PetscScalar *Ux,PetscInt ky,P
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  // are the knots you are trying to insert feasible?
+  /* are the knots you are trying to insert feasible? */
   ierr = CheckKnots(iga->mx,iga->Ux,kx,Ux);CHKERRQ(ierr);
   ierr = CheckKnots(iga->my,iga->Uy,ky,Uy);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -981,14 +989,14 @@ PetscErrorCode DMIGAKnotRefine2d(DM dm,PetscInt kx,PetscScalar *Ux,PetscInt ky,P
 #define __FUNCT__ "BDCreate"
 PetscErrorCode BDCreate(BD *bd,int numD,int p,int numGP,int numEl)
 {
+  BD bdd = *bd;
+  int i,j;
+
   PetscErrorCode ierr;
   PetscFunctionBegin;
   ierr = PetscMalloc(sizeof(BasisData1D),bd); CHKERRQ(ierr);
 
-  BD bdd = *bd;
-
   ierr = PetscMalloc(numEl*numGP*sizeof(GP),&(bdd->data));CHKERRQ(ierr);
-  int i,j;
   for(i=0;i<numEl;i++){
     for(j=0;j<numGP;j++){
       ierr = PetscMalloc((p+1)*(numD+1)*sizeof(PetscScalar),&(bdd->data[i*numGP+j].basis));CHKERRQ(ierr);
@@ -1031,7 +1039,7 @@ PetscErrorCode BDGetBasis(BD bd, int iel, int igp, int ib, int ider, double *bas
   PetscFunctionBegin;
 
   *basis = bd->data[iel*bd->numGP+igp].basis[ider*(bd->p+1)+ib];
-  //  *basis = bd->arrayX[iel][igp*(bd->numD+1)*(bd->p+1) + ider*(bd->p+1) + ib];
+  /*  *basis = bd->arrayX[iel][igp*(bd->numD+1)*(bd->p+1) + ider*(bd->p+1) + ib]; */
 
   PetscFunctionReturn(0);
 }
@@ -1043,7 +1051,7 @@ PetscErrorCode BDSetBasis(BD bd, int iel, int igp, int ib, int ider, double basi
   PetscFunctionBegin;
 
   bd->data[iel*bd->numGP+igp].basis[ider*(bd->p+1)+ib] = basis;
-  //bd->arrayX[iel][igp*(bd->numD+1)*(bd->p+1) + ider*(bd->p+1) + ib] = basis;
+  /* bd->arrayX[iel][igp*(bd->numD+1)*(bd->p+1) + ider*(bd->p+1) + ib] = basis; */
 
   PetscFunctionReturn(0);
 }
@@ -1055,7 +1063,7 @@ PetscErrorCode BDSetGaussPt(BD bd, int iel, int igp, double gp)
   PetscFunctionBegin;
 
   bd->data[iel*bd->numGP+igp].gx = gp;
-  //bd->arrayX[iel][(bd->numD+1)*(bd->p+1)*(bd->numGP) + igp*(2)] = gp;
+  /* bd->arrayX[iel][(bd->numD+1)*(bd->p+1)*(bd->numGP) + igp*(2)] = gp; */
 
   PetscFunctionReturn(0);
 }
@@ -1067,7 +1075,7 @@ PetscErrorCode BDSetGaussWt(BD bd, int iel, int igp, double gw)
   PetscFunctionBegin;
 
   bd->data[iel*bd->numGP+igp].gw = gw;
-  //bd->arrayX[iel][(bd->numD+1)*(bd->p+1)*(bd->numGP) + igp*(2) + 1] = gw;
+  /* bd->arrayX[iel][(bd->numD+1)*(bd->p+1)*(bd->numGP) + igp*(2) + 1] = gw; */
 
   PetscFunctionReturn(0);
 }
@@ -1076,12 +1084,12 @@ PetscErrorCode BDSetGaussWt(BD bd, int iel, int igp, double gw)
 #define __FUNCT__ "BDSetBasisOffset"
 PetscErrorCode BDSetBasisOffset(BD bd, int iel, int bOffset)
 {
-  PetscFunctionBegin;
   PetscInt igp = 0;
 
+  PetscFunctionBegin;
   bd->data[iel*bd->numGP+igp].offset = bOffset;
-  // (bd->numD+1)*(bd->p+1)*(bd->numGP) + (bd->numGP)*(2)
-  //bd->arrayX[iel][((bd->numD+1)*(bd->p+1)+2)*(bd->numGP)] = (double)bOffset;
+  /* (bd->numD+1)*(bd->p+1)*(bd->numGP) + (bd->numGP)*(2) */
+  /* bd->arrayX[iel][((bd->numD+1)*(bd->p+1)+2)*(bd->numGP)] = (double)bOffset; */
 
   PetscFunctionReturn(0);
 }
@@ -1092,7 +1100,7 @@ PetscErrorCode BDGetGaussPt(BD bd, int iel, int igp, double *gp)
 {
   PetscFunctionBegin;
   *gp = bd->data[iel*bd->numGP+igp].gx;
-  //*gp = bd->arrayX[iel][(bd->numD+1)*(bd->p+1)*(bd->numGP) + igp*(2)];
+  /* *gp = bd->arrayX[iel][(bd->numD+1)*(bd->p+1)*(bd->numGP) + igp*(2)]; */
 
   PetscFunctionReturn(0);
 }
@@ -1104,7 +1112,7 @@ PetscErrorCode BDGetGaussWt(BD bd, int iel, int igp, double *gw)
   PetscFunctionBegin;
 
   *gw = bd->data[iel*bd->numGP+igp].gw;
-  //*gw = bd->arrayX[iel][(bd->numD+1)*(bd->p+1)*(bd->numGP) + igp*(2) + 1];
+  /* *gw = bd->arrayX[iel][(bd->numD+1)*(bd->p+1)*(bd->numGP) + igp*(2) + 1]; */
 
   PetscFunctionReturn(0);
 }
@@ -1113,12 +1121,12 @@ PetscErrorCode BDGetGaussWt(BD bd, int iel, int igp, double *gw)
 #define __FUNCT__ "BDGetBasisOffset"
 PetscErrorCode BDGetBasisOffset(BD bd, int iel, int *bOffset)
 {
-  PetscFunctionBegin;
-
   PetscInt igp = 0;
+
+  PetscFunctionBegin;
   *bOffset = bd->data[iel*bd->numGP+igp].offset;
-  // (bd->numD+1)*(bd->p+1)*(bd->numGP) + (bd->numGP)*(2)
-  //*bOffset = (int)bd->arrayX[iel][((bd->numD+1)*(bd->p+1)+2)*(bd->numGP)];
+  /* (bd->numD+1)*(bd->p+1)*(bd->numGP) + (bd->numGP)*(2) */
+  /* *bOffset = (int)bd->arrayX[iel][((bd->numD+1)*(bd->p+1)+2)*(bd->numGP)]; */
 
   PetscFunctionReturn(0);
 }
@@ -1127,20 +1135,21 @@ PetscErrorCode BDGetBasisOffset(BD bd, int iel, int *bOffset)
 #define __FUNCT__ "BDSetElementOwnership"
 PetscErrorCode BDSetElementOwnership(BD bd,int nel,int dof_b,int dof_e,int p)
 {
-  PetscFunctionBegin;
   int i,boffset;
+
+  PetscFunctionBegin;
   bd->cont_b = nel; bd->cont_e = -1;
   bd->own_b = nel; bd->own_e = -1;
-  for(i=0;i<nel;i++){ // loop thru elements
+  for(i=0;i<nel;i++){ /* loop thru elements */
 
-    BDGetBasisOffset(bd,i,&boffset); // left-most dof
+    BDGetBasisOffset(bd,i,&boffset); /* left-most dof */
 
-    if(boffset >= dof_b && boffset <= dof_e){ // I own this element
+    if(boffset >= dof_b && boffset <= dof_e){ /* I own this element */
       if(i < bd->own_b) bd->own_b = i;
       if(i > bd->own_e) bd->own_e = i;
     }
 
-    if((boffset >= dof_b && boffset <= dof_e)||(boffset+p >= dof_b && boffset+p <= dof_e)){ // This element contributes to me
+    if((boffset >= dof_b && boffset <= dof_e)||(boffset+p >= dof_b && boffset+p <= dof_e)){ /* This element contributes to me */
       if(i < bd->cont_b) bd->cont_b = i;
       if(i > bd->cont_e) bd->cont_e = i;
     }
@@ -1160,51 +1169,51 @@ PetscErrorCode Compute1DBasisFunctions(PetscInt numGP, PetscInt numD, double *U,
      need to determine which span in the knot vector corresponds to
      the nonzero spans represented in the DA */
 
-  PetscFunctionBegin;
   PetscErrorCode ierr;
-
-  // Setup gauss points
   PetscReal *X, *W;
+  PetscReal **Nu;
+  PetscInt    i;
+  PetscInt numEl = 0;
+  BD bd;
+  PetscInt k,j,l;
+
+  PetscFunctionBegin;
+  /* Setup gauss points */
   ierr = PetscMalloc2(numGP,PetscReal,&X,numGP,PetscReal,&W);CHKERRQ(ierr);
   ierr = SetupGauss1D(numGP,X,W);CHKERRQ(ierr);
 
-  // create space to get basis functions
-  PetscReal **Nu;
-  PetscInt    i;
+  /* create space to get basis functions */
   ierr = PetscMalloc((numD+1)*sizeof(PetscReal *), &Nu);CHKERRQ(ierr);
   for(i = 0; i <= numD; ++i) {
     ierr = PetscMalloc((porder+1)*sizeof(PetscReal), &Nu[i]);CHKERRQ(ierr);
   }
 
-  // count the number of elements
-  PetscInt numEl = 0;
+  /* count the number of elements */
   for(i = 0; i < m-1; ++i) {
     double du = (U[i+1]-U[i]);
     if(du > 1.0e-13) numEl++;
   }
 
-  // initialize the bd
-  BD bd;
+  /* initialize the bd */
   ierr = BDCreate(&bd,numD,porder,numGP,numEl);CHKERRQ(ierr);
 
-  // precompute the basis
-  PetscInt k,j,l;
+  /* precompute the basis */
   for(i = 0; i < numEl; ++i) {
     int uspan = FindSpan(U,m,i,porder);
     double du = (U[uspan+1]-U[uspan]);
 
-    // here I am storing the first global basis number in 1d
+    /* here I am storing the first global basis number in 1d */
     ierr = BDSetBasisOffset(bd,i,uspan-porder);CHKERRQ(ierr);
 
     for(k = 0; k < numGP; ++k) {
       double u = (X[k]+1.0)*0.5*du + U[uspan];
 
-      // and also storing the gauss point and its weight (sneaky and flagrant abuse of DAs)
+      /* and also storing the gauss point and its weight (sneaky and flagrant abuse of DAs) */
       ierr = BDSetGaussPt(bd,i,k,u);CHKERRQ(ierr);
-      ierr = BDSetGaussWt(bd,i,k,W[k]*0.5*du);CHKERRQ(ierr); // note includes detJ for [-1:1]->[U[span]:U[span+1]]
+      ierr = BDSetGaussWt(bd,i,k,W[k]*0.5*du);CHKERRQ(ierr); /* note includes detJ for [-1:1]->[U[span]:U[span+1]] */
       ierr = GetDersBasisFuns(uspan,u,porder,U,Nu,numD);CHKERRQ(ierr);
 
-      // load values
+      /* load values */
       for(j = 0; j < porder+1; ++j) {
 	for(l = 0; l <= numD; ++l) {
           ierr = BDSetBasis(bd,i,k,j,l,Nu[l][j]);CHKERRQ(ierr);
@@ -1216,7 +1225,7 @@ PetscErrorCode Compute1DBasisFunctions(PetscInt numGP, PetscInt numD, double *U,
 
   *bd1D = bd;
 
-  // Cleanup
+  /* Cleanup */
   for(i = 0; i <= numD; ++i) {
     ierr = PetscFree(Nu[i]);CHKERRQ(ierr);
   }
@@ -1227,7 +1236,7 @@ PetscErrorCode Compute1DBasisFunctions(PetscInt numGP, PetscInt numD, double *U,
 
 PetscInt FindSpan(double *U,int m,int j,int p)
 {
-  // i is the span not counting zero spans, return the span including
+  /* i is the span not counting zero spans, return the span including */
 
   int i,id = -1;
   for(i=p;i<m-p-1;i++)
@@ -1244,16 +1253,16 @@ PetscInt FindSpan(double *U,int m,int j,int p)
 #define __FUNCT__ "GetDersBasisFuns"
 PetscErrorCode GetDersBasisFuns(int i,double u,int p,double *U, double **N,int nd)
 {
-  //  This function calculates the non-vanishing spline basis functions
-  //  and their derivatives. See the notes from the above function.
-  //    i <-- knot span index
-  //    u <-- parameter value for evaluation
-  //    p <-- 1D polynomial order
-  //    U <-- knot vector
-  //    N --> (nd+1,p+1) matrix of function and derivative
-  //    evaluations. The first row are the function evaluations,
-  //    equivalent to the above function. The second row are the
-  //    derivatives.
+  /*  This function calculates the non-vanishing spline basis functions
+      and their derivatives. See the notes from the above function.
+      i <-- knot span index
+      u <-- parameter value for evaluation
+      p <-- 1D polynomial order
+      U <-- knot vector
+      N --> (nd+1,p+1) matrix of function and derivative
+      evaluations. The first row are the function evaluations,
+      equivalent to the above function. The second row are the
+      derivatives. */
   int j,k,r,s1,s2,rk,pk,j1,j2;
   double saved,temp,d;
   PetscErrorCode ierr;
@@ -1287,11 +1296,11 @@ PetscErrorCode GetDersBasisFuns(int i,double u,int p,double *U, double **N,int n
     saved = 0.0;
     for (r = 0; r < j; r++)
     {
-      // Lower triangle
+      /* Lower triangle */
       ndu[j][r] = right[r+1] + left[j-r];
       temp = ndu[r][j-1] / ndu[j][r];
 
-      // Upper triangle
+      /* Upper triangle */
       ndu[r][j] = saved + right[r+1]*temp;
       saved = left[j-r]*temp;
     }
@@ -1338,7 +1347,7 @@ PetscErrorCode GetDersBasisFuns(int i,double u,int p,double *U, double **N,int n
     }
   }
 
-  // Multiply through by correct factors
+  /* Multiply through by correct factors */
   r = p;
   for(k = 1; k <= nd; k++)
   {
@@ -1363,17 +1372,17 @@ PetscErrorCode SetupGauss1D(int n,double *X,double *W)
   PetscFunctionBegin;
   switch(n)
   {
-  case 1: // porder = 1
+  case 1: /* porder = 1 */
     X[0] = 0.0;
     W[0] = 2.0;
     break;
-  case 2: // porder = 3
+  case 2: /* porder = 3 */
     X[0] = -0.577350269189626;
     X[1] = -X[0];
     W[0] = 1.0;
     W[1] = 1.0;
     break;
-  case 3: // porder = 5
+  case 3: /* porder = 5 */
     X[0] = -0.774596669241483;
     X[1] = 0.0;
     X[2] = -X[0];
@@ -1381,7 +1390,7 @@ PetscErrorCode SetupGauss1D(int n,double *X,double *W)
     W[1] = 0.888888888888889;
     W[2] = W[0];
     break;
-  case 4: // porder = 7
+  case 4: /* porder = 7 */
     X[0] = -.86113631159405257524;
     X[1] = -.33998104358485626481;
     X[2] = -X[1];
@@ -1391,7 +1400,7 @@ PetscErrorCode SetupGauss1D(int n,double *X,double *W)
     W[2] = W[1];
     W[3] = W[0];
     break;
-  case 5: // porder = 9
+  case 5: /* porder = 9 */
     X[0] = -.90617984593866399282;
     X[1] = -.53846931010568309105;
     X[2] = 0.0;
@@ -1472,10 +1481,10 @@ PetscErrorCode SetupGauss1D(int n,double *X,double *W)
     W[8] = .0812743883615744 ;
     break ;
   case 15:
-    // Generated in Mathematica:
-    // << NumericalDifferentialEquationAnalysis`
-    // GaussianQuadratureWeights[15, -1, 1, 25] here I overkilled
-    // the precision to make sure we get as much as possible.
+    /* Generated in Mathematica:
+       << NumericalDifferentialEquationAnalysis`
+       GaussianQuadratureWeights[15, -1, 1, 25] here I overkilled
+       the precision to make sure we get as much as possible. */
     X[0] = -0.9879925180204854284896 ; W[0] = 0.0307532419961172683546284 ;
     X[1] = -0.9372733924007059043078 ; W[1] = 0.0703660474881081247092674 ;
     X[2] = -0.8482065834104272162006 ; W[2] = 0.1071592204671719350118695 ;
@@ -1493,10 +1502,10 @@ PetscErrorCode SetupGauss1D(int n,double *X,double *W)
     X[14] = 0.987992518020485428490 ; W[14] = 0.0307532419961172683546284 ;
     break ;
   case 20:
-    // Generated in Mathematica:
-    // << NumericalDifferentialEquationAnalysis`
-    // GaussianQuadratureWeights[20, -1, 1, 25] here I overkilled
-    // the precision to make sure we get as much as possible.
+    /* Generated in Mathematica:
+       << NumericalDifferentialEquationAnalysis`
+       GaussianQuadratureWeights[20, -1, 1, 25] here I overkilled
+       the precision to make sure we get as much as possible. */
     X[0] = -0.9931285991850949247861 ; W[0] = 0.0176140071391521183118620 ;
     X[1] = -0.9639719272779137912677 ; W[1] = 0.0406014298003869413310400 ;
     X[2] = -0.9122344282513259058678 ; W[2] = 0.0626720483341090635695065 ;
@@ -1529,19 +1538,21 @@ PetscErrorCode SetupGauss1D(int n,double *X,double *W)
 PetscErrorCode CreateKnotVector(int N,int p,int C,int m, PetscScalar *U,PetscScalar U0,PetscScalar Uf)
 {
   PetscInt i,j;
+  PetscReal dU;
+  PetscInt  k0;
 
   PetscFunctionBegin;
-  for(i=0;i<p+1;i++) // open part
+  for(i=0;i<p+1;i++) /* open part */
   {
     U[i] = U0;
     U[m-i-1] = Uf;
   }
 
-  PetscReal dU = (Uf-U0)/((PetscReal) N);
-  PetscInt  k0 = p+1;
-  for(i=0;i<(N-1);i++) // insert N-1 knots
+  dU = (Uf-U0)/((PetscReal) N);
+  k0 = p+1;
+  for(i=0;i<(N-1);i++) /* insert N-1 knots */
   {
-    for(j=0;j<(p-C);j++) // p-C+1 times
+    for(j=0;j<(p-C);j++) /* p-C+1 times */
       U[k0 + i*(p-C) + j] = U0+((PetscReal) (i+1))*dU;
   }
   PetscFunctionReturn(0);
@@ -1552,16 +1563,18 @@ PetscErrorCode CreateKnotVector(int N,int p,int C,int m, PetscScalar *U,PetscSca
 PetscErrorCode CreatePeriodicKnotVector(int N,int p,int C,int m, PetscScalar *U,PetscScalar U0,PetscScalar Uf)
 {
   PetscInt i,j;
+  PetscReal dU;
+  PetscInt  k0;
 
-  PetscFunctionBegin; // periodic part
+  PetscFunctionBegin; /* periodic part */
   U[p] = U0;
   U[m-p-1] = Uf;
 
-  PetscReal dU = (Uf-U0)/((PetscReal) N);
-  PetscInt  k0 = p+1;
-  for(i=0;i<(N-1);i++) // insert N-1 knots
+  dU = (Uf-U0)/((PetscReal) N);
+  k0 = p+1;
+  for(i=0;i<(N-1);i++) /* insert N-1 knots */
   {
-    for(j=0;j<(p-C);j++) // p-C+1 times
+    for(j=0;j<(p-C);j++) /* p-C+1 times */
       U[k0 + i*(p-C) + j] = U0+((PetscReal) (i+1))*dU;
   }
 
@@ -1579,9 +1592,9 @@ PetscErrorCode CreatePeriodicKnotVector(int N,int p,int C,int m, PetscScalar *U,
 #define __FUNCT__ "CreateKnotVectorFromMesh"
 PetscErrorCode CreateKnotVectorFromMesh(int N,int p,int C,int m, PetscScalar *U,PetscScalar *X,PetscInt nX)
 {
-  PetscFunctionBegin;
   PetscInt i,j,countU=0;
 
+  PetscFunctionBegin;
   for(i=0;i<nX;i++){
 
     if(i==0 || i==nX-1){
@@ -1604,18 +1617,18 @@ PetscErrorCode CreateKnotVectorFromMesh(int N,int p,int C,int m, PetscScalar *U,
 #define __FUNCT__ "CreateTaperSetOfPoints"
 PetscErrorCode CreateTaperSetOfPoints(PetscScalar Xbegin,PetscScalar Xend,PetscScalar f,PetscInt N,PetscScalar *X)
 {
-  PetscFunctionBegin;
-  // N is the number of points, we will need number of spans, Ns
+  /* N is the number of points, we will need number of spans, Ns */
   PetscInt Ns=N-1;
-
   PetscScalar sum=0.0;
-
   int i;
+  PetscScalar dX;
+
+  PetscFunctionBegin;
   for(i=0;i<Ns;i++){
     sum += pow(f,i);
   }
 
-  PetscScalar dX = (Xend-Xbegin)/sum;
+  dX = (Xend-Xbegin)/sum;
   X[0] = Xbegin;
   for(i=1;i<N;i++){
     X[i] = X[i-1] + dX*pow(f,i-1.0);
@@ -1628,17 +1641,17 @@ PetscErrorCode CreateTaperSetOfPoints(PetscScalar Xbegin,PetscScalar Xend,PetscS
 #define __FUNCT__ "CheckKnots"
 PetscErrorCode CheckKnots(PetscInt m,PetscScalar *U,PetscInt k,PetscScalar *Uadd)
 {
-  PetscFunctionBegin;
+  /* Check the knots we are trying to insert into the vector U */
 
-  // Check the knots we are trying to insert into the vector U
-
-  // 1) check that they are U[0] < Uadd[i] < U[m-1]
+  /* 1) check that they are U[0] < Uadd[i] < U[m-1] */
   PetscInt j;
+
+  PetscFunctionBegin;
   for(j=0;j<k;j++)
     if(Uadd[j] < U[0] || Uadd[j] > U[m-1])
       SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Inserted knots beyond original knot vector limits");
 
-  // 2) I am lazy so I am not thinking about more that could go wrong
+  /* 2) I am lazy so I am not thinking about more that could go wrong */
 
   PetscFunctionReturn(0);
 }

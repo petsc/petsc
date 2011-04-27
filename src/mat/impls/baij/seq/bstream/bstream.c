@@ -50,11 +50,12 @@ PetscErrorCode MatSolve_SeqBSTRM_4(Mat A,Vec bb,Vec xx)
   PetscScalar       *x,s1,s2,s3,s4,x1,x2,x3,x4;
   PetscScalar       *v1, *v2, *v3, *v4;
   const PetscScalar *b;
+  PetscInt slen;
 
   PetscFunctionBegin;
   ierr = VecGetArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
-  PetscInt slen = 4*(ai[n]-ai[0]+diag[0]-diag[n]);
+  slen = 4*(ai[n]-ai[0]+diag[0]-diag[n]);
 
   v1  = bstrm->as;
   v2  = v1 + slen;
@@ -129,14 +130,13 @@ PetscErrorCode MatSolve_SeqBSTRM_5(Mat A,Vec bb,Vec xx)
   PetscScalar       *x,s1,s2,s3,s4,s5,x1,x2,x3,x4,x5;
   PetscScalar       *v1, *v2, *v3, *v4, *v5;
   const PetscScalar *b;
+  PetscInt slen;
 
   PetscFunctionBegin;
   ierr = VecGetArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
 
- 
-
-  PetscInt slen = 5*(ai[n]-ai[0]+diag[0]-diag[n]);
+  slen = 5*(ai[n]-ai[0]+diag[0]-diag[n]);
   v1  = bstrm->as;
   v2  = v1 + slen;
   v3  = v2 + slen;
@@ -220,9 +220,10 @@ PetscErrorCode SeqBSTRM_convert_bstrm(Mat A)
   PetscInt       i,j,ib,jb;
   MatScalar      *aa = a->a;
   PetscErrorCode ierr;
+  PetscInt  bs2, rbs,  cbs, blen, slen;
+  PetscScalar **asp;
 
   PetscFunctionBegin;
-  PetscInt  bs2, rbs,  cbs, blen, slen;
   bstrm->rbs = bs;
   bstrm->cbs = bs;
 
@@ -235,7 +236,6 @@ PetscErrorCode SeqBSTRM_convert_bstrm(Mat A)
   ierr = PetscFree(bstrm->as);CHKERRQ(ierr);
   ierr = PetscMalloc(bs2*blen*sizeof(MatScalar), &bstrm->as);CHKERRQ(ierr);
 
-  PetscScalar **asp;
   ierr  = PetscMalloc(rbs*sizeof(MatScalar *), &asp);CHKERRQ(ierr);
    
   for(i=0;i<rbs;i++) asp[i] = bstrm->as + i*slen; 
@@ -377,6 +377,7 @@ PetscErrorCode MatLUFactorNumeric_bstrm(Mat F,Mat A,const MatFactorInfo *info)
   /* Mat_SeqBSTRM     *bstrm = (Mat_SeqBSTRM *) F->spptr; */
   PetscInt          bs = A->rmap->bs;
   PetscErrorCode ierr;
+  Mat_SeqBSTRM  *bstrm;
 
   PetscFunctionBegin;
   /*ierr = (*bstrm ->MatLUFactorNumeric)(F,A,info);CHKERRQ(ierr); */
@@ -392,7 +393,6 @@ PetscErrorCode MatLUFactorNumeric_bstrm(Mat F,Mat A,const MatFactorInfo *info)
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"not supported for block size %D",bs);
   }
   
-  Mat_SeqBSTRM  *bstrm;
   ierr = PetscNewLog(F,Mat_SeqBSTRM,&bstrm);CHKERRQ(ierr);
   F->spptr = (void *) bstrm;  
   ierr = SeqBSTRM_convert_bstrm(F);CHKERRQ(ierr);
@@ -480,6 +480,7 @@ PetscErrorCode MatSOR_SeqBSTRM_4(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pe
 
   Mat_SeqBSTRM      *bstrm = (Mat_SeqBSTRM *)A->spptr;
   MatScalar         *v1,*v2,*v3,*v4, *v10,*v20,*v30,*v40, vvs1,vvs2,vvs3,vvs4;
+  PetscInt slen;
 
   PetscFunctionBegin;
   if (flag & SOR_EISENSTAT) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support yet for Eisenstat");
@@ -497,7 +498,7 @@ PetscErrorCode MatSOR_SeqBSTRM_4(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pe
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
 
-  PetscInt slen = 4*(ai[m]-ai[0]);
+  slen = 4*(ai[m]-ai[0]);
   v10 = bstrm->as;
   v20 = v10 + slen;
   v30 = v20 + slen;
@@ -630,6 +631,7 @@ PetscErrorCode MatSOR_SeqBSTRM_5(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pe
 
   Mat_SeqBSTRM      *bstrm = (Mat_SeqBSTRM *)A->spptr;
   MatScalar         *v1, *v2, *v3, *v4, *v5, *v10, *v20, *v30, *v40, *v50, vvs1, vvs2,vvs3,vvs4,vvs5;
+  PetscInt slen;
 
   PetscFunctionBegin;
   if (flag & SOR_EISENSTAT) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"No support yet for Eisenstat");
@@ -647,7 +649,7 @@ PetscErrorCode MatSOR_SeqBSTRM_5(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pe
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
 
-  PetscInt slen = 5*(ai[m]-ai[0]);
+  slen = 5*(ai[m]-ai[0]);
   v10 = bstrm->as;
   v20 = v10 + slen;
   v30 = v20 + slen;
@@ -790,6 +792,7 @@ PetscErrorCode MatMult_SeqBSTRM_4(Mat A,Vec xx,Vec zz)
   PetscErrorCode    ierr;
   PetscInt          mbs,i,*idx,*ii,j,n,*ridx=PETSC_NULL,nonzerorow=0;
   PetscBool         usecprow=a->compressedrow.use;
+  PetscInt slen;
 
   PetscFunctionBegin;
   ierr = VecGetArray(xx,(PetscScalar**)&x);CHKERRQ(ierr);
@@ -807,7 +810,7 @@ PetscErrorCode MatMult_SeqBSTRM_4(Mat A,Vec xx,Vec zz)
     z   = zarray;
   }
   
-  PetscInt slen = 4*(ii[mbs]-ii[0]);
+  slen = 4*(ii[mbs]-ii[0]);
   v1 = bstrm->as;
   v2 = v1 + slen;
   v3 = v2 + slen;
@@ -848,6 +851,7 @@ PetscErrorCode MatMult_SeqBSTRM_5(Mat A,Vec xx,Vec zz)
   PetscErrorCode    ierr;
   PetscInt          mbs,i,*idx,*ii,j,n,*ridx=PETSC_NULL,nonzerorow=0;
   PetscBool         usecprow=a->compressedrow.use;
+  PetscInt slen;
 
   PetscFunctionBegin;
   ierr = VecGetArray(xx,(PetscScalar**)&x);CHKERRQ(ierr);
@@ -865,7 +869,7 @@ PetscErrorCode MatMult_SeqBSTRM_5(Mat A,Vec xx,Vec zz)
     z   = zarray;
   }
   
-  PetscInt slen = 5*(ii[mbs]-ii[0]);
+  slen = 5*(ii[mbs]-ii[0]);
   v1 = bstrm->as;
   v2 = v1 + slen;
   v3 = v2 + slen;
@@ -919,13 +923,14 @@ PetscErrorCode MatMultTranspose_SeqBSTRM_4(Mat A,Vec xx,Vec zz)
   PetscErrorCode    ierr;
   PetscInt       mbs=a->mbs,i,*aj=a->j,*ai=a->i,n,*ib,cval,j;
   PetscInt       nonzerorow=0;
+  PetscInt slen;
 
   PetscFunctionBegin;
   ierr = VecSet(zz,zero);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
 
-  PetscInt slen = 4*(ai[mbs]-ai[0]);
+  slen = 4*(ai[mbs]-ai[0]);
   v1 = sbstrm->as;
   v2 = v1 + slen;
   v3 = v2 + slen;
@@ -968,14 +973,14 @@ PetscErrorCode MatMultTranspose_SeqBSTRM_5(Mat A,Vec xx,Vec zz)
   PetscErrorCode    ierr;
   PetscInt       mbs=a->mbs,i,*aj=a->j,*ai=a->i,n,*ib,cval,j;
   PetscInt       nonzerorow=0;
-
+  PetscInt slen;
 
   PetscFunctionBegin;
   ierr = VecSet(zz,zero);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
 
-  PetscInt slen = 5*(ai[mbs]-ai[0]);
+  slen = 5*(ai[mbs]-ai[0]);
 
   v1 = sbstrm->as;
   v2 = v1 + slen;
@@ -1027,6 +1032,7 @@ PetscErrorCode MatMultAdd_SeqBSTRM_4(Mat A,Vec xx,Vec yy,Vec zz)
   PetscErrorCode ierr;
   PetscInt       mbs=a->mbs,i,*idx,*ii,j,n,*ridx=PETSC_NULL;
   PetscBool      usecprow=a->compressedrow.use;
+  PetscInt slen;
 
   PetscFunctionBegin;
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
@@ -1051,7 +1057,7 @@ PetscErrorCode MatMultAdd_SeqBSTRM_4(Mat A,Vec xx,Vec yy,Vec zz)
     z   = zarray;
   }  
 
-  PetscInt slen = 4*(ii[mbs]-ii[0]);
+  slen = 4*(ii[mbs]-ii[0]);
   v1 = bstrm->as;
   v2 = v1 + slen;
   v3 = v2 + slen;
@@ -1100,6 +1106,7 @@ PetscErrorCode MatMultAdd_SeqBSTRM_5(Mat A,Vec xx,Vec yy,Vec zz)
   PetscErrorCode ierr;
   PetscInt       mbs=a->mbs,i,*idx,*ii,j,n,*ridx=PETSC_NULL;
   PetscBool      usecprow=a->compressedrow.use;
+  PetscInt slen;
 
   PetscFunctionBegin;
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
@@ -1125,7 +1132,7 @@ PetscErrorCode MatMultAdd_SeqBSTRM_5(Mat A,Vec xx,Vec yy,Vec zz)
     z   = zarray;
   }
 
-  PetscInt slen = 5*(ii[mbs]-ii[0]);
+  slen = 5*(ii[mbs]-ii[0]);
   v1 = bstrm->as;
   v2 = v1 + slen;
   v3 = v2 + slen;
@@ -1184,10 +1191,11 @@ PetscErrorCode SeqBSTRM_create_bstrm(Mat A)
   PetscInt       i,j,k;
   MatScalar      *aa = a->a;
   PetscErrorCode ierr;
+  PetscInt  bs2, rbs,  cbs, blen, slen;
+  PetscScalar **asp;
 
   PetscFunctionBegin;
   bstrm->rbs = bstrm->cbs = bs;
-  PetscInt  bs2, rbs,  cbs, blen, slen;
 
   rbs = cbs = bs;
   bs2 = rbs*cbs; 
@@ -1196,7 +1204,6 @@ PetscErrorCode SeqBSTRM_create_bstrm(Mat A)
 
   ierr  = PetscMalloc(bs2*blen*sizeof(PetscScalar), &bstrm->as);CHKERRQ(ierr);
 
-  PetscScalar **asp;
   ierr  = PetscMalloc(rbs*sizeof(PetscScalar *), &asp);CHKERRQ(ierr);
    
   for(i=0;i<rbs;i++) asp[i] = bstrm->as + i*slen; 

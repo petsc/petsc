@@ -198,7 +198,7 @@ PetscErrorCode DGMREScycle (PetscInt *itcount,KSP ksp) {
         CHKERRQ (ierr);
         PetscFunctionReturn (0);
     }
-//   /* record the residual norm to test if deflation is needed */
+    /* record the residual norm to test if deflation is needed */
     res_old = res;
 
     ierr = (*ksp->converged) (ksp,ksp->its,res,&ksp->reason,ksp->cnvP);
