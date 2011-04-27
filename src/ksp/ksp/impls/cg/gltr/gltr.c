@@ -1582,7 +1582,6 @@ PetscErrorCode  KSPCreate_GLTR(KSP ksp)
 
   ksp->ops->setup          = KSPSetUp_GLTR;
   ksp->ops->solve          = KSPSolve_GLTR;
-  ksp->ops->reset          = KSPDefaultReset;
   ksp->ops->destroy        = KSPDestroy_GLTR;
   ksp->ops->setfromoptions = KSPSetFromOptions_GLTR;
   ksp->ops->buildsolution  = KSPDefaultBuildSolution;

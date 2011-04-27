@@ -473,7 +473,6 @@ PetscErrorCode  KSPCreate_QCG(KSP ksp)
   ksp->ops->setup                = KSPSetUp_QCG;
   ksp->ops->setfromoptions       = KSPSetFromOptions_QCG;
   ksp->ops->solve                = KSPSolve_QCG;
-  ksp->ops->reset                = KSPDefaultReset;
   ksp->ops->destroy              = KSPDestroy_QCG;
   ksp->ops->buildsolution        = KSPDefaultBuildSolution;
   ksp->ops->buildresidual        = KSPDefaultBuildResidual;

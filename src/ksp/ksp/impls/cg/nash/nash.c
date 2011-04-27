@@ -762,7 +762,6 @@ PetscErrorCode  KSPCreate_NASH(KSP ksp)
 
   ksp->ops->setup                = KSPSetUp_NASH;
   ksp->ops->solve                = KSPSolve_NASH;
-  ksp->ops->reset                = KSPDefaultReset;
   ksp->ops->destroy              = KSPDestroy_NASH;
   ksp->ops->setfromoptions       = KSPSetFromOptions_NASH;
   ksp->ops->buildsolution        = KSPDefaultBuildSolution;

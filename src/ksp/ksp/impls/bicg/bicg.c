@@ -167,7 +167,6 @@ PetscErrorCode  KSPCreate_BiCG(KSP ksp)
   ksp->pc_side                   = PC_LEFT;
   ksp->ops->setup                = KSPSetUp_BiCG;
   ksp->ops->solve                = KSPSolve_BiCG;
-  ksp->ops->reset                = KSPDefaultReset;
   ksp->ops->destroy              = KSPDefaultDestroy;
   ksp->ops->view                 = 0;
   ksp->ops->setfromoptions       = 0;

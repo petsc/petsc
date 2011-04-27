@@ -303,7 +303,7 @@ PetscErrorCode  KSPBCGSLSetXRes(KSP ksp, PetscReal delta)
   PetscValidLogicalCollectiveReal(ksp,delta,2);
   if (ksp->setupstage) {
     if ((delta<=0 && bcgsl->delta>0) || (delta>0 && bcgsl->delta<=0)) {
-      ierr = KSPDefaultReset(ksp);CHKERRQ(ierr);
+      ierr = VecDestroyVecs(ksp->nwork,&ksp->work);CHKERRQ(ierr);
       ierr = PetscFree5(AY0c,AYlc,AYtc,MZa,MZb);CHKERRQ(ierr);
       ksp->setupstage = KSP_SETUP_NEW;
     }
@@ -349,7 +349,7 @@ PetscErrorCode  KSPBCGSLSetPol(KSP ksp, PetscBool  uMROR)
     /* free the data structures,
        then create them again
      */
-    ierr = KSPDefaultReset(ksp);CHKERRQ(ierr);
+    ierr = VecDestroyVecs(ksp->nwork,&ksp->work);CHKERRQ(ierr);
     ierr = PetscFree5(AY0c,AYlc,AYtc,MZa,MZb);CHKERRQ(ierr);
     bcgsl->bConvex = uMROR;
     ksp->setupstage = KSP_SETUP_NEW;
@@ -391,7 +391,7 @@ PetscErrorCode  KSPBCGSLSetEll(KSP ksp, PetscInt ell)
     bcgsl->ell = ell;
   } else if (bcgsl->ell != ell) {
     /* free the data structures, then create them again */
-    ierr = KSPDefaultReset(ksp);CHKERRQ(ierr);
+    ierr = VecDestroyVecs(ksp->nwork,&ksp->work);CHKERRQ(ierr);
     ierr = PetscFree5(AY0c,AYlc,AYtc,MZa,MZb);CHKERRQ(ierr);
     bcgsl->ell = ell;
     ksp->setupstage = KSP_SETUP_NEW;
@@ -484,7 +484,7 @@ PetscErrorCode KSPReset_BCGSL(KSP ksp)
   KSP_BCGSL      *bcgsl = (KSP_BCGSL *)ksp->data;
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = KSPDefaultReset(ksp);CHKERRQ(ierr);
+  ierr = VecDestroyVecs(ksp->nwork,&ksp->work);CHKERRQ(ierr);
   ierr = PetscFree5(AY0c,AYlc,AYtc,MZa,MZb);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -497,7 +497,7 @@ PetscErrorCode KSPDestroy_BCGSL(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFree5(AY0c,AYlc,AYtc,MZa,MZb);CHKERRQ(ierr);
+  ierr = KSPReset_BCGSL(ksp);CHKERRQ(ierr);
   ierr = KSPDefaultDestroy(ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

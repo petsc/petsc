@@ -187,7 +187,6 @@ PetscErrorCode  KSPCreate_TCQMR(KSP ksp)
   ksp->ops->buildresidual  = KSPDefaultBuildResidual;
   ksp->ops->setup          = KSPSetUp_TCQMR;
   ksp->ops->solve          = KSPSolve_TCQMR;
-  ksp->ops->reset          = KSPDefaultReset;
   ksp->ops->destroy        = KSPDefaultDestroy;
   ksp->ops->setfromoptions = 0;
   ksp->ops->view           = 0;

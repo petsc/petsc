@@ -833,41 +833,20 @@ PetscErrorCode KSPDefaultGetWork(KSP ksp,PetscInt nw)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (ksp->work) {ierr = KSPDefaultReset(ksp);CHKERRQ(ierr);}
+  ierr = VecDestroyVecs(ksp->nwork,&ksp->work);CHKERRQ(ierr);
   ksp->nwork = nw;
   ierr = KSPGetVecs(ksp,nw,&ksp->work,0,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscLogObjectParents(ksp,nw,ksp->work);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "KSPDefaultReset"
-/*
-  KSPDefaultReset - Resets a iterative context variable for methods with
-  no separate context.  
-
-  Input Parameter: 
-. ksp - the iterative context
-*/
-PetscErrorCode KSPDefaultReset(KSP ksp)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  if (ksp->work)  {
-    ierr      = VecDestroyVecs(ksp->nwork,&ksp->work);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPDefaultDestroy"
 /*
   KSPDefaultDestroy - Destroys a iterative context variable for methods with
   no separate context.  Preferred calling sequence KSPDestroy().
 
-  Input Parameter: 
+  Input Parameter:
 . ksp - the iterative context
 */
 PetscErrorCode KSPDefaultDestroy(KSP ksp)
@@ -876,7 +855,6 @@ PetscErrorCode KSPDefaultDestroy(KSP ksp)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  ierr = KSPDefaultReset(ksp);CHKERRQ(ierr);
   ierr = PetscFree(ksp->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

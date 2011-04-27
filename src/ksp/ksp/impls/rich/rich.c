@@ -52,7 +52,6 @@ PetscErrorCode  KSPSolve_Richardson(KSP ksp)
   ierr    = VecGetSize(x,&xs);CHKERRQ(ierr);
   ierr    = VecGetSize(ksp->work[0],&ws);CHKERRQ(ierr);
   if (xs != ws) {
-    ierr  = KSPDefaultReset(ksp);CHKERRQ(ierr);
     if (richardsonP->selfscale) {
       ierr  = KSPDefaultGetWork(ksp,4);CHKERRQ(ierr);
     } else {
@@ -303,7 +302,6 @@ PetscErrorCode  KSPCreate_Richardson(KSP ksp)
 
   ksp->ops->setup                  = KSPSetUp_Richardson;
   ksp->ops->solve                  = KSPSolve_Richardson;
-  ksp->ops->reset                  = KSPDefaultReset;
   ksp->ops->destroy                = KSPDestroy_Richardson;
   ksp->ops->buildsolution          = KSPDefaultBuildSolution;
   ksp->ops->buildresidual          = KSPDefaultBuildResidual;

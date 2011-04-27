@@ -141,7 +141,7 @@ PetscErrorCode KSPView_GCR( KSP ksp, PetscViewer viewer )
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSetUp_GCR"
 PetscErrorCode KSPSetUp_GCR( KSP ksp )
 {
@@ -149,7 +149,7 @@ PetscErrorCode KSPSetUp_GCR( KSP ksp )
   PetscErrorCode ierr;
   Mat            A;
   PetscBool      diagonalscale;
-        
+
   PetscFunctionBegin;
   if (ksp->pc_side == PC_LEFT) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"No left preconditioning for GCR");
   else if (ksp->pc_side == PC_SYMMETRIC) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"No symmetric preconditioning for GCR");
@@ -160,41 +160,38 @@ PetscErrorCode KSPSetUp_GCR( KSP ksp )
   ierr = MatGetVecs( A, &ctx->R, PETSC_NULL );CHKERRQ(ierr);
   ierr = VecDuplicateVecs( ctx->R, ctx->restart, &ctx->VV );CHKERRQ(ierr);
   ierr = VecDuplicateVecs( ctx->R, ctx->restart, &ctx->SS );CHKERRQ(ierr);
-        
+
   ierr = PetscMalloc( sizeof(PetscScalar)*ctx->restart, &ctx->val );CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPReset_GCR"
 PetscErrorCode KSPReset_GCR( KSP ksp )
 {
   PetscErrorCode ierr;
   KSP_GCR        *ctx = (KSP_GCR*)ksp->data;
-        
+
   PetscFunctionBegin;
-  if (ctx) {
-    if (ctx->R) {ierr = VecDestroy(& ctx->R );CHKERRQ(ierr);}
-    if (ctx->VV) {ierr = VecDestroyVecs(ctx->restart,&ctx->VV);CHKERRQ(ierr);}
-    if (ctx->SS) {ierr = VecDestroyVecs(ctx->restart,&ctx->SS);CHKERRQ(ierr);}
-    if (ctx->modifypc_destroy) {
-      ierr = (*ctx->modifypc_destroy)(ctx->modifypc_ctx);CHKERRQ(ierr);
+  ierr = VecDestroy(&ctx->R);CHKERRQ(ierr);
+  ierr = VecDestroyVecs(ctx->restart,&ctx->VV);CHKERRQ(ierr);
+  ierr = VecDestroyVecs(ctx->restart,&ctx->SS);CHKERRQ(ierr);
+  if (ctx->modifypc_destroy) {
+    ierr = (*ctx->modifypc_destroy)(ctx->modifypc_ctx);CHKERRQ(ierr);
     }
-    ierr = KSPDefaultReset(ksp);CHKERRQ(ierr);
-  }
+  ierr = PetscFree(ctx->val);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPDestroy_GCR"
 PetscErrorCode KSPDestroy_GCR( KSP ksp )
 {
   PetscErrorCode ierr;
   KSP_GCR        *ctx = (KSP_GCR*)ksp->data;
-        
+
   PetscFunctionBegin;
   ierr = KSPReset_GCR(ksp);CHKERRQ(ierr);
-  ierr = PetscFree( ctx->val );CHKERRQ(ierr);
   ierr = KSPDefaultDestroy(ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -384,7 +381,7 @@ PetscErrorCode KSPCreate_GCR(KSP ksp)
      ierr = PetscInfo(ksp,"WARNING! Setting PC_SIDE for GCR to right!\n");CHKERRQ(ierr);
   }
   ksp->pc_side                   = PC_RIGHT;
-        
+
   ksp->ops->setup                = KSPSetUp_GCR;
   ksp->ops->solve                = KSPSolve_GCR;
   ksp->ops->reset                = KSPReset_GCR;
@@ -393,11 +390,11 @@ PetscErrorCode KSPCreate_GCR(KSP ksp)
   ksp->ops->setfromoptions       = KSPSetFromOptions_GCR;
   ksp->ops->buildsolution        = KSPBuildSolution_GCR;
   ksp->ops->buildresidual        = KSPBuildResidual_GCR;
-  
+
   ierr = PetscObjectComposeFunctionDynamic(  (PetscObject)ksp, "KSPGCRSetRestart_C",
-				      "KSPGCRSetRestart_GCR",KSPGCRSetRestart_GCR );CHKERRQ(ierr);
+                                      "KSPGCRSetRestart_GCR",KSPGCRSetRestart_GCR );CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGCRSetModifyPC_C",
-					   "KSPGCRSetModifyPC_GCR",KSPGCRSetModifyPC_GCR);CHKERRQ(ierr);
+                                           "KSPGCRSetModifyPC_GCR",KSPGCRSetModifyPC_GCR);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

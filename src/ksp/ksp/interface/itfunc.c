@@ -706,11 +706,12 @@ PetscErrorCode  KSPReset(KSP ksp)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  ierr = KSPFischerGuessDestroy(&ksp->guess);CHKERRQ(ierr);
   if (ksp->ops->reset) {
     ierr = (*ksp->ops->reset)(ksp);CHKERRQ(ierr);
   }
   if (ksp->pc) {ierr = PCReset(ksp->pc);CHKERRQ(ierr);}
+  ierr = KSPFischerGuessDestroy(&ksp->guess);CHKERRQ(ierr);
+  ierr = VecDestroyVecs(ksp->nwork,&ksp->work);CHKERRQ(ierr);
   ierr = VecDestroy(&ksp->vec_rhs);CHKERRQ(ierr);
   ierr = VecDestroy(&ksp->vec_sol);CHKERRQ(ierr);
   ierr = VecDestroy(&ksp->diagonal);CHKERRQ(ierr);
@@ -720,7 +721,7 @@ PetscErrorCode  KSPReset(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPDestroy"
 /*@C
    KSPDestroy - Destroys KSP context.
@@ -744,16 +745,19 @@ PetscErrorCode  KSPDestroy(KSP *ksp)
   if (!*ksp) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*ksp),KSP_CLASSID,1);
   if (--((PetscObject)(*ksp))->refct > 0) {*ksp = 0; PetscFunctionReturn(0);}
+
   ierr = KSPReset((*ksp));CHKERRQ(ierr);
+
   ierr = PetscObjectDepublish((*ksp));CHKERRQ(ierr);
+  if ((*ksp)->ops->destroy) {ierr = (*(*ksp)->ops->destroy)(*ksp);CHKERRQ(ierr);}
+
   ierr = DMDestroy(&(*ksp)->dm);CHKERRQ(ierr);
-  if ((*ksp)->ops->destroy) {
-    ierr = (*(*ksp)->ops->destroy)(*ksp);CHKERRQ(ierr);
-  }
   ierr = PCDestroy(&(*ksp)->pc);CHKERRQ(ierr);
   ierr = PetscFree((*ksp)->res_hist_alloc);CHKERRQ(ierr);
+  if ((*ksp)->convergeddestroy) {
+    ierr = (*(*ksp)->convergeddestroy)((*ksp)->cnvP);CHKERRQ(ierr);
+  }
   ierr = KSPMonitorCancel((*ksp));CHKERRQ(ierr);
-  if ((*ksp)->convergeddestroy) {ierr = (*(*ksp)->convergeddestroy)((*ksp)->cnvP);CHKERRQ(ierr);}
   ierr = PetscHeaderDestroy(ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

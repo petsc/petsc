@@ -445,7 +445,6 @@ PetscErrorCode  KSPCreate_CG(KSP ksp)
   */
   ksp->ops->setup                = KSPSetUp_CG;
   ksp->ops->solve                = KSPSolve_CG;
-  ksp->ops->reset                = KSPDefaultReset;
   ksp->ops->destroy              = KSPDestroy_CG;
   ksp->ops->view                 = KSPView_CG;
   ksp->ops->setfromoptions       = KSPSetFromOptions_CG;

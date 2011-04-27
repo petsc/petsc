@@ -152,7 +152,6 @@ PetscErrorCode  KSPCreate_TFQMR(KSP ksp)
   ksp->data                      = (void*)0;
   ksp->ops->setup                = KSPSetUp_TFQMR;
   ksp->ops->solve                = KSPSolve_TFQMR;
-  ksp->ops->reset                = KSPDefaultReset;
   ksp->ops->destroy              = KSPDefaultDestroy;
   ksp->ops->buildsolution        = KSPDefaultBuildSolution;
   ksp->ops->buildresidual        = KSPDefaultBuildResidual;

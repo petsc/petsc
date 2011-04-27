@@ -160,7 +160,6 @@ PetscErrorCode  KSPCreate_CGS(KSP ksp)
   ksp->data                      = (void*)0;
   ksp->ops->setup                = KSPSetUp_CGS;
   ksp->ops->solve                = KSPSolve_CGS;
-  ksp->ops->reset                = KSPDefaultReset;
   ksp->ops->destroy              = KSPDefaultDestroy;
   ksp->ops->buildsolution        = KSPDefaultBuildSolution;
   ksp->ops->buildresidual        = KSPDefaultBuildResidual;

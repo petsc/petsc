@@ -271,7 +271,6 @@ PetscErrorCode  KSPCreate_CGNE(KSP ksp)
   */
   ksp->ops->setup                = KSPSetUp_CGNE;
   ksp->ops->solve                = KSPSolve_CGNE;
-  ksp->ops->reset                = KSPDefaultReset;
   ksp->ops->destroy              = KSPDestroy_CG;
   ksp->ops->view                 = KSPView_CG;
   ksp->ops->setfromoptions       = KSPSetFromOptions_CG;

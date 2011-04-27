@@ -174,7 +174,6 @@ PetscErrorCode KSPReset_BCGS(KSP ksp)
 
   PetscFunctionBegin;
   ierr = VecDestroy(&cg->guess);CHKERRQ(ierr);
-  ierr = KSPDefaultReset(ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
