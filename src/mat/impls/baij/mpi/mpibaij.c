@@ -1276,7 +1276,7 @@ PetscErrorCode MatView_MPIBAIJ(Mat mat,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatDestroy_MPIBAIJ"
 PetscErrorCode MatDestroy_MPIBAIJ(Mat mat)
 {
@@ -1303,7 +1303,7 @@ PetscErrorCode MatDestroy_MPIBAIJ(Mat mat)
   ierr = PetscFree(baij->barray);CHKERRQ(ierr);
   ierr = PetscFree2(baij->hd,baij->ht);CHKERRQ(ierr);
   ierr = PetscFree(baij->rangebs);CHKERRQ(ierr);
-  ierr = PetscFree(baij);CHKERRQ(ierr);
+  ierr = PetscFree(mat->data);CHKERRQ(ierr);
 
   ierr = PetscObjectChangeTypeName((PetscObject)mat,0);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatStoreValues_C","",PETSC_NULL);CHKERRQ(ierr);

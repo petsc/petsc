@@ -1425,7 +1425,7 @@ static PetscErrorCode MatRestoreRowIJ_SeqBAIJ(Mat A,PetscInt oshift,PetscBool  s
   PetscFunctionReturn(0); 
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatDestroy_SeqBAIJ"
 PetscErrorCode MatDestroy_SeqBAIJ(Mat A)
 {
@@ -1452,7 +1452,7 @@ PetscErrorCode MatDestroy_SeqBAIJ(Mat A)
 
   ierr = MatDestroy(&a->sbaijMat);CHKERRQ(ierr);
   ierr = MatDestroy(&a->parent);CHKERRQ(ierr);
-  ierr = PetscFree(a);CHKERRQ(ierr);
+  ierr = PetscFree(A->data);CHKERRQ(ierr);
 
   ierr = PetscObjectChangeTypeName((PetscObject)A,0);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatSeqBAIJInvertBlockDiagonal_C","",PETSC_NULL);CHKERRQ(ierr);

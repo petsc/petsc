@@ -53,7 +53,7 @@ PetscErrorCode MatMultTransposeAdd_Transpose(Mat N,Vec v1,Vec v2,Vec v3)
   PetscFunctionReturn(0); 
 } 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatDestroy_Transpose"
 PetscErrorCode MatDestroy_Transpose(Mat N)
 {
@@ -62,10 +62,10 @@ PetscErrorCode MatDestroy_Transpose(Mat N)
 
   PetscFunctionBegin;
   ierr = MatDestroy(&Na->A);CHKERRQ(ierr);
-  ierr = PetscFree(Na);CHKERRQ(ierr);
+  ierr = PetscFree(N->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-  
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreateTranspose"
 /*@

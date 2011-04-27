@@ -142,7 +142,7 @@ PetscErrorCode MatDestroy_SeqSBAIJ(Mat A)
   if (a->free_jshort) {ierr = PetscFree(a->jshort);CHKERRQ(ierr);}
   ierr = PetscFree(a->inew);CHKERRQ(ierr);
   ierr = MatDestroy(&a->parent);CHKERRQ(ierr);
-  ierr = PetscFree(a);CHKERRQ(ierr);
+  ierr = PetscFree(A->data);CHKERRQ(ierr);
 
   ierr = PetscObjectChangeTypeName((PetscObject)A,0);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatStoreValues_C","",PETSC_NULL);CHKERRQ(ierr);

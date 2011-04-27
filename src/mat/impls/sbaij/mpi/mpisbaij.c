@@ -740,7 +740,7 @@ PetscErrorCode MatView_MPISBAIJ(Mat mat,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatDestroy_MPISBAIJ"
 PetscErrorCode MatDestroy_MPISBAIJ(Mat mat)
 {
@@ -764,10 +764,10 @@ PetscErrorCode MatDestroy_MPISBAIJ(Mat mat)
   ierr = VecDestroy(&baij->lvec);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&baij->Mvctx);CHKERRQ(ierr);
   ierr = VecDestroy(&baij->slvec0);CHKERRQ(ierr);
-  ierr = VecDestroy(&baij->slvec0b);CHKERRQ(ierr); 
+  ierr = VecDestroy(&baij->slvec0b);CHKERRQ(ierr);
   ierr = VecDestroy(&baij->slvec1);CHKERRQ(ierr);
   ierr = VecDestroy(&baij->slvec1a);CHKERRQ(ierr);
-  ierr = VecDestroy(&baij->slvec1b);CHKERRQ(ierr); 
+  ierr = VecDestroy(&baij->slvec1b);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&baij->sMvctx);CHKERRQ(ierr);
   ierr = PetscFree2(baij->rowvalues,baij->rowindices);CHKERRQ(ierr);
   ierr = PetscFree(baij->barray);CHKERRQ(ierr);
@@ -781,7 +781,7 @@ PetscErrorCode MatDestroy_MPISBAIJ(Mat mat)
   ierr = PetscFree(baij->in_loc);CHKERRQ(ierr);
   ierr = PetscFree(baij->v_loc);CHKERRQ(ierr);
   ierr = PetscFree(baij->rangebs);CHKERRQ(ierr);
-  ierr = PetscFree(baij);CHKERRQ(ierr);
+  ierr = PetscFree(mat->data);CHKERRQ(ierr);
 
   ierr = PetscObjectChangeTypeName((PetscObject)mat,0);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatStoreValues_C","",PETSC_NULL);CHKERRQ(ierr);

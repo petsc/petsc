@@ -42,31 +42,32 @@ PetscErrorCode MatCholeskyFactorSymbolic_MPISBAIJSpooles(Mat B,Mat A,IS r,const 
 }
 
 extern PetscErrorCode MatDestroy_MPISBAIJ(Mat);
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatDestroy_MPISBAIJSpooles"
 PetscErrorCode MatDestroy_MPISBAIJSpooles(Mat A)
 {
-  Mat_Spooles   *lu = (Mat_Spooles*)A->spptr; 
+  Mat_Spooles   *lu = (Mat_Spooles*)A->spptr;
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
-  if (lu->CleanUpSpooles) {
-    FrontMtx_free(lu->frontmtx);        
-    IV_free(lu->newToOldIV);            
-    IV_free(lu->oldToNewIV); 
+  if (lu && lu->CleanUpSpooles) {
+    FrontMtx_free(lu->frontmtx);
+    IV_free(lu->newToOldIV);
+    IV_free(lu->oldToNewIV);
     IV_free(lu->vtxmapIV);
-    InpMtx_free(lu->mtxA);             
-    ETree_free(lu->frontETree);          
-    IVL_free(lu->symbfacIVL);         
-    SubMtxManager_free(lu->mtxmanager);    
+    InpMtx_free(lu->mtxA);
+    ETree_free(lu->frontETree);
+    IVL_free(lu->symbfacIVL);
+    SubMtxManager_free(lu->mtxmanager);
     DenseMtx_free(lu->mtxX);
     DenseMtx_free(lu->mtxY);
     ierr = MPI_Comm_free(&(lu->comm_spooles));CHKERRQ(ierr);
-    ierr = VecDestroy(&lu->vec_spooles);CHKERRQ(ierr); 
-    ierr = ISDestroy(&lu->iden);CHKERRQ(ierr); 
+    ierr = VecDestroy(&lu->vec_spooles);CHKERRQ(ierr);
+    ierr = ISDestroy(&lu->iden);CHKERRQ(ierr);
     ierr = ISDestroy(&lu->is_petsc);CHKERRQ(ierr);
     ierr = VecScatterDestroy(&lu->scat);CHKERRQ(ierr);
   }
+  ierr = PetscFree(A->spptr);CHKERRQ(ierr);
   ierr = MatDestroy_MPISBAIJ(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

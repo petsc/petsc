@@ -45,7 +45,7 @@ typedef struct {
   mem_usage_t       mem_usage;
   MatStructure      flg;
   SuperLUStat_t     stat;
-  Mat               A_dup;  
+  Mat               A_dup;
   PetscScalar       *rhs_dup;
 
   /* Flag to clean up (non-global) SuperLU objects during Destroy */
@@ -207,7 +207,7 @@ PetscErrorCode MatLUFactorNumeric_SuperLU(Mat F,Mat A,const MatFactorInfo *info)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatDestroy_SuperLU"
 PetscErrorCode MatDestroy_SuperLU(Mat A)
 {
@@ -215,30 +215,32 @@ PetscErrorCode MatDestroy_SuperLU(Mat A)
   Mat_SuperLU    *lu=(Mat_SuperLU*)A->spptr;
 
   PetscFunctionBegin;
-  if (lu->CleanUpSuperLU) { /* Free the SuperLU datastructures */
-    Destroy_SuperMatrix_Store(&lu->A); 
+  if (lu && lu->CleanUpSuperLU) { /* Free the SuperLU datastructures */
+    Destroy_SuperMatrix_Store(&lu->A);
     Destroy_SuperMatrix_Store(&lu->B);
-    Destroy_SuperMatrix_Store(&lu->X); 
+    Destroy_SuperMatrix_Store(&lu->X);
     StatFree(&lu->stat);
-    if ( lu->lwork >= 0 ) {
+    if (lu->lwork >= 0) {
       Destroy_SuperNode_Matrix(&lu->L);
       Destroy_CompCol_Matrix(&lu->U);
     }
   }
+  if (lu) {
+    ierr = PetscFree(lu->etree);CHKERRQ(ierr);
+    ierr = PetscFree(lu->perm_r);CHKERRQ(ierr);
+    ierr = PetscFree(lu->perm_c);CHKERRQ(ierr);
+    ierr = PetscFree(lu->R);CHKERRQ(ierr);
+    ierr = PetscFree(lu->C);CHKERRQ(ierr);
+    ierr = PetscFree(lu->rhs_dup);CHKERRQ(ierr);
+    ierr = MatDestroy(&lu->A_dup);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(A->spptr);CHKERRQ(ierr);
 
-  ierr = PetscFree(lu->etree);CHKERRQ(ierr);
-  ierr = PetscFree(lu->perm_r);CHKERRQ(ierr);
-  ierr = PetscFree(lu->perm_c);CHKERRQ(ierr);
-  ierr = PetscFree(lu->R);CHKERRQ(ierr);
-  ierr = PetscFree(lu->C);CHKERRQ(ierr);
-  
   /* clear composed functions */
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatFactorGetSolverPackage_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatSuperluSetILUDropTol_C","",PETSC_NULL);CHKERRQ(ierr);
 
   ierr = MatDestroy_SeqAIJ(A);CHKERRQ(ierr);
-  ierr = MatDestroy(&lu->A_dup);CHKERRQ(ierr);
-  ierr = PetscFree(lu->rhs_dup);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

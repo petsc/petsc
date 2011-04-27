@@ -155,7 +155,7 @@ PetscErrorCode MatMultTransposeAdd_Normal(Mat N,Vec v1,Vec v2,Vec v3)
   PetscFunctionReturn(0); 
 } 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatDestroy_Normal"
 PetscErrorCode MatDestroy_Normal(Mat N)
 {
@@ -163,16 +163,16 @@ PetscErrorCode MatDestroy_Normal(Mat N)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatDestroy(&Na->A);CHKERRQ(ierr); 
-  ierr = VecDestroy(&Na->w);CHKERRQ(ierr); 
+  ierr = MatDestroy(&Na->A);CHKERRQ(ierr);
+  ierr = VecDestroy(&Na->w);CHKERRQ(ierr);
   ierr = VecDestroy(&Na->left);CHKERRQ(ierr);
   ierr = VecDestroy(&Na->right);CHKERRQ(ierr);
   ierr = VecDestroy(&Na->leftwork);CHKERRQ(ierr);
   ierr = VecDestroy(&Na->rightwork);CHKERRQ(ierr);
-  ierr = PetscFree(Na);CHKERRQ(ierr);
+  ierr = PetscFree(N->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-  
+
 /*
       Slow, nonscalable version
 */

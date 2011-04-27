@@ -175,11 +175,14 @@ PetscErrorCode  MatDestroy_CHOLMOD(Mat F)
   Mat_CHOLMOD    *chol=(Mat_CHOLMOD*)F->spptr;
 
   PetscFunctionBegin;
-  ierr = !cholmod_X_free_factor(&chol->factor,chol->common);CHKERRQ(ierr);
-  ierr = !cholmod_X_finish(chol->common);CHKERRQ(ierr);
-  ierr = PetscFree(chol->common);CHKERRQ(ierr);
-  ierr = PetscFree(chol->matrix);CHKERRQ(ierr);
-  ierr = (*chol->Destroy)(F);CHKERRQ(ierr);
+  if (chol) {
+    ierr = !cholmod_X_free_factor(&chol->factor,chol->common);CHKERRQ(ierr);
+    ierr = !cholmod_X_finish(chol->common);CHKERRQ(ierr);
+    ierr = PetscFree(chol->common);CHKERRQ(ierr);
+    ierr = PetscFree(chol->matrix);CHKERRQ(ierr);
+    ierr = (*chol->Destroy)(F);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(F->spptr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

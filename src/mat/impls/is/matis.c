@@ -27,7 +27,7 @@ PetscErrorCode MatDestroy_IS(Mat A)
   ierr = VecDestroy(&b->x);CHKERRQ(ierr);
   ierr = VecDestroy(&b->y);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(&b->mapping);CHKERRQ(ierr);
-  ierr = PetscFree(b);CHKERRQ(ierr);
+  ierr = PetscFree(A->data);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)A,0);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatISGetLocalMat_C","",PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);

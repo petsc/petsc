@@ -17,7 +17,7 @@ typedef struct {
   Vec               leftwork,rightwork;
 } Mat_Composite;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatDestroy_Composite"
 PetscErrorCode MatDestroy_Composite(Mat mat)
 {

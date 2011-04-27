@@ -144,37 +144,41 @@ PetscErrorCode  BAIJtoMyANonz( PetscInt *AIndex, PetscInt *AStruct, PetscInt bs,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatDestroy_DSCPACK"
-PetscErrorCode MatDestroy_DSCPACK(Mat A) 
+PetscErrorCode MatDestroy_DSCPACK(Mat A)
 {
-  Mat_DSCPACK    *lu=(Mat_DSCPACK*)A->spptr;  
+  Mat_DSCPACK    *lu=(Mat_DSCPACK*)A->spptr;
   PetscErrorCode ierr;
-    
+
   PetscFunctionBegin;
-  if (lu->CleanUpDSCPACK) {
-    if (lu->dsc_id != -1) {  
-      if(lu->stat) DSC_DoStats(lu->My_DSC_Solver);    
-      DSC_FreeAll(lu->My_DSC_Solver);   
+  if (lu && lu->CleanUpDSCPACK) {
+    if (lu->dsc_id != -1) {
+      if(lu->stat) DSC_DoStats(lu->My_DSC_Solver);
+      DSC_FreeAll(lu->My_DSC_Solver);
       DSC_Close0(lu->My_DSC_Solver);
-      
-      ierr = PetscFree(lu->local_cols_old_num);CHKERRQ(ierr); 
-    } 
-    DSC_End(lu->My_DSC_Solver); 
- 
+
+      ierr = PetscFree(lu->local_cols_old_num);CHKERRQ(ierr);
+    }
+    DSC_End(lu->My_DSC_Solver);
+
     ierr = MPI_Comm_free(&lu->comm_dsc);CHKERRQ(ierr);
-    ierr = ISDestroy(lu->my_cols);CHKERRQ(ierr);  
+    ierr = ISDestroy(lu->my_cols);CHKERRQ(ierr);
     ierr = PetscFree(lu->replication);CHKERRQ(ierr);
-    ierr = VecDestroy(lu->vec_dsc);CHKERRQ(ierr); 
+    ierr = VecDestroy(lu->vec_dsc);CHKERRQ(ierr);
     ierr = ISDestroy(lu->iden_dsc);CHKERRQ(ierr);
     ierr = VecScatterDestroy(lu->scat);CHKERRQ(ierr);
     if (lu->size >1 && lu->iden) {ierr = ISDestroy(lu->iden);CHKERRQ(ierr);}
   }
-  if (lu->size == 1) {
-    ierr = MatDestroy_SeqBAIJ(A);CHKERRQ(ierr);
-  } else {
-    ierr = MatDestroy_MPIBAIJ(A);CHKERRQ(ierr);
+  if (lu) {
+    if (lu->size == 1) {
+      ierr = MatDestroy_SeqBAIJ(A);CHKERRQ(ierr);
+    } else {
+      ierr = MatDestroy_MPIBAIJ(A);CHKERRQ(ierr);
+    }
   }
+  ierr = PetscFree(A->spptr);CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }
 

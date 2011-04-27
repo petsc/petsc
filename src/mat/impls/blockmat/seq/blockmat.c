@@ -447,7 +447,7 @@ PetscErrorCode MatView_BlockMat(Mat A,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatDestroy_BlockMat"
 PetscErrorCode MatDestroy_BlockMat(Mat mat)
 {
@@ -471,7 +471,7 @@ PetscErrorCode MatDestroy_BlockMat(Mat mat)
     }
   }
   ierr = MatSeqXAIJFreeAIJ(mat,(PetscScalar**)&bmat->a,&bmat->j,&bmat->i);CHKERRQ(ierr);
-  ierr = PetscFree(bmat);CHKERRQ(ierr);
+  ierr = PetscFree(mat->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

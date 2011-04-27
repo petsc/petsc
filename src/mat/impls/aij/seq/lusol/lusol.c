@@ -176,15 +176,15 @@ typedef struct  {
 #define Factorization_Pivot_Tolerance pow(2.2204460492503131E-16, 2.0 / 3.0) 
 #define Factorization_Small_Tolerance 1e-15 /* pow(DBL_EPSILON, 0.8) */
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatDestroy_LUSOL"
-PetscErrorCode MatDestroy_LUSOL(Mat A) 
+PetscErrorCode MatDestroy_LUSOL(Mat A)
 {
   PetscErrorCode ierr;
   Mat_LUSOL      *lusol=(Mat_LUSOL *)A->spptr;
 
   PetscFunctionBegin;
-  if (lusol->CleanUpLUSOL) {
+  if (lusol && lusol->CleanUpLUSOL) {
     ierr = PetscFree(lusol->ip);CHKERRQ(ierr);
     ierr = PetscFree(lusol->iq);CHKERRQ(ierr);
     ierr = PetscFree(lusol->lenc);CHKERRQ(ierr);
@@ -199,6 +199,7 @@ PetscErrorCode MatDestroy_LUSOL(Mat A)
     ierr = PetscFree(lusol->mnsv);CHKERRQ(ierr);
     ierr = PetscFree3(lusol->data,lusol->indc,lusol->indr);CHKERRQ(ierr);
   }
+  ierr = PetscFree(A->spptr);CHKERRQ(ierr);
   ierr = MatDestroy_SeqAIJ(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

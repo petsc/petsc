@@ -60,12 +60,13 @@ PetscErrorCode  MatShellGetContext(Mat mat,void **ctx)
 PetscErrorCode MatDestroy_Shell(Mat mat)
 {
   PetscErrorCode ierr;
-  Mat_Shell      *shell;
+  Mat_Shell      *shell = (Mat_Shell*)mat->data;
 
   PetscFunctionBegin;
-  shell = (Mat_Shell*)mat->data;
-  if (shell->destroy) {ierr = (*shell->destroy)(mat);CHKERRQ(ierr);}
-  ierr = PetscFree(shell);CHKERRQ(ierr);
+  if (shell->destroy) {
+    ierr = (*shell->destroy)(mat);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(mat->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

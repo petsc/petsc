@@ -114,8 +114,8 @@ PetscErrorCode MatDestroy_SeqCUFFT(Mat A)
   if (cufft->p_forward)  {result = cufftDestroy(cufft->p_forward);CHKERRQ(result != CUFFT_SUCCESS);}
   if (cufft->p_backward) {result = cufftDestroy(cufft->p_backward);CHKERRQ(result != CUFFT_SUCCESS);}
   cudaFree(cufft->devArray);
-  ierr = PetscFree(cufft);CHKERRQ(ierr);
-  ierr = PetscObjectChangeTypeName((PetscObject) A, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscFree(A->data);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)A,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

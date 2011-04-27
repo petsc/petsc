@@ -55,7 +55,7 @@ PetscErrorCode MatView_MPIAdj(Mat A,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatDestroy_MPIAdj"
 PetscErrorCode MatDestroy_MPIAdj(Mat mat)
 {
@@ -77,7 +77,7 @@ PetscErrorCode MatDestroy_MPIAdj(Mat mat)
       ierr = PetscFree(a->values);CHKERRQ(ierr);
     }
   }
-  ierr = PetscFree(a);CHKERRQ(ierr);
+  ierr = PetscFree(mat->data);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)mat,0);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMPIAdjSetPreallocation_C","",PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);

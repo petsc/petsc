@@ -100,7 +100,7 @@ PetscErrorCode MatDestroy_SeqMAIJ(Mat A)
 
   PetscFunctionBegin;
   ierr = MatDestroy(&b->AIJ);CHKERRQ(ierr);
-  ierr = PetscFree(b);CHKERRQ(ierr);
+  ierr = PetscFree(A->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -132,8 +132,8 @@ PetscErrorCode MatView_MPIMAIJ(Mat A,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatDestroy_MPIMAIJ" 
+#undef __FUNCT__
+#define __FUNCT__ "MatDestroy_MPIMAIJ"
 PetscErrorCode MatDestroy_MPIMAIJ(Mat A)
 {
   PetscErrorCode ierr;
@@ -145,7 +145,7 @@ PetscErrorCode MatDestroy_MPIMAIJ(Mat A)
   ierr = MatDestroy(&b->A);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&b->ctx);CHKERRQ(ierr);
   ierr = VecDestroy(&b->w);CHKERRQ(ierr);
-  ierr = PetscFree(b);CHKERRQ(ierr);
+  ierr = PetscFree(A->data);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)A,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

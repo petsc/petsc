@@ -86,19 +86,19 @@ typedef struct {
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatSeqXAIJFreeAIJ"
-PETSC_STATIC_INLINE PetscErrorCode MatSeqXAIJFreeAIJ(Mat AA,MatScalar **a,PetscInt **j,PetscInt **i) 
+PETSC_STATIC_INLINE PetscErrorCode MatSeqXAIJFreeAIJ(Mat AA,MatScalar **a,PetscInt **j,PetscInt **i)
 {
-                                     PetscErrorCode ierr;
-                                     Mat_SeqAIJ     *A = (Mat_SeqAIJ*) AA->data;
-                                     if (A->singlemalloc) {
-                                       ierr = PetscFree3(*a,*j,*i);CHKERRQ(ierr);
-                                     } else {
-                                       if (A->free_a)  {ierr = PetscFree(*a);CHKERRQ(ierr);}
-                                       if (A->free_ij) {ierr = PetscFree(*j);CHKERRQ(ierr);}
-                                       if (A->free_ij) {ierr = PetscFree(*i);CHKERRQ(ierr);}
-                                     }
-                                     return 0;
-                                   }
+  PetscErrorCode ierr;
+  Mat_SeqAIJ     *A = (Mat_SeqAIJ*) AA->data;
+  if (A->singlemalloc) {
+    ierr = PetscFree3(*a,*j,*i);CHKERRQ(ierr);
+  } else {
+    if (A->free_a)  {ierr = PetscFree(*a);CHKERRQ(ierr);}
+    if (A->free_ij) {ierr = PetscFree(*j);CHKERRQ(ierr);}
+    if (A->free_ij) {ierr = PetscFree(*i);CHKERRQ(ierr);}
+  }
+  return 0;
+}
 /*
     Allocates larger a, i, and j arrays for the XAIJ (AIJ, BAIJ, and SBAIJ) matrix types
     This is a macro because it takes the datatype as an argument which can be either a Mat or a MatScalar

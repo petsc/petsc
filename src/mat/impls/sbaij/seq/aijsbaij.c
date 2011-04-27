@@ -267,12 +267,12 @@ PetscErrorCode  MatConvert_SeqSBAIJ_SeqBAIJ(Mat A, MatType newtype,MatReuse reus
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatConvert_SeqBAIJ_SeqSBAIJ"
-PetscErrorCode  MatConvert_SeqBAIJ_SeqSBAIJ(Mat A, MatType newtype,MatReuse reuse,Mat *newmat) 
+PetscErrorCode  MatConvert_SeqBAIJ_SeqSBAIJ(Mat A, MatType newtype,MatReuse reuse,Mat *newmat)
 {
   Mat            B;
-  Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data; 
+  Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data;
   Mat_SeqSBAIJ   *b;
   PetscErrorCode ierr;
   PetscInt       *ai=a->i,*aj,m=A->rmap->N,n=A->cmap->n,i,j,k,*bi,*bj,*browlengths;
@@ -281,11 +281,11 @@ PetscErrorCode  MatConvert_SeqBAIJ_SeqSBAIJ(Mat A, MatType newtype,MatReuse reus
   PetscBool      flg;
 
   PetscFunctionBegin;
-  if (!A->symmetric) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_USER,"Matrix must be symmetric. Call MatSetOption(mat,MAT_SYMMETRIC,PETSC_TRUE)"); 
+  if (!A->symmetric) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_USER,"Matrix must be symmetric. Call MatSetOption(mat,MAT_SYMMETRIC,PETSC_TRUE)");
   if (n != m) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Matrix must be square");
   ierr = MatMissingDiagonal_SeqBAIJ(A,&flg,&dd);CHKERRQ(ierr); /* check for missing diagonals, then mark diag */
   if (flg) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal %D",dd);
-  
+
   ierr = PetscMalloc(mbs*sizeof(PetscInt),&browlengths);CHKERRQ(ierr);
   for (i=0; i<mbs; i++) {
     browlengths[i] = ai[i+1] - a->diag[i];
@@ -296,7 +296,7 @@ PetscErrorCode  MatConvert_SeqBAIJ_SeqSBAIJ(Mat A, MatType newtype,MatReuse reus
   ierr = MatSetType(B,newtype);CHKERRQ(ierr);
   ierr = MatSeqSBAIJSetPreallocation_SeqSBAIJ(B,bs,0,browlengths);CHKERRQ(ierr);
   ierr = MatSetOption(B,MAT_ROW_ORIENTED,PETSC_TRUE);CHKERRQ(ierr);
-  
+
   b  = (Mat_SeqSBAIJ*)(B->data);
   bi = b->i;
   bj = b->j;
@@ -305,9 +305,9 @@ PetscErrorCode  MatConvert_SeqBAIJ_SeqSBAIJ(Mat A, MatType newtype,MatReuse reus
   bi[0] = 0;
   for (i=0; i<mbs; i++) {
     aj = a->j + a->diag[i];
-    av = a->a + (a->diag[i])*bs2;   
+    av = a->a + (a->diag[i])*bs2;
     for (j=0; j<browlengths[i]; j++){
-      *bj = *aj; bj++; aj++; 
+      *bj = *aj; bj++; aj++;
       for (k=0; k<bs2; k++){
         *bv = *av; bv++; av++;
       }

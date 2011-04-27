@@ -1003,11 +1003,11 @@ PetscErrorCode  MatUseScaledForm(Mat mat,PetscBool  scaled)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatDestroy"
 /*@C
    MatDestroy - Frees space taken by a matrix.
-  
+
    Collective on Mat
 
    Input Parameter:
@@ -1025,24 +1025,20 @@ PetscErrorCode  MatDestroy(Mat *A)
   PetscValidHeaderSpecific(*A,MAT_CLASSID,1);
   if (--((PetscObject)(*A))->refct > 0) {*A = PETSC_NULL; PetscFunctionReturn(0);}
 
- /* if no sizes were ever set in matrix then MatPreallocated()
-  may generate an error, so set the sizes.
-  This should be fixed elsewhere !! */
-
-  if ((*A)->rmap->n == -1 && (*A)->rmap->N == -1) (*A)->rmap->n = (*A)->rmap->N = 0;
-  if ((*A)->cmap->n == -1 && (*A)->cmap->N == -1) (*A)->cmap->n = (*A)->cmap->N = 0;
-  ierr = MatPreallocated(*A);CHKERRQ(ierr);
-
- /* if memory was published with AMS then destroy it */
+  /* if memory was published with AMS then destroy it */
   ierr = PetscObjectDepublish(*A);CHKERRQ(ierr);
-  if ((*A)->ops->destroy) {ierr = (*(*A)->ops->destroy)(*A);CHKERRQ(ierr);}
+
+  if ((*A)->ops->destroy) {
+    ierr = (*(*A)->ops->destroy)(*A);CHKERRQ(ierr);
+  }
+
+  ierr = MatNullSpaceDestroy(&(*A)->nullsp);CHKERRQ(ierr);
 
   ierr = ISLocalToGlobalMappingDestroy(&(*A)->rmapping);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(&(*A)->cmapping);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(&(*A)->rbmapping);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(&(*A)->cbmapping);CHKERRQ(ierr);
 
-  ierr = PetscFree((*A)->spptr);CHKERRQ(ierr);
   ierr = PetscLayoutDestroy(&(*A)->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutDestroy(&(*A)->cmap);CHKERRQ(ierr);
 

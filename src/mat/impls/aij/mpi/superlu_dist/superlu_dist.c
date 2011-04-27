@@ -54,21 +54,21 @@ extern PetscErrorCode MatSolve_SuperLU_DIST(Mat,Vec,Vec);
 extern PetscErrorCode MatLUFactorSymbolic_SuperLU_DIST(Mat,Mat,IS,IS,const MatFactorInfo *);
 extern PetscErrorCode MatDestroy_MPIAIJ(Mat);
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatDestroy_SuperLU_DIST"
 PetscErrorCode MatDestroy_SuperLU_DIST(Mat A)
 {
   PetscErrorCode   ierr;
-  Mat_SuperLU_DIST *lu = (Mat_SuperLU_DIST*)A->spptr; 
+  Mat_SuperLU_DIST *lu = (Mat_SuperLU_DIST*)A->spptr;
   PetscBool        flg;
-    
+
   PetscFunctionBegin;
-  if (lu->CleanUpSuperLU_Dist) {
+  if (lu && lu->CleanUpSuperLU_Dist) {
     /* Deallocate SuperLU_DIST storage */
-    if (lu->MatInputMode == GLOBAL) { 
+    if (lu->MatInputMode == GLOBAL) {
       Destroy_CompCol_Matrix_dist(&lu->A_sup);
-    } else {     
-      Destroy_CompRowLoc_Matrix_dist(&lu->A_sup);  
+    } else {
+      Destroy_CompRowLoc_Matrix_dist(&lu->A_sup);
       if ( lu->options.SolveInitialized ) {
 #if defined(PETSC_USE_COMPLEX)
         zSolveFinalize(&lu->options, &lu->SOLVEstruct);
@@ -80,12 +80,13 @@ PetscErrorCode MatDestroy_SuperLU_DIST(Mat A)
     Destroy_LU(A->cmap->N, &lu->grid, &lu->LUstruct);
     ScalePermstructFree(&lu->ScalePermstruct);
     LUstructFree(&lu->LUstruct);
-    
+
     /* Release the SuperLU_DIST process grid. */
     superlu_gridexit(&lu->grid);
-    
+
     ierr = MPI_Comm_free(&(lu->comm_superlu));CHKERRQ(ierr);
   }
+  ierr = PetscFree(A->spptr);CHKERRQ(ierr);
 
   ierr = PetscTypeCompare((PetscObject)A,MATSEQAIJ,&flg);CHKERRQ(ierr);
   if (flg) {

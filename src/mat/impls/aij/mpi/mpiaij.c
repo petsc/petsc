@@ -1152,7 +1152,7 @@ PetscErrorCode MatScale_MPIAIJ(Mat A,PetscScalar aa)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatDestroy_MPIAIJ"
 PetscErrorCode MatDestroy_MPIAIJ(Mat mat)
 {
@@ -1177,7 +1177,7 @@ PetscErrorCode MatDestroy_MPIAIJ(Mat mat)
   ierr = VecScatterDestroy(&aij->Mvctx);CHKERRQ(ierr);
   ierr = PetscFree2(aij->rowvalues,aij->rowindices);CHKERRQ(ierr);
   ierr = PetscFree(aij->ld);CHKERRQ(ierr);
-  ierr = PetscFree(aij);CHKERRQ(ierr);
+  ierr = PetscFree(mat->data);CHKERRQ(ierr);
 
   ierr = PetscObjectChangeTypeName((PetscObject)mat,0);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatStoreValues_C","",PETSC_NULL);CHKERRQ(ierr);
@@ -2274,6 +2274,7 @@ PetscErrorCode MatILUFactorSymbolic_MPIAIJ(Mat fact,Mat A, IS isrow, IS iscol, c
   ierr = PetscContainerCreate(((PetscObject)A)->comm, &c);
   ierr = PetscContainerSetPointer(c, lgraph_p);
   ierr = PetscObjectCompose((PetscObject) (fact), "graph", (PetscObject) c);
+  ierr = PetscContainerDestroy(&c);
   PetscFunctionReturn(0);
 }
 
@@ -2337,7 +2338,7 @@ typedef struct { /* used by MatGetRedundantMatrix() for reusing matredundant */
   PetscMPIInt    *send_rank,*recv_rank;
   PetscInt       *sbuf_nz,*rbuf_nz,*sbuf_j,**rbuf_j;
   PetscScalar    *sbuf_a,**rbuf_a;
-  PetscErrorCode (*MatDestroy)(Mat);
+  PetscErrorCode (*Destroy)(Mat);
 } Mat_Redundant;
 
 #undef __FUNCT__  
@@ -2361,7 +2362,7 @@ PetscErrorCode PetscContainerDestroy_MatRedundant(void *ptr)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatDestroy_MatRedundant"
 PetscErrorCode MatDestroy_MatRedundant(Mat A)
 {
@@ -2371,23 +2372,21 @@ PetscErrorCode MatDestroy_MatRedundant(Mat A)
 
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject)A,"Mat_Redundant",(PetscObject *)&container);CHKERRQ(ierr);
-  if (container) {
-    ierr = PetscContainerGetPointer(container,(void **)&redund);CHKERRQ(ierr);
-  } else {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Container does not exit");
-  }
-  A->ops->destroy = redund->MatDestroy;
+  if (!container) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Container does not exit");
+  ierr = PetscContainerGetPointer(container,(void **)&redund);CHKERRQ(ierr);
+  A->ops->destroy = redund->Destroy;
   ierr = PetscObjectCompose((PetscObject)A,"Mat_Redundant",0);CHKERRQ(ierr);
-  ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
-  ierr = PetscContainerDestroy(&container);CHKERRQ(ierr); 
+  if (A->ops->destroy) {
+    ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatGetRedundantMatrix_MPIAIJ"
 PetscErrorCode MatGetRedundantMatrix_MPIAIJ(Mat mat,PetscInt nsubcomm,MPI_Comm subcomm,PetscInt mlocal_sub,MatReuse reuse,Mat *matredundant)
 {
-  PetscMPIInt    rank,size; 
+  PetscMPIInt    rank,size;
   MPI_Comm       comm=((PetscObject)mat)->comm;
   PetscErrorCode ierr;
   PetscInt       nsends=0,nrecvs=0,i,rownz_max=0;
@@ -2406,7 +2405,7 @@ PetscErrorCode MatGetRedundantMatrix_MPIAIJ(Mat mat,PetscInt nsubcomm,MPI_Comm s
   PetscMPIInt    tag1,tag2,tag3,imdex;
   MPI_Request    *s_waits1=PETSC_NULL,*s_waits2=PETSC_NULL,*s_waits3=PETSC_NULL,
                  *r_waits1=PETSC_NULL,*r_waits2=PETSC_NULL,*r_waits3=PETSC_NULL;
-  MPI_Status     recv_status,*send_status; 
+  MPI_Status     recv_status,*send_status;
   PetscInt       *sbuf_nz=PETSC_NULL,*rbuf_nz=PETSC_NULL,count;
   PetscInt       **rbuf_j=PETSC_NULL;
   PetscScalar    **rbuf_a=PETSC_NULL;
@@ -2419,32 +2418,29 @@ PetscErrorCode MatGetRedundantMatrix_MPIAIJ(Mat mat,PetscInt nsubcomm,MPI_Comm s
 
   if (reuse == MAT_REUSE_MATRIX) {
     ierr = MatGetSize(C,&M,&N);CHKERRQ(ierr);
-    if (M != N || M != mat->rmap->N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Cannot reuse matrix. Wrong global size");   
-    ierr = MatGetLocalSize(C,&M,&N);CHKERRQ(ierr);    
+    if (M != N || M != mat->rmap->N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Cannot reuse matrix. Wrong global size");
+    ierr = MatGetLocalSize(C,&M,&N);CHKERRQ(ierr);
     if (M != N || M != mlocal_sub) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Cannot reuse matrix. Wrong local size");
     ierr = PetscObjectQuery((PetscObject)C,"Mat_Redundant",(PetscObject *)&container);CHKERRQ(ierr);
-    if (container) {
-      ierr = PetscContainerGetPointer(container,(void **)&redund);CHKERRQ(ierr);
-    } else {
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Container does not exit");
-    }
+    if (!container) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Container does not exit");
+    ierr = PetscContainerGetPointer(container,(void **)&redund);CHKERRQ(ierr);
     if (nzlocal != redund->nzlocal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Cannot reuse matrix. Wrong nzlocal");
 
     nsends    = redund->nsends;
     nrecvs    = redund->nrecvs;
     send_rank = redund->send_rank;
     recv_rank = redund->recv_rank;
-    sbuf_nz   = redund->sbuf_nz;     
+    sbuf_nz   = redund->sbuf_nz;
     rbuf_nz   = redund->rbuf_nz;
     sbuf_j    = redund->sbuf_j;
     sbuf_a    = redund->sbuf_a;
     rbuf_j    = redund->rbuf_j;
     rbuf_a    = redund->rbuf_a;
-  } 
+  }
 
   if (reuse == MAT_INITIAL_MATRIX){
     PetscMPIInt  subrank,subsize;
-    PetscInt     nleftover,np_subcomm; 
+    PetscInt     nleftover,np_subcomm;
     /* get the destination processors' id send_rank, nsends and nrecvs */
     ierr = MPI_Comm_rank(subcomm,&subrank);CHKERRQ(ierr);
     ierr = MPI_Comm_size(subcomm,&subsize);CHKERRQ(ierr);
@@ -2456,10 +2452,10 @@ PetscErrorCode MatGetRedundantMatrix_MPIAIJ(Mat mat,PetscInt nsubcomm,MPI_Comm s
       if (subrank == i/nsubcomm && rank != i){ /* my_subrank == other's subrank */
         send_rank[nsends] = i; nsends++;
         recv_rank[nrecvs++] = i;
-      } 
+      }
     }
     if (rank >= size - nleftover){/* this proc is a leftover processor */
-      i = size-nleftover-1; 
+      i = size-nleftover-1;
       j = 0;
       while (j < nsubcomm - nleftover){
         send_rank[nsends++] = i;
@@ -2471,14 +2467,14 @@ PetscErrorCode MatGetRedundantMatrix_MPIAIJ(Mat mat,PetscInt nsubcomm,MPI_Comm s
       for (i=0; i<nleftover; i++){
         recv_rank[nrecvs++] = size-nleftover+i;
       }
-    } 
+    }
 
     /* allocate sbuf_j, sbuf_a */
     i = nzlocal + rowrange[rank+1] - rowrange[rank] + 2;
     ierr = PetscMalloc(i*sizeof(PetscInt),&sbuf_j);CHKERRQ(ierr);
     ierr = PetscMalloc((nzlocal+1)*sizeof(PetscScalar),&sbuf_a);CHKERRQ(ierr);
   } /* endof if (reuse == MAT_INITIAL_MATRIX) */
- 
+
   /* copy mat's local entries into the buffers */
   if (reuse == MAT_INITIAL_MATRIX){
     rownz_max = 0;
@@ -2490,7 +2486,7 @@ PetscErrorCode MatGetRedundantMatrix_MPIAIJ(Mat mat,PetscInt nsubcomm,MPI_Comm s
       row = i + rstart;
       nzA    = a->i[i+1] - a->i[i]; nzB = b->i[i+1] - b->i[i];
       ncols  = nzA + nzB;
-      cworkA = a->j + a->i[i]; cworkB = b->j + b->i[i]; 
+      cworkA = a->j + a->i[i]; cworkB = b->j + b->i[i];
       aworkA = a->a + a->i[i]; aworkB = b->a + b->i[i];
       /* load the column indices for this row into cols */
       lwrite = 0;
@@ -2512,9 +2508,9 @@ PetscErrorCode MatGetRedundantMatrix_MPIAIJ(Mat mat,PetscInt nsubcomm,MPI_Comm s
       }
       vals += ncols;
       cols += ncols;
-      rptr[i+1] = rptr[i] + ncols;  
+      rptr[i+1] = rptr[i] + ncols;
       if (rownz_max < ncols) rownz_max = ncols;
-    } 
+    }
     if (rptr[rend-rstart] != a->nz + b->nz) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_PLIB, "rptr[%d] %d != %d + %d",rend-rstart,rptr[rend-rstart+1],a->nz,b->nz);
   } else { /* only copy matrix values into sbuf_a */
     rptr = sbuf_j;
@@ -2524,19 +2520,19 @@ PetscErrorCode MatGetRedundantMatrix_MPIAIJ(Mat mat,PetscInt nsubcomm,MPI_Comm s
       row = i + rstart;
       nzA    = a->i[i+1] - a->i[i]; nzB = b->i[i+1] - b->i[i];
       ncols  = nzA + nzB;
-      cworkA = a->j + a->i[i]; cworkB = b->j + b->i[i]; 
+      cworkA = a->j + a->i[i]; cworkB = b->j + b->i[i];
       aworkA = a->a + a->i[i]; aworkB = b->a + b->i[i];
       lwrite = 0;
       for (l=0; l<nzB; l++) {
-        if ((ctmp = bmap[cworkB[l]]) < cstart) vals[lwrite++] = aworkB[l];      
+        if ((ctmp = bmap[cworkB[l]]) < cstart) vals[lwrite++] = aworkB[l];
       }
-      for (l=0; l<nzA; l++) vals[lwrite++] = aworkA[l];  
+      for (l=0; l<nzA; l++) vals[lwrite++] = aworkA[l];
       for (l=0; l<nzB; l++) {
         if ((ctmp = bmap[cworkB[l]]) >= cend) vals[lwrite++] = aworkB[l];
       }
       vals += ncols;
-      rptr[i+1] = rptr[i] + ncols; 
-    } 
+      rptr[i+1] = rptr[i] + ncols;
+    }
   } /* endof if (reuse == MAT_INITIAL_MATRIX) */
 
   /* send nzlocal to others, and recv other's nzlocal */
@@ -2553,17 +2549,17 @@ PetscErrorCode MatGetRedundantMatrix_MPIAIJ(Mat mat,PetscInt nsubcomm,MPI_Comm s
     r_waits3 = s_waits3 + nsends;
   }
 
-  ierr = PetscObjectGetNewTag((PetscObject)mat,&tag3);CHKERRQ(ierr); 
+  ierr = PetscObjectGetNewTag((PetscObject)mat,&tag3);CHKERRQ(ierr);
   if (reuse == MAT_INITIAL_MATRIX){
     /* get new tags to keep the communication clean */
-    ierr = PetscObjectGetNewTag((PetscObject)mat,&tag1);CHKERRQ(ierr); 
+    ierr = PetscObjectGetNewTag((PetscObject)mat,&tag1);CHKERRQ(ierr);
     ierr = PetscObjectGetNewTag((PetscObject)mat,&tag2);CHKERRQ(ierr);
     ierr = PetscMalloc4(nsends,PetscInt,&sbuf_nz,nrecvs,PetscInt,&rbuf_nz,nrecvs,PetscInt*,&rbuf_j,nrecvs,PetscScalar*,&rbuf_a);CHKERRQ(ierr);
-    
+
     /* post receives of other's nzlocal */
     for (i=0; i<nrecvs; i++){
       ierr = MPI_Irecv(rbuf_nz+i,1,MPIU_INT,MPI_ANY_SOURCE,tag1,comm,r_waits1+i);CHKERRQ(ierr);
-    }  
+    }
     /* send nzlocal to others */
     for (i=0; i<nsends; i++){
       sbuf_nz[i] = nzlocal;
@@ -2625,7 +2621,7 @@ PetscErrorCode MatGetRedundantMatrix_MPIAIJ(Mat mat,PetscInt nsubcomm,MPI_Comm s
   }
 
   ierr = PetscFree2(s_waits3,send_status);CHKERRQ(ierr);
-  
+
   /* create redundant matrix */
   /*-------------------------*/
   if (reuse == MAT_INITIAL_MATRIX){
@@ -2638,7 +2634,7 @@ PetscErrorCode MatGetRedundantMatrix_MPIAIJ(Mat mat,PetscInt nsubcomm,MPI_Comm s
         if (rownz_max < ncols) rownz_max = ncols;
       }
     }
-    
+
     ierr = MatCreate(subcomm,&C);CHKERRQ(ierr);
     ierr = MatSetSizes(C,mlocal_sub,mlocal_sub,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
     ierr = MatSetFromOptions(C);CHKERRQ(ierr);
@@ -2660,7 +2656,7 @@ PetscErrorCode MatGetRedundantMatrix_MPIAIJ(Mat mat,PetscInt nsubcomm,MPI_Comm s
     cols += ncols;
   }
   /* insert received matrix entries */
-  for (imdex=0; imdex<nrecvs; imdex++){    
+  for (imdex=0; imdex<nrecvs; imdex++){
     rstart = rowrange[recv_rank[imdex]];
     rend   = rowrange[recv_rank[imdex]+1];
     rptr = rbuf_j[imdex];
@@ -2678,16 +2674,17 @@ PetscErrorCode MatGetRedundantMatrix_MPIAIJ(Mat mat,PetscInt nsubcomm,MPI_Comm s
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatGetSize(C,&M,&N);CHKERRQ(ierr);
   if (M != mat->rmap->N || N != mat->cmap->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"redundant mat size %d != input mat size %d",M,mat->rmap->N);
-  if (reuse == MAT_INITIAL_MATRIX){
+  if (reuse == MAT_INITIAL_MATRIX) {
     PetscContainer container;
     *matredundant = C;
     /* create a supporting struct and attach it to C for reuse */
     ierr = PetscNewLog(C,Mat_Redundant,&redund);CHKERRQ(ierr);
     ierr = PetscContainerCreate(PETSC_COMM_SELF,&container);CHKERRQ(ierr);
     ierr = PetscContainerSetPointer(container,redund);CHKERRQ(ierr);
-    ierr = PetscObjectCompose((PetscObject)C,"Mat_Redundant",(PetscObject)container);CHKERRQ(ierr);
     ierr = PetscContainerSetUserDestroy(container,PetscContainerDestroy_MatRedundant);CHKERRQ(ierr);
-    
+    ierr = PetscObjectCompose((PetscObject)C,"Mat_Redundant",(PetscObject)container);CHKERRQ(ierr);
+    ierr = PetscContainerDestroy(&container);CHKERRQ(ierr);
+
     redund->nzlocal = nzlocal;
     redund->nsends  = nsends;
     redund->nrecvs  = nrecvs;
@@ -2700,8 +2697,8 @@ PetscErrorCode MatGetRedundantMatrix_MPIAIJ(Mat mat,PetscInt nsubcomm,MPI_Comm s
     redund->rbuf_j  = rbuf_j;
     redund->rbuf_a  = rbuf_a;
 
-    redund->MatDestroy = C->ops->destroy;
-    C->ops->destroy    = MatDestroy_MatRedundant;
+    redund->Destroy = C->ops->destroy;
+    C->ops->destroy = MatDestroy_MatRedundant;
   }
   PetscFunctionReturn(0);
 }
@@ -3566,7 +3563,7 @@ PetscErrorCode MatGetSubMatrix_MPIAIJ_Private(Mat mat,IS isrow,IS iscol,PetscInt
   /* save submatrix used in processor for next request */
   if (call ==  MAT_INITIAL_MATRIX) {
     ierr = PetscObjectCompose((PetscObject)M,"SubMatrix",(PetscObject)Mreuse);CHKERRQ(ierr);
-    ierr = PetscObjectDereference((PetscObject)Mreuse);CHKERRQ(ierr);
+    ierr = MatDestroy(&Mreuse);CHKERRQ(ierr);
   }
 
   PetscFunctionReturn(0);
@@ -4328,32 +4325,29 @@ extern PetscErrorCode MatDestroy_MPIAIJ(Mat);
 PetscErrorCode  MatDestroy_MPIAIJ_SeqsToMPI(Mat A)
 {
   PetscErrorCode       ierr;
-  Mat_Merge_SeqsToMPI  *merge; 
+  Mat_Merge_SeqsToMPI  *merge;
   PetscContainer       container;
 
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject)A,"MatMergeSeqsToMPI",(PetscObject *)&container);CHKERRQ(ierr);
   if (container) {
-    ierr = PetscContainerGetPointer(container,(void **)&merge);CHKERRQ(ierr); 
+    ierr = PetscContainerGetPointer(container,(void **)&merge);CHKERRQ(ierr);
     ierr = PetscFree(merge->id_r);CHKERRQ(ierr);
     ierr = PetscFree(merge->len_s);CHKERRQ(ierr);
     ierr = PetscFree(merge->len_r);CHKERRQ(ierr);
     ierr = PetscFree(merge->bi);CHKERRQ(ierr);
     ierr = PetscFree(merge->bj);CHKERRQ(ierr);
-    ierr = PetscFree(merge->buf_ri[0]);CHKERRQ(ierr); 
-    ierr = PetscFree(merge->buf_ri);CHKERRQ(ierr); 
+    ierr = PetscFree(merge->buf_ri[0]);CHKERRQ(ierr);
+    ierr = PetscFree(merge->buf_ri);CHKERRQ(ierr);
     ierr = PetscFree(merge->buf_rj[0]);CHKERRQ(ierr);
     ierr = PetscFree(merge->buf_rj);CHKERRQ(ierr);
     ierr = PetscFree(merge->coi);CHKERRQ(ierr);
     ierr = PetscFree(merge->coj);CHKERRQ(ierr);
     ierr = PetscFree(merge->owners_co);CHKERRQ(ierr);
     ierr = PetscLayoutDestroy(&merge->rowmap);CHKERRQ(ierr);
-    
-    ierr = PetscContainerDestroy(&container);CHKERRQ(ierr);
+    ierr = PetscFree(merge);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject)A,"MatMergeSeqsToMPI",0);CHKERRQ(ierr);
   }
-  ierr = PetscFree(merge);CHKERRQ(ierr);
-
   ierr = MatDestroy_MPIAIJ(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -4361,7 +4355,7 @@ PetscErrorCode  MatDestroy_MPIAIJ_SeqsToMPI(Mat A)
 #include <../src/mat/utils/freespace.h>
 #include <petscbt.h>
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatMerge_SeqsToMPINumeric"
 /*@C
       MatMerge_SeqsToMPI - Creates a MPIAIJ matrix by adding sequential
@@ -4381,29 +4375,29 @@ PetscErrorCode  MatDestroy_MPIAIJ_SeqsToMPI(Mat A)
 
     Level: advanced
 
-   Notes: 
+   Notes:
      The dimensions of the sequential matrix in each processor MUST be the same.
      The input seqmat is included into the container "Mat_Merge_SeqsToMPI", and will be
      destroyed when mpimat is destroyed. Call PetscObjectQuery() to access seqmat.
 @*/
-PetscErrorCode  MatMerge_SeqsToMPINumeric(Mat seqmat,Mat mpimat) 
+PetscErrorCode  MatMerge_SeqsToMPINumeric(Mat seqmat,Mat mpimat)
 {
-  PetscErrorCode       ierr; 
+  PetscErrorCode       ierr;
   MPI_Comm             comm=((PetscObject)mpimat)->comm;
   Mat_SeqAIJ           *a=(Mat_SeqAIJ*)seqmat->data;
   PetscMPIInt          size,rank,taga,*len_s;
-  PetscInt             N=mpimat->cmap->N,i,j,*owners,*ai=a->i,*aj=a->j; 
+  PetscInt             N=mpimat->cmap->N,i,j,*owners,*ai=a->i,*aj=a->j;
   PetscInt             proc,m;
-  PetscInt             **buf_ri,**buf_rj;  
-  PetscInt             k,anzi,*bj_i,*bi,*bj,arow,bnzi,nextaj; 
+  PetscInt             **buf_ri,**buf_rj;
+  PetscInt             k,anzi,*bj_i,*bi,*bj,arow,bnzi,nextaj;
   PetscInt             nrows,**buf_ri_k,**nextrow,**nextai;
-  MPI_Request          *s_waits,*r_waits; 
+  MPI_Request          *s_waits,*r_waits;
   MPI_Status           *status;
   MatScalar            *aa=a->a;
   MatScalar            **abuf_r,*ba_i;
   Mat_Merge_SeqsToMPI  *merge;
   PetscContainer       container;
-  
+
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(MAT_Seqstompinum,seqmat,0,0,0);CHKERRQ(ierr);
 
@@ -4411,9 +4405,8 @@ PetscErrorCode  MatMerge_SeqsToMPINumeric(Mat seqmat,Mat mpimat)
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
   ierr = PetscObjectQuery((PetscObject)mpimat,"MatMergeSeqsToMPI",(PetscObject *)&container);CHKERRQ(ierr);
-  if (container) {
-    ierr  = PetscContainerGetPointer(container,(void **)&merge);CHKERRQ(ierr); 
-  }
+  ierr  = PetscContainerGetPointer(container,(void **)&merge);CHKERRQ(ierr);
+
   bi     = merge->bi;
   bj     = merge->bj;
   buf_ri = merge->buf_ri;
@@ -4429,12 +4422,12 @@ PetscErrorCode  MatMerge_SeqsToMPINumeric(Mat seqmat,Mat mpimat)
   ierr = PetscPostIrecvScalar(comm,taga,merge->nrecv,merge->id_r,merge->len_r,&abuf_r,&r_waits);CHKERRQ(ierr);
 
   ierr = PetscMalloc((merge->nsend+1)*sizeof(MPI_Request),&s_waits);CHKERRQ(ierr);
-  for (proc=0,k=0; proc<size; proc++){  
+  for (proc=0,k=0; proc<size; proc++){
     if (!len_s[proc]) continue;
     i = owners[proc];
     ierr = MPI_Isend(aa+ai[i],len_s[proc],MPIU_MATSCALAR,proc,taga,comm,s_waits+k);CHKERRQ(ierr);
     k++;
-  } 
+  }
 
   if (merge->nrecv) {ierr = MPI_Waitall(merge->nrecv,r_waits,status);CHKERRQ(ierr);}
   if (merge->nsend) {ierr = MPI_Waitall(merge->nsend,s_waits,status);CHKERRQ(ierr);}
@@ -4458,15 +4451,15 @@ PetscErrorCode  MatMerge_SeqsToMPINumeric(Mat seqmat,Mat mpimat)
   /* set values of ba */
   m = merge->rowmap->n;
   for (i=0; i<m; i++) {
-    arow = owners[rank] + i; 
+    arow = owners[rank] + i;
     bj_i = bj+bi[i];  /* col indices of the i-th row of mpimat */
     bnzi = bi[i+1] - bi[i];
     ierr = PetscMemzero(ba_i,bnzi*sizeof(PetscScalar));CHKERRQ(ierr);
 
     /* add local non-zero vals of this proc's seqmat into ba */
     anzi = ai[arow+1] - ai[arow];
-    aj   = a->j + ai[arow]; 
-    aa   = a->a + ai[arow]; 
+    aj   = a->j + ai[arow];
+    aa   = a->a + ai[arow];
     nextaj = 0;
     for (j=0; nextaj<anzi; j++){
       if (*(bj_i + j) == aj[nextaj]){ /* bcol == acol */
@@ -4478,22 +4471,22 @@ PetscErrorCode  MatMerge_SeqsToMPINumeric(Mat seqmat,Mat mpimat)
     for (k=0; k<merge->nrecv; k++){ /* k-th received message */
       /* i-th row */
       if (i == *nextrow[k]) {
-        anzi = *(nextai[k]+1) - *nextai[k]; 
+        anzi = *(nextai[k]+1) - *nextai[k];
         aj   = buf_rj[k] + *(nextai[k]);
         aa   = abuf_r[k] + *(nextai[k]);
         nextaj = 0;
-        for (j=0; nextaj<anzi; j++){ 
+        for (j=0; nextaj<anzi; j++){
           if (*(bj_i + j) == aj[nextaj]){ /* bcol == acol */
             ba_i[j] += aa[nextaj++];
           }
         }
         nextrow[k]++; nextai[k]++;
-      } 
+      }
     }
     ierr = MatSetValues(mpimat,1,&arow,bnzi,bj_i,ba_i,INSERT_VALUES);CHKERRQ(ierr);
-  } 
+  }
   ierr = MatAssemblyBegin(mpimat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(mpimat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr); 
+  ierr = MatAssemblyEnd(mpimat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   ierr = PetscFree(abuf_r[0]);CHKERRQ(ierr);
   ierr = PetscFree(abuf_r);CHKERRQ(ierr);
@@ -4505,20 +4498,20 @@ PetscErrorCode  MatMerge_SeqsToMPINumeric(Mat seqmat,Mat mpimat)
 
 extern PetscErrorCode  MatDestroy_MPIAIJ_SeqsToMPI(Mat);
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatMerge_SeqsToMPISymbolic"
-PetscErrorCode  MatMerge_SeqsToMPISymbolic(MPI_Comm comm,Mat seqmat,PetscInt m,PetscInt n,Mat *mpimat) 
+PetscErrorCode  MatMerge_SeqsToMPISymbolic(MPI_Comm comm,Mat seqmat,PetscInt m,PetscInt n,Mat *mpimat)
 {
-  PetscErrorCode       ierr; 
+  PetscErrorCode       ierr;
   Mat                  B_mpi;
   Mat_SeqAIJ           *a=(Mat_SeqAIJ*)seqmat->data;
   PetscMPIInt          size,rank,tagi,tagj,*len_s,*len_si,*len_ri;
   PetscInt             **buf_rj,**buf_ri,**buf_ri_k;
   PetscInt             M=seqmat->rmap->n,N=seqmat->cmap->n,i,*owners,*ai=a->i,*aj=a->j;
   PetscInt             len,proc,*dnz,*onz;
-  PetscInt             k,anzi,*bi,*bj,*lnk,nlnk,arow,bnzi,nspacedouble=0; 
+  PetscInt             k,anzi,*bi,*bj,*lnk,nlnk,arow,bnzi,nspacedouble=0;
   PetscInt             nrows,*buf_s,*buf_si,*buf_si_i,**nextrow,**nextai;
-  MPI_Request          *si_waits,*sj_waits,*ri_waits,*rj_waits; 
+  MPI_Request          *si_waits,*sj_waits,*ri_waits,*rj_waits;
   MPI_Status           *status;
   PetscFreeSpaceList   free_space=PETSC_NULL,current_space=PETSC_NULL;
   PetscBT              lnkbt;
@@ -4532,20 +4525,20 @@ PetscErrorCode  MatMerge_SeqsToMPISymbolic(MPI_Comm comm,Mat seqmat,PetscInt m,P
   ierr = PetscCommDuplicate(comm,&comm,PETSC_NULL);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  
+
   ierr = PetscNew(Mat_Merge_SeqsToMPI,&merge);CHKERRQ(ierr);
   ierr = PetscMalloc(size*sizeof(MPI_Status),&status);CHKERRQ(ierr);
 
   /* determine row ownership */
   /*---------------------------------------------------------*/
-  ierr = PetscLayoutCreate(comm,&merge->rowmap);CHKERRQ(ierr); 
+  ierr = PetscLayoutCreate(comm,&merge->rowmap);CHKERRQ(ierr);
   ierr = PetscLayoutSetLocalSize(merge->rowmap,m);CHKERRQ(ierr);
   ierr = PetscLayoutSetSize(merge->rowmap,M);CHKERRQ(ierr);
   ierr = PetscLayoutSetBlockSize(merge->rowmap,1);CHKERRQ(ierr);
-  ierr = PetscLayoutSetUp(merge->rowmap);CHKERRQ(ierr); 
+  ierr = PetscLayoutSetUp(merge->rowmap);CHKERRQ(ierr);
   ierr = PetscMalloc(size*sizeof(PetscMPIInt),&len_si);CHKERRQ(ierr);
   ierr = PetscMalloc(size*sizeof(PetscMPIInt),&merge->len_s);CHKERRQ(ierr);
-  
+
   m      = merge->rowmap->n;
   M      = merge->rowmap->N;
   owners = merge->rowmap->range;
@@ -4559,7 +4552,7 @@ PetscErrorCode  MatMerge_SeqsToMPISymbolic(MPI_Comm comm,Mat seqmat,PetscInt m,P
   for (proc=0; proc<size; proc++){
     len_si[proc] = 0;
     if (proc == rank){
-      len_s[proc] = 0;  
+      len_s[proc] = 0;
     } else {
       len_si[proc] = owners[proc+1] - owners[proc] + 1;
       len_s[proc] = ai[owners[proc+1]] - ai[owners[proc]]; /* num of rows to be sent to [proc] */
@@ -4572,13 +4565,13 @@ PetscErrorCode  MatMerge_SeqsToMPISymbolic(MPI_Comm comm,Mat seqmat,PetscInt m,P
       }
       len_si[proc] = 2*(nrows+1);
       len += len_si[proc];
-    } 
+    }
   }
 
   /* determine the number and length of messages to receive for ij-structure */
   /*-------------------------------------------------------------------------*/
   ierr = PetscGatherNumberOfMessages(comm,PETSC_NULL,len_s,&merge->nrecv);CHKERRQ(ierr);
-  ierr = PetscGatherMessageLengths2(comm,merge->nsend,merge->nrecv,len_s,len_si,&merge->id_r,&merge->len_r,&len_ri);CHKERRQ(ierr);      
+  ierr = PetscGatherMessageLengths2(comm,merge->nsend,merge->nrecv,len_s,len_si,&merge->id_r,&merge->len_r,&len_ri);CHKERRQ(ierr);
 
   /* post the Irecv of j-structure */
   /*-------------------------------*/
@@ -4589,34 +4582,34 @@ PetscErrorCode  MatMerge_SeqsToMPISymbolic(MPI_Comm comm,Mat seqmat,PetscInt m,P
   /*--------------------------------*/
   ierr = PetscMalloc2(merge->nsend,MPI_Request,&si_waits,merge->nsend,MPI_Request,&sj_waits);CHKERRQ(ierr);
 
-  for (proc=0, k=0; proc<size; proc++){  
+  for (proc=0, k=0; proc<size; proc++){
     if (!len_s[proc]) continue;
     i = owners[proc];
     ierr = MPI_Isend(aj+ai[i],len_s[proc],MPIU_INT,proc,tagj,comm,sj_waits+k);CHKERRQ(ierr);
     k++;
-  } 
+  }
 
   /* receives and sends of j-structure are complete */
   /*------------------------------------------------*/
   if (merge->nrecv) {ierr = MPI_Waitall(merge->nrecv,rj_waits,status);CHKERRQ(ierr);}
   if (merge->nsend) {ierr = MPI_Waitall(merge->nsend,sj_waits,status);CHKERRQ(ierr);}
-  
+
   /* send and recv i-structure */
-  /*---------------------------*/  
+  /*---------------------------*/
   ierr = PetscCommGetNewTag(comm,&tagi);CHKERRQ(ierr);
   ierr = PetscPostIrecvInt(comm,tagi,merge->nrecv,merge->id_r,len_ri,&buf_ri,&ri_waits);CHKERRQ(ierr);
-    
-  ierr = PetscMalloc((len+1)*sizeof(PetscInt),&buf_s);CHKERRQ(ierr); 
+
+  ierr = PetscMalloc((len+1)*sizeof(PetscInt),&buf_s);CHKERRQ(ierr);
   buf_si = buf_s;  /* points to the beginning of k-th msg to be sent */
-  for (proc=0,k=0; proc<size; proc++){  
+  for (proc=0,k=0; proc<size; proc++){
     if (!len_s[proc]) continue;
-    /* form outgoing message for i-structure: 
+    /* form outgoing message for i-structure:
          buf_si[0]:                 nrows to be sent
                [1:nrows]:           row index (global)
                [nrows+1:2*nrows+1]: i-structure index
     */
-    /*-------------------------------------------*/      
-    nrows = len_si[proc]/2 - 1; 
+    /*-------------------------------------------*/
+    nrows = len_si[proc]/2 - 1;
     buf_si_i    = buf_si + nrows+1;
     buf_si[0]   = nrows;
     buf_si_i[0] = 0;
@@ -4632,7 +4625,7 @@ PetscErrorCode  MatMerge_SeqsToMPISymbolic(MPI_Comm comm,Mat seqmat,PetscInt m,P
     ierr = MPI_Isend(buf_si,len_si[proc],MPIU_INT,proc,tagi,comm,si_waits+k);CHKERRQ(ierr);
     k++;
     buf_si += len_si[proc];
-  } 
+  }
 
   if (merge->nrecv) {ierr = MPI_Waitall(merge->nrecv,ri_waits,status);CHKERRQ(ierr);}
   if (merge->nsend) {ierr = MPI_Waitall(merge->nsend,si_waits,status);CHKERRQ(ierr);}
@@ -4659,7 +4652,7 @@ PetscErrorCode  MatMerge_SeqsToMPISymbolic(MPI_Comm comm,Mat seqmat,PetscInt m,P
   /* create and initialize a linked list */
   nlnk = N+1;
   ierr = PetscLLCreate(N,N,nlnk,lnk,lnkbt);CHKERRQ(ierr);
-  
+
   /* initial FreeSpace size is 2*(num of local nnz(seqmat)) */
   len = 0;
   len  = ai[owners[rank+1]] - ai[owners[rank]];
@@ -4677,19 +4670,19 @@ PetscErrorCode  MatMerge_SeqsToMPISymbolic(MPI_Comm comm,Mat seqmat,PetscInt m,P
   }
 
   ierr = MatPreallocateInitialize(comm,m,n,dnz,onz);CHKERRQ(ierr);
-  len = 0;  
+  len = 0;
   for (i=0;i<m;i++) {
     bnzi   = 0;
     /* add local non-zero cols of this proc's seqmat into lnk */
     arow   = owners[rank] + i;
     anzi   = ai[arow+1] - ai[arow];
-    aj     = a->j + ai[arow]; 
+    aj     = a->j + ai[arow];
     ierr = PetscLLAdd(anzi,aj,N,nlnk,lnk,lnkbt);CHKERRQ(ierr);
     bnzi += nlnk;
     /* add received col data into lnk */
     for (k=0; k<merge->nrecv; k++){ /* k-th received message */
       if (i == *nextrow[k]) { /* i-th row */
-        anzi = *(nextai[k]+1) - *nextai[k]; 
+        anzi = *(nextai[k]+1) - *nextai[k];
         aj   = buf_rj[k] + *nextai[k];
         ierr = PetscLLAdd(anzi,aj,N,nlnk,lnk,lnkbt);CHKERRQ(ierr);
         bnzi += nlnk;
@@ -4710,10 +4703,10 @@ PetscErrorCode  MatMerge_SeqsToMPISymbolic(MPI_Comm comm,Mat seqmat,PetscInt m,P
     current_space->array           += bnzi;
     current_space->local_used      += bnzi;
     current_space->local_remaining -= bnzi;
-   
+
     bi[i+1] = bi[i] + bnzi;
   }
-  
+
   ierr = PetscFree3(buf_ri_k,nextrow,nextai);CHKERRQ(ierr);
 
   ierr = PetscMalloc((bi[m]+1)*sizeof(PetscInt),&bj);CHKERRQ(ierr);
@@ -4733,8 +4726,8 @@ PetscErrorCode  MatMerge_SeqsToMPISymbolic(MPI_Comm comm,Mat seqmat,PetscInt m,P
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
 
   /* B_mpi is not ready for use - assembly will be done by MatMerge_SeqsToMPINumeric() */
-  B_mpi->assembled     = PETSC_FALSE; 
-  B_mpi->ops->destroy  = MatDestroy_MPIAIJ_SeqsToMPI; 
+  B_mpi->assembled     = PETSC_FALSE;
+  B_mpi->ops->destroy  = MatDestroy_MPIAIJ_SeqsToMPI;
   merge->bi            = bi;
   merge->bj            = bj;
   merge->buf_ri        = buf_ri;
@@ -4743,30 +4736,32 @@ PetscErrorCode  MatMerge_SeqsToMPISymbolic(MPI_Comm comm,Mat seqmat,PetscInt m,P
   merge->coj           = PETSC_NULL;
   merge->owners_co     = PETSC_NULL;
 
+  ierr = PetscCommDestroy(&comm);CHKERRQ(ierr);
+
   /* attach the supporting struct to B_mpi for reuse */
   ierr = PetscContainerCreate(PETSC_COMM_SELF,&container);CHKERRQ(ierr);
   ierr = PetscContainerSetPointer(container,merge);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)B_mpi,"MatMergeSeqsToMPI",(PetscObject)container);CHKERRQ(ierr);
+  ierr = PetscContainerDestroy(&container);CHKERRQ(ierr);
   *mpimat = B_mpi;
 
-  ierr = PetscCommDestroy(&comm);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_Seqstompisym,seqmat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMerge_SeqsToMPI"
-PetscErrorCode  MatMerge_SeqsToMPI(MPI_Comm comm,Mat seqmat,PetscInt m,PetscInt n,MatReuse scall,Mat *mpimat) 
+PetscErrorCode  MatMerge_SeqsToMPI(MPI_Comm comm,Mat seqmat,PetscInt m,PetscInt n,MatReuse scall,Mat *mpimat)
 {
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(MAT_Seqstompi,seqmat,0,0,0);CHKERRQ(ierr);
-  if (scall == MAT_INITIAL_MATRIX){ 
+  if (scall == MAT_INITIAL_MATRIX){
     ierr = MatMerge_SeqsToMPISymbolic(comm,seqmat,m,n,mpimat);CHKERRQ(ierr);
-  } 
-  ierr = MatMerge_SeqsToMPINumeric(seqmat,*mpimat);CHKERRQ(ierr); 
-  ierr = PetscLogEventEnd(MAT_Seqstompi,seqmat,0,0,0);CHKERRQ(ierr); 
+  }
+  ierr = MatMerge_SeqsToMPINumeric(seqmat,*mpimat);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_Seqstompi,seqmat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

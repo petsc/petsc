@@ -1332,9 +1332,9 @@ PetscErrorCode  MatCreateSeqAIJCUSP(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt
 PetscErrorCode MatDestroy_SeqAIJCUSP(Mat A)
 {
   PetscErrorCode      ierr;
+  Mat_SeqAIJ          *a          = (Mat_SeqAIJ*)A->data;
   Mat_SeqAIJCUSP      *cuspstruct = (Mat_SeqAIJCUSP*)A->spptr;
   Mat_SeqAIJCUSPInode *cuspstructInode = (Mat_SeqAIJCUSPInode*)A->spptr;
-  Mat_SeqAIJ          *a          = (Mat_SeqAIJ*)A->data;
   cudaError_t         err;
 
   PetscFunctionBegin;

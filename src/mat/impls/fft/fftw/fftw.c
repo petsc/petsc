@@ -218,7 +218,7 @@ PetscErrorCode MatMultTranspose_MPIFFTW(Mat A,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatDestroy_FFTW"
 PetscErrorCode MatDestroy_FFTW(Mat A)
 {
@@ -226,13 +226,13 @@ PetscErrorCode MatDestroy_FFTW(Mat A)
   Mat_FFTW       *fftw = (Mat_FFTW*)fft->data;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin; 
+  PetscFunctionBegin;
 #if !defined(PETSC_USE_COMPLEX)
   SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"not support for real numbers");
 #endif
-  fftw_destroy_plan(fftw->p_forward); 
+  fftw_destroy_plan(fftw->p_forward);
   fftw_destroy_plan(fftw->p_backward);
-  ierr = PetscFree(fftw);CHKERRQ(ierr);
+  ierr = PetscFree(fft->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

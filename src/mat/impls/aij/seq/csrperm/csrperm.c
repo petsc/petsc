@@ -95,20 +95,21 @@ PetscErrorCode MatDestroy_SeqAIJPERM(Mat A)
   Mat_SeqAIJPERM *aijperm = (Mat_SeqAIJPERM *) A->spptr;
 
   PetscFunctionBegin;
-  /* Free everything in the Mat_SeqAIJPERM data structure. 
-   * Note that we don't need to free the Mat_SeqAIJPERM struct 
+  /* Free everything in the Mat_SeqAIJPERM data structure.
+   * Note that we don't need to free the Mat_SeqAIJPERM struct
    * itself, as MatDestroy() will do so. */
-  if(aijperm->CleanUpAIJPERM) {
+  if(aijperm && aijperm->CleanUpAIJPERM) {
     ierr = PetscFree(aijperm->xgroup);CHKERRQ(ierr);
     ierr = PetscFree(aijperm->nzgroup);CHKERRQ(ierr);
     ierr = PetscFree(aijperm->iperm);CHKERRQ(ierr);
   }
+  ierr = PetscFree(A->spptr);CHKERRQ(ierr);
 
-  /* Change the type of A back to SEQAIJ and use MatDestroy_SeqAIJ() 
+  /* Change the type of A back to SEQAIJ and use MatDestroy_SeqAIJ()
    * to destroy everything that remains. */
   ierr = PetscObjectChangeTypeName( (PetscObject)A, MATSEQAIJ);CHKERRQ(ierr);
-  /* Note that I don't call MatSetType().  I believe this is because that 
-   * is only to be called when *building* a matrix.  I could be wrong, but 
+  /* Note that I don't call MatSetType().  I believe this is because that
+   * is only to be called when *building* a matrix.  I could be wrong, but
    * that is how things work for the SuperLU matrix class. */
   ierr = MatDestroy_SeqAIJ(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);

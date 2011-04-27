@@ -256,7 +256,7 @@ static PetscErrorCode MatDestroy_Nest(Mat A)
     }
     ierr = PetscFree(vs->m);CHKERRQ(ierr);
   }
-  ierr = PetscFree(vs);CHKERRQ(ierr);
+  ierr = PetscFree(A->data);CHKERRQ(ierr);
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatNestGetSubMat_C",   "",0);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatNestGetSubMats_C",  "",0);CHKERRQ(ierr);

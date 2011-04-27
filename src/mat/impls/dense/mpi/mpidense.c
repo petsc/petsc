@@ -548,14 +548,14 @@ PetscErrorCode MatGetDiagonal_MPIDense(Mat A,Vec v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatDestroy_MPIDense"
 PetscErrorCode MatDestroy_MPIDense(Mat mat)
 {
   Mat_MPIDense   *mdn = (Mat_MPIDense*)mat->data;
   PetscErrorCode ierr;
 #if defined(PETSC_HAVE_PLAPACK)
-  Mat_Plapack   *lu=(Mat_Plapack*)(mat->spptr); 
+  Mat_Plapack   *lu=(Mat_Plapack*)mat->spptr;
 #endif
 
   PetscFunctionBegin;
@@ -572,16 +572,14 @@ PetscErrorCode MatDestroy_MPIDense(Mat mat)
     ierr = PLA_Obj_free(&lu->A);CHKERRQ(ierr);
     ierr = PLA_Obj_free (&lu->pivots);CHKERRQ(ierr);
     ierr = PLA_Temp_free(&lu->templ);CHKERRQ(ierr);
-
-    if (lu->is_pla) {
-      ierr = ISDestroy(&lu->is_pla);CHKERRQ(ierr);
-      ierr = ISDestroy(&lu->is_petsc);CHKERRQ(ierr);
-      ierr = VecScatterDestroy(&lu->ctx);CHKERRQ(ierr);
-    }
+    ierr = ISDestroy(&lu->is_pla);CHKERRQ(ierr);
+    ierr = ISDestroy(&lu->is_petsc);CHKERRQ(ierr);
+    ierr = VecScatterDestroy(&lu->ctx);CHKERRQ(ierr);
   }
+  ierr = PetscFree(mat->spptr);CHKERRQ(ierr);
 #endif
 
-  ierr = PetscFree(mdn);CHKERRQ(ierr);
+  ierr = PetscFree(mat->data);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)mat,0);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)mat,"MatGetDiagonalBlock_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)mat,"MatMPIDenseSetPreallocation_C","",PETSC_NULL);CHKERRQ(ierr);

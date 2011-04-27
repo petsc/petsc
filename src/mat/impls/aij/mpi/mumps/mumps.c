@@ -42,7 +42,7 @@ typedef struct {
   VecScatter     scat_rhs, scat_sol;
   PetscBool      isAIJ,CleanUpMUMPS;
   Vec            b_seq,x_seq;
-  PetscErrorCode (*MatDestroy)(Mat);
+  PetscErrorCode (*Destroy)(Mat);
   PetscErrorCode (*ConvertToTriples)(Mat, int, MatReuse, int*, int**, int**, PetscScalar**);
 } Mat_MUMPS;
 
@@ -473,36 +473,39 @@ PetscErrorCode MatConvertToTriples_mpiaij_mpisbaij(Mat A,int shift,MatReuse reus
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatDestroy_MUMPS"
 PetscErrorCode MatDestroy_MUMPS(Mat A)
 {
-  Mat_MUMPS      *lu=(Mat_MUMPS*)A->spptr; 
+  Mat_MUMPS      *lu=(Mat_MUMPS*)A->spptr;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (lu->CleanUpMUMPS) {
+  if (lu && lu->CleanUpMUMPS) {
     /* Terminate instance, deallocate memories */
     ierr = PetscFree2(lu->id.sol_loc,lu->id.isol_loc);CHKERRQ(ierr);
     ierr = VecScatterDestroy(&lu->scat_rhs);CHKERRQ(ierr);
     ierr = VecDestroy(&lu->b_seq);CHKERRQ(ierr);
-    if (lu->nSolve && lu->scat_sol){ierr = VecScatterDestroy(&lu->scat_sol);CHKERRQ(ierr);}
-    if (lu->nSolve && lu->x_seq){ierr = VecDestroy(&lu->x_seq);CHKERRQ(ierr);}
+    ierr = VecScatterDestroy(&lu->scat_sol);CHKERRQ(ierr);
+    ierr = VecDestroy(&lu->x_seq);CHKERRQ(ierr);
     ierr=PetscFree(lu->id.perm_in);CHKERRQ(ierr);
-
-    ierr = PetscFree(lu->irn);CHKERRQ(ierr); 
-    lu->id.job=JOB_END; 
+    ierr = PetscFree(lu->irn);CHKERRQ(ierr);
+    lu->id.job=JOB_END;
 #if defined(PETSC_USE_COMPLEX)
-    zmumps_c(&lu->id); 
+    zmumps_c(&lu->id);
 #else
-    dmumps_c(&lu->id); 
+    dmumps_c(&lu->id);
 #endif
     ierr = MPI_Comm_free(&(lu->comm_mumps));CHKERRQ(ierr);
   }
+  if (lu && lu->Destroy) {
+    ierr = (lu->Destroy)(A);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(A->spptr);CHKERRQ(ierr);
+
   /* clear composed functions */
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatFactorGetSolverPackage_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatMumpsSetIcntl_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = (lu->MatDestroy)(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1319,7 +1322,7 @@ PetscErrorCode MatGetFactor_aij_mumps(Mat A,MatFactorType ftype,Mat *F)
   }
 
   mumps->isAIJ        = PETSC_TRUE;
-  mumps->MatDestroy   = B->ops->destroy;
+  mumps->Destroy      = B->ops->destroy;
   B->ops->destroy     = MatDestroy_MUMPS;
   B->spptr            = (void*)mumps;
   ierr = PetscInitializeMUMPS(A,mumps);CHKERRQ(ierr);
@@ -1367,7 +1370,7 @@ PetscErrorCode MatGetFactor_sbaij_mumps(Mat A,MatFactorType ftype,Mat *F)
   else                      mumps->sym = 2;
 
   mumps->isAIJ        = PETSC_FALSE;
-  mumps->MatDestroy   = B->ops->destroy;
+  mumps->Destroy      = B->ops->destroy;
   B->ops->destroy     = MatDestroy_MUMPS;
   B->spptr            = (void*)mumps;
   ierr = PetscInitializeMUMPS(A,mumps);CHKERRQ(ierr);
@@ -1415,7 +1418,7 @@ PetscErrorCode MatGetFactor_baij_mumps(Mat A,MatFactorType ftype,Mat *F)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMumpsSetIcntl_C","MatMumpsSetIcntl_MUMPS",MatMumpsSetIcntl_MUMPS);CHKERRQ(ierr);
 
   mumps->isAIJ        = PETSC_TRUE;
-  mumps->MatDestroy   = B->ops->destroy;
+  mumps->Destroy      = B->ops->destroy;
   B->ops->destroy     = MatDestroy_MUMPS;
   B->spptr            = (void*)mumps;
   ierr = PetscInitializeMUMPS(A,mumps);CHKERRQ(ierr);

@@ -5,19 +5,19 @@
 
 #include <../src/mat/impls/fft/fft.h>   /*I "petscmat.h" I*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatDestroy_FFT"
 PetscErrorCode MatDestroy_FFT(Mat A)
 {
   PetscErrorCode ierr;
   Mat_FFT        *fft = (Mat_FFT*)A->data;
 
-  PetscFunctionBegin; 
+  PetscFunctionBegin;
   if (fft->matdestroy){
     ierr = (fft->matdestroy)(A);CHKERRQ(ierr);
   }
   ierr = PetscFree(fft->dim);CHKERRQ(ierr);
-  ierr = PetscFree(fft);CHKERRQ(ierr);
+  ierr = PetscFree(A->data);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)A,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

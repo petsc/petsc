@@ -7,24 +7,25 @@
 
 extern PetscErrorCode MatDestroy_SeqSBAIJ(Mat);
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatDestroy_SeqSBAIJSpooles"
 PetscErrorCode MatDestroy_SeqSBAIJSpooles(Mat A)
 {
-  Mat_Spooles    *lu = (Mat_Spooles*)A->spptr; 
+  Mat_Spooles    *lu = (Mat_Spooles*)A->spptr;
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
-  if (lu->CleanUpSpooles) {
-    FrontMtx_free(lu->frontmtx);        
-    IV_free(lu->newToOldIV);            
-    IV_free(lu->oldToNewIV);            
-    InpMtx_free(lu->mtxA);             
-    ETree_free(lu->frontETree);          
-    IVL_free(lu->symbfacIVL);         
-    SubMtxManager_free(lu->mtxmanager); 
+  if (lu && lu->CleanUpSpooles) {
+    FrontMtx_free(lu->frontmtx);
+    IV_free(lu->newToOldIV);
+    IV_free(lu->oldToNewIV);
+    InpMtx_free(lu->mtxA);
+    ETree_free(lu->frontETree);
+    IVL_free(lu->symbfacIVL);
+    SubMtxManager_free(lu->mtxmanager);
     Graph_free(lu->graph);
   }
+  ierr = PetscFree(A->spptr);CHKERRQ(ierr);
   ierr = MatDestroy_SeqSBAIJ(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

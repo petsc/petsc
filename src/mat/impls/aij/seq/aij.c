@@ -851,14 +851,14 @@ PetscErrorCode MatZeroEntries_SeqAIJ(Mat A)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatDestroy_SeqAIJ"
 PetscErrorCode MatDestroy_SeqAIJ(Mat A)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;  
+  PetscFunctionBegin;
 #if defined(PETSC_USE_LOG)
   PetscLogObjectState((PetscObject)A,"Rows=%D, Cols=%D, NZ=%D",A->rmap->n,A->cmap->n,a->nz);
 #endif
@@ -877,8 +877,7 @@ PetscErrorCode MatDestroy_SeqAIJ(Mat A)
   ierr = PetscFree2(a->compressedrow.i,a->compressedrow.rindex);CHKERRQ(ierr);
 
   ierr = MatDestroy_SeqAIJ_Inode(A);CHKERRQ(ierr);
-
-  ierr = PetscFree(a);CHKERRQ(ierr);
+  ierr = PetscFree(A->data);CHKERRQ(ierr);
 
   ierr = PetscObjectChangeTypeName((PetscObject)A,0);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatSeqAIJSetColumnIndices_C","",PETSC_NULL);CHKERRQ(ierr);
@@ -1710,14 +1709,14 @@ EXTERN_C_BEGIN
 PetscErrorCode  MatIsTranspose_SeqAIJ(Mat A,Mat B,PetscReal tol,PetscBool  *f)
 {
   Mat_SeqAIJ     *aij = (Mat_SeqAIJ *) A->data,*bij = (Mat_SeqAIJ*) A->data;
-  PetscInt       *adx,*bdx,*aii,*bii,*aptr,*bptr; 
+  PetscInt       *adx,*bdx,*aii,*bii,*aptr,*bptr;
   MatScalar      *va,*vb;
   PetscErrorCode ierr;
   PetscInt       ma,na,mb,nb, i;
 
   PetscFunctionBegin;
   bij = (Mat_SeqAIJ *) B->data;
-  
+
   ierr = MatGetSize(A,&ma,&na);CHKERRQ(ierr);
   ierr = MatGetSize(B,&mb,&nb);CHKERRQ(ierr);
   if (ma!=nb || na!=mb){
@@ -1735,27 +1734,25 @@ PetscErrorCode  MatIsTranspose_SeqAIJ(Mat A,Mat B,PetscReal tol,PetscBool  *f)
   *f = PETSC_TRUE;
   for (i=0; i<ma; i++) {
     while (aptr[i]<aii[i+1]) {
-      PetscInt         idc,idr; 
+      PetscInt         idc,idr;
       PetscScalar vc,vr;
       /* column/row index/value */
-      idc = adx[aptr[i]]; 
+      idc = adx[aptr[i]];
       idr = bdx[bptr[idc]];
-      vc  = va[aptr[i]]; 
+      vc  = va[aptr[i]];
       vr  = vb[bptr[idc]];
       if (i!=idr || PetscAbsScalar(vc-vr) > tol) {
-	*f = PETSC_FALSE;
+        *f = PETSC_FALSE;
         goto done;
       } else {
-	aptr[i]++; 
+        aptr[i]++;
         if (B || i!=idc) bptr[idc]++;
       }
     }
   }
  done:
   ierr = PetscFree(aptr);CHKERRQ(ierr);
-  if (B) {
-    ierr = PetscFree(bptr);CHKERRQ(ierr);
-  }
+  ierr = PetscFree(bptr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -1766,14 +1763,14 @@ EXTERN_C_BEGIN
 PetscErrorCode  MatIsHermitianTranspose_SeqAIJ(Mat A,Mat B,PetscReal tol,PetscBool  *f)
 {
   Mat_SeqAIJ     *aij = (Mat_SeqAIJ *) A->data,*bij = (Mat_SeqAIJ*) A->data;
-  PetscInt       *adx,*bdx,*aii,*bii,*aptr,*bptr; 
+  PetscInt       *adx,*bdx,*aii,*bii,*aptr,*bptr;
   MatScalar      *va,*vb;
   PetscErrorCode ierr;
   PetscInt       ma,na,mb,nb, i;
 
   PetscFunctionBegin;
   bij = (Mat_SeqAIJ *) B->data;
-  
+
   ierr = MatGetSize(A,&ma,&na);CHKERRQ(ierr);
   ierr = MatGetSize(B,&mb,&nb);CHKERRQ(ierr);
   if (ma!=nb || na!=mb){
@@ -1791,27 +1788,25 @@ PetscErrorCode  MatIsHermitianTranspose_SeqAIJ(Mat A,Mat B,PetscReal tol,PetscBo
   *f = PETSC_TRUE;
   for (i=0; i<ma; i++) {
     while (aptr[i]<aii[i+1]) {
-      PetscInt         idc,idr; 
+      PetscInt         idc,idr;
       PetscScalar vc,vr;
       /* column/row index/value */
-      idc = adx[aptr[i]]; 
+      idc = adx[aptr[i]];
       idr = bdx[bptr[idc]];
-      vc  = va[aptr[i]]; 
+      vc  = va[aptr[i]];
       vr  = vb[bptr[idc]];
       if (i!=idr || PetscAbsScalar(vc-PetscConj(vr)) > tol) {
-	*f = PETSC_FALSE;
+        *f = PETSC_FALSE;
         goto done;
       } else {
-	aptr[i]++; 
+        aptr[i]++;
         if (B || i!=idc) bptr[idc]++;
       }
     }
   }
  done:
   ierr = PetscFree(aptr);CHKERRQ(ierr);
-  if (B) {
-    ierr = PetscFree(bptr);CHKERRQ(ierr);
-  }
+  ierr = PetscFree(bptr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

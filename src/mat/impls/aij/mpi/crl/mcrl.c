@@ -25,10 +25,12 @@ PetscErrorCode MatDestroy_MPIAIJCRL(Mat A)
   Mat_AIJCRL     *aijcrl = (Mat_AIJCRL *) A->spptr;
 
   /* Free everything in the Mat_AIJCRL data structure. */
-  ierr = PetscFree2(aijcrl->acols,aijcrl->icols);CHKERRQ(ierr);
-  ierr = VecDestroy(&aijcrl->fwork);CHKERRQ(ierr);
-  ierr = VecDestroy(&aijcrl->xwork);CHKERRQ(ierr);
-  ierr = PetscFree(aijcrl->array);CHKERRQ(ierr);
+  if (aijcrl) {
+    ierr = PetscFree2(aijcrl->acols,aijcrl->icols);CHKERRQ(ierr);
+    ierr = VecDestroy(&aijcrl->fwork);CHKERRQ(ierr);
+    ierr = VecDestroy(&aijcrl->xwork);CHKERRQ(ierr);
+    ierr = PetscFree(aijcrl->array);CHKERRQ(ierr);
+  }
   ierr = PetscFree(A->spptr);CHKERRQ(ierr);
 
   ierr = PetscObjectChangeTypeName( (PetscObject)A, MATMPIAIJ);CHKERRQ(ierr);

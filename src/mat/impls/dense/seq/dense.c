@@ -1116,7 +1116,7 @@ PetscErrorCode MatView_SeqDense(Mat A,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatDestroy_SeqDense"
 PetscErrorCode MatDestroy_SeqDense(Mat mat)
 {
@@ -1129,7 +1129,7 @@ PetscErrorCode MatDestroy_SeqDense(Mat mat)
 #endif
   ierr = PetscFree(l->pivots);CHKERRQ(ierr);
   if (!l->user_alloc) {ierr = PetscFree(l->v);CHKERRQ(ierr);}
-  ierr = PetscFree(l);CHKERRQ(ierr);
+  ierr = PetscFree(mat->data);CHKERRQ(ierr);
 
   ierr = PetscObjectChangeTypeName((PetscObject)mat,0);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)mat,"MatSeqDenseSetPreallocation_C","",PETSC_NULL);CHKERRQ(ierr);

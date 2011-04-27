@@ -27,15 +27,15 @@ typedef struct {
   PetscBool  CleanUpESSL;
 } Mat_Essl;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatDestroy_Essl"
-PetscErrorCode MatDestroy_Essl(Mat A) 
+PetscErrorCode MatDestroy_Essl(Mat A)
 {
   PetscErrorCode ierr;
   Mat_Essl       *essl=(Mat_Essl*)A->spptr;
 
   PetscFunctionBegin;
-  if (essl->CleanUpESSL) {
+  if (essl && essl->CleanUpESSL) {
     ierr = PetscFree4(essl->a,essl->aux,essl->ia,essl->ja);CHKERRQ(ierr);
   }
   ierr = PetscFree(A->spptr);CHKERRQ(ierr);

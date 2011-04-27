@@ -94,7 +94,7 @@ typedef struct {
   PetscBool  CleanUpUMFPACK;
 } Mat_UMFPACK;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatDestroy_UMFPACK"
 static PetscErrorCode MatDestroy_UMFPACK(Mat A)
 {
@@ -102,7 +102,7 @@ static PetscErrorCode MatDestroy_UMFPACK(Mat A)
   Mat_UMFPACK    *lu=(Mat_UMFPACK*)A->spptr;
 
   PetscFunctionBegin;
-  if (lu->CleanUpUMFPACK) {
+  if (lu && lu->CleanUpUMFPACK) {
     umfpack_UMF_free_symbolic(&lu->Symbolic);
     umfpack_UMF_free_numeric(&lu->Numeric);
     ierr = PetscFree(lu->Wi);CHKERRQ(ierr);
@@ -111,6 +111,7 @@ static PetscErrorCode MatDestroy_UMFPACK(Mat A)
       ierr = PetscFree(lu->perm_c);CHKERRQ(ierr);
     }
   }
+  ierr = PetscFree(A->spprt);CHKERRQ(ierr);
   ierr = MatDestroy_SeqAIJ(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

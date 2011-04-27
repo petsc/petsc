@@ -40,7 +40,7 @@ PetscErrorCode MatMult_LRC(Mat N,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatDestroy_LRC"
 PetscErrorCode MatDestroy_LRC(Mat N)
 {
@@ -48,15 +48,15 @@ PetscErrorCode MatDestroy_LRC(Mat N)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectDereference((PetscObject)Na->A);CHKERRQ(ierr);
-  ierr = PetscObjectDereference((PetscObject)Na->U);CHKERRQ(ierr);
-  ierr = PetscObjectDereference((PetscObject)Na->V);CHKERRQ(ierr);
+  ierr = MatDestroy(&Na->A);CHKERRQ(ierr);
+  ierr = MatDestroy(&Na->U);CHKERRQ(ierr);
+  ierr = MatDestroy(&Na->V);CHKERRQ(ierr);
   ierr = VecDestroy(&Na->work1);CHKERRQ(ierr);
   ierr = VecDestroy(&Na->work2);CHKERRQ(ierr);
-  ierr = PetscFree(Na);CHKERRQ(ierr);
+  ierr = PetscFree(N->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-  
+
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreateLRC"

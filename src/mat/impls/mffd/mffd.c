@@ -229,7 +229,7 @@ PetscErrorCode  MatMFFDAddNullSpace_MFFD(Mat J,MatNullSpace nullsp)
 EXTERN_C_END
 
 /* ----------------------------------------------------------------------------------------*/
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatDestroy_MFFD"
 PetscErrorCode MatDestroy_MFFD(Mat mat)
 {
@@ -247,6 +247,7 @@ PetscErrorCode MatDestroy_MFFD(Mat mat)
   if (ctx->ops->destroy) {ierr = (*ctx->ops->destroy)(ctx);CHKERRQ(ierr);}
   ierr = MatNullSpaceDestroy(&ctx->sp);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(&ctx);CHKERRQ(ierr);
+  mat->data = 0;
 
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMFFDSetBase_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMFFDSetFunctioniBase_C","",PETSC_NULL);CHKERRQ(ierr);

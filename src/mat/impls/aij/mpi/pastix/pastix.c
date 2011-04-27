@@ -20,7 +20,7 @@ EXTERN_C_END
 
 typedef struct Mat_Pastix_ {
   pastix_data_t *pastix_data;              /* Pastix data storage structure                        */
-  MatStructure   matstruc;                 				                           
+  MatStructure   matstruc;
   PetscInt       n;                        /* Number of columns in the matrix                      */
   PetscInt       *colptr;                  /* Index of first element of each column in row and val */
   PetscInt       *row;                     /* Row of each element of the matrix                    */
@@ -39,7 +39,7 @@ typedef struct Mat_Pastix_ {
   VecScatter     scat_sol;
   Vec            b_seq;
   PetscBool      isAIJ;
-  PetscErrorCode (*MatDestroy)(Mat);
+  PetscErrorCode (*Destroy)(Mat);
 } Mat_Pastix;
 
 extern PetscErrorCode MatDuplicate_Pastix(Mat,MatDuplicateOption,Mat*);
@@ -190,7 +190,7 @@ PetscErrorCode MatConvertToCSC(Mat A,PetscBool  valOnly,PetscInt *n,PetscInt **c
 
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatDestroy_Pastix"
 /*
   Call clean step of PaStiX if lu->CleanUpPastix == true.
@@ -198,43 +198,46 @@ PetscErrorCode MatConvertToCSC(Mat A,PetscBool  valOnly,PetscInt *n,PetscInt **c
  */
 PetscErrorCode MatDestroy_Pastix(Mat A)
 {
-  Mat_Pastix      *lu=(Mat_Pastix*)A->spptr; 
+  Mat_Pastix      *lu=(Mat_Pastix*)A->spptr;
   PetscErrorCode   ierr;
   PetscMPIInt      size=lu->commSize;
 
   PetscFunctionBegin;
-  if (lu->CleanUpPastix) {    
+  if (lu && lu->CleanUpPastix) {
     /* Terminate instance, deallocate memories */
     if (size > 1){
       ierr = VecScatterDestroy(&lu->scat_rhs);CHKERRQ(ierr);
       ierr = VecDestroy(&lu->b_seq);CHKERRQ(ierr);
       ierr = VecScatterDestroy(&lu->scat_sol);CHKERRQ(ierr);
     }
-    
-    lu->iparm[IPARM_START_TASK]=API_TASK_CLEAN; 
-    lu->iparm[IPARM_END_TASK]=API_TASK_CLEAN; 
+
+    lu->iparm[IPARM_START_TASK]=API_TASK_CLEAN;
+    lu->iparm[IPARM_END_TASK]=API_TASK_CLEAN;
 
     pastix((pastix_data_t **)&(lu->pastix_data),
-	                      lu->pastix_comm,
-	   (pastix_int_t)     lu->n,
-	   (pastix_int_t*)    lu->colptr,
-	   (pastix_int_t*)    lu->row,
-	   (pastix_float_t*)  lu->val,
-	   (pastix_int_t*)    lu->perm,
-	   (pastix_int_t*)    lu->invp,
-	   (pastix_float_t*)  lu->rhs,
-	   (pastix_int_t)     lu->rhsnbr,
-	   (pastix_int_t*)    lu->iparm,
-	                      lu->dparm);
+                              lu->pastix_comm,
+           (pastix_int_t)     lu->n,
+           (pastix_int_t*)    lu->colptr,
+           (pastix_int_t*)    lu->row,
+           (pastix_float_t*)  lu->val,
+           (pastix_int_t*)    lu->perm,
+           (pastix_int_t*)    lu->invp,
+           (pastix_float_t*)  lu->rhs,
+           (pastix_int_t)     lu->rhsnbr,
+           (pastix_int_t*)    lu->iparm,
+                              lu->dparm);
 
     ierr = PetscFree(lu->colptr);CHKERRQ(ierr);
-    ierr = PetscFree(lu->row);  CHKERRQ(ierr);    
+    ierr = PetscFree(lu->row);  CHKERRQ(ierr);
     ierr = PetscFree(lu->val);  CHKERRQ(ierr);
     ierr = PetscFree(lu->perm); CHKERRQ(ierr);
-    ierr = PetscFree(lu->invp); CHKERRQ(ierr); 
+    ierr = PetscFree(lu->invp); CHKERRQ(ierr);
     ierr = MPI_Comm_free(&(lu->pastix_comm));CHKERRQ(ierr);
   }
-  ierr = (lu->MatDestroy)(A);CHKERRQ(ierr);
+  if (lu && lu->Destroy) {
+    ierr = (lu->Destroy)(A);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(A->spptr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -608,7 +611,7 @@ PetscErrorCode MatGetFactor_seqaij_pastix(Mat A,MatFactorType ftype,Mat *F)
   pastix->isAIJ                     = PETSC_TRUE;
   pastix->scat_rhs                  = PETSC_NULL;
   pastix->scat_sol                  = PETSC_NULL;
-  pastix->MatDestroy                = B->ops->destroy;
+  pastix->Destroy                   = B->ops->destroy;
   B->ops->destroy                   = MatDestroy_Pastix;
   B->spptr                          = (void*)pastix;
 
@@ -646,9 +649,9 @@ PetscErrorCode MatGetFactor_mpiaij_pastix(Mat A,MatFactorType ftype,Mat *F)
   pastix->isAIJ                     = PETSC_TRUE;
   pastix->scat_rhs                  = PETSC_NULL;
   pastix->scat_sol                  = PETSC_NULL;
-  pastix->MatDestroy                = B->ops->destroy;
-  B->ops->destroy                  = MatDestroy_Pastix;
-  B->spptr                         = (void*)pastix;
+  pastix->Destroy                   = B->ops->destroy;
+  B->ops->destroy                   = MatDestroy_Pastix;
+  B->spptr                          = (void*)pastix;
 
   *F = B;
   PetscFunctionReturn(0); 
@@ -666,7 +669,7 @@ PetscErrorCode MatGetFactor_seqsbaij_pastix(Mat A,MatFactorType ftype,Mat *F)
 
   PetscFunctionBegin;
   if (ftype != MAT_FACTOR_CHOLESKY) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot use PETSc SBAIJ matrices with PaStiX LU, use AIJ matrix");
-  /* Create the factorization matrix */ 
+  /* Create the factorization matrix */
   ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N);CHKERRQ(ierr);
   ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
@@ -683,9 +686,9 @@ PetscErrorCode MatGetFactor_seqsbaij_pastix(Mat A,MatFactorType ftype,Mat *F)
   pastix->isAIJ                     = PETSC_TRUE;
   pastix->scat_rhs                  = PETSC_NULL;
   pastix->scat_sol                  = PETSC_NULL;
-  pastix->MatDestroy                = B->ops->destroy;
-  B->ops->destroy                  = MatDestroy_Pastix;
-  B->spptr                         = (void*)pastix;
+  pastix->Destroy                   = B->ops->destroy;
+  B->ops->destroy                   = MatDestroy_Pastix;
+  B->spptr                          = (void*)pastix;
 
   *F = B;
   PetscFunctionReturn(0);
@@ -721,7 +724,7 @@ PetscErrorCode MatGetFactor_mpisbaij_pastix(Mat A,MatFactorType ftype,Mat *F)
   pastix->isAIJ                     = PETSC_TRUE;
   pastix->scat_rhs                  = PETSC_NULL;
   pastix->scat_sol                  = PETSC_NULL;
-  pastix->MatDestroy                = B->ops->destroy;
+  pastix->Destroy                   = B->ops->destroy;
   B->ops->destroy                   = MatDestroy_Pastix;
   B->spptr                          = (void*)pastix;
 
