@@ -4,8 +4,10 @@
 #include "../src/mat/impls/baij/seq/bstream/bstream.h"
 
 /*=========================================================*/ 
-PetscErrorCode MatLUFactorSymbolic_bstrm(Mat B,Mat A,IS r,IS c,const MatFactorInfo *info);
+EXTERN_C_BEGIN
+extern PetscErrorCode MatLUFactorSymbolic_bstrm(Mat B,Mat A,IS r,IS c,const MatFactorInfo *info);
 extern PetscErrorCode MatLUFactorNumeric_bstrm(Mat F,Mat A,const MatFactorInfo *info);
+EXTERN_C_END
 /*=========================================================*/ 
 #undef __FUNCT__
 #define __FUNCT__ "MatDestroy_SeqBSTRM"
@@ -43,19 +45,15 @@ PetscErrorCode MatSolve_SeqBSTRM_4(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ       *a = (Mat_SeqBAIJ *)A->data;
   Mat_SeqBSTRM      *bstrm = (Mat_SeqBSTRM *)A->spptr;
-  IS                iscol=a->col,isrow=a->row;
   PetscErrorCode    ierr;
-  PetscInt          i,j,n=a->mbs,*vi,*ai=a->i,*aj=a->j, *diag=a->diag, nz,idx,jdx;     
-  const MatScalar   *aa=a->a,*v;
-  PetscScalar       *x,s1,s2,s3,s4,x1,x2,x3,x4,*t;
+  PetscInt          i,j,n=a->mbs,*ai=a->i,*aj=a->j, *diag=a->diag,idx,jdx;
+  PetscScalar       *x,s1,s2,s3,s4,x1,x2,x3,x4;
   PetscScalar       *v1, *v2, *v3, *v4;
   const PetscScalar *b;
 
   PetscFunctionBegin;
   ierr = VecGetArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
-
-  PetscInt *asi = bstrm->asi, *asj = bstrm->asj; 
   PetscInt slen = 4*(ai[n]-ai[0]+diag[0]-diag[n]);
 
   v1  = bstrm->as;
@@ -126,11 +124,9 @@ PetscErrorCode MatSolve_SeqBSTRM_5(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ       *a = (Mat_SeqBAIJ *)A->data;
   Mat_SeqBSTRM      *bstrm = (Mat_SeqBSTRM *)A->spptr;
-  IS                iscol=a->col,isrow=a->row;
   PetscErrorCode    ierr;
-  PetscInt          i,j,n=a->mbs,*vi,*ai=a->i,*aj=a->j,*diag = a->diag, nz,idx,jdx;     
-  const MatScalar   *aa=a->a,*v;
-  PetscScalar       *x,s1,s2,s3,s4,s5,x1,x2,x3,x4,x5,*t;
+  PetscInt          i,j,n=a->mbs,*ai=a->i,*aj=a->j,*diag = a->diag,idx,jdx;
+  PetscScalar       *x,s1,s2,s3,s4,s5,x1,x2,x3,x4,x5;
   PetscScalar       *v1, *v2, *v3, *v4, *v5;
   const PetscScalar *b;
 
@@ -220,9 +216,8 @@ PetscErrorCode SeqBSTRM_convert_bstrm(Mat A)
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ *) A->data;
   Mat_SeqBSTRM   *bstrm = (Mat_SeqBSTRM*) A->spptr;
   PetscInt       m = a->mbs, bs = A->rmap->bs;
-  PetscInt       *aj = a->j, *ai = a->i, *diag = a->diag;
-  PetscInt       i,j,k,ib,jb, rmax = a->rmax, *idiag, nnz;
-  PetscInt       *asi, *asj;
+  PetscInt       *ai = a->i, *diag = a->diag;
+  PetscInt       i,j,ib,jb;
   MatScalar      *aa = a->a;
   PetscErrorCode ierr;
 
@@ -266,13 +261,14 @@ PetscErrorCode SeqBSTRM_convert_bstrm(Mat A)
   PetscFunctionReturn(0);
 }
 /*=========================================================*/ 
+extern PetscErrorCode SeqBSTRM_create_bstrm(Mat);
+
 #undef __FUNCT__
 #define __FUNCT__ "MatAssemblyEnd_SeqBSTRM"
 PetscErrorCode MatAssemblyEnd_SeqBSTRM(Mat A, MatAssemblyType mode)
 {
   PetscErrorCode ierr;
   Mat_SeqBSTRM    *bstrm = (Mat_SeqBSTRM *) A->spptr;
-  Mat_SeqBAIJ     *a    = (Mat_SeqBAIJ *)  A->data;
 
   PetscFunctionBegin;
   if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(0);
@@ -290,7 +286,6 @@ PetscErrorCode  MatConvert_SeqBAIJ_SeqBSTRM(Mat A,const MatType type,MatReuse re
   PetscErrorCode ierr;
   Mat            B = *newmat;
   Mat_SeqBSTRM   *bstrm;
-  PetscInt       bs = A->rmap->bs;
 
   PetscFunctionBegin;
   if (reuse == MAT_INITIAL_MATRIX) {
@@ -415,9 +410,8 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatILUFactorSymbolic_bstrm"
 PetscErrorCode MatILUFactorSymbolic_bstrm(Mat B,Mat A,IS r,IS c,const MatFactorInfo *info)
 {
-  Mat_SeqBSTRM     *bstrm = (Mat_SeqBSTRM *) B->spptr;
-  PetscFunctionBegin;
   PetscInt ierr;
+  PetscFunctionBegin;
   ierr = (MatILUFactorSymbolic_SeqBAIJ)(B,A,r,c,info);CHKERRQ(ierr);
   B->ops->lufactornumeric  = MatLUFactorNumeric_bstrm;
   PetscFunctionReturn(0);
@@ -429,9 +423,8 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatLUFactorSymbolic_bstrm"
 PetscErrorCode MatLUFactorSymbolic_bstrm(Mat B,Mat A,IS r,IS c,const MatFactorInfo *info)
 {
-  Mat_SeqBSTRM     *bstrm = (Mat_SeqBSTRM *) B->spptr;
-  PetscFunctionBegin;
   PetscInt ierr;
+  PetscFunctionBegin;
   /* ierr = (*bstrm ->MatLUFactorSymbolic)(B,A,r,c,info);CHKERRQ(ierr); */
   ierr = (MatLUFactorSymbolic_SeqBAIJ)(B,A,r,c,info);CHKERRQ(ierr);
   B->ops->lufactornumeric  = MatLUFactorNumeric_bstrm;
@@ -444,7 +437,7 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatGetFactor_seqbaij_bstrm"
 PetscErrorCode MatGetFactor_seqbaij_bstrm(Mat A,MatFactorType ftype,Mat *B)
 {
-  PetscInt       n = A->rmap->n, bs = A->rmap->bs;
+  PetscInt       n = A->rmap->n;
   Mat_SeqBSTRM   *bstrm;
   PetscErrorCode ierr;
 
@@ -469,7 +462,9 @@ PetscErrorCode MatGetFactor_seqbaij_bstrm(Mat A,MatFactorType ftype,Mat *B)
 }
 EXTERN_C_END
 /*=========================================================*/ 
-
+EXTERN_C_BEGIN
+extern PetscErrorCode  MatInvertBlockDiagonal_SeqBAIJ(Mat);
+EXTERN_C_END
 /*=========================================================*/ 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSOR_SeqBSTRM_4"
@@ -477,7 +472,7 @@ PetscErrorCode MatSOR_SeqBSTRM_4(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pe
 {
   Mat_SeqBAIJ        *a = (Mat_SeqBAIJ*)A->data;
   PetscScalar        *x,x1,x2,x3,x4,s1,s2,s3,s4;
-  const MatScalar    *v,*aa = a->a, *idiag,*mdiag;
+  const MatScalar    *idiag,*mdiag;
   const PetscScalar  *b;
   PetscErrorCode     ierr;
   PetscInt           m = a->mbs,i,i2,nz,idx;
@@ -627,7 +622,7 @@ PetscErrorCode MatSOR_SeqBSTRM_5(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pe
 {
   Mat_SeqBAIJ        *a = (Mat_SeqBAIJ*)A->data;
   PetscScalar        *x,x1,x2,x3,x4,x5,s1,s2,s3,s4,s5;
-  const MatScalar    *v,*aa = a->a, *idiag,*mdiag;
+  const MatScalar    *idiag,*mdiag;
   const PetscScalar  *b;
   PetscErrorCode     ierr;
   PetscInt           m = a->mbs,i,i2,nz,idx;
@@ -788,7 +783,6 @@ PetscErrorCode MatSOR_SeqBSTRM_5(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pe
 PetscErrorCode MatMult_SeqBSTRM_4(Mat A,Vec xx,Vec zz)
 {
   Mat_SeqBAIJ       *a = (Mat_SeqBAIJ*)A->data;
-  MatScalar         *aa = a->a;
   Mat_SeqBSTRM      *bstrm = (Mat_SeqBSTRM *)A->spptr;
   PetscScalar       *z = 0,sum1,sum2,sum3,sum4,x1,x2,x3,x4,*zarray;
   const PetscScalar *x,*xb;
@@ -847,7 +841,6 @@ PetscErrorCode MatMult_SeqBSTRM_4(Mat A,Vec xx,Vec zz)
 PetscErrorCode MatMult_SeqBSTRM_5(Mat A,Vec xx,Vec zz)
 {
   Mat_SeqBAIJ       *a = (Mat_SeqBAIJ*)A->data;
-  MatScalar         *aa = a->a;
   Mat_SeqBSTRM      *bstrm = (Mat_SeqBSTRM *)A->spptr;
   PetscScalar       *z = 0,sum1,sum2,sum3,sum4,sum5,x1,x2,x3,x4,x5,*zarray;
   const PetscScalar *x,*xb;
@@ -918,14 +911,13 @@ PetscErrorCode MatMult_SeqBSTRM_5(Mat A,Vec xx,Vec zz)
 PetscErrorCode MatMultTranspose_SeqBSTRM_4(Mat A,Vec xx,Vec zz)
 {
   Mat_SeqBAIJ      *a = (Mat_SeqBAIJ*)A->data;
-  MatScalar         *aa = a->a;
   Mat_SeqBSTRM     *sbstrm = (Mat_SeqBSTRM *)A->spptr;
   PetscScalar       zero = 0.0;  
   PetscScalar       x1,x2,x3,x4;
   PetscScalar       *x, *xb, *z;
   MatScalar         *v1, *v2, *v3, *v4;
   PetscErrorCode    ierr;
-  PetscInt       mbs=a->mbs,i,*aj=a->j,*ai=a->i,n,*ib,cval,j,jmin;
+  PetscInt       mbs=a->mbs,i,*aj=a->j,*ai=a->i,n,*ib,cval,j;
   PetscInt       nonzerorow=0;
 
   PetscFunctionBegin;
@@ -967,7 +959,6 @@ PetscErrorCode MatMultTranspose_SeqBSTRM_4(Mat A,Vec xx,Vec zz)
 PetscErrorCode MatMultTranspose_SeqBSTRM_5(Mat A,Vec xx,Vec zz)
 {
   Mat_SeqBAIJ       *a = (Mat_SeqBAIJ*)A->data;
-  MatScalar         *aa = a->a;
   Mat_SeqBSTRM      *sbstrm = (Mat_SeqBSTRM *)A->spptr;
   PetscScalar       zero = 0.0;  
   PetscScalar       *z = 0;
@@ -975,7 +966,7 @@ PetscErrorCode MatMultTranspose_SeqBSTRM_5(Mat A,Vec xx,Vec zz)
   const MatScalar   *v1, *v2, *v3, *v4, *v5;
   PetscScalar       x1, x2, x3, x4, x5;
   PetscErrorCode    ierr;
-  PetscInt       mbs=a->mbs,i,*aj=a->j,*ai=a->i,n,*ib,cval,j,jmin;
+  PetscInt       mbs=a->mbs,i,*aj=a->j,*ai=a->i,n,*ib,cval,j;
   PetscInt       nonzerorow=0;
 
 
@@ -1189,8 +1180,8 @@ PetscErrorCode SeqBSTRM_create_bstrm(Mat A)
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ *) A->data;
   Mat_SeqBSTRM   *bstrm = (Mat_SeqBSTRM*) A->spptr;
   PetscInt       MROW = a->mbs, bs = A->rmap->bs;
-  PetscInt       *aj = a->j, *ai = a->i, *ilen=a->ilen;
-  PetscInt       i,j,k, rmax = a->rmax, *idiag, nnz;
+  PetscInt       *ai = a->i;
+  PetscInt       i,j,k;
   MatScalar      *aa = a->a;
   PetscErrorCode ierr;
 
