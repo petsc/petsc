@@ -338,7 +338,7 @@ static PetscErrorCode BuildGmresSoln(PetscScalar* nrs,Vec vs,Vec vdest,KSP ksp,P
     nrs[it] = *GRS(it) / *HH(it,it);
   } else {
     ksp->reason = KSP_DIVERGED_BREAKDOWN;
-    ierr = PetscInfo2(ksp,"Likley your matrix or perconditioner is singular. HH(it,it) is identically zero; it = %D GRS(it) = %G",it,PetscAbsScalar(*GRS(it)));
+    ierr = PetscInfo2(ksp,"Likely your matrix or preconditioner is singular. HH(it,it) is identically zero; it = %D GRS(it) = %G",it,PetscAbsScalar(*GRS(it)));
     PetscFunctionReturn(0);
   }
   for (ii=1; ii<=it; ii++) {
@@ -347,7 +347,7 @@ static PetscErrorCode BuildGmresSoln(PetscScalar* nrs,Vec vs,Vec vdest,KSP ksp,P
     for (j=k+1; j<=it; j++) tt  = tt - *HH(k,j) * nrs[j];
     if (*HH(k,k) == 0.0) {
       ksp->reason = KSP_DIVERGED_BREAKDOWN;
-      ierr = PetscInfo1(ksp,"Likley your matrix or perconditioner is singular. HH(k,k) is identically zero; k = %D",k);
+      ierr = PetscInfo1(ksp,"Likely your matrix or preconditioner is singular. HH(k,k) is identically zero; k = %D",k);
       PetscFunctionReturn(0);
     } 
     nrs[k]   = tt / *HH(k,k);
