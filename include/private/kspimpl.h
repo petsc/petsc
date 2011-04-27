@@ -122,7 +122,6 @@ typedef struct {
 extern PetscErrorCode KSPMonitor(KSP,PetscInt,PetscReal);
 
 extern PetscErrorCode KSPDefaultDestroy(KSP);
-extern PetscErrorCode KSPDefaultReset(KSP);
 extern PetscErrorCode KSPGetVecs(KSP,PetscInt,Vec**,PetscInt,Vec**);
 extern PetscErrorCode KSPDefaultGetWork(KSP,PetscInt);
 
