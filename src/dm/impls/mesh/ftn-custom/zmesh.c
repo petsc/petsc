@@ -1,30 +1,5 @@
 #include <private/fortranimpl.h>
 #include <petscdmmesh.h>
-/* mesh.c */
-/* Fortran interface file */
-
-/*
-* This file was generated automatically by bfort from the C source
-* file.  
- */
-
-#ifdef PETSC_USE_POINTER_CONVERSION
-#if defined(__cplusplus)
-extern "C" { 
-#endif 
-extern void *PetscToPointer(void*);
-extern int PetscFromPointer(void *);
-extern void PetscRmPointer(void*);
-#if defined(__cplusplus)
-} 
-#endif 
-
-#else
-
-#define PetscToPointer(a) (*(long *)(a))
-#define PetscFromPointer(a) (long)(a)
-#define PetscRmPointer(a)
-#endif
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define dmmeshcreatepcice_          DMMESHCREATEPCICE
@@ -87,95 +62,95 @@ void PETSC_STDCALL  dmmeshcreateexodus_(MPI_Fint * comm, CHAR filename PETSC_MIX
   *ierr = DMMeshCreateExodus(MPI_Comm_f2c( *(comm) ),cF,dm);
   FREECHAR(filename,cF);
 }
-void PETSC_STDCALL  dmmeshdistribute_(DM serialMesh, CHAR partitioner PETSC_MIXED_LEN(lenP), DM *parallelMesh, PetscErrorCode *ierr PETSC_END_LEN(lenP))
+void PETSC_STDCALL  dmmeshdistribute_(DM *serialMesh, CHAR partitioner PETSC_MIXED_LEN(lenP), DM *parallelMesh, PetscErrorCode *ierr PETSC_END_LEN(lenP))
 {
   char *pF;
   FIXCHAR(partitioner,lenP,pF);
-  *ierr = DMMeshDistribute((DM) PetscToPointer(serialMesh),pF,parallelMesh);
+  *ierr = DMMeshDistribute(serialMesh,pF,parallelMesh);
   FREECHAR(partitioner,pF);
 }
-void PETSC_STDCALL  dmmeshgetvertexsectionreal_(DM mesh, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *fiberDim, SectionReal *section, int *ierr PETSC_END_LEN(lenN)){
+void PETSC_STDCALL  dmmeshgetvertexsectionreal_(DM *mesh, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *fiberDim, SectionReal *section, int *ierr PETSC_END_LEN(lenN)){
   char *pN;
   FIXCHAR(name,lenN,pN);
-  *ierr = DMMeshGetVertexSectionReal((DM) PetscToPointer(mesh), pN, *fiberDim, section);
+  *ierr = DMMeshGetVertexSectionReal(mesh, pN, *fiberDim, section);
   FREECHAR(name,pN);
 }
-void PETSC_STDCALL  dmmeshgetcellsectionreal_(DM mesh, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *fiberDim, SectionReal *section, int *ierr PETSC_END_LEN(lenN)){
+void PETSC_STDCALL  dmmeshgetcellsectionreal_(DM *mesh, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *fiberDim, SectionReal *section, int *ierr PETSC_END_LEN(lenN)){
   char *pN;
   FIXCHAR(name,lenN,pN);
-  *ierr = DMMeshGetCellSectionReal((DM) PetscToPointer(mesh), pN, *fiberDim, section);
+  *ierr = DMMeshGetCellSectionReal(mesh, pN, *fiberDim, section);
   FREECHAR(name,pN);
 }
-void PETSC_STDCALL  dmmeshgetvertexsectionint_(DM mesh, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *fiberDim, SectionInt *section, int *ierr PETSC_END_LEN(lenN)){
+void PETSC_STDCALL  dmmeshgetvertexsectionint_(DM *mesh, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *fiberDim, SectionInt *section, int *ierr PETSC_END_LEN(lenN)){
   char *pN;
   FIXCHAR(name,lenN,pN);
-  *ierr = DMMeshGetVertexSectionInt((DM) PetscToPointer(mesh), pN, *fiberDim, section);
+  *ierr = DMMeshGetVertexSectionInt(mesh, pN, *fiberDim, section);
   FREECHAR(name,pN);
 }
-void PETSC_STDCALL  mdmeshgetcellsectionint_(DM mesh, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *fiberDim, SectionInt *section, int *ierr PETSC_END_LEN(lenN)){
+void PETSC_STDCALL  mdmeshgetcellsectionint_(DM *mesh, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *fiberDim, SectionInt *section, int *ierr PETSC_END_LEN(lenN)){
   char *pN;
   FIXCHAR(name,lenN,pN);
-  *ierr = DMMeshGetCellSectionInt((DM) PetscToPointer(mesh), pN, *fiberDim, section);
+  *ierr = DMMeshGetCellSectionInt(mesh, pN, *fiberDim, section);
   FREECHAR(name,pN);
 }
-void PETSC_STDCALL  vertexsectionrealcreate_(DM mesh, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *fiberDim, int *ierr PETSC_END_LEN(lenN)){
+void PETSC_STDCALL  vertexsectionrealcreate_(DM *mesh, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *fiberDim, int *ierr PETSC_END_LEN(lenN)){
   SectionReal section;
   char *pN;
   FIXCHAR(name,lenN,pN);
-  *ierr = DMMeshGetVertexSectionReal((DM) PetscToPointer(mesh), pN, *fiberDim, &section);
-  *ierr = DMMeshSetSectionReal((DM) PetscToPointer(mesh), section);
+  *ierr = DMMeshGetVertexSectionReal(mesh, pN, *fiberDim, &section);
+  *ierr = DMMeshSetSectionReal(mesh, section);
   *ierr = SectionRealDestroy(&section);
   FREECHAR(name,pN);
 }
-void PETSC_STDCALL  vertexsectionintcreate_(DM mesh, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *fiberDim, int *ierr PETSC_END_LEN(lenN)){
+void PETSC_STDCALL  vertexsectionintcreate_(DM *mesh, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *fiberDim, int *ierr PETSC_END_LEN(lenN)){
   SectionInt section;
   char *pN;
   FIXCHAR(name,lenN,pN);
-  *ierr = DMMeshGetVertexSectionInt((DM) PetscToPointer(mesh), pN, *fiberDim, &section);
-  *ierr = DMMeshSetSectionInt((DM) PetscToPointer(mesh), section);
+  *ierr = DMMeshGetVertexSectionInt(mesh, pN, *fiberDim, &section);
+  *ierr = DMMeshSetSectionInt(mesh, section);
   *ierr = SectionIntDestroy(&section);
   FREECHAR(name,pN);
 }
-void PETSC_STDCALL  cellsectionrealcreate_(DM mesh, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *fiberDim, int *ierr PETSC_END_LEN(lenN)){
+void PETSC_STDCALL  cellsectionrealcreate_(DM *mesh, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *fiberDim, int *ierr PETSC_END_LEN(lenN)){
   SectionReal section;
   char *pN;
   FIXCHAR(name,lenN,pN);
-  *ierr = DMMeshGetCellSectionReal((DM) PetscToPointer(mesh), pN, *fiberDim, &section);
-  *ierr = DMMeshSetSectionReal((DM) PetscToPointer(mesh), section);
+  *ierr = DMMeshGetCellSectionReal(mesh, pN, *fiberDim, &section);
+  *ierr = DMMeshSetSectionReal(mesh, section);
   *ierr = SectionRealDestroy(&section);
   FREECHAR(name,pN);
 }
-void PETSC_STDCALL  dmmeshgetlabelsize_(DM mesh, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *size, int *ierr PETSC_END_LEN(lenN)){
+void PETSC_STDCALL  dmmeshgetlabelsize_(DM *mesh, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *size, int *ierr PETSC_END_LEN(lenN)){
   char *pN;
   FIXCHAR(name,lenN,pN);
-  *ierr = DMMeshGetLabelSize((DM) PetscToPointer(mesh),pN, size);
+  *ierr = DMMeshGetLabelSize(mesh,pN, size);
   FREECHAR(name,pN);
 }
-void PETSC_STDCALL  dmmeshgetstratumsize_(DM mesh, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *value, PetscInt *size, int *ierr PETSC_END_LEN(lenN)){
+void PETSC_STDCALL  dmmeshgetstratumsize_(DM *mesh, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *value, PetscInt *size, int *ierr PETSC_END_LEN(lenN)){
   char *pN;
   FIXCHAR(name,lenN,pN);
-  *ierr = DMMeshGetStratumSize((DM) PetscToPointer(mesh),pN, *value, size);
-  FREECHAR(name,pN);
-}
-
-void PETSC_STDCALL  dmmeshgetsectionreal_(DM mesh, CHAR name PETSC_MIXED_LEN(lenN), SectionReal *section, int *ierr PETSC_END_LEN(lenN)){
-  char *pN;
-  FIXCHAR(name,lenN,pN);
-  *ierr = DMMeshGetSectionReal((DM) PetscToPointer(mesh), pN, section);
+  *ierr = DMMeshGetStratumSize(mesh,pN, *value, size);
   FREECHAR(name,pN);
 }
 
-void PETSC_STDCALL  dmmeshgetsectionint_(DM mesh, CHAR name PETSC_MIXED_LEN(lenN), SectionInt *section, int *ierr PETSC_END_LEN(lenN)){
+void PETSC_STDCALL  dmmeshgetsectionreal_(DM *mesh, CHAR name PETSC_MIXED_LEN(lenN), SectionReal *section, int *ierr PETSC_END_LEN(lenN)){
   char *pN;
   FIXCHAR(name,lenN,pN);
-  *ierr = DMMeshGetSectionInt((DM) PetscToPointer(mesh), pN, section);
+  *ierr = DMMeshGetSectionReal(mesh, pN, section);
   FREECHAR(name,pN);
 }
 
-void PETSC_STDCALL  dmmeshcreatematrix_(DM mesh, SectionReal section, CHAR mattype PETSC_MIXED_LEN(lenN), Mat *J, int *ierr PETSC_END_LEN(lenN)){
+void PETSC_STDCALL  dmmeshgetsectionint_(DM *mesh, CHAR name PETSC_MIXED_LEN(lenN), SectionInt *section, int *ierr PETSC_END_LEN(lenN)){
+  char *pN;
+  FIXCHAR(name,lenN,pN);
+  *ierr = DMMeshGetSectionInt(mesh, pN, section);
+  FREECHAR(name,pN);
+}
+
+void PETSC_STDCALL  dmmeshcreatematrix_(DM *mesh, SectionReal *section, CHAR mattype PETSC_MIXED_LEN(lenN), Mat *J, int *ierr PETSC_END_LEN(lenN)){
   char *pN;
   FIXCHAR(mattype,lenN,pN);
-  *ierr = DMMeshCreateMatrix((DM) PetscToPointer(mesh), (SectionReal) PetscToPointer(section), pN, J);
+  *ierr = DMMeshCreateMatrix(mesh, section, pN, J);
   FREECHAR(mattype,pN);
 }
 

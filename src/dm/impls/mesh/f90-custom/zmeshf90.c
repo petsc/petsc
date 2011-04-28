@@ -2,24 +2,6 @@
 #include <petscdmmesh.h>
 #include <../src/sys/f90-src/f90impl.h>
 
-#ifdef PETSC_USE_POINTER_CONVERSION
-#if defined(__cplusplus)
-extern "C" { 
-#endif 
-extern void *PetscToPointer(void*);
-extern int PetscFromPointer(void *);
-extern void PetscRmPointer(void*);
-#if defined(__cplusplus)
-} 
-#endif 
-
-#else
-
-#define PetscToPointer(a) (*(long *)(a))
-#define PetscFromPointer(a) (long)(a)
-#define PetscRmPointer(a)
-#endif
-
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define dmmeshgetcoordinatesf90_     DMMESHGETCOORDINATESF90
 #define dmmeshrestorecoordinatesf90_ DMMESHRESTORECOORDINATESF90
