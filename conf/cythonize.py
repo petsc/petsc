@@ -66,4 +66,8 @@ if __name__ == "__main__":
                   includes=['include'],
                   destdir_h=os.path.join('include', 'petsc4py'),
                   wdir='src')
+        or
+        cythonize(os.path.join('libpetsc4py', 'libpetsc4py.pyx'),
+                  includes=['include'],
+                  wdir='src')
         )

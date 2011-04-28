@@ -64,8 +64,6 @@ def get_ext_modules(Extension):
     depends = []
     for pth, dirs, files in walk('src'):
         depends += glob(path.join(pth, '*.h'))
-    for pth, dirs, files in walk(path.join('src', 'source')):
-        depends += glob(path.join(pth, '*.h'))
         depends += glob(path.join(pth, '*.c'))
     try:
         import numpy
@@ -74,10 +72,9 @@ def get_ext_modules(Extension):
         numpy_includes = []
     return [Extension('petsc4py.lib.PETSc',
                       sources=['src/PETSc.c',
-                               'src/source/libpetsc4py.c',
+                               'src/libpetsc4py.c',
                                ],
                       include_dirs=['src/include',
-                                    'src/source',
                                     ] + numpy_includes,
                       depends=depends)]
 
@@ -209,6 +206,15 @@ def build_sources(cmd):
     destdir_h = os.path.join('include', 'petsc4py')
     run_cython(source, depends, includes,
                destdir_c=None, destdir_h=destdir_h, wdir='src',
+               force=cmd.force, VERSION=CYTHON_VERSION_REQUIRED)
+    # libpetsc4py
+    source = os.path.join('libpetsc4py', 'libpetsc4py.pyx')
+    depends = ["include/petsc4py/*.pxd",
+               "libpetsc4py/*.pyx",
+               "libpetsc4py/*.pxi"]
+    includes = ['include']
+    run_cython(source, depends, includes,
+               destdir_c=None, destdir_h=None, wdir='src',
                force=cmd.force, VERSION=CYTHON_VERSION_REQUIRED)
 
 build_src.run = build_sources

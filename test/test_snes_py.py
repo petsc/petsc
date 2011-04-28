@@ -48,41 +48,41 @@ class MySNES(object):
     def reset(self, snes):
         self._log('reset', snes)
 
-    def preSolve(self, snes):
-        self._log('preSolve', snes)
+    #def preSolve(self, snes):
+    #    self._log('preSolve', snes)
+    #
+    #def postSolve(self, snes):
+    #    self._log('postSolve', snes)
 
-    def postSolve(self, snes):
-        self._log('postSolve', snes)
+    def preStep(self, snes):
+        self._log('preStep', snes)
 
-    def preStep(self, snes, its):
-        self._log('preStep', snes, its)
+    def postStep(self, snes):
+        self._log('postStep', snes)
 
-    def postStep(self, snes, its):
-        self._log('postStep', snes, its)
-
-    def computeFunction(self, snes, x, F):
-        self._log('computeFunction', snes, x, F)
-        snes.computeFunction(x, F)
-
-    def computeJacobian(self, snes, x, A, B):
-        self._log('computeJacobian', snes, x, A, B)
-        flag = snes.computeJacobian(x, A, B)
-        return flag
-
-    def linearSolve(self, snes, b, x):
-        self._log('linearSolve', snes, b, x)
-        snes.ksp.solve(b,x)
-        ## return False # not succedd
-        if snes.ksp.getConvergedReason() < 0:
-            return False # not succedd
-        return True # succedd
-
-    def lineSearch(self, snes, x, y, F):
-        self._log('lineSearch', snes, x, y, F)
-        x.axpy(-1,y)
-        snes.computeFunction(x, F)
-        ## return False # not succedd
-        return True # succedd
+    #def computeFunction(self, snes, x, F):
+    #    self._log('computeFunction', snes, x, F)
+    #    snes.computeFunction(x, F)
+    #
+    #def computeJacobian(self, snes, x, A, B):
+    #    self._log('computeJacobian', snes, x, A, B)
+    #    flag = snes.computeJacobian(x, A, B)
+    #    return flag
+    #
+    #def linearSolve(self, snes, b, x):
+    #    self._log('linearSolve', snes, b, x)
+    #    snes.ksp.solve(b,x)
+    #    ## return False # not succedd
+    #    if snes.ksp.getConvergedReason() < 0:
+    #        return False # not succedd
+    #    return True # succedd
+    #
+    #def lineSearch(self, snes, x, y, F):
+    #    self._log('lineSearch', snes, x, y, F)
+    #    x.axpy(-1,y)
+    #    snes.computeFunction(x, F)
+    #    ## return False # not succedd
+    #    return True # succedd
 
 
 from test_snes import BaseTestSNES

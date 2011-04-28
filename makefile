@@ -34,6 +34,7 @@ distclean: clean
 
 srcclean:
 	-${RM} src/petsc4py.PETSc.c
+	-${RM} src/libpetsc4py/libpetsc4py.[ch]
 	-${RM} src/include/petsc4py/petsc4py.PETSc.h
 	-${RM} src/include/petsc4py/petsc4py.PETSc_api.h
 

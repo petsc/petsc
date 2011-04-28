@@ -15,21 +15,17 @@ class MyODE:
         self.function_calls = 0
         self.jacobian_calls = 0
 
-    def function(self, ts,t,u,F):
+    def function(self,ts,t,u,du,F):
         #print 'MyODE.function()'
         self.function_calls += 1
-        dt = ts.getTimeStep()
-        u0 = ts.getSolution()
-        f = (u - u0)/dt + u * u
+        f = du + u * u
         f.copy(F)
 
-    def jacobian(self,ts,t,u,J,P):
+    def jacobian(self,ts,t,u,du,a,J,P):
         #print 'MyODE.jacobian()'
         self.jacobian_calls += 1
-        u0 = ts.getSolution()
-        dt = ts.getTimeStep()
         P.zeroEntries()
-        diag = 1/dt + 2 * u
+        diag = a + 2 * u
         P.setDiagonal(diag)
         P.assemble()
         if J != P: J.assemble()
@@ -42,10 +38,10 @@ class MyTS:
         self.log.setdefault(method, 0)
         self.log[method] += 1
 
-    def create(self, *args):
+    def create(self, ts, *args):
         self._log('create', *args)
 
-    def destroy(self,*args):
+    def destroy(self, ts, *args):
         self._log('destroy', *args)
 
     def setFromOptions(self, ts, *args):
@@ -57,39 +53,19 @@ class MyTS:
     def reset(self, ts, *args):
         self._log('reset', ts, *args)
 
-    def computeRHSFunction(self, ts, *args):
-        self._log('computeRHSFunction', ts, *args)
-        return ts.computeRHSFunction(*args)
-
-    def computeRHSJacobian(self, ts, *args):
-        self._log('computeRHSJacobian', *args)
-        return ts.computeRHSJacobian(*args)
-
-    def preSolve(self, ts, *args):
-        self._log('preSolve', ts, args)
-
-    def postSolve(self, ts, *args):
-        self._log('postSolve', ts, args)
-
     def preStep(self, ts, *args):
-        self._log('preStep', ts, args)
+        self._log('preStep', ts, *args)
 
     def postStep(self, ts, *args):
-        self._log('postStep', ts, args)
+        self._log('postStep', ts, *args)
 
-    def startStep(self, ts, *args):
-        self._log('startStep', ts, args)
+    def step(self, ts, t, u, *args):
+        self._log('step', ts, t, u, *args)
+        ts.snes.solve(None, u)
 
-    def verifyStep(self, ts, *args):
-        self._log('verifyStep', ts, args)
-        return (True, ts.getTimeStep())
-
-    def monitor(self, ts, s, t, u):
-        self._log('monitor', ts, s, t, u)
-        dt = ts.time_step
-        ut  = ts.vec_sol.norm()
-        #prn = PETSc.Sys.Print
-        #prn('TS: step %2d, T:%f, dT:%f, u:%f' % (s,t,dt,ut))
+    def adapt(self, ts, t, u, *args):
+        self._log('adapt', ts, t, u, *args)
+        return (ts.getTimeStep(), True)
 
 
 class TestTSPython(unittest.TestCase):
@@ -100,6 +76,7 @@ class TestTSPython(unittest.TestCase):
         ctx = self.ts.getPythonContext()
         self.assertEqual(getrefcount(ctx),  3)
         self.assertEqual(ctx.log['create'], 1)
+        self.nsolve = 0
 
     def tearDown(self):
         ctx = self.ts.getPythonContext()
@@ -110,8 +87,9 @@ class TestTSPython(unittest.TestCase):
         self.assertEqual(ctx.log['destroy'], 1)
         self.assertEqual(getrefcount(ctx),   2)
 
-    def testSolve(self, nsolve=1):
+    def testSolve(self):
         ts = self.ts
+        ts.setProblemType(ts.ProblemType.NONLINEAR)
         ode = MyODE()
         J = PETSc.Mat().create(ts.comm)
         J.setSizes(3);
@@ -119,40 +97,42 @@ class TestTSPython(unittest.TestCase):
         u, f = J.createVecs()
 
         ts.setAppCtx(ode)
-        ts.setRHSFunction(ode.function, f)
-        ts.setRHSJacobian(ode.jacobian, J, J)
+        ts.setIFunction(ode.function, f)
+        ts.setIJacobian(ode.jacobian, J, J)
         ts.snes.ksp.pc.setType('none')
-
-        T0, dT, nT = 0.00, 0.1, 10
+        
+        T0, dT, nT = 0.0, 0.1, 10
         T = T0 + nT*dT
         ts.setTime(T0)
         ts.setTimeStep(dT)
+        ts.setMaxTime(T)
+        ts.setMaxSteps(nT)
         ts.setDuration(T, nT)
         ts.setFromOptions()
         u[0], u[1], u[2] = 1, 2, 3
         ts.solve(u)
+        self.nsolve +=1
 
         self.assertTrue(ode.function_calls > 0)
         self.assertTrue(ode.jacobian_calls > 0)
-
+        
         ctx = self.ts.getPythonContext()
-        self.assertEqual(getrefcount(ctx), 3)
-        self.assertTrue(ctx.log['preSolve']  ==  nsolve)
-        self.assertTrue(ctx.log['postSolve'] ==  nsolve)
-        self.assertTrue(ctx.log['preStep']    >  1)
-        self.assertTrue(ctx.log['postStep']   >  1)
-        self.assertTrue(ctx.log['startStep']  >  1)
-        self.assertTrue(ctx.log['verifyStep'] >  1)
-        self.assertTrue(ctx.log['monitor']    >  1)
+        ncalls = self.nsolve * ts.step_number
+        self.assertTrue(ctx.log['preStep']  == ncalls)
+        self.assertTrue(ctx.log['postStep'] == ncalls)
+        self.assertTrue(ctx.log['step']     == ncalls)
+        self.assertTrue(ctx.log['adapt']    == ncalls)
         del ctx
 
         dct = self.ts.getDict()
-        self.assertTrue('__appctx__'   in dct)
-        self.assertTrue('__rhsfunction__' in dct)
-        self.assertTrue('__rhsjacobian__' in dct)
+        self.assertTrue('__appctx__'    in dct)
+        self.assertTrue('__ifunction__' in dct)
+        self.assertTrue('__ijacobian__' in dct)
 
     def testFDColor(self):
+        #
         ts = self.ts
+        ts.setProblemType(ts.ProblemType.NONLINEAR)
         ode = MyODE()
         J = PETSc.Mat().create(ts.comm)
         J.setSizes(5); J.setType('aij');
@@ -161,8 +141,8 @@ class TestTSPython(unittest.TestCase):
         u, f = J.createVecs()
 
         ts.setAppCtx(ode)
-        ts.setRHSFunction(ode.function, f)
-        ts.setRHSJacobian(ode.jacobian, J, J)
+        ts.setIFunction(ode.function, f)
+        ts.setIJacobian(ode.jacobian, J, J)
 
         T0, dT, nT = 0.00, 0.1, 10
         T = T0 + nT*dT
@@ -170,20 +150,21 @@ class TestTSPython(unittest.TestCase):
         ts.setTimeStep(dT)
         ts.setDuration(T, nT)
         ts.setFromOptions()
-        u[0], u[1], u[2] = 1, 2, 3
+        u[:] = 1, 2, 3, 4, 5
 
         ts.setSolution(u)
-        ode.jacobian(ts, 0,u,J,J)
+        ode.jacobian(ts,0.0,u,u,1.0,J,J)
         ts.snes.setUseFD(True)
         ts.solve(u)
+        self.nsolve +=1
 
     def testResetAndSolve(self):
         self.ts.reset()
-        self.testSolve(nsolve=1)
+        self.testSolve()
         self.ts.reset()
-        self.testFDColor()#self.testSolve(nsolve=2)
+        self.testFDColor()
         self.ts.reset()
-        self.testSolve(nsolve=3)
+        self.testSolve()
         self.ts.reset()
 
 # --------------------------------------------------------------------

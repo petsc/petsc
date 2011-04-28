@@ -49,7 +49,13 @@ class Diagonal(Matrix):
         self.D.copy(vd)
 
     def setDiagonal(self, mat, vd, im):
-        if im == PETSc.InsertMode.INSERT_VALUES:
+        if isinstance (im, bool):
+            addv = im
+            if addv:
+                self.D.axpy(1, vd)
+            else:
+                vd.copy(self.D)
+        elif im == PETSc.InsertMode.INSERT_VALUES:
             vd.copy(self.D)
         elif im == PETSc.InsertMode.ADD_VALUES:
             self.D.axpy(1, vd)
