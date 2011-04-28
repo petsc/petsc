@@ -836,6 +836,12 @@ cdef class Mat(Object):
     def multTransposeAdd(self, Vec x not None, Vec v not None, Vec y not None):
         CHKERR( MatMultTransposeAdd(self.mat, x.vec, v.vec, y.vec) )
 
+    def multHermitian(self, Vec x not None, Vec y not None):
+        CHKERR( MatMultHermitian(self.mat, x.vec, y.vec) )
+
+    def multHermitianAdd(self, Vec x not None, Vec v not None, Vec y not None):
+        CHKERR( MatMultHermitianAdd(self.mat, x.vec, v.vec, y.vec) )
+
     #
 
     def getDiagonalBlock(self):

@@ -361,6 +361,36 @@ static PetscErrorCode MatGetSubMatrix_Compat(Mat mat,IS isrow,IS iscol,MatReuse 
 #endif
 
 #if (PETSC_VERSION_(3,0,0))
+#undef __FUNCT__
+#define __FUNCT__ "MatMultHermitianTranspose"
+static PetscErrorCode MatMultHermitianTranspose_Compat(Mat A,Vec x,Vec y)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_COOKIE,1);
+  PetscValidHeaderSpecific(x,VEC_COOKIE,2);
+  PetscValidHeaderSpecific(y,VEC_COOKIE,3);
+  SETERRQ(PETSC_ERR_SUP,__FUNCT__"() "
+          "not supported in this PETSc version");
+  PetscFunctionReturn(PETSC_ERR_SUP);
+}
+#define MatMultHermitianTranspose MatMultHermitianTranspose_Compat
+#undef __FUNCT__
+#define __FUNCT__ "MatMultHermitianTransposeAdd"
+static PetscErrorCode MatMultHermitianTransposeAdd_Compat(Mat A,Vec x,Vec v,Vec y)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_COOKIE,1);
+  PetscValidHeaderSpecific(x,VEC_COOKIE,2);
+  PetscValidHeaderSpecific(v,VEC_COOKIE,3);
+  PetscValidHeaderSpecific(y,VEC_COOKIE,4);
+  SETERRQ(PETSC_ERR_SUP,__FUNCT__"() "
+          "not supported in this PETSc version");
+  PetscFunctionReturn(PETSC_ERR_SUP);
+}
+#define MatMultHermitianTransposeAdd MatMultHermitianTransposeAdd_Compat
+#endif
+
+#if (PETSC_VERSION_(3,0,0))
 #define MAT_KEEP_NONZERO_PATTERN MAT_KEEP_ZEROED_ROWS
 #endif
 
