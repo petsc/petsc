@@ -188,7 +188,6 @@ PetscErrorCode KSPReset_GCR( KSP ksp )
 PetscErrorCode KSPDestroy_GCR( KSP ksp )
 {
   PetscErrorCode ierr;
-  KSP_GCR        *ctx = (KSP_GCR*)ksp->data;
 
   PetscFunctionBegin;
   ierr = KSPReset_GCR(ksp);CHKERRQ(ierr);
