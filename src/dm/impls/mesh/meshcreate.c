@@ -84,7 +84,7 @@ PetscErrorCode DMConvert_DA_Mesh(DM dm, const DMType newtype, DM *dmNew)
     */
     const PetscInt        numGlobalEdges = M-1;
     const PetscInt        numVertices    = info.gxm;
-    const PetscInt        numEdges       = numVertices-1; /* Do not include edge attached to ghost vertex */
+    /* const PetscInt        numEdges       = numVertices-1; Do not include edge attached to ghost vertex */
     FlexMesh::point_type *vertices       = new FlexMesh::point_type[numVertices];
     const ALE::Obj<FlexMesh::label_type>& markers = m->createLabel("marker");
 

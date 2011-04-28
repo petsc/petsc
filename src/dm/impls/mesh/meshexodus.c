@@ -1,4 +1,4 @@
-#include<petscdmmesh_formats.hh>   /*I      "petscmesh.h"   I*/
+#include<petscdmmesh_formats.hh>   /*I "petscdmmesh.h" I*/
 
 #ifdef PETSC_HAVE_EXODUSII
 
