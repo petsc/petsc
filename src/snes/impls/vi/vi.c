@@ -1147,7 +1147,7 @@ PetscErrorCode SNESSolveVI_RS2(SNES snes)
     PetscInt       nis_redact,nis_act;
     const PetscInt *idx_redact,*idx_act;
     PetscInt       k;
-    PetscInt       *idx_actkept=PETSC_NULL,nkept; /* list of kept active set */
+    PetscInt       *idx_actkept=PETSC_NULL,nkept=0; /* list of kept active set */
     PetscScalar    *f,*f2;
     PetscBool      isequal;
     PetscInt       i1=0,j1=0;

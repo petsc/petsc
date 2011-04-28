@@ -1303,7 +1303,7 @@ PetscErrorCode  VecRestoreSubVector(Vec X,IS is,Vec *Y)
   if (X->ops->restoresubvector) {
     ierr = (*X->ops->restoresubvector)(X,is,Y);CHKERRQ(ierr);
   } else {
-    PetscInt savedstate,newstate;
+    PetscInt savedstate=0,newstate;
     PetscBool valid;
     ierr = PetscObjectComposedDataGetInt((PetscObject)*Y,VecGetSubVectorSavedStateId,savedstate,valid);CHKERRQ(ierr);
     ierr = PetscObjectStateQuery((PetscObject)*Y,&newstate);CHKERRQ(ierr);
