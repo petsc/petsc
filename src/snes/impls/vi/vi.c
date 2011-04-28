@@ -1030,7 +1030,7 @@ PetscErrorCode SNESVIRedundancyCheck_Matlab(SNES snes,IS is_act,IS* is_redact,vo
   SNESMatlabContext   *sctx = (SNESMatlabContext*)ctx;
   int                 nlhs = 1, nrhs = 5;
   mxArray             *plhs[1], *prhs[5];
-  long long int       l1 = 0, l2 = 0,ls = 0;
+  long long int       l1 = 0, l2 = 0, ls = 0;
   PetscInt            *indices=PETSC_NULL;
 
   PetscFunctionBegin;
@@ -1039,7 +1039,8 @@ PetscErrorCode SNESVIRedundancyCheck_Matlab(SNES snes,IS is_act,IS* is_redact,vo
   PetscValidPointer(is_redact,3);
   PetscCheckSameComm(snes,1,is_act,2);
 
-  /* Create IS for reduced active set, its size and indices will be changed by the Matlab function */
+  /* Create IS for reduced active set of size 0, its size and indices will
+   bet set by the Matlab function */
   ierr = ISCreateGeneral(((PetscObject)snes)->comm,0,indices,PETSC_OWN_POINTER,is_redact);CHKERRQ(ierr);
   /* call Matlab function in ctx */
   ierr = PetscMemcpy(&ls,&snes,sizeof(snes));CHKERRQ(ierr);
