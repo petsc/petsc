@@ -839,13 +839,10 @@ cdef class Mat(Object):
     #
 
     def getDiagonalBlock(self):
-        cdef PetscBool iscopy = PETSC_FALSE
-        cdef PetscMatReuse reuse = MAT_INITIAL_MATRIX
-        cdef Mat mat = Mat()
-        CHKERR( MatGetDiagonalBlock(self.mat, &iscopy, reuse, &mat.mat) )
-        if iscopy == PETSC_FALSE:
-            PetscINCREF(mat.obj)
-        return mat
+        cdef Mat submat = Mat()
+        CHKERR( MatGetDiagonalBlock(self.mat, &submat.mat) )
+        PetscINCREF(submat.obj)
+        return submat
 
     def getSubMatrix(self, IS isrow not None, IS iscol=None, Mat submat=None):
         cdef PetscMatReuse reuse = MAT_INITIAL_MATRIX

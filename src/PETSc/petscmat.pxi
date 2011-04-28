@@ -209,7 +209,7 @@ cdef extern from * nogil:
     int MatGetSubMatrix(PetscMat,PetscIS,PetscIS,PetscMatReuse,PetscMat*)
     int MatGetSubMatrices(PetscMat,PetscInt,PetscIS[],PetscIS[],PetscMatReuse,PetscMat*[])
     int MatIncreaseOverlap(PetscMat,PetscInt,PetscIS[],PetscInt)
-    int MatGetDiagonalBlock(PetscMat,PetscBool*,PetscMatReuse,PetscMat*)
+    int MatGetDiagonalBlock(PetscMat,PetscMat*)
 
     int MatConjugate(PetscMat)
     int MatRealPart(PetscMat)

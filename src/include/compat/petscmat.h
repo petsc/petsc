@@ -255,17 +255,38 @@ static PetscErrorCode MatCreateSubMatrix_Compat(Mat A, IS r, IS c, Mat *B)
 #define MatCreateSubMatrix MatCreateSubMatrix_Compat 
 #endif
 
+#if (PETSC_VERSION_(3,1,0))
+#undef __FUNCT__
+#define __FUNCT__ "MatGetDiagonalBlock"
+static PetscErrorCode MatGetDiagonalBlock_Compat(Mat A,Mat *a)
+{
+  MatReuse       reuse = MAT_INITIAL_MATRIX;
+  PetscTruth     iscopy;
+  PetscErrorCode ierr;
+  ierr = MatGetDiagonalBlock(A,&iscopy,reuse,a);CHKERRQ(ierr);
+  if (iscopy) {
+    Mat B = *a;
+    ierr = PetscObjectCompose((PetscObject)A,"DiagonalBlock",(PetscObject)B);CHKERRQ(ierr);
+    ierr = MatDestroy(B);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+#define MatGetDiagonalBlock MatGetDiagonalBlock_Compat
+#endif
+
 #if (PETSC_VERSION_(3,0,0))
 #undef __FUNCT__
 #define __FUNCT__ "MatGetDiagonalBlock"
-static PetscErrorCode MatGetDiagonalBlock_Compat(Mat A,PetscTruth *iscopy,MatReuse reuse,Mat *a)
+static PetscErrorCode MatGetDiagonalBlock_Compat(Mat A,Mat *a)
 {
-  PetscErrorCode ierr,(*f)(Mat,PetscTruth*,MatReuse,Mat*);
+  MatReuse       reuse = MAT_INITIAL_MATRIX;
+  PetscTruth     iscopy;
+  PetscErrorCode (*f)(Mat,PetscTruth*,MatReuse,Mat*);
   PetscMPIInt    size;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE,1);
-  PetscValidPointer(iscopy,2);
   PetscValidPointer(a,3);
   PetscValidType(A,1);
   if (!A->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
@@ -273,12 +294,17 @@ static PetscErrorCode MatGetDiagonalBlock_Compat(Mat A,PetscTruth *iscopy,MatReu
   ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);
   ierr = PetscObjectQueryFunction((PetscObject)A,"MatGetDiagonalBlock_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
-    ierr = (*f)(A,iscopy,reuse,a);CHKERRQ(ierr);
+    ierr = (*f)(A,&iscopy,reuse,a);CHKERRQ(ierr);
   } else if (size == 1) {
+    iscopy = PETSC_FALSE;
     *a = A;
-    *iscopy = PETSC_FALSE;
   } else {
     SETERRQ(PETSC_ERR_SUP,"Cannot get diagonal part for this matrix");
+  }
+  if (iscopy) {
+    Mat B = *a;
+    ierr = PetscObjectCompose((PetscObject)A,"DiagonalBlock",(PetscObject)B);CHKERRQ(ierr);
+    ierr = MatDestroy(B);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
