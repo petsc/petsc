@@ -60,7 +60,7 @@ PetscErrorCode MatFindNonzeroRows(Mat mat,IS *keptrows)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatGetDiagonalBlock"
 /*@
    MatGetDiagonalBlock - Returns the part of the matrix associated with the on-process coupling
@@ -68,38 +68,39 @@ PetscErrorCode MatFindNonzeroRows(Mat mat,IS *keptrows)
    Not Collective
 
    Input Parameters:
-+  mat - the matrix
--  reuse - indicates you are passing in the a matrix and want it reused
+.  mat - the matrix
 
    Output Parameters:
-+   iscopy - indicates a copy of the diagonal matrix was created and you should use MatDestroy() on it
--   a - the diagonal part (which is a SEQUENTIAL matrix)
+.   a - the diagonal part (which is a SEQUENTIAL matrix)
 
-   Notes: see the manual page for MatCreateMPIAIJ() for more information on the "diagonal part" of the matrix
+   Notes: see the manual page for MatCreateMPIAIJ() for more information on the "diagonal part" of the matrix.
 
    Level: advanced
 
 @*/
-PetscErrorCode  MatGetDiagonalBlock(Mat A,PetscBool  *iscopy,MatReuse reuse,Mat *a)
+PetscErrorCode  MatGetDiagonalBlock(Mat A,Mat *a)
 {
-  PetscErrorCode ierr,(*f)(Mat,PetscBool *,MatReuse,Mat*);
+  PetscErrorCode ierr,(*f)(Mat,Mat*);
   PetscMPIInt    size;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidType(A,1);
-  PetscValidPointer(iscopy,2);
   PetscValidPointer(a,3);
   if (!A->assembled) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (A->factortype) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);
   ierr = PetscObjectQueryFunction((PetscObject)A,"MatGetDiagonalBlock_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
-    ierr = (*f)(A,iscopy,reuse,a);CHKERRQ(ierr);
+    ierr = (*f)(A,a);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
   } else if (size == 1) {
     *a = A;
-    *iscopy = PETSC_FALSE;
-  } else SETERRQ(((PetscObject)A)->comm,PETSC_ERR_SUP,"Cannot get diagonal part for this matrix");
+  } else {
+    const MatType mattype;
+    ierr = MatGetType(A,&mattype);CHKERRQ(ierr);
+    SETERRQ1(((PetscObject)A)->comm,PETSC_ERR_SUP,"Matrix type %s does not support getting diagonal block",mattype);
+  }
   PetscFunctionReturn(0);
 }
 

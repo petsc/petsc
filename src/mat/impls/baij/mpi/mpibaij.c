@@ -2877,13 +2877,12 @@ static struct _MatOps MatOps_Values = {
 };
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatGetDiagonalBlock_MPIBAIJ"
-PetscErrorCode  MatGetDiagonalBlock_MPIBAIJ(Mat A,PetscBool  *iscopy,MatReuse reuse,Mat *a)
+PetscErrorCode  MatGetDiagonalBlock_MPIBAIJ(Mat A,Mat *a)
 {
   PetscFunctionBegin;
-  *a      = ((Mat_MPIBAIJ *)A->data)->A;
-  *iscopy = PETSC_FALSE;
+  *a = ((Mat_MPIBAIJ *)A->data)->A;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

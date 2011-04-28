@@ -356,7 +356,7 @@ extern PetscErrorCode  MatDestroy(Mat*);
 extern PetscErrorCode  MatConjugate(Mat);
 extern PetscErrorCode  MatRealPart(Mat);
 extern PetscErrorCode  MatImaginaryPart(Mat);
-extern PetscErrorCode  MatGetDiagonalBlock(Mat,PetscBool *,MatReuse,Mat*);
+extern PetscErrorCode  MatGetDiagonalBlock(Mat,Mat*);
 extern PetscErrorCode  MatGetTrace(Mat,PetscScalar*);
 
 /* ------------------------------------------------------------*/

@@ -9,13 +9,13 @@ static PetscErrorCode PCSetUp_BJacobi_Singleblock(PC,Mat,Mat);
 static PetscErrorCode PCSetUp_BJacobi_Multiblock(PC,Mat,Mat);
 static PetscErrorCode PCSetUp_BJacobi_Multiproc(PC);
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCSetUp_BJacobi"
 static PetscErrorCode PCSetUp_BJacobi(PC pc)
 {
   PC_BJacobi     *jac = (PC_BJacobi*)pc->data;
   Mat            mat = pc->mat,pmat = pc->pmat;
-  PetscErrorCode ierr,(*f)(Mat,PetscBool *,MatReuse,Mat*);
+  PetscErrorCode ierr,(*f)(Mat,Mat*);
   PetscInt       N,M,start,i,sum,end;
   PetscInt       bs,i_start=-1,i_end=-1;
   PetscMPIInt    rank,size;
@@ -33,7 +33,7 @@ static PetscErrorCode PCSetUp_BJacobi(PC pc)
   }
 
   /* --------------------------------------------------------------------------
-      Determines the number of blocks assigned to each processor 
+      Determines the number of blocks assigned to each processor
   -----------------------------------------------------------------------------*/
 
   /*   local block count  given */
@@ -108,67 +108,29 @@ static PetscErrorCode PCSetUp_BJacobi(PC pc)
       Determines mat and pmat 
   ---------------------------*/
   ierr = PetscObjectQueryFunction((PetscObject)pc->mat,"MatGetDiagonalBlock_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (size == 1 && !f) {
+  if (!f && size == 1) {
     mat  = pc->mat;
     pmat = pc->pmat;
   } else {
-    PetscBool  iscopy;
-    MatReuse   scall;
-
     if (jac->use_true_local) {
       /* use block from true matrix, not preconditioner matrix for local MatMult() */
-      scall = MAT_INITIAL_MATRIX;
-      if (pc->setupcalled) {
-        if (pc->flag == SAME_NONZERO_PATTERN) {
-          if (jac->tp_mat) {
-            scall = MAT_REUSE_MATRIX;
-            mat   = jac->tp_mat;
-          }
-        } else {
-          ierr = MatDestroy(&jac->tp_mat);CHKERRQ(ierr);
-        }
-      }
-      if (!f) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_SUP,"This matrix does not support getting diagonal block");
-      ierr = (*f)(pc->mat,&iscopy,scall,&mat);CHKERRQ(ierr);
+      ierr = MatGetDiagonalBlock(pc->mat,&mat);CHKERRQ(ierr);
       /* make submatrix have same prefix as entire matrix */
       ierr = PetscObjectGetOptionsPrefix((PetscObject)pc->mat,&mprefix);CHKERRQ(ierr);
       ierr = PetscObjectSetOptionsPrefix((PetscObject)mat,mprefix);CHKERRQ(ierr);
-      if (iscopy) {
-        jac->tp_mat = mat;
-      }
     }
     if (pc->pmat != pc->mat || !jac->use_true_local) {
-      scall = MAT_INITIAL_MATRIX;
-      if (pc->setupcalled) {
-        if (pc->flag == SAME_NONZERO_PATTERN) {
-          if (jac->tp_pmat) {
-            scall = MAT_REUSE_MATRIX;
-            pmat   = jac->tp_pmat;
-          }
-        } else {
-          ierr = MatDestroy(&jac->tp_pmat);CHKERRQ(ierr);
-        }
-      }
-      ierr = PetscObjectQueryFunction((PetscObject)pc->pmat,"MatGetDiagonalBlock_C",(void (**)(void))&f);CHKERRQ(ierr);
-      if (!f) {
-        const char *type;
-        ierr = PetscObjectGetType((PetscObject) pc->pmat,&type);CHKERRQ(ierr);
-        SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_SUP,"This matrix type, %s, does not support getting diagonal block", type);
-      }
-      ierr = (*f)(pc->pmat,&iscopy,scall,&pmat);CHKERRQ(ierr);
+      ierr = MatGetDiagonalBlock(pc->pmat,&pmat);CHKERRQ(ierr);
       /* make submatrix have same prefix as entire matrix */
       ierr = PetscObjectGetOptionsPrefix((PetscObject)pc->pmat,&pprefix);CHKERRQ(ierr);
       ierr = PetscObjectSetOptionsPrefix((PetscObject)pmat,pprefix);CHKERRQ(ierr);
-      if (iscopy) {
-        jac->tp_pmat = pmat;
-      }
     } else {
       pmat = mat;
     }
   }
 
   /* ------
-     Setup code depends on the number of blocks 
+     Setup code depends on the number of blocks
   */
   if (jac->n_local == 1) {
     ierr = PCSetUp_BJacobi_Singleblock(pc,mat,pmat);CHKERRQ(ierr);
@@ -669,8 +631,6 @@ PetscErrorCode  PCCreate_BJacobi(PC pc)
   jac->same_local_solves = PETSC_TRUE;
   jac->g_lens            = 0;
   jac->l_lens            = 0;
-  jac->tp_mat            = 0;
-  jac->tp_pmat           = 0;
   jac->psubcomm          = 0;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCBJacobiSetUseTrueLocal_C",
@@ -704,13 +664,6 @@ PetscErrorCode PCReset_BJacobi_Singleblock(PC pc)
   PetscErrorCode         ierr;
 
   PetscFunctionBegin;
-  /*
-        If the on processor block had to be generated via a MatGetDiagonalBlock()
-     that creates a copy, this frees the space
-  */
-  ierr = MatDestroy(&jac->tp_mat);CHKERRQ(ierr);
-  ierr = MatDestroy(&jac->tp_pmat);CHKERRQ(ierr);
-
   ierr = KSPReset(jac->ksp[0]);CHKERRQ(ierr);
   ierr = VecDestroy(&bjac->x);CHKERRQ(ierr);
   ierr = VecDestroy(&bjac->y);CHKERRQ(ierr);
@@ -959,13 +912,6 @@ PetscErrorCode PCReset_BJacobi_Multiblock(PC pc)
     }
   }
 
-  /*
-        If the on processor block had to be generated via a MatGetDiagonalBlock()
-     that creates a copy, this frees the space
-  */
-  ierr = MatDestroy(&jac->tp_mat);CHKERRQ(ierr);
-  ierr = MatDestroy(&jac->tp_pmat);CHKERRQ(ierr);
-
   for (i=0; i<jac->n_local; i++) {
     ierr = KSPReset(jac->ksp[i]);CHKERRQ(ierr);
     if (bjac && bjac->x) {
@@ -1102,7 +1048,6 @@ static PetscErrorCode PCSetUp_BJacobi_Multiblock(PC pc,Mat mat,Mat pmat)
   PC_BJacobi_Multiblock  *bjac = (PC_BJacobi_Multiblock*)jac->data;
   PC                     subpc;
   IS                     is;
-  MatReuse               scall = MAT_REUSE_MATRIX;
 
   PetscFunctionBegin;
   ierr = MatGetLocalSize(pc->pmat,&M,&N);CHKERRQ(ierr);

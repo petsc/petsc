@@ -84,33 +84,37 @@ PetscErrorCode MatRestoreRow_MPIDense(Mat mat,PetscInt row,PetscInt *nz,PetscInt
 }
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatGetDiagonalBlock_MPIDense"
-PetscErrorCode  MatGetDiagonalBlock_MPIDense(Mat A,PetscBool  *iscopy,MatReuse reuse,Mat *B)
+PetscErrorCode  MatGetDiagonalBlock_MPIDense(Mat A,Mat *a)
 {
   Mat_MPIDense   *mdn = (Mat_MPIDense*)A->data;
   PetscErrorCode ierr;
   PetscInt       m = A->rmap->n,rstart = A->rmap->rstart;
   PetscScalar    *array;
   MPI_Comm       comm;
+  Mat            B;
 
   PetscFunctionBegin;
   if (A->rmap->N != A->cmap->N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only square matrices supported.");
 
-  /* The reuse aspect is not implemented efficiently */
-  if (reuse) { ierr = MatDestroy(B);CHKERRQ(ierr);}
-
-  ierr = PetscObjectGetComm((PetscObject)(mdn->A),&comm);CHKERRQ(ierr);
-  ierr = MatGetArray(mdn->A,&array);CHKERRQ(ierr);
-  ierr = MatCreate(comm,B);CHKERRQ(ierr);
-  ierr = MatSetSizes(*B,m,m,m,m);CHKERRQ(ierr);
-  ierr = MatSetType(*B,((PetscObject)mdn->A)->type_name);CHKERRQ(ierr);
-  ierr = MatSeqDenseSetPreallocation(*B,array+m*rstart);CHKERRQ(ierr);
-  ierr = MatRestoreArray(mdn->A,&array);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    
-  *iscopy = PETSC_TRUE;
+  ierr = PetscObjectQuery((PetscObject)A,"DiagonalBlock",(PetscObject*)&B);CHKERRQ(ierr);
+  if (!B) {
+    ierr = PetscObjectGetComm((PetscObject)(mdn->A),&comm);CHKERRQ(ierr);
+    ierr = MatCreate(comm,&B);CHKERRQ(ierr);
+    ierr = MatSetSizes(B,m,m,m,m);CHKERRQ(ierr);
+    ierr = MatSetType(B,((PetscObject)mdn->A)->type_name);CHKERRQ(ierr);
+    ierr = MatGetArray(mdn->A,&array);CHKERRQ(ierr);
+    ierr = MatSeqDenseSetPreallocation(B,array+m*rstart);CHKERRQ(ierr);
+    ierr = MatRestoreArray(mdn->A,&array);CHKERRQ(ierr);
+    ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = PetscObjectCompose((PetscObject)A,"DiagonalBlock",(PetscObject)B);CHKERRQ(ierr);
+    *a = B;
+    ierr = MatDestroy(&B);CHKERRQ(ierr);
+  } else {
+    *a = B;
+  }
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

@@ -20,7 +20,7 @@ PetscErrorCode PCGetDefaultType_Private(PC pc,const char* type[])
   PetscFunctionBegin;
   ierr = MPI_Comm_size(((PetscObject)pc)->comm,&size);CHKERRQ(ierr);
   if (pc->pmat) {
-    PetscErrorCode (*f)(Mat,PetscBool *,MatReuse,Mat*);
+    PetscErrorCode (*f)(Mat,MatReuse,Mat*);
     ierr = PetscObjectQueryFunction((PetscObject)pc->pmat,"MatGetDiagonalBlock_C",(void (**)(void))&f);CHKERRQ(ierr);
     if (size == 1) {
       ierr = MatGetFactorAvailable(pc->pmat,"petsc",MAT_FACTOR_ICC,&flg1);CHKERRQ(ierr);
@@ -32,7 +32,7 @@ PetscErrorCode PCGetDefaultType_Private(PC pc,const char* type[])
 	*type = PCILU;
       } else if (f) { /* likely is a parallel matrix run on one processor */
 	*type = PCBJACOBI;
-      } else {  
+      } else {
 	*type = PCNONE;
       }
     } else {

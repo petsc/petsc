@@ -20,7 +20,6 @@ typedef struct {
   PetscBool  same_local_solves; /* flag indicating whether all local solvers are same (used for PCView()) */
   PetscInt   *l_lens;           /* lens of each block */
   PetscInt   *g_lens;
-  Mat        tp_mat,tp_pmat;    /* diagonal block of matrix for this processor */
   PetscSubcomm psubcomm;        /* for multiple processors per block */
 } PC_BJacobi;
 

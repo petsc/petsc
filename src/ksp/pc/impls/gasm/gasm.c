@@ -1121,10 +1121,10 @@ PetscErrorCode  PCGASMCreateSubdomains(Mat A, PetscInt n, IS* outis[])
 {
   MatPartitioning           mpart;
   const char                *prefix;
-  PetscErrorCode            (*f)(Mat,PetscBool *,MatReuse,Mat*);
+  PetscErrorCode            (*f)(Mat,MatReuse,Mat*);
   PetscMPIInt               size;
   PetscInt                  i,j,rstart,rend,bs;
-  PetscBool                 iscopy = PETSC_FALSE,isbaij = PETSC_FALSE,foundpart = PETSC_FALSE;
+  PetscBool                 isbaij = PETSC_FALSE,foundpart = PETSC_FALSE;
   Mat                       Ad = PETSC_NULL, adj;
   IS                        ispart,isnumb,*is;
   PetscErrorCode            ierr;
@@ -1133,7 +1133,7 @@ PetscErrorCode  PCGASMCreateSubdomains(Mat A, PetscInt n, IS* outis[])
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidPointer(outis,3);
   if (n < 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"number of local blocks must be > 0, n = %D",n);
-  
+
   /* Get prefix, row distribution, and block size */
   ierr = MatGetOptionsPrefix(A,&prefix);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
@@ -1144,11 +1144,9 @@ PetscErrorCode  PCGASMCreateSubdomains(Mat A, PetscInt n, IS* outis[])
   ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);
   ierr = PetscObjectQueryFunction((PetscObject)A,"MatGetDiagonalBlock_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
-    ierr = (*f)(A,&iscopy,MAT_INITIAL_MATRIX,&Ad);CHKERRQ(ierr);
+    ierr = MatGetDiagonalBlock(A,&Ad);CHKERRQ(ierr);
   } else if (size == 1) {
-    iscopy = PETSC_FALSE; Ad = A;
-  } else {
-    iscopy = PETSC_FALSE; Ad = PETSC_NULL;
+    Ad = A;
   }
   if (Ad) {
     ierr = PetscTypeCompare((PetscObject)Ad,MATSEQBAIJ,&isbaij);CHKERRQ(ierr);
@@ -1168,57 +1166,56 @@ PetscErrorCode  PCGASMCreateSubdomains(Mat A, PetscInt n, IS* outis[])
       PetscInt na,*ia,*ja;
       ierr = MatGetRowIJ(Ad,0,PETSC_TRUE,isbaij,&na,&ia,&ja,&done);CHKERRQ(ierr);
       if (done) {
-	/* Build adjacency matrix by hand. Unfortunately a call to
-	   MatConvert(Ad,MATMPIADJ,MAT_INITIAL_MATRIX,&adj) will
-	   remove the block-aij structure and we cannot expect
-	   MatPartitioning to split vertices as we need */
-	PetscInt i,j,*row,len,nnz,cnt,*iia=0,*jja=0;
-	nnz = 0;
-	for (i=0; i<na; i++) { /* count number of nonzeros */
-	  len = ia[i+1] - ia[i];
-	  row = ja + ia[i];
-	  for (j=0; j<len; j++) {
-	    if (row[j] == i) { /* don't count diagonal */
-	      len--; break;
-	    }
-	  }
-	  nnz += len;
-	}
-	ierr = PetscMalloc((na+1)*sizeof(PetscInt),&iia);CHKERRQ(ierr);
-	ierr = PetscMalloc((nnz)*sizeof(PetscInt),&jja);CHKERRQ(ierr);
-	nnz    = 0;
-	iia[0] = 0;
-	for (i=0; i<na; i++) { /* fill adjacency */
-	  cnt = 0;
-	  len = ia[i+1] - ia[i];
-	  row = ja + ia[i];
-	  for (j=0; j<len; j++) {
-	    if (row[j] != i) { /* if not diagonal */
-	      jja[nnz+cnt++] = row[j];
-	    }
-	  }
-	  nnz += cnt;
-	  iia[i+1] = nnz; 
-	}
-	/* Partitioning of the adjacency matrix */
-	ierr = MatCreateMPIAdj(PETSC_COMM_SELF,na,na,iia,jja,PETSC_NULL,&adj);CHKERRQ(ierr);
-	ierr = MatPartitioningSetAdjacency(mpart,adj);CHKERRQ(ierr);
-	ierr = MatPartitioningSetNParts(mpart,n);CHKERRQ(ierr);
-	ierr = MatPartitioningApply(mpart,&ispart);CHKERRQ(ierr);
-	ierr = ISPartitioningToNumbering(ispart,&isnumb);CHKERRQ(ierr);
-	ierr = MatDestroy(&adj);CHKERRQ(ierr);
-	foundpart = PETSC_TRUE;
+        /* Build adjacency matrix by hand. Unfortunately a call to
+           MatConvert(Ad,MATMPIADJ,MAT_INITIAL_MATRIX,&adj) will
+           remove the block-aij structure and we cannot expect
+           MatPartitioning to split vertices as we need */
+        PetscInt i,j,*row,len,nnz,cnt,*iia=0,*jja=0;
+        nnz = 0;
+        for (i=0; i<na; i++) { /* count number of nonzeros */
+          len = ia[i+1] - ia[i];
+          row = ja + ia[i];
+          for (j=0; j<len; j++) {
+            if (row[j] == i) { /* don't count diagonal */
+              len--; break;
+            }
+          }
+          nnz += len;
+        }
+        ierr = PetscMalloc((na+1)*sizeof(PetscInt),&iia);CHKERRQ(ierr);
+        ierr = PetscMalloc((nnz)*sizeof(PetscInt),&jja);CHKERRQ(ierr);
+        nnz    = 0;
+        iia[0] = 0;
+        for (i=0; i<na; i++) { /* fill adjacency */
+          cnt = 0;
+          len = ia[i+1] - ia[i];
+          row = ja + ia[i];
+          for (j=0; j<len; j++) {
+            if (row[j] != i) { /* if not diagonal */
+              jja[nnz+cnt++] = row[j];
+            }
+          }
+          nnz += cnt;
+          iia[i+1] = nnz;
+        }
+        /* Partitioning of the adjacency matrix */
+        ierr = MatCreateMPIAdj(PETSC_COMM_SELF,na,na,iia,jja,PETSC_NULL,&adj);CHKERRQ(ierr);
+        ierr = MatPartitioningSetAdjacency(mpart,adj);CHKERRQ(ierr);
+        ierr = MatPartitioningSetNParts(mpart,n);CHKERRQ(ierr);
+        ierr = MatPartitioningApply(mpart,&ispart);CHKERRQ(ierr);
+        ierr = ISPartitioningToNumbering(ispart,&isnumb);CHKERRQ(ierr);
+        ierr = MatDestroy(&adj);CHKERRQ(ierr);
+        foundpart = PETSC_TRUE;
       }
       ierr = MatRestoreRowIJ(Ad,0,PETSC_TRUE,isbaij,&na,&ia,&ja,&done);CHKERRQ(ierr);
     }
     ierr = MatPartitioningDestroy(&mpart);CHKERRQ(ierr);
   }
-  if (iscopy) {ierr = MatDestroy(&Ad);CHKERRQ(ierr);}
-  
+
   ierr = PetscMalloc(n*sizeof(IS),&is);CHKERRQ(ierr);
   *outis = is;
 
-  if (!foundpart) { 
+  if (!foundpart) {
 
     /* Partitioning by contiguous chunks of rows */
 
@@ -1229,8 +1226,8 @@ PetscErrorCode  PCGASMCreateSubdomains(Mat A, PetscInt n, IS* outis[])
       ierr   = ISCreateStride(PETSC_COMM_SELF,count,start,1,&is[i]);CHKERRQ(ierr);
       start += count;
     }
-    
-  } else { 
+
+  } else {
 
     /* Partitioning by adjacency of diagonal block  */
 
@@ -1252,15 +1249,15 @@ PetscErrorCode  PCGASMCreateSubdomains(Mat A, PetscInt n, IS* outis[])
     if (isbaij && bs > 1) { /* adjust for the block-aij case */
       ierr = PetscMalloc(nidx*bs*sizeof(PetscInt),&newidx);CHKERRQ(ierr);
       for (i=0; i<nidx; i++)
-	for (j=0; j<bs; j++)
-	  newidx[i*bs+j] = indices[i]*bs + j;
+        for (j=0; j<bs; j++)
+          newidx[i*bs+j] = indices[i]*bs + j;
       ierr = PetscFree(indices);CHKERRQ(ierr);
       nidx   *= bs;
       indices = newidx;
     }
     /* Shift to get global indices */
     for (i=0; i<nidx; i++) indices[i] += rstart;
-    
+
     /* Build the index sets for each block */
     for (i=0; i<n; i++) {
       ierr   = ISCreateGeneral(PETSC_COMM_SELF,count[i],&indices[start],PETSC_COPY_VALUES,&is[i]);CHKERRQ(ierr);
@@ -1273,7 +1270,7 @@ PetscErrorCode  PCGASMCreateSubdomains(Mat A, PetscInt n, IS* outis[])
     ierr = ISDestroy(&isnumb);CHKERRQ(ierr);
     ierr = ISDestroy(&ispart);CHKERRQ(ierr);
   }
-  
+
   PetscFunctionReturn(0);
 }
 
