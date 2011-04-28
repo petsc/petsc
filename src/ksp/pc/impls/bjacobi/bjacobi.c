@@ -1048,6 +1048,7 @@ static PetscErrorCode PCSetUp_BJacobi_Multiblock(PC pc,Mat mat,Mat pmat)
   PC_BJacobi_Multiblock  *bjac = (PC_BJacobi_Multiblock*)jac->data;
   PC                     subpc;
   IS                     is;
+  MatReuse               scall;
 
   PetscFunctionBegin;
   ierr = MatGetLocalSize(pc->pmat,&M,&N);CHKERRQ(ierr);
