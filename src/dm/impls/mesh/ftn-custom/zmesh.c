@@ -37,10 +37,6 @@ extern void PetscRmPointer(void*);
 #define vertexsectionrealcreate_    VERTEXSECTIONREALCREATE
 #define vertexsectionintcreate_     VERTEXSECTIONINTCREATE
 #define cellsectionrealcreate_      CELLSECTIONREALCREATE
-#define restrictvector_             RESTRICTVECTOR
-#define assemblevectorcomplete_     ASSEMBLEVECTORCOMPLETE
-#define assemblevector_             ASSEMBLEVECTOR
-#define dmmeshexodusgetinfo_        DMMESHEXODUSGETINFO
 #define dmmeshgetlabelsize_         DMMESHGETLABELSIZE
 #define dmmeshgetstratumsize_       DMMESHGETSTRATUMSIZE
 #define dmmeshgetsectionreal_       DMMESHGETSECTIONREAL
@@ -60,10 +56,6 @@ extern void PetscRmPointer(void*);
 #define vertexsectionrealcreate_     vertexsectionrealcreate
 #define vertexsectionintcreate_      vertexsectionintcreate
 #define cellsectionrealcreate_       cellsectionrealcreate
-#define restrictvector_              restrictvector
-#define assemblevectorcomplete_      assemblevectorcomplete
-#define assemblevector_              assemblevector
-#define dmmeshexodusgetinfo_         dmmeshexodusgetinfo
 #define dmmeshgetlabelsize_          dmmeshgetlabelsize
 #define dmmeshgetstratumsize_        dmmeshgetstratumsize
 #define dmmeshgetsectionreal_        dmmeshgetsectionreal
@@ -152,23 +144,6 @@ void PETSC_STDCALL  cellsectionrealcreate_(DM mesh, CHAR name PETSC_MIXED_LEN(le
   *ierr = DMMeshSetSectionReal((DM) PetscToPointer(mesh), section);
   *ierr = SectionRealDestroy(&section);
   FREECHAR(name,pN);
-}
-void PETSC_STDCALL  restrictvector_(Vec g,Vec l,InsertMode *mode, int *__ierr ){
-*__ierr = restrictVector(
-	(Vec)PetscToPointer((g) ),
-	(Vec)PetscToPointer((l) ),*mode);
-}
-void PETSC_STDCALL  assemblevectorcomplete_(Vec g,Vec l,InsertMode *mode, int *__ierr ){
-*__ierr = assembleVectorComplete(
-	(Vec)PetscToPointer((g) ),
-	(Vec)PetscToPointer((l) ),*mode);
-}
-void PETSC_STDCALL  assemblevector_(Vec b,PetscInt *e,PetscScalar v[],InsertMode *mode, int *__ierr ){
-*__ierr = assembleVector(
-	(Vec)PetscToPointer((b) ),*e,v,*mode);
-}
-void PETSC_STDCALL  dmmeshexodusgetinfo_(DM mesh, PetscInt *dim, PetscInt *numVertices, PetscInt *numCells, PetscInt *numCellBlocks, PetscInt *numVertexSets, int *ierr){
-  *ierr = DMMeshExodusGetInfo((DM) PetscToPointer(mesh), dim, numVertices, numCells, numCellBlocks, numVertexSets);
 }
 void PETSC_STDCALL  dmmeshgetlabelsize_(DM mesh, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *size, int *ierr PETSC_END_LEN(lenN)){
   char *pN;

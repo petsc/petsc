@@ -254,7 +254,7 @@ PetscErrorCode DMMeshCreateExodus(MPI_Comm comm, const char filename[], DM *dm)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMeshExodusGetInfo"
-/*@C
+/*@
   DMMeshExodusGetInfo - Get information about an ExodusII Mesh.
 
   Not Collective

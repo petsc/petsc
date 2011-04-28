@@ -303,7 +303,7 @@ PetscErrorCode  SectionRealDestroy(SectionReal *section)
 
 #undef __FUNCT__  
 #define __FUNCT__ "SectionRealDistribute"
-/*@C
+/*@
   SectionRealDistribute - Distributes the sections.
 
   Not Collective
@@ -792,7 +792,7 @@ PetscErrorCode  SectionRealAddSpace(SectionReal section)
 
 #undef __FUNCT__  
 #define __FUNCT__ "SectionRealGetFibration"
-/*@C
+/*@
   SectionRealGetFibration - Creates a section for only the data associated with the given field
 
   Collective on DMMesh
@@ -1413,7 +1413,7 @@ PetscErrorCode  SectionIntDestroy(SectionInt *section)
 
 #undef __FUNCT__  
 #define __FUNCT__ "SectionIntDistribute"
-/*@C
+/*@
   SectionIntDistribute - Distributes the sections.
 
   Not Collective
@@ -1848,7 +1848,7 @@ PetscErrorCode  SectionIntAddSpace(SectionInt section)
 
 #undef __FUNCT__  
 #define __FUNCT__ "SectionIntGetFibration"
-/*@C
+/*@
   SectionIntGetFibration - Creates a section for only the data associated with the given field
 
   Collective on DMMesh

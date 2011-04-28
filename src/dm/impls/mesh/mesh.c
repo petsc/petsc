@@ -740,7 +740,7 @@ extern PetscErrorCode assembleFullField(VecScatter, Vec, Vec, InsertMode);
 
 #undef __FUNCT__
 #define __FUNCT__ "restrictVector"
-/*@C
+/*@
   restrictVector - Insert values from a global vector into a local ghosted vector
 
   Collective on g
@@ -780,7 +780,7 @@ PetscErrorCode restrictVector(Vec g, Vec l, InsertMode mode)
 
 #undef __FUNCT__
 #define __FUNCT__ "assembleVectorComplete"
-/*@C
+/*@
   assembleVectorComplete - Insert values from a local ghosted vector into a global vector
 
   Collective on g
@@ -820,7 +820,7 @@ PetscErrorCode assembleVectorComplete(Vec g, Vec l, InsertMode mode)
 
 #undef __FUNCT__
 #define __FUNCT__ "assembleVector"
-/*@C
+/*@
   assembleVector - Insert values into a vector
 
   Collective on A
