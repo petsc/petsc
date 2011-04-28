@@ -1,7 +1,9 @@
 #ifndef PETSC4PY_NUMPY_H
 #define PETSC4PY_NUMPY_H
 
+#include "Python.h"
 #include "numpy/arrayobject.h"
+#include "petsc.h"
 
 #if defined(PETSC_USE_64BIT_INDICES)
 #  define NPY_PETSC_INT  NPY_LONGLONG

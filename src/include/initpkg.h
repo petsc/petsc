@@ -5,9 +5,6 @@
 static PetscErrorCode PetscInitializePackageAll(const char path[])
 {
   PetscErrorCode ierr;
-  static PetscBool initialized = PETSC_FALSE;
-  if (initialized) return ierr=0;
-  initialized = PETSC_TRUE;
   PetscFunctionBegin;
   ierr = PetscSysInitializePackage(path);CHKERRQ(ierr);
   ierr = PetscFwkInitializePackage(path);CHKERRQ(ierr);

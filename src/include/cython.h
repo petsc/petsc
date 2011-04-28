@@ -1,8 +1,7 @@
 static
-void *
-Cython_ImportFunction(PyObject   *module,
-                      const char *funcname,
-                      const char *signature) 
+void *Cython_ImportFunction(PyObject   *module,
+                            const char *funcname,
+                            const char *signature) 
 {
   PyObject *capi = NULL, *capsule = NULL; void *p = NULL;
   capi = PyObject_GetAttrString(module, (char *)"__pyx_capi__");

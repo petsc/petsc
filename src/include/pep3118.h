@@ -1,6 +1,9 @@
 #ifndef PETSC4PY_PEP3118_H
 #define PETSC4PY_PEP3118_H
 
+#include "Python.h"
+#include "petsc.h"
+
 #if defined(PETSC_USE_64BIT_INDICES)
 # define _PyPetsc_FMT_PETSC_INT     "q"
 #else
@@ -17,7 +20,7 @@
 # define _PyPetsc_FMT_PETSC_REAL    "g"
 # define _PyPetsc_FMT_PETSC_COMPLEX "Zg"
 #else
-# error "unsupported precision"
+# error "unsupported real precision"
 #endif
 
 #if   defined(PETSC_USE_SCALAR_COMPLEX)
@@ -28,9 +31,10 @@
 # error "unsupported scalar type"
 #endif
 
-static int PyPetscBuffer_FillInfo(Py_buffer *view,
-                                  void *buf, PetscInt count, char typechar,
-                                  int readonly, int flags)
+PETSC_STATIC_INLINE
+int PyPetscBuffer_FillInfo(Py_buffer *view,
+                           void *buf, PetscInt count, char typechar,
+                           int readonly, int flags)
 {
   if (view == NULL) return 0;
   if (((flags & PyBUF_WRITABLE) == PyBUF_WRITABLE) && (readonly == 1)) {
@@ -46,7 +50,7 @@ static int PyPetscBuffer_FillInfo(Py_buffer *view,
   case 'i': view->itemsize = sizeof(PetscInt);    break;
   case 'r': view->itemsize = sizeof(PetscReal);   break;
   case 's': view->itemsize = sizeof(PetscScalar); break;
-  case 'c': view->itemsize = 2*sizeof(PetscReal); break;
+  case 'c': view->itemsize = sizeof(PetscReal)*2; break;
   default:  view->itemsize = 1;
   }
   view->len = count*view->itemsize;
@@ -100,4 +104,4 @@ static void PyPetscBuffer_Release(Py_buffer *view)
 #undef _PyPetsc_FMT_PETSC_SCALAR
 #undef _PyPetsc_FMT_PETSC_COMPLEX
 
-#endif /* !PETSC4PY_PEP3118_H */
+#endif/*!PETSC4PY_PEP3118_H*/
