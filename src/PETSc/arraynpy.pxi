@@ -1,6 +1,6 @@
 # --------------------------------------------------------------------
 
-cdef extern from "numpy/arrayobject.h":
+cdef extern from "petsc4py/numpy.h":
 
     int import_array "_import_array" () except -1
 
@@ -53,7 +53,7 @@ cdef extern from "numpy/arrayobject.h":
     ndarray PyArray_NewCopy(ndarray,NPY_ORDER)
 
 
-cdef extern from "arraynpy.h":
+cdef extern from "petsc4py/numpy.h":
 
     enum: NPY_PETSC_INT
     enum: NPY_PETSC_REAL

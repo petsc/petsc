@@ -1,6 +1,8 @@
 #ifndef PETSC4PY_NUMPY_H
 #define PETSC4PY_NUMPY_H
 
+#include "numpy/arrayobject.h"
+
 #if defined(PETSC_USE_64BIT_INDICES)
 #  define NPY_PETSC_INT  NPY_LONGLONG
 #else
@@ -17,7 +19,7 @@
 #  define NPY_PETSC_REAL    NPY_LONGDOUBLE
 #  define NPY_PETSC_COMPLEX NPY_CLONGDOUBLE
 #else
-#  error "unsupported precision"
+#  error "unsupported real precision"
 #endif
 
 #if   defined(PETSC_USE_SCALAR_COMPLEX)
