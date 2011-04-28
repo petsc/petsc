@@ -8,6 +8,8 @@ PetscInitialize({'-malloc_dump','-snes_monitor','-snes_mf_operator','-ksp_monito
 viewer = PetscViewer();
 viewer.SetType('ascii');
 
+PetscOptionsView(viewer);
+
 vec = PetscVec();
 vec.SetType('seq');
 vec.SetSizes(10,10);

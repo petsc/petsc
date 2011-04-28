@@ -1031,6 +1031,7 @@ PetscErrorCode SNESVIRedundancyCheck_Matlab(SNES snes,IS is_act,IS* is_redact,vo
   int                 nlhs = 1, nrhs = 5;
   mxArray             *plhs[1], *prhs[5];
   long long int       l1 = 0, l2 = 0,ls = 0;
+  PetscInt            *indices=PETSC_NULL;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
@@ -1038,8 +1039,8 @@ PetscErrorCode SNESVIRedundancyCheck_Matlab(SNES snes,IS is_act,IS* is_redact,vo
   PetscValidPointer(is_redact,3);
   PetscCheckSameComm(snes,1,is_act,2);
 
-  /* Create IS for reduced active set, its size and indices will be set by the Matlab function */
-  ierr = ISCreate(((PetscObject)snes)->comm,is_redact);CHKERRQ(ierr);
+  /* Create IS for reduced active set, its size and indices will be changed by the Matlab function */
+  ierr = ISCreateGeneral(((PetscObject)snes)->comm,0,indices,PETSC_OWN_POINTER,is_redact);CHKERRQ(ierr);
   /* call Matlab function in ctx */
   ierr = PetscMemcpy(&ls,&snes,sizeof(snes));CHKERRQ(ierr);
   ierr = PetscMemcpy(&l1,&is_act,sizeof(is_act));CHKERRQ(ierr);
@@ -1051,14 +1052,10 @@ PetscErrorCode SNESVIRedundancyCheck_Matlab(SNES snes,IS is_act,IS* is_redact,vo
   prhs[4] = sctx->ctx;
   ierr    = mexCallMATLAB(nlhs,plhs,nrhs,prhs,"PetscSNESVIRedundancyCheckInternal");CHKERRQ(ierr);
   ierr    = mxGetScalar(plhs[0]);CHKERRQ(ierr);
-  PetscInt n;
-  ierr = ISGetSize(*is_redact,&n);CHKERRQ(ierr);
-  PetscPrintf(PETSC_COMM_SELF,"IS_size = %d\n",n);
   mxDestroyArray(prhs[0]);
   mxDestroyArray(prhs[1]);
   mxDestroyArray(prhs[2]);
   mxDestroyArray(prhs[3]);
-  mxDestroyArray(prhs[4]);
   mxDestroyArray(plhs[0]);
   PetscFunctionReturn(0);
 }
@@ -1176,12 +1173,10 @@ PetscErrorCode SNESSolveVI_RS2(SNES snes)
 	/* User called checkredundancy function but didn't create IS_redact because
            there were no redundant active set variables */
 	/* Copy over all active set indices to the list */
-        PetscPrintf(PETSC_COMM_SELF,"Came here 1\n");
 	ierr = PetscMalloc(nis_act*sizeof(PetscInt),&idx_actkept);CHKERRQ(ierr);
 	for(k=0;k < nis_act;k++) idx_actkept[k] = idx_act[k];
 	nkept = nis_act;
       } else {
-        PetscPrintf(PETSC_COMM_SELF,"Came here 2\n");
 	ierr = ISGetLocalSize(IS_redact,&nis_redact);CHKERRQ(ierr);
 	ierr = PetscMalloc((nis_act-nis_redact)*sizeof(PetscInt),&idx_actkept);CHKERRQ(ierr);
 
