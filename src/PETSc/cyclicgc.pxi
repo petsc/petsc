@@ -13,24 +13,23 @@ cdef extern from "Python.h":
        char*        tp_name
        traverseproc tp_traverse
        inquiry      tp_clear
+    PyTypeObject *Py_TYPE(PyObject *)
     ctypedef struct PyGC_Head:
        Py_ssize_t gc_refs"gc.gc_refs"
     PyGC_Head *_Py_AS_GC(PyObject*)
     enum: _PyGC_REFS_REACHABLE
-    ## PyTypeObject *Py_TYPE(PyObject *)
 
-cdef int traverse(PyObject *o, visitproc visit, void *arg):
+cdef int tp_traverse(PyObject *o, visitproc visit, void *arg):
     ## printf("%s.tp_traverse(%p)\n", Py_TYPE(o).tp_name, <void*>o)
     cdef PetscObject p = (<Object>o).obj[0]
     if p == NULL: return 0
-    cdef PyObject *dct = NULL
-    PetscObjectGetPyDict(p, PETSC_FALSE, <void**>&dct)
-    if dct == NULL or dct == <PyObject*>None: return 0
-    if arg == NULL and _Py_AS_GC(dct).gc_refs == 0:
-        _Py_AS_GC(dct).gc_refs = _PyGC_REFS_REACHABLE
-    return visit(dct, arg)
+    cdef PyObject *d = <PyObject*>p.python_context
+    if d == NULL: return 0
+    if arg == NULL and _Py_AS_GC(d).gc_refs == 0:
+        _Py_AS_GC(d).gc_refs = _PyGC_REFS_REACHABLE
+    return visit(d, arg)
 
-cdef int clear(PyObject *o):
+cdef int tp_clear(PyObject *o):
     ## printf("%s.tp_clear(%p)\n", Py_TYPE(o).tp_name, <void*>o)
     cdef PetscObject *p = (<Object>o).obj
     PetscDEALLOC(p)
@@ -38,7 +37,7 @@ cdef int clear(PyObject *o):
 
 cdef inline void TypeEnableGC(PyTypeObject *t):
     ## printf("%s: enforcing GC support\n", t.tp_name)
-    t.tp_traverse = traverse
-    t.tp_clear    = clear
+    t.tp_traverse = tp_traverse
+    t.tp_clear    = tp_clear
 
 # --------------------------------------------------------------------

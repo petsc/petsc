@@ -42,18 +42,13 @@ cdef class Object:
     # --- attribute management ---
 
     cdef object get_attr(self, char name[]):
-        cdef void *attr = NULL
-        CHKERR( PetscObjectGetPyObj(self.obj[0], name, &attr) )
-        return <object> attr
+        return PetscGetPyObj(self.obj[0], name)
 
     cdef object set_attr(self, char name[], object attr):
-        CHKERR( PetscObjectSetPyObj(self.obj[0], name, <void*>attr) )
-        return None
+        return PetscSetPyObj(self.obj[0], name, attr)
 
     cdef object get_dict(self):
-        cdef void *dct = NULL
-        CHKERR( PetscObjectGetPyDict(self.obj[0], PETSC_TRUE, &dct) )
-        return <object> dct
+        return PetscGetPyDict(self.obj[0], True)
 
     #
 

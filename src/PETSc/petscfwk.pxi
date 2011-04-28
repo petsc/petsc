@@ -32,8 +32,8 @@ cdef dict fwk_cache = {}
 __fwk_cache__ = fwk_cache
 
 cdef extern from "Python.h":
-    object PyModule_New(char *)
     ctypedef struct PyObject
+    PyObject *PyModule_New(char *)
     void Py_XINCREF(PyObject *)
     void Py_XDECREF(PyObject *)
 
@@ -75,7 +75,7 @@ cdef int Fwk_LoadVTable(
     #
     cdef module = fwk_cache.get(path)
     if module is None:
-        module = PyModule_New("__petsc__")
+        module = <object>PyModule_New("__petsc__")
         module.__file__    = path
         module.__package__ = None
         fwk_cache[path] = module
