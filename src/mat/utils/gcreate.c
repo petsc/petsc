@@ -174,7 +174,7 @@ PetscErrorCode  MatSetFromOptions(Mat B)
   PetscErrorCode ierr;
   const char     *deft = MATAIJ;
   char           type[256];
-  PetscBool      flg;
+  PetscBool      flg,set;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(B,MAT_CLASSID,1);
@@ -190,6 +190,13 @@ PetscErrorCode  MatSetFromOptions(Mat B)
     if (B->ops->setfromoptions) {
       ierr = (*B->ops->setfromoptions)(B);CHKERRQ(ierr);
     }
+
+    flg = PETSC_FALSE;
+    ierr = PetscOptionsBool("-mat_new_nonzero_location_err","Generate an error if new nonzeros are created in the matrix structure (useful to test preallocation)","MatSetOption",flg,&flg,&set);CHKERRQ(ierr);
+    if (set) {ierr = MatSetOption(B,MAT_NEW_NONZERO_LOCATION_ERR,flg);CHKERRQ(ierr);}
+    flg = PETSC_FALSE;
+    ierr = PetscOptionsBool("-mat_new_nonzero_allocation_err","Generate an error if new nonzeros are allocated in the matrix structure (useful to test preallocation)","MatSetOption",flg,&flg,&set);CHKERRQ(ierr);
+    if (set) {ierr = MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR,flg);CHKERRQ(ierr);}
 
     /* process any options handlers added with PetscObjectAddOptionsHandler() */
     ierr = PetscObjectProcessOptionsHandlers((PetscObject)B);CHKERRQ(ierr);
