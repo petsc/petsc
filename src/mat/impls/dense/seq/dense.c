@@ -1821,6 +1821,47 @@ PetscErrorCode MatGetColumnVector_SeqDense(Mat A,Vec v,PetscInt col)
   PetscFunctionReturn(0);
 }
 
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetColumnNorms_SeqDense"
+PetscErrorCode MatGetColumnNorms_SeqDense(Mat A,NormType type,PetscReal *norms)
+{
+  PetscErrorCode ierr;
+  PetscInt       i,j,m,n;
+  PetscScalar    *a;
+
+  PetscFunctionBegin;
+  ierr = MatGetSize(A,&m,&n);CHKERRQ(ierr);
+  ierr = PetscMemzero(norms,n*sizeof(PetscReal));CHKERRQ(ierr);  
+  ierr = MatGetArray(A,&a);CHKERRQ(ierr);
+  if (type == NORM_2) {
+    for (i=0; i<n; i++ ){ 
+      for (j=0; j<m; j++) {
+	norms[i] += PetscAbsScalar(a[j]*a[j]);
+      }
+      a += m;
+    }
+  } else if (type == NORM_1) {
+    for (i=0; i<n; i++ ){ 
+      for (j=0; j<m; j++) {
+	norms[i] += PetscAbsScalar(a[j]);
+      }
+      a += m;
+    }
+  } else if (type == NORM_INFINITY) {
+    for (i=0; i<n; i++ ){ 
+      for (j=0; j<m; j++) {
+	norms[i] = PetscMax(PetscAbsScalar(a[j]),norms[i]);
+      }
+      a += m;
+    }
+  } else SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONG,"Unknown NormType");
+  if (type == NORM_2) {
+    for (i=0; i<n; i++) norms[i] = sqrt(norms[i]);
+  }
+  PetscFunctionReturn(0);
+}
+
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {MatSetValues_SeqDense,
        MatGetRow_SeqDense,
@@ -1944,7 +1985,10 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqDense,
 /*119*/0,
        0,
        0,
-       0
+       0,
+       0,
+/*124*/0,
+       MatGetColumnNorms_SeqDense
 };
 
 #undef __FUNCT__  

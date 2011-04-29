@@ -1487,6 +1487,35 @@ PetscErrorCode MatImaginaryPart_MPIDense(Mat A)
   PetscFunctionReturn(0);
 }
 
+extern PetscErrorCode MatGetColumnNorms_SeqDense(Mat,NormType,PetscReal*);
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetColumnNorms_MPIDense"
+PetscErrorCode MatGetColumnNorms_MPIDense(Mat A,NormType type,PetscReal *norms)
+{
+  PetscErrorCode ierr;
+  PetscInt       i,n;
+  Mat_MPIDense   *a = (Mat_MPIDense*) A->data;
+  PetscReal      *work;
+
+  PetscFunctionBegin;
+  ierr = MatGetSize(A,PETSC_NULL,&n);CHKERRQ(ierr);
+  ierr = PetscMalloc(n*sizeof(PetscReal),&work);CHKERRQ(ierr);
+  ierr = MatGetColumnNorms_SeqDense(a->A,type,work);CHKERRQ(ierr);
+  if (type == NORM_2) {
+    for (i=0; i<n; i++) work[i] *= work[i];
+  }
+  if (type == NORM_INFINITY) {
+    ierr = MPI_Allreduce(work,norms,n,MPIU_REAL,MPIU_MAX,A->hdr.comm);CHKERRQ(ierr);
+  } else {
+    ierr = MPI_Allreduce(work,norms,n,MPIU_REAL,MPIU_SUM,A->hdr.comm);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(work);CHKERRQ(ierr);
+  if (type == NORM_2) {
+    for (i=0; i<n; i++) norms[i] = sqrt(norms[i]);
+  }
+  PetscFunctionReturn(0);
+}
+
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {MatSetValues_MPIDense,
        MatGetRow_MPIDense,
@@ -1617,7 +1646,10 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIDense,
 /*119*/0,
        0,
        0,
-       0
+       0,
+       0,
+/*124*/0,
+       MatGetColumnNorms_MPIDense
 };
 
 EXTERN_C_BEGIN

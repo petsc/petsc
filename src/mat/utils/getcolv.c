@@ -74,164 +74,13 @@ PetscErrorCode  MatGetColumnVector(Mat A,Vec yy,PetscInt col)
   PetscFunctionReturn(0);
 }
 
-#include <../src/mat/impls/aij/seq/aij.h>
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatGetColumnNorms_SeqAIJ"
-PetscErrorCode MatGetColumnNorms_SeqAIJ(Mat A,NormType type,PetscReal *norms)
-{
-  PetscErrorCode ierr;
-  PetscInt       i,m,n;
-  Mat_SeqAIJ     *aij = (Mat_SeqAIJ*)A->data;
 
-  PetscFunctionBegin;
-  ierr = MatGetSize(A,&m,&n);CHKERRQ(ierr);
-  ierr = PetscMemzero(norms,n*sizeof(PetscReal));CHKERRQ(ierr);  
-  if (type == NORM_2) {
-    for (i=0; i<aij->i[m]; i++) {
-      norms[aij->j[i]] += PetscAbsScalar(aij->a[i]*aij->a[i]);
-    }
-  } else if (type == NORM_1) {
-    for (i=0; i<aij->i[m]; i++) {
-      norms[aij->j[i]] += PetscAbsScalar(aij->a[i]);
-    }
-  } else if (type == NORM_INFINITY) {
-    for (i=0; i<aij->i[m]; i++) {
-      norms[aij->j[i]] = PetscMax(PetscAbsScalar(aij->a[i]),norms[aij->j[i]]);
-    }
-  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown NormType");
-
-  if (type == NORM_2) {
-    for (i=0; i<n; i++) norms[i] = sqrt(norms[i]);
-  }
-  PetscFunctionReturn(0);
-}
-
-#include <../src/mat/impls/aij/mpi/mpiaij.h>
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatGetColumnNorms_MPIAIJ"
-PetscErrorCode MatGetColumnNorms_MPIAIJ(Mat A,NormType type,PetscReal *norms)
-{
-  PetscErrorCode ierr;
-  Mat_MPIAIJ     *aij = (Mat_MPIAIJ*)A->data;
-  PetscInt       i,n,*garray = aij->garray;
-  Mat_SeqAIJ     *a_aij = (Mat_SeqAIJ*) aij->A->data;
-  Mat_SeqAIJ     *b_aij = (Mat_SeqAIJ*) aij->B->data;
-  PetscReal      *work;
-
-  PetscFunctionBegin;
-  ierr = MatGetSize(A,PETSC_NULL,&n);CHKERRQ(ierr);
-  ierr = PetscMalloc(n*sizeof(PetscReal),&work);CHKERRQ(ierr);
-  ierr = PetscMemzero(work,n*sizeof(PetscReal));CHKERRQ(ierr);  
-  if (type == NORM_2) {
-    for (i=0; i<a_aij->i[aij->A->rmap->n]; i++) {
-      work[A->cmap->rstart + a_aij->j[i]] += PetscAbsScalar(a_aij->a[i]*a_aij->a[i]);
-    }
-    for (i=0; i<b_aij->i[aij->B->rmap->n]; i++) {
-      work[garray[b_aij->j[i]]] += PetscAbsScalar(b_aij->a[i]*b_aij->a[i]);
-    }
-  } else if (type == NORM_1) {
-    for (i=0; i<a_aij->i[aij->A->rmap->n]; i++) {
-      work[A->cmap->rstart + a_aij->j[i]] += PetscAbsScalar(a_aij->a[i]);
-    }
-    for (i=0; i<b_aij->i[aij->B->rmap->n]; i++) {
-      work[garray[b_aij->j[i]]] += PetscAbsScalar(b_aij->a[i]);
-    }
-  } else if (type == NORM_INFINITY) {
-    for (i=0; i<a_aij->i[aij->A->rmap->n]; i++) {
-      work[A->cmap->rstart + a_aij->j[i]] = PetscMax(PetscAbsScalar(a_aij->a[i]), work[A->cmap->rstart + a_aij->j[i]]);
-    }
-    for (i=0; i<b_aij->i[aij->B->rmap->n]; i++) {
-      work[garray[b_aij->j[i]]] = PetscMax(PetscAbsScalar(b_aij->a[i]),work[garray[b_aij->j[i]]]);
-    }
-
-  } else SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONG,"Unknown NormType");
-  if (type == NORM_INFINITY) {
-    ierr = MPI_Allreduce(work,norms,n,MPIU_REAL,MPIU_MAX,A->hdr.comm);CHKERRQ(ierr);
-  } else {
-    ierr = MPI_Allreduce(work,norms,n,MPIU_REAL,MPIU_SUM,A->hdr.comm);CHKERRQ(ierr);
-  }
-  ierr = PetscFree(work);CHKERRQ(ierr);
-  if (type == NORM_2) {
-    for (i=0; i<n; i++) norms[i] = sqrt(norms[i]);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatGetColumnNorms_SeqDense"
-PetscErrorCode MatGetColumnNorms_SeqDense(Mat A,NormType type,PetscReal *norms)
-{
-  PetscErrorCode ierr;
-  PetscInt       i,j,m,n;
-  PetscScalar    *a;
-
-  PetscFunctionBegin;
-  ierr = MatGetSize(A,&m,&n);CHKERRQ(ierr);
-  ierr = PetscMemzero(norms,n*sizeof(PetscReal));CHKERRQ(ierr);  
-  ierr = MatGetArray(A,&a);CHKERRQ(ierr);
-  if (type == NORM_2) {
-    for (i=0; i<n; i++ ){ 
-      for (j=0; j<m; j++) {
-	norms[i] += PetscAbsScalar(a[j]*a[j]);
-      }
-      a += m;
-    }
-  } else if (type == NORM_1) {
-    for (i=0; i<n; i++ ){ 
-      for (j=0; j<m; j++) {
-	norms[i] += PetscAbsScalar(a[j]);
-      }
-      a += m;
-    }
-  } else if (type == NORM_INFINITY) {
-    for (i=0; i<n; i++ ){ 
-      for (j=0; j<m; j++) {
-	norms[i] = PetscMax(PetscAbsScalar(a[j]),norms[i]);
-      }
-      a += m;
-    }
-  } else SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONG,"Unknown NormType");
-  if (type == NORM_2) {
-    for (i=0; i<n; i++) norms[i] = sqrt(norms[i]);
-  }
-  PetscFunctionReturn(0);
-}
-
-#include <../src/mat/impls/dense/mpi/mpidense.h>
-#undef __FUNCT__  
-#define __FUNCT__ "MatGetColumnNorms_MPIDense"
-PetscErrorCode MatGetColumnNorms_MPIDense(Mat A,NormType type,PetscReal *norms)
-{
-  PetscErrorCode ierr;
-  PetscInt       i,n;
-  Mat_MPIDense   *a = (Mat_MPIDense*) A->data;
-  PetscReal      *work;
-
-  PetscFunctionBegin;
-  ierr = MatGetSize(A,PETSC_NULL,&n);CHKERRQ(ierr);
-  ierr = PetscMalloc(n*sizeof(PetscReal),&work);CHKERRQ(ierr);
-  ierr = MatGetColumnNorms_SeqDense(a->A,type,work);CHKERRQ(ierr);
-  if (type == NORM_2) {
-    for (i=0; i<n; i++) work[i] *= work[i];
-  }
-  if (type == NORM_INFINITY) {
-    ierr = MPI_Allreduce(work,norms,n,MPIU_REAL,MPIU_MAX,A->hdr.comm);CHKERRQ(ierr);
-  } else {
-    ierr = MPI_Allreduce(work,norms,n,MPIU_REAL,MPIU_SUM,A->hdr.comm);CHKERRQ(ierr);
-  }
-  ierr = PetscFree(work);CHKERRQ(ierr);
-  if (type == NORM_2) {
-    for (i=0; i<n; i++) norms[i] = sqrt(norms[i]);
-  }
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetColumnNorms"
 /*@
-    MatGetColumnNorms - Gets the 2 norms of each column of a sparse or dense matrix.
+    MatGetColumnNorms - Gets the norms of each column of a sparse or dense matrix.
 
   Input Parameter:
 +  A - the matrix
@@ -251,28 +100,12 @@ PetscErrorCode MatGetColumnNorms_MPIDense(Mat A,NormType type,PetscReal *norms)
 PetscErrorCode MatGetColumnNorms(Mat A,NormType type,PetscReal *norms)
 {
   PetscErrorCode ierr;
-  PetscBool      flg;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)A,MATSEQAIJ,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = MatGetColumnNorms_SeqAIJ(A,type,norms);CHKERRQ(ierr);
-  } else {
-    ierr = PetscTypeCompare((PetscObject)A,MATSEQDENSE,&flg);CHKERRQ(ierr);
-    if (flg) {
-      ierr = MatGetColumnNorms_SeqDense(A,type,norms);CHKERRQ(ierr);
-    } else {
-      ierr = PetscTypeCompare((PetscObject)A,MATMPIDENSE,&flg);CHKERRQ(ierr);
-      if (flg) {
-        ierr = MatGetColumnNorms_MPIDense(A,type,norms);CHKERRQ(ierr);
-      } else {
-        ierr = PetscTypeCompare((PetscObject)A,MATMPIAIJ,&flg);CHKERRQ(ierr);
-        if (flg) {
-          ierr = MatGetColumnNorms_MPIAIJ(A,type,norms);CHKERRQ(ierr);
-        } else SETERRQ(((PetscObject)A)->comm,PETSC_ERR_SUP,"Not coded for this matrix type");
-      }
-    } 
-  }
+  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
+  if (A->ops->getcolumnnorms) {
+    ierr = (*A->ops->getcolumnnorms)(A,type,norms);CHKERRQ(ierr);
+  } else SETERRQ(((PetscObject)A)->comm,PETSC_ERR_SUP,"Not coded for this matrix type");
   PetscFunctionReturn(0);
 }
   

@@ -561,7 +561,7 @@ extern PetscErrorCode  MatMultTransposeAddEqual(Mat,Mat,PetscInt,PetscBool *);
 
 extern PetscErrorCode  MatNorm(Mat,NormType,PetscReal *);
 PetscPolymorphicFunction(MatNorm,(Mat A,NormType t),(A,t,&n),PetscReal,n)
-extern PetscErrorCode MatGetColumnNorms(Mat,NormType,PetscReal *);
+extern PetscErrorCode  MatGetColumnNorms(Mat,NormType,PetscReal *);
 extern PetscErrorCode  MatZeroEntries(Mat);
 extern PetscErrorCode  MatZeroRows(Mat,PetscInt,const PetscInt [],PetscScalar,Vec,Vec);
 extern PetscErrorCode  MatZeroRowsIS(Mat,IS,PetscScalar,Vec,Vec);
@@ -1566,6 +1566,7 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_MULTHERMITIANTRANSPOSE=121,
                MATOP_MULTHERMITIANTRANSPOSEADD=122,
                MATOP_GETMULTIPROCBLOCK=123,
+               MATOP_GETCOLUMNNORMS=125,
 	       MATOP_GET_SUBMATRICES_PARALLEL=128
              } MatOperation;
 extern PetscErrorCode  MatHasOperation(Mat,MatOperation,PetscBool *);

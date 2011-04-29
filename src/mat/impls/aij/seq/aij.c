@@ -9,6 +9,38 @@
 #include <petscblaslapack.h>
 #include <petscbt.h>
 
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetColumnNorms_SeqAIJ"
+PetscErrorCode MatGetColumnNorms_SeqAIJ(Mat A,NormType type,PetscReal *norms)
+{
+  PetscErrorCode ierr;
+  PetscInt       i,m,n;
+  Mat_SeqAIJ     *aij = (Mat_SeqAIJ*)A->data;
+
+  PetscFunctionBegin;
+  ierr = MatGetSize(A,&m,&n);CHKERRQ(ierr);
+  ierr = PetscMemzero(norms,n*sizeof(PetscReal));CHKERRQ(ierr);  
+  if (type == NORM_2) {
+    for (i=0; i<aij->i[m]; i++) {
+      norms[aij->j[i]] += PetscAbsScalar(aij->a[i]*aij->a[i]);
+    }
+  } else if (type == NORM_1) {
+    for (i=0; i<aij->i[m]; i++) {
+      norms[aij->j[i]] += PetscAbsScalar(aij->a[i]);
+    }
+  } else if (type == NORM_INFINITY) {
+    for (i=0; i<aij->i[m]; i++) {
+      norms[aij->j[i]] = PetscMax(PetscAbsScalar(aij->a[i]),norms[aij->j[i]]);
+    }
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown NormType");
+
+  if (type == NORM_2) {
+    for (i=0; i<n; i++) norms[i] = sqrt(norms[i]);
+  }
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatFindZeroDiagonals_SeqAIJ"
 PetscErrorCode MatFindZeroDiagonals_SeqAIJ(Mat A,IS *zrows)
@@ -2818,7 +2850,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
        0,
        0,
        MatGetMultiProcBlock_SeqAIJ,
-/*124*/MatFindNonzeroRows_SeqAIJ
+/*124*/MatFindNonzeroRows_SeqAIJ,
+       MatGetColumnNorms_SeqAIJ
 };
 
 EXTERN_C_BEGIN

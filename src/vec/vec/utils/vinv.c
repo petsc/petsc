@@ -47,12 +47,8 @@ PetscErrorCode  VecStrideScale(Vec v,PetscInt start,PetscScalar scale)
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   bs   = v->map->bs;
-  if (start < 0) {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative start %D",start);
-  } else if (start >= bs) {
-    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Start of stride subvector (%D) is too large for stride\n\
-            Have you set the vector blocksize (%D) correctly with VecSetBlockSize()?",start,bs);
-  }
+  if (start < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative start %D",start);
+  else if (start >= bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Start of stride subvector (%D) is too large for stride\n  Have you set the vector blocksize (%D) correctly with VecSetBlockSize()?",start,bs);
   x += start;
 
   for (i=0; i<n; i+=bs) {
@@ -115,12 +111,8 @@ PetscErrorCode  VecStrideNorm(Vec v,PetscInt start,NormType ntype,PetscReal *nrm
   ierr = PetscObjectGetComm((PetscObject)v,&comm);CHKERRQ(ierr);
 
   bs   = v->map->bs;
-  if (start < 0) {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative start %D",start);
-  } else if (start >= bs) {
-    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Start of stride subvector (%D) is too large for stride\n\
-            Have you set the vector blocksize (%D) correctly with VecSetBlockSize()?",start,bs);
-  }
+  if (start < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative start %D",start);
+  else if (start >= bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Start of stride subvector (%D) is too large for stride\n Have you set the vector blocksize (%D) correctly with VecSetBlockSize()?",start,bs);
   x += start;
 
   if (ntype == NORM_2) {
@@ -147,10 +139,7 @@ PetscErrorCode  VecStrideNorm(Vec v,PetscInt start,NormType ntype,PetscReal *nrm
       if (tmp != tmp) {tnorm = tmp; break;}
     } 
     ierr   = MPI_Allreduce(&tnorm,nrm,1,MPIU_REAL,MPIU_MAX,comm);CHKERRQ(ierr);
-  } else {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown norm type");
-  }
-
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown norm type");
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -206,12 +195,8 @@ PetscErrorCode  VecStrideMax(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
   ierr = PetscObjectGetComm((PetscObject)v,&comm);CHKERRQ(ierr);
 
   bs   = v->map->bs;
-  if (start < 0) {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative start %D",start);
-  } else if (start >= bs) {
-    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Start of stride subvector (%D) is too large for stride\n\
-            Have you set the vector blocksize (%D) correctly with VecSetBlockSize()?",start,bs);
-  }
+  if (start < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative start %D",start);
+  else if (start >= bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Start of stride subvector (%D) is too large for stride\n Have you set the vector blocksize (%D) correctly with VecSetBlockSize()?",start,bs);
   x += start;
 
   id = -1;
@@ -302,12 +287,8 @@ PetscErrorCode  VecStrideMin(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
   ierr = PetscObjectGetComm((PetscObject)v,&comm);CHKERRQ(ierr);
 
   bs   = v->map->bs;
-  if (start < 0) {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative start %D",start);
-  } else if (start >= bs) {
-    SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Start of stride subvector (%D) is too large for stride\n\
-            Have you set the vector blocksize (%D) correctly with VecSetBlockSize()?",start,bs);
-  }
+  if (start < 0)  SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative start %D",start);
+  else if (start >= bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Start of stride subvector (%D) is too large for stride\nHave you set the vector blocksize (%D) correctly with VecSetBlockSize()?",start,bs);
   x += start;
 
   id = -1;
@@ -486,10 +467,7 @@ PetscErrorCode  VecStrideNormAll(Vec v,NormType ntype,PetscReal nrm[])
       }
     } 
     ierr   = MPI_Allreduce(tnorm,nrm,bs,MPIU_REAL,MPIU_MAX,comm);CHKERRQ(ierr);
-  } else {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown norm type");
-  }
-
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown norm type");
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -747,9 +725,7 @@ PetscErrorCode  VecStrideGatherAll(Vec v,Vec s[],InsertMode addv)
       jj += bss[j];
     }
 #endif
-  } else {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown insert type");
-  }
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown insert type");
 
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
   for (i=0; i<nv; i++) {
@@ -852,9 +828,7 @@ PetscErrorCode  VecStrideScatterAll(Vec s[],Vec v,InsertMode addv)
       jj += bss[j];
     }
 #endif
-  } else {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown insert type");
-  }
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown insert type");
 
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
   for (i=0; i<nv; i++) {
@@ -993,9 +967,7 @@ PetscErrorCode  VecStrideGather_Default(Vec v,PetscInt start,Vec s,InsertMode ad
       y[i] = PetscMax(y[i],x[bs*i]);
     }
 #endif
-  } else {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown insert type");
-  }
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown insert type");
 
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(s,&y);CHKERRQ(ierr);
@@ -1035,9 +1007,7 @@ PetscErrorCode  VecStrideScatter_Default(Vec s,PetscInt start,Vec v,InsertMode a
       x[bs*i] = PetscMax(y[i],x[bs*i]);
     }
 #endif
-  } else {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown insert type");
-  }
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown insert type");
 
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(s,&y);CHKERRQ(ierr);

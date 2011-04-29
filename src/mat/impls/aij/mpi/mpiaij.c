@@ -66,6 +66,56 @@ PetscErrorCode MatFindNonZeroRows_MPIAIJ(Mat M,IS *keptrows)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "MatGetColumnNorms_MPIAIJ"
+PetscErrorCode MatGetColumnNorms_MPIAIJ(Mat A,NormType type,PetscReal *norms)
+{
+  PetscErrorCode ierr;
+  Mat_MPIAIJ     *aij = (Mat_MPIAIJ*)A->data;
+  PetscInt       i,n,*garray = aij->garray;
+  Mat_SeqAIJ     *a_aij = (Mat_SeqAIJ*) aij->A->data;
+  Mat_SeqAIJ     *b_aij = (Mat_SeqAIJ*) aij->B->data;
+  PetscReal      *work;
+
+  PetscFunctionBegin;
+  ierr = MatGetSize(A,PETSC_NULL,&n);CHKERRQ(ierr);
+  ierr = PetscMalloc(n*sizeof(PetscReal),&work);CHKERRQ(ierr);
+  ierr = PetscMemzero(work,n*sizeof(PetscReal));CHKERRQ(ierr);  
+  if (type == NORM_2) {
+    for (i=0; i<a_aij->i[aij->A->rmap->n]; i++) {
+      work[A->cmap->rstart + a_aij->j[i]] += PetscAbsScalar(a_aij->a[i]*a_aij->a[i]);
+    }
+    for (i=0; i<b_aij->i[aij->B->rmap->n]; i++) {
+      work[garray[b_aij->j[i]]] += PetscAbsScalar(b_aij->a[i]*b_aij->a[i]);
+    }
+  } else if (type == NORM_1) {
+    for (i=0; i<a_aij->i[aij->A->rmap->n]; i++) {
+      work[A->cmap->rstart + a_aij->j[i]] += PetscAbsScalar(a_aij->a[i]);
+    }
+    for (i=0; i<b_aij->i[aij->B->rmap->n]; i++) {
+      work[garray[b_aij->j[i]]] += PetscAbsScalar(b_aij->a[i]);
+    }
+  } else if (type == NORM_INFINITY) {
+    for (i=0; i<a_aij->i[aij->A->rmap->n]; i++) {
+      work[A->cmap->rstart + a_aij->j[i]] = PetscMax(PetscAbsScalar(a_aij->a[i]), work[A->cmap->rstart + a_aij->j[i]]);
+    }
+    for (i=0; i<b_aij->i[aij->B->rmap->n]; i++) {
+      work[garray[b_aij->j[i]]] = PetscMax(PetscAbsScalar(b_aij->a[i]),work[garray[b_aij->j[i]]]);
+    }
+
+  } else SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONG,"Unknown NormType");
+  if (type == NORM_INFINITY) {
+    ierr = MPI_Allreduce(work,norms,n,MPIU_REAL,MPIU_MAX,A->hdr.comm);CHKERRQ(ierr);
+  } else {
+    ierr = MPI_Allreduce(work,norms,n,MPIU_REAL,MPIU_SUM,A->hdr.comm);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(work);CHKERRQ(ierr);
+  if (type == NORM_2) {
+    for (i=0; i<n; i++) norms[i] = sqrt(norms[i]);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatDistribute_MPIAIJ"
 /*
     Distributes a SeqAIJ matrix across a set of processes. Code stolen from
@@ -3022,7 +3072,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
        0,
        MatGetMultiProcBlock_MPIAIJ, 
 /*124*/MatFindNonZeroRows_MPIAIJ,
-       0,
+       MatGetColumnNorms_MPIAIJ,
        0,
        0,
        MatGetSubMatricesParallel_MPIAIJ
