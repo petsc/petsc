@@ -111,7 +111,7 @@ static PetscErrorCode MatDestroy_UMFPACK(Mat A)
       ierr = PetscFree(lu->perm_c);CHKERRQ(ierr);
     }
   }
-  ierr = PetscFree(A->spprt);CHKERRQ(ierr);
+  ierr = PetscFree(A->spptr);CHKERRQ(ierr);
   ierr = MatDestroy_SeqAIJ(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
