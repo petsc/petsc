@@ -400,7 +400,7 @@ EXTERN_C_END
      KSPCG - The preconditioned conjugate gradient (PCG) iterative method
 
    Options Database Keys:
-+   -ksp_cg_type Hermitian - (for complex matrices only) indicates the matrix is Hermitian
++   -ksp_cg_type Hermitian - (for complex matrices only) indicates the matrix is Hermitian, see KSPCGSetType()
 .   -ksp_cg_type symmetric - (for complex matrices only) indicates the matrix is symmetric
 -   -ksp_cg_single_reduction - performs both inner products needed in the algorithm with a single MPI_Allreduce() call, see KSPCGUseSingleReduction()
 
@@ -408,6 +408,12 @@ EXTERN_C_END
 
    Notes: The PCG method requires both the matrix and preconditioner to be symmetric positive (or negative) (semi) definite
           Only left preconditioning is supported.
+
+   For complex numbers there are two different CG methods. One for Hermitian symmetric matrices and one for non-Hermitian symmetric matrices. Use 
+   KSPCGSetType() to indicate which type you are using. 
+
+   Developer Notes: KSPSolve_CG() should actually query the matrix to determine if it is Hermitian symmetric or not and NOT require the user to 
+   indicate it to the KSP object.
 
    References:
    Methods of Conjugate Gradients for Solving Linear Systems, Magnus R. Hestenes and Eduard Stiefel,

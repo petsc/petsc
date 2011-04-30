@@ -2168,11 +2168,14 @@ PetscErrorCode  MatMult(Mat mat,Vec x,Vec y)
    The vectors x and y cannot be the same.  I.e., one cannot
    call MatMultTranspose(A,y,y).
 
+   For complex numbers this does NOT compute the Hermitian (complex conjugate) transpose multiple, 
+   use MatMultHermitianTranspose()
+
    Level: beginner
 
    Concepts: matrix vector product^transpose
 
-.seealso: MatMult(), MatMultAdd(), MatMultTransposeAdd()
+.seealso: MatMult(), MatMultAdd(), MatMultTransposeAdd(), MatMultHermitianTranspose(), MatTranspose()
 @*/
 PetscErrorCode  MatMultTranspose(Mat mat,Vec x,Vec y)
 {
@@ -2218,6 +2221,10 @@ PetscErrorCode  MatMultTranspose(Mat mat,Vec x,Vec y)
    Notes:
    The vectors x and y cannot be the same.  I.e., one cannot
    call MatMultHermitianTranspose(A,y,y).
+
+   Also called the conjugate transpose, complex conjugate transpose, or adjoint. 
+
+   For real numbers MatMultTranspose() and MatMultHermitianTranspose() are identical.
 
    Level: beginner
 
@@ -6598,8 +6605,7 @@ PetscErrorCode  MatSetBlockSize(Mat mat,PetscInt bs)
     Input Parameters:
 +   mat - the matrix
 .   shift -  0 or 1 indicating we want the indices starting at 0 or 1
-.   symmetric - PETSC_TRUE or PETSC_FALSE indicating the matrix data structure should be
-                symmetrized
+.   symmetric - PETSC_TRUE or PETSC_FALSE indicating the matrix data structure should be   symmetrized
 -   inodecompressed - PETSC_TRUE or PETSC_FALSE  indicating if the nonzero structure of the
                  inodes or the nonzero elements is wanted. For BAIJ matrices the compressed version is 
                  always used.
@@ -7621,6 +7627,8 @@ PetscErrorCode  MatSolves(Mat mat,Vecs b,Vecs x)
    Output Parameters:
 .  flg - the result
 
+   Notes: For real numbers MatIsSymmetric() and MatIsHermitian() return identical results
+
    Level: intermediate
 
    Concepts: matrix^symmetry
@@ -7683,7 +7691,8 @@ PetscErrorCode  MatIsSymmetric(Mat A,PetscReal tol,PetscBool  *flg)
 
    Concepts: matrix^symmetry
 
-.seealso: MatTranspose(), MatIsTranspose(), MatIsHermitian(), MatIsStructurallySymmetric(), MatSetOption(), MatIsSymmetricKnown()
+.seealso: MatTranspose(), MatIsTranspose(), MatIsHermitian(), MatIsStructurallySymmetric(), MatSetOption(),
+          MatIsSymmetricKnown(), MatIsSymmetric()
 @*/ 
 PetscErrorCode  MatIsHermitian(Mat A,PetscReal tol,PetscBool  *flg)
 {

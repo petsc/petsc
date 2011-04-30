@@ -165,6 +165,12 @@ $      MATORDERINGQMD - Quotient Minimum Degree
 
    The user can define additional orderings; see MatOrderingRegisterDynamic().
 
+   These are generally only implemented for sequential sparse matrices.
+
+   The external packages that PETSc can use for direct factorization such as SuperLU do not accept orderings provided by 
+   this call.
+
+
 .keywords: matrix, set, ordering, factorization, direct, ILU, LU,
            fill, reordering, natural, Nested Dissection,
            One-way Dissection, Cholesky, Reverse Cuthill-McKee, 

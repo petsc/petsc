@@ -1828,7 +1828,10 @@ EXTERN_C_END
 /*MC
   MATSEQSBAIJ - MATSEQSBAIJ = "seqsbaij" - A matrix type to be used for sequential symmetric block sparse matrices, 
   based on block compressed sparse row format.  Only the upper triangular portion of the matrix is stored.
-  
+
+  For complex numbers by default this matrix is symmetric, NOT Hermitian symmetric. To make it Hermitian symmetric you
+  can call MatSetOption(Mat, MAT_HERMITIAN); 
+
   Options Database Keys:
   . -mat_type seqsbaij - sets the matrix type to "seqsbaij" during a call to MatSetFromOptions()
   
