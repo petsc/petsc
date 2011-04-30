@@ -35,16 +35,16 @@ cdef extern from *:
     enum: PETSC_ERR_PYTHON "(-1)"
 
 cdef extern from *:
-    void PyErr_SetObject(void*, object)
+    void PyErr_SetObject(object, object)
     void *PyExc_RuntimeError
 
 cdef object PetscError = <object>PyExc_RuntimeError
 
 cdef inline int SETERR(int ierr) with gil:
     if (<void*>PetscError) != NULL:
-        PyErr_SetObject(<void*>PetscError, <long>ierr)
+        PyErr_SetObject(PetscError, <long>ierr)
     else:
-        PyErr_SetObject(PyExc_RuntimeError, <long>ierr)
+        PyErr_SetObject(<object>PyExc_RuntimeError, <long>ierr)
     return ierr
 
 cdef inline int CHKERR(int ierr) nogil except -1:
