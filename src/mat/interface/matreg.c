@@ -54,6 +54,7 @@ PetscErrorCode  MatSetType(Mat mat, const MatType matype)
     ierr = (*mat->ops->destroy)(mat);CHKERRQ(ierr);
     mat->ops->destroy = PETSC_NULL;
   }
+  mat->preallocated = PETSC_FALSE;
 
   /* create the new data structure */
   ierr = (*r)(mat);CHKERRQ(ierr);
