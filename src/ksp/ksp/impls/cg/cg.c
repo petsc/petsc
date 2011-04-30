@@ -128,11 +128,7 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
     W           = Z;
   } 
 
-#if !defined(PETSC_USE_COMPLEX)
-#define VecXDot(x,y,a) VecDot(x,y,a)
-#else
 #define VecXDot(x,y,a) (((cg->type) == (KSP_CG_HERMITIAN)) ? VecDot(x,y,a) : VecTDot(x,y,a))
-#endif
 
   if (eigs) {e = cg->e; d = cg->d; e[0] = 0.0; }
   ierr = PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
