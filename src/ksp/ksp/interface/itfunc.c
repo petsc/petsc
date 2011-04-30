@@ -636,6 +636,9 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
 .  b - right hand side vector
 -  x - solution vector
 
+   Notes: For complex numbers this solve the non-Hermitian transpose system.
+
+   Developer Notes: We need to implement a KSPSolveHermitianTranspose()
 
    Level: developer
 

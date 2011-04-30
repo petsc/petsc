@@ -483,6 +483,10 @@ PetscErrorCode  PCApplySymmetricRight(PC pc,Vec x,Vec y)
    Output Parameter:
 .  y - output vector
 
+   Notes: For complex numbers this applies the non-Hermitian transpose.
+
+   Developer Notes: We need to implement a PCApplyHermitianTranspose()
+
    Level: developer
 
 .keywords: PC, apply, transpose
