@@ -91,18 +91,17 @@ cdef PetscErrorCode PetscCHKERR(PetscErrorCode ierr) nogil:
                       PETSC_ERROR_REPEAT, b"",NULL)
 
 cdef extern from *:
-    void pyx_raise"__Pyx_Raise"(object, object, void*)
+    void PyErr_SetObject(void*, object)
     void *PyExc_RuntimeError
-if PyExc_RuntimeError == NULL: raise RuntimeError
 
 cdef object PetscError = <object>PyExc_RuntimeError
 from petsc4py.PETSc import Error as PetscError
 
 cdef inline PetscErrorCode PythonRAISE(PetscErrorCode ierr) with gil:
-    if (<void*>PetscError):
-        pyx_raise(PetscError, <long>ierr, NULL)
+    if (<void*>PetscError) != NULL:
+        PyErr_SetObject(<void*>PetscError, <long>ierr)
     else:
-        pyx_raise(<object>PyExc_RuntimeError, <long>ierr, NULL)
+        PyErr_SetObject(PyExc_RuntimeError, <long>ierr)
     return ierr
 
 cdef inline PetscErrorCode PetscGETERR"PetscGETERR"() nogil:
