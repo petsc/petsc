@@ -1,12 +1,14 @@
-#if !defined(PETSC4PY_COMPAT_H)
+#ifndef PETSC4PY_COMPAT_H
 #define PETSC4PY_COMPAT_H
 
+#include <petsc.h>
+#include "compat/mpi.h"
+
+#if PETSC_VERSION_(3,1,0) || PETSC_VERSION_(3,0,0)
 #if PETSC_VERSION_(3,0,0)
 #include <petscts.h>
 #include <petscda.h>
 #endif
-
-#include "compat/mpi.h"
 #include "compat/petsc.h"
 #include "compat/petscsys.h"
 #include "compat/petscfwk.h"
@@ -21,16 +23,7 @@
 #include "compat/petscao.h"
 #include "compat/petscdm.h"
 #include "compat/petscda.h"
+#include "compat/destroy.h"
+#endif/*PETSC31||PETSC30*/
 
-#if !defined(WITH_THREAD)
-#undef  PyGILState_Ensure
-#define PyGILState_Ensure() ((PyGILState_STATE)0)
-#undef  PyGILState_Release
-#define PyGILState_Release(state) (state)=((PyGILState_STATE)0)
-#undef  Py_BLOCK_THREADS
-#define Py_BLOCK_THREADS (_save)=(PyThreadState*)0;
-#undef  Py_UNBLOCK_THREADS
-#define Py_UNBLOCK_THREADS (_save)=(PyThreadState*)0;
-#endif
-
-#endif /* !PETSC4PY_COMPAT_H */
+#endif/*PETSC4PY_COMPAT_H*/

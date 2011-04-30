@@ -1,4 +1,5 @@
-/* ---------------------------------------------------------------- */
+#ifndef PETSC4PY_CUSTOM_H
+#define PETSC4PY_CUSTOM_H
 
 #include "private/vecimpl.h"
 #include "private/matimpl.h"
@@ -6,11 +7,6 @@
 #include "private/pcimpl.h"
 #include "private/snesimpl.h"
 #include "private/tsimpl.h"
-
-#if PETSC_VERSION_(3,1,0) || PETSC_VERSION_(3,0,0)
-#include "compat.h"
-#include "compat/destroy.h"
-#endif
 
 /* ---------------------------------------------------------------- */
 
@@ -263,8 +259,7 @@ typedef PetscErrorCode (*PetscFwkPythonLoadVTableFunction)
   (PetscFwk, const char *path, const char *name, void **vtable_p);
 typedef PetscErrorCode (*PetscFwkPythonClearVTableFunction)
   (PetscFwk fwk, void **vtable_p);
-#if (PETSC_VERSION_(3,1,0) || \
-     PETSC_VERSION_(3,0,0))
+#if PETSC_VERSION_(3,1,0) || PETSC_VERSION_(3,0,0)
 static PetscFwkPythonCallFunction
        PetscFwkPythonCall = PETSC_NULL;
 static PetscFwkPythonLoadVTableFunction
@@ -592,6 +587,10 @@ MatAnyDenseSetPreallocation(Mat mat, PetscInt bs, PetscScalar *data)
   }
   PetscFunctionReturn(0);
 }
+
+#ifndef MatNullSpaceFunction
+typedef PetscErrorCode MatNullSpaceFunction(MatNullSpace,Vec,void*);
+#endif
 
 /* ---------------------------------------------------------------- */
 
@@ -1315,6 +1314,8 @@ DACreateND(MPI_Comm comm,
 #endif
 
 /* ---------------------------------------------------------------- */
+
+#endif/* PETSC4PY_CUSTOM_H*/
 
 /*
   Local variables:

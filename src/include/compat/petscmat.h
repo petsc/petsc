@@ -237,6 +237,7 @@ typedef PetscErrorCode MatNullSpaceFunction(Vec,void*);
 #else
 typedef PetscErrorCode MatNullSpaceFunction(MatNullSpace,Vec,void*);
 #endif
+#define MatNullSpaceFunction MatNullSpaceFunction
 
 #if (PETSC_VERSION_(3,0,0))
 #undef __FUNCT__
