@@ -355,7 +355,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       }
     } else {
       for (i=0; i<nsplit; i++) {
-        ierr = MatGetSubMatrix(pc->mat,ilink->is,ilink->is,MAT_REUSE_MATRIX,&jac->mat[i]);CHKERRQ(ierr);
+        if (jac->mat[i]) {ierr = MatGetSubMatrix(pc->mat,ilink->is,ilink->is,MAT_REUSE_MATRIX,&jac->mat[i]);CHKERRQ(ierr);}
         ilink = ilink->next;
       }
     }
