@@ -187,7 +187,7 @@ PetscErrorCode  StageLogPush(StageLog stageLog, int stage)
       stageLog->stageInfo[curStage].perfInfo.flops         += _TotalFlops;
       stageLog->stageInfo[curStage].perfInfo.numMessages   += irecv_ct  + isend_ct  + recv_ct  + send_ct;
       stageLog->stageInfo[curStage].perfInfo.messageLength += irecv_len + isend_len + recv_len + send_len;
-      stageLog->stageInfo[curStage].perfInfo.numReductions += allreduce_ct;
+      stageLog->stageInfo[curStage].perfInfo.numReductions += allreduce_ct + gather_ct + scatter_ct;
     }
   }
   /* Activate the stage */
@@ -201,7 +201,7 @@ PetscErrorCode  StageLogPush(StageLog stageLog, int stage)
     stageLog->stageInfo[stage].perfInfo.flops         -= _TotalFlops;
     stageLog->stageInfo[stage].perfInfo.numMessages   -= irecv_ct  + isend_ct  + recv_ct  + send_ct;
     stageLog->stageInfo[stage].perfInfo.messageLength -= irecv_len + isend_len + recv_len + send_len;
-    stageLog->stageInfo[stage].perfInfo.numReductions -= allreduce_ct;
+    stageLog->stageInfo[stage].perfInfo.numReductions -= allreduce_ct + gather_ct + scatter_ct;
   }
   PetscFunctionReturn(0);
 }
@@ -253,7 +253,7 @@ PetscErrorCode  StageLogPop(StageLog stageLog)
     stageLog->stageInfo[curStage].perfInfo.flops         += _TotalFlops;
     stageLog->stageInfo[curStage].perfInfo.numMessages   += irecv_ct  + isend_ct  + recv_ct  + send_ct;
     stageLog->stageInfo[curStage].perfInfo.messageLength += irecv_len + isend_len + recv_len + send_len;
-    stageLog->stageInfo[curStage].perfInfo.numReductions += allreduce_ct;
+    stageLog->stageInfo[curStage].perfInfo.numReductions += allreduce_ct + gather_ct + scatter_ct;
   }
   ierr = StackEmpty(stageLog->stack, &empty);CHKERRQ(ierr);
   if (!empty) {
@@ -264,7 +264,7 @@ PetscErrorCode  StageLogPop(StageLog stageLog)
       stageLog->stageInfo[curStage].perfInfo.flops         -= _TotalFlops;
       stageLog->stageInfo[curStage].perfInfo.numMessages   -= irecv_ct  + isend_ct  + recv_ct  + send_ct;
       stageLog->stageInfo[curStage].perfInfo.messageLength -= irecv_len + isend_len + recv_len + send_len;
-      stageLog->stageInfo[curStage].perfInfo.numReductions -= allreduce_ct;
+      stageLog->stageInfo[curStage].perfInfo.numReductions -= allreduce_ct + gather_ct + scatter_ct;
     }
     stageLog->curStage                           = curStage;
   } else {

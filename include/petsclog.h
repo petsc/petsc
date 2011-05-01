@@ -325,6 +325,19 @@ PETSC_STATIC_INLINE PetscErrorCode TypeSize(PetscLogDouble *buff,PetscMPIInt cou
   PetscMPIInt mysize; return  (MPI_Type_size(type,&mysize) || ((*buff += (PetscLogDouble) (count*mysize)),0));
 }
 
+PETSC_STATIC_INLINE PetscErrorCode TypeSizeComm(MPI_Comm comm, PetscLogDouble *buff,PetscMPIInt *counts,MPI_Datatype type) 
+{
+  PetscMPIInt mysize, commsize, p;
+  PetscErrorCode _myierr;
+
+  _myierr = MPI_Comm_size(comm,&commsize);CHKERRQ(_myierr);
+  _myierr = MPI_Type_size(type,&mysize);CHKERRQ(_myierr);
+  for(p = 0; p < commsize; ++p) {
+    *buff += (PetscLogDouble) (counts[p]*mysize);
+  }
+  return 0;
+}
+
 #define MPI_Irecv(buf,count,datatype,source,tag,comm,request) \
  ((irecv_ct++,0) || TypeSize(&irecv_len,count,datatype) || MPI_Irecv(buf,count,datatype,source,tag,comm,request))
 
@@ -357,6 +370,12 @@ PETSC_STATIC_INLINE PetscErrorCode TypeSize(PetscLogDouble *buff,PetscMPIInt cou
 
 #define MPI_Allreduce(sendbuf,recvbuf,count,datatype,op,comm) \
  ((allreduce_ct++,0) || MPI_Allreduce(sendbuf,recvbuf,count,datatype,op,comm))
+
+#define MPI_Alltoall(sendbuf,sendcount,sendtype,recvbuf,recvcount,recvtype,comm) \
+ ((allreduce_ct++,0) || TypeSize(&send_len,sendcount,sendtype) || MPI_Alltoall(sendbuf,sendcount,sendtype,recvbuf,recvcount,recvtype,comm))
+
+#define MPI_Alltoallv(sendbuf,sendcnts,sdispls,sendtype,recvbuf,recvcnts,rdispls,recvtype,comm) \
+ ((allreduce_ct++,0) || TypeSizeComm(comm,&send_len,sendcnts,sendtype) || MPI_Alltoallv(sendbuf,sendcnts,sdispls,sendtype,recvbuf,recvcnts,rdispls,recvtype,comm))
 
 #define MPI_Allgather(sendbuf,sendcount,sendtype,recvbuf,recvcount,recvtype,comm) \
  ((gather_ct++,0) || MPI_Allgather(sendbuf,sendcount,sendtype,recvbuf,recvcount,recvtype,comm))

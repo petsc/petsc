@@ -611,7 +611,7 @@ PetscErrorCode PetscLogEventBeginDefault(PetscLogEvent event, int t, PetscObject
 #endif
   eventLog->eventInfo[event].numMessages   -= irecv_ct  + isend_ct  + recv_ct  + send_ct;
   eventLog->eventInfo[event].messageLength -= irecv_len + isend_len + recv_len + send_len;
-  eventLog->eventInfo[event].numReductions -= allreduce_ct;
+  eventLog->eventInfo[event].numReductions -= allreduce_ct + gather_ct + scatter_ct;
   PetscFunctionReturn(0);
 }
 
@@ -650,7 +650,7 @@ PetscErrorCode PetscLogEventEndDefault(PetscLogEvent event, int t, PetscObject o
 #endif
   eventLog->eventInfo[event].numMessages   += irecv_ct  + isend_ct  + recv_ct  + send_ct;
   eventLog->eventInfo[event].messageLength += irecv_len + isend_len + recv_len + send_len;
-  eventLog->eventInfo[event].numReductions += allreduce_ct;
+  eventLog->eventInfo[event].numReductions += allreduce_ct + gather_ct + scatter_ct;
   PetscFunctionReturn(0);
 }
 
@@ -707,7 +707,7 @@ PetscErrorCode PetscLogEventBeginComplete(PetscLogEvent event, int t, PetscObjec
   eventPerfLog->eventInfo[event].flops         -= _TotalFlops;
   eventPerfLog->eventInfo[event].numMessages   -= irecv_ct  + isend_ct  + recv_ct  + send_ct;
   eventPerfLog->eventInfo[event].messageLength -= irecv_len + isend_len + recv_len + send_len;
-  eventPerfLog->eventInfo[event].numReductions -= allreduce_ct;
+  eventPerfLog->eventInfo[event].numReductions -= allreduce_ct + gather_ct + scatter_ct;
   PetscFunctionReturn(0);
 }
 
@@ -768,7 +768,7 @@ PetscErrorCode PetscLogEventEndComplete(PetscLogEvent event, int t, PetscObject 
   eventPerfLog->eventInfo[event].flops         += _TotalFlops;
   eventPerfLog->eventInfo[event].numMessages   += irecv_ct  + isend_ct  + recv_ct  + send_ct;
   eventPerfLog->eventInfo[event].messageLength += irecv_len + isend_len + recv_len + send_len;
-  eventPerfLog->eventInfo[event].numReductions += allreduce_ct;
+  eventPerfLog->eventInfo[event].numReductions += allreduce_ct + gather_ct + scatter_ct;
   PetscFunctionReturn(0);
 }
 
