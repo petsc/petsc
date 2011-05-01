@@ -989,12 +989,13 @@ PetscErrorCode DMIGAKnotRefine2d(DM dm,PetscInt kx,PetscScalar *Ux,PetscInt ky,P
 #define __FUNCT__ "BDCreate"
 PetscErrorCode BDCreate(BD *bd,int numD,int p,int numGP,int numEl)
 {
-  BD bdd = *bd;
+  BD bdd = PETSC_NULL;
   int i,j;
 
   PetscErrorCode ierr;
   PetscFunctionBegin;
   ierr = PetscMalloc(sizeof(BasisData1D),bd); CHKERRQ(ierr);
+  bdd = *bd;
 
   ierr = PetscMalloc(numEl*numGP*sizeof(GP),&(bdd->data));CHKERRQ(ierr);
   for(i=0;i<numEl;i++){
