@@ -5055,8 +5055,11 @@ PetscErrorCode  MatAssemblyEnd(Mat mat,MatAssemblyType type)
    MAT_USE_INODES - indicates using inode version of the code - works with AIJ and 
    ROWBS matrix types
 
-  MAT_NO_OFF_PROC_ZERO_ROWS - you know each process will only zero its own rows. This avoids all reductions in the
+   MAT_NO_OFF_PROC_ZERO_ROWS - you know each process will only zero its own rows. This avoids all reductions in the
         zero row routines and thus improves performance for very large process counts.
+
+   MAT_IGNORE_LOWER_TRIANGULAR - For SBAIJ matrices will ignore any insertions you make in the lower triangular 
+        part of the matrix (since they should match the upper triangular part).
 
    Level: intermediate
 
