@@ -19,8 +19,8 @@ PetscErrorCode MPISBSTRM_create_sbstrm(Mat A)
   Mat_SeqSBSTRM   *sbstrmA, *sbstrmB;
   PetscInt       MROW = Aij->mbs, bs = a->A->rmap->bs;
 
-  PetscInt       m = A->rmap->n;  /* Number of rows in the matrix. */
-  PetscInt       nd = a->A->cmap->n; /* number of columns in diagonal portion */
+  /* PetscInt       m = A->rmap->n;*/  /* Number of rows in the matrix. */
+  /* PetscInt       nd = a->A->cmap->n;*/ /* number of columns in diagonal portion */
   PetscInt       *ai = Aij->i, *bi = Bij->i;  /* From the CSR representation; points to the beginning  of each row. */
   PetscInt       i,j,k;
   PetscScalar    *aa = Aij->a,*ba = Bij->a;

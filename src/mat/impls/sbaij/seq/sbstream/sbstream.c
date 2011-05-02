@@ -125,7 +125,7 @@ PetscErrorCode MatConvert_SeqSBAIJ_SeqSBSTRM(Mat A,const MatType type,MatReuse r
 
   Mat            B = *newmat;
   Mat_SeqSBSTRM   *sbstrm;
-  PetscInt       bs = A->rmap->bs;
+  /* PetscInt       bs = A->rmap->bs; */
 
   PetscFunctionBegin;
   if (reuse == MAT_INITIAL_MATRIX) {
