@@ -543,7 +543,7 @@ EXTERN_C_BEGIN
 PetscErrorCode MatFactorGetSolverPackage_sbstrm(Mat A,const MatSolverPackage *type)
 {   
   PetscFunctionBegin;
-  printf(" --- MatFactorGetSolverPackage_sbstrm \n");
+  /* printf(" --- MatFactorGetSolverPackage_sbstrm \n"); */
   *type = MATSOLVERSBSTRM;
   PetscFunctionReturn(0);
 }   
@@ -557,9 +557,10 @@ PetscErrorCode MatCholeskyFactorNumeric_sbstrm(Mat F,Mat A,const MatFactorInfo *
   /* Mat_SeqSBSTRM     *sbstrm = (Mat_SeqSBSTRM *) F->spptr; */
   PetscInt          bs = A->rmap->bs;
   PetscErrorCode ierr;
+  Mat_SeqSBSTRM  *sbstrm;
 
   PetscFunctionBegin;
-  printf(" --- in seasea MatCholeskyFactorNumeric_sbstrm \n"); 
+  /* printf(" --- in seasea MatCholeskyFactorNumeric_sbstrm \n");  */
   /*ierr = (*sbstrm ->MatCholeskyFactorNumeric)(F,A,info);CHKERRQ(ierr); */
   switch (bs){
     case 4:
@@ -572,8 +573,7 @@ PetscErrorCode MatCholeskyFactorNumeric_sbstrm(Mat F,Mat A,const MatFactorInfo *
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"not supported for block size %D",bs);
   }
   
-  printf(" --- in MatCholeskyFactorNumeric_sbstrm 000 \n"); 
-  Mat_SeqSBSTRM  *sbstrm;
+  /* printf(" --- in MatCholeskyFactorNumeric_sbstrm 000 \n");  */
   ierr = PetscNewLog(F,Mat_SeqSBSTRM,&sbstrm);CHKERRQ(ierr);
   F->spptr = (void *) sbstrm;  
   ierr = SeqSBSTRM_convert_sbstrm(F);CHKERRQ(ierr);
@@ -604,9 +604,9 @@ PetscErrorCode MatCholeskyFactorNumeric_sbstrm(Mat F,Mat A,const MatFactorInfo *
 #define __FUNCT__ "MatICCFactorSymbolic_sbstrm"
 PetscErrorCode MatICCFactorSymbolic_sbstrm(Mat B,Mat A,IS perm,const MatFactorInfo *info)   
 {
-  PetscFunctionBegin;
   PetscInt ierr;
-  printf(" --- MatICCFactorSymbolic_sbstrm \n");  
+  PetscFunctionBegin;
+  /* printf(" --- MatICCFactorSymbolic_sbstrm \n");  */
   ierr = (MatICCFactorSymbolic_SeqSBAIJ)(B,A,perm,info);CHKERRQ(ierr);
   B->ops->choleskyfactornumeric  = MatCholeskyFactorNumeric_sbstrm;
   PetscFunctionReturn(0);
@@ -616,9 +616,9 @@ PetscErrorCode MatICCFactorSymbolic_sbstrm(Mat B,Mat A,IS perm,const MatFactorIn
 #define __FUNCT__ "MatCholeskyFactorSymbolic_sbstrm"
 PetscErrorCode MatCholeskyFactorSymbolic_sbstrm(Mat B,Mat A,IS perm,const MatFactorInfo *info)   
 {
-  PetscFunctionBegin;
   PetscInt ierr;
-  printf(" --- MatCholeskyFactorSymbolic_sbstrm \n");  
+  PetscFunctionBegin;
+  /* printf(" --- MatCholeskyFactorSymbolic_sbstrm \n");  */
   /* ierr = (*sbstrm ->MatCholeskyFactorSymbolic)(B,A,r,c,info);CHKERRQ(ierr); */
   ierr = (MatCholeskyFactorSymbolic_SeqSBAIJ)(B,A,perm,info);CHKERRQ(ierr);
   B->ops->choleskyfactornumeric  = MatCholeskyFactorNumeric_sbstrm;

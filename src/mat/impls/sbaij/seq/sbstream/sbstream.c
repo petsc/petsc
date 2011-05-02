@@ -55,10 +55,11 @@ PetscErrorCode SeqSBSTRM_convert_sbstrm(Mat A)
   PetscInt       i,j,ib,jb;
   MatScalar      *aa = a->a;
   PetscErrorCode ierr;
+  PetscInt  bs2, rbs,  cbs, blen, slen;
+  PetscScalar **asp;
 
   PetscFunctionBegin;
-  PetscInt  bs2, rbs,  cbs, blen, slen;
-  printf(" ---!!! In SeqSBSTRM_convert_sbstrm, m, rbs=%d, %d\n", m, bs);
+  /* printf(" ---!!! In SeqSBSTRM_convert_sbstrm, m, rbs=%d, %d\n", m, bs); */
   sbstrm->rbs = bs;
   sbstrm->cbs = bs;
 
@@ -71,7 +72,6 @@ PetscErrorCode SeqSBSTRM_convert_sbstrm(Mat A)
   ierr = PetscFree(sbstrm->as);CHKERRQ(ierr);
   ierr = PetscMalloc(bs2*blen*sizeof(MatScalar), &sbstrm->as);CHKERRQ(ierr);
 
-  PetscScalar **asp;
   ierr  = PetscMalloc(rbs*sizeof(MatScalar *), &asp);CHKERRQ(ierr);
    
   for(i=0;i<rbs;i++) asp[i] = sbstrm->as + i*slen; 
@@ -132,7 +132,7 @@ PetscErrorCode MatConvert_SeqSBAIJ_SeqSBSTRM(Mat A,const MatType type,MatReuse r
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   }
   
-  printf(" ---SEASEA in MatConvert_SeqSBAIJ_SeqSBSTRM, bs = %d\n", bs); 
+  /* printf(" ---SEASEA in MatConvert_SeqSBAIJ_SeqSBSTRM, bs = %d\n", bs);  */
 
   ierr = PetscNewLog(B,Mat_SeqSBSTRM,&sbstrm);CHKERRQ(ierr);
   B->spptr = (void *) sbstrm;
@@ -171,7 +171,7 @@ PetscErrorCode MatCreateSeqSBSTRM(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt 
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-    printf(" --- in MatCreateSeqSBSTRM !!, bs = %d \n", bs);
+  /* printf(" --- in MatCreateSeqSBSTRM !!, bs = %d \n", bs); */
     ierr = MatCreate(comm,A);CHKERRQ(ierr);
     ierr = MatSetSizes(*A,m,n,m,n);CHKERRQ(ierr);
     ierr = MatSetType(*A,MATSEQSBSTRM);CHKERRQ(ierr);
@@ -187,7 +187,7 @@ PetscErrorCode  MatCreate_SeqSBSTRM(Mat A)
 {
   PetscErrorCode ierr;
 
-  printf(" --- in MatCreate_SeqSBSTRM bs = %d \n", A->rmap->bs);
+  /* printf(" --- in MatCreate_SeqSBSTRM bs = %d \n", A->rmap->bs); */
   PetscFunctionBegin;
   ierr = MatSetType(A,MATSEQSBAIJ);CHKERRQ(ierr);
   ierr = MatConvert_SeqSBAIJ_SeqSBSTRM(A,MATSEQSBSTRM,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
@@ -213,14 +213,14 @@ PetscErrorCode MatMult_SeqSBSTRM_4(Mat A,Vec xx,Vec zz)
   PetscErrorCode    ierr;
   PetscInt       mbs=a->mbs,i,*aj=a->j,*ai=a->i,n,*ib,cval,j,jmin;
   PetscInt       nonzerorow=0;
-
+  PetscInt slen;
 
   PetscFunctionBegin;
   ierr = VecSet(zz,zero);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
 
-  PetscInt slen = 4*(ai[mbs]-ai[0]);
+  slen = 4*(ai[mbs]-ai[0]);
  /*  printf(" --- in MatMult_SeqSBSTRM_4, nz = %d, %d \n", a->nz, ii[mbs]-ii[0]);  */
   v1 = sbstrm->as;
   v2 = v1 + slen;
@@ -288,6 +288,7 @@ PetscErrorCode MatMult_SeqSBSTRM_5(Mat A,Vec xx,Vec zz)
   PetscErrorCode    ierr;
   PetscInt       mbs=a->mbs,i,*aj=a->j,*ai=a->i,n,*ib,cval,j,jmin;
   PetscInt       nonzerorow=0;
+  PetscInt slen;
 
 
   PetscFunctionBegin;
@@ -295,7 +296,7 @@ PetscErrorCode MatMult_SeqSBSTRM_5(Mat A,Vec xx,Vec zz)
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
 
-  PetscInt slen = 5*(ai[mbs]-ai[0]);
+  slen = 5*(ai[mbs]-ai[0]);
   /* printf(" --- in MatMult_SeqSBSTRM_5, nz = %d, %d \n", a->nz, ai[mbs]-ai[0]);   */
 
   v1 = sbstrm->as;
@@ -373,14 +374,14 @@ PetscErrorCode MatMultAdd_SeqSBSTRM_4(Mat A,Vec xx,Vec yy,Vec zz)
   PetscErrorCode    ierr;
   PetscInt       mbs=a->mbs,i,*aj=a->j,*ai=a->i,n,*ib,cval,j,jmin;
   PetscInt       nonzerorow=0;
-
+  PetscInt slen;
 
   PetscFunctionBegin;
   ierr = VecCopy(yy,zz);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
 
-  PetscInt slen = 4*(ai[mbs]-ai[0]);
+  slen = 4*(ai[mbs]-ai[0]);
   v1 = sbstrm->as;
   v2 = v1 + slen;
   v3 = v2 + slen;
@@ -448,7 +449,7 @@ PetscErrorCode MatMultAdd_SeqSBSTRM_5(Mat A,Vec xx,Vec yy,Vec zz)
   PetscErrorCode    ierr;
   PetscInt       mbs=a->mbs,i,*aj=a->j,*ai=a->i,n,*ib,cval,j,jmin;
   PetscInt       nonzerorow=0;
-
+  PetscInt slen;
 
   PetscFunctionBegin;
   ierr = VecCopy(yy,zz);CHKERRQ(ierr);
@@ -457,7 +458,7 @@ PetscErrorCode MatMultAdd_SeqSBSTRM_5(Mat A,Vec xx,Vec yy,Vec zz)
 
   /* printf(" --- in MatMultAdd_SeqSBSTRM_5, nz = %d, %d \n", a->nz, ai[mbs]-ai[0]);   */
 
-  PetscInt slen = 5*(ai[mbs]-ai[0]);
+  slen = 5*(ai[mbs]-ai[0]);
   v1 = sbstrm->as;
   v2 = v1 + slen;
   v3 = v2 + slen;
@@ -527,11 +528,12 @@ PetscErrorCode SeqSBSTRM_create_sbstrm(Mat A)
   PetscInt       i,j,k;
   MatScalar      *aa = a->a;
   PetscErrorCode ierr;
+  PetscInt  bs2, rbs,  cbs, blen, slen;
+  PetscScalar **asp;
 
   PetscFunctionBegin;
   sbstrm->rbs = sbstrm->cbs = bs;
-  PetscInt  bs2, rbs,  cbs, blen, slen;
-  printf(" ---!!! In SeqSBSTRM_create_sbstrm, MROW, rbs=%d, %d\n", MROW, bs);
+  /* printf(" ---!!! In SeqSBSTRM_create_sbstrm, MROW, rbs=%d, %d\n", MROW, bs); */
 
   rbs = cbs = bs;
   bs2 = rbs*cbs; 
@@ -540,7 +542,6 @@ PetscErrorCode SeqSBSTRM_create_sbstrm(Mat A)
 
   ierr  = PetscMalloc(bs2*blen*sizeof(PetscScalar), &sbstrm->as);CHKERRQ(ierr);
 
-  PetscScalar **asp;
   ierr  = PetscMalloc(rbs*sizeof(PetscScalar *), &asp);CHKERRQ(ierr);
    
   for(i=0;i<rbs;i++) asp[i] = sbstrm->as + i*slen; 
@@ -583,7 +584,7 @@ PetscErrorCode MatGetFactor_seqsbaij_sbstrm(Mat A,MatFactorType ftype,Mat *B)
   PetscFunctionBegin;
   if (A->cmap->N != A->rmap->N)
          SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must be square matrix, rows %D columns %D",A->rmap->n,A->cmap->n);
-  printf(" ---  in MatGetFactor_seqsbaij_sbstrm \n");
+  /* printf(" ---  in MatGetFactor_seqsbaij_sbstrm \n"); */
   ierr = MatCreate(((PetscObject)A)->comm,B);CHKERRQ(ierr);
   ierr = MatSetSizes(*B,n,n,n,n);CHKERRQ(ierr);
   ierr = MatSetType(*B,((PetscObject)A)->type_name);CHKERRQ(ierr);

@@ -27,16 +27,18 @@ PetscErrorCode MPISBSTRM_create_sbstrm(Mat A)
 
   PetscInt      bs2,  rbs, cbs, slen, blen;
   PetscErrorCode ierr;
+  PetscScalar **asp;
+  PetscScalar **bsp;
 
   PetscFunctionBegin;
-  printf(" --- in MPISBSTRM_create_sbstrm, m=%d, nd=%d, bs=%d, MROW=%d\n", m,nd,bs,MROW); 
+  /* printf(" --- in MPISBSTRM_create_sbstrm, m=%d, nd=%d, bs=%d, MROW=%d\n", m,nd,bs,MROW); */
 
   rbs = cbs = bs;
   bs2 = bs*bs;
   blen = ai[MROW]-ai[0];
   slen = blen*bs;
   
-  printf(" --- blen=%d, slen=%d\n", blen, slen); 
+  /* printf(" --- blen=%d, slen=%d\n", blen, slen);  */
 
   ierr = PetscNewLog(a->A,Mat_SeqSBSTRM,&sbstrmA);CHKERRQ(ierr);
   a->A->spptr = (void *) sbstrmA;
@@ -44,7 +46,6 @@ PetscErrorCode MPISBSTRM_create_sbstrm(Mat A)
   sbstrmA->rbs = sbstrmA->cbs = bs;
   ierr  = PetscMalloc(bs2*blen*sizeof(PetscScalar), &sbstrmA->as);CHKERRQ(ierr);
 
-  PetscScalar **asp;
   ierr  = PetscMalloc(rbs*sizeof(PetscScalar *), &asp);CHKERRQ(ierr);
 
   for(i=0;i<rbs;i++) asp[i] = sbstrmA->as + i*slen;
@@ -74,7 +75,6 @@ PetscErrorCode MPISBSTRM_create_sbstrm(Mat A)
   sbstrmB->rbs = sbstrmB->cbs = bs;
   ierr  = PetscMalloc(bs2*blen*sizeof(PetscScalar), &sbstrmB->as);CHKERRQ(ierr);
 
-  PetscScalar **bsp;
   ierr  = PetscMalloc(rbs*sizeof(PetscScalar *), &bsp);CHKERRQ(ierr);
 
   for(i=0;i<rbs;i++) bsp[i] = sbstrmB->as + i*slen;
@@ -179,7 +179,7 @@ PetscErrorCode   MatConvert_MPISBAIJ_MPISBSTRM(Mat A,const MatType type,MatReuse
   if (reuse == MAT_INITIAL_MATRIX) {
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   }
-  printf(" --- in MatConvert_MPISBAIJ_MPISBSTRM  -- 1 \n"); 
+  /* printf(" --- in MatConvert_MPISBAIJ_MPISBSTRM  -- 1 \n"); */
 
   ierr = PetscNewLog(B,   Mat_SeqSBSTRM,&sbstrm);CHKERRQ(ierr);
   B->spptr    = (void *) sbstrm;
