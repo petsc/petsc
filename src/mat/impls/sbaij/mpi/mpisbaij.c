@@ -788,6 +788,7 @@ PetscErrorCode MatDestroy_MPISBAIJ(Mat mat)
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatRetrieveValues_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatGetDiagonalBlock_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMPISBAIJSetPreallocation_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatConvert_mpisbaij_mpisbstrm_C","",PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1750,6 +1751,10 @@ EXTERN_C_END
 M*/
 
 EXTERN_C_BEGIN
+extern PetscErrorCode MatConvert_MPISBAIJ_MPISBSTRM(Mat,const MatType,MatReuse,Mat*);
+EXTERN_C_END
+
+EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreate_MPISBAIJ"
 PetscErrorCode  MatCreate_MPISBAIJ(Mat B)
@@ -1857,6 +1862,10 @@ PetscErrorCode  MatCreate_MPISBAIJ(Mat B)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMPISBAIJSetPreallocationCSR_C",
                                      "MatMPISBAIJSetPreallocationCSR_MPISBAIJ",
                                      MatMPISBAIJSetPreallocationCSR_MPISBAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_mpisbaij_mpisbstrm_C",
+                                     "MatConvert_MPISBAIJ_MPISBSTRM",
+                                      MatConvert_MPISBAIJ_MPISBSTRM);CHKERRQ(ierr);
+
   B->symmetric                  = PETSC_TRUE;
   B->structurally_symmetric     = PETSC_TRUE;
   B->symmetric_set              = PETSC_TRUE;

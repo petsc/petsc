@@ -15,7 +15,7 @@ OBJSC	 = sbaij.o sbaij2.o sbaijfact.o sbaijfact2.o sro.o sbaijfact3.o \
            sbaijfact10.o sbaijfact11.o sbaijfact12.o aijsbaij.o
 OBJSF	 = 
 LIBBASE	 = libpetscmat
-DIRS     = spooles cholmod
+DIRS     = sbstream spooles cholmod
 MANSEC	 = Mat
 LOCDIR	 = src/mat/impls/sbaij/seq/
 

@@ -214,7 +214,6 @@ PetscErrorCode MatCreate_MPIBSTRM(Mat A)
 }
 EXTERN_C_END
 
-
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_BSTRM"
