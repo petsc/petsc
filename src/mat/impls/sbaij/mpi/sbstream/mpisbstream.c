@@ -16,14 +16,13 @@ PetscErrorCode MPISBSTRM_create_sbstrm(Mat A)
   Mat_SeqSBAIJ     *Aij = (Mat_SeqSBAIJ*)(a->A->data), *Bij = (Mat_SeqSBAIJ*)(a->B->data);
   /* 
   */
-  Mat            *AA  = &(a->A), *AB = &(a->B); 
   Mat_SeqSBSTRM   *sbstrmA, *sbstrmB;
   PetscInt       MROW = Aij->mbs, bs = a->A->rmap->bs;
 
   PetscInt       m = A->rmap->n;  /* Number of rows in the matrix. */
   PetscInt       nd = a->A->cmap->n; /* number of columns in diagonal portion */
-  PetscInt       *ai = Aij->i, *bi = Bij->i,  *aj = Aij->j,*bj = Bij->j;  /* From the CSR representation; points to the beginning  of each row. */
-  PetscInt       i,j,k,rmax = 0,*icols, *ailen = Aij->ilen, *bilen = Bij->ilen;
+  PetscInt       *ai = Aij->i, *bi = Bij->i;  /* From the CSR representation; points to the beginning  of each row. */
+  PetscInt       i,j,k;
   PetscScalar    *aa = Aij->a,*ba = Bij->a;
 
   PetscInt      bs2,  rbs, cbs, slen, blen;
@@ -102,13 +101,12 @@ PetscErrorCode MPISBSTRM_create_sbstrm(Mat A)
 }
 
 
+extern PetscErrorCode MatAssemblyEnd_MPISBAIJ(Mat,MatAssemblyType);
 #undef __FUNCT__
 #define __FUNCT__ "MatAssemblyEnd_MPISBSTRM"
 PetscErrorCode MatAssemblyEnd_MPISBSTRM(Mat A, MatAssemblyType mode)
 {
   PetscErrorCode ierr;
-  Mat_MPISBAIJ     *a = (Mat_MPISBAIJ *) A->data;
-  Mat_SeqSBAIJ     *Aij = (Mat_SeqSBAIJ*)(a->A->data), *Bij = (Mat_SeqSBAIJ*)(a->B->data);
 
   PetscFunctionBegin;
   /*
@@ -155,7 +153,6 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatMPISBAIJSetPreallocation_MPISBSTRM"
 PetscErrorCode   MatMPISBAIJSetPreallocation_MPISBSTRM(Mat B,PetscInt bs,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[])
 {
-  Mat_MPISBAIJ     *b = (Mat_MPISBAIJ*)B->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -175,8 +172,6 @@ PetscErrorCode   MatConvert_MPISBAIJ_MPISBSTRM(Mat A,const MatType type,MatReuse
 {
   PetscErrorCode ierr;
   Mat            B = *newmat;
-  Mat_MPISBAIJ   *b = (Mat_MPISBAIJ *)B->data;
-  
   Mat_SeqSBSTRM  *sbstrm;
 
   PetscFunctionBegin;

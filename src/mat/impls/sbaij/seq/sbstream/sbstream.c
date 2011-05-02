@@ -7,8 +7,9 @@
 extern PetscErrorCode MatCholeskyFactorSymbolic_sbstrm(Mat B,Mat A,IS perm, const MatFactorInfo *info);
 extern PetscErrorCode MatICCFactorSymbolic_sbstrm(Mat B,Mat A,IS perm, const MatFactorInfo *info);
 extern PetscErrorCode MatCholeskyFactorNumeric_sbstrm(Mat F,Mat A,const MatFactorInfo *info);
+EXTERN_C_BEGIN
 extern PetscErrorCode MatFactorGetSolverPackage_sbstrm(Mat A,const MatSolverPackage *type);
-
+EXTERN_C_END
 /*=========================================================*/
 
 
@@ -50,9 +51,8 @@ PetscErrorCode SeqSBSTRM_convert_sbstrm(Mat A)
   Mat_SeqSBAIJ    *a = (Mat_SeqSBAIJ *) A->data;
   Mat_SeqSBSTRM   *sbstrm = (Mat_SeqSBSTRM*) A->spptr;
   PetscInt       m = a->mbs, bs = A->rmap->bs;
-  PetscInt       *aj = a->j, *ai = a->i, *diag = a->diag;
-  PetscInt       i,j,k,ib,jb, rmax = a->rmax, *idiag, nnz;
-  PetscInt       *asi, *asj;
+  PetscInt       *ai = a->i;
+  PetscInt       i,j,ib,jb;
   MatScalar      *aa = a->a;
   PetscErrorCode ierr;
 
@@ -99,13 +99,14 @@ PetscErrorCode SeqSBSTRM_convert_sbstrm(Mat A)
   PetscFunctionReturn(0);
 }
 /*=========================================================*/ 
+extern PetscErrorCode SeqSBSTRM_create_sbstrm(Mat);
+/*=========================================================*/ 
 #undef __FUNCT__
 #define __FUNCT__ "MatAssemblyEnd_SeqSBSTRM"
 PetscErrorCode MatAssemblyEnd_SeqSBSTRM(Mat A, MatAssemblyType mode)
 {
   PetscErrorCode ierr;
   Mat_SeqSBSTRM    *sbstrm = (Mat_SeqSBSTRM *) A->spptr;
-  Mat_SeqSBAIJ     *a    = (Mat_SeqSBAIJ *)  A->data;
 
   PetscFunctionBegin;
   if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(0);
@@ -204,7 +205,6 @@ EXTERN_C_END
 PetscErrorCode MatMult_SeqSBSTRM_4(Mat A,Vec xx,Vec zz)
 {
   Mat_SeqSBAIJ       *a = (Mat_SeqSBAIJ*)A->data;
-  MatScalar         *aa = a->a;
   Mat_SeqSBSTRM      *sbstrm = (Mat_SeqSBSTRM *)A->spptr;
   PetscScalar       zero = 0.0;  
   PetscScalar       sum1,sum2,sum3,sum4,x1,x2,x3,x4, xr1,xr2,xr3,xr4;
@@ -277,7 +277,6 @@ PetscErrorCode MatMult_SeqSBSTRM_4(Mat A,Vec xx,Vec zz)
 PetscErrorCode MatMult_SeqSBSTRM_5(Mat A,Vec xx,Vec zz)
 {
   Mat_SeqSBAIJ       *a = (Mat_SeqSBAIJ*)A->data;
-  MatScalar         *aa = a->a;
   Mat_SeqSBSTRM      *sbstrm = (Mat_SeqSBSTRM *)A->spptr;
   PetscScalar       zero = 0.0;  
   PetscScalar       *z = 0;
@@ -367,7 +366,6 @@ PetscErrorCode MatMultAdd_SeqSBSTRM_4(Mat A,Vec xx,Vec yy,Vec zz)
 {
 
   Mat_SeqSBAIJ       *a = (Mat_SeqSBAIJ*)A->data;
-  MatScalar         *aa = a->a;
   Mat_SeqSBSTRM      *sbstrm = (Mat_SeqSBSTRM *)A->spptr;
   PetscScalar       sum1,sum2,sum3,sum4,x1,x2,x3,x4, xr1,xr2,xr3,xr4;
   PetscScalar       *x,*z, *xb;
@@ -441,7 +439,6 @@ PetscErrorCode MatMultAdd_SeqSBSTRM_4(Mat A,Vec xx,Vec yy,Vec zz)
 PetscErrorCode MatMultAdd_SeqSBSTRM_5(Mat A,Vec xx,Vec yy,Vec zz)
 {
   Mat_SeqSBAIJ       *a = (Mat_SeqSBAIJ*)A->data;
-  MatScalar         *aa = a->a;
   Mat_SeqSBSTRM      *sbstrm = (Mat_SeqSBSTRM *)A->spptr;
   PetscScalar       *x,*xb, *z;
   MatScalar         *v1, *v2, *v3, *v4, *v5;
@@ -526,8 +523,8 @@ PetscErrorCode SeqSBSTRM_create_sbstrm(Mat A)
   Mat_SeqSBAIJ    *a = (Mat_SeqSBAIJ *) A->data;
   Mat_SeqSBSTRM   *sbstrm = (Mat_SeqSBSTRM*) A->spptr;
   PetscInt       MROW = a->mbs, bs = A->rmap->bs;
-  PetscInt       *aj = a->j, *ai = a->i, *ilen=a->ilen;
-  PetscInt       i,j,k, rmax = a->rmax, *idiag, nnz;
+  PetscInt       *ai = a->i;
+  PetscInt       i,j,k;
   MatScalar      *aa = a->a;
   PetscErrorCode ierr;
 
@@ -579,7 +576,7 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatGetFactor_seqsbaij_sbstrm"
 PetscErrorCode MatGetFactor_seqsbaij_sbstrm(Mat A,MatFactorType ftype,Mat *B)
 {
-  PetscInt       n = A->rmap->n, bs = A->rmap->bs;
+  PetscInt       n = A->rmap->n;
   Mat_SeqSBSTRM   *sbstrm;
   PetscErrorCode ierr;
 

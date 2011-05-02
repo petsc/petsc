@@ -363,7 +363,7 @@ EXTERN_C_BEGIN
 PetscErrorCode MatFactorGetSolverPackage_bstrm(Mat A,const MatSolverPackage *type)
 {
   PetscFunctionBegin;
-  *type = MAT_SOLVER_BSTRM;    
+  *type = MATSOLVERBSTRM;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
