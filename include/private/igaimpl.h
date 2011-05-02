@@ -11,7 +11,7 @@ typedef struct {
 
 PetscErrorCode Compute1DBasisFunctions(PetscInt numGP, PetscInt numD, double *U, PetscScalar m, PetscInt porder, BD *bd1D);
 PetscErrorCode GetDersBasisFuns(int i,double u,int p,double *U, double **N,int nd);
-PetscInt       FindSpan(double *U,int m,int j,int porder);
+int            FindSpan(double *U,int m,int j,int porder);
 PetscErrorCode SetupGauss1D(int n,double *X,double *W);
 PetscErrorCode CreateKnotVector(int N,int p,int C,int m, PetscScalar *U,PetscScalar U0,PetscScalar Uf);
 PetscErrorCode CreateKnotVectorFromMesh(int N,int p,int C,int m, PetscScalar *U,PetscScalar *X,PetscInt nX);

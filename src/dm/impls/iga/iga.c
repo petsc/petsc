@@ -1235,7 +1235,7 @@ PetscErrorCode Compute1DBasisFunctions(PetscInt numGP, PetscInt numD, double *U,
   PetscFunctionReturn(0);
 }
 
-PetscInt FindSpan(double *U,int m,int j,int p)
+int FindSpan(double *U,int m,int j,int p)
 {
   /* i is the span not counting zero spans, return the span including */
 
