@@ -29,7 +29,7 @@ runex1_2:
 runex2:
 	-@${MPIEXEC} -n 2 ./ex2
 
-TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc runex2 ex2.rm
+TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 ex1.rm 
 TESTEXAMPLES_C_X11	       =
 TESTEXAMPLES_FORTRAN	       =
 TESTEXAMPLES_FORTRAN_NOCOMPLEX =
@@ -37,5 +37,6 @@ TESTEXAMPLES_FORTRAN_COMPLEX   =
 TESTEXAMPLES_FORTRAN_MPIUNI    =
 TESTEXAMPLES_C_X11_MPIUNI      =
 TESTEXAMPLES_13		       =
+TESTEXAMPLES_C_NOCOMPLEX       = ex2.PETSc runex2 ex2.rm
 
 include ${PETSC_DIR}/conf/test
