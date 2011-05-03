@@ -109,6 +109,10 @@ test_chwirut1: test_chwirut1.o tao_chkopts
 	-${CLINKER} -o test_chwirut1 test_chwirut1.o ${TAO_LIB} ${PETSC_LIB}
 	${RM} test_chwirut1.o
 
+test_copper1: test_copper1.o tao_chkopts
+	-${CLINKER} -o test_copper1 test_copper1.o ${TAO_LIB} ${PETSC_LIB}
+	${RM} test_copper1.o
+
 test_chwirut1f: test_chwirut1f.o tao_chkopts
 	-${FLINKER} -o  test_chwirut1f test_chwirut1f.o ${TAO_LIB} ${PETSC_LIB}
 	${RM} test_chwirut1f.o

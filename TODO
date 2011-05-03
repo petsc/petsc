@@ -52,22 +52,6 @@ finish examples
   - generate output
 Check documentation on examples
 MT linesearch view
-Check memory (esp. on MT line search!)
-  -lmvm             OK
-  -ntr              OK
-  -nls              BAD
-  -ntl              BAD
-  -cg               OK
-  -neldermead       BAD
-  -pounder          BAD
-
-  -blmvm            BAD
-  -tron             BAD
-  -bqpip            OK
-  -bnls             ??
-  -gpcg             BAD
-
-  -pounders         BAD
 
 Set KSP Monitors
 LMVM options

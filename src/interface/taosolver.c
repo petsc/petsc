@@ -100,13 +100,12 @@ PetscErrorCode TaoSolverCreate(MPI_Comm comm, TaoSolver *newtao)
     tao->conv_hist_reset = PETSC_TRUE;
     tao->conv_hist_max = 0;
     tao->conv_hist_len = 0;
-    tao->conv_hist = PETSC_NULL;
-    tao->conv_hist_feval = PETSC_NULL;
-    tao->conv_hist_fgeval = PETSC_NULL;
-    tao->conv_hist_geval = PETSC_NULL;
-    tao->conv_hist_heval = PETSC_NULL;
-    tao->conv_hist_ceval = PETSC_NULL;
-    tao->conv_hist_jeval = PETSC_NULL;
+    tao->conv_hist_obj = PETSC_NULL;
+    tao->conv_hist_resid = PETSC_NULL;
+    tao->conv_hist_ls_trials = PETSC_NULL;
+    tao->conv_hist_ksp_its = PETSC_NULL;
+    tao->conv_hist_iteration = PETSC_NULL;
+    tao->conv_hist_cnorm = PETSC_NULL;
 
     tao->numbermonitors=0;
     tao->viewsolution=PETSC_FALSE;

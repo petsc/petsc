@@ -2,7 +2,7 @@
 
 ALL: lib
 
-DIRS     = rsqn
+DIRS     = sqpcon
 
 LOCDIR   = src/bound/impls/
 

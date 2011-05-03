@@ -210,19 +210,22 @@ static PetscErrorCode TaoSolverSolve_RSQN(TaoSolver tao)
     rsqnP->Jpre_U = rsqnP->JU;
     ierr = PetscObjectReference((PetscObject)rsqnP->Jpre_U); CHKERRQ(ierr);
     }*/
-  CHKMEMQ;
   void *ptr;
-  ierr = MatShellGetContext(tao->jacobian_state,&ptr); CHKERRQ(ierr); //for debugging
+  ierr = MatShellGetContext(tao->jacobian_state,&ptr); CHKERRQ(ierr); //for debugging help -- remove me
 
   ierr = KSPSetOperators(tao->ksp, tao->jacobian_state, tao->jacobian_state_pre, rsqnP->statematflag); CHKERRQ(ierr);
+  
   ierr = KSPSolve(tao->ksp,  rsqnP->GU, rsqnP->LM); CHKERRQ(ierr);
-  CHKMEMQ;
+  PetscScalar gunorm,lmnorm;
+  ierr = VecNorm(rsqnP->GU, NORM_2, &gunorm); CHKERRQ(ierr);
+  ierr = VecNorm(rsqnP->LM, NORM_2, &lmnorm); CHKERRQ(ierr);
+  printf("||gu|| = %f\t||lm||=%f\n",gunorm,lmnorm); 
+
   /* Evaluate Lagrangian gradient norm */
 
   ierr = MatMultTranspose(tao->jacobian_state,rsqnP->LM, rsqnP->WU); CHKERRQ(ierr);
   ierr = MatMultTranspose(tao->jacobian_design,rsqnP->LM, rsqnP->WV); CHKERRQ(ierr);
 
-  CHKMEMQ;
   ierr = VecScatterBegin(rsqnP->state_scatter, rsqnP->WU, rsqnP->GL, INSERT_VALUES, SCATTER_REVERSE); CHKERRQ(ierr);
   ierr = VecScatterEnd(rsqnP->state_scatter, rsqnP->WU, rsqnP->GL, INSERT_VALUES, SCATTER_REVERSE); CHKERRQ(ierr);
   ierr = VecScatterBegin(rsqnP->design_scatter, rsqnP->WV, rsqnP->GL, INSERT_VALUES, SCATTER_REVERSE); CHKERRQ(ierr);
@@ -237,7 +240,9 @@ static PetscErrorCode TaoSolverSolve_RSQN(TaoSolver tao)
   /* Monitor convergence */
   ierr = TaoSolverMonitor(tao, iter,f,mnorm,cnorm,step,&reason); CHKERRQ(ierr);
 
+
   while (reason == TAO_CONTINUE_ITERATING) {
+    PetscScalar wunorm,dunorm;
     
     /* update reduced hessian */
     ierr = MatLMVMUpdate(rsqnP->M, rsqnP->V, rsqnP->GV); CHKERRQ(ierr);
@@ -245,17 +250,29 @@ static PetscErrorCode TaoSolverSolve_RSQN(TaoSolver tao)
     /* compute reduced gradient */
     ierr = MatMultTranspose(tao->jacobian_design, rsqnP->LM, rsqnP->Gr); CHKERRQ(ierr);
     ierr = VecAYPX(rsqnP->Gr, -1.0, rsqnP->GV); CHKERRQ(ierr);
+    ierr = VecNorm(rsqnP->Gr,NORM_2,&wunorm); CHKERRQ(ierr);
+    printf("||Gr|| = %f\n",wunorm);
     
     /* Compute DV */
     ierr = MatLMVMSolve(rsqnP->M, rsqnP->Gr, rsqnP->DV); CHKERRQ(ierr);
     ierr = VecScale(rsqnP->DV, -1.0); CHKERRQ(ierr);
+    ierr = VecNorm(rsqnP->DV,NORM_2,&wunorm); CHKERRQ(ierr);
+    printf("||DV|| = %f\n",wunorm);
 
     CHKMEMQ;
     /* Compute DU */
     ierr = MatMult(tao->jacobian_design, rsqnP->DV, rsqnP->WU); CHKERRQ(ierr);
+    ierr = VecNorm(rsqnP->WU, NORM_2, &wunorm); CHKERRQ(ierr);
+    printf("||wu|| = %f\n",wunorm);
+
+
     ierr = VecAYPX(rsqnP->WU, 1.0, tao->constraints); CHKERRQ(ierr);
     ierr = KSPSetOperators(tao->ksp, tao->jacobian_state, tao->jacobian_state_pre, rsqnP->statematflag); CHKERRQ(ierr);
     ierr = KSPSolve(tao->ksp,  rsqnP->WU, rsqnP->DU); CHKERRQ(ierr);
+    ierr = VecNorm(rsqnP->WU, NORM_2, &wunorm); CHKERRQ(ierr);
+    ierr = VecNorm(rsqnP->DU, NORM_2, &dunorm); CHKERRQ(ierr);
+    printf("||wu|| = %f\t||du||=%f\n",wunorm,dunorm); 
+
     ierr = VecScale(rsqnP->DU, -1.0); CHKERRQ(ierr);
 
     CHKMEMQ;
@@ -285,8 +302,6 @@ static PetscErrorCode TaoSolverSolve_RSQN(TaoSolver tao)
       ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &fm, rsqnP->GM, tao->stepdirection,&step, &ls_reason); CHKERRQ(ierr);
     }
       
-	
-    /* TODO check linesearch results, double rho and reapply if necessary */
     
     /* Scatter X to U,V */
     ierr = VecScatterBegin(rsqnP->state_scatter, tao->solution, rsqnP->U, INSERT_VALUES, SCATTER_FORWARD); CHKERRQ(ierr);
@@ -319,6 +334,10 @@ static PetscErrorCode TaoSolverSolve_RSQN(TaoSolver tao)
     ierr = KSPSetOperators(tao->ksp, tao->jacobian_state, tao->jacobian_state_pre, rsqnP->statematflag); CHKERRQ(ierr);
     ierr = KSPSolveTranspose(tao->ksp,  rsqnP->GU, rsqnP->LM); CHKERRQ(ierr);
     //ierr = KSPSolve(tao->ksp,  rsqnP->GU, rsqnP->LM); CHKERRQ(ierr);
+    PetscScalar gunorm,lmnorm;
+    ierr = VecNorm(rsqnP->GU, NORM_2, &gunorm); CHKERRQ(ierr);
+    ierr = VecNorm(rsqnP->LM, NORM_2, &lmnorm); CHKERRQ(ierr);
+    printf("T solve ||gu|| = %f\t||lm||=%f\n",gunorm,lmnorm); 
 
     /* Evaluate Lagrangian gradient norm */
 
@@ -418,6 +437,7 @@ static PetscErrorCode RSQNObjectiveAndGradient(TaoLineSearch ls, Vec X, PetscRea
           WV = B' * WL */
   ierr = MatMultTranspose(tao->jacobian_state,rsqnP->WL,rsqnP->WU); CHKERRQ(ierr);
   ierr = MatMultTranspose(tao->jacobian_design,rsqnP->WL,rsqnP->WV); CHKERRQ(ierr);
+  ierr = VecNorm(rsqnP->WU,NORM_2,&hnorm); CHKERRQ(ierr);
   
   ierr = VecScatterBegin(rsqnP->state_scatter, rsqnP->WU, rsqnP->W, INSERT_VALUES, SCATTER_REVERSE); CHKERRQ(ierr);
   ierr = VecScatterEnd(rsqnP->state_scatter, rsqnP->WU, rsqnP->W, INSERT_VALUES, SCATTER_REVERSE); CHKERRQ(ierr);

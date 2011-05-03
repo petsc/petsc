@@ -117,13 +117,12 @@ struct _p_TaoSolver {
     PetscBool viewjacobian;
 
     PetscInt conv_hist_max;/* Number of iteration histories to keep */
-    PetscReal *conv_hist; 
-    PetscInt *conv_hist_feval; /* Number of func evals at each iteration */
-    PetscInt *conv_hist_fgeval; /* Number of func/grad evals at each iteration */
-    PetscInt *conv_hist_geval; /* Number of grad evals at each iteration */
-    PetscInt *conv_hist_heval; /* Number of hess evals at each iteration */
-    PetscInt *conv_hist_ceval;
-    PetscInt *conv_hist_jeval;
+    PetscReal *conv_hist_obj; /* obj value at each iteration */
+    PetscReal *conv_hist_resid; /* residual at each iteration */
+    PetscReal *conv_hist_cnorm; /* constraint norm at each iteration */
+    PetscInt *conv_hist_ls_trials;
+    PetscInt *conv_hist_ksp_its;
+    PetscInt *conv_hist_iteration;
     PetscInt conv_hist_len;
     PetscBool conv_hist_reset;
 
