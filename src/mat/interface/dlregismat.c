@@ -30,7 +30,19 @@ static PetscBool  MatPackageInitialized = PETSC_FALSE;
 @*/
 PetscErrorCode  MatFinalizePackage(void)
 {
+  MatBaseName    nnames,names = MatBaseNameList;
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
+  while (names) {
+    nnames = names->next;
+    ierr = PetscFree(names->bname);CHKERRQ(ierr);
+    ierr = PetscFree(names->sname);CHKERRQ(ierr);
+    ierr = PetscFree(names->mname);CHKERRQ(ierr);
+    ierr = PetscFree(names);CHKERRQ(ierr);
+    names = nnames;
+  }
+    
   MatPackageInitialized            = PETSC_FALSE;
   MatRegisterAllCalled             = PETSC_FALSE;
   MatList                          = PETSC_NULL;

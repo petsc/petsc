@@ -182,21 +182,3 @@ EXTERN_C_END
 .seealso: MatCreateMPIAIJPERM(), MATSEQAIJPERM, MATMPIAIJPERM
 M*/
 
-EXTERN_C_BEGIN
-#undef __FUNCT__
-#define __FUNCT__ "MatCreate_AIJPERM"
-PetscErrorCode  MatCreate_AIJPERM(Mat A) 
-{
-  PetscErrorCode ierr;
-  PetscMPIInt    size;
-
-  PetscFunctionBegin;
-  ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);
-  if (size == 1) {
-    ierr = MatSetType(A,MATSEQAIJPERM);CHKERRQ(ierr);
-  } else {
-    ierr = MatSetType(A,MATMPIAIJPERM);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-EXTERN_C_END

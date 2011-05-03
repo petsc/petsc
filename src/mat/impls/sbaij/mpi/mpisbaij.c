@@ -1889,25 +1889,6 @@ EXTERN_C_END
 .seealso: MatCreateMPISBAIJ,MATSEQSBAIJ,MATMPISBAIJ
 M*/
 
-EXTERN_C_BEGIN
-#undef __FUNCT__
-#define __FUNCT__ "MatCreate_SBAIJ"
-PetscErrorCode  MatCreate_SBAIJ(Mat A) 
-{
-  PetscErrorCode ierr;
-  PetscMPIInt    size;
-
-  PetscFunctionBegin;
-  ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);
-  if (size == 1) {
-    ierr = MatSetType(A,MATSEQSBAIJ);CHKERRQ(ierr);
-  } else {
-    ierr = MatSetType(A,MATMPISBAIJ);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-EXTERN_C_END
-
 #undef __FUNCT__  
 #define __FUNCT__ "MatMPISBAIJSetPreallocation"
 /*@C

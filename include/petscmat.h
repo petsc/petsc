@@ -171,7 +171,7 @@ extern PetscErrorCode  MatSetFromOptions(Mat);
 extern PetscErrorCode  MatSetUpPreallocation(Mat);
 extern PetscErrorCode  MatRegisterAll(const char[]);
 extern PetscErrorCode  MatRegister(const char[],const char[],const char[],PetscErrorCode(*)(Mat));
-
+extern PetscErrorCode  MatRegisterBaseName(const char[],const char[],const char[]);
 extern PetscErrorCode  MatSetOptionsPrefix(Mat,const char[]);
 extern PetscErrorCode  MatAppendOptionsPrefix(Mat,const char[]);
 extern PetscErrorCode  MatGetOptionsPrefix(Mat,const char*[]);

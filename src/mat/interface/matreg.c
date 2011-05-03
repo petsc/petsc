@@ -38,10 +38,23 @@ PetscFList MatList = 0;
 PetscErrorCode  MatSetType(Mat mat, const MatType matype)
 {
   PetscErrorCode ierr,(*r)(Mat);
-  PetscBool      sametype;
+  PetscBool      sametype,found;
+  MatBaseName    names = MatBaseNameList;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+
+  while (names) {
+    ierr = PetscStrcmp(matype,names->bname,&found);CHKERRQ(ierr);
+    if (found) {
+      PetscMPIInt size;
+      ierr = MPI_Comm_size(((PetscObject)mat)->comm,&size);CHKERRQ(ierr);
+      if (size == 1) matype = names->sname;
+      else matype = names->mname;
+      break;
+    }
+    names = names->next;
+  }
 
   ierr = PetscTypeCompare((PetscObject)mat,matype,&sametype);CHKERRQ(ierr);
   if (sametype) PetscFunctionReturn(0);
@@ -135,6 +148,41 @@ PetscErrorCode  MatRegister(const char sname[],const char path[],const char name
   PetscFunctionBegin;
   ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);
   ierr = PetscFListAdd(&MatList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+MatBaseName MatBaseNameList = 0;
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatRegisterBaseName"
+/*@C
+      MatRegisterBaseName - Registers a name that can be used for either a sequential or its corresponding parallel matrix type.
+
+  Input Parameters:
++     bname - the basename, for example, MATAIJ
+.     sname - the name of the sequential matrix type, for example, MATSEQAIJ
+-     mname - the name of the parallel matrix type, for example, MATMPIAIJ
+
+
+  Level: advanced
+@*/
+PetscErrorCode  MatRegisterBaseName(const char bname[],const char sname[],const char mname[])
+{
+  PetscErrorCode ierr;
+  MatBaseName    names;
+
+  PetscFunctionBegin;
+  ierr = PetscNew(struct _p_MatBaseName,&names);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(bname,&names->bname);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(sname,&names->sname);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(mname,&names->mname);CHKERRQ(ierr);
+  if (!MatBaseNameList) {
+    MatBaseNameList = names;
+  } else {
+    MatBaseName next = MatBaseNameList;
+    while (next->next) next = next->next;
+    next->next = names;
+  }
   PetscFunctionReturn(0);
 }
 

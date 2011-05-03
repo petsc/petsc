@@ -1,7 +1,7 @@
 
 ALL: lib
 
-DIRS     = seq mpi aij
+DIRS     = seq mpi
 LOCDIR   = src/mat/impls/aij/
 
 include ${PETSC_DIR}/conf/variables

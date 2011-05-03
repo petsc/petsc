@@ -80,7 +80,7 @@ int TV_add_row(const char *field_name,
         
   remaining = TV_data_buffer_ptr + DATA_FORMAT_BUFFER_SIZE - TV_data_format_buffer;
   
-#if defined(PETSC_HAVE__SNPRINTF)
+#if defined(PETSC_HAVE__SNPRINTF) && !defined(PETSC_HAVE_SNPRINTF)
 #define snprintf _snprintf
 #endif
   out = snprintf(TV_data_buffer_ptr, 

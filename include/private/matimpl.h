@@ -177,6 +177,14 @@ struct _MatOps {
     in include/petscmat.h and include/finclude/petscmat.h
 */
 
+typedef struct _p_MatBaseName* MatBaseName;
+struct _p_MatBaseName {
+  char        *bname,*sname,*mname;
+  MatBaseName next;
+};
+
+extern MatBaseName MatBaseNameList;
+
 /*
    Utility private matrix routines
 */

@@ -148,21 +148,3 @@ PetscErrorCode  MatCreateMPIAIJCUSP(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt
 .seealso: MatCreateMPIAIJ,MATSEQAIJ,MATMPIAIJ, MATMPIAIJCUSP, MATSEQAIJCUSP
 M*/
 
-EXTERN_C_BEGIN
-#undef __FUNCT__
-#define __FUNCT__ "MatCreate_AIJCUSP"
-PetscErrorCode  MatCreate_AIJCUSP(Mat A) 
-{
-  PetscErrorCode ierr;
-  PetscMPIInt    size;
-
-  PetscFunctionBegin;
-  ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);
-  if (size == 1) {
-    ierr = MatSetType(A,MATSEQAIJCUSP);CHKERRQ(ierr);
-  } else {
-    ierr = MatSetType(A,MATMPIAIJCUSP);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-EXTERN_C_END

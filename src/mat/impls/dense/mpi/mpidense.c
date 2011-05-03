@@ -1771,25 +1771,6 @@ EXTERN_C_END
 .seealso: MatCreateMPIDense,MATSEQDENSE,MATMPIDENSE
 M*/
 
-EXTERN_C_BEGIN
-#undef __FUNCT__
-#define __FUNCT__ "MatCreate_Dense"
-PetscErrorCode  MatCreate_Dense(Mat A) 
-{
-  PetscErrorCode ierr;
-  PetscMPIInt    size;
-
-  PetscFunctionBegin;
-  ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);
-  if (size == 1) {
-    ierr = MatSetType(A,MATSEQDENSE);CHKERRQ(ierr);
-  } else {
-    ierr = MatSetType(A,MATMPIDENSE);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-EXTERN_C_END
-
 #undef __FUNCT__  
 #define __FUNCT__ "MatMPIDenseSetPreallocation"
 /*@C
