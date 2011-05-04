@@ -9,15 +9,15 @@ typedef struct {
   PetscScalar x,y,z,w;
 } GeometryPoint;
 
-PetscErrorCode Compute1DBasisFunctions(PetscInt numGP, PetscInt numD, double *U, PetscScalar m, PetscInt porder, BD *bd1D);
-PetscErrorCode GetDersBasisFuns(int i,double u,int p,double *U, double **N,int nd);
-int            FindSpan(double *U,int m,int j,int porder);
-PetscErrorCode SetupGauss1D(int n,double *X,double *W);
-PetscErrorCode CreateKnotVector(int N,int p,int C,int m, PetscScalar *U,PetscScalar U0,PetscScalar Uf);
-PetscErrorCode CreateKnotVectorFromMesh(int N,int p,int C,int m, PetscScalar *U,PetscScalar *X,PetscInt nX);
-PetscErrorCode CreatePeriodicKnotVector(int N,int p,int C,int m, PetscScalar *U,PetscScalar U0,PetscScalar Uf);
-PetscErrorCode CreateTaperSetOfPoints(PetscScalar Xbegin,PetscScalar Xend,PetscScalar f,PetscInt N,PetscScalar *X);
-PetscErrorCode CheckKnots(PetscInt m,PetscScalar *U,PetscInt k,PetscScalar *Uadd);
+PetscErrorCode Compute1DBasisFunctions(PetscInt numGP, PetscInt numD, PetscReal *U, PetscInt m, PetscInt porder, BD *bd1D);
+PetscErrorCode GetDersBasisFuns(PetscInt i,PetscReal u,PetscInt p,PetscReal *U, PetscReal **N,PetscInt nd);
+PetscInt            FindSpan(PetscReal *U,PetscInt m,PetscInt j,PetscInt porder);
+PetscErrorCode SetupGauss1D(PetscInt n,PetscReal *X,PetscReal *W);
+PetscErrorCode CreateKnotVector(PetscInt N,PetscInt p,PetscInt C,PetscInt m, PetscReal *U,PetscReal U0,PetscReal Uf);
+PetscErrorCode CreateKnotVectorFromMesh(PetscInt N,PetscInt p,PetscInt C,PetscInt m, PetscReal *U,PetscReal *X,PetscInt nX);
+PetscErrorCode CreatePeriodicKnotVector(PetscInt N,PetscInt p,PetscInt C,PetscInt m, PetscReal *U,PetscReal U0,PetscReal Uf);
+PetscErrorCode CreateTaperSetOfPoints(PetscReal Xbegin,PetscReal Xend,PetscReal f,PetscInt N,PetscReal *X);
+PetscErrorCode CheckKnots(PetscInt m,PetscReal *U,PetscInt k,PetscReal *Uadd);
 
 typedef struct {
   PetscInt   px,py,pz;     /* polynomial order */

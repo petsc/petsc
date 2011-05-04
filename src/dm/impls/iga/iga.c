@@ -418,9 +418,9 @@ PetscErrorCode DMIGAGetLocalInfo(DM dm, DMDALocalInfo *info)
 #undef __FUNCT__
 #define __FUNCT__ "DMIGAInitializeUniform3d"
 PetscErrorCode DMIGAInitializeUniform3d(DM dm,PetscBool IsRational,PetscInt NumDerivatives,PetscInt ndof,
-                                        PetscInt px,PetscInt Nx,PetscInt Cx,PetscScalar Ux0, PetscScalar Uxf,PetscBool IsPeriodicX,PetscInt ngx,
-                                        PetscInt py,PetscInt Ny,PetscInt Cy,PetscScalar Uy0, PetscScalar Uyf,PetscBool IsPeriodicY,PetscInt ngy,
-                                        PetscInt pz,PetscInt Nz,PetscInt Cz,PetscScalar Uz0, PetscScalar Uzf,PetscBool IsPeriodicZ,PetscInt ngz)
+                                        PetscInt px,PetscInt Nx,PetscInt Cx,PetscReal Ux0, PetscReal Uxf,PetscBool IsPeriodicX,PetscInt ngx,
+                                        PetscInt py,PetscInt Ny,PetscInt Cy,PetscReal Uy0, PetscReal Uyf,PetscBool IsPeriodicY,PetscInt ngy,
+                                        PetscInt pz,PetscInt Nz,PetscInt Cz,PetscReal Uz0, PetscReal Uzf,PetscBool IsPeriodicZ,PetscInt ngz)
 {
   DM_IGA        *iga = (DM_IGA *) dm->data;
   PetscErrorCode ierr;
@@ -577,21 +577,21 @@ PetscErrorCode DMIGAInitializeGeometry3d(DM dm,PetscInt ndof,PetscInt NumDerivat
   /* count the number of elements */
   numEl = 0;
   for(i = 0; i < iga->mx-1; ++i) {
-    double du = (iga->Ux[i+1]-iga->Ux[i]);
+    PetscReal du = (iga->Ux[i+1]-iga->Ux[i]);
     if(du > 1.0e-13) numEl++;
   }
   iga->Nx = numEl;
 
   numEl = 0;
   for(i = 0; i < iga->my-1; ++i) {
-    double du = (iga->Uy[i+1]-iga->Uy[i]);
+    PetscReal du = (iga->Uy[i+1]-iga->Uy[i]);
     if(du > 1.0e-13) numEl++;
   }
   iga->Ny = numEl;
 
   numEl = 0;
   for(i = 0; i < iga->mz-1; ++i) {
-    double du = (iga->Uz[i+1]-iga->Uz[i]);
+    PetscReal du = (iga->Uz[i+1]-iga->Uz[i]);
     if(du > 1.0e-13) numEl++;
   }
   iga->Nz = numEl;
@@ -651,10 +651,10 @@ PetscErrorCode DMIGAInitializeGeometry3d(DM dm,PetscInt ndof,PetscInt NumDerivat
 #undef __FUNCT__
 #define __FUNCT__ "DMIGAInitializeSymmetricTaper2d"
 PetscErrorCode DMIGAInitializeSymmetricTaper2d(DM dm,PetscBool IsRational,PetscInt NumDerivatives,PetscInt ndof,
-                                               PetscInt px,PetscInt Nx,PetscInt Cx,PetscScalar fx,
-                                               PetscScalar Ux0, PetscScalar Uxf,PetscBool IsPeriodicX,PetscInt ngx,
-                                               PetscInt py,PetscInt Ny,PetscInt Cy,PetscScalar fy,
-                                               PetscScalar Uy0, PetscScalar Uyf,PetscBool IsPeriodicY,PetscInt ngy)
+                                               PetscInt px,PetscInt Nx,PetscInt Cx,PetscReal fx,
+                                               PetscReal Ux0, PetscReal Uxf,PetscBool IsPeriodicX,PetscInt ngx,
+                                               PetscInt py,PetscInt Ny,PetscInt Cy,PetscReal fy,
+                                               PetscReal Uy0, PetscReal Uyf,PetscBool IsPeriodicY,PetscInt ngy)
 {
   DM_IGA        *iga = (DM_IGA *) dm->data;
   PetscErrorCode ierr;
@@ -699,18 +699,18 @@ PetscErrorCode DMIGAInitializeSymmetricTaper2d(DM dm,PetscBool IsRational,PetscI
 
   }else{
 
-    PetscScalar *X1;
-    PetscScalar *X2;
-    int i;
-    PetscScalar *X;
+    PetscReal *X1;
+    PetscReal *X2;
+    PetscInt i;
+    PetscReal *X;
 
-    ierr = PetscMalloc((Nx/2+1)*sizeof(PetscScalar),&X1);CHKERRQ(ierr);
-    ierr = PetscMalloc((Nx/2+1)*sizeof(PetscScalar),&X2);CHKERRQ(ierr);
+    ierr = PetscMalloc((Nx/2+1)*sizeof(PetscReal),&X1);CHKERRQ(ierr);
+    ierr = PetscMalloc((Nx/2+1)*sizeof(PetscReal),&X2);CHKERRQ(ierr);
 
     CreateTaperSetOfPoints(Ux0,0.5*(Uxf+Ux0),fx,Nx/2+1,X1);
     CreateTaperSetOfPoints(Uxf,0.5*(Uxf+Ux0),fx,Nx/2+1,X2);
 
-    ierr = PetscMalloc((Nx+1)*sizeof(PetscScalar),&X);CHKERRQ(ierr);
+    ierr = PetscMalloc((Nx+1)*sizeof(PetscReal),&X);CHKERRQ(ierr);
 
     if( Nx % 2 == 0){
 
@@ -744,18 +744,18 @@ PetscErrorCode DMIGAInitializeSymmetricTaper2d(DM dm,PetscBool IsRational,PetscI
   }else{
 
 
-    PetscScalar *X1;
-    PetscScalar *X2;
-    int i;
-    PetscScalar *X;
+    PetscReal *X1;
+    PetscReal *X2;
+    PetscInt i;
+    PetscReal *X;
 
-    ierr = PetscMalloc((Ny/2+1)*sizeof(PetscScalar),&X1);CHKERRQ(ierr);
-    ierr = PetscMalloc((Ny/2+1)*sizeof(PetscScalar),&X2);CHKERRQ(ierr);
+    ierr = PetscMalloc((Ny/2+1)*sizeof(PetscReal),&X1);CHKERRQ(ierr);
+    ierr = PetscMalloc((Ny/2+1)*sizeof(PetscReal),&X2);CHKERRQ(ierr);
 
     CreateTaperSetOfPoints(Uy0,0.5*(Uyf+Uy0),fy,Ny/2+1,X1);
     CreateTaperSetOfPoints(Uyf,0.5*(Uyf+Uy0),fy,Ny/2+1,X2);
 
-    ierr = PetscMalloc((Ny+1)*sizeof(PetscScalar),&X);CHKERRQ(ierr);
+    ierr = PetscMalloc((Ny+1)*sizeof(PetscReal),&X);CHKERRQ(ierr);
 
     if( Ny % 2 == 0){
 
@@ -815,8 +815,8 @@ PetscErrorCode DMIGAInitializeSymmetricTaper2d(DM dm,PetscBool IsRational,PetscI
 #undef __FUNCT__
 #define __FUNCT__ "DMIGAInitializeUniform2d"
 PetscErrorCode DMIGAInitializeUniform2d(DM dm,PetscBool IsRational,PetscInt NumDerivatives,PetscInt ndof,
-                                        PetscInt px,PetscInt Nx,PetscInt Cx,PetscScalar Ux0, PetscScalar Uxf,PetscBool IsPeriodicX,PetscInt ngx,
-                                        PetscInt py,PetscInt Ny,PetscInt Cy,PetscScalar Uy0, PetscScalar Uyf,PetscBool IsPeriodicY,PetscInt ngy)
+                                        PetscInt px,PetscInt Nx,PetscInt Cx,PetscReal Ux0, PetscReal Uxf,PetscBool IsPeriodicX,PetscInt ngx,
+                                        PetscInt py,PetscInt Ny,PetscInt Cy,PetscReal Uy0, PetscReal Uyf,PetscBool IsPeriodicY,PetscInt ngy)
 {
   DM_IGA        *iga = (DM_IGA *) dm->data;
   PetscErrorCode ierr;
@@ -896,7 +896,7 @@ PetscErrorCode DMIGAInitializeUniform2d(DM dm,PetscBool IsRational,PetscInt NumD
 #undef __FUNCT__
 #define __FUNCT__ "DMIGAInitializeUniform1d"
 PetscErrorCode DMIGAInitializeUniform1d(DM dm,PetscBool IsRational,PetscInt NumDerivatives,PetscInt ndof,
-                                        PetscInt px,PetscInt Nx,PetscInt Cx,PetscScalar Ux0, PetscScalar Uxf,PetscBool IsPeriodicX,PetscInt ngx)
+                                        PetscInt px,PetscInt Nx,PetscInt Cx,PetscReal Ux0, PetscReal Uxf,PetscBool IsPeriodicX,PetscInt ngx)
 {
   DM_IGA        *iga = (DM_IGA *) dm->data;
   PetscErrorCode ierr;
@@ -961,7 +961,7 @@ PetscErrorCode DMIGAInitializeUniform1d(DM dm,PetscBool IsRational,PetscInt NumD
 
 #undef __FUNCT__
 #define __FUNCT__ "DMIGAKnotRefine3d"
-PetscErrorCode DMIGAKnotRefine3d(DM dm,PetscInt kx,PetscScalar *Ux,PetscInt ky,PetscScalar *Uy,PetscInt kz,PetscScalar *Uz,DM iga_new)
+PetscErrorCode DMIGAKnotRefine3d(DM dm,PetscInt kx,PetscReal *Ux,PetscInt ky,PetscReal *Uy,PetscInt kz,PetscReal *Uz,DM iga_new)
 {
   DM_IGA        *iga = (DM_IGA *) dm->data;
   PetscErrorCode ierr;
@@ -976,7 +976,7 @@ PetscErrorCode DMIGAKnotRefine3d(DM dm,PetscInt kx,PetscScalar *Ux,PetscInt ky,P
 
 #undef __FUNCT__
 #define __FUNCT__ "DMIGAKnotRefine2d"
-PetscErrorCode DMIGAKnotRefine2d(DM dm,PetscInt kx,PetscScalar *Ux,PetscInt ky,PetscScalar *Uy,DM iga_new)
+PetscErrorCode DMIGAKnotRefine2d(DM dm,PetscInt kx,PetscReal *Ux,PetscInt ky,PetscReal *Uy,DM iga_new)
 {
   DM_IGA        *iga = (DM_IGA *) dm->data;
   PetscErrorCode ierr;
@@ -990,10 +990,10 @@ PetscErrorCode DMIGAKnotRefine2d(DM dm,PetscInt kx,PetscScalar *Ux,PetscInt ky,P
 
 #undef __FUNCT__
 #define __FUNCT__ "BDCreate"
-PetscErrorCode BDCreate(BD *bd,int numD,int p,int numGP,int numEl)
+PetscErrorCode BDCreate(BD *bd,PetscInt numD,PetscInt p,PetscInt numGP,PetscInt numEl)
 {
   BD bdd = PETSC_NULL;
-  int i,j;
+  PetscInt i,j;
 
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -1003,7 +1003,7 @@ PetscErrorCode BDCreate(BD *bd,int numD,int p,int numGP,int numEl)
   ierr = PetscMalloc(numEl*numGP*sizeof(GP),&(bdd->data));CHKERRQ(ierr);
   for(i=0;i<numEl;i++){
     for(j=0;j<numGP;j++){
-      ierr = PetscMalloc((p+1)*(numD+1)*sizeof(PetscScalar),&(bdd->data[i*numGP+j].basis));CHKERRQ(ierr);
+      ierr = PetscMalloc((p+1)*(numD+1)*sizeof(PetscReal),&(bdd->data[i*numGP+j].basis));CHKERRQ(ierr);
     }
   }
 
@@ -1038,7 +1038,7 @@ PetscErrorCode BDDestroy(BD *bd)
 
 #undef __FUNCT__
 #define __FUNCT__ "BDGetBasis"
-PetscErrorCode BDGetBasis(BD bd, int iel, int igp, int ib, int ider, double *basis)
+PetscErrorCode BDGetBasis(BD bd, PetscInt iel, PetscInt igp, PetscInt ib, PetscInt ider, PetscReal *basis)
 {
   PetscFunctionBegin;
 
@@ -1050,7 +1050,7 @@ PetscErrorCode BDGetBasis(BD bd, int iel, int igp, int ib, int ider, double *bas
 
 #undef __FUNCT__
 #define __FUNCT__ "BDSetBasis"
-PetscErrorCode BDSetBasis(BD bd, int iel, int igp, int ib, int ider, double basis)
+PetscErrorCode BDSetBasis(BD bd, PetscInt iel, PetscInt igp, PetscInt ib, PetscInt ider, PetscReal basis)
 {
   PetscFunctionBegin;
 
@@ -1062,7 +1062,7 @@ PetscErrorCode BDSetBasis(BD bd, int iel, int igp, int ib, int ider, double basi
 
 #undef __FUNCT__
 #define __FUNCT__ "BDSetGaussPt"
-PetscErrorCode BDSetGaussPt(BD bd, int iel, int igp, double gp)
+PetscErrorCode BDSetGaussPt(BD bd, PetscInt iel, PetscInt igp, PetscReal gp)
 {
   PetscFunctionBegin;
 
@@ -1074,7 +1074,7 @@ PetscErrorCode BDSetGaussPt(BD bd, int iel, int igp, double gp)
 
 #undef __FUNCT__
 #define __FUNCT__ "BDSetGaussWt"
-PetscErrorCode BDSetGaussWt(BD bd, int iel, int igp, double gw)
+PetscErrorCode BDSetGaussWt(BD bd, PetscInt iel, PetscInt igp, PetscReal gw)
 {
   PetscFunctionBegin;
 
@@ -1086,21 +1086,21 @@ PetscErrorCode BDSetGaussWt(BD bd, int iel, int igp, double gw)
 
 #undef __FUNCT__
 #define __FUNCT__ "BDSetBasisOffset"
-PetscErrorCode BDSetBasisOffset(BD bd, int iel, int bOffset)
+PetscErrorCode BDSetBasisOffset(BD bd, PetscInt iel, PetscInt bOffset)
 {
   PetscInt igp = 0;
 
   PetscFunctionBegin;
   bd->data[iel*bd->numGP+igp].offset = bOffset;
   /* (bd->numD+1)*(bd->p+1)*(bd->numGP) + (bd->numGP)*(2) */
-  /* bd->arrayX[iel][((bd->numD+1)*(bd->p+1)+2)*(bd->numGP)] = (double)bOffset; */
+  /* bd->arrayX[iel][((bd->numD+1)*(bd->p+1)+2)*(bd->numGP)] = (PetscReal)bOffset; */
 
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "BDGetGaussPt"
-PetscErrorCode BDGetGaussPt(BD bd, int iel, int igp, double *gp)
+PetscErrorCode BDGetGaussPt(BD bd, PetscInt iel, PetscInt igp, PetscReal *gp)
 {
   PetscFunctionBegin;
   *gp = bd->data[iel*bd->numGP+igp].gx;
@@ -1111,7 +1111,7 @@ PetscErrorCode BDGetGaussPt(BD bd, int iel, int igp, double *gp)
 
 #undef __FUNCT__
 #define __FUNCT__ "BDGetGaussWt"
-PetscErrorCode BDGetGaussWt(BD bd, int iel, int igp, double *gw)
+PetscErrorCode BDGetGaussWt(BD bd, PetscInt iel, PetscInt igp, PetscReal *gw)
 {
   PetscFunctionBegin;
 
@@ -1123,7 +1123,7 @@ PetscErrorCode BDGetGaussWt(BD bd, int iel, int igp, double *gw)
 
 #undef __FUNCT__
 #define __FUNCT__ "BDGetBasisOffset"
-PetscErrorCode BDGetBasisOffset(BD bd, int iel, int *bOffset)
+PetscErrorCode BDGetBasisOffset(BD bd, PetscInt iel, PetscInt *bOffset)
 {
   PetscInt igp = 0;
 
@@ -1137,9 +1137,9 @@ PetscErrorCode BDGetBasisOffset(BD bd, int iel, int *bOffset)
 
 #undef __FUNCT__
 #define __FUNCT__ "BDSetElementOwnership"
-PetscErrorCode BDSetElementOwnership(BD bd,int nel,int dof_b,int dof_e,int p)
+PetscErrorCode BDSetElementOwnership(BD bd,PetscInt nel,PetscInt dof_b,PetscInt dof_e,PetscInt p)
 {
-  int i,boffset;
+  PetscInt i,boffset;
 
   PetscFunctionBegin;
   bd->cont_b = nel; bd->cont_e = -1;
@@ -1165,7 +1165,7 @@ PetscErrorCode BDSetElementOwnership(BD bd,int nel,int dof_b,int dof_e,int p)
 
 #undef __FUNCT__
 #define __FUNCT__ "Compute1DBasisFunctions"
-PetscErrorCode Compute1DBasisFunctions(PetscInt numGP, PetscInt numD, double *U, PetscScalar m, PetscInt porder, BD *bd1D)
+PetscErrorCode Compute1DBasisFunctions(PetscInt numGP, PetscInt numD, PetscReal *U, PetscInt m, PetscInt porder, BD *bd1D)
 {
   /* The idea of the 1d DA is to hold all information for a particular
      non-zero span of the knot vector. Here I will need to pass in the
@@ -1194,7 +1194,7 @@ PetscErrorCode Compute1DBasisFunctions(PetscInt numGP, PetscInt numD, double *U,
 
   /* count the number of elements */
   for(i = 0; i < m-1; ++i) {
-    double du = (U[i+1]-U[i]);
+    PetscReal du = (U[i+1]-U[i]);
     if(du > 1.0e-13) numEl++;
   }
 
@@ -1203,14 +1203,14 @@ PetscErrorCode Compute1DBasisFunctions(PetscInt numGP, PetscInt numD, double *U,
 
   /* precompute the basis */
   for(i = 0; i < numEl; ++i) {
-    int uspan = FindSpan(U,m,i,porder);
-    double du = (U[uspan+1]-U[uspan]);
+    PetscInt uspan = FindSpan(U,m,i,porder);
+    PetscReal du = (U[uspan+1]-U[uspan]);
 
     /* here I am storing the first global basis number in 1d */
     ierr = BDSetBasisOffset(bd,i,uspan-porder);CHKERRQ(ierr);
 
     for(k = 0; k < numGP; ++k) {
-      double u = (X[k]+1.0)*0.5*du + U[uspan];
+      PetscReal u = (X[k]+1.0)*0.5*du + U[uspan];
 
       /* and also storing the gauss point and its weight (sneaky and flagrant abuse of DAs) */
       ierr = BDSetGaussPt(bd,i,k,u);CHKERRQ(ierr);
@@ -1238,11 +1238,11 @@ PetscErrorCode Compute1DBasisFunctions(PetscInt numGP, PetscInt numD, double *U,
   PetscFunctionReturn(0);
 }
 
-int FindSpan(double *U,int m,int j,int p)
+PetscInt FindSpan(PetscReal *U,PetscInt m,PetscInt j,PetscInt p)
 {
   /* i is the span not counting zero spans, return the span including */
 
-  int i,id = -1;
+  PetscInt i,id = -1;
   for(i=p;i<m-p-1;i++)
     if(fabs(U[i+1]-U[i]) > 1.0e-14)
       {
@@ -1255,7 +1255,7 @@ int FindSpan(double *U,int m,int j,int p)
 
 #undef __FUNCT__
 #define __FUNCT__ "GetDersBasisFuns"
-PetscErrorCode GetDersBasisFuns(int i,double u,int p,double *U, double **N,int nd)
+PetscErrorCode GetDersBasisFuns(PetscInt i,PetscReal u,PetscInt p,PetscReal *U, PetscReal **N,PetscInt nd)
 {
   /*  This function calculates the non-vanishing spline basis functions
       and their derivatives. See the notes from the above function.
@@ -1267,8 +1267,8 @@ PetscErrorCode GetDersBasisFuns(int i,double u,int p,double *U, double **N,int n
       evaluations. The first row are the function evaluations,
       equivalent to the above function. The second row are the
       derivatives. */
-  int j,k,r,s1,s2,rk,pk,j1,j2;
-  double saved,temp,d;
+  PetscInt j,k,r,s1,s2,rk,pk,j1,j2;
+  PetscReal saved,temp,d;
   PetscErrorCode ierr;
 
   PetscReal **a, **ndu;
@@ -1371,7 +1371,7 @@ PetscErrorCode GetDersBasisFuns(int i,double u,int p,double *U, double **N,int n
 
 #undef __FUNCT__
 #define __FUNCT__ "SetupGauss1D"
-PetscErrorCode SetupGauss1D(int n,double *X,double *W)
+PetscErrorCode SetupGauss1D(PetscInt n,PetscReal *X,PetscReal *W)
 {
   PetscFunctionBegin;
   switch(n)
@@ -1539,7 +1539,7 @@ PetscErrorCode SetupGauss1D(int n,double *X,double *W)
 
 #undef __FUNCT__
 #define __FUNCT__ "CreateKnotVector"
-PetscErrorCode CreateKnotVector(int N,int p,int C,int m, PetscScalar *U,PetscScalar U0,PetscScalar Uf)
+PetscErrorCode CreateKnotVector(PetscInt N,PetscInt p,PetscInt C,PetscInt m, PetscReal *U,PetscReal U0,PetscReal Uf)
 {
   PetscInt i,j;
   PetscReal dU;
@@ -1564,7 +1564,7 @@ PetscErrorCode CreateKnotVector(int N,int p,int C,int m, PetscScalar *U,PetscSca
 
 #undef __FUNCT__
 #define __FUNCT__ "CreatePeriodicKnotVector"
-PetscErrorCode CreatePeriodicKnotVector(int N,int p,int C,int m, PetscScalar *U,PetscScalar U0,PetscScalar Uf)
+PetscErrorCode CreatePeriodicKnotVector(PetscInt N,PetscInt p,PetscInt C,PetscInt m, PetscReal *U,PetscReal U0,PetscReal Uf)
 {
   PetscInt i,j;
   PetscReal dU;
@@ -1594,7 +1594,7 @@ PetscErrorCode CreatePeriodicKnotVector(int N,int p,int C,int m, PetscScalar *U,
 
 #undef __FUNCT__
 #define __FUNCT__ "CreateKnotVectorFromMesh"
-PetscErrorCode CreateKnotVectorFromMesh(int N,int p,int C,int m, PetscScalar *U,PetscScalar *X,PetscInt nX)
+PetscErrorCode CreateKnotVectorFromMesh(PetscInt N,PetscInt p,PetscInt C,PetscInt m, PetscReal *U,PetscReal *X,PetscInt nX)
 {
   PetscInt i,j,countU=0;
 
@@ -1619,13 +1619,13 @@ PetscErrorCode CreateKnotVectorFromMesh(int N,int p,int C,int m, PetscScalar *U,
 
 #undef __FUNCT__
 #define __FUNCT__ "CreateTaperSetOfPoints"
-PetscErrorCode CreateTaperSetOfPoints(PetscScalar Xbegin,PetscScalar Xend,PetscScalar f,PetscInt N,PetscScalar *X)
+PetscErrorCode CreateTaperSetOfPoints(PetscReal Xbegin,PetscReal Xend,PetscReal f,PetscInt N,PetscReal *X)
 {
   /* N is the number of points, we will need number of spans, Ns */
   PetscInt Ns=N-1;
-  PetscScalar sum=0.0;
-  int i;
-  PetscScalar dX;
+  PetscReal sum=0.0;
+  PetscInt i;
+  PetscReal dX;
 
   PetscFunctionBegin;
   for(i=0;i<Ns;i++){
@@ -1643,7 +1643,7 @@ PetscErrorCode CreateTaperSetOfPoints(PetscScalar Xbegin,PetscScalar Xend,PetscS
 
 #undef __FUNCT__
 #define __FUNCT__ "CheckKnots"
-PetscErrorCode CheckKnots(PetscInt m,PetscScalar *U,PetscInt k,PetscScalar *Uadd)
+PetscErrorCode CheckKnots(PetscInt m,PetscReal *U,PetscInt k,PetscReal *Uadd)
 {
   /* Check the knots we are trying to insert into the vector U */
 

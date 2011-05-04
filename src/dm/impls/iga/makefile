@@ -1,6 +1,3 @@
-#requiresprecision double
-#requiresscalar    real
-
 ALL: lib
 
 CFLAGS   =

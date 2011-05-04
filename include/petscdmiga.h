@@ -18,25 +18,26 @@ extern PetscErrorCode DMIGAVecRestoreArray(DM,Vec,void *);
 extern PetscErrorCode DMIGAGetLocalInfo(DM,DMDALocalInfo*);
 
 extern PetscErrorCode DMIGAInitializeUniform1d(DM dm,PetscBool IsRational,PetscInt NumDerivatives,PetscInt ndof,
-                                               PetscInt px,PetscInt Nx,PetscInt Cx,PetscScalar Ux0, PetscScalar Uxf,PetscBool IsPeriodicX,PetscInt ngx);
+                                               PetscInt px,PetscInt Nx,PetscInt Cx,PetscReal Ux0, PetscReal Uxf,PetscBool IsPeriodicX,PetscInt ngx);
 extern PetscErrorCode DMIGAInitializeUniform2d(DM dm,PetscBool IsRational,PetscInt NumDerivatives,PetscInt ndof,
-                                               PetscInt px,PetscInt Nx,PetscInt Cx,PetscScalar Ux0, PetscScalar Uxf,PetscBool IsPeriodicX,PetscInt ngx,
-                                               PetscInt py,PetscInt Ny,PetscInt Cy,PetscScalar Uy0, PetscScalar Uyf,PetscBool IsPeriodicY,PetscInt ngy);
+                                               PetscInt px,PetscInt Nx,PetscInt Cx,PetscReal Ux0, PetscReal Uxf,PetscBool IsPeriodicX,PetscInt ngx,
+                                               PetscInt py,PetscInt Ny,PetscInt Cy,PetscReal Uy0, PetscReal Uyf,PetscBool IsPeriodicY,PetscInt ngy);
 extern PetscErrorCode DMIGAInitializeSymmetricTaper2d(DM dm,PetscBool IsRational,PetscInt NumDerivatives,PetscInt ndof,
-                                                      PetscInt px,PetscInt Nx,PetscInt Cx,PetscScalar fx,
-                                                      PetscScalar Ux0, PetscScalar Uxf,PetscBool IsPeriodicX,PetscInt ngx,
-                                                      PetscInt py,PetscInt Ny,PetscInt Cy,PetscScalar fy,
-                                                      PetscScalar Uy0, PetscScalar Uyf,PetscBool IsPeriodicY,PetscInt ngy);
+                                                      PetscInt px,PetscInt Nx,PetscInt Cx,PetscReal fx,
+                                                      PetscReal Ux0, PetscReal Uxf,PetscBool IsPeriodicX,PetscInt ngx,
+                                                      PetscInt py,PetscInt Ny,PetscInt Cy,PetscReal fy,
+                                                      PetscReal Uy0, PetscReal Uyf,PetscBool IsPeriodicY,PetscInt ngy)
+;
 extern PetscErrorCode DMIGAInitializeUniform3d(DM dm,PetscBool IsRational,PetscInt NumDerivatives,PetscInt ndof,
-                                               PetscInt px,PetscInt Nx,PetscInt Cx,PetscScalar Ux0, PetscScalar Uxf,PetscBool IsPeriodicX,PetscInt ngx,
-                                               PetscInt py,PetscInt Ny,PetscInt Cy,PetscScalar Uy0, PetscScalar Uyf,PetscBool IsPeriodicY,PetscInt ngy,
-                                               PetscInt pz,PetscInt Nz,PetscInt Cz,PetscScalar Uz0, PetscScalar Uzf,PetscBool IsPeriodicZ,PetscInt ngz);
+                                               PetscInt px,PetscInt Nx,PetscInt Cx,PetscReal Ux0, PetscReal Uxf,PetscBool IsPeriodicX,PetscInt ngx,
+                                               PetscInt py,PetscInt Ny,PetscInt Cy,PetscReal Uy0, PetscReal Uyf,PetscBool IsPeriodicY,PetscInt ngy,
+                                               PetscInt pz,PetscInt Nz,PetscInt Cz,PetscReal Uz0, PetscReal Uzf,PetscBool IsPeriodicZ,PetscInt ngz);
 extern PetscErrorCode DMIGAInitializeGeometry3d(DM dm,PetscInt ndof,PetscInt NumDerivatives,char *FunctionSpaceFile,char *GeomFile);
-extern PetscErrorCode DMIGAKnotRefine2d(DM dm,PetscInt kx,PetscScalar *Ux,PetscInt ky,PetscScalar *Uy,DM iga_new);
-extern PetscErrorCode DMIGAKnotRefine3d(DM dm,PetscInt kx,PetscScalar *Ux,PetscInt ky,PetscScalar *Uy,PetscInt kz,PetscScalar *Uz,DM iga_new);
+extern PetscErrorCode DMIGAKnotRefine2d(DM dm,PetscInt kx,PetscReal *Ux,PetscInt ky,PetscReal *Uy,DM iga_new);
+extern PetscErrorCode DMIGAKnotRefine3d(DM dm,PetscInt kx,PetscReal *Ux,PetscInt ky,PetscReal *Uy,PetscInt kz,PetscReal *Uz,DM iga_new);
 typedef struct {
-  PetscScalar *basis; /* (p+1)x(numD+1) */
-  PetscScalar gx,gw;
+  PetscReal *basis; /* (p+1)x(numD+1) */
+  PetscReal gx,gw;
   PetscInt offset;
 } GP;
 
@@ -51,16 +52,16 @@ typedef BasisData1D* BD;
 
 extern PetscErrorCode DMIGAGetBasisData(DM,BD*,BD*,BD*);
 
-extern PetscErrorCode BDCreate(BD *bd,int numD,int p,int numGP,int numEl);
+extern PetscErrorCode BDCreate(BD *bd,PetscInt numD,PetscInt p,PetscInt numGP,PetscInt numEl);
 extern PetscErrorCode BDDestroy(BD *bd);
-extern PetscErrorCode BDGetBasis(BD bd, int iel, int igp, int ib, int ider, double *basis);
-extern PetscErrorCode BDSetBasis(BD bd, int iel, int igp, int ib, int ider, double basis);
-extern PetscErrorCode BDGetGaussPt(BD bd, int iel, int igp, double *gp);
-extern PetscErrorCode BDSetGaussPt(BD bd, int iel, int igp, double gp);
-extern PetscErrorCode BDGetGaussWt(BD bd, int iel, int igp, double *gw);
-extern PetscErrorCode BDSetGaussWt(BD bd, int iel, int igp, double gw);
-extern PetscErrorCode BDGetBasisOffset(BD bd, int iel, int *bOffset);
-extern PetscErrorCode BDSetBasisOffset(BD bd, int iel, int bOffset);
-extern PetscErrorCode BDSetElementOwnership(BD bd,int nel,int dof_b,int dof_e,int p);
+extern PetscErrorCode BDGetBasis(BD bd, PetscInt iel, PetscInt igp, PetscInt ib, PetscInt ider, PetscReal *basis);
+extern PetscErrorCode BDSetBasis(BD bd, PetscInt iel, PetscInt igp, PetscInt ib, PetscInt ider, PetscReal basis);
+extern PetscErrorCode BDGetGaussPt(BD bd, PetscInt iel, PetscInt igp, PetscReal *gp);
+extern PetscErrorCode BDSetGaussPt(BD bd, PetscInt iel, PetscInt igp, PetscReal gp);
+extern PetscErrorCode BDGetGaussWt(BD bd, PetscInt iel, PetscInt igp, PetscReal *gw);
+extern PetscErrorCode BDSetGaussWt(BD bd, PetscInt iel, PetscInt igp, PetscReal gw);
+extern PetscErrorCode BDGetBasisOffset(BD bd, PetscInt iel, PetscInt *bOffset);
+extern PetscErrorCode BDSetBasisOffset(BD bd, PetscInt iel, PetscInt bOffset);
+extern PetscErrorCode BDSetElementOwnership(BD bd,PetscInt nel,PetscInt dof_b,PetscInt dof_e,PetscInt p);
 
 #endif /* __PETSCDMIGA_H */
