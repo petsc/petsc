@@ -9,8 +9,7 @@ Runtime options include:\n\
 -theta_c <theta_c>\n\n";
 
 #include "petscsnes.h"
-#include "../src/snes/impls/vi/viimpl.h"
-#include "petscdm.h"
+#include "petscdmda.h"
 
 typedef struct{
   PetscReal   dt,T; /* Time step and end time */
@@ -48,7 +47,7 @@ int main(int argc, char **argv)
   /* Get physics and time parameters */
   ierr = GetParams(&user);CHKERRQ(ierr);
   /* Create a 2D DA with dof = 2 */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_NONPERIODIC,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,2,1,PETSC_NULL,PETSC_NULL,&user.da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,2,1,PETSC_NULL,PETSC_NULL,&user.da);CHKERRQ(ierr);
   /* Set Element type (triangular) */
   ierr = DMDASetElementType(user.da,DMDA_ELEMENT_P1);CHKERRQ(ierr);
 
@@ -106,6 +105,7 @@ int main(int argc, char **argv)
   ierr = DMDestroy(&user.da);CHKERRQ(ierr);
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);
   PetscFinalize();
+  return 0;
 }
 
 #undef __FUNCT__

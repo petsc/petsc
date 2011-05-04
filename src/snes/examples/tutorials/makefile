@@ -12,7 +12,7 @@ MANSEC           = SNES
 EXAMPLESC	 = ex1.c ex2.c ex3.c ex5.c ex5s.c ex6.c \
                    ex10.c ex14.c ex18.c ex19.c ex20.c ex21.c ex22.c \
                    ex23.c ex24.c ex25.c ex26.c ex27.c ex28.c ex29.c ex30.c ex31.c ex38.c ex42.c ex43.c \
-                   ex44.c ex45.c ex48.c ex49.c ex50.c ex47cu.cu
+                   ex44.c ex45.c ex48.c ex49.c ex50.c ex47cu.cu ex54.c
 EXAMPLESF	 = ex1f.F ex5f.F ex5f90.F ex5fs.F 
 EXAMPLESCH	 = ex43-44.h
 EXAMPLESFH       = ex5f.h
@@ -197,6 +197,9 @@ ex52: ex52.o  chkopts
 ex53: ex53.o  chkopts
 	-${CLINKER} -o ex53 ex53.o ${PETSC_SNES_LIB}
 	${RM} ex53.o
+ex54: ex54.o  chkopts
+	-${CLINKER} -o ex54 ex54.o ${PETSC_SNES_LIB}
+	${RM} ex54.o
 
 #--------------------------------------------------------------------------
 runex1:
@@ -778,7 +781,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2  runex2_3 ex2.
                                  ex25.rm ex28.PETSc runex28_0 runex28_1 runex28_2 runex28_3 ex28.rm ex29.PETSc ex29.rm \
                                  ex31.PETSc ex31.rm ex32.PETSc ex32.rm ex42.PETSc runex42 ex42.rm ex43.PETSc ex43.rm \
                                  ex44.PETSc runex44 runex44_2 ex44.rm ex45.PETSc runex45 runex45_2 runex45_3 ex45.rm \
-                                 ex48.PETSc runex48 runex48_2 runex48_3 runex48_4 ex48.rm
+                                 ex48.PETSc runex48 runex48_2 runex48_3 runex48_4 ex48.rm ex54.PETSc ex54.rm
 TESTEXAMPLES_C_X11	       = ex5.PETSc runex5_8 runex5_10 ex5.rm 
 TESTEXAMPLES_FORTRAN	       = ex1f.PETSc runex1f ex1f.rm
 TESTEXAMPLES_C_NOCOMPLEX       = ex26.PETSc ex26.rm ex30.PETSc ex30.rm
