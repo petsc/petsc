@@ -4,7 +4,7 @@ import PETSc.package
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
-    self.download         = ['hg://petsc.cs.iit.edu/petsc/ParMetis-dev','http://ftp.mcs.anl.gov/pub/petsc/externalpackages/ParMetis-3.1.1-p1.tar.gz']
+    self.download         = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/ParMetis-3.2.0-p1.tar.gz']
     self.functions        = ['ParMETIS_V3_PartKway']
     self.includes         = ['parmetis.h']
     self.liblist          = [['libparmetis.a','libmetis.a']]
