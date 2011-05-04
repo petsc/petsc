@@ -256,10 +256,12 @@ PetscErrorCode PetscOptionsGetFromTextInput()
           sscanf(str,"%e",&ir);
 #elif defined(PETSC_USE_REAL_DOUBLE)
           sscanf(str,"%le",&ir);
+#elif defined(PETSC_USE_REAL_LONG_DOUBLE)
+          sscanf(str,"%Le",&ir);
 #elif defined(PETSC_USE_REAL___FLOAT128)
           ir = strtoflt128(str,0);
 #else
-          SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Unknown scalar type");
+          SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Unknown scalar type");
 #endif
           next->set = PETSC_TRUE;
           *((PetscReal*)next->data) = ir;

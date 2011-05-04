@@ -318,6 +318,12 @@ M*/
 #  define PETSC_MACHINE_EPSILON         1.e-14
 #  define PETSC_SQRT_MACHINE_EPSILON    1.e-7
 #  define PETSC_SMALL                   1.e-10
+#elif defined(PETSC_USE_REAL_LONG_DOUBLE)
+#  define PETSC_MAX_REAL                1.e4900L
+#  define PETSC_MIN_REAL                -PETSC_MAX_REAL
+#  define PETSC_MACHINE_EPSILON         1.e-18
+#  define PETSC_SQRT_MACHINE_EPSILON    1.e-9
+#  define PETSC_SMALL                   1.e-13
 #elif defined(PETSC_USE_REAL___FLOAT128)
 #  define PETSC_MAX_REAL                FLT128_MAX
 #  define PETSC_MIN_REAL                -FLT128_MAX
