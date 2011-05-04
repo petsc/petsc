@@ -188,7 +188,7 @@ PetscErrorCode  ISSetPermutation(IS is)
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISDestroy" 
-/*@C
+/*@
    ISDestroy - Destroys an index set.
 
    Collective on IS

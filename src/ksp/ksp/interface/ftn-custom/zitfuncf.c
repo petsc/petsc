@@ -18,7 +18,6 @@
 #define kspmonitorsingularvalue_   KSPMONITORSINGULARVALUE
 #define kspfgmresmodifypcksp_      KSPFGMRESMODIFYPCKSP
 #define kspfgmresmodifypcnochange_ KSPFGMRESMODIFYPCNOCHANGE
-#define kspdestroy_ KSPDESTROY
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define kspmonitorset_                 kspmonitorset
 #define kspsetconvergencetest_         kspsetconvergencetest
@@ -35,15 +34,9 @@
 #define kspmonitorlgtrueresidualnorm_  kspmonitorlgtrueresidualnorm
 #define kspfgmresmodifypcksp_          kspfgmresmodifypcksp
 #define kspfgmresmodifypcnochange_     kspfgmresmodifypcnochange
-#define kspdestroy_                    kspdestroy
 #endif
 
 EXTERN_C_BEGIN
-
-void PETSC_STDCALL  kspdestroy_(KSP *ksp, int *__ierr )
-{
-  *__ierr = KSPDestroy(ksp);
-}
 
 /*
         These are not usually called from Fortran but allow Fortran users 

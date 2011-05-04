@@ -1006,7 +1006,7 @@ PetscErrorCode  MatUseScaledForm(Mat mat,PetscBool  scaled)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatDestroy"
-/*@C
+/*@
    MatDestroy - Frees space taken by a matrix.
 
    Collective on Mat

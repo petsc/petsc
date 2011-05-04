@@ -726,7 +726,7 @@ PetscErrorCode  KSPReset(KSP ksp)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPDestroy"
-/*@C
+/*@
    KSPDestroy - Destroys KSP context.
 
    Collective on KSP

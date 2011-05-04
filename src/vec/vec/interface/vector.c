@@ -489,8 +489,8 @@ PetscErrorCode  VecDuplicate(Vec v,Vec *newv)
 
 #undef __FUNCT__
 #define __FUNCT__ "VecDestroy"
-/*@C
-   VecDestroy_ - Destroys a vector.
+/*@
+   VecDestroy - Destroys a vector.
 
    Collective on Vec
 
