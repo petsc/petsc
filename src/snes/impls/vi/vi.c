@@ -2030,7 +2030,8 @@ static PetscErrorCode SNESView_VI(SNES snes,PetscViewer viewer)
 @*/
 PetscErrorCode SNESVISetVariableBounds(SNES snes, Vec xl, Vec xu)
 {
-  SNES_VI  *vi = (SNES_VI*)snes->data;
+  SNES_VI        *vi;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
@@ -2039,7 +2040,8 @@ PetscErrorCode SNESVISetVariableBounds(SNES snes, Vec xl, Vec xu)
   if (!snes->vec_func) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call SNESSetFunction() first");
   if (xl->map->N != snes->vec_func->map->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector lengths lower bound = %D solution vector = %D",xl->map->N,snes->vec_func->map->N);
   if (xu->map->N != snes->vec_func->map->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector lengths: upper bound = %D solution vector = %D",xu->map->N,snes->vec_func->map->N);
-
+  ierr = SNESSetType(snes,SNESVI);CHKERRQ(ierr);
+  vi = (SNES_VI*)snes->data;
   vi->usersetxbounds = PETSC_TRUE;
   vi->xl = xl;
   vi->xu = xu;

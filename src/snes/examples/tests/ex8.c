@@ -90,7 +90,6 @@ int main(int argc, char **argv)
   /* Set initial solution guess */
   info = MSA_InitialPoint(&user, x); CHKERRQ(info);
 
-  info = SNESSetFromOptions(snes);CHKERRQ(info);
 
   /* Set Bounds on variables */
   info = VecDuplicate(x, &xl); CHKERRQ(info);
@@ -99,6 +98,8 @@ int main(int argc, char **argv)
   info = VecSet(xu, ub); CHKERRQ(info);
 
   info = SNESVISetVariableBounds(snes,xl,xu);CHKERRQ(info);
+
+  info = SNESSetFromOptions(snes);CHKERRQ(info);
 
   /* Solve the application */
   info = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(info);
