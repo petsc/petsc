@@ -1127,6 +1127,8 @@ static PetscErrorCode PCSetUp_BJacobi_Multiblock(PC pc,Mat mat,Mat pmat)
         ierr = MatDestroyMatrices(n_local,&bjac->mat);CHKERRQ(ierr);
       }
       scall = MAT_INITIAL_MATRIX;
+    } else {
+      scall = MAT_REUSE_MATRIX;
     }
   }
 

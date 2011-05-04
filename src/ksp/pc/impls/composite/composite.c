@@ -130,7 +130,7 @@ static PetscErrorCode PCReset_Composite(PC pc)
   PetscFunctionBegin;
   while (next) {
     ierr = PCReset(next->pc);CHKERRQ(ierr);
-    next     = next->next;
+    next = next->next;
   }
   ierr = VecDestroy(&jac->work1);CHKERRQ(ierr);
   ierr = VecDestroy(&jac->work2);CHKERRQ(ierr);
