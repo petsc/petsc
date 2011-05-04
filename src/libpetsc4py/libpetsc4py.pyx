@@ -258,7 +258,7 @@ cdef createcontext(name):
         cls = getattr(mod, clsname)
         return cls()
 
-@cython.internal
+#@cython.internal
 cdef class _PyObj:
 
     cdef object self
@@ -411,7 +411,7 @@ cdef extern from * nogil:
     PetscErrorCode MatSolve(PetscMat,PetscVec,PetscVec)
     PetscErrorCode MatSolveTranspose(PetscMat,PetscVec,PetscVec)
 
-@cython.internal
+#@cython.internal
 cdef class _PyMat(_PyObj): pass
 cdef inline _PyMat PyMat(PetscMat mat):
     if mat != NULL and mat.data != NULL:
@@ -1044,7 +1044,7 @@ cdef extern from * nogil:
         void *data
         PCOps ops
 
-@cython.internal
+#@cython.internal
 cdef class _PyPC(_PyObj): pass
 cdef inline _PyPC PyPC(PetscPC pc):
     if pc != NULL and pc.data != NULL:
@@ -1306,7 +1306,7 @@ cdef extern from * nogil:
     PetscErrorCode KSPMonitor(PetscKSP,PetscInt,PetscReal)
 
 
-@cython.internal
+#@cython.internal
 cdef class _PyKSP(_PyObj): pass
 cdef inline _PyKSP PyKSP(PetscKSP ksp):
     if ksp != NULL and ksp.data != NULL:
@@ -1645,7 +1645,7 @@ cdef extern from * nogil:
     PetscErrorCode SNESMonitor(PetscSNES,PetscInt,PetscReal)
 
 
-@cython.internal
+#@cython.internal
 cdef class _PySNES(_PyObj): pass
 cdef inline _PySNES PySNES(PetscSNES snes):
     if snes != NULL and snes.data != NULL:
@@ -1950,7 +1950,7 @@ cdef extern from * nogil:
     PetscErrorCode SNESTSFormFunction(PetscSNES,PetscVec,PetscVec,void*)
     PetscErrorCode SNESTSFormJacobian(PetscSNES,PetscVec,PetscMat*,PetscMat*,MatStructure*,void*)
 
-@cython.internal
+#@cython.internal
 cdef class _PyTS(_PyObj): pass
 cdef inline _PyTS PyTS(PetscTS ts):
     if ts != NULL and ts.data != NULL:
