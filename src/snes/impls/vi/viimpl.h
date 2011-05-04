@@ -1,7 +1,6 @@
 #include <private/snesimpl.h>
 
-#define PETSC_VI_INF   1.0e20
-#define PETSC_VI_NINF -1.0e20
+
 
 #define PetscScalarNorm(a,b) (PetscSqrtScalar((a)*(a)+(b)*(b)))
 /* 

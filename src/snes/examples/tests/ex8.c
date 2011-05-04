@@ -1,5 +1,4 @@
 #include <petscsnes.h>
-#include <../src/snes/impls/vi/viimpl.h>
 #include <petscdmda.h>
 
 static char  help[] = "Parallel version of the minimum surface area problem using DMs.\n\
@@ -52,8 +51,8 @@ int main(int argc, char **argv)
   SNES            snes;             /* nonlinear solver context */
   Mat             J;                /* Jacobian matrix */
   PetscInt        N;            /* Number of elements in vector */
-  PetscScalar     lb = -PETSC_VI_INF;
-  PetscScalar     ub = PETSC_VI_INF;
+  PetscScalar     lb = -SNES_VI_INF;
+  PetscScalar     ub = SNES_VI_INF;
   AppCtx          user;             /* user-defined work context */
   PetscBool       flg;
 

@@ -368,6 +368,8 @@ extern PetscErrorCode  SNESLineSearchSetMonitor(SNES,PetscBool );
 extern PetscErrorCode  SNESVISetVariableBounds(SNES,Vec,Vec);
 extern PetscErrorCode  SNESVIGetActiveSetIS(SNES,Vec,Vec,IS*);
 extern PetscErrorCode  SNESVISetRedundancyCheck(SNES,PetscErrorCode(*)(SNES,IS,IS*,void*),void*);
+#define SNES_VI_INF   1.0e20
+#define SNES_VI_NINF -1.0e20
 
 extern PetscErrorCode  SNESTestLocalMin(SNES);
 

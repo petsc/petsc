@@ -226,11 +226,11 @@ static PetscErrorCode SNESVIComputeFunction(SNES snes,Vec X,Vec phi,void* functx
   ierr = VecGetArray(phi,&phi_arr);CHKERRQ(ierr);
 
   for (i=0;i < nlocal;i++) {
-    if ((l[i] <= PETSC_VI_NINF) && (u[i] >= PETSC_VI_INF)) { /* no constraints on variable */
+    if ((l[i] <= SNES_VI_NINF) && (u[i] >= SNES_VI_INF)) { /* no constraints on variable */
       phi_arr[i] = f_arr[i];
-    } else if (l[i] <= PETSC_VI_NINF) {                      /* upper bound on variable only */
+    } else if (l[i] <= SNES_VI_NINF) {                      /* upper bound on variable only */
       phi_arr[i] = -Phi(u[i] - x_arr[i],-f_arr[i]);
-    } else if (u[i] >= PETSC_VI_INF) {                       /* lower bound on variable only */
+    } else if (u[i] >= SNES_VI_INF) {                       /* lower bound on variable only */
       phi_arr[i] = Phi(x_arr[i] - l[i],f_arr[i]);
     } else if (l[i] == u[i]) {
       phi_arr[i] = l[i] - x_arr[i];
@@ -271,13 +271,13 @@ PetscErrorCode SNESVIComputeBsubdifferentialVectors(SNES snes,Vec X,Vec F,Mat ja
   ierr = VecGetLocalSize(X,&nlocal);CHKERRQ(ierr);
   
   for (i=0;i< nlocal;i++) {
-    if ((l[i] <= PETSC_VI_NINF) && (u[i] >= PETSC_VI_INF)) {/* no constraints on variable */
+    if ((l[i] <= SNES_VI_NINF) && (u[i] >= SNES_VI_INF)) {/* no constraints on variable */
       da[i] = 0; 
       db[i] = 1;
-    } else if (l[i] <= PETSC_VI_NINF) {                     /* upper bound on variable only */
+    } else if (l[i] <= SNES_VI_NINF) {                     /* upper bound on variable only */
       da[i] = DPhi(u[i] - x[i], -f[i]);
       db[i] = DPhi(-f[i],u[i] - x[i]);
-    } else if (u[i] >= PETSC_VI_INF) {                      /* lower bound on variable only */
+    } else if (u[i] >= SNES_VI_INF) {                      /* lower bound on variable only */
       da[i] = DPhi(x[i] - l[i], f[i]);
       db[i] = DPhi(f[i],x[i] - l[i]);
     } else if (l[i] == u[i]) {                              /* fixed variable */
@@ -1422,9 +1422,9 @@ PetscErrorCode SNESSetUp_VI(SNES snes)
   if (!vi->xl && !vi->xu) {
     vi->usersetxbounds = PETSC_FALSE;
     ierr = VecDuplicate(snes->vec_sol, &vi->xl); CHKERRQ(ierr);
-    ierr = VecSet(vi->xl,PETSC_VI_NINF);CHKERRQ(ierr);
+    ierr = VecSet(vi->xl,SNES_VI_NINF);CHKERRQ(ierr);
     ierr = VecDuplicate(snes->vec_sol, &vi->xu); CHKERRQ(ierr);
-    ierr = VecSet(vi->xu,PETSC_VI_INF);CHKERRQ(ierr);
+    ierr = VecSet(vi->xu,SNES_VI_INF);CHKERRQ(ierr);
   } else {
     /* Check if lower bound, upper bound and solution vector distribution across the processors is identical */
     ierr = VecGetOwnershipRange(snes->vec_sol,i_start,i_end);CHKERRQ(ierr);
@@ -2025,7 +2025,7 @@ static PetscErrorCode SNESView_VI(SNES snes,PetscViewer viewer)
 
    Notes:
    If this routine is not called then the lower and upper bounds are set to 
-   PETSC_VI_INF and PETSC_VI_NINF respectively during SNESSetUp().
+   SNES_VI_INF and SNES_VI_NINF respectively during SNESSetUp().
 
 @*/
 PetscErrorCode SNESVISetVariableBounds(SNES snes, Vec xl, Vec xu)

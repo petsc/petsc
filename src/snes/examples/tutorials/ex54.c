@@ -226,9 +226,9 @@ PetscErrorCode SetVariableBounds(DM da,Vec xl,Vec xu)
 
   for(j=ys; j < ys+ym; j++) {
     for(i=xs; i < xs+xm;i++) {
-      l[j][i][0] = -PETSC_VI_INF;
+      l[j][i][0] = -SNES_VI_INF;
       l[j][i][1] = -1.0;
-      u[j][i][0] = PETSC_VI_INF;
+      u[j][i][0] = SNES_VI_INF;
       u[j][i][1] = 1.0;
     }
   }
