@@ -53,8 +53,8 @@ PetscErrorCode DMCreate_IGA(DM dm)
   dm->data = iga;
 
   /* TODO */
-  iga->Ux  = NULL; iga->Uy  = NULL; iga->Uz  = NULL;
-  iga->bdX = NULL; iga->bdY = NULL; iga->bdZ = NULL;
+  iga->Ux  = 0; iga->Uy  = 0; iga->Uz  = 0;
+  iga->bdX = 0; iga->bdY = 0; iga->bdZ = 0;
 
   ierr = PetscStrallocpy(VECSTANDARD, &dm->vectype);CHKERRQ(ierr);
   dm->ops->view               = DMView_IGA;

@@ -53,6 +53,7 @@ PetscErrorCode DMCreateGlobalVector_IGA(DM dm, Vec *gvec)
 
   PetscFunctionBegin;
   ierr = DMCreateGlobalVector(iga->da_dof, gvec);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject)*gvec,"DMIGA",(PetscObject)dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -65,6 +66,7 @@ PetscErrorCode DMCreateLocalVector_IGA(DM dm, Vec *lvec)
 
   PetscFunctionBegin;
   ierr = DMCreateLocalVector(iga->da_dof, lvec);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject)*lvec,"DMIGA",(PetscObject)dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -77,6 +79,7 @@ PetscErrorCode DMGetMatrix_IGA(DM dm, const MatType mtype, Mat *J)
 
   PetscFunctionBegin;
   ierr = DMGetMatrix(iga->da_dof, mtype, J);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject)*J,"DMIGA",(PetscObject)dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1021,13 +1024,13 @@ PetscErrorCode BDDestroy(BD *bd)
   PetscErrorCode ierr;
   PetscInt       i,j;
   PetscFunctionBegin;
-
-  for(i=0;i<(*bd)->numEl;i++){
-    for(j=0;j<(*bd)->numGP;j++){
+  PetscValidPointer(bd,1);
+  if (!(*bd)) PetscFunctionReturn(0);
+  for(i=0;i<(*bd)->numEl;i++) {
+    for(j=0;j<(*bd)->numGP;j++) {
       ierr = PetscFree((*bd)->data[i*(*bd)->numGP+j].basis);CHKERRQ(ierr);
     }
   }
-
   ierr = PetscFree((*bd)->data); CHKERRQ(ierr);
   ierr = PetscFree(*bd); CHKERRQ(ierr);
   PetscFunctionReturn(0);
