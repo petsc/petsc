@@ -2142,7 +2142,7 @@ PetscErrorCode  SNESCreate_VI(SNES snes)
 
   PetscFunctionBegin;
   snes->ops->setup           = SNESSetUp_VI;
-  snes->ops->solve           = SNESSolveVI_SS;
+  snes->ops->solve           = SNESSolveVI_RS;
   snes->ops->destroy         = SNESDestroy_VI;
   snes->ops->setfromoptions  = SNESSetFromOptions_VI;
   snes->ops->view            = SNESView_VI;
