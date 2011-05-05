@@ -618,7 +618,7 @@ PetscErrorCode  VecAXPBY(Vec y,PetscScalar alpha,PetscScalar beta,Vec x)
 
    Notes: x, y and z must be different vectors 
 
-   Developer Note:   alpha = 1 or gamma = 1 are handled as special cases
+   Developer Note:   alpha = 1 or gamma = 1 or gamma = 0.0 are handled as special cases
 
    Concepts: BLAS
    Concepts: vector^BLAS
