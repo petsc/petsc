@@ -1927,7 +1927,7 @@ PetscErrorCode  MatCreate_SeqSBAIJ(Mat B)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_petsc_C",
                                      "MatGetFactor_seqsbaij_petsc",
                                      MatGetFactor_seqsbaij_petsc);CHKERRQ(ierr);
-  ierr = sbstrmObjectComposeFunctionDynamic((sbstrmObject)B,"MatGetFactor_sbstrm_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_sbstrm_C",
                                      "MatGetFactor_seqsbaij_sbstrm",
                                      MatGetFactor_seqsbaij_sbstrm);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatStoreValues_C",
