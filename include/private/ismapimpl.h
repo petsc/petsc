@@ -4,72 +4,74 @@
 #include <petscmap.h>
 
 /* --------------------------------------------------------------------------*/
-struct _ISMappingOps {
-  PetscErrorCode (*view)(ISMapping,PetscViewer);
-  PetscErrorCode (*destroy)(ISMapping);
-  PetscErrorCode (*setup)(ISMapping);
-  PetscErrorCode (*assemblybegin)(ISMapping);
-  PetscErrorCode (*assemblyend)(ISMapping);
-  PetscErrorCode (*getsupportis)(ISMapping,IS*);
-  PetscErrorCode (*getsupportsizelocal)(ISMapping, PetscInt*);
-  PetscErrorCode (*getimageis)(ISMapping,IS*);
-  PetscErrorCode (*getimagesizelocal)(ISMapping, PetscInt*);
-  PetscErrorCode (*getmaximagesizelocal)(ISMapping, PetscInt*);
-  PetscErrorCode (*map)(ISMapping,ISArray,ISArrayIndex,ISArray);
-  PetscErrorCode (*maplocal)(ISMapping,ISArray,ISArrayIndex,ISArray);
-  PetscErrorCode (*bin)(ISMapping,ISArray,ISArrayIndex,ISArray);
-  PetscErrorCode (*binlocal)(ISMapping,ISArray,ISArrayIndex,ISArray);
-  PetscErrorCode (*mapsplit)(ISMapping,ISArray,ISArrayIndex,ISArray*);
-  PetscErrorCode (*mapsplitlocal)(ISMapping,ISArray,ISArrayIndex,ISArray*);
-  PetscErrorCode (*binsplit)(ISMapping,ISArray,ISArrayIndex,ISArray*);
-  PetscErrorCode (*binsplitlocal)(ISMapping,ISArray,ISArrayIndex,ISArray*);
-  PetscErrorCode (*invert)(ISMapping, ISMapping*);
-  PetscErrorCode (*getoperator)(ISMapping, Mat*);
+struct _SAMappingOps {
+  PetscErrorCode (*view)(SAMapping,PetscViewer);
+  PetscErrorCode (*destroy)(SAMapping);
+  PetscErrorCode (*setup)(SAMapping);
+  PetscErrorCode (*assemblybegin)(SAMapping);
+  PetscErrorCode (*assemblyend)(SAMapping);
+  PetscErrorCode (*getsupport)(SAMapping, PetscInt*, PetscInt **);
+  PetscErrorCode (*getsupportis)(SAMapping,IS*);
+  PetscErrorCode (*getsupportsa)(SAMapping,SA*);
+  PetscErrorCode (*getimage)(SAMapping, PetscInt*, PetscInt **);
+  PetscErrorCode (*getimageis)(SAMapping,IS*);
+  PetscErrorCode (*getimagesa)(SAMapping,SA*);
+  PetscErrorCode (*getmaximagesize)(SAMapping, PetscInt*);
+  PetscErrorCode (*map)(SAMapping,SA,SAIndex,SA);
+  PetscErrorCode (*maplocal)(SAMapping,SA,SAIndex,SA);
+  PetscErrorCode (*bin)(SAMapping,SA,SAIndex,SA);
+  PetscErrorCode (*binlocal)(SAMapping,SA,SAIndex,SA);
+  PetscErrorCode (*mapsplit)(SAMapping,SA,SAIndex,SA*);
+  PetscErrorCode (*mapsplitlocal)(SAMapping,SA,SAIndex,SA*);
+  PetscErrorCode (*binsplit)(SAMapping,SA,SAIndex,SA*);
+  PetscErrorCode (*binsplitlocal)(SAMapping,SA,SAIndex,SA*);
+  PetscErrorCode (*invert)(SAMapping, SAMapping*);
+  PetscErrorCode (*getoperator)(SAMapping, Mat*);
 };
 
-struct _p_ISMapping{
-  PETSCHEADER(struct _ISMappingOps);
+struct _p_SAMapping{
+  PETSCHEADER(struct _SAMappingOps);
   PetscLayout             xlayout,ylayout;
   PetscBool               setup;
   PetscBool               assembled;
   void                   *data;
 };
 
-extern PetscErrorCode ISMappingSetUp_ISMapping(ISMapping map);
+extern PetscErrorCode SAMappingSetUp_SAMapping(SAMapping map);
 
 
 #if defined(PETSC_USE_DEBUG)
-#define ISMappingCheckMethod(map,method,name)                                                                  \
+#define SAMappingCheckMethod(map,method,name)                                                                  \
 do {                                                                                                    \
-  if(!(method)) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "ISMapping doesn't implement %s", (name)); \
+  if(!(method)) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "SAMapping doesn't implement %s", (name)); \
 } while(0)
-#define ISMappingCheckType(map,maptype,arg)                             \
+#define SAMappingCheckType(map,maptype,arg)                             \
   do {                                                                   \
     PetscBool _9_sametype;                                              \
     PetscErrorCode _9_ierr;                                             \
-    PetscValidHeaderSpecific((map), IS_MAPPING_CLASSID, 1);             \
+    PetscValidHeaderSpecific((map), SA_MAPPING_CLASSID, 1);             \
     _9_ierr = PetscTypeCompare((PetscObject)(map),(maptype),&_9_sametype); CHKERRQ(_9_ierr); \
-    if(!_9_sametype) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Expected ISMapping of type %s", (maptype)); \
+    if(!_9_sametype) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Expected SAMapping of type %s", (maptype)); \
   } while(0)
 #else
-#define ISMappingCheckMethod(map,method,name) do {} while(0)
-#define ISMappingCheckType(map,maptype,arg) do {} while(0)
+#define SAMappingCheckMethod(map,method,name) do {} while(0)
+#define SAMappingCheckType(map,maptype,arg) do {} while(0)
 #endif
 
-#define ISMappingCheckAssembled(map,needassembled,arg)                                            \
+#define SAMappingCheckAssembled(map,needassembled,arg)                                            \
   do {                                                                                            \
     if(!((map)->assembled) && (needassembled)) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, \
-                                  "ISMapping not assembled");                                     \
+                                  "SAMapping not assembled");                                     \
     if(((map)->assembled) && !(needassembled)) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, \
-                                  "ISMapping already assembled");                                 \
+                                  "SAMapping already assembled");                                 \
   } while(0)
 
-#define ISMappingCheckSetup(map,needsetup,arg)                                            \
+#define SAMappingCheckSetup(map,needsetup,arg)                                            \
   do {                                                                                    \
     if(!((map)->setup) && (needsetup)) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, \
-                                  "ISMapping not setup");                                 \
+                                  "SAMapping not setup");                                 \
     if(((map)->setup) && !(needsetup)) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE, \
-                                  "ISMapping already setup");                             \
+                                  "SAMapping already setup");                             \
   } while(0)
 
 extern PetscErrorCode PetscCheckIntArrayRange(PetscInt len, const PetscInt idx[],  PetscInt imin, PetscInt imax, PetscBool outOfBoundsError, PetscBool *flag);
@@ -77,39 +79,41 @@ extern PetscErrorCode PetscCheckISRange(IS is, PetscInt imin, PetscInt imax, Pet
 
 
 
-struct _n_ISArrayHunk {
+struct _n_SAHunk {
   PetscInt              refcnt;
   PetscInt              mask;
   PetscInt              length,maxlength;
   PetscInt             *i, *j;
   PetscScalar          *w;
   PetscCopyMode         mode;
-  struct _n_ISArrayHunk  *parent;
+  struct _n_SAHunk  *parent;
 };
-typedef struct _n_ISArrayHunk *ISArrayHunk;
+typedef struct _n_SAHunk *SAHunk;
 
-struct _n_ISArrayLink {
-  ISArrayHunk            hunk;
-  struct _n_ISArrayLink *next;
+struct _n_SALink {
+  SAHunk            hunk;
+  struct _n_SALink *next;
 };
-typedef struct _n_ISArrayLink *ISArrayLink;
+typedef struct _n_SALink *SALink;
 
-struct _n_ISArray {
-  ISArrayComponents mask;
+struct _n_SA {
+  SAComponents mask;
   PetscInt          length;
-  ISArrayLink       first,last;
+  SALink       first,last;
 };
 
 
 
-extern PetscErrorCode ISArrayHunkCreate(PetscInt length, PetscInt mask, ISArrayHunk *_newhunk);
-extern PetscErrorCode ISArrayHunkGetSubHunk(ISArrayHunk hunk, PetscInt length, PetscInt mask, ISArrayHunk *_subhunk);
-extern PetscErrorCode ISArrayHunkDestroy(ISArrayHunk hunk);
-extern PetscErrorCode ISArrayHunkAddData(ISArrayHunk hunk, PetscInt length, const PetscInt *i, const PetscScalar *w, const PetscInt *j);
+extern PetscErrorCode SAHunkCreate(PetscInt length, PetscInt mask, SAHunk *_newhunk);
+extern PetscErrorCode SAHunkGetSubHunk(SAHunk hunk, PetscInt start, PetscInt maxlength, PetscInt length, PetscInt mask, SAHunk *_subhunk);
+extern PetscErrorCode SAHunkDestroy(SAHunk hunk);
+extern PetscErrorCode SAHunkAddData(SAHunk hunk, PetscInt length, const PetscInt *i, const PetscScalar *w, const PetscInt *j);
 
 
-extern PetscErrorCode ISArrayGetHunk(ISArray array, PetscInt length, ISArrayHunk *_hunk);
-extern PetscErrorCode ISArrayAddHunk(ISArray array, ISArrayHunk hunk);
-extern PetscErrorCode ISArrayAssemble(ISArray chain, PetscInt mask, PetscLayout layout, ISArray *_achain);
+extern PetscErrorCode SAGetHunk(SA array, PetscInt length, SAHunk *_hunk);
+extern PetscErrorCode SAAddHunk(SA array, SAHunk hunk);
+extern PetscErrorCode SAMerge(SA chain, SA *mchain);
+extern PetscErrorCode SAAssemble(SA chain, PetscInt mask, PetscLayout layout, SA achain);
+extern PetscErrorCode SASplit(SA arr, PetscInt count, const PetscInt *lengths, PetscInt mask, SA *arrs);
 
 #endif

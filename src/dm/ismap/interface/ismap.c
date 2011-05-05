@@ -3,27 +3,27 @@
 #include "private/ismapimpl.h"  /*I "petscmap.h"  I*/
 
 
-PetscClassId  IS_MAPPING_CLASSID;
-PetscLogEvent IS_MAPPING_Map, IS_MAPPING_MapLocal, IS_MAPPING_MapSplit, IS_MAPPING_MapSplitLocal;
-PetscLogEvent IS_MAPPING_Bin, IS_MAPPING_BinLocal, IS_MAPPING_BinSplit, IS_MAPPING_BinSplitLocal;
-PetscLogEvent IS_MAPPING_AssemblyBegin, IS_MAPPING_AssemblyEnd, IS_MAPPING_Invert, IS_MAPPING_Pushforward, IS_MAPPING_Pullback;
+PetscClassId  SA_MAPPING_CLASSID;
+PetscLogEvent SA_MAPPING_Map, SA_MAPPING_MapLocal, SA_MAPPING_MapSplit, SA_MAPPING_MapSplitLocal;
+PetscLogEvent SA_MAPPING_Bin, SA_MAPPING_BinLocal, SA_MAPPING_BinSplit, SA_MAPPING_BinSplitLocal;
+PetscLogEvent SA_MAPPING_AssemblyBegin, SA_MAPPING_AssemblyEnd, SA_MAPPING_Invert, SA_MAPPING_Pushforward, SA_MAPPING_Pullback;
 
-PetscFList ISMappingList               = PETSC_NULL;
-PetscBool  ISMappingRegisterAllCalled  = PETSC_FALSE;
-PetscBool  ISMappingPackageInitialized = PETSC_FALSE;
+PetscFList SAMappingList               = PETSC_NULL;
+PetscBool  SAMappingRegisterAllCalled  = PETSC_FALSE;
+PetscBool  SAMappingPackageInitialized = PETSC_FALSE;
 
 EXTERN_C_BEGIN
-extern PetscErrorCode ISMappingCreate_Graph(ISMapping);
+extern PetscErrorCode SAMappingCreate_Graph(SAMapping);
 EXTERN_C_END
 
 
-extern PetscErrorCode  ISMappingRegisterAll(const char *path);
+extern PetscErrorCode  SAMappingRegisterAll(const char *path);
 
 
 #undef __FUNCT__  
-#define __FUNCT__ "ISMappingFinalizePackage"
+#define __FUNCT__ "SAMappingFinalizePackage"
 /*@C
-  ISMappingFinalizePackage - This function destroys everything in the ISMapping package. It is
+  SAMappingFinalizePackage - This function destroys everything in the SAMapping package. It is
   called from PetscFinalize().
 
   Level: developer
@@ -31,20 +31,20 @@ extern PetscErrorCode  ISMappingRegisterAll(const char *path);
 .keywords: Petsc, destroy, package
 .seealso: PetscFinalize()
 @*/
-PetscErrorCode  ISMappingFinalizePackage(void)
+PetscErrorCode  SAMappingFinalizePackage(void)
 {
   PetscFunctionBegin;
-  ISMappingPackageInitialized = PETSC_FALSE;
-  ISMappingRegisterAllCalled  = PETSC_FALSE;
-  ISMappingList               = PETSC_NULL;
+  SAMappingPackageInitialized = PETSC_FALSE;
+  SAMappingRegisterAllCalled  = PETSC_FALSE;
+  SAMappingList               = PETSC_NULL;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "ISMappingInitializePackage"
+#define __FUNCT__ "SAMappingInitializePackage"
 /*@C
-  ISMappingInitializePackage - This function initializes everything in the ISMapping package. It is called
-  from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to ISMappingCreate()
+  SAMappingInitializePackage - This function initializes everything in the SAMapping package. It is called
+  from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to SAMappingCreate()
   when using static libraries.
 
   Input Parameter:
@@ -52,10 +52,10 @@ PetscErrorCode  ISMappingFinalizePackage(void)
 
   Level: developer
 
-.keywords: ISMapping, initialize, package
+.keywords: SAMapping, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode  ISMappingInitializePackage(const char path[])
+PetscErrorCode  SAMappingInitializePackage(const char path[])
 {
   char              logList[256];
   char              *className;
@@ -63,34 +63,34 @@ PetscErrorCode  ISMappingInitializePackage(const char path[])
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  if (ISMappingPackageInitialized) PetscFunctionReturn(0);
+  if (SAMappingPackageInitialized) PetscFunctionReturn(0);
 
-  ISMappingPackageInitialized = PETSC_TRUE;
+  SAMappingPackageInitialized = PETSC_TRUE;
   /* Register Classes */
-  ierr = PetscClassIdRegister("ISMapping",&IS_MAPPING_CLASSID);                                         CHKERRQ(ierr);
+  ierr = PetscClassIdRegister("SAMapping",&SA_MAPPING_CLASSID);                                         CHKERRQ(ierr);
   /* Register Constructors */
-  ierr = ISMappingRegisterAll(path);                                                                    CHKERRQ(ierr);
+  ierr = SAMappingRegisterAll(path);                                                                    CHKERRQ(ierr);
   /* Register Events */
-  ierr = PetscLogEventRegister("ISMappingMap",           IS_MAPPING_CLASSID,&IS_MAPPING_Map);           CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("ISMappingMapLocal",      IS_MAPPING_CLASSID,&IS_MAPPING_MapLocal);      CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("ISMappingBin",           IS_MAPPING_CLASSID,&IS_MAPPING_Bin);           CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("ISMappingBinLocal",      IS_MAPPING_CLASSID,&IS_MAPPING_BinLocal);      CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("ISMappingMap",           IS_MAPPING_CLASSID,&IS_MAPPING_MapSplit);      CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("ISMappingMapLocal",      IS_MAPPING_CLASSID,&IS_MAPPING_MapSplitLocal); CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("ISMappingBin",           IS_MAPPING_CLASSID,&IS_MAPPING_BinSplit);      CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("ISMappingBinLocal",      IS_MAPPING_CLASSID,&IS_MAPPING_BinSplitLocal); CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("ISMappingAssemblyBegin", IS_MAPPING_CLASSID,&IS_MAPPING_AssemblyBegin); CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("ISMappingAssemblyEnd",   IS_MAPPING_CLASSID,&IS_MAPPING_AssemblyEnd);   CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("ISMappingPushforward",   IS_MAPPING_CLASSID,&IS_MAPPING_Pushforward);   CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("ISMappingPullback",      IS_MAPPING_CLASSID,&IS_MAPPING_Pullback);      CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("ISMappingInvert",        IS_MAPPING_CLASSID,&IS_MAPPING_Invert);        CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("SAMappingMap",           SA_MAPPING_CLASSID,&SA_MAPPING_Map);           CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("SAMappingMapLocal",      SA_MAPPING_CLASSID,&SA_MAPPING_MapLocal);      CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("SAMappingBin",           SA_MAPPING_CLASSID,&SA_MAPPING_Bin);           CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("SAMappingBinLocal",      SA_MAPPING_CLASSID,&SA_MAPPING_BinLocal);      CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("SAMappingMap",           SA_MAPPING_CLASSID,&SA_MAPPING_MapSplit);      CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("SAMappingMapLocal",      SA_MAPPING_CLASSID,&SA_MAPPING_MapSplitLocal); CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("SAMappingBin",           SA_MAPPING_CLASSID,&SA_MAPPING_BinSplit);      CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("SAMappingBinLocal",      SA_MAPPING_CLASSID,&SA_MAPPING_BinSplitLocal); CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("SAMappingAssemblyBegin", SA_MAPPING_CLASSID,&SA_MAPPING_AssemblyBegin); CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("SAMappingAssemblyEnd",   SA_MAPPING_CLASSID,&SA_MAPPING_AssemblyEnd);   CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("SAMappingPushforward",   SA_MAPPING_CLASSID,&SA_MAPPING_Pushforward);   CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("SAMappingPullback",      SA_MAPPING_CLASSID,&SA_MAPPING_Pullback);      CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("SAMappingInvert",        SA_MAPPING_CLASSID,&SA_MAPPING_Invert);        CHKERRQ(ierr);
 
   /* Process info exclusions */
   ierr = PetscOptionsGetString(PETSC_NULL, "-info_exclude", logList, 256, &opt);                        CHKERRQ(ierr);
   if (opt) {
     ierr = PetscStrstr(logList, "is_mapping", &className);                                              CHKERRQ(ierr);
     if (className) {
-      ierr = PetscInfoDeactivateClass(IS_MAPPING_CLASSID);                                              CHKERRQ(ierr);
+      ierr = PetscInfoDeactivateClass(SA_MAPPING_CLASSID);                                              CHKERRQ(ierr);
     }
   }
   /* Process summary exclusions */
@@ -98,86 +98,86 @@ PetscErrorCode  ISMappingInitializePackage(const char path[])
   if (opt) {
     ierr = PetscStrstr(logList, "is_mapping", &className);CHKERRQ(ierr);
     if (className) {
-      ierr = PetscLogEventDeactivateClass(IS_MAPPING_CLASSID);CHKERRQ(ierr);
+      ierr = PetscLogEventDeactivateClass(SA_MAPPING_CLASSID);CHKERRQ(ierr);
     }
   }
-  ierr = PetscRegisterFinalize(ISMappingFinalizePackage);CHKERRQ(ierr);
+  ierr = PetscRegisterFinalize(SAMappingFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "ISMappingRegister"
+#define __FUNCT__ "SAMappingRegister"
 /*@C
-  ISMappingRegister - See ISMappingRegisterDynamic()
+  SAMappingRegister - See SAMappingRegisterDynamic()
 
   Level: advanced
 @*/
-PetscErrorCode  ISMappingRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(ISMapping))
+PetscErrorCode  SAMappingRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(SAMapping))
 {
   PetscErrorCode ierr;
   char           fullname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
   ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&ISMappingList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFListAdd(&SAMappingList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 
 #undef __FUNCT__  
-#define __FUNCT__ "ISMappingRegisterDestroy"
+#define __FUNCT__ "SAMappingRegisterDestroy"
 /*@C
-   ISMappingRegisterDestroy - Frees the list of ISMapping methods that were
-   registered by ISMappingRegisterDynamic).
+   SAMappingRegisterDestroy - Frees the list of SAMapping methods that were
+   registered by SAMappingRegisterDynamic).
 
    Not Collective
 
    Level: developer
 
-.keywords: ISMapping, register, destroy
+.keywords: SAMapping, register, destroy
 
-.seealso: ISMappingRegisterDynamic), ISMappingRegisterAll()
+.seealso: SAMappingRegisterDynamic), SAMappingRegisterAll()
 @*/
-PetscErrorCode  ISMappingRegisterDestroy(void)
+PetscErrorCode  SAMappingRegisterDestroy(void)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFListDestroy(&ISMappingList);CHKERRQ(ierr);
-  ISMappingRegisterAllCalled = PETSC_FALSE;
+  ierr = PetscFListDestroy(&SAMappingList);CHKERRQ(ierr);
+  SAMappingRegisterAllCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
 
 #undef __FUNCT__  
-#define __FUNCT__ "ISMappingRegisterAll"
+#define __FUNCT__ "SAMappingRegisterAll"
 /*@C
-  ISMappingRegisterAll - Registers all of the mapping constructors in the ISMapping package.
+  SAMappingRegisterAll - Registers all of the mapping constructors in the SAMapping package.
 
   Not Collective
 
   Level: developer
 
-.keywords: ISMapping, register, all
+.keywords: SAMapping, register, all
 
-.seealso:  ISMappingRegisterDestroy(), ISMappingRegisterDynamic), ISMappingCreate(), 
-           ISMappingSetType()
+.seealso:  SAMappingRegisterDestroy(), SAMappingRegisterDynamic), SAMappingCreate(), 
+           SAMappingSetType()
 @*/
-PetscErrorCode  ISMappingRegisterAll(const char *path)
+PetscErrorCode  SAMappingRegisterAll(const char *path)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ISMappingRegisterAllCalled = PETSC_TRUE;
-  ierr = ISMappingRegisterDynamic(IS_MAPPING_GRAPH,path,"ISMappingCreate_Graph",ISMappingCreate_Graph);CHKERRQ(ierr);
+  SAMappingRegisterAllCalled = PETSC_TRUE;
+  ierr = SAMappingRegisterDynamic(SA_MAPPING_GRAPH,path,"SAMappingCreate_Graph",SAMappingCreate_Graph);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "ISMappingMapLocal"
-/*@
-    ISMappingMapLocal - maps an ISArray with local indices from the rank's support to global indices from the rank's range.
-                        Since ISMapping is in general multivalued, some local indices are mapped to multiple global indices.
+#define __FUNCT__ "SAMappingMapLocal"
+/*@C
+    SAMappingMapLocal - maps an SA with local indices from the rank's support to global indices from the rank's range.
+                        Since SAMapping is in general multivalued, some local indices are mapped to multiple global indices.
                         Only selected indices (I or J) are mapped; the other indices and weights, if any, are preserved on 
                         the images.
 
@@ -186,42 +186,42 @@ PetscErrorCode  ISMappingRegisterAll(const char *path)
 
     Input Parameters:
 +   map    - mapping of indices
-.   inarr  - input ISArray
--   index   - selection of the index to map (ISARRAY_I or ISARRAY_J; PETSC_NULL is equivalent to ISARRAY_I)
+.   inarr  - input SA
+-   index   - selection of the index to map (SA_I or SA_J; PETSC_NULL is equivalent to SA_I)
 
 
     Output Parameters:
-.   outarr - ISArray with the selected indices mapped
+.   outarr - SA with the selected indices mapped
 
 
     Level: advanced
 
     Concepts: mapping^indices
 
-.seealso: ISMappingGetSupport(), ISMappingGetImage(), ISMappingGetSupportSizeLocal(), ISMappingGetImageSizeLocal(),
-          ISMappingMap(),        ISMappingBin(),      ISMappingBinLocal(),            ISMappingMapSplitLocal()
+.seealso: SAMappingGetSupport(), SAMappingGetImage(), SAMappingGetSupportSizeLocal(), SAMappingGetImageSizeLocal(),
+          SAMappingMap(),        SAMappingBin(),      SAMappingBinLocal(),            SAMappingMapSplitLocal()
 
 @*/
-PetscErrorCode ISMappingMapLocal(ISMapping map, ISArray inarr, ISArrayIndex index, ISArray outarr)
+PetscErrorCode SAMappingMapLocal(SAMapping map, SA inarr, SAIndex index, SA outarr)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(map, IS_MAPPING_CLASSID, 1);
+  PetscValidHeaderSpecific(map, SA_MAPPING_CLASSID, 1);
   PetscValidPointer(outarr, 4);
-  if(!index) index = ISARRAY_I;
-  ISMappingCheckAssembled(map,PETSC_TRUE,1);
-  ISMappingCheckMethod(map,map->ops->maplocal,"ISMappingMapLocal");
-  ierr = PetscLogEventBegin(IS_MAPPING_MapLocal,map,0,0,0); CHKERRQ(ierr);
+  if(!index) index = SA_I;
+  SAMappingCheckAssembled(map,PETSC_TRUE,1);
+  SAMappingCheckMethod(map,map->ops->maplocal,"SAMappingMapLocal");
+  ierr = PetscLogEventBegin(SA_MAPPING_MapLocal,map,0,0,0); CHKERRQ(ierr);
   ierr = (*map->ops->maplocal)(map,inarr,index,outarr);      CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(IS_MAPPING_MapLocal,map,0,0,0);   CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(SA_MAPPING_MapLocal,map,0,0,0);   CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "ISMappingMap"
-/*@
-    ISMappingMap      - maps an ISArray with global indices from the rank's support to global indices from the rank's range.
-                        Since ISMapping is in general multivalued, some indices are mapped to multiple global indices.
+#define __FUNCT__ "SAMappingMap"
+/*@C
+    SAMappingMap      - maps an SA with global indices from the rank's support to global indices from the rank's range.
+                        Since SAMapping is in general multivalued, some indices are mapped to multiple global indices.
                         Only indices of the selected type (I or J) are mapped; the other indices and weights, if any, are 
                         preserved on the images.
 
@@ -229,45 +229,45 @@ PetscErrorCode ISMappingMapLocal(ISMapping map, ISArray inarr, ISArrayIndex inde
 
     Input Parameters:
 +   map    - mapping of indices
-.   inarr  - input ISArray of indices and weights to map
--   index  - selection of the index to map (ISARRAY_I or ISARRAY_J; PETSC_NULL is equivalent to ISARRAY_I)
+.   inarr  - input SA of indices and weights to map
+-   index  - selection of the index to map (SA_I or SA_J; PETSC_NULL is equivalent to SA_I)
 
 
     Output Parameters:
-.   outarr - ISArray with the selected indices mapped
+.   outarr - SA with the selected indices mapped
 
 
     Level: advanced
 
     Concepts: mapping^indices global
 
-.seealso: ISMappingGetSupport(), ISMappingGetImage(), ISMappingGetSupportSizeLocal(), ISMappingGetImageSizeLocal(),
-          ISMappingMapLocal(),   ISMappingBin(),      ISMappingBinLocal(),            ISMappingMapSlit()
+.seealso: SAMappingGetSupport(), SAMappingGetImage(), SAMappingGetSupportSizeLocal(), SAMappingGetImageSizeLocal(),
+          SAMappingMapLocal(),   SAMappingBin(),      SAMappingBinLocal(),            SAMappingMapSlit()
 
 @*/
-PetscErrorCode ISMappingMap(ISMapping map, ISArray inarr, ISArrayIndex index, ISArray outarr)
+PetscErrorCode SAMappingMap(SAMapping map, SA inarr, SAIndex index, SA outarr)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(map, IS_MAPPING_CLASSID, 1);
+  PetscValidHeaderSpecific(map, SA_MAPPING_CLASSID, 1);
   PetscValidPointer(outarr, 4);
-  ISMappingCheckAssembled(map,PETSC_TRUE,1);
-  if(!index) index = ISARRAY_I;
-  ISMappingCheckMethod(map,map->ops->map,"ISMappingMap");
-  ierr = PetscLogEventBegin(IS_MAPPING_Map,map,0,0,0); CHKERRQ(ierr);
+  SAMappingCheckAssembled(map,PETSC_TRUE,1);
+  if(!index) index = SA_I;
+  SAMappingCheckMethod(map,map->ops->map,"SAMappingMap");
+  ierr = PetscLogEventBegin(SA_MAPPING_Map,map,0,0,0); CHKERRQ(ierr);
   ierr = (*map->ops->map)(map,inarr,index,outarr);     CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(IS_MAPPING_Map,map,0,0,0);   CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(SA_MAPPING_Map,map,0,0,0);   CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 
 #undef __FUNCT__  
-#define __FUNCT__ "ISMappingBinLocal"
-/*@
-    ISMappingBinLocal        - order local indices from the rank's support into n consecutive groups or "bins" (some possibly empty)
+#define __FUNCT__ "SAMappingBinLocal"
+/*@C
+    SAMappingBinLocal        - order local indices from the rank's support into n consecutive groups or "bins" (some possibly empty)
                                according to which of the n image indices they are mapped to on this rank. The groups are concatenated
-                               and returned as a single array. See ISMappingBinSplitLocal() if separate bin output is desired. 
-                               Since ISMapping is potentially multivalued, the same index can appear in multiple bins.
+                               and returned as a single array. See SAMappingBinSplitLocal() if separate bin output is desired. 
+                               Since SAMapping is potentially multivalued, the same index can appear in multiple bins.
                                The binning is done on the indices of the selected type(I or J); the other indices and weights, if any, 
                                are moved to the appropriate bin together with the selected indices.
 
@@ -276,45 +276,45 @@ PetscErrorCode ISMappingMap(ISMapping map, ISArray inarr, ISArrayIndex index, IS
 
     Input Parameters:
 +   map    - mapping of indices
-.   array  - ISArray with indices to bin
--   index  - selection of the index to bin on (ISARRAY_I or ISARRAY_J; PETSC_NULL is equivalent to ISARRAY_I)
+.   array  - SA with indices to bin
+-   index  - selection of the index to bin on (SA_I or SA_J; PETSC_NULL is equivalent to SA_I)
 
 
     Output Parameters:
-.   bins    - ISArray containing concatenated binned indices; the number of bins is the same as the result of ISGetImageSizeLocal().
+.   bins    - SA containing concatenated binned indices; the number of bins is the same as the result of ISGetImageSizeLocal().
 
     Level: advanced
 
     Concepts: binning^local indices
 
-.seealso: ISMappingGetSupport(), ISMappingGetImage(), ISMappingGetSupportSizeLocal(), ISMappingGetImageSizeLocal(),
-          ISMappingBin(),        ISMappingMapLocal(), ISMappingMapLocal(),            ISMappingBinSplitLocal()
+.seealso: SAMappingGetSupport(), SAMappingGetImage(), SAMappingGetSupportSizeLocal(), SAMappingGetImageSizeLocal(),
+          SAMappingBin(),        SAMappingMapLocal(), SAMappingMapLocal(),            SAMappingBinSplitLocal()
 
 @*/
-PetscErrorCode ISMappingBinLocal(ISMapping map, ISArray array, ISArrayIndex index, ISArray bins)
+PetscErrorCode SAMappingBinLocal(SAMapping map, SA array, SAIndex index, SA bins)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(map, IS_MAPPING_CLASSID, 1);
+  PetscValidHeaderSpecific(map, SA_MAPPING_CLASSID, 1);
   PetscValidPointer(bins,4);
-  ISMappingCheckAssembled(map,PETSC_TRUE, 1);
-  if(!index) index = ISARRAY_I;
-  ISMappingCheckMethod(map,map->ops->binlocal,"ISMappingBinLocal");
-  ierr = PetscLogEventBegin(IS_MAPPING_BinLocal,map,0,0,0); CHKERRQ(ierr);
+  SAMappingCheckAssembled(map,PETSC_TRUE, 1);
+  if(!index) index = SA_I;
+  SAMappingCheckMethod(map,map->ops->binlocal,"SAMappingBinLocal");
+  ierr = PetscLogEventBegin(SA_MAPPING_BinLocal,map,0,0,0); CHKERRQ(ierr);
   ierr = (*map->ops->binlocal)(map,array,index,bins);       CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(IS_MAPPING_BinLocal,map,0,0,0);   CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(SA_MAPPING_BinLocal,map,0,0,0);   CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 
 #undef __FUNCT__  
-#define __FUNCT__ "ISMappingBin"
-/*@
-    ISMappingBin             - group local indices from the rank's support into n groups or "bins" (some possibly empty)
+#define __FUNCT__ "SAMappingBin"
+/*@C
+    SAMappingBin             - group local indices from the rank's support into n groups or "bins" (some possibly empty)
                                according to which of the n image indices they are mapped to on this rank. The groups are 
-                               concatenated and returned as a single array. See ISMappingBinSplit() if separate bin output 
+                               concatenated and returned as a single array. See SAMappingBinSplit() if separate bin output 
                                is desired.
-                               Since ISMapping is potentially multivalued, the same index can appear in multiple bins.
+                               Since SAMapping is potentially multivalued, the same index can appear in multiple bins.
                                The binning is done only on the indices of the selected type (I or J); the other indices and weights, 
                                if any, are moved to the appropriate bin together with the selected indices.
 
@@ -323,42 +323,42 @@ PetscErrorCode ISMappingBinLocal(ISMapping map, ISArray array, ISArrayIndex inde
 
     Input Parameters:
 +   map    - mapping of indices
-.   array  - ISArray with indices to bin
--   index  - selection of the index to bin on (ISARRAY_I or ISARRAY_J; PETSC_NULL is equivalent to ISARRAY_I)
+.   array  - SA with indices to bin
+-   index  - selection of the index to bin on (SA_I or SA_J; PETSC_NULL is equivalent to SA_I)
 
 
     Output Parameters:
-.   bins    - ISArray containing the concatenated binned indices; the number of bins is the same as the result of ISGetImageSizeLocal().
+.   bins    - SA containing the concatenated binned indices; the number of bins is the same as the result of ISGetImageSizeLocal().
 
     Level: advanced
 
     Concepts: binning^global indices
 
-.seealso: ISMappingGetSupport(), ISMappingGetImage(), ISMappingGetSupportSizeLocal(), ISMappingGetImageSizeLocal(),
-          ISMappingBinLocal(),   ISMappingMapLocal(), ISMappingMapLocal(),            ISMappingBinSplit()
+.seealso: SAMappingGetSupport(), SAMappingGetImage(), SAMappingGetSupportSizeLocal(), SAMappingGetImageSizeLocal(),
+          SAMappingBinLocal(),   SAMappingMapLocal(), SAMappingMapLocal(),            SAMappingBinSplit()
 
 @*/
-PetscErrorCode ISMappingBin(ISMapping map, ISArray array, ISArrayIndex index, ISArray bins)
+PetscErrorCode SAMappingBin(SAMapping map, SA array, SAIndex index, SA bins)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(map, IS_MAPPING_CLASSID, 1);
+  PetscValidHeaderSpecific(map, SA_MAPPING_CLASSID, 1);
   PetscValidPointer(bins,4);
-  ISMappingCheckAssembled(map,PETSC_TRUE, 1);
-  if(!index) index = ISARRAY_I;
-  ISMappingCheckMethod(map,map->ops->bin,"ISMappingBin");
-  ierr = PetscLogEventBegin(IS_MAPPING_Bin,map,0,0,0); CHKERRQ(ierr);
+  SAMappingCheckAssembled(map,PETSC_TRUE, 1);
+  if(!index) index = SA_I;
+  SAMappingCheckMethod(map,map->ops->bin,"SAMappingBin");
+  ierr = PetscLogEventBegin(SA_MAPPING_Bin,map,0,0,0); CHKERRQ(ierr);
   ierr = (*map->ops->bin)(map,array,index,bins);       CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(IS_MAPPING_Bin,map,0,0,0);   CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(SA_MAPPING_Bin,map,0,0,0);   CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "ISMappingMapSplit"
-/*@
-    ISMappingMapSplit      - maps an ISArray with global indices from the rank's support to global indices from the rank's range.
-                             The image of each index is a separate ISArray. See ISMappingMap, if concatenated output is desired. 
-                             Since ISMapping is in general multivalued, some global indices are mapped to multiple global indices.  
+#define __FUNCT__ "SAMappingMapSplit"
+/*@C
+    SAMappingMapSplit      - maps an SA with global indices from the rank's support to global indices from the rank's range.
+                             The image of each index is a separate SA. See SAMappingMap, if concatenated output is desired. 
+                             Since SAMapping is in general multivalued, some global indices are mapped to multiple global indices.  
                              Only the indices of the selected type (I or J) are mapped; the other indices and weights, if any, 
                              are preserved on the images.
 
@@ -367,42 +367,42 @@ PetscErrorCode ISMappingBin(ISMapping map, ISArray array, ISArrayIndex index, IS
 
     Input Parameters:
 +   map    - mapping of indices
-.   inarr  - input ISArray
--   index  - selection of the index to map (ISARRAY_I or ISARRAY_J; PETSC_NULL is equivalent to ISARRAY_I)
+.   inarr  - input SA
+-   index  - selection of the index to map (SA_I or SA_J; PETSC_NULL is equivalent to SA_I)
 
 
     Output Parameters:
-.   outarrs - ISArray list; the list length is the same as inarr's ISArray length.
+.   outarrs - SA list; the list length is the same as inarr's SA length.
 
 
     Level: advanced
 
     Concepts: mapping^indices global split
 
-.seealso: ISMappingGetSupport(), ISMappingGetImage(), ISMappingGetSupportSizeLocal(), ISMappingGetImageSizeLocal(),
-          ISMappingMap(),        ISMappingMapLocalSplit(), ISMappingBinSplit(),       ISMappingBinSplitLocal()
+.seealso: SAMappingGetSupport(), SAMappingGetImage(), SAMappingGetSupportSizeLocal(), SAMappingGetImageSizeLocal(),
+          SAMappingMap(),        SAMappingMapLocalSplit(), SAMappingBinSplit(),       SAMappingBinSplitLocal()
 
 @*/
-PetscErrorCode ISMappingMapSplit(ISMapping map, ISArray inarr, ISArrayIndex index, ISArray *outarr)
+PetscErrorCode SAMappingMapSplit(SAMapping map, SA inarr, SAIndex index, SA *outarr)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(map, IS_MAPPING_CLASSID, 1);
+  PetscValidHeaderSpecific(map, SA_MAPPING_CLASSID, 1);
   PetscValidPointer(outarr, 4);
-  if(!index) index = ISARRAY_I;
-  ISMappingCheckAssembled(map,PETSC_TRUE,1);
-  ISMappingCheckMethod(map,map->ops->mapsplit,"ISMappingMapSplit");
-  ierr = PetscLogEventBegin(IS_MAPPING_MapSplit,map,0,0,0);  CHKERRQ(ierr);
+  if(!index) index = SA_I;
+  SAMappingCheckAssembled(map,PETSC_TRUE,1);
+  SAMappingCheckMethod(map,map->ops->mapsplit,"SAMappingMapSplit");
+  ierr = PetscLogEventBegin(SA_MAPPING_MapSplit,map,0,0,0);  CHKERRQ(ierr);
   ierr = (*map->ops->mapsplit)(map,inarr,index,outarr); CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(IS_MAPPING_MapSplit,map,0,0,0);    CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(SA_MAPPING_MapSplit,map,0,0,0);    CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "ISMappingMapSplitLocal"
-/*@
-    ISMappingMapSplitLocal - maps an ISArray with local indices from the rank's support to global indices from the rank's range.
-                             The image of each index is a separate ISArray. Since ISMapping is in general multivalued, some local 
+#define __FUNCT__ "SAMappingMapSplitLocal"
+/*@C
+    SAMappingMapSplitLocal - maps an SA with local indices from the rank's support to global indices from the rank's range.
+                             The image of each index is a separate SA. Since SAMapping is in general multivalued, some local 
                              indices are mapped to multiple global indices.  Only the indices of the selected type (I or J) are mapped; 
                              the other indices and weights, if any, are preserved on the images.
 
@@ -411,44 +411,44 @@ PetscErrorCode ISMappingMapSplit(ISMapping map, ISArray inarr, ISArrayIndex inde
 
     Input Parameters:
 +   map    - mapping of indices
-.   inarr  - input ISArray
--   index   - selection of the index to map (ISARRAY_I or ISARRAY_J; PETSC_NULL is equivalent to ISARRAY_I)
+.   inarr  - input SA
+-   index   - selection of the index to map (SA_I or SA_J; PETSC_NULL is equivalent to SA_I)
 
 
     Output Parameters:
-.   outarrs - ISArray list; the list length is the same as inarr's ISArray length.
+.   outarrs - SA list; the list length is the same as inarr's SA length.
 
 
     Level: advanced
 
     Concepts: mapping^indices local split
 
-.seealso: ISMappingGetSupport(), ISMappingGetImage(), ISMappingGetSupportSizeLocal(), ISMappingGetImageSizeLocal(),
-          ISMappingMapLocal(),   ISMappingMapSplit(), ISMappingBinSplit(),            ISMappingBinSplitLocal()
+.seealso: SAMappingGetSupport(), SAMappingGetImage(), SAMappingGetSupportSizeLocal(), SAMappingGetImageSizeLocal(),
+          SAMappingMapLocal(),   SAMappingMapSplit(), SAMappingBinSplit(),            SAMappingBinSplitLocal()
 
 @*/
-PetscErrorCode ISMappingMapSplitLocal(ISMapping map, ISArray inarr, ISArrayIndex index, ISArray *outarr)
+PetscErrorCode SAMappingMapSplitLocal(SAMapping map, SA inarr, SAIndex index, SA *outarr)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(map, IS_MAPPING_CLASSID, 1);
+  PetscValidHeaderSpecific(map, SA_MAPPING_CLASSID, 1);
   PetscValidPointer(outarr, 4);
-  if(!index) index = ISARRAY_I;
-  ISMappingCheckAssembled(map,PETSC_TRUE,1);
-  ISMappingCheckMethod(map,map->ops->mapsplitlocal,"ISMappingMapSplitLocal");
-  ierr = PetscLogEventBegin(IS_MAPPING_MapSplitLocal,map,0,0,0);  CHKERRQ(ierr);
+  if(!index) index = SA_I;
+  SAMappingCheckAssembled(map,PETSC_TRUE,1);
+  SAMappingCheckMethod(map,map->ops->mapsplitlocal,"SAMappingMapSplitLocal");
+  ierr = PetscLogEventBegin(SA_MAPPING_MapSplitLocal,map,0,0,0);  CHKERRQ(ierr);
   ierr = (*map->ops->mapsplitlocal)(map,inarr,index,outarr);      CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(IS_MAPPING_MapSplitLocal,map,0,0,0);    CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(SA_MAPPING_MapSplitLocal,map,0,0,0);    CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "ISMappingBinSplitLocal"
-/*@
-    ISMappingBinSplitLocal   - order local indices from the rank's support into n consecutive groups or "bins" (some possibly empty)
+#define __FUNCT__ "SAMappingBinSplitLocal"
+/*@C
+    SAMappingBinSplitLocal   - order local indices from the rank's support into n consecutive groups or "bins" (some possibly empty)
                                according to which of the n image indices they are mapped to on this rank. The bins are returned 
-                               as individual ISArrays. See ISMappingBinLocal() if concatenated bin output is desired.
-                               Since ISMapping is potentially multivalued, the same index can appear in multiple bins.
+                               as individual SAs. See SAMappingBinLocal() if concatenated bin output is desired.
+                               Since SAMapping is potentially multivalued, the same index can appear in multiple bins.
                                The binning is done on the indices of the selected type (I or J); the other indices and weights, if any, 
                                are moved to the appropriate bin together with the selected indices.
 
@@ -457,44 +457,44 @@ PetscErrorCode ISMappingMapSplitLocal(ISMapping map, ISArray inarr, ISArrayIndex
 
     Input Parameters:
 +   map    - mapping of indices
-.   array  - ISArray with indices to bin
--   index  - selection of the index to bin on (ISARRAY_I or ISARRAY_J; PETSC_NULL is equivalent to ISARRAY_I)
+.   array  - SA with indices to bin
+-   index  - selection of the index to bin on (SA_I or SA_J; PETSC_NULL is equivalent to SA_I)
 
 
     Output Parameters:
-.   bins    - ISArray list of bins; the number of bins is the same as the result of ISGetImageSizeLocal().
+.   bins    - SA list of bins; the number of bins is the same as the result of ISGetImageSizeLocal().
 
     Level: advanced
 
     Concepts: binning^local indices split
 
-.seealso: ISMappingGetSupport(), ISMappingGetImage(), ISMappingGetSupportSizeLocal(), ISMappingGetImageSizeLocal(),
-          ISMappingBinLocal(),   ISMappingMapSplit(), ISMappingMapSplitLocal(),       ISMappingBinSplit()
+.seealso: SAMappingGetSupport(), SAMappingGetImage(), SAMappingGetSupportSizeLocal(), SAMappingGetImageSizeLocal(),
+          SAMappingBinLocal(),   SAMappingMapSplit(), SAMappingMapSplitLocal(),       SAMappingBinSplit()
 
 @*/
-PetscErrorCode ISMappingBinSplitLocal(ISMapping map, ISArray array, ISArrayIndex index, ISArray *bins)
+PetscErrorCode SAMappingBinSplitLocal(SAMapping map, SA array, SAIndex index, SA *bins)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(map, IS_MAPPING_CLASSID, 1);
+  PetscValidHeaderSpecific(map, SA_MAPPING_CLASSID, 1);
   PetscValidPointer(bins,4);
-  ISMappingCheckAssembled(map,PETSC_TRUE, 1);
-  if(!index) index = ISARRAY_I;
-  ISMappingCheckMethod(map,map->ops->binsplitlocal,"ISMappingBinSplitLocal");
-  ierr = PetscLogEventBegin(IS_MAPPING_BinSplitLocal,map,0,0,0); CHKERRQ(ierr);
+  SAMappingCheckAssembled(map,PETSC_TRUE, 1);
+  if(!index) index = SA_I;
+  SAMappingCheckMethod(map,map->ops->binsplitlocal,"SAMappingBinSplitLocal");
+  ierr = PetscLogEventBegin(SA_MAPPING_BinSplitLocal,map,0,0,0); CHKERRQ(ierr);
   ierr = (*map->ops->binsplitlocal)(map,array,index,bins);       CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(IS_MAPPING_BinSplitLocal,map,0,0,0);   CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(SA_MAPPING_BinSplitLocal,map,0,0,0);   CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 
 #undef __FUNCT__  
-#define __FUNCT__ "ISMappingBinSplit"
-/*@
-    ISMappingBinSplit        - group global indices from the rank's support into n groups or "bins" (some possibly empty)
+#define __FUNCT__ "SAMappingBinSplit"
+/*@C
+    SAMappingBinSplit        - group global indices from the rank's support into n groups or "bins" (some possibly empty)
                                according to which of the n image indices they are mapped to on this rank. The bins and 
-                               returned as individual ISArrays. See ISMappingBin() if concatenated bin output is desired.
-                               Since ISMapping is potentially multivalued, the same index can appear in multiple bins.
+                               returned as individual SAs. See SAMappingBin() if concatenated bin output is desired.
+                               Since SAMapping is potentially multivalued, the same index can appear in multiple bins.
                                The binning is done on the indices of selected type (I or J); the other indices and weights, 
                                if any, are moved to the appropriate bin together with the selected indices.
 
@@ -503,42 +503,42 @@ PetscErrorCode ISMappingBinSplitLocal(ISMapping map, ISArray array, ISArrayIndex
 
     Input Parameters:
 +   map    - mapping of indices
-.   array  - ISArray with indices to bin
--   index  - selection of the index to bin on (ISARRAY_I or ISARRAY_J; PETSC_NULL is equivalent to ISARRAY_I)
+.   array  - SA with indices to bin
+-   index  - selection of the index to bin on (SA_I or SA_J; PETSC_NULL is equivalent to SA_I)
 
 
     Output Parameters:
-.   bins    - ISArray list of bins; the number of bins is the same as the result of ISGetImageSizeLocal().
+.   bins    - SA list of bins; the number of bins is the same as the result of ISGetImageSizeLocal().
 
     Level: advanced
 
     Concepts: binning^global indices split
 
-.seealso: ISMappingGetSupport(), ISMappingGetImage(), ISMappingGetSupportSizeLocal(), ISMappingGetImageSizeLocal(),
-          ISMappingBin(),        ISMappingMapSplit(), ISMappingMapSplitLocal(),       ISMappingBinSplitLocal()
+.seealso: SAMappingGetSupport(), SAMappingGetImage(), SAMappingGetSupportSizeLocal(), SAMappingGetImageSizeLocal(),
+          SAMappingBin(),        SAMappingMapSplit(), SAMappingMapSplitLocal(),       SAMappingBinSplitLocal()
 
 @*/
-PetscErrorCode ISMappingBinSplit(ISMapping map, ISArray array, ISArrayIndex index, ISArray *bins)
+PetscErrorCode SAMappingBinSplit(SAMapping map, SA array, SAIndex index, SA *bins)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(map, IS_MAPPING_CLASSID, 1);
+  PetscValidHeaderSpecific(map, SA_MAPPING_CLASSID, 1);
   PetscValidPointer(bins,4);
-  ISMappingCheckAssembled(map,PETSC_TRUE, 1);
-  if(!index) index = ISARRAY_I;
-  ISMappingCheckMethod(map,map->ops->binsplit,"ISMappingBinSplit");
-  ierr = PetscLogEventBegin(IS_MAPPING_BinSplit,map,0,0,0); CHKERRQ(ierr);
+  SAMappingCheckAssembled(map,PETSC_TRUE, 1);
+  if(!index) index = SA_I;
+  SAMappingCheckMethod(map,map->ops->binsplit,"SAMappingBinSplit");
+  ierr = PetscLogEventBegin(SA_MAPPING_BinSplit,map,0,0,0); CHKERRQ(ierr);
   ierr = (*map->ops->binsplit)(map,array,index,bins);       CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(IS_MAPPING_BinSplit,map,0,0,0);   CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(SA_MAPPING_BinSplit,map,0,0,0);   CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "ISMappingSetSizes"
-/*@
-  ISMappingSetSizes - Sets the local and global sizes for the domain and range, and checks to determine compatibility
+#define __FUNCT__ "SAMappingSetSizes"
+/*@C
+  SAMappingSetSizes - Sets the local and global sizes for the domain and range, and checks to determine compatibility
 
-  Collective on ISMapping
+  Collective on SAMapping
 
   Input Parameters:
 +  map     - the mapping
@@ -548,7 +548,7 @@ PetscErrorCode ISMappingBinSplit(ISMapping map, ISArray array, ISArrayIndex inde
 -  N       - number of global range  indices (or PETSC_DETERMINE or PETSC_IGNORE)
 
    Notes:
-   The sizes specify (i) what the domain and range for the graph underlying ISMapping is, 
+   The sizes specify (i) what the domain and range for the graph underlying SAMapping is, 
    and (b) what the parallel layout of the domain and range are.  The local and global sizes
    m and M (and n and N) are not independent.  Two situations are possible the domain
    (and,analogously, for the range):
@@ -574,9 +574,9 @@ PetscErrorCode ISMappingBinSplit(ISMapping map, ISArray array, ISArrayIndex inde
    In this case, domain indices can have any value 0 <= i < m on every rank (with its own m).
 
    Assembly/Mapping:
-   Whether the domain is laid out in parallel (P) or not (S), determines the behavior of ISMapping
+   Whether the domain is laid out in parallel (P) or not (S), determines the behavior of SAMapping
    during assembly.  In case (P), the edges of the underlying graph are migrated to the rank that
-   owns the corresponding domain indices.  ISMapping can map indices lying in its local range, 
+   owns the corresponding domain indices.  SAMapping can map indices lying in its local range, 
    which is a subset of its local domain.  This means that due to parallel assembly edges inserted
    by different ranks might be used during the mapping.  This is completely analogous to matrix 
    assembly.
@@ -588,10 +588,10 @@ PetscErrorCode ISMappingBinSplit(ISMapping map, ISArray array, ISArrayIndex inde
 
    Support/Image:
    Observe that the support and image of the graph may be strictly smaller than its domain and range,
-   if no edges from some domain points (or to some range points) are added to ISMapping.
+   if no edges from some domain points (or to some range points) are added to SAMapping.
    
    Operator:
-   Observe also that the linear operator defined by ISMapping will behave essentially as a VecScatter
+   Observe also that the linear operator defined by SAMapping will behave essentially as a VecScatter
    (i)   between MPI vectors with sizes (m,M) and (n,N), if both the domain and the range are (P),
    (ii)  between an MPI Vec with size (m,M) and a collection of SEQ Vecs (one per rank) of local size (n), 
          if the domain is (P) and the range is (S),
@@ -602,14 +602,14 @@ PetscErrorCode ISMappingBinSplit(ISMapping map, ISArray array, ISArrayIndex inde
 
   Level: beginner
 
-.seealso: ISMappingGetSizes(), ISMappingGetSupportSize(), ISMappingGetImageSize(), ISMappingMapIndicesLocal()
+.seealso: SAMappingGetSizes(), SAMappingGetSupportSize(), SAMappingGetImageSize(), SAMappingMapIndicesLocal()
 @*/
-PetscErrorCode  ISMappingSetSizes(ISMapping map, PetscInt m, PetscInt n, PetscInt M, PetscInt N)
+PetscErrorCode  SAMappingSetSizes(SAMapping map, PetscInt m, PetscInt n, PetscInt M, PetscInt N)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(map,IS_MAPPING_CLASSID,1); 
+  PetscValidHeaderSpecific(map,SA_MAPPING_CLASSID,1); 
   if (M > 0 && m > M) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Local column size %D cannot be larger than global column size %D",m,M);
   if (N > 0 && n > N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Local row size %D cannot be larger than global row size %D",n,N);
   if(!map->xlayout) {
@@ -642,8 +642,8 @@ PetscErrorCode  ISMappingSetSizes(ISMapping map, PetscInt m, PetscInt n, PetscIn
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "ISMappingGetSizes"
-PetscErrorCode  ISMappingGetSizes(ISMapping map, PetscInt *m, PetscInt *n, PetscInt *M, PetscInt *N)
+#define __FUNCT__ "SAMappingGetSizes"
+PetscErrorCode  SAMappingGetSizes(SAMapping map, PetscInt *m, PetscInt *n, PetscInt *M, PetscInt *N)
 {
 
   PetscFunctionBegin;
@@ -655,8 +655,8 @@ PetscErrorCode  ISMappingGetSizes(ISMapping map, PetscInt *m, PetscInt *n, Petsc
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "ISMappingSetUp_ISMapping"
-PetscErrorCode ISMappingSetUp_ISMapping(ISMapping map)
+#define __FUNCT__ "SAMappingSetUp_SAMapping"
+PetscErrorCode SAMappingSetUp_SAMapping(SAMapping map)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -665,192 +665,223 @@ PetscErrorCode ISMappingSetUp_ISMapping(ISMapping map)
   ierr = PetscLayoutSetUp(map->xlayout);CHKERRQ(ierr);
   ierr = PetscLayoutSetUp(map->ylayout);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
-}/* ISMappingSetUp_ISMapping() */
+}/* SAMappingSetUp_SAMapping() */
 
 #undef __FUNCT__  
-#define __FUNCT__ "ISMappingSetUp"
-/*@
-   ISMappingSetUp - Sets up the internal mapping data structures for the later use.
+#define __FUNCT__ "SAMappingSetUp"
+/*@C
+   SAMappingSetUp - Sets up the internal mapping data structures for the later use.
 
-   Collective on ISMapping
+   Collective on SAMapping
 
    Input Parameters:
-.  map - the ISMapping context
+.  map - the SAMapping context
 
    Notes:
-   For basic use of the ISMapping classes the user need not explicitly call
-   ISMappingSetUp(), since these actions will happen automatically.
+   For basic use of the SAMapping classes the user need not explicitly call
+   SAMappingSetUp(), since these actions will happen automatically.
 
    Level: advanced
 
-.keywords: ISMapping, setup
+.keywords: SAMapping, setup
 
-.seealso: ISMappingCreate(), ISMappingDestroy(), ISMappingSetSizes()
+.seealso: SAMappingCreate(), SAMappingDestroy(), SAMappingSetSizes()
 @*/
-PetscErrorCode ISMappingSetUp(ISMapping map)
+PetscErrorCode SAMappingSetUp(SAMapping map)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(map, IS_MAPPING_CLASSID,1);
-  ISMappingCheckMethod(map,map->ops->setup,"ISMappingSetUp");
+  PetscValidHeaderSpecific(map, SA_MAPPING_CLASSID,1);
+  SAMappingCheckMethod(map,map->ops->setup,"SAMappingSetUp");
   ierr = (*(map->ops->setup))(map); CHKERRQ(ierr);
   map->setup = PETSC_TRUE;
   PetscFunctionReturn(0);
-}/* ISMappingGetSizes() */
+}/* SAMappingGetSizes() */
 
 #undef  __FUNCT__
-#define __FUNCT__ "ISMappingAssemblyBegin"
-PetscErrorCode ISMappingAssemblyBegin(ISMapping map)
+#define __FUNCT__ "SAMappingAssemblyBegin"
+PetscErrorCode SAMappingAssemblyBegin(SAMapping map)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(map, IS_MAPPING_CLASSID,1);
+  PetscValidHeaderSpecific(map, SA_MAPPING_CLASSID,1);
 
   if(map->assembled) PetscFunctionReturn(0);
-  ierr = ISMappingSetUp(map); CHKERRQ(ierr);
+  ierr = SAMappingSetUp(map); CHKERRQ(ierr);
   
-  ISMappingCheckMethod(map,map->ops->assemblybegin, "ISMappingAsemblyBegin");
-  ierr = PetscLogEventBegin(IS_MAPPING_AssemblyBegin, map,0,0,0); CHKERRQ(ierr);
+  SAMappingCheckMethod(map,map->ops->assemblybegin, "SAMappingAsemblyBegin");
+  ierr = PetscLogEventBegin(SA_MAPPING_AssemblyBegin, map,0,0,0); CHKERRQ(ierr);
   ierr = (*(map->ops->assemblybegin))(map); CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(IS_MAPPING_AssemblyBegin, map,0,0,0); CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(SA_MAPPING_AssemblyBegin, map,0,0,0); CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
-}/* ISMappingAssemblyBegin() */
+}/* SAMappingAssemblyBegin() */
 
 #undef __FUNCT__
-#define __FUNCT__ "ISMappingAssemblyEnd"
-PetscErrorCode ISMappingAssemblyEnd(ISMapping map)
+#define __FUNCT__ "SAMappingAssemblyEnd"
+PetscErrorCode SAMappingAssemblyEnd(SAMapping map)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(map, IS_MAPPING_CLASSID, 1);
-  ISMappingCheckMethod(map,map->ops->assemblyend, "ISMappingAsemblyEnd");
-  ierr = PetscLogEventBegin(IS_MAPPING_AssemblyEnd, map,0,0,0); CHKERRQ(ierr);
+  PetscValidHeaderSpecific(map, SA_MAPPING_CLASSID, 1);
+  SAMappingCheckMethod(map,map->ops->assemblyend, "SAMappingAsemblyEnd");
+  ierr = PetscLogEventBegin(SA_MAPPING_AssemblyEnd, map,0,0,0); CHKERRQ(ierr);
   ierr = (*(map->ops->assemblyend))(map); CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(IS_MAPPING_AssemblyBegin, map,0,0,0); CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(SA_MAPPING_AssemblyBegin, map,0,0,0); CHKERRQ(ierr);
   map->assembled = PETSC_TRUE;
   PetscFunctionReturn(0);
-}/* ISMappingAssemblyEnd() */
+}/* SAMappingAssemblyEnd() */
+
 
 #undef  __FUNCT__
-#define __FUNCT__ "ISMappingGetSupportIS"
-PetscErrorCode ISMappingGetSupportIS(ISMapping map, IS *supp) {
+#define __FUNCT__ "SAMappingGetSupport"
+PetscErrorCode SAMappingGetSupport(SAMapping map, PetscInt *_len, PetscInt *_supp[]) {
   PetscErrorCode ierr;
   PetscFunctionBegin;
   
-  PetscValidHeaderSpecific(map, IS_MAPPING_CLASSID,1);
-  ISMappingCheckAssembled(map,PETSC_TRUE,1);
+  PetscValidHeaderSpecific(map, SA_MAPPING_CLASSID,1);
+  SAMappingCheckAssembled(map,PETSC_TRUE,1);
+  if(!_len && !_supp) PetscFunctionReturn(0);
+  SAMappingCheckMethod(map,map->ops->getsupport,"SAMappingGetSupport");
+  ierr = (*(map->ops->getsupport))(map,_len,_supp); CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef  __FUNCT__
+#define __FUNCT__ "SAMappingGetSupportIS"
+PetscErrorCode SAMappingGetSupportIS(SAMapping map, IS *supp) {
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  
+  PetscValidHeaderSpecific(map, SA_MAPPING_CLASSID,1);
+  SAMappingCheckAssembled(map,PETSC_TRUE,1);
   if(!supp) PetscFunctionReturn(0);
-  ISMappingCheckMethod(map,map->ops->getsupportis,"ISMappingGetSupportIS");
+  SAMappingCheckMethod(map,map->ops->getsupportis,"SAMappingGetSupportIS");
   ierr = (*(map->ops->getsupportis))(map,supp); CHKERRQ(ierr);
   PetscFunctionReturn(0);
-}/* ISMappingGetSupportIS() */
+}
+
 
 #undef  __FUNCT__
-#define __FUNCT__ "ISMappingGetImageIS"
-PetscErrorCode ISMappingGetImageIS(ISMapping map, IS *image) {
+#define __FUNCT__ "SAMappingGetSupportSA"
+PetscErrorCode SAMappingGetSupportSA(SAMapping map, SA *supp) {
   PetscErrorCode ierr;
   PetscFunctionBegin;
   
-  PetscValidHeaderSpecific(map, IS_MAPPING_CLASSID,1);
-  ISMappingCheckAssembled(map,PETSC_TRUE,1);
+  PetscValidHeaderSpecific(map, SA_MAPPING_CLASSID,1);
+  SAMappingCheckAssembled(map,PETSC_TRUE,1);
+  if(!supp) PetscFunctionReturn(0);
+  SAMappingCheckMethod(map,map->ops->getsupportsa,"SAMappingGetSupportSA");
+  ierr = (*(map->ops->getsupportsa))(map,supp); CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef  __FUNCT__
+#define __FUNCT__ "SAMappingGetImage"
+PetscErrorCode SAMappingGetImage(SAMapping map, PetscInt *_len, PetscInt *_image[]) {
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  
+  PetscValidHeaderSpecific(map, SA_MAPPING_CLASSID,1);
+  SAMappingCheckAssembled(map,PETSC_TRUE,1);
+  if(!_len && !_image) PetscFunctionReturn(0);
+  SAMappingCheckMethod(map,map->ops->getimage,"SAMappingGetImage");
+  ierr = (*(map->ops->getimage))(map,_len,_image); CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef  __FUNCT__
+#define __FUNCT__ "SAMappingGetImageIS"
+PetscErrorCode SAMappingGetImageIS(SAMapping map, IS *image) {
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  
+  PetscValidHeaderSpecific(map, SA_MAPPING_CLASSID,1);
+  SAMappingCheckAssembled(map,PETSC_TRUE,1);
   if(!image) PetscFunctionReturn(0);
-  ISMappingCheckMethod(map,map->ops->getimageis,"ISMappingGetImageIS");
+  SAMappingCheckMethod(map,map->ops->getimageis,"SAMappingGetImageIS");
   ierr = (*(map->ops->getimageis))(map,image); CHKERRQ(ierr);
   PetscFunctionReturn(0);
-}/* ISMappingGetImageIS() */
+}
+
+#undef  __FUNCT__
+#define __FUNCT__ "SAMappingGetImageSA"
+PetscErrorCode SAMappingGetImageSA(SAMapping map, SA *image) {
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  
+  PetscValidHeaderSpecific(map, SA_MAPPING_CLASSID,1);
+  SAMappingCheckAssembled(map,PETSC_TRUE,1);
+  if(!image) PetscFunctionReturn(0);
+  SAMappingCheckMethod(map,map->ops->getimagesa,"SAMappingGetImageSA");
+  ierr = (*(map->ops->getimagesa))(map,image); CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__  
-#define __FUNCT__ "ISMappingGetMaxImageSizeLocal"
-PetscErrorCode ISMappingGetMaxImageSizeLocal(ISMapping map, PetscInt *maxsize)
+#define __FUNCT__ "SAMappingGetMaxImageSize"
+PetscErrorCode SAMappingGetMaxImageSize(SAMapping map, PetscInt *maxsize)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(map,IS_MAPPING_CLASSID,1);
+  PetscValidHeaderSpecific(map,SA_MAPPING_CLASSID,1);
   PetscValidIntPointer(maxsize,2);
-  ISMappingCheckAssembled(map,PETSC_TRUE,1);
-  ISMappingCheckMethod(map, map->ops->getmaximagesizelocal,"ISMappingGetMaxImageSizeLocal");
-  ierr = (*map->ops->getmaximagesizelocal)(map,maxsize); CHKERRQ(ierr);
+  SAMappingCheckAssembled(map,PETSC_TRUE,1);
+  SAMappingCheckMethod(map, map->ops->getmaximagesize,"SAMappingGetMaxImageSize");
+  ierr = (*map->ops->getmaximagesize)(map,maxsize); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "ISMappingGetImageSizeLocal"
-PetscErrorCode ISMappingGetImageSizeLocal(ISMapping map, PetscInt *size)
-{
-  PetscErrorCode ierr;
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(map,IS_MAPPING_CLASSID,1);
-  PetscValidIntPointer(size,2);
-  ISMappingCheckAssembled(map,PETSC_TRUE,1);
-  ISMappingCheckMethod(map, map->ops->getimagesizelocal,"ISMappingGetImageSizeLocal");
-  ierr = (*map->ops->getimagesizelocal)(map,size); CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__  
-#define __FUNCT__ "ISMappingGetSupportSizeLocal"
-PetscErrorCode ISMappingGetSupportSizeLocal(ISMapping map, PetscInt *size)
+#define __FUNCT__ "SAMappingGetOperator"
+PetscErrorCode SAMappingGetOperator(SAMapping map, Mat *mat)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(map,IS_MAPPING_CLASSID,1);
-  PetscValidIntPointer(size,2);
-  ISMappingCheckAssembled(map,PETSC_TRUE,1);
-  ISMappingCheckMethod(map, map->ops->getsupportsizelocal,"ISMappingGetSupportSizeLocal");
-  ierr = (*map->ops->getsupportsizelocal)(map,size); CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "ISMappingGetOperator"
-PetscErrorCode ISMappingGetOperator(ISMapping map, Mat *mat)
-{
-  PetscErrorCode ierr;
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(map,IS_MAPPING_CLASSID,1);
+  PetscValidHeaderSpecific(map,SA_MAPPING_CLASSID,1);
   PetscValidPointer(mat,2);
-  ISMappingCheckAssembled(map,PETSC_TRUE,1);
-  ISMappingCheckMethod(map, map->ops->getoperator,"ISMappingGetOperator");
+  SAMappingCheckAssembled(map,PETSC_TRUE,1);
+  SAMappingCheckMethod(map, map->ops->getoperator,"SAMappingGetOperator");
   ierr = (*map->ops->getoperator)(map,mat); CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
 
 #undef  __FUNCT__
-#define __FUNCT__ "ISMappingView"
-PetscErrorCode ISMappingView(ISMapping map, PetscViewer v) 
+#define __FUNCT__ "SAMappingView"
+PetscErrorCode SAMappingView(SAMapping map, PetscViewer v) 
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(map,IS_MAPPING_CLASSID,1);
-  ISMappingCheckAssembled(map,PETSC_TRUE,1);
-  ISMappingCheckMethod(map,map->ops->view, "ISMappingView");
+  PetscValidHeaderSpecific(map,SA_MAPPING_CLASSID,1);
+  SAMappingCheckAssembled(map,PETSC_TRUE,1);
+  SAMappingCheckMethod(map,map->ops->view, "SAMappingView");
   ierr = (*(map->ops->view))(map,v); CHKERRQ(ierr);
   PetscFunctionReturn(0);
-}/* ISMappingView() */
+}/* SAMappingView() */
 
 #undef  __FUNCT__
-#define __FUNCT__ "ISMappingInvert"
-PetscErrorCode ISMappingInvert(ISMapping map, ISMapping *imap) 
+#define __FUNCT__ "SAMappingInvert"
+PetscErrorCode SAMappingInvert(SAMapping map, SAMapping *imap) 
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(map,IS_MAPPING_CLASSID, 1);
+  PetscValidHeaderSpecific(map,SA_MAPPING_CLASSID, 1);
   PetscValidPointer(imap,2);
-  ISMappingCheckMethod(map,map->ops->invert, "ISMappingInvert");
-  ierr = PetscLogEventBegin(IS_MAPPING_Invert, map, 0,0,0); CHKERRQ(ierr);
+  SAMappingCheckMethod(map,map->ops->invert, "SAMappingInvert");
+  ierr = PetscLogEventBegin(SA_MAPPING_Invert, map, 0,0,0); CHKERRQ(ierr);
   ierr = (*(map->ops->invert))(map,imap); CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(IS_MAPPING_Invert, map, 0,0,0); CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(SA_MAPPING_Invert, map, 0,0,0); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "ISMappingPullback"
-/*@
-   ISMappingPullback - compose mappings C = A*B
+#define __FUNCT__ "SAMappingPullback"
+/*@C
+   SAMappingPullback - compose mappings C = A*B
 
-   Collective on ISMapping
+   Collective on SAMapping
 
    Input Parameters:
 +  A - the left  mapping
@@ -863,43 +894,43 @@ PetscErrorCode ISMappingInvert(ISMapping map, ISMapping *imap)
 
    Level: intermediate
 
-.seealso: ISMappingPushforward(), ISMappingInvert()
+.seealso: SAMappingPushforward(), SAMappingInvert()
 @*/
-PetscErrorCode  ISMappingPullback(ISMapping A,ISMapping B, ISMapping *C) 
+PetscErrorCode  SAMappingPullback(SAMapping A,SAMapping B, SAMapping *C) 
 {
   PetscErrorCode ierr;
-  PetscErrorCode (*pullback)(ISMapping,ISMapping,ISMapping*);
+  PetscErrorCode (*pullback)(SAMapping,SAMapping,SAMapping*);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(A,IS_MAPPING_CLASSID,1);
+  PetscValidHeaderSpecific(A,SA_MAPPING_CLASSID,1);
   PetscValidType(A,1);
   if (!A->assembled) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled mapping");
-  PetscValidHeaderSpecific(B,IS_MAPPING_CLASSID,2);
+  PetscValidHeaderSpecific(B,SA_MAPPING_CLASSID,2);
   PetscValidType(B,2);
   if (!B->assembled) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled mapping");
   PetscValidPointer(C,3);
 
   /* dispatch based on the type of A and B */
   char  pullbackname[256];
-  ierr = PetscStrcpy(pullbackname,"ISMappingPullback_");CHKERRQ(ierr);
+  ierr = PetscStrcpy(pullbackname,"SAMappingPullback_");CHKERRQ(ierr);
   ierr = PetscStrcat(pullbackname,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = PetscStrcat(pullbackname,"_");    CHKERRQ(ierr);
   ierr = PetscStrcat(pullbackname,((PetscObject)B)->type_name);CHKERRQ(ierr);
   ierr = PetscStrcat(pullbackname,"_C");   CHKERRQ(ierr); /* e.g., pullbackname = "ISPullback_ismappingis_ismappingis_C" */
   ierr = PetscObjectQueryFunction((PetscObject)B,pullbackname,(void (**)(void))&pullback);CHKERRQ(ierr);
-  if (!pullback) SETERRQ2(((PetscObject)A)->comm,PETSC_ERR_ARG_INCOMP,"ISMappingPullback requires A, %s, to be compatible with B, %s",((PetscObject)A)->type_name,((PetscObject)B)->type_name);    
-  ierr = PetscLogEventBegin(IS_MAPPING_Pullback, A,B,0,0); CHKERRQ(ierr);
+  if (!pullback) SETERRQ2(((PetscObject)A)->comm,PETSC_ERR_ARG_INCOMP,"SAMappingPullback requires A, %s, to be compatible with B, %s",((PetscObject)A)->type_name,((PetscObject)B)->type_name);    
+  ierr = PetscLogEventBegin(SA_MAPPING_Pullback, A,B,0,0); CHKERRQ(ierr);
   ierr = (*pullback)(A,B,C);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(IS_MAPPING_Pullback, A,B,0,0); CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(SA_MAPPING_Pullback, A,B,0,0); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 } 
 
 #undef __FUNCT__
-#define __FUNCT__ "ISMappingPushforward"
-/*@
-   ISMappingPushforward - mapping from the range of A to the range of B, pointwise on the common domain
+#define __FUNCT__ "SAMappingPushforward"
+/*@C
+   SAMappingPushforward - mapping from the range of A to the range of B, pointwise on the common domain
 
-   Collective on ISMapping
+   Collective on SAMapping
 
    Input Parameters:
 +  A - the left  mapping
@@ -911,53 +942,53 @@ PetscErrorCode  ISMappingPullback(ISMapping A,ISMapping B, ISMapping *C)
 
 
    Level: intermediate
-.seealso: ISMappingPullback(), ISMappingInvert()
+.seealso: SAMappingPullback(), SAMappingInvert()
 @*/
-PetscErrorCode  ISMappingPushforward(ISMapping A,ISMapping B, ISMapping *C) 
+PetscErrorCode  SAMappingPushforward(SAMapping A,SAMapping B, SAMapping *C) 
 {
   PetscErrorCode ierr;
-  PetscErrorCode (*pushforward)(ISMapping,ISMapping,ISMapping*);
+  PetscErrorCode (*pushforward)(SAMapping,SAMapping,SAMapping*);
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(A,IS_MAPPING_CLASSID,1);
+  PetscValidHeaderSpecific(A,SA_MAPPING_CLASSID,1);
   PetscValidType(A,1);
   if (!A->assembled) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled mapping");
-  PetscValidHeaderSpecific(B,IS_MAPPING_CLASSID,2);
+  PetscValidHeaderSpecific(B,SA_MAPPING_CLASSID,2);
   PetscValidType(B,2);
   if (!B->assembled) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled mapping");
   PetscValidPointer(C,3);
 
   /* dispatch based on the type of A and B */
   char  pushforwardname[256];
-  ierr = PetscStrcpy(pushforwardname,"ISMappingPushforward_");CHKERRQ(ierr);
+  ierr = PetscStrcpy(pushforwardname,"SAMappingPushforward_");CHKERRQ(ierr);
   ierr = PetscStrcat(pushforwardname,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = PetscStrcat(pushforwardname,"_");    CHKERRQ(ierr);
   ierr = PetscStrcat(pushforwardname,((PetscObject)B)->type_name);CHKERRQ(ierr);
   ierr = PetscStrcat(pushforwardname,"_C");   CHKERRQ(ierr); /* e.g., pushforwardname = "ISPushforward_ismappingis_ismappingis_C" */
   ierr = PetscObjectQueryFunction((PetscObject)B,pushforwardname,(void (**)(void))&pushforward);CHKERRQ(ierr);
-  if (!pushforward) SETERRQ2(((PetscObject)A)->comm,PETSC_ERR_ARG_INCOMP,"ISMappingPushforward requires A, %s, to be compatible with B, %s",((PetscObject)A)->type_name,((PetscObject)B)->type_name);    
-  ierr = PetscLogEventBegin(IS_MAPPING_Pushforward, A,B,0,0); CHKERRQ(ierr);
+  if (!pushforward) SETERRQ2(((PetscObject)A)->comm,PETSC_ERR_ARG_INCOMP,"SAMappingPushforward requires A, %s, to be compatible with B, %s",((PetscObject)A)->type_name,((PetscObject)B)->type_name);    
+  ierr = PetscLogEventBegin(SA_MAPPING_Pushforward, A,B,0,0); CHKERRQ(ierr);
   ierr = (*pushforward)(A,B,C);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(IS_MAPPING_Pushforward, A,B,0,0); CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(SA_MAPPING_Pushforward, A,B,0,0); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 } 
 
 #undef  __FUNCT__
-#define __FUNCT__ "ISMappingSetType"
-PetscErrorCode ISMappingSetType(ISMapping map, const ISMappingType maptype) {
+#define __FUNCT__ "SAMappingSetType"
+PetscErrorCode SAMappingSetType(SAMapping map, const SAMappingType maptype) {
   PetscErrorCode ierr;
-  PetscErrorCode (*ctor)(ISMapping);
+  PetscErrorCode (*ctor)(SAMapping);
   PetscBool sametype;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(map,IS_MAPPING_CLASSID, 1);
+  PetscValidHeaderSpecific(map,SA_MAPPING_CLASSID, 1);
   ierr = PetscTypeCompare((PetscObject)map,maptype, &sametype); CHKERRQ(ierr);
   if(sametype) PetscFunctionReturn(0);
 
-  if(!ISMappingRegisterAllCalled) {
-    ierr = ISMappingRegisterAll(PETSC_NULL); CHKERRQ(ierr);
+  if(!SAMappingRegisterAllCalled) {
+    ierr = SAMappingRegisterAll(PETSC_NULL); CHKERRQ(ierr);
   }
   ierr =  PetscFListFind(ISList,((PetscObject)map)->comm,maptype,(void(**)(void))&ctor);CHKERRQ(ierr);
-  if(!ctor) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unrecognized ISMapping type: %s", maptype); 
+  if(!ctor) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Unrecognized SAMapping type: %s", maptype); 
 
   /* destroy the old implementation, if it existed */
   if(map->ops->destroy) {
@@ -968,15 +999,15 @@ PetscErrorCode ISMappingSetType(ISMapping map, const ISMappingType maptype) {
   /* create the new implementation */
   ierr = (*ctor)(map); CHKERRQ(ierr);
   PetscFunctionReturn(0);
-}/* ISMappingSetType() */
+}/* SAMappingSetType() */
 
 #undef  __FUNCT__
-#define __FUNCT__ "ISMappingDestroy"
-PetscErrorCode ISMappingDestroy(ISMapping map) 
+#define __FUNCT__ "SAMappingDestroy"
+PetscErrorCode SAMappingDestroy(SAMapping map) 
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(map,IS_MAPPING_CLASSID,1);
+  PetscValidHeaderSpecific(map,SA_MAPPING_CLASSID,1);
   if(--((PetscObject)map)->refct > 0) PetscFunctionReturn(0);
   if(map->ops->destroy) {
     ierr = (*map->ops->destroy)(map); CHKERRQ(ierr);
@@ -989,58 +1020,58 @@ PetscErrorCode ISMappingDestroy(ISMapping map)
   }
   ierr = PetscHeaderDestroy(map); CHKERRQ(ierr);
   PetscFunctionReturn(0);
-}/* ISMappingDestroy() */
+}/* SAMappingDestroy() */
 
 #undef  __FUNCT__
-#define __FUNCT__ "ISMappingCreate"
-PetscErrorCode ISMappingCreate(MPI_Comm comm, ISMapping *_map) 
+#define __FUNCT__ "SAMappingCreate"
+PetscErrorCode SAMappingCreate(MPI_Comm comm, SAMapping *_map) 
 {
-  ISMapping map;
+  SAMapping map;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidPointer(map,2);
   *_map = PETSC_NULL;
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
-  ierr = ISMappingInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+  ierr = SAMappingInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
-  ierr = PetscHeaderCreate(map,_p_ISMapping,struct _ISMappingOps,IS_MAPPING_CLASSID,0,"ISMapping",comm,ISMappingDestroy,ISMappingView); CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(map,_p_SAMapping,struct _SAMappingOps,SA_MAPPING_CLASSID,0,"SAMapping",comm,SAMappingDestroy,SAMappingView); CHKERRQ(ierr);
   ierr = PetscLayoutCreate(comm,&(map->xlayout)); CHKERRQ(ierr);
   ierr = PetscLayoutCreate(comm,&(map->ylayout)); CHKERRQ(ierr);
   *_map = map;
   PetscFunctionReturn(0);
-}/* ISMappingCreate() */
+}/* SAMappingCreate() */
 
 
 
 #undef  __FUNCT__
-#define __FUNCT__ "ISArrayHunkCreate"
-PetscErrorCode ISArrayHunkCreate(PetscInt maxlength, ISArrayComponents mask, ISArrayHunk *_hunk) 
+#define __FUNCT__ "SAHunkCreate"
+PetscErrorCode SAHunkCreate(PetscInt maxlength, SAComponents mask, SAHunk *_hunk) 
 {
   PetscErrorCode ierr;
-  ISArrayHunk hunk;
+  SAHunk hunk;
   PetscFunctionBegin;
   PetscValidPointer(_hunk,3);
 
   if(maxlength <= 0) 
-    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Nonpositive ISArrayHunk maxlength: %D", maxlength);
+    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Nonpositive SAHunk maxlength: %D", maxlength);
 
-  ierr = PetscNew(struct _n_ISArrayHunk, &hunk); CHKERRQ(ierr);
+  ierr = PetscNew(struct _n_SAHunk, &hunk); CHKERRQ(ierr);
   hunk->mask = mask;
   hunk->maxlength = maxlength;
-  if(mask & ISARRAY_I) {
+  if(mask & SA_I) {
     PetscInt *ia;
     ierr = PetscMalloc(sizeof(PetscInt)*maxlength, &ia);  CHKERRQ(ierr);
     ierr = PetscMemzero(ia, sizeof(PetscInt)*maxlength);  CHKERRQ(ierr);
     hunk->i = ia;
   }
-  if(mask & ISARRAY_J) {
+  if(mask & SA_J) {
     PetscInt *ja;
     ierr = PetscMalloc(sizeof(PetscInt)*maxlength, &ja);  CHKERRQ(ierr);
     ierr = PetscMemzero(ja, sizeof(PetscInt)*maxlength); CHKERRQ(ierr);
     hunk->j = ja;
   }
-  if(mask & ISARRAY_W) {
+  if(mask & SA_W) {
     PetscScalar *wa;
     ierr = PetscMalloc(sizeof(PetscScalar)*maxlength, &wa);  CHKERRQ(ierr);
     ierr = PetscMemzero(wa, sizeof(PetscScalar)*maxlength); CHKERRQ(ierr);
@@ -1053,59 +1084,67 @@ PetscErrorCode ISArrayHunkCreate(PetscInt maxlength, ISArrayComponents mask, ISA
 }
 
 #undef  __FUNCT__
-#define __FUNCT__ "ISArrayHunkAddData"
-PetscErrorCode ISArrayHunkAddData(ISArrayHunk hunk, PetscInt length, const PetscInt *i, const PetscScalar *w, const PetscInt *j) 
+#define __FUNCT__ "SAHunkAddData"
+PetscErrorCode SAHunkAddData(SAHunk hunk, PetscInt length, const PetscInt *i, const PetscScalar *w, const PetscInt *j) 
 {
   PetscErrorCode ierr;
   PetscInt mask;
   PetscFunctionBegin;
   PetscValidPointer(hunk,1);
   mask = (i != PETSC_NULL) | ((j != PETSC_NULL)<<1) | ((w != PETSC_NULL)<<2);
-  if(mask != hunk->mask) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Data components %D incompatible with the ISArrayHunk mask", mask,hunk->mask);
-  if(mask & ISARRAY_I) {
-    ierr = PetscMemcpy(hunk->i, i, sizeof(PetscInt)*length);
+  if(mask != hunk->mask) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Data components %D incompatible with the SAHunk mask", mask,hunk->mask);
+  if(hunk->length + length > hunk->maxlength) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot add data of length %D, hunk only has %D space left", length, hunk->maxlength-hunk->length);
+  if(mask & SA_I) {
+    ierr = PetscMemcpy(hunk->i+hunk->length, i, sizeof(PetscInt)*length);
   }
-  if(mask & ISARRAY_J) {
-    ierr = PetscMemcpy(hunk->j, j, sizeof(PetscInt)*length);
+  if(mask & SA_J) {
+    ierr = PetscMemcpy(hunk->j+hunk->length, j, sizeof(PetscInt)*length);
   }
-  if(mask & ISARRAY_W) {
-    ierr = PetscMemcpy(hunk->w, w, sizeof(PetscScalar)*length);
+  if(mask & SA_W) {
+    ierr = PetscMemcpy(hunk->w+hunk->length, w, sizeof(PetscScalar)*length);
   }
+  hunk->length += length;
   PetscFunctionReturn(0);
 }
 
 
 #undef  __FUNCT__
-#define __FUNCT__ "ISArrayHunkGetSubHunk"
-PetscErrorCode ISArrayHunkGetSubHunk(ISArrayHunk hunk, PetscInt maxlength, ISArrayComponents mask, ISArrayHunk *_subhunk) 
+#define __FUNCT__ "SAHunkGetSubHunk"
+PetscErrorCode SAHunkGetSubHunk(SAHunk hunk, PetscInt start, PetscInt maxlength, PetscInt length, SAComponents mask, SAHunk *_subhunk) 
 {
   PetscErrorCode ierr;
-  ISArrayHunk subhunk;
+  SAHunk subhunk;
   PetscFunctionBegin;
   PetscValidPointer(hunk,1);
-  PetscValidPointer(_subhunk,3);
+  PetscValidPointer(_subhunk,5);
   *_subhunk = PETSC_NULL;
   if(maxlength <= 0) 
     SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Nonpositive subhunk maxlength: %D", maxlength);
+  if(length <= 0) 
+    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Nonpositive subhunk length: %D", length);
+  if(length > maxlength) 
+    SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "subhunk length %D exceeds maxlength %D", length, maxlength);
+  if(start < 0 || start >= hunk->maxlength) 
+    SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "subhunk start %D out of bounds [0,%D)", start,hunk->maxlength);
+  if(start+maxlength > hunk->maxlength) 
+    SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "subhunk end %D beyond the end of hunk %D",start+maxlength,hunk->maxlength);
+  
   if(mask & (~(hunk->mask))) 
     SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Subhunk mask %D is not a submask of the hunk mask %D", mask, hunk->mask);
-
-  if(hunk->length+maxlength > hunk->maxlength) PetscFunctionReturn(0);
-  ierr = PetscNew(struct _n_ISArrayHunk, &subhunk); CHKERRQ(ierr);
+  ierr = PetscNew(struct _n_SAHunk, &subhunk); CHKERRQ(ierr);
   subhunk->mask = mask;
   subhunk->maxlength = maxlength;
-  subhunk->length   = 0;
-  if(mask & ISARRAY_I) {
-    subhunk->i = hunk->i+hunk->length;
+  subhunk->length    = length;
+  if(mask & SA_I) {
+    subhunk->i = hunk->i+start;
   }
-  if(mask & ISARRAY_J) {
-    subhunk->j = hunk->j+hunk->length;
+  if(mask & SA_J) {
+    subhunk->j = hunk->j+start;
   }
-  if(mask & ISARRAY_W) {
-    subhunk->w = hunk->w+hunk->length;
+  if(mask & SA_W) {
+    subhunk->w = hunk->w+start;
   }
   subhunk->mode = PETSC_USE_POINTER;
-  hunk->length += maxlength;
   ++(hunk->refcnt);
   *_subhunk = subhunk;
   PetscFunctionReturn(0);
@@ -1113,8 +1152,8 @@ PetscErrorCode ISArrayHunkGetSubHunk(ISArrayHunk hunk, PetscInt maxlength, ISArr
 
 
 #undef  __FUNCT__
-#define __FUNCT__ "ISArrayHunkDestroy"
-PetscErrorCode ISArrayHunkDestroy(ISArrayHunk hunk) 
+#define __FUNCT__ "SAHunkDestroy"
+PetscErrorCode SAHunkDestroy(SAHunk hunk) 
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -1126,7 +1165,7 @@ PetscErrorCode ISArrayHunkDestroy(ISArrayHunk hunk)
   }
   hunk->length = 0;
   if(hunk->parent) {
-    ierr = ISArrayHunkDestroy(hunk->parent); CHKERRQ(ierr);
+    ierr = SAHunkDestroy(hunk->parent); CHKERRQ(ierr);
   }
   hunk->parent = PETSC_NULL;
   ierr = PetscFree(hunk); CHKERRQ(ierr);
@@ -1135,67 +1174,67 @@ PetscErrorCode ISArrayHunkDestroy(ISArrayHunk hunk)
 
 
 #undef  __FUNCT__
-#define __FUNCT__ "ISArrayCreate"
-PetscErrorCode ISArrayCreate(ISArrayComponents mask, ISArray *_arr) 
+#define __FUNCT__ "SACreate"
+PetscErrorCode SACreate(SAComponents mask, SA *_arr) 
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidPointer(_arr,2);
-  if(!(mask & ISARRAY_I) && !(mask & ISARRAY_J)) {
-    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "ISArrayComponents %D must contain at least one of the indices: I or J", mask);
+  if(!(mask & SA_I) && !(mask & SA_J)) {
+    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "SAComponents %D must contain at least one of the indices: I or J", mask);
   }
-  ierr = PetscNew(struct _n_ISArray, _arr); CHKERRQ(ierr);
+  ierr = PetscNew(struct _n_SA, _arr); CHKERRQ(ierr);
   (*_arr)->mask = mask;
   PetscFunctionReturn(0);
 }
 
 #undef  __FUNCT__
-#define __FUNCT__ "ISArrayDuplicate"
-PetscErrorCode ISArrayDuplicate(ISArray arr, ISArray *_darr) 
+#define __FUNCT__ "SADuplicate"
+PetscErrorCode SADuplicate(SA arr, SA *_darr) 
 {
   PetscErrorCode ierr;
-  ISArray darr;
-  ISArrayLink link;
+  SA darr;
+  SALink link;
   PetscFunctionBegin;
   PetscValidPointer(arr,1);
   PetscValidPointer(_darr,2);
-  ierr = ISArrayCreate(arr->mask, &darr); CHKERRQ(ierr);
+  ierr = SACreate(arr->mask, &darr); CHKERRQ(ierr);
   link  = arr->first;
   while(link) {
-    ierr = ISArrayAddHunk(darr,link->hunk);  CHKERRQ(ierr);
+    ierr = SAAddHunk(darr,link->hunk);  CHKERRQ(ierr);
   }
   *_darr = arr;
   PetscFunctionReturn(0);
 }
 
 #undef  __FUNCT__
-#define __FUNCT__ "ISArrayCreateArrays"
-PetscErrorCode ISArrayCreateArrays(ISArrayComponents mask, PetscInt count, ISArray **_arrays) 
+#define __FUNCT__ "SACreateArrays"
+PetscErrorCode SACreateArrays(SAComponents mask, PetscInt count, SA **_arrays) 
 {
   PetscErrorCode ierr;
   PetscInt i;
   PetscFunctionBegin;
   PetscValidPointer(_arrays,3);
-  if(!(mask & ISARRAY_I) && !(mask & ISARRAY_J)) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "ISArrayComponents %D must contain at least one of the indices: I or J", mask);
+  if(!(mask & SA_I) && !(mask & SA_J)) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "SAComponents %D must contain at least one of the indices: I or J", mask);
   if(count < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Negative array count: %D", count);
-  ierr = PetscMalloc(sizeof(ISArray), _arrays); CHKERRQ(ierr);
+  ierr = PetscMalloc(sizeof(SA), _arrays); CHKERRQ(ierr);
   for(i = 0; i < count; ++i) {
-    ierr = ISArrayCreate(mask, *_arrays+i); CHKERRQ(ierr);
+    ierr = SACreate(mask, *_arrays+i); CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
 #undef  __FUNCT__
-#define __FUNCT__ "ISArrayClear"
-PetscErrorCode ISArrayClear(ISArray arr) 
+#define __FUNCT__ "SAClear"
+PetscErrorCode SAClear(SA arr) 
 {
   PetscErrorCode ierr;
-  ISArrayLink    link;
+  SALink    link;
   PetscFunctionBegin;
   PetscValidPointer(arr,1);
   link = arr->first;
   while(link) {
-    ierr = ISArrayHunkDestroy(link->hunk); CHKERRQ(ierr);
+    ierr = SAHunkDestroy(link->hunk); CHKERRQ(ierr);
     link = link->next;
   }
   arr->first = PETSC_NULL;
@@ -1206,13 +1245,13 @@ PetscErrorCode ISArrayClear(ISArray arr)
 
 
 #undef  __FUNCT__
-#define __FUNCT__ "ISArrayDestroy"
-PetscErrorCode ISArrayDestroy(ISArray chain) 
+#define __FUNCT__ "SADestroy"
+PetscErrorCode SADestroy(SA chain) 
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidPointer(chain,1);
-  ierr = ISArrayClear(chain); CHKERRQ(ierr);
+  ierr = SAClear(chain); CHKERRQ(ierr);
   chain->mask   = 0;
   ierr = PetscFree(chain);    CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1224,26 +1263,26 @@ PetscErrorCode ISArrayDestroy(ISArray chain)
  In the future, this can manage a pool of hunks, use a buffer to draw subhunks from, etc.
  */
 #undef  __FUNCT__
-#define __FUNCT__ "ISArrayGetHunk"
-PetscErrorCode ISArrayGetHunk(ISArray chain, PetscInt length, ISArrayHunk *_hunk) 
+#define __FUNCT__ "SAGetHunk"
+PetscErrorCode SAGetHunk(SA chain, PetscInt length, SAHunk *_hunk) 
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = ISArrayHunkCreate(length, chain->mask, _hunk); CHKERRQ(ierr);
+  ierr = SAHunkCreate(length, chain->mask, _hunk); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef  __FUNCT__
-#define __FUNCT__ "ISArrayAddHunk"
-PetscErrorCode ISArrayAddHunk(ISArray chain, ISArrayHunk hunk) 
+#define __FUNCT__ "SAAddHunk"
+PetscErrorCode SAAddHunk(SA chain, SAHunk hunk) 
 {
   PetscErrorCode ierr;
-  ISArrayLink    link;
+  SALink    link;
   PetscFunctionBegin;
   if(chain->mask & (~(hunk->mask))) {
     SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Hunk mask %D incompatible with the array mask %D", hunk->mask, chain->mask);
   }
-  ierr = PetscMalloc(sizeof(struct _n_ISArrayLink), &link);
+  ierr = PetscMalloc(sizeof(struct _n_SALink), &link);
   link->hunk = hunk;
   ++(hunk->refcnt);
   if(chain->last) {
@@ -1258,37 +1297,37 @@ PetscErrorCode ISArrayAddHunk(ISArray chain, ISArrayHunk hunk)
 
 
 #undef  __FUNCT__
-#define __FUNCT__ "ISArrayAddData"
-PetscErrorCode ISArrayAddData(ISArray chain, PetscInt length, const PetscInt *i, const PetscScalar *w, const PetscInt *j) 
+#define __FUNCT__ "SAAddData"
+PetscErrorCode SAAddData(SA chain, PetscInt length, const PetscInt *i, const PetscScalar *w, const PetscInt *j) 
 {
   PetscErrorCode ierr;
-  ISArrayHunk hunk;
-  ISArrayComponents mask;
+  SAHunk hunk;
+  SAComponents mask;
   PetscFunctionBegin;
   PetscValidPointer(chain,1);
   mask = (i != PETSC_NULL) | ((j != PETSC_NULL)<<1) | ((w != PETSC_NULL)<<2);
-  if(mask != chain->mask) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Data components %D incompatible with the ISArrayComponents", mask,chain->mask);
-  ierr = ISArrayGetHunk(chain, length, &hunk);  CHKERRQ(ierr);
-  ierr = ISArrayHunkAddData(hunk, length, i,w,j);       CHKERRQ(ierr);
-  ierr = ISArrayAddHunk(chain, hunk); CHKERRQ(ierr);
+  if(mask != chain->mask) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Data components %D incompatible with the SAComponents", mask,chain->mask);
+  ierr = SAGetHunk(chain, length, &hunk);  CHKERRQ(ierr);
+  ierr = SAHunkAddData(hunk, length, i,w,j);       CHKERRQ(ierr);
+  ierr = SAAddHunk(chain, hunk); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 
 #undef  __FUNCT__
-#define __FUNCT__ "ISArrayAddI"
-PetscErrorCode ISArrayAddI(ISArray chain, PetscInt length, PetscInt i, const PetscScalar wa[], const PetscInt ja[]) 
+#define __FUNCT__ "SAAddI"
+PetscErrorCode SAAddI(SA chain, PetscInt length, PetscInt i, const PetscScalar wa[], const PetscInt ja[]) 
 {
   PetscErrorCode ierr;
-  ISArrayHunk hunk;
+  SAHunk hunk;
   PetscInt mask;
   PetscInt k;
   PetscFunctionBegin;
   PetscValidPointer(chain,1);
-  mask = (ISARRAY_I | (ja != PETSC_NULL)<<1 | (wa != PETSC_NULL)<<2);
+  mask = (SA_I | (ja != PETSC_NULL)<<1 | (wa != PETSC_NULL)<<2);
   if(mask & (~(chain->mask))) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Array components provided %D incompatible with array mask %D", mask, chain->mask);
   if(!length) PetscFunctionReturn(0);
-  ierr = ISArrayGetHunk(chain, length, &hunk);           CHKERRQ(ierr);
+  ierr = SAGetHunk(chain, length, &hunk);           CHKERRQ(ierr);
   for(k = 0; k < length; ++k) hunk->i[k] = i;
   if(ja) {
     ierr = PetscMemcpy(hunk->j, ja, sizeof(PetscInt)*length);    CHKERRQ(ierr);
@@ -1296,24 +1335,24 @@ PetscErrorCode ISArrayAddI(ISArray chain, PetscInt length, PetscInt i, const Pet
   if(wa) {
     ierr = PetscMemcpy(hunk->w, wa, sizeof(PetscScalar)*length); CHKERRQ(ierr);
   }
-  ierr = ISArrayAddHunk(chain, hunk);                            CHKERRQ(ierr);
+  ierr = SAAddHunk(chain, hunk);                            CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef  __FUNCT__
-#define __FUNCT__ "ISArrayAddJ"
-PetscErrorCode ISArrayAddJ(ISArray chain, PetscInt length, const PetscInt ia[], const PetscScalar wa[], PetscInt j) 
+#define __FUNCT__ "SAAddJ"
+PetscErrorCode SAAddJ(SA chain, PetscInt length, const PetscInt ia[], const PetscScalar wa[], PetscInt j) 
 {
   PetscErrorCode ierr;
-  ISArrayHunk hunk;
+  SAHunk hunk;
   PetscInt mask;
   PetscInt k;
   PetscFunctionBegin;
   PetscValidPointer(chain,1);
-  mask = ((ia != PETSC_NULL) | ISARRAY_J | (wa != PETSC_NULL)<<2);
+  mask = ((ia != PETSC_NULL) | SA_J | (wa != PETSC_NULL)<<2);
   if(mask & (~(chain->mask))) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Array components provided %D incompatible with array mask %D", mask, chain->mask);
   if(!length) PetscFunctionReturn(0);
-  ierr = ISArrayGetHunk(chain, length, &hunk);           CHKERRQ(ierr);
+  ierr = SAGetHunk(chain, length, &hunk);           CHKERRQ(ierr);
   for(k = 0; k < length; ++k) hunk->j[k] = j;
   if(ia) {
     ierr = PetscMemcpy(hunk->i, ia, sizeof(PetscInt)*length);    CHKERRQ(ierr);
@@ -1321,20 +1360,21 @@ PetscErrorCode ISArrayAddJ(ISArray chain, PetscInt length, const PetscInt ia[], 
   if(wa) {
     ierr = PetscMemcpy(hunk->w, wa, sizeof(PetscScalar)*length); CHKERRQ(ierr);
   }
-  ierr = ISArrayAddHunk(chain, hunk);                            CHKERRQ(ierr);
+  ierr = SAAddHunk(chain, hunk);                            CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef  __FUNCT__
-#define __FUNCT__ "ISArrayMerge_Private"
-static PetscErrorCode ISArrayMerge_Private(ISArray arr) 
+#define __FUNCT__ "SAMerge"
+PetscErrorCode SAMerge(SA arr, SA *_marr) 
 {
   PetscErrorCode ierr;
-  ISArrayLink link;
-  ISArrayHunk merged;
+  SALink link;
+  SAHunk merged;
   PetscInt count, offset;
   PetscFunctionBegin;
   PetscValidPointer(arr,1);
+  PetscValidPointer(_marr,2);
 
   /* Determine the number of links in the chain and perform the mask consistency check. */
   link = arr->first;
@@ -1350,33 +1390,33 @@ static PetscErrorCode ISArrayMerge_Private(ISArray arr)
   if(count == 1) PetscFunctionReturn(0);
 
   if(arr->length) {
-    ierr = ISArrayHunkCreate(arr->length, arr->mask, &merged);                           CHKERRQ(ierr);
+    ierr = SAHunkCreate(arr->length, arr->mask, &merged);                           CHKERRQ(ierr);
     /* Copy the indices and weights into the merged arrays. */
     offset = 0;
     link = arr->first;
     while(link) {
-      ISArrayHunk hunk = link->hunk;
-      if(arr->mask & ISARRAY_I) {
+      SAHunk hunk = link->hunk;
+      if(arr->mask & SA_I) {
         ierr = PetscMemcpy(merged->i+offset, hunk->i, sizeof(PetscInt)*hunk->length);    CHKERRQ(ierr);
       }
-      if(arr->mask & ISARRAY_J) {
+      if(arr->mask & SA_J) {
         ierr = PetscMemcpy(merged->j+offset, hunk->j, sizeof(PetscInt)*hunk->length);    CHKERRQ(ierr);
       }
-      if(arr->mask & ISARRAY_W) {
+      if(arr->mask & SA_W) {
         ierr = PetscMemcpy(merged->w+offset, hunk->w, sizeof(PetscScalar)*hunk->length); CHKERRQ(ierr);
       }
       offset += hunk->length;
     }
   }/* if(arr->length) */
   merged->length = offset;
-  ierr = ISArrayClear(arr);            CHKERRQ(ierr);
-  ierr = ISArrayAddHunk(arr, merged);  CHKERRQ(ierr);
+  ierr = SACreate(arr->mask, _marr); CHKERRQ(ierr);
+  ierr = SAAddHunk(*_marr, merged);  CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef  __FUNCT__
-#define __FUNCT__ "ISArrayGetLength"
-PetscErrorCode ISArrayGetLength(ISArray chain, PetscInt *_length) 
+#define __FUNCT__ "SAGetLength"
+PetscErrorCode SAGetLength(SA chain, PetscInt *_length) 
 {
   PetscFunctionBegin;
   PetscValidPointer(chain,1);
@@ -1386,34 +1426,43 @@ PetscErrorCode ISArrayGetLength(ISArray chain, PetscInt *_length)
 }
 
 #undef  __FUNCT__
-#define __FUNCT__ "ISArrayGetData"
-PetscErrorCode ISArrayGetData(ISArray chain, const PetscInt *_i[], const PetscScalar *_w[], const PetscInt *_j[]) 
+#define __FUNCT__ "SAGetData"
+PetscErrorCode SAGetData(SA chain, PetscInt *ia, PetscScalar *wa, PetscInt *ja) 
 {
   PetscErrorCode ierr;
+  PetscInt len, mask, off;
+  SALink link;
+  SAHunk hunk;
+
   PetscFunctionBegin;
   PetscValidPointer(chain,1);
-  ierr = ISArrayMerge_Private(chain); CHKERRQ(ierr);
-  if(_i && (chain->mask&ISARRAY_I)) {
-    if(chain->first) *_i = chain->first->hunk->i;
-    else             *_i = PETSC_NULL;
-  }
-  if(_w && (chain->mask&ISARRAY_W)) {
-    if(chain->first) *_w = chain->first->hunk->w;
-    else             *_w = PETSC_NULL;
-  }
-  if(_j && (chain->mask&ISARRAY_J)) {
-    if(chain->first) *_j = chain->first->hunk->j;
-    else             *_j = PETSC_NULL;
+  mask = ((ia != PETSC_NULL) & (chain->mask&SA_I)) | ((ja != PETSC_NULL)<<1 & (chain->mask&SA_J)) | ((wa != PETSC_NULL)<<2 & (chain->mask&SA_W));
+  len = chain->length;
+  off = 0;
+  link = chain->first;
+  while(link) {
+    hunk = link->hunk;
+    if(mask&SA_I) {
+      ierr = PetscMemcpy(ia+off, hunk->i, sizeof(PetscInt)*hunk->length); CHKERRQ(ierr);
+    }
+    if(mask&SA_J) {
+      ierr = PetscMemcpy(ja+off, hunk->j, sizeof(PetscInt)*hunk->length); CHKERRQ(ierr);
+    }
+    if(mask&SA_W) {
+      ierr = PetscMemcpy(wa+off, hunk->w, sizeof(PetscScalar)*hunk->length); CHKERRQ(ierr);
+    }
+    link = link->next;
+    off += hunk->length;
   }
   PetscFunctionReturn(0);
 }
 
 #undef  __FUNCT__
-#define __FUNCT__ "ISArrayAddArray"
-PetscErrorCode ISArrayAddArray(ISArray chain, ISArray chain2) 
+#define __FUNCT__ "SAAddArray"
+PetscErrorCode SAAddArray(SA chain, SA chain2) 
 {
   PetscErrorCode ierr;
-  ISArrayLink link;
+  SALink link;
   PetscFunctionBegin;
   PetscValidPointer(chain, 1);
   PetscValidPointer(chain2,2);
@@ -1422,13 +1471,50 @@ PetscErrorCode ISArrayAddArray(ISArray chain, ISArray chain2)
   }
   link = chain2->first;
   while(link) {
-    ierr = ISArrayAddHunk(chain, link->hunk); CHKERRQ(ierr);
+    ierr = SAAddHunk(chain, link->hunk); CHKERRQ(ierr);
     link = link->next;
   }
   PetscFunctionReturn(0);
 }
 
+#undef  __FUNCT__
+#define __FUNCT__ "SASplit"
+PetscErrorCode SASplit(SA arr, PetscInt count, const PetscInt *lengths, PetscInt mask, SA *arrs)
+{
+  PetscErrorCode ierr;
+  PetscInt i, lengthi, start, end, len;
+  SALink link;
+  SAHunk hunk, subhunk;
 
+  PetscFunctionBegin;
+  PetscValidPointer(arr,1);
+  if(count < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Negative array length %D", count);
+  PetscValidPointer(lengths, 3);
+  PetscValidPointer(arrs, 5);
+  if(!count) PetscFunctionReturn(0);
+  link = arr->first;
+  i = 0;        /* current subarray index */
+  lengthi = 0;  /* current length of the current subarray */
+  while(link) {
+    hunk = link->hunk;
+    start = 0;  /* start of unassigned hunk space */
+    while(hunk->length-start) {
+      end = PetscMin(hunk->length, lengths[i]-lengthi);
+      len = start-end;
+      ierr = SAHunkGetSubHunk(hunk,start,len,len,hunk->mask, &subhunk); CHKERRQ(ierr);
+      ierr = SAAddHunk(arrs[i], subhunk);                               CHKERRQ(ierr);
+      start   += len;
+      lengthi += len;
+      if(lengthi == lengths[i]) {
+        lengthi = 0; ++i;
+        if(i >= count) PetscFunctionReturn(0);
+      }
+    }
+    link = link->next;
+  }
+    
+  PetscFunctionReturn(0);
+}
 
 
 
@@ -1508,15 +1594,14 @@ PetscErrorCode PetscCheckISRange(IS is, PetscInt imin, PetscInt imax, PetscBool 
 
 /* 
  FIX: If we wanted to split this into AssemblyBegin/End, some data must be passed between the stages (e.g., tags,
-      waits), this could be made into an ISMapping method.  However, then an ISMapping of some sort must be instantiated
-      for ISArray assembly.  Maybe it always happens in the common use cases, anyhow. 
+      waits), this could be made into an SAMapping method.  However, then an SAMapping of some sort must be instantiated
+      for SA assembly.  Maybe it always happens in the common use cases, anyhow. 
  */
 #undef __FUNCT__  
-#define __FUNCT__ "ISArrayAssemble"
-PetscErrorCode ISArrayAssemble(ISArray chain, PetscInt mask, PetscLayout layout, ISArray *_achain) 
+#define __FUNCT__ "SAAssemble"
+PetscErrorCode SAAssemble(SA chain, PetscInt mask, PetscLayout layout, SA achain) 
 {
   PetscErrorCode ierr;
-  ISArray achain;
   MPI_Comm comm = layout->comm;
   PetscMPIInt size, rank, tag_i, tag_v;
   PetscMPIInt chainmaskmpi, allchainmask;
@@ -1538,16 +1623,20 @@ PetscErrorCode ISArrayAssemble(ISArray chain, PetscInt mask, PetscLayout layout,
   PetscInt *aixidx, *aiyidx = PETSC_NULL;
   PetscScalar *aval = PETSC_NULL;
   const PetscScalar *val;
-  ISArrayLink link;
-  ISArrayHunk hunk, ahunk;
+  SALink link;
+  SAHunk hunk, ahunk;
 
   PetscFunctionBegin;
   PetscValidPointer(chain,1);
-  PetscValidPointer(_achain, 4);
+  PetscValidPointer(achain, 4);
 
-  /* Make sure that at least one of the indices -- I or J -- is being assembled on, and that the index being assembled on is present in the ISArray. */
-  if((mask != ISARRAY_I && mask != ISARRAY_J)|| !(mask & chain->mask))
-    SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot assemble ISArray with components %D on component %D", chain->mask, mask);
+  /* Make sure that at least one of the indices -- I or J -- is being assembled on, and that the index being assembled on is present in the SA. */
+  if((mask != SA_I && mask != SA_J)|| !(mask & chain->mask)) {
+    SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot assemble SA with components %D on component %D", chain->mask, mask);
+  }
+  if(chain->mask != achain->mask) {
+    SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Input and output array masks differ: %D and %D", chain->mask, achain->mask);
+  }
 
   /* Comm parameters */
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
@@ -1563,11 +1652,11 @@ PetscErrorCode ISArrayAssemble(ISArray chain, PetscInt mask, PetscLayout layout,
 
   /* How many index arrays are being sent? One or two? */
   ni = 0;
-  ni += ((chain->mask & ISARRAY_I) > 0);
-  ni += ((chain->mask & ISARRAY_J) > 0);
+  ni += ((chain->mask & SA_I) > 0);
+  ni += ((chain->mask & SA_J) > 0);
 
   /* How many value arrays are being sent?  One or none? */
-  nv =  ((chain->mask & ISARRAY_W) > 0);
+  nv =  ((chain->mask & SA_W) > 0);
 
 
   
@@ -1585,7 +1674,7 @@ PetscErrorCode ISArrayAssemble(ISArray chain, PetscInt mask, PetscLayout layout,
   while(link) {
     hunk = link->hunk;
     for (i=0; i<hunk->length; ++i) {
-      if(mask == ISARRAY_I) {
+      if(mask == SA_I) {
         ixidx = hunk->i;
         iyidx = hunk->j;
       }
@@ -1664,7 +1753,7 @@ PetscErrorCode ISArrayAssemble(ISArray chain, PetscInt mask, PetscLayout layout,
   count = 0;
   while(link){
     hunk = link->hunk;
-    if(mask == ISARRAY_I) {
+    if(mask == SA_I) {
       ixidx = hunk->i;
       iyidx = hunk->j;
     }
@@ -1707,13 +1796,13 @@ PetscErrorCode ISArrayAssemble(ISArray chain, PetscInt mask, PetscLayout layout,
   for(j = 0; j < nrecvs; ++j) rstarts[j+1] = rstarts[j] + rlengths[j];
 
   alength = rstarts[nrecvs];
-  /* Create a new ISArray for the received data segments */
-  ierr = ISArrayCreate(chain->mask, &achain);               CHKERRQ(ierr);
+  /* Clear the SA that will store the received data segments */
+  ierr = SAClear(achain);                      CHKERRQ(ierr);
   /* Get a hunk to pack the data into. */
-  ierr = ISArrayGetHunk(achain, alength, &ahunk);   CHKERRQ(ierr);
+  ierr = SAGetHunk(achain, alength, &ahunk);   CHKERRQ(ierr);
   
   /* Use ahunk's data arrays as receive buffers. */
-  if(mask == ISARRAY_I) {
+  if(mask == SA_I) {
     aixidx = ahunk->i;
     aiyidx = ahunk->j;
   }
@@ -1775,10 +1864,8 @@ PetscErrorCode ISArrayAssemble(ISArray chain, PetscInt mask, PetscLayout layout,
   if(nv) {
     ierr = PetscFree(svalues);  CHKERRQ(ierr);
   }
-
-  *_achain = achain;
   PetscFunctionReturn(0);
-}/* ISArrayAssemble() */
+}/* SAAssemble() */
 
 
 

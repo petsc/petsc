@@ -9,7 +9,7 @@ if __name__ == '__main__':
     '--download-mpich=1',
     '--with-cc=gcc',
     '--with-cxx=g++',
-    '--with-clanguage=cxx',
+    '--with-clanguage=C++',
     '--with-scalar-type=complex',
     '--with-dynamic-loading=1',
     '--with-shared-libraries=1',
