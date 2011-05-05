@@ -10,7 +10,7 @@ OBJSC	 = ismapgr.o
 OBJSF	 =
 LIBBASE	 = libpetscdm
 DIRS	 = 
-MANSEC	 = ISMapping
+MANSEC	 = SAMapping
 LOCDIR	 = src/dm/ismap/impls/graph/
 
 include ${PETSC_DIR}/conf/variables
