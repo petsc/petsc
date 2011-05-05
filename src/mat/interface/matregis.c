@@ -15,6 +15,12 @@ extern PetscErrorCode  MatCreate_MPIBAIJ(Mat);
 extern PetscErrorCode  MatCreate_SeqSBAIJ(Mat);
 extern PetscErrorCode  MatCreate_MPISBAIJ(Mat);
 
+extern PetscErrorCode  MatCreate_SeqBSTRM(Mat);
+extern PetscErrorCode  MatCreate_MPIBSTRM(Mat);
+
+extern PetscErrorCode  MatCreate_SeqSBSTRM(Mat);
+extern PetscErrorCode  MatCreate_MPISBSTRM(Mat);
+
 extern PetscErrorCode  MatCreate_SeqDense(Mat);
 extern PetscErrorCode  MatCreate_MPIDense(Mat);
 
@@ -103,6 +109,14 @@ PetscErrorCode  MatRegisterAll(const char path[])
   ierr = MatRegisterBaseName(MATSBAIJ,MATSEQSBAIJ,MATMPISBAIJ);CHKERRQ(ierr);
   ierr = MatRegisterDynamic(MATMPISBAIJ,       path,"MatCreate_MPISBAIJ",  MatCreate_MPISBAIJ);CHKERRQ(ierr);
   ierr = MatRegisterDynamic(MATSEQSBAIJ,       path,"MatCreate_SeqSBAIJ",  MatCreate_SeqSBAIJ);CHKERRQ(ierr);
+
+  ierr = MatRegisterBaseName(MATBSTRM,MATSEQBSTRM,MATMPIBSTRM);CHKERRQ(ierr);
+  ierr = MatRegisterDynamic(MATMPIBSTRM,        path,"MatCreate_MPIBSTRM",    MatCreate_MPIBSTRM);CHKERRQ(ierr);
+  ierr = MatRegisterDynamic(MATSEQBSTRM,        path,"MatCreate_SeqBSTRM",    MatCreate_SeqBSTRM);CHKERRQ(ierr);
+
+  ierr = MatRegisterBaseName(MATSBSTRM,MATSEQSBSTRM,MATMPISBSTRM);CHKERRQ(ierr);
+  ierr = MatRegisterDynamic(MATMPISBSTRM,       path,"MatCreate_MPISBSTRM",  MatCreate_MPISBSTRM);CHKERRQ(ierr);
+  ierr = MatRegisterDynamic(MATSEQSBSTRM,       path,"MatCreate_SeqSBSTRM",  MatCreate_SeqSBSTRM);CHKERRQ(ierr);
 
   ierr = MatRegisterBaseName(MATDENSE,MATSEQDENSE,MATMPIDENSE);CHKERRQ(ierr);
   ierr = MatRegisterDynamic(MATMPIDENSE,       path,"MatCreate_MPIDense",  MatCreate_MPIDense);CHKERRQ(ierr);

@@ -3307,6 +3307,7 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 extern PetscErrorCode  MatGetFactor_seqbaij_petsc(Mat,MatFactorType,Mat*);
+extern PetscErrorCode  MatGetFactor_seqbaij_bstrm(Mat,MatFactorType,Mat*);
 #if defined(PETSC_HAVE_MUMPS)
 extern PetscErrorCode  MatGetFactor_baij_mumps(Mat,MatFactorType,Mat*);
 #endif
@@ -3369,6 +3370,9 @@ PetscErrorCode  MatCreate_SeqBAIJ(Mat B)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_petsc_C",
                                      "MatGetFactor_seqbaij_petsc",
                                      MatGetFactor_seqbaij_petsc);CHKERRQ(ierr);
+  ierr = bstrmObjectComposeFunctionDynamic((bstrmObject)B,"MatGetFactor_bstrm_C",
+                                     "MatGetFactor_seqbaij_bstrm",
+                                     MatGetFactor_seqbaij_bstrm);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MUMPS)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_mumps_C", "MatGetFactor_baij_mumps", MatGetFactor_baij_mumps);CHKERRQ(ierr);
 #endif

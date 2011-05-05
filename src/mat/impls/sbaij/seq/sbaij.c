@@ -1825,6 +1825,7 @@ extern PetscErrorCode MatGetFactor_seqsbaij_pastix(Mat,MatFactorType,Mat*);
 extern PetscErrorCode MatGetFactor_seqsbaij_cholmod(Mat,MatFactorType,Mat*);
 #endif
 EXTERN_C_END 
+extern PetscErrorCode MatGetFactor_seqsbaij_sbstrm(Mat,MatFactorType,Mat*);
 
 /*MC
   MATSEQSBAIJ - MATSEQSBAIJ = "seqsbaij" - A matrix type to be used for sequential symmetric block sparse matrices, 
@@ -1926,6 +1927,9 @@ PetscErrorCode  MatCreate_SeqSBAIJ(Mat B)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_petsc_C",
                                      "MatGetFactor_seqsbaij_petsc",
                                      MatGetFactor_seqsbaij_petsc);CHKERRQ(ierr);
+  ierr = sbstrmObjectComposeFunctionDynamic((sbstrmObject)B,"MatGetFactor_sbstrm_C",
+                                     "MatGetFactor_seqsbaij_sbstrm",
+                                     MatGetFactor_seqsbaij_sbstrm);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatStoreValues_C",
                                      "MatStoreValues_SeqSBAIJ",
                                      MatStoreValues_SeqSBAIJ);CHKERRQ(ierr);
