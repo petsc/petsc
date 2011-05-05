@@ -1,6 +1,6 @@
 #define PETSCDM_DLL
 
-#include "private/ismapimpl.h"  /*I "petscdm.h"  I*/
+#include "private/saimpl.h"  /*I "petscsa.h"  I*/
 
 typedef struct {
   /* The following is used for mapping. */

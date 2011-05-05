@@ -1,6 +1,6 @@
 #define PETSCDM_DLL
 
-#include "private/ismapimpl.h"  /*I "petscmap.h"  I*/
+#include "private/saimpl.h"  /*I "petscsa.h"  I*/
 
 
 PetscClassId  SA_MAPPING_CLASSID;

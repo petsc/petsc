@@ -1,7 +1,7 @@
 
 ALL: lib
 
-DIRS     = ao ismap impls f90-mod interface examples
+DIRS     = ao sa impls f90-mod interface examples
 LOCDIR   = src/dm/
 MANSEC   = DM
 

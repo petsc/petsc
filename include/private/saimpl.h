@@ -1,7 +1,7 @@
-#if !defined(__ISMAPIMPL_H)
-#define __ISMAPIMPL_H
+#if !defined(__SAIMPL_H)
+#define __SAIMPL_H
 
-#include <petscmap.h>
+#include <petscsa.h>
 
 /* --------------------------------------------------------------------------*/
 struct _SAMappingOps {

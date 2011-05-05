@@ -3,15 +3,15 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC	 = ismapgr.c
+SOURCEC	 = sagraph.c
 SOURCEF	 =
 SOURCEH	 =
-OBJSC	 = ismapgr.o 
+OBJSC	 = sagraph.o 
 OBJSF	 =
 LIBBASE	 = libpetscdm
 DIRS	 = 
-MANSEC	 = SAMapping
-LOCDIR	 = src/dm/ismap/impls/graph/
+MANSEC	 = DM
+LOCDIR	 = src/dm/sa/impls/graph/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

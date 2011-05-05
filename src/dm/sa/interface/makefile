@@ -3,15 +3,15 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC	 = ismap.c
+SOURCEC	 = sa.c
 SOURCEF	 =
 SOURCEH	 =
-OBJSC	 = ismap.o
+OBJSC	 = sa.o
 OBJSF	 =
 LIBBASE	 = libpetscdm
 DIRS	 = 
 MANSEC	 = DM
-LOCDIR	 = src/dm/ismap/interface/
+LOCDIR	 = src/dm/sa/interface/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

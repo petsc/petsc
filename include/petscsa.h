@@ -1,8 +1,8 @@
 /*
       SA is a sparse array indexed by i, optionally by j, with an optional weight. SAMapping is a mapping of SAs.
 */
-#if !defined(__PETSCMAP_H)
-#define __PETSCMAP_H
+#if !defined(__PETSCSA_H)
+#define __PETSCSA_H
 #include "petscmat.h"
 PETSC_EXTERN_CXX_BEGIN
 extern PetscErrorCode  SAMappingInitializePackage(const char[]);

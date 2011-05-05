@@ -2,7 +2,7 @@
 ALL: lib
 
 DIRS     = graph
-LOCDIR   = src/dm/ismap/impls/
+LOCDIR   = src/dm/sa/impls/
 MANSEC   = DM
 
 include ${PETSC_DIR}/conf/variables

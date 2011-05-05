@@ -2,7 +2,7 @@
 ALL: lib
 
 DIRS     = interface impls
-LOCDIR   = src/dm/ismap
+LOCDIR   = src/dm/sa/
 MANSEC   = DM
 
 include ${PETSC_DIR}/conf/variables
