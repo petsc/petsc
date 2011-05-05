@@ -1824,8 +1824,8 @@ extern PetscErrorCode MatGetFactor_seqsbaij_pastix(Mat,MatFactorType,Mat*);
 #if defined(PETSC_HAVE_CHOLMOD)
 extern PetscErrorCode MatGetFactor_seqsbaij_cholmod(Mat,MatFactorType,Mat*);
 #endif
-EXTERN_C_END 
 extern PetscErrorCode MatGetFactor_seqsbaij_sbstrm(Mat,MatFactorType,Mat*);
+EXTERN_C_END 
 
 /*MC
   MATSEQSBAIJ - MATSEQSBAIJ = "seqsbaij" - A matrix type to be used for sequential symmetric block sparse matrices, 
