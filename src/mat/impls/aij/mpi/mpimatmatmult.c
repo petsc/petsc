@@ -129,6 +129,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat B,PetscReal fill,Mat *
   ierr = PetscContainerSetPointer(container,mult);CHKERRQ(ierr);
   ierr = PetscContainerSetUserDestroy(container,PetscContainerDestroy_Mat_MatMatMultMPI);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)(*C),"Mat_MatMatMultMPI",(PetscObject)container);CHKERRQ(ierr);
+  ierr = PetscContainerDestroy(&container);CHKERRQ(ierr);
   mult->destroy   = (*C)->ops->destroy;
   mult->duplicate = (*C)->ops->duplicate;
   (*C)->ops->destroy   = MatDestroy_MPIAIJ_MatMatMult;
