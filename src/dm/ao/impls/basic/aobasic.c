@@ -196,11 +196,11 @@ PetscErrorCode  AOCreate_Basic(AO ao)
 {
   AO_Basic       *aobasic;
   PetscMPIInt    *lens,size,rank,napp,*disp;
-  PetscInt       *allpetsc,*allapp,ip,ia,N,i,*petsc,start;
+  PetscInt       *allpetsc,*allapp,ip,ia,N,i,*petsc=PETSC_NULL,start;
   PetscErrorCode ierr;
   IS             isapp=ao->isapp,ispetsc=ao->ispetsc;
   MPI_Comm       comm;
-  const PetscInt *myapp,*mypetsc;
+  const PetscInt *myapp,*mypetsc=PETSC_NULL;
 
   PetscFunctionBegin;
   /* create special struct aobasic */
@@ -236,7 +236,7 @@ PetscErrorCode  AOCreate_Basic(AO ao)
       ierr = ISGetIndices(ispetsc,&mypetsc);CHKERRQ(ierr);
       petsc = (PetscInt*)mypetsc;
     }
-  }
+  } 
 
   /* get all indices on all processors */
   ierr   = PetscMalloc2(N,PetscInt, &allpetsc,N,PetscInt,&allapp);CHKERRQ(ierr);
@@ -279,7 +279,7 @@ PetscErrorCode  AOCreate_Basic(AO ao)
     if (aobasic->petsc[ia]) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Duplicate in Application ordering at position %d. Already mapped to %d, not %d.", i, aobasic->petsc[ia]-1, ip);
     aobasic->petsc[ia] = ip + 1;
   }
-  if (!mypetsc) {
+  if (napp && !mypetsc) {
     ierr = PetscFree(petsc);CHKERRQ(ierr);
   }
   ierr = PetscFree2(allpetsc,allapp);CHKERRQ(ierr);

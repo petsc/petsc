@@ -9,8 +9,8 @@ static char help[] = "Test AO with on IS with 0 entries - contributed by Ethan C
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
-  AO ao;
-  PetscInt *localvert, nlocal, rank;
+  AO             ao;
+  PetscInt       *localvert=PETSC_NULL, nlocal, rank;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
