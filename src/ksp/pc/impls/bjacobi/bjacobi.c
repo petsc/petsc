@@ -101,6 +101,13 @@ static PetscErrorCode PCSetUp_BJacobi(PC pc)
     jac->n_local   = 1;
     ierr           = PetscMalloc(sizeof(PetscInt),&jac->l_lens);CHKERRQ(ierr);
     jac->l_lens[0] = M;
+  } else { /* jac->n > 0 && jac->n_local > 0 */
+    if (!jac->l_lens) { 
+      ierr = PetscMalloc(jac->n_local*sizeof(PetscInt),&jac->l_lens);CHKERRQ(ierr);
+      for (i=0; i<jac->n_local; i++) {
+        jac->l_lens[i] = bs*((M/bs)/jac->n_local + (((M/bs) % jac->n_local) > i));
+      }
+    }
   }
   if (jac->n_local < 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Number of blocks is less than number of processors");
 
@@ -132,7 +139,7 @@ static PetscErrorCode PCSetUp_BJacobi(PC pc)
   /* ------
      Setup code depends on the number of blocks
   */
-  if (jac->n_local == 1) {
+  if (jac->n_local == 0) {
     ierr = PCSetUp_BJacobi_Singleblock(pc,mat,pmat);CHKERRQ(ierr);
   } else {
     ierr = PCSetUp_BJacobi_Multiblock(pc,mat,pmat);CHKERRQ(ierr);
@@ -923,6 +930,8 @@ PetscErrorCode PCReset_BJacobi_Multiblock(PC pc)
       ierr = ISDestroy(&bjac->is[i]);CHKERRQ(ierr);
     }
   }
+  ierr = PetscFree(jac->l_lens);CHKERRQ(ierr);
+  ierr = PetscFree(jac->g_lens);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -943,8 +952,6 @@ PetscErrorCode PCDestroy_BJacobi_Multiblock(PC pc)
     ierr = PetscFree(bjac->is);CHKERRQ(ierr);
   }
   ierr = PetscFree(jac->data);CHKERRQ(ierr);
-  ierr = PetscFree(jac->l_lens);CHKERRQ(ierr);
-  ierr = PetscFree(jac->g_lens);CHKERRQ(ierr);
   for (i=0; i<jac->n_local; i++) {
     ierr = KSPDestroy(&jac->ksp[i]);CHKERRQ(ierr);
   }
@@ -1103,8 +1110,7 @@ static PetscErrorCode PCSetUp_BJacobi_Multiblock(PC pc,Mat mat,Mat pmat)
 
     start = 0;
     for (i=0; i<n_local; i++) {
-        m = jac->l_lens[i];
-        printf("m %d\n",m);
+      m = jac->l_lens[i];
       /*
       The reason we need to generate these vectors is to serve 
       as the right-hand side and solution vector for the solve on the 
