@@ -365,9 +365,14 @@ class Configure(config.base.Configure):
         if elem not in unique and elem != '':
           unique.append(elem)
       return unique
+    def lreverse(lst):
+      rlst = []
+      for elem in lst:
+        rlst.insert(0,elem)
+      return rlst
     def nublast(lst):
       'Return a list containing the last occurrence of each unique entry in a list'
-      return reversed(nub(reversed(lst)))
+      return lreverse(nub(lreverse(lst)))
     def cmakeexpand(varname):
       return r'"${' + varname + r'}"'
     def uniqextend(lst,new):
