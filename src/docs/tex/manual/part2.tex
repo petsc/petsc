@@ -2311,7 +2311,7 @@ Application programmers can also provide their own routines to perform
 the monitoring by using the command 
 \begin{tabbing}
   KSPMonitorSet(\=KSP ksp,PetscErrorCode (*mon)(KSP ksp,int it,double rnorm,void *ctx),\\
-                \>        void *ctx,PetscErrorCode (*mondestroy)(void*));
+                \>        void *ctx,PetscErrorCode (*mondestroy)(void**));
 \end{tabbing}
 The final routine argument, \trl{ctx}, is an optional context for private
 data for the user-defined monitoring routine, \trl{mon}.  Other
@@ -3772,7 +3772,7 @@ about the iterations. The user can initiate monitoring with the
 command
 \begin{tabbing}
   SNESMonitorSet(\=SNES snes,PetscErrorCode (*mon)(SNES,int its,double norm,void* mctx),\\
-                 \>        void *mctx,PetscErrorCode (*monitordestroy)(void*));
+                 \>        void *mctx,PetscErrorCode (*monitordestroy)(void**));
 \end{tabbing}
 The routine, \trl{mon}, indicates a user-defined monitoring routine,
 where \trl{its} and \trl{mctx} respectively denote the iteration

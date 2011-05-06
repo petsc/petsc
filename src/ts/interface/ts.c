@@ -93,7 +93,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     ierr = PetscOptionsString("-ts_monitor","Monitor timestep size","TSMonitorDefault","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PetscViewerASCIIMonitorCreate(((PetscObject)ts)->comm,monfilename,((PetscObject)ts)->tablevel,&monviewer);CHKERRQ(ierr);
-      ierr = TSMonitorSet(ts,TSMonitorDefault,monviewer,(PetscErrorCode (*)(void*))PetscViewerASCIIMonitorDestroy);CHKERRQ(ierr);
+      ierr = TSMonitorSet(ts,TSMonitorDefault,monviewer,(PetscErrorCode (*)(void**))PetscViewerASCIIMonitorDestroy);CHKERRQ(ierr);
     }
     opt  = PETSC_FALSE;
     ierr = PetscOptionsBool("-ts_monitor_draw","Monitor timestep size graphically","TSMonitorLG",opt,&opt,PETSC_NULL);CHKERRQ(ierr);
@@ -1609,7 +1609,7 @@ $    int func(TS ts,PetscInt steps,PetscReal time,Vec x,void *mctx)
 
 .seealso: TSMonitorDefault(), TSMonitorCancel()
 @*/
-PetscErrorCode  TSMonitorSet(TS ts,PetscErrorCode (*monitor)(TS,PetscInt,PetscReal,Vec,void*),void *mctx,PetscErrorCode (*mdestroy)(void*))
+PetscErrorCode  TSMonitorSet(TS ts,PetscErrorCode (*monitor)(TS,PetscInt,PetscReal,Vec,void*),void *mctx,PetscErrorCode (*mdestroy)(void**))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);

@@ -1461,7 +1461,7 @@ $     monitor (KSP ksp, int it, PetscReal rnorm, void *mctx)
 
 .seealso: KSPMonitorDefault(), KSPMonitorLGCreate(), KSPMonitorCancel()
 @*/
-PetscErrorCode  KSPMonitorSet(KSP ksp,PetscErrorCode (*monitor)(KSP,PetscInt,PetscReal,void*),void *mctx,PetscErrorCode (*monitordestroy)(void*))
+PetscErrorCode  KSPMonitorSet(KSP ksp,PetscErrorCode (*monitor)(KSP,PetscInt,PetscReal,void*),void *mctx,PetscErrorCode (*monitordestroy)(void**))
 {
   PetscInt i;
 
@@ -1478,7 +1478,7 @@ PetscErrorCode  KSPMonitorSet(KSP ksp,PetscErrorCode (*monitor)(KSP,PetscInt,Pet
         PetscViewerASCIIMonitor viewer1 = (PetscViewerASCIIMonitor) mctx;
         PetscViewerASCIIMonitor viewer2 = (PetscViewerASCIIMonitor) ksp->monitorcontext[i];
         if (viewer1->viewer == viewer2->viewer) {
-          ierr = (*monitordestroy)(mctx);CHKERRQ(ierr);
+          ierr = (*monitordestroy)(&mctx);CHKERRQ(ierr);
           PetscFunctionReturn(0);
         }
       }

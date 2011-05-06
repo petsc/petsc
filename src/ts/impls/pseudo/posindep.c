@@ -355,7 +355,7 @@ static PetscErrorCode TSSetFromOptions_Pseudo(TS ts)
     ierr = PetscOptionsBool("-ts_monitor","Monitor convergence","TSPseudoMonitorDefault",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
     if (flg) {
       ierr = PetscViewerASCIIMonitorCreate(((PetscObject)ts)->comm,"stdout",0,&viewer);CHKERRQ(ierr);
-      ierr = TSMonitorSet(ts,TSPseudoMonitorDefault,viewer,(PetscErrorCode (*)(void*))PetscViewerASCIIMonitorDestroy);CHKERRQ(ierr);
+      ierr = TSMonitorSet(ts,TSPseudoMonitorDefault,viewer,(PetscErrorCode (*)(void**))PetscViewerASCIIMonitorDestroy);CHKERRQ(ierr);
     }
     flg  = PETSC_FALSE;
     ierr = PetscOptionsBool("-ts_pseudo_increment_dt_from_initial_dt","Increase dt as a ratio from original dt","TSPseudoIncrementDtFromInitialDt",flg,&flg,PETSC_NULL);CHKERRQ(ierr);

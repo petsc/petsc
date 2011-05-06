@@ -358,7 +358,7 @@ PetscErrorCode KSPSetFromOptions_LSQR(KSP ksp)
   ierr = PetscOptionsString("-ksp_monitor_lsqr","Monitor residual norm and norm of residual of normal equations","KSPMonitorSet","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscViewerASCIIMonitorCreate(((PetscObject)ksp)->comm,monfilename,((PetscObject)ksp)->tablevel,&monviewer);CHKERRQ(ierr);
-    ierr = KSPMonitorSet(ksp,KSPLSQRMonitorDefault,monviewer,(PetscErrorCode (*)(void*))PetscViewerASCIIMonitorDestroy);CHKERRQ(ierr);
+    ierr = KSPMonitorSet(ksp,KSPLSQRMonitorDefault,monviewer,(PetscErrorCode (*)(void**))PetscViewerASCIIMonitorDestroy);CHKERRQ(ierr);
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);

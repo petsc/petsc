@@ -19,7 +19,7 @@
 #include <private/tsimpl.h>                /*I   "petscts.h"   I*/
 
 typedef struct {
-  Vec X,Xdot;                   /* Storage for one stage */
+  Vec       X,Xdot;                   /* Storage for one stage */
   PetscBool extrapolate;
   PetscReal Theta;
   PetscReal shift;
@@ -105,7 +105,7 @@ static PetscErrorCode TSDestroy_Theta(TS ts)
 #define __FUNCT__ "SNESTSFormFunction_Theta"
 static PetscErrorCode SNESTSFormFunction_Theta(SNES snes,Vec x,Vec y,TS ts)
 {
-  TS_Theta *th = (TS_Theta*)ts->data;
+  TS_Theta       *th = (TS_Theta*)ts->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -118,7 +118,7 @@ static PetscErrorCode SNESTSFormFunction_Theta(SNES snes,Vec x,Vec y,TS ts)
 #define __FUNCT__ "SNESTSFormJacobian_Theta"
 static PetscErrorCode SNESTSFormJacobian_Theta(SNES snes,Vec x,Mat *A,Mat *B,MatStructure *str,TS ts)
 {
-  TS_Theta *th = (TS_Theta*)ts->data;
+  TS_Theta       *th = (TS_Theta*)ts->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -132,7 +132,7 @@ static PetscErrorCode SNESTSFormJacobian_Theta(SNES snes,Vec x,Mat *A,Mat *B,Mat
 #define __FUNCT__ "TSSetUp_Theta"
 static PetscErrorCode TSSetUp_Theta(TS ts)
 {
-  TS_Theta *th = (TS_Theta*)ts->data;
+  TS_Theta       *th = (TS_Theta*)ts->data;
   PetscErrorCode ierr;
   Vec            res;
 
@@ -149,9 +149,9 @@ static PetscErrorCode TSSetUp_Theta(TS ts)
   the Jacobian user context to snes->funP, it will actually be NULL.  This is not a problem because both snes->funP and
   snes->jacP should be the TS. */
   {
-    Mat A,B;
+    Mat            A,B;
     PetscErrorCode (*func)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
-    void *ctx;
+    void           *ctx;
     ierr = SNESGetJacobian(ts->snes,&A,&B,&func,&ctx);CHKERRQ(ierr);
     ierr = SNESSetJacobian(ts->snes,A?A:ts->A,B?B:ts->B,func?func:&SNESTSFormJacobian,ctx?ctx:ts);CHKERRQ(ierr);
   }
@@ -163,7 +163,7 @@ static PetscErrorCode TSSetUp_Theta(TS ts)
 #define __FUNCT__ "TSSetFromOptions_Theta"
 static PetscErrorCode TSSetFromOptions_Theta(TS ts)
 {
-  TS_Theta *th = (TS_Theta*)ts->data;
+  TS_Theta       *th = (TS_Theta*)ts->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

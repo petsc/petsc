@@ -51,7 +51,7 @@ int main(int argc, char **argv)
   SNES            snes;             /* nonlinear solver context */
   Mat             J;                /* Jacobian matrix */
   PetscInt        N;            /* Number of elements in vector */
-  PetscScalar     lb = -SNES_VI_INF;
+  PetscScalar     lb = .05;
   PetscScalar     ub = SNES_VI_INF;
   AppCtx          user;             /* user-defined work context */
   PetscBool       flg;

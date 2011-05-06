@@ -55,7 +55,7 @@ extern PetscErrorCode   PetscOptionsStringToInt(const char[],PetscInt*);
 extern PetscErrorCode   PetscOptionsStringToReal(const char[],PetscReal*);
 extern PetscErrorCode   PetscOptionsStringToBool(const char[],PetscBool*);
 
-extern PetscErrorCode  PetscOptionsMonitorSet(PetscErrorCode (*)(const char[], const char[], void*), void *, PetscErrorCode (*)(void*));
+extern PetscErrorCode  PetscOptionsMonitorSet(PetscErrorCode (*)(const char[], const char[], void*), void *, PetscErrorCode (*)(void**));
 extern PetscErrorCode  PetscOptionsMonitorCancel(void);
 extern PetscErrorCode  PetscOptionsMonitorDefault(const char[], const char[], void *);
 

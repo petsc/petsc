@@ -97,10 +97,10 @@ static PetscErrorCode oursnesmonitor(SNES snes,PetscInt i,PetscReal d,void*ctx)
   (*(void (PETSC_STDCALL *)(SNES*,PetscInt*,PetscReal*,void*,PetscErrorCode*))(((PetscObject)snes)->fortran_func_pointers[3]))(&snes,&i,&d,mctx,&ierr);CHKERRQ(ierr);
   return 0;
 }
-static PetscErrorCode ourmondestroy(void* ctx)
+static PetscErrorCode ourmondestroy(void** ctx)
 {
   PetscErrorCode ierr = 0;
-  SNES           snes = (SNES)ctx;
+  SNES           snes = *(SNES*)ctx;
   void           *mctx = (void*) ((PetscObject)snes)->fortran_func_pointers[4];
   (*(void (PETSC_STDCALL *)(void*,PetscErrorCode*))(((PetscObject)snes)->fortran_func_pointers[5]))(mctx,&ierr);CHKERRQ(ierr);
   return 0;

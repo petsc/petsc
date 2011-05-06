@@ -693,10 +693,12 @@ PetscErrorCode SNESVIResetPCandKSP(SNES snes,Mat Amat,Mat Pmat)
   const MatSolverPackage stype;
   
   PetscFunctionBegin;
-  /* The active and inactive set sizes have changed so need to create a new snes->ksp object */
   ierr = SNESGetKSP(snes,&snesksp);CHKERRQ(ierr);
+ 
+  ierr = KSPReset(snesksp);CHKERRQ(ierr);
+  /*
+
   ierr = KSPCreate(((PetscObject)snes)->comm,&kspnew);CHKERRQ(ierr);
-  /* Copy over snes->ksp info */
   kspnew->pc_side = snesksp->pc_side;
   kspnew->rtol    = snesksp->rtol;
   kspnew->abstol    = snesksp->abstol;
@@ -710,7 +712,7 @@ PetscErrorCode SNESVIResetPCandKSP(SNES snes,Mat Amat,Mat Pmat)
   ierr = KSPDestroy(&snesksp);CHKERRQ(ierr);
   snes->ksp = kspnew;
   ierr = PetscLogObjectParent(snes,kspnew);CHKERRQ(ierr);
-  ierr = KSPSetFromOptions(kspnew);CHKERRQ(ierr);
+   ierr = KSPSetFromOptions(kspnew);CHKERRQ(ierr);*/
   PetscFunctionReturn(0);
 }
 
@@ -745,8 +747,8 @@ PetscErrorCode SNESVIComputeInactiveSetFnorm(SNES snes,Vec F,Vec X,PetscScalar *
 }
 
 /* Variational Inequality solver using reduce space method. No semismooth algorithm is
-   implemented in this algorithm. It basically identifies the active variables and does
-   a linear solve on the inactive variables. */
+   implemented in this algorithm. It basically identifies the active constraints and does
+   a linear solve on the other variables (those not associated with the active constraints). */
 #undef __FUNCT__  
 #define __FUNCT__ "SNESSolveVI_RS"
 PetscErrorCode SNESSolveVI_RS(SNES snes)
