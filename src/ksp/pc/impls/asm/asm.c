@@ -271,21 +271,22 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
     }
     ierr = VecDestroy(&vec);CHKERRQ(ierr);
 
-    /* Create the local solvers */
-    ierr = PetscMalloc(osm->n_local_true*sizeof(KSP *),&osm->ksp);CHKERRQ(ierr);
-    for (i=0; i<osm->n_local_true; i++) {
-      ierr = KSPCreate(PETSC_COMM_SELF,&ksp);CHKERRQ(ierr);
-      ierr = PetscLogObjectParent(pc,ksp);CHKERRQ(ierr);
-      ierr = PetscObjectIncrementTabLevel((PetscObject)ksp,(PetscObject)pc,1);CHKERRQ(ierr);
-      ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
-      ierr = KSPGetPC(ksp,&subpc);CHKERRQ(ierr);
-      ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
-      ierr = KSPSetOptionsPrefix(ksp,prefix);CHKERRQ(ierr);
-      ierr = KSPAppendOptionsPrefix(ksp,"sub_");CHKERRQ(ierr);
-      osm->ksp[i] = ksp;
+    if (!osm->ksp) {
+      /* Create the local solvers */
+      ierr = PetscMalloc(osm->n_local_true*sizeof(KSP *),&osm->ksp);CHKERRQ(ierr);
+      for (i=0; i<osm->n_local_true; i++) {
+        ierr = KSPCreate(PETSC_COMM_SELF,&ksp);CHKERRQ(ierr);
+        ierr = PetscLogObjectParent(pc,ksp);CHKERRQ(ierr);
+        ierr = PetscObjectIncrementTabLevel((PetscObject)ksp,(PetscObject)pc,1);CHKERRQ(ierr);
+        ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
+        ierr = KSPGetPC(ksp,&subpc);CHKERRQ(ierr);
+        ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
+        ierr = KSPSetOptionsPrefix(ksp,prefix);CHKERRQ(ierr);
+        ierr = KSPAppendOptionsPrefix(ksp,"sub_");CHKERRQ(ierr);
+        osm->ksp[i] = ksp;
+      }
     }
     scall = MAT_INITIAL_MATRIX;
-
   } else {
     /* 
        Destroy the blocks from the previous iteration
