@@ -751,10 +751,8 @@ PetscErrorCode  TSSetIFunction(TS ts,TSIFunction f,void *ctx)
 #undef __FUNCT__
 #define __FUNCT__ "TSSetIJacobian"
 /*@C
-   TSSetIJacobian - Set the function to compute the matrix dF/dU + a*dF/dU_t which is
-   the Jacobian of G(U) = F(t,U,W+a*U) where F(t,U,U_t) = 0 is the DAE to be solved.
-   The time integrator internally approximates U_t by W+a*U where the positive "shift"
-   a and vector W depend on the integration method, step size, and past states.
+   TSSetIJacobian - Set the function to compute the matrix dF/dU + a*dF/dU_t where F(t,U,U_t) is the function
+        you provided with TSSetIFunction().  
 
    Logically Collective on TS
 
@@ -780,6 +778,13 @@ $  f(TS ts,PetscReal t,Vec U,Vec U_t,PetscReal a,Mat *A,Mat *B,MatStructure *fla
 
    Notes:
    The matrices A and B are exactly the matrices that are used by SNES for the nonlinear solve.
+
+   The matrix dF/dU + a*dF/dU_t you provide turns out to be 
+   the Jacobian of G(U) = F(t,U,W+a*U) where F(t,U,U_t) = 0 is the DAE to be solved.
+   The time integrator internally approximates U_t by W+a*U where the positive "shift"
+   a and vector W depend on the integration method, step size, and past states. For example with 
+   the backward Euler method a = 1/dt and W = -a*U(previous timestep) so
+   W + a*U = a*(U - U(previous timestep)) = (U - U(previous timestep))/dt
 
    Level: beginner
 
