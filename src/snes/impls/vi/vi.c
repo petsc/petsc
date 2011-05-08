@@ -1221,10 +1221,10 @@ PetscErrorCode SNESSolveVI_RS2(SNES snes)
       PetscInt          ncols;
       const PetscInt    *cols;
       const PetscScalar *vals;
-      PetscScalar        value=1.0;
-      PetscInt           row,col;
+      PetscScalar        value[2];
+      PetscInt           row,col[2];
       PetscInt           *d_nnz;
-
+      value[0] = 1.0; value[1] = 0.0;
       ierr = PetscMalloc((X->map->n+nkept)*sizeof(PetscInt),&d_nnz);CHKERRQ(ierr);
       ierr = PetscMemzero(d_nnz,(X->map->n+nkept)*sizeof(PetscInt));CHKERRQ(ierr);
       for(row=0;row<snes->jacobian->rmap->n;row++) {
@@ -1235,7 +1235,7 @@ PetscErrorCode SNESSolveVI_RS2(SNES snes)
 
       for(k=0;k<nkept;k++) {
         d_nnz[idx_actkept[k]] += 1;
-        d_nnz[snes->jacobian->rmap->n+k] += 1;
+        d_nnz[snes->jacobian->rmap->n+k] += 2;
       }
       ierr = MatSeqAIJSetPreallocation(J_aug,PETSC_NULL,d_nnz);CHKERRQ(ierr);
       
@@ -1249,10 +1249,10 @@ PetscErrorCode SNESSolveVI_RS2(SNES snes)
       }
       /* Add the augmented part */
       for(k=0;k<nkept;k++) {
-	row = idx_actkept[k];
-	col = snes->jacobian->rmap->n+k;
-	ierr = MatSetValues(J_aug,1,&row,1,&col,&value,INSERT_VALUES);CHKERRQ(ierr);
-	ierr = MatSetValues(J_aug,1,&col,1,&row,&value,INSERT_VALUES);CHKERRQ(ierr);
+	row = snes->jacobian->rmap->n+k;
+	col[0] = idx_actkept[k]; col[1] = snes->jacobian->rmap->n+k;
+	ierr = MatSetValues(J_aug,1,&row,1,col,value,INSERT_VALUES);CHKERRQ(ierr);
+	ierr = MatSetValues(J_aug,1,&col[0],1,&row,&value[0],INSERT_VALUES);CHKERRQ(ierr);
       }
       ierr = MatAssemblyBegin(J_aug,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
       ierr = MatAssemblyEnd(J_aug,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
