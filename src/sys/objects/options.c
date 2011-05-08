@@ -2172,7 +2172,7 @@ PetscErrorCode  PetscOptionsMonitorCancel(void)
   PetscFunctionBegin;
   for (i=0; i<options->numbermonitors; i++) {
     if (options->monitordestroy[i]) {
-      ierr = (*options->monitordestroy[i])(options->monitorcontext[i]);CHKERRQ(ierr);
+      ierr = (*options->monitordestroy[i])(&options->monitorcontext[i]);CHKERRQ(ierr);
     }
   }
   options->numbermonitors = 0;
