@@ -412,9 +412,12 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     elif output:
       lines = output.splitlines()
       if self.argDB['ignoreWarnings']:
+        # EXCEPT warnings that those bastards say we want
+        extraLines = filter(lambda s: s.find('implicit declaration of function') >= 0, lines)
         lines = filter(lambda s: not self.warningRE.search(s), lines)
         lines = filter(lambda s: s.find('In file included from') < 0, lines)
         lines = filter(lambda s: s.find('from ') < 0, lines)
+        lines += extraLines
       # GCC: Ignore headers to toplevel
       lines = filter(lambda s: s.find('At the top level') < 0, lines)
       # GCC: Ignore headers to functions
