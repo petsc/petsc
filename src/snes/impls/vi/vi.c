@@ -1166,8 +1166,9 @@ PetscErrorCode SNESSolveVI_RS2(SNES snes)
 
     /* Get local active set size */
     ierr = ISGetLocalSize(IS_act,&nis_act);CHKERRQ(ierr);
-    ierr = ISGetIndices(IS_act,&idx_act);CHKERRQ(ierr);
-    if(nis_act) {
+    if (nis_act) {
+      ierr = ISGetIndices(IS_act,&idx_act);CHKERRQ(ierr);
+      IS_redact  = PETSC_NULL;
       if(vi->checkredundancy) {
 	(*vi->checkredundancy)(snes,IS_act,&IS_redact,vi->ctxP);
       }
@@ -1259,6 +1260,8 @@ PetscErrorCode SNESSolveVI_RS2(SNES snes)
       /* Only considering prejac = jac for now */
       Jpre_aug = J_aug;
       } /* local vars*/
+      ierr = ISRestoreIndices(IS_act,&idx_act);CHKERRQ(ierr);
+      ierr = ISDestroy(&IS_act);CHKERRQ(ierr);
     } else {
       F_aug = F; J_aug = snes->jacobian; Y_aug = Y; Jpre_aug = snes->jacobian_pre;
     }
