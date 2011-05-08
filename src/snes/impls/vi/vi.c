@@ -1090,8 +1090,8 @@ PetscErrorCode SNESVISetRedundancyCheckMatlab(SNES snes,const char* func,mxArray
    Specific implementation for Allen-Cahn problem 
 */
 #undef __FUNCT__  
-#define __FUNCT__ "SNESSolveVI_RS2"
-PetscErrorCode SNESSolveVI_RS2(SNES snes)
+#define __FUNCT__ "SNESSolveVI_RSAUG"
+PetscErrorCode SNESSolveVI_RSAUG(SNES snes)
 { 
   SNES_VI          *vi = (SNES_VI*)snes->data;
   PetscErrorCode    ierr;
@@ -2004,10 +2004,10 @@ static PetscErrorCode SNESView_VI(SNES snes,PetscViewer viewer)
     if (vi->LineSearch == SNESLineSearchNo_VI)             cstr = "SNESLineSearchNo";
     else if (vi->LineSearch == SNESLineSearchQuadratic_VI) cstr = "SNESLineSearchQuadratic";
     else if (vi->LineSearch == SNESLineSearchCubic_VI)     cstr = "SNESLineSearchCubic";
-    else                                                             cstr = "unknown";
-    if (snes->ops->solve == SNESSolveVI_SS)      tstr = "Semismooth";
-    else if (snes->ops->solve == SNESSolveVI_RS) tstr = "Reduced Space";
-    else if (snes->ops->solve == SNESSolveVI_RS2) tstr = "Augmented Space";
+    else                                                   cstr = "unknown";
+    if (snes->ops->solve == SNESSolveVI_SS)         tstr = "Semismooth";
+    else if (snes->ops->solve == SNESSolveVI_RS)    tstr = "Reduced Space";
+    else if (snes->ops->solve == SNESSolveVI_RSAUG) tstr = "Reduced space with augmented variables";
     else                                         tstr = "unknown";
     ierr = PetscViewerASCIIPrintf(viewer,"  VI algorithm: %s\n",tstr);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  line search variant: %s\n",cstr);CHKERRQ(ierr);
@@ -2068,7 +2068,7 @@ static PetscErrorCode SNESSetFromOptions_VI(SNES snes)
 {
   SNES_VI        *vi = (SNES_VI *)snes->data;
   const char     *lses[] = {"basic","basicnonorms","quadratic","cubic"};
-  const char     *vies[] = {"ss","rs","rs2"};
+  const char     *vies[] = {"ss","rs","rsaug"};
   PetscErrorCode ierr;
   PetscInt       indx;
   PetscBool      flg,set,flg2;
@@ -2095,7 +2095,7 @@ static PetscErrorCode SNESSetFromOptions_VI(SNES snes)
       snes->ops->solve = SNESSolveVI_RS;
       break;
     case 2:
-      snes->ops->solve = SNESSolveVI_RS2;
+      snes->ops->solve = SNESSolveVI_RSAUG;
     }
   }
   ierr = PetscOptionsEList("-snes_ls","Line search used","SNESLineSearchSet",lses,4,"basic",&indx,&flg);CHKERRQ(ierr);
