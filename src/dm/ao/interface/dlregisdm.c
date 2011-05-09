@@ -206,8 +206,7 @@ PetscErrorCode  DMInitializePackage(const char path[])
 }
 
 extern PetscErrorCode  SAMappingInitializePackage(const char path[]);
-extern PetscErrorCode  ISMappingInitializePackage(const char path[]);
-#endif
+
 
 #ifdef PETSC_USE_DYNAMIC_LIBRARIES
 EXTERN_C_BEGIN
@@ -228,8 +227,7 @@ PetscErrorCode  PetscDLLibraryRegister_petscdm(const char path[])
 
   PetscFunctionBegin;
   ierr = SAMappingInitializePackage(PETSC_NULL); CHKERRQ(ierr);
-  ierr = ISMappingInitializePackage(path); CHKERRQ(ierr);
-#endif
+
   ierr = AOInitializePackage(path);CHKERRQ(ierr);
   ierr = DMInitializePackage(path);CHKERRQ(ierr);
   PetscFunctionReturn(0);
