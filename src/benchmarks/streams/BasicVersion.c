@@ -161,26 +161,31 @@ int main(int argc,char **args)
 	{
    MPI_Barrier(MPI_COMM_WORLD);
 	times[0][k] = second();
+   MPI_Barrier(MPI_COMM_WORLD);
 	for (j=0; j<N; j++)
 	    c[j] = a[j];
-	times[0][k] = second() - times[0][k];
-	
    MPI_Barrier(MPI_COMM_WORLD);
+	times[0][k] = second() - times[0][k];
+
 	times[1][k] = second();
+   MPI_Barrier(MPI_COMM_WORLD);
 	for (j=0; j<N; j++)
 	    b[j] = scalar*c[j];
-	times[1][k] = second() - times[1][k];
-	
    MPI_Barrier(MPI_COMM_WORLD);
+	times[1][k] = second() - times[1][k];
+
 	times[2][k] = second();
+   MPI_Barrier(MPI_COMM_WORLD);
 	for (j=0; j<N; j++)
 	    c[j] = a[j]+b[j];
-	times[2][k] = second() - times[2][k];
-	
    MPI_Barrier(MPI_COMM_WORLD);
+	times[2][k] = second() - times[2][k];
+
 	times[3][k] = second();
+   MPI_Barrier(MPI_COMM_WORLD);
 	for (j=0; j<N; j++)
 	    a[j] = b[j]+scalar*c[j];
+   MPI_Barrier(MPI_COMM_WORLD);
 	times[3][k] = second() - times[3][k];
      }
 

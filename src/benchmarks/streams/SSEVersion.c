@@ -159,8 +159,10 @@ int main(int argc,char *argv[])
 
   scalar = 3.0;
   for (k=0; k<NTIMES; k++) {
+    MPI_Barrier(PETSC_COMM_WORLD);
     /* ### COPY: c <- a ### */
     times[0][k] = Second();
+    MPI_Barrier(PETSC_COMM_WORLD);
 #if USE_MEMCPY
     memcpy(c,a,N*sizeof(double));
 #elif SSE2
@@ -176,10 +178,12 @@ int main(int argc,char *argv[])
 #else
     for (j=0; j<N; j++) c[j] = a[j];
 #endif
+    MPI_Barrier(PETSC_COMM_WORLD);
     times[0][k] = Second() - times[0][k];
 
     /* ### SCALE: b <- scalar * c ### */
     times[1][k] = Second();
+    MPI_Barrier(PETSC_COMM_WORLD);
 #if SSE2
     {
       __m128d scalar2 = _mm_set1_pd(scalar);
@@ -196,10 +200,12 @@ int main(int argc,char *argv[])
 #else
     for (j=0; j<N; j++) b[j] = scalar*c[j];
 #endif
+    MPI_Barrier(PETSC_COMM_WORLD);
     times[1][k] = Second() - times[1][k];
 
     /* ### ADD: c <- a + b ### */
     times[2][k] = Second();
+    MPI_Barrier(PETSC_COMM_WORLD);
 #if SSE2
     {
       for (j=0; j<N; j+=8) {
@@ -216,10 +222,12 @@ int main(int argc,char *argv[])
 #else
     for (j=0; j<N; j++) c[j] = a[j]+b[j];
 #endif
+    MPI_Barrier(PETSC_COMM_WORLD);
     times[2][k] = Second() - times[2][k];
 
     /* ### TRIAD: a <- b + scalar * c ### */
     times[3][k] = Second();
+    MPI_Barrier(PETSC_COMM_WORLD);
 #if SSE2
     {
       __m128d scalar2 = _mm_set1_pd(scalar);
@@ -237,6 +245,7 @@ int main(int argc,char *argv[])
 #else
     for (j=0; j<N; j++) a[j] = b[j]+scalar*c[j];
 #endif
+    MPI_Barrier(PETSC_COMM_WORLD);
     times[3][k] = Second() - times[3][k];
   }
 
@@ -262,9 +271,7 @@ int main(int argc,char *argv[])
 
 static double Second() {
   double t;
-  MPI_Barrier(PETSC_COMM_WORLD);
   PetscTime(t);
-  MPI_Barrier(PETSC_COMM_WORLD);
   return t;
 }
 
@@ -278,8 +285,7 @@ static int checktick()
 
   for (i = 0; i < M; i++) {
     t1 = Second();
-    while( ((t2=Second()) - t1) < 1.0E-6 )
-      ;
+    while ((t2 = Second()) - t1 < 1.0E-6) {}
     timesfound[i] = t1 = t2;
   }
 
