@@ -1,8 +1,8 @@
 
 ALL: lib
 
-DIRS     = is
-LOCDIR   = src/dm/ismap/impls
+DIRS     = interface impls
+LOCDIR   = src/dm/sa/
 MANSEC   = DM
 SUBMANSEC= ISMAP
 

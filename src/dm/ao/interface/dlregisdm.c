@@ -205,7 +205,7 @@ PetscErrorCode  DMInitializePackage(const char path[])
   PetscFunctionReturn(0);
 }
 
-#ifdef PETSC_HAVE_IS_MAPPING
+extern PetscErrorCode  SAMappingInitializePackage(const char path[]);
 extern PetscErrorCode  ISMappingInitializePackage(const char path[]);
 #endif
 
@@ -227,7 +227,7 @@ PetscErrorCode  PetscDLLibraryRegister_petscdm(const char path[])
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-#ifdef PETSC_HAVE_IS_MAPPING
+  ierr = SAMappingInitializePackage(PETSC_NULL); CHKERRQ(ierr);
   ierr = ISMappingInitializePackage(path); CHKERRQ(ierr);
 #endif
   ierr = AOInitializePackage(path);CHKERRQ(ierr);
