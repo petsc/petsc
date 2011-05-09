@@ -181,7 +181,7 @@ do{                                                                     \
 
 #undef __FUNCT__  
 #define __FUNCT__ "SAMappingGraphMap_Private"
-static PetscErrorCode SAMappingGraphMap_Private(SAMapping map, PetscInt insize, const PetscInt inidxi[], const PetscReal inval[], const PetscInt inidxj[], PetscInt *outsize, PetscInt outidxi[], PetscScalar outval[], PetscInt outidxj[], PetscInt outsizes[], PetscBool local, PetscBool drop) 
+static PetscErrorCode SAMappingGraphMap_Private(SAMapping map, PetscInt insize, const PetscInt inidxi[], const PetscScalar inval[], const PetscInt inidxj[], PetscInt *outsize, PetscInt outidxi[], PetscScalar outval[], PetscInt outidxj[], PetscInt outsizes[], PetscBool local, PetscBool drop) 
 {
   SAMapping_Graph *mapg = (SAMapping_Graph*)map->data;
   PetscInt i,j,k,last,low,high,ind,count;
@@ -366,7 +366,7 @@ static PetscErrorCode SAMappingGraphBinSA_Private(SAMapping map, SA inarr, Petsc
   PetscErrorCode ierr;
   SAMapping_Graph *mapg = (SAMapping_Graph*)map->data;
   PetscInt      *binoff, *bincount, i,j,k,count,last,low,high,ind, *inidxi,*inidxj,*outidxi,*outidxj;
-  PetscReal     *inval, *outval;
+  PetscScalar     *inval, *outval;
   SALink link;
   SAHunk inhunk, outhunk;
 
