@@ -2,11 +2,11 @@
 ALL: 
 
 CFLAGS	      = -fopenmp
-FFLAGS	      =	 
+FFLAGS	      =
 CPPFLAGS      =
 FPPFLAGS      =
 LOCDIR        = src/benchmarks/streams/
-EXAMPLESC     = BasicVersion.c OpenMPVersion.c
+EXAMPLESC     = BasicVersion.c OpenMPVersion.c SSEVersion.c
 EXAMPLESF     = 
 TESTS         = BasicVersion OpenMPVersion
 MANSEC        = Sys
@@ -22,6 +22,10 @@ BasicVersion: BasicVersion.o  chkopts
 OpenMPVersion: OpenMPVersion.o  chkopts 
 	-${CLINKER} -o OpenMPVersion OpenMPVersion.o ${PETSC_LIB}
 	${RM} -f OpenMPVersion.o
+
+SSEVersion: SSEVersion.o chkopts
+	-${CLINKER} -o $@ $< ${PETSC_LIB}
+	${RM} -f $<
 
 test:  BasicVersion OpenMPVersion
 	-@echo "Time Taken by STREAMS as follows"

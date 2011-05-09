@@ -310,7 +310,7 @@ PetscErrorCode PetscSetFPTrap(PetscFPTrap on)
   PetscFunctionReturn(0);
 }
 
-#elif defined PETSC_HAVE_FENV_H
+#elif defined(PETSC_HAVE_FENV_H) && !defined(__cplusplus)
 /*
    C99 style floating point environment.
 

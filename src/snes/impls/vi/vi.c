@@ -1090,8 +1090,8 @@ PetscErrorCode SNESVISetRedundancyCheckMatlab(SNES snes,const char* func,mxArray
    Specific implementation for Allen-Cahn problem 
 */
 #undef __FUNCT__  
-#define __FUNCT__ "SNESSolveVI_RS2"
-PetscErrorCode SNESSolveVI_RS2(SNES snes)
+#define __FUNCT__ "SNESSolveVI_RSAUG"
+PetscErrorCode SNESSolveVI_RSAUG(SNES snes)
 { 
   SNES_VI          *vi = (SNES_VI*)snes->data;
   PetscErrorCode    ierr;
@@ -1166,8 +1166,9 @@ PetscErrorCode SNESSolveVI_RS2(SNES snes)
 
     /* Get local active set size */
     ierr = ISGetLocalSize(IS_act,&nis_act);CHKERRQ(ierr);
-    ierr = ISGetIndices(IS_act,&idx_act);CHKERRQ(ierr);
-    if(nis_act) {
+    if (nis_act) {
+      ierr = ISGetIndices(IS_act,&idx_act);CHKERRQ(ierr);
+      IS_redact  = PETSC_NULL;
       if(vi->checkredundancy) {
 	(*vi->checkredundancy)(snes,IS_act,&IS_redact,vi->ctxP);
       }
@@ -1259,6 +1260,8 @@ PetscErrorCode SNESSolveVI_RS2(SNES snes)
       /* Only considering prejac = jac for now */
       Jpre_aug = J_aug;
       } /* local vars*/
+      ierr = ISRestoreIndices(IS_act,&idx_act);CHKERRQ(ierr);
+      ierr = ISDestroy(&IS_act);CHKERRQ(ierr);
     } else {
       F_aug = F; J_aug = snes->jacobian; Y_aug = Y; Jpre_aug = snes->jacobian_pre;
     }
@@ -2001,10 +2004,10 @@ static PetscErrorCode SNESView_VI(SNES snes,PetscViewer viewer)
     if (vi->LineSearch == SNESLineSearchNo_VI)             cstr = "SNESLineSearchNo";
     else if (vi->LineSearch == SNESLineSearchQuadratic_VI) cstr = "SNESLineSearchQuadratic";
     else if (vi->LineSearch == SNESLineSearchCubic_VI)     cstr = "SNESLineSearchCubic";
-    else                                                             cstr = "unknown";
-    if (snes->ops->solve == SNESSolveVI_SS)      tstr = "Semismooth";
-    else if (snes->ops->solve == SNESSolveVI_RS) tstr = "Reduced Space";
-    else if (snes->ops->solve == SNESSolveVI_RS2) tstr = "Augmented Space";
+    else                                                   cstr = "unknown";
+    if (snes->ops->solve == SNESSolveVI_SS)         tstr = "Semismooth";
+    else if (snes->ops->solve == SNESSolveVI_RS)    tstr = "Reduced Space";
+    else if (snes->ops->solve == SNESSolveVI_RSAUG) tstr = "Reduced space with augmented variables";
     else                                         tstr = "unknown";
     ierr = PetscViewerASCIIPrintf(viewer,"  VI algorithm: %s\n",tstr);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  line search variant: %s\n",cstr);CHKERRQ(ierr);
@@ -2065,7 +2068,7 @@ static PetscErrorCode SNESSetFromOptions_VI(SNES snes)
 {
   SNES_VI        *vi = (SNES_VI *)snes->data;
   const char     *lses[] = {"basic","basicnonorms","quadratic","cubic"};
-  const char     *vies[] = {"ss","rs","rs2"};
+  const char     *vies[] = {"ss","rs","rsaug"};
   PetscErrorCode ierr;
   PetscInt       indx;
   PetscBool      flg,set,flg2;
@@ -2092,7 +2095,7 @@ static PetscErrorCode SNESSetFromOptions_VI(SNES snes)
       snes->ops->solve = SNESSolveVI_RS;
       break;
     case 2:
-      snes->ops->solve = SNESSolveVI_RS2;
+      snes->ops->solve = SNESSolveVI_RSAUG;
     }
   }
   ierr = PetscOptionsEList("-snes_ls","Line search used","SNESLineSearchSet",lses,4,"basic",&indx,&flg);CHKERRQ(ierr);
@@ -2117,14 +2120,12 @@ static PetscErrorCode SNESSetFromOptions_VI(SNES snes)
 }
 /* -------------------------------------------------------------------------- */
 /*MC
-      SNESVI - Semismooth newton method based nonlinear solver that uses a line search
+      SNESVI - Various solvers for variational inequalities based on Newton's method
 
    Options Database:
-+   -snes_ls [cubic,quadratic,basic,basicnonorms] - Selects line search
-.   -snes_ls_alpha <alpha> - Sets alpha
-.   -snes_ls_maxstep <maxstep> - Sets the maximum stepsize the line search will use (if the 2-norm(y) > maxstep then scale y to be y = (maxstep/2-norm(y)) *y)
-.   -snes_ls_minlambda <minlambda>  - Sets the minimum lambda the line search will use  minlambda / max_i ( y[i]/x[i] )
--   -snes_ls_monitor - print information about progress of line searches 
++   -snes_vi_type <ss,rs,rsaug> a semi-smooth solver, a reduced space active set method and a reduced space active set method that does not eliminate the active constraints from the Jacobian instead augments the Jacobian with 
+                                additional variables that enforce the constraints
+-   -snes_vi_monitor - prints the number of active constraints at each iteration.
 
 
    Level: beginner
