@@ -1003,19 +1003,19 @@ PetscErrorCode SAMappingSetType(SAMapping map, const SAMappingType maptype) {
 
 #undef  __FUNCT__
 #define __FUNCT__ "SAMappingDestroy"
-PetscErrorCode SAMappingDestroy(SAMapping map) 
+PetscErrorCode SAMappingDestroy(SAMapping *_map) 
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(map,SA_MAPPING_CLASSID,1);
-  PetscValidHeaderSpecific(*map,IS_MAPPING_CLASSID,1);
-  if(--((PetscObject)(*map))->refct > 0) PetscFunctionReturn(0);
-  if((*map)->ops->destroy) {
-    ierr = (*(*map)->ops->destroy)(*map); CHKERRQ(ierr);
+  if(!*_map) PetscFunctionReturn(0);
+  PetscValidHeaderSpecific((*_map),SA_MAPPING_CLASSID,1);
+  if(--((PetscObject)(*_map))->refct > 0) PetscFunctionReturn(0);
+  if((*_map)->ops->destroy) {
+    ierr = (*(*_map)->ops->destroy)(*_map); CHKERRQ(ierr);
   }
-  ierr = PetscLayoutDestroy(&(*map)->xlayout); CHKERRQ(ierr);
-  ierr = PetscLayoutDestroy(&(*map)->ylayout); CHKERRQ(ierr);
-  ierr = PetscHeaderDestroy(map); CHKERRQ(ierr);
+  ierr = PetscLayoutDestroy(&(*_map)->xlayout); CHKERRQ(ierr);
+  ierr = PetscLayoutDestroy(&(*_map)->ylayout); CHKERRQ(ierr);
+  ierr = PetscHeaderDestroy(_map); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }/* SAMappingDestroy() */
 
@@ -1076,6 +1076,7 @@ PetscErrorCode SAHunkCreate(PetscInt maxlength, SAComponents mask, SAHunk *_hunk
   }
   hunk->mode = PETSC_OWN_POINTER;
   hunk->length = 0;
+  hunk->refcnt = 1;
   *_hunk = hunk;
   PetscFunctionReturn(0);
 }
@@ -1150,22 +1151,23 @@ PetscErrorCode SAHunkGetSubHunk(SAHunk hunk, PetscInt start, PetscInt maxlength,
 
 #undef  __FUNCT__
 #define __FUNCT__ "SAHunkDestroy"
-PetscErrorCode SAHunkDestroy(SAHunk hunk) 
+PetscErrorCode SAHunkDestroy(SAHunk *_hunk) 
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  if((hunk->refcnt)--) PetscFunctionReturn(0);
-  if(hunk->length && hunk->mode != PETSC_USE_POINTER) {
-      ierr = PetscFree(hunk->i); CHKERRQ(ierr);
-      ierr = PetscFree(hunk->w); CHKERRQ(ierr);
-      ierr = PetscFree(hunk->j); CHKERRQ(ierr);
+  if(!*_hunk) PetscFunctionReturn(0);
+  if(--((*_hunk)->refcnt) > 0) {*_hunk = 0; PetscFunctionReturn(0);}
+  if((*_hunk)->length && (*_hunk)->mode != PETSC_USE_POINTER) {
+    ierr = PetscFree((*_hunk)->i); CHKERRQ(ierr);
+    ierr = PetscFree((*_hunk)->w); CHKERRQ(ierr);
+    ierr = PetscFree((*_hunk)->j); CHKERRQ(ierr);
   }
-  hunk->length = 0;
-  if(hunk->parent) {
-    ierr = SAHunkDestroy(hunk->parent); CHKERRQ(ierr);
+  (*_hunk)->length = 0;
+  if((*_hunk)->parent) {
+    ierr = SAHunkDestroy(&((*_hunk)->parent)); CHKERRQ(ierr);
   }
-  hunk->parent = PETSC_NULL;
-  ierr = PetscFree(hunk); CHKERRQ(ierr);
+  ierr = PetscFree((*_hunk)); CHKERRQ(ierr);
+  *_hunk = PETSC_NULL;
   PetscFunctionReturn(0);
 }
 
@@ -1226,13 +1228,15 @@ PetscErrorCode SACreateArrays(SAComponents mask, PetscInt count, SA **_arrays)
 PetscErrorCode SAClear(SA arr) 
 {
   PetscErrorCode ierr;
-  SALink    link;
+  SALink    link, next;
   PetscFunctionBegin;
   PetscValidPointer(arr,1);
   link = arr->first;
   while(link) {
-    ierr = SAHunkDestroy(link->hunk); CHKERRQ(ierr);
-    link = link->next;
+    ierr = SAHunkDestroy(&(link->hunk)); CHKERRQ(ierr);
+    next = link->next;
+    ierr = PetscFree(link);              CHKERRQ(ierr);
+    link = next;
   }
   arr->first = PETSC_NULL;
   arr->last  = PETSC_NULL;
@@ -1243,14 +1247,15 @@ PetscErrorCode SAClear(SA arr)
 
 #undef  __FUNCT__
 #define __FUNCT__ "SADestroy"
-PetscErrorCode SADestroy(SA chain) 
+PetscErrorCode SADestroy(SA *_arr) 
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidPointer(chain,1);
-  ierr = SAClear(chain); CHKERRQ(ierr);
-  chain->mask   = 0;
-  ierr = PetscFree(chain);    CHKERRQ(ierr);
+  if(!*_arr) PetscFunctionReturn(0);
+  ierr = SAClear(*_arr);      CHKERRQ(ierr);
+  (*_arr)->mask   = 0;
+  ierr = PetscFree(*_arr);    CHKERRQ(ierr);
+  *_arr = PETSC_NULL;
   PetscFunctionReturn(0);
 }
 

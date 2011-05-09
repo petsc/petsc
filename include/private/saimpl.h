@@ -106,7 +106,7 @@ struct _n_SA {
 
 extern PetscErrorCode SAHunkCreate(PetscInt length, PetscInt mask, SAHunk *_newhunk);
 extern PetscErrorCode SAHunkGetSubHunk(SAHunk hunk, PetscInt start, PetscInt maxlength, PetscInt length, PetscInt mask, SAHunk *_subhunk);
-extern PetscErrorCode SAHunkDestroy(SAHunk hunk);
+extern PetscErrorCode SAHunkDestroy(SAHunk *_hunk);
 extern PetscErrorCode SAHunkAddData(SAHunk hunk, PetscInt length, const PetscInt *i, const PetscScalar *w, const PetscInt *j);
 
 

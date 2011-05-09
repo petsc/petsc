@@ -218,7 +218,7 @@ static PetscErrorCode SAMappingGraphMap_Private(SAMapping map, PetscInt insize, 
   }/* for(i = 0; i < len; ++i) */
   if(outsize) *outsize = j;
   PetscFunctionReturn(0);
-}/* SAMappingGraphMap_Private() */
+}
 
 
 #undef __FUNCT__  
@@ -311,7 +311,7 @@ static PetscErrorCode SAMappingMapSplit_Graph(SAMapping map, SA inarr, SAIndex i
   ierr = SACreate(inarr->mask, &outarr);                                                                     CHKERRQ(ierr);
   ierr = SAMappingGraphMapSA_Private(map,inarr,index,outarr,&outsizes,&own_outsizes,PETSC_FALSE,PETSC_TRUE); CHKERRQ(ierr);
   ierr = SASplit(outarr, inarr->length, outsizes, outarr->mask, outarrs);                                    CHKERRQ(ierr);
-  ierr = SADestroy(outarr);                                                                                  CHKERRQ(ierr);
+  ierr = SADestroy(&outarr);                                                                                  CHKERRQ(ierr);
   if(own_outsizes) {
     ierr = PetscFree(outsizes); CHKERRQ(ierr);
   }
@@ -351,7 +351,7 @@ static PetscErrorCode SAMappingMapSplitLocal_Graph(SAMapping map, SA inarr, SAIn
   ierr = SACreate(inarr->mask, &outarr);                                                                    CHKERRQ(ierr);
   ierr = SAMappingGraphMapSA_Private(map,inarr,index,outarr,&outsizes,&own_outsizes,PETSC_TRUE,PETSC_TRUE); CHKERRQ(ierr);
   ierr = SASplit(outarr, inarr->length, outsizes, outarr->mask, outarrs);                                   CHKERRQ(ierr);
-  ierr = SADestroy(outarr);                                                                                 CHKERRQ(ierr);
+  ierr = SADestroy(&outarr);                                                                                 CHKERRQ(ierr);
   if(own_outsizes) {
     ierr = PetscFree(outsizes); CHKERRQ(ierr);
   }
@@ -451,7 +451,6 @@ static PetscErrorCode SAMappingGraphBinSA_Private(SAMapping map, SA inarr, Petsc
   }/* while(link) */
   if(_outsizes) *_outsizes = bincount;
   PetscFunctionReturn(0);
-
 }
 
 #undef __FUNCT__  
@@ -481,7 +480,7 @@ static PetscErrorCode SAMappingBinSplit_Graph(SAMapping map, SA inarr, SAIndex i
   ierr = SACreate(inarr->mask, &outarr);                                                             CHKERRQ(ierr);
   ierr = SAMappingGraphBinSA_Private(map, inarr, index, outarr, &outsizes, PETSC_FALSE, PETSC_TRUE); CHKERRQ(ierr);
   ierr = SASplit(outarr, mapg->n, outsizes, outarr->mask, outarrs);                                  CHKERRQ(ierr);
-  ierr = SADestroy(outarr);                                                                          CHKERRQ(ierr);
+  ierr = SADestroy(&outarr);                                                                          CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -515,7 +514,7 @@ static PetscErrorCode SAMappingBinSplitLocal_Graph(SAMapping map, SA inarr, SAIn
   ierr = SACreate(inarr->mask, &outarr);                                                            CHKERRQ(ierr);
   ierr = SAMappingGraphBinSA_Private(map, inarr, index, outarr, &outsizes, PETSC_TRUE, PETSC_TRUE); CHKERRQ(ierr);
   ierr = SASplit(outarr, mapg->n, outsizes, outarr->mask, outarrs);                                 CHKERRQ(ierr);
-  ierr = SADestroy(outarr);                                                                         CHKERRQ(ierr);
+  ierr = SADestroy(&outarr);                                                                         CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -687,10 +686,10 @@ static PetscErrorCode SAMappingGraphAssembleEdgesLocal_Private(SAMapping map, SA
   mapg->maxijlen = maxnij;
 
   if(edges != medges) {
-    ierr = SADestroy(medges); CHKERRQ(ierr);
+    ierr = SADestroy(&medges); CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
-}/* SAMappingGraphAssembleEdgesLocal_Private() */
+}
 
 
 #undef  __FUNCT__
@@ -712,6 +711,7 @@ PetscErrorCode SAMappingGraphAddEdgesSA(SAMapping map, SA edges)
     ierr = PetscCheckIntArrayRange(hunk->length, hunk->i, 0, map->xlayout->N, PETSC_TRUE, PETSC_NULL); CHKERRQ(ierr);
     ierr = PetscCheckIntArrayRange(hunk->length, hunk->j, 0, map->ylayout->N, PETSC_TRUE, PETSC_NULL); CHKERRQ(ierr);
     link = link->next;
+  }
   ierr = SAAddArray(mapg->edges, edges); CHKERRQ(ierr);
   map->assembled = PETSC_FALSE;
   PetscFunctionReturn(0);
@@ -758,10 +758,10 @@ PetscErrorCode SAMappingGraphAddEdgesIS(SAMapping map, IS inix, IS iniy)
   ierr = ISRestoreIndices(ix,&ixidx); CHKERRQ(ierr);
   ierr = ISRestoreIndices(iy,&iyidx); CHKERRQ(ierr);
   if(!inix) {
-    ierr = ISDestroy(ix); CHKERRQ(ierr);
+    ierr = ISDestroy(&ix); CHKERRQ(ierr);
   }
   if(!iniy) {
-    ierr = ISDestroy(iy); CHKERRQ(ierr);
+    ierr = ISDestroy(&iy); CHKERRQ(ierr);
   }
   map->assembled = PETSC_FALSE;
   PetscFunctionReturn(0);
@@ -783,7 +783,7 @@ PetscErrorCode SAMappingGraphAddEdges(SAMapping map, PetscInt len, const PetscIn
   ierr = SAAddData(mapg->edges, len, ii, PETSC_NULL, jj); CHKERRQ(ierr);
   map->assembled = PETSC_FALSE;
   PetscFunctionReturn(0);
-}/* SAMappingGraphAddEdges() */
+}
 
 
 #undef  __FUNCT__
@@ -910,7 +910,7 @@ PetscErrorCode SAMappingGraphGetEdgesSA(SAMapping map, SA *_edges)
 
 #undef __FUNCT__
 #define __FUNCT__ "SAMappingAssemblyBegin_Graph"
-static PetscErrorCode SAMappingAssemblyBegin_Graph(SAMapping map)
+PetscErrorCode SAMappingAssemblyBegin_Graph(SAMapping map)
 {
   SAMapping_Graph   *mapg  = (SAMapping_Graph*)(map->data);
   PetscErrorCode ierr;
@@ -927,7 +927,7 @@ static PetscErrorCode SAMappingAssemblyBegin_Graph(SAMapping map)
     ierr = SAAssemble(mapg->edges, SA_I, map->xlayout, aedges);         CHKERRQ(ierr);
     /* Assemble edges locally. */
     ierr = SAMappingGraphAssembleEdgesLocal_Private(map,aedges);                  CHKERRQ(ierr);
-    ierr = SADestroy(aedges);                                                CHKERRQ(ierr);
+    ierr = SADestroy(&aedges);                                                CHKERRQ(ierr);
   }
   else {
     /* Assemble edges locally. */
@@ -935,12 +935,12 @@ static PetscErrorCode SAMappingAssemblyBegin_Graph(SAMapping map)
   }
   ierr = SAClear(mapg->edges); CHKERRQ(ierr);
   PetscFunctionReturn(0);
-}/* SAMappingAssemblyBegin_Graph() */
+}
 
 
 #undef __FUNCT__
 #define __FUNCT__ "SAMappingAssemblyEnd_Graph"
-static PetscErrorCode SAMappingAssemblyEnd_Graph(SAMapping map)
+PetscErrorCode SAMappingAssemblyEnd_Graph(SAMapping map)
 {
   PetscFunctionBegin;
   /* Currently a noop */
@@ -1079,24 +1079,24 @@ PetscErrorCode SAMappingGetOperator_Graph(SAMapping map, Mat *mat)
   ierr = VecDestroy(&x); CHKERRQ(ierr);
   ierr = VecDestroy(&y); CHKERRQ(ierr);
   PetscFunctionReturn(0);
-}/* SAMappingGetOperator_Graph() */
+}
 
 
 #undef  __FUNCT__
 #define __FUNCT__ "SAMappingView_Graph"
-static PetscErrorCode SAMappingView_Graph(SAMapping map, PetscViewer v) 
+PetscErrorCode SAMappingView_Graph(SAMapping map, PetscViewer v) 
 {
   PetscFunctionBegin;
   SAMappingCheckType(map,SA_MAPPING_GRAPH,1);
   /* FIX: actually implement this */
   PetscFunctionReturn(0);
-}/* SAMappingView_Graph() */
+}
 
 
 
 #undef  __FUNCT__
 #define __FUNCT__ "SAMappingInvert_Graph"
-static PetscErrorCode SAMappingInvert_Graph(SAMapping map, SAMapping *_imap) 
+PetscErrorCode SAMappingInvert_Graph(SAMapping map, SAMapping *_imap) 
 {
   SAMapping imap;
   PetscErrorCode ierr;
@@ -1111,7 +1111,7 @@ static PetscErrorCode SAMappingInvert_Graph(SAMapping map, SAMapping *_imap)
   ierr = SAMappingAssemblyBegin(imap);                                                                 CHKERRQ(ierr);
   ierr = SAMappingAssemblyEnd(imap);                                                                   CHKERRQ(ierr);
   PetscFunctionReturn(0);
-}/* SAMappingInvert_Graph() */
+}
 
 #undef  __FUNCT__
 #define __FUNCT__ "SAMappingPushforward_Graph_Graph"
@@ -1263,9 +1263,9 @@ PetscErrorCode SAMappingPullback_Graph_Graph(SAMapping map1, SAMapping map2, SAM
                                                                                                |
                                                                                                -
    */
-  ierr = SAMappingInvert_Graph(map1, &imap1);               CHKERRQ(ierr);
+  ierr = SAMappingInvert_Graph(map1, &imap1);                  CHKERRQ(ierr);
   ierr = SAMappingPushforward_Graph_Graph(imap1, map2, &map3); CHKERRQ(ierr);
-  ierr = SAMappingDestroy(imap1);                        CHKERRQ(ierr);
+  ierr = SAMappingDestroy(&imap1);                             CHKERRQ(ierr);
   *_map3 = map3;
   PetscFunctionReturn(0);
 }
@@ -1280,7 +1280,7 @@ PetscErrorCode SAMappingDestroy_Graph(SAMapping map) {
   
   PetscFunctionBegin;
   ierr = SAMappingGraphClear_Private(map); CHKERRQ(ierr);
-  ierr = SADestroy(mapg->edges);      CHKERRQ(ierr);
+  ierr = SADestroy(&(mapg->edges));        CHKERRQ(ierr);
   ierr = PetscFree(mapg);                  CHKERRQ(ierr);
   map->data = PETSC_NULL;
   
@@ -1291,7 +1291,7 @@ PetscErrorCode SAMappingDestroy_Graph(SAMapping map) {
   ierr = PetscObjectComposeFunction((PetscObject)map,"SAMappingPullback_graph_graph_C", "",PETSC_NULL); CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)map,"SAMappingPushforward_graph_graph_C", "",PETSC_NULL); CHKERRQ(ierr);
   PetscFunctionReturn(0);
-}/* SAMappingDestroy_Graph() */
+}
 
 EXTERN_C_BEGIN
 #undef  __FUNCT__
@@ -1337,5 +1337,5 @@ PetscErrorCode SAMappingCreate_Graph(SAMapping map) {
                                            SAMappingPushforward_Graph_Graph); CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)map, SA_MAPPING_GRAPH); CHKERRQ(ierr);
   PetscFunctionReturn(0);
-}/* SAMappingCreate_Graph() */
+}
 EXTERN_C_END

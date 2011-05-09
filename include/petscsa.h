@@ -27,13 +27,13 @@ extern PetscErrorCode SACreate(SAComponents mask, SA *_arr);
 extern PetscErrorCode SACreateArrays(PetscInt mask, PetscInt count, SA **arrays);
 extern PetscErrorCode SAClear(SA arr);
 extern PetscErrorCode SADuplicate(SA arr, SA *darr);
-extern PetscErrorCode SADestroy(SA chain);
-extern PetscErrorCode SAAddArray(SA chain, SA chain2);
-extern PetscErrorCode SAAddData(SA chain, const PetscInt len, const PetscInt *ia, const PetscScalar *wa, const PetscInt *ja);
-extern PetscErrorCode SAAddI(SA chain, const PetscInt len, PetscInt i, const PetscScalar* wa, const PetscInt *ja);
-extern PetscErrorCode SAAddJ(SA chain, const PetscInt len, const PetscInt *ia, const PetscScalar* wa, PetscInt j);
-extern PetscErrorCode SAGetLength(SA chain, PetscInt *_length);
-extern PetscErrorCode SAGetData(SA chain, PetscInt *ia, PetscScalar *wa, PetscInt *ja);
+extern PetscErrorCode SADestroy(SA *arr);
+extern PetscErrorCode SAAddArray(SA arr, SA arr2);
+extern PetscErrorCode SAAddData(SA arr, const PetscInt len, const PetscInt *ia, const PetscScalar *wa, const PetscInt *ja);
+extern PetscErrorCode SAAddI(SA arr, const PetscInt len, PetscInt i, const PetscScalar* wa, const PetscInt *ja);
+extern PetscErrorCode SAAddJ(SA arr, const PetscInt len, const PetscInt *ia, const PetscScalar* wa, PetscInt j);
+extern PetscErrorCode SAGetLength(SA arr, PetscInt *_length);
+extern PetscErrorCode SAGetData(SA arr, PetscInt *ia, PetscScalar *wa, PetscInt *ja);
 
 
 
@@ -133,7 +133,7 @@ extern PetscErrorCode  SAMappingRegisterDestroy(void);
 
 extern  PetscErrorCode SAMappingCreate(MPI_Comm comm, SAMapping *mapping);
 extern  PetscErrorCode SAMappingView(SAMapping mapping, PetscViewer viewer);
-extern  PetscErrorCode SAMappingDestroy(SAMapping mapping);
+extern  PetscErrorCode SAMappingDestroy(SAMapping *mapping);
 extern  PetscErrorCode SAMappingSetType(SAMapping mapping, const SAMappingType maptype); 
 extern  PetscErrorCode SAMappingSetSizes(SAMapping mapping, PetscInt m, PetscInt n, PetscInt M, PetscInt N);
 extern  PetscErrorCode SAMappingGetSizes(SAMapping mapping, PetscInt *m, PetscInt *n, PetscInt *M, PetscInt *N);
