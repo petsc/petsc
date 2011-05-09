@@ -2120,14 +2120,12 @@ static PetscErrorCode SNESSetFromOptions_VI(SNES snes)
 }
 /* -------------------------------------------------------------------------- */
 /*MC
-      SNESVI - Semismooth newton method based nonlinear solver that uses a line search
+      SNESVI - Various solvers for variational inequalities based on Newton's method
 
    Options Database:
-+   -snes_ls [cubic,quadratic,basic,basicnonorms] - Selects line search
-.   -snes_ls_alpha <alpha> - Sets alpha
-.   -snes_ls_maxstep <maxstep> - Sets the maximum stepsize the line search will use (if the 2-norm(y) > maxstep then scale y to be y = (maxstep/2-norm(y)) *y)
-.   -snes_ls_minlambda <minlambda>  - Sets the minimum lambda the line search will use  minlambda / max_i ( y[i]/x[i] )
--   -snes_ls_monitor - print information about progress of line searches 
++   -snes_vi_type <ss,rs,rsaug> a semi-smooth solver, a reduced space active set method and a reduced space active set method that does not eliminate the active constraints from the Jacobian instead augments the Jacobian with 
+                                additional variables that enforce the constraints
+-   -snes_vi_monitor - prints the number of active constraints at each iteration.
 
 
    Level: beginner
