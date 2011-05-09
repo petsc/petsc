@@ -40,7 +40,7 @@ int main(int argc, char **argv)
   AppCtx         user; /* Application context */
   Vec            xl,xu; /* Upper and lower bounds on variables */
   Mat            J;
-  PetscScalar    t=0.0;
+  PetscReal      t=0.0;
 
   PetscInitialize(&argc,&argv, (char*)0, help);
 
