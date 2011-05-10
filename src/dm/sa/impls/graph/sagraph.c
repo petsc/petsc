@@ -184,22 +184,22 @@ do{                                                                     \
 static PetscErrorCode SAMappingGraphMap_Private(SAMapping map, PetscInt insize, const PetscInt inidxi[], const PetscScalar inval[], const PetscInt inidxj[], PetscInt *outsize, PetscInt outidxi[], PetscScalar outval[], PetscInt outidxj[], PetscInt outsizes[], PetscBool local, PetscBool drop) 
 {
   SAMapping_Graph *mapg = (SAMapping_Graph*)map->data;
-  PetscInt i,j,k,last,low,high,ind,count;
+  PetscInt i,j,k,ind=0;
   PetscFunctionBegin;
 
   j = 0;
-  count = 0;
   for(i = 0; i < insize; ++i) {
     if(!local) {
+      PetscInt last=0, low=0, high=0;
       /* Convert to local by searching through mapg->supp. */
-      SAMappingGraphLocalizeIndex(mapg->m,mapg->supp,inidxi[i],ind,count,last,low,high);
+      SAMappingGraphLocalizeIndex(mapg->m,mapg->supp,inidxi[i],ind,i,last,low,high);
     }/* if(!local) */
     else {
       ind = inidxi[i];
     }
     if((ind < 0 || ind > mapg->m)){
-      if(!drop) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Index %D at %D not in the support", inidxi[i], count);
-      if(outsizes) outsizes[count] = 0;
+      if(!drop) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Index %D at %D not in the support", inidxi[i], i);
+      if(outsizes) outsizes[i] = 0;
       continue;
     }
     if(outidxi || (inval && outval) || (inidxj && outidxj) ) {
@@ -213,8 +213,7 @@ static PetscErrorCode SAMappingGraphMap_Private(SAMapping map, PetscInt insize, 
     else {
       j += mapg->ijlen[ind+1]-mapg->ijlen[ind];
     }
-    if(outsizes) outsizes[count] = (mapg->ijlen[ind+1]-mapg->ijlen[ind]);
-    ++count;
+    if(outsizes) outsizes[i] = (mapg->ijlen[ind+1]-mapg->ijlen[ind]);
   }/* for(i = 0; i < len; ++i) */
   if(outsize) *outsize = j;
   PetscFunctionReturn(0);
@@ -365,8 +364,8 @@ static PetscErrorCode SAMappingGraphBinSA_Private(SAMapping map, SA inarr, Petsc
 {
   PetscErrorCode ierr;
   SAMapping_Graph *mapg = (SAMapping_Graph*)map->data;
-  PetscInt      *binoff, *bincount, i,j,k,count,last,low,high,ind, *inidxi,*inidxj,*outidxi,*outidxj;
-  PetscScalar     *inval, *outval;
+  PetscInt      *binoff, *bincount, i,j,k,count,ind=0, *inidxi,*inidxj=PETSC_NULL,*outidxi,*outidxj;
+  PetscScalar     *inval=PETSC_NULL, *outval;
   SALink link;
   SAHunk inhunk, outhunk;
 
@@ -393,6 +392,7 @@ static PetscErrorCode SAMappingGraphBinSA_Private(SAMapping map, SA inarr, Petsc
     SAMappingGraphOrderPointers_Private(inhunk->i,inhunk->w,inhunk->j,inhunk->mask,index,0,inidxi,inval,inidxj);
     for(i = 0; i < inhunk->length; ++i) {
       if(!local) {
+        PetscInt low = 0, last = 0, high = 0;
         /* Convert to local by searching through mapg->supp. */
         SAMappingGraphLocalizeIndex(mapg->m,mapg->supp,inidxi[i],ind,count,last,low,high);
       }/* if(!local) */
@@ -401,11 +401,13 @@ static PetscErrorCode SAMappingGraphBinSA_Private(SAMapping map, SA inarr, Petsc
       }
       if((ind < 0 || ind > mapg->m)){
         if(!drop) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Array index %D at %D not in the support",inidxi[i],count);
-        else continue;
+        else goto loopend1;
       }
       for(k = mapg->ijlen[ind]; k < mapg->ijlen[ind+1]; ++k) {
         ++(binoff[mapg->ij[k]+1]);
       }
+      loopend1:
+      ++count;
     }/* for(i = 0; i < hunk->length; ++i) */
     for(j = 0; j < mapg->n; ++j) {
       binoff[j+1] += binoff[j];
@@ -427,6 +429,7 @@ static PetscErrorCode SAMappingGraphBinSA_Private(SAMapping map, SA inarr, Petsc
       SAMappingGraphOrderPointers_Private(inhunk->i,inhunk->w,inhunk->j,inhunk->mask,index,0,inidxi,inval,inidxj);
       for(i = 0; i < inhunk->length; ++i) {
         if(!local) {
+          PetscInt low = 0, last = 0, high = 0;
           /* Convert to local by searching through mapg->supp. */
           SAMappingGraphLocalizeIndex(mapg->m,mapg->supp,inidxi[i],ind,count,last,low,high);
         }/* if(!local) */
@@ -435,7 +438,7 @@ static PetscErrorCode SAMappingGraphBinSA_Private(SAMapping map, SA inarr, Petsc
         }
         if((ind < 0 || ind > mapg->m)){
           if(!drop) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Array index %D at %D not in the support",inidxi[i],count);
-          else continue;
+          else goto loopend2;
         }
         for(k = mapg->ijlen[ind]; k < mapg->ijlen[ind+1]; ++k) {
           j = mapg->ij[k];
@@ -444,6 +447,7 @@ static PetscErrorCode SAMappingGraphBinSA_Private(SAMapping map, SA inarr, Petsc
           if(outidxj && inidxj)  outidxj[binoff[j]+bincount[j]] = inidxj[i];
           ++bincount[j];
         }
+        loopend2:
         ++count;
       }/* for(i = 0; i < hunk->length; ++i) */
     }/* if(outidxi || (inval && outval) || (inidxj && outidxj)) */
@@ -792,14 +796,12 @@ static PetscErrorCode SAMappingGraphGetEdgeCount_Private(SAMapping map, PetscInt
 {
   PetscErrorCode ierr;
   SAMapping_Graph   *mapg = (SAMapping_Graph *)(map->data);
-  PetscInt len;
   PetscFunctionBegin;
   SAMappingCheckType(map, SA_MAPPING_GRAPH, 1);
   if(!map->assembled) {
-    ierr = SAGetLength(mapg->edges, &len);             CHKERRQ(ierr);
+    ierr = SAGetLength(mapg->edges, _len);             CHKERRQ(ierr);
   }
-  else len = mapg->n;
-  *_len = len;
+  else *_len = mapg->n;
   PetscFunctionReturn(0);
 }
 
