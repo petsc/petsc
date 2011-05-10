@@ -95,9 +95,9 @@ runex7:
 	   else echo "Possible problem with ex7_1, diffs above"; fi ;\
 	   ${RM} -f ex7_1.tmp
 TESTEXAMPLES_C		  = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 ex2.rm \
-                            ex4.PETSc runex4 runex4_2 ex4.rm ex4f.PETSc runex4f runex4f_2 ex4f.rm ex7.PETSc runex7 ex7.rm
+                            ex4.PETSc runex4 runex4_2 ex4.rm  ex7.PETSc runex7 ex7.rm
 TESTEXAMPLES_C_X11	  = 
-TESTEXAMPLES_FORTRAN	  = 
+TESTEXAMPLES_FORTRAN	  = ex4f.PETSc runex4f runex4f_2 ex4f.rm
 TESTEXAMPLES_C_X11_MPIUNI = 
 TESTEXAMPLES_C3		  = 
 
