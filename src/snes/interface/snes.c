@@ -406,7 +406,7 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
     ierr = PetscOptionsString("-snes_monitor","Monitor norm of function","SNESMonitorSet","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PetscViewerASCIIMonitorCreate(((PetscObject)snes)->comm,monfilename,((PetscObject)snes)->tablevel,&monviewer);CHKERRQ(ierr);
-      ierr = SNESMonitorSet(snes,SNESMonitorDefault,monviewer,(PetscErrorCode (*)(void*))PetscViewerASCIIMonitorDestroy);CHKERRQ(ierr);
+      ierr = SNESMonitorSet(snes,SNESMonitorDefault,monviewer,(PetscErrorCode (*)(void**))PetscViewerASCIIMonitorDestroy);CHKERRQ(ierr);
     }
 
     ierr = PetscOptionsString("-snes_monitor_range","Monitor range of elements of function","SNESMonitorSet","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
@@ -423,7 +423,7 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
     ierr = PetscOptionsString("-snes_monitor_short","Monitor norm of function (fewer digits)","SNESMonitorSet","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PetscViewerASCIIMonitorCreate(((PetscObject)snes)->comm,monfilename,((PetscObject)snes)->tablevel,&monviewer);CHKERRQ(ierr);
-      ierr = SNESMonitorSet(snes,SNESMonitorDefaultShort,monviewer,(PetscErrorCode (*)(void*))PetscViewerASCIIMonitorDestroy);CHKERRQ(ierr);
+      ierr = SNESMonitorSet(snes,SNESMonitorDefaultShort,monviewer,(PetscErrorCode (*)(void**))PetscViewerASCIIMonitorDestroy);CHKERRQ(ierr);
     }
 
     flg  = PETSC_FALSE;
@@ -1997,7 +1997,7 @@ _    -snes_monitor_cancel - cancels all monitors that have
 
 .seealso: SNESMonitorDefault(), SNESMonitorCancel()
 @*/
-PetscErrorCode  SNESMonitorSet(SNES snes,PetscErrorCode (*monitor)(SNES,PetscInt,PetscReal,void*),void *mctx,PetscErrorCode (*monitordestroy)(void*))
+PetscErrorCode  SNESMonitorSet(SNES snes,PetscErrorCode (*monitor)(SNES,PetscInt,PetscReal,void*),void *mctx,PetscErrorCode (*monitordestroy)(void**))
 {
   PetscInt i;
 
@@ -2014,7 +2014,7 @@ PetscErrorCode  SNESMonitorSet(SNES snes,PetscErrorCode (*monitor)(SNES,PetscInt
         PetscViewerASCIIMonitor viewer1 = (PetscViewerASCIIMonitor) mctx;
         PetscViewerASCIIMonitor viewer2 = (PetscViewerASCIIMonitor) snes->monitorcontext[i];
         if (viewer1->viewer == viewer2->viewer) {
-          ierr = (*monitordestroy)(mctx);CHKERRQ(ierr);
+          ierr = (*monitordestroy)(&mctx);CHKERRQ(ierr);
           PetscFunctionReturn(0);
         }
       }

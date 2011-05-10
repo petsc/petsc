@@ -269,10 +269,10 @@ PetscErrorCode  SNESMonitorRatio(SNES snes,PetscInt its,PetscReal fgnorm,void *d
 */
 #undef __FUNCT__  
 #define __FUNCT__ "SNESMonitorRatioDestroy"
-PetscErrorCode SNESMonitorRatioDestroy(void *ct)
+PetscErrorCode SNESMonitorRatioDestroy(void **ct)
 {
   PetscErrorCode          ierr;
-  SNESMonitorRatioContext *ctx = (SNESMonitorRatioContext*)ct;
+  SNESMonitorRatioContext *ctx = *(SNESMonitorRatioContext**)ct;
 
   PetscFunctionBegin;
   ierr = PetscFree(ctx->history);CHKERRQ(ierr);

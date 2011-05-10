@@ -102,10 +102,10 @@ static PetscErrorCode ourmonitor(KSP ksp,PetscInt i,PetscReal d,void* ctx)
   return 0;
 }
 
-static PetscErrorCode ourdestroy(void* ctx)
+static PetscErrorCode ourdestroy(void** ctx)
 {
   PetscErrorCode ierr = 0;
-  KSP            ksp = (KSP)ctx;
+  KSP            ksp = *(KSP*)ctx;
   void           *mctx = (void*) ((PetscObject)ksp)->fortran_func_pointers[1];
   (*(void (PETSC_STDCALL *)(void*,PetscErrorCode*))(((PetscObject)ksp)->fortran_func_pointers[2]))(mctx,&ierr);CHKERRQ(ierr);
   return 0;

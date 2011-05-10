@@ -93,7 +93,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     ierr = PetscOptionsString("-ts_monitor","Monitor timestep size","TSMonitorDefault","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PetscViewerASCIIMonitorCreate(((PetscObject)ts)->comm,monfilename,((PetscObject)ts)->tablevel,&monviewer);CHKERRQ(ierr);
-      ierr = TSMonitorSet(ts,TSMonitorDefault,monviewer,(PetscErrorCode (*)(void*))PetscViewerASCIIMonitorDestroy);CHKERRQ(ierr);
+      ierr = TSMonitorSet(ts,TSMonitorDefault,monviewer,(PetscErrorCode (*)(void**))PetscViewerASCIIMonitorDestroy);CHKERRQ(ierr);
     }
     opt  = PETSC_FALSE;
     ierr = PetscOptionsBool("-ts_monitor_draw","Monitor timestep size graphically","TSMonitorLG",opt,&opt,PETSC_NULL);CHKERRQ(ierr);
@@ -751,10 +751,8 @@ PetscErrorCode  TSSetIFunction(TS ts,TSIFunction f,void *ctx)
 #undef __FUNCT__
 #define __FUNCT__ "TSSetIJacobian"
 /*@C
-   TSSetIJacobian - Set the function to compute the matrix dF/dU + a*dF/dU_t which is
-   the Jacobian of G(U) = F(t,U,W+a*U) where F(t,U,U_t) = 0 is the DAE to be solved.
-   The time integrator internally approximates U_t by W+a*U where the positive "shift"
-   a and vector W depend on the integration method, step size, and past states.
+   TSSetIJacobian - Set the function to compute the matrix dF/dU + a*dF/dU_t where F(t,U,U_t) is the function
+        you provided with TSSetIFunction().  
 
    Logically Collective on TS
 
@@ -780,6 +778,13 @@ $  f(TS ts,PetscReal t,Vec U,Vec U_t,PetscReal a,Mat *A,Mat *B,MatStructure *fla
 
    Notes:
    The matrices A and B are exactly the matrices that are used by SNES for the nonlinear solve.
+
+   The matrix dF/dU + a*dF/dU_t you provide turns out to be 
+   the Jacobian of G(U) = F(t,U,W+a*U) where F(t,U,U_t) = 0 is the DAE to be solved.
+   The time integrator internally approximates U_t by W+a*U where the positive "shift"
+   a and vector W depend on the integration method, step size, and past states. For example with 
+   the backward Euler method a = 1/dt and W = -a*U(previous timestep) so
+   W + a*U = a*(U - U(previous timestep)) = (U - U(previous timestep))/dt
 
    Level: beginner
 
@@ -1609,7 +1614,7 @@ $    int func(TS ts,PetscInt steps,PetscReal time,Vec x,void *mctx)
 
 .seealso: TSMonitorDefault(), TSMonitorCancel()
 @*/
-PetscErrorCode  TSMonitorSet(TS ts,PetscErrorCode (*monitor)(TS,PetscInt,PetscReal,Vec,void*),void *mctx,PetscErrorCode (*mdestroy)(void*))
+PetscErrorCode  TSMonitorSet(TS ts,PetscErrorCode (*monitor)(TS,PetscInt,PetscReal,Vec,void*),void *mctx,PetscErrorCode (*mdestroy)(void**))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);

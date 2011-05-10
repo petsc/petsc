@@ -41,7 +41,7 @@ typedef struct {
 
   /* --------User (or default) routines (most return -1 on error) --------*/
   PetscErrorCode (*monitor[MAXOPTIONSMONITORS])(const char[], const char[], void*); /* returns control to user after */
-  PetscErrorCode (*monitordestroy[MAXOPTIONSMONITORS])(void*);         /* */
+  PetscErrorCode (*monitordestroy[MAXOPTIONSMONITORS])(void**);         /* */
   void           *monitorcontext[MAXOPTIONSMONITORS];                  /* to pass arbitrary user data into monitor */
   PetscInt       numbermonitors;                                       /* to, for instance, detect options being set */
 
@@ -2053,7 +2053,7 @@ PetscErrorCode  PetscOptionsSetFromOptions(void)
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   if (flgm) {
     ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,monfilename,&monviewer);CHKERRQ(ierr);
-    ierr = PetscOptionsMonitorSet(PetscOptionsMonitorDefault,monviewer,(PetscErrorCode (*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
+    ierr = PetscOptionsMonitorSet(PetscOptionsMonitorDefault,monviewer,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
   }
   if (flgc) { ierr = PetscOptionsMonitorCancel();CHKERRQ(ierr); }
   PetscFunctionReturn(0);
@@ -2136,7 +2136,7 @@ $     monitor (const char name[], const char value[], void *mctx)
 
 .seealso: PetscOptionsMonitorDefault(), PetscOptionsMonitorCancel()
 @*/
-PetscErrorCode  PetscOptionsMonitorSet(PetscErrorCode (*monitor)(const char name[], const char value[], void*),void *mctx,PetscErrorCode (*monitordestroy)(void*))
+PetscErrorCode  PetscOptionsMonitorSet(PetscErrorCode (*monitor)(const char name[], const char value[], void*),void *mctx,PetscErrorCode (*monitordestroy)(void**))
 {
   PetscFunctionBegin;
   if (options->numbermonitors >= MAXOPTIONSMONITORS) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Too many PetscOptions monitors set");
@@ -2172,7 +2172,7 @@ PetscErrorCode  PetscOptionsMonitorCancel(void)
   PetscFunctionBegin;
   for (i=0; i<options->numbermonitors; i++) {
     if (options->monitordestroy[i]) {
-      ierr = (*options->monitordestroy[i])(options->monitorcontext[i]);CHKERRQ(ierr);
+      ierr = (*options->monitordestroy[i])(&options->monitorcontext[i]);CHKERRQ(ierr);
     }
   }
   options->numbermonitors = 0;

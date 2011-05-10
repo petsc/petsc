@@ -693,10 +693,12 @@ PetscErrorCode SNESVIResetPCandKSP(SNES snes,Mat Amat,Mat Pmat)
   const MatSolverPackage stype;
   
   PetscFunctionBegin;
-  /* The active and inactive set sizes have changed so need to create a new snes->ksp object */
   ierr = SNESGetKSP(snes,&snesksp);CHKERRQ(ierr);
+ 
+  ierr = KSPReset(snesksp);CHKERRQ(ierr);
+  /*
+
   ierr = KSPCreate(((PetscObject)snes)->comm,&kspnew);CHKERRQ(ierr);
-  /* Copy over snes->ksp info */
   kspnew->pc_side = snesksp->pc_side;
   kspnew->rtol    = snesksp->rtol;
   kspnew->abstol    = snesksp->abstol;
@@ -710,7 +712,7 @@ PetscErrorCode SNESVIResetPCandKSP(SNES snes,Mat Amat,Mat Pmat)
   ierr = KSPDestroy(&snesksp);CHKERRQ(ierr);
   snes->ksp = kspnew;
   ierr = PetscLogObjectParent(snes,kspnew);CHKERRQ(ierr);
-  ierr = KSPSetFromOptions(kspnew);CHKERRQ(ierr);
+   ierr = KSPSetFromOptions(kspnew);CHKERRQ(ierr);*/
   PetscFunctionReturn(0);
 }
 
@@ -745,8 +747,8 @@ PetscErrorCode SNESVIComputeInactiveSetFnorm(SNES snes,Vec F,Vec X,PetscScalar *
 }
 
 /* Variational Inequality solver using reduce space method. No semismooth algorithm is
-   implemented in this algorithm. It basically identifies the active variables and does
-   a linear solve on the inactive variables. */
+   implemented in this algorithm. It basically identifies the active constraints and does
+   a linear solve on the other variables (those not associated with the active constraints). */
 #undef __FUNCT__  
 #define __FUNCT__ "SNESSolveVI_RS"
 PetscErrorCode SNESSolveVI_RS(SNES snes)
@@ -1088,8 +1090,8 @@ PetscErrorCode SNESVISetRedundancyCheckMatlab(SNES snes,const char* func,mxArray
    Specific implementation for Allen-Cahn problem 
 */
 #undef __FUNCT__  
-#define __FUNCT__ "SNESSolveVI_RS2"
-PetscErrorCode SNESSolveVI_RS2(SNES snes)
+#define __FUNCT__ "SNESSolveVI_RSAUG"
+PetscErrorCode SNESSolveVI_RSAUG(SNES snes)
 { 
   SNES_VI          *vi = (SNES_VI*)snes->data;
   PetscErrorCode    ierr;
@@ -1164,8 +1166,9 @@ PetscErrorCode SNESSolveVI_RS2(SNES snes)
 
     /* Get local active set size */
     ierr = ISGetLocalSize(IS_act,&nis_act);CHKERRQ(ierr);
-    ierr = ISGetIndices(IS_act,&idx_act);CHKERRQ(ierr);
-    if(nis_act) {
+    if (nis_act) {
+      ierr = ISGetIndices(IS_act,&idx_act);CHKERRQ(ierr);
+      IS_redact  = PETSC_NULL;
       if(vi->checkredundancy) {
 	(*vi->checkredundancy)(snes,IS_act,&IS_redact,vi->ctxP);
       }
@@ -1219,10 +1222,10 @@ PetscErrorCode SNESSolveVI_RS2(SNES snes)
       PetscInt          ncols;
       const PetscInt    *cols;
       const PetscScalar *vals;
-      PetscScalar        value=1.0;
-      PetscInt           row,col;
+      PetscScalar        value[2];
+      PetscInt           row,col[2];
       PetscInt           *d_nnz;
-
+      value[0] = 1.0; value[1] = 0.0;
       ierr = PetscMalloc((X->map->n+nkept)*sizeof(PetscInt),&d_nnz);CHKERRQ(ierr);
       ierr = PetscMemzero(d_nnz,(X->map->n+nkept)*sizeof(PetscInt));CHKERRQ(ierr);
       for(row=0;row<snes->jacobian->rmap->n;row++) {
@@ -1233,7 +1236,7 @@ PetscErrorCode SNESSolveVI_RS2(SNES snes)
 
       for(k=0;k<nkept;k++) {
         d_nnz[idx_actkept[k]] += 1;
-        d_nnz[snes->jacobian->rmap->n+k] += 1;
+        d_nnz[snes->jacobian->rmap->n+k] += 2;
       }
       ierr = MatSeqAIJSetPreallocation(J_aug,PETSC_NULL,d_nnz);CHKERRQ(ierr);
       
@@ -1247,16 +1250,18 @@ PetscErrorCode SNESSolveVI_RS2(SNES snes)
       }
       /* Add the augmented part */
       for(k=0;k<nkept;k++) {
-	row = idx_actkept[k];
-	col = snes->jacobian->rmap->n+k;
-	ierr = MatSetValues(J_aug,1,&row,1,&col,&value,INSERT_VALUES);CHKERRQ(ierr);
-	ierr = MatSetValues(J_aug,1,&col,1,&row,&value,INSERT_VALUES);CHKERRQ(ierr);
+	row = snes->jacobian->rmap->n+k;
+	col[0] = idx_actkept[k]; col[1] = snes->jacobian->rmap->n+k;
+	ierr = MatSetValues(J_aug,1,&row,1,col,value,INSERT_VALUES);CHKERRQ(ierr);
+	ierr = MatSetValues(J_aug,1,&col[0],1,&row,&value[0],INSERT_VALUES);CHKERRQ(ierr);
       }
       ierr = MatAssemblyBegin(J_aug,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
       ierr = MatAssemblyEnd(J_aug,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
       /* Only considering prejac = jac for now */
       Jpre_aug = J_aug;
       } /* local vars*/
+      ierr = ISRestoreIndices(IS_act,&idx_act);CHKERRQ(ierr);
+      ierr = ISDestroy(&IS_act);CHKERRQ(ierr);
     } else {
       F_aug = F; J_aug = snes->jacobian; Y_aug = Y; Jpre_aug = snes->jacobian_pre;
     }
@@ -1999,10 +2004,10 @@ static PetscErrorCode SNESView_VI(SNES snes,PetscViewer viewer)
     if (vi->LineSearch == SNESLineSearchNo_VI)             cstr = "SNESLineSearchNo";
     else if (vi->LineSearch == SNESLineSearchQuadratic_VI) cstr = "SNESLineSearchQuadratic";
     else if (vi->LineSearch == SNESLineSearchCubic_VI)     cstr = "SNESLineSearchCubic";
-    else                                                             cstr = "unknown";
-    if (snes->ops->solve == SNESSolveVI_SS)      tstr = "Semismooth";
-    else if (snes->ops->solve == SNESSolveVI_RS) tstr = "Reduced Space";
-    else if (snes->ops->solve == SNESSolveVI_RS2) tstr = "Augmented Space";
+    else                                                   cstr = "unknown";
+    if (snes->ops->solve == SNESSolveVI_SS)         tstr = "Semismooth";
+    else if (snes->ops->solve == SNESSolveVI_RS)    tstr = "Reduced Space";
+    else if (snes->ops->solve == SNESSolveVI_RSAUG) tstr = "Reduced space with augmented variables";
     else                                         tstr = "unknown";
     ierr = PetscViewerASCIIPrintf(viewer,"  VI algorithm: %s\n",tstr);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  line search variant: %s\n",cstr);CHKERRQ(ierr);
@@ -2063,7 +2068,7 @@ static PetscErrorCode SNESSetFromOptions_VI(SNES snes)
 {
   SNES_VI        *vi = (SNES_VI *)snes->data;
   const char     *lses[] = {"basic","basicnonorms","quadratic","cubic"};
-  const char     *vies[] = {"ss","rs","rs2"};
+  const char     *vies[] = {"ss","rs","rsaug"};
   PetscErrorCode ierr;
   PetscInt       indx;
   PetscBool      flg,set,flg2;
@@ -2090,7 +2095,7 @@ static PetscErrorCode SNESSetFromOptions_VI(SNES snes)
       snes->ops->solve = SNESSolveVI_RS;
       break;
     case 2:
-      snes->ops->solve = SNESSolveVI_RS2;
+      snes->ops->solve = SNESSolveVI_RSAUG;
     }
   }
   ierr = PetscOptionsEList("-snes_ls","Line search used","SNESLineSearchSet",lses,4,"basic",&indx,&flg);CHKERRQ(ierr);
@@ -2115,14 +2120,12 @@ static PetscErrorCode SNESSetFromOptions_VI(SNES snes)
 }
 /* -------------------------------------------------------------------------- */
 /*MC
-      SNESVI - Semismooth newton method based nonlinear solver that uses a line search
+      SNESVI - Various solvers for variational inequalities based on Newton's method
 
    Options Database:
-+   -snes_ls [cubic,quadratic,basic,basicnonorms] - Selects line search
-.   -snes_ls_alpha <alpha> - Sets alpha
-.   -snes_ls_maxstep <maxstep> - Sets the maximum stepsize the line search will use (if the 2-norm(y) > maxstep then scale y to be y = (maxstep/2-norm(y)) *y)
-.   -snes_ls_minlambda <minlambda>  - Sets the minimum lambda the line search will use  minlambda / max_i ( y[i]/x[i] )
--   -snes_ls_monitor - print information about progress of line searches 
++   -snes_vi_type <ss,rs,rsaug> a semi-smooth solver, a reduced space active set method and a reduced space active set method that does not eliminate the active constraints from the Jacobian instead augments the Jacobian with 
+                                additional variables that enforce the constraints
+-   -snes_vi_monitor - prints the number of active constraints at each iteration.
 
 
    Level: beginner

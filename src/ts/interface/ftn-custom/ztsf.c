@@ -52,10 +52,10 @@ static PetscErrorCode ourtsjacobian(TS ts,PetscReal d,Vec x,Mat* m,Mat* p,MatStr
   return 0;
 }
 
-static PetscErrorCode ourmonitordestroy(void *ctx)
+static PetscErrorCode ourmonitordestroy(void **ctx)
 {
   PetscErrorCode ierr = 0;
-  TS          ts = (TS)ctx;
+  TS          ts = *(TS*)ctx;
   void        *mctx = (void*) ((PetscObject)ts)->fortran_func_pointers[6];
   (*(void (PETSC_STDCALL *)(void*,PetscErrorCode*))(((PetscObject)ts)->fortran_func_pointers[5]))(mctx,&ierr);
   return 0;

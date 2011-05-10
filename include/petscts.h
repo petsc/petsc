@@ -59,7 +59,7 @@ extern PetscErrorCode   TSDestroy(TS*);
 
 extern PetscErrorCode   TSSetProblemType(TS,TSProblemType);
 extern PetscErrorCode   TSGetProblemType(TS,TSProblemType*);
-extern PetscErrorCode   TSMonitorSet(TS,PetscErrorCode(*)(TS,PetscInt,PetscReal,Vec,void*),void *,PetscErrorCode (*)(void*));
+extern PetscErrorCode   TSMonitorSet(TS,PetscErrorCode(*)(TS,PetscInt,PetscReal,Vec,void*),void *,PetscErrorCode (*)(void**));
 extern PetscErrorCode   TSMonitorCancel(TS);
 
 extern PetscErrorCode   TSSetOptionsPrefix(TS,const char[]);

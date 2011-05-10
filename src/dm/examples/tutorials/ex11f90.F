@@ -146,7 +146,7 @@
       call DMDestroy(ada,ierr)
 
       dof = 3
-      call DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,
+      call DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,                 &
      &     DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,                            &
      &         DMDA_STENCIL_BOX,m,n,p,PETSC_DECIDE,PETSC_DECIDE,                     &
      &                PETSC_DECIDE,dof,s,                                  &

@@ -450,6 +450,7 @@ PetscErrorCode DMCreateLocalToGlobalMapping_Mesh(DM dm)
   }
   ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF, localOrder->getLocalSize(), ltog, PETSC_OWN_POINTER, &dm->ltogmap);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(dm, dm->ltogmap);CHKERRQ(ierr);
+  ierr = SectionRealDestroy(&section);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1543,7 +1544,8 @@ PetscErrorCode DMMeshHasSectionReal(DM dm, const char name[], PetscBool  *flag)
   Level: intermediate
 
 .keywords: mesh, elements
-.seealso: DMMeshCreate()
+
+.seealso: DMMeshCreate(), SectionRealDestroy()
 @*/
 PetscErrorCode DMMeshGetSectionReal(DM dm, const char name[], SectionReal *section)
 {

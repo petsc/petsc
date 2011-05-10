@@ -311,7 +311,7 @@ static void THIInitialize_HOM_Y(THI thi,PetscReal xx,PetscReal yy,PrmNode *p)
   PetscReal x = xx*2*PETSC_PI/thi->Lx - PETSC_PI,y = yy*2*PETSC_PI/thi->Ly - PETSC_PI; /* [-pi,pi] */
   PetscReal r = sqrt(x*x + y*y),s = -x*sin(thi->alpha);
   p->b = s - 1000*units->meter + 500*units->meter * sin(x + PETSC_PI) * sin(y + PETSC_PI);
-  if (p->b > -700*units->meter) p->b += 200*units->meter;
+  if (PetscRealPart(p->b) > -700*units->meter) p->b += 200*units->meter;
   p->h = s - p->b;
   p->beta2 = 1000 * (1. + sin(sqrt(16*r))/sqrt(1e-2 + 16*r)*cos(x*3/2)*cos(y*3/2)) * units->Pascal * units->year / units->meter;
 }

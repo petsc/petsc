@@ -72,7 +72,7 @@ struct _p_KSP {
                                         MPI_Allreduce() for computing the inner products for the next iteration. */ 
   /* --------User (or default) routines (most return -1 on error) --------*/
   PetscErrorCode (*monitor[MAXKSPMONITORS])(KSP,PetscInt,PetscReal,void*); /* returns control to user after */
-  PetscErrorCode (*monitordestroy[MAXKSPMONITORS])(void*);         /* */
+  PetscErrorCode (*monitordestroy[MAXKSPMONITORS])(void**);         /* */
   void *monitorcontext[MAXKSPMONITORS];                  /* residual calculation, allows user */
   PetscInt  numbermonitors;                                   /* to, for instance, print residual norm, etc. */
 

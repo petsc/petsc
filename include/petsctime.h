@@ -177,17 +177,23 @@ EXTERN_C_END
     The usual Unix time routines.
 */
 #else
-#define PetscTime(v)         {static struct timeval _tp; \
-                             gettimeofday(&_tp,(struct timezone *)0);\
-                             (v)=((PetscLogDouble)_tp.tv_sec)+(1.0e-6)*(_tp.tv_usec);}
+#define PetscTime(v)         do {                                       \
+    static struct timeval _tp;                                          \
+    gettimeofday(&_tp,(struct timezone *)0);                            \
+    (v)=((PetscLogDouble)_tp.tv_sec)+(1.0e-6)*(_tp.tv_usec);            \
+  } while (0)
 
-#define PetscTimeSubtract(v) {static struct timeval _tp; \
-                             gettimeofday(&_tp,(struct timezone *)0);\
-                             (v)-=((PetscLogDouble)_tp.tv_sec)+(1.0e-6)*(_tp.tv_usec);}
+#define PetscTimeSubtract(v) do {                                       \
+    static struct timeval _tp;                                          \
+    gettimeofday(&_tp,(struct timezone *)0);                            \
+    (v)-=((PetscLogDouble)_tp.tv_sec)+(1.0e-6)*(_tp.tv_usec);           \
+  } while (0)
 
-#define PetscTimeAdd(v)      {static struct timeval _tp; \
-                             gettimeofday(&_tp,(struct timezone *)0);\
-                             (v)+=((PetscLogDouble)_tp.tv_sec)+(1.0e-6)*(_tp.tv_usec);}
+#define PetscTimeAdd(v) do {                                            \
+    static struct timeval _tp;                                          \
+    gettimeofday(&_tp,(struct timezone *)0);                            \
+    (v)+=((PetscLogDouble)_tp.tv_sec)+(1.0e-6)*(_tp.tv_usec);           \
+  } while (0)
 #endif
 
 #endif

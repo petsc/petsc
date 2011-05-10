@@ -118,6 +118,22 @@ static PetscErrorCode PCApply_SVD(PC pc,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "PCReset_SVD"
+static PetscErrorCode PCReset_SVD(PC pc)
+{
+  PC_SVD         *jac = (PC_SVD*)pc->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatDestroy(&jac->A);CHKERRQ(ierr);
+  ierr = MatDestroy(&jac->U);CHKERRQ(ierr);
+  ierr = MatDestroy(&jac->V);CHKERRQ(ierr);
+  ierr = VecDestroy(&jac->diag);CHKERRQ(ierr);
+  ierr = VecDestroy(&jac->work);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /* -------------------------------------------------------------------------- */
 /*
    PCDestroy_SVD - Destroys the private context for the SVD preconditioner
@@ -132,14 +148,10 @@ static PetscErrorCode PCApply_SVD(PC pc,Vec x,Vec y)
 #define __FUNCT__ "PCDestroy_SVD"
 static PetscErrorCode PCDestroy_SVD(PC pc)
 {
-  PC_SVD         *jac = (PC_SVD*)pc->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatDestroy(&jac->A);CHKERRQ(ierr);
-  ierr = MatDestroy(&jac->U);CHKERRQ(ierr);
-  ierr = MatDestroy(&jac->V);CHKERRQ(ierr);
-  ierr = VecDestroy(&jac->diag);CHKERRQ(ierr);
+  ierr = PCReset_SVD(pc);CHKERRQ(ierr);
   ierr = PetscFree(pc->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -206,6 +218,7 @@ PetscErrorCode PCCreate_SVD(PC pc)
   pc->ops->apply               = PCApply_SVD;
   pc->ops->applytranspose      = PCApply_SVD;
   pc->ops->setup               = PCSetUp_SVD;
+  pc->ops->reset               = PCReset_SVD;
   pc->ops->destroy             = PCDestroy_SVD;
   pc->ops->setfromoptions      = PCSetFromOptions_SVD;
   pc->ops->view                = 0;

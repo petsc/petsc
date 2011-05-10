@@ -122,6 +122,7 @@ PetscErrorCode AOMap_MemoryScalable_private(AO ao,PetscInt n,PetscInt *ia,PetscI
   ierr   = PetscMalloc2(2*size,PetscInt,&nprocs,size,PetscInt,&start);CHKERRQ(ierr);
   ierr   = PetscMemzero(nprocs,2*size*sizeof(PetscInt));CHKERRQ(ierr);
   ierr   = PetscMalloc(n*sizeof(PetscInt),&owner);CHKERRQ(ierr);
+  ierr   = PetscMemzero(owner,n*sizeof(PetscInt));CHKERRQ(ierr);
   
   j       = 0;
   lastidx = -1;

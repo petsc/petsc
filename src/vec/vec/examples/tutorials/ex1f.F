@@ -81,7 +81,6 @@
       call VecSetSizes(x,PETSC_DECIDE,n,ierr)
       call VecSetFromOptions(x,ierr)
       call VecGetType(x,name,ierr)
-c      print*,name
 
 !  Duplicate some work vectors (of the same format and
 !  partitioning as the initial vector).

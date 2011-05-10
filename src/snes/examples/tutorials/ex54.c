@@ -40,7 +40,7 @@ int main(int argc, char **argv)
   AppCtx         user; /* Application context */
   Vec            xl,xu; /* Upper and lower bounds on variables */
   Mat            J;
-  PetscScalar    t=0.0;
+  PetscReal      t=0.0;
 
   PetscInitialize(&argc,&argv, (char*)0, help);
 
@@ -74,8 +74,8 @@ int main(int argc, char **argv)
   ierr = SNESSetFunction(snes,r,FormFunction,(void*)&user);CHKERRQ(ierr);
   ierr = SNESSetJacobian(snes,J,J,FormJacobian,(void*)&user);CHKERRQ(ierr);
 
-  ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
   ierr = SNESSetType(snes,SNESVI);CHKERRQ(ierr);
+  ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
   /* Set the boundary conditions */
   ierr = SetVariableBounds(user.da,xl,xu);CHKERRQ(ierr);
   ierr = SNESVISetVariableBounds(snes,xl,xu);CHKERRQ(ierr);

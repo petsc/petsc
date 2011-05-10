@@ -182,6 +182,11 @@ PetscErrorCode VecAXPBYPCZ_Seq(Vec zin,PetscScalar alpha,PetscScalar beta,PetscS
       zz[i] = alpha*xx[i] + beta*yy[i] + zz[i];
     }
     ierr = PetscLogFlops(4.0*n);CHKERRQ(ierr);
+  } else if (gamma == 0.0) {
+    for (i=0; i<n; i++) {
+      zz[i] = alpha*xx[i] + beta*yy[i];
+    }
+    ierr = PetscLogFlops(3.0*n);CHKERRQ(ierr);
   } else {
     for (i=0; i<n; i++) {
       zz[i] = alpha*xx[i] + beta*yy[i] + gamma*zz[i];

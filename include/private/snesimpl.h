@@ -54,7 +54,7 @@ struct _p_SNES {
   /* ---------------- PETSc-provided (or user-provided) stuff ---------------------*/
 
   PetscErrorCode      (*monitor[MAXSNESMONITORS])(SNES,PetscInt,PetscReal,void*); /* monitor routine */
-  PetscErrorCode      (*monitordestroy[MAXSNESMONITORS])(void*);          /* monitor context destroy routine */
+  PetscErrorCode      (*monitordestroy[MAXSNESMONITORS])(void**);          /* monitor context destroy routine */
   void                *monitorcontext[MAXSNESMONITORS];                   /* monitor context */
   PetscInt            numbermonitors;                                     /* number of monitors */
   void                *cnvP;	                                            /* convergence context */

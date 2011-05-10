@@ -457,6 +457,8 @@ static PetscErrorCode FormJacobian_All(SNES snes, Vec X, Mat *J, Mat *B, MatStru
     ierr = VecDestroy(&vecK);CHKERRQ(ierr);
 
     ierr = FormJacobianLocal_U(dmu, dmk, sectionU, sectionK, *B, user);CHKERRQ(ierr);
+    ierr = SectionRealDestroy(&sectionU);CHKERRQ(ierr);
+    ierr = SectionRealDestroy(&sectionK);CHKERRQ(ierr);
     break;
   case 1:
     ierr = DMMeshGetSectionReal(dmk, "default", &sectionK);CHKERRQ(ierr);
@@ -471,6 +473,8 @@ static PetscErrorCode FormJacobian_All(SNES snes, Vec X, Mat *J, Mat *B, MatStru
     ierr = VecDestroy(&vecU);CHKERRQ(ierr);
 
     ierr = FormJacobianLocal_K(dmu, dmk, sectionU, sectionK, *B, user);CHKERRQ(ierr);
+    ierr = SectionRealDestroy(&sectionU);CHKERRQ(ierr);
+    ierr = SectionRealDestroy(&sectionK);CHKERRQ(ierr);
     break;
   case 2: {
     Mat Buu,Buk,Bku,Bkk;
@@ -505,6 +509,8 @@ static PetscErrorCode FormJacobian_All(SNES snes, Vec X, Mat *J, Mat *B, MatStru
     ierr = MatRestoreLocalSubMatrix(*B, is[1], is[0], &Bku);CHKERRQ(ierr);
     ierr = MatRestoreLocalSubMatrix(*B, is[1], is[1], &Bkk);CHKERRQ(ierr);
 
+    ierr = SectionRealDestroy(&sectionU);CHKERRQ(ierr);
+    ierr = SectionRealDestroy(&sectionK);CHKERRQ(ierr);
     ierr = ISDestroy(&is[0]);CHKERRQ(ierr);
     ierr = ISDestroy(&is[1]);CHKERRQ(ierr);
     ierr = PetscFree(is);CHKERRQ(ierr);

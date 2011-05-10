@@ -46,7 +46,7 @@ struct _p_TS {
 
   /* ---------------- User (or PETSc) Provided stuff ---------------------*/
   PetscErrorCode (*monitor[MAXTSMONITORS])(TS,PetscInt,PetscReal,Vec,void*); /* returns control to user after */
-  PetscErrorCode (*mdestroy[MAXTSMONITORS])(void*);                
+  PetscErrorCode (*mdestroy[MAXTSMONITORS])(void**);                
   void *monitorcontext[MAXTSMONITORS];                 /* residual calculation, allows user */
   PetscInt  numbermonitors;                                 /* to, for instance, print residual norm, etc. */
 
