@@ -573,6 +573,7 @@ PetscErrorCode CharacteristicSetNeighbors(Characteristic c, PetscInt numNeighbor
 
   PetscFunctionBegin;
   c->numNeighbors = numNeighbors;
+  ierr = PetscFree(c->neighbors);CHKERRQ(ierr);
   ierr = PetscMalloc(numNeighbors * sizeof(PetscMPIInt), &c->neighbors);CHKERRQ(ierr);
   ierr = PetscMemcpy(c->neighbors, neighbors, numNeighbors * sizeof(PetscMPIInt));CHKERRQ(ierr);
   PetscFunctionReturn(0);

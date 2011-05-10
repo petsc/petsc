@@ -121,7 +121,6 @@
 !     Basic constants
 ! 
       PetscFortranDouble PETSC_PI
-      PetscFortranDouble PETSC_DEGREES_TO_RADIANS
       PetscFortranDouble PETSC_MAX_REAL
       PetscFortranDouble PETSC_MIN_REAL
 
