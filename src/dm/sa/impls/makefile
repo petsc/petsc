@@ -1,10 +1,10 @@
 
 ALL: lib
 
-DIRS     = interface impls
-LOCDIR   = src/dm/ismap
+DIRS     = graph
+LOCDIR   = src/dm/sa/impls/
 MANSEC   = DM
-SUBMANSEC= ISMAP
+SUBMANSEC= SA
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules
