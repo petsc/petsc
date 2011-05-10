@@ -46,6 +46,7 @@ extern PetscErrorCode  PetscBagRegisterBool(PetscBag,void*,PetscBool ,const  cha
 extern PetscErrorCode  PetscBagSetFromOptions(PetscBag);
 extern PetscErrorCode  PetscBagGetName(PetscBag, char **);
 extern PetscErrorCode  PetscBagSetName(PetscBag, const char *, const char *);
+extern PetscErrorCode  PetscBagSetOptionsPrefix(PetscBag, const char *);
 
 extern PetscErrorCode  PetscBagView(PetscBag,PetscViewer);
 extern PetscErrorCode  PetscBagLoad(PetscViewer,PetscBag*);

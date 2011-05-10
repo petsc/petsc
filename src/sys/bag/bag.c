@@ -68,13 +68,13 @@ PetscErrorCode PetscBagRegisterEnum(PetscBag bag,void *addr,const char **list,Pe
     ierr     = PetscOptionsHasName(PETSC_NULL,"-help",&printhelp);CHKERRQ(ierr);
     if (printhelp) {
       while (list[i++]); 
-      ierr     = (*PetscHelpPrintf)(bag->bagcomm,"  %s <%s>: (%s) %s (choose one of) ",nname,list[mdefault],list[i-3],help);CHKERRQ(ierr);
+      ierr = (*PetscHelpPrintf)(bag->bagcomm,"  -%s%s <%s>: (%s) %s (choose one of) ",bag->bagprefix?bag->bagprefix:"",name,list[mdefault],list[i-3],help);CHKERRQ(ierr);
       for (i=0; list[i+2]; i++){
         ierr = (*PetscHelpPrintf)(bag->bagcomm," %s",list[i]);CHKERRQ(ierr);
       }
       ierr = (*PetscHelpPrintf)(bag->bagcomm,"\n");CHKERRQ(ierr);
     }
-    ierr     = PetscOptionsGetEnum(PETSC_NULL,nname,list,&mdefault,PETSC_NULL);CHKERRQ(ierr);
+    ierr     = PetscOptionsGetEnum(bag->bagprefix,nname,list,&mdefault,PETSC_NULL);CHKERRQ(ierr);
   }
 
   ierr = PetscNew(struct _n_PetscBagItem,&item);CHKERRQ(ierr);
@@ -124,9 +124,9 @@ PetscErrorCode PetscBagRegisterInt(PetscBag bag,void *addr,PetscInt mdefault, co
     ierr     = PetscStrncat(nname,name,PETSC_BAG_NAME_LENGTH-1);CHKERRQ(ierr);
     ierr     = PetscOptionsHasName(PETSC_NULL,"-help",&printhelp);CHKERRQ(ierr);
     if (printhelp) {
-      ierr     = (*PetscHelpPrintf)(bag->bagcomm,"  %s <%d>: %s \n",nname,mdefault,help);CHKERRQ(ierr);
+      ierr     = (*PetscHelpPrintf)(bag->bagcomm,"  -%s%s <%d>: %s \n",bag->bagprefix?bag->bagprefix:"",name,mdefault,help);CHKERRQ(ierr);
     }
-    ierr     = PetscOptionsGetInt(PETSC_NULL,nname,&mdefault,PETSC_NULL);CHKERRQ(ierr);
+    ierr     = PetscOptionsGetInt(bag->bagprefix,nname,&mdefault,PETSC_NULL);CHKERRQ(ierr);
   }
 
   ierr = PetscNew(struct _n_PetscBagItem,&item);CHKERRQ(ierr);
@@ -178,7 +178,7 @@ PetscErrorCode PetscBagRegisterString(PetscBag bag,void *addr,PetscInt msize,con
     ierr     = PetscStrncat(nname,name,PETSC_BAG_NAME_LENGTH-1);CHKERRQ(ierr);
     ierr     = PetscOptionsHasName(PETSC_NULL,"-help",&printhelp);CHKERRQ(ierr);
     if (printhelp) {
-      ierr     = (*PetscHelpPrintf)(bag->bagcomm,"  %s <%s>: %s \n",nname,mdefault,help);CHKERRQ(ierr);
+      ierr     = (*PetscHelpPrintf)(bag->bagcomm,"  -%s%s <%s>: %s \n",bag->bagprefix?bag->bagprefix:"",name,mdefault,help);CHKERRQ(ierr);
     }
   }
 
@@ -192,7 +192,7 @@ PetscErrorCode PetscBagRegisterString(PetscBag bag,void *addr,PetscInt msize,con
     ierr = PetscStrncpy((char*)addr,mdefault,msize-1);CHKERRQ(ierr);
   }
   if (!PetscBagInLoad) {
-    ierr = PetscOptionsGetString(PETSC_NULL,nname,(char*)addr,msize,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(bag->bagprefix,nname,(char*)addr,msize,PETSC_NULL);CHKERRQ(ierr);
   }
   ierr = PetscBagRegister_Private(bag,item,name,help);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -233,9 +233,9 @@ PetscErrorCode PetscBagRegisterReal(PetscBag bag,void *addr,PetscReal mdefault, 
     ierr     = PetscStrncat(nname,name,PETSC_BAG_NAME_LENGTH-1);CHKERRQ(ierr);
     ierr     = PetscOptionsHasName(PETSC_NULL,"-help",&printhelp);CHKERRQ(ierr);
     if (printhelp) {
-      ierr     = (*PetscHelpPrintf)(bag->bagcomm,"  %s <%G>: %s \n",nname,mdefault,help);CHKERRQ(ierr);
+      ierr     = (*PetscHelpPrintf)(bag->bagcomm,"  -%s%s <%G>: %s \n",bag->bagprefix?bag->bagprefix:"",name,mdefault,help);CHKERRQ(ierr);
     }
-    ierr     = PetscOptionsGetReal(PETSC_NULL,nname,&mdefault,PETSC_NULL);CHKERRQ(ierr);
+    ierr     = PetscOptionsGetReal(bag->bagprefix,nname,&mdefault,PETSC_NULL);CHKERRQ(ierr);
   }
 
   ierr = PetscNew(struct _n_PetscBagItem,&item);CHKERRQ(ierr);
@@ -285,9 +285,9 @@ PetscErrorCode PetscBagRegisterScalar(PetscBag bag,void *addr,PetscScalar mdefau
     ierr     = PetscStrncat(nname,name,PETSC_BAG_NAME_LENGTH-1);CHKERRQ(ierr);
     ierr     = PetscOptionsHasName(PETSC_NULL,"-help",&printhelp);CHKERRQ(ierr);
     if (printhelp) {
-      ierr     = (*PetscHelpPrintf)(bag->bagcomm,"  %s <%G + %Gi>: %s \n",nname,PetscRealPart(mdefault),PetscImaginaryPart(mdefault),help);CHKERRQ(ierr);
+      ierr     = (*PetscHelpPrintf)(bag->bagcomm,"  -%s%s <%G + %Gi>: %s \n",bag->bagprefix?bag->bagprefix:"",name,PetscRealPart(mdefault),PetscImaginaryPart(mdefault),help);CHKERRQ(ierr);
     }
-    ierr     = PetscOptionsGetScalar(PETSC_NULL,nname,&mdefault,PETSC_NULL);CHKERRQ(ierr);
+    ierr     = PetscOptionsGetScalar(bag->bagprefix,nname,&mdefault,PETSC_NULL);CHKERRQ(ierr);
   }
 
   ierr = PetscNew(struct _n_PetscBagItem,&item);CHKERRQ(ierr);
@@ -339,9 +339,9 @@ PetscErrorCode PetscBagRegisterBool(PetscBag bag,void *addr,PetscBool  mdefault,
     ierr     = PetscStrncat(nname,name,PETSC_BAG_NAME_LENGTH-1);CHKERRQ(ierr);
     ierr     = PetscOptionsHasName(PETSC_NULL,"-help",&printhelp);CHKERRQ(ierr);
     if (printhelp) {
-      ierr     = (*PetscHelpPrintf)(bag->bagcomm,"  %s <%s>: %s \n",nname,PetscBools[mdefault],help);CHKERRQ(ierr);
+      ierr     = (*PetscHelpPrintf)(bag->bagcomm,"  -%s%s <%s>: %s \n",bag->bagprefix?bag->bagprefix:"",name,PetscBools[mdefault],help);CHKERRQ(ierr);
     }
-    ierr     = PetscOptionsGetBool(PETSC_NULL,nname,&mdefault,PETSC_NULL);CHKERRQ(ierr);
+    ierr     = PetscOptionsGetBool(bag->bagprefix,nname,&mdefault,PETSC_NULL);CHKERRQ(ierr);
   }
 
   ierr = PetscNew(struct _n_PetscBagItem,&item);CHKERRQ(ierr);
@@ -387,6 +387,7 @@ PetscErrorCode  PetscBagDestroy(PetscBag *bag)
     ierr  = PetscFree(nitem);CHKERRQ(ierr);
     nitem = item;
   }
+  if ((*bag)->bagprefix) { ierr = PetscFree((*bag)->bagprefix);CHKERRQ(ierr); }
   ierr = PetscFree(*bag);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -673,6 +674,7 @@ PetscErrorCode PetscBagCreate(MPI_Comm comm, size_t bagsize, PetscBag *bag)
   ierr = PetscMemzero(*bag,bagsize+sizeof(struct _n_PetscBag)+sizeof(PetscScalar));CHKERRQ(ierr);
   (*bag)->bagsize        = bagsize+sizeof(struct _n_PetscBag)+sizeof(PetscScalar);
   (*bag)->bagcomm        = comm;
+  (*bag)->bagprefix      = PETSC_NULL;
   (*bag)->structlocation = (void*)(((char*)(*bag)) + sizeof(PetscScalar)*(sizeof(struct _n_PetscBag)/sizeof(PetscScalar)) + sizeof(PetscScalar));
   PetscFunctionReturn(0);
 }  
@@ -704,6 +706,7 @@ PetscErrorCode PetscBagSetName(PetscBag bag, const char *name, const char *help)
   ierr = PetscStrncpy(bag->baghelp,help,PETSC_BAG_HELP_LENGTH-1);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }  
+
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscBagGetName"
@@ -755,5 +758,39 @@ PetscErrorCode PetscBagGetData(PetscBag bag, void **data)
 {
   PetscFunctionBegin;
   *data = bag->structlocation;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscBagSetOptionsPrefix"
+/*@C
+  PetscBagSetOptionsPrefix - Sets the prefix used for searching for all
+  PetscBag items in the options database.
+
+  Logically collective on Bag.
+
+  Level: Intermediate
+
+  Input Parameters:
++   bag - the bag of values
+-   prefix - the prefix to prepend all Bag item names with.
+
+  NOTES: Must be called prior to registering any of the bag items.
+
+.seealso: PetscBag, PetscBagRegisterReal(), PetscBagRegisterInt(), PetscBagRegisterBool(), PetscBagRegisterScalar()
+           PetscBagSetFromOptions(), PetscBagCreate(), PetscBagDestroy(), PetscBagRegisterEnum()
+@*/
+
+PetscErrorCode PetscBagSetOptionsPrefix(PetscBag bag, const char pre[])
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  if (!pre) {
+    ierr = PetscFree(bag->bagprefix);CHKERRQ(ierr);
+  } else {
+    if (pre[0] == '-') SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Options prefix should not begin with a hypen");
+    ierr = PetscFree(bag->bagprefix);CHKERRQ(ierr);
+    ierr = PetscStrallocpy(pre,&(bag->bagprefix));CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }

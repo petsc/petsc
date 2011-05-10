@@ -115,7 +115,14 @@
 #define PETSC_SCALAR PETSC_LONG_DOUBLE
 #elif defined(PETSC_USE_REAL_DOUBLE)
 #define PETSC_SCALAR PETSC_DOUBLE
-#endif     
+#endif
+#endif
+#if defined(PETSC_USE_REAL_SINGLE)
+#define  PETSC_REAL  PETSC_FLOAT
+#elif defined(PETSC_USE_REAL_LONG_DOUBLE)
+#define  PETSC_REAL  PETSC_LONG_DOUBLE
+#else
+#define  PETSC_REAL  PETSC_DOUBLE
 #endif
 !
 !     Macro for templating between real and complex
