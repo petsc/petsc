@@ -23,6 +23,7 @@ struct _n_PetscBag {
   PetscInt     count;
   char         bagname[PETSC_BAG_NAME_LENGTH];
   char         baghelp[PETSC_BAG_HELP_LENGTH];
+  char         *bagprefix;
   PetscBagItem bagitems;
 };
 
