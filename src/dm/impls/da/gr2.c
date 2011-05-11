@@ -418,7 +418,7 @@ PetscErrorCode  VecView_MPI_DA(Vec xin,PetscViewer viewer)
 #if defined(PETSC_HAVE_HDF5)
   PetscBool      ishdf5;
 #endif
-  const char     *prefix;
+  const char     *prefix,*name;
 
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject)xin,"DMDA",(PetscObject*)&da);CHKERRQ(ierr);
@@ -460,7 +460,8 @@ PetscErrorCode  VecView_MPI_DA(Vec xin,PetscViewer viewer)
     ierr = PetscObjectSetOptionsPrefix((PetscObject)natural,prefix);CHKERRQ(ierr);
     ierr = DMDAGlobalToNaturalBegin(da,xin,INSERT_VALUES,natural);CHKERRQ(ierr);
     ierr = DMDAGlobalToNaturalEnd(da,xin,INSERT_VALUES,natural);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject)natural,((PetscObject)xin)->name);CHKERRQ(ierr);
+    ierr = PetscObjectGetName((PetscObject)xin,&name);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject)natural,name);CHKERRQ(ierr);
     ierr = VecView(natural,viewer);CHKERRQ(ierr);
     ierr = VecDestroy(&natural);CHKERRQ(ierr);
   }
