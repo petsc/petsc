@@ -989,7 +989,7 @@ PetscErrorCode  PetscFinalize(void)
   ierr = PetscOptionsGetBool(PETSC_NULL,"-options_table",&flg2,PETSC_NULL);CHKERRQ(ierr);
 
   if (flg2) {
-    if (!rank) {ierr = PetscOptionsView(PETSC_NULL);CHKERRQ(ierr);}
+    ierr = PetscOptionsView(PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
 
   /* to prevent PETSc -options_left from warning */
