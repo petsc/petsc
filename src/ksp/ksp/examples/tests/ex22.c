@@ -224,11 +224,11 @@ PetscErrorCode test_solve_matgetvecs( void )
 #define __FUNCT__ "main"
 int main( int argc, char **args )
 {
+  PetscErrorCode ierr;
+
   PetscInitialize( &argc, &args,(char *)0, help);
-
-  test_solve();
-  test_solve_matgetvecs();
-
+  ierr = test_solve();CHKERRQ(ierr);
+  ierr = test_solve_matgetvecs();CHKERRQ(ierr);
   PetscFinalize();
   return 0;
 }
