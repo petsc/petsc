@@ -1772,7 +1772,7 @@ PETSC_STATIC_INLINE PetscErrorCode  PetscMemcpy(void *a,const void *b,size_t n)
     } else {
       memcpy((char*)(a),(char*)(b),n);
     }
-#elif defined(PETSC_HAVE__INTEL_FAST_MEMCPY)
+#elif defined(PETSC_HAVE__INTEL_FAST_MEMCPY) && !defined(__cplusplus)
     _intel_fast_memcpy((char*)(a),(char*)(b),n);
 #else
     memcpy((char*)(a),(char*)(b),n);
@@ -1823,7 +1823,7 @@ PETSC_STATIC_INLINE PetscErrorCode  PetscMemzero(void *a,size_t n)
 #endif
 #if defined(PETSC_PREFER_BZERO)
       bzero((char *)a,n);
-#elif defined (PETSC_HAVE__INTEL_FAST_MEMSET)
+#elif defined (PETSC_HAVE__INTEL_FAST_MEMSET) && !defined(__cplusplus)
       _intel_fast_memset((char*)a,0,n);
 #else
       memset((char*)a,0,n);
