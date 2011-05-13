@@ -984,7 +984,7 @@ EXTERN_C_END
 
    Only one of changed_y and changed_w can  be PETSC_TRUE
 
-   On input w = x + y
+   On input w = x - y
 
    SNESLineSearchNo() and SNESLineSearchNoNorms() (1) compute a candidate iterate u_{i+1}, (2) pass control 
    to the checking routine, and then (3) compute the corresponding nonlinear
