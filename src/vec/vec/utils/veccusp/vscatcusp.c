@@ -93,7 +93,7 @@ PetscErrorCode  VecScatterInitializeForGPU(VecScatter inctx,Vec x,ScatterMode mo
     // This should be called here.
     // ... basically, we launch the copy kernel that takes the scattered data and puts it in a 
     //     a contiguous buffer. Then, this buffer is messaged after the MatMult is called.
-    ierr = VecCUSPCopySomeToContiguousBufferGPU_Public(x,(PetscCUSPIndices)inctx->spptr);CHKERRQ(ierr);
+    //ierr = VecCUSPCopySomeToContiguousBufferGPU_Public(x,(PetscCUSPIndices)inctx->spptr);CHKERRQ(ierr);
     } else {
     ierr = VecGetArrayRead(x,(const PetscScalar**)&xv);CHKERRQ(ierr);
   }

@@ -91,7 +91,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJCUSP(Mat fact,Mat A,IS isrow,IS iscol,
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  ierr = MatILUFactorSymbolic_SeqAIJ(fact,A,isrow,iscol,info); CHKERRQ(ierr);
+  ierr = MatILUFactorSymbolic_SeqAIJ(fact,A,isrow,iscol,info);CHKERRQ(ierr);
   (fact)->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJCUSP;
   PetscFunctionReturn(0);
 }
@@ -103,7 +103,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJCUSP(Mat B,Mat A,IS isrow,IS iscol,cons
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  ierr = MatLUFactorSymbolic_SeqAIJ(B,A,isrow,iscol,info); CHKERRQ(ierr);
+  ierr = MatLUFactorSymbolic_SeqAIJ(B,A,isrow,iscol,info);CHKERRQ(ierr);
   B->ops->lufactornumeric = MatLUFactorNumeric_SeqAIJCUSP;
   PetscFunctionReturn(0);
 }
@@ -190,9 +190,9 @@ PetscErrorCode MatCUSPARSEBuildLowerTriMatrix(Mat A)
       
       cudaError_t err;
       /* Allocate Space for the lower triangular matrix */	
-      err = cudaMallocHost((void **) &AiLo, (n+1)*sizeof(PetscInt)); CHKERRCUSP(err);
-      err = cudaMallocHost((void **) &AjLo, nzLower*sizeof(PetscInt)); CHKERRCUSP(err);
-      err = cudaMallocHost((void **) &AALo, nzLower*sizeof(PetscScalar)); CHKERRCUSP(err);
+      err = cudaMallocHost((void **) &AiLo, (n+1)*sizeof(PetscInt));CHKERRCUSP(err);
+      err = cudaMallocHost((void **) &AjLo, nzLower*sizeof(PetscInt));CHKERRCUSP(err);
+      err = cudaMallocHost((void **) &AALo, nzLower*sizeof(PetscScalar));CHKERRCUSP(err);
       
       /* Fill the lower triangular matrix */
       AiLo[0]=(PetscInt) 0;
@@ -277,9 +277,9 @@ PetscErrorCode MatCUSPARSEBuildUpperTriMatrix(Mat A)
       nzUpper = adiag[0]-adiag[n];
       
       /* Allocate Space for the upper triangular matrix */
-      err = cudaMallocHost((void **) &AiUp, (n+1)*sizeof(PetscInt)); CHKERRCUSP(err);
-      err = cudaMallocHost((void **) &AjUp, nzUpper*sizeof(PetscInt)); CHKERRCUSP(err);
-      err = cudaMallocHost((void **) &AAUp, nzUpper*sizeof(PetscScalar)); CHKERRCUSP(err);
+      err = cudaMallocHost((void **) &AiUp, (n+1)*sizeof(PetscInt));CHKERRCUSP(err);
+      err = cudaMallocHost((void **) &AjUp, nzUpper*sizeof(PetscInt));CHKERRCUSP(err);
+      err = cudaMallocHost((void **) &AAUp, nzUpper*sizeof(PetscScalar));CHKERRCUSP(err);
       
       /* Fill the upper triangular matrix */
       AiUp[0]=(PetscInt) 0;
@@ -383,7 +383,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJCUSP(Mat B,Mat A,const MatFactorInfo *in
 
   PetscFunctionBegin;
   
-  ierr = MatLUFactorNumeric_SeqAIJ(B,A,info); CHKERRQ(ierr);
+  ierr = MatLUFactorNumeric_SeqAIJ(B,A,info);CHKERRQ(ierr);
   
   // determine which version of MatSolve needs to be used.
   ierr = ISIdentity(isrow,&row_identity);CHKERRQ(ierr);
@@ -619,8 +619,7 @@ PetscErrorCode MatCUSPCopyToGPU(Mat A)
 	// Create the streams and events (if desired) 
 	PetscMPIInt    size;
 	ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-	ierr = cuspstruct->mat->buildStreamsAndEvents(size, &theBodyStream);
-	CHKERRCUSP(ierr);	
+	ierr = cuspstruct->mat->buildStreamsAndEvents(size, &theBodyStream);CHKERRCUSP(ierr);	
 
 	///
 	// INODES : Determine the inode data structure for the GPU.
@@ -646,14 +645,14 @@ PetscErrorCode MatCUSPCopyToGPU(Mat A)
 	  }
 	  // Set the Inode data ... only relevant for CSR really
 	  cuspstruct->mat->setInodeData(temp, a->inode.node_count+1, nnzPerRowMax, nodeMax, a->inode.node_count);
-	  ierr = PetscFree(temp); CHKERRQ(ierr);
+	  ierr = PetscFree(temp);CHKERRQ(ierr);
 	}
 
       }
       if (!a->compressedrow.use) {	
 	// free data
-	ierr = PetscFree(ii); CHKERRQ(ierr);
-	ierr = PetscFree(ridx); CHKERRQ(ierr);
+	ierr = PetscFree(ii);CHKERRQ(ierr);
+	ierr = PetscFree(ridx);CHKERRQ(ierr);
       }
      
 #else
@@ -798,7 +797,7 @@ PetscErrorCode MatMult_SeqAIJCUSP(Mat A,Vec xx,Vec yy)
   try {
 #ifdef PETSC_HAVE_TXPETSCGPU
     ierr = cuspstruct->mat->multiply(thrust::raw_pointer_cast(xarray->data()),
-				     thrust::raw_pointer_cast(yarray->data())); CHKERRCUSP(ierr);
+				     thrust::raw_pointer_cast(yarray->data()));CHKERRCUSP(ierr);
 #else
     if (usecprow){ /* use compressed row format */
       cusp::multiply(*cuspstruct->mat,*xarray,*cuspstruct->tempvec);
@@ -858,7 +857,7 @@ PetscErrorCode MatMultAdd_SeqAIJCUSP(Mat A,Vec xx,Vec yy,Vec zz)
     ierr = VecCUSPGetArrayWrite(zz,&zarray);CHKERRQ(ierr);
 #ifdef PETSC_HAVE_TXPETSCGPU
     ierr = cuspstruct->mat->multiplyAdd(thrust::raw_pointer_cast(xarray->data()),
-					thrust::raw_pointer_cast(zarray->data())); CHKERRCUSP(ierr);
+					thrust::raw_pointer_cast(zarray->data()));CHKERRCUSP(ierr);
 
 #else
     if (a->compressedrow.use) {

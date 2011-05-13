@@ -41,7 +41,7 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(VecScatter ctx,Vec xin,Vec yin,InsertM
 
 #if defined(PETSC_HAVE_TXPETSCGPU)
 
-#if 0
+#if 1
   // This branch messages the entire vector
   ierr = VecGetArrayRead(xin,(const PetscScalar**)&xv);CHKERRQ(ierr);
 #else
@@ -215,9 +215,11 @@ PetscErrorCode PETSCMAP1(VecScatterEnd)(VecScatter ctx,Vec xin,Vec yin,InsertMod
   /* wait on sends */
   if (nsends  && !to->use_alltoallv  && !to->use_window) {ierr = MPI_Waitall(nsends,swaits,sstatus);CHKERRQ(ierr);}
   ierr = VecRestoreArray(yin,&yv);CHKERRQ(ierr);
+#if 0
 #if defined(PETSC_HAVE_TXPETSCGPU)
   if (ctx->spptr)
     ierr = VecCUSPCopyToGPUSome_Public(yin,(PetscCUSPIndices)ctx->spptr);CHKERRQ(ierr);
+#endif
 #endif
   PetscFunctionReturn(0);
 }
