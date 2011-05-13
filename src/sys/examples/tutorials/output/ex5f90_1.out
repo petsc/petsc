@@ -1,12 +1,16 @@
-PetscBag Object:   
+PetscBag Object:  demo parameters super secret demo parameters in a bag
+  nxc = 56; nxc_variable help message
+  x = 103.2; x variable help message
+  t = TRUE; t boolean help message
+  c = hello; string help message
+  y = -11; y variable help message
+  pos_x1 = 1; tuple value 1 help message
+  pos_x2 = 2; tuple value 2 help message
+PetscBag Object:  demo parameters super secret demo parameters in a bag
   nxc = 23; nxc_variable help message
   x = 155.4; x variable help message
   t = TRUE; t boolean help message
-  c = a whole new string                                                              ; string help message
+  c = a whole new string                                                             ; string help message
   y = -11; y variable help message
-PetscBag Object:   
-  nxc = 23; nxc_variable help message
-  x = 155.4; x variable help message
-  t = TRUE; t boolean help message
-  c = a whole new string                                                              ; string help message
-  y = -11; y variable help message
+  pos_x1 = 1; tuple value 1 help message
+  pos_x2 = 2; tuple value 2 help message
