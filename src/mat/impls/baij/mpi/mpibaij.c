@@ -3540,8 +3540,8 @@ static PetscErrorCode MatDuplicate_MPIBAIJ(Mat matin,MatDuplicateOption cpvalues
   a->Mbs   = oldmat->Mbs;
   a->Nbs   = oldmat->Nbs;
   
-  ierr = PetscLayoutCopy(matin->rmap,&mat->rmap);CHKERRQ(ierr);  
-  ierr = PetscLayoutCopy(matin->cmap,&mat->cmap);CHKERRQ(ierr);  
+  ierr = PetscLayoutReference(matin->rmap,&mat->rmap);CHKERRQ(ierr);  
+  ierr = PetscLayoutReference(matin->cmap,&mat->cmap);CHKERRQ(ierr);  
 
   a->size         = oldmat->size;
   a->rank         = oldmat->rank;

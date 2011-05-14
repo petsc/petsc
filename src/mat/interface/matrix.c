@@ -4014,8 +4014,6 @@ PetscErrorCode  MatDuplicate(Mat mat,MatDuplicateOption op,Mat *M)
   if (mat->rbmapping) {
     ierr = MatSetLocalToGlobalMappingBlock(B,mat->rbmapping,mat->cbmapping);CHKERRQ(ierr);
   }
-  ierr = PetscLayoutCopy(mat->rmap,&B->rmap);CHKERRQ(ierr);
-  ierr = PetscLayoutCopy(mat->cmap,&B->cmap);CHKERRQ(ierr);
   
   B->stencil.dim = mat->stencil.dim;
   B->stencil.noc = mat->stencil.noc;

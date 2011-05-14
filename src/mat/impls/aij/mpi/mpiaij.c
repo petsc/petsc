@@ -3227,8 +3227,8 @@ PetscErrorCode MatDuplicate_MPIAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *ne
   a->rowvalues      = 0;
   a->getrowactive   = PETSC_FALSE;
 
-  ierr = PetscLayoutCopy(matin->rmap,&mat->rmap);CHKERRQ(ierr);
-  ierr = PetscLayoutCopy(matin->cmap,&mat->cmap);CHKERRQ(ierr);
+  ierr = PetscLayoutReference(matin->rmap,&mat->rmap);CHKERRQ(ierr);
+  ierr = PetscLayoutReference(matin->cmap,&mat->cmap);CHKERRQ(ierr);
 
   if (oldmat->colmap) {
 #if defined (PETSC_USE_CTABLE)

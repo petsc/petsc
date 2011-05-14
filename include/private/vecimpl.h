@@ -33,6 +33,7 @@ extern PetscErrorCode PetscLayoutCreate(MPI_Comm,PetscLayout*);
 extern PetscErrorCode PetscLayoutSetUp(PetscLayout);
 extern PetscErrorCode PetscLayoutDestroy(PetscLayout*);
 extern PetscErrorCode PetscLayoutCopy(PetscLayout,PetscLayout*);
+extern PetscErrorCode PetscLayoutReference(PetscLayout,PetscLayout*);
 extern PetscErrorCode  PetscLayoutSetLocalSize(PetscLayout,PetscInt);
 extern PetscErrorCode  PetscLayoutGetLocalSize(PetscLayout,PetscInt *);
 PetscPolymorphicFunction(PetscLayoutGetLocalSize,(PetscLayout m),(m,&s),PetscInt,s)
