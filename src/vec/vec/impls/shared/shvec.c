@@ -24,6 +24,7 @@ PetscErrorCode VecDuplicate_Shared(Vec win,Vec *v)
   ierr = VecCreate(((PetscObject)win)->comm,v);CHKERRQ(ierr);
   ierr = VecSetSizes(*v,win->map->n,win->map->N);CHKERRQ(ierr);
   ierr = VecCreate_MPI_Private(*v,PETSC_FALSE,w->nghost,array);CHKERRQ(ierr);
+  ierr = PetscLayoutReference(win->map,&(*v)->map);CHKERRQ(ierr);
 
   /* New vector should inherit stashing property of parent */
   (*v)->stash.donotstash   = win->stash.donotstash;
@@ -41,7 +42,6 @@ PetscErrorCode VecDuplicate_Shared(Vec win,Vec *v)
     (*v)->bmapping = win->bmapping;
   }
   (*v)->ops->duplicate = VecDuplicate_Shared;
-  (*v)->map->bs    = win->map->bs;
   (*v)->bstash.bs = win->bstash.bs;
   PetscFunctionReturn(0);
 }

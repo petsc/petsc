@@ -131,11 +131,7 @@ PetscErrorCode VecDuplicate_MPICUSP(Vec win,Vec *v)
 
   PetscFunctionBegin;
   ierr = VecCreate(((PetscObject)win)->comm,v);CHKERRQ(ierr);
-
-  /* use the map that exists aleady in win */
-  ierr = PetscLayoutDestroy(&(*v)->map);CHKERRQ(ierr);
-  (*v)->map = win->map;
-  win->map->refcnt++;
+  ierr = PetscLayoutReference(win->map,&(*v)->map);CHKERRQ(ierr);
 
   ierr = VecCreate_MPI_Private(*v,PETSC_FALSE,w->nghost,0);CHKERRQ(ierr);
   vw   = (Vec_MPI *)(*v)->data;
