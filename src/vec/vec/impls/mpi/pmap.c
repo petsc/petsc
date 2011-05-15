@@ -81,6 +81,8 @@ PetscErrorCode  PetscLayoutDestroy(PetscLayout *map)
   if (!*map) PetscFunctionReturn(0);
   if (!(*map)->refcnt--) {
     ierr = PetscFree((*map)->range);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingDestroy(&(*map)->mapping);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingDestroy(&(*map)->bmapping);CHKERRQ(ierr);
     ierr = PetscFree((*map));CHKERRQ(ierr);
   }
   *map = PETSC_NULL;
@@ -221,6 +223,72 @@ PetscErrorCode  PetscLayoutReference(PetscLayout in,PetscLayout *out)
   in->refcnt++;
   ierr = PetscLayoutDestroy(out);CHKERRQ(ierr);
   *out = in;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscLayoutSetISLocalToGlobalMapping"
+/*@C
+
+    PetscLayoutSetISLocalToGlobalMapping - sets a ISLocalGlobalMapping into a PetscLayout
+
+     Collective on PetscLayout
+
+    Input Parameter:
++     in - input PetscLayout
+-     ltog - the local to global mapping
+
+
+   Level: developer
+
+    Notes: PetscLayoutSetUp() does not need to be called on the resulting PetscLayout
+
+    If the ltog location already contains a PetscLayout it is destroyed
+
+.seealso: PetscLayoutCreate(), PetscLayoutDestroy(), PetscLayoutSetUp(), PetscLayoutCopy(), PetscLayoutSetLocalToGlobalMappingBlock()
+
+@*/
+PetscErrorCode  PetscLayoutSetISLocalToGlobalMapping(PetscLayout in,ISLocalToGlobalMapping ltog)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectReference((PetscObject)ltog);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingDestroy(&in->mapping);CHKERRQ(ierr);
+  in->mapping = ltog;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscLayoutSetISLocalToGlobalMappingBlock"
+/*@C
+
+    PetscLayoutSetISLocalToGlobalMappingBlock - sets a ISLocalGlobalMapping into a PetscLayout
+
+     Collective on PetscLayout
+
+    Input Parameter:
++     in - input PetscLayout
+-     ltog - the local to global block mapping
+
+
+   Level: developer
+
+    Notes: PetscLayoutSetUp() does not need to be called on the resulting PetscLayout
+
+    If the ltog location already contains a PetscLayout it is destroyed
+
+.seealso: PetscLayoutCreate(), PetscLayoutDestroy(), PetscLayoutSetUp(), PetscLayoutCopy(), PetscLayoutSetLocalToGlobalMappingBlock()
+
+@*/
+PetscErrorCode  PetscLayoutSetISLocalToGlobalMappingBlock(PetscLayout in,ISLocalToGlobalMapping ltog)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectReference((PetscObject)ltog);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingDestroy(&in->bmapping);CHKERRQ(ierr);
+  in->bmapping = ltog;
   PetscFunctionReturn(0);
 }
 

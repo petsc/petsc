@@ -156,14 +156,6 @@ PetscErrorCode VecDuplicate_MPICUSP(Vec win,Vec *v)
   
   ierr = PetscOListDuplicate(((PetscObject)win)->olist,&((PetscObject)(*v))->olist);CHKERRQ(ierr);
   ierr = PetscFListDuplicate(((PetscObject)win)->qlist,&((PetscObject)(*v))->qlist);CHKERRQ(ierr);
-  if (win->mapping) {
-    ierr = PetscObjectReference((PetscObject)win->mapping);CHKERRQ(ierr);
-    (*v)->mapping = win->mapping;
-  }
-  if (win->bmapping) {
-    ierr = PetscObjectReference((PetscObject)win->bmapping);CHKERRQ(ierr);
-    (*v)->bmapping = win->bmapping;
-  }
   (*v)->map->bs    = win->map->bs;
   (*v)->bstash.bs = win->bstash.bs;
 

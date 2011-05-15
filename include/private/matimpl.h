@@ -284,8 +284,6 @@ struct _p_Mat {
   PetscInt               num_ass;          /* number of times matrix has been assembled */
   PetscBool              same_nonzero;     /* matrix has same nonzero pattern as previous */
   MatInfo                info;             /* matrix information */
-  ISLocalToGlobalMapping rmapping,cmapping; /* row and column mappings used in MatSetValuesLocal() */
-  ISLocalToGlobalMapping rbmapping,cbmapping; /* row and mappings used in MatSetValuesBlockedLocal() */
   InsertMode             insertmode;       /* have values been inserted in matrix or added? */
   MatStash               stash,bstash;     /* used for assembling off-proc mat emements */
   MatNullSpace           nullsp;

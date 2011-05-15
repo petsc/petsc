@@ -44,8 +44,8 @@ static PetscErrorCode MatSetValuesBlockedLocal_LocalRef_Block(Mat A,PetscInt nro
   PetscFunctionBegin;
   if (!nrow || !ncol) PetscFunctionReturn(0);
   IndexSpaceGet(buf,nrow,ncol,irowm,icolm);
-  ierr = ISLocalToGlobalMappingApply(A->rbmapping,nrow,irow,irowm);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingApply(A->cbmapping,ncol,icol,icolm);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingApply(A->rmap->bmapping,nrow,irow,irowm);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingApply(A->cmap->bmapping,ncol,icol,icolm);CHKERRQ(ierr);
   ierr = (*lr->SetValuesBlocked)(lr->Top,nrow,irowm,ncol,icolm,y,addv);CHKERRQ(ierr);
   IndexSpaceRestore(buf,nrow,ncol,irowm,icolm);
   PetscFunctionReturn(0);
@@ -63,8 +63,8 @@ static PetscErrorCode MatSetValuesBlockedLocal_LocalRef_Scalar(Mat A,PetscInt nr
   IndexSpaceGet(buf,nrow*bs,ncol*bs,irowm,icolm);
   BlockIndicesExpand(nrow,irow,bs,irowm);
   BlockIndicesExpand(ncol,icol,bs,icolm);
-  ierr = ISLocalToGlobalMappingApply(A->rmapping,nrow*bs,irowm,irowm);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingApply(A->cmapping,ncol*bs,icolm,icolm);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingApply(A->rmap->mapping,nrow*bs,irowm,irowm);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingApply(A->cmap->mapping,ncol*bs,icolm,icolm);CHKERRQ(ierr);
   ierr = (*lr->SetValues)(lr->Top,nrow*bs,irowm,ncol*bs,icolm,y,addv);CHKERRQ(ierr);
   IndexSpaceRestore(buf,nrow*bs,ncol*bs,irowm,icolm);
   PetscFunctionReturn(0);
@@ -80,8 +80,8 @@ static PetscErrorCode MatSetValuesLocal_LocalRef_Scalar(Mat A,PetscInt nrow,cons
 
   PetscFunctionBegin;
   IndexSpaceGet(buf,nrow,ncol,irowm,icolm);
-  ierr = ISLocalToGlobalMappingApply(A->rmapping,nrow,irow,irowm);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingApply(A->cmapping,ncol,icol,icolm);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingApply(A->rmap->mapping,nrow,irow,irowm);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingApply(A->cmap->mapping,ncol,icol,icolm);CHKERRQ(ierr);
   ierr = (*lr->SetValues)(lr->Top,nrow,irowm,ncol,icolm,y,addv);CHKERRQ(ierr);
   IndexSpaceRestore(buf,nrow,ncol,irowm,icolm);
   PetscFunctionReturn(0);
@@ -231,12 +231,12 @@ PetscErrorCode  MatCreateLocalRef(Mat A,IS isrow,IS iscol,Mat *newmat)
     lr->SetValuesBlocked = MatSetValuesBlocked;
 
     B->ops->setvalueslocal = MatSetValuesLocal_LocalRef_Scalar;
-    ierr = ISL2GCompose(isrow,A->rmapping,&rltog);CHKERRQ(ierr);
-    if (isrow == iscol && A->rmapping == A->cmapping) {
+    ierr = ISL2GCompose(isrow,A->rmap->mapping,&rltog);CHKERRQ(ierr);
+    if (isrow == iscol && A->rmap->mapping == A->cmap->mapping) {
       ierr = PetscObjectReference((PetscObject)rltog);CHKERRQ(ierr);
       cltog = rltog;
     } else {
-      ierr = ISL2GCompose(iscol,A->cmapping,&cltog);CHKERRQ(ierr);
+      ierr = ISL2GCompose(iscol,A->cmap->mapping,&cltog);CHKERRQ(ierr);
     }
     ierr = MatSetLocalToGlobalMapping(B,rltog,cltog);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingDestroy(&rltog);CHKERRQ(ierr);
@@ -254,12 +254,12 @@ PetscErrorCode  MatCreateLocalRef(Mat A,IS isrow,IS iscol,Mat *newmat)
       } else {
         /* Block sizes match so we can forward values to the top level using the block interface */
         B->ops->setvaluesblockedlocal = MatSetValuesBlockedLocal_LocalRef_Block;
-        ierr = ISL2GComposeBlock(isrow,A->rbmapping,&rltog);CHKERRQ(ierr);
-        if (isrow == iscol && A->rbmapping == A->cbmapping) {
+        ierr = ISL2GComposeBlock(isrow,A->rmap->bmapping,&rltog);CHKERRQ(ierr);
+        if (isrow == iscol && A->rmap->bmapping == A->cmap->bmapping) {
           ierr =  PetscObjectReference((PetscObject)rltog);CHKERRQ(ierr);
           cltog = rltog;
         } else {
-          ierr = ISL2GComposeBlock(iscol,A->cbmapping,&cltog);CHKERRQ(ierr);
+          ierr = ISL2GComposeBlock(iscol,A->cmap->bmapping,&cltog);CHKERRQ(ierr);
         }
         ierr = MatSetLocalToGlobalMappingBlock(B,rltog,cltog);CHKERRQ(ierr);
         ierr = ISLocalToGlobalMappingDestroy(&rltog);CHKERRQ(ierr);

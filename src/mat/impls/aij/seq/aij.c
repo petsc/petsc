@@ -3887,7 +3887,7 @@ PetscErrorCode MatSetColoring_SeqAIJ(Mat A,ISColoring coloring)
     for (i=0; i<A->cmap->n; i++) {
       larray[i] = i;
     }
-    ierr = ISGlobalToLocalMappingApply(A->cmapping,IS_GTOLM_MASK,A->cmap->n,larray,PETSC_NULL,larray);CHKERRQ(ierr);
+    ierr = ISGlobalToLocalMappingApply(A->cmap->mapping,IS_GTOLM_MASK,A->cmap->n,larray,PETSC_NULL,larray);CHKERRQ(ierr);
     ierr = PetscMalloc(A->cmap->n*sizeof(ISColoringValue),&colors);CHKERRQ(ierr);
     for (i=0; i<A->cmap->n; i++) {
       colors[i] = coloring->colors[larray[i]];

@@ -21,12 +21,14 @@ PETSC_EXTERN_CXX_BEGIN
 S*/
 typedef struct _n_PetscLayout* PetscLayout;
 struct _n_PetscLayout{
-  MPI_Comm  comm;
-  PetscInt  n,N;         /* local, global vector size */
-  PetscInt  rstart,rend; /* local start, local end + 1 */
-  PetscInt  *range;      /* the offset of each processor */
-  PetscInt  bs;          /* number of elements in each block (generally for multi-component problems) Do NOT multiply above numbers by bs */
-  PetscInt  refcnt;      /* MPI Vecs obtained with VecDuplicate() and from MatGetVecs() reuse map of input object */
+  MPI_Comm               comm;
+  PetscInt               n,N;         /* local, global vector size */
+  PetscInt               rstart,rend; /* local start, local end + 1 */
+  PetscInt               *range;      /* the offset of each processor */
+  PetscInt               bs;          /* number of elements in each block (generally for multi-component problems) Do NOT multiply above numbers by bs */
+  PetscInt               refcnt;      /* MPI Vecs obtained with VecDuplicate() and from MatGetVecs() reuse map of input object */
+  ISLocalToGlobalMapping mapping;     /* mapping used in Vec/MatSetValuesLocal() */
+  ISLocalToGlobalMapping bmapping;    /* mapping used in Vec/MatSetValuesBlockedLocal() */
 };
 
 extern PetscErrorCode PetscLayoutCreate(MPI_Comm,PetscLayout*);
@@ -44,6 +46,8 @@ extern PetscErrorCode  PetscLayoutSetBlockSize(PetscLayout,PetscInt);
 extern PetscErrorCode  PetscLayoutGetBlockSize(PetscLayout,PetscInt*);
 extern PetscErrorCode  PetscLayoutGetRange(PetscLayout,PetscInt *,PetscInt *);
 extern PetscErrorCode  PetscLayoutGetRanges(PetscLayout,const PetscInt *[]);
+extern PetscErrorCode  PetscLayoutSetISLocalToGlobalMapping(PetscLayout,ISLocalToGlobalMapping);
+extern PetscErrorCode  PetscLayoutSetISLocalToGlobalMappingBlock(PetscLayout,ISLocalToGlobalMapping);
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscLayoutFindOwner"
@@ -197,8 +201,6 @@ struct _p_Vec {
   PETSCHEADER(struct _VecOps);
   PetscLayout            map;
   void                   *data;     /* implementation-specific data */
-  ISLocalToGlobalMapping mapping;   /* mapping used in VecSetValuesLocal() */
-  ISLocalToGlobalMapping bmapping;  /* mapping used in VecSetValuesBlockedLocal() */
   PetscBool              array_gotten;
   VecStash               stash,bstash; /* used for storing off-proc values during assembly */
   PetscBool              petscnative;  /* means the ->data starts with VECHEADER and can use VecGetArrayFast()*/
