@@ -7912,27 +7912,15 @@ PetscErrorCode  MatGetVecs(Mat mat,Vec *right,Vec *left)
       ierr = VecCreate(((PetscObject)mat)->comm,right);CHKERRQ(ierr);
       ierr = VecSetSizes(*right,mat->cmap->n,PETSC_DETERMINE);CHKERRQ(ierr);
       ierr = VecSetBlockSize(*right,mat->rmap->bs);CHKERRQ(ierr);
-      if (size > 1) {
-        /* New vectors uses Mat cmap and does not create a new one */
-	ierr = PetscLayoutDestroy(&(*right)->map);CHKERRQ(ierr);
-	(*right)->map = mat->cmap;
-	mat->cmap->refcnt++;
-
-        ierr = VecSetType(*right,VECMPI);CHKERRQ(ierr);
-      } else {ierr = VecSetType(*right,VECSEQ);CHKERRQ(ierr);}
+      ierr = VecSetType(*right,VECSTANDARD);CHKERRQ(ierr);
+      ierr = PetscLayoutReference(mat->cmap,&(*right)->map);CHKERRQ(ierr);
     }
     if (left) {
       ierr = VecCreate(((PetscObject)mat)->comm,left);CHKERRQ(ierr);
       ierr = VecSetSizes(*left,mat->rmap->n,PETSC_DETERMINE);CHKERRQ(ierr);
       ierr = VecSetBlockSize(*left,mat->rmap->bs);CHKERRQ(ierr);
-      if (size > 1) {
-        /* New vectors uses Mat rmap and does not create a new one */
-	ierr = PetscLayoutDestroy(&(*left)->map);CHKERRQ(ierr);
-	(*left)->map = mat->rmap;
-	mat->rmap->refcnt++;
-
-        ierr = VecSetType(*left,VECMPI);CHKERRQ(ierr);
-      } else {ierr = VecSetType(*left,VECSEQ);CHKERRQ(ierr);}
+      ierr = VecSetType(*left,VECSTANDARD);CHKERRQ(ierr);
+      ierr = PetscLayoutReference(mat->rmap,&(*left)->map);CHKERRQ(ierr);
     }
   }
   if (mat->rmapping) {
