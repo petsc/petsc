@@ -3,14 +3,14 @@
 #include "../src/mat/impls/sbaij/seq/sbaij.h"
 #include "../src/mat/impls/sbaij/seq/sbstream/sbstream.h"
 
-/*=========================================================*/
-extern PetscErrorCode MatCholeskyFactorSymbolic_sbstrm(Mat B,Mat A,IS perm, const MatFactorInfo *info);
-extern PetscErrorCode MatICCFactorSymbolic_sbstrm(Mat B,Mat A,IS perm, const MatFactorInfo *info);
-extern PetscErrorCode MatCholeskyFactorNumeric_sbstrm(Mat F,Mat A,const MatFactorInfo *info);
-EXTERN_C_BEGIN
-extern PetscErrorCode MatFactorGetSolverPackage_sbstrm(Mat A,const MatSolverPackage *type);
-EXTERN_C_END
-/*=========================================================*/
+#if 0 
+extern   PetscErrorCode MatFactorGetSolverPackage_seqsbaij_sbstrm(Mat, const MatSolverPackage *);
+extern   PetscErrorCode MatICCFactorSymbolic_sbstrm(Mat,Mat, IS, const MatFactorInfo *);
+extern   PetscErrorCode MatCholeskyFactorSymbolic_sbstrm(Mat, Mat, IS, const MatFactorInfo *);
+extern   PetscErrorCode MatCholeskyFactorNumeric_sbstrm (Mat, Mat, const MatFactorInfo *);
+#endif 
+
+extern   PetscErrorCode  MatAssemblyEnd_SeqSBAIJ(Mat,MatAssemblyType);
 
 
 #undef __FUNCT__
@@ -20,25 +20,17 @@ PetscErrorCode MatDestroy_SeqSBSTRM(Mat A)
   PetscErrorCode ierr;
   Mat_SeqSBSTRM       *sbstrm = (Mat_SeqSBSTRM *) A->spptr;
 
-  A->ops->choleskyfactorsymbolic = sbstrm->MatCholeskyFactorSymbolic;
-  A->ops->choleskyfactornumeric  = sbstrm->MatCholeskyFactorNumeric;
-  A->ops->assemblyend            = sbstrm->AssemblyEnd;
-  A->ops->destroy                = sbstrm->MatDestroy;
-  A->ops->duplicate              = sbstrm->MatDuplicate;
-
-  ierr = PetscFree(sbstrm->as);CHKERRQ(ierr);
+  if (sbstrm) {
+    ierr = PetscFree3(sbstrm->as, sbstrm->asi, sbstrm->asj);CHKERRQ(ierr);
+  }
   ierr = PetscObjectChangeTypeName( (PetscObject)A, MATSEQSBAIJ);CHKERRQ(ierr);
-  ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
+  ierr = MatDestroy_SeqSBAIJ(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /*=========================================================*/ 
 PetscErrorCode MatDuplicate_SeqSBSTRM(Mat A, MatDuplicateOption op, Mat *M) 
 {
-  PetscErrorCode ierr;
-  Mat_SeqSBSTRM        *sbstrm = (Mat_SeqSBSTRM *) A->spptr;
-
   PetscFunctionBegin;
-  ierr = (*sbstrm->MatDuplicate)(A,op,M);CHKERRQ(ierr);
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Cannot duplicate STRM matrices yet");    
   PetscFunctionReturn(0);
 }
@@ -106,11 +98,10 @@ extern PetscErrorCode SeqSBSTRM_create_sbstrm(Mat);
 PetscErrorCode MatAssemblyEnd_SeqSBSTRM(Mat A, MatAssemblyType mode)
 {
   PetscErrorCode ierr;
-  Mat_SeqSBSTRM    *sbstrm = (Mat_SeqSBSTRM *) A->spptr;
 
   PetscFunctionBegin;
+  MatAssemblyEnd_SeqSBAIJ(A, mode);
   if (mode == MAT_FLUSH_ASSEMBLY) PetscFunctionReturn(0);
-  (*sbstrm->AssemblyEnd)(A, mode);
 
   ierr = SeqSBSTRM_create_sbstrm(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -136,16 +127,6 @@ PetscErrorCode MatConvert_SeqSBAIJ_SeqSBSTRM(Mat A,const MatType type,MatReuse r
 
   ierr = PetscNewLog(B,Mat_SeqSBSTRM,&sbstrm);CHKERRQ(ierr);
   B->spptr = (void *) sbstrm;
-
-/*.........................................................
-  sbstrm->MatCholeskyFactorNumeric  = A->ops->choleskyfactornumeric; 
-  sbstrm->MatCholeskyFactorSymbolic = A->ops->choleskyfactorsymbolic; 
-  sbstrm->MatCholeskyFactorSymbolic = MatCholeskyFactorSymbolic_SeqSBAIJ;
-  sbstrm->MatCholeskyFactorNumeric  = MatCholeskyFactorNumeric_SeqSBAIJ_4_NaturalOrdering;
-  .........................................................*/ 
-  sbstrm->AssemblyEnd         = A->ops->assemblyend;
-  sbstrm->MatDestroy          = A->ops->destroy;
-  sbstrm->MatDuplicate        = A->ops->duplicate;
 
   /* Set function pointers for methods that we inherit from BAIJ but override. */
   B->ops->duplicate        = MatDuplicate_SeqSBSTRM;
@@ -297,7 +278,7 @@ PetscErrorCode MatMult_SeqSBSTRM_5(Mat A,Vec xx,Vec zz)
   ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
 
   slen = 5*(ai[mbs]-ai[0]);
-  /* printf(" --- in MatMult_SeqSBSTRM_5, nz = %d, %d \n", a->nz, ai[mbs]-ai[0]);   */
+  /* printf(" --- in MatMult_SeqSBSTRM_5, nz = %d, %d \n", a->nz, ai[mbs]-ai[0]);  */
 
   v1 = sbstrm->as;
   v2 = v1 + slen;
@@ -570,40 +551,6 @@ PetscErrorCode SeqSBSTRM_create_sbstrm(Mat A)
   }
   PetscFunctionReturn(0);
 }
-/*=========================================================*/ 
-
-EXTERN_C_BEGIN
-#undef __FUNCT__  
-#define __FUNCT__ "MatGetFactor_seqsbaij_sbstrm"
-PetscErrorCode MatGetFactor_seqsbaij_sbstrm(Mat A,MatFactorType ftype,Mat *B)
-{
-  PetscInt       n = A->rmap->n;
-  Mat_SeqSBSTRM   *sbstrm;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  if (A->cmap->N != A->rmap->N)
-         SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Must be square matrix, rows %D columns %D",A->rmap->n,A->cmap->n);
-  /* printf(" ---  in MatGetFactor_seqsbaij_sbstrm \n"); */
-  ierr = MatCreate(((PetscObject)A)->comm,B);CHKERRQ(ierr);
-  ierr = MatSetSizes(*B,n,n,n,n);CHKERRQ(ierr);
-  ierr = MatSetType(*B,((PetscObject)A)->type_name);CHKERRQ(ierr);
-  /* ierr = MatSeqSBAIJSetPreallocation(*B,bs,0,PETSC_NULL);CHKERRQ(ierr); */
-
-  (*B)->ops->iccfactorsymbolic       = MatICCFactorSymbolic_sbstrm;
-  (*B)->ops->choleskyfactorsymbolic  = MatCholeskyFactorSymbolic_sbstrm;
-  (*B)->ops->choleskyfactornumeric   = MatCholeskyFactorNumeric_sbstrm;
-  (*B)->ops->destroy                 = MatDestroy_SeqSBSTRM;
-  (*B)->factortype                   = ftype;
-  (*B)->assembled                    = PETSC_TRUE;  /* required by -ksp_view */
-  (*B)->preallocated                 = PETSC_TRUE;
-  ierr = PetscNewLog(*B,Mat_SeqSBSTRM,&sbstrm);CHKERRQ(ierr);
-  (*B)->spptr = (void *) sbstrm;
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)*B,"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_sbstrm",MatFactorGetSolverPackage_sbstrm);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-EXTERN_C_END
-
 /*=========================================================*/ 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
