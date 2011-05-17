@@ -11,7 +11,7 @@ class FEMQuadrature(script.Script):
 
   def setupHelp(self, help):
     import nargs
-    help.addArgument('FEM', '-element_family=<string>', nargs.Arg(None, 'Lagrange', 'Specify the element family', isTemporary=1))
+    help.addArgument('FEM', '-element_family=<string>', nargs.Arg(None, 'lagrange', 'Specify the element family', isTemporary=1))
     help.addArgument('FEM', '-element_order=<int>', nargs.ArgInt(None, 1, 'Specify the element order', isTemporary=1))
     return
 
@@ -43,12 +43,12 @@ class FEMQuadrature(script.Script):
 
   def run(self):
     self.setup()
-    import FIAT.shapes
+    from FIAT.reference_element import default_simplex
 
-    femCls = getattr(script.Script.importModule('FIAT.'+self.family), self.family)
-    defautFemCls = getattr(script.Script.importModule('FIAT.Lagrange'), 'Lagrange')
+    femCls = getattr(script.Script.importModule('FIAT.'+self.family), self.family.capitalize())
+    defautFemCls = getattr(script.Script.importModule('FIAT.lagrange'), 'Lagrange')
     elements = []
-    for shape in [FIAT.shapes.LINE, FIAT.shapes.TRIANGLE, FIAT.shapes.TETRAHEDRON]:
+    for shape in map(default_simplex, range(1,4)):
       try:
         elements.append(femCls(shape, self.order))
       except:

@@ -603,7 +603,7 @@ PetscErrorCode DMMeshSetLocalFunction(DM dm, PetscErrorCode (*lf)(DM, SectionRea
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "DMMeshSetLocalJacobian"
+#define __FUNCT__ "DMMeshGetLocalJacobian"
 PetscErrorCode DMMeshGetLocalJacobian(DM dm, PetscErrorCode (**lj)(DM, SectionReal, Mat, void *))
 {
   DM_Mesh *mesh = (DM_Mesh *) dm->data;
@@ -1345,9 +1345,12 @@ PetscErrorCode DMMeshGetCone(DM dm, PetscInt p, PetscInt *numPoints, PetscInt *p
 PetscErrorCode DMMeshDistribute(DM serialMesh, const char partitioner[], DM *parallelMesh)
 {
   ALE::Obj<PETSC_MESH_TYPE> oldMesh;
+  PetscMPIInt         commSize;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
+  ierr = MPI_Comm_size(((PetscObject) serialMesh)->comm, &commSize);CHKERRQ(ierr);
+  if (commSize == 1) PetscFunctionReturn(0);
   ierr = DMMeshGetMesh(serialMesh, oldMesh);CHKERRQ(ierr);
   ierr = DMMeshCreate(oldMesh->comm(), parallelMesh);CHKERRQ(ierr);
   const Obj<PETSC_MESH_TYPE>             newMesh  = new PETSC_MESH_TYPE(oldMesh->comm(), oldMesh->getDimension(), oldMesh->debug());
@@ -1452,6 +1455,7 @@ PetscErrorCode DMMeshRefine(DM mesh, double refinementLimit, PetscBool  interpol
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (refinementLimit == 0.0) PetscFunctionReturn(0);
   ierr = DMMeshGetMesh(mesh, oldMesh);CHKERRQ(ierr);
   ierr = DMMeshCreate(oldMesh->comm(), refinedMesh);CHKERRQ(ierr);
   ALE::Obj<PETSC_MESH_TYPE> newMesh = ALE::Generator<PETSC_MESH_TYPE>::refineMeshV(oldMesh, refinementLimit, interpolate);
@@ -1493,6 +1497,247 @@ PetscErrorCode DMCoarsenHierarchy_Mesh(DM mesh, int numLevels, DM *coarseHierarc
 #define __FUNCT__ "DMGetInterpolation_Mesh"
 PetscErrorCode DMGetInterpolation_Mesh(DM dmCoarse, DM dmFine, Mat *interpolation, Vec *scaling) {
   SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP, "Peter needs to incorporate his code.");
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMMeshMarkBoundaryCells"
+PetscErrorCode DMMeshMarkBoundaryCells(DM dm, const char labelName[], PetscInt marker, PetscInt newMarker) {
+  ALE::Obj<PETSC_MESH_TYPE> mesh;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMMeshGetMesh(dm, mesh);CHKERRQ(ierr);
+  mesh->markBoundaryCells(labelName, marker, newMarker);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMMeshGetDepthStratum"
+PetscErrorCode DMMeshGetDepthStratum(DM dm, PetscInt stratumValue, PetscInt *start, PetscInt *end) {
+  ALE::Obj<PETSC_MESH_TYPE> mesh;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMMeshGetMesh(dm, mesh);CHKERRQ(ierr);
+  {
+    const Obj<PETSC_MESH_TYPE::label_sequence>& stratum = mesh->depthStratum(stratumValue);
+    if (start) *start = *stratum->begin();
+    if (end)   *end   = *stratum->rbegin()+1;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMMeshGetHeightStratum"
+PetscErrorCode DMMeshGetHeightStratum(DM dm, PetscInt stratumValue, PetscInt *start, PetscInt *end) {
+  ALE::Obj<PETSC_MESH_TYPE> mesh;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMMeshGetMesh(dm, mesh);CHKERRQ(ierr);
+  {
+    const Obj<PETSC_MESH_TYPE::label_sequence>& stratum = mesh->heightStratum(stratumValue);
+    if (start) *start = *stratum->begin();
+    if (end)   *end   = *stratum->rbegin()+1;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMMeshGetSection"
+PetscErrorCode DMMeshGetSection(DM dm, const char name[], PetscSection *section) {
+  ALE::Obj<PETSC_MESH_TYPE> mesh;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMMeshGetMesh(dm, mesh);CHKERRQ(ierr);
+  {
+    const Obj<PETSC_MESH_TYPE::real_section_type>& s = mesh->getRealSection(name);
+    const PetscInt pStart = s->getChart().min();
+    const PetscInt pEnd   = s->getChart().max();
+
+    ierr = PetscSectionCreate(((PetscObject) dm)->comm, section);CHKERRQ(ierr);
+    ierr = PetscSectionSetChart(*section, pStart, pEnd);CHKERRQ(ierr);
+    for(PetscInt p = pStart; p < pEnd; ++p) {
+      ierr = PetscSectionSetDof(*section, p, s->getFiberDimension(p));CHKERRQ(ierr);
+      ierr = PetscSectionSetConstraintDof(*section, p, s->getConstraintDimension(p));CHKERRQ(ierr);
+    }
+    ierr = PetscSectionSetUp(*section);CHKERRQ(ierr);
+    for(PetscInt p = pStart; p < pEnd; ++p) {
+      ierr = PetscSectionSetConstraintIndices(*section, p, (PetscInt *) s->getConstraintDof(p));CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMMeshGetDefaultSection"
+PetscErrorCode DMMeshGetDefaultSection(DM dm, PetscSection *section) {
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMMeshGetSection(dm, "default", section);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMMeshGetCoordinateSection"
+PetscErrorCode DMMeshGetCoordinateSection(DM dm, PetscSection *section) {
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMMeshGetSection(dm, "coordinates", section);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMMeshGetCoordinateVec"
+PetscErrorCode DMMeshGetCoordinateVec(DM dm, Vec *coordinates) {
+  ALE::Obj<PETSC_MESH_TYPE> mesh;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMMeshGetMesh(dm, mesh);CHKERRQ(ierr);
+  {
+    const Obj<PETSC_MESH_TYPE::real_section_type>& coords = mesh->getRealSection("coordinates");
+    ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, coords->getStorageSize(), coords->restrictSpace(), coordinates);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMMeshComputeCellGeometry"
+PetscErrorCode DMMeshComputeCellGeometry(DM dm, PetscInt cell, PetscReal *v0, PetscReal *J, PetscReal *invJ, PetscReal *detJ) {
+  ALE::Obj<PETSC_MESH_TYPE> mesh;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMMeshGetMesh(dm, mesh);CHKERRQ(ierr);
+  {
+    ALE::Obj<PETSC_MESH_TYPE::real_section_type> coordinates = mesh->getRealSection("coordinates");
+
+    mesh->computeElementGeometry(coordinates, cell, v0, J, invJ, *detJ);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMMeshVecGetClosure"
+PetscErrorCode DMMeshVecGetClosure(DM dm, Vec v, PetscInt point, const PetscScalar *values[]) {
+  ALE::Obj<PETSC_MESH_TYPE> mesh;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+#ifdef PETSC_USE_COMPLEX
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "DMMesh does not support complex closure");
+#else
+  ierr = DMMeshGetMesh(dm, mesh);CHKERRQ(ierr);
+  /* Peeling back IMesh::restrictClosure() */
+  try {
+    ALE::Obj<PETSC_MESH_TYPE::real_section_type> s = mesh->getRealSection("default");
+    const PETSC_MESH_TYPE::real_section_type::value_type *oldStorage = s->restrictSpace();
+    const PetscInt size = mesh->sizeWithBC(s, point);
+    ALE::ISieveVisitor::RestrictVisitor<PETSC_MESH_TYPE::real_section_type> rV(*s, size, s->getRawArray(size));
+    PetscScalar *array;
+
+    ierr = VecGetArray(v, &array);CHKERRQ(ierr);
+    s->setStorage(array);
+    if (mesh->depth() == 1) {
+      rV.visitPoint(point, 0);
+      // Cone is guarateed to be ordered correctly
+      mesh->getSieve()->orientedCone(point, rV);
+    } else {
+      ALE::ISieveVisitor::PointRetriever<PETSC_MESH_TYPE::sieve_type,ALE::ISieveVisitor::RestrictVisitor<PETSC_MESH_TYPE::real_section_type> > pV((int) pow((double) mesh->getSieve()->getMaxConeSize(), mesh->depth())+1, rV, true);
+
+      ALE::ISieveTraversal<PETSC_MESH_TYPE::sieve_type>::orientedClosure(*mesh->getSieve(), point, pV);
+    }
+    s->setStorage((PETSC_MESH_TYPE::real_section_type::value_type *) oldStorage);
+    ierr = VecRestoreArray(v, &array);CHKERRQ(ierr);
+    *values = rV.getValues();
+  } catch(ALE::Exception e) {
+    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid argument: %s", e.message());
+  }
+#endif
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMMeshVecSetClosure"
+PetscErrorCode DMMeshVecSetClosure(DM dm, Vec v, PetscInt point, const PetscScalar values[], InsertMode mode) {
+  ALE::Obj<PETSC_MESH_TYPE> mesh;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+#ifdef PETSC_USE_COMPLEX
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "DMMesh does not support complex closure");
+#else
+  ierr = DMMeshGetMesh(dm, mesh);CHKERRQ(ierr);
+  /* Peeling back IMesh::update() and IMesh::updateAdd() */
+  try {
+    ALE::Obj<PETSC_MESH_TYPE::real_section_type> s = mesh->getRealSection("default");
+    const PETSC_MESH_TYPE::real_section_type::value_type *oldStorage = s->restrictSpace();
+    PetscScalar *array;
+
+    ierr = VecGetArray(v, &array);CHKERRQ(ierr);
+    s->setStorage(array);
+
+    if (mode == INSERT_VALUES) {
+      ALE::ISieveVisitor::UpdateVisitor<PETSC_MESH_TYPE::real_section_type> uV(*s, values);
+      if (mesh->depth() == 1) {
+        uV.visitPoint(point, 0);
+        // Cone is guarateed to be ordered correctly
+        mesh->getSieve()->orientedCone(point, uV);
+      } else {
+        ALE::ISieveVisitor::PointRetriever<PETSC_MESH_TYPE::sieve_type,ALE::ISieveVisitor::UpdateVisitor<PETSC_MESH_TYPE::real_section_type> > pV((int) pow((double) mesh->getSieve()->getMaxConeSize(), mesh->depth())+1, uV, true);
+
+        ALE::ISieveTraversal<PETSC_MESH_TYPE::sieve_type>::orientedClosure(*mesh->getSieve(), point, pV);
+      }
+    } else {
+      ALE::ISieveVisitor::UpdateAddVisitor<PETSC_MESH_TYPE::real_section_type> uV(*s, values);
+      if (mesh->depth() == 1) {
+        uV.visitPoint(point, 0);
+        // Cone is guarateed to be ordered correctly
+        mesh->getSieve()->orientedCone(point, uV);
+      } else {
+        ALE::ISieveVisitor::PointRetriever<PETSC_MESH_TYPE::sieve_type,ALE::ISieveVisitor::UpdateAddVisitor<PETSC_MESH_TYPE::real_section_type> > pV((int) pow((double) mesh->getSieve()->getMaxConeSize(), mesh->depth())+1, uV, true);
+
+        ALE::ISieveTraversal<PETSC_MESH_TYPE::sieve_type>::orientedClosure(*mesh->getSieve(), point, pV);
+      }
+    }
+
+    s->setStorage((PETSC_MESH_TYPE::real_section_type::value_type *) oldStorage);
+    ierr = VecRestoreArray(v, &array);CHKERRQ(ierr);
+  } catch(ALE::Exception e) {
+    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid argument: %s", e.message());
+  }
+#endif
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMMeshMatSetClosure"
+PetscErrorCode DMMeshMatSetClosure(DM dm, Mat A, PetscInt point, PetscScalar values[], InsertMode mode) {
+  ALE::Obj<PETSC_MESH_TYPE> mesh;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+#ifdef PETSC_USE_COMPLEX
+  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "DMMesh does not support complex closure");
+#else
+  ierr = DMMeshGetMesh(dm, mesh);CHKERRQ(ierr);
+  /* Copying from updateOperator() */
+  try {
+    ALE::Obj<PETSC_MESH_TYPE::real_section_type> s = mesh->getRealSection("default");
+    const ALE::Obj<PETSC_MESH_TYPE::order_type>& globalOrder = mesh->getFactory()->getGlobalOrder(mesh, s->getName(), s);
+    typedef ALE::ISieveVisitor::IndicesVisitor<PETSC_MESH_TYPE::real_section_type,PETSC_MESH_TYPE::order_type,PetscInt> visitor_type;
+    visitor_type iV(*s, *globalOrder, (int) pow((double) mesh->getSieve()->getMaxConeSize(), mesh->depth())*mesh->getMaxDof(), mesh->depth() > 1);
+
+    ierr = updateOperator(A, *mesh->getSieve(), iV, point, values, mode);CHKERRQ(ierr);
+  } catch(ALE::Exception e) {
+    SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Invalid argument: %s", e.message());
+  }
+#endif
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__

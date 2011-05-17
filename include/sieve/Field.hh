@@ -1727,6 +1727,10 @@ namespace ALE {
       this->_atlas             = this->_atlasNew;
       this->_atlasNew          = NULL;
     };
+    // DANGEROUS
+    void setStorage(value_type *newArray) {
+      this->_array = newArray;
+    };
     void addPoint(const point_type& point, const int dim) {
       if (dim == 0) return;
       if (this->_atlasNew.isNull()) {

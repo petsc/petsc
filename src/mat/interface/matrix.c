@@ -1102,6 +1102,7 @@ PetscErrorCode  MatSetValues(Mat mat,PetscInt m,const PetscInt idxm[],PetscInt n
 #if defined(PETSC_USE_DEBUG)
   else if (mat->insertmode != addv) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Cannot mix add values and insert values");
   if (mat->factortype) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+  if (!mat->ops->setvalues) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
 #endif
 
   if (mat->assembled) {
@@ -1109,7 +1110,6 @@ PetscErrorCode  MatSetValues(Mat mat,PetscInt m,const PetscInt idxm[],PetscInt n
     mat->assembled     = PETSC_FALSE;
   }
   ierr = PetscLogEventBegin(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
-  if (!mat->ops->setvalues) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
   ierr = (*mat->ops->setvalues)(mat,m,idxm,n,idxn,v,addv);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_CUSP)
@@ -1302,7 +1302,8 @@ $    idxm(MatStencil_c,1) = c
 PetscErrorCode  MatSetValuesStencil(Mat mat,PetscInt m,const MatStencil idxm[],PetscInt n,const MatStencil idxn[],const PetscScalar v[],InsertMode addv)
 {
   PetscErrorCode ierr;
-  PetscInt       j,i,jdxm[128],jdxn[256],dim = mat->stencil.dim,*dims = mat->stencil.dims+1,tmp;
+  PetscInt       buf[8192],*bufm=0,*bufn=0,*jdxm,*jdxn;
+  PetscInt       j,i,dim = mat->stencil.dim,*dims = mat->stencil.dims+1,tmp;
   PetscInt       *starts = mat->stencil.starts,*dxm = (PetscInt*)idxm,*dxn = (PetscInt*)idxn,sdim = dim - (1 - (PetscInt)mat->stencil.noc);
 
   PetscFunctionBegin;
@@ -1313,11 +1314,14 @@ PetscErrorCode  MatSetValuesStencil(Mat mat,PetscInt m,const MatStencil idxm[],P
   PetscValidIntPointer(idxn,5);
   PetscValidScalarPointer(v,6);
 
-  if (m > 128) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Can only set 128 rows at a time; trying to set %D",m);
-  if (n > 256) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Can only set 256 columns at a time; trying to set %D",n);
-
+  if ((m+n) <= sizeof(buf)/sizeof(PetscInt)) {
+    jdxm = buf; jdxn = buf+m;
+  } else {
+    ierr = PetscMalloc2(m,PetscInt,&bufm,n,PetscInt,&bufn);CHKERRQ(ierr);
+    jdxm = bufm; jdxn = bufn;
+  }
   for (i=0; i<m; i++) {
-    for (j=0; j<3-sdim; j++) dxm++;  
+    for (j=0; j<3-sdim; j++) dxm++;
     tmp = *dxm++ - starts[0];
     for (j=0; j<dim-1; j++) {
       if ((*dxm++ - starts[j+1]) < 0 || tmp < 0) tmp = PETSC_MIN_INT;
@@ -1327,7 +1331,7 @@ PetscErrorCode  MatSetValuesStencil(Mat mat,PetscInt m,const MatStencil idxm[],P
     jdxm[i] = tmp;
   }
   for (i=0; i<n; i++) {
-    for (j=0; j<3-sdim; j++) dxn++;  
+    for (j=0; j<3-sdim; j++) dxn++;
     tmp = *dxn++ - starts[0];
     for (j=0; j<dim-1; j++) {
       if ((*dxn++ - starts[j+1]) < 0 || tmp < 0) tmp = PETSC_MIN_INT;
@@ -1337,6 +1341,7 @@ PetscErrorCode  MatSetValuesStencil(Mat mat,PetscInt m,const MatStencil idxm[],P
     jdxn[i] = tmp;
   }
   ierr = MatSetValuesLocal(mat,m,jdxm,n,jdxn,v,addv);CHKERRQ(ierr);
+  ierr = PetscFree2(bufm,bufn);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1410,7 +1415,8 @@ $    idxm(MatStencil_k,1) = k
 PetscErrorCode  MatSetValuesBlockedStencil(Mat mat,PetscInt m,const MatStencil idxm[],PetscInt n,const MatStencil idxn[],const PetscScalar v[],InsertMode addv)
 {
   PetscErrorCode ierr;
-  PetscInt       j,i,jdxm[128],jdxn[256],dim = mat->stencil.dim,*dims = mat->stencil.dims+1,tmp;
+  PetscInt       buf[8192],*bufm=0,*bufn=0,*jdxm,*jdxn;
+  PetscInt       j,i,dim = mat->stencil.dim,*dims = mat->stencil.dims+1,tmp;
   PetscInt       *starts = mat->stencil.starts,*dxm = (PetscInt*)idxm,*dxn = (PetscInt*)idxn,sdim = dim - (1 - (PetscInt)mat->stencil.noc);
 
   PetscFunctionBegin;
@@ -1421,11 +1427,14 @@ PetscErrorCode  MatSetValuesBlockedStencil(Mat mat,PetscInt m,const MatStencil i
   PetscValidIntPointer(idxn,5);
   PetscValidScalarPointer(v,6);
 
-  if (m > 128) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Can only set 128 rows at a time; trying to set %D",m);
-  if (n > 128) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Can only set 256 columns at a time; trying to set %D",n);
-
+  if ((m+n) <= sizeof(buf)/sizeof(PetscInt)) {
+    jdxm = buf; jdxn = buf+m;
+  } else {
+    ierr = PetscMalloc2(m,PetscInt,&bufm,n,PetscInt,&bufn);CHKERRQ(ierr);
+    jdxm = bufm; jdxn = bufn;
+  }
   for (i=0; i<m; i++) {
-    for (j=0; j<3-sdim; j++) dxm++;  
+    for (j=0; j<3-sdim; j++) dxm++;
     tmp = *dxm++ - starts[0];
     for (j=0; j<sdim-1; j++) {
       if ((*dxm++ - starts[j+1]) < 0 || tmp < 0) tmp = PETSC_MIN_INT;
@@ -1435,7 +1444,7 @@ PetscErrorCode  MatSetValuesBlockedStencil(Mat mat,PetscInt m,const MatStencil i
     jdxm[i] = tmp;
   }
   for (i=0; i<n; i++) {
-    for (j=0; j<3-sdim; j++) dxn++;  
+    for (j=0; j<3-sdim; j++) dxn++;
     tmp = *dxn++ - starts[0];
     for (j=0; j<sdim-1; j++) {
       if ((*dxn++ - starts[j+1]) < 0 || tmp < 0) tmp = PETSC_MIN_INT;
@@ -1445,6 +1454,7 @@ PetscErrorCode  MatSetValuesBlockedStencil(Mat mat,PetscInt m,const MatStencil i
     jdxn[i] = tmp;
   }
   ierr = MatSetValuesBlockedLocal(mat,m,jdxm,n,jdxn,v,addv);CHKERRQ(ierr);
+  ierr = PetscFree2(bufm,bufn);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_CUSP)
   if (mat->valid_GPU_matrix != PETSC_CUSP_UNALLOCATED) {
     mat->valid_GPU_matrix = PETSC_CUSP_CPU;
@@ -1585,39 +1595,36 @@ PetscErrorCode  MatSetValuesBlocked(Mat mat,PetscInt m,const PetscInt idxm[],Pet
   if (mat->insertmode == NOT_SET_VALUES) {
     mat->insertmode = addv;
   }
-#if defined(PETSC_USE_DEBUG) 
+#if defined(PETSC_USE_DEBUG)
   else if (mat->insertmode != addv) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Cannot mix add values and insert values");
-  if (mat->factortype) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+  if (mat->factortype) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
+  if (!mat->ops->setvaluesblocked && !mat->ops->setvalues) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
 #endif
 
   if (mat->assembled) {
-    mat->was_assembled = PETSC_TRUE; 
+    mat->was_assembled = PETSC_TRUE;
     mat->assembled     = PETSC_FALSE;
   }
   ierr = PetscLogEventBegin(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
   if (mat->ops->setvaluesblocked) {
     ierr = (*mat->ops->setvaluesblocked)(mat,m,idxm,n,idxn,v,addv);CHKERRQ(ierr);
   } else {
-    PetscInt buf[4096],*ibufm=0,*ibufn=0;
-    PetscInt i,j,*iidxm,*iidxn,bs=mat->rmap->bs;
-    if ((m+n)*bs <= 4096) {
+    PetscInt buf[8192],*bufr=0,*bufc=0,*iidxm,*iidxn;
+    PetscInt i,j,bs=mat->rmap->bs;
+    if ((m+n)*bs <= sizeof(buf)/sizeof(PetscInt)) {
       iidxm = buf; iidxn = buf + m*bs;
     } else {
-      ierr = PetscMalloc2(m*bs,PetscInt,&ibufm,n*bs,PetscInt,&ibufn);CHKERRQ(ierr);
-      iidxm = ibufm; iidxn = ibufn;
+      ierr = PetscMalloc2(m*bs,PetscInt,&bufr,n*bs,PetscInt,&bufc);CHKERRQ(ierr);
+      iidxm = bufr; iidxn = bufc;
     }
-    for (i=0; i<m; i++) {
-      for (j=0; j<bs; j++) {
+    for (i=0; i<m; i++)
+      for (j=0; j<bs; j++)
 	iidxm[i*bs+j] = bs*idxm[i] + j;
-      }
-    }
-    for (i=0; i<n; i++) {
-      for (j=0; j<bs; j++) {
+    for (i=0; i<n; i++)
+      for (j=0; j<bs; j++)
 	iidxn[i*bs+j] = bs*idxn[i] + j;
-      }
-    }
-    ierr = MatSetValues(mat,bs*m,iidxm,bs*n,iidxn,v,addv);CHKERRQ(ierr);
-    ierr = PetscFree2(ibufm,ibufn);CHKERRQ(ierr);
+    ierr = MatSetValues(mat,m*bs,iidxm,n*bs,iidxn,v,addv);CHKERRQ(ierr);
+    ierr = PetscFree2(bufr,bufc);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_CUSP)
@@ -1865,10 +1872,9 @@ PetscErrorCode  MatGetLocalToGlobalMappingBlock(Mat A,ISLocalToGlobalMapping *rm
 .seealso:  MatAssemblyBegin(), MatAssemblyEnd(), MatSetValues(), MatSetLocalToGlobalMapping(),
            MatSetValueLocal()
 @*/
-PetscErrorCode  MatSetValuesLocal(Mat mat,PetscInt nrow,const PetscInt irow[],PetscInt ncol,const PetscInt icol[],const PetscScalar y[],InsertMode addv) 
+PetscErrorCode  MatSetValuesLocal(Mat mat,PetscInt nrow,const PetscInt irow[],PetscInt ncol,const PetscInt icol[],const PetscScalar y[],InsertMode addv)
 {
   PetscErrorCode ierr;
-  PetscInt       irowm[2048],icolm[2048];
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
@@ -1881,25 +1887,32 @@ PetscErrorCode  MatSetValuesLocal(Mat mat,PetscInt nrow,const PetscInt irow[],Pe
   if (mat->insertmode == NOT_SET_VALUES) {
     mat->insertmode = addv;
   }
-#if defined(PETSC_USE_DEBUG) 
+#if defined(PETSC_USE_DEBUG)
   else if (mat->insertmode != addv) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Cannot mix add values and insert values");
-  if (!mat->ops->setvalueslocal && (nrow > 2048 || ncol > 2048)) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Number column/row indices must be <= 2048: are %D %D",nrow,ncol);
-  if (mat->factortype) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+  if (mat->factortype) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
+  if (!mat->ops->setvalueslocal && !mat->ops->setvalues) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
 #endif
 
   if (mat->assembled) {
-    mat->was_assembled = PETSC_TRUE; 
+    mat->was_assembled = PETSC_TRUE;
     mat->assembled     = PETSC_FALSE;
   }
   ierr = PetscLogEventBegin(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
-  if (!mat->ops->setvalueslocal) {
+  if (mat->ops->setvalueslocal) {
+    ierr = (*mat->ops->setvalueslocal)(mat,nrow,irow,ncol,icol,y,addv);CHKERRQ(ierr);
+  } else {
+    PetscInt buf[8192],*bufr=0,*bufc=0,*irowm,*icolm;
+    if ((nrow+ncol) <= sizeof(buf)/sizeof(PetscInt)) {
+      irowm = buf; icolm = buf+nrow;
+    } else {
+      ierr = PetscMalloc2(nrow,PetscInt,&bufr,ncol,PetscInt,&bufc);CHKERRQ(ierr);
+      irowm = bufr; icolm = bufc;
+    }
     ierr = ISLocalToGlobalMappingApply(mat->rmap->mapping,nrow,irow,irowm);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingApply(mat->cmap->mapping,ncol,icol,icolm);CHKERRQ(ierr);
-    ierr = (*mat->ops->setvalues)(mat,nrow,irowm,ncol,icolm,y,addv);CHKERRQ(ierr);
-  } else {
-    ierr = (*mat->ops->setvalueslocal)(mat,nrow,irow,ncol,icol,y,addv);CHKERRQ(ierr);
+    ierr = MatSetValues(mat,nrow,irowm,ncol,icolm,y,addv);CHKERRQ(ierr);
+    ierr = PetscFree2(bufr,bufc);CHKERRQ(ierr);
   }
-  mat->same_nonzero = PETSC_FALSE;
   ierr = PetscLogEventEnd(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_CUSP)
   if (mat->valid_GPU_matrix != PETSC_CUSP_UNALLOCATED) {
@@ -1946,10 +1959,9 @@ PetscErrorCode  MatSetValuesLocal(Mat mat,PetscInt nrow,const PetscInt irow[],Pe
 .seealso:  MatSetBlockSize(), MatSetLocalToGlobalMappingBlock(), MatAssemblyBegin(), MatAssemblyEnd(),
            MatSetValuesLocal(), MatSetLocalToGlobalMappingBlock(), MatSetValuesBlocked()
 @*/
-PetscErrorCode  MatSetValuesBlockedLocal(Mat mat,PetscInt nrow,const PetscInt irow[],PetscInt ncol,const PetscInt icol[],const PetscScalar y[],InsertMode addv) 
+PetscErrorCode  MatSetValuesBlockedLocal(Mat mat,PetscInt nrow,const PetscInt irow[],PetscInt ncol,const PetscInt icol[],const PetscScalar y[],InsertMode addv)
 {
   PetscErrorCode ierr;
-  PetscInt       irowm[2048],icolm[2048];
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
@@ -1964,61 +1976,47 @@ PetscErrorCode  MatSetValuesBlockedLocal(Mat mat,PetscInt nrow,const PetscInt ir
   }
 #if defined(PETSC_USE_DEBUG)
   else if (mat->insertmode != addv) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Cannot mix add values and insert values");
-  if (nrow > 2048 || ncol > 2048) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SUP,"Number column/row indices must be <= 2048: are %D %D",nrow,ncol);
   if (mat->factortype) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
+  if (!mat->ops->setvaluesblockedlocal && !mat->ops->setvaluesblocked && !mat->ops->setvalueslocal && !mat->ops->setvalues) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
 #endif
 
   if (mat->assembled) {
-    mat->was_assembled = PETSC_TRUE; 
+    mat->was_assembled = PETSC_TRUE;
     mat->assembled     = PETSC_FALSE;
   }
   ierr = PetscLogEventBegin(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
   if (mat->ops->setvaluesblockedlocal) {
     ierr = (*mat->ops->setvaluesblockedlocal)(mat,nrow,irow,ncol,icol,y,addv);CHKERRQ(ierr);
-  } else if (mat->rmap->bmapping && mat->cmap->bmapping) {
-    ierr = ISLocalToGlobalMappingApply(mat->rmap->bmapping,nrow,irow,irowm);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingApply(mat->cmap->bmapping,ncol,icol,icolm);CHKERRQ(ierr);
-    if (mat->ops->setvaluesblocked) {
-      ierr = (*mat->ops->setvaluesblocked)(mat,nrow,irowm,ncol,icolm,y,addv);CHKERRQ(ierr);
-    } else {
-      PetscInt buf[4096],*ibufm=0,*ibufn=0;
-      PetscInt i,j,*iirowm,*iicolm,bs=mat->rmap->bs;
-      if ((nrow+ncol)*bs <= 4096) {
-        iirowm = buf; iicolm = buf + nrow*bs;
-      } else {
-        ierr = PetscMalloc2(nrow*bs,PetscInt,&ibufm,ncol*bs,PetscInt,&ibufn);CHKERRQ(ierr);
-        iirowm = ibufm; iicolm = ibufn;
-      }
-      for (i=0; i<nrow; i++) {
-        for (j=0; j<bs; j++) {
-          iirowm[i*bs+j] = bs*irowm[i] + j;
-        }
-      }
-      for (i=0; i<ncol; i++) {
-        for (j=0; j<bs; j++) {
-          iicolm[i*bs+j] = bs*icolm[i] + j;
-        }
-      }
-      ierr = MatSetValues(mat,bs*nrow,iirowm,bs*ncol,iicolm,y,addv);CHKERRQ(ierr);
-      ierr = PetscFree2(ibufm,ibufn);CHKERRQ(ierr);
-    }
   } else {
-    PetscInt buf[4096],*ibufm=0,*ibufn=0;
-    PetscInt i,j,*iirowm,*iicolm,bs=mat->rmap->bs;
-    if ((nrow+ncol)*bs <= 4096) {
-      iirowm = buf; iicolm = buf + nrow*bs;
+    PetscInt buf[8192],*bufr=0,*bufc=0,*irowm,*icolm;
+    if (mat->rmap->bmapping && mat->cmap->bmapping) {
+      if ((nrow+ncol) <= sizeof(buf)/sizeof(PetscInt)) {
+        irowm = buf; icolm = buf + nrow;
+      } else {
+        ierr = PetscMalloc2(nrow,PetscInt,&bufr,ncol,PetscInt,&bufc);CHKERRQ(ierr);
+        irowm = bufr; icolm = bufc;
+      }
+      ierr = ISLocalToGlobalMappingApply(mat->rmap->bmapping,nrow,irow,irowm);CHKERRQ(ierr);
+      ierr = ISLocalToGlobalMappingApply(mat->cmap->bmapping,ncol,icol,icolm);CHKERRQ(ierr);
+      ierr = MatSetValuesBlocked(mat,nrow,irowm,ncol,icolm,y,addv);CHKERRQ(ierr);
+      ierr = PetscFree2(bufr,bufc);CHKERRQ(ierr);
     } else {
-      ierr = PetscMalloc2(nrow*bs,PetscInt,&ibufm,ncol*bs,PetscInt,&ibufn);CHKERRQ(ierr);
-      iirowm = ibufm; iicolm = ibufn;
+      PetscInt i,j,bs=mat->rmap->bs;
+      if ((nrow+ncol)*bs <=sizeof(buf)/sizeof(PetscInt)) {
+        irowm = buf; icolm = buf + nrow;
+      } else {
+        ierr = PetscMalloc2(nrow*bs,PetscInt,&bufr,ncol*bs,PetscInt,&bufc);CHKERRQ(ierr);
+        irowm = bufr; icolm = bufc;
+      }
+      for (i=0; i<nrow; i++)
+        for (j=0; j<bs; j++)
+          irowm[i*bs+j] = irow[i]*bs+j;
+      for (i=0; i<ncol; i++)
+        for (j=0; j<bs; j++)
+          icolm[i*bs+j] = icol[i]*bs+j;
+      ierr = MatSetValuesLocal(mat,nrow*bs,irowm,ncol*bs,icolm,y,addv);CHKERRQ(ierr);
+      ierr = PetscFree2(bufr,bufc);CHKERRQ(ierr);
     }
-    for (i=0; i<nrow; i++) {
-      for (j=0; j<bs; j++) iirowm[i*bs+j] = irow[i]*bs+j;
-    }
-    for (i=0; i<ncol; i++) {
-      for (j=0; j<bs; j++) iicolm[i*bs+j] = icol[i]*bs+j;
-    }
-    ierr = MatSetValuesLocal(mat,nrow*bs,iirowm,ncol*bs,iicolm,y,addv);CHKERRQ(ierr);
-    ierr = PetscFree2(ibufm,ibufn);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_CUSP)
