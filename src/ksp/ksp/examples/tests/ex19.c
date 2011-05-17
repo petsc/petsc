@@ -198,7 +198,7 @@ int FormJacobian_Grid(AppCtx *user,GridCtx *grid,Mat *J)
   for (j=ys; j<ys+ym; j++) {
     row = (j - Ys)*Xm + xs - Xs - 1; 
     for (i=xs; i<xs+xm; i++) {
-      row++;
+      row++;p
       grow = ltog[row];
       if (i > 0 && i < mx-1 && j > 0 && j < my-1) {
         v[0] = -hxdhy; col[0] = ltog[row - Xm];
