@@ -338,6 +338,7 @@ PetscErrorCode  SNESDAFormFunction(SNES snes,Vec X,Vec F,void *ptr)
   PetscFunctionReturn(0); 
 } 
 
+#if defined(PETSC_HAVE_SIEVE)
 #undef __FUNCT__
 #define __FUNCT__ "SNESMeshFormFunction"
 /*@C
@@ -399,7 +400,9 @@ PetscErrorCode SNESMeshFormFunction(SNES snes, Vec X, Vec F, void *ptr)
   ierr = DMRestoreLocalVector(dm, &localF);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+#endif
 
+#if defined(PETSC_HAVE_SIEVE)
 #undef __FUNCT__
 #define __FUNCT__ "SNESMeshFormJacobian"
 /*
@@ -445,6 +448,7 @@ PetscErrorCode SNESMeshFormJacobian(SNES snes, Vec X, Mat *J, Mat *B, MatStructu
   *flag = SAME_NONZERO_PATTERN;
   PetscFunctionReturn(0);
 }
+#endif
 
 /* ------------------------------------------------------------------------------*/
 #include <private/matimpl.h>        /*I "petscmat.h" I*/

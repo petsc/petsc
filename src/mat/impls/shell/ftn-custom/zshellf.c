@@ -1,4 +1,4 @@
-#include <private/fortranimpl.h>
+c#include <private/fortranimpl.h>
 #include <petscmat.h>
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
