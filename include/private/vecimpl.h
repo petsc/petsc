@@ -89,6 +89,46 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLayoutFindOwner(PetscLayout map,PetscInt
 }
 
 /* ----------------------------------------------------------------------------*/
+typedef struct _n_PetscUniformSection *PetscUniformSection;
+struct _n_PetscUniformSection {
+  MPI_Comm comm;
+  PetscInt pStart, pEnd; /* The chart: all points are contained in [pStart, pEnd) */
+  PetscInt numDof;       /* Describes layout of storage, point --> (constant # of values, (p - pStart)*constant # of values) */
+};
+
+/*S
+  PetscSection - This is a mapping from DMMESH points to sets of values, which is
+  our presentation of a fibre bundle.
+
+  Level: developer
+
+.seealso:  PetscSectionCreate(), PetscSectionDestroy()
+S*/
+typedef struct _n_PetscSection *PetscSection;
+struct _n_PetscSection {
+  struct _n_PetscUniformSection atlasLayout;  /* Layout for the atlas */
+  PetscInt                     *atlasDof;     /* Describes layout of storage, point --> # of values */
+  PetscInt                     *atlasOff;     /* Describes layout of storage, point --> offset into storage */
+  PetscSection                  bc;           /* Describes constraints, point --> # local dofs which are constrained */
+  PetscInt                     *bcIndices;    /* Local indices for constrained dofs */
+  PetscInt                      refcnt;       /* Vecs obtained with VecDuplicate() and from MatGetVecs() reuse map of input object */
+};
+
+extern PetscErrorCode PetscSectionCreate(MPI_Comm,PetscSection*);
+extern PetscErrorCode PetscSectionSetChart(PetscSection, PetscInt, PetscInt);
+extern PetscErrorCode PetscSectionGetDof(PetscSection, PetscInt, PetscInt*);
+extern PetscErrorCode PetscSectionSetDof(PetscSection, PetscInt, PetscInt);
+extern PetscErrorCode PetscSectionGetConstraintDof(PetscSection, PetscInt, PetscInt*);
+extern PetscErrorCode PetscSectionSetConstraintDof(PetscSection, PetscInt, PetscInt);
+extern PetscErrorCode PetscSectionGetConstraintIndices(PetscSection, PetscInt, PetscInt**);
+extern PetscErrorCode PetscSectionSetConstraintIndices(PetscSection, PetscInt, PetscInt*);
+extern PetscErrorCode PetscSectionSetUp(PetscSection);
+extern PetscErrorCode PetscSectionDestroy(PetscSection*);
+
+extern PetscErrorCode VecGetValuesSection(Vec, PetscSection, PetscInt, PetscScalar **);
+extern PetscErrorCode VecSetValuesSection(Vec, PetscSection, PetscInt, PetscScalar [], InsertMode);
+
+/* ----------------------------------------------------------------------------*/
 
 typedef struct _VecOps *VecOps;
 struct _VecOps {

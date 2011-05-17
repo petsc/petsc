@@ -41,6 +41,18 @@ extern PetscErrorCode DMMeshGetCoordinates(DM, PetscBool , PetscInt *, PetscInt 
 extern PetscErrorCode DMMeshGetElements(DM, PetscBool , PetscInt *, PetscInt *, PetscInt *[]);
 extern PetscErrorCode DMMeshGetCone(DM, PetscInt, PetscInt *, PetscInt *[]);
 
+extern PetscErrorCode DMMeshCreateBoxMesh(MPI_Comm, PetscInt, PetscBool, DM *);
+extern PetscErrorCode DMMeshMarkBoundaryCells(DM, const char [], PetscInt, PetscInt);
+extern PetscErrorCode DMMeshGetDepthStratum(DM, PetscInt, PetscInt *, PetscInt *);
+extern PetscErrorCode DMMeshGetHeightStratum(DM, PetscInt, PetscInt *, PetscInt *);
+extern PetscErrorCode DMMeshGetDefaultSection(DM, PetscSection *);
+extern PetscErrorCode DMMeshGetCoordinateSection(DM, PetscSection *);
+extern PetscErrorCode DMMeshGetCoordinateVec(DM, Vec *);
+extern PetscErrorCode DMMeshComputeCellGeometry(DM, PetscInt, PetscReal *, PetscReal *, PetscReal *, PetscReal *);
+extern PetscErrorCode DMMeshVecSetClosure(DM, Vec, PetscInt, const PetscScalar [], InsertMode);
+extern PetscErrorCode DMMeshVecGetClosure(DM, Vec, PetscInt, const PetscScalar **);
+extern PetscErrorCode DMMeshMatSetClosure(DM, Mat, PetscInt, PetscScalar [], InsertMode);
+
 extern PetscErrorCode MatSetValuesTopology(Mat, DM, PetscInt, const PetscInt [], DM, PetscInt, const PetscInt [], const PetscScalar [], InsertMode);
 extern PetscErrorCode restrictVector(Vec, Vec, InsertMode);
 extern PetscErrorCode assembleVectorComplete(Vec, Vec, InsertMode);
