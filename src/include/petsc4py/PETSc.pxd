@@ -169,7 +169,7 @@ ctypedef public api class DA(DM) [
 cdef MPI_Comm GetComm(object, MPI_Comm) except *
 cdef MPI_Comm GetCommDefault()
 
-cdef int  TypeRegistryAdd(int, type) except -1
-cdef type TypeRegistryGet(int)
+cdef int  PyPetscType_Register(int, type) except -1
+cdef type PyPetscType_Lookup(int)
 
 # --------------------------------------------------------------------

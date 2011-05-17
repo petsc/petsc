@@ -131,7 +131,7 @@ cdef class Object:
         if cobj == NULL: return None
         cdef PetscClassId classid = 0
         CHKERR( PetscObjectGetClassId(cobj, &classid) )
-        cdef type Class = TypeRegistryGet(classid)
+        cdef type Class = PyPetscType_Lookup(classid)
         if classid == PETSC_DM_CLASSID:
             Class = subtype_DM(<PetscDM>cobj)
         cdef Object newobj = Class()
@@ -220,7 +220,7 @@ include "cyclicgc.pxi"
 cdef dict type_registry = { 0 : None }
 __type_registry__ = type_registry
 
-cdef int TypeRegistryAdd(PetscClassId classid, type cls) except -1:
+cdef int PyPetscType_Register(PetscClassId classid, type cls) except -1:
     global type_registry
     cdef object key = classid
     cdef object value = cls
@@ -238,7 +238,7 @@ cdef int TypeRegistryAdd(PetscClassId classid, type cls) except -1:
                 "already registered: %s" % (key, cls, value))
     return 0
 
-cdef type TypeRegistryGet(PetscClassId classid):
+cdef type PyPetscType_Lookup(PetscClassId classid):
     global type_registry
     cdef object key = classid
     cdef type cls = Object
