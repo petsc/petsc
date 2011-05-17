@@ -51,7 +51,6 @@ PetscErrorCode SeqSBSTRM_convert_sbstrm(Mat A)
   PetscScalar **asp;
 
   PetscFunctionBegin;
-  /* printf(" ---!!! In SeqSBSTRM_convert_sbstrm, m, rbs=%d, %d\n", m, bs); */
   sbstrm->rbs = bs;
   sbstrm->cbs = bs;
 
@@ -123,7 +122,6 @@ PetscErrorCode MatConvert_SeqSBAIJ_SeqSBSTRM(Mat A,const MatType type,MatReuse r
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   }
   
-  /* printf(" ---SEASEA in MatConvert_SeqSBAIJ_SeqSBSTRM, bs = %d\n", bs);  */
 
   ierr = PetscNewLog(B,Mat_SeqSBSTRM,&sbstrm);CHKERRQ(ierr);
   B->spptr = (void *) sbstrm;
@@ -152,7 +150,6 @@ PetscErrorCode MatCreateSeqSBSTRM(MPI_Comm comm,PetscInt bs,PetscInt m,PetscInt 
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  /* printf(" --- in MatCreateSeqSBSTRM !!, bs = %d \n", bs); */
     ierr = MatCreate(comm,A);CHKERRQ(ierr);
     ierr = MatSetSizes(*A,m,n,m,n);CHKERRQ(ierr);
     ierr = MatSetType(*A,MATSEQSBSTRM);CHKERRQ(ierr);
@@ -168,7 +165,6 @@ PetscErrorCode  MatCreate_SeqSBSTRM(Mat A)
 {
   PetscErrorCode ierr;
 
-  /* printf(" --- in MatCreate_SeqSBSTRM bs = %d \n", A->rmap->bs); */
   PetscFunctionBegin;
   ierr = MatSetType(A,MATSEQSBAIJ);CHKERRQ(ierr);
   ierr = MatConvert_SeqSBAIJ_SeqSBSTRM(A,MATSEQSBSTRM,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
@@ -202,7 +198,6 @@ PetscErrorCode MatMult_SeqSBSTRM_4(Mat A,Vec xx,Vec zz)
   ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
 
   slen = 4*(ai[mbs]-ai[0]);
- /*  printf(" --- in MatMult_SeqSBSTRM_4, nz = %d, %d \n", a->nz, ii[mbs]-ii[0]);  */
   v1 = sbstrm->as;
   v2 = v1 + slen;
   v3 = v2 + slen;
@@ -278,7 +273,6 @@ PetscErrorCode MatMult_SeqSBSTRM_5(Mat A,Vec xx,Vec zz)
   ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
 
   slen = 5*(ai[mbs]-ai[0]);
-  /* printf(" --- in MatMult_SeqSBSTRM_5, nz = %d, %d \n", a->nz, ai[mbs]-ai[0]);  */
 
   v1 = sbstrm->as;
   v2 = v1 + slen;
@@ -437,7 +431,6 @@ PetscErrorCode MatMultAdd_SeqSBSTRM_5(Mat A,Vec xx,Vec yy,Vec zz)
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
 
-  /* printf(" --- in MatMultAdd_SeqSBSTRM_5, nz = %d, %d \n", a->nz, ai[mbs]-ai[0]);   */
 
   slen = 5*(ai[mbs]-ai[0]);
   v1 = sbstrm->as;
@@ -514,7 +507,6 @@ PetscErrorCode SeqSBSTRM_create_sbstrm(Mat A)
 
   PetscFunctionBegin;
   sbstrm->rbs = sbstrm->cbs = bs;
-  /* printf(" ---!!! In SeqSBSTRM_create_sbstrm, MROW, rbs=%d, %d\n", MROW, bs); */
 
   rbs = cbs = bs;
   bs2 = rbs*cbs; 

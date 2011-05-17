@@ -14,7 +14,7 @@ PetscErrorCode MatDestroy_SeqBSTRM(Mat A)
      ierr = PetscFree(bstrm->as);CHKERRQ(ierr);
   }
   ierr = PetscObjectChangeTypeName( (PetscObject)A, MATSEQBAIJ);CHKERRQ(ierr);
-  ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
+  ierr = MatDestroy_SeqBAIJ(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /*=========================================================*/ 

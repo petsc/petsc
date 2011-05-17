@@ -293,7 +293,6 @@ PetscErrorCode MatSolve_SeqSBSTRM_5_inplace(Mat A,Vec bb,Vec xx)
   t  = a->solve_work;
   ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
 
-  /*printf(" --- !! MatSolve_SeqSBSTRM_5_inplace \n");  */
 
   slen = 5*(ai[mbs]-ai[0]);
   v0  = as + 25*ai[0];
@@ -391,7 +390,6 @@ PetscErrorCode ForwardSolve_SeqSBSTRM_5_NaturalOrdering_private(PetscInt *ai,Pet
   PetscFunctionBegin;
  
  
- /* printf(" --- ForwardSolve_SeqSBSTRM_5_NaturalOrdering_private\n");  */
 
   slen = 5*(ai[mbs]-ai[0]);
   v0  = aa + 25*ai[0];
@@ -442,7 +440,6 @@ PetscErrorCode BackwardSolve_SeqSBSTRM_5_NaturalOrdering_private(PetscInt *ai,Pe
   PetscFunctionBegin;
 
 
- /* printf(" --- BackwardSolve_SeqSBSTRM_5_NaturalOrdering_private \n"); */
   slen = 5*(ai[mbs]-ai[0]);
   v0  = aa + 25*ai[0]+5*(ai[mbs]-ai[0]); 
   v1  = v0 + slen;     
@@ -490,7 +487,6 @@ PetscErrorCode MatSolve_SeqSBSTRM_5_NaturalOrdering_inplace(Mat A,Vec bb,Vec xx)
 
   PetscFunctionBegin;
 #if 0 
-  printf(" --- in MatSolve_SeqSBSTRM_5_NaturalOrdering_inplace\n"); 
 #endif 
   ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
@@ -569,7 +565,6 @@ PetscErrorCode SeqSBSTRM_convertFact_sbstrm(Mat F)
   PetscScalar **asp ;
 
   PetscFunctionBegin;
-  /* printf(" ---!!! In SeqSBSTRM_convert_sbstrm, m, rbs=%d, %d\n", m, bs); */
   sbstrm->rbs = bs;
   sbstrm->cbs = bs;
 
@@ -642,7 +637,6 @@ PetscErrorCode MatCholeskyFactorNumeric_sbstrm(Mat F,Mat A,const MatFactorInfo *
   Mat_SeqSBSTRM  *sbstrm;
 
   PetscFunctionBegin;
-  /* printf(" --- in seasea MatCholeskyFactorNumeric_sbstrm \n");  */
   switch (bs){
     case 4:
        ierr = MatCholeskyFactorNumeric_SeqSBAIJ_4_NaturalOrdering(F,A,info);CHKERRQ(ierr);
@@ -665,7 +659,6 @@ PetscErrorCode MatICCFactorSymbolic_sbstrm(Mat B,Mat A,IS perm,const MatFactorIn
 {
   PetscInt ierr;
   PetscFunctionBegin;
-   /* printf(" --- MatICCFactorSymbolic_sbstrm \n");  */
   ierr = (MatICCFactorSymbolic_SeqSBAIJ)(B,A,perm,info);CHKERRQ(ierr);
   B->ops->choleskyfactornumeric  = MatCholeskyFactorNumeric_sbstrm;
   PetscFunctionReturn(0);
@@ -677,7 +670,6 @@ PetscErrorCode MatCholeskyFactorSymbolic_sbstrm(Mat B,Mat A,IS perm,const MatFac
 {
   PetscInt ierr;
   PetscFunctionBegin;
-  /* printf(" --- MatCholeskyFactorSymbolic_sbstrm \n");  */
   ierr = (MatCholeskyFactorSymbolic_SeqSBAIJ)(B,A,perm,info);CHKERRQ(ierr);
   B->ops->choleskyfactornumeric  = MatCholeskyFactorNumeric_sbstrm;
   PetscFunctionReturn(0);
@@ -702,7 +694,6 @@ PetscErrorCode MatGetFactor_seqsbaij_sbstrm(Mat A,MatFactorType ftype,Mat *F)
   ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatSeqSBAIJSetPreallocation_SeqSBAIJ(B,bs,MAT_SKIP_ALLOCATION,PETSC_NULL);CHKERRQ(ierr);
 
-  /* printf(" ---  in MatGetFactor_seqsbaij_sbstrm \n"); */
 
   B->ops->iccfactorsymbolic       = MatICCFactorSymbolic_sbstrm;
   B->ops->choleskyfactorsymbolic  = MatCholeskyFactorSymbolic_sbstrm;
@@ -719,7 +710,6 @@ PetscErrorCode MatGetFactor_seqsbaij_sbstrm(Mat A,MatFactorType ftype,Mat *F)
 
   B->spptr = sbstrm;
   *F = B;
-  /* printf(" ---  !!!! MatGetFactor_seqsbaij_sbstrm \n"); */
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
