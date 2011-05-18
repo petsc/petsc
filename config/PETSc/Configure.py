@@ -20,7 +20,7 @@ class Configure(config.base.Configure):
   def __str2__(self):
     desc = []
     desc.append('xxx=========================================================================xxx')
-    desc.append('   Configure stage complete. Now build PETSc libraries with:')
+    desc.append(' Configure stage complete. Now build PETSc libraries with:')
     desc.append('   make PETSC_DIR='+self.petscdir.dir+' PETSC_ARCH='+self.arch.arch+' all')
     if self.cmakeboot_success:
       desc.append(' or:')
