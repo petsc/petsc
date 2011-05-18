@@ -95,11 +95,10 @@ class PETScMaker(script.Script):
    log.write('Invoking: %s\n' % cmd)
    output,error,retcode = self.executeShellCommand(cmd, checkCommand = noCheck, log=log, cwd=archdir)
    if retcode:
-      self.logPrintBox('CMake process failed with status %d. Proceeding..' % (retcode,))
+     self.logPrintBox('CMake process failed with status %d. Proceeding..' % (retcode,))
+     return False
    else:
-     self.logPrintBox('CMake configuration completed successfully.\n' +
-                      'Can now use alternate build command [optionally with -j]: make -C %s' % quoteIfNeeded(archdir))
-   return
+     return True # Configure successful
 
 def main(petscdir, petscarch, argDB=None, framework=None, log=StdoutLogger(), args=[]):
   # This can be called as a stand-alone program, or by importing it from
@@ -112,7 +111,7 @@ def main(petscdir, petscarch, argDB=None, framework=None, log=StdoutLogger(), ar
   # and makes the result unpickleable.  This is not a problem when run
   # as a standalone program (because the database is read-only), but is
   # not okay when called from configure.
-  PETScMaker(petscdir,petscarch,argDB,framework).cmakeboot(args,log)
+  return PETScMaker(petscdir,petscarch,argDB,framework).cmakeboot(args,log)
 
 if __name__ == "__main__":
   main(petscdir=os.environ['PETSC_DIR'], petscarch=os.environ['PETSC_ARCH'], args=sys.argv[1:])
