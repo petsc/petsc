@@ -23,9 +23,9 @@ class Configure(config.base.Configure):
     desc.append(' Configure stage complete. Now build PETSc libraries with:')
     desc.append('   make PETSC_DIR='+self.petscdir.dir+' PETSC_ARCH='+self.arch.arch+' all')
     if self.cmakeboot_success:
-      desc.append(' or:')
+      desc.append(' or (experimental with cmake):')
       desc.append('   make -j4 -C '+os.path.join(self.petscdir.dir,self.arch.arch))
-    desc.append(' or:')
+    desc.append(' or (experimental with python):')
     desc.append('   PETSC_DIR='+self.petscdir.dir+' PETSC_ARCH='+self.arch.arch+' ./config/builder.py')
     desc.append('xxx=========================================================================xxx')
     return '\n'.join(desc)+'\n'
