@@ -634,7 +634,6 @@ PetscErrorCode MatCholeskyFactorNumeric_sbstrm(Mat F,Mat A,const MatFactorInfo *
 {
   PetscInt          bs = A->rmap->bs;
   PetscErrorCode ierr;
-  Mat_SeqSBSTRM  *sbstrm;
 
   PetscFunctionBegin;
   switch (bs){
