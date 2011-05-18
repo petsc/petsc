@@ -7,7 +7,7 @@ if __name__ == '__main__':
   configure_options = [
     '--with-cc=gcc',
     '--with-cxx=g++',
-    '--with-mpi=0',
+    '--download-mpich=1',
     '--with-cuda=1',
     '--with-cusp=1',
     '--with-thrust=1',
