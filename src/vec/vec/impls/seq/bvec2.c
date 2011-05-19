@@ -760,7 +760,7 @@ PetscErrorCode VecSetValuesBlocked_Seq(Vec xin,PetscInt ni,const PetscInt ix[],c
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecDestroy_Seq"
-static PetscErrorCode VecDestroy_Seq(Vec v)
+PetscErrorCode VecDestroy_Seq(Vec v)
 {
   Vec_Seq        *vs = (Vec_Seq*)v->data;
   PetscErrorCode ierr;

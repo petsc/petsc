@@ -2,6 +2,7 @@
 #include <private/vecimpl.h>     /*I  "vec.h"  I*/
 EXTERN_C_BEGIN
 extern PetscErrorCode  VecCreate_Seq(Vec);
+extern PetscErrorCode  VecCreate_SeqPThread(Vec);
 extern PetscErrorCode  VecCreate_MPI(Vec);
 extern PetscErrorCode  VecCreate_Standard(Vec);
 extern PetscErrorCode  VecCreate_Shared(Vec);
@@ -39,10 +40,11 @@ PetscErrorCode  VecRegisterAll(const char path[])
   PetscFunctionBegin;
   VecRegisterAllCalled = PETSC_TRUE;
 
-  ierr = VecRegisterDynamic(VECSEQ,      path, "VecCreate_Seq",      VecCreate_Seq);CHKERRQ(ierr);
-  ierr = VecRegisterDynamic(VECMPI,      path, "VecCreate_MPI",      VecCreate_MPI);CHKERRQ(ierr);
-  ierr = VecRegisterDynamic(VECSTANDARD, path, "VecCreate_Standard", VecCreate_Standard);CHKERRQ(ierr);
-  ierr = VecRegisterDynamic(VECSHARED,   path, "VecCreate_Shared",   VecCreate_Shared);CHKERRQ(ierr);
+  ierr = VecRegisterDynamic(VECSEQ,       path, "VecCreate_Seq",       VecCreate_Seq);CHKERRQ(ierr);
+  ierr = VecRegisterDynamic(VECMPI,       path, "VecCreate_MPI",       VecCreate_MPI);CHKERRQ(ierr);
+  ierr = VecRegisterDynamic(VECSTANDARD,  path, "VecCreate_Standard",  VecCreate_Standard);CHKERRQ(ierr);
+  ierr = VecRegisterDynamic(VECSHARED,    path, "VecCreate_Shared",    VecCreate_Shared);CHKERRQ(ierr);
+  ierr = VecRegisterDynamic(VECSEQPTHREAD,path, "VecCreate_SeqPThread",VecCreate_SeqPThread);CHKERRQ(ierr);
 #if defined PETSC_HAVE_CUSP
   ierr = VecRegisterDynamic(VECSEQCUSP,  path, "VecCreate_SeqCUSP",  VecCreate_SeqCUSP);CHKERRQ(ierr);
   ierr = VecRegisterDynamic(VECMPICUSP,  path, "VecCreate_MPICUSP",  VecCreate_MPICUSP);CHKERRQ(ierr);
