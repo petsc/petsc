@@ -58,7 +58,7 @@ PetscErrorCode FillMatrix(DM da,Mat jac)
   PetscScalar    v[7];
   MatStencil     row,col[7];
 
-  ierr = DMDAGetInfo(da,0,&mx,&my,&mz,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,0,&mx,&my,&mz,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
 
   for (k=zs; k<zs+zm; k++){
@@ -195,14 +195,15 @@ int main(int argc,char **args)
       }
       else             /* (1,NP,1) partitioning */
       {
-        ierr=DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUDNARY_NONE,DMDA_BOUDNARY_NONE,
-                          DMDA_BOUDNARY_NONE,DMDA_STENCIL_STAR,-10,-10,-10,
+        ierr=DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,
+                          DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-10,-10,-10,
                           1,PETSC_DECIDE,1,1,1,0,0,0,&da); CHKERRQ(ierr);
       }
 
       /* now we print what partitioning is chosen */
       ierr=DMDAGetInfo(da,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,&m,
-                      &n,&p,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL); CHKERRQ(ierr);
+                      &n,&p,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,
+                      PETSC_NULL,PETSC_NULL); CHKERRQ(ierr);
       PetscPrintf(PETSC_COMM_WORLD,"Partitioning: %u %u %u\n",m,n,p);
   }
 
