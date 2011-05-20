@@ -65,7 +65,7 @@ def check(ui, repo, *pats, **opts):
   if hasattr(maker.configInfo.compilers, 'FC'):
     if maker.configInfo.fortrancpp.fortranDatatypes:
       examples.append(os.path.join(maker.petscDir, 'src', 'snes', 'examples', 'tutorials', 'ex5f90t.F'))
-    elif self.configInfo.compilers.fortranIsF90:
+    elif maker.configInfo.compilers.fortranIsF90:
       examples.append(os.path.join(maker.petscDir, 'src', 'snes', 'examples', 'tutorials', 'ex5f90.F'))
     else:
       examples.append(os.path.join(maker.petscDir, 'src', 'snes', 'examples', 'tutorials', 'ex5f.F'))
@@ -88,11 +88,13 @@ def check(ui, repo, *pats, **opts):
     params = builder.regressionParameters.get(paramKey, {})
     if isinstance(params, list):
       for testnum, param in enumerate(params):
+        if not 'args' in param: param['args'] = ''
         param['args'] += extraArgs
         if maker.runTest(exampleDir, executable, testnum, **param):
           print 'TEST FAILED (check make.log for details)'
           return 1
     else:
+      if not 'args' in params: params['args'] = ''
       params['args'] += extraArgs
       if maker.runTest(exampleDir, executable, 1, **params):
         print 'TEST FAILED (check make.log for details)'
