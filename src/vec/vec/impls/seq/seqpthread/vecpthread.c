@@ -14,39 +14,28 @@ typedef struct {
   PetscScalar       result;
 } VecDot_KernelData;
 
-typedef struct {
-  PetscScalar Mysum;
-  pthread_mutex_t mutex_sum;
-} MutexStruct;
-
-MutexStruct MyData = {0,PTHREAD_MUTEX_INITIALIZER};
-
 void *VecDot_Kernel(void *arg)
 {
   VecDot_KernelData *data = arg;
   const PetscScalar *x, *y;
   PetscScalar LocalSum = 0;
-  PetscInt    i,n;
+  PetscInt    i,j,n;
 
   x = data->x;
   y = data->y;
   n = data->n;
-
+  for (j=0; j<1000; j++) {
   for (i=0; i<n; i++) {
     LocalSum += x[i]*PetscConj(y[i]);
   }
-  //lock the mutex
-  i = pthread_mutex_lock(&MyData.mutex_sum);
-  //update the overall sum value
-  MyData.Mysum += LocalSum;
-  //unlock the mutex
-  i = pthread_mutex_unlock(&MyData.mutex_sum);
-  printf("hello\n");
-  free(data);
+  }
+  //LocalSum = LocalSum/100.0;
+  data->result = LocalSum;
   return NULL;
 }
+VecDot_KernelData kerneldatap[2]; //must match iNumThreads below
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecDot_SeqPThread"
 PetscErrorCode VecDot_SeqPThread(Vec xin,Vec yin,PetscScalar *z)
 {
@@ -54,26 +43,33 @@ PetscErrorCode VecDot_SeqPThread(Vec xin,Vec yin,PetscScalar *z)
   PetscErrorCode    ierr;
   PetscInt          i, iIndex = 0;
   void              *joinstatus;
-  VecDot_KernelData *kerneldatap;
-  const PetscInt    iNumThreads = 4;
+  // VecDot_KernelData *kerneldatap;
+  const PetscInt    iNumThreads = 2;
   pthread_t         aiThread[iNumThreads];
-  PetscInt          Q = xin->map->n/iNumThreads;
-  PetscInt          R = xin->map->n-Q*iNumThreads;
+  PetscInt          Q = xin->map->n/(iNumThreads);
+  PetscInt          R = xin->map->n-Q*(iNumThreads);
   PetscBool         S;
+
+  //kerneldatap = (VecDot_KernelData*)malloc(iNumThreads*sizeof(VecDot_KernelData));
 
   PetscFunctionBegin;
   ierr = VecGetArrayRead(xin,&xa);CHKERRQ(ierr);
   ierr = VecGetArrayRead(yin,&ya);CHKERRQ(ierr);
 
   for (i=0; i<iNumThreads; i++) {
-    kerneldatap = (VecDot_KernelData*)malloc(sizeof(VecDot_KernelData));
     S = i<R;
-    kerneldatap->x = &xa[iIndex];
-    kerneldatap->y = &ya[iIndex];
-    kerneldatap->n = S?Q+1:Q;
-    ierr = pthread_create(&aiThread[i], NULL, VecDot_Kernel, kerneldatap);CHKERRQ(ierr);
-    iIndex += kerneldatap->n;
+    kerneldatap[i].x = &xa[iIndex];
+    kerneldatap[i].y = &ya[iIndex];
+    kerneldatap[i].n = S?Q+1:Q;
+    ierr = pthread_create(&aiThread[i], NULL, VecDot_Kernel, &kerneldatap[i]);CHKERRQ(ierr);
+    iIndex += kerneldatap[i].n;
   }
+
+  //code used if 'main' thread is to be a 'worker' too!
+  //kerneldatap[iNumThreads].x = &xa[iIndex];
+  //kerneldatap[iNumThreads].y = &ya[iIndex];
+  //kerneldatap[iNumThreads].n = Q;
+  //VecDot_Kernel(&kerneldatap[iNumThreads]);
 
   for (i=0; i<iNumThreads; i++) {
     pthread_join(aiThread[i], &joinstatus);
@@ -81,7 +77,11 @@ PetscErrorCode VecDot_SeqPThread(Vec xin,Vec yin,PetscScalar *z)
 
   ierr = VecRestoreArrayRead(xin,&xa);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(yin,&ya);CHKERRQ(ierr);
-  *z = MyData.Mysum;
+  //*z = kerneldatap[iNumThreads].result;
+  for(i=0; i<iNumThreads; i++) {
+    *z += kerneldatap[i].result;
+  }
+  //free(kerneldatap);
   if (xin->map->n > 0) {
     ierr = PetscLogFlops(2.0*xin->map->n-1);CHKERRQ(ierr);
   }

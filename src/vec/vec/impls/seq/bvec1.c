@@ -33,7 +33,15 @@ PetscErrorCode VecDot_Seq(Vec xin,Vec yin,PetscScalar *z)
     *z = sum;
   }
 #else
-  *z = BLASdot_(&bn,xa,&one,ya,&one);
+  PetscInt i,j;
+  PetscScalar sum = 0.0;
+  for(j=0; j<1000; j++) {
+    for(i=0; i<xin->map->n; i++) {
+      sum += xa[i]*PetscConj(ya[i]);
+    }
+  }
+  *z = sum;
+  //*z = BLASdot_(&bn,xa,&one,ya,&one);
 #endif
   ierr = VecRestoreArrayRead(xin,&xa);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(yin,&ya);CHKERRQ(ierr);
