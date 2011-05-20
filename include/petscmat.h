@@ -1738,6 +1738,11 @@ extern PetscErrorCode  MatMumpsSetIcntl(Mat,PetscInt,PetscInt);
 extern PetscErrorCode  MatSuperluSetILUDropTol(Mat,PetscReal);
 #endif
 
+#if defined(PETSC_HAVE_CUSP)
+extern PetscErrorCode  MatCreateSeqAIJCUSP(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscInt[],Mat*);
+extern PetscErrorCode  MatCreateMPIAIJCUSP(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],PetscInt,const PetscInt[],Mat*);
+#endif
+
 extern PetscErrorCode MatCreateNest(MPI_Comm,PetscInt,const IS[],PetscInt,const IS[],const Mat[],Mat*);
 extern PetscErrorCode MatNestGetSize(Mat,PetscInt*,PetscInt*);
 extern PetscErrorCode MatNestGetSubMats(Mat,PetscInt*,PetscInt*,Mat***);
