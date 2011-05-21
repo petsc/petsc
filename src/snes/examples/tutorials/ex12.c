@@ -731,6 +731,37 @@ PetscErrorCode SetupQuadrature(AppCtx *user) {
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "SetupSection"
+PetscErrorCode SetupSection(AppCtx *user) {
+  PetscSection   section;
+  /* These can be generated using config/PETSc/FEM.py */
+  PetscInt       numDof_0[2] = {1, 0};
+  PetscInt       numDof_1[3] = {1, 0, 0};
+  PetscInt       numDof_2[4] = {1, 0, 0, 0};
+  PetscInt      *numDof;
+  const char    *bcLabel = PETSC_NULL;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  switch(usr->dim) {
+  case 1:
+    numDof = numDof_0;
+    break;
+  case 2:
+    numDof = numDof_1;
+    break;
+  case 3:
+    numDof = numDof_2;
+    break;
+  }
+  if (user->bcType == DIRICHLET) {
+    bcLabel = "marker";
+  }
+  ierr = DMMeshCreateSection(user->dm, user->dim, numDof, bcLabel, 1, &section);CHEKRRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "SetupExactSolution"
 PetscErrorCode SetupExactSolution(AppCtx *user) {
   PetscFunctionBegin;
@@ -868,6 +899,7 @@ int main(int argc, char **argv)
     SectionReal defaultSection;
 
     ierr = SetupQuadrature(&user);CHKERRQ(ierr);
+    ierr = SetupSection(&user);CHKERRQ(ierr);
 
     ierr = DMMeshGetSectionReal(user.dm, "default", &defaultSection);CHKERRQ(ierr);
     ierr = DMMeshSetupSection(user.dm, defaultSection);CHKERRQ(ierr);
