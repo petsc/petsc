@@ -85,6 +85,10 @@ overlap2: overlap2.o chkopts
 	-${CLINKER} -o overlap2 overlap2.o ${PETSC_DM_LIB}
 	${RM} -f overlap2.o
 
+conversion1: conversion1.o chkopts
+	-${CLINKER} -o conversion1 conversion1.o ${PETSC_DM_LIB}
+	${RM} -f conversion1.o
+
 operator1: operator1.o chkopts
 	-${CLINKER} -o operator1 operator1.o ${PETSC_DM_LIB}
 	${RM} -f operator1.o
