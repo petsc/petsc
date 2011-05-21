@@ -1520,9 +1520,14 @@ PetscErrorCode DMMeshGetDepthStratum(DM dm, PetscInt stratumValue, PetscInt *sta
   PetscFunctionBegin;
   ierr = DMMeshGetMesh(dm, mesh);CHKERRQ(ierr);
   {
-    const Obj<PETSC_MESH_TYPE::label_sequence>& stratum = mesh->depthStratum(stratumValue);
-    if (start) *start = *stratum->begin();
-    if (end)   *end   = *stratum->rbegin()+1;
+    if (stratumValue < 0) {
+      if (start) *start = mesh->getSieve()->getChart().min();
+      if (end)   *end   = mesh->getSieve()->getChart().max();
+    } else {
+      const Obj<PETSC_MESH_TYPE::label_sequence>& stratum = mesh->depthStratum(stratumValue);
+      if (start) *start = *stratum->begin();
+      if (end)   *end   = *stratum->rbegin()+1;
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -1539,6 +1544,57 @@ PetscErrorCode DMMeshGetHeightStratum(DM dm, PetscInt stratumValue, PetscInt *st
     const Obj<PETSC_MESH_TYPE::label_sequence>& stratum = mesh->heightStratum(stratumValue);
     if (start) *start = *stratum->begin();
     if (end)   *end   = *stratum->rbegin()+1;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMMeshCreateSection"
+PetscErrorCode DMMeshCreateSection(DM dm, PetscInt dim, PetscInt numDof[], const char bcName[], PetscInt bcValue, PetscSection *section) {
+  ALE::Obj<PETSC_MESH_TYPE> mesh;
+  PetscSection   section;
+  PetscInt       pStart, pEnd, maxConstraints = 0;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscSectionCreate(((PetscObject) dm)->comm, &section);CHKERRQ(ierr);
+  ierr = DMMeshGetDepthStratum(dm, -1, &pStart, &pEnd);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(section, pStart, pEnd);CHKERRQ(ierr);
+  for(PetscInt d = 0; d <= dim; ++d) {
+    ierr = DMMeshGetDepthStratum(user->dm, d, &pStart, &pEnd);CHKERRQ(ierr);
+    for(PetscInt p = pStart; p < pEnd; ++p) {
+      ierr = PetscSectionSetDof(*section, p, numDof[d]);CHKERRQ(ierr);
+    }
+  }
+  ierr = DMMeshGetMesh(dm, mesh);CHKERRQ(ierr);
+  if (bcName) {
+    const Obj<label_sequence>& boundary = mesh->getLabelStratum(bcName, bcValue);
+
+    for(label_sequence::iterator e_iter = boundary->begin(); e_iter != boundary->end(); ++e_iter) {
+      const int numDof = disc->getNumDof(this->depth(*e_iter));
+
+      maxConstraints = PetscMax(maxConstraints, numDof);
+      ierr = PetscSectionSetConstraintDof(section, *e_iter, numDof);CHKERRQ(ierr);
+    }
+  }
+  ierr = PetscSectionSetUp(section);CHKERRQ(ierr);
+  if (maxConstraints) {
+    PetscInt indices;
+
+    ierr = PetscMalloc(maxConstraints * sizeof(PetscInt), &indices);CHKERRQ(ierr);
+    ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
+    for(PetscInt p = pStart; p < pEnd; ++p) {
+      const PetscInt cDof = this->getConstraintDimension(*p_iter);
+
+      ierr = PetscSectionGetConstraintDof(section, p, &cDof);CHKERRQ(ierr);
+      if (cDof) {
+        for(PetscInt d = 0; d < cDof; ++d) {
+          indices[d] = d;
+        }
+        ierr = PetscSectionSetConstraintIndices(section, p, indices);CHKERRQ(ierr);
+      }
+    }
+    ierr = PetscFree(indices);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
