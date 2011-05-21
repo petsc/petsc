@@ -550,6 +550,9 @@ namespace ALE {
     //   (0, numCells) ... (0, numVertices): vertices
     // The other cells are numbered as they are requested
     static void buildTopology(Obj<sieve_type> sieve, int dim, int numCells, int cells[], int numVertices, bool interpolate = true, int corners = -1, int firstVertex = -1, Obj<arrow_section_type> orientation = NULL, int firstCell = 0) {
+      if (interpolate && orientation.isNull()) {
+        throw ALE::Exception("Cannot interpolate mesh without providing an orientation Section");
+      }
       ALE_LOG_EVENT_BEGIN;
       if (sieve->commRank() != 0) {
         ALE_LOG_EVENT_END;
