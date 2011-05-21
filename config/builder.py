@@ -942,7 +942,7 @@ class PETScMaker(script.Script):
    self.logWrite('Building '+filename+'\n', debugSection = 'screen', forceScroll = True)
    sourceMap = self.sourceManager.sortSourceFiles([filename], objDir)
    objects   = []
-   for language in ['C', 'Fortran', 'Cuda']:
+   for language in ['C', 'Cxx', 'Fortran', 'Cuda']:
      if sourceMap[language]:
        self.logPrint('Compiling %s files %s' % (language, str(sourceMap['C'])))
        objects.extend(getattr(self, 'compile'+language)(sourceMap[language], objDir))
