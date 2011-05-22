@@ -743,7 +743,7 @@ PetscErrorCode SetupSection(AppCtx *user) {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  switch(usr->dim) {
+  switch(user->dim) {
   case 1:
     numDof = numDof_0;
     break;
@@ -757,7 +757,7 @@ PetscErrorCode SetupSection(AppCtx *user) {
   if (user->bcType == DIRICHLET) {
     bcLabel = "marker";
   }
-  ierr = DMMeshCreateSection(user->dm, user->dim, numDof, bcLabel, 1, &section);CHEKRRQ(ierr);
+  ierr = DMMeshCreateSection(user->dm, user->dim, numDof, bcLabel, 1, &section);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

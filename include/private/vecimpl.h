@@ -115,6 +115,7 @@ struct _n_PetscSection {
 };
 
 extern PetscErrorCode PetscSectionCreate(MPI_Comm,PetscSection*);
+extern PetscErrorCode PetscSectionGetChart(PetscSection, PetscInt *, PetscInt *);
 extern PetscErrorCode PetscSectionSetChart(PetscSection, PetscInt, PetscInt);
 extern PetscErrorCode PetscSectionGetDof(PetscSection, PetscInt, PetscInt*);
 extern PetscErrorCode PetscSectionSetDof(PetscSection, PetscInt, PetscInt);

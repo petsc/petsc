@@ -65,6 +65,18 @@ PetscErrorCode PetscSectionCheckConstraints(PetscSection s)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscSectionGetChart"
+PetscErrorCode PetscSectionGetChart(PetscSection s, PetscInt *pStart, PetscInt *pEnd)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (pStart) {*pStart = s->atlasLayout.pStart;}
+  if (pEnd)   {*pEnd   = s->atlasLayout.pEnd;}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscSectionSetChart"
 PetscErrorCode PetscSectionSetChart(PetscSection s, PetscInt pStart, PetscInt pEnd)
 {
