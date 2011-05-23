@@ -402,6 +402,12 @@ cdef class TS(Object):
     def solve(self, Vec u not None):
         CHKERR( TSSolve(self.ts, u.vec) )
 
+    def step(self):
+        cdef PetscInt  ival = 0
+        cdef PetscReal rval = 0
+        CHKERR( TSStep(self.ts, &ival, &rval) )
+        return (toInt(ival), toReal(rval))
+
     # --- Python ---
 
     def createPython(self, context=None, comm=None):
@@ -437,6 +443,26 @@ cdef class TS(Object):
         cdef PetscReal rval = 0
         CHKERR( TSThetaGetTheta(self.ts, &rval) )
         return toReal(rval)
+
+    # --- Alpha ---
+
+    def setAlphaRadius(self, radius):
+        cdef PetscReal rval = asReal(radius)
+        CHKERR( TSAlphaSetRadius(self.ts, rval) )
+
+    def setAlphaParams(self, alpha_m=None,alpha_f=None, gamma=None):
+        cdef PetscReal rval1 = 0, rval2 = 0, rval3 = 0
+        try: CHKERR( TSAlphaGetParams(self.ts, &rval1, &rval2, &rval3) )
+        except PetscError: pass
+        if alpha_m is not None: rval1 = asReal(alpha_m)
+        if alpha_f is not None: rval2 = asReal(alpha_f)
+        if gamma   is not None: rval3 = asReal(gamma)
+        CHKERR( TSAlphaSetParams(self.ts,  rval1,  rval2,  rval3) )
+        
+    def getAlphaParams(self):
+        cdef PetscReal rval1 = 0, rval2 = 0, rval3 = 0
+        CHKERR( TSAlphaGetParams(self.ts, &rval1, &rval2, &rval3) )
+        return (toReal(rval1), toReal(rval2), toReal(rval3))
 
     # --- application context ---
 

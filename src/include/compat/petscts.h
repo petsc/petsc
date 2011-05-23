@@ -1,18 +1,21 @@
 #ifndef _COMPAT_PETSC_TS_H
 #define _COMPAT_PETSC_TS_H
 
+#include "private/tsimpl.h"
+
 #if (PETSC_VERSION_(3,1,0) || \
      PETSC_VERSION_(3,0,0))
-#include "private/tsimpl.h"
+#define PetscTS_ERR_SUP(ts)                                                 \
+  PetscFunctionBegin;                                                       \
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);                                \
+  SETERRQ(PETSC_ERR_SUP,__FUNCT__"() not supported in this PETSc version"); \
+  PetscFunctionReturn(PETSC_ERR_SUP);
 #endif
+
 
 #if PETSC_VERSION_(3,1,0)
-#define TSCN TSCRANK_NICHOLSON
-#define TSRK TSRUNGE_KUTTA
-#endif
-
-#if (PETSC_VERSION_(3,1,0) || \
-     PETSC_VERSION_(3,0,0))
+#define TSCN    TSCRANK_NICHOLSON
+#define TSRK    TSRUNGE_KUTTA
 #define TSALPHA "alpha"
 #endif
 
@@ -24,8 +27,8 @@ static PetscErrorCode TSSetDM(TS ts,DM dm)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
-  PetscValidHeaderSpecific(dm,DM_COOKIE,2);
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidHeaderSpecific(dm,DM_CLASSID,2);
   ierr = PetscObjectCompose((PetscObject)ts, "__DM__",
 			    (PetscObject)dm);CHKERRQ(ierr);
   if (ts->snes) { ierr = SNESSetDM(ts->snes,dm);CHKERRQ(ierr); }
@@ -38,7 +41,7 @@ static PetscErrorCode TSGetDM(TS ts,DM *dm)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidPointer(dm,2);
   ierr = PetscObjectQuery((PetscObject)ts, "__DM__",(PetscObject*)dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -49,14 +52,8 @@ static PetscErrorCode TSGetDM(TS ts,DM *dm)
      PETSC_VERSION_(3,0,0))
 #undef __FUNCT__  
 #define __FUNCT__ "TSReset"
-static PetscErrorCode TSReset_Compat(TS ts)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  SETERRQ(PETSC_ERR_SUP,"not supported in this PETSc version");
-  PetscFunctionReturn(0);
-}
-#define TSReset TSReset_Compat
+static PetscErrorCode TSReset(TS ts)
+{PetscTS_ERR_SUP(ts);}
 #endif
 
 #if (PETSC_VERSION_(3,1,0) || \
@@ -118,6 +115,47 @@ TSSetMatrices_Compat(TS ts,
 #define TSSetMatrices TSSetMatrices_Compat
 #endif
 
+#if (PETSC_VERSION_(3,1,0) || \
+     PETSC_VERSION_(3,0,0))
+#undef __FUNCT__  
+#define __FUNCT__ "TSAlphaSetRadius"
+static PetscErrorCode TSAlphaSetRadius(TS ts,PetscReal radius)
+{
+  PetscErrorCode ierr,(*f)(TS,PetscReal);
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  ierr = PetscObjectQueryFunction((PetscObject)ts,"TSAlphaSetRadius_C",(void(**)(void))&f);CHKERRQ(ierr);
+  if (f) {ierr = (*f)(ts,radius);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+#undef __FUNCT__  
+#define __FUNCT__ "TSAlphaSetParams"
+static PetscErrorCode TSAlphaSetParams(TS ts,PetscReal alpha_m,PetscReal alpha_f,PetscReal gamma)
+{
+  PetscErrorCode ierr,(*f)(TS,PetscReal,PetscReal,PetscReal);
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  ierr = PetscObjectQueryFunction((PetscObject)ts,"TSAlphaSetParams_C",(void(**)(void))&f);CHKERRQ(ierr);
+  if (f) {ierr = (*f)(ts,alpha_m,alpha_f,gamma);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+#undef __FUNCT__  
+#define __FUNCT__ "TSAlphaGetParams"
+static PetscErrorCode TSAlphaGetParams(TS ts,PetscReal *alpha_m,PetscReal *alpha_f,PetscReal *gamma)
+{ 
+  PetscErrorCode ierr,(*f)(TS,PetscReal*,PetscReal*,PetscReal*);
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  if(alpha_m) PetscValidPointer(alpha_m,2);
+  if(alpha_f) PetscValidPointer(alpha_f,3);
+  if(gamma)   PetscValidPointer(gamma,4);
+  ierr = PetscObjectQueryFunction((PetscObject)ts,"TSAlphaGetParams_C",(void(**)(void))&f);CHKERRQ(ierr);
+  if (!f) SETERRQ1(PETSC_ERR_SUP,"TS type %s",((PetscObject)ts)->type_name);
+  ierr = (*f)(ts,alpha_m,alpha_f,gamma);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#endif
+
 #if (PETSC_VERSION_(3,0,0))
 #define TSEULER           TS_EULER
 #define TSBEULER          TS_BEULER
@@ -129,40 +167,36 @@ TSSetMatrices_Compat(TS ts,
 #define TSTHETA           "theta"
 #define TSGL              "gl"
 #define TSSSP             "ssp"
+#define TSALPHA           "alpha"
 #endif
 
 #if (PETSC_VERSION_(3,0,0))
-#define PetscTS_ERR_SUP                                                     \
-  PetscFunctionBegin;                                                       \
-  SETERRQ(PETSC_ERR_SUP,__FUNCT__"() not supported in this PETSc version"); \
-  PetscFunctionReturn(PETSC_ERR_SUP);
-
 typedef PetscErrorCode (*TSIFunction)(TS,PetscReal,Vec,Vec,Vec,void*);
 typedef PetscErrorCode (*TSIJacobian)(TS,PetscReal,Vec,Vec,PetscReal,
                                       Mat*,Mat*,MatStructure*,void*);
 #undef __FUNCT__
 #define __FUNCT__ "TSSetIFunction"
 static PetscErrorCode TSSetIFunction(TS ts,TSIFunction f,void *ctx)
-{PetscTS_ERR_SUP}
+{PetscTS_ERR_SUP(ts);}
 #undef __FUNCT__
 #define __FUNCT__ "TSSetIJacobian"
 static PetscErrorCode TSSetIJacobian(TS ts,Mat A,Mat B,TSIJacobian j,void *ctx)
-{PetscTS_ERR_SUP}
+{PetscTS_ERR_SUP(ts);}
 #undef __FUNCT__
 #define __FUNCT__ "TSComputeIFunction"
 static PetscErrorCode TSComputeIFunction(TS ts,PetscReal t,Vec x,Vec Xdot,Vec f)
-{PetscTS_ERR_SUP}
+{PetscTS_ERR_SUP(ts);}
 #undef __FUNCT__
 #define __FUNCT__ "TSComputeIJacobian"
 static PetscErrorCode TSComputeIJacobian(TS ts,
-                                  PetscReal t,Vec x,Vec Xdot,PetscReal a,
-                                  Mat *A,Mat *B,MatStructure *flag)
-{PetscTS_ERR_SUP}
+                                         PetscReal t,Vec x,Vec Xdot,PetscReal a,
+                                         Mat *A,Mat *B,MatStructure *flag)
+{PetscTS_ERR_SUP(ts);}
 #undef __FUNCT__
 #define __FUNCT__ "TSGetIJacobian"
 static PetscErrorCode TSGetIJacobian(TS ts,Mat *A,Mat *B,
-                              TSIJacobian *j,void **ctx)
-{PetscTS_ERR_SUP}
+                                     TSIJacobian *j,void **ctx)
+{PetscTS_ERR_SUP(ts);}
 #endif
 
 #if (PETSC_VERSION_(3,0,0))
@@ -173,7 +207,6 @@ static PetscErrorCode TSThetaSetTheta(TS ts,PetscReal theta)
   PetscErrorCode ierr,(*f)(TS,PetscReal);
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE,1);
-  PetscValidPointer(theta,2);
   ierr = PetscObjectQueryFunction((PetscObject)ts,"TSThetaSetTheta_C",(void(**)(void))&f);CHKERRQ(ierr);
   if (f) {ierr = (*f)(ts,theta);CHKERRQ(ierr);}
   PetscFunctionReturn(0);

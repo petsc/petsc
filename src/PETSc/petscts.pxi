@@ -127,6 +127,10 @@ cdef extern from * nogil:
     int TSThetaSetTheta(PetscTS,PetscReal)
     int TSThetaGetTheta(PetscTS,PetscReal*)
 
+    int TSAlphaSetRadius(PetscTS,PetscReal)
+    int TSAlphaSetParams(PetscTS,PetscReal,PetscReal,PetscReal)
+    int TSAlphaGetParams(PetscTS,PetscReal*,PetscReal*,PetscReal*)
+
 cdef extern from "custom.h" nogil:
     int TSSetTimeStepNumber(PetscTS,PetscInt)
     int TSMonitorCall(PetscTS,PetscInt,PetscReal,PetscVec)
