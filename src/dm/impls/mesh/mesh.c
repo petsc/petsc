@@ -444,7 +444,7 @@ PetscErrorCode DMCreateLocalToGlobalMapping_Mesh(DM dm)
     PetscInt l = localOrder->getIndex(p);
     PetscInt g = globalOrder->getIndex(p);
 
-    for(PetscInt c = 0; c < s->getFiberDimension(p); ++c) {
+    for(PetscInt c = 0; c < s->getConstrainedFiberDimension(p); ++c) {
       ltog[l+c] = g+c;
     }
   }
@@ -1552,7 +1552,7 @@ PetscErrorCode DMMeshGetHeightStratum(DM dm, PetscInt stratumValue, PetscInt *st
 #define __FUNCT__ "DMMeshCreateSection"
 PetscErrorCode DMMeshCreateSection(DM dm, PetscInt dim, PetscInt numDof[], const char bcName[], PetscInt bcValue, PetscSection *section) {
   ALE::Obj<PETSC_MESH_TYPE> mesh;
-  PetscInt       pStart, pEnd, maxConstraints = 0;
+  PetscInt       pStart = 0, pEnd = 0, maxConstraints = 0;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1587,6 +1587,7 @@ PetscErrorCode DMMeshCreateSection(DM dm, PetscInt dim, PetscInt numDof[], const
 
       ierr = PetscSectionGetConstraintDof(*section, p, &cDof);CHKERRQ(ierr);
       if (cDof) {
+        if (cDof > maxConstraints) {SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_LIB, "Likely memory corruption, poitn %d cDof %d > maxConstraints %d", p, cDof, maxConstraints);}
         for(PetscInt d = 0; d < cDof; ++d) {
           indices[d] = d;
         }

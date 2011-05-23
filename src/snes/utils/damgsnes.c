@@ -374,9 +374,9 @@ PetscErrorCode SNESMeshFormFunction(SNES snes, Vec X, Vec F, void *ptr)
   if (!dm) SETERRQ(((PetscObject)snes)->comm, PETSC_ERR_ARG_WRONGSTATE, "Looks like you called SNESSetFromFuntion(snes,SNESMeshFormFunction,) without the DMMesh context");
   PetscValidHeaderSpecific(dm, DM_CLASSID, 4);
 
-  ierr = DMGetLocalVector(dm, &localF);CHKERRQ(ierr);
   /* determine whether X = localX */
   ierr = DMGetLocalVector(dm, &localX);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(dm, &localF);CHKERRQ(ierr);
   ierr = VecGetSize(X, &N);CHKERRQ(ierr);
   ierr = VecGetSize(localX, &n);CHKERRQ(ierr);
 
