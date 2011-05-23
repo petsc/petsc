@@ -55,11 +55,8 @@ EXTERN_C_END
 PetscErrorCode  MatGetVecs_MPIAIJCUSP(Mat mat,Vec *right,Vec *left)
 {
   PetscErrorCode ierr;
-  PetscMPIInt size;
 
   PetscFunctionBegin;
-
-  ierr = MPI_Comm_size(((PetscObject)mat)->comm, &size);CHKERRQ(ierr);
   if (right) {
     ierr = VecCreate(((PetscObject)mat)->comm,right);CHKERRQ(ierr);
     ierr = VecSetSizes(*right,mat->cmap->n,PETSC_DETERMINE);CHKERRQ(ierr);
