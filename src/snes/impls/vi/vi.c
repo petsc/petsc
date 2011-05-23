@@ -695,8 +695,9 @@ PetscErrorCode SNESVIResetPCandKSP(SNES snes,Mat Amat,Mat Pmat)
   PetscFunctionBegin;
   ierr = SNESGetKSP(snes,&snesksp);CHKERRQ(ierr);
  
-  ierr = KSPReset(snesksp);CHKERRQ(ierr);
   /*
+  ierr = KSPReset(snesksp);CHKERRQ(ierr);
+   */
 
   ierr = KSPCreate(((PetscObject)snes)->comm,&kspnew);CHKERRQ(ierr);
   kspnew->pc_side = snesksp->pc_side;
@@ -712,7 +713,7 @@ PetscErrorCode SNESVIResetPCandKSP(SNES snes,Mat Amat,Mat Pmat)
   ierr = KSPDestroy(&snesksp);CHKERRQ(ierr);
   snes->ksp = kspnew;
   ierr = PetscLogObjectParent(snes,kspnew);CHKERRQ(ierr);
-   ierr = KSPSetFromOptions(kspnew);CHKERRQ(ierr);*/
+   ierr = KSPSetFromOptions(kspnew);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
