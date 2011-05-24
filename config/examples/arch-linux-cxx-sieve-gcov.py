@@ -7,7 +7,7 @@ configure_options = [
   '--with-sieve=1',
   '--download-boost=1',
   '--with-clanguage=cxx',
-  '--with-gcov=1',
+  #'--with-gcov=1',
   ]
 
 if __name__ == '__main__':

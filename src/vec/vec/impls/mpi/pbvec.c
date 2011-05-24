@@ -184,11 +184,7 @@ static PetscErrorCode VecDuplicate_MPI(Vec win,Vec *v)
 
   PetscFunctionBegin;
   ierr = VecCreate(((PetscObject)win)->comm,v);CHKERRQ(ierr);
-
-  /* use the map that exists aleady in win */
-  ierr = PetscLayoutDestroy(&(*v)->map);CHKERRQ(ierr);
-  (*v)->map = win->map;
-  win->map->refcnt++;
+  ierr = PetscLayoutReference(win->map,&(*v)->map);CHKERRQ(ierr);
 
   ierr = VecCreate_MPI_Private(*v,PETSC_TRUE,w->nghost,0);CHKERRQ(ierr);
   vw   = (Vec_MPI *)(*v)->data;
@@ -213,14 +209,6 @@ static PetscErrorCode VecDuplicate_MPI(Vec win,Vec *v)
   
   ierr = PetscOListDuplicate(((PetscObject)win)->olist,&((PetscObject)(*v))->olist);CHKERRQ(ierr);
   ierr = PetscFListDuplicate(((PetscObject)win)->qlist,&((PetscObject)(*v))->qlist);CHKERRQ(ierr);
-  if (win->mapping) {
-    ierr = PetscObjectReference((PetscObject)win->mapping);CHKERRQ(ierr);
-    (*v)->mapping = win->mapping;
-  }
-  if (win->bmapping) {
-    ierr = PetscObjectReference((PetscObject)win->bmapping);CHKERRQ(ierr);
-    (*v)->bmapping = win->bmapping;
-  }
   (*v)->map->bs    = win->map->bs;
   (*v)->bstash.bs = win->bstash.bs;
 
@@ -396,8 +384,6 @@ PetscErrorCode VecCreate_MPI_Private(Vec v,PetscBool  alloc,PetscInt nghost,cons
   v->data        = (void*)s;
   ierr           = PetscMemcpy(v->ops,&DvOps,sizeof(DvOps));CHKERRQ(ierr);
   s->nghost      = nghost;
-  v->mapping     = 0;
-  v->bmapping    = 0;
   v->petscnative = PETSC_TRUE;
 
   if (v->map->bs == -1) v->map->bs = 1;

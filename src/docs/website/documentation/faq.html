@@ -1817,13 +1817,13 @@ Notes:<br>
 additional source-file:line-number info.<br>
 - option '-download-mpich=1' gives valgrind clean MPI - hence the
 recommendation.<br>
-- Wrt Other MPI impls, Open MPI should also work. MPICH1 will not work.
-Don't know about other MPIs.<br>
+- Wrt Other MPI impls, Open MPI should also work. MPICH1 will not work.<br>
 - if '-download-mpich=1' is used - mpiexec will be in PETSC_ARCH/bin<br>
 '--log-file=valgrind.log.%p' option tells valgrind to store the output
 from each proc in a different file [as %p i.e PID, is different for
 each MPI proc].<br>
 - On Apple you need the additional valgrind option '--dsymutil=yes'<br>
+- memcheck will not find certain array access that violate static array declarations so if memcheck runs clean you can try the --tool=exp-ptrcheck instead.
       <br>
       <font style="color: rgb(255, 0, 0);" face="Terminal"><a
  name="zeropivot"></a>What does </font><font

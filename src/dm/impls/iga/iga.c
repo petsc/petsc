@@ -522,12 +522,14 @@ PetscErrorCode DMIGAInitializeGeometry3d(DM dm,PetscInt ndof,PetscInt NumDerivat
   PetscErrorCode ierr;
   MPI_Comm       comm;
   PetscViewer    viewer;
-  PetscInt spatial_dim,count,i;
-  PetscReal Umax = 0.0;
-  PetscInt numEl;
+  PetscInt       spatial_dim,i;
+  PetscReal      Umax;
+  PetscInt       numEl;
   DMDABoundaryType ptype;
-  PetscInt sw;
-  DMDALocalInfo       info_dof;
+  PetscInt       sw;
+  DMDALocalInfo  info_dof;
+  int            ival,count;
+  double         dval;
 
   PetscFunctionBegin;
   fp = fopen(FunctionSpaceFile, "r");
@@ -535,14 +537,20 @@ PetscErrorCode DMIGAInitializeGeometry3d(DM dm,PetscInt ndof,PetscInt NumDerivat
     SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_FILE_OPEN, "Cannot find geometry file");
   }
 
-  count = fscanf(fp, "%d", &spatial_dim);
+  count = fscanf(fp, "%d", &ival);
+  spatial_dim = ival;
   if(spatial_dim != 3){
     SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Geometry dimension != problem dimension");
   }
 
   /* Read in polynomial orders and number of basis functions */
-  count = fscanf(fp, "%d %d %d",&iga->px,&iga->py,&iga->pz);
-  count = fscanf(fp, "%d %d %d",&iga->nbx,&iga->nby,&iga->nbz);
+  {
+    int a,b,c;
+    count = fscanf(fp, "%d %d %d", &a, &b, &c);
+    iga->px = a; iga->py = b; iga->pz= c;
+    count = fscanf(fp, "%d %d %d", &a, &b, &c);
+    iga->nbx = a; iga->nby = b; iga->nbz= c;
+  }
 
   /* Knot vector size */
   iga->mx = iga->nbx + iga->px + 1;
@@ -554,25 +562,31 @@ PetscErrorCode DMIGAInitializeGeometry3d(DM dm,PetscInt ndof,PetscInt NumDerivat
   ierr = PetscMalloc(iga->my*sizeof(PetscReal), &iga->Uy);CHKERRQ(ierr);
   ierr = PetscMalloc(iga->mz*sizeof(PetscReal), &iga->Uz);CHKERRQ(ierr);
 
+  Umax = 0.0;
   for(i=0;i<iga->mx;i++) {
-    count = fscanf(fp, "%lf ",&iga->Ux[i]);
+    count = fscanf(fp, "%lf ", &dval);
+    iga->Ux[i] = dval;
     if(iga->Ux[i] > Umax) Umax = iga->Ux[i];
   }
   for(i=0;i<iga->mx;i++) iga->Ux[i] /= Umax;
 
   Umax = 0.0;
   for(i=0;i<iga->my;i++) {
-    count = fscanf(fp, "%lf ",&iga->Uy[i]);
+    count = fscanf(fp, "%lf ", &dval);
+    iga->Uy[i] = dval;
     if(iga->Uy[i] > Umax) Umax = iga->Uy[i];
   }
   for(i=0;i<iga->my;i++) iga->Uy[i] /= Umax;
 
   Umax = 0.0;
   for(i=0;i<iga->mz;i++) {
-    count = fscanf(fp, "%lf ",&iga->Uz[i]);
+    count = fscanf(fp, "%lf ", &dval);
+    iga->Uz[i] = dval;
     if(iga->Uz[i] > Umax) Umax = iga->Uz[i];
   }
   for(i=0;i<iga->mz;i++) iga->Uz[i] /= Umax;
+
+  fclose(fp);
 
   /* count the number of elements */
   numEl = 0;

@@ -797,8 +797,10 @@ namespace ALE {
     template<typename Visitor>
     static void orientedClosure(const Sieve& sieve, const point_type& p, Visitor& v) {
       typedef ISieveVisitor::PointRetriever<Sieve,Visitor> Retriever;
-      Retriever cV[2] = {Retriever(200,v), Retriever(200,v)};
-      int       c     = 0;
+      typedef ISieveVisitor::PointRetriever<Sieve,Retriever> TmpRetriever;
+      Retriever    pV(200, v, true); // Correct estimate is pow(std::max(1, sieve->getMaxConeSize()), mesh->depth())
+      TmpRetriever cV[2] = {TmpRetriever(200,pV), TmpRetriever(200,pV)};
+      int          c     = 0;
 
       v.visitPoint(p, 0);
       // Cone is guarateed to be ordered correctly
@@ -1942,8 +1944,22 @@ namespace ALE {
       typename ISieve::point_type              max  = 0;
 
       if (renumber) {
+        /* Roots/Leaves from Sieve do not seem to work */
+
         for(typename Sieve::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
-          renumbering[*b_iter] = max++;
+          if (sieve.support(*b_iter)->size() == 0) {
+            renumbering[*b_iter] = max++;
+          }
+        }
+        for(typename Sieve::baseSequence::iterator c_iter = cap->begin(); c_iter != cap->end(); ++c_iter) {
+          if (sieve.cone(*c_iter)->size() == 0) {
+            renumbering[*c_iter] = max++;
+          }
+        }
+        for(typename Sieve::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
+          if (renumbering.find(*b_iter) == renumbering.end()) {
+            renumbering[*b_iter] = max++;
+          }
         }
         for(typename Sieve::baseSequence::iterator c_iter = cap->begin(); c_iter != cap->end(); ++c_iter) {
           if (renumbering.find(*c_iter) == renumbering.end()) {

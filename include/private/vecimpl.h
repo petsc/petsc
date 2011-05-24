@@ -21,18 +21,21 @@ PETSC_EXTERN_CXX_BEGIN
 S*/
 typedef struct _n_PetscLayout* PetscLayout;
 struct _n_PetscLayout{
-  MPI_Comm  comm;
-  PetscInt  n,N;         /* local, global vector size */
-  PetscInt  rstart,rend; /* local start, local end + 1 */
-  PetscInt  *range;      /* the offset of each processor */
-  PetscInt  bs;          /* number of elements in each block (generally for multi-component problems) Do NOT multiply above numbers by bs */
-  PetscInt  refcnt;      /* MPI Vecs obtained with VecDuplicate() and from MatGetVecs() reuse map of input object */
+  MPI_Comm               comm;
+  PetscInt               n,N;         /* local, global vector size */
+  PetscInt               rstart,rend; /* local start, local end + 1 */
+  PetscInt               *range;      /* the offset of each processor */
+  PetscInt               bs;          /* number of elements in each block (generally for multi-component problems) Do NOT multiply above numbers by bs */
+  PetscInt               refcnt;      /* MPI Vecs obtained with VecDuplicate() and from MatGetVecs() reuse map of input object */
+  ISLocalToGlobalMapping mapping;     /* mapping used in Vec/MatSetValuesLocal() */
+  ISLocalToGlobalMapping bmapping;    /* mapping used in Vec/MatSetValuesBlockedLocal() */
 };
 
 extern PetscErrorCode PetscLayoutCreate(MPI_Comm,PetscLayout*);
 extern PetscErrorCode PetscLayoutSetUp(PetscLayout);
 extern PetscErrorCode PetscLayoutDestroy(PetscLayout*);
 extern PetscErrorCode PetscLayoutCopy(PetscLayout,PetscLayout*);
+extern PetscErrorCode PetscLayoutReference(PetscLayout,PetscLayout*);
 extern PetscErrorCode  PetscLayoutSetLocalSize(PetscLayout,PetscInt);
 extern PetscErrorCode  PetscLayoutGetLocalSize(PetscLayout,PetscInt *);
 PetscPolymorphicFunction(PetscLayoutGetLocalSize,(PetscLayout m),(m,&s),PetscInt,s)
@@ -43,6 +46,8 @@ extern PetscErrorCode  PetscLayoutSetBlockSize(PetscLayout,PetscInt);
 extern PetscErrorCode  PetscLayoutGetBlockSize(PetscLayout,PetscInt*);
 extern PetscErrorCode  PetscLayoutGetRange(PetscLayout,PetscInt *,PetscInt *);
 extern PetscErrorCode  PetscLayoutGetRanges(PetscLayout,const PetscInt *[]);
+extern PetscErrorCode  PetscLayoutSetISLocalToGlobalMapping(PetscLayout,ISLocalToGlobalMapping);
+extern PetscErrorCode  PetscLayoutSetISLocalToGlobalMappingBlock(PetscLayout,ISLocalToGlobalMapping);
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscLayoutFindOwner"
@@ -82,6 +87,47 @@ PETSC_STATIC_INLINE PetscErrorCode PetscLayoutFindOwner(PetscLayout map,PetscInt
   *owner = lo;
   PetscFunctionReturn(0);
 }
+
+/* ----------------------------------------------------------------------------*/
+typedef struct _n_PetscUniformSection *PetscUniformSection;
+struct _n_PetscUniformSection {
+  MPI_Comm comm;
+  PetscInt pStart, pEnd; /* The chart: all points are contained in [pStart, pEnd) */
+  PetscInt numDof;       /* Describes layout of storage, point --> (constant # of values, (p - pStart)*constant # of values) */
+};
+
+/*S
+  PetscSection - This is a mapping from DMMESH points to sets of values, which is
+  our presentation of a fibre bundle.
+
+  Level: developer
+
+.seealso:  PetscSectionCreate(), PetscSectionDestroy()
+S*/
+typedef struct _n_PetscSection *PetscSection;
+struct _n_PetscSection {
+  struct _n_PetscUniformSection atlasLayout;  /* Layout for the atlas */
+  PetscInt                     *atlasDof;     /* Describes layout of storage, point --> # of values */
+  PetscInt                     *atlasOff;     /* Describes layout of storage, point --> offset into storage */
+  PetscSection                  bc;           /* Describes constraints, point --> # local dofs which are constrained */
+  PetscInt                     *bcIndices;    /* Local indices for constrained dofs */
+  PetscInt                      refcnt;       /* Vecs obtained with VecDuplicate() and from MatGetVecs() reuse map of input object */
+};
+
+extern PetscErrorCode PetscSectionCreate(MPI_Comm,PetscSection*);
+extern PetscErrorCode PetscSectionGetChart(PetscSection, PetscInt *, PetscInt *);
+extern PetscErrorCode PetscSectionSetChart(PetscSection, PetscInt, PetscInt);
+extern PetscErrorCode PetscSectionGetDof(PetscSection, PetscInt, PetscInt*);
+extern PetscErrorCode PetscSectionSetDof(PetscSection, PetscInt, PetscInt);
+extern PetscErrorCode PetscSectionGetConstraintDof(PetscSection, PetscInt, PetscInt*);
+extern PetscErrorCode PetscSectionSetConstraintDof(PetscSection, PetscInt, PetscInt);
+extern PetscErrorCode PetscSectionGetConstraintIndices(PetscSection, PetscInt, PetscInt**);
+extern PetscErrorCode PetscSectionSetConstraintIndices(PetscSection, PetscInt, PetscInt*);
+extern PetscErrorCode PetscSectionSetUp(PetscSection);
+extern PetscErrorCode PetscSectionDestroy(PetscSection*);
+
+extern PetscErrorCode VecGetValuesSection(Vec, PetscSection, PetscInt, PetscScalar **);
+extern PetscErrorCode VecSetValuesSection(Vec, PetscSection, PetscInt, PetscScalar [], InsertMode);
 
 /* ----------------------------------------------------------------------------*/
 
@@ -196,8 +242,6 @@ struct _p_Vec {
   PETSCHEADER(struct _VecOps);
   PetscLayout            map;
   void                   *data;     /* implementation-specific data */
-  ISLocalToGlobalMapping mapping;   /* mapping used in VecSetValuesLocal() */
-  ISLocalToGlobalMapping bmapping;  /* mapping used in VecSetValuesBlockedLocal() */
   PetscBool              array_gotten;
   VecStash               stash,bstash; /* used for storing off-proc values during assembly */
   PetscBool              petscnative;  /* means the ->data starts with VECHEADER and can use VecGetArrayFast()*/

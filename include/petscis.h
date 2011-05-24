@@ -163,7 +163,7 @@ extern  PetscClassId IS_LTOGM_CLASSID;
   is very large.
 
    Note: the ISLocalToGlobalMapping is actually a private object; it is included
-  here for the MACRO ISLocalToGlobalMappingApply() to allow it to be inlined since
+  here for the inline function ISLocalToGlobalMappingApply() to allow it to be inlined since
   it is used so often.
 
 .seealso:  ISLocalToGlobalMappingCreate()

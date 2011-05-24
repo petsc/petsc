@@ -688,9 +688,7 @@ PetscErrorCode SNESVICreateSubVectors(SNES snes,PetscInt n,Vec* newv)
 PetscErrorCode SNESVIResetPCandKSP(SNES snes,Mat Amat,Mat Pmat)
 {
   PetscErrorCode         ierr;
-  KSP                    kspnew,snesksp;
-  PC                     pcnew;
-  const MatSolverPackage stype;
+  KSP                    snesksp;
   
   PetscFunctionBegin;
   ierr = SNESGetKSP(snes,&snesksp);CHKERRQ(ierr);
