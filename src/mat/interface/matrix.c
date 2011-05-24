@@ -1314,7 +1314,7 @@ PetscErrorCode  MatSetValuesStencil(Mat mat,PetscInt m,const MatStencil idxm[],P
   PetscValidIntPointer(idxn,5);
   PetscValidScalarPointer(v,6);
 
-  if ((m+n) <= sizeof(buf)/sizeof(PetscInt)) {
+  if ((m+n) <= (PetscInt)(sizeof(buf)/sizeof(PetscInt))) {
     jdxm = buf; jdxn = buf+m;
   } else {
     ierr = PetscMalloc2(m,PetscInt,&bufm,n,PetscInt,&bufn);CHKERRQ(ierr);
@@ -1427,7 +1427,7 @@ PetscErrorCode  MatSetValuesBlockedStencil(Mat mat,PetscInt m,const MatStencil i
   PetscValidIntPointer(idxn,5);
   PetscValidScalarPointer(v,6);
 
-  if ((m+n) <= sizeof(buf)/sizeof(PetscInt)) {
+  if ((m+n) <= (PetscInt)(sizeof(buf)/sizeof(PetscInt))) {
     jdxm = buf; jdxn = buf+m;
   } else {
     ierr = PetscMalloc2(m,PetscInt,&bufm,n,PetscInt,&bufn);CHKERRQ(ierr);
@@ -1611,7 +1611,7 @@ PetscErrorCode  MatSetValuesBlocked(Mat mat,PetscInt m,const PetscInt idxm[],Pet
   } else {
     PetscInt buf[8192],*bufr=0,*bufc=0,*iidxm,*iidxn;
     PetscInt i,j,bs=mat->rmap->bs;
-    if ((m+n)*bs <= sizeof(buf)/sizeof(PetscInt)) {
+    if ((m+n)*bs <= (PetscInt)(sizeof(buf)/sizeof(PetscInt))) {
       iidxm = buf; iidxn = buf + m*bs;
     } else {
       ierr = PetscMalloc2(m*bs,PetscInt,&bufr,n*bs,PetscInt,&bufc);CHKERRQ(ierr);
@@ -1902,7 +1902,7 @@ PetscErrorCode  MatSetValuesLocal(Mat mat,PetscInt nrow,const PetscInt irow[],Pe
     ierr = (*mat->ops->setvalueslocal)(mat,nrow,irow,ncol,icol,y,addv);CHKERRQ(ierr);
   } else {
     PetscInt buf[8192],*bufr=0,*bufc=0,*irowm,*icolm;
-    if ((nrow+ncol) <= sizeof(buf)/sizeof(PetscInt)) {
+    if ((nrow+ncol) <= (PetscInt)(sizeof(buf)/sizeof(PetscInt))) {
       irowm = buf; icolm = buf+nrow;
     } else {
       ierr = PetscMalloc2(nrow,PetscInt,&bufr,ncol,PetscInt,&bufc);CHKERRQ(ierr);
@@ -1990,7 +1990,7 @@ PetscErrorCode  MatSetValuesBlockedLocal(Mat mat,PetscInt nrow,const PetscInt ir
   } else {
     PetscInt buf[8192],*bufr=0,*bufc=0,*irowm,*icolm;
     if (mat->rmap->bmapping && mat->cmap->bmapping) {
-      if ((nrow+ncol) <= sizeof(buf)/sizeof(PetscInt)) {
+      if ((nrow+ncol) <= (PetscInt)(sizeof(buf)/sizeof(PetscInt))) {
         irowm = buf; icolm = buf + nrow;
       } else {
         ierr = PetscMalloc2(nrow,PetscInt,&bufr,ncol,PetscInt,&bufc);CHKERRQ(ierr);
@@ -2002,7 +2002,7 @@ PetscErrorCode  MatSetValuesBlockedLocal(Mat mat,PetscInt nrow,const PetscInt ir
       ierr = PetscFree2(bufr,bufc);CHKERRQ(ierr);
     } else {
       PetscInt i,j,bs=mat->rmap->bs;
-      if ((nrow+ncol)*bs <=sizeof(buf)/sizeof(PetscInt)) {
+      if ((nrow+ncol)*bs <=(PetscInt)(sizeof(buf)/sizeof(PetscInt))) {
         irowm = buf; icolm = buf + nrow;
       } else {
         ierr = PetscMalloc2(nrow*bs,PetscInt,&bufr,ncol*bs,PetscInt,&bufc);CHKERRQ(ierr);
@@ -5456,7 +5456,7 @@ PetscErrorCode  MatZeroRowsStencil(Mat mat,PetscInt numRows,const MatStencil row
   PetscValidType(mat,1);
   if (numRows) PetscValidIntPointer(rows,3);
 
-  ierr = PetscMalloc(numRows * sizeof(PetscInt), &jdxm);CHKERRQ(ierr);
+  ierr = PetscMalloc(numRows*sizeof(PetscInt), &jdxm);CHKERRQ(ierr);
   for(i = 0; i < numRows; ++i) {
     /* Skip unused dimensions (they are ordered k, j, i, c) */
     for(j = 0; j < 3-sdim; ++j) dxm++;
