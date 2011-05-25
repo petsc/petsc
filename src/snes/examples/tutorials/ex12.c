@@ -158,55 +158,6 @@ double IntegrateBdDualBasis_gen_0(const double *v0, const double *J, const int d
   return (*func)(coords);
 }
 
-#undef __FUNCT__
-
-#define __FUNCT__ "CreateProblem_gen_0"
-
-PetscErrorCode CreateProblem_gen_0(DM dm, const char *name, const int numBC, const int *markers, double (**bcFuncs)(const double *coords), double (*exactFunc)(const double *coords))
-{
-  ALE::Obj<PETSC_MESH_TYPE> m;
-  PetscErrorCode ierr = 0;
-  
-  PetscFunctionBegin;
-  ierr = DMMeshGetMesh(dm, m);
-  CHKERRQ(ierr);
-  {
-    const ALE::Obj<ALE::Discretization>& d = new ALE::Discretization(m->comm(), m->debug());
-    
-    d->setNumDof(0, 1);
-    d->setNumDof(1, 0);
-    d->setQuadratureSize(NUM_QUADRATURE_POINTS_0);
-    d->setQuadraturePoints(points_0);
-    d->setQuadratureWeights(weights_0);
-    d->setBasisSize(NUM_BASIS_FUNCTIONS_0);
-    d->setBasis(Basis_0);
-    d->setBasisDerivatives(BasisDerivatives_0);
-    for(int i = 0; i < numBC; ++i)
-    {
-      const ALE::Obj<ALE::BoundaryCondition>& b = new ALE::BoundaryCondition(m->comm(), m->debug());
-      ostringstream name;
-      
-      b->setLabelName("marker");
-      b->setMarker(markers[i]);
-      b->setFunction(bcFuncs[i]);
-      b->setDualIntegrator(IntegrateDualBasis_gen_0);
-      name << i;
-      d->setBoundaryCondition(name.str(), b);
-    }
-    if (exactFunc)
-    {
-      const ALE::Obj<ALE::BoundaryCondition>& e = new ALE::BoundaryCondition(m->comm(), m->debug());
-      
-      e->setLabelName("marker");
-      e->setFunction(exactFunc);
-      e->setDualIntegrator(IntegrateDualBasis_gen_0);
-      d->setExactSolution(e);
-    }
-    m->setDiscretization(name, d);
-  }
-  PetscFunctionReturn(0);
-}
-
 #define NUM_QUADRATURE_POINTS_1 1
 
 /* Quadrature points
@@ -324,55 +275,6 @@ double IntegrateBdDualBasis_gen_1(const double *v0, const double *J, const int d
   return (*func)(coords);
 }
 
-#undef __FUNCT__
-
-#define __FUNCT__ "CreateProblem_gen_1"
-
-PetscErrorCode CreateProblem_gen_1(DM dm, const char *name, const int numBC, const int *markers, double (**bcFuncs)(const double *coords), double (*exactFunc)(const double *coords))
-{
-  ALE::Obj<PETSC_MESH_TYPE> m;
-  PetscErrorCode ierr = 0;
-  
-  PetscFunctionBegin;
-  ierr = DMMeshGetMesh(dm, m);
-  CHKERRQ(ierr);
-  {
-    const ALE::Obj<ALE::Discretization>& d = new ALE::Discretization(m->comm(), m->debug());
-    
-    d->setNumDof(0, 1);
-    d->setNumDof(1, 0);
-    d->setNumDof(2, 0);
-    d->setQuadratureSize(NUM_QUADRATURE_POINTS_1);
-    d->setQuadraturePoints(points_1);
-    d->setQuadratureWeights(weights_1);
-    d->setBasisSize(NUM_BASIS_FUNCTIONS_1);
-    d->setBasis(Basis_1);
-    d->setBasisDerivatives(BasisDerivatives_1);
-    for(int i = 0; i < numBC; ++i)
-    {
-      const ALE::Obj<ALE::BoundaryCondition>& b = new ALE::BoundaryCondition(m->comm(), m->debug());
-      ostringstream name;
-      
-      b->setLabelName("marker");
-      b->setMarker(markers[i]);
-      b->setFunction(bcFuncs[i]);
-      b->setDualIntegrator(IntegrateDualBasis_gen_1);
-      name << i;
-      d->setBoundaryCondition(name.str(), b);
-    }
-    if (exactFunc)
-    {
-      const ALE::Obj<ALE::BoundaryCondition>& e = new ALE::BoundaryCondition(m->comm(), m->debug());
-      
-      e->setLabelName("marker");
-      e->setFunction(exactFunc);
-      e->setDualIntegrator(IntegrateDualBasis_gen_1);
-      d->setExactSolution(e);
-    }
-    m->setDiscretization(name, d);
-  }
-  PetscFunctionReturn(0);
-}
 
 #define NUM_QUADRATURE_POINTS_2 1
 
@@ -521,56 +423,6 @@ double IntegrateBdDualBasis_gen_2(const double *v0, const double *J, const int d
   return (*func)(coords);
 }
 
-#undef __FUNCT__
-
-#define __FUNCT__ "CreateProblem_gen_2"
-
-PetscErrorCode CreateProblem_gen_2(DM dm, const char *name, const int numBC, const int *markers, double (**bcFuncs)(const double *coords), double (*exactFunc)(const double *coords))
-{
-  ALE::Obj<PETSC_MESH_TYPE> m;
-  PetscErrorCode ierr = 0;
-  
-  PetscFunctionBegin;
-  ierr = DMMeshGetMesh(dm, m);
-  CHKERRQ(ierr);
-  {
-    const ALE::Obj<ALE::Discretization>& d = new ALE::Discretization(m->comm(), m->debug());
-    
-    d->setNumDof(0, 1);
-    d->setNumDof(1, 0);
-    d->setNumDof(2, 0);
-    d->setNumDof(3, 0);
-    d->setQuadratureSize(NUM_QUADRATURE_POINTS_2);
-    d->setQuadraturePoints(points_2);
-    d->setQuadratureWeights(weights_2);
-    d->setBasisSize(NUM_BASIS_FUNCTIONS_2);
-    d->setBasis(Basis_2);
-    d->setBasisDerivatives(BasisDerivatives_2);
-    for(int i = 0; i < numBC; ++i)
-    {
-      const ALE::Obj<ALE::BoundaryCondition>& b = new ALE::BoundaryCondition(m->comm(), m->debug());
-      ostringstream name;
-      
-      b->setLabelName("marker");
-      b->setMarker(markers[i]);
-      b->setFunction(bcFuncs[i]);
-      b->setDualIntegrator(IntegrateDualBasis_gen_2);
-      name << i;
-      d->setBoundaryCondition(name.str(), b);
-    }
-    if (exactFunc)
-    {
-      const ALE::Obj<ALE::BoundaryCondition>& e = new ALE::BoundaryCondition(m->comm(), m->debug());
-      
-      e->setLabelName("marker");
-      e->setFunction(exactFunc);
-      e->setDualIntegrator(IntegrateDualBasis_gen_2);
-      d->setExactSolution(e);
-    }
-    m->setDiscretization(name, d);
-  }
-  PetscFunctionReturn(0);
-}
 /*------------------------------------------------------------------------------
   end of generated code
  -----------------------------------------------------------------------------*/
@@ -716,12 +568,6 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
 #undef __FUNCT__
 #define __FUNCT__ "SetupQuadrature"
 PetscErrorCode SetupQuadrature(AppCtx *user) {
-  PetscInt       numBC      = (user->bcType == DIRICHLET) ? 1 : 0;
-  //PetscInt       numBC      = 0;
-  PetscInt       markers[1] = {1};
-  PetscScalar  (*funcs[1])(const PetscReal *coords) = {user->exactFunc};
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   switch(user->dim) {
   case 1:
@@ -731,8 +577,6 @@ PetscErrorCode SetupQuadrature(AppCtx *user) {
     user->numBasisFuncs = NUM_BASIS_FUNCTIONS_0;
     user->basis         = Basis_0;
     user->basisDer      = BasisDerivatives_0;
-    /* There is perhaps a better way to do this that does not rely on the Discretization/BoundaryCondition objects in Mesh.hh */
-    ierr = CreateProblem_gen_0(user->dm, "u", numBC, markers, funcs, user->exactFunc);CHKERRQ(ierr);
     break;
   case 2:
     user->numQuadPoints = NUM_QUADRATURE_POINTS_1;
@@ -741,8 +585,6 @@ PetscErrorCode SetupQuadrature(AppCtx *user) {
     user->numBasisFuncs = NUM_BASIS_FUNCTIONS_1;
     user->basis         = Basis_1;
     user->basisDer      = BasisDerivatives_1;
-    /* There is perhaps a better way to do this that does not rely on the Discretization/BoundaryCondition objects in Mesh.hh */
-    ierr = CreateProblem_gen_1(user->dm, "u", numBC, markers, funcs, user->exactFunc);CHKERRQ(ierr);
     break;
   case 3:
     user->numQuadPoints = NUM_QUADRATURE_POINTS_2;
@@ -751,8 +593,6 @@ PetscErrorCode SetupQuadrature(AppCtx *user) {
     user->numBasisFuncs = NUM_BASIS_FUNCTIONS_2;
     user->basis         = Basis_2;
     user->basisDer      = BasisDerivatives_2;
-    /* There is perhaps a better way to do this that does not rely on the Discretization/BoundaryCondition objects in Mesh.hh */
-    ierr = CreateProblem_gen_2(user->dm, "u", numBC, markers, funcs, user->exactFunc);CHKERRQ(ierr);
     break;
   default:
     SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid dimension %d", user->dim);
@@ -790,6 +630,7 @@ PetscErrorCode SetupSection(AppCtx *user) {
     bcLabel = "marker";
   }
   ierr = DMMeshCreateSection(user->dm, user->dim, numDof, bcLabel, 1, &section);CHKERRQ(ierr);
+  ierr = DMMeshSetSection(user->dm, "default", section);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -935,16 +776,8 @@ int main(int argc, char **argv)
      However, for a DMMesh, we need to specify this.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = SetupExactSolution(&user);CHKERRQ(ierr);
-  {
-    SectionReal defaultSection;
-
-    ierr = SetupQuadrature(&user);CHKERRQ(ierr);
-    ierr = SetupSection(&user);CHKERRQ(ierr);
-
-    ierr = DMMeshGetSectionReal(user.dm, "default", &defaultSection);CHKERRQ(ierr);
-    ierr = DMMeshSetupSection(user.dm, defaultSection);CHKERRQ(ierr);
-    ierr = SectionRealDestroy(&defaultSection);CHKERRQ(ierr);
-  }
+  ierr = SetupQuadrature(&user);CHKERRQ(ierr);
+  ierr = SetupSection(&user);CHKERRQ(ierr);
   if (user.bcType == NEUMANN) {
     /* With Neumann conditions, we tell DMMG that constants are in the null space of the operator
          Should have a nice one like DMMG that sets it for all MG PCs */
@@ -983,8 +816,8 @@ int main(int argc, char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set local function evaluation routine
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMMeshSetLocalFunction(user.dm, (PetscErrorCode (*)(DM,SectionReal,SectionReal,void*)) FormFunctionLocal);CHKERRQ(ierr);
-  ierr = DMMeshSetLocalJacobian(user.dm, (PetscErrorCode (*)(DM,SectionReal,Mat,void*)) FormJacobianLocal);CHKERRQ(ierr);
+  ierr = DMMeshSetLocalFunction(user.dm, (DMMeshLocalFunction1) FormFunctionLocal);CHKERRQ(ierr);
+  ierr = DMMeshSetLocalJacobian(user.dm, (DMMeshLocalJacobian1) FormJacobianLocal);CHKERRQ(ierr);
   ierr = SNESSetFunction(snes, r, SNESMeshFormFunction, &user);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

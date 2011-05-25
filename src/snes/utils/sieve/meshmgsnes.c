@@ -6,8 +6,6 @@
 /* Just to set iterations */
 #include <private/snesimpl.h>      /*I "petscsnes.h"  I*/
 
-PetscErrorCode DMMGFormFunctionMesh(SNES snes, Vec X, Vec F, void *ptr);
-
 #if 0
 PetscErrorCode CreateNullSpace(DMMG dmmg, Vec *nulls) {
   DM             mesh = dmmg->dm;
@@ -202,6 +200,9 @@ PetscErrorCode Relax_Mesh(DMMG *dmmg, DM mesh, MatSORType flag, int its, Vec X, 
 }
 EXTERN_C_END
 
+#if 0
+PetscErrorCode DMMGFormFunctionMesh(SNES snes, Vec X, Vec F, void *ptr);
+
 /*
  This is alpha FAS code.
 
@@ -348,3 +349,4 @@ PetscErrorCode DMMGSolveFAS_Mesh(DMMG *dmmg, PetscInt level)
   theend:
   PetscFunctionReturn(0);
 }
+#endif

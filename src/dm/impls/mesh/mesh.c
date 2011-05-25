@@ -580,7 +580,7 @@ PetscErrorCode  DMLocalToGlobalEnd_Mesh(DM dm, Vec l, InsertMode mode, Vec g)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMeshGetLocalFunction"
-PetscErrorCode DMMeshGetLocalFunction(DM dm, PetscErrorCode (**lf)(DM, SectionReal, SectionReal, void *))
+PetscErrorCode DMMeshGetLocalFunction(DM dm, PetscErrorCode (**lf)(DM, Vec, Vec, void *))
 {
   DM_Mesh *mesh = (DM_Mesh *) dm->data;
 
@@ -592,7 +592,7 @@ PetscErrorCode DMMeshGetLocalFunction(DM dm, PetscErrorCode (**lf)(DM, SectionRe
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMeshSetLocalFunction"
-PetscErrorCode DMMeshSetLocalFunction(DM dm, PetscErrorCode (*lf)(DM, SectionReal, SectionReal, void *))
+PetscErrorCode DMMeshSetLocalFunction(DM dm, PetscErrorCode (*lf)(DM, Vec, Vec, void *))
 {
   DM_Mesh *mesh = (DM_Mesh *) dm->data;
 
@@ -604,7 +604,7 @@ PetscErrorCode DMMeshSetLocalFunction(DM dm, PetscErrorCode (*lf)(DM, SectionRea
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMeshGetLocalJacobian"
-PetscErrorCode DMMeshGetLocalJacobian(DM dm, PetscErrorCode (**lj)(DM, SectionReal, Mat, void *))
+PetscErrorCode DMMeshGetLocalJacobian(DM dm, PetscErrorCode (**lj)(DM, Vec, Mat, void *))
 {
   DM_Mesh *mesh = (DM_Mesh *) dm->data;
 
@@ -616,47 +616,13 @@ PetscErrorCode DMMeshGetLocalJacobian(DM dm, PetscErrorCode (**lj)(DM, SectionRe
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMeshSetLocalJacobian"
-PetscErrorCode DMMeshSetLocalJacobian(DM dm, PetscErrorCode (*lj)(DM, SectionReal, Mat, void *))
+PetscErrorCode DMMeshSetLocalJacobian(DM dm, PetscErrorCode (*lj)(DM, Vec, Mat, void *))
 {
   DM_Mesh *mesh = (DM_Mesh *) dm->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   mesh->lj = lj;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMMeshFormFunction"
-PetscErrorCode DMMeshFormFunction(DM dm, SectionReal X, SectionReal F, void *ctx)
-{
-  DM_Mesh       *mesh = (DM_Mesh *) dm->data;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidHeaderSpecific(X, SECTIONREAL_CLASSID, 2);
-  PetscValidHeaderSpecific(F, SECTIONREAL_CLASSID, 3);
-  if (mesh->lf) {
-    ierr = (*mesh->lf)(dm, X, F, ctx);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DMMeshFormJacobian"
-PetscErrorCode DMMeshFormJacobian(DM dm, SectionReal X, Mat J, void *ctx)
-{
-  DM_Mesh       *mesh = (DM_Mesh *) dm->data;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidHeaderSpecific(X, SECTIONREAL_CLASSID, 2);
-  PetscValidHeaderSpecific(J, MAT_CLASSID, 3);
-  if (mesh->lj) {
-    ierr = (*mesh->lj)(dm, X, J, ctx);CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
 
@@ -1621,6 +1587,55 @@ PetscErrorCode DMMeshGetSection(DM dm, const char name[], PetscSection *section)
     ierr = PetscSectionSetUp(*section);CHKERRQ(ierr);
     for(PetscInt p = pStart; p < pEnd; ++p) {
       ierr = PetscSectionSetConstraintIndices(*section, p, (PetscInt *) s->getConstraintDof(p));CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMMeshSetSection"
+PetscErrorCode DMMeshSetSection(DM dm, const char name[], PetscSection section) {
+  ALE::Obj<PETSC_MESH_TYPE> mesh;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMMeshGetMesh(dm, mesh);CHKERRQ(ierr);
+  {
+    const Obj<PETSC_MESH_TYPE::real_section_type>& s = mesh->getRealSection(name);
+    PetscInt pStart, pEnd;
+
+    ierr = PetscSectionGetChart(section, &pStart, &pEnd);CHKERRQ(ierr);
+    s->setChart(PETSC_MESH_TYPE::real_section_type::chart_type(pStart, pEnd));
+    for(PetscInt p = pStart; p < pEnd; ++p) {
+      PetscInt fDim, cDim;
+
+      ierr = PetscSectionGetDof(section, p, &fDim);CHKERRQ(ierr);
+      s->setFiberDimension(p, fDim);
+      ierr = PetscSectionGetConstraintDof(section, p, &cDim);CHKERRQ(ierr);
+      if (cDim) {s->setConstraintDimension(p, cDim);}
+    }
+    s->allocatePoint();
+    for(PetscInt p = pStart; p < pEnd; ++p) {
+      PetscInt *indices;
+
+      ierr = PetscSectionGetConstraintIndices(section, p, &indices);CHKERRQ(ierr);
+      s->setConstraintDof(p, indices);
+    }
+    {
+      PetscBool isDefault;
+
+      ierr = PetscStrcmp(name, "default", &isDefault);CHKERRQ(ierr);
+      if (isDefault) {
+        PetscInt maxDof = 0;
+
+        for(PetscInt p = pStart; p < pEnd; ++p) {
+          PetscInt fDim;
+
+          ierr = PetscSectionGetDof(section, p, &fDim);CHKERRQ(ierr);
+          maxDof = PetscMax(maxDof, fDim);
+        }
+        mesh->setMaxDof(maxDof);
+      }
     }
   }
   PetscFunctionReturn(0);
