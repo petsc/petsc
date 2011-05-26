@@ -30,20 +30,18 @@ T*/
 
     Program usage:  mpiexec -n <procs> ex5 [-help] [all PETSc options] 
      e.g.,
-      ./ex5 -fd_jacobian -mat_fd_coloring_view_draw -draw_pause -1
-      mpiexec -n 2 ./ex5 -fd_jacobian_ghosted -log_summary
+     
+      This example shows how geometric multigrid can be run transparently with a nonlinear solver so long
+      as SNESSetDM() is provided. Example usage
+
+      ./ex57 -pc_type mg -ksp_monitor  -snes_view -pc_mg_levels 3 -pc_mg_galerkin -da_grid_x 17 -da_grid_y 17 
+             -mg_levels_ksp_monitor -snes_monitor -mg_levels_pc_type sor -pc_mg_type full
 
   ------------------------------------------------------------------------- */
 
 /* 
    Include "petscdmda.h" so that we can use distributed arrays (DMDAs).
    Include "petscsnes.h" so that we can use SNES solvers.  Note that this
-   file automatically includes:
-     petscsys.h       - base PETSc routines   petscvec.h - vectors
-     petscmat.h - matrices
-     petscis.h     - index sets            petscksp.h - Krylov subspace methods
-     petscviewer.h - viewers               petscpc.h  - preconditioners
-     petscksp.h   - linear solvers
 */
 #include <petscdmda.h>
 #include <petscsnes.h>
@@ -99,8 +97,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,
-                    1,1,PETSC_NULL,PETSC_NULL,&user.da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&user.da);CHKERRQ(ierr);
   ierr = DMDASetUniformCoordinates(user.da, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);
   ierr = SNESSetDM(snes,user.da);CHKERRQ(ierr);
 
@@ -133,8 +130,6 @@ int main(int argc,char **argv)
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = DMDASetLocalFunction(user.da,(DMDALocalFunction1)FormFunctionLocal);CHKERRQ(ierr);
   ierr = DMDASetLocalJacobian(user.da,(DMDALocalFunction1)FormJacobianLocal);CHKERRQ(ierr); 
-
-
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Customize nonlinear solver; set runtime options
@@ -237,9 +232,8 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
 #undef __FUNCT__
 #define __FUNCT__ "FormFunctionLocal"
 /* 
-   FormFunctionLocal - Evaluates nonlinear function, F(x).
+   FormFunctionLocal - Evaluates nonlinear function, F(x) on local process patch
 
-       Process adiC(36): FormFunctionLocal
 
  */
 PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,PetscScalar **f,AppCtx *user)
@@ -272,7 +266,6 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,PetscScalar
       }
     }
   }
-
   ierr = PetscLogFlops(11.0*info->ym*info->xm);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
 } 
@@ -280,7 +273,7 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,PetscScalar **x,PetscScalar
 #undef __FUNCT__
 #define __FUNCT__ "FormJacobianLocal"
 /*
-   FormJacobianLocal - Evaluates Jacobian matrix.
+   FormJacobianLocal - Evaluates Jacobian matrix on local process patch
 */
 PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat jac,AppCtx *user)
 {
