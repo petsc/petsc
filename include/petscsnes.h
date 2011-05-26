@@ -382,5 +382,11 @@ extern PetscErrorCode  SNESComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*);
 extern PetscErrorCode  SNESSetDM(SNES,DM);
 extern PetscErrorCode  SNESGetDM(SNES,DM*);
 
+/* Routines for Multiblock solver */
+PetscErrorCode SNESMultiblockSetFields(SNES, const char [], PetscInt, const PetscInt *);
+PetscErrorCode SNESMultiblockSetIS(SNES, const char [], IS);
+PetscErrorCode SNESMultiblockSetBlockSize(SNES, PetscInt);
+PetscErrorCode SNESMultiblockSetType(SNES, PCCompositeType);
+
 PETSC_EXTERN_CXX_END
 #endif
