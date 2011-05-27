@@ -45,6 +45,7 @@ typedef struct {
   PCFieldSplitSchurFactorizationType schurfactorization;
   KSP                                kspschur;     /* The solver for S */
   PC_FieldSplitLink                  head;
+  PetscBool                          reset;         /* indicates PCReset() has been last called on this object, hack */
 } PC_FieldSplit;
 
 /* 
@@ -277,8 +278,8 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
       ierr = PCFieldSplitSetIS(pc,"1",is2);CHKERRQ(ierr);
       ierr = ISDestroy(&is2);CHKERRQ(ierr);
     } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Must provide at least two sets of fields to PCFieldSplit()");
-  } else if (!pc->setupcalled) {
-    /* PCReset() has been called on this PC, ilink exists but all data structures in it must be rebuilt 
+  } else if (jac->reset) {
+    /* PCReset() has been called on this PC, ilink exists but all IS and Vec data structures in it must be rebuilt 
        This is basically the !ilink portion of code above copied from above and the allocation of the ilinks removed
        since they already exist. This should be totally rewritten */
     ierr = PetscOptionsGetBool(((PetscObject)pc)->prefix,"-pc_fieldsplit_detect_saddle_point",&stokes,PETSC_NULL);CHKERRQ(ierr);
@@ -790,6 +791,7 @@ static PetscErrorCode PCReset_FieldSplit(PC pc)
   ierr = KSPDestroy(&jac->kspschur);CHKERRQ(ierr);
   ierr = MatDestroy(&jac->B);CHKERRQ(ierr);
   ierr = MatDestroy(&jac->C);CHKERRQ(ierr);
+  jac->reset = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
