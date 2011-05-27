@@ -3,8 +3,11 @@
 #include "../src/mat/impls/baij/mpi/mpibaij.h"
 #include "../src/mat/impls/baij/seq/bstream/bstream.h"
 
+extern PetscErrorCode MatMult_SeqBSTRM_4(Mat,Vec,Vec);
 extern PetscErrorCode MatMult_SeqBSTRM_5(Mat,Vec,Vec);
+extern PetscErrorCode MatMultAdd_SeqBSTRM_4(Mat,Vec,Vec,Vec);
 extern PetscErrorCode MatMultAdd_SeqBSTRM_5(Mat,Vec,Vec,Vec);
+extern PetscErrorCode MatSOR_SeqBSTRM_4(Mat,Vec,PetscReal,MatSORType,PetscReal,PetscInt,PetscInt,Vec);
 extern PetscErrorCode MatSOR_SeqBSTRM_5(Mat,Vec,PetscReal,MatSORType,PetscReal,PetscInt,PetscInt,Vec);
 
 
@@ -55,6 +58,10 @@ PetscErrorCode MPIBSTRM_create_bstrm(Mat A)
         asp[i][k*cbs+j] = aa[k*bs2+j*rbs+i];
   }
   switch (bs){
+    case 4:
+      a->A->ops->mult  = MatMult_SeqBSTRM_4;
+      a->A->ops->sor   = MatSOR_SeqBSTRM_4; 
+      break;
     case 5:
       a->A->ops->mult  = MatMult_SeqBSTRM_5;
       a->A->ops->sor   = MatSOR_SeqBSTRM_5; 
@@ -62,7 +69,7 @@ PetscErrorCode MPIBSTRM_create_bstrm(Mat A)
     default:
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"not supported for block size %D yet",bs);
   }
-
+  ierr = PetscFree(asp);CHKERRQ(ierr);
 
 /*.....*/
   blen = bi[MROW]-bi[0];
@@ -83,15 +90,17 @@ PetscErrorCode MPIBSTRM_create_bstrm(Mat A)
         bsp[i][k*cbs+j] = ba[k*bs2+j*rbs+i];
   }
   switch (bs){
+    case 4:
+      a->B->ops->multadd = MatMultAdd_SeqBSTRM_4;
+      break;
     case 5:
       a->B->ops->multadd = MatMultAdd_SeqBSTRM_5;
       break;
     default:
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"not supported for block size %D yet",bs);
   }
+  ierr = PetscFree(bsp);CHKERRQ(ierr);
 
-
-  /* ierr = PetscFree(a->a);CHKERRQ(ierr);  */
   PetscFunctionReturn(0);
 }
 

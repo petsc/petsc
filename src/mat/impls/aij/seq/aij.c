@@ -3587,10 +3587,8 @@ PetscErrorCode MatDuplicateNoCreate_SeqAIJ(Mat C,Mat A,MatDuplicateOption cpvalu
 
   C->assembled      = PETSC_TRUE;
  
-  ierr = PetscLayoutSetBlockSize(C->rmap,1);CHKERRQ(ierr);
-  ierr = PetscLayoutSetBlockSize(C->cmap,1);CHKERRQ(ierr);
-  ierr = PetscLayoutSetUp(C->rmap);CHKERRQ(ierr);
-  ierr = PetscLayoutSetUp(C->cmap);CHKERRQ(ierr);
+  ierr = PetscLayoutReference(A->rmap,&C->rmap);CHKERRQ(ierr);
+  ierr = PetscLayoutReference(A->cmap,&C->cmap);CHKERRQ(ierr);
 
   ierr = PetscMalloc2(m,PetscInt,&c->imax,m,PetscInt,&c->ilen);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory(C, 2*m*sizeof(PetscInt));CHKERRQ(ierr);
@@ -3889,7 +3887,7 @@ PetscErrorCode MatSetColoring_SeqAIJ(Mat A,ISColoring coloring)
     for (i=0; i<A->cmap->n; i++) {
       larray[i] = i;
     }
-    ierr = ISGlobalToLocalMappingApply(A->cmapping,IS_GTOLM_MASK,A->cmap->n,larray,PETSC_NULL,larray);CHKERRQ(ierr);
+    ierr = ISGlobalToLocalMappingApply(A->cmap->mapping,IS_GTOLM_MASK,A->cmap->n,larray,PETSC_NULL,larray);CHKERRQ(ierr);
     ierr = PetscMalloc(A->cmap->n*sizeof(ISColoringValue),&colors);CHKERRQ(ierr);
     for (i=0; i<A->cmap->n; i++) {
       colors[i] = coloring->colors[larray[i]];

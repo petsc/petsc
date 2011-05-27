@@ -78,12 +78,10 @@ PetscErrorCode  VecSetLocalToGlobalMapping(Vec x,ISLocalToGlobalMapping mapping)
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidHeaderSpecific(mapping,IS_LTOGM_CLASSID,2);
 
-  if (x->mapping) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Mapping already set for vector");
   if (x->ops->setlocaltoglobalmapping) {
     ierr = (*x->ops->setlocaltoglobalmapping)(x,mapping);CHKERRQ(ierr);
   } else {
-    ierr = PetscObjectReference((PetscObject)mapping);CHKERRQ(ierr);
-    x->mapping = mapping;
+    ierr = PetscLayoutSetISLocalToGlobalMapping(x->map,mapping);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -119,9 +117,7 @@ PetscErrorCode  VecSetLocalToGlobalMappingBlock(Vec x,ISLocalToGlobalMapping map
   PetscValidHeaderSpecific(x,VEC_CLASSID,1);
   PetscValidHeaderSpecific(mapping,IS_LTOGM_CLASSID,2);
 
-  if (x->bmapping) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Mapping already set for vector");
-  ierr = PetscObjectReference((PetscObject)mapping);CHKERRQ(ierr);
-  x->bmapping = mapping;
+  ierr = PetscLayoutSetISLocalToGlobalMappingBlock(x->map,mapping);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -514,8 +510,6 @@ PetscErrorCode  VecDestroy(Vec *v)
     ierr = (*(*v)->ops->destroy)(*v);CHKERRQ(ierr);
   }
   /* destroy the external/common part */
-  ierr = ISLocalToGlobalMappingDestroy(&(*v)->mapping);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingDestroy(&(*v)->bmapping);CHKERRQ(ierr);
   ierr = PetscLayoutDestroy(&(*v)->map);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(v);CHKERRQ(ierr);
   PetscFunctionReturn(0);

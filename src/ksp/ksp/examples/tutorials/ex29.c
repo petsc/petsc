@@ -13,7 +13,7 @@ Inhomogeneous Laplacian in 2D. Modeled by the partial differential equation
 
 with forcing function
 
-   f = e^{-(1 - x)^2/\nu} e^{-(1 - y)^2/\nu}
+   f = e^{-x^2/\nu} e^{-y^2/\nu}
 
 with Dirichlet boundary conditions
 

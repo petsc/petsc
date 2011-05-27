@@ -548,6 +548,9 @@ extern PetscErrorCode PetscCUSPIndicesCreate(PetscInt,const PetscInt*,PetscCUSPI
 extern PetscErrorCode PetscCUSPIndicesDestroy(PetscCUSPIndices*);
 extern PetscErrorCode VecCUSPCopyToGPUSome_Public(Vec,PetscCUSPIndices);
 extern PetscErrorCode VecCUSPCopyFromGPUSome_Public(Vec,PetscCUSPIndices);
+
+extern PetscErrorCode  VecCreateSeqCUSP(MPI_Comm,PetscInt,Vec*);
+extern PetscErrorCode  VecCreateMPICUSP(MPI_Comm,PetscInt,PetscInt,Vec*);
 #endif
 
 extern PetscErrorCode  VecNestGetSubVecs(Vec,PetscInt*,Vec**);

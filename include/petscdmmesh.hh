@@ -112,7 +112,7 @@ PetscErrorCode  DMMeshCreateGlobalScatter(const ALE::Obj<Mesh>& m, const ALE::Ob
   const typename Mesh::order_type::chart_type& chart = globalOrder->getChart();
   int *localIndices, *globalIndices;
   int  localSize   = globalOrder->getLocalSize();
-  int  overlapSize = s->size();
+  int  overlapSize = -1;
   int  localIndx   = 0, globalIndx = 0;
   Vec  globalVec, localVec;
   IS   localIS, globalIS;
@@ -120,9 +120,18 @@ PetscErrorCode  DMMeshCreateGlobalScatter(const ALE::Obj<Mesh>& m, const ALE::Ob
   ierr = VecCreate(m->comm(), &globalVec);CHKERRQ(ierr);
   ierr = VecSetSizes(globalVec, localSize, PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(globalVec);CHKERRQ(ierr);
+
+  if (includeConstraints) {
+    overlapSize = s->sizeWithBC();
+    ierr = PetscMalloc(overlapSize*sizeof(int), &localIndices);CHKERRQ(ierr);
+    ierr = PetscMalloc(overlapSize*sizeof(int), &globalIndices);CHKERRQ(ierr);
+  } else {
+    overlapSize = s->size();
+    ierr = PetscMalloc(overlapSize*sizeof(int), &localIndices);CHKERRQ(ierr);
+    ierr = PetscMalloc(overlapSize*sizeof(int), &globalIndices);CHKERRQ(ierr);
+  } // if/else
+
   // Loop over all local points
-  ierr = PetscMalloc(overlapSize*sizeof(int), &localIndices);CHKERRQ(ierr);
-  ierr = PetscMalloc(overlapSize*sizeof(int), &globalIndices);CHKERRQ(ierr);
   for(typename Mesh::order_type::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
     // Map local indices to global indices
     if (includeConstraints) {

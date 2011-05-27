@@ -253,7 +253,6 @@ PetscErrorCode MatHeaderMerge(Mat A,Mat C)
   MatOps                 Aops;
   char                   *mtype,*mname;
   void                   *spptr;
-  ISLocalToGlobalMapping rmapping,cmapping,rbmapping,cbmapping;
 
   PetscFunctionBegin;
   /* save the parts of A we need */
@@ -263,10 +262,6 @@ PetscErrorCode MatHeaderMerge(Mat A,Mat C)
   mtype = ((PetscObject)A)->type_name;
   mname = ((PetscObject)A)->name;
   spptr = A->spptr;
-  rmapping  = A->rmapping;
-  cmapping  = A->cmapping;
-  rbmapping = A->rbmapping;
-  cbmapping = A->cbmapping;
 
   /* zero these so the destroy below does not free them */
   ((PetscObject)A)->type_name = 0;
@@ -276,10 +271,6 @@ PetscErrorCode MatHeaderMerge(Mat A,Mat C)
   ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
 
   ierr = PetscFree(C->spptr);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingDestroy(&C->rmapping);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingDestroy(&C->cmapping);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingDestroy(&C->rbmapping);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingDestroy(&C->cbmapping);CHKERRQ(ierr);
 
   ierr = PetscLayoutDestroy(&A->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutDestroy(&A->cmap);CHKERRQ(ierr);
@@ -296,10 +287,6 @@ PetscErrorCode MatHeaderMerge(Mat A,Mat C)
   ((PetscObject)A)->type_name = mtype;
   ((PetscObject)A)->name      = mname;
   A->spptr                    = spptr;
-  A->rmapping                 = rmapping;
-  A->cmapping                 = cmapping;
-  A->rbmapping                = rbmapping;
-  A->cbmapping                = cbmapping;
 
   /* since these two are copied into A we do not want them destroyed in C */
   ((PetscObject)C)->qlist = 0;
@@ -335,10 +322,6 @@ PetscErrorCode MatHeaderReplace(Mat A,Mat C)
   ierr = PetscLayoutDestroy(&A->rmap);CHKERRQ(ierr);
   ierr = PetscLayoutDestroy(&A->cmap);CHKERRQ(ierr);
   ierr = PetscFree(A->spptr);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingDestroy(&A->rmapping);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingDestroy(&A->cmapping);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingDestroy(&A->rbmapping);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingDestroy(&A->cbmapping);CHKERRQ(ierr);
 
   /* copy C over to A */
   refct = ((PetscObject)A)->refct;

@@ -340,6 +340,9 @@ extern PetscErrorCode  SNESDAComputeJacobianWithAdic(SNES,Vec,Mat*,Mat*,MatStruc
 extern PetscErrorCode  SNESDAComputeJacobianWithAdifor(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 extern PetscErrorCode  SNESDAComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 
+extern PetscErrorCode  SNESMeshFormFunction(SNES,Vec,Vec,void*);
+extern PetscErrorCode SNESMeshFormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+
 /* --------- Solving systems of nonlinear equations --------------- */
 typedef PetscErrorCode (*SNESFunction)(SNES,Vec,Vec,void*);
 typedef PetscErrorCode (*SNESJacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
@@ -378,6 +381,12 @@ extern PetscErrorCode  SNESComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*);
 
 extern PetscErrorCode  SNESSetDM(SNES,DM);
 extern PetscErrorCode  SNESGetDM(SNES,DM*);
+
+/* Routines for Multiblock solver */
+PetscErrorCode SNESMultiblockSetFields(SNES, const char [], PetscInt, const PetscInt *);
+PetscErrorCode SNESMultiblockSetIS(SNES, const char [], IS);
+PetscErrorCode SNESMultiblockSetBlockSize(SNES, PetscInt);
+PetscErrorCode SNESMultiblockSetType(SNES, PCCompositeType);
 
 PETSC_EXTERN_CXX_END
 #endif

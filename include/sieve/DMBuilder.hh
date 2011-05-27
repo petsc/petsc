@@ -5,7 +5,7 @@
 #include <sieve/Mesh.hh>
 #endif
 
-#include <petscmesh.hh>
+#include <petscdmmesh.hh>
 
 namespace ALE {
 
@@ -23,9 +23,10 @@ namespace ALE {
       } else {
         typedef ALE::Mesh<PetscInt,PetscScalar> FlexMesh;
         typedef PETSC_MESH_TYPE::point_type point_type;
-        ::Mesh boundary;
+        DM boundary;
 
-        ierr = MeshCreate(comm, &boundary);CHKERRQ(ierr);
+        ierr = DMCreate(comm, &boundary);CHKERRQ(ierr);
+        ierr = DMSetType(boundary, DMMESH);CHKERRQ(ierr);
         Obj<PETSC_MESH_TYPE>             meshBd = new PETSC_MESH_TYPE(comm, dim-1, debug);
         Obj<PETSC_MESH_TYPE::sieve_type> sieve  = new PETSC_MESH_TYPE::sieve_type(comm, debug);
         std::map<point_type,point_type>  renumbering;
@@ -48,8 +49,8 @@ namespace ALE {
           SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Dimension not supported: %d", dim);
         }
         ALE::ISieveConverter::convertMesh(*mB, *meshBd, renumbering, false);
-        ierr = MeshSetMesh(boundary, meshBd);CHKERRQ(ierr);
-        *dm = (DM) boundary;
+        ierr = DMMeshSetMesh(boundary, meshBd);CHKERRQ(ierr);
+        *dm = boundary;
       }
       PetscFunctionReturn(0);
     };
@@ -66,21 +67,22 @@ namespace ALE {
         const PetscInt pd  = PETSC_DECIDE;
 
         if (dim == 2) {
-          ierr = DMDACreate2d(comm, DMDA_NONPERIODIC, DMDA_STENCIL_BOX, -3, -3, pd, pd, dof, 1, PETSC_NULL, PETSC_NULL, &da);CHKERRQ(ierr);
+          ierr = DMDACreate2d(comm, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE, DMDA_STENCIL_BOX, -3, -3, pd, pd, dof, 1, PETSC_NULL, PETSC_NULL, &da);CHKERRQ(ierr);
         } else if (dim == 3) {
-          ierr = DMDACreate3d(comm, DMDA_NONPERIODIC, DMDA_STENCIL_BOX, -3, -3, -3, pd, pd, pd, dof, 1, PETSC_NULL, PETSC_NULL, PETSC_NULL, &da);CHKERRQ(ierr);
+          ierr = DMDACreate3d(comm, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE, DMDA_STENCIL_BOX, -3, -3, -3, pd, pd, pd, dof, 1, PETSC_NULL, PETSC_NULL, PETSC_NULL, &da);CHKERRQ(ierr);
         } else {
           SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Dimension not supported: %d", dim);
         }
         ierr = DMDASetUniformCoordinates(da, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);
-        *dm = (DM) da;
+        *dm = da;
       } else {
         typedef ALE::Mesh<PetscInt,PetscScalar> FlexMesh;
         typedef PETSC_MESH_TYPE::point_type point_type;
-        ::Mesh mesh;
-        ::Mesh boundary;
+        DM mesh;
+        DM boundary;
 
-        ierr = MeshCreate(comm, &boundary);CHKERRQ(ierr);
+        ierr = DMCreate(comm, &boundary);CHKERRQ(ierr);
+        ierr = DMSetType(boundary, DMMESH);CHKERRQ(ierr);
         Obj<PETSC_MESH_TYPE>             meshBd = new PETSC_MESH_TYPE(comm, dim-1, debug);
         Obj<PETSC_MESH_TYPE::sieve_type> sieve  = new PETSC_MESH_TYPE::sieve_type(comm, debug);
         std::map<point_type,point_type>  renumbering;
@@ -106,7 +108,7 @@ namespace ALE {
         ierr = DMMeshSetMesh(boundary, meshBd);CHKERRQ(ierr);
         ierr = DMMeshGenerate(boundary, (PetscBool) interpolate, &mesh);CHKERRQ(ierr);
         ierr = DMDestroy(&boundary);CHKERRQ(ierr);
-        *dm = (DM) mesh;
+        *dm = mesh;
       }
       PetscFunctionReturn(0);
     };
@@ -116,12 +118,13 @@ namespace ALE {
       typedef ALE::Mesh<PetscInt,PetscScalar> FlexMesh;
       typedef PETSC_MESH_TYPE::point_type point_type;
       typedef PETSC_MESH_TYPE::real_section_type::value_type real;
-      ::Mesh         mesh;
-      ::Mesh         boundary;
+      DM         mesh;
+      DM         boundary;
       PetscErrorCode ierr;
 
       PetscFunctionBegin;
-      ierr = MeshCreate(comm, &boundary);CHKERRQ(ierr);
+      ierr = DMCreate(comm, &boundary);CHKERRQ(ierr);
+      ierr = DMSetType(boundary, DMMESH);CHKERRQ(ierr);
       Obj<PETSC_MESH_TYPE>             meshBd = new PETSC_MESH_TYPE(comm, dim-1, debug);
       Obj<PETSC_MESH_TYPE::sieve_type> sieve  = new PETSC_MESH_TYPE::sieve_type(comm, debug);
       std::map<point_type,point_type>  renumbering;
@@ -146,8 +149,8 @@ namespace ALE {
       ALE::ISieveConverter::convertMesh(*mB, *meshBd, renumbering, false);
       ierr = DMMeshSetMesh(boundary, meshBd);CHKERRQ(ierr);
       ierr = DMMeshGenerate(boundary, (PetscBool) interpolate, &mesh);CHKERRQ(ierr);
-      ierr = MeshDestroy(&boundary);CHKERRQ(ierr);
-      *dm = (DM) mesh;
+      ierr = DMDestroy(&boundary);CHKERRQ(ierr);
+      *dm = mesh;
       PetscFunctionReturn(0);
     };
     #undef __FUNCT__
@@ -155,12 +158,13 @@ namespace ALE {
     static PetscErrorCode createSphericalMesh(MPI_Comm comm, const int dim, const bool interpolate, const int debug, DM *dm) {
       typedef ALE::Mesh<PetscInt,PetscScalar> FlexMesh;
       typedef PETSC_MESH_TYPE::point_type point_type;
-      ::Mesh         mesh;
-      ::Mesh         boundary;
+      DM         mesh;
+      DM         boundary;
       PetscErrorCode ierr;
 
       PetscFunctionBegin;
-      ierr = MeshCreate(comm, &boundary);CHKERRQ(ierr);
+      ierr = DMCreate(comm, &boundary);CHKERRQ(ierr);
+      ierr = DMSetType(boundary, DMMESH);CHKERRQ(ierr);
       Obj<PETSC_MESH_TYPE>             meshBd = new PETSC_MESH_TYPE(comm, dim-1, debug);
       Obj<PETSC_MESH_TYPE::sieve_type> sieve  = new PETSC_MESH_TYPE::sieve_type(comm, debug);
       std::map<point_type,point_type>  renumbering;
@@ -175,8 +179,8 @@ namespace ALE {
       ALE::ISieveConverter::convertMesh(*mB, *meshBd, renumbering, false);
       ierr = DMMeshSetMesh(boundary, meshBd);CHKERRQ(ierr);
       ierr = DMMeshGenerate(boundary, (PetscBool) interpolate, &mesh);CHKERRQ(ierr);
-      ierr = MeshDestroy(&boundary);CHKERRQ(ierr);
-      *dm = (DM) mesh;
+      ierr = DMDestroy(&boundary);CHKERRQ(ierr);
+      *dm = mesh;
       PetscFunctionReturn(0);
     };
     #undef __FUNCT__
@@ -184,12 +188,13 @@ namespace ALE {
     static PetscErrorCode createReentrantSphericalMesh(MPI_Comm comm, const int dim, const bool interpolate, const int debug, DM *dm) {
       typedef ALE::Mesh<PetscInt,PetscScalar> FlexMesh;
       typedef PETSC_MESH_TYPE::point_type point_type;
-      ::Mesh         mesh;
-      ::Mesh         boundary;
+      DM         mesh;
+      DM         boundary;
       PetscErrorCode ierr;
 
       PetscFunctionBegin;
-      ierr = MeshCreate(comm, &boundary);CHKERRQ(ierr);
+      ierr = DMCreate(comm, &boundary);CHKERRQ(ierr);
+      ierr = DMSetType(boundary, DMMESH);CHKERRQ(ierr);
       Obj<PETSC_MESH_TYPE>             meshBd = new PETSC_MESH_TYPE(comm, dim-1, debug);
       Obj<PETSC_MESH_TYPE::sieve_type> sieve  = new PETSC_MESH_TYPE::sieve_type(comm, debug);
       std::map<point_type,point_type>  renumbering;
@@ -204,21 +209,22 @@ namespace ALE {
       ALE::ISieveConverter::convertMesh(*mB, *meshBd, renumbering, false);
       ierr = DMMeshSetMesh(boundary, meshBd);CHKERRQ(ierr);
       ierr = DMMeshGenerate(boundary, (PetscBool) interpolate, &mesh);CHKERRQ(ierr);
-      ierr = MeshDestroy(&boundary);CHKERRQ(ierr);
-      *dm = (DM) mesh;
+      ierr = DMDestroy(&boundary);CHKERRQ(ierr);
+      *dm = mesh;
       PetscFunctionReturn(0);
     };
     #undef __FUNCT__
     #define __FUNCT__ "MeshRefineSingularity"
-    static PetscErrorCode MeshRefineSingularity(::Mesh mesh, double * singularity, double factor, ::Mesh *refinedMesh) {
+    static PetscErrorCode MeshRefineSingularity(DM mesh, double * singularity, double factor, DM *refinedMesh) {
       typedef PETSC_MESH_TYPE::real_section_type::value_type real;
       ALE::Obj<PETSC_MESH_TYPE> oldMesh;
       double              oldLimit;
       PetscErrorCode      ierr;
 
       PetscFunctionBegin;
-      ierr = MeshGetMesh(mesh, oldMesh);CHKERRQ(ierr);
-      ierr = MeshCreate(oldMesh->comm(), refinedMesh);CHKERRQ(ierr);
+      ierr = DMMeshGetMesh(mesh, oldMesh);CHKERRQ(ierr);
+      ierr = DMCreate(oldMesh->comm(), refinedMesh);CHKERRQ(ierr);
+      ierr = DMSetType(*refinedMesh, DMMESH);CHKERRQ(ierr);
       int dim = oldMesh->getDimension();
       oldLimit = oldMesh->getMaxVolume();
       //double oldLimInv = 1./oldLimit;
@@ -263,7 +269,7 @@ namespace ALE {
 #else
       ALE::Obj<PETSC_MESH_TYPE> newMesh = ALE::Generator<PETSC_MESH_TYPE>::refineMesh(oldMesh, volume_limits, true);
 #endif
-      ierr = MeshSetMesh(*refinedMesh, newMesh);CHKERRQ(ierr);
+      ierr = DMMeshSetMesh(*refinedMesh, newMesh);CHKERRQ(ierr);
       const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& s = newMesh->getRealSection("default");
       const Obj<std::set<std::string> >& discs = oldMesh->getDiscretizations();
 
@@ -275,15 +281,16 @@ namespace ALE {
     };
     #undef __FUNCT__
     #define __FUNCT__ "MeshRefineSingularity_Fichera"
-    static PetscErrorCode MeshRefineSingularity_Fichera(::Mesh mesh, double * singularity, double factor, ::Mesh *refinedMesh) {
+    static PetscErrorCode MeshRefineSingularity_Fichera(DM mesh, double * singularity, double factor, DM *refinedMesh) {
       typedef PETSC_MESH_TYPE::real_section_type::value_type real;
       ALE::Obj<PETSC_MESH_TYPE> oldMesh;
       real                      oldLimit;
       PetscErrorCode            ierr;
 
       PetscFunctionBegin;
-      ierr = MeshGetMesh(mesh, oldMesh);CHKERRQ(ierr);
-      ierr = MeshCreate(oldMesh->comm(), refinedMesh);CHKERRQ(ierr);
+      ierr = DMMeshGetMesh(mesh, oldMesh);CHKERRQ(ierr);
+      ierr = DMCreate(oldMesh->comm(), refinedMesh);CHKERRQ(ierr);
+      ierr = DMSetType(*refinedMesh, DMMESH);CHKERRQ(ierr);
       int dim = oldMesh->getDimension();
       oldLimit = oldMesh->getMaxVolume();
       //double oldLimInv = 1./oldLimit;
@@ -352,7 +359,7 @@ namespace ALE {
 #else
       ALE::Obj<PETSC_MESH_TYPE> newMesh = ALE::Generator<PETSC_MESH_TYPE>::refineMesh(oldMesh, volume_limits, true);
 #endif
-      ierr = MeshSetMesh(*refinedMesh, newMesh);CHKERRQ(ierr);
+      ierr = DMMeshSetMesh(*refinedMesh, newMesh);CHKERRQ(ierr);
       const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& s = newMesh->getRealSection("default");
       const Obj<std::set<std::string> >& discs = oldMesh->getDiscretizations();
 

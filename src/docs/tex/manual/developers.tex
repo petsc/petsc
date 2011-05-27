@@ -39,8 +39,8 @@
 \ANLTitle{PETSc Developers Manual}{\em The PETSc Team \\
 http://www.mcs.anl.gov/petsc
 \vspace{0.5in} \\
-{\rm This document is intended for use with PETSc 3.0}}
-{}{2006}
+{\rm This document is intended for use with PETSc 3.2}}
+{}{May 2011}
 
 \newpage
 
@@ -830,10 +830,10 @@ We use several conventions:
 \item Functions that are private to PETSc (not callable by the 
       application code) either
       \begin{itemize}
-        \item have an appended \trl{\_Private} (for example, 
-           \trl{StashValues\_Private}) or
-        \item have an appended \trl{\_$<$class$>$Subtype} (for example,
-           \trl{MatMult\_SeqAIJ}).
+        \item have an appended \trl{_Private} (for example, 
+           \trl{StashValues_Private}) or
+        \item have an appended \trl{_$<$class$>$Subtype} (for example,
+           \trl{MatMult_SeqAIJ}).
       \end{itemize}
 
       In addition, functions that are not intended for use outside
@@ -842,8 +842,9 @@ We use several conventions:
       function name without the object prefix, and all are in small letters. 
       For example, MatMultTranspose() has a structure name of 
       \trl{multtranspose()}.
-\item Each application usable function begins with the name of the class object, 
-      for example, ISInvertPermutation() or MatMult(). 
+\item Each application usable function begins with the name of the class object, followed by any subclass name,
+      for example, ISInvertPermutation(), MatMult() or KSPGMRESSetRestart(). 
+\item Options database keys are lower case, have an underscore between words and match the function name associated with the option without the word set. For example, \trl{-ksp_gmres_restart}.
 \end{itemize}
 
 \section{Coding Conventions and Style Guide}
@@ -857,10 +858,6 @@ so that the code is uniform and easily maintainable:
       two more characters.
 \item Wrapping lines should be avoided whenever possible.
 \item Source code lines do not have a hard length limit, generally we like then less than 150 characters wide.
-\item The macros SETERRQ() and CHKERRQ() should be on the 
-      same line as the routine to be checked unless this violates the 
-      150 character width rule. Try to make error messages short, but 
-      informative.
 \item The local variable declarations should be aligned. For example,
       use the style
 \begin{tabbing}
@@ -927,6 +924,10 @@ or
       its own line. The closing bracket \} should {\bf always} be on its own line. 
 \item In function declaration the open bracket \{ should be on the {\bf next} line, not on the same line as the function name and
       arguments. This is an exception to the rule above.
+\item The macros SETERRQ() and CHKERRQ() should be on the 
+      same line as the routine to be checked unless this violates the 
+      150 character width rule. Try to make error messages short, but 
+      informative.
 \item {\em No} space after a ( or before a ). No space before the CHKXXX(). That is, do not write
 \begin{tabbing}
    ierr = PetscMalloc( 10*sizeof(int),\&a ); CHKERRQ(ierr);

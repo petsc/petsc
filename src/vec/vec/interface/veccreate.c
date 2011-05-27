@@ -40,8 +40,6 @@ PetscErrorCode  VecCreate(MPI_Comm comm, Vec *vec)
   ierr = PetscMemzero(v->ops, sizeof(struct _VecOps));CHKERRQ(ierr);
 
   ierr            = PetscLayoutCreate(comm,&v->map);CHKERRQ(ierr);
-  v->mapping      = PETSC_NULL;
-  v->bmapping     = PETSC_NULL;
   v->array_gotten = PETSC_FALSE;
   v->petscnative  = PETSC_FALSE;
 

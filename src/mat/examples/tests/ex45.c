@@ -1,7 +1,10 @@
 
+#include "petscconf.h"
 #include <stdio.h>
 #include <fcntl.h>
+#if defined(PETSC_HAVE_UNISTD_H)
 #include <unistd.h>
+#endif
 #include <stdlib.h>
 
 /*

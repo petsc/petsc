@@ -131,11 +131,7 @@ PetscErrorCode VecDuplicate_MPICUSP(Vec win,Vec *v)
 
   PetscFunctionBegin;
   ierr = VecCreate(((PetscObject)win)->comm,v);CHKERRQ(ierr);
-
-  /* use the map that exists aleady in win */
-  ierr = PetscLayoutDestroy(&(*v)->map);CHKERRQ(ierr);
-  (*v)->map = win->map;
-  win->map->refcnt++;
+  ierr = PetscLayoutReference(win->map,&(*v)->map);CHKERRQ(ierr);
 
   ierr = VecCreate_MPI_Private(*v,PETSC_FALSE,w->nghost,0);CHKERRQ(ierr);
   vw   = (Vec_MPI *)(*v)->data;
@@ -160,14 +156,6 @@ PetscErrorCode VecDuplicate_MPICUSP(Vec win,Vec *v)
   
   ierr = PetscOListDuplicate(((PetscObject)win)->olist,&((PetscObject)(*v))->olist);CHKERRQ(ierr);
   ierr = PetscFListDuplicate(((PetscObject)win)->qlist,&((PetscObject)(*v))->qlist);CHKERRQ(ierr);
-  if (win->mapping) {
-    ierr = PetscObjectReference((PetscObject)win->mapping);CHKERRQ(ierr);
-    (*v)->mapping = win->mapping;
-  }
-  if (win->bmapping) {
-    ierr = PetscObjectReference((PetscObject)win->bmapping);CHKERRQ(ierr);
-    (*v)->bmapping = win->bmapping;
-  }
   (*v)->map->bs    = win->map->bs;
   (*v)->bstash.bs = win->bstash.bs;
 

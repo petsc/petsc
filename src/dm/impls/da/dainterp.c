@@ -343,7 +343,7 @@ PetscErrorCode DMGetInterpolation_DA_2D_Q1(DM dac,DM daf,Mat *A)
         cols[nc++] = col_shift + idx_c[col+m_ghost_c*dof]/dof;
       }
       /* one right and above */
-      if (j_c*ratioi != j && i_c*ratioj != i) { 
+      if (i_c*ratioi != i && j_c*ratioj != j) {
         cols[nc++] = col_shift + idx_c[col+(m_ghost_c+1)*dof]/dof;
       }
       ierr = MatPreallocateSet(row,nc,cols,dnz,onz);CHKERRQ(ierr);

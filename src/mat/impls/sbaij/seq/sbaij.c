@@ -2105,8 +2105,8 @@ PetscErrorCode MatDuplicate_SeqSBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
   c->keepnonzeropattern = a->keepnonzeropattern;
   C->assembled          = PETSC_TRUE;
 
-  ierr = PetscLayoutCopy(A->rmap,&C->rmap);CHKERRQ(ierr);  
-  ierr = PetscLayoutCopy(A->cmap,&C->cmap);CHKERRQ(ierr);  
+  ierr = PetscLayoutReference(A->rmap,&C->rmap);CHKERRQ(ierr);  
+  ierr = PetscLayoutReference(A->cmap,&C->cmap);CHKERRQ(ierr);  
   c->bs2  = a->bs2;
   c->mbs  = a->mbs;
   c->nbs  = a->nbs;

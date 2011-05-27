@@ -21,9 +21,45 @@ PetscErrorCode  DMSetFromOptions_Mesh(DM dm)
     if (flg) {
       ierr = DMSetVecType(dm, typeName);CHKERRQ(ierr);
     }
+    /* Handle viewing */
+    ierr = PetscOptionsBool("-mesh_view_vtk", "Output mesh in VTK format", "DMView", PETSC_FALSE, &flg, PETSC_NULL);CHKERRQ(ierr);
+    if (flg) {
+      PetscViewer viewer;
+
+      ierr = PetscViewerCreate(((PetscObject) dm)->comm, &viewer);CHKERRQ(ierr);
+      ierr = PetscViewerSetType(viewer, PETSCVIEWERASCII);CHKERRQ(ierr);
+      ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
+      ierr = PetscViewerFileSetName(viewer, "mesh.vtk");CHKERRQ(ierr);
+      ierr = DMView(dm, viewer);CHKERRQ(ierr);
+      ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+    }
+    ierr = PetscOptionsBool("-mesh_view", "Exhaustive mesh description", "DMView", PETSC_FALSE, &flg, PETSC_NULL);CHKERRQ(ierr);
+    if (flg) {
+      ALE::Obj<PETSC_MESH_TYPE> mesh;
+
+      ierr = DMMeshGetMesh(dm, mesh);CHKERRQ(ierr);
+      mesh->view("Mesh");
+    }
+    ierr = PetscOptionsBool("-mesh_view_simple", "Simple mesh description", "DMView", PETSC_FALSE, &flg, PETSC_NULL);CHKERRQ(ierr);
+    if (flg) {
+      ierr = DMView(dm, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    }
     /* process any options handlers added with PetscObjectAddOptionsHandler() */
     ierr = PetscObjectProcessOptionsHandlers((PetscObject) dm);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#include <sieve/DMBuilder.hh>
+
+#undef __FUNCT__
+#define __FUNCT__ "DMMeshCreateBoxMesh"
+PetscErrorCode DMMeshCreateBoxMesh(MPI_Comm comm, PetscInt dim, PetscBool interpolate, DM *dm) {
+  PetscInt       debug = 0;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = ALE::DMBuilder::createBoxMesh(comm, dim, false, interpolate, debug, dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

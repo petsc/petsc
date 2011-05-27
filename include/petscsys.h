@@ -1772,8 +1772,6 @@ PETSC_STATIC_INLINE PetscErrorCode  PetscMemcpy(void *a,const void *b,size_t n)
     } else {
       memcpy((char*)(a),(char*)(b),n);
     }
-#elif defined(PETSC_HAVE__INTEL_FAST_MEMCPY)
-    _intel_fast_memcpy((char*)(a),(char*)(b),n);
 #else
     memcpy((char*)(a),(char*)(b),n);
 #endif
@@ -1823,8 +1821,6 @@ PETSC_STATIC_INLINE PetscErrorCode  PetscMemzero(void *a,size_t n)
 #endif
 #if defined(PETSC_PREFER_BZERO)
       bzero((char *)a,n);
-#elif defined (PETSC_HAVE__INTEL_FAST_MEMSET)
-      _intel_fast_memset((char*)a,0,n);
 #else
       memset((char*)a,0,n);
 #endif
@@ -2380,7 +2376,7 @@ extern PetscErrorCode  PetscSSEIsEnabled(MPI_Comm,PetscBool  *,PetscBool  *);
           VecSetValuesLocal(), VecSetValuesBlockedLocal(), MatSetValuesBlocked(),
           MatSetValuesBlockedLocal(), MatSetValuesLocal(), VecScatterBegin(), VecScatterEnd()
 E*/
-typedef enum {NOT_SET_VALUES, INSERT_VALUES, ADD_VALUES, MAX_VALUES} InsertMode;
+ typedef enum {NOT_SET_VALUES, INSERT_VALUES, ADD_VALUES, MAX_VALUES, INSERT_ALL_VALUES, ADD_ALL_VALUES} InsertMode;
 
 /*MC
     INSERT_VALUES - Put a value into a vector or matrix, overwrites any previous value

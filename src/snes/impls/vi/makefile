@@ -1,4 +1,3 @@
-#requiresscalar real
 
 ALL: lib
 

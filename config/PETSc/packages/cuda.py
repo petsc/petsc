@@ -98,7 +98,7 @@ class Configure(PETSc.package.NewPackage):
     oldFlags = self.compilers.CUDAPPFLAGS
     self.compilers.CUDAPPFLAGS += ' '+self.headers.toString(self.thrust.include)
     if not self.checkRun('#include <cuda.h>\n#include <stdio.h>', 'if (CUDA_VERSION < ' + self.CUDAVersion +') {printf("Invalid version %d\\n", CUDA_VERSION); return 1;}'):
-      raise RuntimeError('CUDA version error: PETSC currently requires CUDA version '+self.CUDAVersionStr+' when compiling with CUDA')
+      raise RuntimeError('CUDA version error: PETSC currently requires CUDA version '+self.CUDAVersionStr+' or higher - when compiling with CUDA')
     self.compilers.CUDAPPFLAGS = oldFlags
     self.popLanguage()
     return
@@ -108,7 +108,7 @@ class Configure(PETSc.package.NewPackage):
     oldFlags = self.compilers.CUDAPPFLAGS
     self.compilers.CUDAPPFLAGS += ' '+self.headers.toString(self.thrust.include)
     if not self.checkRun('#include <thrust/version.h>\n#include <stdio.h>', 'if (THRUST_VERSION < ' + self.ThrustVersion +') {printf("Invalid version %d\\n", THRUST_VERSION); return 1;}'):
-      raise RuntimeError('Thrust version error: PETSC currently requires Thrust version '+self.ThrustVersionStr+' when compiling with CUDA')
+      raise RuntimeError('Thrust version error: PETSC currently requires Thrust version '+self.ThrustVersionStr+' or higher - when compiling with CUDA')
     self.compilers.CUDAPPFLAGS = oldFlags
     self.popLanguage()
     return
@@ -144,7 +144,7 @@ class Configure(PETSc.package.NewPackage):
     self.compilers.CUDAPPFLAGS += ' '+self.headers.toString(self.cusp.include)
     self.compilers.CUDAPPFLAGS += ' '+self.headers.toString(self.thrust.include)
     if not self.checkRun('#include <cusp/version.h>\n#include <stdio.h>', 'if (CUSP_VERSION < ' + self.CUSPVersion +') {printf("Invalid version %d\\n", CUSP_VERSION); return 1;}'):
-      raise RuntimeError('Cusp version error: PETSC currently requires CUSP version '+self.CUSPVersionStr+' when compiling with CUDA')
+      raise RuntimeError('Cusp version error: PETSC currently requires CUSP version '+self.CUSPVersionStr+' or higher - when compiling with CUDA')
     self.compilers.CUDAPPFLAGS = oldFlags
     self.popLanguage()
     return

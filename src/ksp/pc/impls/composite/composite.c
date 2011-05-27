@@ -490,7 +490,7 @@ PetscErrorCode  PCCompositeSetUseTrue(PC pc)
      PCCOMPOSITE - Build a preconditioner by composing together several preconditioners 
 
    Options Database Keys:
-+  -pc_composite_type <type: one of multiplicative, additive, special> - Sets composite preconditioner type
++  -pc_composite_type <type: one of multiplicative, additive, symmetric_multiplicative, special> - Sets composite preconditioner type
 .  -pc_composite_true - Activates PCCompositeSetUseTrue()
 -  -pc_composite_pcs - <pc0,pc1,...> list of PCs to compose
 

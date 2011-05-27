@@ -46,7 +46,7 @@ Suggest using --download-mpich or install openmpi separately - and specify mpicc
     if self.installNeeded('Makefile.inc'):
       try:
         self.logPrintBox('Compiling blopex; this may take several minutes')
-        output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && BLOPEX_INSTALL_DIR='+self.installDir+' && export BLOPEX_INSTALL_DIR && make clean && make && mv -f lib/* '+os.path.join(self.installDir,self.libdir)+' && cp -fp multivector/temp_multivector.h include/. && mv -f include/* '+os.path.join(self.installDir,self.includedir)+'', timeout=2500, log = self.framework.log)
+        output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && BLOPEX_INSTALL_DIR='+self.installDir+' && export BLOPEX_INSTALL_DIR && make clean && make && mv -f lib/*.'+self.setCompilers.AR_LIB_SUFFIX+' '+os.path.join(self.installDir,self.libdir)+' && cp -fp multivector/temp_multivector.h include/. && mv -f include/* '+os.path.join(self.installDir,self.includedir)+'', timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on BLOPEX: '+str(e))
       self.postInstall(output+err,'Makefile.inc')

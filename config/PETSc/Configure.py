@@ -20,9 +20,12 @@ class Configure(config.base.Configure):
   def __str2__(self):
     desc = []
     desc.append('xxx=========================================================================xxx')
-    desc.append('   Configure stage complete. Now build PETSc libraries with:')
+    desc.append(' Configure stage complete. Now build PETSc libraries with:')
     desc.append('   make PETSC_DIR='+self.petscdir.dir+' PETSC_ARCH='+self.arch.arch+' all')
-    desc.append(' or:')
+    if self.cmakeboot_success:
+      desc.append(' or (experimental with cmake):')
+      desc.append('   make -j4 -C '+os.path.join(self.petscdir.dir,self.arch.arch))
+    desc.append(' or (experimental with python):')
     desc.append('   PETSC_DIR='+self.petscdir.dir+' PETSC_ARCH='+self.arch.arch+' ./config/builder.py')
     desc.append('xxx=========================================================================xxx')
     return '\n'.join(desc)+'\n'
@@ -444,10 +447,11 @@ class Configure(config.base.Configure):
 
   def cmakeBoot(self):
     import sys
+    self.cmakeboot_success = False
     if sys.version_info >= (2,5) and hasattr(self.cmake,'cmake'):
       try:
         import cmakeboot
-        cmakeboot.main(petscdir=self.petscdir.dir,petscarch=self.arch.arch,argDB=self.argDB,framework=self.framework,log=self.framework.log)
+        self.cmakeboot_success = cmakeboot.main(petscdir=self.petscdir.dir,petscarch=self.arch.arch,argDB=self.argDB,framework=self.framework,log=self.framework.log)
       except (OSError), e:
         self.framework.logPrint('Booting CMake in PETSC_ARCH failed:\n' + str(e))
       except (ImportError, KeyError), e:

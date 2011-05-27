@@ -2125,8 +2125,8 @@ static PetscErrorCode MatDuplicate_MPISBAIJ(Mat matin,MatDuplicateOption cpvalue
   ierr = MatSetSizes(mat,matin->rmap->n,matin->cmap->n,matin->rmap->N,matin->cmap->N);CHKERRQ(ierr);
   ierr = MatSetType(mat,((PetscObject)matin)->type_name);CHKERRQ(ierr);
   ierr = PetscMemcpy(mat->ops,matin->ops,sizeof(struct _MatOps));CHKERRQ(ierr);
-  ierr = PetscLayoutCopy(matin->rmap,&mat->rmap);CHKERRQ(ierr);  
-  ierr = PetscLayoutCopy(matin->cmap,&mat->cmap);CHKERRQ(ierr);  
+  ierr = PetscLayoutReference(matin->rmap,&mat->rmap);CHKERRQ(ierr);  
+  ierr = PetscLayoutReference(matin->cmap,&mat->cmap);CHKERRQ(ierr);  
   
   mat->factortype   = matin->factortype; 
   mat->preallocated = PETSC_TRUE;

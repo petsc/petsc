@@ -106,6 +106,8 @@ PetscErrorCode MatDuplicateNoCreate_SeqDense(Mat newi,Mat A,MatDuplicateOption c
   PetscInt       lda = (PetscInt)mat->lda,j,m;
 
   PetscFunctionBegin;
+  ierr = PetscLayoutReference(A->rmap,&newi->rmap);CHKERRQ(ierr);
+  ierr = PetscLayoutReference(A->cmap,&newi->cmap);CHKERRQ(ierr);
   ierr = MatSeqDenseSetPreallocation(newi,PETSC_NULL);CHKERRQ(ierr);
   if (cpvalues == MAT_COPY_VALUES) {
     l = (Mat_SeqDense*)newi->data;

@@ -210,7 +210,8 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
 
   PetscFunctionBegin;
   if (!ilink) {
-    if (pc->dm) {
+    ierr = PetscOptionsGetBool(((PetscObject)pc)->prefix,"-pc_fieldsplit_detect_saddle_point",&stokes,PETSC_NULL);CHKERRQ(ierr);
+    if (pc->dm && !stokes) {
       PetscBool dmcomposite;
       ierr = PetscTypeCompare((PetscObject)pc->dm,DMCOMPOSITE,&dmcomposite);CHKERRQ(ierr);
       if (dmcomposite) {
@@ -237,7 +238,6 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
       }
 
       ierr = PetscOptionsGetBool(((PetscObject)pc)->prefix,"-pc_fieldsplit_default",&flg,PETSC_NULL);CHKERRQ(ierr);
-      ierr = PetscOptionsGetBool(((PetscObject)pc)->prefix,"-pc_fieldsplit_detect_saddle_point",&stokes,PETSC_NULL);CHKERRQ(ierr);
       if (stokes) {
         IS       zerodiags,rest;
         PetscInt nmin,nmax;
@@ -277,7 +277,43 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
       ierr = PCFieldSplitSetIS(pc,"1",is2);CHKERRQ(ierr);
       ierr = ISDestroy(&is2);CHKERRQ(ierr);
     } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Must provide at least two sets of fields to PCFieldSplit()");
+  } else if (!pc->setupcalled) {
+    /* PCReset() has been called on this PC, ilink exists but all data structures in it must be rebuilt 
+       This is basically the !ilink portion of code above copied from above and the allocation of the ilinks removed
+       since they already exist. This should be totally rewritten */
+    ierr = PetscOptionsGetBool(((PetscObject)pc)->prefix,"-pc_fieldsplit_detect_saddle_point",&stokes,PETSC_NULL);CHKERRQ(ierr);
+    if (pc->dm && !stokes) {
+      PetscBool dmcomposite;
+      ierr = PetscTypeCompare((PetscObject)pc->dm,DMCOMPOSITE,&dmcomposite);CHKERRQ(ierr);
+      if (dmcomposite) {
+        PetscInt nDM;
+        IS       *fields;
+        ierr = PetscInfo(pc,"Setting up physics based fieldsplit preconditioner using the embedded DM\n");CHKERRQ(ierr);
+        ierr = DMCompositeGetNumberDM(pc->dm,&nDM);CHKERRQ(ierr);
+        ierr = DMCompositeGetGlobalISs(pc->dm,&fields);CHKERRQ(ierr);
+        for (i=0; i<nDM; i++) {
+          ilink->is = fields[i];
+          ilink     = ilink->next;
+        }
+        ierr = PetscFree(fields);CHKERRQ(ierr);
+      }
+    } else {
+      ierr = PetscOptionsGetBool(((PetscObject)pc)->prefix,"-pc_fieldsplit_default",&flg,PETSC_NULL);CHKERRQ(ierr);
+      if (stokes) {
+        IS       zerodiags,rest;
+        PetscInt nmin,nmax;
+
+        ierr = MatGetOwnershipRange(pc->mat,&nmin,&nmax);CHKERRQ(ierr);
+        ierr = MatFindZeroDiagonals(pc->mat,&zerodiags);CHKERRQ(ierr);
+        ierr = ISComplement(zerodiags,nmin,nmax,&rest);CHKERRQ(ierr);
+        ilink->is       = rest;
+        ilink->next->is = zerodiags;
+      } else {
+        SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_SUP,"Cases not yet handled when PCReset() was used");
+      }
+    }
   }
+
   if (jac->nsplits < 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Unhandled case, must have at least two fields");
   PetscFunctionReturn(0);
 }
@@ -908,12 +944,12 @@ PetscErrorCode  PCFieldSplitGetSubKSP_FieldSplit(PC pc,PetscInt *n,KSP **subksp)
   PC_FieldSplitLink ilink = jac->head;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(jac->nsplits*sizeof(KSP*),subksp);CHKERRQ(ierr);
+  ierr = PetscMalloc(jac->nsplits*sizeof(KSP),subksp);CHKERRQ(ierr);
   while (ilink) {
     (*subksp)[cnt++] = ilink->ksp;
     ilink = ilink->next;
   }
-  if (cnt != jac->nsplits) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Corrupt PCFIELDSPLIT object: number splits in linked list %D in object %D",cnt,jac->nsplits);
+  if (cnt != jac->nsplits) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Corrupt PCFIELDSPLIT object: number of splits in linked list %D does not match number in object %D",cnt,jac->nsplits);
   if (n) *n = jac->nsplits;
   PetscFunctionReturn(0);
 }

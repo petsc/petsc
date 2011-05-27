@@ -98,7 +98,7 @@ runex4f90:
 	   ${RM} -f ex4f90_1.tmp 
 
 runex5:
-	-@${MPIEXEC} -n 1 ./ex5 -rho 44 -do_output true > ex5_1.tmp 5>&1; \
+	-@${MPIEXEC} -n 1 ./ex5 -pbag_rho 44 -pbag_do_output true > ex5_1.tmp 5>&1; \
 	   if (${DIFF} output/ex5_1.out ex5_1.tmp) then true; \
 	   else echo "Possible problem with ex5_1, diffs above"; fi; \
 	   ${RM} -f ex5_1.tmp 

@@ -15,6 +15,7 @@ PetscErrorCode  VecDuplicate_MPI_DA(Vec g,Vec* gg)
   PetscFunctionBegin; 
   ierr = PetscObjectQuery((PetscObject)g,"DMDA",(PetscObject*)&da);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da,gg);CHKERRQ(ierr);
+  ierr = PetscLayoutReference(g->map,&(*gg)->map);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

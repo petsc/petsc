@@ -3,9 +3,13 @@
 #include "../src/mat/impls/sbaij/mpi/mpisbaij.h"
 #include "../src/mat/impls/sbaij/seq/sbstream/sbstream.h"
 
+extern PetscErrorCode MatMult_SeqSBSTRM_4(Mat,Vec,Vec);
 extern PetscErrorCode MatMult_SeqSBSTRM_5(Mat,Vec,Vec);
+extern PetscErrorCode MatMultTranspose_SeqBSTRM_4(Mat,Vec,Vec);
 extern PetscErrorCode MatMultTranspose_SeqBSTRM_5(Mat,Vec,Vec);
+extern PetscErrorCode MatMultAdd_SeqSBSTRM_4(Mat,Vec,Vec,Vec);
 extern PetscErrorCode MatMultAdd_SeqSBSTRM_5(Mat,Vec,Vec,Vec);
+extern PetscErrorCode MatMultAdd_SeqBSTRM_4(Mat,Vec,Vec,Vec);
 extern PetscErrorCode MatMultAdd_SeqBSTRM_5(Mat,Vec,Vec,Vec);
 
 #undef __FUNCT__
@@ -56,6 +60,11 @@ PetscErrorCode MPISBSTRM_create_sbstrm(Mat A)
         asp[i][k*cbs+j] = aa[k*bs2+j*rbs+i];
   }
   switch (bs){
+    case 4:
+      a->A->ops->mult          = MatMult_SeqSBSTRM_4;
+      a->A->ops->multtranspose = MatMult_SeqSBSTRM_4;
+      /* a->A->ops->sor   = MatSOR_SeqSBSTRM_4;  */
+      break;
     case 5:
       a->A->ops->mult          = MatMult_SeqSBSTRM_5;
       a->A->ops->multtranspose = MatMult_SeqSBSTRM_5;
@@ -64,6 +73,7 @@ PetscErrorCode MPISBSTRM_create_sbstrm(Mat A)
     default:
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"not supported for block size %D yet",bs);
   }
+  ierr = PetscFree(asp);CHKERRQ(ierr);
 
 
 /*.....*/
@@ -85,6 +95,12 @@ PetscErrorCode MPISBSTRM_create_sbstrm(Mat A)
         bsp[i][k*cbs+j] = ba[k*bs2+j*rbs+i];
   }
   switch (bs){
+    case 4:
+      /* a->B->ops->mult             = MatMult_SeqSBSTRM_4; */
+      a->B->ops->multtranspose    = MatMultTranspose_SeqBSTRM_4;
+      a->B->ops->multadd          = MatMultAdd_SeqBSTRM_4;
+      /* a->B->ops->multtransposeadd = MatMultAdd_SeqSBSTRM_4; */
+      break;
     case 5:
       /* a->B->ops->mult             = MatMult_SeqSBSTRM_5; */
       a->B->ops->multtranspose    = MatMultTranspose_SeqBSTRM_5;
@@ -94,9 +110,8 @@ PetscErrorCode MPISBSTRM_create_sbstrm(Mat A)
     default:
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"not supported for block size %D yet",bs);
   }
+  ierr = PetscFree(bsp);CHKERRQ(ierr);
 
-
-  /* ierr = PetscFree(a->a);CHKERRQ(ierr);  */
   PetscFunctionReturn(0);
 }
 

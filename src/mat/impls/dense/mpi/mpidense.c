@@ -1887,8 +1887,8 @@ static PetscErrorCode MatDuplicate_MPIDense(Mat A,MatDuplicateOption cpvalues,Ma
   a->nvec           = oldmat->nvec;
   a->donotstash     = oldmat->donotstash;
 
-  ierr = PetscLayoutCopy(A->rmap,&mat->rmap);CHKERRQ(ierr);
-  ierr = PetscLayoutCopy(A->cmap,&mat->cmap);CHKERRQ(ierr);
+  ierr = PetscLayoutReference(A->rmap,&mat->rmap);CHKERRQ(ierr);
+  ierr = PetscLayoutReference(A->cmap,&mat->cmap);CHKERRQ(ierr);
 
   ierr = MatSetUpMultiply_MPIDense(mat);CHKERRQ(ierr);
   ierr = MatDuplicate(oldmat->A,cpvalues,&a->A);CHKERRQ(ierr);

@@ -1474,18 +1474,9 @@ PetscErrorCode VecDuplicate_SeqCUSP(Vec win,Vec *V)
 
   PetscFunctionBegin;
   ierr = VecCreateSeqCUSP(((PetscObject)win)->comm,win->map->n,V);CHKERRQ(ierr);
-  if (win->mapping) {
-    ierr = PetscObjectReference((PetscObject)win->mapping);CHKERRQ(ierr);
-    (*V)->mapping = win->mapping;
-  }
-  if (win->bmapping) {
-    ierr = PetscObjectReference((PetscObject)win->bmapping);CHKERRQ(ierr);
-    (*V)->bmapping = win->bmapping;
-  }
-  (*V)->map->bs = win->map->bs;
+  ierr = PetscLayoutReference(win->map,&(*V)->map);CHKERRQ(ierr);
   ierr = PetscOListDuplicate(((PetscObject)win)->olist,&((PetscObject)(*V))->olist);CHKERRQ(ierr);
   ierr = PetscFListDuplicate(((PetscObject)win)->qlist,&((PetscObject)(*V))->qlist);CHKERRQ(ierr);
-
   (*V)->stash.ignorenegidx = win->stash.ignorenegidx;
   PetscFunctionReturn(0);
 }

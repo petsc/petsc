@@ -2,10 +2,10 @@ ALL: lib
 
 CFLAGS   = 
 FFLAGS   =
-SOURCEC  = bstream.c 
+SOURCEC  = bstream.c bstrmfact.c
 SOURCEF  = 
 SOURCEH  = 
-OBJSC    = bstream.o
+OBJSC    = bstream.o bstrmfact.o
 OBJSF    = 
 LIBBASE  = libpetscmat
 DIRS     = ftn-kernels

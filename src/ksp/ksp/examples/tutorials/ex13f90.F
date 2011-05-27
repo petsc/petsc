@@ -60,7 +60,8 @@
       PetscInt m,n,t,tmax,i,j
       PetscBool  flg
       PetscMPIInt size,rank
-      double precision  enorm
+      PetscReal  enorm
+      PetscScalar cnorm
       PetscScalar,ALLOCATABLE :: userx(:,:)
       PetscScalar,ALLOCATABLE :: userb(:,:)
       PetscScalar,ALLOCATABLE :: solution(:,:)
@@ -142,14 +143,15 @@
 !        using the PETSc vector operations. Here we demonstrate using more 
 !        standard programming practices to show how they may be mixed with 
 !        PETSc.
-         enorm = 0.0
+         cnorm = 0.0
          do 90 j=1,n
             do 80 i=1,m
-               enorm = enorm +                                          &
-     &             (solution(i,j)-userx(i,j))*(solution(i,j)-userx(i,j))
+               cnorm = cnorm +                                           &
+     &    PetscConj(solution(i,j)-userx(i,j))*                                            &
+     &                             (solution(i,j)-userx(i,j))
  80         continue
  90      continue
-         enorm = enorm * PetscRealPart(hx*hy)
+         enorm =  PetscRealPart(cnorm*hx*hy)
          write(6,115) m,n,enorm
  115     format ('m = ',I2,' n = ',I2,' error norm = ',1PE10.4)
  100  continue

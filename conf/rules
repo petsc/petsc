@@ -162,14 +162,7 @@ tree: ${ACTION}
 		PKGFLG=`echo $$r | cut -d \' -f2`;\
                 grep -w "#define $${PKGFLG}" ${PETSC_DIR}/${PETSC_ARCH}/include/petscconf.h > /dev/null; \
                 if [ "$$?" = 1 ]; then \
-                  if [ "${PCONF}" != "" ]; then \
-                    echo ${PCONF} | sed s/-D//g | grep -w "$${PKGFLG}" > /dev/null; \
-                    if [ "$$?" = 1 ]; then \
-                      continue; \
-                    fi; \
-                  else \
-                    continue; \
-                  fi; \
+                  continue; \
                 fi; \
               fi; \
 	      r=`grep -w requiresfunction $$dir/makefile`; \
@@ -177,14 +170,7 @@ tree: ${ACTION}
 		PKGFLG=`echo $$r | cut -d \' -f2`;\
                 grep -w "#define $${PKGFLG}" ${PETSC_DIR}/${PETSC_ARCH}/include/petscconf.h > /dev/null; \
                 if [ "$$?" = 1 ]; then \
-                  if [ "${PCONF}" != "" ]; then \
-                    echo ${PCONF} | sed s/-D//g | grep -w "$${PKGFLG}" > /dev/null; \
-                    if [ "$$?" = 1 ]; then \
-                      continue; \
-                    fi; \
-                  else \
-                    continue; \
-                  fi; \
+                  continue; \
                 fi; \
               fi; \
 	      r=`grep -w requiresdefine $$dir/makefile`; \
@@ -192,14 +178,7 @@ tree: ${ACTION}
 		PKGFLG=`echo $$r | cut -d \' -f2`;\
                 grep -w "#define $${PKGFLG}" ${PETSC_DIR}/${PETSC_ARCH}/include/petscconf.h > /dev/null; \
                 if [ "$$?" = 1 ]; then \
-                  if [ "${PCONF}" != "" ]; then \
-                    echo ${PCONF} | sed s/-D//g | grep -w "$${PKGFLG}" > /dev/null; \
-                    if [ "$$?" = 1 ]; then \
-                      continue; \
-                    fi; \
-                  else \
-                    continue; \
-                  fi; \
+                  continue; \
                 fi; \
               fi; \
               r=`grep -w requireslanguage $$dir/makefile`; \

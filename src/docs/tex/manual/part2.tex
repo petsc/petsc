@@ -852,7 +852,7 @@ stride (\trl{step}), \sindex{stride} and can be created with the command
 
 Index sets can be destroyed with the command 
 \begin{tabbing}
-  ISDestroy(IS &is); 
+  ISDestroy(IS \&is); 
 \end{tabbing}
 
 On rare occasions the user may need to access information directly 
@@ -985,9 +985,9 @@ elements it needed, or none by creating an index set with no entries.
    VecScatterBegin(scatter,p,x,INSERT_VALUES,SCATTER_FORWARD);\\
    VecScatterEnd(scatter,p,x,INSERT_VALUES,SCATTER_FORWARD);\\
    VecGetArray(x,\&values);\\
-   ISDestroy(&from);\\
-   ISDestroy(&to); \\
-   VecScatterDestroy(&scatter);
+   ISDestroy(\&from);\\
+   ISDestroy(\&to); \\
+   VecScatterDestroy(\&scatter);
 \end{tabbing}
 \caption{Example Code for Vector Scatters}
 \label{fig_vecscatter}
@@ -4091,7 +4091,7 @@ A code fragment that demonstrates this process is given below.
        to compute the actual Jacobians via finite differences.\\
    \trl{*/}\\
    MatFDColoringCreate(J,iscoloring,\&fdcoloring);\\
-   ISColoringDestroy(&iscoloring);\\
+   ISColoringDestroy(\&iscoloring);\\
    MatFDColoringSetFromOptions(fdcoloring);\\
 
    \trl{/*}\\
@@ -4169,7 +4169,7 @@ DMGetColoring().
    DMGetColoring(da,IS\_COLORING\_GHOSTED,\&iscoloring);\\
    MatFDColoringCreate(J,iscoloring,\&fdcoloring); \\
    MatFDColoringSetFromOptions(fdcoloring);\\
-   ISColoringDestroy(&iscoloring);
+   ISColoringDestroy(\&iscoloring);
 \end{tabbing}
 
 Note that the routine MatFDColoringCreate() currently is only 
@@ -4646,7 +4646,7 @@ to guide your development. We give a short summary here.
   soln = DMMGGetx(dmmg);\\
 
   ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);\\
-  ierr = DMDestroy(&da);CHKERRQ(ierr);\\
+  ierr = DMDestroy(\&da);CHKERRQ(ierr);\\
 \end{tabbing}
 The option \trl{-ksp_monitor} \findex{-ksp_monitor} and \trl{-mg_levels_ksp_monitor} and optionally \trl{-mg_coarse_ksp_monitor} 
  causes the DMMG code to print the residual norms for each level of the solver to the screen so that

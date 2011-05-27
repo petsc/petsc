@@ -61,6 +61,8 @@ extern PetscErrorCode MatGetDiagonal_SeqBAIJ(Mat,Vec);
 extern PetscErrorCode MatDiagonalScale_SeqBAIJ(Mat,Vec,Vec);
 extern PetscErrorCode MatGetInfo_SeqBAIJ(Mat,MatInfoType,MatInfo *);
 extern PetscErrorCode MatZeroEntries_SeqBAIJ(Mat);
+extern PetscErrorCode MatDestroy_SeqBAIJ(Mat);
+extern PetscErrorCode MatAssemblyEnd_SeqBAIJ(Mat,MatAssemblyType);
 
 extern PetscErrorCode MatSeqBAIJ_UpdateFactorNumeric_NaturalOrdering(Mat);
 
