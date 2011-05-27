@@ -23,6 +23,7 @@ typedef struct{
 	Vec         q,u1,u2,u3,work1,work2,work3,work4;
 	PetscScalar epsilon; /* physics parameters */
 	PetscReal   xmin,xmax,ymin,ymax;
+	PetscInt    nx;
 	
 }AppCtx;
 
@@ -53,7 +54,7 @@ int main(int argc, char **argv)
 	/* Get physics and time parameters */
 	ierr = GetParams(&user);CHKERRQ(ierr);
 	/* Create a 2D DA with dof = 2 */
-	ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,4,1,PETSC_NULL,PETSC_NULL,&user.da);CHKERRQ(ierr);
+	ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,-4,-4,PETSC_DECIDE,PETSC_DECIDE,4,1,PETSC_NULL,PETSC_NULL,&user.da);CHKERRQ(ierr);
 	/* Set Element type (triangular) */
 	ierr = DMDASetElementType(user.da,DMDA_ELEMENT_P1);CHKERRQ(ierr);
 	
@@ -95,11 +96,8 @@ int main(int argc, char **argv)
 		ierr = VecView(user.u1,view1);CHKERRQ(ierr);
 		ierr = VecView(user.u2,view1);CHKERRQ(ierr);
 		ierr = VecView(user.u3,view1);CHKERRQ(ierr);
-                //		ierr = VecView(user.u1,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+
 		ierr = Update_q(user.q,user.u1,user.u2,user.u3,user.M_0,&user);
-		//ierr = VecView(user.u1,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-		//ierr = VecView(user.u2,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-		//ierr = VecView(user.u2,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 		ierr = VecView(user.q,view_q);CHKERRQ(ierr);		
 		ierr = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(ierr);
 		PetscInt its;
@@ -411,8 +409,9 @@ PetscErrorCode GetParams(AppCtx* user)
 	/* Set default parameters */
 	user->xmin = 0.0; user->xmax = 1.0;
 	user->ymin = 0.0; user->ymax = 1.0;
-	user->T = 0.030;    user->dt = 0.001;
+	user->T = 0.2;    user->dt = 0.001;
 	user->epsilon = 0.05;
+	user->nx=4;
 	
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-xmin",&user->xmin,&flg);CHKERRQ(ierr);
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-xmax",&user->xmax,&flg);CHKERRQ(ierr);
@@ -421,48 +420,11 @@ PetscErrorCode GetParams(AppCtx* user)
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-T",&user->T,&flg);CHKERRQ(ierr);
 	ierr = PetscOptionsGetReal(PETSC_NULL,"-dt",&user->dt,&flg);CHKERRQ(ierr);
 	ierr = PetscOptionsGetScalar(PETSC_NULL,"-epsilon",&user->epsilon,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsGetInt(PETSC_NULL,"-nx",&user->nx,&flg);CHKERRQ(ierr);
 	
 	PetscFunctionReturn(0);
 }
 
-static void Gausspoints(PetscScalar *xx,PetscScalar *yy,PetscScalar *w,PetscScalar *x,PetscScalar *y)
-{
-	
-	xx[0] = 2.0/3.0*x[0] + 1.0/6.0*x[1] + 1.0/6.0*x[2];
-	xx[1] = 1.0/6.0*x[0] + 2.0/3.0*x[1] + 1.0/6.0*x[2];
-	xx[2] = 1.0/6.0*x[0] + 1.0/6.0*x[1] + 2.0/3.0*x[2];
-	
-	yy[0] = 2.0/3.0*y[0] + 1.0/6.0*y[1] + 1.0/6.0*y[2];
-	yy[1] = 1.0/6.0*y[0] + 2.0/3.0*y[1] + 1.0/6.0*y[2];
-	yy[2] = 1.0/6.0*y[0] + 1.0/6.0*y[1] + 2.0/3.0*y[2];
-	
-	*w = PetscAbsScalar(x[0]*(y[2]-y[1]) + x[2]*(y[1]-y[0]) + x[1]*(y[0]-y[2]))/6.0;
-	
-}
-
-static void ShapefunctionsT3(PetscScalar *phi,PetscScalar phider[][2],PetscScalar xx,PetscScalar yy,PetscScalar *x,PetscScalar *y)
-{
-	PetscScalar area,a1,a2,a3,b1,b2,b3,c1,c2,c3,pp;
-	
-	/* Area of the triangle */
-	area = 1.0/2.0*PetscAbsScalar(x[0]*(y[2]-y[1]) + x[2]*(y[1]-y[0]) + x[1]*(y[0]-y[2]));
-	
-	a1 = x[1]*y[2]-x[2]*y[1]; a2 = x[2]*y[0]-x[0]*y[2]; a3 = x[0]*y[1]-x[1]*y[0];
-	b1 = y[1]-y[2]; b2 = y[2]-y[0]; b3 = y[0]-y[1];
-	c1 = x[2]-x[1]; c2 = x[0]-x[2]; c3 = x[1]-x[0];
-	pp = 1.0/(2.0*area);
-	
-	/* shape functions */
-	phi[0] = pp*(a1 + b1*xx + c1*yy);
-	phi[1] = pp*(a2 + b2*xx + c2*yy);
-	phi[2] = pp*(a3 + b3*xx + c3*yy);
-	
-	/* shape functions derivatives */
-	phider[0][0] = pp*b1; phider[0][1] = pp*c1;
-	phider[1][0] = pp*b2; phider[1][1] = pp*c2;
-	phider[2][0] = pp*b3; phider[2][1] = pp*c3;
-	
-}
 
 #undef __FUNCT__
 #define __FUNCT__ "SetUpMatrices"
@@ -474,15 +436,15 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
 	PetscScalar       dt=user->dt;
 	Vec               coords;
 	const PetscScalar *_coords;
-	PetscScalar       x[3],y[3],xx[3],yy[3],w;
+	PetscScalar       x[3],y[3];
 	PetscInt          idx[3];
-	PetscScalar       phi[3],phider[3][2];
-	PetscScalar       eM_0[3][3],eM_2[3][3];
+	PetscScalar       eM_0[3][3],eM_2_odd[3][3],eM_2_even[3][3];
 	Mat               M=user->M;
 	PetscScalar       epsilon=user->epsilon;
-	PetscInt n;
-	
-	
+	PetscScalar		  hx=1.0/(user->nx-1);
+	PetscInt n,Mda,Nda;
+	DM               da;
+	 
 	PetscFunctionBegin;
 	/* Get ghosted coordinates */
 	ierr = DMDAGetGhostedCoordinates(user->da,&coords);CHKERRQ(ierr);
@@ -491,9 +453,23 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
 	/* Create the mass matrix M_0 */
 	ierr = MatGetLocalSize(M,&n,PETSC_NULL);CHKERRQ(ierr);
 	
-	ierr = MatCreate(PETSC_COMM_WORLD,&user->M_0);CHKERRQ(ierr);
-	ierr = MatSetType(user->M_0,MATAIJ);CHKERRQ(ierr);
-	ierr = MatSetSizes(user->M_0,n/4,n/4,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+
+	/* ierr = MatCreate(PETSC_COMM_WORLD,&user->M_0);CHKERRQ(ierr);*/
+        ierr = DMDAGetInfo(user->da,PETSC_NULL,&Mda,&Nda,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL);
+        ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,Mda,Nda,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
+        ierr = DMGetMatrix(da,MATAIJ,&user->M_0);CHKERRQ(ierr);
+	ierr = DMDestroy(&da);CHKERRQ(ierr);
+	
+	eM_0[0][0]=eM_0[1][1]=eM_0[2][2]=hx*hx/12.0;
+	eM_0[0][1]=eM_0[0][2]=eM_0[1][0]=eM_0[1][2]=eM_0[2][0]=eM_0[2][1]=hx*hx/24.0;
+	
+	eM_2_odd[0][0]=1.0;
+	eM_2_odd[1][1]=eM_2_odd[2][2]=0.5;
+	eM_2_odd[0][1]=eM_2_odd[0][2]=eM_2_odd[1][0]=eM_2_odd[2][0]=-0.5;
+	
+	eM_2_even[1][1]=1;
+	eM_2_even[0][0]=eM_2_even[2][2]=0.5;
+	eM_2_even[0][1]=eM_2_even[1][0]=eM_2_even[1][2]=eM_2_even[2][1]=-0.5;
 	
 	/* Get local element info */
 	ierr = DMDAGetElements(user->da,&nele,&nen,&ele);CHKERRQ(ierr);
@@ -503,34 +479,7 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
 		x[1] = _coords[2*idx[1]]; y[1] = _coords[2*idx[1]+1];
 		x[2] = _coords[2*idx[2]]; y[2] = _coords[2*idx[2]+1];
 		
-		ierr = PetscMemzero(xx,3*sizeof(PetscScalar));CHKERRQ(ierr);
-		ierr = PetscMemzero(yy,3*sizeof(PetscScalar));CHKERRQ(ierr);
-		Gausspoints(xx,yy,&w,x,y);
-		
-		eM_0[0][0]=eM_0[0][1]=eM_0[0][2]=0.0;
-		eM_0[1][0]=eM_0[1][1]=eM_0[1][2]=0.0;
-		eM_0[2][0]=eM_0[2][1]=eM_0[2][2]=0.0;
-		eM_2[0][0]=eM_2[0][1]=eM_2[0][2]=0.0;
-		eM_2[1][0]=eM_2[1][1]=eM_2[1][2]=0.0;
-		eM_2[2][0]=eM_2[2][1]=eM_2[2][2]=0.0;
-				
-		PetscInt m;
-		for(m=0;m<3;m++) {
-			ierr = PetscMemzero(phi,3*sizeof(PetscScalar));CHKERRQ(ierr);
-			phider[0][0]=phider[0][1]=0.0;
-			phider[1][0]=phider[1][1]=0.0;
-			phider[2][0]=phider[2][1]=0.0;
-			
-			ShapefunctionsT3(phi,phider,xx[m],yy[m],x,y);
-			
-			PetscInt j,k;
-			for(j=0;j<3;j++) {
-				for(k=0;k<3;k++) {
-					eM_0[k][j] += phi[j]*phi[k]*w;
-					eM_2[k][j] += phider[j][0]*phider[k][0]*w + phider[j][1]*phider[k][1]*w;
-				}
-			}
-		}
+						
 		PetscInt    row,cols[3],r,row_M_0;
 		PetscScalar vals[3],vals_M_0[3];
 		
@@ -543,27 +492,50 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
 			
 			ierr = MatSetValues(user->M_0,1,&row_M_0,3,idx,vals_M_0,ADD_VALUES);CHKERRQ(ierr);
 			
-			row = 4*idx[r];
-			cols[0] = 4*idx[0];     vals[0] = eM_0[r][0]+dt*epsilon*epsilon*eM_2[r][0];
-			cols[1] = 4*idx[1];     vals[1] = eM_0[r][1]+dt*epsilon*epsilon*eM_2[r][1];
-			cols[2] = 4*idx[2];     vals[2] = eM_0[r][2]+dt*epsilon*epsilon*eM_2[r][2];
-			/* Insert values in matrix M for 1st dof */
-			ierr = MatSetValuesLocal(M,1,&row,3,cols,vals,ADD_VALUES);CHKERRQ(ierr);
+			if (y[1]==y[0]) {
+				row = 4*idx[r];
+				cols[0] = 4*idx[0];     vals[0] = eM_0[r][0]+dt*epsilon*epsilon*eM_2_odd[r][0];
+				cols[1] = 4*idx[1];     vals[1] = eM_0[r][1]+dt*epsilon*epsilon*eM_2_odd[r][1];
+				cols[2] = 4*idx[2];     vals[2] = eM_0[r][2]+dt*epsilon*epsilon*eM_2_odd[r][2];
+				/* Insert values in matrix M for 1st dof */
+				ierr = MatSetValuesLocal(M,1,&row,3,cols,vals,ADD_VALUES);CHKERRQ(ierr);
 
-			row = 4*idx[r]+1;
-			cols[0] = 4*idx[0]+1;   vals[0] = eM_0[r][0]+dt*epsilon*epsilon*eM_2[r][0];
-			cols[1] = 4*idx[1]+1;   vals[1] = eM_0[r][1]+dt*epsilon*epsilon*eM_2[r][1];
-			cols[2] = 4*idx[2]+1;   vals[2] = eM_0[r][2]+dt*epsilon*epsilon*eM_2[r][2];
-			/* Insert values in matrix M for 2nd dof */
-			ierr = MatSetValuesLocal(M,1,&row,3,cols,vals,ADD_VALUES);CHKERRQ(ierr);  
+				row = 4*idx[r]+1;
+				cols[0] = 4*idx[0]+1;   vals[0] = eM_0[r][0]+dt*epsilon*epsilon*eM_2_odd[r][0];
+				cols[1] = 4*idx[1]+1;   vals[1] = eM_0[r][1]+dt*epsilon*epsilon*eM_2_odd[r][1];
+				cols[2] = 4*idx[2]+1;   vals[2] = eM_0[r][2]+dt*epsilon*epsilon*eM_2_odd[r][2];
+				/* Insert values in matrix M for 2nd dof */
+				ierr = MatSetValuesLocal(M,1,&row,3,cols,vals,ADD_VALUES);CHKERRQ(ierr);  
 
-			row = 4*idx[r]+2;
-			cols[0] = 4*idx[0]+2;   vals[0] = eM_0[r][0]+dt*epsilon*epsilon*eM_2[r][0];
-			cols[1] = 4*idx[1]+2;   vals[1] = eM_0[r][1]+dt*epsilon*epsilon*eM_2[r][1];
-			cols[2] = 4*idx[2]+2;   vals[2] = eM_0[r][2]+dt*epsilon*epsilon*eM_2[r][2];
-			/* Insert values in matrix M for 3nd dof */
-			ierr = MatSetValuesLocal(M,1,&row,3,cols,vals,ADD_VALUES);CHKERRQ(ierr);  
-
+				row = 4*idx[r]+2;
+				cols[0] = 4*idx[0]+2;   vals[0] = eM_0[r][0]+dt*epsilon*epsilon*eM_2_odd[r][0];
+				cols[1] = 4*idx[1]+2;   vals[1] = eM_0[r][1]+dt*epsilon*epsilon*eM_2_odd[r][1];
+				cols[2] = 4*idx[2]+2;   vals[2] = eM_0[r][2]+dt*epsilon*epsilon*eM_2_odd[r][2];
+				/* Insert values in matrix M for 3nd dof */
+				ierr = MatSetValuesLocal(M,1,&row,3,cols,vals,ADD_VALUES);CHKERRQ(ierr);  
+			}
+			else{
+				row = 4*idx[r];
+				cols[0] = 4*idx[0];     vals[0] = eM_0[r][0]+dt*epsilon*epsilon*eM_2_even[r][0];
+				cols[1] = 4*idx[1];     vals[1] = eM_0[r][1]+dt*epsilon*epsilon*eM_2_even[r][1];
+				cols[2] = 4*idx[2];     vals[2] = eM_0[r][2]+dt*epsilon*epsilon*eM_2_even[r][2];
+				/* Insert values in matrix M for 1st dof */
+				ierr = MatSetValuesLocal(M,1,&row,3,cols,vals,ADD_VALUES);CHKERRQ(ierr);
+				
+				row = 4*idx[r]+1;
+				cols[0] = 4*idx[0]+1;   vals[0] = eM_0[r][0]+dt*epsilon*epsilon*eM_2_even[r][0];
+				cols[1] = 4*idx[1]+1;   vals[1] = eM_0[r][1]+dt*epsilon*epsilon*eM_2_even[r][1];
+				cols[2] = 4*idx[2]+1;   vals[2] = eM_0[r][2]+dt*epsilon*epsilon*eM_2_even[r][2];
+				/* Insert values in matrix M for 2nd dof */
+				ierr = MatSetValuesLocal(M,1,&row,3,cols,vals,ADD_VALUES);CHKERRQ(ierr);  
+				
+				row = 4*idx[r]+2;
+				cols[0] = 4*idx[0]+2;   vals[0] = eM_0[r][0]+dt*epsilon*epsilon*eM_2_even[r][0];
+				cols[1] = 4*idx[1]+2;   vals[1] = eM_0[r][1]+dt*epsilon*epsilon*eM_2_even[r][1];
+				cols[2] = 4*idx[2]+2;   vals[2] = eM_0[r][2]+dt*epsilon*epsilon*eM_2_even[r][2];
+				/* Insert values in matrix M for 3nd dof */
+				ierr = MatSetValuesLocal(M,1,&row,3,cols,vals,ADD_VALUES);CHKERRQ(ierr);  
+			}
 		}
 	}
 	
