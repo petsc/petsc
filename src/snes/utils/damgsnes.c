@@ -550,6 +550,9 @@ PetscErrorCode DMMGSolveSNES(DMMG *dmmg,PetscInt level)
     DMMGSetSNES - Sets the nonlinear function that defines the nonlinear set of equations
     to be solved using the grid hierarchy.
 
+    This is being deprecated. Use KSPSetDM() for linear problems and SNESSetDM() for nonlinear problems. 
+    See src/ksp/ksp/examples/tutorials/ex45.c and src/snes/examples/tutorials/ex57.c 
+
     Collective on DMMG
 
     Input Parameter:
@@ -815,6 +818,9 @@ PetscErrorCode  DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*function)(SNES,Vec,Vec,v
 /*@C
     DMMGSetFromOptions - Sets various options associated with the DMMG object
 
+    This is being deprecated. Use KSPSetDM() for linear problems and SNESSetDM() for nonlinear problems. 
+    See src/ksp/ksp/examples/tutorials/ex45.c and src/snes/examples/tutorials/ex57.c 
+
     Collective on DMMG
 
     Input Parameter:
@@ -850,6 +856,9 @@ PetscErrorCode  DMMGSetFromOptions(DMMG *dmmg)
     DMMGSetSNESLocalFD - Sets the local user function that is used to approximately compute the Jacobian
         via finite differences.
 
+    This is being deprecated. Use KSPSetDM() for linear problems and SNESSetDM() for nonlinear problems. 
+    See src/ksp/ksp/examples/tutorials/ex45.c and src/snes/examples/tutorials/ex57.c 
+
     Logically Collective on DMMG
 
     Input Parameter:
@@ -877,6 +886,9 @@ PetscErrorCode DMMGSetSNESLocalFD(DMMG *dmmg,DMDALocalFunction1 function)
 #define __FUNCT__ "DMMGSetSNESLocal_Private"
 /*@C
   DMMGGetSNESLocal - Returns the local functions for residual and Jacobian evaluation.
+
+    This is being deprecated. Use KSPSetDM() for linear problems and SNESSetDM() for nonlinear problems. 
+    See src/ksp/ksp/examples/tutorials/ex45.c and src/snes/examples/tutorials/ex57.c 
 
   Not Collective
 
@@ -1093,7 +1105,10 @@ PetscErrorCode  DMMGInitialGuess_Local(DMMG dmmg,Vec x)
 /*@C
     DMMGSetInitialGuessLocal - sets code to compute the initial guess for each level
 
-    Logically Collective on DMMG
+       This is being deprecated. Use KSPSetDM() for linear problems and SNESSetDM() for nonlinear problems. 
+    See src/ksp/ksp/examples/tutorials/ex45.c and src/snes/examples/tutorials/ex57.c 
+
+ Logically Collective on DMMG
 
     Input Parameter:
 +   dmmg - the context
@@ -1119,6 +1134,9 @@ PetscErrorCode DMMGSetInitialGuessLocal(DMMG *dmmg,PetscErrorCode (*localguess)(
 #define __FUNCT__ "DMMGSetISColoringType"
 /*@C
     DMMGSetISColoringType - type of coloring used to compute Jacobian via finite differencing
+
+    This is being deprecated. Use KSPSetDM() for linear problems and SNESSetDM() for nonlinear problems. 
+    See src/ksp/ksp/examples/tutorials/ex45.c and src/snes/examples/tutorials/ex57.c 
 
     Logically Collective on DMMG
 
@@ -1148,6 +1166,9 @@ PetscErrorCode DMMGSetISColoringType(DMMG *dmmg,ISColoringType isctype)
 #define __FUNCT__ "DMMGSetUp"
 /*@C
     DMMGSetUp - Called after DMMGSetSNES() and (optionally) DMMGSetFromOptions()
+
+    This is being deprecated. Use KSPSetDM() for linear problems and SNESSetDM() for nonlinear problems. 
+    See src/ksp/ksp/examples/tutorials/ex45.c and src/snes/examples/tutorials/ex57.c 
 
     Collective on DMMG
 

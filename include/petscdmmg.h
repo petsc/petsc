@@ -11,6 +11,9 @@ PETSC_EXTERN_CXX_BEGIN
      DMMGArray - Fortran only. This is used in the main program when doing DMMGCreate(), DMMGSetDM() etc.
         in the subroutines like FormFunction() one should use DMMG.
 
+    This is being deprecated. Use KSPSetDM() for linear problems and SNESSetDM() for nonlinear problems. 
+    See src/ksp/ksp/examples/tutorials/ex45.c and src/snes/examples/tutorials/ex57.c 
+
         You can use DMMGArrayGetDMMG(DMMGArray,DMMG,ierr) to obtain the DMMG from a DMMG.
 
    Level: intermediate
@@ -23,6 +26,9 @@ S*/
 
 /*S
      DMMG -  Data structure to easily manage multi-level non-linear solvers on grids managed by DM
+
+    This is being deprecated. Use KSPSetDM() for linear problems and SNESSetDM() for nonlinear problems. 
+    See src/ksp/ksp/examples/tutorials/ex45.c and src/snes/examples/tutorials/ex57.c 
           
    Level: intermediate
 

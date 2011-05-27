@@ -8,6 +8,10 @@ Runtime options include:\n\
 -gamma <gamma>\n\
 -theta_c <theta_c>\n\n";
 
+/*
+  ./ex55 -ksp_type fgmres -pc_type fieldsplit -pc_fieldsplit_detect_saddle_point -pc_fieldsplit_type schur -pc_fieldsplit_schur_precondition self -fieldsplit_1_ksp_type fgmres -fieldsplit_1_pc_type lsc -snes_vi_monitor -ksp_monitor_true_residual -ksp_monitor_true_residual -fieldsplit_ksp_monitor 
+ */
+
 #include "petscsnes.h"
 #include "petscdmda.h"
 
