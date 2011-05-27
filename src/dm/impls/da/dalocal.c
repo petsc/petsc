@@ -232,6 +232,40 @@ PetscErrorCode  DMGetGlobalVector(DM dm,Vec* g)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "DMClearGlobalVectors"
+/*@
+   DMClearGlobalVectors - Destroys all the global vectors that have been stashed in this DM
+
+   Collective on DM
+
+   Input Parameter:
+.  dm - the distributed array
+
+   Level: developer
+
+.keywords: distributed array, create, Global, vector
+
+.seealso: DMCreateGlobalVector(), VecDuplicate(), VecDuplicateVecs(),
+          DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMGlobalToLocalBegin(),
+          DMGlobalToLocalEnd(), DMLocalToGlobalBegin(), DMCreateLocalVector(), DMRestoreLocalVector()
+          VecStrideMax(), VecStrideMin(), VecStrideNorm()
+
+@*/
+PetscErrorCode  DMClearGlobalVectors(DM dm)
+{
+  PetscErrorCode ierr;
+  PetscInt       i;
+
+  PetscFunctionBegin; 
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  for (i=0; i<DM_MAX_WORK_VECTORS; i++) {
+    if (dm->globalout[i]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Clearing DM of global vectors that has a global vector obtained with DMGetGlobalVector()");
+    ierr = VecDestroy(&dm->globalin[i]);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "DMRestoreGlobalVector"
 /*@
    DMRestoreGlobalVector - Returns a Seq PETSc vector that

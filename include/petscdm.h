@@ -111,6 +111,7 @@ extern PetscErrorCode   DMGetLocalVector(DM,Vec *);
 extern PetscErrorCode   DMRestoreLocalVector(DM,Vec *);
 extern PetscErrorCode   DMGetGlobalVector(DM,Vec *);
 extern PetscErrorCode   DMRestoreGlobalVector(DM,Vec *);
+extern PetscErrorCode   DMClearGlobalVectors(DM);
 extern PetscErrorCode   DMGetLocalToGlobalMapping(DM,ISLocalToGlobalMapping*);
 extern PetscErrorCode   DMGetLocalToGlobalMappingBlock(DM,ISLocalToGlobalMapping*);
 extern PetscErrorCode   DMGetBlockSize(DM,PetscInt*);

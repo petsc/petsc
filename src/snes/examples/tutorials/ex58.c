@@ -28,6 +28,9 @@ The command line options are:\n\
 
 /*
      This is a new version of the ../tests/ex8.c code
+
+     Run, for example, with the options -snes_vi_monitor -ksp_monitor -mg_levels_ksp_monitor -pc_type mg -pc_mg_levels 2 -pc_mg_galerkin
+
 */
 
 typedef struct {

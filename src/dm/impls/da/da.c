@@ -779,9 +779,9 @@ PetscErrorCode  DMCoarsen_DA(DM da, MPI_Comm comm,DM *daref)
   }
   dd2 = (DM_DA*)da2->data;
 
-  /* allow overloaded (user replaced) operations to be inherited by refinement clones */
+  /* allow overloaded (user replaced) operations to be inherited by refinement clones; why are only some inherited and not all? */
+  /* da2->ops->getinterpolation = da->ops->getinterpolation; copying this one causes trouble for DMSetVI */
   da2->ops->getmatrix        = da->ops->getmatrix;
-  da2->ops->getinterpolation = da->ops->getinterpolation;
   da2->ops->getcoloring      = da->ops->getcoloring;
   dd2->interptype            = dd->interptype;
   

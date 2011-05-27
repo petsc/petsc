@@ -5,6 +5,7 @@
 #include <../include/private/dmimpl.h>
 
 typedef struct {
+  PetscInt       n;                                        /* size of vectors in the reduced DM space */
   IS             inactive;
   Vec            upper,lower,values,F;                    /* upper and lower bounds of all variables on this level, the values and the function values */
   PetscErrorCode (*getinterpolation)(DM,DM,Mat*,Vec*);    /* DM's original routines */
@@ -60,6 +61,26 @@ PetscErrorCode SNESVIGetInActiveSetIS(Vec upper,Vec lower,Vec X,Vec F,IS* inact)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "DMCreateGlobalVector_SNESVI"
+/*
+     DMCreateGlobalVector_SNESVI - Creates global vector of the size of the reduced space
+
+*/
+PetscErrorCode  DMCreateGlobalVector_SNESVI(DM dm,Vec *vec)
+{
+  PetscErrorCode          ierr;
+  PetscContainer          isnes;
+  DMSNESVI                *dmsnesvi;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectQuery((PetscObject)dm,"VI",(PetscObject *)&isnes);CHKERRQ(ierr);
+  if (!isnes) SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_PLIB,"Composed SNES is missing");
+  ierr = PetscContainerGetPointer(isnes,(void**)&dmsnesvi);CHKERRQ(ierr);
+  ierr = VecCreateMPI(((PetscObject)dm)->comm,dmsnesvi->n,PETSC_DETERMINE,vec);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "DMGetInterpolation_SNESVI"
 /*
      DMGetInterpolation_SNESVI - Modifieds the interpolation obtained from the DM by removing all rows and columns associated with active constraints.
@@ -74,14 +95,14 @@ PetscErrorCode  DMGetInterpolation_SNESVI(DM dm1,DM dm2,Mat *mat,Vec *vec)
 
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject)dm1,"VI",(PetscObject *)&isnes);CHKERRQ(ierr);
-  if (isnes) SETERRQ(((PetscObject)dm1)->comm,PETSC_ERR_PLIB,"Composed SNES is missing");
+  if (!isnes) SETERRQ(((PetscObject)dm1)->comm,PETSC_ERR_PLIB,"Composed SNES is missing");
   ierr = PetscContainerGetPointer(isnes,(void**)&dmsnesvi1);CHKERRQ(ierr);
   ierr = PetscObjectQuery((PetscObject)dm2,"VI",(PetscObject *)&isnes);CHKERRQ(ierr);
-  if (isnes) SETERRQ(((PetscObject)dm2)->comm,PETSC_ERR_PLIB,"Composed SNES is missing");
+  if (!isnes) SETERRQ(((PetscObject)dm2)->comm,PETSC_ERR_PLIB,"Composed SNES is missing");
   ierr = PetscContainerGetPointer(isnes,(void**)&dmsnesvi2);CHKERRQ(ierr);
   
   ierr = (*dmsnesvi1->getinterpolation)(dm1,dm2,&interp,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatGetSubMatrix(interp,dmsnesvi1->inactive,dmsnesvi2->inactive,MAT_INITIAL_MATRIX,mat);CHKERRQ(ierr);
+  ierr = MatGetSubMatrix(interp,dmsnesvi2->inactive,dmsnesvi1->inactive,MAT_INITIAL_MATRIX,mat);CHKERRQ(ierr);
   ierr = MatDestroy(&interp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -105,7 +126,7 @@ PetscErrorCode  DMCoarsen_SNESVI(DM dm1,MPI_Comm comm,DM *dm2)
 
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject)dm1,"VI",(PetscObject *)&isnes);CHKERRQ(ierr);
-  if (isnes) SETERRQ(((PetscObject)dm1)->comm,PETSC_ERR_PLIB,"Composed SNES is missing");
+  if (!isnes) SETERRQ(((PetscObject)dm1)->comm,PETSC_ERR_PLIB,"Composed SNES is missing");
   ierr = PetscContainerGetPointer(isnes,(void**)&dmsnesvi1);CHKERRQ(ierr);
   
   ierr = (*dmsnesvi1->coarsen)(dm1,comm,dm2);CHKERRQ(ierr);
@@ -158,6 +179,7 @@ PetscErrorCode  DMSetVI(DM dm,Vec upper,Vec lower,Vec values,Vec F,IS inactive)
   DMSNESVI                *dmsnesvi;
 
   PetscFunctionBegin;
+  if (!dm) PetscFunctionReturn(0);
   ierr = PetscObjectReference((PetscObject)upper);CHKERRQ(ierr);
   ierr = PetscObjectReference((PetscObject)lower);CHKERRQ(ierr);
   ierr = PetscObjectReference((PetscObject)values);CHKERRQ(ierr);
@@ -172,10 +194,11 @@ PetscErrorCode  DMSetVI(DM dm,Vec upper,Vec lower,Vec values,Vec F,IS inactive)
     ierr = PetscNew(DMSNESVI,&dmsnesvi);CHKERRQ(ierr);
     ierr = PetscContainerSetPointer(isnes,(void*)dmsnesvi);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject)dm,"VI",(PetscObject)isnes);CHKERRQ(ierr);
-    dmsnesvi->getinterpolation = dm->ops->getinterpolation;
-    dm->ops->getinterpolation  = DMGetInterpolation_SNESVI;
-    dmsnesvi->coarsen          = dm->ops->coarsen;
-    dm->ops->coarsen           = DMCoarsen_SNESVI;
+    dmsnesvi->getinterpolation  = dm->ops->getinterpolation;
+    dm->ops->getinterpolation   = DMGetInterpolation_SNESVI;
+    dmsnesvi->coarsen           = dm->ops->coarsen;
+    dm->ops->coarsen            = DMCoarsen_SNESVI;
+    dm->ops->createglobalvector = DMCreateGlobalVector_SNESVI;
   } else {
     ierr = PetscContainerGetPointer(isnes,(void**)&dmsnesvi);CHKERRQ(ierr);
     ierr = VecDestroy(&dmsnesvi->upper);CHKERRQ(ierr);
@@ -184,6 +207,8 @@ PetscErrorCode  DMSetVI(DM dm,Vec upper,Vec lower,Vec values,Vec F,IS inactive)
     ierr = VecDestroy(&dmsnesvi->F);CHKERRQ(ierr);
     ierr = ISDestroy(&dmsnesvi->inactive);CHKERRQ(ierr);
   }
+  ierr = DMClearGlobalVectors(dm);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(inactive,&dmsnesvi->n);CHKERRQ(ierr);
   dmsnesvi->upper    = upper;
   dmsnesvi->lower    = lower;
   dmsnesvi->values   = values;
@@ -1013,6 +1038,9 @@ PetscErrorCode SNESSolveVI_RS(SNES snes)
 
     /* Create active and inactive index sets */
     ierr = SNESVICreateIndexSets_RS(snes,X,F,&IS_act,&IS_inact);CHKERRQ(ierr);
+
+    ierr = DMSetVI(snes->dm,vi->xu,vi->xl,X,F,IS_inact);CHKERRQ(ierr);
+
 
     /* Create inactive set submatrix */
     ierr = MatGetSubMatrix(snes->jacobian,IS_inact,IS_inact,MAT_INITIAL_MATRIX,&jac_inact_inact);CHKERRQ(ierr);

@@ -1987,7 +1987,13 @@ PetscErrorCode MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,PetscInt csize,Mat
     ierr  = PetscMalloc(oldcols*sizeof(PetscInt),&smap);CHKERRQ(ierr);
     ierr  = PetscMemzero(smap,oldcols*sizeof(PetscInt));CHKERRQ(ierr);
     ierr  = PetscMalloc((1+nrows)*sizeof(PetscInt),&lens);CHKERRQ(ierr);
-    for (i=0; i<ncols; i++) smap[icol[i]] = i+1;
+    for (i=0; i<ncols; i++) {
+#if defined(PETSC_USE_DEBUG)
+      if (icol[i] >= oldcols) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Requesting column beyond largest column icol[%D] %D <= A->cmap->n %D",i,icol[i],oldcols);
+#endif
+      smap[icol[i]] = i+1;
+    }
+
     /* determine lens of each row */
     for (i=0; i<nrows; i++) {
       kstart  = ai[irow[i]]; 
