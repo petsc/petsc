@@ -8,6 +8,7 @@
 */
 
 #include <petscsys.h>        /*I  "petscsys.h"   I*/
+#include <pthread.h>
 #if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
@@ -26,8 +27,34 @@
 PetscBool    PetscBeganMPI         = PETSC_FALSE;
 PetscBool    PetscInitializeCalled = PETSC_FALSE;
 PetscBool    PetscFinalizeCalled   = PETSC_FALSE;
+PetscBool    PetscUseThreadPool    = PETSC_FALSE;
+PetscBool    PetscThreadGo         = PETSC_TRUE;
 PetscMPIInt  PetscGlobalRank = -1;
 PetscMPIInt  PetscGlobalSize = -1;
+PetscMPIInt  PetscMaxThreads = 2;
+pthread_t*   PetscThreadPoint;
+pthread_barrier_t* BarrPoint;
+
+typedef struct {
+  pthread_mutex_t mutex;
+  pthread_cond_t cond;
+  void* (*pfunc)(void*);
+  void** pdata;
+  pthread_barrier_t* pbarr;
+  int iNumJobThreads;
+  int iNumReadyThreads;
+  PetscBool startJob;
+} sjob;
+sjob job = {PTHREAD_MUTEX_INITIALIZER,PTHREAD_COND_INITIALIZER,NULL,NULL,NULL,0,0,PETSC_FALSE};
+
+pthread_cond_t  main_cond  = PTHREAD_COND_INITIALIZER;
+
+void*          PetscThreadFunc(void*);
+void*          PetscThreadInitialize(PetscInt);
+PetscErrorCode PetscThreadFinalize(void);
+void           MainWait(void);
+void           MainJob(void* (*pFunc)(void*),void**,pthread_barrier_t*,PetscInt);
+void*          FuncFinish(void*);
 
 #if defined(PETSC_USE_COMPLEX)
 #if defined(PETSC_COMPLEX_INSTANTIATE)
@@ -294,6 +321,23 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
       Set the display variable for graphics
   */
   ierr = PetscSetDisplay();CHKERRQ(ierr);
+
+  /*
+      Determine whether user specified maximum number of threads
+   */
+  ierr = PetscOptionsHasName(PETSC_NULL,"-thread_max",&flg1);CHKERRQ(ierr);
+  if(flg1) {
+    ierr = PetscOptionsGetInt(PETSC_NULL,"-thread_max",&PetscMaxThreads,PETSC_NULL);CHKERRQ(ierr);
+  }
+
+  /*
+      Determine whether to use thread pool
+   */
+  ierr = PetscOptionsHasName(PETSC_NULL,"-use_thread_pool",&flg1);CHKERRQ(ierr);
+  if(flg1) {
+    PetscUseThreadPool = PETSC_TRUE;
+    PetscThreadInitialize(PetscMaxThreads);
+  }
 
   /*
       Print the PETSc version information
@@ -598,3 +642,127 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   PetscFunctionReturn(0);
 }
 
+void* PetscThreadFunc(void* arg) {
+  int ierr;
+  int* pId = (int*)arg;
+  int ThreadId = *pId;
+
+  ierr = pthread_mutex_lock(&job.mutex);
+  job.iNumReadyThreads++;
+  if(job.iNumReadyThreads==PetscMaxThreads) {
+    ierr = pthread_cond_signal(&main_cond);
+  }
+  //the while loop needs to have an exit
+  //the 'main' thread can terminate all the threads by performing a broacast
+  //and calling FuncFinish
+  while(PetscThreadGo) {
+    //need to check the condition to ensure we don't have to wait
+    //waiting when you don't have to causes problems
+    //also need to wait if another thread sneaks in and messes with the predicate
+    while(job.startJob==PETSC_FALSE&&job.iNumJobThreads==0) {
+      //upon entry, automically releases the lock and blocks
+      //upon return, has the lock
+      printf("Thread Blocking!\n");
+      ierr = pthread_cond_wait(&job.cond,&job.mutex);
+    }
+    job.startJob = PETSC_FALSE;
+    job.iNumJobThreads--;
+    job.iNumReadyThreads--;
+    printf("before JOB PDATA address 0 = %p\n",job.pdata[0]);
+    printf("before JOB PDATA address 1 = %p\n",job.pdata[1]);
+    if(job.pdata==NULL) {
+      job.pfunc(job.pdata);
+    }
+    else {
+      job.pfunc(job.pdata[PetscMaxThreads-job.iNumReadyThreads-1]);
+    }
+    printf("after JOB PDATA address 0 = %p\n",job.pdata[0]);
+    printf("after JOB PDATA address 1 = %p\n",job.pdata[1]);
+    pthread_mutex_unlock(&job.mutex);
+    pthread_barrier_wait(job.pbarr); //ensures all threads are finished
+    printf("Thread %d Got Past The Barrier!\n",ThreadId);
+    //do collection of results?
+    //reset job
+    if(PetscThreadGo) {
+      pthread_mutex_lock(&job.mutex);
+      job.iNumReadyThreads++;
+      if(job.iNumReadyThreads==PetscMaxThreads) {
+	//signal the 'main' thread that the job is done!
+	ierr = pthread_cond_signal(&main_cond);
+      }
+    }
+  }
+  printf("Thread Signing Off!\n");
+  return NULL;
+}
+
+void* PetscThreadInitialize(PetscInt N) {
+  PetscInt i;
+  int status;
+  int* p = &i;
+  printf("In Thread Initialize Function\n");
+  //allocate memory in the heap for the thread structure
+  PetscThreadPoint = (pthread_t*)malloc(N*sizeof(pthread_t));
+  BarrPoint = (pthread_barrier_t*)malloc((N+1)*sizeof(pthread_barrier_t)); //BarrPoint[0] makes no sense, don't use it!
+  for(i=0; i<N; i++) {
+    status = pthread_create(&PetscThreadPoint[i],NULL,PetscThreadFunc,p);
+    //error check to ensure proper thread creation
+    status = pthread_barrier_init(&BarrPoint[i+1],NULL,i+1);
+    //error check
+  }
+  return NULL;
+}
+
+PetscErrorCode PetscThreadFinalize() {
+  int i,ierr;
+  void* jstatus;
+
+  PetscFunctionBegin;
+  printf("In Thread Finalize Function\n");
+  MainWait(); //guarantee that all threads are ready to go
+  printf("Main Thread Done Waiting!\n");
+  MainJob(FuncFinish,NULL,&BarrPoint[PetscMaxThreads],PetscMaxThreads);  //set up job and broadcast work
+  printf("Main Thread Done With Finish Function!\n");
+  //join the threads
+  for(i=0; i<PetscMaxThreads; i++) {
+    ierr = pthread_join(PetscThreadPoint[i],&jstatus);
+    //do error checking
+  }
+  printf("Main Thread Done With Joins!\n");
+  free(BarrPoint);
+  free(PetscThreadPoint);
+  PetscFunctionReturn(0);
+}
+
+void MainWait() {
+  int ierr;
+
+  ierr = pthread_mutex_lock(&job.mutex);
+  while(job.iNumReadyThreads<PetscMaxThreads||job.startJob==PETSC_TRUE) {
+    ierr = pthread_cond_wait(&main_cond,&job.mutex);
+  }
+  //ierr = pthread_mutex_unlock(&job.mutex);
+}
+
+void MainJob(void* (*pFunc)(void*),void** data,pthread_barrier_t* barr,PetscInt n) {
+  int ierr;
+
+  //ierr = pthread_mutex_lock(&job.mutex);
+  printf("In Job, before, data[0] = %p\n",data[0]);
+  printf("In Job, before, data[1] = %p\n",data[1]);
+  job.pfunc = pFunc;
+  job.pdata = data;
+  printf("In Job, after, job.pdata[0] = %p\n",job.pdata[0]);
+  printf("In Job, after, job.pdata[1] = %p\n",job.pdata[1]);
+  job.pbarr = barr;
+  job.iNumJobThreads = n;
+  job.startJob = PETSC_TRUE;
+  ierr = pthread_cond_broadcast(&job.cond);
+  ierr = pthread_mutex_unlock(&job.mutex);
+}
+
+void* FuncFinish(void* arg) {
+  printf("In Thread Finish Function\n");
+  PetscThreadGo = PETSC_FALSE;
+  return NULL;
+}

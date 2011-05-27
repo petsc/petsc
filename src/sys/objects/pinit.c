@@ -13,7 +13,7 @@
 extern PetscErrorCode PetscLogBegin_Private(void);
 #endif
 extern PetscBool  PetscOpenMPWorker;
-
+extern PetscBool  PetscUseThreadPool;
 /* -----------------------------------------------------------------------------------------*/
 
 extern FILE *petsc_history;
@@ -24,6 +24,7 @@ extern PetscErrorCode PetscFListDestroyAll(void);
 extern PetscErrorCode PetscSequentialPhaseBegin_Private(MPI_Comm,int);
 extern PetscErrorCode PetscSequentialPhaseEnd_Private(MPI_Comm,int);
 extern PetscErrorCode PetscCloseHistoryFile(FILE **);
+extern PetscErrorCode PetscThreadFinalize(void);
 
 /* this is used by the _, __, and ___ macros (see include/petscerror.h) */
 PetscErrorCode __gierr = 0;
@@ -893,8 +894,10 @@ PetscErrorCode  PetscFinalize(void)
   }  
 #endif
 
-  ierr = PetscOpenMPFinalize();CHKERRQ(ierr); 
-
+  ierr = PetscOpenMPFinalize();CHKERRQ(ierr);
+  if(PetscUseThreadPool) {
+    ierr = PetscThreadFinalize();CHKERRQ(ierr);
+  }
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(PETSC_NULL,"-malloc_info",&flg2,PETSC_NULL);CHKERRQ(ierr);
   if (!flg2) {

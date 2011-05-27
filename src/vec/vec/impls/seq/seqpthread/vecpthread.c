@@ -6,34 +6,56 @@
 #include <petscconf.h>
 #include <private/vecimpl.h>          /*I "petscvec.h" I*/
 #include <../src/vec/vec/impls/dvecimpl.h>
+#include <petscblaslapack.h>
 #include <pthread.h>
+void           MainWait(void);
+void           MainJob(void* (*pFunc)(void*),void**,pthread_barrier_t*,PetscInt);
+extern PetscBool    PetscUseThreadPool;
+extern pthread_barrier_t* BarrPoint;
+#define giNUM_THREADS 2
+pthread_t apThread[giNUM_THREADS];
 
 typedef struct {
   const PetscScalar *x,*y;
   PetscInt          n;
   PetscScalar       result;
 } VecDot_KernelData;
+VecDot_KernelData kerneldatap[giNUM_THREADS];
+
+static inline void* PetscThreadRun(MPI_Comm Comm,void* funcp,int iNumThreads,void** data) {
+  PetscInt    ierr;
+  int i;
+  for(i=0; i<iNumThreads; i++) {
+    ierr = pthread_create(&apThread[i],NULL,funcp,data[i]);
+    //CHKERRQ((PetscErrorCode)ierr);
+  }
+  return NULL;
+}
+
+static inline void* PetscThreadStop(MPI_Comm Comm,int iNumThreads) {
+  int i;
+  void* joinstatus;
+  for (i=0; i<iNumThreads; i++) {
+    pthread_join(apThread[i], &joinstatus);
+  }
+  return NULL;
+}
 
 void *VecDot_Kernel(void *arg)
 {
-  VecDot_KernelData *data = arg;
+  VecDot_KernelData *data = (VecDot_KernelData*)arg;
   const PetscScalar *x, *y;
-  PetscScalar LocalSum = 0;
-  PetscInt    i,j,n;
-
+  PetscBLASInt one = 1, bn;
+  PetscInt    n;
+  printf("You Are in Thread Kernel With Data Address %p!\n",arg);
   x = data->x;
   y = data->y;
   n = data->n;
-  for (j=0; j<1000; j++) {
-  for (i=0; i<n; i++) {
-    LocalSum += x[i]*PetscConj(y[i]);
-  }
-  }
-  //LocalSum = LocalSum/100.0;
-  data->result = LocalSum;
+  bn = PetscBLASIntCast(n);
+  data->result = BLASdot_(&bn,x,&one,y,&one);
+  printf("Data Result = %f\n",data->result);
   return NULL;
 }
-VecDot_KernelData kerneldatap[2]; //must match iNumThreads below
 
 #undef __FUNCT__
 #define __FUNCT__ "VecDot_SeqPThread"
@@ -42,15 +64,11 @@ PetscErrorCode VecDot_SeqPThread(Vec xin,Vec yin,PetscScalar *z)
   const PetscScalar *ya,*xa;
   PetscErrorCode    ierr;
   PetscInt          i, iIndex = 0;
-  void              *joinstatus;
-  // VecDot_KernelData *kerneldatap;
-  const PetscInt    iNumThreads = 2;
-  pthread_t         aiThread[iNumThreads];
+  const PetscInt    iNumThreads = giNUM_THREADS;
   PetscInt          Q = xin->map->n/(iNumThreads);
   PetscInt          R = xin->map->n-Q*(iNumThreads);
   PetscBool         S;
-
-  //kerneldatap = (VecDot_KernelData*)malloc(iNumThreads*sizeof(VecDot_KernelData));
+  VecDot_KernelData* pdata[giNUM_THREADS];
 
   PetscFunctionBegin;
   ierr = VecGetArrayRead(xin,&xa);CHKERRQ(ierr);
@@ -61,27 +79,31 @@ PetscErrorCode VecDot_SeqPThread(Vec xin,Vec yin,PetscScalar *z)
     kerneldatap[i].x = &xa[iIndex];
     kerneldatap[i].y = &ya[iIndex];
     kerneldatap[i].n = S?Q+1:Q;
-    ierr = pthread_create(&aiThread[i], NULL, VecDot_Kernel, &kerneldatap[i]);CHKERRQ(ierr);
     iIndex += kerneldatap[i].n;
+    pdata[i] = &kerneldatap[i];
+    printf("Data Address %d = %p\n",i,pdata[i]);
   }
-
-  //code used if 'main' thread is to be a 'worker' too!
-  //kerneldatap[iNumThreads].x = &xa[iIndex];
-  //kerneldatap[iNumThreads].y = &ya[iIndex];
-  //kerneldatap[iNumThreads].n = Q;
-  //VecDot_Kernel(&kerneldatap[iNumThreads]);
-
-  for (i=0; i<iNumThreads; i++) {
-    pthread_join(aiThread[i], &joinstatus);
+  printf("Size of VecDot_KernelData  = %ld\n",sizeof(VecDot_KernelData)); 
+  if(PetscUseThreadPool) {
+    printf("Main Got INTO Wait Function\n");
+    MainWait();
+    printf("Main Got OUT of Wait Function\n");
+    MainJob(VecDot_Kernel,(void**)pdata,&BarrPoint[2],2);
+    printf("Main Processed Job!\n");
+    //*z = 99;
   }
-
-  ierr = VecRestoreArrayRead(xin,&xa);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(yin,&ya);CHKERRQ(ierr);
-  //*z = kerneldatap[iNumThreads].result;
-  for(i=0; i<iNumThreads; i++) {
+  else {
+    PetscThreadRun(MPI_COMM_WORLD,VecDot_Kernel,giNUM_THREADS,(void**)pdata);
+    PetscThreadStop(MPI_COMM_WORLD,giNUM_THREADS); //ensures that all threads are finished with the job
+  }
+  //gather result
+  for(i=0; i<giNUM_THREADS; i++) {
     *z += kerneldatap[i].result;
   }
-  //free(kerneldatap);
+  printf("Results Have Been Gathered With Value %f\n",*z);
+  ierr = VecRestoreArrayRead(xin,&xa);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(yin,&ya);CHKERRQ(ierr);
+
   if (xin->map->n > 0) {
     ierr = PetscLogFlops(2.0*xin->map->n-1);CHKERRQ(ierr);
   }
