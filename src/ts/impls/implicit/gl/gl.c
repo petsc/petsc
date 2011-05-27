@@ -8,6 +8,12 @@ static PetscFList TSGLAcceptList;
 static PetscBool  TSGLPackageInitialized;
 static PetscBool  TSGLRegisterAllCalled;
 
+#if defined(PETSC_USE_64BIT_INDICES)
+typedef int PowInt;
+#else
+typedef PetscInt PowInt;
+#endif
+
 /* This function is pure */
 static PetscScalar Factorial(PetscInt n)
 {
@@ -26,7 +32,7 @@ static PetscScalar Factorial(PetscInt n)
 /* This function is pure */
 static PetscScalar CPowF(PetscScalar c,PetscInt p)
 {
-  return PetscPowScalar(c,p)/Factorial(p);
+  return PetscPowScalar(c,(PowInt)p)/Factorial(p);
 }
 
 #undef __FUNCT__  
@@ -366,16 +372,16 @@ static PetscErrorCode TSGLCompleteStep_RescaleAndModify(TSGLScheme sc,PetscReal 
   for (i=0; i<r; i++) {
     ierr = VecZeroEntries(X[i]);CHKERRQ(ierr);
     for (j=0; j<s; j++) {
-      brow[j] = h*(PetscPowScalar(ratio,i)*sc->b[i*s+j]
-                   + (PetscPowScalar(ratio,i) - PetscPowScalar(ratio,p+1))*(+ sc->alpha[i]*sc->phi[0*s+j])
-                   + (PetscPowScalar(ratio,i) - PetscPowScalar(ratio,p+2))*(+ sc->beta [i]*sc->phi[1*s+j]
+      brow[j] = h*(PetscPowScalar(ratio,(PowInt)i)*sc->b[i*s+j]
+                   + (PetscPowScalar(ratio,(PowInt)i) - PetscPowScalar(ratio,(PowInt)p+1))*(+ sc->alpha[i]*sc->phi[0*s+j])
+                   + (PetscPowScalar(ratio,(PowInt)i) - PetscPowScalar(ratio,(PowInt)p+2))*(+ sc->beta [i]*sc->phi[1*s+j]
                                                       + sc->gamma[i]*sc->phi[2*s+j]));
     }
     ierr = VecMAXPY(X[i],s,brow,Ydot);CHKERRQ(ierr);
     for (j=0; j<r; j++) {
-      vrow[j] = (PetscPowScalar(ratio,i)*sc->v[i*r+j]
-                 + (PetscPowScalar(ratio,i) - PetscPowScalar(ratio,p+1))*(+ sc->alpha[i]*sc->psi[0*r+j])
-                 + (PetscPowScalar(ratio,i) - PetscPowScalar(ratio,p+2))*(+ sc->beta [i]*sc->psi[1*r+j]
+      vrow[j] = (PetscPowScalar(ratio,(PowInt)i)*sc->v[i*r+j]
+                 + (PetscPowScalar(ratio,(PowInt)i) - PetscPowScalar(ratio,(PowInt)p+1))*(+ sc->alpha[i]*sc->psi[0*r+j])
+                 + (PetscPowScalar(ratio,(PowInt)i) - PetscPowScalar(ratio,(PowInt)p+2))*(+ sc->beta [i]*sc->psi[1*r+j]
                                                     + sc->gamma[i]*sc->psi[2*r+j]));
     }
     ierr = VecMAXPY(X[i],r,vrow,Xold);CHKERRQ(ierr);
@@ -383,9 +389,9 @@ static PetscErrorCode TSGLCompleteStep_RescaleAndModify(TSGLScheme sc,PetscReal 
   if (r < next_sc->r) {
     if (r+1 != next_sc->r) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Cannot accommodate jump in r greater than 1");
     ierr = VecZeroEntries(X[r]);
-    for (j=0; j<s; j++) brow[j] = h*PetscPowScalar(ratio,p+1)*sc->phi[0*s+j];
+    for (j=0; j<s; j++) brow[j] = h*PetscPowScalar(ratio,(PowInt)p+1)*sc->phi[0*s+j];
     ierr = VecMAXPY(X[r],s,brow,Ydot);CHKERRQ(ierr);
-    for (j=0; j<r; j++) vrow[j] = PetscPowScalar(ratio,p+1)*sc->psi[0*r+j];
+    for (j=0; j<r; j++) vrow[j] = PetscPowScalar(ratio,(PowInt)p+1)*sc->psi[0*r+j];
     ierr = VecMAXPY(X[r],r,vrow,Xold);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -926,7 +932,7 @@ static PetscErrorCode TSStep_GL(TS ts,PetscInt *steps,PetscReal *ptime)
       */
       h *= 0.5;
       for (i=1; i<scheme->r; i++) {
-        ierr = VecScale(X[i],PetscPowScalar(0.5,i));CHKERRQ(ierr);
+        ierr = VecScale(X[i],PetscPowScalar(0.5,(PowInt)i));CHKERRQ(ierr);
       }
     }
     SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_CONV_FAILED,"Time step %D (t=%g) not accepted after %D failures\n",k,gl->stage_time,rejections);CHKERRQ(ierr);
