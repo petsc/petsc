@@ -83,20 +83,22 @@ PetscErrorCode VecDot_SeqPThread(Vec xin,Vec yin,PetscScalar *z)
     pdata[i] = &kerneldatap[i];
     printf("Data Address %d = %p\n",i,pdata[i]);
   }
-  printf("Size of VecDot_KernelData  = %ld\n",sizeof(VecDot_KernelData)); 
+
   if(PetscUseThreadPool) {
     printf("Main Got INTO Wait Function\n");
     MainWait();
     printf("Main Got OUT of Wait Function\n");
     MainJob(VecDot_Kernel,(void**)pdata,&BarrPoint[2],2);
     printf("Main Processed Job!\n");
-    //*z = 99;
   }
   else {
     PetscThreadRun(MPI_COMM_WORLD,VecDot_Kernel,giNUM_THREADS,(void**)pdata);
     PetscThreadStop(MPI_COMM_WORLD,giNUM_THREADS); //ensures that all threads are finished with the job
   }
+  //do i need to have main stall until i know the results are in?  YES!
+  MainWait();
   //gather result
+  *z = 0.0;
   for(i=0; i<giNUM_THREADS; i++) {
     *z += kerneldatap[i].result;
   }

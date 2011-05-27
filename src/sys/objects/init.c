@@ -34,6 +34,7 @@ PetscMPIInt  PetscGlobalSize = -1;
 PetscMPIInt  PetscMaxThreads = 2;
 pthread_t*   PetscThreadPoint;
 pthread_barrier_t* BarrPoint;
+int*         pVal;
 
 typedef struct {
   pthread_mutex_t mutex;
@@ -668,16 +669,12 @@ void* PetscThreadFunc(void* arg) {
     job.startJob = PETSC_FALSE;
     job.iNumJobThreads--;
     job.iNumReadyThreads--;
-    printf("before JOB PDATA address 0 = %p\n",job.pdata[0]);
-    printf("before JOB PDATA address 1 = %p\n",job.pdata[1]);
     if(job.pdata==NULL) {
       job.pfunc(job.pdata);
     }
     else {
       job.pfunc(job.pdata[PetscMaxThreads-job.iNumReadyThreads-1]);
     }
-    printf("after JOB PDATA address 0 = %p\n",job.pdata[0]);
-    printf("after JOB PDATA address 1 = %p\n",job.pdata[1]);
     pthread_mutex_unlock(&job.mutex);
     pthread_barrier_wait(job.pbarr); //ensures all threads are finished
     printf("Thread %d Got Past The Barrier!\n",ThreadId);
@@ -696,16 +693,20 @@ void* PetscThreadFunc(void* arg) {
   return NULL;
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscThreadInitialize"
 void* PetscThreadInitialize(PetscInt N) {
   PetscInt i;
   int status;
-  int* p = &i;
+  pVal = (int*)malloc(N*sizeof(int));
   printf("In Thread Initialize Function\n");
   //allocate memory in the heap for the thread structure
   PetscThreadPoint = (pthread_t*)malloc(N*sizeof(pthread_t));
   BarrPoint = (pthread_barrier_t*)malloc((N+1)*sizeof(pthread_barrier_t)); //BarrPoint[0] makes no sense, don't use it!
+  job.pdata = (void**)malloc(N*sizeof(void*));
   for(i=0; i<N; i++) {
-    status = pthread_create(&PetscThreadPoint[i],NULL,PetscThreadFunc,p);
+    pVal[i] = i;
+    status = pthread_create(&PetscThreadPoint[i],NULL,PetscThreadFunc,&pVal[i]);
     //error check to ensure proper thread creation
     status = pthread_barrier_init(&BarrPoint[i+1],NULL,i+1);
     //error check
@@ -713,6 +714,9 @@ void* PetscThreadInitialize(PetscInt N) {
   return NULL;
 }
 
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscThreadFinalize"
 PetscErrorCode PetscThreadFinalize() {
   int i,ierr;
   void* jstatus;
@@ -734,6 +738,8 @@ PetscErrorCode PetscThreadFinalize() {
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "MainWait"
 void MainWait() {
   int ierr;
 
@@ -741,19 +747,17 @@ void MainWait() {
   while(job.iNumReadyThreads<PetscMaxThreads||job.startJob==PETSC_TRUE) {
     ierr = pthread_cond_wait(&main_cond,&job.mutex);
   }
-  //ierr = pthread_mutex_unlock(&job.mutex);
+  ierr = pthread_mutex_unlock(&job.mutex);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "MainJob"
 void MainJob(void* (*pFunc)(void*),void** data,pthread_barrier_t* barr,PetscInt n) {
   int ierr;
 
-  //ierr = pthread_mutex_lock(&job.mutex);
-  printf("In Job, before, data[0] = %p\n",data[0]);
-  printf("In Job, before, data[1] = %p\n",data[1]);
+  ierr = pthread_mutex_lock(&job.mutex);
   job.pfunc = pFunc;
   job.pdata = data;
-  printf("In Job, after, job.pdata[0] = %p\n",job.pdata[0]);
-  printf("In Job, after, job.pdata[1] = %p\n",job.pdata[1]);
   job.pbarr = barr;
   job.iNumJobThreads = n;
   job.startJob = PETSC_TRUE;
