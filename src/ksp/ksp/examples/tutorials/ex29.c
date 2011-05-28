@@ -226,6 +226,7 @@ PetscErrorCode VecView_VTK(Vec x, const char filename[], const char bcName[])
   MPI_Status         status;
   PetscMPIInt        rank, size, tag, nn;
   PetscErrorCode     ierr;
+  PetscBool          flg;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject) x, &comm);CHKERRQ(ierr);
@@ -233,8 +234,10 @@ PetscErrorCode VecView_VTK(Vec x, const char filename[], const char bcName[])
 
   ierr = VecGetSize(x, &N);CHKERRQ(ierr);
   ierr = VecGetLocalSize(x, &n);CHKERRQ(ierr);
-  ierr = PetscObjectQuery((PetscObject) x, "DMDA", (PetscObject *) &da);CHKERRQ(ierr);
+  ierr = PetscObjectQuery((PetscObject) x, "DM", (PetscObject *) &da);CHKERRQ(ierr);
   if (!da) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Vector not generated from a DMDA");
+  ierr = PetscTypeCompare((PetscObject)da,DMDA,&flg);CHKERRQ(ierr);
+  if (!flg) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONG,"Vector not generated from a DMDA");
 
   ierr = DMDAGetInfo(da, 0, &mx, &my, 0,0,0,0, &dof,0,0,0,0,0);CHKERRQ(ierr);
 

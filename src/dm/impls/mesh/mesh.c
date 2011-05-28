@@ -276,7 +276,7 @@ PetscErrorCode DMMeshCreateMatrix(DM dm, SectionReal section, const MatType mtyp
   } catch(ALE::Exception e) {
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB, e.message());
   }
-  ierr = PetscObjectCompose((PetscObject) *J, "DMMesh", (PetscObject) dm);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject) *J, "DM", (PetscObject) dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -358,7 +358,7 @@ PetscErrorCode DMCreateGlobalVector_Mesh(DM dm, Vec *gvec)
   ierr = VecCreate(((PetscObject) dm)->comm, gvec);CHKERRQ(ierr);
   ierr = VecSetSizes(*gvec, order->getLocalSize(), order->getGlobalSize());CHKERRQ(ierr);
   ierr = VecSetFromOptions(*gvec);CHKERRQ(ierr);
-  ierr = PetscObjectCompose((PetscObject) *gvec, "DMMesh", (PetscObject) dm);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject) *gvec, "DM", (PetscObject) dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -415,7 +415,7 @@ PetscErrorCode DMCreateLocalVector_Mesh(DM dm, Vec *lvec)
   ierr = VecCreate(PETSC_COMM_SELF, lvec);CHKERRQ(ierr);
   ierr = VecSetSizes(*lvec, size, size);CHKERRQ(ierr);
   ierr = VecSetFromOptions(*lvec);CHKERRQ(ierr);
-  ierr = PetscObjectCompose((PetscObject) *lvec, "DMMesh", (PetscObject) dm);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject) *lvec, "DM", (PetscObject) dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -811,7 +811,7 @@ PetscErrorCode assembleVector(Vec b, PetscInt e, PetscScalar v[], InsertMode mod
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectQuery((PetscObject) b, "DMMesh", (PetscObject *) &dm);CHKERRQ(ierr);
+  ierr = PetscObjectQuery((PetscObject) b, "DM", (PetscObject *) &dm);CHKERRQ(ierr);
   ierr = DMMeshGetSectionReal(dm, "x", &section);CHKERRQ(ierr);
   ierr = assembleVector(b, dm, section, e, v, mode);CHKERRQ(ierr);
   ierr = SectionRealDestroy(&section);CHKERRQ(ierr);

@@ -4,15 +4,6 @@
 #include <../include/private/matimpl.h>
 #include <../include/private/dmimpl.h>
 
-typedef struct {
-  PetscInt       n;                                        /* size of vectors in the reduced DM space */
-  IS             inactive;
-  Vec            upper,lower,values,F;                    /* upper and lower bounds of all variables on this level, the values and the function values */
-  PetscErrorCode (*getinterpolation)(DM,DM,Mat*,Vec*);    /* DM's original routines */
-  PetscErrorCode (*coarsen)(DM, MPI_Comm, DM*); 
-  PetscErrorCode (*createglobalvector)(DM,Vec*);
-} DMSNESVI;
-
 #undef __FUNCT__
 #define __FUNCT__ "SNESVIGetInActiveSetIS"
 /*
@@ -61,6 +52,22 @@ PetscErrorCode SNESVIGetInActiveSetIS(Vec upper,Vec lower,Vec X,Vec F,IS* inact)
   PetscFunctionReturn(0);
 }
 
+/*
+    Provides a wrapper to a DM to allow it to be used to generated the interpolation/restriction from the DM for the smaller matrices and vectors 
+  defined by the reduced space method. 
+
+    Simple calls the regular DM interpolation and restricts it to operation on the variables not associated with active constraints.
+
+*/
+typedef struct {
+  PetscInt       n;                                        /* size of vectors in the reduced DM space */
+  IS             inactive;
+  Vec            upper,lower,values,F;                    /* upper and lower bounds of all variables on this level, the values and the function values */
+  PetscErrorCode (*getinterpolation)(DM,DM,Mat*,Vec*);    /* DM's original routines */
+  PetscErrorCode (*coarsen)(DM, MPI_Comm, DM*); 
+  PetscErrorCode (*createglobalvector)(DM,Vec*);
+} DM_SNESVI;
+
 #undef __FUNCT__  
 #define __FUNCT__ "DMCreateGlobalVector_SNESVI"
 /*
@@ -71,7 +78,7 @@ PetscErrorCode  DMCreateGlobalVector_SNESVI(DM dm,Vec *vec)
 {
   PetscErrorCode          ierr;
   PetscContainer          isnes;
-  DMSNESVI                *dmsnesvi;
+  DM_SNESVI               *dmsnesvi;
 
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject)dm,"VI",(PetscObject *)&isnes);CHKERRQ(ierr);
@@ -91,7 +98,7 @@ PetscErrorCode  DMGetInterpolation_SNESVI(DM dm1,DM dm2,Mat *mat,Vec *vec)
 {
   PetscErrorCode          ierr;
   PetscContainer          isnes;
-  DMSNESVI                *dmsnesvi1,*dmsnesvi2;
+  DM_SNESVI               *dmsnesvi1,*dmsnesvi2;
   Mat                     interp;
 
   PetscFunctionBegin;
@@ -120,7 +127,7 @@ PetscErrorCode  DMCoarsen_SNESVI(DM dm1,MPI_Comm comm,DM *dm2)
 {
   PetscErrorCode          ierr;
   PetscContainer          isnes;
-  DMSNESVI                *dmsnesvi1;
+  DM_SNESVI               *dmsnesvi1;
   Vec                     upper,lower,values,F;
   IS                      inactive;
   VecScatter              inject;
@@ -132,6 +139,9 @@ PetscErrorCode  DMCoarsen_SNESVI(DM dm1,MPI_Comm comm,DM *dm2)
   
   /* get the original coarsen */
   ierr = (*dmsnesvi1->coarsen)(dm1,comm,dm2);CHKERRQ(ierr);
+
+  /* not sure why this extra reference is needed, but without the dm2 disappears too early */
+  ierr = PetscObjectReference((PetscObject)*dm2);CHKERRQ(ierr);
 
   /* need to set back global vectors in order to use the original injection */
   ierr = DMClearGlobalVectors(dm1);CHKERRQ(ierr);
@@ -154,12 +164,17 @@ PetscErrorCode  DMCoarsen_SNESVI(DM dm1,MPI_Comm comm,DM *dm2)
   dm1->ops->createglobalvector = DMCreateGlobalVector_SNESVI;
   ierr = SNESVIGetInActiveSetIS(upper,lower,values,F,&inactive);CHKERRQ(ierr);
   ierr = DMSetVI(*dm2,upper,lower,values,F,inactive);CHKERRQ(ierr);
+  ierr = VecDestroy(&upper);CHKERRQ(ierr);
+  ierr = VecDestroy(&lower);CHKERRQ(ierr);
+  ierr = VecDestroy(&values);CHKERRQ(ierr);
+  ierr = VecDestroy(&F);CHKERRQ(ierr);
+  ierr = ISDestroy(&inactive);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DMSNESVIDestroy"
-PetscErrorCode DMSNESVIDestroy(DMSNESVI *dmsnesvi)
+#define __FUNCT__ "DMDestroy_SNESVI"
+PetscErrorCode DMDestroy_SNESVI(DM_SNESVI *dmsnesvi)
 {
   PetscErrorCode ierr;
   
@@ -184,7 +199,7 @@ PetscErrorCode  DMSetVI(DM dm,Vec upper,Vec lower,Vec values,Vec F,IS inactive)
 {
   PetscErrorCode          ierr;
   PetscContainer          isnes;
-  DMSNESVI                *dmsnesvi;
+  DM_SNESVI               *dmsnesvi;
 
   PetscFunctionBegin;
   if (!dm) PetscFunctionReturn(0);
@@ -196,12 +211,12 @@ PetscErrorCode  DMSetVI(DM dm,Vec upper,Vec lower,Vec values,Vec F,IS inactive)
 
   ierr = PetscObjectQuery((PetscObject)dm,"VI",(PetscObject *)&isnes);CHKERRQ(ierr);
   if (!isnes) {
-    /* cannot just compose snes into dm because that will cause circular reference */
     ierr = PetscContainerCreate(((PetscObject)dm)->comm,&isnes);CHKERRQ(ierr);
-    ierr = PetscContainerSetUserDestroy(isnes,(PetscErrorCode (*)(void*))DMSNESVIDestroy);CHKERRQ(ierr);
-    ierr = PetscNew(DMSNESVI,&dmsnesvi);CHKERRQ(ierr);
+    ierr = PetscContainerSetUserDestroy(isnes,(PetscErrorCode (*)(void*))DMDestroy_SNESVI);CHKERRQ(ierr);
+    ierr = PetscNew(DM_SNESVI,&dmsnesvi);CHKERRQ(ierr);
     ierr = PetscContainerSetPointer(isnes,(void*)dmsnesvi);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject)dm,"VI",(PetscObject)isnes);CHKERRQ(ierr);
+    ierr = PetscContainerDestroy(&isnes);CHKERRQ(ierr);
     dmsnesvi->getinterpolation   = dm->ops->getinterpolation;
     dm->ops->getinterpolation    = DMGetInterpolation_SNESVI;
     dmsnesvi->coarsen            = dm->ops->coarsen;
@@ -223,10 +238,15 @@ PetscErrorCode  DMSetVI(DM dm,Vec upper,Vec lower,Vec values,Vec F,IS inactive)
   dmsnesvi->values   = values;
   dmsnesvi->F        = F;
   dmsnesvi->inactive = inactive;
+  /* since these vectors may reference the DM, need to remove circle referencing */
+  ierr = PetscObjectCompose((PetscObject)dmsnesvi->upper,"DM",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject)dmsnesvi->lower,"DM",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject)dmsnesvi->values,"DM",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject)dmsnesvi->F,"DM",PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-
+/* --------------------------------------------------------------------------------------------------------*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "SNESMonitorVI"

@@ -549,10 +549,12 @@ PetscErrorCode  PetscObjectSetPrecision(PetscObject obj,PetscPrecision precision
          Thus must be cast with a (PetscObject), for example, 
          PetscObjectCompose((PetscObject)mat,...);
 .  name - name associated with child object 
--  ptr - the other PETSc object associated with the PETSc object, this must also be 
-         cast with (PetscObject)
+-  ptr - the other PETSc object associated with the PETSc object, this must be 
+         cast with (PetscObject *)
 
    Level: advanced
+
+   The reference count of neither object is increased in this call
 
    Concepts: objects^composing
    Concepts: composing objects
@@ -739,7 +741,7 @@ PetscClassId  PETSC_CONTAINER_CLASSID;
    PetscContainerCreate - Creates a PETSc object that has room to hold
    a single pointer. This allows one to attach any type of data (accessible
    through a pointer) with the PetscObjectCompose() function to a PetscObject.
-   The data item itself is attached by a call to PetscContainerSetPointer.
+   The data item itself is attached by a call to PetscContainerSetPointer().
 
    Collective on MPI_Comm
 

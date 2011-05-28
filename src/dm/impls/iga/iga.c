@@ -53,7 +53,7 @@ PetscErrorCode DMCreateGlobalVector_IGA(DM dm, Vec *gvec)
 
   PetscFunctionBegin;
   ierr = DMCreateGlobalVector(iga->da_dof, gvec);CHKERRQ(ierr);
-  ierr = PetscObjectCompose((PetscObject)*gvec,"DMIGA",(PetscObject)dm);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject)*gvec,"DM",(PetscObject)dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -66,7 +66,7 @@ PetscErrorCode DMCreateLocalVector_IGA(DM dm, Vec *lvec)
 
   PetscFunctionBegin;
   ierr = DMCreateLocalVector(iga->da_dof, lvec);CHKERRQ(ierr);
-  ierr = PetscObjectCompose((PetscObject)*lvec,"DMIGA",(PetscObject)dm);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject)*lvec,"DM",(PetscObject)dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -79,7 +79,7 @@ PetscErrorCode DMGetMatrix_IGA(DM dm, const MatType mtype, Mat *J)
 
   PetscFunctionBegin;
   ierr = DMGetMatrix(iga->da_dof, mtype, J);CHKERRQ(ierr);
-  ierr = PetscObjectCompose((PetscObject)*J,"DMIGA",(PetscObject)dm);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject)*J,"DM",(PetscObject)dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -952,6 +952,8 @@ PetscErrorCode  KSPSetDM(KSP ksp,DM dm)
 
    Level: intermediate
 
+   Notes:
+   By default KSPSetDM() sets the DM as active, call KSPSetDMActive(dm,PETSC_FALSE); after KSPSetDM(dm) to not have the KSP object use the DM to generate the matrices
 
 .seealso: KSPGetDM(), KSPSetDM(), KSPGetDM()
 @*/

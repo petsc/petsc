@@ -737,7 +737,7 @@ PetscErrorCode  VecView_DMComposite(Vec gvec,PetscViewer viewer)
   DM_Composite           *com;
 
   PetscFunctionBegin;
-  ierr = PetscObjectQuery((PetscObject)gvec,"DMComposite",(PetscObject*)&dm);CHKERRQ(ierr);
+  ierr = PetscObjectQuery((PetscObject)gvec,"DM",(PetscObject*)&dm);CHKERRQ(ierr);
   if (!dm) SETERRQ(((PetscObject)gvec)->comm,PETSC_ERR_ARG_WRONG,"Vector not generated from a DMComposite");
   com = (DM_Composite*)dm->data;
   next = com->next;
@@ -791,7 +791,7 @@ PetscErrorCode  DMCreateGlobalVector_Composite(DM dm,Vec *gvec)
     ierr = DMSetUp(dm);CHKERRQ(ierr);
   }
   ierr = VecCreateMPI(((PetscObject)dm)->comm,com->n,com->N,gvec);CHKERRQ(ierr);
-  ierr = PetscObjectCompose((PetscObject)*gvec,"DMComposite",(PetscObject)dm);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject)*gvec,"DM",(PetscObject)dm);CHKERRQ(ierr);
   ierr = VecSetOperation(*gvec,VECOP_VIEW,(void(*)(void))VecView_DMComposite);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -809,7 +809,7 @@ PetscErrorCode  DMCreateLocalVector_Composite(DM dm,Vec *lvec)
     ierr = DMSetUp(dm);CHKERRQ(ierr);
   }
   ierr = VecCreateSeq(((PetscObject)dm)->comm,com->nghost,lvec);CHKERRQ(ierr);
-  ierr = PetscObjectCompose((PetscObject)*lvec,"DMComposite",(PetscObject)dm);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject)*lvec,"DM",(PetscObject)dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

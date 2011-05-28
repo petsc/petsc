@@ -136,8 +136,9 @@ PetscErrorCode  PetscOListDestroy(PetscOList *ifl)
     Level: developer
 
     Notes:
-    The name must have been registered with the PetscOListAdd() before calling this 
-    routine.
+    The name must have been registered with the PetscOListAdd() before calling this routine.
+
+    The reference count of the object is not increased
 
 .seealso: PetscOListDestroy(), PetscOListAdd(), PetscOListDuplicate(), PetscOListReverseFind(), PetscOListDuplicate()
 
@@ -148,7 +149,6 @@ PetscErrorCode  PetscOListFind(PetscOList fl,const char name[],PetscObject *obj)
   PetscBool      match;
 
   PetscFunctionBegin;
-
   *obj = 0;
   while (fl) {
     ierr = PetscStrcmp(name,fl->name,&match);CHKERRQ(ierr);
@@ -176,8 +176,9 @@ PetscErrorCode  PetscOListFind(PetscOList fl,const char name[],PetscObject *obj)
     Level: developer
 
     Notes:
-    The name must have been registered with the PetscOListAdd() before calling this 
-    routine.
+    The name must have been registered with the PetscOListAdd() before calling this routine.
+
+    The reference count of the object is not increased
 
 .seealso: PetscOListDestroy(), PetscOListAdd(), PetscOListDuplicate(), PetscOListFind(), PetscOListDuplicate()
 
@@ -185,7 +186,6 @@ PetscErrorCode  PetscOListFind(PetscOList fl,const char name[],PetscObject *obj)
 PetscErrorCode  PetscOListReverseFind(PetscOList fl,PetscObject obj,char **name)
 {
   PetscFunctionBegin;
-
   *name = 0;
   while (fl) {
     if (fl->obj == obj) {

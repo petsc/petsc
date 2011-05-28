@@ -483,19 +483,14 @@ PetscErrorCode PCSetUp_MG(PC pc)
     dms[n-1] = pc->dm;
     for (i=n-2; i>-1; i--) {
       ierr = DMCoarsen(dms[i+1],PETSC_NULL,&dms[i]);CHKERRQ(ierr);
+      ierr = KSPSetDM(mglevels[i]->smoothd,dms[i]);CHKERRQ(ierr);
+      if (mg->galerkin) {ierr = KSPSetDMActive(mglevels[i]->smoothd,PETSC_FALSE);CHKERRQ(ierr);}
       ierr = DMSetFunction(dms[i],0);
       ierr = DMSetInitialGuess(dms[i],0);
       if (!mglevels[i+1]->interpolate) {
 	ierr = DMGetInterpolation(dms[i],dms[i+1],&p,PETSC_NULL);CHKERRQ(ierr);
 	ierr = PCMGSetInterpolation(pc,i+1,p);CHKERRQ(ierr);
         ierr = MatDestroy(&p);CHKERRQ(ierr);
-      }
-    }
-
-    if (!mg->galerkin) {
-      /* each coarse level gets its DM; finest level does not get DM because it shared the outer PC operators */
-      for (i=n-2; i>-1; i--) {
-        ierr = KSPSetDM(mglevels[i]->smoothd,dms[i]);CHKERRQ(ierr);
       }
     }
 

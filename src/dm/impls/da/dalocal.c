@@ -24,7 +24,7 @@ PetscErrorCode  VecMatlabEnginePut_DA2d(PetscObject obj,void *mengine)
   DM             da;
 
   PetscFunctionBegin;
-  ierr = PetscObjectQuery((PetscObject)vec,"DMDA",(PetscObject*)&da);CHKERRQ(ierr);
+  ierr = PetscObjectQuery((PetscObject)vec,"DM",(PetscObject*)&da);CHKERRQ(ierr);
   if (!da) SETERRQ(((PetscObject)vec)->comm,PETSC_ERR_ARG_WRONGSTATE,"Vector not associated with a DMDA");
   ierr = DMDAGetGhostCorners(da,0,0,0,&m,&n,0);CHKERRQ(ierr);
 
@@ -59,7 +59,7 @@ PetscErrorCode  DMCreateLocalVector_DA(DM da,Vec* g)
   ierr = VecSetSizes(*g,dd->nlocal,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = VecSetType(*g,da->vectype);CHKERRQ(ierr);
   ierr = VecSetBlockSize(*g,dd->w);CHKERRQ(ierr);
-  ierr = PetscObjectCompose((PetscObject)*g,"DMDA",(PetscObject)da);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject)*g,"DM",(PetscObject)da);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
   if (dd->w == 1  && dd->dim == 2) {
     ierr = PetscObjectComposeFunctionDynamic((PetscObject)*g,"PetscMatlabEnginePut_C","VecMatlabEnginePut_DA2d",VecMatlabEnginePut_DA2d);CHKERRQ(ierr);
