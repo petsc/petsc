@@ -1,17 +1,6 @@
 /*
   Code for timestepping with implicit generalized-\alpha method
   for first order systems.
-
-  K.E. Jansen, C.H. Whiting, G.M. Hulber, "A generalized-\alpha
-  method for integrating the filtered Navier-Stokes equations with a
-  stabilized finite element method", Computer Methods in Applied
-  Mechanics and Engineering, 190, 305-319, 2000.
-  DOI: 10.1016/S0045-7825(00)00203-6.
-
-  J. Chung, G.M.Hubert. "A Time Integration Algorithm for Structural
-  Dynamics with Improved Numerical Dissipation: The Generalized-\alpha
-  Method" ASME Journal of Applied Mechanics, 60, 371:375, 1993.
-
 */
 #include <private/tsimpl.h>                /*I   "petscts.h"   I*/
 
@@ -314,6 +303,17 @@ EXTERN_C_END
       TSALPHA - DAE solver using the implicit Generalized-Alpha method
 
   Level: beginner
+
+  References:
+  K.E. Jansen, C.H. Whiting, G.M. Hulber, "A generalized-alpha
+  method for integrating the filtered Navier-Stokes equations with a
+  stabilized finite element method", Computer Methods in Applied
+  Mechanics and Engineering, 190, 305-319, 2000.
+  DOI: 10.1016/S0045-7825(00)00203-6.
+
+  J. Chung, G.M.Hubert. "A Time Integration Algorithm for Structural
+  Dynamics with Improved Numerical Dissipation: The Generalized-alpha
+  Method" ASME Journal of Applied Mechanics, 60, 371:375, 1993.
 
 .seealso:  TSCreate(), TS, TSSetType()
 

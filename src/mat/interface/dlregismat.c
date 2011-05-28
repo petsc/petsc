@@ -42,7 +42,7 @@ PetscErrorCode  MatFinalizePackage(void)
     ierr = PetscFree(names);CHKERRQ(ierr);
     names = nnames;
   }
-    
+  MatBaseNameList                  = PETSC_NULL;
   MatPackageInitialized            = PETSC_FALSE;
   MatRegisterAllCalled             = PETSC_FALSE;
   MatList                          = PETSC_NULL;
