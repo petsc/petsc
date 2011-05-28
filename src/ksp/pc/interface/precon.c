@@ -1074,6 +1074,8 @@ PetscErrorCode  PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStructure flag)
 
    Level: intermediate
 
+   Notes: Does not increase the reference count of the matrices, so you should not destroy them
+
    Alternative usage: If the operators have NOT been set with KSP/PCSetOperators() then the operators
       are created in PC and returned to the user. In this case, if both operators
       mat and pmat are requested, two DIFFERENT operators will be returned. If

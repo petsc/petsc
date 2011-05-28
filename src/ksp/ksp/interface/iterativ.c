@@ -577,10 +577,8 @@ PetscErrorCode  KSPDefaultConverged(KSP ksp,PetscInt n,PetscReal rnorm,KSPConver
         ierr = VecNorm(ksp->vec_rhs,NORM_2,&snorm);CHKERRQ(ierr);        /*     <- b'*b */
       } else {
         Vec z;
-        if (!cctx->work) {
-          ierr = VecDuplicate(ksp->vec_rhs,&cctx->work);CHKERRQ(ierr);
-        }
-        z = cctx->work;
+        /* Should avoid allocating the z vector each time but cannot stash it in cctx because if KSPReset() is called the vector size might change */
+        ierr = VecDuplicate(ksp->vec_rhs,&z);CHKERRQ(ierr);
         ierr = KSP_PCApply(ksp,ksp->vec_rhs,z);CHKERRQ(ierr);
         if (ksp->normtype == KSP_NORM_PRECONDITIONED) {
           ierr = PetscInfo(ksp,"user has provided nonzero initial guess, computing 2-norm of preconditioned RHS\n");CHKERRQ(ierr);
@@ -591,6 +589,7 @@ PetscErrorCode  KSPDefaultConverged(KSP ksp,PetscInt n,PetscReal rnorm,KSPConver
           ierr  = VecDot(ksp->vec_rhs,z,&norm);
           snorm = sqrt(PetscAbsScalar(norm));                            /*    dp <- b'*B*b */
         }
+        ierr = VecDestroy(&z);CHKERRQ(ierr);
       }
       /* handle special case of zero RHS and nonzero guess */
       if (!snorm) {

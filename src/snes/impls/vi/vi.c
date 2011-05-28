@@ -10,6 +10,7 @@ typedef struct {
   Vec            upper,lower,values,F;                    /* upper and lower bounds of all variables on this level, the values and the function values */
   PetscErrorCode (*getinterpolation)(DM,DM,Mat*,Vec*);    /* DM's original routines */
   PetscErrorCode (*coarsen)(DM, MPI_Comm, DM*); 
+  PetscErrorCode (*createglobalvector)(DM,Vec*);
 } DMSNESVI;
 
 #undef __FUNCT__
@@ -129,7 +130,12 @@ PetscErrorCode  DMCoarsen_SNESVI(DM dm1,MPI_Comm comm,DM *dm2)
   if (!isnes) SETERRQ(((PetscObject)dm1)->comm,PETSC_ERR_PLIB,"Composed SNES is missing");
   ierr = PetscContainerGetPointer(isnes,(void**)&dmsnesvi1);CHKERRQ(ierr);
   
+  /* get the original coarsen */
   ierr = (*dmsnesvi1->coarsen)(dm1,comm,dm2);CHKERRQ(ierr);
+
+  /* need to set back global vectors in order to use the original injection */
+  ierr = DMClearGlobalVectors(dm1);CHKERRQ(ierr);
+  dm1->ops->createglobalvector = dmsnesvi1->createglobalvector;
   ierr = DMGetInjection(*dm2,dm1,&inject);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(*dm2,&upper);CHKERRQ(ierr);
   ierr = VecScatterBegin(inject,dmsnesvi1->upper,upper,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -144,6 +150,8 @@ PetscErrorCode  DMCoarsen_SNESVI(DM dm1,MPI_Comm comm,DM *dm2)
   ierr = VecScatterBegin(inject,dmsnesvi1->F,F,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(inject,dmsnesvi1->F,F,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&inject);CHKERRQ(ierr);
+  ierr = DMClearGlobalVectors(dm1);CHKERRQ(ierr);
+  dm1->ops->createglobalvector = DMCreateGlobalVector_SNESVI;
   ierr = SNESVIGetInActiveSetIS(upper,lower,values,F,&inactive);CHKERRQ(ierr);
   ierr = DMSetVI(*dm2,upper,lower,values,F,inactive);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -194,11 +202,12 @@ PetscErrorCode  DMSetVI(DM dm,Vec upper,Vec lower,Vec values,Vec F,IS inactive)
     ierr = PetscNew(DMSNESVI,&dmsnesvi);CHKERRQ(ierr);
     ierr = PetscContainerSetPointer(isnes,(void*)dmsnesvi);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject)dm,"VI",(PetscObject)isnes);CHKERRQ(ierr);
-    dmsnesvi->getinterpolation  = dm->ops->getinterpolation;
-    dm->ops->getinterpolation   = DMGetInterpolation_SNESVI;
-    dmsnesvi->coarsen           = dm->ops->coarsen;
-    dm->ops->coarsen            = DMCoarsen_SNESVI;
-    dm->ops->createglobalvector = DMCreateGlobalVector_SNESVI;
+    dmsnesvi->getinterpolation   = dm->ops->getinterpolation;
+    dm->ops->getinterpolation    = DMGetInterpolation_SNESVI;
+    dmsnesvi->coarsen            = dm->ops->coarsen;
+    dm->ops->coarsen             = DMCoarsen_SNESVI;
+    dmsnesvi->createglobalvector = dm->ops->createglobalvector;
+    dm->ops->createglobalvector  = DMCreateGlobalVector_SNESVI;
   } else {
     ierr = PetscContainerGetPointer(isnes,(void**)&dmsnesvi);CHKERRQ(ierr);
     ierr = VecDestroy(&dmsnesvi->upper);CHKERRQ(ierr);

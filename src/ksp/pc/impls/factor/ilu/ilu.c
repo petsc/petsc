@@ -44,7 +44,7 @@ PetscErrorCode PCReset_ILU(PC pc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!ilu->inplace && ((PC_Factor*)ilu)->fact) {ierr = MatDestroy(&((PC_Factor*)ilu)->fact);CHKERRQ(ierr);}
+  if (!ilu->inplace) {ierr = MatDestroy(&((PC_Factor*)ilu)->fact);CHKERRQ(ierr);}
   if (ilu->row && ilu->col && ilu->row != ilu->col) {ierr = ISDestroy(&ilu->row);CHKERRQ(ierr);}
   ierr = ISDestroy(&ilu->col);CHKERRQ(ierr);
   PetscFunctionReturn(0);

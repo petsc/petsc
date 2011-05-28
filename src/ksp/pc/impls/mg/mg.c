@@ -232,6 +232,7 @@ PetscErrorCode PCReset_MG(PC pc)
     }
 
     for (i=0; i<n; i++) {
+      ierr = MatDestroy(&mglevels[i]->A);CHKERRQ(ierr);
       if (mglevels[i]->smoothd != mglevels[i]->smoothu) {
 	ierr = KSPReset(mglevels[i]->smoothd);CHKERRQ(ierr);
       }
@@ -292,9 +293,10 @@ static PetscErrorCode PCApply_MG(PC pc,Vec b,Vec x)
   PetscFunctionBegin;
 
   /* When the DM is supplying the matrix then it will not exist until here */
-  for (i=0; i<levels-1; i++) {
+  for (i=0; i<levels; i++) {
     if (!mglevels[i]->A) {
       ierr = KSPGetOperators(mglevels[i]->smoothu,&mglevels[i]->A,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscObjectReference((PetscObject)mglevels[i]->A);CHKERRQ(ierr);
     }
   }
 
