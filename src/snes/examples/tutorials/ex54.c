@@ -69,6 +69,7 @@ int main(int argc, char **argv)
 
   /* Create nonlinear solver context */
   ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
+  ierr = SNESSetDM(snes,user.da);CHKERRQ(ierr);
 
   /* Set Function evaluation and jacobian evaluation routines */
   ierr = SNESSetFunction(snes,r,FormFunction,(void*)&user);CHKERRQ(ierr);
@@ -250,7 +251,7 @@ PetscErrorCode GetParams(AppCtx* user)
   /* Set default parameters */
   user->xmin = 0.0; user->xmax = 1.0;
   user->ymin = 0.0; user->ymax = 1.0;
-  user->T = 0.2;    user->dt = 0.0001;
+  user->T = 0.0002;    user->dt = 0.0001;
   user->gamma = 3.2E-4; user->theta_c = 0;
 
   ierr = PetscOptionsGetReal(PETSC_NULL,"-xmin",&user->xmin,&flg);CHKERRQ(ierr);

@@ -76,6 +76,7 @@ int main(int argc, char **argv)
 	
 	/* Create nonlinear solver context */
 	ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
+        ierr = SNESSetDM(snes,user.da);CHKERRQ(ierr);
 	
 	/* Set Function evaluation and jacobian evaluation routines */
 	ierr = SNESSetFunction(snes,r,FormFunction,(void*)&user);CHKERRQ(ierr);
@@ -331,8 +332,8 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
 	ierr = VecRestoreArray(user->u1,&u1);CHKERRQ(ierr);
 	ierr = VecRestoreArray(user->u2,&u2);CHKERRQ(ierr);
 	ierr = VecRestoreArray(user->u3,&u3);CHKERRQ(ierr);
-	
-	
+        ierr = VecDestroy(&rand1);CHKERRQ(ierr);
+        ierr = VecDestroy(&rand2);CHKERRQ(ierr);
 	PetscFunctionReturn(0);
 }
 

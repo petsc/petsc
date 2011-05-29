@@ -3326,6 +3326,19 @@ PetscErrorCode  MatConvert_MPIMAIJ_MPIAIJ(Mat A, MatType newtype,MatReuse reuse,
 }
 EXTERN_C_END
 
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetSubMatrix_MAIJ"
+PetscErrorCode  MatGetSubMatrix_MAIJ(Mat mat,IS isrow,IS iscol,MatReuse cll,Mat *newmat)
+{
+  PetscErrorCode ierr;
+  Mat            A;
+
+  PetscFunctionBegin;
+  ierr = MatConvert(mat,MATAIJ,MAT_INITIAL_MATRIX,&A);CHKERRQ(ierr);
+  ierr = MatGetSubMatrix(A,isrow,iscol,cll,newmat);CHKERRQ(ierr);
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 /* ---------------------------------------------------------------------------------- */
 #undef __FUNCT__  
@@ -3490,14 +3503,15 @@ PetscErrorCode  MatCreateMAIJ(Mat A,PetscInt dof,Mat *maij)
       ierr = ISDestroy(&to);CHKERRQ(ierr);
       ierr = VecDestroy(&gvec);CHKERRQ(ierr);
 
-      B->ops->mult             = MatMult_MPIMAIJ_dof;
-      B->ops->multtranspose    = MatMultTranspose_MPIMAIJ_dof;
-      B->ops->multadd          = MatMultAdd_MPIMAIJ_dof;
-      B->ops->multtransposeadd = MatMultTransposeAdd_MPIMAIJ_dof;
+      B->ops->mult                = MatMult_MPIMAIJ_dof;
+      B->ops->multtranspose       = MatMultTranspose_MPIMAIJ_dof;
+      B->ops->multadd             = MatMultAdd_MPIMAIJ_dof;
+      B->ops->multtransposeadd    = MatMultTransposeAdd_MPIMAIJ_dof;
       B->ops->ptapsymbolic_mpiaij = MatPtAPSymbolic_MPIAIJ_MPIMAIJ;
       B->ops->ptapnumeric_mpiaij  = MatPtAPNumeric_MPIAIJ_MPIMAIJ;
       ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_mpimaij_mpiaij_C","MatConvert_MPIMAIJ_MPIAIJ",MatConvert_MPIMAIJ_MPIAIJ);CHKERRQ(ierr);
     }
+    B->ops->getsubmatrix        = MatGetSubMatrix_MAIJ;
     *maij = B;
     ierr = MatView_Private(B);CHKERRQ(ierr);
   }

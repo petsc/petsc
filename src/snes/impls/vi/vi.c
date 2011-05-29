@@ -1068,8 +1068,6 @@ PetscErrorCode SNESSolveVI_RS(SNES snes)
     /* Create active and inactive index sets */
     ierr = SNESVICreateIndexSets_RS(snes,X,F,&IS_act,&IS_inact);CHKERRQ(ierr);
 
-    ierr = DMSetVI(snes->dm,vi->xu,vi->xl,X,F,IS_inact);CHKERRQ(ierr);
-
 
     /* Create inactive set submatrix */
     ierr = MatGetSubMatrix(snes->jacobian,IS_inact,IS_inact,MAT_INITIAL_MATRIX,&jac_inact_inact);CHKERRQ(ierr);
@@ -1098,6 +1096,7 @@ PetscErrorCode SNESSolveVI_RS(SNES snes)
       ierr = ISComplement(IS_inact,F->map->rstart,F->map->rend,&IS_act);CHKERRQ(ierr);
       ierr = MatGetSubMatrix(snes->jacobian,IS_inact,IS_inact,MAT_INITIAL_MATRIX,&jac_inact_inact);CHKERRQ(ierr);
     }
+    ierr = DMSetVI(snes->dm,vi->xu,vi->xl,X,F,IS_inact);CHKERRQ(ierr);
 
     /* Get sizes of active and inactive sets */
     ierr = ISGetLocalSize(IS_act,&nis_act);CHKERRQ(ierr);
