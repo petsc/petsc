@@ -1978,7 +1978,7 @@ $     int func(SNES snes,PetscInt its, PetscReal norm,void *mctx)
 +    -snes_monitor        - sets SNESMonitorDefault()
 .    -snes_monitor_draw    - sets line graph monitor,
                             uses SNESMonitorLGCreate()
-_    -snes_monitor_cancel - cancels all monitors that have
+-    -snes_monitor_cancel - cancels all monitors that have
                             been hardwired into a code by 
                             calls to SNESMonitorSet(), but
                             does not cancel those set via
