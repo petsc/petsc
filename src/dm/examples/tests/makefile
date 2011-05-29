@@ -9,7 +9,7 @@ EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c\
 	          ex21.c ex22.c ex23.c ex24.c ex25.c ex26.c ex27.c ex28.c ex30.c \
 	          ex31.c ex32.c ex36.c
 EXAMPLESF       = 
-MANSEC          = DA
+MANSEC          = DM
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules
