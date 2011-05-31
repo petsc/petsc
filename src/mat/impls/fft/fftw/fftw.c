@@ -325,8 +325,12 @@ PetscErrorCode  MatGetVecs_FFTW(Mat A,Vec *fin,Vec *fout)
       break;
     }
   } 
-  ierr = PetscLayoutReference(A->cmap,&(*fin)->map);CHKERRQ(ierr);
-  ierr = PetscLayoutReference(A->rmap,&(*fout)->map);CHKERRQ(ierr);
+  if (fin){
+    ierr = PetscLayoutReference(A->cmap,&(*fin)->map);CHKERRQ(ierr);
+  }
+  if (fout){
+    ierr = PetscLayoutReference(A->rmap,&(*fout)->map);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
