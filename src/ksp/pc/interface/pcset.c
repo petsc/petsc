@@ -221,7 +221,7 @@ PetscErrorCode  PCSetDM(PC pc,DM dm)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscObjectReference((PetscObject)dm);CHKERRQ(ierr);
+  if (dm) {ierr = PetscObjectReference((PetscObject)dm);CHKERRQ(ierr);}
   ierr = DMDestroy(&pc->dm);CHKERRQ(ierr);
   pc->dm = dm;
   PetscFunctionReturn(0);

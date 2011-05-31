@@ -3149,7 +3149,7 @@ PetscErrorCode  SNESSetDM(SNES snes,DM dm)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  ierr = PetscObjectReference((PetscObject)dm);CHKERRQ(ierr);
+  if (dm) {ierr = PetscObjectReference((PetscObject)dm);CHKERRQ(ierr);}
   ierr = DMDestroy(&snes->dm);CHKERRQ(ierr);
   snes->dm = dm;
   ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);

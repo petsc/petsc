@@ -20,8 +20,7 @@ with boundary conditions
 static char help[] = "Solves 3D Laplacian using multigrid.\n\n";
 
 #include <petscksp.h>
-#include <petscdmmg.h>
-
+#include <petscdmda.h>
 
 extern PetscErrorCode ComputeMatrix(DM,Vec,Mat,Mat,MatStructure*);
 extern PetscErrorCode ComputeRHS(DM,Vec,Vec);
@@ -46,6 +45,7 @@ int main(int argc,char **argv)
   ierr = DMSetFunction(da,ComputeRHS);CHKERRQ(ierr);
   ierr = DMSetJacobian(da,ComputeMatrix);CHKERRQ(ierr);
   ierr = KSPSetDM(ksp,da);CHKERRQ(ierr);
+  /*  ierr = KSPSetDMActive(ksp,PETSC_FALSE);CHKERRQ(ierr);*/
   ierr = DMDestroy(&da);CHKERRQ(ierr);
 
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);

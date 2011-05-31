@@ -524,7 +524,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_1(Mat B,Mat A,const MatFactorInfo *inf
 
       sctx.rs  = rs;
       sctx.pv  = rtmp[i];
-      ierr = MatPivotCheck(info,&sctx,i);CHKERRQ(ierr);
+      ierr = MatPivotCheck(A,info,&sctx,i);CHKERRQ(ierr);
       if(sctx.newshift) break; /* break for-loop */
       rtmp[i] = sctx.pv; /* sctx.pv might be updated in the case of MAT_SHIFT_INBLOCKS */
 
@@ -801,7 +801,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N(Mat C,Mat A,const MatFactorInf
 
       sctx.rs = rs;
       sctx.pv = dk;
-      ierr = MatPivotCheck(info,&sctx,k);CHKERRQ(ierr);
+      ierr = MatPivotCheck(A,info,&sctx,k);CHKERRQ(ierr);
       if (sctx.newshift) break;    
       dk = sctx.pv;
 
@@ -919,7 +919,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N_NaturalOrdering(Mat C,Mat A,co
 
       sctx.rs = rs;
       sctx.pv = dk;
-      ierr = MatPivotCheck(info,&sctx,k);CHKERRQ(ierr);
+      ierr = MatPivotCheck(A,info,&sctx,k);CHKERRQ(ierr);
       if (sctx.newshift) break;    /* sctx.shift_amount is updated */
       dk = sctx.pv;
 

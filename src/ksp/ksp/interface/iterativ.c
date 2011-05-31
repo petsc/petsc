@@ -930,7 +930,7 @@ PetscErrorCode  KSPSetDM(KSP ksp,DM dm)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  ierr = PetscObjectReference((PetscObject)dm);CHKERRQ(ierr);
+  if (dm) {ierr = PetscObjectReference((PetscObject)dm);CHKERRQ(ierr);}
   ierr = DMDestroy(&ksp->dm);CHKERRQ(ierr);
   ksp->dm = dm;
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
