@@ -1363,6 +1363,7 @@ extern PetscErrorCode  PetscObjectDereference(PetscObject);
 extern PetscErrorCode  PetscObjectGetNewTag(PetscObject,PetscMPIInt *);
 extern PetscErrorCode  PetscObjectView(PetscObject,PetscViewer);
 extern PetscErrorCode  PetscObjectCompose(PetscObject,const char[],PetscObject);
+extern PetscErrorCode  PetscObjectRemoveReference(PetscObject,const char[]);
 extern PetscErrorCode  PetscObjectQuery(PetscObject,const char[],PetscObject *);
 extern PetscErrorCode  PetscObjectComposeFunction(PetscObject,const char[],const char[],void (*)(void));
 extern PetscErrorCode  PetscObjectSetFromOptions(PetscObject);
@@ -1449,6 +1450,7 @@ extern PetscErrorCode  PetscOListDestroy(PetscOList*);
 extern PetscErrorCode  PetscOListFind(PetscOList,const char[],PetscObject*);
 extern PetscErrorCode  PetscOListReverseFind(PetscOList,PetscObject,char**);
 extern PetscErrorCode  PetscOListAdd(PetscOList *,const char[],PetscObject);
+extern PetscErrorCode  PetscOListRemoveReference(PetscOList *,const char[]);
 extern PetscErrorCode  PetscOListDuplicate(PetscOList,PetscOList *);
 
 /*

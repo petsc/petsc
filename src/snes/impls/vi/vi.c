@@ -223,6 +223,11 @@ PetscErrorCode  DMSetVI(DM dm,Vec upper,Vec lower,Vec values,Vec F,IS inactive)
     dm->ops->coarsen             = DMCoarsen_SNESVI;
     dmsnesvi->createglobalvector = dm->ops->createglobalvector;
     dm->ops->createglobalvector  = DMCreateGlobalVector_SNESVI;
+    /* since these vectors may reference the DM, need to remove circle referencing */
+    ierr = PetscObjectRemoveReference((PetscObject)upper,"DM");CHKERRQ(ierr);
+    ierr = PetscObjectRemoveReference((PetscObject)lower,"DM");CHKERRQ(ierr);
+    ierr = PetscObjectRemoveReference((PetscObject)values,"DM");CHKERRQ(ierr);
+    ierr = PetscObjectRemoveReference((PetscObject)F,"DM");CHKERRQ(ierr);
   } else {
     ierr = PetscContainerGetPointer(isnes,(void**)&dmsnesvi);CHKERRQ(ierr);
     ierr = VecDestroy(&dmsnesvi->upper);CHKERRQ(ierr);
@@ -238,11 +243,6 @@ PetscErrorCode  DMSetVI(DM dm,Vec upper,Vec lower,Vec values,Vec F,IS inactive)
   dmsnesvi->values   = values;
   dmsnesvi->F        = F;
   dmsnesvi->inactive = inactive;
-  /* since these vectors may reference the DM, need to remove circle referencing */
-  ierr = PetscObjectCompose((PetscObject)dmsnesvi->upper,"DM",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectCompose((PetscObject)dmsnesvi->lower,"DM",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectCompose((PetscObject)dmsnesvi->values,"DM",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectCompose((PetscObject)dmsnesvi->F,"DM",PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

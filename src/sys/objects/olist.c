@@ -7,9 +7,51 @@
 
 struct _n_PetscOList {
     char        name[256];
+    PetscBool   skipdereference;   /* when the OList is destroyed do not call PetscObjectDereference() on this object */
     PetscObject obj;
     PetscOList  next;
 };
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscOListRemoveReference"
+/*@C
+     PetscOListRemoveReference - Calls PetscObjectDereference() on an object in the list immediately but keeps a pointer to the object in the list.
+
+    Input Parameters:
++     fl - the object list
+-     name - the name to use for the object
+
+    Level: developer
+
+       Notes: Use PetscOListAdd(PetscOList,const char name[],PETSC_NULL) to truly remove the object from the list
+ 
+              Use this routine ONLY if you know that the object referenced will remain in existence until the pointing object is destroyed
+
+      Developer Note: this is to handle some cases that otherwise would result in having circular references so reference counts never got to zero
+
+.seealso: PetscOListDestroy(), PetscOListFind(), PetscOListDuplicate(), PetscOListReverseFind(), PetscOListDuplicate(), PetscOListAdd()
+
+@*/
+PetscErrorCode  PetscOListRemoveReference(PetscOList *fl,const char name[])
+{
+  PetscOList     nlist,prev;
+  PetscErrorCode ierr;
+  PetscBool      match;
+
+  PetscFunctionBegin;
+  nlist = *fl; prev = 0;
+  while (nlist) {
+    ierr = PetscStrcmp(name,nlist->name,&match);CHKERRQ(ierr);
+    if (match) {  /* found it in the list */
+      ierr = PetscObjectDereference(nlist->obj);CHKERRQ(ierr);
+      nlist->skipdereference = PETSC_TRUE;
+      PetscFunctionReturn(0);
+    }
+    prev  = nlist;
+    nlist = nlist->next;
+  }
+  PetscFunctionReturn(0); 
+}
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscOListAdd"
@@ -112,7 +154,7 @@ PetscErrorCode  PetscOListDestroy(PetscOList *ifl)
   PetscFunctionBegin;
   while (fl) {
     tmp   = fl->next;
-    ierr  = PetscObjectDereference(fl->obj);CHKERRQ(ierr);
+    if (!fl->skipdereference) {ierr  = PetscObjectDereference(fl->obj);CHKERRQ(ierr);}
     ierr  = PetscFree(fl);CHKERRQ(ierr);
     fl    = tmp;
   }

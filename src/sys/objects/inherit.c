@@ -418,6 +418,17 @@ PetscErrorCode PetscObjectGetComm_Petsc(PetscObject obj,MPI_Comm *comm)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "PetscObjectRemoveReference"
+PetscErrorCode PetscObjectRemoveReference(PetscObject obj,const char name[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscOListRemoveReference(&obj->olist,name);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "PetscObjectCompose_Petsc"
 PetscErrorCode PetscObjectCompose_Petsc(PetscObject obj,const char name[],PetscObject ptr)
 {
