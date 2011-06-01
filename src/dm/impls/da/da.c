@@ -114,9 +114,9 @@ PetscErrorCode  DMDASetBoundaryType(DM da,DMDABoundaryType bx,DMDABoundaryType b
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
-  PetscValidLogicalCollectiveInt(da,bx,2);
-  PetscValidLogicalCollectiveInt(da,by,3);
-  PetscValidLogicalCollectiveInt(da,bz,4);
+  PetscValidLogicalCollectiveEnum(da,bx,2);
+  PetscValidLogicalCollectiveEnum(da,by,3);
+  PetscValidLogicalCollectiveEnum(da,bz,4);
   dd->bx = bx;
   dd->by = by;
   dd->bz = bz;
