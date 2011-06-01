@@ -62,12 +62,12 @@ PetscErrorCode DMCreate_IGA(DM dm)
   dm->ops->setup              = 0;
   dm->ops->createglobalvector = DMCreateGlobalVector_IGA;
   dm->ops->createlocalvector  = DMCreateLocalVector_IGA;
-  dm->ops->createlocaltoglobalmapping      = 0 /*DMCreateLocalToGlobalMapping_IGA*/;
+  dm->ops->createlocaltoglobalmapping      = 0 /* DMCreateLocalToGlobalMapping_IGA */;
   dm->ops->createlocaltoglobalmappingblock = 0;
 
   dm->ops->getcoloring        = 0;
   dm->ops->getmatrix          = DMGetMatrix_IGA;
-  dm->ops->getinterpolation   = 0 /*DMGetInterpolation_IGA*/;
+  dm->ops->getinterpolation   = 0 /* DMGetInterpolation_IGA */;
   dm->ops->getaggregates      = 0;
   dm->ops->getinjection       = 0;
 

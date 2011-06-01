@@ -413,7 +413,7 @@ class SourceFileManager(logger.Logger):
       f77names  = f77names[:self.argDB['maxSources']]
       f90names  = f90names[:self.argDB['maxSources']]
       source    = source[:self.argDB['maxSources']]
-    return {'C': cnames, 'Cxx': cxxnames, 'Cuda': cudanames, 'F77': f77names, 'F90': f90names, 'Fortran': f77names+f90names, 'Objects': [self.getObjectName(s, objDir) for s in source]}
+    return {'C': cnames, 'Cxx': cxxnames, 'CUDA': cudanames, 'F77': f77names, 'F90': f90names, 'Fortran': f77names+f90names, 'Objects': [self.getObjectName(s, objDir) for s in source]}
 
 class DependencyBuilder(logger.Logger):
   def __init__(self, argDB, log, sourceManager, sourceDatabase, objDir):
@@ -699,6 +699,9 @@ class PETScMaker(script.Script):
  def compileC(self, source, objDir = None):
    return self.compile(self.configInfo.languages.clanguage, source, objDir)
 
+ def compileCUDA(self, source, objDir = None):
+   return self.compile('CUDA', source, objDir)
+
  def compileCxx(self, source, objDir = None):
    return self.compile('Cxx', source, objDir)
 
@@ -893,7 +896,7 @@ class PETScMaker(script.Script):
       ${DSYMUTIL} $@'''
    self.logWrite('Linking object '+str(objects)+' into '+executable+'\n', debugSection = self.debugSection, forceScroll = True)
    self.configInfo.compilers.pushLanguage(language)
-   cmd = self.configInfo.compilers.getFullLinkerCmd(' '.join(objects)+' -L'+self.petscLibDir+' -lpetsc', executable)
+   cmd = self.configInfo.compilers.getFullLinkerCmd(' '.join(objects)+' -L'+self.petscLibDir+' -lpetsc'+' -L/usr/local/cuda/lib', executable)
    if not self.dryRun:
      (output, error, status) = self.executeShellCommand(cmd, checkCommand = noCheckCommand, log=self.log)
      if status:
@@ -916,7 +919,7 @@ class PETScMaker(script.Script):
    os.chdir(dirname)
    sourceMap = self.sourceManager.sortSourceFiles(files, objDir)
    objects   = []
-   for language in ['C', 'Cxx', 'Fortran', 'Cuda']:
+   for language in ['C', 'Cxx', 'Fortran', 'CUDA']:
      if sourceMap[language]:
        self.logPrint('Compiling %s files %s' % (language, str(sourceMap[language])))
        objects.extend(getattr(self, 'compile'+language)(sourceMap[language], objDir))
@@ -930,7 +933,7 @@ class PETScMaker(script.Script):
    os.chdir(dirname)
    sourceMap = self.sourceManager.sortSourceFiles(files, objDir)
    futures   = []
-   for language in ['C', 'Cxx', 'Fortran', 'Cuda']:
+   for language in ['C', 'Cxx', 'Fortran', 'CUDA']:
      if sourceMap[language]:
        self.logPrint('Compiling %s files %s' % (language, str(sourceMap[language])))
        futures.extend(getattr(self, 'compile'+language+'Parallel')(sourceMap[language], objDir))
@@ -942,7 +945,7 @@ class PETScMaker(script.Script):
    self.logWrite('Building '+filename+'\n', debugSection = 'screen', forceScroll = True)
    sourceMap = self.sourceManager.sortSourceFiles([filename], objDir)
    objects   = []
-   for language in ['C', 'Cxx', 'Fortran', 'Cuda']:
+   for language in ['C', 'Cxx', 'Fortran', 'CUDA']:
      if sourceMap[language]:
        self.logPrint('Compiling %s files %s' % (language, str(sourceMap['C'])))
        objects.extend(getattr(self, 'compile'+language)(sourceMap[language], objDir))

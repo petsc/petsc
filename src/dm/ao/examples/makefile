@@ -3,7 +3,7 @@ ALL:
 
 LOCDIR   = src/dm/ao/examples/
 DIRS     = tests tutorials
-MANSEC   = DA
+MANSEC   = AO
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules
