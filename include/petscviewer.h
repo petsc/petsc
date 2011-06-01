@@ -120,7 +120,6 @@ extern PetscErrorCode  PetscViewerASCIIOpenWithFILE(MPI_Comm,FILE*,PetscViewer*)
 
 extern PetscErrorCode  PetscViewerASCIIOpen(MPI_Comm,const char[],PetscViewer*);
 extern PetscErrorCode  PetscViewerASCIISetFILE(PetscViewer,FILE*);
-extern PetscErrorCode  PetscViewerBinaryCreate(MPI_Comm,PetscViewer*);
 extern PetscErrorCode  PetscViewerBinaryOpen(MPI_Comm,const char[],PetscFileMode,PetscViewer*);
 extern PetscErrorCode  PetscViewerBinaryGetFlowControl(PetscViewer,PetscInt*);
 extern PetscErrorCode  PetscViewerBinarySetFlowControl(PetscViewer,PetscInt);
