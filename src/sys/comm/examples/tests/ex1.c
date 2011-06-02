@@ -21,7 +21,7 @@ PetscErrorCode PetscOverlapGetPoints(PetscOverlap overlap, PetscInt r, const Pet
 PetscErrorCode PetscOverlapGetNumPointsByRank(PetscOverlap overlap, PetscInt rank, PetscInt *numPoints);
 PetscErrorCode PetscOverlapGetPointsByRank(PetscOverlap overlap, PetscInt rank, const PetscInt **points);
 
-PetscErrorCode PetscCopyChart(PetscOverlap sendOverlap, PetscOverlap recvOverlap, const PetscUniformSection sendSection, const PetscUniformSection recvSection);
+PetscErrorCode PetscCopySection(PetscOverlap sendOverlap, PetscOverlap recvOverlap, const PetscUniformSection sendSection, const PetscUniformSection recvSection);
 
 PetscErrorCode BuildRingOverlap(MPI_Comm comm, PetscInt pStart, PetscInt pEnd, PetscOverlap *sendOverlap, PetscOverlap *recvOverlap)
 {
@@ -75,12 +75,12 @@ PetscErrorCode TestSameChart(MPI_Comm comm) {
   recvSection.pStart = -1;
   recvSection.pEnd   = -1;
   recvSection.numDof = -1;
-  ierr = PetscCopyChart(sendOverlap, recvOverlap, &sendSection, &recvSection);CHKERRQ(ierr);
-  ierr = PetscOverlapDestroy(&sendOverlap);CHKERRQ(ierr);
-  ierr = PetscOverlapDestroy(&recvOverlap);CHKERRQ(ierr);
+  ierr = PetscCopySection(sendOverlap, recvOverlap, &sendSection, &recvSection);CHKERRQ(ierr);
   if (recvSection.pStart != sendSection.pStart) {SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Recv section pStart %d should be %d", recvSection.pStart, sendSection.pStart);}
   if (recvSection.pEnd   != sendSection.pEnd)   {SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Recv section pEnd   %d should be %d", recvSection.pEnd,   sendSection.pEnd);}
   if (recvSection.numDof != sendSection.numDof) {SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Recv section numDof %d should be %d", recvSection.numDof, sendSection.numDof);}
+  ierr = PetscOverlapDestroy(&sendOverlap);CHKERRQ(ierr);
+  ierr = PetscOverlapDestroy(&recvOverlap);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -105,7 +105,7 @@ PetscErrorCode TestDifferentChart(MPI_Comm comm) {
   recvSection.pStart = -1;
   recvSection.pEnd   = -1;
   recvSection.numDof = -1;
-  ierr = PetscCopyChart(sendOverlap, recvOverlap, &sendSection, &recvSection);CHKERRQ(ierr);
+  ierr = PetscCopySection(sendOverlap, recvOverlap, &sendSection, &recvSection);CHKERRQ(ierr);
   ierr = PetscOverlapGetNumRanks(recvOverlap, &numRecvRanks);CHKERRQ(ierr);
   pStart = numProcs;
   for(r = 0; r < numRecvRanks; ++r) {
@@ -129,12 +129,45 @@ PetscErrorCode TestDifferentChart(MPI_Comm comm) {
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode TestSameSection(MPI_Comm comm) {
+  PetscOverlap   sendOverlap, recvOverlap;
+  PetscInt       pStart, pEnd, size, p;
+  PetscSection   sendSection, recvSection;
+  PetscInt      *sendStorage, *recvStorage;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  pStart = 0;
+  pEnd   = 10;
+  ierr = BuildRingOverlap(comm, pStart, pEnd, &sendOverlap, &recvOverlap);CHKERRQ(ierr);
+  ierr = PetscSectionCreate(comm, &sendSection);CHKERRQ(ierr);
+  ierr = PetscSectionSetChart(sendSection, pStart, pEnd);CHKERRQ(ierr);
+  ierr = PetscSectionCreate(comm, &recvSection);CHKERRQ(ierr);
+  for(p = pStart; p < pEnd; ++p) {
+    ierr = PetscSectionSetDof(sendSection, p, 2);CHKERRQ(ierr);
+  }
+  ierr = PetscSectionSetUp(sendSection);CHKERRQ(ierr);
+  ierr = PetscSectionGetStorageSize(sendSection, &size);CHKERRQ(ierr);
+  ierr = PetscMalloc(size * sizeof(PetscInt), &sendStorage);CHKERRQ(ierr);
+
+  ierr = PetscCopySection(sendOverlap, recvOverlap, &sendSection->atlasLayout, &recvSection->atlasLayout, sendSection->atlasDof, &recvSection->atlasDof);CHKERRQ(ierr);
+
+  if (recvSection.pStart != sendSection.pStart) {SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Recv section pStart %d should be %d", recvSection.pStart, sendSection.pStart);}
+  if (recvSection.pEnd   != sendSection.pEnd)   {SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Recv section pEnd   %d should be %d", recvSection.pEnd,   sendSection.pEnd);}
+  if (recvSection.numDof != sendSection.numDof) {SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Recv section numDof %d should be %d", recvSection.numDof, sendSection.numDof);}
+  ierr = PetscFree(sendStorage);CHKERRQ(ierr);
+  ierr = PetscOverlapDestroy(&sendOverlap);CHKERRQ(ierr);
+  ierr = PetscOverlapDestroy(&recvOverlap);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 int main(int argc, char **argv) {
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, 0, 0);CHKERRQ(ierr);
   ierr = TestSameChart(PETSC_COMM_WORLD);CHKERRQ(ierr);
   ierr = TestDifferentChart(PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = TestSameSection(PETSC_COMM_WORLD);CHKERRQ(ierr);
   ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }

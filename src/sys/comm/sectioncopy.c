@@ -24,6 +24,7 @@ PetscErrorCode PetscOverlapCreate(MPI_Comm comm, PetscOverlap *o)
   (*o)->ranks        = PETSC_NULL;
   (*o)->pointsOffset = PETSC_NULL;
   (*o)->points       = PETSC_NULL;
+  (*o)->remotePoints = PETSC_NULL;
   PetscFunctionReturn(0);
 }
 
@@ -36,6 +37,7 @@ PetscErrorCode PetscOverlapDestroy(PetscOverlap *o)
   ierr = PetscFree((*o)->ranks);CHKERRQ(ierr);
   ierr = PetscFree((*o)->pointsOffset);CHKERRQ(ierr);
   ierr = PetscFree((*o)->points);CHKERRQ(ierr);
+  ierr = PetscFree((*o)->remotePoints);CHKERRQ(ierr);
   ierr = PetscFree((*o));CHKERRQ(ierr);
   *o = PETSC_NULL;
   PetscFunctionReturn(0);
@@ -93,6 +95,16 @@ PetscErrorCode PetscOverlapGetPoints(PetscOverlap overlap, PetscInt r, const Pet
   PetscFunctionReturn(0);
 };
 
+// These cannot be sorted
+PetscErrorCode PetscOverlapGetRemotePoints(PetscOverlap overlap, PetscInt r, const PetscInt **remotePoints)
+{
+  PetscFunctionBegin;
+  PetscValidIntPointer(remotePoints,3);
+  if (r < 0 || r >= overlap->numRanks) {SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid rank index %d should be in [%d, %d)", r, 0, overlap->numRanks);}
+  *remotePoints = &overlap->remotePoints[overlap->pointsOffset[r]];
+  PetscFunctionReturn(0);
+};
+
 PetscErrorCode PetscOverlapGetNumPointsByRank(PetscOverlap overlap, PetscInt rank, PetscInt *numPoints)
 {
   PetscInt       r;
@@ -118,11 +130,11 @@ PetscErrorCode PetscOverlapGetPointsByRank(PetscOverlap overlap, PetscInt rank, 
   PetscFunctionReturn(0);
 };
 
-// Copy the overlap section to the related processes
-//   This version is for IConstant sections, meaning the same, single value over all points
 typedef PetscInt point_type;
 
-PetscErrorCode PetscCopyChart(PetscOverlap sendOverlap, PetscOverlap recvOverlap, const PetscUniformSection sendSection, const PetscUniformSection recvSection) {
+// Copies the PetscUniformSection from one process to another, specified by the overlap
+//   Moves the chart interval [pStart, pEnd) and the numDof
+PetscErrorCode PetscCopySection(PetscOverlap sendOverlap, PetscOverlap recvOverlap, const PetscUniformSection sendSection, const PetscUniformSection recvSection) {
   PetscInt       numSendRanks; // This is sendOverlap->base()
   PetscInt       numRecvRanks; // This is recvOverlap->cap()
   const int      debug = 0;
@@ -200,22 +212,42 @@ PetscErrorCode PetscCopyChart(PetscOverlap sendOverlap, PetscOverlap recvOverlap
   PetscFunctionReturn(0);
 };
 
-#if 0
-template<typename value_type, typename SendSection, typename RecvSection>
-static PetscErrorCode copy(PetscOverlap sendOverlap, PetscOverlap recvOverlap, PetscSection sendSection, PetscSection recvSection, const MPI_Datatype datatype = MPI_DATATYPE_NULL) {
-  PetscInt  numSendRanks; // This is sendOverlap->base()
-  PetscInt  numRecvRanks; // This is recvOverlap->cap()
-  const int debug = 1;
-  const Obj<typename SendSection::atlas_type>& sendAtlas = sendSection->getAtlas();
-  const Obj<typename RecvSection::atlas_type>& recvAtlas = recvSection->getAtlas();
-  ALE::MPIMover<value_type> vMover(sendSection->comm, datatype, MPI_UNDEFINED, debug);
-  PetscErrorCode ierr;
+// Full Sequence:
+//   PetscCopySection(sOv, rOv, sSec, sStor, rSec, rStor)
+//   --> PetscCopySection(sOv, rOv, sSec->atlasLayout, sSec->atlasDof, rSec->atlasLayout, rSec->atlasDof)
+//       --> PetscCopyChart(sOv, rOv, sSec->atlasLayout, rSec->atlasLayout)
+//       --> Copy sSec->atlasDof to rSec->atlasDof
+//   --> Copy sStor to rStor
+//
+// RecvSection
+//   1) Usually has scattered values, so using an interval chart is wrong
+//   2) Must differentiate between data from different ranks (wait for fuse() process to merge)
+//      Should we combine the fuse step here?
 
-  copy(sendOverlap, recvOverlap, sendAtlas, recvAtlas);
+// Copies the PetscSection from one process to another, specified by the overlap
+//   Use MPI_DATATYPE_NULL for a default
+template<typename section_type, typename send_value_type, typename recv_value_type>
+PetscErrorCode PetscCopySection(PetscOverlap sendOverlap, PetscOverlap recvOverlap, section_type sendSection, section_type recvSection, send_value_type *sendStorage, recv_value_type **recvStorage) {
+  PetscInt         numSendRanks; // This is sendOverlap->base()
+  PetscInt         numRecvRanks; // This is recvOverlap->cap()
+  PetscInt         recvSize;
+  send_value_type *sendValues;
+  send_value_type *recvValues;
+  const int        debug = 1;
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  if (!sendStorage) {
+    ierr = PetscCopySection(sendOverlap, recvOverlap, sendSection, recvSection);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  } else {
+    ierr = PetscCopySection(sendOverlap, recvOverlap, sendSection->atlasLayout, recvSection->atlasLayout, sendSection->atlasDof, &recvSection->atlasDof);CHKERRQ(ierr);
+  }
+  ALE::MPIMover<send_value_type> vMover(sendSection->comm, debug);
 
   ierr = PetscOverlapGetNumRanks(sendOverlap, &numSendRanks);CHKERRQ(ierr);
   ierr = PetscOverlapGetNumRanks(recvOverlap, &numRecvRanks);CHKERRQ(ierr);
-  ierr = PetscMalloc(numSendRanks * sizeof(value_type *), &sendValues);CHKERRQ(ierr);
+  ierr = PetscMalloc(numSendRanks * sizeof(send_value_type *), &sendValues);CHKERRQ(ierr);
   for(PetscInt r = 0; r < numSendRanks; ++r) {
     PetscInt        rank;
     PetscInt        numPoints;
@@ -231,10 +263,10 @@ static PetscErrorCode copy(PetscOverlap sendOverlap, PetscOverlap recvOverlap, P
       ierr = PetscSectionGetDof(sendSection, points[p], &fDim);CHKERRQ(ierr);
       numVals += fDim;
     }
-    value_type *v;
-    PetscInt    k = 0;
+    send_value_type *v;
+    PetscInt         k = 0;
 
-    ierr = PetscMalloc(numVals * sizeof(value_type), &v);CHKERRQ(ierr);
+    ierr = PetscMalloc(numVals * sizeof(send_value_type), &v);CHKERRQ(ierr);
     for(PetscInt p = 0; p < numPoints; ++p) {
       PetscInt fDim, off;
 
@@ -247,10 +279,11 @@ static PetscErrorCode copy(PetscOverlap sendOverlap, PetscOverlap recvOverlap, P
     sendValues[r] = v;
     vMover.send(r, numVals, v);
   }
-  ierr = PetscSectionSetup(recvSection);CHKERRQ(ierr);
-  recvSection->allocatePoint();
+  ierr = PetscSectionSetUp(recvSection);CHKERRQ(ierr);
+  ierr = PetscSectionGetStorageSize(recvSection, &recvSize);CHKERRQ(ierr);
+  ierr = PetscMalloc(recvSize * sizeof(recv_value_type), &recvStorage);CHKERRQ(ierr);
 
-  ierr = PetscMalloc(numRecvRanks * sizeof(value_type *), &recvValues);CHKERRQ(ierr);
+  ierr = PetscMalloc(numRecvRanks * sizeof(send_value_type *), &recvValues);CHKERRQ(ierr);
   for(PetscInt r = 0; r < numRecvRanks; ++r) {
     PetscInt        rank;
     PetscInt        numPoints;
@@ -268,9 +301,9 @@ static PetscErrorCode copy(PetscOverlap sendOverlap, PetscOverlap recvOverlap, P
       ierr = PetscSectionGetDof(recvSection, recv_point_type(rank, remotePoints[p]), &fDim);CHKERRQ(ierr);
       numVals += fDim;
     }
-    value_type *v;
+    send_value_type *v;
 
-    ierr = PetscMalloc(numVals * sizeof(value_type), &v);CHKERRQ(ierr);
+    ierr = PetscMalloc(numVals * sizeof(send_value_type), &v);CHKERRQ(ierr);
     recvValues[r] = v;
     vMover.recv(rank, numVals, v);
   }
@@ -278,18 +311,139 @@ static PetscErrorCode copy(PetscOverlap sendOverlap, PetscOverlap recvOverlap, P
   vMover.end();
 
   for(PetscInt r = 0; r < numRecvRanks; ++r) {
+    PetscInt         rank;
+    PetscInt         numPoints;
+    const PetscInt  *points;       // This is recvOverlap->support(rank)
+    const PetscInt  *remotePoints; // This is recvOverlap->support(rank).color()
+    send_value_type *v = recvValues[r];
+    PetscInt         p, k = 0;
+    point_type      *sortedPoints;
+
+    ierr = PetscMalloc(numPoints * sizeof(point_type), &sortedPoints);CHKERRQ(ierr);
+    for(p = 0; p < numPoints; ++p) {
+      sortedPoints[p] = remotePoints[p];
+    }
+    ierr = PetscSortInt(numPoints, sortedPoints);CHKERRQ(ierr);
+
+    ierr = PetscOverlapGetRank(recvOverlap, r, &rank);CHKERRQ(ierr);
+    ierr = PetscOverlapGetNumPoints(recvOverlap, r, &numPoints);CHKERRQ(ierr);
+    ierr = PetscOverlapGetPoints(recvOverlap, r, &points);CHKERRQ(ierr);
+    ierr = PetscOverlapGetRemotePoints(recvOverlap, r, &remotePoints);CHKERRQ(ierr);
+    for(p = 0; p < numPoints; ++p) {
+      const int fDim, off;
+
+      ierr = PetscSectionGetDof(recvSection, recv_point_type(rank, sortedPoints[p]), &fDim);CHKERRQ(ierr);
+      ierr = PetscSectionGetOffset(recvSection, recv_point_type(rank, sortedPoints[p]), &off);CHKERRQ(ierr);
+      for(PetscInt i = 0; i < fDim; ++i, ++k) {
+        recvStorage[off+i] = (recv_value_type) v[k];
+      }
+    }
+    ierr = PetscFree(sortedPoints);CHKERRQ(ierr);
+  }
+  for(PetscInt r = 0; r < numSendRanks; ++r) {
+    ierr = PetscFree(sendValues[r]);CHKERRQ(ierr);
+  }
+  for(PetscInt r = 0; r < numRecvRanks; ++r) {
+    ierr = PetscFree(recvValues[r]);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+};
+
+#if 0
+// Copies the PetscSection from one process to another, specified by the overlap
+//   Use MPI_DATATYPE_NULL for a default
+template<typename send_value_type, typename recv_value_type>
+PetscErrorCode PetscCopySection(PetscOverlap sendOverlap, PetscOverlap recvOverlap, PetscSection sendSection, PetscSection recvSection, const MPI_Datatype datatype, send_value_type *sendStorage, recv_value_type **recvStorage) {
+  PetscInt         numSendRanks; // This is sendOverlap->base()
+  PetscInt         numRecvRanks; // This is recvOverlap->cap()
+  PetscInt         recvSize;
+  send_value_type *sendValues;
+  send_value_type *recvValues;
+  const int        debug = 1;
+  PetscErrorCode   ierr;
+  ALE::MPIMover<send_value_type> vMover(sendSection->atlasLayout.comm, datatype, MPI_UNDEFINED, debug);
+
+  ierr = PetscCopyChart(sendOverlap, recvOverlap, &sendSection->atlasLayout, &recvSection->atlasLayout);CHKERRQ(ierr);
+
+  ierr = PetscOverlapGetNumRanks(sendOverlap, &numSendRanks);CHKERRQ(ierr);
+  ierr = PetscOverlapGetNumRanks(recvOverlap, &numRecvRanks);CHKERRQ(ierr);
+  ierr = PetscMalloc(numSendRanks * sizeof(send_value_type *), &sendValues);CHKERRQ(ierr);
+  for(PetscInt r = 0; r < numSendRanks; ++r) {
+    PetscInt        rank;
+    PetscInt        numPoints;
+    const PetscInt *points; // This is sendOverlap->cone(rank)
+    PetscInt        numVals   = 0;
+
+    ierr = PetscOverlapGetRank(sendOverlap, r, &rank);CHKERRQ(ierr);
+    ierr = PetscOverlapGetNumPoints(sendOverlap, r, &numPoints);CHKERRQ(ierr);
+    ierr = PetscOverlapGetPoints(sendOverlap, r, &points);CHKERRQ(ierr);
+    for(PetscInt p = 0; p < numPoints; ++p) {
+      PetscInt fDim;
+
+      ierr = PetscSectionGetDof(sendSection, points[p], &fDim);CHKERRQ(ierr);
+      numVals += fDim;
+    }
+    send_value_type *v;
+    PetscInt         k = 0;
+
+    ierr = PetscMalloc(numVals * sizeof(send_value_type), &v);CHKERRQ(ierr);
+    for(PetscInt p = 0; p < numPoints; ++p) {
+      PetscInt fDim, off;
+
+      ierr = PetscSectionGetDof(sendSection, points[p], &fDim);CHKERRQ(ierr);
+      ierr = PetscSectionGetOffset(sendSection, points[p], &off);
+      for(PetscInt i = 0; i < fDim; ++i, ++k) {
+        v[k] = sendStorage[off+i];
+      }
+    }
+    sendValues[r] = v;
+    vMover.send(r, numVals, v);
+  }
+  ierr = PetscSectionSetUp(recvSection);CHKERRQ(ierr);
+  ierr = PetscSectionGetStorageSize(recvSection, &recvSize);CHKERRQ(ierr);
+  ierr = PetscMalloc(recvSize * sizeof(recv_value_type), &recvStorage);CHKERRQ(ierr);
+
+  ierr = PetscMalloc(numRecvRanks * sizeof(send_value_type *), &recvValues);CHKERRQ(ierr);
+  for(PetscInt r = 0; r < numRecvRanks; ++r) {
     PetscInt        rank;
     PetscInt        numPoints;
     const PetscInt *points;       // This is recvOverlap->support(rank)
     const PetscInt *remotePoints; // This is recvOverlap->support(rank).color()
-    value_type     *v = recvValues[r];
-    PetscInt        k = 0;
-    ///std::valarray<point_type> sortedPoints(numPoints);
+    PetscInt        numVals      = 0;
 
-    ///for(PetscInt p = 0; p < numPoints; ++p) {
-    ///  sortedPoints[p] = remotePoints[p];
-    ///}
-    ///std::sort(&sortedPoints[0], &sortedPoints[numPoints]);
+    ierr = PetscOverlapGetRank(recvOverlap, r, &rank);CHKERRQ(ierr);
+    ierr = PetscOverlapGetNumPoints(recvOverlap, r, &numPoints);CHKERRQ(ierr);
+    ierr = PetscOverlapGetPoints(recvOverlap, r, &points);CHKERRQ(ierr);
+    ierr = PetscOverlapGetRemotePoints(recvOverlap, r, &remotePoints);CHKERRQ(ierr);
+    for(PetscInt p = 0; p < numPoints; ++p) {
+      PetscInt fDim;
+
+      ierr = PetscSectionGetDof(recvSection, recv_point_type(rank, remotePoints[p]), &fDim);CHKERRQ(ierr);
+      numVals += fDim;
+    }
+    send_value_type *v;
+
+    ierr = PetscMalloc(numVals * sizeof(send_value_type), &v);CHKERRQ(ierr);
+    recvValues[r] = v;
+    vMover.recv(rank, numVals, v);
+  }
+  vMover.start();
+  vMover.end();
+
+  for(PetscInt r = 0; r < numRecvRanks; ++r) {
+    PetscInt         rank;
+    PetscInt         numPoints;
+    const PetscInt  *points;       // This is recvOverlap->support(rank)
+    const PetscInt  *remotePoints; // This is recvOverlap->support(rank).color()
+    send_value_type *v = recvValues[r];
+    PetscInt         p, k = 0;
+    point_type      *sortedPoints;
+
+    ierr = PetscMalloc(numPoints * sizeof(point_type), &sortedPoints);CHKERRQ(ierr);
+    for(p = 0; p < numPoints; ++p) {
+      sortedPoints[p] = remotePoints[p];
+    }
+    ierr = PetscSortInt(numPoints, sortedPoints);CHKERRQ(ierr);
 
     ierr = PetscOverlapGetRank(recvOverlap, r, &rank);CHKERRQ(ierr);
     ierr = PetscOverlapGetNumPoints(recvOverlap, r, &numPoints);CHKERRQ(ierr);
@@ -301,9 +455,10 @@ static PetscErrorCode copy(PetscOverlap sendOverlap, PetscOverlap recvOverlap, P
       ierr = PetscSectionGetDof(recvSection, recv_point_type(rank, sortedPoints[p]), &fDim);CHKERRQ(ierr);
       ierr = PetscSectionGetOff(recvSection, recv_point_type(rank, sortedPoints[p]), &off);CHKERRQ(ierr);
       for(PetscInt i = 0; i < fDim; ++i, ++k) {
-        recvStorage[off+i] = (typename RecvSection::value_type) v[k];
+        recvStorage[off+i] = (recv_value_type) v[k];
       }
     }
+    ierr = PetscFree(sortedPoints);CHKERRQ(ierr);
   }
   for(PetscInt r = 0; r < numSendRanks; ++r) {
     ierr = PetscFree(sendValues[r]);CHKERRQ(ierr);
@@ -311,6 +466,5 @@ static PetscErrorCode copy(PetscOverlap sendOverlap, PetscOverlap recvOverlap, P
   for(PetscInt r = 0; r < numRecvRanks; ++r) {
     ierr = PetscFree(recvValues[r]);CHKERRQ(ierr);
   }
-  //recvSection->view("After copy");
 };
 #endif
