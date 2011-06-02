@@ -1010,7 +1010,7 @@ PetscErrorCode  PetscFinalize(void)
       } else if (nopt == 1) {
 	ierr = PetscPrintf(PETSC_COMM_WORLD,"There is one unused database option. It is:\n");CHKERRQ(ierr);
       } else {
-	ierr = PetscPrintf(PETSC_COMM_WORLD,"There are %d unused database options. They are:\n",nopt);CHKERRQ(ierr);
+	ierr = PetscPrintf(PETSC_COMM_WORLD,"There are %D unused database options. They are:\n",nopt);CHKERRQ(ierr);
       }
     } 
 #if defined(PETSC_USE_DEBUG)

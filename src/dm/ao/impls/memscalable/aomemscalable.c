@@ -110,7 +110,7 @@ PetscErrorCode AOMap_MemoryScalable_private(AO ao,PetscInt n,PetscInt *ia,PetscI
   PetscInt          *owners = aomems->map->range;
   MPI_Request       *send_waits,*recv_waits,*send_waits2,*recv_waits2;
   MPI_Status        recv_status;
-  PetscMPIInt       nindices,source;
+  PetscMPIInt       nindices,source,widx;
   PetscInt          *rbuf,*sbuf;
   MPI_Status        *send_status,*send_status2;
   
@@ -204,9 +204,9 @@ PetscErrorCode AOMap_MemoryScalable_private(AO ao,PetscInt n,PetscInt *ia,PetscI
   
   /* 1st recvs: other's requests */
   for (j=0; j< nreceives; j++){
-    ierr = MPI_Waitany(nreceives,recv_waits,&idx,&recv_status);CHKERRQ(ierr); /* idx=j: index of handle for operation that completed */
+    ierr = MPI_Waitany(nreceives,recv_waits,&widx,&recv_status);CHKERRQ(ierr); /* idx: index of handle for operation that completed */
     ierr = MPI_Get_count(&recv_status,MPIU_INT,&nindices);CHKERRQ(ierr);
-    rbuf = rindices+nmax*idx; /* global index */
+    rbuf = rindices+nmax*widx; /* global index */
     source = recv_status.MPI_SOURCE;
     
     /* compute mapping */
@@ -214,7 +214,7 @@ PetscErrorCode AOMap_MemoryScalable_private(AO ao,PetscInt n,PetscInt *ia,PetscI
     for (i=0; i<nindices; i++)sbuf[i] = maploc[rbuf[i]-owners[rank]];
 
     /* send mapping back to the sender */ 
-    ierr = MPI_Isend(sbuf,nindices,MPIU_INT,source,tag2,comm,send_waits2+idx);CHKERRQ(ierr);  
+    ierr = MPI_Isend(sbuf,nindices,MPIU_INT,source,tag2,comm,send_waits2+widx);CHKERRQ(ierr);  
   }
 
   /* wait on 2nd sends */
@@ -224,7 +224,7 @@ PetscErrorCode AOMap_MemoryScalable_private(AO ao,PetscInt n,PetscInt *ia,PetscI
 
   /* 2nd recvs: for the answer of my request */
   for (j=0; j< nsends; j++){
-    ierr = MPI_Waitany(nsends,recv_waits2,&idx,&recv_status);CHKERRQ(ierr);
+    ierr = MPI_Waitany(nsends,recv_waits2,&widx,&recv_status);CHKERRQ(ierr);
     ierr = MPI_Get_count(&recv_status,MPIU_INT,&nindices);CHKERRQ(ierr);
     source = recv_status.MPI_SOURCE;
     /* pack output ia[] */
@@ -296,7 +296,7 @@ PetscErrorCode  AOCreateMemoryScalable_private(MPI_Comm comm,PetscInt napp,const
   PetscInt          *owners = aomems->map->range;
   MPI_Request       *send_waits,*recv_waits;
   MPI_Status        recv_status;
-  PetscMPIInt       nindices,source;
+  PetscMPIInt       nindices,source,widx;
   PetscInt          *rbuf;
   PetscInt          n=napp,ip,ia;
   MPI_Status        *send_status;
@@ -382,9 +382,9 @@ PetscErrorCode  AOCreateMemoryScalable_private(MPI_Comm comm,PetscInt napp,const
   /* recvs */
   count=0;
   for (j= nreceives; j>0; j--){
-    ierr = MPI_Waitany(nreceives,recv_waits,&i,&recv_status);CHKERRQ(ierr);
+    ierr = MPI_Waitany(nreceives,recv_waits,&widx,&recv_status);CHKERRQ(ierr);
     ierr = MPI_Get_count(&recv_status,MPIU_INT,&nindices);CHKERRQ(ierr);
-    rbuf = rindices+nmax*i; /* global index */
+    rbuf = rindices+nmax*widx; /* global index */
     source = recv_status.MPI_SOURCE;
     /* compute local mapping */
     for (i=0; i<nindices; i+=2){ /* pack aomap_loc */
