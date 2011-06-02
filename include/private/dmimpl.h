@@ -46,16 +46,17 @@ struct _DMOps {
 
 struct _p_DM {
   PETSCHEADER(struct _DMOps);
-  Vec           localin[DM_MAX_WORK_VECTORS],localout[DM_MAX_WORK_VECTORS];   
-  Vec           globalin[DM_MAX_WORK_VECTORS],globalout[DM_MAX_WORK_VECTORS]; 
-  void          *ctx;    /* a user context */  
-  Vec           x;       /* location at which the functions/Jacobian are computed */  
-  MatFDColoring fd;      /* used by DMComputeJacobianDefault() */   
-  VecType       vectype;  /* type of vector created with DMCreateLocalVector() and DMCreateGlobalVector() */
-  PetscInt      bs;
+  Vec                    localin[DM_MAX_WORK_VECTORS],localout[DM_MAX_WORK_VECTORS];   
+  Vec                    globalin[DM_MAX_WORK_VECTORS],globalout[DM_MAX_WORK_VECTORS]; 
+  void                   *ctx;    /* a user context */  
+  Vec                    x;       /* location at which the functions/Jacobian are computed */  
+  MatFDColoring          fd;      /* used by DMComputeJacobianDefault() */   
+  VecType                vectype;  /* type of vector created with DMCreateLocalVector() and DMCreateGlobalVector() */
+  PetscInt               bs;
   ISLocalToGlobalMapping ltogmap,ltogmapb;
-  PetscBool     prealloc_only; /* Flag indicating the DMGetMatrix() should only preallocate, not fill the matrix */
-  void          *data;
+  PetscBool              prealloc_only; /* Flag indicating the DMGetMatrix() should only preallocate, not fill the matrix */
+  PetscInt               levelup,leveldown;  /* if the DM has been obtained by refining (or coarsening) this indicates how many times that process has been used to generate this DM */
+  void                   *data;
 };
 
 extern PetscLogEvent DM_Convert, DM_GlobalToLocal, DM_LocalToGlobal;

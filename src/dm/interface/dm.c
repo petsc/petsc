@@ -599,6 +599,7 @@ PetscErrorCode  DMRefine(DM dm,MPI_Comm comm,DM *dmf)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = (*dm->ops->refine)(dm,comm,dmf);CHKERRQ(ierr);
+  (*dmf)->levelup = dm->levelup + 1;
   PetscFunctionReturn(0);
 }
 
@@ -781,6 +782,7 @@ PetscErrorCode  DMCoarsen(DM dm, MPI_Comm comm, DM *dmc)
   if (dm->ops->jacobian != DMComputeJacobianDefault) {
     (*dmc)->ops->jacobian     = dm->ops->jacobian;
   }
+  (*dmc)->leveldown = dm->leveldown + 1;
   PetscFunctionReturn(0);
 }
 
