@@ -706,6 +706,9 @@ PetscErrorCode  DMRefine_DA(DM da,MPI_Comm comm,DM *daref)
   ierr = PetscFree(da2->vectype);CHKERRQ(ierr);
   ierr = PetscStrallocpy(da->vectype,&da2->vectype);CHKERRQ(ierr);
 
+  dd2->lf = dd->lf;
+  dd2->lj = dd->lj;
+
   /* interpolate coordinates if they are set on the coarse grid */
   if (dd->coordinates) {
     DM  cdaf,cdac;

@@ -203,6 +203,9 @@ ex54: ex54.o  chkopts
 ex55: ex55.o  chkopts
 	-${CLINKER} -o ex55 ex55.o ${PETSC_SNES_LIB}
 	${RM} ex55.o
+ex56: ex56.o  chkopts
+	-${CLINKER} -o ex56 ex56.o ${PETSC_SNES_LIB}
+	${RM} ex56.o
 ex57: ex57.o  chkopts
 	-${CLINKER} -o ex57 ex57.o ${PETSC_SNES_LIB}
 	${RM} ex57.o

@@ -81,6 +81,7 @@ struct _p_SNES {
   PetscBool   printreason;     /* print reason for convergence/divergence after each solve */
   PetscInt    lagpreconditioner; /* SNESSetLagPreconditioner() */
   PetscInt    lagjacobian;       /* SNESSetLagJacobian() */
+  PetscInt    gridsequence;      /* number of grid sequence steps to take; defaults to zero */
   /* ------------------------ Default work-area management ---------------------- */
 
   PetscInt    nwork;              

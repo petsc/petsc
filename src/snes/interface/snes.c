@@ -334,7 +334,7 @@ static PetscErrorCode SNESSetUpMatrixFree_Private(SNES snes, PetscBool  hasOpera
 PetscErrorCode  SNESSetFromOptions(SNES snes)
 {
   PetscBool               flg,mf,mf_operator;
-  PetscInt                i,indx,lag,mf_version;
+  PetscInt                i,indx,lag,mf_version,grids;
   MatStructure            matflag;
   const char              *deft = SNESLS;
   const char              *convtests[] = {"default","skip"};
@@ -375,6 +375,10 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
     ierr = PetscOptionsInt("-snes_lag_jacobian","How often to rebuild Jacobian","SNESSetLagJacobian",snes->lagjacobian,&lag,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = SNESSetLagJacobian(snes,lag);CHKERRQ(ierr);
+    }
+    ierr = PetscOptionsInt("-snes_grid_sequence","Use grid sequencing to generate initial guess","SNESSetGridSequence",snes->gridsequence,&grids,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = SNESSetGridSequence(snes,grids);CHKERRQ(ierr);
     }
 
     ierr = PetscOptionsEList("-snes_convergence_test","Convergence test","SNESSetConvergenceTest",convtests,2,"default",&indx,&flg);CHKERRQ(ierr);
@@ -1279,9 +1283,9 @@ PetscErrorCode  SNESComputeJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *
 +  snes - the SNES context
 .  A - Jacobian matrix
 .  B - preconditioner matrix (usually same as the Jacobian)
-.  func - Jacobian evaluation routine
+.  func - Jacobian evaluation routine (if PETSC_NULL then SNES retains any previously set value)
 -  ctx - [optional] user-defined context for private data for the 
-         Jacobian evaluation routine (may be PETSC_NULL)
+         Jacobian evaluation routine (may be PETSC_NULL) (if PETSC_NULL then SNES retains any previously set value)
 
    Calling sequence of func:
 $     func (SNES snes,Vec x,Mat *A,Mat *B,int *flag,void *ctx);
@@ -1410,6 +1414,9 @@ PetscErrorCode  SNESSetUp(SNES snes)
     ierr = SNESSetType(snes,SNESLS);CHKERRQ(ierr);
   }
 
+  if (!snes->vec_func && snes->dm && !snes->vec_rhs) {  
+    ierr = DMCreateGlobalVector(snes->dm,&snes->vec_func);CHKERRQ(ierr);
+  }
   if (!snes->vec_func && !snes->vec_rhs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call SNESSetFunction() first");
   if (!snes->ops->computefunction && !snes->vec_rhs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call SNESSetFunction() first");
   if (snes->vec_func == snes->vec_sol) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_IDN,"Solution vector cannot be function vector");
@@ -1434,7 +1441,13 @@ PetscErrorCode  SNESSetUp(SNES snes)
     ierr = MatFDColoringSetFunction(fd,(PetscErrorCode (*)(void))snes->ops->computefunction,snes->funP);CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobianColor,fd);CHKERRQ(ierr);
     ierr = ISColoringDestroy(&coloring);CHKERRQ(ierr);
+  } else if (snes->dm && !snes->jacobian_pre){
+    Mat J;
+    ierr = DMGetMatrix(snes->dm,MATAIJ,&J);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(snes,J,J,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatDestroy(&J);CHKERRQ(ierr);
   }
+ 
   if (!snes->ksp) {ierr = SNESGetKSP(snes, &snes->ksp);CHKERRQ(ierr);}
 
   if (snes->ops->setup) {
@@ -1569,6 +1582,36 @@ PetscErrorCode  SNESSetLagPreconditioner(SNES snes,PetscInt lag)
   if (!lag) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Lag cannot be 0");
   PetscValidLogicalCollectiveInt(snes,lag,2);
   snes->lagpreconditioner = lag;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "SNESSetGridSequence"
+/*@
+   SNESSetGridSequence - sets the number of steps of grid sequencing that SNES does
+
+   Logically Collective on SNES
+
+   Input Parameters:
++  snes - the SNES context
+-  steps - the number of refinements to do, defaults to 0
+
+   Options Database Keys: 
+.    -snes_grid_sequence <steps>
+
+   Level: intermediate
+
+.keywords: SNES, nonlinear, set, convergence, tolerances
+
+.seealso: SNESSetTrustRegionTolerance(), SNESGetLagPreconditioner(), SNESSetLagJacobian(), SNESGetLagJacobian()
+
+@*/
+PetscErrorCode  SNESSetGridSequence(SNES snes,PetscInt steps)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  PetscValidLogicalCollectiveInt(snes,steps,2);
+  snes->gridsequence = steps;
   PetscFunctionReturn(0);
 }
 
@@ -2398,6 +2441,7 @@ PetscErrorCode  SNESSolve(SNES snes,Vec b,Vec x)
   PetscBool      flg;
   char           filename[PETSC_MAX_PATH_LEN];
   PetscViewer    viewer;
+  PetscInt       grid;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
@@ -2406,48 +2450,67 @@ PetscErrorCode  SNESSolve(SNES snes,Vec b,Vec x)
   if (b) PetscValidHeaderSpecific(b,VEC_CLASSID,2);
   if (b) PetscCheckSameComm(snes,1,b,2);
 
-  /* set solution vector */
-  ierr = PetscObjectReference((PetscObject)x);CHKERRQ(ierr);
-  ierr = VecDestroy(&snes->vec_sol);CHKERRQ(ierr);
-  snes->vec_sol = x;
-  /* set afine vector if provided */
-  if (b) { ierr = PetscObjectReference((PetscObject)b);CHKERRQ(ierr); }
-  ierr = VecDestroy(&snes->vec_rhs);CHKERRQ(ierr);
-  snes->vec_rhs = b;
+  for (grid=0; grid<snes->gridsequence+1; grid++) {
 
-  ierr = SNESSetUp(snes);CHKERRQ(ierr);
+    /* set solution vector */
+    if (!grid) {ierr = PetscObjectReference((PetscObject)x);CHKERRQ(ierr);}
+    ierr = VecDestroy(&snes->vec_sol);CHKERRQ(ierr);
+    snes->vec_sol = x;
+    /* set afine vector if provided */
+    if (b) { ierr = PetscObjectReference((PetscObject)b);CHKERRQ(ierr); }
+    ierr = VecDestroy(&snes->vec_rhs);CHKERRQ(ierr);
+    snes->vec_rhs = b;
 
-  if (snes->conv_hist_reset) snes->conv_hist_len = 0;
-  snes->nfuncs = 0; snes->linear_its = 0; snes->numFailures = 0;
+    ierr = SNESSetUp(snes);CHKERRQ(ierr);
 
-  ierr = PetscLogEventBegin(SNES_Solve,snes,0,0,0);CHKERRQ(ierr);
-  ierr = (*snes->ops->solve)(snes);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(SNES_Solve,snes,0,0,0);CHKERRQ(ierr);
-  if (snes->domainerror){
-    snes->reason      = SNES_DIVERGED_FUNCTION_DOMAIN;
-    snes->domainerror = PETSC_FALSE;
-  }
-  if (!snes->reason) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Internal error, solver returned without setting converged reason");
+    if (snes->conv_hist_reset) snes->conv_hist_len = 0;
+    snes->nfuncs = 0; snes->linear_its = 0; snes->numFailures = 0;
 
-  ierr = PetscOptionsGetString(((PetscObject)snes)->prefix,"-snes_view",filename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
-  if (flg && !PetscPreLoadingOn) {
-    ierr = PetscViewerASCIIOpen(((PetscObject)snes)->comm,filename,&viewer);CHKERRQ(ierr);
-    ierr = SNESView(snes,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  }
+    ierr = PetscLogEventBegin(SNES_Solve,snes,0,0,0);CHKERRQ(ierr);
+    ierr = (*snes->ops->solve)(snes);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(SNES_Solve,snes,0,0,0);CHKERRQ(ierr);
+    if (snes->domainerror){
+      snes->reason      = SNES_DIVERGED_FUNCTION_DOMAIN;
+      snes->domainerror = PETSC_FALSE;
+    }
+    if (!snes->reason) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Internal error, solver returned without setting converged reason");
 
-  flg  = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(((PetscObject)snes)->prefix,"-snes_test_local_min",&flg,PETSC_NULL);CHKERRQ(ierr);
-  if (flg && !PetscPreLoadingOn) { ierr = SNESTestLocalMin(snes);CHKERRQ(ierr); }
-  if (snes->printreason) {
-    if (snes->reason > 0) {
-      ierr = PetscPrintf(((PetscObject)snes)->comm,"Nonlinear solve converged due to %s\n",SNESConvergedReasons[snes->reason]);CHKERRQ(ierr);
-    } else {
-      ierr = PetscPrintf(((PetscObject)snes)->comm,"Nonlinear solve did not converge due to %s\n",SNESConvergedReasons[snes->reason]);CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(((PetscObject)snes)->prefix,"-snes_view",filename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+    if (flg && !PetscPreLoadingOn) {
+      ierr = PetscViewerASCIIOpen(((PetscObject)snes)->comm,filename,&viewer);CHKERRQ(ierr);
+      ierr = SNESView(snes,viewer);CHKERRQ(ierr);
+      ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+    }
+    
+    flg  = PETSC_FALSE;
+    ierr = PetscOptionsGetBool(((PetscObject)snes)->prefix,"-snes_test_local_min",&flg,PETSC_NULL);CHKERRQ(ierr);
+    if (flg && !PetscPreLoadingOn) { ierr = SNESTestLocalMin(snes);CHKERRQ(ierr); }
+    if (snes->printreason) {
+      if (snes->reason > 0) {
+        ierr = PetscPrintf(((PetscObject)snes)->comm,"Nonlinear solve converged due to %s\n",SNESConvergedReasons[snes->reason]);CHKERRQ(ierr);
+      } else {
+        ierr = PetscPrintf(((PetscObject)snes)->comm,"Nonlinear solve did not converge due to %s\n",SNESConvergedReasons[snes->reason]);CHKERRQ(ierr);
+      }
+    }
+    
+    if (snes->errorifnotconverged && snes->reason < 0) SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_NOT_CONVERGED,"SNESSolve has not converged");
+    if (grid <  snes->gridsequence) {
+      DM  fine;
+      Vec xnew;
+      Mat interp;
+
+      ierr = DMRefine(snes->dm,((PetscObject)snes)->comm,&fine);CHKERRQ(ierr);
+      ierr = DMGetInterpolation(snes->dm,fine,&interp,PETSC_NULL);CHKERRQ(ierr);
+      ierr = DMCreateGlobalVector(fine,&xnew);CHKERRQ(ierr);
+      ierr = MatInterpolate(interp,x,xnew);CHKERRQ(ierr);
+      ierr = MatDestroy(&interp);CHKERRQ(ierr);
+      x    = xnew;
+
+      ierr = SNESReset(snes);CHKERRQ(ierr);
+      ierr = SNESSetDM(snes,fine);CHKERRQ(ierr);
+      ierr = DMDestroy(&fine);CHKERRQ(ierr);
     }
   }
-
-  if (snes->errorifnotconverged && snes->reason < 0) SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_NOT_CONVERGED,"SNESSolve has not converged");
   PetscFunctionReturn(0);
 }
 

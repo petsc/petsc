@@ -208,12 +208,13 @@ PetscErrorCode DMMGFormFunctionFD(SNES snes,Vec X,Vec F,void *ptr)
   PetscFunctionReturn(0); 
 } 
 
+#include <private/snesimpl.h>
+
 #undef __FUNCT__
 #define __FUNCT__ "SNESDAFormFunction"
 /*@C 
    SNESDAFormFunction - This is a universal function evaluation routine that
-   may be used with SNESSetFunction() as long as the user context has a DMDA
-   as its first record and the user has called DMDASetLocalFunction().
+   may be used with SNESSetFunction(). Must be used with SNESSetDM().
 
    Collective on SNES
 
@@ -227,14 +228,14 @@ PetscErrorCode DMMGFormFunctionFD(SNES snes,Vec X,Vec F,void *ptr)
    Level: intermediate
 
 .seealso: DMDASetLocalFunction(), DMDASetLocalJacobian(), DMDASetLocalAdicFunction(), DMDASetLocalAdicMFFunction(),
-          SNESSetFunction(), SNESSetJacobian()
+          SNESSetFunction(), SNESSetJacobian(), SNESSetDM()
 
 @*/
 PetscErrorCode  SNESDAFormFunction(SNES snes,Vec X,Vec F,void *ptr)
 {
   PetscErrorCode ierr;
   Vec            localX;
-  DM             da = *(DM*)ptr;
+  DM             da = snes->dm;
   PetscInt       N,n;
   
   PetscFunctionBegin;
@@ -489,7 +490,7 @@ PetscErrorCode  SNESDAComputeJacobianWithAdifor(SNES snes,Vec X,Mat *J,Mat *B,Ma
 #define __FUNCT__ "SNESDAComputeJacobian"
 /*
    SNESDAComputeJacobian - This is a universal Jacobian evaluation routine for a
-   locally provided Jacobian.
+   locally provided Jacobian. Must be used with SNESSetDM().
 
    Collective on SNES
 
@@ -503,12 +504,12 @@ PetscErrorCode  SNESDAComputeJacobianWithAdifor(SNES snes,Vec X,Mat *J,Mat *B,Ma
 
    Level: intermediate
 
-.seealso: DMDASetLocalFunction(), DMDASetLocalJacobian(), SNESSetFunction(), SNESSetJacobian()
+.seealso: DMDASetLocalFunction(), DMDASetLocalJacobian(), SNESSetFunction(), SNESSetJacobian(), SNESSetDM()
 
 */
 PetscErrorCode  SNESDAComputeJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 {
-  DM             da = *(DM*) ptr;
+  DM             da = snes->dm;
   PetscErrorCode ierr;
   Vec            localX;
 

@@ -155,6 +155,7 @@ extern PetscErrorCode  SNESSetLagPreconditioner(SNES,PetscInt);
 extern PetscErrorCode  SNESGetLagPreconditioner(SNES,PetscInt*);
 extern PetscErrorCode  SNESSetLagJacobian(SNES,PetscInt);
 extern PetscErrorCode  SNESGetLagJacobian(SNES,PetscInt*);
+extern PetscErrorCode  SNESSetGridSequence(SNES,PetscInt);
 
 extern PetscErrorCode  SNESGetLinearSolveIterations(SNES,PetscInt*);
 extern PetscErrorCode  SNESGetLinearSolveFailures(SNES,PetscInt*);
