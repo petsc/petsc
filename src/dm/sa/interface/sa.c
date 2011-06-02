@@ -1611,8 +1611,8 @@ PetscErrorCode SAAssemble(SA chain, PetscInt mask, PetscLayout layout, SA achain
   PetscInt idx, lastidx;
   PetscInt i, j, p;
   PetscInt    *owner = PETSC_NULL;
-  PetscInt    nsends, nrecvs;
-  PetscMPIInt    *plengths, *sstarts = PETSC_NULL;
+  PetscMPIInt nsends, nrecvs;
+  PetscMPIInt *plengths, *sstarts = PETSC_NULL;
   PetscMPIInt *rnodes, *rlengths, *rstarts = PETSC_NULL, rlengthtotal;
   PetscInt    **rindices = PETSC_NULL, *sindices= PETSC_NULL;
   PetscScalar *svalues = PETSC_NULL, **rvalues = PETSC_NULL;
