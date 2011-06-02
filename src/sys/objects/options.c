@@ -1948,7 +1948,7 @@ PetscErrorCode  PetscOptionsGetStringArray(const char pre[],const char name[],ch
 
 .seealso: PetscOptionsView()
 @*/
-PetscErrorCode  PetscOptionsAllUsed(int *N)
+PetscErrorCode  PetscOptionsAllUsed(PetscInt *N)
 {
   PetscInt i,n = 0;
 
