@@ -101,7 +101,7 @@ PetscErrorCode  PetscViewerDestroy(PetscViewer *viewer)
   ierr = PetscViewerFlush(*viewer);CHKERRQ(ierr);
   if (--((PetscObject)(*viewer))->refct > 0) {*viewer = 0; PetscFunctionReturn(0);}
 
-  ierr = PetscObjectDepublish(v*iewer);CHKERRQ(ierr);
+  ierr = PetscObjectDepublish(*viewer);CHKERRQ(ierr);
 
   if ((*viewer)->ops->destroy) {
     ierr = (*(*viewer)->ops->destroy)(*viewer);CHKERRQ(ierr);
