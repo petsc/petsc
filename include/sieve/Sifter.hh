@@ -698,12 +698,26 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
     PetscObject petscObj() const {return this->_petscObj;};
 #endif
 
+    // Added to allow optimized versions
+    void assemble() {};
     // FIX: need const_cap, const_base returning const capSequence etc, but those need to have const_iterators, const_begin etc.
     Obj<typename traits::capSequence> cap() {
       return typename traits::capSequence(::boost::multi_index::get<typename traits::capInd>(this->_cap.set));
     };
     Obj<typename traits::baseSequence> base() {
       return typename traits::baseSequence(::boost::multi_index::get<typename traits::baseInd>(this->_base.set));
+    };
+    typename traits::capSequence::iterator capBegin() {
+      return this->cap()->begin();
+    };
+    typename traits::capSequence::iterator capEnd() {
+      return this->cap()->end();
+    };
+    typename traits::baseSequence::iterator baseBegin() {
+      return this->base()->begin();
+    };
+    typename traits::baseSequence::iterator baseEnd() {
+      return this->base()->end();
     };
     bool capContains(const typename traits::source_type& p) {
       typename traits::capSequence cap(::boost::multi_index::get<typename traits::capInd>(this->_cap.set));
@@ -739,6 +753,14 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
       this->_coneSeq->setKey(p);
       this->_coneSeq->setUseSubkey(false);
       return this->_coneSeq;
+    };
+    const typename traits::coneSequence::iterator
+    coneBegin(const typename traits::target_type& p) {
+      return this->cone(p)->begin();
+    };
+    const typename traits::coneSequence::iterator
+    coneEnd(const typename traits::target_type& p) {
+      return this->cone(p)->end();
     };
 #endif
     template<class InputSequence> 
@@ -806,6 +828,14 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
       this->_supportSeq->setKey(p);
       this->_supportSeq->setUseSubkey(false);
       return this->_supportSeq;
+    };
+    const typename traits::supportSequence::iterator
+    supportBegin(const typename traits::source_type& p) {
+      return this->support(p)->begin();
+    };
+    const typename traits::supportSequence::iterator
+    supportEnd(const typename traits::source_type& p) {
+      return this->support(p)->end();
     };
 #endif
 #ifdef SLOW

@@ -353,33 +353,32 @@ namespace ALE {
         typename SendSection::alloc_type::template rebind<char>::other sendAllocator;
         typename RecvSection::alloc_type::template rebind<char>::other recvAllocator;
 
-        const Obj<typename SendOverlap::traits::baseSequence>      sRanks  = sendOverlap->base();
-        const typename SendOverlap::traits::baseSequence::iterator sEnd    = sRanks->end();
-        const typename SendSection::value_type                    *sValues = sendSection->restrictSpace();
+        const typename SendOverlap::baseSequence::iterator sBegin  = sendOverlap->baseBegin();
+        const typename SendOverlap::baseSequence::iterator sEnd    = sendOverlap->baseEnd();
+        const typename SendSection::value_type            *sValues = sendSection->restrictSpace();
 
-        for(typename SendOverlap::traits::baseSequence::iterator r_iter = sRanks->begin(); r_iter != sEnd; ++r_iter) {
-          const Obj<typename SendOverlap::coneSequence>&     points = sendOverlap->cone(*r_iter);
-          const int                                          pSize  = points->size();
-          const typename SendOverlap::coneSequence::iterator pEnd   = points->end();
-          char                                              *v      = sendAllocator.allocate(points->size());
+        for(typename SendOverlap::baseSequence::iterator r_iter = sBegin; r_iter != sEnd; ++r_iter) {
+          const int                                          pSize  = sendOverlap->getConeSize(*r_iter);
+          const typename SendOverlap::coneSequence::iterator pBegin = sendOverlap->coneBegin(*r_iter);
+          const typename SendOverlap::coneSequence::iterator pEnd   = sendOverlap->coneEnd(*r_iter);
+          char                                              *v      = sendAllocator.allocate(pSize);
           int                                                k      = 0;
 
           for(int i = 0; i < pSize; ++i) {sendAllocator.construct(v+i, 0);}
-          for(typename SendOverlap::coneSequence::iterator p_iter = points->begin(); p_iter != pEnd; ++p_iter, ++k) {
+          for(typename SendOverlap::coneSequence::iterator p_iter = pBegin; p_iter != pEnd; ++p_iter, ++k) {
             v[k] = (char) sendSection->hasPoint(*p_iter);
           }
           sendPoints[*r_iter] = v;
           pMover.send(*r_iter, pSize, sendPoints[*r_iter]);
           vMover.send(*r_iter, 2, sValues);
         }
-        const Obj<typename RecvOverlap::traits::capSequence>      rRanks  = recvOverlap->cap();
-        const typename RecvOverlap::traits::capSequence::iterator rEnd    = rRanks->end();
-        const typename RecvSection::value_type                   *rValues = recvSection->restrictSpace();
+        const typename RecvOverlap::capSequence::iterator rBegin  = recvOverlap->capBegin();
+        const typename RecvOverlap::capSequence::iterator rEnd    = recvOverlap->capEnd();
+        const typename RecvSection::value_type           *rValues = recvSection->restrictSpace();
 
-        for(typename RecvOverlap::traits::capSequence::iterator r_iter = rRanks->begin(); r_iter != rEnd; ++r_iter) {
-          const Obj<typename RecvOverlap::traits::supportSequence>& points = recvOverlap->support(*r_iter);
-          const int                                                 pSize  = points->size();
-          char                                                     *v      = recvAllocator.allocate(pSize);
+        for(typename RecvOverlap::capSequence::iterator r_iter = rBegin; r_iter != rEnd; ++r_iter) {
+          const int pSize = recvOverlap->getSupportSize(*r_iter);
+          char     *v     = recvAllocator.allocate(pSize);
 
           for(int i = 0; i < pSize; ++i) {recvAllocator.construct(v+i, 0);}
           recvPoints[*r_iter] = v;
@@ -390,21 +389,21 @@ namespace ALE {
         pMover.end();
         vMover.start();
         vMover.end();
-        for(typename RecvOverlap::traits::capSequence::iterator r_iter = rRanks->begin(); r_iter != rEnd; ++r_iter) {
-          const Obj<typename RecvOverlap::traits::supportSequence>&     points = recvOverlap->support(*r_iter);
-          const typename RecvOverlap::traits::supportSequence::iterator pEnd   = points->end();
-          const char                                                   *v      = recvPoints[*r_iter];
-          int                                                           k      = 0;
+        for(typename RecvOverlap::capSequence::iterator r_iter = rBegin; r_iter != rEnd; ++r_iter) {
+          const typename RecvOverlap::supportSequence::iterator pBegin = recvOverlap->supportBegin(*r_iter);
+          const typename RecvOverlap::supportSequence::iterator pEnd   = recvOverlap->supportEnd(*r_iter);
+          const char                                           *v      = recvPoints[*r_iter];
+          int                                                   k      = 0;
 
-          for(typename RecvOverlap::traits::supportSequence::iterator s_iter = points->begin(); s_iter != pEnd; ++s_iter, ++k) {
+          for(typename RecvOverlap::supportSequence::iterator s_iter = pBegin; s_iter != pEnd; ++s_iter, ++k) {
             if (v[k]) {recvSection->addPoint(typename RecvSection::point_type(*r_iter, s_iter.color()));}
           }
         }
-        for(typename SendOverlap::traits::baseSequence::iterator r_iter = sRanks->begin(); r_iter != sEnd; ++r_iter) {
-          sendAllocator.deallocate(sendPoints[*r_iter], sendOverlap->cone(*r_iter)->size());
+        for(typename SendOverlap::baseSequence::iterator r_iter = sBegin; r_iter != sEnd; ++r_iter) {
+          sendAllocator.deallocate(sendPoints[*r_iter], sendOverlap->getConeSize(*r_iter));
         }
-        for(typename RecvOverlap::traits::capSequence::iterator r_iter = rRanks->begin(); r_iter != rEnd; ++r_iter) {
-          recvAllocator.deallocate(recvPoints[*r_iter], recvOverlap->support(*r_iter)->size());
+        for(typename RecvOverlap::capSequence::iterator r_iter = rBegin; r_iter != rEnd; ++r_iter) {
+          recvAllocator.deallocate(recvPoints[*r_iter], recvOverlap->getSupportSize(*r_iter));
         }
       };
       // Specialize to ArrowSection
@@ -423,7 +422,7 @@ namespace ALE {
 
         for(typename SendOverlap::traits::baseSequence::iterator r_iter = sRanks->begin(); r_iter != sEnd; ++r_iter) {
           const Obj<typename SendOverlap::coneSequence>&     points = sendOverlap->cone(*r_iter);
-          const int                                          pSize  = points->size();
+          const int                                          pSize  = sendOverlap->getConeSize(*r_iter);
           const typename SendOverlap::coneSequence::iterator pBegin = points->begin();
           const typename SendOverlap::coneSequence::iterator pEnd   = points->end();
           char                                              *v      = sendAllocator.allocate(pSize*pSize);
@@ -445,8 +444,8 @@ namespace ALE {
 
         for(typename RecvOverlap::traits::capSequence::iterator r_iter = rRanks->begin(); r_iter != rEnd; ++r_iter) {
           const Obj<typename RecvOverlap::traits::supportSequence>& points = recvOverlap->support(*r_iter);
-          const int                                                 pSize  = points->size();
-          char                                                     *v      = recvAllocator.allocate(points->size()*points->size());
+          const int                                                 pSize  = recvOverlap->getSupportSize(*r_iter);
+          char                                                     *v      = recvAllocator.allocate(pSize*pSize);
 
           for(size_t i = 0; i < pSize*pSize; ++i) {recvAllocator.construct(v+i, 0);}
           recvPoints[*r_iter] = v;
@@ -471,10 +470,10 @@ namespace ALE {
           }
         }
         for(typename SendOverlap::traits::baseSequence::iterator r_iter = sRanks->begin(); r_iter != sEnd; ++r_iter) {
-          sendAllocator.deallocate(sendPoints[*r_iter], sendOverlap->cone(*r_iter)->size()*sendOverlap->cone(*r_iter)->size());
+          sendAllocator.deallocate(sendPoints[*r_iter], sendOverlap->getConeSize(*r_iter)*sendOverlap->getConeSize(*r_iter));
         }
         for(typename RecvOverlap::traits::capSequence::iterator r_iter = rRanks->begin(); r_iter != rEnd; ++r_iter) {
-          recvAllocator.deallocate(recvPoints[*r_iter], recvOverlap->support(*r_iter)->size()*recvOverlap->support(*r_iter)->size());
+          recvAllocator.deallocate(recvPoints[*r_iter], recvOverlap->getSupportSize(*r_iter)*recvOverlap->getSupportSize(*r_iter));
         }
       };
       // Copy the overlap section to the related processes
@@ -488,11 +487,11 @@ namespace ALE {
         typename SendSection::alloc_type::template rebind<typename SendSection::point_type>::other sendAllocator;
         typename RecvSection::alloc_type::template rebind<typename SendSection::point_type>::other recvAllocator;
 
-        const Obj<typename SendOverlap::traits::baseSequence>      sRanks  = sendOverlap->base();
-        const typename SendOverlap::traits::baseSequence::iterator sEnd    = sRanks->end();
-        const typename SendSection::value_type                    *sValues = sendSection->restrictSpace();
+        const Obj<typename SendOverlap::baseSequence>      sRanks  = sendOverlap->base();
+        const typename SendOverlap::baseSequence::iterator sEnd    = sRanks->end();
+        const typename SendSection::value_type            *sValues = sendSection->restrictSpace();
 
-        for(typename SendOverlap::traits::baseSequence::iterator r_iter = sRanks->begin(); r_iter != sEnd; ++r_iter) {
+        for(typename SendOverlap::baseSequence::iterator r_iter = sRanks->begin(); r_iter != sEnd; ++r_iter) {
           typename SendSection::point_type *v = sendAllocator.allocate(2);
 
           for(size_t i = 0; i < 2; ++i) {sendAllocator.construct(v+i, 0);}
@@ -503,11 +502,11 @@ namespace ALE {
           vMover.send(*r_iter, 2, sValues);
           ///std::cout << "["<<sendOverlap->commRank()<<"]Sending chart (" << v[0] << ", " << v[1] << ") with values (" << sValues[0] << ", " << sValues[1] << ") to process " << *r_iter << std::endl;
         }
-        const Obj<typename RecvOverlap::traits::capSequence>      rRanks  = recvOverlap->cap();
-        const typename RecvOverlap::traits::capSequence::iterator rEnd    = rRanks->end();
-        const typename RecvSection::value_type                   *rValues = recvSection->restrictSpace();
+        const Obj<typename RecvOverlap::capSequence>      rRanks  = recvOverlap->cap();
+        const typename RecvOverlap::capSequence::iterator rEnd    = rRanks->end();
+        const typename RecvSection::value_type           *rValues = recvSection->restrictSpace();
 
-        for(typename RecvOverlap::traits::capSequence::iterator r_iter = rRanks->begin(); r_iter != rEnd; ++r_iter) {
+        for(typename RecvOverlap::capSequence::iterator r_iter = rRanks->begin(); r_iter != rEnd; ++r_iter) {
           typename SendSection::point_type *v = recvAllocator.allocate(2);
 
           for(size_t i = 0; i < 2; ++i) {recvAllocator.construct(v+i, 0);}
@@ -523,7 +522,7 @@ namespace ALE {
         typename SendSection::point_type min = -1;
         typename SendSection::point_type max = -1;
 
-        for(typename RecvOverlap::traits::capSequence::iterator r_iter = rRanks->begin(); r_iter != rEnd; ++r_iter) {
+        for(typename RecvOverlap::capSequence::iterator r_iter = rRanks->begin(); r_iter != rEnd; ++r_iter) {
           const typename RecvSection::point_type *v = recvPoints[*r_iter];
           typename SendSection::point_type        newMin = v[0];
           typename SendSection::point_type        newMax = v[1]-1;
@@ -566,10 +565,10 @@ namespace ALE {
         }
         if (!rRanks->size()) {min = max = 0;}
         recvSection->setChart(typename RecvSection::chart_type(min, max));
-        for(typename SendOverlap::traits::baseSequence::iterator r_iter = sRanks->begin(); r_iter != sEnd; ++r_iter) {
+        for(typename SendOverlap::baseSequence::iterator r_iter = sRanks->begin(); r_iter != sEnd; ++r_iter) {
           sendAllocator.deallocate(sendPoints[*r_iter], 2);
         }
-        for(typename RecvOverlap::traits::capSequence::iterator r_iter = rRanks->begin(); r_iter != rEnd; ++r_iter) {
+        for(typename RecvOverlap::capSequence::iterator r_iter = rRanks->begin(); r_iter != rEnd; ++r_iter) {
           recvAllocator.deallocate(recvPoints[*r_iter], 2);
         }
       };
@@ -589,19 +588,19 @@ namespace ALE {
         typename RecvSection::alloc_type             recvAllocator;
 
         copy(sendOverlap, recvOverlap, sendAtlas, recvAtlas);
-        const Obj<typename SendOverlap::traits::baseSequence>      sRanks = sendOverlap->base();
-        const typename SendOverlap::traits::baseSequence::iterator sEnd   = sRanks->end();
+        const typename SendOverlap::baseSequence::iterator sBegin = sendOverlap->baseBegin();
+        const typename SendOverlap::baseSequence::iterator sEnd   = sendOverlap->baseEnd();
 
         // TODO: This should be const_iterator, but Sifter sucks
-        for(typename SendOverlap::traits::baseSequence::iterator r_iter = sRanks->begin(); r_iter != sEnd; ++r_iter) {
-          const Obj<typename SendOverlap::coneSequence>&     points    = sendOverlap->cone(*r_iter);
-          const typename SendOverlap::coneSequence::iterator pEnd      = points->end();
-          const int                                          numPoints = points->size();
+        for(typename SendOverlap::baseSequence::iterator r_iter = sBegin; r_iter != sEnd; ++r_iter) {
+          const typename SendOverlap::coneSequence::iterator pBegin    = sendOverlap->coneBegin(*r_iter);
+          const typename SendOverlap::coneSequence::iterator pEnd      = sendOverlap->coneEnd(*r_iter);
+          const int                                          numPoints = sendOverlap->getConeSize(*r_iter);
           std::valarray<typename SendOverlap::source_type>   sortedPoints(numPoints);
           int                                                numVals   = 0, p = 0;
 
           // TODO: This should be const_iterator, but Sifter sucks
-          for(typename SendOverlap::coneSequence::iterator c_iter = points->begin(); c_iter != pEnd; ++c_iter, ++p) {
+          for(typename SendOverlap::coneSequence::iterator c_iter = pBegin; c_iter != pEnd; ++c_iter, ++p) {
             numVals += sendSection->getFiberDimension(*c_iter);
             sortedPoints[p] = *c_iter;
           }
@@ -610,7 +609,6 @@ namespace ALE {
 
           std::sort(&sortedPoints[0], &sortedPoints[numPoints]);
           for(int i = 0; i < numVals; ++i) {sendAllocator.construct(v+i, 0);}
-          //for(typename SendOverlap::coneSequence::iterator c_iter = points->begin(); c_iter != pEnd; ++c_iter) {
           for(p = 0; p < numPoints; ++p) {
             const typename SendSection::value_type *vals = sendSection->restrictPoint(sortedPoints[p]);
 
@@ -619,19 +617,19 @@ namespace ALE {
           sendValues[*r_iter] = allocPair(numVals, v);
           vMover.send(*r_iter, numVals, v);
         }
-        const Obj<typename RecvOverlap::traits::capSequence>      rRanks = recvOverlap->cap();
-        const typename RecvOverlap::traits::capSequence::iterator rEnd   = rRanks->end();
+        const typename RecvOverlap::capSequence::iterator rBegin = recvOverlap->capBegin();
+        const typename RecvOverlap::capSequence::iterator rEnd   = recvOverlap->capEnd();
 
         recvSection->allocatePoint();
         // TODO: This should be const_iterator, but Sifter sucks
         int maxVals = 0;
-        for(typename RecvOverlap::traits::capSequence::iterator r_iter = rRanks->begin(); r_iter != rEnd; ++r_iter) {
-          const Obj<typename RecvOverlap::supportSequence>&     points  = recvOverlap->support(*r_iter);
-          const typename RecvOverlap::supportSequence::iterator pEnd    = points->end();
+        for(typename RecvOverlap::capSequence::iterator r_iter = rBegin; r_iter != rEnd; ++r_iter) {
+          const typename RecvOverlap::supportSequence::iterator pBegin  = recvOverlap->supportBegin(*r_iter);
+          const typename RecvOverlap::supportSequence::iterator pEnd    = recvOverlap->supportEnd(*r_iter);
           int                                                   numVals = 0;
 
           // TODO: This should be const_iterator, but Sifter sucks
-          for(typename RecvOverlap::supportSequence::iterator s_iter = points->begin(); s_iter != pEnd; ++s_iter) {
+          for(typename RecvOverlap::supportSequence::iterator s_iter = pBegin; s_iter != pEnd; ++s_iter) {
             numVals += recvSection->getFiberDimension(recv_point_type(*r_iter, s_iter.color()));
           }
           typename SendSection::value_type *v = sendAllocator.allocate(numVals);
@@ -645,16 +643,16 @@ namespace ALE {
         vMover.end();
         typename RecvSection::value_type *convertedValues = recvAllocator.allocate(maxVals);
         for(int i = 0; i < maxVals; ++i) {recvAllocator.construct(convertedValues+i, 0);}
-        for(typename RecvOverlap::traits::capSequence::iterator r_iter = rRanks->begin(); r_iter != rEnd; ++r_iter) {
-          const Obj<typename RecvOverlap::supportSequence>&     points    = recvOverlap->support(*r_iter);
-          const typename RecvOverlap::supportSequence::iterator pEnd      = points->end();
-          const int                                             numPoints = points->size();
+        for(typename RecvOverlap::capSequence::iterator r_iter = rBegin; r_iter != rEnd; ++r_iter) {
+          const typename RecvOverlap::supportSequence::iterator pBegin    = recvOverlap->supportBegin(*r_iter);
+          const typename RecvOverlap::supportSequence::iterator pEnd      = recvOverlap->supportEnd(*r_iter);
+          const int                                             numPoints = recvOverlap->getSupportSize(*r_iter);
           std::valarray<typename RecvOverlap::color_type>       sortedPoints(numPoints);
           typename SendSection::value_type                     *v       = recvValues[*r_iter].second;
           const int                                             numVals = recvValues[*r_iter].first;
           int                                                   k       = 0, p = 0;
 
-          for(typename RecvOverlap::supportSequence::iterator s_iter = points->begin(); s_iter != pEnd; ++s_iter, ++p) {
+          for(typename RecvOverlap::supportSequence::iterator s_iter = pBegin; s_iter != pEnd; ++s_iter, ++p) {
             sortedPoints[p] = s_iter.color();
           }
           std::sort(&sortedPoints[0], &sortedPoints[numPoints]);
@@ -672,14 +670,14 @@ namespace ALE {
         }
         for(int i = 0; i < maxVals; ++i) {recvAllocator.destroy(convertedValues+i);}
         recvAllocator.deallocate(convertedValues, maxVals);
-        for(typename SendOverlap::traits::baseSequence::iterator r_iter = sRanks->begin(); r_iter != sEnd; ++r_iter) {
+        for(typename SendOverlap::baseSequence::iterator r_iter = sBegin; r_iter != sEnd; ++r_iter) {
           typename SendSection::value_type *v       = sendValues[*r_iter].second;
           const int                         numVals = sendValues[*r_iter].first;
 
           for(int i = 0; i < numVals; ++i) {sendAllocator.destroy(v+i);}
           sendAllocator.deallocate(v, numVals);
         }
-        for(typename RecvOverlap::traits::capSequence::iterator r_iter = rRanks->begin(); r_iter != rEnd; ++r_iter) {
+        for(typename RecvOverlap::capSequence::iterator r_iter = rBegin; r_iter != rEnd; ++r_iter) {
           typename SendSection::value_type *v       = recvValues[*r_iter].second;
           const int                         numVals = recvValues[*r_iter].first;
 
@@ -710,7 +708,7 @@ namespace ALE {
         for(typename SendOverlap::traits::baseSequence::iterator r_iter = sRanks->begin(); r_iter != sEnd; ++r_iter) {
           const Obj<typename SendOverlap::coneSequence>&     points    = sendOverlap->cone(*r_iter);
           const typename SendOverlap::coneSequence::iterator pEnd      = points->end();
-          const int                                          numPoints = points->size();
+          const int                                          numPoints = sendOverlap->getConeSize(*r_iter);
           std::valarray<typename SendOverlap::source_type>   sortedPoints(numPoints);
           int                                                numVals   = 0, p = 0;
 
@@ -760,7 +758,7 @@ namespace ALE {
         for(typename RecvOverlap::traits::capSequence::iterator r_iter = rRanks->begin(); r_iter != rEnd; ++r_iter) {
           const Obj<typename RecvOverlap::supportSequence>&     points    = recvOverlap->support(*r_iter);
           const typename RecvOverlap::supportSequence::iterator pEnd      = points->end();
-          const int                                             numPoints = points->size();
+          const int                                             numPoints = recvOverlap->getSupportSize(*r_iter);
           std::valarray<typename RecvOverlap::color_type>       sortedPoints(numPoints);
           typename Section::value_type                         *v         = recvValues[*r_iter].second;
           const int                                             numVals   = recvValues[*r_iter].first;
@@ -1044,10 +1042,11 @@ namespace ALE {
       static void fuse(const Obj<OverlapSection>& overlapSection, const Obj<RecvOverlap>& recvOverlap, const Obj<Section>& section) {
         typedef typename Section::point_type        point_type;
         typedef typename OverlapSection::point_type overlap_point_type;
-        const Obj<typename RecvOverlap::traits::baseSequence>      rPoints = recvOverlap->base();
-        const typename RecvOverlap::traits::baseSequence::iterator rEnd    = rPoints->end();
+#if 0
+        const Obj<typename RecvOverlap::baseSequence>      rPoints = recvOverlap->base();
+        const typename RecvOverlap::baseSequence::iterator rEnd    = rPoints->end();
 
-        for(typename RecvOverlap::traits::baseSequence::iterator p_iter = rPoints->begin(); p_iter != rEnd; ++p_iter) {
+        for(typename RecvOverlap::baseSequence::iterator p_iter = rPoints->begin(); p_iter != rEnd; ++p_iter) {
           const Obj<typename RecvOverlap::coneSequence>& points      = recvOverlap->cone(*p_iter);
           const point_type&                              localPoint  = *p_iter;
           const int                                      rank        = *points->begin();
@@ -1061,7 +1060,7 @@ namespace ALE {
           }
         }
         if (rPoints->size()) {section->allocatePoint();}
-        for(typename RecvOverlap::traits::baseSequence::iterator p_iter = rPoints->begin(); p_iter != rEnd; ++p_iter) {
+        for(typename RecvOverlap::baseSequence::iterator p_iter = rPoints->begin(); p_iter != rEnd; ++p_iter) {
           const Obj<typename RecvOverlap::coneSequence>& points      = recvOverlap->cone(*p_iter);
           const point_type&                              localPoint  = *p_iter;
           const int                                      rank        = *points->begin();
@@ -1071,6 +1070,45 @@ namespace ALE {
             section->updatePoint(localPoint, overlapSection->restrictPoint(overlap_point_type(rank, remotePoint)));
           }
         }
+#else
+        const typename RecvOverlap::capSequence::iterator rBegin = recvOverlap->capBegin();
+        const typename RecvOverlap::capSequence::iterator rEnd   = recvOverlap->capEnd();
+        bool                                              hasPoints = false;
+
+        for(typename RecvOverlap::capSequence::iterator r_iter = rBegin; r_iter != rEnd; ++r_iter) {
+          const int                                             rank    = *r_iter;
+          const typename RecvOverlap::supportSequence::iterator pBegin  = recvOverlap->supportBegin(*r_iter);
+          const typename RecvOverlap::supportSequence::iterator pEnd    = recvOverlap->supportEnd(*r_iter);
+
+          for(typename RecvOverlap::supportSequence::iterator p_iter = pBegin; p_iter != pEnd; ++p_iter) {
+            const point_type&                              localPoint  = *p_iter;
+            const point_type&                              remotePoint = p_iter.color();
+
+            if (overlapSection->hasPoint(overlap_point_type(rank, remotePoint))) {
+              if (!section->hasPoint(localPoint)) {
+                std::cout <<"["<<section->commRank()<<"]: Destination section does not have local point " << localPoint << " remote point " << remotePoint << " fiber dim " << overlapSection->getFiberDimension(overlap_point_type(rank, remotePoint)) << std::endl;
+              }
+              section->setFiberDimension(localPoint, overlapSection->getFiberDimension(overlap_point_type(rank, remotePoint)));
+            }
+            hasPoints = true;
+          }
+        }
+        if (hasPoints) {section->allocatePoint();}
+        for(typename RecvOverlap::capSequence::iterator r_iter = rBegin; r_iter != rEnd; ++r_iter) {
+          const int                                             rank    = *r_iter;
+          const typename RecvOverlap::supportSequence::iterator pBegin  = recvOverlap->supportBegin(*r_iter);
+          const typename RecvOverlap::supportSequence::iterator pEnd    = recvOverlap->supportEnd(*r_iter);
+
+          for(typename RecvOverlap::supportSequence::iterator p_iter = pBegin; p_iter != pEnd; ++p_iter) {
+            const point_type& localPoint  = *p_iter;
+            const point_type& remotePoint = p_iter.color();
+
+            if (overlapSection->hasPoint(overlap_point_type(rank, remotePoint))) {
+              section->updatePoint(localPoint, overlapSection->restrictPoint(overlap_point_type(rank, remotePoint)));
+            }
+          }
+        }
+#endif
       };
       // Specialize to ArrowSection
       template<typename OverlapSection, typename RecvOverlap>
@@ -1136,11 +1174,12 @@ namespace ALE {
       template<typename OverlapSection, typename RecvOverlap, typename Renumbering, typename Point>
       static void fuse(const Obj<OverlapSection>& overlapSection, const Obj<RecvOverlap>& recvOverlap, Renumbering& renumbering, const Obj<IFSieve<Point> >& sieve) {
         typedef typename OverlapSection::point_type overlap_point_type;
-        const Obj<typename RecvOverlap::traits::baseSequence>      rPoints = recvOverlap->base();
-        const typename RecvOverlap::traits::baseSequence::iterator rEnd    = rPoints->end();
-        int                                                        maxSize = 0;
+#if 0
+        const Obj<typename RecvOverlap::baseSequence>      rPoints = recvOverlap->base();
+        const typename RecvOverlap::baseSequence::iterator rEnd    = rPoints->end();
+        int                                                maxSize = 0;
 
-        for(typename RecvOverlap::traits::baseSequence::iterator p_iter = rPoints->begin(); p_iter != rEnd; ++p_iter) {
+        for(typename RecvOverlap::baseSequence::iterator p_iter = rPoints->begin(); p_iter != rEnd; ++p_iter) {
           const Obj<typename RecvOverlap::coneSequence>& points      = recvOverlap->cone(*p_iter);
           const Point&                                   localPoint  = *p_iter;
           const int                                      rank        = *points->begin();
@@ -1158,7 +1197,7 @@ namespace ALE {
         typename OverlapSection::value_type::first_type  *localValues      = new typename OverlapSection::value_type::first_type[maxSize];
         typename OverlapSection::value_type::second_type *localOrientation = new typename OverlapSection::value_type::second_type[maxSize];
 
-        for(typename RecvOverlap::traits::baseSequence::iterator p_iter = rPoints->begin(); p_iter != rEnd; ++p_iter) {
+        for(typename RecvOverlap::baseSequence::iterator p_iter = rPoints->begin(); p_iter != rEnd; ++p_iter) {
           const Obj<typename RecvOverlap::coneSequence>& points      = recvOverlap->cone(*p_iter);
           const Point&                                   localPoint  = *p_iter;
           const int                                      rank        = *points->begin();
@@ -1176,15 +1215,63 @@ namespace ALE {
         }
         delete [] localValues;
         delete [] localOrientation;
+#else
+        const typename RecvOverlap::capSequence::iterator rBegin  = recvOverlap->capBegin();
+        const typename RecvOverlap::capSequence::iterator rEnd    = recvOverlap->capEnd();
+        int                                               maxSize = 0;
+
+        for(typename RecvOverlap::capSequence::iterator r_iter = rBegin; r_iter != rEnd; ++r_iter) {
+          const int                                             rank    = *r_iter;
+          const typename RecvOverlap::supportSequence::iterator pBegin  = recvOverlap->supportBegin(*r_iter);
+          const typename RecvOverlap::supportSequence::iterator pEnd    = recvOverlap->supportEnd(*r_iter);
+
+          for(typename RecvOverlap::supportSequence::iterator p_iter = pBegin; p_iter != pEnd; ++p_iter) {
+            const Point&                               localPoint  = *p_iter;
+            const Point&                               remotePoint = p_iter.color();
+            const int                                  size        = overlapSection->getFiberDimension(overlap_point_type(rank, remotePoint));
+            const typename OverlapSection::value_type *values      = overlapSection->restrictPoint(overlap_point_type(rank, remotePoint));
+
+            sieve->setConeSize(localPoint, size);
+            for(int i = 0; i < size; ++i) {sieve->addSupportSize(renumbering[values[i].first], 1);}
+            maxSize = std::max(maxSize, size);
+          }
+        }
+        sieve->allocate();
+        typename OverlapSection::value_type::first_type  *localValues      = new typename OverlapSection::value_type::first_type[maxSize];
+        typename OverlapSection::value_type::second_type *localOrientation = new typename OverlapSection::value_type::second_type[maxSize];
+
+        for(typename RecvOverlap::capSequence::iterator r_iter = rBegin; r_iter != rEnd; ++r_iter) {
+          const int                                             rank    = *r_iter;
+          const typename RecvOverlap::supportSequence::iterator pBegin  = recvOverlap->supportBegin(*r_iter);
+          const typename RecvOverlap::supportSequence::iterator pEnd    = recvOverlap->supportEnd(*r_iter);
+
+          for(typename RecvOverlap::supportSequence::iterator p_iter = pBegin; p_iter != pEnd; ++p_iter) {
+            const Point&                               localPoint  = *p_iter;
+            const Point&                               remotePoint = p_iter.color();
+            const int                                  size        = overlapSection->getFiberDimension(overlap_point_type(rank, remotePoint));
+            const typename OverlapSection::value_type *values      = overlapSection->restrictPoint(overlap_point_type(rank, remotePoint));
+
+            for(int i = 0; i < size; ++i) {
+              localValues[i]      = renumbering[values[i].first];
+              localOrientation[i] = values[i].second;
+            }
+            sieve->setCone(localValues, localPoint);
+            sieve->setConeOrientation(localOrientation, localPoint);
+          }
+        }
+        delete [] localValues;
+        delete [] localOrientation;
+#endif
       };
       template<typename OverlapSection, typename RecvOverlap, typename Point>
       static void fuse(const Obj<OverlapSection>& overlapSection, const Obj<RecvOverlap>& recvOverlap, const Obj<IFSieve<Point> >& sieve) {
         typedef typename OverlapSection::point_type overlap_point_type;
-        const Obj<typename RecvOverlap::traits::baseSequence>      rPoints = recvOverlap->base();
-        const typename RecvOverlap::traits::baseSequence::iterator rEnd    = rPoints->end();
-        int                                                        maxSize = 0;
+#if 0
+        const Obj<typename RecvOverlap::baseSequence>      rPoints = recvOverlap->base();
+        const typename RecvOverlap::baseSequence::iterator rEnd    = rPoints->end();
+        int                                                maxSize = 0;
 
-        for(typename RecvOverlap::traits::baseSequence::iterator p_iter = rPoints->begin(); p_iter != rEnd; ++p_iter) {
+        for(typename RecvOverlap::baseSequence::iterator p_iter = rPoints->begin(); p_iter != rEnd; ++p_iter) {
           const Obj<typename RecvOverlap::coneSequence>& points      = recvOverlap->cone(*p_iter);
           const Point&                                   localPoint  = *p_iter;
           const int                                      rank        = *points->begin();
@@ -1200,7 +1287,7 @@ namespace ALE {
         typename OverlapSection::value_type::first_type  *localValues      = new typename OverlapSection::value_type::first_type[maxSize];
         typename OverlapSection::value_type::second_type *localOrientation = new typename OverlapSection::value_type::second_type[maxSize];
 
-        for(typename RecvOverlap::traits::baseSequence::iterator p_iter = rPoints->begin(); p_iter != rEnd; ++p_iter) {
+        for(typename RecvOverlap::baseSequence::iterator p_iter = rPoints->begin(); p_iter != rEnd; ++p_iter) {
           const Obj<typename RecvOverlap::coneSequence>& points      = recvOverlap->cone(*p_iter);
           const Point&                                   localPoint  = *p_iter;
           const int                                      rank        = *points->begin();
@@ -1217,15 +1304,64 @@ namespace ALE {
         }
         delete [] localValues;
         delete [] localOrientation;
+#else
+        const Obj<typename RecvOverlap::capSequence>      rRanks  = recvOverlap->cap();
+        const typename RecvOverlap::capSequence::iterator rEnd    = rRanks->end();
+        int                                               maxSize = 0;
+
+        for(typename RecvOverlap::capSequence::iterator r_iter = rRanks->begin(); r_iter != rEnd; ++r_iter) {
+          const int                                             rank    = *r_iter;
+          const Obj<typename RecvOverlap::supportSequence>&     points  = recvOverlap->support(*r_iter);
+          const typename RecvOverlap::supportSequence::iterator pBegin  = points->begin();
+          const typename RecvOverlap::supportSequence::iterator pEnd    = points->end();
+
+          for(typename RecvOverlap::supportSequence::iterator p_iter = pBegin; p_iter != pEnd; ++p_iter) {
+            const Point&                               localPoint  = *p_iter;
+            const Point&                               remotePoint = p_iter.color();
+            const int                                  size        = overlapSection->getFiberDimension(overlap_point_type(rank, remotePoint));
+            const typename OverlapSection::value_type *values      = overlapSection->restrictPoint(overlap_point_type(rank, remotePoint));
+
+            sieve->setConeSize(localPoint, size);
+            for(int i = 0; i < size; ++i) {sieve->addSupportSize(values[i].first, 1);}
+            maxSize = std::max(maxSize, size);
+          }
+        }
+        sieve->allocate();
+        typename OverlapSection::value_type::first_type  *localValues      = new typename OverlapSection::value_type::first_type[maxSize];
+        typename OverlapSection::value_type::second_type *localOrientation = new typename OverlapSection::value_type::second_type[maxSize];
+
+        for(typename RecvOverlap::capSequence::iterator r_iter = rRanks->begin(); r_iter != rEnd; ++r_iter) {
+          const int                                             rank    = *r_iter;
+          const Obj<typename RecvOverlap::supportSequence>&     points  = recvOverlap->support(*r_iter);
+          const typename RecvOverlap::supportSequence::iterator pBegin  = points->begin();
+          const typename RecvOverlap::supportSequence::iterator pEnd    = points->end();
+
+          for(typename RecvOverlap::supportSequence::iterator p_iter = pBegin; p_iter != pEnd; ++p_iter) {
+            const Point&                               localPoint  = *p_iter;
+            const Point&                               remotePoint = p_iter.color();
+            const int                                  size        = overlapSection->getFiberDimension(overlap_point_type(rank, remotePoint));
+            const typename OverlapSection::value_type *values      = overlapSection->restrictPoint(overlap_point_type(rank, remotePoint));
+
+            for(int i = 0; i < size; ++i) {
+              localValues[i]      = values[i].first;
+              localOrientation[i] = values[i].second;
+            }
+            sieve->setCone(localValues, localPoint);
+            sieve->setConeOrientation(localOrientation, localPoint);
+          }
+        }
+        delete [] localValues;
+        delete [] localOrientation;
+#endif
       };
       // Generic
       template<typename OverlapSection, typename RecvOverlap, typename Section, typename Bundle>
       static void fuse(const Obj<OverlapSection>& overlapSection, const Obj<RecvOverlap>& recvOverlap, const Obj<Section>& section, const Obj<Bundle>& bundle) {
         typedef typename OverlapSection::point_type overlap_point_type;
-        const Obj<typename RecvOverlap::traits::baseSequence>      rPoints = recvOverlap->base();
-        const typename RecvOverlap::traits::baseSequence::iterator rEnd    = rPoints->end();
+        const Obj<typename RecvOverlap::baseSequence>      rPoints = recvOverlap->base();
+        const typename RecvOverlap::baseSequence::iterator rEnd    = rPoints->end();
 
-        for(typename RecvOverlap::traits::baseSequence::iterator p_iter = rPoints->begin(); p_iter != rEnd; ++p_iter) {
+        for(typename RecvOverlap::baseSequence::iterator p_iter = rPoints->begin(); p_iter != rEnd; ++p_iter) {
           const Obj<typename RecvOverlap::coneSequence>& points      = recvOverlap->cone(*p_iter);
           const typename Section::point_type&            localPoint  = *p_iter;
           const int                                      rank        = *points->begin();
@@ -1234,7 +1370,7 @@ namespace ALE {
           section->setFiberDimension(localPoint, overlapSection->getFiberDimension(overlap_point_type(rank, remotePoint)));
         }
         bundle->allocate(section);
-        for(typename RecvOverlap::traits::baseSequence::iterator p_iter = rPoints->begin(); p_iter != rEnd; ++p_iter) {
+        for(typename RecvOverlap::baseSequence::iterator p_iter = rPoints->begin(); p_iter != rEnd; ++p_iter) {
           const Obj<typename RecvOverlap::coneSequence>& points      = recvOverlap->cone(*p_iter);
           const typename Section::point_type&            localPoint  = *p_iter;
           const int                                      rank        = *points->begin();

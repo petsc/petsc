@@ -615,6 +615,7 @@ namespace ALE {
           sendOverlap->addArrow(points[i], *p_iter, points[i]);
         }
       }
+      sendOverlap->assemble();
       if (sendOverlap->debug()) {sendOverlap->view("Send mesh overlap");}
       const Obj<typename RecvPartOverlap::traits::baseSequence> rPoints    = recvPartOverlap->base();
 
@@ -631,6 +632,7 @@ namespace ALE {
         }
       }
       if (recvOverlap->debug()) {recvOverlap->view("Receive mesh overlap");}
+      recvOverlap->assemble();
     };
     // Create a partition point overlap from a partition
     //   The intention is to create an overlap which enables exchange of redistribution information
