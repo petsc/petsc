@@ -891,7 +891,7 @@ PetscErrorCode  DMDAGetAdicMFArray(DM da,PetscBool  ghosted,void *vptr,void *arr
 PetscErrorCode  DMDAGetAdicMFArray4(DM da,PetscBool  ghosted,void *vptr,void *array_start,PetscInt *tdof)
 {
   PetscErrorCode ierr;
-  PetscInt       j,i,xs,ys,xm,ym,zs,zm,itdof = 0;
+  PetscInt       j,i,xs,ys,xm,ym,itdof = 0;
   char           *iarray_start;
   void           **iptr = (void**)vptr;
   DM_DA          *dd = (DM_DA*)da->data;
@@ -912,10 +912,8 @@ PetscErrorCode  DMDAGetAdicMFArray4(DM da,PetscBool  ghosted,void *vptr,void *ar
     }
     xs = dd->Xs;
     ys = dd->Ys;
-    zs = dd->Zs;
     xm = dd->Xe-dd->Xs;
     ym = dd->Ye-dd->Ys;
-    zm = dd->Ze-dd->Zs;
   } else {
     for (i=0; i<DMDA_MAX_AD_ARRAYS; i++) {
       if (dd->admfarrayin[i]) {
@@ -930,10 +928,8 @@ PetscErrorCode  DMDAGetAdicMFArray4(DM da,PetscBool  ghosted,void *vptr,void *ar
     }
     xs = dd->xs;
     ys = dd->ys;
-    zs = dd->zs;
     xm = dd->xe-dd->xs;
     ym = dd->ye-dd->ys;
-    zm = dd->ze-dd->zs;
   }
 
   switch (dd->dim) {
@@ -985,7 +981,7 @@ PetscErrorCode  DMDAGetAdicMFArray4(DM da,PetscBool  ghosted,void *vptr,void *ar
 PetscErrorCode  DMDAGetAdicMFArray9(DM da,PetscBool  ghosted,void *vptr,void *array_start,PetscInt *tdof)
 {
   PetscErrorCode ierr;
-  PetscInt       j,i,xs,ys,xm,ym,zs,zm,itdof = 0;
+  PetscInt       j,i,xs,ys,xm,ym,itdof = 0;
   char           *iarray_start;
   void           **iptr = (void**)vptr;
   DM_DA          *dd = (DM_DA*)da->data;
@@ -1006,10 +1002,8 @@ PetscErrorCode  DMDAGetAdicMFArray9(DM da,PetscBool  ghosted,void *vptr,void *ar
     }
     xs = dd->Xs;
     ys = dd->Ys;
-    zs = dd->Zs;
     xm = dd->Xe-dd->Xs;
     ym = dd->Ye-dd->Ys;
-    zm = dd->Ze-dd->Zs;
   } else {
     for (i=0; i<DMDA_MAX_AD_ARRAYS; i++) {
       if (dd->admfarrayin[i]) {
@@ -1024,10 +1018,8 @@ PetscErrorCode  DMDAGetAdicMFArray9(DM da,PetscBool  ghosted,void *vptr,void *ar
     }
     xs = dd->xs;
     ys = dd->ys;
-    zs = dd->zs;
     xm = dd->xe-dd->xs;
     ym = dd->ye-dd->ys;
-    zm = dd->ze-dd->zs;
   }
 
   switch (dd->dim) {

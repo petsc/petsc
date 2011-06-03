@@ -34,12 +34,12 @@ struct _n_PetscOList {
 @*/
 PetscErrorCode  PetscOListRemoveReference(PetscOList *fl,const char name[])
 {
-  PetscOList     nlist,prev;
+  PetscOList     nlist;
   PetscErrorCode ierr;
   PetscBool      match;
 
   PetscFunctionBegin;
-  nlist = *fl; prev = 0;
+  nlist = *fl;
   while (nlist) {
     ierr = PetscStrcmp(name,nlist->name,&match);CHKERRQ(ierr);
     if (match) {  /* found it in the list */
@@ -47,7 +47,6 @@ PetscErrorCode  PetscOListRemoveReference(PetscOList *fl,const char name[])
       nlist->skipdereference = PETSC_TRUE;
       PetscFunctionReturn(0);
     }
-    prev  = nlist;
     nlist = nlist->next;
   }
   PetscFunctionReturn(0); 

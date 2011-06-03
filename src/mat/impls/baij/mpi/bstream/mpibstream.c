@@ -20,9 +20,6 @@ PetscErrorCode MPIBSTRM_create_bstrm(Mat A)
   /* */
   Mat_SeqBSTRM   *bstrmA, *bstrmB;
   PetscInt       MROW = Aij->mbs, bs = a->A->rmap->bs;
-
-  PetscInt       m = A->rmap->n;  /* Number of rows in the matrix. */
-  PetscInt       nd = a->A->cmap->n; /* number of columns in diagonal portion */
   PetscInt       *ai = Aij->i, *bi = Bij->i;
   PetscInt       i,j,k;
   PetscScalar    *aa = Aij->a,*ba = Bij->a;
