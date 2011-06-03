@@ -5,6 +5,30 @@
 #include <private/vecimpl.h>   /*I  "petscvec.h"   I*/
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscSectionGetDof"
+PetscErrorCode PetscSectionGetDof(PetscUniformSection s, PetscInt point, PetscInt *numDof)
+{
+  PetscFunctionBegin;
+  if ((point < s->pStart) || (point >= s->pEnd)) {
+    SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Section point %p should be in [%d, %d)", point, s->pStart, s->pEnd);
+  }
+  *numDof = s->numDof;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSectionGetOffset"
+PetscErrorCode PetscSectionGetOffset(PetscUniformSection s, PetscInt point, PetscInt *offset)
+{
+  PetscFunctionBegin;
+  if ((point < s->pStart) || (point >= s->pEnd)) {
+    SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Section point %p should be in [%d, %d)", point, s->pStart, s->pEnd);
+  }
+  *offset = s->numDof*(point - s->pStart);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscSectionCreate"
 /*@C
   PetscSectionCreate - Allocates PetscSection space and sets the map contents to the default.
@@ -160,6 +184,32 @@ PetscErrorCode PetscSectionSetUp(PetscSection s)
     ierr = PetscSectionSetUp(s->bc);CHKERRQ(ierr);
     ierr = PetscMalloc((s->bc->atlasOff[last] + s->bc->atlasDof[last]) * sizeof(PetscInt), &s->bcIndices);CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSectionGetStorageSize"
+PetscErrorCode PetscSectionGetStorageSize(PetscSection s, PetscInt *size)
+{
+  PetscInt p, n = 0;
+
+  PetscFunctionBegin;
+  for(p = 0; p < s->atlasLayout.pEnd - s->atlasLayout.pStart; ++p) {
+    n += s->atlasDof[p];
+  }
+  *size = n;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSectionGetOffset"
+PetscErrorCode PetscSectionGetOffset(PetscSection s, PetscInt point, PetscInt *offset)
+{
+  PetscFunctionBegin;
+  if ((point < s->atlasLayout.pStart) || (point >= s->atlasLayout.pEnd)) {
+    SETERRQ3(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Section point %p should be in [%d, %d)", point, s->atlasLayout.pStart, s->atlasLayout.pEnd);
+  }
+  *offset = s->atlasOff[point - s->atlasLayout.pStart];
   PetscFunctionReturn(0);
 }
 

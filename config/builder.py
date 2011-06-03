@@ -14,7 +14,9 @@ import logger, script
 regressionRequirements = {'src/vec/vec/examples/tests/ex31':  set(['Matlab'])
                           }
 
-regressionParameters = {'src/vec/vec/examples/tests/ex1_2':    {'numProcs': 2},
+regressionParameters = {'src/sys/comm/examples/tests/ex1':    [{'numProcs': 2},
+                                                               {'numProcs': 5}],
+                        'src/vec/vec/examples/tests/ex1_2':    {'numProcs': 2},
                         'src/vec/vec/examples/tests/ex3':      {'numProcs': 2},
                         'src/vec/vec/examples/tests/ex4':      {'numProcs': 2},
                         'src/vec/vec/examples/tests/ex5':      {'numProcs': 2},

@@ -604,30 +604,62 @@ namespace ALE {
     template<typename Section, typename RecvPartOverlap, typename Renumbering, typename SendOverlap, typename RecvOverlap>
     static void createDistributionMeshOverlap(const Obj<Section>& partition, const Obj<RecvPartOverlap>& recvPartOverlap, Renumbering& renumbering, const Obj<Section>& overlapPartition, const Obj<SendOverlap>& sendOverlap, const Obj<RecvOverlap>& recvOverlap) {
       const typename Section::chart_type& chart = partition->getChart();
+      int numRanks = 0;
 
+      for(typename Section::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
+        if (*p_iter != sendOverlap->commRank() && partition->getFiberDimension(*p_iter)) numRanks++;
+      }
+      sendOverlap->setBaseSize(numRanks); // setNumRanks
+      for(typename Section::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
+        const int coneSize = partition->getFiberDimension(*p_iter);
+
+        if (*p_iter != sendOverlap->commRank() && coneSize) {
+          sendOverlap->setConeSize(*p_iter, coneSize); // setNumPoints
+        }
+      }
+      sendOverlap->assemble();
       for(typename Section::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
         if (*p_iter == sendOverlap->commRank()) continue;
         const typename Section::value_type *points     = partition->restrictPoint(*p_iter);
         const int                           numPoints  = partition->getFiberDimension(*p_iter);
-        
+
         for(int i = 0; i < numPoints; ++i) {
           // Notice here that we do not know the local renumbering (but we do not use it)
           sendOverlap->addArrow(points[i], *p_iter, points[i]);
         }
       }
       if (sendOverlap->debug()) {sendOverlap->view("Send mesh overlap");}
-      const Obj<typename RecvPartOverlap::traits::baseSequence> rPoints    = recvPartOverlap->base();
+      const typename RecvPartOverlap::capSequence::iterator rBegin = recvPartOverlap->capBegin();
+      const typename RecvPartOverlap::capSequence::iterator rEnd   = recvPartOverlap->capEnd();
 
-      for(typename RecvPartOverlap::traits::baseSequence::iterator p_iter = rPoints->begin(); p_iter != rPoints->end(); ++p_iter) {
-        const Obj<typename RecvPartOverlap::coneSequence>& ranks           = recvPartOverlap->cone(*p_iter);
-        //const typename Section::point_type&                localPartPoint  = *p_iter;
-        const typename Section::point_type                 rank            = *ranks->begin();
-        const typename Section::point_type&                remotePartPoint = ranks->begin().color();
-        const typename Section::value_type                *points          = overlapPartition->restrictPoint(remotePartPoint);
-        const int                                          numPoints       = overlapPartition->getFiberDimension(remotePartPoint);
+      recvOverlap->setCapSize(recvPartOverlap->getCapSize()); // setNumRanks
+      for(typename RecvPartOverlap::capSequence::iterator r_iter = rBegin; r_iter != rEnd; ++r_iter) {
+        const int                                                 rank   = *r_iter;
+        const typename RecvPartOverlap::supportSequence::iterator pBegin = recvPartOverlap->supportBegin(*r_iter);
+        const typename RecvPartOverlap::supportSequence::iterator pEnd   = recvPartOverlap->supportEnd(*r_iter);
 
-        for(int i = 0; i < numPoints; ++i) {
-          recvOverlap->addArrow(rank, renumbering[points[i]], points[i]);
+        for(typename RecvPartOverlap::supportSequence::iterator p_iter = pBegin; p_iter != pEnd; ++p_iter) {
+          const typename Section::point_type& remotePartPoint = p_iter.color();
+          const int                           numPoints       = overlapPartition->getFiberDimension(remotePartPoint);
+
+          recvOverlap->setSupportSize(rank, numPoints); // setNumPoints
+        }
+      }
+      recvOverlap->assemble();
+
+      for(typename RecvPartOverlap::capSequence::iterator r_iter = rBegin; r_iter != rEnd; ++r_iter) {
+        const int                                                 rank   = *r_iter;
+        const typename RecvPartOverlap::supportSequence::iterator pBegin = recvPartOverlap->supportBegin(*r_iter);
+        const typename RecvPartOverlap::supportSequence::iterator pEnd   = recvPartOverlap->supportEnd(*r_iter);
+
+        for(typename RecvPartOverlap::supportSequence::iterator p_iter = pBegin; p_iter != pEnd; ++p_iter) {
+          const typename Section::point_type& remotePartPoint = p_iter.color();
+          const typename Section::value_type *points          = overlapPartition->restrictPoint(remotePartPoint);
+          const int                           numPoints       = overlapPartition->getFiberDimension(remotePartPoint);
+
+          for(int i = 0; i < numPoints; ++i) {
+            recvOverlap->addArrow(rank, renumbering[points[i]], points[i]);
+          }
         }
       }
       if (recvOverlap->debug()) {recvOverlap->view("Receive mesh overlap");}
