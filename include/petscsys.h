@@ -1212,6 +1212,9 @@ extern  MPI_Op MPIU_MIN;
 #endif
 extern PetscErrorCode  PetscMaxSum(MPI_Comm,const PetscInt[],PetscInt*,PetscInt*);
 
+extern PetscErrorCode MPILong_Send(void*,PetscInt,MPI_Datatype,PetscMPIInt,PetscMPIInt,MPI_Comm);
+extern PetscErrorCode MPILong_Recv(void*,PetscInt,MPI_Datatype,PetscMPIInt,PetscMPIInt,MPI_Comm);
+
 /*S
      PetscObject - any PETSc object, PetscViewer, Mat, Vec, KSP etc
 

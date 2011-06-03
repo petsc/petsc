@@ -604,6 +604,32 @@ PetscErrorCode  DMRefine(DM dm,MPI_Comm comm,DM *dmf)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "DMGetRefineLevel"
+/*@
+    DMGetRefineLevel - Get's the number of refinements that have generated this DM.
+
+    Not Collective
+
+    Input Parameter:
+.   dm - the DM object
+
+    Output Parameter:
+.   level - number of refinements
+
+    Level: developer
+
+.seealso DMCoarsen(), DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetInterpolation()
+
+@*/
+PetscErrorCode  DMGetRefineLevel(DM dm,PetscInt *level)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  *level = dm->levelup;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "DMGlobalToLocalBegin"
 /*@
     DMGlobalToLocalBegin - Begins updating local vectors from global vector

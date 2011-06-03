@@ -149,6 +149,7 @@ extern PetscErrorCode   DMComputeFunction(DM,Vec,Vec);
 extern PetscErrorCode   DMComputeJacobian(DM,Vec,Mat,Mat,MatStructure *);
 extern PetscErrorCode   DMComputeJacobianDefault(DM,Vec,Mat,Mat,MatStructure *);
 
+extern PetscErrorCode   DMGetRefineLevel(DM,PetscInt*);
 extern PetscErrorCode   DMFinalizePackage(void);
 
 typedef struct NLF_DAAD* NLF;

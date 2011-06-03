@@ -3260,48 +3260,7 @@ PetscErrorCode MatDuplicate_MPIAIJ(Mat matin,MatDuplicateOption cpvalues,Mat *ne
   PetscFunctionReturn(0);
 }
 
-/*
-    Allows sending/receiving larger messages then 2 gigabytes in a single call
-*/
-static int MPILong_Send(void *mess,PetscInt cnt, MPI_Datatype type,int to, int tag, MPI_Comm comm)
-{
-  int             ierr;
-  static PetscInt CHUNKSIZE = 250000000; /* 250,000,000 */
-  PetscInt        i,numchunks;
-  PetscMPIInt     icnt;
 
-  numchunks = cnt/CHUNKSIZE + 1;
-  for (i=0; i<numchunks; i++) {
-    icnt = PetscMPIIntCast((i < numchunks-1) ? CHUNKSIZE : cnt - (numchunks-1)*CHUNKSIZE);
-    ierr = MPI_Send(mess,icnt,type,to,tag,comm);if (ierr) return ierr;
-    if (type == MPIU_INT) {
-      mess = (void*) (((PetscInt*)mess) + CHUNKSIZE);
-    } else if (type == MPIU_SCALAR) {
-      mess = (void*) (((PetscScalar*)mess) + CHUNKSIZE);
-    } else SETERRQ(comm,PETSC_ERR_SUP,"No support for this datatype");
-  }
-  return 0;
-}
-static int MPILong_Recv(void *mess,PetscInt cnt, MPI_Datatype type,int from, int tag, MPI_Comm comm)
-{
-  int             ierr;
-  static PetscInt CHUNKSIZE = 250000000; /* 250,000,000 */
-  MPI_Status      status;
-  PetscInt        i,numchunks;
-  PetscMPIInt     icnt;
-
-  numchunks = cnt/CHUNKSIZE + 1;
-  for (i=0; i<numchunks; i++) {
-    icnt = PetscMPIIntCast((i < numchunks-1) ? CHUNKSIZE : cnt - (numchunks-1)*CHUNKSIZE);
-    ierr = MPI_Recv(mess,icnt,type,from,tag,comm,&status);if (ierr) return ierr;
-    if (type == MPIU_INT) {
-      mess = (void*) (((PetscInt*)mess) + CHUNKSIZE);
-    } else if (type == MPIU_SCALAR) {
-      mess = (void*) (((PetscScalar*)mess) + CHUNKSIZE);
-    } else SETERRQ(comm,PETSC_ERR_SUP,"No support for this datatype");
-  }
-  return 0;
-}
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLoad_MPIAIJ"
