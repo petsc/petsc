@@ -4,6 +4,8 @@
 
 #include <private/vecimpl.h>   /*I  "petscvec.h"   I*/
 
+#if 0
+// Should I protect these for C++?
 #undef __FUNCT__
 #define __FUNCT__ "PetscSectionGetDof"
 PetscErrorCode PetscSectionGetDof(PetscUniformSection s, PetscInt point, PetscInt *numDof)
@@ -27,6 +29,7 @@ PetscErrorCode PetscSectionGetOffset(PetscUniformSection s, PetscInt point, Pets
   *offset = s->numDof*(point - s->pStart);
   PetscFunctionReturn(0);
 }
+#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscSectionCreate"

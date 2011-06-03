@@ -484,9 +484,9 @@ PetscErrorCode ISieveISectionPartitionNewOverlapTest(const Options *options)
   //   Can I figure this out in a nicer way?
   ALE::SetFromMap<std::map<point_type,point_type> > globalPoints(renumbering);
 
-  //ALE::OverlapBuilder<>::constructOverlap(globalPoints, renumbering, sendParallelMeshOverlap, recvParallelMeshOverlap);
-  //sendParallelMeshOverlap->view("Send parallel mesh overlap");
-  //recvParallelMeshOverlap->view("Receive parallel mesh overlap");
+  ALE::OverlapBuilder<>::constructOverlap(globalPoints, renumbering, sendParallelMeshOverlap, recvParallelMeshOverlap);
+  sendParallelMeshOverlap->view("Send parallel mesh overlap");
+  recvParallelMeshOverlap->view("Receive parallel mesh overlap");
   PetscFunctionReturn(0);
 }
 

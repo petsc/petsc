@@ -96,8 +96,11 @@ struct _n_PetscUniformSection {
   PetscInt numDof;       /* Describes layout of storage, point --> (constant # of values, (p - pStart)*constant # of values) */
 };
 
+#if 0
+// Should I protect these for C++?
 extern PetscErrorCode PetscSectionGetDof(PetscUniformSection, PetscInt, PetscInt*);
 extern PetscErrorCode PetscSectionGetOffset(PetscUniformSection, PetscInt, PetscInt*);
+#endif
 
 /*S
   PetscSection - This is a mapping from DMMESH points to sets of values, which is
