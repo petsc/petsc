@@ -59,7 +59,7 @@ PetscErrorCode  MatInvertBlockDiagonal_SeqBAIJ(Mat A)
         odiag = v + 1*diag_offset[i];
         diag[0]  = odiag[0];
         mdiag[0] = odiag[0];
-        diag[0]  = 1.0 / (diag[0] + shift);
+        diag[0]  = (PetscScalar)1.0 / (diag[0] + shift);
         diag    += 1;
         mdiag   += 1;
       }
@@ -2231,7 +2231,7 @@ PetscErrorCode MatZeroRows_SeqBAIJ(Mat A,PetscInt is_n,const PetscInt is_idx[],P
     count = (baij->i[row/bs +1] - baij->i[row/bs])*bs;
     aa    = ((MatScalar*)(baij->a)) + baij->i[row/bs]*bs2 + (row%bs);
     if (sizes[i] == bs && !baij->keepnonzeropattern) {
-      if (diag != 0.0) {
+      if (diag != (PetscScalar)0.0) {
         if (baij->ilen[row/bs] > 0) {
           baij->ilen[row/bs]       = 1;
           baij->j[baij->i[row/bs]] = row/bs;
@@ -2252,7 +2252,7 @@ PetscErrorCode MatZeroRows_SeqBAIJ(Mat A,PetscInt is_n,const PetscInt is_idx[],P
         aa[0] =  zero; 
         aa    += bs;
       }
-      if (diag != 0.0) {
+      if (diag != (PetscScalar)0.0) {
         ierr = (*A->ops->setvalues)(A,1,rows+j,1,rows+j,&diag,INSERT_VALUES);CHKERRQ(ierr);
       }
     }
@@ -2323,7 +2323,7 @@ PetscErrorCode MatZeroRowsColumns_SeqBAIJ(Mat A,PetscInt is_n,const PetscInt is_
       aa[0] =  zero; 
       aa    += bs;
     }
-    if (diag != 0.0) {
+    if (diag != (PetscScalar)0.0) {
       ierr = (*A->ops->setvalues)(A,1,&row,1,&row,&diag,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
@@ -2835,7 +2835,7 @@ PetscErrorCode  MatFDColoringApply_BAIJ(Mat J,MatFDColoring coloring,Vec x1,MatS
     } else {
       dx  = xx[col];
     }
-    if (dx == 0.0) dx = 1.0;
+    if (dx == (PetscScalar)0.0) dx = 1.0;
 #if !defined(PETSC_USE_COMPLEX)
     if (dx < umin && dx >= 0.0)      dx = umin;
     else if (dx < 0.0 && dx > -umin) dx = -umin;
@@ -2844,7 +2844,7 @@ PetscErrorCode  MatFDColoringApply_BAIJ(Mat J,MatFDColoring coloring,Vec x1,MatS
     else if (PetscRealPart(dx) < 0.0 && PetscAbsScalar(dx) < umin) dx = -umin;
 #endif
     dx               *= epsilon;
-    vscale_array[col] = 1.0/dx;
+    vscale_array[col] = (PetscScalar)1.0/dx;
   }     CHKMEMQ;
   if (ctype == IS_COLORING_GLOBAL)  vscale_array = vscale_array + start;      
   ierr = VecRestoreArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);
@@ -2879,7 +2879,7 @@ PetscErrorCode  MatFDColoringApply_BAIJ(Mat J,MatFDColoring coloring,Vec x1,MatS
 	} else {
 	  dx  = xx[col];
 	}
-	if (dx == 0.0) dx = 1.0;
+	if (dx == (PetscScalar)0.0) dx = 1.0;
 #if !defined(PETSC_USE_COMPLEX)
 	if (dx < umin && dx >= 0.0)      dx = umin;
 	else if (dx < 0.0 && dx > -umin) dx = -umin;

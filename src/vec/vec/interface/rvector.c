@@ -435,7 +435,7 @@ PetscErrorCode  VecScale (Vec x, PetscScalar alpha)
   PetscValidType(x,1);
   if (x->stash.insertmode != NOT_SET_VALUES) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled vector");
   ierr = PetscLogEventBegin(VEC_Scale,x,0,0,0);CHKERRQ(ierr);
-  if (alpha != 1.0) {
+  if (alpha != (PetscScalar)1.0) {
     /* get current stashed norms */
     for (i=0; i<4; i++) {
       ierr = PetscObjectComposedDataGetReal((PetscObject)x,NormIds[i],norms[i],flgs[i]);CHKERRQ(ierr);

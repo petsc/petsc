@@ -609,7 +609,7 @@ PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,MatSt
     } else {
       dx  = xx[col];
     }
-    if (dx == 0.0) dx = 1.0;
+    if (dx == (PetscScalar)0.0) dx = 1.0;
 #if !defined(PETSC_USE_COMPLEX)
     if (dx < umin && dx >= 0.0)      dx = umin;
     else if (dx < 0.0 && dx > -umin) dx = -umin;
@@ -618,7 +618,7 @@ PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,MatSt
     else if (PetscRealPart(dx) < 0.0 && PetscAbsScalar(dx) < umin) dx = -umin;
 #endif
     dx               *= epsilon;
-    vscale_array[col] = 1.0/dx;
+    vscale_array[col] = (PetscScalar)1.0/dx;
   } 
   if (ctype == IS_COLORING_GLOBAL)  vscale_array = vscale_array + start;      
   ierr = VecRestoreArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);
@@ -651,7 +651,7 @@ PetscErrorCode  MatFDColoringApply_AIJ(Mat J,MatFDColoring coloring,Vec x1,MatSt
       } else {
         dx  = xx[col];
       }
-      if (dx == 0.0) dx = 1.0;
+      if (dx == (PetscScalar)0.0) dx = 1.0;
 #if !defined(PETSC_USE_COMPLEX)
       if (dx < umin && dx >= 0.0)      dx = umin;
       else if (dx < 0.0 && dx > -umin) dx = -umin;
@@ -782,7 +782,7 @@ PetscErrorCode  MatFDColoringApplyTS(Mat J,MatFDColoring coloring,PetscReal t,Ve
     for (l=0; l<coloring->ncolumns[k]; l++) {
       col = coloring->columns[k][l];    /* column of the matrix we are probing for */
       dx  = xx[col];
-      if (dx == 0.0) dx = 1.0;
+      if (dx == (PetscScalar)0.0) dx = 1.0;
 #if !defined(PETSC_USE_COMPLEX)
       if (dx < umin && dx >= 0.0)      dx = umin;
       else if (dx < 0.0 && dx > -umin) dx = -umin;
@@ -791,7 +791,7 @@ PetscErrorCode  MatFDColoringApplyTS(Mat J,MatFDColoring coloring,PetscReal t,Ve
       else if (PetscRealPart(dx) < 0.0 && PetscAbsScalar(dx) < umin) dx = -umin;
 #endif
       dx                *= epsilon;
-      vscale_array[col] = 1.0/dx;
+      vscale_array[col] = (PetscScalar)1.0/dx;
     }
   } 
   vscale_array = vscale_array - start;ierr = VecRestoreArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);
@@ -815,7 +815,7 @@ PetscErrorCode  MatFDColoringApplyTS(Mat J,MatFDColoring coloring,PetscReal t,Ve
     for (l=0; l<coloring->ncolumns[k]; l++) {
       col = coloring->columns[k][l];    /* column of the matrix we are probing for */
       dx  = xx[col];
-      if (dx == 0.0) dx = 1.0;
+      if (dx == (PetscScalar)0.0) dx = 1.0;
 #if !defined(PETSC_USE_COMPLEX)
       if (dx < umin && dx >= 0.0)      dx = umin;
       else if (dx < 0.0 && dx > -umin) dx = -umin;

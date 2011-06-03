@@ -86,9 +86,9 @@ PetscErrorCode VecScale_Seq(Vec xin, PetscScalar alpha)
   PetscBLASInt   one = 1,bn = PetscBLASIntCast(xin->map->n);
 
   PetscFunctionBegin;
-  if (alpha == 0.0) {
+  if (alpha == (PetscScalar)0.0) {
     ierr = VecSet_Seq(xin,alpha);CHKERRQ(ierr);
-  } else if (alpha != 1.0) {
+  } else if (alpha != (PetscScalar)1.0) {
     PetscScalar a = alpha,*xarray;
     ierr = VecGetArray(xin,&xarray);CHKERRQ(ierr);
     BLASscal_(&bn,&a,xarray,&one);
@@ -110,7 +110,7 @@ PetscErrorCode VecAXPY_Seq(Vec yin,PetscScalar alpha,Vec xin)
 
   PetscFunctionBegin;
   /* assume that the BLAS handles alpha == 1.0 efficiently since we have no fast code for it */
-  if (alpha != 0.0) {
+  if (alpha != (PetscScalar)0.0) {
     ierr = VecGetArrayRead(xin,&xarray);CHKERRQ(ierr);
     ierr = VecGetArray(yin,&yarray);CHKERRQ(ierr);
     BLASaxpy_(&bn,&alpha,xarray,&one,yarray,&one);
@@ -131,13 +131,13 @@ PetscErrorCode VecAXPBY_Seq(Vec yin,PetscScalar alpha,PetscScalar beta,Vec xin)
   PetscScalar       *yy,a = alpha,b = beta;
 
   PetscFunctionBegin;
-  if (a == 0.0) {
+  if (a == (PetscScalar)0.0) {
     ierr = VecScale_Seq(yin,beta);CHKERRQ(ierr);
-  } else if (b == 1.0) {
+  } else if (b == (PetscScalar)1.0) {
     ierr = VecAXPY_Seq(yin,alpha,xin);CHKERRQ(ierr);
-  } else if (a == 1.0) {
+  } else if (a == (PetscScalar)1.0) {
     ierr = VecAYPX_Seq(yin,beta,xin);CHKERRQ(ierr);
-  } else if (b == 0.0) {
+  } else if (b == (PetscScalar)0.0) {
     ierr = VecGetArrayRead(xin,&xx);CHKERRQ(ierr);
     ierr = VecGetArray(yin,(PetscScalar**)&yy);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
@@ -172,17 +172,17 @@ PetscErrorCode VecAXPBYPCZ_Seq(Vec zin,PetscScalar alpha,PetscScalar beta,PetscS
   ierr = VecGetArrayRead(xin,&xx);CHKERRQ(ierr);
   ierr = VecGetArrayRead(yin,&yy);CHKERRQ(ierr);
   ierr = VecGetArray(zin,&zz);CHKERRQ(ierr);
-  if (alpha == 1.0) {
+  if (alpha == (PetscScalar)1.0) {
     for (i=0; i<n; i++) {
       zz[i] = xx[i] + beta*yy[i] + gamma*zz[i];
     }
     ierr = PetscLogFlops(4.0*n);CHKERRQ(ierr);
-  } else if (gamma == 1.0) {
+  } else if (gamma == (PetscScalar)1.0) {
     for (i=0; i<n; i++) {
       zz[i] = alpha*xx[i] + beta*yy[i] + zz[i];
     }
     ierr = PetscLogFlops(4.0*n);CHKERRQ(ierr);
-  } else if (gamma == 0.0) {
+  } else if (gamma == (PetscScalar)0.0) {
     for (i=0; i<n; i++) {
       zz[i] = alpha*xx[i] + beta*yy[i];
     }
