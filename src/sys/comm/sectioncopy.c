@@ -298,7 +298,8 @@ PetscErrorCode PetscCopySection(PetscOverlap sendOverlap, PetscOverlap recvOverl
     for(PetscInt p = 0; p < numPoints; ++p) {
       PetscInt fDim;
 
-      ierr = PetscSectionGetDof(recvSection, recv_point_type(rank, remotePoints[p]), &fDim);CHKERRQ(ierr);
+      /// TODO
+      ///ierr = PetscSectionGetDof(recvSection, recv_point_type(rank, remotePoints[p]), &fDim);CHKERRQ(ierr);
       numVals += fDim;
     }
     send_value_type *v;
@@ -332,8 +333,9 @@ PetscErrorCode PetscCopySection(PetscOverlap sendOverlap, PetscOverlap recvOverl
     for(p = 0; p < numPoints; ++p) {
       const int fDim, off;
 
-      ierr = PetscSectionGetDof(recvSection, recv_point_type(rank, sortedPoints[p]), &fDim);CHKERRQ(ierr);
-      ierr = PetscSectionGetOffset(recvSection, recv_point_type(rank, sortedPoints[p]), &off);CHKERRQ(ierr);
+      /// TODO
+      ///ierr = PetscSectionGetDof(recvSection, recv_point_type(rank, sortedPoints[p]), &fDim);CHKERRQ(ierr);
+      ///ierr = PetscSectionGetOffset(recvSection, recv_point_type(rank, sortedPoints[p]), &off);CHKERRQ(ierr);
       for(PetscInt i = 0; i < fDim; ++i, ++k) {
         recvStorage[off+i] = (recv_value_type) v[k];
       }
