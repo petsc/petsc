@@ -110,6 +110,37 @@ static PetscErrorCode PCApplyRichardson_MG(PC pc,Vec b,Vec x,Vec w,PetscReal rto
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "PCReset_MG"
+PetscErrorCode PCReset_MG(PC pc)
+{
+  PC_MG          *mg = (PC_MG*)pc->data;
+  PC_MG_Levels   **mglevels = mg->levels;
+  PetscErrorCode ierr;
+  PetscInt       i,n;
+
+  PetscFunctionBegin;
+  if (mglevels) {
+    n = mglevels[0]->levels;
+    for (i=0; i<n-1; i++) {
+      ierr = VecDestroy(&mglevels[i+1]->r);CHKERRQ(ierr);
+      ierr = VecDestroy(&mglevels[i]->b);CHKERRQ(ierr);
+      ierr = VecDestroy(&mglevels[i]->x);CHKERRQ(ierr);
+      ierr = MatDestroy(&mglevels[i+1]->restrct);CHKERRQ(ierr);
+      ierr = MatDestroy(&mglevels[i+1]->interpolate);CHKERRQ(ierr);
+    }
+
+    for (i=0; i<n; i++) {
+      ierr = MatDestroy(&mglevels[i]->A);CHKERRQ(ierr);
+      if (mglevels[i]->smoothd != mglevels[i]->smoothu) {
+	ierr = KSPReset(mglevels[i]->smoothd);CHKERRQ(ierr);
+      }
+      ierr = KSPReset(mglevels[i]->smoothu);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "PCMGSetLevels"
 /*@C
    PCMGSetLevels - Sets the number of levels to use with MG.
@@ -138,18 +169,30 @@ PetscErrorCode  PCMGSetLevels(PC pc,PetscInt levels,MPI_Comm *comms)
   PetscErrorCode ierr;
   PC_MG          *mg = (PC_MG*)pc->data;
   MPI_Comm       comm = ((PetscObject)pc)->comm;
-  PC_MG_Levels   **mglevels;
+  PC_MG_Levels   **mglevels = mg->levels;
   PetscInt       i;
   PetscMPIInt    size;
   const char     *prefix;
   PC             ipc;
+  PetscInt       n;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   PetscValidLogicalCollectiveInt(pc,levels,2);
   if (mg->nlevels == levels) PetscFunctionReturn(0);
-  if (mg->nlevels > -1) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ORDER,"Number levels already set for MG\n  make sure that you call PCMGSetLevels() before KSPSetFromOptions()");
-  if (mg->levels) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Internal error in PETSc, this array should not yet exist");
+  if (mglevels) {
+    /* changing the number of levels so free up the previous stuff */
+    ierr = PCReset_MG(pc);CHKERRQ(ierr);
+    n = mglevels[0]->levels;
+    for (i=0; i<n; i++) {
+      if (mglevels[i]->smoothd != mglevels[i]->smoothu) {
+	ierr = KSPDestroy(&mglevels[i]->smoothd);CHKERRQ(ierr);
+      }
+      ierr = KSPDestroy(&mglevels[i]->smoothu);CHKERRQ(ierr);
+      ierr = PetscFree(mglevels[i]);CHKERRQ(ierr);
+    }
+    ierr = PetscFree(mg->levels);CHKERRQ(ierr);
+  }
 
   mg->nlevels      = levels;
   mg->galerkin     = PETSC_FALSE;
@@ -211,36 +254,6 @@ PetscErrorCode  PCMGSetLevels(PC pc,PetscInt levels,MPI_Comm *comms)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PCReset_MG"
-PetscErrorCode PCReset_MG(PC pc)
-{
-  PC_MG          *mg = (PC_MG*)pc->data;
-  PC_MG_Levels   **mglevels = mg->levels;
-  PetscErrorCode ierr;
-  PetscInt       i,n;
-
-  PetscFunctionBegin;
-  if (mglevels) {
-    n = mglevels[0]->levels;
-    for (i=0; i<n-1; i++) {
-      ierr = VecDestroy(&mglevels[i+1]->r);CHKERRQ(ierr);
-      ierr = VecDestroy(&mglevels[i]->b);CHKERRQ(ierr);
-      ierr = VecDestroy(&mglevels[i]->x);CHKERRQ(ierr);
-      ierr = MatDestroy(&mglevels[i+1]->restrct);CHKERRQ(ierr);
-      ierr = MatDestroy(&mglevels[i+1]->interpolate);CHKERRQ(ierr);
-    }
-
-    for (i=0; i<n; i++) {
-      ierr = MatDestroy(&mglevels[i]->A);CHKERRQ(ierr);
-      if (mglevels[i]->smoothd != mglevels[i]->smoothu) {
-	ierr = KSPReset(mglevels[i]->smoothd);CHKERRQ(ierr);
-      }
-      ierr = KSPReset(mglevels[i]->smoothu);CHKERRQ(ierr);
-    }
-  }
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCDestroy_MG"
@@ -335,15 +348,17 @@ PetscErrorCode PCSetFromOptions_MG(PC pc)
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("Multigrid options");CHKERRQ(ierr);
-    if (!mglevels) {
+    if (!mg->levels) {
       ierr = PetscOptionsInt("-pc_mg_levels","Number of Levels","PCMGSetLevels",levels,&levels,&flg);CHKERRQ(ierr);
       if (!flg && pc->dm) {
         ierr = DMGetRefineLevel(pc->dm,&levels);CHKERRQ(ierr);
         levels++;
+        mg->usedmfornumberoflevels = PETSC_TRUE;
       }
       ierr = PCMGSetLevels(pc,levels,PETSC_NULL);CHKERRQ(ierr);
-      mglevels = mg->levels;
     }
+    mglevels = mg->levels;
+
     mgctype = (PCMGCycleType) mglevels[0]->cycles;
     ierr = PetscOptionsEnum("-pc_mg_cycle_type","V cycle or for W-cycle","PCMGSetCycleType",PCMGCycleTypes,(PetscEnum)mgctype,(PetscEnum*)&mgctype,&flg);CHKERRQ(ierr);
     if (flg) {
@@ -468,6 +483,18 @@ PetscErrorCode PCSetUp_MG(PC pc)
   DM                      *dms;
 
   PetscFunctionBegin;
+  if (mg->usedmfornumberoflevels) {
+    PetscInt levels;
+    ierr = DMGetRefineLevel(pc->dm,&levels);CHKERRQ(ierr);
+    levels++;
+    if (levels > n) { /* the problem is now being solved on a finer grid */
+      ierr = PCMGSetLevels(pc,levels,PETSC_NULL);CHKERRQ(ierr);
+      n    = levels;
+      ierr = PCSetFromOptions(pc);CHKERRQ(ierr);  /* it is bad to call this here, but otherwise will never be called for the new hierarchy */
+      mglevels =  mg->levels;
+    }
+  }
+
 
   /* If user did not provide fine grid operators OR operator was not updated since last global KSPSetOperators() */
   /* so use those from global PC */
