@@ -249,6 +249,7 @@ PetscErrorCode  DMSetVI(DM dm,Vec upper,Vec lower,Vec values,Vec F,IS inactive)
   dmsnesvi->values   = values;
   dmsnesvi->F        = F;
   dmsnesvi->inactive = inactive;
+  dmsnesvi->dm       = dm;
   PetscFunctionReturn(0);
 }
 
