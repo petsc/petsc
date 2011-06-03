@@ -66,6 +66,7 @@ typedef struct {
   PetscErrorCode (*getinterpolation)(DM,DM,Mat*,Vec*);    /* DM's original routines */
   PetscErrorCode (*coarsen)(DM, MPI_Comm, DM*); 
   PetscErrorCode (*createglobalvector)(DM,Vec*);
+  DM             dm;                                      /* when destroying this object we need to reset the above function into the base DM */
 } DM_SNESVI;
 
 #undef __FUNCT__  
@@ -103,10 +104,10 @@ PetscErrorCode  DMGetInterpolation_SNESVI(DM dm1,DM dm2,Mat *mat,Vec *vec)
 
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject)dm1,"VI",(PetscObject *)&isnes);CHKERRQ(ierr);
-  if (!isnes) SETERRQ(((PetscObject)dm1)->comm,PETSC_ERR_PLIB,"Composed SNES is missing");
+  if (!isnes) SETERRQ(((PetscObject)dm1)->comm,PETSC_ERR_PLIB,"Composed VI data structure is missing");
   ierr = PetscContainerGetPointer(isnes,(void**)&dmsnesvi1);CHKERRQ(ierr);
   ierr = PetscObjectQuery((PetscObject)dm2,"VI",(PetscObject *)&isnes);CHKERRQ(ierr);
-  if (!isnes) SETERRQ(((PetscObject)dm2)->comm,PETSC_ERR_PLIB,"Composed SNES is missing");
+  if (!isnes) SETERRQ(((PetscObject)dm2)->comm,PETSC_ERR_PLIB,"Composed VI data structure is missing");
   ierr = PetscContainerGetPointer(isnes,(void**)&dmsnesvi2);CHKERRQ(ierr);
   
   ierr = (*dmsnesvi1->getinterpolation)(dm1,dm2,&interp,PETSC_NULL);CHKERRQ(ierr);
@@ -134,7 +135,7 @@ PetscErrorCode  DMCoarsen_SNESVI(DM dm1,MPI_Comm comm,DM *dm2)
 
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject)dm1,"VI",(PetscObject *)&isnes);CHKERRQ(ierr);
-  if (!isnes) SETERRQ(((PetscObject)dm1)->comm,PETSC_ERR_PLIB,"Composed SNES is missing");
+  if (!isnes) SETERRQ(((PetscObject)dm1)->comm,PETSC_ERR_PLIB,"Composed VI data structure is missing");
   ierr = PetscContainerGetPointer(isnes,(void**)&dmsnesvi1);CHKERRQ(ierr);
   
   /* get the original coarsen */
@@ -179,6 +180,11 @@ PetscErrorCode DMDestroy_SNESVI(DM_SNESVI *dmsnesvi)
   PetscErrorCode ierr;
   
   PetscFunctionBegin;
+  /* reset the base methods in the DM object that were changed when the DM_SNESVI was reset */
+  dmsnesvi->dm->ops->getinterpolation   = dmsnesvi->getinterpolation;
+  dmsnesvi->dm->ops->coarsen            = dmsnesvi->coarsen;
+  dmsnesvi->dm->ops->createglobalvector = dmsnesvi->createglobalvector;
+
   ierr = VecDestroy(&dmsnesvi->upper);CHKERRQ(ierr);
   ierr = VecDestroy(&dmsnesvi->lower);CHKERRQ(ierr);
   ierr = VecDestroy(&dmsnesvi->values);CHKERRQ(ierr);
@@ -243,6 +249,22 @@ PetscErrorCode  DMSetVI(DM dm,Vec upper,Vec lower,Vec values,Vec F,IS inactive)
   dmsnesvi->values   = values;
   dmsnesvi->F        = F;
   dmsnesvi->inactive = inactive;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMDestroyVI"
+/*
+     DMDestroyVI - Frees the DM_SNESVI object contained in the DM 
+         - also resets the function pointers in the DM for getinterpolation() etc to use the original DM 
+*/
+PetscErrorCode  DMDestroyVI(DM dm)
+{
+  PetscErrorCode          ierr;
+
+  PetscFunctionBegin;
+  if (!dm) PetscFunctionReturn(0);
+  ierr = PetscObjectCompose((PetscObject)dm,"VI",(PetscObject)PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1221,6 +1243,7 @@ PetscErrorCode SNESSolveVI_RS(SNES snes)
     if (snes->reason == SNES_DIVERGED_FUNCTION_COUNT) break;
     if (snes->domainerror) {
       snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
+      ierr = DMDestroyVI(snes->dm);CHKERRQ(ierr);
       PetscFunctionReturn(0);
     }
     if (!lssucceed) {
@@ -1248,6 +1271,7 @@ PetscErrorCode SNESSolveVI_RS(SNES snes)
     ierr = (*snes->ops->converged)(snes,snes->iter,xnorm,ynorm,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
     if (snes->reason) break;
   }
+  ierr = DMDestroyVI(snes->dm);CHKERRQ(ierr);
   if (i == maxits) {
     ierr = PetscInfo1(snes,"Maximum number of iterations has been reached: %D\n",maxits);CHKERRQ(ierr);
     if(!snes->reason) snes->reason = SNES_DIVERGED_MAX_IT;

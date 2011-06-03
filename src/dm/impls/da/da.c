@@ -684,7 +684,7 @@ PetscErrorCode  DMRefine_DA(DM da,MPI_Comm comm,DM *daref)
 
   /* allow overloaded (user replaced) operations to be inherited by refinement clones */
   da2->ops->getmatrix        = da->ops->getmatrix;
-  da2->ops->getinterpolation = da->ops->getinterpolation;
+  /* da2->ops->getinterpolation = da->ops->getinterpolation; this causes problem with SNESVI */
   da2->ops->getcoloring      = da->ops->getcoloring;
   dd2->interptype            = dd->interptype;
   
