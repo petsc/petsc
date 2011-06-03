@@ -337,6 +337,9 @@ namespace ALE {
         for(int i = 0; i < numSendPoints; ++i) {point_allocator.destroy(sendPoints+i);}
         point_allocator.deallocate(sendPoints, numSendPoints);
       }
+      // TODO: Rewrite above to use optimized construction
+      sendOverlap->assemble();
+      recvOverlap->assemble();
     };
   };
   namespace Pullback {
