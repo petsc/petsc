@@ -48,6 +48,19 @@ public:
     ierr = PetscFree(this->points);CHKERRXX(ierr);
     ierr = PetscFree(this->remotePoints);CHKERRXX(ierr);
   };
+  void setNumRanks(index_type R) {
+    PetscErrorCode ierr;
+
+    if (R) {
+      numRanks = R;
+      ierr = PetscMalloc(numRanks * sizeof(rank_type), &ranks);CHKERRXX(ierr);
+      ierr = PetscMalloc((numRanks+1) * sizeof(index_type), &pointsOffset);CHKERRXX(ierr);
+      for(index_type r = 0; r < numRanks; ++r) {
+        ranks[r]        = -1;
+        pointsOffset[r] = 0;
+      }
+    }
+  };
   index_type getRankIndex(index_type rank) {
     for(index_type r = 0; r < numRanks; ++r) {
       if (ranks[r] == rank) {
@@ -56,8 +69,31 @@ public:
     }
     throw ALE::Exception("Invalid rank was not contained in this overlap");
   };
-  // TODO This should also sort
-  void assemble() {
+  void setNumPoints(rank_type rank, index_type numPoints) {
+    index_type r, s;
+    for(r = 0; r < numRanks; ++r) {
+      if (rank >= ranks[r]) break;
+    }
+    assert(r < numRanks);
+    if (rank != ranks[r]) {
+      assert(ranks[numRanks-1] == -1);
+      for(s = numRanks; s > r; --s) {
+        pointsOffset[s] = pointsOffset[s-1];
+      }
+    }
+    ranks[r] = rank;
+    for(s = r+1; s <= numRanks; ++s) {
+      pointsOffset[s] += numPoints;
+    }
+  };
+  index_type getNumPoints(index_type r) {
+    return this->pointsOffset[r+1] - this->pointsOffset[r];
+  };
+  index_type getNumPointsByRank(index_type rank) {
+    const index_type r = this->getRankIndex(rank);
+    return this->pointsOffset[r+1] - this->pointsOffset[r];
+  };
+  void assembleFlexible() {
     index_type    *indices;
     PetscErrorCode ierr;
 
@@ -96,13 +132,33 @@ public:
     flexPoints.clear();
     flexRemotePoints.clear();
   };
-  void viewSpecial(const char *msg = PETSC_NULL) {
+  void assembleFast() {
+    PetscErrorCode ierr;
+
+    assert(!flexRanks.size() && !flexPoints.size() && !flexRemotePoints.size());
+    ierr = PetscMalloc((pointsOffset[numRanks]) * sizeof(point_type), &points);CHKERRXX(ierr);
+    ierr = PetscMalloc((pointsOffset[numRanks]) * sizeof(point_type), &remotePoints);CHKERRXX(ierr);
+    for(index_type i = 0; i < pointsOffset[numRanks]; ++i) {
+      points[i] = remotePoints[i] = -1;
+    }
+  };
+  void assemble() {
+    if (!flexRanks.size() && ranks) {
+      assembleFast();
+    } else if (!ranks && !pointsOffset) {
+      assembleFlexible();
+    } else {
+      std::cout << "["<<this->commRank()<<"]ranks: " << ranks << " pointsOffset: " << pointsOffset << " flexRank size: " << flexRanks.size() << std::endl;
+      throw ALE::Exception("Cannot assemble overlap in an invalid state");
+    }
+  };
+  void view(const std::string& name, MPI_Comm comm = MPI_COMM_NULL) const {
     PetscErrorCode ierr;
 
     if (!this->commRank()) {
-      ierr = PetscSynchronizedPrintf(this->comm(), "%s: %s\n", this->getName().size() ? this->getName() : "Overlap", msg);
+      ierr = PetscSynchronizedPrintf(this->comm(), "[%d]%s: %s\n", this->commRank(), this->getName().size() ? this->getName().c_str() : "Overlap", name.c_str());
     }
-    ierr = PetscSynchronizedPrintf(this->comm(), "%d partners:\n", this->numRanks);
+    ierr = PetscSynchronizedPrintf(this->comm(), "[%d]%d partners:\n[%d]", this->commRank(), this->numRanks, this->commRank());
     for(index_type r = 0; r < this->numRanks; ++r) {
       ierr = PetscSynchronizedPrintf(this->comm(), "  %d:", this->ranks[r]);
       for(index_type p = pointsOffset[r]; p < pointsOffset[r+1]; ++p) {
@@ -136,17 +192,36 @@ public:
   PetscNewSendOverlap(MPI_Comm comm, const int debug = 0) : PetscNewOverlap<Point,Rank>(comm, debug) {};
   ~PetscNewSendOverlap() {};
   void addArrow(source_type s, target_type t, color_type c) {
-    // Add rank
-    bool addRank = true;
-    for(typename std::vector<rank_type>::const_iterator r_iter = this->flexRanks.begin(); r_iter != this->flexRanks.end(); ++r_iter) {
-      if (*r_iter == t) {addRank = false; break;}
+    if (!this->ranks) {
+      // Add rank
+      bool addRank = true;
+      for(typename std::vector<rank_type>::const_iterator r_iter = this->flexRanks.begin(); r_iter != this->flexRanks.end(); ++r_iter) {
+        if (*r_iter == t) {addRank = false; break;}
+      }
+      if (addRank) {
+        this->flexRanks.push_back(t);
+      }
+      // Add point
+      this->flexPoints[t].push_back(s);
+      this->flexRemotePoints[t].push_back(c);
+    } else {
+      const index_type r = this->getRankIndex(t);
+      index_type       i;
+
+      for(i = this->pointsOffset[r]; i < this->pointsOffset[r+1]; ++i) {
+        if (s <= this->points[i] || this->points[i] < 0) break;
+      }
+      assert(i < this->pointsOffset[r+1] && s != this->points[i]);
+      for(index_type j = this->pointsOffset[r+1]-1; j > i; --j) {
+        this->points[j]       = this->points[j-1];
+        this->remotePoints[j] = this->remotePoints[j-1];
+      }
+      this->points[i]       = s;
+      this->remotePoints[i] = c;
     }
-    if (addRank) {
-      this->flexRanks.push_back(t);
-    }
-    // Add point
-    this->flexPoints[t].push_back(s);
-    this->flexRemotePoints[t].push_back(c);
+  };
+  void setBaseSize(index_type size) {
+    this->setNumRanks(size);
   };
   typename baseSequence::iterator baseBegin() {
     assert(!this->numRanks || this->ranks);
@@ -156,9 +231,11 @@ public:
     assert(!this->numRanks || this->ranks);
     return &this->ranks[this->numRanks];
   };
+  void setConeSize(rank_type rank, index_type size) {
+    this->setNumPoints(rank, size);
+  };
   int getConeSize(rank_type rank) {
-    const index_type r = this->getRankIndex(rank);
-    return this->pointsOffset[r+1] - this->pointsOffset[r];
+    return this->getNumPointsByRank(rank);
   };
   typename coneSequence::iterator coneBegin(rank_type rank) {
     const index_type r = this->getRankIndex(rank);
@@ -220,17 +297,33 @@ public:
   PetscNewRecvOverlap(MPI_Comm comm, const int debug = 0) : PetscNewOverlap<Point,Rank>(comm, debug) {};
   ~PetscNewRecvOverlap() {};
   void addArrow(source_type s, target_type t, color_type c) {
-    // Add rank
-    bool addRank = true;
-    for(typename std::vector<rank_type>::const_iterator r_iter = this->flexRanks.begin(); r_iter != this->flexRanks.end(); ++r_iter) {
-      if (*r_iter == s) {addRank = false; break;}
+    if (!this->ranks) {
+      // Add rank
+      bool addRank = true;
+      for(typename std::vector<rank_type>::const_iterator r_iter = this->flexRanks.begin(); r_iter != this->flexRanks.end(); ++r_iter) {
+        if (*r_iter == s) {addRank = false; break;}
+      }
+      if (addRank) {
+        this->flexRanks.push_back(s);
+      }
+      // Add point
+      this->flexPoints[s].push_back(t);
+      this->flexRemotePoints[s].push_back(c);
+    } else {
+      const index_type r = this->getRankIndex(s);
+      index_type       i;
+
+      for(i = this->pointsOffset[r]; i < this->pointsOffset[r+1]; ++i) {
+        if (t <= this->points[i] || this->points[i] < 0) break;
+      }
+      assert(i < this->pointsOffset[r+1] && s != this->points[i]);
+      for(index_type j = this->pointsOffset[r+1]-1; j > i; --j) {
+        this->points[j]       = this->points[j-1];
+        this->remotePoints[j] = this->remotePoints[j-1];
+      }
+      this->points[i]       = t;
+      this->remotePoints[i] = c;
     }
-    if (addRank) {
-      this->flexRanks.push_back(s);
-    }
-    // Add point
-    this->flexPoints[s].push_back(t);
-    this->flexRemotePoints[s].push_back(c);
   };
   typename capSequence::iterator capBegin() {
     assert(!this->numRanks || this->ranks);
@@ -239,6 +332,12 @@ public:
   typename capSequence::iterator capEnd() {
     assert(!this->numRanks || this->ranks);
     return &this->ranks[this->numRanks];
+  };
+  void setCapSize(index_type size) {
+    this->setNumRanks(size);
+  };
+  void setSupportSize(rank_type rank, index_type size) {
+    this->setNumPoints(rank, size);
   };
   int getSupportSize(rank_type rank) {
     const index_type r = this->getRankIndex(rank);

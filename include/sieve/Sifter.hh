@@ -719,6 +719,10 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
     typename traits::baseSequence::iterator baseEnd() {
       return this->base()->end();
     };
+    int getBaseSize() {return this->base()->size();};
+    void setBaseSize(int size) {};
+    int getCapSize() {return this->cap()->size();};
+    void setCapSize(int size) {};
     bool capContains(const typename traits::source_type& p) {
       typename traits::capSequence cap(::boost::multi_index::get<typename traits::capInd>(this->_cap.set));
 
@@ -762,6 +766,7 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
     coneEnd(const typename traits::target_type& p) {
       return this->cone(p)->end();
     };
+    void setConeSize(const typename traits::target_type& p, int size) {};
 #endif
     template<class InputSequence> 
     Obj<typename traits::coneSet> 
@@ -837,6 +842,7 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
     supportEnd(const typename traits::source_type& p) {
       return this->support(p)->end();
     };
+    void setSupportSize(const typename traits::source_type& p, int size) {};
 #endif
 #ifdef SLOW
     Obj<typename traits::supportSequence> 
