@@ -180,9 +180,9 @@ public:
     if (!this->commRank()) {
       ierr = PetscSynchronizedPrintf(this->comm(), "[%d]%s: %s\n", this->commRank(), this->getName().size() ? this->getName().c_str() : "Overlap", name.c_str());
     }
-    ierr = PetscSynchronizedPrintf(this->comm(), "[%d]%d partners:\n[%d]", this->commRank(), this->numRanks, this->commRank());
+    ierr = PetscSynchronizedPrintf(this->comm(), "[%d]%d partners:\n", this->commRank(), this->numRanks);
     for(index_type r = 0; r < this->numRanks; ++r) {
-      ierr = PetscSynchronizedPrintf(this->comm(), "  %d:", this->ranks[r]);
+      ierr = PetscSynchronizedPrintf(this->comm(), "[%d]  %d:", this->commRank(), this->ranks[r]);
       for(index_type p = pointsOffset[r]; p < pointsOffset[r+1]; ++p) {
         ierr = PetscSynchronizedPrintf(this->comm(), "  %d (%d)", this->points[p], this->remotePoints[p]);
       }
