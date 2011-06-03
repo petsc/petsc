@@ -1,4 +1,4 @@
-
+#requireslanguage CXXONLY
 ALL: lib
 
 CFLAGS    =
