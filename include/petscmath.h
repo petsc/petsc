@@ -382,10 +382,10 @@ PETSC_STATIC_INLINE PetscErrorCode PetscIsInfOrNanReal(PetscReal a) {
 }
 #else
 PETSC_STATIC_INLINE PetscErrorCode PetscIsInfOrNanScalar(PetscScalar a) {
-  return  ((a - a) != 0.0);
+  return  ((a - a) != (PetscScalar)0);
 }
 PETSC_STATIC_INLINE PetscErrorCode PetscIsInfOrNanReal(PetscReal a) {
-  return ((a - a) != 0.0);
+  return ((a - a) != 0);
 }
 #endif
 

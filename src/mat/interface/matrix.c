@@ -4596,14 +4596,14 @@ PetscErrorCode  MatScale(Mat mat,PetscScalar a)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidType(mat,1);
-  if (a != 1.0 && !mat->ops->scale) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
+  if (a != (PetscScalar)1.0 && !mat->ops->scale) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
   if (!mat->assembled) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factortype) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   PetscValidLogicalCollectiveScalar(mat,a,2);
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
 
   ierr = PetscLogEventBegin(MAT_Scale,mat,0,0,0);CHKERRQ(ierr);
-  if (a != 1.0) {
+  if (a != (PetscScalar)1.0) {
     ierr = (*mat->ops->scale)(mat,a);CHKERRQ(ierr);
     ierr = PetscObjectStateIncrease((PetscObject)mat);CHKERRQ(ierr);
   } 
