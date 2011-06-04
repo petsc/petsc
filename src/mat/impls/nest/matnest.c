@@ -250,6 +250,7 @@ static PetscErrorCode MatDestroy_Nest(Mat A)
   ierr = PetscFree(A->data);CHKERRQ(ierr);
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatNestGetSubMat_C",   "",0);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatNestSetSubMat_C",   "",0);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatNestGetSubMats_C",  "",0);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatNestGetSize_C",     "",0);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatNestSetVecType_C",  "",0);CHKERRQ(ierr);
@@ -798,6 +799,64 @@ PetscErrorCode  MatNestGetSubMat(Mat A,PetscInt idxm,PetscInt jdxm,Mat *sub)
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
+#define __FUNCT__ "MatNestSetSubMat_Nest"
+PetscErrorCode MatNestSetSubMat_Nest(Mat A,PetscInt idxm,PetscInt jdxm,Mat mat)
+{
+  Mat_Nest *bA = (Mat_Nest*)A->data;
+  PetscInt m,n,M,N,mi,ni,Mi,Ni;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (idxm >= bA->nr) SETERRQ2(((PetscObject)A)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %D max %D",idxm,bA->nr-1);
+  if (jdxm >= bA->nc) SETERRQ2(((PetscObject)A)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Col too large: row %D max %D",jdxm,bA->nc-1);
+  ierr = MatGetLocalSize(mat,&m,&n);CHKERRQ(ierr);
+  ierr = MatGetSize(mat,&M,&N);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(bA->isglobal.row[idxm],&mi);CHKERRQ(ierr);
+  ierr = ISGetSize(bA->isglobal.row[idxm],&Mi);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(bA->isglobal.col[jdxm],&ni);CHKERRQ(ierr);
+  ierr = ISGetSize(bA->isglobal.col[jdxm],&Ni);CHKERRQ(ierr);
+  if (M != Mi || N != Ni) SETERRQ4(((PetscObject)mat)->comm,PETSC_ERR_ARG_INCOMP,"Submatrix dimension (%D,%D) incompatible with nest block (%D,%D)",M,N,Mi,Ni);
+  if (m != mi || n != ni) SETERRQ4(((PetscObject)mat)->comm,PETSC_ERR_ARG_INCOMP,"Submatrix local dimension (%D,%D) incompatible with nest block (%D,%D)",m,n,mi,ni);
+  ierr = PetscObjectReference((PetscObject)mat);CHKERRQ(ierr);
+  ierr = MatDestroy(&bA->m[idxm][jdxm]);CHKERRQ(ierr);
+  bA->m[idxm][jdxm] = mat;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatNestSetSubMat"
+/*@C
+ MatNestSetSubMat - Set a single submatrix in the nest matrix.
+
+ Logically collective on the submatrix communicator
+
+ Input Parameters:
++   A  - nest matrix
+.   idxm - index of the matrix within the nest matrix
+.   jdxm - index of the matrix within the nest matrix
+-   sub - matrix at index idxm,jdxm within the nest matrix
+
+ Notes:
+ The new submatrix must have the same size and communicator as that block of the nest.
+
+ This increments the reference count of the submatrix.
+
+ Level: developer
+
+.seealso: MatNestSetSubMats(), MatNestGetSubMat()
+@*/
+PetscErrorCode  MatNestSetSubMat(Mat A,PetscInt idxm,PetscInt jdxm,Mat sub)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscUseMethod(A,"MatNestSetSubMat_C",(Mat,PetscInt,PetscInt,Mat),(A,idxm,jdxm,sub));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
 #define __FUNCT__ "MatNestGetSubMats_Nest"
 PetscErrorCode MatNestGetSubMats_Nest(Mat A,PetscInt *M,PetscInt *N,Mat ***mat)
 {
@@ -1239,6 +1298,7 @@ PetscErrorCode MatCreate_Nest(Mat A)
 
   /* expose Nest api's */
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatNestGetSubMat_C",   "MatNestGetSubMat_Nest",   MatNestGetSubMat_Nest);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatNestSetSubMat_C",   "MatNestSetSubMat_Nest",   MatNestSetSubMat_Nest);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatNestGetSubMats_C",  "MatNestGetSubMats_Nest",  MatNestGetSubMats_Nest);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatNestGetSize_C",     "MatNestGetSize_Nest",     MatNestGetSize_Nest);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatNestSetVecType_C",  "MatNestSetVecType_Nest",  MatNestSetVecType_Nest);CHKERRQ(ierr);

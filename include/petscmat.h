@@ -1749,6 +1749,7 @@ extern PetscErrorCode MatNestGetSubMats(Mat,PetscInt*,PetscInt*,Mat***);
 extern PetscErrorCode MatNestGetSubMat(Mat,PetscInt,PetscInt,Mat*);
 extern PetscErrorCode MatNestSetVecType(Mat,const VecType);
 extern PetscErrorCode MatNestSetSubMats(Mat,PetscInt,const IS[],PetscInt,const IS[],const Mat[]);
+extern PetscErrorCode MatNestSetSubMat(Mat,PetscInt,PetscInt,Mat);
 
 PETSC_EXTERN_CXX_END
 #endif
