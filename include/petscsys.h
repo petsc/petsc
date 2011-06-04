@@ -2048,12 +2048,12 @@ extern PetscErrorCode MPIU_File_read_all(MPI_File,void*,PetscMPIInt,MPI_Datatype
 #if defined(PETSC_USE_64BIT_INDICES)
 #define PetscMPIIntCheck(a)  if ((a) > PETSC_MPI_INT_MAX) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Message too long for MPI")
 #define PetscBLASIntCheck(a)  if ((a) > PETSC_BLAS_INT_MAX) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Array too long for BLAS/LAPACK")
-#define PetscMPIIntCast(a) (a);PetscMPIIntCheck(a)
-#define PetscBLASIntCast(a) (a);PetscBLASIntCheck(a)
+#define PetscMPIIntCast(a) (PetscMPIInt)(a);PetscMPIIntCheck(a)
+#define PetscBLASIntCast(a) (PetscBLASInt)(a);PetscBLASIntCheck(a)
 
 #if (PETSC_SIZEOF_SIZE_T == 4)
 #define PetscHDF5IntCheck(a)  if ((a) > PETSC_HDF5_INT_MAX) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Array too long for HDF5")
-#define PetscHDF5IntCast(a) (a);PetscHDF5IntCheck(a)
+#define PetscHDF5IntCast(a) (hsize_t)(a);PetscHDF5IntCheck(a)
 #else
 #define PetscHDF5IntCheck(a)
 #define PetscHDF5IntCast(a) a
