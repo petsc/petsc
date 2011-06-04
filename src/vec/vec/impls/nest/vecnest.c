@@ -642,6 +642,7 @@ static PetscErrorCode  VecGetSubVector_Nest(Vec X,IS is,Vec *x)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  *x = PETSC_NULL;
   for (i=0;i<bx->nb; i++) {
     PetscBool issame = PETSC_FALSE;
     ierr = ISEqual(is,bx->is[i],&issame);CHKERRQ(ierr);
@@ -651,7 +652,7 @@ static PetscErrorCode  VecGetSubVector_Nest(Vec X,IS is,Vec *x)
       break;
     }
   }
-
+  if (!*x) SETERRQ(((PetscObject)is)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Index set not found in nested Vec");
   PetscFunctionReturn(0);
 }
 
@@ -662,7 +663,7 @@ static PetscErrorCode  VecRestoreSubVector_Nest(Vec X,IS is,Vec *x)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectDereference((PetscObject)(*x));CHKERRQ(ierr);
+  ierr = VecDestroy(x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
