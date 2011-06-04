@@ -35,8 +35,6 @@ typedef struct {
   Vec                      t;    /* B subdifferential work vector */
   Vec                      xl;            /* lower bound on variables */
   Vec                      xu;            /* upper bound on variables */
-  PetscBool                usersetxbounds; /* flag to indicate whether the user 
-                                              has set bounds on variables */
 
   PetscScalar              norm_d;         /* two norm of the descent direction */
   IS                       IS_inact_prev; /* Inctive set IS for the previous iteration 
@@ -49,6 +47,8 @@ typedef struct {
   /* user supplied function for checking redundant equations for SNESSolveVI_RS2 */
   PetscErrorCode (*checkredundancy)(SNES,IS,IS*,void*);
   void                     *ctxP; /* user defined check redundancy context */
+
+  PetscErrorCode           (*computevariablebounds)(SNES,Vec*,Vec*);
 } SNES_VI;
 
 #endif

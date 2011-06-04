@@ -29,13 +29,20 @@ The command line options are:\n\
 /*
      This is a new version of the ../tests/ex8.c code
 
-     Run, for example, with the options -snes_vi_monitor -ksp_monitor -mg_levels_ksp_monitor -pc_type mg -pc_mg_levels 2 -pc_mg_galerkin -ksp_type fgmres
+     Run, for example, with the options ./ex58 -snes_vi_monitor -ksp_monitor -mg_levels_ksp_monitor -pc_type mg -pc_mg_levels 2 -pc_mg_galerkin -ksp_type fgmres
+
+     Or to run with grid sequencing on the nonlinear problem (note that you do not need to provide the number of 
+         multigrid levels, it will be determined automatically based on the number of refinements done)
+
+      ./ex58 -pc_type mg -ksp_monitor  -snes_view -pc_mg_galerkin -snes_grid_sequence 3
+             -mg_levels_ksp_monitor -snes_monitor -mg_levels_pc_type sor -pc_mg_type full
+
 
 */
 
 typedef struct {
-  DM           da;
   PetscScalar  *bottom, *top, *left, *right;
+  PetscScalar  lb,ub;
   PetscInt     mx,my;
 } AppCtx;
 
@@ -43,9 +50,10 @@ typedef struct {
 /* -------- User-defined Routines --------- */
 
 extern PetscErrorCode MSA_BoundaryConditions(AppCtx *);
-extern PetscErrorCode MSA_InitialPoint(AppCtx *, Vec);
+extern PetscErrorCode MSA_InitialPoint(DM,AppCtx *, Vec);
 extern PetscErrorCode FormGradient(SNES, Vec, Vec, void *);
 extern PetscErrorCode FormJacobian(SNES, Vec, Mat *, Mat*, MatStructure*,void *);
+extern PetscErrorCode FormBounds(SNES,Vec*,Vec*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -53,32 +61,32 @@ int main(int argc, char **argv)
 {
   PetscErrorCode  ierr;             /* used to check for functions returning nonzeros */
   Vec             x,r;              /* solution and residual vectors */
-  Vec             xl,xu;            /* Bounds on the variables */
-  PetscBool       flg_l,flg_u;     /* flags to check if the bounds are set */
   SNES            snes;             /* nonlinear solver context */
   Mat             J;                /* Jacobian matrix */
-  PetscScalar     lb = .05;
-  PetscScalar     ub = SNES_VI_INF;
   AppCtx          user;             /* user-defined work context */
+  DM              da;
 
   PetscInitialize(&argc, &argv, (char *)0, help );
+  user.lb = .05;
+  user.ub = SNES_VI_INF;
 
   /* Check if lower and upper bounds are set */
-  ierr = PetscOptionsGetScalar(PETSC_NULL, "-lb", &lb, &flg_l);CHKERRQ(ierr);
-  ierr = PetscOptionsGetScalar(PETSC_NULL, "-ub", &ub, &flg_u);CHKERRQ(ierr);
+  ierr = PetscOptionsGetScalar(PETSC_NULL, "-lb", &user.lb, 0);CHKERRQ(ierr);
+  ierr = PetscOptionsGetScalar(PETSC_NULL, "-ub", &user.ub, 0);CHKERRQ(ierr);
 
   /* Create distributed array to manage the 2d grid */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,-4,-4,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&user.da);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(user.da,PETSC_IGNORE,&user.mx,&user.my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,-4,-4,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,PETSC_IGNORE,&user.mx,&user.my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
   /* Extract global vectors from DMDA; */
-  ierr = DMCreateGlobalVector(user.da,&x);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(da,&x);CHKERRQ(ierr);
   ierr = VecDuplicate(x, &r); CHKERRQ(ierr);
 
-  ierr = DMGetMatrix(user.da,MATAIJ,&J);CHKERRQ(ierr);
+  ierr = DMGetMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
 
   /* Create nonlinear solver context */
   ierr = SNESCreate(PETSC_COMM_WORLD,&snes); CHKERRQ(ierr);
-  ierr = SNESSetDM(snes,user.da);CHKERRQ(ierr);
+  ierr = SNESSetDM(snes,da);CHKERRQ(ierr);
+  ierr = SNESSetApplicationContext(snes,&user);CHKERRQ(ierr);
 
   /*  Set function evaluation and Jacobian evaluation  routines */
   ierr = SNESSetFunction(snes,r,FormGradient,&user);CHKERRQ(ierr);
@@ -88,16 +96,9 @@ int main(int argc, char **argv)
   ierr = MSA_BoundaryConditions(&user); CHKERRQ(ierr);
 
   /* Set initial solution guess */
-  ierr = MSA_InitialPoint(&user, x); CHKERRQ(ierr);
+  ierr = MSA_InitialPoint(da,&user, x); CHKERRQ(ierr);
 
-
-  /* Set Bounds on variables */
-  ierr = VecDuplicate(x, &xl); CHKERRQ(ierr);
-  ierr = VecDuplicate(x, &xu); CHKERRQ(ierr);
-  ierr = VecSet(xl, lb); CHKERRQ(ierr);
-  ierr = VecSet(xu, ub); CHKERRQ(ierr);
-
-  ierr = SNESVISetVariableBounds(snes,xl,xu);CHKERRQ(ierr);
+  ierr = SNESVISetComputeVariableBounds(snes,FormBounds);CHKERRQ(ierr);
 
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
@@ -106,14 +107,12 @@ int main(int argc, char **argv)
 
   /* Free memory */
   ierr = VecDestroy(&x); CHKERRQ(ierr);
-  ierr = VecDestroy(&xl); CHKERRQ(ierr);
-  ierr = VecDestroy(&xu); CHKERRQ(ierr);
   ierr = VecDestroy(&r); CHKERRQ(ierr);
   ierr = MatDestroy(&J); CHKERRQ(ierr);
   ierr = SNESDestroy(&snes); CHKERRQ(ierr);
 
   /* Free user-created data structures */
-  ierr = DMDestroy(&user.da);CHKERRQ(ierr);
+  ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = PetscFree(user.bottom); CHKERRQ(ierr);
   ierr = PetscFree(user.top); CHKERRQ(ierr);
   ierr = PetscFree(user.left); CHKERRQ(ierr);
@@ -122,6 +121,35 @@ int main(int argc, char **argv)
   ierr = PetscFinalize();
 
   return 0;
+}
+
+/* -------------------------------------------------------------------- */
+#undef __FUNCT__
+#define __FUNCT__ "FormBounds"
+
+/*  FormBounds - sets the upper and lower bounds
+
+    Input Parameters:
+.   snes  - the SNES context
+    
+    Output Parameters:
+.   xl - lower bounds
+.   xu - upper bounds
+*/
+PetscErrorCode FormBounds(SNES snes, Vec *xl, Vec *xu)
+{
+  PetscErrorCode ierr;
+  DM             dm;
+  AppCtx         *ctx;
+
+  PetscFunctionBegin;
+  ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
+  ierr = SNESGetApplicationContext(snes,(void**)&ctx);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(dm,xl);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(dm,xu);CHKERRQ(ierr);
+  ierr = VecSet(*xl,ctx->lb);CHKERRQ(ierr);
+  ierr = VecSet(*xu,ctx->ub);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 /* -------------------------------------------------------------------- */
@@ -138,7 +166,8 @@ int main(int argc, char **argv)
     Output Parameters:
 .   G - vector containing the newly evaluated gradient
 */
-PetscErrorCode FormGradient(SNES snes, Vec X, Vec G, void *ptr){
+PetscErrorCode FormGradient(SNES snes, Vec X, Vec G, void *ptr)
+{
   AppCtx       *user = (AppCtx *) ptr;
   int          ierr;
   PetscInt     i,j;
@@ -149,21 +178,23 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G, void *ptr){
   PetscScalar  **g, **x;
   PetscInt     xs,xm,ys,ym;
   Vec          localX;
+  DM           da;
 
   PetscFunctionBegin;
+  ierr = SNESGetDM(snes,&da);CHKERRQ(ierr);
   /* Initialize vector to zero */
   ierr = VecSet(G,0.0);CHKERRQ(ierr);
 
   /* Get local vector */
-  ierr = DMGetLocalVector(user->da,&localX);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(da,&localX);CHKERRQ(ierr);
   /* Get ghost points */
-  ierr = DMGlobalToLocalBegin(user->da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(user->da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   /* Get pointer to local vector data */
-  ierr = DMDAVecGetArray(user->da,localX, &x); CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(user->da,G, &g); CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da,localX, &x); CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da,G, &g); CHKERRQ(ierr);
 
-  ierr = DMDAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
   /* Compute function over the locally owned part of the mesh */
   for (j=ys; j < ys+ym; j++){
     for (i=xs; i< xs+xm; i++){
@@ -251,9 +282,9 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G, void *ptr){
   }
   
   /* Restore vectors */
-  ierr = DMDAVecRestoreArray(user->da,localX, &x); CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArray(user->da,G, &g); CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(user->da,&localX);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da,localX, &x); CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da,G, &g); CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
   ierr = PetscLogFlops(67*mx*my); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -288,23 +319,25 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat* tHPre, MatStructure*
   PetscBool       assembled;
   PetscInt        xs,xm,ys,ym;
   Vec             localX;
+  DM              da;
 
   PetscFunctionBegin;
+  ierr = SNESGetDM(snes,&da);CHKERRQ(ierr);
   /* Set various matrix options */
   ierr = MatAssembled(H,&assembled); CHKERRQ(ierr);
   if (assembled){ierr = MatZeroEntries(H);  CHKERRQ(ierr);}
   *flag=SAME_NONZERO_PATTERN;
 
   /* Get local vector */
-  ierr = DMGetLocalVector(user->da,&localX);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(da,&localX);CHKERRQ(ierr);
   /* Get ghost points */
-  ierr = DMGlobalToLocalBegin(user->da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(user->da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
  
   /* Get pointers to vector data */
-  ierr = DMDAVecGetArray(user->da,localX, &x); CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da,localX, &x); CHKERRQ(ierr);
 
-  ierr = DMDAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
   /* Compute Jacobian over the locally owned part of the mesh */
   for (j=ys; j< ys+ym; j++){
     for (i=xs; i< xs+xm; i++){
@@ -437,9 +470,9 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat* tHPre, MatStructure*
 
   /* Assemble the matrix */
   ierr = MatAssemblyBegin(H,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArray(user->da,localX,&x);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da,localX,&x);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(H,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(user->da,&localX);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
 
   ierr = PetscLogFlops(199*mx*my); CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -545,7 +578,7 @@ PetscErrorCode MSA_BoundaryConditions(AppCtx * user)
    Output Parameters:
 .  X - newly computed initial guess
 */
-PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
+PetscErrorCode MSA_InitialPoint(DM da,AppCtx * user, Vec X)
 {
   PetscErrorCode  ierr;
   PetscInt        start=-1,i,j;
@@ -567,8 +600,8 @@ PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
     PetscInt    xs,xm,ys,ym;
     
     /* Get pointers to vector data */
-    ierr = DMDAVecGetArray(user->da,X,&x); CHKERRQ(ierr);
-    ierr = DMDAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
+    ierr = DMDAVecGetArray(da,X,&x); CHKERRQ(ierr);
+    ierr = DMDAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
 
     /* Perform local computations */    
     for (j=ys; j<ys+ym; j++){
@@ -579,7 +612,7 @@ PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
     }
     
     /* Restore vectors */
-    ierr = DMDAVecRestoreArray(user->da,X,&x); CHKERRQ(ierr);
+    ierr = DMDAVecRestoreArray(da,X,&x); CHKERRQ(ierr);
     
   }
   PetscFunctionReturn(0);

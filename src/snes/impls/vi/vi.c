@@ -5,6 +5,30 @@
 #include <../include/private/dmimpl.h>
 
 #undef __FUNCT__
+#define __FUNCT__ "SNESVISetComputeVariableBounds"
+/*@C
+   SNESVISetComputeVariableBounds - Sets a function  that is called to compute the variable bounds
+
+   Input parameter
++  snes - the SNES context
+-  compute - computes the bounds
+
+
+C@*/
+PetscErrorCode SNESVISetComputeVariableBounds(SNES snes, PetscErrorCode (*compute)(SNES,Vec*,Vec*))
+{
+  PetscErrorCode   ierr;
+  SNES_VI          *vi;
+
+  PetscFunctionBegin;
+  ierr = SNESSetType(snes,SNESVI);CHKERRQ(ierr);
+  vi = (SNES_VI*)snes->data;
+  vi->computevariablebounds = compute;
+  PetscFunctionReturn(0);
+}
+  
+
+#undef __FUNCT__
 #define __FUNCT__ "SNESVIGetInActiveSetIS"
 /*
    SNESVIGetInActiveSetIS - Gets the global indices for the bogus inactive set variables
@@ -1696,13 +1720,15 @@ PetscErrorCode SNESSetUp_VI(SNES snes)
 
   ierr = SNESDefaultGetWork(snes,3);CHKERRQ(ierr);
 
-  /* If the lower and upper bound on variables are not set, set it to
-     -Inf and Inf */
-  if (!vi->xl && !vi->xu) {
-    vi->usersetxbounds = PETSC_FALSE;
-    ierr = VecDuplicate(snes->vec_sol, &vi->xl); CHKERRQ(ierr);
+  if (vi->computevariablebounds) {
+    ierr = VecDestroy(&vi->xl);CHKERRQ(ierr);
+    ierr = VecDestroy(&vi->xu);CHKERRQ(ierr);
+    ierr = (*vi->computevariablebounds)(snes,&vi->xl,&vi->xu);CHKERRQ(ierr);
+  } else if (!vi->xl && !vi->xu) {
+    /* If the lower and upper bound on variables are not set, set it to -Inf and Inf */
+    ierr = VecDuplicate(snes->vec_sol, &vi->xl);CHKERRQ(ierr);
     ierr = VecSet(vi->xl,SNES_VI_NINF);CHKERRQ(ierr);
-    ierr = VecDuplicate(snes->vec_sol, &vi->xu); CHKERRQ(ierr);
+    ierr = VecDuplicate(snes->vec_sol, &vi->xu);CHKERRQ(ierr);
     ierr = VecSet(vi->xu,SNES_VI_INF);CHKERRQ(ierr);
   } else {
     /* Check if lower bound, upper bound and solution vector distribution across the processors is identical */
@@ -1727,15 +1753,28 @@ PetscErrorCode SNESSetUp_VI(SNES snes)
 
   if (snes->ops->solve == SNESSolveVI_SS) {
     ierr = VecDuplicate(snes->vec_sol, &vi->dpsi);CHKERRQ(ierr);
-    ierr = VecDuplicate(snes->vec_sol, &vi->phi); CHKERRQ(ierr);
-    ierr = VecDuplicate(snes->vec_sol, &vi->Da); CHKERRQ(ierr);
-    ierr = VecDuplicate(snes->vec_sol, &vi->Db); CHKERRQ(ierr);
+    ierr = VecDuplicate(snes->vec_sol, &vi->phi);CHKERRQ(ierr);
+    ierr = VecDuplicate(snes->vec_sol, &vi->Da);CHKERRQ(ierr);
+    ierr = VecDuplicate(snes->vec_sol, &vi->Db);CHKERRQ(ierr);
     ierr = VecDuplicate(snes->vec_sol, &vi->z);CHKERRQ(ierr);
-    ierr = VecDuplicate(snes->vec_sol, &vi->t); CHKERRQ(ierr);
+    ierr = VecDuplicate(snes->vec_sol, &vi->t);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
+#undef __FUNCT__  
+#define __FUNCT__ "SNESReset_VI"
+PetscErrorCode SNESReset_VI(SNES snes)
+{
+  SNES_VI        *vi = (SNES_VI*) snes->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecDestroy(&vi->xl);CHKERRQ(ierr);
+  ierr = VecDestroy(&vi->xu);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*
    SNESDestroy_VI - Destroys the private SNES_VI context that was created
    with SNESCreate_VI().
@@ -1760,16 +1799,11 @@ PetscErrorCode SNESDestroy_VI(SNES snes)
   if (snes->ops->solve == SNESSolveVI_SS) {
     /* clear vectors */
     ierr = VecDestroy(&vi->dpsi);CHKERRQ(ierr);
-    ierr = VecDestroy(&vi->phi); CHKERRQ(ierr);
-    ierr = VecDestroy(&vi->Da); CHKERRQ(ierr);
-    ierr = VecDestroy(&vi->Db); CHKERRQ(ierr);
-    ierr = VecDestroy(&vi->z); CHKERRQ(ierr);
-    ierr = VecDestroy(&vi->t); CHKERRQ(ierr);
-  }
- 
-  if (!vi->usersetxbounds) {
-    ierr = VecDestroy(&vi->xl); CHKERRQ(ierr);
-    ierr = VecDestroy(&vi->xu); CHKERRQ(ierr);
+    ierr = VecDestroy(&vi->phi);CHKERRQ(ierr);
+    ierr = VecDestroy(&vi->Da);CHKERRQ(ierr);
+    ierr = VecDestroy(&vi->Db);CHKERRQ(ierr);
+    ierr = VecDestroy(&vi->z);CHKERRQ(ierr);
+    ierr = VecDestroy(&vi->t);CHKERRQ(ierr);
   }
  
   ierr = PetscViewerASCIIMonitorDestroy(&vi->lsmonitor);CHKERRQ(ierr);
@@ -2321,7 +2355,10 @@ PetscErrorCode SNESVISetVariableBounds(SNES snes, Vec xl, Vec xu)
   if (xu->map->N != snes->vec_func->map->N) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Incompatible vector lengths: upper bound = %D solution vector = %D",xu->map->N,snes->vec_func->map->N);
   ierr = SNESSetType(snes,SNESVI);CHKERRQ(ierr);
   vi = (SNES_VI*)snes->data;
-  vi->usersetxbounds = PETSC_TRUE;
+  ierr = PetscObjectReference((PetscObject)xl);CHKERRQ(ierr);
+  ierr = PetscObjectReference((PetscObject)xu);CHKERRQ(ierr);
+  ierr = VecDestroy(&vi->xl);CHKERRQ(ierr);
+  ierr = VecDestroy(&vi->xu);CHKERRQ(ierr);
   vi->xl = xl;
   vi->xu = xu;
   PetscFunctionReturn(0);
@@ -2415,15 +2452,15 @@ EXTERN_C_BEGIN
 PetscErrorCode  SNESCreate_VI(SNES snes)
 {
   PetscErrorCode ierr;
-  SNES_VI      *vi;
+  SNES_VI        *vi;
 
   PetscFunctionBegin;
+  snes->ops->reset           = SNESReset_VI;
   snes->ops->setup           = SNESSetUp_VI;
   snes->ops->solve           = SNESSolveVI_RS;
   snes->ops->destroy         = SNESDestroy_VI;
   snes->ops->setfromoptions  = SNESSetFromOptions_VI;
   snes->ops->view            = SNESView_VI;
-  snes->ops->reset           = 0; /* XXX Implement!!! */
   snes->ops->converged       = SNESDefaultConverged_VI;
 
   ierr                  = PetscNewLog(snes,SNES_VI,&vi);CHKERRQ(ierr);
