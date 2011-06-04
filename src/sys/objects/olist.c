@@ -42,7 +42,7 @@ PetscErrorCode  PetscOListRemoveReference(PetscOList *fl,const char name[])
   nlist = *fl;
   while (nlist) {
     ierr = PetscStrcmp(name,nlist->name,&match);CHKERRQ(ierr);
-    if (match) {  /* found it in the list */
+    if (match && !nlist->skipdereference) {  /* found it in the list */
       ierr = PetscObjectDereference(nlist->obj);CHKERRQ(ierr);
       nlist->skipdereference = PETSC_TRUE;
       PetscFunctionReturn(0);

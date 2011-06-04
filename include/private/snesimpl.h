@@ -9,6 +9,7 @@ typedef struct _SNESOps *SNESOps;
 struct _SNESOps {
   PetscErrorCode (*computefunction)(SNES,Vec,Vec,void*); 
   PetscErrorCode (*computejacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+  PetscErrorCode (*computeinitialguess)(SNES,Vec,void*);
   PetscErrorCode (*computescaling)(Vec,Vec,void*);       
   PetscErrorCode (*update)(SNES, PetscInt);                     /* General purpose function for update */
   PetscErrorCode (*converged)(SNES,PetscInt,PetscReal,PetscReal,PetscReal,SNESConvergedReason*,void*);
@@ -19,6 +20,8 @@ struct _SNESOps {
   PetscErrorCode (*setfromoptions)(SNES);    /* sets options from database */
   PetscErrorCode (*destroy)(SNES);
   PetscErrorCode (*reset)(SNES);
+  PetscErrorCode (*usercompute)(SNES,void**);
+  PetscErrorCode (*userdestroy)(void**);
 };
 
 /*
@@ -42,6 +45,7 @@ struct _p_SNES {
   Mat  jacobian;                 /* Jacobian matrix */
   Mat  jacobian_pre;             /* preconditioner matrix */
   void *jacP;                    /* user-defined Jacobian context */
+  void *initialguessP;           /* user-defined initial guess context */
   KSP  ksp;                      /* linear solver context */
 
   Vec  vec_sol_update;           /* pointer to solution update */

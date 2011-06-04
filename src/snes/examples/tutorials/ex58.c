@@ -49,7 +49,8 @@ typedef struct {
 
 /* -------- User-defined Routines --------- */
 
-extern PetscErrorCode MSA_BoundaryConditions(AppCtx *);
+extern PetscErrorCode FormBoundaryConditions(SNES,AppCtx **);
+extern PetscErrorCode DestroyBoundaryConditions(AppCtx **);
 extern PetscErrorCode MSA_InitialPoint(DM,AppCtx *, Vec);
 extern PetscErrorCode FormGradient(SNES, Vec, Vec, void *);
 extern PetscErrorCode FormJacobian(SNES, Vec, Mat *, Mat*, MatStructure*,void *);
@@ -63,20 +64,13 @@ int main(int argc, char **argv)
   Vec             x,r;              /* solution and residual vectors */
   SNES            snes;             /* nonlinear solver context */
   Mat             J;                /* Jacobian matrix */
-  AppCtx          user;             /* user-defined work context */
   DM              da;
 
   PetscInitialize(&argc, &argv, (char *)0, help );
-  user.lb = .05;
-  user.ub = SNES_VI_INF;
-
-  /* Check if lower and upper bounds are set */
-  ierr = PetscOptionsGetScalar(PETSC_NULL, "-lb", &user.lb, 0);CHKERRQ(ierr);
-  ierr = PetscOptionsGetScalar(PETSC_NULL, "-ub", &user.ub, 0);CHKERRQ(ierr);
 
   /* Create distributed array to manage the 2d grid */
   ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,-4,-4,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
-  ierr = DMDAGetInfo(da,PETSC_IGNORE,&user.mx,&user.my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
+
   /* Extract global vectors from DMDA; */
   ierr = DMCreateGlobalVector(da,&x);CHKERRQ(ierr);
   ierr = VecDuplicate(x, &r); CHKERRQ(ierr);
@@ -86,15 +80,12 @@ int main(int argc, char **argv)
   /* Create nonlinear solver context */
   ierr = SNESCreate(PETSC_COMM_WORLD,&snes); CHKERRQ(ierr);
   ierr = SNESSetDM(snes,da);CHKERRQ(ierr);
-  ierr = SNESSetApplicationContext(snes,&user);CHKERRQ(ierr);
 
   /*  Set function evaluation and Jacobian evaluation  routines */
-  ierr = SNESSetFunction(snes,r,FormGradient,&user);CHKERRQ(ierr);
-  ierr = SNESSetJacobian(snes,J,J,FormJacobian,&user);CHKERRQ(ierr);
+  ierr = SNESSetFunction(snes,r,FormGradient,PETSC_NULL);CHKERRQ(ierr);
+  ierr = SNESSetJacobian(snes,J,J,FormJacobian,PETSC_NULL);CHKERRQ(ierr);
 
-  /* Set the boundary conditions */
-  ierr = MSA_BoundaryConditions(&user); CHKERRQ(ierr);
-
+  ierr = SNESSetComputeApplicationContext(snes,(PetscErrorCode (*)(SNES,void**))FormBoundaryConditions,(PetscErrorCode (*)(void**))DestroyBoundaryConditions);CHKERRQ(ierr);
   /* Set initial solution guess */
   ierr = MSA_InitialPoint(da,&user, x); CHKERRQ(ierr);
 
@@ -113,13 +104,8 @@ int main(int argc, char **argv)
 
   /* Free user-created data structures */
   ierr = DMDestroy(&da);CHKERRQ(ierr);
-  ierr = PetscFree(user.bottom); CHKERRQ(ierr);
-  ierr = PetscFree(user.top); CHKERRQ(ierr);
-  ierr = PetscFree(user.left); CHKERRQ(ierr);
-  ierr = PetscFree(user.right); CHKERRQ(ierr);
 
   ierr = PetscFinalize();
-
   return 0;
 }
 
@@ -168,7 +154,7 @@ PetscErrorCode FormBounds(SNES snes, Vec *xl, Vec *xu)
 */
 PetscErrorCode FormGradient(SNES snes, Vec X, Vec G, void *ptr)
 {
-  AppCtx       *user = (AppCtx *) ptr;
+  AppCtx       *user;
   int          ierr;
   PetscInt     i,j;
   PetscInt     mx=user->mx, my=user->my;
@@ -182,6 +168,7 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G, void *ptr)
 
   PetscFunctionBegin;
   ierr = SNESGetDM(snes,&da);CHKERRQ(ierr);
+  ierr = SNESGetApplicationContext(snes,(void**)&user);CHKERRQ(ierr);
   /* Initialize vector to zero */
   ierr = VecSet(G,0.0);CHKERRQ(ierr);
 
@@ -306,7 +293,7 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G, void *ptr)
 */
 PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat* tHPre, MatStructure* flag, void *ptr)
 { 
-  AppCtx          *user = (AppCtx *) ptr;
+  AppCtx          *user;
   Mat             H = *tH;
   PetscErrorCode  ierr;
   PetscInt        i,j,k;
@@ -323,6 +310,7 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat* tHPre, MatStructure*
 
   PetscFunctionBegin;
   ierr = SNESGetDM(snes,&da);CHKERRQ(ierr);
+  ierr = SNESGetApplicationContext(snes,(void**)&user);CHKERRQ(ierr);
   /* Set various matrix options */
   ierr = MatAssembled(H,&assembled); CHKERRQ(ierr);
   if (assembled){ierr = MatZeroEntries(H);  CHKERRQ(ierr);}
@@ -480,9 +468,9 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat* tHPre, MatStructure*
 
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
-#define __FUNCT__ "MSA_BoundaryConditions"
+#define __FUNCT__ "FormBoundaryConditions"
 /* 
-   MSA_BoundaryConditions -  Calculates the boundary conditions for
+   FormBoundaryConditions -  Calculates the boundary conditions for
    the region.
 
    Input Parameter:
@@ -491,19 +479,31 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat* tHPre, MatStructure*
    Output Parameter:
 .  user - user-defined application context
 */
-PetscErrorCode MSA_BoundaryConditions(AppCtx * user)
+PetscErrorCode FormBoundaryConditions(SNES snes,AppCtx **ouser)
 {
   PetscErrorCode  ierr;
   PetscInt        i,j,k,limit=0,maxits=5;
-  PetscInt        mx=user->mx,my=user->my;
+  PetscInt        mx,my;
   PetscInt        bsize=0, lsize=0, tsize=0, rsize=0;
   PetscScalar     one=1.0, two=2.0, three=3.0, tol=1e-10;
   PetscScalar     fnorm,det,hx,hy,xt=0,yt=0;
   PetscScalar     u1,u2,nf1,nf2,njac11,njac12,njac21,njac22;
   PetscScalar     b=-0.5, t=0.5, l=-0.5, r=0.5;
   PetscScalar     *boundary;
+  AppCtx          *user;
+  DM              da;
 
   PetscFunctionBegin;
+  ierr     = SNESGetDM(snes,&da);CHKERRQ(ierr);
+  ierr     = PetscNew(AppCtx,&user);CHKERRQ(ierr);
+  *ouser   = user;
+  user->lb = .05;
+  user->ub = SNES_VI_INF;
+  ierr = DMDAGetInfo(da,PETSC_IGNORE,&user->mx,&user->my,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
+
+  /* Check if lower and upper bounds are set */
+  ierr = PetscOptionsGetScalar(PETSC_NULL, "-lb", &user->lb, 0);CHKERRQ(ierr);
+  ierr = PetscOptionsGetScalar(PETSC_NULL, "-ub", &user->ub, 0);CHKERRQ(ierr);
   bsize=mx+2; lsize=my+2; rsize=my+2; tsize=mx+2;
 
   ierr = PetscMalloc(bsize*sizeof(PetscScalar), &user->bottom);CHKERRQ(ierr);
@@ -561,9 +561,23 @@ PetscErrorCode MSA_BoundaryConditions(AppCtx * user)
       }
     }
   }
-
   PetscFunctionReturn(0);
 }
+
+PetscErrorCode DestroyBoundaryConditions(AppCtx **ouser)
+{
+  PetscErrorCode  ierr;
+  AppCtx          *user = *ouser;
+
+  PetscFunctionBegin;
+  ierr = PetscFree(user->bottom);CHKERRQ(ierr);
+  ierr = PetscFree(user->top);CHKERRQ(ierr);
+  ierr = PetscFree(user->left);CHKERRQ(ierr);
+  ierr = PetscFree(user->right);CHKERRQ(ierr);
+  ierr = PetscFree(*ouser);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__

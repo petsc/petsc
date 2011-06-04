@@ -485,6 +485,33 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
   PetscFunctionReturn(0); 
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "SNESSetComputeApplicationContext"
+/*@
+   SNESSetComputeApplicationContext - Sets an optional function to compute a user-defined context for 
+   the nonlinear solvers.  
+
+   Logically Collective on SNES
+
+   Input Parameters:
++  snes - the SNES context
+.  compute - function to compute the context
+-  destroy - function to destroy the context
+
+   Level: intermediate
+
+.keywords: SNES, nonlinear, set, application, context
+
+.seealso: SNESGetApplicationContext(), SNESSetComputeApplicationContext(), SNESGetApplicationContext()
+@*/
+PetscErrorCode  SNESSetComputeApplicationContext(SNES snes,PetscErrorCode (*compute)(SNES,void**),PetscErrorCode (*destroy)(void**))
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  snes->ops->usercompute = compute;
+  snes->ops->userdestroy = destroy;
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__  
 #define __FUNCT__ "SNESSetApplicationContext"
@@ -502,7 +529,7 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
 
 .keywords: SNES, nonlinear, set, application, context
 
-.seealso: SNESGetApplicationContext()
+.seealso: SNESGetApplicationContext(), SNESSetApplicationContext()
 @*/
 PetscErrorCode  SNESSetApplicationContext(SNES snes,void *usrP)
 {
@@ -1093,6 +1120,40 @@ PetscErrorCode  SNESSetFunction(SNES snes,Vec r,PetscErrorCode (*func)(SNES,Vec,
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "SNESSetComputeInitialGuess"
+/*@C
+   SNESSetComputeInitialGuess - Sets a routine used to compute an initial guess for the problem
+
+   Logically Collective on SNES
+
+   Input Parameters:
++  snes - the SNES context
+.  func - function evaluation routine
+-  ctx - [optional] user-defined context for private data for the 
+         function evaluation routine (may be PETSC_NULL)
+
+   Calling sequence of func:
+$    func (SNES snes,Vec x,void *ctx);
+
+.  f - function vector
+-  ctx - optional user-defined function context 
+
+   Level: intermediate
+
+.keywords: SNES, nonlinear, set, function
+
+.seealso: SNESGetFunction(), SNESComputeFunction(), SNESSetJacobian()
+@*/
+PetscErrorCode  SNESSetComputeInitialGuess(SNES snes,PetscErrorCode (*func)(SNES,Vec,void*),void *ctx)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  if (func) snes->ops->computeinitialguess = func;
+  if (ctx)  snes->initialguessP            = ctx;
+  PetscFunctionReturn(0);
+}
+
 /* --------------------------------------------------------------- */
 #undef __FUNCT__  
 #define __FUNCT__ "SNESGetRhs"
@@ -1450,6 +1511,10 @@ PetscErrorCode  SNESSetUp(SNES snes)
  
   if (!snes->ksp) {ierr = SNESGetKSP(snes, &snes->ksp);CHKERRQ(ierr);}
 
+  if (snes->ops->usercompute && !snes->user) {
+    ierr = (*snes->ops->usercompute)(snes,(void**)&snes->user);CHKERRQ(ierr);
+  }
+
   if (snes->ops->setup) {
     ierr = (*snes->ops->setup)(snes);CHKERRQ(ierr);
   }
@@ -1468,7 +1533,9 @@ PetscErrorCode  SNESSetUp(SNES snes)
    Input Parameter:
 .  snes - iterative context obtained from SNESCreate()
 
-   Level: beginner
+   Level: intermediate
+
+   Notes: Also calls the application context destroy routine set with SNESSetComputeApplicationContext() 
 
 .keywords: SNES, destroy
 
@@ -1480,6 +1547,11 @@ PetscErrorCode  SNESReset(SNES snes)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  if (snes->ops->userdestroy && snes->user) {
+    ierr       = (*snes->ops->userdestroy)((void**)&snes->user);CHKERRQ(ierr);
+    snes->user = PETSC_NULL;
+  }
+
   if (snes->ops->reset) {
     ierr = (*snes->ops->reset)(snes);CHKERRQ(ierr);
   }
@@ -2462,6 +2534,10 @@ PetscErrorCode  SNESSolve(SNES snes,Vec b,Vec x)
     snes->vec_rhs = b;
 
     ierr = SNESSetUp(snes);CHKERRQ(ierr);
+
+    if (!grid && snes->ops->computeinitialguess) {
+      ierr = (*snes->ops->computeinitialguess)(snes,snes->vec_sol,snes->initialguessP);CHKERRQ(ierr);
+    }
 
     if (snes->conv_hist_reset) snes->conv_hist_len = 0;
     snes->nfuncs = 0; snes->linear_its = 0; snes->numFailures = 0;

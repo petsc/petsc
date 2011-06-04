@@ -176,6 +176,7 @@ extern PetscErrorCode  SNESMonitorLGRangeDestroy(PetscDrawLG*);
 
 extern PetscErrorCode  SNESSetApplicationContext(SNES,void *);
 extern PetscErrorCode  SNESGetApplicationContext(SNES,void **);
+extern PetscErrorCode  SNESSetComputeApplicationContext(SNES,PetscErrorCode (*)(SNES,void**),PetscErrorCode (*)(void**));
 
 extern PetscErrorCode  SNESPythonSetType(SNES,const char[]);
 
@@ -354,6 +355,7 @@ extern PetscErrorCode  SNESSetJacobian(SNES,Mat,Mat,SNESJacobian,void*);
 extern PetscErrorCode  SNESGetJacobian(SNES,Mat*,Mat*,SNESJacobian*,void**);
 extern PetscErrorCode  SNESDefaultComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 extern PetscErrorCode  SNESDefaultComputeJacobianColor(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode  SNESSetComputeInitialGuess(SNES,PetscErrorCode (*)(SNES,Vec,void*),void*);
 
 /* --------- Routines specifically for line search methods --------------- */
 extern PetscErrorCode  SNESLineSearchSet(SNES,PetscErrorCode(*)(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal*,PetscReal*,PetscBool *),void*);
