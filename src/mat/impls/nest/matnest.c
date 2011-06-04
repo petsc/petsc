@@ -776,18 +776,16 @@ EXTERN_C_END
  Not collective
 
  Input Parameters:
- .  A  - nest matrix
- .  idxm - index of the matrix within the nest matrix
- .  jdxm - index of the matrix within the nest matrix
++   A  - nest matrix
+.   idxm - index of the matrix within the nest matrix
+-   jdxm - index of the matrix within the nest matrix
 
  Output Parameter:
- .  sub - matrix at index idxm,jdxm within the nest matrix
-
- Notes:
+.   sub - matrix at index idxm,jdxm within the nest matrix
 
  Level: developer
 
- .seealso: MatNestGetSize(), MatNestGetSubMats()
+.seealso: MatNestGetSize(), MatNestGetSubMats()
 @*/
 PetscErrorCode  MatNestGetSubMat(Mat A,PetscInt idxm,PetscInt jdxm,Mat *sub)
 {
@@ -820,12 +818,12 @@ EXTERN_C_END
  Not collective
 
  Input Parameters:
- .  A  - nest matri
+.   A  - nest matrix
 
  Output Parameter:
- .  M - number of rows in the nest matrix
- .  N - number of cols in the nest matrix
- .  mat - 2d array of matrices
++   M - number of rows in the nest matrix
+.   N - number of cols in the nest matrix
+-   mat - 2d array of matrices
 
  Notes:
 
@@ -833,7 +831,7 @@ EXTERN_C_END
 
  Level: developer
 
- .seealso: MatNestGetSize(), MatNestGetSubMat()
+.seealso: MatNestGetSize(), MatNestGetSubMat()
 @*/
 PetscErrorCode  MatNestGetSubMats(Mat A,PetscInt *M,PetscInt *N,Mat ***mat)
 {
@@ -866,17 +864,17 @@ EXTERN_C_END
  Not collective
 
  Input Parameters:
- .  A  - nest matrix
+.   A  - nest matrix
 
  Output Parameter:
- .  M - number of rows in the nested mat
- .  N - number of cols in the nested mat
++   M - number of rows in the nested mat
+-   N - number of cols in the nested mat
 
  Notes:
 
  Level: developer
 
- .seealso: MatNestGetSubMat(), MatNestGetSubMats()
+.seealso: MatNestGetSubMat(), MatNestGetSubMats()
 @*/
 PetscErrorCode  MatNestGetSize(Mat A,PetscInt *M,PetscInt *N)
 {
@@ -921,7 +919,7 @@ EXTERN_C_END
 
  Level: developer
 
- .seealso: MatGetVecs()
+.seealso: MatGetVecs()
 @*/
 PetscErrorCode  MatNestSetVecType(Mat A,const VecType vtype)
 {
