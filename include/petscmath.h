@@ -26,6 +26,19 @@ extern  MPI_Datatype  MPIU_2INT;
 */
 
 #define PetscExpPassiveScalar(a) PetscExpScalar()
+#if defined(PETSC_USE_REAL_SINGLE)
+#define MPIU_REAL   MPI_FLOAT
+typedef float PetscReal;
+#elif defined(PETSC_USE_REAL_DOUBLE)
+#define MPIU_REAL   MPI_DOUBLE
+typedef double PetscReal;
+#elif defined(PETSC_USE_REAL_LONG_DOUBLE)
+#define MPIU_REAL   MPI_LONG_DOUBLE
+typedef long double PetscReal;
+#elif defined(PETSC_USE_REAL___FLOAT128)
+#define MPIU_REAL MPIU___FLOAT128
+typedef __float128 PetscReal;
+#endif /* PETSC_USE_REAL_* */
 
 /*
     Complex number definitions
@@ -135,8 +148,8 @@ extern MPI_Datatype MPIU___FLOAT128;
 typedef __float128 PetscScalar;
 #endif /* PETSC_USE_REAL_* */
 #define PetscRealPart(a)      (a)
-#define PetscImaginaryPart(a) (0.)
-#define PetscAbsScalar(a)     (((a)<0.0)   ? -(a) : (a))
+#define PetscImaginaryPart(a) ((PetscReal)0.)
+PETSC_STATIC_INLINE PetscReal PetscAbsScalar(PetscScalar a) {return a < 0.0 ? -a : a;}
 #define PetscConj(a)          (a)
 #if !defined(PETSC_USE_REAL___FLOAT128)
 #define PetscSqrtScalar(a)    sqrt(a)
@@ -156,20 +169,6 @@ typedef __float128 PetscScalar;
 #endif /* PETSC_USE_REAL___FLOAT128 */
 
 #endif /* PETSC_USE_COMPLEX */
-
-#if defined(PETSC_USE_REAL_SINGLE)
-#define MPIU_REAL   MPI_FLOAT
-typedef float PetscReal;
-#elif defined(PETSC_USE_REAL_DOUBLE)
-#define MPIU_REAL   MPI_DOUBLE
-typedef double PetscReal;
-#elif defined(PETSC_USE_REAL_LONG_DOUBLE)
-#define MPIU_REAL   MPI_LONG_DOUBLE
-typedef long double PetscReal;
-#elif defined(PETSC_USE_REAL___FLOAT128)
-#define MPIU_REAL MPIU___FLOAT128
-typedef __float128 PetscReal;
-#endif /* PETSC_USE_REAL_* */
 
 #define PetscSign(a) (((a) >= 0) ? ((a) == 0 ? 0 : 1) : -1)
 #define PetscAbs(a)  (((a) >= 0) ? (a) : -(a))
