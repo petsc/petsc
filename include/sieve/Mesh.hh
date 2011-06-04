@@ -36,6 +36,10 @@
 #include <sieve/Ordering.hh>
 #endif
 
+#ifndef  included_PETSc_Overlap_hh
+#include <sieve/Overlap.hh>
+#endif
+
 namespace ALE {
   class indexSet : public std::valarray<int> {
   public:
@@ -1204,8 +1208,13 @@ namespace ALE {
     typedef std::pair<int *, int>                                     indices_type;
     typedef NumberingFactory<this_type>                               MeshNumberingFactory;
     typedef typename ALE::Partitioner<>::part_type                    rank_type;
+#if 0
     typedef typename ALE::Sifter<point_type,rank_type,point_type>     send_overlap_type;
     typedef typename ALE::Sifter<rank_type,point_type,point_type>     recv_overlap_type;
+#else
+    typedef typename PETSc::SendOverlap<point_type,rank_type>         send_overlap_type;
+    typedef typename PETSc::RecvOverlap<point_type,rank_type>         recv_overlap_type;
+#endif
     typedef typename MeshNumberingFactory::numbering_type             numbering_type;
     typedef typename MeshNumberingFactory::order_type                 order_type;
     typedef std::map<point_type, point_type>                          renumbering_type;

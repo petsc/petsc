@@ -1020,18 +1020,17 @@ namespace ALE {
       static void fuse(const Obj<OverlapSection>& overlapSection, const Obj<RecvOverlap>& recvOverlap, const Obj<Section>& section) {
         typedef typename Section::point_type        point_type;
         typedef typename OverlapSection::point_type overlap_point_type;
-        const Obj<typename RecvOverlap::traits::baseSequence>      rPoints = recvOverlap->base();
-        const typename RecvOverlap::traits::baseSequence::iterator rEnd    = rPoints->end();
+        const typename RecvOverlap::capSequence::iterator rBegin = recvOverlap->capBegin();
+        const typename RecvOverlap::capSequence::iterator rEnd   = recvOverlap->capEnd();
 
-        for(typename RecvOverlap::traits::baseSequence::iterator p_iter = rPoints->begin(); p_iter != rEnd; ++p_iter) {
-          // TODO: This must become a more general iterator over colors
-          const typename Section::point_type&                localPoint = *p_iter;
-          const Obj<typename RecvOverlap::coneSequence>&     points     = recvOverlap->cone(*p_iter);
-          const typename RecvOverlap::coneSequence::iterator cEnd       = points->end();
+        for(typename RecvOverlap::capSequence::iterator r_iter = rBegin; r_iter != rEnd; ++r_iter) {
+          const int                                             rank    = *r_iter;
+          const typename RecvOverlap::supportSequence::iterator pBegin  = recvOverlap->supportBegin(*r_iter);
+          const typename RecvOverlap::supportSequence::iterator pEnd    = recvOverlap->supportEnd(*r_iter);
 
-          for(typename RecvOverlap::coneSequence::iterator c_iter = points->begin(); c_iter != cEnd; ++c_iter) {
-            const int         rank        = *c_iter;
-            const point_type& remotePoint = c_iter.color();
+          for(typename RecvOverlap::supportSequence::iterator p_iter = pBegin; p_iter != pEnd; ++p_iter) {
+            const point_type& localPoint  = *p_iter;
+            const point_type& remotePoint = p_iter.color();
 
             section->updateAddPoint(localPoint, overlapSection->restrictPoint(overlap_point_type(rank, remotePoint)));
           }

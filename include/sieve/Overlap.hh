@@ -36,11 +36,13 @@ public:
     bool operator()(index_type i, index_type j) {return values[i] < values[j];};
   };
 protected:
-  PetscInt    numRanks;     // Number of partner processes
-  rank_type  *ranks;        // MPI Rank of each partner process
-  index_type *pointsOffset; // Offset into points array for each partner process
-  point_type *points;       // Points array for each partner process, in sorted order
-  point_type *remotePoints; // Remote points array for each partner process
+  PetscInt    numRanks;      // Number of partner processes
+  rank_type  *ranks;         // MPI Rank of each partner process
+  index_type *pointsOffset;  // Offset into points array for each partner process
+  point_type *points;        // Points array for each partner process, in sorted order
+  point_type *remotePoints;  // Remote points array for each partner process
+  index_type  numPointRanks; // Number of partner process ranks which share a given point (needs search)
+  rank_type  *pointRanks;    // Array of partner process ranks which share a given point (needs search and allocation)
 
   std::vector<rank_type> flexRanks;
   std::map<rank_type, std::vector<point_type> > flexPoints;
@@ -52,6 +54,7 @@ public:
     this->pointsOffset = PETSC_NULL;
     this->points       = PETSC_NULL;
     this->remotePoints = PETSC_NULL;
+    this->pointRanks   = PETSC_NULL;
   };
   ~Overlap() {
     PetscErrorCode ierr;
@@ -59,6 +62,7 @@ public:
     ierr = PetscFree(this->pointsOffset);CHKERRXX(ierr);
     ierr = PetscFree(this->points);CHKERRXX(ierr);
     ierr = PetscFree(this->remotePoints);CHKERRXX(ierr);
+    ierr = PetscFree(this->pointRanks);CHKERRXX(ierr);
   };
   /* setNumRanks - Set the number of partner processes
 
@@ -115,6 +119,26 @@ public:
   index_type getNumPointsByRank(index_type rank) {
     const index_type r = this->getRankIndex(rank);
     return this->pointsOffset[r+1] - this->pointsOffset[r];
+  };
+  /* SLOW, since it involves a search */
+  void getRanks(point_type point, index_type *size, const rank_type **ranks) {
+    std::vector<rank_type> pRanks;
+    PetscErrorCode ierr;
+
+    ierr = PetscFree(pointRanks);CHKERRXX(ierr);
+    for(index_type r = 0; r < numRanks; ++r) {
+      for(index_type p = pointsOffset[r]; p < pointsOffset[r+1]; ++p) {
+        if (points[p] == point) {
+          pRanks.push_back(this->ranks[r]);
+          break;
+        }
+      }
+    }
+    numPointRanks = pRanks.size();
+    ierr = PetscMalloc(numPointRanks * sizeof(rank_type), &pointRanks);CHKERRXX(ierr);
+    for(index_type i = 0; i < numPointRanks; ++i) {pointRanks[i] = pRanks[i];}
+    *size  = numPointRanks;
+    *ranks = pointRanks;
   };
   /* assembleFlexible - Compress data from flexible construction into CR structures */
   void assembleFlexible() {
@@ -199,6 +223,21 @@ public:
   typedef Value *iterator;
 };
 
+// Compatibility wrapper for raw pointers that need precomputation
+template<typename Value>
+class PointerSequence {
+public:
+  typedef const Value *iterator;
+protected:
+  const Value *beginP;
+  const Value *endP;
+public:
+  PointerSequence(const Value *begin, const Value *end) : beginP(begin), endP(end) {};
+  ~PointerSequence() {};
+  iterator begin() {return beginP;};
+  iterator end()   {return endP;};
+};
+
 /* Compatibility wrapper which translates ALE::Sifter calls to Petsc::Overlap calls for a send overlap
 
    Note that addArrow() works for both flexible and optimized construction modes.
@@ -213,8 +252,9 @@ public:
   typedef point_type source_type;
   typedef rank_type  target_type;
   typedef point_type color_type;
-  typedef Sequence<rank_type>  baseSequence;
-  typedef Sequence<point_type> coneSequence;
+  typedef Sequence<rank_type>        baseSequence;
+  typedef Sequence<point_type>       coneSequence;
+  typedef PointerSequence<rank_type> supportSequence;
 public:
   SendOverlap(MPI_Comm comm, const int debug = 0) : Overlap<Point,Rank>(comm, debug) {};
   ~SendOverlap() {};
@@ -258,6 +298,13 @@ public:
     assert(!this->numRanks || this->ranks);
     return &this->ranks[this->numRanks];
   };
+  bool capContains(point_type point) {
+    // TODO This can be made fast by searching each sorted rank bucket
+    for(index_type p = 0; p < this->pointsOffset[this->numRanks]; ++p) {
+      if (this->points[p] == point) return false;
+    }
+    return false;
+  };
   void setConeSize(rank_type rank, index_type size) {
     this->setNumPoints(rank, size);
   };
@@ -271,6 +318,13 @@ public:
   typename coneSequence::iterator coneEnd(rank_type rank) {
     const index_type r = this->getRankIndex(rank);
     return &this->points[this->pointsOffset[r+1]];
+  };
+  supportSequence support(point_type point) {
+    index_type       numPointRanks;
+    const rank_type *pointRanks;
+
+    this->getRanks(point, &numPointRanks, &pointRanks);
+    return supportSequence(pointRanks, &pointRanks[numPointRanks]);
   };
 };
 
