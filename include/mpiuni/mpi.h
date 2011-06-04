@@ -603,6 +603,7 @@ extern int    MPI_Finalized(int*);
 #define MPI_Scan(sendbuf, recvbuf,count,datatype,op,comm) \
      (MPIUNI_Memcpy(recvbuf,sendbuf,(count)*(datatype)),\
      MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (comm),MPI_SUCCESS)
+#define MPI_Exscan(sendbuf, recvbuf,count,datatype,op,comm) MPI_SUCCESS
 #define MPI_Reduce_scatter(sendbuf, recvbuf,recvcounts,\
      datatype,op,comm) \
      MPI_Abort(MPI_COMM_WORLD,0)
