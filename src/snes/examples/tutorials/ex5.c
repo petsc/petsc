@@ -181,6 +181,7 @@ int main(int argc,char **argv)
   /* Decide which FormFunction to use */
   ierr = PetscOptionsGetBool(PETSC_NULL,"-matlab_function",&matlab_function,0);CHKERRQ(ierr);
 
+  ierr = SNESSetDM(snes,user.da);CHKERRQ(ierr);
   ierr = SNESSetFunction(snes,r,SNESDAFormFunction,&user);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
   if (matlab_function) {
