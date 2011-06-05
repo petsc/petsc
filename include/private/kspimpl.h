@@ -78,7 +78,9 @@ struct _p_KSP {
 
   PetscErrorCode (*converged)(KSP,PetscInt,PetscReal,KSPConvergedReason*,void*);
   PetscErrorCode (*convergeddestroy)(void*);
-  void       *cnvP; 
+  void       *cnvP;
+
+  void       *user;             /* optional user-defined context */
 
   PC         pc;
 

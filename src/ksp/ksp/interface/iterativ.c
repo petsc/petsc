@@ -994,3 +994,55 @@ PetscErrorCode  KSPGetDM(KSP ksp,DM *dm)
   *dm = ksp->dm;
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__  
+#define __FUNCT__ "KSPSetApplicationContext"
+/*@
+   KSPSetApplicationContext - Sets the optional user-defined context for the linear solver.
+
+   Logically Collective on KSP
+
+   Input Parameters:
++  ksp - the KSP context
+-  usrP - optional user context
+
+   Level: intermediate
+
+.keywords: KSP, set, application, context
+
+.seealso: KSPGetApplicationContext()
+@*/
+PetscErrorCode  KSPSetApplicationContext(KSP ksp,void *usrP)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  ksp->user = usrP;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "KSPGetApplicationContext"
+/*@C
+   KSPGetApplicationContext - Gets the user-defined context for the linear solver.
+
+   Not Collective
+
+   Input Parameter:
+.  ksp - KSP context
+
+   Output Parameter:
+.  usrP - user context
+
+   Level: intermediate
+
+.keywords: KSP, get, application, context
+
+.seealso: KSPSetApplicationContext()
+@*/
+PetscErrorCode  KSPGetApplicationContext(KSP ksp,void *usrP)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  *(void**)usrP = ksp->user;
+  PetscFunctionReturn(0);
+}
