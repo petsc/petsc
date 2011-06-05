@@ -239,7 +239,7 @@ PetscErrorCode  SNESDAFormFunction(SNES snes,Vec X,Vec F,void *ptr)
   PetscInt       N,n;
   
   PetscFunctionBegin;
-  if (!da) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Looks like you called SNESSetFromFuntion(snes,SNESDAFormFunction,) without the DMDA context");
+  if (!da) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Looks like you called SNESSetFuntion(snes,SNESDAFormFunction,) without also calling SNESSetDM() to set the DMDA context");
 
   /* determine whether X=localX */
   ierr = DMGetLocalVector(da,&localX);CHKERRQ(ierr);
