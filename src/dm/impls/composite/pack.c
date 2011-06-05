@@ -16,7 +16,7 @@
 
     Level: advanced
 
-    Notes: See DMCompositeSetContext() and DMCompositeGetContext() for how to get user information into
+    Notes: See DMSetContext() and DMGetContext() for how to get user information into
         this routine
 
 @*/
@@ -26,57 +26,6 @@ PetscErrorCode  DMCompositeSetCoupling(DM dm,PetscErrorCode (*FormCoupleLocation
 
   PetscFunctionBegin;
   com->FormCoupleLocations = FormCoupleLocations;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "DMCompositeSetContext"
-/*@
-    DMCompositeSetContext - Allows user to stash data they may need within the form coupling routine they 
-      set with DMCompositeSetCoupling()
-
-
-    Not Collective
-
-    Input Parameter:
-+   dm - the composite object
--   ctx - the user supplied context
-
-    Level: advanced
-
-    Notes: Use DMCompositeGetContext() to retrieve the context when needed.
-
-@*/
-PetscErrorCode  DMCompositeSetContext(DM dm,void *ctx)
-{
-  PetscFunctionBegin;
-  dm->ctx = ctx;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "DMCompositeGetContext"
-/*@
-    DMCompositeGetContext - Access the context set with DMCompositeSetContext()
-
-
-    Not Collective
-
-    Input Parameter:
-.   dm - the composite object
-
-    Output Parameter:
-.    ctx - the user supplied context
-
-    Level: advanced
-
-    Notes: Use DMCompositeGetContext() to retrieve the context when needed.
-
-@*/
-PetscErrorCode  DMCompositeGetContext(DM dm,void **ctx)
-{
-  PetscFunctionBegin;
-  *ctx = dm->ctx;
   PetscFunctionReturn(0);
 }
 

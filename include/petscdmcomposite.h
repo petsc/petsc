@@ -9,8 +9,6 @@ extern PetscErrorCode   DMCompositeCreate(MPI_Comm,DM*);
 extern PetscErrorCode   DMCompositeAddArray(DM,PetscMPIInt,PetscInt);
 extern PetscErrorCode   DMCompositeAddDM(DM,DM);
 extern PetscErrorCode   DMCompositeSetCoupling(DM,PetscErrorCode (*)(DM,Mat,PetscInt*,PetscInt*,PetscInt,PetscInt,PetscInt,PetscInt));
-extern PetscErrorCode   DMCompositeSetContext(DM,void*);
-extern PetscErrorCode   DMCompositeGetContext(DM,void**);
 extern PetscErrorCode   DMCompositeAddVecScatter(DM,VecScatter);
 extern PetscErrorCode   DMCompositeScatter(DM,Vec,...);
 extern PetscErrorCode   DMCompositeGather(DM,Vec,InsertMode,...);
