@@ -227,7 +227,8 @@ PetscErrorCode  KSPMonitorTrueResidualNorm(KSP ksp,PetscInt n,PetscReal rnorm,vo
   PC                      pc;
   Mat                     A,B;
   PetscViewerASCIIMonitor viewer = (PetscViewerASCIIMonitor) dummy;
-  
+  char                    normtype[256];
+
   PetscFunctionBegin;
   if (!dummy) {ierr = PetscViewerASCIIMonitorCreate(((PetscObject)ksp)->comm,"stdout",0,&viewer);CHKERRQ(ierr);}
   ierr = VecDuplicate(ksp->vec_rhs,&work);CHKERRQ(ierr);
@@ -246,7 +247,9 @@ PetscErrorCode  KSPMonitorTrueResidualNorm(KSP ksp,PetscInt n,PetscReal rnorm,vo
   ierr = VecNorm(work,NORM_2,&scnorm);CHKERRQ(ierr);
   ierr = VecDestroy(&work);CHKERRQ(ierr);
   ierr = VecNorm(ksp->vec_rhs,NORM_2,&bnorm);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIMonitorPrintf(viewer,"%3D KSP preconditioned resid norm %14.12e true resid norm %14.12e ||r(i)||/||b|| %14.12e\n",n,(double)rnorm,(double)scnorm,(double)scnorm/bnorm);CHKERRQ(ierr);
+  ierr = PetscStrncpy(normtype,KSPNormTypes[ksp->normtype],sizeof normtype);CHKERRQ(ierr);
+  ierr = PetscStrtolower(normtype);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIMonitorPrintf(viewer,"%3D KSP %s resid norm %14.12e true resid norm %14.12e ||r(i)||/||b|| %14.12e\n",n,normtype,(double)rnorm,(double)scnorm,(double)scnorm/bnorm);CHKERRQ(ierr);
   if (!dummy) {ierr = PetscViewerASCIIMonitorDestroy(&viewer);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
@@ -989,5 +992,57 @@ PetscErrorCode  KSPGetDM(KSP ksp,DM *dm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   *dm = ksp->dm;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "KSPSetApplicationContext"
+/*@
+   KSPSetApplicationContext - Sets the optional user-defined context for the linear solver.
+
+   Logically Collective on KSP
+
+   Input Parameters:
++  ksp - the KSP context
+-  usrP - optional user context
+
+   Level: intermediate
+
+.keywords: KSP, set, application, context
+
+.seealso: KSPGetApplicationContext()
+@*/
+PetscErrorCode  KSPSetApplicationContext(KSP ksp,void *usrP)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  ksp->user = usrP;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "KSPGetApplicationContext"
+/*@C
+   KSPGetApplicationContext - Gets the user-defined context for the linear solver.
+
+   Not Collective
+
+   Input Parameter:
+.  ksp - KSP context
+
+   Output Parameter:
+.  usrP - user context
+
+   Level: intermediate
+
+.keywords: KSP, get, application, context
+
+.seealso: KSPSetApplicationContext()
+@*/
+PetscErrorCode  KSPGetApplicationContext(KSP ksp,void *usrP)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  *(void**)usrP = ksp->user;
   PetscFunctionReturn(0);
 }

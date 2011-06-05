@@ -605,6 +605,8 @@ extern PetscErrorCode  MatGetSchurComplement_Basic(Mat mat,IS isrow0,IS iscol0,I
 extern PetscErrorCode  KSPSetDM(KSP,DM);
 extern PetscErrorCode  KSPSetDMActive(KSP,PetscBool );
 extern PetscErrorCode  KSPGetDM(KSP,DM*);
+extern PetscErrorCode  KSPSetApplicationContext(KSP,void*);
+extern PetscErrorCode  KSPGetApplicationContext(KSP,void*);
 
 PETSC_EXTERN_CXX_END
 #endif
