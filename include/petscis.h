@@ -204,6 +204,7 @@ extern PetscErrorCode  ISLocalToGlobalMappingGetIndices(ISLocalToGlobalMapping,c
 extern PetscErrorCode  ISLocalToGlobalMappingRestoreIndices(ISLocalToGlobalMapping,const PetscInt**);
 extern PetscErrorCode  ISLocalToGlobalMappingBlock(ISLocalToGlobalMapping,PetscInt,ISLocalToGlobalMapping*);
 extern PetscErrorCode  ISLocalToGlobalMappingUnBlock(ISLocalToGlobalMapping,PetscInt,ISLocalToGlobalMapping*);
+extern PetscErrorCode  ISLocalToGlobalMappingConcatenate(MPI_Comm,PetscInt,const ISLocalToGlobalMapping[],ISLocalToGlobalMapping*);
 
 #undef __FUNCT__
 #define __FUNCT__ "ISLocalToGlobalMappingApply"

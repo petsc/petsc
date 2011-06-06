@@ -521,7 +521,7 @@ for how to install PETSc to use GPUs. PETSc has a Vec class VECCUSP
 that performs almost all the vector operations on the GPU. The Mat
 class MATCUSP performs matrix-vector products on the GPU but does not
 have matrix assembly on the GPU yet. Both of these classes run in
-parallel with MPI. All KPS methods, except KSPIBCGS, run all their
+parallel with MPI. All KSP methods, except KSPIBCGS, run all their
 vector operations on the GPU thus, for example Jacobi preconditioned
 Krylov methods run completely on the GPU. Preconditioners are a
 problem, we could do with some help for these. The example <a

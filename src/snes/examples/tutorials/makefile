@@ -659,7 +659,7 @@ runex19_superlu_dist_2:
 	   else echo "Possible problem with ex19_superlu_dist, diffs above"; fi; \
 	   ${RM} -f ex19.tmp
 runex19_cusp:
-	-@${MPIEXEC} -n 1 ./ex19 da_vec_type cusp -da_mat_type aijcusp -pc_type none -dmmg_nlevels 1 -snes_monitor_short -snes_rtol 1.e-5 > ex19.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex19 -da_vec_type cusp -da_mat_type aijcusp -pc_type none -dmmg_nlevels 1 -snes_monitor_short -snes_rtol 1.e-5 > ex19.tmp 2>&1; \
 	   if (${DIFF} output/ex19_cusp.out ex19.tmp) then true; \
 	   else echo "Possible problem with ex19_cusp, diffs above"; fi; \
 	   ${RM} -f ex19.tmp

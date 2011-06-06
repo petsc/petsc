@@ -386,6 +386,10 @@ runex22_2:
 	-@${MPIEXEC} -n 2 ./ex22  > ex22_2.tmp 2>&1; \
 	   ${DIFF} output/ex22_2.out ex22_2.tmp || echo "Possible problem with ex22_2, diffs above"; \
 	   ${RM} -f ex22_2.tmp
+runex22_3:
+	-@${MPIEXEC} -n 2 ./ex22 -ksp_monitor_short -ksp_type bicg > ex22_3.tmp 2>&1; \
+	   ${DIFF} output/ex22_3.out ex22_3.tmp || echo "Possible problem with ex22_3, diffs above"; \
+	   ${RM} -f ex22_3.tmp
 
 runex24:
 	-@${MPIEXEC} -n 1 ./ex24 -pc_type icc -mat_type seqsbaij -mat_ignore_lower_triangular > ex24_1.tmp 2>&1; \

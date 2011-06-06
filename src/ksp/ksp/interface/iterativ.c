@@ -231,6 +231,9 @@ PetscErrorCode  KSPMonitorTrueResidualNorm(KSP ksp,PetscInt n,PetscReal rnorm,vo
 
   PetscFunctionBegin;
   if (!dummy) {ierr = PetscViewerASCIIMonitorCreate(((PetscObject)ksp)->comm,"stdout",0,&viewer);CHKERRQ(ierr);}
+  if (n == 0 && ((PetscObject)ksp)->prefix) {
+    ierr = PetscViewerASCIIMonitorPrintf(viewer,"  Residual norms for %s solve.\n",((PetscObject)ksp)->prefix);CHKERRQ(ierr);
+  }
   ierr = VecDuplicate(ksp->vec_rhs,&work);CHKERRQ(ierr);
   ierr = KSPBuildResidual(ksp,0,work,&resid);CHKERRQ(ierr);
 
@@ -328,6 +331,9 @@ PetscErrorCode  KSPMonitorRange(KSP ksp,PetscInt it,PetscReal rnorm,void *dummy)
   PetscFunctionBegin;
   if (!it) prev = rnorm;
   if (!dummy) {ierr = PetscViewerASCIIMonitorCreate(((PetscObject)ksp)->comm,"stdout",0,&viewer);CHKERRQ(ierr);}
+  if (it == 0 && ((PetscObject)ksp)->prefix) {
+    ierr = PetscViewerASCIIMonitorPrintf(viewer,"  Residual norms for %s solve.\n",((PetscObject)ksp)->prefix);CHKERRQ(ierr);
+  }
   ierr = KSPMonitorRange_Private(ksp,it,&perc);CHKERRQ(ierr);
 
   rel  = (prev - rnorm)/prev;
@@ -353,6 +359,9 @@ PetscErrorCode  KSPMonitorDefaultShort(KSP ksp,PetscInt its,PetscReal fnorm,void
 
   PetscFunctionBegin;
   if (!dummy) {ierr = PetscViewerASCIIMonitorCreate(((PetscObject)ksp)->comm,"stdout",0,&viewer);CHKERRQ(ierr);}
+  if (its == 0 && ((PetscObject)ksp)->prefix) {
+    ierr = PetscViewerASCIIMonitorPrintf(viewer,"  Residual norms for %s solve.\n",((PetscObject)ksp)->prefix);CHKERRQ(ierr);
+  }
 
   if (fnorm > 1.e-9) {
     ierr = PetscViewerASCIIMonitorPrintf(viewer,"%3D KSP Residual norm %G \n",its,fnorm);CHKERRQ(ierr);
