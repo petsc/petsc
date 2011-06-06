@@ -1074,7 +1074,7 @@ PetscErrorCode MatNestSetSubMats(Mat A,PetscInt nr,const IS is_row[],PetscInt nc
     for (i=0; i<nr; i++) PetscValidHeaderSpecific(is_row[i],IS_CLASSID,3);
   }
   if (nc < 0) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Number of columns cannot be negative");
-  if (nc && is_row) {
+  if (nc && is_col) {
     PetscValidPointer(is_col,5);
     for (i=0; i<nr; i++) PetscValidHeaderSpecific(is_col[i],IS_CLASSID,5);
   }
