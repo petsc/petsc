@@ -185,7 +185,7 @@ runex15:
 	   ${DIFF} output/ex15_1.out ex15.tmp || echo "Possible problem with ex15_1, diffs above"; \
 	   ${RM} -f ex15.tmp
 runex15_2:
-	-@${MPIEXEC} -n 1 ./ex15 -da_grid_x 20 -da_grid_y 20 -boundary 0 -ts_max_steps 10 -fdcoloring > ex15.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex15 -da_grid_x 20 -da_grid_y 20 -boundary 0 -ts_max_steps 10 -Jtype 2 > ex15.tmp 2>&1; \
 	   ${DIFF} output/ex15_1.out ex15.tmp || echo "Possible problem with ex15_2, diffs above"; \
 	   ${RM} -f ex15.tmp
 runex15_3:
@@ -196,12 +196,16 @@ runex15_4:
 	-@${MPIEXEC} -n 2 ./ex15 -da_grid_x 20 -da_grid_y 20 -boundary 1 -ts_max_steps 10 > ex15.tmp 2>&1; \
 	   ${DIFF} output/ex15_4.out ex15.tmp || echo "Possible problem with ex15_4, diffs above"; \
 	   ${RM} -f ex15.tmp
+runex15_5:
+	-@${MPIEXEC} -n 1 ./ex15 -da_grid_x 20 -da_grid_y 20 -boundary 0 -ts_max_steps 10 -Jtype 1 > ex15.tmp 2>&1; \
+	   ${DIFF} output/ex15_1.out ex15.tmp || echo "Possible problem with ex15_2, diffs above"; \
+	   ${RM} -f ex15.tmp
 
 
 TESTEXAMPLES_C		  = ex1.PETSc runex1 ex1.rm ex4.PETSc runex4 runex4_2 runex4_3 runex4_4 ex4.rm\
                             ex6.PETSc runex6 ex6.rm ex7.PETSc runex7 runex7_2 runex7_3 ex7.rm ex11.PETSc ex11.rm \
                             ex10.PETSc runex10 runex10_2 runex10_3 runex10_4 ex10.rm ex12.PETSc ex12.rm \
-                            ex15.PETSc runex15 runex15_2 runex15_3 runex15_4 ex15.rm
+                            ex15.PETSc runex15 runex15_2 runex15_3 runex15_4 runex15_5 ex15.rm
 TESTEXAMPLES_C_X11	  = 
 TESTEXAMPLES_FORTRAN	  = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f ex2f.rm
 TESTEXAMPLES_C_X11_MPIUNI = 
