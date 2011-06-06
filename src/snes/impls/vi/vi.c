@@ -1772,6 +1772,9 @@ PetscErrorCode SNESReset_VI(SNES snes)
   PetscFunctionBegin;
   ierr = VecDestroy(&vi->xl);CHKERRQ(ierr);
   ierr = VecDestroy(&vi->xu);CHKERRQ(ierr);
+  if (snes->ops->solve != SNESSolveVI_SS) {
+    ierr = ISDestroy(&vi->IS_inact_prev);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -1792,9 +1795,6 @@ PetscErrorCode SNESDestroy_VI(SNES snes)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (snes->ops->solve != SNESSolveVI_SS) {
-    ierr = ISDestroy(&vi->IS_inact_prev);
-  }
 
   if (snes->ops->solve == SNESSolveVI_SS) {
     /* clear vectors */
