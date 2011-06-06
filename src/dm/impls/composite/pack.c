@@ -1456,26 +1456,13 @@ static PetscErrorCode DMCreateLocalToGlobalMapping_Composite(DM dm)
 {
   DM_Composite           *com = (DM_Composite*)dm->data;
   ISLocalToGlobalMapping *ltogs;
-  PetscInt               i,cnt,m,*idx;
+  PetscInt               i;
   PetscErrorCode         ierr;
 
   PetscFunctionBegin;
   /* Set the ISLocalToGlobalMapping on the new matrix */
   ierr = DMCompositeGetISLocalToGlobalMappings(dm,&ltogs);CHKERRQ(ierr);
-  for (cnt=0,i=0; i<(com->nDM+com->nredundant); i++) {
-    ierr = ISLocalToGlobalMappingGetSize(ltogs[i],&m);CHKERRQ(ierr);
-    cnt += m;
-  }
-  ierr = PetscMalloc(cnt*sizeof(PetscInt),&idx);CHKERRQ(ierr);
-  for (cnt=0,i=0; i<(com->nDM+com->nredundant); i++) {
-    const PetscInt *subidx;
-    ierr = ISLocalToGlobalMappingGetSize(ltogs[i],&m);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingGetIndices(ltogs[i],&subidx);CHKERRQ(ierr);
-    ierr = PetscMemcpy(&idx[cnt],subidx,m*sizeof(PetscInt));CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingRestoreIndices(ltogs[i],&subidx);CHKERRQ(ierr);
-    cnt += m;
-  }
-  ierr = ISLocalToGlobalMappingCreate(((PetscObject)dm)->comm,cnt,idx,PETSC_OWN_POINTER,&dm->ltogmap);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingConcatenate(((PetscObject)dm)->comm,com->nDM+com->nredundant,ltogs,&dm->ltogmap);CHKERRQ(ierr);
   for (i=0; i<com->nDM+com->nredundant; i++) {ierr = ISLocalToGlobalMappingDestroy(&ltogs[i]);CHKERRQ(ierr);}
   ierr = PetscFree(ltogs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
