@@ -182,10 +182,6 @@ static PetscErrorCode MatMultTranspose_Nest(Mat A,Vec x,Vec y)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (A->symmetric) {
-    ierr = MatMult_Nest(A,x,y);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-  }
   for (i=0; i<nr; i++) {ierr = VecGetSubVector(x,bA->isglobal.row[i],&bx[i]);CHKERRQ(ierr);}
   for (i=0; i<nc; i++) {ierr = VecGetSubVector(y,bA->isglobal.col[i],&by[i]);CHKERRQ(ierr);}
   for (j=0; j<nc; j++) {
