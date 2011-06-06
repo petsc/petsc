@@ -173,6 +173,36 @@ static PetscErrorCode MatMult_Nest(Mat A,Vec x,Vec y)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "MatMultAdd_Nest"
+static PetscErrorCode MatMultAdd_Nest(Mat A,Vec x,Vec y,Vec z)
+{
+  Mat_Nest       *bA = (Mat_Nest*)A->data;
+  Vec            *bx = bA->right,*bz = bA->left;
+  PetscInt       i,j,nr = bA->nr,nc = bA->nc;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  for (i=0; i<nr; i++) {ierr = VecGetSubVector(z,bA->isglobal.row[i],&bz[i]);CHKERRQ(ierr);}
+  for (i=0; i<nc; i++) {ierr = VecGetSubVector(x,bA->isglobal.col[i],&bx[i]);CHKERRQ(ierr);}
+  for (i=0; i<nr; i++) {
+    if (y != z) {
+      Vec by;
+      ierr = VecGetSubVector(y,bA->isglobal.row[i],&by);CHKERRQ(ierr);
+      ierr = VecCopy(by,bz[i]);CHKERRQ(ierr);
+      ierr = VecRestoreSubVector(y,bA->isglobal.col[j],&by);CHKERRQ(ierr);
+    }
+    for (j=0; j<nc; j++) {
+      if (!bA->m[i][j]) continue;
+      /* y[i] <- y[i] + A[i][j] * x[j] */
+      ierr = MatMultAdd(bA->m[i][j],bx[j],bz[i],bz[i]);CHKERRQ(ierr);
+    }
+  }
+  for (i=0; i<nr; i++) {ierr = VecRestoreSubVector(z,bA->isglobal.row[i],&bz[i]);CHKERRQ(ierr);}
+  for (i=0; i<nc; i++) {ierr = VecRestoreSubVector(x,bA->isglobal.col[i],&bx[i]);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatMultTranspose_Nest"
 static PetscErrorCode MatMultTranspose_Nest(Mat A,Vec x,Vec y)
 {
@@ -194,6 +224,36 @@ static PetscErrorCode MatMultTranspose_Nest(Mat A,Vec x,Vec y)
   }
   for (i=0; i<nr; i++) {ierr = VecRestoreSubVector(x,bA->isglobal.row[i],&bx[i]);CHKERRQ(ierr);}
   for (i=0; i<nc; i++) {ierr = VecRestoreSubVector(y,bA->isglobal.col[i],&by[i]);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatMultTransposeAdd_Nest"
+static PetscErrorCode MatMultTransposeAdd_Nest(Mat A,Vec x,Vec y,Vec z)
+{
+  Mat_Nest       *bA = (Mat_Nest*)A->data;
+  Vec            *bx = bA->left,*bz = bA->right;
+  PetscInt       i,j,nr = bA->nr,nc = bA->nc;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  for (i=0; i<nr; i++) {ierr = VecGetSubVector(x,bA->isglobal.row[i],&bx[i]);CHKERRQ(ierr);}
+  for (i=0; i<nc; i++) {ierr = VecGetSubVector(z,bA->isglobal.col[i],&bz[i]);CHKERRQ(ierr);}
+  for (j=0; j<nc; j++) {
+    if (y != z) {
+      Vec by;
+      ierr = VecGetSubVector(y,bA->isglobal.col[j],&by);CHKERRQ(ierr);
+      ierr = VecCopy(by,bz[j]);CHKERRQ(ierr);
+      ierr = VecRestoreSubVector(y,bA->isglobal.col[j],&by);CHKERRQ(ierr);
+    }
+    for (i=0; i<nr; i++) {
+      if (!bA->m[j][i]) continue;
+      /* z[j] <- y[j] + (A[i][j])^T * x[i] */
+      ierr = MatMultTransposeAdd(bA->m[i][j],bx[i],bz[j],bz[j]);CHKERRQ(ierr);
+    }
+  }
+  for (i=0; i<nr; i++) {ierr = VecRestoreSubVector(x,bA->isglobal.row[i],&bx[i]);CHKERRQ(ierr);}
+  for (i=0; i<nc; i++) {ierr = VecRestoreSubVector(z,bA->isglobal.col[i],&bz[i]);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -1290,9 +1350,9 @@ PetscErrorCode MatCreate_Nest(Mat A)
 
   ierr = PetscMemzero(A->ops,sizeof(*A->ops));CHKERRQ(ierr);
   A->ops->mult                  = MatMult_Nest;
-  A->ops->multadd               = 0;
+  A->ops->multadd               = MatMultAdd_Nest;
   A->ops->multtranspose         = MatMultTranspose_Nest;
-  A->ops->multtransposeadd      = 0;
+  A->ops->multtransposeadd      = MatMultTransposeAdd_Nest;
   A->ops->assemblybegin         = MatAssemblyBegin_Nest;
   A->ops->assemblyend           = MatAssemblyEnd_Nest;
   A->ops->zeroentries           = MatZeroEntries_Nest;
