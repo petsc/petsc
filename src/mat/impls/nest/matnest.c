@@ -186,18 +186,18 @@ static PetscErrorCode MatMultTranspose_Nest(Mat A,Vec x,Vec y)
     ierr = MatMult_Nest(A,x,y);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
-  for (i=0; i<nr; i++) {ierr = VecGetSubVector(y,bA->isglobal.row[i],&bx[i]);CHKERRQ(ierr);}
-  for (i=0; i<nc; i++) {ierr = VecGetSubVector(x,bA->isglobal.col[i],&by[i]);CHKERRQ(ierr);}
-  for (i=0; i<nr; i++) {
-    ierr = VecZeroEntries(by[i]);CHKERRQ(ierr);
-    for (j=0; j<nc; j++) {
+  for (i=0; i<nr; i++) {ierr = VecGetSubVector(x,bA->isglobal.row[i],&bx[i]);CHKERRQ(ierr);}
+  for (i=0; i<nc; i++) {ierr = VecGetSubVector(y,bA->isglobal.col[i],&by[i]);CHKERRQ(ierr);}
+  for (j=0; j<nc; j++) {
+    ierr = VecZeroEntries(by[j]);CHKERRQ(ierr);
+    for (i=0; i<nr; i++) {
       if (!bA->m[j][i]) continue;
-      /* y[i] <- y[i] + A^T[i][j] * x[j], so we swap i,j in mat[][] */
-      ierr = MatMultTransposeAdd(bA->m[j][i],bx[j],by[i],by[i]);CHKERRQ(ierr);
+      /* y[j] <- y[j] + (A[i][j])^T * x[i] */
+      ierr = MatMultTransposeAdd(bA->m[i][j],bx[i],by[j],by[j]);CHKERRQ(ierr);
     }
   }
-  for (i=0; i<nr; i++) {ierr = VecRestoreSubVector(y,bA->isglobal.row[i],&bx[i]);CHKERRQ(ierr);}
-  for (i=0; i<nc; i++) {ierr = VecRestoreSubVector(x,bA->isglobal.col[i],&by[i]);CHKERRQ(ierr);}
+  for (i=0; i<nr; i++) {ierr = VecRestoreSubVector(x,bA->isglobal.row[i],&bx[i]);CHKERRQ(ierr);}
+  for (i=0; i<nc; i++) {ierr = VecRestoreSubVector(y,bA->isglobal.col[i],&by[i]);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
