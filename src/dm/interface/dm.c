@@ -525,9 +525,9 @@ PetscErrorCode  DMGetColoring(DM dm,ISColoringType ctype,const MatType mtype,ISC
        For structured grid problems, in general it is easiest to use MatSetValuesStencil() or MatSetValuesLocal() to put values into the matrix because MatSetValues() requires 
        the indices for the global numbering for DMDAs which is complicated.
 
-.seealso DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetMatrix()
+.seealso DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetInterpolation()
 
-@*/
+C@*/
 PetscErrorCode  DMGetMatrix(DM dm,const MatType mtype,Mat *mat)
 {
   PetscErrorCode ierr;
