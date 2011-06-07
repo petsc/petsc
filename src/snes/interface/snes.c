@@ -515,7 +515,7 @@ PetscErrorCode  SNESSetComputeApplicationContext(SNES snes,PetscErrorCode (*comp
 
 #undef __FUNCT__  
 #define __FUNCT__ "SNESSetApplicationContext"
-/*@
+/*@C
    SNESSetApplicationContext - Sets the optional user-defined context for 
    the nonlinear solvers.  
 

@@ -1006,7 +1006,7 @@ PetscErrorCode  KSPGetDM(KSP ksp,DM *dm)
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSetApplicationContext"
-/*@
+/*@C
    KSPSetApplicationContext - Sets the optional user-defined context for the linear solver.
 
    Logically Collective on KSP

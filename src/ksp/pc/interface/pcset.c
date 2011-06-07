@@ -255,7 +255,7 @@ PetscErrorCode  PCGetDM(PC pc,DM *dm)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetApplicationContext"
-/*@
+/*@C
    PCSetApplicationContext - Sets the optional user-defined context for the linear solver.
 
    Logically Collective on PC
