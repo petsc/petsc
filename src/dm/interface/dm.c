@@ -485,7 +485,7 @@ PetscErrorCode  DMGetInjection(DM dm1,DM dm2,VecScatter *ctx)
 
 .seealso DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetMatrix()
 
-C@*/
+@*/
 PetscErrorCode  DMGetColoring(DM dm,ISColoringType ctype,const MatType mtype,ISColoring *coloring)
 {
   PetscErrorCode ierr;
@@ -527,7 +527,7 @@ PetscErrorCode  DMGetColoring(DM dm,ISColoringType ctype,const MatType mtype,ISC
 
 .seealso DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetInterpolation()
 
-C@*/
+@*/
 PetscErrorCode  DMGetMatrix(DM dm,const MatType mtype,Mat *mat)
 {
   PetscErrorCode ierr;

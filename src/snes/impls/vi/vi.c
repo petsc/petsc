@@ -14,7 +14,7 @@
 -  compute - computes the bounds
 
 
-C@*/
+@*/
 PetscErrorCode SNESVISetComputeVariableBounds(SNES snes, PetscErrorCode (*compute)(SNES,Vec*,Vec*))
 {
   PetscErrorCode   ierr;
