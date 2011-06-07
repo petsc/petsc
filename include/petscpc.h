@@ -401,6 +401,9 @@ extern PetscErrorCode  PCPythonSetType(PC,const char[]);
 extern PetscErrorCode  PCSetDM(PC,DM);
 extern PetscErrorCode  PCGetDM(PC,DM*);
 
+extern PetscErrorCode  PCSetApplicationContext(PC,void*);
+extern PetscErrorCode  PCGetApplicationContext(PC,void*);
+
 extern PetscErrorCode  PCBiCGStabCUSPSetTolerance(PC,PetscReal);
 extern PetscErrorCode  PCBiCGStabCUSPSetIterations(PC,PetscInt);
 extern PetscErrorCode  PCBiCGStabCUSPSetUseVerboseMonitor(PC,PetscBool);

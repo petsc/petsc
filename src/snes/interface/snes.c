@@ -533,9 +533,12 @@ PetscErrorCode  SNESSetComputeApplicationContext(SNES snes,PetscErrorCode (*comp
 @*/
 PetscErrorCode  SNESSetApplicationContext(SNES snes,void *usrP)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  snes->user		= usrP;
+  ierr       = KSPSetApplicationContext(snes->ksp,usrP);CHKERRQ(ierr);
+  snes->user = usrP;
   PetscFunctionReturn(0);
 }
 

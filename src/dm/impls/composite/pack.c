@@ -16,7 +16,7 @@
 
     Level: advanced
 
-    Notes: See DMSetContext() and DMGetContext() for how to get user information into
+    Notes: See DMSetApplicationContext() and DMGetApplicationContext() for how to get user information into
         this routine
 
 @*/
