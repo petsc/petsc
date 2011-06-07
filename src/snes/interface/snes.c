@@ -1259,7 +1259,11 @@ PetscErrorCode  SNESComputeFunction(SNES snes,Vec x,Vec y)
 
   Options Database Keys: 
 +    -snes_lag_preconditioner <lag>
--    -snes_lag_jacobian <lag>
+.    -snes_lag_jacobian <lag>
+.    -snes_compare_explicit - Compare the computed Jacobian to the finite difference Jacobian and output the differences
+.    -snes_compare_explicit_draw  - Compare the computed Jacobian to the finite difference Jacobian and draw the result
+.    -snes_compare_explicit_contour  - Compare the computed Jacobian to the finite difference Jacobian and draw a contour plot with the result
+-    -snes_compare_operator  - Make the comparison options above use the operator instead of the preconditioning matrix
 
    Notes: 
    Most users should not need to explicitly call this routine, as it 
@@ -1332,6 +1336,57 @@ PetscErrorCode  SNESComputeJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *
   /* make sure user returned a correct Jacobian and preconditioner */
   /* PetscValidHeaderSpecific(*A,MAT_CLASSID,3);
     PetscValidHeaderSpecific(*B,MAT_CLASSID,4);   */
+  {
+    PetscBool flag = PETSC_FALSE,flag_draw = PETSC_FALSE,flag_contour = PETSC_FALSE,flag_operator = PETSC_FALSE;
+    ierr  = PetscOptionsGetBool(((PetscObject)snes)->prefix,"-snes_compare_explicit",&flag,PETSC_NULL);CHKERRQ(ierr);
+    ierr  = PetscOptionsGetBool(((PetscObject)snes)->prefix,"-snes_compare_explicit_draw",&flag_draw,PETSC_NULL);CHKERRQ(ierr);
+    ierr  = PetscOptionsGetBool(((PetscObject)snes)->prefix,"-snes_compare_explicit_draw_contour",&flag_contour,PETSC_NULL);CHKERRQ(ierr);
+    ierr  = PetscOptionsGetBool(((PetscObject)snes)->prefix,"-snes_compare_operator",&flag_operator,PETSC_NULL);CHKERRQ(ierr);
+    if (flag || flag_draw || flag_contour) {
+      Mat Bexp_mine = PETSC_NULL,Bexp,FDexp;
+      MatStructure mstruct;
+      PetscViewer vdraw,vstdout;
+      PetscBool flg,convert;
+      if (flag_operator) {
+        ierr = MatComputeExplicitOperator(*A,&Bexp_mine);CHKERRQ(ierr);
+        Bexp = Bexp_mine;
+      } else {
+        /* See if the preconditioning matrix can be viewed and added directly */
+        ierr = PetscTypeCompareAny((PetscObject)*B,&flg,MATSEQAIJ,MATMPIAIJ,MATSEQDENSE,MATMPIDENSE,MATSEQBAIJ,MATMPIBAIJ,MATSEQSBAIJ,MATMPIBAIJ,"");CHKERRQ(ierr);
+        if (flg) Bexp = *B;
+        else {
+          /* If the "preconditioning" matrix is itself MATSHELL or some other type without direct support */
+          ierr = MatComputeExplicitOperator(*B,&Bexp_mine);CHKERRQ(ierr);
+          Bexp = Bexp_mine;
+        }
+      }
+      ierr = MatConvert(Bexp,MATSAME,MAT_INITIAL_MATRIX,&FDexp);CHKERRQ(ierr);
+      ierr = SNESDefaultComputeJacobian(snes,X,&FDexp,&FDexp,&mstruct,NULL);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIGetStdout(((PetscObject)snes)->comm,&vstdout);CHKERRQ(ierr);
+      if (flag_draw || flag_contour) {
+        ierr = PetscViewerDrawOpen(((PetscObject)snes)->comm,0,"Explicit Jacobians",PETSC_DECIDE,PETSC_DECIDE,300,300,&vdraw);CHKERRQ(ierr);
+        if (flag_contour) {ierr = PetscViewerPushFormat(vdraw,PETSC_VIEWER_DRAW_CONTOUR);CHKERRQ(ierr);}
+      } else vdraw = PETSC_NULL;
+      ierr = PetscViewerASCIIPrintf(vstdout,"Explicit %s\n",flag_operator?"Jacobian":"preconditioning Jacobian");CHKERRQ(ierr);
+      if (flag) {ierr = MatView(Bexp,vstdout);CHKERRQ(ierr);}
+      if (vdraw) {ierr = MatView(Bexp,vdraw);CHKERRQ(ierr);}
+      ierr = PetscViewerASCIIPrintf(vstdout,"Finite difference Jacobian\n");CHKERRQ(ierr);
+      if (flag) {ierr = MatView(FDexp,vstdout);CHKERRQ(ierr);}
+      if (vdraw) {ierr = MatView(FDexp,vdraw);CHKERRQ(ierr);}
+      ierr = MatAYPX(FDexp,-1.0,Bexp,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(vstdout,"User-provided matrix minus finite difference Jacobian\n");CHKERRQ(ierr);
+      if (flag) {ierr = MatView(FDexp,vstdout);CHKERRQ(ierr);}
+      if (vdraw) {              /* Always use contour for the difference */
+        ierr = PetscViewerPushFormat(vdraw,PETSC_VIEWER_DRAW_CONTOUR);CHKERRQ(ierr);
+        ierr = MatView(FDexp,vdraw);CHKERRQ(ierr);
+        ierr = PetscViewerPopFormat(vdraw);CHKERRQ(ierr);
+      }
+      if (flag_contour) {ierr = PetscViewerPopFormat(vdraw);CHKERRQ(ierr);}
+      ierr = PetscViewerDestroy(&vdraw);CHKERRQ(ierr);
+      ierr = MatDestroy(&Bexp_mine);CHKERRQ(ierr);
+      ierr = MatDestroy(&FDexp);CHKERRQ(ierr);
+    }
+  }
   PetscFunctionReturn(0);
 }
 
