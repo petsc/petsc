@@ -230,9 +230,14 @@ PetscErrorCode  DMSetVI(DM dm,Vec upper,Vec lower,Vec values,Vec F,IS inactive)
   PetscErrorCode          ierr;
   PetscContainer          isnes;
   DM_SNESVI               *dmsnesvi;
+  PetscInt                Ni,Nu;
 
   PetscFunctionBegin;
   if (!dm) PetscFunctionReturn(0);
+  ierr = ISGetSize(inactive,&Ni);CHKERRQ(ierr);
+  ierr = VecGetSize(upper,&Nu);CHKERRQ(ierr);
+  if (Ni == Nu) PetscFunctionReturn(0);
+
   ierr = PetscObjectReference((PetscObject)upper);CHKERRQ(ierr);
   ierr = PetscObjectReference((PetscObject)lower);CHKERRQ(ierr);
   ierr = PetscObjectReference((PetscObject)values);CHKERRQ(ierr);
