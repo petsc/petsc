@@ -1808,57 +1808,84 @@ static PetscErrorCode MatView_SeqBAIJ_Draw_Zoom(PetscDraw draw,void *Aa)
   PetscReal      xl,yl,xr,yr,x_l,x_r,y_l,y_r;
   MatScalar      *aa;
   PetscViewer    viewer;
+  PetscViewerFormat format;
 
-  PetscFunctionBegin; 
-
-  /* still need to add support for contour plot of nonzeros; see MatView_SeqAIJ_Draw_Zoom()*/
+  PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject)A,"Zoomviewer",(PetscObject*)&viewer);CHKERRQ(ierr); 
+  ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
 
   ierr = PetscDrawGetCoordinates(draw,&xl,&yl,&xr,&yr);CHKERRQ(ierr);
 
   /* loop over matrix elements drawing boxes */
-  color = PETSC_DRAW_BLUE;
-  for (i=0,row=0; i<mbs; i++,row+=bs) {
-    for (j=a->i[i]; j<a->i[i+1]; j++) {
-      y_l = A->rmap->N - row - 1.0; y_r = y_l + 1.0;
-      x_l = a->j[j]*bs; x_r = x_l + 1.0;
-      aa = a->a + j*bs2;
-      for (k=0; k<bs; k++) {
-        for (l=0; l<bs; l++) {
-          if (PetscRealPart(*aa++) >=  0.) continue;
-          ierr = PetscDrawRectangle(draw,x_l+k,y_l-l,x_r+k,y_r-l,color,color,color,color);CHKERRQ(ierr);
-        }
-      }
-    } 
-  }
-  color = PETSC_DRAW_CYAN;
-  for (i=0,row=0; i<mbs; i++,row+=bs) {
-    for (j=a->i[i]; j<a->i[i+1]; j++) {
-      y_l = A->rmap->N - row - 1.0; y_r = y_l + 1.0;
-      x_l = a->j[j]*bs; x_r = x_l + 1.0;
-      aa = a->a + j*bs2;
-      for (k=0; k<bs; k++) {
-        for (l=0; l<bs; l++) {
-          if (PetscRealPart(*aa++) != 0.) continue;
-          ierr = PetscDrawRectangle(draw,x_l+k,y_l-l,x_r+k,y_r-l,color,color,color,color);CHKERRQ(ierr);
-        }
-      }
-    } 
-  }
 
-  color = PETSC_DRAW_RED;
-  for (i=0,row=0; i<mbs; i++,row+=bs) {
-    for (j=a->i[i]; j<a->i[i+1]; j++) {
-      y_l = A->rmap->N - row - 1.0; y_r = y_l + 1.0;
-      x_l = a->j[j]*bs; x_r = x_l + 1.0;
-      aa = a->a + j*bs2;
-      for (k=0; k<bs; k++) {
-        for (l=0; l<bs; l++) {
-          if (PetscRealPart(*aa++) <= 0.) continue;
-          ierr = PetscDrawRectangle(draw,x_l+k,y_l-l,x_r+k,y_r-l,color,color,color,color);CHKERRQ(ierr);
+  if (format != PETSC_VIEWER_DRAW_CONTOUR) {
+    color = PETSC_DRAW_BLUE;
+    for (i=0,row=0; i<mbs; i++,row+=bs) {
+      for (j=a->i[i]; j<a->i[i+1]; j++) {
+        y_l = A->rmap->N - row - 1.0; y_r = y_l + 1.0;
+        x_l = a->j[j]*bs; x_r = x_l + 1.0;
+        aa = a->a + j*bs2;
+        for (k=0; k<bs; k++) {
+          for (l=0; l<bs; l++) {
+            if (PetscRealPart(*aa++) >=  0.) continue;
+            ierr = PetscDrawRectangle(draw,x_l+k,y_l-l,x_r+k,y_r-l,color,color,color,color);CHKERRQ(ierr);
+          }
+        }
+      } 
+    }
+    color = PETSC_DRAW_CYAN;
+    for (i=0,row=0; i<mbs; i++,row+=bs) {
+      for (j=a->i[i]; j<a->i[i+1]; j++) {
+        y_l = A->rmap->N - row - 1.0; y_r = y_l + 1.0;
+        x_l = a->j[j]*bs; x_r = x_l + 1.0;
+        aa = a->a + j*bs2;
+        for (k=0; k<bs; k++) {
+          for (l=0; l<bs; l++) {
+            if (PetscRealPart(*aa++) != 0.) continue;
+            ierr = PetscDrawRectangle(draw,x_l+k,y_l-l,x_r+k,y_r-l,color,color,color,color);CHKERRQ(ierr);
+          }
         }
       }
-    } 
+    }
+    color = PETSC_DRAW_RED;
+    for (i=0,row=0; i<mbs; i++,row+=bs) {
+      for (j=a->i[i]; j<a->i[i+1]; j++) {
+        y_l = A->rmap->N - row - 1.0; y_r = y_l + 1.0;
+        x_l = a->j[j]*bs; x_r = x_l + 1.0;
+        aa = a->a + j*bs2;
+        for (k=0; k<bs; k++) {
+          for (l=0; l<bs; l++) {
+            if (PetscRealPart(*aa++) <= 0.) continue;
+            ierr = PetscDrawRectangle(draw,x_l+k,y_l-l,x_r+k,y_r-l,color,color,color,color);CHKERRQ(ierr);
+          }
+        }
+      }
+    }
+  } else {
+    /* use contour shading to indicate magnitude of values */
+    /* first determine max of all nonzero values */
+    PetscDraw   popup;
+    PetscReal scale,maxv = 0.0;
+
+    for (i=0; i<a->nz*a->bs2; i++) {
+      if (PetscAbsScalar(a->a[i]) > maxv) maxv = PetscAbsScalar(a->a[i]);
+    }
+    scale = (245.0 - PETSC_DRAW_BASIC_COLORS)/maxv;
+    ierr  = PetscDrawGetPopup(draw,&popup);CHKERRQ(ierr);
+    if (popup) {ierr  = PetscDrawScalePopup(popup,0.0,maxv);CHKERRQ(ierr);}
+    for (i=0,row=0; i<mbs; i++,row+=bs) {
+      for (j=a->i[i]; j<a->i[i+1]; j++) {
+        y_l = A->rmap->N - row - 1.0; y_r = y_l + 1.0;
+        x_l = a->j[j]*bs; x_r = x_l + 1.0;
+        aa = a->a + j*bs2;
+        for (k=0; k<bs; k++) {
+          for (l=0; l<bs; l++) {
+            color = PETSC_DRAW_BASIC_COLORS + (PetscInt)(scale*PetscAbsScalar(*aa++));
+            ierr = PetscDrawRectangle(draw,x_l+k,y_l-l,x_r+k,y_r-l,color,color,color,color);CHKERRQ(ierr);
+          }
+        }
+      }
+    }
   }
   PetscFunctionReturn(0);
 }
