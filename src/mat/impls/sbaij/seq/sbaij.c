@@ -1183,12 +1183,13 @@ PetscErrorCode MatAXPY_SeqSBAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
 {
   Mat_SeqSBAIJ   *x=(Mat_SeqSBAIJ *)X->data, *y=(Mat_SeqSBAIJ *)Y->data;
   PetscErrorCode ierr;
-  PetscInt       i,bs=Y->rmap->bs,bs2,j;
-  PetscBLASInt   one = 1,bnz = PetscBLASIntCast(x->nz);
+  PetscInt       i,bs=Y->rmap->bs,bs2=bs*bs,j;
+  PetscBLASInt   one = 1;
   
   PetscFunctionBegin;
   if (str == SAME_NONZERO_PATTERN) {
     PetscScalar alpha = a;
+    PetscInt bnz = PetscBLASIntCast(x->nz*bs2);
     BLASaxpy_(&bnz,&alpha,x->a,&one,y->a,&one);
   } else if (str == SUBSET_NONZERO_PATTERN) { /* nonzeros of X is a subset of Y's */
     if (y->xtoy && y->XtoY != X) {
@@ -1199,7 +1200,6 @@ PetscErrorCode MatAXPY_SeqSBAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
       ierr = MatAXPYGetxtoy_Private(x->mbs,x->i,x->j,PETSC_NULL, y->i,y->j,PETSC_NULL, &y->xtoy);CHKERRQ(ierr);
       y->XtoY = X;
     }
-    bs2 = bs*bs;
     for (i=0; i<x->nz; i++) {
       j = 0;
       while (j < bs2){
