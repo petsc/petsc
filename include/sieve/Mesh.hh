@@ -1208,7 +1208,7 @@ namespace ALE {
     typedef std::pair<int *, int>                                     indices_type;
     typedef NumberingFactory<this_type>                               MeshNumberingFactory;
     typedef typename ALE::Partitioner<>::part_type                    rank_type;
-#if 0
+#if 1
     typedef typename ALE::Sifter<point_type,rank_type,point_type>     send_overlap_type;
     typedef typename ALE::Sifter<rank_type,point_type,point_type>     recv_overlap_type;
 #else
