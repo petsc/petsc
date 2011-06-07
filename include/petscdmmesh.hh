@@ -54,7 +54,7 @@ PetscErrorCode  DMMeshCreateMatrix(const Obj<Mesh>& mesh, const Obj<Section>& se
       }
     }
     ierr = PetscMalloc2(localSize/bs, PetscInt, &dnz, localSize/bs, PetscInt, &onz);CHKERRQ(ierr);
-    ierr = preallocateOperatorNew(mesh, bs, section->getAtlas(), order, dnz, onz, isSymmetric, *J, fillMatrix);CHKERRQ(ierr);
+    ierr = preallocateOperatorNewOverlap(mesh, bs, section->getAtlas(), order, dnz, onz, isSymmetric, *J, fillMatrix);CHKERRQ(ierr);
     ierr = PetscFree2(dnz, onz);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -912,6 +912,118 @@ PetscErrorCode preallocateOperator(const ALE::Obj<ALE::Mesh<PetscInt,PetscScalar
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "createAllocationVectors"
+template<typename Atlas, typename Order>
+PetscErrorCode createAllocationVectors(const int bs, const ALE::Obj<Atlas>& atlas, const ALE::Obj<Order>& globalOrder, const ALE::Obj<ALE::Mesh<PetscInt,PetscScalar>::sieve_type>& adjGraph, PetscBool isSymmetric, PetscInt dnz[], PetscInt onz[])
+{
+  typedef ALE::Mesh<PetscInt,PetscScalar> FlexMesh;
+  const typename Atlas::chart_type& chart        = atlas->getChart();
+  PetscInt                          numLocalRows = globalOrder->getLocalSize();
+  PetscInt                          firstRow     = globalOrder->getGlobalOffsets()[atlas->commRank()];
+  PetscErrorCode                    ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscMemzero(dnz, numLocalRows/bs * sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMemzero(onz, numLocalRows/bs * sizeof(PetscInt));CHKERRQ(ierr);
+  for(typename Atlas::chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+    const typename Atlas::point_type& point = *c_iter;
+
+    if (globalOrder->isLocal(point)) {
+      const ALE::Obj<typename FlexMesh::sieve_type::coneSequence>& adj   = adjGraph->cone(point);
+      const typename Order::value_type& rIdx  = globalOrder->restrictPoint(point)[0];
+      const int                         row   = rIdx.prefix;
+      const int                         rSize = rIdx.index/bs;
+
+      if ((atlas->debug() > 1) && ((bs == 1) || (rIdx.index%bs == 0))) std::cout << "["<<adjGraph->commRank()<<"]: row "<<row<<": size " << rIdx.index << " bs "<<bs<<std::endl;
+      if (rSize == 0) continue;
+      for(typename FlexMesh::sieve_type::coneSequence::iterator v_iter = adj->begin(); v_iter != adj->end(); ++v_iter) {
+        const typename Atlas::point_type& neighbor = *v_iter;
+        const typename Order::value_type& cIdx     = globalOrder->restrictPoint(neighbor)[0];
+        const int                         col      = cIdx.prefix>=0 ? cIdx.prefix : -(cIdx.prefix+1);
+        const int&                        cSize    = cIdx.index/bs;
+
+        if ((atlas->debug() > 1) && ((bs == 1) || (cIdx.index%bs == 0))) std::cout << "["<<adjGraph->commRank()<<"]:   col "<<col<<": size " << cIdx.index << " bs "<<bs<<std::endl;
+        if (cSize > 0) {
+          if (isSymmetric && (col < row)) {
+            if (atlas->debug() > 1) {std::cout << "["<<adjGraph->commRank()<<"]: Rejecting row "<<row<<" col " << col <<std::endl;}
+            continue;
+          }
+          if (globalOrder->isLocal(neighbor)) {
+            for(int r = 0; r < rSize; ++r) {dnz[(row - firstRow)/bs + r] += cSize;}
+          } else {
+            for(int r = 0; r < rSize; ++r) {onz[(row - firstRow)/bs + r] += cSize;}
+          }
+        }
+      }
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "fillMatrixWithZero"
+template<typename Atlas, typename Order>
+PetscErrorCode fillMatrixWithZero(Mat A, const int bs, const ALE::Obj<Atlas>& atlas, const ALE::Obj<Order>& globalOrder, const ALE::Obj<ALE::Mesh<PetscInt,PetscScalar>::sieve_type>& adjGraph, PetscBool isSymmetric, PetscInt dnz[], PetscInt onz[])
+{
+  typedef ALE::Mesh<PetscInt,PetscScalar> FlexMesh;
+  const typename Atlas::chart_type& chart        = atlas->getChart();
+  PetscInt                          numLocalRows = globalOrder->getLocalSize();
+  PetscInt                          firstRow     = globalOrder->getGlobalOffsets()[atlas->commRank()];
+  PetscInt                          maxRowLen    = 0;
+  PetscErrorCode                    ierr;
+
+  PetscFunctionBegin;
+  for(PetscInt r = 0; r < numLocalRows/bs; ++r) {
+    maxRowLen = std::max(maxRowLen, dnz[r] + onz[r]);
+  }
+  PetscInt    *cols   = new PetscInt[maxRowLen];
+  PetscScalar *values = new PetscScalar[maxRowLen];
+
+  ierr = PetscMemzero((void *) values, maxRowLen * sizeof(PetscScalar));CHKERRQ(ierr);
+  for(typename Atlas::chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+    const typename Atlas::point_type& point  = *c_iter;
+    int                               rowLen = 0;
+
+    if (globalOrder->isLocal(point)) {
+      const ALE::Obj<typename FlexMesh::sieve_type::coneSequence>& adj   = adjGraph->cone(point);
+      const typename Order::value_type& rIdx  = globalOrder->restrictPoint(point)[0];
+      const int                         row   = rIdx.prefix;
+      const int                         rSize = rIdx.index/bs;
+
+      if (rSize == 0) continue;
+      for(typename FlexMesh::sieve_type::coneSequence::iterator v_iter = adj->begin(); v_iter != adj->end(); ++v_iter) {
+        const typename Atlas::point_type& neighbor = *v_iter;
+        const typename Order::value_type& cIdx     = globalOrder->restrictPoint(neighbor)[0];
+        const int                         col      = cIdx.prefix>=0 ? cIdx.prefix : -(cIdx.prefix+1);
+        const int&                        cSize    = cIdx.index/bs;
+
+        if (cSize > 0) {
+          if (isSymmetric && (col < row)) {
+            continue;
+          }
+          for(int c = col; c < col+cSize; ++c) {
+            cols[rowLen++] = c;
+          }
+        }
+      }
+      for(int r = 0; r < rSize; ++r) {
+        PetscInt fullRow = row + r;
+
+        if (rowLen != dnz[(row - firstRow)/bs+r]+onz[(row - firstRow)/bs+r]) {
+          SETERRQ5(atlas->comm(), PETSC_ERR_ARG_WRONG, "Invalid row length %d, should be dnz[%d]: %d + onz[%d]: %d", rowLen, (row - firstRow)/bs+r, dnz[(row - firstRow)/bs+r], (row - firstRow)/bs+r, onz[(row - firstRow)/bs+r]);
+        }
+        ierr = MatSetValues(A, 1, &fullRow, rowLen, cols, values, INSERT_VALUES);CHKERRQ(ierr);
+      }
+    }
+  }
+  delete [] cols;
+  delete [] values;
+  ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "preallocateOperatorNew"
 template<typename Mesh, typename Atlas>
 PetscErrorCode preallocateOperatorNew(const ALE::Obj<Mesh>& mesh, const int bs, const ALE::Obj<Atlas>& atlas, const ALE::Obj<typename Mesh::order_type>& globalOrder, PetscInt dnz[], PetscInt onz[], PetscBool  isSymmetric, Mat A, bool fillMatrix = false)
@@ -1138,6 +1250,139 @@ PetscErrorCode preallocateOperatorNew(const ALE::Obj<Mesh>& mesh, const int bs, 
     ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
+}
+
+template<typename Mesh, typename Atlas>
+PetscErrorCode preallocateOperatorNewOverlap(const ALE::Obj<Mesh>& mesh, const int bs, const ALE::Obj<Atlas>& atlas, const ALE::Obj<typename Mesh::order_type>& globalOrder, PetscInt dnz[], PetscInt onz[], PetscBool isSymmetric, Mat A, bool fillMatrix = false)
+{
+  typedef ALE::Mesh<PetscInt,PetscScalar> FlexMesh;
+  typedef typename Mesh::sieve_type        sieve_type;
+  typedef typename Mesh::point_type        point_type;
+  typedef typename Mesh::send_overlap_type send_overlap_type;
+  typedef typename Mesh::recv_overlap_type recv_overlap_type;
+  const ALE::Obj<FlexMesh::sieve_type> adjGraph = new FlexMesh::sieve_type(mesh->comm(), mesh->debug());
+  const PetscInt                       debug    = mesh->debug()/3;
+  PetscErrorCode                       ierr;
+
+  PetscFunctionBegin;
+  // Create local adjacency graph
+  if (debug) mesh->view("Input Mesh");
+  if (debug) globalOrder->view("Initial Global Order");
+  ierr = createLocalAdjacencyGraph(mesh, atlas, adjGraph);CHKERRQ(ierr);
+  if (debug) adjGraph->view("Adjacency Graph");
+  // Complete adjacency graph
+  typedef ALE::ConeSection<FlexMesh::sieve_type>              cones_wrapper_type;
+  typedef ALE::Section<ALE::Pair<int, point_type>, point_type> cones_type;
+  Obj<cones_wrapper_type>       cones          = new cones_wrapper_type(adjGraph);
+  Obj<cones_type>               overlapCones   = new cones_type(adjGraph->comm(), adjGraph->debug());
+  const Obj<send_overlap_type>& sendOverlap    = mesh->getSendOverlap();
+  const Obj<recv_overlap_type>& recvOverlap    = mesh->getRecvOverlap();
+  const Obj<send_overlap_type>  nbrSendOverlap = new send_overlap_type(mesh->comm(), mesh->debug());
+  const Obj<recv_overlap_type>  nbrRecvOverlap = new recv_overlap_type(mesh->comm(), mesh->debug());
+
+  // Now overlapCones will have the neighbors for any point in the overlap, in the remote numbering
+  ALE::Pullback::SimpleCopy::copy(sendOverlap, recvOverlap, cones, overlapCones);
+  if (debug) overlapCones->view("Overlap Cones");
+  // TODO Copy overlaps
+  sendOverlap->copy(nbrSendOverlap.ptr());
+  recvOverlap->copy(nbrRecvOverlap.ptr());
+  if (debug) nbrSendOverlap->view("Initial Send Overlap");
+  if (debug) nbrRecvOverlap->view("Initial Recv Overlap");
+  // TODO Update neighbor send overlap from local adjacency
+  //   For each localPoint in sendOverlap
+  //     For each rank receiving this point
+  //       For each adjPoint in adjGraph->cone(point)
+  //         If recvOverlap does not contain an arrow (rank, adjPoint, *), meaning the point is not interior to the domain
+  //           nbrSendOverlap->addArrow(adjPoint, rank, -1)
+  const typename send_overlap_type::baseSequence::iterator sBegin = sendOverlap->baseBegin();
+  const typename send_overlap_type::baseSequence::iterator sEnd   = sendOverlap->baseEnd();
+
+  for(typename send_overlap_type::baseSequence::iterator r_iter = sBegin; r_iter != sEnd; ++r_iter) {
+    const typename send_overlap_type::target_type            rank   = *r_iter;
+    const typename send_overlap_type::coneSequence::iterator pBegin = sendOverlap->coneBegin(*r_iter);
+    const typename send_overlap_type::coneSequence::iterator pEnd   = sendOverlap->coneEnd(*r_iter);
+
+    for(typename send_overlap_type::coneSequence::iterator p_iter = pBegin; p_iter != pEnd; ++p_iter) {
+      const typename send_overlap_type::source_type               localPoint = *p_iter;
+      const typename FlexMesh::sieve_type::coneSequence::iterator adjBegin   = adjGraph->cone(localPoint)->begin();
+      const typename FlexMesh::sieve_type::coneSequence::iterator adjEnd     = adjGraph->cone(localPoint)->end();
+
+      for(typename FlexMesh::sieve_type::coneSequence::iterator a_iter = adjBegin; a_iter != adjEnd; ++a_iter) {
+        const typename FlexMesh::sieve_type::coneSequence::iterator::value_type adjPoint = *a_iter;
+
+        // Deal with duplication at the assembly stage
+        nbrSendOverlap->addArrow(adjPoint, rank, -1);
+      }
+    }
+  }
+  nbrSendOverlap->assemble();
+  if (debug) nbrSendOverlap->view("Modified Send Overlap");
+  //   Let maxPoint be the first point not contained in adjGraph
+  point_type maxPoint = std::max(*std::max_element(adjGraph->cap()->begin(),  adjGraph->cap()->end()),
+                                 *std::max_element(adjGraph->base()->begin(), adjGraph->base()->end())) + 1;
+  // TODO Update neighbor recv overlap and local adjacency
+  //   For each point in recvOverlap
+  //     For each rank sending this point
+  //       For each adjPoint in the overlap cone from adjGraph for this point
+  //         If adjPoint is interior, meaning sendOverlap has no arrow (rank, *, adjPoint) CAN THIS EVER HAPPEN???
+  //           If nbrRevOverlap has arrow (rank, newPoint, adjPoint)
+  //             Let newPoint = maxPoint, increment maxPoint
+  //             Add arrows (point, newPoint) and (newPoint, point) to adjGraph
+  //           Else
+  //             Add arrows (point, newPoint) and (newPoint, point) to adjGraph
+  //         Else
+  //           Why would we see a new connection for an old point??? Need an example
+  //           We have the arrow (rank, oldPoint, adjPoint)
+  //           Add arrows (point, oldPoint) and (oldPoint, point) to adjGraph
+  const typename recv_overlap_type::capSequence::iterator rBegin = recvOverlap->capBegin();
+  const typename recv_overlap_type::capSequence::iterator rEnd   = recvOverlap->capEnd();
+
+  for(typename recv_overlap_type::capSequence::iterator r_iter = rBegin; r_iter != rEnd; ++r_iter) {
+    const int                                                   rank   = *r_iter;
+    const typename recv_overlap_type::supportSequence::iterator pBegin = recvOverlap->supportBegin(*r_iter);
+    const typename recv_overlap_type::supportSequence::iterator pEnd   = recvOverlap->supportEnd(*r_iter);
+
+    for(typename recv_overlap_type::supportSequence::iterator p_iter = pBegin; p_iter != pEnd; ++p_iter) {
+      const point_type&                      localPoint  = *p_iter;
+      const point_type&                      remotePoint = p_iter.color();
+      const int                              size        = overlapCones->getFiberDimension(typename cones_type::point_type(rank, remotePoint));
+      const typename cones_type::value_type *values      = overlapCones->restrictPoint(typename cones_type::point_type(rank, remotePoint));
+
+      for(int i = 0; i < size; ++i) {
+        const typename recv_overlap_type::supportSequence::iterator newPointsBegin = nbrRecvOverlap->supportBegin(rank, values[i]);
+        const int                                                   numNewPoints   = nbrRecvOverlap->getSupportSize(rank, values[i]);
+        point_type                                                  newPoint;
+
+        if (!numNewPoints) {
+          newPoint = maxPoint++;
+          nbrRecvOverlap->addArrow(rank, newPoint, values[i]);
+        } else {
+          newPoint = *newPointsBegin;
+        }
+        adjGraph->addArrow(newPoint,   localPoint);
+        adjGraph->addArrow(localPoint, newPoint);
+      }
+    }
+  }
+  nbrRecvOverlap->assemble();
+  if (debug) nbrRecvOverlap->view("Modified Recv Overlap");
+  if (debug) adjGraph->view("Modified Adjacency Graph");
+  // Update global order
+  mesh->getFactory()->completeOrder(globalOrder, nbrSendOverlap, nbrRecvOverlap);
+  if (debug) globalOrder->view("Modified Global Order");
+  // Read out adjacency graph
+  ierr = createAllocationVectors(bs, atlas, globalOrder, adjGraph, isSymmetric, dnz, onz);
+  // Set matrix pattern
+  ierr = MatSeqAIJSetPreallocation(A, 0, dnz);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(A, 0, dnz, 0, onz);CHKERRQ(ierr);
+  ierr = MatSeqBAIJSetPreallocation(A, bs, 0, dnz);CHKERRQ(ierr);
+  ierr = MatMPIBAIJSetPreallocation(A, bs, 0, dnz, 0, onz);CHKERRQ(ierr);
+  ierr = MatSeqSBAIJSetPreallocation(A, bs, 0, dnz);CHKERRQ(ierr);
+  ierr = MatMPISBAIJSetPreallocation(A, bs, 0, dnz, 0, onz);CHKERRQ(ierr);
+  ierr = MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
+  // Fill matrix with zeros
+  if (fillMatrix) {ierr = fillMatrixWithZero(A, bs, atlas, globalOrder, adjGraph, isSymmetric, dnz, onz);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 

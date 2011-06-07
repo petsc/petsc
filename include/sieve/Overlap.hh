@@ -287,6 +287,13 @@ public:
       this->remotePoints[i] = c;
     }
   };
+  void copy(SendOverlap *overlap) {
+    for(index_type r = 0; r < this->numRanks; ++r) {
+      for(index_type p = this->pointsOffset[r]; p < this->pointsOffset[r+1]; ++p) {
+        overlap->addArrow(this->points[p], this->ranks[r], this->remotePoints[p]);
+      }
+    }
+  };
   void setBaseSize(index_type size) {
     this->setNumRanks(size);
   };
@@ -379,6 +386,7 @@ public:
   typedef point_type color_type;
   typedef Sequence<rank_type>         capSequence;
   typedef SupportSequence<point_type> supportSequence;
+  typedef PointerSequence<rank_type>  coneSequence;
 public:
   RecvOverlap(MPI_Comm comm, const int debug = 0) : Overlap<Point,Rank>(comm, debug) {};
   ~RecvOverlap() {};
@@ -411,6 +419,13 @@ public:
       this->remotePoints[i] = c;
     }
   };
+  void copy(RecvOverlap *overlap) {
+    for(index_type r = 0; r < this->numRanks; ++r) {
+      for(index_type p = this->pointsOffset[r]; p < this->pointsOffset[r+1]; ++p) {
+        overlap->addArrow(this->ranks[r], this->points[p], this->remotePoints[p]);
+      }
+    }
+  };
   typename capSequence::iterator capBegin() {
     assert(!this->numRanks || this->ranks);
     return this->ranks;
@@ -429,13 +444,38 @@ public:
     const index_type r = this->getRankIndex(rank);
     return this->pointsOffset[r+1] - this->pointsOffset[r];
   };
+  int getSupportSize(rank_type rank, point_type remotePoint) {
+    const index_type r = this->getRankIndex(rank);
+    index_type       n = 0;
+
+    for(index_type p = this->pointsOffset[r]; p < this->pointsOffset[r+1]; ++p) {
+      if (remotePoint == this->remotePoints[p]) ++n;
+    }
+    return  n;
+  };
   typename supportSequence::iterator supportBegin(rank_type rank) {
     const index_type r = this->getRankIndex(rank);
     return typename supportSequence::iterator(&this->points[this->pointsOffset[r]], &this->remotePoints[this->pointsOffset[r]]);
   };
+  typename supportSequence::iterator supportBegin(rank_type rank, point_type remotePoint) {
+    const index_type r = this->getRankIndex(rank);
+    index_type       p;
+
+    for(p = this->pointsOffset[r]; p < this->pointsOffset[r+1]; ++p) {
+      if (remotePoint == this->remotePoints[p]) break;
+    }
+    return typename supportSequence::iterator(&this->points[p], &this->remotePoints[p]);
+  };
   typename supportSequence::iterator supportEnd(rank_type rank) {
     const index_type r = this->getRankIndex(rank);
     return typename supportSequence::iterator(&this->points[this->pointsOffset[r+1]], &this->remotePoints[this->pointsOffset[r+1]]);
+  };
+  coneSequence cone(point_type point) {
+    index_type       numPointRanks;
+    const rank_type *pointRanks;
+
+    this->getRanks(point, &numPointRanks, &pointRanks);
+    return coneSequence(pointRanks, &pointRanks[numPointRanks]);
   };
 };
 }

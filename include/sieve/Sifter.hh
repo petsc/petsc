@@ -1066,6 +1066,25 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
       PetscFunctionReturn(0);
     };
   public:
+    void copy(const ASifter *newSifter) {
+      const typename traits::baseSequence::iterator sBegin = this->baseBegin();
+      const typename traits::baseSequence::iterator sEnd   = this->baseEnd();
+
+      for(typename traits::baseSequence::iterator r_iter = sBegin; r_iter != sEnd; ++r_iter) {
+        const typename traits::coneSequence::iterator pBegin = this->coneBegin(*r_iter);
+        const typename traits::coneSequence::iterator pEnd   = this->coneEnd(*r_iter);
+
+        for(typename traits::coneSequence::iterator p_iter = pBegin; p_iter != pEnd; ++p_iter) {
+          const Obj<typename traits::supportSequence>&              support  = this->support(*p_iter);
+          const typename traits::supportSequence::iterator supBegin = support->begin();
+          const typename traits::supportSequence::iterator supEnd   = support->end();
+
+          for(typename traits::supportSequence::iterator s_iter = supBegin; s_iter != supEnd; ++s_iter) {
+            newSifter->addArrow(*p_iter, *s_iter, s_iter.color());
+          }
+        }
+      }
+    };
     //
     // Lattice queries
     //
