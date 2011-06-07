@@ -1430,6 +1430,7 @@ extern PetscErrorCode  PetscObjectRegisterDestroy(PetscObject);
 extern PetscErrorCode  PetscObjectRegisterDestroyAll(void);
 extern PetscErrorCode  PetscObjectName(PetscObject);
 extern PetscErrorCode  PetscTypeCompare(PetscObject,const char[],PetscBool *);
+extern PetscErrorCode  PetscTypeCompareAny(PetscObject,PetscBool*,const char[],...);
 extern PetscErrorCode  PetscRegisterFinalize(PetscErrorCode (*)(void));
 extern PetscErrorCode  PetscRegisterFinalizeAll(void);
 
