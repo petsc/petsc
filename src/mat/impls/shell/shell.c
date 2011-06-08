@@ -158,8 +158,10 @@ static PetscErrorCode MatShellShiftAndScale(Mat A,Vec X,Vec Y)
     ierr = VecRestoreArrayRead(shell->dshift,&d);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
     ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
-  } else {
+  } else if (shell->vshift != 0) {
     ierr = VecAXPBY(Y,shell->vshift,shell->vscale,X);CHKERRQ(ierr);
+  } else if (shell->vscale != 1.0) {
+    ierr = VecScale(Y,shell->vscale);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

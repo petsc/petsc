@@ -139,12 +139,13 @@ PetscErrorCode  DMDASetBoundaryType(DM da,DMDABoundaryType bx,DMDABoundaryType b
 .keywords:  distributed array, degrees of freedom
 .seealso: DMDACreate(), DMDestroy(), DMDA
 @*/
-PetscErrorCode  DMDASetDof(DM da, int dof)
+PetscErrorCode  DMDASetDof(DM da, PetscInt dof)
 {
   DM_DA *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidLogicalCollectiveInt(da,dof,2);
   dd->w = dof;
   da->bs = dof;
   PetscFunctionReturn(0);
