@@ -1346,7 +1346,7 @@ PetscErrorCode  SNESComputeJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *
       Mat Bexp_mine = PETSC_NULL,Bexp,FDexp;
       MatStructure mstruct;
       PetscViewer vdraw,vstdout;
-      PetscBool flg,convert;
+      PetscBool flg;
       if (flag_operator) {
         ierr = MatComputeExplicitOperator(*A,&Bexp_mine);CHKERRQ(ierr);
         Bexp = Bexp_mine;

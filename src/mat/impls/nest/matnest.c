@@ -413,7 +413,6 @@ static PetscErrorCode MatNestFindIS(Mat A,PetscInt n,const IS list[],IS is,Petsc
 static PetscErrorCode MatNestGetRow(Mat A,PetscInt row,Mat *B)
 {
   Mat_Nest       *vs = (Mat_Nest*)A->data;
-  Mat            C;
   char           keyname[256];
   PetscErrorCode ierr;
 
@@ -436,9 +435,7 @@ static PetscErrorCode MatNestFindSubMat(Mat A,struct MatNestISPair *is,IS isrow,
 {
   Mat_Nest       *vs = (Mat_Nest*)A->data;
   PetscErrorCode ierr;
-  PetscInt       row,col,i;
-  IS             *iscopy;
-  Mat            *matcopy;
+  PetscInt       row,col;
   PetscBool      same,isFullCol;
 
   PetscFunctionBegin;
