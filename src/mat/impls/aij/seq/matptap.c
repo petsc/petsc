@@ -167,7 +167,7 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat C)
   const PetscInt   am=A->rmap->N,cn=C->cmap->N,cm=C->rmap->N;
   PetscInt         i,j,k,anzi,pnzi,apnzj,nextap,pnzj,prow,crow;
   const MatScalar  *aa=a->a,*pa=p->a,*pA=p->a,*paj;
-  MatScalar        *apa,*ca=c->a,*caj;
+  MatScalar        *apa,*ca=c->a,*caj,aaa;
 
   PetscFunctionBegin;
   /* Allocate temporary array for storage of one row of A*P */
@@ -189,12 +189,13 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat C)
       pnzj = pi[prow+1] - pi[prow];
       pjj  = pj + pi[prow];
       paj  = pa + pi[prow];
+      aaa  = aa[j];
       for (k=0;k<pnzj;k++) {
         if (!apjdense[pjj[k]]) {
           apjdense[pjj[k]] = -1; 
           apj[apnzj++]     = pjj[k];
         }
-        apa[pjj[k]] += aa[j]*paj[k];
+        apa[pjj[k]] += aaa*paj[k];
       }
       ierr = PetscLogFlops(2.0*pnzj);CHKERRQ(ierr);
     }
@@ -210,13 +211,14 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat C)
       crow   = *pJ++;
       cjj    = cj + ci[crow];
       caj    = ca + ci[crow];
+      aaa    = pA[j];
       /* Perform sparse axpy operation.  Note cjj includes apj. */
       for (k=0;nextap<apnzj;k++) {
 #if defined(PETSC_USE_DEBUG)  
         if (k >= ci[crow+1] - ci[crow]) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_PLIB,"k too large k %d, crow %d",k,crow);
 #endif
         if (cjj[k]==apj[nextap]) {
-          caj[k] += pA[j]*apa[apj[nextap++]];
+          caj[k] += aaa*apa[apj[nextap++]];
         }
       }
       ierr = PetscLogFlops(2.0*apnzj);CHKERRQ(ierr);
