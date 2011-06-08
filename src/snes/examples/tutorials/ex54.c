@@ -41,6 +41,7 @@ int main(int argc, char **argv)
   Vec            xl,xu; /* Upper and lower bounds on variables */
   Mat            J;
   PetscReal      t=0.0;
+  PetscLogStage  timestep_stage;
 
   PetscInitialize(&argc,&argv, (char*)0, help);
 
@@ -82,6 +83,8 @@ int main(int argc, char **argv)
   ierr = SNESVISetVariableBounds(snes,xl,xu);CHKERRQ(ierr);
 
   ierr = SetInitialGuess(x,&user);CHKERRQ(ierr);
+  ierr = PetscLogStageRegister("Time stepping",&timestep_stage);
+  ierr = PetscLogStagePush(timestep_stage);CHKERRQ(ierr);
   /* Begin time loop */
   while(t < user.T) {
     ierr = Update_q(user.q,user.u,user.M_0,&user);
@@ -92,6 +95,7 @@ int main(int argc, char **argv)
     ierr = Update_u(user.u,x);CHKERRQ(ierr);
     t = t + user.dt;
   }
+  ierr = PetscLogStagePop();CHKERRQ(ierr);
 
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = VecDestroy(&r);CHKERRQ(ierr);
