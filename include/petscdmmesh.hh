@@ -1253,7 +1253,9 @@ PetscErrorCode preallocateOperatorNew(const ALE::Obj<Mesh>& mesh, const int bs, 
   PetscFunctionReturn(0);
 }
 
-template<typename Mesh, typename Atlas>
+#undef __FUNCT__
+#define __FUNCT__ "preallocateOperatorNewOverlap"
+ template<typename Mesh, typename Atlas>
 PetscErrorCode preallocateOperatorNewOverlap(const ALE::Obj<Mesh>& mesh, const int bs, const ALE::Obj<Atlas>& atlas, const ALE::Obj<typename Mesh::order_type>& globalOrder, PetscInt dnz[], PetscInt onz[], PetscBool isSymmetric, Mat A, bool fillMatrix = false)
 {
   typedef ALE::Mesh<PetscInt,PetscScalar> FlexMesh;
