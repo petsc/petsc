@@ -999,7 +999,7 @@ M*/
 
 
 /* Routines unique to particular data structures */
-extern PetscErrorCode  MatShellGetContext(Mat,void **);
+extern PetscErrorCode  MatShellGetContext(Mat,void *);
 PetscPolymorphicFunction(MatShellGetContext,(Mat A),(A,&t),void*,t)
 
 extern PetscErrorCode  MatInodeAdjustForInodes(Mat,IS*,IS*);
