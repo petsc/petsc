@@ -182,7 +182,7 @@ PetscErrorCode MatSOR_SeqBSTRM_4(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pe
   const PetscInt     *diag,*ai = a->i,*aj = a->j,*vi;
 
   Mat_SeqBSTRM      *bstrm = (Mat_SeqBSTRM *)A->spptr;
-  MatScalar         *v1,*v2,*v3,*v4, *v10,*v20,*v30,*v40, vvs1,vvs2,vvs3,vvs4;
+  MatScalar         *v1,*v2,*v3,*v4, *v10,*v20,*v30,*v40;
   PetscInt slen;
 
   PetscFunctionBegin;
@@ -230,14 +230,6 @@ PetscErrorCode MatSOR_SeqBSTRM_4(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pe
 	  s2  -= v2[0]*x1 + v2[1]*x2 + v2[2]*x3 + v2[3]*x4;
 	  s3  -= v3[0]*x1 + v3[1]*x2 + v3[2]*x3 + v3[3]*x4;
 	  s4  -= v4[0]*x1 + v4[1]*x2 + v4[2]*x3 + v4[3]*x4;
-	  v1 += 4; v2 += 4; v3 += 4; v4 += 4; 
-	}
-	nz    = ai[i+1] - diag[i];
-	while (nz--) {
-	  vvs1 = v1[0]; vvs1 = v1[1]; vvs1 = v1[2]*x3; vvs1 = v1[3]; 
-	  vvs2 = v2[0]; vvs2 = v2[1]; vvs2 = v2[2]*x3; vvs2 = v2[3]; 
-	  vvs3 = v3[0]; vvs3 = v3[1]; vvs3 = v3[2]*x3; vvs3 = v3[3]; 
-	  vvs4 = v4[0]; vvs4 = v4[1]; vvs4 = v4[2]*x3; vvs4 = v4[3]; 
 	  v1 += 4; v2 += 4; v3 += 4; v4 += 4; 
 	}
         x[i2]   = idiag[0]*s1 + idiag[4]*s2 + idiag[8]*s3  + idiag[12]*s4;
@@ -294,14 +286,6 @@ PetscErrorCode MatSOR_SeqBSTRM_4(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pe
 	  s4  -= v4[3]*x4 + v4[2]*x3 + v4[1]*x2 + v4[0]*x1;
 	  v1 -= 4; v2 -= 4; v3 -= 4; v4 -= 4; 
 	}
-	nz    =  diag[i] - ai[i];
-	while (nz--) {
-	  vvs1 = v1[3]; vvs1 = v1[2]*x3; vvs1 = v1[1]; vvs1 = v1[0];
-	  vvs2 = v2[3]; vvs2 = v2[2]*x3; vvs2 = v2[1]; vvs2 = v2[0];
-	  vvs3 = v3[3]; vvs3 = v3[2]*x3; vvs3 = v3[1]; vvs3 = v3[0];
-	  vvs4 = v4[3]; vvs4 = v4[2]*x3; vvs4 = v4[1]; vvs4 = v4[0];
-	  v1 -= 4; v2 -= 4; v3 -= 4; v4 -= 4;
-	}
         x[i2]   = idiag[0]*s1 + idiag[4]*s2 + idiag[8]*s3  + idiag[12]*s4;
         x[i2+1] = idiag[1]*s1 + idiag[5]*s2 + idiag[9]*s3  + idiag[13]*s4;
         x[i2+2] = idiag[2]*s1 + idiag[6]*s2 + idiag[10]*s3 + idiag[14]*s4;
@@ -333,7 +317,7 @@ PetscErrorCode MatSOR_SeqBSTRM_5(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pe
   const PetscInt     *diag,*ai = a->i,*aj = a->j,*vi;
 
   Mat_SeqBSTRM      *bstrm = (Mat_SeqBSTRM *)A->spptr;
-  MatScalar         *v1, *v2, *v3, *v4, *v5, *v10, *v20, *v30, *v40, *v50, vvs1, vvs2,vvs3,vvs4,vvs5;
+  MatScalar         *v1, *v2, *v3, *v4, *v5, *v10, *v20, *v30, *v40, *v50;
   PetscInt slen;
 
   PetscFunctionBegin;
@@ -385,15 +369,6 @@ PetscErrorCode MatSOR_SeqBSTRM_5(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pe
 	  s3  -= v3[0]*x1 + v3[1]*x2 + v3[2]*x3 + v3[3]*x4 + v3[4]*x5;
 	  s4  -= v4[0]*x1 + v4[1]*x2 + v4[2]*x3 + v4[3]*x4 + v4[4]*x5;
 	  s5  -= v5[0]*x1 + v5[1]*x2 + v5[2]*x3 + v5[3]*x4 + v5[4]*x5;
-	  v1 += 5; v2 += 5; v3 += 5; v4 += 5; v5 += 5;
-	}
-	nz    = ai[i+1] - diag[i];
-	while (nz--) {
-	  vvs1 = v1[0]; vvs1 = v1[1]; vvs1 = v1[2]*x3; vvs1 = v1[3]; vvs1 = v1[4];
-	  vvs2 = v2[0]; vvs2 = v2[1]; vvs2 = v2[2]*x3; vvs2 = v2[3]; vvs2 = v2[4];
-	  vvs3 = v3[0]; vvs3 = v3[1]; vvs3 = v3[2]*x3; vvs3 = v3[3]; vvs3 = v3[4];
-	  vvs4 = v4[0]; vvs4 = v4[1]; vvs4 = v4[2]*x3; vvs4 = v4[3]; vvs4 = v4[4];
-	  vvs5 = v5[0]; vvs5 = v5[1]; vvs5 = v5[2]*x3; vvs5 = v5[3]; vvs5 = v5[4];
 	  v1 += 5; v2 += 5; v3 += 5; v4 += 5; v5 += 5;
 	}
 	x[i2]   = idiag[0]*s1 + idiag[5]*s2 + idiag[10]*s3 + idiag[15]*s4 + idiag[20]*s5;
@@ -453,15 +428,6 @@ PetscErrorCode MatSOR_SeqBSTRM_5(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pe
 	  s3  -= v3[4]*x5 + v3[3]*x4 + v3[2]*x3 + v3[1]*x2 + v3[0]*x1;
 	  s4  -= v4[4]*x5 + v4[3]*x4 + v4[2]*x3 + v4[1]*x2 + v4[0]*x1;
 	  s5  -= v5[4]*x5 + v5[3]*x4 + v5[2]*x3 + v5[1]*x2 + v5[0]*x1;
-	  v1 -= 5; v2 -= 5; v3 -= 5; v4 -= 5; v5 -= 5;
-	}
-	nz    =  diag[i] - ai[i];
-	while (nz--) {
-	  vvs1 = v1[4]; vvs1 = v1[3]; vvs1 = v1[2]*x3; vvs1 = v1[1]; vvs1 = v1[0];
-	  vvs2 = v2[4]; vvs2 = v2[3]; vvs2 = v2[2]*x3; vvs2 = v2[1]; vvs2 = v2[0];
-	  vvs3 = v3[4]; vvs3 = v3[3]; vvs3 = v3[2]*x3; vvs3 = v3[1]; vvs3 = v3[0];
-	  vvs4 = v4[4]; vvs4 = v4[3]; vvs4 = v4[2]*x3; vvs4 = v4[1]; vvs4 = v4[0];
-	  vvs5 = v5[4]; vvs5 = v5[3]; vvs5 = v5[2]*x3; vvs5 = v5[1]; vvs5 = v5[0];
 	  v1 -= 5; v2 -= 5; v3 -= 5; v4 -= 5; v5 -= 5;
 	}
 	x[i2]   = idiag[0]*s1 + idiag[5]*s2 + idiag[10]*s3 + idiag[15]*s4 + idiag[20]*s5;
