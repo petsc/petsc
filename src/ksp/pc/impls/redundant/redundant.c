@@ -212,8 +212,8 @@ static PetscErrorCode PCApply_Redundant(PC pc,Vec x,Vec y)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCDestroy_Redundant"
-static PetscErrorCode PCDestroy_Redundant(PC pc)
+#define __FUNCT__ "PCReset_Redundant"
+static PetscErrorCode PCReset_Redundant(PC pc)
 {
   PC_Redundant   *red = (PC_Redundant*)pc->data;
   PetscErrorCode ierr;
@@ -226,6 +226,19 @@ static PetscErrorCode PCDestroy_Redundant(PC pc)
   ierr = VecDestroy(&red->xdup);CHKERRQ(ierr);
   ierr = VecDestroy(&red->ydup);CHKERRQ(ierr);
   ierr = MatDestroy(&red->pmats);CHKERRQ(ierr);
+  ierr = KSPReset(red->ksp);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PCDestroy_Redundant"
+static PetscErrorCode PCDestroy_Redundant(PC pc)
+{
+  PC_Redundant   *red = (PC_Redundant*)pc->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PCReset_Redundant(pc);CHKERRQ(ierr);
   ierr = KSPDestroy(&red->ksp);CHKERRQ(ierr);
   ierr = PetscSubcommDestroy(&red->psubcomm);CHKERRQ(ierr);
   ierr = PetscFree(pc->data);CHKERRQ(ierr);
@@ -483,6 +496,7 @@ PetscErrorCode  PCCreate_Redundant(PC pc)
   pc->ops->applytranspose  = 0;
   pc->ops->setup           = PCSetUp_Redundant;
   pc->ops->destroy         = PCDestroy_Redundant;
+  pc->ops->reset           = PCReset_Redundant;
   pc->ops->setfromoptions  = PCSetFromOptions_Redundant;
   pc->ops->view            = PCView_Redundant;    
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCRedundantSetScatter_C","PCRedundantSetScatter_Redundant",
