@@ -7,6 +7,12 @@ import os
 def noCheck(command, status, output, error):
   return
 
+try:
+  any
+except NamedError:
+  def any(lst):
+    return reduce(lambda x,y:x or y,lst,False)
+
 class Configure(config.base.Configure):
   def __init__(self, framework):
     config.base.Configure.__init__(self, framework)
@@ -122,14 +128,31 @@ class Configure(config.base.Configure):
     try:
       (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --help')
       output = output + error
-      if output.find('Unrecognised option --help passed to ld') >=0:    # NAG f95 compiler
-        return 0
-      if output.find('www.gnu.org') >= 0 or output.find('developer.apple.com') >= 0 or output.find('bugzilla.redhat.com') >= 0 or output.find('gcc.gnu.org') >= 0 or (output.find('gcc version')>=0 and not output.find('Intel(R)')>= 0):
-        return 1
+      return (any([s in output for s in ['www.gnu.org',
+                                         'developer.apple.com',
+                                         'bugzilla.redhat.com',
+                                         'gcc.gnu.org',
+                                         'gcc version',
+                                         'passed on to the various sub-processes invoked by gcc',
+                                         ]])
+              and not any([s in output for s in ['Intel(R)',
+                                                 'Unrecognised option --help passed to ld', # NAG f95 compiler
+                                                 ]]))
     except RuntimeError:
       pass
     return 0
   isGNU = staticmethod(isGNU)
+
+  def isClang(compiler):
+    '''Returns true if the compiler is a Clang/LLVM compiler'''
+    try:
+      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --help')
+      output = output + error
+      return any([s in output for s in ['Emit Clang AST']])
+    except RuntimeError:
+      pass
+    return 0
+  isClang = staticmethod(isClang)
 
   def isGfortran45x(compiler):
     '''returns true if the compiler is gfortran-4.5.x'''
