@@ -3232,7 +3232,6 @@ PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,
       sz      = ii[row+1] - diag[row] - 1;
       v1      = a->a + diag[row] + 1;
       idx     = a->j + diag[row] + 1;
-      CHKMEMQ;
       /* see comments for MatMult_SeqAIJ_Inode() for how this is coded */
       switch (sizes[i]){              
         case 1:
@@ -3384,7 +3383,6 @@ PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,
         default:
 	  SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Inode size %D not supported",sizes[i]);
       }
-      CHKMEMQ;
     }
     ierr = PetscLogFlops(a->nz);CHKERRQ(ierr);
 
@@ -3393,7 +3391,6 @@ PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,
     */
     cnt = 0;
     for (i=0, row=0; i<m; i++) {
-      CHKMEMQ;
       switch (sizes[i]){              
         case 1:
 	  t[row] = b[row] - bdiag[cnt++]*x[row]; row++;
@@ -3445,7 +3442,6 @@ PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,
         default:
 	  SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Inode size %D not supported",sizes[i]);
       }
-      CHKMEMQ;
     }
     ierr = PetscLogFlops(m);CHKERRQ(ierr);
 
@@ -3458,7 +3454,6 @@ PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,
       sz  = diag[row] - ii[row];
       v1  = a->a + ii[row];
       idx = a->j + ii[row];
-      CHKMEMQ;
       /* see comments for MatMult_SeqAIJ_Inode() for how this is coded */
       switch (sizes[i]){              
         case 1:
@@ -3604,7 +3599,6 @@ PetscErrorCode MatSOR_SeqAIJ_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,
         default:
 	  SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Inode size %D not supported",sizes[i]);
       }
-      CHKMEMQ;
     }
     ierr = PetscLogFlops(a->nz);CHKERRQ(ierr);
     ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
