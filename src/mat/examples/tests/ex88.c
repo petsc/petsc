@@ -35,6 +35,19 @@ static PetscErrorCode MatMultTranspose_User(Mat A,Vec X,Vec Y)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatGetDiagonal_User"
+static PetscErrorCode MatGetDiagonal_User(Mat A,Vec X)
+{
+  User user;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatShellGetContext(A,&user);CHKERRQ(ierr);
+  ierr = MatGetDiagonal(user->B,X);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "TestMatrix"
 static PetscErrorCode TestMatrix(Mat A,Vec X,Vec Y,Vec Z)
 {
@@ -53,6 +66,8 @@ static PetscErrorCode TestMatrix(Mat A,Vec X,Vec Y,Vec Z)
   ierr = MatView(E,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = MatMult(A,Z,W1);CHKERRQ(ierr);
   ierr = MatMultTranspose(A,W1,W2);CHKERRQ(ierr);
+  ierr = VecView(W2,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = MatGetDiagonal(A,W2);CHKERRQ(ierr);
   ierr = VecView(W2,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = MatDestroy(&E);CHKERRQ(ierr);
   ierr = VecDestroy(&W1);CHKERRQ(ierr);
@@ -95,6 +110,7 @@ int main(int argc,char **args)
   ierr = MatCreateShell(PETSC_COMM_WORLD,2,2,2,2,user,&S);CHKERRQ(ierr);
   ierr = MatShellSetOperation(S,MATOP_MULT,(void(*)(void))MatMult_User);CHKERRQ(ierr);
   ierr = MatShellSetOperation(S,MATOP_MULT_TRANSPOSE,(void(*)(void))MatMultTranspose_User);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(S,MATOP_GET_DIAGONAL,(void(*)(void))MatGetDiagonal_User);CHKERRQ(ierr);
   ierr = TestMatrix(S,X,Y,Z);CHKERRQ(ierr);
   ierr = TestMatrix(A,X,Y,Z);CHKERRQ(ierr);
 
