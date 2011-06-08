@@ -350,10 +350,19 @@ PetscErrorCode MatAssemblyEnd_Shell(Mat Y,MatAssemblyType t)
     shell->dshift      = PETSC_NULL;
     shell->left        = PETSC_NULL;
     shell->right       = PETSC_NULL;
+    if (shell->mult) {
+      Y->ops->mult = shell->mult;
+      shell->mult  = PETSC_NULL;
+    }
+    if (shell->multtranspose) {
+      Y->ops->multtranspose = shell->multtranspose;
+      shell->multtranspose  = PETSC_NULL;
+    }
+    if (shell->getdiagonal) {
+      Y->ops->getdiagonal = shell->getdiagonal;
+      shell->getdiagonal  = PETSC_NULL;
+    }
     shell->usingscaled = PETSC_FALSE;
-    Y->ops->mult          = shell->mult;
-    Y->ops->multtranspose = shell->multtranspose;
-    Y->ops->getdiagonal   = shell->getdiagonal;
   }
   PetscFunctionReturn(0);
 }
