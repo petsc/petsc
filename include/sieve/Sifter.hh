@@ -842,6 +842,14 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
     supportEnd(const typename traits::source_type& p) {
       return this->support(p)->end();
     };
+    const typename traits::supportSequence::iterator
+    supportBegin(const typename traits::source_type& p, const typename traits::color_type& color) {
+      return this->support(p, color)->begin();
+    };
+    const typename traits::supportSequence::iterator
+    supportEnd(const typename traits::source_type& p, const typename traits::color_type& color) {
+      return this->support(p, color)->end();
+    };
     void setSupportSize(const typename traits::source_type& p, int size) {};
 #endif
 #ifdef SLOW
@@ -897,6 +905,9 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
     }
     int getSupportSize(const typename traits::source_type& p) {
       return this->support(p)->size();
+    }
+    int getSupportSize(const typename traits::source_type& p, const typename traits::color_type& color) {
+      return this->support(p, color)->size();
     }
 
     template<typename ostream_type>
@@ -1066,6 +1077,25 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
       PetscFunctionReturn(0);
     };
   public:
+    void copy(ASifter *newSifter) {
+      const typename traits::baseSequence::iterator sBegin = this->baseBegin();
+      const typename traits::baseSequence::iterator sEnd   = this->baseEnd();
+
+      for(typename traits::baseSequence::iterator r_iter = sBegin; r_iter != sEnd; ++r_iter) {
+        const typename traits::coneSequence::iterator pBegin = this->coneBegin(*r_iter);
+        const typename traits::coneSequence::iterator pEnd   = this->coneEnd(*r_iter);
+
+        for(typename traits::coneSequence::iterator p_iter = pBegin; p_iter != pEnd; ++p_iter) {
+          const Obj<typename traits::supportSequence>&              support  = this->support(*p_iter);
+          const typename traits::supportSequence::iterator supBegin = support->begin();
+          const typename traits::supportSequence::iterator supEnd   = support->end();
+
+          for(typename traits::supportSequence::iterator s_iter = supBegin; s_iter != supEnd; ++s_iter) {
+            newSifter->addArrow(*p_iter, *s_iter, s_iter.color());
+          }
+        }
+      }
+    };
     //
     // Lattice queries
     //
