@@ -52,8 +52,7 @@ cdef inline int PetscDEALLOC(PetscObject* obj) nogil:
 
 cdef extern from *:
     ctypedef struct PyObject
-    void _Py_IncRef"Py_IncRef"(PyObject*)
-    void _Py_DecRef"Py_DecRef"(PyObject*)
+    void _Py_DecRef"Py_DECREF"(PyObject*)
     PyObject* PyDict_New() except NULL
     PyObject* PyDict_GetItem(PyObject*, PyObject*) except *
     int       PyDict_SetItem(PyObject*, PyObject*, PyObject*) except -1

@@ -373,7 +373,7 @@ cdef class DA(DM):
                                       refine[2]) )
 
     def getRefinementFactor(self):
-        cdef PetscInt i, dim, refine[3]
+        cdef PetscInt i, dim = 0, refine[3]
         CHKERR( DAGetDim(self.dm, &dim) )
         CHKERR( DAGetRefinementFactor(self.dm,
                                       &refine[0],

@@ -69,7 +69,7 @@ cdef class TS(Object):
         CHKERR( TSSetProblemType(self.ts, ptype) )
 
     def getProblemType(self):
-        cdef PetscTSProblemType ptype
+        cdef PetscTSProblemType ptype = TS_NONLINEAR
         CHKERR( TSGetProblemType(self.ts, &ptype) )
         return ptype
 

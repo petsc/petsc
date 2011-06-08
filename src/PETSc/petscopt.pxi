@@ -131,7 +131,7 @@ cdef getopt(PetscOptType otype, prefix, name, deft):
 # simple minded options parser
 
 cdef tokenize(options):
-  cdef PetscToken t
+  cdef PetscToken t = NULL
   cdef const_char *s = NULL
   cdef const_char *p = NULL
   options = str2bytes(options, &s)

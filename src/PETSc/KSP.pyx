@@ -196,8 +196,8 @@ cdef class KSP(Object):
         CHKERR( KSPSetTolerances(self.ksp, crtol, catol, cdivtol, cmaxits) )
 
     def getTolerances(self):
-        cdef PetscReal crtol, catol, cdivtol
-        cdef PetscInt cmaxits
+        cdef PetscReal crtol=0, catol=0, cdivtol=0
+        cdef PetscInt cmaxits=0
         CHKERR( KSPGetTolerances(self.ksp, &crtol, &catol, &cdivtol, &cmaxits) )
         return (toReal(crtol), toReal(catol), toReal(cdivtol), toInt(cmaxits))
 

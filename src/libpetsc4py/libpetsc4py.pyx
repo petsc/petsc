@@ -2318,8 +2318,8 @@ cdef PetscErrorCode TSStep_Python_default(
     cdef PetscInt nits = 0, lits = 0
     if ts.problem_type == TS_LINEAR:
         return PetscSETERR(PETSC_ERR_SUP,"only for nonlinear problems")
-        CHKERR( KSPSolve(ts.ksp, NULL, x)           )
-        CHKERR( KSPGetIterationNumber(ts.ksp,&lits) )
+        #CHKERR( KSPSolve(ts.ksp, NULL, x)           )
+        #CHKERR( KSPGetIterationNumber(ts.ksp,&lits) )
     if ts.problem_type == TS_NONLINEAR:
         CHKERR( SNESSolve(ts.snes, NULL, x)                 )
         CHKERR( SNESGetIterationNumber(ts.snes,&nits)        )

@@ -213,20 +213,22 @@ cdef class _DA_Vec_array(object):
 
     def __cinit__(self, DA da not None, Vec vec not None):
         #
-        cdef PetscInt dim, dof
+        cdef PetscInt dim=0, dof=0
         CHKERR( DAGetInfo(da.dm,
                           &dim, NULL, NULL, NULL, NULL, NULL, NULL,
                           &dof, NULL, NULL, NULL, NULL, NULL) )
-        cdef PetscInt lxs, lys, lzs, lxm, lym, lzm
+        cdef PetscInt lxs=0, lys=0, lzs=0
+        cdef PetscInt lxm=0, lym=0, lzm=0
         CHKERR( DAGetCorners(da.dm,
                              &lxs, &lys, &lzs,
                              &lxm, &lym, &lzm) )
-        cdef PetscInt gxs, gys, gzs, gxm, gym, gzm
+        cdef PetscInt gxs=0, gys=0, gzs=0
+        cdef PetscInt gxm=0, gym=0, gzm=0
         CHKERR( DAGetGhostCorners(da.dm,
                                   &gxs, &gys, &gzs,
                                   &gxm, &gym, &gzm) )
         #
-        cdef PetscInt n
+        cdef PetscInt n=0
         CHKERR( VecGetLocalSize(vec.vec, &n) )
         cdef PetscInt xs, ys, zs, xm, ym, zm
         if (n == lxm*lym*lzm*dof):

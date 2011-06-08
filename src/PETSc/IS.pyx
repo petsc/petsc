@@ -180,7 +180,7 @@ cdef class IS(Object):
         return out
 
     def union(self, IS iset not None): # XXX review this
-        cdef PetscBool flag1, flag2
+        cdef PetscBool flag1=PETSC_FALSE, flag2=PETSC_FALSE
         CHKERR( ISSorted(self.iset, &flag1) )
         CHKERR( ISSorted(iset.iset, &flag2) )
         cdef IS out = IS()

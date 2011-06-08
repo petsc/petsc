@@ -754,7 +754,7 @@ cdef class Mat(Object):
         CHKERR( MatAssemblyEnd(self.mat, flag) )
 
     def isAssembled(self):
-        cdef PetscBool assembled
+        cdef PetscBool assembled = PETSC_FALSE
         CHKERR( MatAssembled(self.mat, &assembled) )
         return <bint> assembled
     #

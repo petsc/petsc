@@ -271,7 +271,7 @@ cdef class Viewer(Object):
         CHKERR( PetscViewerFileSetMode(self.vwr, mode) )
 
     def getFileMode(self):
-        cdef PetscFileMode mode
+        cdef PetscFileMode mode = PETSC_FILE_MODE_READ
         CHKERR( PetscViewerFileGetMode(self.vwr, &mode) )
         return mode
 
