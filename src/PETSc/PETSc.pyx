@@ -264,10 +264,10 @@ cdef int getinitargs(object args, int *argc, char **argv[]) except -1:
     if args is None: args = []
     args = [str(a).encode() for a in args]
     args = [a for a in args if a]
-    c = <int>    len(args)
-    v = <char**> malloc((c+1)*sizeof(char*))
+    c = <int> len(args)
+    v = <char**> malloc(<size_t>(c+1)*sizeof(char*))
     if v == NULL: raise MemoryError
-    memset(v, 0, (c+1)*sizeof(char*))
+    memset(v, 0, <size_t>(c+1)*sizeof(char*))
     try:
         for 0 <= i < c:
             v[i] = strdup(args[i])

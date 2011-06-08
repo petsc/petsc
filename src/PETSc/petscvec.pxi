@@ -327,7 +327,7 @@ cdef inline int vec_setarray(Vec self, object o) except -1:
             for i from 0 <= i < nv:
                 vv[i] = va[0]
         else:
-            CHKERR( PetscMemcpy(vv, va, nv*sizeof(PetscScalar)) )
+            CHKERR( PetscMemcpy(vv, va, <size_t>nv*sizeof(PetscScalar)) )
     finally:
         CHKERR( VecRestoreArray(self.vec, &vv) )
     return 0
@@ -443,7 +443,7 @@ cdef class _Vec_buffer:
             if self.vec != NULL and self.data == NULL:
                 CHKERR( VecGetArray(self.vec, &self.data) )
             p[0] = <void*>self.data
-        return <Py_ssize_t> (self.size*sizeof(PetscScalar))
+        return <Py_ssize_t>(<size_t>self.size*sizeof(PetscScalar))
 
     def __getsegcount__(self, Py_ssize_t *lenp):
         if lenp != NULL:

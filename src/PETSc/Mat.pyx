@@ -1086,10 +1086,9 @@ cdef class NullSpace(Object):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscBool has_const = PETSC_FALSE
         if constant: has_const = PETSC_TRUE
-        cdef PetscInt nv = len(vectors)
+        cdef PetscInt i = 0, nv = <PetscInt>len(vectors)
         cdef PetscVec *v = NULL
-        cdef object tmp2 = oarray_p(empty_p(nv),NULL, <void**>&v)
-        cdef Py_ssize_t i=0
+        cdef object tmp2 = oarray_p(empty_p(nv), NULL, <void**>&v)
         for i from 0 <= i < nv:
             v[i] = (<Vec?>(vectors[i])).vec
         cdef PetscNullSpace newnsp = NULL

@@ -145,7 +145,7 @@ cdef class _IS_buffer:
             CHKERR( ISGetLocalSize(self.iset, &self.size) )
             CHKERR( ISGetIndices(self.iset, &self.data) )
         if p != NULL: p[0] = <void*>self.data
-        return <Py_ssize_t> (self.size*sizeof(PetscInt))
+        return <Py_ssize_t>(<size_t>self.size*sizeof(PetscInt))
 
     def __getsegcount__(self, Py_ssize_t *lenp):
         if lenp != NULL:

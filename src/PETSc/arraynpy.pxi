@@ -94,21 +94,21 @@ cdef inline ndarray array_i(PetscInt size, const_PetscInt* data):
     cdef npy_intp s = <npy_intp> size
     cdef ndarray ary = PyArray_EMPTY(1, &s, NPY_PETSC_INT, 0)
     if data != NULL:
-        memcpy(PyArray_DATA(ary), data, size*sizeof(PetscInt))
+        memcpy(PyArray_DATA(ary), data, <size_t>size*sizeof(PetscInt))
     return ary
 
 cdef inline ndarray array_r(PetscInt size, const_PetscReal* data):
     cdef npy_intp s = <npy_intp> size
     cdef ndarray ary = PyArray_EMPTY(1, &s, NPY_PETSC_REAL, 0)
     if data != NULL:
-        memcpy(PyArray_DATA(ary), data, size*sizeof(PetscReal))
+        memcpy(PyArray_DATA(ary), data, <size_t>size*sizeof(PetscReal))
     return ary
 
 cdef inline ndarray array_s(PetscInt size, const_PetscScalar* data):
     cdef npy_intp s = <npy_intp> size
     cdef ndarray ary = PyArray_EMPTY(1, &s, NPY_PETSC_SCALAR, 0)
     if data != NULL:
-        memcpy(PyArray_DATA(ary), data, size*sizeof(PetscScalar))
+        memcpy(PyArray_DATA(ary), data, <size_t>size*sizeof(PetscScalar))
     return ary
 
 # --------------------------------------------------------------------

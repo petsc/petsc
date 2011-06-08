@@ -184,7 +184,7 @@ cdef inline PetscInt asDims(dims,
                             PetscInt *_M,
                             PetscInt *_N,
                             PetscInt *_P) except -1:
-    cdef PetscInt ndim = len(dims)
+    cdef PetscInt ndim = <PetscInt>len(dims)
     cdef object M, N, P
     if   ndim == 1: M, = dims
     elif ndim == 2: M, N = dims

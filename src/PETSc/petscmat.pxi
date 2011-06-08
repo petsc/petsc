@@ -681,12 +681,12 @@ cdef inline int matsetvalues_rcv(PetscMat A,
     elif not PyArray_ISCONTIGUOUS(av): raise ValueError(
         "expecting a C-contiguous array")
     # check various shapes
-    cdef PetscInt nm = PyArray_DIM(ai, 0)
-    cdef PetscInt si = PyArray_DIM(ai, 1)
-    cdef PetscInt sj = PyArray_DIM(aj, 1)
-    cdef PetscInt sv = PyArray_SIZE(av) // PyArray_DIM(av, 0)
-    if ((nm != <PetscInt> PyArray_DIM(aj, 0)) or
-        (nm != <PetscInt> PyArray_DIM(av, 0)) or
+    cdef Py_ssize_t nm = PyArray_DIM(ai, 0)
+    cdef Py_ssize_t si = PyArray_DIM(ai, 1)
+    cdef Py_ssize_t sj = PyArray_DIM(aj, 1)
+    cdef Py_ssize_t sv = PyArray_SIZE(av) // PyArray_DIM(av, 0)
+    if ((nm != PyArray_DIM(aj, 0)) or
+        (nm != PyArray_DIM(av, 0)) or
         (si*bs * sj*bs != sv)): raise ValueError(
         ("input arrays have incompatible shapes: "
          "rows.shape=%s, cols.shape=%s, vals.shape=%s") %
@@ -696,9 +696,12 @@ cdef inline int matsetvalues_rcv(PetscMat A,
          matsetvalues_fcn(blocked, local)
     cdef PetscInsertMode addv = insertmode(oaddv)
     # actual calls
-    cdef PetscInt k=0
+    cdef Py_ssize_t k=0
     for k from 0 <= k < nm:
-        CHKERR( setvalues(A, si, &i[k*si], sj, &j[k*sj], &v[k*sv], addv) )
+        CHKERR( setvalues(A,
+                          <PetscInt>si, &i[k*si], 
+                          <PetscInt>sj, &j[k*sj], 
+                          &v[k*sv], addv) )
     return 0
 
 cdef inline int matsetvalues_ijv(PetscMat A,
