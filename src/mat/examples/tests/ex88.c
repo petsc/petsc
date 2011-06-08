@@ -1,5 +1,5 @@
 
-static char help[] = "Tests MatShift(), MatScale(), and MatDiagonalScale() for SHELL matrices\n\n";
+static char help[] = "Tests MatShift(), MatScale(), and MatDiagonalScale() for SHELL and NEST matrices\n\n";
 
 #include <petscmat.h>
 
@@ -54,6 +54,9 @@ static PetscErrorCode TestMatrix(Mat A,Vec X,Vec Y,Vec Z)
   PetscErrorCode ierr;
   Vec W1,W2;
   Mat E;
+  const char *typename;
+  PetscViewer viewer = PETSC_VIEWER_STDOUT_WORLD;
+
   PetscFunctionBegin;
   ierr = VecDuplicate(X,&W1);CHKERRQ(ierr);
   ierr = VecDuplicate(X,&W2);CHKERRQ(ierr);
@@ -63,12 +66,15 @@ static PetscErrorCode TestMatrix(Mat A,Vec X,Vec Y,Vec Z)
   ierr = MatScale(A,41);CHKERRQ(ierr);
   ierr = MatDiagonalScale(A,Y,Z);CHKERRQ(ierr);
   ierr = MatComputeExplicitOperator(A,&E);CHKERRQ(ierr);
-  ierr = MatView(E,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+
+  ierr = PetscObjectGetType((PetscObject)A,&typename);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"Matrix of type: %s\n",typename);CHKERRQ(ierr);
+  ierr = MatView(E,viewer);CHKERRQ(ierr);
   ierr = MatMult(A,Z,W1);CHKERRQ(ierr);
   ierr = MatMultTranspose(A,W1,W2);CHKERRQ(ierr);
-  ierr = VecView(W2,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = VecView(W2,viewer);CHKERRQ(ierr);
   ierr = MatGetDiagonal(A,W2);CHKERRQ(ierr);
-  ierr = VecView(W2,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = VecView(W2,viewer);CHKERRQ(ierr);
   ierr = MatDestroy(&E);CHKERRQ(ierr);
   ierr = VecDestroy(&W1);CHKERRQ(ierr);
   ierr = VecDestroy(&W2);CHKERRQ(ierr);
@@ -79,11 +85,13 @@ static PetscErrorCode TestMatrix(Mat A,Vec X,Vec Y,Vec Z)
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  const PetscScalar avals[] = {2,3,5,7},xvals[] = {11,13},yvals[] = {17,19},zvals[] = {23,29};
+  const PetscScalar xvals[] = {11,13},yvals[] = {17,19},zvals[] = {23,29};
   const PetscInt inds[] = {0,1};
-  Mat            A,S;
+  PetscScalar avals[] = {2,3,5,7};
+  Mat            A,S,D[4],N;
   Vec            X,Y,Z;
   User           user;
+  PetscInt       i;
   PetscErrorCode ierr;
 
   PetscInitialize(&argc,&args,(char *)0,help);
@@ -111,11 +119,20 @@ int main(int argc,char **args)
   ierr = MatShellSetOperation(S,MATOP_MULT,(void(*)(void))MatMult_User);CHKERRQ(ierr);
   ierr = MatShellSetOperation(S,MATOP_MULT_TRANSPOSE,(void(*)(void))MatMultTranspose_User);CHKERRQ(ierr);
   ierr = MatShellSetOperation(S,MATOP_GET_DIAGONAL,(void(*)(void))MatGetDiagonal_User);CHKERRQ(ierr);
+
+  for (i=0; i<4; i++) {
+    ierr = MatCreateSeqDense(PETSC_COMM_WORLD,1,1,&avals[i],&D[i]);CHKERRQ(ierr);
+  }
+  ierr = MatCreateNest(PETSC_COMM_WORLD,2,PETSC_NULL,2,PETSC_NULL,D,&N);CHKERRQ(ierr);
+
   ierr = TestMatrix(S,X,Y,Z);CHKERRQ(ierr);
   ierr = TestMatrix(A,X,Y,Z);CHKERRQ(ierr);
+  ierr = TestMatrix(N,X,Y,Z);CHKERRQ(ierr);
 
+  for (i=0; i<4; i++) {ierr = MatDestroy(&D[i]);CHKERRQ(ierr);}
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = MatDestroy(&S);CHKERRQ(ierr);
+  ierr = MatDestroy(&N);CHKERRQ(ierr);
   ierr = VecDestroy(&X);CHKERRQ(ierr);
   ierr = VecDestroy(&Y);CHKERRQ(ierr);
   ierr = VecDestroy(&Z);CHKERRQ(ierr);
