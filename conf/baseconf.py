@@ -269,7 +269,7 @@ class config(_config):
             log.info(' * linker:      %s' % linker)
         log.info('-' * 70)
 
-    @staticmethod
+    #@staticmethod
     def get_petsc_dir(petsc_dir):
         if not petsc_dir: return None
         petsc_dir = os.path.expandvars(petsc_dir)
@@ -283,15 +283,17 @@ class config(_config):
         petsc_dir = os.path.expanduser(petsc_dir)
         petsc_dir = os.path.abspath(petsc_dir)
         return config.chk_petsc_dir(petsc_dir)
+    get_petsc_dir = staticmethod(get_petsc_dir)
 
-    @staticmethod
+    #@staticmethod
     def chk_petsc_dir(petsc_dir):
         if not os.path.isdir(petsc_dir):
             log.error('invalid PETSC_DIR: %s (ignored)' % petsc_dir)
             return None
         return petsc_dir
+    chk_petsc_dir = staticmethod(chk_petsc_dir)
 
-    @staticmethod
+    #@staticmethod
     def get_petsc_arch(petsc_dir, petsc_arch):
         if not petsc_dir: return None
         petsc_arch = os.path.expandvars(petsc_arch)
@@ -309,8 +311,9 @@ class config(_config):
         petsc_arch = unique(petsc_arch)
         petsc_arch = [arch for arch in petsc_arch if arch]
         return config.chk_petsc_arch(petsc_dir, petsc_arch)
+    get_petsc_arch = staticmethod(get_petsc_arch)
 
-    @staticmethod
+    #@staticmethod
     def chk_petsc_arch(petsc_dir, petsc_arch):
         valid_archs = []
         for arch in petsc_arch:
@@ -320,6 +323,7 @@ class config(_config):
             else:
                 log.warn("invalid PETSC_ARCH: %s (ignored)" % arch)
         return valid_archs
+    chk_petsc_arch = staticmethod(chk_petsc_arch)
 
 
 class build(_build):
