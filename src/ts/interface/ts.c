@@ -892,7 +892,7 @@ PetscErrorCode  TSView(TS ts,PetscViewer viewer)
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSSetApplicationContext"
-/*@C
+/*@
    TSSetApplicationContext - Sets an optional user-defined context for 
    the timesteppers.
 
@@ -918,7 +918,7 @@ PetscErrorCode  TSSetApplicationContext(TS ts,void *usrP)
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSGetApplicationContext"
-/*@C
+/*@
     TSGetApplicationContext - Gets the user-defined context for the 
     timestepper.
 

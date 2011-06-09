@@ -198,8 +198,8 @@ PetscErrorCode  MatShellGetContext(Mat mat,void *ctx)
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidPointer(ctx,2);
   ierr = PetscTypeCompare((PetscObject)mat,MATSHELL,&flg);CHKERRQ(ierr);
-  if (!flg) *(void**)ctx = 0;
-  else      *(void**)ctx = ((Mat_Shell*)(mat->data))->ctx;
+  if (flg) *(void**)ctx = ((Mat_Shell*)(mat->data))->ctx;
+  else SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_SUP,"Cannot get context from non-shell matrix");
   PetscFunctionReturn(0);
 }
 
@@ -630,7 +630,7 @@ PetscErrorCode  MatShellSetContext(Mat mat,void *ctx)
   ierr = PetscTypeCompare((PetscObject)mat,MATSHELL,&flg);CHKERRQ(ierr);
   if (flg) {
     shell->ctx = ctx;
-  }
+  } else SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_SUP,"Cannot attach context to non-shell matrix");
   PetscFunctionReturn(0);
 }
 
