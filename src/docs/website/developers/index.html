@@ -155,15 +155,15 @@ the software <br>
         <li>MacOS: <a
  href="http://www.selenic.com/mercurial/wiki/index.cgi/BinaryPackages">Prebuilt
 binaries</a> are available. For eg: <a
- href="http://mercurial.berkwood.com/binaries/Mercurial-1.5-py2.6-macosx10.6.zip">Mercurial
-1.5
+ href="http://mercurial.berkwood.com/binaries/Mercurial-1.8.4-py2.6-macosx10.6.zip">Mercurial
+1.8.4
 for
 
           <span class="release"> OS X 10.6</span></a></li>
         <li>Windows: <a
  href="http://www.selenic.com/mercurial/wiki/index.cgi/BinaryPackages">Prebuilt
 binaries</a> are available. For ex: <a
- href="http://mercurial.berkwood.com/binaries/Mercurial-1.4.3.exe">mercurial-1.4.3.exe</a><br>
+ href="http://mercurial.selenic.com/release/windows/Mercurial-1.8.4.exe">mercurial-1.8.4.exe</a><br>
         </li>
         <li><a
  href="http://www.selenic.com/mercurial/wiki/index.cgi/Download">From
@@ -177,9 +177,9 @@ Mercurial.</li>
 following:
       <ul style="color: rgb(128, 0, 0);">
         <li>hg clone http://petsc.cs.iit.edu/petsc/petsc-dev</li>
-        <li> cd petsc-dev/config</li>
+        <li> cd petsc-dev</li>
         <li>hg clone http://petsc.cs.iit.edu/petsc/BuildSystem
-BuildSystem</li>
+config/BuildSystem</li>
       </ul>
 PETSc can now be configured in the usual way, specified on the <a
  href="../documentation/installation.html">Installation page</a>.
@@ -196,7 +196,6 @@ Once updated, you will usually want to rebuild completely
         <li>cd petsc-dev<br>
         </li>
         <li>./$PETSC_ARCH/conf/reconfigure-$PETSC_ARCH.py</li>
-        <li>make allfortranstubs</li>
         <li>make</li>
       </ul>
 The Mercurial download always has the latest version of petsc-dev.<br>
