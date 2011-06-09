@@ -41,7 +41,7 @@ int main(int argc,char **argv)
         - Lap(T) + PR*Div([U*T,V*T]) = 0        
         where U and V are given by the given x.u and x.v
         - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDACreate2d(comm,DMDA_NONPERIODIC,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,&da2);CHKERRQ(ierr);
+  ierr = DMDACreate2d(comm,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,&da2);CHKERRQ(ierr);
   ierr = DMDASetFieldName(da2,0,"temperature");CHKERRQ(ierr);
 
   /* Create the solver object and attach the grid/physics info */
@@ -53,7 +53,7 @@ int main(int argc,char **argv)
   ierr = DMMGSetSNES(dmmg,FormFunction,0);CHKERRQ(ierr);
   ierr = DMMGSetFromOptions(dmmg);CHKERRQ(ierr);
 
-  ierr = DMDAGetInfo(da2,PETSC_NULL,&mx,&my,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da2,PETSC_NULL,&mx,&my,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   user.lidvelocity = 1.0/(mx*my);
   user.prandtl     = 1.0;
   user.grashof     = 1.0;
@@ -67,7 +67,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free spaces 
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDestroy(da2);CHKERRQ(ierr);
+  ierr = DMDestroy(&da2);CHKERRQ(ierr);
   ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;

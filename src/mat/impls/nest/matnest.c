@@ -446,9 +446,45 @@ static PetscErrorCode MatDiagonalScale_Nest(Mat A,Vec l,Vec r)
         ierr = MatDiagonalScale(bA->m[i][j],bl,br[j]);CHKERRQ(ierr);
       }
     }
+    ierr = VecRestoreSubVector(l,bA->isglobal.row[i],&bl);CHKERRQ(ierr);
   }
   for (j=0; j<bA->nc; j++) {ierr = VecRestoreSubVector(r,bA->isglobal.col[j],&br[j]);CHKERRQ(ierr);}
   ierr = PetscFree(br);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatScale_Nest"
+static PetscErrorCode MatScale_Nest(Mat A,PetscScalar a)
+{
+  Mat_Nest       *bA = (Mat_Nest*)A->data;
+  PetscInt       i,j;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  for (i=0; i<bA->nr; i++) {
+    for (j=0; j<bA->nc; j++) {
+      if (bA->m[i][j]) {
+        ierr = MatScale(bA->m[i][j],a);CHKERRQ(ierr);
+      }
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatShift_Nest"
+static PetscErrorCode MatShift_Nest(Mat A,PetscScalar a)
+{
+  Mat_Nest       *bA = (Mat_Nest*)A->data;
+  PetscInt       i;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  for (i=0; i<bA->nr; i++) {
+    if (!bA->m[i][i]) SETERRQ2(((PetscObject)A)->comm,PETSC_ERR_SUP,"No support for shifting an empty diagonal block, insert a matrix in block (%D,%D)",i,i);
+    ierr = MatShift(bA->m[i][i],a);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -1083,6 +1119,14 @@ static PetscErrorCode MatSetUp_NestIS_Private(Mat A,PetscInt nr,const IS is_row[
     }
   }
 #endif
+
+  /* Set A->assembled if all non-null blocks are currently assembled */
+  for (i=0; i<vs->nr; i++) {
+    for (j=0; j<vs->nc; j++) {
+      if (vs->m[i][j] && !vs->m[i][j]->assembled) PetscFunctionReturn(0);
+    }
+  }
+  A->assembled = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -1165,6 +1209,8 @@ PetscErrorCode MatCreate_Nest(Mat A)
   A->ops->restorelocalsubmatrix = MatRestoreLocalSubMatrix_Nest;
   A->ops->getdiagonal           = MatGetDiagonal_Nest;
   A->ops->diagonalscale         = MatDiagonalScale_Nest;
+  A->ops->scale                 = MatScale_Nest;
+  A->ops->shift                 = MatShift_Nest;
 
   A->spptr        = 0;
   A->same_nonzero = PETSC_FALSE;

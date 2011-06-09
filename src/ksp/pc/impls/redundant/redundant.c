@@ -226,7 +226,7 @@ static PetscErrorCode PCReset_Redundant(PC pc)
   ierr = VecDestroy(&red->xdup);CHKERRQ(ierr);
   ierr = VecDestroy(&red->ydup);CHKERRQ(ierr);
   ierr = MatDestroy(&red->pmats);CHKERRQ(ierr);
-  ierr = KSPReset(red->ksp);CHKERRQ(ierr);
+  if (red->ksp) {ierr = KSPReset(red->ksp);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
