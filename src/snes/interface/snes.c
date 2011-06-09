@@ -515,7 +515,7 @@ PetscErrorCode  SNESSetComputeApplicationContext(SNES snes,PetscErrorCode (*comp
 
 #undef __FUNCT__  
 #define __FUNCT__ "SNESSetApplicationContext"
-/*@C
+/*@
    SNESSetApplicationContext - Sets the optional user-defined context for 
    the nonlinear solvers.  
 
@@ -534,17 +534,19 @@ PetscErrorCode  SNESSetComputeApplicationContext(SNES snes,PetscErrorCode (*comp
 PetscErrorCode  SNESSetApplicationContext(SNES snes,void *usrP)
 {
   PetscErrorCode ierr;
+  KSP            ksp;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  ierr       = KSPSetApplicationContext(snes->ksp,usrP);CHKERRQ(ierr);
+  ierr       = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
+  ierr       = KSPSetApplicationContext(ksp,usrP);CHKERRQ(ierr);
   snes->user = usrP;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
 #define __FUNCT__ "SNESGetApplicationContext"
-/*@C
+/*@
    SNESGetApplicationContext - Gets the user-defined context for the 
    nonlinear solvers.  
 

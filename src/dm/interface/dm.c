@@ -927,7 +927,7 @@ PetscErrorCode  DMGetAggregates(DM dmc, DM dmf, Mat *rest)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMSetApplicationContext"
-/*@C
+/*@
     DMSetApplicationContext - Set a user context into a DM object
 
     Not Collective
