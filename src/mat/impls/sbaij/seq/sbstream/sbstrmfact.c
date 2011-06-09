@@ -156,7 +156,6 @@ PetscErrorCode ForwardSolve_SeqSBSTRM_4_NaturalOrdering_private(PetscInt *ai,Pet
 #define __FUNCT__ "BackwardSolve_SeqSBSTRM_4_NaturalOrdering_private"
 PetscErrorCode BackwardSolve_SeqSBSTRM_4_NaturalOrdering_private(PetscInt *ai,PetscInt *aj,MatScalar *aa,PetscInt mbs,PetscScalar *x)
 {
-  MatScalar      *v; 
   PetscScalar    *xp,x0,x1,x2,x3;
   PetscInt       nz,*vj,k;
 
@@ -172,7 +171,6 @@ PetscErrorCode BackwardSolve_SeqSBSTRM_4_NaturalOrdering_private(PetscInt *ai,Pe
   v3  = v2 + slen;
 
   for (k=mbs-1; k>=0; k--){ 
-    v  = aa + 16*ai[k]; 
     xp = x + k*4;
     x0=xp[0]; x1=xp[1]; x2=xp[2]; x3=xp[3]; /* xk */ 
     nz = ai[k+1] - ai[k];  

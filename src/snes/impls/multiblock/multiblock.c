@@ -722,35 +722,6 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
-#define __FUNCT__ "SNESMultiblockSetType_Default"
-PetscErrorCode  SNESMultiblockSetType_Default(SNES snes, PCCompositeType type)
-{
-  SNES_Multiblock *mb = (SNES_Multiblock *) snes->data;
-  PetscErrorCode   ierr;
-
-  PetscFunctionBegin;
-  mb->type = type;
-  if (type == PC_COMPOSITE_SCHUR) {
-#if 1
-    SETERRQ(((PetscObject) snes)->comm, PETSC_ERR_SUP, "The Schur composite type is not yet supported");
-#else
-    snes->ops->solve = SNESSolve_Multiblock_Schur;
-    snes->ops->view  = SNESView_Multiblock_Schur;
-    ierr = PetscObjectComposeFunctionDynamic((PetscObject) snes, "SNESMultiblockGetSubSNES_C", "SNESMultiblockGetSubSNES_Schur", SNESMultiblockGetSubSNES_Schur);CHKERRQ(ierr);
-    ierr = PetscObjectComposeFunctionDynamic((PetscObject) snes, "SNESMultiblockSchurPrecondition_C", "SNESMultiblockSchurPrecondition_Default", SNESMultiblockSchurPrecondition_Default);CHKERRQ(ierr);
-#endif
-  } else {
-    snes->ops->solve = SNESSolve_Multiblock;
-    snes->ops->view  = SNESView_Multiblock;
-    ierr = PetscObjectComposeFunctionDynamic((PetscObject) snes, "SNESMultiblockGetSubSNES_C", "SNESMultiblockGetSubSNES_Default", SNESMultiblockGetSubSNES_Default);CHKERRQ(ierr);
-    ierr = PetscObjectComposeFunctionDynamic((PetscObject) snes, "SNESMultiblockSchurPrecondition_C", "", 0);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-EXTERN_C_END
-
-EXTERN_C_BEGIN
-#undef __FUNCT__
 #define __FUNCT__ "SNESMultiblockSetBlockSize_Default"
 PetscErrorCode  SNESMultiblockSetBlockSize_Default(SNES snes, PetscInt bs)
 {
@@ -784,6 +755,35 @@ PetscErrorCode SNESMultiblockGetSubSNES_Default(SNES snes, PetscInt *n, SNES **s
     SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_PLIB, "Corrupt SNESMULTIBLOCK object: number of blocks in linked list %D does not match number in object %D", cnt, mb->numBlocks);
   }
   if (n) {*n = mb->numBlocks;}
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "SNESMultiblockSetType_Default"
+PetscErrorCode  SNESMultiblockSetType_Default(SNES snes, PCCompositeType type)
+{
+  SNES_Multiblock *mb = (SNES_Multiblock *) snes->data;
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  mb->type = type;
+  if (type == PC_COMPOSITE_SCHUR) {
+#if 1
+    SETERRQ(((PetscObject) snes)->comm, PETSC_ERR_SUP, "The Schur composite type is not yet supported");
+#else
+    snes->ops->solve = SNESSolve_Multiblock_Schur;
+    snes->ops->view  = SNESView_Multiblock_Schur;
+    ierr = PetscObjectComposeFunctionDynamic((PetscObject) snes, "SNESMultiblockGetSubSNES_C", "SNESMultiblockGetSubSNES_Schur", SNESMultiblockGetSubSNES_Schur);CHKERRQ(ierr);
+    ierr = PetscObjectComposeFunctionDynamic((PetscObject) snes, "SNESMultiblockSchurPrecondition_C", "SNESMultiblockSchurPrecondition_Default", SNESMultiblockSchurPrecondition_Default);CHKERRQ(ierr);
+#endif
+  } else {
+    snes->ops->solve = SNESSolve_Multiblock;
+    snes->ops->view  = SNESView_Multiblock;
+    ierr = PetscObjectComposeFunctionDynamic((PetscObject) snes, "SNESMultiblockGetSubSNES_C", "SNESMultiblockGetSubSNES_Default", SNESMultiblockGetSubSNES_Default);CHKERRQ(ierr);
+    ierr = PetscObjectComposeFunctionDynamic((PetscObject) snes, "SNESMultiblockSchurPrecondition_C", "", 0);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

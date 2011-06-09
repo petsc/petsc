@@ -516,8 +516,7 @@ PetscErrorCode  ISCreate_General(IS is)
   ierr = PetscNewLog(is,IS_General,&sub);CHKERRQ(ierr);
   is->data = (void*)sub;
   is->bs   = 1;
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)is,"ISGeneralSetIndices_C","ISGeneralSetIndices_General",
-					   ISGeneralSetIndices_General);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)is,"ISGeneralSetIndices_C","ISGeneralSetIndices_General",ISGeneralSetIndices_General);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

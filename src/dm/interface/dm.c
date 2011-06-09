@@ -485,7 +485,7 @@ PetscErrorCode  DMGetInjection(DM dm1,DM dm2,VecScatter *ctx)
 
 .seealso DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetMatrix()
 
-C@*/
+@*/
 PetscErrorCode  DMGetColoring(DM dm,ISColoringType ctype,const MatType mtype,ISColoring *coloring)
 {
   PetscErrorCode ierr;
@@ -527,7 +527,7 @@ PetscErrorCode  DMGetColoring(DM dm,ISColoringType ctype,const MatType mtype,ISC
 
 .seealso DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetInterpolation()
 
-C@*/
+@*/
 PetscErrorCode  DMGetMatrix(DM dm,const MatType mtype,Mat *mat)
 {
   PetscErrorCode ierr;
@@ -760,7 +760,7 @@ PetscErrorCode  DMLocalToGlobalEnd(DM dm,Vec l,InsertMode mode,Vec g)
 
     Level: developer
 
-.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetContext(), DMSetInitialGuess(), 
+.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetApplicationContext(), DMSetInitialGuess(), 
          DMSetFunction()
 
 @*/
@@ -926,9 +926,9 @@ PetscErrorCode  DMGetAggregates(DM dmc, DM dmf, Mat *rest)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DMSetContext"
-/*@
-    DMSetContext - Set a user context into a DM object
+#define __FUNCT__ "DMSetApplicationContext"
+/*@C
+    DMSetApplicationContext - Set a user context into a DM object
 
     Not Collective
 
@@ -938,10 +938,10 @@ PetscErrorCode  DMGetAggregates(DM dmc, DM dmf, Mat *rest)
 
     Level: intermediate
 
-.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetContext()
+.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetApplicationContext()
 
 @*/
-PetscErrorCode  DMSetContext(DM dm,void *ctx)
+PetscErrorCode  DMSetApplicationContext(DM dm,void *ctx)
 {
   PetscFunctionBegin;
   dm->ctx = ctx;
@@ -949,9 +949,9 @@ PetscErrorCode  DMSetContext(DM dm,void *ctx)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DMGetContext"
+#define __FUNCT__ "DMGetApplicationContext"
 /*@
-    DMGetContext - Gets a user context from a DM object
+    DMGetApplicationContext - Gets a user context from a DM object
 
     Not Collective
 
@@ -963,13 +963,13 @@ PetscErrorCode  DMSetContext(DM dm,void *ctx)
 
     Level: intermediate
 
-.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetContext()
+.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetApplicationContext()
 
 @*/
-PetscErrorCode  DMGetContext(DM dm,void **ctx)
+PetscErrorCode  DMGetApplicationContext(DM dm,void *ctx)
 {
   PetscFunctionBegin;
-  *ctx = dm->ctx;
+  *(void**)ctx = dm->ctx;
   PetscFunctionReturn(0);
 }
 
@@ -986,7 +986,7 @@ PetscErrorCode  DMGetContext(DM dm,void **ctx)
 
     Level: intermediate
 
-.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetContext(), DMSetFunction(), DMSetJacobian()
+.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetApplicationContext(), DMSetFunction(), DMSetJacobian()
 
 @*/
 PetscErrorCode  DMSetInitialGuess(DM dm,PetscErrorCode (*f)(DM,Vec))
@@ -1012,7 +1012,7 @@ PetscErrorCode  DMSetInitialGuess(DM dm,PetscErrorCode (*f)(DM,Vec))
     Notes: This sets both the function for function evaluations and the function used to compute Jacobians via finite differences if no Jacobian 
            computer is provided with DMSetJacobian(). Canceling cancels the function, but not the function used to compute the Jacobian.
 
-.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetContext(), DMSetInitialGuess(),
+.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetApplicationContext(), DMSetInitialGuess(),
          DMSetJacobian()
 
 @*/
@@ -1039,7 +1039,7 @@ PetscErrorCode  DMSetFunction(DM dm,PetscErrorCode (*f)(DM,Vec,Vec))
 
     Level: intermediate
 
-.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetContext(), DMSetInitialGuess(), 
+.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetApplicationContext(), DMSetInitialGuess(), 
          DMSetFunction()
 
 @*/
@@ -1063,7 +1063,7 @@ PetscErrorCode  DMSetJacobian(DM dm,PetscErrorCode (*f)(DM,Vec,Mat,Mat,MatStruct
 
     Level: developer
 
-.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetContext(), DMSetRhs(), DMSetMat()
+.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetApplicationContext(), DMSetRhs(), DMSetMat()
 
 @*/
 PetscErrorCode  DMComputeInitialGuess(DM dm,Vec x)
@@ -1090,7 +1090,7 @@ PetscErrorCode  DMComputeInitialGuess(DM dm,Vec x)
 
     Level: developer
 
-.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetContext(), DMSetFunction(), DMSetJacobian()
+.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetApplicationContext(), DMSetFunction(), DMSetJacobian()
 
 @*/
 PetscErrorCode  DMHasInitialGuess(DM dm,PetscBool  *flg)
@@ -1115,7 +1115,7 @@ PetscErrorCode  DMHasInitialGuess(DM dm,PetscBool  *flg)
 
     Level: developer
 
-.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetContext(), DMSetFunction(), DMSetJacobian()
+.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetApplicationContext(), DMSetFunction(), DMSetJacobian()
 
 @*/
 PetscErrorCode  DMHasFunction(DM dm,PetscBool  *flg)
@@ -1140,7 +1140,7 @@ PetscErrorCode  DMHasFunction(DM dm,PetscBool  *flg)
 
     Level: developer
 
-.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetContext(), DMSetFunction(), DMSetJacobian()
+.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetApplicationContext(), DMSetFunction(), DMSetJacobian()
 
 @*/
 PetscErrorCode  DMHasJacobian(DM dm,PetscBool  *flg)
@@ -1164,7 +1164,7 @@ PetscErrorCode  DMHasJacobian(DM dm,PetscBool  *flg)
 
     Level: developer
 
-.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetContext(), DMSetInitialGuess(),
+.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetApplicationContext(), DMSetInitialGuess(),
          DMSetJacobian()
 
 @*/
@@ -1194,7 +1194,7 @@ PetscErrorCode  DMComputeFunction(DM dm,Vec x,Vec b)
 
     Level: developer
 
-.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetContext(), DMSetInitialGuess(), 
+.seealso DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix(), DMGetApplicationContext(), DMSetInitialGuess(), 
          DMSetFunction()
 
 @*/
@@ -1474,7 +1474,7 @@ PetscErrorCode  DMComputeFunction_Matlab(DM dm,Vec x,Vec y)
   PetscCheckSameComm(dm,1,y,3);
 
   /* call Matlab function in ctx with arguments x and y */
-  ierr = DMGetContext(dm,(void**)&sctx);CHKERRQ(ierr);
+  ierr = DMGetApplicationContext(dm,&sctx);CHKERRQ(ierr);
   ierr = PetscMemcpy(&ls,&dm,sizeof(dm));CHKERRQ(ierr); 
   ierr = PetscMemcpy(&lx,&x,sizeof(x));CHKERRQ(ierr); 
   ierr = PetscMemcpy(&ly,&y,sizeof(y));CHKERRQ(ierr); 
@@ -1506,12 +1506,12 @@ PetscErrorCode  DMSetFunctionMatlab(DM dm,const char *func)
 
   PetscFunctionBegin;
   /* currently sctx is memory bleed */
-  ierr = DMGetContext(dm,(void**)&sctx);CHKERRQ(ierr);
+  ierr = DMGetApplicationContext(dm,&sctx);CHKERRQ(ierr);
   if (!sctx) {
     ierr = PetscMalloc(sizeof(DMMatlabContext),&sctx);CHKERRQ(ierr);
   }
   ierr = PetscStrallocpy(func,&sctx->funcname);CHKERRQ(ierr);
-  ierr = DMSetContext(dm,sctx);CHKERRQ(ierr);
+  ierr = DMSetApplicationContext(dm,sctx);CHKERRQ(ierr);
   ierr = DMSetFunction(dm,DMComputeFunction_Matlab);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1539,7 +1539,7 @@ PetscErrorCode  DMComputeJacobian_Matlab(DM dm,Vec x,Mat A,Mat B,MatStructure *s
   PetscValidHeaderSpecific(A,MAT_CLASSID,3);
 
   /* call MATLAB function in ctx with arguments x, A, and B */
-  ierr = DMGetContext(dm,(void**)&sctx);CHKERRQ(ierr);
+  ierr = DMGetApplicationContext(dm,&sctx);CHKERRQ(ierr);
   ierr = PetscMemcpy(&ls,&dm,sizeof(dm));CHKERRQ(ierr); 
   ierr = PetscMemcpy(&lx,&x,sizeof(x));CHKERRQ(ierr); 
   ierr = PetscMemcpy(&lA,&A,sizeof(A));CHKERRQ(ierr); 
@@ -1576,12 +1576,12 @@ PetscErrorCode  DMSetJacobianMatlab(DM dm,const char *func)
 
   PetscFunctionBegin;
   /* currently sctx is memory bleed */
-  ierr = DMGetContext(dm,(void**)&sctx);CHKERRQ(ierr);
+  ierr = DMGetApplicationContext(dm,&sctx);CHKERRQ(ierr);
   if (!sctx) {
     ierr = PetscMalloc(sizeof(DMMatlabContext),&sctx);CHKERRQ(ierr);
   }
   ierr = PetscStrallocpy(func,&sctx->jacname);CHKERRQ(ierr);
-  ierr = DMSetContext(dm,sctx);CHKERRQ(ierr);
+  ierr = DMSetApplicationContext(dm,sctx);CHKERRQ(ierr);
   ierr = DMSetJacobian(dm,DMComputeJacobian_Matlab);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

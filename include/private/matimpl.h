@@ -489,7 +489,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatPivotCheck_none(Mat mat,const MatFactorInf
   sctx->newshift = PETSC_FALSE;
   if (PetscAbsScalar(sctx->pv) <= _zero) {
     PetscErrorCode ierr;
-    PetscBool      flg;
+    PetscBool      flg = PETSC_FALSE;
     
     ierr = PetscOptionsGetBool(PETSC_NULL,"-mat_dump",&flg,PETSC_NULL);CHKERRQ(ierr);
     if (flg) {

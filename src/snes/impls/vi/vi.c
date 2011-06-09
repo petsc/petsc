@@ -14,7 +14,7 @@
 -  compute - computes the bounds
 
 
-C@*/
+@*/
 PetscErrorCode SNESVISetComputeVariableBounds(SNES snes, PetscErrorCode (*compute)(SNES,Vec*,Vec*))
 {
   PetscErrorCode   ierr;
@@ -233,6 +233,7 @@ PetscErrorCode  DMSetVI(DM dm,Vec upper,Vec lower,Vec values,Vec F,IS inactive)
 
   PetscFunctionBegin;
   if (!dm) PetscFunctionReturn(0);
+
   ierr = PetscObjectReference((PetscObject)upper);CHKERRQ(ierr);
   ierr = PetscObjectReference((PetscObject)lower);CHKERRQ(ierr);
   ierr = PetscObjectReference((PetscObject)values);CHKERRQ(ierr);
@@ -1177,6 +1178,7 @@ PetscErrorCode SNESSolveVI_RS(SNES snes)
     ierr = ISEqual(vi->IS_inact_prev,IS_inact,&isequal);CHKERRQ(ierr);
     if (!isequal) {
       ierr = SNESVIResetPCandKSP(snes,jac_inact_inact,prejac_inact_inact);CHKERRQ(ierr);
+      flg  = DIFFERENT_NONZERO_PATTERN;
     }
     
     /*      ierr = ISView(IS_inact,0);CHKERRQ(ierr); */

@@ -136,8 +136,8 @@ extern PetscErrorCode   DMConvert(DM,const DMType,DM*);
 
 extern PetscErrorCode   DMSetOptionsPrefix(DM,const char []);
 extern PetscErrorCode   DMSetVecType(DM,const VecType);
-extern PetscErrorCode   DMSetContext(DM,void*);
-extern PetscErrorCode   DMGetContext(DM,void**);
+extern PetscErrorCode   DMSetApplicationContext(DM,void*);
+extern PetscErrorCode   DMGetApplicationContext(DM,void*);
 extern PetscErrorCode   DMSetInitialGuess(DM,PetscErrorCode (*)(DM,Vec));
 extern PetscErrorCode   DMSetFunction(DM,PetscErrorCode (*)(DM,Vec,Vec));
 extern PetscErrorCode   DMSetJacobian(DM,PetscErrorCode (*)(DM,Vec,Mat,Mat,MatStructure *));

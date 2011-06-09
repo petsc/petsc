@@ -55,7 +55,7 @@ int main(int argc,char **argv)
 {
   TS             ts;                   /* nonlinear solver */
   Vec            u;                    /* solution, residual vectors */
-  Mat            J;                    /* Jacobian matrix */
+  Mat            J,Jmf;                /* Jacobian matrices */
   PetscInt       steps,maxsteps = 1000;     /* iterations for convergence */
   PetscErrorCode ierr;
   DM             da;
@@ -63,7 +63,11 @@ int main(int argc,char **argv)
   PetscReal      ftime,dt;
   MonitorCtx     usermonitor;       /* user-defined monitor context */
   AppCtx         user;              /* user-defined work context */
-  PetscBool      fdcoloring;
+  SNES           snes;
+  PetscInt       Jtype; /* Jacobian type
+                            0: user provide Jacobian; 
+                            1: slow finite difference;
+                            2: fd with coloring; */
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   /* Initialize user application context */
@@ -123,38 +127,41 @@ int main(int argc,char **argv)
   ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Set runtime options
-   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
-
-  /* Use coloring to compute rhs Jacobian efficiently */
-  fdcoloring = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-fdcoloring",&fdcoloring,PETSC_NULL);CHKERRQ(ierr);
-  if (fdcoloring){
-    SNES       snes;
-    ISColoring iscoloring;
-    ierr = DMGetColoring(da,IS_COLORING_GLOBAL,MATAIJ,&iscoloring);CHKERRQ(ierr);
-    ierr = MatFDColoringCreate(J,iscoloring,&matfdcoloring);CHKERRQ(ierr);
-    ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
-    ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
-    ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))SNESTSFormFunction,ts);CHKERRQ(ierr);
-    ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
-    ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr);
-  } else { /* use user provided Jacobian evaluation routine */
+   Set Jacobian evaluation routine 
+  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  Jtype = 0;
+  ierr = PetscOptionsGetInt(PETSC_NULL, "-Jtype",&Jtype,PETSC_NULL);CHKERRQ(ierr);
+  if (Jtype == 0){ /* use user provided Jacobian evaluation routine */
     if (user.nstencilpts != 5) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"user Jacobian routine FormIJacobian() does not support nstencilpts=%D",user.nstencilpts);
     ierr = TSSetIJacobian(ts,J,J,FormIJacobian,&user);CHKERRQ(ierr);
+    ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
+  } else { /* use finite difference Jacobian J as preconditioner and '-snes_mf_operator' for Mat*vec */
+    ierr = TSSetFromOptions(ts);CHKERRQ(ierr); 
+    ierr = TSSetUp(ts);CHKERRQ(ierr);            /* enables MatCreateSNESMF() below */
+    ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
+    ierr = MatCreateSNESMF(snes,&Jmf);CHKERRQ(ierr); 
+    if (Jtype == 1){ /* slow finite difference J; */
+      ierr = SNESSetJacobian(snes,Jmf,J,SNESDefaultComputeJacobian,PETSC_NULL);CHKERRQ(ierr);
+    } else if (Jtype == 2){ /* Use coloring to compute  finite difference J efficiently */
+      ISColoring iscoloring;
+      ierr = DMGetColoring(da,IS_COLORING_GLOBAL,MATAIJ,&iscoloring);CHKERRQ(ierr);
+      ierr = MatFDColoringCreate(J,iscoloring,&matfdcoloring);CHKERRQ(ierr);
+      ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
+      ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
+      ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))SNESTSFormFunction,ts);CHKERRQ(ierr);
+      ierr = SNESSetJacobian(snes,Jmf,J,SNESDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr);
+    } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Jtype is not supported");
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSStep(ts,&steps,&ftime);CHKERRQ(ierr);
-
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = MatDestroy(&J);CHKERRQ(ierr);
-  if (fdcoloring){
+  if (Jtype ==2){
     ierr = MatFDColoringDestroy(&matfdcoloring);CHKERRQ(ierr);
   }
   ierr = VecDestroy(&u);CHKERRQ(ierr);     
