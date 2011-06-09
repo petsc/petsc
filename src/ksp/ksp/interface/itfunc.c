@@ -708,7 +708,8 @@ PetscErrorCode  KSPReset(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  if (ksp) PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  if (!ksp) PetscFunctionReturn(0);
   if (ksp->ops->reset) {
     ierr = (*ksp->ops->reset)(ksp);CHKERRQ(ierr);
   }

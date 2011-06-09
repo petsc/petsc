@@ -9,7 +9,7 @@ Runtime options include:\n\
 -theta_c <theta_c>\n\n";
 
 /*
-    Run with for example: -pc_type mg -pc_mg_galerkin -T .01 -da_grid_x 65 -da_grid_y 65    -pc_mg_levels 4 -ksp_type fgmres   -snes_atol 1.e-14  
+    Run with for example: -pc_type mg -pc_mg_galerkin -T .01 -da_grid_x 65 -da_grid_y 65 -pc_mg_levels 4 -ksp_type fgmres -snes_atol 1.e-14 -mat_no_inode
  */
 
 #include "petscsnes.h"
@@ -194,12 +194,18 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void* ctx)
 #define __FUNCT__ "FormJacobian"
 PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void *ctx)
 {
-  PetscErrorCode ierr;
-  AppCtx         *user=(AppCtx*)ctx;
+  PetscErrorCode   ierr;
+  AppCtx           *user=(AppCtx*)ctx;
+  static PetscBool copied = PETSC_FALSE;
 
   PetscFunctionBegin;
-  *flg = SAME_NONZERO_PATTERN;
-  ierr = MatCopy(user->M,*J,*flg);CHKERRQ(ierr);
+  /* for active set method the matrix does not get changed, so do not need to copy each time, 
+     if the active set remains the same for several solves the preconditioner does not need to be rebuilt*/
+  *flg = SAME_PRECONDITIONER;  
+  if (!copied) {
+    ierr = MatCopy(user->M,*J,*flg);CHKERRQ(ierr);
+    copied = PETSC_TRUE;
+  }
   ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
