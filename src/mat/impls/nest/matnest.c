@@ -32,120 +32,6 @@ static PetscErrorCode MatNestGetSizes_Private(Mat A,PetscInt *m,PetscInt *n,Pets
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PETSc_MatNest_CheckMatVecCompatibility2"
-PETSC_UNUSED
-static PetscErrorCode PETSc_MatNest_CheckMatVecCompatibility2(Mat A,Vec x,Vec y)
-{
-  PetscBool      isANest, isxNest, isyNest;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  isANest = isxNest = isyNest = PETSC_FALSE;
-  ierr = PetscTypeCompare( (PetscObject)A, MATNEST, &isANest );CHKERRQ(ierr);
-  ierr = PetscTypeCompare( (PetscObject)x, VECNEST, &isxNest );CHKERRQ(ierr);
-  ierr = PetscTypeCompare( (PetscObject)y, VECNEST, &isyNest );CHKERRQ(ierr);
-
-  if (isANest && isxNest && isyNest) {
-    PetscFunctionReturn(0);
-  } else {
-    SETERRQ( ((PetscObject)A)->comm, PETSC_ERR_SUP, "Operation only valid for Mat(Nest)-Vec(Nest) combinations");
-    PetscFunctionReturn(0);
-  }
-  PetscFunctionReturn(0);
-}
-
-/*
- This function is called every time we insert a sub matrix the Nest.
- It ensures that every Nest along row r, and col c has the same dimensions
- as the submat being inserted.
-*/
-#undef __FUNCT__  
-#define __FUNCT__ "PETSc_MatNest_CheckConsistency"
-PETSC_UNUSED
-static PetscErrorCode PETSc_MatNest_CheckConsistency(Mat A,Mat submat,PetscInt r,PetscInt c)
-{
-  Mat_Nest       *b = (Mat_Nest*)A->data;
-  PetscInt       i,j;
-  PetscInt       nr,nc;
-  PetscInt       sM,sN,M,N;
-  Mat            mat;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  nr = b->nr;
-  nc = b->nc;
-  ierr = MatGetSize(submat,&sM,&sN);CHKERRQ(ierr);
-  for (i=0; i<nr; i++) {
-    mat = b->m[i][c];
-    if (mat) {
-      ierr = MatGetSize(mat,&M,&N);CHKERRQ(ierr);
-      /* Check columns match */
-      if (sN != N) {
-        SETERRQ3(((PetscObject)A)->comm,PETSC_ERR_SUP,"Inserted incompatible submatrix into Nest at (%D,%D). Submatrix must have %D rows",r,c,N );
-      }
-    }
-  }
-
-  for (j=0; j<nc; j++) {
-    mat = b->m[r][j];
-    if (mat) {
-      ierr = MatGetSize(mat,&M,&N);CHKERRQ(ierr);
-      /* Check rows match */
-      if (sM != M) {
-        SETERRQ3(((PetscObject)A)->comm,PETSC_ERR_SUP,"Inserted incompatible submatrix into Nest at (%D,%D). Submatrix must have %D cols",r,c,M );
-      }
-    }
-  }
-  PetscFunctionReturn(0);
-}
-
-/*
- Checks if the row/col's contain a complete set of IS's.
- Once they are filled, the offsets are computed. This saves having to update
- the index set entries each time we insert something new.
- */
-#undef __FUNCT__  
-#define __FUNCT__ "PETSc_MatNest_UpdateStructure"
-PETSC_UNUSED
-static PetscErrorCode PETSc_MatNest_UpdateStructure(Mat A,PetscInt ridx,PetscInt cidx)
-{
-  Mat_Nest       *b = (Mat_Nest*)A->data;
-  PetscInt       m,n,i,j;
-  PetscBool      fullrow,fullcol;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = MatGetLocalSize(b->m[ridx][cidx],&m,&n);CHKERRQ(ierr);
-  b->row_len[ridx] = m;
-  b->col_len[cidx] = n;
-
-  fullrow = PETSC_TRUE;
-  for (i=0; i<b->nr; i++) {
-    if (b->row_len[i]==-1) { fullrow = PETSC_FALSE; break; }
-  }
-  if ( (fullrow) && (!b->isglobal.row[0]) ){
-    PetscInt cnt = 0;
-    for (i=0; i<b->nr; i++) {
-      ierr = ISCreateStride(PETSC_COMM_SELF,b->row_len[i],cnt,1,&b->isglobal.row[i]);CHKERRQ(ierr);
-      cnt = cnt + b->row_len[i];
-    }
-  }
-
-  fullcol = PETSC_TRUE;
-  for (j=0; j<b->nc; j++) {
-    if (b->col_len[j]==-1) { fullcol = PETSC_FALSE; break; }
-  }
-  if( (fullcol) && (!b->isglobal.col[0]) ){
-    PetscInt cnt = 0;
-    for (j=0; j<b->nc; j++) {
-      ierr = ISCreateStride(PETSC_COMM_SELF,b->col_len[j],cnt,1,&b->isglobal.col[j]);CHKERRQ(ierr);
-      cnt = cnt + b->col_len[j];
-    }
-  }
-  PetscFunctionReturn(0);
-}
-
 /* operations */
 #undef __FUNCT__  
 #define __FUNCT__ "MatMult_Nest"
@@ -413,7 +299,6 @@ static PetscErrorCode MatNestFindIS(Mat A,PetscInt n,const IS list[],IS is,Petsc
 static PetscErrorCode MatNestGetRow(Mat A,PetscInt row,Mat *B)
 {
   Mat_Nest       *vs = (Mat_Nest*)A->data;
-  Mat            C;
   char           keyname[256];
   PetscErrorCode ierr;
 
@@ -436,9 +321,7 @@ static PetscErrorCode MatNestFindSubMat(Mat A,struct MatNestISPair *is,IS isrow,
 {
   Mat_Nest       *vs = (Mat_Nest*)A->data;
   PetscErrorCode ierr;
-  PetscInt       row,col,i;
-  IS             *iscopy;
-  Mat            *matcopy;
+  PetscInt       row,col;
   PetscBool      same,isFullCol;
 
   PetscFunctionBegin;
@@ -527,53 +410,20 @@ static PetscErrorCode MatRestoreLocalSubMatrix_Nest(Mat A,IS isrow,IS iscol,Mat 
 static PetscErrorCode MatGetDiagonal_Nest(Mat A,Vec v)
 {
   Mat_Nest       *bA = (Mat_Nest*)A->data;
-  Vec            *bdiag;
   PetscInt       i;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  /*  ierr = MatGetVecs_Nest(A,&diag,PETSC_NULL);CHKERRQ(ierr); */
-  /*  ierr = VecNestGetSubVecs(diag,PETSC_NULL,&bdiag);CHKERRQ(ierr); */
-  ierr = VecNestGetSubVecs(v,PETSC_NULL,&bdiag);CHKERRQ(ierr);
   for (i=0; i<bA->nr; i++) {
+    Vec bv;
+    ierr = VecGetSubVector(v,bA->isglobal.row[i],&bv);CHKERRQ(ierr);
     if (bA->m[i][i]) {
-      ierr = MatGetDiagonal(bA->m[i][i],bdiag[i]);CHKERRQ(ierr);
+      ierr = MatGetDiagonal(bA->m[i][i],bv);CHKERRQ(ierr);
     } else {
-      ierr = VecSet(bdiag[i],1.0);CHKERRQ(ierr);
+      ierr = VecSet(bv,1.0);CHKERRQ(ierr);
     }
+    ierr = VecRestoreSubVector(v,bA->isglobal.row[i],&bv);CHKERRQ(ierr);
   }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatGetDiagonal_Nest2"
-static PetscErrorCode MatGetDiagonal_Nest2(Mat A,Vec v)
-{
-  Mat_Nest       *bA = (Mat_Nest*)A->data;
-  Vec            diag,*bdiag;
-  VecScatter     *vscat;
-  PetscInt       i;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = MatGetVecs_Nest(A,&diag,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatGetDiagonal_Nest(A,diag);CHKERRQ(ierr);
-
-  /* scatter diag into v */
-  ierr = VecNestGetSubVecs(diag,PETSC_NULL,&bdiag);CHKERRQ(ierr);
-  ierr = PetscMalloc( sizeof(VecScatter) * bA->nr, &vscat );CHKERRQ(ierr);
-  for (i=0; i<bA->nr; i++) {
-    ierr = VecScatterCreate(v,bA->isglobal.row[i], bdiag[i],PETSC_NULL,&vscat[i]);CHKERRQ(ierr);
-    ierr = VecScatterBegin(vscat[i],bdiag[i],v,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  }
-  for (i=0; i<bA->nr; i++) {
-    ierr = VecScatterEnd(vscat[i],bdiag[i],v,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  }
-  for (i=0; i<bA->nr; i++) {
-    ierr = VecScatterDestroy(&vscat[i]);CHKERRQ(ierr);
-  }
-  ierr = PetscFree(vscat);CHKERRQ(ierr);
-  ierr = VecDestroy(&diag);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -582,17 +432,40 @@ static PetscErrorCode MatGetDiagonal_Nest2(Mat A,Vec v)
 static PetscErrorCode MatDiagonalScale_Nest(Mat A,Vec l,Vec r)
 {
   Mat_Nest       *bA = (Mat_Nest*)A->data;
-  Vec            *bl,*br;
+  Vec            bl,*br;
   PetscInt       i,j;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecNestGetSubVecs(l,PETSC_NULL,&bl);CHKERRQ(ierr);
-  ierr = VecNestGetSubVecs(r,PETSC_NULL,&br);CHKERRQ(ierr);
+  ierr = PetscMalloc(bA->nc*sizeof(Vec),&br);CHKERRQ(ierr);
+  for (j=0; j<bA->nc; j++) {ierr = VecGetSubVector(r,bA->isglobal.col[j],&br[j]);CHKERRQ(ierr);}
+  for (i=0; i<bA->nr; i++) {
+    ierr = VecGetSubVector(l,bA->isglobal.row[i],&bl);CHKERRQ(ierr);
+    for (j=0; j<bA->nc; j++) {
+      if (bA->m[i][j]) {
+        ierr = MatDiagonalScale(bA->m[i][j],bl,br[j]);CHKERRQ(ierr);
+      }
+    }
+    ierr = VecRestoreSubVector(l,bA->isglobal.row[i],&bl);CHKERRQ(ierr);
+  }
+  for (j=0; j<bA->nc; j++) {ierr = VecRestoreSubVector(r,bA->isglobal.col[j],&br[j]);CHKERRQ(ierr);}
+  ierr = PetscFree(br);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatScale_Nest"
+static PetscErrorCode MatScale_Nest(Mat A,PetscScalar a)
+{
+  Mat_Nest       *bA = (Mat_Nest*)A->data;
+  PetscInt       i,j;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
   for (i=0; i<bA->nr; i++) {
     for (j=0; j<bA->nc; j++) {
       if (bA->m[i][j]) {
-        ierr = MatDiagonalScale(bA->m[i][j],bl[i],br[j]);CHKERRQ(ierr);
+        ierr = MatScale(bA->m[i][j],a);CHKERRQ(ierr);
       }
     }
   }
@@ -600,52 +473,18 @@ static PetscErrorCode MatDiagonalScale_Nest(Mat A,Vec l,Vec r)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatDiagonalScale_Nest2"
-static PetscErrorCode MatDiagonalScale_Nest2(Mat A,Vec l,Vec r)
+#define __FUNCT__ "MatShift_Nest"
+static PetscErrorCode MatShift_Nest(Mat A,PetscScalar a)
 {
   Mat_Nest       *bA = (Mat_Nest*)A->data;
-  Vec            bl,br,*ble,*bre;
-  VecScatter     *vscatl,*vscatr;
   PetscInt       i;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  /* scatter l,r into bl,br */
-  ierr = MatGetVecs_Nest(A,&bl,&br);CHKERRQ(ierr);
-  ierr = VecNestGetSubVecs(bl,PETSC_NULL,&ble);CHKERRQ(ierr);
-  ierr = VecNestGetSubVecs(br,PETSC_NULL,&bre);CHKERRQ(ierr);
-
-  /* row */
-  ierr = PetscMalloc( sizeof(VecScatter) * bA->nr, &vscatl );CHKERRQ(ierr);
   for (i=0; i<bA->nr; i++) {
-    ierr = VecScatterCreate(l,bA->isglobal.row[i], ble[i],PETSC_NULL,&vscatl[i]);CHKERRQ(ierr);
-    ierr = VecScatterBegin(vscatl[i],l,ble[i],INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    if (!bA->m[i][i]) SETERRQ2(((PetscObject)A)->comm,PETSC_ERR_SUP,"No support for shifting an empty diagonal block, insert a matrix in block (%D,%D)",i,i);
+    ierr = MatShift(bA->m[i][i],a);CHKERRQ(ierr);
   }
-  for (i=0; i<bA->nr; i++) {
-    ierr = VecScatterEnd(vscatl[i],l,ble[i],INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  }
-  /* col */
-  ierr = PetscMalloc( sizeof(VecScatter) * bA->nc, &vscatr );CHKERRQ(ierr);
-  for (i=0; i<bA->nc; i++) {
-    ierr = VecScatterCreate(r,bA->isglobal.col[i], bre[i],PETSC_NULL,&vscatr[i]);CHKERRQ(ierr);
-    ierr = VecScatterBegin(vscatr[i],l,bre[i],INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  }
-  for (i=0; i<bA->nc; i++) {
-    ierr = VecScatterEnd(vscatr[i],r,bre[i],INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  }
-
-  ierr = MatDiagonalScale_Nest(A,bl,br);CHKERRQ(ierr);
-
-  for (i=0; i<bA->nr; i++) {
-    ierr = VecScatterDestroy(&vscatl[i]);CHKERRQ(ierr);
-  }
-  for (i=0; i<bA->nc; i++) {
-    ierr = VecScatterDestroy(&vscatr[i]);CHKERRQ(ierr);
-  }
-  ierr = PetscFree(vscatl);CHKERRQ(ierr);
-  ierr = PetscFree(vscatr);CHKERRQ(ierr);
-  ierr = VecDestroy(&bl);CHKERRQ(ierr);
-  ierr = VecDestroy(&br);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1012,9 +851,6 @@ PetscErrorCode  MatNestSetVecType_Nest(Mat A,const VecType vtype)
   ierr = PetscStrcmp(vtype,VECNEST,&flg);CHKERRQ(ierr);
   /* In reality, this only distinguishes VECNEST and "other" */
   A->ops->getvecs       = flg ? MatGetVecs_Nest       : 0;
-  A->ops->getdiagonal   = flg ? MatGetDiagonal_Nest   : 0;
-  A->ops->diagonalscale = flg ? MatDiagonalScale_Nest : 0;
- 
  PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -1283,6 +1119,14 @@ static PetscErrorCode MatSetUp_NestIS_Private(Mat A,PetscInt nr,const IS is_row[
     }
   }
 #endif
+
+  /* Set A->assembled if all non-null blocks are currently assembled */
+  for (i=0; i<vs->nr; i++) {
+    for (j=0; j<vs->nc; j++) {
+      if (vs->m[i][j] && !vs->m[i][j]->assembled) PetscFunctionReturn(0);
+    }
+  }
+  A->assembled = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -1363,8 +1207,10 @@ PetscErrorCode MatCreate_Nest(Mat A)
   A->ops->getvecs               = 0; /* Use VECNEST by calling MatNestSetVecType(A,VECNEST) */
   A->ops->getlocalsubmatrix     = MatGetLocalSubMatrix_Nest;
   A->ops->restorelocalsubmatrix = MatRestoreLocalSubMatrix_Nest;
-  A->ops->getdiagonal           = MatGetDiagonal_Nest2; /* VECNEST version activated by calling MatNestSetVecType(A,VECNEST) */
-  A->ops->diagonalscale         = MatDiagonalScale_Nest2; /* VECNEST version activated by calling MatNestSetVecType(A,VECNEST) */
+  A->ops->getdiagonal           = MatGetDiagonal_Nest;
+  A->ops->diagonalscale         = MatDiagonalScale_Nest;
+  A->ops->scale                 = MatScale_Nest;
+  A->ops->shift                 = MatShift_Nest;
 
   A->spptr        = 0;
   A->same_nonzero = PETSC_FALSE;

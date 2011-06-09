@@ -87,6 +87,8 @@ extern PetscBool PetscBeganMPI;
      indicate that it did NOT start MPI so that the PetscFinalize() does not end MPI, thus allowing PetscInitialize() to 
      be called multiple times from MATLAB without the problem of trying to initialize MPI more than once.
 
+     Turns off PETSc signal handling because that can interact with MATLAB's signal handling causing random crashes.
+
 .seealso: PetscInitialize(), PetscInitializeFortran(), PetscInitializeNoArguments()
 */
 PetscErrorCode  PetscInitializeMatlab(int argc,char **args,const char *filename,const char *help)
@@ -97,6 +99,7 @@ PetscErrorCode  PetscInitializeMatlab(int argc,char **args,const char *filename,
 
   PetscFunctionBegin;
   ierr = PetscInitialize(&myargc,&myargs,filename,help);
+  ierr = PetscPopSignalHandler();CHKERRQ(ierr);
   PetscBeganMPI = PETSC_FALSE;
   PetscFunctionReturn(ierr);
 }
