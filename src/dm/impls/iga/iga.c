@@ -528,7 +528,7 @@ PetscErrorCode DMIGAInitializeGeometry3d(DM dm,PetscInt ndof,PetscInt NumDerivat
   DMDABoundaryType ptype;
   PetscInt       sw;
   DMDALocalInfo  info_dof;
-  int            ival,count;
+  int            ival;
   double         dval;
 
   PetscFunctionBegin;
@@ -537,7 +537,7 @@ PetscErrorCode DMIGAInitializeGeometry3d(DM dm,PetscInt ndof,PetscInt NumDerivat
     SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_FILE_OPEN, "Cannot find geometry file");
   }
 
-  count = fscanf(fp, "%d", &ival);
+  if (fscanf(fp, "%d", &ival) != 1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SYS,"Failed to read spatial dimension from %s",FunctionSpaceFile);
   spatial_dim = ival;
   if(spatial_dim != 3){
     SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Geometry dimension != problem dimension");
@@ -546,9 +546,9 @@ PetscErrorCode DMIGAInitializeGeometry3d(DM dm,PetscInt ndof,PetscInt NumDerivat
   /* Read in polynomial orders and number of basis functions */
   {
     int a,b,c;
-    count = fscanf(fp, "%d %d %d", &a, &b, &c);
+    if (fscanf(fp, "%d %d %d", &a, &b, &c) != 3) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SYS,"Failed to read polynomial orders from %s",FunctionSpaceFile);
     iga->px = a; iga->py = b; iga->pz= c;
-    count = fscanf(fp, "%d %d %d", &a, &b, &c);
+    if (fscanf(fp, "%d %d %d", &a, &b, &c) != 3) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SYS,"Failed to read number of basis functions from %s",FunctionSpaceFile);
     iga->nbx = a; iga->nby = b; iga->nbz= c;
   }
 
@@ -564,7 +564,7 @@ PetscErrorCode DMIGAInitializeGeometry3d(DM dm,PetscInt ndof,PetscInt NumDerivat
 
   Umax = 0.0;
   for(i=0;i<iga->mx;i++) {
-    count = fscanf(fp, "%lf ", &dval);
+    if (fscanf(fp, "%lf ", &dval) != 1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SYS,"Failed to read X coordinate at %D from %s",i,FunctionSpaceFile);
     iga->Ux[i] = dval;
     if(iga->Ux[i] > Umax) Umax = iga->Ux[i];
   }
@@ -572,7 +572,7 @@ PetscErrorCode DMIGAInitializeGeometry3d(DM dm,PetscInt ndof,PetscInt NumDerivat
 
   Umax = 0.0;
   for(i=0;i<iga->my;i++) {
-    count = fscanf(fp, "%lf ", &dval);
+    if (fscanf(fp, "%lf ", &dval) != 1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SYS,"Failed to read Y coordinate at %D from %s",i,FunctionSpaceFile);
     iga->Uy[i] = dval;
     if(iga->Uy[i] > Umax) Umax = iga->Uy[i];
   }
@@ -580,7 +580,7 @@ PetscErrorCode DMIGAInitializeGeometry3d(DM dm,PetscInt ndof,PetscInt NumDerivat
 
   Umax = 0.0;
   for(i=0;i<iga->mz;i++) {
-    count = fscanf(fp, "%lf ", &dval);
+    if (fscanf(fp, "%lf ", &dval) != 1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_SYS,"Failed to read Z coordinate at %D from %s",i,FunctionSpaceFile);
     iga->Uz[i] = dval;
     if(iga->Uz[i] > Umax) Umax = iga->Uz[i];
   }
