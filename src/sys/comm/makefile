@@ -1,4 +1,5 @@
 #requireslanguage CXXONLY
+#requirespackage  'PETSC_HAVE_SIEVE'
 ALL: lib
 
 CFLAGS    =
