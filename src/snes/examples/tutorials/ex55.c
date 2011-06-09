@@ -9,7 +9,14 @@ Runtime options include:\n\
 -theta_c <theta_c>\n\n";
 
 /*
-  ./ex55 -ksp_type fgmres -pc_type fieldsplit -pc_fieldsplit_detect_saddle_point -pc_fieldsplit_type schur -pc_fieldsplit_schur_precondition self -fieldsplit_1_ksp_type fgmres -fieldsplit_1_pc_type lsc -snes_vi_monitor -ksp_monitor_true_residual -ksp_monitor_true_residual -fieldsplit_ksp_monitor 
+  Solves the linear system using a Schur complement solver based on PCLSC
+
+  ./ex55 -ksp_type fgmres -pc_type fieldsplit -pc_fieldsplit_detect_saddle_point -pc_fieldsplit_type schur -pc_fieldsplit_schur_precondition self -fieldsplit_1_ksp_type fgmres -fieldsplit_1_pc_type lsc -snes_vi_monitor -ksp_monitor_true_residual -fieldsplit_ksp_monitor 
+
+  Solves the linear systems with multigrid using  a Schur complement based smoother (which is handled by PCFIELDSPLIT)
+ 
+./ex55 -ksp_type fgmres -pc_type mg -mg_levels_ksp_type fgmres -mg_levels_pc_type fieldsplit -mg_levels_pc_fieldsplit_detect_saddle_point -mg_levels_pc_fieldsplit_type schur -mg_levels_pc_fieldsplit_factorization_type full -mg_levels_pc_fieldsplit_schur_precondition user -mg_levels_fieldsplit_1_ksp_type gmres -mg_levels_fieldsplit_1_pc_type none -mg_levels_fieldsplit_0_ksp_type preonly -mg_levels_fieldsplit_0_pc_type sor -mg_levels_fieldsplit_0_pc_sor_forward -snes_vi_monitor -ksp_monitor_true_residual -mg_levels_ksp_monitor -mg_levels_fieldsplit_ksp_monitor -mg_levels_ksp_max_it 2 -mg_levels_fieldsplit_ksp_max_it 5 -snes_atol 1.e-11
+
  */
 
 #include "petscsnes.h"
@@ -23,7 +30,6 @@ typedef struct{
   Vec         q,u1,u2,u3,work1,work2,work3,work4;
   PetscScalar epsilon; /* physics parameters */
   PetscReal   xmin,xmax,ymin,ymax;
-  PetscInt    nx;
 }AppCtx;
 
 PetscErrorCode GetParams(AppCtx*);
@@ -411,7 +417,6 @@ PetscErrorCode GetParams(AppCtx* user)
   user->ymin = 0.0; user->ymax = 1.0;
   user->T = 0.2;    user->dt = 0.001;
   user->epsilon = 0.05;
-  user->nx=4;
   
   ierr = PetscOptionsGetReal(PETSC_NULL,"-xmin",&user->xmin,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(PETSC_NULL,"-xmax",&user->xmax,&flg);CHKERRQ(ierr);
@@ -420,8 +425,6 @@ PetscErrorCode GetParams(AppCtx* user)
   ierr = PetscOptionsGetReal(PETSC_NULL,"-T",&user->T,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(PETSC_NULL,"-dt",&user->dt,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetScalar(PETSC_NULL,"-epsilon",&user->epsilon,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-nx",&user->nx,&flg);CHKERRQ(ierr);
-  
   PetscFunctionReturn(0);
 }
 
@@ -441,7 +444,7 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
   PetscScalar       eM_0[3][3],eM_2_odd[3][3],eM_2_even[3][3];
   Mat               M=user->M;
   PetscScalar       epsilon=user->epsilon;
-  PetscScalar		  hx=1.0/(user->nx-1);
+  PetscScalar		  hx;
   PetscInt n,Mda,Nda;
   DM               da;
   
@@ -456,6 +459,7 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
   
   /* ierr = MatCreate(PETSC_COMM_WORLD,&user->M_0);CHKERRQ(ierr);*/
   ierr = DMDAGetInfo(user->da,PETSC_NULL,&Mda,&Nda,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL);
+  hx = 1.0/(Mda-1);
   ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,Mda,Nda,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
   ierr = DMGetMatrix(da,MATAIJ,&user->M_0);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
@@ -478,7 +482,7 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
   eM_2_even[1][1]=1;
   eM_2_even[0][0]=eM_2_even[2][2]=0.5;
   eM_2_even[0][1]=eM_2_even[1][0]=eM_2_even[1][2]=eM_2_even[2][1]=-0.5;
-  
+
   /* Get local element info */
   ierr = DMDAGetElements(user->da,&nele,&nen,&ele);CHKERRQ(ierr);
   for(i=0;i < nele;i++) {
@@ -486,8 +490,7 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
     x[0] = _coords[2*idx[0]]; y[0] = _coords[2*idx[0]+1];
     x[1] = _coords[2*idx[1]]; y[1] = _coords[2*idx[1]+1];
     x[2] = _coords[2*idx[2]]; y[2] = _coords[2*idx[2]+1];
-    
-    
+ 
     PetscInt    row,cols[3],r,row_M_0;
     PetscScalar vals[3],vals_M_0[3];
     

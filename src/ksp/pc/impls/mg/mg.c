@@ -473,7 +473,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
   PetscErrorCode          ierr;
   PetscInt                i,n = mglevels[0]->levels;
   PC                      cpc,mpc;
-  PetscBool               preonly,lu,redundant,cholesky,monitor = PETSC_FALSE,dump = PETSC_FALSE,opsset;
+  PetscBool               preonly,lu,redundant,cholesky,svd,monitor = PETSC_FALSE,dump = PETSC_FALSE,opsset;
   PetscViewerASCIIMonitor ascii;
   PetscViewer             viewer = PETSC_NULL;
   MPI_Comm                comm;
@@ -660,7 +660,8 @@ PetscErrorCode PCSetUp_MG(PC pc)
     ierr = PetscTypeCompare((PetscObject)cpc,PCLU,&lu);CHKERRQ(ierr);
     ierr = PetscTypeCompare((PetscObject)cpc,PCREDUNDANT,&redundant);CHKERRQ(ierr);
     ierr = PetscTypeCompare((PetscObject)cpc,PCCHOLESKY,&cholesky);CHKERRQ(ierr);
-    if (!lu && !redundant && !cholesky) {
+    ierr = PetscTypeCompare((PetscObject)cpc,PCSVD,&svd);CHKERRQ(ierr);
+    if (!lu && !redundant && !cholesky && !svd) {
       ierr = KSPSetType(mglevels[0]->smoothd,KSPGMRES);CHKERRQ(ierr);
     }
   }
