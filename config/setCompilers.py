@@ -9,7 +9,7 @@ def noCheck(command, status, output, error):
 
 try:
   any
-except NamedError:
+except NameError:
   def any(lst):
     return reduce(lambda x,y:x or y,lst,False)
 
