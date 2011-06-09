@@ -15,7 +15,7 @@ Runtime options include:\n\
 
   Solves the linear systems with multigrid using  a Schur complement based smoother (which is handled by PCFIELDSPLIT)
  
-./ex55 -ksp_type fgmres -pc_type mg -mg_levels_ksp_type fgmres -mg_levels_pc_type fieldsplit -mg_levels_pc_fieldsplit_detect_saddle_point -mg_levels_pc_fieldsplit_type schur -mg_levels_pc_fieldsplit_factorization_type full -mg_levels_pc_fieldsplit_schur_precondition user -mg_levels_fieldsplit_1_ksp_type gmres -mg_levels_fieldsplit_1_pc_type none -mg_levels_fieldsplit_0_ksp_type preonly -mg_levels_fieldsplit_0_pc_type sor -mg_levels_fieldsplit_0_pc_sor_forward -snes_vi_monitor -ksp_monitor_true_residual -mg_levels_ksp_monitor -mg_levels_fieldsplit_ksp_monitor -mg_levels_ksp_max_it 2 -mg_levels_fieldsplit_ksp_max_it 5 -snes_atol 1.e-11
+./ex55 -ksp_type fgmres -pc_type mg -mg_levels_ksp_type fgmres -mg_levels_pc_type fieldsplit -mg_levels_pc_fieldsplit_detect_saddle_point -mg_levels_pc_fieldsplit_type schur -mg_levels_pc_fieldsplit_factorization_type full -mg_levels_pc_fieldsplit_schur_precondition user -mg_levels_fieldsplit_1_ksp_type gmres -mg_levels_fieldsplit_1_pc_type none -mg_levels_fieldsplit_0_ksp_type preonly -mg_levels_fieldsplit_0_pc_type sor -mg_levels_fieldsplit_0_pc_sor_forward -snes_vi_monitor -ksp_monitor_true_residual -pc_mg_levels 5 -pc_mg_galerkin -mg_levels_ksp_monitor -mg_levels_fieldsplit_ksp_monitor -mg_levels_ksp_max_it 2 -mg_levels_fieldsplit_ksp_max_it 5 -snes_atol 1.e-11 -mg_coarse_ksp_type preonly -mg_coarse_pc_type svd -da_grid_x 65 -da_grid_y 65
 
  */
 
