@@ -637,7 +637,7 @@ PetscErrorCode DMMeshInterpolatePoints(DM dm, SectionReal section, int numPoints
 {
   Obj<PETSC_MESH_TYPE> m;
   Obj<PETSC_MESH_TYPE::real_section_type> s;
-  double        *v0, *J, *invJ, detJ;
+  PetscReal     *v0, *J, *invJ, detJ;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

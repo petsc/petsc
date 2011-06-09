@@ -1063,8 +1063,8 @@ namespace ALE {
   };
   class BoundaryCondition : public ALE::ParallelObject {
   public:
-    typedef double (*function_type)(const double []);
-    typedef double (*integrator_type)(const double [], const double [], const int, function_type);
+    typedef double (*function_type)(const PetscReal []);
+    typedef double (*integrator_type)(const PetscReal [], const PetscReal [], const int, function_type);
   protected:
     std::string     _labelName;
     int             _marker;
@@ -1083,8 +1083,8 @@ namespace ALE {
     integrator_type getDualIntegrator() const {return this->_integrator;};
     void setDualIntegrator(integrator_type integrator) {this->_integrator = integrator;};
   public:
-    double evaluate(const double coords[]) const {return this->_func(coords);};
-    double integrateDual(const double v0[], const double J[], const int dualIndex) const {return this->_integrator(v0, J, dualIndex, this->_func);};
+    PetscReal evaluate(const PetscReal coords[]) const {return this->_func(coords);};
+    PetscReal integrateDual(const PetscReal v0[], const PetscReal J[], const int dualIndex) const {return this->_integrator(v0, J, dualIndex, this->_func);};
   };
   class Discretization : public ALE::ParallelObject {
     typedef std::map<std::string, Obj<BoundaryCondition> > boundaryConditions_type;
@@ -1812,10 +1812,10 @@ namespace ALE {
         throw ALE::Exception("No point location for mesh dimension");
       }
     };
-    void computeTriangleGeometry(const Obj<real_section_type>& coordinates, const point_type& e, double v0[], double J[], double invJ[], double& detJ) {
+    void computeTriangleGeometry(const Obj<real_section_type>& coordinates, const point_type& e, typename real_section_type::value_type v0[], typename real_section_type::value_type J[], typename real_section_type::value_type invJ[], typename real_section_type::value_type& detJ) {
       const PetscReal *coords = this->restrictClosure(coordinates, e);
       const int        dim    = 2;
-      double           invDet;
+      typename real_section_type::value_type           invDet;
 
       if (v0) {
         for(int d = 0; d < dim; d++) {
@@ -1830,16 +1830,16 @@ namespace ALE {
         }
         detJ = J[0]*J[3] - J[1]*J[2];
         if (detJ < 0.0) {
-          const double  xLength = this->_periodicity[0];
+          const typename real_section_type::value_type  xLength = this->_periodicity[0];
 
           if (xLength != 0.0) {
-            double v0x = coords[0*dim+0];
+            typename real_section_type::value_type v0x = coords[0*dim+0];
 
             if (v0x == 0.0) {
               v0x = v0[0] = xLength;
             }
             for(int f = 0; f < dim; f++) {
-              const double px = coords[(f+1)*dim+0] == 0.0 ? xLength : coords[(f+1)*dim+0];
+              const typename real_section_type::value_type px = coords[(f+1)*dim+0] == 0.0 ? xLength : coords[(f+1)*dim+0];
 
               J[0*dim+f] = 0.5*(px - v0x);
             }
@@ -1857,10 +1857,10 @@ namespace ALE {
         PetscLogFlopsNoError(5.0);
       }
     };
-    void computeTetrahedronGeometry(const Obj<real_section_type>& coordinates, const point_type& e, double v0[], double J[], double invJ[], double& detJ) {
+    void computeTetrahedronGeometry(const Obj<real_section_type>& coordinates, const point_type& e, typename real_section_type::value_type v0[], typename real_section_type::value_type J[], typename real_section_type::value_type invJ[], typename real_section_type::value_type& detJ) {
       const PetscReal *coords = this->restrictClosure(coordinates, e);
       const int        dim    = 3;
-      double           invDet;
+      typename real_section_type::value_type           invDet;
 
       if (v0) {
         for(int d = 0; d < dim; d++) {
@@ -1893,7 +1893,7 @@ namespace ALE {
         PetscLogFlopsNoError(37.0);
       }
     };
-    void computeElementGeometry(const Obj<real_section_type>& coordinates, const point_type& e, double v0[], double J[], double invJ[], double& detJ) {
+    void computeElementGeometry(const Obj<real_section_type>& coordinates, const point_type& e, typename real_section_type::value_type v0[], typename real_section_type::value_type J[], typename real_section_type::value_type invJ[], typename real_section_type::value_type& detJ) {
       if (this->_dim == 2) {
         computeTriangleGeometry(coordinates, e, v0, J, invJ, detJ);
       } else if (this->_dim == 3) {
@@ -1902,10 +1902,10 @@ namespace ALE {
         throw ALE::Exception("Unsupported dimension for element geometry computation");
       }
     };
-    void computeBdSegmentGeometry(const Obj<real_section_type>& coordinates, const point_type& e, double v0[], double J[], double invJ[], double& detJ) {
-      const double *coords = this->restrictClosure(coordinates, e);
+    void computeBdSegmentGeometry(const Obj<real_section_type>& coordinates, const point_type& e, typename real_section_type::value_type v0[], typename real_section_type::value_type J[], typename real_section_type::value_type invJ[], typename real_section_type::value_type& detJ) {
+      const typename real_section_type::value_type *coords = this->restrictClosure(coordinates, e);
       const int     dim    = 2;
-      double        invDet;
+      typename real_section_type::value_type        invDet;
 
       if (v0) {
         for(int d = 0; d < dim; d++) {
@@ -1918,16 +1918,16 @@ namespace ALE {
         J[2] =  (coords[1*dim+1] - coords[0*dim+1])*0.5; J[3] = ( coords[1*dim+0] - coords[0*dim+0])*0.5;
         detJ = J[0]*J[3] - J[1]*J[2];
         if (detJ < 0.0) {
-          const double  xLength = this->_periodicity[0];
+          const typename real_section_type::value_type  xLength = this->_periodicity[0];
 
           if (xLength != 0.0) {
-            double v0x = coords[0*dim+0];
+            typename real_section_type::value_type v0x = coords[0*dim+0];
 
             if (v0x == 0.0) {
               v0x = v0[0] = xLength;
             }
             for(int f = 0; f < dim; f++) {
-              const double px = coords[(f+1)*dim+0] == 0.0 ? xLength : coords[(f+1)*dim+0];
+              const typename real_section_type::value_type px = coords[(f+1)*dim+0] == 0.0 ? xLength : coords[(f+1)*dim+0];
 
               J[0*dim+f] = 0.5*(px - v0x);
             }
@@ -1945,7 +1945,7 @@ namespace ALE {
         PetscLogFlopsNoError(5.0);
       }
     };
-    void computeBdElementGeometry(const Obj<real_section_type>& coordinates, const point_type& e, double v0[], double J[], double invJ[], double& detJ) {
+    void computeBdElementGeometry(const Obj<real_section_type>& coordinates, const point_type& e, typename real_section_type::value_type v0[], typename real_section_type::value_type J[], typename real_section_type::value_type invJ[], typename real_section_type::value_type& detJ) {
       if (this->_dim == 1) {
         computeBdSegmentGeometry(coordinates, e, v0, J, invJ, detJ);
         //      } else if (this->_dim == 2) {
@@ -1954,11 +1954,11 @@ namespace ALE {
         throw ALE::Exception("Unsupported dimension for element geometry computation");
       }
     };
-    double getMaxVolume() {
+    typename real_section_type::value_type getMaxVolume() {
       const Obj<real_section_type>& coordinates = this->getRealSection("coordinates");
       const Obj<label_sequence>&    cells       = this->heightStratum(0);
       const int                     dim         = this->getDimension();
-      double v0[3], J[9], invJ[9], detJ, refVolume = 0.0, maxVolume = 0.0;
+      typename real_section_type::value_type v0[3], J[9], invJ[9], detJ, refVolume = 0.0, maxVolume = 0.0;
 
       if (dim == 1) refVolume = 2.0;
       if (dim == 2) refVolume = 2.0;
@@ -2301,9 +2301,9 @@ namespace ALE {
         typename real_section_type::value_type *values        = new typename real_section_type::value_type[this->sizeWithBC(s, firstCell)];
         int                                    *dofs          = new int[this->_maxDof];
         int                                    *v             = new int[numFields];
-        double                                 *v0            = new double[this->getDimension()];
-        double                                 *J             = new double[this->getDimension()*this->getDimension()];
-        double                                  detJ;
+        typename real_section_type::value_type *v0            = new typename real_section_type::value_type[this->getDimension()];
+        typename real_section_type::value_type *J             = new typename real_section_type::value_type[this->getDimension()*this->getDimension()];
+        typename real_section_type::value_type  detJ;
         Visitor pV((int) pow((double) this->getSieve()->getMaxConeSize(), this->depth())+1, true);
 
         for(typename label_sequence::iterator c_iter = boundaryCells->begin(); c_iter != boundaryCells->end(); ++c_iter) {
@@ -3242,12 +3242,12 @@ namespace ALE {
         const Obj<names_type>&         discs         = this->getDiscretizations();
         const point_type               firstCell     = *boundaryCells->begin();
         const int                      numFields     = discs->size();
-        typename real_section_type::value_type *values        = new typename real_section_type::value_type[this->sizeWithBC(s, firstCell)];
+        typename real_section_type::value_type *values = new typename real_section_type::value_type[this->sizeWithBC(s, firstCell)];
         int                           *dofs          = new int[maxDof];
         int                           *v             = new int[numFields];
-        double                        *v0            = new double[this->getDimension()];
-        double                        *J             = new double[this->getDimension()*this->getDimension()];
-        double                         detJ;
+        typename real_section_type::value_type *v0   = new typename real_section_type::value_type[this->getDimension()];
+        typename real_section_type::value_type *J    = new typename real_section_type::value_type[this->getDimension()*this->getDimension()];
+        typename real_section_type::value_type  detJ;
 
         for(typename label_sequence::iterator c_iter = boundaryCells->begin(); c_iter != boundaryCells->end(); ++c_iter) {
           const Obj<coneArray>      closure = sieve_alg_type::closure(this, this->getArrowSection("orientation"), *c_iter);
