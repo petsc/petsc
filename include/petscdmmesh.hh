@@ -54,7 +54,7 @@ PetscErrorCode  DMMeshCreateMatrix(const Obj<Mesh>& mesh, const Obj<Section>& se
       }
     }
     ierr = PetscMalloc2(localSize/bs, PetscInt, &dnz, localSize/bs, PetscInt, &onz);CHKERRQ(ierr);
-    ierr = preallocateOperatorNewOverlap(mesh, bs, section->getAtlas(), order, dnz, onz, isSymmetric, *J, fillMatrix);CHKERRQ(ierr);
+    ierr = preallocateOperatorNew(mesh, bs, section->getAtlas(), order, dnz, onz, isSymmetric, *J, fillMatrix);CHKERRQ(ierr);
     ierr = PetscFree2(dnz, onz);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -1133,7 +1133,10 @@ PetscErrorCode preallocateOperatorNew(const ALE::Obj<Mesh>& mesh, const int bs, 
           point_type newPoint;
 
           if (!newPoints->size()) {
+            typename Mesh::order_type::value_type value(-1, 0);
+
             newPoint = maxPoint++;
+            globalOrder->updatePoint(newPoint, &value); // Mark the new point as nonlocal
             nbrRecvOverlap->addArrow(rank, newPoint, values[i]);
           } else {
             newPoint = *newPoints->begin();
@@ -1357,7 +1360,10 @@ PetscErrorCode preallocateOperatorNewOverlap(const ALE::Obj<Mesh>& mesh, const i
         point_type                                                  newPoint;
 
         if (!numNewPoints) {
+          typename Mesh::order_type::value_type value(-1, 0);
+
           newPoint = maxPoint++;
+          globalOrder->updatePoint(newPoint, &value); // Mark the new point as nonlocal
           nbrRecvOverlap->addArrow(rank, newPoint, values[i]);
         } else {
           newPoint = *newPointsBegin;
