@@ -296,7 +296,7 @@ PetscErrorCode  AOCreateMemoryScalable_private(MPI_Comm comm,PetscInt napp,const
   PetscInt          *owners = aomems->map->range;
   MPI_Request       *send_waits,*recv_waits;
   MPI_Status        recv_status;
-  PetscMPIInt       nindices,source,widx;
+  PetscMPIInt       nindices,widx;
   PetscInt          *rbuf;
   PetscInt          n=napp,ip,ia;
   MPI_Status        *send_status;
@@ -385,7 +385,7 @@ PetscErrorCode  AOCreateMemoryScalable_private(MPI_Comm comm,PetscInt napp,const
     ierr = MPI_Waitany(nreceives,recv_waits,&widx,&recv_status);CHKERRQ(ierr);
     ierr = MPI_Get_count(&recv_status,MPIU_INT,&nindices);CHKERRQ(ierr);
     rbuf = rindices+nmax*widx; /* global index */
-    source = recv_status.MPI_SOURCE;
+  
     /* compute local mapping */
     for (i=0; i<nindices; i+=2){ /* pack aomap_loc */
       ip = rbuf[i] - owners[rank]; /* local index */
