@@ -461,6 +461,9 @@ PetscErrorCode PCView_MG(PC pc,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+#include <private/dmimpl.h>
+#include <private/kspimpl.h>
+
 /*
     Calls setup for the KSP on each level
 */
@@ -529,6 +532,10 @@ PetscErrorCode PCSetUp_MG(PC pc)
       ierr = DMDestroy(&dms[i]);CHKERRQ(ierr);
     }
     ierr = PetscFree(dms);CHKERRQ(ierr);
+
+    /* finest smoother also gets DM but it is not active */
+    ierr = KSPSetDM(mglevels[n-1]->smoothd,pc->dm);CHKERRQ(ierr);
+    ierr = KSPSetDMActive(mglevels[n-1]->smoothd,PETSC_FALSE);CHKERRQ(ierr);
   }
 
   if (mg->galerkin) {
@@ -552,7 +559,18 @@ PetscErrorCode PCSetUp_MG(PC pc)
         dB   = B;
       }
     }
-  } 
+  } else if (pc->dm && pc->dm->x) {
+    /* need to restrict Jacobian location to coarser meshes for evaluation */
+    for (i=n-2;i>-1; i--) {
+      if (!mglevels[i]->smoothd->dm->x) {
+        Vec *vecs;
+        ierr = KSPGetVecs(mglevels[i]->smoothd,1,&vecs,0,PETSC_NULL);CHKERRQ(ierr);
+        mglevels[i]->smoothd->dm->x = vecs[0];
+        ierr = PetscFree(vecs);CHKERRQ(ierr);
+      }
+      ierr = MatRestrict(mglevels[i+1]->interpolate,mglevels[i+1]->smoothd->dm->x,mglevels[i]->smoothd->dm->x);CHKERRQ(ierr);
+    }
+  }
 
   if (!pc->setupcalled) {
     ierr = PetscOptionsGetBool(((PetscObject)pc)->prefix,"-pc_mg_monitor",&monitor,PETSC_NULL);CHKERRQ(ierr);

@@ -8,6 +8,22 @@ PetscFList SNESList              = PETSC_NULL;
 PetscClassId  SNES_CLASSID;
 PetscLogEvent  SNES_Solve, SNES_LineSearch, SNES_FunctionEval, SNES_JacobianEval;
 
+#undef __FUNCT__
+#define __FUNCT__ "SNESDMComputeJacobian"
+/*
+    Translates from a SNES call to a DM call in computing a Jacobian
+*/
+PetscErrorCode SNESDMComputeJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
+{
+  PetscErrorCode ierr;
+  DM             dm;
+
+  PetscFunctionBegin;
+  ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
+  ierr = DMComputeJacobian(dm,X,*J,*B,flag);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "SNESSetErrorIfNotConverged"
 /*@
@@ -1555,21 +1571,9 @@ PetscErrorCode  SNESSetUp(SNES snes)
 
   if (!snes->ops->computejacobian && snes->dm) {
     Mat           J;
-    ISColoring    coloring;
-    MatFDColoring fd;
-
     ierr = DMGetMatrix(snes->dm,MATAIJ,&J);CHKERRQ(ierr);
-    ierr = DMGetColoring(snes->dm,IS_COLORING_GHOSTED,MATAIJ,&coloring);CHKERRQ(ierr);
-    ierr = MatFDColoringCreate(J,coloring,&fd);CHKERRQ(ierr);
-    if (snes->ops->computefunction) {
-      ierr = MatFDColoringSetFunction(fd,(PetscErrorCode (*)(void))snes->ops->computefunction,snes->funP);CHKERRQ(ierr);
-    } else {
-      void *ctx;
-      ierr = DMGetApplicationContext(snes->dm,&ctx);CHKERRQ(ierr);
-      ierr = MatFDColoringSetFunction(fd,(PetscErrorCode (*)(void))SNESDAFormFunction,ctx);CHKERRQ(ierr);
-    }
-    ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobianColor,fd);CHKERRQ(ierr);
-    ierr = ISColoringDestroy(&coloring);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(snes,J,J,SNESDMComputeJacobian,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatDestroy(&J);CHKERRQ(ierr);
   } else if (snes->dm && !snes->jacobian_pre){
     Mat J;
     ierr = DMGetMatrix(snes->dm,MATAIJ,&J);CHKERRQ(ierr);

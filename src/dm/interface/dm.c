@@ -153,7 +153,8 @@ PetscErrorCode  DMDestroy(DM *dm)
   ierr = ISLocalToGlobalMappingDestroy(&(*dm)->ltogmap);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(&(*dm)->ltogmapb);CHKERRQ(ierr);
   ierr = PetscFree((*dm)->vectype);CHKERRQ(ierr);
-
+  
+  ierr = VecDestroy(&(*dm)->x);CHKERRQ(ierr);
   /* if memory was published with AMS then destroy it */
   ierr = PetscObjectDepublish(*dm);CHKERRQ(ierr);
 
@@ -1181,7 +1182,6 @@ PetscErrorCode  DMComputeFunction(DM dm,Vec x,Vec b)
   PetscErrorCode ierr;
   PetscFunctionBegin;
   if (!dm->ops->function) SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_ARG_WRONGSTATE,"Need to provide function with DMSetFunction()");
-  if (!x) x = dm->x;
   PetscStackPush("DM user function");
   ierr = (*dm->ops->function)(dm,x,b);CHKERRQ(ierr);
   PetscStackPop;
@@ -1198,7 +1198,7 @@ PetscErrorCode  DMComputeFunction(DM dm,Vec x,Vec b)
 
     Input Parameter:
 +   dm - the DM object 
-.   x - location to compute Jacobian at; may be ignored for linear problems
+.   x - location to compute Jacobian at; will be PETSC_NULL for linear problems, for nonlinear problems if not provided then pulled from DM
 .   A - matrix that defines the operator for the linear solve
 -   B - the matrix used to construct the preconditioner
 
@@ -1223,15 +1223,20 @@ PetscErrorCode  DMComputeJacobian(DM dm,Vec x,Mat A,Mat B,MatStructure *stflag)
     ierr = MatFDColoringSetFunction(fd,(PetscErrorCode (*)(void))dm->ops->functionj,dm);CHKERRQ(ierr);
     dm->fd = fd;
     dm->ops->jacobian = DMComputeJacobianDefault;
-
-    if (!dm->x) {
-      ierr = MatGetVecs(B,&dm->x,PETSC_NULL);CHKERRQ(ierr);
-    }
   }
   if (!x) x = dm->x;
   ierr = (*dm->ops->jacobian)(dm,x,A,B,stflag);CHKERRQ(ierr);
+
+  /* if matrix depends on x; i.e. nonlinear problem, keep copy of input vector since needed by multigrid methods */
+  if (x) {
+    if (!dm->x) {
+      ierr = VecDuplicate(x,&dm->x);CHKERRQ(ierr);
+    }
+    ierr = VecCopy(x,dm->x);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
+
 
 PetscFList DMList                       = PETSC_NULL;
 PetscBool  DMRegisterAllCalled          = PETSC_FALSE;
