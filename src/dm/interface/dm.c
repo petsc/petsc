@@ -599,6 +599,13 @@ PetscErrorCode  DMRefine(DM dm,MPI_Comm comm,DM *dmf)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   ierr = (*dm->ops->refine)(dm,comm,dmf);CHKERRQ(ierr);
+  (*dmf)->ops->initialguess = dm->ops->initialguess;
+  (*dmf)->ops->function     = dm->ops->function;
+  (*dmf)->ops->functionj    = dm->ops->functionj;
+  if (dm->ops->jacobian != DMComputeJacobianDefault) {
+    (*dmf)->ops->jacobian     = dm->ops->jacobian;
+  }
+  (*dmf)->ctx     = dm->ctx;
   (*dmf)->levelup = dm->levelup + 1;
   PetscFunctionReturn(0);
 }
@@ -808,6 +815,7 @@ PetscErrorCode  DMCoarsen(DM dm, MPI_Comm comm, DM *dmc)
   if (dm->ops->jacobian != DMComputeJacobianDefault) {
     (*dmc)->ops->jacobian     = dm->ops->jacobian;
   }
+  (*dmc)->ctx       = dm->ctx;
   (*dmc)->leveldown = dm->leveldown + 1;
   PetscFunctionReturn(0);
 }
@@ -1174,7 +1182,9 @@ PetscErrorCode  DMComputeFunction(DM dm,Vec x,Vec b)
   PetscFunctionBegin;
   if (!dm->ops->function) SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_ARG_WRONGSTATE,"Need to provide function with DMSetFunction()");
   if (!x) x = dm->x;
+  PetscStackPush("DM user function");
   ierr = (*dm->ops->function)(dm,x,b);CHKERRQ(ierr);
+  PetscStackPop;
   PetscFunctionReturn(0);
 }
 

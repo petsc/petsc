@@ -1233,7 +1233,9 @@ PetscErrorCode  SNESComputeFunction(SNES snes,Vec x,Vec y)
     PetscStackPop;
   } else if (snes->vec_rhs) {
     ierr = MatMult(snes->jacobian, x, y);CHKERRQ(ierr);
-  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Must call SNESSetFunction() before SNESComputeFunction(), likely called from SNESSolve().");
+  } if (snes->dm) {
+    ierr = DMComputeFunction(snes->dm,x,y);CHKERRQ(ierr);
+  } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Must call SNESSetFunction() or SNESSetDM() before SNESComputeFunction(), likely called from SNESSolve().");
   if (snes->vec_rhs) {
     ierr = VecAXPY(y,-1.0,snes->vec_rhs);CHKERRQ(ierr);
   }
@@ -1539,7 +1541,7 @@ PetscErrorCode  SNESSetUp(SNES snes)
     ierr = DMCreateGlobalVector(snes->dm,&snes->vec_func);CHKERRQ(ierr);
   }
   if (!snes->vec_func && !snes->vec_rhs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call SNESSetFunction() first");
-  if (!snes->ops->computefunction && !snes->vec_rhs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call SNESSetFunction() first");
+  if (!snes->ops->computefunction && !snes->vec_rhs && !snes->dm) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call SNESSetFunction() or SNESSetDM() first");
   if (snes->vec_func == snes->vec_sol) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_IDN,"Solution vector cannot be function vector");
   if (snes->vec_rhs  == snes->vec_sol) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_IDN,"Solution vector cannot be right hand side vector");
 
@@ -1559,7 +1561,13 @@ PetscErrorCode  SNESSetUp(SNES snes)
     ierr = DMGetMatrix(snes->dm,MATAIJ,&J);CHKERRQ(ierr);
     ierr = DMGetColoring(snes->dm,IS_COLORING_GHOSTED,MATAIJ,&coloring);CHKERRQ(ierr);
     ierr = MatFDColoringCreate(J,coloring,&fd);CHKERRQ(ierr);
-    ierr = MatFDColoringSetFunction(fd,(PetscErrorCode (*)(void))snes->ops->computefunction,snes->funP);CHKERRQ(ierr);
+    if (snes->ops->computefunction) {
+      ierr = MatFDColoringSetFunction(fd,(PetscErrorCode (*)(void))snes->ops->computefunction,snes->funP);CHKERRQ(ierr);
+    } else {
+      void *ctx;
+      ierr = DMGetApplicationContext(snes->dm,&ctx);CHKERRQ(ierr);
+      ierr = MatFDColoringSetFunction(fd,(PetscErrorCode (*)(void))SNESDAFormFunction,ctx);CHKERRQ(ierr);
+    }
     ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobianColor,fd);CHKERRQ(ierr);
     ierr = ISColoringDestroy(&coloring);CHKERRQ(ierr);
   } else if (snes->dm && !snes->jacobian_pre){
@@ -1611,7 +1619,11 @@ PetscErrorCode  SNESReset(SNES snes)
     ierr       = (*snes->ops->userdestroy)((void**)&snes->user);CHKERRQ(ierr);
     snes->user = PETSC_NULL;
   }
-
+  if (snes->ops->computejacobian == SNESDefaultComputeJacobianColor && snes->dm) {
+    ierr = MatFDColoringDestroy((MatFDColoring*)&snes->jacP);CHKERRQ(ierr);
+    snes->ops->computejacobian = PETSC_NULL;
+  }
+      
   if (snes->ops->reset) {
     ierr = (*snes->ops->reset)(snes);CHKERRQ(ierr);
   }

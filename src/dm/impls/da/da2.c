@@ -168,6 +168,22 @@ PetscErrorCode  DMDASplitComm2d(MPI_Comm comm,PetscInt M,PetscInt N,PetscInt sw,
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "DMDAFunction"
+static PetscErrorCode DMDAFunction(DM dm,Vec x,Vec F)
+{
+  PetscErrorCode ierr;
+  Vec            localX;
+  
+  PetscFunctionBegin;
+  ierr = DMGetLocalVector(dm,&localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(dm,x,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(dm,x,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DMDAFormFunction1(dm,localX,F,dm->ctx);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(dm,&localX);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "DMDASetLocalFunction"
 /*@C
        DMDASetLocalFunction - Caches in a DM a local function. 
@@ -188,10 +204,13 @@ PetscErrorCode  DMDASplitComm2d(MPI_Comm comm,PetscInt M,PetscInt N,PetscInt sw,
 @*/
 PetscErrorCode  DMDASetLocalFunction(DM da,DMDALocalFunction1 lf)
 {
+  PetscErrorCode ierr;
   DM_DA          *dd = (DM_DA*)da->data;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
-  dd->lf    = lf;
+  ierr = DMSetFunction(da,DMDAFunction);CHKERRQ(ierr);
+  dd->lf       = lf;
   PetscFunctionReturn(0);
 }
 
@@ -413,6 +432,29 @@ PetscErrorCode DMDASetLocalAdicMFFunction_Private(DM da,DMDALocalFunction1 ad_lf
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "DMDAJacobian"
+static PetscErrorCode DMDAJacobian(DM dm,Vec x,Mat A,Mat B, MatStructure *str)
+{
+  PetscErrorCode ierr;
+  Vec            localX;
+  
+  PetscFunctionBegin;
+  ierr = DMGetLocalVector(dm,&localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(dm,x,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(dm,x,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DMDAComputeJacobian1(dm,localX,B,dm->ctx);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(dm,&localX);CHKERRQ(ierr);
+  /* Assemble true Jacobian; if it is different */
+  if (A != B) {
+    ierr  = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr  = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  }
+  ierr  = MatSetOption(B,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
+  *str = SAME_NONZERO_PATTERN;
+  PetscFunctionReturn(0);
+}
+
 /*@C
        DMDASetLocalJacobian - Caches in a DM a local Jacobian computation function
 
@@ -435,9 +477,12 @@ PetscErrorCode DMDASetLocalAdicMFFunction_Private(DM da,DMDALocalFunction1 ad_lf
 #define __FUNCT__ "DMDASetLocalJacobian"
 PetscErrorCode  DMDASetLocalJacobian(DM da,DMDALocalFunction1 lj)
 {
+  PetscErrorCode ierr;
   DM_DA          *dd = (DM_DA*)da->data;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  ierr = DMSetJacobian(da,DMDAJacobian);CHKERRQ(ierr);
   dd->lj    = lj;
   PetscFunctionReturn(0);
 }

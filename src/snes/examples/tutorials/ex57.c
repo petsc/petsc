@@ -74,8 +74,7 @@ extern PetscErrorCode FormJacobianLocal(DMDALocalInfo*,PetscScalar**,Mat,AppCtx*
 int main(int argc,char **argv)
 {
   SNES                   snes;                 /* nonlinear solver */
-  Vec                    x,r;                  /* solution, residual vectors */
-  Mat                    J;                    /* Jacobian matrix */
+  Vec                    x;                    /* solution vector */
   AppCtx                 user;                 /* user-defined work context */
   PetscInt               its;                  /* iterations for convergence */
   PetscErrorCode         ierr;
@@ -105,6 +104,7 @@ int main(int argc,char **argv)
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&user.da);CHKERRQ(ierr);
   ierr = DMDASetUniformCoordinates(user.da, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);
+  ierr = DMSetApplicationContext(user.da,&user);CHKERRQ(ierr);
   ierr = SNESSetDM(snes,user.da);CHKERRQ(ierr);
 
   /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -112,24 +112,6 @@ int main(int argc,char **argv)
      vectors that are the same types
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = DMCreateGlobalVector(user.da,&x);CHKERRQ(ierr);
-  ierr = VecDuplicate(x,&r);CHKERRQ(ierr);
-
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Create matrix data structure; set Jacobian evaluation routine
-
-     Set Jacobian matrix data structure and default Jacobian evaluation
-     routine. User can override with:
-     -snes_mf : matrix-free Newton-Krylov method with no preconditioning
-                (unless user explicitly sets preconditioner) 
-     -snes_mf_operator : form preconditioning matrix as set by the user,
-                         but use matrix-free approx for Jacobian-vector
-                         products within Newton-Krylov method
-
-     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  
-  ierr = SNESSetFunction(snes,r,SNESDAFormFunction,&user);CHKERRQ(ierr);
-  ierr = DMGetMatrix(user.da,MATAIJ,&J);CHKERRQ(ierr);
-  ierr = SNESSetJacobian(snes,J,J,SNESDAComputeJacobian,&user);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set local function evaluation routine
@@ -157,9 +139,7 @@ int main(int argc,char **argv)
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = MatDestroy(&J);CHKERRQ(ierr);
   ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&r);CHKERRQ(ierr);      
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);
   ierr = DMDestroy(&user.da);CHKERRQ(ierr);
   ierr = PetscFinalize();

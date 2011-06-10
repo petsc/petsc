@@ -120,7 +120,7 @@ PetscErrorCode MatDestroy_SchurComplement(Mat N)
 
           A00 and  A11 must be square matrices
 
-.seealso: MatCreateNormal(), MatMult(), MatCreate(), MatSchurComplementGetKSP(), MatSchurComplementUpdate(), MatCreateTranspose()
+.seealso: MatCreateNormal(), MatMult(), MatCreate(), MatSchurComplementGetKSP(), MatSchurComplementUpdate(), MatCreateTranspose(), MatGetSchurComplement()
 
 @*/
 PetscErrorCode  MatCreateSchurComplement(Mat A00,Mat Ap00,Mat A01,Mat A10,Mat A11,Mat *N)
@@ -464,7 +464,7 @@ PetscErrorCode MatGetSchurComplement_Basic(Mat mat,IS isrow0,IS iscol0,IS isrow1
 
     Concepts: matrices^submatrices
 
-.seealso: MatGetSubMatrix(), PCFIELDSPLIT
+.seealso: MatGetSubMatrix(), PCFIELDSPLIT, MatCreateSchurComplement()
 @*/
 PetscErrorCode  MatGetSchurComplement(Mat mat,IS isrow0,IS iscol0,IS isrow1,IS iscol1,MatReuse mreuse,Mat *newmat,MatReuse preuse,Mat *newpmat)
 {
