@@ -24,6 +24,7 @@ typedef struct {
   KSP            smoothu;                      /* post smoother */
   Mat            interpolate; 
   Mat            restrct;                      /* restrict is a reserved word in C99 and on Cray */
+  Vec            rscale;                       /* scaling of restriction matrix */
   PetscLogEvent  eventsmoothsetup;             /* if logging times for each level */
   PetscLogEvent  eventsmoothsolve;
   PetscLogEvent  eventresidual;

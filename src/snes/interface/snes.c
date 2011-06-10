@@ -1249,7 +1249,7 @@ PetscErrorCode  SNESComputeFunction(SNES snes,Vec x,Vec y)
     PetscStackPop;
   } else if (snes->vec_rhs) {
     ierr = MatMult(snes->jacobian, x, y);CHKERRQ(ierr);
-  } if (snes->dm) {
+  } else if (snes->dm) {
     ierr = DMComputeFunction(snes->dm,x,y);CHKERRQ(ierr);
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Must call SNESSetFunction() or SNESSetDM() before SNESComputeFunction(), likely called from SNESSolve().");
   if (snes->vec_rhs) {

@@ -187,6 +187,43 @@ PetscErrorCode  PCMGSetRestriction(PC pc,PetscInt l,Mat mat)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "PCMGSetRScale"
+/*@
+   PCMGSetRScale - Sets the pointwise scaling for the restriction operator from level l to l-1. 
+
+   Logically Collective on PC and Mat
+
+   Input Parameters:
++  pc - the multigrid context 
+.  rscale - the scaling
+-  l - the level (0 is coarsest) to supply [Do not supply 0]
+
+   Level: advanced
+
+   Notes: 
+       When evaluating a function on a coarse level one does not want to do F( R * x) one does F( rscale * R * x) where rscale is 1 over the row sums of R. 
+
+.keywords: MG, set, multigrid, restriction, level
+
+.seealso: PCMGSetInterpolation(), PCMGSetRestriction()
+@*/
+PetscErrorCode  PCMGSetRScale(PC pc,PetscInt l,Vec rscale)
+{
+  PetscErrorCode ierr;
+  PC_MG          *mg = (PC_MG*)pc->data;
+  PC_MG_Levels   **mglevels = mg->levels;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  if (!mglevels) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
+  if (!l) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Do not set restriction routine for coarsest level");
+  ierr = PetscObjectReference((PetscObject)rscale);CHKERRQ(ierr);
+  ierr = VecDestroy(&mglevels[l]->rscale);CHKERRQ(ierr);
+  mglevels[l]->rscale  = rscale;  
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "PCMGGetSmoother"
 /*@
    PCMGGetSmoother - Gets the KSP context to be used as smoother for 

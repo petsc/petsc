@@ -127,6 +127,7 @@ PetscErrorCode PCReset_MG(PC pc)
       ierr = VecDestroy(&mglevels[i]->x);CHKERRQ(ierr);
       ierr = MatDestroy(&mglevels[i+1]->restrct);CHKERRQ(ierr);
       ierr = MatDestroy(&mglevels[i+1]->interpolate);CHKERRQ(ierr);
+      ierr = VecDestroy(&mglevels[i+1]->rscale);CHKERRQ(ierr);
     }
 
     for (i=0; i<n; i++) {
@@ -513,6 +514,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
   if (pc->dm && !pc->setupcalled) {
     /* construct the interpolation from the DMs */
     Mat p;
+    Vec rscale;
     ierr = PetscMalloc(n*sizeof(DM),&dms);CHKERRQ(ierr);
     dms[n-1] = pc->dm;
     for (i=n-2; i>-1; i--) {
@@ -522,8 +524,10 @@ PetscErrorCode PCSetUp_MG(PC pc)
       ierr = DMSetFunction(dms[i],0);
       ierr = DMSetInitialGuess(dms[i],0);
       if (!mglevels[i+1]->interpolate) {
-	ierr = DMGetInterpolation(dms[i],dms[i+1],&p,PETSC_NULL);CHKERRQ(ierr);
+	ierr = DMGetInterpolation(dms[i],dms[i+1],&p,&rscale);CHKERRQ(ierr);
 	ierr = PCMGSetInterpolation(pc,i+1,p);CHKERRQ(ierr);
+	ierr = PCMGSetRScale(pc,i+1,rscale);CHKERRQ(ierr);
+        ierr = VecDestroy(&rscale);CHKERRQ(ierr);
         ierr = MatDestroy(&p);CHKERRQ(ierr);
       }
     }
@@ -569,6 +573,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
         ierr = PetscFree(vecs);CHKERRQ(ierr);
       }
       ierr = MatRestrict(mglevels[i+1]->interpolate,mglevels[i+1]->smoothd->dm->x,mglevels[i]->smoothd->dm->x);CHKERRQ(ierr);
+      ierr = VecPointwiseMult(mglevels[i]->smoothd->dm->x,mglevels[i]->smoothd->dm->x,mglevels[i+1]->rscale);CHKERRQ(ierr);
     }
   }
 
