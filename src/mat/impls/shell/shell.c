@@ -229,7 +229,7 @@ PetscErrorCode MatMult_Shell(Mat A,Vec x,Vec y)
 {
   Mat_Shell      *shell = (Mat_Shell*)A->data;
   PetscErrorCode ierr;
-  Vec            xx;
+  Vec            xx=PETSC_NULL;
 
   PetscFunctionBegin;
   ierr = MatShellPreScaleRight(A,x,&xx);CHKERRQ(ierr);
@@ -245,7 +245,7 @@ PetscErrorCode MatMultTranspose_Shell(Mat A,Vec x,Vec y)
 {
   Mat_Shell      *shell = (Mat_Shell*)A->data;
   PetscErrorCode ierr;
-  Vec            xx;
+  Vec            xx=PETSC_NULL;
 
   PetscFunctionBegin;
   ierr = MatShellPreScaleLeft(A,x,&xx);CHKERRQ(ierr);
