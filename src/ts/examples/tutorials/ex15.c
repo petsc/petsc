@@ -164,6 +164,9 @@ int main(int argc,char **argv)
   if (Jtype ==2){
     ierr = MatFDColoringDestroy(&matfdcoloring);CHKERRQ(ierr);
   }
+  if (Jtype > 0){
+    ierr = MatDestroy(&Jmf);CHKERRQ(ierr);
+  }
   ierr = VecDestroy(&u);CHKERRQ(ierr);     
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
