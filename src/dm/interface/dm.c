@@ -132,10 +132,13 @@ PetscErrorCode  DMDestroy(DM *dm)
   PetscFunctionBegin;
   if (!*dm) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*dm),DM_CLASSID,1);
+
+  /* count all the circular references of DM and its contained Vecs */
   for (i=0; i<DM_MAX_WORK_VECTORS; i++) {
     if ((*dm)->localin[i])  {cnt++;}
     if ((*dm)->globalin[i]) {cnt++;}
   }
+  if ((*dm)->x) cnt++;
 
   if (--((PetscObject)(*dm))->refct - cnt > 0) {*dm = 0; PetscFunctionReturn(0);}
   /*
@@ -149,12 +152,13 @@ PetscErrorCode  DMDestroy(DM *dm)
     if ((*dm)->localout[i]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Destroying a DM that has a local vector obtained with DMGetLocalVector()");
     ierr = VecDestroy(&(*dm)->localin[i]);CHKERRQ(ierr);
   }
+  ierr = VecDestroy(&(*dm)->x);CHKERRQ(ierr);
+
   ierr = DMClearGlobalVectors(*dm);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(&(*dm)->ltogmap);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(&(*dm)->ltogmapb);CHKERRQ(ierr);
   ierr = PetscFree((*dm)->vectype);CHKERRQ(ierr);
   
-  ierr = VecDestroy(&(*dm)->x);CHKERRQ(ierr);
   /* if memory was published with AMS then destroy it */
   ierr = PetscObjectDepublish(*dm);CHKERRQ(ierr);
 
