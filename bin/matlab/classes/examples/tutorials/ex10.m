@@ -7,7 +7,7 @@ function ex10(args)
 %   Set the Matlab path and initialize PETSc
 path(path,'../../')
 if (nargin == 0); args = {};end
-PetscInitialize(cellcat(args,{'-ksp_monitor_true_residual','-ksp_converged_reason','-ksp_view'}));
+PetscInitialize([args {'-ksp_monitor_true_residual','-ksp_converged_reason','-ksp_view'}]);
 %%
 %  Create a matrix and put some values in it
 filename = PetscOptionsGetString('-f0');
