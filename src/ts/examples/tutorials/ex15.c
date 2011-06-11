@@ -55,7 +55,7 @@ int main(int argc,char **argv)
 {
   TS             ts;                   /* nonlinear solver */
   Vec            u;                    /* solution, residual vectors */
-  Mat            J,Jmf;                /* Jacobian matrices */
+  Mat            J,Jmf = PETSC_NULL;   /* Jacobian matrices */
   PetscInt       steps,maxsteps = 1000;     /* iterations for convergence */
   PetscErrorCode ierr;
   DM             da;
@@ -161,12 +161,8 @@ int main(int argc,char **argv)
      Free work space.  
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = MatDestroy(&J);CHKERRQ(ierr);
-  if (Jtype ==2){
-    ierr = MatFDColoringDestroy(&matfdcoloring);CHKERRQ(ierr);
-  }
-  if (Jtype > 0){
-    ierr = MatDestroy(&Jmf);CHKERRQ(ierr);
-  }
+  ierr = MatFDColoringDestroy(&matfdcoloring);CHKERRQ(ierr);
+  ierr = MatDestroy(&Jmf);CHKERRQ(ierr);
   ierr = VecDestroy(&u);CHKERRQ(ierr);     
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
@@ -187,7 +183,7 @@ PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,void *ctx)
   AppCtx         *user=(AppCtx*)ctx;
   DM             da = (DM)user->da;
   PetscInt       i,j,Mx,My,xs,ys,xm,ym;
-  PetscReal      hx,hy,hxdhy,hydhx,sx,sy;
+  PetscReal      hx,hy,sx,sy;
   PetscScalar    u,uxx,uyy,**uarray,**f,**udot;
   Vec            localU;
 
@@ -199,8 +195,6 @@ PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec U,Vec Udot,Vec F,void *ctx)
   hx     = 1.0/(PetscReal)(Mx-1); sx = 1.0/(hx*hx);
   hy     = 1.0/(PetscReal)(My-1); sy = 1.0/(hy*hy);
   if (user->nstencilpts == 9 && hx != hy)SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"hx must equal hy when nstencilpts = 9 for this example");
-  hxdhy  = hx/hy; 
-  hydhx  = hy/hx;
 
   /*
      Scatter ghost points to local vector,using the 2-step process
