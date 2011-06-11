@@ -64,7 +64,7 @@ static PetscErrorCode MatMultAdd_Nest(Mat A,Vec x,Vec y,Vec z)
 {
   Mat_Nest       *bA = (Mat_Nest*)A->data;
   Vec            *bx = bA->right,*bz = bA->left;
-  PetscInt       i,j=-1,nr = bA->nr,nc = bA->nc;
+  PetscInt       i,j,nr = bA->nr,nc = bA->nc;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
