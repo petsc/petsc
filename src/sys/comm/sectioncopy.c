@@ -331,7 +331,7 @@ PetscErrorCode PetscCopySection(PetscOverlap sendOverlap, PetscOverlap recvOverl
     ierr = PetscOverlapGetPoints(recvOverlap, r, &points);CHKERRQ(ierr);
     ierr = PetscOverlapGetRemotePoints(recvOverlap, r, &remotePoints);CHKERRQ(ierr);
     for(p = 0; p < numPoints; ++p) {
-      const int fDim, off;
+      const int fDim(0), off(0);
 
       /// TODO
       ///ierr = PetscSectionGetDof(recvSection, recv_point_type(rank, sortedPoints[p]), &fDim);CHKERRQ(ierr);

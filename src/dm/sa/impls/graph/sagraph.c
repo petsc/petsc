@@ -82,12 +82,12 @@ typedef struct {
 #define SAMappingGraphLocalizeIndex(tablen, table, i,ii,count,last,low,high) \
 {                                                                       \
   PetscBool _9_found = PETSC_FALSE;                                     \
-  /* Convert to local by searching through mapg->supp. */               \
+  /* Convert iindex to local by searching through table. */             \
   if((count) > 0) {                                                     \
     /* last and ii have valid previous values, that can be used to take \
      advantage of the already known information about the table. */     \
     if((i) > (last)) {                                                  \
-      /* lower bound is still valid, but the upper bound might not be.*/ \
+      /* lower bound is still valid, but the upper bound might not be.*/\
       /*                                                                \
        table is ordered, hence, is a subsequence of the integers.       \
        Thus, the distance between ind and last in table is no greater   \
@@ -152,10 +152,10 @@ typedef struct {
     upon completion.
  */
 #define SAMappingGraphLocalizeIndices(tablen,table,ilen,iarr,iilen,iiarr,drop) \
-do {                                                                       \
-  PetscInt _10_last,_10_low = 0,_10_high = (tablen), _10_k, _10_ind;    \
-  (iilen) = 0;                                                          \
-  for(_10_k = 0; _10_k < (ilen); ++_10_k) {                             \
+do {                                                                     \
+  PetscInt _10_last,_10_low = 0,_10_high = (tablen), _10_k, _10_ind;     \
+  (iilen) = 0;                                                           \
+  for(_10_k = 0, _10_ind = -1, _10_last = -1; _10_k < (ilen); ++_10_k) { \
     SAMappingGraphLocalizeIndex((tablen),(table),(iarr)[_10_k],_10_ind,_10_k,_10_last,_10_low,_10_high); \
     if(_10_ind != -1 && !(drop)) (iiarr)[(iilen)++]  = _10_ind;         \
   }                                                                     \
@@ -739,7 +739,7 @@ PetscErrorCode SAMappingGraphAddEdgesIS(SAMapping map, IS inix, IS iniy)
     ierr = ISCreateStride(((PetscObject)map)->comm,map->xlayout->n,map->xlayout->rstart,1,&(ix));CHKERRQ(ierr);
   }
   else ix = inix;
-  if(!iy) {
+  if(!iniy) {
     ierr = ISCreateStride(((PetscObject)map)->comm,map->ylayout->n,map->ylayout->rstart,1,&(iy));CHKERRQ(ierr);
   }
   else iy = iniy;

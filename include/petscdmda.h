@@ -159,7 +159,7 @@ S*/
 typedef struct {
   PetscInt       dim,dof,sw;
   PetscInt       mx,my,mz;    /* global number of grid points in each direction */
-  PetscInt       xs,ys,zs;    /* starting pointd of this processor, excluding ghosts */
+  PetscInt       xs,ys,zs;    /* starting point of this processor, excluding ghosts */
   PetscInt       xm,ym,zm;    /* number of grid points on this processor, excluding ghosts */
   PetscInt       gxs,gys,gzs;    /* starting point of this processor including ghosts */
   PetscInt       gxm,gym,gzm;    /* number of grid points on this processor including ghosts */

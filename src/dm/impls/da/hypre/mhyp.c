@@ -159,7 +159,7 @@ PetscErrorCode MatHYPRE_IJMatrixFastCopy_SeqAIJ(Mat A,HYPRE_IJMatrix ij)
 
   hypre_ParCSRMatrix    *par_matrix;
   hypre_AuxParCSRMatrix *aux_matrix;
-  hypre_CSRMatrix       *hdiag,*hoffd;
+  hypre_CSRMatrix       *hdiag;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
@@ -171,7 +171,6 @@ PetscErrorCode MatHYPRE_IJMatrixFastCopy_SeqAIJ(Mat A,HYPRE_IJMatrix ij)
   par_matrix = (hypre_ParCSRMatrix*)hypre_IJMatrixObject(ij);
   aux_matrix = (hypre_AuxParCSRMatrix*)hypre_IJMatrixTranslator(ij);
   hdiag = hypre_ParCSRMatrixDiag(par_matrix);
-  hoffd = hypre_ParCSRMatrixOffd(par_matrix);
 
   /* 
        this is the Hack part where we monkey directly with the hypre datastructures
@@ -258,7 +257,6 @@ PetscErrorCode MatHYPRE_IJMatrixLink(Mat A,HYPRE_IJMatrix *ij)
   PetscErrorCode        ierr;
   int                   rstart,rend,cstart,cend;
   PetscBool             flg;
-  hypre_ParCSRMatrix    *par_matrix;
   hypre_AuxParCSRMatrix *aux_matrix;
 
   PetscFunctionBegin;
@@ -278,7 +276,6 @@ PetscErrorCode MatHYPRE_IJMatrixLink(Mat A,HYPRE_IJMatrix *ij)
   PetscStackCallHypre(0,HYPRE_IJMatrixSetObjectType,(*ij,HYPRE_PARCSR));
  
   PetscStackCallHypre(0,HYPRE_IJMatrixInitialize,(*ij));
-  par_matrix = (hypre_ParCSRMatrix*)hypre_IJMatrixObject(*ij);
   aux_matrix = (hypre_AuxParCSRMatrix*)hypre_IJMatrixTranslator(*ij);
 
   hypre_AuxParCSRMatrixNeedAux(aux_matrix) = 0;

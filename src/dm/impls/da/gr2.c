@@ -476,7 +476,7 @@ PetscErrorCode VecLoad_HDF5_DA(Vec xin, PetscViewer viewer)
 {
   DM             da;
   PetscErrorCode ierr;
-  hsize_t        dim,dims[5];
+  hsize_t        dim;
   hsize_t        count[5];
   hsize_t        offset[5];
   PetscInt       cnt = 0;
@@ -497,13 +497,8 @@ PetscErrorCode VecLoad_HDF5_DA(Vec xin, PetscViewer viewer)
 
   /* Create the dataspace for the dataset */
   dim       = PetscHDF5IntCast(dd->dim + ((dd->w == 1) ? 0 : 1));
-  if (dd->dim == 3) dims[cnt++]   = PetscHDF5IntCast(dd->P);
-  if (dd->dim > 1)  dims[cnt++]   = PetscHDF5IntCast(dd->N);
-  dims[cnt++]     = PetscHDF5IntCast(dd->M);
-  if (dd->w > 1) PetscHDF5IntCast(dims[cnt++] = dd->w);
 #if defined(PETSC_USE_COMPLEX)
   dim++;
-  dims[cnt++] = 2;
 #endif
 
   /* Create the dataset with default properties and close filespace */

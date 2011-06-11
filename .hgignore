@@ -74,9 +74,11 @@ src/dm/mesh/examples/tutorials/*_quadrature.h
 src/dm/mesh/examples/tutorials/*.vtk
 *.gcov.html
 *.dSYM
-*.mexmaci
+*.mexmaci*
 valgrind*
 .DS_Store
 session_*
+*.xc*
+*.vim
 CTAGS
 CMakeLists.txt
