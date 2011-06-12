@@ -137,6 +137,7 @@ PetscErrorCode  DMGetInterpolation_SNESVI(DM dm1,DM dm2,Mat *mat,Vec *vec)
   ierr = (*dmsnesvi1->getinterpolation)(dm1,dm2,&interp,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatGetSubMatrix(interp,dmsnesvi2->inactive,dmsnesvi1->inactive,MAT_INITIAL_MATRIX,mat);CHKERRQ(ierr);
   ierr = MatDestroy(&interp);CHKERRQ(ierr);
+  *vec = 0;
   PetscFunctionReturn(0);
 }
 
@@ -208,6 +209,9 @@ PetscErrorCode DMDestroy_SNESVI(DM_SNESVI *dmsnesvi)
   dmsnesvi->dm->ops->getinterpolation   = dmsnesvi->getinterpolation;
   dmsnesvi->dm->ops->coarsen            = dmsnesvi->coarsen;
   dmsnesvi->dm->ops->createglobalvector = dmsnesvi->createglobalvector;
+  /* need to clear out this vectors because some of them may not have a reference to the DM
+    but they are counted as having references to the DM in DMDestroy() */
+  ierr = DMClearGlobalVectors(dmsnesvi->dm);CHKERRQ(ierr);
 
   ierr = VecDestroy(&dmsnesvi->upper);CHKERRQ(ierr);
   ierr = VecDestroy(&dmsnesvi->lower);CHKERRQ(ierr);

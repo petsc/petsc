@@ -35,7 +35,7 @@ The command line options are:\n\
          multigrid levels, it will be determined automatically based on the number of refinements done)
 
       ./ex58 -pc_type mg -ksp_monitor  -snes_view -pc_mg_galerkin -snes_grid_sequence 3
-             -mg_levels_ksp_monitor -snes_monitor -mg_levels_pc_type sor -pc_mg_type full
+             -mg_levels_ksp_monitor -snes_vi_monitor -mg_levels_pc_type sor -pc_mg_type full
 
 
 */

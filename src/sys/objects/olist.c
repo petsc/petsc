@@ -42,8 +42,10 @@ PetscErrorCode  PetscOListRemoveReference(PetscOList *fl,const char name[])
   nlist = *fl;
   while (nlist) {
     ierr = PetscStrcmp(name,nlist->name,&match);CHKERRQ(ierr);
-    if (match && !nlist->skipdereference) {  /* found it in the list */
-      ierr = PetscObjectDereference(nlist->obj);CHKERRQ(ierr);
+    if (match) { /* found it in the list */
+      if (!nlist->skipdereference) { 
+        ierr = PetscObjectDereference(nlist->obj);CHKERRQ(ierr);
+      }
       nlist->skipdereference = PETSC_TRUE;
       PetscFunctionReturn(0);
     }
@@ -84,7 +86,9 @@ PetscErrorCode  PetscOListAdd(PetscOList *fl,const char name[],PetscObject obj)
     while (nlist) {
       ierr = PetscStrcmp(name,nlist->name,&match);CHKERRQ(ierr);
       if (match) {  /* found it already in the list */
-        ierr = PetscObjectDereference(nlist->obj);CHKERRQ(ierr);
+        if (!nlist->skipdereference) { 
+          ierr = PetscObjectDereference(nlist->obj);CHKERRQ(ierr);
+        }
         if (prev) prev->next = nlist->next;
         else if (nlist->next) {
           *fl = nlist->next;
@@ -105,15 +109,17 @@ PetscErrorCode  PetscOListAdd(PetscOList *fl,const char name[],PetscObject obj)
     ierr = PetscStrcmp(name,nlist->name,&match);CHKERRQ(ierr);
     if (match) {  /* found it in the list */
       ierr = PetscObjectReference(obj);CHKERRQ(ierr);
-      ierr = PetscObjectDereference(nlist->obj);CHKERRQ(ierr);
-      nlist->obj = obj;
+      if (!nlist->skipdereference) { 
+        ierr = PetscObjectDereference(nlist->obj);CHKERRQ(ierr);
+      }
+      nlist->skipdereference = PETSC_FALSE;
+      nlist->obj             = obj;
       PetscFunctionReturn(0);
     }
     nlist = nlist->next;
   }
 
   /* add it to list, because it was not already there */
-
   ierr        = PetscNew(struct _n_PetscOList,&olist);CHKERRQ(ierr);
   olist->next = 0;
   olist->obj  = obj;
@@ -153,7 +159,9 @@ PetscErrorCode  PetscOListDestroy(PetscOList *ifl)
   PetscFunctionBegin;
   while (fl) {
     tmp   = fl->next;
-    if (!fl->skipdereference) {ierr  = PetscObjectDereference(fl->obj);CHKERRQ(ierr);}
+    if (!fl->skipdereference) {
+      ierr  = PetscObjectDereference(fl->obj);CHKERRQ(ierr);
+    }
     ierr  = PetscFree(fl);CHKERRQ(ierr);
     fl    = tmp;
   }

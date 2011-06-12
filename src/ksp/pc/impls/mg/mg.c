@@ -526,7 +526,7 @@ PetscErrorCode PCSetUp_MG(PC pc)
       if (!mglevels[i+1]->interpolate) {
 	ierr = DMGetInterpolation(dms[i],dms[i+1],&p,&rscale);CHKERRQ(ierr);
 	ierr = PCMGSetInterpolation(pc,i+1,p);CHKERRQ(ierr);
-	ierr = PCMGSetRScale(pc,i+1,rscale);CHKERRQ(ierr);
+	if (rscale) {ierr = PCMGSetRScale(pc,i+1,rscale);CHKERRQ(ierr);}
         ierr = VecDestroy(&rscale);CHKERRQ(ierr);
         ierr = MatDestroy(&p);CHKERRQ(ierr);
       }
