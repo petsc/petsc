@@ -46,6 +46,7 @@ typedef struct {
   KSP                                kspschur;     /* The solver for S */
   PC_FieldSplitLink                  head;
   PetscBool                          reset;         /* indicates PCReset() has been last called on this object, hack */
+  PetscBool                          suboptionsset; /* Indicates that the KSPSetFromOptions() has been called on the sub-KSPs */
 } PC_FieldSplit;
 
 /* 
@@ -458,7 +459,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       ierr  = PetscObjectIncrementTabLevel((PetscObject)ksp,(PetscObject)pc,2);CHKERRQ(ierr);
       ierr  = PetscSNPrintf(schurprefix,sizeof schurprefix,"%sfieldsplit_%s_",((PetscObject)pc)->prefix?((PetscObject)pc)->prefix:"",jac->head->splitname);CHKERRQ(ierr);
       ierr  = KSPSetOptionsPrefix(ksp,schurprefix);CHKERRQ(ierr);
-      ierr  = MatSetFromOptions(jac->schur);CHKERRQ(ierr);
+      if (!jac->suboptionsset) {ierr  = MatSetFromOptions(jac->schur);CHKERRQ(ierr);}
 
       ierr  = KSPCreate(((PetscObject)pc)->comm,&jac->kspschur);CHKERRQ(ierr);
       ierr  = PetscLogObjectParent((PetscObject)pc,(PetscObject)jac->kspschur);CHKERRQ(ierr);
@@ -473,7 +474,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       ierr = PetscSNPrintf(schurprefix,sizeof schurprefix,"%sfieldsplit_%s_",((PetscObject)pc)->prefix?((PetscObject)pc)->prefix:"",ilink->splitname);CHKERRQ(ierr);
       ierr  = KSPSetOptionsPrefix(jac->kspschur,schurprefix);CHKERRQ(ierr);
       /* really want setfromoptions called in PCSetFromOptions_FieldSplit(), but it is not ready yet */
-      ierr = KSPSetFromOptions(jac->kspschur);CHKERRQ(ierr);
+      if (!jac->suboptionsset) {ierr = KSPSetFromOptions(jac->kspschur);CHKERRQ(ierr);}
 
       ierr = PetscMalloc2(2,Vec,&jac->x,2,Vec,&jac->y);CHKERRQ(ierr);
       ierr = MatGetVecs(jac->pmat[0],&jac->x[0],&jac->y[0]);CHKERRQ(ierr);
@@ -490,7 +491,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
     while (ilink) {
       ierr = KSPSetOperators(ilink->ksp,jac->mat[i],jac->pmat[i],flag);CHKERRQ(ierr);
       /* really want setfromoptions called in PCSetFromOptions_FieldSplit(), but it is not ready yet */
-      ierr = KSPSetFromOptions(ilink->ksp);CHKERRQ(ierr);
+      if (!jac->suboptionsset) {ierr = KSPSetFromOptions(ilink->ksp);CHKERRQ(ierr);}
       ierr = KSPSetUp(ilink->ksp);CHKERRQ(ierr);
       i++;
       ilink = ilink->next;
@@ -529,6 +530,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
     }
     ierr = VecDestroy(&xtmp);CHKERRQ(ierr);
   }
+  jac->suboptionsset = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 

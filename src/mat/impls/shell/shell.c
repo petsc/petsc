@@ -86,6 +86,7 @@ static PetscErrorCode MatShellPreScaleLeft(Mat A,Vec x,Vec *xx)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  *xx = PETSC_NULL;
   if (!shell->left) {
     *xx = x;
   } else {
@@ -104,6 +105,7 @@ static PetscErrorCode MatShellPreScaleRight(Mat A,Vec x,Vec *xx)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  *xx = PETSC_NULL;
   if (!shell->right) {
     *xx = x;
   } else {
@@ -147,9 +149,9 @@ static PetscErrorCode MatShellShiftAndScale(Mat A,Vec X,Vec Y)
 
   PetscFunctionBegin;
   if (shell->dshift) {          /* get arrays because there is no VecPointwiseMultAdd() */
-    PetscInt i,m;
+    PetscInt          i,m;
     const PetscScalar *x,*d;
-    PetscScalar *y;
+    PetscScalar       *y;
     ierr = VecGetLocalSize(X,&m);CHKERRQ(ierr);
     ierr = VecGetArrayRead(shell->dshift,&d);CHKERRQ(ierr);
     ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
@@ -158,7 +160,7 @@ static PetscErrorCode MatShellShiftAndScale(Mat A,Vec X,Vec Y)
     ierr = VecRestoreArrayRead(shell->dshift,&d);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
     ierr = VecRestoreArray(Y,&y);CHKERRQ(ierr);
-  } else if (shell->vshift != 0) {
+  } else if (PetscAbsScalar(shell->vshift) != 0) {
     ierr = VecAXPBY(Y,shell->vshift,shell->vscale,X);CHKERRQ(ierr);
   } else if (shell->vscale != 1.0) {
     ierr = VecScale(Y,shell->vscale);CHKERRQ(ierr);

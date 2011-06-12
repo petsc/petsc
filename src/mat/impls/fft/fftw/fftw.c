@@ -147,10 +147,7 @@ PetscErrorCode MatMult_MPIFFTW(Mat A,Vec x,Vec y)
       fftw->p_forward = fftw_mpi_plan_dft_3d(dim[0],dim[1],dim[2],(fftw_complex*)x_array,(fftw_complex*)y_array,comm,FFTW_FORWARD,fftw->p_flag);
       break;
     default:
-      /*
-       fftw->p_forward = fftw_mpi_plan_dft(ndim,dim,(fftw_complex*)x_array,(fftw_complex*)y_array,comm,FFTW_FORWARD,fftw->p_flag);
-       */
-      SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not supported yet");
+      fftw->p_forward = fftw_mpi_plan_dft(ndim,(const ptrdiff_t*)dim,(fftw_complex*)x_array,(fftw_complex*)y_array,comm,FFTW_FORWARD,fftw->p_flag);
       break;
     }
     fftw->finarray  = x_array;
@@ -199,8 +196,7 @@ PetscErrorCode MatMultTranspose_MPIFFTW(Mat A,Vec x,Vec y)
       fftw->p_backward = fftw_mpi_plan_dft_3d(dim[0],dim[1],dim[2],(fftw_complex*)x_array,(fftw_complex*)y_array,comm,FFTW_BACKWARD,fftw->p_flag);
       break;
     default:
-      SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not supported yet");
-      /* fftw->p_backward = fftw_mpi_plan_dft(ndim,dim,(fftw_complex*)x_array,(fftw_complex*)y_array,FFTW_BACKWARD,fftw->p_flag); */
+      fftw->p_backward = fftw_mpi_plan_dft(ndim,(const ptrdiff_t*)dim,(fftw_complex*)x_array,(fftw_complex*)y_array,comm,FFTW_BACKWARD,fftw->p_flag); 
       break;
     }
     fftw->binarray  = x_array;
@@ -296,12 +292,25 @@ PetscErrorCode  MatGetVecs_FFTW(Mat A,Vec *fin,Vec *fout)
     if (fout){ierr = VecCreateSeq(PETSC_COMM_SELF,N,fout);CHKERRQ(ierr);}
   } else {        /* mpi case */
     ptrdiff_t      alloc_local,local_n0,local_0_start;
+    ptrdiff_t      local_n1,local_1_end;
     PetscInt       ndim=fft->ndim,*dim=fft->dim,n=fft->n;
     fftw_complex   *data_fin,*data_fout;
 
     switch (ndim){
     case 1:
-      SETERRQ(((PetscObject)A)->comm,PETSC_ERR_SUP,"Not supported yet");
+      /* Get local size */
+
+      alloc_local = fftw_mpi_local_size_1d(dim[0],comm,FFTW_FORWARD,FFTW_ESTIMATE,&local_n0,&local_0_start,&local_n1,&local_1_end);
+      if (fin) {
+        data_fin  = (fftw_complex*)fftw_malloc(sizeof(fftw_complex)*alloc_local);
+        ierr = VecCreateMPIWithArray(comm,local_n0,N,(const PetscScalar*)data_fin,fin);CHKERRQ(ierr);
+        (*fin)->ops->destroy   = VecDestroy_MPIFFTW;
+      } 
+      if (fout) {
+        data_fout = (fftw_complex*)fftw_malloc(sizeof(fftw_complex)*alloc_local);
+        ierr = VecCreateMPIWithArray(comm,local_n1,N,(const PetscScalar*)data_fout,fout);CHKERRQ(ierr);
+        (*fout)->ops->destroy   = VecDestroy_MPIFFTW;
+      }
       break;
     case 2:
       /* Get local size */
@@ -318,10 +327,32 @@ PetscErrorCode  MatGetVecs_FFTW(Mat A,Vec *fin,Vec *fout)
       }
       break;
     case 3:
-      SETERRQ(((PetscObject)A)->comm,PETSC_ERR_SUP,"Not supported yet");
+      /* Get local size */
+      alloc_local = fftw_mpi_local_size_3d(dim[0],dim[1],dim[2],comm,&local_n0,&local_0_start);
+      if (fin) {
+        data_fin  = (fftw_complex*)fftw_malloc(sizeof(fftw_complex)*alloc_local);
+        ierr = VecCreateMPIWithArray(comm,n,N,(const PetscScalar*)data_fin,fin);CHKERRQ(ierr);
+        (*fin)->ops->destroy   = VecDestroy_MPIFFTW;
+      }
+      if (fout) {
+        data_fout = (fftw_complex*)fftw_malloc(sizeof(fftw_complex)*alloc_local);
+        ierr = VecCreateMPIWithArray(comm,n,N,(const PetscScalar*)data_fout,fout);CHKERRQ(ierr);
+        (*fout)->ops->destroy   = VecDestroy_MPIFFTW;
+      }
       break;
     default:
-      SETERRQ(((PetscObject)A)->comm,PETSC_ERR_SUP,"Not supported yet");
+      /* Get local size */
+      alloc_local = fftw_mpi_local_size(ndim,(const ptrdiff_t*)dim,comm,&local_n0,&local_0_start);
+      if (fin) {
+        data_fin  = (fftw_complex*)fftw_malloc(sizeof(fftw_complex)*alloc_local);
+        ierr = VecCreateMPIWithArray(comm,n,N,(const PetscScalar*)data_fin,fin);CHKERRQ(ierr);
+        (*fin)->ops->destroy   = VecDestroy_MPIFFTW;
+      }
+      if (fout) {
+        data_fout = (fftw_complex*)fftw_malloc(sizeof(fftw_complex)*alloc_local);
+        ierr = VecCreateMPIWithArray(comm,n,N,(const PetscScalar*)data_fout,fout);CHKERRQ(ierr);
+        (*fout)->ops->destroy   = VecDestroy_MPIFFTW;
+      }
       break;
     }
   } 
@@ -356,7 +387,7 @@ PetscErrorCode MatCreate_FFTW(Mat A)
   PetscInt       n=fft->n,N=fft->N,ndim=fft->ndim,*dim = fft->dim;
   const char     *p_flags[]={"FFTW_ESTIMATE","FFTW_MEASURE","FFTW_PATIENT","FFTW_EXHAUSTIVE"};
   PetscBool      flg;
-  PetscInt       p_flag;
+  PetscInt       p_flag,partial_dim=1,ctr;
   PetscMPIInt    size;
 
   PetscFunctionBegin;
@@ -365,17 +396,20 @@ PetscErrorCode MatCreate_FFTW(Mat A)
 #endif
  
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
-  //ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-
-  
+  for(ctr=1;ctr<ndim;ctr++){
+          partial_dim*=dim[ctr];
+      }               
   if (size == 1) {
     ierr = MatSetSizes(A,N,N,N,N);CHKERRQ(ierr);  
     n = N;
   } else {
-    ptrdiff_t alloc_local,local_n0,local_0_start;
+    ptrdiff_t alloc_local,local_n0,local_0_start,local_n1,local_1_end;
     switch (ndim){
     case 1:
-      SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"not implemented yet");
+      alloc_local = fftw_mpi_local_size_1d(dim[0],comm,FFTW_FORWARD,FFTW_ESTIMATE,&local_n0,&local_0_start,&local_n1,&local_1_end);
+      n = (PetscInt)local_n0;
+      ierr = MatSetSizes(A,n,n,N,N);CHKERRQ(ierr);  
+   
       break;
     case 2:
       alloc_local = fftw_mpi_local_size_2d(dim[0],dim[1],comm,&local_n0,&local_0_start);
@@ -388,10 +422,14 @@ PetscErrorCode MatCreate_FFTW(Mat A)
       ierr = MatSetSizes(A,n,n,N,N);CHKERRQ(ierr);  
       break;
     case 3:
-      SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"not implemented yet");
+      alloc_local = fftw_mpi_local_size_3d(dim[0],dim[1],dim[2],comm,&local_n0,&local_0_start);
+      n = (PetscInt)local_n0*dim[1]*dim[2];
+      ierr = MatSetSizes(A,n,n,N,N);CHKERRQ(ierr);  
       break;
     default:
-      SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"not implemented yet");
+      alloc_local = fftw_mpi_local_size(ndim,(const ptrdiff_t*)dim,comm,&local_n0,&local_0_start);
+      n = (PetscInt)local_n0*partial_dim;
+      ierr = MatSetSizes(A,n,n,N,N);CHKERRQ(ierr);  
       break;
     }
   }
