@@ -86,6 +86,7 @@ static PetscErrorCode MatShellPreScaleLeft(Mat A,Vec x,Vec *xx)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  *xx = PETSC_NULL;
   if (!shell->left) {
     *xx = x;
   } else {
@@ -104,6 +105,7 @@ static PetscErrorCode MatShellPreScaleRight(Mat A,Vec x,Vec *xx)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  *xx = PETSC_NULL;
   if (!shell->right) {
     *xx = x;
   } else {
