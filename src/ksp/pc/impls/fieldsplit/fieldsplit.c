@@ -308,11 +308,11 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
         ierr = MatGetOwnershipRange(pc->mat,&nmin,&nmax);CHKERRQ(ierr);
         ierr = MatFindZeroDiagonals(pc->mat,&zerodiags);CHKERRQ(ierr);
         ierr = ISComplement(zerodiags,nmin,nmax,&rest);CHKERRQ(ierr);
+        ierr = ISDestroy(&ilink->is);CHKERRQ(ierr);
+        ierr = ISDestroy(&ilink->next->is);CHKERRQ(ierr);
         ilink->is       = rest;
         ilink->next->is = zerodiags;
-      } else {
-        SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_SUP,"Cases not yet handled when PCReset() was used");
-      }
+      } else SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_SUP,"Cases not yet handled when PCReset() was used");
     }
   }
 
@@ -459,7 +459,8 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       ierr  = PetscObjectIncrementTabLevel((PetscObject)ksp,(PetscObject)pc,2);CHKERRQ(ierr);
       ierr  = PetscSNPrintf(schurprefix,sizeof schurprefix,"%sfieldsplit_%s_",((PetscObject)pc)->prefix?((PetscObject)pc)->prefix:"",jac->head->splitname);CHKERRQ(ierr);
       ierr  = KSPSetOptionsPrefix(ksp,schurprefix);CHKERRQ(ierr);
-      if (!jac->suboptionsset) {ierr  = MatSetFromOptions(jac->schur);CHKERRQ(ierr);}
+      /* Need to call this everytime because new matrix is being created */
+      ierr  = MatSetFromOptions(jac->schur);CHKERRQ(ierr);
 
       ierr  = KSPCreate(((PetscObject)pc)->comm,&jac->kspschur);CHKERRQ(ierr);
       ierr  = PetscLogObjectParent((PetscObject)pc,(PetscObject)jac->kspschur);CHKERRQ(ierr);
@@ -474,7 +475,8 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       ierr = PetscSNPrintf(schurprefix,sizeof schurprefix,"%sfieldsplit_%s_",((PetscObject)pc)->prefix?((PetscObject)pc)->prefix:"",ilink->splitname);CHKERRQ(ierr);
       ierr  = KSPSetOptionsPrefix(jac->kspschur,schurprefix);CHKERRQ(ierr);
       /* really want setfromoptions called in PCSetFromOptions_FieldSplit(), but it is not ready yet */
-      if (!jac->suboptionsset) {ierr = KSPSetFromOptions(jac->kspschur);CHKERRQ(ierr);}
+      /* need to call this every time, since the jac->kspschur is freshly created, otherwise its options never get set */
+      ierr = KSPSetFromOptions(jac->kspschur);CHKERRQ(ierr);
 
       ierr = PetscMalloc2(2,Vec,&jac->x,2,Vec,&jac->y);CHKERRQ(ierr);
       ierr = MatGetVecs(jac->pmat[0],&jac->x[0],&jac->y[0]);CHKERRQ(ierr);
