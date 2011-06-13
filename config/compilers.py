@@ -1240,6 +1240,8 @@ class Configure(config.base.Configure):
       languages.append('Cxx')
     if hasattr(self, 'FC'):
       languages.append('FC')
+    if hasattr(self, 'CUDAC'):
+      languages.append('CUDA')
     for language in languages:
       self.generateDependencies[language] = 0
       self.setCompilers.pushLanguage(language)
