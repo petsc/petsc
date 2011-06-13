@@ -1071,6 +1071,65 @@ PetscErrorCode  DMGetInterpolation_DA(DM dac,DM daf,Mat *A,Vec *scale)
 } 
 
 #undef __FUNCT__  
+#define __FUNCT__ "DMGetInjection_DA_1D"
+PetscErrorCode DMGetInjection_DA_1D(DM dac,DM daf,VecScatter *inject)
+{
+    PetscErrorCode   ierr;
+    PetscInt         i,i_start,m_f,Mx,*idx_f,dof;
+    PetscInt         m_ghost,*idx_c,m_ghost_c;
+    PetscInt         row,i_start_ghost,mx,m_c,nc,ratioi;
+    PetscInt         i_start_c,i_start_ghost_c;
+    PetscInt         *cols;
+    DMDABoundaryType bx;
+    Vec              vecf,vecc;
+    IS               isf;
+    
+    PetscFunctionBegin;
+    ierr = DMDAGetInfo(dac,0,&Mx,0,0,0,0,0,0,0,&bx,0,0,0);CHKERRQ(ierr);
+    ierr = DMDAGetInfo(daf,0,&mx,0,0,0,0,0,&dof,0,0,0,0,0);CHKERRQ(ierr);
+    if (bx == DMDA_BOUNDARY_PERIODIC) {
+        ratioi = mx/Mx;
+        if (ratioi*Mx != mx) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: mx/Mx  must be integer: mx %D Mx %D",mx,Mx);
+    } else {
+        ratioi = (mx-1)/(Mx-1);
+        if (ratioi*(Mx-1) != mx-1) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Ratio between levels: (mx - 1)/(Mx - 1) must be integer: mx %D Mx %D",mx,Mx);
+    }
+   
+    ierr = DMDAGetCorners(daf,&i_start,0,0,&m_f,0,0);CHKERRQ(ierr);
+    ierr = DMDAGetGhostCorners(daf,&i_start_ghost,0,0,&m_ghost,0,0);CHKERRQ(ierr);
+    ierr = DMDAGetGlobalIndices(daf,PETSC_NULL,&idx_f);CHKERRQ(ierr);
+    
+    ierr = DMDAGetCorners(dac,&i_start_c,0,0,&m_c,0,0);CHKERRQ(ierr);
+    ierr = DMDAGetGhostCorners(dac,&i_start_ghost_c,0,0,&m_ghost_c,0,0);CHKERRQ(ierr);
+    ierr = DMDAGetGlobalIndices(dac,PETSC_NULL,&idx_c);CHKERRQ(ierr);
+    
+    
+    /* loop over local fine grid nodes setting interpolation for those*/
+    nc = 0;
+    ierr = PetscMalloc(m_f*sizeof(PetscInt),&cols);CHKERRQ(ierr);
+   
+   
+    for (i=i_start_c; i<i_start_c+m_c; i++) {
+        PetscInt i_f = i*ratioi;
+
+           if (i_f < i_start_ghost || i_f >= i_start_ghost+m_ghost) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_ARG_INCOMP,"Processor's coarse DMDA must lie over fine DMDA\n\
+ i_c %D i_f %D fine ghost range [%D,%D]",i,i_f,i_start_ghost,i_start_ghost+m_ghost);
+            row = idx_f[dof*(i_f-i_start_ghost)];
+            cols[nc++] = row/dof;
+    }
+   
+
+    ierr = ISCreateBlock(((PetscObject)daf)->comm,dof,nc,cols,PETSC_OWN_POINTER,&isf);CHKERRQ(ierr);
+    ierr = DMGetGlobalVector(dac,&vecc);CHKERRQ(ierr);
+    ierr = DMGetGlobalVector(daf,&vecf);CHKERRQ(ierr);
+    ierr = VecScatterCreate(vecf,isf,vecc,PETSC_NULL,inject);CHKERRQ(ierr);
+    ierr = DMRestoreGlobalVector(dac,&vecc);CHKERRQ(ierr);
+    ierr = DMRestoreGlobalVector(daf,&vecf);CHKERRQ(ierr);
+    ierr = ISDestroy(&isf);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "DMGetInjection_DA_2D"
 PetscErrorCode DMGetInjection_DA_2D(DM dac,DM daf,VecScatter *inject)
 {
@@ -1244,12 +1303,12 @@ PetscErrorCode  DMGetInjection_DA(DM dac,DM daf,VecScatter *inject)
   if (dimc > 1 && Nc < 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Coarse grid requires at least 2 points in y direction");
   if (dimc > 2 && Pc < 2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Coarse grid requires at least 2 points in z direction");
 
-  if (dimc == 2){
+  if (dimc == 1){
+    ierr = DMGetInjection_DA_1D(dac,daf,inject);CHKERRQ(ierr);
+  } else if (dimc == 2) {
     ierr = DMGetInjection_DA_2D(dac,daf,inject);CHKERRQ(ierr);
   } else if (dimc == 3) {
     ierr = DMGetInjection_DA_3D(dac,daf,inject);CHKERRQ(ierr);
-  } else {
-    SETERRQ1(((PetscObject)daf)->comm,PETSC_ERR_SUP,"No support for this DMDA dimension %D",dimc);
   }
   PetscFunctionReturn(0);
 }
