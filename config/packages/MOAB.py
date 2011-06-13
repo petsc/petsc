@@ -9,7 +9,7 @@ class Configure(config.package.GNUPackage):
     self.downloadext     = 'tar.gz'
     self.functions = ['iMesh_newMesh']
     self.functionsFortran = 1
-    self.includes  = ['iMeshP.h', 'iMesh.h']
+    self.includes  = ['iMesh.h']
     self.liblist   = [['libiMesh.a', 'libMOAB.a']]
     self.cxx       = 1
     return
