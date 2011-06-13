@@ -123,7 +123,6 @@ int main(int argc,char **argv)
      routines.
   */
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
-  ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Evaluate initial guess; then solve nonlinear system
