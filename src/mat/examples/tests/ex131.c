@@ -44,7 +44,7 @@ int main(int argc,char **args)
   ierr = VecDuplicate(x,&b);CHKERRQ(ierr);
   ierr = MatMult(A,x,b);CHKERRQ(ierr);
 
-  /*Print (for testing only) */
+  /* Print (for testing only) */
   ierr = MatView(A,0);CHKERRQ(ierr);
   ierr = VecView(b,0);CHKERRQ(ierr);
   /* Free data structures */

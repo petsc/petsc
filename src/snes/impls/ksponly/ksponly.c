@@ -53,7 +53,6 @@ static PetscErrorCode SNESSolve_KSPONLY(SNES snes)
 #define __FUNCT__ "SNESSetUp_KSPONLY"
 static PetscErrorCode SNESSetUp_KSPONLY(SNES snes)
 {
-  /*PetscErrorCode ierr;*/
 
   PetscFunctionBegin;
   PetscFunctionReturn(0);
@@ -63,7 +62,6 @@ static PetscErrorCode SNESSetUp_KSPONLY(SNES snes)
 #define __FUNCT__ "SNESDestroy_KSPONLY"
 static PetscErrorCode SNESDestroy_KSPONLY(SNES snes)
 {
-  /*PetscErrorCode ierr;*/
 
   PetscFunctionBegin;
   PetscFunctionReturn(0);
