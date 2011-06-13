@@ -138,7 +138,11 @@ PetscErrorCode  DMDestroy(DM *dm)
     if ((*dm)->localin[i])  {cnt++;}
     if ((*dm)->globalin[i]) {cnt++;}
   }
-  if ((*dm)->x) cnt++;
+  if ((*dm)->x) {
+    PetscObject obj;
+    ierr = PetscObjectQuery((PetscObject)(*dm)->x,"DM",&obj);CHKERRQ(ierr);
+    if (obj == (PetscObject)*dm) cnt++;
+  }
 
   if (--((PetscObject)(*dm))->refct - cnt > 0) {*dm = 0; PetscFunctionReturn(0);}
   /*
@@ -153,7 +157,7 @@ PetscErrorCode  DMDestroy(DM *dm)
     ierr = VecDestroy(&(*dm)->localin[i]);CHKERRQ(ierr);
   }
   ierr = VecDestroy(&(*dm)->x);CHKERRQ(ierr);
-
+  ierr = MatFDColoringDestroy(&(*dm)->fd);CHKERRQ(ierr);
   ierr = DMClearGlobalVectors(*dm);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(&(*dm)->ltogmap);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(&(*dm)->ltogmapb);CHKERRQ(ierr);
@@ -1225,19 +1229,20 @@ PetscErrorCode  DMComputeJacobian(DM dm,Vec x,Mat A,Mat B,MatStructure *stflag)
     ierr = MatFDColoringCreate(B,coloring,&fd);CHKERRQ(ierr);
     ierr = ISColoringDestroy(&coloring);CHKERRQ(ierr);
     ierr = MatFDColoringSetFunction(fd,(PetscErrorCode (*)(void))dm->ops->functionj,dm);CHKERRQ(ierr);
+    
     dm->fd = fd;
     dm->ops->jacobian = DMComputeJacobianDefault;
+    /* don't know why this is needed */
+    ierr = PetscObjectDereference((PetscObject)dm);CHKERRQ(ierr);
   }
   if (!x) x = dm->x;
   ierr = (*dm->ops->jacobian)(dm,x,A,B,stflag);CHKERRQ(ierr);
 
-  /* if matrix depends on x; i.e. nonlinear problem, keep copy of input vector since needed by multigrid methods */
-  if (x) {
-    if (!dm->x) {
-      ierr = VecDuplicate(x,&dm->x);CHKERRQ(ierr);
-    }
-    ierr = VecCopy(x,dm->x);CHKERRQ(ierr);
+  /* if matrix depends on x; i.e. nonlinear problem, keep copy of input vector since needed by multigrid methods to generate coarse grid matrices */
+  if (!dm->x) {
+   ierr = DMCreateGlobalVector(dm,&dm->x);CHKERRQ(ierr);
   }
+  ierr = VecCopy(x,dm->x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

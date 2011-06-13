@@ -170,9 +170,7 @@ PetscErrorCode  DMGetColoring_DA(DM da,ISColoringType ctype,const MatType mtype,
     ierr =  DMGetColoring_DA_2d_MPIAIJ(da,ctype,coloring);CHKERRQ(ierr);
   } else if (dim == 3) {
     ierr =  DMGetColoring_DA_3d_MPIAIJ(da,ctype,coloring);CHKERRQ(ierr);
-  } else {
-    SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_SUP,"Not done for %D dimension, send us mail petsc-maint@mcs.anl.gov for code",dim);
-  }
+  } else SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_SUP,"Not done for %D dimension, send us mail petsc-maint@mcs.anl.gov for code",dim);
   if (isBAIJ) {
     dd->w = nc;
     dd->xs = dd->xs*nc;

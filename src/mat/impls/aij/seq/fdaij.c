@@ -120,10 +120,7 @@ PetscErrorCode MatFDColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,MatFDCol
             rowhit[currentcol]        = fm;
             fm                        = currentcol; 
             /* fm points to present position in list since we know the columns are sorted */
-          } else {
-            SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Detected invalid coloring");
-          }
-
+          } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Detected invalid coloring");
         }
       }
       c->nrows[i] = nrows;
