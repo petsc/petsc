@@ -35,25 +35,28 @@ class Configure(config.package.Package):
     g.write('CFLAGS       = '+self.setCompilers.getCompilerFlags()+''' -DUF_long="long long" -DUF_long_max=''' + ulong_max + ''' -DUF_long_id='"%lld"' -DNCHOLMOD \n''')
     self.setCompilers.popLanguage()
     g.write('RANLIB       = '+self.setCompilers.RANLIB+'\n')
-    g.write('AR = ar cr\n')
-    g.write('RM = rm -f\n')
-    g.write('MV = mv -f\n')
-    g.write('BLAS      = '+self.libraries.toString(self.blasLapack.dlib)+'\n')
+    g.write('AR           = '+self.setCompilers.AR+' '+self.setCompilers.AR_FLAGS+'\n')
+    g.write('RM           = '+self.programs.RM+'\n')
+    g.write('MV           = '+self.programs.mv+'\n')
+    g.write('CP           = '+self.programs.cp+'\n')
+    g.write('BLAS         = '+self.libraries.toString(self.blasLapack.dlib)+'\n')
     if self.blasLapack.mangling == 'underscore':
       flg = ''
     elif self.blasLapack.mangling == 'caps':
       flg = '-DBLAS_CAPS_DOES_NOT_WORK'
     else:
       flg = '-DBLAS_NO_UNDERSCORE'
-    g.write('UMFPACK_CONFIG   = '+flg+'\n')
-    g.write('CLEAN = *.o *.obj *.ln *.bb *.bbg *.da *.tcov *.gcov gmon.out *.bak *.d\n')
+    g.write('UMFPACK_CONFIG    = '+flg+'\n')
+    g.write('CLEAN             = *.o *.obj *.ln *.bb *.bbg *.da *.tcov *.gcov gmon.out *.bak *.d\n')
+    g.write('INSTALL_LIB       = ' + self.libDir + '\n')
+    g.write('INSTALL_INCLUDE   = ' + self.includeDir + '\n')
     g.close()
     
     # Build UMFPACK
     if self.installNeeded(mkfile):
       try:
         self.logPrintBox('Compiling UMFPACK; this may take several minutes')
-        output,err,ret = config.base.Configure.executeShellCommand('cd '+self.packageDir+'/UMFPACK && UMFPACK_INSTALL_DIR='+self.installDir+'''/lib && export UMFPACK_INSTALL_DIR && make && make clean && mv Lib/*.a '''+self.libDir+' && cp Include/*.h '+self.includeDir+' && cd .. && cp UFconfig/*.h '+self.includeDir+' && cd AMD && mv Lib/*.a '+self.libDir+' && cp Include/*.h '+self.includeDir, timeout=2500, log = self.framework.log)
+        output,err,ret = config.base.Configure.executeShellCommand('cd '+self.packageDir+'/UMFPACK && make && make install && make clean && cd ../AMD && make install && cd .. && cp UFconfig/*.h '+self.includeDir, timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on UMFPACK: '+str(e))
       self.postInstall(output+err, mkfile)

@@ -7,6 +7,12 @@ import os
 def noCheck(command, status, output, error):
   return
 
+try:
+  any
+except NameError:
+  def any(lst):
+    return reduce(lambda x,y:x or y,lst,False)
+
 class Configure(config.base.Configure):
   def __init__(self, framework):
     config.base.Configure.__init__(self, framework)
@@ -122,14 +128,31 @@ class Configure(config.base.Configure):
     try:
       (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --help')
       output = output + error
-      if output.find('Unrecognised option --help passed to ld') >=0:    # NAG f95 compiler
-        return 0
-      if output.find('www.gnu.org') >= 0 or output.find('developer.apple.com') >= 0 or output.find('bugzilla.redhat.com') >= 0 or output.find('gcc.gnu.org') >= 0 or (output.find('gcc version')>=0 and not output.find('Intel(R)')>= 0):
-        return 1
+      return (any([s in output for s in ['www.gnu.org',
+                                         'developer.apple.com',
+                                         'bugzilla.redhat.com',
+                                         'gcc.gnu.org',
+                                         'gcc version',
+                                         'passed on to the various sub-processes invoked by gcc',
+                                         ]])
+              and not any([s in output for s in ['Intel(R)',
+                                                 'Unrecognised option --help passed to ld', # NAG f95 compiler
+                                                 ]]))
     except RuntimeError:
       pass
     return 0
   isGNU = staticmethod(isGNU)
+
+  def isClang(compiler):
+    '''Returns true if the compiler is a Clang/LLVM compiler'''
+    try:
+      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --help')
+      output = output + error
+      return any([s in output for s in ['Emit Clang AST']])
+    except RuntimeError:
+      pass
+    return 0
+  isClang = staticmethod(isClang)
 
   def isGfortran45x(compiler):
     '''returns true if the compiler is gfortran-4.5.x'''
@@ -476,6 +499,7 @@ class Configure(config.base.Configure):
         self.logPrint('Error testing C compiler: '+str(e))
         if os.path.basename(self.CC) == 'mpicc':
           self.framework.logPrint(' MPI installation '+str(self.CC)+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI.')
+        self.delMakeMacro('CC')
         del self.CC
     if not hasattr(self, 'CC'):
       raise RuntimeError('Could not locate a functional C compiler')
@@ -550,6 +574,7 @@ class Configure(config.base.Configure):
           break
       except RuntimeError, e:
         self.logPrint('Error testing CUDA compiler: '+str(e))
+        self.delMakeMacro('CUDAC')
         del self.CUDAC
     return
 
@@ -687,6 +712,7 @@ class Configure(config.base.Configure):
           self.logPrint('Error testing C++ compiler: '+str(e))
           if os.path.basename(self.CXX) in ['mpicxx', 'mpiCC']:
             self.logPrint('  MPI installation '+str(self.CXX)+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI.')
+          self.delMakeMacro('CXX')
           del self.CXX
       if hasattr(self, 'CXX'):
         break
@@ -722,6 +748,7 @@ class Configure(config.base.Configure):
         if os.path.basename(self.CXXCPP) in ['mpicxx', 'mpiCC']:
           self.framework.logPrint('MPI installation '+self.getCompiler()+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI')
         self.popLanguage()
+        self.delMakeMacro('CCCPP')
         del self.CXXCPP
     return
 
@@ -827,6 +854,7 @@ class Configure(config.base.Configure):
         self.logPrint('Error testing Fortran compiler: '+str(e))
         if os.path.basename(self.FC) in ['mpif90', 'mpif77']:
           self.framework.logPrint(' MPI installation '+str(self.FC)+' is likely incorrect.\n  Use --with-mpi-dir to indicate an alternate MPI.')
+        self.delMakeMacro('FC')
         del self.FC
     return
 
@@ -1161,7 +1189,8 @@ class Configure(config.base.Configure):
           os.remove(oldLib)
           self.LIBS = oldLibs
         if os.path.isfile(self.linkerObj): os.remove(self.linkerObj)
-        del self.LD_SHARED 
+        self.delMakeMacro('LD_SHARED')
+        del self.LD_SHARED
         del self.sharedLinker
     return
 
@@ -1418,8 +1447,8 @@ This way - mpi compilers from '''+self.argDB['with-mpi-dir']+ ''' are used.'''
 
   def resetEnvCompilers(self):
     ignoreEnv = ['CC','CFLAGS','CXX','CXXFLAGS','FC','FCFLAGS','F77','FFLAGS',
-                 'CPP','CPPFLAGS','CXXCPP','CXXCPPFLAGS','LDFLAGS','LIBS',
-                 'MPI_DIR']
+                 'F90','F90FLAGS','CPP','CPPFLAGS','CXXCPP','CXXCPPFLAGS',
+                 'LDFLAGS','LIBS','MPI_DIR']
     for envVal in ignoreEnv:
       if envVal in os.environ:
         self.logPrintBox('***** WARNING: '+envVal+' found in enviornment variables - ignoring ******')

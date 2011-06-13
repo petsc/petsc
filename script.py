@@ -13,7 +13,7 @@ except ImportError:
 
 # Some features related to detecting login failures cannot be easily
 # implemented with the 'subprocess' module. Disable it for now ...
-#USE_SUBPROCESS = 0
+USE_SUBPROCESS = 0
 # In Python 2.6 and above, the 'popen2' module is deprecated
 if sys.version_info[:2] >= (2, 6) and not USE_SUBPROCESS:
   import warnings
