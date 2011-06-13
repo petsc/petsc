@@ -863,8 +863,8 @@ class GNUPackage(Package):
     '''Add args corresponding to --with-<deppackage>=<deppackage-dir>.'''
     args = []
     for d in self.deps:
-      if d.directory is not None and d.directory is not ""
-      args.append('--with-'+d.package+'='+d.directory)
+      if d.directory is not None and not d.directory == "":
+        args.append('--with-'+d.package+'='+d.directory)
     for d in self.odeps:
       if hasattr(d,'found') and d.found:
         args.append('--with-'+d.package+'='+d.directory)
