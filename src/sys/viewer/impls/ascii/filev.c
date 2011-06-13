@@ -245,6 +245,82 @@ PetscErrorCode  PetscViewerASCIISetTab(PetscViewer viewer,PetscInt tabs)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "PetscViewerASCIIAddTab" 
+/*@
+    PetscViewerASCIIAddTab - Add to the number of times an ASCII viewer tabs before printing
+
+    Not Collective, but only first processor in set has any effect
+
+    Input Parameters:
++    viewer - optained with PetscViewerASCIIOpen()
+-    tabs - number of tabs
+
+    Level: developer
+
+    Fortran Note:
+    This routine is not supported in Fortran.
+
+  Concepts: PetscViewerASCII^formating
+  Concepts: tab^setting
+
+.seealso: PetscPrintf(), PetscSynchronizedPrintf(), PetscViewerASCIIPrintf(),
+          PetscViewerASCIIPopTab(), PetscViewerASCIISynchronizedPrintf(), PetscViewerASCIIOpen(),
+          PetscViewerCreate(), PetscViewerDestroy(), PetscViewerSetType(), PetscViewerASCIIGetPointer(), PetscViewerASCIIPushTab()
+@*/
+PetscErrorCode  PetscViewerASCIIAddTab(PetscViewer viewer,PetscInt tabs)
+{
+  PetscViewer_ASCII *ascii = (PetscViewer_ASCII*)viewer->data;
+  PetscBool         iascii;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  if (iascii) {
+    ascii->tab += tabs;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerASCIISubtractTab" 
+/*@
+    PetscViewerASCIISubtractTab - Subtracts from the number of times an ASCII viewer tabs before printing
+
+    Not Collective, but only first processor in set has any effect
+
+    Input Parameters:
++    viewer - optained with PetscViewerASCIIOpen()
+-    tabs - number of tabs
+
+    Level: developer
+
+    Fortran Note:
+    This routine is not supported in Fortran.
+
+  Concepts: PetscViewerASCII^formating
+  Concepts: tab^setting
+
+.seealso: PetscPrintf(), PetscSynchronizedPrintf(), PetscViewerASCIIPrintf(),
+          PetscViewerASCIIPopTab(), PetscViewerASCIISynchronizedPrintf(), PetscViewerASCIIOpen(),
+          PetscViewerCreate(), PetscViewerDestroy(), PetscViewerSetType(), PetscViewerASCIIGetPointer(), PetscViewerASCIIPushTab()
+@*/
+PetscErrorCode  PetscViewerASCIISubtractTab(PetscViewer viewer,PetscInt tabs)
+{
+  PetscViewer_ASCII *ascii = (PetscViewer_ASCII*)viewer->data;
+  PetscBool         iascii;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+  if (iascii) {
+    ascii->tab -= tabs;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "PetscViewerASCIISynchronizedAllow" 
 /*@C
     PetscViewerASCIISynchronizedAllow - Allows calls to PetscViewerASCIISynchronizedPrintf() for this viewer

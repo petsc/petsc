@@ -232,6 +232,8 @@ extern PetscErrorCode  PetscViewerASCIIPushTab(PetscViewer);
 extern PetscErrorCode  PetscViewerASCIIPopTab(PetscViewer);
 extern PetscErrorCode  PetscViewerASCIIUseTabs(PetscViewer,PetscBool );
 extern PetscErrorCode  PetscViewerASCIISetTab(PetscViewer,PetscInt);
+extern PetscErrorCode  PetscViewerASCIIAddTab(PetscViewer,PetscInt);
+extern PetscErrorCode  PetscViewerASCIISubtractTab(PetscViewer,PetscInt);
 extern PetscErrorCode  PetscViewerBinaryGetDescriptor(PetscViewer,int*);
 extern PetscErrorCode  PetscViewerBinaryGetInfoPointer(PetscViewer,FILE **);
 extern PetscErrorCode  PetscViewerBinaryRead(PetscViewer,void*,PetscInt,PetscDataType);
