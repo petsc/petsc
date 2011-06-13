@@ -76,13 +76,32 @@ static PetscErrorCode DMSetFromOptions(DM dm)
 #define __FUNCT__ "DMSetUp"
 static PetscErrorCode DMSetUp(DM dm) 
 {
+#if PETSC_VERSION_(3,1,0)
+  PetscInt       dim;
+  const DAType   datype = NULL;
   PetscErrorCode ierr;
+#endif
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_COOKIE,1);
 #if PETSC_VERSION_(3,1,0)
+  /*ierr = DAGetInfo((DA)dm,&dim,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  if (dim >= 1 && dim <= 3) {
+    switch (dim) {
+    case 1: datype = DA1D; break;
+    case 2: datype = DA2D; break;
+    case 3: datype = DA3D; break;}
+    ierr = DASetType((DA)dm,datype);CHKERRQ(ierr);
+    }*/
   ierr = DASetFromOptions((DA)dm);CHKERRQ(ierr);
+  ierr = DAGetInfo((DA)dm,&dim,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  if (dim >= 1 && dim <= 3) {
+    switch (dim) {
+    case 1: datype = DA1D; break;
+    case 2: datype = DA2D; break;
+    case 3: datype = DA3D; break;}
+    ierr = DASetType((DA)dm,datype);CHKERRQ(ierr);
+  }
 #endif
-  ierr = 0;CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

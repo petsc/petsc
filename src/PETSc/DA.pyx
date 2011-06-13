@@ -29,9 +29,10 @@ cdef class DA(DM):
 
     #
 
-    def create(self, dim=None, dof=1,
+    def create(self, dim=None, dof=None,
                sizes=None, proc_sizes=None, boundary_type=None,
-               stencil_type=None, stencil_width=0, comm=None):
+               stencil_type=None, stencil_width=None,
+               bint setup=True, comm=None):
         #
         cdef object arg = None
         try: arg = tuple(dim)
@@ -39,38 +40,38 @@ cdef class DA(DM):
         else: dim, sizes = None, arg
         #
         cdef PetscInt ndim = PETSC_DECIDE
-        cdef PetscInt ndof = 1
+        cdef PetscInt ndof = PETSC_DECIDE
         cdef PetscInt M = 1, m = PETSC_DECIDE, *lx = NULL
         cdef PetscInt N = 1, n = PETSC_DECIDE, *ly = NULL
         cdef PetscInt P = 1, p = PETSC_DECIDE, *lz = NULL
         cdef PetscDABoundaryType btx = DA_BOUNDARY_NONE
         cdef PetscDABoundaryType bty = DA_BOUNDARY_NONE
         cdef PetscDABoundaryType btz = DA_BOUNDARY_NONE
-        cdef PetscDAStencilType  stype = DA_STENCIL_STAR
+        cdef PetscDAStencilType  stype = DA_STENCIL_BOX
         cdef PetscInt            swidth = 0
-        # global grid sizes
+        # grid and proc sizes
         cdef object gsizes = sizes
-        if gsizes is None: gsizes = ()
-        else: gsizes = tuple(gsizes)
-        cdef PetscInt gdim = asDims(gsizes, &M, &N, &P)
-        assert gdim <= 3
-        # processor sizes
         cdef object psizes = proc_sizes
-        if psizes is None: psizes = ()
-        else: psizes = tuple(psizes)
-        cdef PetscInt pdim = asDims(psizes, &m, &n, &p)
-        assert pdim <= 3
+        cdef PetscInt gdim = PETSC_DECIDE
+        cdef PetscInt pdim = PETSC_DECIDE
+        if sizes is not None:
+            gdim = asDims(gsizes, &M, &N, &P)
+        if psizes is not None:
+            pdim = asDims(psizes, &m, &n, &p)
+        if gdim>=0 and pdim>=0:
+            assert gdim == pdim
+        # dim and dof
+        if dim is not None: ndim = asInt(dim)
+        if dof is not None: ndof = asInt(dof)
+        if ndim==PETSC_DECIDE: ndim = gdim
+        if ndof==PETSC_DECIDE: ndof = 1
         # vertex distribution
         lx = NULL # XXX implement!
         ly = NULL # XXX implement!
         lz = NULL # XXX implement!
-        # dim and dof, periodicity, stencil type & width
-        if dim is not None: ndim = asInt(dim)
-        if dof is not None: ndof = asInt(dof)
-        if ndim==PETSC_DECIDE and gdim>0: ndim = gdim
-        if ndof==PETSC_DECIDE: ndof = 1
+        # periodicity, stencil type & width
         if boundary_type is not None:
-            asBoundary(ndim, boundary_type, &btx, &bty, &btz)
+            asBoundary(boundary_type, &btx, &bty, &btz)
         if stencil_type is not None:
             stype = asStencil(stencil_type)
         if stencil_width is not None:
@@ -80,22 +81,24 @@ cdef class DA(DM):
         cdef PetscDA newda = NULL
         CHKERR( DACreateND(ccomm, ndim, ndof,
                            M, N, P, m, n, p, lx, ly, lz,
-                           btx, bty, btz, stype, swidth, &newda) )
+                           btx, bty, btz, stype, swidth,
+                           &newda) )
+        if setup and ndim > 0: CHKERR( DASetUp(newda) )
         PetscCLEAR(self.obj); self.dm = newda
         return self
 
     def duplicate(self, dof=None, boundary_type=None,
                   stencil_type=None, stencil_width=None):
-        cdef PetscInt dim = 0
+        cdef PetscInt ndim = 0, ndof = 0
         cdef PetscInt M = 1, N = 1, P = 1
         cdef PetscInt m = 1, n = 1, p = 1
-        cdef PetscInt ndof = 1, swidth = 1
         cdef PetscDABoundaryType btx = DA_BOUNDARY_NONE
         cdef PetscDABoundaryType bty = DA_BOUNDARY_NONE
         cdef PetscDABoundaryType btz = DA_BOUNDARY_NONE
-        cdef PetscDAStencilType  stype = DA_STENCIL_BOX
+        cdef PetscDAStencilType  stype = DA_STENCIL_STAR
+        cdef PetscInt            swidth = 0
         CHKERR( DAGetInfo(self.dm,
-                          &dim,
+                          &ndim,
                           &M, &N, &P,
                           &m, &n, &p,
                           &ndof, &swidth,
@@ -109,20 +112,26 @@ cdef class DA(DM):
         if dof is not None:
             ndof = asInt(dof)
         if boundary_type is not None:
-            asBoundary(dim, boundary_type, &btx, &bty, &btz)
+            asBoundary(boundary_type, &btx, &bty, &btz)
         if stencil_type  is not None:
             stype = asStencil(stencil_type)
         if stencil_width is not None:
             swidth = asInt(stencil_width)
         #
         cdef DA da = DA()
-        CHKERR( DACreateND(comm, dim, ndof,
+        CHKERR( DACreateND(comm, ndim, ndof,
                            M, N, P, m, n, p, lx, ly, lz,
-                           btx, bty, btz, stype, swidth, &da.dm) )
+                           btx, bty, btz, stype, swidth,
+                           &da.dm) )
+        CHKERR( DASetUp(da.dm) )
         return da
 
     #
 
+    def setDim(self, dim):
+        cdef PetscInt ndim = asInt(dim)
+        CHKERR( DASetDim(self.dm, ndim) )
+        
     def getDim(self):
         cdef PetscInt dim = 0
         CHKERR( DAGetInfo(self.dm,
@@ -134,6 +143,10 @@ cdef class DA(DM):
                           NULL) )
         return toInt(dim)
 
+    def setDof(self, dof):
+        cdef PetscInt ndof = asInt(dof)
+        CHKERR( DASetDof(self.dm, ndof) )
+
     def getDof(self):
         cdef PetscInt dof = 0
         CHKERR( DAGetInfo(self.dm,
@@ -144,6 +157,19 @@ cdef class DA(DM):
                           NULL, NULL, NULL,
                           NULL) )
         return toInt(dof)
+
+    def setSizes(self, sizes):
+        cdef PetscInt gdim = PETSC_DECIDE
+        cdef PetscInt M = 1
+        cdef PetscInt N = 1
+        cdef PetscInt P = 1
+        cdef tuple gsizes = tuple(sizes)
+        gdim = asDims(gsizes, &M, &N, &P)
+        #cdef PetscInt dim = PETSC_DECIDE
+        #CHKERR( DAGetDim(self.dm, &dim) )
+        #if dim == PETSC_DECIDE:
+        #    CHKERR( DASetDim(self.dm, gdim) )
+        CHKERR( DASetSizes(self.dm, M, N, P) )
 
     def getSizes(self):
         cdef PetscInt dim = 0
@@ -159,6 +185,19 @@ cdef class DA(DM):
                           NULL) )
         return toDims(dim, M, N, P)
 
+    def setProcSizes(self, proc_sizes):
+        cdef PetscInt pdim = PETSC_DECIDE
+        cdef PetscInt m = PETSC_DECIDE
+        cdef PetscInt n = PETSC_DECIDE
+        cdef PetscInt p = PETSC_DECIDE
+        cdef tuple psizes = tuple(proc_sizes)
+        pdim = asDims(psizes, &m, &n, &p)
+        #cdef PetscInt dim = PETSC_DECIDE
+        #CHKERR( DAGetDim(self.dm, &dim) )
+        #if dim == PETSC_DECIDE:
+        #    CHKERR( DASetDim(self.dm, pdim) )
+        CHKERR( DASetNumProcs(self.dm, m, n, p) )
+
     def getProcSizes(self):
         cdef PetscInt dim = 0
         cdef PetscInt m = PETSC_DECIDE
@@ -173,6 +212,18 @@ cdef class DA(DM):
                           NULL) )
         return toDims(dim, m, n, p)
 
+    def setBoundaryType(self, boundary_type):
+        cdef PetscInt bdim = PETSC_DECIDE
+        cdef PetscDABoundaryType btx = DA_BOUNDARY_NONE
+        cdef PetscDABoundaryType bty = DA_BOUNDARY_NONE
+        cdef PetscDABoundaryType btz = DA_BOUNDARY_NONE
+        bdim = asBoundary(boundary_type, &btx, &bty, &btz)
+        #cdef PetscInt dim = PETSC_DECIDE
+        #CHKERR( DAGetDim(self.dm, &dim) )
+        #if dim == PETSC_DECIDE:
+        #    CHKERR( DASetDim(self.dm, bdim) )
+        CHKERR( DASetBoundaryType(self.dm, btx, bty, btz) )
+        
     def getBoundaryType(self):
         cdef PetscInt dim = 0
         cdef PetscDABoundaryType btx = DA_BOUNDARY_NONE
@@ -187,18 +238,10 @@ cdef class DA(DM):
                           NULL) )
         return toDims(dim, btx, bty, btz)
 
-    def getStencil(self):
-        cdef PetscDAStencilType stype = DA_STENCIL_BOX
-        cdef PetscInt swidth = 0
-        CHKERR( DAGetInfo(self.dm,
-                          NULL,
-                          NULL, NULL, NULL,
-                          NULL, NULL, NULL,
-                          NULL, &swidth,
-                          NULL, NULL, NULL,
-                          &stype) )
-        return (toStencil(stype), toInt(swidth))
-
+    def setStencilType(self, stencil_type):
+        cdef PetscDAStencilType stype = asStencil(stencil_type)
+        CHKERR( DASetStencilType(self.dm, stype) )
+        
     def getStencilType(self):
         cdef PetscDAStencilType stype = DA_STENCIL_BOX
         CHKERR( DAGetInfo(self.dm,
@@ -210,6 +253,10 @@ cdef class DA(DM):
                           &stype) )
         return stype
 
+    def setStencilWidth(self, stencil_width):
+        cdef PetscInt swidth = asInt(stencil_width)
+        CHKERR( DASetStencilWidth(self.dm, swidth) )
+
     def getStencilWidth(self):
         cdef PetscInt swidth = 0
         CHKERR( DAGetInfo(self.dm,
@@ -220,6 +267,24 @@ cdef class DA(DM):
                           NULL, NULL, NULL,
                           NULL) )
         return toInt(swidth)
+
+    def setStencil(self, stencil_type, stencil_width):
+        cdef PetscDAStencilType stype = asStencil(stencil_type)
+        cdef PetscInt swidth = asInt(stencil_width)
+        CHKERR( DASetStencilType(self.dm, stype) )
+        CHKERR( DASetStencilWidth(self.dm, swidth) )
+        
+    def getStencil(self):
+        cdef PetscDAStencilType stype = DA_STENCIL_BOX
+        cdef PetscInt swidth = 0
+        CHKERR( DAGetInfo(self.dm,
+                          NULL,
+                          NULL, NULL, NULL,
+                          NULL, NULL, NULL,
+                          NULL, &swidth,
+                          NULL, NULL, NULL,
+                          &stype) )
+        return (toStencil(stype), toInt(swidth))
 
     #
 

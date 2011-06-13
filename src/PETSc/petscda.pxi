@@ -33,6 +33,15 @@ cdef extern from * nogil:
                    PetscDAStencilType,               # stencil type
                    PetscInt,                         # stencil width
                    PetscDA*)
+    
+    int DASetDim"DMDASetDim"(PetscDA,PetscInt)
+    int DASetDof"DMDASetDof"(PetscDA,PetscInt)
+    int DASetSizes"DMDASetSizes"(PetscDA,PetscInt,PetscInt,PetscInt)
+    int DASetNumProcs"DMDASetNumProcs"(PetscDA,PetscInt,PetscInt,PetscInt)
+    int DASetBoundaryType"DMDASetBoundaryType"(PetscDA,PetscDABoundaryType,PetscDABoundaryType,PetscDABoundaryType)
+    int DASetStencilType"DMDASetStencilType"(PetscDA,PetscDAStencilType)
+    int DASetStencilWidth"DMDASetStencilWidth"(PetscDA,PetscInt)
+    int DASetUp"DMSetUp"(PetscDA)
 
     int DAGetInfo"DMDAGetInfo"(
                   PetscDA,
@@ -112,40 +121,39 @@ cdef inline PetscDABoundaryType asBoundaryType(object boundary) \
             raise ValueError("unknown boundary type: %s" % boundary)
     return boundary
 
-cdef inline int asBoundary(PetscInt dim,
-                           object boundary,
-                           PetscDABoundaryType *_x,
-                           PetscDABoundaryType *_y,
-                           PetscDABoundaryType *_z) except -1:
-    if boundary is None: return 0
+cdef inline PetscInt asBoundary(object boundary,
+                                PetscDABoundaryType *_x,
+                                PetscDABoundaryType *_y,
+                                PetscDABoundaryType *_z) except? -1:
+    cdef PetscInt dim = PETSC_DECIDE
     cdef object x, y, z
-    if isinstance(boundary, str):
-        x = y = z = boundary
-    elif isinstance(boundary, int):
-        x = y = z = boundary
+    if (boundary is None or
+        isinstance(boundary, str) or
+        isinstance(boundary, int)):
+        _x[0] = _y[0] = _z[0] = asBoundaryType(boundary)
     else:
-        x = y = z = None
-        if   dim == 1: (x,) = boundary
+        boundary = tuple(boundary)
+        dim = <PetscInt>len(boundary)
+        if   dim == 0: pass
+        elif dim == 1: (x,) = boundary
         elif dim == 2: (x, y) = boundary
         elif dim == 3: (x, y, z) = boundary
-    #
-    if dim >= 1: _x[0] = asBoundaryType(x)
-    if dim >= 2: _y[0] = asBoundaryType(y)
-    if dim >= 3: _z[0] = asBoundaryType(z)
-    return 0
+        if dim >= 1: _x[0] = asBoundaryType(x)
+        if dim >= 2: _y[0] = asBoundaryType(y)
+        if dim >= 3: _z[0] = asBoundaryType(z)
+    return dim
 
 cdef inline object toBoundary(PetscInt dim,
                               PetscDABoundaryType x,
                               PetscDABoundaryType y,
                               PetscDABoundaryType z):
-    if   dim == 1: return (x,)
+    if   dim == 0: return ()
+    elif dim == 1: return (x,)
     elif dim == 2: return (x, y)
     elif dim == 3: return (x, y, z)
 
 cdef inline PetscDAStencilType asStencil(object stencil) \
     except <PetscDAStencilType>(-1):
-    if stencil is None:
-        return DA_STENCIL_BOX
     if isinstance(stencil, str):
         if   stencil == "star": return DA_STENCIL_STAR
         elif stencil == "box":  return DA_STENCIL_BOX
@@ -183,22 +191,26 @@ cdef inline int DAGetDim(PetscDA da, PetscInt *dim) nogil:
 cdef inline PetscInt asDims(dims,
                             PetscInt *_M,
                             PetscInt *_N,
-                            PetscInt *_P) except -1:
-    cdef PetscInt ndim = <PetscInt>len(dims)
+                            PetscInt *_P) except? -1:
+    cdef PetscInt dim = PETSC_DECIDE
     cdef object M, N, P
-    if   ndim == 1: M, = dims
-    elif ndim == 2: M, N = dims
-    elif ndim == 3: M, N, P = dims
-    if ndim >= 1: _M[0] = asInt(M)
-    if ndim >= 2: _N[0] = asInt(N)
-    if ndim >= 3: _P[0] = asInt(P)
-    return ndim
+    dims = tuple(dims)
+    dim = <PetscInt>len(dims)
+    if   dim == 0: pass
+    elif dim == 1: M, = dims
+    elif dim == 2: M, N = dims
+    elif dim == 3: M, N, P = dims
+    if dim >= 1: _M[0] = asInt(M)
+    if dim >= 2: _N[0] = asInt(N)
+    if dim >= 3: _P[0] = asInt(P)
+    return dim
 
 cdef inline tuple toDims(PetscInt dim,
                          PetscInt M,
                          PetscInt N,
                          PetscInt P):
-        if   dim == 1: return (toInt(M),)
+        if   dim == 0: return ()
+        elif dim == 1: return (toInt(M),)
         elif dim == 2: return (toInt(M), toInt(N))
         elif dim == 3: return (toInt(M), toInt(N), toInt(P))
 

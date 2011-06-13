@@ -1229,7 +1229,6 @@ DACreateND(MPI_Comm comm,PetscInt dim,PetscInt dof,
 {
   DA             da;
   DAPeriodicType ptype = DA_NONPERIODIC;
-  const DAType   datype = 0;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidPointer(dm,18);
@@ -1243,12 +1242,6 @@ DACreateND(MPI_Comm comm,PetscInt dim,PetscInt dof,
   ierr = DASetPeriodicity(da,ptype);CHKERRQ(ierr);
   ierr = DASetStencilType(da,stencil_type);CHKERRQ(ierr);
   ierr = DASetStencilWidth(da,stencil_width);CHKERRQ(ierr);
-  ierr = DASetFromOptions(da);CHKERRQ(ierr);
-  switch (dim) {
-  case 1: datype = DA1D; break;
-  case 2: datype = DA2D; break;
-  case 3: datype = DA3D; break;}
-  ierr = DASetType(da,datype);CHKERRQ(ierr);
   *dm = (DM)da;
   PetscFunctionReturn(0);
 }
@@ -1306,7 +1299,6 @@ DACreateND(MPI_Comm comm,
   ierr = DMDASetBoundaryType(da,bx,by,bz);CHKERRQ(ierr);
   ierr = DMDASetStencilType(da,stencil_type);CHKERRQ(ierr);
   ierr = DMDASetStencilWidth(da,stencil_width);CHKERRQ(ierr);
-  ierr = DMSetUp(da);CHKERRQ(ierr);
   *dm = (DM)da;
   PetscFunctionReturn(0);
 }

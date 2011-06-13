@@ -365,6 +365,8 @@ DA_Boundary2Periodic(PetscInt dim,
 {
   DAPeriodicType ptype = DA_NONPERIODIC;
   PetscFunctionBegin;
+  if (dim < 3) z = DA_BOUNDARY_NONE;
+  if (dim < 2) y = DA_BOUNDARY_NONE;
   /*  */ if (x==DA_BOUNDARY_NONE &&
 	     y==DA_BOUNDARY_NONE &&
 	     z==DA_BOUNDARY_NONE) {
@@ -410,7 +412,6 @@ DA_Boundary2Periodic(PetscInt dim,
 }
 #endif
 
-/*
 #if PETSC_VERSION_(3,1,0)
 #undef __FUNCT__
 #define __FUNCT__ "DASetBoundaryType"
@@ -428,7 +429,6 @@ DASetBoundaryType(DA da,DABoundaryType x,DABoundaryType y,DABoundaryType z)
   PetscFunctionReturn(0);
 }
 #endif
-*/
 
 #if PETSC_VERSION_(3,1,0) || PETSC_VERSION_(3,0,0)
 #undef __FUNCT__
@@ -491,6 +491,41 @@ DAGetInterpolationType_Compat(DA da,DAInterpolationType *ctype)
   PetscFunctionReturn(0);
 }
 #define DAGetInterpolationType DAGetInterpolationType_Compat
+#endif
+
+/* ---------------------------------------------------------------- */
+
+#if PETSC_VERSION_(3,0,0)
+
+#define PetscDA_ERR_SUP(da) \
+  PetscFunctionBegin; \
+  PetscValidHeaderSpecific(da,DM_COOKIE,1); \
+  SETERRQ(PETSC_ERR_SUP,__FUNCT__"() " \
+          "not supported in this PETSc version"); \
+  PetscFunctionReturn(PETSC_ERR_SUP);
+/**/
+#undef __FUNCT__
+#define __FUNCT__ "DASetDim"
+static PetscErrorCode DASetDim(DA da,...){PetscDA_ERR_SUP(da)}
+#undef __FUNCT__
+#define __FUNCT__ "DASetDof"
+static PetscErrorCode DASetDof(DA da,...){PetscDA_ERR_SUP(da)}
+#undef __FUNCT__
+#define __FUNCT__ "DASetSizes"
+static PetscErrorCode DASetSizes(DA da,...){PetscDA_ERR_SUP(da)}
+#undef __FUNCT__
+#define __FUNCT__ "DASetNumProcs"
+static PetscErrorCode DASetNumProcs(DA da,...){PetscDA_ERR_SUP(da)}
+#undef __FUNCT__
+#define __FUNCT__ "DASetBoundaryType"
+static PetscErrorCode DASetBoundaryType(DA da,...){PetscDA_ERR_SUP(da)}
+#undef __FUNCT__
+#define __FUNCT__ "DASetStencilType"
+static PetscErrorCode DASetStencilType(DA da,...){PetscDA_ERR_SUP(da)}
+#undef __FUNCT__
+#define __FUNCT__ "DASetStencilWidth"
+static PetscErrorCode DASetStencilWidth(DA da,...){PetscDA_ERR_SUP(da)}
+
 #endif
 
 /* ---------------------------------------------------------------- */
