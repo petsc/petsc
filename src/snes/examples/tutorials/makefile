@@ -271,6 +271,18 @@ runex3_4:
 	   if (${DIFF} output/ex3_4.out ex3_4.tmp) then true; \
 	   else echo "Possible problem with ex3_4, diffs above"; fi; \
 	   ${RM} -f ex3_4.tmp
+runex5:
+	-@${MPIEXEC} -n 1 ./ex5 -pc_type mg -ksp_monitor_short  -snes_view -pc_mg_levels 3 -pc_mg_galerkin -da_grid_x 17 -da_grid_y 17 \
+                    -mg_levels_ksp_monitor_short -snes_monitor_short -mg_levels_pc_type sor -pc_mg_type full  > ex5_1.tmp 2>&1; \
+	   if (${DIFF} output/ex5_1.out ex5_1.tmp) then true; \
+	   else echo "Possible problem with ex5, diffs above"; fi; \
+	   ${RM} -f ex5_1.tmp
+runex5_2:
+	-@${MPIEXEC} -n 1 ./ex5   -pc_type mg -ksp_monitor_short  -snes_view -pc_mg_galerkin -snes_grid_sequence 3 \
+                           -mg_levels_ksp_monitor_short -snes_monitor_short -mg_levels_pc_type sor -pc_mg_type full  > ex5_2.tmp 2>&1; \
+	   if (${DIFF} output/ex5_2.out ex5_2.tmp) then true; \
+	   else echo "Possible problem with ex5_2, diffs above"; fi; \
+	   ${RM} -f ex5_2.tmp
 
 runex5f:
 	-@${MPIEXEC} -n 4 ./ex5f -snes_mf -da_processors_x 4 -da_processors_y 1 -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex5f_1.tmp 2>&1; \
@@ -930,7 +942,7 @@ runex50_cusp:
 	   ${RM} -f ex50.tmp
 
 TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2  runex2_3 ex2.rm ex3.PETSc runex3 \
-                                 runex3_2 runex3_3 runex3_4 ex3.rm \
+                                 runex3_2 runex3_3 runex3_4 ex3.rm ex5.PETSc runex5 runex5_2 ex5.rm\
                                  ex6.PETSc runex6 runex6_2 ex6.rm\
                                  ex14.PETSc runex14 runex14_2 ex14.rm ex19.PETSc runex19 runex19_2 runex19_5 \
                                  runex19_6 runex19_fieldsplit_2 runex19_fieldsplit_3 runex19_fieldsplit_4 \
