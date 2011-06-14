@@ -19,7 +19,7 @@ PetscInt main(PetscInt argc,char **args)
 {
   PetscErrorCode  ierr;
   PetscMPIInt     rank,size;
-  PetscInt        N0=50,N1=20,N=N0*N1;
+  PetscInt        N0=20,N1=20,N2=20,N3=20,N4=20,N=N0*N1*N2*N3*N4;
   PetscRandom     rdm;
   PetscScalar     a;
   PetscReal       enorm;
@@ -95,12 +95,23 @@ PetscInt main(PetscInt argc,char **args)
   } else {
     /* Use PETSc-FFTW interface                  */
     /*-------------------------------------------*/
-    PetscInt DIM = 2,dim[2];
+    PetscInt i,*dim,k;
+    N=1;
+    for(i=1;i<6;i++){
+    PetscInt DIM = i;
+    N*=20;
+    dim=(PetscInt *)calloc(i,sizeof(PetscInt));
+        for(k=0;k<i;k++){
+            dim[k]=20;
+            }
+
+    
     Mat      A;
   
     /* Create FFTW object */
-    dim[0] = N0; dim[1] = N1;
-    if (!rank) printf("Use PETSc-FFTW interface...%d-DIM: %d %d\n",DIM,dim[0],dim[1]);
+//    dim[0] = N0; 
+//    dim[1] = N1; dim[2] = N2; dim[3] = N3; dim[4] = N4; 
+    if (!rank) printf("Use PETSc-FFTW interface...%d-DIM: \n",DIM);
 
     ierr = MatCreateFFT(PETSC_COMM_WORLD,DIM,dim,MATFFTW,&A);CHKERRQ(ierr);
 
@@ -132,10 +143,12 @@ PetscInt main(PetscInt argc,char **args)
     }
 
     /* Free spaces */
+    free(dim);
     ierr = VecDestroy(&x);CHKERRQ(ierr);
     ierr = VecDestroy(&y);CHKERRQ(ierr);
     ierr = VecDestroy(&z);CHKERRQ(ierr);
     ierr = MatDestroy(&A);
+   }
   }
 
   ierr = PetscRandomDestroy(&rdm);CHKERRQ(ierr);
