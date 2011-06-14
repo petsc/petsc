@@ -135,7 +135,7 @@ extern PetscErrorCode  SNESGetType(SNES,const SNESType*);
 extern PetscErrorCode  SNESMonitorDefault(SNES,PetscInt,PetscReal,void *);
 extern PetscErrorCode  SNESMonitorRange(SNES,PetscInt,PetscReal,void *);
 extern PetscErrorCode  SNESMonitorRatio(SNES,PetscInt,PetscReal,void *);
-extern PetscErrorCode  SNESMonitorSetRatio(SNES,PetscViewerASCIIMonitor);
+extern PetscErrorCode  SNESMonitorSetRatio(SNES,PetscViewer);
 extern PetscErrorCode  SNESMonitorSolution(SNES,PetscInt,PetscReal,void *);
 extern PetscErrorCode  SNESMonitorResidual(SNES,PetscInt,PetscReal,void *);
 extern PetscErrorCode  SNESMonitorSolutionUpdate(SNES,PetscInt,PetscReal,void *);

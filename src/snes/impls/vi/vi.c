@@ -304,17 +304,14 @@ PetscErrorCode  DMDestroyVI(DM dm)
 #define __FUNCT__ "SNESMonitorVI"
 PetscErrorCode  SNESMonitorVI(SNES snes,PetscInt its,PetscReal fgnorm,void *dummy)
 {
-  PetscErrorCode          ierr;
-  SNES_VI                 *vi = (SNES_VI*)snes->data;
-  PetscViewerASCIIMonitor viewer = (PetscViewerASCIIMonitor) dummy;
-  const PetscScalar       *x,*xl,*xu,*f;
-  PetscInt                i,n,act = 0;
-  PetscReal               rnorm,fnorm;
+  PetscErrorCode    ierr;
+  SNES_VI            *vi = (SNES_VI*)snes->data;
+  PetscViewer        viewer = dummy ? (PetscViewer) dummy : PETSC_VIEWER_STDOUT_(((PetscObject)snes)->comm);
+  const PetscScalar  *x,*xl,*xu,*f;
+  PetscInt           i,n,act = 0;
+  PetscReal          rnorm,fnorm;
 
   PetscFunctionBegin;
-  if (!dummy) {
-    ierr = PetscViewerASCIIMonitorCreate(((PetscObject)snes)->comm,"stdout",0,&viewer);CHKERRQ(ierr);
-  }
   ierr = VecGetLocalSize(snes->vec_sol,&n);CHKERRQ(ierr);
   ierr = VecGetArrayRead(vi->xl,&xl);CHKERRQ(ierr);
   ierr = VecGetArrayRead(vi->xu,&xu);CHKERRQ(ierr);
@@ -332,10 +329,9 @@ PetscErrorCode  SNESMonitorVI(SNES snes,PetscInt its,PetscReal fgnorm,void *dumm
   ierr = VecRestoreArrayRead(snes->vec_sol,&x);CHKERRQ(ierr);
   ierr = MPI_Allreduce(&rnorm,&fnorm,1,MPIU_REAL,MPIU_SUM,((PetscObject)snes)->comm);CHKERRQ(ierr);
   fnorm = sqrt(fnorm);
-  ierr = PetscViewerASCIIMonitorPrintf(viewer,"%3D SNES VI Function norm %14.12e Active constraints %D\n",its,fnorm,act);CHKERRQ(ierr);
-  if (!dummy) {
-    ierr = PetscViewerASCIIMonitorDestroy(&viewer);CHKERRQ(ierr);
-  }
+  ierr = PetscViewerASCIIAddTab(viewer,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"%3D SNES VI Function norm %14.12e Active constraints %D\n",its,fnorm,act);CHKERRQ(ierr);
+  ierr = PetscViewerASCIISubtractTab(viewer,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1812,7 +1808,7 @@ PetscErrorCode SNESDestroy_VI(SNES snes)
     ierr = VecDestroy(&vi->t);CHKERRQ(ierr);
   }
  
-  ierr = PetscViewerASCIIMonitorDestroy(&vi->lsmonitor);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&vi->lsmonitor);CHKERRQ(ierr);
   ierr = PetscFree(snes->data);CHKERRQ(ierr);
 
   /* clear composed functions */
@@ -1860,7 +1856,9 @@ PetscErrorCode SNESLineSearchNo_VI(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y
     if (PetscIsInfOrNanReal(*gnorm)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
   }
   if (vi->lsmonitor) {
-    ierr = PetscViewerASCIIMonitorPrintf(vi->lsmonitor,"    Line search: Using full step: fnorm %G gnorm %G\n",fnorm,*gnorm);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIAddTab(vi->lsmonitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(vi->lsmonitor,"    Line search: Using full step: fnorm %G gnorm %G\n",fnorm,*gnorm);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISubtractTab(vi->lsmonitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1927,7 +1925,9 @@ PetscErrorCode SNESLineSearchCubic_VI(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Ve
   ierr = VecNorm(y,NORM_2,ynorm);CHKERRQ(ierr);
   if (*ynorm == 0.0) {
     if (vi->lsmonitor) {
-      ierr = PetscViewerASCIIMonitorPrintf(vi->lsmonitor,"    Line search: Initial direction and size is 0\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIAddTab(vi->lsmonitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(vi->lsmonitor,"    Line search: Initial direction and size is 0\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIISubtractTab(vi->lsmonitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
     }
     *gnorm = fnorm;
     ierr   = VecCopy(x,w);CHKERRQ(ierr);
@@ -1937,7 +1937,9 @@ PetscErrorCode SNESLineSearchCubic_VI(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Ve
   }
   if (*ynorm > vi->maxstep) {	/* Step too big, so scale back */
     if (vi->lsmonitor) {
-      ierr = PetscViewerASCIIMonitorPrintf(vi->lsmonitor,"    Line search: Scaling step by %G old ynorm %G\n",vi->maxstep/(*ynorm),*ynorm);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIAddTab(vi->lsmonitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(vi->lsmonitor,"    Line search: Scaling step by %G old ynorm %G\n",vi->maxstep/(*ynorm),*ynorm);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISubtractTab(vi->lsmonitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
     }
     ierr = VecScale(y,vi->maxstep/(*ynorm));CHKERRQ(ierr);
     *ynorm = vi->maxstep;
@@ -1976,7 +1978,9 @@ PetscErrorCode SNESLineSearchCubic_VI(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Ve
   ierr = PetscInfo2(snes,"Initial fnorm %G gnorm %G\n",fnorm,*gnorm);CHKERRQ(ierr);
   if (.5*(*gnorm)*(*gnorm) <= .5*fnorm*fnorm + vi->alpha*initslope) { /* Sufficient reduction */
     if (vi->lsmonitor) {
-      ierr = PetscViewerASCIIMonitorPrintf(vi->lsmonitor,"    Line search: Using full step: fnorm %G gnorm %G\n",fnorm,*gnorm);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIAddTab(vi->lsmonitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(vi->lsmonitor,"    Line search: Using full step: fnorm %G gnorm %G\n",fnorm,*gnorm);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISubtractTab(vi->lsmonitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
     }
     goto theend1;
   }
@@ -2010,11 +2014,15 @@ PetscErrorCode SNESLineSearchCubic_VI(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Ve
   }
   if (PetscIsInfOrNanReal(*gnorm)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
   if (vi->lsmonitor) {
-    ierr = PetscViewerASCIIMonitorPrintf(vi->lsmonitor,"    Line search: gnorm after quadratic fit %G\n",*gnorm);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIAddTab(vi->lsmonitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(vi->lsmonitor,"    Line search: gnorm after quadratic fit %G\n",*gnorm);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISubtractTab(vi->lsmonitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
   }
   if (.5*(*gnorm)*(*gnorm) < .5*fnorm*fnorm + lambda*vi->alpha*initslope) { /* sufficient reduction */
     if (vi->lsmonitor) {
-      ierr = PetscViewerASCIIMonitorPrintf(vi->lsmonitor,"    Line search: Quadratically determined step, lambda=%18.16e\n",lambda);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIAddTab(vi->lsmonitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(vi->lsmonitor,"    Line search: Quadratically determined step, lambda=%18.16e\n",lambda);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISubtractTab(vi->lsmonitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
     }
     goto theend1;
   }
@@ -2024,8 +2032,10 @@ PetscErrorCode SNESLineSearchCubic_VI(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Ve
   while (PETSC_TRUE) {
     if (lambda <= minlambda) { 
       if (vi->lsmonitor) {
-	ierr = PetscViewerASCIIMonitorPrintf(vi->lsmonitor,"    Line search: unable to find good step length! After %D tries \n",count);CHKERRQ(ierr);
-	ierr = PetscViewerASCIIMonitorPrintf(vi->lsmonitor,"    Line search: fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, minlambda=%18.16e, lambda=%18.16e, initial slope=%18.16e\n",fnorm,*gnorm,*ynorm,minlambda,lambda,initslope);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIAddTab(vi->lsmonitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
+ 	ierr = PetscViewerASCIIPrintf(vi->lsmonitor,"    Line search: unable to find good step length! After %D tries \n",count);CHKERRQ(ierr);
+	ierr = PetscViewerASCIIPrintf(vi->lsmonitor,"    Line search: fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, minlambda=%18.16e, lambda=%18.16e, initial slope=%18.16e\n",fnorm,*gnorm,*ynorm,minlambda,lambda,initslope);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISubtractTab(vi->lsmonitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
       }
       *flag = PETSC_FALSE; 
       break;
@@ -2135,7 +2145,9 @@ PetscErrorCode SNESLineSearchQuadratic_VI(SNES snes,void *lsctx,Vec x,Vec f,Vec 
   ierr = VecNorm(y,NORM_2,ynorm);CHKERRQ(ierr);
   if (*ynorm == 0.0) {
     if (vi->lsmonitor) {
-      ierr = PetscViewerASCIIMonitorPrintf(vi->lsmonitor,"Line search: Direction and size is 0\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIAddTab(vi->lsmonitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(vi->lsmonitor,"Line search: Direction and size is 0\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIISubtractTab(vi->lsmonitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
     }
     *gnorm = fnorm;
     ierr   = VecCopy(x,w);CHKERRQ(ierr);
@@ -2181,7 +2193,9 @@ PetscErrorCode SNESLineSearchQuadratic_VI(SNES snes,void *lsctx,Vec x,Vec f,Vec 
   if (PetscIsInfOrNanReal(*gnorm)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
   if (.5*(*gnorm)*(*gnorm) <= .5*fnorm*fnorm + vi->alpha*initslope) { /* Sufficient reduction */
     if (vi->lsmonitor) {
-      ierr = PetscViewerASCIIMonitorPrintf(vi->lsmonitor,"    Line search: Using full step: fnorm %G gnorm %G\n",fnorm,*gnorm);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIAddTab(vi->lsmonitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(vi->lsmonitor,"    Line search: Using full step: fnorm %G gnorm %G\n",fnorm,*gnorm);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISubtractTab(vi->lsmonitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
     }
     goto theend2;
   }
@@ -2192,8 +2206,10 @@ PetscErrorCode SNESLineSearchQuadratic_VI(SNES snes,void *lsctx,Vec x,Vec f,Vec 
   while (PETSC_TRUE) {
     if (lambda <= minlambda) { /* bad luck; use full step */
       if (vi->lsmonitor) {
-        ierr = PetscViewerASCIIMonitorPrintf(vi->lsmonitor,"Line search: Unable to find good step length! %D \n",count);CHKERRQ(ierr);
-        ierr = PetscViewerASCIIMonitorPrintf(vi->lsmonitor,"Line search: fnorm=%G, gnorm=%G, ynorm=%G, lambda=%G, initial slope=%G\n",fnorm,*gnorm,*ynorm,lambda,initslope);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIAddTab(vi->lsmonitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(vi->lsmonitor,"Line search: Unable to find good step length! %D \n",count);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(vi->lsmonitor,"Line search: fnorm=%G, gnorm=%G, ynorm=%G, lambda=%G, initial slope=%G\n",fnorm,*gnorm,*ynorm,lambda,initslope);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISubtractTab(vi->lsmonitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
       }
       ierr = VecCopy(x,w);CHKERRQ(ierr);
       *flag = PETSC_FALSE;
@@ -2226,7 +2242,9 @@ PetscErrorCode SNESLineSearchQuadratic_VI(SNES snes,void *lsctx,Vec x,Vec f,Vec 
     if (PetscIsInfOrNanReal(*gnorm)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
     if (.5*(*gnorm)*(*gnorm) < .5*fnorm*fnorm + lambda*vi->alpha*initslope) { /* sufficient reduction */
       if (vi->lsmonitor) {
-        ierr = PetscViewerASCIIMonitorPrintf(vi->lsmonitor,"    Line Search: Quadratically determined step, lambda=%G\n",lambda);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIAddTab(vi->lsmonitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(vi->lsmonitor,"    Line Search: Quadratically determined step, lambda=%G\n",lambda);CHKERRQ(ierr);
+        ierr = PetscViewerASCIISubtractTab(vi->lsmonitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
       }
       break;
     }
@@ -2286,9 +2304,9 @@ PetscErrorCode  SNESLineSearchSetMonitor_VI(SNES snes,PetscBool flg)
 
   PetscFunctionBegin;
   if (flg && !vi->lsmonitor) {
-    ierr = PetscViewerASCIIMonitorCreate(((PetscObject)snes)->comm,"stdout",((PetscObject)snes)->tablevel,&vi->lsmonitor);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIOpen(((PetscObject)snes)->comm,"stdout",&vi->lsmonitor);CHKERRQ(ierr);
   } else if (!flg && vi->lsmonitor) {
-    ierr = PetscViewerASCIIMonitorDestroy(&vi->lsmonitor);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&vi->lsmonitor);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

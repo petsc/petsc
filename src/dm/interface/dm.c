@@ -1239,10 +1239,12 @@ PetscErrorCode  DMComputeJacobian(DM dm,Vec x,Mat A,Mat B,MatStructure *stflag)
   ierr = (*dm->ops->jacobian)(dm,x,A,B,stflag);CHKERRQ(ierr);
 
   /* if matrix depends on x; i.e. nonlinear problem, keep copy of input vector since needed by multigrid methods to generate coarse grid matrices */
-  if (!dm->x) {
-   ierr = DMCreateGlobalVector(dm,&dm->x);CHKERRQ(ierr);
+  if (x) {
+    if (!dm->x) {
+      ierr = DMCreateGlobalVector(dm,&dm->x);CHKERRQ(ierr);
+    }
+    ierr = VecCopy(x,dm->x);CHKERRQ(ierr);
   }
-  ierr = VecCopy(x,dm->x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -324,20 +324,16 @@ static PetscErrorCode TSSetUp_Pseudo(TS ts)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSPseudoMonitorDefault"
-PetscErrorCode TSPseudoMonitorDefault(TS ts,PetscInt step,PetscReal ptime,Vec v,void *ctx)
+PetscErrorCode TSPseudoMonitorDefault(TS ts,PetscInt step,PetscReal ptime,Vec v,void *dummy)
 {
-  TS_Pseudo               *pseudo = (TS_Pseudo*)ts->data;
-  PetscErrorCode          ierr;
-  PetscViewerASCIIMonitor viewer = (PetscViewerASCIIMonitor)ctx;
+  TS_Pseudo        *pseudo = (TS_Pseudo*)ts->data;
+  PetscErrorCode   ierr;
+  PetscViewer      viewer = dummy ? (PetscViewer) dummy : PETSC_VIEWER_STDOUT_(((PetscObject)ts)->comm);
 
   PetscFunctionBegin;
-  if (!ctx) {
-    ierr = PetscViewerASCIIMonitorCreate(((PetscObject)ts)->comm,"stdout",0,&viewer);CHKERRQ(ierr);
-  }
-  ierr = PetscViewerASCIIMonitorPrintf(viewer,"TS %D dt %G time %G fnorm %G\n",step,ts->time_step,ptime,pseudo->fnorm);CHKERRQ(ierr);
-  if (!ctx) {
-    ierr = PetscViewerASCIIMonitorDestroy(&viewer);CHKERRQ(ierr);
-  }
+  ierr = PetscViewerASCIIAddTab(viewer,((PetscObject)ts)->tablevel);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"TS %D dt %G time %G fnorm %G\n",step,ts->time_step,ptime,pseudo->fnorm);CHKERRQ(ierr);
+  ierr = PetscViewerASCIISubtractTab(viewer,((PetscObject)ts)->tablevel);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -345,17 +341,17 @@ PetscErrorCode TSPseudoMonitorDefault(TS ts,PetscInt step,PetscReal ptime,Vec v,
 #define __FUNCT__ "TSSetFromOptions_Pseudo"
 static PetscErrorCode TSSetFromOptions_Pseudo(TS ts)
 {
-  TS_Pseudo               *pseudo = (TS_Pseudo*)ts->data;
-  PetscErrorCode          ierr;
-  PetscBool               flg = PETSC_FALSE;
-  PetscViewerASCIIMonitor viewer;
+  TS_Pseudo       *pseudo = (TS_Pseudo*)ts->data;
+  PetscErrorCode  ierr;
+  PetscBool       flg = PETSC_FALSE;
+  PetscViewer     viewer;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("Pseudo-timestepping options");CHKERRQ(ierr);
     ierr = PetscOptionsBool("-ts_monitor","Monitor convergence","TSPseudoMonitorDefault",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
     if (flg) {
-      ierr = PetscViewerASCIIMonitorCreate(((PetscObject)ts)->comm,"stdout",0,&viewer);CHKERRQ(ierr);
-      ierr = TSMonitorSet(ts,TSPseudoMonitorDefault,viewer,(PetscErrorCode (*)(void**))PetscViewerASCIIMonitorDestroy);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIOpen(((PetscObject)ts)->comm,"stdout",&viewer);CHKERRQ(ierr);
+      ierr = TSMonitorSet(ts,TSPseudoMonitorDefault,viewer,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
     }
     flg  = PETSC_FALSE;
     ierr = PetscOptionsBool("-ts_pseudo_increment_dt_from_initial_dt","Increase dt as a ratio from original dt","TSPseudoIncrementDtFromInitialDt",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
