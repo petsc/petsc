@@ -208,7 +208,7 @@ class Configure(config.base.Configure):
       self.addDefine('HAVE_CRAY_VECTOR','1')
 
 #-----------------------------------------------------------------------------------------------------
-    if self.functions.haveFunction('gethostbyname') and self.functions.haveFunction('socket'):
+    if self.functions.haveFunction('gethostbyname') and self.functions.haveFunction('socket') and self.headers.haveHeader('netinet/in.h'):
       self.addDefine('USE_SOCKET_VIEWER','1')
 
 #-----------------------------------------------------------------------------------------------------

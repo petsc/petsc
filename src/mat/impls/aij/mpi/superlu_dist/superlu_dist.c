@@ -258,7 +258,7 @@ PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFactorInfo *
   Mat_SuperLU_DIST *lu = (Mat_SuperLU_DIST*)(F)->spptr;
   PetscErrorCode   ierr;
   PetscInt         M=A->rmap->N,N=A->cmap->N,i,*ai,*aj,*bi,*bj,nz,rstart,*garray,
-                   m=A->rmap->n, irow,colA_start,j,jcol,jB,countA,countB,*bjj,*ajj;
+                   m=A->rmap->n, colA_start,j,jcol,jB,countA,countB,*bjj,*ajj;
   int              sinfo; /* SuperLU_Dist info flag is always an int even with long long indices */
   PetscMPIInt      size,rank;
   SuperLUStat_t    stat;
@@ -357,7 +357,7 @@ PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFactorInfo *
         lu->options.Fact = SamePattern;
       }
     }
-    nz = 0; irow = rstart;   
+    nz = 0;
     for ( i=0; i<m; i++ ) {
       lu->row[i] = nz;
       countA = ai[i+1] - ai[i];
