@@ -13,6 +13,8 @@
 #define tsdefaultcomputejacobian_            TSDEFAULTCOMPUTEJACOBIAN
 #define tsdefaultcomputejacobiancolor_       TSDEFAULTCOMPUTEJACOBIANCOLOR
 #define tsmonitordefault_                    TSMONITORDEFAULT
+#define tssetprestep_                        TSSETPRESTEP
+#define tssetpoststep_                       TSSETPOSTSTEP
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define tssetrhsfunction_                    tssetrhsfunction
 #define tssetmatrices_                       tssetmatrices
@@ -25,8 +27,22 @@
 #define tsdefaultcomputejacobian_            tsdefaultcomputejacobian
 #define tsdefaultcomputejacobiancolor_       tsdefaultcomputejacobiancolor
 #define tsmonitordefault_                    tsmonitordefault
+#define tssetprestep_                        tssetprestep
+#define tssetpoststep_                       tssetpoststep
 #endif
 
+static PetscErrorCode ourprestep(TS ts)
+{
+  PetscErrorCode ierr = 0;
+  (*(void (PETSC_STDCALL *)(TS*,PetscErrorCode*))(((PetscObject)ts)->fortran_func_pointers[8]))(&ts,&ierr);
+  return 0;
+}
+static PetscErrorCode ourpoststep(TS ts)
+{
+  PetscErrorCode ierr = 0;
+  (*(void (PETSC_STDCALL *)(TS*,PetscErrorCode*))(((PetscObject)ts)->fortran_func_pointers[9]))(&ts,&ierr);
+  return 0;
+}
 static PetscErrorCode ourtsfunction(TS ts,PetscReal d,Vec x,Vec f,void *ctx)
 {
   PetscErrorCode ierr = 0;
@@ -74,9 +90,23 @@ static PetscErrorCode ourtsmonitor(TS ts,PetscInt i,PetscReal d,Vec v,void*ctx)
 
 EXTERN_C_BEGIN
 
+void PETSC_STDCALL tssetprestep_(TS *ts,PetscErrorCode (PETSC_STDCALL *f)(TS*,PetscErrorCode*),PetscErrorCode *ierr)
+{
+  PetscObjectAllocateFortranPointers(*ts,10);
+  ((PetscObject)*ts)->fortran_func_pointers[8] = (PetscVoidFunction)f;
+  *ierr = TSSetPreStep(*ts,ourprestep);
+}
+
+void PETSC_STDCALL tssetpoststep_(TS *ts,PetscErrorCode (PETSC_STDCALL *f)(TS*,PetscErrorCode*),PetscErrorCode *ierr)
+{
+  PetscObjectAllocateFortranPointers(*ts,10);
+  ((PetscObject)*ts)->fortran_func_pointers[9] = (PetscVoidFunction)f;
+  *ierr = TSSetPreStep(*ts,ourpoststep);
+}
+
 void PETSC_STDCALL tssetrhsfunction_(TS *ts,PetscErrorCode (PETSC_STDCALL *f)(TS*,PetscReal*,Vec*,Vec*,void*,PetscErrorCode*),void*fP,PetscErrorCode *ierr)
 {
-  PetscObjectAllocateFortranPointers(*ts,8);
+  PetscObjectAllocateFortranPointers(*ts,10);
   ((PetscObject)*ts)->fortran_func_pointers[1] = (PetscVoidFunction)f;
   *ierr = TSSetRHSFunction(*ts,ourtsfunction,fP);
 }
@@ -87,7 +117,7 @@ void PETSC_STDCALL tssetmatrices_(TS *ts,Mat *Arhs,PetscErrorCode (PETSC_STDCALL
                                                    void*,PetscInt *),
                                          MatStructure *flag,void*fP,PetscErrorCode *ierr)
 {
-  PetscObjectAllocateFortranPointers(*ts,8);
+  PetscObjectAllocateFortranPointers(*ts,10);
   if (FORTRANNULLFUNCTION(frhs) && FORTRANNULLFUNCTION(flhs)) {
     *ierr = TSSetMatrices(*ts,*Arhs,PETSC_NULL,*Alhs,PETSC_NULL,*flag,fP);
   } else if (FORTRANNULLFUNCTION(flhs)){
@@ -110,7 +140,7 @@ extern void tsdefaultcomputejacobiancolor_(TS*,PetscReal*,Vec*,Mat*,Mat*,MatStru
 void PETSC_STDCALL tssetrhsjacobian_(TS *ts,Mat *A,Mat *B,void (PETSC_STDCALL *f)(TS*,PetscReal*,Vec*,Mat*,Mat*,MatStructure*,
                void*,PetscErrorCode*),void*fP,PetscErrorCode *ierr)
 {
-  PetscObjectAllocateFortranPointers(*ts,8);
+  PetscObjectAllocateFortranPointers(*ts,10);
   if (FORTRANNULLFUNCTION(f)) {
     *ierr = TSSetRHSJacobian(*ts,*A,*B,PETSC_NULL,fP);
   } else if ((PetscVoidFunction)f == (PetscVoidFunction)tsdefaultcomputejacobian_) {
@@ -129,7 +159,7 @@ extern void PETSC_STDCALL tsmonitordefault_(TS*,PetscInt*,PetscReal*,Vec*,void*,
 
 void PETSC_STDCALL tsmonitorset_(TS *ts,void (PETSC_STDCALL *func)(TS*,PetscInt*,PetscReal*,Vec*,void*,PetscErrorCode*),void (*mctx)(void),void (PETSC_STDCALL *d)(void*,PetscErrorCode*),PetscErrorCode *ierr)
 {
-  PetscObjectAllocateFortranPointers(*ts,8);
+  PetscObjectAllocateFortranPointers(*ts,10);
   if ((PetscVoidFunction)func == (PetscVoidFunction)tsmonitordefault_) {
     *ierr = TSMonitorSet(*ts,TSMonitorDefault,0,0);
   } else {
