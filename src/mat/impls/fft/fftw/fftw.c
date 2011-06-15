@@ -10,6 +10,7 @@ EXTERN_C_BEGIN
 EXTERN_C_END 
 
 typedef struct {
+  ptrdiff_t   ndim_fftw,*dim_fftw;
   fftw_plan   p_forward,p_backward;
   unsigned    p_flag; /* planner flags, FFTW_ESTIMATE,FFTW_MEASURE, FFTW_PATIENT, FFTW_EXHAUSTIVE */
   PetscScalar *finarray,*foutarray,*binarray,*boutarray; /* keep track of arrays becaue fftw plan should be 
@@ -36,6 +37,7 @@ PetscErrorCode MatMult_SeqFFTW(Mat A,Vec x,Vec y)
 
   PetscFunctionBegin;
 #if !defined(PETSC_USE_COMPLEX)
+
   SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"not support for real numbers");
 #endif
   ierr = VecGetArray(x,&x_array);CHKERRQ(ierr);
@@ -189,7 +191,7 @@ PetscErrorCode MatMultTranspose_MPIFFTW(Mat A,Vec x,Vec y)
   SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"not support for real numbers");
 #endif
   ierr = PetscMalloc(ndim*sizeof(ptrdiff_t), (ptrdiff_t *)&pdim);CHKERRQ(ierr); // should pdim be a member of Mat_FFTW?
-  for(ctr=0; ctr<ndim; ctr++) pdim[ctr] = dim[ctr];
+  for (ctr=0; ctr<ndim; ctr++) pdim[ctr] = dim[ctr];
     
   ierr = VecGetArray(x,&x_array);CHKERRQ(ierr);
   ierr = VecGetArray(y,&y_array);CHKERRQ(ierr);
