@@ -1204,7 +1204,35 @@ PetscErrorCode  DMRefine_Composite(DM dmi,MPI_Comm comm,DM *fine)
   PetscFunctionReturn(0);
 }
 
-#include <petscmat.h>
+#undef __FUNCT__  
+#define __FUNCT__ "DMCoarsen_Composite"
+PetscErrorCode  DMCoarsen_Composite(DM dmi,MPI_Comm comm,DM *fine)
+{
+  PetscErrorCode         ierr;
+  struct DMCompositeLink *next;
+  DM_Composite           *com = (DM_Composite*)dmi->data;
+  DM                     dm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dmi,DM_CLASSID,1);
+  next = com->next;
+  ierr = DMCompositeCreate(comm,fine);CHKERRQ(ierr);
+
+  /* loop over packed objects, handling one at at time */
+  while (next) {
+    if (next->type == DMCOMPOSITE_ARRAY) {
+      ierr = DMCompositeAddArray(*fine,next->rank,next->nlocal);CHKERRQ(ierr);
+    } else if (next->type == DMCOMPOSITE_DM) {
+      ierr = DMCoarsen(next->dm,comm,&dm);CHKERRQ(ierr);
+      ierr = DMCompositeAddDM(*fine,dm);CHKERRQ(ierr);
+      ierr = PetscObjectDereference((PetscObject)dm);CHKERRQ(ierr);
+    } else {
+      SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_SUP,"Cannot handle that object type yet");
+    }
+    next = next->next;
+  }
+  PetscFunctionReturn(0);
+}
 
 struct MatPackLink {
   Mat                A;
@@ -1615,6 +1643,7 @@ PetscErrorCode  DMCreate_Composite(DM p)
   p->ops->createlocaltoglobalmapping      = DMCreateLocalToGlobalMapping_Composite;
   p->ops->createlocaltoglobalmappingblock = 0;
   p->ops->refine                          = DMRefine_Composite;
+  p->ops->coarsen                         = DMCoarsen_Composite;
   p->ops->getinterpolation                = DMGetInterpolation_Composite;
   p->ops->getmatrix                       = DMGetMatrix_Composite;
   p->ops->getcoloring                     = DMGetColoring_Composite;

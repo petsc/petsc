@@ -126,13 +126,17 @@ PetscErrorCode MatMult_MPIFFTW(Mat A,Vec x,Vec y)
   Mat_FFT        *fft  = (Mat_FFT*)A->data;
   Mat_FFTW       *fftw = (Mat_FFTW*)fft->data;
   PetscScalar    *x_array,*y_array;
-  PetscInt       ndim=fft->ndim,*dim=fft->dim;
+  PetscInt       ndim=fft->ndim,*dim=fft->dim,ctr;
   MPI_Comm       comm=((PetscObject)A)->comm;
+  ptrdiff_t      ndim1=(ptrdiff_t) ndim,*pdim;
 
   PetscFunctionBegin;
 #if !defined(PETSC_USE_COMPLEX)
   SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"not support for real numbers");
 #endif
+  pdim = (ptrdiff_t *)calloc(ndim,sizeof(ptrdiff_t));
+  for (ctr=0; ctr<ndim; ctr++) pdim[ctr] = dim[ctr];
+    
   ierr = VecGetArray(x,&x_array);CHKERRQ(ierr);
   ierr = VecGetArray(y,&y_array);CHKERRQ(ierr);
   if (!fftw->p_forward){ /* create a plan, then excute it */
@@ -147,7 +151,8 @@ PetscErrorCode MatMult_MPIFFTW(Mat A,Vec x,Vec y)
       fftw->p_forward = fftw_mpi_plan_dft_3d(dim[0],dim[1],dim[2],(fftw_complex*)x_array,(fftw_complex*)y_array,comm,FFTW_FORWARD,fftw->p_flag);
       break;
     default:
-      fftw->p_forward = fftw_mpi_plan_dft(ndim,(const ptrdiff_t*)dim,(fftw_complex*)x_array,(fftw_complex*)y_array,comm,FFTW_FORWARD,fftw->p_flag);
+      fftw->p_forward = fftw_mpi_plan_dft(ndim1,pdim,(fftw_complex*)x_array,(fftw_complex*)y_array,comm,FFTW_FORWARD,fftw->p_flag);
+ //     fftw->p_forward = fftw_mpi_plan_dft(ndim,dim,(fftw_complex*)x_array,(fftw_complex*)y_array,comm,FFTW_FORWARD,fftw->p_flag);
       break;
     }
     fftw->finarray  = x_array;
@@ -175,13 +180,17 @@ PetscErrorCode MatMultTranspose_MPIFFTW(Mat A,Vec x,Vec y)
   Mat_FFT        *fft  = (Mat_FFT*)A->data;
   Mat_FFTW       *fftw = (Mat_FFTW*)fft->data;
   PetscScalar    *x_array,*y_array;
-  PetscInt       ndim=fft->ndim,*dim=fft->dim;
+  PetscInt       ndim=fft->ndim,*dim=fft->dim,ctr;
   MPI_Comm       comm=((PetscObject)A)->comm;
-
+  ptrdiff_t      ndim1=(ptrdiff_t)ndim,*pdim;
+ 
   PetscFunctionBegin;
 #if !defined(PETSC_USE_COMPLEX)
   SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"not support for real numbers");
 #endif
+  ierr = PetscMalloc(ndim*sizeof(ptrdiff_t), (ptrdiff_t *)&pdim);CHKERRQ(ierr); // should pdim be a member of Mat_FFTW?
+  for(ctr=0; ctr<ndim; ctr++) pdim[ctr] = dim[ctr];
+    
   ierr = VecGetArray(x,&x_array);CHKERRQ(ierr);
   ierr = VecGetArray(y,&y_array);CHKERRQ(ierr);
   if (!fftw->p_backward){ /* create a plan, then excute it */
@@ -196,7 +205,7 @@ PetscErrorCode MatMultTranspose_MPIFFTW(Mat A,Vec x,Vec y)
       fftw->p_backward = fftw_mpi_plan_dft_3d(dim[0],dim[1],dim[2],(fftw_complex*)x_array,(fftw_complex*)y_array,comm,FFTW_BACKWARD,fftw->p_flag);
       break;
     default:
-      fftw->p_backward = fftw_mpi_plan_dft(ndim,(const ptrdiff_t*)dim,(fftw_complex*)x_array,(fftw_complex*)y_array,comm,FFTW_BACKWARD,fftw->p_flag); 
+      fftw->p_backward = fftw_mpi_plan_dft(ndim1,pdim,(fftw_complex*)x_array,(fftw_complex*)y_array,comm,FFTW_BACKWARD,fftw->p_flag);  
       break;
     }
     fftw->binarray  = x_array;
@@ -211,6 +220,7 @@ PetscErrorCode MatMultTranspose_MPIFFTW(Mat A,Vec x,Vec y)
   }
   ierr = VecRestoreArray(y,&y_array);CHKERRQ(ierr);
   ierr = VecRestoreArray(x,&x_array);CHKERRQ(ierr);
+  ierr = PetscFree(pdim);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -293,8 +303,16 @@ PetscErrorCode  MatGetVecs_FFTW(Mat A,Vec *fin,Vec *fout)
   } else {        /* mpi case */
     ptrdiff_t      alloc_local,local_n0,local_0_start;
     ptrdiff_t      local_n1,local_1_end;
-    PetscInt       ndim=fft->ndim,*dim=fft->dim,n=fft->n;
+    PetscInt       ndim=fft->ndim,*dim=fft->dim,n=fft->n,ctr;
     fftw_complex   *data_fin,*data_fout;
+    ptrdiff_t      ndim1,*pdim;
+    ndim1=(ptrdiff_t) ndim;
+    pdim = (ptrdiff_t *)calloc(ndim,sizeof(ptrdiff_t));
+
+    for(ctr=0;ctr<ndim;ctr++)
+        {
+           pdim[ctr] = dim[ctr];
+       } 
 
     switch (ndim){
     case 1:
@@ -329,6 +347,7 @@ PetscErrorCode  MatGetVecs_FFTW(Mat A,Vec *fin,Vec *fout)
     case 3:
       /* Get local size */
       alloc_local = fftw_mpi_local_size_3d(dim[0],dim[1],dim[2],comm,&local_n0,&local_0_start);
+//      printf("The quantity n is %d",n);
       if (fin) {
         data_fin  = (fftw_complex*)fftw_malloc(sizeof(fftw_complex)*alloc_local);
         ierr = VecCreateMPIWithArray(comm,n,N,(const PetscScalar*)data_fin,fin);CHKERRQ(ierr);
@@ -342,7 +361,16 @@ PetscErrorCode  MatGetVecs_FFTW(Mat A,Vec *fin,Vec *fout)
       break;
     default:
       /* Get local size */
-      alloc_local = fftw_mpi_local_size(ndim,(const ptrdiff_t*)dim,comm,&local_n0,&local_0_start);
+      alloc_local = fftw_mpi_local_size(ndim1,pdim,comm,&local_n0,&local_0_start);
+//      printf("The value of alloc local is %d from process %d\n",alloc_local,rank);
+//      printf("The value of alloc local is %d",alloc_local);
+//      pdim=(ptrdiff_t *)calloc(ndim,sizeof(ptrdiff_t));
+//      for(i=0;i<ndim;i++)
+//         {
+//          pdim[i]=dim[i];printf("%d",pdim[i]);
+//         }
+//      alloc_local = fftw_mpi_local_size(ndim,pdim,comm,&local_n0,&local_0_start);
+//      printf("The quantity n is %d",n);
       if (fin) {
         data_fin  = (fftw_complex*)fftw_malloc(sizeof(fftw_complex)*alloc_local);
         ierr = VecCreateMPIWithArray(comm,n,N,(const PetscScalar*)data_fin,fin);CHKERRQ(ierr);
@@ -388,7 +416,8 @@ PetscErrorCode MatCreate_FFTW(Mat A)
   const char     *p_flags[]={"FFTW_ESTIMATE","FFTW_MEASURE","FFTW_PATIENT","FFTW_EXHAUSTIVE"};
   PetscBool      flg;
   PetscInt       p_flag,partial_dim=1,ctr;
-  PetscMPIInt    size;
+  PetscMPIInt    size,rank;
+  ptrdiff_t      *pdim;
 
   PetscFunctionBegin;
 #if !defined(PETSC_USE_COMPLEX)
@@ -396,9 +425,15 @@ PetscErrorCode MatCreate_FFTW(Mat A)
 #endif
  
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
-  for(ctr=1;ctr<ndim;ctr++){
-          partial_dim*=dim[ctr];
-      }               
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+  pdim = (ptrdiff_t *)calloc(ndim,sizeof(ptrdiff_t));
+  pdim[0] = dim[0];
+  for(ctr=1;ctr<ndim;ctr++)
+      {
+          partial_dim*=dim[ctr]; 
+          pdim[ctr] = dim[ctr];
+      } 
+//  printf("partial dimension is %d",partial_dim);              
   if (size == 1) {
     ierr = MatSetSizes(A,N,N,N,N);CHKERRQ(ierr);  
     n = N;
@@ -423,12 +458,16 @@ PetscErrorCode MatCreate_FFTW(Mat A)
       break;
     case 3:
       alloc_local = fftw_mpi_local_size_3d(dim[0],dim[1],dim[2],comm,&local_n0,&local_0_start);
+//      printf("The value of alloc local is %d",alloc_local);
       n = (PetscInt)local_n0*dim[1]*dim[2];
       ierr = MatSetSizes(A,n,n,N,N);CHKERRQ(ierr);  
       break;
     default:
-      alloc_local = fftw_mpi_local_size(ndim,(const ptrdiff_t*)dim,comm,&local_n0,&local_0_start);
+      alloc_local = fftw_mpi_local_size(ndim,pdim,comm,&local_n0,&local_0_start);
+//      printf("The value of alloc local is %d from process %d\n",alloc_local,rank);
+//      alloc_local = fftw_mpi_local_size(ndim,dim,comm,&local_n0,&local_0_start);
       n = (PetscInt)local_n0*partial_dim;
+//      printf("New partial dimension is %d %d %d",n,N,ndim);              
       ierr = MatSetSizes(A,n,n,N,N);CHKERRQ(ierr);  
       break;
     }

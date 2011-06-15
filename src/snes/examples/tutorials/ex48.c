@@ -662,7 +662,7 @@ static PetscErrorCode THIInitial(DMMG dmmg,Vec X)
       for (k=zs; k<zs+zm; k++) {
         const PetscScalar zm1 = zm-1,
           drivingx = thi->rhog * (prm[i+1][j].b+prm[i+1][j].h - prm[i-1][j].b-prm[i-1][j].h) / (2*hx),
-          drivingy = thi->rhog * (prm[i][j+1].b+prm[i][j+1].h - prm[i][j-1].b-prm[i][j-1].h) / (2*hx);
+          drivingy = thi->rhog * (prm[i][j+1].b+prm[i][j+1].h - prm[i][j-1].b-prm[i][j-1].h) / (2*hy);
         x[i][j][k].u = 0. * drivingx * prm[i][j].h*(PetscScalar)k/zm1;
         x[i][j][k].v = 0. * drivingy * prm[i][j].h*(PetscScalar)k/zm1;
       }
