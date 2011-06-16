@@ -282,6 +282,30 @@ PetscErrorCode  PetscViewerHDF5GetGroup(PetscViewer viewer, const char **name)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscViewerHDF5IncrementTimestep"
+/*@C
+  PetscViewerHDF5IncrementTimestep - Increments the current timestep for the HDF5 output. Fields are stacked in time.
+
+  Not collective
+
+  Input Parameter:
+. viewer - the PetscViewer
+
+  Level: intermediate
+
+.seealso: PetscViewerHDF5Open(), PetscViewerHDF5SetTimestep(), PetscViewerHDF5GetTimestep()
+@*/
+PetscErrorCode PetscViewerHDF5IncrementTimestep(PetscViewer viewer)
+{
+  PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5 *) viewer->data;
+ 
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
+  ++hdf5->timestep;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscViewerHDF5SetTimestep"
 /*@C
   PetscViewerHDF5SetTimestep - Set the current timestep for the HDF5 output. Fields are stacked in time. A timestep
@@ -295,7 +319,7 @@ PetscErrorCode  PetscViewerHDF5GetGroup(PetscViewer viewer, const char **name)
 
   Level: intermediate
 
-.seealso: PetscViewerHDF5Open()
+.seealso: PetscViewerHDF5Open(), PetscViewerHDF5IncrementTimestep(), PetscViewerHDF5GetTimestep()
 @*/
 PetscErrorCode  PetscViewerHDF5SetTimestep(PetscViewer viewer, PetscInt timestep)
 {
@@ -322,7 +346,7 @@ PetscErrorCode  PetscViewerHDF5SetTimestep(PetscViewer viewer, PetscInt timestep
 
   Level: intermediate
 
-.seealso: PetscViewerHDF5Open()
+.seealso: PetscViewerHDF5Open(), PetscViewerHDF5IncrementTimestep(), PetscViewerHDF5SetTimestep()
 @*/
 PetscErrorCode  PetscViewerHDF5GetTimestep(PetscViewer viewer, PetscInt *timestep)
 {

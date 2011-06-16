@@ -263,6 +263,7 @@ extern PetscErrorCode  PetscViewerHDF5Open(MPI_Comm,const char[],PetscFileMode,P
 extern PetscErrorCode  PetscViewerHDF5PushGroup(PetscViewer,const char *);
 extern PetscErrorCode  PetscViewerHDF5PopGroup(PetscViewer);
 extern PetscErrorCode  PetscViewerHDF5GetGroup(PetscViewer, const char **);
+extern PetscErrorCode  PetscViewerHDF5IncrementTimestep(PetscViewer);
 extern PetscErrorCode  PetscViewerHDF5SetTimestep(PetscViewer,PetscInt);
 extern PetscErrorCode  PetscViewerHDF5GetTimestep(PetscViewer,PetscInt*);
 #ifdef PETSC_HAVE_HDF5
