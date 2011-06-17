@@ -383,8 +383,10 @@ extern PetscErrorCode  SNESTestLocalMin(SNES);
 /* Should this routine be private? */
 extern PetscErrorCode  SNESComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*);
 
-extern PetscErrorCode  SNESSetDM(SNES,DM);
-extern PetscErrorCode  SNESGetDM(SNES,DM*);
+extern PetscErrorCode SNESSetDM(SNES,DM);
+extern PetscErrorCode SNESGetDM(SNES,DM*);
+extern PetscErrorCode SNESSetPC(SNES,SNES);
+extern PetscErrorCode SNESGetPC(SNES,SNES*);
 
 /* Routines for Multiblock solver */
 PetscErrorCode SNESMultiblockSetFields(SNES, const char [], PetscInt, const PetscInt *);

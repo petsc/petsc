@@ -32,6 +32,7 @@ struct _SNESOps {
 struct _p_SNES {
   PETSCHEADER(struct _SNESOps);
   DM   dm;
+  SNES pc;
 
   /*  ------------------------ User-provided stuff -------------------------------*/
   void  *user;		          /* user-defined context */
@@ -41,7 +42,7 @@ struct _p_SNES {
 
   Vec  vec_func;                 /* pointer to function */
   void *funP;                    /* user-defined function context */
-		       		 
+
   Mat  jacobian;                 /* Jacobian matrix */
   Mat  jacobian_pre;             /* preconditioner matrix */
   void *jacP;                    /* user-defined Jacobian context */
@@ -49,7 +50,7 @@ struct _p_SNES {
   KSP  ksp;                      /* linear solver context */
 
   Vec  vec_sol_update;           /* pointer to solution update */
-		       		 
+
   Vec  scaling;                  /* scaling vector */
   void *scaP;                    /* scaling context */
 
@@ -88,7 +89,7 @@ struct _p_SNES {
   PetscInt    gridsequence;      /* number of grid sequence steps to take; defaults to zero */
   /* ------------------------ Default work-area management ---------------------- */
 
-  PetscInt    nwork;              
+  PetscInt    nwork;
   Vec         *work;
 
   /* ------------------------- Miscellaneous Information ------------------------ */

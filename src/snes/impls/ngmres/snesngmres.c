@@ -132,8 +132,7 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
   ierr = (*snes->ops->converged)(snes,0,0.0,0.0,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
   if (snes->reason) PetscFunctionReturn(0);
 
-#if 0
-  /* Barry: What the heck is this part doing? */
+#if 0 /* Barry: What the heck is this part doing? */
   /* determine optimal scale factor -- slow code */
   ierr = VecDuplicate(P, &y);CHKERRQ(ierr);
   ierr = VecDuplicate(P, &w);CHKERRQ(ierr);
@@ -147,6 +146,7 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
 #endif
 
   /* Loop over batches of directions */
+  /* Code from Barry I do not understand to solve the least-squares problem, Time to try again */
   for(k = 0; k < snes->max_its; k += ngmres->msize) {
     /* Loop over updates for this batch */
     /*   TODO: Incorporate the variant which use the analytic Jacobian */

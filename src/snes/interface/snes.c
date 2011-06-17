@@ -3392,6 +3392,75 @@ PetscErrorCode  SNESGetDM(SNES snes,DM *dm)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "SNESSetPC"
+/*@
+  SNESSetPC - Sets the preconditioner to be used.
+
+  Collective on SNES
+
+  Input Parameters:
++ snes - iterative context obtained from SNESCreate()
+- pc   - the preconditioner object
+
+  Notes:
+  Use SNESGetPC() to retrieve the preconditioner context (for example,
+  to configure it using the API).
+
+  Level: developer
+
+.keywords: SNES, set, precondition
+.seealso: SNESGetPC()
+@*/
+PetscErrorCode SNESSetPC(SNES snes, SNES pc)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
+  PetscValidHeaderSpecific(pc, SNES_CLASSID, 2);
+  PetscCheckSameComm(snes, 1, pc, 2);
+  ierr = PetscObjectReference((PetscObject) pc);CHKERRQ(ierr);
+  ierr = PCDestroy(&snes->pc);CHKERRQ(ierr);
+  snes->pc = pc;
+  ierr = PetscLogObjectParent(snes, snes->pc);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESGetPC"
+/*@
+  SNESGetPC - Returns a pointer to the preconditioner context set with SNESSetPC().
+
+  Not Collective
+
+  Input Parameter:
+. snes - iterative context obtained from SNESCreate()
+
+  Output Parameter:
+. pc - preconditioner context
+
+  Level: developer
+
+.keywords: SNES, get, preconditioner
+.seealso: SNESSetPC()
+@*/
+PetscErrorCode SNESGetPC(SNES snes, SNES *pc)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes, SNES_CLASSID, 1);
+  PetscValidPointer(pc, 2);
+  if (!snes->pc) {
+    ierr = SNESCreate(((PetscObject) snes)->comm, &snes->pc);CHKERRQ(ierr);
+    ierr = PetscObjectIncrementTabLevel((PetscObject) snes->pc, (PetscObject) snes, 0);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent(snes, snes->pc);CHKERRQ(ierr);
+  }
+  *pc = snes->pc;
+  PetscFunctionReturn(0);
+}
+
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
 #include <mex.h>
 
