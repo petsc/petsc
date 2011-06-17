@@ -159,16 +159,16 @@ cdef class DA(DM):
         return toInt(dof)
 
     def setSizes(self, sizes):
+        cdef tuple gsizes = tuple(sizes)
         cdef PetscInt gdim = PETSC_DECIDE
         cdef PetscInt M = 1
         cdef PetscInt N = 1
         cdef PetscInt P = 1
-        cdef tuple gsizes = tuple(sizes)
         gdim = asDims(gsizes, &M, &N, &P)
-        #cdef PetscInt dim = PETSC_DECIDE
-        #CHKERR( DAGetDim(self.dm, &dim) )
-        #if dim == PETSC_DECIDE:
-        #    CHKERR( DASetDim(self.dm, gdim) )
+        cdef PetscInt dim = PETSC_DECIDE
+        CHKERR( DAGetDim(self.dm, &dim) )
+        if dim == PETSC_DECIDE:
+            CHKERR( DASetDim(self.dm, gdim) )
         CHKERR( DASetSizes(self.dm, M, N, P) )
 
     def getSizes(self):
@@ -186,16 +186,16 @@ cdef class DA(DM):
         return toDims(dim, M, N, P)
 
     def setProcSizes(self, proc_sizes):
+        cdef tuple psizes = tuple(proc_sizes)
         cdef PetscInt pdim = PETSC_DECIDE
         cdef PetscInt m = PETSC_DECIDE
         cdef PetscInt n = PETSC_DECIDE
         cdef PetscInt p = PETSC_DECIDE
-        cdef tuple psizes = tuple(proc_sizes)
         pdim = asDims(psizes, &m, &n, &p)
-        #cdef PetscInt dim = PETSC_DECIDE
-        #CHKERR( DAGetDim(self.dm, &dim) )
-        #if dim == PETSC_DECIDE:
-        #    CHKERR( DASetDim(self.dm, pdim) )
+        cdef PetscInt dim = PETSC_DECIDE
+        CHKERR( DAGetDim(self.dm, &dim) )
+        if dim == PETSC_DECIDE:
+            CHKERR( DASetDim(self.dm, pdim) )
         CHKERR( DASetNumProcs(self.dm, m, n, p) )
 
     def getProcSizes(self):
@@ -213,15 +213,10 @@ cdef class DA(DM):
         return toDims(dim, m, n, p)
 
     def setBoundaryType(self, boundary_type):
-        cdef PetscInt bdim = PETSC_DECIDE
         cdef PetscDABoundaryType btx = DA_BOUNDARY_NONE
         cdef PetscDABoundaryType bty = DA_BOUNDARY_NONE
         cdef PetscDABoundaryType btz = DA_BOUNDARY_NONE
-        bdim = asBoundary(boundary_type, &btx, &bty, &btz)
-        #cdef PetscInt dim = PETSC_DECIDE
-        #CHKERR( DAGetDim(self.dm, &dim) )
-        #if dim == PETSC_DECIDE:
-        #    CHKERR( DASetDim(self.dm, bdim) )
+        asBoundary(boundary_type, &btx, &bty, &btz)
         CHKERR( DASetBoundaryType(self.dm, btx, bty, btz) )
         
     def getBoundaryType(self):
@@ -450,7 +445,7 @@ cdef class DA(DM):
         cdef PetscDAInterpolationType ival = dainterpolationtype(interp_type)
         CHKERR( DASetInterpolationType(self.dm, ival) )
 
-    def getInterpolationType(self, interp_type):
+    def getInterpolationType(self):
         cdef PetscDAInterpolationType ival = DA_INTERPOLATION_Q0
         CHKERR( DAGetInterpolationType(self.dm, &ival) )
         return <long>ival
@@ -461,7 +456,7 @@ cdef class DA(DM):
         cdef PetscDAElementType ival = daelementtype(elem_type)
         CHKERR( DASetElementType(self.dm, ival) )
 
-    def getElementType(self, elem_type):
+    def getElementType(self):
         cdef PetscDAElementType ival = DA_ELEMENT_Q1
         CHKERR( DAGetElementType(self.dm, &ival) )
         return <long>ival

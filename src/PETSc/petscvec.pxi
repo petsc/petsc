@@ -429,7 +429,7 @@ cdef class _Vec_buffer:
     def __enter__(self):
         return self.enter()
 
-    def __exit__(self, t, v, tb):
+    def __exit__(self, *exc):
         return self.exit()
 
     # buffer interface (legacy)

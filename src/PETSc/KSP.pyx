@@ -363,7 +363,7 @@ cdef class KSP(Object):
 
     def setConvergedReason(self, reason):
         cdef PetscKSPConvergedReason val = reason
-        CHKERR( KSPSetConvergedReason(self.ksp, reason) )
+        CHKERR( KSPSetConvergedReason(self.ksp, val) )
 
     def getConvergedReason(self):
         cdef PetscKSPConvergedReason reason = KSP_CONVERGED_ITERATING

@@ -377,7 +377,7 @@ cdef class TS(Object):
             CHKERR( TSSetPreStep(self.ts, NULL) )
             self.set_attr('__prestep__', None)
 
-    def getPreStep(self, prestep):
+    def getPreStep(self):
         return self.get_attr('__prestep__')
 
     def setPostStep(self, poststep, args=None, kargs=None):

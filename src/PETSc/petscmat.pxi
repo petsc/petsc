@@ -605,7 +605,7 @@ cdef inline int Mat_AllocDense_ARRAY(PetscMat A, PetscInt bs,
     if m*n != size: raise ValueError(
         "size(array) is %d, expected %dx%d=%d" %
         (toInt(size), toInt(m), toInt(n), toInt(m*n)) )
-    CHKERR( MatAnyDenseSetPreallocation(A, bs, data) )
+    CHKERR( MatAnyDenseSetPreallocation(A, b, data) )
     return 0
 
 # -----------------------------------------------------------------------------

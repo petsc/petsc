@@ -300,7 +300,7 @@ cdef class _DA_Vec_array(object):
         self.acquire()
         return self
 
-    def __exit__(self, t, v, tb):
+    def __exit__(self, *exc):
         self.release()
         return None
 

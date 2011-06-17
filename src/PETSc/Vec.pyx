@@ -117,7 +117,7 @@ cdef class Vec(Object):
         self.set_attr('__buffer__', buf)
         return buf.enter()
 
-    def __exit__(self, t, v, tb):
+    def __exit__(self, *exc):
         cdef _Vec_buffer buf = self.get_attr('__buffer__')
         self.set_attr('__buffer__', None)
         return buf.exit()
@@ -183,7 +183,6 @@ cdef class Vec(Object):
         cdef PetscInt na=0
         cdef PetscScalar *sa=NULL
         array = iarray_s(array, &na, &sa)
-        cdef PetscInt b = 1 if bsize is None else asInt(bsize)
         if size is None: size = (toInt(na), PETSC_DECIDE)
         cdef PetscInt bs=0, n=0, N=0
         CHKERR( Vec_SplitSizes(ccomm, size, bsize, &bs, &n, &N) )
@@ -404,21 +403,27 @@ cdef class Vec(Object):
         return toScalar(sval)
 
     def mDot(self, vecs, out=None):
+        vecs = out = None
         raise NotImplementedError
 
     def mDotBegin(self, vecs, out=None):
+        vecs = out = None
         raise NotImplementedError
 
     def mDotEnd(self, vecs, out=None):
+        vecs = out = None
         raise NotImplementedError
 
     def mtDot(self, vecs, out=None):
+        vecs = out = None
         raise NotImplementedError
 
     def mtDotBegin(self, vecs, out=None):
+        vecs = out = None
         raise NotImplementedError
 
     def mtDotEnd(self, vecs, out=None):
+        vecs = out = None
         raise NotImplementedError
 
     def norm(self, norm_type=None):

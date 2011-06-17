@@ -2072,7 +2072,6 @@ cdef PetscErrorCode TSSetUp_Python_NONLINEAR(
     CHKERR( SNESSetFunction(ts.snes,vec_func,SNESTSFormFunction,<void*>ts) )
     #
     cdef PetscMat A = NULL, B = NULL
-    cdef MatStructure mstr = DIFFERENT_NONZERO_PATTERN
     cdef SNESJacobian jac = NULL
     cdef void *jacP = NULL
     CHKERR( SNESGetJacobian(ts.snes,&A,&B,&jac,&jacP) )

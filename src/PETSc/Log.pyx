@@ -263,12 +263,14 @@ cdef class LogEvent:
         cdef PetscObject o[4]
         event_args2objs(objs, o)
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
+        if ccomm == MPI_COMM_NULL: ccomm = PETSC_COMM_DEFAULT
         CHKERR( PetscLogEventBarrierBegin(self.id, o[0], o[1], o[2], o[3], ccomm) )
 
     def barrierEnd(self, Comm comm=None, *objs):
         cdef PetscObject o[4]
         event_args2objs(objs, o)
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
+        if ccomm == MPI_COMM_NULL: ccomm = PETSC_COMM_DEFAULT
         CHKERR( PetscLogEventBarrierEnd(self.id, o[0], o[1], o[2], o[3], ccomm) )
 
     #

@@ -548,20 +548,20 @@ cdef class Mat(Object):
 
     def isHermitian(self, tol=0):
         cdef PetscReal rval = asReal(tol)
-        cdef PetscBool flag = PETSC_FALSE
-        CHKERR( MatIsHermitian(self.mat, rval, &flag) )
-        return <bint>flag
+        cdef PetscBool bval = PETSC_FALSE
+        CHKERR( MatIsHermitian(self.mat, rval, &bval) )
+        return <bint>bval
 
     def isHermitianKnown(self):
-        cdef PetscBool flag1 = PETSC_FALSE
-        cdef PetscBool flag2 = PETSC_FALSE
-        rslt = CHKERR( MatIsHermitianKnown(self.mat, &flag1, &flag2) )
-        return (<bint>flag1, <bint>flag2)
+        cdef PetscBool bval1 = PETSC_FALSE
+        cdef PetscBool bval2 = PETSC_FALSE
+        CHKERR( MatIsHermitianKnown(self.mat, &bval1, &bval2) )
+        return (<bint>bval1, <bint>bval2)
 
     def isStructurallySymmetric(self):
-        cdef PetscBool flag = PETSC_FALSE
-        CHKERR( MatIsStructurallySymmetric(self.mat, &flag) )
-        return <bint>flag
+        cdef PetscBool bval = PETSC_FALSE
+        CHKERR( MatIsStructurallySymmetric(self.mat, &bval) )
+        return <bint>bval
 
     def zeroEntries(self):
         CHKERR( MatZeroEntries(self.mat) )
@@ -951,14 +951,17 @@ cdef class Mat(Object):
         matfactorinfo(PETSC_FALSE, options, &info)
         CHKERR( MatLUFactor(self.mat, isrow.iset, iscol.iset, &info) )
     def factorSymbolicLU(self, Mat mat not None, IS isrow not None, IS iscol not None, options=None):
+        mat = isrow = iscol = options = None
         raise NotImplementedError
     def factorNumericLU(self, Mat mat not None, options=None):
+        mat = options = None
         raise NotImplementedError
     def factorILU(self, IS isrow not None, IS iscol not None, options=None):
         cdef PetscMatFactorInfo info
         matfactorinfo(PETSC_TRUE, options, &info)
         CHKERR( MatILUFactor(self.mat, isrow.iset, iscol.iset, &info) )
     def factorSymbolicILU(self, IS isrow not None, IS iscol not None, options=None):
+        isrow = iscol = options = None
         raise NotImplementedError
 
     def factorCholesky(self, IS isperm not None, options=None):
@@ -966,17 +969,21 @@ cdef class Mat(Object):
         matfactorinfo(PETSC_FALSE, options, &info)
         CHKERR( MatCholeskyFactor(self.mat, isperm.iset, &info) )
     def factorSymbolicCholesky(self, IS isperm not None, options=None):
+        isperm = options = None
         raise NotImplementedError
     def factorNumericCholesky(self, Mat mat not None, options=None):
+        mat = options = None
         raise NotImplementedError
     def factorICC(self, IS isperm not None, options=None):
         cdef PetscMatFactorInfo info
         matfactorinfo(PETSC_TRUE, options, &info)
         CHKERR( MatICCFactor(self.mat, isperm.iset, &info) )
     def factorSymbolicICC(self, IS isperm not None, options=None):
+        isperm = options = None
         raise NotImplementedError
 
     def factorILUDT(self, IS isrow not None, IS iscol not None, options=None):
+        isrow = iscol = options = None
         raise NotImplementedError
         ## cdef PetscMatFactorInfo info
         ## matfactorinfo(PETSC_TRUE, options, &info)

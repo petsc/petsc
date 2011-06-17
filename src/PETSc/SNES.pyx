@@ -430,22 +430,22 @@ cdef class SNES(Object):
     # --- matrix free / finite diferences ---
 
     def setUseMF(self, flag=True):
-        cdef PetscBool cflag = flag
-        CHKERR( SNESSetUseMFFD(self.snes, cflag) )
+        cdef PetscBool bval = flag
+        CHKERR( SNESSetUseMFFD(self.snes, bval) )
 
     def getUseMF(self):
-        cdef PetscBool flag = PETSC_FALSE
-        CHKERR( SNESGetUseMFFD(self.snes, &flag) )
-        return <bint> flag
+        cdef PetscBool bval = PETSC_FALSE
+        CHKERR( SNESGetUseMFFD(self.snes, &bval) )
+        return <bint> bval
 
     def setUseFD(self, flag=True):
-        cdef PetscBool cflag = flag
-        CHKERR( SNESSetUseFDColoring(self.snes, flag) )
+        cdef PetscBool bval = flag
+        CHKERR( SNESSetUseFDColoring(self.snes, bval) )
 
     def getUseFD(self):
-        cdef PetscBool flag = PETSC_FALSE
-        CHKERR( SNESGetUseFDColoring(self.snes, &flag) )
-        return <bint> flag
+        cdef PetscBool bval = PETSC_FALSE
+        CHKERR( SNESGetUseFDColoring(self.snes, &bval) )
+        return <bint> bval
 
     # --- Python ---
 
