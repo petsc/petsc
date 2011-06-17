@@ -3,21 +3,24 @@
 cdef class Sys:
 
     @classmethod
-    def getVersion(cls, patch=False, date=False, author=False):
+    def getVersion(cls, patch=False, devel=False,
+                   date=False, author=False):
         cdef int cmajor = PETSC_VERSION_MAJOR
         cdef int cminor = PETSC_VERSION_MINOR
         cdef int cmicro = PETSC_VERSION_SUBMINOR
         cdef int cpatch = PETSC_VERSION_PATCH
-        cdef int crelease = PETSC_VERSION_RELEASE ## XXX unused
+        cdef int cdevel = not PETSC_VERSION_RELEASE
         cdef const_char *cdate       = PETSC_VERSION_DATE
         cdef const_char *cpatchdate  = PETSC_VERSION_PATCH_DATE
         cdef const_char *cauthorinfo = PETSC_AUTHOR_INFO
         version = (cmajor, cminor, cmicro)
         out = version
-        if patch or date or author:
+        if patch or devel or date or author:
             out = [version]
             if patch:
                 out.append(cpatch)
+            if devel:
+                out.append(<bint>cdevel)
             if date:
                 if patch: date = [bytes2str(cdate), bytes2str(cpatchdate)]
                 else:     date = bytes2str(cdate)
