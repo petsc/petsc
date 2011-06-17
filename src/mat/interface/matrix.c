@@ -6867,7 +6867,7 @@ PetscErrorCode  MatSetUnfactored(Mat mat)
     MatGetArrayF90 - Accesses a matrix array from Fortran90.
 
     Synopsis:
-    MatGetArrayF90(Mat x,{Scalar, pointer :: xx_v(:)},integer ierr)
+    MatGetArrayF90(Mat x,{Scalar, pointer :: xx_v(:,:)},integer ierr)
 
     Not collective
 
@@ -6880,7 +6880,7 @@ PetscErrorCode  MatSetUnfactored(Mat mat)
 
     Example of Usage: 
 .vb
-      PetscScalar, pointer xx_v(:)
+      PetscScalar, pointer xx_v(:,:)
       ....
       call MatGetArrayF90(x,xx_v,ierr)
       a = xx_v(3)
