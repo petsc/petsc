@@ -4,7 +4,9 @@ static const char help[] = "STREAM benchmark specialized for SSE2\n\\n";
 #include <emmintrin.h>
 #include <petsctime.h>
 #include <petscsys.h>
+#if defined(HAVE_NUMA)
 #include <numa.h>
+#endif
 #include <limits.h>
 #include <float.h>
 
@@ -110,10 +112,12 @@ int main(int argc,char *argv[])
     a = malloc(N*sizeof(double));
     b = malloc(N*sizeof(double));
     c = malloc(N*sizeof(double));
+#if defined(HAVE_NUMA)
   } else {
     a = numa_alloc_onnode(N*sizeof(double),node);
     b = numa_alloc_onnode(N*sizeof(double),node);
     c = numa_alloc_onnode(N*sizeof(double),node);
+#endif
   }
 #endif
 #if FAULT_TOGETHER
