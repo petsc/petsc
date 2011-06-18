@@ -199,6 +199,9 @@ newall:
 	-@cd src/ksp; ${PETSC_DIR}/config/builder.py
 	-@cd src/snes; ${PETSC_DIR}/config/builder.py
 	-@cd src/ts; ${PETSC_DIR}/config/builder.py
+
+streams:
+	cd src/benchmarks/streams; ${OMAKE} test
 # ------------------------------------------------------------------
 #
 # All remaining actions are intended for PETSc developers only.

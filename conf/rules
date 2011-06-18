@@ -63,6 +63,11 @@ chkopts: remote
 	fi; \
 	done
 
+#
+# uses the cmake infrastructure to build/rebuild the libraries
+cmake:
+	cd ${PETSC_DIR}; make -j2 -C ${PETSC_DIR}/${PETSC_ARCH}
+
 # Does nothing; needed for some rules that require actions.
 foo:
 
