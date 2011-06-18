@@ -3421,7 +3421,7 @@ PetscErrorCode SNESSetPC(SNES snes, SNES pc)
   PetscValidHeaderSpecific(pc, SNES_CLASSID, 2);
   PetscCheckSameComm(snes, 1, pc, 2);
   ierr = PetscObjectReference((PetscObject) pc);CHKERRQ(ierr);
-  ierr = PCDestroy(&snes->pc);CHKERRQ(ierr);
+  ierr = SNESDestroy(&snes->pc);CHKERRQ(ierr);
   snes->pc = pc;
   ierr = PetscLogObjectParent(snes, snes->pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
