@@ -427,13 +427,13 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
 
   if (!ksp->reason) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_PLIB,"Internal error, solver returned without setting converged reason");
   if (ksp->printreason) {
-    PetscInt tab = ((PetscObject)ksp)->tablevel;
-    while (tab--) {ierr = PetscPrintf(((PetscObject)ksp)->comm,"  ");CHKERRQ(ierr);}
+    ierr = PetscViewerASCIIAddTab(PETSC_VIEWER_STDOUT_(((PetscObject)ksp)->comm),((PetscObject)ksp)->tablevel);CHKERRQ(ierr);
     if (ksp->reason > 0) {
-      ierr = PetscPrintf(((PetscObject)ksp)->comm,"Linear solve converged due to %s iterations %D\n",KSPConvergedReasons[ksp->reason],ksp->its);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_(((PetscObject)ksp)->comm),"Linear solve converged due to %s iterations %D\n",KSPConvergedReasons[ksp->reason],ksp->its);CHKERRQ(ierr);
     } else {
-      ierr = PetscPrintf(((PetscObject)ksp)->comm,"Linear solve did not converge due to %s iterations %D\n",KSPConvergedReasons[ksp->reason],ksp->its);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(PETSC_VIEWER_STDOUT_(((PetscObject)ksp)->comm),"Linear solve did not converge due to %s iterations %D\n",KSPConvergedReasons[ksp->reason],ksp->its);CHKERRQ(ierr);
     }
+    ierr = PetscViewerASCIISubtractTab(PETSC_VIEWER_STDOUT_(((PetscObject)ksp)->comm),((PetscObject)ksp)->tablevel);CHKERRQ(ierr);
   }
   ierr = PCPostSolve(ksp->pc,ksp);CHKERRQ(ierr);
 

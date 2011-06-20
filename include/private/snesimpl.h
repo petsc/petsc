@@ -118,6 +118,8 @@ struct _p_SNES {
 
   Vec         *vwork;            /* more work vectors for Jacobian approx */
   PetscInt    nvwork;
+
+  PetscBool   mf_operator;      /* -snes_mf_operator was used on this snes */
 };
 
 /* Context for Eisenstat-Walker convergence criteria for KSP solvers */
