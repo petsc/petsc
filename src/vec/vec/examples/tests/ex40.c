@@ -10,7 +10,7 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   PetscMPIInt    size;
   PetscInt       n = 10,i;
-  PetscScalar    array[n];
+  PetscScalar    array[10];
   Vec            x;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
