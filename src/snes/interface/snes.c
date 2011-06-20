@@ -1593,7 +1593,7 @@ PetscErrorCode  SNESSetUp(SNES snes)
   } else if (snes->dm && !snes->jacobian_pre){
     Mat J;
     ierr = DMGetMatrix(snes->dm,MATAIJ,&J);CHKERRQ(ierr);
-    ierr = SNESSetJacobian(snes,PETSC_NULL,J,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(snes,J,J,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     ierr = MatDestroy(&J);CHKERRQ(ierr);
   }
  
