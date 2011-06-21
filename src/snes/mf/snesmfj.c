@@ -47,7 +47,10 @@ PetscErrorCode  MatMFFDComputeJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStruct
 }
 
 PetscErrorCode MatAssemblyEnd_MFFD(Mat,MatAssemblyType);
+EXTERN_C_BEGIN
 PetscErrorCode MatMFFDSetBase_MFFD(Mat,Vec,Vec);
+EXTERN_C_END
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatAssemblyEnd_SNESMF"
 /*
