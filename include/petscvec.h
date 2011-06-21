@@ -261,7 +261,7 @@ extern PetscErrorCode  VecDestroyVecs(PetscInt, Vec*[]);
 extern PetscErrorCode  VecStrideNormAll(Vec,NormType,PetscReal[]);
 extern PetscErrorCode  VecStrideMaxAll(Vec,PetscInt [],PetscReal []);
 extern PetscErrorCode  VecStrideMinAll(Vec,PetscInt [],PetscReal []);
-extern PetscErrorCode  VecStrideScaleAll(Vec,PetscScalar[]);
+extern PetscErrorCode  VecStrideScaleAll(Vec,const PetscScalar[]);
 
 extern PetscErrorCode  VecStrideNorm(Vec,PetscInt,NormType,PetscReal*);
 PetscPolymorphicFunction(VecStrideNorm,(Vec x,PetscInt i),(x,i,NORM_2,&r),PetscReal,r)
