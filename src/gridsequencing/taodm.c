@@ -219,7 +219,7 @@ PetscErrorCode  TaoDMDestroyLevel(TaoDM taodmlevel)
   ierr = PetscFree(((PetscObject)(taodmlevel))->prefix);CHKERRQ(ierr);
   ierr = PetscFree(taodmlevel->mtype);CHKERRQ(ierr);
   ierr = PetscFree(taodmlevel->ttype);CHKERRQ(ierr);
-  if (taodmlevel->dm)      {ierr = DMDestroy(taodmlevel->dm);CHKERRQ(ierr);}
+  if (taodmlevel->dm)      {ierr = DMDestroy(&taodmlevel->dm);CHKERRQ(ierr);}
   if (taodmlevel->x)       {ierr = VecDestroy(&taodmlevel->x);CHKERRQ(ierr);}
   //if (taodmlevel->b)       {ierr = VecDestroy(&taodmlevel->b);CHKERRQ(ierr);}
   //if (taodmlevel->r)       {ierr = VecDestroy(&taodmlevel->r);CHKERRQ(ierr);}
@@ -231,7 +231,7 @@ PetscErrorCode  TaoDMDestroyLevel(TaoDM taodmlevel)
   if (taodmlevel->hessian)         {ierr = MatDestroy(&taodmlevel->hessian);CHKERRQ(ierr);}
   //if (taodmlevel->R)    {ierr = MatDestroy(&taodmlevel->R);CHKERRQ(ierr);}
   //if (taodmlevel->fdcoloring){ierr = MatFDColoringDestroy(taodmlevel->fdcoloring);CHKERRQ(ierr);}
-  if (taodmlevel->tao)      {ierr = PetscObjectDestroy((PetscObject)taodmlevel->tao);CHKERRQ(ierr);}
+  //if (taodmlevel->tao)      {ierr = PetscObjectDestroy((PetscObject)taodmlevel->tao);CHKERRQ(ierr);}
   ierr = PetscHeaderDestroy(&taodmlevel); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 
