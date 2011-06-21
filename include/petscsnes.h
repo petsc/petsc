@@ -34,6 +34,7 @@ E*/
 #define SNESPICARD  "picard"
 #define SNESKSPONLY "ksponly"
 #define SNESVI      "vi"
+#define SNESNGMRES  "ngmres"
 
 /* Logging support */
 extern PetscClassId  SNES_CLASSID;

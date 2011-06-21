@@ -47,7 +47,7 @@ PetscErrorCode SNESSetUp_NGMRES(SNES snes)
 #endif
   ierr = VecDuplicateVecs(snes->vec_sol, ngmres->msize, &ngmres->v);CHKERRQ(ierr);
   ierr = VecDuplicateVecs(snes->vec_sol, ngmres->msize, &ngmres->w);CHKERRQ(ierr);
-  ierr = SNESDefaultGetWork(snes, 2);CHKERRQ(ierr);
+  ierr = SNESDefaultGetWork(snes, 1);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -88,11 +88,10 @@ PetscErrorCode SNESView_NGMRES(SNES snes, PetscViewer viewer)
 PetscErrorCode SNESSolve_NGMRES(SNES snes)
 {
   SNES_NGMRES   *ngmres = (SNES_NGMRES *) snes->data;
-  Vec            X, Y, F, Pold, P, *V = ngmres->v, *W = ngmres->w;
-  //Vec            y, w;
+  SNES           pc;
+  Vec            X, Y, F, r, rOld, *V = ngmres->v, *W = ngmres->w;
   PetscScalar    wdot;
   PetscReal      fnorm;
-  //PetscScalar    rdot, abr, A0;
   PetscInt       i, j, k;
   PetscErrorCode ierr;
 
@@ -101,24 +100,19 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
   X             = snes->vec_sol;
   Y             = snes->vec_sol_update;
   F             = snes->vec_func;
-  Pold          = snes->work[0];
-  P             = snes->work[1];
+  rOld          = snes->work[0];
 
+  ierr = SNESGetPC(snes, &pc);CHKERRQ(ierr);
   ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
   snes->iter = 0;
   snes->norm = 0.;
   ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
-  ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);               /* r = F(x) */
-#if 0
-  ierr = SNESSolve(snes->pc, F, Pold);CHKERRQ(ierr);                  /* p = P(r) */
-#else
-  ierr = VecCopy(F, Pold);CHKERRQ(ierr);                              /* p = r    */
-#endif
+  ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
   if (snes->domainerror) {
     snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
     PetscFunctionReturn(0);
   }
-  ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr);                    /* fnorm = ||r||  */
+  ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr);
   if (PetscIsInfOrNanReal(fnorm)) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_FP, "Infinite or not-a-number generated in norm");
   ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
   snes->norm = fnorm;
@@ -132,7 +126,10 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
   ierr = (*snes->ops->converged)(snes,0,0.0,0.0,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
   if (snes->reason) PetscFunctionReturn(0);
 
-#if 0 /* Barry: What the heck is this part doing? */
+#ifndef OLD_BARRY_CODE
+  ierr = VecCopy(F, rOld);CHKERRQ(ierr);
+#else
+  /* Barry: What the heck is this part doing? */
   /* determine optimal scale factor -- slow code */
   ierr = VecDuplicate(P, &y);CHKERRQ(ierr);
   ierr = VecDuplicate(P, &w);CHKERRQ(ierr);
@@ -150,36 +147,37 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
   for(k = 0; k < snes->max_its; k += ngmres->msize) {
     /* Loop over updates for this batch */
     /*   TODO: Incorporate the variant which use the analytic Jacobian */
+    /*   TODO: Incorporate selection criteria for u^A from paper (need to store residual and update norms) */
     /*   TODO: Incorporate criteria for restarting from paper */
     for(i = 0; i < ngmres->msize && k+i < snes->max_its; ++i) {
-      ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);               /* r = F(x) */
-#if 0
-      ierr = SNESSolve(snes->pc, F, P);CHKERRQ(ierr);                     /* p = P(r) */
-#else
-      ierr = VecCopy(F, P);CHKERRQ(ierr);                                 /* p = r    */
-#endif
-      ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr);                    /* fnorm = ||r||  */
-      SNESLogConvHistory(snes, fnorm, 0);
-      ierr = SNESMonitor(snes, 0, fnorm);CHKERRQ(ierr);
-      ierr = (*snes->ops->converged)(snes,0,0.0,0.0,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
-      if (snes->reason) PetscFunctionReturn(0);
-
-      for(j = 0; j < i; ++j) {                                            /* p = \prod_i (I + v_i w^T_i) p */
-        ierr = VecDot(W[j], P, &wdot);CHKERRQ(ierr);
-        ierr = VecAXPY(P, wdot, V[j]);CHKERRQ(ierr);
+      /* Get a new approxiate solution u^k */
+      ierr = SNESSolve(pc, PETSC_NULL, X);CHKERRQ(ierr);
+      /* Solve least squares problem using last msize iterates */
+      ierr = SNESGetFunction(pc, &r, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr); /* r = F(u^M)                    */
+      for(j = 0; j < i; ++j) {                                              /* r = \prod_j (I + v_j w^T_j) r */
+        ierr = VecDot(W[j], r, &wdot);CHKERRQ(ierr);
+        ierr = VecAXPY(r, wdot, V[j]);CHKERRQ(ierr);
       }
-      ierr = VecCopy(Pold, W[i]);CHKERRQ(ierr);                           /* w_i = p_{old} */
-
-      ierr = VecAXPY(Pold, -1.0, P);CHKERRQ(ierr);                        /* v_i =         P           */
-      ierr = VecDot(W[i], Pold, &wdot);CHKERRQ(ierr);                     /*       ------------------- */
-      ierr = VecCopy(P, V[i]);CHKERRQ(ierr);                              /*       w^T_i (p_{old} - p) */
+      ierr = VecCopy(rOld, W[i]);CHKERRQ(ierr);                             /* w_i = r_{old}                 */
+      ierr = VecAXPY(rOld, -1.0, r);CHKERRQ(ierr);                          /* v_i =         r               */
+      ierr = VecDot(W[i], rOld, &wdot);CHKERRQ(ierr);                       /*       -------------------     */
+      ierr = VecCopy(r, V[i]);CHKERRQ(ierr);                                /*       w^T_i (r_{old} - r)     */
       ierr = VecScale(V[i], 1.0/wdot);CHKERRQ(ierr);
+      ierr = VecDot(W[i], r, &wdot);CHKERRQ(ierr);                          /* r = (I + v_i w^T_i) r         */
+      ierr = VecAXPY(r, wdot, V[i]);CHKERRQ(ierr);
+      ierr = VecCopy(r, rOld);CHKERRQ(ierr);                                /* r_{old} = r                   */
 
-      ierr = VecDot(W[i], P, &wdot);CHKERRQ(ierr);                        /* p = (I + v_i w^T_i) p */
-      ierr = VecAXPY(P, wdot, V[i]);CHKERRQ(ierr);
-      ierr = VecCopy(P, Pold);CHKERRQ(ierr);                              /* p_{old} = p */
-
-      ierr = VecAXPY(X, 1.0, P);CHKERRQ(ierr);                            /* x = x + p */
+      ierr = VecAXPY(X, 1.0, r);CHKERRQ(ierr);                              /* u^A = u^M + r                 */
+      /* Monitor and log history */
+      ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);                 /* F(u^k) */
+      ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr);
+      SNESLogConvHistory(snes, fnorm, 0);
+      ierr = SNESMonitor(snes, i+k+1, fnorm);CHKERRQ(ierr);
+      /* Check convergence */
+      ierr = (*snes->ops->converged)(snes, i+k+1, 0.0, 0.0, fnorm, &snes->reason, snes->cnvP);CHKERRQ(ierr);
+      if (snes->reason) PetscFunctionReturn(0);
+      /* Select update between u^M and u^A */
+      /* Decide whether to restart */
     }
   }
   snes->reason = SNES_DIVERGED_MAX_IT;
@@ -218,6 +216,8 @@ PetscErrorCode SNESCreate_NGMRES(SNES snes)
   snes->data = (void*) ngmres;
   ngmres->msize = 30;
   ngmres->csize = 0;
+
+  ierr = SNESGetPC(snes, &snes->pc);CHKERRQ(ierr);
 #if 0
   if (ksp->pc_side != PC_LEFT) {ierr = PetscInfo(ksp,"WARNING! Setting PC_SIDE for NGMRES to left!\n");CHKERRQ(ierr);}
   snes->pc_side = PC_LEFT;

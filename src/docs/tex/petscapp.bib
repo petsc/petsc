@@ -514,22 +514,20 @@ year = 2003,
 % LiteralHTML:a winner of a Gordon Bell Special Prize at SC2004 and ran scalably
 % LiteralHTML:with over 4000 processors.</p>
 % LiteralHTML: </font>
-@Inproceedings{Adams-04, 
-  author =   {M. F. Adams and Harun H. Bayraktar and Tony M. Keaveny and Panayiotis Papadopoulos},
-  title =   {Ultrascalable Implicit Finite Element Analyses in Solid Mechanics with over a Half a Billion Degrees of Freedom},
-  note =   {Winner of Gordon Bell Special Prize at SC2004: Large scale trabecular bone finite element modeling},
-  booktitle = {Proceedings of SC04},
-  url = {http://www.sc-conference.org/sc2004/schedule/pdfs/pap111.pdf},
-  lab = {LBL},
-  year = {2004}
-} 
+
+@inproceedings{Adams-04,
+	Author = {Adams, M.~F. and Bayraktar, H.H. and Keaveny, T.M. and Papadopoulos, P.},
+	Booktitle = {ACM/IEEE Proceedings of SC2004: High Performance Networking and Computing},
+	Title = {Ultrascalable implicit finite element analyses in solid mechanics with over a half a billion degrees of freedom},
+	Note = {Gordon Bell Award},
+	Year = {2004}}
+
 @InProceedings{Adams-03b,
    author =   {Adams, M.~F. and Bayraktar, H.H. and Keaveny, T.M. and  Papadopoulos, P.},
    title =   {Applications of Algebraic Multigrid to Large-Scale Finite Element Analysis of Whole Bone Micro-Mechanics on the IBM SP},
    booktitle = {ACM/IEEE Proceedings of SC2003: High Performance Networking and Computing},
-   year = {2003},
- Lab = {LBL}
-}
+   year = {2003}}
+   
 @inproceedings{oghattas2002,
    author = "Volkan Akcelik and George Biros and Omar Ghattas",
    title  = "Parallel Multiscale Gauss-Newton-Krylov Methods For Inverse Wave Propagation",
@@ -2685,7 +2683,7 @@ title =     {Finite-difference lattice Boltzmann model with flux limiters for li
 
 @article{sz2010,
       author  = "B. Smith and H. Zhang",
-      title   = "Sparse Triangular Solve Revisited: Data Layout Crucial to Better Performance",
+      title   = "Sparse Triangular Solves for ILU Revisited: Data Layout Crucial to Better Performance",
       journal = "International Journal of High Performance Computing Applications",
       year    = 2010
 }
@@ -2864,13 +2862,17 @@ pages   = "157--166"
   volume =     {151},
   number =     {6},
 }
-@article{ma2005,
-  author =       {Mark F. Adams},
-  title =        {Algebraic multigrid techniques for strongly indefinite linear systems from direct frequency
-                    response analysis in solid mechanics},
-  journal =      {Computional Mechanics},
-  year =         2005
-}
+
+@Article{Adams-07b, 
+  author =   {Adams M.F.}, 
+  title =   {Algebraic Multigrid Techniques for Strongly Indefinite Linear Systems from Direct Frequency Response Analysis in Solid Mechanics}, 
+  journal =   {Computional Mechanics}, 
+  year =   {2007}, 
+  volume =  	 {39}, 
+  number =  	 {4}, 
+  pages =  	 {497-507} 
+} 
+
 @INPROCEEDINGS{wc2004,
  AUTHOR=    "A. Wheelock and D. Cooke",
  TITLE=     "Computational Modeling of Ion Beam-Neutralizer Interactions in Two and Three Dimensions",
@@ -3130,13 +3132,16 @@ pages   = "157--166"
  volume      = 20,
  URL        = "http://www.iop.org/EJ/article/0264-9381/20/22/001/cqg3_22_001.pdf"
 }
-@Article{Adams-03a,
-   author =   {Adams, M.~F.},
-   title =   {Algebraic multrigrid methods for constrained linear systems with applications to contact problems in solid mechanics},
-   journal =   {Numerical Linear Algebra with Applications},
-   year =   {2004},
-   note =   {To appear}
-}
+
+@article{Adams-03a,
+	Author = {Adams, M.~F.},
+	Journal = {Numerical Linear Algebra with Applications},
+	Number = {2-3},
+	Pages = {141-153},
+	Title = {Algebraic multigrid methods for constrained linear systems with applications to contact problems in solid mechanics},
+	Volume = {11},
+	Year = {2004}}
+
 @Article{vandesande1,
   author =        "H. Vande Sande and H. De Gersem and F. Henrotte and K. Hameyer",
   journal =      "IEEE TRANSACTIONS ON MAGNETICS",
@@ -4280,12 +4285,16 @@ w@InProceedings{dalcin-paz-storti,
   year =         "2003",
   Lab = {LANL}
 }
-@unpublished{Adams-02, 
-  author =   {Adams, M. F.  and Brezina, M. and Hu, J. J.  and Tuminaro, R. S.}, 
-  title =   {Parallel multigrid smoothing: polynomial versus {G}auss-{S}eidel}, 
-  note =   {Submitted to JCP},
-  URL = {http://www.cs.berkeley.edu/\~{ }madams/poly.ps}
-} 
+
+@article{Adams-02,
+	Author = {Adams, M.~F. and Brezina, M. and Hu, J. J. and Tuminaro, R. S},
+	Journal = {J. Comp. Phys.},
+	Number = {2},
+	Pages = {593-610},
+	Title = {Parallel multigrid smoothing: polynomial versus {G}auss--{S}eidel},
+	Volume = {188},
+	Year = {2003}}
+
 @PhdThesis{Els01,
   author =       {Ulrich Elsner},
   title =        {Static and Dynamic Graph Partitioning. A comparative study of existing algorithms},
@@ -4401,13 +4410,25 @@ w@InProceedings{dalcin-paz-storti,
       PUBLISHER="Katholieke Universiteit Leuven",
       NOTES="Thesis"
 }
-@Article{Adams-00a, 
-  author =   {Mark F. Adams}, 
-  title = {Evaluation of Three Unstructured Multigrid Methods on 3{D} Finite Element Problems in Solid Mechanics}, 
-  journal =   {International Journal for Numerical Methods in Engineering}, 
-  year =   {To Appear}, 
-  url = "http://www.cs.berkeley.edu/\~{ }madams/amg.ps"
-} 
+
+@article{Adams-00,
+	Author = {Adams, M.~F.},
+	Journal = {International Journal for Numerical Methods in Engineering},
+	Number = {8},
+	Pages = {1241-1262},
+	Title = {Parallel Multigrid Solvers for 3{D} Unstructured Finite Element Problems in Large Deformation Elasticity and Plasticity},
+	Volume = {48},
+	Year = {2000}}
+
+@article{Adams-01,
+	Author = {Adams, M.~F.},
+	Journal = {International Journal for Numerical Methods in Engineering},
+	Number = {1},
+	Pages = {519-534},
+	Title = {Evaluation of Three Unstructured Multigrid Methods on 3{D} Finite Element Problems in Solid Mechanics},
+	Volume = {55},
+	Year = {2002}}
+
 @Article{Lahaye00,
   author =       "Domenico Lahaye and De Gersem, H. and Vandewalle, S. and Hameyer, K.",
   title  =       "Algebraic Multigrid for Complex Symmetric Systems", 
@@ -4417,16 +4438,7 @@ w@InProceedings{dalcin-paz-storti,
   number =       "4", 
   pages =        "1535--1538", 
 }
-@Article{Adams-00b, 
-  author =   {Mark F. Adams}, 
-  title =   {Parallel Multigrid Solvers for 3D Unstructured Finite Element Problems in Large Deformation Elasticity and Plasticity}, 
-  journal =   {International Journal for Numerical Methods in Engineering}, 
-  year =   {2000}, 
-  volume =   {48}, 
-  number = {8}, 
-  pages = {1241-1262}, 
-  url = 	"http://www.cs.berkeley.edu/\~{ }madams/NMEMFA.ps",
-} 
+
 @InProceedings{Adams-99c, 
   author =   {Mark F. Adams and J. Demmel}, 
   title =   {Parallel Multigrid Solver Algorithms and Implementations for 3{D} Unstructured Finite Element 
@@ -4434,7 +4446,6 @@ w@InProceedings{dalcin-paz-storti,
   booktitle = {Proceedings of SC99: High Performance Networking and Computing},
   address = {Portland, Oregon}, 
   month = {November}, 
-  url = 	"http://www.cs.berkeley.edu/\~{ }madams/sc99.ps",
   year = {1999} 
 } 
 @Article{chan95,
@@ -4470,7 +4481,6 @@ w@InProceedings{dalcin-paz-storti,
                  on an IBM SP, that confirm our P-RAM complexity model
                  is indicative of the performance one can expect with
                  practical partitions on graphs from FE problems.",
-  url = 	"http://www.cs.berkeley.edu/\~{ }madams/pmis.ps",
   month =        mar # " 11,",
 }
 @TechReport{k676,

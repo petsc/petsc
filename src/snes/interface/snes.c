@@ -194,6 +194,11 @@ PetscErrorCode  SNESView(SNES snes,PetscViewer viewer)
     ierr = PetscViewerStringSPrintf(viewer," %-3.3s",type);CHKERRQ(ierr);
   }
   ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
+  if (snes->pc) {
+    ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+    ierr = SNESView(snes->pc, viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+  }
   ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
   ierr = KSPView(ksp,viewer);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
@@ -287,7 +292,7 @@ static PetscErrorCode SNESSetUpMatrixFree_Private(SNES snes, PetscBool  hasOpera
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESSetFromOptions"
 /*@
    SNESSetFromOptions - Sets various SNES and KSP parameters from user options.
@@ -310,7 +315,7 @@ static PetscErrorCode SNESSetUpMatrixFree_Private(SNES snes, PetscBool  hasOpera
 .  -snes_lag_preconditioner <lag> - how often preconditioner is rebuilt (use -1 to never rebuild)
 .  -snes_lag_jacobian <lag> - how often Jacobian is rebuilt (use -1 to never rebuild)
 .  -snes_trtol <trtol> - trust region tolerance
-.  -snes_no_convergence_test - skip convergence test in nonlinear 
+.  -snes_no_convergence_test - skip convergence test in nonlinear
                                solver; hence iterations will continue until max_it
                                or some other criterion is reached. Saves expense
                                of convergence test
@@ -318,8 +323,8 @@ static PetscErrorCode SNESSetUpMatrixFree_Private(SNES snes, PetscBool  hasOpera
                                        filename given prints to stdout
 .  -snes_monitor_solution - plots solution at each iteration
 .  -snes_monitor_residual - plots residual (not its norm) at each iteration
-.  -snes_monitor_solution_update - plots update to solution at each iteration 
-.  -snes_monitor_draw - plots residual norm at each iteration 
+.  -snes_monitor_solution_update - plots update to solution at each iteration
+.  -snes_monitor_draw - plots residual norm at each iteration
 .  -snes_fd - use finite differences to compute Jacobian; very slow, only for testing
 .  -snes_mf_ksp_monitor - if using matrix-free multiply then print h at each KSP iteration
 -  -snes_converged_reason - print the reason for convergence/divergence after each solve
@@ -331,7 +336,7 @@ static PetscErrorCode SNESSetUpMatrixFree_Private(SNES snes, PetscBool  hasOpera
 .  -snes_ksp_ew_rtolmax <rtolmax> - Sets rtolmax
 .  -snes_ksp_ew_gamma <gamma> - Sets gamma
 .  -snes_ksp_ew_alpha <alpha> - Sets alpha
-.  -snes_ksp_ew_alpha2 <alpha2> - Sets alpha2 
+.  -snes_ksp_ew_alpha2 <alpha2> - Sets alpha2
 -  -snes_ksp_ew_threshold <threshold> - Sets threshold
 
    Notes:
@@ -360,8 +365,8 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
 
   if (!SNESRegisterAllCalled) {ierr = SNESRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
-  ierr = PetscOptionsBegin(((PetscObject)snes)->comm,((PetscObject)snes)->prefix,"Nonlinear solver (SNES) options","SNES");CHKERRQ(ierr); 
-    if (((PetscObject)snes)->type_name) { deft = ((PetscObject)snes)->type_name; } 
+  ierr = PetscOptionsBegin(((PetscObject)snes)->comm,((PetscObject)snes)->prefix,"Nonlinear solver (SNES) options","SNES");CHKERRQ(ierr);
+    if (((PetscObject)snes)->type_name) { deft = ((PetscObject)snes)->type_name; }
     ierr = PetscOptionsList("-snes_type","Nonlinear solver method","SNESSetType",SNESList,deft,type,256,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = SNESSetType(snes,type);CHKERRQ(ierr);
@@ -492,13 +497,21 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   if (mf) { ierr = SNESSetUpMatrixFree_Private(snes, mf_operator, mf_version);CHKERRQ(ierr); }
-  
+
   if (!snes->ksp) {ierr = SNESGetKSP(snes,&snes->ksp);CHKERRQ(ierr);}
   ierr = KSPGetOperators(snes->ksp,PETSC_NULL,PETSC_NULL,&matflag);
   ierr = KSPSetOperators(snes->ksp,snes->jacobian,snes->jacobian_pre,matflag);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(snes->ksp);CHKERRQ(ierr);
 
-  PetscFunctionReturn(0); 
+  if (snes->pc) {
+    ierr = SNESSetOptionsPrefix(snes->pc, "npc_");CHKERRQ(ierr);
+    ierr = SNESSetDM(snes->pc, snes->dm);CHKERRQ(ierr);
+    /* Should we make a duplicate vector and matrix? Leave the DM to make it? */
+    ierr = SNESSetFunction(snes->pc, snes->vec_func, snes->ops->computefunction, snes->funP);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(snes->pc, snes->jacobian, snes->jacobian_pre, snes->ops->computejacobian, snes->jacP);CHKERRQ(ierr);
+    ierr = SNESSetFromOptions(snes->pc);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
@@ -3474,7 +3487,7 @@ PetscErrorCode SNESGetPC(SNES snes, SNES *pc)
   PetscValidPointer(pc, 2);
   if (!snes->pc) {
     ierr = SNESCreate(((PetscObject) snes)->comm, &snes->pc);CHKERRQ(ierr);
-    ierr = PetscObjectIncrementTabLevel((PetscObject) snes->pc, (PetscObject) snes, 0);CHKERRQ(ierr);
+    ierr = PetscObjectIncrementTabLevel((PetscObject) snes->pc, (PetscObject) snes, 1);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(snes, snes->pc);CHKERRQ(ierr);
   }
   *pc = snes->pc;
