@@ -156,22 +156,22 @@ PetscErrorCode MatDestroy_ADA(Mat mat)
   PetscFunctionBegin;
   info=MatShellGetContext(mat,(void **)&ctx);CHKERRQ(info);
   if (ctx->W) {
-    info=VecDestroy(ctx->W);CHKERRQ(info);
+    info=VecDestroy(&ctx->W);CHKERRQ(info);
   }
   if (ctx->W2) {
-    info=VecDestroy(ctx->W2);CHKERRQ(info);
+    info=VecDestroy(&ctx->W2);CHKERRQ(info);
   }
   if (ctx->ADADiag) {
-    info=VecDestroy(ctx->ADADiag);CHKERRQ(info);
+    info=VecDestroy(&ctx->ADADiag);CHKERRQ(info);
   }
   if (ctx->A) {
-    info=MatDestroy(ctx->A);CHKERRQ(info);
+    info=MatDestroy(&ctx->A);CHKERRQ(info);
   }
   if (ctx->D1) {
-    info=VecDestroy(ctx->D1);CHKERRQ(info);
+    info=VecDestroy(&ctx->D1);CHKERRQ(info);
   }
   if (ctx->D2) {
-    info=VecDestroy(ctx->D2);CHKERRQ(info);
+    info=VecDestroy(&ctx->D2);CHKERRQ(info);
   }
   info = PetscFree(ctx); CHKERRQ(info);
   PetscFunctionReturn(0);
@@ -389,7 +389,7 @@ PetscErrorCode MatGetSubMatrix_ADA(Mat mat,IS isrow,IS iscol,MatReuse cll,
   info = MatGetOwnershipRange(ctx->A,&low,&high);CHKERRQ(info);
   info = ISCreateStride(((PetscObject)mat)->comm,high-low,low,1,&ISrow);CHKERRQ(info);
   info = MatGetSubMatrix(ctx->A,ISrow,iscol,cll,&Atemp);CHKERRQ(info);
-  info = ISDestroy(ISrow);CHKERRQ(info);
+  info = ISDestroy(&ISrow);CHKERRQ(info);
 
   if (ctx->D1){
     info=VecDuplicate(ctx->D1,&D1);CHKERRQ(info);
@@ -532,7 +532,7 @@ PetscErrorCode MatConvert_ADA(Mat mat,MatType newtype,Mat *NewMat)
     }
     info=MatAssemblyBegin(*NewMat,MAT_FINAL_ASSEMBLY);CHKERRQ(info);
     info=MatAssemblyEnd(*NewMat,MAT_FINAL_ASSEMBLY);CHKERRQ(info);
-    info = VecDestroy(X);CHKERRQ(info);
+    info = VecDestroy(&X);CHKERRQ(info);
 
   } else if (isseqdense && size==1){
 
@@ -556,7 +556,7 @@ PetscErrorCode MatConvert_ADA(Mat mat,MatType newtype,Mat *NewMat)
     }
     info=MatAssemblyBegin(*NewMat,MAT_FINAL_ASSEMBLY);CHKERRQ(info);
     info=MatAssemblyEnd(*NewMat,MAT_FINAL_ASSEMBLY);CHKERRQ(info);
-    info=VecDestroy(X);CHKERRQ(info);
+    info=VecDestroy(&X);CHKERRQ(info);
 
   } else {
     SETERRQ(PETSC_COMM_SELF,1,"No support to convert objects to that type");

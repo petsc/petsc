@@ -673,14 +673,14 @@ static PetscErrorCode TaoSolverDestroy_NTR(TaoSolver tao)
 
   PetscFunctionBegin;
   if (tao->setupcalled) {
-    ierr = VecDestroy(tr->W); CHKERRQ(ierr);
+    ierr = VecDestroy(&tr->W); CHKERRQ(ierr);
   }
   if (tr->M) {
-    ierr = MatDestroy(tr->M); CHKERRQ(ierr);
+    ierr = MatDestroy(&tr->M); CHKERRQ(ierr);
     tr->M = PETSC_NULL;
   }
   if (tr->Diag) {
-    ierr = VecDestroy(tr->Diag); CHKERRQ(ierr);
+    ierr = VecDestroy(&tr->Diag); CHKERRQ(ierr);
     tr->Diag = PETSC_NULL;
   }
   ierr = PetscFree(tao->data); CHKERRQ(ierr);

@@ -31,10 +31,10 @@ PetscErrorCode TaoSolverSetVariableBounds(TaoSolver tao, Vec XL, Vec XU)
 	PetscObjectReference((PetscObject)XU);
     }
     if (tao->XL) {
-	ierr = VecDestroy(tao->XL); CHKERRQ(ierr);
+	ierr = VecDestroy(&tao->XL); CHKERRQ(ierr);
     }
     if (tao->XU) {
-	ierr = VecDestroy(tao->XU); CHKERRQ(ierr);
+	ierr = VecDestroy(&tao->XU); CHKERRQ(ierr);
     }	
 
     tao->XL = XL;

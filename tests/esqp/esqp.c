@@ -18,6 +18,7 @@ typedef struct {
   Mat Grad;
   Mat Av,Avwork;
   Mat DSG;
+  Mat Hs,Hd,Hsd;
   Vec q;
   Vec ur; // reference
 
@@ -60,8 +61,8 @@ PetscErrorCode ESQPDestroy(AppCtx *user);
 PetscErrorCode MyMonitor(TaoSolver, void*);
 
 PetscErrorCode StateMatMult(Mat,Vec,Vec);
-//PetscErrorCode DesignMatMult(Mat,Vec,Vec);
-//PetscErrorCode DesignMatMultTranspose(Mat,Vec,Vec);
+PetscErrorCode StateMatGetDiagonal(Mat,Vec); 
+PetscErrorCode StateMatDuplicate(Mat,MatDuplicateOption,Mat*);
 
 static  char help[]="";
 
@@ -77,7 +78,7 @@ int main(int argc, char **argv)
   TaoSolverTerminationReason reason;
   AppCtx user;
   IS is_allstate,is_alldesign;
-  PetscInt idx[512],lo,hi,i;
+  PetscInt *idx,lo,hi,i;
   
 
   PetscInitialize(&argc, &argv, (char*)0,help);
@@ -86,9 +87,10 @@ int main(int argc, char **argv)
   user.mx = 8;
   user.m = user.mx*user.mx*user.mx; // number of constraints
   user.n = 2*user.m; // number of variables
-
+  ierr = PetscMalloc(user.m*sizeof(PetscInt),&idx); CHKERRQ(ierr);
   for (i=0;i<user.m;i++) idx[i]=i;
   ierr = ISCreateGeneral(PETSC_COMM_SELF,user.m,idx,PETSC_COPY_VALUES,&user.s_is); CHKERRQ(ierr);
+  ierr = PetscFree(idx); CHKERRQ(ierr);
   
   ierr = VecCreateSeq(PETSC_COMM_SELF,user.n,&x); CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF,user.m,&c); CHKERRQ(ierr);
@@ -121,8 +123,8 @@ int main(int argc, char **argv)
 
   ierr = VecScatterCreate(x,user.s_is,user.y,is_allstate,&user.state_scatter); CHKERRQ(ierr);
   ierr = VecScatterCreate(x,user.d_is,user.u,is_alldesign,&user.design_scatter); CHKERRQ(ierr);
-  ierr = ISDestroy(is_alldesign); CHKERRQ(ierr);
-  ierr = ISDestroy(is_allstate); CHKERRQ(ierr);
+  ierr = ISDestroy(&is_alldesign); CHKERRQ(ierr);
+  ierr = ISDestroy(&is_allstate); CHKERRQ(ierr);
 
   ierr = Gather(x,user.y,user.state_scatter,user.u,user.design_scatter); CHKERRQ(ierr);
 
@@ -130,9 +132,9 @@ int main(int argc, char **argv)
 
   /* Create TAO solver and set desired solution method */
   ierr = TaoSolverCreate(PETSC_COMM_SELF,&tao); CHKERRQ(ierr);
-  ierr = TaoSolverSetType(tao,"tao_rsqn"); CHKERRQ(ierr);
+  ierr = TaoSolverSetType(tao,"tao_lcl"); CHKERRQ(ierr);
 
-  ierr = TaoSolverSetMonitor(tao,MyMonitor,&user); CHKERRQ(ierr);
+  //ierr = TaoSolverSetMonitor(tao,MyMonitor,&user); CHKERRQ(ierr);
 
   /* Set solution vector with an initial guess */
   ierr = TaoSolverSetInitialVector(tao,x); CHKERRQ(ierr);
@@ -143,8 +145,9 @@ int main(int argc, char **argv)
   ierr = TaoSolverSetJacobianStateRoutine(tao, user.Js, user.Js, FormJacobianState, (void *)&user); CHKERRQ(ierr);
   ierr = TaoSolverSetJacobianDesignRoutine(tao, user.Jd, user.Jd, FormJacobianDesign, (void *)&user); CHKERRQ(ierr);
 
-  ierr = TaoSolverRSQNSetStateIS(tao,user.s_is); CHKERRQ(ierr);
   ierr = TaoSolverSetFromOptions(tao); CHKERRQ(ierr);
+  ierr = TaoSolverLCLSetStateIS(tao,user.s_is); CHKERRQ(ierr);
+  ierr = TaoSolverSQPCONSetStateIS(tao,user.s_is); CHKERRQ(ierr);
 
   /* SOLVE THE APPLICATION */
   ierr = TaoSolverSolve(tao);  CHKERRQ(ierr);
@@ -153,7 +156,7 @@ int main(int argc, char **argv)
 
   if (reason < 0)
   {
-    PetscPrintf(MPI_COMM_SELF, "Try a different TAO method. RSQN failed.\n");
+    PetscPrintf(MPI_COMM_SELF, "TAO failed to converge.\n");
   }
   else
   {
@@ -165,8 +168,8 @@ int main(int argc, char **argv)
   ierr = TaoSolverDestroy(tao); CHKERRQ(ierr);
 
   /* Free PETSc data structures */
-  ierr = VecDestroy(x); CHKERRQ(ierr);
-  ierr = VecDestroy(c); CHKERRQ(ierr);
+  ierr = VecDestroy(&x); CHKERRQ(ierr);
+  ierr = VecDestroy(&c); CHKERRQ(ierr);
   ierr = ESQPDestroy(&user); CHKERRQ(ierr);
 
   /* Finalize TAO, PETSc */
@@ -259,9 +262,14 @@ PetscErrorCode FormFunctionGradient(TaoSolver tao, Vec X, PetscScalar *f, Vec G,
   PetscFunctionReturn(0);
 
 }
+
+
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormJacobianState"
+/* A 
+MatShell object
+*/
 PetscErrorCode FormJacobianState(TaoSolver tao, Vec X, Mat *J, Mat* JPre, MatStructure* flag, void *ptr)
 {
   PetscErrorCode ierr;
@@ -281,8 +289,6 @@ PetscErrorCode FormJacobianState(TaoSolver tao, Vec X, Mat *J, Mat* JPre, MatStr
     user->dsg_formed = PETSC_TRUE;
   }
     
-  //ierr = MatGetDiagonal(user->DSG,user->js_diag); CHKERRQ(ierr);
-  //ierr = VecShift(user->js_diag,1.0/user->m); CHKERRQ(ierr);
   *JPre = user->DSG;
   *flag = SAME_NONZERO_PATTERN;
 
@@ -291,6 +297,7 @@ PetscErrorCode FormJacobianState(TaoSolver tao, Vec X, Mat *J, Mat* JPre, MatStr
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormJacobianDesign"
+/* B */
 PetscErrorCode FormJacobianDesign(TaoSolver tao, Vec X, Mat *J, Mat* JPre, MatStructure* flag, void *ptr)
 {
   PetscErrorCode ierr;
@@ -342,9 +349,36 @@ PetscErrorCode StateMatMult(Mat J_shell, Vec X, Vec Y)
   PetscFunctionReturn(0);
 }
 
+
 #undef __FUNCT__
-#define __FUNCT__ "StateGetDiagonal"
-PetscErrorCode StateGetDiagonal(Mat J_shell, Vec X)
+#define __FUNCT__ "StateMatDuplicate"
+PetscErrorCode StateMatDuplicate(Mat J_shell, MatDuplicateOption opt, Mat *new_shell)
+{
+  PetscErrorCode ierr;
+  void *ptr;
+  AppCtx *user;
+  PetscFunctionBegin;
+  ierr = MatShellGetContext(J_shell,&ptr); CHKERRQ(ierr);
+  user = (AppCtx*)ptr;
+
+  ierr = MatCreateShell(PETSC_COMM_SELF,PETSC_DETERMINE,PETSC_DETERMINE,user->m,user->n/2,user,new_shell); CHKERRQ(ierr);
+  ierr = MatShellSetOperation(*new_shell,MATOP_MULT,(void(*)(void))StateMatMult); CHKERRQ(ierr);
+  ierr = MatShellSetOperation(*new_shell,MATOP_DUPLICATE,(void(*)(void))StateMatDuplicate); CHKERRQ(ierr);
+  /* Js is symmetric */
+  ierr = MatShellSetOperation(*new_shell,MATOP_MULT_TRANSPOSE,(void(*)(void))StateMatMult); CHKERRQ(ierr);
+  ierr = MatShellSetOperation(*new_shell,MATOP_GET_DIAGONAL,(void(*)(void))StateMatGetDiagonal); CHKERRQ(ierr);
+  ierr = MatSetOption(*new_shell,MAT_SYMMETRY_ETERNAL,PETSC_TRUE); CHKERRQ(ierr);
+  ierr = MatSetOption(user->Js,MAT_SYMMETRY_ETERNAL,PETSC_TRUE); CHKERRQ(ierr);
+  
+
+  
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "StateMatGetDiagonal"
+PetscErrorCode StateMatGetDiagonal(Mat J_shell, Vec X)
 {
   PetscErrorCode ierr;
   void *ptr;
@@ -369,6 +403,7 @@ PetscErrorCode DesignMatMult(Mat J_shell, Vec X, Vec Y)
   ierr = Scatter(X,user->y,user->state_scatter,user->u,user->design_scatter); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
 #undef __FUNCT__
 #define __FUNCT__ "FormConstraints"
 PetscErrorCode FormConstraints(TaoSolver tao, Vec X, Vec C, void *ptr)
@@ -432,6 +467,7 @@ PetscErrorCode Gather(Vec x, Vec state, VecScatter s_scat, Vec design, VecScatte
 PetscErrorCode ESQPInitialize(AppCtx *user)
 {
   PetscErrorCode ierr;
+  PetscInt m,n;
   PetscViewer reader;
   PetscFunctionBegin;
   user->jformed = PETSC_FALSE;
@@ -440,55 +476,51 @@ PetscErrorCode ESQPInitialize(AppCtx *user)
   ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,"u0.dat",FILE_MODE_READ,&reader); CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&user->u); CHKERRQ(ierr);
   ierr = VecLoad(user->u,reader); CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(reader); CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&reader); CHKERRQ(ierr);
 
   ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,"ur.dat",FILE_MODE_READ,&reader); CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&user->ur); CHKERRQ(ierr);
 
   ierr = VecLoad(user->ur,reader); CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(reader); CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&reader); CHKERRQ(ierr);
   
   ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,"y0.dat",FILE_MODE_READ,&reader); CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&user->y); CHKERRQ(ierr);
   ierr = VecLoad(user->y,reader); CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(reader); CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&reader); CHKERRQ(ierr);
 
   ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,"yt.dat",FILE_MODE_READ,&reader); CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&user->ytrue); CHKERRQ(ierr);
   ierr = VecLoad(user->ytrue,reader); CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(reader); CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&reader); CHKERRQ(ierr);
 
   ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,"ut.dat",FILE_MODE_READ,&reader); CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&user->utrue); CHKERRQ(ierr);
   ierr = VecLoad(user->utrue,reader); CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(reader); CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&reader); CHKERRQ(ierr);
 
   
   ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,"q.dat",FILE_MODE_READ,&reader); CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&user->q); CHKERRQ(ierr);
   ierr = VecLoad(user->q,reader); CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(reader); CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&reader); CHKERRQ(ierr);
 
   ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,"d.dat",FILE_MODE_READ,&reader); CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&user->d); CHKERRQ(ierr);
   ierr = VecLoad(user->d,reader); CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(reader); CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&reader); CHKERRQ(ierr);
   
   ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,"Q.dat",FILE_MODE_READ,&reader); CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&user->Q); CHKERRQ(ierr);
   ierr = MatLoad(user->Q, reader); CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(reader); CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&reader); CHKERRQ(ierr);
 
 
   ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,"L.dat",FILE_MODE_READ,&reader); CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&user->L); CHKERRQ(ierr);
   ierr = MatLoad(user->L, reader); CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(reader); CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&reader); CHKERRQ(ierr);
 
-  ierr = VecCreate(PETSC_COMM_SELF,&user->lwork); CHKERRQ(ierr);
-  ierr = VecSetType(user->lwork,VECSEQ); CHKERRQ(ierr);
-  ierr = VecSetSizes(user->lwork,PETSC_DECIDE,1856); CHKERRQ(ierr);
-  ierr = VecSetFromOptions(user->lwork); CHKERRQ(ierr);
 
   ierr = VecCreate(PETSC_COMM_SELF,&user->S); CHKERRQ(ierr);
   ierr = VecSetType(user->S,VECSEQ); CHKERRQ(ierr);
@@ -501,18 +533,25 @@ PetscErrorCode ESQPInitialize(AppCtx *user)
   ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,"Grad.dat",FILE_MODE_READ,&reader); CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&user->Grad); CHKERRQ(ierr);
   ierr = MatLoad(user->Grad, reader); CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(reader); CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&reader); CHKERRQ(ierr);
+  ierr = MatGetSize(user->Grad,&m,&n); CHKERRQ(ierr);
+
+  ierr = VecCreate(PETSC_COMM_SELF,&user->lwork); CHKERRQ(ierr);
+  ierr = VecSetType(user->lwork,VECSEQ); CHKERRQ(ierr);
+  ierr = VecSetSizes(user->lwork,PETSC_DECIDE,m+user->mx*user->mx*user->mx); CHKERRQ(ierr); 
+  ierr = VecSetFromOptions(user->lwork); CHKERRQ(ierr);
+
 
   ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,"Div.dat",FILE_MODE_READ,&reader); CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&user->Div); CHKERRQ(ierr);
   ierr = MatLoad(user->Div, reader); CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(reader); CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&reader); CHKERRQ(ierr);
   ierr = MatDuplicate(user->Div,MAT_SHARE_NONZERO_PATTERN,&user->Divwork); CHKERRQ(ierr);
 
   ierr = PetscViewerBinaryOpen(PETSC_COMM_SELF,"Av.dat",FILE_MODE_READ,&reader); CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&user->Av); CHKERRQ(ierr);
   ierr = MatLoad(user->Av, reader); CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(reader); CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&reader); CHKERRQ(ierr);
   ierr = MatDuplicate(user->Av,MAT_SHARE_NONZERO_PATTERN,&user->Avwork); CHKERRQ(ierr);
 
   ierr = VecDuplicate(user->S,&user->Swork); CHKERRQ(ierr);
@@ -527,12 +566,20 @@ PetscErrorCode ESQPInitialize(AppCtx *user)
 
   ierr = MatCreateShell(PETSC_COMM_SELF,PETSC_DETERMINE,PETSC_DETERMINE,user->m,user->n/2,user,&user->Js); CHKERRQ(ierr);
   ierr = MatShellSetOperation(user->Js,MATOP_MULT,(void(*)(void))StateMatMult); CHKERRQ(ierr);
+  ierr = MatShellSetOperation(user->Js,MATOP_DUPLICATE,(void(*)(void))StateMatDuplicate); CHKERRQ(ierr);
   /* Js is symmetric */
   ierr = MatShellSetOperation(user->Js,MATOP_MULT_TRANSPOSE,(void(*)(void))StateMatMult); CHKERRQ(ierr);
-  ierr = MatShellSetOperation(user->Js,MATOP_GET_DIAGONAL,(void(*)(void))StateGetDiagonal); CHKERRQ(ierr);
+  ierr = MatShellSetOperation(user->Js,MATOP_GET_DIAGONAL,(void(*)(void))StateMatGetDiagonal); CHKERRQ(ierr);
   ierr = MatSetOption(user->Js,MAT_SYMMETRY_ETERNAL,PETSC_TRUE); CHKERRQ(ierr);
 
   ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,user->m,user->n/2,7,PETSC_NULL,&user->Jd); CHKERRQ(ierr);
+  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,user->m,user->m,0,PETSC_NULL,&user->Hsd); CHKERRQ(ierr);
+  ierr = MatZeroEntries(user->Hsd); CHKERRQ(ierr);
+
+  ierr = MatMatMultTranspose(user->Q,user->Q,MAT_INITIAL_MATRIX,2.0,&user->Hs); CHKERRQ(ierr);
+  ierr = MatMatMultTranspose(user->L,user->L,MAT_INITIAL_MATRIX,2.0,&user->Hd); CHKERRQ(ierr);
+  ierr = MatScale(user->Hd,user->alpha); CHKERRQ(ierr);
+
 
 
   /* Assemble the matrix */
@@ -550,38 +597,41 @@ PetscErrorCode ESQPDestroy(AppCtx *user)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = MatDestroy(user->Q); CHKERRQ(ierr);
-  ierr = MatDestroy(user->Div); CHKERRQ(ierr);
-  ierr = MatDestroy(user->Divwork); CHKERRQ(ierr);
-  ierr = MatDestroy(user->Grad); CHKERRQ(ierr);
-  ierr = MatDestroy(user->Av); CHKERRQ(ierr);
-  ierr = MatDestroy(user->Avwork); CHKERRQ(ierr);
-  ierr = MatDestroy(user->L); CHKERRQ(ierr);
-  ierr = MatDestroy(user->Js); CHKERRQ(ierr);
-  ierr = MatDestroy(user->Jd); CHKERRQ(ierr);
-  ierr = VecDestroy(user->u); CHKERRQ(ierr);
-  ierr = VecDestroy(user->uwork); CHKERRQ(ierr);
-  ierr = VecDestroy(user->usave); CHKERRQ(ierr);
-  ierr = VecDestroy(user->utrue); CHKERRQ(ierr);
-  ierr = VecDestroy(user->y); CHKERRQ(ierr);
-  ierr = VecDestroy(user->ywork); CHKERRQ(ierr);
-  ierr = VecDestroy(user->ysave); CHKERRQ(ierr);
-  ierr = VecDestroy(user->ytrue); CHKERRQ(ierr);
-  ierr = VecDestroy(user->c); CHKERRQ(ierr);
-  ierr = VecDestroy(user->cwork); CHKERRQ(ierr);
-  ierr = VecDestroy(user->ur); CHKERRQ(ierr);
-  ierr = VecDestroy(user->q); CHKERRQ(ierr);
-  ierr = VecDestroy(user->d); CHKERRQ(ierr);
-  ierr = VecDestroy(user->dwork); CHKERRQ(ierr);
-  ierr = VecDestroy(user->lwork); CHKERRQ(ierr);
-  ierr = VecDestroy(user->S); CHKERRQ(ierr);
-  ierr = VecDestroy(user->Swork); CHKERRQ(ierr);
-  ierr = VecDestroy(user->Av_u); CHKERRQ(ierr);
-  ierr = VecDestroy(user->js_diag); CHKERRQ(ierr);
-  ierr = ISDestroy(user->s_is); CHKERRQ(ierr);
-  ierr = ISDestroy(user->d_is); CHKERRQ(ierr);
-  ierr = VecScatterDestroy(user->state_scatter); CHKERRQ(ierr);
-  ierr = VecScatterDestroy(user->design_scatter); CHKERRQ(ierr);
+  ierr = MatDestroy(&user->Q); CHKERRQ(ierr);
+  ierr = MatDestroy(&user->Div); CHKERRQ(ierr);
+  ierr = MatDestroy(&user->Divwork); CHKERRQ(ierr);
+  ierr = MatDestroy(&user->Grad); CHKERRQ(ierr);
+  ierr = MatDestroy(&user->Av); CHKERRQ(ierr);
+  ierr = MatDestroy(&user->Avwork); CHKERRQ(ierr);
+  ierr = MatDestroy(&user->L); CHKERRQ(ierr);
+  ierr = MatDestroy(&user->Js); CHKERRQ(ierr);
+  ierr = MatDestroy(&user->Jd); CHKERRQ(ierr);
+  ierr = MatDestroy(&user->Hs); CHKERRQ(ierr);
+  ierr = MatDestroy(&user->Hd); CHKERRQ(ierr);
+  ierr = MatDestroy(&user->Hsd); CHKERRQ(ierr);
+  ierr = VecDestroy(&user->u); CHKERRQ(ierr);
+  ierr = VecDestroy(&user->uwork); CHKERRQ(ierr);
+  ierr = VecDestroy(&user->usave); CHKERRQ(ierr);
+  ierr = VecDestroy(&user->utrue); CHKERRQ(ierr);
+  ierr = VecDestroy(&user->y); CHKERRQ(ierr);
+  ierr = VecDestroy(&user->ywork); CHKERRQ(ierr);
+  ierr = VecDestroy(&user->ysave); CHKERRQ(ierr);
+  ierr = VecDestroy(&user->ytrue); CHKERRQ(ierr);
+  ierr = VecDestroy(&user->c); CHKERRQ(ierr);
+  ierr = VecDestroy(&user->cwork); CHKERRQ(ierr);
+  ierr = VecDestroy(&user->ur); CHKERRQ(ierr);
+  ierr = VecDestroy(&user->q); CHKERRQ(ierr);
+  ierr = VecDestroy(&user->d); CHKERRQ(ierr);
+  ierr = VecDestroy(&user->dwork); CHKERRQ(ierr);
+  ierr = VecDestroy(&user->lwork); CHKERRQ(ierr);
+  ierr = VecDestroy(&user->S); CHKERRQ(ierr);
+  ierr = VecDestroy(&user->Swork); CHKERRQ(ierr);
+  ierr = VecDestroy(&user->Av_u); CHKERRQ(ierr);
+  ierr = VecDestroy(&user->js_diag); CHKERRQ(ierr);
+  ierr = ISDestroy(&user->s_is); CHKERRQ(ierr);
+  ierr = ISDestroy(&user->d_is); CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&user->state_scatter); CHKERRQ(ierr);
+  ierr = VecScatterDestroy(&user->design_scatter); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -12,13 +12,13 @@ static PetscErrorCode TaoLineSearchDestroy_GPCG(TaoLineSearch ls)
 
   PetscFunctionBegin;
   if (ctx->W1) { 
-    ierr = VecDestroy(ctx->W1);CHKERRQ(ierr);
+    ierr = VecDestroy(&ctx->W1);CHKERRQ(ierr);
   }
   if (ctx->W2) {
-    ierr = VecDestroy(ctx->W2);CHKERRQ(ierr);
+    ierr = VecDestroy(&ctx->W2);CHKERRQ(ierr);
   }
   if (ctx->Gold) {
-    ierr = VecDestroy(ctx->Gold);CHKERRQ(ierr);
+    ierr = VecDestroy(&ctx->Gold);CHKERRQ(ierr);
   }
   if (ctx->x) {
     ierr = PetscObjectDereference((PetscObject)ctx->x); CHKERRQ(ierr);
@@ -82,10 +82,10 @@ static PetscErrorCode TaoLineSearchApply_GPCG(TaoLineSearch ls, Vec x,
 
   /* If X has changed, remake work vectors */
   else if (x != neP->x) {
-      ierr = VecDestroy(neP->x); CHKERRQ(ierr);
-      ierr = VecDestroy(neP->W1); CHKERRQ(ierr);
-      ierr = VecDestroy(neP->W2); CHKERRQ(ierr);
-      ierr = VecDestroy(neP->Gold); CHKERRQ(ierr);
+      ierr = VecDestroy(&neP->x); CHKERRQ(ierr);
+      ierr = VecDestroy(&neP->W1); CHKERRQ(ierr);
+      ierr = VecDestroy(&neP->W2); CHKERRQ(ierr);
+      ierr = VecDestroy(&neP->Gold); CHKERRQ(ierr);
       ierr = VecDuplicate(x,&neP->W1); CHKERRQ(ierr);
       ierr = VecDuplicate(x,&neP->W2); CHKERRQ(ierr);
       ierr = VecDuplicate(x,&neP->Gold); CHKERRQ(ierr);

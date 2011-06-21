@@ -142,11 +142,11 @@ int main(int argc, char **argv)
     ierr = TaoSolverDestroy(tao); CHKERRQ(ierr);
 
     /* Free PETSc data structures */
-    ierr = VecDestroy(x); CHKERRQ(ierr);
-    ierr = MatDestroy(H); CHKERRQ(ierr);
+    ierr = VecDestroy(&x); CHKERRQ(ierr);
+    ierr = MatDestroy(&H); CHKERRQ(ierr);
 
-    ierr = VecDestroy(user.localX); CHKERRQ(ierr);
-    ierr = DMDestroy(user.dm); CHKERRQ(ierr);
+    ierr = VecDestroy(&user.localX); CHKERRQ(ierr);
+    ierr = DMDestroy(&user.dm); CHKERRQ(ierr);
 
 
     /* Finalize TAO and PETSc*/

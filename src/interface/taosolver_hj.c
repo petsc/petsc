@@ -25,12 +25,12 @@ PetscErrorCode TaoSolverSetHessianRoutine(TaoSolver tao, Mat H, Mat Hpre, PetscE
     
     if (H) {
 	ierr = PetscObjectReference((PetscObject)H); CHKERRQ(ierr);
-	if (tao->hessian) {   ierr = MatDestroy(tao->hessian); CHKERRQ(ierr);}
+	if (tao->hessian) {   ierr = MatDestroy(&tao->hessian); CHKERRQ(ierr);}
 	tao->hessian = H;
     }
     if (Hpre) {
 	ierr = PetscObjectReference((PetscObject)Hpre); CHKERRQ(ierr);
-	if (tao->hessian_pre) { ierr = MatDestroy(tao->hessian_pre); CHKERRQ(ierr);}
+	if (tao->hessian_pre) { ierr = MatDestroy(&tao->hessian_pre); CHKERRQ(ierr);}
 	tao->hessian_pre=Hpre;
     }
     PetscFunctionReturn(0);
@@ -201,12 +201,12 @@ PetscErrorCode TaoSolverSetJacobianRoutine(TaoSolver tao, Mat J, Mat Jpre, Petsc
     
     if (J) {
 	ierr = PetscObjectReference((PetscObject)J); CHKERRQ(ierr);
-	if (tao->jacobian) {   ierr = MatDestroy(tao->jacobian); CHKERRQ(ierr);}
+	if (tao->jacobian) {   ierr = MatDestroy(&tao->jacobian); CHKERRQ(ierr);}
 	tao->jacobian = J;
     }
     if (Jpre) {
 	ierr = PetscObjectReference((PetscObject)Jpre); CHKERRQ(ierr);
-	if (tao->jacobian_pre) { ierr = MatDestroy(tao->jacobian_pre); CHKERRQ(ierr);}
+	if (tao->jacobian_pre) { ierr = MatDestroy(&tao->jacobian_pre); CHKERRQ(ierr);}
 	tao->jacobian_pre=Jpre;
     }
     PetscFunctionReturn(0);
@@ -238,12 +238,12 @@ PetscErrorCode TaoSolverSetJacobianStateRoutine(TaoSolver tao, Mat J, Mat Jpre, 
     
     if (J) {
 	ierr = PetscObjectReference((PetscObject)J); CHKERRQ(ierr);
-	if (tao->jacobian_state) {   ierr = MatDestroy(tao->jacobian_state); CHKERRQ(ierr);}
+	if (tao->jacobian_state) {   ierr = MatDestroy(&tao->jacobian_state); CHKERRQ(ierr);}
 	tao->jacobian_state = J;
     }
     if (Jpre) {
 	ierr = PetscObjectReference((PetscObject)Jpre); CHKERRQ(ierr);
-	if (tao->jacobian_state_pre) { ierr = MatDestroy(tao->jacobian_state_pre); CHKERRQ(ierr);}
+	if (tao->jacobian_state_pre) { ierr = MatDestroy(&tao->jacobian_state_pre); CHKERRQ(ierr);}
 	tao->jacobian_state_pre=Jpre;
     }
     PetscFunctionReturn(0);
@@ -274,12 +274,12 @@ PetscErrorCode TaoSolverSetJacobianDesignRoutine(TaoSolver tao, Mat J, Mat Jpre,
     
     if (J) {
 	ierr = PetscObjectReference((PetscObject)J); CHKERRQ(ierr);
-	if (tao->jacobian_design) {   ierr = MatDestroy(tao->jacobian_design); CHKERRQ(ierr);}
+	if (tao->jacobian_design) {   ierr = MatDestroy(&tao->jacobian_design); CHKERRQ(ierr);}
 	tao->jacobian_design = J;
     }
     if (Jpre) {
 	ierr = PetscObjectReference((PetscObject)Jpre); CHKERRQ(ierr);
-	if (tao->jacobian_design_pre) { ierr = MatDestroy(tao->jacobian_design_pre); CHKERRQ(ierr);}
+	if (tao->jacobian_design_pre) { ierr = MatDestroy(&tao->jacobian_design_pre); CHKERRQ(ierr);}
 	tao->jacobian_design_pre=Jpre;
     }
     PetscFunctionReturn(0);

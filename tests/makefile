@@ -3,6 +3,7 @@ EXAMPLESC = test_link1.c linesearch1.c
 TESTEXAMPLES_C = test_link1.tao runtest_link1 test_link1.rm clean \
          test_linesearch1.tao runtest_linesearch1 test_linesearch1.rm \
          test_lmvmmat1.tao runtest_lmvmmat1 test_lmvmmat1.rm \
+         test_approxmat1.tao runtest_approxmat1 test_approxmat1.rm \
          test_rosenbrock1.tao runtest_rosenbrock1 test_rosenbrock1.rm \
          test_jbearing2.tao runtest_jbearing2 test_jbearing2.rm \
 	 test_eptorsion1.tao runtest_eptorsion1 test_eptorsion2.rm \
@@ -43,6 +44,10 @@ test_linesearch1: test_linesearch1.o tao_chkopts
 test_lmvmmat1: test_lmvmmat1.o tao_chkopts
 	-${CLINKER} -o test_lmvmmat1 test_lmvmmat1.o ${TAO_LIB} ${PETSC_LIB}
 	${RM} test_lmvmmat1.o
+
+test_approxmat1: test_approxmat1.o tao_chkopts
+	-${CLINKER} -o test_approxmat1 test_approxmat1.o ${TAO_LIB} ${PETSC_LIB}
+	${RM} test_approxmat1.o
 
 test_rosenbrock1: test_rosenbrock1.o tao_chkopts
 	-${CLINKER} -o test_rosenbrock1 test_rosenbrock1.o ${TAO_LIB} ${PETSC_LIB}

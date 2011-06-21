@@ -100,8 +100,8 @@ int main(int argc, char **argv)
 	ierr = TaoSolverView(tao,PETSC_VIEWER_STDOUT_SELF); CHKERRQ(ierr);
 	ierr = TaoSolverDestroy(tao); CHKERRQ(ierr);
 	
-	ierr = VecDestroy(X); CHKERRQ(ierr);
-	ierr = VecDestroy(F); CHKERRQ(ierr);
+	ierr = VecDestroy(&X); CHKERRQ(ierr);
+	ierr = VecDestroy(&F); CHKERRQ(ierr);
 	wallclock_(&wctime2);
 	wctime = wctime2 - wctime1;
 	printf("time = %f\n",wctime);

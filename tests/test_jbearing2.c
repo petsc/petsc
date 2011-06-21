@@ -177,15 +177,15 @@ int main( int argc, char **argv )
 
 
   /* Free PETSc data structures */
-  info = VecDestroy(x); CHKERRQ(info); 
-  info = VecDestroy(xl); CHKERRQ(info); 
-  info = VecDestroy(xu); CHKERRQ(info); 
-  info = MatDestroy(user.A); CHKERRQ(info);
-  info = VecDestroy(user.B); CHKERRQ(info); 
+  info = VecDestroy(&x); CHKERRQ(info); 
+  info = VecDestroy(&xl); CHKERRQ(info); 
+  info = VecDestroy(&xu); CHKERRQ(info); 
+  info = MatDestroy(&user.A); CHKERRQ(info);
+  info = VecDestroy(&user.B); CHKERRQ(info); 
   /* Free TAO data structures */
   info = TaoSolverDestroy(tao); CHKERRQ(info);
 
-  info = DMDestroy(user.dm); CHKERRQ(info);
+  info = DMDestroy(&user.dm); CHKERRQ(info);
 
   TaoFinalize();
   PetscFinalize();

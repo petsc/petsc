@@ -911,16 +911,16 @@ static PetscErrorCode TaoSolverDestroy_NTL(TaoSolver tao)
 
   PetscFunctionBegin;
   if (tao->setupcalled) {
-    ierr = VecDestroy(tl->W); CHKERRQ(ierr);
-    ierr = VecDestroy(tl->Xold); CHKERRQ(ierr);
-    ierr = VecDestroy(tl->Gold); CHKERRQ(ierr);
+    ierr = VecDestroy(&tl->W); CHKERRQ(ierr);
+    ierr = VecDestroy(&tl->Xold); CHKERRQ(ierr);
+    ierr = VecDestroy(&tl->Gold); CHKERRQ(ierr);
   }
   if (tl->Diag) {
-    ierr = VecDestroy(tl->Diag); CHKERRQ(ierr);
+    ierr = VecDestroy(&tl->Diag); CHKERRQ(ierr);
     tl->Diag = PETSC_NULL;
   }
   if (tl->M) {
-    ierr = MatDestroy(tl->M); CHKERRQ(ierr);
+    ierr = MatDestroy(&tl->M); CHKERRQ(ierr);
     tl->M = PETSC_NULL;
   }
 

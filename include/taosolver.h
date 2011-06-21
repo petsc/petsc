@@ -114,7 +114,8 @@ extern PetscErrorCode TaoSolverSetMonitor(TaoSolver, PetscErrorCode (*)(TaoSolve
 extern PetscErrorCode TaoSolverDefaultMonitor(TaoSolver, void*);
 extern PetscErrorCode TaoSolverDefaultSMonitor(TaoSolver, void*);
 extern PetscErrorCode TaoSolverDefaultCMonitor(TaoSolver, void*);
-extern PetscErrorCode TaoSolverRSQNSetStateIS(TaoSolver, IS);
+extern PetscErrorCode TaoSolverSQPCONSetStateIS(TaoSolver, IS);
+extern PetscErrorCode TaoSolverLCLSetStateIS(TaoSolver, IS);
 PetscErrorCode TaoSolverMonitor(TaoSolver, PetscInt, PetscReal, PetscReal, PetscReal, PetscReal, TaoSolverTerminationReason*); 
 
 

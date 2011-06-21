@@ -65,8 +65,8 @@ PetscErrorCode TaoSolverSolve_FD(TaoSolver tao)
       ierr = PetscPrintf(comm,"ratio ||fd-hc||/||hc|| = %G, difference ||fd-hc|| = %G\n", fdnorm/hcnorm, fdnorm); CHKERRQ(ierr);
 
     }
-    ierr = VecDestroy(g1); CHKERRQ(ierr);
-    ierr = VecDestroy(g2); CHKERRQ(ierr);
+    ierr = VecDestroy(&g1); CHKERRQ(ierr);
+    ierr = VecDestroy(&g2); CHKERRQ(ierr);
   }
 
 
@@ -113,7 +113,7 @@ PetscErrorCode TaoSolverSolve_FD(TaoSolver tao)
       ierr = PetscPrintf(comm,"ratio ||fd-hc||/||hc|| = %G, difference ||fd-hc|| = %G\n",nrm/gnorm,nrm);CHKERRQ(ierr);
     }
 
-    ierr = MatDestroy(B);CHKERRQ(ierr);
+    ierr = MatDestroy(&B);CHKERRQ(ierr);
   }
   tao->reason = TAO_CONVERGED_USER;
   PetscFunctionReturn(0);

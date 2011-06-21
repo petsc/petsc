@@ -40,10 +40,10 @@ PetscErrorCode TaoSolverDestroy_NM(TaoSolver tao)
   PetscFunctionBegin;
   if (tao->setupcalled) {
     ierr = VecDestroyVecs(nm->N+1,&nm->simplex); CHKERRQ(ierr);
-    ierr = VecDestroy(nm->Xmuc); CHKERRQ(ierr);
-    ierr = VecDestroy(nm->Xmue); CHKERRQ(ierr);
-    ierr = VecDestroy(nm->Xmur); CHKERRQ(ierr);
-    ierr = VecDestroy(nm->Xbar); CHKERRQ(ierr);
+    ierr = VecDestroy(&nm->Xmuc); CHKERRQ(ierr);
+    ierr = VecDestroy(&nm->Xmue); CHKERRQ(ierr);
+    ierr = VecDestroy(&nm->Xmur); CHKERRQ(ierr);
+    ierr = VecDestroy(&nm->Xbar); CHKERRQ(ierr);
   }
   ierr = PetscFree(nm->indices); CHKERRQ(ierr);
   ierr = PetscFree(nm->f_values); CHKERRQ(ierr);

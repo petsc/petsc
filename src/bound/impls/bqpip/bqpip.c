@@ -160,25 +160,25 @@ static PetscErrorCode TaoSolverDestroy_BQPIP(TaoSolver tao)
   /* Free allocated memory in GPCG structure */
   PetscFunctionBegin;
   if (tao->setupcalled) {
-    ierr = VecDestroy(qp->G); CHKERRQ(ierr);
-    ierr = VecDestroy(qp->DG); CHKERRQ(ierr);
-    ierr = VecDestroy(qp->Z); CHKERRQ(ierr);
-    ierr = VecDestroy(qp->DZ); CHKERRQ(ierr);
-    ierr = VecDestroy(qp->GZwork); CHKERRQ(ierr);
-    ierr = VecDestroy(qp->R3); CHKERRQ(ierr);
-    ierr = VecDestroy(qp->S); CHKERRQ(ierr);
-    ierr = VecDestroy(qp->DS); CHKERRQ(ierr);
-    ierr = VecDestroy(qp->T); CHKERRQ(ierr);
+    ierr = VecDestroy(&qp->G); CHKERRQ(ierr);
+    ierr = VecDestroy(&qp->DG); CHKERRQ(ierr);
+    ierr = VecDestroy(&qp->Z); CHKERRQ(ierr);
+    ierr = VecDestroy(&qp->DZ); CHKERRQ(ierr);
+    ierr = VecDestroy(&qp->GZwork); CHKERRQ(ierr);
+    ierr = VecDestroy(&qp->R3); CHKERRQ(ierr);
+    ierr = VecDestroy(&qp->S); CHKERRQ(ierr);
+    ierr = VecDestroy(&qp->DS); CHKERRQ(ierr);
+    ierr = VecDestroy(&qp->T); CHKERRQ(ierr);
 
-    ierr = VecDestroy(qp->DT); CHKERRQ(ierr);
-    ierr = VecDestroy(qp->TSwork); CHKERRQ(ierr);
-    ierr = VecDestroy(qp->R5); CHKERRQ(ierr);
-    ierr = VecDestroy(qp->HDiag); CHKERRQ(ierr);
-    ierr = VecDestroy(qp->Work); CHKERRQ(ierr);
-    ierr = VecDestroy(qp->DiagAxpy); CHKERRQ(ierr);
-    ierr = VecDestroy(qp->RHS); CHKERRQ(ierr);
-    ierr = VecDestroy(qp->RHS2); CHKERRQ(ierr);
-    ierr = VecDestroy(qp->C0); CHKERRQ(ierr);
+    ierr = VecDestroy(&qp->DT); CHKERRQ(ierr);
+    ierr = VecDestroy(&qp->TSwork); CHKERRQ(ierr);
+    ierr = VecDestroy(&qp->R5); CHKERRQ(ierr);
+    ierr = VecDestroy(&qp->HDiag); CHKERRQ(ierr);
+    ierr = VecDestroy(&qp->Work); CHKERRQ(ierr);
+    ierr = VecDestroy(&qp->DiagAxpy); CHKERRQ(ierr);
+    ierr = VecDestroy(&qp->RHS); CHKERRQ(ierr);
+    ierr = VecDestroy(&qp->RHS2); CHKERRQ(ierr);
+    ierr = VecDestroy(&qp->C0); CHKERRQ(ierr);
   }
   ierr = PetscFree(tao->data); CHKERRQ(ierr);
   tao->data = PETSC_NULL;

@@ -29,33 +29,33 @@ static PetscErrorCode TaoSolverDestroy_TRON(TaoSolver tao)
   PetscFunctionBegin;
 
   if (tao->setupcalled) {
-    ierr = VecDestroy(tron->X_New);CHKERRQ(ierr);
-    ierr = VecDestroy(tron->G_New);CHKERRQ(ierr);
-    ierr = VecDestroy(tron->Work);CHKERRQ(ierr);
+    ierr = VecDestroy(&tron->X_New);CHKERRQ(ierr);
+    ierr = VecDestroy(&tron->G_New);CHKERRQ(ierr);
+    ierr = VecDestroy(&tron->Work);CHKERRQ(ierr);
   }
   if (tron->DXFree) {
-    ierr = VecDestroy(tron->DXFree);CHKERRQ(ierr);
+    ierr = VecDestroy(&tron->DXFree);CHKERRQ(ierr);
   }
   if (tron->R) {
-    ierr = VecDestroy(tron->R); CHKERRQ(ierr);
+    ierr = VecDestroy(&tron->R); CHKERRQ(ierr);
   }
   if (tron->diag) {
-    ierr = VecDestroy(tron->diag); CHKERRQ(ierr);
+    ierr = VecDestroy(&tron->diag); CHKERRQ(ierr);
   }
   if (tron->rmask) {
-    ierr = VecDestroy(tron->rmask); CHKERRQ(ierr);
+    ierr = VecDestroy(&tron->rmask); CHKERRQ(ierr);
   }
   if (tron->scatter) {
-    ierr = VecScatterDestroy(tron->scatter); CHKERRQ(ierr);
+    ierr = VecScatterDestroy(&tron->scatter); CHKERRQ(ierr);
   }
   if (tron->Free_Local) {
-    ierr = ISDestroy(tron->Free_Local); CHKERRQ(ierr);
+    ierr = ISDestroy(&tron->Free_Local); CHKERRQ(ierr);
   }
   if (tron->H_sub) {
-    ierr = MatDestroy(tron->H_sub); CHKERRQ(ierr);
+    ierr = MatDestroy(&tron->H_sub); CHKERRQ(ierr);
   }
   if (tron->Hpre_sub) {
-    ierr = MatDestroy(tron->Hpre_sub); CHKERRQ(ierr);
+    ierr = MatDestroy(&tron->Hpre_sub); CHKERRQ(ierr);
   }
   ierr = PetscFree(tao->data);
   tao->data = PETSC_NULL;
@@ -162,7 +162,7 @@ static PetscErrorCode TaoSolverSolve_TRON(TaoSolver tao){
   
   ierr = TaoSolverComputeObjectiveAndGradient(tao,tao->solution,&tron->f,tao->gradient);CHKERRQ(ierr);
   if (tron->Free_Local) {
-    ierr = ISDestroy(tron->Free_Local); CHKERRQ(ierr);
+    ierr = ISDestroy(&tron->Free_Local); CHKERRQ(ierr);
     tron->Free_Local = PETSC_NULL;
   }
   ierr = VecWhichBetween(tao->XL,tao->solution,tao->XU,&tron->Free_Local); CHKERRQ(ierr);
@@ -182,7 +182,7 @@ static PetscErrorCode TaoSolverSolve_TRON(TaoSolver tao){
   tron->stepsize=tron->delta;
   ierr = TaoSolverMonitor(tao, iter, tron->f, tron->gnorm, 0.0, tron->stepsize, &reason); CHKERRQ(ierr);
   if (tron->R) {
-    ierr = VecDestroy(tron->R); CHKERRQ(ierr);
+    ierr = VecDestroy(&tron->R); CHKERRQ(ierr);
     tron->R = PETSC_NULL;
   }
   while (reason==TAO_CONTINUE_ITERATING){
@@ -262,7 +262,7 @@ static PetscErrorCode TaoSolverSolve_TRON(TaoSolver tao){
 	}
 	ierr = VecBoundGradientProjection(tron->G_New,tron->X_New, tao->XL, tao->XU, tao->gradient); CHKERRQ(ierr);
 	if (tron->Free_Local) {
-	  ierr = ISDestroy(tron->Free_Local); CHKERRQ(ierr);
+	  ierr = ISDestroy(&tron->Free_Local); CHKERRQ(ierr);
 	  tron->Free_Local=PETSC_NULL;
 	}
 	ierr = VecWhichBetween(tao->XL, tron->X_New, tao->XU, &tron->Free_Local); CHKERRQ(ierr);
@@ -308,7 +308,7 @@ static PetscErrorCode TronGradientProjections(TaoSolver tao,TAO_TRON *tron)
   
   PetscFunctionBegin;
   if (tron->Free_Local) {
-    ierr = ISDestroy(tron->Free_Local); CHKERRQ(ierr);
+    ierr = ISDestroy(&tron->Free_Local); CHKERRQ(ierr);
     tron->Free_Local = PETSC_NULL;
   }
   ierr = VecWhichBetween(tao->XL,tao->solution,tao->XU,&tron->Free_Local); CHKERRQ(ierr);
@@ -332,7 +332,7 @@ static PetscErrorCode TronGradientProjections(TaoSolver tao,TAO_TRON *tron)
     actred_max = PetscMax(actred_max,-(f_new - tron->f));
     tron->f = f_new;
     if (tron->Free_Local) {
-      ierr = ISDestroy(tron->Free_Local); CHKERRQ(ierr);
+      ierr = ISDestroy(&tron->Free_Local); CHKERRQ(ierr);
       tron->Free_Local = PETSC_NULL;
     }
     ierr = VecWhichBetween(tao->XL,tao->solution,tao->XU,&tron->Free_Local); CHKERRQ(ierr);
@@ -356,11 +356,11 @@ PetscErrorCode TronSetupKSP(TaoSolver tao, TAO_TRON*tron)
 
   if (tron->subset_type == TRON_SUBSET_SUBMAT) {
     if (tron->R) {
-      ierr = VecDestroy(tron->R); CHKERRQ(ierr);
+      ierr = VecDestroy(&tron->R); CHKERRQ(ierr);
       tron->R = PETSC_NULL;
     }
     if (tron->DXFree) {
-      ierr = VecDestroy(tron->DXFree);
+      ierr = VecDestroy(&tron->DXFree);
       tron->DXFree = PETSC_NULL;
     }
     ierr = VecCreate(((PetscObject)tao)->comm,&tron->R); CHKERRQ(ierr);
@@ -373,7 +373,7 @@ PetscErrorCode TronSetupKSP(TaoSolver tao, TAO_TRON*tron)
     ierr = VecSetFromOptions(tron->DXFree); CHKERRQ(ierr);
     ierr = VecSet(tron->DXFree,0.0);CHKERRQ(ierr);
     if (tron->scatter) {
-      ierr = VecScatterDestroy(tron->scatter); CHKERRQ(ierr);
+      ierr = VecScatterDestroy(&tron->scatter); CHKERRQ(ierr);
       tron->scatter = PETSC_NULL;
     }
     ierr = VecGetOwnershipRange(tron->R,&low,&high); CHKERRQ(ierr);
@@ -381,17 +381,17 @@ PetscErrorCode TronSetupKSP(TaoSolver tao, TAO_TRON*tron)
 
     ierr = VecScatterCreate(tao->gradient,tron->Free_Local,tron->R,fullis,&tron->scatter); CHKERRQ(ierr);
 
-    ierr = ISDestroy(fullis); CHKERRQ(ierr);
+    ierr = ISDestroy(&fullis); CHKERRQ(ierr);
 
     ierr = VecScatterBegin(tron->scatter, tao->gradient, tron->R, INSERT_VALUES, SCATTER_FORWARD); CHKERRQ(ierr);
     ierr = VecScatterEnd(tron->scatter, tao->gradient, tron->R, INSERT_VALUES, SCATTER_FORWARD); CHKERRQ(ierr);
     ierr = VecScale(tron->R, -1.0); CHKERRQ(ierr);
     if (tron->H_sub) {
-      ierr = MatDestroy(tron->H_sub); CHKERRQ(ierr); tron->H_sub=PETSC_NULL;
+      ierr = MatDestroy(&tron->H_sub); CHKERRQ(ierr); tron->H_sub=PETSC_NULL;
     }
     ierr = MatGetSubMatrix(tao->hessian, tron->Free_Local, tron->Free_Local, MAT_INITIAL_MATRIX, &tron->H_sub); CHKERRQ(ierr);
     if (tron->Hpre_sub) {
-      ierr = MatDestroy(tron->Hpre_sub); CHKERRQ(ierr); tron->Hpre_sub=PETSC_NULL;
+      ierr = MatDestroy(&tron->Hpre_sub); CHKERRQ(ierr); tron->Hpre_sub=PETSC_NULL;
     }
     if (tao->hessian != tao->hessian_pre) {
       ierr = MatGetSubMatrix(tao->hessian_pre, tron->Free_Local, tron->Free_Local, MAT_INITIAL_MATRIX, &tron->Hpre_sub); CHKERRQ(ierr);
@@ -413,7 +413,7 @@ PetscErrorCode TronSetupKSP(TaoSolver tao, TAO_TRON*tron)
 	ierr = KSPGetPC(newksp,&newpc); CHKERRQ(ierr);
 	ierr = PCSetType(newpc, ((PetscObject)pc)->type_name); CHKERRQ(ierr);
       }
-      ierr = KSPDestroy(tao->ksp); CHKERRQ(ierr);
+      ierr = KSPDestroy(&tao->ksp); CHKERRQ(ierr);
       tao->ksp = newksp;
       ierr = PetscLogObjectParent(tao,tao->ksp); CHKERRQ(ierr);
       ierr = KSPSetFromOptions(tao->ksp); CHKERRQ(ierr);
@@ -459,12 +459,12 @@ PetscErrorCode TronSetupKSP(TaoSolver tao, TAO_TRON*tron)
     ierr = PetscOptionsHasName(0,"-different_submatrix",&flg);
     if (flg == PETSC_TRUE) {
       if (tron->H_sub) {
-	ierr = MatDestroy(tron->H_sub); CHKERRQ(ierr); tron->H_sub=PETSC_NULL;
+	ierr = MatDestroy(&tron->H_sub); CHKERRQ(ierr); tron->H_sub=PETSC_NULL;
       }
       ierr = MatDuplicate(tao->hessian, MAT_COPY_VALUES, &tron->H_sub); CHKERRQ(ierr);
       if (tao->hessian != tao->hessian_pre) {
 	if (tron->Hpre_sub) {
-	  ierr = MatDestroy(tron->Hpre_sub); CHKERRQ(ierr); tron->Hpre_sub=PETSC_NULL;
+	  ierr = MatDestroy(&tron->Hpre_sub); CHKERRQ(ierr); tron->Hpre_sub=PETSC_NULL;
 	}
 	ierr = MatDuplicate(tao->hessian_pre, MAT_COPY_VALUES, &tron->Hpre_sub); CHKERRQ(ierr);
       }

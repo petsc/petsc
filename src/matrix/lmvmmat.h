@@ -115,6 +115,7 @@ PetscErrorCode MatLMVMSetDelta(Mat,PetscReal);
 PetscErrorCode MatLMVMSetScale(Mat,Vec);
 PetscErrorCode MatLMVMGetRejects(Mat,PetscInt*);
 PetscErrorCode MatLMVMSetH0(Mat,Mat);
+PetscErrorCode MatLMVMSetPrev(Mat,Vec,Vec);
 PetscErrorCode MatLMVMGetX0(Mat,Vec);
 PetscErrorCode MatLMVMRefine(Mat, Mat, Vec, Vec);
 PetscErrorCode MatLMVMAllocateVectors(Mat m, Vec v);

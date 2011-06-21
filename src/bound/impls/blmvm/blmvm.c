@@ -187,10 +187,10 @@ static PetscErrorCode TaoSolverDestroy_BLMVM(TaoSolver tao)
 
   PetscFunctionBegin;
   if (tao->setupcalled) {
-    ierr = MatDestroy(blmP->M); CHKERRQ(ierr);
-    ierr = VecDestroy(blmP->unprojected_gradient); CHKERRQ(ierr);
-    ierr = VecDestroy(blmP->Xold); CHKERRQ(ierr);
-    ierr = VecDestroy(blmP->Gold); CHKERRQ(ierr);
+    ierr = MatDestroy(&blmP->M); CHKERRQ(ierr);
+    ierr = VecDestroy(&blmP->unprojected_gradient); CHKERRQ(ierr);
+    ierr = VecDestroy(&blmP->Xold); CHKERRQ(ierr);
+    ierr = VecDestroy(&blmP->Gold); CHKERRQ(ierr);
   }
   ierr = PetscFree(tao->data); CHKERRQ(ierr);
   tao->data = PETSC_NULL;

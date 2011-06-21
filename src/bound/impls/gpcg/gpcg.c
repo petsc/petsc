@@ -32,33 +32,33 @@ static PetscErrorCode TaoSolverDestroy_GPCG(TaoSolver tao)
   PetscFunctionBegin;
   
   if (gpcg->X_New) {
-    ierr = VecDestroy(gpcg->X_New);CHKERRQ(ierr);
+    ierr = VecDestroy(&gpcg->X_New);CHKERRQ(ierr);
   }
   if (gpcg->G_New) {
-    ierr = VecDestroy(gpcg->G_New);CHKERRQ(ierr);
+    ierr = VecDestroy(&gpcg->G_New);CHKERRQ(ierr);
   }
   if (gpcg->Work) {
-    ierr = VecDestroy(gpcg->Work);CHKERRQ(ierr);
+    ierr = VecDestroy(&gpcg->Work);CHKERRQ(ierr);
   }
   if (gpcg->DXFree) {
-    ierr = VecDestroy(gpcg->DXFree);CHKERRQ(ierr);
+    ierr = VecDestroy(&gpcg->DXFree);CHKERRQ(ierr);
   }
   if (gpcg->R) {
-    ierr = VecDestroy(gpcg->R);CHKERRQ(ierr);
+    ierr = VecDestroy(&gpcg->R);CHKERRQ(ierr);
   }
   if (gpcg->B) {
-    ierr = VecDestroy(gpcg->B);CHKERRQ(ierr);
+    ierr = VecDestroy(&gpcg->B);CHKERRQ(ierr);
   }
   if (gpcg->PG) {
-    ierr = VecDestroy(gpcg->PG);CHKERRQ(ierr);
+    ierr = VecDestroy(&gpcg->PG);CHKERRQ(ierr);
   }
   
   if (tao->ksp) {
-    ierr = KSPDestroy(tao->ksp); CHKERRQ(ierr);
+    ierr = KSPDestroy(&tao->ksp); CHKERRQ(ierr);
     tao->ksp = 0;
   }
   if (gpcg->Free_Local) {
-    ierr = ISDestroy(gpcg->Free_Local);CHKERRQ(ierr);
+    ierr = ISDestroy(&gpcg->Free_Local);CHKERRQ(ierr);
   }
   ierr = PetscFree(tao->data); CHKERRQ(ierr);
   tao->data = PETSC_NULL;
@@ -218,7 +218,7 @@ static PetscErrorCode TaoSolverSolve_GPCG(TaoSolver tao)
   ierr = VecDot(gpcg->B,tao->solution,&xtb); CHKERRQ(ierr);
   gpcg->c=f-xtHx/2.0-xtb;
   if (gpcg->Free_Local) {
-      ierr = ISDestroy(gpcg->Free_Local); CHKERRQ(ierr);
+      ierr = ISDestroy(&gpcg->Free_Local); CHKERRQ(ierr);
   }
   ierr = VecWhichBetween(tao->XL,tao->solution,tao->XU,&gpcg->Free_Local); CHKERRQ(ierr);
   
@@ -241,7 +241,7 @@ static PetscErrorCode TaoSolverSolve_GPCG(TaoSolver tao)
 
     if (gpcg->subset_type != TAOSUBSET_REDISTRIBUTE) {
       if (tao->ksp) {
-	ierr = KSPDestroy(tao->ksp); CHKERRQ(ierr);
+	ierr = KSPDestroy(&tao->ksp); CHKERRQ(ierr);
       }
       ierr = KSPCreate(((PetscObject)tao)->comm, &tao->ksp); CHKERRQ(ierr);
 
@@ -281,7 +281,7 @@ static PetscErrorCode TaoSolverSolve_GPCG(TaoSolver tao)
       if (gpcg->subset_type == TAOSUBSET_REDISTRIBUTE) {
 	  // Need to create ksp each time  (really only if size changes...)
 	  if (tao->ksp) {
-	      ierr = KSPDestroy(tao->ksp); CHKERRQ(ierr);
+	      ierr = KSPDestroy(&tao->ksp); CHKERRQ(ierr);
 	  }
 	  ierr = KSPCreate(((PetscObject)tao)->comm, &tao->ksp); CHKERRQ(ierr);
 
@@ -305,7 +305,7 @@ static PetscErrorCode TaoSolverSolve_GPCG(TaoSolver tao)
 
       ierr = KSPSolve(tao->ksp,gpcg->R,gpcg->DXFree); CHKERRQ(ierr);
 
-      ierr = KSPDestroy(tao->ksp); CHKERRQ(ierr);
+      ierr = KSPDestroy(&tao->ksp); CHKERRQ(ierr);
       tao->ksp = PETSC_NULL;
 
       ierr = VecSet(tao->stepdirection,0.0); CHKERRQ(ierr);
@@ -323,7 +323,7 @@ static PetscErrorCode TaoSolverSolve_GPCG(TaoSolver tao)
       ierr = VecBoundGradientProjection(tao->gradient,tao->solution,tao->XL,tao->XU, gpcg->PG); CHKERRQ(ierr);
       ierr = VecNorm(gpcg->PG, NORM_2, &gnorm); CHKERRQ(ierr);
       f=f_new;
-      ierr = ISDestroy(gpcg->Free_Local); CHKERRQ(ierr);
+      ierr = ISDestroy(&gpcg->Free_Local); CHKERRQ(ierr);
       ierr = VecWhichBetween(tao->XL,tao->solution,tao->XU,&gpcg->Free_Local); CHKERRQ(ierr);
       
     } else {
@@ -385,7 +385,7 @@ static PetscErrorCode GPCGGradProjections(TaoSolver tao)
     actred = f_new - gpcg->f;
     actred_max = PetscMax(actred_max,-(f_new - gpcg->f));
     gpcg->f = f_new;
-    ierr = ISDestroy(gpcg->Free_Local); CHKERRQ(ierr);
+    ierr = ISDestroy(&gpcg->Free_Local); CHKERRQ(ierr);
     ierr = VecWhichBetween(XL,X,XU,&gpcg->Free_Local); CHKERRQ(ierr);
   }
   

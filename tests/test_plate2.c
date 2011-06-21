@@ -185,19 +185,19 @@ int main( int argc, char **argv )
   ierr = TaoSolverDestroy(tao); CHKERRQ(ierr);
 
   /* Free PETSc data structures */
-  ierr = VecDestroy(x); CHKERRQ(ierr);
-  ierr = VecDestroy(xl); CHKERRQ(ierr);
-  ierr = VecDestroy(xu); CHKERRQ(ierr);
-  ierr = MatDestroy(user.H); CHKERRQ(ierr);
-  ierr = VecDestroy(user.localX); CHKERRQ(ierr); 
-  ierr = VecDestroy(user.localV); CHKERRQ(ierr);
-  ierr = VecDestroy(user.Bottom); CHKERRQ(ierr);
-  ierr = VecDestroy(user.Top); CHKERRQ(ierr);
-  ierr = VecDestroy(user.Left); CHKERRQ(ierr);
-  ierr = VecDestroy(user.Right); CHKERRQ(ierr);
-  ierr = DMDestroy(user.dm); CHKERRQ(ierr);
+  ierr = VecDestroy(&x); CHKERRQ(ierr);
+  ierr = VecDestroy(&xl); CHKERRQ(ierr);
+  ierr = VecDestroy(&xu); CHKERRQ(ierr);
+  ierr = MatDestroy(&user.H); CHKERRQ(ierr);
+  ierr = VecDestroy(&user.localX); CHKERRQ(ierr); 
+  ierr = VecDestroy(&user.localV); CHKERRQ(ierr);
+  ierr = VecDestroy(&user.Bottom); CHKERRQ(ierr);
+  ierr = VecDestroy(&user.Top); CHKERRQ(ierr);
+  ierr = VecDestroy(&user.Left); CHKERRQ(ierr);
+  ierr = VecDestroy(&user.Right); CHKERRQ(ierr);
+  ierr = DMDestroy(&user.dm); CHKERRQ(ierr);
   if (flg) {
-    ierr = MatDestroy(H_shell); CHKERRQ(ierr);
+    ierr = MatDestroy(&H_shell); CHKERRQ(ierr);
   }
   /* Finalize TAO and PETSc */
   TaoFinalize();

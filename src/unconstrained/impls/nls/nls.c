@@ -1059,16 +1059,16 @@ static PetscErrorCode TaoSolverDestroy_NLS(TaoSolver tao)
 
   PetscFunctionBegin;
   if (tao->setupcalled) {
-    ierr = VecDestroy(nlsP->D); CHKERRQ(ierr);
-    ierr = VecDestroy(nlsP->W); CHKERRQ(ierr);
-    ierr = VecDestroy(nlsP->Xold); CHKERRQ(ierr);
-    ierr = VecDestroy(nlsP->Gold); CHKERRQ(ierr);
+    ierr = VecDestroy(&nlsP->D); CHKERRQ(ierr);
+    ierr = VecDestroy(&nlsP->W); CHKERRQ(ierr);
+    ierr = VecDestroy(&nlsP->Xold); CHKERRQ(ierr);
+    ierr = VecDestroy(&nlsP->Gold); CHKERRQ(ierr);
   }
   if (nlsP->Diag) {
-    ierr = VecDestroy(nlsP->Diag); CHKERRQ(ierr);
+    ierr = VecDestroy(&nlsP->Diag); CHKERRQ(ierr);
   }
   if (nlsP->M) {
-    ierr = MatDestroy(nlsP->M); CHKERRQ(ierr);
+    ierr = MatDestroy(&nlsP->M); CHKERRQ(ierr);
   }
 
   ierr = PetscFree(tao->data); CHKERRQ(ierr);

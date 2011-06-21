@@ -25,7 +25,7 @@ PetscErrorCode TaoSolverSetInitialVector(TaoSolver tao, Vec x0) {
 	PetscObjectReference((PetscObject)x0);
     }
     if (tao->solution) {
-	ierr = VecDestroy(tao->solution); CHKERRQ(ierr);
+	ierr = VecDestroy(&tao->solution); CHKERRQ(ierr);
     }
     tao->solution = x0;
     PetscFunctionReturn(0);
@@ -135,7 +135,7 @@ PetscErrorCode TaoSolverComputeObjective(TaoSolver tao, Vec X, PetscReal *f)
 	CHKMEMQ;
 	PetscStackPop;
 	ierr = PetscLogEventEnd(TaoSolver_ObjGradientEval,tao,X,PETSC_NULL,PETSC_NULL); CHKERRQ(ierr);
-	ierr = VecDestroy(temp); CHKERRQ(ierr);
+	ierr = VecDestroy(&temp); CHKERRQ(ierr);
 	tao->nfuncgrads++;
 
     }  else {

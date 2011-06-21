@@ -20,18 +20,20 @@ int main(int argc, char *argv[])
     ierr = VecDuplicate(v[0], &y); CHKERRQ(ierr);
     ierr = VecGetLocalSize(v[0],&localsize); CHKERRQ(ierr);
     ierr = MatCreateLMVM(PETSC_COMM_WORLD,localsize,10,&lmvm_mat); CHKERRQ(ierr);
-    for (i=0;i<20;i++) {
+    for (i=0;i<4;i++) {
       ierr = MatLMVMUpdate(lmvm_mat,v[i],v[20+i]); CHKERRQ(ierr);
     }
     ierr = MatLMVMSolve(lmvm_mat,v[41],y); CHKERRQ(ierr);
 
     ierr = VecView(y, PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
 //    ierr = MatView(lmvm_mat,PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
-    ierr = MatDestroy(lmvm_mat); CHKERRQ(ierr);
+    ierr = MatDestroy(&lmvm_mat); CHKERRQ(ierr);
+    
+    for (i=0;i<50;i++) {
+      ierr = VecDestroy(&v[i]); CHKERRQ(ierr);
+    }
 
-    ierr = VecDestroyVecs(&v,50); CHKERRQ(ierr);
-
-    ierr = VecDestroy(y); CHKERRQ(ierr);
+    ierr = VecDestroy(&y); CHKERRQ(ierr);
 
     TaoFinalize();
     PetscFinalize();
@@ -80,7 +82,7 @@ PetscErrorCode initializevecs(Vec **vv, PetscInt numvecs, PetscInt size)
     }
 
     *vv = v;
-    ierr = VecDestroy(tmp); CHKERRQ(ierr);
+    ierr = VecDestroy(&tmp); CHKERRQ(ierr);
     PetscFunctionReturn(0);
 }
 

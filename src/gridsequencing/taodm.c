@@ -220,19 +220,19 @@ PetscErrorCode  TaoDMDestroyLevel(TaoDM taodmlevel)
   ierr = PetscFree(taodmlevel->mtype);CHKERRQ(ierr);
   ierr = PetscFree(taodmlevel->ttype);CHKERRQ(ierr);
   if (taodmlevel->dm)      {ierr = DMDestroy(taodmlevel->dm);CHKERRQ(ierr);}
-  if (taodmlevel->x)       {ierr = VecDestroy(taodmlevel->x);CHKERRQ(ierr);}
-  //if (taodmlevel->b)       {ierr = VecDestroy(taodmlevel->b);CHKERRQ(ierr);}
-  //if (taodmlevel->r)       {ierr = VecDestroy(taodmlevel->r);CHKERRQ(ierr);}
-  //if (taodmlevel->work1)   {ierr = VecDestroy(taodmlevel->work1);CHKERRQ(ierr);}
-  //if (taodmlevel->w)       {ierr = VecDestroy(taodmlevel->w);CHKERRQ(ierr);}
-  //if (taodmlevel->work2)   {ierr = VecDestroy(taodmlevel->work2);CHKERRQ(ierr);}
-  //if (taodmlevel->lwork1)  {ierr = VecDestroy(taodmlevel->lwork1);CHKERRQ(ierr);}
-  if (taodmlevel->hessian_pre)         {ierr = MatDestroy(taodmlevel->hessian_pre);CHKERRQ(ierr);}
-  if (taodmlevel->hessian)         {ierr = MatDestroy(taodmlevel->hessian);CHKERRQ(ierr);}
-  //if (taodmlevel->R)    {ierr = MatDestroy(taodmlevel->R);CHKERRQ(ierr);}
+  if (taodmlevel->x)       {ierr = VecDestroy(&taodmlevel->x);CHKERRQ(ierr);}
+  //if (taodmlevel->b)       {ierr = VecDestroy(&taodmlevel->b);CHKERRQ(ierr);}
+  //if (taodmlevel->r)       {ierr = VecDestroy(&taodmlevel->r);CHKERRQ(ierr);}
+  //if (taodmlevel->work1)   {ierr = VecDestroy(&taodmlevel->work1);CHKERRQ(ierr);}
+  //if (taodmlevel->w)       {ierr = VecDestroy(&taodmlevel->w);CHKERRQ(ierr);}
+  //if (taodmlevel->work2)   {ierr = VecDestroy(&taodmlevel->work2);CHKERRQ(ierr);}
+  //if (taodmlevel->lwork1)  {ierr = VecDestroy(&taodmlevel->lwork1);CHKERRQ(ierr);}
+  if (taodmlevel->hessian_pre)         {ierr = MatDestroy(&taodmlevel->hessian_pre);CHKERRQ(ierr);}
+  if (taodmlevel->hessian)         {ierr = MatDestroy(&taodmlevel->hessian);CHKERRQ(ierr);}
+  //if (taodmlevel->R)    {ierr = MatDestroy(&taodmlevel->R);CHKERRQ(ierr);}
   //if (taodmlevel->fdcoloring){ierr = MatFDColoringDestroy(taodmlevel->fdcoloring);CHKERRQ(ierr);}
   if (taodmlevel->tao)      {ierr = PetscObjectDestroy((PetscObject)taodmlevel->tao);CHKERRQ(ierr);}
-  ierr = PetscHeaderDestroy(taodmlevel); CHKERRQ(ierr);
+  ierr = PetscHeaderDestroy(&taodmlevel); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 
   
@@ -288,8 +288,8 @@ PetscErrorCode  TaoDMSetDM(TaoDM *taodm, DM dm)
   ierr = PetscFree(hierarchy);CHKERRQ(ierr);
   /* Cleanup old structures (should use some private Destroy() instead) */
   for(i = 0; i < nlevels; ++i) {
-    if (taodm[i]->hessian) {ierr = MatDestroy(taodm[i]->hessian);CHKERRQ(ierr); taodm[i]->hessian = PETSC_NULL;}
-    if (taodm[i]->hessian_pre) {ierr = MatDestroy(taodm[i]->hessian_pre);CHKERRQ(ierr); taodm[i]->hessian_pre = PETSC_NULL;}
+    if (taodm[i]->hessian) {ierr = MatDestroy(&taodm[i]->hessian);CHKERRQ(ierr); taodm[i]->hessian = PETSC_NULL;}
+    if (taodm[i]->hessian_pre) {ierr = MatDestroy(&taodm[i]->hessian_pre);CHKERRQ(ierr); taodm[i]->hessian_pre = PETSC_NULL;}
   }
 
   /* Clean up work vectors and matrix for each level */

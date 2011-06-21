@@ -27,7 +27,7 @@ static PetscErrorCode TaoLineSearchDestroy_MT(TaoLineSearch ls)
     ierr = PetscObjectDereference((PetscObject)mt->x); CHKERRQ(ierr); 
   }
   if (mt->work) {
-    ierr = VecDestroy(mt->work); CHKERRQ(ierr);
+    ierr = VecDestroy(&mt->work); CHKERRQ(ierr);
   }
   ierr = PetscFree(ls->data);
   ls->data = PETSC_NULL;
@@ -115,7 +115,7 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
     }
     /* If x has changed, then recreate work */
     else if (x != mt->x) { 
-      ierr = VecDestroy(mt->work); CHKERRQ(ierr);
+      ierr = VecDestroy(&mt->work); CHKERRQ(ierr);
       ierr = VecDuplicate(x,&mt->work); CHKERRQ(ierr);
       ierr = PetscObjectDereference((PetscObject)mt->x); CHKERRQ(ierr);
       mt->x = x;

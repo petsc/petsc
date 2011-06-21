@@ -155,9 +155,9 @@ PetscErrorCode TaoSolverDefaultComputeHessian(TaoSolver tao,Vec V,Mat *H,Mat *B,
   ierr = SNESSetFunction(snes,G,Fsnes,tao);CHKERRQ(ierr);
   ierr = SNESDefaultComputeJacobian(snes,V,H,B,flag,tao);CHKERRQ(ierr);
 
-  ierr = SNESDestroy(snes);CHKERRQ(ierr);
+  ierr = SNESDestroy(&snes);CHKERRQ(ierr);
   
-  ierr = VecDestroy(G);CHKERRQ(ierr);
+  ierr = VecDestroy(&G);CHKERRQ(ierr);
   
   PetscFunctionReturn(0);
 }

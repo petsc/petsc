@@ -191,8 +191,8 @@ int main( int argc, char **argv )
   ierr = TaoSolverDestroy(tao); CHKERRQ(ierr);
 
   /* Free PETSc data structures */
-  ierr = VecDestroy(x); CHKERRQ(ierr);
-  ierr = MatDestroy(user.H); CHKERRQ(ierr);
+  ierr = VecDestroy(&x); CHKERRQ(ierr);
+  ierr = MatDestroy(&user.H); CHKERRQ(ierr);
   if (fdcoloring) {
       ierr = MatFDColoringDestroy(matfdcoloring); CHKERRQ(ierr);
   }
@@ -200,7 +200,7 @@ int main( int argc, char **argv )
   ierr = PetscFree(user.top); CHKERRQ(ierr);
   ierr = PetscFree(user.left); CHKERRQ(ierr);
   ierr = PetscFree(user.right); CHKERRQ(ierr);
-  ierr = DMDestroy(user.dm); CHKERRQ(ierr);
+  ierr = DMDestroy(&user.dm); CHKERRQ(ierr);
 
   /* Finalize TAO */
   TaoFinalize();

@@ -253,14 +253,14 @@ extern PetscErrorCode MatDestroy_LMVM(Mat M)
 
       ierr = VecDestroyVecs(ctx->lm+1,&ctx->S); CHKERRQ(ierr);
       ierr = VecDestroyVecs(ctx->lm+1,&ctx->Y); CHKERRQ(ierr);
-      ierr = VecDestroy(ctx->D); CHKERRQ(ierr);
-      ierr = VecDestroy(ctx->U); CHKERRQ(ierr);
-      ierr = VecDestroy(ctx->V); CHKERRQ(ierr);
-      ierr = VecDestroy(ctx->W); CHKERRQ(ierr);
-      ierr = VecDestroy(ctx->P); CHKERRQ(ierr);
-      ierr = VecDestroy(ctx->Q); CHKERRQ(ierr);
+      ierr = VecDestroy(&ctx->D); CHKERRQ(ierr);
+      ierr = VecDestroy(&ctx->U); CHKERRQ(ierr);
+      ierr = VecDestroy(&ctx->V); CHKERRQ(ierr);
+      ierr = VecDestroy(&ctx->W); CHKERRQ(ierr);
+      ierr = VecDestroy(&ctx->P); CHKERRQ(ierr);
+      ierr = VecDestroy(&ctx->Q); CHKERRQ(ierr);
       if (ctx->scale) {
-	ierr = VecDestroy(ctx->scale); CHKERRQ(ierr);
+	ierr = VecDestroy(&ctx->scale); CHKERRQ(ierr);
       }
     }
     ierr = PetscFree(ctx->rho); CHKERRQ(ierr);
@@ -797,7 +797,7 @@ extern PetscErrorCode MatLMVMSetScale(Mat m, Vec s)
     ierr = MatShellGetContext(m,(void**)&ctx); CHKERRQ(ierr);
 
     if (ctx->scale) {
-      ierr = VecDestroy(ctx->scale); CHKERRQ(ierr);
+      ierr = VecDestroy(&ctx->scale); CHKERRQ(ierr);
       ctx->scale=PETSC_NULL;
     }
 
@@ -840,6 +840,32 @@ extern PetscErrorCode MatLMVMGetX0(Mat m, Vec x)
     PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "MatLMVMSetPrev"
+extern PetscErrorCode MatLMVMSetPrev(Mat M, Vec x, Vec g)
+{
+  MatLMVMCtx *ctx;
+  PetscErrorCode ierr;
+  PetscBool same;
+
+  PetscFunctionBegin;
+
+  PetscValidHeaderSpecific(x,VEC_CLASSID,2); 
+  PetscValidHeaderSpecific(g,VEC_CLASSID,3);
+  ierr = PetscTypeCompare((PetscObject)M,MATSHELL,&same); CHKERRQ(ierr);
+  if (!same) {SETERRQ(PETSC_COMM_SELF,1,"Matrix M is not type MatLMVM");}
+  ierr = MatShellGetContext(M,(void**)&ctx); CHKERRQ(ierr);
+  if (ctx->nupdates == 0) {
+    ierr = MatLMVMUpdate(M,x,g); CHKERRQ(ierr);
+  } else {
+    ierr = VecCopy(x,ctx->S[0]); CHKERRQ(ierr);
+    ierr = VecCopy(g,ctx->Y[0]); CHKERRQ(ierr);
+    ierr = VecDot(x,g,&ctx->rho[0]); CHKERRQ(ierr);
+    // TODO scaling specific terms
+  }
+  PetscFunctionReturn(0);
+  
+}
 #undef __FUNCT__
 #define __FUNCT__ "MatLMVMRefine"
 extern PetscErrorCode MatLMVMRefine(Mat coarse, Mat op, Vec fineX, Vec fineG)

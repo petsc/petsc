@@ -128,8 +128,8 @@ int main( int argc, char **argv )
   ierr = TaoSolverDestroy(tao); CHKERRQ(ierr);
 
   /* Free PETSc data structures */
-  ierr = VecDestroy(x); CHKERRQ(ierr);
-  ierr = VecDestroy(F); CHKERRQ(ierr);
+  ierr = VecDestroy(&x); CHKERRQ(ierr);
+  ierr = VecDestroy(&F); CHKERRQ(ierr);
   ierr = PetscFree(user.bottom); CHKERRQ(ierr);
   ierr = PetscFree(user.top); CHKERRQ(ierr);
   ierr = PetscFree(user.left); CHKERRQ(ierr);

@@ -80,9 +80,9 @@ int main(int argc, char *argv[])
 
     
     ierr = TaoLineSearchDestroy(ls); CHKERRQ(ierr);
-    ierr = VecDestroy(x); CHKERRQ(ierr);
-    ierr = VecDestroy(s); CHKERRQ(ierr);
-    ierr = VecDestroy(g); CHKERRQ(ierr);
+    ierr = VecDestroy(&x); CHKERRQ(ierr);
+    ierr = VecDestroy(&s); CHKERRQ(ierr);
+    ierr = VecDestroy(&g); CHKERRQ(ierr);
     ierr = TaoFinalize();
     ierr = PetscFinalize();
     return(0);

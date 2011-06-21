@@ -1,4 +1,4 @@
-DIRS     = interface util unconstrained bound linesearch matrix leastsquares gridsequencing constrained
+DIRS     = interface util unconstrained bound linesearch matrix leastsquares gridsequencing pde_constrained
 LOCDIR   = src/
 
 include ${TAO_DIR}/conf/tao_base

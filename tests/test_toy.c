@@ -84,11 +84,11 @@ int main(int argc, char **argv)
   ierr = TaoSolverDestroy(tao); CHKERRQ(ierr);
 
   /* Free PETSc data structures */
-  ierr = VecDestroy(x); CHKERRQ(ierr);
-  ierr = VecDestroy(c); CHKERRQ(ierr);
-  ierr = MatDestroy(Js); CHKERRQ(ierr);
-  ierr = MatDestroy(Jd); CHKERRQ(ierr);
-  ierr = ISDestroy(user.ais); CHKERRQ(ierr);
+  ierr = VecDestroy(&x); CHKERRQ(ierr);
+  ierr = VecDestroy(&c); CHKERRQ(ierr);
+  ierr = MatDestroy(&Js); CHKERRQ(ierr);
+  ierr = MatDestroy(&Jd); CHKERRQ(ierr);
+  ierr = ISDestroy(&user.ais); CHKERRQ(ierr);
 
   /* Finalize TAO, PETSc */
   TaoFinalize();

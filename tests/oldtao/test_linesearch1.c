@@ -70,10 +70,10 @@ int main(int argc, char *argv[])
     delete G;
     delete S;
     delete W;
-    info = VecDestroy(x); CHKERRQ(info);
-    info = VecDestroy(g); CHKERRQ(info);
-    info = VecDestroy(s); CHKERRQ(info);
-    info = VecDestroy(w); CHKERRQ(info);
+    info = VecDestroy(&x); CHKERRQ(info);
+    info = VecDestroy(&g); CHKERRQ(info);
+    info = VecDestroy(&s); CHKERRQ(info);
+    info = VecDestroy(&w); CHKERRQ(info);
 
     info = TaoFinalize();
     info = PetscFinalize();

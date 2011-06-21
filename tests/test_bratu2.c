@@ -172,11 +172,11 @@ int main( int argc, char **argv )
   info = TaoSolverDestroy(tao); CHKERRQ(info);  
 
   /* Free PETSc data structures */
-  info = VecDestroy(x); CHKERRQ(info);
-  info = VecDestroy(f); CHKERRQ(info);      
-  info = VecDestroy(user.localX); CHKERRQ(info); 
-  info = VecDestroy(user.localF); CHKERRQ(info); 
-  info = MatDestroy(J); CHKERRQ(info);
+  info = VecDestroy(&x); CHKERRQ(info);
+  info = VecDestroy(&f); CHKERRQ(info);      
+  info = VecDestroy(&user.localX); CHKERRQ(info); 
+  info = VecDestroy(&user.localF); CHKERRQ(info); 
+  info = MatDestroy(&J); CHKERRQ(info);
   info = DADestroy(user.da); CHKERRQ(info);
 
 

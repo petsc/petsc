@@ -140,9 +140,9 @@ int main(int argc,char **argv)
   info = TaoApplicationDestroy(taoapp); CHKERRQ(info);
 
    /* Free PETSc data structures */
-  info = VecDestroy(x); CHKERRQ(info);
-  info = VecDestroy(r); CHKERRQ(info);
-  info = MatDestroy(J); CHKERRQ(info);
+  info = VecDestroy(&x); CHKERRQ(info);
+  info = VecDestroy(&r); CHKERRQ(info);
+  info = MatDestroy(&J); CHKERRQ(info);
 
 
   /* Finalize TAO */

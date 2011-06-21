@@ -92,8 +92,8 @@ PetscErrorCode MatSMFResetRowColumn(Mat mat,IS RowMask,IS ColMask){
   ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
   ierr = PetscObjectReference((PetscObject)RowMask);CHKERRQ(ierr);
   ierr = PetscObjectReference((PetscObject)ColMask);CHKERRQ(ierr);
-  ierr = ISDestroy(ctx->RowComplement);CHKERRQ(ierr);
-  ierr = ISDestroy(ctx->ColComplement);CHKERRQ(ierr);
+  ierr = ISDestroy(&ctx->RowComplement);CHKERRQ(ierr);
+  ierr = ISDestroy(&ctx->ColComplement);CHKERRQ(ierr);
   ctx->ColComplement=ColMask;
   ctx->RowComplement=RowMask;
   PetscFunctionReturn(0);  
@@ -153,19 +153,19 @@ PetscErrorCode MatDestroy_SMF(Mat mat)
 
   PetscFunctionBegin;
   ierr =MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
-  //  ierr =ISDestroy(ctx->Row);CHKERRQ(ierr);
-  //  ierr =ISDestroy(ctx->Col);CHKERRQ(ierr);
+  //  ierr =ISDestroy(&ctx->Row);CHKERRQ(ierr);
+  //  ierr =ISDestroy(&ctx->Col);CHKERRQ(ierr);
   if (ctx->A) {
-    ierr =MatDestroy(ctx->A);CHKERRQ(ierr);
+    ierr =MatDestroy(&ctx->A);CHKERRQ(ierr);
   }
   if (ctx->RowComplement) {
-    ierr =ISDestroy(ctx->RowComplement);CHKERRQ(ierr);
+    ierr =ISDestroy(&ctx->RowComplement);CHKERRQ(ierr);
   }
   if (ctx->ColComplement) {
-    ierr =ISDestroy(ctx->ColComplement);CHKERRQ(ierr);
+    ierr =ISDestroy(&ctx->ColComplement);CHKERRQ(ierr);
   }
   if (ctx->VC) {
-    ierr =VecDestroy(ctx->VC);CHKERRQ(ierr);
+    ierr =VecDestroy(&ctx->VC);CHKERRQ(ierr);
   }
   ierr = PetscFree(ctx); CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -316,7 +316,7 @@ PetscErrorCode MatGetSubMatrix_SMF(Mat mat,IS isrow,IS iscol,MatReuse cll,
   PetscFunctionBegin;
   ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
   if (newmat){
-    ierr =MatDestroy(*newmat);CHKERRQ(ierr);
+    ierr =MatDestroy(&*newmat);CHKERRQ(ierr);
   }
   ierr = MatCreateSubMatrixFree(ctx->A,isrow,iscol, newmat);CHKERRQ(ierr);
   PetscFunctionReturn(0);

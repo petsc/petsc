@@ -866,10 +866,10 @@ static PetscErrorCode TaoSolverSetUp_POUNDERS(TaoSolver tao)
       ierr = VecScatterCreate(tao->solution,isxglob,mfqP->localx,isxloc,&mfqP->scatterx); CHKERRQ(ierr);
       ierr = VecScatterCreate(tao->sep_objective,isfglob,mfqP->localf,isfloc,&mfqP->scatterf); CHKERRQ(ierr);
 
-      ierr = ISDestroy(isxloc); CHKERRQ(ierr);
-      ierr = ISDestroy(isxglob); CHKERRQ(ierr);
-      ierr = ISDestroy(isfloc); CHKERRQ(ierr);
-      ierr = ISDestroy(isfglob); CHKERRQ(ierr);
+      ierr = ISDestroy(&isxloc); CHKERRQ(ierr);
+      ierr = ISDestroy(&isxglob); CHKERRQ(ierr);
+      ierr = ISDestroy(&isfloc); CHKERRQ(ierr);
+      ierr = ISDestroy(&isfglob); CHKERRQ(ierr);
 
   }
   PetscFunctionReturn(0);
@@ -922,20 +922,20 @@ static PetscErrorCode TaoSolverDestroy_POUNDERS(TaoSolver tao)
   ierr = PetscFree(mfqP->iwork); CHKERRQ(ierr);
   
   for (i=0;i<mfqP->nHist;i++) {
-      ierr = VecDestroy(mfqP->Xhist[i]); CHKERRQ(ierr);
-      ierr = VecDestroy(mfqP->Fhist[i]); CHKERRQ(ierr);
+      ierr = VecDestroy(&mfqP->Xhist[i]); CHKERRQ(ierr);
+      ierr = VecDestroy(&mfqP->Fhist[i]); CHKERRQ(ierr);
   }
   if (mfqP->workxvec) {
-    ierr = VecDestroy(mfqP->workxvec); CHKERRQ(ierr);
+    ierr = VecDestroy(&mfqP->workxvec); CHKERRQ(ierr);
   }
   ierr = PetscFree(mfqP->Xhist); CHKERRQ(ierr);
   ierr = PetscFree(mfqP->Fhist); CHKERRQ(ierr);
 
   if (mfqP->mpisize > 1) {
-      ierr = VecDestroy(mfqP->localx);  CHKERRQ(ierr);
-      ierr = VecDestroy(mfqP->localxmin);  CHKERRQ(ierr);
-      ierr = VecDestroy(mfqP->localf);  CHKERRQ(ierr);
-      ierr = VecDestroy(mfqP->localfmin);  CHKERRQ(ierr);
+      ierr = VecDestroy(&mfqP->localx);  CHKERRQ(ierr);
+      ierr = VecDestroy(&mfqP->localxmin);  CHKERRQ(ierr);
+      ierr = VecDestroy(&mfqP->localf);  CHKERRQ(ierr);
+      ierr = VecDestroy(&mfqP->localfmin);  CHKERRQ(ierr);
   }
 
 

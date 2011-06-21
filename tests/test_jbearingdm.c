@@ -101,7 +101,7 @@ int main(int argc, char **argv) {
 		      DMDA_STENCIL_BOX,user.mx,user.my,Nx,Ny,1,1,
 		      PETSC_NULL,PETSC_NULL,&dm); CHKERRQ(ierr);
   ierr = TaoDMSetDM(taodm,dm); CHKERRQ(ierr);
-  ierr = DMDestroy(dm); CHKERRQ(ierr);
+  ierr = DMDestroy(&dm); CHKERRQ(ierr);
   ierr = TaoDMSetTolerances(taodm,0,0,0,0,0);
 
 

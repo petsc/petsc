@@ -224,10 +224,10 @@ static PetscErrorCode TaoSolverDestroy_LMVM(TaoSolver tao)
 
   PetscFunctionBegin;
   if (tao->setupcalled) {
-    ierr = VecDestroy(lmP->Xold); CHKERRQ(ierr);
-    ierr = VecDestroy(lmP->Gold); CHKERRQ(ierr);
-    ierr = VecDestroy(lmP->D); CHKERRQ(ierr);
-    ierr = MatDestroy(lmP->M); CHKERRQ(ierr);
+    ierr = VecDestroy(&lmP->Xold); CHKERRQ(ierr);
+    ierr = VecDestroy(&lmP->Gold); CHKERRQ(ierr);
+    ierr = VecDestroy(&lmP->D); CHKERRQ(ierr);
+    ierr = MatDestroy(&lmP->M); CHKERRQ(ierr);
   }
   ierr = PetscFree(tao->data); CHKERRQ(ierr);
   tao->data = PETSC_NULL;

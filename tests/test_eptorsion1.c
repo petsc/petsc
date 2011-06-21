@@ -196,10 +196,10 @@ PetscErrorCode main(int argc,char **argv)
   ierr = TaoSolverDestroy(tao); CHKERRQ(ierr);
 
   /* Free PETSc data structures */
-  ierr = VecDestroy(user.s); CHKERRQ(ierr);
-  ierr = VecDestroy(user.y); CHKERRQ(ierr);
-  ierr = VecDestroy(x); CHKERRQ(ierr);
-  ierr = MatDestroy(H); CHKERRQ(ierr);
+  ierr = VecDestroy(&user.s); CHKERRQ(ierr);
+  ierr = VecDestroy(&user.y); CHKERRQ(ierr);
+  ierr = VecDestroy(&x); CHKERRQ(ierr);
+  ierr = MatDestroy(&H); CHKERRQ(ierr);
 
   /* Finalize TAO, PETSc */
   TaoFinalize();

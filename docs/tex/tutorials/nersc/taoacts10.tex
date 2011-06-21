@@ -588,7 +588,9 @@ will need.  For example:
 \begin{verbatim}
   typedef struct {          
       double      epsilon; /* application parameter */
-      PetscViewer pv;      /* helpful for debugging */
+      int         n;       /* Size of problem       */
+      int         rank;
+      int         size;
   } UserContext;
 \end{verbatim}
 The objective function evaluation routine should look like:

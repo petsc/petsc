@@ -377,7 +377,7 @@ PetscErrorCode VecGetSubVec(Vec vfull, IS is, Vec *vreduced)
 	ierr = VecScatterCreate(vfull,is,*vreduced,ident,&scatter); CHKERRQ(ierr);
 	ierr = VecScatterBegin(scatter,vfull,*vreduced,INSERT_VALUES,SCATTER_FORWARD); CHKERRQ(ierr);
 	ierr = VecScatterEnd(scatter,vfull,*vreduced,INSERT_VALUES,SCATTER_FORWARD); CHKERRQ(ierr);
-	ierr = ISDestroy(ident); CHKERRQ(ierr);
+	ierr = ISDestroy(&ident); CHKERRQ(ierr);
     }
     PetscFunctionReturn(0);
     
@@ -409,7 +409,7 @@ PetscErrorCode VecReducedXPY(Vec vfull, Vec vreduced, IS is)
 	ierr = VecScatterCreate(vreduced,ident,vfull,is,&scatter); CHKERRQ(ierr);
 	ierr = VecScatterBegin(scatter,vreduced,vfull,ADD_VALUES,SCATTER_FORWARD); CHKERRQ(ierr);
 	ierr = VecScatterEnd(scatter,vreduced,vfull,ADD_VALUES,SCATTER_FORWARD); CHKERRQ(ierr);
-	ierr = ISDestroy(ident); CHKERRQ(ierr);
+	ierr = ISDestroy(&ident); CHKERRQ(ierr);
     }
     
     PetscFunctionReturn(0);
