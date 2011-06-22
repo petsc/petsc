@@ -1834,8 +1834,10 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
 .  -da_grid_y <ny> - number of grid points in y direction, if N < 0
 .  -da_processors_x <nx> - number of processors in x direction
 .  -da_processors_y <ny> - number of processors in y direction
-.  -da_refine_x - refinement ratio in x direction
--  -da_refine_y - refinement ratio in y direction
+.  -da_refine_x <rx> - refinement ratio in x direction
+.  -da_refine_y <ry> - refinement ratio in y direction
+-  -da_refine <n> - refine the DMDA n times before creating, if M or N < 0
+
 
    Level: beginner
 

@@ -136,12 +136,11 @@ int main(int argc,char **argv)
      Create nonlinear solver context
      
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  ierr = DMSetApplicationContext(da,&user);CHKERRQ(ierr);
   ierr = DMDASetLocalFunction(da,(DMDALocalFunction1)FormFunctionLocal);CHKERRQ(ierr);
-  ierr = SNESSetFunction(snes,PETSC_NULL,SNESDAFormFunction,&user);CHKERRQ(ierr);
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
   
-  ierr = PetscPrintf(comm,"lid velocity = %G, prandtl # = %G, grashof # = %G\n",
-		     user.lidvelocity,user.prandtl,user.grashof);CHKERRQ(ierr);
+  ierr = PetscPrintf(comm,"lid velocity = %G, prandtl # = %G, grashof # = %G\n",user.lidvelocity,user.prandtl,user.grashof);CHKERRQ(ierr);
 
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -159,7 +158,7 @@ int main(int argc,char **argv)
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);
   

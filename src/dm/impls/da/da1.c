@@ -341,7 +341,8 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
    Options Database Key:
 +  -da_view - Calls DMView() at the conclusion of DMDACreate1d()
 .  -da_grid_x <nx> - number of grid points in x direction; can set if M < 0
--  -da_refine_x - refinement factor 
+.  -da_refine_x <rx> - refinement factor 
+-  -da_refine <n> - refine the DMDA n times before creating it, if M < 0
 
    Level: beginner
 

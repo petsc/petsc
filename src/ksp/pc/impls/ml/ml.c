@@ -523,6 +523,9 @@ PetscErrorCode PCSetUp_ML(PC pc)
   PC              subpc;
 
   PetscFunctionBegin;
+  /* Since PCMG tries to use DM assocated with PC must delete it */
+  ierr = DMDestroy(&pc->dm);CHKERRQ(ierr);
+
   if (pc->setupcalled){
     /* since ML can change the size of vectors/matrices at any level we must destroy everything */
     ierr = PCReset_ML(pc);CHKERRQ(ierr);
@@ -847,10 +850,13 @@ PetscErrorCode  PCCreate_ML(PC pc)
   /* PCML is an inherited class of PCMG. Initialize pc as PCMG */
   ierr = PCSetType(pc,PCMG);CHKERRQ(ierr); /* calls PCCreate_MG() and MGCreate_Private() */
   ierr = PetscObjectChangeTypeName((PetscObject)pc,PCML);CHKERRQ(ierr);
+  /* Since PCMG tries to use DM assocated with PC must delete it */
+  ierr = DMDestroy(&pc->dm);CHKERRQ(ierr);
+  mg = (PC_MG*)pc->data;
+  mg->galerkin = PETSC_TRUE;
 
   /* create a supporting struct and attach it to pc */
   ierr = PetscNewLog(pc,PC_ML,&pc_ml);CHKERRQ(ierr);
-  mg = (PC_MG*)pc->data;
   mg->innerctx = pc_ml;
 
   pc_ml->ml_object     = 0;
