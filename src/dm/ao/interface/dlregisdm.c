@@ -51,6 +51,8 @@ PetscErrorCode  AOInitializePackage(const char path[])
   AOPackageInitialized = PETSC_TRUE;
   /* Register Classes */
   ierr = PetscClassIdRegister("Application Order",&AO_CLASSID);CHKERRQ(ierr);
+  /* Register Constructors */
+  ierr = AORegisterAll(path);CHKERRQ(ierr);
   /* Register Events */
   ierr = PetscLogEventRegister("AOPetscToApplication", AO_CLASSID,&AO_PetscToApplication);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("AOApplicationToPetsc", AO_CLASSID,&AO_ApplicationToPetsc);CHKERRQ(ierr);
