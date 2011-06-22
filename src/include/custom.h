@@ -304,6 +304,34 @@ VecRestoreArrayC(Vec v, PetscScalar *a[])
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "VecStrideSum"
+PETSC_STATIC_INLINE PetscErrorCode
+VecStrideSum(Vec v, PetscInt start, PetscScalar *a)
+{
+  PetscInt       i,n,bs;
+  PetscScalar    *x,sum;
+  MPI_Comm       comm;
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(v,VEC_CLASSID,1);
+  PetscValidType(v,1);
+  PetscValidScalarPointer(a,2);
+  ierr = VecGetBlockSize(v,&bs);CHKERRQ(ierr);
+  if (start <  0)  SETERRQQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,
+                             "Negative start %D",start);
+  if (start >= bs) SETERRQQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,
+                             "Start of stride subvector (%D) is too large for block size (%D)",start,bs);
+  ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
+  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
+  sum = (PetscScalar)0.0;
+  for (i=start; i<n; i+=bs) sum += x[i];
+  ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)v,&comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&sum,a,1,MPIU_SCALAR,MPIU_SUM,comm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /* ---------------------------------------------------------------- */
 
 #if PETSC_VERSION_(3,0,0)

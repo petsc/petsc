@@ -124,6 +124,7 @@ cdef extern from * nogil:
     int VecSqrtAbs(PetscVec)
     int VecAbs(PetscVec)
 
+    int VecStrideSum(PetscVec,PetscInt,PetscScalar*)
     int VecStrideMin(PetscVec,PetscInt,PetscInt*,PetscReal*)
     int VecStrideMax(PetscVec,PetscInt,PetscInt*,PetscReal*)
     int VecStrideScale(PetscVec,PetscInt,PetscScalar)

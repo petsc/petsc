@@ -623,6 +623,12 @@ cdef class Vec(Object):
         cdef PetscScalar sval = asScalar(alpha)
         CHKERR( VecStrideScale(self.vec, ival, sval) )
 
+    def strideSum(self, field):
+        cdef PetscInt    ival = asInt(field)
+        cdef PetscScalar sval = 0
+        CHKERR( VecStrideSum(self.vec, ival, &sval) )
+        return toScalar(sval)
+
     def strideMin(self, field):
         cdef PetscInt  ival1 = asInt(field)
         cdef PetscInt  ival2 = 0
