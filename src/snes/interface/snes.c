@@ -593,11 +593,11 @@ PetscErrorCode  SNESSetApplicationContext(SNES snes,void *usrP)
 
 .seealso: SNESSetApplicationContext()
 @*/
-PetscErrorCode  SNESGetApplicationContext(SNES snes,void **usrP)
+PetscErrorCode  SNESGetApplicationContext(SNES snes,void *usrP)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  *usrP = snes->user;
+  *(void**)usrP = snes->user;
   PetscFunctionReturn(0);
 }
 

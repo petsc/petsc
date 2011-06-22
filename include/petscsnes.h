@@ -176,7 +176,7 @@ extern PetscErrorCode  SNESMonitorLGRange(SNES,PetscInt,PetscReal,void*);
 extern PetscErrorCode  SNESMonitorLGRangeDestroy(PetscDrawLG*);
 
 extern PetscErrorCode  SNESSetApplicationContext(SNES,void *);
-extern PetscErrorCode  SNESGetApplicationContext(SNES,void **);
+extern PetscErrorCode  SNESGetApplicationContext(SNES,void *);
 extern PetscErrorCode  SNESSetComputeApplicationContext(SNES,PetscErrorCode (*)(SNES,void**),PetscErrorCode (*)(void**));
 
 extern PetscErrorCode  SNESPythonSetType(SNES,const char[]);
