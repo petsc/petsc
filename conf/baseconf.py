@@ -149,12 +149,10 @@ class PetscConfig:
 
     def configure_compiler(self, compiler):
         if compiler.compiler_type != 'unix': return
-        (cc, cxx, basecflags, opt,
-         cflags, ccshared,
-         ldflags, ldshared, so_ext) = \
-            get_config_vars('CC', 'CXX', 'BASECFLAGS', 'OPT',
-                            'CFLAGS',  'CCSHARED', 
-                            'LDFLAGS', 'LDSHARED', 'SO')
+        (cc, cxx, cflags, ccshared,
+         ldflags, ldshared, so_ext) = get_config_vars(
+            'CC', 'CXX', 'CFLAGS',  'CCSHARED',
+            'LDFLAGS', 'LDSHARED', 'SO')
         cflags = cflags.replace('-Wstrict-prototypes', '')
         ld = cc
         ldshared = ldshared.replace(ld, '').strip()
