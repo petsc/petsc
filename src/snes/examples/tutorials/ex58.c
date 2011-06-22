@@ -53,7 +53,7 @@ extern PetscErrorCode DestroyBoundaryConditions(AppCtx **);
 extern PetscErrorCode ComputeInitialGuess(SNES, Vec,void*);
 extern PetscErrorCode FormGradient(SNES, Vec, Vec, void *);
 extern PetscErrorCode FormJacobian(SNES, Vec, Mat *, Mat*, MatStructure*,void *);
-extern PetscErrorCode FormBounds(SNES,Vec*,Vec*);
+extern PetscErrorCode FormBounds(SNES,Vec,Vec);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -121,19 +121,15 @@ int main(int argc, char **argv)
 .   xl - lower bounds
 .   xu - upper bounds
 */
-PetscErrorCode FormBounds(SNES snes, Vec *xl, Vec *xu)
+PetscErrorCode FormBounds(SNES snes, Vec xl, Vec xu)
 {
   PetscErrorCode ierr;
-  DM             dm;
   AppCtx         *ctx;
 
   PetscFunctionBegin;
-  ierr = SNESGetDM(snes,&dm);CHKERRQ(ierr);
-  ierr = SNESGetApplicationContext(snes,(void**)&ctx);CHKERRQ(ierr);
-  ierr = DMCreateGlobalVector(dm,xl);CHKERRQ(ierr);
-  ierr = DMCreateGlobalVector(dm,xu);CHKERRQ(ierr);
-  ierr = VecSet(*xl,ctx->lb);CHKERRQ(ierr);
-  ierr = VecSet(*xu,ctx->ub);CHKERRQ(ierr);
+  ierr = SNESGetApplicationContext(snes,&ctx);CHKERRQ(ierr);
+  ierr = VecSet(xl,ctx->lb);CHKERRQ(ierr);
+  ierr = VecSet(xu,ctx->ub);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -15,7 +15,7 @@
 
 
 @*/
-PetscErrorCode SNESVISetComputeVariableBounds(SNES snes, PetscErrorCode (*compute)(SNES,Vec*,Vec*))
+PetscErrorCode SNESVISetComputeVariableBounds(SNES snes, PetscErrorCode (*compute)(SNES,Vec,Vec))
 {
   PetscErrorCode   ierr;
   SNES_VI          *vi;
@@ -1723,9 +1723,9 @@ PetscErrorCode SNESSetUp_VI(SNES snes)
   ierr = SNESDefaultGetWork(snes,3);CHKERRQ(ierr);
 
   if (vi->computevariablebounds) {
-    ierr = VecDestroy(&vi->xl);CHKERRQ(ierr);
-    ierr = VecDestroy(&vi->xu);CHKERRQ(ierr);
-    ierr = (*vi->computevariablebounds)(snes,&vi->xl,&vi->xu);CHKERRQ(ierr);
+    if (!vi->xl) {ierr = VecDuplicate(snes->vec_sol,&vi->xl);CHKERRQ(ierr);}
+    if (!vi->xu) {ierr = VecDuplicate(snes->vec_sol,&vi->xu);CHKERRQ(ierr);}
+    ierr = (*vi->computevariablebounds)(snes,vi->xl,vi->xu);CHKERRQ(ierr);
   } else if (!vi->xl && !vi->xu) {
     /* If the lower and upper bound on variables are not set, set it to -Inf and Inf */
     ierr = VecDuplicate(snes->vec_sol, &vi->xl);CHKERRQ(ierr);

@@ -48,7 +48,7 @@ typedef struct {
   PetscErrorCode (*checkredundancy)(SNES,IS,IS*,void*);
   void                     *ctxP; /* user defined check redundancy context */
 
-  PetscErrorCode           (*computevariablebounds)(SNES,Vec*,Vec*);
+  PetscErrorCode           (*computevariablebounds)(SNES,Vec,Vec);
 } SNES_VI;
 
 #endif
