@@ -217,6 +217,16 @@ class Configure(config.base.Configure):
           else:
             self.logPrint('Skipping, already in lflags: '+arg, 4, 'compilers')
           continue
+        # Check for full dylib library name
+        m = re.match(r'^/.*\.dylib$', arg)
+        if m:
+          if not arg in lflags:
+            lflags.append(arg)
+            self.logPrint('Found full library spec: '+arg, 4, 'compilers')
+            clibs.append(arg)
+          else:
+            self.logPrint('already in lflags: '+arg, 4, 'compilers')
+          continue
         # Check for system libraries
         m = re.match(r'^-l(ang.*|crt[0-9].o|crtbegin.o|c|gcc|cygwin|crt[0-9].[0-9][0-9].[0-9].o)$', arg)
         if m: 
@@ -414,6 +424,16 @@ class Configure(config.base.Configure):
             cxxlibs.append(arg)
           else:
             self.logPrint('Already in lflags: '+arg, 4, 'compilers')
+          continue
+        # Check for full dylib library name
+        m = re.match(r'^/.*\.dylib$', arg)
+        if m:
+          if not arg in lflags:
+            lflags.append(arg)
+            self.logPrint('Found full library spec: '+arg, 4, 'compilers')
+            cxxlibs.append(arg)
+          else:
+            self.logPrint('already in lflags: '+arg, 4, 'compilers')
           continue
         # Check for system libraries
         m = re.match(r'^-l(ang.*|crt[0-9].o|crtbegin.o|c|gcc|cygwin|crt[0-9].[0-9][0-9].[0-9].o)$', arg)
@@ -749,6 +769,16 @@ class Configure(config.base.Configure):
 
         # Check for full library name
         m = re.match(r'^/.*\.a$', arg)
+        if m:
+          if not arg in lflags:
+            lflags.append(arg)
+            self.logPrint('Found full library spec: '+arg, 4, 'compilers')
+            flibs.append(arg)
+          else:
+            self.logPrint('already in lflags: '+arg, 4, 'compilers')
+          continue
+        # Check for full dylib library name
+        m = re.match(r'^/.*\.dylib$', arg)
         if m:
           if not arg in lflags:
             lflags.append(arg)
