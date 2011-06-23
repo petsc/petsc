@@ -34,6 +34,7 @@ PetscMPIInt  PetscGlobalSize = -1;
 PetscMPIInt  PetscMaxThreads = 2;
 pthread_t*   PetscThreadPoint;
 pthread_barrier_t* BarrPoint;
+PetscErrorCode ithreaderr;
 int*         pVal;
 
 typedef struct {
@@ -54,8 +55,10 @@ void*          PetscThreadFunc(void*);
 void*          PetscThreadInitialize(PetscInt);
 PetscErrorCode PetscThreadFinalize(void);
 void           MainWait(void);
-void           MainJob(void* (*pFunc)(void*),void**,pthread_barrier_t*,PetscInt);
-void*          FuncFinish(void*);
+PetscErrorCode MainJob(void* (*pFunc)(void*),void**,PetscInt);
+void* FuncFinish(void*);
+void* PetscThreadRun(MPI_Comm Comm,void* (*pFunc)(void*),int,pthread_t*,void**);
+void* PetscThreadStop(MPI_Comm Comm,int,pthread_t*);
 
 #if defined(PETSC_USE_COMPLEX)
 #if defined(PETSC_COMPLEX_INSTANTIATE)
@@ -337,9 +340,8 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   ierr = PetscOptionsHasName(PETSC_NULL,"-use_thread_pool",&flg1);CHKERRQ(ierr);
   if(flg1) {
     PetscUseThreadPool = PETSC_TRUE;
-    PetscThreadInitialize(PetscMaxThreads);
   }
-
+  PetscThreadInitialize(PetscMaxThreads);
   /*
       Print the PETSc version information
   */
@@ -449,7 +451,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
         if (nodes[i] == rank) { flag = PETSC_FALSE; break; }
       }
     }
-    if (!flag) {        
+    if (!flag) {
       ierr = PetscSetDebuggerFromString(string);CHKERRQ(ierr);
       ierr = PetscPushErrorHandler(PetscAbortErrorHandler,0);CHKERRQ(ierr);
       if (flg1) {
@@ -473,7 +475,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   ierr = PetscOptionsHasName(PETSC_NULL,"-zope", &flgz);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-nostdout", &flgzout);CHKERRQ(ierr);
   if (flgz){
-    int  sockfd; 
+    int  sockfd;
     char hostname[256];
     char username[256];
     int  remoteport = 9999;
@@ -644,9 +646,10 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
 }
 
 void* PetscThreadFunc(void* arg) {
-  int ierr;
+  int ierr,iVal;
   int* pId = (int*)arg;
   int ThreadId = *pId;
+  PetscErrorCode iterr;
 
   ierr = pthread_mutex_lock(&job.mutex);
   job.iNumReadyThreads++;
@@ -663,78 +666,85 @@ void* PetscThreadFunc(void* arg) {
     while(job.startJob==PETSC_FALSE&&job.iNumJobThreads==0) {
       //upon entry, automically releases the lock and blocks
       //upon return, has the lock
-      printf("Thread Blocking!\n");
       ierr = pthread_cond_wait(&job.cond,&job.mutex);
     }
     job.startJob = PETSC_FALSE;
     job.iNumJobThreads--;
     job.iNumReadyThreads--;
+    iVal = PetscMaxThreads-job.iNumReadyThreads-1;
+    pthread_mutex_unlock(&job.mutex);
     if(job.pdata==NULL) {
-      job.pfunc(job.pdata);
+      iterr = (PetscErrorCode)(long int)job.pfunc(job.pdata);
     }
     else {
-      job.pfunc(job.pdata[PetscMaxThreads-job.iNumReadyThreads-1]);
+      iterr = (PetscErrorCode)(long int)job.pfunc(job.pdata[iVal]);
     }
-    pthread_mutex_unlock(&job.mutex);
+    if(iterr!=0) {
+      ithreaderr = 1;
+    }
+    //the barrier is necessary BECAUSE: look at job.iNumReadyThreads
+    //what happens if a thread finishes before they all start? BAD!
+    //what happens if a thread finishes before any else start? BAD!
     pthread_barrier_wait(job.pbarr); //ensures all threads are finished
-    printf("Thread %d Got Past The Barrier!\n",ThreadId);
-    //do collection of results?
     //reset job
     if(PetscThreadGo) {
       pthread_mutex_lock(&job.mutex);
       job.iNumReadyThreads++;
       if(job.iNumReadyThreads==PetscMaxThreads) {
-	//signal the 'main' thread that the job is done!
+	//signal the 'main' thread that the job is done! (only done once)
 	ierr = pthread_cond_signal(&main_cond);
       }
     }
   }
-  printf("Thread Signing Off!\n");
   return NULL;
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscThreadInitialize"
 void* PetscThreadInitialize(PetscInt N) {
   PetscInt i;
   int status;
-  pVal = (int*)malloc(N*sizeof(int));
-  printf("In Thread Initialize Function\n");
-  //allocate memory in the heap for the thread structure
-  PetscThreadPoint = (pthread_t*)malloc(N*sizeof(pthread_t));
-  BarrPoint = (pthread_barrier_t*)malloc((N+1)*sizeof(pthread_barrier_t)); //BarrPoint[0] makes no sense, don't use it!
-  job.pdata = (void**)malloc(N*sizeof(void*));
-  for(i=0; i<N; i++) {
-    pVal[i] = i;
-    status = pthread_create(&PetscThreadPoint[i],NULL,PetscThreadFunc,&pVal[i]);
-    //error check to ensure proper thread creation
-    status = pthread_barrier_init(&BarrPoint[i+1],NULL,i+1);
-    //error check
+
+  if(PetscUseThreadPool) {
+    pVal = (int*)malloc(N*sizeof(int));
+    //allocate memory in the heap for the thread structure
+    PetscThreadPoint = (pthread_t*)malloc(N*sizeof(pthread_t));
+    BarrPoint = (pthread_barrier_t*)malloc((N+1)*sizeof(pthread_barrier_t)); //BarrPoint[0] makes no sense, don't use it!
+    job.pdata = (void**)malloc(N*sizeof(void*));
+    for(i=0; i<N; i++) {
+      pVal[i] = i;
+      status = pthread_create(&PetscThreadPoint[i],NULL,PetscThreadFunc,&pVal[i]);
+      //error check to ensure proper thread creation
+      status = pthread_barrier_init(&BarrPoint[i+1],NULL,i+1);
+      //error check
+    }
+  }
+  else {
   }
   return NULL;
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscThreadFinalize"
 PetscErrorCode PetscThreadFinalize() {
   int i,ierr;
   void* jstatus;
 
   PetscFunctionBegin;
-  printf("In Thread Finalize Function\n");
-  MainWait(); //guarantee that all threads are ready to go
-  printf("Main Thread Done Waiting!\n");
-  MainJob(FuncFinish,NULL,&BarrPoint[PetscMaxThreads],PetscMaxThreads);  //set up job and broadcast work
-  printf("Main Thread Done With Finish Function!\n");
-  //join the threads
-  for(i=0; i<PetscMaxThreads; i++) {
-    ierr = pthread_join(PetscThreadPoint[i],&jstatus);
-    //do error checking
+
+  if(PetscUseThreadPool) {
+    MainJob(FuncFinish,NULL,PetscMaxThreads);  //set up job and broadcast work
+    //join the threads
+    for(i=0; i<PetscMaxThreads; i++) {
+      ierr = pthread_join(PetscThreadPoint[i],&jstatus);
+      //do error checking
+    }
+    free(BarrPoint);
+    free(PetscThreadPoint);
   }
-  printf("Main Thread Done With Joins!\n");
-  free(BarrPoint);
-  free(PetscThreadPoint);
+  else {
+  }
   PetscFunctionReturn(0);
 }
 
@@ -742,7 +752,6 @@ PetscErrorCode PetscThreadFinalize() {
 #define __FUNCT__ "MainWait"
 void MainWait() {
   int ierr;
-
   ierr = pthread_mutex_lock(&job.mutex);
   while(job.iNumReadyThreads<PetscMaxThreads||job.startJob==PETSC_TRUE) {
     ierr = pthread_cond_wait(&main_cond,&job.mutex);
@@ -752,21 +761,36 @@ void MainWait() {
 
 #undef __FUNCT__
 #define __FUNCT__ "MainJob"
-void MainJob(void* (*pFunc)(void*),void** data,pthread_barrier_t* barr,PetscInt n) {
+PetscErrorCode MainJob(void* (*pFunc)(void*),void** data,PetscInt n) {
   int ierr;
-
-  ierr = pthread_mutex_lock(&job.mutex);
-  job.pfunc = pFunc;
-  job.pdata = data;
-  job.pbarr = barr;
-  job.iNumJobThreads = n;
-  job.startJob = PETSC_TRUE;
-  ierr = pthread_cond_broadcast(&job.cond);
-  ierr = pthread_mutex_unlock(&job.mutex);
+  PetscErrorCode ijoberr = 0;
+  if(PetscUseThreadPool) {
+    MainWait();
+    ierr = pthread_mutex_lock(&job.mutex);
+    job.pfunc = pFunc;
+    job.pdata = data;
+    job.pbarr = &BarrPoint[n];
+    job.iNumJobThreads = n;
+    job.startJob = PETSC_TRUE;
+    ierr = pthread_cond_broadcast(&job.cond);
+    ierr = pthread_mutex_unlock(&job.mutex);
+    if(pFunc!=FuncFinish) {
+      MainWait(); //why wait after? guarantees that job gets done
+    }
+  }
+  else {
+    pthread_t* apThread = (pthread_t*)malloc(n*sizeof(pthread_t));
+    PetscThreadRun(MPI_COMM_WORLD,pFunc,n,apThread,data);
+    PetscThreadStop(MPI_COMM_WORLD,n,apThread); //ensures that all threads are finished with the job
+    free(apThread);
+  }
+  if(ithreaderr) {
+    ijoberr = ithreaderr;
+  }
+  return ijoberr;
 }
 
 void* FuncFinish(void* arg) {
-  printf("In Thread Finish Function\n");
   PetscThreadGo = PETSC_FALSE;
-  return NULL;
+  return(0);
 }

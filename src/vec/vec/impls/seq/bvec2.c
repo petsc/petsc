@@ -797,7 +797,7 @@ static PetscErrorCode VecDuplicate_Seq(Vec win,Vec *V)
   ierr = VecCreate(((PetscObject)win)->comm,V);CHKERRQ(ierr);
   ierr = PetscObjectSetPrecision((PetscObject)*V,((PetscObject)win)->precision);CHKERRQ(ierr);
   ierr = VecSetSizes(*V,win->map->n,win->map->n);CHKERRQ(ierr);
-  ierr = VecSetType(*V,VECSEQ);CHKERRQ(ierr);
+  ierr = VecSetType(*V,((PetscObject)win)->type_name);CHKERRQ(ierr);
   ierr = PetscLayoutReference(win->map,&(*V)->map);CHKERRQ(ierr);
   ierr = PetscOListDuplicate(((PetscObject)win)->olist,&((PetscObject)(*V))->olist);CHKERRQ(ierr);
   ierr = PetscFListDuplicate(((PetscObject)win)->qlist,&((PetscObject)(*V))->qlist);CHKERRQ(ierr);
