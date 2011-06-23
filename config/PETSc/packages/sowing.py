@@ -94,6 +94,11 @@ class Configure(PETSc.package.NewPackage):
   def configure(self):
     '''Determine whether the Sowing exist or not'''
 
+    if (self.framework.clArgDB.has_key('with-sowing') and not self.framework.argDB['with-sowing']) or \
+          (self.framework.clArgDB.has_key('download-sowing') and not self.framework.argDB['download-sowing']):
+      self.framework.logPrint("Not checking sowing on user request\n")
+      return
+
     # If download option is specified always build sowing
     if self.framework.argDB['download-sowing']:
       PETSc.package.NewPackage.configure(self)

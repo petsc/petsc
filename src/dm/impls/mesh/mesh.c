@@ -706,9 +706,9 @@ PetscErrorCode DMMeshGetMaximumDegree(DM dm, PetscInt *maxDegree)
 extern PetscErrorCode assembleFullField(VecScatter, Vec, Vec, InsertMode);
 
 #undef __FUNCT__
-#define __FUNCT__ "restrictVector"
+#define __FUNCT__ "DMMeshRestrictVector"
 /*@
-  restrictVector - Insert values from a global vector into a local ghosted vector
+  DMMeshRestrictVector - Insert values from a global vector into a local ghosted vector
 
   Collective on g
 
@@ -723,7 +723,7 @@ extern PetscErrorCode assembleFullField(VecScatter, Vec, Vec, InsertMode);
 
 .seealso: MatSetOption()
 @*/
-PetscErrorCode restrictVector(Vec g, Vec l, InsertMode mode)
+PetscErrorCode DMMeshRestrictVector(Vec g, Vec l, InsertMode mode)
 {
   VecScatter     injection;
   PetscErrorCode ierr;
@@ -746,9 +746,9 @@ PetscErrorCode restrictVector(Vec g, Vec l, InsertMode mode)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "assembleVectorComplete"
+#define __FUNCT__ "DMMeshAssembleVectorComplete"
 /*@
-  assembleVectorComplete - Insert values from a local ghosted vector into a global vector
+  DMMeshAssembleVectorComplete - Insert values from a local ghosted vector into a global vector
 
   Collective on g
 
@@ -763,7 +763,7 @@ PetscErrorCode restrictVector(Vec g, Vec l, InsertMode mode)
 
 .seealso: MatSetOption()
 @*/
-PetscErrorCode assembleVectorComplete(Vec g, Vec l, InsertMode mode)
+PetscErrorCode DMMeshAssembleVectorComplete(Vec g, Vec l, InsertMode mode)
 {
   VecScatter     injection;
   PetscErrorCode ierr;
@@ -786,9 +786,9 @@ PetscErrorCode assembleVectorComplete(Vec g, Vec l, InsertMode mode)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "assembleVector"
+#define __FUNCT__ "DMMeshAssembleVector"
 /*@
-  assembleVector - Insert values into a vector
+  DMMeshAssembleVector - Insert values into a vector
 
   Collective on A
 
@@ -804,7 +804,7 @@ PetscErrorCode assembleVectorComplete(Vec g, Vec l, InsertMode mode)
 
 .seealso: VecSetOption()
 @*/
-PetscErrorCode assembleVector(Vec b, PetscInt e, PetscScalar v[], InsertMode mode)
+PetscErrorCode DMMeshAssembleVector(Vec b, PetscInt e, PetscScalar v[], InsertMode mode)
 {
   DM             dm;
   SectionReal    section;
@@ -813,12 +813,12 @@ PetscErrorCode assembleVector(Vec b, PetscInt e, PetscScalar v[], InsertMode mod
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject) b, "DM", (PetscObject *) &dm);CHKERRQ(ierr);
   ierr = DMMeshGetSectionReal(dm, "x", &section);CHKERRQ(ierr);
-  ierr = assembleVector(b, dm, section, e, v, mode);CHKERRQ(ierr);
+  ierr = DMMeshAssembleVector(b, dm, section, e, v, mode);CHKERRQ(ierr);
   ierr = SectionRealDestroy(&section);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode assembleVector(Vec b, DM dm, SectionReal section, PetscInt e, PetscScalar v[], InsertMode mode)
+PetscErrorCode DMMeshAssembleVector(Vec b, DM dm, SectionReal section, PetscInt e, PetscScalar v[], InsertMode mode)
 {
   ALE::Obj<PETSC_MESH_TYPE> m;
   ALE::Obj<PETSC_MESH_TYPE::real_section_type> s;
@@ -913,8 +913,8 @@ PetscErrorCode MatSetValuesTopology(Mat mat, DM dmr, PetscInt nrow, const PetscI
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "updateOperator"
-PetscErrorCode updateOperator(Mat A, const ALE::Obj<PETSC_MESH_TYPE>& m, const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& section, const ALE::Obj<PETSC_MESH_TYPE::order_type>& globalOrder, const PETSC_MESH_TYPE::point_type& e, PetscScalar array[], InsertMode mode)
+#define __FUNCT__ "DMMeshUpdateOperator"
+PetscErrorCode DMMeshUpdateOperator(Mat A, const ALE::Obj<PETSC_MESH_TYPE>& m, const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& section, const ALE::Obj<PETSC_MESH_TYPE::order_type>& globalOrder, const PETSC_MESH_TYPE::point_type& e, PetscScalar array[], InsertMode mode)
 {
   PetscErrorCode ierr;
 
@@ -927,8 +927,8 @@ PetscErrorCode updateOperator(Mat A, const ALE::Obj<PETSC_MESH_TYPE>& m, const A
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "updateOperatorGeneral"
-PetscErrorCode updateOperatorGeneral(Mat A, const ALE::Obj<PETSC_MESH_TYPE>& rowM, const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& rowSection, const ALE::Obj<PETSC_MESH_TYPE::order_type>& rowGlobalOrder, const PETSC_MESH_TYPE::point_type& rowE, const ALE::Obj<PETSC_MESH_TYPE>& colM, const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& colSection, const ALE::Obj<PETSC_MESH_TYPE::order_type>& colGlobalOrder, const PETSC_MESH_TYPE::point_type& colE, PetscScalar array[], InsertMode mode)
+#define __FUNCT__ "DMMeshUpdateOperatorGeneral"
+PetscErrorCode DMMeshUpdateOperatorGeneral(Mat A, const ALE::Obj<PETSC_MESH_TYPE>& rowM, const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& rowSection, const ALE::Obj<PETSC_MESH_TYPE::order_type>& rowGlobalOrder, const PETSC_MESH_TYPE::point_type& rowE, const ALE::Obj<PETSC_MESH_TYPE>& colM, const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& colSection, const ALE::Obj<PETSC_MESH_TYPE::order_type>& colGlobalOrder, const PETSC_MESH_TYPE::point_type& colE, PetscScalar array[], InsertMode mode)
 {
   typedef ALE::ISieveVisitor::IndicesVisitor<PETSC_MESH_TYPE::real_section_type,PETSC_MESH_TYPE::order_type,PetscInt> visitor_type;
   visitor_type iVr(*rowSection, *rowGlobalOrder, (int) pow((double) rowM->getSieve()->getMaxConeSize(), rowM->depth())*rowM->getMaxDof(), rowM->depth() > 1);
@@ -955,11 +955,11 @@ PetscErrorCode updateOperatorGeneral(Mat A, const ALE::Obj<PETSC_MESH_TYPE>& row
    ADD_VALUES adds values to any existing entries, and
    INSERT_VALUES replaces existing entries with new values
 
-   Notes: This is used by routines like updateOperator() to bound buffer sizes
+   Notes: This is used by routines like DMMeshUpdateOperator() to bound buffer sizes
 
    Level: developer
 
-.seealso: updateOperator(), assembleMatrix()
+.seealso: DMMeshUpdateOperator(), DMMeshAssembleMatrix()
 @*/
 PetscErrorCode DMMeshSetMaxDof(DM dm, PetscInt maxDof)
 {
@@ -973,9 +973,9 @@ PetscErrorCode DMMeshSetMaxDof(DM dm, PetscInt maxDof)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "assembleMatrix"
+#define __FUNCT__ "DMMeshAssembleMatrix"
 /*@
-  assembleMatrix - Insert values into a matrix
+  DMMeshAssembleMatrix - Insert values into a matrix
 
   Collective on A
 
@@ -993,7 +993,7 @@ PetscErrorCode DMMeshSetMaxDof(DM dm, PetscInt maxDof)
 
 .seealso: MatSetOption()
 @*/
-PetscErrorCode assembleMatrix(Mat A, DM dm, SectionReal section, PetscInt e, PetscScalar v[], InsertMode mode)
+PetscErrorCode DMMeshAssembleMatrix(Mat A, DM dm, SectionReal section, PetscInt e, PetscScalar v[], InsertMode mode)
 {
   PetscErrorCode ierr;
 
@@ -1010,7 +1010,7 @@ PetscErrorCode assembleMatrix(Mat A, DM dm, SectionReal section, PetscInt e, Pet
     if (m->debug()) {
       std::cout << "Assembling matrix for element number " << e << " --> point " << e << std::endl;
     }
-    ierr = updateOperator(A, m, s, globalOrder, e, v, mode);CHKERRQ(ierr);
+    ierr = DMMeshUpdateOperator(A, m, s, globalOrder, e, v, mode);CHKERRQ(ierr);
   } catch (ALE::Exception e) {
     std::cout << e.msg() << std::endl;
   }
