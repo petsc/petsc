@@ -23,6 +23,8 @@ typedef struct {
   PetscReal rho;
   PetscReal scale_min;
   PetscReal scale_max;
+  PetscReal dt_min;
+  PetscReal dt_max;
 } TS_Alpha;
 
 #undef __FUNCT__
@@ -40,6 +42,7 @@ static PetscErrorCode TSStep_Alpha(TS ts,PetscInt *steps,PetscReal *ptime)
   ierr = TSMonitor(ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
 
   for (i=0; i<ts->max_steps; i++) {
+    SNESConvergedReason snesreason;
     PetscBool stepok = PETSC_TRUE;
     PetscReal nextdt = ts->time_step;
     if (ts->ptime + ts->time_step > ts->max_time) break;
@@ -54,26 +57,41 @@ static PetscErrorCode TSStep_Alpha(TS ts,PetscInt *steps,PetscReal *ptime)
       ierr = VecCopy(th->X0,th->X1);CHKERRQ(ierr);
       /* solve R(X,V) = 0 */
       ierr = SNESSolve(ts->snes,PETSC_NULL,th->X1);CHKERRQ(ierr);
-      ierr = SNESGetIterationNumber(ts->snes,&its);CHKERRQ(ierr);
-      ierr = SNESGetLinearSolveIterations(ts->snes,&lits);CHKERRQ(ierr);
-      ts->nonlinear_its += its; ts->linear_its += lits;
-      /* V1 = (1-1/Gamma)*V0 + 1/(Gamma*dT)*(X1-X0) */
-      ierr = VecWAXPY(th->V1,-1,th->X0,th->X1);CHKERRQ(ierr);
-      ierr = VecAXPBY(th->V1,1-1/th->Gamma,1/(th->Gamma*ts->time_step),th->V0);CHKERRQ(ierr);
+      ierr = SNESGetConvergedReason(ts->snes,&snesreason);CHKERRQ(ierr);
+      if (snesreason > 0) {
+        ierr = SNESGetIterationNumber(ts->snes,&its);CHKERRQ(ierr);
+        ierr = SNESGetLinearSolveIterations(ts->snes,&lits);CHKERRQ(ierr);
+        ts->nonlinear_its += its; ts->linear_its += lits;
+        /* V1 = (1-1/Gamma)*V0 + 1/(Gamma*dT)*(X1-X0) */
+        ierr = VecWAXPY(th->V1,-1,th->X0,th->X1);CHKERRQ(ierr);
+        ierr = VecAXPBY(th->V1,1-1/th->Gamma,1/(th->Gamma*ts->time_step),th->V0);CHKERRQ(ierr);
+      }
       /* adapt time step */
       if (th->adapt) {
         PetscReal t = ts->ptime+ts->time_step;
-        PetscReal dtmax = ts->max_time-t;
-        ierr = th->adapt(ts,t,th->X1,th->V1,&nextdt,&stepok,th->adaptctx);CHKERRQ(ierr);
+        PetscReal dtend = ts->max_time-t;
+        if (snesreason > 0) {
+          ierr = th->adapt(ts,t,th->X1,th->V1,&nextdt,&stepok,th->adaptctx);CHKERRQ(ierr);
+        } else {
+          stepok = PETSC_FALSE;
+          nextdt *= th->scale_min;
+        }
+        nextdt = PetscMax(nextdt,th->dt_min);
+        nextdt = PetscMin(nextdt,th->dt_max);
+        if (dtend > 0) nextdt = PetscMin(nextdt,dtend);
         ierr = PetscInfo4(ts,"Step %D (t=%G) %s, next dt=%G\n",ts->steps,ts->ptime,
                           stepok?"accepted":"rejected",nextdt);CHKERRQ(ierr);
-        if (dtmax > 0) nextdt = PetscMin(nextdt,dtmax);
       }
       if (stepok) break;
     }
-    ierr = VecCopy(th->X1,th->X0);CHKERRQ(ierr);
-    ierr = VecCopy(th->V1,th->V0);CHKERRQ(ierr);
-
+    if (snesreason > 0) {
+      ierr = VecCopy(th->X1,th->X0);CHKERRQ(ierr);
+      ierr = VecCopy(th->V1,th->V0);CHKERRQ(ierr);
+    } else {
+      ierr = PetscInfo1(ts,"step=%D, nonlinear solve solve failure, "
+                        "stopping solve\n",ts->steps);CHKERRQ(ierr);
+      break;
+    }
     ierr = VecCopy(th->X1,ts->vec_sol);CHKERRQ(ierr);
     ts->ptime += ts->time_step;
     ts->time_step = nextdt;
@@ -214,9 +232,11 @@ static PetscErrorCode TSSetFromOptions_Alpha(TS ts)
     ierr = PetscOptionsBool("-ts_alpha_adapt","default time step adaptativity","TSAlphaSetAdapt",adapt,&adapt,&flag);CHKERRQ(ierr);
     if (flag) { ierr = TSAlphaSetAdapt(ts,adapt?TSAlphaAdaptDefault:PETSC_NULL,PETSC_NULL); CHKERRQ(ierr); }
     ierr = PetscOptionsReal("-ts_alpha_adapt_rtol","relative tolerance for dt adaptativity","",th->rtol,&th->rtol,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-ts_alpha_adapt_atol","absulute tolerance for dt adaptativity","",th->atol,&th->atol,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-ts_alpha_adapt_atol","absolute tolerance for dt adaptativity","",th->atol,&th->atol,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-ts_alpha_adapt_min","minimum dt scale","",th->scale_min,&th->scale_min,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-ts_alpha_adapt_max","maximum dt scale","",th->scale_max,&th->scale_max,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-ts_alpha_adapt_dt_min","minimum dt","",th->dt_min,&th->dt_min,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-ts_alpha_adapt_dt_max","maximum dt","",th->dt_max,&th->dt_max,PETSC_NULL);CHKERRQ(ierr);
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -351,6 +371,8 @@ PetscErrorCode  TSCreate_Alpha(TS ts)
   th->rho       = 0.9;
   th->scale_min = 0.1;
   th->scale_max = 5.0;
+  th->dt_min    = 0.0;
+  th->dt_max    = PETSC_MAX_REAL;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSAlphaSetAdapt_C","TSAlphaSetAdapt_Alpha",TSAlphaSetAdapt_Alpha);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSAlphaSetRadius_C","TSAlphaSetRadius_Alpha",TSAlphaSetRadius_Alpha);CHKERRQ(ierr);
