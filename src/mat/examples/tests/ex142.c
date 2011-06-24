@@ -7,7 +7,7 @@ static char help[] = "Test sequential r2c/c2r FFTW interface \n\n";
 
 #include <petscmat.h>
 #include <fftw3.h>
-
+#include<fftw3-mpi.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -27,12 +27,17 @@ PetscInt main(PetscInt argc,char **args)
   PetscErrorCode ierr;
   PetscScalar    *x_array,*y_array,*z_array;
   fftw_plan      fplan,bplan;
+  const ptrdiff_t N0 = 20, N1 = 20;
 
+  ptrdiff_t alloc_local, local_n0, local_0_start;
   ierr = PetscInitialize(&argc,&args,(char *)0,help);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
   SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP, "This example requires real numbers");
 #endif
   ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRQ(ierr);
+  alloc_local=fftw_mpi_local_size_2d(N0, N1, PETSC_COMM_WORLD,
+                                              &local_n0, &local_0_start);
+
   if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP, "This is a uniprocessor example only!");
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD, PETSC_NULL, "FFTW Options", "ex142");CHKERRQ(ierr);
     ierr = PetscOptionsEList("-function", "Function type", "ex142", funcNames, NUM_FUNCS, funcNames[function], &func, PETSC_NULL);CHKERRQ(ierr);
