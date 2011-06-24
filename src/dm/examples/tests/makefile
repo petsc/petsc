@@ -153,7 +153,7 @@ ex36: ex36.o   chkopts
 
 #-------------------------------------------------------------------------------
 runex1:
-	-@${MPIEXEC} -n 2 ./ex1 -nox > ex1_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 2 ./ex1 -nox | grep -v -i Object > ex1_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex1_1.out ex1_1.tmp) then true; \
 	   else echo "Possible problem with ex1_1, diffs above"; fi; \
 	   ${RM} -f ex1_1.tmp
@@ -175,7 +175,7 @@ runex2_3:
 runex3:
 	-@${MPIEXEC} -n 3 ./ex3 -time 50 -nox
 runex4:
-	-@${MPIEXEC} -n 4 ./ex4  -nox > ex4_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 4 ./ex4  -nox  | grep -v -i Object > ex4_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex4_1.out ex4_1.tmp) then true; \
 	   else echo "Possible problem with ex4_1, diffs above"; fi; \
 	   ${RM} -f ex4_1.tmp
