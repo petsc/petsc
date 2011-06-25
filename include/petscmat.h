@@ -680,6 +680,8 @@ PETSC_STATIC_INLINE PetscErrorCode MatGetValue(Mat v,PetscInt i,PetscInt j,Petsc
 
 PETSC_STATIC_INLINE PetscErrorCode MatSetValueLocal(Mat v,PetscInt i,PetscInt j,PetscScalar va,InsertMode mode) {return MatSetValuesLocal(v,1,&i,1,&j,&va,mode);}
 
+extern PetscErrorCode MatSeqAIJSetValuesBatch(Mat, PetscInt, PetscInt, PetscInt, PetscInt *, PetscScalar *);
+
 /*MC
    MatPreallocateInitialize - Begins the block of code that will count the number of nonzeros per
        row in a matrix providing the data that one can use to correctly preallocate the matrix.
