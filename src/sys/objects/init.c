@@ -563,7 +563,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
     ierr = (*PetscHelpPrintf)(comm," -memory_info: print memory usage at end of run\n");CHKERRQ(ierr);
 #if defined(PETSC_USE_LOG)
     ierr = (*PetscHelpPrintf)(comm," -get_total_flops: total flops over all processors\n");CHKERRQ(ierr);
-    ierr = (*PetscHelpPrintf)(comm," -log[_all _summary]: logging objects and events\n");CHKERRQ(ierr);
+    ierr = (*PetscHelpPrintf)(comm," -log[_all _summary _summary_python]: logging objects and events\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm," -log_trace [filename]: prints trace of all PETSc calls\n");CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MPE)
     ierr = (*PetscHelpPrintf)(comm," -log_mpe: Also create logfile viewable through upshot\n");CHKERRQ(ierr);
