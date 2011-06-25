@@ -194,7 +194,7 @@ extern PetscErrorCode   TSView(TS,PetscViewer);
 extern PetscErrorCode   TSViewFromOptions(TS,const char[]);
 
 extern PetscErrorCode   TSSetApplicationContext(TS,void *);
-extern PetscErrorCode   TSGetApplicationContext(TS,void **);
+extern PetscErrorCode   TSGetApplicationContext(TS,void *);
 
 extern PetscErrorCode   TSMonitorLGCreate(const char[],const char[],int,int,int,int,PetscDrawLG *);
 extern PetscErrorCode   TSMonitorLG(TS,PetscInt,PetscReal,Vec,void *);

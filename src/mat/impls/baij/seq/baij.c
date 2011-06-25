@@ -2644,7 +2644,7 @@ PetscErrorCode MatAXPY_SeqBAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
   PetscFunctionBegin;
   if (str == SAME_NONZERO_PATTERN) {
     PetscScalar alpha = a;
-    PetscInt bnz = PetscBLASIntCast(x->nz*bs2);
+    PetscBLASInt bnz = PetscBLASIntCast(x->nz*bs2);
     BLASaxpy_(&bnz,&alpha,x->a,&one,y->a,&one);
   } else if (str == SUBSET_NONZERO_PATTERN) { /* nonzeros of X is a subset of Y's */
     if (y->xtoy && y->XtoY != X) {

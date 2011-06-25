@@ -2761,7 +2761,11 @@ PetscErrorCode  MatLUFactorSymbolic(Mat fact,Mat mat,IS row,IS col,const MatFact
   PetscValidPointer(fact,5);
   if (!mat->assembled) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factortype) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
-  if (!(fact)->ops->lufactorsymbolic) SETERRQ1(((PetscObject)mat)->comm,PETSC_ERR_SUP,"Matrix type %s  symbolic LU",((PetscObject)mat)->type_name);
+  if (!(fact)->ops->lufactorsymbolic) {
+    const MatSolverPackage spackage;
+    ierr = MatFactorGetSolverPackage(fact,&spackage);CHKERRQ(ierr);
+    SETERRQ2(((PetscObject)mat)->comm,PETSC_ERR_SUP,"Matrix type %s symbolic LU using solver package %s",((PetscObject)mat)->type_name,spackage);
+  }
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
 
   ierr = PetscLogEventBegin(MAT_LUFactorSymbolic,mat,row,col,0);CHKERRQ(ierr);
@@ -2929,7 +2933,11 @@ PetscErrorCode  MatCholeskyFactorSymbolic(Mat fact,Mat mat,IS perm,const MatFact
   if (mat->rmap->N != mat->cmap->N) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONG,"Matrix must be square");
   if (!mat->assembled) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factortype) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
-  if (!(fact)->ops->choleskyfactorsymbolic) SETERRQ1(((PetscObject)mat)->comm,PETSC_ERR_SUP,"Mat type %s symbolic factor Cholesky",((PetscObject)mat)->type_name);
+  if (!(fact)->ops->choleskyfactorsymbolic) {
+    const MatSolverPackage spackage;
+    ierr = MatFactorGetSolverPackage(fact,&spackage);CHKERRQ(ierr);
+    SETERRQ2(((PetscObject)mat)->comm,PETSC_ERR_SUP,"Mat type %s symbolic factor Cholesky using solver package %s",((PetscObject)mat)->type_name,spackage);
+  }
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
 
   ierr = PetscLogEventBegin(MAT_CholeskyFactorSymbolic,mat,perm,0,0);CHKERRQ(ierr);
@@ -6008,7 +6016,11 @@ PetscErrorCode  MatILUFactorSymbolic(Mat fact,Mat mat,IS row,IS col,const MatFac
   PetscValidPointer(fact,5);
   if (info->levels < 0) SETERRQ1(((PetscObject)mat)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Levels of fill negative %D",(PetscInt)info->levels);
   if (info->fill < 1.0) SETERRQ1(((PetscObject)mat)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Expected fill less than 1.0 %G",info->fill);
-  if (!(fact)->ops->ilufactorsymbolic) SETERRQ1(((PetscObject)mat)->comm,PETSC_ERR_SUP,"Matrix type %s  symbolic ILU",((PetscObject)mat)->type_name);
+  if (!(fact)->ops->ilufactorsymbolic) {
+    const MatSolverPackage spackage;
+    ierr = MatFactorGetSolverPackage(fact,&spackage);CHKERRQ(ierr);
+    SETERRQ2(((PetscObject)mat)->comm,PETSC_ERR_SUP,"Matrix type %s symbolic ILU using solver package %s",((PetscObject)mat)->type_name,spackage);
+  }
   if (!mat->assembled) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factortype) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
@@ -6068,7 +6080,11 @@ PetscErrorCode  MatICCFactorSymbolic(Mat fact,Mat mat,IS perm,const MatFactorInf
   if (mat->factortype) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   if (info->levels < 0) SETERRQ1(((PetscObject)mat)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Levels negative %D",(PetscInt) info->levels);
   if (info->fill < 1.0) SETERRQ1(((PetscObject)mat)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Expected fill less than 1.0 %G",info->fill);
-  if (!(fact)->ops->iccfactorsymbolic) SETERRQ1(((PetscObject)mat)->comm,PETSC_ERR_SUP,"Matrix type %s  symbolic ICC",((PetscObject)mat)->type_name);
+  if (!(fact)->ops->iccfactorsymbolic) {
+    const MatSolverPackage spackage;
+    ierr = MatFactorGetSolverPackage(fact,&spackage);CHKERRQ(ierr);
+    SETERRQ2(((PetscObject)mat)->comm,PETSC_ERR_SUP,"Matrix type %s symbolic ICC using solver package %s",((PetscObject)mat)->type_name,spackage);
+  }
   if (!mat->assembled) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
 

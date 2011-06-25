@@ -176,7 +176,7 @@ extern PetscErrorCode  SNESMonitorLGRange(SNES,PetscInt,PetscReal,void*);
 extern PetscErrorCode  SNESMonitorLGRangeDestroy(PetscDrawLG*);
 
 extern PetscErrorCode  SNESSetApplicationContext(SNES,void *);
-extern PetscErrorCode  SNESGetApplicationContext(SNES,void **);
+extern PetscErrorCode  SNESGetApplicationContext(SNES,void *);
 extern PetscErrorCode  SNESSetComputeApplicationContext(SNES,PetscErrorCode (*)(SNES,void**),PetscErrorCode (*)(void**));
 
 extern PetscErrorCode  SNESPythonSetType(SNES,const char[]);
@@ -373,7 +373,7 @@ extern PetscErrorCode  SNESLineSearchSetMonitor(SNES,PetscBool );
 
 /* Routines for VI solver */
 extern PetscErrorCode  SNESVISetVariableBounds(SNES,Vec,Vec);
-extern PetscErrorCode  SNESVISetComputeVariableBounds(SNES, PetscErrorCode (*)(SNES,Vec*,Vec*));
+extern PetscErrorCode  SNESVISetComputeVariableBounds(SNES, PetscErrorCode (*)(SNES,Vec,Vec));
 extern PetscErrorCode  SNESVIGetActiveSetIS(SNES,Vec,Vec,IS*);
 extern PetscErrorCode  SNESVISetRedundancyCheck(SNES,PetscErrorCode(*)(SNES,IS,IS*,void*),void*);
 #define SNES_VI_INF   1.0e20

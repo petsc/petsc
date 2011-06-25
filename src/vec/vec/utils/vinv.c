@@ -352,7 +352,7 @@ PetscErrorCode  VecStrideMin(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
 
 .seealso: VecNorm(), VecStrideScale(), VecScale(), VecStrideGather(), VecStrideScatter(), VecStrideMin(), VecStrideMax()
 @*/
-PetscErrorCode  VecStrideScaleAll(Vec v,PetscScalar *scales)
+PetscErrorCode  VecStrideScaleAll(Vec v,const PetscScalar *scales)
 {
   PetscErrorCode ierr;
   PetscInt       i,j,n,bs;

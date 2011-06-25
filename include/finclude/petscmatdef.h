@@ -66,24 +66,33 @@
 !  Matrix types
 !
 #define MATSAME            'same'
+#define MATMAIJ            'maij'
 #define MATSEQMAIJ         'seqmaij'
 #define MATMPIMAIJ         'mpimaij'
-#define MATMAIJ            'maij'
 #define MATIS              'is'
+#define MATAIJ             'aij'
 #define MATSEQAIJ          'seqaij'
 #define MATMPIAIJ          'mpiaij'
-#define MATAIJ             'aij'
+#define MATAIJCRL          'aijcrl'
+#define MATSEQAIJCRL       'seqaijcrl'
+#define MATMPIAIJCRL       'mpiaijcrl'
+#define MATAIJCUSP         'aijcusp'
+#define MATSEQAIJCUSP      'seqaijcusp'
+#define MATMPIAIJCUSP      'mpiaijcusp'
+#define MATAIJPERM         'aijperm'
+#define MATSEQAIJPERM      'seqaijperm'
+#define MATMPIAIJPERM      'mpiaijperm'
 #define MATSHELL           'shell'
+#define MATDENSE           'dense'
 #define MATSEQDENSE        'seqdense'
 #define MATMPIDENSE        'mpidense'
-#define MATDENSE           'dense'
+#define MATBAIJ            'baij'
 #define MATSEQBAIJ         'seqbaij'
 #define MATMPIBAIJ         'mpibaij'
-#define MATBAIJ            'baij'
 #define MATMPIADJ          'mpiadj'
+#define MATSBAIJ           'sbaij'
 #define MATSEQSBAIJ        'seqsbaij'
 #define MATMPISBAIJ        'mpisbaij'
-#define MATSBAIJ           'sbaij'
 
 #define MATSEQBSTRM        'seqbstrm'
 #define MATMPIBSTRM        'mpibstrm'
@@ -96,12 +105,6 @@
 #define MATMFFD            'mffd'
 #define MATNORMAL          'normal'
 #define MATLRC             'lrc'
-#define MATSEQAIJPERM      'seqaijperm'
-#define MATMPIAIJPERM      'mpiaijperm'
-#define MATAIJPERM         'aijperm'
-#define MATSEQAIJCRL       'seqaijcrl'
-#define MATMPIAIJCRL       'mpiaijcrl'
-#define MATAIJCRL          'aijcrl'
 #define MATSCATTER         'scatter'
 #define MATBLOCKMAT        'blockmat'
 #define MATCOMPOSITE       'composite'
@@ -114,9 +117,8 @@
 #define MATHYPRESTRUCT     'hyprestruct'
 #define MATHYPRESSTRUCT    'hypresstruct'
 #define MATSUBMATRIX       'submatrix'
-#ifdef PETSC_USE_MATFWK
-#define MATFWK           'matfwk'
-#endif
+#define MATLOCALREF        'localref'
+#define MATNEST            'nest'
 !
 ! MatSolverPackages
 !
@@ -134,6 +136,7 @@
 #define MATSOLVERPETSC        'petsc'
 #define MATSOLVERPLAPACK      'plapack'
 #define MATSOLVERBAS          'bas'
+
 #define MATSOLVERBSTRM        'bstrm'
 #define MATSOLVERSBSTRM       'sbstrm'
 #endif

@@ -936,11 +936,11 @@ PetscErrorCode  TSSetApplicationContext(TS ts,void *usrP)
 
 .seealso: TSSetApplicationContext()
 @*/
-PetscErrorCode  TSGetApplicationContext(TS ts,void **usrP)
+PetscErrorCode  TSGetApplicationContext(TS ts,void *usrP)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  *usrP = ts->user;
+  *(void**)usrP = ts->user;
   PetscFunctionReturn(0);
 }
 
