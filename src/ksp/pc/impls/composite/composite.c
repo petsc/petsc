@@ -35,13 +35,13 @@ static PetscErrorCode PCApply_Composite_Multiplicative(PC pc,Vec x,Vec y)
   if (next->next && !jac->work2) { /* allocate second work vector */
     ierr = VecDuplicate(jac->work1,&jac->work2);CHKERRQ(ierr);
   }
-  ierr = PCApply(next->pc,x,y);CHKERRQ(ierr);
   if (jac->use_true_matrix) mat = pc->mat;
+  ierr = PCApply(next->pc,x,y);CHKERRQ(ierr);
   while (next->next) {
     next = next->next;
     ierr = MatMult(mat,y,jac->work1);CHKERRQ(ierr);
     ierr = VecWAXPY(jac->work2,-1.0,jac->work1,x);CHKERRQ(ierr);
-    ierr = VecSet(jac->work1,0.0);CHKERRQ(ierr);  /* zero since some PC's may not set all entries in the result */        
+    ierr = VecSet(jac->work1,0.0);CHKERRQ(ierr);  /* zero since some PC's may not set all entries in the result */
     ierr = PCApply(next->pc,jac->work2,jac->work1);CHKERRQ(ierr);
     ierr = VecAXPY(y,1.0,jac->work1);CHKERRQ(ierr);
   }
@@ -50,8 +50,50 @@ static PetscErrorCode PCApply_Composite_Multiplicative(PC pc,Vec x,Vec y)
       next = next->previous;
       ierr  = MatMult(mat,y,jac->work1);CHKERRQ(ierr);
       ierr = VecWAXPY(jac->work2,-1.0,jac->work1,x);CHKERRQ(ierr);
-      ierr = VecSet(jac->work1,0.0);CHKERRQ(ierr);  /* zero since some PC's may not set all entries in the result */        
+      ierr = VecSet(jac->work1,0.0);CHKERRQ(ierr);  /* zero since some PC's may not set all entries in the result */
       ierr = PCApply(next->pc,jac->work2,jac->work1);CHKERRQ(ierr);
+      ierr = VecAXPY(y,1.0,jac->work1);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PCApplyTranspose_Composite_Multiplicative"
+static PetscErrorCode PCApplyTranspose_Composite_Multiplicative(PC pc,Vec x,Vec y)
+{
+  PetscErrorCode   ierr;
+  PC_Composite     *jac = (PC_Composite*)pc->data;
+  PC_CompositeLink next = jac->head;
+  Mat              mat = pc->pmat;
+
+  PetscFunctionBegin;
+  if (!next) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"No composite preconditioners supplied via PCCompositeAddPC() or -pc_composite_pcs");
+  if (next->next && !jac->work2) { /* allocate second work vector */
+    ierr = VecDuplicate(jac->work1,&jac->work2);CHKERRQ(ierr);
+  }
+  if (jac->use_true_matrix) mat = pc->mat;
+  /* locate last PC */
+  while (next->next) {
+    next = next->next;
+  }
+  ierr = PCApplyTranspose(next->pc,x,y);CHKERRQ(ierr);
+  while (next->previous) {
+    next = next->previous;
+    ierr = MatMultTranspose(mat,y,jac->work1);CHKERRQ(ierr);
+    ierr = VecWAXPY(jac->work2,-1.0,jac->work1,x);CHKERRQ(ierr);
+    ierr = VecSet(jac->work1,0.0);CHKERRQ(ierr);  /* zero since some PC's may not set all entries in the result */
+    ierr = PCApplyTranspose(next->pc,jac->work2,jac->work1);CHKERRQ(ierr);
+    ierr = VecAXPY(y,1.0,jac->work1);CHKERRQ(ierr);
+  }
+  if (jac->type == PC_COMPOSITE_SYMMETRIC_MULTIPLICATIVE) {
+    next = jac->head;
+    while (next->next) {
+      next = next->next;
+      ierr  = MatMultTranspose(mat,y,jac->work1);CHKERRQ(ierr);
+      ierr = VecWAXPY(jac->work2,-1.0,jac->work1,x);CHKERRQ(ierr);
+      ierr = VecSet(jac->work1,0.0);CHKERRQ(ierr);  /* zero since some PC's may not set all entries in the result */
+      ierr = PCApplyTranspose(next->pc,jac->work2,jac->work1);CHKERRQ(ierr);
       ierr = VecAXPY(y,1.0,jac->work1);CHKERRQ(ierr);
     }
   }
@@ -95,6 +137,26 @@ static PetscErrorCode PCApply_Composite_Additive(PC pc,Vec x,Vec y)
     next = next->next;
     ierr = VecSet(jac->work1,0.0);CHKERRQ(ierr);  /* zero since some PC's may not set all entries in the result */        
     ierr = PCApply(next->pc,x,jac->work1);CHKERRQ(ierr);
+    ierr = VecAXPY(y,1.0,jac->work1);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PCApplyTranspose_Composite_Additive"
+static PetscErrorCode PCApplyTranspose_Composite_Additive(PC pc,Vec x,Vec y)
+{
+  PetscErrorCode   ierr;
+  PC_Composite     *jac = (PC_Composite*)pc->data;
+  PC_CompositeLink next = jac->head;
+
+  PetscFunctionBegin;
+  if (!next) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"No composite preconditioners supplied via PCCompositeAddPC() or -pc_composite_pcs");
+  ierr = PCApplyTranspose(next->pc,x,y);CHKERRQ(ierr);
+  while (next->next) {
+    next = next->next;
+    ierr = VecSet(jac->work1,0.0);CHKERRQ(ierr);  /* zero since some PC's may not set all entries in the result */        
+    ierr = PCApplyTranspose(next->pc,x,jac->work1);CHKERRQ(ierr);
     ierr = VecAXPY(y,1.0,jac->work1);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -249,11 +311,14 @@ PetscErrorCode  PCCompositeSetType_Composite(PC pc,PCCompositeType type)
 {
   PetscFunctionBegin;
   if (type == PC_COMPOSITE_ADDITIVE) {
-    pc->ops->apply = PCApply_Composite_Additive;
+    pc->ops->apply          = PCApply_Composite_Additive;
+    pc->ops->applytranspose = PCApplyTranspose_Composite_Additive;
   } else if (type ==  PC_COMPOSITE_MULTIPLICATIVE || type == PC_COMPOSITE_SYMMETRIC_MULTIPLICATIVE) {
-    pc->ops->apply = PCApply_Composite_Multiplicative;
+    pc->ops->apply          = PCApply_Composite_Multiplicative;
+    pc->ops->applytranspose = PCApplyTranspose_Composite_Multiplicative;
   } else if (type ==  PC_COMPOSITE_SPECIAL) {
-    pc->ops->apply = PCApply_Composite_Special;
+    pc->ops->apply          = PCApply_Composite_Special;
+    pc->ops->applytranspose = PETSC_NULL;
   } else SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONG,"Unkown composite preconditioner type");
   PetscFunctionReturn(0);
 }
@@ -521,6 +586,7 @@ PetscErrorCode  PCCreate_Composite(PC pc)
   PetscFunctionBegin;
   ierr = PetscNewLog(pc,PC_Composite,&jac);CHKERRQ(ierr);
   pc->ops->apply              = PCApply_Composite_Additive;
+  pc->ops->applytranspose     = PCApplyTranspose_Composite_Additive;
   pc->ops->setup              = PCSetUp_Composite;
   pc->ops->reset              = PCReset_Composite;
   pc->ops->destroy            = PCDestroy_Composite;

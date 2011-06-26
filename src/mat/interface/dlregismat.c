@@ -170,6 +170,7 @@ PetscErrorCode  MatInitializePackage(const char path[])
   ierr = PetscLogEventRegister("MatGetSymTransR",MAT_CLASSID,&MAT_Getsymtransreduced);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatTranspose_SeqAIJ_FAST",MAT_CLASSID,&MAT_Transpose_SeqAIJ);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatCUSPCopyTo",MAT_CLASSID,&MAT_CUSPCopyToGPU);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatCUSPSetValBch",MAT_CLASSID,&MAT_CUSPSetValuesBatch);CHKERRQ(ierr);
 
   /* Turn off high traffic events by default */
   ierr = PetscLogEventSetActiveAll(MAT_SetValues, PETSC_FALSE);CHKERRQ(ierr);

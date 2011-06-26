@@ -433,6 +433,30 @@ PetscErrorCode DMDASetLocalAdicMFFunction_Private(DM da,DMDALocalFunction1 ad_lf
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "DMDAJacobianDefaultLocal"
+PetscErrorCode DMDAJacobianLocal(DM dm,Vec x,Mat A,Mat B, MatStructure *str)
+{
+  PetscErrorCode ierr;
+  Vec            localX;
+  
+  PetscFunctionBegin;
+  ierr = DMGetLocalVector(dm,&localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(dm,x,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(dm,x,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = MatFDColoringApply(B,dm->fd,localX,str,dm);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(dm,&localX);CHKERRQ(ierr);
+  /* Assemble true Jacobian; if it is different */
+  if (A != B) {
+    ierr  = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr  = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  }
+  ierr  = MatSetOption(B,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
+  *str = SAME_NONZERO_PATTERN;
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__  
 #define __FUNCT__ "DMDAJacobian"
 static PetscErrorCode DMDAJacobian(DM dm,Vec x,Mat A,Mat B, MatStructure *str)
 {
@@ -1834,8 +1858,10 @@ PetscErrorCode  DMSetUp_DA_2D(DM da)
 .  -da_grid_y <ny> - number of grid points in y direction, if N < 0
 .  -da_processors_x <nx> - number of processors in x direction
 .  -da_processors_y <ny> - number of processors in y direction
-.  -da_refine_x - refinement ratio in x direction
--  -da_refine_y - refinement ratio in y direction
+.  -da_refine_x <rx> - refinement ratio in x direction
+.  -da_refine_y <ry> - refinement ratio in y direction
+-  -da_refine <n> - refine the DMDA n times before creating, if M or N < 0
+
 
    Level: beginner
 

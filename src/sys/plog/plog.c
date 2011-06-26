@@ -2102,10 +2102,6 @@ PetscErrorCode  PetscLogViewPython(PetscViewer viewer)
   PetscInt          i;
   MPI_Comm          comm;
 
-  /* remove these two lines! */
-  PetscLogDouble     BaseTime = 0.0;
-  int               numObjects = 0;
-
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);

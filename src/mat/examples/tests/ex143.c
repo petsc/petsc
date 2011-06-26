@@ -19,7 +19,7 @@ PetscInt main(PetscInt argc,char **args)
 {
   PetscErrorCode  ierr;
   PetscMPIInt     rank,size;
-  PetscInt        N0=20,N1=20,N2=20,N3=20,N4=20,N=N0*N1*N2*N3*N4;
+  PetscInt        N0=50,N1=20,N=N0*N1;
   PetscRandom     rdm;
   PetscScalar     a;
   PetscReal       enorm;
@@ -35,6 +35,9 @@ PetscInt main(PetscInt argc,char **args)
     ierr = PetscOptionsBool("-vec_view_draw", "View the vectors", "ex143", view, &view, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-use_FFTW_interface", "Use PETSc-FFTW interface", "ex143",use_interface, &use_interface, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
+
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-use_FFTW_interface",&use_interface,PETSC_NULL);CHKERRQ(ierr);
+  printf("interface value: %d\n",(int)use_interface);
 
   ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
@@ -53,7 +56,6 @@ PetscInt main(PetscInt argc,char **args)
     fftw_mpi_init();
     N = N0*N1;
     alloc_local = fftw_mpi_local_size_2d(N0,N1,PETSC_COMM_WORLD,&local_n0,&local_0_start);
-    printf("[%d] local_n0, local_0_start %d %d\n",rank,(PetscInt)local_n0,(PetscInt)local_0_start);
 
     data_in   = (fftw_complex*)fftw_malloc(sizeof(fftw_complex)*alloc_local);
     data_out  = (fftw_complex*)fftw_malloc(sizeof(fftw_complex)*alloc_local);
@@ -102,12 +104,12 @@ PetscInt main(PetscInt argc,char **args)
     N=1;
     for (i=1; i<6; i++){
       DIM = i;
-      //dim=(PetscInt *)calloc(i,sizeof(PetscInt));
       ierr = PetscMalloc(i*sizeof(PetscInt),&dim);CHKERRQ(ierr);
       for(k=0;k<i;k++){
         dim[k]=30;
       }
       N *= dim[i-1];
+
   
       /* Create FFTW object */
       if (!rank) printf("Use PETSc-FFTW interface...%d-DIM:%d \n",DIM,N);
@@ -115,6 +117,7 @@ PetscInt main(PetscInt argc,char **args)
       ierr = MatCreateFFT(PETSC_COMM_WORLD,DIM,dim,MATFFTW,&A);CHKERRQ(ierr);
 
       /* Create vectors that are compatible with parallel layout of A - must call MatGetVecs()! */
+    
       ierr = MatGetVecs(A,&x,&y);CHKERRQ(ierr); 
       ierr = MatGetVecs(A,&z,PETSC_NULL);CHKERRQ(ierr); 
       ierr = PetscObjectSetName((PetscObject) x, "Real space vector");CHKERRQ(ierr);
@@ -123,6 +126,7 @@ PetscInt main(PetscInt argc,char **args)
 
       /* Set values of space vector x */
       ierr = VecSetRandom(x, rdm);CHKERRQ(ierr);
+
       if (view){ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
 
       /* Apply FFTW_FORWARD and FFTW_BACKWARD */
@@ -137,9 +141,11 @@ PetscInt main(PetscInt argc,char **args)
       if (view){ierr = VecView(z,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
       ierr = VecAXPY(z,-1.0,x);CHKERRQ(ierr);
       ierr = VecNorm(z,NORM_1,&enorm);CHKERRQ(ierr);
-      if (enorm > 1.e-8){
+      if (enorm > 1.e-14){
+        if(!rank)
         ierr = PetscPrintf(PETSC_COMM_SELF,"  Error norm of |x - z| %A\n",enorm);CHKERRQ(ierr);
       }
+     
 
       /* Free spaces */
       ierr = PetscFree(dim);CHKERRQ(ierr);
@@ -149,7 +155,7 @@ PetscInt main(PetscInt argc,char **args)
       ierr = MatDestroy(&A);CHKERRQ(ierr);
     }
   }
-
+   
   ierr = PetscRandomDestroy(&rdm);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;

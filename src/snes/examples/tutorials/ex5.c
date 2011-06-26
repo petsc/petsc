@@ -58,14 +58,13 @@ T*/
    FormFunctionLocal().
 */
 typedef struct {
-   DM          da;             /* distributed array data structure */
    PassiveReal param;          /* test problem parameter */
 } AppCtx;
 
 /* 
    User-defined routines
 */
-extern PetscErrorCode FormInitialGuess(AppCtx*,Vec);
+extern PetscErrorCode FormInitialGuess(DM,AppCtx*,Vec);
 extern PetscErrorCode FormFunctionLocal(DMDALocalInfo*,PetscScalar**,PetscScalar**,AppCtx*);
 extern PetscErrorCode FormJacobianLocal(DMDALocalInfo*,PetscScalar**,Mat,AppCtx*);
 
@@ -80,6 +79,7 @@ int main(int argc,char **argv)
   PetscErrorCode         ierr;
   PetscReal              bratu_lambda_max = 6.81,bratu_lambda_min = 0.;
   PetscBool              flg = PETSC_FALSE;
+  DM                     da;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
@@ -102,24 +102,24 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&user.da);CHKERRQ(ierr);
-  ierr = DMDASetUniformCoordinates(user.da, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);
-  ierr = DMSetApplicationContext(user.da,&user);CHKERRQ(ierr);
-  ierr = SNESSetDM(snes,user.da);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE,DMDA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
+  ierr = DMDASetUniformCoordinates(da, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);
+  ierr = DMSetApplicationContext(da,&user);CHKERRQ(ierr);
+  ierr = SNESSetDM(snes,da);CHKERRQ(ierr);
 
   /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Extract global vectors from DMDA; then duplicate for remaining
      vectors that are the same types
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMCreateGlobalVector(user.da,&x);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(da,&x);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set local function evaluation routine
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDASetLocalFunction(user.da,(DMDALocalFunction1)FormFunctionLocal);CHKERRQ(ierr);
+  ierr = DMDASetLocalFunction(da,(DMDALocalFunction1)FormFunctionLocal);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(PETSC_NULL,"-fd",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (!flg) {
-    ierr = DMDASetLocalJacobian(user.da,(DMDALocalFunction1)FormJacobianLocal);CHKERRQ(ierr); 
+    ierr = DMDASetLocalJacobian(da,(DMDALocalFunction1)FormJacobianLocal);CHKERRQ(ierr); 
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -127,7 +127,7 @@ int main(int argc,char **argv)
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
-  ierr = FormInitialGuess(&user,x);CHKERRQ(ierr);
+  ierr = FormInitialGuess(da,&user,x);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system
@@ -144,7 +144,7 @@ int main(int argc,char **argv)
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);
-  ierr = DMDestroy(&user.da);CHKERRQ(ierr);
+  ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = PetscFinalize();
 
   PetscFunctionReturn(0);
@@ -162,7 +162,7 @@ int main(int argc,char **argv)
    Output Parameter:
    X - vector
  */
-PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
+PetscErrorCode FormInitialGuess(DM da,AppCtx *user,Vec X)
 {
   PetscInt       i,j,Mx,My,xs,ys,xm,ym;
   PetscErrorCode ierr;
@@ -170,7 +170,7 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
   PetscScalar    **x;
 
   PetscFunctionBegin;
-  ierr = DMDAGetInfo(user->da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
+  ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
                    PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
 
   lambda = user->param;
@@ -185,7 +185,7 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
        - You MUST call VecRestoreArray() when you no longer need access to
          the array.
   */
-  ierr = DMDAVecGetArray(user->da,X,&x);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da,X,&x);CHKERRQ(ierr);
 
   /*
      Get local grid boundaries (for 2-dimensional DMDA):
@@ -193,7 +193,7 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
        xm, ym   - widths of local grid (no ghost points)
 
   */
-  ierr = DMDAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
 
   /*
      Compute initial guess over the locally owned part of the grid
@@ -213,7 +213,7 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
   /*
      Restore vector
   */
-  ierr = DMDAVecRestoreArray(user->da,X,&x);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da,X,&x);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 } 

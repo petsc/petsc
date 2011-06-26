@@ -284,7 +284,7 @@ runex5_2:
 	   else echo "Possible problem with ex5_2, diffs above"; fi; \
 	   ${RM} -f ex5_2.tmp
 runex5_3:
-	-@${MPIEXEC} -n 1 ./ex5 -snes_grid_sequence 2 -snes_monitor_short -ksp_monitor_short -snes_mf_operator -ksp_converged_reason \
+	-@${MPIEXEC} -n 2 ./ex5 -snes_grid_sequence 2 -snes_monitor_short -ksp_monitor_short -snes_mf_operator -ksp_converged_reason \
            -snes_converged_reason -snes_view -pc_type mg    > ex5_3.tmp 2>&1; \
 	   if (${DIFF} output/ex5_3.out ex5_3.tmp) then true; \
 	   else echo "Possible problem with ex5_3, diffs above"; fi; \
@@ -593,7 +593,7 @@ runex19_16a:
 	   else echo "Possible problem with ex19_16a, diffs above"; fi; \
 	   ${RM} -f ex19_16a.tmp
 runex19_superlu:
-	-@${MPIEXEC} -n 1 ./ex19 -nlevels 1 -da_grid_x 20 -da_grid_y 20 -pc_type lu -pc_factor_mat_solver_package superlu > ex19.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex19 -nlevels 1 -da_gridx 20 -da_grid_y 20 -pc_type lu -pc_factor_mat_solver_package superlu > ex19.tmp 2>&1; \
 	   if (${DIFF} output/ex19_superlu.out ex19.tmp) then true; \
 	   else echo "Possible problem with ex19_superlu, diffs above"; fi; \
 	   ${RM} -f ex19.tmp

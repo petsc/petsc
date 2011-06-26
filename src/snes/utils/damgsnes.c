@@ -222,8 +222,7 @@ PetscErrorCode DMMGFormFunctionFD(SNES snes,Vec X,Vec F,void *ptr)
 +  snes - the SNES context
 .  X - input vector
 .  F - function vector
--  ptr - pointer to a structure that must have a DMDA as its first entry. For example this 
-         could be a DMMG, this ptr must have been passed into SNESDAFormFunction() as the context
+-  ptr - pointer to a user context containing problem specific information used by application function
 
    Level: intermediate
 

@@ -516,8 +516,8 @@ master.<br>
 speedup computations?</font></a><span style="font-weight: bold;"></span></p>
       <p>PETSc-dev has some support for running portions of the
 computation on Nvidia GPUs. See <a
- href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-dev/docs/installation.html#CUDA">installation.html</a>
-for how to install PETSc to use GPUs. PETSc has a Vec class VECCUSP
+ href="http://www.mcs.anl.gov/petsc/petsc-as/features/gpus.html">PETSc GPUs</a>
+for more information. PETSc has a Vec class VECCUSP
 that performs almost all the vector operations on the GPU. The Mat
 class MATCUSP performs matrix-vector products on the GPU but does not
 have matrix assembly on the GPU yet. Both of these classes run in
@@ -1565,6 +1565,7 @@ parallel).</li>
 enough.</li>
         <li>The Jacobian system has a singularity that the linear
 solver is not handling.</li>
+        <li>There is a bug in the function evaluation routine.</li>
       </ul>
 Here are some of the ways to help debug lack of convergence of Newton.<br>
       <ul>
