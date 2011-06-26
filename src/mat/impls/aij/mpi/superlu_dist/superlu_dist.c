@@ -303,14 +303,12 @@ PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFactorInfo *
     /* Convert Petsc NR matrix to SuperLU_DIST NC. 
        Note: memories of lu->val, col and row are allocated by CompRow_to_CompCol_dist()! */
     if (lu->options.Fact != DOFACT) {/* successive numeric factorization, sparsity pattern is reused. */
+      Destroy_CompCol_Matrix_dist(&lu->A_sup);
       if (lu->FactPattern == SamePattern_SameRowPerm){
-        Destroy_CompCol_Matrix_dist(&lu->A_sup);
-        /* Destroy_LU(N, &lu->grid, &lu->LUstruct); Crash! Comment it out does not lead to mem leak. */
         lu->options.Fact = SamePattern_SameRowPerm; /* matrix has similar numerical values */
-      } else {
-        Destroy_CompCol_Matrix_dist(&lu->A_sup); 
+      } else { /* lu->FactPattern == SamePattern */
         Destroy_LU(N, &lu->grid, &lu->LUstruct); 
-        lu->options.Fact = SamePattern; 
+        lu->options.Fact = SamePattern;    
       }
     }
 #if defined(PETSC_USE_COMPLEX)
@@ -349,8 +347,8 @@ PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFactorInfo *
       dallocateA_dist(m, nz, &lu->val, &lu->col, &lu->row);
 #endif
     } else { /* successive numeric factorization, sparsity pattern and perm_c are reused. */
+      /* Destroy_CompRowLoc_Matrix_dist(&lu->A_sup); */ /* this leads to crash! However, see SuperLU_DIST_2.5/EXAMPLE/pzdrive2.c */
       if (lu->FactPattern == SamePattern_SameRowPerm){
-        /* Destroy_LU(N, &lu->grid, &lu->LUstruct); Crash! Comment it out does not lead to mem leak. */
         lu->options.Fact = SamePattern_SameRowPerm; /* matrix has similar numerical values */
       } else {
         Destroy_LU(N, &lu->grid, &lu->LUstruct); /* Deallocate storage associated with the L and U matrices. */
@@ -612,8 +610,8 @@ PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Mat *F)
 #endif
     }
 
-    lu->FactPattern = SamePattern;
-    ierr = PetscOptionsEList("-mat_superlu_dist_fact","Sparsity pattern for repeated matrix factorization","None",factPattern,2,factPattern[0],&indx,&flg);CHKERRQ(ierr);
+    lu->FactPattern = SamePattern_SameRowPerm;
+    ierr = PetscOptionsEList("-mat_superlu_dist_fact","Sparsity pattern for repeated matrix factorization","None",factPattern,2,factPattern[1],&indx,&flg);CHKERRQ(ierr);
     if (flg) {
       switch (indx) {
       case 0:
