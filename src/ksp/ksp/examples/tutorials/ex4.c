@@ -1,6 +1,7 @@
 static char help[] = "Test MatSeqAIJSetValuesBatch: setting batches of elements using the GPU.\n\
 This works with SeqAIJCUSP matrices.\n\n";
 #include <petscdmda.h>
+#include <petscksp.h>
 
 /* We will use a structured mesh for this assembly test. Each square will be divided into two triangles:
   C       D
@@ -17,15 +18,27 @@ This works with SeqAIJCUSP matrices.\n\n";
 
 TO ADD:
   1) Build and run on baconost
+    - Gather data for CPU/GPU up to da_grid_x 1300
+      - Looks 6x faster than CPU
+    - Make plot
 
-  2) Multi-GPU solve
-    - Try it on GPU machine at Brown
+  2) Solve the Neumann Poisson problem
 
-  3) GPU FEM integration
+  3) Multi-GPU solve
+    - Try it on GPU machine at Brown (They need another GNU install)
+    - Need a strategy
+      1) Have implicit rep of COO from repeated/tiled_range
+      2) Do a filtered copy, decrementing rows and remapping columns, which splits into two sets
+      3) Make two COO matrices and do separate aggregation on each one
+    - MPIAIJCUSP: Just have two SEQAIJCUSP matrices, nothing else special
+
+  4) Solve the Neumann Poisson problem in parallel
+
+  5) GPU FEM integration
     - Move launch code to PETSc   or   - Try again now that assembly is in PETSc
     - Move build code to PETSc
 
-  4) Try out CUSP PCs
+  6) Try out CUSP PCs
 */
 
 #undef __FUNCT__
@@ -98,12 +111,16 @@ PetscErrorCode AssembleMatrix(DM dm, PetscInt Ne, PetscInt Nl, PetscInt *elemRow
 #define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
+  KSP            ksp;
+  MatNullSpace   nullsp;
   DM             dm;
   Mat            A;
+  Vec            x, b;
   PetscViewer    viewer;
   PetscInt       Nl, Ne, N;
   PetscInt      *elemRows;
   PetscScalar   *elemMats;
+  PetscBool      doSolve;
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, 0, help);CHKERRQ(ierr);
@@ -121,8 +138,8 @@ int main(int argc, char **argv)
   if (N > 500) {ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);}
   ierr = MatView(A, viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
   /* Construct matrix using CPU */
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = AssembleMatrix(dm, Ne, Nl, elemRows, elemMats, &A);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -130,8 +147,33 @@ int main(int argc, char **argv)
   if (N > 500) {ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);}
   ierr = MatView(A, viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  /* Solve simple system with random rhs */
+  ierr = PetscOptionsGetBool(PETSC_NULL, "-solve", &doSolve, PETSC_NULL);CHKERRQ(ierr);
+  if (doSolve) {
+    ierr = MatGetVecs(A, &x, &b);CHKERRQ(ierr);
+    ierr = VecSetRandom(b, PETSC_NULL);CHKERRQ(ierr);
+    ierr = KSPCreate(PETSC_COMM_WORLD, &ksp);CHKERRQ(ierr);
+    ierr = KSPSetOperators(ksp, A, A, DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = MatNullSpaceCreate(PETSC_COMM_WORLD, PETSC_TRUE, 0, PETSC_NULL, &nullsp);CHKERRQ(ierr);
+    ierr = KSPSetNullSpace(ksp, nullsp);CHKERRQ(ierr);
+    ierr = MatNullSpaceDestroy(&nullsp);CHKERRQ(ierr);
+    ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
+    ierr = KSPSolve(ksp, b, x);CHKERRQ(ierr);
+    ierr = VecDestroy(&x);CHKERRQ(ierr);
+    ierr = VecDestroy(&b);CHKERRQ(ierr);
+    /* Solve physical system:
+
+         -\Delta u = -6 (x + y - 1)
+
+       where u = x^3 - 3/2 x^2 + y^3 - 3/2y^2 + 1/2,
+       so \Delta u = 6 x - 3 + 6 y - 3,
+       and \frac{\partial u}{\partial n} = {3x (x - 1), 3y (y - 1)} \cdot n
+                                         = \pm 3x (x - 1) at x=0,1 = 0
+                                         = \pm 3y (y - 1) at y=0,1 = 0
+    */
+  }
   /* Cleanup */
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = PetscFree2(elemRows, elemMats);CHKERRQ(ierr);
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
   ierr = PetscFinalize();

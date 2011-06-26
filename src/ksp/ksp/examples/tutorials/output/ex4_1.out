@@ -202,3 +202,12 @@ row 96: (85, 0)  (86, -1)  (87, 0)  (95, -0.5)  (96, 2)  (97, -0.5)
 row 97: (86, 0)  (87, -1)  (88, 0)  (96, -0.5)  (97, 2)  (98, -0.5) 
 row 98: (87, 0)  (88, -1)  (89, 0)  (97, -0.5)  (98, 2)  (99, -0.5) 
 row 99: (88, 0)  (89, -0.5)  (98, -0.5)  (99, 1) 
+  0 KSP Residual norm 5.466511726379e+00 
+  1 KSP Residual norm 1.203510403633e+00 
+  2 KSP Residual norm 3.860273659229e-01 
+  3 KSP Residual norm 9.600131958723e-02 
+  4 KSP Residual norm 2.458464540541e-02 
+  5 KSP Residual norm 7.967560552061e-03 
+  6 KSP Residual norm 1.669024815783e-03 
+  7 KSP Residual norm 2.642405161168e-04 
+  8 KSP Residual norm 3.365715747350e-05 

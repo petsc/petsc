@@ -186,6 +186,9 @@ PetscErrorCode MatSeqAIJSetValuesBatch(Mat J, PetscInt Ne, PetscInt Nl, PetscInt
   // copy values from elemMats into COO structure (could be avoided)
   thrust::copy(d_elemMats.begin(), d_elemMats.end(), COO.values.begin());
 
+  // For MPIAIJ, split this into two COO matrices, and return both
+  //   Need the column map
+
   // print the "fat" COO representation
   if (PetscLogPrintInfo) {cusp::print(COO);}
 
