@@ -14,8 +14,22 @@ This works with SeqAIJCUSP matrices.\n\n";
   |      \|
   ---------
   A       B
- */
 
+TO ADD:
+  1) Build and run on baconost
+
+  2) Multi-GPU solve
+    - Try it on GPU machine at Brown
+
+  3) GPU FEM integration
+    - Move launch code to PETSc   or   - Try again now that assembly is in PETSc
+    - Move build code to PETSc
+
+  4) Try out CUSP PCs
+*/
+
+#undef __FUNCT__
+#define __FUNCT__ "IntegrateCells"
 PetscErrorCode IntegrateCells(DM dm, PetscInt *Ne, PetscInt *Nl, PetscInt *N, PetscInt **elemRows, PetscScalar **elemMats) {
   DMDALocalInfo  info;
   PetscInt      *er;
@@ -61,6 +75,8 @@ PetscErrorCode IntegrateCells(DM dm, PetscInt *Ne, PetscInt *Nl, PetscInt *N, Pe
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "AssembleMatrix"
 PetscErrorCode AssembleMatrix(DM dm, PetscInt Ne, PetscInt Nl, PetscInt *elemRows, PetscScalar *elemMats, Mat *A) {
   PetscInt       e;
   PetscLogEvent  assemblyEvent;
