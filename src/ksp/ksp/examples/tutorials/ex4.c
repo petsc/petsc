@@ -22,7 +22,7 @@ TO ADD:
       - Looks 6x faster than CPU
     - Make plot
 
-  2) Solve the Neumann Poisson problem
+  DONE 2) Solve the Neumann Poisson problem
 
   3) Multi-GPU solve
     - Try it on GPU machine at Brown (They need another GNU install)
@@ -120,7 +120,7 @@ int main(int argc, char **argv)
   PetscInt       Nl, Ne, N;
   PetscInt      *elemRows;
   PetscScalar   *elemMats;
-  PetscBool      doSolve;
+  PetscBool      doSolve = PETSC_FALSE;
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, 0, help);CHKERRQ(ierr);
