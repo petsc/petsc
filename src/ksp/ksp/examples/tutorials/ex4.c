@@ -16,7 +16,7 @@ This works with SeqAIJCUSP matrices.\n\n";
   A       B
  */
 
-PetscErrorCode IntegrateCells(DM dm, PetscInt *Nl, PetscInt *Ne, PetscInt *N, PetscInt **elemRows, PetscScalar **elemMats) {
+PetscErrorCode IntegrateCells(DM dm, PetscInt *Ne, PetscInt *Nl, PetscInt *N, PetscInt **elemRows, PetscScalar **elemMats) {
   DMDALocalInfo  info;
   PetscInt      *er;
   PetscScalar   *em;
@@ -61,6 +61,23 @@ PetscErrorCode IntegrateCells(DM dm, PetscInt *Nl, PetscInt *Ne, PetscInt *N, Pe
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode AssembleMatrix(DM dm, PetscInt Ne, PetscInt Nl, PetscInt *elemRows, PetscScalar *elemMats, Mat *A) {
+  PetscInt       e;
+  PetscLogEvent  assemblyEvent;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscLogEventRegister("ElemAssembly", DM_CLASSID, &assemblyEvent);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(assemblyEvent,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMGetMatrix(dm, MATAIJ, A);CHKERRQ(ierr);
+  ierr = MatZeroEntries(*A);CHKERRQ(ierr);
+  for(e = 0; e < Ne; ++e) {
+    ierr = MatSetValues(*A, Nl, &elemRows[Nl*e], Nl, &elemRows[Nl*e], &elemMats[Nl*Nl*e], ADD_VALUES);CHKERRQ(ierr);
+  }
+  ierr = PetscLogEventEnd(assemblyEvent,0,0,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc, char **argv)
@@ -74,21 +91,32 @@ int main(int argc, char **argv)
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, 0, help);CHKERRQ(ierr);
-  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE, DMDA_STENCIL_STAR, -3, -3, PETSC_DECIDE, PETSC_DECIDE, 1, 1, PETSC_NULL, PETSC_NULL, &dm);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE, DMDA_STENCIL_BOX, -3, -3, PETSC_DECIDE, PETSC_DECIDE, 1, 1, PETSC_NULL, PETSC_NULL, &dm);CHKERRQ(ierr);
+  ierr = IntegrateCells(dm, &Ne, &Nl, &N, &elemRows, &elemMats);CHKERRQ(ierr);
+  /* Construct matrix using GPU */
   ierr = MatCreate(PETSC_COMM_WORLD, &A);CHKERRQ(ierr);
-  ierr = IntegrateCells(dm, &Nl, &Ne, &N, &elemRows, &elemMats);CHKERRQ(ierr);
   ierr = MatSetSizes(A, PETSC_DECIDE, PETSC_DECIDE, N, N);CHKERRQ(ierr);
   ierr = MatSetType(A, MATSEQAIJCUSP);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(A, 0, PETSC_NULL);CHKERRQ(ierr);
   ierr = MatSeqAIJSetValuesBatch(A, Ne, Nl, N, elemRows, elemMats);CHKERRQ(ierr);
-  ierr = PetscFree2(elemRows, elemMats);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-
   ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD, PETSC_NULL, &viewer);CHKERRQ(ierr);
   if (N > 500) {ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);}
   ierr = MatView(A, viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  /* Construct matrix using CPU */
+  ierr = AssembleMatrix(dm, Ne, Nl, elemRows, elemMats, &A);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD, PETSC_NULL, &viewer);CHKERRQ(ierr);
+  if (N > 500) {ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);}
+  ierr = MatView(A, viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  /* Cleanup */
+  ierr = PetscFree2(elemRows, elemMats);CHKERRQ(ierr);
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
