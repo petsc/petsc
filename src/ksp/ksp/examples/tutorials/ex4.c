@@ -24,9 +24,12 @@ PetscErrorCode IntegrateCells(DM dm, PetscInt *Nl, PetscInt *Ne, PetscInt *N, Pe
   PetscInt       nl, ne;
   PetscInt       k  = 0, m  = 0;
   PetscInt       i, j;
+  PetscLogEvent  integrationEvent;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscLogEventRegister("ElemIntegration", DM_CLASSID, &integrationEvent);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(integrationEvent,0,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetInfo(dm, 0, &X, &Y,0,0,0,0, &dof,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetLocalInfo(dm, &info);CHKERRQ(ierr);
   nl   = dof*3;
@@ -54,6 +57,7 @@ PetscErrorCode IntegrateCells(DM dm, PetscInt *Nl, PetscInt *Ne, PetscInt *N, Pe
       k += nl; m += nl*nl;
     }
   }
+  ierr = PetscLogEventEnd(integrationEvent,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -63,6 +67,7 @@ int main(int argc, char **argv)
 {
   DM             dm;
   Mat            A;
+  PetscViewer    viewer;
   PetscInt       Nl, Ne, N;
   PetscInt      *elemRows;
   PetscScalar   *elemMats;
@@ -79,7 +84,11 @@ int main(int argc, char **argv)
   ierr = PetscFree2(elemRows, elemMats);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatView(A, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+
+  ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD, PETSC_NULL, &viewer);CHKERRQ(ierr);
+  if (N > 500) {ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);}
+  ierr = MatView(A, viewer);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;

@@ -168,6 +168,7 @@ PetscErrorCode MatSeqAIJSetValuesBatch(Mat J, PetscInt Ne, PetscInt Nl, PetscInt
   ValueArray d_elemMats(elemMats, elemMats + No);
 
   PetscFunctionBegin;
+  ierr = PetscLogEventBegin(MAT_CUSPSetValuesBatch,0,0,0,0);CHKERRQ(ierr);
   // allocate storage for "fat" COO representation of matrix
   ierr = PetscInfo(J, "Making COO matrix\n");CHKERRQ(ierr);
   cusp::coo_matrix<IndexType,ValueType, memSpace> COO(Nr, Nr, No);
@@ -291,6 +292,7 @@ PetscErrorCode MatSeqAIJSetValuesBatch(Mat J, PetscInt Ne, PetscInt Nl, PetscInt
   if (PetscLogPrintInfo) {cusp::print(*Jgpu);}
   ierr = PetscInfo(J, "Copying to CPU matrix");CHKERRQ(ierr);
   ierr = MatCUSPCopyFromGPU(J, Jgpu);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_CUSPSetValuesBatch,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
