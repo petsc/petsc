@@ -1,6 +1,6 @@
 static char help[] = "Test MatSeqAIJSetValuesBatch: setting batches of elements using the GPU.\n\
 This works with SeqAIJCUSP matrices.\n\n";
-#include <petscmat.h>
+#include <petscdmda.h>
 
 /* We will use a structured mesh for this assembly test. Each square will be divided into two triangles:
   C       D
@@ -16,25 +16,31 @@ This works with SeqAIJCUSP matrices.\n\n";
   A       B
  */
 
-PetscErrorCode IntegrateCells(PetscInt *Nl, PetscInt *Ne, PetscInt *N, PetscInt **elemRows, PetscScalar **elemMats) {
+PetscErrorCode IntegrateCells(DM dm, PetscInt *Nl, PetscInt *Ne, PetscInt *N, PetscInt **elemRows, PetscScalar **elemMats) {
+  DMDALocalInfo  info;
   PetscInt      *er;
   PetscScalar   *em;
-  PetscInt       nl = 3, ne = 2 /*triangles*/ * 2 /*x size-1*/ * 2 /*y size-1*/;
+  PetscInt       X, Y, dof;
+  PetscInt       nl, ne;
   PetscInt       k  = 0, m  = 0;
   PetscInt       i, j;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = DMDAGetInfo(dm, 0, &X, &Y,0,0,0,0, &dof,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetLocalInfo(dm, &info);CHKERRQ(ierr);
+  nl   = dof*3;
+  ne   = 2 * (X-1) * (Y-1);
+  *N   = X * Y * dof;
+  *Ne  = ne;
+  *Nl  = nl;
   ierr = PetscMalloc2(ne*nl, PetscInt, elemRows, ne*nl*nl, PetscScalar, elemMats);CHKERRQ(ierr);
-  *N  = 3 /*x size*/ * 3 /*y size*/;
-  *Ne = ne;
-  *Nl = nl;
-  er  = *elemRows;
-  em  = *elemMats;
-  for(j = 0; j < 2; ++j) {
-    for(i = 0; i < 2; ++i) {
-      PetscInt rowA = j*nl     + i, rowB = j*nl     + i+1;
-      PetscInt rowC = (j+1)*nl + i, rowD = (j+1)*nl + i+1;
+  er   = *elemRows;
+  em   = *elemMats;
+  for(j = info.ys; j < info.ys+info.ym-1; ++j) {
+    for(i = info.xs; i < info.xs+info.xm-1; ++i) {
+      PetscInt rowA = j*X     + i, rowB = j*X     + i+1;
+      PetscInt rowC = (j+1)*X + i, rowD = (j+1)*X + i+1;
 
       /* Lower triangle */
       er[k+0] = rowA; em[m+0*nl+0] =  1.0; em[m+0*nl+1] = -0.5; em[m+0*nl+2] = -0.5;
@@ -55,6 +61,7 @@ PetscErrorCode IntegrateCells(PetscInt *Nl, PetscInt *Ne, PetscInt *N, PetscInt 
 #define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
+  DM             dm;
   Mat            A;
   PetscInt       Nl, Ne, N;
   PetscInt      *elemRows;
@@ -62,8 +69,9 @@ int main(int argc, char **argv)
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, 0, help);CHKERRQ(ierr);
-  ierr = MatCreate(MPI_COMM_SELF,&A);CHKERRQ(ierr);
-  ierr = IntegrateCells(&Nl, &Ne, &N, &elemRows, &elemMats);CHKERRQ(ierr);
+  ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE, DMDA_STENCIL_STAR, -3, -3, PETSC_DECIDE, PETSC_DECIDE, 1, 1, PETSC_NULL, PETSC_NULL, &dm);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD, &A);CHKERRQ(ierr);
+  ierr = IntegrateCells(dm, &Nl, &Ne, &N, &elemRows, &elemMats);CHKERRQ(ierr);
   ierr = MatSetSizes(A, PETSC_DECIDE, PETSC_DECIDE, N, N);CHKERRQ(ierr);
   ierr = MatSetType(A, MATSEQAIJCUSP);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(A, 0, PETSC_NULL);CHKERRQ(ierr);
@@ -72,6 +80,7 @@ int main(int argc, char **argv)
   ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatView(A, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = DMDestroy(&dm);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }
