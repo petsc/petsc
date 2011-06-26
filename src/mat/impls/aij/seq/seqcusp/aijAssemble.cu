@@ -161,22 +161,24 @@ PetscErrorCode MatSeqAIJSetValuesBatch(Mat J, PetscInt Ne, PetscInt Nl, PetscInt
 {
   size_t N  = Ne * Nl;
   size_t No = Ne * Nl*Nl;
+  PetscErrorCode ierr;
 
   // copy elemRows and elemMat to device
   IndexArray d_elemRows(elemRows, elemRows + N);
   ValueArray d_elemMats(elemMats, elemMats + No);
 
+  PetscFunctionBegin;
   // allocate storage for "fat" COO representation of matrix
-  std::cout << "Making COO matrix" << std::endl;
+  ierr = PetscInfo(J, "Making COO matrix\n");CHKERRQ(ierr);
   cusp::coo_matrix<IndexType,ValueType, memSpace> COO(Nr, Nr, No);
 
   // repeat elemRows entries Nl times
-  std::cout << "Making row indices" << std::endl;
+  ierr = PetscInfo(J, "Making row indices\n");CHKERRQ(ierr);
   repeated_range<IndexArrayIterator> rowInd(d_elemRows.begin(), d_elemRows.end(), Nl);
   thrust::copy(rowInd.begin(), rowInd.end(), COO.row_indices.begin());
 
   // tile rows of elemRows Nl times
-  std::cout << "Making column indices" << std::endl;
+  ierr = PetscInfo(J, "Making column indices\n");CHKERRQ(ierr);
   tiled_range<IndexArrayIterator> colInd(d_elemRows.begin(), d_elemRows.end(), Nl, Nl);
   thrust::copy(colInd.begin(), colInd.end(), COO.column_indices.begin());
 
@@ -184,56 +186,60 @@ PetscErrorCode MatSeqAIJSetValuesBatch(Mat J, PetscInt Ne, PetscInt Nl, PetscInt
   thrust::copy(d_elemMats.begin(), d_elemMats.end(), COO.values.begin());
 
   // print the "fat" COO representation
-  cusp::print(COO);
+  if (PetscLogPrintInfo) {cusp::print(COO);}
 
   // sort COO format by (i,j), this is the most costly step
-  std::cout << "Sorting rows and columns" << std::endl;
-  //COO.sort_by_row_and_column();
-  ///cusp::detail::sort_by_row_and_column(COO.row_indices, COO.column_indices, COO.values);
+  ierr = PetscInfo(J, "Sorting rows and columns\n");CHKERRQ(ierr);
+#if 1
+  COO.sort_by_row_and_column();
+#else
   {
-    std::cout << "  Making permutation" << std::endl;
+    ierr = PetscInfo(J, "  Making permutation\n");CHKERRQ(ierr);
     IndexArray permutation(No);
     thrust::sequence(permutation.begin(), permutation.end());
 
     // compute permutation and sort by (I,J)
     {
-        std::cout << "  Sorting columns" << std::endl;
+        ierr = PetscInfo(J, "  Sorting columns\n");CHKERRQ(ierr);
         IndexArray temp(No);
         thrust::copy(COO.column_indices.begin(), COO.column_indices.end(), temp.begin());
         thrust::stable_sort_by_key(temp.begin(), temp.end(), permutation.begin());
-        std::cout << "    Sorted columns" << std::endl;
-        for(IndexArrayIterator t_iter = temp.begin(), p_iter = permutation.begin(); t_iter != temp.end(); ++t_iter, ++p_iter) {
-          std::cout << *t_iter << "("<<*p_iter<<")" << std::endl;
+        ierr = PetscInfo(J, "    Sorted columns\n");CHKERRQ(ierr);
+        if (PetscLogPrintInfo) {
+          for(IndexArrayIterator t_iter = temp.begin(), p_iter = permutation.begin(); t_iter != temp.end(); ++t_iter, ++p_iter) {
+            ierr = PetscInfo2(J, "%d(%d)\n", *t_iter, *p_iter);CHKERRQ(ierr);
+          }
         }
 
-        std::cout << "  Copying rows" << std::endl;
+        ierr = PetscInfo(J, "  Copying rows\n");CHKERRQ(ierr);
         //cusp::copy(COO.row_indices, temp);
         thrust::copy(COO.row_indices.begin(), COO.row_indices.end(), temp.begin());
-        std::cout << "  Gathering rows" << std::endl;
+        ierr = PetscInfo(J, "  Gathering rows\n");CHKERRQ(ierr);
         thrust::gather(permutation.begin(), permutation.end(), temp.begin(), COO.row_indices.begin());
-        std::cout << "  Sorting rows" << std::endl;
+        ierr = PetscInfo(J, "  Sorting rows\n");CHKERRQ(ierr);
         thrust::stable_sort_by_key(COO.row_indices.begin(), COO.row_indices.end(), permutation.begin());
 
-        std::cout << "  Gathering columns" << std::endl;
+        ierr = PetscInfo(J, "  Gathering columns\n");CHKERRQ(ierr);
         cusp::copy(COO.column_indices, temp);
         thrust::gather(permutation.begin(), permutation.end(), temp.begin(), COO.column_indices.begin());
     }
 
     // use permutation to reorder the values
     {
-        std::cout << "  Sorting values" << std::endl;
+        ierr = PetscInfo(J, "  Sorting values\n");CHKERRQ(ierr);
         ValueArray temp(COO.values);
         cusp::copy(COO.values, temp);
         thrust::gather(permutation.begin(), permutation.end(), temp.begin(), COO.values.begin());
     }
   }
+#endif
 
   // print the "fat" COO representation
-  cusp::print(COO);
+  if (PetscLogPrintInfo) {cusp::print(COO);}
 
   // compute number of unique (i,j) entries
   //   this counts the number of changes as we move along the (i,j) list
-  std::cout << "Computing number of unique entries" << std::endl;
+  ierr = PetscInfo(J, "Computing number of unique entries\n");CHKERRQ(ierr);
   size_t num_entries = thrust::inner_product
     (thrust::make_zip_iterator(thrust::make_tuple(COO.row_indices.begin(), COO.column_indices.begin())),
      thrust::make_zip_iterator(thrust::make_tuple(COO.row_indices.end (),  COO.column_indices.end()))   - 1,
@@ -243,15 +249,15 @@ PetscErrorCode MatSeqAIJSetValuesBatch(Mat J, PetscInt Ne, PetscInt Nl, PetscInt
      thrust::not_equal_to< thrust::tuple<IndexType,IndexType> >());
 
   // allocate COO storage for final matrix
-  std::cout << "Allocating compressed matrix" << std::endl;
+  ierr = PetscInfo(J, "Allocating compressed matrix\n");CHKERRQ(ierr);
   cusp::coo_matrix<IndexType, ValueType, memSpace> A(Nr, Nr, num_entries);
 
   // sum values with the same (i,j) index
   // XXX thrust::reduce_by_key is unoptimized right now, so we provide a SpMV-based one in cusp::detail
   //     the Cusp one is 2x faster, but still not optimal
   // This could possibly be done in-place
-  std::cout << "Compressing matrix" << std::endl;
-#if 0
+  ierr = PetscInfo(J, "Compressing matrix\n");CHKERRQ(ierr);
+#if 1
   cusp::detail::device::reduce_by_key
     (thrust::make_zip_iterator(thrust::make_tuple(COO.row_indices.begin(), COO.column_indices.begin())),
      thrust::make_zip_iterator(thrust::make_tuple(COO.row_indices.end(),   COO.column_indices.end())),
@@ -272,19 +278,19 @@ PetscErrorCode MatSeqAIJSetValuesBatch(Mat J, PetscInt Ne, PetscInt Nl, PetscInt
 #endif
 
   // print the final matrix
-  cusp::print(A);
+  if (PetscLogPrintInfo) {cusp::print(A);}
 
-  std::cout << "Writing matrix" << std::endl;
-  cusp::io::write_matrix_market_file(A, "A.mtx");
+  //std::cout << "Writing matrix" << std::endl;
+  //cusp::io::write_matrix_market_file(A, "A.mtx");
 
-  PetscErrorCode ierr;
-
+  ierr = PetscInfo(J, "Converting to PETSc matrix\n");CHKERRQ(ierr);
   ierr = MatSetType(J, MATSEQAIJCUSP);CHKERRQ(ierr);
   //cusp::csr_matrix<PetscInt,PetscScalar,cusp::device_memory> Jgpu;
   CUSPMATRIX *Jgpu = new CUSPMATRIX;
   cusp::convert(A, *Jgpu);
-  cusp::print(*Jgpu);
+  if (PetscLogPrintInfo) {cusp::print(*Jgpu);}
+  ierr = PetscInfo(J, "Copying to CPU matrix");CHKERRQ(ierr);
   ierr = MatCUSPCopyFromGPU(J, Jgpu);CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 EXTERN_C_END
