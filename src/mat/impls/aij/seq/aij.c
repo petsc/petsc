@@ -1152,19 +1152,18 @@ PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
 #define __FUNCT__ "MatMultAdd_SeqAIJ"
 PetscErrorCode MatMultAdd_SeqAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 {
-  Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data;
-  PetscScalar     *x,*y,*z;
-  const MatScalar *aa;
-  PetscErrorCode  ierr;
-  PetscInt        m = A->rmap->n,*aj,*ii;
-#if !defined(PETSC_USE_FORTRAN_KERNEL_MULTADDAIJ)
-  PetscInt        n,i,jrow,j,*ridx=PETSC_NULL;
-  PetscScalar     sum;
-  PetscBool       usecprow=a->compressedrow.use;
-#endif
+  Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
+  PetscScalar       *y,*z;
+  const PetscScalar *x;
+  const MatScalar   *aa;
+  PetscErrorCode    ierr;
+  PetscInt          m = A->rmap->n,*aj,*ii;
+  PetscInt          n,i,*ridx=PETSC_NULL;
+  PetscScalar       sum;
+  PetscBool         usecprow=a->compressedrow.use;
 
   PetscFunctionBegin; 
-  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
   if (zz != yy) {
     ierr = VecGetArray(zz,&z);CHKERRQ(ierr);
@@ -1175,9 +1174,6 @@ PetscErrorCode MatMultAdd_SeqAIJ(Mat A,Vec xx,Vec yy,Vec zz)
   aj  = a->j;
   aa  = a->a;
   ii  = a->i;
-#if defined(PETSC_USE_FORTRAN_KERNEL_MULTADDAIJ)
-  fortranmultaddaij_(&m,x,ii,aj,aa,y,z);
-#else
   if (usecprow){ /* use compressed row format */
     if (zz != yy){
       ierr = PetscMemcpy(z,y,m*sizeof(PetscScalar));CHKERRQ(ierr);
@@ -1190,23 +1186,25 @@ PetscErrorCode MatMultAdd_SeqAIJ(Mat A,Vec xx,Vec yy,Vec zz)
       aj  = a->j + ii[i];
       aa  = a->a + ii[i];
       sum = y[*ridx];
-      for (j=0; j<n; j++) sum += (*aa++)*x[*aj++]; 
+      PetscSparseDensePlusDot(sum,x,aa,aj,n); 
       z[*ridx++] = sum;
     }
   } else { /* do not use compressed row format */
+#if defined(PETSC_USE_FORTRAN_KERNEL_MULTADDAIJ)
+  fortranmultaddaij_(&m,x,ii,aj,aa,y,z);
+#else
     for (i=0; i<m; i++) {
-      jrow = ii[i];
-      n    = ii[i+1] - jrow;
+      n    = ii[i+1] - ii[i];
+      aj  = a->j + ii[i];
+      aa  = a->a + ii[i];
       sum  = y[i];
-      for (j=0; j<n; j++) {
-        sum += aa[jrow]*x[aj[jrow]]; jrow++;
-      }
+      PetscSparseDensePlusDot(sum,x,aa,aj,n); 
       z[i] = sum;
     }
-  }
 #endif
+  }
   ierr = PetscLogFlops(2.0*a->nz);CHKERRQ(ierr);
-  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   if (zz != yy) {
     ierr = VecRestoreArray(zz,&z);CHKERRQ(ierr);
