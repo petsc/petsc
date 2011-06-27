@@ -1,16 +1,18 @@
 #!/bin/bash
-export BUILDDIR = $HOME/working/taobuild
+export BUILDDIR=$HOME/working/taobuild
 export VERSION=2.0-beta2
 export REVISION=default
 export HERE=$PWD
-if (! -d $BUILDDIR) then
+if [ ! -d "$BUILDDIR" ]
+then
     mkdir -p $BUILDDIR
-endif
+fi
 cd $BUILDDIR
 
-if (-d tao-$VERSION) then
+if [ -d "tao-$VERSION" ]
+then
     rm -rf tao-$VERSION
-endif
+fi
 
 echo "Cloning ssh://login.mcs.anl.gov//home/sarich/hg/tao_c -r $REVISION"
 hg clone ssh://login.mcs.anl.gov//home/sarich/hg/tao_c -r $REVISION tao-$VERSION
@@ -31,6 +33,5 @@ tar czf tao-$VERSION.tar.gz --exclude-vcs --exclude="TODO" --exclude="oldtao" --
 
 echo "mv tao-$VERSION.tar.gz $HERE"
 mv tao-$VERSION.tar.gz $HERE
-
 
 
