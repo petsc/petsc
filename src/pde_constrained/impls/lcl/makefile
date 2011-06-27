@@ -2,14 +2,14 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = rsqn.c
+SOURCEC  = lcl.c
 SOURCEF  = 
-SOURCEH  = rsqn.h
-OBJSC    = rsqn.o
+SOURCEH  = lcl.h
+OBJSC    = lcl.o
 OBJSF    = 
 LIBBASE  = libtaosolver
 MANSEC   = taosolver
-LOCDIR   = src/constrained/impls/rsqn/
+LOCDIR   = src/pde_constrained/impls/lcl/
 
 include ${TAO_DIR}/conf/tao_base
 
