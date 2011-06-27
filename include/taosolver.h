@@ -50,8 +50,7 @@ extern PetscErrorCode TaoSolverSetUp(TaoSolver);
 extern PetscErrorCode TaoSolverSetType(TaoSolver, const TaoSolverType);
 extern PetscErrorCode TaoSolverGetType(TaoSolver, TaoSolverType *);
 
-#define TaoSolverDestroy(a) (TaoSolverDestroy_(a) || (((a)=0),0))
-extern PetscErrorCode TaoSolverDestroy_(TaoSolver);
+extern PetscErrorCode TaoSolverDestroy(TaoSolver);
 
 extern PetscErrorCode TaoSolverSetOptionsPrefix(TaoSolver,const char []);
 extern PetscErrorCode TaoSolverView(TaoSolver, PetscViewer);

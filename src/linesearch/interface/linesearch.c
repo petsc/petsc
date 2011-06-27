@@ -157,7 +157,7 @@ PetscErrorCode TaoLineSearchCreate(MPI_Comm comm, TaoLineSearch *newls)
 
      info = PetscHeaderCreate(ls,_p_TaoLineSearch,struct _TaoLineSearchOps,
 			      TAOLINESEARCH_CLASSID, 0, "TaoLineSearch",
-			      comm,TaoLineSearchDestroy_, TaoLineSearchView);
+			      comm,TaoLineSearchDestroy, TaoLineSearchView);
      CHKERRQ(info);
      ls->bounded = 0;
      ls->maxfev=30;
@@ -222,9 +222,9 @@ PetscErrorCode TaoLineSearchSetUp(TaoLineSearch ls)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TaoLineSearchDestroy_"
+#define __FUNCT__ "TaoLineSearchDestroy"
 /*@ 
-  TaoLineSearchDestroy_ - Destroys the TAO context that was created with 
+  TaoLineSearchDestroy - Destroys the TAO context that was created with 
   TaoLineSearchCreate()
 
   Collective on TaoLineSearch
@@ -236,7 +236,7 @@ PetscErrorCode TaoLineSearchSetUp(TaoLineSearch ls)
 
 .seealse: TaoLineSearchCreate(), TaoLineSearchSolve()
 @*/
-PetscErrorCode TaoLineSearchDestroy_(TaoLineSearch ls)
+PetscErrorCode TaoLineSearchDestroy(TaoLineSearch ls)
 {
      PetscErrorCode info;
      PetscFunctionBegin;

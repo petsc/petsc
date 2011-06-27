@@ -57,7 +57,7 @@ PetscErrorCode TaoSolverCreate(MPI_Comm comm, TaoSolver *newtao)
     ierr = TaoSolverInitializePackage(PETSC_NULL); CHKERRQ(ierr);
 #endif
 
-    ierr = PetscHeaderCreate(tao,_p_TaoSolver, struct _TaoSolverOps, TAOSOLVER_CLASSID,0,"TaoSolver",comm,TaoSolverDestroy_,TaoSolverView); CHKERRQ(ierr);
+    ierr = PetscHeaderCreate(tao,_p_TaoSolver, struct _TaoSolverOps, TAOSOLVER_CLASSID,0,"TaoSolver",comm,TaoSolverDestroy,TaoSolverView); CHKERRQ(ierr);
     
     tao->ops->computeobjective=0;
     tao->ops->computeobjectiveandgradient=0;
@@ -227,9 +227,9 @@ PetscErrorCode TaoSolverSetUp(TaoSolver tao)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TaoSolverDestroy_"
+#define __FUNCT__ "TaoSolverDestroy"
 /*@ 
-  TaoSolverDestroy_ - Destroys the TAO context that was created with 
+  TaoSolverDestroy - Destroys the TAO context that was created with 
   TaoSolverCreate()
 
   Collective on TaoSolver
@@ -241,7 +241,7 @@ PetscErrorCode TaoSolverSetUp(TaoSolver tao)
 
 .seealse: TaoSolverCreate(), TaoSolverSolve()
 @*/
-PetscErrorCode TaoSolverDestroy_(TaoSolver tao)
+PetscErrorCode TaoSolverDestroy(TaoSolver tao)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
