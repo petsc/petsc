@@ -257,6 +257,7 @@ PetscErrorCode MatDestroy_FFTW(Mat A)
 #endif
   fftw_destroy_plan(fftw->p_forward);
   fftw_destroy_plan(fftw->p_backward);
+  ierr = PetscFree(fftw->dim_fftw);CHKERRQ(ierr);
   ierr = PetscFree(fft->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -584,11 +585,7 @@ PetscErrorCode MatCreate_FFTW(Mat A)
   fft->n           = n;
   fftw->ndim_fftw  = (ptrdiff_t)ndim; // This is dimension of fft
   ierr = PetscMalloc(ndim*sizeof(ptrdiff_t), (ptrdiff_t *)&(fftw->dim_fftw));CHKERRQ(ierr); 
-//  (fftw->dim_fftw)=(ptrdiff_t *)calloc(ndim,sizeof(ptrdiff_t));
-  for(ctr=0;ctr<ndim;ctr++)
-      {
-          (fftw->dim_fftw)[ctr]=dim[ctr];
-      } 
+  for(ctr=0;ctr<ndim;ctr++) (fftw->dim_fftw)[ctr]=dim[ctr];
   
   fftw->p_forward  = 0;
   fftw->p_backward = 0;
