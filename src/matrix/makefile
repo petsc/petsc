@@ -3,10 +3,10 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = lmvmmat.c adamat.c submatfree.c #approxmat.c
+SOURCEC  = lmvmmat.c adamat.c submatfree.c approxmat.c
 SOURCEF  = 
-SOURCEH  = lmvmmat.h adamat.h submatfree.h #approxmat.h
-OBJSC    =  lmvmmat.o adamat.o submatfree.o #approxmat.o
+SOURCEH  = lmvmmat.h adamat.h submatfree.h approxmat.h
+OBJSC    =  lmvmmat.o adamat.o submatfree.o approxmat.o
 OBJSF    = 
 LIBBASE  = libtao
 MANSEC   = util
