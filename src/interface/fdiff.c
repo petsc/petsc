@@ -61,7 +61,6 @@ static PetscErrorCode Fsnes(SNES snes ,Vec X,Vec G,void*ctx){
 @*/
 PetscErrorCode TaoSolverDefaultComputeGradient(TaoSolver tao,Vec X,Vec G,void *dummy) 
 {
-  Vec TempX;
   PetscReal *g;
   PetscReal f, f2;
   PetscErrorCode ierr;
@@ -71,21 +70,19 @@ PetscErrorCode TaoSolverDefaultComputeGradient(TaoSolver tao,Vec X,Vec G,void *d
   PetscFunctionBegin;
   ierr = TaoSolverComputeObjective(tao, X,&f); CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(PETSC_NULL,"-tao_fd_delta",&h,&flg); CHKERRQ(ierr);
-  ierr = VecDuplicate(X,&TempX); CHKERRQ(ierr);
-  ierr = VecCopy(X,TempX); CHKERRQ(ierr);
   ierr = VecGetSize(X,&N); CHKERRQ(ierr);
-  ierr = VecGetOwnershipRange(TempX,&low,&high); CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(X,&low,&high); CHKERRQ(ierr);
   ierr = VecGetArray(G,&g); CHKERRQ(ierr);
   for (i=0;i<N;i++) {
-      ierr = VecSetValue(TempX,i,h,ADD_VALUES); CHKERRQ(ierr);
-      ierr = VecAssemblyBegin(TempX); CHKERRQ(ierr);
-      ierr = VecAssemblyEnd(TempX); CHKERRQ(ierr);
+      ierr = VecSetValue(X,i,h,ADD_VALUES); CHKERRQ(ierr);
+      ierr = VecAssemblyBegin(X); CHKERRQ(ierr);
+      ierr = VecAssemblyEnd(X); CHKERRQ(ierr);
 
-      ierr = TaoSolverComputeObjective(tao,TempX,&f2); CHKERRQ(ierr);
+      ierr = TaoSolverComputeObjective(tao,X,&f2); CHKERRQ(ierr);
 
-      ierr = VecSetValue(TempX,i,-h,ADD_VALUES);
-      ierr = VecAssemblyBegin(TempX); CHKERRQ(ierr);
-      ierr = VecAssemblyEnd(TempX); CHKERRQ(ierr);
+      ierr = VecSetValue(X,i,-h,ADD_VALUES);
+      ierr = VecAssemblyBegin(X); CHKERRQ(ierr);
+      ierr = VecAssemblyEnd(X); CHKERRQ(ierr);
       
       if (i>=low && i<high) {
 	  g[i-low]=(f2-f)/h;

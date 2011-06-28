@@ -6,11 +6,10 @@ replace default convergence test
 
 MANSEC - do we need more than 1?
 
+tao_version.h
 
 finite differences
    add to tests (-tao_fd, -tao_fdgrad, -tao_fd_delta)
-
-fd_test memory leak
 
 Mesh Refinement
  - fd
