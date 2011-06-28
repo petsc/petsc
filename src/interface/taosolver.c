@@ -97,15 +97,12 @@ PetscErrorCode TaoSolverCreate(MPI_Comm comm, TaoSolver *newtao)
     tao->xtol        = 0.0;
     tao->trtol       = 0.0;
     tao->fmin        = -1e100;
-    tao->conv_hist_reset = PETSC_TRUE;
-    tao->conv_hist_max = 0;
-    tao->conv_hist_len = 0;
-    tao->conv_hist_obj = PETSC_NULL;
-    tao->conv_hist_resid = PETSC_NULL;
-    tao->conv_hist_ls_trials = PETSC_NULL;
-    tao->conv_hist_ksp_its = PETSC_NULL;
-    tao->conv_hist_iteration = PETSC_NULL;
-    tao->conv_hist_cnorm = PETSC_NULL;
+    tao->hist_reset = PETSC_TRUE;
+    tao->hist_max = 0;
+    tao->hist_len = 0;
+    tao->hist_obj = PETSC_NULL;
+    tao->hist_resid = PETSC_NULL;
+    tao->hist_cnorm = PETSC_NULL;
 
     tao->numbermonitors=0;
     tao->viewsolution=PETSC_FALSE;
@@ -800,7 +797,7 @@ PetscErrorCode TaoSolverResetStatistics(TaoSolver tao)
     tao->cnorm        = 0.0;
     tao->step         = 0.0;
     tao->lsflag       = PETSC_FALSE;
-    if (tao->conv_hist_reset) tao->conv_hist_len=0;
+    if (tao->hist_reset) tao->hist_len=0;
     PetscFunctionReturn(0);
 }
 
@@ -1554,6 +1551,7 @@ PetscErrorCode TaoSolverMonitor(TaoSolver tao, PetscInt its, PetscReal f, PetscR
     tao->cnorm = cnorm;
     tao->step = steplength;
     tao->niter=its;
+    TaoSolverLogHistory(tao,f,res,cnorm);
     if (TaoInfOrNaN(f) || TaoInfOrNaN(res)) {
       SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf or NaN");
     }
@@ -1567,5 +1565,92 @@ PetscErrorCode TaoSolverMonitor(TaoSolver tao, PetscInt its, PetscReal f, PetscR
     
     PetscFunctionReturn(0);
 
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "TaoSolverSetHistory"
+/*@
+   TaoSolverSetHistory - Sets the array used to hold the convergence history.
+
+   Collective on TAO_SOLVER
+
+   Input Parameters:
++  tao - the TaoSolver solver context
+.  obj   - array to hold objective value history
+.  resid - array to hold residual history
+.  cnorm - array to hold constraint violation history
+.  na  - size of obj, resid, and cnorm
+-  reset - PetscTrue indicates each new minimization resets the history counter to zero,
+           else it continues storing new values for new minimizations after the old ones
+
+   Notes:
+   If set, TAO will fill the given arrays with the indicated
+   information at each iteration.  If no information is desired
+   for a given array, then PETSC_NULL may be used.
+
+   This routine is useful, e.g., when running a code for purposes
+   of accurate performance monitoring, when no I/O should be done
+   during the section of code that is being timed.
+
+   Level: intermediate
+
+.keywords: options, view, monitor, convergence, history
+
+.seealso: TaoSolverGetHistory()
+
+@*/
+PetscErrorCode TaoSolverSetHistory(TaoSolver tao, PetscReal *obj, PetscReal *resid, PetscReal *cnorm, PetscInt na,PetscBool reset)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
+  tao->hist_obj = obj;
+  tao->hist_resid = resid;
+  tao->hist_cnorm = cnorm;
+  tao->hist_max   = na;
+  tao->hist_reset = reset;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "TaoSolverGetHistory"
+/*@
+   TaoSolverGetHistory - Gets the array used to hold the convergence history.
+
+   Collective on TaoSolver
+
+   Input Parameter:
++  tao - the TaoSolver solver context
+
+   Output Parameters:
++  obj   - array used to hold objective value history
+.  resid - array used to hold residual history
+.  cnorm - array used to hold constraint violation history
+-  na  - size of obj, resid, and cnorm (will be less than or equal to na given in TaoSolverSetHistory)
+
+
+   Notes:
+    The calling sequence for this routine in Fortran is
+$   call TaoSolverGetHistory(TaoSolver tao, integer obj, integer resid, integer cnorm, integer na, integer info)
+
+   This routine is useful, e.g., when running a code for purposes
+   of accurate performance monitoring, when no I/O should be done
+   during the section of code that is being timed.
+
+   Level: advanced
+
+.keywords: convergence, history, monitor, View
+
+.seealso: TaoSolverSetConvergencHistory()
+
+@*/
+PetscErrorCode TaoSolverGetHistory(TaoSolver tao, PetscReal **obj, PetscReal **resid, PetscReal **cnorm, PetscInt *na)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
+  if (obj)   *obj   = tao->hist_obj;
+  if (cnorm) *cnorm = tao->hist_cnorm;
+  if (resid) *resid = tao->hist_resid;
+  if (na) *na   = tao->hist_len;
+  PetscFunctionReturn(0);
 }
 

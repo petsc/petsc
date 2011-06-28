@@ -116,21 +116,24 @@ struct _p_TaoSolver {
     PetscBool viewhessian;
     PetscBool viewjacobian;
 
-    PetscInt conv_hist_max;/* Number of iteration histories to keep */
-    PetscReal *conv_hist_obj; /* obj value at each iteration */
-    PetscReal *conv_hist_resid; /* residual at each iteration */
-    PetscReal *conv_hist_cnorm; /* constraint norm at each iteration */
-    PetscInt *conv_hist_ls_trials;
-    PetscInt *conv_hist_ksp_its;
-    PetscInt *conv_hist_iteration;
-    PetscInt conv_hist_len;
-    PetscBool conv_hist_reset;
+    PetscInt hist_max;/* Number of iteration histories to keep */
+    PetscReal *hist_obj; /* obj value at each iteration */
+    PetscReal *hist_resid; /* residual at each iteration */
+    PetscReal *hist_cnorm; /* constraint norm at each iteration */
+    PetscInt hist_len;
+    PetscBool hist_reset;
 
     
 };
 
 extern PetscLogEvent TaoSolver_Solve, TaoSolver_ObjectiveEval, TaoSolver_ObjGradientEval, TaoSolver_GradientEval, TaoSolver_HessianEval, TaoSolver_ConstraintsEval, TaoSolver_JacobianEval;
-    
 
+#define TaoSolverLogHistory(tao,obj,resid,cnorm) \
+  { if (tao->hist_max > tao->hist_len) \
+      { if (tao->hist_obj) tao->hist_obj[tao->hist_len]=obj;\
+        if (tao->hist_resid) tao->hist_resid[tao->hist_len]=resid;\
+        if (tao->hist_cnorm) tao->hist_cnorm[tao->hist_len]=cnorm;} \
+    tao->hist_len++;\
+  }
 
 #endif

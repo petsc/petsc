@@ -109,6 +109,8 @@ extern PetscErrorCode TaoSolverResetStatistics(TaoSolver);
 extern PetscErrorCode TaoSolverSetDefaultMonitors(TaoSolver);
 extern PetscErrorCode TaoSolverGetKSP(TaoSolver, KSP*);
 extern PetscErrorCode TaoSolverDefaultConvergenceTest(TaoSolver,void*);
+extern PetscErrorCode TaoSolverSetHistory(TaoSolver,PetscReal*,PetscReal*,PetscReal*,PetscInt,PetscBool);
+extern PetscErrorCode TaoSolverGetHistory(TaoSolver,PetscReal**,PetscReal**,PetscReal**,PetscInt*);
 extern PetscErrorCode TaoSolverSetMonitor(TaoSolver, PetscErrorCode (*)(TaoSolver,void*),void *);
 extern PetscErrorCode TaoSolverDefaultMonitor(TaoSolver, void*);
 extern PetscErrorCode TaoSolverDefaultSMonitor(TaoSolver, void*);
@@ -116,6 +118,7 @@ extern PetscErrorCode TaoSolverDefaultCMonitor(TaoSolver, void*);
 extern PetscErrorCode TaoSolverSQPCONSetStateIS(TaoSolver, IS);
 extern PetscErrorCode TaoSolverLCLSetStateIS(TaoSolver, IS);
 PetscErrorCode TaoSolverMonitor(TaoSolver, PetscInt, PetscReal, PetscReal, PetscReal, PetscReal, TaoSolverTerminationReason*); 
+
 
 
 

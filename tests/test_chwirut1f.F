@@ -36,11 +36,13 @@
       PetscErrorCode   ierr    ! used to check for functions returning nonzeros
       Vec              x       ! solution vector
       Vec              f       ! vector of functions
-      TaoSolver        tao     ! TAO_SOVER context
+      TaoSolver        tao     ! TaoSolver context
       PetscBool       flg     
       PetscInt         i
       integer          size,rank    ! number of processes running
       PetscReal      zero
+      PetscReal      hist(100) ! objective value history
+      PetscReal      resid(100)! residual history
       TaoSolverTerminationReason reason
 
       
@@ -106,10 +108,15 @@
 !  Check for TAO command line options
       call TaoSolverSetFromOptions(tao,ierr)
       CHKERRQ(ierr)
-
+      call TaoSolverSetHistory(tao,hist,resid,PETSC_NULL_INTEGER,       &
+     &     100,PETSC_TRUE,ierr)
+      CHKERRQ(ierr)
 !  SOLVE THE APPLICATION
       call TaoSolverSolve(tao,ierr)
-
+      CHKERRQ(ierr)
+      do i=1,20
+         print *,hist(i),resid(i)
+      enddo
       call TaoSolverGetConvergedReason(tao, reason, ierr)
       if (reason .le. 0) then
          print *,'Try a different TAO method, adjust some parameters,'

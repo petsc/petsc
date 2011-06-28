@@ -71,6 +71,7 @@ int main(int argc,char **argv)
   Mat        J;                  /* Jacobian matrix */ 
   TaoSolver  tao;                /* TAO_SOLVER solver context */
   PetscInt   i;               /* iteration information */
+  PetscReal  hist[100],resid[100];
   AppCtx     user;               /* user-defined work context */
 
    /* Initialize TAO and PETSc */
@@ -110,8 +111,13 @@ int main(int argc,char **argv)
   /* Check for any TAO command line arguments */
   ierr = TaoSolverSetFromOptions(tao); CHKERRQ(ierr);
 
+  ierr = TaoSolverSetHistory(tao,hist,resid,0,100,PETSC_TRUE); CHKERRQ(ierr);
   /* Perform the Solve */
   ierr = TaoSolverSolve(tao); CHKERRQ(ierr);
+
+  for (i=0;i<20;i++) {
+    printf("%12.5f\t%12.5f\n",hist[i],resid[i]); 
+  }
   ierr = TaoSolverView(tao,PETSC_VIEWER_STDOUT_SELF); CHKERRQ(ierr);
 
   /* Use VecView to print x to screen  */
