@@ -29,7 +29,7 @@ PetscErrorCode TaoSolverSolve_FD(TaoSolver tao)
     ierr = VecDuplicate(x,&g1); CHKERRQ(ierr);
     ierr = VecDuplicate(x,&g2); CHKERRQ(ierr);
 
-    ierr = PetscPrintf(comm,"Testing hand-coded gradient, if the ratio ||fd - hc|| / ||hc|| is\n"); CHKERRQ(ierr);
+    ierr = PetscPrintf(comm,"Testing hand-coded gradient (hc) against finite difference gradient (fd), if the ratio ||fd - hc|| / ||hc|| is\n"); CHKERRQ(ierr);
     ierr = PetscPrintf(comm,"0 (1.e-8), the hand-coded gradient is probably correct.\n"); CHKERRQ(ierr);
     
     if (!fd->complete_print) {
@@ -75,7 +75,7 @@ PetscErrorCode TaoSolverSolve_FD(TaoSolver tao)
   if (fd->check_hessian) {
     if (A != tao->hessian_pre) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot test with alternative preconditioner");
 
-    ierr = PetscPrintf(comm,"Testing hand-coded Hessian, if the ratio is\n");CHKERRQ(ierr);
+    ierr = PetscPrintf(comm,"Testing hand-coded Hessian (hc) against finite difference Hessian (fd). If the ratio is\n");CHKERRQ(ierr);
     ierr = PetscPrintf(comm,"O (1.e-8), the hand-coded Hessian is probably correct.\n");CHKERRQ(ierr);
   
     if (!fd->complete_print) {
