@@ -250,14 +250,14 @@ initialized by some other library), the user can first call
 \trl{MPI_Init()} (or have the other library do it), and then call
 PetscInitialize().
 By default, PetscInitialize() sets the PETSc ``world''
-communicator, given by PETSC_COMM_WORLD, to \trl{MPI_COMM_WORLD}.
+communicator, given by PETSC\_COMM\_WORLD, to \trl{MPI_COMM_WORLD}.
 
 For those not familar with MPI, a {\em communicator} is a way of
 indicating a collection of processes that will be involved together
 in a calculation or communication. Communicators have the variable type
 \trl{MPI_Comm}. In most cases users can employ the communicator 
-PETSC_COMM_WORLD to indicate all processes in a given run and 
-PETSC_COMM_SELF to indicate a single process.
+PETSC\_COMM\_WORLD to indicate all processes in a given run and 
+PETSC\_COMM\_SELF to indicate a single process.
 
 MPI provides routines
 for generating new communicators consisting of subsets of processors,
@@ -336,7 +336,7 @@ for a discussion of PETSc include files in Fortran programs.
 
 As shown in Figure~\ref{fig_example1}, the user can input control data
 at run time using the options database. In this example the command
-PetscOptionsGetInt(PETSC_NULL,"-n",\&n,\&flg); checks whether the user has
+PetscOptionsGetInt(PETSC\_NULL,"-n",\&n,\&flg); checks whether the user has
 provided a command line option to set the value of \trl{n}, the
 problem dimension.  If so, the variable \trl{n} is set accordingly;
 otherwise, \trl{n} remains unchanged. A complete description of the
@@ -353,7 +353,7 @@ commands  \sindex{vectors}
   VecSetSizes(Vec x, int m, int M);
 \end{tabbing}
 where \trl{comm} denotes the MPI communicator and \trl{m} is the optional local size
-which may be PETSC_DECIDE. The type of storage
+which may be PETSC\_DECIDE. The type of storage
 for the vector may be set with either calls to 
 VecSetType() or VecSetFromOptions().
 Additional vectors of the same type can be formed with
@@ -363,7 +363,7 @@ Additional vectors of the same type can be formed with
 The commands 
 \begin{tabbing}
   VecSet(Vec x,PetscScalar value);\\
-  VecSetValues(Vec x,int n,int *indices,PetscScalar *values,INSERT_VALUES);
+  VecSetValues(Vec x,int n,int *indices,PetscScalar *values,INSERT\_VALUES);
 \end{tabbing}
 respectively set all the components of a vector to a particular scalar
 value and assign a different value to each component.  More
@@ -402,7 +402,7 @@ This causes the matrix to used the compressed sparse row storage format to store
 matrix entries. See MatType for a list of all matrix types.
 Values can then be set with the command
 \begin{tabbing}
-  MatSetValues(Mat A,int m,int *im,int n,int *in,PetscScalar *values,INSERT_VALUES);
+  MatSetValues(Mat A,int m,int *im,int n,int *in,PetscScalar *values,INSERT\_VALUES);
 \end{tabbing}
 After  all elements have been inserted into the
 matrix, it must be processed with the pair of commands
