@@ -264,7 +264,6 @@ static PetscErrorCode TaoSolverSolve_SQPCON(TaoSolver tao)
       f = fold;
       ierr = VecAXPY(tao->solution, 1.0, tao->stepdirection); CHKERRQ(ierr);
       ierr = PetscInfo(tao,"Line Search Failed, using full step."); CHKERRQ(ierr);
-      PetscPrintf(PETSC_COMM_SELF,"Line Search Failed, using full step.\n"); CHKERRQ(ierr);
       use_update=PETSC_FALSE;
     } else {
       use_update = PETSC_TRUE;

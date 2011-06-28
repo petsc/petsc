@@ -291,10 +291,8 @@ static PetscErrorCode TaoSolverSolve_LCL(TaoSolver tao)
     ierr = MatMultTranspose(tao->jacobian_state,tao->constraints,lclP->WU); CHKERRQ(ierr);
     
     ierr = VecDot(lclP->r,lclP->WU,&descent); CHKERRQ(ierr);
-    printf("descent=%g\n",descent);
     if (descent <= 0) {
       ierr = PetscInfo1(tao,"Newton direction not descent: %g",descent);
-      PetscPrintf(PETSC_COMM_WORLD,"Newton direction not descent: %g\n",descent);
       reason = TAO_DIVERGED_LS_FAILURE;
       tao->reason = TAO_DIVERGED_LS_FAILURE;
       continue;
@@ -327,9 +325,6 @@ static PetscErrorCode TaoSolverSolve_LCL(TaoSolver tao)
 
     ierr = TaoLineSearchSetInitialStepLength(tao->linesearch,1.0); CHKERRQ(ierr);
     ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &lclP->aug, lclP->GAugL, tao->stepdirection, &step, &ls_reason); CHKERRQ(ierr);
-    if (ls_reason < 0) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"ls_reason = %d\n",ls_reason); CHKERRQ(ierr);
-    }
     ierr = LCLScatter(lclP,tao->solution,lclP->U,lclP->V); CHKERRQ(ierr);
     ierr = TaoSolverComputeObjectiveAndGradient(tao,tao->solution,&f,tao->gradient); CHKERRQ(ierr);
     ierr = LCLScatter(lclP,tao->gradient,lclP->GU,lclP->GV); CHKERRQ(ierr);
@@ -395,9 +390,6 @@ static PetscErrorCode TaoSolverSolve_LCL(TaoSolver tao)
 
     ierr = TaoLineSearchSetInitialStepLength(tao->linesearch,1.0); CHKERRQ(ierr);
     ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &lclP->aug, lclP->GAugL, tao->stepdirection,&step,&ls_reason); CHKERRQ(ierr);
-    if (ls_reason < 0) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"ls_reason = %d\n",ls_reason); CHKERRQ(ierr);
-    }
     ierr = LCLScatter(lclP,tao->solution,lclP->U,lclP->V); CHKERRQ(ierr);
     ierr = LCLScatter(lclP,lclP->GL,lclP->GL_U,lclP->GL_V); CHKERRQ(ierr);
     ierr = LCLScatter(lclP,lclP->GAugL,lclP->GAugL_U,lclP->GAugL_V); CHKERRQ(ierr);
