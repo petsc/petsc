@@ -251,7 +251,7 @@ PetscErrorCode Update_q(AppCtx *user)
  
   ierr = MatMult(user->M_0,user->DPsiv,user->work1);CHKERRQ(ierr);
   for (i=0;i<n;i++) {
-       q_p[5*i+1]=-1.0*w1[i];
+       q_p[5*i+1]=w1[i];
   }
 
   ierr = VecCopy(user->ci,user->work1);CHKERRQ(ierr);
@@ -264,7 +264,7 @@ PetscErrorCode Update_q(AppCtx *user)
 
   ierr = MatMult(user->M_0,user->DPsii,user->work1);CHKERRQ(ierr);
   for (i=0;i<n;i++) {
-       q_p[5*i+3]=-1.0*w1[i];
+       q_p[5*i+3]=w1[i];
   }
 
   ierr = VecCopy(user->eta,user->work1);CHKERRQ(ierr);
@@ -680,12 +680,12 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
         
         
         row = 5*idx[r]+1;
-        cols[0] = 5*idx[0];     vals[0] = eM_0[r][0];
-        cols[1] = 5*idx[1];     vals[1] = eM_0[r][1];
-        cols[2] = 5*idx[2];     vals[2] = eM_0[r][2]; 
-        cols[3] = 5*idx[0]+1;   vals[3] = -1.0*user->kav*eM_2_odd[r][0];
-        cols[4] = 5*idx[1]+1;   vals[4] = -1.0*user->kav*eM_2_odd[r][1];
-        cols[5] = 5*idx[2]+1;   vals[5] = -1.0*user->kav*eM_2_odd[r][2];
+        cols[0] = 5*idx[0];     vals[0] = -1.0*eM_0[r][0];
+        cols[1] = 5*idx[1];     vals[1] = -1.0*eM_0[r][1];
+        cols[2] = 5*idx[2];     vals[2] = -1.0*eM_0[r][2]; 
+        cols[3] = 5*idx[0]+1;   vals[3] = user->kav*eM_2_odd[r][0];
+        cols[4] = 5*idx[1]+1;   vals[4] = user->kav*eM_2_odd[r][1];
+        cols[5] = 5*idx[2]+1;   vals[5] = user->kav*eM_2_odd[r][2];
        
         ierr = MatSetValuesLocal(M,1,&row,6,cols,vals,ADD_VALUES);CHKERRQ(ierr);  
         
@@ -701,12 +701,12 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
      
         
         row = 5*idx[r]+3;
-        cols[0] = 5*idx[0]+2;   vals[0] = eM_0[r][0];
-        cols[1] = 5*idx[1]+2;   vals[1] = eM_0[r][1];
-        cols[2] = 5*idx[2]+2;   vals[2] = eM_0[r][2];
-        cols[3] = 5*idx[0]+3;   vals[3] = -1.0*user->kai*eM_2_odd[r][0];
-        cols[4] = 5*idx[1]+3;   vals[4] = -1.0*user->kai*eM_2_odd[r][1];
-        cols[5] = 5*idx[2]+3;   vals[5] = -1.0*user->kai*eM_2_odd[r][2];
+        cols[0] = 5*idx[0]+2;   vals[0] = -1.0*eM_0[r][0];
+        cols[1] = 5*idx[1]+2;   vals[1] = -1.0*eM_0[r][1];
+        cols[2] = 5*idx[2]+2;   vals[2] = -1.0*eM_0[r][2];
+        cols[3] = 5*idx[0]+3;   vals[3] =  user->kai*eM_2_odd[r][0];
+        cols[4] = 5*idx[1]+3;   vals[4] =  user->kai*eM_2_odd[r][1];
+        cols[5] = 5*idx[2]+3;   vals[5] =  user->kai*eM_2_odd[r][2];
        
         ierr = MatSetValuesLocal(M,1,&row,6,cols,vals,ADD_VALUES);CHKERRQ(ierr); 
         
@@ -743,12 +743,12 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
         
         
         row = 5*idx[r]+1;
-        cols[0] = 5*idx[0];     vals[0] = eM_0[r][0];
-        cols[1] = 5*idx[1];     vals[1] = eM_0[r][1];
-        cols[2] = 5*idx[2];     vals[2] = eM_0[r][2];
-        cols[3] = 5*idx[0]+1;   vals[3] = -1.0*user->kav*eM_2_even[r][0];
-        cols[4] = 5*idx[1]+1;   vals[4] = -1.0*user->kav*eM_2_even[r][1];
-        cols[5] = 5*idx[2]+1;   vals[5] = -1.0*user->kav*eM_2_even[r][2];
+        cols[0] = 5*idx[0];     vals[0] = -1.0*eM_0[r][0];
+        cols[1] = 5*idx[1];     vals[1] = -1.0*eM_0[r][1];
+        cols[2] = 5*idx[2];     vals[2] = -1.0*eM_0[r][2];
+        cols[3] = 5*idx[0]+1;   vals[3] =  user->kav*eM_2_even[r][0];
+        cols[4] = 5*idx[1]+1;   vals[4] =  user->kav*eM_2_even[r][1];
+        cols[5] = 5*idx[2]+1;   vals[5] =  user->kav*eM_2_even[r][2];
        
         ierr = MatSetValuesLocal(M,1,&row,6,cols,vals,ADD_VALUES);CHKERRQ(ierr);  
         
@@ -763,12 +763,12 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
         ierr = MatSetValuesLocal(M,1,&row,6,cols,vals,ADD_VALUES);CHKERRQ(ierr); 
      
         row = 5*idx[r]+3;
-        cols[0] = 5*idx[0]+2;   vals[0] = eM_0[r][0];
-        cols[1] = 5*idx[1]+2;   vals[1] = eM_0[r][1];
-        cols[2] = 5*idx[2]+2;   vals[2] = eM_0[r][2];
-        cols[3] = 5*idx[0]+3;   vals[3] = -1.0*user->kai*eM_2_even[r][0];
-        cols[4] = 5*idx[1]+3;   vals[4] = -1.0*user->kai*eM_2_even[r][1];
-        cols[5] = 5*idx[2]+3;   vals[5] = -1.0*user->kai*eM_2_even[r][2];
+        cols[0] = 5*idx[0]+2;   vals[0] = -1.0*eM_0[r][0];
+        cols[1] = 5*idx[1]+2;   vals[1] = -1.0*eM_0[r][1];
+        cols[2] = 5*idx[2]+2;   vals[2] = -1.0*eM_0[r][2];
+        cols[3] = 5*idx[0]+3;   vals[3] =  user->kai*eM_2_even[r][0];
+        cols[4] = 5*idx[1]+3;   vals[4] =  user->kai*eM_2_even[r][1];
+        cols[5] = 5*idx[2]+3;   vals[5] =  user->kai*eM_2_even[r][2];
        
         ierr = MatSetValuesLocal(M,1,&row,6,cols,vals,ADD_VALUES);CHKERRQ(ierr); 
         
