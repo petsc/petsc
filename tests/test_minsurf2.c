@@ -41,7 +41,7 @@ T*/
 */
 typedef struct {
   PetscInt      mx, my;                 /* discretization in x, y directions */
-  PetscScalar      *bottom, *top, *left, *right;             /* boundary values */
+  PetscReal      *bottom, *top, *left, *right;             /* boundary values */
   DM          dm;                      /* distributed array data structure */
   Mat         H;                       /* Hessian */
 } AppCtx;
@@ -52,7 +52,7 @@ typedef struct {
 static PetscErrorCode MSA_BoundaryConditions(AppCtx*);
 static PetscErrorCode MSA_InitialPoint(AppCtx*,Vec);
 PetscErrorCode QuadraticH(AppCtx*,Vec,Mat);
-PetscErrorCode FormFunctionGradient(TaoSolver,Vec,PetscScalar *,Vec,void*);
+PetscErrorCode FormFunctionGradient(TaoSolver,Vec,PetscReal *,Vec,void*);
 PetscErrorCode FormGradient(TaoSolver,Vec,Vec,void*);
 PetscErrorCode FormHessian(TaoSolver,Vec,Mat*,Mat*,MatStructure *,void*);
 PetscErrorCode My_Monitor(TaoSolver, void *);
@@ -467,7 +467,7 @@ PetscErrorCode QuadraticH(AppCtx *user, Vec X, Mat Hessian)
   PetscReal hx=1.0/(mx+1), hy=1.0/(my+1), hydhx=hy/hx, hxdhy=hx/hy;
   PetscReal f1,f2,f3,f4,f5,f6,d1,d2,d3,d4,d5,d6,d7,d8,xc,xl,xr,xt,xb,xlt,xrb;
   PetscReal hl,hr,ht,hb,hc,htl,hbr;
-  PetscScalar **x, v[7];
+  PetscReal **x, v[7];
   MatStencil col[7],row;
   Vec    localX;
   PetscBool assembled;
@@ -798,7 +798,7 @@ static PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
 
   } else if (flg2 && start2>0){ /* Try a random start between -0.5 and 0.5 */
 
-    PetscRandom rctx;  PetscScalar np5=-0.5;
+    PetscRandom rctx;  PetscReal np5=-0.5;
 
     ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rctx); CHKERRQ(ierr);
     ierr = PetscRandomSetType(rctx,PETSCRAND); 
@@ -813,7 +813,7 @@ static PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
 
     PetscInt xs,xm,ys,ym;
     PetscInt mx=user->mx,my=user->my;
-    PetscScalar **x;
+    PetscReal **x;
     
     /* Get local mesh boundaries */
     ierr = DMDAGetCorners(user->dm,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL); CHKERRQ(ierr);

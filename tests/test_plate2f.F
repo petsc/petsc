@@ -239,7 +239,7 @@
 ! Input/output variables
 
       TaoSolver        tao
-      PetscScalar      fcn
+      PetscReal      fcn
       Vec              X, G
       PetscErrorCode   ierr
       PetscInt         dummy
@@ -249,23 +249,23 @@
       PetscInt         gxs, gxm
       PetscInt         ys, ym
       PetscInt         gys, gym
-      PetscScalar      ft,zero,hx,hy,hydhx,hxdhy
-      PetscScalar      area,rhx,rhy
-      PetscScalar      f1,f2,f3,f4,f5,f6,d1,d2,d3
-      PetscScalar      d4,d5,d6,d7,d8
-      PetscScalar      df1dxc,df2dxc,df3dxc,df4dxc
-      PetscScalar      df5dxc,df6dxc
-      PetscScalar      xc,xl,xr,xt,xb,xlt,xrb
+      PetscReal      ft,zero,hx,hy,hydhx,hxdhy
+      PetscReal      area,rhx,rhy
+      PetscReal      f1,f2,f3,f4,f5,f6,d1,d2,d3
+      PetscReal      d4,d5,d6,d7,d8
+      PetscReal      df1dxc,df2dxc,df3dxc,df4dxc
+      PetscReal      df5dxc,df6dxc
+      PetscReal      xc,xl,xr,xt,xb,xlt,xrb
 
 
 ! PETSc's VecGetArray acts differently in Fortran than it does in C.
-! Calling VecGetArray((Vec) X, (PetscScalar) x_array(0:1), (PetscOffset) x_index, ierr)
+! Calling VecGetArray((Vec) X, (PetscReal) x_array(0:1), (PetscOffset) x_index, ierr)
 ! will return an array of doubles referenced by x_array offset by x_index.
 !  i.e.,  to reference the kth element of X, use x_array(k + x_index).
 ! Notice that by declaring the arrays with range (0:1), we are using the C 0-indexing practice.
-      PetscScalar      g_v(0:1),x_v(0:1)
-      PetscScalar      top_v(0:1),left_v(0:1)
-      PetscScalar      right_v(0:1),bottom_v(0:1)
+      PetscReal      g_v(0:1),x_v(0:1)
+      PetscReal      top_v(0:1),left_v(0:1)
+      PetscReal      right_v(0:1),bottom_v(0:1)
       PetscOffset      g_i,left_i,right_i
       PetscOffset      bottom_i,top_i,x_i
 
@@ -531,23 +531,23 @@
       PetscInt       xs,xm,gxs,gxm
       PetscInt       ys,ym,gys,gym
       PetscInt       col(0:6)
-      PetscScalar    hx,hy,hydhx,hxdhy,rhx,rhy
-      PetscScalar    f1,f2,f3,f4,f5,f6,d1,d2,d3
-      PetscScalar    d4,d5,d6,d7,d8
-      PetscScalar    xc,xl,xr,xt,xb,xlt,xrb
-      PetscScalar    hl,hr,ht,hb,hc,htl,hbr
+      PetscReal    hx,hy,hydhx,hxdhy,rhx,rhy
+      PetscReal    f1,f2,f3,f4,f5,f6,d1,d2,d3
+      PetscReal    d4,d5,d6,d7,d8
+      PetscReal    xc,xl,xr,xt,xb,xlt,xrb
+      PetscReal    hl,hr,ht,hb,hc,htl,hbr
 
 ! PETSc's VecGetArray acts differently in Fortran than it does in C.
-! Calling VecGetArray((Vec) X, (PetscScalar) x_array(0:1), (PetscOffset) x_index, ierr)
+! Calling VecGetArray((Vec) X, (PetscReal) x_array(0:1), (PetscOffset) x_index, ierr)
 ! will return an array of doubles referenced by x_array offset by x_index.
 !  i.e.,  to reference the kth element of X, use x_array(k + x_index).
 ! Notice that by declaring the arrays with range (0:1), we are using the C 0-indexing practice.
-      PetscScalar   right_v(0:1),left_v(0:1)
-      PetscScalar   bottom_v(0:1),top_v(0:1)
-      PetscScalar   x_v(0:1)
+      PetscReal   right_v(0:1),left_v(0:1)
+      PetscReal   bottom_v(0:1),top_v(0:1)
+      PetscReal   x_v(0:1)
       PetscOffset   x_i,right_i,left_i
       PetscOffset   bottom_i,top_i
-      PetscScalar   v(0:6)
+      PetscReal   v(0:6)
       PetscBool     assembled
       PetscInt      i1
  
@@ -777,12 +777,12 @@
       PetscInt         ys, ym, gys, gym
       PetscInt         bsize, lsize
       PetscInt         tsize, rsize
-      PetscScalar      one,two,three,tol
-      PetscScalar      scl,fnorm,det,xt
-      PetscScalar      yt,hx,hy,u1,u2,nf1,nf2
-      PetscScalar      njac11,njac12,njac21,njac22
-      PetscScalar      b, t, l, r
-      PetscScalar      boundary_v(0:1)
+      PetscReal      one,two,three,tol
+      PetscReal      scl,fnorm,det,xt
+      PetscReal      yt,hx,hy,u1,u2,nf1,nf2
+      PetscReal      njac11,njac12,njac21,njac22
+      PetscReal      b, t, l, r
+      PetscReal      boundary_v(0:1)
       PetscOffset      boundary_i
       logical exitloop
       PetscBool flg
@@ -946,15 +946,15 @@
       PetscErrorCode   ierr
       PetscInt         i,j,row
       PetscInt         xs, xm, ys, ym
-      PetscScalar      lb,ub
+      PetscReal      lb,ub
       PetscInt         dummy
 
 ! PETSc's VecGetArray acts differently in Fortran than it does in C.
-! Calling VecGetArray((Vec) X, (PetscScalar) x_array(0:1), (PetscOffset) x_index, ierr)
+! Calling VecGetArray((Vec) X, (PetscReal) x_array(0:1), (PetscOffset) x_index, ierr)
 ! will return an array of doubles referenced by x_array offset by x_index.
 !  i.e.,  to reference the kth element of X, use x_array(k + x_index).
 ! Notice that by declaring the arrays with range (0:1), we are using the C 0-indexing practice.
-      PetscScalar      xl_v(0:1)
+      PetscReal      xl_v(0:1)
       PetscOffset      xl_i
 
       print *,'msa_plate'
@@ -1023,16 +1023,16 @@
       PetscInt          row
       PetscInt          xs,xm,gxs,gxm
       PetscInt          ys,ym,gys,gym
-      PetscScalar       zero, np5
+      PetscReal       zero, np5
 
 ! PETSc's VecGetArray acts differently in Fortran than it does in C.
-! Calling VecGetArray((Vec) X, (PetscScalar) x_array(0:1), (integer) x_index, ierr)
+! Calling VecGetArray((Vec) X, (PetscReal) x_array(0:1), (integer) x_index, ierr)
 ! will return an array of doubles referenced by x_array offset by x_index.
 !  i.e.,  to reference the kth element of X, use x_array(k + x_index).
 ! Notice that by declaring the arrays with range (0:1), we are using the C 0-indexing practice.
-      PetscScalar   left_v(0:1),right_v(0:1)
-      PetscScalar   bottom_v(0:1),top_v(0:1)
-      PetscScalar   x_v(0:1)
+      PetscReal   left_v(0:1),right_v(0:1)
+      PetscReal   bottom_v(0:1),top_v(0:1)
+      PetscReal   x_v(0:1)
       PetscOffset   left_i, right_i, top_i
       PetscOffset   bottom_i,x_i
       PetscBool     flg

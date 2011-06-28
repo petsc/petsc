@@ -3,7 +3,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecPow"
-PetscErrorCode VecPow(Vec Vec1, PetscScalar p)
+PetscErrorCode VecPow(Vec Vec1, PetscReal p)
 {
   PetscErrorCode ierr;
   PetscInt n,i;
@@ -169,7 +169,7 @@ PetscErrorCode VecCompare(Vec V1,Vec V2, PetscBool *flg){
 
 #undef __FUNCT__
 #define __FUNCT__ "Fischer"
-inline static PetscScalar Fischer(PetscScalar a, PetscScalar b)
+inline static PetscReal Fischer(PetscReal a, PetscReal b)
 {
    // Method suggested by Bob Vanderbei
    if (a + b <= 0) {
@@ -182,8 +182,8 @@ inline static PetscScalar Fischer(PetscScalar a, PetscScalar b)
 #define __FUNCT__ "VecFischer"
 PetscErrorCode VecFischer(Vec X, Vec F, Vec L, Vec U, Vec FF)
 {
-  PetscScalar *x, *f, *l, *u, *ff;
-  PetscScalar xval, fval, lval, uval;
+  PetscReal *x, *f, *l, *u, *ff;
+  PetscReal xval, fval, lval, uval;
   PetscErrorCode ierr;
   PetscInt low[5], high[5], n, i;
 
@@ -246,7 +246,7 @@ PetscErrorCode VecFischer(Vec X, Vec F, Vec L, Vec U, Vec FF)
 
 #undef __FUNCT__
 #define __FUNCT__ "SFischer"
-inline static PetscScalar SFischer(PetscScalar a, PetscScalar b, PetscScalar c)
+inline static PetscReal SFischer(PetscReal a, PetscReal b, PetscReal c)
 {
    // Method suggested by Bob Vanderbei
    if (a + b <= 0) {
@@ -257,10 +257,10 @@ inline static PetscScalar SFischer(PetscScalar a, PetscScalar b, PetscScalar c)
 
 #undef __FUNCT__
 #define __FUNCT__ "VecSFischer"
-PetscErrorCode VecSFischer(Vec X, Vec F, Vec L, Vec U, PetscScalar mu, Vec FF)
+PetscErrorCode VecSFischer(Vec X, Vec F, Vec L, Vec U, PetscReal mu, Vec FF)
 {
-  PetscScalar *x, *f, *l, *u, *ff;
-  PetscScalar xval, fval, lval, uval;
+  PetscReal *x, *f, *l, *u, *ff;
+  PetscReal xval, fval, lval, uval;
   PetscErrorCode ierr;
   PetscInt low[5], high[5], n, i;
 

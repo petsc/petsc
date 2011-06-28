@@ -35,15 +35,15 @@ extern PetscErrorCode TaoDMSetObjectiveRoutine(TaoDM*,PetscErrorCode(*)(TaoSolve
 extern PetscErrorCode TaoDMSetGradientRoutine(TaoDM*,PetscErrorCode(*)(TaoSolver, Vec, Vec, void*));
 extern PetscErrorCode TaoDMSetHessianRoutine(TaoDM*,PetscErrorCode(*)(TaoSolver, Vec, Mat*, Mat*, MatStructure*,void*));
 
-extern PetscErrorCode TaoDMSetLocalObjectiveRoutine(TaoDM*,PetscErrorCode(*)(DMDALocalInfo*,PetscScalar**,PetscScalar*,void*));
-extern PetscErrorCode TaoDMSetLocalGradientRoutine(TaoDM*,PetscErrorCode(*)(DMDALocalInfo*,PetscScalar**,PetscScalar**,void*));
-extern PetscErrorCode TaoDMSetLocalObjectiveAndGradientRoutine(TaoDM*,PetscErrorCode(*)(DMDALocalInfo*,PetscScalar**,PetscScalar*,PetscScalar**,void*));
-extern PetscErrorCode TaoDMSetLocalHessianRoutine(TaoDM*,PetscErrorCode(*)(DMDALocalInfo*,PetscScalar**,Mat,void*));
+extern PetscErrorCode TaoDMSetLocalObjectiveRoutine(TaoDM*,PetscErrorCode(*)(DMDALocalInfo*,PetscReal**,PetscReal*,void*));
+extern PetscErrorCode TaoDMSetLocalGradientRoutine(TaoDM*,PetscErrorCode(*)(DMDALocalInfo*,PetscReal**,PetscReal**,void*));
+extern PetscErrorCode TaoDMSetLocalObjectiveAndGradientRoutine(TaoDM*,PetscErrorCode(*)(DMDALocalInfo*,PetscReal**,PetscReal*,PetscReal**,void*));
+extern PetscErrorCode TaoDMSetLocalHessianRoutine(TaoDM*,PetscErrorCode(*)(DMDALocalInfo*,PetscReal**,Mat,void*));
 
 
-extern PetscErrorCode TaoDMFormFunctionLocal(TaoSolver, Vec, PetscScalar *, void*);
+extern PetscErrorCode TaoDMFormFunctionLocal(TaoSolver, Vec, PetscReal *, void*);
 extern PetscErrorCode TaoDMFormGradientLocal(TaoSolver, Vec, Vec, void*);
-extern PetscErrorCode TaoDMFormFunctionGradientLocal(TaoSolver, Vec, PetscScalar *, Vec, void*);
+extern PetscErrorCode TaoDMFormFunctionGradientLocal(TaoSolver, Vec, PetscReal *, Vec, void*);
 extern PetscErrorCode TaoDMFormHessianLocal(TaoSolver, Vec, Mat*, Mat*, MatStructure*,void*);
 extern PetscErrorCode TaoDMFormBounds(TaoSolver, Vec, Vec, void*); 
 

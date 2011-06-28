@@ -42,7 +42,7 @@ typedef struct {
   Mat R,Q;
   Vec LM;   /* Lagrange Multiplier */
   Vec WL;   /* Work vector */
-  PetscScalar rho; /* Penalty parameter */
+  PetscReal rho; /* Penalty parameter */
   PetscInt    subset_type;
   MatStructure statematflag,designmatflag;
 

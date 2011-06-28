@@ -150,7 +150,7 @@ static PetscErrorCode TaoSolverSolve_TRON(TaoSolver tao){
 
   TaoSolverTerminationReason reason = TAO_CONTINUE_ITERATING;
   TaoLineSearchTerminationReason ls_reason = TAOLINESEARCH_CONTINUE_ITERATING;
-  PetscScalar prered,actred,delta,f,f_new,rhok,gnorm,gdx,xdiff,stepsize;
+  PetscReal prered,actred,delta,f,f_new,rhok,gnorm,gdx,xdiff,stepsize;
   PetscFunctionBegin;
 
   tron->pgstepsize=1.0;
@@ -297,8 +297,8 @@ static PetscErrorCode TronGradientProjections(TaoSolver tao,TAO_TRON *tron)
   PetscErrorCode ierr;
   PetscInt i;
   TaoLineSearchTerminationReason ls_reason;
-  PetscScalar actred=-1.0,actred_max=0.0;
-  PetscScalar f_new;
+  PetscReal actred=-1.0,actred_max=0.0;
+  PetscReal f_new;
   /*
      The gradient and function value passed into and out of this
      routine should be current and correct.
@@ -347,7 +347,7 @@ PetscErrorCode TronSetupKSP(TaoSolver tao, TAO_TRON*tron)
   PetscErrorCode ierr;
   const PetscInt *s;
   PetscInt nlocal, low, high, i;
-  PetscScalar *v;
+  PetscReal *v;
   PetscBool flg;
   KSP newksp;
   PC pc;
@@ -575,7 +575,7 @@ static PetscErrorCode TronApplyMask(TAO_TRON *tron, Mat M, Vec mask)
   if  (M->ops->diagonalset) {
     ierr = MatDiagonalSet(M, tron->diag, INSERT_VALUES); CHKERRQ(ierr);
   } else {
-    PetscScalar *d,*m;
+    PetscReal *d,*m;
     PetscInt lo,hi,lo2,hi2,i;
     ierr = VecGetOwnershipRange(mask, &lo, &hi); CHKERRQ(ierr);
     ierr = VecGetOwnershipRange(tron->diag, &lo2, &hi2); CHKERRQ(ierr);

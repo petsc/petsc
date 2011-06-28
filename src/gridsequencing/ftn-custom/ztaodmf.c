@@ -51,11 +51,11 @@ static int BOUNDS=8;
 static int GUESS=9;
 static int NFUNCS=10;
 
-static PetscErrorCode ourtaodmobjectiveroutine(TaoSolver tao, Vec X, PetscScalar *f, void *ctx) {
+static PetscErrorCode ourtaodmobjectiveroutine(TaoSolver tao, Vec X, PetscReal *f, void *ctx) {
   PetscErrorCode ierr = 0;
   TaoDM taodm = (TaoDM)ctx; 
   TaoDM taodm0 = (TaoDM)(taodm->coarselevel);
-  (*(void (PETSC_STDCALL*)(TaoSolver*, Vec*, PetscScalar*, void*, PetscErrorCode*))
+  (*(void (PETSC_STDCALL*)(TaoSolver*, Vec*, PetscReal*, void*, PetscErrorCode*))
      (((PetscObject)taodm0)->fortran_func_pointers[OBJ]))(&tao,&X,f,ctx,&ierr);
    CHKERRQ(ierr);
    return 0;
@@ -63,7 +63,7 @@ static PetscErrorCode ourtaodmobjectiveroutine(TaoSolver tao, Vec X, PetscScalar
 }
 
 EXTERN_C_BEGIN
-void PETSC_STDCALL taodmsetobjectiveroutine_(TaoDM *taodm, void (PETSC_STDCALL *func)(TaoSolver*, Vec *, PetscScalar*, void*), void *ctx, PetscErrorCode *ierr)
+void PETSC_STDCALL taodmsetobjectiveroutine_(TaoDM *taodm, void (PETSC_STDCALL *func)(TaoSolver*, Vec *, PetscReal*, void*), void *ctx, PetscErrorCode *ierr)
 {
   CHKFORTRANNULLOBJECT(ctx);
   CHKFORTRANNULLFUNCTION(func);
@@ -105,11 +105,11 @@ EXTERN_C_END
 
 
 
-static PetscErrorCode ourtaodmobjectiveandgradientroutine(TaoSolver tao, Vec X, PetscScalar *f, Vec G, void *ctx) {
+static PetscErrorCode ourtaodmobjectiveandgradientroutine(TaoSolver tao, Vec X, PetscReal *f, Vec G, void *ctx) {
   PetscErrorCode ierr = 0;
   TaoDM taodm = (TaoDM)ctx; 
   TaoDM taodm0 = (TaoDM)(taodm->coarselevel);
-  (*(void (PETSC_STDCALL*)(TaoSolver*, Vec*, PetscScalar *, Vec*, void*, PetscErrorCode*))
+  (*(void (PETSC_STDCALL*)(TaoSolver*, Vec*, PetscReal *, Vec*, void*, PetscErrorCode*))
    (((PetscObject)taodm0)->fortran_func_pointers[GRAD]))(&tao,&X,f,&G,ctx,&ierr);
   CHKERRQ(ierr);
   return 0;
@@ -117,7 +117,7 @@ static PetscErrorCode ourtaodmobjectiveandgradientroutine(TaoSolver tao, Vec X, 
 
 
 EXTERN_C_BEGIN
-void PETSC_STDCALL taodmsetobjectiveandgradientroutine_(TaoDM *taodm, void (PETSC_STDCALL *func)(TaoSolver*, Vec *, PetscScalar *, Vec*, void*), void *ctx, PetscErrorCode *ierr)
+void PETSC_STDCALL taodmsetobjectiveandgradientroutine_(TaoDM *taodm, void (PETSC_STDCALL *func)(TaoSolver*, Vec *, PetscReal *, Vec*, void*), void *ctx, PetscErrorCode *ierr)
 {
   CHKFORTRANNULLOBJECT(ctx);
   CHKFORTRANNULLFUNCTION(func);

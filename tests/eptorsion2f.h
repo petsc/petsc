@@ -55,7 +55,7 @@
 !
       Vec              localX
       DM               dm
-      PetscScalar      param
+      PetscReal      param
       PetscInt         mx, my
 
       common /params/ param,mx,my

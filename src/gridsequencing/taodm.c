@@ -746,7 +746,7 @@ $      func (TaoSolver tao, Vec x, PetscReal *f, Vec g, void *ctx);
 
 .seealso: TaoDMSetGradientRoutine(), TaoDMSetHessianRoutine() TaoDMSetObjectiveRoutine(), TaoDMSetLocalObjectiveAndGradientRoutine()
 @*/
-PetscErrorCode TaoDMSetObjectiveAndGradientRoutine(TaoDM* taodm, PetscErrorCode (*func)(TaoSolver,Vec,PetscScalar*,Vec,void*))
+PetscErrorCode TaoDMSetObjectiveAndGradientRoutine(TaoDM* taodm, PetscErrorCode (*func)(TaoSolver,Vec,PetscReal*,Vec,void*))
 {
   PetscInt i;
   PetscInt nlevels = taodm[0]->nlevels;
@@ -786,7 +786,7 @@ $      func (TaoSolver tao, Vec x, PetscReal *f, void *ctx);
 
 .seealso: TaoDMSetGradientRoutine(), TaoDMSetHessianRoutine() TaoDMSetObjectiveAndGradientRoutine(), TaoDMSetLocalObjectiveRoutine()
 @*/
-PetscErrorCode TaoDMSetObjectiveRoutine(TaoDM* taodm, PetscErrorCode (*func)(TaoSolver,Vec,PetscScalar*,void*))
+PetscErrorCode TaoDMSetObjectiveRoutine(TaoDM* taodm, PetscErrorCode (*func)(TaoSolver,Vec,PetscReal*,void*))
 {
   PetscInt i;
   PetscInt nlevels = taodm[0]->nlevels;
@@ -851,7 +851,7 @@ PetscErrorCode TaoDMSetGradientRoutine(TaoDM* taodm, PetscErrorCode (*func)(TaoS
 - func - the objective function
 
   Calling sequence of func:
-$      func (DMDALocalInfo *info, PetscScalar **x, PetscScalar *f, void *ctx)
+$      func (DMDALocalInfo *info, PetscReal **x, PetscReal *f, void *ctx)
 
 + info - information about the DMDA grid
 . x - input vector
@@ -862,7 +862,7 @@ $      func (DMDALocalInfo *info, PetscScalar **x, PetscScalar *f, void *ctx)
 
 .seealso: TaoDMSetGradientRoutine(), TaoDMSetHessianRoutine() TaoDMSetObjectiveAndGradientRoutine(), TaoDMSetLocalGradientRoutine()
 @*/
-PetscErrorCode TaoDMSetLocalObjectiveRoutine(TaoDM* taodm, PetscErrorCode (*func)(DMDALocalInfo*,PetscScalar**,PetscScalar*,void*))
+PetscErrorCode TaoDMSetLocalObjectiveRoutine(TaoDM* taodm, PetscErrorCode (*func)(DMDALocalInfo*,PetscReal**,PetscReal*,void*))
 {
   PetscInt i;
   PetscInt nlevels = taodm[0]->nlevels;
@@ -887,7 +887,7 @@ PetscErrorCode TaoDMSetLocalObjectiveRoutine(TaoDM* taodm, PetscErrorCode (*func
 - func - the gradient function
 
   Calling sequence of func:
-$      func (DMDALocalInfo *info, PetscScalar **x, PetscScalar **g, void *ctx)
+$      func (DMDALocalInfo *info, PetscReal **x, PetscReal **g, void *ctx)
 
 + info - information about the DMDA grid
 . x - input array of local x values
@@ -898,7 +898,7 @@ $      func (DMDALocalInfo *info, PetscScalar **x, PetscScalar **g, void *ctx)
 
 .seealso: TaoDMSetLocalObjectiveRoutine(), TaoDMSetHessianRoutine() TaoDMSetObjectiveAndGradientRoutine(), TaoDMSetGradientRoutine()
 @*/
-PetscErrorCode TaoDMSetLocalGradientRoutine(TaoDM* taodm, PetscErrorCode (*func)(DMDALocalInfo*,PetscScalar**,PetscScalar**,void*))
+PetscErrorCode TaoDMSetLocalGradientRoutine(TaoDM* taodm, PetscErrorCode (*func)(DMDALocalInfo*,PetscReal**,PetscReal**,void*))
 {
   PetscInt i;
   PetscInt nlevels = taodm[0]->nlevels;
@@ -915,7 +915,7 @@ PetscErrorCode TaoDMSetLocalGradientRoutine(TaoDM* taodm, PetscErrorCode (*func)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoDMSetLocalObjectiveAndGradientRoutine"
-PetscErrorCode TaoDMSetLocalObjectiveAndGradientRoutine(TaoDM* taodm, PetscErrorCode (*func)(DMDALocalInfo*,PetscScalar**,PetscScalar *,PetscScalar**,void*))
+PetscErrorCode TaoDMSetLocalObjectiveAndGradientRoutine(TaoDM* taodm, PetscErrorCode (*func)(DMDALocalInfo*,PetscReal**,PetscReal *,PetscReal**,void*))
 {
   PetscInt i;
   PetscInt nlevels = taodm[0]->nlevels;
@@ -942,7 +942,7 @@ PetscErrorCode TaoDMSetLocalObjectiveAndGradientRoutine(TaoDM* taodm, PetscError
 - func - the hessian evaluation routine
 
   Calling sequence of func:
-$      func (DMDALocalInfo *info, PetscScalar **x, Mat H, void *ctx)
+$      func (DMDALocalInfo *info, PetscReal **x, Mat H, void *ctx)
 
 + info - information about the DMDA grid
 . x - input vector
@@ -953,7 +953,7 @@ $      func (DMDALocalInfo *info, PetscScalar **x, Mat H, void *ctx)
 
 .seealso: TaoDMSetLocalGradientRoutine(), TaoDMSetHessianRoutine() TaoDMSetLocalObjectiveAndGradientRoutine(), TaoDMSetLocalObjectiveRoutine()
 @*/
-PetscErrorCode TaoDMSetLocalHessianRoutine(TaoDM *taodm, PetscErrorCode (*func)(DMDALocalInfo*, PetscScalar**,Mat,void*))
+PetscErrorCode TaoDMSetLocalHessianRoutine(TaoDM *taodm, PetscErrorCode (*func)(DMDALocalInfo*, PetscReal**,Mat,void*))
 {
   PetscInt i;
   PetscInt nlevels = taodm[0]->nlevels;
@@ -1174,7 +1174,7 @@ PetscErrorCode TaoDMFormHessianLocal(TaoSolver tao, Vec X, Mat *H, Mat *Hpre, Ma
   ierr = DMGlobalToLocalEnd(dm,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   ierr = DMDAGetLocalInfo(dm,&info); CHKERRQ(ierr);
   ierr = DMDAVecGetArray(dm,X,&x); CHKERRQ(ierr);
-  ierr = (*taodm->ops->computehessianlocal)(&info, (PetscScalar**)x, *H, taodm->user); CHKERRQ(ierr);
+  ierr = (*taodm->ops->computehessianlocal)(&info, (PetscReal**)x, *H, taodm->user); CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(dm,X,&x); CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(dm,&localX);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1230,7 +1230,7 @@ PetscErrorCode TaoDMFormGradientLocal(TaoSolver tao, Vec X, Vec G, void *ptr)
   ierr = DMDAVecGetArray(dm,G,&g);CHKERRQ(ierr);
 
   CHKMEMQ;
-  ierr = (*taodm->ops->computegradientlocal)(&info,(PetscScalar**)x,(PetscScalar**)g,taodm->user); CHKERRQ(ierr);
+  ierr = (*taodm->ops->computegradientlocal)(&info,(PetscReal**)x,(PetscReal**)g,taodm->user); CHKERRQ(ierr);
   CHKMEMQ;
 
   ierr = DMDAVecRestoreArray(dm,X,&x);CHKERRQ(ierr);
@@ -1261,14 +1261,14 @@ PetscErrorCode TaoDMFormGradientLocal(TaoSolver tao, Vec X, Vec G, void *ptr)
 
   Level: developer
 @*/
-PetscErrorCode TaoDMFormFunctionGradientLocal(TaoSolver tao, Vec X, PetscScalar *f, Vec G, void *ptr)
+PetscErrorCode TaoDMFormFunctionGradientLocal(TaoSolver tao, Vec X, PetscReal *f, Vec G, void *ptr)
 {
   PetscErrorCode ierr;
   Vec            localX;
   void           *x, *g;
   TaoDM          taodm = (TaoDM)ptr;
   PetscInt       N,n;
-  PetscScalar    floc;
+  PetscReal    floc;
   MPI_Comm       comm;
   DMDALocalInfo  info;
   DM             dm;
@@ -1296,7 +1296,7 @@ PetscErrorCode TaoDMFormFunctionGradientLocal(TaoSolver tao, Vec X, PetscScalar 
   ierr = DMDAVecGetArray(dm,G,&g);CHKERRQ(ierr);
 
   CHKMEMQ;
-  ierr = (*taodm->ops->computeobjectiveandgradientlocal)(&info,(PetscScalar**)x,&floc,(PetscScalar**)g,taodm->user); CHKERRQ(ierr);
+  ierr = (*taodm->ops->computeobjectiveandgradientlocal)(&info,(PetscReal**)x,&floc,(PetscReal**)g,taodm->user); CHKERRQ(ierr);
   CHKMEMQ;
   ierr = PetscObjectGetComm((PetscObject)X,&comm); CHKERRQ(ierr);
   ierr = MPI_Allreduce(&floc,f,1,MPIU_SCALAR, MPI_SUM, comm); CHKERRQ(ierr);
@@ -1325,14 +1325,14 @@ PetscErrorCode TaoDMFormFunctionGradientLocal(TaoSolver tao, Vec X, PetscScalar 
 
   Level: developer
 @*/
-PetscErrorCode TaoDMFormFunctionLocal(TaoSolver tao, Vec X, PetscScalar *f, void *ptr)
+PetscErrorCode TaoDMFormFunctionLocal(TaoSolver tao, Vec X, PetscReal *f, void *ptr)
 {
   PetscErrorCode ierr;
   Vec            localX;
-  PetscScalar    *x;
+  PetscReal    *x;
   TaoDM          taodm = (TaoDM)ptr;
   PetscInt       N,n;
-  PetscScalar    floc;
+  PetscReal    floc;
   MPI_Comm       comm;
   DMDALocalInfo  info;
   DM             dm;
@@ -1360,7 +1360,7 @@ PetscErrorCode TaoDMFormFunctionLocal(TaoSolver tao, Vec X, PetscScalar *f, void
   ierr = DMDAVecGetArray(dm,X,&x);CHKERRQ(ierr);
 
   CHKMEMQ;
-  ierr = (*taodm->ops->computeobjectivelocal)(&info,(PetscScalar**)x,&floc,taodm->user); CHKERRQ(ierr);
+  ierr = (*taodm->ops->computeobjectivelocal)(&info,(PetscReal**)x,&floc,taodm->user); CHKERRQ(ierr);
   CHKMEMQ;
   ierr = PetscObjectGetComm((PetscObject)X,&comm); CHKERRQ(ierr);
   ierr = MPI_Allreduce(&floc,f,1,MPIU_SCALAR, MPI_SUM, comm); CHKERRQ(ierr);

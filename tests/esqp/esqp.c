@@ -58,7 +58,7 @@ PetscErrorCode Gather(Vec x, Vec state, VecScatter s_scat, Vec design, VecScatte
 PetscErrorCode Scatter(Vec x, Vec state, VecScatter s_scat, Vec design, VecScatter d_scat);
 PetscErrorCode ESQPInitialize(AppCtx *user);
 PetscErrorCode ESQPDestroy(AppCtx *user);
-PetscErrorCode MyMonitor(TaoSolver, void*);
+PetscErrorCode ESQPMonitor(TaoSolver, void*);
 
 PetscErrorCode StateMatMult(Mat,Vec,Vec);
 PetscErrorCode StateMatGetDiagonal(Mat,Vec); 
@@ -134,7 +134,7 @@ int main(int argc, char **argv)
   ierr = TaoSolverCreate(PETSC_COMM_SELF,&tao); CHKERRQ(ierr);
   ierr = TaoSolverSetType(tao,"tao_lcl"); CHKERRQ(ierr);
 
-  //ierr = TaoSolverSetMonitor(tao,MyMonitor,&user); CHKERRQ(ierr);
+  //ierr = TaoSolverSetMonitor(tao,ESQPMonitor,&user); CHKERRQ(ierr);
 
   /* Set solution vector with an initial guess */
   ierr = TaoSolverSetInitialVector(tao,x); CHKERRQ(ierr);
@@ -189,7 +189,7 @@ int main(int argc, char **argv)
 PetscErrorCode FormFunction(TaoSolver tao,Vec X,PetscReal *f,void *ptr)
 {
   PetscErrorCode ierr;
-  PetscScalar d1=0,d2=0;
+  PetscReal d1=0,d2=0;
   AppCtx *user = (AppCtx*)ptr;
   PetscFunctionBegin;
   ierr = Scatter(X,user->y,user->state_scatter,user->u,user->design_scatter); CHKERRQ(ierr);
@@ -236,10 +236,10 @@ PetscErrorCode FormGradient(TaoSolver tao,Vec X,Vec G,void *ptr)
 
 #undef __FUNCT__
 #define __FUNCT__ "FormFunctionGradient"
-PetscErrorCode FormFunctionGradient(TaoSolver tao, Vec X, PetscScalar *f, Vec G, void *ptr)
+PetscErrorCode FormFunctionGradient(TaoSolver tao, Vec X, PetscReal *f, Vec G, void *ptr)
 {
   PetscErrorCode ierr;
-  PetscScalar d1,d2;
+  PetscReal d1,d2;
   AppCtx *user = (AppCtx*)ptr;
   PetscFunctionBegin;
   ierr = Scatter(X,user->y,user->state_scatter,user->u,user->design_scatter); CHKERRQ(ierr);
@@ -636,8 +636,8 @@ PetscErrorCode ESQPDestroy(AppCtx *user)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MyMonitor"
-PetscErrorCode MyMonitor(TaoSolver tao, void *ptr)
+#define __FUNCT__ "ESQPMonitor"
+PetscErrorCode ESQPMonitor(TaoSolver tao, void *ptr)
 {
   PetscErrorCode ierr;
   Vec X;

@@ -1,7 +1,7 @@
 #include "submatfree.h"
 
 PetscErrorCode ISCreateComplement(IS, Vec, IS *);
-PetscErrorCode VecISSetToConstant(IS, PetscScalar, Vec);
+PetscErrorCode VecISSetToConstant(IS, PetscReal, Vec);
 
 
 #undef __FUNCT__  
@@ -190,7 +190,7 @@ PetscErrorCode MatView_SMF(Mat mat,PetscViewer viewer)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatShift_SMF"
-PetscErrorCode MatShift_SMF(Mat Y, PetscScalar a)
+PetscErrorCode MatShift_SMF(Mat Y, PetscReal a)
 {
   PetscErrorCode ierr;
   MatSubMatFreeCtx ctx;
@@ -239,7 +239,7 @@ PetscErrorCode MatEqual_SMF(Mat A,Mat B,PetscBool *flg)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatScale_SMF"
-PetscErrorCode MatScale_SMF(Mat mat, PetscScalar a)
+PetscErrorCode MatScale_SMF(Mat mat, PetscReal a)
 {
   PetscErrorCode ierr;
   MatSubMatFreeCtx ctx;
@@ -324,7 +324,7 @@ PetscErrorCode MatGetSubMatrix_SMF(Mat mat,IS isrow,IS iscol,MatReuse cll,
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetRow_SMF"
-PetscErrorCode MatGetRow_SMF(Mat mat,PetscInt row,PetscInt *ncols,const PetscInt **cols,const PetscScalar **vals)
+PetscErrorCode MatGetRow_SMF(Mat mat,PetscInt row,PetscInt *ncols,const PetscInt **cols,const PetscReal **vals)
 {
   PetscErrorCode ierr;
   MatSubMatFreeCtx ctx;
@@ -337,7 +337,7 @@ PetscErrorCode MatGetRow_SMF(Mat mat,PetscInt row,PetscInt *ncols,const PetscInt
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatRestoreRow_SMF"
-PetscErrorCode MatRestoreRow_SMF(Mat mat,PetscInt row,PetscInt *ncols,const PetscInt **cols,const PetscScalar **vals)
+PetscErrorCode MatRestoreRow_SMF(Mat mat,PetscInt row,PetscInt *ncols,const PetscInt **cols,const PetscReal **vals)
 {
   PetscErrorCode ierr;
   MatSubMatFreeCtx ctx;
@@ -410,11 +410,11 @@ PetscErrorCode MatNorm_SMF(Mat mat,NormType type,PetscReal *norm)
 
    Level: advanced
 @*/
-PetscErrorCode VecISSetToConstant(IS S, PetscScalar c, Vec V){
+PetscErrorCode VecISSetToConstant(IS S, PetscReal c, Vec V){
   PetscErrorCode ierr;
   PetscInt nloc,low,high,i;
   const PetscInt *s;
-  PetscScalar *v;
+  PetscReal *v;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(V,VEC_CLASSID,3); 
   PetscValidHeaderSpecific(S,IS_CLASSID,1); 

@@ -326,7 +326,7 @@ PetscErrorCode modelimprove(TaoSolver tao, TAO_POUNDERS *mfqP, PetscInt addallpo
   /* modeld = Q(:,np+1:n)' */
   PetscErrorCode ierr;
   PetscInt i,j,minindex;
-  PetscScalar dp,half=0.5,one=1.0,minvalue;
+  PetscReal dp,half=0.5,one=1.0,minvalue;
   PetscBLASInt blasn=mfqP->n,  blasnpmax = mfqP->npmax, blask,info;
   PetscBLASInt blas1=1,blasnpmax_x_5 = mfqP->npmax*5;
   blask = mfqP->nmodelpoints;

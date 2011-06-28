@@ -5,11 +5,11 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "estsv"
-static PetscErrorCode estsv(PetscInt n, PetscScalar *r, PetscInt ldr, PetscScalar *svmin, PetscScalar *z) {
+static PetscErrorCode estsv(PetscInt n, PetscReal *r, PetscInt ldr, PetscReal *svmin, PetscReal *z) {
 
     PetscBLASInt blas1=1, blasn=n, blasnmi, blasj, blasldr = ldr;
     PetscInt i,j;
-    PetscScalar e,temp,w,wm,ynorm,znorm,s,sm;
+    PetscReal e,temp,w,wm,ynorm,znorm,s,sm;
     PetscFunctionBegin;
     for (i=0;i<n;i++) {
 	z[i]=0.0;

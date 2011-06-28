@@ -15,19 +15,19 @@ typedef struct {
   Vec Gold;
   Vec Diag;
 
-  PetscScalar trust0;
+  PetscReal trust0;
 
   /* Parameters when updating the trust-region radius based on steplength */
-  PetscScalar nu1;		/* used to compute trust-region radius */
-  PetscScalar nu2;		/* used to compute trust-region radius */
-  PetscScalar nu3;		/* used to compute trust-region radius */
-  PetscScalar nu4;		/* used to compute trust-region radius */
+  PetscReal nu1;		/* used to compute trust-region radius */
+  PetscReal nu2;		/* used to compute trust-region radius */
+  PetscReal nu3;		/* used to compute trust-region radius */
+  PetscReal nu4;		/* used to compute trust-region radius */
 
-  PetscScalar omega1;        /* factor used for trust-region update */
-  PetscScalar omega2;        /* factor used for trust-region update */
-  PetscScalar omega3;        /* factor used for trust-region update */
-  PetscScalar omega4;        /* factor used for trust-region update */
-  PetscScalar omega5;        /* factor used for trust-region update */
+  PetscReal omega1;        /* factor used for trust-region update */
+  PetscReal omega2;        /* factor used for trust-region update */
+  PetscReal omega3;        /* factor used for trust-region update */
+  PetscReal omega4;        /* factor used for trust-region update */
+  PetscReal omega5;        /* factor used for trust-region update */
 
   /*
   // if   step < nu1  		(very bad step)
@@ -44,16 +44,16 @@ typedef struct {
   */
 
   /* Parameters when updating the trust-region radius based on reduction */
-  PetscScalar eta1;		/* used to compute trust-region radius */
-  PetscScalar eta2;		/* used to compute trust-region radius */
-  PetscScalar eta3;		/* used to compute trust-region radius */
-  PetscScalar eta4;		/* used to compute trust-region radius */
+  PetscReal eta1;		/* used to compute trust-region radius */
+  PetscReal eta2;		/* used to compute trust-region radius */
+  PetscReal eta3;		/* used to compute trust-region radius */
+  PetscReal eta4;		/* used to compute trust-region radius */
 
-  PetscScalar alpha1;        /* factor used for trust-region update */
-  PetscScalar alpha2;        /* factor used for trust-region update */
-  PetscScalar alpha3;        /* factor used for trust-region update */
-  PetscScalar alpha4;        /* factor used for trust-region update */
-  PetscScalar alpha5;        /* factor used for trust-region update */
+  PetscReal alpha1;        /* factor used for trust-region update */
+  PetscReal alpha2;        /* factor used for trust-region update */
+  PetscReal alpha3;        /* factor used for trust-region update */
+  PetscReal alpha4;        /* factor used for trust-region update */
+  PetscReal alpha5;        /* factor used for trust-region update */
 
   /* kappa = ared / pred
   // if   kappa < eta1 		(very bad step)
@@ -70,15 +70,15 @@ typedef struct {
   */
  
   /* Parameters when updating the trust-region radius based on interpolation */
-  PetscScalar mu1;		/* used for model agreement in interpolation */
-  PetscScalar mu2;		/* used for model agreement in interpolation */
+  PetscReal mu1;		/* used for model agreement in interpolation */
+  PetscReal mu2;		/* used for model agreement in interpolation */
 
-  PetscScalar gamma1;	/* factor used for interpolation */
-  PetscScalar gamma2;	/* factor used for interpolation */
-  PetscScalar gamma3;	/* factor used for interpolation */
-  PetscScalar gamma4;	/* factor used for interpolation */
+  PetscReal gamma1;	/* factor used for interpolation */
+  PetscReal gamma2;	/* factor used for interpolation */
+  PetscReal gamma3;	/* factor used for interpolation */
+  PetscReal gamma4;	/* factor used for interpolation */
 
-  PetscScalar theta;		/* factor used for interpolation */
+  PetscReal theta;		/* factor used for interpolation */
 
   /* kappa = ared / pred 
   // if   kappa >= 1.0 - mu1	(very good step)
@@ -98,20 +98,20 @@ typedef struct {
   */
  
   /* Parameters when initializing trust-region radius based on interpolation */
-  PetscScalar mu1_i;		/* used for model agreement in interpolation */
-  PetscScalar mu2_i;		/* used for model agreement in interpolation */
+  PetscReal mu1_i;		/* used for model agreement in interpolation */
+  PetscReal mu2_i;		/* used for model agreement in interpolation */
 
-  PetscScalar gamma1_i;	/* factor used for interpolation */
-  PetscScalar gamma2_i;	/* factor used for interpolation */
-  PetscScalar gamma3_i;	/* factor used for interpolation */
-  PetscScalar gamma4_i;	/* factor used for interpolation */
+  PetscReal gamma1_i;	/* factor used for interpolation */
+  PetscReal gamma2_i;	/* factor used for interpolation */
+  PetscReal gamma3_i;	/* factor used for interpolation */
+  PetscReal gamma4_i;	/* factor used for interpolation */
 
-  PetscScalar theta_i;	/* factor used for interpolation */
+  PetscReal theta_i;	/* factor used for interpolation */
 
   /* Other parameters */
-  PetscScalar min_radius;    /* lower bound on initial radius value */
-  PetscScalar max_radius;    /* upper bound on trust region radius */
-  PetscScalar epsilon;       /* tolerance used when computing ared/pred */
+  PetscReal min_radius;    /* lower bound on initial radius value */
+  PetscReal max_radius;    /* upper bound on trust region radius */
+  PetscReal epsilon;       /* tolerance used when computing ared/pred */
 
   PetscInt trust;		/* Trust-region steps accepted */
   PetscInt newt;		/* Newton directions attempted */

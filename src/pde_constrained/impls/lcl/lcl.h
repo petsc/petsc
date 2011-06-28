@@ -61,8 +61,8 @@ typedef struct {
   Vec lamda1;   /* Lagrange Multiplier */
 
   Vec WL;   /* Work vector */
-  PetscScalar rho; /* Penalty parameter */
-  PetscScalar aug,aug0,lgn,lgn0;
+  PetscReal rho; /* Penalty parameter */
+  PetscReal aug,aug0,lgn,lgn0;
   PetscInt    subset_type;
   MatStructure statematflag,designmatflag;
   PetscBool recompute_jacobian_flag;

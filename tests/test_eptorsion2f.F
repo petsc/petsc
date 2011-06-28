@@ -52,7 +52,7 @@
       TaoSolverTerminationReason reason
       PetscBool        flg
       PetscInt         iter           ! iteration information
-      PetscScalar      ff,gnorm,cnorm,xdiff
+      PetscReal      ff,gnorm,cnorm,xdiff
       PetscInt         i1
       
 
@@ -167,7 +167,7 @@
 
 !  Local variables:
       PetscInt         i, j, k, xe, ye
-      PetscScalar      temp, val, hx, hy
+      PetscReal      temp, val, hx, hy
       PetscInt         xs, ys, xm, ym
       PetscInt         gxm, gym, gxs, gys
       PetscInt         i1
@@ -230,7 +230,7 @@
 !  Input/output variables:
       TaoSolver        tao
       Vec              X, G
-      PetscScalar      f
+      PetscReal      f
       PetscErrorCode   ierr
       PetscInt         dummy
 
@@ -238,18 +238,18 @@
 
 
 ! PETSc's VecGetArray acts differently in Fortran than it does in C.
-! Calling VecGetArray((Vec) X, (PetscScalar) x_array(0:1), (PetscOffset) x_index, ierr)
+! Calling VecGetArray((Vec) X, (PetscReal) x_array(0:1), (PetscOffset) x_index, ierr)
 ! will return an array of doubles referenced by x_array offset by x_index.
 !  i.e.,  to reference the kth element of X, use x_array(k + x_index).
 ! Notice that by declaring the arrays with range (0:1), we are using the C 0-indexing practice.
-      PetscScalar      lx_v(0:1)
+      PetscReal      lx_v(0:1)
       PetscOffset      lx_i
 
 !  Local variables:
-      PetscScalar      zero, p5, area, cdiv3
-      PetscScalar      val, flin, fquad,floc
-      PetscScalar      v, vb, vl, vr, vt, dvdx
-      PetscScalar      dvdy, hx, hy
+      PetscReal      zero, p5, area, cdiv3
+      PetscReal      val, flin, fquad,floc
+      PetscReal      v, vb, vl, vr, vt, dvdx
+      PetscReal      dvdy, hx, hy
       PetscInt         xe, ye, xsm, ysm
       PetscInt         xep, yep, i, j, k, ind
       PetscInt         xs, ys, xm, ym 
@@ -416,7 +416,7 @@
       PetscInt col(0:4),row
       PetscInt xs,xm,gxs,gxm
       PetscInt ys,ym,gys,gym
-      PetscScalar v(0:4)
+      PetscReal v(0:4)
       PetscInt i1
 
       i1 = 1

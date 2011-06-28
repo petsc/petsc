@@ -33,7 +33,7 @@ T*/
 */
 typedef struct {
   PetscInt    mx, my;                 /* discretization in x, y directions */
-  PetscScalar *bottom, *top, *left, *right;             /* boundary values */
+  PetscReal *bottom, *top, *left, *right;             /* boundary values */
   Mat         H;
 } AppCtx;
 
@@ -42,7 +42,7 @@ typedef struct {
 static PetscErrorCode MSA_BoundaryConditions(AppCtx*);
 static PetscErrorCode MSA_InitialPoint(AppCtx*,Vec);
 static PetscErrorCode QuadraticH(AppCtx*,Vec,Mat);
-PetscErrorCode FormFunctionGradient(TaoSolver,Vec,PetscScalar*,Vec,void*);
+PetscErrorCode FormFunctionGradient(TaoSolver,Vec,PetscReal*,Vec,void*);
 PetscErrorCode FormHessian(TaoSolver,Vec,Mat*,Mat*,MatStructure *,void*);
 
 #undef __FUNCT__
@@ -164,18 +164,18 @@ int main( int argc, char **argv )
 .   fcn     - the newly evaluated function
 .   G       - vector containing the newly evaluated gradient
 */
-PetscErrorCode FormFunctionGradient(TaoSolver tao,Vec X,PetscScalar *fcn,Vec G,void *userCtx) {
+PetscErrorCode FormFunctionGradient(TaoSolver tao,Vec X,PetscReal *fcn,Vec G,void *userCtx) {
 
   AppCtx * user = (AppCtx *) userCtx;
   PetscErrorCode ierr;
   PetscInt i,j,row;
   PetscInt mx=user->mx, my=user->my;
-  PetscScalar rhx=mx+1, rhy=my+1;
-  PetscScalar hx=1.0/(mx+1),hy=1.0/(my+1), hydhx=hy/hx, hxdhy=hx/hy, area=0.5*hx*hy, ft=0;
-  PetscScalar f1,f2,f3,f4,f5,f6,d1,d2,d3,d4,d5,d6,d7,d8,xc,xl,xr,xt,xb,xlt,xrb;
-  PetscScalar df1dxc,df2dxc,df3dxc,df4dxc,df5dxc,df6dxc;
-  PetscScalar zero=0.0;
-  PetscScalar *g, *x;
+  PetscReal rhx=mx+1, rhy=my+1;
+  PetscReal hx=1.0/(mx+1),hy=1.0/(my+1), hydhx=hy/hx, hxdhy=hx/hy, area=0.5*hx*hy, ft=0;
+  PetscReal f1,f2,f3,f4,f5,f6,d1,d2,d3,d4,d5,d6,d7,d8,xc,xl,xr,xt,xb,xlt,xrb;
+  PetscReal df1dxc,df2dxc,df3dxc,df4dxc,df5dxc,df6dxc;
+  PetscReal zero=0.0;
+  PetscReal *g, *x;
 
   /* Initialize vector to zero */
   ierr = VecSet(G, zero); CHKERRQ(ierr);
@@ -370,11 +370,11 @@ PetscErrorCode QuadraticH(AppCtx *user, Vec X, Mat Hessian)
   PetscInt    i,j,k,row;
   PetscInt    mx=user->mx, my=user->my;
   PetscInt    col[7];
-  PetscScalar hx=1.0/(mx+1), hy=1.0/(my+1), hydhx=hy/hx, hxdhy=hx/hy;
-  PetscScalar rhx=mx+1, rhy=my+1;
-  PetscScalar f1,f2,f3,f4,f5,f6,d1,d2,d3,d4,d5,d6,d7,d8,xc,xl,xr,xt,xb,xlt,xrb;
-  PetscScalar hl,hr,ht,hb,hc,htl,hbr;
-  PetscScalar *x, v[7];
+  PetscReal hx=1.0/(mx+1), hy=1.0/(my+1), hydhx=hy/hx, hxdhy=hx/hy;
+  PetscReal rhx=mx+1, rhy=my+1;
+  PetscReal f1,f2,f3,f4,f5,f6,d1,d2,d3,d4,d5,d6,d7,d8,xc,xl,xr,xt,xb,xlt,xrb;
+  PetscReal hl,hr,ht,hb,hc,htl,hbr;
+  PetscReal *x, v[7];
 
   /* Get pointers to vector data */
   ierr = VecGetArray(X,&x); CHKERRQ(ierr);
@@ -535,18 +535,18 @@ static PetscErrorCode MSA_BoundaryConditions(AppCtx * user)
   PetscInt     maxits=5;
   PetscInt     mx=user->mx,my=user->my;
   PetscInt     bsize=0, lsize=0, tsize=0, rsize=0;
-  PetscScalar     one=1.0, two=2.0, three=3.0, tol=1e-10;
-  PetscScalar     fnorm,det,hx,hy,xt=0,yt=0;
-  PetscScalar     u1,u2,nf1,nf2,njac11,njac12,njac21,njac22;
-  PetscScalar     b=-0.5, t=0.5, l=-0.5, r=0.5;
-  PetscScalar     *boundary;
+  PetscReal     one=1.0, two=2.0, three=3.0, tol=1e-10;
+  PetscReal     fnorm,det,hx,hy,xt=0,yt=0;
+  PetscReal     u1,u2,nf1,nf2,njac11,njac12,njac21,njac22;
+  PetscReal     b=-0.5, t=0.5, l=-0.5, r=0.5;
+  PetscReal     *boundary;
 
   bsize=mx+2; lsize=my+2; rsize=my+2; tsize=mx+2;
 
-  ierr = PetscMalloc(bsize*sizeof(PetscScalar),&user->bottom); CHKERRQ(ierr);
-  ierr = PetscMalloc(tsize*sizeof(PetscScalar),&user->top); CHKERRQ(ierr);
-  ierr = PetscMalloc(lsize*sizeof(PetscScalar),&user->left); CHKERRQ(ierr);
-  ierr = PetscMalloc(rsize*sizeof(PetscScalar),&user->right); CHKERRQ(ierr);
+  ierr = PetscMalloc(bsize*sizeof(PetscReal),&user->bottom); CHKERRQ(ierr);
+  ierr = PetscMalloc(tsize*sizeof(PetscReal),&user->top); CHKERRQ(ierr);
+  ierr = PetscMalloc(lsize*sizeof(PetscReal),&user->left); CHKERRQ(ierr);
+  ierr = PetscMalloc(rsize*sizeof(PetscReal),&user->right); CHKERRQ(ierr);
 
   hx= (r-l)/(mx+1); hy=(t-b)/(my+1);
 
@@ -621,7 +621,7 @@ static PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
 {
   PetscInt      start=-1,i,j;
   PetscErrorCode ierr;
-  PetscScalar   zero=0.0;
+  PetscReal   zero=0.0;
   PetscBool flg;
 
   ierr = VecSet(X, zero); CHKERRQ(ierr);
@@ -637,7 +637,7 @@ static PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
 
     PetscInt    row;
     PetscInt    mx=user->mx,my=user->my;
-    PetscScalar *x;
+    PetscReal *x;
     
     /* Get pointers to vector data */
     ierr = VecGetArray(X,&x); CHKERRQ(ierr);

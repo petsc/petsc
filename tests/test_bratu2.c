@@ -284,7 +284,7 @@ PetscErrorCode FormFunction(TaoSolver tao,Vec X,Vec F,void *ptr)
   PetscErrorCode     info;
   PetscInt i, j, row, mx, my, xs, ys, xm, ym, gxs, gys, gxm, gym;
   PetscReal  two = 2.0, lambda,hx, hy, hxdhy, hydhx,sc;
-  PetscScalar  u, uxx, uyy, *x,*f;
+  PetscReal  u, uxx, uyy, *x,*f;
   Vec localX=user->localX,localF=user->localF;
 
   mx = user->mx;            my = user->my;            lambda = user->param;
@@ -395,7 +395,7 @@ PetscErrorCode FormJacobian(TaoSolver tao,Vec X,Mat *JJ,Mat *Jpre,MatStructure *
   PetscErrorCode     info;
   PetscInt i, j, row, mx, my, col[5];
   PetscInt     xs, ys, xm, ym, gxs, gys, gxm, gym;
-  PetscScalar  two = 2.0, one = 1.0, lambda, v[5], hx, hy, hxdhy, hydhx, sc, *x;
+  PetscReal  two = 2.0, one = 1.0, lambda, v[5], hx, hy, hxdhy, hydhx, sc, *x;
   
 
   mx = user->mx;            my = user->my;            lambda = user->param;

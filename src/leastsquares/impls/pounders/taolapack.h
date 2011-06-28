@@ -42,7 +42,7 @@
 PETSC_EXTERN_CXX_BEGIN
 EXTERN_C_BEGIN
 
-extern void LAPACKgesv_(PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
+extern void LAPACKgesv_(PetscBLASInt*,PetscBLASInt*,PetscReal*,PetscBLASInt*,PetscBLASInt*,PetscReal*,PetscBLASInt*,PetscBLASInt*);
 EXTERN_C_END
 PETSC_EXTERN_CXX_END
 

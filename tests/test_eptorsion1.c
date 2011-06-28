@@ -93,7 +93,7 @@ PetscErrorCode main(int argc,char **argv)
   KSP         ksp;                 /* PETSc Krylov subspace solver */
   AppCtx      user;                /* application context */
   PetscMPIInt size;                /* number of processes */
-  PetscScalar one=1.0;
+  PetscReal one=1.0;
 
 
   /* Initialize TAO,PETSc */
@@ -223,8 +223,8 @@ PetscErrorCode main(int argc,char **argv)
 */
 PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
 {
-  PetscScalar hx = user->hx, hy = user->hy, temp;
-  PetscScalar val;
+  PetscReal hx = user->hx, hy = user->hy, temp;
+  PetscReal val;
   PetscErrorCode ierr;
   PetscInt i, j, k, nx = user->mx, ny = user->my;
 
@@ -277,13 +277,13 @@ PetscErrorCode FormFunctionGradient(TaoSolver tao,Vec X,double *f,Vec G,void *pt
    Output Parameters:
 .  f    - the newly evaluated function
 */
-PetscErrorCode FormFunction(TaoSolver tao,Vec X,PetscScalar *f,void *ptr)
+PetscErrorCode FormFunction(TaoSolver tao,Vec X,PetscReal *f,void *ptr)
 {
   AppCtx *user = (AppCtx *) ptr;
-  PetscScalar hx = user->hx, hy = user->hy, area, three = 3.0, p5 = 0.5;
-  PetscScalar zero = 0.0, vb, vl, vr, vt, dvdx, dvdy, flin = 0.0, fquad = 0.0;
-  PetscScalar v, cdiv3 = user->param/three;
-  PetscScalar *x;
+  PetscReal hx = user->hx, hy = user->hy, area, three = 3.0, p5 = 0.5;
+  PetscReal zero = 0.0, vb, vl, vr, vt, dvdx, dvdy, flin = 0.0, fquad = 0.0;
+  PetscReal v, cdiv3 = user->param/three;
+  PetscReal *x;
   PetscErrorCode ierr;
   PetscInt  nx = user->mx, ny = user->my, i, j, k;
 
@@ -351,12 +351,12 @@ PetscErrorCode FormFunction(TaoSolver tao,Vec X,PetscScalar *f,void *ptr)
 PetscErrorCode FormGradient(TaoSolver tao,Vec X,Vec G,void *ptr)
 {
   AppCtx *user = (AppCtx *) ptr;
-  PetscScalar zero=0.0, p5=0.5, three = 3.0, area, val, *x;
+  PetscReal zero=0.0, p5=0.5, three = 3.0, area, val, *x;
   PetscErrorCode ierr;
   PetscInt nx = user->mx, ny = user->my, ind, i, j, k;
-  PetscScalar hx = user->hx, hy = user->hy;
-  PetscScalar vb, vl, vr, vt, dvdx, dvdy;
-  PetscScalar v, cdiv3 = user->param/three;
+  PetscReal hx = user->hx, hy = user->hy;
+  PetscReal vb, vl, vr, vt, dvdx, dvdy;
+  PetscReal v, cdiv3 = user->param/three;
 
   /* Initialize gradient to zero */
   ierr = VecSet(G, zero); CHKERRQ(ierr);
@@ -460,7 +460,7 @@ PetscErrorCode FormHessian(TaoSolver tao,Vec X,Mat *HH,Mat *Hpre, MatStructure *
   AppCtx     *user = (AppCtx *) ptr;
   PetscErrorCode ierr;
   PetscInt   i,j, ndim = user->ndim;
-  PetscScalar  *y, zero = 0.0, one = 1.0;
+  PetscReal  *y, zero = 0.0, one = 1.0;
   Mat H=*HH;
   *Hpre = H;
   PetscBool assembled;
@@ -577,8 +577,8 @@ PetscErrorCode HessianProductMat(Mat mat,Vec svec,Vec y)
 PetscErrorCode HessianProduct(void *ptr,Vec svec,Vec y)
 {
   AppCtx *user = (AppCtx *)ptr;
-  PetscScalar p5 = 0.5, zero = 0.0, one = 1.0, hx, hy, val, area, *x, *s;
-  PetscScalar v, vb, vl, vr, vt, hxhx, hyhy;
+  PetscReal p5 = 0.5, zero = 0.0, one = 1.0, hx, hy, val, area, *x, *s;
+  PetscReal v, vb, vl, vr, vt, hxhx, hyhy;
   PetscErrorCode ierr;
   PetscInt nx, ny, i, j, k, ind;
 

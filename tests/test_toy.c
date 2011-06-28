@@ -142,7 +142,7 @@ PetscErrorCode FormGradient(TaoSolver tao,Vec X,Vec G,void *ptr)
 }
 #undef __FUNCT__
 #define __FUNCT__ "FormFunctionGradient"
-PetscErrorCode FormFunctionGradient(TaoSolver tao, Vec X, PetscScalar *f, Vec G, void *ptr)
+PetscErrorCode FormFunctionGradient(TaoSolver tao, Vec X, PetscReal *f, Vec G, void *ptr)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -212,8 +212,8 @@ PetscErrorCode FormHessian(TaoSolver tao, Vec X, Mat *tH, Mat* tHPre, MatStructu
 PetscErrorCode FormConstraints(TaoSolver tao, Vec X, Vec C, void *)
 {
    PetscErrorCode ierr;
-   PetscScalar *a;
-   PetscScalar *b;
+   PetscReal *a;
+   PetscReal *b;
    PetscFunctionBegin;
    ierr = VecGetArray(X,&a); CHKERRQ(ierr);
    ierr = VecGetArray(C,&b); CHKERRQ(ierr);

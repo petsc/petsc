@@ -59,7 +59,7 @@
       Vec              Top, Left 
       Vec              Right, Bottom
       DM               dm
-      PetscScalar      bheight
+      PetscReal      bheight
       PetscInt         bmx, bmy
       PetscInt         mx, my, Nx, Ny, N
 

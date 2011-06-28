@@ -50,10 +50,10 @@ typedef struct {
 //static PetscErrorCode AppCtxInitialize(void *ptr);
 static PetscErrorCode FormInitialGuess(TaoDM, Vec);
 static PetscErrorCode FormBounds(TaoDM, Vec, Vec);
-static PetscErrorCode FormFunctionGradient(TaoSolver, Vec, PetscScalar*, Vec, void*);
+static PetscErrorCode FormFunctionGradient(TaoSolver, Vec, PetscReal*, Vec, void*);
 static PetscErrorCode FormHessian(TaoSolver, Vec, Mat*, Mat*, MatStructure*, void*);
-static PetscErrorCode FormFunctionGradientLocal(DMDALocalInfo *info, PetscScalar **x, PetscScalar *f, PetscScalar **g, void *ctx);
-static PetscErrorCode FormHessianLocal(DMDALocalInfo *info, PetscScalar **x, Mat H, void *ctx);
+static PetscErrorCode FormFunctionGradientLocal(DMDALocalInfo *info, PetscReal **x, PetscReal *f, PetscReal **g, void *ctx);
+static PetscErrorCode FormHessianLocal(DMDALocalInfo *info, PetscReal **x, Mat H, void *ctx);
 
 static PetscErrorCode Monitor(TaoDM, PetscInt, void*); 
 static PetscReal p(PetscReal xi, PetscReal ecc);
@@ -68,7 +68,7 @@ static PetscErrorCode WholeJBearHessian(TAO_APPLICATION,DA,Vec,Mat,void*);
 int main(int argc, char **argv) {
   PetscErrorCode       ierr;
   PetscInt             Nx,Ny;
-  //PetscScalar          ff,gnorm;
+  //PetscReal          ff,gnorm;
   DM              dm;
   PetscBool       flg;
   AppCtx          user;                    /* user-defined work context */
@@ -152,7 +152,7 @@ PetscErrorCode FormInitialGuess(TaoDM taodm, Vec X)
   PetscInt    i, j;
   PetscInt    xs, ys, xm, ym, xe, ye;
   PetscReal hx, val;
-  PetscScalar **x;
+  PetscReal **x;
 
   PetscFunctionBegin;
   ierr = TaoDMGetContext(taodm,(void**)&user);
@@ -192,7 +192,7 @@ PetscErrorCode FormBounds(TaoDM taodm, Vec XL, Vec XU)
   PetscErrorCode ierr;
   PetscInt i, j, mx, my;
   PetscInt xs, xm, ys, ym;
-  PetscScalar **xl, **xu;
+  PetscReal **xl, **xu;
 
   PetscFunctionBegin;  
   ierr = TaoDMGetContext(taodm,(void**)&user); CHKERRQ(ierr);
@@ -226,12 +226,12 @@ PetscErrorCode FormBounds(TaoDM taodm, Vec XL, Vec XU)
 
 #undef __FUNCT__
 #define __FUNCT__ "FormFunctionGradientLocal"
-static PetscErrorCode FormFunctionGradientLocal(DMDALocalInfo *dminfo, PetscScalar **x, PetscScalar *f, PetscScalar **g, void *ctx)
+static PetscErrorCode FormFunctionGradientLocal(DMDALocalInfo *dminfo, PetscReal **x, PetscReal *f, PetscReal **g, void *ctx)
 {
   PetscErrorCode ierr;
   AppCtx *user = (AppCtx*)ctx;
 
-  PetscScalar area, aread3;
+  PetscReal area, aread3;
   PetscInt i,j;
   PetscInt xs,xm,gxs,gxm,ys,ym,gys,gym;
   PetscReal hx,hy,dvdx,dvdy;
@@ -256,7 +256,7 @@ static PetscErrorCode FormFunctionGradientLocal(DMDALocalInfo *dminfo, PetscScal
 
   f1=0.0; f2=0.0;
   /* Initialize local area of g to zero */
-  ierr = PetscMemzero((void*)&(g[dminfo->xs][dminfo->ys]),dminfo->xm*dminfo->ym*sizeof(PetscScalar)); CHKERRQ(ierr);
+  ierr = PetscMemzero((void*)&(g[dminfo->xs][dminfo->ys]),dminfo->xm*dminfo->ym*sizeof(PetscReal)); CHKERRQ(ierr);
   for (i=xs; i< xs+xm-1; i++){
     xi=i*hx;
     sinxi = sin(xi);
@@ -311,7 +311,7 @@ static PetscErrorCode FormFunctionGradientLocal(DMDALocalInfo *dminfo, PetscScal
 
 #undef __FUNCT__
 #define __FUNCT__ "FormHessianLocal"
-static PetscErrorCode FormHessianLocal(DMDALocalInfo *dminfo, PetscScalar **x, Mat hes, void *ptr)
+static PetscErrorCode FormHessianLocal(DMDALocalInfo *dminfo, PetscReal **x, Mat hes, void *ptr)
 {
   PetscErrorCode ierr;
   AppCtx *user = (AppCtx*)ptr;

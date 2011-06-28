@@ -15,7 +15,7 @@ PetscErrorCode VecWhichEqual(Vec Vec1, Vec Vec2, IS * S)
   PetscInt i,n_same=0;
   PetscInt n,low,high,low2,high2;
   PetscInt    *same;
-  PetscScalar *v1,*v2;
+  PetscReal *v1,*v2;
   MPI_Comm comm;
 
   PetscFunctionBegin;
@@ -79,7 +79,7 @@ PetscErrorCode VecWhichLessThan(Vec Vec1, Vec Vec2, IS * S)
   PetscInt i;
   PetscInt n,low,high,low2,high2,n_lt=0;
   PetscInt *lt;
-  PetscScalar *v1,*v2;
+  PetscReal *v1,*v2;
   MPI_Comm comm;
 
   PetscFunctionBegin;
@@ -138,7 +138,7 @@ PetscErrorCode VecWhichGreaterThan(Vec Vec1, Vec Vec2, IS * S)
   int    ierr;
   PetscInt n,low,high,low2,high2,n_gt=0,i;
   PetscInt    *gt=NULL;
-  PetscScalar *v1,*v2;
+  PetscReal *v1,*v2;
   MPI_Comm comm;
 
   PetscFunctionBegin;
@@ -204,7 +204,7 @@ PetscErrorCode VecWhichBetween(Vec VecLow, Vec V, Vec VecHigh, IS * S)
   PetscErrorCode ierr;
   PetscInt n,low,high,low2,high2,low3,high3,n_vm=0;
   PetscInt *vm,i;
-  PetscScalar *v1,*v2,*vmiddle;
+  PetscReal *v1,*v2,*vmiddle;
   MPI_Comm comm;
 
   PetscValidHeaderSpecific(V,VEC_CLASSID,2); 
@@ -278,7 +278,7 @@ PetscErrorCode VecWhichBetweenOrEqual(Vec VecLow, Vec V, Vec VecHigh, IS * S)
   PetscErrorCode ierr;
   PetscInt n,low,high,low2,high2,low3,high3,n_vm=0,i;
   PetscInt *vm;
-  PetscScalar *v1,*v2,*vmiddle;
+  PetscReal *v1,*v2,*vmiddle;
   MPI_Comm comm;
 
   PetscValidHeaderSpecific(V,VEC_CLASSID,2); 

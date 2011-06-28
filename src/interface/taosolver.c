@@ -906,7 +906,7 @@ PetscErrorCode TaoSolverDefaultMonitor(TaoSolver tao, void *dummy)
 {
   PetscErrorCode ierr;
   PetscInt its;
-  PetscScalar fct,gnorm;
+  PetscReal fct,gnorm;
 
   PetscFunctionBegin;
   its=tao->niter;
@@ -948,7 +948,7 @@ PetscErrorCode TaoSolverDefaultSMonitor(TaoSolver tao, void *dummy)
 {
   PetscErrorCode ierr;
   PetscInt its;
-  PetscScalar fct,gnorm;
+  PetscReal fct,gnorm;
 
   PetscFunctionBegin;
   its=tao->niter;
@@ -992,7 +992,7 @@ PetscErrorCode TaoSolverDefaultCMonitor(TaoSolver tao, void *dummy)
 {
   PetscErrorCode ierr;
   PetscInt its;
-  PetscScalar fct,gnorm;
+  PetscReal fct,gnorm;
 
   PetscFunctionBegin;
   its=tao->niter;

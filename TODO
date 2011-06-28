@@ -24,15 +24,11 @@ Mesh Refinement
 
 Levenberg-Marquardt
 POUNDer
-KT?
-BNLS?
 
 tabs for view()
 
 
 Decisions to make:
- - what to #include in applications
- - PetscReal or PetscScalar
  - Tao or TaoSolver?
 
 Check documentation
