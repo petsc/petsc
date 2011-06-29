@@ -52,6 +52,8 @@ struct _p_TS {
 
   /* ---------------------Linear Iteration---------------------------------*/
   /* The right hand side matrices are stored in SNES with SNESKSPONLY, (TS,PetscReal,Mat*,Mat*,MatStructure*,void*) */
+  Mat Arhs;
+  Mat Brhs;
   Mat Alhs;     /* user provided left hand side matrix and preconditioner */
   Mat Blhs;     /* user provided left hand side matrix and preconditioner */
   MatStructure rhsmatstructure;
