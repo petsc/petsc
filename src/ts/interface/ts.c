@@ -457,7 +457,7 @@ PetscErrorCode  TSComputeIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal sh
 
     Input Parameters:
 +   ts - the TS context obtained from TSCreate()
-.   r - vector to put the computed right hand side
+.   r - vector to put the computed right hand side (or PETSC_NULL to have it created)
 .   f - routine for evaluating the right-hand-side function
 -   ctx - [optional] user-defined context for private data for the 
           function evaluation routine (may be PETSC_NULL)
@@ -486,6 +486,7 @@ PetscErrorCode  TSSetRHSFunction(TS ts,Vec r,PetscErrorCode (*f)(TS,PetscReal,Ve
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  if (r) PetscValidHeaderSpecific(r,VEC_CLASSID,2);
   if (ts->problem_type == TS_LINEAR) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot set function for linear problem");
   ts->ops->rhsfunction = f;
   ts->funP             = ctx;
@@ -695,6 +696,7 @@ PetscErrorCode  TSSetRHSJacobian(TS ts,Mat A,Mat B,TSRHSJacobian f,void *ctx)
 
    Input Parameters:
 +  ts  - the TS context obtained from TSCreate()
+.  r   - vector to hold the residual (or PETSC_NULL to have it created internally)
 .  f   - the function evaluation routine
 -  ctx - user-defined context for private data for the function evaluation routine (may be PETSC_NULL)
 
@@ -723,6 +725,7 @@ PetscErrorCode  TSSetIFunction(TS ts,Vec res,TSIFunction f,void *ctx)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  if (res) PetscValidHeaderSpecific(res,VEC_CLASSID,2);
   if (f)   ts->ops->ifunction = f;
   if (ctx) ts->funP           = ctx;
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
