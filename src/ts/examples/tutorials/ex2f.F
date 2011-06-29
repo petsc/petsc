@@ -1,3 +1,4 @@
+
 !
 !/*T
 !   Concepts: TS^time-dependent nonlinear problems
@@ -140,7 +141,8 @@
 
       call TSCreate(comm,ts,ierr)
       call TSSetProblemType(ts,TS_NONLINEAR,ierr)
-      call TSSetRHSFunction(ts,RHSFunction,PETSC_NULL_OBJECT,ierr)
+      call TSSetRHSFunction(ts,PETSC_NULL_OBJECT,RHSFunction,           &
+     &                      PETSC_NULL_OBJECT,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Set optional user-defined monitoring routine
@@ -188,7 +190,8 @@
 !  to override the defaults set by TSSetDuration().
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-      call TSSetType(ts,TSBEULER,ierr)
+      call TSSetType(ts,TSTHETA,ierr)
+      call TSThetaSetTheta(ts,one_d0,ierr)
       call TSSetDuration(ts,time_steps_max,time_total_max,ierr)
       call TSSetFromOptions(ts,ierr)
 
