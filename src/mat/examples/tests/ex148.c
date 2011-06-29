@@ -8,14 +8,15 @@ PetscInt main(PetscInt argc,char **args)
 {
   PetscErrorCode  ierr;
   PetscMPIInt     rank,size;
-  PetscInt        N0=20,N1=20,N=N0*N1;
+  PetscInt        N0=50,N1=20,N=N0*N1;
   PetscRandom     rdm;
   PetscScalar     a;
   PetscReal       enorm;
   Vec             x,y,z;
   PetscBool       view=PETSC_FALSE,use_interface=PETSC_TRUE;
-  Mat A;
+  Mat             A;
   PetscInt        DIM, dim[2],vsize;
+
   ierr = PetscInitialize(&argc,&args,(char *)0,help);CHKERRQ(ierr);
 #if defined(PETSC_USE_COMPLEX)
  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP, "This example requires real numbers");
@@ -33,10 +34,12 @@ PetscInt main(PetscInt argc,char **args)
 
  ierr = MatCreateFFT(PETSC_COMM_WORLD,DIM,dim,MATFFTW,&A);CHKERRQ(ierr);
  ierr = MatGetVecs(A,&x,&y);CHKERRQ(ierr);
- ierr = VecGetSize(y,&vsize);CHKERRQ(ierr);
+ ierr = VecGetSize(x,&vsize);CHKERRQ(ierr);
  
 // ierr = MatGetVecs(A,&z,PETSC_NULL);CHKERRQ(ierr);
- printf("The code comes here with vector size %d\n",vsize);
+ printf("Vector size from ex148 %d\n",vsize);
+ ierr = PetscFinalize();
+  return 0;
   
 }
 

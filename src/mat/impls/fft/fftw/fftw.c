@@ -469,18 +469,19 @@ PetscErrorCode  MatGetVecs_FFTW(Mat A,Vec *fin,Vec *fout)
         data_finr=(double *)fftw_malloc(sizeof(double)*alloc_local*2);
         ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,n1,N1,(PetscScalar*)data_finr,fin);CHKERRQ(ierr);
         ierr = VecGetSize(*fin,&vsize);CHKERRQ(ierr);
-        printf("The code comes here with vector size %d\n",vsize);
+        //printf("The code comes here with vector size %d\n",vsize);
         (*fin)->ops->destroy   = VecDestroy_MPIFFTW;
       }
       if (fout) {
-        data_foutr=(double *)fftw_malloc(sizeof(double)*alloc_local*2);
-        ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,n1,N1,(PetscScalar*)data_foutr,fout);CHKERRQ(ierr);
+        data_fout=(fftw_complex *)fftw_malloc(sizeof(fftw_complex)*alloc_local);
+        ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,n1,N1,(PetscScalar*)data_fout,fout);CHKERRQ(ierr);
         (*fout)->ops->destroy   = VecDestroy_MPIFFTW;
       }
-      printf("The code successfully comes at the end of the routine %d, %d\n",n1,N1);
+      printf("Vector size from fftw.c is  %d\n",N1);
      
 #else
       /* Get local size */
+     printf("Hope this does not come here");
       alloc_local = fftw_mpi_local_size_2d(dim[0],dim[1],comm,&local_n0,&local_0_start);
       if (fin) {
         data_fin  = (fftw_complex*)fftw_malloc(sizeof(fftw_complex)*alloc_local);
