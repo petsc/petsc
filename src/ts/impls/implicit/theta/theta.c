@@ -110,7 +110,7 @@ static PetscErrorCode SNESTSFormFunction_Theta(SNES snes,Vec x,Vec y,TS ts)
 
   PetscFunctionBegin;
   ierr = VecAXPBYPCZ(th->Xdot,-th->shift,th->shift,0,ts->vec_sol,x);CHKERRQ(ierr);
-  ierr = TSComputeIFunction(ts,th->stage_time,x,th->Xdot,y);CHKERRQ(ierr);
+  ierr = TSComputeIFunction(ts,th->stage_time,x,th->Xdot,y,PETSC_FALSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -123,7 +123,7 @@ static PetscErrorCode SNESTSFormJacobian_Theta(SNES snes,Vec x,Mat *A,Mat *B,Mat
 
   PetscFunctionBegin;
   /* th->Xdot has already been computed in SNESTSFormFunction_Theta (SNES guarantees this) */
-  ierr = TSComputeIJacobian(ts,th->stage_time,x,th->Xdot,th->shift,A,B,str);CHKERRQ(ierr);
+  ierr = TSComputeIJacobian(ts,th->stage_time,x,th->Xdot,th->shift,A,B,str,PETSC_FALSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

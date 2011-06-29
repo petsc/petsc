@@ -88,10 +88,6 @@ extern PetscErrorCode   TSSetTime(TS,PetscReal);
 extern PetscErrorCode   TSGetTimeStepNumber(TS,PetscInt*);
 extern PetscErrorCode   TSSetTimeStep(TS,PetscReal);
 
-typedef PetscErrorCode (*TSMatrix)(TS,PetscReal,Mat*,Mat*,MatStructure*,void*);
-extern PetscErrorCode   TSSetMatrices(TS,Mat,Mat,TSMatrix,Mat,Mat,TSMatrix,MatStructure,void*);
-extern PetscErrorCode   TSGetMatrices(TS,Mat*,Mat*,TSMatrix*,Mat*,Mat*,TSMatrix*,void**);
-
 typedef PetscErrorCode (*TSRHSFunction)(TS,PetscReal,Vec,Vec,void*);
 typedef PetscErrorCode (*TSRHSJacobian)(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*);
 extern PetscErrorCode   TSSetRHSFunction(TS,Vec,TSRHSFunction,void*);
@@ -128,8 +124,8 @@ extern PetscErrorCode   TSPythonSetType(TS,const char[]);
 
 extern PetscErrorCode   TSComputeRHSFunction(TS,PetscReal,Vec,Vec);
 extern PetscErrorCode   TSComputeRHSJacobian(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*);
-extern PetscErrorCode   TSComputeIFunction(TS,PetscReal,Vec,Vec,Vec);
-extern PetscErrorCode   TSComputeIJacobian(TS,PetscReal,Vec,Vec,PetscReal,Mat*,Mat*,MatStructure*);
+extern PetscErrorCode   TSComputeIFunction(TS,PetscReal,Vec,Vec,Vec,PetscBool);
+extern PetscErrorCode   TSComputeIJacobian(TS,PetscReal,Vec,Vec,PetscReal,Mat*,Mat*,MatStructure*,PetscBool);
 
 /* Dynamic creation and loading functions */
 extern PetscFList TSList;

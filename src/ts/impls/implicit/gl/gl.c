@@ -1029,7 +1029,7 @@ static PetscErrorCode SNESTSFormFunction_GL(SNES snes,Vec x,Vec f,TS ts)
 
   PetscFunctionBegin;
   ierr = VecWAXPY(gl->Ydot[gl->stage],gl->shift,x,gl->Z);CHKERRQ(ierr);
-  ierr = TSComputeIFunction(ts,gl->stage_time,x,gl->Ydot[gl->stage],f);CHKERRQ(ierr);
+  ierr = TSComputeIFunction(ts,gl->stage_time,x,gl->Ydot[gl->stage],f,PETSC_FALSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1042,7 +1042,7 @@ static PetscErrorCode SNESTSFormJacobian_GL(SNES snes,Vec x,Mat *A,Mat *B,MatStr
 
   PetscFunctionBegin;
   /* gl->Xdot will have already been computed in SNESTSFormFunction_GL */
-  ierr = TSComputeIJacobian(ts,gl->stage_time,x,gl->Ydot[gl->stage],gl->shift,A,B,str);CHKERRQ(ierr);
+  ierr = TSComputeIJacobian(ts,gl->stage_time,x,gl->Ydot[gl->stage],gl->shift,A,B,str,PETSC_FALSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

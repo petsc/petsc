@@ -50,14 +50,11 @@ struct _p_TS {
   void *monitorcontext[MAXTSMONITORS];                 /* residual calculation, allows user */
   PetscInt  numbermonitors;                                 /* to, for instance, print residual norm, etc. */
 
-  /* ---------------------Linear Iteration---------------------------------*/
-  /* The right hand side matrices are stored in SNES with SNESKSPONLY, (TS,PetscReal,Mat*,Mat*,MatStructure*,void*) */
-  Mat Arhs;
-  Mat Brhs;
-  Mat Alhs;     /* user provided left hand side matrix and preconditioner */
-  Mat Blhs;     /* user provided left hand side matrix and preconditioner */
-  MatStructure rhsmatstructure;
-  MatStructure lhsmatstructure;
+  /* ---------------------- IMEX support ---------------------------------*/
+  /* These extra slots are only used when the user provides both Implicit and RHS */
+  Mat Arhs;     /* Right hand side matrix */
+  Mat Brhs;     /* Right hand side preconditioning matrix */
+  Vec Frhs;     /* Right hand side function value */
 
   /* ---------------------Nonlinear Iteration------------------------------*/
   SNES  snes;
@@ -88,7 +85,6 @@ struct _p_TS {
 };
 
 extern PetscErrorCode TSMonitor(TS,PetscInt,PetscReal,Vec);
-extern PetscErrorCode TSScaleShiftMatrices(TS,Mat,Mat,MatStructure);
 
 extern PetscLogEvent TS_Step, TS_PseudoComputeTimeStep, TS_FunctionEval, TS_JacobianEval;
 

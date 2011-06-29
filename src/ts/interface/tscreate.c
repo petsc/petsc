@@ -48,10 +48,6 @@ PetscErrorCode  TSCreate(MPI_Comm comm, TS *ts) {
   t->problem_type       = TS_NONLINEAR;
   t->vec_sol            = PETSC_NULL;
   t->numbermonitors     = 0;
-  t->Alhs               = PETSC_NULL;
-  t->Blhs               = PETSC_NULL;
-  t->rhsmatstructure    = DIFFERENT_NONZERO_PATTERN;
-  t->lhsmatstructure    = DIFFERENT_NONZERO_PATTERN;
   t->snes               = PETSC_NULL;
   t->funP               = PETSC_NULL;
   t->jacP               = PETSC_NULL;
@@ -71,32 +67,5 @@ PetscErrorCode  TSCreate(MPI_Comm comm, TS *ts) {
   t->nwork              = 0;
 
   *ts = t;
-  PetscFunctionReturn(0);
-}
-
-/* Set A = 1/dt*Alhs - A, B = 1/dt*Blhs - B */
-#undef __FUNCT__  
-#define __FUNCT__ "TSScaleShiftMatrices"
-PetscErrorCode TSScaleShiftMatrices(TS ts,Mat A,Mat B,MatStructure str)
-{
-  PetscBool      flg;
-  PetscErrorCode ierr;
-  PetscScalar    mdt = 1.0/ts->time_step;
-
-  PetscFunctionBegin;
-  /* this function requires additional work! */
-  ierr = PetscTypeCompare((PetscObject)A,MATMFFD,&flg);CHKERRQ(ierr);
-  if (!flg) {
-    ierr = MatScale(A,-1.0);CHKERRQ(ierr);
-    if (ts->Alhs){
-      ierr = MatAXPY(A,mdt,ts->Alhs,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-    } else {
-      ierr = MatShift(A,mdt);CHKERRQ(ierr);
-    }
-  }
-  if (B != A && str != SAME_PRECONDITIONER) {
-    ierr = MatScale(B,-1.0);CHKERRQ(ierr);
-    ierr = MatShift(B,mdt);CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }

@@ -225,13 +225,9 @@ PetscErrorCode  TSComputeRHSJacobian(TS ts,PetscReal t,Vec X,Mat *A,Mat *B,MatSt
     PetscValidHeaderSpecific(*A,MAT_CLASSID,4);
     PetscValidHeaderSpecific(*B,MAT_CLASSID,5);
   } else {
-    ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    if (*A != *B) {
-      ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-      ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    }
-    *flg = ts->rhsmatstructure;
+    ierr = MatZeroEntries(*A);CHKERRQ(ierr);
+    if (*A != *B) {ierr = MatZeroEntries(*B);CHKERRQ(ierr);}
+    *flg = SAME_NONZERO_PATTERN;
   }
   PetscFunctionReturn(0);
 }
@@ -255,9 +251,6 @@ PetscErrorCode  TSComputeRHSJacobian(TS ts,PetscReal t,Vec X,Mat *A,Mat *B,MatSt
    Most users should not need to explicitly call this routine, as it
    is used internally within the nonlinear solvers.
 
-   If the user did not provide a function but merely a matrix,
-   this routine applies the matrix.
-
    Level: developer
 
 .keywords: TS, compute
@@ -278,20 +271,48 @@ PetscErrorCode TSComputeRHSFunction(TS ts,PetscReal t,Vec x,Vec y)
     PetscStackPush("TS user right-hand-side function");
     ierr = (*ts->ops->rhsfunction)(ts,t,x,y,ts->funP);CHKERRQ(ierr);
     PetscStackPop;
-  } else if (ts->problem_type == TS_LINEAR) {
-    Mat A,B;
-    ierr = TSGetMatrices(ts,&A,&B,PETSC_NULL, PETSC_NULL,PETSC_NULL,PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
-    if (ts->ops->rhsmatrix) {
-      ts->rhsmatstructure = DIFFERENT_NONZERO_PATTERN;
-      PetscStackPush("TS user right-hand-side matrix function");
-      ierr = (*ts->ops->rhsmatrix)(ts,t,&A,&B,&ts->rhsmatstructure,ts->jacP);CHKERRQ(ierr);
-      PetscStackPop;
-      /* call TSSetMatrices() in case the user changed the pointers */
-      ierr = TSSetMatrices(ts,A,B,PETSC_NULL, PETSC_NULL,PETSC_NULL,PETSC_NULL,DIFFERENT_NONZERO_PATTERN,PETSC_NULL);CHKERRQ(ierr);
-    }
-    ierr = MatMult(A,x,y);CHKERRQ(ierr);
-  } else SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_USER,"No RHS provided, must call TSSetRHSFunction() or TSSetMatrices()");
+  } else {
+    ierr = VecZeroEntries(y);CHKERRQ(ierr);
+  }
   ierr = PetscLogEventEnd(TS_FunctionEval,ts,x,y,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "TSGetRHSVec_Private"
+static PetscErrorCode TSGetRHSVec_Private(TS ts,Vec *Frhs)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!ts->Frhs) {
+    ierr = VecDuplicate(ts->vec_sol,&ts->Frhs);CHKERRQ(ierr);
+  }
+  *Frhs = ts->Frhs;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "TSGetRHSMats_Private"
+static PetscErrorCode TSGetRHSMats_Private(TS ts,Mat *Arhs,Mat *Brhs)
+{
+  PetscErrorCode ierr;
+  Mat A,B;
+
+  PetscFunctionBegin;
+  ierr = TSGetIJacobian(ts,&A,&B,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  if (Arhs) {
+    if (!ts->Arhs) {
+      ierr = MatDuplicate(A,MAT_DO_NOT_COPY_VALUES,&ts->Arhs);CHKERRQ(ierr);
+    }
+    *Arhs = ts->Arhs;
+  }
+  if (Brhs) {
+    if (!ts->Brhs) {
+      ierr = MatDuplicate(B,MAT_DO_NOT_COPY_VALUES,&ts->Brhs);CHKERRQ(ierr);
+    }
+    *Brhs = ts->Brhs;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -306,7 +327,8 @@ PetscErrorCode TSComputeRHSFunction(TS ts,PetscReal t,Vec x,Vec y)
 +  ts - the TS context
 .  t - current time
 .  X - state vector
--  Xdot - time derivative of state vector
+.  Xdot - time derivative of state vector
+-  imex - flag indicates if the method is IMEX so that the RHSFunction should be kept separate
 
    Output Parameter:
 .  Y - right hand side
@@ -324,7 +346,7 @@ PetscErrorCode TSComputeRHSFunction(TS ts,PetscReal t,Vec x,Vec y)
 
 .seealso: TSSetIFunction(), TSComputeRHSFunction()
 @*/
-PetscErrorCode TSComputeIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec Y)
+PetscErrorCode TSComputeIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec Y,PetscBool imex)
 {
   PetscErrorCode ierr;
 
@@ -339,18 +361,18 @@ PetscErrorCode TSComputeIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec Y)
     PetscStackPush("TS user implicit function");
     ierr = (*ts->ops->ifunction)(ts,t,X,Xdot,Y,ts->funP);CHKERRQ(ierr);
     PetscStackPop;
+  }
+  if (imex) {
+    if (!ts->ops->ifunction) {ierr = VecCopy(Xdot,Y);CHKERRQ(ierr);}
   } else {
-    ierr = TSComputeRHSFunction(ts,t,X,Y);CHKERRQ(ierr);
-    /* Convert to implicit form: F(X,Xdot) = Alhs * Xdot - Frhs(X) */
-    if (ts->ops->lhsmatrix) {
-      ts->lhsmatstructure = DIFFERENT_NONZERO_PATTERN;
-      PetscStackPush("TS user left-hand-side matrix function");
-      ierr = (*ts->ops->lhsmatrix)(ts,t,&ts->Alhs,&ts->Blhs,&ts->lhsmatstructure,ts->jacP);CHKERRQ(ierr);
-      PetscStackPop;
-      ierr = VecScale(Y,-1.);CHKERRQ(ierr);
-      ierr = MatMultAdd(ts->Alhs,Xdot,Y,Y);CHKERRQ(ierr);
-    } else {
+    if (!ts->ops->ifunction) {
+      ierr = TSComputeRHSFunction(ts,t,X,Y);CHKERRQ(ierr);
       ierr = VecAYPX(Y,-1,Xdot);CHKERRQ(ierr);
+    } else {
+      Vec Frhs;
+      ierr = TSGetRHSVec_Private(ts,&Frhs);CHKERRQ(ierr);
+      ierr = TSComputeRHSFunction(ts,t,X,Frhs);CHKERRQ(ierr);
+      ierr = VecAXPY(Y,-1,Frhs);CHKERRQ(ierr);
     }
   }
   ierr = PetscLogEventEnd(TS_FunctionEval,ts,X,Xdot,Y);CHKERRQ(ierr);
@@ -370,7 +392,8 @@ PetscErrorCode TSComputeIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec Y)
 .  t - current timestep
 .  X - state vector
 .  Xdot - time derivative of state vector
--  shift - shift to apply, see note below
+.  shift - shift to apply, see note below
+-  imex - flag indicates if the method is IMEX so that the RHSJacobian should be kept separate
 
    Output Parameters:
 +  A - Jacobian matrix
@@ -391,7 +414,7 @@ PetscErrorCode TSComputeIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec Y)
 
 .seealso:  TSSetIJacobian()
 @*/
-PetscErrorCode TSComputeIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal shift,Mat *A,Mat *B,MatStructure *flg)
+PetscErrorCode TSComputeIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal shift,Mat *A,Mat *B,MatStructure *flg,PetscBool imex)
 {
   PetscErrorCode ierr;
 
@@ -411,20 +434,40 @@ PetscErrorCode TSComputeIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal shi
     PetscStackPush("TS user implicit Jacobian");
     ierr = (*ts->ops->ijacobian)(ts,t,X,Xdot,shift,A,B,flg,ts->jacP);CHKERRQ(ierr);
     PetscStackPop;
-  } else {
-    ierr = TSComputeRHSJacobian(ts,t,X,A,B,flg);CHKERRQ(ierr);
-
-    /* Convert to implicit form */
-    /* inefficient because these operations will normally traverse all matrix elements twice */
-    ierr = MatScale(*A,-1);CHKERRQ(ierr);
-    if (ts->Alhs) {
-      ierr = MatAXPY(*A,shift,ts->Alhs,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-    } else {
-      ierr = MatShift(*A,shift);CHKERRQ(ierr);
+    /* make sure user returned a correct Jacobian and preconditioner */
+    PetscValidHeaderSpecific(*A,MAT_CLASSID,4);
+    PetscValidHeaderSpecific(*B,MAT_CLASSID,5);
+  }
+  if (imex) {
+    if (!ts->ops->ijacobian) {  /* system was written as Xdot = F(t,X) */
+      ierr = MatZeroEntries(*A);CHKERRQ(ierr);
+      ierr = MatShift(*A,1.0);CHKERRQ(ierr);
+      if (*A != *B) {
+        ierr = MatZeroEntries(*B);CHKERRQ(ierr);
+        ierr = MatShift(*B,shift);CHKERRQ(ierr);
+      }
+      *flg = SAME_PRECONDITIONER;
     }
-    if (*A != *B) {
-      ierr = MatScale(*B,-1);CHKERRQ(ierr);
-      ierr = MatShift(*B,shift);CHKERRQ(ierr);
+  } else {
+    if (!ts->ops->ijacobian) {
+      ierr = TSComputeRHSJacobian(ts,t,X,A,B,flg);CHKERRQ(ierr);
+      ierr = MatScale(*A,-1);CHKERRQ(ierr);
+      ierr = MatShift(*A,shift);CHKERRQ(ierr);
+      if (*A != *B) {
+        ierr = MatScale(*B,-1);CHKERRQ(ierr);
+        ierr = MatShift(*B,shift);CHKERRQ(ierr);
+      }
+    } else if (ts->ops->rhsjacobian) {
+      Mat Arhs,Brhs;
+      MatStructure axpy,flg2 = DIFFERENT_NONZERO_PATTERN;
+      ierr = TSGetRHSMats_Private(ts,&Arhs,&Brhs);CHKERRQ(ierr);
+      ierr = TSComputeRHSJacobian(ts,t,X,&Arhs,&Brhs,&flg2);CHKERRQ(ierr);
+      axpy = (*flg == flg2) ? SAME_NONZERO_PATTERN : DIFFERENT_NONZERO_PATTERN;
+      ierr = MatAXPY(*A,-1,Arhs,axpy);CHKERRQ(ierr);
+      if (*A != *B) {
+        ierr = MatAXPY(*B,-1,Brhs,axpy);CHKERRQ(ierr);
+      }
+      *flg = PetscMin(*flg,flg2);
     }
   }
   ierr = PetscLogEventEnd(TS_JacobianEval,ts,X,*A,*B);CHKERRQ(ierr);
@@ -475,150 +518,6 @@ PetscErrorCode  TSSetRHSFunction(TS ts,Vec r,PetscErrorCode (*f)(TS,PetscReal,Ve
   if (ctx) ts->funP             = ctx;
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
   ierr = SNESSetFunction(snes,r,SNESTSFormFunction,ts);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "TSSetMatrices"
-/*@C
-   TSSetMatrices - Sets the functions to compute the matrices Alhs and Arhs, 
-   where Alhs(t) U_t = Arhs(t) U.
-
-   Logically Collective on TS
-
-   Input Parameters:
-+  ts   - the TS context obtained from TSCreate()
-.  Arhs - matrix
-.  Brhs - preconditioning matrix
-.  frhs - the matrix evaluation routine for Arhs and Brhs; use PETSC_NULL (PETSC_NULL_FUNCTION in fortran)
-          if Arhs is not a function of t.
-.  Alhs - matrix or PETSC_NULL if Alhs is an indentity matrix.
-.  Blhs - preconditioning matrix or PETSC_NULL if Blhs is an identity matrix
-.  flhs - the matrix evaluation routine for Alhs; use PETSC_NULL (PETSC_NULL_FUNCTION in fortran)
-          if Alhs is not a function of t.
-.  flag - flag indicating information about the matrix structure of Arhs and Alhs. 
-          The available options are
-            SAME_NONZERO_PATTERN - Alhs has the same nonzero structure as Arhs
-            DIFFERENT_NONZERO_PATTERN - Alhs has different nonzero structure as Arhs
--  ctx  - [optional] user-defined context for private data for the 
-          matrix evaluation routine (may be PETSC_NULL)
-
-   Calling sequence of func:
-$     func(TS ts,PetscReal t,Mat *A,Mat *B,PetscInt *flag,void *ctx);
-
-+  t - current timestep
-.  A - matrix A, where U_t = A(t) U
-.  B - preconditioner matrix, usually the same as A
-.  flag - flag indicating information about the preconditioner matrix
-          structure (same as flag in KSPSetOperators())
--  ctx - [optional] user-defined context for matrix evaluation routine
-
-   Notes:  
-   The routine func() takes Mat* as the matrix arguments rather than Mat.  
-   This allows the matrix evaluation routine to replace Arhs or Alhs with a 
-   completely new new matrix structure (not just different matrix elements)
-   when appropriate, for instance, if the nonzero structure is changing
-   throughout the global iterations.
-
-   Important: 
-   The user MUST call either this routine or TSSetRHSFunction().
-
-   Level: beginner
-
-.keywords: TS, timestep, set, matrix
-
-.seealso: TSSetRHSFunction()
-@*/
-PetscErrorCode  TSSetMatrices(TS ts,Mat Arhs,Mat Brhs,PetscErrorCode (*frhs)(TS,PetscReal,Mat*,Mat*,MatStructure*,void*),Mat Alhs,Mat Blhs,PetscErrorCode (*flhs)(TS,PetscReal,Mat*,Mat*,MatStructure*,void*),MatStructure flag,void *ctx)
-{
-  PetscErrorCode ierr;
-  SNES           snes;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  if (ts->problem_type != TS_LINEAR) SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_ARG_WRONG,"Only for linear problems");
-  if (frhs) ts->ops->rhsmatrix = frhs;
-  if (flhs) ts->ops->lhsmatrix = flhs;
-  if (ctx)  ts->jacP           = ctx;
-  if (Arhs) {
-    PetscValidHeaderSpecific(Arhs,MAT_CLASSID,2);
-    PetscCheckSameComm(ts,1,Arhs,2);
-    ierr = PetscObjectReference((PetscObject)Arhs);CHKERRQ(ierr);
-    ierr = MatDestroy(&ts->Arhs);CHKERRQ(ierr);
-    ts->Arhs = Arhs;
-  }
-  if (Brhs) {
-    PetscValidHeaderSpecific(Brhs,MAT_CLASSID,3);
-    PetscCheckSameComm(ts,1,Brhs,3);
-    ierr = PetscObjectReference((PetscObject)Brhs);CHKERRQ(ierr);
-    ierr = MatDestroy(&ts->Brhs);CHKERRQ(ierr);
-    ts->Brhs = Brhs;
-  }
-  if (Alhs) {
-    PetscValidHeaderSpecific(Alhs,MAT_CLASSID,5);
-    PetscCheckSameComm(ts,1,Alhs,5);
-    ierr = PetscObjectReference((PetscObject)Alhs);CHKERRQ(ierr);
-    ierr = MatDestroy(&ts->Alhs);CHKERRQ(ierr);
-    ts->Alhs = Alhs;
-  }
-  if (Blhs) {
-    PetscValidHeaderSpecific(Blhs,MAT_CLASSID,6);
-    PetscCheckSameComm(ts,1,Blhs,6);
-    ierr = PetscObjectReference((PetscObject)Blhs);CHKERRQ(ierr);
-    ierr = MatDestroy(&ts->Blhs);CHKERRQ(ierr);
-    ts->Blhs = Blhs;
-  }
-  ts->rhsmatstructure = flag;
-  ts->lhsmatstructure = flag;
-  ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
-  ierr = SNESSetFunction(snes,PETSC_NULL,SNESTSFormFunction,ts);CHKERRQ(ierr);
-  if (frhs) {
-    /* The RHS matrix is recomputed every step so we can share it with SNES and shift it in-place inside of TSComputeIJacobian() */
-    ierr = SNESSetJacobian(snes,Arhs,Brhs,SNESTSFormJacobian,ts);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "TSGetMatrices"
-/*@C
-   TSGetMatrices - Returns the matrices Arhs and Alhs at the present timestep,
-   where Alhs(t) U_t = Arhs(t) U.
-
-   Not Collective, but parallel objects are returned if TS is parallel
-
-   Input Parameter:
-.  ts  - The TS context obtained from TSCreate()
-
-   Output Parameters:
-+  Arhs - The right-hand side matrix
-.  Alhs - The left-hand side matrix
--  ctx - User-defined context for matrix evaluation routine
-
-   Notes: You can pass in PETSC_NULL for any return argument you do not need.
-
-   Level: intermediate
-
-.seealso: TSSetMatrices(), TSGetTimeStep(), TSGetTime(), TSGetTimeStepNumber(), TSGetRHSJacobian()
-
-.keywords: TS, timestep, get, matrix
-
-@*/
-PetscErrorCode  TSGetMatrices(TS ts,Mat *Arhs,Mat *Brhs,TSMatrix *frhs,Mat *Alhs,Mat *Blhs,TSMatrix *flhs,void **ctx)
-{
-  PetscErrorCode ierr;
-  SNES           snes;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  if (ts->problem_type != TS_LINEAR) SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_ARG_WRONG,"Only for linear problems");
-  if (Arhs) *Arhs = ts->Arhs;
-  if (Brhs) *Brhs = ts->Brhs;
-  if (frhs) *frhs = ts->ops->rhsmatrix;
-  if (Alhs) *Alhs = ts->Alhs;
-  if (Blhs) *Blhs = ts->Blhs;
-  if (flhs) *flhs = ts->ops->lhsmatrix;
-  if (ctx)  *ctx = ts->jacP;
   PetscFunctionReturn(0);
 }
 
@@ -679,7 +578,6 @@ PetscErrorCode  TSSetRHSJacobian(TS ts,Mat A,Mat B,TSRHSJacobian f,void *ctx)
   if (B) PetscValidHeaderSpecific(B,MAT_CLASSID,3);
   if (A) PetscCheckSameComm(ts,1,A,2);
   if (B) PetscCheckSameComm(ts,1,B,3);
-  if (ts->problem_type != TS_NONLINEAR) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Not for linear problems; use TSSetMatrices()");
 
   if (f)   ts->ops->rhsjacobian = f;
   if (ctx) ts->jacP             = ctx;
@@ -1278,8 +1176,7 @@ PetscErrorCode  TSReset(TS ts)
   if (ts->snes) {ierr = SNESReset(ts->snes);CHKERRQ(ierr);}
   ierr = MatDestroy(&ts->Arhs);CHKERRQ(ierr);
   ierr = MatDestroy(&ts->Brhs);CHKERRQ(ierr);
-  ierr = MatDestroy(&ts->Alhs);CHKERRQ(ierr);
-  ierr = MatDestroy(&ts->Blhs);CHKERRQ(ierr);
+  ierr = VecDestroy(&ts->Frhs);CHKERRQ(ierr);
   ierr = VecDestroy(&ts->vec_sol);CHKERRQ(ierr);
   if (ts->work) {ierr = VecDestroyVecs(ts->nwork,&ts->work);CHKERRQ(ierr);}
   ts->setupcalled = PETSC_FALSE;

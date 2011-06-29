@@ -102,6 +102,11 @@ runex1f:
 runex2f:
 	-@${MPIEXEC} -n 1 ./ex2f 
 
+runex3:
+	-@${MPIEXEC} -n 1 ./ex3 -ts_view -nox > ex3_1.tmp 2>&1;	  \
+	   ${DIFF} output/ex3_1.out ex3_1.tmp || echo "Possible problem with ex3_1, diffs above"; \
+	   ${RM} -f ex3_1.tmp
+
 runex4:
 	-@${MPIEXEC} -n 1 ./ex4 -ts_view -nox > ex4_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex4_1.out ex4_1.tmp) then true; \

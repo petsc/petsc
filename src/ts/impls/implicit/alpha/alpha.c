@@ -162,7 +162,7 @@ static PetscErrorCode SNESTSFormFunction_Alpha(SNES snes,Vec x,Vec y,TS ts)
   ierr = VecWAXPY(th->Va,-1,V0,V1);CHKERRQ(ierr);
   ierr = VecAYPX(th->Va,th->Alpha_m,V0);CHKERRQ(ierr);
   /* F = Function(ta,Xa,Va) */
-  ierr = TSComputeIFunction(ts,th->stage_time,th->Xa,th->Va,R);CHKERRQ(ierr);
+  ierr = TSComputeIFunction(ts,th->stage_time,th->Xa,th->Va,R,PETSC_FALSE);CHKERRQ(ierr);
   ierr = VecScale(R,1/th->Alpha_f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -176,7 +176,7 @@ static PetscErrorCode SNESTSFormJacobian_Alpha(SNES snes,Vec x,Mat *A,Mat *B,Mat
 
   PetscFunctionBegin;
   /* A,B = Jacobian(ta,Xa,Va) */
-  ierr = TSComputeIJacobian(ts,th->stage_time,th->Xa,th->Va,th->shift,A,B,str);CHKERRQ(ierr);
+  ierr = TSComputeIJacobian(ts,th->stage_time,th->Xa,th->Va,th->shift,A,B,str,PETSC_FALSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
