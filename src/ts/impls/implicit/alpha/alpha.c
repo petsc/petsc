@@ -188,8 +188,6 @@ static PetscErrorCode TSSetUp_Alpha(TS ts)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (ts->problem_type != TS_NONLINEAR) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Only for nonlinear problems");
-
   ierr = VecDuplicate(ts->vec_sol,&th->X0);CHKERRQ(ierr);
   ierr = VecDuplicate(ts->vec_sol,&th->Xa);CHKERRQ(ierr);
   ierr = VecDuplicate(ts->vec_sol,&th->X1);CHKERRQ(ierr);
@@ -344,9 +342,6 @@ PetscErrorCode  TSCreate_Alpha(TS ts)
   ts->ops->setfromoptions = TSSetFromOptions_Alpha;
   ts->ops->snesfunction   = SNESTSFormFunction_Alpha;
   ts->ops->snesjacobian   = SNESTSFormJacobian_Alpha;
-
-  ts->problem_type = TS_NONLINEAR;
-  ierr = TSGetSNES(ts,&ts->snes);CHKERRQ(ierr);
 
   ierr = PetscNewLog(ts,TS_Alpha,&th);CHKERRQ(ierr);
   ts->data = (void*)th;

@@ -1159,9 +1159,16 @@ PetscErrorCode  TSGetSolution(TS ts,Vec *v)
 @*/
 PetscErrorCode  TSSetProblemType(TS ts, TSProblemType type) 
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID,1);
   ts->problem_type = type;
+  if (type == TS_LINEAR) {
+    SNES snes;
+    ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
+    ierr = SNESSetType(snes,SNESKSPONLY);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -1354,6 +1361,9 @@ PetscErrorCode  TSGetSNES(TS ts,SNES *snes)
     ierr = SNESCreate(((PetscObject)ts)->comm,&ts->snes);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(ts,ts->snes);CHKERRQ(ierr);
     ierr = PetscObjectIncrementTabLevel((PetscObject)ts->snes,(PetscObject)ts,1);CHKERRQ(ierr);
+    if (ts->problem_type == TS_LINEAR) {
+      ierr = SNESSetType(ts->snes,SNESKSPONLY);CHKERRQ(ierr);
+    }
   }
   *snes = ts->snes;
   PetscFunctionReturn(0);

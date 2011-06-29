@@ -136,7 +136,6 @@ static PetscErrorCode TSSetUp_Theta(TS ts)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (ts->problem_type == TS_LINEAR) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Only for nonlinear problems");
   ierr = VecDuplicate(ts->vec_sol,&th->X);CHKERRQ(ierr);
   ierr = VecDuplicate(ts->vec_sol,&th->Xdot);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -220,7 +219,6 @@ PetscErrorCode  TSCreate_Theta(TS ts)
 {
   TS_Theta       *th;
   PetscErrorCode ierr;
-  SNES           snes;
 
   PetscFunctionBegin;
   ts->ops->reset          = TSReset_Theta;
@@ -231,9 +229,6 @@ PetscErrorCode  TSCreate_Theta(TS ts)
   ts->ops->setfromoptions = TSSetFromOptions_Theta;
   ts->ops->snesfunction   = SNESTSFormFunction_Theta;
   ts->ops->snesjacobian   = SNESTSFormJacobian_Theta;
-
-  ts->problem_type = TS_NONLINEAR;
-  ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
 
   ierr = PetscNewLog(ts,TS_Theta,&th);CHKERRQ(ierr);
   ts->data = (void*)th;

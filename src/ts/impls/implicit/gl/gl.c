@@ -1056,7 +1056,6 @@ static PetscErrorCode TSSetUp_GL(TS ts)
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  if (ts->problem_type == TS_LINEAR) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Only for nonlinear problems");
   gl->setupcalled = PETSC_TRUE;
   ierr = TSGLGetMaxSizes(ts,&max_r,&max_s);CHKERRQ(ierr);
   ierr = VecDuplicateVecs(ts->vec_sol,max_r,&gl->X);CHKERRQ(ierr);
@@ -1421,9 +1420,6 @@ PetscErrorCode  TSCreate_GL(TS ts)
   ts->ops->setfromoptions = TSSetFromOptions_GL;
   ts->ops->snesfunction   = SNESTSFormFunction_GL;
   ts->ops->snesjacobian   = SNESTSFormJacobian_GL;
-
-  ts->problem_type = TS_NONLINEAR;
-  ierr = TSGetSNES(ts,&ts->snes);CHKERRQ(ierr);
 
   gl->max_step_rejections = 1;
   gl->min_order           = 1;
