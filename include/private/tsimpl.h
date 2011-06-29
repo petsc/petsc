@@ -51,10 +51,11 @@ struct _p_TS {
   PetscInt  numbermonitors;                                 /* to, for instance, print residual norm, etc. */
 
   /* ---------------------Linear Iteration---------------------------------*/
-  KSP ksp;
-  Mat A,B;           /* internel matrix and preconditioner used for KSPSolve() */
-  Mat Arhs,Alhs;     /* user provided right/left hand side matrix and preconditioner */
-  MatStructure matflg; /* flag indicating the matrix structure of Arhs and Alhs */
+  /* The right hand side matrices are stored in SNES with SNESKSPONLY, (TS,PetscReal,Mat*,Mat*,MatStructure*,void*) */
+  Mat Alhs;     /* user provided left hand side matrix and preconditioner */
+  Mat Blhs;     /* user provided left hand side matrix and preconditioner */
+  MatStructure rhsmatstructure;
+  MatStructure lhsmatstructure;
 
   /* ---------------------Nonlinear Iteration------------------------------*/
   SNES  snes;

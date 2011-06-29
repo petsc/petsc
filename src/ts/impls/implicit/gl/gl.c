@@ -1052,7 +1052,6 @@ static PetscErrorCode SNESTSFormJacobian_GL(SNES snes,Vec x,Mat *A,Mat *B,MatStr
 static PetscErrorCode TSSetUp_GL(TS ts)
 {
   TS_GL          *gl = (TS_GL*)ts->data;
-  Vec             res;
   PetscInt        max_r,max_s;
   PetscErrorCode  ierr;
 
@@ -1067,21 +1066,6 @@ static PetscErrorCode TSSetUp_GL(TS ts)
   ierr = VecDuplicate(ts->vec_sol,&gl->W);CHKERRQ(ierr);
   ierr = VecDuplicate(ts->vec_sol,&gl->Y);CHKERRQ(ierr);
   ierr = VecDuplicate(ts->vec_sol,&gl->Z);CHKERRQ(ierr);
-  ierr = VecDuplicate(ts->vec_sol,&res);CHKERRQ(ierr);
-  ierr = SNESSetFunction(ts->snes,res,SNESTSFormFunction,ts);CHKERRQ(ierr);
-  ierr = VecDestroy(&res);CHKERRQ(ierr); /* Give ownership to SNES */
-  /* This is nasty.  SNESSetFromOptions() is usually called in TSSetFromOptions().  With -snes_mf_operator, it will
-  replace A and we don't want to mess with that.  With -snes_mf, A and B will be replaced as well as the function and
-  context.  Note that SNESSetFunction() normally has not been called before SNESSetFromOptions(), so when -snes_mf sets
-  the Jacobian user context to snes->funP, it will actually be NULL.  This is not a problem because both snes->funP and
-  snes->jacP should be the TS. */
-  {
-    Mat A,B;
-    PetscErrorCode (*func)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
-    void *ctx;
-    ierr = SNESGetJacobian(ts->snes,&A,&B,&func,&ctx);CHKERRQ(ierr);
-    ierr = SNESSetJacobian(ts->snes,A?A:ts->A,B?B:ts->B,func?func:SNESTSFormJacobian,ctx?ctx:ts);CHKERRQ(ierr);
-  }
 
   /* Default acceptance tests and adaptivity */
   if (!gl->Accept) {ierr = TSGLSetAcceptType(ts,TSGLACCEPT_ALWAYS);CHKERRQ(ierr);}

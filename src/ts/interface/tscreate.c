@@ -45,15 +45,13 @@ PetscErrorCode  TSCreate(MPI_Comm comm, TS *ts) {
   ierr = PetscMemzero(t->ops, sizeof(struct _TSOps));CHKERRQ(ierr);
 
   /* General TS description */
-  t->problem_type       = TS_LINEAR;
+  t->problem_type       = TS_NONLINEAR;
   t->vec_sol            = PETSC_NULL;
   t->numbermonitors     = 0;
-  t->ksp                = PETSC_NULL;
-  t->A                  = PETSC_NULL;
-  t->B                  = PETSC_NULL;
-  t->Arhs               = PETSC_NULL;
   t->Alhs               = PETSC_NULL;
-  t->matflg             = DIFFERENT_NONZERO_PATTERN;
+  t->Blhs               = PETSC_NULL;
+  t->rhsmatstructure    = DIFFERENT_NONZERO_PATTERN;
+  t->lhsmatstructure    = DIFFERENT_NONZERO_PATTERN;
   t->snes               = PETSC_NULL;
   t->funP               = PETSC_NULL;
   t->jacP               = PETSC_NULL;

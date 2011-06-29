@@ -22,13 +22,14 @@ PetscErrorCode TSPrecond_Sundials(realtype tn,N_Vector y,N_Vector fy,
   TS_Sundials    *cvode = (TS_Sundials*)ts->data;
   PC             pc = cvode->pc;
   PetscErrorCode ierr;
-  Mat            Jac = ts->B;
+  Mat            Jac;
   Vec            yy = cvode->w1;
   PetscScalar    one = 1.0,gm;
   MatStructure   str = DIFFERENT_NONZERO_PATTERN;
   PetscScalar    *y_data;
 
   PetscFunctionBegin;
+  ierr = TSGetRHSJacobian(ts,PETSC_NULL,&Jac,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   /* This allows us to construct preconditioners in-place if we like */
   ierr = MatSetUnfactored(Jac);CHKERRQ(ierr);
 

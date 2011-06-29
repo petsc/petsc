@@ -121,7 +121,6 @@ static PetscErrorCode TSReset_Alpha(TS ts)
   ierr = VecDestroy(&th->V0);CHKERRQ(ierr);
   ierr = VecDestroy(&th->Va);CHKERRQ(ierr);
   ierr = VecDestroy(&th->V1);CHKERRQ(ierr);
-  ierr = VecDestroy(&th->R);CHKERRQ(ierr);
   ierr = VecDestroy(&th->E);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -197,16 +196,6 @@ static PetscErrorCode TSSetUp_Alpha(TS ts)
   ierr = VecDuplicate(ts->vec_sol,&th->V0);CHKERRQ(ierr);
   ierr = VecDuplicate(ts->vec_sol,&th->Va);CHKERRQ(ierr);
   ierr = VecDuplicate(ts->vec_sol,&th->V1);CHKERRQ(ierr);
-
-  ierr = VecDuplicate(ts->vec_sol,&th->R);CHKERRQ(ierr);
-  ierr = SNESSetFunction(ts->snes,th->R,SNESTSFormFunction,ts);CHKERRQ(ierr);
-  {
-    Mat A,B;
-    PetscErrorCode (*func)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
-    void *ctx;
-    ierr = SNESGetJacobian(ts->snes,&A,&B,&func,&ctx);CHKERRQ(ierr);
-    ierr = SNESSetJacobian(ts->snes,A?A:ts->A,B?B:ts->B,func?func:SNESTSFormJacobian,ctx?ctx:ts);CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
 

@@ -1032,7 +1032,7 @@ int main(int argc, char *argv[])
   RD             rd;
   TS             ts;
   SNES           snes;
-  Vec            X;
+  Vec            X,R;
   Mat            A,B;
   PetscInt       steps;
   PetscReal      ftime;
@@ -1041,6 +1041,7 @@ int main(int argc, char *argv[])
   ierr = PetscInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
   ierr = RDCreate(PETSC_COMM_WORLD,&rd);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(rd->da,&X);CHKERRQ(ierr);
+  ierr = VecDuplicate(X,&R);CHKERRQ(ierr);
   ierr = DMGetMatrix(rd->da,MATAIJ,&B);CHKERRQ(ierr);
   ierr = RDInitialState(rd,X);CHKERRQ(ierr);
 
@@ -1049,11 +1050,11 @@ int main(int argc, char *argv[])
   ierr = TSSetType(ts,TSTHETA);CHKERRQ(ierr);
   switch (rd->discretization) {
   case DISCRETIZATION_FD:
-    ierr = TSSetIFunction(ts,RDIFunction_FD,rd);CHKERRQ(ierr);
+    ierr = TSSetIFunction(ts,R,RDIFunction_FD,rd);CHKERRQ(ierr);
     ierr = TSSetIJacobian(ts,B,B,RDIJacobian_FD,rd);CHKERRQ(ierr);
     break;
   case DISCRETIZATION_FE:
-    ierr = TSSetIFunction(ts,RDIFunction_FE,rd);CHKERRQ(ierr);
+    ierr = TSSetIFunction(ts,R,RDIFunction_FE,rd);CHKERRQ(ierr);
     ierr = TSSetIJacobian(ts,B,B,RDIJacobian_FE,rd);CHKERRQ(ierr);
     break;
   }
@@ -1100,6 +1101,7 @@ int main(int argc, char *argv[])
 
   if (matfdcoloring) {ierr = MatFDColoringDestroy(&matfdcoloring);CHKERRQ(ierr);}
   ierr = VecDestroy(&X);CHKERRQ(ierr);
+  ierr = VecDestroy(&R);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);
   ierr = RDDestroy(&rd);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
