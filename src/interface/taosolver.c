@@ -299,6 +299,22 @@ PetscErrorCode TaoSolverDestroy(TaoSolver tao)
     ierr = MatDestroy(&tao->jacobian); CHKERRQ(ierr);
     tao->jacobian = PETSC_NULL;
   }
+  if (tao->jacobian_state_pre) {
+    ierr = MatDestroy(&tao->jacobian_state_pre); CHKERRQ(ierr);
+    tao->jacobian_state_pre = PETSC_NULL;
+  }
+  if (tao->jacobian_state) {
+    ierr = MatDestroy(&tao->jacobian_state); CHKERRQ(ierr);
+    tao->jacobian_state = PETSC_NULL;
+  }
+  if (tao->jacobian_design_pre) {
+    ierr = MatDestroy(&tao->jacobian_design_pre); CHKERRQ(ierr);
+    tao->jacobian_design_pre = PETSC_NULL;
+  }
+  if (tao->jacobian_design) {
+    ierr = MatDestroy(&tao->jacobian_design); CHKERRQ(ierr);
+    tao->jacobian_design = PETSC_NULL;
+  }
   ierr = PetscHeaderDestroy(&tao); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

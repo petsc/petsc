@@ -38,6 +38,8 @@ static PetscErrorCode TaoSolverDestroy_LCL(TaoSolver tao)
   PetscErrorCode ierr;
   PetscFunctionBegin;
   if (tao->setupcalled) {
+    ierr = MatDestroy(&lclP->R); CHKERRQ(ierr);
+    
     ierr = VecDestroy(&lclP->lamda); CHKERRQ(ierr);
     ierr = VecDestroy(&lclP->WL); CHKERRQ(ierr);
     ierr = VecDestroy(&lclP->W); CHKERRQ(ierr);
@@ -76,6 +78,9 @@ static PetscErrorCode TaoSolverDestroy_LCL(TaoSolver tao)
     ierr = ISDestroy(&lclP->UIS); CHKERRQ(ierr);
     ierr = ISDestroy(&lclP->UID); CHKERRQ(ierr);
     ierr = ISDestroy(&lclP->UIM); CHKERRQ(ierr);
+
+    ierr = VecScatterDestroy(&lclP->state_scatter); CHKERRQ(ierr);
+    ierr = VecScatterDestroy(&lclP->design_scatter); CHKERRQ(ierr);
   }
   ierr = PetscFree(tao->data);
   tao->data = PETSC_NULL;

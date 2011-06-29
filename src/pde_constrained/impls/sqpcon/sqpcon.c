@@ -36,6 +36,9 @@ static PetscErrorCode TaoSolverDestroy_SQPCON(TaoSolver tao)
   PetscErrorCode ierr;
   PetscFunctionBegin;
   if (tao->setupcalled) {
+    ierr = MatDestroy(&sqpconP->Q); CHKERRQ(ierr);
+    ierr = MatDestroy(&sqpconP->R); CHKERRQ(ierr);
+
     ierr = VecDestroy(&sqpconP->LM); CHKERRQ(ierr);
     ierr = VecDestroy(&sqpconP->WL); CHKERRQ(ierr);
     ierr = VecDestroy(&sqpconP->W); CHKERRQ(ierr);
