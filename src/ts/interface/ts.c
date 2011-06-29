@@ -281,15 +281,17 @@ PetscErrorCode TSComputeRHSFunction(TS ts,PetscReal t,Vec x,Vec y)
     PetscStackPush("TS user right-hand-side function");
     ierr = (*ts->ops->rhsfunction)(ts,t,x,y,ts->funP);CHKERRQ(ierr);
     PetscStackPop;
-  } else if (ts->ops->rhsmatrix) {
+  } else if (ts->problem_type == TS_LINEAR) {
     Mat A,B;
     ierr = TSGetMatrices(ts,&A,&B,PETSC_NULL, PETSC_NULL,PETSC_NULL,PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
-    ts->rhsmatstructure = DIFFERENT_NONZERO_PATTERN;
-    PetscStackPush("TS user right-hand-side matrix function");
-    ierr = (*ts->ops->rhsmatrix)(ts,t,&A,&B,&ts->rhsmatstructure,ts->jacP);CHKERRQ(ierr);
-    PetscStackPop;
-    /* call TSSetMatrices() in case the user changed the pointers */
-    ierr = TSSetMatrices(ts,A,B,PETSC_NULL, PETSC_NULL,PETSC_NULL,PETSC_NULL, PETSC_NULL,ts->jacP);CHKERRQ(ierr);
+    if (ts->ops->rhsmatrix) {
+      ts->rhsmatstructure = DIFFERENT_NONZERO_PATTERN;
+      PetscStackPush("TS user right-hand-side matrix function");
+      ierr = (*ts->ops->rhsmatrix)(ts,t,&A,&B,&ts->rhsmatstructure,ts->jacP);CHKERRQ(ierr);
+      PetscStackPop;
+      /* call TSSetMatrices() in case the user changed the pointers */
+      ierr = TSSetMatrices(ts,A,B,PETSC_NULL, PETSC_NULL,PETSC_NULL,PETSC_NULL, PETSC_NULL,ts->jacP);CHKERRQ(ierr);
+    }
     ierr = MatMult(A,x,y);CHKERRQ(ierr);
   } else SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_USER,"No RHS provided, must call TSSetRHSFunction() or TSSetMatrices()");
 
@@ -1348,7 +1350,6 @@ PetscErrorCode  TSGetSNES(TS ts,SNES *snes)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidPointer(snes,2);
-  if (ts->problem_type != TS_NONLINEAR) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Nonlinear only; use TSGetKSP()");
   if (!ts->snes) {
     ierr = SNESCreate(((PetscObject)ts)->comm,&ts->snes);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(ts,ts->snes);CHKERRQ(ierr);
