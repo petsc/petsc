@@ -433,7 +433,6 @@ PetscErrorCode  MatGetVecs_FFTW(Mat A,Vec *fin,Vec *fout)
     fftw_complex   *data_fin,*data_fout;
     double         *data_finr, *data_foutr;
     ptrdiff_t local_1_start;
-    PetscInt N1;
 //    PetscInt ctr;
 //    ptrdiff_t      ndim1,*pdim;
 //    ndim1=(ptrdiff_t) ndim;
@@ -467,7 +466,7 @@ PetscErrorCode  MatGetVecs_FFTW(Mat A,Vec *fin,Vec *fout)
       N1 = 2*dim[0]*(dim[1]/2+1); n1 = 2*local_n0*(dim[1]/2+1);
       if (fin) {
         data_finr=(double *)fftw_malloc(sizeof(double)*alloc_local*2);
-        ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,n1,N1,(PetscScalar*)data_finr,fin);CHKERRQ(ierr);
+        ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,(PetscInt)n1,N1,(PetscScalar*)data_finr,fin);CHKERRQ(ierr);
         ierr = VecGetSize(*fin,&vsize);CHKERRQ(ierr);
         //printf("The code comes here with vector size %d\n",vsize);
         (*fin)->ops->destroy   = VecDestroy_MPIFFTW;
@@ -477,7 +476,7 @@ PetscErrorCode  MatGetVecs_FFTW(Mat A,Vec *fin,Vec *fout)
         ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,n1,N1,(PetscScalar*)data_fout,fout);CHKERRQ(ierr);
         (*fout)->ops->destroy   = VecDestroy_MPIFFTW;
       }
-      printf("Vector size from fftw.c is  %d\n",N1);
+      printf("Vector size from fftw.c is  given by %d\n",N1);
      
 #else
       /* Get local size */
@@ -544,12 +543,12 @@ PetscErrorCode  MatGetVecs_FFTW(Mat A,Vec *fin,Vec *fout)
       break;
     }
   } 
-  if (fin){
-    ierr = PetscLayoutReference(A->cmap,&(*fin)->map);CHKERRQ(ierr);
-  }
-  if (fout){
-    ierr = PetscLayoutReference(A->rmap,&(*fout)->map);CHKERRQ(ierr);
-  }
+//  if (fin){
+//    ierr = PetscLayoutReference(A->cmap,&(*fin)->map);CHKERRQ(ierr);
+//  }
+//  if (fout){
+//    ierr = PetscLayoutReference(A->rmap,&(*fout)->map);CHKERRQ(ierr);
+//  }
   PetscFunctionReturn(0);
 }
 
@@ -568,7 +567,7 @@ PetscErrorCode InputTransformFFT(Mat A,Vec x,Vec y)
       InputTransformFFT_FFTW - Copies the user data to the vector that goes into FFTW block
   Input A, x, y
   A - FFTW matrix
-  x - user d
+  x - user data
   Options Database Keys:
 + -mat_fftw_plannerflags - set FFTW planner flags
 
@@ -692,6 +691,8 @@ PetscErrorCode MatCreate_FFTW(Mat A)
  
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
+      printf("The code is coming here\n");
+  ierr = MPI_Barrier(PETSC_COMM_WORLD);
 
   pdim = (ptrdiff_t *)calloc(ndim,sizeof(ptrdiff_t));
   pdim[0] = dim[0];
@@ -713,6 +714,7 @@ PetscErrorCode MatCreate_FFTW(Mat A)
     switch (ndim){
     case 1:
 #if !defined(PETSC_USE_COMPLEX)
+      printf("The code is coming here\n");
   SETERRQ(comm,PETSC_ERR_SUP,"FFTW does not support parallel 1D real transform");
 #endif
       alloc_local = fftw_mpi_local_size_1d(dim[0],comm,FFTW_FORWARD,FFTW_ESTIMATE,&local_n0,&local_0_start,&local_n1,&local_1_end);
@@ -721,6 +723,7 @@ PetscErrorCode MatCreate_FFTW(Mat A)
 //      PetscObjectComposeFunctionDynamic((PetscObject)A,"MatGetVecs1DC_C","MatGetVecs1DC_FFTW",MatGetVecs1DC_FFTW);   
       break;
     case 2:
+      printf("The code is coming here\n");
       alloc_local = fftw_mpi_local_size_2d(dim[0],dim[1],comm,&local_n0,&local_0_start);
       /*
        PetscMPIInt    rank;
@@ -769,7 +772,9 @@ PetscErrorCode MatCreate_FFTW(Mat A)
   fft->matdestroy          = MatDestroy_FFTW;
   A->ops->getvecs       = MatGetVecs_FFTW;
   A->assembled          = PETSC_TRUE;
+  printf("The code is coming here\n");
 #if !defined(PETSC_USE_COMPLEX)
+  printf("The code is coming here\n");
   PetscObjectComposeFunctionDynamic((PetscObject)A,"InputTransformFFT_C","InputTransformFFT_FFTW",InputTransformFFT_FFTW);   
 //  PetscObjectComposeFunctionDynamic((PetscObject)A,"OutputTransformFFT_C","OutputTransformFFT_FFTW",OutputTransformFFT_FFTW);  
 #endif 
