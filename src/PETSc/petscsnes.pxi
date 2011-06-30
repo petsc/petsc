@@ -30,6 +30,9 @@ cdef extern from * nogil:
 
     ctypedef int (*PetscSNESCtxDel)(void*)
 
+    ctypedef int (*PetscSNESInitialGuessFunction)(PetscSNES,
+                                                  PetscVec,
+                                                  void*) except PETSC_ERR_PYTHON
     ctypedef int (*PetscSNESFunctionFunction)(PetscSNES,
                                               PetscVec,
                                               PetscVec,
@@ -79,6 +82,7 @@ cdef extern from * nogil:
     int SNESGetSolution(PetscSNES,PetscVec*)
     int SNESGetSolutionUpdate(PetscSNES,PetscVec*)
 
+    int SNESSetInitialGuess"SNESSetComputeInitialGuess"(PetscSNES,PetscSNESInitialGuessFunction,void*)
     int SNESSetFunction(PetscSNES,PetscVec,PetscSNESFunctionFunction,void*)
     int SNESGetFunction(PetscSNES,PetscVec*,PetscSNESFunctionFunction*,void**)
     int SNESSetUpdate(PetscSNES,PetscSNESUpdateFunction)
@@ -156,6 +160,19 @@ cdef inline SNES ref_SNES(PetscSNES snes):
     ob.snes = snes
     PetscINCREF(ob.obj)
     return ob
+
+# -----------------------------------------------------------------------------
+
+cdef int SNES_InitialGuess(
+    PetscSNES snes,
+    PetscVec  x,
+    void*     ctx,
+    ) except PETSC_ERR_PYTHON with gil:
+    cdef SNES Snes = ref_SNES(snes)
+    cdef Vec  Xvec = ref_Vec(x)
+    (initialguess, args, kargs) = Snes.get_attr('__initialguess__')
+    initialguess(Snes, Xvec, *args, **kargs)
+    return 0
 
 # -----------------------------------------------------------------------------
 

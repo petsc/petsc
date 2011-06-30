@@ -104,6 +104,15 @@ cdef class SNES(Object):
 
     # --- user Function/Jacobian routines ---
 
+    def setInitialGuess(self, initialguess, args=None, kargs=None):
+        CHKERR( SNESSetInitialGuess(self.snes, SNES_InitialGuess, NULL) )
+        if args is None: args = ()
+        if kargs is None: kargs = {}
+        self.set_attr('__initialguess__', (initialguess, args, kargs))
+
+    def getInitialGuess(self):
+        return self.get_attr('__initialguess__')
+
     def setFunction(self, function, Vec f not None, args=None, kargs=None):
         CHKERR( SNESSetFunction(self.snes, f.vec, SNES_Function, NULL) )
         if args is None: args = ()

@@ -17,6 +17,22 @@
 #if (PETSC_VERSION_(3,1,0) || \
      PETSC_VERSION_(3,0,0))
 #undef __FUNCT__  
+#define __FUNCT__ "SNESSetComputeInitialGuess"
+static PetscErrorCode  SNESSetComputeInitialGuess(SNES snes,
+                                                  PetscErrorCode (*func)(SNES,Vec,void*),
+                                                  void *ctx)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  SETERRQ(PETSC_ERR_SUP,__FUNCT__"() not supported in this PETSc version");
+  PetscFunctionReturn(0);
+}
+
+#endif
+
+#if (PETSC_VERSION_(3,1,0) || \
+     PETSC_VERSION_(3,0,0))
+#undef __FUNCT__  
 #define __FUNCT__ "SNESSetDM"
 static PetscErrorCode SNESSetDM(SNES snes,DM dm)
 {
@@ -51,7 +67,7 @@ static PetscErrorCode SNESReset_Compat(SNES snes)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  SETERRQ(PETSC_ERR_SUP,"not supported in this PETSc version");
+  SETERRQ(PETSC_ERR_SUP,__FUNCT__"() not supported in this PETSc version");
   PetscFunctionReturn(0);
 }
 #define SNESReset SNESReset_Compat
