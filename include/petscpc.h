@@ -80,6 +80,7 @@ E*/
 #define PCBICGSTABCUSP    "bicgstabcusp"
 #define PCSVD             "svd"
 #define PCAINVCUSP        "ainvcusp"
+#define PCGAMG            "gamg"
 
 /* Logging support */
 extern PetscClassId  PC_CLASSID;
