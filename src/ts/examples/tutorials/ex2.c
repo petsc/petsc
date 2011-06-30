@@ -135,7 +135,7 @@ int main(int argc,char **argv)
 
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
-  ierr = TSSetRHSFunction(ts,RHSFunction,&appctx);CHKERRQ(ierr);
+  ierr = TSSetRHSFunction(ts,PETSC_NULL,RHSFunction,&appctx);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set optional user-defined monitoring routine

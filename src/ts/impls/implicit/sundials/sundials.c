@@ -22,13 +22,14 @@ PetscErrorCode TSPrecond_Sundials(realtype tn,N_Vector y,N_Vector fy,
   TS_Sundials    *cvode = (TS_Sundials*)ts->data;
   PC             pc = cvode->pc;
   PetscErrorCode ierr;
-  Mat            Jac = ts->B;
+  Mat            Jac;
   Vec            yy = cvode->w1;
   PetscScalar    one = 1.0,gm;
   MatStructure   str = DIFFERENT_NONZERO_PATTERN;
   PetscScalar    *y_data;
 
   PetscFunctionBegin;
+  ierr = TSGetRHSJacobian(ts,PETSC_NULL,&Jac,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   /* This allows us to construct preconditioners in-place if we like */
   ierr = MatSetUnfactored(Jac);CHKERRQ(ierr);
 
@@ -122,11 +123,11 @@ int TSFunction_Sundials(realtype t,N_Vector y,N_Vector ydot,void *ctx)
 }
 
 /*
-       TSStep_Sundials_Nonlinear - Calls Sundials to integrate the ODE.
+       TSStep_Sundials - Calls Sundials to integrate the ODE.
 */
 #undef __FUNCT__
-#define __FUNCT__ "TSStep_Sundials_Nonlinear"
-PetscErrorCode TSStep_Sundials_Nonlinear(TS ts,int *steps,double *time)
+#define __FUNCT__ "TSStep_Sundials"
+PetscErrorCode TSStep_Sundials(TS ts,int *steps,double *time)
 {
   TS_Sundials    *cvode = (TS_Sundials*)ts->data;
   Vec            sol = ts->vec_sol;
@@ -270,8 +271,8 @@ PetscErrorCode TSDestroy_Sundials(TS ts)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TSSetUp_Sundials_Nonlinear"
-PetscErrorCode TSSetUp_Sundials_Nonlinear(TS ts)
+#define __FUNCT__ "TSSetUp_Sundials"
+PetscErrorCode TSSetUp_Sundials(TS ts)
 {
   TS_Sundials    *cvode = (TS_Sundials*)ts->data;
   PetscErrorCode ierr;
@@ -389,8 +390,8 @@ const char *TSSundialsLmmTypes[] = {"","adams","bdf","TSSundialsLmmType","SUNDIA
 const char *TSSundialsGramSchmidtTypes[] = {"","modified","classical","TSSundialsGramSchmidtType","SUNDIALS_",0};
 
 #undef __FUNCT__
-#define __FUNCT__ "TSSetFromOptions_Sundials_Nonlinear"
-PetscErrorCode TSSetFromOptions_Sundials_Nonlinear(TS ts)
+#define __FUNCT__ "TSSetFromOptions_Sundials"
+PetscErrorCode TSSetFromOptions_Sundials(TS ts)
 {
   TS_Sundials    *cvode = (TS_Sundials*)ts->data;
   PetscErrorCode ierr;
@@ -998,13 +999,12 @@ PetscErrorCode  TSCreate_Sundials(TS ts)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (ts->problem_type != TS_NONLINEAR) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Only support for nonlinear problems");
   ts->ops->reset          = TSReset_Sundials;
   ts->ops->destroy        = TSDestroy_Sundials;
   ts->ops->view           = TSView_Sundials;
-  ts->ops->setup          = TSSetUp_Sundials_Nonlinear;
-  ts->ops->step           = TSStep_Sundials_Nonlinear;
-  ts->ops->setfromoptions = TSSetFromOptions_Sundials_Nonlinear;
+  ts->ops->setup          = TSSetUp_Sundials;
+  ts->ops->step           = TSStep_Sundials;
+  ts->ops->setfromoptions = TSSetFromOptions_Sundials;
 
   ierr = PetscNewLog(ts,TS_Sundials,&cvode);CHKERRQ(ierr);
   ierr = PCCreate(((PetscObject)ts)->comm,&cvode->pc);CHKERRQ(ierr);

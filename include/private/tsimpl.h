@@ -50,11 +50,11 @@ struct _p_TS {
   void *monitorcontext[MAXTSMONITORS];                 /* residual calculation, allows user */
   PetscInt  numbermonitors;                                 /* to, for instance, print residual norm, etc. */
 
-  /* ---------------------Linear Iteration---------------------------------*/
-  KSP ksp;
-  Mat A,B;           /* internel matrix and preconditioner used for KSPSolve() */
-  Mat Arhs,Alhs;     /* user provided right/left hand side matrix and preconditioner */
-  MatStructure matflg; /* flag indicating the matrix structure of Arhs and Alhs */
+  /* ---------------------- IMEX support ---------------------------------*/
+  /* These extra slots are only used when the user provides both Implicit and RHS */
+  Mat Arhs;     /* Right hand side matrix */
+  Mat Brhs;     /* Right hand side preconditioning matrix */
+  Vec Frhs;     /* Right hand side function value */
 
   /* ---------------------Nonlinear Iteration------------------------------*/
   SNES  snes;
@@ -85,7 +85,6 @@ struct _p_TS {
 };
 
 extern PetscErrorCode TSMonitor(TS,PetscInt,PetscReal,Vec);
-extern PetscErrorCode TSScaleShiftMatrices(TS,Mat,Mat,MatStructure);
 
 extern PetscLogEvent TS_Step, TS_PseudoComputeTimeStep, TS_FunctionEval, TS_JacobianEval;
 

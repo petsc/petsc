@@ -1252,7 +1252,7 @@ int main(int argc,char *argv[])
   PetscFList limiters = 0,physics = 0;
   MPI_Comm comm;
   TS ts;
-  Vec X,X0;
+  Vec X,X0,R;
   FVCtx ctx;
   PetscInt i,dof,xs,xm,Mx,draw = 0;
   PetscBool  view_final = PETSC_FALSE;
@@ -1327,9 +1327,6 @@ int main(int argc,char *argv[])
   for (i=0; i<ctx.physics.dof; i++) {
     ierr = DMDASetFieldName(ctx.da,i,ctx.physics.fieldname[i]);CHKERRQ(ierr);
   }
-  /* Allow customization of the DMDA at runtime, mostly to change problem size with -da_grid_x M */
-  ierr = DMSetFromOptions(ctx.da);CHKERRQ(ierr);
-  ierr = DMSetUp(ctx.da);CHKERRQ(ierr);
   ierr = DMDAGetInfo(ctx.da,0, &Mx,0,0, 0,0,0, &dof,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetCorners(ctx.da,&xs,0,0,&xm,0,0);CHKERRQ(ierr);
 
@@ -1343,11 +1340,11 @@ int main(int argc,char *argv[])
   /* Create a vector to store the solution and to save the initial state */
   ierr = DMCreateGlobalVector(ctx.da,&X);CHKERRQ(ierr);
   ierr = VecDuplicate(X,&X0);CHKERRQ(ierr);
+  ierr = VecDuplicate(X,&R);CHKERRQ(ierr);
 
   /* Create a time-stepping object */
   ierr = TSCreate(comm,&ts);CHKERRQ(ierr);
-  ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
-  ierr = TSSetRHSFunction(ts,FVRHSFunction,&ctx);CHKERRQ(ierr);
+  ierr = TSSetRHSFunction(ts,R,FVRHSFunction,&ctx);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSSSP);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,1000,10);CHKERRQ(ierr);
 
@@ -1403,6 +1400,7 @@ int main(int argc,char *argv[])
   ierr = PetscFree2(ctx.uLR,ctx.flux);CHKERRQ(ierr);
   ierr = VecDestroy(&X);CHKERRQ(ierr);
   ierr = VecDestroy(&X0);CHKERRQ(ierr);
+  ierr = VecDestroy(&R);CHKERRQ(ierr);
   ierr = DMDestroy(&ctx.da);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   ierr = PetscFinalize();

@@ -88,19 +88,17 @@ extern PetscErrorCode   TSSetTime(TS,PetscReal);
 extern PetscErrorCode   TSGetTimeStepNumber(TS,PetscInt*);
 extern PetscErrorCode   TSSetTimeStep(TS,PetscReal);
 
-typedef PetscErrorCode (*TSMatrix)(TS,PetscReal,Mat*,Mat*,MatStructure*,void*);
-extern PetscErrorCode   TSSetMatrices(TS,Mat,TSMatrix,Mat,TSMatrix,MatStructure,void*);
-extern PetscErrorCode   TSGetMatrices(TS,Mat*,Mat*,void**);
-
 typedef PetscErrorCode (*TSRHSFunction)(TS,PetscReal,Vec,Vec,void*);
 typedef PetscErrorCode (*TSRHSJacobian)(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*);
-extern PetscErrorCode   TSSetRHSFunction(TS,TSRHSFunction,void*);
+extern PetscErrorCode   TSSetRHSFunction(TS,Vec,TSRHSFunction,void*);
+extern PetscErrorCode   TSGetRHSFunction(TS,Vec*,TSRHSFunction*,void**);
 extern PetscErrorCode   TSSetRHSJacobian(TS,Mat,Mat,TSRHSJacobian,void*);
-extern PetscErrorCode   TSGetRHSJacobian(TS,Mat*,Mat*,void**);
+extern PetscErrorCode   TSGetRHSJacobian(TS,Mat*,Mat*,TSRHSJacobian*,void**);
 
 typedef PetscErrorCode (*TSIFunction)(TS,PetscReal,Vec,Vec,Vec,void*);
 typedef PetscErrorCode (*TSIJacobian)(TS,PetscReal,Vec,Vec,PetscReal,Mat*,Mat*,MatStructure*,void*);
-extern PetscErrorCode   TSSetIFunction(TS,TSIFunction,void*);
+extern PetscErrorCode   TSSetIFunction(TS,Vec,TSIFunction,void*);
+extern PetscErrorCode   TSGetIFunction(TS,Vec*,TSIFunction*,void**);
 extern PetscErrorCode   TSSetIJacobian(TS,Mat,Mat,TSIJacobian,void*);
 extern PetscErrorCode   TSGetIJacobian(TS,Mat*,Mat*,TSIJacobian*,void**);
 
@@ -126,8 +124,8 @@ extern PetscErrorCode   TSPythonSetType(TS,const char[]);
 
 extern PetscErrorCode   TSComputeRHSFunction(TS,PetscReal,Vec,Vec);
 extern PetscErrorCode   TSComputeRHSJacobian(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*);
-extern PetscErrorCode   TSComputeIFunction(TS,PetscReal,Vec,Vec,Vec);
-extern PetscErrorCode   TSComputeIJacobian(TS,PetscReal,Vec,Vec,PetscReal,Mat*,Mat*,MatStructure*);
+extern PetscErrorCode   TSComputeIFunction(TS,PetscReal,Vec,Vec,Vec,PetscBool);
+extern PetscErrorCode   TSComputeIJacobian(TS,PetscReal,Vec,Vec,PetscReal,Mat*,Mat*,MatStructure*,PetscBool);
 
 /* Dynamic creation and loading functions */
 extern PetscFList TSList;

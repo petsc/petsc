@@ -38,7 +38,7 @@ extern PetscErrorCode MyTSMonitor(TS,PetscInt,PetscReal,Vec,void*);
 int main(int argc,char **argv)
 {
   TS             ts;                   /* nonlinear solver */
-  Vec            u;                    /* solution, residual vectors */
+  Vec            u,r;                  /* solution, residual vector */
   Mat            J;                    /* Jacobian matrix */
   PetscInt       steps,maxsteps = 1000;     /* iterations for convergence */
   PetscErrorCode ierr;
@@ -61,6 +61,7 @@ int main(int argc,char **argv)
      Extract global vectors from DMDA; 
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = DMCreateGlobalVector(da,&u);CHKERRQ(ierr);
+  ierr = VecDuplicate(u,&r);CHKERRQ(ierr);
 
   /* Initialize user application context */
   user.da            = da;
@@ -73,9 +74,9 @@ int main(int argc,char **argv)
      Create timestepping solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
-  ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
-  ierr = TSSetType(ts,TSBEULER);CHKERRQ(ierr); 
-  ierr = TSSetRHSFunction(ts,RHSFunction,&user);CHKERRQ(ierr);
+  ierr = TSSetType(ts,TSTHETA);CHKERRQ(ierr);
+  ierr = TSThetaSetTheta(ts,1.0);CHKERRQ(ierr); /* Backward Euler */
+  ierr = TSSetRHSFunction(ts,r,RHSFunction,&user);CHKERRQ(ierr);
 
   /* Set Jacobian */
   ierr = DMGetMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
@@ -123,6 +124,7 @@ int main(int argc,char **argv)
     ierr = MatFDColoringDestroy(&matfdcoloring);CHKERRQ(ierr);
   }
   ierr = VecDestroy(&u);CHKERRQ(ierr);    
+  ierr = VecDestroy(&r);CHKERRQ(ierr);    
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
 
@@ -149,7 +151,7 @@ PetscErrorCode RHSFunction(TS ts,PetscReal ftime,Vec U,Vec F,void *ptr)
   DM             da = (DM)user->da;
   PetscErrorCode ierr;
   PetscInt       i,j,Mx,My,xs,ys,xm,ym;
-  PetscReal      two = 2.0,hx,hy,hxdhy,hydhx,sx,sy;
+  PetscReal      two = 2.0,hx,hy,sx,sy;
   PetscScalar    u,uxx,uyy,**uarray,**f;
   Vec            localU;
 
@@ -160,8 +162,6 @@ PetscErrorCode RHSFunction(TS ts,PetscReal ftime,Vec U,Vec F,void *ptr)
 
   hx     = 1.0/(PetscReal)(Mx-1); sx = 1.0/(hx*hx);
   hy     = 1.0/(PetscReal)(My-1); sy = 1.0/(hy*hy);
-  hxdhy  = hx/hy; 
-  hydhx  = hy/hx;
 
   /*
      Scatter ghost points to local vector,using the 2-step process

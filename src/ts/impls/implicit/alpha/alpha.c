@@ -121,7 +121,6 @@ static PetscErrorCode TSReset_Alpha(TS ts)
   ierr = VecDestroy(&th->V0);CHKERRQ(ierr);
   ierr = VecDestroy(&th->Va);CHKERRQ(ierr);
   ierr = VecDestroy(&th->V1);CHKERRQ(ierr);
-  ierr = VecDestroy(&th->R);CHKERRQ(ierr);
   ierr = VecDestroy(&th->E);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -163,7 +162,7 @@ static PetscErrorCode SNESTSFormFunction_Alpha(SNES snes,Vec x,Vec y,TS ts)
   ierr = VecWAXPY(th->Va,-1,V0,V1);CHKERRQ(ierr);
   ierr = VecAYPX(th->Va,th->Alpha_m,V0);CHKERRQ(ierr);
   /* F = Function(ta,Xa,Va) */
-  ierr = TSComputeIFunction(ts,th->stage_time,th->Xa,th->Va,R);CHKERRQ(ierr);
+  ierr = TSComputeIFunction(ts,th->stage_time,th->Xa,th->Va,R,PETSC_FALSE);CHKERRQ(ierr);
   ierr = VecScale(R,1/th->Alpha_f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -177,7 +176,7 @@ static PetscErrorCode SNESTSFormJacobian_Alpha(SNES snes,Vec x,Mat *A,Mat *B,Mat
 
   PetscFunctionBegin;
   /* A,B = Jacobian(ta,Xa,Va) */
-  ierr = TSComputeIJacobian(ts,th->stage_time,th->Xa,th->Va,th->shift,A,B,str);CHKERRQ(ierr);
+  ierr = TSComputeIJacobian(ts,th->stage_time,th->Xa,th->Va,th->shift,A,B,str,PETSC_FALSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -189,24 +188,12 @@ static PetscErrorCode TSSetUp_Alpha(TS ts)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (ts->problem_type != TS_NONLINEAR) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Only for nonlinear problems");
-
   ierr = VecDuplicate(ts->vec_sol,&th->X0);CHKERRQ(ierr);
   ierr = VecDuplicate(ts->vec_sol,&th->Xa);CHKERRQ(ierr);
   ierr = VecDuplicate(ts->vec_sol,&th->X1);CHKERRQ(ierr);
   ierr = VecDuplicate(ts->vec_sol,&th->V0);CHKERRQ(ierr);
   ierr = VecDuplicate(ts->vec_sol,&th->Va);CHKERRQ(ierr);
   ierr = VecDuplicate(ts->vec_sol,&th->V1);CHKERRQ(ierr);
-
-  ierr = VecDuplicate(ts->vec_sol,&th->R);CHKERRQ(ierr);
-  ierr = SNESSetFunction(ts->snes,th->R,SNESTSFormFunction,ts);CHKERRQ(ierr);
-  {
-    Mat A,B;
-    PetscErrorCode (*func)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
-    void *ctx;
-    ierr = SNESGetJacobian(ts->snes,&A,&B,&func,&ctx);CHKERRQ(ierr);
-    ierr = SNESSetJacobian(ts->snes,A?A:ts->A,B?B:ts->B,func?func:SNESTSFormJacobian,ctx?ctx:ts);CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
 
@@ -355,9 +342,6 @@ PetscErrorCode  TSCreate_Alpha(TS ts)
   ts->ops->setfromoptions = TSSetFromOptions_Alpha;
   ts->ops->snesfunction   = SNESTSFormFunction_Alpha;
   ts->ops->snesjacobian   = SNESTSFormJacobian_Alpha;
-
-  ts->problem_type = TS_NONLINEAR;
-  ierr = TSGetSNES(ts,&ts->snes);CHKERRQ(ierr);
 
   ierr = PetscNewLog(ts,TS_Alpha,&th);CHKERRQ(ierr);
   ts->data = (void*)th;

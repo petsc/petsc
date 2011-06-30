@@ -110,7 +110,7 @@ int main(int argc,char **argv)
      function they will call this routine. Note the final argument
      is the application context used by the call-back functions.
   */
-  ierr = TSSetRHSFunction(ts,FormFunction,&user);CHKERRQ(ierr);
+  ierr = TSSetRHSFunction(ts,PETSC_NULL,FormFunction,&user);CHKERRQ(ierr);
 
   /*
      Set the Jacobian matrix and the function used to compute 

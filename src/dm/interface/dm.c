@@ -192,9 +192,11 @@ PetscErrorCode  DMSetUp(DM dm)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (dm->setupcalled) PetscFunctionReturn(0);
   if (dm->ops->setup) {
     ierr = (*dm->ops->setup)(dm);CHKERRQ(ierr);
   }
+  dm->setupcalled = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 

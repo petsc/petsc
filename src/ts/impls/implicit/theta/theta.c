@@ -110,7 +110,7 @@ static PetscErrorCode SNESTSFormFunction_Theta(SNES snes,Vec x,Vec y,TS ts)
 
   PetscFunctionBegin;
   ierr = VecAXPBYPCZ(th->Xdot,-th->shift,th->shift,0,ts->vec_sol,x);CHKERRQ(ierr);
-  ierr = TSComputeIFunction(ts,th->stage_time,x,th->Xdot,y);CHKERRQ(ierr);
+  ierr = TSComputeIFunction(ts,th->stage_time,x,th->Xdot,y,PETSC_FALSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -123,7 +123,7 @@ static PetscErrorCode SNESTSFormJacobian_Theta(SNES snes,Vec x,Mat *A,Mat *B,Mat
 
   PetscFunctionBegin;
   /* th->Xdot has already been computed in SNESTSFormFunction_Theta (SNES guarantees this) */
-  ierr = TSComputeIJacobian(ts,th->stage_time,x,th->Xdot,th->shift,A,B,str);CHKERRQ(ierr);
+  ierr = TSComputeIJacobian(ts,th->stage_time,x,th->Xdot,th->shift,A,B,str,PETSC_FALSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -134,27 +134,10 @@ static PetscErrorCode TSSetUp_Theta(TS ts)
 {
   TS_Theta       *th = (TS_Theta*)ts->data;
   PetscErrorCode ierr;
-  Vec            res;
 
   PetscFunctionBegin;
-  if (ts->problem_type == TS_LINEAR) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Only for nonlinear problems");
   ierr = VecDuplicate(ts->vec_sol,&th->X);CHKERRQ(ierr);
   ierr = VecDuplicate(ts->vec_sol,&th->Xdot);CHKERRQ(ierr);
-  ierr = VecDuplicate(ts->vec_sol,&res);CHKERRQ(ierr);
-  ierr = SNESSetFunction(ts->snes,res,SNESTSFormFunction,ts);CHKERRQ(ierr);
-  ierr = VecDestroy(&res);CHKERRQ(ierr);
-  /* This is nasty.  SNESSetFromOptions() is usually called in TSSetFromOptions().  With -snes_mf_operator, it will
-  replace A and we don't want to mess with that.  With -snes_mf, A and B will be replaced as well as the function and
-  context.  Note that SNESSetFunction() normally has not been called before SNESSetFromOptions(), so when -snes_mf sets
-  the Jacobian user context to snes->funP, it will actually be NULL.  This is not a problem because both snes->funP and
-  snes->jacP should be the TS. */
-  {
-    Mat            A,B;
-    PetscErrorCode (*func)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
-    void           *ctx;
-    ierr = SNESGetJacobian(ts->snes,&A,&B,&func,&ctx);CHKERRQ(ierr);
-    ierr = SNESSetJacobian(ts->snes,A?A:ts->A,B?B:ts->B,func?func:&SNESTSFormJacobian,ctx?ctx:ts);CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
 /*------------------------------------------------------------*/
@@ -246,9 +229,6 @@ PetscErrorCode  TSCreate_Theta(TS ts)
   ts->ops->setfromoptions = TSSetFromOptions_Theta;
   ts->ops->snesfunction   = SNESTSFormFunction_Theta;
   ts->ops->snesjacobian   = SNESTSFormJacobian_Theta;
-
-  ts->problem_type = TS_NONLINEAR;
-  ierr = TSGetSNES(ts,&ts->snes);CHKERRQ(ierr);
 
   ierr = PetscNewLog(ts,TS_Theta,&th);CHKERRQ(ierr);
   ts->data = (void*)th;

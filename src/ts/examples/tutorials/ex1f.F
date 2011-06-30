@@ -124,7 +124,7 @@
 !    is the application context used by the call-back functions.
 !
 
-      call TSSetRHSFunction(ts,FormFunction,user,ierr) 
+      call TSSetRHSFunction(ts,PETSC_NULL_OBJECT,FormFunction,user,ierr)
 
 !
 !     Set the Jacobian matrix and the function used to compute 

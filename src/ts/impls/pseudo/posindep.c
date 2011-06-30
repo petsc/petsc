@@ -174,7 +174,7 @@ static PetscErrorCode TSStep_Pseudo(TS ts,PetscInt *steps,PetscReal *ptime)
     ierr = TSPostStep(ts);CHKERRQ(ierr);
   }
   ierr = VecZeroEntries(pseudo->xdot);CHKERRQ(ierr);
-  ierr = TSComputeIFunction(ts,ts->ptime,ts->vec_sol,pseudo->xdot,pseudo->func);CHKERRQ(ierr);
+ierr = TSComputeIFunction(ts,ts->ptime,ts->vec_sol,pseudo->xdot,pseudo->func,PETSC_FALSE);CHKERRQ(ierr);
   ierr = VecNorm(pseudo->func,NORM_2,&pseudo->fnorm);CHKERRQ(ierr);
   ierr = TSMonitor(ts,ts->steps,ts->ptime,sol);CHKERRQ(ierr);
 
@@ -265,7 +265,7 @@ static PetscErrorCode SNESTSFormFunction_Pseudo(SNES snes,Vec X,Vec Y,TS ts)
 
   PetscFunctionBegin;
   ierr = TSPseudoGetXdot(ts,X,&Xdot);CHKERRQ(ierr);
-  ierr = TSComputeIFunction(ts,ts->ptime,X,Xdot,Y);CHKERRQ(ierr);
+  ierr = TSComputeIFunction(ts,ts->ptime,X,Xdot,Y,PETSC_FALSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -287,7 +287,7 @@ static PetscErrorCode SNESTSFormJacobian_Pseudo(SNES snes,Vec X,Mat *AA,Mat *BB,
 
   PetscFunctionBegin;
   ierr = TSPseudoGetXdot(ts,X,&Xdot);CHKERRQ(ierr);
-  ierr = TSComputeIJacobian(ts,ts->ptime,X,Xdot,1./ts->time_step,AA,BB,str);CHKERRQ(ierr);
+  ierr = TSComputeIJacobian(ts,ts->ptime,X,Xdot,1./ts->time_step,AA,BB,str,PETSC_FALSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -300,24 +300,9 @@ static PetscErrorCode TSSetUp_Pseudo(TS ts)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (ts->problem_type != TS_NONLINEAR) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Only for nonlinear problems");
-
   ierr = VecDuplicate(ts->vec_sol,&pseudo->update);CHKERRQ(ierr);
   ierr = VecDuplicate(ts->vec_sol,&pseudo->func);CHKERRQ(ierr);
   ierr = VecDuplicate(ts->vec_sol,&pseudo->xdot);CHKERRQ(ierr);
-  ierr = SNESSetFunction(ts->snes,pseudo->func,SNESTSFormFunction,ts);CHKERRQ(ierr);
-  /* This is nasty.  SNESSetFromOptions() is usually called in TSSetFromOptions().  With -snes_mf_operator, it will
-  replace A and we don't want to mess with that.  With -snes_mf, A and B will be replaced as well as the function and
-  context.  Note that SNESSetFunction() normally has not been called before SNESSetFromOptions(), so when -snes_mf sets
-  the Jacobian user context to snes->funP, it will actually be NULL.  This is not a problem because both snes->funP and
-  snes->jacP should be the TS. */
-  {
-    Mat A,B;
-    PetscErrorCode (*func)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
-    void *ctx;
-    ierr = SNESGetJacobian(ts->snes,&A,&B,&func,&ctx);CHKERRQ(ierr);
-    ierr = SNESSetJacobian(ts->snes,A?A:ts->A,B?B:ts->B,func?func:SNESTSFormJacobian,ctx?ctx:ts);CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
 /*------------------------------------------------------------*/
@@ -698,7 +683,7 @@ PetscErrorCode  TSPseudoDefaultTimeStep(TS ts,PetscReal* newdt,void* dtctx)
 
   PetscFunctionBegin;
   ierr = VecZeroEntries(pseudo->xdot);CHKERRQ(ierr);
-  ierr = TSComputeIFunction(ts,ts->ptime,ts->vec_sol,pseudo->xdot,pseudo->func);CHKERRQ(ierr);
+  ierr = TSComputeIFunction(ts,ts->ptime,ts->vec_sol,pseudo->xdot,pseudo->func,PETSC_FALSE);CHKERRQ(ierr);
   ierr = VecNorm(pseudo->func,NORM_2,&pseudo->fnorm);CHKERRQ(ierr);
   if (pseudo->initial_fnorm == 0.0) {
     /* first time through so compute initial function norm */

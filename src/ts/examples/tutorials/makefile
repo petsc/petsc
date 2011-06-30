@@ -102,6 +102,11 @@ runex1f:
 runex2f:
 	-@${MPIEXEC} -n 1 ./ex2f 
 
+runex3:
+	-@${MPIEXEC} -n 1 ./ex3 -ts_view -nox > ex3_1.tmp 2>&1;	  \
+	   ${DIFF} output/ex3_1.out ex3_1.tmp || echo "Possible problem with ex3_1, diffs above"; \
+	   ${RM} -f ex3_1.tmp
+
 runex4:
 	-@${MPIEXEC} -n 1 ./ex4 -ts_view -nox > ex4_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex4_1.out ex4_1.tmp) then true; \
@@ -151,6 +156,19 @@ runex7_3:
 	   if (${DIFF} output/ex7_3.out ex7_3.tmp) then true; \
 	   else echo "Possible problem with ex7_3, diffs above"; fi; \
 	   ${RM} -f ex7_3.tmp
+
+runex9:
+	-@${MPIEXEC} -n 1 ./ex9 -da_grid_x 100 -initial 1 -xmin -2 -xmax 5 -exact -limit mc > ex9_1.tmp 2>&1; \
+	   ${DIFF} output/ex9_1.out ex9_1.tmp || echo "Possible problem with ex9_1, diffs above"; \
+	   ${RM} -f ex9_1.tmp
+runex9_2:
+	-@${MPIEXEC} -n 1 ./ex9 -da_grid_x 100 -initial 2 -xmin -2 -xmax 2 -exact -limit mc -physics burgers -bc_type outflow -ts_max_time 1 > ex9_2.tmp 2>&1; \
+	   ${DIFF} output/ex9_2.out ex9_2.tmp || echo "Possible problem with ex9_2, diffs above"; \
+	   ${RM} -f ex9_2.tmp
+runex9_3:
+	-@${MPIEXEC} -n 3 ./ex9 -da_grid_x 100 -initial 2 -xmin -2 -xmax 2 -exact -limit mc -physics burgers -bc_type outflow -ts_max_time 1 > ex9_3.tmp 2>&1; \
+	   ${DIFF} output/ex9_3.out ex9_3.tmp || echo "Possible problem with ex9_3, diffs above"; \
+	   ${RM} -f ex9_3.tmp
 
 runex10:
 	-@${MPIEXEC} -n 1 ./ex10 -da_grid_x 20 -rd_initial 1 -rd_discretization fd \
