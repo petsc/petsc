@@ -91,7 +91,11 @@ PetscErrorCode createCrsOp( Mat Amat, Mat P_inout, Mat *Acrs )
   PetscFunctionBegin;
   Mat H;
   ierr = MatPtAP( Amat, P_inout, MAT_INITIAL_MATRIX, 2.0, &H); CHKERRQ(ierr);
-  *Acrs = H;
+
+  /* need to repartition H and move colums of P accordingly */
+  
+
+  *Acrs = H;  
 
   PetscFunctionReturn(0);
 }
