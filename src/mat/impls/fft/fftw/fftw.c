@@ -700,7 +700,7 @@ PetscErrorCode OutputTransformFFT_FFTW(Mat A,Vec x,Vec y)
 
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr = VecGetOwnershipRange(y,&low,PETSC_NULL);
+  ierr = VecGetOwnershipRange(x,&low,PETSC_NULL);
   printf("Local ownership starts at %d\n",low);
 
  switch (ndim){
@@ -728,10 +728,10 @@ PetscErrorCode OutputTransformFFT_FFTW(Mat A,Vec x,Vec y)
             tempindx1 = i*NM + j;
             indx1[tempindx]=local_0_start*dim[1]+tempindx;
             indx2[tempindx]=low+tempindx1;
-            printf("Val tempindx1 = %d\n",tempindx1);
-            printf("index1 %d from proc %d is \n",indx1[tempindx],rank);
-            printf("index2 %d from proc %d is \n",indx2[tempindx],rank);
-            printf("-------------------------\n",indx2[tempindx],rank);
+       //     printf("Val tempindx1 = %d\n",tempindx1);
+       //     printf("index1 %d from proc %d is \n",indx1[tempindx],rank);
+       //     printf("index2 %d from proc %d is \n",indx2[tempindx],rank);
+       //     printf("-------------------------\n",indx2[tempindx],rank);
         }
      }
 

@@ -61,8 +61,8 @@ PetscInt main(PetscInt argc,char **args)
   VecAssemblyBegin(output);
   VecAssemblyEnd(output);
 
-//  VecView(input,PETSC_VIEWER_STDOUT_WORLD);
-//  VecView(output,PETSC_VIEWER_STDOUT_WORLD);
+  VecView(input,PETSC_VIEWER_STDOUT_WORLD);
+  VecView(output,PETSC_VIEWER_STDOUT_WORLD);
 
   
  
