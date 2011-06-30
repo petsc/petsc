@@ -35,10 +35,10 @@ cdef api MPI_Comm* PyPetscComm_GetPtr(object arg) except NULL:
 
 # -- Object --
 
-## cdef api object PyPetscObject_New(PetscObject arg):
-##     cdef Object retv = Class()
-##     setref(&retv.obj[0], arg)
-##     return retv
+cdef api object PyPetscObject_New(PetscObject arg):
+    cdef Object retv = subtype_Object(arg)()
+    setref(&retv.obj[0], arg)
+    return retv
 
 cdef api PetscObject PyPetscObject_Get(object arg) except ? NULL:
     cdef PetscObject retv = NULL

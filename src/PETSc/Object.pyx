@@ -101,7 +101,7 @@ cdef class Object:
     def getClassId(self):
         cdef PetscClassId classid = 0
         CHKERR( PetscObjectGetClassId(self.obj[0], &classid) )
-        return classid
+        return <long>classid
 
     def getClassName(self):
         cdef const_char *cval = NULL
@@ -129,15 +129,10 @@ cdef class Object:
         name = str2bytes(name, &cval)
         CHKERR( PetscObjectQuery(self.obj[0], cval, &cobj) )
         if cobj == NULL: return None
-        cdef PetscClassId classid = 0
-        CHKERR( PetscObjectGetClassId(cobj, &classid) )
-        cdef type Class = PyPetscType_Lookup(classid)
-        if classid == PETSC_DM_CLASSID:
-            Class = subtype_DM(<PetscDM>cobj)
-        cdef Object newobj = Class()
-        newobj.obj[0] = cobj
-        PetscINCREF(newobj.obj)
-        return newobj
+        cdef Object obj = subtype_Object(cobj)()
+        obj.obj[0] = cobj
+        PetscINCREF(obj.obj)
+        return obj
 
     def incRef(self):
         cdef PetscObject obj = self.obj[0]
@@ -212,7 +207,6 @@ cdef class Object:
         def __get__(self):
             return Object_toFortran(self.obj[0])
 
-
 # --------------------------------------------------------------------
 
 include "cyclicgc.pxi"
@@ -220,9 +214,9 @@ include "cyclicgc.pxi"
 cdef dict type_registry = { 0 : None }
 __type_registry__ = type_registry
 
-cdef int PyPetscType_Register(PetscClassId classid, type cls) except -1:
+cdef int PyPetscType_Register(int classid, type cls) except -1:
     global type_registry
-    cdef object key = classid
+    cdef object key = <long>classid
     cdef object value = cls
     cdef const_char *dummy = NULL
     if key not in type_registry:
@@ -238,9 +232,9 @@ cdef int PyPetscType_Register(PetscClassId classid, type cls) except -1:
                 "already registered: %s" % (key, cls, value))
     return 0
 
-cdef type PyPetscType_Lookup(PetscClassId classid):
+cdef type PyPetscType_Lookup(int classid):
     global type_registry
-    cdef object key = classid
+    cdef object key = <long>classid
     cdef type cls = Object
     try:
         cls = type_registry[key]

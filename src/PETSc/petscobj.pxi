@@ -113,3 +113,38 @@ cdef inline long Object_toFortran(PetscObject o) nogil:
     return <long> o
 
 # --------------------------------------------------------------------
+
+cdef inline type subtype_DM(PetscDM dm):
+    cdef type klass = DM
+    cdef PetscObject obj = <PetscObject> dm
+    if obj == NULL: return klass
+    cdef PetscBool match = PETSC_FALSE
+    # -- DA --
+    CHKERR( PetscTypeCompare(obj, b"da", &match) )
+    if match == PETSC_FALSE:
+        if (PETSC_VERSION_MAJOR == 3 and
+            PETSC_VERSION_MINOR == 1): # petsc-3.1
+            CHKERR( PetscTypeCompare(obj, b"da1d", &match) )
+            if match == PETSC_FALSE:
+                CHKERR( PetscTypeCompare(obj, b"da2d", &match) )
+                if match == PETSC_FALSE:
+                    CHKERR( PetscTypeCompare(obj, b"da3d", &match) )
+        if (PETSC_VERSION_MAJOR == 3 and
+            PETSC_VERSION_MINOR == 0): # petsc-3.0
+            CHKERR( PetscTypeCompare(obj, b"DA", &match) )
+    if match == PETSC_TRUE: klass = DA
+    # --------
+    return klass
+
+cdef inline type subtype_Object(PetscObject obj):
+    cdef type klass = Object
+    if obj == NULL: return klass
+    cdef PetscClassId classid = 0
+    CHKERR( PetscObjectGetClassId(obj,&classid) )
+    if classid == PETSC_DM_CLASSID:
+        klass = subtype_DM(<PetscDM>obj)
+    else:
+        klass = PyPetscType_Lookup(classid)
+    return klass
+
+# --------------------------------------------------------------------

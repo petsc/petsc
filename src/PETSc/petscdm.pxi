@@ -36,24 +36,3 @@ cdef extern from * nogil:
     int DMGetLocalToGlobalMappingBlock(PetscDM,PetscLGMap*)
 
 # --------------------------------------------------------------------
-
-cdef inline type subtype_DM(PetscDM dm):
-    cdef type klass = DM
-    cdef PetscBool match = PETSC_FALSE
-    cdef PetscObject obj = <PetscObject> dm
-    if obj == NULL: return klass
-    # DA
-    CHKERR( PetscTypeCompare(obj, b"da", &match) ) # petsc-3.2
-    if match == PETSC_FALSE: # petsc-3.1
-        CHKERR( PetscTypeCompare(obj, b"da1d", &match) )
-        if match == PETSC_FALSE:
-            CHKERR( PetscTypeCompare(obj, b"da2d", &match) )
-            if match == PETSC_FALSE:
-                CHKERR( PetscTypeCompare(obj, b"da3d", &match) )
-                if match == PETSC_FALSE: # petsc-3.0
-                    CHKERR( PetscTypeCompare(obj, b"DA", &match) )
-    if match == PETSC_TRUE: klass = DA
-    # --
-    return klass
-
-# --------------------------------------------------------------------
