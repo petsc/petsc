@@ -9,7 +9,7 @@ SOURCEH  = lmvmmat.h adamat.h submatfree.h approxmat.h
 OBJSC    =  lmvmmat.o adamat.o submatfree.o approxmat.o
 OBJSF    = 
 LIBBASE  = libtao
-MANSEC   = util
+MANSEC   = taosolver
 LOCDIR   = src/matrix/
 
 include ${TAO_DIR}/conf/tao_base

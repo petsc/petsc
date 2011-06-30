@@ -93,24 +93,9 @@ int main(int argc, char **argv)
   ierr = PetscFree(idx); CHKERRQ(ierr);
   
   ierr = VecCreateSeq(PETSC_COMM_SELF,user.n,&x); CHKERRQ(ierr);
-  ierr = VecCreateSeq(PETSC_COMM_SELF,user.m,&c); CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(x,&lo,&hi); CHKERRQ(ierr);
   ierr = ISComplement(user.s_is,lo,hi,&user.d_is); CHKERRQ(ierr);
 
-
-
-  ierr = VecCreate(PETSC_COMM_SELF,&user.u); CHKERRQ(ierr);
-  ierr = VecCreate(PETSC_COMM_SELF,&user.y); CHKERRQ(ierr);
-  ierr = VecCreate(PETSC_COMM_SELF,&user.c); CHKERRQ(ierr);
-  ierr = VecSetType(user.u,VECSEQ); CHKERRQ(ierr);
-  ierr = VecSetType(user.y,VECSEQ); CHKERRQ(ierr);
-  ierr = VecSetType(user.c,VECSEQ); CHKERRQ(ierr);
-  ierr = VecSetSizes(user.u,PETSC_DECIDE,user.m); CHKERRQ(ierr);
-  ierr = VecSetSizes(user.y,PETSC_DECIDE,user.m); CHKERRQ(ierr);
-  ierr = VecSetSizes(user.c,PETSC_DECIDE,user.m); CHKERRQ(ierr);
-  ierr = VecSetFromOptions(user.u); CHKERRQ(ierr);
-  ierr = VecSetFromOptions(user.y); CHKERRQ(ierr);
-  ierr = VecSetFromOptions(user.c); CHKERRQ(ierr);
 
   /* Set up initial vectors and matrices */
   ierr = ESQPInitialize(&user); CHKERRQ(ierr);
@@ -131,16 +116,17 @@ int main(int argc, char **argv)
 
 
   /* Create TAO solver and set desired solution method */
+
   ierr = TaoSolverCreate(PETSC_COMM_SELF,&tao); CHKERRQ(ierr);
-  ierr = TaoSolverSetType(tao,"tao_lcl"); CHKERRQ(ierr);
+  ierr = TaoSolverSetType(tao,"tao_sqpcon"); CHKERRQ(ierr);
 
   //ierr = TaoSolverSetMonitor(tao,ESQPMonitor,&user); CHKERRQ(ierr);
 
-  /* Set solution vector with an initial guess */
+  // Set solution vector with an initial guess 
   ierr = TaoSolverSetInitialVector(tao,x); CHKERRQ(ierr);
   ierr = TaoSolverSetObjectiveRoutine(tao, FormFunction, (void *)&user); CHKERRQ(ierr);
   ierr = TaoSolverSetGradientRoutine(tao, FormGradient, (void *)&user); CHKERRQ(ierr);
-  ierr = TaoSolverSetConstraintsRoutine(tao, c, FormConstraints, (void *)&user); CHKERRQ(ierr);
+  ierr = TaoSolverSetConstraintsRoutine(tao, user.c, FormConstraints, (void *)&user); CHKERRQ(ierr);
 
   ierr = TaoSolverSetJacobianStateRoutine(tao, user.Js, user.Js, FormJacobianState, (void *)&user); CHKERRQ(ierr);
   ierr = TaoSolverSetJacobianDesignRoutine(tao, user.Jd, user.Jd, FormJacobianDesign, (void *)&user); CHKERRQ(ierr);
@@ -149,7 +135,7 @@ int main(int argc, char **argv)
   ierr = TaoSolverLCLSetStateIS(tao,user.s_is); CHKERRQ(ierr);
   ierr = TaoSolverSQPCONSetStateIS(tao,user.s_is); CHKERRQ(ierr);
 
-  /* SOLVE THE APPLICATION */
+  // SOLVE THE APPLICATION 
   ierr = TaoSolverSolve(tao);  CHKERRQ(ierr);
 
   ierr = TaoSolverGetConvergedReason(tao,&reason); CHKERRQ(ierr);
@@ -164,12 +150,11 @@ int main(int argc, char **argv)
   }
 
 
-  /* Free TAO data structures */
+  // Free TAO data structures 
   ierr = TaoSolverDestroy(tao); CHKERRQ(ierr);
 
   /* Free PETSc data structures */
   ierr = VecDestroy(&x); CHKERRQ(ierr);
-  ierr = VecDestroy(&c); CHKERRQ(ierr);
   ierr = ESQPDestroy(&user); CHKERRQ(ierr);
 
   /* Finalize TAO, PETSc */
@@ -561,6 +546,7 @@ PetscErrorCode ESQPInitialize(AppCtx *user)
   ierr = VecDuplicate(user->u,&user->uwork); CHKERRQ(ierr);
   ierr = VecDuplicate(user->u,&user->usave); CHKERRQ(ierr);
   ierr = VecDuplicate(user->u,&user->js_diag); CHKERRQ(ierr);
+  ierr = VecDuplicate(user->u,&user->c); CHKERRQ(ierr);
   ierr = VecDuplicate(user->c,&user->cwork); CHKERRQ(ierr);
   ierr = VecDuplicate(user->d,&user->dwork); CHKERRQ(ierr);
 

@@ -66,7 +66,7 @@ tao_chk_tao_dir:
 tao_manpages_buildcite:
 	@-if [ "${MANSEC}" != "" ] ; then \
 	  DOCTEXT_PATH=${TAO_DIR}/docs/tex/doctext; \
-          doctext -html -indexdir ../${MANSEC} \
+          ${DOCTEXT} -html -indexdir ../${MANSEC} \
 		-index ${TAO_DIR}/docs/manpages/manpages.cit \
 		-mpath ${TAO_DIR}/docs/manpages/${MANSEC} ${SOURCEC} ${SOURCEH}; \
 		chmod g+w ${TAO_DIR}/docs/manpages/${MANSEC}/*; fi 
@@ -76,7 +76,7 @@ tao_manpages_buildcite:
 tao_manpages:
 	@-if [ "${MANSEC}" != "" ] ; then \
 	  DOCTEXT_PATH=${TAO_DIR}/docs/tex/doctext; \
-	  doctext -html \
+	  ${DOCTEXT} -html \
 		-mpath ${TAO_DIR}/docs/manpages/${MANSEC} -heading TAO \
 		-defn ${TAO_DIR}/docs/tex/doctext/html.def \
 		-locdir ${LOCDIR} -mapref ${TAO_DIR}/docs/manpages/manpages.cit \
