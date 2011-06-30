@@ -6,8 +6,6 @@ replace default convergence test
 
 MANSEC - do we need more than 1?
 
-tao_version.h
-
 finite differences
    add to tests (-tao_fd, -tao_fdgrad, -tao_fd_delta)
 
@@ -31,7 +29,6 @@ Decisions to make:
  - Tao or TaoSolver?
 
 Check documentation
-Check memory 
 MT linesearch view
 
 Set KSP Monitors
@@ -48,7 +45,6 @@ make install to put libs/headers in separate location
  Check TAO options in TaoSolverSetFromOptions
  Fix convergence explanations
 TaoSolverClearMonitor
-manual
 
 
-Yuchen's code
+lcl

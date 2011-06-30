@@ -1,9 +1,13 @@
 #ifndef __TAOSOLVER_H
 #define __TAOSOLVER_H
 
+#include "petsc.h"
 #include "petscvec.h"
 #include "petscmat.h"
-#include "tao.h"
+#include "tao_sys.h"
+#include "tao_util.h"
+#include "tao_version.h"
+
 PETSC_EXTERN_CXX_BEGIN
 
 typedef struct _p_TaoSolver*   TaoSolver;
