@@ -439,9 +439,11 @@ PetscErrorCode  MatGetVecs_FFTW(Mat A,Vec *fin,Vec *fout)
 //    pdim = (ptrdiff_t *)calloc(ndim,sizeof(ptrdiff_t));
 
 //    for(ctr=0;ctr<ndim;ctr++)
-//        {
+//        {k
 //           pdim[ctr] = dim[ctr];
-//       } 
+//       }
+
+ 
 
     switch (ndim){
     case 1:
@@ -476,7 +478,7 @@ PetscErrorCode  MatGetVecs_FFTW(Mat A,Vec *fin,Vec *fout)
         ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,n1,N1,(PetscScalar*)data_fout,fout);CHKERRQ(ierr);
         (*fout)->ops->destroy   = VecDestroy_MPIFFTW;
       }
-      printf("Vector size from fftw.c is  given by %d\n",N1);
+      printf("Vector size from fftw.c is  given by %d, %d\n",n1,N1);
      
 #else
       /* Get local size */
@@ -586,14 +588,17 @@ PetscErrorCode InputTransformFFT_FFTW(Mat A,Vec x,Vec y)
   Mat_FFTW       *fftw = (Mat_FFTW*)fft->data;
   PetscInt       N=fft->N, N1, n1 ,NM;
   PetscInt       ndim=fft->ndim,*dim=fft->dim,n=fft->n;
-  PetscInt       low, *indx1, *indx2, tempindx, tempindx1; 
-  PetscInt       i,j; 
+  PetscInt       low, *indx1, *indx2, tempindx, tempindx1, *indx3, *indx4; 
+  PetscInt       i,j,rank,size; 
   ptrdiff_t      alloc_local,local_n0,local_0_start;
   ptrdiff_t      local_n1,local_1_start;
   VecScatter     vecscat;
   IS             list1,list2;
 
+  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(y,&low,PETSC_NULL);
+  printf("Local ownership starts at %d\n",low);
 
  switch (ndim){
  case 1:
@@ -603,8 +608,9 @@ PetscErrorCode InputTransformFFT_FFTW(Mat A,Vec x,Vec y)
       alloc_local =  fftw_mpi_local_size_2d_transposed(dim[0],dim[1]/2+1,comm,&local_n0,&local_0_start,&local_n1,&local_1_start);
       N1 = 2*dim[0]*(dim[1]/2+1); n1 = 2*local_n0*(dim[1]/2+1);
      
-     ierr = PetscMalloc(sizeof(PetscInt)*local_n0*N1,&indx1);CHKERRQ(ierr);
-     ierr = PetscMalloc(sizeof(PetscInt)*local_n0*N1,&indx2);CHKERRQ(ierr);
+     ierr = PetscMalloc(sizeof(PetscInt)*((int)local_n0)*N1,&indx1);CHKERRQ(ierr);
+     ierr = PetscMalloc(sizeof(PetscInt)*((int)local_n0)*N1,&indx2);CHKERRQ(ierr);
+     printf("Val local_0_start = %d",local_0_start);
       
      if (dim[1]%2==0)
       NM = dim[1]+2;
@@ -617,18 +623,19 @@ PetscErrorCode InputTransformFFT_FFTW(Mat A,Vec x,Vec y)
             tempindx1 = i*NM + j;
             indx1[tempindx]=local_0_start*N1+tempindx;
             indx2[tempindx]=low+tempindx1;
-  //          printf("index3 %d from proc %d is \n",indx3[tempindx],rank);
-  //          printf("index4 %d from proc %d is \n",indx4[tempindx],rank);
+            printf("Val tempindx1 = %d",tempindx1);
+            printf("index1 %d from proc %d is \n",indx1[tempindx],rank);
+            printf("index2 %d from proc %d is \n",indx2[tempindx],rank);
         }
      }
    
      ierr = ISCreateGeneral(comm,local_n0*dim[1],indx1,PETSC_COPY_VALUES,&list1);CHKERRQ(ierr);
      ierr = ISCreateGeneral(comm,local_n0*dim[1],indx2,PETSC_COPY_VALUES,&list2);CHKERRQ(ierr);
 
-     ierr = VecScatterCreate(x,list1,y,list2,&vecscat); 
-     ierr = VecScatterBegin(vecscat,x,y,INSERT_VALUES,SCATTER_FORWARD);
-     ierr = VecScatterEnd(vecscat,x,y,INSERT_VALUES,SCATTER_FORWARD);
-     ierr = VecScatterDestroy(&vecscat);
+     ierr = VecScatterCreate(x,list1,y,list2,&vecscat);CHKERRQ(ierr); 
+     ierr = VecScatterBegin(vecscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+     ierr = VecScatterEnd(vecscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+     ierr = VecScatterDestroy(&vecscat);CHKERRQ(ierr);
      break;
 
  case 3:
