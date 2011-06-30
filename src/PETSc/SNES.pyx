@@ -113,8 +113,10 @@ cdef class SNES(Object):
     def getInitialGuess(self):
         return self.get_attr('__initialguess__')
 
-    def setFunction(self, function, Vec f not None, args=None, kargs=None):
-        CHKERR( SNESSetFunction(self.snes, f.vec, SNES_Function, NULL) )
+    def setFunction(self, function, Vec f, args=None, kargs=None):
+        cdef PetscVec fvec=NULL
+        if f is not None: fvec = f.vec
+        CHKERR( SNESSetFunction(self.snes, fvec, SNES_Function, NULL) )
         if args is None: args = ()
         if kargs is None: kargs = {}
         self.set_attr('__function__', (function, args, kargs))
