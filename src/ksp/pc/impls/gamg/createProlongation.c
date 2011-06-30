@@ -6,10 +6,9 @@
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
 
-#ifdef PETSC_HAVE_TRIANGLE
 #define REAL PetscReal
 #include <triangle.h>
-#endif
+
 #include <assert.h>
 #include <petscblaslapack.h>
 
@@ -125,7 +124,6 @@ PetscErrorCode triangulateAndFormProl( GNode gnodes[],
                                        Mat Prol
                                        )
 {
-#ifdef PETSC_HAVE_TRIANGLE
   PetscErrorCode ierr;
   PetscInt nloc_wg,nn,my0,bs=1;
   PetscScalar *lid_crd;
@@ -198,7 +196,8 @@ PetscErrorCode triangulateAndFormProl( GNode gnodes[],
     fprintf(file, "%d  %d  %d  %d\n",in.numberofpoints,2,0,0);
     /*Following lines: <vertex #> <x> <y> */
     for(int kk=0,sid=0;kk<in.numberofpoints;kk++){
-      fprintf(file, "%d %e %e\n",kk,in.pointlist[sid++],in.pointlist[sid++]);
+      fprintf(file, "%d %e %e\n",kk,in.pointlist[sid],in.pointlist[sid+1]);
+      sid += 2;
     }
     /*One line: <# of segments> <# of boundary markers (0 or 1)> */
     fprintf(file, "%d  %d\n",0,0);
@@ -215,7 +214,8 @@ PetscErrorCode triangulateAndFormProl( GNode gnodes[],
     fprintf(file, "%d %d %d\n",mid.numberoftriangles,3,0);
     /*Remaining lines: <triangle #> <node> <node> <node> ... [attributes]*/
     for(int kk=0,sid=0;kk<mid.numberoftriangles;kk++){
-      fprintf(file, "%d %d %d %d\n",kk,mid.trianglelist[sid++],mid.trianglelist[sid++],mid.trianglelist[sid++]);
+      fprintf(file, "%d %d %d %d\n",kk,mid.trianglelist[sid],mid.trianglelist[sid+1],mid.trianglelist[sid+2]);
+      sid += 3;
     }
     fclose(file);
     sprintf(fname,"C%d.node",level); file = fopen(fname, "w");
@@ -223,7 +223,8 @@ PetscErrorCode triangulateAndFormProl( GNode gnodes[],
     fprintf(file, "%d  %d  %d  %d\n",in.numberofpoints,2,0,0);
     /*Following lines: <vertex #> <x> <y> */
     for(int kk=0,sid=0;kk<in.numberofpoints;kk++){
-      fprintf(file, "%d %e %e\n",kk,in.pointlist[sid++],in.pointlist[sid++]);
+      fprintf(file, "%d %e %e\n",kk,in.pointlist[sid],in.pointlist[sid+1]);
+      sid += 2;
     }
     fclose(file);
     level++;
@@ -494,7 +495,4 @@ PetscErrorCode createProlongation( Mat Amat,
 
   *P_out = Prol;  /* out */
   PetscFunctionReturn(0);
-#else
-  SETERRQ(((PetscObject)Amat)->comm,PETSC_ERR_LIB,"GAMG requires TRIANGLE");
-#endif
 }

@@ -1,4 +1,4 @@
-#requirespackage  'PETSC_HAVE_GAMG'
+#requirespackage  'PETSC_HAVE_TRIANGLE'
 #requiresprecision double
 #requiresscalar    real
 
@@ -7,10 +7,10 @@ ALL: lib
 
 CFLAGS   = ${GAMG_INCLUDE}
 FFLAGS   =
-SOURCEC  = gamg.c createProlingation.c
+SOURCEC  = gamg.c createProlongation.c
 SOURCEF  =
 SOURCEH  = ../../../../../include/petscpcmg.h
-OBJSC    = gamg.o createProlingation.o
+OBJSC    = gamg.o createProlongation.o
 OBJSF    =
 LIBBASE  = libpetscksp
 MANSEC   = PC
