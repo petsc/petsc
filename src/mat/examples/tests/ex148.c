@@ -10,7 +10,7 @@ PetscInt main(PetscInt argc,char **args)
 {
   PetscErrorCode  ierr;
   PetscMPIInt     rank,size;
-  PetscInt        N0=3,N1=3,N=N0*N1;
+  PetscInt        N0=50,N1=50,N=N0*N1;
   PetscRandom     rdm;
   PetscScalar     a;
   PetscReal       enorm;
@@ -56,15 +56,23 @@ PetscInt main(PetscInt argc,char **args)
   fac = 1.0/(PetscReal)N;
   ierr = VecScale(output,fac);CHKERRQ(ierr);
 
-  VecAssemblyBegin(input);
-  VecAssemblyEnd(input);
-  VecAssemblyBegin(output);
-  VecAssemblyEnd(output);
+//  ierr = VecAssemblyBegin(input);CHKERRQ(ierr);
+//  ierr = VecAssemblyEnd(input);CHKERRQ(ierr);
+//  ierr = VecAssemblyBegin(output);CHKERRQ(ierr);
+//  ierr = VecAssemblyEnd(output);CHKERRQ(ierr);
 
-  VecView(input,PETSC_VIEWER_STDOUT_WORLD);
-  VecView(output,PETSC_VIEWER_STDOUT_WORLD);
+//  ierr = VecView(input,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+//  ierr = VecView(output,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-  
+  ierr = VecAXPY(output,-1.0,input);CHKERRQ(ierr);
+  ierr = VecNorm(output,NORM_1,&enorm);CHKERRQ(ierr);
+//  if (enorm > 1.e-14){
+    if (!rank)
+      ierr = PetscPrintf(PETSC_COMM_SELF,"  Error norm of |x - z| %e\n",enorm);CHKERRQ(ierr);
+//      }
+
+
+    
  
 // ierr = MatGetVecs(A,&z,PETSC_NULL);CHKERRQ(ierr);
 //  printf("Vector size from ex148 %d\n",vsize);
