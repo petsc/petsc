@@ -435,7 +435,7 @@ PetscErrorCode  MatGetVecs_FFTW(Mat A,Vec *fin,Vec *fout)
     PetscInt       ndim=fft->ndim,*dim=fft->dim,n=fft->n;
     fftw_complex   *data_fin,*data_fout;
     double         *data_finr ;
-    ptrdiff_t local_1_start;
+    ptrdiff_t      local_1_start,temp;
 //    PetscInt ctr;
 //    ptrdiff_t      ndim1,*pdim;
 //    ndim1=(ptrdiff_t) ndim;
@@ -538,7 +538,25 @@ PetscErrorCode  MatGetVecs_FFTW(Mat A,Vec *fin,Vec *fout)
     default:
       /* Get local size */
 #if !defined(PETSC_USE_COMPLEX)
-  SETERRQ(comm,PETSC_ERR_SUP,"Not done yet");
+      temp = (fftw->dim_fftw)[fftw->ndim_fftw-1];
+      printf("The value of temp is %ld\n",temp);
+      (fftw->dim_fftw)[fftw->ndim_fftw-1] = temp/2 + 1; 
+      alloc_local = fftw_mpi_local_size_transposed(fftw->ndim_fftw,fftw->dim_fftw,comm,&local_n0,&local_0_start,&local_n1,&local_1_start);
+      N1 = 2*N*(PetscInt)((fftw->dim_fftw)[fftw->ndim_fftw-1])/((PetscInt) temp);
+      (fftw->dim_fftw)[fftw->ndim_fftw-1] = temp;
+      if (fin) {
+        data_finr=(double *)fftw_malloc(sizeof(double)*alloc_local*2);
+        ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,(PetscInt)n,N1,(PetscScalar*)data_finr,fin);CHKERRQ(ierr);
+        ierr = VecGetSize(*fin,&vsize);CHKERRQ(ierr);
+        //printf("The code comes here with vector size %d\n",vsize);
+        (*fin)->ops->destroy   = VecDestroy_MPIFFTW;
+      }
+      if (fout) {
+        data_fout=(fftw_complex *)fftw_malloc(sizeof(fftw_complex)*alloc_local);
+        ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,n,N1,(PetscScalar*)data_fout,fout);CHKERRQ(ierr);
+        (*fout)->ops->destroy   = VecDestroy_MPIFFTW;
+      }
+ 
 #else
       alloc_local = fftw_mpi_local_size(fftw->ndim_fftw,fftw->dim_fftw,comm,&local_n0,&local_0_start);
 //      printf("The value of alloc local is %d from process %d\n",alloc_local,rank);
@@ -864,9 +882,9 @@ PetscErrorCode MatCreate_FFTW(Mat A)
   PetscInt       n=fft->n,N=fft->N,ndim=fft->ndim,*dim = fft->dim;
   const char     *p_flags[]={"FFTW_ESTIMATE","FFTW_MEASURE","FFTW_PATIENT","FFTW_EXHAUSTIVE"};
   PetscBool      flg;
-  PetscInt       p_flag,partial_dim=1,ctr;
+  PetscInt       p_flag,partial_dim=1,ctr,N1;
   PetscMPIInt    size,rank;
-  ptrdiff_t      *pdim;
+  ptrdiff_t      *pdim, temp;
   ptrdiff_t      local_n1,local_1_start;
 
   PetscFunctionBegin;
@@ -935,17 +953,28 @@ PetscErrorCode MatCreate_FFTW(Mat A)
 #endif 
       break;
     default:
+#if defined(PETSC_USE_COMPLEX)
       alloc_local = fftw_mpi_local_size(ndim,pdim,comm,&local_n0,&local_0_start);
 //      printf("The value of alloc local is %ld from process %d\n",alloc_local,rank);
 //      alloc_local = fftw_mpi_local_size(ndim,dim,comm,&local_n0,&local_0_start);
       n = (PetscInt)local_n0*partial_dim;
 //      printf("New partial dimension is %d %d %d",n,N,ndim);              
-      ierr = MatSetSizes(A,n,n,N,N);CHKERRQ(ierr);  
+      ierr = MatSetSizes(A,n,n,N,N);CHKERRQ(ierr);
+#else
+      temp = pdim[ndim-1];
+      pdim[ndim-1]= temp/2 + 1;
+      printf("For Multi dim case temp = %ld, pdim[ndim-1] = %ld\n",temp,pdim[ndim-1]); 
+      alloc_local = fftw_mpi_local_size_transposed(ndim,pdim,PETSC_COMM_WORLD,&local_n0,&local_0_start,&local_n1,&local_1_start);
+      n = 2*(PetscInt)local_n0*partial_dim*pdim[ndim-1]/temp; 
+      N1 = 2*N*(PetscInt)pdim[ndim-1]/((PetscInt) temp);
+      pdim[ndim-1] = temp;
+      printf("For Multi dim case n = %d, N1  = %d\n",n,N1); 
+      ierr = MatSetSizes(A,n,n,N1,N1);CHKERRQ(ierr);
+#endif  
       break;
     }
   }
   ierr = PetscObjectChangeTypeName((PetscObject)A,MATFFTW);CHKERRQ(ierr);
-
   ierr = PetscNewLog(A,Mat_FFTW,&fftw);CHKERRQ(ierr);
   fft->data = (void*)fftw;
   
