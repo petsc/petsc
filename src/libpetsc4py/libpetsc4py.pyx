@@ -14,6 +14,7 @@ cdef extern from "Python.h":
     void Py_INCREF(PyObject*)
     void Py_DECREF(PyObject*)
     void Py_CLEAR(PyObject*)
+    object PyModule_New(char*)
     bint PyModule_Check(object)
     object PyImport_Import(object)
 
@@ -43,6 +44,8 @@ cdef extern from * nogil:
         MPI_Comm comm
         char     *prefix
         PetscInt refct
+    ctypedef int PetscClassId
+    PetscErrorCode PetscObjectGetClassId(PetscObject,PetscClassId*)
     PetscErrorCode PetscObjectGetComm(PetscObject,MPI_Comm*)
     PetscErrorCode PetscObjectCompose(PetscObject,char[],PetscObject)
     PetscErrorCode PetscObjectQuery(PetscObject,char[],PetscObject*)
@@ -2409,5 +2412,73 @@ cdef public PetscErrorCode PetscPythonRegisterAll(char path[]) nogil except IERR
     CHKERR( SNESRegister( SNESPYTHON, path, b"SNESCreate_Python", SNESCreate_Python ) )
     CHKERR( TSRegister  ( TSPYTHON,   path, b"TSCreate_Python",   TSCreate_Python   ) )
     return FunctionEnd()
+
+# --------------------------------------------------------------------
+
+cdef dict module_cache = {}
+
+cdef object load_module(object path):
+    if path in module_cache:
+        return module_cache[path]
+    module = PyModule_New("__petsc__")
+    module.__file__ = path
+    module.__package__ = None
+    module_cache[path] = module
+    try:
+        source = open(path, 'rU')
+        try:
+            code = compile(source.read(), path, 'exec')
+        finally:
+            source.close()
+        namespace = module.__dict__
+        exec code in namespace
+    except:
+        del module_cache[path]
+        raise
+    return module
+
+cdef extern from *:
+    ctypedef char const_char "const char"
+
+cdef object parse_url(const_char *url_p):
+    assert url_p != NULL
+    cdef bytes b = <char*>url_p
+    if isinstance(b, str): url = b
+    else: url = b.decode()
+    path, name = url.rsplit(":", 1)
+    return (path, name)
+
+# --------------------------------------------------------------------
+
+cdef PetscErrorCode PetscPythonMonitorSet_Python(
+    PetscObject obj_p,
+    const_char *url_p,
+    ) \
+    except IERR with gil:
+    FunctionBegin(b"PetscPythonMonitorSet_Python")
+    #
+    assert obj_p != NULL
+    assert url_p != NULL
+    assert url_p[0] != 0
+    #
+    cdef PetscClassId classid = 0
+    CHKERR( PetscObjectGetClassId(obj_p,&classid) )
+    cdef type klass = PyPetscType_Lookup(classid)
+    cdef Object ob = klass()
+    ob.obj[0] = newRef(obj_p)
+    #
+    path, names = parse_url(url_p)
+    module = load_module(path)
+    for name in names.split(','):
+        monitor = getattr(module, name)
+        ob.setMonitor(monitor)
+    #
+    return FunctionEnd()
+
+cdef extern from * nogil:
+    cdef PetscErrorCode (*PetscPythonMonitorSet_C) \
+        (PetscObject, const_char[]) except IERR
+
+PetscPythonMonitorSet_C = PetscPythonMonitorSet_Python
 
 # --------------------------------------------------------------------

@@ -33,7 +33,7 @@ __fwk_cache__ = fwk_cache
 
 cdef extern from "Python.h":
     ctypedef struct PyObject
-    PyObject *PyModule_New(char *)
+    object PyModule_New(char *)
     void Py_XINCREF(PyObject *)
     void Py_XDECREF(PyObject *)
 
@@ -75,7 +75,7 @@ cdef int Fwk_LoadVTable(
     #
     cdef module = fwk_cache.get(path)
     if module is None:
-        module = <object>PyModule_New("__petsc__")
+        module = PyModule_New("__petsc__")
         module.__file__    = path
         module.__package__ = None
         fwk_cache[path] = module
@@ -106,19 +106,19 @@ cdef int Fwk_ClearVTable(
 
 # -----------------------------------------------------------------------------
 
-cdef extern from *:
+cdef extern from * nogil:
 
     ctypedef int (*PetscFwkPythonCallFunction)(
         PetscFwk, const_char[], void *
-        ) except PETSC_ERR_PYTHON with gil
+        ) except PETSC_ERR_PYTHON
 
     ctypedef int (*PetscFwkPythonLoadVTableFunction)(
         PetscFwk, const_char[], const_char[], void**
-        ) except PETSC_ERR_PYTHON with gil
+        ) except PETSC_ERR_PYTHON
 
     ctypedef int (*PetscFwkPythonClearVTableFunction)(
         PetscFwk, void**
-        )  except PETSC_ERR_PYTHON with gil
+        )  except PETSC_ERR_PYTHON
 
     cdef PetscFwkPythonCallFunction \
         PetscFwkPythonCall

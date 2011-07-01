@@ -5,6 +5,10 @@
 #include <private/snesimpl.h>
 #include <private/tsimpl.h>
 
+EXTERN_C_BEGIN
+extern PetscErrorCode (*PetscPythonMonitorSet_C)(PetscObject,const char*);
+EXTERN_C_END
+
 #undef __FUNCT__
 #define __FUNCT__ "KSPLogHistory"
 PETSC_STATIC_INLINE
