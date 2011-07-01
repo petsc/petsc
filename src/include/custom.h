@@ -253,29 +253,6 @@ PetscLogEventFindName(PetscLogEvent eventid,
 
 /* ---------------------------------------------------------------- */
 
-typedef PetscErrorCode (*PetscFwkPythonCallFunction)
-  (PetscFwk, const char *message, void *vtable);
-typedef PetscErrorCode (*PetscFwkPythonLoadVTableFunction)
-  (PetscFwk, const char *path, const char *name, void **vtable_p);
-typedef PetscErrorCode (*PetscFwkPythonClearVTableFunction)
-  (PetscFwk fwk, void **vtable_p);
-#if PETSC_VERSION_(3,1,0) || PETSC_VERSION_(3,0,0)
-static PetscFwkPythonCallFunction
-       PetscFwkPythonCall = PETSC_NULL;
-static PetscFwkPythonLoadVTableFunction
-       PetscFwkPythonLoadVTable = PETSC_NULL;
-static PetscFwkPythonClearVTableFunction
-       PetscFwkPythonClearVTable = PETSC_NULL;
-#else
-EXTERN_C_BEGIN
-extern PetscFwkPythonCallFunction        PetscFwkPythonCall;
-extern PetscFwkPythonLoadVTableFunction  PetscFwkPythonLoadVTable;
-extern PetscFwkPythonClearVTableFunction PetscFwkPythonClearVTable;
-EXTERN_C_END
-#endif
-
-/* ---------------------------------------------------------------- */
-
 #undef __FUNCT__
 #define __FUNCT__ "VecGetArrayC"
 PETSC_STATIC_INLINE PetscErrorCode

@@ -2440,11 +2440,18 @@ cdef object load_module(object path):
 cdef extern from *:
     ctypedef char const_char "const char"
 
+cdef inline object bytes2str(const_char p[]):
+     if p == NULL: 
+         return None
+     cdef bytes s = <char*>p
+     if isinstance(s, str):
+         return s
+     else:
+         return s.decode()
+
 cdef object parse_url(const_char *url_p):
     assert url_p != NULL
-    cdef bytes b = <char*>url_p
-    if isinstance(b, str): url = b
-    else: url = b.decode()
+    cdef url = bytes2str(url_p)
     path, name = url.rsplit(":", 1)
     return (path, name)
 
@@ -2456,7 +2463,6 @@ cdef PetscErrorCode PetscPythonMonitorSet_Python(
     ) \
     except IERR with gil:
     FunctionBegin(b"PetscPythonMonitorSet_Python")
-    #
     assert obj_p != NULL
     assert url_p != NULL
     assert url_p[0] != 0
@@ -2476,9 +2482,92 @@ cdef PetscErrorCode PetscPythonMonitorSet_Python(
     return FunctionEnd()
 
 cdef extern from * nogil:
-    cdef PetscErrorCode (*PetscPythonMonitorSet_C) \
+    PetscErrorCode (*PetscPythonMonitorSet_C) \
         (PetscObject, const_char[]) except IERR
 
 PetscPythonMonitorSet_C = PetscPythonMonitorSet_Python
 
 # --------------------------------------------------------------------
+
+cdef extern from * nogil:
+    struct _p_PetscFwk
+    ctypedef _p_PetscFwk *PetscFwk
+
+cdef type Fwk
+from petsc4py.PETSc import Fwk
+
+cdef inline Object Fwk_(PetscFwk p):
+    cdef Object ob = Fwk.__new__(Fwk)
+    ob.obj[0] = newRef(p)
+    return ob
+
+cdef PetscErrorCode PetscFwkPython_Call(
+    PetscFwk   component_p,
+    const_char *message_p,
+    void       *vtable_p,
+    ) \
+    except IERR with gil:
+    FunctionBegin(b"PetscFwkPython_Call")
+    assert component_p != NULL
+    assert message_p   != NULL
+    assert vtable_p    != NULL
+    #
+    cdef component = Fwk_(component_p)
+    cdef vtable = <object> vtable_p
+    cdef message = bytes2str(message_p)
+    #
+    cdef function = None
+    try:
+        function = getattr(vtable, message)
+    except AttributeError:
+        vtable(component, message)
+    else:
+        function(component)
+    return FunctionEnd()
+
+cdef PetscErrorCode PetscFwkPython_LoadVTable(
+    PetscFwk   component_p,
+    const_char *path_p, 
+    const_char *name_p,
+    void       **vtable_p,
+    ) \
+    except IERR with gil:
+    FunctionBegin(b"PetscFwkPython_LoadVTable")
+    assert component_p != NULL
+    assert path_p      != NULL
+    assert name_p      != NULL
+    assert vtable_p    != NULL
+    #
+    cdef path = bytes2str(path_p)
+    cdef name = bytes2str(name_p)
+    cdef module = load_module(path)
+    cdef vtable = getattr(module, name)
+    vtable_p[0] = <void*>vtable
+    Py_INCREF(<PyObject*>vtable_p[0])
+    return FunctionEnd()
+
+cdef PetscErrorCode PetscFwkPython_ClearVTable(
+    PetscFwk component_p, 
+    void     **vtable_p,
+    ) \
+    except IERR with gil:
+    FunctionBegin(b"PetscFwkPython_ClearVTable")
+    assert component_p != NULL
+    assert vtable_p    != NULL
+    Py_DECREF(<PyObject*>vtable_p[0])
+    vtable_p[0] = NULL
+    return FunctionEnd()
+
+cdef extern from * nogil:
+    PetscErrorCode (*PetscFwkPythonCall_C) \
+        (PetscFwk,const_char[],void *) except IERR
+    PetscErrorCode (*PetscFwkPythonLoadVTable_C) \
+        (PetscFwk,const_char[],const_char[],void**) except IERR
+    PetscErrorCode (*PetscFwkPythonClearVTable_C) \
+        (PetscFwk,void**) except IERR
+
+PetscFwkPythonCall_C        = PetscFwkPython_Call
+PetscFwkPythonLoadVTable_C  = PetscFwkPython_LoadVTable
+PetscFwkPythonClearVTable_C = PetscFwkPython_ClearVTable
+
+# -----------------------------------------------------------------------------
