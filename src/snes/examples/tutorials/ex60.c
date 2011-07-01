@@ -489,6 +489,7 @@ PetscErrorCode RedundancyCheck(SNES snes,IS IS_act,IS* IS_redact,void* ctx)
   AppCtx         *user=(AppCtx*)ctx;
   
   PetscFunctionBegin;
+  *IS_redact = 0;
 
   //X = snes->vec_sol;
   //ierr = VecView(snes->vec_sol,	PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
@@ -558,7 +559,7 @@ PetscErrorCode RedundancyCheck(SNES snes,IS IS_act,IS* IS_redact,void* ctx)
     ierr = ISCreateGeneral(PETSC_COMM_WORLD,n_redact,idx_redact,PETSC_OWN_POINTER,IS_redact);CHKERRQ(ierr);
   }
 
-  ierr = PetscFree(idx_redact);CHKERRQ(ierr);
+  //  ierr = PetscFree(idx_redact);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #undef __FUNCT__
