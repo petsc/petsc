@@ -404,10 +404,24 @@ runex50:
 	   else echo "Possible problem with ex19, diffs above"; fi; \
 	   ${RM} -f ex19_1.tmp
 runex50_3: #test pc_redundant
-	-@${MPIEXEC} -n 4 ./ex19 -da_refine 3 -snes_monitor_short -pc_type redundant -mat_type mpiaij -redundant_ksp_type preonly -redundant_pc_factor_mat_solver_package mumps -pc_redundant_number 2 > ex19_3.tmp 2>&1; \
+	-@${MPIEXEC} -n 4 ./ex50 -da_refine 3 -snes_monitor_short -pc_type redundant -mat_type mpiaij -redundant_ksp_type preonly -redundant_pc_factor_mat_solver_package mumps -pc_redundant_number 2 > ex19_3.tmp 2>&1; \
 	   if (${DIFF} output/ex19_3.out ex19_3.tmp) then true; \
-	   else echo "Possible problem with ex19_3, diffs above"; fi; \
+	   else echo "Possible problem with ex50_3, diffs above"; fi; \
 	   ${RM} -f ex19_3.tmp
+runex50_4: #test pc_redundant
+	-@${MPIEXEC} -n 12 ./ex50 -da_refine 3 -snes_monitor_short -pc_type redundant -mat_type mpiaij -redundant_ksp_type preonly -redundant_pc_factor_mat_solver_package mumps -pc_redundant_number 5 > ex19_4.tmp 2>&1; \
+	   if (${DIFF} output/ex19_3.out ex19_4.tmp) then true; \
+	   else echo "Possible problem with ex50_4, diffs above"; fi; \
+	   ${RM} -f ex19_4.tmp
+runex50_5: #test different scatters
+	-@for A in " " -vecscatter_rsend -vecscatter_ssend -vecscatter_alltoall "-vecscatter_alltoall -vecscatter_nopack" -vecscatter_window; do \
+           for B in " " -vecscatter_merge ; do \
+             ${MPIEXEC} -n 4 ./ex50 -da_refine 3 -ksp_type fgmres -pc_type mg -pc_mg_type full -snes_monitor_short $$A $$B > ex19_5.tmp 2>&1; \
+	     if (${DIFF} output/ex19_5.out ex19_5.tmp) then true; \
+	     else echo "Possible problem with ex50_5 " $$A $$B " diffs above"; fi; \
+           done;\
+         done;\
+	 ${RM} -f ex19_5.tmp
 runex19:
 	-@${MPIEXEC} -n 2 ./ex19 -dmmg_nlevels 4 -snes_monitor_short  > ex19_1.tmp 2>&1; \
 	   if (${DIFF} output/ex19_1.out ex19_1.tmp) then true; \
