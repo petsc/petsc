@@ -37,8 +37,7 @@ typedef struct {
   Vec                      xu;            /* upper bound on variables */
 
   PetscScalar              norm_d;         /* two norm of the descent direction */
-  IS                       IS_inact_prev; /* Inctive set IS for the previous iteration 
-                                          or previous snes solve */
+  IS                       IS_inact_prev; /* Inctive set IS for the previous iteration or previous snes solve */
 
   /* Tolerance to check whether the constraint is satisfied */
   PetscReal                const_tol;
