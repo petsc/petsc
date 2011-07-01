@@ -1587,7 +1587,7 @@ PetscErrorCode  SNESSetUp(SNES snes)
     ierr = DMGetMatrix(snes->dm,MATAIJ,&J);CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,J,J,SNESDMComputeJacobian,PETSC_NULL);CHKERRQ(ierr);
     ierr = MatDestroy(&J);CHKERRQ(ierr);
-  } else if (snes->ops->computejacobian == MatMFFDComputeJacobian) {
+  } else if (!snes->jacobian && snes->ops->computejacobian == MatMFFDComputeJacobian) {
     Mat J;
     ierr = MatCreateSNESMF(snes,&J);CHKERRQ(ierr);
     ierr = MatMFFDSetOptionsPrefix(J,((PetscObject)snes)->prefix);CHKERRQ(ierr);
