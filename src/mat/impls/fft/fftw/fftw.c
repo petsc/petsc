@@ -24,8 +24,6 @@ extern PetscErrorCode MatMultTranspose_MPIFFTW(Mat,Vec,Vec);
 extern PetscErrorCode MatDestroy_FFTW(Mat);
 extern PetscErrorCode VecDestroy_MPIFFTW(Vec);
 extern PetscErrorCode MatGetVecs_FFTW(Mat,Vec*,Vec*);
-extern PetscErrorCode InputTransformFFT_FFTW(Mat,Vec,Vec);
-extern PetscErrorCode InputTransformFFT(Mat,Vec,Vec);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMult_SeqFFTW"
@@ -573,7 +571,6 @@ PetscErrorCode  MatGetVecs_FFTW(Mat A,Vec *fin,Vec *fout)
   PetscFunctionReturn(0);
 }
 
-//EXTERN_C_BEGIN - Do we need this?
 #undef __FUNCT__  
 #define __FUNCT__ "InputTransformFFT"
 PetscErrorCode InputTransformFFT(Mat A,Vec x,Vec y)
@@ -583,7 +580,7 @@ PetscErrorCode InputTransformFFT(Mat A,Vec x,Vec y)
   ierr = PetscTryMethod(A,"InputTransformFFT_C",(Mat,Vec,Vec),(A,x,y));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-//EXTERN_C_END - Do we need this?
+
 /*
       InputTransformFFT_FFTW - Copies the user data to the vector that goes into FFTW block
   Input A, x, y
@@ -704,8 +701,6 @@ PetscErrorCode InputTransformFFT_FFTW(Mat A,Vec x,Vec y)
 }
 EXTERN_C_END
 
-
-//EXTERN_C_BEGIN - Do we need this?
 #undef __FUNCT__  
 #define __FUNCT__ "OutputTransformFFT"
 PetscErrorCode OutputTransformFFT(Mat A,Vec x,Vec y)
@@ -715,7 +710,7 @@ PetscErrorCode OutputTransformFFT(Mat A,Vec x,Vec y)
   ierr = PetscTryMethod(A,"OutputTransformFFT_C",(Mat,Vec,Vec),(A,x,y));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-//EXTERN_C_END - Do we need this?
+
 /*
       OutputTransformFFT_FFTW - Copies the FFTW output to the PETSc vector that user can use 
   Input A, x, y
@@ -834,13 +829,9 @@ PetscErrorCode OutputTransformFFT_FFTW(Mat A,Vec x,Vec y)
   SETERRQ(comm,PETSC_ERR_SUP,"Not Done Yet");
   break;
  }
-
  return 0;
 }
 EXTERN_C_END
-
-
-
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  

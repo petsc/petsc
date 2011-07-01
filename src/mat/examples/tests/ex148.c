@@ -4,8 +4,6 @@ static char help[]="This program illustrates the use of PETSc-fftw interface for
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
-extern PetscErrorCode InputTransformFFT(Mat,Vec,Vec);
-extern PetscErrorCode OutputTransformFFT(Mat,Vec,Vec);
 PetscInt main(PetscInt argc,char **args)
 {
   PetscErrorCode  ierr;
@@ -55,11 +53,6 @@ PetscInt main(PetscInt argc,char **args)
 
   fac = 1.0/(PetscReal)N;
   ierr = VecScale(output,fac);CHKERRQ(ierr);
-
-//  ierr = VecAssemblyBegin(input);CHKERRQ(ierr);
-//  ierr = VecAssemblyEnd(input);CHKERRQ(ierr);
-//  ierr = VecAssemblyBegin(output);CHKERRQ(ierr);
-//  ierr = VecAssemblyEnd(output);CHKERRQ(ierr);
 
 //  ierr = VecView(input,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 //  ierr = VecView(output,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
