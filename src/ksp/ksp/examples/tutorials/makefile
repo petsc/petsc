@@ -255,6 +255,11 @@ ex52: ex52.o chkopts
 ex53: ex53.o chkopts
 	-${CLINKER} -o ex53 ex53.o ${PETSC_KSP_LIB}
 	${RM} ex53.o
+
+ex54: ex54.o chkopts
+	-${CLINKER} -o ex54 ex54.o ${PETSC_KSP_LIB}
+	${RM} ex54.o
+
 #----------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 1 ./ex1 -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex1_1.tmp 2>&1;	  \
@@ -972,13 +977,18 @@ runex52_superlu:
 	   ${RM} -f ex52.tmp
 
 runex53:
-	-@${MPIEXEC} -n 1 ./ex53 > ex53.tmp 2>&1;	  \
-	   ${DIFF} output/ex53.out ex53.tmp || echo "Possible problem with ex53, diffs above"; \
-	   ${RM} -f ex53.tmp
+	-@${MPIEXEC} -n 1 ./ex53 > ex53.tmp 2>&1;         \
+        ${DIFF} output/ex53.out ex53.tmp || echo "Possible problem with ex53, diffs above"; \
+        ${RM} -f ex53.tmp
+
 runex53_2:
 	-@${MPIEXEC} -n 2 ./ex53 > ex53.tmp 2>&1;	  \
 	   ${DIFF} output/ex53.out ex53.tmp || echo "Possible problem with ex53_2, diffs above"; \
 	   ${RM} -f ex53.tmp
+
+runex54:
+	-@${MPIEXEC} -n 1 ./ex54 -m 112 -alpha 1.e-3 -ksp_monitor -ksp_rtol 1.e-12
+
 
 TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 \
                                  runex2_4 runex2_bjacobi runex2_bjacobi_2 runex2_bjacobi_3 runex2_specest_1 runex2_specest_2 ex2.rm \

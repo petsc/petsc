@@ -95,6 +95,9 @@ PetscErrorCode  TSSetFromOptions(TS ts)
       ierr = PetscViewerASCIIOpen(((PetscObject)ts)->comm,monfilename,&monviewer);CHKERRQ(ierr);
       ierr = TSMonitorSet(ts,TSMonitorDefault,monviewer,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
     }
+    ierr = PetscOptionsString("-ts_monitor_python","Use Python function","TSMonitorSet",0,monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+    if (flg) {ierr = PetscPythonMonitorSet((PetscObject)ts,monfilename);CHKERRQ(ierr);}
+
     opt  = PETSC_FALSE;
     ierr = PetscOptionsBool("-ts_monitor_draw","Monitor timestep size graphically","TSMonitorLG",opt,&opt,PETSC_NULL);CHKERRQ(ierr);
     if (opt) {

@@ -99,7 +99,7 @@ PetscInt main(PetscInt argc,char **args)
     /* Use PETSc-FFTW interface                  */
     /*-------------------------------------------*/
     PetscInt i,*dim,k,DIM;
-    Mtat      A;
+    Mat      A;
 
     N=1;
     for (i=1; i<6; i++){

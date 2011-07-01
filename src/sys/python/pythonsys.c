@@ -281,3 +281,35 @@ PetscErrorCode  PetscPythonPrintError(void)
 }
 
 /* ---------------------------------------------------------------- */
+
+EXTERN_C_BEGIN
+extern PetscErrorCode (*PetscPythonMonitorSet_C)(PetscObject,const char[]);
+PetscErrorCode (*PetscPythonMonitorSet_C)(PetscObject,const char[]) = PETSC_NULL;
+EXTERN_C_END
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscPythonMonitorSet"
+/*@C
+  PetscPythonMonitorSet - Set Python monitor
+
+  Level: developer
+
+.keywords: Python
+
+@*/
+PetscErrorCode PetscPythonMonitorSet(PetscObject obj, const char url[])
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeader(obj,1);
+  PetscValidCharPointer(url,2);
+  if(PetscPythonMonitorSet_C == PETSC_NULL) {
+    ierr = PetscPythonInitialize(PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+    if(PetscPythonMonitorSet_C == PETSC_NULL)
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Couldn't initialize Python support for monitors");
+  }
+  ierr = PetscPythonMonitorSet_C(obj,url);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/* ---------------------------------------------------------------- */
