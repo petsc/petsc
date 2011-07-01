@@ -1100,6 +1100,7 @@ PetscErrorCode SNESSolveVI_RS(SNES snes)
   for (i=0; i<maxits; i++) {
 
     IS         IS_act,IS_inact; /* _act -> active set _inact -> inactive set */
+    IS         IS_redact; /* redundant active set */
     VecScatter scat_act,scat_inact;
     PetscInt   nis_act,nis_inact;
     Vec        Y_act,Y_inact,F_inact;
@@ -1114,11 +1115,24 @@ PetscErrorCode SNESSolveVI_RS(SNES snes)
     ierr = SNESComputeJacobian(snes,X,&snes->jacobian,&snes->jacobian_pre,&flg);CHKERRQ(ierr);
 
     /* Create active and inactive index sets */
+    
+    /*original
     ierr = SNESVICreateIndexSets_RS(snes,X,F,&IS_act,&IS_inact);CHKERRQ(ierr);
-
+     */
+    ierr = SNESVIGetActiveSetIS(snes,X,F,&IS_act);CHKERRQ(ierr);
+    
+    if (vi->checkredundancy) {
+      (*vi->checkredundancy)(snes,IS_act,&IS_redact,vi->ctxP);CHKERRQ(ierr);
+      ierr = ISComplement(IS_redact,X->map->rstart,X->map->rend,&IS_inact);CHKERRQ(ierr);
+      ierr = ISDestroy(&IS_redact);CHKERRQ(ierr);
+    } else {
+      ierr = ISComplement(IS_act,X->map->rstart,X->map->rend,&IS_inact);CHKERRQ(ierr);
+    }
+    
 
     /* Create inactive set submatrix */
     ierr = MatGetSubMatrix(snes->jacobian,IS_inact,IS_inact,MAT_INITIAL_MATRIX,&jac_inact_inact);CHKERRQ(ierr);
+    
     ierr = MatFindNonzeroRows(jac_inact_inact,&keptrows);CHKERRQ(ierr);
     if (keptrows) {
       PetscInt       cnt,*nrows,k;
