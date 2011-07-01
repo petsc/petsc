@@ -78,8 +78,8 @@
       Mat              A
       PetscBool        flg,monitor
       PetscErrorCode ierr
-      PetscInt  time_steps_max,steps,i1
-      PetscReal dt,ftime,time_total_max
+      PetscInt  time_steps_max,i1,steps
+      PetscReal dt,time_total_max,ftime,norm
 
 !  Note: Any user-defined Fortran routines (such as RHSFunction)
 !  MUST be declared as external.
@@ -178,7 +178,6 @@
 
       dt = h/two_d0
       call TSSetInitialTimeStep(ts,0.d0,dt,ierr)
-      call TSSetSolution(ts,u,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Customize timestepping solver:  
@@ -205,7 +204,14 @@
 
 !  Run the timestepping solver
 
-      call TSStep(ts,steps,ftime,ierr)
+      call TSSolve(ts,u,ierr)
+      call TSGetTimeStepNumber(ts,steps,ierr)
+      call TSGetTime(ts,ftime,ierr)
+      call VecNorm(u,NORM_2,norm,ierr)
+
+      write(6,100) steps,ftime,norm
+ 100  format('Number of pseudo time-steps ',i5,' final time ',1pe8.2,   &
+     & ' solution norm ',1pe8.2)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Free work space.  All PETSc objects should be destroyed when they
