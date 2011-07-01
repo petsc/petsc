@@ -10,8 +10,8 @@ cdef class Scatter(Object):
         self.obj = <PetscObject*> &self.sct
         self.sct = NULL
 
-    def __call__(self, x, y, im, sm):
-        self.scatter(x, y, im, sm)
+    def __call__(self, x, y, addv=None, mode=None):
+        self.scatter(x, y, addv, mode)
 
     #
 
@@ -30,8 +30,8 @@ cdef class Scatter(Object):
         if is_from is not None: cisfrom = is_from.iset
         if is_to   is not None: cisto   = is_to.iset
         cdef PetscScatter newsct = NULL
-        CHKERR( VecScatterCreate(vec_from.vec, cisfrom, vec_to.vec,
-                                 cisto,  &newsct) )
+        CHKERR( VecScatterCreate(
+                vec_from.vec, cisfrom, vec_to.vec, cisto, &newsct) )
         PetscCLEAR(self.obj); self.sct = newsct
         return self
 
