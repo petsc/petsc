@@ -34,7 +34,6 @@ PetscErrorCode SetUpMatrices(AppCtx*);
 PetscErrorCode UpdateMatrices(AppCtx*);
 PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
 PetscErrorCode FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
-PetscErrorCode RedundancyCheck(SNES,IS,IS*,void*);
 PetscErrorCode SetInitialGuess(Vec,AppCtx*);
 PetscErrorCode Update_q(AppCtx*);
 PetscErrorCode Update_u(Vec,AppCtx*);
@@ -52,8 +51,10 @@ int main(int argc, char **argv)
   Vec            xl,xu; /* Upper and lower bounds on variables */
   Mat            J;
   PetscScalar    t=0.0;
-  PetscViewer    view_out, view_p, view_q, view_psi, view_mat;
+  PetscViewer    view_out, view_q, view_psi, view_mat;
   PetscViewer    view_rand;
+  IS             inactiveconstraints;
+  PetscInt       ninactiveconstraints,N;
 
   PetscInitialize(&argc,&argv, (char*)0, help);
   
@@ -61,6 +62,7 @@ int main(int argc, char **argv)
   ierr = GetParams(&user);CHKERRQ(ierr);
   /* Create a 1D DA with dof = 5; the whole thing */
   ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX, -3,-3,PETSC_DECIDE,PETSC_DECIDE, 5, 1,PETSC_NULL,PETSC_NULL,&user.da1);CHKERRQ(ierr);
+ 
   /* Create a 1D DA with dof = 1; for individual componentes */
   ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX, -3,-3,PETSC_DECIDE,PETSC_DECIDE, 1, 1,PETSC_NULL,PETSC_NULL,&user.da2);CHKERRQ(ierr);
 
@@ -74,6 +76,7 @@ int main(int argc, char **argv)
   ierr = DMDASetUniformCoordinates(user.da2,user.xmin,user.xmax,user.ymin,user.ymax,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   /* Get global vector x from DM (da1) and duplicate vectors r,xl,xu */
   ierr = DMCreateGlobalVector(user.da1,&x);CHKERRQ(ierr);
+  ierr = VecGetSize(x,&N);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&r);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&xl);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&xu);CHKERRQ(ierr);
@@ -118,7 +121,7 @@ int main(int argc, char **argv)
  
 
    ierr = SNESSetType(snes,SNESVI);CHKERRQ(ierr);
-  ierr = SNESVISetRedundancyCheck(snes,RedundancyCheck,(void*)&user);CHKERRQ(ierr);
+
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
   ierr = SetVariableBounds(user.da1,xl,xu);CHKERRQ(ierr);
   ierr = SNESVISetVariableBounds(snes,xl,xu);CHKERRQ(ierr);
@@ -147,6 +150,10 @@ int main(int argc, char **argv)
     ierr = VecView(user.q,view_q);CHKERRQ(ierr);
     ierr = MatView(user.M,view_mat);CHKERRQ(ierr);
     ierr = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(ierr);
+    ierr = SNESVIGetInactiveSet(snes,&inactiveconstraints);CHKERRQ(ierr);
+    ierr = ISGetSize(inactiveconstraints,&ninactiveconstraints);CHKERRQ(ierr);
+    /* if (ninactiveconstraints < .90*N) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP,"To many active constraints, model has become non-physical"); */
+
     ierr = VecView(x,view_out);CHKERRQ(ierr);
     ierr = VecView(x,PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD));CHKERRQ(ierr);
     PetscInt its;
@@ -479,90 +486,6 @@ PetscErrorCode SetRandomVectors(AppCtx* user)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "RedundancyCheck"
-PetscErrorCode RedundancyCheck(SNES snes,IS IS_act,IS* IS_redact,void* ctx)
-{
-  PetscErrorCode ierr;
-  PetscInt       *idx_redact,i,n,n_redact,n_act,n_act1=0,n_act3=0,n_act4=0,i1=0,i2=0;
-  const PetscInt *is_act;
-  Vec            X;
-  AppCtx         *user=(AppCtx*)ctx;
-  
-  PetscFunctionBegin;
-  *IS_redact = 0;
-
-  //X = snes->vec_sol;
-  //ierr = VecView(snes->vec_sol,	PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  //ierr = VecGetLocalSize(snes->vec_sol,&n);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(user->q,&n);CHKERRQ(ierr);
-  ierr = ISGetLocalSize(IS_act,&n_act);CHKERRQ(ierr);
-  ierr = ISGetIndices(IS_act,&is_act);CHKERRQ(ierr);
-  for (i=0; i<n_act ; i++) {
-    if (is_act[i]%5==1) n_act1++;
-    if (is_act[i]%5==3) n_act3++;
-    if (is_act[i]%5==4) n_act4++;
-  }
-
-  if (n_act1 == n/5 && n_act3 == n/5){
-    n_redact = 4*n/5+n_act4;
-    ierr = PetscMalloc(n_redact*sizeof(PetscInt),&idx_redact);CHKERRQ(ierr);
-    for (i=0;i<n;i++) {
-      idx_redact[i1++]=i/5;
-      idx_redact[i1++]=i/5+1;
-      idx_redact[i1++]=i/5+2;
-      idx_redact[i1++]=i/5+3;
-      i2=i2+2;
-      if (is_act[i2]%5==4) {
-        idx_redact[i1++]=is_act[i2++];
-      }
-    }
-   
-    //ierr = ISCreateGeneral(((PetscObject)snes)->comm,n_redact,idx_redact,PETSC_OWN_POINTER,IS_redact);CHKERRQ(ierr);
-    ierr = ISCreateGeneral(PETSC_COMM_WORLD,n_redact,idx_redact,PETSC_OWN_POINTER,IS_redact);CHKERRQ(ierr);
-  }
- 
-  if (n_act1 == n/5 && n_act3 != n/5){
-    n_redact = 2*n/5+n_act3+n_act4;
-    ierr = PetscMalloc(n_redact*sizeof(PetscInt),&idx_redact);CHKERRQ(ierr);
-    for (i=0;i<n;i++) {
-      idx_redact[i1++]=i/5;
-      idx_redact[i1++]=i/5+1;
-      i2=i2+1;
-      if (is_act[i2]%5==3) {
-        idx_redact[i1++]=is_act[i2++];
-      }
-      if (is_act[i2]%5==4) {
-        idx_redact[i1++]=is_act[i2++];
-      }
-    }
-    
-    //ierr = ISCreateGeneral(((PetscObject)snes)->comm,n_redact,idx_redact,PETSC_OWN_POINTER,IS_redact);CHKERRQ(ierr);
-    ierr = ISCreateGeneral(PETSC_COMM_WORLD,n_redact,idx_redact,PETSC_OWN_POINTER,IS_redact);CHKERRQ(ierr);
-  }
-
-  if (n_act1 != n/5 && n_act3 == n/5){
-    n_redact = 2*n/5+n_act1+n_act4;
-    ierr = PetscMalloc(n_redact*sizeof(PetscInt),&idx_redact);CHKERRQ(ierr);
-    for (i=0;i<n;i++){
-      if (is_act[i2]%5==1) {
-        idx_redact[i1++]=is_act[i2++];
-      }
-      idx_redact[i1++]=i/5+2;
-      idx_redact[i1++]=i/5+3;
-      i2=i2+1;
-      if (is_act[i2]%5==4) {
-        idx_redact[i1++]=is_act[i2++];
-      }
-    }
-
-    //ierr = ISCreateGeneral(((PetscObject)snes)->comm,n_redact,idx_redact,PETSC_OWN_POINTER,IS_redact);CHKERRQ(ierr);
-    ierr = ISCreateGeneral(PETSC_COMM_WORLD,n_redact,idx_redact,PETSC_OWN_POINTER,IS_redact);CHKERRQ(ierr);
-  }
-
-  //  ierr = PetscFree(idx_redact);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-#undef __FUNCT__
 #define __FUNCT__ "FormFunction"
 PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void* ctx)
 {
@@ -644,7 +567,7 @@ PetscErrorCode GetParams(AppCtx* user)
   user->Rsurf = 10.0; user->Rbulk = 1.0;
   user->L = 10.0; user->P_casc = 0.05;
   user->T = 1.0e-2;    user->dt = 1.0e-4;
-  user->VG = 100000.0;
+  user->VG = 100.0;
 
   ierr = PetscOptionsGetReal(PETSC_NULL,"-xmin",&user->xmin,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(PETSC_NULL,"-xmax",&user->xmax,&flg);CHKERRQ(ierr);
@@ -763,8 +686,8 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
        
       //cv_sum = (cv_p[idx[0]] + cv_p[idx[1]] + cv_p[idx[2]])*user->Dv/(3.0*user->kBT);
       //ci_sum = (ci_p[idx[0]] + ci_p[idx[1]] + ci_p[idx[2]])*user->Di/(3.0*user->kBT);
-      cv_sum = .00069*user->Dv/user->kBT;
-      ci_sum = .00069*user->Di/user->kBT;
+      cv_sum = .0000069*user->Dv/user->kBT;
+      ci_sum = .0000069*user->Di/user->kBT;
       
       if (k%2 == 0)  {
         
@@ -1014,8 +937,8 @@ PetscErrorCode UpdateMatrices(AppCtx* user)
                       
         // cv_sum = (1.0e-3+cv_p[idx[0]] + cv_p[idx[1]] + cv_p[idx[2]])*user->Dv/(3.0*user->kBT);
         //ci_sum = (1.0e-3+ci_p[idx[0]] + ci_p[idx[1]] + ci_p[idx[2]])*user->Di/(3.0*user->kBT);
-        cv_sum = .00069*user->Dv/(user->kBT);
-        ci_sum = .00069*user->Di/user->kBT;
+        cv_sum = .0000069*user->Dv/(user->kBT);
+        ci_sum = .0000069*user->Di/user->kBT;
 
             if (k%2 == 0) /* odd triangle */ {
                 
