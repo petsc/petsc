@@ -440,6 +440,11 @@ PetscErrorCode  KSPSetFromOptions(KSP ksp)
       ierr = KSPMonitorSet(ksp,KSPMonitorDefaultShort,monviewer,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
     }
     /*
+     Calls Python function
+    */
+    ierr = PetscOptionsString("-ksp_monitor_python","Use Python function","KSPMonitorSet",0,monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+    if (flg) {ierr = PetscPythonMonitorSet((PetscObject)ksp,monfilename);CHKERRQ(ierr);}
+    /*
       Graphically plots preconditioned residual norm
     */
     flg  = PETSC_FALSE;
