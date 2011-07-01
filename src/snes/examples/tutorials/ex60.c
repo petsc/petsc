@@ -12,6 +12,20 @@ Runtime options include:\n\
   ./ex55 -ksp_type fgmres -pc_type fieldsplit -pc_fieldsplit_detect_saddle_point -pc_fieldsplit_type schur -pc_fieldsplit_schur_precondition self -fieldsplit_1_ksp_type fgmres -fieldsplit_1_pc_type lsc -snes_vi_monitor -ksp_monitor_true_residual -ksp_monitor_true_residual -fieldsplit_ksp_monitor 
  */
 
+/*
+   Possible additions to the code. At each iteration count the number of solution elements that are at the upper bound and stop the program if large
+
+   Add command-line option for constant or degenerate mobility 
+   Add command-line option for graphics at each time step
+
+   Check time-step business; what should it be? How to check that it is good? 
+   Make random right hand side forcing function proportional to time step so smaller time steps don't mean more radiation
+   How does the multigrid linear solver work now?
+   What happens when running with degenerate mobility
+
+   
+ */
+
 #include "petscsnes.h"
 #include "petscdmda.h"
 
@@ -137,24 +151,24 @@ int main(int argc, char **argv)
     ierr = SNESSetJacobian(snes,J,J,FormJacobian,(void*)&user);CHKERRQ(ierr);
 
     ierr = SetRandomVectors(&user);CHKERRQ(ierr);
-    ierr = VecView(user.Pv,view_rand);CHKERRQ(ierr);
+    /*    ierr = VecView(user.Pv,view_rand);CHKERRQ(ierr);
     ierr = VecView(user.Pi,view_rand);CHKERRQ(ierr);
-    ierr = VecView(user.Piv,view_rand);CHKERRQ(ierr);
+     ierr = VecView(user.Piv,view_rand);CHKERRQ(ierr);*/
 
     ierr = DPsi(&user);CHKERRQ(ierr);
-    ierr = VecView(user.DPsiv,view_psi);CHKERRQ(ierr);
+    /*    ierr = VecView(user.DPsiv,view_psi);CHKERRQ(ierr);
     ierr = VecView(user.DPsii,view_psi);CHKERRQ(ierr);
-    ierr = VecView(user.DPsieta,view_psi);CHKERRQ(ierr);
+     ierr = VecView(user.DPsieta,view_psi);CHKERRQ(ierr);*/
 
     ierr = Update_q(&user);CHKERRQ(ierr);
-    ierr = VecView(user.q,view_q);CHKERRQ(ierr);
-    ierr = MatView(user.M,view_mat);CHKERRQ(ierr);
+    /*    ierr = VecView(user.q,view_q);CHKERRQ(ierr);
+     ierr = MatView(user.M,view_mat);CHKERRQ(ierr);*/
     ierr = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(ierr);
     ierr = SNESVIGetInactiveSet(snes,&inactiveconstraints);CHKERRQ(ierr);
     ierr = ISGetSize(inactiveconstraints,&ninactiveconstraints);CHKERRQ(ierr);
     /* if (ninactiveconstraints < .90*N) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP,"To many active constraints, model has become non-physical"); */
 
-    ierr = VecView(x,view_out);CHKERRQ(ierr);
+    /*    ierr = VecView(x,view_out);CHKERRQ(ierr);*/
     ierr = VecView(x,PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD));CHKERRQ(ierr);
     PetscInt its;
     ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
@@ -600,6 +614,9 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
    
   PetscFunctionBegin;
  
+  /*  ierr = MatSetOption(M,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
+   ierr = MatSetOption(M_0,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);*/
+
   /* Create the mass matrix M_0 */
   ierr = VecGetArray(user->cv,&cv_p);CHKERRQ(ierr);
   ierr = VecGetArray(user->ci,&ci_p);CHKERRQ(ierr);
