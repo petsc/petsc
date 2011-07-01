@@ -54,13 +54,13 @@ extern PetscErrorCode MyTSMonitor(TS,PetscInt,PetscReal,Vec,void*);
 int main(int argc,char **argv)
 {
   TS             ts;                   /* nonlinear solver */
-  Vec            u;                    /* solution, residual vectors */
+  Vec            u,r;                  /* solution, residual vectors */
   Mat            J,Jmf = PETSC_NULL;   /* Jacobian matrices */
-  PetscInt       steps,maxsteps = 1000;     /* iterations for convergence */
+  PetscInt       maxsteps = 1000;      /* iterations for convergence */
   PetscErrorCode ierr;
   DM             da;
   MatFDColoring  matfdcoloring = PETSC_NULL;
-  PetscReal      ftime,dt;
+  PetscReal      dt;
   MonitorCtx     usermonitor;       /* user-defined monitor context */
   AppCtx         user;              /* user-defined work context */
   SNES           snes;
@@ -102,20 +102,20 @@ int main(int argc,char **argv)
      Extract global vectors from DMDA; 
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = DMCreateGlobalVector(da,&u);CHKERRQ(ierr);
+  ierr = VecDuplicate(u,&r);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create timestepping solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
-  ierr = TSSetType(ts,TSTHETA);CHKERRQ(ierr); /* General Linear method, TSTHETA can also solve DAE */
+  ierr = TSSetType(ts,TSTHETA);CHKERRQ(ierr);
   ierr = TSThetaSetTheta(ts,1.0);CHKERRQ(ierr);
 
-  ierr = TSSetIFunction(ts,FormIFunction,&user);CHKERRQ(ierr);
+  ierr = TSSetIFunction(ts,r,FormIFunction,&user);CHKERRQ(ierr);
   ierr = DMGetMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
 
-  ftime = 1.0;
-  ierr = TSSetDuration(ts,maxsteps,ftime);CHKERRQ(ierr);
+  ierr = TSSetDuration(ts,maxsteps,1.0);CHKERRQ(ierr);
   ierr = TSMonitorSet(ts,MyTSMonitor,&usermonitor,PETSC_NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -156,14 +156,16 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = TSStep(ts,&steps,&ftime);CHKERRQ(ierr);
+  ierr = TSSolve(ts,u);CHKERRQ(ierr);
+
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Free work space.  
+     Free work space.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = MatDestroy(&J);CHKERRQ(ierr);
   ierr = MatFDColoringDestroy(&matfdcoloring);CHKERRQ(ierr);
   ierr = MatDestroy(&Jmf);CHKERRQ(ierr);
-  ierr = VecDestroy(&u);CHKERRQ(ierr);     
+  ierr = VecDestroy(&u);CHKERRQ(ierr);
+  ierr = VecDestroy(&r);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
 

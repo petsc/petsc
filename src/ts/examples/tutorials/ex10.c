@@ -1058,7 +1058,6 @@ int main(int argc, char *argv[])
     break;
   }
   ierr = TSSetDuration(ts,10000,rd->final_time);CHKERRQ(ierr);
-  ierr = TSSetSolution(ts,X);CHKERRQ(ierr);
   ierr = TSSetInitialTimeStep(ts,0.,1e-3);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
@@ -1086,7 +1085,9 @@ int main(int argc, char *argv[])
   if (rd->test_diff) {
     ierr = RDTestDifferentiation(rd);CHKERRQ(ierr);
   }
-  ierr = TSStep(ts,&steps,&ftime);CHKERRQ(ierr);
+  ierr = TSSolve(ts,X);CHKERRQ(ierr);
+  ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
+  ierr = TSGetTime(ts,&ftime);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Steps %D  final time %G\n",steps,ftime);CHKERRQ(ierr);
   if (rd->view_draw) {
     ierr = RDView(rd,X,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);

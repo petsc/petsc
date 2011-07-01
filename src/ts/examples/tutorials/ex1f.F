@@ -175,9 +175,10 @@
 !
 !      Perform the solve. This is where the timestepping takes place.
 !
- 
-      call TSStep(ts,its,ftime,ierr) 
-   
+      call TSSolve(ts,x,ierr)
+      call TSGetTimeStepNumber(ts,its,ierr)
+      call TSGetTime(ts,ftime,ierr)
+
       write(6,100) its,ftime
  100  format('Number of pseudo time-steps ',i5,' final time ',1pe8.2)
 

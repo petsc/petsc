@@ -1354,7 +1354,6 @@ int main(int argc,char *argv[])
   ierr = VecCopy(X0,X);CHKERRQ(ierr);                        /* The function value was not used so we set X=X0 again */
   ierr = TSSetInitialTimeStep(ts,0,ctx.cfl/ctx.cfl_idt);CHKERRQ(ierr);
 
-  ierr = TSSetSolution(ts,X);CHKERRQ(ierr);  /* The TS will use X for the solution, starting with it's current value as initial condition */
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr); /* Take runtime options */
 
   ierr = SolutionStatsView(ctx.da,X,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
@@ -1363,7 +1362,9 @@ int main(int argc,char *argv[])
     PetscReal nrm1,nrmsup;
     PetscInt steps;
 
-    ierr = TSStep(ts,&steps,&ptime);CHKERRQ(ierr);
+    ierr = TSSolve(ts,X);CHKERRQ(ierr);
+    ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
+    ierr = TSGetTime(ts,&ptime);CHKERRQ(ierr);
 
     ierr = PetscPrintf(comm,"Final time %8.5f, steps %d\n",ptime,steps);CHKERRQ(ierr);
     if (ctx.exact) {
