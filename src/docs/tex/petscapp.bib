@@ -3426,6 +3426,12 @@ pages   = "157--166"
   note          = {[Online]},
   URL  = {http://libmesh.sourceforge.net}
 }
+@Misc{PyLithManual,
+  author = {Brad Aagaard and Sue Kientz and Matthew G. Knepley and Surendra Somala and Leif Strand and Charles Williams},
+  title  = {PyLith User Manual Version 1.6.0},
+  note   = {Available via \url{http://geodynamics.org/cig/software/pylith/pylith_manual-1.6.0.pdf}},
+  url    = {http://geodynamics.org/cig/software/pylith/pylith_manual-1.6.0.pdf}
+}
 @Unpublished{underworld,
   author = "Louis Moresi",
   title = 	"UnderWorld: A Geodynamics Modelling Code",
@@ -3962,9 +3968,9 @@ w@InProceedings{dalcin-paz-storti,
   booktitle =   {Proceedings 5th copper mountain conference on iterative methods}, 
   year =   {1998} 
 }
-@InBook{04,
+@InBook{Akcelik-2006,
   author = {V. Akcelik and G. Biros and Omar Ghattas and J. Hill and David Keyes and B. van Bloemen Waanders},
-  editor = {M. Heroux and P. Raghaven and H. Simon,},
+  bookeditor = {M. Heroux and P. Raghaven and H. Simon},
   title = {Frontiers of Parallel Computing},
   chapter= {Parallel algorithms for PDE-constrained optimization},
   publisher = {SIAM},
@@ -4608,11 +4614,90 @@ w@InProceedings{dalcin-paz-storti,
    howpublished = "\url{http://www.cimec.org.ar/twiki/bin/view/Cimec/PETScFEM}"
 }
 
+@article{libMeshPaper06,
+  author = {B.~S.~Kirk and J.~W.~Peterson and R.~H.~Stogner and G.~F.~Carey},
+  title = {{\texttt{libMesh}: A C++ Library for Parallel Adaptive Mesh
+              Refinement/Coarsening Simulations}},
+  journal = {Engineering with Computers},
+  volume = {22},
+  number = {3--4},
+  pages = {237--254},
+  year = {2006},
+  note = {\url{http://dx.doi.org/10.1007/s00366-006-0049-3}}
+}
+
 @misc{sisiphus:homepage,
    title = "{SISIPHUS}: Scalable Ice-Sheet Solvers and Infrastructure for Petascale, High-Resolution, Unstructured Simulations",
    author = "T. {Tautges et al.}",
    howpublished = "\url{http://trac.mcs.anl.gov/projects/sisiphus/wiki}"
 }
 
+@misc{pism:homepage,
+   title = "{PISM}: A Parallel Ice Sheet Model",
+   author = "E. {Bueler et al.}",
+   howpublished = "\url{http://pism-docs.org}"
+}
+@misc{dohp:homepage,
+   title = "Dohp: dual order $hp$-finite elements",
+   author = "J. Brown",
+   howpublished = "\url{http://dohp.org}"
+}
 
+@misc{mccourt:siamcse11,
+   title = "Improving Scalability for Edge Plasma Transport with Neutral Gas Species",
+   author = "M. McCourt and T. Rognlien and L. C. McInnes and H. Zhang",
+   note = "poster presentation at the 2011 SIAM Conference on Computational Science and Engineering, March 1, 2011",
+} 
 
+@misc{mccourt:dpp10,
+   title = "Progress in Parallel Implicit Methods for Tokamak Edge Plasma Modeling",
+   author = "M. McCourt and L. C. McInnes and H. Zhang and B. Dudson and S. Farley and T. Rognlien and M. Umansky",
+   note = "presentation, Mini-Conference on Integrated, Multiphysics, High-performance Computations for Magnetic Fusion Research, part of the 52nd Annual Meeting of the APS Division of Plasma Physics, Chicago, IL, Nov 8, 2010",
+} 
+
+@misc{petclaw-github,
+  title={Pet{C}law Software},
+  author={Kyle T. Mandli and David I. Ketcheson and Amal Alghamdi and Aron Ahmadia},
+  year={2011},
+  howpublished={\url{https://github.com/pyclaw/pyclaw}}
+}
+@article{ketcheson2011highorder,
+  title={High-order wave propagation algorithms for general hyperbolic systems},
+  author={Ketcheson, David I. and Parsani, Matteo and LeVeque, Randall J.},
+  year={2011},
+  note={submitted.}
+}
+@inbook{alghamdi2011petclaw,
+  title={Pet{C}law: A Scalable Parallel Nonlinear Wave Propagation Solver for {P}ython},
+  booktitle={Proceedings of SpringSim 2011},
+  publisher={ACM},
+  author={Alghamdi, A. and Ahmadia, Aron and Ketcheson, D.I. and Knepley, M.G. and Mandli, K.T. and Dalcin, L.},
+  year={2011}
+}
+
+@INPROCEEDINGS{wang:lee:scidac2011,
+ author = "Lei Wang and Jungho Lee and Mihai Anitesu and Anter El Azab and Lois Curfman McInnes and Todd Munson and Barry Smith",
+ title = "A Differential Variational Inequality Approach for the Simulation of Heterogeneous Materials", 
+ booktitle = "Proceedings of SciDAC 2011 Conference",
+ year = 2011
+}
+@article{biros2005pln1,
+  title={{Parallel Lagrange-Newton-Krylov-Schur methods for PDE constrained optimization. Part I: The Krylov-Schur solver}},
+  author={Biros, G. and Ghattas, O.},
+  journal={SIAM Journal on Scientific Computing},
+  volume={27},
+  number={2},
+  pages={687--713},
+  year={2005},
+  publisher={Society for Industrial and Applied Mathematics Philadelphia, PA, USA}
+}
+@article{biros2005pln2,
+  title={{Parallel Lagrange-Newton-Krylov-Schur methods for PDE-constrained optimization. Part II: The Lagrange Newton solver, and its application to optimal control of steady viscous flows}},
+  author={Biros, G. and Ghattas, O.},
+  journal={SIAM Journal on Scientific Computing},
+  volume={27},
+  number={2},
+  pages={714--739},
+  year={2005},
+  publisher={Society for Industrial and Applied Mathematics Philadelphia, PA, USA}
+}

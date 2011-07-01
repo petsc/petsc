@@ -17,22 +17,21 @@ This works with SeqAIJCUSP matrices.\n\n";
   A       B
 
 TO ADD:
-  1) Build and run on baconost
+  DONE 1) Build and run on baconost
     - Gather data for CPU/GPU up to da_grid_x 1300
       - Looks 6x faster than CPU
     - Make plot
 
-  2) Solve the Neumann Poisson problem
+  DONE 2) Solve the Neumann Poisson problem
 
-  3) Multi-GPU solve
-    - Try it on GPU machine at Brown (They need another GNU install)
-    - Need a strategy
-      1) Have implicit rep of COO from repeated/tiled_range
-      2) Do a filtered copy, decrementing rows and remapping columns, which splits into two sets
-      3) Make two COO matrices and do separate aggregation on each one
+  3) Multi-GPU Assembly
     - MPIAIJCUSP: Just have two SEQAIJCUSP matrices, nothing else special
+    a) Have implicit rep of COO from repeated/tiled_range
+    b) Do a filtered copy, decrementing rows and remapping columns, which splits into two sets
+    c) Make two COO matrices and do separate aggregation on each one
 
   4) Solve the Neumann Poisson problem in parallel
+    - Try it on GPU machine at Brown (They need another GNU install)
 
   5) GPU FEM integration
     - Move launch code to PETSc   or   - Try again now that assembly is in PETSc
@@ -120,7 +119,7 @@ int main(int argc, char **argv)
   PetscInt       Nl, Ne, N;
   PetscInt      *elemRows;
   PetscScalar   *elemMats;
-  PetscBool      doSolve;
+  PetscBool      doSolve = PETSC_FALSE;
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, 0, help);CHKERRQ(ierr);

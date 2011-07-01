@@ -83,8 +83,8 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
   /* Calculate norm of right hand side */
   ierr = VecNorm(ksp->vec_rhs,NORM_2,&lsqr->rhs_norm);CHKERRQ(ierr);
 
-  /* Calculate norm of matrix*/
-  ierr = MatNorm( Amat, NORM_FROBENIUS, &lsqr->anorm);CHKERRQ(ierr);
+  /* mark norm of matrix with negative number to indicate it has not yet been computed */
+  lsqr->anorm = -1.0;
 
   /* vectors of length m, where system size is mxn */
   B        = ksp->vec_rhs;
@@ -294,12 +294,24 @@ PetscErrorCode  KSPLSQRGetStandardErrorVec( KSP ksp,Vec *se )
 #define __FUNCT__ "KSPLSQRGetArnorm"
 PetscErrorCode  KSPLSQRGetArnorm( KSP ksp,PetscReal *arnorm, PetscReal *rhs_norm , PetscReal *anorm)
 {
-  KSP_LSQR *lsqr = (KSP_LSQR*)ksp->data;
+  KSP_LSQR       *lsqr = (KSP_LSQR*)ksp->data;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   *arnorm   = lsqr->arnorm;
-  *anorm    = lsqr->anorm;
-  *rhs_norm = lsqr->rhs_norm;
+  if (anorm) {
+    if (lsqr->anorm < 0.0) {
+      PC  pc;
+      Mat Amat;
+      ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+      ierr = PCGetOperators(pc,&Amat,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+      ierr = MatNorm(Amat,NORM_FROBENIUS,&lsqr->anorm);CHKERRQ(ierr);
+    }
+    *anorm    = lsqr->anorm;
+  }
+  if (rhs_norm) {
+    *rhs_norm = lsqr->rhs_norm;
+  }
   PetscFunctionReturn(0);
 }
 

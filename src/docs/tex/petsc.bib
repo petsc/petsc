@@ -30,7 +30,7 @@
 
 @article{wan2000energy,
   title={An energy-minimizing interpolation for robust multigrid methods},
-  author={Wan, WL and Chan, T.F. and Smith, B. and others},
+  author={Wan, W.L. and Chan, T.F. and Smith, B.},
   journal={SIAM Journal on Scientific Computing},
   volume={21},
   number={4},
@@ -237,7 +237,7 @@
 	Year = {2006}}
 
 @article{jung2006cholesky,
-	Author = {Jung, J.H. and OLeary, D.P.},
+	Author = {Jung, J.H. and O'Leary, D.P.},
 	Date-Added = {2010-08-19 15:42:34 -0500},
 	Date-Modified = {2010-08-19 15:42:34 -0500},
 	Journal = {Scholarly Paper, University of Maryland},
@@ -291,7 +291,7 @@
 
 @conference{rumpf2001using,
 	Author = {Rumpf, M. and Strzodka, R.},
-	Booktitle = {Proc. of IASTED Visualization, Imaging and Image Processing Conference (VIIP01)},
+	Booktitle = {Proc. of IASTED Visualization, Imaging and Image Processing Conference (VIIP-01)},
 	Date-Added = {2010-08-19 15:42:15 -0500},
 	Date-Modified = {2010-08-19 15:42:15 -0500},
 	Organization = {Citeseer},
@@ -3685,7 +3685,13 @@ year = 2003}
 @unpublished{facets:homepage,
   author =	 "John {Cary (PI)}",
   title =	 "{Framework Application for Core-Edge Transport Simulations (FACETS)}",
-  note = "SciDAC2 project, see \url{http://www.facetsproject.org}"
+  note = "Proto-FSP project, see \url{http://www.facetsproject.org}"
+}
+
+@unpublished{cpes:homepage,
+  author =	 "CS {Chang (PI)}",
+  title =	 "{Center for Plasma Edge Simulation (CPES)}",
+  note = "Proto-FSP project, see \url{http://www.cims.nyu.edu/cpes}"
 }
 
 @unpublished{groundwater-scidac2:web,
@@ -5193,18 +5199,6 @@ speakers were: C. Woodward (LLNL), E. Myra (Univ. of Michigan), J. White (Stanfo
    note = "minisymposium presentation at the 2011 SIAM Conference on Computational Science and Engineering, March 3, 2011",
 } 
 
-@misc{mccourt:siamcse11,
-   title = "Improving Scalability for Edge Plasma Transport with Neutral Gas Species",
-   author = "M. McCourt and T. Rognlien and L. C. McInnes and H. Zhang",
-   note = "poster presentation at the 2011 SIAM Conference on Computational Science and Engineering, March 1, 2011",
-} 
-
-@misc{mccourt:dpp10,
-   title = "Progress in Parallel Implicit Methods for Tokamak Edge Plasma Modeling",
-   author = "M. McCourt and L. C. McInnes and H. Zhang and B. Dudson and S. Farley and T. Rognlien and M. Umansky",
-   note = "presentation, Mini-Conference on Integrated, Multiphysics, High-performance Computations for Magnetic Fusion Research, part of the 52nd Annual Meeting of the APS Division of Plasma Physics, Chicago, IL, Nov 8, 2010",
-} 
-
 @misc{jamroz:cemm10,
    title = "{JFNK} within the semi-implicit scheme in {NIMROD}",
    author = "B. Jamroz and S. Kruger and T. Austin",
@@ -5229,20 +5223,20 @@ speakers were: C. Woodward (LLNL), E. Myra (Univ. of Michigan), J. White (Stanfo
 
 @article{Elman1996,
   author  = {H.C. Elman},
-  title   = {Preconditioning for the steady-state Navier–Stokes equations for low viscosity},
+  title   = {Preconditioning for the steady-state Navier-Stokes equations for low viscosity},
   journal = {SIAM J. Sci. Comput.},
   volume  = {20},
   year    = {1996},
-  pages   = {1299-–1316}
+  pages   = {1299--1316}
 }
 
 @article{KayLoghinWathen2002,
   author  = {D. Kay and D. Loghin and A. Wathen},
-  title   = {A preconditioning for the steady-state Navier–Stokes equations},
+  title   = {A preconditioning for the steady-state Navier-Stokes equations},
   journal = {SIAM J. Sci. Comput.},
   volume  = {24},
   year    = {2002},
-  pages   = {237-–256}
+  pages   = {237--256}
 }
 
 @article{ElmanHowleShadidShuttleworthTuminaro2006,
@@ -5252,7 +5246,7 @@ speakers were: C. Woodward (LLNL), E. Myra (Univ. of Michigan), J. White (Stanfo
   volume  = {27},
   number  = {5},
   year    = {2006},
-  pages   = {1651-–1668}
+  pages   = {1651--1668}
 }
 
 @article{BraessSarazin1997,
@@ -5295,7 +5289,27 @@ speakers were: C. Woodward (LLNL), E. Myra (Univ. of Michigan), J. White (Stanfo
   year={2005},
   publisher={Princeton Univ Press}
 }
-
+@article{gomez2010isogeometric,
+  title={Isogeometric analysis of the isothermal {N}avier-{S}tokes-{K}orteweg equations},
+  author={Gomez, H. and Hughes, T.J.R. and Nogueira, X. and Calo, V.M.},
+  journal={Computer Methods in Applied Mechanics and Engineering},
+  volume={199},
+  number={25-28},
+  pages={1828--1840},
+  issn={0045-7825},
+  year={2010},
+  publisher={Elsevier}
+}
+@article{gomez2008isogeometric,
+  title={Isogeometric analysis of the Cahn-Hilliard phase-field model},
+  author={G{\'o}mez, H. and Calo, V.M. and Bazilevs, Y. and Hughes, T.J.R.},
+  journal={Computer Methods in Applied Mechanics and Engineering},
+  volume={197},
+  number={49-50},
+  pages={4333--4352},
+  year={2008},
+  publisher={Elsevier}
+}
 @Misc{fastmath:project,
   author = {Lori {Diachin (PI)}},
   title  = {{Frameworks, Algorithms, and Scalable Technologies for Mathematics (FASTMath)}},
@@ -5312,6 +5326,12 @@ speakers were: C. Woodward (LLNL), E. Myra (Univ. of Michigan), J. White (Stanfo
   author = {Barry {Smith (PI)}},
   title  = {{Scalable Implicit-Explicit (IMEX) Algorithms and Software for Time-Dependent Multimodel PDEs}},
   note   = {DOE ASCR applied math project}
+}
+
+@Misc{intel-mic:website,
+  author = {Intel},
+  title  = {{Many Integrated Core Architecture}},
+  note   = {\url{http://www.intel.com/technology/architecture-silicon/mic}}
 }
 
 @Article{dudson:2009,
@@ -5343,11 +5363,297 @@ year      = 2009}
   pages =        158,
 }
 
+@article{tron:1999,
+  title={Newton's Method for Large Bound-constrained Optimization Problems},
+  author={Chih-Jen Lin and Jorge Mor\'{e}},
+  journal={SIAM Journal on Optimization},
+  volume={9},
+  number={4},
+  pages={1100-1127},
+  year={1999}
+}
 
+@article{StubenAMG,
+ author = {K. St\"{u}ben},
+ title = {A review of algebraic multigrid},
+ journal = {J. Comput. Appl. Math.},
+ volume = {128},
+ number = {1-2},
+ year = {2001},
+ issn = {0377-0427},
+ pages = {281--309},
+ doi = {http://dx.doi.org/10.1016/S0377-0427(00)00516-1},
+ publisher = {Elsevier Science Publishers B. V.},
+ address = {Amsterdam, The Netherlands, The Netherlands},
+ }
 
+@article{FeuchterMG,
+author = "D. Feuchter and I. Heppner and S. Sauter and G. Wittum",
+title = "Bridging the gap between geometric and algebraic multigrid methods",
+journal = "Computing and visualization in science",
+publisher = "Springer",
+volume = "6",
+number = "1",
+year = "2003",
+pages = "1--13",
+}
 
+@article{ChowMGSmoothness,
+    abstract = {For non-M-matrices, this paper proposes an unstructured multigrid method that only  attempts to interpolate in the directions of geometrical smoothness. These directions are  determined by analyzing samples of algebraically smooth error, e. Neighboring grid points i  and j are called smoothly coupled if e i and e j are consistently nearby in value. In addition,  these dierences may be used to dene interpolation weights. These new ideas may be  incorporated into the algebraic multigrid method. Test results show that the new method  can have much lower grid and operator complexities compared to AMG, leading to lower  solve timings.  1 },
+    author = {Chow, Edmond},
+    citeulike-article-id = {7675372},
+    citeulike-linkout-0 = {http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.22.4305},
+    journal = {American Journal of Mathematics},
+    keywords = {fem, multigrid},
+    pages = {197--215},
+    posted-at = {2010-08-17 23:29:51},
+    priority = {2},
+    title = {An Unstructured Multigrid Method Based on Geometric Smoothness},
+    url = {http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.22.4305},
+    volume = {65},
+    year = {2001}
+}
 
+@article{JonesAMGe,
+    abstract = {{This paper contains the main ideas for an AMGe (algebraic multigrid for finite elements) method based on element agglomeration. In the method, coarse grid elements are formed by agglomerating fine grid elements. Compatible interpolation operators are constructed which yield coarse grid basis functions with a minimal energy property. Heuristics based on interpolation quality measures are used to guide the agglomeration procedure. The performance of the resulting method is demonstrated in two-level numerical experiments.}},
+    author = {Jones, Jim E. and Vassilevski, Panayot S.},
+    citeulike-article-id = {8598569},
+    citeulike-linkout-0 = {http://scitation.aip.org/getabs/servlet/GetabsServlet?prog=normal&id=SJOCE3000023000001000109000001&idtype=cvips&gifs=yes},
+    citeulike-linkout-1 = {http://link.aip.org/link/?SCE/23/109},
+    journal = {SIAM Journal on Scientific Computing},
+    keywords = {amg, fem, multigrid},
+    number = {1},
+    pages = {109--133},
+    posted-at = {2011-01-13 18:05:55},
+    priority = {2},
+    publisher = {SIAM},
+    title = {{AMGE Based on Element Agglomeration}},
+    url = {http://scitation.aip.org/getabs/servlet/GetabsServlet?prog=normal&id=SJOCE3000023000001000109000001&idtype=cvips&gifs=yes},
+    volume = {23},
+    year = {2001}
+}
 
+@article{Saad1993,
+author = {Saad, Youcef},
+doi = {10.1137/0914028},
+file = {:Users/knepley/Documents/Mendeley Desktop/SIAM Journal on Scientific Computing/1993/A Flexible Inner-Outer Preconditioned GMRES Algorithm - Saad - 1993.pdf:pdf},
+issn = {10648275},
+journal = {SIAM Journal on Scientific Computing},
+keywords = {65f10,ams,especially since the popularization,gate gradient,general purpose iterative methods,gmres,krylov subspace methods,mos,non-hermitian systems,of precondition-,preconditioned conju-,subject classi cations,variable preconditioners},
+number = {2},
+pages = {461--461},
+publisher = {Citeseer},
+title = {{A flexible inner-outer preconditioned GMRES algorithm}},
+url = {http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.34.7627\&amp;rep=rep1\&amp;type=pdf},
+volume = {14},
+year = {1993}
+}
 
+@misc{path:homepage,
+   author = "S. Dirkse and M. Ferris and T. Munson",
+   title = "{{PATH} {W}eb page}",
+   howpublished  = "\url{http://pages.cs.wisc.edu/~ferris/path.html}"
+}
 
+@article{Ketcheson2008,
+  author  = {David I Ketcheson},
+  title   = {Highly Efficient Strong Stability Preserving Runge-Kutta Methods with Low-Storage Implementations},
+  volume  = {30},
+  journal = {SIAM Journal on Scientific Computing},
+  year    = {2008},
+  pages   = {2113--2136}
+}
+@article{elman2008tcp,
+  title={{A taxonomy and comparison of parallel block multi-level preconditioners for the incompressible Navier-Stokes equations}},
+  author={Elman, H.C. and Howle, V.E. and Shadid, J. and Shuttleworth, R. and Tuminaro, R.},
+  journal={Journal of Computational Physics},
+  volume={227},
+  number={1},
+  pages={1790--1808},
+  year={2008},
+  publisher={Academic Press}
+}
+@article{silvester2001efficient,
+  title={{Efficient preconditioning of the linearized Navier-Stokes equations for incompressible flow}},
+  author={Silvester, D. and Elman, H. and Kay, D. and Wathen, A.},
+  journal={Journal of Computational and Applied Mathematics},
+  volume={128},
+  number={1-2},
+  pages={261--279},
+  issn={0377-0427},
+  year={2001},
+  publisher={Elsevier}
+}
+}
+@article{elman1999bfbt,
+  title={{Preconditioning for the steady-state Navier-Stokes equations with low viscosity}},
+  author={Elman, H.C.},
+  journal={SIAM Journal on Scientific Computing},
+  volume={20},
+  number={4},
+  pages={1299--1316},
+  issn={1064-8275},
+  year={1999},
+  publisher={Citeseer}
+}
+@article{elman2006bpb,
+  title={{Block preconditioners based on approximate commutators}},
+  author={Elman, H. and Howle, V.E. and Shadid, J. and Shuttleworth, R. and Tuminaro, R.},
+  journal={SIAM Journal on Scientific Computing},
+  volume={27},
+  number={5},
+  pages={1651--1668},
+  year={2006},
+  publisher={Philadelphia, PA: SIAM, c1993-}
+}
+@article{olshanskii2006analysis,
+  title={{Analysis of a Stokes interface problem}},
+  author={Olshanskii, M.A. and Reusken, A.},
+  journal={Numerische Mathematik},
+  volume={103},
+  number={1},
+  pages={129--149},
+  issn={0029-599X},
+  year={2006},
+  publisher={Springer}
+}
+@article{patankar1972cph,
+  title={{A calculation procedure for heat, mass and momentum transfer in three-dimensional parabolic flows}},
+  author={Patankar, S.V. and Spalding, D.B.},
+  journal={Int. J. Heat Mass Transfer},
+  volume={15},
+  pages={1787--1806},
+  year={1972}
+}
+@article{rannacher1992simple,
+  title={{Simple nonconforming quadrilateral Stokes element}},
+  author={Rannacher, R. and Turek, S.},
+  journal={Numerical Methods for Partial Differential Equations},
+  volume={8},
+  number={2},
+  pages={97--111},
+  issn={1098-2426},
+  year={1992},
+  publisher={Wiley Online Library}
+}
+@article{rannacher2000finite,
+  title={Finite Element Methods for the Incompressible {N}avier-{S}tokes Equations},
+  author={Rannacher, R.},
+  journal={Fundamental Directions in Mathematical Fluid Mechanics},
+  pages={191},
+  isbn={3764364149},
+  year={2000},
+  publisher={Birkhauser}
+}
+@article{vanka1986block,
+  title={{Block-implicit multigrid solution of Navier-Stokes equations in primitive variables}},
+  author={Vanka, S.P.},
+  journal={Journal of Computational Physics},
+  volume={65},
+  number={1},
+  pages={138--158},
+  issn={0021-9991},
+  year={1986},
+  publisher={Elsevier}
+}
+@article{eisenstat1983variational,
+  title={Variational iterative methods for nonsymmetric systems of linear equations},
+  author={Eisenstat, S.C. and Elman, H.C. and Schultz, M.H.},
+  journal={SIAM Journal on Numerical Analysis},
+  volume={20},
+  number={2},
+  pages={345--357},
+  year={1983},
+  publisher={JSTOR}
+}
+@inproceedings{burstedde2008scalable,
+  title={Scalable adaptive mantle convection simulation on petascale supercomputers},
+  author={Burstedde, C. and Ghattas, O. and Gurnis, M. and Stadler, G. and Tan, E. and Tu, T. and Wilcox, L.C. and Zhong, S.},
+  booktitle={Proceedings of the 2008 ACM/IEEE conference on Supercomputing},
+  pages={62},
+  year={2008},
+  organization={IEEE Press}
+}
+@article{burstedde2009parallel,
+  title={Parallel scalable adjoint-based adaptive solution of variable-viscosity Stokes flow problems},
+  author={Burstedde, C. and Ghattas, O. and Stadler, G. and Tu, T. and Wilcox, L.C.},
+  journal={Computer Methods in Applied Mechanics and Engineering},
+  volume={198},
+  number={21-26},
+  pages={1691--1700},
+  year={2009},
+  publisher={Elsevier}
+}
+@article{stadler2010dynamics,
+  title={The dynamics of plate tectonics and mantle flow: From local to global scales},
+  author={Stadler, G. and Gurnis, M. and Burstedde, C. and Wilcox, L.C. and Alisic, L. and Ghattas, O.},
+  journal={Science},
+  volume={329},
+  number={5995},
+  pages={1033},
+  year={2010},
+  publisher={American Association for the Advancement of Science}
+}
 
+@article{MoresiZhongGurnis96,
+  author  = {Louis N. Moresi and Shijie Zhong and Michael Gurnis},
+  title   = {The accuracy of finite element solutions of Stoke’s flow with strongly varying viscosity},
+  journal = {Physics of the Earth and Planetary Interiors},
+  volume  = {97},
+  pages   = {83-–94},
+  year    = {1996}
+}
+
+@article{MoresiSolomatov95,
+  author  = {Louis N. Moresi and V. S. Solomatov},
+  title   = {Numerical investigation of 2D convection with extremely large viscosity variations},
+  journal = {Physics of Fluids},
+  volume  = {7},
+  number  = {9},
+  pages   = {2154-–2162},
+  year    = {1995}
+}
+
+@article{ChenMolnar83,
+  author  = {W.-P. Chen and P. Molnar},
+  title   = {Focal depths of intra-continental and intraplate earthquakes and their implications for the thermal and mechanical properties of the lithosphere},
+  journal = {Journal of Geophysical Research},
+  volume  = {88},
+  pages   = {4183–-4214},
+  year    = {1983}
+}
+
+@article{Jackson02,
+  author  = {J. Jackson},
+  title   = {Strength of the continental lithosphere: time to abandon the jelly sandwich?},
+  journal = {GSA Today},
+  volume  = {12},
+  pages   = {4–-10},
+  year    = {2002}
+}
+
+@article{BurovWatts06,
+  author  = {E.B. Burov and A.B. Watts},
+  title   = {The long-term strength of continental lithosphere: jelly sandwich or creme brulee?},
+  journal = {GSA Today},
+  volume  = {16},
+  pages   = {4–-10},
+  year    = {2006}
+}
+
+@inproceedings{Yang:Brent:2002,
+  title = "The Improved {BiCGStab} Method for Large and Sparse Unsymmetric Linear Systems 
+           on Parallel Distributed Memory Architectures",
+  author = "Laurence T. Yang and Richard Brent", 
+  booktitle = "Proceedings of the Fifth International Conference on Algorithms and Architectures for Parallel Processing",
+  year = 2002, 
+  publisher = IEEE
+}
+
+@article{demmel09,
+  author = "J. Demmel and M. Hoemmen and M. Mohiyuddin and K Yelick",
+  title = "Communication-optimal Iterative Methods", 
+  journal = "Journal of Physics: Conf. Series",
+  volume = 180,
+  year = 2009
+}

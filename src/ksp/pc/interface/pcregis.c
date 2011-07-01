@@ -36,6 +36,9 @@ extern PetscErrorCode  PCCreate_SupportGraph(PC);
 #if defined(PETSC_HAVE_ML)
 extern PetscErrorCode  PCCreate_ML(PC);
 #endif
+#if defined(PETSC_HAVE_TRIANGLE)
+extern PetscErrorCode  PCCreate_GAMG(PC);
+#endif
 #if defined(PETSC_HAVE_SPAI)
 extern PetscErrorCode  PCCreate_SPAI(PC);
 #endif
@@ -119,6 +122,9 @@ PetscErrorCode  PCRegisterAll(const char path[])
 #endif
 #if defined(PETSC_HAVE_ML)
   ierr = PCRegisterDynamic(PCML           ,path,"PCCreate_ML",PCCreate_ML);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_TRIANGLE)
+  ierr = PCRegisterDynamic(PCGAMG         ,path,"PCCreate_GAMG",PCCreate_GAMG);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_SPAI)
   ierr = PCRegisterDynamic(PCSPAI         ,path,"PCCreate_SPAI",PCCreate_SPAI);CHKERRQ(ierr);
