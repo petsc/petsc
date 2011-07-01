@@ -1,4 +1,3 @@
-
 #include <petscsys.h>       /*I "petscsys.h" I*/
 
 /* ---------------------------------------------------------------- */
@@ -25,8 +24,8 @@ static PetscErrorCode PetscPythonFindExecutable(char pythonexe[PETSC_MAX_PATH_LE
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscPythonFindLibrary"
-static PetscErrorCode PetscPythonFindLibrary(char pythonexe[PETSC_MAX_PATH_LEN], 
-					     char pythonlib[PETSC_MAX_PATH_LEN])
+static PetscErrorCode PetscPythonFindLibrary(char pythonexe[PETSC_MAX_PATH_LEN],
+                                             char pythonlib[PETSC_MAX_PATH_LEN])
 {
   const char cmdline[] = "-c 'import sys; print(sys.exec_prefix); print(sys.version[:3])'";
   char command[PETSC_MAX_PATH_LEN+1+sizeof(cmdline)+1];
@@ -41,7 +40,7 @@ static PetscErrorCode PetscPythonFindLibrary(char pythonexe[PETSC_MAX_PATH_LEN],
   ierr = PetscStrcpy(pythonlib,PETSC_PYTHON_LIB);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 #endif
-  
+
   /* call Python to find out the name of the Python dynamic library */
   ierr = PetscStrncpy(command,pythonexe,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
   ierr = PetscStrcat(command," ");CHKERRQ(ierr);
@@ -103,11 +102,13 @@ static PyObject* Py_None = 0;
 
 static const char* (*Py_GetVersion)(void);
 
-static int   	 (*Py_IsInitialized)(void);
-static void  	 (*Py_InitializeEx)(int);
-static void  	 (*Py_Finalize)(void);
+static int       (*Py_IsInitialized)(void);
+static void      (*Py_InitializeEx)(int);
+static void      (*Py_Finalize)(void);
 
 static void      (*PySys_SetArgv)(int, char **);
+static PyObject* (*PySys_GetObject)(const char *);
+static PyObject* (*PyObject_CallMethod)(PyObject *, const char *, const char *, ...);
 static PyObject* (*PyImport_ImportModule)(const char *);
 
 static void      (*Py_IncRef)(PyObject *);
@@ -144,7 +145,9 @@ static PetscErrorCode PetscPythonLoadLibrary(const char pythonlib[])
   ierr = PetscDLPyLibSym("Py_IsInitialized"      , &Py_IsInitialized      );CHKERRQ(ierr);
   ierr = PetscDLPyLibSym("Py_InitializeEx"       , &Py_InitializeEx       );CHKERRQ(ierr);
   ierr = PetscDLPyLibSym("Py_Finalize"           , &Py_Finalize           );CHKERRQ(ierr);
+  ierr = PetscDLPyLibSym("PySys_GetObject"       , &PySys_GetObject       );CHKERRQ(ierr);
   ierr = PetscDLPyLibSym("PySys_SetArgv"         , &PySys_SetArgv         );CHKERRQ(ierr);
+  ierr = PetscDLPyLibSym("PyObject_CallMethod"   , &PyObject_CallMethod   );CHKERRQ(ierr);
   ierr = PetscDLPyLibSym("PyImport_ImportModule" , &PyImport_ImportModule );CHKERRQ(ierr);
   ierr = PetscDLPyLibSym("Py_IncRef"             , &Py_IncRef             );CHKERRQ(ierr);
   ierr = PetscDLPyLibSym("Py_DecRef"             , &Py_DecRef             );CHKERRQ(ierr);
@@ -175,7 +178,7 @@ static PetscBool  PetscBeganPython = PETSC_FALSE;
 #define __FUNCT__ "PetscPythonFinalize"
 /*@C
   PetscPythonFinalize - Finalize Python.
-  
+
   Level: intermediate
 
 .keywords: Python
@@ -200,12 +203,11 @@ PetscErrorCode  PetscPythonFinalize(void)
   Level: intermediate
 
 .keywords: Python
-  
+
 @*/
 PetscErrorCode  PetscPythonInitialize(const char pyexe[],const char pylib[])
 {
   PyObject          *module    = 0;
-  static PetscBool  registered = PETSC_FALSE;
   PetscErrorCode    ierr;
   PetscFunctionBegin;
   if (PetscBeganPython) PetscFunctionReturn(0);
@@ -226,15 +228,28 @@ PetscErrorCode  PetscPythonInitialize(const char pyexe[],const char pylib[])
   /* initialize Python */
   PetscBeganPython = PETSC_FALSE;
   if (!Py_IsInitialized()) {
-    const char *py_version = Py_GetVersion();
-    /* call below does not install signal handlers */
-    Py_InitializeEx(0);
-    /* call below required to build 'sys.argv' list */
+    static PetscBool registered = PETSC_FALSE;
+    const char *py_version;
+    PyObject *sys_path;
+    char path[PETSC_MAX_PATH_LEN] = { 0 };
+    /* initialize Python */
+    Py_InitializeEx(0); /* 0: do not install signal handlers */
+    /*  build 'sys.argv' list */
+    py_version = Py_GetVersion();
     if (py_version[0] == '2') {
-      int  argc   = 0;
-      char **argv = 0;
+      int argc = 0; char **argv = 0;
       ierr = PetscGetArgs(&argc,&argv);CHKERRQ(ierr);
-      if (argc && argv) PySys_SetArgv(argc,argv);
+      PySys_SetArgv(argc,argv);
+    }
+    if (py_version[0] == '3') {
+      /* XXX 'argv' is type 'wchar_t**' */
+      PySys_SetArgv(0,PETSC_NULL);
+    }
+    /* add PETSC_LIB_DIR in front of 'sys.path' */
+    sys_path = PySys_GetObject("path");
+    if (sys_path) {
+      ierr = PetscStrreplace(PETSC_COMM_SELF,"${PETSC_LIB_DIR}",path,sizeof(path));CHKERRQ(ierr);
+      Py_DecRef(PyObject_CallMethod(sys_path,"insert","is",(int)0,(char*)path));
     }
     /* register finalizer */
     if (!registered) {
@@ -250,7 +265,7 @@ PetscErrorCode  PetscPythonInitialize(const char pyexe[],const char pylib[])
     Py_DecRef(module); module = 0;
   } else {
     PetscPythonPrintError();
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Python: could not import module 'petsc4py.PETSc', perhaps your PYTHONPATH does not contain it\n"); 
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Python: could not import module 'petsc4py.PETSc', perhaps your PYTHONPATH does not contain it\n");
   }
   PetscFunctionReturn(0);
 }
@@ -263,7 +278,7 @@ PetscErrorCode  PetscPythonInitialize(const char pyexe[],const char pylib[])
   Level: developer
 
 .keywords: Python
-  
+
 @*/
 PetscErrorCode  PetscPythonPrintError(void)
 {
