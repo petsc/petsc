@@ -83,11 +83,10 @@ int main(int argc,char **argv)
 
   /* create timestep context */
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
-  ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr); /* Need to be TS_NONLINEAR for Sundials */
   ierr = TSMonitorSet(ts,Monitor,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr); 
 
   /* set user provided RHSFunction and RHSJacobian */  
-  ierr = TSSetRHSFunction(ts,RHSFunction,&data);CHKERRQ(ierr);
+  ierr = TSSetRHSFunction(ts,PETSC_NULL,RHSFunction,&data);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&J);CHKERRQ(ierr);
   ierr = MatSetSizes(J,PETSC_DECIDE,PETSC_DECIDE,mn,mn);CHKERRQ(ierr);
   ierr = MatSetFromOptions(J);CHKERRQ(ierr);
@@ -166,7 +165,8 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-NOUT",&NOUT,PETSC_NULL);CHKERRQ(ierr);
   for (iout=1; iout<=NOUT; iout++){
     ierr = TSSetDuration(ts,time_steps,iout*1.0/NOUT);CHKERRQ(ierr);
-    ierr = TSStep(ts,&steps,&ftime);CHKERRQ(ierr);
+    ierr = TSSolve(ts,global);CHKERRQ(ierr);
+    ierr = TSGetTime(ts,&ftime);CHKERRQ(ierr);
     ierr = TSSetInitialTimeStep(ts,ftime,dt);CHKERRQ(ierr);
   }
 
