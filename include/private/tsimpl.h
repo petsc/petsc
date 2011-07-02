@@ -72,8 +72,8 @@ struct _p_TS {
   /* ------------------  Parameters -------------------------------------- */
   PetscInt  max_steps;              /* max number of steps */
   PetscReal max_time;               /* max time allowed */
-  PetscReal time_step;              /* current time increment */
-  PetscReal time_step_old;          /* previous time increment */
+  PetscReal time_step;              /* current/completed time increment */
+  PetscReal next_time_step;         /* expected next time step (but may end up being different, e.g. if the step is rejected) */
   PetscReal initial_time_step;      /* initial time increment */
   PetscInt  steps;                  /* steps taken so far */
   PetscReal ptime;                  /* time at the start of the current step (stage time is internal if it exists) */
@@ -84,7 +84,6 @@ struct _p_TS {
   PetscInt max_snes_failures;
   TSConvergedReason reason;
   PetscBool errorifstepfailed;
-  PetscReal next_time_step;
   PetscBool exact_final_time;
   PetscInt reject,max_reject;
 

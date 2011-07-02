@@ -944,9 +944,11 @@ PetscErrorCode  TSGetTimeStepNumber(TS ts,PetscInt* iter)
 @*/
 PetscErrorCode  TSSetInitialTimeStep(TS ts,PetscReal initial_time,PetscReal time_step)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  ts->time_step         = time_step;
+  ierr = TSSetTimeStep(ts,time_step);CHKERRQ(ierr);
   ts->initial_time_step = time_step;
   ts->ptime             = initial_time;
   PetscFunctionReturn(0);
