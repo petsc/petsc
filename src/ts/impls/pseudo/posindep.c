@@ -167,7 +167,6 @@ static PetscErrorCode TSStep_Pseudo(TS ts)
       }
     }
     ierr = TSPseudoVerifyTimeStep(ts,pseudo->update,&ts->next_time_step,&ok);CHKERRQ(ierr);
-    printf("step %d, ok %d\n",rej,ok);
     if (ok) {
       ierr = VecCopy(pseudo->update,ts->vec_sol);CHKERRQ(ierr);
       break;
