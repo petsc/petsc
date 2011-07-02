@@ -62,8 +62,12 @@ int main(int argc,char **argv)
   PetscErrorCode ierr; 
   PetscReal      param_max = 6.81,param_min = 0.,dt;
   PetscReal      ftime;
+  PetscMPIInt    size;
 
   PetscInitialize(&argc,&argv,PETSC_NULL,help);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);
+  if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only");
+
   user.mx        = 4;
   user.my        = 4;
   user.param     = 6.0;
