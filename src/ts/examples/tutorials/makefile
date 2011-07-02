@@ -88,10 +88,13 @@ ex18: ex18.o  chkopts
 	${RM} ex18.o
 #---------------------------------------------------------------------------------
 runex1:
-	-@${MPIEXEC} -n 1 ./ex1 -ksp_gmres_cgs_refinement_type refine_always  > ex1_1.tmp 2>&1;	  \
-	   if (${DIFF} output/ex1_1.out ex1_1.tmp) then true; \
-	   else echo "Possible problem with ex1_1, diffs above"; fi; \
+	-@${MPIEXEC} -n 1 ./ex1 -ksp_gmres_cgs_refinement_type refine_always -snes_type ls -ts_monitor_pseudo > ex1_1.tmp 2>&1;	  \
+	   ${DIFF} output/ex1_1.out ex1_1.tmp || echo "Possible problem with ex1_1, diffs above"; \
 	   ${RM} -f ex1_1.tmp
+runex1_2:
+	-@${MPIEXEC} -n 1 ./ex1 -ts_monitor_pseudo > ex1_2.tmp 2>&1;	  \
+	   ${DIFF} output/ex1_2.out ex1_2.tmp || echo "Possible problem with ex1_2, diffs above"; \
+	   ${RM} -f ex1_2.tmp
 
 runex1f:
 	-@${MPIEXEC} -n 1 ./ex1f -ksp_gmres_cgs_refinement_type refine_always > ex1f_1.tmp 2>&1;	  \
@@ -222,7 +225,7 @@ runex15_5:
 	   ${RM} -f ex15.tmp
 
 
-TESTEXAMPLES_C		  = ex1.PETSc runex1 ex1.rm ex4.PETSc runex4 runex4_2 runex4_3 runex4_4 ex4.rm\
+TESTEXAMPLES_C		  = ex1.PETSc runex1 runex1_2 ex1.rm ex4.PETSc runex4 runex4_2 runex4_3 runex4_4 ex4.rm\
                             ex6.PETSc runex6 ex6.rm ex7.PETSc runex7 runex7_2 runex7_3 ex7.rm ex11.PETSc ex11.rm \
                             ex10.PETSc runex10 runex10_2 runex10_3 runex10_4 ex10.rm ex12.PETSc ex12.rm \
                             ex15.PETSc runex15 runex15_2 runex15_3 runex15_4 runex15_5 ex15.rm
