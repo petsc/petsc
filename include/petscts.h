@@ -49,6 +49,15 @@ E*/
 E*/
 typedef enum {TS_LINEAR,TS_NONLINEAR} TSProblemType;
 
+typedef enum {
+  TS_CONVERGED_ITERATING      = 0,
+  TS_CONVERGED_TIME           = 1,
+  TS_CONVERGED_ITS            = 2,
+  TS_DIVERGED_NONLINEAR_SOLVE = -1,
+  TS_DIVERGED_STEP_REJECTED   = -2
+} TSConvergedReason;
+extern const char *const*TSConvergedReasons;
+
 /* Logging support */
 extern PetscClassId  TS_CLASSID;
 
@@ -77,9 +86,9 @@ extern PetscErrorCode   TSGetDuration(TS,PetscInt*,PetscReal*);
 
 extern PetscErrorCode   TSMonitorDefault(TS,PetscInt,PetscReal,Vec,void*);
 extern PetscErrorCode   TSMonitorSolution(TS,PetscInt,PetscReal,Vec,void*);
-extern PetscErrorCode   TSStep(TS,PetscInt *,PetscReal*);
+extern PetscErrorCode   TSStep(TS);
 extern PetscErrorCode   TSSolve(TS,Vec);
-
+extern PetscErrorCode   TSGetConvergedReason(TS,TSConvergedReason*);
 
 extern PetscErrorCode   TSSetInitialTimeStep(TS,PetscReal,PetscReal);
 extern PetscErrorCode   TSGetTimeStep(TS,PetscReal*);

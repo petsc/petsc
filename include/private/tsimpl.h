@@ -31,7 +31,8 @@ struct _TSOps {
   PetscErrorCode (*prestep)(TS);
   PetscErrorCode (*poststep)(TS);
   PetscErrorCode (*setup)(TS);
-  PetscErrorCode (*step)(TS,PetscInt*,PetscReal*);
+  PetscErrorCode (*step)(TS);
+  PetscErrorCode (*solve)(TS);
   PetscErrorCode (*setfromoptions)(TS);
   PetscErrorCode (*destroy)(TS);
   PetscErrorCode (*view)(TS,PetscViewer);
@@ -75,9 +76,17 @@ struct _p_TS {
   PetscReal time_step_old;          /* previous time increment */
   PetscReal initial_time_step;      /* initial time increment */
   PetscInt  steps;                  /* steps taken so far */
-  PetscReal ptime;                  /* time taken so far */
+  PetscReal ptime;                  /* time at the start of the current step (stage time is internal if it exists) */
   PetscInt  linear_its;             /* total number of linear solver iterations */
   PetscInt  nonlinear_its;          /* total number of nonlinear solver iterations */
+
+  PetscInt num_snes_failures;
+  PetscInt max_snes_failures;
+  TSConvergedReason reason;
+  PetscBool errorifstepfailed;
+  PetscReal next_time_step;
+  PetscBool exact_final_time;
+  PetscInt reject,max_reject;
 
   /* ------------------- Default work-area management ------------------ */
   PetscInt nwork;              

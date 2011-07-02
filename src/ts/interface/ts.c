@@ -89,6 +89,9 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     if (opt) {
       ts->initial_time_step = ts->time_step = dt;
     }
+    ierr = PetscOptionsInt("-ts_max_snes_failures","Maximum number of nonlinear solve failures","",ts->max_snes_failures,&ts->max_snes_failures,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-ts_max_reject","Maximum number of step rejections","",ts->max_reject,&ts->max_reject,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-ts_error_if_step_failed","Error if no step succeeds","",ts->errorifstepfailed,&ts->errorifstepfailed,PETSC_NULL);CHKERRQ(ierr);
 
     /* Monitor options */
     ierr = PetscOptionsString("-ts_monitor","Monitor timestep size","TSMonitorDefault","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
@@ -824,8 +827,10 @@ PetscErrorCode  TSView(TS ts,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"  maximum time=%G\n",ts->max_time);CHKERRQ(ierr);
     if (ts->problem_type == TS_NONLINEAR) {
       ierr = PetscViewerASCIIPrintf(viewer,"  total number of nonlinear solver iterations=%D\n",ts->nonlinear_its);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  total number of nonlinear solve failures=%D\n",ts->max_snes_failures);CHKERRQ(ierr);
     }
     ierr = PetscViewerASCIIPrintf(viewer,"  total number of linear solver iterations=%D\n",ts->linear_its);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  total number of rejected steps=%D\n",ts->reject);CHKERRQ(ierr);
   } else if (isstring) {
     ierr = TSGetType(ts,&type);CHKERRQ(ierr);
     ierr = PetscViewerStringSPrintf(viewer," %-7.7s",type);CHKERRQ(ierr);
@@ -970,7 +975,8 @@ PetscErrorCode  TSSetTimeStep(TS ts,PetscReal time_step)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidLogicalCollectiveReal(ts,time_step,2);
-  ts->time_step = time_step;
+  ts->time_step      = time_step;
+  ts->next_time_step = time_step;
   PetscFunctionReturn(0);
 }
 
@@ -1653,7 +1659,7 @@ PetscErrorCode TSMonitorDefault(TS ts,PetscInt step,PetscReal ptime,Vec v,void *
 
 .seealso: TSCreate(), TSSetUp(), TSDestroy()
 @*/
-PetscErrorCode  TSStep(TS ts,PetscInt *steps,PetscReal *ptime)
+PetscErrorCode  TSStep(TS ts)
 {
   PetscErrorCode ierr;
 
@@ -1663,12 +1669,8 @@ PetscErrorCode  TSStep(TS ts,PetscInt *steps,PetscReal *ptime)
   ierr = TSSetUp(ts);CHKERRQ(ierr);
 
   ierr = PetscLogEventBegin(TS_Step, ts, 0, 0, 0);CHKERRQ(ierr);
-  ierr = (*ts->ops->step)(ts, steps, ptime);CHKERRQ(ierr);
+  ierr = (*ts->ops->step)(ts);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(TS_Step, ts, 0, 0, 0);CHKERRQ(ierr);
-
-  if (!PetscPreLoadingOn) {
-    ierr = TSViewFromOptions(ts,((PetscObject)ts)->name);CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
 
@@ -1691,18 +1693,41 @@ PetscErrorCode  TSStep(TS ts,PetscInt *steps,PetscReal *ptime)
 @*/
 PetscErrorCode  TSSolve(TS ts, Vec x)
 {
-  PetscInt       steps;
-  PetscReal      ptime;
+  PetscInt       i;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  /* set solution vector if provided */
-  if (x) { ierr = TSSetSolution(ts, x); CHKERRQ(ierr); }
+  PetscValidHeaderSpecific(x,VEC_CLASSID,2);
+  ierr = TSSetSolution(ts,x); CHKERRQ(ierr);
   /* reset time step and iteration counters */
-  ts->steps = 0; ts->linear_its = 0; ts->nonlinear_its = 0;
-  /* steps the requested number of timesteps. */
-  ierr = TSStep(ts, &steps, &ptime);CHKERRQ(ierr);
+  ts->steps = 0;
+  ts->linear_its = 0;
+  ts->nonlinear_its = 0;
+  ts->reason = TS_CONVERGED_ITERATING;
+  ierr = TSMonitor(ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
+
+  if (ts->ops->solve) {         /* This private interface is transitional and should be removed when all implementations are updated. */
+    ierr = (*ts->ops->solve)(ts);CHKERRQ(ierr);
+  } else {
+    /* steps the requested number of timesteps. */
+    for (i=0; !ts->reason; i++) {
+      ierr = TSPreStep(ts);CHKERRQ(ierr);
+      ierr = TSStep(ts);CHKERRQ(ierr);
+      if (ts->reason < 0) {
+        if (ts->errorifstepfailed) SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_NOT_CONVERGED,"TSStep has failed");
+      } else if (i >= ts->max_steps) {
+        ts->reason = TS_CONVERGED_ITS;
+      } else if (ts->ptime >= ts->max_time) {
+        ts->reason = TS_CONVERGED_TIME;
+      }
+      ierr = TSPostStep(ts);CHKERRQ(ierr);
+      ierr = TSMonitor(ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
+    }
+  }
+  if (!PetscPreLoadingOn) {
+    ierr = TSViewFromOptions(ts,((PetscObject)ts)->name);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

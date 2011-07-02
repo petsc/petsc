@@ -174,34 +174,16 @@ static PetscErrorCode TSSetUp_SSP(TS ts)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSStep_SSP"
-static PetscErrorCode TSStep_SSP(TS ts,PetscInt *steps,PetscReal *ptime)
+static PetscErrorCode TSStep_SSP(TS ts)
 {
   TS_SSP        *ssp = (TS_SSP*)ts->data;
   Vec            sol = ts->vec_sol;
-  PetscInt       i;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  *steps = -ts->steps;
-  *ptime  = ts->ptime;
-
-  ierr = TSMonitor(ts,ts->steps,ts->ptime,sol);CHKERRQ(ierr);
-
-  for (i=0; i<ts->max_steps; i++) {
-    if (ts->ptime + ts->time_step > ts->max_time) break;
-    ierr = TSPreStep(ts);CHKERRQ(ierr);
-
-    ierr = (*ssp->onestep)(ts,ts->ptime,ts->time_step,sol);CHKERRQ(ierr);
-
-    ts->ptime += ts->time_step;
-    ts->steps++;
-
-    ierr = TSPostStep(ts);CHKERRQ(ierr);
-    ierr = TSMonitor(ts,ts->steps,ts->ptime,sol);CHKERRQ(ierr);
-  }
-
-  *steps += ts->steps;
-  *ptime  = ts->ptime;
+  ierr = (*ssp->onestep)(ts,ts->ptime,ts->time_step,sol);CHKERRQ(ierr);
+  ts->ptime += ts->time_step;
+  ts->steps++;
   PetscFunctionReturn(0);
 }
 /*------------------------------------------------------------*/

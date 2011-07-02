@@ -1,6 +1,15 @@
 
 #include <private/tsimpl.h>      /*I "petscts.h"  I*/
 
+const char *const TSConvergedReasons_Shifted[] = {
+  "DIVERGED_STEP_REJECTED",
+  "DIVERGED_NONLINEAR_SOLVE",
+  "CONVERGED_ITERATING",
+  "CONVERGED_TIME",
+  "CONVERGED_ITS",
+  "TSConvergedReason","TS_",0};
+const char *const*TSConvergedReasons = TSConvergedReasons_Shifted + 2;
+
 #if 0
 #undef __FUNCT__  
 #define __FUNCT__ "TSPublish_Petsc"
@@ -65,6 +74,9 @@ PetscErrorCode  TSCreate(MPI_Comm comm, TS *ts) {
   t->nonlinear_its      = 0;
   t->work               = PETSC_NULL;
   t->nwork              = 0;
+  t->max_snes_failures  = 1;
+  t->max_reject         = 10;
+  t->errorifstepfailed  = PETSC_TRUE;
 
   *ts = t;
   PetscFunctionReturn(0);

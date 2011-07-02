@@ -28,46 +28,32 @@ typedef struct {
 
 #undef __FUNCT__
 #define __FUNCT__ "TSStep_Theta"
-static PetscErrorCode TSStep_Theta(TS ts,PetscInt *steps,PetscReal *ptime)
+static PetscErrorCode TSStep_Theta(TS ts)
 {
   TS_Theta       *th = (TS_Theta*)ts->data;
   PetscInt       i,its,lits;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  *steps = -ts->steps;
-  *ptime =  ts->ptime;
+  ts->time_step = ts->next_time_step;
+  th->stage_time = ts->ptime + th->Theta*ts->time_step;
+  th->shift = 1./(th->Theta*ts->time_step);
 
-  ierr = TSMonitor(ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
-
-  for (i=0; i<ts->max_steps; i++) {
-    if (ts->ptime + ts->time_step > ts->max_time) break;
-    ierr = TSPreStep(ts);CHKERRQ(ierr);
-
-    th->stage_time = ts->ptime + th->Theta*ts->time_step;
-    th->shift = 1./(th->Theta*ts->time_step);
-
-    if (th->extrapolate) {
-      ierr = VecWAXPY(th->X,1./th->shift,th->Xdot,ts->vec_sol);CHKERRQ(ierr);
-    } else {
-      ierr = VecCopy(ts->vec_sol,th->X);CHKERRQ(ierr);
-    }
-    ierr = SNESSolve(ts->snes,PETSC_NULL,th->X);CHKERRQ(ierr);
-    ierr = SNESGetIterationNumber(ts->snes,&its);CHKERRQ(ierr);
-    ierr = SNESGetLinearSolveIterations(ts->snes,&lits);CHKERRQ(ierr);
-    ts->nonlinear_its += its; ts->linear_its += lits;
-
-    ierr = VecAXPBYPCZ(th->Xdot,-th->shift,th->shift,0,ts->vec_sol,th->X);CHKERRQ(ierr);
-    ierr = VecAXPY(ts->vec_sol,ts->time_step,th->Xdot);CHKERRQ(ierr);
-    ts->ptime += ts->time_step;
-    ts->steps++;
-
-    ierr = TSPostStep(ts);CHKERRQ(ierr);
-    ierr = TSMonitor(ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
+  if (th->extrapolate) {
+    ierr = VecWAXPY(th->X,1./th->shift,th->Xdot,ts->vec_sol);CHKERRQ(ierr);
+  } else {
+    ierr = VecCopy(ts->vec_sol,th->X);CHKERRQ(ierr);
   }
+  ierr = SNESSolve(ts->snes,PETSC_NULL,th->X);CHKERRQ(ierr);
+  ierr = SNESGetIterationNumber(ts->snes,&its);CHKERRQ(ierr);
+  ierr = SNESGetLinearSolveIterations(ts->snes,&lits);CHKERRQ(ierr);
+  ts->nonlinear_its += its; ts->linear_its += lits;
 
-  *steps += ts->steps;
-  *ptime  = ts->ptime;
+  ierr = VecAXPBYPCZ(th->Xdot,-th->shift,th->shift,0,ts->vec_sol,th->X);CHKERRQ(ierr);
+  ierr = VecAXPY(ts->vec_sol,ts->time_step,th->Xdot);CHKERRQ(ierr);
+  ts->ptime          += ts->time_step;
+  ts->next_time_step  = ts->time_step;
+  ts->steps++;
   PetscFunctionReturn(0);
 }
 

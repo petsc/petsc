@@ -127,7 +127,7 @@ int TSFunction_Sundials(realtype t,N_Vector y,N_Vector ydot,void *ctx)
 */
 #undef __FUNCT__
 #define __FUNCT__ "TSStep_Sundials"
-PetscErrorCode TSStep_Sundials(TS ts,int *steps,double *time)
+PetscErrorCode TSStep_Sundials(TS ts)
 {
   TS_Sundials    *cvode = (TS_Sundials*)ts->data;
   Vec            sol = ts->vec_sol;
@@ -230,9 +230,6 @@ PetscErrorCode TSStep_Sundials(TS ts,int *steps,double *time)
     ierr = TSMonitor(ts,ts->steps,t,sol);CHKERRQ(ierr);
   }
   ierr = CVodeGetNumSteps(mem,&nsteps);CHKERRQ(ierr);
-
-  *steps = nsteps;
-  *time  = t;
   PetscFunctionReturn(0);
 }
 

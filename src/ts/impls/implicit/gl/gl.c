@@ -807,8 +807,8 @@ static PetscErrorCode TSGLGetMaxSizes(TS ts,PetscInt *max_r,PetscInt *max_s)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "TSStep_GL"
-static PetscErrorCode TSStep_GL(TS ts,PetscInt *steps,PetscReal *ptime)
+#define __FUNCT__ "TSSolve_GL"
+static PetscErrorCode TSSolve_GL(TS ts)
 {
   TS_GL          *gl = (TS_GL*)ts->data;
   PetscInt       i,k,its,lits,max_r,max_s;
@@ -816,11 +816,6 @@ static PetscErrorCode TSStep_GL(TS ts,PetscInt *steps,PetscReal *ptime)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  *steps = -ts->steps;
-  *ptime  = ts->ptime;
-
-  ierr = TSMonitor(ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
-
   ierr = TSGLGetMaxSizes(ts,&max_r,&max_s);CHKERRQ(ierr);
   ierr = VecCopy(ts->vec_sol,gl->X[0]);CHKERRQ(ierr);
   for (i=1; i<max_r; i++) {
@@ -970,9 +965,6 @@ static PetscErrorCode TSStep_GL(TS ts,PetscInt *steps,PetscReal *ptime)
     gl->current_scheme = next_scheme;
     ts->time_step = next_h;
   }
-
-  *steps += ts->steps;
-  *ptime  = ts->ptime;
   PetscFunctionReturn(0);
 }
 
@@ -1416,7 +1408,7 @@ PetscErrorCode  TSCreate_GL(TS ts)
   ts->ops->destroy        = TSDestroy_GL;
   ts->ops->view           = TSView_GL;
   ts->ops->setup          = TSSetUp_GL;
-  ts->ops->step           = TSStep_GL;
+  ts->ops->solve          = TSSolve_GL;
   ts->ops->setfromoptions = TSSetFromOptions_GL;
   ts->ops->snesfunction   = SNESTSFormFunction_GL;
   ts->ops->snesjacobian   = SNESTSFormJacobian_GL;
