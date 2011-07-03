@@ -166,7 +166,6 @@ int main(int argc,char **argv)
 
   dt   = appctx.h/2.0;
   ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRQ(ierr);
-  ierr = TSSetSolution(ts,u);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Customize timestepping solver:  
@@ -194,7 +193,7 @@ int main(int argc,char **argv)
   /*
      Run the timestepping solver
   */
-  ierr = TSStep(ts,&steps,&ftime);CHKERRQ(ierr);
+  ierr = TSSolve(ts,u);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they

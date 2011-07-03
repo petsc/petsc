@@ -97,10 +97,14 @@ runex1_2:
 	   ${RM} -f ex1_2.tmp
 
 runex1f:
-	-@${MPIEXEC} -n 1 ./ex1f -ksp_gmres_cgs_refinement_type refine_always > ex1f_1.tmp 2>&1;	  \
-	   if (${DIFF} output/ex1f_1.out ex1f_1.tmp) then true; \
-	   else echo "Possible problem with ex1f_1, diffs above"; fi; \
+	-@${MPIEXEC} -n 1 ./ex1f -ksp_gmres_cgs_refinement_type refine_always -snes_type ls -ts_monitor_pseudo > ex1f_1.tmp 2>&1;	  \
+	   ${DIFF} output/ex1f_1.out ex1f_1.tmp || echo "Possible problem with ex1f_1, diffs above"; \
 	   ${RM} -f ex1f_1.tmp
+
+runex2:
+	-@${MPIEXEC} -n 2 ./ex2 -nox -ts_dt 10 > ex2_1.tmp 2>&1;	  \
+	   ${DIFF} output/ex2_1.out ex2_1.tmp || echo "Possible problem with ex2_1, diffs above"; \
+	   ${RM} -f ex2_1.tmp
 
 runex2f:
 	-@${MPIEXEC} -n 1 ./ex2f -ts_max_steps 100 > ex2f_1.tmp 2>&1; \
