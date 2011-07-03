@@ -1700,6 +1700,7 @@ PetscErrorCode  TSSolve(TS ts, Vec x)
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidHeaderSpecific(x,VEC_CLASSID,2);
   ierr = TSSetSolution(ts,x); CHKERRQ(ierr);
+  ierr = TSSetUp(ts); CHKERRQ(ierr);
   /* reset time step and iteration counters */
   ts->steps = 0;
   ts->linear_its = 0;
