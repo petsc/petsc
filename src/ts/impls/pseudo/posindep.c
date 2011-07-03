@@ -142,9 +142,8 @@ static PetscErrorCode TSStep_Pseudo(TS ts)
 {
   TS_Pseudo      *pseudo = (TS_Pseudo*)ts->data;
   PetscErrorCode ierr;
-  PetscInt       i,its,lits,rej;
+  PetscInt       its,lits,rej;
   PetscBool      ok;
-  PetscReal      new_time_step;
   SNESConvergedReason snesreason;
 
   PetscFunctionBegin;

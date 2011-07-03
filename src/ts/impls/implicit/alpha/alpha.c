@@ -32,7 +32,7 @@ typedef struct {
 static PetscErrorCode TSStep_Alpha(TS ts)
 {
   TS_Alpha            *th    = (TS_Alpha*)ts->data;
-  PetscInt            i,its,lits,rej;
+  PetscInt            its,lits,rej;
   SNESConvergedReason snesreason;
   PetscBool           stepok = PETSC_TRUE;
   PetscReal           nextdt = ts->time_step;
