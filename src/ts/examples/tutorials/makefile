@@ -207,6 +207,12 @@ runex10_4:
 	   ${DIFF} output/ex10_4.out ex10_4.tmp || echo "Possible problem with ex10_4, diffs above"; \
 	   ${RM} -f ex10_4.tmp
 
+runex11:
+	-@${MPIEXEC} -n 1 ./ex11 -da_grid_x 20 -ts_max_time 3 -ts_dt 1e-1 -ts_theta_extrapolate 0 \
+	   -ts_monitor -snes_monitor_short -ksp_monitor_short > ex11_1.tmp 2>&1; \
+	   ${DIFF} output/ex11_1.out ex11_1.tmp || echo "Possible problem with ex11_1, diffs above"; \
+	   ${RM} -f ex11_1.tmp
+
 runex15:
 	-@${MPIEXEC} -n 1 ./ex15 -da_grid_x 20 -da_grid_y 20 -boundary 0 -ts_max_steps 10 > ex15.tmp 2>&1; \
 	   ${DIFF} output/ex15_1.out ex15.tmp || echo "Possible problem with ex15_1, diffs above"; \
@@ -230,7 +236,7 @@ runex15_5:
 
 
 TESTEXAMPLES_C		  = ex1.PETSc runex1 runex1_2 ex1.rm ex4.PETSc runex4 runex4_2 runex4_3 runex4_4 ex4.rm\
-                            ex6.PETSc runex6 ex6.rm ex7.PETSc runex7 runex7_2 runex7_3 ex7.rm ex11.PETSc ex11.rm \
+                            ex6.PETSc runex6 ex6.rm ex7.PETSc runex7 runex7_2 runex7_3 ex7.rm ex11.PETSc runex11 ex11.rm \
                             ex10.PETSc runex10 runex10_2 runex10_3 runex10_4 ex10.rm ex12.PETSc ex12.rm \
                             ex15.PETSc runex15 runex15_2 runex15_3 runex15_4 runex15_5 ex15.rm
 TESTEXAMPLES_C_X11	  = 
