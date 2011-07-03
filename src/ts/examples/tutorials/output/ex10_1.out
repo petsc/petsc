@@ -435,4 +435,18 @@
       1 KSP Residual norm < 1.e-11
     4 SNES Function norm < 1.e-11
 29 TS dt 0.1 time 2.9
-Steps 29  final time 2.9
+    0 SNES Function norm 0.193771 
+      0 KSP Residual norm 0.144754 
+      1 KSP Residual norm < 1.e-11
+    1 SNES Function norm 0.0491279 
+      0 KSP Residual norm 0.0142996 
+      1 KSP Residual norm < 1.e-11
+    2 SNES Function norm 0.00157851 
+      0 KSP Residual norm 0.000392278 
+      1 KSP Residual norm < 1.e-11
+    3 SNES Function norm 2.73702e-06 
+      0 KSP Residual norm 6.27705e-07 
+      1 KSP Residual norm < 1.e-11
+    4 SNES Function norm < 1.e-11
+30 TS dt 0.1 time 3
+Steps 30  final time 3

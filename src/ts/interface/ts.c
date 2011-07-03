@@ -86,9 +86,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     ierr = PetscOptionsReal("-ts_max_time","Time to run to","TSSetDuration",ts->max_time,&ts->max_time,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-ts_init_time","Initial time","TSSetInitialTime", ts->ptime, &ts->ptime, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-ts_dt","Initial time step","TSSetInitialTimeStep",ts->initial_time_step,&dt,&opt);CHKERRQ(ierr);
-    if (opt) {
-      ts->initial_time_step = ts->time_step = dt;
-    }
+    if (opt) {ierr = TSSetInitialTimeStep(ts,ts->ptime,dt);CHKERRQ(ierr);}
     ierr = PetscOptionsInt("-ts_max_snes_failures","Maximum number of nonlinear solve failures","",ts->max_snes_failures,&ts->max_snes_failures,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-ts_max_reject","Maximum number of step rejections","",ts->max_reject,&ts->max_reject,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-ts_error_if_step_failed","Error if no step succeeds","",ts->errorifstepfailed,&ts->errorifstepfailed,PETSC_NULL);CHKERRQ(ierr);
@@ -1713,12 +1711,12 @@ PetscErrorCode  TSSolve(TS ts, Vec x)
     ierr = (*ts->ops->solve)(ts);CHKERRQ(ierr);
   } else {
     /* steps the requested number of timesteps. */
-    for (i=0; !ts->reason; i++) {
+    for (i=0; !ts->reason; ) {
       ierr = TSPreStep(ts);CHKERRQ(ierr);
       ierr = TSStep(ts);CHKERRQ(ierr);
       if (ts->reason < 0) {
         if (ts->errorifstepfailed) SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_NOT_CONVERGED,"TSStep has failed");
-      } else if (i >= ts->max_steps) {
+      } else if (++i >= ts->max_steps) {
         ts->reason = TS_CONVERGED_ITS;
       } else if (ts->ptime >= ts->max_time) {
         ts->reason = TS_CONVERGED_TIME;
