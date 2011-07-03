@@ -272,9 +272,10 @@ PetscErrorCode TSComputeRHSFunction(TS ts,PetscReal t,Vec x,Vec y)
     PetscStackPush("TS user right-hand-side function");
     ierr = (*ts->ops->rhsfunction)(ts,t,x,y,ts->funP);CHKERRQ(ierr);
     PetscStackPop;
-  } else {
+  } else if(ts->ops->ifunction) {
     ierr = VecZeroEntries(y);CHKERRQ(ierr);
-  }
+  } else SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_USER,"Must call TSSetRHSFunction() and / or TSSetIFunction()");
+
   ierr = PetscLogEventEnd(TS_FunctionEval,ts,x,y,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
