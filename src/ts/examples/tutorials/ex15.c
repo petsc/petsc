@@ -109,8 +109,7 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
-  ierr = TSSetType(ts,TSTHETA);CHKERRQ(ierr);
-  ierr = TSThetaSetTheta(ts,1.0);CHKERRQ(ierr);
+  ierr = TSSetType(ts,TSBEULER);CHKERRQ(ierr);
 
   ierr = TSSetIFunction(ts,r,FormIFunction,&user);CHKERRQ(ierr);
   ierr = DMGetMatrix(da,MATAIJ,&J);CHKERRQ(ierr);

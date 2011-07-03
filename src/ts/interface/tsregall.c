@@ -36,15 +36,13 @@ PetscErrorCode  TSRegisterAll(const char path[])
   TSRegisterAllCalled = PETSC_TRUE;
 
   ierr = TSRegisterDynamic(TSEULER,           path, "TSCreate_Euler",    TSCreate_Euler);CHKERRQ(ierr);
-#if 0
   ierr = TSRegisterDynamic(TSBEULER,          path, "TSCreate_BEuler",   TSCreate_BEuler);CHKERRQ(ierr);
   ierr = TSRegisterDynamic(TSCN,              path, "TSCreate_CN",       TSCreate_CN);CHKERRQ(ierr);
-#endif
   ierr = TSRegisterDynamic(TSPSEUDO,          path, "TSCreate_Pseudo",   TSCreate_Pseudo);CHKERRQ(ierr);
   ierr = TSRegisterDynamic(TSGL,              path, "TSCreate_GL",       TSCreate_GL);CHKERRQ(ierr);
   ierr = TSRegisterDynamic(TSSSP,             path, "TSCreate_SSP",      TSCreate_SSP);CHKERRQ(ierr);
   ierr = TSRegisterDynamic(TSTHETA,           path, "TSCreate_Theta",    TSCreate_Theta);CHKERRQ(ierr);
-  ierr = TSRegisterDynamic("alpha"/*TSALPHA*/,path, "TSCreate_Alpha",    TSCreate_Alpha);CHKERRQ(ierr);
+  ierr = TSRegisterDynamic(TSALPHA,           path, "TSCreate_Alpha",    TSCreate_Alpha);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_SUNDIALS)
   ierr = TSRegisterDynamic(TSSUNDIALS,        path, "TSCreate_Sundials", TSCreate_Sundials);CHKERRQ(ierr);
 #endif

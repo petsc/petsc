@@ -286,3 +286,73 @@ PetscErrorCode  TSThetaSetTheta(TS ts,PetscReal theta)
   ierr = PetscTryMethod(ts,"TSThetaSetTheta_C",(TS,PetscReal),(ts,theta));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+/*
+ * TSBEULER and TSCN are straightforward specializations of TSTHETA.
+ * The creation functions for these specializations are below.
+ */
+
+#undef __FUNCT__
+#define __FUNCT__ "TSView_BEuler"
+static PetscErrorCode TSView_BEuler(TS ts,PetscViewer viewer)
+{
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
+
+/*MC
+      TSBEULER - ODE solver using the implicit backward Euler method
+
+  Level: beginner
+
+.seealso:  TSCreate(), TS, TSSetType(), TSEULER, TSCN, TSTHETA
+
+M*/
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "TSCreate_BEuler"
+PetscErrorCode  TSCreate_BEuler(TS ts)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = TSCreate_Theta(ts);CHKERRQ(ierr);
+  ierr = TSThetaSetTheta(ts,1.0);CHKERRQ(ierr);
+  ts->ops->view = TSView_BEuler;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+#undef __FUNCT__
+#define __FUNCT__ "TSView_CN"
+static PetscErrorCode TSView_CN(TS ts,PetscViewer viewer)
+{
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
+
+/*MC
+      TSCN - ODE solver using the implicit Crank-Nicolson method.
+
+  Level: beginner
+
+  Notes:
+  TSCN is equivalent to TSTHETA with Theta=0.5
+
+.seealso:  TSCreate(), TS, TSSetType(), TSBEULER, TSTHETA
+
+M*/
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "TSCreate_CN"
+PetscErrorCode  TSCreate_CN(TS ts)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = TSCreate_Theta(ts);CHKERRQ(ierr);
+  ierr = TSThetaSetTheta(ts,0.5);CHKERRQ(ierr);
+  ts->ops->view = TSView_CN;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
