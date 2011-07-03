@@ -219,6 +219,12 @@ runex12:
 	   ${DIFF} output/ex12_1.out ex12_1.tmp || echo "Possible problem with ex12_1, diffs above"; \
 	   ${RM} -f ex12_1.tmp
 
+runex13:
+	-@${MPIEXEC} -n 1 ./ex13 -max_steps 5   > ex13_1.tmp 2>&1;	  \
+	   if (${DIFF} output/ex13_1.out ex13_1.tmp) then true; \
+	   else echo "Possible problem with ex13_1, diffs above"; fi; \
+	   ${RM} -f ex13_1.tmp
+
 runex15:
 	-@${MPIEXEC} -n 1 ./ex15 -da_grid_x 20 -da_grid_y 20 -boundary 0 -ts_max_steps 10 > ex15.tmp 2>&1; \
 	   ${DIFF} output/ex15_1.out ex15.tmp || echo "Possible problem with ex15_1, diffs above"; \
