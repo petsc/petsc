@@ -1996,7 +1996,7 @@ PetscErrorCode SNESLineSearchCubic_VI(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Ve
   }
   if (PetscIsInfOrNanReal(*gnorm)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
   ierr = PetscInfo4(snes,"Initial fnorm %G gnorm %G alpha %G initslope %G\n",fnorm,*gnorm,vi->alpha,initslope);CHKERRQ(ierr);
-  if ((*gnorm)*(*gnorm) <= (1-vi->alpha)*fnorm*fnorm ) { /* Sufficient reduction */
+  if ((*gnorm)*(*gnorm) <= (1.0 - vi->alpha)*fnorm*fnorm ) { /* Sufficient reduction */
     if (vi->lsmonitor) {
       ierr = PetscViewerASCIIAddTab(vi->lsmonitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(vi->lsmonitor,"    Line search: Using full step: fnorm %G gnorm %G\n",fnorm,*gnorm);CHKERRQ(ierr);
@@ -2038,7 +2038,7 @@ PetscErrorCode SNESLineSearchCubic_VI(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Ve
     ierr = PetscViewerASCIIPrintf(vi->lsmonitor,"    Line search: gnorm after quadratic fit %G\n",*gnorm);CHKERRQ(ierr);
     ierr = PetscViewerASCIISubtractTab(vi->lsmonitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
   }
-  if ((*gnorm)*(*gnorm) < (1-vi->alpha)*fnorm*fnorm ) { /* sufficient reduction */
+  if ((*gnorm)*(*gnorm) < (1.0 - vi->alpha)*fnorm*fnorm ) { /* sufficient reduction */
     if (vi->lsmonitor) {
       ierr = PetscViewerASCIIAddTab(vi->lsmonitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(vi->lsmonitor,"    Line search: Quadratically determined step, lambda=%18.16e\n",lambda);CHKERRQ(ierr);
@@ -2096,7 +2096,7 @@ PetscErrorCode SNESLineSearchCubic_VI(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Ve
       PetscFunctionReturn(0);
     }
     if (PetscIsInfOrNanReal(*gnorm)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
-    if ((*gnorm)*(*gnorm) < (1-vi->alpha)*fnorm*fnorm) { /* is reduction enough? */
+    if ((*gnorm)*(*gnorm) < (1.0 - vi->alpha)*fnorm*fnorm) { /* is reduction enough? */
       if (vi->lsmonitor) {
 	ierr = PetscPrintf(comm,"    Line search: Cubically determined step, current gnorm %G lambda=%18.16e\n",*gnorm,lambda);CHKERRQ(ierr);
       }
@@ -2211,7 +2211,7 @@ PetscErrorCode SNESLineSearchQuadratic_VI(SNES snes,void *lsctx,Vec x,Vec f,Vec 
     PetscFunctionReturn(0);
   }
   if (PetscIsInfOrNanReal(*gnorm)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
-  if (.5*(*gnorm)*(*gnorm) <= .5*fnorm*fnorm + vi->alpha*initslope) { /* Sufficient reduction */
+  if ((*gnorm)*(*gnorm) <= (1.0 - vi->alpha)*fnorm*fnorm) { /* Sufficient reduction */
     if (vi->lsmonitor) {
       ierr = PetscViewerASCIIAddTab(vi->lsmonitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(vi->lsmonitor,"    Line search: Using full step: fnorm %G gnorm %G\n",fnorm,*gnorm);CHKERRQ(ierr);
@@ -2260,7 +2260,7 @@ PetscErrorCode SNESLineSearchQuadratic_VI(SNES snes,void *lsctx,Vec x,Vec f,Vec 
       ierr = VecNorm(g,NORM_2,gnorm);CHKERRQ(ierr);
     }
     if (PetscIsInfOrNanReal(*gnorm)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
-    if (.5*(*gnorm)*(*gnorm) < .5*fnorm*fnorm + lambda*vi->alpha*initslope) { /* sufficient reduction */
+    if ((*gnorm)*(*gnorm) < (1.0 - vi->alpha)*fnorm*fnorm) { /* sufficient reduction */
       if (vi->lsmonitor) {
         ierr = PetscViewerASCIIAddTab(vi->lsmonitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPrintf(vi->lsmonitor,"    Line Search: Quadratically determined step, lambda=%G\n",lambda);CHKERRQ(ierr);
@@ -2453,7 +2453,7 @@ static PetscErrorCode SNESSetFromOptions_VI(SNES snes)
       snes->ops->solve = SNESSolveVI_RSAUG;
     }
   }
-  ierr = PetscOptionsEList("-snes_ls","Line search used","SNESLineSearchSet",lses,4,"basic",&indx,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-snes_ls","Line search used","SNESLineSearchSet",lses,4,"cubic",&indx,&flg);CHKERRQ(ierr);
   if (flg) {
     switch (indx) {
     case 0:
@@ -2512,7 +2512,7 @@ PetscErrorCode  SNESCreate_VI(SNES snes)
   vi->alpha             = 1.e-4;
   vi->maxstep           = 1.e8;
   vi->minlambda         = 1.e-12;
-  vi->LineSearch        = SNESLineSearchNo_VI;
+  vi->LineSearch        = SNESLineSearchCubic_VI;
   vi->lsP               = PETSC_NULL;
   vi->postcheckstep     = PETSC_NULL;
   vi->postcheck         = PETSC_NULL;
