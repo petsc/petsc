@@ -213,6 +213,12 @@ runex11:
 	   ${DIFF} output/ex11_1.out ex11_1.tmp || echo "Possible problem with ex11_1, diffs above"; \
 	   ${RM} -f ex11_1.tmp
 
+runex12:
+	-@${MPIEXEC} -n 1 ./ex12 -da_grid_x 20 -ts_max_time 3 -ts_dt 1e-1 -ts_theta_extrapolate 0 \
+	   -ts_monitor -snes_monitor_short -ksp_monitor_short > ex12_1.tmp 2>&1; \
+	   ${DIFF} output/ex12_1.out ex12_1.tmp || echo "Possible problem with ex12_1, diffs above"; \
+	   ${RM} -f ex12_1.tmp
+
 runex15:
 	-@${MPIEXEC} -n 1 ./ex15 -da_grid_x 20 -da_grid_y 20 -boundary 0 -ts_max_steps 10 > ex15.tmp 2>&1; \
 	   ${DIFF} output/ex15_1.out ex15.tmp || echo "Possible problem with ex15_1, diffs above"; \
