@@ -37,25 +37,41 @@ PetscErrorCode MatMult_SeqFFTW(Mat A,Vec x,Vec y)
   PetscInt       ndim=fft->ndim,*dim=fft->dim;
 
   PetscFunctionBegin;
-#if !defined(PETSC_USE_COMPLEX)
+//#if !defined(PETSC_USE_COMPLEX)
 
-  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"not support for real numbers");
-#endif
+//  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"not support for real numbers");
+//#endif
   ierr = VecGetArray(x,&x_array);CHKERRQ(ierr);
   ierr = VecGetArray(y,&y_array);CHKERRQ(ierr);
   if (!fftw->p_forward){ /* create a plan, then excute it */
     switch (ndim){
     case 1:
+#if defined(PETSC_USE_COMPLEX)
       fftw->p_forward = fftw_plan_dft_1d(dim[0],(fftw_complex*)x_array,(fftw_complex*)y_array,FFTW_FORWARD,fftw->p_flag);   
+#else
+      fftw->p_forward = fftw_plan_dft_r2c_1d(dim[0],(double *)x_array,(fftw_complex*)y_array,fftw->p_flag);   
+#endif
       break;
     case 2:
+#if defined(PETSC_USE_COMPLEX)
       fftw->p_forward = fftw_plan_dft_2d(dim[0],dim[1],(fftw_complex*)x_array,(fftw_complex*)y_array,FFTW_FORWARD,fftw->p_flag);
+#else
+      fftw->p_forward = fftw_plan_dft_r2c_2d(dim[0],dim[1],(double *)x_array,(fftw_complex*)y_array,fftw->p_flag);   
+#endif
       break;
     case 3:
+#if defined(PETSC_USE_COMPLEX)
       fftw->p_forward = fftw_plan_dft_3d(dim[0],dim[1],dim[2],(fftw_complex*)x_array,(fftw_complex*)y_array,FFTW_FORWARD,fftw->p_flag);
+#else
+      fftw->p_forward = fftw_plan_dft_r2c_3d(dim[0],dim[1],dim[2],(double *)x_array,(fftw_complex*)y_array,fftw->p_flag);   
+#endif
       break;
     default:
+#if defined(PETSC_USE_COMPLEX)
       fftw->p_forward = fftw_plan_dft(ndim,dim,(fftw_complex*)x_array,(fftw_complex*)y_array,FFTW_FORWARD,fftw->p_flag);
+#else
+      fftw->p_forward = fftw_plan_dft_r2c(ndim,dim,(double *)x_array,(fftw_complex*)y_array,fftw->p_flag);
+#endif
       break;
     }
     fftw->finarray  = x_array;
@@ -94,16 +110,32 @@ PetscErrorCode MatMultTranspose_SeqFFTW(Mat A,Vec x,Vec y)
   if (!fftw->p_backward){ /* create a plan, then excute it */
     switch (ndim){
     case 1:
+#if defined(PETSC_USE_COMPLEX)
       fftw->p_backward = fftw_plan_dft_1d(dim[0],(fftw_complex*)x_array,(fftw_complex*)y_array,FFTW_BACKWARD,fftw->p_flag);
+#else
+      fftw->p_forward = fftw_plan_dft_c2r_1d(dim[0],(fftw_complex*)x_array,(double *)y_array,fftw->p_flag);   
+#endif
       break;
     case 2:
+#if defined(PETSC_USE_COMPLEX)
       fftw->p_backward = fftw_plan_dft_2d(dim[0],dim[1],(fftw_complex*)x_array,(fftw_complex*)y_array,FFTW_BACKWARD,fftw->p_flag);
+#else
+      fftw->p_forward = fftw_plan_dft_c2r_2d(dim[0],dim[1],(fftw_complex*)x_array,(double *)y_array,fftw->p_flag);   
+#endif
       break;
     case 3:
+#if defined(PETSC_USE_COMPLEX)
       fftw->p_backward = fftw_plan_dft_3d(dim[0],dim[1],dim[2],(fftw_complex*)x_array,(fftw_complex*)y_array,FFTW_BACKWARD,fftw->p_flag);
+#else
+      fftw->p_forward = fftw_plan_dft_c2r_3d(dim[0],dim[1],dim[2],(fftw_complex*)x_array,(double *)y_array,fftw->p_flag);   
+#endif
       break;
     default:
+#if defined(PETSC_USE_COMPLEX)
       fftw->p_backward = fftw_plan_dft(ndim,dim,(fftw_complex*)x_array,(fftw_complex*)y_array,FFTW_BACKWARD,fftw->p_flag);
+#else
+      fftw->p_forward = fftw_plan_dft_c2r(ndim,dim,(fftw_complex*)x_array,(double *)y_array,fftw->p_flag);
+#endif
       break;
     }
     fftw->binarray  = x_array;
