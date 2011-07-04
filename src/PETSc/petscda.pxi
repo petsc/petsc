@@ -220,10 +220,10 @@ cdef class _DA_Vec_array(object):
 
     cdef _Vec_buffer vecbuf
     cdef readonly tuple starts, sizes
-    cdef tuple shape, strides
+    cdef readonly tuple shape, strides
     cdef readonly ndarray array
 
-    def __cinit__(self, DA da not None, Vec vec not None):
+    def __cinit__(self, DA da not None, Vec vec not None, bint DOF=False):
         #
         cdef PetscInt dim=0, dof=0
         CHKERR( DAGetInfo(da.dm,
@@ -256,12 +256,13 @@ cdef class _DA_Vec_array(object):
         #
         cdef tuple starts = toDims(dim, xs, ys, zs)
         cdef tuple sizes  = toDims(dim, xm, ym, zm)
-        cdef PetscInt k = sizeof(PetscScalar)
+        cdef Py_ssize_t k = <Py_ssize_t>sizeof(PetscScalar)
+        cdef Py_ssize_t f = <Py_ssize_t>dof
+        cdef Py_ssize_t d = <Py_ssize_t>dim
         cdef tuple shape   = toDims(dim, xm, ym, zm)
-        cdef tuple strides = toDims(dim, k*1, k*xm, k*xm*ym)
-        if dof > 1:
-            shape   += (<Py_ssize_t>dof,)
-            strides += (<Py_ssize_t>(k*xm*ym*zm),)
+        cdef tuple strides = (k*f, k*f*xm, k*f*xm*ym)[:d]
+        if DOF or f > 1: shape   += (f,)
+        if DOF or f > 1: strides += (k,)
         #
         self.vecbuf = _Vec_buffer(vec)
         self.starts = starts
