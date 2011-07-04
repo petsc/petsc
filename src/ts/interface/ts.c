@@ -210,11 +210,17 @@ PetscErrorCode  TSViewFromOptions(TS ts,const char title[])
 PetscErrorCode  TSComputeRHSJacobian(TS ts,PetscReal t,Vec X,Mat *A,Mat *B,MatStructure *flg)
 {
   PetscErrorCode ierr;
+  PetscInt Xstate;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidHeaderSpecific(X,VEC_CLASSID,3);
   PetscCheckSameComm(ts,1,X,3);
+  ierr = PetscObjectStateQuery((PetscObject)X,&Xstate);CHKERRQ(ierr);
+  if (ts->rhsjacobian.time == t && (ts->problem_type == TS_LINEAR || (ts->rhsjacobian.X == X && ts->rhsjacobian.Xstate == Xstate))) {
+    *flg = ts->rhsjacobian.mstructure;
+    PetscFunctionReturn(0);
+  }
   if (ts->ops->rhsjacobian) {
     ierr = PetscLogEventBegin(TS_JacobianEval,ts,X,*A,*B);CHKERRQ(ierr);
     *flg = DIFFERENT_NONZERO_PATTERN;
@@ -230,6 +236,10 @@ PetscErrorCode  TSComputeRHSJacobian(TS ts,PetscReal t,Vec X,Mat *A,Mat *B,MatSt
     if (*A != *B) {ierr = MatZeroEntries(*B);CHKERRQ(ierr);}
     *flg = SAME_NONZERO_PATTERN;
   }
+  ts->rhsjacobian.time = t;
+  ts->rhsjacobian.X = X;
+  ierr = PetscObjectStateQuery((PetscObject)X,&ts->rhsjacobian.Xstate);CHKERRQ(ierr);
+  ts->rhsjacobian.mstructure = *flg;
   PetscFunctionReturn(0);
 }
 
@@ -583,7 +593,19 @@ PetscErrorCode  TSSetRHSJacobian(TS ts,Mat A,Mat B,TSRHSJacobian f,void *ctx)
   if (f)   ts->ops->rhsjacobian = f;
   if (ctx) ts->jacP             = ctx;
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
-  ierr = SNESSetJacobian(snes,A,B,SNESTSFormJacobian,ts);CHKERRQ(ierr);
+  if (!ts->ops->ijacobian) {
+    ierr = SNESSetJacobian(snes,A,B,SNESTSFormJacobian,ts);CHKERRQ(ierr);
+  }
+  if (A) {
+    ierr = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
+    ierr = MatDestroy(&ts->Arhs);CHKERRQ(ierr);
+    ts->Arhs = A;
+  }
+  if (B) {
+    ierr = PetscObjectReference((PetscObject)B);CHKERRQ(ierr);
+    ierr = MatDestroy(&ts->Brhs);CHKERRQ(ierr);
+    ts->Brhs = B;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -2255,6 +2277,76 @@ PetscErrorCode  SNESTSFormJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *f
   PetscValidPointer(flag,5);
   PetscValidHeaderSpecific(ts,TS_CLASSID,6);
   ierr = (ts->ops->snesjacobian)(snes,X,A,B,flag,ts);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "TSComputeRHSFunctionLinear"
+/*@C
+   TSComputeRHSFunctionLinear - Evaluate the right hand side via the user-provided Jacobian, for linear problems only
+
+   Collective on TS
+
+   Input Arguments:
++  ts - time stepping context
+.  t - time at which to evaluate
+.  X - state at which to evaluate
+-  ctx - context
+
+   Output Arguments:
+.  F - right hand side
+
+   Level: intermediate
+
+   Notes:
+   This function is intended to be passed to TSSetRHSFunction() to evaluate the right hand side for linear problems.
+   The matrix (and optionally the evaluation context) should be passed to TSSetRHSJacobian().
+
+.seealso: TSSetRHSFunction(), TSSetRHSJacobian(), TSComputeRHSJacobianConstant()
+@*/
+PetscErrorCode TSComputeRHSFunctionLinear(TS ts,PetscReal t,Vec X,Vec F,void *ctx)
+{
+  PetscErrorCode ierr;
+  Mat Arhs,Brhs;
+  MatStructure flg2;
+
+  PetscFunctionBegin;
+  ierr = TSGetRHSMats_Private(ts,&Arhs,&Brhs);CHKERRQ(ierr);
+  ierr = TSComputeRHSJacobian(ts,t,X,&Arhs,&Brhs,&flg2);CHKERRQ(ierr);
+  ierr = MatMult(Arhs,X,F);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "TSComputeRHSJacobianConstant"
+/*@C
+   TSComputeRHSJacobianConstant - Reuses a Jacobian that is time-independent.
+
+   Collective on TS
+
+   Input Arguments:
++  ts - time stepping context
+.  t - time at which to evaluate
+.  X - state at which to evaluate
+-  ctx - context
+
+   Output Arguments:
++  A - pointer to operator
+.  B - pointer to preconditioning matrix
+-  flg - matrix structure flag
+
+   Level: intermediate
+
+   Notes:
+   This function is intended to be passed to TSSetRHSJacobian() to evaluate the Jacobian for linear time-independent problems.
+
+.seealso: TSSetRHSFunction(), TSSetRHSJacobian(), TSComputeRHSFunctionLinear()
+@*/
+PetscErrorCode TSComputeRHSJacobianConstant(TS ts,PetscReal t,Vec X,Mat *A,Mat *B,MatStructure *flg,void *ctx)
+{
+
+  PetscFunctionBegin;
+  *flg = SAME_PRECONDITIONER;
   PetscFunctionReturn(0);
 }
 

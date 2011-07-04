@@ -112,9 +112,13 @@ runex2f:
 	  ${RM} -f ex2_1.tmp
 
 runex3:
-	-@${MPIEXEC} -n 1 ./ex3 -ts_view -nox > ex3_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex3 -nox -ts_type ssp -ts_dt 0.0005 > ex3_1.tmp 2>&1;	  \
 	   ${DIFF} output/ex3_1.out ex3_1.tmp || echo "Possible problem with ex3_1, diffs above"; \
 	   ${RM} -f ex3_1.tmp
+runex3_2:
+	-@${MPIEXEC} -n 1 ./ex3 -nox -ts_type ssp -ts_dt 0.0005 -time_dependent_rhs 1 > ex3_2.tmp 2>&1;	  \
+	   ${DIFF} output/ex3_1.out ex3_2.tmp || echo "Possible problem with ex3_2, diffs above"; \
+	   ${RM} -f ex3_2.tmp
 
 runex4:
 	-@${MPIEXEC} -n 1 ./ex4 -ts_view -nox > ex4_1.tmp 2>&1;	  \
@@ -137,7 +141,7 @@ runex4_4:
 	   else echo "Possible problem with ex4_4, diffs above"; fi; \
 	   ${RM} -f ex4_4.tmp
 runex4_sundials:
-	-@${MPIEXEC} -n 4 ./ex4 -nox -ts_type sundials -ts_max_steps 500 > ex4.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 4 ./ex4 -nox -ts_type sundials -ts_max_steps 500 -nonlinear > ex4.tmp 2>&1;	  \
 	   if (${DIFF} output/ex4_sundials.out ex4.tmp) then true; \
 	   else echo "Possible problem with ex4_sundials, diffs above"; fi; \
 	   ${RM} -f ex4.tmp
@@ -229,7 +233,8 @@ runex15_5:
 	   ${RM} -f ex15.tmp
 
 
-TESTEXAMPLES_C		  = ex1.PETSc runex1 runex1_2 ex1.rm ex4.PETSc runex4 runex4_2 runex4_3 runex4_4 ex4.rm\
+TESTEXAMPLES_C		  = ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 runex3_2 ex3.rm \
+                            ex4.PETSc runex4 runex4_2 runex4_3 runex4_4 ex4.rm ex5.PETSc ex5.rm \
                             ex6.PETSc runex6 ex6.rm ex7.PETSc runex7 runex7_2 runex7_3 ex7.rm ex11.PETSc ex11.rm \
                             ex10.PETSc runex10 runex10_2 runex10_3 runex10_4 ex10.rm ex12.PETSc ex12.rm \
                             ex15.PETSc runex15 runex15_2 runex15_3 runex15_4 runex15_5 ex15.rm

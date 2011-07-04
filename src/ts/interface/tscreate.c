@@ -73,6 +73,7 @@ PetscErrorCode  TSCreate(MPI_Comm comm, TS *ts) {
   t->max_snes_failures  = 1;
   t->max_reject         = 10;
   t->errorifstepfailed  = PETSC_TRUE;
+  t->rhsjacobian.time   = -1e20;
 
   ierr = TSSetInitialTimeStep(t,0.,0.1);CHKERRQ(ierr);
 

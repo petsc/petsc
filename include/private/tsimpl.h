@@ -57,6 +57,16 @@ struct _p_TS {
   Mat Brhs;     /* Right hand side preconditioning matrix */
   Vec Frhs;     /* Right hand side function value */
 
+  /* This is a general caching scheme to avoid recomputing the Jacobian at a place that has been previously been evaluated.
+   * The present use case is that TSComputeRHSFunctionLinear() evaluates the Jacobian once and we don't want it to be immeditely re-evaluated.
+   */
+  struct {
+    PetscReal time;             /* The time at which the matrices were last evaluated */
+    Vec X;                      /* Solution vector at which the Jacobian was last evaluated */
+    PetscInt Xstate;            /* State of the solution vector */
+    MatStructure mstructure;    /* The structure returned */
+  } rhsjacobian;
+
   /* ---------------------Nonlinear Iteration------------------------------*/
   SNES  snes;
   void *funP;

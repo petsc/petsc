@@ -8,6 +8,8 @@
 #define tsview_                              TSVIEW
 #define tsgetoptionsprefix_                  TSGETOPTIONSPREFIX
 #define tsmonitorset_                        TSMONITORSET
+#define tscomputerhsfunctionlinear_          TSCOMPUTERHSFUNCTIONLINEAR
+#define tscomputerhsjacobianconstant_        TSCOMPUTERHSJACOBIANCONSTANT
 #define tsdefaultcomputejacobian_            TSDEFAULTCOMPUTEJACOBIAN
 #define tsdefaultcomputejacobiancolor_       TSDEFAULTCOMPUTEJACOBIANCOLOR
 #define tsmonitordefault_                    TSMONITORDEFAULT
@@ -20,6 +22,8 @@
 #define tsview_                              tsview
 #define tsgetoptionsprefix_                  tsgetoptionsprefix
 #define tsmonitorset_                        tsmonitorset
+#define tscomputerhsfunctionlinear_          tscomputerhsfunctionlinear
+#define tscomputerhsjacobianconstant_        tscomputerhsjacobianconstant
 #define tsdefaultcomputejacobian_            tsdefaultcomputejacobian
 #define tsdefaultcomputejacobiancolor_       tsdefaultcomputejacobiancolor
 #define tsmonitordefault_                    tsmonitordefault
@@ -88,23 +92,41 @@ void PETSC_STDCALL tssetpoststep_(TS *ts,PetscErrorCode (PETSC_STDCALL *f)(TS*,P
   *ierr = TSSetPreStep(*ts,ourpoststep);
 }
 
+void tscomputerhsfunctionlinear_(TS *ts,PetscReal *t,Vec *X,Vec *F,void *ctx,PetscErrorCode *ierr)
+{
+  *ierr = TSComputeRHSFunctionLinear(*ts,*t,*X,*F,ctx);
+}
 void PETSC_STDCALL tssetrhsfunction_(TS *ts,Vec *r,PetscErrorCode (PETSC_STDCALL *f)(TS*,PetscReal*,Vec*,Vec*,void*,PetscErrorCode*),void*fP,PetscErrorCode *ierr)
 {
-  PetscObjectAllocateFortranPointers(*ts,10);
-  ((PetscObject)*ts)->fortran_func_pointers[1] = (PetscVoidFunction)f;
-  *ierr = TSSetRHSFunction(*ts,*r,ourtsfunction,fP);
+  Vec R;
+  CHKFORTRANNULLOBJECT(r);
+  CHKFORTRANNULLFUNCTION(f);
+  CHKFORTRANNULLOBJECT(fP);
+  R = r ? *r : PETSC_NULL;
+  if ((PetscVoidFunction)f == (PetscVoidFunction)tscomputerhsfunctionlinear_) {
+    *ierr = TSSetRHSFunction(*ts,R,TSComputeRHSFunctionLinear,fP);
+  } else {
+    PetscObjectAllocateFortranPointers(*ts,10);
+    ((PetscObject)*ts)->fortran_func_pointers[1] = (PetscVoidFunction)f;
+    *ierr = TSSetRHSFunction(*ts,R,ourtsfunction,fP);
+  }
 }
 
 /* ---------------------------------------------------------*/
 extern void tsdefaultcomputejacobian_(TS*,PetscReal*,Vec*,Mat*,Mat*,MatStructure*,void*,PetscErrorCode*);
 extern void tsdefaultcomputejacobiancolor_(TS*,PetscReal*,Vec*,Mat*,Mat*,MatStructure*,void*,PetscErrorCode*);
-
+void tscomputerhsjacobianconstant_(TS *ts,PetscReal *t,Vec *X,Mat *A,Mat *B,MatStructure *flg,void *ctx,PetscErrorCode *ierr)
+{
+  *ierr = TSComputeRHSJacobianConstant(*ts,*t,*X,A,B,flg,ctx);
+}
 void PETSC_STDCALL tssetrhsjacobian_(TS *ts,Mat *A,Mat *B,void (PETSC_STDCALL *f)(TS*,PetscReal*,Vec*,Mat*,Mat*,MatStructure*,
                void*,PetscErrorCode*),void*fP,PetscErrorCode *ierr)
 {
   PetscObjectAllocateFortranPointers(*ts,10);
   if (FORTRANNULLFUNCTION(f)) {
     *ierr = TSSetRHSJacobian(*ts,*A,*B,PETSC_NULL,fP);
+  } else if ((PetscVoidFunction)f == (PetscVoidFunction)tscomputerhsjacobianconstant_) {
+    *ierr = TSSetRHSJacobian(*ts,*A,*B,TSComputeRHSJacobianConstant,fP);
   } else if ((PetscVoidFunction)f == (PetscVoidFunction)tsdefaultcomputejacobian_) {
     *ierr = TSSetRHSJacobian(*ts,*A,*B,TSDefaultComputeJacobian,fP);
   } else if ((PetscVoidFunction)f == (PetscVoidFunction)tsdefaultcomputejacobiancolor_) {
