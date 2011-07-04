@@ -18,14 +18,15 @@ Program usage:
    e.g., mpiexec -n 2 ./ex17 -da_grid_x 40 -ts_max_steps 2 -snes_monitor -ksp_monitor
          ./ex17 -da_grid_x 40 -drawcontours -draw_pause .1
          ./ex17 -da_grid_x 100 -drawcontours -draw_pause .1 -ts_type theta -ts_theta_theta 0.5 # Midpoint is not L-stable
-         ./ex17 -jac_type 1 -drawcontours -draw_pause .1 -da_grid_x 500 -boundary 1 
+         ./ex17 -jac_type fd_coloring -drawcontours -draw_pause .1 -da_grid_x 500 -boundary 1 
          ./ex17 -da_grid_x 100 -drawcontours -draw_pause 1 -ts_type gl -ts_adapt_type none -ts_max_steps 2 
 */
 
 #include <petscdmda.h>
 #include <petscts.h>
 
-enum JacEvalType {JAC_EXACT,JAC_COLOR,JAC_FD};
+typedef enum {JACOBIAN_ANALYTIC,JACOBIAN_FD_COLORING,JACOBIAN_FD_FULL} JacobianType;
+static const char *const JacobianTypes[] = {"analytic","fd_coloring","fd_full","JacobianType","fd_",0};
 
 /*
    User-defined data structures and routines
@@ -60,7 +61,7 @@ int main(int argc,char **argv)
   PetscReal      ftime,dt;
   MonitorCtx     usermonitor;       /* user-defined monitor context */
   AppCtx         user;              /* user-defined work context */
-  JacEvalType    jacType;
+  JacobianType   jacType;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
 
@@ -92,10 +93,10 @@ int main(int argc,char **argv)
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSTHETA);CHKERRQ(ierr); /* General Linear method, TSTHETA can also solve DAE */
   ierr = TSThetaSetTheta(ts,1.0);CHKERRQ(ierr); 
-  ierr = TSSetIFunction(ts,FormIFunction,&user);CHKERRQ(ierr);
+  ierr = TSSetIFunction(ts,PETSC_NULL,FormIFunction,&user);CHKERRQ(ierr);
 
   ierr = DMGetMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
-  jacType = JAC_EXACT; /* use user-provide Jacobian */
+  jacType = JACOBIAN_ANALYTIC; /* use user-provide Jacobian */
   ierr = TSSetIJacobian(ts,J,J,FormIJacobian,&user);CHKERRQ(ierr);
 
   ftime = 1.0;
@@ -115,10 +116,12 @@ int main(int argc,char **argv)
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
-  /* Use slow fd Jacobian or fast fd Jacobian with clorings. 
+  /* Use slow fd Jacobian or fast fd Jacobian with colorings.
      Note: this requirs snes which is not created until TSSetUp()/TSSetFromOptions() is called */
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-jac_type",(PetscInt*)&jacType,PETSC_NULL);CHKERRQ(ierr);
-  if (jacType == JAC_COLOR) {
+  ierr = PetscOptionsBegin(((PetscObject)da)->comm,PETSC_NULL,"Options for Jacobian evaluation",PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsEnum("-jac_type","Type of Jacobian","",JacobianTypes,(PetscEnum)jacType,(PetscEnum*)&jacType,0);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  if (jacType == JACOBIAN_FD_COLORING) {
     SNES       snes;
     ISColoring iscoloring;
     ierr = DMGetColoring(da,IS_COLORING_GLOBAL,MATAIJ,&iscoloring);CHKERRQ(ierr);
@@ -128,18 +131,20 @@ int main(int argc,char **argv)
     ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode(*)(void))SNESTSFormFunction,ts);CHKERRQ(ierr);
     ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr);
-  } else if (jacType == JAC_FD){
+  } else if (jacType == JACOBIAN_FD_FULL){
     SNES       snes;
     ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobian,&user);CHKERRQ(ierr);
   }
-  
+
   //ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = TSStep(ts,&steps,&ftime);CHKERRQ(ierr);
+  ierr = TSSolve(ts,u);CHKERRQ(ierr);
+  ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
+  ierr = TSGetTime(ts,&ftime);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.
