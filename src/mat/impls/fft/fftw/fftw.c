@@ -11,6 +11,7 @@ EXTERN_C_END
 
 typedef struct {
   ptrdiff_t   ndim_fftw,*dim_fftw;
+  PetscInt   partial_dim;
   fftw_plan   p_forward,p_backward;
   unsigned    p_flag; /* planner flags, FFTW_ESTIMATE,FFTW_MEASURE, FFTW_PATIENT, FFTW_EXHAUSTIVE */
   PetscScalar *finarray,*foutarray,*binarray,*boutarray; /* keep track of arrays becaue fftw plan should be 
@@ -424,8 +425,13 @@ PetscErrorCode  MatGetVecs_FFTW(Mat A,Vec *fin,Vec *fout)
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   if (size == 1){ /* sequential case */
+#if defined(PETSC_USE_COMPLEX)
     if (fin) {ierr = VecCreateSeq(PETSC_COMM_SELF,N,fin);CHKERRQ(ierr);}
     if (fout){ierr = VecCreateSeq(PETSC_COMM_SELF,N,fout);CHKERRQ(ierr);}
+#else
+    if (fin) {ierr = VecCreateSeq(PETSC_COMM_SELF,N,fin);CHKERRQ(ierr);}
+    if (fout){ierr = VecCreateSeq(PETSC_COMM_SELF,2*(N/2+1),fout);CHKERRQ(ierr);}
+#endif
     printf("The code successfully comes at the end of the routine with one processor\n");
   } else {        /* mpi case */
     ptrdiff_t      alloc_local,local_n0,local_0_start;
@@ -449,7 +455,7 @@ PetscErrorCode  MatGetVecs_FFTW(Mat A,Vec *fin,Vec *fout)
     switch (ndim){
     case 1:
       /* Get local size */
-      /* We need to write an error message here saying that one cannot call this routine when doing paralllel 1D complex FFTW */
+      /* We need to write an error message here saying that one cannot call this routine when doing parallel 1D real FFTW */
 //      SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Works only for parallel Multi-dimensional FFTW, Dimension>1. Check Documentation for MatGetVecs_FFTW1D routine");
       alloc_local = fftw_mpi_local_size_1d(dim[0],comm,FFTW_FORWARD,FFTW_ESTIMATE,&local_n0,&local_0_start,&local_n1,&local_1_end);
       if (fin) {
@@ -623,9 +629,9 @@ PetscErrorCode InputTransformFFT_FFTW(Mat A,Vec x,Vec y)
   PetscInt       N=fft->N, N1, n1 ,NM;
   PetscInt       ndim=fft->ndim,*dim=fft->dim,n=fft->n;
   PetscInt       low, *indx1, *indx2, tempindx, tempindx1, *indx3, *indx4; 
-  PetscInt       i,j,k,rank,size; 
+  PetscInt       i,j,k,rank,size,partial_dim; 
   ptrdiff_t      alloc_local,local_n0,local_0_start;
-  ptrdiff_t      local_n1,local_1_start;
+  ptrdiff_t      local_n1,local_1_start,temp;
   VecScatter     vecscat;
   IS             list1,list2;
 
@@ -636,7 +642,7 @@ PetscErrorCode InputTransformFFT_FFTW(Mat A,Vec x,Vec y)
 
  switch (ndim){
  case 1:
-  SETERRQ(comm,PETSC_ERR_SUP,"Not Supported by FFTW");
+  SETERRQ(comm,PETSC_ERR_SUP,"FFTW does not support parallel 1D real transform");
   break;
  case 2:
       alloc_local =  fftw_mpi_local_size_2d_transposed(dim[0],dim[1]/2+1,comm,&local_n0,&local_0_start,&local_n1,&local_1_start);
@@ -711,7 +717,27 @@ PetscErrorCode InputTransformFFT_FFTW(Mat A,Vec x,Vec y)
       break;
 
  default:
-  SETERRQ(comm,PETSC_ERR_SUP,"Not Done Yet");
+      temp = (fftw->dim_fftw)[fftw->ndim_fftw-1];
+      printf("The value of temp is %ld\n",temp);
+      (fftw->dim_fftw)[fftw->ndim_fftw-1] = temp/2 + 1; 
+      alloc_local = fftw_mpi_local_size_transposed(fftw->ndim_fftw,fftw->dim_fftw,comm,&local_n0,&local_0_start,&local_n1,&local_1_start);
+      N1 = 2*N*(PetscInt)((fftw->dim_fftw)[fftw->ndim_fftw-1])/((PetscInt) temp);
+      (fftw->dim_fftw)[fftw->ndim_fftw-1] = temp;
+
+      partial_dim = fftw->partial_dim;
+      printf("The value of partial dim is %d\n",partial_dim);
+      
+      ierr = PetscMalloc(sizeof(PetscInt)*((PetscInt)local_n0)*partial_dim,&indx1);CHKERRQ(ierr);
+      ierr = PetscMalloc(sizeof(PetscInt)*((PetscInt)local_n0)*partial_dim,&indx2);CHKERRQ(ierr);
+      printf("Val local_0_start = %ld\n",local_0_start);
+
+      if (dim[ndim-1]%2==0)
+        NM = dim[ndim-1]+2;
+      else
+        NM = dim[ndim-1]+1;
+
+
+
   break;
  }
 
@@ -767,7 +793,7 @@ PetscErrorCode OutputTransformFFT_FFTW(Mat A,Vec x,Vec y)
 
  switch (ndim){
  case 1:
-  SETERRQ(comm,PETSC_ERR_SUP,"Not Supported by FFTW");
+  SETERRQ(comm,PETSC_ERR_SUP,"FFTW does not support parallel 1D real transform");
   break;
  case 2:
       alloc_local =  fftw_mpi_local_size_2d_transposed(dim[0],dim[1]/2+1,comm,&local_n0,&local_0_start,&local_n1,&local_1_start);
@@ -908,10 +934,11 @@ PetscErrorCode MatCreate_FFTW(Mat A)
     case 1:
 #if !defined(PETSC_USE_COMPLEX)
   SETERRQ(comm,PETSC_ERR_SUP,"FFTW does not support parallel 1D real transform");
-#endif
+#else
       alloc_local = fftw_mpi_local_size_1d(dim[0],comm,FFTW_FORWARD,FFTW_ESTIMATE,&local_n0,&local_0_start,&local_n1,&local_1_end);
       n = (PetscInt)local_n0;
       ierr = MatSetSizes(A,n,n,N,N);CHKERRQ(ierr);  
+#endif
 //      PetscObjectComposeFunctionDynamic((PetscObject)A,"MatGetVecs1DC_C","MatGetVecs1DC_FFTW",MatGetVecs1DC_FFTW);   
       break;
     case 2:
@@ -971,9 +998,10 @@ PetscErrorCode MatCreate_FFTW(Mat A)
   
   fft->n           = n;
   fftw->ndim_fftw  = (ptrdiff_t)ndim; // This is dimension of fft
+  fftw->partial_dim = partial_dim;
   ierr = PetscMalloc(ndim*sizeof(ptrdiff_t), (ptrdiff_t *)&(fftw->dim_fftw));CHKERRQ(ierr); 
   for(ctr=0;ctr<ndim;ctr++) (fftw->dim_fftw)[ctr]=dim[ctr];
-  
+   
   fftw->p_forward  = 0;
   fftw->p_backward = 0;
   fftw->p_flag     = FFTW_ESTIMATE;

@@ -49,8 +49,8 @@ PetscInt main(PetscInt argc,char **args)
   ierr = VecGetSize(x,&vsize);CHKERRQ(ierr);
   printf("The vector size from the main routine is %d\n",vsize);
 
-/*  ierr = InputTransformFFT(A,input,x);CHKERRQ(ierr);
-  ierr = MatMult(A,x,y);CHKERRQ(ierr);
+  ierr = InputTransformFFT(A,input,x);CHKERRQ(ierr);
+/*  ierr = MatMult(A,x,y);CHKERRQ(ierr);
   ierr = MatMultTranspose(A,y,z);CHKERRQ(ierr);
   ierr = OutputTransformFFT(A,z,output);CHKERRQ(ierr);
 
