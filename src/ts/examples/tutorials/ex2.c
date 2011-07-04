@@ -83,8 +83,6 @@ int main(int argc,char **argv)
   Vec            u;                      /* approximate solution vector */
   PetscInt       time_steps_max = 1000;  /* default max timesteps */
   PetscErrorCode ierr;
-  PetscInt       steps;
-  PetscReal      ftime;                  /* final time */
   PetscReal      dt;
   PetscReal      time_total_max = 100.0; /* default max total time */
   PetscBool      flg;

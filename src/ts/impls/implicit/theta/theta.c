@@ -31,7 +31,7 @@ typedef struct {
 static PetscErrorCode TSStep_Theta(TS ts)
 {
   TS_Theta       *th = (TS_Theta*)ts->data;
-  PetscInt       i,its,lits;
+  PetscInt       its,lits;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
