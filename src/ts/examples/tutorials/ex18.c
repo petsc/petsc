@@ -108,7 +108,7 @@ int main(int argc, char *argv[]) {
   ierr = TSSetDM(ts,user.iga);CHKERRQ(ierr);
   ierr = TSSetSolution(ts,U);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
-  ierr = TSSetIFunction(ts,FormResidual,&user);CHKERRQ(ierr);
+  ierr = TSSetIFunction(ts,PETSC_NULL,FormResidual,&user);CHKERRQ(ierr);
   ierr = TSSetIJacobian(ts,J,J,FormTangent,&user);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,1000000,1000.0);CHKERRQ(ierr);
   ierr = TSSetInitialTimeStep(ts,0.0,0.001);CHKERRQ(ierr);
@@ -118,7 +118,9 @@ int main(int argc, char *argv[]) {
 
   PetscInt steps;
   PetscReal ftime;
-  ierr =  TSStep(ts,&steps,&ftime);CHKERRQ(ierr);
+  ierr = TSSolve(ts,U);CHKERRQ(ierr);
+  ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
+  ierr = TSGetTime(ts,&ftime);CHKERRQ(ierr);
 
   // Cleanup
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
