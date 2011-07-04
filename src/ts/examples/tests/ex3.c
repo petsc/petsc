@@ -68,7 +68,7 @@ int main(int argc,char **argv)
   zInitial       = 0.0;
   zFinal         = 1.0;
   T              = 0.014/nphase;
-  nz             = num_z; 
+  nz             = num_z;
   m              = nz-2;
   appctx.nz      = nz;
   max_steps      = (PetscInt)10000;
@@ -91,9 +91,9 @@ int main(int argc,char **argv)
   /*------------------------*/
   ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD, m, m, 3, PETSC_NULL, &appctx.Amat);
   ierr = MatSetFromOptions(appctx.Amat);
-  /* set space grid points - interio points only! */   
+  /* set space grid points - interio points only! */
   ierr = PetscMalloc((nz+1)*sizeof(PetscScalar),&z);CHKERRQ(ierr);
-  for (i=0; i<nz; i++) z[i]=(i)*((zFinal-zInitial)/(nz-1)); 
+  for (i=0; i<nz; i++) z[i]=(i)*((zFinal-zInitial)/(nz-1));
   appctx.z = z;
   femA(&appctx,nz,z);
 
@@ -104,7 +104,7 @@ int main(int argc,char **argv)
   ierr = MatSetFromOptions(Jmat);CHKERRQ(ierr);
 
   /* create working vectors for formulating rhs=inv(Alhs)*(Arhs*U + g) */
-  ierr = VecDuplicate(init_sol,&appctx.ksp_rhs);CHKERRQ(ierr); 
+  ierr = VecDuplicate(init_sol,&appctx.ksp_rhs);CHKERRQ(ierr);
   ierr = VecDuplicate(init_sol,&appctx.ksp_sol);CHKERRQ(ierr);
 
   /* set intial guess */
@@ -119,7 +119,7 @@ int main(int argc,char **argv)
   /*create a time-stepping context and set the problem type */
   /*--------------------------------------------------------*/
   ierr = TSCreate(PETSC_COMM_WORLD, &ts);CHKERRQ(ierr);
-  ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr); 
+  ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
 
   /* set time-step method */
   ierr = TSSetType(ts,TSCN);CHKERRQ(ierr);
@@ -127,11 +127,12 @@ int main(int argc,char **argv)
   /* Set optional user-defined monitoring routine */
   ierr = TSMonitorSet(ts,Monitor,&appctx,PETSC_NULL);CHKERRQ(ierr);
   /* set the right hand side of U_t = RHSfunction(U,t) */
-  ierr = TSSetRHSFunction(ts,(PetscErrorCode (*)(TS,PetscScalar,Vec,Vec,void*))RHSfunction,&appctx);CHKERRQ(ierr);
+  ierr = TSSetRHSFunction(ts,PETSC_NULL,(PetscErrorCode (*)(TS,PetscScalar,Vec,Vec,void*))RHSfunction,&appctx);CHKERRQ(ierr);
 
   if (appctx.useAlhs){
     /* set the left hand side matrix of Amat*U_t = rhs(U,t) */
-    ierr = TSSetMatrices(ts,PETSC_NULL,PETSC_NULL,appctx.Amat,PETSC_NULL,DIFFERENT_NONZERO_PATTERN,&appctx);CHKERRQ(ierr); 
+    ierr = TSSetIFunction(ts,PETSC_NULL,TSComputeIFunctionLinear,&appctx);CHKERRQ(ierr);
+    ierr = TSSetIJacobian(ts,appctx.Amat,appctx.Amat,TSComputeIJacobianConstant,&appctx);
   }
 
   /* use petsc to compute the jacobian by finite differences */
@@ -163,12 +164,14 @@ int main(int argc,char **argv)
 
     /* loop over time steps */
     /*----------------------*/
-    ierr = TSStep(ts,&steps,&ftime);CHKERRQ(ierr);
+    ierr = TSSolve(ts,init_sol);CHKERRQ(ierr);
+    ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
+    ierr = TSGetTime(ts,&ftime);CHKERRQ(ierr);
     stepsz[k+1] = stepsz[k]*1.5; /* change step size for the next phase */
   }
 
   /* free space */
-  ierr = TSDestroy(&ts);CHKERRQ(ierr)
+  ierr = TSDestroy(&ts);CHKERRQ(ierr);
   ierr = MatDestroy(&appctx.Amat);CHKERRQ(ierr);
   ierr = MatDestroy(&Jmat);CHKERRQ(ierr);
   ierr = VecDestroy(&appctx.ksp_rhs);CHKERRQ(ierr);
