@@ -53,6 +53,12 @@ PetscErrorCode  TSCreate(MPI_Comm comm, TS *ts) {
   ierr = PetscHeaderCreate(t, _p_TS, struct _TSOps, TS_CLASSID, -1, "TS", comm, TSDestroy, TSView);CHKERRQ(ierr);
   ierr = PetscMemzero(t->ops, sizeof(struct _TSOps));CHKERRQ(ierr);
 
+  ierr = PetscMalloc(sizeof(struct _TSUserOps), &t->userops);
+  t->userops->rhsfunction = 0;
+  t->userops->ifunction   = 0;
+  t->userops->rhsjacobian = 0;
+  t->userops->ijacobian   = 0;
+
   /* General TS description */
   t->problem_type       = TS_NONLINEAR;
   t->vec_sol            = PETSC_NULL;

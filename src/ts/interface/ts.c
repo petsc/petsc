@@ -220,12 +220,15 @@ PetscErrorCode  TSComputeRHSJacobian(TS ts,PetscReal t,Vec X,Mat *A,Mat *B,MatSt
   if (ts->rhsjacobian.time == t && (ts->problem_type == TS_LINEAR || (ts->rhsjacobian.X == X && ts->rhsjacobian.Xstate == Xstate))) {
     *flg = ts->rhsjacobian.mstructure;
     PetscFunctionReturn(0);
+
+  if (!ts->userops->rhsjacobian && !ts->userops->ijacobian) SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_USER,"Must call TSSetRHSJacobian() and / or TSSetIJacobian()");
+
+  if (ts->userops->rhsjacobian) {
   }
-  if (ts->ops->rhsjacobian) {
     ierr = PetscLogEventBegin(TS_JacobianEval,ts,X,*A,*B);CHKERRQ(ierr);
     *flg = DIFFERENT_NONZERO_PATTERN;
     PetscStackPush("TS user Jacobian function");
-    ierr = (*ts->ops->rhsjacobian)(ts,t,X,A,B,flg,ts->jacP);CHKERRQ(ierr);
+    ierr = (*ts->userops->rhsjacobian)(ts,t,X,A,B,flg,ts->jacP);CHKERRQ(ierr);
     PetscStackPop;
     ierr = PetscLogEventEnd(TS_JacobianEval,ts,X,*A,*B);CHKERRQ(ierr);
     /* make sure user returned a correct Jacobian and preconditioner */
@@ -277,14 +280,17 @@ PetscErrorCode TSComputeRHSFunction(TS ts,PetscReal t,Vec x,Vec y)
   PetscValidHeaderSpecific(x,VEC_CLASSID,3);
   PetscValidHeaderSpecific(y,VEC_CLASSID,4);
 
+  if (!ts->userops->rhsfunction && !ts->userops->ifunction) SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_USER,"Must call TSSetRHSFunction() and / or TSSetIFunction()");
+
   ierr = PetscLogEventBegin(TS_FunctionEval,ts,x,y,0);CHKERRQ(ierr);
-  if (ts->ops->rhsfunction) {
+  if (ts->userops->rhsfunction) {
     PetscStackPush("TS user right-hand-side function");
-    ierr = (*ts->ops->rhsfunction)(ts,t,x,y,ts->funP);CHKERRQ(ierr);
+    ierr = (*ts->userops->rhsfunction)(ts,t,x,y,ts->funP);CHKERRQ(ierr);
     PetscStackPop;
   } else {
     ierr = VecZeroEntries(y);CHKERRQ(ierr);
   }
+
   ierr = PetscLogEventEnd(TS_FunctionEval,ts,x,y,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -367,16 +373,18 @@ PetscErrorCode TSComputeIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec Y,PetscBo
   PetscValidHeaderSpecific(Xdot,VEC_CLASSID,4);
   PetscValidHeaderSpecific(Y,VEC_CLASSID,5);
 
+  if (!ts->userops->rhsfunction && !ts->userops->ifunction) SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_USER,"Must call TSSetRHSFunction() and / or TSSetIFunction()");
+
   ierr = PetscLogEventBegin(TS_FunctionEval,ts,X,Xdot,Y);CHKERRQ(ierr);
-  if (ts->ops->ifunction) {
+  if (ts->userops->ifunction) {
     PetscStackPush("TS user implicit function");
-    ierr = (*ts->ops->ifunction)(ts,t,X,Xdot,Y,ts->funP);CHKERRQ(ierr);
+    ierr = (*ts->userops->ifunction)(ts,t,X,Xdot,Y,ts->funP);CHKERRQ(ierr);
     PetscStackPop;
   }
   if (imex) {
-    if (!ts->ops->ifunction) {ierr = VecCopy(Xdot,Y);CHKERRQ(ierr);}
+    if (!ts->userops->ifunction) {ierr = VecCopy(Xdot,Y);CHKERRQ(ierr);}
   } else {
-    if (!ts->ops->ifunction) {
+    if (!ts->userops->ifunction) {
       ierr = TSComputeRHSFunction(ts,t,X,Y);CHKERRQ(ierr);
       ierr = VecAYPX(Y,-1,Xdot);CHKERRQ(ierr);
     } else {
@@ -439,18 +447,20 @@ PetscErrorCode TSComputeIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal shi
   PetscValidHeaderSpecific(*B,MAT_CLASSID,7);
   PetscValidPointer(flg,8);
 
+  if (!ts->userops->rhsjacobian && !ts->userops->ijacobian) SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_USER,"Must call TSSetRHSJacobian() and / or TSSetIJacobian()");
+
   *flg = SAME_NONZERO_PATTERN;  /* In case we're solving a linear problem in which case it wouldn't get initialized below. */
   ierr = PetscLogEventBegin(TS_JacobianEval,ts,X,*A,*B);CHKERRQ(ierr);
-  if (ts->ops->ijacobian) {
+  if (ts->userops->ijacobian) {
     PetscStackPush("TS user implicit Jacobian");
-    ierr = (*ts->ops->ijacobian)(ts,t,X,Xdot,shift,A,B,flg,ts->jacP);CHKERRQ(ierr);
+    ierr = (*ts->userops->ijacobian)(ts,t,X,Xdot,shift,A,B,flg,ts->jacP);CHKERRQ(ierr);
     PetscStackPop;
     /* make sure user returned a correct Jacobian and preconditioner */
     PetscValidHeaderSpecific(*A,MAT_CLASSID,4);
     PetscValidHeaderSpecific(*B,MAT_CLASSID,5);
   }
   if (imex) {
-    if (!ts->ops->ijacobian) {  /* system was written as Xdot = F(t,X) */
+    if (!ts->userops->ijacobian) {  /* system was written as Xdot = F(t,X) */
       ierr = MatZeroEntries(*A);CHKERRQ(ierr);
       ierr = MatShift(*A,1.0);CHKERRQ(ierr);
       if (*A != *B) {
@@ -460,7 +470,7 @@ PetscErrorCode TSComputeIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal shi
       *flg = SAME_PRECONDITIONER;
     }
   } else {
-    if (!ts->ops->ijacobian) {
+    if (!ts->userops->ijacobian) {
       ierr = TSComputeRHSJacobian(ts,t,X,A,B,flg);CHKERRQ(ierr);
       ierr = MatScale(*A,-1);CHKERRQ(ierr);
       ierr = MatShift(*A,shift);CHKERRQ(ierr);
@@ -468,7 +478,7 @@ PetscErrorCode TSComputeIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal shi
         ierr = MatScale(*B,-1);CHKERRQ(ierr);
         ierr = MatShift(*B,shift);CHKERRQ(ierr);
       }
-    } else if (ts->ops->rhsjacobian) {
+    } else if (ts->userops->rhsjacobian) {
       Mat Arhs,Brhs;
       MatStructure axpy,flg2 = DIFFERENT_NONZERO_PATTERN;
       ierr = TSGetRHSMats_Private(ts,&Arhs,&Brhs);CHKERRQ(ierr);
@@ -525,7 +535,7 @@ PetscErrorCode  TSSetRHSFunction(TS ts,Vec r,PetscErrorCode (*f)(TS,PetscReal,Ve
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (r) PetscValidHeaderSpecific(r,VEC_CLASSID,2);
-  if (f)   ts->ops->rhsfunction = f;
+  if (f)   ts->userops->rhsfunction = f;
   if (ctx) ts->funP             = ctx;
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
   ierr = SNESSetFunction(snes,r,SNESTSFormFunction,ts);CHKERRQ(ierr);
@@ -590,10 +600,10 @@ PetscErrorCode  TSSetRHSJacobian(TS ts,Mat A,Mat B,TSRHSJacobian f,void *ctx)
   if (A) PetscCheckSameComm(ts,1,A,2);
   if (B) PetscCheckSameComm(ts,1,B,3);
 
-  if (f)   ts->ops->rhsjacobian = f;
+  if (f)   ts->userops->rhsjacobian = f;
   if (ctx) ts->jacP             = ctx;
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
-  if (!ts->ops->ijacobian) {
+  if (!ts->userops->ijacobian) {
     ierr = SNESSetJacobian(snes,A,B,SNESTSFormJacobian,ts);CHKERRQ(ierr);
   }
   if (A) {
@@ -649,7 +659,7 @@ PetscErrorCode  TSSetIFunction(TS ts,Vec res,TSIFunction f,void *ctx)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (res) PetscValidHeaderSpecific(res,VEC_CLASSID,2);
-  if (f)   ts->ops->ifunction = f;
+  if (f)   ts->userops->ifunction = f;
   if (ctx) ts->funP           = ctx;
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
   ierr = SNESSetFunction(snes,res,SNESTSFormFunction,ts);CHKERRQ(ierr);
@@ -686,7 +696,7 @@ PetscErrorCode TSGetIFunction(TS ts,Vec *r,TSIFunction *func,void **ctx)
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
   ierr = SNESGetFunction(snes,r,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-  if (func) *func = ts->ops->ifunction;
+  if (func) *func = ts->userops->ifunction;
   if (ctx)  *ctx  = ts->funP;
   PetscFunctionReturn(0);
 }
@@ -721,7 +731,7 @@ PetscErrorCode TSGetRHSFunction(TS ts,Vec *r,TSRHSFunction *func,void **ctx)
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
   ierr = SNESGetFunction(snes,r,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-  if (func) *func = ts->ops->rhsfunction;
+  if (func) *func = ts->userops->rhsfunction;
   if (ctx)  *ctx  = ts->funP;
   PetscFunctionReturn(0);
 }
@@ -782,7 +792,7 @@ PetscErrorCode  TSSetIJacobian(TS ts,Mat A,Mat B,TSIJacobian f,void *ctx)
   if (B) PetscValidHeaderSpecific(B,MAT_CLASSID,3);
   if (A) PetscCheckSameComm(ts,1,A,2);
   if (B) PetscCheckSameComm(ts,1,B,3);
-  if (f)   ts->ops->ijacobian = f;
+  if (f)   ts->userops->ijacobian = f;
   if (ctx) ts->jacP           = ctx;
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
   ierr = SNESSetJacobian(snes,A,B,SNESTSFormJacobian,ts);CHKERRQ(ierr);
@@ -1246,6 +1256,8 @@ PetscErrorCode  TSDestroy(TS *ts)
   ierr = SNESDestroy(&(*ts)->snes);CHKERRQ(ierr);
   ierr = DMDestroy(&(*ts)->dm);CHKERRQ(ierr);
   ierr = TSMonitorCancel((*ts));CHKERRQ(ierr);
+
+  ierr = PetscFree((*ts)->userops);
 
   ierr = PetscHeaderDestroy(ts);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1722,6 +1734,7 @@ PetscErrorCode  TSSolve(TS ts, Vec x)
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidHeaderSpecific(x,VEC_CLASSID,2);
   ierr = TSSetSolution(ts,x); CHKERRQ(ierr);
+  ierr = TSSetUp(ts); CHKERRQ(ierr);
   /* reset time step and iteration counters */
   ts->steps = 0;
   ts->linear_its = 0;
@@ -2068,7 +2081,7 @@ PetscErrorCode  TSGetRHSJacobian(TS ts,Mat *J,Mat *M,TSRHSJacobian *func,void **
   PetscFunctionBegin;
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
   ierr = SNESGetJacobian(snes,J,M,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-  if (func) *func = ts->ops->rhsjacobian;
+  if (func) *func = ts->userops->rhsjacobian;
   if (ctx) *ctx = ts->jacP;
   PetscFunctionReturn(0);
 }
@@ -2105,7 +2118,7 @@ PetscErrorCode  TSGetIJacobian(TS ts,Mat *A,Mat *B,TSIJacobian *f,void **ctx)
   PetscFunctionBegin;
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
   ierr = SNESGetJacobian(snes,A,B,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-  if (f) *f = ts->ops->ijacobian;
+  if (f) *f = ts->userops->ijacobian;
   if (ctx) *ctx = ts->jacP;
   PetscFunctionReturn(0);
 }

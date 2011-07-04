@@ -4,7 +4,7 @@
 static char help[] = "Nonlinear, time-dependent PDE in 2d.\n";
 
 
-/* 
+/*
    Include "petscdmda.h" so that we can use distributed arrays (DMDAs).
    Include "petscts.h" so that we can use SNES solvers.  Note that this
    file automatically includes:
@@ -21,7 +21,7 @@ static char help[] = "Nonlinear, time-dependent PDE in 2d.\n";
 #include <petscts.h>
 
 
-/* 
+/*
    User-defined routines
 */
 extern PetscErrorCode FormFunction(TS,PetscReal,Vec,Vec,void*),FormInitialSolution(DM,Vec);
@@ -66,7 +66,7 @@ int main(int argc,char **argv)
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetDM(ts,(DM)da);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
-  ierr = TSSetRHSFunction(ts,FormFunction,da);CHKERRQ(ierr);
+  ierr = TSSetRHSFunction(ts,PETSC_NULL,FormFunction,da);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create matrix data structure; set Jacobian evaluation routine
@@ -89,13 +89,13 @@ int main(int argc,char **argv)
   ierr = TSSetRHSJacobian(ts,J,J,TSDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr);
 
   ierr = TSSetDuration(ts,maxsteps,1.0);CHKERRQ(ierr);
-  
+
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Customize nonlinear solver
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSetType(ts,TSBEULER);CHKERRQ(ierr);
   ierr = TSGetSNES(ts,&ts_snes);
- 
+
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -111,7 +111,9 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = TSStep(ts,&steps,&ftime);CHKERRQ(ierr);
+  ierr = TSSolve(ts,x);CHKERRQ(ierr);
+  ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
+  ierr = TSGetTime(ts,&ftime);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
@@ -130,7 +132,7 @@ int main(int argc,char **argv)
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "FormFunction"
-/* 
+/*
    FormFunction - Evaluates nonlinear function, F(x).
 
    Input Parameters:
@@ -206,7 +208,7 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec F,void *ptr)
   ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
   ierr = PetscLogFlops(11.0*ym*xm);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
-} 
+}
 
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
@@ -256,5 +258,5 @@ PetscErrorCode FormInitialSolution(DM da,Vec U)
   */
   ierr = DMDAVecRestoreArray(da,U,&u);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
-} 
+}
 
