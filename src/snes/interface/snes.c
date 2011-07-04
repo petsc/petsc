@@ -1655,11 +1655,6 @@ PetscErrorCode  SNESReset(SNES snes)
     ierr       = (*snes->ops->userdestroy)((void**)&snes->user);CHKERRQ(ierr);
     snes->user = PETSC_NULL;
   }
-  if (snes->ops->computejacobian == SNESDefaultComputeJacobianColor && snes->dm) {
-    ierr = MatFDColoringDestroy((MatFDColoring*)&snes->jacP);CHKERRQ(ierr);
-    snes->ops->computejacobian = PETSC_NULL;
-  }
-      
   if (snes->ops->reset) {
     ierr = (*snes->ops->reset)(snes);CHKERRQ(ierr);
   }
