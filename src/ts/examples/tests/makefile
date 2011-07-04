@@ -144,6 +144,21 @@ runex1f:
 	-@${MPIEXEC} -n 1 ./ex1f -test -nox -ts_type beuler -ksp_gmres_cgs_refinement_type refine_always -linear_variable_matrix 
 	-@${MPIEXEC} -n 1 ./ex1f -test -nox -ts_type beuler -ksp_gmres_cgs_refinement_type refine_always -nonlinear_jacobian 
 
+runex2_euler:
+	-@${MPIEXEC} -n 1 ./ex2 -ts_type euler > ex2_euler.tmp 2>&1;   \
+           ${DIFF} output/ex2_euler.out ex2_euler.tmp || echo "Possible problem with ex2_euler, diffs above"; \
+           ${RM} -f ex2_euler.tmp
+
+runex2_beuler:
+	-@${MPIEXEC} -n 1 ./ex2 -ts_type beuler > ex2_beuler.tmp 2>&1;   \
+           ${DIFF} output/ex2_beuler.out ex2_beuler.tmp || echo "Possible problem with ex2_beuler, diffs above"; \
+           ${RM} -f ex2_beuler.tmp
+
+runex2_sundials:
+	-@${MPIEXEC} -n 1 ./ex2 -ts_type sundials > ex2_sundials.tmp 2>&1;   \
+           ${DIFF} output/ex2_sundials.out ex2_sundials.tmp || echo "Possible problem with ex2_sundials, diffs above"; \
+           ${RM} -f ex2_sundials.tmp
+
 runex3:
 	-@${MPIEXEC} -n 1 ./ex3 > ex3.tmp 2>&1;	  \
 	   ${DIFF} output/ex3.out ex3.tmp || echo "Possible problem with ex3, diffs above"; \
