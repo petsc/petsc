@@ -75,7 +75,7 @@ static PetscErrorCode MatMultAdd_Nest(Mat A,Vec x,Vec y,Vec z)
       Vec by;
       ierr = VecGetSubVector(y,bA->isglobal.row[i],&by);CHKERRQ(ierr);
       ierr = VecCopy(by,bz[i]);CHKERRQ(ierr);
-      ierr = VecRestoreSubVector(y,bA->isglobal.col[j],&by);CHKERRQ(ierr);
+      ierr = VecRestoreSubVector(y,bA->isglobal.row[i],&by);CHKERRQ(ierr);
     }
     for (j=0; j<nc; j++) {
       if (!bA->m[i][j]) continue;
