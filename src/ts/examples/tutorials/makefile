@@ -220,9 +220,8 @@ runex12:
 	   ${RM} -f ex12_1.tmp
 
 runex13:
-	-@${MPIEXEC} -n 1 ./ex13 -max_steps 5   > ex13_1.tmp 2>&1;	  \
-	   if (${DIFF} output/ex13_1.out ex13_1.tmp) then true; \
-	   else echo "Possible problem with ex13_1, diffs above"; fi; \
+	-@${MPIEXEC} -n 1 ./ex13 -max_steps 5   > ex13_1.tmp 2>&1; \
+	   ${DIFF} output/ex13_1.out ex13_1.tmp || echo "Possible problem with ex13_1, diffs above"; \
 	   ${RM} -f ex13_1.tmp
 
 runex15:
@@ -247,10 +246,14 @@ runex15_5:
 	   ${RM} -f ex15.tmp
 
 runex17:
-	-@${MPIEXEC} -n 1 ./ex17 -da_grid_x 40 -ts_max_steps 2 -snes_monitor -ksp_monitor > ex17_1.tmp 2>&1;	  \
-	   if (${DIFF} output/ex17_1.out ex17_1.tmp) then true; \
-	   else echo "Possible problem with ex17_1, diffs above"; fi; \
+	-@${MPIEXEC} -n 1 ./ex17 -da_grid_x 40 -ts_max_steps 2 -snes_monitor -ksp_monitor > ex17_1.tmp 2>&1; \
+	   ${DIFF} output/ex17_1.out ex17_1.tmp || echo "Possible problem with ex17_1, diffs above"; \
 	   ${RM} -f ex17_1.tmp
+
+runex17_2:
+	-@${MPIEXEC} -n 1 ./ex17 -da_grid_x 100 -ts_type theta -ts_theta_theta 0.5 > ex17_2.tmp 2>&1; \
+	   ${DIFF} output/ex17_2.out ex17_2.tmp || echo "Possible problem with ex17_2, diffs above";  \
+	   ${RM} -f ex17_2.tmp
 
 
 TESTEXAMPLES_C		  = ex1.PETSc runex1 runex1_2 ex1.rm ex4.PETSc runex4 runex4_2 runex4_3 runex4_4 ex4.rm\
