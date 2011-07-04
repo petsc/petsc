@@ -246,6 +246,12 @@ runex15_5:
 	   ${DIFF} output/ex15_1.out ex15.tmp || echo "Possible problem with ex15_2, diffs above"; \
 	   ${RM} -f ex15.tmp
 
+runex17:
+	-@${MPIEXEC} -n 1 ./ex17 -da_grid_x 40 -ts_max_steps 2 -snes_monitor -ksp_monitor > ex17_1.tmp 2>&1;	  \
+	   if (${DIFF} output/ex17_1.out ex17_1.tmp) then true; \
+	   else echo "Possible problem with ex17_1, diffs above"; fi; \
+	   ${RM} -f ex17_1.tmp
+
 
 TESTEXAMPLES_C		  = ex1.PETSc runex1 runex1_2 ex1.rm ex4.PETSc runex4 runex4_2 runex4_3 runex4_4 ex4.rm\
                             ex6.PETSc runex6 ex6.rm ex7.PETSc runex7 runex7_2 runex7_3 ex7.rm ex11.PETSc runex11 ex11.rm \
