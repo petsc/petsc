@@ -57,6 +57,7 @@ PetscErrorCode  TSCreate(MPI_Comm comm, TS *ts) {
   t->userops->rhsfunction = 0;
   t->userops->ifunction   = 0;
   t->userops->rhsjacobian = 0;
+  t->userops->rhsjacobian = 0;
   t->userops->ijacobian   = 0;
 
   /* General TS description */
@@ -80,6 +81,7 @@ PetscErrorCode  TSCreate(MPI_Comm comm, TS *ts) {
   t->max_reject         = 10;
   t->errorifstepfailed  = PETSC_TRUE;
   t->rhsjacobian.time   = -1e20;
+  t->ijacobian.time     = -1e20;
 
   ierr = TSSetInitialTimeStep(t,0.,0.1);CHKERRQ(ierr);
 

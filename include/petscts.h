@@ -113,6 +113,8 @@ extern PetscErrorCode   TSGetIJacobian(TS,Mat*,Mat*,TSIJacobian*,void**);
 
 extern PetscErrorCode   TSComputeRHSFunctionLinear(TS,PetscReal,Vec,Vec,void*);
 extern PetscErrorCode   TSComputeRHSJacobianConstant(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode   TSComputeIFunctionLinear(TS,PetscReal,Vec,Vec,Vec,void*);
+extern PetscErrorCode   TSComputeIJacobianConstant(TS,PetscReal,Vec,Vec,PetscReal,Mat*,Mat*,MatStructure*,void*);
 extern PetscErrorCode   TSDefaultComputeJacobianColor(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*);
 extern PetscErrorCode   TSDefaultComputeJacobian(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*);
 

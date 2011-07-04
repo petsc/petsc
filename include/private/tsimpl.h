@@ -70,6 +70,17 @@ struct _p_TS {
     MatStructure mstructure;    /* The structure returned */
   } rhsjacobian;
 
+  struct {
+    PetscReal time;             /* The time at which the matrices were last evaluated */
+    Vec X;                      /* Solution vector at which the Jacobian was last evaluated */
+    Vec Xdot;                   /* Time derivative of the state vector at which the Jacobian was last evaluated */
+    PetscInt Xstate;            /* State of the solution vector */
+    PetscInt Xdotstate;         /* State of the solution vector */
+    MatStructure mstructure;    /* The structure returned */
+    PetscReal shift;            /* The derivative of the lhs wrt to Xdot */
+    PetscBool imex;             /* Flag of the method if it was started as an imex method */
+  } ijacobian;
+
   /* ---------------------Nonlinear Iteration------------------------------*/
   SNES  snes;
   void *funP;
