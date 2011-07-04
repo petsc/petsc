@@ -29,7 +29,8 @@ extern PetscErrorCode MySNESMonitor(SNES,PetscInt,PetscReal,void *);
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  TS                     ts;                 /* nonlinear solver */
+  TS                     ts;                 /* time integrator */
+  SNES                   snes;               /* nonlinear solver */
   Vec                    x,r;                  /* solution, residual vectors */
   Mat                    J;                    /* Jacobian matrix */
   PetscInt               steps,maxsteps = 100;     /* iterations for convergence */
@@ -38,7 +39,6 @@ int main(int argc,char **argv)
   MatFDColoring          matfdcoloring;
   ISColoring             iscoloring;
   PetscReal              ftime;
-  SNES                   ts_snes;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
@@ -82,9 +82,10 @@ int main(int argc,char **argv)
   ierr = DMGetMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
   ierr = MatFDColoringCreate(J,iscoloring,&matfdcoloring);CHKERRQ(ierr);
   ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
-  ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))FormFunction,da);CHKERRQ(ierr);
+  ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode(*)(void))SNESTSFormFunction,ts);CHKERRQ(ierr);
   ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
-  ierr = TSSetRHSJacobian(ts,J,J,TSDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr);
+  ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
+  ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr);
 
   ierr = TSSetDuration(ts,maxsteps,1.0);CHKERRQ(ierr);
   ierr = TSMonitorSet(ts,MyTSMonitor,0,0);CHKERRQ(ierr);
@@ -93,8 +94,7 @@ int main(int argc,char **argv)
      Customize nonlinear solver
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSetType(ts,TSBEULER);CHKERRQ(ierr);
-  ierr = TSGetSNES(ts,&ts_snes);
-  ierr = SNESMonitorSet(ts_snes,MySNESMonitor,PETSC_NULL,PETSC_NULL);
+  ierr = SNESMonitorSet(snes,MySNESMonitor,PETSC_NULL,PETSC_NULL);
  
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
@@ -148,7 +148,7 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec F,void *ptr)
   DM             da = (DM)ptr;
   PetscErrorCode ierr;
   PetscInt       i,j,Mx,My,xs,ys,xm,ym;
-  PetscReal      two = 2.0,hx,hy,hxdhy,hydhx,sx,sy;
+  PetscReal      two = 2.0,hx,hy,sx,sy;
   PetscScalar    u,uxx,uyy,**x,**f;
   Vec            localX;
 
@@ -159,8 +159,6 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec F,void *ptr)
 
   hx     = 1.0/(PetscReal)(Mx-1); sx = 1.0/(hx*hx);
   hy     = 1.0/(PetscReal)(My-1); sy = 1.0/(hy*hy);
-  hxdhy  = hx/hy; 
-  hydhx  = hy/hx;
 
   /*
      Scatter ghost points to local vector,using the 2-step process
