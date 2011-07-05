@@ -2477,6 +2477,8 @@ cdef PetscErrorCode PetscPythonMonitorSet_Python(
     module = load_module(path)
     for name in names.split(','):
         monitor = getattr(module, name)
+        if isinstance(monitor, type):
+            monitor = monitor(ob)
         ob.setMonitor(monitor)
     #
     return FunctionEnd()
