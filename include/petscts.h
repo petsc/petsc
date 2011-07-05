@@ -39,6 +39,7 @@ E*/
 #define TSALPHA           "alpha"
 #define TSGL              "gl"
 #define TSSSP             "ssp"
+#define TSARKIMEX         "arkimex"
 
 /*E
     TSProblemType - Determines the type of problem this TS object is to be used to solve
@@ -411,7 +412,7 @@ M*/
 #  define TSGLRegisterDynamic(a,b,c,d)       TSGLRegister(a,b,c,d)
 #endif
 
-extern PetscErrorCode   TSGLRegister(const char[],const char[],const char[],PetscErrorCode(*)(TS));
+extern PetscErrorCode  TSGLRegister(const char[],const char[],const char[],PetscErrorCode(*)(TS));
 extern PetscErrorCode  TSGLRegisterAll(const char[]);
 extern PetscErrorCode  TSGLRegisterDestroy(void);
 extern PetscErrorCode  TSGLInitializePackage(const char[]);
@@ -419,6 +420,19 @@ extern PetscErrorCode  TSGLFinalizePackage(void);
 extern PetscErrorCode  TSGLSetType(TS,const TSGLType);
 extern PetscErrorCode  TSGLGetAdapt(TS,TSGLAdapt*);
 extern PetscErrorCode  TSGLSetAcceptType(TS,const TSGLAcceptType);
+
+#define TSARKIMEXType char*
+#define TSARKIMEX2D "2d"
+#define TSARKIMEX3  "3"
+#define TSARKIMEX4  "4"
+#define TSARKIMEX5  "5"
+extern PetscErrorCode TSARKIMEXGetType(TS ts,const TSARKIMEXType*);
+extern PetscErrorCode TSARKIMEXSetType(TS ts,const TSARKIMEXType);
+extern PetscErrorCode TSARKIMEXRegister(const TSARKIMEXType,PetscInt,PetscInt,const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[]);
+extern PetscErrorCode TSARKIMEXFinalizePackage(void);
+extern PetscErrorCode TSARKIMEXInitializePackage(const char path[]);
+extern PetscErrorCode TSARKIMEXRegisterDestroy(void);
+extern PetscErrorCode TSARKIMEXRegisterAll(void);
 
 /*
        PETSc interface to Sundials
