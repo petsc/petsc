@@ -1430,8 +1430,8 @@ PetscErrorCode  TSSetDuration(TS ts,PetscInt maxsteps,PetscReal maxtime)
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidLogicalCollectiveInt(ts,maxsteps,2);
   PetscValidLogicalCollectiveReal(ts,maxtime,2);
-  ts->max_steps = maxsteps;
-  ts->max_time  = maxtime;
+  if (maxsteps >= 0) ts->max_steps = maxsteps;
+  if (maxtime != PETSC_DEFAULT) ts->max_time  = maxtime;
   PetscFunctionReturn(0);
 }
 
@@ -1762,6 +1762,11 @@ PetscErrorCode  TSSolve(TS ts, Vec x)
   if (ts->ops->solve) {         /* This private interface is transitional and should be removed when all implementations are updated. */
     ierr = (*ts->ops->solve)(ts);CHKERRQ(ierr);
   } else {
+    if (++i >= ts->max_steps) {
+      ts->reason = TS_CONVERGED_ITS;
+    } else if (ts->ptime >= ts->max_time) {
+      ts->reason = TS_CONVERGED_TIME;
+    }
     /* steps the requested number of timesteps. */
     for (i=0; !ts->reason; ) {
       ierr = TSPreStep(ts);CHKERRQ(ierr);
