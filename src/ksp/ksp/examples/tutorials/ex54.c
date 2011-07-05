@@ -19,13 +19,14 @@ int main(int argc,char **args)
 {
   Mat            Amat,Pmat;
   PetscErrorCode ierr;
-  PetscInt       i,m = 2,N,rdim,cdim,its,Istart,Iend,j,Ii,bs;
+  PetscInt       i,m = 20,N,rdim,cdim,its,Istart,Iend,j,Ii,bs;
   PetscReal      x,y,h;
   Vec            xx,bb;
   KSP            ksp;
   PetscReal      soft_alpha = 1.e-3, *coords;
   PetscScalar    v;
-  
+  PetscInt       ii,jj;
+
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL); CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(PETSC_NULL,"-alpha",&soft_alpha,PETSC_NULL); CHKERRQ(ierr);
@@ -71,7 +72,7 @@ int main(int argc,char **args)
       PetscReal radius = sqrt( (x-.5+h/2)*(x-.5+h/2) +  (y-.5+h/2)*(y-.5+h/2) );
       PetscReal alpha = 1.0;
       if( radius < 0.25 ) alpha = soft_alpha;
-      for(int ii=0;ii<4;ii++)for(int jj=0;jj<4;jj++) DD[ii][jj] = alpha*DD1[ii][jj];
+      for(ii=0;ii<4;ii++)for(jj=0;jj<4;jj++) DD[ii][jj] = alpha*DD1[ii][jj];
       /* no BCs in Pamt */
       ierr = MatSetValues(Pmat,4,idx,4,idx,(const PetscScalar*)DD,ADD_VALUES);CHKERRQ(ierr);
       if( i>0 ) {
@@ -79,7 +80,7 @@ int main(int argc,char **args)
       }
       else {
         /* a BC */
-        for(int ii=0;ii<4;ii++)for(int jj=0;jj<4;jj++) DD[ii][jj] = alpha*DD2[ii][jj];
+        for(ii=0;ii<4;ii++)for(jj=0;jj<4;jj++) DD[ii][jj] = alpha*DD2[ii][jj];
         ierr = MatSetValues(Amat,4,idx,4,idx,(const PetscScalar*)DD,ADD_VALUES);CHKERRQ(ierr);
       }
     }
@@ -103,7 +104,7 @@ int main(int argc,char **args)
     ierr = PCSetCoordinates( subpc, 2, coords ); CHKERRQ(ierr);
     ierr = PetscFree( coords );  CHKERRQ(ierr);
   }
-  if(!true) {
+  if(!PETSC_TRUE) {
     PetscViewer        viewer;
     ierr = PetscViewerASCIIOpen(PETSC_COMM_SELF, "Amat.m", &viewer);  CHKERRQ(ierr);
     ierr = PetscViewerSetFormat( viewer, PETSC_VIEWER_ASCII_MATLAB);  CHKERRQ(ierr);

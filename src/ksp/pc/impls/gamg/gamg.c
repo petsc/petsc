@@ -8,8 +8,6 @@
 
 /* Private context for the GAMG preconditioner */
 typedef struct gamg_TAG {
-gamg_TAG() : m_dim(0), m_Nlevels(-1), m_data(0)
-    {}
   PetscInt       m_dim;
   PetscInt       m_Nlevels;
   PetscInt       m_data_sz;
@@ -26,10 +24,7 @@ PetscErrorCode PCReset_GAMG(PC pc)
   PC_GAMG         *pc_gamg = (PC_GAMG*)mg->innerctx;
 
   PetscFunctionBegin;
-  if (pc_gamg->m_data) {
-    ierr = PetscFree(pc_gamg->m_data);CHKERRQ(ierr);
-    pc_gamg->m_data = 0;
-  }
+  ierr = PetscFree(pc_gamg->m_data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -42,25 +37,24 @@ PetscErrorCode PCReset_GAMG(PC pc)
 */
 #undef __FUNCT__
 #define __FUNCT__ "PCSetCoordinates_GAMG"
-PetscErrorCode PCSetCoordinates_GAMG( PC pc, const int ndm,
-                                      PetscReal *coords )
+PetscErrorCode PCSetCoordinates_GAMG(PC pc, const int ndm,PetscReal *coords )
 {
-  PC_MG           *mg = (PC_MG*)pc->data;
-  PC_GAMG         *pc_gamg = (PC_GAMG*)mg->innerctx;
-  PetscErrorCode ierr;  PetscInt bs, my0, tt;
+  PC_MG          *mg = (PC_MG*)pc->data;
+  PC_GAMG        *pc_gamg = (PC_GAMG*)mg->innerctx;
+  PetscErrorCode ierr;  
+  PetscInt       bs, my0, tt;
+  Mat            mat = pc->pmat; 
+  PetscInt       arrsz;
 
   PetscFunctionBegin;
-  Mat mat = pc->pmat; 
-  ierr = MatGetBlockSize( mat, &bs );               CHKERRQ( ierr );
-  ierr = MatGetOwnershipRange( mat, &my0, &tt ); CHKERRQ(ierr);
-  const PetscInt arrsz = (tt-my0)/bs*ndm;
+  ierr  = MatGetBlockSize( mat, &bs );               CHKERRQ( ierr );
+  ierr  = MatGetOwnershipRange( mat, &my0, &tt ); CHKERRQ(ierr);
+  arrsz = (tt-my0)/bs*ndm;
 
   // put coordinates
-  if ( pc_gamg->m_data==0 || pc_gamg->m_data_sz != arrsz ) {
-    if( pc_gamg->m_data != 0 ) {
-      ierr = PetscFree( pc_gamg->m_data );  CHKERRQ(ierr);
-    }
-    ierr = PetscMalloc( (arrsz+1)*sizeof(double), &pc_gamg->m_data ); CHKERRQ(ierr);
+  if (!pc_gamg->m_data || (pc_gamg->m_data_sz != arrsz)) {
+    ierr = PetscFree( pc_gamg->m_data );  CHKERRQ(ierr);
+    ierr = PetscMalloc(arrsz*sizeof(double), &pc_gamg->m_data ); CHKERRQ(ierr);
   }
 
   /* copy data in */
@@ -134,9 +128,7 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
     /* no state data in GAMG to destroy (now) */
     ierr = PCReset_MG(pc);CHKERRQ(ierr);
   }
-  if ( pc_gamg->m_data==0 ) {
-    SETERRQ(wcomm,PETSC_ERR_SUP,"PCSetUp_GAMG called before PCSetCoordinates");
-  }
+  if (!pc_gamg->m_data) SETERRQ(wcomm,PETSC_ERR_SUP,"PCSetUp_GAMG called before PCSetCoordinates");
   /* setup special features of PCGAMG */
   ierr = PetscTypeCompare((PetscObject) Amat, MATSEQAIJ, &isSeq);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject) Amat, MATMPIAIJ, &isMPI);CHKERRQ(ierr);
@@ -165,9 +157,8 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
     ierr = PetscFree( crds ); CHKERRQ( ierr );
     crds = coarse_crds;
   }
-  if( coarse_crds != 0 ) {
-    ierr = PetscFree( coarse_crds ); CHKERRQ( ierr );
-  }
+  ierr = PetscFree( coarse_crds ); CHKERRQ( ierr );
+
   pc_gamg->m_data = 0; /* destroyed coordinate data */
   pc_gamg->m_Nlevels = level + 1;
   fine_level = level;
@@ -199,7 +190,7 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
     /* ierr = MatGetSize( Rarr[lidx], &MM, &NN );CHKERRQ(ierr); */
     /* PetscPrintf(PETSC_COMM_WORLD,"%s Set P(%d,%d) on level %d (%d)\n",__FUNCT__,MM,NN,level1,lidx); */
     ierr = PCMGSetInterpolation(pc,level1,Rarr[lidx]);CHKERRQ(ierr);
-    if(!true) {
+    if(!PETSC_TRUE) {
       PetscViewer        viewer;
       ierr = PetscViewerASCIIOpen(PETSC_COMM_SELF, "Rmat.m", &viewer);  CHKERRQ(ierr);
       ierr = PetscViewerSetFormat( viewer, PETSC_VIEWER_ASCII_MATLAB);  CHKERRQ(ierr);
@@ -249,9 +240,6 @@ PetscErrorCode PCDestroy_GAMG(PC pc)
 
   PetscFunctionBegin;
   ierr = PCReset_GAMG(pc);CHKERRQ(ierr);
-  if (pc_gamg->m_data) {
-    ierr = PetscFree(pc_gamg->m_data);CHKERRQ(ierr);
-  }
   ierr = PetscFree(pc_gamg);CHKERRQ(ierr);
   ierr = PCDestroy_MG(pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -321,7 +309,6 @@ PetscErrorCode  PCCreate_GAMG(PC pc)
   mg = (PC_MG*)pc->data;
   mg->innerctx = pc_gamg;
 
-  pc_gamg->m_data     = 0;
   pc_gamg->m_Nlevels    = -1;
 
   /* overwrite the pointers of PCMG by the functions of PCGAMG */

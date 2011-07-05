@@ -12,7 +12,7 @@
 #include <assert.h>
 #include <petscblaslapack.h>
 
-enum NState { DELETED, SELECTED, NOT_DONE };
+typedef enum { DELETED, SELECTED, NOT_DONE } NState;
 
 /* Private context for the GAMG preconditioner */
 typedef struct{
@@ -40,38 +40,35 @@ int compare (const void * a, const void * b)
 */
 #undef __FUNCT__
 #define __FUNCT__ "selectCrs"
-PetscErrorCode selectCrs( Mat Gmat,
-                          GNode gnodes[],
-                          PetscInt &a_Sel
-                          )
+PetscErrorCode selectCrs( Mat Gmat, GNode gnodes[],PetscInt *a_Sel)
 {
   PetscErrorCode ierr;
-  PetscInt Istart,Iend,nloc;
+  PetscInt       kk,Istart,Iend,nloc,col;
 
   PetscFunctionBegin;
   ierr = MatGetOwnershipRange(Gmat,&Istart,&Iend);  CHKERRQ(ierr); /* always AIJ */
   nloc = Iend - Istart; 
   /* need an inverse map - locals */
   PetscInt lid_graphID[nloc+1];
-  for(int kk=0;kk<nloc;kk++){
+  for(kk=0;kk<nloc;kk++){
     lid_graphID[gnodes[kk].m_lid] = kk;
   }
   /* MIS */
-  a_Sel = 0; PetscInt nDone = 0;
-  while( nDone < nloc ) {
-    for(int kk=0;kk<nloc;kk++){
+  *a_Sel = 0; PetscInt nDone = 0;
+  while ( nDone < nloc ) {
+    for(kk=0;kk<nloc;kk++){
       if( gnodes[kk].m_state == NOT_DONE ) {
         PetscInt gid = gnodes[kk].m_gid;
         const PetscInt *idx; PetscInt ncols;
         ierr = MatGetRow(Gmat,gid,&ncols,&idx,0); CHKERRQ(ierr);
         /* add parallel test with test for degree */
-        if(true){ /* select */
+        if (PETSC_TRUE){ /* select */
           gnodes[kk].m_state = SELECTED;
-          a_Sel++; nDone++;
+          (*a_Sel)++; nDone++;
           //PetscPrintf(PETSC_COMM_WORLD,"%s select %d, degree=%d\n",__FUNCT__,gid,gnodes[kk].m_degree);
           /* delete ndighbors and collect sends */
           PetscMPIInt sendProcs[64]; PetscInt nSends = 0;
-          for(int col=0;col<ncols;col++){
+          for(col=0;col<ncols;col++){
             PetscInt gidj = idx[col], lidj = gidj - Istart;
             PetscInt jj; /* index in sorted space */
             if(lidj<0 || lidj >= nloc ) { /* get local index in gnodes ?*/
@@ -94,7 +91,7 @@ PetscErrorCode selectCrs( Mat Gmat,
             }
           }
           /* send message - should collect these */
-          for(int kk=0;kk<nSends;kk++){
+          for(kk=0;kk<nSends;kk++){
           }
         }
         ierr = MatRestoreRow(Gmat,gid,&ncols,&idx,0); CHKERRQ(ierr);
@@ -118,15 +115,11 @@ PetscErrorCode selectCrs( Mat Gmat,
 */
 #undef __FUNCT__
 #define __FUNCT__ "triangulateAndFormProl"
-PetscErrorCode triangulateAndFormProl( GNode gnodes[],
-                                       Vec a_coords,
-                                       const PetscInt a_nSel,
-                                       Mat Prol
-                                       )
+PetscErrorCode triangulateAndFormProl( GNode gnodes[],Vec a_coords,const PetscInt a_nSel,Mat Prol)
 {
   PetscErrorCode ierr;
-  PetscInt nloc_wg,nn,my0,bs=1;
-  PetscScalar *lid_crd;
+  PetscInt       kk,nloc_wg,nn,my0,bs=1,jj,tid,tt,sid,cid,kkk,crsID,idx;
+  PetscScalar    *lid_crd;
 
   PetscFunctionBegin;
   ierr = VecGetLocalSize( a_coords, &nn ); CHKERRQ(ierr);
@@ -139,10 +132,10 @@ PetscErrorCode triangulateAndFormProl( GNode gnodes[],
   in.numberofpointattributes = 0;
   /* get a_nSel points */
   ierr = PetscMalloc( 2*(a_nSel+1)*sizeof(REAL), &in.pointlist ); CHKERRQ(ierr);
-  for(int kk=0,sid=0;kk<nloc_wg;kk++){
+  for(kk=0,sid=0;kk<nloc_wg;kk++){
     if( gnodes[kk].m_state == SELECTED ) {
       PetscInt lid = gnodes[kk].m_lid;
-      for(int jj=0;jj<2;jj++,sid++) in.pointlist[sid] = lid_crd[2*lid+jj];
+      for(jj=0;jj<2;jj++,sid++) in.pointlist[sid] = lid_crd[2*lid+jj];
     }
   }
   in.numberofsegments = 0;
@@ -187,7 +180,7 @@ PetscErrorCode triangulateAndFormProl( GNode gnodes[],
   triangulate(args, &in, &mid, (struct triangulateio *) NULL );
 
   /* output .poly files for 'showme' */
-  if(!true) {
+  if(!PETSC_TRUE) {
     static int level = 0;
     FILE *file; char fname[32]; 
     sprintf(fname,"C%d.poly",level);
@@ -195,7 +188,7 @@ PetscErrorCode triangulateAndFormProl( GNode gnodes[],
     /*First line: <# of vertices> <dimension (must be 2)> <# of attributes> <# of boundary markers (0 or 1)>*/
     fprintf(file, "%d  %d  %d  %d\n",in.numberofpoints,2,0,0);
     /*Following lines: <vertex #> <x> <y> */
-    for(int kk=0,sid=0;kk<in.numberofpoints;kk++){
+    for(kk=0,sid=0;kk<in.numberofpoints;kk++){
       fprintf(file, "%d %e %e\n",kk,in.pointlist[sid],in.pointlist[sid+1]);
       sid += 2;
     }
@@ -213,7 +206,7 @@ PetscErrorCode triangulateAndFormProl( GNode gnodes[],
     /*First line: <# of triangles> <nodes per triangle> <# of attributes> */
     fprintf(file, "%d %d %d\n",mid.numberoftriangles,3,0);
     /*Remaining lines: <triangle #> <node> <node> <node> ... [attributes]*/
-    for(int kk=0,sid=0;kk<mid.numberoftriangles;kk++){
+    for(kk=0,sid=0;kk<mid.numberoftriangles;kk++){
       fprintf(file, "%d %d %d %d\n",kk,mid.trianglelist[sid],mid.trianglelist[sid+1],mid.trianglelist[sid+2]);
       sid += 3;
     }
@@ -222,7 +215,7 @@ PetscErrorCode triangulateAndFormProl( GNode gnodes[],
     /*First line: <# of vertices> <dimension (must be 2)> <# of attributes> <# of boundary markers (0 or 1)>*/
     fprintf(file, "%d  %d  %d  %d\n",in.numberofpoints,2,0,0);
     /*Following lines: <vertex #> <x> <y> */
-    for(int kk=0,sid=0;kk<in.numberofpoints;kk++){
+    for(kk=0,sid=0;kk<in.numberofpoints;kk++){
       fprintf(file, "%d %e %e\n",kk,in.pointlist[sid],in.pointlist[sid+1]);
       sid += 2;
     }
@@ -237,67 +230,67 @@ PetscErrorCode triangulateAndFormProl( GNode gnodes[],
   PetscInt nloc = Iend - Istart; /* bs? */
   /* need an inverse map - coarse nodes */
   PetscInt clid_fidx[a_nSel]; /* so this does work ... */
-  for(int kk=0,cid=0;kk<nloc;kk++){
+  for(kk=0,cid=0;kk<nloc;kk++){
     if( gnodes[kk].m_state == SELECTED ) {
       clid_fidx[cid++] = gnodes[kk].m_lid;
     }
   }
   /* need list of triagles on node*/
   PetscInt nTri[a_nSel], node_tri[a_nSel][8];
-  for(int kk=0;kk<a_nSel;kk++) nTri[kk] = 0;
-  for(int tid=0,kk=0;tid<mid.numberoftriangles;tid++){
-    for(int jj=0;jj<3;jj++) {
+  for(kk=0;kk<a_nSel;kk++) nTri[kk] = 0;
+  for(tid=0,kk=0;tid<mid.numberoftriangles;tid++){
+    for(jj=0;jj<3;jj++) {
       PetscInt cid = mid.trianglelist[kk++];
       if( nTri[cid] < 8 ) node_tri[cid][nTri[cid]++] = tid;
     }
   }
 
   /* find points and set prolongation */
-  for(int kkk=0,crsID=0;kkk<nloc;kkk++){
+  for(kkk=0,crsID=0;kkk<nloc;kkk++){
     if( gnodes[kkk].m_state == SELECTED ) {
       PetscInt id = kkk;
       do{
         PetscInt gid = gnodes[id].m_gid, lid = gid - my0;
         /* compute shape function for gid */
         const PetscReal fcoord[3] = { lid_crd[2*lid], lid_crd[2*lid+1], 1.0 };
-        bool haveit = false;  PetscScalar alpha[3];  PetscInt cids[3];
-        for(int jj=0 ; jj<nTri[crsID] && !haveit ; jj++) {
+        PetscBool haveit = PETSC_FALSE;  PetscScalar alpha[3];  PetscInt cids[3];
+        for(jj=0 ; jj<nTri[crsID] && !haveit ; jj++) {
           PetscScalar AA[3][3];
           PetscInt tid = node_tri[crsID][jj];
-          for(int tt=0;tt<3;tt++){
+          for(tt=0;tt<3;tt++){
             PetscInt cid2 = mid.trianglelist[3*tid + tt];
             PetscInt lid2 = clid_fidx[cid2]; /* get to coordinate through fine grid */
             AA[tt][0] = lid_crd[2*lid2]; AA[tt][1] = lid_crd[2*lid2 + 1]; AA[tt][2] = 1.0;
             cids[tt] = cid2; /* store for interp */
           }
-          for(int tt=0;tt<3;tt++) alpha[tt] = fcoord[tt];
+          for(tt=0;tt<3;tt++) alpha[tt] = fcoord[tt];
           /* SUBROUTINE DGESV( N, NRHS, A, LDA, IPIV, B, LDB, INFO ) */
           PetscBLASInt N=3,NRHS=1,LDA=3,IPIV[3],LDB=3,INFO;
           dgesv_(&N, &NRHS, (PetscScalar*)AA, &LDA, IPIV, alpha, &LDB, &INFO);
-          bool have=true;
+          PetscBool have=PETSC_TRUE;
 #define EPS 1.e-5
-          for(int tt=0; tt<3 && have ;tt++) if(alpha[tt] > 1.0+EPS || alpha[tt] < 0.0-EPS ) have=false;
+          for(tt=0; tt<3 && have ;tt++) if(alpha[tt] > 1.0+EPS || alpha[tt] < 0.0-EPS ) have=PETSC_FALSE;
           haveit = have;
         }
         if(!haveit) {
           /* brute force */
           PetscInt bestTID = -1; PetscScalar best_alpha = 1.e10; 
-          for( int tid=0 ; tid<mid.numberoftriangles && !haveit ; tid++ ){
+          for(tid=0 ; tid<mid.numberoftriangles && !haveit ; tid++ ){
             PetscScalar AA[3][3];
-            for(int tt=0;tt<3;tt++){
+            for(tt=0;tt<3;tt++){
               PetscInt cid2 = mid.trianglelist[3*tid + tt];
               PetscInt lid2 = clid_fidx[cid2];
               AA[tt][0] = lid_crd[2*lid2]; AA[tt][1] = lid_crd[2*lid2 + 1]; AA[tt][2] = 1.0;
               cids[tt] = cid2; /* store for interp */
             }
-            for(int tt=0;tt<3;tt++) alpha[tt] = fcoord[tt];
+            for(tt=0;tt<3;tt++) alpha[tt] = fcoord[tt];
             /* SUBROUTINE DGESV( N, NRHS, A, LDA, IPIV, B, LDB, INFO ) */
             PetscBLASInt N=3,NRHS=1,LDA=3,IPIV[3],LDB=3,INFO;
             dgesv_(&N, &NRHS, (PetscScalar*)AA, &LDA, IPIV, alpha, &LDB, &INFO);
-            bool have=true;  PetscScalar worst = 0.0,v;
-            for(int tt=0; tt<3 && have ;tt++) {
+            PetscBool have=PETSC_TRUE;  PetscScalar worst = 0.0,v;
+            for(tt=0; tt<3 && have ;tt++) {
 #define EPS2 1.e-2
-              if(alpha[tt] > 1.0+EPS2 || alpha[tt] < 0.0-EPS2 ) have=false;
+              if(alpha[tt] > 1.0+EPS2 || alpha[tt] < 0.0-EPS2 ) have=PETSC_FALSE;
               if( (v=PetscAbs(alpha[tt]-0.5)) > worst ) worst = v;
             }
             if( worst < best_alpha ) {
@@ -308,25 +301,25 @@ PetscErrorCode triangulateAndFormProl( GNode gnodes[],
           if( !haveit ) {
             /* use best one */
             PetscScalar AA[3][3];
-            for(int tt=0;tt<3;tt++){
+            for(tt=0;tt<3;tt++){
               PetscInt cid2 = mid.trianglelist[3*bestTID + tt];
               PetscInt lid2 = clid_fidx[cid2];
               AA[tt][0] = lid_crd[2*lid2]; AA[tt][1] = lid_crd[2*lid2 + 1]; AA[tt][2] = 1.0;
               cids[tt] = cid2; /* store for interp */
             }
-            for(int tt=0;tt<3;tt++) alpha[tt] = fcoord[tt];
+            for(tt=0;tt<3;tt++) alpha[tt] = fcoord[tt];
             /* SUBROUTINE DGESV( N, NRHS, A, LDA, IPIV, B, LDB, INFO ) */
             PetscBLASInt N=3,NRHS=1,LDA=3,IPIV[3],LDB=3,INFO;
             dgesv_(&N, &NRHS, (PetscScalar*)AA, &LDA, IPIV, alpha, &LDB, &INFO);
           }
         }
         /* put in row of P */
-        for(int idx=0;idx<3;idx++){
+        for(idx=0;idx<3;idx++){
           PetscReal shp = alpha[idx];
           if( PetscAbs(shp) > 1.e-6 ) {
             PetscInt cgid = cids[idx];
             PetscInt jj = cgid*bs, ii = gid*bs; /* need to gloalize */
-            for(int tt=0;tt<bs;tt++,ii++,jj++){
+            for(tt=0;tt<bs;tt++,ii++,jj++){
               ierr = MatSetValues(Prol,1,&ii,1,&jj,&shp,INSERT_VALUES); CHKERRQ(ierr);
             }
           }
@@ -357,17 +350,12 @@ PetscErrorCode triangulateAndFormProl( GNode gnodes[],
 */
 #undef __FUNCT__
 #define __FUNCT__ "createProlongation"
-PetscErrorCode createProlongation( Mat Amat,
-                                   Mat *P_out,
-                                   PetscReal a_coords[],
-                                   PetscReal **a_coords_out,
-                                   const PetscInt a_dim
-                                   )
+PetscErrorCode createProlongation( Mat Amat,Mat *P_out,PetscReal a_coords[],PetscReal **a_coords_out,const PetscInt a_dim)
 {
   PetscErrorCode ierr;
-  PetscInt Istart,Iend,Ii,nloc,bs,my0;
-  Mat Prol; 
-  PetscMPIInt  mype;
+  PetscInt       Istart,Iend,Ii,nloc,bs,my0,jj,kk,sid;
+  Mat            Prol; 
+  PetscMPIInt    mype;
  
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(((PetscObject)Amat)->comm,&mype);CHKERRQ(ierr);
@@ -396,7 +384,7 @@ PetscErrorCode createProlongation( Mat Amat,
     const PetscScalar *vals;  PetscScalar v; const PetscInt *idx; PetscInt ncols;
     for (Ii=Istart; Ii<Iend; Ii++) {
       ierr = MatGetRow(Gmat,Ii,&ncols,&idx,&vals); CHKERRQ(ierr);
-      for(int jj=0;jj<ncols;jj++){
+      for(jj=0;jj<ncols;jj++){
         if( (v=PetscAbs(vals[jj])) > 0.02 ) { // hard wired filter!!!
           ierr = MatSetValues(Gmat2,1,&Ii,1,&idx[jj],&v,INSERT_VALUES); CHKERRQ(ierr);
         }
@@ -410,14 +398,14 @@ PetscErrorCode createProlongation( Mat Amat,
     Gmat = Gmat2;
   }
   /* modify matrix for fast coarsening in MIS */
-  if( false ){
+  if(PETSC_FALSE){
     Mat Gmat2; /* this also symmetrizes - needed if Amat is !sym */
     ierr = MatCreateNormal( Gmat, &Gmat2 );    CHKERRQ(ierr);
     ierr = MatDestroy( &Gmat );  CHKERRQ(ierr);
     Gmat = Gmat2;
   }
   
-  if(!true) {
+  if(!PETSC_TRUE) {
     PetscViewer        viewer;
     ierr = PetscViewerASCIIOpen(PETSC_COMM_SELF, "Gmat.m", &viewer);  CHKERRQ(ierr);
     ierr = PetscViewerSetFormat( viewer, PETSC_VIEWER_ASCII_MATLAB);  CHKERRQ(ierr);
@@ -453,7 +441,7 @@ PetscErrorCode createProlongation( Mat Amat,
 
   /* select coarse points */
   PetscInt nSelected;
-  ierr = selectCrs( Gmat, gnodes, nSelected ); CHKERRQ(ierr);
+  ierr = selectCrs( Gmat, gnodes, &nSelected ); CHKERRQ(ierr);
 
   /* create prolongator */
   ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,nloc*bs,nSelected*bs,15,PETSC_NULL,&Prol);CHKERRQ(ierr);
@@ -464,7 +452,7 @@ PetscErrorCode createProlongation( Mat Amat,
   ierr = VecSetSizes(crdsVec,a_dim*nloc,PETSC_DECIDE); CHKERRQ(ierr);
   ierr = VecSetFromOptions( crdsVec ); CHKERRQ(ierr);
   /* set local */
-  for(int kk=0; kk<nloc; kk++) {
+  for(kk=0; kk<nloc; kk++) {
     PetscInt lid = gnodes[kk].m_lid, gid = my0 + lid;
     ierr = VecSetValuesBlocked(crdsVec, 1, &gid, &a_coords[lid*a_dim], INSERT_VALUES ); CHKERRQ(ierr);
   }
@@ -482,10 +470,10 @@ PetscErrorCode createProlongation( Mat Amat,
   /* create next coords - output */
   PetscReal *crs_crds;
   ierr = PetscMalloc( a_dim*(nSelected+1)*sizeof(PetscReal), &crs_crds ); CHKERRQ(ierr);
-  for(int kk=0,sid=0;kk<nloc;kk++){ /* grab local select nodes to promote - output */
+  for(kk=0,sid=0;kk<nloc;kk++){ /* grab local select nodes to promote - output */
     if( gnodes[kk].m_state == SELECTED ) {
       PetscInt lid = gnodes[kk].m_lid;
-      for(int jj=0;jj<a_dim;jj++,sid++) crs_crds[sid] = a_coords[a_dim*lid+jj];
+      for(jj=0;jj<a_dim;jj++,sid++) crs_crds[sid] = a_coords[a_dim*lid+jj];
     }
   }
   *a_coords_out = crs_crds; /* out */
