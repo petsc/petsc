@@ -403,7 +403,7 @@ static PetscErrorCode PetscDrawGetPopup_X(PetscDraw draw,PetscDraw *popup)
   PetscDraw_X*   win = (PetscDraw_X*)draw->data;
 
   PetscFunctionBegin;
-  ierr = PetscDrawOpenX(((PetscObject)draw)->comm,PETSC_NULL,PETSC_NULL,win->x,win->y+win->h+36,150,220,popup);CHKERRQ(ierr);
+  ierr = PetscDrawOpenX(((PetscObject)draw)->comm,PETSC_NULL,PETSC_NULL,win->x,win->y+win->h+36,220,220,popup);CHKERRQ(ierr);
   draw->popup = *popup;
   PetscFunctionReturn(0);
 }
