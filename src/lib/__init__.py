@@ -104,7 +104,9 @@ def getPathArch(path, arch, rcvar='PETSC_ARCH', rcfile='petsc.cfg'):
             return (path, '')
     # helper function
     def parse_rc(rcfile):
-        rcdata = open(rcfile).read()
+        fh = open(rcfile)
+        try: rcdata = fh.read()
+        finally: fh.close()
         lines = [ln.strip() for ln in rcdata.splitlines()]
         lines = [ln for ln in lines if not ln.startswith('#')]
         entries = [ln.split('=') for ln in lines if ln]
@@ -127,11 +129,11 @@ def getInitArgs(args):
     """
     Undocumented.
     """
-    import sys
+    import sys, shlex
     if args is None:
         args = []
     elif isinstance(args, str):
-        args = args.split()
+        args = shlex.split(args)
     else:
         args = [str(a) for a in args]
         args = [a for a in args if a]
