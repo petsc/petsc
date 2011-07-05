@@ -9,7 +9,7 @@ Runtime options include:\n\
 -theta_c <theta_c>\n\n";
 
 /*
- ./ex60 -ksp_type fgmres -pc_type mg  -snes_vi_monitor   -snes_atol 1.e-11  -da_grid_x 72 -da_grid_y 72 -ksp_rtol 1.e-8  -T 0.1  -VG 100 -pc_type lu -ksp_monitor_true_residual -pc_factor_mat_solver_package superlu -snes_converged_reason -ksp_converged_reason -pc_type sor  -ksp_rtol 1.e-9  -snes_ls_monitor -VG 10 -snes_monitor_solution
+ ./ex60 -ksp_type fgmres -pc_type mg  -snes_vi_monitor   -snes_atol 1.e-11  -da_grid_x 72 -da_grid_y 72 -ksp_rtol 1.e-8  -T 0.1  -VG 100 -pc_type lu -ksp_monitor_true_residual -pc_factor_mat_solver_package superlu -snes_converged_reason -ksp_converged_reason -pc_type sor  -ksp_rtol 1.e-9  -snes_ls_monitor -VG 10 -draw_fields 1,3,4 -snes_monitor_solution
 
  */
 

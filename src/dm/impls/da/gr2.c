@@ -87,6 +87,9 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
   ZoomCtx            zctx;
   PetscDrawViewPorts *ports = PETSC_NULL;
   PetscViewerFormat  format;
+  PetscInt           *displayfields;
+  PetscInt           ndisplayfields,i;
+  PetscBool          flg;
 
   PetscFunctionBegin;
   zctx.showgrid = PETSC_FALSE;
@@ -196,21 +199,28 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
   ierr = DMDAGetCorners(dac,&istart,0,0,&isize,0,0);CHKERRQ(ierr);
 
   ierr = PetscOptionsGetBool(PETSC_NULL,"-draw_contour_grid",&zctx.showgrid,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscMalloc(zctx.step*sizeof(PetscInt),&displayfields);CHKERRQ(ierr);
+  for (i=0; i<zctx.step; i++) displayfields[i] = i;
+  ndisplayfields = zctx.step;
+  ierr = PetscOptionsGetIntArray(PETSC_NULL,"-draw_fields",displayfields,&ndisplayfields,&flg);CHKERRQ(ierr);
+  if (!flg) ndisplayfields = zctx.step;
 
   ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(PETSC_NULL,"-draw_ports",&useports,PETSC_NULL);CHKERRQ(ierr);
   if (useports || format == PETSC_VIEWER_DRAW_PORTS){
     ierr = PetscDrawSynchronizedClear(draw);CHKERRQ(ierr);
-    ierr = PetscDrawViewPortsCreate(draw,zctx.step,&ports);CHKERRQ(ierr);
+    ierr = PetscDrawViewPortsCreate(draw,ndisplayfields,&ports);CHKERRQ(ierr);
   }
+
   /*
      Loop over each field; drawing each in a different window
   */
-  for (zctx.k=0; zctx.k<zctx.step; zctx.k++) {
+  for (i=0; i<ndisplayfields; i++) {
+    zctx.k = displayfields[i];
     if (useports) {
-      ierr = PetscDrawViewPortsSet(ports,zctx.k);CHKERRQ(ierr);
+      ierr = PetscDrawViewPortsSet(ports,i);CHKERRQ(ierr);
     } else {
-      ierr = PetscViewerDrawGetDraw(viewer,zctx.k,&draw);CHKERRQ(ierr);
+      ierr = PetscViewerDrawGetDraw(viewer,i,&draw);CHKERRQ(ierr);
       ierr = PetscDrawSynchronizedClear(draw);CHKERRQ(ierr);
     }
 
@@ -242,6 +252,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
 
     ierr = PetscDrawZoom(draw,VecView_MPI_Draw_DA2d_Zoom,&zctx);CHKERRQ(ierr);
   }
+  ierr = PetscFree(displayfields);CHKERRQ(ierr);
   ierr = PetscDrawViewPortsDestroy(ports);CHKERRQ(ierr);
 
   ierr = VecRestoreArray(xcoorl,&zctx.xy);CHKERRQ(ierr);
