@@ -243,12 +243,12 @@ PetscErrorCode TSReset_Sundials(TS ts)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatDestroy(&cvode->pmat);
-  ierr = VecDestroy(&cvode->update);
-  ierr = VecDestroy(&cvode->func);
-  ierr = VecDestroy(&cvode->rhs);
-  ierr = VecDestroy(&cvode->w1);
-  ierr = VecDestroy(&cvode->w2);
+  ierr = MatDestroy(&cvode->pmat);CHKERRQ(ierr);
+  ierr = VecDestroy(&cvode->update);CHKERRQ(ierr);
+  ierr = VecDestroy(&cvode->func);CHKERRQ(ierr);
+  ierr = VecDestroy(&cvode->rhs);CHKERRQ(ierr);
+  ierr = VecDestroy(&cvode->w1);CHKERRQ(ierr);
+  ierr = VecDestroy(&cvode->w2);CHKERRQ(ierr);
   if (cvode->mem)    {CVodeFree(&cvode->mem);}
   PetscFunctionReturn(0);
 }
