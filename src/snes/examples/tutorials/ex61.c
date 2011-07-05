@@ -609,7 +609,7 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
   const PetscInt    *ele;
   PetscScalar       dt=user->dt,hx,hy;
   
-  PetscInt          idx[3], k;
+  PetscInt          idx[3];
   PetscScalar       eM_0[3][3],eM_2_even[3][3],eM_2_odd[3][3];
   PetscScalar       cv_sum, ci_sum;
   Mat               M=user->M;
@@ -680,7 +680,7 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
       cv_sum = .0000069*user->Dv/user->kBT;
       ci_sum = .0000069*user->Di/user->kBT;
       
-       if (k%2 == 0)  {
+
         
         row = 5*idx[r];
         cols[0] = 5*idx[0];     vals[0] = dt*eM_2_odd[r][0]*cv_sum;
@@ -737,69 +737,7 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
         cols3[2] = 5*idx[2]+4;   vals3[2] = eM_0[r][2]/dt + user->L*user->kaeta*eM_2_odd[r][2];
         
         ierr = MatSetValuesLocal(M,1,&row,3,cols3,vals3,ADD_VALUES);CHKERRQ(ierr);
-        
-         
-         }
-      
-         else {
-        
-        
-        row = 5*idx[r];
-        cols[0] = 5*idx[0];     vals[0] = dt*eM_2_even[r][0]*cv_sum;
-        cols[1] = 5*idx[1];     vals[1] = dt*eM_2_even[r][1]*cv_sum; 
-        cols[2] = 5*idx[2];     vals[2] = dt*eM_2_even[r][2]*cv_sum;
-        cols[3] = 5*idx[0]+1;   vals[3] = eM_0[r][0];
-        cols[4] = 5*idx[1]+1;   vals[4] = eM_0[r][1];
-        cols[5] = 5*idx[2]+1;   vals[5] = eM_0[r][2];
 
-
-        
-        ierr = MatSetValuesLocal(M,1,&row,6,cols,vals,ADD_VALUES);CHKERRQ(ierr);
-        
-        
-        row = 5*idx[r]+1;
-        cols[0] = 5*idx[0];     vals[0] = -1.0*eM_0[r][0];
-        cols[1] = 5*idx[1];     vals[1] = -1.0*eM_0[r][1];
-        cols[2] = 5*idx[2];     vals[2] = -1.0*eM_0[r][2];
-        cols[3] = 5*idx[0]+1;   vals[3] =  user->kav*eM_2_even[r][0];
-        cols[4] = 5*idx[1]+1;   vals[4] =  user->kav*eM_2_even[r][1];
-        cols[5] = 5*idx[2]+1;   vals[5] =  user->kav*eM_2_even[r][2];
-       
-        ierr = MatSetValuesLocal(M,1,&row,6,cols,vals,ADD_VALUES);CHKERRQ(ierr);  
-        
-        row = 5*idx[r]+2;
-        cols[0] = 5*idx[0]+2;   vals[0] = dt*eM_2_even[r][0]*ci_sum;
-        cols[1] = 5*idx[1]+2;   vals[1] = dt*eM_2_even[r][1]*ci_sum;
-        cols[2] = 5*idx[2]+2;   vals[2] = dt*eM_2_even[r][2]*ci_sum;
-        cols[3] = 5*idx[0]+3;   vals[3] = eM_0[r][0];
-        cols[4] = 5*idx[1]+3;   vals[4] = eM_0[r][1];
-        cols[5] = 5*idx[2]+3;   vals[5] = eM_0[r][2];
-       
-        ierr = MatSetValuesLocal(M,1,&row,6,cols,vals,ADD_VALUES);CHKERRQ(ierr); 
-     
-        row = 5*idx[r]+3;
-        cols[0] = 5*idx[0]+2;   vals[0] = -1.0*eM_0[r][0];
-        cols[1] = 5*idx[1]+2;   vals[1] = -1.0*eM_0[r][1];
-        cols[2] = 5*idx[2]+2;   vals[2] = -1.0*eM_0[r][2];
-        cols[3] = 5*idx[0]+3;   vals[3] =  user->kai*eM_2_even[r][0];
-        cols[4] = 5*idx[1]+3;   vals[4] =  user->kai*eM_2_even[r][1];
-        cols[5] = 5*idx[2]+3;   vals[5] =  user->kai*eM_2_even[r][2];
-       
-        ierr = MatSetValuesLocal(M,1,&row,6,cols,vals,ADD_VALUES);CHKERRQ(ierr); 
-        
-        row = 5*idx[r]+4;
-        /*
-        cols3[0] = 5*idx[0]+4;   vals3[0] = eM_0[r][0]/dt + user->L*user->kaeta*dt*eM_2_even[r][0];
-        cols3[1] = 5*idx[1]+4;   vals3[1] = eM_0[r][1]/dt + user->L*user->kaeta*dt*eM_2_even[r][1];
-        cols3[2] = 5*idx[2]+4;   vals3[2] = eM_0[r][2]/dt + user->L*user->kaeta*dt*eM_2_even[r][2];
-         */
-        cols3[0] = 5*idx[0]+4;   vals3[0] = eM_0[r][0]/dt + user->L*user->kaeta*eM_2_even[r][0];
-        cols3[1] = 5*idx[1]+4;   vals3[1] = eM_0[r][1]/dt + user->L*user->kaeta*eM_2_even[r][1];
-        cols3[2] = 5*idx[2]+4;   vals3[2] = eM_0[r][2]/dt + user->L*user->kaeta*eM_2_even[r][2];
-        ierr = MatSetValuesLocal(M,1,&row,3,cols3,vals3,ADD_VALUES);CHKERRQ(ierr);
-         
-      }
-       
     }
   }
 
@@ -828,7 +766,7 @@ PetscErrorCode UpdateMatrices(AppCtx* user)
   PetscInt          i,j,n,Mda,Nda,nele,nen;
   const PetscInt    *ele;
   
-  PetscInt          idx[3],*nodes,*connect,k;
+  PetscInt          idx[3],*nodes,*connect;
   PetscInt          ld,rd,lu,ru;
   PetscScalar       eM_2_odd[3][3],eM_2_even[3][3],h,dt=user->dt;
   Mat               M=user->M;
@@ -920,7 +858,7 @@ PetscErrorCode UpdateMatrices(AppCtx* user)
         cv_sum = .0000069*user->Dv/(user->kBT);
         ci_sum = .0000069*user->Di/user->kBT;
 
-            if (k%2 == 0) /* odd triangle */ {
+         
                 
                 row = 5*idx[r];
                 cols[0] = 5*idx[0];     vals[0] = dt*eM_2_odd[r][0]*cv_sum;
@@ -937,27 +875,9 @@ PetscErrorCode UpdateMatrices(AppCtx* user)
                 cols[2] = 5*idx[2]+2;   vals[2] = dt*eM_2_odd[r][2]*ci_sum;
           
                 ierr = MatSetValuesLocal(M,1,&row,3,cols,vals,ADD_VALUES);CHKERRQ(ierr); 
-                
-            }
+
             
-            else {
-                row = 5*idx[r];
-                cols[0] = 5*idx[0];     vals[0] = dt*eM_2_even[r][0]*cv_sum;
-                cols[1] = 5*idx[1];     vals[1] = dt*eM_2_even[r][1]*cv_sum; 
-                cols[2] = 5*idx[2];     vals[2] = dt*eM_2_even[r][2]*cv_sum;
-                             
-                /* Insert values in matrix M for 1st dof */
-                ierr = MatSetValuesLocal(M,1,&row,3,cols,vals,ADD_VALUES);CHKERRQ(ierr);
-                
-                             
-                row = 5*idx[r]+2;
-                cols[0] = 5*idx[0]+2;   vals[0] = dt*eM_2_even[r][0]*ci_sum;
-                cols[1] = 5*idx[1]+2;   vals[1] = dt*eM_2_even[r][1]*ci_sum;
-                cols[2] = 5*idx[2]+2;   vals[2] = dt*eM_2_even[r][2]*ci_sum;
-                /* Insert values in matrix M for 3nd dof */
-                ierr = MatSetValuesLocal(M,1,&row,3,cols,vals,ADD_VALUES);CHKERRQ(ierr); 
-                
-            }
+           
         }
    
     }
