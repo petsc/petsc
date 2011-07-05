@@ -1765,13 +1765,11 @@ PetscErrorCode  TSSolve(TS ts, Vec x)
   if (ts->ops->solve) {         /* This private interface is transitional and should be removed when all implementations are updated. */
     ierr = (*ts->ops->solve)(ts);CHKERRQ(ierr);
   } else {
-    if (++i >= ts->max_steps) {
-      ts->reason = TS_CONVERGED_ITS;
-    } else if (ts->ptime >= ts->max_time) {
-      ts->reason = TS_CONVERGED_TIME;
-    }
+    i = 0;
+    if (i >= ts->max_steps) ts->reason = TS_CONVERGED_ITS;
+    else if (ts->ptime >= ts->max_time) ts->reason = TS_CONVERGED_TIME;
     /* steps the requested number of timesteps. */
-    for (i=0; !ts->reason; ) {
+    while (!ts->reason) {
       ierr = TSPreStep(ts);CHKERRQ(ierr);
       ierr = TSStep(ts);CHKERRQ(ierr);
       if (ts->reason < 0) {
