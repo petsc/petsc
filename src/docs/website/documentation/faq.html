@@ -366,6 +366,7 @@ provides faster speed for ethernet systems, we have not tried it but it
 claims it can dramatically reduce latency and increase bandwidth on
 Linux system. You must first install this software and then install
 MPICH or Open MPI to use it.</li>
+       <li>In ${PETSC_DIR} run make streams and when requested enter the number of cores your system has. The more the achieved memory bandwidth increases the more performance you can expect across your multiple cores. If the bandwidth does not increase significently then you cannot expect to get any improvement in parallel performance.
       </ul>
       <a name="license"><font color="#ff0000">What kind of
 license is PETSc released under?</font><br>
