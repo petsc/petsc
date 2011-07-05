@@ -408,11 +408,21 @@ cdef class KSP(Object):
         elif L:     return vecsl
         else:       return None
 
-    def buildSolution(self, Vec x not None):
+    def buildSolution(self, Vec x=None):
+        if x is None: x = Vec()
+        if x.vec == NULL:
+            CHKERR( KSPGetSolution(self.ksp, &x.vec) )
+            CHKERR( VecDuplicate(x.vec, &x.vec) )
         CHKERR( KSPBuildSolution(self.ksp, x.vec, NULL) )
+        return x
 
-    def buildResidual(self, Vec r not None):
+    def buildResidual(self, Vec r=None):
+        if r is None: r = Vec()
+        if r.vec == NULL:
+            CHKERR( KSPGetRhs(self.ksp, &r.vec) )
+            CHKERR( VecDuplicate(r.vec, &r.vec) )
         CHKERR( KSPBuildResidual(self.ksp , NULL, r.vec, &r.vec) )
+        return r
 
     # --- GMRES ---
 
