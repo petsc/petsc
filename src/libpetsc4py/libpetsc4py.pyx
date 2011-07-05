@@ -213,53 +213,44 @@ cdef inline TS TS_(PetscTS p):
 
 # --------------------------------------------------------------------
 
-cdef inline bytes contextname(object obj):
-    if obj is None: return None
-    cdef modname, clsname
-    if PyModule_Check(obj):
-        modname = getattr(obj, '__name__')
-    else:
-        cls = getattr(obj, '__class__', None)
-        if cls:
-            modname = getattr(cls, '__module__', None)
-            clsname = getattr(cls, '__name__', None)
-    if modname:
-        modname = modname.encode()
-    if clsname:
-        clsname = clsname.encode()
-    #
-    if modname:
-        if clsname:
-            return modname + b'.' + clsname
-        else:
-            return modname
-    elif clsname:
-        return clsname
-    else:
-        return None
+cdef extern from *:
+    ctypedef char const_char "const char"
 
-cdef createcontext(name):
-    #
-    if name is None:
-        return None
-    if not isinstance(name, str):
-        if isinstance(name, bytes):
-            name = name.decode()
-        elif isinstance(name, unicode):
-            name = name.encode()
-    #
-    cdef modname=None, mod
-    cdef clsname=None, cls
-    if '.' in name:
-        modname, clsname = name.rsplit('.', 1)
+cdef inline object bytes2str(const_char p[]):
+    if p == NULL: return None
+    cdef bytes s = <char*>p
+    if not isinstance(s, str):
+        return s.decode()
     else:
-        modname, clsname = name, None
-    mod = PyImport_Import(modname)
-    if clsname is None:
-        return mod
-    else:
-        cls = getattr(mod, clsname)
-        return cls()
+        return s
+
+cdef object parse_url(object url):
+    path, name = url.rsplit(":", 1)
+    return (path, name)
+
+cdef dict module_cache = {}
+
+cdef object load_module(object path):
+    if path in module_cache:
+        return module_cache[path]
+    module = PyModule_New("__petsc__")
+    module.__file__ = path
+    module.__package__ = None
+    module_cache[path] = module
+    try:
+        source = open(path, 'rU')
+        try:
+            code = compile(source.read(), path, 'exec')
+        finally:
+            source.close()
+        namespace = module.__dict__
+        exec code in namespace
+    except:
+        del module_cache[path]
+        raise
+    return module
+
+# -----------------------------------------------------------------------------
 
 #@cython.internal
 cdef class _PyObj:
@@ -301,17 +292,63 @@ cdef class _PyObj:
             ctx[0] = NULL
         return 0
 
+    cdef int setname(self, char name[]) except -1:
+        if name != NULL and name[0] != 0:
+            self.name = name
+        else:
+            self.name = None
+        return 0
+
     cdef char* getname(self) except? NULL:
         if self.self is None:
             return NULL
-        elif self.name is None:
-            self.name = contextname(self.self)
-            if isinstance(self.name, unicode):
-                self.name = self.name.encode()
         if self.name is not None:
             return self.name
+        ctx = self.self
+        if PyModule_Check(ctx):
+            self.name = getattr(ctx, '__name__', None)
         else:
-            return NULL
+            modname = getattr(ctx, '__module__', None)
+            cls = getattr(ctx, '__class__', None)
+            if cls:
+                clsname = getattr(cls, '__name__', None)
+                if not modname:
+                    modname = getattr(cls, '__module__', None)
+            if modname and clsname:
+                self.name = modname + '.' + clsname
+            elif clsname:
+                self.name = clsname
+            elif modname:
+                self.name = modname
+        if self.name is not None:
+            return self.name
+        return NULL
+
+cdef createcontext(char name_p[]):
+    if name_p == NULL: return None
+    cdef name = bytes2str(name_p)
+    cdef mod, path, modname=None
+    cdef cls, attr, clsname=None
+    # path/to/filename.py:{function|class}
+    if ':' in name:
+        path, attr = parse_url(name)
+        mod = load_module(path)
+        if attr:
+            cls = getattr(mod, attr)
+            return cls()
+        else:
+            return mod
+    # package.module[.{function|class}]
+    if '.' in name:
+        modname, clsname = name.rsplit('.', 1)
+        mod = PyImport_Import(modname)
+        if hasattr(mod, clsname):
+            cls = getattr(mod, clsname)
+            if not PyModule_Check(cls):
+                return cls()
+    # package[.module]
+    mod = PyImport_Import(name)
+    return mod
 
 # --------------------------------------------------------------------
 
@@ -441,6 +478,7 @@ cdef PetscErrorCode MatPythonSetType_PYTHON(PetscMat mat, char name[]) \
     if name == NULL: return FunctionEnd() # XXX
     cdef object ctx = createcontext(name)
     MatPythonSetContext(mat, <void*>ctx)
+    PyMat(mat).setname(name)
     return FunctionEnd()
 
 cdef PetscErrorCode MatCreate_Python(
@@ -616,7 +654,7 @@ cdef PetscErrorCode MatGetSubMatrix_Python(
         sub = getSubMatrix(Mat_(mat), IS_(row), IS_(col), None)
     elif op == MAT_REUSE_MATRIX:
         sub = getSubMatrix(Mat_(mat), IS_(row), IS_(col), Mat_(out[0]))
-    if sub is not None: 
+    if sub is not None:
         addRef(sub.mat)
         out[0] = sub.mat
     return FunctionEnd()
@@ -1074,6 +1112,7 @@ cdef PetscErrorCode PCPythonSetType_PYTHON(PetscPC pc, char name[]) \
     if name == NULL: return FunctionEnd() # XXX
     cdef object ctx = createcontext(name)
     PCPythonSetContext(pc, <void*>ctx)
+    PyPC(pc).setname(name)
     return FunctionEnd()
 
 cdef PetscErrorCode PCCreate_Python(
@@ -1336,6 +1375,7 @@ cdef PetscErrorCode KSPPythonSetType_PYTHON(PetscKSP ksp, char name[]) \
     if name == NULL: return FunctionEnd() # XXX
     cdef object ctx = createcontext(name)
     KSPPythonSetContext(ksp, <void*>ctx)
+    PyKSP(ksp).setname(name)
     return FunctionEnd()
 
 cdef PetscErrorCode KSPCreate_Python(
@@ -1675,6 +1715,7 @@ cdef PetscErrorCode SNESPythonSetType_PYTHON(PetscSNES snes, char name[]) \
     if name == NULL: return FunctionEnd() # XXX
     cdef object ctx = createcontext(name)
     SNESPythonSetContext(snes, <void*>ctx)
+    PySNES(snes).setname(name)
     return FunctionEnd()
 
 cdef PetscErrorCode SNESCreate_Python(
@@ -1980,6 +2021,7 @@ cdef PetscErrorCode TSPythonSetType_PYTHON(PetscTS ts, char name[]) \
     if name == NULL: return FunctionEnd() # XXX
     cdef object ctx = createcontext(name)
     TSPythonSetContext(ts, <void*>ctx)
+    PyTS(ts).setname(name)
     return  0
 
 cdef PetscErrorCode TSCreate_Python(
@@ -2415,48 +2457,6 @@ cdef public PetscErrorCode PetscPythonRegisterAll(char path[]) nogil except IERR
 
 # --------------------------------------------------------------------
 
-cdef dict module_cache = {}
-
-cdef object load_module(object path):
-    if path in module_cache:
-        return module_cache[path]
-    module = PyModule_New("__petsc__")
-    module.__file__ = path
-    module.__package__ = None
-    module_cache[path] = module
-    try:
-        source = open(path, 'rU')
-        try:
-            code = compile(source.read(), path, 'exec')
-        finally:
-            source.close()
-        namespace = module.__dict__
-        exec code in namespace
-    except:
-        del module_cache[path]
-        raise
-    return module
-
-cdef extern from *:
-    ctypedef char const_char "const char"
-
-cdef inline object bytes2str(const_char p[]):
-     if p == NULL: 
-         return None
-     cdef bytes s = <char*>p
-     if isinstance(s, str):
-         return s
-     else:
-         return s.decode()
-
-cdef object parse_url(const_char *url_p):
-    assert url_p != NULL
-    cdef url = bytes2str(url_p)
-    path, name = url.rsplit(":", 1)
-    return (path, name)
-
-# --------------------------------------------------------------------
-
 cdef PetscErrorCode PetscPythonMonitorSet_Python(
     PetscObject obj_p,
     const_char *url_p,
@@ -2473,10 +2473,14 @@ cdef PetscErrorCode PetscPythonMonitorSet_Python(
     cdef Object ob = klass()
     ob.obj[0] = newRef(obj_p)
     #
-    path, names = parse_url(url_p)
+    cdef url = bytes2str(url_p)
+    if ':' in url:
+        path, names = parse_url(url)
+    else:
+        path, names = url, 'monitor'
     module = load_module(path)
-    for name in names.split(','):
-        monitor = getattr(module, name)
+    for attr in names.split(','):
+        monitor = getattr(module, attr)
         if isinstance(monitor, type):
             monitor = monitor(ob)
         ob.setMonitor(monitor)
@@ -2529,7 +2533,7 @@ cdef PetscErrorCode PetscFwkPython_Call(
 
 cdef PetscErrorCode PetscFwkPython_LoadVTable(
     PetscFwk   component_p,
-    const_char *path_p, 
+    const_char *path_p,
     const_char *name_p,
     void       **vtable_p,
     ) \
@@ -2549,7 +2553,7 @@ cdef PetscErrorCode PetscFwkPython_LoadVTable(
     return FunctionEnd()
 
 cdef PetscErrorCode PetscFwkPython_ClearVTable(
-    PetscFwk component_p, 
+    PetscFwk component_p,
     void     **vtable_p,
     ) \
     except IERR with gil:
