@@ -4438,8 +4438,22 @@ uses:
   details), and the (optional) user-provided context \trl{jacP}.
 \end{itemize}
 
-Note: currently only TSALPHA, TSGL, TSTHETA, and TSPSEUDO have
-support for solving differential algebraic equations.
+\subsection{Using Implicit-Explicit (IMEX) methods for multi-rate problems}
+\label{sec_imex}
+The methods of the last section can be generalized for problems with multiple time scales using the form
+\begin{equation}\label{eq:imex}
+  G(t,u,\dot u) = F(t,u),\quad u(t_0) = u_0
+\end{equation}
+where $G$ will be treated implicitly using a method suitable for stiff problems and $F$ will be treated explicitly when using an IMEX method like TSARKIMEX.
+$G$ is typically linear or weakly nonlinear while $F$ may have very strong nonlinearities such as arise in non-oscillatory methods for hyperbolic PDE.
+The user provides three pieces of information, the APIs for which have been described above.
+\begin{itemize}
+\item ``Slow'' part $F(t,u)$ using TSSetRHSFunction().
+\item ``Stiff'' part $G(t,u,\dot u)$ using TSSetIFunction().
+\item Jacobian $J(t,u,\dot u) = G_u + a G_{\dot u}$ using TSSetIJacobian().
+  An assembled Jacobian is optional and can be approximated using finite differencing.
+\end{itemize}
+To solve \eqref{eq:imex} using fully implicit methods, the user may also provide the Jacobian $F_u$.
 
 \subsection{Using Sundials from PETSc}
 \label{sec_sundials}
