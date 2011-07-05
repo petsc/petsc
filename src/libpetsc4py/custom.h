@@ -53,10 +53,10 @@ PetscErrorCode KSPConverged(KSP ksp,
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   if (reason) PetscValidPointer(reason,2);
+  if (!iter) ksp->rnorm0 = rnorm;
   if (!iter) {
     ksp->reason = KSP_CONVERGED_ITERATING;
-    ksp->rnorm0 = rnorm;
-    ksp->ttol = PetscMax(ksp->rtol*ksp->rnorm0,ksp->abstol);
+    ksp->ttol = PetscMax(rnorm*ksp->rtol,ksp->abstol);
   }
   if (ksp->converged) {
     ierr = (*ksp->converged)(ksp,iter,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
