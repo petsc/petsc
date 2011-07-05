@@ -12,7 +12,7 @@ MANSEC           = SNES
 EXAMPLESC	 = ex1.c ex2.c ex3.c ex5.c ex5s.c ex6.c \
                    ex10.c ex14.c ex18.c ex19.c ex20.c ex21.c ex22.c \
                    ex23.c ex24.c ex25.c ex26.c ex27.c ex28.c ex29.c ex30.c ex31.c ex38.c ex42.c ex43.c \
-                   ex44.c ex45.c ex48.c ex49.c ex50.c ex47cu.cu ex54.c ex55.c ex58.c ex59.c
+                   ex44.c ex45.c ex48.c ex49.c ex50.c ex47cu.cu ex54.c ex55.c ex58.c ex59.c ex60.c ex61.c
 EXAMPLESF	 = ex1f.F ex5f.F ex5f90.F ex5fs.F 
 EXAMPLESCH	 = ex43-44.h
 EXAMPLESFH       = ex5f.h
@@ -215,6 +215,13 @@ ex58: ex58.o  chkopts
 ex59: ex59.o  chkopts
 	-${CLINKER} -o ex59 ex59.o ${PETSC_SNES_LIB}
 	${RM} ex59.o
+ex60: ex60.o  chkopts
+	-${CLINKER} -o ex60 ex60.o ${PETSC_SNES_LIB}
+	${RM} ex60.o
+ex61: ex61.o  chkopts
+	-${CLINKER} -o ex61 ex61.o ${PETSC_SNES_LIB}
+	${RM} ex61.o
+
 #--------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 1 ./ex1 -ksp_gmres_cgs_refinement_type refine_always -snes_monitor_short > ex1_1.tmp 2>&1;   \
@@ -404,10 +411,24 @@ runex50:
 	   else echo "Possible problem with ex19, diffs above"; fi; \
 	   ${RM} -f ex19_1.tmp
 runex50_3: #test pc_redundant
-	-@${MPIEXEC} -n 4 ./ex19 -da_refine 3 -snes_monitor_short -pc_type redundant -mat_type mpiaij -redundant_ksp_type preonly -redundant_pc_factor_mat_solver_package mumps -pc_redundant_number 2 > ex19_3.tmp 2>&1; \
+	-@${MPIEXEC} -n 4 ./ex50 -da_refine 3 -snes_monitor_short -pc_type redundant -mat_type mpiaij -redundant_ksp_type preonly -redundant_pc_factor_mat_solver_package mumps -pc_redundant_number 2 > ex19_3.tmp 2>&1; \
 	   if (${DIFF} output/ex19_3.out ex19_3.tmp) then true; \
-	   else echo "Possible problem with ex19_3, diffs above"; fi; \
+	   else echo "Possible problem with ex50_3, diffs above"; fi; \
 	   ${RM} -f ex19_3.tmp
+runex50_4: #test pc_redundant
+	-@${MPIEXEC} -n 12 ./ex50 -da_refine 3 -snes_monitor_short -pc_type redundant -mat_type mpiaij -redundant_ksp_type preonly -redundant_pc_factor_mat_solver_package mumps -pc_redundant_number 5 > ex19_4.tmp 2>&1; \
+	   if (${DIFF} output/ex19_3.out ex19_4.tmp) then true; \
+	   else echo "Possible problem with ex50_4, diffs above"; fi; \
+	   ${RM} -f ex19_4.tmp
+runex50_5: #test different scatters
+	-@for A in " " -vecscatter_rsend -vecscatter_ssend -vecscatter_alltoall "-vecscatter_alltoall -vecscatter_nopack" -vecscatter_window; do \
+           for B in " " -vecscatter_merge ; do \
+             ${MPIEXEC} -n 4 ./ex50 -da_refine 3 -ksp_type fgmres -pc_type mg -pc_mg_type full -snes_monitor_short $$A $$B > ex19_5.tmp 2>&1; \
+	     if (${DIFF} output/ex19_5.out ex19_5.tmp) then true; \
+	     else echo "Possible problem with ex50_5 " $$A $$B " diffs above"; fi; \
+           done;\
+         done;\
+	 ${RM} -f ex19_5.tmp
 runex19:
 	-@${MPIEXEC} -n 2 ./ex19 -dmmg_nlevels 4 -snes_monitor_short  > ex19_1.tmp 2>&1; \
 	   if (${DIFF} output/ex19_1.out ex19_1.tmp) then true; \

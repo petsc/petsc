@@ -29,9 +29,9 @@ PetscErrorCode SNESVISetComputeVariableBounds(SNES snes, PetscErrorCode (*comput
   
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESVIGetInActiveSetIS"
+#define __FUNCT__ "SNESVIComputeInactiveSetIS"
 /*
-   SNESVIGetInActiveSetIS - Gets the global indices for the bogus inactive set variables
+   SNESVIComputeInactiveSetIS - Gets the global indices for the bogus inactive set variables
 
    Input parameter
 .  snes - the SNES context
@@ -41,7 +41,7 @@ PetscErrorCode SNESVISetComputeVariableBounds(SNES snes, PetscErrorCode (*comput
 .  ISact - active set index set
 
  */
-PetscErrorCode SNESVIGetInActiveSetIS(Vec upper,Vec lower,Vec X,Vec F,IS* inact)
+PetscErrorCode SNESVIComputeInactiveSetIS(Vec upper,Vec lower,Vec X,Vec F,IS* inact)
 {
   PetscErrorCode   ierr;
   const PetscScalar *x,*xl,*xu,*f;
@@ -82,7 +82,7 @@ PetscErrorCode SNESVIGetInActiveSetIS(Vec upper,Vec lower,Vec X,Vec F,IS* inact)
 
     Simple calls the regular DM interpolation and restricts it to operation on the variables not associated with active constraints.
 
-*/
+<*/
 typedef struct {
   PetscInt       n;                                        /* size of vectors in the reduced DM space */
   IS             inactive;
@@ -188,7 +188,7 @@ PetscErrorCode  DMCoarsen_SNESVI(DM dm1,MPI_Comm comm,DM *dm2)
   ierr = VecScatterDestroy(&inject);CHKERRQ(ierr);
   ierr = DMClearGlobalVectors(dm1);CHKERRQ(ierr);
   dm1->ops->createglobalvector = DMCreateGlobalVector_SNESVI;
-  ierr = SNESVIGetInActiveSetIS(upper,lower,values,F,&inactive);CHKERRQ(ierr);
+  ierr = SNESVIComputeInactiveSetIS(upper,lower,values,F,&inactive);CHKERRQ(ierr);
   ierr = DMSetVI(*dm2,upper,lower,values,F,inactive);CHKERRQ(ierr);
   ierr = VecDestroy(&upper);CHKERRQ(ierr);
   ierr = VecDestroy(&lower);CHKERRQ(ierr);
@@ -1100,6 +1100,7 @@ PetscErrorCode SNESSolveVI_RS(SNES snes)
   for (i=0; i<maxits; i++) {
 
     IS         IS_act,IS_inact; /* _act -> active set _inact -> inactive set */
+    IS         IS_redact; /* redundant active set */
     VecScatter scat_act,scat_inact;
     PetscInt   nis_act,nis_inact;
     Vec        Y_act,Y_inact,F_inact;
@@ -1114,11 +1115,30 @@ PetscErrorCode SNESSolveVI_RS(SNES snes)
     ierr = SNESComputeJacobian(snes,X,&snes->jacobian,&snes->jacobian_pre,&flg);CHKERRQ(ierr);
 
     /* Create active and inactive index sets */
+    
+    /*original
     ierr = SNESVICreateIndexSets_RS(snes,X,F,&IS_act,&IS_inact);CHKERRQ(ierr);
-
+     */
+    ierr = SNESVIGetActiveSetIS(snes,X,F,&IS_act);CHKERRQ(ierr);
+    
+    if (vi->checkredundancy) {
+      (*vi->checkredundancy)(snes,IS_act,&IS_redact,vi->ctxP);CHKERRQ(ierr);
+      if (IS_redact){
+        ierr = ISSort(IS_redact);CHKERRQ(ierr);
+        ierr = ISComplement(IS_redact,X->map->rstart,X->map->rend,&IS_inact);CHKERRQ(ierr);
+        ierr = ISDestroy(&IS_redact);CHKERRQ(ierr);
+      }
+      else {
+        ierr = ISComplement(IS_act,X->map->rstart,X->map->rend,&IS_inact);CHKERRQ(ierr);
+      }
+    } else {
+      ierr = ISComplement(IS_act,X->map->rstart,X->map->rend,&IS_inact);CHKERRQ(ierr);
+    }
+    
 
     /* Create inactive set submatrix */
     ierr = MatGetSubMatrix(snes->jacobian,IS_inact,IS_inact,MAT_INITIAL_MATRIX,&jac_inact_inact);CHKERRQ(ierr);
+    
     ierr = MatFindNonzeroRows(jac_inact_inact,&keptrows);CHKERRQ(ierr);
     if (keptrows) {
       PetscInt       cnt,*nrows,k;
@@ -1975,8 +1995,8 @@ PetscErrorCode SNESLineSearchCubic_VI(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Ve
     PetscFunctionReturn(0);
   }
   if (PetscIsInfOrNanReal(*gnorm)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
-  ierr = PetscInfo2(snes,"Initial fnorm %G gnorm %G\n",fnorm,*gnorm);CHKERRQ(ierr);
-  if (.5*(*gnorm)*(*gnorm) <= .5*fnorm*fnorm + vi->alpha*initslope) { /* Sufficient reduction */
+  ierr = PetscInfo4(snes,"Initial fnorm %G gnorm %G alpha %G initslope %G\n",fnorm,*gnorm,vi->alpha,initslope);CHKERRQ(ierr);
+  if ((*gnorm)*(*gnorm) <= (1.0 - vi->alpha)*fnorm*fnorm ) { /* Sufficient reduction */
     if (vi->lsmonitor) {
       ierr = PetscViewerASCIIAddTab(vi->lsmonitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(vi->lsmonitor,"    Line search: Using full step: fnorm %G gnorm %G\n",fnorm,*gnorm);CHKERRQ(ierr);
@@ -2018,7 +2038,7 @@ PetscErrorCode SNESLineSearchCubic_VI(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Ve
     ierr = PetscViewerASCIIPrintf(vi->lsmonitor,"    Line search: gnorm after quadratic fit %G\n",*gnorm);CHKERRQ(ierr);
     ierr = PetscViewerASCIISubtractTab(vi->lsmonitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
   }
-  if (.5*(*gnorm)*(*gnorm) < .5*fnorm*fnorm + lambda*vi->alpha*initslope) { /* sufficient reduction */
+  if ((*gnorm)*(*gnorm) < (1.0 - vi->alpha)*fnorm*fnorm ) { /* sufficient reduction */
     if (vi->lsmonitor) {
       ierr = PetscViewerASCIIAddTab(vi->lsmonitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(vi->lsmonitor,"    Line search: Quadratically determined step, lambda=%18.16e\n",lambda);CHKERRQ(ierr);
@@ -2076,7 +2096,7 @@ PetscErrorCode SNESLineSearchCubic_VI(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Ve
       PetscFunctionReturn(0);
     }
     if (PetscIsInfOrNanReal(*gnorm)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
-    if (.5*(*gnorm)*(*gnorm) < .5*fnorm*fnorm + lambda*vi->alpha*initslope) { /* is reduction enough? */
+    if ((*gnorm)*(*gnorm) < (1.0 - vi->alpha)*fnorm*fnorm) { /* is reduction enough? */
       if (vi->lsmonitor) {
 	ierr = PetscPrintf(comm,"    Line search: Cubically determined step, current gnorm %G lambda=%18.16e\n",*gnorm,lambda);CHKERRQ(ierr);
       }
@@ -2191,7 +2211,7 @@ PetscErrorCode SNESLineSearchQuadratic_VI(SNES snes,void *lsctx,Vec x,Vec f,Vec 
     PetscFunctionReturn(0);
   }
   if (PetscIsInfOrNanReal(*gnorm)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
-  if (.5*(*gnorm)*(*gnorm) <= .5*fnorm*fnorm + vi->alpha*initslope) { /* Sufficient reduction */
+  if ((*gnorm)*(*gnorm) <= (1.0 - vi->alpha)*fnorm*fnorm) { /* Sufficient reduction */
     if (vi->lsmonitor) {
       ierr = PetscViewerASCIIAddTab(vi->lsmonitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(vi->lsmonitor,"    Line search: Using full step: fnorm %G gnorm %G\n",fnorm,*gnorm);CHKERRQ(ierr);
@@ -2240,7 +2260,7 @@ PetscErrorCode SNESLineSearchQuadratic_VI(SNES snes,void *lsctx,Vec x,Vec f,Vec 
       ierr = VecNorm(g,NORM_2,gnorm);CHKERRQ(ierr);
     }
     if (PetscIsInfOrNanReal(*gnorm)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
-    if (.5*(*gnorm)*(*gnorm) < .5*fnorm*fnorm + lambda*vi->alpha*initslope) { /* sufficient reduction */
+    if ((*gnorm)*(*gnorm) < (1.0 - vi->alpha)*fnorm*fnorm) { /* sufficient reduction */
       if (vi->lsmonitor) {
         ierr = PetscViewerASCIIAddTab(vi->lsmonitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPrintf(vi->lsmonitor,"    Line Search: Quadratically determined step, lambda=%G\n",lambda);CHKERRQ(ierr);
@@ -2433,7 +2453,7 @@ static PetscErrorCode SNESSetFromOptions_VI(SNES snes)
       snes->ops->solve = SNESSolveVI_RSAUG;
     }
   }
-  ierr = PetscOptionsEList("-snes_ls","Line search used","SNESLineSearchSet",lses,4,"basic",&indx,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-snes_ls","Line search used","SNESLineSearchSet",lses,4,"cubic",&indx,&flg);CHKERRQ(ierr);
   if (flg) {
     switch (indx) {
     case 0:
@@ -2492,7 +2512,7 @@ PetscErrorCode  SNESCreate_VI(SNES snes)
   vi->alpha             = 1.e-4;
   vi->maxstep           = 1.e8;
   vi->minlambda         = 1.e-12;
-  vi->LineSearch        = SNESLineSearchNo_VI;
+  vi->LineSearch        = SNESLineSearchCubic_VI;
   vi->lsP               = PETSC_NULL;
   vi->postcheckstep     = PETSC_NULL;
   vi->postcheck         = PETSC_NULL;
@@ -2507,3 +2527,24 @@ PetscErrorCode  SNESCreate_VI(SNES snes)
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESVIGetInactiveSet"
+/*
+   SNESVIGetInactiveSet - Gets the global indices for the inactive set variables (these correspond to the degrees of freedom the linear
+     system is solved on)
+
+   Input parameter
+.  snes - the SNES context
+
+   Output parameter
+.  ISact - active set index set
+
+ */
+PetscErrorCode SNESVIGetInactiveSet(SNES snes,IS* inact)
+{
+  SNES_VI          *vi = (SNES_VI*)snes->data;
+  PetscFunctionBegin;
+  *inact = vi->IS_inact_prev;
+  PetscFunctionReturn(0);
+}

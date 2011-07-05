@@ -80,6 +80,10 @@ ex15: ex15.o  chkopts
 	-${CLINKER} -o ex15 ex15.o  ${PETSC_TS_LIB}
 	${RM} ex15.o
 
+ex16: ex16.o  chkopts
+	-${CLINKER} -o ex16 ex16.o  ${PETSC_TS_LIB}
+	${RM} ex16.o
+
 ex17: ex17.o  chkopts
 	-${CLINKER} -o ex17 ex17.o  ${PETSC_TS_LIB}
 	${RM} ex17.o

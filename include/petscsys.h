@@ -1305,6 +1305,7 @@ extern PetscErrorCode  PetscOpenMPMalloc(MPI_Comm,size_t,void**);
 extern PetscErrorCode  PetscPythonInitialize(const char[],const char[]);
 extern PetscErrorCode  PetscPythonFinalize(void);
 extern PetscErrorCode  PetscPythonPrintError(void);
+extern PetscErrorCode  PetscPythonMonitorSet(PetscObject,const char[]);
 
 /*
      These are so that in extern C code we can caste function pointers to non-extern C

@@ -36,32 +36,27 @@ ex4: ex4.o  chkopts
 NPROCS    = 1  3
 runex1_euler:
 	-@${MPIEXEC} -n 1 ./ex1 -ts_type euler -linear_constant_matrix -monitor -nox -time 10 > ex1_euler.tmp 2>&1;   \
-           if (${DIFF} output/ex1_euler.out ex1_euler.tmp) then true; \
-           else echo "Possible problem with ex1_euler, diffs above"; fi; \
+           ${DIFF} output/ex1_euler.out ex1_euler.tmp || echo "Possible problem with ex1_euler, diffs above"; \
            ${RM} -f ex1_euler.tmp
 
 runex1_euler_2:
 	-@${MPIEXEC} -n 1 ./ex1 -ts_type euler -linear_variable_matrix -monitor -nox -time 10 > ex1_euler.tmp 2>&1;   \
-           if (${DIFF} output/ex1_euler.out ex1_euler.tmp) then true; \
-           else echo "Possible problem with ex1_euler_2, diffs above"; fi; \
+           ${DIFF} output/ex1_euler.out ex1_euler.tmp || echo "Possible problem with ex1_euler_2, diffs above"; \
            ${RM} -f ex1_euler.tmp
 
 runex1_euler_3:
 	-@${MPIEXEC} -n 1 ./ex1 -ts_type euler -linear_no_matrix -monitor -nox -time 10 > ex1_euler.tmp 2>&1;   \
-           if (${DIFF} output/ex1_euler.out ex1_euler.tmp) then true; \
-           else echo "Possible problem with ex1_euler_3, diffs above"; fi; \
+           ${DIFF} output/ex1_euler.out ex1_euler.tmp || echo "Possible problem with ex1_euler_3, diffs above"; \
            ${RM} -f ex1_euler.tmp
 
 runex1_euler_4:
 	-@${MPIEXEC} -n 1 ./ex1 -ts_type euler -nonlinear_jacobian -monitor -nox -time 10 > ex1_euler.tmp 2>&1;   \
-           if (${DIFF} output/ex1_euler.out ex1_euler.tmp) then true; \
-           else echo "Possible problem with ex1_euler_4, diffs above"; fi; \
+           ${DIFF} output/ex1_euler.out ex1_euler.tmp || echo "Possible problem with ex1_euler_4, diffs above"; \
            ${RM} -f ex1_euler.tmp
 
 runex1_euler_5:
 	-@${MPIEXEC} -n 1 ./ex1 -ts_type euler -nonlinear_no_jacobian -monitor -nox -time 10 > ex1_euler.tmp 2>&1;   \
-           if (${DIFF} output/ex1_euler.out ex1_euler.tmp) then true; \
-           else echo "Possible problem with ex1_euler_5, diffs above"; fi; \
+           ${DIFF} output/ex1_euler.out ex1_euler.tmp || echo "Possible problem with ex1_euler_5, diffs above"; \
            ${RM} -f ex1_euler.tmp
 
 runex1_beuler:
@@ -69,32 +64,28 @@ runex1_beuler:
 	for np in ${NPROCS}; do \
 	  ${MPIEXEC} -n $$np ./ex1 -ts_type beuler -ksp_gmres_cgs_refinement_type refine_always -linear_constant_matrix -monitor -nox -time 10 >> ex1_beuler.tmp 2>&1;   \
 	done; \
-        if (${DIFF} output/ex1_beuler.out ex1_beuler.tmp) then true; \
-        else echo "Possible problem with ex1_beuler, diffs above"; fi; \
-        ${RM} -f ex1_beuler.tmp; 
+        ${DIFF} output/ex1_beuler.out ex1_beuler.tmp || echo "Possible problem with ex1_beuler, diffs above"; \
+        ${RM} -f ex1_beuler.tmp;
 runex1_beuler_2:
 	-@touch ex1_beuler.tmp;\
 	for np in ${NPROCS}; do \
 	  ${MPIEXEC} -n $$np ./ex1 -ts_type beuler -linear_variable_matrix -monitor -nox -time 10 >> ex1_beuler.tmp 2>&1;   \
 	done; \
-        if (${DIFF} output/ex1_beuler.out ex1_beuler.tmp) then true; \
-        else echo "Possible problem with ex1_beuler_2, diffs above"; fi; \
-        ${RM} -f ex1_beuler.tmp; 
+        ${DIFF} output/ex1_beuler.out ex1_beuler.tmp || echo "Possible problem with ex1_beuler_2, diffs above"; \
+        ${RM} -f ex1_beuler.tmp;
 runex1_beuler_3:
 	-@touch ex1_beuler.tmp;\
 	for np in ${NPROCS}; do \
 	  ${MPIEXEC} -n $$np ./ex1 -ts_type beuler -nonlinear_jacobian -monitor -nox -time 10 >> ex1_beuler.tmp 2>&1;   \
 	done; \
-        if (${DIFF} output/ex1_beuler.out ex1_beuler.tmp) then true; \
-        else echo "Possible problem with ex1_beuler_3, diffs above"; fi; \
-        ${RM} -f ex1_beuler.tmp; 
+        ${DIFF} output/ex1_beuler.out ex1_beuler.tmp || echo "Possible problem with ex1_beuler_3, diffs above"; \
+        ${RM} -f ex1_beuler.tmp;
 runex1_beuler_4:
 	-@touch ex1_beuler.tmp;\
 	for np in ${NPROCS}; do \
 	  ${MPIEXEC} -n $$np ./ex1 -ts_type beuler -nonlinear_no_jacobian -pc_type none -monitor -nox -time 10 >> ex1_beuler.tmp 2>&1;   \
 	done; \
-        if (${DIFF} output/ex1_beuler.out ex1_beuler.tmp) then true; \
-        else echo "Possible problem with ex1_4, diffs above"; fi; \
+        ${DIFF} output/ex1_beuler.out ex1_beuler.tmp || echo "Possible problem with ex1_4, diffs above"; \
         ${RM} -f ex1_beuler.tmp; 
 
 runex1_beuler_5:
@@ -102,8 +93,7 @@ runex1_beuler_5:
 	for np in ${NPROCS}; do \
 	   ${MPIEXEC} -n $$np ./ex1 -ts_type beuler -linear_no_matrix -pc_type none -monitor -nox -time 10 >> ex1_beuler.tmp 2>&1;   \
 	done; \
-        if (${DIFF} output/ex1_beuler.out ex1_beuler.tmp) then true; \
-        else echo "Possible problem with ex1_beuler_5, diffs above"; fi; \
+        ${DIFF} output/ex1_beuler.out ex1_beuler.tmp || echo "Possible problem with ex1_beuler_5, diffs above"; \
         ${RM} -f ex1_beuler.tmp 
 
 runex1_cn:
@@ -111,40 +101,35 @@ runex1_cn:
 	for np in ${NPROCS}; do \
 	  ${MPIEXEC} -n $$np ./ex1 -ts_type cn -linear_constant_matrix -monitor -nox -time 10 >> ex1_cn.tmp 2>&1;   \
         done; \
-        if (${DIFF} output/ex1_cn.out ex1_cn.tmp) then true; \
-        else echo "Possible problem with ex1_cn, diffs above"; fi; \
+        ${DIFF} output/ex1_cn.out ex1_cn.tmp || echo "Possible problem with ex1_cn, diffs above"; \
         ${RM} -f ex1_cn.tmp 
 runex1_cn_2:
 	-@touch ex1_cn.tmp;\
 	for np in ${NPROCS}; do \
 	  ${MPIEXEC} -n $$np ./ex1 -ts_type cn -linear_variable_matrix -monitor -nox -time 10 >> ex1_cn.tmp 2>&1;   \
 	done; \
-        if (${DIFF} output/ex1_cn.out ex1_cn.tmp) then true; \
-        else echo "Possible problem with ex1_cn_2, diffs above"; fi; \
+        ${DIFF} output/ex1_cn.out ex1_cn.tmp || echo "Possible problem with ex1_cn_2, diffs above"; \
         ${RM} -f ex1_cn.tmp
 runex1_cn_3:
 	-@touch ex1_cn.tmp;\
 	for np in ${NPROCS}; do \
 	  ${MPIEXEC} -n $$np ./ex1 -ts_type cn -linear_no_matrix -pc_type none -monitor -nox -time 10 >> ex1_cn.tmp 2>&1;   \
 	done; \
-        if (${DIFF} output/ex1_cn.out ex1_cn.tmp) then true; \
-        else echo "Possible problem with ex1_cn_3, diffs above"; fi; \
+        ${DIFF} output/ex1_cn.out ex1_cn.tmp || echo "Possible problem with ex1_cn_3, diffs above"; \
         ${RM} -f ex1_cn.tmp
 runex1_cn_4:
 	-@touch ex1_cn.tmp;\
 	for np in ${NPROCS}; do \
 	  ${MPIEXEC} -n $$np ./ex1 -ts_type cn -nonlinear_jacobian -monitor -nox -time 10 >> ex1_cn.tmp 2>&1;   \
 	done; \
-        if (${DIFF} output/ex1_cn.out ex1_cn.tmp) then true; \
-        else echo "Possible problem with ex1_cn_4, diffs above"; fi; \
+        ${DIFF} output/ex1_cn.out ex1_cn.tmp || echo "Possible problem with ex1_cn_4, diffs above"; \
         ${RM} -f ex1_cn.tmp
 runex1_cn_5:
 	-@touch ex1_cn.tmp;\
 	for np in ${NPROCS}; do \
 	  ${MPIEXEC} -n $$np ./ex1 -ts_type cn -nonlinear_no_jacobian -pc_type none -monitor -nox -time 10 >> ex1_cn.tmp 2>&1;   \
 	done; \
-        if (${DIFF} output/ex1_cn.out ex1_cn.tmp) then true; \
-        else echo "Possible problem with ex1_cn_5, diffs above"; fi; \
+        ${DIFF} output/ex1_cn.out ex1_cn.tmp || echo "Possible problem with ex1_cn_5, diffs above"; \
         ${RM} -f ex1_cn.tmp; 
 
 runex1f:
@@ -159,58 +144,63 @@ runex1f:
 	-@${MPIEXEC} -n 1 ./ex1f -test -nox -ts_type beuler -ksp_gmres_cgs_refinement_type refine_always -linear_variable_matrix 
 	-@${MPIEXEC} -n 1 ./ex1f -test -nox -ts_type beuler -ksp_gmres_cgs_refinement_type refine_always -nonlinear_jacobian 
 
+runex2_euler:
+	-@${MPIEXEC} -n 1 ./ex2 -ts_type euler > ex2_euler.tmp 2>&1;   \
+           ${DIFF} output/ex2_euler.out ex2_euler.tmp || echo "Possible problem with ex2_euler, diffs above"; \
+           ${RM} -f ex2_euler.tmp
+
+runex2_beuler:
+	-@${MPIEXEC} -n 1 ./ex2 -ts_type beuler > ex2_beuler.tmp 2>&1;   \
+           ${DIFF} output/ex2_beuler.out ex2_beuler.tmp || echo "Possible problem with ex2_beuler, diffs above"; \
+           ${RM} -f ex2_beuler.tmp
+
+runex2_sundials:
+	-@${MPIEXEC} -n 1 ./ex2 -ts_type sundials > ex2_sundials.tmp 2>&1;   \
+           ${DIFF} output/ex2_sundials.out ex2_sundials.tmp || echo "Possible problem with ex2_sundials, diffs above"; \
+           ${RM} -f ex2_sundials.tmp
+
 runex3:
 	-@${MPIEXEC} -n 1 ./ex3 > ex3.tmp 2>&1;	  \
-	   if (${DIFF} output/ex3.out ex3.tmp) then true; \
-	   else echo "Possible problem with ex3, diffs above"; fi; \
+	   ${DIFF} output/ex3.out ex3.tmp || echo "Possible problem with ex3, diffs above"; \
 	   ${RM} -f ex3.tmp
 
 runex3_2:
 	-@${MPIEXEC} -n 1 ./ex3 -useAlhs > ex3.tmp 2>&1;	  \
-	   if (${DIFF} output/ex3.out ex3.tmp) then true; \
-	   else echo "Possible problem with ex3_2, diffs above"; fi; \
+	   ${DIFF} output/ex3.out ex3.tmp || echo "Possible problem with ex3_2, diffs above"; \
 	   ${RM} -f ex3.tmp
 
 runex4:
 	-@${MPIEXEC} -n 1 ./ex4 -ts_fd -ts_type beuler> ex4.tmp 2>&1;	  \
-	   if (${DIFF} output/ex4.out ex4.tmp) then true; \
-	   else echo "Possible problem with ex4, diffs above"; fi; \
+	   ${DIFF} output/ex4.out ex4.tmp || echo "Possible problem with ex4, diffs above"; \
 	   ${RM} -f ex4.tmp
 runex4_1:
 	-@${MPIEXEC} -n 2 ./ex4 -ts_fd -ts_type beuler> ex4.tmp 2>&1;	  \
-	   if (${DIFF} output/ex4.out ex4.tmp) then true; \
-	   else echo "Possible problem with ex4_1, diffs above"; fi; \
+	   ${DIFF} output/ex4.out ex4.tmp || echo "Possible problem with ex4_1, diffs above"; \
 	   ${RM} -f ex4.tmp
 runex4_2:
 	-@${MPIEXEC} -n 2 ./ex4 -ts_fd -ts_type beuler -snes_mf_operator> ex4.tmp 2>&1;	  \
-	   if (${DIFF} output/ex4.out ex4.tmp) then true; \
-	   else echo "Possible problem with ex4_2, diffs above"; fi; \
+	   ${DIFF} output/ex4.out ex4.tmp || echo "Possible problem with ex4_2, diffs above"; \
 	   ${RM} -f ex4.tmp
 runex4_3:
 	-@${MPIEXEC} -n 2 ./ex4 -ts_fd -ts_type cn > ex4.tmp 2>&1;	  \
-	   if (${DIFF} output/ex4_3.out ex4.tmp) then true; \
-	   else echo "Possible problem with ex4_3, diffs above"; fi; \
+	   ${DIFF} output/ex4_3.out ex4.tmp || echo "Possible problem with ex4_3, diffs above"; \
 	   ${RM} -f ex4.tmp
 runex4_4:
 	-@${MPIEXEC} -n 2 ./ex4 -ts_fd -ts_type cn -snes_mf_operator > ex4.tmp 2>&1;	  \
-	   if (${DIFF} output/ex4_3.out ex4.tmp) then true; \
-	   else echo "Possible problem with ex4_4, diffs above"; fi; \
+	   ${DIFF} output/ex4_3.out ex4.tmp || echo "Possible problem with ex4_4, diffs above"; \
 	   ${RM} -f ex4.tmp
 runex4_5:
 	-@${MPIEXEC} -n 1 ./ex4 -ts_type beuler -ts_fd -fd_color -mat_coloring_type sl > ex4.tmp 2>&1;	  \
-	   if (${DIFF} output/ex4.out ex4.tmp) then true; \
-	   else echo "Possible problem with ex4_5, diffs above"; fi; \
+	   ${DIFF} output/ex4.out ex4.tmp || echo "Possible problem with ex4_5, diffs above"; \
 	   ${RM} -f ex4.tmp
 runex4_6:
 	-@${MPIEXEC} -n 2 ./ex4 -ts_type beuler -ts_fd -fd_color -mat_coloring_type sl > ex4.tmp 2>&1;	  \
-	   if (${DIFF} output/ex4.out ex4.tmp) then true; \
-	   else echo "Possible problem with ex4_6, diffs above"; fi; \
+	   ${DIFF} output/ex4.out ex4.tmp || echo "Possible problem with ex4_6, diffs above"; \
 	   ${RM} -f ex4.tmp
 
 runex4_7:
 	-@${MPIEXEC} -n 1 ./ex4 -ts_fd -ts_type beuler -test_PostStep > ex4.tmp 2>&1;	  \
-	   if (${DIFF} output/ex4_7.out ex4.tmp) then true; \
-	   else echo "Possible problem with ex4_7, diffs above"; fi; \
+	   ${DIFF} output/ex4_7.out ex4.tmp || echo "Possible problem with ex4_7, diffs above"; \
 	   ${RM} -f ex4.tmp
 
 TESTEXAMPLES_C		  = ex1.PETSc runex1_euler runex1_euler_2 runex1_euler_3 runex1_euler_4 runex1_euler_5 \

@@ -31,7 +31,6 @@ typedef struct {
                                    requested by user (default) */
   /* PETSc peconditioner objects used by SUNDIALS */
   Mat  pmat;                         /* preconditioner Jacobian */
-  PC   pc;                           /* the PC context */
   int  cvode_type;                   /* the SUNDIALS method, BDF or ADAMS  */
   TSSundialsGramSchmidtType gtype; 
   int                       restart;

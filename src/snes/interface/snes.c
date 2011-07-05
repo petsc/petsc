@@ -448,6 +448,9 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
       ierr = SNESMonitorSet(snes,SNESMonitorDefaultShort,monviewer,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
     }
 
+    ierr = PetscOptionsString("-snes_monitor_python","Use Python function","SNESMonitorSet",0,monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+    if (flg) {ierr = PetscPythonMonitorSet((PetscObject)snes,monfilename);CHKERRQ(ierr);}
+
     flg  = PETSC_FALSE;
     ierr = PetscOptionsBool("-snes_monitor_solution","Plot solution at each iteration","SNESMonitorSolution",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
     if (flg) {ierr = SNESMonitorSet(snes,SNESMonitorSolution,0,0);CHKERRQ(ierr);}
@@ -1588,7 +1591,7 @@ PetscErrorCode  SNESSetUp(SNES snes)
     ierr = DMGetMatrix(snes->dm,MATAIJ,&J);CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,J,J,SNESDMComputeJacobian,PETSC_NULL);CHKERRQ(ierr);
     ierr = MatDestroy(&J);CHKERRQ(ierr);
-  } else if (snes->ops->computejacobian == MatMFFDComputeJacobian) {
+  } else if (!snes->jacobian && snes->ops->computejacobian == MatMFFDComputeJacobian) {
     Mat J;
     ierr = MatCreateSNESMF(snes,&J);CHKERRQ(ierr);
     ierr = MatMFFDSetOptionsPrefix(J,((PetscObject)snes)->prefix);CHKERRQ(ierr);

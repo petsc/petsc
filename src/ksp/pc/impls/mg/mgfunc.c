@@ -74,7 +74,8 @@ PetscErrorCode  PCMGGetCoarseSolve(PC pc,KSP *ksp)
    Input Parameters:
 +  pc       - the multigrid context
 .  l        - the level (0 is coarsest) to supply
-.  residual - function used to form residual (usually PCMGDefaultResidual)
+.  residual - function used to form residual, if none is provided the previously provide one is used, if no 
+              previous one were provided then PCMGDefaultResidual() is used
 -  mat      - matrix associated with residual
 
    Level: advanced
@@ -92,7 +93,11 @@ PetscErrorCode  PCMGSetResidual(PC pc,PetscInt l,PetscErrorCode (*residual)(Mat,
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   if (!mglevels) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
-  mglevels[l]->residual = residual;  
+  if (residual) {
+    mglevels[l]->residual = residual;  
+  } if (!mglevels[l]->residual) {
+    mglevels[l]->residual = PCMGDefaultResidual;
+  }
   if (mat) {ierr = PetscObjectReference((PetscObject)mat);CHKERRQ(ierr);}
   ierr = MatDestroy(&mglevels[l]->A);CHKERRQ(ierr);
   mglevels[l]->A        = mat;

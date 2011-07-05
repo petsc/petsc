@@ -1745,6 +1745,15 @@ extern PetscErrorCode  MatCreateSeqAIJCUSP(MPI_Comm,PetscInt,PetscInt,PetscInt,c
 extern PetscErrorCode  MatCreateMPIAIJCUSP(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],PetscInt,const PetscInt[],Mat*);
 #endif
 
+/* 
+   PETSc interface to FFTW
+*/
+#if defined(PETSC_HAVE_FFTW)
+extern PetscErrorCode InputTransformFFT(Mat,Vec,Vec);
+extern PetscErrorCode OutputTransformFFT(Mat,Vec,Vec);
+#endif
+
+
 extern PetscErrorCode MatCreateNest(MPI_Comm,PetscInt,const IS[],PetscInt,const IS[],const Mat[],Mat*);
 extern PetscErrorCode MatNestGetSize(Mat,PetscInt*,PetscInt*);
 extern PetscErrorCode MatNestGetSubMats(Mat,PetscInt*,PetscInt*,Mat***);

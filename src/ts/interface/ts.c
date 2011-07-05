@@ -97,6 +97,9 @@ PetscErrorCode  TSSetFromOptions(TS ts)
       ierr = PetscViewerASCIIOpen(((PetscObject)ts)->comm,monfilename,&monviewer);CHKERRQ(ierr);
       ierr = TSMonitorSet(ts,TSMonitorDefault,monviewer,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
     }
+    ierr = PetscOptionsString("-ts_monitor_python","Use Python function","TSMonitorSet",0,monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+    if (flg) {ierr = PetscPythonMonitorSet((PetscObject)ts,monfilename);CHKERRQ(ierr);}
+
     opt  = PETSC_FALSE;
     ierr = PetscOptionsBool("-ts_monitor_draw","Monitor timestep size graphically","TSMonitorLG",opt,&opt,PETSC_NULL);CHKERRQ(ierr);
     if (opt) {
@@ -435,6 +438,7 @@ PetscErrorCode TSComputeIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec Y,PetscBo
 @*/
 PetscErrorCode TSComputeIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal shift,Mat *A,Mat *B,MatStructure *flg,PetscBool imex)
 {
+  PetscInt Xstate, Xdotstate;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -446,6 +450,13 @@ PetscErrorCode TSComputeIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal shi
   PetscValidPointer(B,7);
   PetscValidHeaderSpecific(*B,MAT_CLASSID,7);
   PetscValidPointer(flg,8);
+  ierr = PetscObjectStateQuery((PetscObject)X,&Xstate);CHKERRQ(ierr);
+  ierr = PetscObjectStateQuery((PetscObject)Xdot,&Xdotstate);CHKERRQ(ierr);
+  if (ts->ijacobian.time == t && (ts->problem_type == TS_LINEAR || (ts->ijacobian.X == X && ts->ijacobian.Xstate == Xstate && ts->ijacobian.Xdot == Xdot && ts->ijacobian.Xdotstate == Xdotstate && ts->ijacobian.imex == imex))) {
+    *flg = ts->ijacobian.mstructure;
+    ierr = MatScale(*A, shift / ts->ijacobian.shift);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
 
   if (!ts->userops->rhsjacobian && !ts->userops->ijacobian) SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_USER,"Must call TSSetRHSJacobian() and / or TSSetIJacobian()");
 
@@ -491,6 +502,15 @@ PetscErrorCode TSComputeIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal shi
       *flg = PetscMin(*flg,flg2);
     }
   }
+
+  ts->ijacobian.time = t;
+  ts->ijacobian.X = X;
+  ts->ijacobian.Xdot = Xdot;
+  ierr = PetscObjectStateQuery((PetscObject)X,&ts->ijacobian.Xstate);CHKERRQ(ierr);
+  ierr = PetscObjectStateQuery((PetscObject)Xdot,&ts->ijacobian.Xdotstate);CHKERRQ(ierr);
+  ts->ijacobian.shift = shift;
+  ts->ijacobian.imex = imex;
+  ts->ijacobian.mstructure = *flg;
   ierr = PetscLogEventEnd(TS_JacobianEval,ts,X,*A,*B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1413,8 +1433,8 @@ PetscErrorCode  TSSetDuration(TS ts,PetscInt maxsteps,PetscReal maxtime)
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidLogicalCollectiveInt(ts,maxsteps,2);
   PetscValidLogicalCollectiveReal(ts,maxtime,2);
-  ts->max_steps = maxsteps;
-  ts->max_time  = maxtime;
+  if (maxsteps >= 0) ts->max_steps = maxsteps;
+  if (maxtime != PETSC_DEFAULT) ts->max_time  = maxtime;
   PetscFunctionReturn(0);
 }
 
@@ -1745,6 +1765,11 @@ PetscErrorCode  TSSolve(TS ts, Vec x)
   if (ts->ops->solve) {         /* This private interface is transitional and should be removed when all implementations are updated. */
     ierr = (*ts->ops->solve)(ts);CHKERRQ(ierr);
   } else {
+    if (++i >= ts->max_steps) {
+      ts->reason = TS_CONVERGED_ITS;
+    } else if (ts->ptime >= ts->max_time) {
+      ts->reason = TS_CONVERGED_TIME;
+    }
     /* steps the requested number of timesteps. */
     for (i=0; !ts->reason; ) {
       ierr = TSPreStep(ts);CHKERRQ(ierr);
@@ -2293,7 +2318,7 @@ PetscErrorCode  SNESTSFormJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *f
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__ 
 #define __FUNCT__ "TSComputeRHSFunctionLinear"
 /*@C
    TSComputeRHSFunctionLinear - Evaluate the right hand side via the user-provided Jacobian, for linear problems only
@@ -2356,6 +2381,81 @@ PetscErrorCode TSComputeRHSFunctionLinear(TS ts,PetscReal t,Vec X,Vec F,void *ct
 .seealso: TSSetRHSFunction(), TSSetRHSJacobian(), TSComputeRHSFunctionLinear()
 @*/
 PetscErrorCode TSComputeRHSJacobianConstant(TS ts,PetscReal t,Vec X,Mat *A,Mat *B,MatStructure *flg,void *ctx)
+{
+
+  PetscFunctionBegin;
+  *flg = SAME_PRECONDITIONER;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__ 
+#define __FUNCT__ "TSComputeIFunctionLinear"
+/*@C
+   TSComputeIFunctionLinear - Evaluate the left hand side via the user-provided Jacobian, for linear problems only
+
+   Collective on TS
+
+   Input Arguments:
++  ts - time stepping context
+.  t - time at which to evaluate
+.  X - state at which to evaluate
+.  Xdot - time derivative of state vector
+-  ctx - context
+
+   Output Arguments:
+.  F - left hand side
+
+   Level: intermediate
+
+   Notes:
+   The assumption here is that the left hand side is of the form A*Xdot (and not A*Xdot + B*X). For other cases, the
+   user is required to write their own TSComputeIFunction.
+   This function is intended to be passed to TSSetIFunction() to evaluate the left hand side for linear problems.
+   The matrix (and optionally the evaluation context) should be passed to TSSetIJacobian().
+
+.seealso: TSSetIFunction(), TSSetIJacobian(), TSComputeIJacobianConstant()
+@*/
+PetscErrorCode TSComputeIFunctionLinear(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ctx)
+{
+  PetscErrorCode ierr;
+  Mat A,B;
+  MatStructure flg2;
+
+  PetscFunctionBegin;
+  ierr = TSGetIJacobian(ts,&A,&B,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = TSComputeIJacobian(ts,t,X,Xdot,1.0,&A,&B,&flg2,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = MatMult(A,Xdot,F);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "TSComputeIJacobianConstant"
+/*@C
+   TSComputeRHSJacobianConstant - Reuses a Jacobian that is time-independent.
+
+   Collective on TS
+
+   Input Arguments:
++  ts - time stepping context
+.  t - time at which to evaluate
+.  X - state at which to evaluate
+.  Xdot - time derivative of state vector
+.  shift - shift to apply
+-  ctx - context
+
+   Output Arguments:
++  A - pointer to operator
+.  B - pointer to preconditioning matrix
+-  flg - matrix structure flag
+
+   Level: intermediate
+
+   Notes:
+   This function is intended to be passed to TSSetIJacobian() to evaluate the Jacobian for linear time-independent problems.
+
+.seealso: TSSetIFunction(), TSSetIJacobian(), TSComputeIFunctionLinear()
+@*/
+PetscErrorCode TSComputeIJacobianConstant(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal shift,Mat *A,Mat *B,MatStructure *flg,void *ctx)
 {
 
   PetscFunctionBegin;

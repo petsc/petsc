@@ -20,7 +20,7 @@ PetscErrorCode TSPrecond_Sundials(realtype tn,N_Vector y,N_Vector fy,
 {
   TS             ts = (TS) P_data;
   TS_Sundials    *cvode = (TS_Sundials*)ts->data;
-  PC             pc = cvode->pc;
+  PC             pc;
   PetscErrorCode ierr;
   Mat            Jac;
   Vec            yy = cvode->w1;
@@ -61,6 +61,7 @@ PetscErrorCode TSPrecond_Sundials(realtype tn,N_Vector y,N_Vector fy,
   ierr = MatScale(Jac,gm);CHKERRQ(ierr);
   ierr = MatShift(Jac,one);CHKERRQ(ierr);
 
+  ierr = TSSundialsGetPC(ts,&pc); CHKERRQ(ierr);
   ierr = PCSetOperators(pc,Jac,Jac,str);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -75,7 +76,7 @@ PetscErrorCode TSPSolve_Sundials(realtype tn,N_Vector y,N_Vector fy,N_Vector r,N
 {
   TS              ts = (TS) P_data;
   TS_Sundials     *cvode = (TS_Sundials*)ts->data;
-  PC              pc = cvode->pc;
+  PC              pc;
   Vec             rr = cvode->w1,zz = cvode->w2;
   PetscErrorCode  ierr;
   PetscScalar     *r_data,*z_data;
@@ -88,6 +89,7 @@ PetscErrorCode TSPSolve_Sundials(realtype tn,N_Vector y,N_Vector fy,N_Vector r,N
   ierr = VecPlaceArray(zz,z_data); CHKERRQ(ierr);
 
   /* Solve the Px=r and put the result in zz */
+  ierr = TSSundialsGetPC(ts,&pc); CHKERRQ(ierr);
   ierr = PCApply(pc,rr,zz); CHKERRQ(ierr);
   ierr = VecResetArray(rr); CHKERRQ(ierr);
   ierr = VecResetArray(zz); CHKERRQ(ierr);
@@ -241,7 +243,6 @@ PetscErrorCode TSReset_Sundials(TS ts)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (cvode->pc)     {ierr = PCReset(cvode->pc);CHKERRQ(ierr);}
   ierr = MatDestroy(&cvode->pmat);
   ierr = VecDestroy(&cvode->update);
   ierr = VecDestroy(&cvode->func);
@@ -261,7 +262,6 @@ PetscErrorCode TSDestroy_Sundials(TS ts)
 
   PetscFunctionBegin;
   ierr = TSReset_Sundials(ts);CHKERRQ(ierr);
-  ierr = PCDestroy(&cvode->pc);CHKERRQ(ierr);
   ierr = MPI_Comm_free(&(cvode->comm_sundials));CHKERRQ(ierr);
   ierr = PetscFree(ts->data);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSSundialsSetType_C","",PETSC_NULL);CHKERRQ(ierr);
@@ -287,12 +287,12 @@ PetscErrorCode TSSetUp_Sundials(TS ts)
   PetscInt       glosize,locsize,i,flag;
   PetscScalar    *y_data,*parray;
   void           *mem;
+  PC             pc;
   const PCType   pctype;
   PetscBool      pcnone;
   Vec            sol = ts->vec_sol;
 
   PetscFunctionBegin;
-  ierr = PCSetFromOptions(cvode->pc);CHKERRQ(ierr);
 
   /* get the vector size */
   ierr = VecGetSize(ts->vec_sol,&glosize);CHKERRQ(ierr);
@@ -372,8 +372,9 @@ PetscErrorCode TSSetUp_Sundials(TS ts)
 
   /* call CVSpgmr to use GMRES as the linear solver.        */
   /* setup the ode integrator with the given preconditioner */
-  ierr = PCGetType(cvode->pc,&pctype);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)cvode->pc,PCNONE,&pcnone);CHKERRQ(ierr);
+  ierr = TSSundialsGetPC(ts,&pc); CHKERRQ(ierr);
+  ierr = PCGetType(pc,&pctype);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)pc,PCNONE,&pcnone);CHKERRQ(ierr);
   if (pcnone){
     flag  = CVSpgmr(mem,PREC_NONE,0);
     if (flag) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVSpgmr() fails, flag %d",flag);
@@ -495,7 +496,6 @@ PetscErrorCode TSView_Sundials(TS ts,PetscViewer viewer)
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported by TS Sundials",((PetscObject)viewer)->type_name);
   }
   ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-  ierr = PCView(cvode->pc,viewer);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -599,10 +599,14 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "TSSundialsGetPC_Sundials"
 PetscErrorCode  TSSundialsGetPC_Sundials(TS ts,PC *pc)
 {
-  TS_Sundials *cvode = (TS_Sundials*)ts->data;
+  SNES            snes;
+  KSP             ksp;
+  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  *pc = cvode->pc;
+  ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
+  ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
+  ierr = KSPGetPC(ksp,pc); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -1015,8 +1019,6 @@ PetscErrorCode  TSCreate_Sundials(TS ts)
   ts->ops->setfromoptions = TSSetFromOptions_Sundials;
 
   ierr = PetscNewLog(ts,TS_Sundials,&cvode);CHKERRQ(ierr);
-  ierr = PCCreate(((PetscObject)ts)->comm,&cvode->pc);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(ts,cvode->pc);CHKERRQ(ierr);
   ts->data          = (void*)cvode;
   cvode->cvode_type = SUNDIALS_BDF;
   cvode->gtype      = SUNDIALS_CLASSICAL_GS;
