@@ -4362,8 +4362,9 @@ explicit timestepping methods) the user  passes the function with
 the routine
 
 \begin{tabbing}
- TSSetRHSFunction(TS ts,PetscErrorCode (*f)(TS,double,Vec,Vec,void*),void *fP);
+ TSSetRHSFunction(TS ts,Vec R,PetscErrorCode (*f)(TS,double,Vec,Vec,void*),void *fP);
 \end{tabbing}
+The vector \trl{R} is an optional location to store the result.
 The arguments to the function \trl{f()} are
 the timestep context, the current time, the input for the function,
 the output for the function, and the (optional) user-provided context
@@ -4408,14 +4409,15 @@ reduces overhead to prepare the system for algebraic solvers (SNES/KSP)
 by having the user assemble the correctly shifted matrix.  Therefore
 this interface is also useful for ODE systems.
 
-To solve a DAE, instead of TSSetRHSFunction and TSSetRHSJacobian, one
+To solve a DAE, instead of TSSetRHSFunction() and TSSetRHSJacobian(), one
 uses:
 
 \begin{itemize}
 \item Function $F(t,u,\dot{u})$
   \begin{tabbing}
-    TSSetIFunction(TS ts,PetscErrorCode (*f)(TS,PetscReal,Vec,Vec,Vec,void*),void *funP);
+    TSSetIFunction(TS ts,Vec R,PetscErrorCode (*f)(TS,PetscReal,Vec,Vec,Vec,void*),void *funP);
   \end{tabbing}
+  The vector \trl{R} is an optional location to store the residual.
   The arguments to the function \trl{f()} are the
   timestep contex, current time, input state $u$, input time derivative
   $\dot{u}$, and the (optional) user-provided context \trl{funP}.

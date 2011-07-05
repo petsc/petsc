@@ -281,8 +281,9 @@ and SNESLineSearchSetParams().<br>
       <ul>
         <li>Rename TSCRANK_NICHOLSON to TSCN and TSRUNGE_KUTTA to TSRK
 for consistency.</li>
-        <li> <br>
-        </li>
+        <li>TSSetIFunction() and TSSetRHSFunction() have an additional
+argument for the vector to compute the function value in. If PETSC_NULL
+is used, then one is created by the TS.</li>
       </ul>
       <p><u><b>DM/DA:</b></u></p>
       <ul>
