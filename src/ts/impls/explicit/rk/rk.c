@@ -423,6 +423,7 @@ static PetscErrorCode TSDestroy_RK(TS ts)
   PetscFunctionBegin;
   ierr = TSReset_RK(ts);CHKERRQ(ierr);
   ierr = PetscFree(ts->data);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSRKSetTolerance_C","",PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /*------------------------------------------------------------*/

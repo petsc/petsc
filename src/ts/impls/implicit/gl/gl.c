@@ -1005,6 +1005,9 @@ static PetscErrorCode TSDestroy_GL(TS ts)
   if (gl->adapt) {ierr = TSGLAdaptDestroy(&gl->adapt);CHKERRQ(ierr);}
   if (gl->Destroy) {ierr = (*gl->Destroy)(gl);CHKERRQ(ierr);}
   ierr = PetscFree(ts->data);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSGLSetType_C",      "",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSGLSetAcceptType_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSGLGetAdapt_C",     "",PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
