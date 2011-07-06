@@ -821,22 +821,26 @@ PetscErrorCode InputTransformFFT_FFTW(Mat A,Vec x,Vec y)
       printf("Val local_0_start = %ld\n",local_0_start);
 
       if (dim[ndim-1]%2==0)
-        NM = dim[ndim-1]+2;
+        NM = 2;
       else
-        NM = dim[ndim-1]+1;
+        NM = 1;
 
       j = low;
-      for (i=0, k=1; i<((PetscInt)local_n0)*partial_dim;i++,k++)
+      for (i=0,k=1; i<((PetscInt)local_n0)*partial_dim;i++,k++)
          {
           indx1[i] = local_0_start*partial_dim + i;
           indx2[i] = j;
+          //printf("The values are %d and %d from %d\n",indx1[i],indx2[i],rank);
           if (k%dim[ndim-1]==0)
-            { j +=NM;}
+            { j+=NM;}
           j++;
          }
       ierr = ISCreateGeneral(comm,local_n0*partial_dim,indx1,PETSC_COPY_VALUES,&list1);CHKERRQ(ierr);
       ierr = ISCreateGeneral(comm,local_n0*partial_dim,indx2,PETSC_COPY_VALUES,&list2);CHKERRQ(ierr);
+      
+      //ISView(list1,PETSC_VIEWER_STDOUT_SELF);
 
+ 
       ierr = VecScatterCreate(x,list1,y,list2,&vecscat);CHKERRQ(ierr);
       ierr = VecScatterBegin(vecscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = VecScatterEnd(vecscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -884,9 +888,9 @@ PetscErrorCode OutputTransformFFT_FFTW(Mat A,Vec x,Vec y)
   PetscInt       N=fft->N, N1, n1 ,NM;
   PetscInt       ndim=fft->ndim,*dim=fft->dim,n=fft->n;
   PetscInt       low, *indx1, *indx2, tempindx, tempindx1, *indx3, *indx4;
-  PetscInt       i,j,k,rank,size;
+  PetscInt       i,j,k,rank,size,partial_dim;
   ptrdiff_t      alloc_local,local_n0,local_0_start;
-  ptrdiff_t      local_n1,local_1_start;
+  ptrdiff_t      local_n1,local_1_start,temp;
   VecScatter     vecscat;
   IS             list1,list2;
 
@@ -1028,8 +1032,47 @@ PetscErrorCode OutputTransformFFT_FFTW(Mat A,Vec x,Vec y)
      ierr = VecScatterDestroy(&vecscat);CHKERRQ(ierr);
   break;
 
- default:
-  SETERRQ(comm,PETSC_ERR_SUP,"Not Done Yet");
+  default:
+     temp = (fftw->dim_fftw)[fftw->ndim_fftw-1];
+     printf("The value of temp is %ld\n",temp);
+     (fftw->dim_fftw)[fftw->ndim_fftw-1] = temp/2 + 1;
+     alloc_local = fftw_mpi_local_size_transposed(fftw->ndim_fftw,fftw->dim_fftw,comm,&local_n0,&local_0_start,&local_n1,&local_1_start);
+     N1 = 2*N*(PetscInt)((fftw->dim_fftw)[fftw->ndim_fftw-1])/((PetscInt) temp);
+     (fftw->dim_fftw)[fftw->ndim_fftw-1] = temp;
+
+     partial_dim = fftw->partial_dim;
+     printf("The value of partial dim is %d\n",partial_dim);
+
+     ierr = PetscMalloc(sizeof(PetscInt)*((PetscInt)local_n0)*partial_dim,&indx1);CHKERRQ(ierr);
+     ierr = PetscMalloc(sizeof(PetscInt)*((PetscInt)local_n0)*partial_dim,&indx2);CHKERRQ(ierr);
+     printf("Val local_0_start = %ld\n",local_0_start);
+
+     if (dim[ndim-1]%2==0)
+       NM = 2;
+     else
+       NM = 1;
+
+     j = low;
+     for (i=0,k=1; i<((PetscInt)local_n0)*partial_dim;i++,k++)
+        {
+         indx1[i] = local_0_start*partial_dim + i;
+         indx2[i] = j;
+         //printf("The values are %d and %d from %d\n",indx1[i],indx2[i],rank);
+         if (k%dim[ndim-1]==0)
+           { j+=NM;}
+         j++;
+        }
+     ierr = ISCreateGeneral(comm,local_n0*partial_dim,indx1,PETSC_COPY_VALUES,&list1);CHKERRQ(ierr);
+     ierr = ISCreateGeneral(comm,local_n0*partial_dim,indx2,PETSC_COPY_VALUES,&list2);CHKERRQ(ierr);
+
+      //ISView(list1,PETSC_VIEWER_STDOUT_SELF);
+
+
+     ierr = VecScatterCreate(x,list2,y,list1,&vecscat);CHKERRQ(ierr);
+     ierr = VecScatterBegin(vecscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+     ierr = VecScatterEnd(vecscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+     ierr = VecScatterDestroy(&vecscat);CHKERRQ(ierr);
+
   break;
  }
  }
