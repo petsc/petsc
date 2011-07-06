@@ -86,9 +86,7 @@ PetscErrorCode  DMDASetUniformCoordinates(DM da,PetscReal xmin,PetscReal xmax,Pe
       }
     }
     ierr = VecRestoreArray(xcoor,&coors);CHKERRQ(ierr);
-  } else {
-    SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_SUP,"Cannot create uniform coordinates for this dimension %D\n",dim);
-  }
+  } else SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_SUP,"Cannot create uniform coordinates for this dimension %D\n",dim);
   ierr = DMDASetCoordinates(da,xcoor);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(da,xcoor);CHKERRQ(ierr);
   ierr = VecDestroy(&xcoor);CHKERRQ(ierr);

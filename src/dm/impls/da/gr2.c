@@ -75,7 +75,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
   DM                 da,dac,dag;
   PetscErrorCode     ierr;
   PetscMPIInt        rank;
-  PetscInt           igstart,N,s,M,istart,isize,jgstart,w;
+  PetscInt           N,s,M,w;
   const PetscInt     *lx,*ly;
   PetscReal          coors[4],ymin,ymax,xmin,xmax;
   PetscDraw          draw,popup;
@@ -112,7 +112,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
   */
   ierr = PetscObjectQuery((PetscObject)da,"GraphicsGhosted",(PetscObject*)&xlocal);CHKERRQ(ierr);
   if (!xlocal) {
-    if (!bx || !by || s != 1 || st != DMDA_STENCIL_BOX) {
+    if (bx !=  DMDA_BOUNDARY_NONE || by !=  DMDA_BOUNDARY_NONE || s != 1 || st != DMDA_STENCIL_BOX) {
       /* 
          if original da is not of stencil width one, or periodic or not a box stencil then
          create a special DMDA to handle one level of ghost points for graphics
@@ -127,21 +127,20 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
     ierr = DMCreateLocalVector(dac,&xlocal);CHKERRQ(ierr);
     if (dac != da) {
       /* don't keep any public reference of this DMDA, is is only available through xlocal */
-      DM dacd = dac;
-      ierr = DMDestroy(&dacd);CHKERRQ(ierr);
+      ierr = PetscObjectDereference((PetscObject)dac);CHKERRQ(ierr);
     } else {
       /* remove association between xlocal and da, because below we compose in the opposite
          direction and if we left this connect we'd get a loop, so the objects could 
          never be destroyed */
-      ierr = PetscObjectCompose((PetscObject)xlocal,"DM",0);CHKERRQ(ierr);
+      ierr = PetscObjectRemoveReference((PetscObject)xlocal,"DM");CHKERRQ(ierr);
     }
     ierr = PetscObjectCompose((PetscObject)da,"GraphicsGhosted",(PetscObject)xlocal);CHKERRQ(ierr);
     ierr = PetscObjectDereference((PetscObject)xlocal);CHKERRQ(ierr);
   } else {
-    if (!bx && !by && s == 1 && st == DMDA_STENCIL_BOX) {
-      dac = da;
-    } else {
+    if (bx !=  DMDA_BOUNDARY_NONE || by !=  DMDA_BOUNDARY_NONE || s != 1 || st != DMDA_STENCIL_BOX) {
       ierr = PetscObjectQuery((PetscObject)xlocal,"DM",(PetscObject*)&dac);CHKERRQ(ierr);
+    } else {
+      dac = da;
     }
   }
 
@@ -175,14 +174,12 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
   */
   ierr = PetscObjectQuery((PetscObject)da,"GraphicsCoordinateGhosted",(PetscObject*)&xcoorl);CHKERRQ(ierr);
   if (!xcoorl) {
-    DM dagd;
     /* create DMDA to get local version of graphics */
     ierr = DMDACreate2d(comm,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,M,N,zctx.m,zctx.n,2,1,lx,ly,&dag);CHKERRQ(ierr); 
     ierr = PetscInfo(dag,"Creating auxilary DMDA for managing graphics coordinates ghost points\n");CHKERRQ(ierr);
     ierr = DMCreateLocalVector(dag,&xcoorl);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject)da,"GraphicsCoordinateGhosted",(PetscObject)xcoorl);CHKERRQ(ierr);
-    dagd = dag;
-    ierr = DMDestroy(&dagd);CHKERRQ(ierr);/* dereference dag */
+    ierr = PetscObjectDereference((PetscObject)dag);CHKERRQ(ierr);
     ierr = PetscObjectDereference((PetscObject)xcoorl);CHKERRQ(ierr);
   } else {
     ierr = PetscObjectQuery((PetscObject)xcoorl,"DM",(PetscObject*)&dag);CHKERRQ(ierr);
@@ -195,8 +192,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
         Get information about size of area each processor must do graphics for
   */
   ierr = DMDAGetInfo(dac,0,&M,&N,0,0,0,0,&zctx.step,0,&bx,&by,0,0);CHKERRQ(ierr);
-  ierr = DMDAGetGhostCorners(dac,&igstart,&jgstart,0,&zctx.m,&zctx.n,0);CHKERRQ(ierr);
-  ierr = DMDAGetCorners(dac,&istart,0,0,&isize,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(dac,0,0,0,&zctx.m,&zctx.n,0);CHKERRQ(ierr);
 
   ierr = PetscOptionsGetBool(PETSC_NULL,"-draw_contour_grid",&zctx.showgrid,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscMalloc(zctx.step*sizeof(PetscInt),&displayfields);CHKERRQ(ierr);
