@@ -236,7 +236,7 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
     ierr = TSComputeIFunction(ts,t+h*ct[i],Y[i],Ydot,YdotI[i],PETSC_TRUE);CHKERRQ(ierr);
     ierr = TSComputeRHSFunction(ts,t+h*c[i],Y[i],YdotRHS[i]);CHKERRQ(ierr);
   }
-  for (j=0; j<s; j++) w[j] = h*bt[j];
+  for (j=0; j<s; j++) w[j] = -h*bt[j];
   ierr = VecMAXPY(ts->vec_sol,s,w,YdotI);CHKERRQ(ierr);
   for (j=0; j<s; j++) w[j] = h*b[j];
   ierr = VecMAXPY(ts->vec_sol,s,w,YdotRHS);CHKERRQ(ierr);
