@@ -15,6 +15,8 @@ Runtime options include:\n\
 
 ./ex61 -ksp_type fgmres -snes_vi_monitor   -snes_atol 1.e-11  -da_refine 5 -T 0.1   -ksp_monitor_true_residual -snes_converged_reason -ksp_converged_reason  -ksp_rtol 1.e-9  -snes_ls_monitor -VG 10 -draw_fields 1,3,4 -snes_ls basic -pc_type mg -pc_mg_galerkin
 
+./ex61 -ksp_type fgmres -snes_vi_monitor   -snes_atol 1.e-11  -da_refine 5 -snes_converged_reason -ksp_converged_reason   -snes_ls_monitor -VG 1 -draw_fields 1,3,4  -pc_type mg -pc_mg_galerkin -log_summary -dt .0000000000001 -mg_coarse_pc_type svd  -ksp_monitor_true_residual -ksp_rtol 1.e-9
+
  */
 
 /*
@@ -186,7 +188,7 @@ int main(int argc, char **argv)
     ierr = VecView(x,PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD));CHKERRQ(ierr);
     PetscInt its;
     ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"SNESVI solver converged at t = %5.4f in %d iterations\n",t,its);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"SNESVI solver converged at t = %g in %d iterations\n",t,its);CHKERRQ(ierr);
 
     ierr = Update_u(x,&user);CHKERRQ(ierr);
     ierr = UpdateMatrices(&user);CHKERRQ(ierr);
@@ -477,7 +479,7 @@ PetscErrorCode SetRandomVectors(AppCtx* user)
   PetscErrorCode ierr;
   PetscInt       i,n,count=0;
   PetscScalar    *w1,*w2,*Pv_p,*eta_p;
-  
+  static PetscViewer viewer = 0;
 
   PetscFunctionBegin;
   
@@ -496,7 +498,7 @@ PetscErrorCode SetRandomVectors(AppCtx* user)
     }
     else
     {
-      Pv_p[i]=w2[i]*user->VG;
+      Pv_p[i]=w2[i]*user->VG*user->dt;
       count=count+1;
     }
 
@@ -509,6 +511,11 @@ PetscErrorCode SetRandomVectors(AppCtx* user)
   ierr = VecRestoreArray(user->work2,&w2);CHKERRQ(ierr);
   ierr = VecRestoreArray(user->Pv,&Pv_p);CHKERRQ(ierr);
   ierr = VecRestoreArray(user->eta,&eta_p);CHKERRQ(ierr);
+
+  if (!viewer) {
+    ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,PETSC_NULL,"Random",0,0,300,300,&viewer);CHKERRQ(ierr);
+  }
+  ierr = VecView(user->Pv,viewer);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
   
