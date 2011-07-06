@@ -10,6 +10,10 @@
 
 /* ---------------------------------------------------------------- */
 
+#ifndef PETSC_ERR_PYTHON
+#define PETSC_ERR_PYTHON ((PetscErrorCode)(-1))
+#endif
+
 #define SETERRQQ(comm,n,s) \
   return PetscError(comm,__LINE__,__FUNCT__,__FILE__,__SDIR__,\
                     n,PETSC_ERROR_INITIAL,s)
@@ -50,8 +54,7 @@ PetscTBEH(MPI_Comm comm,
           const char *mess,
           void *ctx)
 {
-#if (PETSC_VERSION_(3,1,0) || \
-     PETSC_VERSION_(3,0,0))
+#if (PETSC_VERSION_(3,1,0) || PETSC_VERSION_(3,0,0))
   return PetscTraceBackErrorHandler(line,fun,file,dir,n,p,mess,ctx);
 #else
   return PetscTraceBackErrorHandler(comm,line,fun,file,dir,n,p,mess,ctx);
@@ -60,8 +63,7 @@ PetscTBEH(MPI_Comm comm,
 
 static PetscErrorHandlerFunction PetscPyEH = 0;
 
-#if (PETSC_VERSION_(3,1,0) || \
-     PETSC_VERSION_(3,0,0))
+#if (PETSC_VERSION_(3,1,0) || PETSC_VERSION_(3,0,0))
 static PetscErrorCode
 PetscPythonErrorHandler(int line,
                         const char *fun,

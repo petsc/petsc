@@ -32,7 +32,7 @@ cdef inline str S_(const_char p[]):
 # Vile hack for raising a exception and not contaminating traceback
 
 cdef extern from *:
-    enum: PETSC_ERR_PYTHON "(-1)"
+    enum: PETSC_ERR_PYTHON
 
 cdef extern from *:
     void PyErr_SetObject(object, object)
@@ -320,8 +320,6 @@ cdef int initialize(object args, object comm) except -1:
     # initialize PETSc
     CHKERR( PetscInitialize(&PyPetsc_Argc, &PyPetsc_Argv, NULL, NULL) )
     # install custom error handler
-    global PetscPyEH
-    PetscPyEH = PetscPythonErrorHandler
     CHKERR( PetscPushErrorHandlerPython() )
     # register finalization function
     if Py_AtExit(finalize) < 0:
