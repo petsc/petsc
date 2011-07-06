@@ -68,7 +68,7 @@ cdef extern from "scalar.h":
 # --------------------------------------------------------------------
 
 cdef extern from * nogil:
-    enum: PETSC_ERR_PYTHON "-1"
+    enum: PETSC_ERR_PYTHON
 
 cdef char *FUNCT = NULL
 cdef PetscErrorCode ERROR = PETSC_ERR_PYTHON
@@ -285,7 +285,7 @@ cdef class _PyObj:
         return 0
 
     cdef int getcontext(self, void **ctx) except -1:
-        if ctx == NULL: return 0 # XXX
+        if ctx == NULL: return 0
         if self.self is not None:
             ctx[0] = <void*> self.self
         else:
@@ -462,7 +462,6 @@ cdef inline _PyMat PyMat(PetscMat mat):
 cdef public PetscErrorCode MatPythonGetContext(PetscMat mat, void **ctx) \
     except IERR:
     FunctionBegin(b"MatPythonGetContext")
-    if ctx == NULL: return FunctionEnd() # XXX
     PyMat(mat).getcontext(ctx)
     return FunctionEnd()
 
@@ -702,11 +701,10 @@ cdef PetscErrorCode MatSetBlockSize_Python(
         setBlockSize(Mat_(mat), toInt(bs))
     return FunctionEnd()
 
-cdef PetscErrorCode MatSetUp_Python(PetscMat mat) \
+cdef PetscErrorCode MatSetUp_Python(
+    PetscMat mat,
+    ) \
     except IERR with gil:
-    if getRef(mat) == 0: return 0
-    if not Py_IsInitialized(): return 0
-    #
     FunctionBegin(b"MatSetUp_Python")
     cdef PetscInt rbs = -1, cbs = -1
     CHKERR( PetscLayoutGetBlockSize(mat.rmap,&rbs) )
@@ -1096,7 +1094,6 @@ cdef inline _PyPC PyPC(PetscPC pc):
 cdef public PetscErrorCode PCPythonGetContext(PetscPC pc, void **ctx) \
     except IERR:
     FunctionBegin(b"PCPythonGetContext")
-    if ctx == NULL: return FunctionEnd() # XXX
     PyPC(pc).getcontext(ctx)
     return FunctionEnd()
 
@@ -1359,7 +1356,6 @@ cdef inline _PyKSP PyKSP(PetscKSP ksp):
 cdef public PetscErrorCode KSPPythonGetContext(PetscKSP ksp, void **ctx) \
     except IERR:
     FunctionBegin(b"KSPPythonGetContext")
-    if ctx == NULL: return FunctionEnd() # XXX
     PyKSP(ksp).getcontext(ctx)
     return FunctionEnd()
 
@@ -1699,7 +1695,6 @@ cdef inline _PySNES PySNES(PetscSNES snes):
 cdef public PetscErrorCode SNESPythonGetContext(PetscSNES snes, void **ctx) \
     except IERR:
     FunctionBegin(b"SNESPythonGetContext ")
-    if ctx == NULL: return FunctionEnd() # XXX
     PySNES(snes).getcontext(ctx)
     return FunctionEnd()
 
@@ -2005,7 +2000,6 @@ cdef inline _PyTS PyTS(PetscTS ts):
 cdef public PetscErrorCode TSPythonGetContext(PetscTS ts, void **ctx) \
     except IERR:
     FunctionBegin(b"TSPythonGetContext")
-    if ctx == NULL: return FunctionEnd() # XXX
     PyTS(ts).getcontext(ctx)
     return FunctionEnd()
 

@@ -5,6 +5,10 @@
 #include <private/snesimpl.h>
 #include <private/tsimpl.h>
 
+#ifndef PETSC_ERR_PYTHON
+#define PETSC_ERR_PYTHON ((PetscErrorCode)(-1))
+#endif
+
 EXTERN_C_BEGIN
 extern PetscErrorCode (*PetscPythonMonitorSet_C)(PetscObject,const char*);
 EXTERN_C_END
