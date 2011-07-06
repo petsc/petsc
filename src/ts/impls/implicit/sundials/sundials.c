@@ -104,11 +104,11 @@ int TSFunction_Sundials(realtype t,N_Vector y,N_Vector ydot,void *ctx)
 }
 
 /*
-       TSStep_Sundials - Calls Sundials to integrate the ODE.
+       TSSolve_Sundials - Calls Sundials to integrate the ODE.
 */
 #undef __FUNCT__
-#define __FUNCT__ "TSStep_Sundials"
-PetscErrorCode TSStep_Sundials(TS ts)
+#define __FUNCT__ "TSSolve_Sundials"
+PetscErrorCode TSSolve_Sundials(TS ts)
 {
   TS_Sundials    *cvode = (TS_Sundials*)ts->data;
   Vec            sol = ts->vec_sol;
@@ -267,7 +267,6 @@ PetscErrorCode TSSetUp_Sundials(TS ts)
   PC             pc;
   const PCType   pctype;
   PetscBool      pcnone;
-  Vec            sol = ts->vec_sol;
 
   PetscFunctionBegin;
 
@@ -345,7 +344,6 @@ PetscErrorCode TSSetUp_Sundials(TS ts)
 
   /* Specify max num of steps to be taken by cvode in its attempt to reach the next output time */
   flag = CVodeSetMaxNumSteps(mem,ts->max_steps);
-  ierr = TSMonitor(ts,ts->steps,ts->ptime,sol);CHKERRQ(ierr);
 
   /* call CVSpgmr to use GMRES as the linear solver.        */
   /* setup the ode integrator with the given preconditioner */
@@ -992,7 +990,7 @@ PetscErrorCode  TSCreate_Sundials(TS ts)
   ts->ops->destroy        = TSDestroy_Sundials;
   ts->ops->view           = TSView_Sundials;
   ts->ops->setup          = TSSetUp_Sundials;
-  ts->ops->step           = TSStep_Sundials;
+  ts->ops->solve          = TSSolve_Sundials;
   ts->ops->setfromoptions = TSSetFromOptions_Sundials;
 
   ierr = PetscNewLog(ts,TS_Sundials,&cvode);CHKERRQ(ierr);
