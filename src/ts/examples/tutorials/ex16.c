@@ -95,6 +95,26 @@ static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "RegisterMyARK2"
+static PetscErrorCode RegisterMyARK2(void)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  {
+    const PetscReal
+      A[3][3] = {{0,0,0},
+                 {0.41421356237309504880,0,0},
+                 {0.75,0.25,0}},
+      At[3][3] = {{0,0,0},
+                  {0.12132034355964257320,0.29289321881345247560,0},
+                  {0.20710678118654752440,0.50000000000000000000,0.29289321881345247560}};
+      ierr = TSARKIMEXRegister("myark2",2,3,&At[0][0],PETSC_NULL,PETSC_NULL,&A[0][0],PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
@@ -110,6 +130,7 @@ int main(int argc,char **argv)
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscInitialize(&argc,&argv,PETSC_NULL,help);
+  ierr = RegisterMyARK2();CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Set runtime options
