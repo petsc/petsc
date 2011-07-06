@@ -717,7 +717,12 @@ PetscErrorCode InputTransformFFT_FFTW(Mat A,Vec x,Vec y)
           ierr = VecScatterDestroy(&vecscat);CHKERRQ(ierr);
           break;
      default:
-          SETERRQ(comm,PETSC_ERR_SUP,"No support yet");
+          ierr = ISCreateStride(PETSC_COMM_SELF,N,0,1,&list1);
+          ierr = VecScatterCreate(x,list1,y,list1,&vecscat);CHKERRQ(ierr);
+          ierr = VecScatterBegin(vecscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+          ierr = VecScatterEnd(vecscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+          ierr = VecScatterDestroy(&vecscat);CHKERRQ(ierr);
+          //ierr = ISDestroy(list1);CHKERRQ(ierr);
           break;
       }
     }
@@ -820,9 +825,23 @@ PetscErrorCode InputTransformFFT_FFTW(Mat A,Vec x,Vec y)
       else
         NM = dim[ndim-1]+1;
 
+      j = low;
+      for (i=0, k=1; i<((PetscInt)local_n0)*partial_dim;i++,k++)
+         {
+          indx1[i] = local_0_start*partial_dim + i;
+          indx2[i] = j;
+          if (k%dim[ndim-1]==0)
+            { j +=NM;}
+          j++;
+         }
+      ierr = ISCreateGeneral(comm,local_n0*partial_dim,indx1,PETSC_COPY_VALUES,&list1);CHKERRQ(ierr);
+      ierr = ISCreateGeneral(comm,local_n0*partial_dim,indx2,PETSC_COPY_VALUES,&list2);CHKERRQ(ierr);
 
-
-  break;
+      ierr = VecScatterCreate(x,list1,y,list2,&vecscat);CHKERRQ(ierr);
+      ierr = VecScatterBegin(vecscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterEnd(vecscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterDestroy(&vecscat);CHKERRQ(ierr);
+      break;
   }
  }
 
@@ -920,7 +939,12 @@ PetscErrorCode OutputTransformFFT_FFTW(Mat A,Vec x,Vec y)
          ierr = VecScatterDestroy(&vecscat);CHKERRQ(ierr);
          break;
     default:
-         SETERRQ(comm,PETSC_ERR_SUP,"No support yet");
+         ierr = ISCreateStride(comm,N,0,1,&list1);
+         //ierr = ISView(list1,PETSC_VIEWER_STDOUT_SELF);
+         ierr = VecScatterCreate(x,list1,y,list1,&vecscat);CHKERRQ(ierr);
+         ierr = VecScatterBegin(vecscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+         ierr = VecScatterEnd(vecscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+         ierr = VecScatterDestroy(&vecscat);CHKERRQ(ierr);
          break;
     }
   }
