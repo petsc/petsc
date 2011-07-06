@@ -115,7 +115,6 @@ int main(int argc,char **args)
   /* solve */
   ierr = KSPSolve(ksp,bb,xx);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
-
   /* Free work space */
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
   ierr = VecDestroy(&xx);CHKERRQ(ierr);

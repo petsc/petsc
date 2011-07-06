@@ -35,6 +35,7 @@ PetscErrorCode PCReset_GAMG(PC pc)
    Input Parameter:
    .  pc - the preconditioner context
 */
+EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCSetCoordinates_GAMG"
 PetscErrorCode PCSetCoordinates_GAMG(PC pc, const int ndm,PetscReal *coords )
@@ -63,9 +64,10 @@ PetscErrorCode PCSetCoordinates_GAMG(PC pc, const int ndm,PetscReal *coords )
   }
   pc_gamg->m_data_sz = arrsz;
   pc_gamg->m_dim = ndm;
- 
+
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 /* -------------------------------------------------------------------------- */
 /*
@@ -194,24 +196,23 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
       PetscViewer        viewer;
       ierr = PetscViewerASCIIOpen(PETSC_COMM_SELF, "Rmat.m", &viewer);  CHKERRQ(ierr);
       ierr = PetscViewerSetFormat( viewer, PETSC_VIEWER_ASCII_MATLAB);  CHKERRQ(ierr);
-      ierr = MatView(Rarr[level1],viewer);CHKERRQ(ierr);
+      ierr = MatView(Rarr[lidx],viewer);CHKERRQ(ierr);
       ierr = PetscViewerDestroy( &viewer );
     }
-    KSP smoother;
-    ierr = PCMGGetSmoother(pc,level,&smoother); CHKERRQ(ierr);
-    ierr = KSPSetOperators( smoother, Aarr[lidx], Aarr[lidx], DIFFERENT_NONZERO_PATTERN );
-    CHKERRQ(ierr);
-    /* ierr = MatGetSize( Aarr[lidx], &MM, &NN ); CHKERRQ(ierr); */
-    /* PetscPrintf(PETSC_COMM_WORLD,"%s Set A(%d,%d) on level %d (%d)\n",__FUNCT__,MM,NN,level,lidx); */
+    ierr = MatDestroy( &Rarr[lidx] );  CHKERRQ(ierr);
+    {
+      KSP smoother;
+      ierr = PCMGGetSmoother(pc,level,&smoother); CHKERRQ(ierr);
+      ierr = KSPSetOperators( smoother, Aarr[lidx], Aarr[lidx], DIFFERENT_NONZERO_PATTERN );
+      CHKERRQ(ierr);
+      ierr = MatDestroy( &Aarr[lidx] );  CHKERRQ(ierr);
+    }
   }
   { /* fine level (no P) */
     KSP smoother;
     ierr = PCMGGetSmoother(pc,fine_level,&smoother); CHKERRQ(ierr);
     ierr = KSPSetOperators( smoother, Aarr[0], Aarr[0], DIFFERENT_NONZERO_PATTERN );
     CHKERRQ(ierr);
-    /* PetscInt MM,NN; */
-    /* ierr = MatGetSize( Aarr[0], &MM, &NN );CHKERRQ(ierr); */
-    /* PetscPrintf(PETSC_COMM_WORLD,"%s Set A(%d,%d) on level %d (%d)\n",__FUNCT__,MM,NN,fine_level,0); */
   }
 
   /* setupcalled is set to 0 so that MG is setup from scratch */
