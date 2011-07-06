@@ -397,9 +397,7 @@ PetscErrorCode  PetscObjectDereference(PetscObject obj)
   PetscValidHeader(obj,1);
   if (obj->bops->destroy) {
     ierr = (*obj->bops->destroy)(&obj);CHKERRQ(ierr);
-  } else if (!--obj->refct) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"This PETSc object does not have a generic destroy routine");
-  }
+  } else if (!--obj->refct) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"This PETSc object does not have a generic destroy routine");
   PetscFunctionReturn(0);
 }
 
