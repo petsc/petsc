@@ -9,12 +9,18 @@ Runtime options include:\n\
 -theta_c <theta_c>\n\n";
 
 /*
- ./ex60 -ksp_type fgmres -pc_type mg  -snes_vi_monitor   -snes_atol 1.e-11  -da_grid_x 72 -da_grid_y 72 -ksp_rtol 1.e-8  -T 0.1  -VG 100 -pc_type lu -ksp_monitor_true_residual -pc_factor_mat_solver_package superlu -snes_converged_reason -ksp_converged_reason -pc_type sor  -ksp_rtol 1.e-9  -snes_ls_monitor -VG 10 -snes_monitor_solution
+ ./ex61 -ksp_type gmres -snes_vi_monitor   -snes_atol 1.e-11  -da_refine 3  -T 0.1   -ksp_monitor_true_residual -pc_type lu -pc_factor_mat_solver_package superlu -snes_converged_reason -ksp_converged_reason  -ksp_rtol 1.e-9  -snes_ls_monitor -VG 10 -draw_fields 1,3,4 -snes_ls basic
+
+./ex61 -ksp_type gmres -snes_vi_monitor   -snes_atol 1.e-11  -da_refine 4 -T 0.1   -ksp_monitor_true_residual -pc_type sor -snes_converged_reason -ksp_converged_reason  -ksp_rtol 1.e-9  -snes_ls_monitor -VG 10 -draw_fields 1,3,4 -snes_ls basic
+
+./ex61 -ksp_type fgmres -snes_vi_monitor   -snes_atol 1.e-11  -da_refine 5 -T 0.1   -ksp_monitor_true_residual -snes_converged_reason -ksp_converged_reason  -ksp_rtol 1.e-9  -snes_ls_monitor -VG 10 -draw_fields 1,3,4 -snes_ls basic -pc_type mg -pc_mg_galerkin
 
  */
 
 /*
    Possible additions to the code. At each iteration count the number of solution elements that are at the upper bound and stop the program if large
+
+   Is the solution at time 0 nonsense?  Looks totally different from first time step. Why does cubic line search at beginning screw it up? 
 
    Add command-line option for constant or degenerate mobility 
    Add command-line option for graphics at each time step
@@ -59,18 +65,18 @@ PetscErrorCode Llog(Vec,Vec);
 #define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
-  PetscErrorCode ierr;
-  Vec            x,r;  /* Solution and residual vectors */
-  SNES           snes; /* Nonlinear solver context */
-  AppCtx         user; /* Application context */
-  Vec            xl,xu; /* Upper and lower bounds on variables */
-  Mat            J;
-  PetscScalar    t=0.0;
-  PetscViewer    view_out, view_q, view_psi, view_mat;
-  PetscViewer    view_rand;
-  IS             inactiveconstraints;
-  PetscInt       ninactiveconstraints,N;
-
+  PetscErrorCode      ierr;
+  Vec                 x,r;  /* Solution and residual vectors */
+  SNES                snes; /* Nonlinear solver context */
+  AppCtx              user; /* Application context */
+  Vec                 xl,xu; /* Upper and lower bounds on variables */
+  Mat                 J;
+  PetscScalar         t=0.0;
+  /*  PetscViewer         view_out, view_q, view_psi, view_mat;*/
+  /*  PetscViewer         view_rand;*/
+  IS                  inactiveconstraints;
+  PetscInt            ninactiveconstraints,N;
+  SNESConvergedReason reason;
   
   PetscInitialize(&argc,&argv, (char*)0, help);
   
@@ -138,18 +144,20 @@ int main(int argc, char **argv)
   ierr = SNESSetJacobian(snes,J,J,FormJacobian,(void*)&user);CHKERRQ(ierr);
  
 
-   ierr = SNESSetType(snes,SNESVI);CHKERRQ(ierr);
+  ierr = SNESSetType(snes,SNESVI);CHKERRQ(ierr);
+  ierr = SNESSetTolerances(snes,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,100,PETSC_DEFAULT);CHKERRQ(ierr);
 
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
   ierr = SetVariableBounds(user.da1,xl,xu);CHKERRQ(ierr);
   ierr = SNESVISetVariableBounds(snes,xl,xu);CHKERRQ(ierr);
   
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"file_rand",FILE_MODE_WRITE,&view_rand);CHKERRQ(ierr);
+  /*  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"file_rand",FILE_MODE_WRITE,&view_rand);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"file_mat2",FILE_MODE_WRITE,&view_mat);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"file_q",FILE_MODE_WRITE,&view_q);CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"file_out",FILE_MODE_WRITE,&view_out);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"file_psi",FILE_MODE_WRITE,&view_psi);CHKERRQ(ierr);
-  
+   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"file_psi",FILE_MODE_WRITE,&view_psi);CHKERRQ(ierr);*/
+ 
+  ierr = VecView(x,PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD));CHKERRQ(ierr);  
   while (t<user.T) {
     ierr = SNESSetFunction(snes,r,FormFunction,(void*)&user);CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,J,J,FormJacobian,(void*)&user);CHKERRQ(ierr);
@@ -166,8 +174,10 @@ int main(int argc, char **argv)
 
     ierr = Update_q(&user);CHKERRQ(ierr);
     /*    ierr = VecView(user.q,view_q);CHKERRQ(ierr);*/
-     ierr = MatView(user.M,view_mat);CHKERRQ(ierr);
+    /*  ierr = MatView(user.M,view_mat);CHKERRQ(ierr);*/
     ierr = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(ierr);
+    ierr = SNESGetConvergedReason(snes,&reason);CHKERRQ(ierr);
+    if (reason < 0) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_CONV_FAILED,"Nonlinear solver failed");
     ierr = SNESVIGetInactiveSet(snes,&inactiveconstraints);CHKERRQ(ierr);
     ierr = ISGetSize(inactiveconstraints,&ninactiveconstraints);CHKERRQ(ierr);
     /* if (ninactiveconstraints < .90*N) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP,"To many active constraints, model has become non-physical"); */
@@ -183,11 +193,11 @@ int main(int argc, char **argv)
     t = t + user.dt;
   }
    
-  ierr = PetscViewerDestroy(&view_rand);CHKERRQ(ierr);
+  /*  ierr = PetscViewerDestroy(&view_rand);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&view_mat);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&view_q);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&view_out);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&view_psi);CHKERRQ(ierr);
+   ierr = PetscViewerDestroy(&view_psi);CHKERRQ(ierr);*/
 
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = VecDestroy(&r);CHKERRQ(ierr);
@@ -415,12 +425,12 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
   PetscErrorCode    ierr;
   PetscInt          n,i;
   PetscScalar	   *xx,*cv_p,*ci_p,*wv_p,*wi_p;
-  PetscViewer       view;
+  /*  PetscViewer       view; */
   PetscScalar       initv = .00069;
 
   PetscFunctionBegin;
 
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"file_initial",FILE_MODE_WRITE,&view);CHKERRQ(ierr);
+  /*  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"file_initial",FILE_MODE_WRITE,&view);CHKERRQ(ierr);*/
   ierr = VecGetLocalSize(X,&n);CHKERRQ(ierr);
 
   ierr = VecSet(user->cv,initv);CHKERRQ(ierr);
@@ -445,11 +455,11 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
     xx[5*i+4]=0.0;
   }
 
-  ierr = VecView(user->wv,view);CHKERRQ(ierr);
+  /* ierr = VecView(user->wv,view);CHKERRQ(ierr);
   ierr = VecView(user->cv,view);CHKERRQ(ierr);
   ierr = VecView(user->wi,view);CHKERRQ(ierr);
   ierr = VecView(user->ci,view);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&view);CHKERRQ(ierr);
+   ierr = PetscViewerDestroy(&view);CHKERRQ(ierr);*/
 
   ierr = VecRestoreArray(X,&xx);CHKERRQ(ierr);
   ierr = VecRestoreArray(user->cv,&cv_p);CHKERRQ(ierr);
@@ -605,7 +615,7 @@ PetscErrorCode GetParams(AppCtx* user)
 PetscErrorCode SetUpMatrices(AppCtx* user)
 {
   PetscErrorCode    ierr;
-  PetscInt          nele,nen,i,j,n;
+  PetscInt          nele,nen,i,n;
   const PetscInt    *ele;
   PetscScalar       dt=user->dt,hx,hy;
   
@@ -614,7 +624,7 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
   PetscScalar       cv_sum, ci_sum;
   Mat               M=user->M;
   Mat               M_0=user->M_0;
-  PetscInt          Mda=user->Mda, Nda=user->Nda, ld, rd, ru, lu;
+  PetscInt          Mda=user->Mda, Nda=user->Nda;
   PetscScalar       *cv_p,*ci_p;
    
   PetscFunctionBegin;
@@ -763,14 +773,14 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
 PetscErrorCode UpdateMatrices(AppCtx* user)
 {
   PetscErrorCode    ierr;
-  PetscInt          i,j,n,Mda,Nda,nele,nen;
+  PetscInt          i,n,Mda,Nda,nele,nen;
   const PetscInt    *ele;
   
-  PetscInt          idx[3],*nodes,*connect;
-  PetscInt          ld,rd,lu,ru;
+  PetscInt          idx[3];
   PetscScalar       eM_2_odd[3][3],eM_2_even[3][3],h,dt=user->dt;
   Mat               M=user->M;
   PetscScalar       *cv_p,*ci_p,cv_sum,ci_sum;
+
   PetscFunctionBegin;
  
   /* Create the mass matrix M_0 */
