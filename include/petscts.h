@@ -425,6 +425,7 @@ extern PetscErrorCode  TSGLSetAcceptType(TS,const TSGLAcceptType);
 
 #define TSARKIMEXType char*
 #define TSARKIMEX2D "2d"
+#define TSARKIMEX2E "2e"
 #define TSARKIMEX3  "3"
 #define TSARKIMEX4  "4"
 #define TSARKIMEX5  "5"
