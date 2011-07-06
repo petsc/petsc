@@ -22,47 +22,24 @@ PetscErrorCode TSPrecond_Sundials(realtype tn,N_Vector y,N_Vector fy,
   TS_Sundials    *cvode = (TS_Sundials*)ts->data;
   PC             pc;
   PetscErrorCode ierr;
-  Mat            Jac;
-  Vec            yy = cvode->w1;
-  PetscScalar    one = 1.0,gm;
+  Mat            J,P;
+  Vec            yy = cvode->w1,yydot = cvode->ydot;
+  PetscReal      gm = (PetscReal)_gamma;
   MatStructure   str = DIFFERENT_NONZERO_PATTERN;
   PetscScalar    *y_data;
 
   PetscFunctionBegin;
-  ierr = TSGetRHSJacobian(ts,PETSC_NULL,&Jac,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-  /* This allows us to construct preconditioners in-place if we like */
-  ierr = MatSetUnfactored(Jac);CHKERRQ(ierr);
-
-  /* jok - TRUE means reuse current Jacobian else recompute Jacobian */
-  if (jok) {
-    ierr     = MatCopy(cvode->pmat,Jac,str);CHKERRQ(ierr);
-    *jcurPtr = FALSE;
-  } else {
-    /* make PETSc vector yy point to SUNDIALS vector y */
-    y_data = (PetscScalar *) N_VGetArrayPointer(y);
-    ierr   = VecPlaceArray(yy,y_data); CHKERRQ(ierr);
-
-    /* compute the Jacobian */
-    ierr = TSComputeRHSJacobian(ts,ts->ptime,yy,&Jac,&Jac,&str);CHKERRQ(ierr);
-    ierr = VecResetArray(yy); CHKERRQ(ierr);
-
-    /* copy the Jacobian matrix */
-    if (!cvode->pmat) {
-      ierr = MatDuplicate(Jac,MAT_COPY_VALUES,&cvode->pmat);CHKERRQ(ierr);
-      ierr = PetscLogObjectParent(ts,cvode->pmat);CHKERRQ(ierr);
-    } else {
-      ierr = MatCopy(Jac,cvode->pmat,str);CHKERRQ(ierr);
-    }
-    *jcurPtr = TRUE;
-  }
-
-  /* construct I-gamma*Jac  */
-  gm   = -_gamma;
-  ierr = MatScale(Jac,gm);CHKERRQ(ierr);
-  ierr = MatShift(Jac,one);CHKERRQ(ierr);
-
+  ierr = TSGetIJacobian(ts,&J,&P,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  y_data = (PetscScalar *) N_VGetArrayPointer(y);
+  ierr = VecPlaceArray(yy,y_data); CHKERRQ(ierr);
+  ierr = VecZeroEntries(yydot);CHKERRQ(ierr); /* The Jacobian is independent of Ydot for ODE which is all that CVode works for */
+  /* compute the shifted Jacobian   (1/gm)*I + Jrest */
+  ierr = TSComputeIJacobian(ts,ts->ptime,yy,yydot,1/gm,&J,&P,&str,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = VecResetArray(yy); CHKERRQ(ierr);
+  ierr = MatScale(P,gm);CHKERRQ(ierr);  /* turn into I-gm*Jrest, J is not used by Sundials  */
+  *jcurPtr = TRUE;
   ierr = TSSundialsGetPC(ts,&pc); CHKERRQ(ierr);
-  ierr = PCSetOperators(pc,Jac,Jac,str);CHKERRQ(ierr);
+  ierr = PCSetOperators(pc,J,P,str);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -106,7 +83,7 @@ int TSFunction_Sundials(realtype t,N_Vector y,N_Vector ydot,void *ctx)
   TS              ts = (TS) ctx;
   MPI_Comm        comm = ((PetscObject)ts)->comm;
   TS_Sundials     *cvode = (TS_Sundials*)ts->data;
-  Vec             yy = cvode->w1,yyd = cvode->w2;
+  Vec             yy = cvode->w1,yyd = cvode->w2,yydot = cvode->ydot;
   PetscScalar     *y_data,*ydot_data;
   PetscErrorCode  ierr;
 
@@ -116,9 +93,11 @@ int TSFunction_Sundials(realtype t,N_Vector y,N_Vector ydot,void *ctx)
   ydot_data  = (PetscScalar *) N_VGetArrayPointer(ydot);
   ierr = VecPlaceArray(yy,y_data);CHKERRABORT(comm,ierr);
   ierr = VecPlaceArray(yyd,ydot_data); CHKERRABORT(comm,ierr);
+  ierr = VecZeroEntries(yydot);CHKERRQ(ierr);
 
   /* now compute the right hand side function */
-  ierr = TSComputeRHSFunction(ts,t,yy,yyd); CHKERRABORT(comm,ierr);
+  ierr = TSComputeIFunction(ts,t,yy,yydot,yyd,PETSC_FALSE); CHKERRABORT(comm,ierr);
+  ierr = VecScale(yyd,-1.);CHKERRQ(ierr);
   ierr = VecResetArray(yy); CHKERRABORT(comm,ierr);
   ierr = VecResetArray(yyd); CHKERRABORT(comm,ierr);
   PetscFunctionReturn(0);
@@ -243,10 +222,8 @@ PetscErrorCode TSReset_Sundials(TS ts)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatDestroy(&cvode->pmat);CHKERRQ(ierr);
   ierr = VecDestroy(&cvode->update);CHKERRQ(ierr);
-  ierr = VecDestroy(&cvode->func);CHKERRQ(ierr);
-  ierr = VecDestroy(&cvode->rhs);CHKERRQ(ierr);
+  ierr = VecDestroy(&cvode->ydot);CHKERRQ(ierr);
   ierr = VecDestroy(&cvode->w1);CHKERRQ(ierr);
   ierr = VecDestroy(&cvode->w2);CHKERRQ(ierr);
   if (cvode->mem)    {CVodeFree(&cvode->mem);}
@@ -309,9 +286,9 @@ PetscErrorCode TSSetUp_Sundials(TS ts)
   /*ierr = PetscMemcpy(y_data,parray,locsize*sizeof(PETSC_SCALAR)); CHKERRQ(ierr);*/
   ierr = VecRestoreArray(ts->vec_sol,PETSC_NULL);CHKERRQ(ierr);
   ierr = VecDuplicate(ts->vec_sol,&cvode->update);CHKERRQ(ierr);
-  ierr = VecDuplicate(ts->vec_sol,&cvode->func);CHKERRQ(ierr);
+  ierr = VecDuplicate(ts->vec_sol,&cvode->ydot);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(ts,cvode->update);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(ts,cvode->func);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent(ts,cvode->ydot);CHKERRQ(ierr);
 
   /*
     Create work vectors for the TSPSolve_Sundials() routine. Note these are
