@@ -16,12 +16,12 @@ typedef enum { DELETED, SELECTED, NOT_DONE } NState;
 
 /* Private context for the GAMG preconditioner */
 typedef struct{
-  PetscInt       m_gid;
-  PetscInt       m_lid;
-  PetscInt       m_degree;
-  PetscInt       m_next_idx;
-  NState         m_state;
-  PetscMPIInt    m_procID;
+  PetscInt       m_gid;      // global vertex index
+  PetscInt       m_lid;      // local vertex index
+  PetscInt       m_degree;   // vertex degree
+  PetscInt       m_next_idx; // Next list item
+  NState         m_state;    // Selected, not decided, or deleted
+  PetscMPIInt    m_procID;   // The process
 } GNode;
 
 int compare (const void * a, const void * b)
