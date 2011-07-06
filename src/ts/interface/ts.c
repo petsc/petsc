@@ -2461,6 +2461,38 @@ PetscErrorCode TSComputeIJacobianConstant(TS ts,PetscReal t,Vec X,Vec Xdot,Petsc
   PetscFunctionReturn(0);
 }
 
+
+#undef __FUNCT__  
+#define __FUNCT__ "TSGetConvergedReason"
+/*@
+   TSGetConvergedReason - Gets the reason the TS iteration was stopped.
+
+   Not Collective
+
+   Input Parameter:
+.  ts - the TS context
+
+   Output Parameter:
+.  reason - negative value indicates diverged, positive value converged, see TSConvergedReason or the 
+            manual pages for the individual convergence tests for complete lists
+
+   Level: intermediate
+
+   Notes: Can only be called after the call to TSSolve() is complete.
+
+.keywords: TS, nonlinear, set, convergence, test
+
+.seealso: TSSetConvergenceTest(), TSConvergedReason
+@*/
+PetscErrorCode  TSGetConvergedReason(TS ts,TSConvergedReason *reason)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidPointer(reason,2);
+  *reason = ts->reason;
+  PetscFunctionReturn(0);
+}
+
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
 #include <mex.h>
 
