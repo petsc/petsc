@@ -220,7 +220,8 @@ PetscErrorCode  PetscOListFind(PetscOList fl,const char name[],PetscObject *obj)
 -   ob - the PETSc object
 
     Output Parameters:
-.   name - name string
++  name - name string
+-  skipdereference - if the object is list but does not have the increased reference count for a circular dependency
 
     Level: developer
 
@@ -232,13 +233,14 @@ PetscErrorCode  PetscOListFind(PetscOList fl,const char name[],PetscObject *obj)
 .seealso: PetscOListDestroy(), PetscOListAdd(), PetscOListDuplicate(), PetscOListFind(), PetscOListDuplicate()
 
 @*/
-PetscErrorCode  PetscOListReverseFind(PetscOList fl,PetscObject obj,char **name)
+PetscErrorCode  PetscOListReverseFind(PetscOList fl,PetscObject obj,char **name,PetscBool *skipdereference)
 {
   PetscFunctionBegin;
   *name = 0;
   while (fl) {
     if (fl->obj == obj) {
       *name = fl->name;
+      if (skipdereference) *skipdereference = fl->skipdereference;
       break;
     }
     fl = fl->next;

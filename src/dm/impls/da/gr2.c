@@ -133,7 +133,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
       /* remove association between xlocal and da, because below we compose in the opposite
          direction and if we left this connect we'd get a loop, so the objects could 
          never be destroyed */
-      ierr = PetscObjectCompose((PetscObject)xlocal,"DM",0);CHKERRQ(ierr);
+      ierr = PetscObjectRemoveReference((PetscObject)xlocal,"DM");CHKERRQ(ierr);
     }
     ierr = PetscObjectCompose((PetscObject)da,"GraphicsGhosted",(PetscObject)xlocal);CHKERRQ(ierr);
     ierr = PetscObjectDereference((PetscObject)xlocal);CHKERRQ(ierr);
