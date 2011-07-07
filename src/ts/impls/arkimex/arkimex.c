@@ -383,7 +383,7 @@ static PetscErrorCode TSSetUp_ARKIMEX(TS ts)
 
   PetscFunctionBegin;
   if (!ark->tableau) {
-    ierr = TSSetType(ts,TSARKIMEXDefault);CHKERRQ(ierr);
+    ierr = TSARKIMEXSetType(ts,TSARKIMEXDefault);CHKERRQ(ierr);
   }
   ierr = VecDuplicateVecs(ts->vec_sol,s,&ark->Y);CHKERRQ(ierr);
   ierr = VecDuplicateVecs(ts->vec_sol,s,&ark->YdotI);CHKERRQ(ierr);
