@@ -1453,7 +1453,7 @@ typedef struct _n_PetscOList *PetscOList;
 
 extern PetscErrorCode  PetscOListDestroy(PetscOList*);
 extern PetscErrorCode  PetscOListFind(PetscOList,const char[],PetscObject*);
-extern PetscErrorCode  PetscOListReverseFind(PetscOList,PetscObject,char**);
+extern PetscErrorCode  PetscOListReverseFind(PetscOList,PetscObject,char**,PetscBool*);
 extern PetscErrorCode  PetscOListAdd(PetscOList *,const char[],PetscObject);
 extern PetscErrorCode  PetscOListRemoveReference(PetscOList *,const char[]);
 extern PetscErrorCode  PetscOListDuplicate(PetscOList,PetscOList *);

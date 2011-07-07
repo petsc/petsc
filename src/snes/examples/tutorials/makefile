@@ -408,7 +408,7 @@ runex14_2:
 runex50:
 	-@${MPIEXEC} -n 2 ./ex50 -da_refine 3 -snes_monitor_short -pc_type mg -ksp_type fgmres -pc_mg_type full > ex19_1.tmp 2>&1; \
 	   if (${DIFF} output/ex19_1.out ex19_1.tmp) then true; \
-	   else echo "Possible problem with ex19, diffs above"; fi; \
+	   else echo "Possible problem with ex50, diffs above"; fi; \
 	   ${RM} -f ex19_1.tmp
 runex50_3: #test pc_redundant
 	-@${MPIEXEC} -n 4 ./ex50 -da_refine 3 -snes_monitor_short -pc_type redundant -mat_type mpiaij -redundant_ksp_type preonly -redundant_pc_factor_mat_solver_package mumps -pc_redundant_number 2 > ex19_3.tmp 2>&1; \

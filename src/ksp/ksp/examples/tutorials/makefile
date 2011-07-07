@@ -987,7 +987,7 @@ runex53_2:
 	   ${RM} -f ex53.tmp
 
 runex54:
-	-@${MPIEXEC} -n 1 ./ex54 -m 112 -alpha 1.e-3 -ksp_monitor -ksp_rtol 1.e-12
+	-@${MPIEXEC} -n 1 ./ex54 -m 12 -alpha 1.e-3 -ksp_monitor -ksp_rtol 1.e-12 
 
 
 TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 \

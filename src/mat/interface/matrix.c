@@ -5108,6 +5108,9 @@ PetscErrorCode  MatSetOption(Mat mat,MatOption op,PetscBool  flg)
 
    Level: intermediate
 
+   Notes: If the matrix was not preallocated then a default, likely poor preallocation will be set in the matrix, so this should be called after the preallocation phase. 
+   See the Performance chapter of the users manual for information on preallocating matrices.
+
    Concepts: matrices^zeroing
 
 .seealso: MatZeroRows()

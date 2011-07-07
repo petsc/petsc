@@ -115,38 +115,6 @@ PetscErrorCode PCCreate_Prometheus(PC pc)
 }
 
 EXTERN_C_END 
-#undef __FUNCT__
-#define __FUNCT__ "PCSetCoordinates"
-/*@
-   PCSetCoordinates - sets the coordinates of all the nodes on the local process
-
-   Collective on PC
-
-   Input Parameters:
-+  pc - the solver context
-.  dim - the dimension of the coordinates 1, 2, or 3
--  coords - the coordinates
-
-   Level: intermediate
-
-   Notes: coords is an array of the 3D coordinates for the nodes on
-   the local processor.  So if there are 108 equation on a processor
-   for a displacement finite element discretization of elasticity (so
-   that there are 36 = 108/3 nodes) then the array must have 108
-   double precision values (ie, 3 * 36).  These x y z coordinates
-   should be ordered for nodes 0 to N-1 like so: [ 0.x, 0.y, 0.z, 1.x,
-   ... , N-1.z ].
-
-.seealso: PCPROMETHEUS
-@*/
-PetscErrorCode  PCSetCoordinates(PC pc,PetscInt dim,PetscReal *coords)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscTryMethod(pc,"PCSetCoordinates_C",(PC,PetscInt,PetscReal*),(pc,dim,coords));CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSASetVectors"
