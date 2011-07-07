@@ -74,8 +74,7 @@ int main(int argc,char **argv)
      Create timestepping solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
-  ierr = TSSetType(ts,TSTHETA);CHKERRQ(ierr);
-  ierr = TSThetaSetTheta(ts,1.0);CHKERRQ(ierr); /* Backward Euler */
+  ierr = TSSetType(ts,TSBEULER);CHKERRQ(ierr);
   ierr = TSSetRHSFunction(ts,r,RHSFunction,&user);CHKERRQ(ierr);
 
   /* Set Jacobian */

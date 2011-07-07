@@ -19,8 +19,7 @@ Program usage:
    mpiexec -n <procs> ./ex15 [-help] [all PETSc options] 
    e.g., mpiexec -n 2 ./ex15 -da_grid_x 40 -da_grid_y 40 -ts_max_steps 2 -snes_monitor -ksp_monitor 
          ./ex15 -da_grid_x 40 -da_grid_y 40 -drawcontours -draw_pause .1 -boundary 1 
-         ./ex15 -da_grid_x 40 -da_grid_y 40 -drawcontours -draw_pause .1 -boundary 1 -fdcoloring -nstencilpts 9
-        
+         ./ex15 -da_grid_x 40 -da_grid_y 40 -drawcontours -draw_pause .1 -boundary 1 -Jtype 2 -nstencilpts 9
         
 */
 
@@ -82,9 +81,6 @@ int main(int argc,char **argv)
 
   usermonitor.drawcontours = PETSC_FALSE;
   ierr = PetscOptionsHasName(PETSC_NULL,"-drawcontours",&usermonitor.drawcontours);CHKERRQ(ierr);
-  
-  usermonitor.drawcontours = PETSC_FALSE;
-  ierr = PetscOptionsHasName(PETSC_NULL,"-drawcontours",&usermonitor.drawcontours);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
@@ -110,10 +106,7 @@ int main(int argc,char **argv)
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSBEULER);CHKERRQ(ierr);
-
   ierr = TSSetIFunction(ts,r,FormIFunction,&user);CHKERRQ(ierr);
-  ierr = DMGetMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
-
   ierr = TSSetDuration(ts,maxsteps,1.0);CHKERRQ(ierr);
   ierr = TSMonitorSet(ts,MyTSMonitor,&usermonitor,PETSC_NULL);CHKERRQ(ierr);
 
@@ -128,15 +121,13 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    Set Jacobian evaluation routine 
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  ierr = DMGetMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
   Jtype = 0;
   ierr = PetscOptionsGetInt(PETSC_NULL, "-Jtype",&Jtype,PETSC_NULL);CHKERRQ(ierr);
   if (Jtype == 0){ /* use user provided Jacobian evaluation routine */
     if (user.nstencilpts != 5) SETERRQ1(PETSC_COMM_WORLD,PETSC_ERR_SUP,"user Jacobian routine FormIJacobian() does not support nstencilpts=%D",user.nstencilpts);
     ierr = TSSetIJacobian(ts,J,J,FormIJacobian,&user);CHKERRQ(ierr);
-    ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
   } else { /* use finite difference Jacobian J as preconditioner and '-snes_mf_operator' for Mat*vec */
-    ierr = TSSetFromOptions(ts);CHKERRQ(ierr); 
-    ierr = TSSetUp(ts);CHKERRQ(ierr);            /* enables MatCreateSNESMF() below */
     ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
     ierr = MatCreateSNESMF(snes,&Jmf);CHKERRQ(ierr); 
     if (Jtype == 1){ /* slow finite difference J; */
@@ -151,6 +142,11 @@ int main(int argc,char **argv)
       ierr = SNESSetJacobian(snes,Jmf,J,SNESDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr);
     } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Jtype is not supported");
   }
+
+  /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+   Sets various TS parameters from user options 
+   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  ierr = TSSetFromOptions(ts);CHKERRQ(ierr); 
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system
