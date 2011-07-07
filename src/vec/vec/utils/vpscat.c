@@ -1598,7 +1598,10 @@ PetscErrorCode VecScatterCreateLocal(VecScatter ctx,PetscInt nsends,const PetscI
   to->type   = VEC_SCATTER_MPI_GENERAL; 
   from->bs = bs;
   to->bs   = bs;
-  ierr = VecScatterCreateCommon_PtoS(from, to, ctx); CHKERRQ(ierr);
+  ierr = VecScatterCreateCommon_PtoS(from, to, ctx);CHKERRQ(ierr);
+
+  /* mark lengths as negative so it won't check local vector lengths */
+  ctx->from_n = ctx->to_n = -1;
   PetscFunctionReturn(0);
 }
 

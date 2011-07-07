@@ -515,7 +515,7 @@ PetscErrorCode SetRandomVectors(AppCtx* user)
   if (!viewer) {
     ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,PETSC_NULL,"Random",0,0,300,300,&viewer);CHKERRQ(ierr);
   }
-  ierr = VecView(user->Pv,viewer);CHKERRQ(ierr);
+  /*err = VecView(user->Pv,viewer);CHKERRQ(ierr);*/
 
   PetscFunctionReturn(0);
   
