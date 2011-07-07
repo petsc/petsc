@@ -17,6 +17,9 @@ Runtime options include:\n\
 
 ./ex61 -ksp_type fgmres -snes_vi_monitor   -snes_atol 1.e-11  -da_refine 5 -snes_converged_reason -ksp_converged_reason   -snes_ls_monitor -VG 1 -draw_fields 1,3,4  -pc_type mg -pc_mg_galerkin -log_summary -dt .0000000000001 -mg_coarse_pc_type svd  -ksp_monitor_true_residual -ksp_rtol 1.e-9
 
+Movie version
+./ex61 -ksp_type fgmres -snes_vi_monitor   -snes_atol 1.e-11  -da_refine 6 -snes_converged_reason -ksp_converged_reason   -snes_ls_monitor -VG 10000000 -draw_fields 1,3,4  -pc_type mg -pc_mg_galerkin -log_summary -dt .000001 -mg_coarse_pc_type svd  -ksp_monitor_true_residual -ksp_rtol 1.e-9 -snes_ls basic -T .0020 -P_casc .0005
+
  */
 
 /*
@@ -79,6 +82,7 @@ int main(int argc, char **argv)
   IS                  inactiveconstraints;
   PetscInt            ninactiveconstraints,N;
   SNESConvergedReason reason;
+  PetscViewer         view_out;
   
   PetscInitialize(&argc,&argv, (char*)0, help);
   
@@ -159,6 +163,8 @@ int main(int argc, char **argv)
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"file_out",FILE_MODE_WRITE,&view_out);CHKERRQ(ierr);
    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"file_psi",FILE_MODE_WRITE,&view_psi);CHKERRQ(ierr);*/
  
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"file_out",FILE_MODE_WRITE,&view_out);CHKERRQ(ierr);
+ 
   ierr = VecView(x,PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD));CHKERRQ(ierr);  
   while (t<user.T) {
     ierr = SNESSetFunction(snes,r,FormFunction,(void*)&user);CHKERRQ(ierr);
@@ -177,6 +183,10 @@ int main(int argc, char **argv)
     ierr = Update_q(&user);CHKERRQ(ierr);
     /*    ierr = VecView(user.q,view_q);CHKERRQ(ierr);*/
     /*  ierr = MatView(user.M,view_mat);CHKERRQ(ierr);*/
+    if (t==0 || t==user.dt){
+      ierr = VecView(user.cv,view_out);CHKERRQ(ierr);
+    }
+
     ierr = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(ierr);
     ierr = SNESGetConvergedReason(snes,&reason);CHKERRQ(ierr);
     if (reason < 0) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_CONV_FAILED,"Nonlinear solver failed");
@@ -186,6 +196,7 @@ int main(int argc, char **argv)
 
     /*    ierr = VecView(x,view_out);CHKERRQ(ierr);*/
     ierr = VecView(x,PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD));CHKERRQ(ierr);
+    ierr = VecView(x,PETSC_VIEWER_BINARY_(PETSC_COMM_WORLD));CHKERRQ(ierr);
     PetscInt its;
     ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"SNESVI solver converged at t = %g in %d iterations\n",t,its);CHKERRQ(ierr);
@@ -200,6 +211,7 @@ int main(int argc, char **argv)
   ierr = PetscViewerDestroy(&view_q);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&view_out);CHKERRQ(ierr);
    ierr = PetscViewerDestroy(&view_psi);CHKERRQ(ierr);*/
+  ierr = PetscViewerDestroy(&view_out);CHKERRQ(ierr);
 
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = VecDestroy(&r);CHKERRQ(ierr);
@@ -479,12 +491,18 @@ PetscErrorCode SetRandomVectors(AppCtx* user)
   PetscErrorCode ierr;
   PetscInt       i,n,count=0;
   PetscScalar    *w1,*w2,*Pv_p,*eta_p;
-  static PetscViewer viewer = 0;
+  /* static PetscViewer viewer = 0; */
+  static PetscRandom    rand = 0;
+  static PetscInt       step = 0;
 
   PetscFunctionBegin;
+  if (!rand) {
+    PetscRandomCreate(PETSC_COMM_WORLD,&rand);CHKERRQ(ierr);
+    PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
+  }
   
-  ierr = VecSetRandom(user->work1,PETSC_NULL);CHKERRQ(ierr);
-  ierr = VecSetRandom(user->work2,PETSC_NULL);CHKERRQ(ierr);
+  ierr = VecSetRandom(user->work1,rand);CHKERRQ(ierr);
+  ierr = VecSetRandom(user->work2,rand);CHKERRQ(ierr);
   ierr = VecGetArray(user->work1,&w1);CHKERRQ(ierr);
   ierr = VecGetArray(user->work2,&w2);CHKERRQ(ierr);
   ierr = VecGetArray(user->Pv,&Pv_p);CHKERRQ(ierr);
@@ -492,7 +510,7 @@ PetscErrorCode SetRandomVectors(AppCtx* user)
   ierr = VecGetLocalSize(user->work1,&n);CHKERRQ(ierr);
   for (i=0;i<n;i++) {
    
-    if (eta_p[i]>=0.8 || w1[i]>user->P_casc){
+    if ( eta_p[i]>=0.8 || w1[i]>user->P_casc){
       Pv_p[i]=0;
    
     }
@@ -503,7 +521,8 @@ PetscErrorCode SetRandomVectors(AppCtx* user)
     }
 
   }
-  
+  step++;
+
   ierr = VecCopy(user->Pv,user->Pi);CHKERRQ(ierr);
   ierr = VecScale(user->Pi,0.9);CHKERRQ(ierr);
   ierr = VecPointwiseMult(user->Piv,user->Pi,user->Pv);CHKERRQ(ierr);
@@ -511,12 +530,13 @@ PetscErrorCode SetRandomVectors(AppCtx* user)
   ierr = VecRestoreArray(user->work2,&w2);CHKERRQ(ierr);
   ierr = VecRestoreArray(user->Pv,&Pv_p);CHKERRQ(ierr);
   ierr = VecRestoreArray(user->eta,&eta_p);CHKERRQ(ierr);
-
+  printf("count %d n %d\n",count,n);
+  /*
   if (!viewer) {
     ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,PETSC_NULL,"Random",0,0,300,300,&viewer);CHKERRQ(ierr);
   }
-  /*err = VecView(user->Pv,viewer);CHKERRQ(ierr);*/
-
+  ierr = VecView(user->Pv,viewer);CHKERRQ(ierr);
+   */
   PetscFunctionReturn(0);
   
 }

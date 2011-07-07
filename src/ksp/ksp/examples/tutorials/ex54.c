@@ -34,8 +34,8 @@ int main(int argc,char **args)
   /*M = m*m; number of elements */
   h = 1.0/(PetscReal)m;
   /* create stiffness matrix */
-  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,N,N,9,PETSC_NULL,&Amat);CHKERRQ(ierr);
-  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,N,N,9,PETSC_NULL,&Pmat);CHKERRQ(ierr);
+  ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,N,N,9,PETSC_NULL,&Amat);CHKERRQ(ierr);
+  ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,N,N,9,PETSC_NULL,&Pmat);CHKERRQ(ierr);
   bs = 1;
 
   /* Generate vectors */
@@ -115,7 +115,6 @@ int main(int argc,char **args)
   /* solve */
   ierr = KSPSolve(ksp,bb,xx);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
-
   /* Free work space */
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
   ierr = VecDestroy(&xx);CHKERRQ(ierr);
