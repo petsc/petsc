@@ -27,6 +27,7 @@ struct _TSOps {
   PetscErrorCode (*setup)(TS);
   PetscErrorCode (*step)(TS);
   PetscErrorCode (*solve)(TS);
+  PetscErrorCode (*interpolate)(TS,PetscReal,Vec);
   PetscErrorCode (*setfromoptions)(TS);
   PetscErrorCode (*destroy)(TS);
   PetscErrorCode (*view)(TS,PetscViewer);
@@ -108,6 +109,7 @@ struct _p_TS {
   TSConvergedReason reason;
   PetscBool errorifstepfailed;
   PetscBool exact_final_time;
+  PetscBool retain_stages;
   PetscInt reject,max_reject;
 
   /* ------------------- Default work-area management ------------------ */

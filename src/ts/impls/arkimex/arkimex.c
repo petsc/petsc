@@ -22,6 +22,7 @@ struct _ARKTableau {
   PetscInt s;
   PetscReal *At,*bt,*ct;
   PetscReal *A,*b,*c;           /* Non-stiff tableau */
+  PetscReal *binterpt,*binterp; /* Dense output formula */
 };
 typedef struct _ARKTableauLink *ARKTableauLink;
 struct _ARKTableauLink {
@@ -72,7 +73,7 @@ PetscErrorCode TSARKIMEXRegisterAll(void)
       At[3][3] = {{0,0,0},
                   {0.12132034355964257320,0.29289321881345247560,0},
                   {0.20710678118654752440,0.50000000000000000000,0.29289321881345247560}};
-      ierr = TSARKIMEXRegister(TSARKIMEX2D,2,3,&At[0][0],PETSC_NULL,PETSC_NULL,&A[0][0],PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+    ierr = TSARKIMEXRegister(TSARKIMEX2D,2,3,&At[0][0],PETSC_NULL,PETSC_NULL,&A[0][0],PETSC_NULL,PETSC_NULL,0,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   }
   {
     const PetscReal s2 = sqrt(2),
@@ -81,8 +82,9 @@ PetscErrorCode TSARKIMEXRegisterAll(void)
                  {(3-2*s2)/6,(3+2*s2)/6,0}},
       At[3][3] = {{0,0,0},
                   {1-1/s2,1-1/s2,0},
-                  {1/(2*s2),1/(2*s2),1-1/s2}};
-      ierr = TSARKIMEXRegister(TSARKIMEX2E,2,3,&At[0][0],PETSC_NULL,PETSC_NULL,&A[0][0],PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+                  {1/(2*s2),1/(2*s2),1-1/s2}},
+      binterpt[3][2] = {{1,-0.5},{0,0},{0,0.5}};
+    ierr = TSARKIMEXRegister(TSARKIMEX2E,2,3,&At[0][0],PETSC_NULL,PETSC_NULL,&A[0][0],PETSC_NULL,PETSC_NULL,2,binterpt[0],PETSC_NULL);CHKERRQ(ierr);
   }
   {
     const PetscReal
@@ -93,8 +95,12 @@ PetscErrorCode TSARKIMEXRegisterAll(void)
       At[4][4] = {{0,0,0,0},
                   {1767732205903./4055673282236,1767732205903./4055673282236,0,0},
                   {2746238789719./10658868560708,-640167445237./6845629431997,1767732205903./4055673282236,0},
-                  {1471266399579./7840856788654,-4482444167858./7529755066697,11266239266428./11593286722821,1767732205903./4055673282236}};
-      ierr = TSARKIMEXRegister(TSARKIMEX3,3,4,&At[0][0],PETSC_NULL,PETSC_NULL,&A[0][0],PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+                  {1471266399579./7840856788654,-4482444167858./7529755066697,11266239266428./11593286722821,1767732205903./4055673282236}},
+      binterpt[4][2] = {{4655552711362./22874653954995, -215264564351./13552729205753},
+                        {-18682724506714./9892148508045,17870216137069./13817060693119},
+                        {34259539580243./13192909600954,-28141676662227./17317692491321},
+                        {584795268549./6622622206610,   2508943948391./7218656332882}};
+    ierr = TSARKIMEXRegister(TSARKIMEX3,3,4,&At[0][0],PETSC_NULL,PETSC_NULL,&A[0][0],PETSC_NULL,PETSC_NULL,2,binterpt[0],PETSC_NULL);CHKERRQ(ierr);
   }
   {
     const PetscReal
@@ -109,8 +115,14 @@ PetscErrorCode TSARKIMEXRegisterAll(void)
                   {8611./62500,-1743./31250,1./4,0,0,0},
                   {5012029./34652500,-654441./2922500,174375./388108,1./4,0,0},
                   {15267082809./155376265600,-71443401./120774400,730878875./902184768,2285395./8070912,1./4,0},
-                  {82889./524892,0,15625./83664,69875./102672,-2260./8211,1./4}};
-      ierr = TSARKIMEXRegister(TSARKIMEX4,4,6,&At[0][0],PETSC_NULL,PETSC_NULL,&A[0][0],PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+                  {82889./524892,0,15625./83664,69875./102672,-2260./8211,1./4}},
+      binterpt[6][3] = {{6943876665148./7220017795957,-54480133./30881146,6818779379841./7100303317025},
+                        {0,0,0},
+                        {7640104374378./9702883013639,-11436875./14766696,2173542590792./12501825683035},
+                        {-20649996744609./7521556579894,174696575./18121608,-31592104683404./5083833661969},
+                        {8854892464581./2390941311638,-12120380./966161,61146701046299./7138195549469},
+                        {-11397109935349./6675773540249,3843./706,-17219254887155./4939391667607}};
+    ierr = TSARKIMEXRegister(TSARKIMEX4,4,6,&At[0][0],PETSC_NULL,PETSC_NULL,&A[0][0],PETSC_NULL,PETSC_NULL,3,binterpt[0],PETSC_NULL);CHKERRQ(ierr);
   }
   {
     const PetscReal
@@ -129,8 +141,16 @@ PetscErrorCode TSARKIMEXRegisterAll(void)
                   {3016520224154./10081342136671,0,30586259806659./12414158314087,-22760509404356./11113319521817,41./200,0,0,0},
                   {218866479029./1489978393911,0,638256894668./5436446318841,-1179710474555./5321154724896,-60928119172./8023461067671,41./200,0,0},
                   {1020004230633./5715676835656,0,25762820946817./25263940353407,-2161375909145./9755907335909,-211217309593./5846859502534,-4269925059573./7827059040749,41./200,0},
-                  {-872700587467./9133579230613,0,0,22348218063261./9555858737531,-1143369518992./8141816002931,-39379526789629./19018526304540,32727382324388./42900044865799,41./200}};
-      ierr = TSARKIMEXRegister(TSARKIMEX5,5,8,&At[0][0],PETSC_NULL,PETSC_NULL,&A[0][0],PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+                  {-872700587467./9133579230613,0,0,22348218063261./9555858737531,-1143369518992./8141816002931,-39379526789629./19018526304540,32727382324388./42900044865799,41./200}},
+      binterpt[8][3] = {{-17674230611817./10670229744614 ,  43486358583215./12773830924787 , -9257016797708./5021505065439},
+                        {0                               ,  0                              , 0                            },
+                        {0                               ,  0                              , 0                            },
+                        {65168852399939./7868540260826   ,  -91478233927265./11067650958493, 26096422576131./11239449250142},
+                        {15494834004392./5936557850923   ,  -79368583304911./10890268929626, 92396832856987./20362823103730},
+                        {-99329723586156./26959484932159 ,  -12239297817655./9152339842473 , 30029262896817./10175596800299},
+                        {-19024464361622./5461577185407  ,  115839755401235./10719374521269, -26136350496073./3983972220547},
+                        {-6511271360970./6095937251113   ,  5843115559534./2180450260947   , -5289405421727./3760307252460 }};
+    ierr = TSARKIMEXRegister(TSARKIMEX5,5,8,&At[0][0],PETSC_NULL,PETSC_NULL,&A[0][0],PETSC_NULL,PETSC_NULL,3,binterpt[0],PETSC_NULL);CHKERRQ(ierr);
   }
 
   PetscFunctionReturn(0);
@@ -158,6 +178,7 @@ PetscErrorCode TSARKIMEXRegisterDestroy(void)
     ARKTableau t = &link->tab;
     ARKTableauList = link->next;
     ierr = PetscFree6(t->At,t->bt,t->ct,t->A,t->b,t->c);CHKERRQ(ierr);
+    ierr = PetscFree2(t->binterpt,t->binterp);CHKERRQ(ierr);
     ierr = PetscFree(t->name);CHKERRQ(ierr);
     ierr = PetscFree(link);CHKERRQ(ierr);
   }
@@ -215,9 +236,38 @@ PetscErrorCode TSARKIMEXFinalizePackage(void)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSARKIMEXRegister"
+/*@C
+   TSARKIMEXRegister - register an ARK IMEX scheme by providing the entries in the Butcher tableau and optionally embedded approximations and interpolation
+
+   Not Collective, but the same schemes should be registered on all processes on which they will be used
+
+   Input Parameters:
++  name - identifier for method
+.  order - approximation order of method
+.  s - number of stages, this is the dimension of the matrices below
+.  At - Butcher table of stage coefficients for stiff part (dimension s*s, row-major)
+.  bt - Butcher table for completing the stiff part of the step (dimension s; PETSC_NULL to use the last row of At)
+.  ct - Abscissa of each stiff stage (dimension s, PETSC_NULL to use row sums of At)
+.  A - Non-stiff stage coefficients (dimension s*s, row-major)
+.  b - Non-stiff step completion table (dimension s; PETSC_NULL to use last row of At)
+.  c - Non-stiff abscissa (dimension s; PETSC_NULL to use row sums of A)
+.  pinterp - Order of the interpolation scheme, equal to the number of columns of binterpt and binterp
+.  binterpt - Coefficients of the interpolation formula for the stiff part (dimension s*pinterp)
+-  binterp - Coefficients of the interpolation formula for the non-stiff part (dimension s*pinterp; PETSC_NULL to reuse binterpt)
+
+   Notes:
+   Several ARK IMEX methods are provided, this function is only needed to create new methods.
+
+   Level: advanced
+
+.keywords: TS, register
+
+.seealso: TSARKIMEX
+@*/
 PetscErrorCode TSARKIMEXRegister(const TSARKIMEXType name,PetscInt order,PetscInt s,
                                  const PetscReal At[],const PetscReal bt[],const PetscReal ct[],
-                                 const PetscReal A[],const PetscReal b[],const PetscReal c[])
+                                 const PetscReal A[],const PetscReal b[],const PetscReal c[],
+                                 PetscInt pinterp,const PetscReal binterpt[],const PetscReal binterp[])
 {
   PetscErrorCode ierr;
   ARKTableauLink link;
@@ -226,6 +276,7 @@ PetscErrorCode TSARKIMEXRegister(const TSARKIMEXType name,PetscInt order,PetscIn
 
   PetscFunctionBegin;
   ierr = PetscMalloc(sizeof(*link),&link);CHKERRQ(ierr);
+  ierr = PetscMemzero(link,sizeof(*link));CHKERRQ(ierr);
   t = &link->tab;
   ierr = PetscStrallocpy(name,&t->name);CHKERRQ(ierr);
   t->order = order;
@@ -241,6 +292,9 @@ PetscErrorCode TSARKIMEXRegister(const TSARKIMEXType name,PetscInt order,PetscIn
   else for (i=0; i<s; i++) for (j=0,t->ct[i]=0; j<s; j++) t->ct[i] += At[i*s+j];
   if (c) {ierr = PetscMemcpy(t->c,c,s*sizeof(c[0]));CHKERRQ(ierr);}
   else for (i=0; i<s; i++) for (j=0,t->c[i]=0; j<s; j++) t->c[i] += A[i*s+j];
+  ierr = PetscMalloc2(s*pinterp,PetscReal,&t->binterpt,s*pinterp,PetscReal,&t->binterp);CHKERRQ(ierr);
+  ierr = PetscMemcpy(t->binterpt,binterpt,s*pinterp*sizeof(binterpt[0]));CHKERRQ(ierr);
+  ierr = PetscMemcpy(t->binterp,binterp?binterp:binterpt,s*pinterp*sizeof(binterpt[0]));CHKERRQ(ierr);
   link->next = ARKTableauList;
   ARKTableauList = link;
   PetscFunctionReturn(0);
@@ -303,6 +357,35 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
   ts->ptime          += ts->time_step;
   ts->next_time_step  = ts->time_step;
   ts->steps++;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSInterpolate_ARKIMEX"
+static PetscErrorCode TSInterpolate_ARKIMEX(TS ts,PetscReal itime,Vec X)
+{
+  TS_ARKIMEX *ark = (TS_ARKIMEX*)ts->data;
+  PetscInt s = ark->tableau->s,i,j;
+  PetscReal tt,t = (itime - ts->ptime)/ts->time_step - 1; /* In the interval [0,1] */
+  PetscScalar *bt,*b;
+  const PetscReal *Bt = ark->tableau->binterpt,*B = ark->tableau->binterp;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!Bt || !B) SETERRQ1(((PetscObject)ts)->comm,PETSC_ERR_SUP,"TSARKIMEX %s does not have an interpolation formula",ark->tableau->name);
+  ierr = PetscMalloc2(s,PetscScalar,&bt,s,PetscScalar,&b);CHKERRQ(ierr);
+  for (i=0; i<s; i++) bt[i] = b[i] = 0;
+  for (j=0,tt=t; j<s; j++,tt*=t) {
+    for (i=0; i<s; i++) {
+      bt[i] += Bt[i*s+j] * tt;
+      b[i]  += B[i*s+j] * tt;
+    }
+  }
+  if (ark->tableau->At[0*s+0] != 0.0) SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_SUP,"First stage not explicit so starting stage not saved");
+  ierr = VecCopy(ark->Y[0],X);CHKERRQ(ierr);
+  ierr = VecMAXPY(X,s,bt,ark->YdotI);CHKERRQ(ierr);
+  ierr = VecMAXPY(X,s,b,ark->YdotRHS);CHKERRQ(ierr);
+  ierr = PetscFree2(bt,b);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -592,6 +675,7 @@ PetscErrorCode  TSCreate_ARKIMEX(TS ts)
   ts->ops->view           = TSView_ARKIMEX;
   ts->ops->setup          = TSSetUp_ARKIMEX;
   ts->ops->step           = TSStep_ARKIMEX;
+  ts->ops->interpolate    = TSInterpolate_ARKIMEX;
   ts->ops->setfromoptions = TSSetFromOptions_ARKIMEX;
   ts->ops->snesfunction   = SNESTSFormFunction_ARKIMEX;
   ts->ops->snesjacobian   = SNESTSFormJacobian_ARKIMEX;

@@ -123,6 +123,8 @@ extern PetscErrorCode   TSSetPreStep(TS, PetscErrorCode (*)(TS));
 extern PetscErrorCode   TSSetPostStep(TS, PetscErrorCode (*)(TS));
 extern PetscErrorCode   TSPreStep(TS);
 extern PetscErrorCode   TSPostStep(TS);
+extern PetscErrorCode   TSSetRetainStages(TS,PetscBool);
+extern PetscErrorCode   TSInterpolate(TS,PetscReal,Vec);
 
 extern PetscErrorCode   TSPseudoSetTimeStep(TS,PetscErrorCode(*)(TS,PetscReal*,void*),void*);
 extern PetscErrorCode   TSPseudoDefaultTimeStep(TS,PetscReal*,void*);
@@ -430,7 +432,7 @@ extern PetscErrorCode  TSGLSetAcceptType(TS,const TSGLAcceptType);
 #define TSARKIMEX5  "5"
 extern PetscErrorCode TSARKIMEXGetType(TS ts,const TSARKIMEXType*);
 extern PetscErrorCode TSARKIMEXSetType(TS ts,const TSARKIMEXType);
-extern PetscErrorCode TSARKIMEXRegister(const TSARKIMEXType,PetscInt,PetscInt,const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[]);
+extern PetscErrorCode TSARKIMEXRegister(const TSARKIMEXType,PetscInt,PetscInt,const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],PetscInt,const PetscReal[],const PetscReal[]);
 extern PetscErrorCode TSARKIMEXFinalizePackage(void);
 extern PetscErrorCode TSARKIMEXInitializePackage(const char path[]);
 extern PetscErrorCode TSARKIMEXRegisterDestroy(void);

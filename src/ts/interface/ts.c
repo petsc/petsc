@@ -1646,6 +1646,72 @@ PetscErrorCode TSMonitorDefault(TS ts,PetscInt step,PetscReal ptime,Vec v,void *
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "TSSetRetainStages"
+/*@
+   TSSetRetainStages - Request that all stages in the upcoming step be stored so that interpolation will be available.
+
+   Logically Collective on TS
+
+   Input Argument:
+.  ts - time stepping context
+
+   Output Argument:
+.  flg - PETSC_TRUE or PETSC_FALSE
+
+   Level: intermediate
+
+.keywords: TS, set
+
+.seealso: TSInterpolate(), TSSetPostStep()
+@*/
+PetscErrorCode TSSetRetainStages(TS ts,PetscBool flg)
+{
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  ts->retain_stages = flg;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "TSInterpolate"
+/*@
+   TSInterpolate - Interpolate the solution computed during the previous step to an arbitrary location in the interval
+
+   Collective on TS
+
+   Input Argument:
++  ts - time stepping context
+-  t - time to interpolate to
+
+   Output Argument:
+.  X - state at given time
+
+   Notes:
+   The user should call TSSetRetainStages() before taking a step in which interpolation will be requested.
+
+   Level: intermediate
+
+   Developer Notes:
+   TSInterpolate() and the storing of previous steps/stages should be generalized to support delay differential equations and continuous adjoints.
+
+.keywords: TS, set
+
+.seealso: TSSetRetainStages(), TSSetPostStep()
+@*/
+PetscErrorCode TSInterpolate(TS ts,PetscReal t,Vec X)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  if (t < ts->ptime - ts->time_step || ts->ptime < t) SETERRQ3(((PetscObject)ts)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Requested time %G not in last time steps [%G,%G]",t,ts->ptime-ts->time_step,ts->ptime);
+  if (!ts->ops->interpolate) SETERRQ1(((PetscObject)ts)->comm,PETSC_ERR_SUP,"%s does not provide interpolation",((PetscObject)ts)->type_name);
+  ierr = (*ts->ops->interpolate)(ts,t,X);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "TSStep"
 /*@
    TSStep - Steps the requested number of timesteps.
@@ -2436,7 +2502,8 @@ PetscErrorCode TSComputeIJacobianConstant(TS ts,PetscReal t,Vec X,Vec Xdot,Petsc
 
    Level: intermediate
 
-   Notes: Can only be called after the call to TSSolve() is complete.
+   Notes:
+   Can only be called after the call to TSSolve() is complete.
 
 .keywords: TS, nonlinear, set, convergence, test
 

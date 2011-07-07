@@ -109,7 +109,7 @@ static PetscErrorCode RegisterMyARK2(void)
       At[3][3] = {{0,0,0},
                   {0.12132034355964257320,0.29289321881345247560,0},
                   {0.20710678118654752440,0.50000000000000000000,0.29289321881345247560}};
-      ierr = TSARKIMEXRegister("myark2",2,3,&At[0][0],PETSC_NULL,PETSC_NULL,&A[0][0],PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+      ierr = TSARKIMEXRegister("myark2",2,3,&At[0][0],PETSC_NULL,PETSC_NULL,&A[0][0],PETSC_NULL,PETSC_NULL,0,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

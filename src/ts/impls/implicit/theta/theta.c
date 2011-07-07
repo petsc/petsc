@@ -57,6 +57,18 @@ static PetscErrorCode TSStep_Theta(TS ts)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "TSInterpolate_Theta"
+static PetscErrorCode TSInterpolate_Theta(TS ts,PetscReal t,Vec X)
+{
+  TS_Theta       *th = (TS_Theta*)ts->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecWAXPY(X,t-ts->ptime,ts->vec_sol,th->Xdot);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "TSReset_Theta"
@@ -212,6 +224,7 @@ PetscErrorCode  TSCreate_Theta(TS ts)
   ts->ops->view           = TSView_Theta;
   ts->ops->setup          = TSSetUp_Theta;
   ts->ops->step           = TSStep_Theta;
+  ts->ops->interpolate    = TSInterpolate_Theta;
   ts->ops->setfromoptions = TSSetFromOptions_Theta;
   ts->ops->snesfunction   = SNESTSFormFunction_Theta;
   ts->ops->snesjacobian   = SNESTSFormJacobian_Theta;
