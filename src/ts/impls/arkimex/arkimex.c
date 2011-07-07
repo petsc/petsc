@@ -254,7 +254,7 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
   ARKTableau      tab  = ark->tableau;
   const PetscInt  s    = tab->s;
   const PetscReal *At  = tab->At,*A = tab->A,*bt = tab->bt,*b = tab->b,*ct = tab->ct,*c = tab->c;
-  PetscReal       *w   = ark->work;
+  PetscScalar     *w   = ark->work;
   Vec             *Y   = ark->Y,*YdotI = ark->YdotI,*YdotRHS = ark->YdotRHS,Ydot = ark->Ydot,W = ark->Work,Z = ark->Z;
   SNES            snes;
   PetscInt        i,j,its,lits;
