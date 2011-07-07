@@ -48,7 +48,7 @@ typedef struct {
 /*@C
   TSARKIMEXRegisterAll - Registers all of the additive Runge-Kutta implicit-explicit methods in TSARKIMEX
 
-  Not Collective
+  Not Collective, but should be called by all processes which will need the schemes to be registered
 
   Level: advanced
 
@@ -562,9 +562,16 @@ EXTERN_C_END
 /*MC
       TSARKIMEX - ODE solver using Additive Runge-Kutta IMEX schemes
 
+  These methods are intended for problems with well-separated time scales, especially when a slow scale is strongly
+  nonlinear such that it is expensive to solve with a fully implicit method. The user should provide the stiff part
+  of the equation using TSSetIFunction() and the non-stiff part with TSSetRHSFunction().
+
+  Notes:
+  This method currently only works with ODE, for which the stiff part G(t,X,Xdot) has the form Xdot + Ghat(t,X).
+
   Level: beginner
 
-.seealso:  TSCreate(), TS, TSSetType()
+.seealso:  TSCreate(), TS, TSSetType(), TSARKIMEXRegister()
 
 M*/
 EXTERN_C_BEGIN
