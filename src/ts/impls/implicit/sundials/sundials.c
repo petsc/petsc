@@ -211,6 +211,7 @@ PetscErrorCode TSSolve_Sundials(TS ts)
     ierr = TSMonitor(ts,ts->steps,t,sol);CHKERRQ(ierr);
   }
   ierr = CVodeGetNumSteps(mem,&nsteps);CHKERRQ(ierr);
+  ts->steps = nsteps;
   PetscFunctionReturn(0);
 }
 
