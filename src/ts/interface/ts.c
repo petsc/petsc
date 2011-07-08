@@ -5,7 +5,7 @@
 PetscClassId  TS_CLASSID;
 PetscLogEvent  TS_Step, TS_PseudoComputeTimeStep, TS_FunctionEval, TS_JacobianEval;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSSetTypeFromOptions"
 /*
   TSSetTypeFromOptions - Sets the type of ts from user options.
@@ -44,7 +44,7 @@ static PetscErrorCode TSSetTypeFromOptions(TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSSetFromOptions"
 /*@
    TSSetFromOptions - Sets various TS parameters from user options.
@@ -131,6 +131,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
 }
 
 #undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSComputeRHSJacobian"
 /*@
    TSComputeRHSJacobian - Computes the Jacobian matrix that has been
@@ -148,9 +149,9 @@ PetscErrorCode  TSSetFromOptions(TS ts)
 .  B - optional preconditioning matrix
 -  flag - flag indicating matrix structure
 
-   Notes: 
-   Most users should not need to explicitly call this routine, as it 
-   is used internally within the nonlinear solvers. 
+   Notes:
+   Most users should not need to explicitly call this routine, as it
+   is used internally within the nonlinear solvers.
 
    See KSPSetOperators() for important information about setting the
    flag parameter.
@@ -200,7 +201,7 @@ PetscErrorCode  TSComputeRHSJacobian(TS ts,PetscReal t,Vec X,Mat *A,Mat *B,MatSt
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSComputeRHSFunction"
 /*@
    TSComputeRHSFunction - Evaluates the right-hand-side function. 
@@ -249,7 +250,7 @@ PetscErrorCode TSComputeRHSFunction(TS ts,PetscReal t,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSGetRHSVec_Private"
 static PetscErrorCode TSGetRHSVec_Private(TS ts,Vec *Frhs)
 {
@@ -263,7 +264,7 @@ static PetscErrorCode TSGetRHSVec_Private(TS ts,Vec *Frhs)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSGetRHSMats_Private"
 static PetscErrorCode TSGetRHSMats_Private(TS ts,Mat *Arhs,Mat *Brhs)
 {
@@ -287,7 +288,7 @@ static PetscErrorCode TSGetRHSMats_Private(TS ts,Mat *Arhs,Mat *Brhs)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSComputeIFunction"
 /*@
    TSComputeIFunction - Evaluates the DAE residual written in implicit form F(t,X,Xdot)=0
@@ -352,7 +353,7 @@ PetscErrorCode TSComputeIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec Y,PetscBo
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSComputeIJacobian"
 /*@
    TSComputeIJacobian - Evaluates the Jacobian of the DAE
@@ -466,7 +467,7 @@ PetscErrorCode TSComputeIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal shi
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSSetRHSFunction"
 /*@C
     TSSetRHSFunction - Sets the routine for evaluating the function,
@@ -513,7 +514,7 @@ PetscErrorCode  TSSetRHSFunction(TS ts,Vec r,PetscErrorCode (*f)(TS,PetscReal,Ve
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSSetRHSJacobian"
 /*@C
    TSSetRHSJacobian - Sets the function to compute the Jacobian of F,
@@ -637,7 +638,7 @@ PetscErrorCode  TSSetIFunction(TS ts,Vec res,TSIFunction f,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSGetIFunction"
 /*@C
    TSGetIFunction - Returns the vector where the implicit residual is stored and the function/contex to compute it.
@@ -672,7 +673,7 @@ PetscErrorCode TSGetIFunction(TS ts,Vec *r,TSIFunction *func,void **ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSGetRHSFunction"
 /*@C
    TSGetRHSFunction - Returns the vector where the right hand side is stored and the function/context to compute it.
@@ -770,7 +771,7 @@ PetscErrorCode  TSSetIJacobian(TS ts,Mat A,Mat B,TSIJacobian f,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSView"
 /*@C
     TSView - Prints the TS data structure.
@@ -789,8 +790,8 @@ PetscErrorCode  TSSetIJacobian(TS ts,Mat A,Mat B,TSIJacobian f,void *ctx)
 +     PETSC_VIEWER_STDOUT_SELF - standard output (default)
 -     PETSC_VIEWER_STDOUT_WORLD - synchronized standard
          output where only the first processor opens
-         the file.  All other processors send their 
-         data to the first processor to print. 
+         the file.  All other processors send their
+         data to the first processor to print.
 
     The user can open an alternative visualization context with
     PetscViewerASCIIOpen() - output to a specified file.
@@ -844,10 +845,10 @@ PetscErrorCode  TSView(TS ts,PetscViewer viewer)
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSSetApplicationContext"
 /*@
-   TSSetApplicationContext - Sets an optional user-defined context for 
+   TSSetApplicationContext - Sets an optional user-defined context for
    the timesteppers.
 
    Logically Collective on TS
@@ -870,7 +871,7 @@ PetscErrorCode  TSSetApplicationContext(TS ts,void *usrP)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSGetApplicationContext"
 /*@
     TSGetApplicationContext - Gets the user-defined context for the 
@@ -898,7 +899,7 @@ PetscErrorCode  TSGetApplicationContext(TS ts,void *usrP)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSGetTimeStepNumber"
 /*@
    TSGetTimeStepNumber - Gets the current number of timesteps.
@@ -924,10 +925,10 @@ PetscErrorCode  TSGetTimeStepNumber(TS ts,PetscInt* iter)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSSetInitialTimeStep"
 /*@
-   TSSetInitialTimeStep - Sets the initial timestep to be used, 
+   TSSetInitialTimeStep - Sets the initial timestep to be used,
    as well as the initial time.
 
    Logically Collective on TS
@@ -955,7 +956,7 @@ PetscErrorCode  TSSetInitialTimeStep(TS ts,PetscReal initial_time,PetscReal time
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSSetTimeStep"
 /*@
    TSSetTimeStep - Allows one to reset the timestep at any time,
@@ -983,7 +984,7 @@ PetscErrorCode  TSSetTimeStep(TS ts,PetscReal time_step)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSGetTimeStep"
 /*@
    TSGetTimeStep - Gets the current timestep size.
@@ -1011,7 +1012,7 @@ PetscErrorCode  TSGetTimeStep(TS ts,PetscReal* dt)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSGetSolution"
 /*@
    TSGetSolution - Returns the solution at the present timestep. It
@@ -1043,7 +1044,7 @@ PetscErrorCode  TSGetSolution(TS ts,Vec *v)
 }
 
 /* ----- Routines to initialize and destroy a timestepper ---- */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSSetProblemType"
 /*@
   TSSetProblemType - Sets the type of problem to be solved.
@@ -1079,7 +1080,7 @@ PetscErrorCode  TSSetProblemType(TS ts, TSProblemType type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSGetProblemType"
 /*@C
   TSGetProblemType - Gets the type of problem to be solved.
@@ -1111,7 +1112,7 @@ PetscErrorCode  TSGetProblemType(TS ts, TSProblemType *type)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSSetUp"
 /*@
    TSSetUp - Sets up the internal data structures for the later use
@@ -1234,7 +1235,7 @@ PetscErrorCode  TSDestroy(TS *ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSGetSNES"
 /*@
    TSGetSNES - Returns the SNES (nonlinear solver) associated with 
@@ -1250,7 +1251,7 @@ PetscErrorCode  TSDestroy(TS *ts)
 
    Notes:
    The user can then directly manipulate the SNES context to set various
-   options, etc.  Likewise, the user can then extract and manipulate the 
+   options, etc.  Likewise, the user can then extract and manipulate the
    KSP, KSP, and PC contexts as well.
 
    TSGetSNES() does not work for integrators that do not use SNES; in
@@ -1322,10 +1323,10 @@ PetscErrorCode  TSGetKSP(TS ts,KSP *ksp)
 
 /* ----------- Routines to set solver parameters ---------- */
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSGetDuration"
 /*@
-   TSGetDuration - Gets the maximum number of timesteps to use and 
+   TSGetDuration - Gets the maximum number of timesteps to use and
    maximum time for iteration.
 
    Not Collective
@@ -1354,10 +1355,10 @@ PetscErrorCode  TSGetDuration(TS ts, PetscInt *maxsteps, PetscReal *maxtime)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSSetDuration"
 /*@
-   TSSetDuration - Sets the maximum number of timesteps to use and 
+   TSSetDuration - Sets the maximum number of timesteps to use and
    maximum time for iteration.
 
    Logically Collective on TS
@@ -1389,7 +1390,7 @@ PetscErrorCode  TSSetDuration(TS ts,PetscInt maxsteps,PetscReal maxtime)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSSetSolution"
 /*@
    TSSetSolution - Sets the initial solution vector
@@ -1538,11 +1539,11 @@ PetscErrorCode  TSPostStep(TS ts)
 
 /* ------------ Routines to set performance monitoring options ----------- */
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSMonitorSet"
 /*@C
    TSMonitorSet - Sets an ADDITIONAL function that is to be used at every
-   timestep to display the iteration's  progress.   
+   timestep to display the iteration's  progress.
 
    Logically Collective on TS
 
@@ -1586,10 +1587,10 @@ PetscErrorCode  TSMonitorSet(TS ts,PetscErrorCode (*monitor)(TS,PetscInt,PetscRe
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSMonitorCancel"
 /*@C
-   TSMonitorCancel - Clears all the monitors that have been set on a time-step object.   
+   TSMonitorCancel - Clears all the monitors that have been set on a time-step object.
 
    Logically Collective on TS
 
@@ -1621,7 +1622,7 @@ PetscErrorCode  TSMonitorCancel(TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSMonitorDefault"
 /*@
    TSMonitorDefault - Sets the Default monitor
@@ -1644,7 +1645,7 @@ PetscErrorCode TSMonitorDefault(TS ts,PetscInt step,PetscReal ptime,Vec v,void *
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSStep"
 /*@
    TSStep - Steps the requested number of timesteps.
@@ -1679,7 +1680,7 @@ PetscErrorCode  TSStep(TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSSolve"
 /*@
    TSSolve - Steps the requested number of timesteps.
@@ -1746,7 +1747,7 @@ PetscErrorCode  TSSolve(TS ts, Vec x)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSMonitor"
 /*
      Runs the user provided monitor routines, if they exists.
@@ -1765,7 +1766,7 @@ PetscErrorCode TSMonitor(TS ts,PetscInt step,PetscReal ptime,Vec x)
 
 /* ------------------------------------------------------------------------*/
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSMonitorLGCreate"
 /*@C
    TSMonitorLGCreate - Creates a line graph context for use with 
@@ -1810,7 +1811,7 @@ PetscErrorCode  TSMonitorLGCreate(const char host[],const char label[],int x,int
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSMonitorLG"
 PetscErrorCode TSMonitorLG(TS ts,PetscInt n,PetscReal ptime,Vec v,void *monctx)
 {
@@ -1837,7 +1838,7 @@ PetscErrorCode TSMonitorLG(TS ts,PetscInt n,PetscReal ptime,Vec v,void *monctx)
   PetscFunctionReturn(0);
 } 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSMonitorLGDestroy" 
 /*@C
    TSMonitorLGDestroy - Destroys a line graph context that was created 
@@ -1866,7 +1867,7 @@ PetscErrorCode  TSMonitorLGDestroy(PetscDrawLG *drawlg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSGetTime"
 /*@
    TSGetTime - Gets the current time.
@@ -1894,7 +1895,7 @@ PetscErrorCode  TSGetTime(TS ts,PetscReal* t)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSSetTime"
 /*@
    TSSetTime - Allows one to reset the time.
@@ -2103,7 +2104,7 @@ PetscErrorCode  TSGetIJacobian(TS ts,Mat *A,Mat *B,TSIJacobian *f,void **ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSMonitorSolution"
 /*@C
    TSMonitorSolution - Monitors progress of the TS solvers by calling 
@@ -2137,7 +2138,7 @@ PetscErrorCode  TSMonitorSolution(TS ts,PetscInt step,PetscReal ptime,Vec x,void
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSSetDM"
 /*@
    TSSetDM - Sets the DM that may be used by some preconditioners
@@ -2168,7 +2169,7 @@ PetscErrorCode  TSSetDM(TS ts,DM dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSGetDM"
 /*@
    TSGetDM - Gets the DM that may be used by some preconditioners
@@ -2194,7 +2195,7 @@ PetscErrorCode  TSGetDM(TS ts,DM *dm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESTSFormFunction"
 /*@
    SNESTSFormFunction - Function to evaluate nonlinear residual
@@ -2231,7 +2232,7 @@ PetscErrorCode  SNESTSFormFunction(SNES snes,Vec X,Vec F,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESTSFormJacobian"
 /*@
    SNESTSFormJacobian - Function to evaluate the Jacobian
@@ -2273,7 +2274,7 @@ PetscErrorCode  SNESTSFormJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *f
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__ 
+#undef __FUNCT__
 #define __FUNCT__ "TSComputeRHSFunctionLinear"
 /*@C
    TSComputeRHSFunctionLinear - Evaluate the right hand side via the user-provided Jacobian, for linear problems only
@@ -2310,7 +2311,7 @@ PetscErrorCode TSComputeRHSFunctionLinear(TS ts,PetscReal t,Vec X,Vec F,void *ct
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSComputeRHSJacobianConstant"
 /*@C
    TSComputeRHSJacobianConstant - Reuses a Jacobian that is time-independent.
@@ -2343,7 +2344,7 @@ PetscErrorCode TSComputeRHSJacobianConstant(TS ts,PetscReal t,Vec X,Mat *A,Mat *
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__ 
+#undef __FUNCT__
 #define __FUNCT__ "TSComputeIFunctionLinear"
 /*@C
    TSComputeIFunctionLinear - Evaluate the left hand side via the user-provided Jacobian, for linear problems only
@@ -2383,7 +2384,7 @@ PetscErrorCode TSComputeIFunctionLinear(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,v
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSComputeIJacobianConstant"
 /*@C
    TSComputeRHSJacobianConstant - Reuses a Jacobian that is time-independent.
@@ -2419,7 +2420,7 @@ PetscErrorCode TSComputeIJacobianConstant(TS ts,PetscReal t,Vec X,Vec Xdot,Petsc
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSGetConvergedReason"
 /*@
    TSGetConvergedReason - Gets the reason the TS iteration was stopped.
@@ -2455,11 +2456,11 @@ PetscErrorCode  TSGetConvergedReason(TS ts,TSConvergedReason *reason)
 
 typedef struct {char *funcname; mxArray *ctx;} TSMatlabContext;
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSComputeFunction_Matlab"
 /*
    TSComputeFunction_Matlab - Calls the function that has been set with
-                         TSSetFunctionMatlab().  
+                         TSSetFunctionMatlab().
 
    Collective on TS
 
@@ -2486,9 +2487,9 @@ PetscErrorCode  TSComputeFunction_Matlab(TS snes,PetscReal time,Vec x,Vec xdot,V
   PetscErrorCode   ierr;
   TSMatlabContext *sctx = (TSMatlabContext *)ctx;
   int              nlhs = 1,nrhs = 7;
-  mxArray	   *plhs[1],*prhs[7];
+  mxArray          *plhs[1],*prhs[7];
   long long int    lx = 0,lxdot = 0,ly = 0,ls = 0;
-      
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,TS_CLASSID,1);
   PetscValidHeaderSpecific(x,VEC_CLASSID,3);
@@ -2521,10 +2522,10 @@ PetscErrorCode  TSComputeFunction_Matlab(TS snes,PetscReal time,Vec x,Vec xdot,V
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSSetFunctionMatlab"
 /*
-   TSSetFunctionMatlab - Sets the function evaluation routine and function 
+   TSSetFunctionMatlab - Sets the function evaluation routine and function
    vector for use by the TS routines in solving ODEs
    equations from MATLAB. Here the function is a string containing the name of a MATLAB function
 
@@ -2543,7 +2544,7 @@ $    func (TS ts,PetscReal time,Vec x,Vec xdot,Vec f,void *ctx);
 
 .seealso: TSGetFunction(), TSComputeFunction(), TSSetJacobian(), TSSetFunction()
 */
-PetscErrorCode  TSSetFunctionMatlab(TS snes,const char *func,mxArray *ctx)
+PetscErrorCode  TSSetFunctionMatlab(TS ts,const char *func,mxArray *ctx)
 {
   PetscErrorCode  ierr;
   TSMatlabContext *sctx;
@@ -2552,26 +2553,26 @@ PetscErrorCode  TSSetFunctionMatlab(TS snes,const char *func,mxArray *ctx)
   /* currently sctx is memory bleed */
   ierr = PetscMalloc(sizeof(TSMatlabContext),&sctx);CHKERRQ(ierr);
   ierr = PetscStrallocpy(func,&sctx->funcname);CHKERRQ(ierr);
-  /* 
-     This should work, but it doesn't 
-  sctx->ctx = ctx; 
+  /*
+     This should work, but it doesn't
+  sctx->ctx = ctx;
   mexMakeArrayPersistent(sctx->ctx);
   */
   sctx->ctx = mxDuplicateArray(ctx);
-  ierr = TSSetIFunction(snes,TSComputeFunction_Matlab,sctx);CHKERRQ(ierr);
+  ierr = TSSetIFunction(ts,PETSC_NULL,TSComputeFunction_Matlab,sctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSComputeJacobian_Matlab"
 /*
    TSComputeJacobian_Matlab - Calls the function that has been set with
-                         TSSetJacobianMatlab().  
+                         TSSetJacobianMatlab().
 
    Collective on TS
 
    Input Parameters:
-+  snes - the TS context
++  ts - the TS context
 .  x - input vector
 .  A, B - the matrices
 -  ctx - user context
@@ -2585,25 +2586,25 @@ PetscErrorCode  TSSetFunctionMatlab(TS snes,const char *func,mxArray *ctx)
 
 .seealso: TSSetFunction(), TSGetFunction()
 @*/
-PetscErrorCode  TSComputeJacobian_Matlab(TS snes,PetscReal time,Vec x,Vec xdot,PetscReal shift,Mat *A,Mat *B,MatStructure *flag, void *ctx)
+PetscErrorCode  TSComputeJacobian_Matlab(TS ts,PetscReal time,Vec x,Vec xdot,PetscReal shift,Mat *A,Mat *B,MatStructure *flag, void *ctx)
 {
   PetscErrorCode  ierr;
   TSMatlabContext *sctx = (TSMatlabContext *)ctx;
   int             nlhs = 2,nrhs = 9;
-  mxArray	  *plhs[2],*prhs[9];
+  mxArray         *plhs[2],*prhs[9];
   long long int   lx = 0,lxdot = 0,lA = 0,ls = 0, lB = 0;
-      
+
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,TS_CLASSID,1);
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidHeaderSpecific(x,VEC_CLASSID,3);
 
   /* call Matlab function in ctx with arguments x and y */
 
-  ierr = PetscMemcpy(&ls,&snes,sizeof(snes));CHKERRQ(ierr); 
-  ierr = PetscMemcpy(&lx,&x,sizeof(x));CHKERRQ(ierr); 
-  ierr = PetscMemcpy(&lxdot,&xdot,sizeof(x));CHKERRQ(ierr); 
-  ierr = PetscMemcpy(&lA,A,sizeof(x));CHKERRQ(ierr); 
-  ierr = PetscMemcpy(&lB,B,sizeof(x));CHKERRQ(ierr); 
+  ierr = PetscMemcpy(&ls,&ts,sizeof(ts));CHKERRQ(ierr);
+  ierr = PetscMemcpy(&lx,&x,sizeof(x));CHKERRQ(ierr);
+  ierr = PetscMemcpy(&lxdot,&xdot,sizeof(x));CHKERRQ(ierr);
+  ierr = PetscMemcpy(&lA,A,sizeof(x));CHKERRQ(ierr);
+  ierr = PetscMemcpy(&lB,B,sizeof(x));CHKERRQ(ierr);
   prhs[0] =  mxCreateDoubleScalar((double)ls);
   prhs[1] =  mxCreateDoubleScalar((double)time);
   prhs[2] =  mxCreateDoubleScalar((double)lx);
@@ -2630,7 +2631,7 @@ PetscErrorCode  TSComputeJacobian_Matlab(TS snes,PetscReal time,Vec x,Vec xdot,P
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSSetJacobianMatlab"
 /*
    TSSetJacobianMatlab - Sets the Jacobian function evaluation routine and two empty Jacobian matrices
@@ -2639,13 +2640,13 @@ PetscErrorCode  TSComputeJacobian_Matlab(TS snes,PetscReal time,Vec x,Vec xdot,P
    Logically Collective on TS
 
    Input Parameters:
-+  snes - the TS context
++  ts - the TS context
 .  A,B - Jacobian matrices
 .  func - function evaluation routine
 -  ctx - user context
 
    Calling sequence of func:
-$    flag = func (TS snes,PetscReal time,Vec x,Vec xdot,Mat A,Mat B,void *ctx);
+$    flag = func (TS ts,PetscReal time,Vec x,Vec xdot,Mat A,Mat B,void *ctx);
 
 
    Level: developer
@@ -2654,7 +2655,7 @@ $    flag = func (TS snes,PetscReal time,Vec x,Vec xdot,Mat A,Mat B,void *ctx);
 
 .seealso: TSGetFunction(), TSComputeFunction(), TSSetJacobian(), TSSetFunction()
 */
-PetscErrorCode  TSSetJacobianMatlab(TS snes,Mat A,Mat B,const char *func,mxArray *ctx)
+PetscErrorCode  TSSetJacobianMatlab(TS ts,Mat A,Mat B,const char *func,mxArray *ctx)
 {
   PetscErrorCode    ierr;
   TSMatlabContext *sctx;
@@ -2663,38 +2664,38 @@ PetscErrorCode  TSSetJacobianMatlab(TS snes,Mat A,Mat B,const char *func,mxArray
   /* currently sctx is memory bleed */
   ierr = PetscMalloc(sizeof(TSMatlabContext),&sctx);CHKERRQ(ierr);
   ierr = PetscStrallocpy(func,&sctx->funcname);CHKERRQ(ierr);
-  /* 
-     This should work, but it doesn't 
-  sctx->ctx = ctx; 
+  /*
+     This should work, but it doesn't
+  sctx->ctx = ctx;
   mexMakeArrayPersistent(sctx->ctx);
   */
   sctx->ctx = mxDuplicateArray(ctx);
-  ierr = TSSetIJacobian(snes,A,B,TSComputeJacobian_Matlab,sctx);CHKERRQ(ierr);
+  ierr = TSSetIJacobian(ts,A,B,TSComputeJacobian_Matlab,sctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSMonitor_Matlab"
 /*
-   TSMonitor_Matlab - Calls the function that has been set with TSMonitorSetMatlab().  
+   TSMonitor_Matlab - Calls the function that has been set with TSMonitorSetMatlab().
 
    Collective on TS
 
 .seealso: TSSetFunction(), TSGetFunction()
 @*/
-PetscErrorCode  TSMonitor_Matlab(TS snes,PetscInt it, PetscReal time,Vec x, void *ctx)
+PetscErrorCode  TSMonitor_Matlab(TS ts,PetscInt it, PetscReal time,Vec x, void *ctx)
 {
   PetscErrorCode  ierr;
   TSMatlabContext *sctx = (TSMatlabContext *)ctx;
   int             nlhs = 1,nrhs = 6;
-  mxArray	  *plhs[1],*prhs[6];
+  mxArray         *plhs[1],*prhs[6];
   long long int   lx = 0,ls = 0;
-      
+
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,TS_CLASSID,1);
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidHeaderSpecific(x,VEC_CLASSID,4);
 
-  ierr = PetscMemcpy(&ls,&snes,sizeof(snes));CHKERRQ(ierr); 
+  ierr = PetscMemcpy(&ls,&ts,sizeof(ts));CHKERRQ(ierr); 
   ierr = PetscMemcpy(&lx,&x,sizeof(x));CHKERRQ(ierr); 
   prhs[0] =  mxCreateDoubleScalar((double)ls);
   prhs[1] =  mxCreateDoubleScalar((double)it);
@@ -2714,7 +2715,7 @@ PetscErrorCode  TSMonitor_Matlab(TS snes,PetscInt it, PetscReal time,Vec x, void
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSMonitorSetMatlab"
 /*
    TSMonitorSetMatlab - Sets the monitor function from Matlab
@@ -2725,7 +2726,7 @@ PetscErrorCode  TSMonitor_Matlab(TS snes,PetscInt it, PetscReal time,Vec x, void
 
 .seealso: TSGetFunction(), TSComputeFunction(), TSSetJacobian(), TSSetFunction()
 */
-PetscErrorCode  TSMonitorSetMatlab(TS snes,const char *func,mxArray *ctx)
+PetscErrorCode  TSMonitorSetMatlab(TS ts,const char *func,mxArray *ctx)
 {
   PetscErrorCode    ierr;
   TSMatlabContext *sctx;
@@ -2734,13 +2735,13 @@ PetscErrorCode  TSMonitorSetMatlab(TS snes,const char *func,mxArray *ctx)
   /* currently sctx is memory bleed */
   ierr = PetscMalloc(sizeof(TSMatlabContext),&sctx);CHKERRQ(ierr);
   ierr = PetscStrallocpy(func,&sctx->funcname);CHKERRQ(ierr);
-  /* 
-     This should work, but it doesn't 
-  sctx->ctx = ctx; 
+  /*
+     This should work, but it doesn't
+  sctx->ctx = ctx;
   mexMakeArrayPersistent(sctx->ctx);
   */
   sctx->ctx = mxDuplicateArray(ctx);
-  ierr = TSMonitorSet(snes,TSMonitor_Matlab,sctx,PETSC_NULL);CHKERRQ(ierr);
+  ierr = TSMonitorSet(ts,TSMonitor_Matlab,sctx,PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
