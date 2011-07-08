@@ -170,16 +170,15 @@ class TestTSPython(unittest.TestCase):
 # --------------------------------------------------------------------
 
 PETSC_VERSION = PETSc.Sys.getVersion()
-
 i = PETSc.Sys.getVersionInfo()
 if (PETSC_VERSION == (3, 1, 0) and
     not i['release']):
     PETSC_VERSION = (3, 2, 0)
 
 if  PETSC_VERSION < (3, 2, 0):
-    del TestTSPython.testResetAndSolve
-
-# --------------------------------------------------------------------
+    del TestTSPython
 
 if __name__ == '__main__':
     unittest.main()
+
+# --------------------------------------------------------------------
