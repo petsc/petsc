@@ -87,32 +87,21 @@ TSSolve_Compat(TS ts, Vec x)
 }
 #undef  TSSolve
 #define TSSolve TSSolve_Compat
-#endif
-
-#if (PETSC_VERSION_(3,1,0) || \
-     PETSC_VERSION_(3,0,0))
-typedef PetscErrorCode (*TSMatrix)(TS,PetscReal,Mat*,Mat*,MatStructure*,void*);
 #undef __FUNCT__
-#define __FUNCT__ "TSSetMatrices_Compat"
+#define __FUNCT__ "TSStep_Compat"
 static PetscErrorCode
-TSSetMatrices_Compat(TS ts,
-                     Mat Arhs,TSMatrix frhs,
-                     Mat Alhs,TSMatrix flhs,
-                     MatStructure flag,void *ctx)
+TSStep_Compat(TS ts)
 {
+  PetscInt  n;
+  PetscReal t;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  ierr = TSSetMatrices(ts,Arhs,frhs,Alhs,flhs,flag,ctx);CHKERRQ(ierr);
-  if (Arhs) {
-    ierr = PetscObjectCompose((PetscObject)ts,"__rhsmat__",(PetscObject)Arhs);CHKERRQ(ierr);
-  }
-  if (Alhs) {
-    ierr = PetscObjectCompose((PetscObject)ts,"__lhsmat__",(PetscObject)Alhs);CHKERRQ(ierr);
-  }
+  ierr = TSStep(ts,&n,&t);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-#define TSSetMatrices TSSetMatrices_Compat
+#undef  TSStep
+#define TSStep TSStep_Compat
 #endif
 
 #if (PETSC_VERSION_(3,1,0) || \
@@ -170,13 +159,151 @@ static PetscErrorCode TSAlphaGetParams(TS ts,PetscReal *alpha_m,PetscReal *alpha
 #define TSALPHA           "alpha"
 #endif
 
+#undef __FUNCT__
+#define __FUNCT__ "TSSetUpFunction_Private"
+static PetscErrorCode
+TSSetUpFunction_Private(TS ts,Vec r)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  if (r) {
+    const TSType   ttype;
+    TSProblemType  ptype;
+    SNES           snes = 0;
+    PetscErrorCode (*ffun)(SNES,Vec,Vec,void*) = 0;
+    void           *fctx = 0;
+    ierr = TSGetType(ts,&ttype);CHKERRQ(ierr);
+    ierr = TSGetProblemType(ts,&ptype);CHKERRQ(ierr);
+    if (ttype && ptype == TS_NONLINEAR) {
+      ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
+      ierr = SNESGetFunction(snes,0,&ffun,&fctx);CHKERRQ(ierr);
+      #if !(PETSC_VERSION_(3,1,0) || PETSC_VERSION_(3,0,0))
+      if (!ffun) { ffun = SNESTSFormFunction; fctx = ts; }
+      #endif
+      ierr = SNESSetFunction(snes,r,ffun,fctx);CHKERRQ(ierr);
+    }
+  }
+  if (r) {
+    Vec svec = 0;
+    ierr = TSGetSolution(ts,&svec);CHKERRQ(ierr);
+    if (!svec) {
+      ierr = VecDuplicate(r,&svec);CHKERRQ(ierr);
+      ierr = TSSetSolution(ts,svec);CHKERRQ(ierr);
+      ierr = VecDestroy(svec);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#if (PETSC_VERSION_(3,1,0))
+
+#undef __FUNCT__
+#define __FUNCT__ "TSSetIFunction_Compat"
+static PetscErrorCode
+TSSetIFunction_Compat(TS ts,Vec r,TSIFunction fun,void *ctx)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  if (r) PetscValidHeaderSpecific(r,VEC_CLASSID,2);
+  ierr = TSSetIFunction(ts,fun,ctx);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject)ts,"__funvec__",(PetscObject)r);CHKERRQ(ierr);
+  ierr = TSSetUpFunction_Private(ts,r);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#define TSSetIFunction TSSetIFunction_Compat
+
+#undef __FUNCT__
+#define __FUNCT__ "TSGetIFunction_Compat"
+static PetscErrorCode
+TSGetIFunction_Compat(TS ts,Vec *f,TSIFunction *fun,void **ctx)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  if (f) {ierr = PetscObjectQuery((PetscObject)ts,"__funvec__",(PetscObject*)f);CHKERRQ(ierr);}
+  #if PETSC_VERSION_(3,0,0)
+  if (fun) *fun = NULL;
+  #else
+  if (fun) *fun = ts->ops->ifunction;
+  #endif
+  if (ctx) *ctx = ts->funP;
+  PetscFunctionReturn(0);
+}
+#define TSGetIFunction TSGetIFunction_Compat
+
+#undef __FUNCT__
+#define __FUNCT__ "TSComputeIFunction_Compat"
+static PetscErrorCode
+TSComputeIFunction_Compat(TS ts,PetscReal t,Vec X,Vec Xdot,Vec Y,PetscBool imex)
+{return TSComputeIFunction(ts,t,X,Xdot,Y);}
+#define TSComputeIFunction TSComputeIFunction_Compat
+
+#undef __FUNCT__
+#define __FUNCT__ "TSComputeIJacobian_Compat"
+static PetscErrorCode
+TSComputeIJacobian_Compat(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal shift,Mat *A,Mat *B,MatStructure *flg,PetscBool imex)
+{return TSComputeIJacobian(ts,t,X,Xdot,shift,A,B,flg);}
+#define TSComputeIJacobian TSComputeIJacobian_Compat
+
+#endif
+
+typedef PetscErrorCode (*TSRHSFunction)(TS,PetscReal,Vec,Vec,void*);
+typedef PetscErrorCode (*TSRHSJacobian)(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*);
+
+#undef __FUNCT__
+#define __FUNCT__ "TSSetRHSFunction_Compat"
+static PetscErrorCode
+TSSetRHSFunction_Compat(TS ts,Vec r,TSRHSFunction fun,void *ctx)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  if (r) PetscValidHeaderSpecific(r,VEC_CLASSID,2);
+  ierr = TSSetRHSFunction(ts,fun,ctx);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject)ts,"__funvec__",(PetscObject)r);CHKERRQ(ierr);
+  ierr = TSSetUpFunction_Private(ts,r);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#define TSSetRHSFunction TSSetRHSFunction_Compat
+
+#undef __FUNCT__
+#define __FUNCT__ "TSGetRHSFunction_Compat"
+static PetscErrorCode
+TSGetRHSFunction_Compat(TS ts,Vec *f,TSRHSFunction *fun,void **ctx)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  if (f) {ierr = PetscObjectQuery((PetscObject)ts, "__funvec__", (PetscObject*)f);CHKERRQ(ierr);}
+  if (fun) *fun = ts->ops->rhsfunction;
+  if (ctx) *ctx = ts->funP;
+  PetscFunctionReturn(0);
+}
+#define TSGetRHSFunction TSGetRHSFunction_Compat
+
+#undef __FUNCT__
+#define __FUNCT__ "TSGetRHSJacobian_Compat"
+static PetscErrorCode
+TSGetRHSJacobian_Compat(TS ts,Mat *A,Mat *B, TSRHSJacobian *jac,void **ctx)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  ierr = TSGetRHSJacobian(ts,A,B,ctx);CHKERRQ(ierr);
+  if (jac) *jac = ts->ops->rhsjacobian;
+  PetscFunctionReturn(0);
+}
+#define TSGetRHSJacobian TSGetRHSJacobian_Compat
+
+
 #if (PETSC_VERSION_(3,0,0))
 typedef PetscErrorCode (*TSIFunction)(TS,PetscReal,Vec,Vec,Vec,void*);
 typedef PetscErrorCode (*TSIJacobian)(TS,PetscReal,Vec,Vec,PetscReal,
                                       Mat*,Mat*,MatStructure*,void*);
 #undef __FUNCT__
 #define __FUNCT__ "TSSetIFunction"
-static PetscErrorCode TSSetIFunction(TS ts,TSIFunction f,void *ctx)
+static PetscErrorCode TSSetIFunction(TS ts,Vec r,TSIFunction f,void *ctx)
 {PetscTS_ERR_SUP(ts);}
 #undef __FUNCT__
 #define __FUNCT__ "TSSetIJacobian"
@@ -184,13 +311,18 @@ static PetscErrorCode TSSetIJacobian(TS ts,Mat A,Mat B,TSIJacobian j,void *ctx)
 {PetscTS_ERR_SUP(ts);}
 #undef __FUNCT__
 #define __FUNCT__ "TSComputeIFunction"
-static PetscErrorCode TSComputeIFunction(TS ts,PetscReal t,Vec x,Vec Xdot,Vec f)
+static PetscErrorCode TSComputeIFunction(TS ts,PetscReal t,Vec x,Vec Xdot,Vec f,PetscTruth imex)
 {PetscTS_ERR_SUP(ts);}
 #undef __FUNCT__
 #define __FUNCT__ "TSComputeIJacobian"
 static PetscErrorCode TSComputeIJacobian(TS ts,
                                          PetscReal t,Vec x,Vec Xdot,PetscReal a,
-                                         Mat *A,Mat *B,MatStructure *flag)
+                                         Mat *A,Mat *B,MatStructure *flag,PetscTruth imex)
+{PetscTS_ERR_SUP(ts);}
+#undef __FUNCT__
+#define __FUNCT__ "TSGetIFunction"
+static PetscErrorCode
+TSGetIFunction(TS ts,Vec *f,TSIFunction *fun,void **ctx)
 {PetscTS_ERR_SUP(ts);}
 #undef __FUNCT__
 #define __FUNCT__ "TSGetIJacobian"

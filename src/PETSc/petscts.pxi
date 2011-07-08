@@ -19,13 +19,6 @@ cdef extern from * nogil:
 
     ctypedef int PetscTSCtxDel(void*)
 
-    ctypedef int (*PetscTSMatrixFunction)(PetscTS,
-                                          PetscReal,
-                                          PetscMat*,
-                                          PetscMat*,
-                                          PetscMatStructure*,
-                                          void*) except PETSC_ERR_PYTHON
-
     ctypedef int (*PetscTSFunctionFunction)(PetscTS,
                                             PetscReal,
                                             PetscVec,
@@ -82,8 +75,6 @@ cdef extern from * nogil:
     int TSSetSolution(PetscTS,PetscVec)
     int TSGetSolution(PetscTS,PetscVec*)
 
-    int TSSetMatrices(PetscTS,PetscMat,PetscTSMatrixFunction,PetscMat,PetscTSMatrixFunction,PetscMatStructure,void*)
-
     int TSGetRHSFunction(PetscTS,PetscVec*,PetscTSFunctionFunction*,void*)
     int TSGetRHSJacobian(PetscTS,PetscMat*,PetscMat*,PetscTSJacobianFunction*,void**)
     int TSSetRHSFunction(PetscTS,PetscVec,PetscTSFunctionFunction,void*)
@@ -101,8 +92,8 @@ cdef extern from * nogil:
 
     int TSComputeRHSFunction(PetscTS,PetscReal,PetscVec,PetscVec)
     int TSComputeRHSJacobian(PetscTS,PetscReal,PetscVec,PetscMat*,PetscMat*,PetscMatStructure*)
-    int TSComputeIFunction(PetscTS,PetscReal,PetscVec,PetscVec,PetscVec,)
-    int TSComputeIJacobian(PetscTS,PetscReal,PetscVec,PetscVec,PetscReal,PetscMat*,PetscMat*,PetscMatStructure*)
+    int TSComputeIFunction(PetscTS,PetscReal,PetscVec,PetscVec,PetscVec,PetscBool)
+    int TSComputeIJacobian(PetscTS,PetscReal,PetscVec,PetscVec,PetscReal,PetscMat*,PetscMat*,PetscMatStructure*,PetscBool)
 
     int TSSetTime(PetscTS,PetscReal)
     int TSGetTime(PetscTS,PetscReal*)
@@ -121,7 +112,7 @@ cdef extern from * nogil:
 
     int TSSetUp(PetscTS)
     int TSReset(PetscTS)
-    int TSStep(PetscTS,PetscInt*,PetscReal*)
+    int TSStep(PetscTS)
     int TSSolve(PetscTS,PetscVec)
 
     int TSThetaSetTheta(PetscTS,PetscReal)
@@ -148,42 +139,6 @@ cdef inline TS ref_TS(PetscTS ts):
     ob.ts = ts
     PetscINCREF(ob.obj)
     return ob
-
-# -----------------------------------------------------------------------------
-
-cdef int TS_LHSMatrix(
-    PetscTS   ts,
-    PetscReal t,
-    PetscMat* A,
-    PetscMat* B,
-    PetscMatStructure* s,
-    void*     ctx,
-    ) except PETSC_ERR_PYTHON with gil:
-    cdef TS   Ts   = ref_TS(ts)
-    cdef Mat  Amat = ref_Mat(A[0])
-    (lhsmatrix, args, kargs) = Ts.get_attr('__lhsmatrix__')
-    retv = lhsmatrix(Ts, toReal(t), Amat, *args, **kargs)
-    s[0] = matstructure(retv)
-    cdef PetscMat Atmp = NULL
-    Atmp = A[0]; A[0] = Amat.mat; Amat.mat = Atmp
-    return 0
-
-cdef int TS_RHSMatrix(
-    PetscTS   ts,
-    PetscReal t,
-    PetscMat* A,
-    PetscMat* B,
-    PetscMatStructure* s,
-    void*     ctx,
-    ) except PETSC_ERR_PYTHON with gil:
-    cdef TS   Ts   = ref_TS(ts)
-    cdef Mat  Amat = ref_Mat(A[0])
-    (rhsmatrix, args, kargs) = Ts.get_attr('__rhsmatrix__')
-    retv = rhsmatrix(Ts, toReal(t), Amat, *args, **kargs)
-    s[0] = matstructure(retv)
-    cdef PetscMat Atmp = NULL
-    Atmp = A[0]; A[0] = Amat.mat; Amat.mat = Atmp
-    return 0
 
 # -----------------------------------------------------------------------------
 

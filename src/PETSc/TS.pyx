@@ -94,36 +94,6 @@ cdef class TS(Object):
     def getAppCtx(self):
         return self.get_attr('__appctx__')
 
-    # --- user LHS Matrix routines ---
-
-    def setLHSMatrix(self, Mat Alhs not None,
-                     lhsmatrix=None, args=None, kargs=None):
-        cdef PetscMatStructure matstr = MAT_DIFFERENT_NONZERO_PATTERN # XXX
-        if lhsmatrix is None:
-            CHKERR( TSSetMatrices(self.ts, NULL, NULL,
-                                  Alhs.mat, NULL, matstr, NULL) )
-            self.set_attr('__lhsmatrix__', None)
-        else:
-            CHKERR( TSSetMatrices(self.ts, NULL, NULL,
-                                  Alhs.mat, TS_LHSMatrix, matstr, NULL) )
-            if args is None: args = ()
-            if kargs is None: kargs = {}
-            self.set_attr('__lhsmatrix__', (lhsmatrix, args, kargs))
-
-    def setRHSMatrix(self, Mat Arhs not None,
-                     rhsmatrix=None, args=None, kargs=None):
-        cdef PetscMatStructure matstr = MAT_DIFFERENT_NONZERO_PATTERN # XXX
-        if rhsmatrix is None:
-            CHKERR( TSSetMatrices(self.ts, Arhs.mat, NULL,
-                                  NULL, NULL, matstr, NULL) )
-            self.set_attr('__rhsmatrix__', None)
-        else:
-            CHKERR( TSSetMatrices(self.ts, Arhs.mat, TS_RHSMatrix,
-                                  NULL, NULL, matstr, NULL) )
-            if args is None: args = ()
-            if kargs is None: kargs = {}
-            self.set_attr('__rhsmatrix__', (rhsmatrix, args, kargs))
-
     # --- user RHS Function/Jacobian routines ---
 
     def setRHSFunction(self, function, Vec f not None, args=None, kargs=None):
@@ -197,20 +167,23 @@ cdef class TS(Object):
 
     def computeIFunction(self,
                          t, Vec x not None, Vec xdot not None,
-                         Vec f not None):
-        cdef PetscReal time = asReal(t)
-        CHKERR( TSComputeIFunction(self.ts, time, x.vec, xdot.vec, f.vec) )
+                         Vec f not None, imex=False):
+        cdef PetscReal rval = asReal(t)
+        cdef PetscBool bval = imex
+        CHKERR( TSComputeIFunction(self.ts, rval, x.vec, xdot.vec,
+                                   f.vec, bval) )
 
     def computeIJacobian(self,
                          t, Vec x not None, Vec xdot not None, a,
-                         Mat J not None, Mat P=None):
-        cdef PetscReal time  = asReal(t)
-        cdef PetscReal shift = asReal(a)
+                         Mat J not None, Mat P=None, imex=False):
+        cdef PetscReal rval1 = asReal(t)
+        cdef PetscReal rval2 = asReal(a)
+        cdef PetscBool bval  = imex
         cdef PetscMat *jmat = &J.mat, *pmat = &J.mat
         if P is not None: pmat = &P.mat
         cdef PetscMatStructure flag = MAT_DIFFERENT_NONZERO_PATTERN
-        CHKERR( TSComputeIJacobian(self.ts, time, x.vec, xdot.vec, shift,
-                                   jmat, pmat, &flag) )
+        CHKERR( TSComputeIJacobian(self.ts, rval1, x.vec, xdot.vec, rval2,
+                                   jmat, pmat, &flag, bval) )
         return flag
 
     def getIFunction(self):
@@ -403,10 +376,7 @@ cdef class TS(Object):
         CHKERR( TSSolve(self.ts, u.vec) )
 
     def step(self):
-        cdef PetscInt  ival = 0
-        cdef PetscReal rval = 0
-        CHKERR( TSStep(self.ts, &ival, &rval) )
-        return (toInt(ival), toReal(rval))
+        CHKERR( TSStep(self.ts) )
 
     # --- Python ---
 

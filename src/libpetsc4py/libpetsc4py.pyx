@@ -1959,13 +1959,21 @@ cdef extern from * nogil:
       PetscErrorCode (*view)(PetscTS,PetscViewer) except IERR
       PetscErrorCode (*prestep)(PetscTS)          except IERR
       PetscErrorCode (*poststep)(PetscTS)         except IERR
-      PetscErrorCode (*step)(PetscTS,PetscInt*,PetscReal*) except IERR
+      PetscErrorCode (*step)(PetscTS) except IERR
+      PetscErrorCode (*solve)(PetscTS) except IERR
       PetscErrorCode (*snesfunction)(PetscSNES,PetscVec,PetscVec,PetscTS) except IERR
       PetscErrorCode (*snesjacobian)(PetscSNES,PetscVec,PetscMat*,PetscMat*,MatStructure*,PetscTS) except IERR
     ctypedef _TSOps *TSOps
+    struct _TSUserOps:
+      PetscErrorCode (*rhsfunction)(PetscTS,PetscReal,PetscVec,PetscVec,void*) except IERR
+      PetscErrorCode (*ifunction)  (PetscTS,PetscReal,PetscVec,PetscVec,PetscVec,void*) except IERR
+      PetscErrorCode (*rhsjacobian)(PetscTS,PetscReal,PetscVec,PetscMat*,PetscMat*,MatStructure*,void*) except IERR
+      PetscErrorCode (*ijacobian)  (PetscTS,PetscReal,PetscVec,PetscVec,PetscReal,PetscMat*,PetscMat*,MatStructure*,void*) except IERR
+    ctypedef _TSUserOps *TSUserOps
     struct _p_TS:
         void *data
         TSOps ops
+        TSUserOps userops
         TSProblemType problem_type
         PetscInt  nonlinear_its
         PetscInt  linear_its
@@ -1976,7 +1984,6 @@ cdef extern from * nogil:
         PetscInt  max_steps
         PetscReal max_time
         PetscMat  A,B
-        PetscKSP  ksp
         PetscSNES snes
 cdef extern from * nogil:
     PetscErrorCode TSGetKSP(PetscTS,PetscKSP*)
@@ -1984,8 +1991,8 @@ cdef extern from * nogil:
     PetscErrorCode TSPreStep(PetscTS)
     PetscErrorCode TSPostStep(PetscTS)
     PetscErrorCode TSMonitor(PetscTS,PetscInt,PetscReal,PetscVec)
-    PetscErrorCode TSComputeIFunction(PetscTS,PetscReal,PetscVec,PetscVec,PetscVec)
-    PetscErrorCode TSComputeIJacobian(PetscTS,PetscReal,PetscVec,PetscVec,PetscReal,PetscMat*,PetscMat*,MatStructure*)
+    PetscErrorCode TSComputeIFunction(PetscTS,PetscReal,PetscVec,PetscVec,PetscVec,PetscBool)
+    PetscErrorCode TSComputeIJacobian(PetscTS,PetscReal,PetscVec,PetscVec,PetscReal,PetscMat*,PetscMat*,MatStructure*,PetscBool)
     PetscErrorCode SNESTSFormFunction(PetscSNES,PetscVec,PetscVec,void*)
     PetscErrorCode SNESTSFormJacobian(PetscSNES,PetscVec,PetscMat*,PetscMat*,MatStructure*,void*)
 
@@ -2032,7 +2039,7 @@ cdef PetscErrorCode TSCreate_Python(
     ops.view           = TSView_Python
     ops.prestep        = TSPreStep_Python
     ops.poststep       = TSPostStep_Python
-    ops.step           = TSSolve_Python
+    ops.solve          = TSSolve_Python
     ops.snesfunction   = SNESTSFormFunction_Python
     ops.snesjacobian   = SNESTSFormJacobian_Python
     #
@@ -2040,12 +2047,6 @@ cdef PetscErrorCode TSCreate_Python(
             <PetscObject>ts, b"TSPythonSetType_C",
              b"TSPythonSetType_PYTHON",
              <PetscVoidFunction>TSPythonSetType_PYTHON) )
-    #
-    ts.problem_type = TS_NONLINEAR # XXX
-    if ts.problem_type == TS_LINEAR:
-        CHKERR( TSGetKSP(ts,&ts.ksp) )
-    if ts.problem_type == TS_NONLINEAR:
-        CHKERR( TSGetSNES(ts,&ts.snes) )
     #
     cdef ctx = PyTS(NULL)
     ts.data = <void*> ctx
@@ -2076,7 +2077,8 @@ cdef PetscErrorCode TSSetUp_Python_LINEAR(
     ) \
     except IERR with gil:
     FunctionBegin(b"TSSetUp_Python_LINEAR")
-    CHKERR( TSGetKSP(ts, &ts.ksp) )
+    cdef PetscKSP ksp = NULL
+    CHKERR( TSGetKSP(ts, &ksp) )
     return FunctionEnd()
 
 cdef PetscErrorCode TSSetUp_Python_NONLINEAR(
@@ -2084,6 +2086,8 @@ cdef PetscErrorCode TSSetUp_Python_NONLINEAR(
     ) \
     except IERR with gil:
     FunctionBegin(b"TSSetUp_Python_NONLINEAR")
+    cdef PetscSNES snes = NULL
+    CHKERR( TSGetSNES(ts, &snes) )
     #
     cdef PetscVec vec_update = NULL
     CHKERR( VecDuplicate(ts.vec_sol,&vec_update) )
@@ -2097,29 +2101,6 @@ cdef PetscErrorCode TSSetUp_Python_NONLINEAR(
                                 b"@ts.vec_dot",
                                 <PetscObject>vec_dot) )
     CHKERR( VecDestroy(&vec_dot) )
-    #
-    cdef PetscVec vec_func = NULL
-    CHKERR( PetscObjectQuery(<PetscObject>ts,
-                              b"__funvec__",
-                              <PetscObject*>&vec_func) )
-    if vec_func == NULL:
-        CHKERR( VecDuplicate(ts.vec_sol,&vec_func) )
-        CHKERR( PetscObjectCompose(<PetscObject>ts,
-                                    b"__funvec__",
-                                    <PetscObject>vec_func) )
-    CHKERR( TSGetSNES(ts, &ts.snes) )
-    CHKERR( SNESSetFunction(ts.snes,vec_func,SNESTSFormFunction,<void*>ts) )
-    #
-    cdef PetscMat A = NULL, B = NULL
-    cdef SNESJacobian jac = NULL
-    cdef void *jacP = NULL
-    CHKERR( SNESGetJacobian(ts.snes,&A,&B,&jac,&jacP) )
-    if A == NULL: A = ts.A
-    if B == NULL: B = ts.B
-    if (jac == NULL or jac != MatMFFDComputeJacobian):
-        jac  = SNESTSFormJacobian
-        jacP = <void*>ts
-    CHKERR( SNESSetJacobian(ts.snes,A,B,jac,jacP) )
     #
     return FunctionEnd()
 
@@ -2163,7 +2144,6 @@ cdef PetscErrorCode TSReset_Python(
     #
     CHKERR( PetscObjectCompose(<PetscObject>ts, b"@ts.vec_update", NULL) )
     CHKERR( PetscObjectCompose(<PetscObject>ts, b"@ts.vec_dot",    NULL) )
-    CHKERR( PetscObjectCompose(<PetscObject>ts, b"__funvec__",         NULL) )
     #
     cdef reset = PyTS(ts).reset
     if reset is not None:
@@ -2221,21 +2201,14 @@ cdef PetscErrorCode TSPostStep_Python(
 
 cdef PetscErrorCode TSSolve_Python(
     PetscTS   ts,
-    PetscInt  *steps,
-    PetscReal *ptime,) \
+    ) \
     except IERR with gil:
     FunctionBegin(b"TSSolve_Python")
-    steps[0] = -ts.steps
-    ptime[0] =  ts.ptime
-    #
     cdef solve = PyTS(ts).solve
     if solve is not None:
         solve(TS_(ts), <double>ts.ptime, Vec_(ts.vec_sol))
     else:
         TSSolve_Python_default(ts)
-    #
-    steps[0] += ts.steps
-    ptime[0]  = ts.ptime
     return FunctionEnd()
 
 cdef PetscErrorCode SNESTSFormFunction_Python(
@@ -2262,7 +2235,7 @@ cdef PetscErrorCode SNESTSFormFunction_Python(
     cdef PetscReal a = 1.0/ts.time_step
     CHKERR( VecCopy(ts.vec_sol,dx)          )
     CHKERR( VecAXPBY(dx,+a,-a,x)            )
-    CHKERR( TSComputeIFunction(ts,t,x,dx,f) )
+    CHKERR( TSComputeIFunction(ts,t,x,dx,f,PETSC_FALSE) )
     return FunctionEnd()
 
 cdef PetscErrorCode SNESTSFormJacobian_Python(
@@ -2293,7 +2266,7 @@ cdef PetscErrorCode SNESTSFormJacobian_Python(
     cdef PetscReal a = 1.0/ts.time_step
     CHKERR( VecCopy(ts.vec_sol,dx)                )
     CHKERR( VecAXPBY(dx,+a,-a,x)                  )
-    CHKERR( TSComputeIJacobian(ts,t,x,dx,a,A,B,s) )
+    CHKERR( TSComputeIJacobian(ts,t,x,dx,a,A,B,s,PETSC_FALSE) )
     return FunctionEnd()
 
 cdef PetscErrorCode TSStep_Python(
