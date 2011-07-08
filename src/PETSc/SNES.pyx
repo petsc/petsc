@@ -392,7 +392,8 @@ cdef class SNES(Object):
         return ksp
 
     def setUseEW(self, flag=True, *targs, **kargs):
-        CHKERR( SNESKSPSetUseEW(self.snes, flag) )
+        cdef PetscBool bval = flag
+        CHKERR( SNESKSPSetUseEW(self.snes, bval) )
         if targs or kargs: self.setParamsEW(*targs, **kargs)
 
     def getUseEW(self):
