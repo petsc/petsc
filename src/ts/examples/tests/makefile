@@ -203,8 +203,8 @@ runex4_7:
 	   ${DIFF} output/ex4_7.out ex4.tmp || echo "Possible problem with ex4_7, diffs above"; \
 	   ${RM} -f ex4.tmp
 
-TESTEXAMPLES_C		  = ex1.PETSc runex1_euler runex1_euler_2 runex1_euler_3 runex1_euler_4 runex1_euler_5 \
-                            runex1_beuler runex1_beuler_2 runex1_beuler_3 runex1_beuler_4 runex1_beuler_5 \
+TESTEXAMPLES_C		  = ex1.PETSc runex1_euler_4 runex1_euler_5 \
+                            runex1_beuler_3 runex1_beuler_4 \
                             runex1_cn runex1_cn_2 runex1_cn_3 ex1.rm \
                             ex4.PETSc runex4 runex4_1 runex4_2 runex4_3 runex4_4 runex4_5 runex4_6 \
                             runex4_7 ex4.rm
