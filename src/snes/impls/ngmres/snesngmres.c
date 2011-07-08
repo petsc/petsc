@@ -77,8 +77,6 @@ PetscErrorCode SNESView_NGMRES(SNES snes, PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer, "  Size of space %d\n", ngmres->msize);CHKERRQ(ierr);
-  } else {
-    SETERRQ1(((PetscObject) snes)->comm, PETSC_ERR_SUP, "Viewer type %s not supported for SNESNGMRES", ((PetscObject) viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

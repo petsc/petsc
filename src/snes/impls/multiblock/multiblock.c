@@ -493,8 +493,6 @@ static PetscErrorCode SNESView_Multiblock(SNES snes, PetscViewer viewer)
       blocks = blocks->next;
     }
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
-  } else {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Viewer type %s not supported for SNES Multiblock", ((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
