@@ -7,7 +7,7 @@ from sys import getrefcount
 class MyODE:
     """
     du/dt + u**2 = 0;
-    u0 = 1
+    u0,u1,u2 = 1,2,3
     """
     def __init__(self):
         self.rhsfunction_calls = 0
@@ -22,14 +22,14 @@ class MyODE:
     def rhsfunction(self,ts,t,u,F):
         # print ('MyODE.rhsfunction()')
         self.rhsfunction_calls += 1
-        f = u * u
+        f = -(u * u)
         f.copy(F)
 
     def rhsjacobian(self,ts,t,u,J,P):
         # print ('MyODE.rhsjacobian()')
         self.rhsjacobian_calls += 1
         P.zeroEntries()
-        diag = 2 * u
+        diag = -2 * u
         P.setDiagonal(diag)
         P.assemble()
         if J != P: J.assemble()
@@ -40,6 +40,7 @@ class MyODE:
         self.ifunction_calls += 1
         f = du + u * u
         f.copy(F)
+
     def ijacobian(self,ts,t,u,du,a,J,P):
         # print ('MyODE.ijacobian()')
         self.ijacobian_calls += 1
@@ -58,7 +59,7 @@ class MyODE:
         #prn('TS: step %2d, T:%f, dT:%f, u:%f' % (s,t,dt,ut))
 
 
-class BaseTestTSNonlinearRHS(object):
+class BaseTestTSNonlinear(object):
 
     TYPE = None
 
@@ -71,7 +72,10 @@ class BaseTestTSNonlinearRHS(object):
     def tearDown(self):
         self.ts = None
 
-    def testSolve(self):
+
+class BaseTestTSNonlinearRHS(BaseTestTSNonlinear):
+
+    def testSolveRHS(self):
         ts = self.ts
         dct = self.ts.getDict()
         self.assertTrue(dct is not None)
@@ -116,7 +120,7 @@ class BaseTestTSNonlinearRHS(object):
         ts.monitor(ts.step_number, ts.time)
         self.assertEqual(ode.monitor_calls, n)
 
-    def testFDColor(self):
+    def testFDColorRHS(self):
         ts = self.ts
         ode = MyODE()
         J = PETSc.Mat().create(ts.comm)
@@ -144,14 +148,14 @@ class BaseTestTSNonlinearRHS(object):
         ts.snes.setUseFD(True)
         ts.solve(u)
 
-    def testResetAndSolve(self):
+    def testResetAndSolveRHS(self):
         self.ts.reset()
-        self.testSolve()
+        self.testSolveRHS()
         self.ts.reset()
-        self.testSolve()
+        self.testSolveRHS()
         self.ts.reset()
 
-class BaseTestTSNonlinearI(BaseTestTSNonlinearRHS):
+class BaseTestTSNonlinearI(BaseTestTSNonlinear):
 
     def testSolveI(self):
         ts = self.ts
@@ -198,7 +202,7 @@ class BaseTestTSNonlinearI(BaseTestTSNonlinearRHS):
         ts.monitor(ts.step_number, ts.time)
         self.assertEqual(ode.monitor_calls, n)
 
-    def testFDColor(self):
+    def testFDColorI(self):
         ts = self.ts
         ode = MyODE()
         J = PETSc.Mat().create(ts.comm)
@@ -222,8 +226,7 @@ class BaseTestTSNonlinearI(BaseTestTSNonlinearRHS):
 
         ts.setSolution(u)
         ode.rhsjacobian(ts,0,u,J,J)
-        if PETSC_VERSION < (3, 2, 0):
-            ts.setUp()
+        ts.setUp()
         ts.snes.setUseFD(True)
         ts.solve(u)
 
@@ -234,33 +237,43 @@ class BaseTestTSNonlinearI(BaseTestTSNonlinearRHS):
         self.testSolveI()
         self.ts.reset()
 
-class TestTSBeuler(BaseTestTSNonlinearRHS, unittest.TestCase):
+class TestTSBeuler(BaseTestTSNonlinearRHS,BaseTestTSNonlinearI,
+                   unittest.TestCase):
     TYPE = PETSc.TS.Type.BEULER
 
-class TestTSTheta(BaseTestTSNonlinearI, unittest.TestCase):
+class TestTSCN(BaseTestTSNonlinearRHS,BaseTestTSNonlinearI,
+               unittest.TestCase):
+    TYPE = PETSc.TS.Type.CN
+
+class TestTSTheta(BaseTestTSNonlinearRHS, BaseTestTSNonlinearI,
+                  unittest.TestCase):
     TYPE = PETSc.TS.Type.THETA
 
-class TestTSAlpha(BaseTestTSNonlinearI, unittest.TestCase):
+class TestTSAlpha(BaseTestTSNonlinearRHS, BaseTestTSNonlinearI,
+                  unittest.TestCase):
     TYPE = PETSc.TS.Type.ALPHA
 
 # --------------------------------------------------------------------
 
 PETSC_VERSION = PETSc.Sys.getVersion()
-
 i = PETSc.Sys.getVersionInfo()
 if (PETSC_VERSION == (3, 1, 0) and
     not i['release']):
     PETSC_VERSION = (3, 2, 0)
 
 if PETSC_VERSION < (3, 2, 0):
-    del BaseTestTSNonlinearRHS.testResetAndSolve
+    del BaseTestTSNonlinearRHS.testResetAndSolveRHS
     del BaseTestTSNonlinearI.testResetAndSolveI
-if PETSC_VERSION < (3, 2, 0):
+    del TestTSCN
     del TestTSAlpha
+    TestTSBeuler.testSolveI = lambda *args: None
+    TestTSBeuler.testFDColorI = lambda *args: None
 if PETSC_VERSION < (3, 1, 0):
+    del BaseTestTSNonlinearI.testSolveI
+    del BaseTestTSNonlinearI.testFDColorI
     del TestTSTheta
-
-# --------------------------------------------------------------------
 
 if __name__ == '__main__':
     unittest.main()
+
+# --------------------------------------------------------------------
