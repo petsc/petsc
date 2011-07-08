@@ -224,8 +224,6 @@ static PetscErrorCode TSView_Alpha(TS ts,PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"  Alpha_m=%G, Alpha_f=%G, Gamma=%G\n",th->Alpha_m,th->Alpha_f,th->Gamma);CHKERRQ(ierr);
-  } else {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for TS_Alpha",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

@@ -447,11 +447,15 @@ static PetscErrorCode TSSetFromOptions_RK(TS ts)
 static PetscErrorCode TSView_RK(TS ts,PetscViewer viewer)
 {
    TS_RK          *rk = (TS_RK*)ts->data;
+   PetscBool      iascii;
    PetscErrorCode ierr;
 
    PetscFunctionBegin;
-   ierr = PetscPrintf(PETSC_COMM_WORLD,"  number of ok steps: %D\n",rk->nok);CHKERRQ(ierr);
-   ierr = PetscPrintf(PETSC_COMM_WORLD,"  number of rejected steps: %D\n",rk->nnok);CHKERRQ(ierr);
+   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+   if (iascii) {
+     ierr = PetscViewerASCIIPrintf(viewer,"number of ok steps: %D\n",rk->nok);CHKERRQ(ierr);
+     ierr = PetscViewerASCIIPrintf(viewer,"number of rejected steps: %D\n",rk->nnok);CHKERRQ(ierr);
+   }
    PetscFunctionReturn(0);
 }
 
