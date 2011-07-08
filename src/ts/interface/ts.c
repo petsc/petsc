@@ -130,55 +130,6 @@ PetscErrorCode  TSSetFromOptions(TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef  __FUNCT__
-#define __FUNCT__ "TSViewFromOptions"
-/*@
-  TSViewFromOptions - This function visualizes the ts based upon user options.
-
-  Collective on TS
-
-  Input Parameter:
-. ts - The ts
-
-  Level: intermediate
-
-.keywords: TS, view, options, database
-.seealso: TSSetFromOptions(), TSView()
-@*/
-PetscErrorCode  TSViewFromOptions(TS ts,const char title[])
-{
-  PetscViewer    viewer;
-  PetscDraw      draw;
-  PetscBool      opt = PETSC_FALSE;
-  char           fileName[PETSC_MAX_PATH_LEN];
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscOptionsGetString(((PetscObject)ts)->prefix, "-ts_view", fileName, PETSC_MAX_PATH_LEN, &opt);CHKERRQ(ierr);
-  if (opt && !PetscPreLoadingOn) {
-    ierr = PetscViewerASCIIOpen(((PetscObject)ts)->comm,fileName,&viewer);CHKERRQ(ierr);
-    ierr = TSView(ts, viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  }
-  opt = PETSC_FALSE;
-  ierr = PetscOptionsGetBool(((PetscObject)ts)->prefix, "-ts_view_draw", &opt,PETSC_NULL);CHKERRQ(ierr);
-  if (opt) {
-    ierr = PetscViewerDrawOpen(((PetscObject)ts)->comm, 0, 0, 0, 0, 300, 300, &viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDrawGetDraw(viewer, 0, &draw);CHKERRQ(ierr);
-    if (title) {
-      ierr = PetscDrawSetTitle(draw, (char *)title);CHKERRQ(ierr);
-    } else {
-      ierr = PetscObjectName((PetscObject)ts);CHKERRQ(ierr);
-      ierr = PetscDrawSetTitle(draw, ((PetscObject)ts)->name);CHKERRQ(ierr);
-    }
-    ierr = TSView(ts, viewer);CHKERRQ(ierr);
-    ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-    ierr = PetscDrawPause(draw);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
 #undef __FUNCT__  
 #define __FUNCT__ "TSComputeRHSJacobian"
 /*@
@@ -1748,6 +1699,9 @@ PetscErrorCode  TSStep(TS ts)
 PetscErrorCode  TSSolve(TS ts, Vec x)
 {
   PetscInt       i;
+  PetscBool      flg;
+  char           filename[PETSC_MAX_PATH_LEN];
+  PetscViewer    viewer;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1783,8 +1737,11 @@ PetscErrorCode  TSSolve(TS ts, Vec x)
       ierr = TSMonitor(ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
     }
   }
-  if (!PetscPreLoadingOn) {
-    ierr = TSViewFromOptions(ts,((PetscObject)ts)->name);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(((PetscObject)ts)->prefix,"-ts_view",filename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  if (flg && !PetscPreLoadingOn) {
+    ierr = PetscViewerASCIIOpen(((PetscObject)ts)->comm,filename,&viewer);CHKERRQ(ierr);
+    ierr = TSView(ts,viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

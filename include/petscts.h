@@ -203,7 +203,6 @@ extern PetscErrorCode   TSGetSNES(TS,SNES*);
 extern PetscErrorCode   TSGetKSP(TS,KSP*);
 
 extern PetscErrorCode   TSView(TS,PetscViewer);
-extern PetscErrorCode   TSViewFromOptions(TS,const char[]);
 
 extern PetscErrorCode   TSSetApplicationContext(TS,void *);
 extern PetscErrorCode   TSGetApplicationContext(TS,void *);
