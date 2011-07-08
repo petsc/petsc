@@ -20,6 +20,19 @@
 #define KSPGCR     "gcr"
 #endif
 
+#undef __FUNCT__
+#define __FUNCT__ "KSPMonitor_Compat"
+static PetscErrorCode
+KSPMonitor_Compat(KSP ksp, PetscInt its, PetscReal rnorm)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  KSPMonitor(ksp,its,rnorm);
+  PetscFunctionReturn(0);
+}
+#undef  KSPMonitor
+#define KSPMonitor KSPMonitor_Compat
+
 #if (PETSC_VERSION_(3,1,0) || \
      PETSC_VERSION_(3,0,0))
 #undef __FUNCT__  

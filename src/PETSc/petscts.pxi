@@ -106,6 +106,7 @@ cdef extern from * nogil:
 
     int TSMonitorSet(PetscTS,PetscTSMonitorFunction,void*,PetscTSCtxDel*)
     int TSMonitorCancel(PetscTS)
+    int TSMonitor(PetscTS,PetscInt,PetscReal,PetscVec)
 
     int TSSetPreStep(PetscTS, PetscTSPreStepFunction)
     int TSSetPostStep(PetscTS, PetscTSPostStepFunction)
@@ -124,7 +125,6 @@ cdef extern from * nogil:
 
 cdef extern from "custom.h" nogil:
     int TSSetTimeStepNumber(PetscTS,PetscInt)
-    int TSMonitorCall(PetscTS,PetscInt,PetscReal,PetscVec)
 
 cdef extern from "libpetsc4py.h":
     PetscTSType TSPYTHON

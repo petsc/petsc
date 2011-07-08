@@ -272,14 +272,14 @@ cdef class KSP(Object):
     def getMonitor(self):
         return self.get_attr('__monitor__')
 
-    def callMonitor(self, its, rnorm):
-        cdef PetscInt  ival = asInt(its)
-        cdef PetscReal rval = asReal(rnorm)
-        CHKERR( KSPMonitorCall(self.ksp, ival, rval) )
-
     def cancelMonitor(self):
         CHKERR( KSPMonitorCancel(self.ksp) )
         self.set_attr('__monitor__', None)
+
+    def monitor(self, its, rnorm):
+        cdef PetscInt  ival = asInt(its)
+        cdef PetscReal rval = asReal(rnorm)
+        CHKERR( KSPMonitor(self.ksp, ival, rval) )
 
     # --- customization ---
 

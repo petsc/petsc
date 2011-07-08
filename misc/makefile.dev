@@ -10,7 +10,7 @@ PETSC_30=/home/devel/petsc/3.0
 PETSC_31=/home/devel/petsc/3.1
 PETSC_DEV=/home/devel/petsc/dev
 
-PETSC_ARCH=linux-gnu
+#PETSC_ARCH=linux-gnu
 
 all: petsc-30 petsc-31 petsc-dev
 

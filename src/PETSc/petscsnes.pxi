@@ -107,6 +107,7 @@ cdef extern from * nogil:
 
     int SNESMonitorSet(PetscSNES,PetscSNESMonitorFunction,void*,PetscSNESCtxDel)
     int SNESMonitorCancel(PetscSNES)
+    int SNESMonitor(PetscSNES,PetscInt,PetscReal)
 
     int SNESSetUp(PetscSNES)
     int SNESReset(PetscSNES)
@@ -142,7 +143,6 @@ cdef extern from "custom.h" nogil:
     int SNESSetUseFDColoring(PetscSNES,PetscBool)
     int SNESGetUseFDColoring(PetscSNES,PetscBool*)
 
-    int SNESMonitorCall(PetscSNES,PetscInt,PetscReal)
     int SNESConvergenceTestCall(PetscSNES,PetscInt,
                                 PetscReal,PetscReal,PetscReal,
                                 PetscSNESConvergedReason*)

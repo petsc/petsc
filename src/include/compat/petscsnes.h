@@ -30,6 +30,20 @@ static PetscErrorCode  SNESSetComputeInitialGuess(SNES snes,
 
 #endif
 
+#undef __FUNCT__
+#define __FUNCT__ "SNESMonitor_Compat"
+static PetscErrorCode
+SNESMonitor_Compat(SNES snes, PetscInt its, PetscReal rnorm)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  SNESMonitor(snes,its,rnorm);
+  PetscFunctionReturn(0);
+}
+#undef  SNESMonitor
+#define SNESMonitor SNESMonitor_Compat
+
+
 #if (PETSC_VERSION_(3,1,0) || \
      PETSC_VERSION_(3,0,0))
 #undef __FUNCT__  

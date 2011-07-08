@@ -260,14 +260,14 @@ cdef class SNES(Object):
     def getMonitor(self):
         return self.get_attr('__monitor__')
 
-    def callMonitor(self, its, rnorm):
-        cdef PetscInt  ival = asInt(its)
-        cdef PetscReal rval = asReal(rnorm)
-        CHKERR( SNESMonitorCall(self.snes, ival, rval) )
-
     def cancelMonitor(self):
         CHKERR( SNESMonitorCancel(self.snes) )
         self.set_attr('__monitor__', None)
+
+    def monitor(self, its, rnorm):
+        cdef PetscInt  ival = asInt(its)
+        cdef PetscReal rval = asReal(rnorm)
+        CHKERR( SNESMonitor(self.snes, ival, rval) )
 
     # --- more tolerances ---
 

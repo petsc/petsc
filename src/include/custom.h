@@ -694,25 +694,6 @@ KSPLogConvergenceHistory(KSP ksp, PetscInt its, PetscReal rnorm)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "KSPMonitorCall"
-static PetscErrorCode
-KSPMonitorCall(KSP ksp, PetscInt its, PetscReal rnorm)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  if (its   < 0) {
-    SETERRQQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,
-             "iteration number must be nonnegative");
-  }
-  if (rnorm < 0) {
-    SETERRQQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,
-             "residual norm must be nonnegative");
-  }
-  KSPMonitor(ksp,its,rnorm);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "KSPConvergenceTestCall"
 static PetscErrorCode
 KSPConvergenceTestCall(KSP ksp, PetscInt its, PetscReal rnorm, KSPConvergedReason *reason)
@@ -792,25 +773,6 @@ SNESLogConvergenceHistory(SNES snes, PetscInt its, PetscReal fnorm, PetscInt lit
              "function norm must be nonnegative");
   }
   SNESLogConvHistory(snes,fnorm,its);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "SNESMonitorCall"
-static PetscErrorCode
-SNESMonitorCall(SNES snes, PetscInt its, PetscReal rnorm)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  if (its < 0) {
-    SETERRQQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,
-             "iteration number must be nonnegative");
-  }
-  if (rnorm < 0) {
-    SETERRQQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,
-             "residual norm must be nonnegative");
-  }
-  SNESMonitor(snes,its,rnorm);
   PetscFunctionReturn(0);
 }
 
@@ -1048,18 +1010,6 @@ TSSetTimeStepNumber(TS ts, PetscInt step)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   ts->steps = step;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "TSMonitorCall"
-static PetscErrorCode
-TSMonitorCall(TS ts,PetscInt step,PetscReal ptime,Vec x)
-{
-  PetscErrorCode ierr;
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  ierr = TSMonitor(ts,step,ptime,x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

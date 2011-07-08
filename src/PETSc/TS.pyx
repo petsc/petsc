@@ -325,18 +325,18 @@ cdef class TS(Object):
     def getMonitor(self):
         return self.get_attr('__monitor__')
 
-    def callMonitor(self, step, time, Vec u=None):
+    def cancelMonitor(self):
+        CHKERR( TSMonitorCancel(self.ts) )
+        self.set_attr('__monitor__', None)
+
+    def monitor(self, step, time, Vec u=None):
         cdef PetscInt  ival = asInt(step)
         cdef PetscReal rval = asReal(time)
         cdef PetscVec  uvec = NULL
         if u is not None: uvec = u.vec
         if uvec == NULL:
             CHKERR( TSGetSolution(self.ts, &uvec) )
-        CHKERR( TSMonitorCall(self.ts, ival, rval, uvec) )
-
-    def cancelMonitor(self):
-        CHKERR( TSMonitorCancel(self.ts) )
-        self.set_attr('__monitor__', None)
+        CHKERR( TSMonitor(self.ts, ival, rval, uvec) )
 
     # --- solving ---
 

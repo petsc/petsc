@@ -235,7 +235,7 @@ class BaseTestSNES(object):
         self.testSolve()
         self.assertTrue(len(reshist) == 0)
         self.snes.setMonitor(monitor)
-        self.snes.callMonitor(1, 7)
+        self.snes.monitor(1, 7)
         self.assertTrue(reshist[1] == 7)
         ## Monitor = PETSc.SNES.Monitor
         ## self.snes.setMonitor(Monitor())

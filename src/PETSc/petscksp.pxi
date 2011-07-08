@@ -103,6 +103,7 @@ cdef extern from * nogil:
 
     int KSPMonitorSet(PetscKSP,PetscKSPMonitorFunction,void*,PetscKSPCtxDel)
     int KSPMonitorCancel(PetscKSP)
+    int KSPMonitor(PetscKSP,PetscInt,PetscReal)
 
     int KSPSetInitialGuessNonzero(PetscKSP,PetscBool)
     int KSPGetInitialGuessNonzero(PetscKSP,PetscBool*)
@@ -158,7 +159,6 @@ cdef extern from "custom.h" nogil:
     int KSPSetIterationNumber(PetscKSP,PetscInt)
     int KSPSetResidualNorm(PetscKSP,PetscReal)
     int KSPLogConvergenceHistory(PetscKSP,PetscInt,PetscReal)
-    int KSPMonitorCall(PetscKSP,PetscInt,PetscReal)
     int KSPConvergenceTestCall(PetscKSP,PetscInt,PetscReal,PetscKSPConvergedReason*)
     int KSPSetConvergedReason(PetscKSP,PetscKSPConvergedReason)
 
