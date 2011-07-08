@@ -82,8 +82,9 @@ int main(int argc, char **argv)
   IS                  inactiveconstraints;
   PetscInt            ninactiveconstraints,N;
   SNESConvergedReason reason;
-  PetscViewer         view_out;
-  
+  PetscViewer         view_out, view_cv,view_eta,view_vtk_cv,view_vtk_eta;
+  char                cv_filename[80],eta_filename[80];
+
   PetscInitialize(&argc,&argv, (char*)0, help);
   
   /* Get physics and time parameters */
@@ -164,7 +165,11 @@ int main(int argc, char **argv)
    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"file_psi",FILE_MODE_WRITE,&view_psi);CHKERRQ(ierr);*/
  
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"file_out",FILE_MODE_WRITE,&view_out);CHKERRQ(ierr);
- 
+  
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"file_cv",FILE_MODE_WRITE,&view_cv);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"file_eta",FILE_MODE_WRITE,&view_eta);CHKERRQ(ierr);
+  
+
   ierr = VecView(x,PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD));CHKERRQ(ierr);  
   while (t<user.T) {
     ierr = SNESSetFunction(snes,r,FormFunction,(void*)&user);CHKERRQ(ierr);
@@ -183,10 +188,25 @@ int main(int argc, char **argv)
     ierr = Update_q(&user);CHKERRQ(ierr);
     /*    ierr = VecView(user.q,view_q);CHKERRQ(ierr);*/
     /*  ierr = MatView(user.M,view_mat);CHKERRQ(ierr);*/
-    if (t==0 || t==user.dt){
-      ierr = VecView(user.cv,view_out);CHKERRQ(ierr);
-    }
 
+    
+   
+    sprintf(cv_filename,"file_cv_%f.vtk",t);
+    sprintf(eta_filename,"file_eta_%f.vtk",t);
+    ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,cv_filename,&view_vtk_cv);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,eta_filename,&view_vtk_eta);CHKERRQ(ierr);
+    ierr = PetscViewerSetFormat(view_vtk_cv, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
+    ierr = PetscViewerSetFormat(view_vtk_eta, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
+    ierr = DMView(user.da2,view_vtk_cv);CHKERRQ(ierr);
+    ierr = DMView(user.da2,view_vtk_eta);CHKERRQ(ierr);
+    ierr = VecView(user.cv,view_cv);CHKERRQ(ierr);
+    ierr = VecView(user.eta,view_eta);CHKERRQ(ierr);
+    ierr = VecView(user.cv,view_vtk_cv);CHKERRQ(ierr);
+    ierr = VecView(user.eta,view_vtk_eta);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&view_vtk_cv);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&view_vtk_eta);CHKERRQ(ierr);
+
+        
     ierr = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(ierr);
     ierr = SNESGetConvergedReason(snes,&reason);CHKERRQ(ierr);
     if (reason < 0) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_CONV_FAILED,"Nonlinear solver failed");
@@ -212,7 +232,11 @@ int main(int argc, char **argv)
   ierr = PetscViewerDestroy(&view_out);CHKERRQ(ierr);
    ierr = PetscViewerDestroy(&view_psi);CHKERRQ(ierr);*/
   ierr = PetscViewerDestroy(&view_out);CHKERRQ(ierr);
-
+  
+  ierr = PetscViewerDestroy(&view_cv);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&view_eta);CHKERRQ(ierr);
+  
+  
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = VecDestroy(&r);CHKERRQ(ierr);
   ierr = VecDestroy(&xl);CHKERRQ(ierr);
