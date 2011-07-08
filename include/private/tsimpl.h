@@ -84,8 +84,7 @@ struct _p_TS {
   /* ---------------------Nonlinear Iteration------------------------------*/
   SNES  snes;
   void *funP;
-  void *jacP,*jacPlhs;
-  void *bcP;
+  void *jacP;
 
 
   /* --- Data that is unique to each particular solver --- */
