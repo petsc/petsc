@@ -254,11 +254,13 @@ PetscErrorCode TSComputeRHSFunction(TS ts,PetscReal t,Vec x,Vec y)
 #define __FUNCT__ "TSGetRHSVec_Private"
 static PetscErrorCode TSGetRHSVec_Private(TS ts,Vec *Frhs)
 {
+  Vec            F;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = TSGetIFunction(ts,&F,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   if (!ts->Frhs) {
-    ierr = VecDuplicate(ts->vec_sol,&ts->Frhs);CHKERRQ(ierr);
+    ierr = VecDuplicate(F,&ts->Frhs);CHKERRQ(ierr);
   }
   *Frhs = ts->Frhs;
   PetscFunctionReturn(0);
@@ -268,8 +270,8 @@ static PetscErrorCode TSGetRHSVec_Private(TS ts,Vec *Frhs)
 #define __FUNCT__ "TSGetRHSMats_Private"
 static PetscErrorCode TSGetRHSMats_Private(TS ts,Mat *Arhs,Mat *Brhs)
 {
+  Mat            A,B;
   PetscErrorCode ierr;
-  Mat A,B;
 
   PetscFunctionBegin;
   ierr = TSGetIJacobian(ts,&A,&B,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
@@ -337,16 +339,18 @@ PetscErrorCode TSComputeIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec Y,PetscBo
     PetscStackPop;
   }
   if (imex) {
-    if (!ts->userops->ifunction) {ierr = VecCopy(Xdot,Y);CHKERRQ(ierr);}
-  } else {
     if (!ts->userops->ifunction) {
-      ierr = TSComputeRHSFunction(ts,t,X,Y);CHKERRQ(ierr);
-      ierr = VecAYPX(Y,-1,Xdot);CHKERRQ(ierr);
-    } else {
+      ierr = VecCopy(Xdot,Y);CHKERRQ(ierr);
+    }
+  } else if (ts->userops->rhsfunction) {
+    if (ts->userops->ifunction) {
       Vec Frhs;
       ierr = TSGetRHSVec_Private(ts,&Frhs);CHKERRQ(ierr);
       ierr = TSComputeRHSFunction(ts,t,X,Frhs);CHKERRQ(ierr);
       ierr = VecAXPY(Y,-1,Frhs);CHKERRQ(ierr);
+    } else {
+      ierr = TSComputeRHSFunction(ts,t,X,Y);CHKERRQ(ierr);
+      ierr = VecAYPX(Y,-1,Xdot);CHKERRQ(ierr);
     }
   }
   ierr = PetscLogEventEnd(TS_FunctionEval,ts,X,Xdot,Y);CHKERRQ(ierr);
@@ -415,6 +419,7 @@ PetscErrorCode TSComputeIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal shi
   *flg = SAME_NONZERO_PATTERN;  /* In case we're solving a linear problem in which case it wouldn't get initialized below. */
   ierr = PetscLogEventBegin(TS_JacobianEval,ts,X,*A,*B);CHKERRQ(ierr);
   if (ts->userops->ijacobian) {
+    *flg = DIFFERENT_NONZERO_PATTERN;
     PetscStackPush("TS user implicit Jacobian");
     ierr = (*ts->userops->ijacobian)(ts,t,X,Xdot,shift,A,B,flg,ts->jacP);CHKERRQ(ierr);
     PetscStackPop;
@@ -425,7 +430,7 @@ PetscErrorCode TSComputeIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal shi
   if (imex) {
     if (!ts->userops->ijacobian) {  /* system was written as Xdot = F(t,X) */
       ierr = MatZeroEntries(*A);CHKERRQ(ierr);
-      ierr = MatShift(*A,1.0);CHKERRQ(ierr);
+      ierr = MatShift(*A,shift);CHKERRQ(ierr);
       if (*A != *B) {
         ierr = MatZeroEntries(*B);CHKERRQ(ierr);
         ierr = MatShift(*B,shift);CHKERRQ(ierr);
@@ -508,7 +513,7 @@ PetscErrorCode  TSSetRHSFunction(TS ts,Vec r,PetscErrorCode (*f)(TS,PetscReal,Ve
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (r) PetscValidHeaderSpecific(r,VEC_CLASSID,2);
   if (f)   ts->userops->rhsfunction = f;
-  if (ctx) ts->funP             = ctx;
+  if (ctx) ts->funP                 = ctx;
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
   ierr = SNESSetFunction(snes,r,SNESTSFormFunction,ts);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -573,7 +578,7 @@ PetscErrorCode  TSSetRHSJacobian(TS ts,Mat A,Mat B,TSRHSJacobian f,void *ctx)
   if (B) PetscCheckSameComm(ts,1,B,3);
 
   if (f)   ts->userops->rhsjacobian = f;
-  if (ctx) ts->jacP             = ctx;
+  if (ctx) ts->jacP                 = ctx;
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
   if (!ts->userops->ijacobian) {
     ierr = SNESSetJacobian(snes,A,B,SNESTSFormJacobian,ts);CHKERRQ(ierr);
