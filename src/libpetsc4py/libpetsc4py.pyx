@@ -1950,6 +1950,13 @@ cdef extern from * nogil:
     ctypedef enum TSProblemType:
         TS_LINEAR
         TS_NONLINEAR
+    ctypedef enum TSConvergedReason:
+      TS_CONVERGED_ITERATING
+      TS_CONVERGED_TIME
+      TS_CONVERGED_ITS
+      TS_DIVERGED_NONLINEAR_SOLVE
+      TS_DIVERGED_STEP_REJECTED
+
 cdef extern from * nogil:
     struct _TSOps:
       PetscErrorCode (*destroy)(PetscTS)          except IERR
@@ -1981,9 +1988,10 @@ cdef extern from * nogil:
         PetscReal ptime
         PetscVec  vec_sol
         PetscReal time_step
+        PetscReal next_time_step
         PetscInt  max_steps
         PetscReal max_time
-        PetscMat  A,B
+        TSConvergedReason reason
         PetscSNES snes
 cdef extern from * nogil:
     PetscErrorCode TSGetKSP(PetscTS,PetscKSP*)

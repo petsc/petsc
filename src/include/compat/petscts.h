@@ -19,6 +19,38 @@
 #define TSALPHA "alpha"
 #endif
 
+typedef enum {
+  TS_CONVERGED_ITERATING      =  0,
+  TS_CONVERGED_TIME           =  1,
+  TS_CONVERGED_ITS            =  2,
+  TS_DIVERGED_NONLINEAR_SOLVE = -1,
+  TS_DIVERGED_STEP_REJECTED   = -2
+} TSConvergedReason;
+
+#undef __FUNCT__
+#define __FUNCT__ "TSSetConvergedReason"
+static PetscErrorCode TSSetConvergedReason(TS ts,TSConvergedReason reason)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSGetConvergedReason"
+static PetscErrorCode TSGetConvergedReason(TS ts,TSConvergedReason *reason)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidPointer(reason,2);
+  *reason = TS_CONVERGED_ITERATING;
+  if (ts->steps >= ts->max_steps) 
+    *reason = TS_CONVERGED_ITS;
+  if (ts->ptime >= ts->max_time)
+    *reason = TS_CONVERGED_ITERATING;
+  PetscFunctionReturn(0);
+}
+
 #if (PETSC_VERSION_(3,1,0) || \
      PETSC_VERSION_(3,0,0))
 #undef __FUNCT__  
