@@ -590,7 +590,8 @@ PetscErrorCode  PetscFreeArguments(char **args)
 .  -not_shared_tmp - each processor has own /tmp
 .  -tmp - alternative name of /tmp directory
 .  -get_total_flops - returns total flops done by all processors
--  -memory_info - Print memory usage at end of run
+.  -memory_info - Print memory usage at end of run
+-  -server <port> - start PETSc webserver (default port is 8080)
 
    Options Database Keys for Profiling:
    See the <a href="../../docs/manual.pdf#nameddest=ch_profiling">profiling chapter of the users manual</a> for details.

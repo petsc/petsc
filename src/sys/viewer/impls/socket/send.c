@@ -813,9 +813,9 @@ PetscErrorCode  PetscWebServeRequest(int port)
       fprintf(fd, "<H4>Serving PETSc application code %s </H4>\r\n\n",program);
       fprintf(fd, "Number of processes %d\r\n\n",size);
       fprintf(fd, "<HR>\r\n");
-      ierr = PetscViewerASCIIOpenWithFILE(fd,&viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIOpenWithFILE(PETSC_COMM_WORLD,fd,&viewer);CHKERRQ(ierr);
       ierr = PetscOptionsView(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
       fprintf(fd, "<HR>\r\n");
 #if defined(PETSC_HAVE_AMS)
       if (PetscAMSPublishAll) {
@@ -889,6 +889,14 @@ void  *PetscWebServeWait(int *port)
   Input Parameters:
 +   comm - the MPI communicator
 -   port - port to listen on
+
+  Options Database Key:
+.  -server <port> - start PETSc webserver (default port is 8080)
+
+   Notes: Point your browser to http://hostname:8080   to access the PETSc web server, where hostname is the name of your machine.
+      If you are running PETSc on your local machine you can use http://localhost:8080
+
+      If the PETSc program completes before you connect with the browser you will not be able to connect to the PETSc webserver.
 
     Level: developer
 
