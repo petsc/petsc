@@ -59,11 +59,13 @@ static PetscErrorCode TSStep_Theta(TS ts)
 static PetscErrorCode TSInterpolate_Theta(TS ts,PetscReal t,Vec X)
 {
   TS_Theta       *th = (TS_Theta*)ts->data;
+  PetscReal      alpha = t - ts->ptime;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = VecCopy(ts->vec_sol,th->X);CHKERRQ(ierr);
-  ierr = VecWAXPY(X,t-ts->ptime,th->X,th->Xdot);CHKERRQ(ierr);
+  if (th->endpoint) alpha *= th->Theta;
+  ierr = VecWAXPY(X,alpha,th->Xdot,th->X);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -109,6 +111,7 @@ static PetscErrorCode SNESTSFormFunction_Theta(SNES snes,Vec x,Vec y,TS ts)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  /* When using the endpoint variant, this is actually 1/Theta * Xdot */
   ierr = VecAXPBYPCZ(th->Xdot,-th->shift,th->shift,0,ts->vec_sol,x);CHKERRQ(ierr);
   ierr = TSComputeIFunction(ts,th->stage_time,x,th->Xdot,y,PETSC_FALSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);

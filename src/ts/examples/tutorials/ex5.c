@@ -212,9 +212,8 @@ int main(int argc,char **argv)
   /*
      Run the timestepping solver
   */
-  ierr = TSSolve(ts,u);CHKERRQ(ierr);
+  ierr = TSSolve(ts,u,&ftime);CHKERRQ(ierr);
   ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
-  ierr = TSGetTime(ts,&ftime);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      View timestepping solver info

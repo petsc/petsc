@@ -59,7 +59,7 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   DM             da;
   MatFDColoring  matfdcoloring = PETSC_NULL;
-  PetscReal      dt;
+  PetscReal      dt,ftime;
   MonitorCtx     usermonitor;       /* user-defined monitor context */
   AppCtx         user;              /* user-defined work context */
   SNES           snes;
@@ -151,7 +151,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = TSSolve(ts,u);CHKERRQ(ierr);
+  ierr = TSSolve(ts,u,&ftime);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.

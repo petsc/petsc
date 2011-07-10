@@ -164,9 +164,8 @@ int main(int argc,char **argv)
 
     /* loop over time steps */
     /*----------------------*/
-    ierr = TSSolve(ts,init_sol);CHKERRQ(ierr);
+    ierr = TSSolve(ts,init_sol,&ftime);CHKERRQ(ierr);
     ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
-    ierr = TSGetTime(ts,&ftime);CHKERRQ(ierr);
     stepsz[k+1] = stepsz[k]*1.5; /* change step size for the next phase */
   }
 

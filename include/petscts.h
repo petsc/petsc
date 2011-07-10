@@ -89,7 +89,7 @@ extern PetscErrorCode   TSSetExactFinalTime(TS,PetscBool);
 extern PetscErrorCode   TSMonitorDefault(TS,PetscInt,PetscReal,Vec,void*);
 extern PetscErrorCode   TSMonitorSolution(TS,PetscInt,PetscReal,Vec,void*);
 extern PetscErrorCode   TSStep(TS);
-extern PetscErrorCode   TSSolve(TS,Vec);
+extern PetscErrorCode   TSSolve(TS,Vec,PetscReal*);
 extern PetscErrorCode   TSGetConvergedReason(TS,TSConvergedReason*);
 
 extern PetscErrorCode   TSSetInitialTimeStep(TS,PetscReal,PetscReal);

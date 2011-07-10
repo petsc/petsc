@@ -173,9 +173,8 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = TSSolve(ts,x);CHKERRQ(ierr);
+  ierr = TSSolve(ts,x,&ftime);CHKERRQ(ierr);
   ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
-  ierr = TSGetTime(ts,&ftime);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"mu %G, steps %D, ftime %G\n",mu,steps,ftime);CHKERRQ(ierr);
   ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 

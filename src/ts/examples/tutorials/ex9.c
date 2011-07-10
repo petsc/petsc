@@ -1362,9 +1362,8 @@ int main(int argc,char *argv[])
     PetscReal nrm1,nrmsup;
     PetscInt steps;
 
-    ierr = TSSolve(ts,X);CHKERRQ(ierr);
+    ierr = TSSolve(ts,X,&ptime);CHKERRQ(ierr);
     ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
-    ierr = TSGetTime(ts,&ptime);CHKERRQ(ierr);
 
     ierr = PetscPrintf(comm,"Final time %8.5f, steps %d\n",ptime,steps);CHKERRQ(ierr);
     if (ctx.exact) {

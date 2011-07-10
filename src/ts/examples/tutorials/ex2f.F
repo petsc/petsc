@@ -204,9 +204,8 @@
 
 !  Run the timestepping solver
 
-      call TSSolve(ts,u,ierr)
+      call TSSolve(ts,u,ftime,ierr)
       call TSGetTimeStepNumber(ts,steps,ierr)
-      call TSGetTime(ts,ftime,ierr)
       call VecNorm(u,NORM_2,norm,ierr)
 
       write(6,100) steps,ftime,norm

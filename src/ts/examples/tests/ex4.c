@@ -165,8 +165,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-NOUT",&NOUT,PETSC_NULL);CHKERRQ(ierr);
   for (iout=1; iout<=NOUT; iout++){
     ierr = TSSetDuration(ts,time_steps,iout*1.0/NOUT);CHKERRQ(ierr);
-    ierr = TSSolve(ts,global);CHKERRQ(ierr);
-    ierr = TSGetTime(ts,&ftime);CHKERRQ(ierr);
+    ierr = TSSolve(ts,global,&ftime);CHKERRQ(ierr);
     ierr = TSSetInitialTimeStep(ts,ftime,dt);CHKERRQ(ierr);
   }
 

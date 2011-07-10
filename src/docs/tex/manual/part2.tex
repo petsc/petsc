@@ -4309,7 +4309,7 @@ One sets the total number of timesteps to run or the total time to run
 \end{tabbing}
 One performs the request number of time steps with
 \begin{tabbing}
-  TSSolve(TS ts);
+  TSSolve(TS ts,Vec X,PetscReal *ftime);
 \end{tabbing}
 The solve call implicitly sets up the timestep context;
 this can be done explicitly with
@@ -4323,6 +4323,10 @@ One destroys the context with
 and views it with 
 \begin{tabbing}
  TSView(TS ts,PetscViewer viewer);
+\end{tabbing}
+In place of TSSolve(), a single step can be taken using
+\begin{tabbing}
+TSStep(TS ts);
 \end{tabbing}
 
 \subsection{Solving Time-dependent Problems}

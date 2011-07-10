@@ -1725,9 +1725,8 @@ int main(int argc,char *argv[])
   ierr = TSSetInitialTimeStep(ts,0.,1e-3);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
-  ierr = TSSolve(ts,X);CHKERRQ(ierr);
+  ierr = TSSolve(ts,X,&ftime);CHKERRQ(ierr);
   ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
-  ierr = TSGetTime(ts,&ftime);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Steps %D  final time %G\n",steps,ftime);CHKERRQ(ierr);
 
   if (0) {ierr = THISolveStatistics(thi,dmmg,0,"Full");CHKERRQ(ierr);}
