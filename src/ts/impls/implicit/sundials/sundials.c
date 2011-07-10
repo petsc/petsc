@@ -282,8 +282,8 @@ PetscErrorCode TSSetUp_Sundials(TS ts)
   ierr = VecGetArray(ts->vec_sol,&parray);CHKERRQ(ierr);
   y_data = (PetscScalar *) N_VGetArrayPointer(cvode->y);
   for (i = 0; i < locsize; i++) y_data[i] = parray[i];
-  /*ierr = PetscMemcpy(y_data,parray,locsize*sizeof(PETSC_SCALAR)); CHKERRQ(ierr);*/
   ierr = VecRestoreArray(ts->vec_sol,PETSC_NULL);CHKERRQ(ierr);
+
   ierr = VecDuplicate(ts->vec_sol,&cvode->update);CHKERRQ(ierr);
   ierr = VecDuplicate(ts->vec_sol,&cvode->ydot);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(ts,cvode->update);CHKERRQ(ierr);
@@ -416,6 +416,7 @@ PetscErrorCode TSView_Sundials(TS ts,PetscViewer viewer)
   long int       nsteps,its,nfevals,nlinsetups,nfails,itmp;
   PetscInt       qlast,qcur;
   PetscReal      hinused,hlast,hcur,tcur,tolsfac;
+  PC             pc;
 
   PetscFunctionBegin;
   if (cvode->cvode_type == SUNDIALS_ADAMS) {type = atype;}
@@ -456,10 +457,14 @@ PetscErrorCode TSView_Sundials(TS ts,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"Sundials no. of linear iterations %D\n",its);CHKERRQ(ierr);
     ierr = CVSpilsGetNumConvFails(cvode->mem,&itmp);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"Sundials no. of linear convergence failures %D\n",itmp);CHKERRQ(ierr);
+
+    ierr = TSSundialsGetPC(ts,&pc); CHKERRQ(ierr);
+    ierr = PCView(pc,viewer);CHKERRQ(ierr);
     ierr = CVSpilsGetNumPrecEvals(cvode->mem,&itmp);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"Sundials no. of preconditioner evaluations %D\n",itmp);CHKERRQ(ierr);
     ierr = CVSpilsGetNumPrecSolves(cvode->mem,&itmp);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"Sundials no. of preconditioner solves %D\n",itmp);CHKERRQ(ierr);
+
     ierr = CVSpilsGetNumJtimesEvals(cvode->mem,&itmp);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"Sundials no. of Jacobian-vector product evaluations %D\n",itmp);CHKERRQ(ierr);
     ierr = CVSpilsGetNumRhsEvals(cvode->mem,&itmp);CHKERRQ(ierr);
@@ -936,8 +941,9 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "TSCreate_Sundials"
 PetscErrorCode  TSCreate_Sundials(TS ts)
 {
-  TS_Sundials *cvode;
+  TS_Sundials    *cvode;
   PetscErrorCode ierr;
+  PC             pc;
 
   PetscFunctionBegin;
   ts->ops->reset          = TSReset_Sundials;
@@ -964,6 +970,10 @@ PetscErrorCode  TSCreate_Sundials(TS ts)
   /* set tolerance for Sundials */
   cvode->reltol = 1e-6;
   cvode->abstol = 1e-6;
+
+  /* set PCNONE as default pctype */
+  ierr = TSSundialsGetPC_Sundials(ts,&pc);CHKERRQ(ierr);
+  ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
 
   if (ts->exact_final_time == PETSC_DECIDE) ts->exact_final_time = PETSC_TRUE;
 
