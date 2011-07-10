@@ -1861,7 +1861,7 @@ PetscErrorCode TSSolve(TS ts,Vec x,PetscReal *ftime)
       ierr = TSPostStep(ts);CHKERRQ(ierr);
       ierr = TSMonitor(ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
     }
-    if (ts->ptime >= ts->max_time) {
+    if (ts->exact_final_time && ts->ptime >= ts->max_time) {
       ierr = TSInterpolate(ts,ts->max_time,x);CHKERRQ(ierr);
       if (ftime) *ftime = ts->max_time;
     } else if (ftime) *ftime = ts->ptime;
