@@ -62,7 +62,8 @@ static PetscErrorCode TSInterpolate_Theta(TS ts,PetscReal t,Vec X)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecWAXPY(X,t-ts->ptime,ts->vec_sol,th->Xdot);CHKERRQ(ierr);
+  ierr = VecCopy(ts->vec_sol,th->X);CHKERRQ(ierr);
+  ierr = VecWAXPY(X,t-ts->ptime,th->X,th->Xdot);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

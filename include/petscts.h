@@ -84,6 +84,7 @@ extern PetscErrorCode   TSGetSolution(TS,Vec*);
 
 extern PetscErrorCode   TSSetDuration(TS,PetscInt,PetscReal);
 extern PetscErrorCode   TSGetDuration(TS,PetscInt*,PetscReal*);
+extern PetscErrorCode   TSSetExactFinalTime(TS,PetscBool);
 
 extern PetscErrorCode   TSMonitorDefault(TS,PetscInt,PetscReal,Vec,void*);
 extern PetscErrorCode   TSMonitorSolution(TS,PetscInt,PetscReal,Vec,void*);
@@ -455,7 +456,6 @@ extern PetscErrorCode   TSSundialsGetIterations(TS,PetscInt *,PetscInt *);
 extern PetscErrorCode   TSSundialsSetGramSchmidtType(TS,TSSundialsGramSchmidtType);
 extern PetscErrorCode   TSSundialsSetGMRESRestart(TS,PetscInt);
 extern PetscErrorCode   TSSundialsSetLinearTolerance(TS,PetscReal);
-extern PetscErrorCode   TSSundialsSetExactFinalTime(TS,PetscBool );
 extern PetscErrorCode   TSSundialsMonitorInternalSteps(TS,PetscBool );
 extern PetscErrorCode   TSSundialsGetParameters(TS,PetscInt *,long*[],double*[]);
 #endif

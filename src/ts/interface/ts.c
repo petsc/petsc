@@ -80,6 +80,8 @@ PetscErrorCode  TSSetFromOptions(TS ts)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID,1);
   ierr = PetscOptionsBegin(((PetscObject)ts)->comm, ((PetscObject)ts)->prefix, "Time step options", "TS");CHKERRQ(ierr);
+    /* Handle TS type options */
+    ierr = TSSetTypeFromOptions(ts);CHKERRQ(ierr);
 
     /* Handle generic TS options */
     ierr = PetscOptionsInt("-ts_max_steps","Maximum number of time steps","TSSetDuration",ts->max_steps,&ts->max_steps,PETSC_NULL);CHKERRQ(ierr);
@@ -87,6 +89,9 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     ierr = PetscOptionsReal("-ts_init_time","Initial time","TSSetInitialTime", ts->ptime, &ts->ptime, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-ts_dt","Initial time step","TSSetInitialTimeStep",ts->initial_time_step,&dt,&opt);CHKERRQ(ierr);
     if (opt) {ierr = TSSetInitialTimeStep(ts,ts->ptime,dt);CHKERRQ(ierr);}
+    opt = ts->exact_final_time == PETSC_DECIDE ? PETSC_FALSE : (PetscBool)ts->exact_final_time;
+    ierr = PetscOptionsBool("-ts_exact_final_time","Interpolate output to stop exactly at the final time","TSSetExactFinalTime",opt,&opt,&flg);CHKERRQ(ierr);
+    if (flg) {ierr = TSSetExactFinalTime(ts,flg);CHKERRQ(ierr);}
     ierr = PetscOptionsInt("-ts_max_snes_failures","Maximum number of nonlinear solve failures","",ts->max_snes_failures,&ts->max_snes_failures,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-ts_max_reject","Maximum number of step rejections","",ts->max_reject,&ts->max_reject,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-ts_error_if_step_failed","Error if no step succeeds","",ts->errorifstepfailed,&ts->errorifstepfailed,PETSC_NULL);CHKERRQ(ierr);
@@ -110,9 +115,6 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     if (opt) {
       ierr = TSMonitorSet(ts,TSMonitorSolution,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     }
-
-    /* Handle TS type options */
-    ierr = TSSetTypeFromOptions(ts);CHKERRQ(ierr);
 
     /* Handle specific TS options */
     if (ts->ops->setfromoptions) {
@@ -990,6 +992,32 @@ PetscErrorCode  TSSetTimeStep(TS ts,PetscReal time_step)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "TSSetExactFinalTime"
+/*@
+   TSSetExactFinalTime - Determines whether to interpolate solution to the
+      exact final time requested by the user or just returns it at the final time
+      it computed.
+
+  Logically Collective on TS
+
+   Input Parameter:
++   ts - the time-step context
+-   ft - PETSC_TRUE if interpolates, else PETSC_FALSE
+
+   Level: beginner
+
+.seealso: TSSetDuration()
+@*/
+PetscErrorCode  TSSetExactFinalTime(TS ts,PetscBool flg)
+{
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  ts->exact_final_time = flg;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "TSGetTimeStep"
 /*@
    TSGetTimeStep - Gets the current timestep size.
@@ -1152,6 +1180,7 @@ PetscErrorCode  TSSetUp(TS ts)
   if (!((PetscObject)ts)->type_name) {
     ierr = TSSetType(ts,TSEULER);CHKERRQ(ierr);
   }
+  if (ts->exact_final_time == PETSC_DECIDE) ts->exact_final_time = PETSC_FALSE;
 
   if (!ts->vec_sol) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TSSetSolution() first");
 
@@ -1383,6 +1412,8 @@ PetscErrorCode  TSGetDuration(TS ts, PetscInt *maxsteps, PetscReal *maxtime)
    Level: intermediate
 
 .keywords: TS, timestep, set, maximum, iterations
+
+.seealso: TSSetExactFinalTime()
 @*/
 PetscErrorCode  TSSetDuration(TS ts,PetscInt maxsteps,PetscReal maxtime)
 {
@@ -1807,6 +1838,9 @@ PetscErrorCode  TSSolve(TS ts, Vec x)
       }
       ierr = TSPostStep(ts);CHKERRQ(ierr);
       ierr = TSMonitor(ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
+    }
+    if (ts->ptime >= ts->max_time) {
+      ierr = TSInterpolate(ts,ts->max_time,x);CHKERRQ(ierr);
     }
   }
   ierr = PetscOptionsGetString(((PetscObject)ts)->prefix,"-ts_view",filename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
