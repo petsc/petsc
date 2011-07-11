@@ -154,13 +154,13 @@ typedef ValueArray::iterator ValueArrayIterator;
 EXTERN_C_BEGIN
 // Ne: Number of elements
 // Nl: Number of dof per element
-// Nr: Number of matrix rows (dof)
 #undef __FUNCT__
 #define __FUNCT__ "MatSeqAIJSetValuesBatch"
-PetscErrorCode MatSeqAIJSetValuesBatch(Mat J, PetscInt Ne, PetscInt Nl, PetscInt Nr, PetscInt *elemRows, PetscScalar *elemMats)
+PetscErrorCode MatSeqAIJSetValuesBatch(Mat J, PetscInt Ne, PetscInt Nl, PetscInt *elemRows, PetscScalar *elemMats)
 {
-  size_t N  = Ne * Nl;
-  size_t No = Ne * Nl*Nl;
+  size_t   N  = Ne * Nl;
+  size_t   No = Ne * Nl*Nl;
+  PetscInt Nr; // Number of rows
   PetscErrorCode ierr;
 
   // copy elemRows and elemMat to device
@@ -169,8 +169,9 @@ PetscErrorCode MatSeqAIJSetValuesBatch(Mat J, PetscInt Ne, PetscInt Nl, PetscInt
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(MAT_CUSPSetValuesBatch,0,0,0,0);CHKERRQ(ierr);
+  ierr = MatGetSize(J, &Nr, PETSC_NULL);CHKERRQ(ierr);
   // allocate storage for "fat" COO representation of matrix
-  ierr = PetscInfo(J, "Making COO matrix\n");CHKERRQ(ierr);
+  ierr = PetscInfo1(J, "Making COO matrix of size %d\n", Nr);CHKERRQ(ierr);
   cusp::coo_matrix<IndexType,ValueType, memSpace> COO(Nr, Nr, No);
 
   // repeat elemRows entries Nl times

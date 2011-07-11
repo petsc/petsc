@@ -26,9 +26,13 @@ TO ADD:
 
   3) Multi-GPU Assembly
     - MPIAIJCUSP: Just have two SEQAIJCUSP matrices, nothing else special
-    a) Have implicit rep of COO from repeated/tiled_range
-    b) Do a filtered copy, decrementing rows and remapping columns, which splits into two sets
-    c) Make two COO matrices and do separate aggregation on each one
+    a) Filter rows to be sent to other procs (normally stashed)
+    b) send/recv rows, might as well do with a VecScatter
+    c) Potential to overlap this computation w/ GPU (talk to Nathan)
+    c') Just shove these rows in after the local
+    d) Have implicit rep of COO from repeated/tiled_range
+    e) Do a filtered copy, decrementing rows and remapping columns, which splits into two sets
+    f) Make two COO matrices and do separate aggregation on each one
 
   4) Solve the Neumann Poisson problem in parallel
     - Try it on GPU machine at Brown (They need another GNU install)
@@ -42,12 +46,12 @@ TO ADD:
 
 #undef __FUNCT__
 #define __FUNCT__ "IntegrateCells"
-PetscErrorCode IntegrateCells(DM dm, PetscInt *Ne, PetscInt *Nl, PetscInt *N, PetscInt **elemRows, PetscScalar **elemMats) {
+PetscErrorCode IntegrateCells(DM dm, PetscInt *Ne, PetscInt *Nl, PetscInt **elemRows, PetscScalar **elemMats) {
   DMDALocalInfo  info;
   PetscInt      *er;
   PetscScalar   *em;
   PetscInt       X, Y, dof;
-  PetscInt       nl, ne;
+  PetscInt       nl, nxe, nye, ne;
   PetscInt       k  = 0, m  = 0;
   PetscInt       i, j;
   PetscLogEvent  integrationEvent;
@@ -59,15 +63,24 @@ PetscErrorCode IntegrateCells(DM dm, PetscInt *Ne, PetscInt *Nl, PetscInt *N, Pe
   ierr = DMDAGetInfo(dm, 0, &X, &Y,0,0,0,0, &dof,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetLocalInfo(dm, &info);CHKERRQ(ierr);
   nl   = dof*3;
-  ne   = 2 * (X-1) * (Y-1);
-  *N   = X * Y * dof;
+  nxe  = info.xm; if (info.xs+info.xm == X) nxe--;
+  nye  = info.ym; if (info.ys+info.ym == Y) nye--;
+  ne   = 2 * nxe * nye;
   *Ne  = ne;
   *Nl  = nl;
   ierr = PetscMalloc2(ne*nl, PetscInt, elemRows, ne*nl*nl, PetscScalar, elemMats);CHKERRQ(ierr);
   er   = *elemRows;
   em   = *elemMats;
-  for(j = info.ys; j < info.ys+info.ym-1; ++j) {
-    for(i = info.xs; i < info.xs+info.xm-1; ++i) {
+  // Proc 0        Proc 1
+  // xs: 0  xm: 3  xs: 0 xm: 3
+  // ys: 0  ym: 2  ys: 2 ym: 1
+  // 8 elements x 3 vertices = 24 element matrix rows and 72 entries
+  //   6 offproc rows containing 18 element matrix entries
+  //  18  onproc rows containing 54 element matrix entries
+  //   3 offproc columns in 8 element matrix entries
+  //   so we should have 46 diagonal matrix entries
+  for(j = info.ys; j < info.ys+nye; ++j) {
+    for(i = info.xs; i < info.xs+nxe; ++i) {
       PetscInt rowA = j*X     + i, rowB = j*X     + i+1;
       PetscInt rowC = (j+1)*X + i, rowD = (j+1)*X + i+1;
 
@@ -116,7 +129,7 @@ int main(int argc, char **argv)
   Mat            A;
   Vec            x, b;
   PetscViewer    viewer;
-  PetscInt       Nl, Ne, N;
+  PetscInt       Nl, Ne;
   PetscInt      *elemRows;
   PetscScalar   *elemMats;
   PetscBool      doSolve = PETSC_FALSE;
@@ -124,17 +137,25 @@ int main(int argc, char **argv)
 
   ierr = PetscInitialize(&argc, &argv, 0, help);CHKERRQ(ierr);
   ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE, DMDA_STENCIL_BOX, -3, -3, PETSC_DECIDE, PETSC_DECIDE, 1, 1, PETSC_NULL, PETSC_NULL, &dm);CHKERRQ(ierr);
-  ierr = IntegrateCells(dm, &Ne, &Nl, &N, &elemRows, &elemMats);CHKERRQ(ierr);
+  ierr = IntegrateCells(dm, &Ne, &Nl, &elemRows, &elemMats);CHKERRQ(ierr);
   /* Construct matrix using GPU */
-  ierr = MatCreate(PETSC_COMM_WORLD, &A);CHKERRQ(ierr);
-  ierr = MatSetSizes(A, PETSC_DECIDE, PETSC_DECIDE, N, N);CHKERRQ(ierr);
-  ierr = MatSetType(A, MATSEQAIJCUSP);CHKERRQ(ierr);
+  ierr = DMGetMatrix(dm, MATAIJ, &A);CHKERRQ(ierr);
+  ierr = MatSetType(A, MATAIJCUSP);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(A, 0, PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetValuesBatch(A, Ne, Nl, N, elemRows, elemMats);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(A, 0, PETSC_NULL, 0, PETSC_NULL);CHKERRQ(ierr);
+
+  PetscMPIInt numProcs;
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD, &numProcs);CHKERRQ(ierr);
+  if (numProcs == 1) {
+    ierr = MatSeqAIJSetValuesBatch(A, Ne, Nl, elemRows, elemMats);CHKERRQ(ierr);
+  } else {
+    ierr = MatMPIAIJSetValuesBatch(A, Ne, Nl, elemRows, elemMats);CHKERRQ(ierr);
+  }
+
   ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD, PETSC_NULL, &viewer);CHKERRQ(ierr);
-  if (N > 500) {ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);}
+  if (Ne > 500) {ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);}
   ierr = MatView(A, viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   /* Construct matrix using CPU */
@@ -143,7 +164,7 @@ int main(int argc, char **argv)
   ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD, PETSC_NULL, &viewer);CHKERRQ(ierr);
-  if (N > 500) {ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);}
+  if (Ne > 500) {ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);}
   ierr = MatView(A, viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   /* Solve simple system with random rhs */

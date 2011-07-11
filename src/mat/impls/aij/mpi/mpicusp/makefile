@@ -3,10 +3,10 @@ ALL: lib
 
 CFLAGS   = 
 FFLAGS   =
-SOURCECU = mpiaijcusp.cu
+SOURCECU = mpiaijcusp.cu mpiaijAssemble.cu
 SOURCEF	 =
 SOURCEH	 = 
-OBJSC	 = mpiaijcusp.o
+OBJSC	 = mpiaijcusp.o  mpiaijAssemble.o
 OBJSF	 =
 LIBBASE	 = libpetscmat
 DIRS	 =
