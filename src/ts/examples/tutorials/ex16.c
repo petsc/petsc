@@ -27,21 +27,27 @@ Input parameters include:\n\
 
 #include <petscts.h>
 
+typedef struct _n_User *User;
+struct _n_User {
+  PetscReal mu;
+  PetscBool imex;
+};
+
 /*
 *  User-defined routines
 */
-
 #undef __FUNCT__
 #define __FUNCT__ "RHSFunction"
 static PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ctx)
 {
   PetscErrorCode ierr;
+  User user = (User)ctx;
   PetscScalar *x,*f;
 
   PetscFunctionBegin;
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
-  f[0] = x[1];
+  f[0] = (user->imex ? x[1] : 0);
   f[1] = 0.0;
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
@@ -53,15 +59,15 @@ static PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ctx)
 static PetscErrorCode IFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ctx)
 {
   PetscErrorCode ierr;
-  PetscReal mu = *(PetscReal *)ctx;
+  User user = (User)ctx;
   PetscScalar *x,*xdot,*f;
 
   PetscFunctionBegin;
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
   ierr = VecGetArray(Xdot,&xdot);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
-  f[0] = xdot[0];
-  f[1] = xdot[1] - mu*(1 - x[0]*x[0])*x[1] + x[0];
+  f[0] = xdot[0] + (user->imex ? 0 : x[1]);
+  f[1] = xdot[1] - user->mu*(1. - x[0]*x[0])*x[1] + x[0];
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(Xdot,&xdot);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
@@ -73,14 +79,15 @@ static PetscErrorCode IFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ctx
 static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat *A,Mat *B,MatStructure *flag,void *ctx)
 {
   PetscErrorCode ierr;
-  PetscReal mu = *(PetscReal *)ctx;
+  User user = (User)ctx;
+  PetscReal mu = user->mu;
   PetscInt rowcol[] = {0,1};
   PetscScalar *x,J[2][2];
 
   PetscFunctionBegin;
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
-  J[0][0] = a;                J[0][1] = 0;
-  J[1][0] = 2*mu*x[0]*x[1]+1; J[1][1] = a - mu*(1 - x[0]*x[0]);
+  J[0][0] = a;                    J[0][1] = (user->imex ? 0 : 1.);
+  J[1][0] = 2.*mu*x[0]*x[1]+1.;   J[1][1] = a - mu*(1. - x[0]*x[0]);
   ierr = MatSetValues(*B,2,rowcol,2,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
 
@@ -109,8 +116,22 @@ static PetscErrorCode RegisterMyARK2(void)
       At[3][3] = {{0,0,0},
                   {0.12132034355964257320,0.29289321881345247560,0},
                   {0.20710678118654752440,0.50000000000000000000,0.29289321881345247560}};
-      ierr = TSARKIMEXRegister("myark2",2,3,&At[0][0],PETSC_NULL,PETSC_NULL,&A[0][0],PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+      ierr = TSARKIMEXRegister("myark2",2,3,&At[0][0],PETSC_NULL,PETSC_NULL,&A[0][0],PETSC_NULL,PETSC_NULL,0,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "Monitor"
+static PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal t,Vec X,void *ctx)
+{
+  PetscErrorCode ierr;
+  const PetscScalar *x;
+
+  PetscFunctionBegin;
+  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"%D TS %G  X % 12.6e % 12.6e\n",step,t,(double)PetscRealPart(x[0]),(double)PetscRealPart(x[1]));CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -122,8 +143,10 @@ int main(int argc,char **argv)
   Vec             x;            /* solution, residual vectors */
   Mat             A;            /* Jacobian matrix */
   PetscInt        steps;
-  PetscReal       mu=1000,ftime=0.5;
+  PetscReal       ftime=0.5;
+  PetscBool       monitor = PETSC_FALSE;
   PetscScalar     *x_ptr;
+  struct _n_User  user;
   PetscErrorCode  ierr;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -135,7 +158,11 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Set runtime options
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-mu",&mu,PETSC_NULL);CHKERRQ(ierr);
+  user.mu = 1000;
+  user.imex = PETSC_TRUE;
+  ierr = PetscOptionsGetReal(PETSC_NULL,"-mu",&user.mu,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-imex",&user.imex,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-monitor",&monitor,PETSC_NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Create necessary matrix and vectors, solve same ODE on every process
@@ -151,10 +178,13 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSBEULER);CHKERRQ(ierr); /* General Linear method, TSTHETA can also solve DAE */
-  ierr = TSSetRHSFunction(ts,PETSC_NULL,RHSFunction,&mu);CHKERRQ(ierr);
-  ierr = TSSetIFunction(ts,PETSC_NULL,IFunction,&mu);CHKERRQ(ierr);
-  ierr = TSSetIJacobian(ts,A,A,IJacobian,&mu);CHKERRQ(ierr);
+  ierr = TSSetRHSFunction(ts,PETSC_NULL,RHSFunction,&user);CHKERRQ(ierr);
+  ierr = TSSetIFunction(ts,PETSC_NULL,IFunction,&user);CHKERRQ(ierr);
+  ierr = TSSetIJacobian(ts,A,A,IJacobian,&user);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,PETSC_DEFAULT,ftime);CHKERRQ(ierr);
+  if (monitor) {
+    ierr = TSMonitorSet(ts,Monitor,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions
@@ -173,10 +203,9 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = TSSolve(ts,x);CHKERRQ(ierr);
+  ierr = TSSolve(ts,x,&ftime);CHKERRQ(ierr);
   ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
-  ierr = TSGetTime(ts,&ftime);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"mu %G, steps %D, ftime %G\n",mu,steps,ftime);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"mu %G, steps %D, ftime %G\n",user.mu,steps,ftime);CHKERRQ(ierr);
   ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

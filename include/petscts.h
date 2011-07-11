@@ -84,11 +84,12 @@ extern PetscErrorCode   TSGetSolution(TS,Vec*);
 
 extern PetscErrorCode   TSSetDuration(TS,PetscInt,PetscReal);
 extern PetscErrorCode   TSGetDuration(TS,PetscInt*,PetscReal*);
+extern PetscErrorCode   TSSetExactFinalTime(TS,PetscBool);
 
 extern PetscErrorCode   TSMonitorDefault(TS,PetscInt,PetscReal,Vec,void*);
 extern PetscErrorCode   TSMonitorSolution(TS,PetscInt,PetscReal,Vec,void*);
 extern PetscErrorCode   TSStep(TS);
-extern PetscErrorCode   TSSolve(TS,Vec);
+extern PetscErrorCode   TSSolve(TS,Vec,PetscReal*);
 extern PetscErrorCode   TSGetConvergedReason(TS,TSConvergedReason*);
 
 extern PetscErrorCode   TSSetInitialTimeStep(TS,PetscReal,PetscReal);
@@ -123,6 +124,8 @@ extern PetscErrorCode   TSSetPreStep(TS, PetscErrorCode (*)(TS));
 extern PetscErrorCode   TSSetPostStep(TS, PetscErrorCode (*)(TS));
 extern PetscErrorCode   TSPreStep(TS);
 extern PetscErrorCode   TSPostStep(TS);
+extern PetscErrorCode   TSSetRetainStages(TS,PetscBool);
+extern PetscErrorCode   TSInterpolate(TS,PetscReal,Vec);
 
 extern PetscErrorCode   TSPseudoSetTimeStep(TS,PetscErrorCode(*)(TS,PetscReal*,void*),void*);
 extern PetscErrorCode   TSPseudoDefaultTimeStep(TS,PetscReal*,void*);
@@ -430,7 +433,7 @@ extern PetscErrorCode  TSGLSetAcceptType(TS,const TSGLAcceptType);
 #define TSARKIMEX5  "5"
 extern PetscErrorCode TSARKIMEXGetType(TS ts,const TSARKIMEXType*);
 extern PetscErrorCode TSARKIMEXSetType(TS ts,const TSARKIMEXType);
-extern PetscErrorCode TSARKIMEXRegister(const TSARKIMEXType,PetscInt,PetscInt,const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[]);
+extern PetscErrorCode TSARKIMEXRegister(const TSARKIMEXType,PetscInt,PetscInt,const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],PetscInt,const PetscReal[],const PetscReal[]);
 extern PetscErrorCode TSARKIMEXFinalizePackage(void);
 extern PetscErrorCode TSARKIMEXInitializePackage(const char path[]);
 extern PetscErrorCode TSARKIMEXRegisterDestroy(void);
@@ -453,7 +456,6 @@ extern PetscErrorCode   TSSundialsGetIterations(TS,PetscInt *,PetscInt *);
 extern PetscErrorCode   TSSundialsSetGramSchmidtType(TS,TSSundialsGramSchmidtType);
 extern PetscErrorCode   TSSundialsSetGMRESRestart(TS,PetscInt);
 extern PetscErrorCode   TSSundialsSetLinearTolerance(TS,PetscReal);
-extern PetscErrorCode   TSSundialsSetExactFinalTime(TS,PetscBool );
 extern PetscErrorCode   TSSundialsMonitorInternalSteps(TS,PetscBool );
 extern PetscErrorCode   TSSundialsGetParameters(TS,PetscInt *,long*[],double*[]);
 #endif
@@ -462,6 +464,7 @@ extern PetscErrorCode   TSRKSetTolerance(TS,PetscReal);
 
 extern PetscErrorCode  TSThetaSetTheta(TS,PetscReal);
 extern PetscErrorCode  TSThetaGetTheta(TS,PetscReal*);
+extern PetscErrorCode  TSThetaSetEndpoint(TS,PetscBool);
 
 extern PetscErrorCode  TSAlphaSetAdapt(TS,PetscErrorCode(*)(TS,PetscReal,Vec,Vec,PetscReal*,PetscBool*,void*),void*);
 extern PetscErrorCode  TSAlphaAdaptDefault(TS,PetscReal,Vec,Vec,PetscReal*,PetscBool*,void*);

@@ -209,7 +209,7 @@ int main(int argc,char **argv)
 
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
-  ierr = TSSolve(ts,appctx.global);CHKERRQ(ierr);
+  ierr = TSSolve(ts,appctx.global,&ftime);CHKERRQ(ierr);
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-testinfo",&flg);CHKERRQ(ierr);
   if (flg) {

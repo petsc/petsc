@@ -73,9 +73,8 @@ int main(int argc,char **argv)
   ierr = TSSetDuration(ts,time_steps,1);CHKERRQ(ierr);
   ierr = TSSetSolution(ts,global);CHKERRQ(ierr);
 
-  ierr = TSSolve(ts,global);CHKERRQ(ierr);
+  ierr = TSSolve(ts,global,&ftime);CHKERRQ(ierr);
   ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
-  ierr = TSGetTime(ts,&ftime);CHKERRQ(ierr);
 
 
   /* free the memories */

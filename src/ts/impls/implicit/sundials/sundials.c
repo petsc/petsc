@@ -251,7 +251,6 @@ PetscErrorCode TSDestroy_Sundials(TS ts)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSSundialsSetMaxTimeStep_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSSundialsGetPC_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSSundialsGetIterations_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSSundialsSetExactFinalTime_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSSundialsMonitorInternalSteps_C","",PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -283,8 +282,8 @@ PetscErrorCode TSSetUp_Sundials(TS ts)
   ierr = VecGetArray(ts->vec_sol,&parray);CHKERRQ(ierr);
   y_data = (PetscScalar *) N_VGetArrayPointer(cvode->y);
   for (i = 0; i < locsize; i++) y_data[i] = parray[i];
-  /*ierr = PetscMemcpy(y_data,parray,locsize*sizeof(PETSC_SCALAR)); CHKERRQ(ierr);*/
   ierr = VecRestoreArray(ts->vec_sol,PETSC_NULL);CHKERRQ(ierr);
+
   ierr = VecDuplicate(ts->vec_sol,&cvode->update);CHKERRQ(ierr);
   ierr = VecDuplicate(ts->vec_sol,&cvode->ydot);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(ts,cvode->update);CHKERRQ(ierr);
@@ -399,7 +398,6 @@ PetscErrorCode TSSetFromOptions_Sundials(TS ts)
     ierr = PetscOptionsReal("-ts_sundials_maxdt","Maximum step size","TSSundialsSetMaxTimeStep",cvode->maxdt,&cvode->maxdt,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-ts_sundials_linear_tolerance","Convergence tolerance for linear solve","TSSundialsSetLinearTolerance",cvode->linear_tol,&cvode->linear_tol,&flag);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-ts_sundials_gmres_restart","Number of GMRES orthogonalization directions","TSSundialsSetGMRESRestart",cvode->restart,&cvode->restart,&flag);CHKERRQ(ierr);
-    ierr = PetscOptionsBool("-ts_sundials_exact_final_time","Interpolate output to stop exactly at the final time","TSSundialsSetExactFinalTime",cvode->exact_final_time,&cvode->exact_final_time,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-ts_sundials_monitor_steps","Monitor SUNDIALS internel steps","TSSundialsMonitorInternalSteps",cvode->monitorstep,&cvode->monitorstep,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -418,6 +416,7 @@ PetscErrorCode TSView_Sundials(TS ts,PetscViewer viewer)
   long int       nsteps,its,nfevals,nlinsetups,nfails,itmp;
   PetscInt       qlast,qcur;
   PetscReal      hinused,hlast,hcur,tcur,tolsfac;
+  PC             pc;
 
   PetscFunctionBegin;
   if (cvode->cvode_type == SUNDIALS_ADAMS) {type = atype;}
@@ -458,10 +457,14 @@ PetscErrorCode TSView_Sundials(TS ts,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"Sundials no. of linear iterations %D\n",its);CHKERRQ(ierr);
     ierr = CVSpilsGetNumConvFails(cvode->mem,&itmp);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"Sundials no. of linear convergence failures %D\n",itmp);CHKERRQ(ierr);
+
+    ierr = TSSundialsGetPC(ts,&pc); CHKERRQ(ierr);
+    ierr = PCView(pc,viewer);CHKERRQ(ierr);
     ierr = CVSpilsGetNumPrecEvals(cvode->mem,&itmp);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"Sundials no. of preconditioner evaluations %D\n",itmp);CHKERRQ(ierr);
     ierr = CVSpilsGetNumPrecSolves(cvode->mem,&itmp);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"Sundials no. of preconditioner solves %D\n",itmp);CHKERRQ(ierr);
+
     ierr = CVSpilsGetNumJtimesEvals(cvode->mem,&itmp);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"Sundials no. of Jacobian-vector product evaluations %D\n",itmp);CHKERRQ(ierr);
     ierr = CVSpilsGetNumRhsEvals(cvode->mem,&itmp);CHKERRQ(ierr);
@@ -597,19 +600,6 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
-#define __FUNCT__ "TSSundialsSetExactFinalTime_Sundials"
-PetscErrorCode  TSSundialsSetExactFinalTime_Sundials(TS ts,PetscBool  s)
-{
-  TS_Sundials *cvode = (TS_Sundials*)ts->data;
-
-  PetscFunctionBegin;
-  cvode->exact_final_time = s;
-  PetscFunctionReturn(0);
-}
-EXTERN_C_END
-
-EXTERN_C_BEGIN
-#undef __FUNCT__
 #define __FUNCT__ "TSSundialsMonitorInternalSteps_Sundials"
 PetscErrorCode  TSSundialsMonitorInternalSteps_Sundials(TS ts,PetscBool  s)
 {
@@ -646,7 +636,7 @@ EXTERN_C_END
 .seealso: TSSundialsSetType(), TSSundialsSetGMRESRestart(),
           TSSundialsSetLinearTolerance(), TSSundialsSetGramSchmidtType(), TSSundialsSetTolerance(),
           TSSundialsGetIterations(), TSSundialsSetType(), TSSundialsSetGMRESRestart(),
-          TSSundialsSetLinearTolerance(), TSSundialsGetPC(), TSSundialsSetExactFinalTime()
+          TSSundialsSetLinearTolerance(), TSSundialsGetPC(), TSSetExactFinalTime()
 
 @*/
 PetscErrorCode  TSSundialsGetIterations(TS ts,int *nonlin,int *lin)
@@ -677,7 +667,7 @@ PetscErrorCode  TSSundialsGetIterations(TS ts,int *nonlin,int *lin)
           TSSundialsSetLinearTolerance(), TSSundialsSetGramSchmidtType(), TSSundialsSetTolerance(),
           TSSundialsGetIterations(), TSSundialsSetType(), TSSundialsSetGMRESRestart(),
           TSSundialsSetLinearTolerance(), TSSundialsSetTolerance(), TSSundialsGetPC(),
-          TSSundialsSetExactFinalTime()
+          TSSetExactFinalTime()
 @*/
 PetscErrorCode  TSSundialsSetType(TS ts,TSSundialsLmmType type)
 {
@@ -709,7 +699,7 @@ PetscErrorCode  TSSundialsSetType(TS ts,TSSundialsLmmType type)
           TSSundialsSetLinearTolerance(), TSSundialsSetGramSchmidtType(), TSSundialsSetTolerance(),
           TSSundialsGetIterations(), TSSundialsSetType(), TSSundialsSetGMRESRestart(),
           TSSundialsSetLinearTolerance(), TSSundialsSetTolerance(), TSSundialsGetPC(),
-          TSSundialsSetExactFinalTime()
+          TSSetExactFinalTime()
 
 @*/
 PetscErrorCode  TSSundialsSetGMRESRestart(TS ts,int restart)
@@ -743,7 +733,7 @@ PetscErrorCode  TSSundialsSetGMRESRestart(TS ts,int restart)
           TSSundialsSetGramSchmidtType(), TSSundialsSetTolerance(),
           TSSundialsGetIterations(), TSSundialsSetType(), TSSundialsSetGMRESRestart(),
           TSSundialsSetLinearTolerance(), TSSundialsSetTolerance(), TSSundialsGetPC(),
-          TSSundialsSetExactFinalTime()
+          TSSetExactFinalTime()
 
 @*/
 PetscErrorCode  TSSundialsSetLinearTolerance(TS ts,double tol)
@@ -776,7 +766,7 @@ PetscErrorCode  TSSundialsSetLinearTolerance(TS ts,double tol)
           TSSundialsSetLinearTolerance(),  TSSundialsSetTolerance(),
           TSSundialsGetIterations(), TSSundialsSetType(), TSSundialsSetGMRESRestart(),
           TSSundialsSetLinearTolerance(), TSSundialsSetTolerance(), TSSundialsGetPC(),
-          TSSundialsSetExactFinalTime()
+          TSSetExactFinalTime()
 
 @*/
 PetscErrorCode  TSSundialsSetGramSchmidtType(TS ts,TSSundialsGramSchmidtType type)
@@ -812,7 +802,7 @@ PetscErrorCode  TSSundialsSetGramSchmidtType(TS ts,TSSundialsGramSchmidtType typ
           TSSundialsSetLinearTolerance(), TSSundialsSetGramSchmidtType(),
           TSSundialsGetIterations(), TSSundialsSetType(), TSSundialsSetGMRESRestart(),
           TSSundialsSetLinearTolerance(), TSSundialsSetTolerance(), TSSundialsGetPC(),
-          TSSundialsSetExactFinalTime()
+          TSSetExactFinalTime()
 
 @*/
 PetscErrorCode  TSSundialsSetTolerance(TS ts,double aabs,double rel)
@@ -848,33 +838,6 @@ PetscErrorCode  TSSundialsGetPC(TS ts,PC *pc)
 
   PetscFunctionBegin;
   ierr = PetscUseMethod(ts,"TSSundialsGetPC_C",(TS,PC *),(ts,pc));CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "TSSundialsSetExactFinalTime"
-/*@
-   TSSundialsSetExactFinalTime - Determines if Sundials interpolates solution to the
-      exact final time requested by the user or just returns it at the final time
-      it computed. (Defaults to true).
-
-   Input Parameter:
-+   ts - the time-step context
--   ft - PETSC_TRUE if interpolates, else PETSC_FALSE
-
-   Level: beginner
-
-.seealso:TSSundialsGetIterations(), TSSundialsSetType(), TSSundialsSetGMRESRestart(),
-          TSSundialsSetLinearTolerance(), TSSundialsSetGramSchmidtType(), TSSundialsSetTolerance(),
-          TSSundialsGetIterations(), TSSundialsSetType(), TSSundialsSetGMRESRestart(),
-          TSSundialsSetLinearTolerance(), TSSundialsSetTolerance(), TSSundialsGetPC()
-@*/
-PetscErrorCode  TSSundialsSetExactFinalTime(TS ts,PetscBool  ft)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscTryMethod(ts,"TSSundialsSetExactFinalTime_C",(TS,PetscBool),(ts,ft));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -961,7 +924,6 @@ PetscErrorCode  TSSundialsMonitorInternalSteps(TS ts,PetscBool  ft)
 .    -ts_sundials_rtol <tol> - Relative tolerance for convergence
 .    -ts_sundials_linear_tolerance <tol>
 .    -ts_sundials_gmres_restart <restart> - Number of GMRES orthogonalization directions
-.    -ts_sundials_exact_final_time - Interpolate output to stop exactly at the final time
 -    -ts_sundials_monitor_steps - Monitor SUNDIALS internel steps
 
 
@@ -971,7 +933,7 @@ PetscErrorCode  TSSundialsMonitorInternalSteps(TS ts,PetscBool  ft)
     Level: beginner
 
 .seealso:  TSCreate(), TS, TSSetType(), TSSundialsSetType(), TSSundialsSetGMRESRestart(), TSSundialsSetLinearTolerance(),
-           TSSundialsSetGramSchmidtType(), TSSundialsSetTolerance(), TSSundialsGetPC(), TSSundialsGetIterations(), TSSundialsSetExactFinalTime()
+           TSSundialsSetGramSchmidtType(), TSSundialsSetTolerance(), TSSundialsGetPC(), TSSundialsGetIterations(), TSSetExactFinalTime()
 
 M*/
 EXTERN_C_BEGIN
@@ -979,8 +941,9 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "TSCreate_Sundials"
 PetscErrorCode  TSCreate_Sundials(TS ts)
 {
-  TS_Sundials *cvode;
+  TS_Sundials    *cvode;
   PetscErrorCode ierr;
+  PC             pc;
 
   PetscFunctionBegin;
   ts->ops->reset          = TSReset_Sundials;
@@ -997,8 +960,7 @@ PetscErrorCode  TSCreate_Sundials(TS ts)
   cvode->restart    = 5;
   cvode->linear_tol = .05;
 
-  cvode->exact_final_time = PETSC_TRUE;
-  cvode->monitorstep      = PETSC_FALSE;
+  cvode->monitorstep   = PETSC_FALSE;
 
   ierr = MPI_Comm_dup(((PetscObject)ts)->comm,&(cvode->comm_sundials));CHKERRQ(ierr);
 
@@ -1008,6 +970,12 @@ PetscErrorCode  TSCreate_Sundials(TS ts)
   /* set tolerance for Sundials */
   cvode->reltol = 1e-6;
   cvode->abstol = 1e-6;
+
+  /* set PCNONE as default pctype */
+  ierr = TSSundialsGetPC_Sundials(ts,&pc);CHKERRQ(ierr);
+  ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
+
+  if (ts->exact_final_time == PETSC_DECIDE) ts->exact_final_time = PETSC_TRUE;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSSundialsSetType_C","TSSundialsSetType_Sundials",
                     TSSundialsSetType_Sundials);CHKERRQ(ierr);
@@ -1035,9 +1003,6 @@ PetscErrorCode  TSCreate_Sundials(TS ts)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSSundialsGetIterations_C",
                     "TSSundialsGetIterations_Sundials",
                      TSSundialsGetIterations_Sundials);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSSundialsSetExactFinalTime_C",
-                    "TSSundialsSetExactFinalTime_Sundials",
-                     TSSundialsSetExactFinalTime_Sundials);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSSundialsMonitorInternalSteps_C",
                     "TSSundialsMonitorInternalSteps_Sundials",
                      TSSundialsMonitorInternalSteps_Sundials);CHKERRQ(ierr);

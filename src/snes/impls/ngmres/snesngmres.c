@@ -87,7 +87,7 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
 {
   SNES_NGMRES   *ngmres = (SNES_NGMRES *) snes->data;
   SNES           pc;
-  Vec            X, Y, F, r, rOld, *V = ngmres->v, *W = ngmres->w;
+  Vec            X, F, r, rOld, *V = ngmres->v, *W = ngmres->w;
   PetscScalar    wdot;
   PetscReal      fnorm;
   PetscInt       i, j, k;
@@ -96,7 +96,6 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
   PetscFunctionBegin;
   snes->reason  = SNES_CONVERGED_ITERATING;
   X             = snes->vec_sol;
-  Y             = snes->vec_sol_update;
   F             = snes->vec_func;
   rOld          = snes->work[0];
 

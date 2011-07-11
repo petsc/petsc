@@ -1555,6 +1555,24 @@ runex143_2:
 	   ${DIFF} output/ex143.out ex143.tmp || echo "Possible problem with ex143_2, diffs above"; \
 	   ${RM} -f ex143.tmp
 
+runex144:
+	-@${MPIEXEC} -n 1 ./ex144  > ex144.tmp 2>&1; \
+	   ${DIFF} output/ex144.out ex144.tmp || echo "Possible problem with ex144, diffs above"; \
+	   ${RM} -f ex144.tmp
+runex144_2:
+	-@${MPIEXEC} -n 3 ./ex144  > ex144.tmp 2>&1; \
+	   ${DIFF} output/ex144.out ex144.tmp || echo "Possible problem with ex144_2, diffs above"; \
+	   ${RM} -f ex144.tmp
+
+runex148:
+	-@${MPIEXEC} -n 1 ./ex148  > ex148.tmp 2>&1; \
+	   ${DIFF} output/ex148.out ex148.tmp || echo "Possible problem with ex148, diffs above"; \
+	   ${RM} -f ex148.tmp
+runex148_2:
+	-@${MPIEXEC} -n 3 ./ex148  > ex148.tmp 2>&1; \
+	   ${DIFF} output/ex148.out ex148.tmp || echo "Possible problem with ex148_2, diffs above"; \
+	   ${RM} -f ex148.tmp
+
 TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex4.PETSc runex4 ex4.rm  ex5.PETSc runex5 runex5_2 ex5.rm \
                                  ex6.PETSc runex6 ex6.rm ex8.PETSc runex8 ex8.rm ex9.PETSc runex9 ex9.rm ex10.PETSc \
                                  runex10 ex10.rm ex11.PETSc runex11 runex11_2 runex11_3 runex11_4 ex11.rm ex14.PETSc \
@@ -1603,9 +1621,9 @@ TESTEXAMPLES_13		       = ex58f.PETSc ex58f.rm ex70.PETSc ex70.rm ex72.PETSc ex7
 TESTEXAMPLES_PARMETIS	       = ex73.PETSc ex73.rm
 TESTEXAMPLES_PLAPACK 	       = ex103.PETSc runex103_2 ex103.rm ex107.PETSc runex107 runex107_2 ex107.rm \
                                  ex115.PETSc ex115.rm ex123.PETSc ex123.rm
-TESTEXAMPLES_FFTW              = ex142.PETSc ex142.rm
+TESTEXAMPLES_FFTW              = ex142.PETSc ex142.rm ex144.PETSc runex144 runex144_2 ex144.rm ex146.PETSc ex146.rm
 TESTEXAMPLES_FFTW_COMPLEX      = ex112.PETSc runex112 runex112_2 runex112_3 runex112_4 ex112.rm ex121.PETSc runex121 ex121.rm \
-                                 ex143.PETSc runex143 runex143_2 ex143.rm
+                                 ex143.PETSc runex143 runex143_2 ex143.rm ex145.PETSc ex145.rm
 TESTEXAMPLES_C_COMPLEX	       = ex127.PETSc runex127 runex127_2 ex127.rm 
 
 include ${PETSC_DIR}/conf/test

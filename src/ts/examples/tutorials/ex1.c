@@ -162,13 +162,12 @@ int main(int argc,char **argv)
   /*
       Perform the solve. This is where the timestepping takes place.
   */
-  ierr = TSSolve(ts,x);CHKERRQ(ierr);
+  ierr = TSSolve(ts,x,&ftime);CHKERRQ(ierr);
 
   /*
-      Get the number of steps and the final time
+      Get the number of steps
   */
   ierr = TSGetTimeStepNumber(ts,&its);CHKERRQ(ierr);
-  ierr = TSGetTime(ts,&ftime);CHKERRQ(ierr);
 
   printf("Number of pseudo timesteps = %d final time %4.2e\n",(int)its,ftime);
 

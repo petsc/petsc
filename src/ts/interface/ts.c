@@ -80,6 +80,8 @@ PetscErrorCode  TSSetFromOptions(TS ts)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID,1);
   ierr = PetscOptionsBegin(((PetscObject)ts)->comm, ((PetscObject)ts)->prefix, "Time step options", "TS");CHKERRQ(ierr);
+    /* Handle TS type options */
+    ierr = TSSetTypeFromOptions(ts);CHKERRQ(ierr);
 
     /* Handle generic TS options */
     ierr = PetscOptionsInt("-ts_max_steps","Maximum number of time steps","TSSetDuration",ts->max_steps,&ts->max_steps,PETSC_NULL);CHKERRQ(ierr);
@@ -87,6 +89,9 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     ierr = PetscOptionsReal("-ts_init_time","Initial time","TSSetInitialTime", ts->ptime, &ts->ptime, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-ts_dt","Initial time step","TSSetInitialTimeStep",ts->initial_time_step,&dt,&opt);CHKERRQ(ierr);
     if (opt) {ierr = TSSetInitialTimeStep(ts,ts->ptime,dt);CHKERRQ(ierr);}
+    opt = ts->exact_final_time == PETSC_DECIDE ? PETSC_FALSE : (PetscBool)ts->exact_final_time;
+    ierr = PetscOptionsBool("-ts_exact_final_time","Interpolate output to stop exactly at the final time","TSSetExactFinalTime",opt,&opt,&flg);CHKERRQ(ierr);
+    if (flg) {ierr = TSSetExactFinalTime(ts,flg);CHKERRQ(ierr);}
     ierr = PetscOptionsInt("-ts_max_snes_failures","Maximum number of nonlinear solve failures","",ts->max_snes_failures,&ts->max_snes_failures,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-ts_max_reject","Maximum number of step rejections","",ts->max_reject,&ts->max_reject,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-ts_error_if_step_failed","Error if no step succeeds","",ts->errorifstepfailed,&ts->errorifstepfailed,PETSC_NULL);CHKERRQ(ierr);
@@ -110,9 +115,6 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     if (opt) {
       ierr = TSMonitorSet(ts,TSMonitorSolution,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     }
-
-    /* Handle TS type options */
-    ierr = TSSetTypeFromOptions(ts);CHKERRQ(ierr);
 
     /* Handle specific TS options */
     if (ts->ops->setfromoptions) {
@@ -254,11 +256,13 @@ PetscErrorCode TSComputeRHSFunction(TS ts,PetscReal t,Vec x,Vec y)
 #define __FUNCT__ "TSGetRHSVec_Private"
 static PetscErrorCode TSGetRHSVec_Private(TS ts,Vec *Frhs)
 {
+  Vec            F;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = TSGetIFunction(ts,&F,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   if (!ts->Frhs) {
-    ierr = VecDuplicate(ts->vec_sol,&ts->Frhs);CHKERRQ(ierr);
+    ierr = VecDuplicate(F,&ts->Frhs);CHKERRQ(ierr);
   }
   *Frhs = ts->Frhs;
   PetscFunctionReturn(0);
@@ -268,8 +272,8 @@ static PetscErrorCode TSGetRHSVec_Private(TS ts,Vec *Frhs)
 #define __FUNCT__ "TSGetRHSMats_Private"
 static PetscErrorCode TSGetRHSMats_Private(TS ts,Mat *Arhs,Mat *Brhs)
 {
+  Mat            A,B;
   PetscErrorCode ierr;
-  Mat A,B;
 
   PetscFunctionBegin;
   ierr = TSGetIJacobian(ts,&A,&B,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
@@ -337,16 +341,18 @@ PetscErrorCode TSComputeIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec Y,PetscBo
     PetscStackPop;
   }
   if (imex) {
-    if (!ts->userops->ifunction) {ierr = VecCopy(Xdot,Y);CHKERRQ(ierr);}
-  } else {
     if (!ts->userops->ifunction) {
-      ierr = TSComputeRHSFunction(ts,t,X,Y);CHKERRQ(ierr);
-      ierr = VecAYPX(Y,-1,Xdot);CHKERRQ(ierr);
-    } else {
+      ierr = VecCopy(Xdot,Y);CHKERRQ(ierr);
+    }
+  } else if (ts->userops->rhsfunction) {
+    if (ts->userops->ifunction) {
       Vec Frhs;
       ierr = TSGetRHSVec_Private(ts,&Frhs);CHKERRQ(ierr);
       ierr = TSComputeRHSFunction(ts,t,X,Frhs);CHKERRQ(ierr);
       ierr = VecAXPY(Y,-1,Frhs);CHKERRQ(ierr);
+    } else {
+      ierr = TSComputeRHSFunction(ts,t,X,Y);CHKERRQ(ierr);
+      ierr = VecAYPX(Y,-1,Xdot);CHKERRQ(ierr);
     }
   }
   ierr = PetscLogEventEnd(TS_FunctionEval,ts,X,Xdot,Y);CHKERRQ(ierr);
@@ -415,6 +421,7 @@ PetscErrorCode TSComputeIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal shi
   *flg = SAME_NONZERO_PATTERN;  /* In case we're solving a linear problem in which case it wouldn't get initialized below. */
   ierr = PetscLogEventBegin(TS_JacobianEval,ts,X,*A,*B);CHKERRQ(ierr);
   if (ts->userops->ijacobian) {
+    *flg = DIFFERENT_NONZERO_PATTERN;
     PetscStackPush("TS user implicit Jacobian");
     ierr = (*ts->userops->ijacobian)(ts,t,X,Xdot,shift,A,B,flg,ts->jacP);CHKERRQ(ierr);
     PetscStackPop;
@@ -425,7 +432,7 @@ PetscErrorCode TSComputeIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal shi
   if (imex) {
     if (!ts->userops->ijacobian) {  /* system was written as Xdot = F(t,X) */
       ierr = MatZeroEntries(*A);CHKERRQ(ierr);
-      ierr = MatShift(*A,1.0);CHKERRQ(ierr);
+      ierr = MatShift(*A,shift);CHKERRQ(ierr);
       if (*A != *B) {
         ierr = MatZeroEntries(*B);CHKERRQ(ierr);
         ierr = MatShift(*B,shift);CHKERRQ(ierr);
@@ -508,7 +515,7 @@ PetscErrorCode  TSSetRHSFunction(TS ts,Vec r,PetscErrorCode (*f)(TS,PetscReal,Ve
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   if (r) PetscValidHeaderSpecific(r,VEC_CLASSID,2);
   if (f)   ts->userops->rhsfunction = f;
-  if (ctx) ts->funP             = ctx;
+  if (ctx) ts->funP                 = ctx;
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
   ierr = SNESSetFunction(snes,r,SNESTSFormFunction,ts);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -573,7 +580,7 @@ PetscErrorCode  TSSetRHSJacobian(TS ts,Mat A,Mat B,TSRHSJacobian f,void *ctx)
   if (B) PetscCheckSameComm(ts,1,B,3);
 
   if (f)   ts->userops->rhsjacobian = f;
-  if (ctx) ts->jacP             = ctx;
+  if (ctx) ts->jacP                 = ctx;
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
   if (!ts->userops->ijacobian) {
     ierr = SNESSetJacobian(snes,A,B,SNESTSFormJacobian,ts);CHKERRQ(ierr);
@@ -985,6 +992,32 @@ PetscErrorCode  TSSetTimeStep(TS ts,PetscReal time_step)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "TSSetExactFinalTime"
+/*@
+   TSSetExactFinalTime - Determines whether to interpolate solution to the
+      exact final time requested by the user or just returns it at the final time
+      it computed.
+
+  Logically Collective on TS
+
+   Input Parameter:
++   ts - the time-step context
+-   ft - PETSC_TRUE if interpolates, else PETSC_FALSE
+
+   Level: beginner
+
+.seealso: TSSetDuration()
+@*/
+PetscErrorCode  TSSetExactFinalTime(TS ts,PetscBool flg)
+{
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  ts->exact_final_time = flg;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "TSGetTimeStep"
 /*@
    TSGetTimeStep - Gets the current timestep size.
@@ -1147,6 +1180,7 @@ PetscErrorCode  TSSetUp(TS ts)
   if (!((PetscObject)ts)->type_name) {
     ierr = TSSetType(ts,TSEULER);CHKERRQ(ierr);
   }
+  if (ts->exact_final_time == PETSC_DECIDE) ts->exact_final_time = PETSC_FALSE;
 
   if (!ts->vec_sol) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TSSetSolution() first");
 
@@ -1378,6 +1412,8 @@ PetscErrorCode  TSGetDuration(TS ts, PetscInt *maxsteps, PetscReal *maxtime)
    Level: intermediate
 
 .keywords: TS, timestep, set, maximum, iterations
+
+.seealso: TSSetExactFinalTime()
 @*/
 PetscErrorCode  TSSetDuration(TS ts,PetscInt maxsteps,PetscReal maxtime)
 {
@@ -1646,6 +1682,72 @@ PetscErrorCode TSMonitorDefault(TS ts,PetscInt step,PetscReal ptime,Vec v,void *
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "TSSetRetainStages"
+/*@
+   TSSetRetainStages - Request that all stages in the upcoming step be stored so that interpolation will be available.
+
+   Logically Collective on TS
+
+   Input Argument:
+.  ts - time stepping context
+
+   Output Argument:
+.  flg - PETSC_TRUE or PETSC_FALSE
+
+   Level: intermediate
+
+.keywords: TS, set
+
+.seealso: TSInterpolate(), TSSetPostStep()
+@*/
+PetscErrorCode TSSetRetainStages(TS ts,PetscBool flg)
+{
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  ts->retain_stages = flg;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "TSInterpolate"
+/*@
+   TSInterpolate - Interpolate the solution computed during the previous step to an arbitrary location in the interval
+
+   Collective on TS
+
+   Input Argument:
++  ts - time stepping context
+-  t - time to interpolate to
+
+   Output Argument:
+.  X - state at given time
+
+   Notes:
+   The user should call TSSetRetainStages() before taking a step in which interpolation will be requested.
+
+   Level: intermediate
+
+   Developer Notes:
+   TSInterpolate() and the storing of previous steps/stages should be generalized to support delay differential equations and continuous adjoints.
+
+.keywords: TS, set
+
+.seealso: TSSetRetainStages(), TSSetPostStep()
+@*/
+PetscErrorCode TSInterpolate(TS ts,PetscReal t,Vec X)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  if (t < ts->ptime - ts->time_step || ts->ptime < t) SETERRQ3(((PetscObject)ts)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Requested time %G not in last time steps [%G,%G]",t,ts->ptime-ts->time_step,ts->ptime);
+  if (!ts->ops->interpolate) SETERRQ1(((PetscObject)ts)->comm,PETSC_ERR_SUP,"%s does not provide interpolation",((PetscObject)ts)->type_name);
+  ierr = (*ts->ops->interpolate)(ts,t,X);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "TSStep"
 /*@
    TSStep - Steps the requested number of timesteps.
@@ -1691,13 +1793,21 @@ PetscErrorCode  TSStep(TS ts)
 +  ts - the TS context obtained from TSCreate()
 -  x - the solution vector, or PETSC_NULL if it was set with TSSetSolution()
 
+   Output Parameter:
+.  ftime - time of the state vector x upon completion
+
    Level: beginner
+
+   Notes:
+   The final time returned by this function may be different from the time of the internally
+   held state accessible by TSGetSolution() and TSGetTime() because the method may have
+   stepped over the final time.
 
 .keywords: TS, timestep, solve
 
 .seealso: TSCreate(), TSSetSolution(), TSStep()
 @*/
-PetscErrorCode  TSSolve(TS ts, Vec x)
+PetscErrorCode TSSolve(TS ts,Vec x,PetscReal *ftime)
 {
   PetscInt       i;
   PetscBool      flg;
@@ -1708,8 +1818,20 @@ PetscErrorCode  TSSolve(TS ts, Vec x)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidHeaderSpecific(x,VEC_CLASSID,2);
-  ierr = TSSetSolution(ts,x); CHKERRQ(ierr);
-  ierr = TSSetUp(ts); CHKERRQ(ierr);
+  if (ts->exact_final_time) {   /* Need ts->vec_sol to be distinct so it is not overwritten when we interpolate at the end */
+    if (!ts->vec_sol || x == ts->vec_sol) {
+      Vec y;
+      ierr = VecDuplicate(x,&y);CHKERRQ(ierr);
+      ierr = VecCopy(x,y);CHKERRQ(ierr);
+      ierr = TSSetSolution(ts,y);CHKERRQ(ierr);
+      ierr = VecDestroy(&y);CHKERRQ(ierr); /* grant ownership */
+    } else {
+      ierr = VecCopy(x,ts->vec_sol);CHKERRQ(ierr);
+    }
+  } else {
+    ierr = TSSetSolution(ts,x);CHKERRQ(ierr);
+  }
+  ierr = TSSetUp(ts);CHKERRQ(ierr);
   /* reset time step and iteration counters */
   ts->steps = 0;
   ts->linear_its = 0;
@@ -1719,6 +1841,8 @@ PetscErrorCode  TSSolve(TS ts, Vec x)
 
   if (ts->ops->solve) {         /* This private interface is transitional and should be removed when all implementations are updated. */
     ierr = (*ts->ops->solve)(ts);CHKERRQ(ierr);
+    ierr = VecCopy(ts->vec_sol,x);CHKERRQ(ierr);
+    if (*ftime) *ftime = ts->ptime;
   } else {
     i = 0;
     if (i >= ts->max_steps) ts->reason = TS_CONVERGED_ITS;
@@ -1736,6 +1860,15 @@ PetscErrorCode  TSSolve(TS ts, Vec x)
       }
       ierr = TSPostStep(ts);CHKERRQ(ierr);
       ierr = TSMonitor(ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
+    }
+    if (ts->exact_final_time && ts->ptime >= ts->max_time) {
+      ierr = TSInterpolate(ts,ts->max_time,x);CHKERRQ(ierr);
+      if (ftime) *ftime = ts->max_time;
+    } else {
+      if (x != ts->vec_sol) {
+        ierr = VecCopy(ts->vec_sol,x);CHKERRQ(ierr);
+      }
+      if (ftime) *ftime = ts->ptime;
     }
   }
   ierr = PetscOptionsGetString(((PetscObject)ts)->prefix,"-ts_view",filename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
@@ -2436,7 +2569,8 @@ PetscErrorCode TSComputeIJacobianConstant(TS ts,PetscReal t,Vec X,Vec Xdot,Petsc
 
    Level: intermediate
 
-   Notes: Can only be called after the call to TSSolve() is complete.
+   Notes:
+   Can only be called after the call to TSSolve() is complete.
 
 .keywords: TS, nonlinear, set, convergence, test
 
