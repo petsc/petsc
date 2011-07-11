@@ -166,7 +166,7 @@ class Package(config.base.Configure):
 
   def getSearchDirectories(self):
     '''By default, do not search any particular directories'''
-    return []
+    return ['/usr/local', '/opt/local']
 
   def getInstallDir(self):
     self.installDir = os.path.join(self.defaultInstallDir, self.arch)
@@ -408,6 +408,41 @@ class Package(config.base.Configure):
       if hasattr(package, 'include') and not incls is None: incls += package.include
     return
 
+  def filesExist(self,files):
+    '''Tests an array of strings if it actually exists (either a library file or
+    include directory'''
+    dirname = ''
+    for f in files:
+
+      # if the string is a link flag, don't check
+      if f.startswith('-l'):
+        continue
+
+      # if the file to be checked is a directory only, i.e. /usr/local/include,
+      # just continue on
+      if os.path.isdir(f):
+        dirname = f
+        continue
+
+      # Get the dirname and basename (just the file part, if it exists)
+      if not dirname:
+        dirname = os.path.dirname(f)
+        # if the directory doesn't exist, return error
+        if not os.path.isdir(dirname):
+          return f
+      basename = os.path.basename(f)
+
+      if basename:
+        file_exists = False
+        fname= os.path.splitext(f)[0]
+        for ext in ['a','so','dylib']:
+          if os.path.isfile(os.path.join(dirname,fname + '.' + ext)):
+            file_exists = True
+            break
+        if not file_exists:
+          return f
+    return None
+
   def configureLibrary(self):
     '''Find an installation and check if it can work with PETSc'''
     self.framework.log.write('==================================================================================\n')
@@ -430,8 +465,16 @@ class Package(config.base.Configure):
         continue
       if lib == '': lib = []
       elif not isinstance(lib, list): lib = [lib]
+      ferr = self.filesExist(lib)
+      if ferr:
+        self.framework.logPrint('File does not exist: %s (while checking "%s" for "%r")' % (ferr,location,lib))
+        continue
       if incl == '': incl = []
       elif not isinstance(incl, list): incl = [incl]
+      ferr = self.filesExist(incl)
+      if ferr:
+        self.framework.logPrint('Directory does not exist: %s (while checking "%s" for "%r")' % (ferr,location,incl))
+        continue
       testedincl = list(incl)
       # weed out duplicates when adding fincs
       for loc in self.compilers.fincs:
@@ -992,8 +1035,16 @@ class GNUPackage(Package):
         continue
       if lib == '': lib = []
       elif not isinstance(lib, list): lib = [lib]
+      ferr = self.filesExist(lib)
+      if ferr:
+        self.framework.logPrint('File does not exist: %s (while checking "%s" for "%r")' % (ferr,location,lib))
+        continue
       if incl == '': incl = []
       elif not isinstance(incl, list): incl = [incl]
+      ferr = self.filesExist(incl)
+      if ferr:
+        self.framework.logPrint('Directory does not exist: %s (while checking "%s" for "%r")' % (ferr,location,incl))
+        continue
       testedincl = list(incl)
       # weed out duplicates when adding fincs
       for loc in self.compilers.fincs:
