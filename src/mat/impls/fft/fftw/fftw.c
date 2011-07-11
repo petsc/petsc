@@ -37,10 +37,6 @@ PetscErrorCode MatMult_SeqFFTW(Mat A,Vec x,Vec y)
   PetscInt       ndim=fft->ndim,*dim=fft->dim;
 
   PetscFunctionBegin;
-//#if !defined(PETSC_USE_COMPLEX)
-
-//  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"not support for real numbers");
-//#endif
   ierr = VecGetArray(x,&x_array);CHKERRQ(ierr);
   ierr = VecGetArray(y,&y_array);CHKERRQ(ierr);
   if (!fftw->p_forward){ /* create a plan, then excute it */
@@ -102,9 +98,6 @@ PetscErrorCode MatMultTranspose_SeqFFTW(Mat A,Vec x,Vec y)
   PetscInt       ndim=fft->ndim,*dim=fft->dim;
 
   PetscFunctionBegin;
-//#if !defined(PETSC_USE_COMPLEX)
-//  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"not support for real numbers");
-//#endif
   ierr = VecGetArray(x,&x_array);CHKERRQ(ierr);
   ierr = VecGetArray(y,&y_array);CHKERRQ(ierr);
   if (!fftw->p_backward){ /* create a plan, then excute it */
@@ -163,23 +156,8 @@ PetscErrorCode MatMult_MPIFFTW(Mat A,Vec x,Vec y)
   PetscScalar    *x_array,*y_array;
   PetscInt       ndim=fft->ndim,*dim=fft->dim;
   MPI_Comm       comm=((PetscObject)A)->comm;
-// PetscInt ctr;
-//  ptrdiff_t      ndim1=(ptrdiff_t) ndim,*pdim;
-//  ndim1=(ptrdiff_t) ndim;
-//  pdim = (ptrdiff_t *)calloc(ndim,sizeof(ptrdiff_t));
-
-//  for(ctr=0;ctr<ndim;ctr++)
-//     {
-//      pdim[ctr] = dim[ctr];
-//     } 
 
   PetscFunctionBegin;
-//#if !defined(PETSC_USE_COMPLEX)
-//  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"not support for real numbers");
-//#endif
-//  pdim = (ptrdiff_t *)calloc(ndim,sizeof(ptrdiff_t));
-//  for (ctr=0; ctr<ndim; ctr++) pdim[ctr] = dim[ctr];
-    
   ierr = VecGetArray(x,&x_array);CHKERRQ(ierr);
   ierr = VecGetArray(y,&y_array);CHKERRQ(ierr);
   if (!fftw->p_forward){ /* create a plan, then excute it */
@@ -187,13 +165,14 @@ PetscErrorCode MatMult_MPIFFTW(Mat A,Vec x,Vec y)
     case 1:
 #if defined(PETSC_USE_COMPLEX)
       fftw->p_forward = fftw_mpi_plan_dft_1d(dim[0],(fftw_complex*)x_array,(fftw_complex*)y_array,comm,FFTW_FORWARD,fftw->p_flag);   
+#else
+      SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"not support for real numbers yet");
 #endif 
       break;
     case 2:
 #if defined(PETSC_USE_COMPLEX)
       fftw->p_forward = fftw_mpi_plan_dft_2d(dim[0],dim[1],(fftw_complex*)x_array,(fftw_complex*)y_array,comm,FFTW_FORWARD,fftw->p_flag);
 #else
-      printf("The code comes here \n");
       fftw->p_forward = fftw_mpi_plan_dft_r2c_2d(dim[0],dim[1],(double *)x_array,(fftw_complex*)y_array,comm,FFTW_ESTIMATE);
 #endif 
       break;
@@ -210,7 +189,6 @@ PetscErrorCode MatMult_MPIFFTW(Mat A,Vec x,Vec y)
 #else
       fftw->p_forward = fftw_mpi_plan_dft_r2c(fftw->ndim_fftw,fftw->dim_fftw,(double *)x_array,(fftw_complex*)y_array,comm,FFTW_ESTIMATE);
 #endif 
- //     fftw->p_forward = fftw_mpi_plan_dft(ndim,dim,(fftw_complex*)x_array,(fftw_complex*)y_array,comm,FFTW_FORWARD,fftw->p_flag);
       break;
     }
     fftw->finarray  = x_array;
@@ -240,24 +218,8 @@ PetscErrorCode MatMultTranspose_MPIFFTW(Mat A,Vec x,Vec y)
   PetscScalar    *x_array,*y_array;
   PetscInt       ndim=fft->ndim,*dim=fft->dim;
   MPI_Comm       comm=((PetscObject)A)->comm;
-//  PetscInt       ctr;
-//  ptrdiff_t      ndim1=(ptrdiff_t)ndim,*pdim;
-//  ndim1=(ptrdiff_t) ndim;
-//  pdim = (ptrdiff_t *)calloc(ndim,sizeof(ptrdiff_t));
 
-//  for(ctr=0;ctr<ndim;ctr++)
-//     {
-//      pdim[ctr] = dim[ctr];
-//     } 
- 
   PetscFunctionBegin;
-//#if !defined(PETSC_USE_COMPLEX)
-//  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"not support for real numbers");
-//#endif
-//  ierr = PetscMalloc(ndim*sizeof(ptrdiff_t), (ptrdiff_t *)&pdim);CHKERRQ(ierr); 
-// should pdim be a member of Mat_FFTW?
-//  for (ctr=0; ctr<ndim; ctr++) pdim[ctr] = dim[ctr];
-    
   ierr = VecGetArray(x,&x_array);CHKERRQ(ierr);
   ierr = VecGetArray(y,&y_array);CHKERRQ(ierr);
   if (!fftw->p_backward){ /* create a plan, then excute it */
@@ -265,6 +227,8 @@ PetscErrorCode MatMultTranspose_MPIFFTW(Mat A,Vec x,Vec y)
     case 1:
 #if defined(PETSC_USE_COMPLEX)
       fftw->p_backward = fftw_mpi_plan_dft_1d(dim[0],(fftw_complex*)x_array,(fftw_complex*)y_array,comm,FFTW_BACKWARD,fftw->p_flag);
+#else
+      SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"not support for real numbers yet");
 #endif 
       break;
     case 2:
@@ -287,7 +251,6 @@ PetscErrorCode MatMultTranspose_MPIFFTW(Mat A,Vec x,Vec y)
 #else
       fftw->p_backward = fftw_mpi_plan_dft_c2r(fftw->ndim_fftw,fftw->dim_fftw,(fftw_complex*)x_array,(double *)y_array,comm,FFTW_ESTIMATE);
 #endif 
-//      fftw->p_backward = fftw_mpi_plan_dft(ndim,dim,(fftw_complex*)x_array,(fftw_complex*)y_array,comm,FFTW_BACKWARD,fftw->p_flag); 
       break;
     }
     fftw->binarray  = x_array;
@@ -314,9 +277,6 @@ PetscErrorCode MatDestroy_FFTW(Mat A)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-//#if !defined(PETSC_USE_COMPLEX)
-//  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"not support for real numbers");
-//#endif
   fftw_destroy_plan(fftw->p_forward);
   fftw_destroy_plan(fftw->p_backward);
   ierr = PetscFree(fftw->dim_fftw);CHKERRQ(ierr);
@@ -333,9 +293,6 @@ PetscErrorCode VecDestroy_MPIFFTW(Vec v)
   PetscScalar     *array;
 
   PetscFunctionBegin;
-//#if !defined(PETSC_USE_COMPLEX)
-//  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"not support for real numbers");
-//#endif
   ierr = VecGetArray(v,&array);CHKERRQ(ierr);
   fftw_free((fftw_complex*)array);CHKERRQ(ierr);
   ierr = VecRestoreArray(v,&array);CHKERRQ(ierr);
@@ -363,7 +320,7 @@ PetscErrorCode  MatGetVecs_FFTW1D(Mat A,Vec *fin,Vec *fout,Vec *bout)
   ptrdiff_t      f_local_n1,f_local_1_end;
   ptrdiff_t      b_alloc_local,b_local_n0,b_local_0_start;
   ptrdiff_t      b_local_n1,b_local_1_end;
-  fftw_complex   *data_fin,*data_fout,*data_bin,*data_bout;
+  fftw_complex   *data_fin,*data_fout,*data_bout;
 
   PetscFunctionBegin;
 #if !defined(PETSC_USE_COMPLEX)
@@ -441,9 +398,6 @@ PetscErrorCode  MatGetVecs_FFTW(Mat A,Vec *fin,Vec *fout)
   PetscInt       ndim=fft->ndim,*dim=fft->dim,n=fft->n;
 
   PetscFunctionBegin;
-//#if !defined(PETSC_USE_COMPLEX)
-//  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"not support for real numbers");
-//#endif
   PetscValidHeaderSpecific(A,MAT_CLASSID,1);
   PetscValidType(A,1);
 
@@ -456,7 +410,6 @@ PetscErrorCode  MatGetVecs_FFTW(Mat A,Vec *fin,Vec *fout)
 #else
     if (fin) {ierr = VecCreateSeq(PETSC_COMM_SELF,N*2*(dim[ndim-1]/2+1)/dim[ndim-1],fin);CHKERRQ(ierr);}
     if (fout){ierr = VecCreateSeq(PETSC_COMM_SELF,2*N*(dim[ndim-1]/2+1)/dim[ndim-1],fout);CHKERRQ(ierr);}
-    printf("The code successfully comes at the end of the routine with one processor\n");
 #endif
   } else {        /* mpi case */
     ptrdiff_t      alloc_local,local_n0,local_0_start;
@@ -904,7 +857,6 @@ PetscErrorCode OutputTransformFFT_FFTW(Mat A,Vec x,Vec y)
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(x,&low,PETSC_NULL);
-  printf("Local ownership starts at %d\n",low);
  
   if (size==1){
     switch (ndim){
@@ -1134,10 +1086,6 @@ PetscErrorCode MatCreate_FFTW(Mat A)
   ptrdiff_t      local_n1,local_1_start;
 
   PetscFunctionBegin;
-//#if !defined(PETSC_USE_COMPLEX)
-//  SETERRQ(comm,PETSC_ERR_SUP,"not support for real numbers");
-//#endif
- 
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = MPI_Barrier(PETSC_COMM_WORLD);
@@ -1149,11 +1097,7 @@ PetscErrorCode MatCreate_FFTW(Mat A)
           partial_dim *= dim[ctr]; 
           pdim[ctr] = dim[ctr];
       } 
-//#if !defined(PETSC_USE_COMPLEX)
-//  SETERRQ(comm,PETSC_ERR_SUP,"not support for real numbers");
-//#endif
-
-//  printf("partial dimension is %d",partial_dim);              
+       
   if (size == 1) {
 #if defined(PETSC_USE_COMPLEX)
     ierr = MatSetSizes(A,N,N,N,N);CHKERRQ(ierr);  
