@@ -169,11 +169,12 @@ class Configure(config.base.Configure):
 
     # PGI: kill anything enclosed in single quotes
     if output.find('\'') >= 0:
-      if output.count('\'')%2: raise RuntimeError('Mismatched single quotes in C library string')
-      while output.find('\'') >= 0:
-        start = output.index('\'')
-        end   = output.index('\'', start+1)+1
-        output = output.replace(output[start:end], '')
+      # Cray has crazy non-matching single quotes so skip the removal
+      if not output.count('\'')%2:
+        while output.find('\'') >= 0:
+          start = output.index('\'')
+          end   = output.index('\'', start+1)+1
+          output = output.replace(output[start:end], '')
 
     # The easiest thing to do for xlc output is to replace all the commas
     # with spaces.  Try to only do that if the output is really from xlc,
@@ -720,7 +721,7 @@ class Configure(config.base.Configure):
         output = output[0:loc] + ' -lpgf90rtl -lpgftnrtl' + output[loc:]
     elif output.find(' -lpgf90rtl -lpgftnrtl') >= 0:
       # somehow doing this hacky thing appears to get rid of error with undefined __hpf_exit
-      self.logPrint('Adding -lpgftnrtl before -lpgf90rtl in library list')
+      self.logPrint('Adding -lpgftnrtl before -lpgf90rtl in librarylist')
       output = output.replace(' -lpgf90rtl -lpgftnrtl',' -lpgftnrtl -lpgf90rtl -lpgftnrtl')
 
     # PGI: kill anything enclosed in single quotes
