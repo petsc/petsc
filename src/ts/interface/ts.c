@@ -260,6 +260,7 @@ static PetscErrorCode TSGetRHSVec_Private(TS ts,Vec *Frhs)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  *Frhs = PETSC_NULL;
   ierr = TSGetIFunction(ts,&F,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   if (!ts->Frhs) {
     ierr = VecDuplicate(F,&ts->Frhs);CHKERRQ(ierr);
