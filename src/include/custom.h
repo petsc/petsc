@@ -1013,6 +1013,18 @@ TSSetTimeStepNumber(TS ts, PetscInt step)
   PetscFunctionReturn(0);
 }
 
+#if !(PETSC_VERSION_(3,1,0) || PETSC_VERSION_(3,0,0))
+#undef __FUNCT__
+#define __FUNCT__ "TSSetConvergedReason"
+static PetscErrorCode
+TSSetConvergedReason(TS ts,TSConvergedReason reason)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  ts->reason = reason;
+  PetscFunctionReturn(0);
+}
+#endif
 /* ---------------------------------------------------------------- */
 
 #if PETSC_VERSION_(3,1,0)

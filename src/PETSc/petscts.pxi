@@ -17,6 +17,16 @@ cdef extern from * nogil:
         TS_LINEAR
         TS_NONLINEAR
 
+    ctypedef enum PetscTSConvergedReason "TSConvergedReason":
+      # iterating
+      TS_CONVERGED_ITERATING
+      # converged
+      TS_CONVERGED_TIME
+      TS_CONVERGED_ITS
+      # diverged
+      TS_DIVERGED_NONLINEAR_SOLVE
+      TS_DIVERGED_STEP_REJECTED
+
     ctypedef int PetscTSCtxDel(void*)
 
     ctypedef int (*PetscTSFunctionFunction)(PetscTS,
@@ -103,6 +113,8 @@ cdef extern from * nogil:
     int TSGetTimeStepNumber(PetscTS,PetscInt*)
     int TSSetDuration(PetscTS,PetscInt,PetscReal)
     int TSGetDuration(PetscTS,PetscInt*,PetscReal*)
+    int TSSetConvergedReason(PetscTS,PetscTSConvergedReason)
+    int TSGetConvergedReason(PetscTS,PetscTSConvergedReason*)
 
     int TSMonitorSet(PetscTS,PetscTSMonitorFunction,void*,PetscTSCtxDel*)
     int TSMonitorCancel(PetscTS)

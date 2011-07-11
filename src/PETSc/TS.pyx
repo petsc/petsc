@@ -24,12 +24,24 @@ class TSProblemType(object):
     LINEAR    = TS_LINEAR
     NONLINEAR = TS_NONLINEAR
 
+class TSConvergedReason(object):
+    # iterating
+    CONVERGED_ITERATING      = TS_CONVERGED_ITERATING
+    ITERATING                = TS_CONVERGED_ITERATING
+    # converged
+    CONVERGED_TIME           = TS_CONVERGED_TIME
+    CONVERGED_ITS            = TS_CONVERGED_ITS
+    # diverged
+    DIVERGED_NONLINEAR_SOLVE = TS_DIVERGED_NONLINEAR_SOLVE
+    DIVERGED_STEP_REJECTED   = TS_DIVERGED_STEP_REJECTED
+
 # -----------------------------------------------------------------------------
 
 cdef class TS(Object):
 
     Type = TSType
     ProblemType = TSProblemType
+    ConvergedReason = TSConvergedReason
 
     # --- xxx ---
 
@@ -309,6 +321,15 @@ cdef class TS(Object):
         CHKERR( TSGetDuration(self.ts, &ival, &rval) )
         return (toReal(rval), toInt(ival))
 
+    def setConvergedReason(self, reason):
+        cdef PetscTSConvergedReason cval = reason
+        CHKERR( TSSetConvergedReason(self.ts, cval) )
+
+    def getConvergedReason(self):
+        cdef PetscTSConvergedReason reason = TS_CONVERGED_ITERATING
+        CHKERR( TSGetConvergedReason(self.ts, &reason) )
+        return reason
+
     # --- monitoring ---
 
     def setMonitor(self, monitor, args=None, kargs=None):
@@ -430,7 +451,7 @@ cdef class TS(Object):
         if alpha_f is not None: rval2 = asReal(alpha_f)
         if gamma   is not None: rval3 = asReal(gamma)
         CHKERR( TSAlphaSetParams(self.ts,  rval1,  rval2,  rval3) )
-        
+
     def getAlphaParams(self):
         cdef PetscReal rval1 = 0, rval2 = 0, rval3 = 0
         CHKERR( TSAlphaGetParams(self.ts, &rval1, &rval2, &rval3) )
@@ -504,9 +525,30 @@ cdef class TS(Object):
         def __set__(self, value):
             self.setMaxSteps(value)
 
+    # --- convergence ---
+
+    property reason:
+        def __get__(self):
+            return self.getConvergedReason()
+        def __set__(self, value):
+            self.setConvergedReason(value)
+
+    property iterating:
+        def __get__(self):
+            return self.reason == 0
+
+    property converged:
+        def __get__(self):
+            return self.reason > 0
+
+    property diverged:
+        def __get__(self):
+            return self.reason < 0
+
 # -----------------------------------------------------------------------------
 
 del TSType
 del TSProblemType
+del TSConvergedReason
 
 # -----------------------------------------------------------------------------
