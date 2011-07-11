@@ -12,10 +12,10 @@ class CompilerOptions(config.base.Configure):
         compiler = output.split(' ')[0]
       except:
         pass
-      
+
     flags = []
     # GNU gcc
-    if config.setCompilers.Configure.isGNU(compiler):
+    if config.setCompilers.Configure.isGNU(compiler) or config.setCompilers.Configure.isClang(compiler):
       if bopt == '':
         flags.extend(['-Wall', '-Wwrite-strings', '-Wno-strict-aliasing','-Wno-unknown-pragmas'])
       elif bopt == 'g':
@@ -74,7 +74,7 @@ class CompilerOptions(config.base.Configure):
     
     flags = []
     # GNU g++
-    if config.setCompilers.Configure.isGNU(compiler):
+    if config.setCompilers.Configure.isGNU(compiler) or config.setCompilers.Configure.isClang(compiler):
       if bopt == '':
         flags.extend(['-Wall', '-Wwrite-strings', '-Wno-strict-aliasing','-Wno-unknown-pragmas'])
       elif bopt in ['g']:

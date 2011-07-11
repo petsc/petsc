@@ -514,9 +514,9 @@ Brief overview of how BuildSystem\'s configuration of packages works.
   writing classes that configure packages.  Customized package configuration classes are written by subclassing
   config.package.Package -- the "parent class".
 
-    Packages essentially encapsulate libraries, that are either
-    (A) (prefix-)installed already somewhere on the system or
-    (B) need to be dowloaded and built first
+    Packages essentially encapsulate libraries, that either
+    (A) are already (prefix-)installed already somewhere on the system or
+    (B) need to be dowloaded, built and installed first
   If (A), the parent class provides a generic mechanism for locating the installation, by looking in user-specified and standard locations.
   If (B), the parent class provides a generic mechanism for determining whether a download is necessary, downloading and unpacking
   the source (if the download is, indeed, required), determining whether the package needs to be built, providing the build and
@@ -526,10 +526,10 @@ Brief overview of how BuildSystem\'s configuration of packages works.
   (shared or not) consistency among packages.
     No matter whether (A) or (B) is realized, the parent class control flow demands that the located or installed package
   be checked to ensure it is functional.  Since a package is conceptualized as a library, the check consists in testing whether
-  a specified set of libraries can be linked against and the specified headers can be located.  The libraries and headers are specified
-  by name, and the corresponding paths are supplied by the location or the install process.  The verified paths and library names are
-  then are stored by the configure object as instance variables.  These can be used by other packages dependent on the package being
-  configured; likewise, the package being configured will use the information from the packages it depends on by examining their instance
+  a specified set of libraries can be linked against, and ahat the specified headers can be located.  The libraries and headers are specified
+  by name, and the corresponding paths are supplied as a result of the process of locating or building the library.  The verified paths and
+  library names are then are stored by the configure object as instance variables.  These can be used by other packages dependent on the package
+  being configured; likewise, the package being configured will use the information from the packages it depends on by examining their instance
   variables.
 
     Thus, the parent class provides for the overall control and data flow, which goes through several configuration stages:
@@ -588,24 +588,23 @@ Brief overview of how BuildSystem\'s configuration of packages works.
       self.framework.require(<dependentObject>, self)
     dependentObject is a string -- the name of the configure module this package depends on.
 
-    The parent package class requires some of the common dependencies:
+    The parent package class by default sets up some of the common dependencies:
       config.compilers, config.types, config.headers, config.libraries, config.packages.MPI,
     among others.
-    The package subclass should add package-specific dependencies as well as list them in
-    self.deps [list].  This list is used during the location/installation stage to ensure that
-    the package\'s dependencies have been configured correctly.
+    The package subclass should add package-specific dependencies via the "require" mechanism,
+    as well as list them in self.deps [list].  This list is used during the location/installation
+    stage to ensure that the package\'s dependencies have been configured correctly.
 
   Comment:
-  There appears to be no good reason for separating setupHelp and setupDependencies
-  from the init stage: these hooks are called immediately following configure object construction
-  and do no depend on any other intervening computation.
-
-  It appears to me that hooks/callbacks are necessary only when a customizable action must be carried out
+    There appears to be no good reason for separating setupHelp and setupDependencies
+  from the init stage: these hooks are called immediately following configure object
+  construction and do no depend on any other intervening computation.
+    It appears that hooks/callbacks are necessary only when a customizable action must be carried out
   at a specific point in the configure process, which is not known a priori and/or is controlled by the framework.
   For example, setupDownload (see GNUPackage below) must be called only after it has been determined
   (by the code outside of the package class) that a download is necessary.  Otherwise (e.g., if setupDownload
-  is called from __init__) setupDownload the user for the version of the package to download even when no download
-  is necessary (and this is annoying).
+  is called from __init__), setupDownload will prompt the user for the version of the package to download even
+  when no download is necessary (and this is annoying).
 
   Location/installation:
   ---------------------
@@ -864,7 +863,8 @@ class GNUPackage(Package):
     '''Add args corresponding to --with-<deppackage>=<deppackage-dir>.'''
     args = []
     for d in self.deps:
-      args.append('--with-'+d.package+'='+d.directory)
+      if d.directory is not None and not d.directory == "":
+        args.append('--with-'+d.package+'='+d.directory)
     for d in self.odeps:
       if hasattr(d,'found') and d.found:
         args.append('--with-'+d.package+'='+d.directory)
