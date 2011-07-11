@@ -11,16 +11,17 @@
 */
 #include <private/tsimpl.h>                /*I   "petscts.h"   I*/
 
-static const TSARKIMEXType TSARKIMEXDefault = TSARKIMEX2D;
+static const TSARKIMEXType TSARKIMEXDefault = TSARKIMEX2E;
 static PetscBool TSARKIMEXRegisterAllCalled;
 static PetscBool TSARKIMEXPackageInitialized;
 
 typedef struct _ARKTableau *ARKTableau;
 struct _ARKTableau {
   char *name;
-  PetscInt order;
-  PetscInt s;
-  PetscReal *At,*bt,*ct;
+  PetscInt order;               /* Classical approximation order of the method */
+  PetscInt s;                   /* Number of stages */
+  PetscInt pinterp;             /* Interpolation order */
+  PetscReal *At,*bt,*ct;        /* Stiff tableau */
   PetscReal *A,*b,*c;           /* Non-stiff tableau */
   PetscReal *binterpt,*binterp; /* Dense output formula */
 };
@@ -292,6 +293,7 @@ PetscErrorCode TSARKIMEXRegister(const TSARKIMEXType name,PetscInt order,PetscIn
   else for (i=0; i<s; i++) for (j=0,t->ct[i]=0; j<s; j++) t->ct[i] += At[i*s+j];
   if (c) {ierr = PetscMemcpy(t->c,c,s*sizeof(c[0]));CHKERRQ(ierr);}
   else for (i=0; i<s; i++) for (j=0,t->c[i]=0; j<s; j++) t->c[i] += A[i*s+j];
+  t->pinterp = pinterp;
   ierr = PetscMalloc2(s*pinterp,PetscReal,&t->binterpt,s*pinterp,PetscReal,&t->binterp);CHKERRQ(ierr);
   ierr = PetscMemcpy(t->binterpt,binterpt,s*pinterp*sizeof(binterpt[0]));CHKERRQ(ierr);
   ierr = PetscMemcpy(t->binterp,binterp?binterp:binterpt,s*pinterp*sizeof(binterpt[0]));CHKERRQ(ierr);
@@ -336,8 +338,8 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
       ierr = VecMAXPY(W,i,w,YdotRHS);CHKERRQ(ierr);
       /* Ydot = shift*(Y-Z) */
       ierr = VecCopy(ts->vec_sol,Z);CHKERRQ(ierr);
-      for (j=0; j<i; j++) w[j] = h*At[i*s+j];
-      ierr = VecMAXPY(Z,i,w,YdotRHS);CHKERRQ(ierr);
+      for (j=0; j<i; j++) w[j] = -h*At[i*s+j];
+      ierr = VecMAXPY(Z,i,w,YdotI);CHKERRQ(ierr);
       /* Initial guess taken from last stage */
       ierr = VecCopy(i>0?Y[i-1]:ts->vec_sol,Y[i]);CHKERRQ(ierr);
       ierr = SNESSolve(snes,W,Y[i]);CHKERRQ(ierr);
@@ -365,8 +367,8 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
 static PetscErrorCode TSInterpolate_ARKIMEX(TS ts,PetscReal itime,Vec X)
 {
   TS_ARKIMEX *ark = (TS_ARKIMEX*)ts->data;
-  PetscInt s = ark->tableau->s,i,j;
-  PetscReal tt,t = (itime - ts->ptime)/ts->time_step - 1; /* In the interval [0,1] */
+  PetscInt s = ark->tableau->s,pinterp = ark->tableau->pinterp,i,j;
+  PetscReal tt,t = (itime - ts->ptime)/ts->time_step + 1; /* In the interval [0,1] */
   PetscScalar *bt,*b;
   const PetscReal *Bt = ark->tableau->binterpt,*B = ark->tableau->binterp;
   PetscErrorCode ierr;
@@ -375,10 +377,10 @@ static PetscErrorCode TSInterpolate_ARKIMEX(TS ts,PetscReal itime,Vec X)
   if (!Bt || !B) SETERRQ1(((PetscObject)ts)->comm,PETSC_ERR_SUP,"TSARKIMEX %s does not have an interpolation formula",ark->tableau->name);
   ierr = PetscMalloc2(s,PetscScalar,&bt,s,PetscScalar,&b);CHKERRQ(ierr);
   for (i=0; i<s; i++) bt[i] = b[i] = 0;
-  for (j=0,tt=t; j<s; j++,tt*=t) {
+  for (j=0,tt=t; j<pinterp; j++,tt*=t) {
     for (i=0; i<s; i++) {
-      bt[i] += Bt[i*s+j] * tt;
-      b[i]  += B[i*s+j] * tt;
+      bt[i] += ts->time_step * Bt[i*pinterp+j] * tt * -1.0;
+      b[i]  += ts->time_step * B[i*pinterp+j] * tt;
     }
   }
   if (ark->tableau->At[0*s+0] != 0.0) SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_SUP,"First stage not explicit so starting stage not saved");
