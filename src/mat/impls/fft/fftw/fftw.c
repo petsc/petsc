@@ -333,9 +333,9 @@ PetscErrorCode VecDestroy_MPIFFTW(Vec v)
   PetscScalar     *array;
 
   PetscFunctionBegin;
-#if !defined(PETSC_USE_COMPLEX)
-  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"not support for real numbers");
-#endif
+//#if !defined(PETSC_USE_COMPLEX)
+//  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"not support for real numbers");
+//#endif
   ierr = VecGetArray(v,&array);CHKERRQ(ierr);
   fftw_free((fftw_complex*)array);CHKERRQ(ierr);
   ierr = VecRestoreArray(v,&array);CHKERRQ(ierr);
@@ -350,7 +350,7 @@ PetscErrorCode VecDestroy_MPIFFTW(Vec v)
      parallel layout determined by FFTW-1D 
 
 */
-PetscErrorCode  MatGetVecs_FFTW1D(Mat A,Vec *fin,Vec *fout,Vec *bin,Vec *bout)
+PetscErrorCode  MatGetVecs_FFTW1D(Mat A,Vec *fin,Vec *fout,Vec *bout)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size,rank;
@@ -390,11 +390,6 @@ PetscErrorCode  MatGetVecs_FFTW1D(Mat A,Vec *fin,Vec *fout,Vec *bin,Vec *bout)
             ierr = VecCreateMPIWithArray(comm,f_local_n1,N,(const PetscScalar*)data_fout,fout);CHKERRQ(ierr);
             (*fout)->ops->destroy   = VecDestroy_MPIFFTW;
           }
-          if (bin) {
-            data_bin  = (fftw_complex*)fftw_malloc(sizeof(fftw_complex)*b_alloc_local);
-            ierr = VecCreateMPIWithArray(comm,b_local_n0,N,(const PetscScalar*)data_bin,bin);CHKERRQ(ierr);
-            (*bin)->ops->destroy   = VecDestroy_MPIFFTW;
-          } 
           if (bout) {
             data_bout = (fftw_complex*)fftw_malloc(sizeof(fftw_complex)*b_alloc_local);
             ierr = VecCreateMPIWithArray(comm,b_local_n1,N,(const PetscScalar*)data_bout,bout);CHKERRQ(ierr);
@@ -406,9 +401,6 @@ PetscErrorCode  MatGetVecs_FFTW1D(Mat A,Vec *fin,Vec *fout,Vec *bin,Vec *bout)
   }
   if (fout){
     ierr = PetscLayoutReference(A->rmap,&(*fout)->map);CHKERRQ(ierr);
-  }
-  if (bin){
-    ierr = PetscLayoutReference(A->rmap,&(*bin)->map);CHKERRQ(ierr);
   }
   if (bout){
     ierr = PetscLayoutReference(A->rmap,&(*bout)->map);CHKERRQ(ierr);
@@ -978,7 +970,7 @@ PetscErrorCode OutputTransformFFT_FFTW(Mat A,Vec x,Vec y)
 
  switch (ndim){
  case 1:
-  SETERRQ(comm,PETSC_ERR_SUP,"No support yet");
+  SETERRQ(comm,PETSC_ERR_SUP,"No support for real parallel 1D FFT");
   break;
  case 2:
       alloc_local =  fftw_mpi_local_size_2d_transposed(dim[0],dim[1]/2+1,comm,&local_n0,&local_0_start,&local_n1,&local_1_start);
@@ -1258,6 +1250,7 @@ PetscErrorCode MatCreate_FFTW(Mat A)
     A->ops->multtranspose = MatMultTranspose_MPIFFTW;
   }
   fft->matdestroy          = MatDestroy_FFTW;
+// if(ndim=1 && size>1) and also if it is complex then getvecs should be attached to MatGetVecs_FFTW1D
   A->ops->getvecs       = MatGetVecs_FFTW;
   A->assembled          = PETSC_TRUE;
 #if !defined(PETSC_USE_COMPLEX)
