@@ -1661,9 +1661,9 @@ PetscErrorCode DAViewVTK_write_PieceExtend( FILE *vtk_fp, int indent_level, DM d
 	for( k=0;k<pP;k++ ) {
 		for( j=0;j<pN;j++ ) {
 			for( i=0;i<pM;i++ ) {
-				char *name;
+				char name[PETSC_MAX_PATH_LEN];
 				PetscInt procid = i + j*pM + k*pM*pN; /* convert proc(i,j,k) to pid */
-				asprintf( &name, "subdomain-%s-p%1.4d.vts", local_file_prefix, procid );
+				ierr = PetscSNPrintf(name, sizeof name, "subdomain-%s-p%1.4d.vts", local_file_prefix, procid );CHKERRQ(ierr);
 				for( II=0; II<indent_level; II++ ) {
 					fprintf(vtk_fp,"  ");
 				}
@@ -1671,7 +1671,6 @@ PetscErrorCode DAViewVTK_write_PieceExtend( FILE *vtk_fp, int indent_level, DM d
 								osx[i],oex[i]-1, 
 								osy[j],oey[j]-1, 
 								osz[k],oez[k]-1, name);
-				free(name);
 			}
 		}
 	}
@@ -1693,7 +1692,7 @@ PetscErrorCode DAView_3DVTK_PStructuredGrid( DM da, const char file_prefix[], co
 {
 	MPI_Comm comm;
 	PetscMPIInt nproc,rank;
-	char *vtk_filename;
+	char vtk_filename[PETSC_MAX_PATH_LEN];
 	FILE *vtk_fp;
 	PetscInt M,N,P, si,sj,sk, nx,ny,nz;
 	PetscInt i,dofs;
@@ -1708,13 +1707,12 @@ PetscErrorCode DAView_3DVTK_PStructuredGrid( DM da, const char file_prefix[], co
 	if( rank != 0 ) { PetscFunctionReturn(0); }
 	
 	/* create file name */
-	asprintf( &vtk_filename, "%s.pvts", file_prefix );
+	ierr = PetscSNPrintf(vtk_filename,sizeof vtk_filename, "%s.pvts", file_prefix );CHKERRQ(ierr);
 	vtk_fp = fopen( vtk_filename, "w" );
 	if( vtk_fp == NULL ) {
 		printf("ERROR(DAView_3DVTK_PStructuredGrid): Cannot open file = %s \n", vtk_filename );
 		exit(0);
 	}
-	free( vtk_filename );
 	
 	/* (VTK) generate pvts header */
 	fprintf( vtk_fp, "<?xml version=\"1.0\"?>\n");
@@ -1767,20 +1765,16 @@ PetscErrorCode DAView_3DVTK_PStructuredGrid( DM da, const char file_prefix[], co
 #define __FUNCT__ "DAView3DPVTS"
 PetscErrorCode DAView3DPVTS(DM da, Vec x,const char NAME[])
 { 
-	char *vts_filename;
-	char *pvts_filename;
+	char vts_filename[PETSC_MAX_PATH_LEN];
+	char pvts_filename[PETSC_MAX_PATH_LEN];
 	PetscErrorCode ierr;
 	
 	PetscFunctionBegin;
-	asprintf( &vts_filename, "%s-mesh", NAME );
+	ierr = PetscSNPrintf(vts_filename,sizeof vts_filename, "%s-mesh", NAME );CHKERRQ(ierr);
 	ierr = DAView_3DVTK_StructuredGrid_appended(da,x,vts_filename);CHKERRQ(ierr); 
 	
-	asprintf( &pvts_filename, "%s-mesh", NAME );
+        ierr = PetscSNPrintf(pvts_filename,sizeof pvts_filename, "%s-mesh", NAME );CHKERRQ(ierr);
 	ierr = DAView_3DVTK_PStructuredGrid( da, pvts_filename, vts_filename );CHKERRQ(ierr);
-	
-	free(pvts_filename);
-	free(vts_filename);
-	
 	PetscFunctionReturn(0);
 }
 
@@ -1871,7 +1865,7 @@ static PetscErrorCode solve_stokes_3d_coupled(PetscInt mx,PetscInt my,PetscInt m
   PetscInt               mxl,myl,mzl;
   DM                     prop_cda,vel_cda;
   Vec                    prop_coords,vel_coords;
-  PetscInt               si,sj,sk,nx,ny,nz,i,j,k,p;
+  PetscInt               si,sj,sk,nx,ny,nz,p;
   Vec                    f,X;
   PetscInt               prop_dof,prop_stencil_width;
   Vec                    properties,l_properties;
@@ -1994,9 +1988,9 @@ static PetscErrorCode solve_stokes_3d_coupled(PetscInt mx,PetscInt my,PetscInt m
 								
 							element_props[ek][ej][ei].eta[p] = 1.0;
 							
-							element_props[ek][ej][ei].fx[p] = 0.0;
+							element_props[ek][ej][ei].fx[p] = 0.0*coord_x;
 							element_props[ek][ej][ei].fy[p] = -sin((double)2.2*M_PI*coord_y)*cos(1.0*M_PI*coord_x);
-							element_props[ek][ej][ei].fz[p] = 0.0;
+							element_props[ek][ej][ei].fz[p] = 0.0*coord_z;
 							element_props[ek][ej][ei].hc[p] = 0.0;
 						}						
 					}
@@ -2036,8 +2030,6 @@ static PetscErrorCode solve_stokes_3d_coupled(PetscInt mx,PetscInt my,PetscInt m
 			for (ek = sez; ek < sez+Kmz; ek++) {
 				for (ej = sey; ej < sey+Jmy; ej++) {
 					for (ei = sex; ei < sex+Imx; ei++) {
-						double eta,Fm[NSD],Fc,pos[NSD];
-						
 						for (p = 0; p < GAUSS_POINTS; p++) {
 							PetscReal coord_x = PetscRealPart(element_props[ek][ej][ei].gp_coords[NSD*p  ]);
 							PetscReal coord_y = PetscRealPart(element_props[ek][ej][ei].gp_coords[NSD*p+1]);
@@ -2047,7 +2039,7 @@ static PetscErrorCode solve_stokes_3d_coupled(PetscInt mx,PetscInt my,PetscInt m
 							
 							element_props[ek][ej][ei].fx[p] = 0.0;
 							element_props[ek][ej][ei].fy[p] = -sin((double)3*M_PI*coord_y)*cos(1.0*M_PI*coord_x);
-							element_props[ek][ej][ei].fz[p] = 0.0;
+							element_props[ek][ej][ei].fz[p] = 0.0*coord_z;
 							element_props[ek][ej][ei].hc[p] = 0.0;
 						}						
 					}
@@ -2059,8 +2051,6 @@ static PetscErrorCode solve_stokes_3d_coupled(PetscInt mx,PetscInt my,PetscInt m
 			for (ek = sez; ek < sez+Kmz; ek++) {
 				for (ej = sey; ej < sey+Jmy; ej++) {
 					for (ei = sex; ei < sex+Imx; ei++) {
-						double eta,Fm[NSD],Fc,pos[NSD];
-						
 						for (p = 0; p < GAUSS_POINTS; p++) {
 							PetscReal xp = PetscRealPart(element_props[ek][ej][ei].gp_coords[NSD*p  ]);
 							PetscReal yp = PetscRealPart(element_props[ek][ej][ei].gp_coords[NSD*p+1]);
