@@ -114,7 +114,7 @@ cdef extern from * nogil:
     int TSSetUp(PetscTS)
     int TSReset(PetscTS)
     int TSStep(PetscTS)
-    int TSSolve(PetscTS,PetscVec)
+    int TSSolve(PetscTS,PetscVec,PetscReal*)
 
     int TSThetaSetTheta(PetscTS,PetscReal)
     int TSThetaGetTheta(PetscTS,PetscReal*)

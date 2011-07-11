@@ -61,7 +61,7 @@ static PetscErrorCode TSReset(TS ts)
 #undef __FUNCT__
 #define __FUNCT__ "TSSetSolution_Compat"
 static PetscErrorCode
-TSSetSolution_Compat(TS ts, Vec u)
+TSSetSolution_Compat(TS ts,Vec u)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -75,14 +75,16 @@ TSSetSolution_Compat(TS ts, Vec u)
 #undef __FUNCT__
 #define __FUNCT__ "TSSolve_Compat"
 static PetscErrorCode
-TSSolve_Compat(TS ts, Vec x)
+TSSolve_Compat(TS ts,Vec x,PetscReal *t)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  if (x) PetscValidHeaderSpecific(x,VEC_CLASSID,1);
-  if (x) {ierr = TSSetSolution(ts, x);CHKERRQ(ierr);}
+  if (x) PetscValidHeaderSpecific(x,VEC_CLASSID,2);
+  if (t) PetscValidPointer(t,3);
+  if (x) {ierr = TSSetSolution(ts,x);CHKERRQ(ierr);}
   ierr = TSSolve(ts,x);CHKERRQ(ierr);
+  if (t) {ierr = TSGetTime(ts,t);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 #undef  TSSolve
