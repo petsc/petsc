@@ -67,7 +67,7 @@ static PetscErrorCode IFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void *ctx
   ierr = VecGetArray(Xdot,&xdot);CHKERRQ(ierr);
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
   f[0] = xdot[0] + (user->imex ? 0 : x[1]);
-  f[1] = xdot[1] - user->mu*(1 - x[0]*x[0])*x[1] + x[0];
+  f[1] = xdot[1] - user->mu*(1. - x[0]*x[0])*x[1] + x[0];
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(Xdot,&xdot);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
@@ -86,8 +86,8 @@ static PetscErrorCode IJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat
 
   PetscFunctionBegin;
   ierr = VecGetArray(X,&x);CHKERRQ(ierr);
-  J[0][0] = a;                J[0][1] = (user->imex ? 0 : 1);
-  J[1][0] = 2*mu*x[0]*x[1]+1; J[1][1] = a - mu*(1 - x[0]*x[0]);
+  J[0][0] = a;                    J[0][1] = (user->imex ? 0 : 1.);
+  J[1][0] = 2.*mu*x[0]*x[1]+1.;   J[1][1] = a - mu*(1. - x[0]*x[0]);
   ierr = MatSetValues(*B,2,rowcol,2,rowcol,&J[0][0],INSERT_VALUES);CHKERRQ(ierr);
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
 
