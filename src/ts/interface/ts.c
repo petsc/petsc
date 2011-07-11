@@ -1864,7 +1864,12 @@ PetscErrorCode TSSolve(TS ts,Vec x,PetscReal *ftime)
     if (ts->exact_final_time && ts->ptime >= ts->max_time) {
       ierr = TSInterpolate(ts,ts->max_time,x);CHKERRQ(ierr);
       if (ftime) *ftime = ts->max_time;
-    } else if (ftime) *ftime = ts->ptime;
+    } else {
+      if (x != ts->vec_sol) {
+        ierr = VecCopy(ts->vec_sol,x);CHKERRQ(ierr);
+      }
+      if (ftime) *ftime = ts->ptime;
+    }
   }
   ierr = PetscOptionsGetString(((PetscObject)ts)->prefix,"-ts_view",filename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   if (flg && !PetscPreLoadingOn) {
