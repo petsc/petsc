@@ -411,6 +411,11 @@ class Package(config.base.Configure):
   def filesExist(self,files):
     '''Tests an array of strings if it actually exists (either a library file or
     include directory'''
+
+    # dirty hack to not check for files if the package was specified to be downloaded
+    if self.checkDownload(1):
+      return None
+
     dirname = ''
     for f in files:
 
