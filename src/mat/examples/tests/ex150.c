@@ -10,14 +10,12 @@ PetscInt main(PetscInt argc,char **args)
 {
   PetscErrorCode  ierr;
   PetscMPIInt     rank,size;
-  PetscInt        N0=3,N1=3,N2=3,N3=3,N=N0*N1*N2*N3;
+  PetscInt        N0=3,N1=3,N2=3,N3=3,N4=3,N=N0*N1*N2*N3*N4;
   PetscRandom     rdm;
-  PetscScalar     a;
   PetscReal       enorm;
   Vec             x,y,z,input,output;
-  PetscBool       view=PETSC_FALSE,use_interface=PETSC_TRUE;
   Mat             A;
-  PetscInt        DIM, dim[3],vsize;
+  PetscInt        DIM, dim[5],vsize;
   PetscReal       fac;
 
   ierr = PetscInitialize(&argc,&args,(char *)0,help);CHKERRQ(ierr);
@@ -40,8 +38,8 @@ PetscInt main(PetscInt argc,char **args)
   ierr = VecGetSize(input,&vsize);CHKERRQ(ierr);
   printf("Size of the input Vector is %d\n",vsize);
   
-  DIM = 4;
-  dim[0] = N0; dim[1] = N1; dim[2] = N2; dim[3] = N3;
+  DIM = 5;
+  dim[0] = N0; dim[1] = N1; dim[2] = N2; dim[3] = N3; dim[4] = N4;
 
   ierr = MatCreateFFT(PETSC_COMM_WORLD,DIM,dim,MATFFTW,&A);CHKERRQ(ierr);
   ierr = MatGetVecs(A,&x,&y);CHKERRQ(ierr);
@@ -80,10 +78,15 @@ PetscInt main(PetscInt argc,char **args)
 //  ierr = PetscObjectSetName((PetscObject) x, "Real space vector");CHKERRQ(ierr);
 //      ierr = PetscObjectSetName((PetscObject) y, "Frequency space vector");CHKERRQ(ierr);
 //      ierr = PetscObjectSetName((PetscObject) z, "Reconstructed vector");CHKERRQ(ierr);
-
+  ierr = VecDestroy(&output);CHKERRQ(ierr);
+  ierr = VecDestroy(&input);CHKERRQ(ierr);
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = VecDestroy(&y);CHKERRQ(ierr);
+  ierr = VecDestroy(&z);CHKERRQ(ierr);
+  ierr = MatDestroy(&A);CHKERRQ(ierr);
+  ierr = PetscRandomDestroy(&rdm);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
-  
 }
 
 

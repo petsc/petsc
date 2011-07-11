@@ -4,7 +4,7 @@ import os
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
-    self.lookforbydefault  = 1 
+    self.lookforbydefault  = 0
     self.functions         = 0
     self.includes          = 0
     self.liblist           = 0
