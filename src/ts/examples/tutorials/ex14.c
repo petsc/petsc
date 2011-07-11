@@ -472,16 +472,16 @@ static PetscErrorCode PRangeMinMax(PRange *p,PetscReal min,PetscReal max)
 
 #undef __FUNCT__  
 #define __FUNCT__ "THIDestroy"
-static PetscErrorCode THIDestroy(&THI thi)
+static PetscErrorCode THIDestroy(THI *thi)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (--((PetscObject)thi)->refct > 0) PetscFunctionReturn(0);
-  ierr = PetscFree(thi->units);CHKERRQ(ierr);
-  ierr = PetscFree(thi->mattype);CHKERRQ(ierr);
-  ierr = PetscFree(thi->monitor_basename);CHKERRQ(ierr);
-  ierr = PetscHeaderDestroy(&thi);CHKERRQ(ierr);
+  if (--((PetscObject)(*thi))->refct > 0) PetscFunctionReturn(0);
+  ierr = PetscFree((*thi)->units);CHKERRQ(ierr);
+  ierr = PetscFree((*thi)->mattype);CHKERRQ(ierr);
+  ierr = PetscFree((*thi)->monitor_basename);CHKERRQ(ierr);
+  ierr = PetscHeaderDestroy(thi);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1718,14 +1718,15 @@ int main(int argc,char *argv[])
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
   ierr = TSMonitorSet(ts,THITSMonitor,thi,NULL);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSTHETA);CHKERRQ(ierr);
-  ierr = TSSetIFunction(ts,THIFunction,thi);CHKERRQ(ierr);
+  ierr = TSSetIFunction(ts,PETSC_NULL,THIFunction,thi);CHKERRQ(ierr);
   ierr = TSSetIJacobian(ts,B,B,THIJacobian,thi);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,100,10.0);CHKERRQ(ierr);
   ierr = TSSetSolution(ts,X);CHKERRQ(ierr);
   ierr = TSSetInitialTimeStep(ts,0.,1e-3);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
-  ierr = TSStep(ts,&steps,&ftime);CHKERRQ(ierr);
+  ierr = TSSolve(ts,X,&ftime);CHKERRQ(ierr);
+  ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Steps %D  final time %G\n",steps,ftime);CHKERRQ(ierr);
 
   if (0) {ierr = THISolveStatistics(thi,dmmg,0,"Full");CHKERRQ(ierr);}

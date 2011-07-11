@@ -1569,17 +1569,18 @@ PetscErrorCode  SNESSetUp(SNES snes)
     ierr = SNESSetType(snes,SNESLS);CHKERRQ(ierr);
   }
 
-  if (!snes->vec_func && snes->dm && !snes->vec_rhs) {  
-    ierr = DMCreateGlobalVector(snes->dm,&snes->vec_func);CHKERRQ(ierr);
+  if (!snes->vec_func) {
+    if (snes->vec_rhs) {
+      ierr = VecDuplicate(snes->vec_rhs,&snes->vec_func);CHKERRQ(ierr);
+    } else if (snes->vec_sol) {
+      ierr = VecDuplicate(snes->vec_sol,&snes->vec_func);CHKERRQ(ierr);
+    } else if (snes->dm) {
+      ierr = DMCreateGlobalVector(snes->dm,&snes->vec_func);CHKERRQ(ierr);
+    }
   }
-  if (!snes->vec_func && !snes->vec_rhs) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call SNESSetFunction() first");
-  if (!snes->ops->computefunction && !snes->vec_rhs && !snes->dm) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call SNESSetFunction() or SNESSetDM() first");
   if (snes->vec_func == snes->vec_sol) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_IDN,"Solution vector cannot be function vector");
   if (snes->vec_rhs  == snes->vec_sol) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_IDN,"Solution vector cannot be right hand side vector");
 
-  if (!snes->vec_func && snes->vec_rhs) {
-    ierr = VecDuplicate(snes->vec_rhs, &snes->vec_func);CHKERRQ(ierr);
-  }
   if (!snes->vec_sol_update /* && snes->vec_sol */) {
     ierr = VecDuplicate(snes->vec_sol,&snes->vec_sol_update);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(snes,snes->vec_sol_update);CHKERRQ(ierr);
@@ -1612,7 +1613,9 @@ PetscErrorCode  SNESSetUp(SNES snes)
     ierr = SNESSetJacobian(snes,J,J,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     ierr = MatDestroy(&J);CHKERRQ(ierr);
   }
- 
+  if (!snes->ops->computefunction && !snes->dm) SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_ARG_WRONGSTATE,"Must provide a residual function with SNESSetFunction() or call SNESSetDM()");
+  if (!snes->vec_func) SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_ARG_WRONGSTATE,"Must provide a vector when calling SNESSetFunction() or call SNESSetDM()");
+
   if (!snes->ksp) {ierr = SNESGetKSP(snes, &snes->ksp);CHKERRQ(ierr);}
 
   if (snes->ops->usercompute && !snes->user) {
@@ -1655,11 +1658,6 @@ PetscErrorCode  SNESReset(SNES snes)
     ierr       = (*snes->ops->userdestroy)((void**)&snes->user);CHKERRQ(ierr);
     snes->user = PETSC_NULL;
   }
-  if (snes->ops->computejacobian == SNESDefaultComputeJacobianColor && snes->dm) {
-    ierr = MatFDColoringDestroy((MatFDColoring*)&snes->jacP);CHKERRQ(ierr);
-    snes->ops->computejacobian = PETSC_NULL;
-  }
-      
   if (snes->ops->reset) {
     ierr = (*snes->ops->reset)(snes);CHKERRQ(ierr);
   }

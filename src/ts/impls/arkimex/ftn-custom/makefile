@@ -1,18 +1,16 @@
 
+#requiresdefine   'PETSC_HAVE_FORTRAN'
 ALL: lib
-
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = beuler.c
+SOURCEC  = zarkimexf.c
+OBJSC    = ${SOURCEC:.c=.o}
 SOURCEF  =
-SOURCEH  = 
-OBJSC    = beuler.o
-OBJSF    =
+SOURCEH  =
+DIRS     =
 LIBBASE  = libpetscts
-MANSEC   = TS
-LOCDIR   = src/ts/impls/implicit/beuler/
+LOCDIR   = src/ts/impls/arkimex/ftn-custom/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules
 include ${PETSC_DIR}/conf/test
-

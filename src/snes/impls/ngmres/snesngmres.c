@@ -77,8 +77,6 @@ PetscErrorCode SNESView_NGMRES(SNES snes, PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer, "  Size of space %d\n", ngmres->msize);CHKERRQ(ierr);
-  } else {
-    SETERRQ1(((PetscObject) snes)->comm, PETSC_ERR_SUP, "Viewer type %s not supported for SNESNGMRES", ((PetscObject) viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -89,7 +87,7 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
 {
   SNES_NGMRES   *ngmres = (SNES_NGMRES *) snes->data;
   SNES           pc;
-  Vec            X, Y, F, r, rOld, *V = ngmres->v, *W = ngmres->w;
+  Vec            X, F, r, rOld, *V = ngmres->v, *W = ngmres->w;
   PetscScalar    wdot;
   PetscReal      fnorm;
   PetscInt       i, j, k;
@@ -98,7 +96,6 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
   PetscFunctionBegin;
   snes->reason  = SNES_CONVERGED_ITERATING;
   X             = snes->vec_sol;
-  Y             = snes->vec_sol_update;
   F             = snes->vec_func;
   rOld          = snes->work[0];
 

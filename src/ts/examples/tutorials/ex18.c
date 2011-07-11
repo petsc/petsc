@@ -34,6 +34,17 @@ PetscErrorCode OutputMonitor(TS ts,PetscInt it_number,PetscReal c_time,Vec U,voi
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc, char *argv[]) {
+  PetscErrorCode  ierr;
+  PetscMPIInt     rank;
+  AppCtx          user;
+  PetscInt        p=2,N=64,C=1;
+  PetscInt ng = p+2; /* integration in each direction */
+  PetscInt Nx,Ny;
+  Vec            U; /* solution vector */
+  Mat            J;
+  TS             ts;
+  PetscInt steps;
+  PetscReal ftime;
 
   /* This code solve the dimensionless form of the isothermal
      Navier-Stokes-Korteweg equations as presented in:
@@ -46,13 +57,10 @@ int main(int argc, char *argv[]) {
  */
 
   // Petsc Initialization rite of passage
-  PetscErrorCode  ierr;
-  PetscMPIInt     rank;
   ierr = PetscInitialize(&argc,&argv,0,0);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
 
   // Define simulation specific parameters
-  AppCtx          user;
   user.L0 = 1.0; // length scale
   user.C1x = 0.75; user.C1y = 0.50; // bubble centers
   user.C2x = 0.25; user.C2y = 0.50;
@@ -63,7 +71,6 @@ int main(int argc, char *argv[]) {
   user.theta = 0.85; // temperature parameter (just before section 5.1)
 
   // Set discretization options
-  PetscInt        p=2,N=64,C=1;
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD, "", "NavierStokesKorteweg Options", "IGA");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-p", "polynomial order", __FILE__, p, &p, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-C", "global continuity order", __FILE__, C, &C, PETSC_NULL);CHKERRQ(ierr);
@@ -71,7 +78,6 @@ int main(int argc, char *argv[]) {
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   // Compute simulation parameters
-  PetscInt ng = p+2; // integration in each direction
   user.h = user.L0/N; // characteristic length scale of mesh (Eq. 43, simplified for uniform elements)
   user.Ca = user.h/user.L0; // capillarity number (Eq. 38)
   user.Re = user.alpha/user.Ca; // Reynolds number (Eq. 39)
@@ -81,7 +87,6 @@ int main(int argc, char *argv[]) {
     SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Discretization inconsistent: polynomial order must be greater than degree of continuity");
   }
 
-  PetscInt Nx,Ny;
   Nx=Ny=N;
 
   // Initialize B-spline space
@@ -91,24 +96,21 @@ int main(int argc, char *argv[]) {
                                   p,Nx,C,0.0,1.0,PETSC_TRUE,ng,
                                   p,Ny,C,0.0,1.0,PETSC_TRUE,ng);CHKERRQ(ierr);
 
-  Vec            U; // solution vector
   ierr = DMCreateGlobalVector(user.iga,&U);CHKERRQ(ierr);
   ierr = FormInitialCondition(&user,U);CHKERRQ(ierr);
   ierr = DMIGASetFieldName(user.iga, 0, "density");CHKERRQ(ierr);
   ierr = DMIGASetFieldName(user.iga, 1, "velocity-u");CHKERRQ(ierr);
   ierr = DMIGASetFieldName(user.iga, 2, "velocity-v");CHKERRQ(ierr);
 
-  Mat            J;
   ierr = DMGetMatrix(user.iga, MATAIJ, &J);CHKERRQ(ierr);
 
-  TS             ts;
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSALPHA);CHKERRQ(ierr);
   ierr = TSAlphaSetRadius(ts,0.5);CHKERRQ(ierr);
   ierr = TSSetDM(ts,user.iga);CHKERRQ(ierr);
   ierr = TSSetSolution(ts,U);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
-  ierr = TSSetIFunction(ts,FormResidual,&user);CHKERRQ(ierr);
+  ierr = TSSetIFunction(ts,PETSC_NULL,FormResidual,&user);CHKERRQ(ierr);
   ierr = TSSetIJacobian(ts,J,J,FormTangent,&user);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,1000000,1000.0);CHKERRQ(ierr);
   ierr = TSSetInitialTimeStep(ts,0.0,0.001);CHKERRQ(ierr);
@@ -116,9 +118,8 @@ int main(int argc, char *argv[]) {
   ierr = TSMonitorSet(ts,OutputMonitor,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
-  PetscInt steps;
-  PetscReal ftime;
-  ierr =  TSStep(ts,&steps,&ftime);CHKERRQ(ierr);
+  ierr = TSSolve(ts,U,&ftime);CHKERRQ(ierr);
+  ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
 
   // Cleanup
   ierr = TSDestroy(&ts);CHKERRQ(ierr);

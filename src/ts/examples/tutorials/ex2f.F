@@ -1,3 +1,4 @@
+
 !
 !/*T
 !   Concepts: TS^time-dependent nonlinear problems
@@ -77,8 +78,8 @@
       Mat              A
       PetscBool        flg,monitor
       PetscErrorCode ierr
-      PetscInt  time_steps_max,steps,i1
-      PetscReal dt,ftime,time_total_max
+      PetscInt  time_steps_max,i1,steps
+      PetscReal dt,time_total_max,ftime,norm
 
 !  Note: Any user-defined Fortran routines (such as RHSFunction)
 !  MUST be declared as external.
@@ -140,7 +141,8 @@
 
       call TSCreate(comm,ts,ierr)
       call TSSetProblemType(ts,TS_NONLINEAR,ierr)
-      call TSSetRHSFunction(ts,RHSFunction,PETSC_NULL_OBJECT,ierr)
+      call TSSetRHSFunction(ts,PETSC_NULL_OBJECT,RHSFunction,           &
+     &                      PETSC_NULL_OBJECT,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Set optional user-defined monitoring routine
@@ -176,7 +178,6 @@
 
       dt = h/two_d0
       call TSSetInitialTimeStep(ts,0.d0,dt,ierr)
-      call TSSetSolution(ts,u,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Customize timestepping solver:  
@@ -188,7 +189,8 @@
 !  to override the defaults set by TSSetDuration().
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-      call TSSetType(ts,TSBEULER,ierr)
+      call TSSetType(ts,TSTHETA,ierr)
+      call TSThetaSetTheta(ts,one_d0,ierr)
       call TSSetDuration(ts,time_steps_max,time_total_max,ierr)
       call TSSetFromOptions(ts,ierr)
 
@@ -202,7 +204,13 @@
 
 !  Run the timestepping solver
 
-      call TSStep(ts,steps,ftime,ierr)
+      call TSSolve(ts,u,ftime,ierr)
+      call TSGetTimeStepNumber(ts,steps,ierr)
+      call VecNorm(u,NORM_2,norm,ierr)
+
+      write(6,100) steps,ftime,norm
+ 100  format('Number of pseudo time-steps ',i5,' final time ',1pe8.2,   &
+     & ' solution norm ',1pe8.2)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Free work space.  All PETSc objects should be destroyed when they

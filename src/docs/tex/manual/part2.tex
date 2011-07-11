@@ -4309,7 +4309,7 @@ One sets the total number of timesteps to run or the total time to run
 \end{tabbing}
 One performs the request number of time steps with
 \begin{tabbing}
-  TSSolve(TS ts);
+  TSSolve(TS ts,Vec X,PetscReal *ftime);
 \end{tabbing}
 The solve call implicitly sets up the timestep context;
 this can be done explicitly with
@@ -4323,6 +4323,10 @@ One destroys the context with
 and views it with 
 \begin{tabbing}
  TSView(TS ts,PetscViewer viewer);
+\end{tabbing}
+In place of TSSolve(), a single step can be taken using
+\begin{tabbing}
+TSStep(TS ts);
 \end{tabbing}
 
 \subsection{Solving Time-dependent Problems}
@@ -4362,8 +4366,9 @@ explicit timestepping methods) the user  passes the function with
 the routine
 
 \begin{tabbing}
- TSSetRHSFunction(TS ts,PetscErrorCode (*f)(TS,double,Vec,Vec,void*),void *fP);
+ TSSetRHSFunction(TS ts,Vec R,PetscErrorCode (*f)(TS,double,Vec,Vec,void*),void *fP);
 \end{tabbing}
+The vector \trl{R} is an optional location to store the result.
 The arguments to the function \trl{f()} are
 the timestep context, the current time, the input for the function,
 the output for the function, and the (optional) user-provided context
@@ -4408,14 +4413,15 @@ reduces overhead to prepare the system for algebraic solvers (SNES/KSP)
 by having the user assemble the correctly shifted matrix.  Therefore
 this interface is also useful for ODE systems.
 
-To solve a DAE, instead of TSSetRHSFunction and TSSetRHSJacobian, one
+To solve a DAE, instead of TSSetRHSFunction() and TSSetRHSJacobian(), one
 uses:
 
 \begin{itemize}
 \item Function $F(t,u,\dot{u})$
   \begin{tabbing}
-    TSSetIFunction(TS ts,PetscErrorCode (*f)(TS,PetscReal,Vec,Vec,Vec,void*),void *funP);
+    TSSetIFunction(TS ts,Vec R,PetscErrorCode (*f)(TS,PetscReal,Vec,Vec,Vec,void*),void *funP);
   \end{tabbing}
+  The vector \trl{R} is an optional location to store the residual.
   The arguments to the function \trl{f()} are the
   timestep contex, current time, input state $u$, input time derivative
   $\dot{u}$, and the (optional) user-provided context \trl{funP}.
@@ -4436,8 +4442,22 @@ uses:
   details), and the (optional) user-provided context \trl{jacP}.
 \end{itemize}
 
-Note: currently only TSALPHA, TSGL, TSTHETA, and TSPSEUDO have
-support for solving differential algebraic equations.
+\subsection{Using Implicit-Explicit (IMEX) methods for multi-rate problems}
+\label{sec_imex}
+The methods of the last section can be generalized for problems with multiple time scales using the form
+\begin{equation}\label{eq:imex}
+  G(t,u,\dot u) = F(t,u),\quad u(t_0) = u_0
+\end{equation}
+where $G$ will be treated implicitly using a method suitable for stiff problems and $F$ will be treated explicitly when using an IMEX method like TSARKIMEX.
+$G$ is typically linear or weakly nonlinear while $F$ may have very strong nonlinearities such as arise in non-oscillatory methods for hyperbolic PDE.
+The user provides three pieces of information, the APIs for which have been described above.
+\begin{itemize}
+\item ``Slow'' part $F(t,u)$ using TSSetRHSFunction().
+\item ``Stiff'' part $G(t,u,\dot u)$ using TSSetIFunction().
+\item Jacobian $J(t,u,\dot u) = G_u + a G_{\dot u}$ using TSSetIJacobian().
+  An assembled Jacobian is optional and can be approximated using finite differencing.
+\end{itemize}
+To solve \eqref{eq:imex} using fully implicit methods, the user may also provide the Jacobian $F_u$.
 
 \subsection{Using Sundials from PETSc}
 \label{sec_sundials}

@@ -1049,16 +1049,15 @@ int main(int argc, char *argv[])
   ierr = TSSetType(ts,TSTHETA);CHKERRQ(ierr);
   switch (rd->discretization) {
   case DISCRETIZATION_FD:
-    ierr = TSSetIFunction(ts,RDIFunction_FD,rd);CHKERRQ(ierr);
+    ierr = TSSetIFunction(ts,PETSC_NULL,RDIFunction_FD,rd);CHKERRQ(ierr);
     ierr = TSSetIJacobian(ts,B,B,RDIJacobian_FD,rd);CHKERRQ(ierr);
     break;
   case DISCRETIZATION_FE:
-    ierr = TSSetIFunction(ts,RDIFunction_FE,rd);CHKERRQ(ierr);
+    ierr = TSSetIFunction(ts,PETSC_NULL,RDIFunction_FE,rd);CHKERRQ(ierr);
     ierr = TSSetIJacobian(ts,B,B,RDIJacobian_FE,rd);CHKERRQ(ierr);
     break;
   }
   ierr = TSSetDuration(ts,10000,rd->final_time);CHKERRQ(ierr);
-  ierr = TSSetSolution(ts,X);CHKERRQ(ierr);
   ierr = TSSetInitialTimeStep(ts,0.,1e-3);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
@@ -1086,7 +1085,8 @@ int main(int argc, char *argv[])
   if (rd->test_diff) {
     ierr = RDTestDifferentiation(rd);CHKERRQ(ierr);
   }
-  ierr = TSStep(ts,&steps,&ftime);CHKERRQ(ierr);
+  ierr = TSSolve(ts,X,&ftime);CHKERRQ(ierr);
+  ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Steps %D  final time %G\n",steps,ftime);CHKERRQ(ierr);
   if (rd->view_draw) {
     ierr = RDView(rd,X,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);

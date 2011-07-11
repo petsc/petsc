@@ -29,80 +29,63 @@ typedef struct {
 
 #undef __FUNCT__
 #define __FUNCT__ "TSStep_Alpha"
-static PetscErrorCode TSStep_Alpha(TS ts,PetscInt *steps,PetscReal *ptime)
+static PetscErrorCode TSStep_Alpha(TS ts)
 {
-  TS_Alpha       *th = (TS_Alpha*)ts->data;
-  PetscInt       i,its,lits;
-  PetscErrorCode ierr;
+  TS_Alpha            *th    = (TS_Alpha*)ts->data;
+  PetscInt            its,lits,rej;
+  SNESConvergedReason snesreason;
+  PetscBool           stepok = PETSC_TRUE;
+  PetscReal           nextdt = ts->time_step;
+  PetscErrorCode      ierr;
 
   PetscFunctionBegin;
-  *steps = -ts->steps;
-  *ptime = ts->ptime;
+  ierr = VecCopy(ts->vec_sol,th->X0);CHKERRQ(ierr);
+  for (rej=0; rej<ts->max_reject; rej++,ts->reject++) {
+    ts->time_step = ts->next_time_step;
+    th->stage_time = ts->ptime + th->Alpha_f*ts->time_step;
+    th->shift = th->Alpha_m/(th->Alpha_f*th->Gamma*ts->time_step);
+    /* predictor */
+    ierr = VecCopy(th->X0,th->X1);CHKERRQ(ierr);
+    /* solve R(X,V) = 0 */
+    ierr = SNESSolve(ts->snes,PETSC_NULL,th->X1);CHKERRQ(ierr);
+    ierr = SNESGetIterationNumber(ts->snes,&its);CHKERRQ(ierr);
+    ierr = SNESGetLinearSolveIterations(ts->snes,&lits);CHKERRQ(ierr);
+    ts->nonlinear_its += its; ts->linear_its += lits;
+    ierr = SNESGetConvergedReason(ts->snes,&snesreason);CHKERRQ(ierr);
+    if (snesreason < 0) {
+      if (++ts->num_snes_failures >= ts->max_snes_failures) {
+        ts->reason = TS_DIVERGED_NONLINEAR_SOLVE;
+        ierr = PetscInfo2(ts,"step=%D, nonlinear solve solve failures %D greater than current TS allowed, stopping solve\n",ts->steps,ts->num_snes_failures);CHKERRQ(ierr);
+        break;
+      }
+    }
+    /* V1 = (1-1/Gamma)*V0 + 1/(Gamma*dT)*(X1-X0) */
+    ierr = VecWAXPY(th->V1,-1,th->X0,th->X1);CHKERRQ(ierr);
+    ierr = VecAXPBY(th->V1,1-1/th->Gamma,1/(th->Gamma*ts->time_step),th->V0);CHKERRQ(ierr);
 
-  ierr = TSMonitor(ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
-
-  for (i=0; i<ts->max_steps; i++) {
-    SNESConvergedReason snesreason;
-    PetscBool stepok = PETSC_TRUE;
-    PetscReal nextdt = ts->time_step;
-    if (ts->ptime + ts->time_step > ts->max_time) break;
-    ierr = TSPreStep(ts);CHKERRQ(ierr);
-
-    ierr = VecCopy(ts->vec_sol,th->X0);CHKERRQ(ierr);
-    for (;;) {
-      ts->time_step = nextdt;
-      th->stage_time = ts->ptime + th->Alpha_f*ts->time_step;
-      th->shift = th->Alpha_m/(th->Alpha_f*th->Gamma*ts->time_step);
-      /* predictor */
-      ierr = VecCopy(th->X0,th->X1);CHKERRQ(ierr);
-      /* solve R(X,V) = 0 */
-      ierr = SNESSolve(ts->snes,PETSC_NULL,th->X1);CHKERRQ(ierr);
-      ierr = SNESGetConvergedReason(ts->snes,&snesreason);CHKERRQ(ierr);
+    /* adapt time step */
+    if (th->adapt) {
+      PetscReal t = ts->ptime+ts->time_step;
+      PetscReal dtend = ts->max_time-t;
       if (snesreason > 0) {
-        ierr = SNESGetIterationNumber(ts->snes,&its);CHKERRQ(ierr);
-        ierr = SNESGetLinearSolveIterations(ts->snes,&lits);CHKERRQ(ierr);
-        ts->nonlinear_its += its; ts->linear_its += lits;
-        /* V1 = (1-1/Gamma)*V0 + 1/(Gamma*dT)*(X1-X0) */
-        ierr = VecWAXPY(th->V1,-1,th->X0,th->X1);CHKERRQ(ierr);
-        ierr = VecAXPBY(th->V1,1-1/th->Gamma,1/(th->Gamma*ts->time_step),th->V0);CHKERRQ(ierr);
+        ierr = th->adapt(ts,t,th->X1,th->V1,&nextdt,&stepok,th->adaptctx);CHKERRQ(ierr);
+      } else {
+        stepok = PETSC_FALSE;
+        nextdt *= th->scale_min;
       }
-      /* adapt time step */
-      if (th->adapt) {
-        PetscReal t = ts->ptime+ts->time_step;
-        PetscReal dtend = ts->max_time-t;
-        if (snesreason > 0) {
-          ierr = th->adapt(ts,t,th->X1,th->V1,&nextdt,&stepok,th->adaptctx);CHKERRQ(ierr);
-        } else {
-          stepok = PETSC_FALSE;
-          nextdt *= th->scale_min;
-        }
-        nextdt = PetscMax(nextdt,th->dt_min);
-        nextdt = PetscMin(nextdt,th->dt_max);
-        if (dtend > 0) nextdt = PetscMin(nextdt,dtend);
-        ierr = PetscInfo4(ts,"Step %D (t=%G) %s, next dt=%G\n",ts->steps,ts->ptime,
-                          stepok?"accepted":"rejected",nextdt);CHKERRQ(ierr);
-      }
-      if (stepok) break;
+      nextdt = PetscMax(nextdt,th->dt_min);
+      nextdt = PetscMin(nextdt,th->dt_max);
+      if (dtend > 0) nextdt = PetscMin(nextdt,dtend);
+      ierr = PetscInfo4(ts,"Step %D (t=%G) %s, next dt=%G\n",ts->steps,ts->ptime,
+                        stepok?"accepted":"rejected",nextdt);CHKERRQ(ierr);
     }
-    if (snesreason > 0) {
-      ierr = VecCopy(th->X1,th->X0);CHKERRQ(ierr);
-      ierr = VecCopy(th->V1,th->V0);CHKERRQ(ierr);
-    } else {
-      ierr = PetscInfo1(ts,"step=%D, nonlinear solve solve failure, "
-                        "stopping solve\n",ts->steps);CHKERRQ(ierr);
-      break;
-    }
-    ierr = VecCopy(th->X1,ts->vec_sol);CHKERRQ(ierr);
-    ts->ptime += ts->time_step;
-    ts->time_step = nextdt;
-    ts->steps++;
-
-    ierr = TSPostStep(ts);CHKERRQ(ierr);
-    ierr = TSMonitor(ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
+    if (stepok) break;
   }
-
-  *steps += ts->steps;
-  *ptime  = ts->ptime;
+  ierr = VecCopy(th->V1,th->V0);CHKERRQ(ierr);
+  ierr = VecCopy(th->X1,ts->vec_sol);CHKERRQ(ierr);
+  ts->ptime += ts->time_step;
+  ts->next_time_step = nextdt;
+  ts->steps++;
   PetscFunctionReturn(0);
 }
 
@@ -121,7 +104,6 @@ static PetscErrorCode TSReset_Alpha(TS ts)
   ierr = VecDestroy(&th->V0);CHKERRQ(ierr);
   ierr = VecDestroy(&th->Va);CHKERRQ(ierr);
   ierr = VecDestroy(&th->V1);CHKERRQ(ierr);
-  ierr = VecDestroy(&th->R);CHKERRQ(ierr);
   ierr = VecDestroy(&th->E);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -163,7 +145,7 @@ static PetscErrorCode SNESTSFormFunction_Alpha(SNES snes,Vec x,Vec y,TS ts)
   ierr = VecWAXPY(th->Va,-1,V0,V1);CHKERRQ(ierr);
   ierr = VecAYPX(th->Va,th->Alpha_m,V0);CHKERRQ(ierr);
   /* F = Function(ta,Xa,Va) */
-  ierr = TSComputeIFunction(ts,th->stage_time,th->Xa,th->Va,R);CHKERRQ(ierr);
+  ierr = TSComputeIFunction(ts,th->stage_time,th->Xa,th->Va,R,PETSC_FALSE);CHKERRQ(ierr);
   ierr = VecScale(R,1/th->Alpha_f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -177,7 +159,7 @@ static PetscErrorCode SNESTSFormJacobian_Alpha(SNES snes,Vec x,Mat *A,Mat *B,Mat
 
   PetscFunctionBegin;
   /* A,B = Jacobian(ta,Xa,Va) */
-  ierr = TSComputeIJacobian(ts,th->stage_time,th->Xa,th->Va,th->shift,A,B,str);CHKERRQ(ierr);
+  ierr = TSComputeIJacobian(ts,th->stage_time,th->Xa,th->Va,th->shift,A,B,str,PETSC_FALSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -189,24 +171,12 @@ static PetscErrorCode TSSetUp_Alpha(TS ts)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (ts->problem_type != TS_NONLINEAR) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Only for nonlinear problems");
-
   ierr = VecDuplicate(ts->vec_sol,&th->X0);CHKERRQ(ierr);
   ierr = VecDuplicate(ts->vec_sol,&th->Xa);CHKERRQ(ierr);
   ierr = VecDuplicate(ts->vec_sol,&th->X1);CHKERRQ(ierr);
   ierr = VecDuplicate(ts->vec_sol,&th->V0);CHKERRQ(ierr);
   ierr = VecDuplicate(ts->vec_sol,&th->Va);CHKERRQ(ierr);
   ierr = VecDuplicate(ts->vec_sol,&th->V1);CHKERRQ(ierr);
-
-  ierr = VecDuplicate(ts->vec_sol,&th->R);CHKERRQ(ierr);
-  ierr = SNESSetFunction(ts->snes,th->R,SNESTSFormFunction,ts);CHKERRQ(ierr);
-  {
-    Mat A,B;
-    PetscErrorCode (*func)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
-    void *ctx;
-    ierr = SNESGetJacobian(ts->snes,&A,&B,&func,&ctx);CHKERRQ(ierr);
-    ierr = SNESSetJacobian(ts->snes,A?A:ts->A,B?B:ts->B,func?func:SNESTSFormJacobian,ctx?ctx:ts);CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
 
@@ -254,8 +224,6 @@ static PetscErrorCode TSView_Alpha(TS ts,PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"  Alpha_m=%G, Alpha_f=%G, Gamma=%G\n",th->Alpha_m,th->Alpha_f,th->Gamma);CHKERRQ(ierr);
-  } else {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for TS_Alpha",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -355,9 +323,6 @@ PetscErrorCode  TSCreate_Alpha(TS ts)
   ts->ops->setfromoptions = TSSetFromOptions_Alpha;
   ts->ops->snesfunction   = SNESTSFormFunction_Alpha;
   ts->ops->snesjacobian   = SNESTSFormJacobian_Alpha;
-
-  ts->problem_type = TS_NONLINEAR;
-  ierr = TSGetSNES(ts,&ts->snes);CHKERRQ(ierr);
 
   ierr = PetscNewLog(ts,TS_Alpha,&th);CHKERRQ(ierr);
   ts->data = (void*)th;

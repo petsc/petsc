@@ -306,8 +306,8 @@ PetscErrorCode TSRKqs(TS ts,PetscReal t,PetscReal h)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TSStep_RK"
-static PetscErrorCode TSStep_RK(TS ts,PetscInt *steps,PetscReal *ptime)
+#define __FUNCT__ "TSSolve_RK"
+static PetscErrorCode TSSolve_RK(TS ts)
 {
   TS_RK          *rk = (TS_RK*)ts->data;
   PetscReal      norm=0.0,dt_fac=0.0,fac = 0.0/*,ttmp=0.0*/;
@@ -315,11 +315,6 @@ static PetscErrorCode TSStep_RK(TS ts,PetscInt *steps,PetscReal *ptime)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  *steps = -ts->steps;
-  *ptime  = ts->ptime;
-
-  ierr = TSMonitor(ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
-
   ierr = VecCopy(ts->vec_sol,rk->y1);CHKERRQ(ierr);
 
   /* while loop to get from start to stop */
@@ -399,9 +394,6 @@ static PetscErrorCode TSStep_RK(TS ts,PetscInt *steps,PetscReal *ptime)
   }
 
   ierr=VecCopy(rk->y1,ts->vec_sol);CHKERRQ(ierr);
-
-  *steps += ts->steps;
-  *ptime  = ts->ptime;
   PetscFunctionReturn(0);
 }
 
@@ -431,6 +423,7 @@ static PetscErrorCode TSDestroy_RK(TS ts)
   PetscFunctionBegin;
   ierr = TSReset_RK(ts);CHKERRQ(ierr);
   ierr = PetscFree(ts->data);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSRKSetTolerance_C","",PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /*------------------------------------------------------------*/
@@ -454,11 +447,15 @@ static PetscErrorCode TSSetFromOptions_RK(TS ts)
 static PetscErrorCode TSView_RK(TS ts,PetscViewer viewer)
 {
    TS_RK          *rk = (TS_RK*)ts->data;
+   PetscBool      iascii;
    PetscErrorCode ierr;
 
    PetscFunctionBegin;
-   ierr = PetscPrintf(PETSC_COMM_WORLD,"  number of ok steps: %D\n",rk->nok);CHKERRQ(ierr);
-   ierr = PetscPrintf(PETSC_COMM_WORLD,"  number of rejected steps: %D\n",rk->nnok);CHKERRQ(ierr);
+   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
+   if (iascii) {
+     ierr = PetscViewerASCIIPrintf(viewer,"number of ok steps: %D\n",rk->nok);CHKERRQ(ierr);
+     ierr = PetscViewerASCIIPrintf(viewer,"number of rejected steps: %D\n",rk->nnok);CHKERRQ(ierr);
+   }
    PetscFunctionReturn(0);
 }
 
@@ -487,7 +484,7 @@ PetscErrorCode  TSCreate_RK(TS ts)
 
   PetscFunctionBegin;
   ts->ops->setup           = TSSetUp_RK;
-  ts->ops->step            = TSStep_RK;
+  ts->ops->solve           = TSSolve_RK;
   ts->ops->destroy         = TSDestroy_RK;
   ts->ops->setfromoptions  = TSSetFromOptions_RK;
   ts->ops->view            = TSView_RK;

@@ -62,8 +62,12 @@ int main(int argc,char **argv)
   PetscErrorCode ierr; 
   PetscReal      param_max = 6.81,param_min = 0.,dt;
   PetscReal      ftime;
+  PetscMPIInt    size;
 
   PetscInitialize(&argc,&argv,PETSC_NULL,help);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);
+  if (size != 1) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"This is a uniprocessor example only");
+
   user.mx        = 4;
   user.my        = 4;
   user.param     = 6.0;
@@ -110,7 +114,7 @@ int main(int argc,char **argv)
      function they will call this routine. Note the final argument
      is the application context used by the call-back functions.
   */
-  ierr = TSSetRHSFunction(ts,FormFunction,&user);CHKERRQ(ierr);
+  ierr = TSSetRHSFunction(ts,PETSC_NULL,FormFunction,&user);CHKERRQ(ierr);
 
   /*
      Set the Jacobian matrix and the function used to compute 
@@ -158,8 +162,13 @@ int main(int argc,char **argv)
   /*
       Perform the solve. This is where the timestepping takes place.
   */
-  ierr = TSStep(ts,&its,&ftime);CHKERRQ(ierr);
-  
+  ierr = TSSolve(ts,x,&ftime);CHKERRQ(ierr);
+
+  /*
+      Get the number of steps
+  */
+  ierr = TSGetTimeStepNumber(ts,&its);CHKERRQ(ierr);
+
   printf("Number of pseudo timesteps = %d final time %4.2e\n",(int)its,ftime);
 
   /* 

@@ -281,8 +281,18 @@ and SNESLineSearchSetParams().<br>
       <ul>
         <li>Rename TSCRANK_NICHOLSON to TSCN and TSRUNGE_KUTTA to TSRK
 for consistency.</li>
-        <li> <br>
-        </li>
+        <li>TSSetIFunction() and TSSetRHSFunction() have an additional
+argument for the vector to compute the function value in. If PETSC_NULL
+is used, then one is created by the TS.</li>
+        <li>TSSetMatrices() has been removed, use TSSetIFunction() and
+TSSetRHSFunction(), perhaps providing Jacobian matrices and
+TSComputeRHSFunctionLinear() and/or TSComputeRHSJacobianConstant(). See
+src/ts/examples/tutorials/ex{2,4,5,6}.c for an example.</li>
+        <li>Added TSARKIMEX: additive Runge-Kutta implicit-explicit methods
+for multi-rate systems.</li>
+        <li>Changed TSStep() interface to only perform one step, added TSSolve()
+to perform multiple steps with callbacks and monitors if desired.</li>
+        <li>Added TSSetExactFinalTime(), replaces TSSundialsSetExactFinalTime(). </li>
       </ul>
       <p><u><b>DM/DA:</b></u></p>
       <ul>
