@@ -59,7 +59,7 @@ sockets and locks to allow a running program (called the accessor) to
 read (and change when desired) variables in another running code
 (called the publisher application).<br>
       </p>
-      <h3> Requirements and installation of the AMS<br>
+      <h3> Requirements and installation of the AMS (if not using the --download-ams PETSc ./configure option)<br>
       </h3>
       <ul>
         <li style="color: rgb(255, 0, 0);">This is currently only
@@ -75,14 +75,14 @@ ssh://petsc@petsc.cs.iit.edu//hg/petsc/ams-dev</li>
       </h3>
       <ul>
         <li>./configure PETSc with the option
---with-ams-dir=/directorywhereamsisinstalled --with-java
+--with-ams-dir=/directorywhereamsisinstalled (or --download-ams) --with-java
 [--java=/usr/bin/java -d32 --javac=/usr/bin/javac]<br>
         </li>
         <li>To change variables in the options database run PETSc applications with the additional options
 -options_gui and -ams_java and you will see something like depicted <a
  href="ftp://ftp.mcs.anl.gov/pub/petsc/AMSOptions.mov">in this movie</a><br>
         </li>
-        <li>To examine options in a browser run PETSc applications with -server <port> and point your brower to http://localhost:8080 (see PetscWebServe()).
+        <li>To examine options in a browser run PETSc applications with -server <port> -ams_publish_objects and point your brower to http://localhost:8080 (see PetscWebServe()).
         </li>
       </ul>
       <p></p>
@@ -98,4 +98,4 @@ ssh://petsc@petsc.cs.iit.edu//hg/petsc/ams-dev</li>
 </table>
 </body>
 </html>
-g
+
