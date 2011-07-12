@@ -3471,7 +3471,7 @@ the following two steps:
 \end{eqnarray}
 
 
-\section{Basic Usage}
+\section{Basic SNES Usage}
 \label{sec_snesusage}
 
 In the simplest usage of the nonlinear solvers, the user must merely 
@@ -4263,7 +4263,7 @@ the transient form is
 \]
 See Section~\ref{sec_dae} for details on this formulation.
 
-\section{Basic Usage}
+\section{Basic TS Usage}
 
 The user first creates a TS object with the command
 \begin{tabbing}
@@ -4457,7 +4457,7 @@ The user provides three pieces of information, the APIs for which have been desc
 \item Jacobian $J(t,u,\dot u) = G_u + a G_{\dot u}$ using TSSetIJacobian().
   An assembled Jacobian is optional and can be approximated using finite differencing.
 \end{itemize}
-To solve \eqref{eq:imex} using fully implicit methods, the user may also provide the Jacobian $F_u$.
+To solve Equation~\ref{eq:imex} using fully implicit methods, the user may also provide the Jacobian $F_u$.
 
 \subsection{Using Sundials from PETSc}
 \label{sec_sundials}

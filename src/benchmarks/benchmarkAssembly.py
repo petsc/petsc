@@ -10,10 +10,11 @@ def processSummary(moduleName, times, events):
   times.append(m.Time[0])
   # Common events
   #   Add the time and flop rate
-  for name in ['MatCUSPSetValBch', 'ElemAssembly']:
-    if not name in events:
-      events[name] = []
-    events[name].append((m.Main_Stage.event[name].Time[0], m.Main_Stage.event[name].Flops[0]/(m.Main_Stage.event[name].Time[0] * 1e6)))
+  for stageName, eventName in [('GPU_Stage','MatCUSPSetValBch'), ('CPU_Stage','ElemAssembly')]:
+    s = getattr(m, stageName)
+    if not eventName in events:
+      events[eventName] = []
+    events[eventName].append((s.event[eventName].Time[0], s.event[eventName].Flops[0]/(s.event[eventName].Time[0] * 1e6)))
   return
 
 def plotSummary(library, num, sizes, times, events):
