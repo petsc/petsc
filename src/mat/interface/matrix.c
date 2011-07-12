@@ -6198,9 +6198,7 @@ PetscErrorCode  MatRestoreArray(Mat mat,PetscScalar *v[])
   PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
   PetscValidType(mat,1);
   PetscValidPointer(v,2);
-#if defined(PETSC_USE_DEBUG)
   CHKMEMQ;
-#endif
   if (!mat->ops->restorearray) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
   ierr = (*mat->ops->restorearray)(mat,v);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)mat);CHKERRQ(ierr);

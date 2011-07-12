@@ -546,12 +546,15 @@ PetscErrorCode  DMGetMatrix(DM dm,const MatType mtype,Mat *mat)
   PetscBool      flg;
 
   PetscFunctionBegin;
+#ifndef PETSC_USE_DYNAMIC_LIBRARIES
+  ierr = MatInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+#endif
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidPointer(mat,3);
-  ierr = PetscStrncpy(ttype,mtype,sizeof ttype);CHKERRQ(ierr);
-  ttype[sizeof ttype-1] = 0;
+  ierr = PetscStrncpy(ttype,mtype,sizeof(ttype));CHKERRQ(ierr);
+  ttype[sizeof(ttype)-1] = 0;
   ierr = PetscOptionsBegin(((PetscObject)dm)->comm,((PetscObject)dm)->prefix,"DM options","Mat");CHKERRQ(ierr);
-  ierr = PetscOptionsList("-dm_mat_type","Matrix type","MatSetType",MatList,ttype,ttype,sizeof ttype,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsList("-dm_mat_type","Matrix type","MatSetType",MatList,ttype,ttype,sizeof(ttype),&flg);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   if (flg || mtype) {
     ierr = (*dm->ops->getmatrix)(dm,ttype,mat);CHKERRQ(ierr);

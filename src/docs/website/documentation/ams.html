@@ -69,23 +69,20 @@ http://petsc.cs.iit.edu/petsc/ams-dev or
 ssh://petsc@petsc.cs.iit.edu//hg/petsc/ams-dev</li>
         <li>Edit the file makeinc and set the compiler, linker etc. <br>
         </li>
-        <li>Run make all in the c and examples subdirectories.</li>
-        <li>If you plan to use the accessor from Java then run make all
-in the java/jni subdirectory<br>
-        </li>
+        <li>Run make</li>
       </ul>
       <h3>Usage from PETSc<br>
       </h3>
       <ul>
-        <li style="color: rgb(255, 0, 0);">Currently only accessing and
-changing variables in the options database is available</li>
         <li>./configure PETSc with the option
 --with-ams-dir=/directorywhereamsisinstalled --with-java
 [--java=/usr/bin/java -d32 --javac=/usr/bin/javac]<br>
         </li>
-        <li>Run PETSc applications with the additional options
+        <li>To change variables in the options database run PETSc applications with the additional options
 -options_gui and -ams_java and you will see something like depicted <a
  href="ftp://ftp.mcs.anl.gov/pub/petsc/AMSOptions.mov">in this movie</a><br>
+        </li>
+        <li>To examine options in a browser run PETSc applications with -server <port> and point your brower to http://localhost:8080 (see PetscWebServe()).
         </li>
       </ul>
       <p></p>
@@ -101,3 +98,4 @@ changing variables in the options database is available</li>
 </table>
 </body>
 </html>
+g

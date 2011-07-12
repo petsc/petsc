@@ -968,9 +968,8 @@ PetscErrorCode DMMGSetSNESLocal_Private(DMMG *dmmg,DMDALocalFunction1 function,D
   CHKMEMQ;
   ierr = PetscObjectGetType((PetscObject) dmmg[0]->dm, &typeName);CHKERRQ(ierr);
   ierr = PetscStrcmp(typeName, DMMESH, &ismesh);CHKERRQ(ierr);
-  if (ismesh) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Unstructured grids no longer supported since DMMG will be phased out");
-  } else {
+  if (ismesh)  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Unstructured grids no longer supported since DMMG will be phased out");
+  else {
     PetscBool  flag;
     /* it makes no sense to use an option to decide on ghost, it depends on whether the 
        formfunctionlocal computes ghost values in F or not. */
