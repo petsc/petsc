@@ -1083,7 +1083,7 @@ PetscErrorCode MatCreate_FFTW(Mat A)
   PetscInt       p_flag,partial_dim=1,ctr,N1;
   PetscMPIInt    size,rank;
   ptrdiff_t      *pdim, temp;
-  ptrdiff_t      local_n1,local_1_start;
+  ptrdiff_t      local_n1,local_1_start,local_1_end;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
