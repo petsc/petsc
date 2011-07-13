@@ -492,7 +492,7 @@ PetscViewer  PETSC_VIEWER_SOCKET_(MPI_Comm comm)
 
 #include <pthread.h>
 #include <time.h>
-#define PROTOCOL   "HTTP/1.0"
+#define PROTOCOL   "HTTP/1.1"
 #define RFC1123FMT "%a, %d %b %Y %H:%M:%S GMT"
 
 #undef __FUNCT__  
@@ -766,6 +766,7 @@ PetscErrorCode  PetscWebServeRequest(int port)
   char           *method, *path, *protocol;
   PetscBool      flg;
   PetscToken     tok;
+  PetscInt       cnt = 8;
 
   PetscFunctionBegin;
   fd = fdopen(port, "r+");
@@ -773,7 +774,7 @@ PetscErrorCode  PetscWebServeRequest(int port)
   ierr = PetscInfo(PETSC_NULL,"Processing web request\n");CHKERRQ(ierr);
   if (!fgets(buf, sizeof(buf), fd)) {
     ierr = PetscInfo(PETSC_NULL,"Cannot read web request, giving up\n");CHKERRQ(ierr); 
-    PetscFunctionReturn(0);
+    goto theend;
   }
   ierr = PetscInfo1(PETSC_NULL,"Processing web request %s",buf);CHKERRQ(ierr);
 
@@ -781,20 +782,64 @@ PetscErrorCode  PetscWebServeRequest(int port)
   ierr = PetscTokenFind(tok,&method);CHKERRQ(ierr);
   ierr = PetscTokenFind(tok,&path);CHKERRQ(ierr);
   ierr = PetscTokenFind(tok,&protocol);CHKERRQ(ierr);
+  ierr = PetscTokenDestroy(tok);CHKERRQ(ierr);
 
   if (!method || !path || !protocol) {
     ierr = PetscInfo(PETSC_NULL,"Web request not well formatted, giving up\n");CHKERRQ(ierr); 
-    ierr = PetscTokenDestroy(tok);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
+    goto theend;
   }   
 
-  fseek(fd, 0, SEEK_CUR); /* Force change of stream direction */
 
   ierr = PetscStrcmp(method,"GET",&flg);
   if (!flg) {
-    ierr = PetscWebSendError(fd, 501, "Not supported", NULL, "Method is not supported.");CHKERRQ(ierr);
-    ierr = PetscInfo(PETSC_NULL,"Web request not a GET, giving up\n");CHKERRQ(ierr); 
-   } else {
+    ierr = PetscStrcmp(method,"POST",&flg);
+    if (flg) {
+      int len;
+      while (cnt--) {
+        if (!fgets(buf, sizeof(buf), fd)) {
+          ierr = PetscInfo(PETSC_NULL,"Cannot read POST data, giving up\n");CHKERRQ(ierr); 
+          goto theend;
+        }
+        ierr = PetscInfo1(PETSC_NULL,"POSTED data %s\n",buf);CHKERRQ(ierr); 
+      }
+      if (!fgets(buf, sizeof(buf), fd)) {
+        ierr = PetscInfo(PETSC_NULL,"Cannot read POST length data, giving up\n");CHKERRQ(ierr); 
+        goto theend;
+      }
+      ierr = PetscInfo1(PETSC_NULL,"POSTED length data %s\n",buf);CHKERRQ(ierr); 
+      sscanf(buf,"Content-Length: %d\n",&len);
+      ierr = PetscInfo1(PETSC_NULL,"Length of POSTED data %d\n",len);CHKERRQ(ierr); 
+      if (!fgets(buf, sizeof(buf), fd)) {
+        ierr = PetscInfo(PETSC_NULL,"Cannot read POST data, giving up\n");CHKERRQ(ierr); 
+        goto theend;
+      }
+      ierr = PetscInfo1(PETSC_NULL,"POSTED data %s\n",buf);CHKERRQ(ierr); 
+      if (!fgets(buf, sizeof(buf), fd)) {
+        ierr = PetscInfo(PETSC_NULL,"Cannot read POST data, giving up\n");CHKERRQ(ierr); 
+        goto theend;
+      }
+      ierr = PetscInfo1(PETSC_NULL,"POSTED data %s\n",buf);CHKERRQ(ierr); 
+      if (!fgets(buf, len+1, fd)) {
+        ierr = PetscInfo(PETSC_NULL,"Cannot read POST data, giving up\n");CHKERRQ(ierr); 
+        goto theend;
+      }
+      ierr = PetscInfo1(PETSC_NULL,"POSTED data %s\n",buf);CHKERRQ(ierr); 
+      fseek(fd, 0, SEEK_CUR); /* Force change of stream direction */
+      const char *str = "{\"result\": \"hello\", \"error\": null, \"id\": 0}";
+      size_t elen;
+      ierr = PetscStrlen(str,&elen);CHKERRQ(ierr);
+      ierr = PetscWebSendHeader(fd, 200, "OK", NULL, "application/json-rpc",(int)elen);CHKERRQ(ierr);
+      fprintf(fd, "%s",str);
+      printf("%s\n",str);
+      /* fprintf(fd, "Content-Type: text/plain\nContent-Length: %d\n\nhello",5);*/
+      goto theend;
+    } else {
+      ierr = PetscWebSendError(fd, 501, "Not supported", NULL, "Method is not supported.");CHKERRQ(ierr);
+      ierr = PetscInfo(PETSC_NULL,"Web request not a GET or POST, giving up\n");CHKERRQ(ierr); 
+    }
+  } else {
+    fseek(fd, 0, SEEK_CUR); /* Force change of stream direction */
+
     ierr = PetscStrcmp(path,"/favicon.ico",&flg);CHKERRQ(ierr);
     if (flg) {
       /* should have cool PETSc icon */;
@@ -841,7 +886,6 @@ PetscErrorCode  PetscWebServeRequest(int port)
     ierr = PetscWebSendError(fd, 501, "Not supported", NULL, "Unknown request.");CHKERRQ(ierr);
   }
   theend:
-  ierr = PetscTokenDestroy(tok);CHKERRQ(ierr);
   fclose(fd);
   ierr = PetscInfo(PETSC_NULL,"Finished processing request\n");CHKERRQ(ierr); 
 
