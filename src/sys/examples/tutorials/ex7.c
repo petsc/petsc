@@ -26,8 +26,8 @@ int main(int argc,char **argv)
   ierr = PetscInitialize(&argc,&argv,(char *)0,help);CHKERRQ(ierr);
 
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Starting up PetscWebServe()\n");CHKERRQ(ierr);
-#if defined(PETSC_HAVE_SERVER)
-  ierr = PetscWebServe(PETSC_COMM_WORLD,PETSC_DECIDE);CHKERRQ(ierr);
+#if defined(PETSC_USE_SERVER)
+  ierr = PetscWebServe(PETSC_COMM_WORLD,8000);CHKERRQ(ierr);
   while (1) {;}
 #endif
 
