@@ -761,9 +761,10 @@ PetscErrorCode PetscAMSDisplayTree(FILE *fd)
 PetscErrorCode  PetscWebServeRequest(int port)
 {
   PetscErrorCode ierr;
-  FILE           *fd;
-  char           buf[4096];
+  FILE           *fd,*fdo;
+  char           buf[4096],fullpath[4024];
   char           *method, *path, *protocol;
+  const char*    type;
   PetscBool      flg;
   PetscToken     tok;
   PetscInt       cnt = 8;
@@ -880,17 +881,20 @@ PetscErrorCode  PetscWebServeRequest(int port)
         fprintf(fd, "<a href=\"./ams\">Connect to Memory Snooper</a></p>\r\n\r\n");
       }
 #endif
-      fprintf(fd, "<a href=\"./JSONRPCExample.html\"></a>JSONRPCExample.html</p>\r\n\r\n");
+      fprintf(fd, "<a href=\"./JSONRPCExample.html\">JSONRPCExample.html</a></p>\r\n\r\n");
       ierr = PetscWebSendFooter(fd);CHKERRQ(ierr);
       goto theend;
     }
-    FILE        *fdo = fopen(path+1,"r");
-    const char* type;
+
+    ierr = PetscStrcpy(fullpath,"${PETSC_DIR}/include/web");CHKERRQ(ierr);
+    ierr = PetscStrcat(fullpath,path);CHKERRQ(ierr);
+    ierr = PetscInfo1(PETSC_NULL,"Checking for file %s\n",fullpath);CHKERRQ(ierr);
+    ierr = PetscFOpen(PETSC_COMM_SELF,fullpath,"r",&fdo);CHKERRQ(ierr);
     if (fdo) {      
-      ierr = PetscStrendswith(path,".html",&flg);CHKERRQ(ierr);
+      ierr = PetscStrendswith(fullpath,".html",&flg);CHKERRQ(ierr);
       if (flg) type = "text/html";
       else {
-        ierr = PetscStrendswith(path,".js",&flg);CHKERRQ(ierr);
+        ierr = PetscStrendswith(fullpath,".js",&flg);CHKERRQ(ierr);
         if (flg) type = "text/javascript";
         else type = "text/unknown";
       }
@@ -900,7 +904,7 @@ PetscErrorCode  PetscWebServeRequest(int port)
         fprintf(fd,"%s\n",buf);
       }
       fclose(fdo);
-      ierr = PetscInfo2(PETSC_NULL,"Sent file %s to browser using format %s\n",path,type);CHKERRQ(ierr);       
+      ierr = PetscInfo2(PETSC_NULL,"Sent file %s to browser using format %s\n",fullpath,type);CHKERRQ(ierr);       
       goto theend;
     }
 #if defined(PETSC_HAVE_AMS)
