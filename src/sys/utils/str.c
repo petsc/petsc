@@ -685,6 +685,43 @@ PetscErrorCode  PetscTokenDestroy(PetscToken a)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "PetscStrendswith"
+/*@C
+   PetscStrendswith - Determines if a string ends with a certain string
+
+   Not Collective
+
+   Input Parameters:
++  a - pointer to string
+-  b - string to endwith
+
+   Output Parameter:
+.  flg - PETSC_TRUE or PETSC_FALSE
+
+   Notes:     Not for use in Fortran
+
+   Level: intermediate
+
+@*/
+PetscErrorCode  PetscStrendswith(const char a[],const char b[],PetscBool *flg)
+{
+  char           *test;
+  PetscErrorCode ierr;
+  size_t         na,nb;
+
+  PetscFunctionBegin;
+  *flg = PETSC_FALSE;
+  ierr = PetscStrrstr(a,b,&test);CHKERRQ(ierr);
+  if (test) {
+    ierr = PetscStrlen(a,&na);CHKERRQ(ierr);
+    ierr = PetscStrlen(b,&nb);CHKERRQ(ierr);
+    if (a+na-nb == test) *flg = PETSC_TRUE;
+  }
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__  
 #define __FUNCT__ "PetscStrrstr"
 /*@C
    PetscStrrstr - Locates last occurance of string in another string

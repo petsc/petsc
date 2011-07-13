@@ -319,7 +319,7 @@ public class amsoptions {
         System.out.println("User changed Choice"+choice.getSelectedItem()+mem.get_field(choice.vName).getStringData()[0]);
         mem.get_field(choice.vLock).setData(true,0);
 
-        /* tell publisher that I changed a method so it can send me a new sreen of data */
+        /* tell publisher that I changed a method so it can send me a new screen of data */
         mem.get_field("ChangedMethod").setData(true,0);
         panel.removeAll();
         System.out.println("User selected choice");

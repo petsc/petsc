@@ -806,7 +806,7 @@ PetscErrorCode  PetscWebServeRequest(int port)
           ierr = PetscInfo(PETSC_NULL,"Cannot read POST data, giving up\n");CHKERRQ(ierr); 
           goto theend;
         }
-        ierr = PetscInfo1(PETSC_NULL,"POSTED data %s\n",buf);CHKERRQ(ierr); 
+        ierr = PetscInfo1(PETSC_NULL,"POSTED data %s",buf);CHKERRQ(ierr); 
         ierr = PetscStrstr(buf,"Content-Type:",&fnd);CHKERRQ(ierr);
         if (fnd) {
           ierr = PetscStrstr(buf,"application/json-rpc",&fnd);CHKERRQ(ierr);
@@ -820,19 +820,19 @@ PetscErrorCode  PetscWebServeRequest(int port)
         ierr = PetscInfo(PETSC_NULL,"Cannot read POST length data, giving up\n");CHKERRQ(ierr); 
         goto theend;
       }
-      ierr = PetscInfo1(PETSC_NULL,"POSTED length data %s\n",buf);CHKERRQ(ierr); 
+      ierr = PetscInfo1(PETSC_NULL,"POSTED length data %s",buf);CHKERRQ(ierr); 
       sscanf(buf,"Content-Length: %d\n",&len);
       ierr = PetscInfo1(PETSC_NULL,"Length of POSTED data %d\n",len);CHKERRQ(ierr); 
       if (!fgets(buf, sizeof(buf), fd)) {
         ierr = PetscInfo(PETSC_NULL,"Cannot read POST data, giving up\n");CHKERRQ(ierr); 
         goto theend;
       }
-      ierr = PetscInfo1(PETSC_NULL,"POSTED data %s\n",buf);CHKERRQ(ierr); 
+      ierr = PetscInfo1(PETSC_NULL,"POSTED data %s",buf);CHKERRQ(ierr); 
       if (!fgets(buf, sizeof(buf), fd)) {
         ierr = PetscInfo(PETSC_NULL,"Cannot read POST data, giving up\n");CHKERRQ(ierr); 
         goto theend;
       }
-      ierr = PetscInfo1(PETSC_NULL,"POSTED data %s\n",buf);CHKERRQ(ierr); 
+      ierr = PetscInfo1(PETSC_NULL,"POSTED data %s",buf);CHKERRQ(ierr); 
       if (!fgets(buf, len+1, fd)) { /* why is this len + 1? */
         ierr = PetscInfo(PETSC_NULL,"Cannot read POST data, giving up\n");CHKERRQ(ierr); 
         goto theend;
@@ -880,7 +880,27 @@ PetscErrorCode  PetscWebServeRequest(int port)
         fprintf(fd, "<a href=\"./ams\">Connect to Memory Snooper</a></p>\r\n\r\n");
       }
 #endif
+      fprintf(fd, "<a href=\"./JSONRPCExample.html\"></a>JSONRPCExample.html</p>\r\n\r\n");
       ierr = PetscWebSendFooter(fd);CHKERRQ(ierr);
+      goto theend;
+    }
+    FILE        *fdo = fopen(path+1,"r");
+    const char* type;
+    if (fdo) {      
+      ierr = PetscStrendswith(path,".html",&flg);CHKERRQ(ierr);
+      if (flg) type = "text/html";
+      else {
+        ierr = PetscStrendswith(path,".js",&flg);CHKERRQ(ierr);
+        if (flg) type = "text/javascript";
+        else type = "text/unknown";
+      }
+     
+      ierr = PetscWebSendHeader(fd, 200, "OK", NULL, type, -1);CHKERRQ(ierr);
+      while (fgets(buf, sizeof(buf), fdo)) {
+        fprintf(fd,"%s\n",buf);
+      }
+      fclose(fdo);
+      ierr = PetscInfo2(PETSC_NULL,"Sent file %s to browser using format %s\n",path,type);CHKERRQ(ierr);       
       goto theend;
     }
 #if defined(PETSC_HAVE_AMS)
