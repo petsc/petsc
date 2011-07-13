@@ -67,7 +67,7 @@ cdef extern from * nogil:
                                               PetscInt,
                                               PetscReal,
                                               PetscKSPConvergedReason*,
-                                              void*)  except PETSC_ERR_PYTHON
+                                              void*) except PETSC_ERR_PYTHON
 
     ctypedef int (*PetscKSPMonitorFunction)(PetscKSP,
                                             PetscInt,

@@ -54,7 +54,7 @@ cdef extern from * nogil:
                                                PetscReal,
                                                PetscReal,
                                                PetscSNESConvergedReason*,
-                                               void*)  except PETSC_ERR_PYTHON
+                                               void*) except PETSC_ERR_PYTHON
 
     ctypedef int (*PetscSNESMonitorFunction)(PetscSNES,
                                              PetscInt,
