@@ -16,7 +16,7 @@
 #undef __FUNCT__  
 #define __FUNCT__ "PetscStrToArray"
 /*@C
-   PetscStrToArray - Seperates a string by its spaces and creates and array of strings
+   PetscStrToArray - Seperates a string by its spaces and creates an array of strings
 
    Not Collective
 
@@ -33,9 +33,10 @@
 
    Not for use in Fortran
 
-   Developer Notes: Using raw malloc() since this may be used before PETSc is initialized
+   Developer Notes: Using raw malloc() and does not call error handlers since this may be used before PETSc is initialized. Used
+     to generate argc, args arguments passed to MPI_Init()
 
-.seealso: PetscStrToArrayDestroy()
+.seealso: PetscStrToArrayDestroy(), PetscToken, PetscTokenCreate()
 
 @*/
 PetscErrorCode  PetscStrToArray(const char s[],int *argc,char ***args)
@@ -433,7 +434,7 @@ PetscErrorCode  PetscStrcasecmp(const char a[],const char b[],PetscBool  *t)
   else c = stricmp(a,b);
 #else
   else {
-    char *aa,*bb;
+    char           *aa,*bb;
     PetscErrorCode ierr;
     ierr = PetscStrallocpy(a,&aa);CHKERRQ(ierr);
     ierr = PetscStrallocpy(b,&bb);CHKERRQ(ierr);

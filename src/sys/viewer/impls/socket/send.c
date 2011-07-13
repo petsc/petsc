@@ -793,14 +793,28 @@ PetscErrorCode  PetscWebServeRequest(int port)
   ierr = PetscStrcmp(method,"GET",&flg);
   if (!flg) {
     ierr = PetscStrcmp(method,"POST",&flg);
+    /*
+          Start to handle support for POSTs based on json-rpc
+    */
     if (flg) {
-      int len;
+      int    len;
+      size_t elen;
+      char   *fnd;
       while (cnt--) {
+        
         if (!fgets(buf, sizeof(buf), fd)) {
           ierr = PetscInfo(PETSC_NULL,"Cannot read POST data, giving up\n");CHKERRQ(ierr); 
           goto theend;
         }
         ierr = PetscInfo1(PETSC_NULL,"POSTED data %s\n",buf);CHKERRQ(ierr); 
+        ierr = PetscStrstr(buf,"Content-Type:",&fnd);CHKERRQ(ierr);
+        if (fnd) {
+          ierr = PetscStrstr(buf,"application/json-rpc",&fnd);CHKERRQ(ierr);
+          if (!fnd) {
+            ierr = PetscInfo(PETSC_NULL,"POST content is not json-rpc, skipping post\n");CHKERRQ(ierr); 
+            goto theend;
+          }
+        }
       }
       if (!fgets(buf, sizeof(buf), fd)) {
         ierr = PetscInfo(PETSC_NULL,"Cannot read POST length data, giving up\n");CHKERRQ(ierr); 
@@ -819,19 +833,17 @@ PetscErrorCode  PetscWebServeRequest(int port)
         goto theend;
       }
       ierr = PetscInfo1(PETSC_NULL,"POSTED data %s\n",buf);CHKERRQ(ierr); 
-      if (!fgets(buf, len+1, fd)) {
+      if (!fgets(buf, len+1, fd)) { /* why is this len + 1? */
         ierr = PetscInfo(PETSC_NULL,"Cannot read POST data, giving up\n");CHKERRQ(ierr); 
         goto theend;
       }
       ierr = PetscInfo1(PETSC_NULL,"POSTED data %s\n",buf);CHKERRQ(ierr); 
       fseek(fd, 0, SEEK_CUR); /* Force change of stream direction */
+      /* send back meaningless result */
       const char *str = "{\"result\": \"hello\", \"error\": null, \"id\": 0}";
-      size_t elen;
       ierr = PetscStrlen(str,&elen);CHKERRQ(ierr);
       ierr = PetscWebSendHeader(fd, 200, "OK", NULL, "application/json-rpc",(int)elen);CHKERRQ(ierr);
       fprintf(fd, "%s",str);
-      printf("%s\n",str);
-      /* fprintf(fd, "Content-Type: text/plain\nContent-Length: %d\n\nhello",5);*/
       goto theend;
     } else {
       ierr = PetscWebSendError(fd, 501, "Not supported", NULL, "Method is not supported.");CHKERRQ(ierr);
