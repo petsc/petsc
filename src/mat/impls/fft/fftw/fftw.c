@@ -619,7 +619,7 @@ PetscErrorCode InputTransformFFT_FFTW(Mat A,Vec x,Vec y)
 
   if (size==1)
     {
-     switch (ndim){
+/*     switch (ndim){
      case 1:
           ierr = PetscMalloc(sizeof(PetscInt)*dim[0],&indx1);CHKERRQ(ierr);
           for (i=0;i<dim[0];i++)
@@ -668,6 +668,7 @@ PetscErrorCode InputTransformFFT_FFTW(Mat A,Vec x,Vec y)
           ierr = PetscFree(indx1);CHKERRQ(ierr);
           break;
      default:
+*/
           ierr = ISCreateStride(PETSC_COMM_SELF,N,0,1,&list1);
           ierr = VecScatterCreate(x,list1,y,list1,&vecscat);CHKERRQ(ierr);
           ierr = VecScatterBegin(vecscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -675,8 +676,8 @@ PetscErrorCode InputTransformFFT_FFTW(Mat A,Vec x,Vec y)
           ierr = VecScatterDestroy(&vecscat);CHKERRQ(ierr);
           ierr = ISDestroy(&list1);CHKERRQ(ierr);
           //ierr = ISDestroy(list1);CHKERRQ(ierr);
-          break;
-      }
+ //         break;
+  //    }
     }
 
  else{
@@ -859,6 +860,7 @@ PetscErrorCode OutputTransformFFT_FFTW(Mat A,Vec x,Vec y)
   ierr = VecGetOwnershipRange(x,&low,PETSC_NULL);
  
   if (size==1){
+/*
     switch (ndim){
     case 1:
            ierr = PetscMalloc(sizeof(PetscInt)*dim[0],&indx1);CHKERRQ(ierr);
@@ -908,6 +910,7 @@ PetscErrorCode OutputTransformFFT_FFTW(Mat A,Vec x,Vec y)
          ierr = PetscFree(indx1);CHKERRQ(ierr);
          break;
     default:
+*/
          ierr = ISCreateStride(comm,N,0,1,&list1);
          //ierr = ISView(list1,PETSC_VIEWER_STDOUT_SELF);
          ierr = VecScatterCreate(x,list1,y,list1,&vecscat);CHKERRQ(ierr);
@@ -915,8 +918,8 @@ PetscErrorCode OutputTransformFFT_FFTW(Mat A,Vec x,Vec y)
          ierr = VecScatterEnd(vecscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
          ierr = VecScatterDestroy(&vecscat);CHKERRQ(ierr);
          ierr = ISDestroy(&list1);CHKERRQ(ierr);
-         break;
-    }
+  //       break;
+   // }
   }
   else{
 
