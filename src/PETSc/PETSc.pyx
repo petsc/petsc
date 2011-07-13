@@ -252,6 +252,7 @@ cdef extern from "initpkg.h":
     int PetscInitializePackageAll(char[])
 
 cdef extern from "libpetsc4py.h":
+    int import_libpetsc4py() except -1
     int PetscPythonRegisterAll(char[])
 
 cdef int    PyPetsc_Argc = 0
@@ -349,6 +350,7 @@ cdef int register(char path[]) except -1:
     # make sure all PETSc packages are initialized
     CHKERR( PetscInitializePackageAll(NULL) )
     # register custom implementations
+    import_libpetsc4py()
     CHKERR( PetscPythonRegisterAll(path) )
     # register Python types
     PyPetscType_Register(PETSC_OBJECT_CLASSID,    Object)

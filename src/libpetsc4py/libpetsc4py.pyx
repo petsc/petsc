@@ -18,6 +18,17 @@ cdef extern from "Python.h":
     bint PyModule_Check(object)
     object PyImport_Import(object)
 
+# --------------------------------------------------------------------
+
+cdef extern from "custom.h":
+    void initlibpetsc4py() nogil except *
+
+cdef public int import_libpetsc4py() nogil except -1:
+    initlibpetsc4py()
+    return 0
+
+# --------------------------------------------------------------------
+
 cdef extern from * nogil:
     MPI_Comm MPI_COMM_NULL
     MPI_Comm PETSC_COMM_SELF
@@ -2396,47 +2407,6 @@ cdef PetscErrorCode TSSolve_Python_default(
 
 # --------------------------------------------------------------------
 
-cdef extern from * nogil:
-
-  char* MATPYTHON  '"python"'
-  char* KSPPYTHON  '"python"'
-  char* PCPYTHON   '"python"'
-  char* SNESPYTHON '"python"'
-  char* TSPYTHON   '"python"'
-
-  ctypedef PetscErrorCode MatCreateFunction  (PetscMat)  except IERR
-  ctypedef PetscErrorCode PCCreateFunction   (PetscPC)   except IERR
-  ctypedef PetscErrorCode KSPCreateFunction  (PetscKSP)  except IERR
-  ctypedef PetscErrorCode SNESCreateFunction (PetscSNES) except IERR
-  ctypedef PetscErrorCode TSCreateFunction   (PetscTS)   except IERR
-
-  PetscErrorCode MatRegister  (char[],char[],char[],MatCreateFunction* )
-  PetscErrorCode PCRegister   (char[],char[],char[],PCCreateFunction*  )
-  PetscErrorCode KSPRegister  (char[],char[],char[],KSPCreateFunction* )
-  PetscErrorCode SNESRegister (char[],char[],char[],SNESCreateFunction*)
-  PetscErrorCode TSRegister   (char[],char[],char[],TSCreateFunction*  )
-
-cdef extern from "custom.h":
-    PyObject* PyInit_libpetsc4py() nogil except NULL
-    void xdecref"Py_XDECREF"(PyObject*) nogil
-
-cdef int import_libpetsc4py() nogil except -1:
-    cdef PyObject* libpetsc4py = PyInit_libpetsc4py()
-    xdecref(libpetsc4py)
-    return 0
-
-cdef public PetscErrorCode PetscPythonRegisterAll(char path[]) nogil except IERR:
-    import_libpetsc4py(); path = NULL;
-    FunctionBegin(b"PetscPythonRegisterAll")
-    CHKERR( MatRegister ( MATPYTHON,  path, b"MatCreate_Python",  MatCreate_Python  ) )
-    CHKERR( PCRegister  ( PCPYTHON,   path, b"PCCreate_Python",   PCCreate_Python   ) )
-    CHKERR( KSPRegister ( KSPPYTHON,  path, b"KSPCreate_Python",  KSPCreate_Python  ) )
-    CHKERR( SNESRegister( SNESPYTHON, path, b"SNESCreate_Python", SNESCreate_Python ) )
-    CHKERR( TSRegister  ( TSPYTHON,   path, b"TSCreate_Python",   TSCreate_Python   ) )
-    return FunctionEnd()
-
-# --------------------------------------------------------------------
-
 cdef PetscErrorCode PetscPythonMonitorSet_Python(
     PetscObject obj_p,
     const_char *url_p,
@@ -2466,12 +2436,6 @@ cdef PetscErrorCode PetscPythonMonitorSet_Python(
         ob.setMonitor(monitor)
     #
     return FunctionEnd()
-
-cdef extern from * nogil:
-    PetscErrorCode (*PetscPythonMonitorSet_C) \
-        (PetscObject, const_char[]) except IERR
-
-PetscPythonMonitorSet_C = PetscPythonMonitorSet_Python
 
 # --------------------------------------------------------------------
 
@@ -2544,16 +2508,61 @@ cdef PetscErrorCode PetscFwkPython_ClearVTable(
     vtable_p[0] = NULL
     return FunctionEnd()
 
+# --------------------------------------------------------------------
+
 cdef extern from * nogil:
-    PetscErrorCode (*PetscFwkPythonCall_C) \
-        (PetscFwk,const_char[],void *) except IERR
-    PetscErrorCode (*PetscFwkPythonLoadVTable_C) \
-        (PetscFwk,const_char[],const_char[],void**) except IERR
-    PetscErrorCode (*PetscFwkPythonClearVTable_C) \
-        (PetscFwk,void**) except IERR
 
-PetscFwkPythonCall_C        = PetscFwkPython_Call
-PetscFwkPythonLoadVTable_C  = PetscFwkPython_LoadVTable
-PetscFwkPythonClearVTable_C = PetscFwkPython_ClearVTable
+  char* MATPYTHON  '"python"'
+  char* KSPPYTHON  '"python"'
+  char* PCPYTHON   '"python"'
+  char* SNESPYTHON '"python"'
+  char* TSPYTHON   '"python"'
 
-# -----------------------------------------------------------------------------
+  ctypedef PetscErrorCode MatCreateFunction  (PetscMat)  except IERR
+  ctypedef PetscErrorCode PCCreateFunction   (PetscPC)   except IERR
+  ctypedef PetscErrorCode KSPCreateFunction  (PetscKSP)  except IERR
+  ctypedef PetscErrorCode SNESCreateFunction (PetscSNES) except IERR
+  ctypedef PetscErrorCode TSCreateFunction   (PetscTS)   except IERR
+
+  PetscErrorCode MatRegister  (char[],char[],char[],MatCreateFunction* )
+  PetscErrorCode PCRegister   (char[],char[],char[],PCCreateFunction*  )
+  PetscErrorCode KSPRegister  (char[],char[],char[],KSPCreateFunction* )
+  PetscErrorCode SNESRegister (char[],char[],char[],SNESCreateFunction*)
+  PetscErrorCode TSRegister   (char[],char[],char[],TSCreateFunction*  )
+
+  PetscErrorCode (*PetscPythonMonitorSet_C) \
+      (PetscObject, const_char[]) except IERR
+
+  PetscErrorCode (*PetscFwkPythonCall_C) \
+      (PetscFwk,const_char[],void *) except IERR
+  PetscErrorCode (*PetscFwkPythonLoadVTable_C) \
+      (PetscFwk,const_char[],const_char[],void**) except IERR
+  PetscErrorCode (*PetscFwkPythonClearVTable_C) \
+      (PetscFwk,void**) except IERR
+
+
+cdef public PetscErrorCode PetscPythonRegisterAll(char path[]) except IERR:
+    FunctionBegin(b"PetscPythonRegisterAll")
+
+    # Python subtypes
+    CHKERR( MatRegister ( MATPYTHON,  path, b"MatCreate_Python",  MatCreate_Python  ) )
+    CHKERR( PCRegister  ( PCPYTHON,   path, b"PCCreate_Python",   PCCreate_Python   ) )
+    CHKERR( KSPRegister ( KSPPYTHON,  path, b"KSPCreate_Python",  KSPCreate_Python  ) )
+    CHKERR( SNESRegister( SNESPYTHON, path, b"SNESCreate_Python", SNESCreate_Python ) )
+    CHKERR( TSRegister  ( TSPYTHON,   path, b"TSCreate_Python",   TSCreate_Python   ) )
+    
+    # Python monitors
+    global PetscPythonMonitorSet_C
+    PetscPythonMonitorSet_C = PetscPythonMonitorSet_Python
+
+    # Python Fwk support
+    global PetscFwkPythonCall_C
+    PetscFwkPythonCall_C = PetscFwkPython_Call
+    global PetscFwkPythonLoadVTable_C
+    PetscFwkPythonLoadVTable_C = PetscFwkPython_LoadVTable
+    global PetscFwkPythonClearVTable_C
+    PetscFwkPythonClearVTable_C = PetscFwkPython_ClearVTable
+
+    return FunctionEnd()
+
+# --------------------------------------------------------------------

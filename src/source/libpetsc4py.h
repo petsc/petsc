@@ -103,4 +103,6 @@ static PetscErrorCode PetscPythonRegisterAll(const char path[])
   PetscFunctionReturn(0);
 }
 
+static int import_libpetsc4py(void){return 0;}
+
 /* ---------------------------------------------------------------- */

@@ -114,23 +114,14 @@ PetscErrorCode SNESConverged(SNES snes,
 PyMODINIT_FUNC initlibpetsc4py(void);
 #else
 PyMODINIT_FUNC PyInit_libpetsc4py(void);
-#endif
-
-#if PY_MAJOR_VERSION < 3
-static PyObject *PyInit_libpetsc4py(void)
+static void initlibpetsc4py(void)
 {
-  PyObject *modules, *mod=NULL;
-  initlibpetsc4py();
-  if (PyErr_Occurred()) goto bad;
-  modules = PyImport_GetModuleDict();
-  if (!modules) goto bad;
-  mod = PyDict_GetItemString(modules, "libpetsc4py");
-  if (!mod) goto bad;
-  Py_INCREF(mod);
-  if (PyDict_DelItemString(modules, "libpetsc4py") < 0) goto bad;
-  return mod;
- bad:
-  Py_XDECREF(mod);
-  return NULL;
+  PyObject *M, *m;
+  M = PyImport_GetModuleDict();
+  if (!M) return;
+  m = PyInit_libpetsc4py();
+  if (!m) return;
+  PyDict_SetItemString(M, "libpetsc4py", m);
+  Py_DECREF(m);
 }
 #endif
