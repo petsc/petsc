@@ -9,7 +9,7 @@ PetscInt main(PetscInt argc,char **args)
 {
   PetscErrorCode  ierr;
   PetscMPIInt     rank,size;
-  PetscInt        N0=5,N1=5,N2=5,N3=10,N4=10,N=N0*N1*N2*N3;
+  PetscInt        N0=500,N1=5,N2=5,N3=10,N4=10,N=N0;
   PetscRandom     rdm;
   PetscReal       enorm;
   Vec             x,y,z,input,output;
@@ -34,7 +34,7 @@ PetscInt main(PetscInt argc,char **args)
 //  ierr = VecView(input,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = VecDuplicate(input,&output);
  
-  DIM = 4; dim[0] = N0; dim[1] = N1; dim[2] = N2; dim[3] = N3; dim[4] = N4;
+  DIM = 1; dim[0] = N0; dim[1] = N1; dim[2] = N2; dim[3] = N3; dim[4] = N4;
   ierr = MatCreateFFT(PETSC_COMM_WORLD,DIM,dim,MATFFTW,&A);CHKERRQ(ierr);
   ierr = MatGetVecs(A,&x,&y);CHKERRQ(ierr);
   ierr = MatGetVecs(A,&z,PETSC_NULL);CHKERRQ(ierr);
@@ -70,8 +70,6 @@ PetscInt main(PetscInt argc,char **args)
 //  if (enorm > 1.e-14){
       ierr = PetscPrintf(PETSC_COMM_SELF,"  Error norm of |x - z| %e\n",enorm);CHKERRQ(ierr);
 //      }
-
-
   ierr = VecDestroy(&output);CHKERRQ(ierr);
   ierr = VecDestroy(&input);CHKERRQ(ierr);
   ierr = VecDestroy(&x);CHKERRQ(ierr);
@@ -79,8 +77,6 @@ PetscInt main(PetscInt argc,char **args)
   ierr = VecDestroy(&z);CHKERRQ(ierr);
   ierr = MatDestroy(&A);CHKERRQ(ierr);
   ierr = PetscRandomDestroy(&rdm);CHKERRQ(ierr);
-
   PetscFinalize();
   return 0;
-
 }

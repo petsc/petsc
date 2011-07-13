@@ -466,7 +466,7 @@ PetscErrorCode  MatGetVecs_FFTW(Mat A,Vec *fin,Vec *fout)
      
 #else
       /* Get local size */
-     printf("Hope this does not come here");
+     //printf("Hope this does not come here");
       alloc_local = fftw_mpi_local_size_2d(dim[0],dim[1],comm,&local_n0,&local_0_start);
       if (fin) {
         data_fin  = (fftw_complex*)fftw_malloc(sizeof(fftw_complex)*alloc_local);
@@ -478,7 +478,7 @@ PetscErrorCode  MatGetVecs_FFTW(Mat A,Vec *fin,Vec *fout)
         ierr = VecCreateMPIWithArray(comm,n,N,(const PetscScalar*)data_fout,fout);CHKERRQ(ierr);
         (*fout)->ops->destroy   = VecDestroy_MPIFFTW;
       }
-     printf("Hope this does not come here");
+     //printf("Hope this does not come here");
 #endif
       break;
     case 3:
@@ -684,7 +684,22 @@ PetscErrorCode InputTransformFFT_FFTW(Mat A,Vec x,Vec y)
 
  switch (ndim){
  case 1:
+#if defined(PETSC_USE_COMPLEX)
+      alloc_local = fftw_mpi_local_size_1d(dim[0],comm,FFTW_FORWARD,FFTW_ESTIMATE,&local_n0,&local_0_start,&local_n1,&local_1_start);
+      ierr = ISCreateStride(PETSC_COMM_WORLD,local_n0,local_0_start,1,&list1);
+      ierr = ISCreateStride(PETSC_COMM_WORLD,local_n0,low,1,&list2);
+      //ierr = ISView(list1,PETSC_VIEWER_STDOUT_WORLD);
+      //ierr = ISView(list2,PETSC_VIEWER_STDOUT_WORLD);
+      ierr = VecScatterCreate(x,list1,y,list2,&vecscat);CHKERRQ(ierr);
+      ierr = VecScatterBegin(vecscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterEnd(vecscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterDestroy(&vecscat);CHKERRQ(ierr);
+      ierr = ISDestroy(&list1);CHKERRQ(ierr);
+      ierr = ISDestroy(&list2);CHKERRQ(ierr);
+      break;
+#else
   SETERRQ(comm,PETSC_ERR_SUP,"FFTW does not support parallel 1D real transform");
+#endif
   break;
  case 2:
 #if defined(PETSC_USE_COMPLEX)
@@ -972,7 +987,23 @@ PetscErrorCode OutputTransformFFT_FFTW(Mat A,Vec x,Vec y)
 
  switch (ndim){
  case 1:
-  SETERRQ(comm,PETSC_ERR_SUP,"No support for real parallel 1D FFT");
+#if defined(PETSC_USE_COMPLEX)
+      alloc_local = fftw_mpi_local_size_1d(dim[0],comm,FFTW_BACKWARD,FFTW_ESTIMATE,&local_n0,&local_0_start,&local_n1,&local_1_start);
+      ierr = ISCreateStride(PETSC_COMM_WORLD,local_n0,local_0_start,1,&list1);
+      ierr = ISCreateStride(PETSC_COMM_WORLD,local_n0,low,1,&list2);
+      //ierr = ISView(list1,PETSC_VIEWER_STDOUT_WORLD);
+      //ierr = ISView(list2,PETSC_VIEWER_STDOUT_WORLD);
+      ierr = VecScatterCreate(x,list1,y,list2,&vecscat);CHKERRQ(ierr);
+      ierr = VecScatterBegin(vecscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterEnd(vecscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterDestroy(&vecscat);CHKERRQ(ierr);
+      ierr = ISDestroy(&list1);CHKERRQ(ierr);
+      ierr = ISDestroy(&list2);CHKERRQ(ierr);
+      break;
+
+#else
+      SETERRQ(comm,PETSC_ERR_SUP,"No support for real parallel 1D FFT");
+#endif
   break;
  case 2:
 #if defined(PETSC_USE_COMPLEX)
