@@ -9,7 +9,7 @@ PetscInt main(PetscInt argc,char **args)
 {
   PetscErrorCode  ierr;
   PetscMPIInt     rank,size;
-  PetscInt        N0=5,N1=5,N2=20,N3=10,N4=10,N=N0*N1;
+  PetscInt        N0=5,N1=5,N2=5,N3=10,N4=10,N=N0*N1*N2*N3;
   PetscRandom     rdm;
   PetscReal       enorm;
   Vec             x,y,z,input,output;
@@ -31,10 +31,10 @@ PetscInt main(PetscInt argc,char **args)
   ierr = VecSetRandom(input,rdm);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(input);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(input);CHKERRQ(ierr);
-  ierr = VecView(input,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+//  ierr = VecView(input,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   ierr = VecDuplicate(input,&output);
  
-  DIM = 2; dim[0] = N0; dim[1] = N1; dim[2] = N2; dim[3] = N3; dim[4] = N4;
+  DIM = 4; dim[0] = N0; dim[1] = N1; dim[2] = N2; dim[3] = N3; dim[4] = N4;
   ierr = MatCreateFFT(PETSC_COMM_WORLD,DIM,dim,MATFFTW,&A);CHKERRQ(ierr);
   ierr = MatGetVecs(A,&x,&y);CHKERRQ(ierr);
   ierr = MatGetVecs(A,&z,PETSC_NULL);CHKERRQ(ierr);
@@ -46,6 +46,9 @@ PetscInt main(PetscInt argc,char **args)
   printf("The vector size of output from the main routine is %d\n",vsize);
 
   ierr = InputTransformFFT(A,input,x);CHKERRQ(ierr);
+//  ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
+//  ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
+//  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   ierr = MatMult(A,x,y);CHKERRQ(ierr);
   ierr = MatMultTranspose(A,y,z);CHKERRQ(ierr);
@@ -56,11 +59,11 @@ PetscInt main(PetscInt argc,char **args)
   
 //  ierr = VecAssemblyBegin(input);CHKERRQ(ierr);
 //  ierr = VecAssemblyEnd(input);CHKERRQ(ierr);
-  ierr = VecAssemblyBegin(output);CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(output);CHKERRQ(ierr);
+//  ierr = VecAssemblyBegin(output);CHKERRQ(ierr);
+//  ierr = VecAssemblyEnd(output);CHKERRQ(ierr);
 
 //  ierr = VecView(input,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-  ierr = VecView(output,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+//  ierr = VecView(output,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   ierr = VecAXPY(output,-1.0,input);CHKERRQ(ierr);
   ierr = VecNorm(output,NORM_1,&enorm);CHKERRQ(ierr);

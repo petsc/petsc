@@ -595,6 +595,9 @@ ex152: ex152.o chkopts
 ex153: ex153.o chkopts
 	-${CLINKER} -o ex153 ex153.o ${PETSC_MAT_LIB}
 	${RM} ex153.o
+ex154: ex154.o chkopts
+	-${CLINKER} -o ex154 ex154.o ${PETSC_MAT_LIB}
+	${RM} ex154.o
 #-----------------------------------------------------------------------------
 NPROCS    = 1 3
 MATSHAPES = A B
