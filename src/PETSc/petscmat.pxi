@@ -334,21 +334,6 @@ cdef int NullSpace_Function(
     function(nsp, vec, *args, **kargs)
     return 0
 
-cdef extern from *:
-    enum: PETSC_300 "(PETSC_VERSION_(3,0,0))"
-
-cdef inline int MatNullSpaceSetFunctionPython(PetscNullSpace nsp) except -1:
-    if PETSC_300:
-        CHKERR( MatNullSpaceSetFunction(
-                nsp, <MatNullSpaceFunction*>NullSpace_Function_OLD, nsp) )
-    else:
-        CHKERR( MatNullSpaceSetFunction(
-                nsp, <MatNullSpaceFunction*>NullSpace_Function, NULL) )
-    return 0
-
-cdef int NullSpace_Function_OLD(PetscVec v, void* ctx) nogil:
-    return NullSpace_Function(<PetscNullSpace> ctx, v, ctx)
-
 # -----------------------------------------------------------------------------
 
 cdef inline Mat ref_Mat(PetscMat mat):

@@ -190,6 +190,35 @@ static PetscErrorCode MatLoad_Compat(Mat mat,PetscViewer viewer)
 #define MATCOLORINGID       MATCOLORING_ID
 #endif
 
+#if PETSC_VERSION_(3,0,0)
+#undef __FUNCT__
+#define __FUNCT__ "MatNullSpaceFunction_Compat"
+static PetscErrorCode MatNullSpaceFunction_Compat(Vec v, void* ctx)
+{
+  MatNullSpace   sp = (MatNullSpace)ctx;
+  PetscErrorCode (*rem)(MatNullSpace,Vec,void*);
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(v,VEC_COOKIE,1);
+  PetscValidHeaderSpecific(sp,MAT_NULLSPACE_COOKIE,2);
+  ierr = PetscObjectQueryFunction((PetscObject)sp,"MatNullSpaceFunction_C",(PetscVoidFunction*)&rem);CHKERRQ(ierr);
+  if (rem) { ierr = rem(sp,v,0); CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+#undef __FUNCT__
+#define __FUNCT__ "MatNullSpaceSetFunction_Compat"
+static PetscErrorCode MatNullSpaceSetFunction_Compat(MatNullSpace sp, PetscErrorCode (*rem)(MatNullSpace,Vec,void*),void *ctx)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sp,MAT_NULLSPACE_COOKIE,1);
+  ierr = PetscObjectComposeFunction((PetscObject)sp,"MatNullSpaceFunction_C","",(PetscVoidFunction)rem);CHKERRQ(ierr);
+  ierr = MatNullSpaceSetFunction(sp,rem?MatNullSpaceFunction_Compat:0,rem?sp:0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#define MatNullSpaceSetFunction MatNullSpaceSetFunction_Compat
+#endif
+
 #if PETSC_VERSION_(3,1,0) || PETSC_VERSION_(3,0,0)
 #undef __FUNCT__
 #define __FUNCT__ "MatNullSpaceView"

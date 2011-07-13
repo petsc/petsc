@@ -86,7 +86,6 @@ cdef extern from * nogil:
     int SNESSetFunction(PetscSNES,PetscVec,PetscSNESFunctionFunction,void*)
     int SNESGetFunction(PetscSNES,PetscVec*,PetscSNESFunctionFunction*,void**)
     int SNESSetUpdate(PetscSNES,PetscSNESUpdateFunction)
-    int SNESDefaultUpdate(PetscSNES,PetscInt) except PETSC_ERR_PYTHON
     int SNESSetJacobian(PetscSNES,PetscMat,PetscMat,PetscSNESJacobianFunction,void*)
     int SNESGetJacobian(PetscSNES,PetscMat*,PetscMat*,PetscSNESJacobianFunction*,void**)
 
