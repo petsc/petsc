@@ -10,7 +10,7 @@ PetscInt main(PetscInt argc,char **args)
 {
   PetscErrorCode  ierr;
   PetscMPIInt     rank,size;
-  PetscInt        N0=3,N1=3,N2=3,N3=3,N4=3,N=N0*N1*N2*N3*N4;
+  PetscInt        N0=3,N1=3,N2=3,N3=3,N4=3,N=N0*N1*N2*N3;
   PetscRandom     rdm;
   PetscReal       enorm;
   Vec             x,y,z,input,output;
@@ -38,7 +38,7 @@ PetscInt main(PetscInt argc,char **args)
   ierr = VecGetSize(input,&vsize);CHKERRQ(ierr);
   printf("Size of the input Vector is %d\n",vsize);
   
-  DIM = 5;
+  DIM = 4;
   dim[0] = N0; dim[1] = N1; dim[2] = N2; dim[3] = N3; dim[4] = N4;
 
   ierr = MatCreateFFT(PETSC_COMM_WORLD,DIM,dim,MATFFTW,&A);CHKERRQ(ierr);

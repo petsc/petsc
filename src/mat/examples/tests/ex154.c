@@ -1,4 +1,4 @@
-static char help[]="This program illustrates the use of PETSc-fftw interface for Complex DFT\n";
+static char help[]="This program illustrates the use of PETSc-fftw interface for Complex parallel DFT\n";
 #include <petscmat.h>
 #include <fftw3-mpi.h>
 //extern PetscErrorCode MatGetVecsFFT(Mat,Vec *,Vec *,Vec *);
@@ -36,6 +36,7 @@ PetscInt main(PetscInt argc,char **args)
  
   DIM = 1; dim[0] = N0; dim[1] = N1; dim[2] = N2; dim[3] = N3; dim[4] = N4;
   ierr = MatCreateFFT(PETSC_COMM_WORLD,DIM,dim,MATFFTW,&A);CHKERRQ(ierr);
+//  ierr = MatGetVecs(A,&x,&y,&z);CHKERRQ(ierr);
   ierr = MatGetVecs(A,&x,&y);CHKERRQ(ierr);
   ierr = MatGetVecs(A,&z,PETSC_NULL);CHKERRQ(ierr);
 
