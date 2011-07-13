@@ -200,8 +200,8 @@ def build_sources(cmd):
     # petsc4py.PETSc
     source = 'petsc4py.PETSc.pyx'
     depends = ("include/*/*.pxd",
-               "*/*.pyx",
-               "*/*.pxi",)
+               "PETSc/*.pyx",
+               "PETSc/*.pxi",)
     includes = ['include']
     destdir_h = os.path.join('include', 'petsc4py')
     run_cython(source, depends, includes,
