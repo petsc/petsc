@@ -70,66 +70,71 @@ cdef extern from "scalar.h":
 cdef extern from * nogil:
     enum: PETSC_ERR_PYTHON
 
+cdef extern from * nogil:
+    enum: IERR "PETSC_ERR_PYTHON"
+
 cdef char *FUNCT = NULL
-cdef PetscErrorCode ERROR = PETSC_ERR_PYTHON
+cdef char *fstack[1024]
+cdef int   istack = 0
 
 cdef inline void FunctionBegin(char name[]) nogil:
     global FUNCT
-    global ERROR
     FUNCT = name
-    ERROR = PETSC_ERR_PYTHON
+    global fstack, istack
+    fstack[istack] = FUNCT
+    istack += 1
+    if istack >= 1024:
+        istack = 0
     return
 
 cdef inline PetscErrorCode FunctionEnd() nogil:
+    global FUNCT
+    FUNCT = NULL
+    global fstack, istack
+    istack -= 1
+    if istack < 0:
+        istack = 1024
+    FUNCT = fstack[istack]
     return 0
 
 cdef PetscErrorCode PetscSETERR(PetscErrorCode ierr,char msg[]) nogil:
+    global fstack, istack
+    istack = 0; fstack[istack] = NULL;
     global FUNCT
     return PetscERROR(PETSC_COMM_SELF,FUNCT,ierr,
                       PETSC_ERROR_INITIAL, msg, NULL)
 
 cdef PetscErrorCode PetscCHKERR(PetscErrorCode ierr) nogil:
+    global fstack, istack
+    istack = 0; fstack[istack] = NULL;
     global FUNCT
     return PetscERROR(PETSC_COMM_SELF,FUNCT,ierr,
-                      PETSC_ERROR_REPEAT, b"",NULL)
+                      PETSC_ERROR_REPEAT, b"", NULL)
+
 
 cdef extern from *:
     void PyErr_SetObject(object, object)
-    void *PyExc_RuntimeError
+    PyObject *PyExc_RuntimeError
 
 cdef object PetscError = <object>PyExc_RuntimeError
 from petsc4py.PETSc import Error as PetscError
 
-cdef inline PetscErrorCode PythonRAISE(PetscErrorCode ierr) with gil:
+cdef inline void PythonSETERR(PetscErrorCode ierr) with gil:
     if (<void*>PetscError) != NULL:
         PyErr_SetObject(PetscError, <long>ierr)
     else:
         PyErr_SetObject(<object>PyExc_RuntimeError, <long>ierr)
-    return ierr
 
-cdef inline PetscErrorCode PetscGETERR"PetscGETERR"() nogil:
-    global ERROR
-    return ERROR
-
-cdef extern from *:
-    enum: IERR "PetscGETERR()"
-
-cdef inline PetscErrorCode CHKERR(PetscErrorCode ierr) \
-    nogil except IERR:
-    global ERROR
+cdef inline int CHKERR(PetscErrorCode ierr) nogil except -1:
     if ierr == 0:
-        ERROR = PETSC_ERR_PYTHON
-        return ierr
+        return 0
     if ierr == PETSC_ERR_PYTHON:
-        ERROR = PETSC_ERR_PYTHON
-        #PetscSETERR(PETSC_ERR_USER, b"Error in Python call")
-        return ierr
-    else:
-        ERROR = ierr
-        if Py_IsInitialized():
-            PythonRAISE(ierr)
-        PetscCHKERR(ierr)
-        return ierr
+        #PetscCHKERR(ierr)
+        return -1
+    if Py_IsInitialized():
+        PythonSETERR(ierr)
+    PetscCHKERR(ierr)
+    return -1
 
 cdef PetscErrorCode UNSUPPORTED(char msg[]) nogil:
     global FUNCT
@@ -2421,8 +2426,8 @@ cdef int import_libpetsc4py() nogil except -1:
     return 0
 
 cdef public PetscErrorCode PetscPythonRegisterAll(char path[]) nogil except IERR:
-    FunctionBegin(b"PetscPythonRegisterAll")
     import_libpetsc4py(); path = NULL;
+    FunctionBegin(b"PetscPythonRegisterAll")
     CHKERR( MatRegister ( MATPYTHON,  path, b"MatCreate_Python",  MatCreate_Python  ) )
     CHKERR( PCRegister  ( PCPYTHON,   path, b"PCCreate_Python",   PCCreate_Python   ) )
     CHKERR( KSPRegister ( KSPPYTHON,  path, b"KSPCreate_Python",  KSPCreate_Python  ) )
