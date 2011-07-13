@@ -112,7 +112,8 @@ PetscErrorCode createCrsOp( Mat Amat, Mat P_inout, Mat *Acrs )
 */
 extern PetscErrorCode PCSetFromOptions_MG(PC);
 extern PetscErrorCode PCReset_MG(PC);
-extern PetscErrorCode createProlongation( Mat, Mat *, PetscReal [], PetscReal **, const PetscInt);
+extern PetscErrorCode createProlongation( Mat, PetscReal [], const PetscInt,
+                                          Mat *, PetscReal ** );
 #undef __FUNCT__
 #define __FUNCT__ "PCSetUp_GAMG"
 PetscErrorCode PCSetUp_GAMG( PC pc )
@@ -132,8 +133,8 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
   }
   if (!pc_gamg->m_data) SETERRQ(wcomm,PETSC_ERR_SUP,"PCSetUp_GAMG called before PCSetCoordinates");
   /* setup special features of PCGAMG */
-  ierr = PetscTypeCompare((PetscObject) Amat, MATSEQAIJ, &isSeq);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject) Amat, MATMPIAIJ, &isMPI);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)Amat, MATSEQAIJ, &isSeq);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)Amat, MATMPIAIJ, &isMPI);CHKERRQ(ierr);
   if (isMPI) {
   } else if (isSeq) {
   } else SETERRQ1(wcomm,PETSC_ERR_ARG_WRONG, "Matrix type '%s' cannot be used with GAMG. GAMG can only handle AIJ matrices.",((PetscObject)Amat)->type_name);
@@ -152,9 +153,10 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
       break;
     }
     level1 = level + 1;
-    ierr = createProlongation( Aarr[level], &Rarr[level1], crds, &coarse_crds, pc_gamg->m_dim );
+    ierr = createProlongation( Aarr[level], crds, pc_gamg->m_dim,
+                               &Rarr[level1], &coarse_crds );
     CHKERRQ(ierr);
-    if(level==0)  Aarr[0] = Amat; /* use Pmat for finest level setup, but use mat for solver */
+    if(level==0) Aarr[0] = Amat; /* use Pmat for finest level setup, but use mat for solver */
     ierr = createCrsOp( Aarr[level], Rarr[level1], &Aarr[level1] ); CHKERRQ(ierr);
     ierr = PetscFree( crds ); CHKERRQ( ierr );
     crds = coarse_crds;
@@ -172,7 +174,7 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
     KSP smoother; PC subpc;
     ierr = PCMGGetSmoother(pc,level,&smoother);CHKERRQ(ierr);
     ierr = KSPSetType(smoother,KSPCHEBYCHEV);CHKERRQ(ierr);
-    emin = emax/5.0;
+    emin = emax/10.0; /* fix!!! */
     ierr = KSPGetPC(smoother,&subpc);CHKERRQ(ierr);
     ierr = PCSetType(subpc,PCJACOBI);CHKERRQ(ierr);
     ierr = KSPChebychevSetEigenvalues(smoother, emax, emin);CHKERRQ(ierr); /* need auto !!!!*/
