@@ -667,7 +667,7 @@ PetscErrorCode  MatGetVecs_FFTW(Mat A,Vec *fin,Vec *fout)
       } 
       if (fout) {
         data_fout = (fftw_complex*)fftw_malloc(sizeof(fftw_complex)*alloc_local);
-        ierr = VecCreateMPIWithArray(comm,local_n1,N,(const PetscScalar*)data_fout,fout);CHKERRQ(ierr);
+        ierr = VecCreateMPIWithArray(comm,local_n0,N,(const PetscScalar*)data_fout,fout);CHKERRQ(ierr);
         (*fout)->ops->destroy   = VecDestroy_MPIFFTW;
       }
       break;
@@ -1464,6 +1464,7 @@ PetscErrorCode MatCreate_FFTW(Mat A)
 #else
       alloc_local = fftw_mpi_local_size_1d(dim[0],comm,FFTW_FORWARD,FFTW_ESTIMATE,&local_n0,&local_0_start,&local_n1,&local_1_end);
       n = (PetscInt)local_n0;
+      printf("The value of n is %d",n);
       ierr = MatSetSizes(A,n,n,N,N);CHKERRQ(ierr);  
 #endif
 //      PetscObjectComposeFunctionDynamic((PetscObject)A,"MatGetVecs1DC_C","MatGetVecs1DC_FFTW",MatGetVecs1DC_FFTW);   
