@@ -118,6 +118,8 @@ PetscErrorCode TSSolve_Sundials(TS ts)
   realtype       t,tout;
   PetscScalar    *y_data;
   void           *mem;
+  SNES           snes;
+  Vec            res; /* This, together with snes, will check if the SNES vec_func has been set */
 
   PetscFunctionBegin;
   mem  = cvode->mem;
@@ -125,6 +127,12 @@ PetscErrorCode TSSolve_Sundials(TS ts)
   ierr = VecGetArray(ts->vec_sol,&y_data);CHKERRQ(ierr);
   N_VSetArrayPointer((realtype *)y_data,cvode->y);
   ierr = VecRestoreArray(ts->vec_sol,PETSC_NULL);CHKERRQ(ierr);
+
+  ierr = TSGetSNES(ts, &snes);CHKERRQ(ierr);
+  ierr = SNESGetFunction(snes, &res, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+  if (!res) {
+    ierr = TSSetIFunction(ts, sol, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+  }
 
   for (i = 0; i < ts->max_steps; i++) {
     if (ts->ptime >= ts->max_time) break;
