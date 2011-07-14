@@ -433,6 +433,7 @@ extern PetscErrorCode  TSGLSetAcceptType(TS,const TSGLAcceptType);
 #define TSARKIMEX5  "5"
 extern PetscErrorCode TSARKIMEXGetType(TS ts,const TSARKIMEXType*);
 extern PetscErrorCode TSARKIMEXSetType(TS ts,const TSARKIMEXType);
+extern PetscErrorCode TSARKIMEXSetFullyImplicit(TS,PetscBool);
 extern PetscErrorCode TSARKIMEXRegister(const TSARKIMEXType,PetscInt,PetscInt,const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],PetscInt,const PetscReal[],const PetscReal[]);
 extern PetscErrorCode TSARKIMEXFinalizePackage(void);
 extern PetscErrorCode TSARKIMEXInitializePackage(const char path[]);

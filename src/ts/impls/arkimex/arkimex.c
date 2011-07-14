@@ -43,6 +43,7 @@ typedef struct {
   PetscScalar *work;            /* Scalar work */
   PetscReal   shift;
   PetscReal   stage_time;
+  PetscBool   imex;
 } TS_ARKIMEX;
 
 #undef __FUNCT__
@@ -349,8 +350,12 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
       ts->nonlinear_its += its; ts->linear_its += lits;
     }
     ierr = VecZeroEntries(Ydot);CHKERRQ(ierr);
-    ierr = TSComputeIFunction(ts,t+h*ct[i],Y[i],Ydot,YdotI[i],PETSC_TRUE);CHKERRQ(ierr);
-    ierr = TSComputeRHSFunction(ts,t+h*c[i],Y[i],YdotRHS[i]);CHKERRQ(ierr);
+    ierr = TSComputeIFunction(ts,t+h*ct[i],Y[i],Ydot,YdotI[i],ark->imex);CHKERRQ(ierr);
+    if (ark->imex) {
+      ierr = TSComputeRHSFunction(ts,t+h*c[i],Y[i],YdotRHS[i]);CHKERRQ(ierr);
+    } else {
+      ierr = VecZeroEntries(YdotRHS[i]);CHKERRQ(ierr);
+    }
   }
   for (j=0; j<s; j++) w[j] = -h*bt[j];
   ierr = VecMAXPY(ts->vec_sol,s,w,YdotI);CHKERRQ(ierr);
@@ -441,7 +446,7 @@ static PetscErrorCode SNESTSFormFunction_ARKIMEX(SNES snes,Vec X,Vec F,TS ts)
 
   PetscFunctionBegin;
   ierr = VecAXPBYPCZ(ark->Ydot,-ark->shift,ark->shift,0,ark->Z,X);CHKERRQ(ierr); /* Ydot = shift*(X-Z) */
-  ierr = TSComputeIFunction(ts,ark->stage_time,X,ark->Ydot,F,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = TSComputeIFunction(ts,ark->stage_time,X,ark->Ydot,F,ark->imex);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -486,6 +491,7 @@ static PetscErrorCode TSSetUp_ARKIMEX(TS ts)
 #define __FUNCT__ "TSSetFromOptions_ARKIMEX"
 static PetscErrorCode TSSetFromOptions_ARKIMEX(TS ts)
 {
+  TS_ARKIMEX     *ark = (TS_ARKIMEX*)ts->data;
   PetscErrorCode ierr;
   char           arktype[256];
 
@@ -503,6 +509,9 @@ static PetscErrorCode TSSetFromOptions_ARKIMEX(TS ts)
     ierr = PetscOptionsEList("-ts_arkimex_type","Family of ARK IMEX method","TSARKIMEXSetType",(const char*const*)namelist,count,arktype,&choice,&flg);CHKERRQ(ierr);
     ierr = TSARKIMEXSetType(ts,flg ? namelist[choice] : arktype);CHKERRQ(ierr);
     ierr = PetscFree(namelist);CHKERRQ(ierr);
+    flg = (PetscBool)!ark->imex;
+    ierr = PetscOptionsBool("-ts_arkimex_fully_implicit","Solve the problem fully implicitly","TSARKIMEXSetFullyImplicit",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
+    ark->imex = (PetscBool)!flg;
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -604,6 +613,31 @@ PetscErrorCode TSARKIMEXGetType(TS ts,const TSARKIMEXType *arktype)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "TSARKIMEXSetFullyImplicit"
+/*@C
+  TSARKIMEXSetFullyImplicit - Solve both parts of the equation implicitly
+
+  Logically collective
+
+  Input Parameter:
++  ts - timestepping context
+-  flg - PETSC_TRUE for fully implicit
+
+  Level: intermediate
+
+.seealso: TSARKIMEXGetType()
+@*/
+PetscErrorCode TSARKIMEXSetFullyImplicit(TS ts,PetscBool flg)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  ierr = PetscTryMethod(ts,"TSARKIMEXSetFullyImplicit_C",(TS,PetscBool),(ts,flg));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSARKIMEXGetType_ARKIMEX"
@@ -640,6 +674,16 @@ PetscErrorCode  TSARKIMEXSetType_ARKIMEX(TS ts,const TSARKIMEXType arktype)
     }
   }
   SETERRQ1(((PetscObject)ts)->comm,PETSC_ERR_ARG_UNKNOWN_TYPE,"Could not find '%s'",arktype);
+  PetscFunctionReturn(0);
+}
+#undef __FUNCT__
+#define __FUNCT__ "TSARKIMEXSetFullyImplicit_ARKIMEX"
+PetscErrorCode  TSARKIMEXSetFullyImplicit_ARKIMEX(TS ts,PetscBool flg)
+{
+  TS_ARKIMEX *ark = (TS_ARKIMEX*)ts->data;
+
+  PetscFunctionBegin;
+  ark->imex = (PetscBool)!flg;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -685,9 +729,11 @@ PetscErrorCode  TSCreate_ARKIMEX(TS ts)
 
   ierr = PetscNewLog(ts,TS_ARKIMEX,&th);CHKERRQ(ierr);
   ts->data = (void*)th;
+  th->imex = PETSC_TRUE;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSARKIMEXGetType_C","TSARKIMEXGetType_ARKIMEX",TSARKIMEXGetType_ARKIMEX);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSARKIMEXSetType_C","TSARKIMEXSetType_ARKIMEX",TSARKIMEXSetType_ARKIMEX);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSARKIMEXSetFullyImplicit_C","TSARKIMEXSetFullyImplicit_ARKIMEX",TSARKIMEXSetFullyImplicit_ARKIMEX);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
