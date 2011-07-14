@@ -436,7 +436,31 @@ PetscErrorCode  MatGetVecsFFT_FFTW(Mat A,Vec *fin,Vec *fout,Vec *bout)
     ptrdiff_t      local_1_start,temp;
     switch (ndim){
           case 1:
+#if !defined(PETSC_USE_COMPLEX)
+                 SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"FFTW does not allow parallel real 1D transform");
+#else
                  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not implemented yet");
+                 alloc_local = fftw_mpi_local_size_1d(dim[0],comm,FFTW_FORWARD,FFTW_ESTIMATE,&local_n0,&local_0_start,&local_n1,&local_1_start);
+                 if (fin) {
+                         data_fin  = (fftw_complex*)fftw_malloc(sizeof(fftw_complex)*alloc_local);
+                         ierr = VecCreateMPIWithArray(comm,local_n0,N,(const PetscScalar*)data_fin,fin);CHKERRQ(ierr);
+                         (*fin)->ops->destroy = VecDestroy_MPIFFTW;
+                         }
+                 if (fout) {
+                          data_fout = (fftw_complex*)fftw_malloc(sizeof(fftw_complex)*alloc_local);
+                          ierr = VecCreateMPIWithArray(comm,local_n1,N,(const PetscScalar*)data_fout,fout);CHKERRQ(ierr);
+                          (*fout)->ops->destroy = VecDestroy_MPIFFTW;
+                         }
+                 alloc_local = fftw_mpi_local_size_1d(dim[0],comm,FFTW_BACKWARD,FFTW_ESTIMATE,&local_n0,&local_0_start,&local_n1,&local_1_start);
+                 if (bout) {
+                          data_bout = (fftw_complex*)fftw_malloc(sizeof(fftw_complex)*alloc_local);
+                          ierr = VecCreateMPIWithArray(comm,local_n1,N,(const PetscScalar*)data_bout,bout);CHKERRQ(ierr);
+                          (*bout)->ops->destroy = VecDestroy_MPIFFTW;
+                         }
+                 break;
+
+                 
+#endif
           case 2:
 #if !defined(PETSC_USE_COMPLEX)
                  alloc_local =  fftw_mpi_local_size_2d_transposed(dim[0],dim[1]/2+1,comm,&local_n0,&local_0_start,&local_n1,&local_1_start);
@@ -448,11 +472,6 @@ PetscErrorCode  MatGetVecsFFT_FFTW(Mat A,Vec *fin,Vec *fout,Vec *bout)
                            //printf("The code comes here with vector size %d\n",vsize);
                            (*fin)->ops->destroy   = VecDestroy_MPIFFTW;
                           }
-                 if (fout) {
-                            data_fout=(fftw_complex *)fftw_malloc(sizeof(fftw_complex)*alloc_local);
-                            ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,n1,N1,(PetscScalar*)data_fout,fout);CHKERRQ(ierr);
-                            (*fout)->ops->destroy   = VecDestroy_MPIFFTW;
-                           }
                  if (bout) {
                            data_boutr=(double *)fftw_malloc(sizeof(double)*alloc_local*2);
                            ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,(PetscInt)n1,N1,(PetscScalar*)data_boutr,bout);CHKERRQ(ierr);
@@ -460,6 +479,11 @@ PetscErrorCode  MatGetVecsFFT_FFTW(Mat A,Vec *fin,Vec *fout,Vec *bout)
                            //printf("The code comes here with vector size %d\n",vsize);
                            (*bout)->ops->destroy   = VecDestroy_MPIFFTW;
                           }
+                 if (fout) {
+                            data_fout=(fftw_complex *)fftw_malloc(sizeof(fftw_complex)*alloc_local);
+                            ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,n1,N1,(PetscScalar*)data_fout,fout);CHKERRQ(ierr);
+                            (*fout)->ops->destroy   = VecDestroy_MPIFFTW;
+                           }
                   
                            //printf("Vector size from fftw.c is  given by %d, %d\n",n1,N1);
 
@@ -498,17 +522,17 @@ PetscErrorCode  MatGetVecsFFT_FFTW(Mat A,Vec *fin,Vec *fout,Vec *bout)
         //printf("The code comes here with vector size %d\n",vsize);
                          (*fin)->ops->destroy   = VecDestroy_MPIFFTW;
                          }
-                 if (fout) {
-                          data_fout=(fftw_complex *)fftw_malloc(sizeof(fftw_complex)*alloc_local);
-                          ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,n1,N1,(PetscScalar*)data_fout,fout);CHKERRQ(ierr);
-                          (*fout)->ops->destroy   = VecDestroy_MPIFFTW;
-                          }
                  if (bout) {
                          data_boutr=(double *)fftw_malloc(sizeof(double)*alloc_local*2);
                          ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,(PetscInt)n1,N1,(PetscScalar*)data_boutr,bout);CHKERRQ(ierr);
                         // ierr = VecGetSize(*fin,&vsize);CHKERRQ(ierr);
         //printf("The code comes here with vector size %d\n",vsize);
                          (*bout)->ops->destroy   = VecDestroy_MPIFFTW;
+                          }
+                 if (fout) {
+                          data_fout=(fftw_complex *)fftw_malloc(sizeof(fftw_complex)*alloc_local);
+                          ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,n1,N1,(PetscScalar*)data_fout,fout);CHKERRQ(ierr);
+                          (*fout)->ops->destroy   = VecDestroy_MPIFFTW;
                           }
 
       //printf("Vector size from fftw.c is  given by %d, %d\n",n1,N1);
@@ -550,17 +574,17 @@ PetscErrorCode  MatGetVecsFFT_FFTW(Mat A,Vec *fin,Vec *fout,Vec *bout)
         //printf("The code comes here with vector size %d\n",vsize);
                          (*fin)->ops->destroy   = VecDestroy_MPIFFTW;
                         }
-                 if (fout) {
-                          data_fout=(fftw_complex *)fftw_malloc(sizeof(fftw_complex)*alloc_local);
-                          ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,n,N1,(PetscScalar*)data_fout,fout);CHKERRQ(ierr);
-                          (*fout)->ops->destroy   = VecDestroy_MPIFFTW;
-                        }
                  if (bout) {
                          data_boutr=(double *)fftw_malloc(sizeof(double)*alloc_local*2);
                          ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,(PetscInt)n,N1,(PetscScalar*)data_boutr,bout);CHKERRQ(ierr);
                          //ierr = VecGetSize(*fin,&vsize);CHKERRQ(ierr);
         //printf("The code comes here with vector size %d\n",vsize);
                          (*fin)->ops->destroy   = VecDestroy_MPIFFTW;
+                        }
+                 if (fout) {
+                          data_fout=(fftw_complex *)fftw_malloc(sizeof(fftw_complex)*alloc_local);
+                          ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,n,N1,(PetscScalar*)data_fout,fout);CHKERRQ(ierr);
+                          (*fout)->ops->destroy   = VecDestroy_MPIFFTW;
                         }
 
 #else
@@ -660,6 +684,7 @@ PetscErrorCode  MatGetVecs_FFTW(Mat A,Vec *fin,Vec *fout)
       /* We need to write an error message here saying that one cannot call this routine when doing parallel 1D real FFTW */
 //      SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Works only for parallel Multi-dimensional FFTW, Dimension>1. Check Documentation for MatGetVecs_FFTW1D routine");
       alloc_local = fftw_mpi_local_size_1d(dim[0],comm,FFTW_FORWARD,FFTW_ESTIMATE,&local_n0,&local_0_start,&local_n1,&local_1_end);
+      printf("The values of local_n0 and local_n1 are %d and %d",local_n0,local_n1);
       if (fin) {
         data_fin  = (fftw_complex*)fftw_malloc(sizeof(fftw_complex)*alloc_local);
         ierr = VecCreateMPIWithArray(comm,local_n0,N,(const PetscScalar*)data_fin,fin);CHKERRQ(ierr);
@@ -667,7 +692,7 @@ PetscErrorCode  MatGetVecs_FFTW(Mat A,Vec *fin,Vec *fout)
       } 
       if (fout) {
         data_fout = (fftw_complex*)fftw_malloc(sizeof(fftw_complex)*alloc_local);
-        ierr = VecCreateMPIWithArray(comm,local_n0,N,(const PetscScalar*)data_fout,fout);CHKERRQ(ierr);
+        ierr = VecCreateMPIWithArray(comm,local_n1,N,(const PetscScalar*)data_fout,fout);CHKERRQ(ierr);
         (*fout)->ops->destroy   = VecDestroy_MPIFFTW;
       }
       break;
@@ -682,6 +707,9 @@ PetscErrorCode  MatGetVecs_FFTW(Mat A,Vec *fin,Vec *fout)
         //printf("The code comes here with vector size %d\n",vsize);
         (*fin)->ops->destroy   = VecDestroy_MPIFFTW;
       }
+      n1 = 2*local_n1*(dim[0]);
+      //n1 = 2*local_n1*dim[1];
+      printf("The values are %ld\n",local_n1);
       if (fout) {
         data_fout=(fftw_complex *)fftw_malloc(sizeof(fftw_complex)*alloc_local);
         ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,n1,N1,(PetscScalar*)data_fout,fout);CHKERRQ(ierr);
@@ -718,6 +746,8 @@ PetscErrorCode  MatGetVecs_FFTW(Mat A,Vec *fin,Vec *fout)
         //printf("The code comes here with vector size %d\n",vsize);
         (*fin)->ops->destroy   = VecDestroy_MPIFFTW;
       }
+      printf("The value is %ld",local_n1);
+      n1 = 2*local_n1*dim[0]*(dim[2]/2+1);
       if (fout) {
         data_fout=(fftw_complex *)fftw_malloc(sizeof(fftw_complex)*alloc_local);
         ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,n1,N1,(PetscScalar*)data_fout,fout);CHKERRQ(ierr);
@@ -757,9 +787,14 @@ PetscErrorCode  MatGetVecs_FFTW(Mat A,Vec *fin,Vec *fout)
         //printf("The code comes here with vector size %d\n",vsize);
         (*fin)->ops->destroy   = VecDestroy_MPIFFTW;
       }
+      printf("The value is %ld. Global length is %d \n",local_n1,N1);
+      temp = fftw->partial_dim;
+      fftw->partial_dim = fftw->partial_dim * ((fftw->dim_fftw)[fftw->ndim_fftw-1]/2+1)*(fftw->dim_fftw)[1]/((fftw->dim_fftw)[2]*(fftw->dim_fftw)[fftw->ndim_fftw-1]);
+      
+      n1 = 2*local_n1*(fftw->partial_dim);  fftw->partial_dim = temp;
       if (fout) {
         data_fout=(fftw_complex *)fftw_malloc(sizeof(fftw_complex)*alloc_local);
-        ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,n,N1,(PetscScalar*)data_fout,fout);CHKERRQ(ierr);
+        ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,n1,N1,(PetscScalar*)data_fout,fout);CHKERRQ(ierr);
         (*fout)->ops->destroy   = VecDestroy_MPIFFTW;
       }
  
