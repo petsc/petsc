@@ -206,7 +206,7 @@ PetscErrorCode  PetscDLLibraryOpen(MPI_Comm comm,const char path[],PetscDLLibrar
 
    Input Parameter:
 +  comm - communicator that will open the library
-.  outlist - list of already open libraries that may contain symbol 
+.  outlist - list of already open libraries that may contain symbol (can be PETSC_NULL and only the executable is searched for the function)
 .  path     - optional complete library name (if provided checks here before checking outlist)
 -  insymbol - name of symbol
 
@@ -225,16 +225,16 @@ PetscErrorCode  PetscDLLibrarySym(MPI_Comm comm,PetscDLLibrary *outlist,const ch
 {
   char           libname[PETSC_MAX_PATH_LEN],suffix[16],*symbol,*s;
   size_t         len;
-  PetscDLLibrary nlist,prev,list;
+  PetscDLLibrary nlist,prev,list = PETSC_NULL;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidPointer(outlist,2);
+  if (outlist) PetscValidPointer(outlist,2);
   if (path) PetscValidCharPointer(path,3);
   PetscValidCharPointer(insymbol,4);
   PetscValidPointer(value,5);
 
-  list   = *outlist;
+  if (outlist) list   = *outlist;
   *value = 0;
 
   /* make copy of symbol so we can edit it in place */

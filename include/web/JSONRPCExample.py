@@ -47,10 +47,12 @@ class JSONRPCExample:
         method_panel.add(self.method_list)
         method_panel.setSpacing(8)
 
-        self.button_py = Button("Send to Python Service", self)
+        self.button_py = Button("Send to echo Service", self)
+        self.button_ams = Button("Send to AMS Service", self)
 
         buttons = HorizontalPanel()
         buttons.add(self.button_py)
+        buttons.add(self.button_ams)
         buttons.setSpacing(8)
         
         info = """<h2>JSON-RPC Example</h2>
@@ -76,16 +78,10 @@ class JSONRPCExample:
         text = self.text_area.getText()
 
         # demonstrate proxy & callMethod()
-        if method == self.METHOD_ECHO:
+        if sender == self.button_py:
             id = self.remote_py.echo(text, self)
-        elif method == self.METHOD_REVERSE:
-            id = self.remote_py.reverse(text, self)
-        elif method == self.METHOD_UPPERCASE:
-            id = self.remote_py.uppercase(text, self)
-        elif method == self.METHOD_LOWERCASE:
-            id = self.remote_py.lowercase(text, self)
-        elif method == self.METHOD_NONEXISTANT:
-            id = self.remote_py.nonexistant(text, self)
+        else:
+            id = self.remote_py.YAML_AMS_Connect(text, self)
 
     def onRemoteResponse(self, response, request_info):
         self.status.setText(response)
@@ -109,7 +105,7 @@ class JSONRPCExample:
 
 class EchoServicePython(JSONProxy):
     def __init__(self):
-        JSONProxy.__init__(self, "No service name", ["echo", "reverse", "uppercase", "lowercase", "nonexistant"])
+        JSONProxy.__init__(self, "No service name", ["echo", "YAML_AMS_Connect"])
 
 if __name__ == '__main__':
     # for pyjd, set up a web server and load the HTML from there:

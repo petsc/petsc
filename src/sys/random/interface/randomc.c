@@ -299,6 +299,19 @@ PetscErrorCode  PetscRandomViewFromOptions(PetscRandom rnd, char *title)
   PetscFunctionReturn(0);
 }
 
+#if defined(PETSC_HAVE_AMS)
+#undef __FUNCT__  
+#define __FUNCT__ "PetscRandomPublish_Petsc"
+static PetscErrorCode PetscRandomPublish_Petsc(PetscObject obj)
+{
+  PetscRandom    rand = (PetscRandom) obj;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = AMS_Memory_add_field(obj->amem,"seed",&rand->low,1,AMS_DOUBLE,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#endif
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscRandomCreate" 
@@ -366,6 +379,7 @@ PetscErrorCode  PetscRandomCreate(MPI_Comm comm,PetscRandom *r)
   rr->width = 1.0;
   rr->iset  = PETSC_FALSE;
   rr->seed  = 0x12345678 + 76543*rank;
+  ((PetscObject)rr)->bops->publish = PetscRandomPublish_Petsc;
   *r = rr;
   PetscFunctionReturn(0);
 }
