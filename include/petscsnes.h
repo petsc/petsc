@@ -126,6 +126,7 @@ extern PetscErrorCode  SNESSetOptionsPrefix(SNES,const char[]);
 extern PetscErrorCode  SNESAppendOptionsPrefix(SNES,const char[]);
 extern PetscErrorCode  SNESGetOptionsPrefix(SNES,const char*[]);
 extern PetscErrorCode  SNESSetFromOptions(SNES);
+extern PetscErrorCode  SNESDefaultGetWork(SNES,PetscInt);
 
 extern PetscErrorCode  MatCreateSNESMF(SNES,Mat*);
 extern PetscErrorCode  MatMFFDComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);

@@ -142,7 +142,7 @@ def do_loop(ksp, r):
     rnorm = r.norm()
     ksp.setResidualNorm(rnorm)
     ksp.logConvergenceHistory(its, rnorm)
-    ksp.callMonitor(its, rnorm)
+    ksp.monitor(its, rnorm)
     reason = ksp.callConvergenceTest(its, rnorm)
     if not reason:
         ksp.setIterationNumber(its+1)

@@ -27,9 +27,9 @@ PetscInt main(PetscInt argc,char **args)
   PetscBool       view=PETSC_FALSE,use_interface=PETSC_TRUE;
 
   ierr = PetscInitialize(&argc,&args,(char *)0,help);CHKERRQ(ierr);
-#if !defined(PETSC_USE_COMPLEX)
-  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP, "This example requires complex numbers");
-#endif
+//#if !defined(PETSC_USE_COMPLEX)
+//  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP, "This example requires complex numbers");
+//#endif
 
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD, PETSC_NULL, "FFTW Options", "ex143");CHKERRQ(ierr);
     ierr = PetscOptionsBool("-vec_view_draw", "View the vectors", "ex143", view, &view, PETSC_NULL);CHKERRQ(ierr);
@@ -102,7 +102,7 @@ PetscInt main(PetscInt argc,char **args)
     Mat      A;
 
     N=1;
-    for (i=1; i<6; i++){
+    for (i=1; i<5; i++){
       DIM = i;
       ierr = PetscMalloc(i*sizeof(PetscInt),&dim);CHKERRQ(ierr);
       for(k=0;k<i;k++){
