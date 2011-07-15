@@ -20,7 +20,7 @@ class Configure(PETSc.package.NewPackage):
     import os
 
     g = open(os.path.join(self.packageDir,'makeinc'),'w')
-    g.write('AR           = '+self.setCompilers.AR+'\n')
+    g.write('AR           = '+self.setCompilers.AR+' '+self.setCompilers.AR_FLAGS+'\n')
     g.write('RANLIB       = '+self.setCompilers.RANLIB+'\n')
     # should use the BuildSystem defined RM, MV
     g.write('RM           = rm -f\n')
