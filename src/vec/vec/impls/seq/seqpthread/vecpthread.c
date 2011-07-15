@@ -7,9 +7,10 @@
 #include <private/vecimpl.h>          /*I "petscvec.h" I*/
 #include <../src/vec/vec/impls/dvecimpl.h>
 #include <petscblaslapack.h>
+#include <private/petscaxpy.h>
 #include <pthread.h>
-void           MainWait(void);
-PetscErrorCode MainJob(void* (*pFunc)(void*),void**,PetscInt);
+void           (*MainWait)(void);
+PetscErrorCode (*MainJob)(void* (*pFunc)(void*),void**,PetscInt);
 extern PetscBool    PetscUseThreadPool;
 extern PetscMPIInt PetscMaxThreads;
 void* PetscThreadRun(MPI_Comm Comm,void* (*pFunc)(void*),int,pthread_t*,void**);
@@ -100,6 +101,20 @@ typedef struct {
   PetscRandom   rin;
   PetscInt nlocal;
 } VecSetRandom_KernelData;
+
+typedef struct {
+  const PetscScalar *xpin;
+  PetscScalar   *ypin;
+  PetscInt nlocal;
+} VecCopy_KernelData;
+
+typedef struct {
+  PetscScalar*       xavalin; //data
+  Vec*               yavecin; //array of type Vec
+  const PetscScalar* amult;   //multipliers
+  PetscInt           nelem;   //number of elements in vector
+  PetscInt           ntoproc; //number of vectors to process
+} VecMAXPY_KernelData;
 
 void* PetscThreadRun(MPI_Comm Comm,void* (*funcp)(void*),int iTotThreads,pthread_t* ThreadId,void** data) {
   PetscInt    ierr;
@@ -232,6 +247,7 @@ PetscErrorCode VecScale_SeqPThread(Vec xin, PetscScalar alpha)
     ierr = MainJob(VecScale_Kernel,(void**)pdata,iNumThreads);
     free(kerneldatap);
     free(pdata);
+    ierr = VecRestoreArray(xin,&xarray);CHKERRQ(ierr);
   }
   ierr = PetscLogFlops(xin->map->n);CHKERRQ(ierr);
   PetscFunctionReturn(ierr);
@@ -286,6 +302,8 @@ PetscErrorCode VecAXPY_SeqPThread(Vec yin,PetscScalar alpha,Vec xin)
       pdata[i] = &kerneldatap[i];
     }
     ierr = MainJob(VecAXPY_Kernel,(void**)pdata,iNumThreads);
+    ierr = VecRestoreArrayRead(xin,&xarray);CHKERRQ(ierr);
+    ierr = VecRestoreArray(yin,&yarray);CHKERRQ(ierr);
     ierr = PetscLogFlops(2.0*yin->map->n);CHKERRQ(ierr);
   }
   free(kerneldatap);
@@ -394,12 +412,12 @@ void* VecWAXPY_Kernel(void *arg)
   n = data->n;
   if(a==-1.0) {
     for (i=0; i<n; i++) {
-      ww[i] = xx[i] - yy[i];
+      ww[i] = yy[i] - xx[i];
     }
   }
   else if(a==1.0) {
     for (i=0; i<n; i++) {
-      ww[i] = xx[i] + yy[i];
+      ww[i] = yy[i] + xx[i];
     }
   }
   else {
@@ -1066,6 +1084,7 @@ static PetscErrorCode VecPointwiseDivide_SeqPThread(Vec win,Vec xin,Vec yin)
   free(kerneldatap);
   free(pdata);
 
+  ierr = PetscLogFlops(n);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(xin,(const PetscScalar**)&xx);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(yin,(const PetscScalar**)&yy);CHKERRQ(ierr);
   ierr = VecRestoreArray(win,&ww);CHKERRQ(ierr);
@@ -1168,6 +1187,162 @@ static PetscErrorCode VecSetRandom_SeqPThread(Vec xin,PetscRandom r)
   PetscFunctionReturn(0);
 }
 
+void* VecCopy_Kernel(void *arg)
+{
+  VecCopy_KernelData *data = (VecCopy_KernelData*)arg;
+  const PetscScalar  *xa = data->xpin;
+  PetscScalar        *ya = data->ypin;
+  PetscInt           n = data->nlocal;
+  PetscErrorCode ierr;
+
+  ierr = PetscMemcpy(ya,xa,n*sizeof(PetscScalar));CHKERRQP(ierr);
+  return(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecCopy_SeqPThread"
+static PetscErrorCode VecCopy_SeqPThread(Vec xin,Vec yin)
+{
+  PetscScalar       *ya;
+  const PetscScalar *xa;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  if (xin != yin) {
+    ierr = VecGetArrayRead(xin,&xa);CHKERRQ(ierr);
+    ierr = VecGetArray(yin,&ya);CHKERRQ(ierr);
+
+  PetscInt       n = xin->map->n,i;
+  const PetscInt    iNumThreads = PetscMaxThreads;  //this number could be different
+  PetscInt          Q = n/(iNumThreads),R = n-Q*(iNumThreads),iIndex;
+  PetscBool         S;
+
+  VecCopy_KernelData* kerneldatap = (VecCopy_KernelData*)malloc(iNumThreads*sizeof(VecCopy_KernelData));
+  VecCopy_KernelData** pdata = (VecCopy_KernelData**)malloc(iNumThreads*sizeof(VecCopy_KernelData*));
+
+    iIndex = 0;
+    for (i=0; i<iNumThreads; i++) {
+      S = i<R;
+      kerneldatap[i].xpin   = xa+iIndex;
+      kerneldatap[i].ypin   = ya+iIndex;
+      kerneldatap[i].nlocal = S?Q+1:Q;
+      iIndex += kerneldatap[i].nlocal;
+      pdata[i] = &kerneldatap[i];
+    }
+    ierr = MainJob(VecCopy_Kernel,(void**)pdata,iNumThreads);
+    free(kerneldatap);
+    free(pdata);
+
+    ierr = VecRestoreArrayRead(xin,&xa);CHKERRQ(ierr);
+    ierr = VecRestoreArray(yin,&ya);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+void* VecMAXPY_Kernel(void* arg)
+{
+  VecMAXPY_KernelData *data = (VecMAXPY_KernelData*)arg;
+  PetscErrorCode    ierr;
+  PetscInt          n = data->nelem,nv=data->ntoproc,j,j_rem;
+  const PetscScalar *alpha=data->amult,*yy0,*yy1,*yy2,*yy3;
+  PetscScalar       *xx = data->xavalin,alpha0,alpha1,alpha2,alpha3;
+  Vec* y = data->yavecin;
+
+#if defined(PETSC_HAVE_PRAGMA_DISJOINT)
+#pragma disjoint(*xx,*yy0,*yy1,*yy2,*yy3,*alpha)
+#endif
+
+  switch (j_rem=nv&0x3) {
+  case 3: 
+    ierr = VecGetArrayRead(y[0],&yy0);CHKERRQP(ierr);
+    ierr = VecGetArrayRead(y[1],&yy1);CHKERRQP(ierr);
+    ierr = VecGetArrayRead(y[2],&yy2);CHKERRQP(ierr);
+    alpha0 = alpha[0]; 
+    alpha1 = alpha[1]; 
+    alpha2 = alpha[2]; 
+    alpha += 3;
+    PetscAXPY3(xx,alpha0,alpha1,alpha2,yy0,yy1,yy2,n);
+    ierr = VecRestoreArrayRead(y[0],&yy0);CHKERRQP(ierr);
+    ierr = VecRestoreArrayRead(y[1],&yy1);CHKERRQP(ierr);
+    ierr = VecRestoreArrayRead(y[2],&yy2);CHKERRQP(ierr);
+    y     += 3;
+    break;
+  case 2: 
+    ierr = VecGetArrayRead(y[0],&yy0);CHKERRQP(ierr);
+    ierr = VecGetArrayRead(y[1],&yy1);CHKERRQP(ierr);
+    alpha0 = alpha[0]; 
+    alpha1 = alpha[1]; 
+    alpha +=2;
+    PetscAXPY2(xx,alpha0,alpha1,yy0,yy1,n);
+    ierr = VecRestoreArrayRead(y[0],&yy0);CHKERRQP(ierr);
+    ierr = VecRestoreArrayRead(y[1],&yy1);CHKERRQP(ierr);
+    y     +=2;
+    break;
+  case 1: 
+    ierr = VecGetArrayRead(y[0],&yy0);CHKERRQP(ierr);
+    alpha0 = *alpha++; 
+    PetscAXPY(xx,alpha0,yy0,n);
+    ierr = VecRestoreArrayRead(y[0],&yy0);CHKERRQP(ierr);
+    y     +=1;
+    break;
+  }
+  for (j=j_rem; j<nv; j+=4) {
+    ierr = VecGetArrayRead(y[0],&yy0);CHKERRQP(ierr);
+    ierr = VecGetArrayRead(y[1],&yy1);CHKERRQP(ierr);
+    ierr = VecGetArrayRead(y[2],&yy2);CHKERRQP(ierr);
+    ierr = VecGetArrayRead(y[3],&yy3);CHKERRQP(ierr);
+    alpha0 = alpha[0];
+    alpha1 = alpha[1];
+    alpha2 = alpha[2];
+    alpha3 = alpha[3];
+    alpha  += 4;
+
+    PetscAXPY4(xx,alpha0,alpha1,alpha2,alpha3,yy0,yy1,yy2,yy3,n);
+    ierr = VecRestoreArrayRead(y[0],&yy0);CHKERRQP(ierr);
+    ierr = VecRestoreArrayRead(y[1],&yy1);CHKERRQP(ierr);
+    ierr = VecRestoreArrayRead(y[2],&yy2);CHKERRQP(ierr);
+    ierr = VecRestoreArrayRead(y[3],&yy3);CHKERRQP(ierr);
+    y      += 4;
+  }
+  return(0);
+} 
+
+#undef __FUNCT__  
+#define __FUNCT__ "VecMAXPY_SeqPThread"
+PetscErrorCode VecMAXPY_SeqPThread(Vec xin, PetscInt nv,const PetscScalar *alpha,Vec *y)
+{
+  PetscErrorCode    ierr;
+  PetscInt          n = xin->map->n,i,j=0;
+  PetscScalar       *xx;
+
+  const PetscInt    iNumThreads = PetscMaxThreads;  //this number could be different
+  PetscInt          Q = nv/(iNumThreads),R = nv-Q*(iNumThreads);
+  PetscBool         S;
+  VecMAXPY_KernelData* kerneldatap = (VecMAXPY_KernelData*)malloc(iNumThreads*sizeof(VecMAXPY_KernelData));
+  VecMAXPY_KernelData** pdata = (VecMAXPY_KernelData**)malloc(iNumThreads*sizeof(VecMAXPY_KernelData*));
+
+  PetscFunctionBegin;
+  ierr = PetscLogFlops(nv*2.0*n);CHKERRQ(ierr);
+  ierr = VecGetArray(xin,&xx);CHKERRQ(ierr);
+
+  for (i=0; i<iNumThreads; i++) {
+    S = i<R;
+    kerneldatap[i].xavalin  = xx;
+    kerneldatap[i].yavecin = &y[j];
+    kerneldatap[i].amult   = &alpha[j];
+    kerneldatap[i].nelem   = n;
+    kerneldatap[i].ntoproc = S?Q+1:Q;
+    j += kerneldatap[i].ntoproc;
+    pdata[i] = &kerneldatap[i];
+  }
+  ierr = MainJob(VecMAXPY_Kernel,(void**)pdata,iNumThreads);
+  free(kerneldatap);
+  free(pdata);
+
+  ierr = VecRestoreArray(xin,&xx);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+} 
+
 #undef __FUNCT__
 #define __FUNCT__ "VecDestroy_SeqPThread"
 PetscErrorCode VecDestroy_SeqPThread(Vec v)
@@ -1210,6 +1385,8 @@ PetscErrorCode  VecCreate_SeqPThread(Vec V)
   V->ops->pointwisedivide = VecPointwiseDivide_SeqPThread;
   V->ops->swap            = VecSwap_SeqPThread;
   V->ops->setrandom       = VecSetRandom_SeqPThread;
+  V->ops->copy            = VecCopy_SeqPThread;
+  V->ops->maxpy           = VecMAXPY_SeqPThread;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

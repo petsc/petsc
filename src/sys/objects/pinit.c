@@ -24,7 +24,7 @@ extern PetscErrorCode PetscFListDestroyAll(void);
 extern PetscErrorCode PetscSequentialPhaseBegin_Private(MPI_Comm,int);
 extern PetscErrorCode PetscSequentialPhaseEnd_Private(MPI_Comm,int);
 extern PetscErrorCode PetscCloseHistoryFile(FILE **);
-extern PetscErrorCode PetscThreadFinalize(void);
+extern PetscErrorCode (*PetscThreadFinalize)(void);
 
 /* this is used by the _, __, and ___ macros (see include/petscerror.h) */
 PetscErrorCode __gierr = 0;

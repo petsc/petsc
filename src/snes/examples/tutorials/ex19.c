@@ -60,6 +60,8 @@ T*/
      petscviewer.h - viewers               petscpc.h  - preconditioners
      petscksp.h   - linear solvers 
 */
+#define _GNU_SOURCE
+#include <sched.h>
 #include <petscsnes.h>
 #include <petscdmda.h>
 #include <petscdmmg.h>
@@ -92,6 +94,12 @@ int main(int argc,char **argv)
   MPI_Comm       comm;
   SNES           snes;
   DM             da;
+  int icorr; cpu_set_t mset;
+
+  icorr = 0;
+  CPU_ZERO(&mset);
+  CPU_SET(icorr,&mset);
+  sched_setaffinity(0,sizeof(cpu_set_t),&mset);
 
   ierr = PetscInitialize(&argc,&argv,(char *)0,help);if (ierr) return(1);
   comm = PETSC_COMM_WORLD;

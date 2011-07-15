@@ -34,6 +34,7 @@ E*/
 #define MATIS              "is"
 #define MATAIJ             "aij"
 #define MATSEQAIJ            "seqaij"
+#define MATSEQPTHREADAIJ     "seqpthreadaij"
 #define MATMPIAIJ            "mpiaij"
 #define MATAIJCRL              "aijcrl"
 #define MATSEQAIJCRL             "seqaijcrl"

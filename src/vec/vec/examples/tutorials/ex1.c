@@ -14,8 +14,11 @@ T*/
      petscviewer.h - viewers
 */
 
+#define _GNU_SOURCE
+#include <sched.h>
 #include <petscvec.h>
 #include <sys/time.h>
+#include <sys/sysinfo.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -27,8 +30,16 @@ int main(int argc,char **argv)
   PetscInt       n = 20,maxind;
   PetscErrorCode ierr;
   PetscScalar    one = 1.0,two = 2.0,three = 3.0,dots[3],dot;
+  int icorr = 0; cpu_set_t mset;
+
+  icorr = get_nprocs();
+  printf("Number of On-line Cores = %d\n",icorr);
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-main",&icorr,PETSC_NULL);CHKERRQ(ierr);
+  CPU_ZERO(&mset);
+  CPU_SET(icorr,&mset);
+  sched_setaffinity(0,sizeof(cpu_set_t),&mset);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
 
   /* 
@@ -50,6 +61,7 @@ int main(int argc,char **argv)
 y
 
   */
+
   ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
   ierr = VecSetSizes(x,PETSC_DECIDE,n);CHKERRQ(ierr);
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);
@@ -86,7 +98,8 @@ y
      PETSC_USE_COMPLEX is defined in the makefiles; otherwise,
      (when using real numbers) it is undefined.
   */
-  printf("Size Of Void* =  %ld, Size Of PetscErrorCode =  %ld\n",sizeof(void*),sizeof(PetscErrorCode));
+  //printf("Size Of Void* =  %ld, Size Of PetscErrorCode =  %ld\n",sizeof(void*),sizeof(PetscErrorCode));
+  //printf("Size of PetscBool = %ld\n",sizeof(PetscBool));
 
 #if defined(PETSC_USE_COMPLEX)
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Vector length %D\n",(PetscInt) (PetscRealPart(dot)));CHKERRQ(ierr);
@@ -97,12 +110,12 @@ y
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Vector length %D %D %D\n",(PetscInt)dots[0],
                              (PetscInt)dots[1],(PetscInt)dots[2]);CHKERRQ(ierr);
 #endif
-  struct timeval t1, t2, result;
-  gettimeofday(&t1,NULL);
+  //struct timeval t1, t2, result;
+  //gettimeofday(&t1,NULL);
   ierr = VecMax(x,&maxind,&maxval);CHKERRQ(ierr);
-  gettimeofday(&t2,NULL);
-  timersub(&t2,&t1,&result);
-  printf("Time for VecMax = %lf\n",result.tv_sec+result.tv_usec/1000000.0);
+  //gettimeofday(&t2,NULL);
+  //timersub(&t2,&t1,&result);
+  //printf("Time for VecMax = %lf\n",result.tv_sec+result.tv_usec/1000000.0);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"VecMax %G, VecInd %D\n",maxval,maxind);CHKERRQ(ierr);
 
   ierr = VecMin(x,&maxind,&maxval);CHKERRQ(ierr);
