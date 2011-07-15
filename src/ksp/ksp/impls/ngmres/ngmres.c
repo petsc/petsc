@@ -159,7 +159,9 @@ PetscErrorCode  KSPSolve_NGMRES(KSP ksp)
         ierr = VecNorm(F,NORM_2,&gnorm);CHKERRQ(ierr);          
       } else SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"NormType not supported");
       KSPLogResidualHistory(ksp,gnorm);
+      //printf("k=%d",k);
       KSPMonitor(ksp,k,gnorm);
+      ksp->its=k;
       ierr = (*ksp->converged)(ksp,k,gnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr); 
       if (ksp->reason) PetscFunctionReturn(0);
 
