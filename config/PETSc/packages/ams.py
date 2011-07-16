@@ -26,7 +26,7 @@ class Configure(PETSc.package.NewPackage):
     g.write('RM           = rm -f\n')
     g.write('MV           = mv -f\n')    
     self.setCompilers.pushLanguage('C')
-    g.write('CC           = '+self.setCompilers.getCompiler()+'\n')
+    g.write('CC           = '+self.setCompilers.getCompiler()+' '+self.setCompilers.getCompilerFlags()+'\n')
     g.write('CLINKER      = ${CC}\n')
     if self.setCompilers.isDarwin():    
       g.write('LINKSHARED   = ${CC} -dynamiclib -single_module -multiply_defined suppress -undefined dynamic_lookup\n')
