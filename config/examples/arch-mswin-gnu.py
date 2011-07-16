@@ -2,12 +2,11 @@
 
 configure_options = [
   # Blas autodetec with cygwin blas at /usr/lib/liblapack,a,libblas.a
-  # MPICH2 binary install autodtect in c:/Program Files/MPICH2
   '--with-cc=gcc',
-  '--with-fc=g77',
+  '--with-fc=gfortran',
   '--with-cxx=g++',
   'DATAFILESPATH=/home/sbalay/datafiles',
-  '--with-mpiexec=mpiexec --localonly',
+  '--download-mpich=1',
   ]
 
 if __name__ == '__main__':
