@@ -410,19 +410,17 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   */
   ierr = PetscSetDisplay();CHKERRQ(ierr);
 
+#if defined(PETSC_USE_PTHREAD_CLASSES)
   /*
       Determine whether user specified maximum number of threads
    */
-  ierr = PetscOptionsHasName(PETSC_NULL,"-thread_max",&flg1);CHKERRQ(ierr);
-  if(flg1) {
-    ierr = PetscOptionsGetInt(PETSC_NULL,"-thread_max",&PetscMaxThreads,PETSC_NULL);CHKERRQ(ierr);
-  }
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-thread_max",&PetscMaxThreads,PETSC_NULL);CHKERRQ(ierr);
 
   /*
       Determine whether to use thread pool
    */
   ierr = PetscOptionsHasName(PETSC_NULL,"-use_thread_pool",&flg1);CHKERRQ(ierr);
-  if(flg1) {
+  if (flg1) {
     PetscUseThreadPool = PETSC_TRUE;
     PetscInt N_CORES = get_nprocs();
     ThreadCoreAffinity = (int*)malloc(N_CORES*sizeof(int));
@@ -458,13 +456,18 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
       MainWait              = &MainWait_Main;
       MainJob               = &MainJob_Main;
       break;
+#if defined(PETSC_HAVE_PTHREAD_BARRIER)
     case 3:
+#else
+    default:
+#endif
       PetscThreadFunc       = &PetscThreadFunc_Chain;
       PetscThreadInitialize = &PetscThreadInitialize_Chain;
       PetscThreadFinalize   = &PetscThreadFinalize_Chain;
       MainWait              = &MainWait_Chain;
       MainJob               = &MainJob_Chain;
       break;
+#if defined(PETSC_HAVE_PTHREAD_BARRIER)
     default:
       PetscThreadFunc       = &PetscThreadFunc_True;
       PetscThreadInitialize = &PetscThreadInitialize_True;
@@ -472,9 +475,12 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
       MainWait              = &MainWait_True;
       MainJob               = &MainJob_True;
       break;
+#endif
     }
+    PetscThreadInitialize(PetscMaxThreads);
   }
-  PetscThreadInitialize(PetscMaxThreads);
+#endif
+
   /*
       Print the PETSc version information
   */
