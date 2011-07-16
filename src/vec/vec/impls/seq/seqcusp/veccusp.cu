@@ -1529,6 +1529,7 @@ PetscErrorCode  VecCreate_SeqCUSP(Vec V)
   V->ops->dot_local       = VecDot_SeqCUSP;
   V->ops->tdot_local      = VecTDot_SeqCUSP;
   V->ops->norm_local      = VecNorm_SeqCUSP;
+  V->ops->mdot_local      = VecMDot_SeqCUSP;
   V->ops->maxpy           = VecMAXPY_SeqCUSP;
   V->ops->mdot            = VecMDot_SeqCUSP;
   V->ops->aypx            = VecAYPX_SeqCUSP;
