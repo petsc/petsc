@@ -399,7 +399,7 @@ PetscErrorCode  TSAlphaAdaptDefault(TS ts,PetscReal t,Vec X,Vec Xdot, PetscReal 
 
   ierr = SNESGetConvergedReason(ts->snes,&snesreason);CHKERRQ(ierr);
   if (snesreason < 0) {
-    ok = PETSC_FALSE;
+    *ok = PETSC_FALSE;
     *nextdt *= th->scale_min;
     goto finally;
   }
