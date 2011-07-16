@@ -456,6 +456,8 @@ class Configure(config.base.Configure):
         self.framework.logPrint('Booting CMake in PETSC_ARCH failed:\n' + str(e))
       except (ImportError, KeyError), e:
         self.framework.logPrint('Importing cmakeboot failed:\n' + str(e))
+      if self.cmakeboot_success and not hasattr(self.compilers, 'CUDAC'): # Our CMake build does not support CUDA at this time
+        self.addMakeMacro('PETSC_BUILD_USING_CMAKE',1)
     return
 
   def configurePrefetch(self):
