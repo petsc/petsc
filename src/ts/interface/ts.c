@@ -837,7 +837,7 @@ PetscErrorCode  TSView(TS ts,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"  maximum time=%G\n",ts->max_time);CHKERRQ(ierr);
     if (ts->problem_type == TS_NONLINEAR) {
       ierr = PetscViewerASCIIPrintf(viewer,"  total number of nonlinear solver iterations=%D\n",ts->nonlinear_its);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  total number of nonlinear solve failures=%D\n",ts->max_snes_failures);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  total number of nonlinear solve failures=%D\n",ts->num_snes_failures);CHKERRQ(ierr);
     }
     ierr = PetscViewerASCIIPrintf(viewer,"  total number of linear solver iterations=%D\n",ts->linear_its);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  total number of rejected steps=%D\n",ts->reject);CHKERRQ(ierr);
@@ -1837,6 +1837,8 @@ PetscErrorCode TSSolve(TS ts,Vec x,PetscReal *ftime)
   ts->steps = 0;
   ts->linear_its = 0;
   ts->nonlinear_its = 0;
+  ts->num_snes_failures = 0;
+  ts->reject = 0;
   ts->reason = TS_CONVERGED_ITERATING;
   ierr = TSMonitor(ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
 
