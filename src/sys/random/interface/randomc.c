@@ -379,7 +379,9 @@ PetscErrorCode  PetscRandomCreate(MPI_Comm comm,PetscRandom *r)
   rr->width = 1.0;
   rr->iset  = PETSC_FALSE;
   rr->seed  = 0x12345678 + 76543*rank;
+#if defined(PETSC_HAVE_AMS)
   ((PetscObject)rr)->bops->publish = PetscRandomPublish_Petsc;
+#endif
   *r = rr;
   PetscFunctionReturn(0);
 }
