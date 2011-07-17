@@ -24,8 +24,7 @@ extern PetscErrorCode MatMult_MPIFFTW(Mat,Vec,Vec);
 extern PetscErrorCode MatMultTranspose_MPIFFTW(Mat,Vec,Vec);
 extern PetscErrorCode MatDestroy_FFTW(Mat);
 extern PetscErrorCode VecDestroy_MPIFFTW(Vec);
-extern PetscErrorCode MatGetVecs_FFTW(Mat,Vec*,Vec*);
-extern PetscErrorCode MatGetVecsFFT_FFTW(Mat,Vec*,Vec*,Vec*);
+extern PetscErrorCode MatGetVecs_FFTW(Mat,Vec*,Vec*); // to be removed!
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMult_SeqFFTW"
@@ -302,13 +301,13 @@ PetscErrorCode VecDestroy_MPIFFTW(Vec v)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatGetVecs1DC_FFTW"
+#define __FUNCT__ "MatGetVecsFFTW_1DC"
 /* 
-   MatGetVecs_FFTW1D - Get Vectors(s) compatible with matrix, i.e. with the 
+    - Get Vectors(s) compatible with matrix, i.e. with the 
      parallel layout determined by FFTW-1D 
 
 */
-PetscErrorCode  MatGetVecs_FFTW1D(Mat A,Vec *fin,Vec *fout,Vec *bout)
+PetscErrorCode MatGetVecsFFTW_1DC(Mat A,Vec *fin,Vec *fout,Vec *bout)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size,rank;
@@ -369,21 +368,10 @@ PetscErrorCode  MatGetVecs_FFTW1D(Mat A,Vec *fin,Vec *fout,Vec *bout)
 
 }
 
-
 #undef __FUNCT__  
-#define __FUNCT__ "MatGetVecsFFT"
-PetscErrorCode MatGetVecsFFT(Mat A,Vec *x,Vec *y,Vec *z)
-{
-  PetscErrorCode ierr;
-  PetscFunctionBegin;
-  ierr = PetscTryMethod(A,"MatGetVecsFFT_C",(Mat,Vec*,Vec*,Vec*),(A,x,y,z));CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatGetVecsFFT_FFTW"
-/*
-   MatGetVecs_FFTW - Get vector(s) compatible with the matrix, i.e. with the
+#define __FUNCT__ "MatGetVecsFFTW"
+/*@
+   MatGetVecFFTW - Get vector(s) compatible with the matrix, i.e. with the
      parallel layout determined by FFTW
 
    Collective on Mat
@@ -398,9 +386,19 @@ PetscErrorCode MatGetVecsFFT(Mat A,Vec *x,Vec *y,Vec *z)
   Level: advanced
 
 .seealso: MatCreateFFTW()
-*/
+@*/
+PetscErrorCode MatGetVecsFFTW(Mat A,Vec *x,Vec *y,Vec *z)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  ierr = PetscTryMethod(A,"MatGetVecsFFTW_C",(Mat,Vec*,Vec*,Vec*),(A,x,y,z));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 EXTERN_C_BEGIN 
-PetscErrorCode  MatGetVecsFFT_FFTW(Mat A,Vec *fin,Vec *fout,Vec *bout)
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetVecsFFTW_FFTW"
+PetscErrorCode  MatGetVecsFFTW_FFTW(Mat A,Vec *fin,Vec *fout,Vec *bout)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size,rank;
@@ -614,8 +612,6 @@ PetscErrorCode  MatGetVecsFFT_FFTW(Mat A,Vec *fin,Vec *fout,Vec *bout)
   PetscFunctionReturn(0);
 }
 EXTERN_C_END 
-
-
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetVecs_FFTW"
@@ -1577,10 +1573,10 @@ PetscErrorCode MatCreate_FFTW(Mat A)
     A->ops->multtranspose = MatMultTranspose_MPIFFTW;
   }
   fft->matdestroy          = MatDestroy_FFTW;
-// if(ndim=1 && size>1) and also if it is complex then getvecs should be attached to MatGetVecs_FFTW1D
-  A->ops->getvecs       = MatGetVecs_FFTW;
+  // if(ndim=1 && size>1) and also if it is complex then getvecs should be attached to MatGetVecs_FFTW1D
+  //A->ops->getvecs       = MatGetVecs_FFTW;
   A->assembled          = PETSC_TRUE;
-  PetscObjectComposeFunctionDynamic((PetscObject)A,"MatGetVecsFFT_C","MatGetVecsFFT_FFTW",MatGetVecsFFT_FFTW);   
+  PetscObjectComposeFunctionDynamic((PetscObject)A,"MatGetVecsFFTW_C","MatGetVecsFFTW_FFTW",MatGetVecsFFTW_FFTW);   
   PetscObjectComposeFunctionDynamic((PetscObject)A,"InputTransformFFT_C","InputTransformFFT_FFTW",InputTransformFFT_FFTW);   
   PetscObjectComposeFunctionDynamic((PetscObject)A,"OutputTransformFFT_C","OutputTransformFFT_FFTW",OutputTransformFFT_FFTW);  
     

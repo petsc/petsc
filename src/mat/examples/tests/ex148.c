@@ -39,8 +39,7 @@ PetscInt main(PetscInt argc,char **args)
   DIM = 2;
   dim[0] = N0; dim[1] = N1;
   ierr = MatCreateFFT(PETSC_COMM_WORLD,DIM,dim,MATFFTW,&A);CHKERRQ(ierr);
-  ierr = MatGetVecs(A,&x,&y);CHKERRQ(ierr);
-  ierr = MatGetVecs(A,&z,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatGetVecsFFTW(A,&x,&y,&z);CHKERRQ(ierr);
 
   /* Scatter PETSc vector 'x' to FFTW vector 'x' */
   ierr = InputTransformFFT(A,input,x);CHKERRQ(ierr);

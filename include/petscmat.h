@@ -1752,8 +1752,8 @@ extern PetscErrorCode  MatCreateMPIAIJCUSP(MPI_Comm,PetscInt,PetscInt,PetscInt,P
 #if defined(PETSC_HAVE_FFTW)
 extern PetscErrorCode InputTransformFFT(Mat,Vec,Vec);
 extern PetscErrorCode OutputTransformFFT(Mat,Vec,Vec);
+extern PetscErrorCode MatGetVecsFFTW(Mat,Vec*,Vec*,Vec*);
 #endif
-
 
 extern PetscErrorCode MatCreateNest(MPI_Comm,PetscInt,const IS[],PetscInt,const IS[],const Mat[],Mat*);
 extern PetscErrorCode MatNestGetSize(Mat,PetscInt*,PetscInt*);

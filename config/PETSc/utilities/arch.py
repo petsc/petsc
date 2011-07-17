@@ -49,7 +49,7 @@ Warning: Using from command-line or name of script: %s, ignoring environment: %s
         self.arch = os.environ['PETSC_ARCH']
       else:
         import sys
-        self.arch = 'arch-' + sys.platform
+        self.arch = 'arch-' + sys.platform.replace('cygwin','mswin')
         # use opt/debug, c/c++ tags.
         self.arch+= '-'+self.languages.clanguage.lower()
         if self.compilerFlags.debugging:
