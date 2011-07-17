@@ -131,8 +131,6 @@ cat include/petscversion.h.bak | \
 /usr/bin/find . -type f -name "*.orig" -exec /bin/rm -f {} \;
 # Create EMACS-TAGS
 cd $tmpdir/petsc$version; ${PETSC_DIR}/bin/maint/generateetags.py
-# Update project files
-cd $tmpdir/petsc$version/projects; make
 
 # Set the correct file permissions.
 cd $tmpdir

@@ -802,21 +802,16 @@ Note:&nbsp; MPICH2 mpif.h needs a fix for it to work with Compaq F90
 option does not
 work with many external packages.<br>
       </p>
-      <p><font color="#551a8b"><b>Project</b></font><font
- color="#551a8b"><b> Files:</b> </font>We
-provide
-templates for Microsoft Visual Studio project files at
-${PETSC_DIR}/projects. These work for us - with our configure build
-[config/cygwin-ms.py with MPICH1 and Intel MKL 5], However they will
-REQURE MODIFICATIONS to work with a user build of PETSc - as the
-locations of packages &amp; configure options used by user could be
-different from our defult build. <br>
-      </p>
-      <p>To get these project files working for your installation of
-PETSc, please do the following:<br>
+      <p><font color="#551a8b"><b>Project Files:</b> </font>We
+cannot provide Microsoft Visual Studio project files for users as they
+are specific to the configure options, location of external packages,
+compiler versions etc. used for any given build of PETSc, so they
+are potentially different for each build of PETSc. So if you need a project file
+for use with PETSc -  please do the following.<br>
       </p>
       <ul>
-        <li>try compiling the example from cygwin shell - using
+        <li>create an empty project file with one of the examples say src/ksp/ksp/examples/tutorials/ex2.c <br>
+        <li>try compiling the example from cygwin bash shell - using
 makefile - for eg: <br>
 cd src/ksp/ksp/examples/tutorials<br>
 make ex2</li>
