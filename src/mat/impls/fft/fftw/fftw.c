@@ -371,7 +371,7 @@ PetscErrorCode MatGetVecsFFTW_1DC(Mat A,Vec *fin,Vec *fout,Vec *bout)
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetVecsFFTW"
 /*@
-   MatGetVecFFTW - Get vector(s) compatible with the matrix, i.e. with the
+   MatGetVecsFFTW - Get vector(s) compatible with the matrix, i.e. with the
      parallel layout determined by FFTW
 
    Collective on Mat
