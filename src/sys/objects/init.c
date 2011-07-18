@@ -139,6 +139,7 @@ PetscErrorCode PetscThreadFinalize_True(void);
 void           MainWait_True(void);
 PetscErrorCode MainJob_True(void* (*pFunc)(void*),void**,PetscInt);
 /****  ****/
+PetscErrorCode MainJob_Spawn(void* (*pFunc)(void*),void**,PetscInt);
 
 void* FuncFinish(void*);
 void* PetscThreadRun(MPI_Comm Comm,void* (*pFunc)(void*),int,pthread_t*,void**);
@@ -413,13 +414,6 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
 
 
   /*
-  else {
-    //need to define these in the case on 'no threads' or 'thread create/destroy'
-    //could take any of the above versions
-    PetscThreadInitialize = &PetscThreadInitialize_True;
-    PetscThreadFinalize   = &PetscThreadFinalize_True;
-    MainJob               = &MainJob_True;
-  }
       Print the PETSc version information
   */
   ierr = PetscOptionsHasName(PETSC_NULL,"-v",&flg1);CHKERRQ(ierr);
@@ -721,6 +715,10 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
 #endif
     }
     PetscThreadInitialize(PetscMaxThreads);
+  } else {
+    //need to define these in the case on 'no threads' or 'thread create/destroy'
+    //could take any of the above versions
+    MainJob               = &MainJob_Spawn;
   }
 #endif
   /*
@@ -1597,6 +1595,19 @@ PetscErrorCode MainJob_True(void* (*pFunc)(void*),void** data,PetscInt n) {
   if(ithreaderr) {
     ijoberr = ithreaderr;
   }
+  return ijoberr;
+}
+/**** NO THREAD POOL FUNCTION ****/
+#undef __FUNCT__
+#define __FUNCT__ "MainJob_Spawn"
+PetscErrorCode MainJob_Spawn(void* (*pFunc)(void*),void** data,PetscInt n) {
+  PetscErrorCode ijoberr = 0;
+
+  pthread_t* apThread = (pthread_t*)malloc(n*sizeof(pthread_t));
+  PetscThreadRun(MPI_COMM_WORLD,pFunc,n,apThread,data);
+  PetscThreadStop(MPI_COMM_WORLD,n,apThread); /* ensures that all threads are finished with the job */
+  free(apThread);
+
   return ijoberr;
 }
 /****  ****/
