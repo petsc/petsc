@@ -647,6 +647,16 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
    */
   ierr = PetscOptionsGetInt(PETSC_NULL,"-thread_max",&PetscMaxThreads,PETSC_NULL);CHKERRQ(ierr);
 
+  ierr = PetscOptionsHasName(PETSC_NULL,"-main",&flg1);CHKERRQ(ierr);
+  if(flg1) {
+    cpu_set_t mset;
+    int icorr,ncorr = get_nprocs();
+    ierr = PetscOptionsGetInt(PETSC_NULL,"-main",&icorr,PETSC_NULL);CHKERRQ(ierr);
+    CPU_ZERO(&mset);
+    CPU_SET(icorr%ncorr,&mset);
+    sched_setaffinity(0,sizeof(cpu_set_t),&mset);
+  }
+
   /*
       Determine whether to use thread pool
    */
