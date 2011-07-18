@@ -146,6 +146,7 @@ int main(int argc,char **argv)
   PetscReal       ftime=0.5;
   PetscBool       monitor = PETSC_FALSE;
   PetscScalar     *x_ptr;
+  PetscMPIInt     size;
   struct _n_User  user;
   PetscErrorCode  ierr;
 
@@ -153,6 +154,10 @@ int main(int argc,char **argv)
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscInitialize(&argc,&argv,PETSC_NULL,help);
+
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  if (size != 1) SETERRQ(PETSC_COMM_SELF,1,"This is a uniprocessor example only!");
+
   ierr = RegisterMyARK2();CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
