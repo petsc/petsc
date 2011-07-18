@@ -31,6 +31,7 @@ typedef struct _n_User *User;
 struct _n_User {
   PetscReal mu;
   PetscBool imex;
+  PetscReal next_output;
 };
 
 /*
@@ -123,15 +124,28 @@ static PetscErrorCode RegisterMyARK2(void)
 
 #undef __FUNCT__  
 #define __FUNCT__ "Monitor"
+/* Monitor timesteps and use interpolation to output at integer multiples of 0.1 */
 static PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal t,Vec X,void *ctx)
 {
   PetscErrorCode ierr;
   const PetscScalar *x;
+  PetscReal tfinal, dt;
+  User user = (User)ctx;
+  Vec interpolatedX;
 
   PetscFunctionBegin;
-  ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"%D TS %G  X % 12.6e % 12.6e\n",step,t,(double)PetscRealPart(x[0]),(double)PetscRealPart(x[1]));CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(X,&x);CHKERRQ(ierr);
+  ierr = TSGetTimeStep(ts,&dt);CHKERRQ(ierr);
+  ierr = TSGetDuration(ts,PETSC_NULL,&tfinal);CHKERRQ(ierr);
+
+  while (user->next_output <= t && user->next_output <= tfinal) {
+    ierr = VecDuplicate(X,&interpolatedX);CHKERRQ(ierr);
+    ierr = TSInterpolate(ts,user->next_output,interpolatedX);CHKERRQ(ierr);
+    ierr = VecGetArrayRead(interpolatedX,&x);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"[%.1f] %D TS %.6f (dt = %.6f) X % 12.6e % 12.6e\n",user->next_output,step,t,dt,(double)PetscRealPart(x[0]),(double)PetscRealPart(x[1]));CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(interpolatedX,&x);CHKERRQ(ierr);
+    ierr = VecDestroy(&interpolatedX);CHKERRQ(ierr);
+    user->next_output += 0.1;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -165,6 +179,7 @@ int main(int argc,char **argv)
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   user.mu = 1000;
   user.imex = PETSC_TRUE;
+  user.next_output = 0.0;
   ierr = PetscOptionsGetReal(PETSC_NULL,"-mu",&user.mu,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(PETSC_NULL,"-imex",&user.imex,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(PETSC_NULL,"-monitor",&monitor,PETSC_NULL);CHKERRQ(ierr);
@@ -188,7 +203,7 @@ int main(int argc,char **argv)
   ierr = TSSetIJacobian(ts,A,A,IJacobian,&user);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,PETSC_DEFAULT,ftime);CHKERRQ(ierr);
   if (monitor) {
-    ierr = TSMonitorSet(ts,Monitor,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+    ierr = TSMonitorSet(ts,Monitor,&user,PETSC_NULL);CHKERRQ(ierr);
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
