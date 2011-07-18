@@ -2136,8 +2136,22 @@ static PetscErrorCode solve_stokes_3d_coupled(PetscInt mx,PetscInt my,PetscInt m
     }
   }
   ierr = KSPSolve(ksp_S,f,X);CHKERRQ(ierr);
-  ierr = DAView3DPVTS(da_Stokes,X,"up");CHKERRQ(ierr);
-
+  {
+    PetscBool flg = PETSC_TRUE;
+    ierr = PetscOptionsGetBool(PETSC_NULL,"-write_pvts",&flg,PETSC_NULL);CHKERRQ(ierr);
+    if (flg) {ierr = DAView3DPVTS(da_Stokes,X,"up");CHKERRQ(ierr);}
+  }
+  {
+    PetscBool flg = PETSC_FALSE;
+    char filename[PETSC_MAX_PATH_LEN];
+    ierr = PetscOptionsGetString(PETSC_NULL,"-write_binary",filename,sizeof filename,&flg);CHKERRQ(ierr);
+    if (flg) {
+      PetscViewer viewer;
+      ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename[0]?filename:"ex42-binaryoutput",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
+      ierr = VecView(X,viewer);CHKERRQ(ierr);
+      ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+    }
+  }
   ierr = KSPGetIterationNumber(ksp_S,&its);CHKERRQ(ierr);
 
   /* verify */
