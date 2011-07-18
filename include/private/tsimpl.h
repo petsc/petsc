@@ -15,7 +15,7 @@
 /*
      Maximum number of monitors you can run with a single TS
 */
-#define MAXTSMONITORS 5 
+#define MAXTSMONITORS 5
 
 typedef struct _TSOps *TSOps;
 
@@ -51,7 +51,7 @@ struct _p_TS {
 
   /* ---------------- User (or PETSc) Provided stuff ---------------------*/
   PetscErrorCode (*monitor[MAXTSMONITORS])(TS,PetscInt,PetscReal,Vec,void*); /* returns control to user after */
-  PetscErrorCode (*mdestroy[MAXTSMONITORS])(void**);                
+  PetscErrorCode (*mdestroy[MAXTSMONITORS])(void**);
   void *monitorcontext[MAXTSMONITORS];                 /* residual calculation, allows user */
   PetscInt  numbermonitors;                                 /* to, for instance, print residual norm, etc. */
 
@@ -89,7 +89,7 @@ struct _p_TS {
 
 
   /* --- Data that is unique to each particular solver --- */
-  PetscInt setupcalled;            /* true if setup has been called */
+  PetscInt setupcalled;             /* true if setup has been called */
   void     *data;                   /* implementationspecific data */
   void     *user;                   /* user context */
 
@@ -113,7 +113,7 @@ struct _p_TS {
   PetscInt reject,max_reject;
 
   /* ------------------- Default work-area management ------------------ */
-  PetscInt nwork;              
+  PetscInt nwork;
   Vec      *work;
 };
 
