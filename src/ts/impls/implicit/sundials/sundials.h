@@ -26,8 +26,7 @@ typedef struct {
   Vec        update;    /* work vector where new solution is formed */
   Vec        ydot;      /* work vector the time derivative is stored */
   Vec        w1,w2;     /* work space vectors for function evaluation */
-  PetscBool  exact_final_time; /* force Sundials to interpolate solution to exactly final time
-                                   requested by user (default) */
+
   /* PETSc peconditioner objects used by SUNDIALS */
   int  cvode_type;                   /* the SUNDIALS method, BDF or ADAMS  */
   TSSundialsGramSchmidtType gtype; 

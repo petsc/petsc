@@ -104,16 +104,16 @@ int TSFunction_Sundials(realtype t,N_Vector y,N_Vector ydot,void *ctx)
 }
 
 /*
-       TSSolve_Sundials - Calls Sundials to integrate the ODE.
+       TSStep_Sundials - Calls Sundials to integrate the ODE.
 */
 #undef __FUNCT__
-#define __FUNCT__ "TSSolve_Sundials"
-PetscErrorCode TSSolve_Sundials(TS ts)
+#define __FUNCT__ "TSStep_Sundials"
+PetscErrorCode TSStep_Sundials(TS ts)
 {
   TS_Sundials    *cvode = (TS_Sundials*)ts->data;
   Vec            sol = ts->vec_sol;
   PetscErrorCode ierr;
-  PetscInt       i,flag;
+  PetscInt       flag;
   long int       its,nsteps;
   realtype       t,tout;
   PetscScalar    *y_data;
@@ -128,24 +128,23 @@ PetscErrorCode TSSolve_Sundials(TS ts)
   N_VSetArrayPointer((realtype *)y_data,cvode->y);
   ierr = VecRestoreArray(ts->vec_sol,PETSC_NULL);CHKERRQ(ierr);
 
+  /* Should think about moving this outside the loop */
   ierr = TSGetSNES(ts, &snes);CHKERRQ(ierr);
   ierr = SNESGetFunction(snes, &res, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
   if (!res) {
     ierr = TSSetIFunction(ts, sol, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
   }
 
-  for (i = 0; i < ts->max_steps; i++) {
-    if (ts->ptime >= ts->max_time) break;
-    ierr = TSPreStep(ts);CHKERRQ(ierr);
+  ierr = TSPreStep(ts);CHKERRQ(ierr);
 
-    if (cvode->monitorstep) {
-      flag = CVode(mem,tout,cvode->y,&t,CV_ONE_STEP);
-    } else {
-      flag = CVode(mem,tout,cvode->y,&t,CV_NORMAL);
-    }
+  if (cvode->monitorstep) {
+    flag = CVode(mem,tout,cvode->y,&t,CV_ONE_STEP);
+  } else {
+    flag = CVode(mem,tout,cvode->y,&t,CV_NORMAL);
+  }
 
-    if (flag){ /* display error message */
-      switch (flag){
+  if (flag){ /* display error message */
+    switch (flag){
       case CV_ILL_INPUT:
         SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVode() fails, CV_ILL_INPUT");
         break;
@@ -193,33 +192,52 @@ PetscErrorCode TSSolve_Sundials(TS ts)
         break;
       default:
         SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVode() fails, flag %d",flag);
-      }
     }
-
-    if (t > ts->max_time && cvode->exact_final_time) {
-      /* interpolate to final requested time */
-      ierr = CVodeGetDky(mem,tout,0,cvode->y);CHKERRQ(ierr);
-      t = tout;
-    }
-
-    /* copy the solution from cvode->y to cvode->update and sol */
-    ierr = VecPlaceArray(cvode->w1,y_data); CHKERRQ(ierr);
-    ierr = VecCopy(cvode->w1,cvode->update);CHKERRQ(ierr);
-    ierr = VecResetArray(cvode->w1); CHKERRQ(ierr);
-    ierr = VecCopy(cvode->update,sol);CHKERRQ(ierr);
-    ierr = CVodeGetNumNonlinSolvIters(mem,&its);CHKERRQ(ierr);
-    ierr = CVSpilsGetNumLinIters(mem, &its);
-    ts->nonlinear_its = its; ts->linear_its = its;
-
-    ts->time_step = t - ts->ptime;
-    ts->ptime     = t;
-    ts->steps++;
-
-    ierr = TSPostStep(ts);CHKERRQ(ierr);
-    ierr = TSMonitor(ts,ts->steps,t,sol);CHKERRQ(ierr);
   }
+
+  /* copy the solution from cvode->y to cvode->update and sol */
+  ierr = VecPlaceArray(cvode->w1,y_data); CHKERRQ(ierr);
+  ierr = VecCopy(cvode->w1,cvode->update);CHKERRQ(ierr);
+  ierr = VecResetArray(cvode->w1); CHKERRQ(ierr);
+  ierr = VecCopy(cvode->update,sol);CHKERRQ(ierr);
+  ierr = CVodeGetNumNonlinSolvIters(mem,&its);CHKERRQ(ierr);
+  ierr = CVSpilsGetNumLinIters(mem, &its);
+  ts->nonlinear_its = its; ts->linear_its = its;
+
+  ts->time_step = t - ts->ptime;
+  ts->ptime     = t;
+  ts->steps++;
+
   ierr = CVodeGetNumSteps(mem,&nsteps);CHKERRQ(ierr);
-  ts->steps = nsteps;
+  if (!cvode->monitorstep) ts->steps = nsteps;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSInterpolate_Sundials"
+static PetscErrorCode TSInterpolate_Sundials(TS ts,PetscReal t,Vec X)
+{
+  TS_Sundials     *cvode = (TS_Sundials*)ts->data;
+  N_Vector        y;
+  PetscErrorCode  ierr;
+  PetscScalar     *x_data;
+  PetscInt        glosize,locsize;
+
+  PetscFunctionBegin;
+
+  /* get the vector size */
+  ierr = VecGetSize(X,&glosize);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(X,&locsize);CHKERRQ(ierr);
+
+  /* allocate the memory for N_Vec y */
+  y = N_VNew_Parallel(cvode->comm_sundials,locsize,glosize);
+  if (!y) SETERRQ(PETSC_COMM_SELF,1,"Interpolated y is not allocated");
+
+  ierr = VecGetArray(X,&x_data);CHKERRQ(ierr);
+  N_VSetArrayPointer((realtype *)x_data,y);
+  ierr = CVodeGetDky(cvode->mem,t,0,y);CHKERRQ(ierr);
+  ierr = VecRestoreArray(X,&x_data);CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }
 
@@ -958,17 +976,18 @@ PetscErrorCode  TSCreate_Sundials(TS ts)
   ts->ops->destroy        = TSDestroy_Sundials;
   ts->ops->view           = TSView_Sundials;
   ts->ops->setup          = TSSetUp_Sundials;
-  ts->ops->solve          = TSSolve_Sundials;
+  ts->ops->step           = TSStep_Sundials;
+  ts->ops->interpolate    = TSInterpolate_Sundials;
   ts->ops->setfromoptions = TSSetFromOptions_Sundials;
 
   ierr = PetscNewLog(ts,TS_Sundials,&cvode);CHKERRQ(ierr);
-  ts->data          = (void*)cvode;
-  cvode->cvode_type = SUNDIALS_BDF;
-  cvode->gtype      = SUNDIALS_CLASSICAL_GS;
-  cvode->restart    = 5;
-  cvode->linear_tol = .05;
+  ts->data                = (void*)cvode;
+  cvode->cvode_type       = SUNDIALS_BDF;
+  cvode->gtype            = SUNDIALS_CLASSICAL_GS;
+  cvode->restart          = 5;
+  cvode->linear_tol       = .05;
 
-  cvode->monitorstep   = PETSC_FALSE;
+  cvode->monitorstep      = PETSC_TRUE;
 
   ierr = MPI_Comm_dup(((PetscObject)ts)->comm,&(cvode->comm_sundials));CHKERRQ(ierr);
 
@@ -983,7 +1002,7 @@ PetscErrorCode  TSCreate_Sundials(TS ts)
   ierr = TSSundialsGetPC_Sundials(ts,&pc);CHKERRQ(ierr);
   ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
 
-  if (ts->exact_final_time == PETSC_DECIDE) ts->exact_final_time = PETSC_TRUE;
+  if (ts->exact_final_time == PETSC_DECIDE) ts->exact_final_time = PETSC_FALSE;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSSundialsSetType_C","TSSundialsSetType_Sundials",
                     TSSundialsSetType_Sundials);CHKERRQ(ierr);
