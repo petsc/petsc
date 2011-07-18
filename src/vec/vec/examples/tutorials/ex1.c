@@ -30,15 +30,14 @@ int main(int argc,char **argv)
   PetscInt       n = 20,maxind;
   PetscErrorCode ierr;
   PetscScalar    one = 1.0,two = 2.0,three = 3.0,dots[3],dot;
-  int icorr = 0; cpu_set_t mset;
+  int icorr = 0,ncorr; cpu_set_t mset;
 
-  icorr = get_nprocs();
-  printf("Number of On-line Cores = %d\n",icorr);
+  ncorr = get_nprocs();
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = PetscOptionsGetInt(PETSC_NULL,"-main",&icorr,PETSC_NULL);CHKERRQ(ierr);
   CPU_ZERO(&mset);
-  CPU_SET(icorr,&mset);
+  CPU_SET(icorr%ncorr,&mset);
   sched_setaffinity(0,sizeof(cpu_set_t),&mset);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
 

@@ -1,4 +1,4 @@
-//new kds file - implements the M-ary tree
+//new kds file - implements all thread pool versions
 /*
 
    This file defines part of the initialization of PETSc
@@ -464,6 +464,14 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
       break;
     }
   }
+  else {
+    //need to define these in the case on 'no threads' or 'thread create/destroy'
+    //could take any of the above versions
+    PetscThreadInitialize = &PetscThreadInitialize_True;
+    PetscThreadFinalize   = &PetscThreadFinalize_True;
+    MainWait              = &MainWait_True;
+    MainJob               = &MainJob_True;
+  }
   PetscThreadInitialize(PetscMaxThreads);
   /*
       Print the PETSc version information
@@ -776,7 +784,7 @@ void* PetscThreadFunc_Tree(void* arg) {
   int ThreadId = *pId,Mary = 2,i,SubWorker;
   PetscBool PeeOn;
   cpu_set_t mset;
-
+  //printf("Thread %d In Tree Thread Function\n",ThreadId);
   icorr = ThreadCoreAffinity[ThreadId];
   CPU_ZERO(&mset);
   CPU_SET(icorr,&mset);
@@ -1022,7 +1030,7 @@ void* PetscThreadFunc_Main(void* arg) {
   int* pId = (int*)arg;
   int ThreadId = *pId;
   cpu_set_t mset;
-
+  //printf("Thread %d In Main Thread Function\n",ThreadId);
   icorr = ThreadCoreAffinity[ThreadId];
   CPU_ZERO(&mset);
   CPU_SET(icorr,&mset);
@@ -1201,7 +1209,7 @@ void* PetscThreadFunc_Chain(void* arg) {
   int SubWorker = ThreadId + 1;
   PetscBool PeeOn;
   cpu_set_t mset;
-
+  //printf("Thread %d In Chain Thread Function\n",ThreadId);
   icorr = ThreadCoreAffinity[ThreadId];
   CPU_ZERO(&mset);
   CPU_SET(icorr,&mset);
@@ -1432,7 +1440,7 @@ void* PetscThreadFunc_True(void* arg) {
   int ThreadId = *pId;
   PetscErrorCode iterr;
   cpu_set_t mset;
-
+  //printf("Thread %d In True Pool Thread Function\n",ThreadId);
   icorr = ThreadCoreAffinity[ThreadId];
   CPU_ZERO(&mset);
   CPU_SET(icorr,&mset);

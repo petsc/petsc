@@ -1210,7 +1210,7 @@ void* MatMult_Kernel(void *arg)
 }
 
 extern PetscMPIInt PetscMaxThreads;
-PetscErrorCode MainJob(void* (*pFunc)(void*),void**,PetscInt);
+PetscErrorCode (*MainJob)(void* (*pFunc)(void*),void**,PetscInt);
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMult_SeqPThreadAIJ"
