@@ -155,7 +155,7 @@ runex2_beuler:
            ${RM} -f ex2_beuler.tmp
 
 runex2_sundials:
-	-@${MPIEXEC} -n 1 ./ex2 -ts_type sundials > ex2_sundials.tmp 2>&1;   \
+	-@${MPIEXEC} -n 1 ./ex2 -ts_type sundials -ts_sundials_monitor_steps false > ex2_sundials.tmp 2>&1;   \
            ${DIFF} output/ex2_sundials.out ex2_sundials.tmp || echo "Possible problem with ex2_sundials, diffs above"; \
            ${RM} -f ex2_sundials.tmp
 
