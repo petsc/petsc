@@ -1292,7 +1292,7 @@ PetscErrorCode  PetscOptionsGetInt(const char pre[],const char name[],PetscInt *
 .  ntext - number of choices
 
    Output Parameter:
-+  value - the index of the value to return
++  value - the index of the value to return (defaults to zero if the option name is given but choice is listed)
 -  set - PETSC_TRUE if found, else PETSC_FALSE
    
    Level: intermediate
@@ -1328,7 +1328,8 @@ PetscErrorCode  PetscOptionsGetEList(const char pre[],const char opt[],const cha
     if (set) *set = PETSC_TRUE;
     for (i=0; i<ntext; i++) {
       ierr = PetscStrcasecmp(svalue,list[i],&flg);CHKERRQ(ierr);
-      if (flg) {
+      if (flg || !svalue[0]) {
+        flg    = PETSC_TRUE;
         *value = i;
         break;
       }

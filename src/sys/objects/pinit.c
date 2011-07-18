@@ -895,7 +895,11 @@ PetscErrorCode  PetscFinalize(void)
 #endif
 
   ierr = PetscOpenMPFinalize();CHKERRQ(ierr);
-  ierr = PetscThreadFinalize();CHKERRQ(ierr);
+#if defined(PETSC_USE_PTHREAD_CLASSES)
+  if (PetscThreadFinalize) {
+    ierr = (*PetscThreadFinalize)();CHKERRQ(ierr);
+  }
+#endif
 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(PETSC_NULL,"-malloc_info",&flg2,PETSC_NULL);CHKERRQ(ierr);

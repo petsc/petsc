@@ -1209,6 +1209,7 @@ void* MatMult_Kernel(void *arg)
   return NULL;
 }
 
+#if defined(PETSC_USE_PTHREAD_CLASSES)
 extern PetscMPIInt PetscMaxThreads;
 PetscErrorCode (*MainJob)(void* (*pFunc)(void*),void**,PetscInt);
 
@@ -1383,6 +1384,7 @@ PetscErrorCode MatMult_SeqPThreadAIJ(Mat A,Vec xx,Vec yy)
   PetscFunctionReturn(0);
 }
 //*******************
+#endif
 
 #include <../src/mat/impls/aij/seq/ftn-kernels/fmultadd.h>
 #undef __FUNCT__
@@ -3802,6 +3804,7 @@ PetscErrorCode  MatCreate_SeqAIJ(Mat B)
 }
 EXTERN_C_END
 
+#if defined(PETSC_USE_PTHREAD_CLASSES)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_SeqPThreadAIJ"
@@ -3817,6 +3820,7 @@ PetscErrorCode  MatCreate_SeqPThreadAIJ(Mat B)
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
+#endif
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatDuplicateNoCreate_SeqAIJ"

@@ -7,8 +7,11 @@ extern PetscErrorCode  MatCreate_MAIJ(Mat);
 extern PetscErrorCode  MatCreate_IS(Mat);
 
 extern PetscErrorCode  MatCreate_SeqAIJ(Mat);
-extern PetscErrorCode  MatCreate_SeqPThreadAIJ(Mat);
 extern PetscErrorCode  MatCreate_MPIAIJ(Mat);
+
+#if defined(PETSC_USE_PTHREAD_CLASSES)
+extern PetscErrorCode  MatCreate_SeqPThreadAIJ(Mat);
+#endif
 
 extern PetscErrorCode  MatCreate_SeqBAIJ(Mat);
 extern PetscErrorCode  MatCreate_MPIBAIJ(Mat);

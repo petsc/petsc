@@ -1,4 +1,3 @@
-//new kds file - implements all thread pool versions
 /*
 
    This file defines part of the initialization of PETSc
@@ -10,8 +9,12 @@
 #define _GNU_SOURCE
 #include <sched.h>
 #include <petscsys.h>        /*I  "petscsys.h"   I*/
+#if defined(PETSC_USE_PTHREAD)
 #include <pthread.h>
+#endif
+#if defined(PETSC_HAVE_SYS_SYSINFO_H)
 #include <sys/sysinfo.h>
+#endif
 #include <unistd.h>
 #if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
@@ -35,16 +38,21 @@ PetscBool    PetscUseThreadPool    = PETSC_FALSE;
 PetscBool    PetscThreadGo         = PETSC_TRUE;
 PetscMPIInt  PetscGlobalRank = -1;
 PetscMPIInt  PetscGlobalSize = -1;
+
+#if defined(PETSC_USE_PTHREAD_CLASSES)
 PetscMPIInt  PetscMaxThreads = 2;
 pthread_t*   PetscThreadPoint;
-pthread_barrier_t* BarrPoint;   //used by 'true' thread pool
+#define PETSC_HAVE_PTHREAD_BARRIER
+#if defined(PETSC_HAVE_PTHREAD_BARRIER)
+pthread_barrier_t* BarrPoint;   /* used by 'true' thread pool */
+#endif
 PetscErrorCode ithreaderr = 0;
 int*         pVal;
 
-#define CACHE_LINE_SIZE 64  //used by 'chain', 'main','tree' thread pools
+#define CACHE_LINE_SIZE 64  /* used by 'chain', 'main','tree' thread pools */
 int* ThreadCoreAffinity;
 
-typedef enum {JobInitiated,ThreadsWorking,JobCompleted} estat;  //used by 'chain','tree' thread pool
+typedef enum {JobInitiated,ThreadsWorking,JobCompleted} estat;  /* used by 'chain','tree' thread pool */
 
 typedef struct {
   pthread_mutex_t** mutexarray;
@@ -79,6 +87,7 @@ typedef struct {
   PetscBool** arrThreadReady;
 } sjob_chain;
 sjob_chain job_chain;
+#if defined(PETSC_HAVE_PTHREAD_BARRIER)
 typedef struct {
   pthread_mutex_t mutex;
   pthread_cond_t cond;
@@ -90,13 +99,14 @@ typedef struct {
   PetscBool startJob;
 } sjob_true;
 sjob_true job_true = {PTHREAD_MUTEX_INITIALIZER,PTHREAD_COND_INITIALIZER,NULL,NULL,NULL,0,0,PETSC_FALSE};
+#endif
 
-pthread_cond_t  main_cond  = PTHREAD_COND_INITIALIZER;  //used by 'true', 'chain','tree' thread pools
-char* arrmutex; //used by 'chain','main','tree' thread pools
-char* arrcond1; //used by 'chain','main','tree' thread pools
-char* arrcond2; //used by 'chain','main','tree' thread pools
-char* arrstart; //used by 'chain','main','tree' thread pools
-char* arrready; //used by 'chain','main','tree' thread pools
+pthread_cond_t  main_cond  = PTHREAD_COND_INITIALIZER;  /* used by 'true', 'chain','tree' thread pools */
+char* arrmutex; /* used by 'chain','main','tree' thread pools */
+char* arrcond1; /* used by 'chain','main','tree' thread pools */
+char* arrcond2; /* used by 'chain','main','tree' thread pools */
+char* arrstart; /* used by 'chain','main','tree' thread pools */
+char* arrready; /* used by 'chain','main','tree' thread pools */
 
 /* Function Pointers */
 void*          (*PetscThreadFunc)(void*) = NULL;
@@ -133,6 +143,7 @@ PetscErrorCode MainJob_True(void* (*pFunc)(void*),void**,PetscInt);
 void* FuncFinish(void*);
 void* PetscThreadRun(MPI_Comm Comm,void* (*pFunc)(void*),int,pthread_t*,void**);
 void* PetscThreadStop(MPI_Comm Comm,int,pthread_t*);
+#endif
 
 #if defined(PETSC_USE_COMPLEX)
 #if defined(PETSC_COMPLEX_INSTANTIATE)
@@ -400,70 +411,8 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   */
   ierr = PetscSetDisplay();CHKERRQ(ierr);
 
-  /*
-      Determine whether user specified maximum number of threads
-   */
-  ierr = PetscOptionsHasName(PETSC_NULL,"-thread_max",&flg1);CHKERRQ(ierr);
-  if(flg1) {
-    ierr = PetscOptionsGetInt(PETSC_NULL,"-thread_max",&PetscMaxThreads,PETSC_NULL);CHKERRQ(ierr);
-  }
 
   /*
-      Determine whether to use thread pool
-   */
-  ierr = PetscOptionsHasName(PETSC_NULL,"-use_thread_pool",&flg1);CHKERRQ(ierr);
-  if(flg1) {
-    PetscUseThreadPool = PETSC_TRUE;
-    PetscInt N_CORES = get_nprocs();
-    ThreadCoreAffinity = (int*)malloc(N_CORES*sizeof(int));
-    char tstr[9];
-    char tbuf[2];
-    strcpy(tstr,"-thread");
-    for(i=0;i<PetscMaxThreads;i++) {
-      ThreadCoreAffinity[i] = i;  //default
-      sprintf(tbuf,"%d",i);
-      strcat(tstr,tbuf);
-      ierr = PetscOptionsHasName(PETSC_NULL,tstr,&flg1);CHKERRQ(ierr);
-      if(flg1) {
-        ierr = PetscOptionsGetInt(PETSC_NULL,tstr,&ThreadCoreAffinity[i],PETSC_NULL);CHKERRQ(ierr);
-        ThreadCoreAffinity[i] = ThreadCoreAffinity[i]%N_CORES; //check on the user
-      }
-      tstr[7] = '\0';
-    }
-    //get the thread pool type
-    PetscInt ipool = 0;
-    ierr = PetscOptionsGetInt(PETSC_NULL,"-pool",&ipool,PETSC_NULL);CHKERRQ(ierr);
-    switch(ipool) {
-    case 1:
-      PetscThreadFunc       = &PetscThreadFunc_Tree;
-      PetscThreadInitialize = &PetscThreadInitialize_Tree;
-      PetscThreadFinalize   = &PetscThreadFinalize_Tree;
-      MainWait              = &MainWait_Tree;
-      MainJob               = &MainJob_Tree;
-      break;
-    case 2:
-      PetscThreadFunc       = &PetscThreadFunc_Main;
-      PetscThreadInitialize = &PetscThreadInitialize_Main;
-      PetscThreadFinalize   = &PetscThreadFinalize_Main;
-      MainWait              = &MainWait_Main;
-      MainJob               = &MainJob_Main;
-      break;
-    case 3:
-      PetscThreadFunc       = &PetscThreadFunc_Chain;
-      PetscThreadInitialize = &PetscThreadInitialize_Chain;
-      PetscThreadFinalize   = &PetscThreadFinalize_Chain;
-      MainWait              = &MainWait_Chain;
-      MainJob               = &MainJob_Chain;
-      break;
-    default:
-      PetscThreadFunc       = &PetscThreadFunc_True;
-      PetscThreadInitialize = &PetscThreadInitialize_True;
-      PetscThreadFinalize   = &PetscThreadFinalize_True;
-      MainWait              = &MainWait_True;
-      MainJob               = &MainJob_True;
-      break;
-    }
-  }
   else {
     //need to define these in the case on 'no threads' or 'thread create/destroy'
     //could take any of the above versions
@@ -471,8 +420,6 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
     PetscThreadFinalize   = &PetscThreadFinalize_True;
     MainJob               = &MainJob_True;
   }
-  PetscThreadInitialize(PetscMaxThreads);
-  /*
       Print the PETSc version information
   */
   ierr = PetscOptionsHasName(PETSC_NULL,"-v",&flg1);CHKERRQ(ierr);
@@ -700,6 +647,82 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
 
   ierr = PetscOptionsGetBool(PETSC_NULL,"-options_gui",&PetscOptionsPublish,PETSC_NULL);CHKERRQ(ierr);
 
+#if defined(PETSC_USE_PTHREAD_CLASSES)
+  /*
+      Determine whether user specified maximum number of threads
+   */
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-thread_max",&PetscMaxThreads,PETSC_NULL);CHKERRQ(ierr);
+
+  /*
+      Determine whether to use thread pool
+   */
+  ierr = PetscOptionsHasName(PETSC_NULL,"-use_thread_pool",&flg1);CHKERRQ(ierr);
+  if (flg1) {
+    PetscUseThreadPool = PETSC_TRUE;
+    PetscInt N_CORES = get_nprocs();
+    ThreadCoreAffinity = (int*)malloc(N_CORES*sizeof(int));
+    char tstr[9];
+    char tbuf[2];
+    strcpy(tstr,"-thread");
+    for(i=0;i<PetscMaxThreads;i++) {
+      ThreadCoreAffinity[i] = i;  
+      sprintf(tbuf,"%d",i);
+      strcat(tstr,tbuf);
+      ierr = PetscOptionsHasName(PETSC_NULL,tstr,&flg1);CHKERRQ(ierr);
+      if(flg1) {
+        ierr = PetscOptionsGetInt(PETSC_NULL,tstr,&ThreadCoreAffinity[i],PETSC_NULL);CHKERRQ(ierr);
+        ThreadCoreAffinity[i] = ThreadCoreAffinity[i]%N_CORES; /* check on the user */
+      }
+      tstr[7] = '\0';
+    }
+    /* get the thread pool type */
+    PetscInt ipool = 0;
+    const char *choices[4] = {"true","tree","main","chain"};
+
+    ierr = PetscOptionsGetEList(PETSC_NULL,"-use_thread_pool",choices,4,&ipool,PETSC_NULL);CHKERRQ(ierr);
+    switch(ipool) {
+    case 1:
+      PetscThreadFunc       = &PetscThreadFunc_Tree;
+      PetscThreadInitialize = &PetscThreadInitialize_Tree;
+      PetscThreadFinalize   = &PetscThreadFinalize_Tree;
+      MainWait              = &MainWait_Tree;
+      MainJob               = &MainJob_Tree;
+      PetscInfo(PETSC_NULL,"Using tree thread pool\n");
+      break;
+    case 2:
+      PetscThreadFunc       = &PetscThreadFunc_Main;
+      PetscThreadInitialize = &PetscThreadInitialize_Main;
+      PetscThreadFinalize   = &PetscThreadFinalize_Main;
+      MainWait              = &MainWait_Main;
+      MainJob               = &MainJob_Main;
+      PetscInfo(PETSC_NULL,"Using main thread pool\n");
+      break;
+#if defined(PETSC_HAVE_PTHREAD_BARRIER)
+    case 3:
+#else
+    default:
+#endif
+      PetscThreadFunc       = &PetscThreadFunc_Chain;
+      PetscThreadInitialize = &PetscThreadInitialize_Chain;
+      PetscThreadFinalize   = &PetscThreadFinalize_Chain;
+      MainWait              = &MainWait_Chain;
+      MainJob               = &MainJob_Chain;
+      PetscInfo(PETSC_NULL,"Using chain thread pool\n");
+      break;
+#if defined(PETSC_HAVE_PTHREAD_BARRIER)
+    default:
+      PetscThreadFunc       = &PetscThreadFunc_True;
+      PetscThreadInitialize = &PetscThreadInitialize_True;
+      PetscThreadFinalize   = &PetscThreadFinalize_True;
+      MainWait              = &MainWait_True;
+      MainJob               = &MainJob_True;
+      PetscInfo(PETSC_NULL,"Using true thread pool\n");
+      break;
+#endif
+    }
+    PetscThreadInitialize(PetscMaxThreads);
+  }
+#endif
   /*
        Print basic help message
   */
@@ -775,6 +798,8 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   PetscFunctionReturn(0);
 }
 
+#if defined(PETSC_USE_PTHREAD_CLASSES)
+
 /**** 'Tree' Thread Pool Functions ****/
 void* PetscThreadFunc_Tree(void* arg) {
   PetscErrorCode iterr;
@@ -796,43 +821,43 @@ void* PetscThreadFunc_Tree(void* arg) {
     PeeOn = PETSC_FALSE;
   }
   if(PeeOn==PETSC_FALSE) {
-    //check your subordinates, wait for them to be ready
+    /* check your subordinates, wait for them to be ready */
     for(i=1;i<=Mary;i++) {
       SubWorker = Mary*ThreadId+i;
       if(SubWorker<PetscMaxThreads) {
         ierr = pthread_mutex_lock(job_tree.mutexarray[SubWorker]);
         while(*(job_tree.arrThreadReady[SubWorker])==PETSC_FALSE) {
-          //upon entry, automically releases the lock and blocks
-          //upon return, has the lock
+          /* upon entry, automically releases the lock and blocks
+           upon return, has the lock */
           ierr = pthread_cond_wait(job_tree.cond1array[SubWorker],job_tree.mutexarray[SubWorker]);
         }
         ierr = pthread_mutex_unlock(job_tree.mutexarray[SubWorker]);
       }
     }
-    //your subordinates are now ready
+    /* your subordinates are now ready */
   }
   ierr = pthread_mutex_lock(job_tree.mutexarray[ThreadId]);
-  //update your ready status
+  /* update your ready status */
   *(job_tree.arrThreadReady[ThreadId]) = PETSC_TRUE;
   if(ThreadId==0) {
     job_tree.eJobStat = JobCompleted;
-    //signal main
+    /* ignal main */
     ierr = pthread_cond_signal(&main_cond);
   }
   else {
-    //tell your boss that you're ready to work
+    /* tell your boss that you're ready to work */
     ierr = pthread_cond_signal(job_tree.cond1array[ThreadId]);
   }
-  //the while loop needs to have an exit
-  //the 'main' thread can terminate all the threads by performing a broadcast
-  //and calling FuncFinish
+  /* the while loop needs to have an exit
+  the 'main' thread can terminate all the threads by performing a broadcast
+   and calling FuncFinish */
   while(PetscThreadGo) {
-    //need to check the condition to ensure we don't have to wait
-    //waiting when you don't have to causes problems
-    //also need to check the condition to ensure proper handling of spurious wakeups
+    /*need to check the condition to ensure we don't have to wait
+      waiting when you don't have to causes problems
+     also need to check the condition to ensure proper handling of spurious wakeups */
     while(*(job_tree.arrThreadReady[ThreadId])==PETSC_TRUE) {
-        //upon entry, automically releases the lock and blocks
-        //upon return, has the lock
+      /* upon entry, automically releases the lock and blocks
+       upon return, has the lock */
         ierr = pthread_cond_wait(job_tree.cond2array[ThreadId],job_tree.mutexarray[ThreadId]);
 	*(job_tree.arrThreadStarted[ThreadId]) = PETSC_TRUE;
 	*(job_tree.arrThreadReady[ThreadId])   = PETSC_FALSE;
@@ -843,7 +868,7 @@ void* PetscThreadFunc_Tree(void* arg) {
     }
     ierr = pthread_mutex_unlock(job_tree.mutexarray[ThreadId]);
     if(PeeOn==PETSC_FALSE) {
-      //tell your subordinates it's time to get to work
+      /* tell your subordinates it's time to get to work */
       for(i=1; i<=Mary; i++) {
 	SubWorker = Mary*ThreadId+i;
         if(SubWorker<PetscMaxThreads) {
@@ -851,7 +876,7 @@ void* PetscThreadFunc_Tree(void* arg) {
         }
       }
     }
-    //do your job
+    /* do your job */
     if(job_tree.pdata==NULL) {
       iterr = (PetscErrorCode)(long int)job_tree.pfunc(job_tree.pdata);
     }
@@ -862,33 +887,33 @@ void* PetscThreadFunc_Tree(void* arg) {
       ithreaderr = 1;
     }
     if(PetscThreadGo) {
-      //reset job, get ready for more
+      /* reset job, get ready for more */
       if(PeeOn==PETSC_FALSE) {
-        //check your subordinates, waiting for them to be ready
-	//how do you know for a fact that a given subordinate has actually started?
+        /* check your subordinates, waiting for them to be ready
+         how do you know for a fact that a given subordinate has actually started? */
 	for(i=1;i<=Mary;i++) {
 	  SubWorker = Mary*ThreadId+i;
           if(SubWorker<PetscMaxThreads) {
             ierr = pthread_mutex_lock(job_tree.mutexarray[SubWorker]);
             while(*(job_tree.arrThreadReady[SubWorker])==PETSC_FALSE||*(job_tree.arrThreadStarted[SubWorker])==PETSC_FALSE) {
-              //upon entry, automically releases the lock and blocks
-              //upon return, has the lock
+              /* upon entry, automically releases the lock and blocks
+               upon return, has the lock */
               ierr = pthread_cond_wait(job_tree.cond1array[SubWorker],job_tree.mutexarray[SubWorker]);
             }
             ierr = pthread_mutex_unlock(job_tree.mutexarray[SubWorker]);
           }
 	}
-        //your subordinates are now ready
+        /* your subordinates are now ready */
       }
       ierr = pthread_mutex_lock(job_tree.mutexarray[ThreadId]);
       *(job_tree.arrThreadReady[ThreadId]) = PETSC_TRUE;
       if(ThreadId==0) {
-	job_tree.eJobStat = JobCompleted; //root thread: last thread to complete, guaranteed!
-        //root thread signals 'main'
+	job_tree.eJobStat = JobCompleted; /* oot thread: last thread to complete, guaranteed! */
+        /* root thread signals 'main' */
         ierr = pthread_cond_signal(&main_cond);
       }
       else {
-        //signal your boss before you go to sleep
+        /* signal your boss before you go to sleep */
         ierr = pthread_cond_signal(job_tree.cond1array[ThreadId]);
       }
     }
@@ -915,7 +940,7 @@ void* PetscThreadInitialize_Tree(PetscInt N) {
     job_tree.cond2array       = (pthread_cond_t**)malloc(PetscMaxThreads*sizeof(pthread_cond_t*));
     job_tree.arrThreadStarted = (PetscBool**)malloc(PetscMaxThreads*sizeof(PetscBool*));
     job_tree.arrThreadReady   = (PetscBool**)malloc(PetscMaxThreads*sizeof(PetscBool*));
-    //initialize job structure
+    /* initialize job structure */
     for(i=0; i<PetscMaxThreads; i++) {
       job_tree.mutexarray[i]        = (pthread_mutex_t*)(arrmutex+CACHE_LINE_SIZE*i);
       job_tree.cond1array[i]        = (pthread_cond_t*)(arrcond1+CACHE_LINE_SIZE*i);
@@ -935,17 +960,14 @@ void* PetscThreadInitialize_Tree(PetscInt N) {
     job_tree.startJob = PETSC_FALSE;
     job_tree.eJobStat = JobInitiated;
     pVal = (int*)malloc(N*sizeof(int));
-    //allocate memory in the heap for the thread structure
+    /* allocate memory in the heap for the thread structure */
     PetscThreadPoint = (pthread_t*)malloc(N*sizeof(pthread_t));
-    //create threads
+    /* create threads */
     for(i=0; i<N; i++) {
       pVal[i] = i;
       status = pthread_create(&PetscThreadPoint[i],NULL,PetscThreadFunc,&pVal[i]);
-      //error check
+      /* should check status */
     }
-  }
-  else {
-    //do nothing
   }
   return NULL;
 }
@@ -959,11 +981,11 @@ PetscErrorCode PetscThreadFinalize_Tree() {
   PetscFunctionBegin;
 
   if(PetscUseThreadPool) {
-    MainJob(FuncFinish,NULL,PetscMaxThreads);  //set up job and broadcast work
-    //join the threads
+    MainJob(FuncFinish,NULL,PetscMaxThreads);  /* set up job and broadcast work */
+    /* join the threads */
     for(i=0; i<PetscMaxThreads; i++) {
       ierr = pthread_join(PetscThreadPoint[i],&jstatus);
-      //do error checking
+      /* do error checking*/
     }
     free(PetscThreadPoint);
     free(arrmutex);
@@ -1006,13 +1028,13 @@ PetscErrorCode MainJob_Tree(void* (*pFunc)(void*),void** data,PetscInt n) {
     job_tree.eJobStat = JobInitiated;
     ierr = pthread_cond_signal(job_tree.cond2array[0]);
     if(pFunc!=FuncFinish) {
-      MainWait(); //why wait after? guarantees that job gets done before proceeding with result collection (if any)
+      MainWait(); /* why wait after? guarantees that job gets done before proceeding with result collection (if any) */
     }
   }
   else {
     pthread_t* apThread = (pthread_t*)malloc(n*sizeof(pthread_t));
     PetscThreadRun(MPI_COMM_WORLD,pFunc,n,apThread,data);
-    PetscThreadStop(MPI_COMM_WORLD,n,apThread); //ensures that all threads are finished with the job
+    PetscThreadStop(MPI_COMM_WORLD,n,apThread); /* ensures that all threads are finished with the job */
     free(apThread);
   }
   if(ithreaderr) {
@@ -1036,26 +1058,25 @@ void* PetscThreadFunc_Main(void* arg) {
   sched_setaffinity(0,sizeof(cpu_set_t),&mset);
 
   ierr = pthread_mutex_lock(job_main.mutexarray[ThreadId]);
-  //update your ready status
+  /* update your ready status */
   *(job_main.arrThreadReady[ThreadId]) = PETSC_TRUE;
-  //tell the BOSS that you're ready to work before you go to sleep
+  /* tell the BOSS that you're ready to work before you go to sleep */
   ierr = pthread_cond_signal(job_main.cond1array[ThreadId]);
 
-  //the while loop needs to have an exit
-  //the 'main' thread can terminate all the threads by performing a broadcast
-  //and calling FuncFinish
+  /* the while loop needs to have an exit
+     the 'main' thread can terminate all the threads by performing a broadcast
+     and calling FuncFinish */
   while(PetscThreadGo) {
-    //need to check the condition to ensure we don't have to wait
-    //waiting when you don't have to causes problems
-    //also need to check the condition to ensure proper handling of spurious wakeups
+    /* need to check the condition to ensure we don't have to wait
+       waiting when you don't have to causes problems
+     also need to check the condition to ensure proper handling of spurious wakeups */
     while(*(job_main.arrThreadReady[ThreadId])==PETSC_TRUE) {
-        //upon entry, atomically releases the lock and blocks
-        //upon return, has the lock
+      /* upon entry, atomically releases the lock and blocks
+       upon return, has the lock */
         ierr = pthread_cond_wait(job_main.cond2array[ThreadId],job_main.mutexarray[ThreadId]);
-	//*(job_main.arrThreadReady[ThreadId])   = PETSC_FALSE;
+	/* (job_main.arrThreadReady[ThreadId])   = PETSC_FALSE; */
     }
     ierr = pthread_mutex_unlock(job_main.mutexarray[ThreadId]);
-    //do your job
     if(job_main.pdata==NULL) {
       iterr = (PetscErrorCode)(long int)job_main.pfunc(job_main.pdata);
     }
@@ -1066,10 +1087,10 @@ void* PetscThreadFunc_Main(void* arg) {
       ithreaderr = 1;
     }
     if(PetscThreadGo) {
-      //reset job, get ready for more
+      /* reset job, get ready for more */
       ierr = pthread_mutex_lock(job_main.mutexarray[ThreadId]);
       *(job_main.arrThreadReady[ThreadId]) = PETSC_TRUE;
-      //tell the BOSS that you're ready to work before you go to sleep
+      /* tell the BOSS that you're ready to work before you go to sleep */
       ierr = pthread_cond_signal(job_main.cond1array[ThreadId]);
     }
   }
@@ -1094,7 +1115,7 @@ void* PetscThreadInitialize_Main(PetscInt N) {
     job_main.cond1array       = (pthread_cond_t**)malloc(PetscMaxThreads*sizeof(pthread_cond_t*));
     job_main.cond2array       = (pthread_cond_t**)malloc(PetscMaxThreads*sizeof(pthread_cond_t*));
     job_main.arrThreadReady   = (PetscBool**)malloc(PetscMaxThreads*sizeof(PetscBool*));
-    //initialize job structure
+    /* initialize job structure */
     for(i=0; i<PetscMaxThreads; i++) {
       job_main.mutexarray[i]        = (pthread_mutex_t*)(arrmutex+CACHE_LINE_SIZE*i);
       job_main.cond1array[i]        = (pthread_cond_t*)(arrcond1+CACHE_LINE_SIZE*i);
@@ -1110,13 +1131,13 @@ void* PetscThreadInitialize_Main(PetscInt N) {
     job_main.pfunc = NULL;
     job_main.pdata = (void**)malloc(N*sizeof(void*));
     pVal = (int*)malloc(N*sizeof(int));
-    //allocate memory in the heap for the thread structure
+    /* allocate memory in the heap for the thread structure */
     PetscThreadPoint = (pthread_t*)malloc(N*sizeof(pthread_t));
-    //create threads
+    /* create threads */
     for(i=0; i<N; i++) {
       pVal[i] = i;
       status = pthread_create(&PetscThreadPoint[i],NULL,PetscThreadFunc,&pVal[i]);
-      //error check
+      /* error check */
     }
   }
   else {
@@ -1133,11 +1154,10 @@ PetscErrorCode PetscThreadFinalize_Main() {
   PetscFunctionBegin;
 
   if(PetscUseThreadPool) {
-    MainJob(FuncFinish,NULL,PetscMaxThreads);  //set up job and broadcast work
-    //join the threads
+    MainJob(FuncFinish,NULL,PetscMaxThreads);  /* set up job and broadcast work */
+    /* join the threads */
     for(i=0; i<PetscMaxThreads; i++) {
-      ierr = pthread_join(PetscThreadPoint[i],&jstatus);
-      //do error checking
+      ierr = pthread_join(PetscThreadPoint[i],&jstatus);CHKERRQ(ierr);
     }
     free(PetscThreadPoint);
     free(arrmutex);
@@ -1147,8 +1167,6 @@ PetscErrorCode PetscThreadFinalize_Main() {
     free(arrready);
     free(job_main.pdata);
     free(pVal);
-  }
-  else {
   }
   PetscFunctionReturn(0);
 }
@@ -1172,24 +1190,24 @@ PetscErrorCode MainJob_Main(void* (*pFunc)(void*),void** data,PetscInt n) {
   int i,ierr;
   PetscErrorCode ijoberr = 0;
   if(PetscUseThreadPool) {
-    MainWait(); //you know everyone is waiting to be signalled!
+    MainWait(); /* you know everyone is waiting to be signalled! */
     job_main.pfunc = pFunc;
     job_main.pdata = data;
     for(i=0; i<PetscMaxThreads; i++) {
-      *(job_main.arrThreadReady[i]) = PETSC_FALSE; //why do this?  suppose you get into MainWait first
+      *(job_main.arrThreadReady[i]) = PETSC_FALSE; /* why do this?  suppose you get into MainWait first */
     }
-    //tell the threads to go to work
+    /* tell the threads to go to work */
     for(i=0; i<PetscMaxThreads; i++) {
       ierr = pthread_cond_signal(job_main.cond2array[i]);
     }
     if(pFunc!=FuncFinish) {
-      MainWait(); //why wait after? guarantees that job gets done before proceeding with result collection (if any)
+      MainWait(); /* why wait after? guarantees that job gets done before proceeding with result collection (if any) */
     }
   }
   else {
     pthread_t* apThread = (pthread_t*)malloc(n*sizeof(pthread_t));
     PetscThreadRun(MPI_COMM_WORLD,pFunc,n,apThread,data);
-    PetscThreadStop(MPI_COMM_WORLD,n,apThread); //ensures that all threads are finished with the job
+    PetscThreadStop(MPI_COMM_WORLD,n,apThread); /* ensures that all threads are finished with the job */
     free(apThread);
   }
   if(ithreaderr) {
@@ -1221,38 +1239,38 @@ void* PetscThreadFunc_Chain(void* arg) {
     PeeOn = PETSC_FALSE;
   }
   if(PeeOn==PETSC_FALSE) {
-    //check your subordinate, wait for him to be ready
+    /* check your subordinate, wait for him to be ready */
     ierr = pthread_mutex_lock(job_chain.mutexarray[SubWorker]);
     while(*(job_chain.arrThreadReady[SubWorker])==PETSC_FALSE) {
-      //upon entry, automically releases the lock and blocks
-      //upon return, has the lock
+      /* upon entry, automically releases the lock and blocks
+       upon return, has the lock */
       ierr = pthread_cond_wait(job_chain.cond1array[SubWorker],job_chain.mutexarray[SubWorker]);
     }
     ierr = pthread_mutex_unlock(job_chain.mutexarray[SubWorker]);
-    //your subordinate is now ready
+    /* your subordinate is now ready*/
   }
   ierr = pthread_mutex_lock(job_chain.mutexarray[ThreadId]);
-  //update your ready status
+  /* update your ready status */
   *(job_chain.arrThreadReady[ThreadId]) = PETSC_TRUE;
   if(ThreadId==0) {
     job_chain.eJobStat = JobCompleted;
-    //signal main
+    /* signal main */
     ierr = pthread_cond_signal(&main_cond);
   }
   else {
-    //tell your boss that you're ready to work
+    /* tell your boss that you're ready to work */
     ierr = pthread_cond_signal(job_chain.cond1array[ThreadId]);
   }
-  //the while loop needs to have an exit
-  //the 'main' thread can terminate all the threads by performing a broadcast
-  //and calling FuncFinish
+  /*  the while loop needs to have an exit
+     the 'main' thread can terminate all the threads by performing a broadcast
+   and calling FuncFinish */
   while(PetscThreadGo) {
-    //need to check the condition to ensure we don't have to wait
-    //waiting when you don't have to causes problems
-    //also need to check the condition to ensure proper handling of spurious wakeups
+    /* need to check the condition to ensure we don't have to wait
+       waiting when you don't have to causes problems
+     also need to check the condition to ensure proper handling of spurious wakeups */
     while(*(job_chain.arrThreadReady[ThreadId])==PETSC_TRUE) {
-        //upon entry, automically releases the lock and blocks
-        //upon return, has the lock
+      /*upon entry, automically releases the lock and blocks
+       upon return, has the lock */
         ierr = pthread_cond_wait(job_chain.cond2array[ThreadId],job_chain.mutexarray[ThreadId]);
 	*(job_chain.arrThreadStarted[ThreadId]) = PETSC_TRUE;
 	*(job_chain.arrThreadReady[ThreadId])   = PETSC_FALSE;
@@ -1263,10 +1281,10 @@ void* PetscThreadFunc_Chain(void* arg) {
     }
     ierr = pthread_mutex_unlock(job_chain.mutexarray[ThreadId]);
     if(PeeOn==PETSC_FALSE) {
-      //tell your subworker it's time to get to work
+      /* tell your subworker it's time to get to work */
       ierr = pthread_cond_signal(job_chain.cond2array[SubWorker]);
     }
-    //do your job
+    /* do your job */
     if(job_chain.pdata==NULL) {
       iterr = (PetscErrorCode)(long int)job_chain.pfunc(job_chain.pdata);
     }
@@ -1277,28 +1295,28 @@ void* PetscThreadFunc_Chain(void* arg) {
       ithreaderr = 1;
     }
     if(PetscThreadGo) {
-      //reset job, get ready for more
+      /* reset job, get ready for more */
       if(PeeOn==PETSC_FALSE) {
-        //check your subordinate, wait for him to be ready
-	//how do you know for a fact that your subordinate has actually started?
+        /* check your subordinate, wait for him to be ready
+         how do you know for a fact that your subordinate has actually started? */
         ierr = pthread_mutex_lock(job_chain.mutexarray[SubWorker]);
         while(*(job_chain.arrThreadReady[SubWorker])==PETSC_FALSE||*(job_chain.arrThreadStarted[SubWorker])==PETSC_FALSE) {
-          //upon entry, automically releases the lock and blocks
-          //upon return, has the lock
+          /* upon entry, automically releases the lock and blocks
+           upon return, has the lock */
           ierr = pthread_cond_wait(job_chain.cond1array[SubWorker],job_chain.mutexarray[SubWorker]);
         }
         ierr = pthread_mutex_unlock(job_chain.mutexarray[SubWorker]);
-        //your subordinate is now ready
+        /* your subordinate is now ready */
       }
       ierr = pthread_mutex_lock(job_chain.mutexarray[ThreadId]);
       *(job_chain.arrThreadReady[ThreadId]) = PETSC_TRUE;
       if(ThreadId==0) {
-	job_chain.eJobStat = JobCompleted; //foreman: last thread to complete, guaranteed!
-        //root thread (foreman) signals 'main'
+	job_chain.eJobStat = JobCompleted; /* foreman: last thread to complete, guaranteed! */
+        /* root thread (foreman) signals 'main' */
         ierr = pthread_cond_signal(&main_cond);
       }
       else {
-        //signal your boss before you go to sleep
+        /* signal your boss before you go to sleep */
         ierr = pthread_cond_signal(job_chain.cond1array[ThreadId]);
       }
     }
@@ -1325,7 +1343,7 @@ void* PetscThreadInitialize_Chain(PetscInt N) {
     job_chain.cond2array       = (pthread_cond_t**)malloc(PetscMaxThreads*sizeof(pthread_cond_t*));
     job_chain.arrThreadStarted = (PetscBool**)malloc(PetscMaxThreads*sizeof(PetscBool*));
     job_chain.arrThreadReady   = (PetscBool**)malloc(PetscMaxThreads*sizeof(PetscBool*));
-    //initialize job structure
+    /* initialize job structure */
     for(i=0; i<PetscMaxThreads; i++) {
       job_chain.mutexarray[i]        = (pthread_mutex_t*)(arrmutex+CACHE_LINE_SIZE*i);
       job_chain.cond1array[i]        = (pthread_cond_t*)(arrcond1+CACHE_LINE_SIZE*i);
@@ -1345,13 +1363,13 @@ void* PetscThreadInitialize_Chain(PetscInt N) {
     job_chain.startJob = PETSC_FALSE;
     job_chain.eJobStat = JobInitiated;
     pVal = (int*)malloc(N*sizeof(int));
-    //allocate memory in the heap for the thread structure
+    /* allocate memory in the heap for the thread structure */
     PetscThreadPoint = (pthread_t*)malloc(N*sizeof(pthread_t));
-    //create threads
+    /* create threads */
     for(i=0; i<N; i++) {
       pVal[i] = i;
       status = pthread_create(&PetscThreadPoint[i],NULL,PetscThreadFunc,&pVal[i]);
-      //error check
+      /* should check error */
     }
   }
   else {
@@ -1369,11 +1387,11 @@ PetscErrorCode PetscThreadFinalize_Chain() {
   PetscFunctionBegin;
 
   if(PetscUseThreadPool) {
-    MainJob(FuncFinish,NULL,PetscMaxThreads);  //set up job and broadcast work
-    //join the threads
+    MainJob(FuncFinish,NULL,PetscMaxThreads);  /* set up job and broadcast work */
+    /* join the threads */
     for(i=0; i<PetscMaxThreads; i++) {
       ierr = pthread_join(PetscThreadPoint[i],&jstatus);
-      //do error checking
+      /* should check error */
     }
     free(PetscThreadPoint);
     free(arrmutex);
@@ -1416,13 +1434,13 @@ PetscErrorCode MainJob_Chain(void* (*pFunc)(void*),void** data,PetscInt n) {
     job_chain.eJobStat = JobInitiated;
     ierr = pthread_cond_signal(job_chain.cond2array[0]);
     if(pFunc!=FuncFinish) {
-      MainWait(); //why wait after? guarantees that job gets done before proceeding with result collection (if any)
+      MainWait(); /* why wait after? guarantees that job gets done before proceeding with result collection (if any) */
     }
   }
   else {
     pthread_t* apThread = (pthread_t*)malloc(n*sizeof(pthread_t));
     PetscThreadRun(MPI_COMM_WORLD,pFunc,n,apThread,data);
-    PetscThreadStop(MPI_COMM_WORLD,n,apThread); //ensures that all threads are finished with the job
+    PetscThreadStop(MPI_COMM_WORLD,n,apThread); /* ensures that all threads are finished with the job */
     free(apThread);
   }
   if(ithreaderr) {
@@ -1432,6 +1450,7 @@ PetscErrorCode MainJob_Chain(void* (*pFunc)(void*),void** data,PetscInt n) {
 }
 /****  ****/
 
+#if defined(PETSC_HAVE_PTHREAD_BARRIER)
 /**** True Thread Functions ****/
 void* PetscThreadFunc_True(void* arg) {
   int icorr,ierr,iVal;
@@ -1450,16 +1469,16 @@ void* PetscThreadFunc_True(void* arg) {
   if(job_true.iNumReadyThreads==PetscMaxThreads) {
     ierr = pthread_cond_signal(&main_cond);
   }
-  //the while loop needs to have an exit
-  //the 'main' thread can terminate all the threads by performing a broadcast
-  //and calling FuncFinish
+  /*the while loop needs to have an exit
+    the 'main' thread can terminate all the threads by performing a broadcast
+   and calling FuncFinish */
   while(PetscThreadGo) {
-    //need to check the condition to ensure we don't have to wait
-    //waiting when you don't have to causes problems
-    //also need to wait if another thread sneaks in and messes with the predicate
+    /*need to check the condition to ensure we don't have to wait
+      waiting when you don't have to causes problems
+     also need to wait if another thread sneaks in and messes with the predicate */
     while(job_true.startJob==PETSC_FALSE&&job_true.iNumJobThreads==0) {
-      //upon entry, automically releases the lock and blocks
-      //upon return, has the lock
+      /* upon entry, automically releases the lock and blocks
+       upon return, has the lock */
       ierr = pthread_cond_wait(&job_true.cond,&job_true.mutex);
     }
     job_true.startJob = PETSC_FALSE;
@@ -1476,16 +1495,16 @@ void* PetscThreadFunc_True(void* arg) {
     if(iterr!=0) {
       ithreaderr = 1;
     }
-    //the barrier is necessary BECAUSE: look at job_true.iNumReadyThreads
-    //what happens if a thread finishes before they all start? BAD!
-    //what happens if a thread finishes before any else start? BAD!
-    pthread_barrier_wait(job_true.pbarr); //ensures all threads are finished
-    //reset job
+    /* the barrier is necessary BECAUSE: look at job_true.iNumReadyThreads
+      what happens if a thread finishes before they all start? BAD!
+     what happens if a thread finishes before any else start? BAD! */
+    pthread_barrier_wait(job_true.pbarr); /* ensures all threads are finished */
+    /* reset job */
     if(PetscThreadGo) {
       pthread_mutex_lock(&job_true.mutex);
       job_true.iNumReadyThreads++;
       if(job_true.iNumReadyThreads==PetscMaxThreads) {
-	//signal the 'main' thread that the job is done! (only done once)
+	/* signal the 'main' thread that the job is done! (only done once) */
 	ierr = pthread_cond_signal(&main_cond);
       }
     }
@@ -1501,16 +1520,16 @@ void* PetscThreadInitialize_True(PetscInt N) {
 
   if(PetscUseThreadPool) {
     pVal = (int*)malloc(N*sizeof(int));
-    //allocate memory in the heap for the thread structure
+    /* allocate memory in the heap for the thread structure */
     PetscThreadPoint = (pthread_t*)malloc(N*sizeof(pthread_t));
-    BarrPoint = (pthread_barrier_t*)malloc((N+1)*sizeof(pthread_barrier_t)); //BarrPoint[0] makes no sense, don't use it!
+    BarrPoint = (pthread_barrier_t*)malloc((N+1)*sizeof(pthread_barrier_t)); /* BarrPoint[0] makes no sense, don't use it! */
     job_true.pdata = (void**)malloc(N*sizeof(void*));
     for(i=0; i<N; i++) {
       pVal[i] = i;
       status = pthread_create(&PetscThreadPoint[i],NULL,PetscThreadFunc,&pVal[i]);
-      //error check to ensure proper thread creation
+      /* error check to ensure proper thread creation */
       status = pthread_barrier_init(&BarrPoint[i+1],NULL,i+1);
-      //error check
+      /* should check error */
     }
   }
   else {
@@ -1528,11 +1547,11 @@ PetscErrorCode PetscThreadFinalize_True() {
   PetscFunctionBegin;
 
   if(PetscUseThreadPool) {
-    MainJob(FuncFinish,NULL,PetscMaxThreads);  //set up job and broadcast work
-    //join the threads
+    MainJob(FuncFinish,NULL,PetscMaxThreads);  /* set up job and broadcast work */
+    /* join the threads */
     for(i=0; i<PetscMaxThreads; i++) {
       ierr = pthread_join(PetscThreadPoint[i],&jstatus);
-      //do error checking
+      /* should check error */
     }
     free(BarrPoint);
     free(PetscThreadPoint);
@@ -1566,13 +1585,13 @@ PetscErrorCode MainJob_True(void* (*pFunc)(void*),void** data,PetscInt n) {
     job_true.startJob = PETSC_TRUE;
     ierr = pthread_cond_broadcast(&job_true.cond);
     if(pFunc!=FuncFinish) {
-      MainWait(); //why wait after? guarantees that job gets done
+      MainWait(); /* why wait after? guarantees that job gets done */
     }
   }
   else {
     pthread_t* apThread = (pthread_t*)malloc(n*sizeof(pthread_t));
     PetscThreadRun(MPI_COMM_WORLD,pFunc,n,apThread,data);
-    PetscThreadStop(MPI_COMM_WORLD,n,apThread); //ensures that all threads are finished with the job
+    PetscThreadStop(MPI_COMM_WORLD,n,apThread); /* ensures that all threads are finished with the job */
     free(apThread);
   }
   if(ithreaderr) {
@@ -1581,8 +1600,11 @@ PetscErrorCode MainJob_True(void* (*pFunc)(void*),void** data,PetscInt n) {
   return ijoberr;
 }
 /****  ****/
+#endif
 
 void* FuncFinish(void* arg) {
   PetscThreadGo = PETSC_FALSE;
   return(0);
 }
+
+#endif
