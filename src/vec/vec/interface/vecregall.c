@@ -46,7 +46,9 @@ PetscErrorCode  VecRegisterAll(const char path[])
   ierr = VecRegisterDynamic(VECMPI,       path, "VecCreate_MPI",       VecCreate_MPI);CHKERRQ(ierr);
   ierr = VecRegisterDynamic(VECSTANDARD,  path, "VecCreate_Standard",  VecCreate_Standard);CHKERRQ(ierr);
   ierr = VecRegisterDynamic(VECSHARED,    path, "VecCreate_Shared",    VecCreate_Shared);CHKERRQ(ierr);
+#if defined(PETSC_USE_PTHREAD_CLASSES)
   ierr = VecRegisterDynamic(VECSEQPTHREAD,path, "VecCreate_SeqPThread",VecCreate_SeqPThread);CHKERRQ(ierr);
+#endif
 #if defined PETSC_HAVE_CUSP
   ierr = VecRegisterDynamic(VECSEQCUSP,  path, "VecCreate_SeqCUSP",  VecCreate_SeqCUSP);CHKERRQ(ierr);
   ierr = VecRegisterDynamic(VECMPICUSP,  path, "VecCreate_MPICUSP",  VecCreate_MPICUSP);CHKERRQ(ierr);

@@ -95,9 +95,11 @@ PetscErrorCode  MatRegisterAll(const char path[])
   ierr = MatRegisterDynamic(MATCOMPOSITE,      path,"MatCreate_Composite",   MatCreate_Composite);CHKERRQ(ierr);
 
   ierr = MatRegisterBaseName(MATAIJ,MATSEQAIJ,MATMPIAIJ);CHKERRQ(ierr);
-  ierr = MatRegisterDynamic(MATSEQPTHREADAIJ,  path,"MatCreate_SeqPThreadAIJ",      MatCreate_SeqPThreadAIJ);CHKERRQ(ierr);
   ierr = MatRegisterDynamic(MATMPIAIJ,         path,"MatCreate_MPIAIJ",      MatCreate_MPIAIJ);CHKERRQ(ierr);
   ierr = MatRegisterDynamic(MATSEQAIJ,         path,"MatCreate_SeqAIJ",      MatCreate_SeqAIJ);CHKERRQ(ierr);
+#if defined(PETSC_USE_PTHREAD_CLASSES)
+  ierr = MatRegisterDynamic(MATSEQPTHREADAIJ,  path,"MatCreate_SeqPThreadAIJ",      MatCreate_SeqPThreadAIJ);CHKERRQ(ierr);
+#endif
 
   ierr = MatRegisterBaseName(MATAIJPERM,MATSEQAIJPERM,MATMPIAIJPERM);CHKERRQ(ierr);
   ierr = MatRegisterDynamic(MATMPIAIJPERM,     path,"MatCreate_MPIAIJPERM", MatCreate_MPIAIJPERM);CHKERRQ(ierr);
