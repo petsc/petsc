@@ -9,6 +9,7 @@ typedef struct _SNESOps *SNESOps;
 struct _SNESOps {
   PetscErrorCode (*computefunction)(SNES,Vec,Vec,void*); 
   PetscErrorCode (*computejacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+  PetscErrorCode (*computeinitialguess)(SNES,Vec,void*);
   PetscErrorCode (*computescaling)(Vec,Vec,void*);       
   PetscErrorCode (*update)(SNES, PetscInt);                     /* General purpose function for update */
   PetscErrorCode (*converged)(SNES,PetscInt,PetscReal,PetscReal,PetscReal,SNESConvergedReason*,void*);
@@ -19,6 +20,8 @@ struct _SNESOps {
   PetscErrorCode (*setfromoptions)(SNES);    /* sets options from database */
   PetscErrorCode (*destroy)(SNES);
   PetscErrorCode (*reset)(SNES);
+  PetscErrorCode (*usercompute)(SNES,void**);
+  PetscErrorCode (*userdestroy)(void**);
 };
 
 /*
@@ -29,6 +32,7 @@ struct _SNESOps {
 struct _p_SNES {
   PETSCHEADER(struct _SNESOps);
   DM   dm;
+  SNES pc;
 
   /*  ------------------------ User-provided stuff -------------------------------*/
   void  *user;		          /* user-defined context */
@@ -38,14 +42,15 @@ struct _p_SNES {
 
   Vec  vec_func;                 /* pointer to function */
   void *funP;                    /* user-defined function context */
-		       		 
+
   Mat  jacobian;                 /* Jacobian matrix */
   Mat  jacobian_pre;             /* preconditioner matrix */
   void *jacP;                    /* user-defined Jacobian context */
+  void *initialguessP;           /* user-defined initial guess context */
   KSP  ksp;                      /* linear solver context */
 
   Vec  vec_sol_update;           /* pointer to solution update */
-		       		 
+
   Vec  scaling;                  /* scaling vector */
   void *scaP;                    /* scaling context */
 
@@ -81,9 +86,10 @@ struct _p_SNES {
   PetscBool   printreason;     /* print reason for convergence/divergence after each solve */
   PetscInt    lagpreconditioner; /* SNESSetLagPreconditioner() */
   PetscInt    lagjacobian;       /* SNESSetLagJacobian() */
+  PetscInt    gridsequence;      /* number of grid sequence steps to take; defaults to zero */
   /* ------------------------ Default work-area management ---------------------- */
 
-  PetscInt    nwork;              
+  PetscInt    nwork;
   Vec         *work;
 
   /* ------------------------- Miscellaneous Information ------------------------ */
@@ -112,6 +118,8 @@ struct _p_SNES {
 
   Vec         *vwork;            /* more work vectors for Jacobian approx */
   PetscInt    nvwork;
+
+  PetscBool   mf_operator;      /* -snes_mf_operator was used on this snes */
 };
 
 /* Context for Eisenstat-Walker convergence criteria for KSP solvers */

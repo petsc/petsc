@@ -9,6 +9,10 @@
 #include <sieve/Completion.hh>
 #endif
 
+#ifndef  included_ALE_SectionCompletion_hh
+#include <sieve/SectionCompletion.hh>
+#endif
+
 // Attempt to unify all of the distribution mechanisms:
 //   one to many  (distributeMesh)
 //   many to one  (unifyMesh)
@@ -418,10 +422,10 @@ namespace ALE {
         //ALE::Pullback::InsertionBinaryFusion::fuse(overlapCones, recvOverlap, renumbering, newSieve);
         {
 	  typedef typename cones_type::point_type overlap_point_type;
-          const Obj<typename RecvOverlap::traits::baseSequence>      rPoints = recvOverlap->base();
-	  const typename RecvOverlap::traits::baseSequence::iterator rEnd    = rPoints->end();
+          const Obj<typename RecvOverlap::baseSequence>      rPoints = recvOverlap->base();
+	  const typename RecvOverlap::baseSequence::iterator rEnd    = rPoints->end();
 
-          for(typename RecvOverlap::traits::baseSequence::iterator p_iter = rPoints->begin(); p_iter != rEnd; ++p_iter) {
+          for(typename RecvOverlap::baseSequence::iterator p_iter = rPoints->begin(); p_iter != rEnd; ++p_iter) {
             const Obj<typename RecvOverlap::coneSequence>& points       = recvOverlap->cone(*p_iter);
             const typename RecvOverlap::target_type&       localPoint   = *p_iter;
             const typename cones_type::point_type&         remotePoint  = points->begin().color();
@@ -453,18 +457,24 @@ namespace ALE {
         //ALE::Pullback::InsertionBinaryFusion::fuse(overlapCones, recvOverlap, renumbering, newSieve);
         {
 	  typedef typename cones_type::point_type overlap_point_type;
-          const Obj<typename RecvOverlap::traits::baseSequence> rPoints = recvOverlap->base();
+          const typename RecvOverlap::capSequence::iterator rBegin = recvOverlap->capBegin();
+          const typename RecvOverlap::capSequence::iterator rEnd   = recvOverlap->capEnd();
 
-          for(typename RecvOverlap::traits::baseSequence::iterator p_iter = rPoints->begin(); p_iter != rPoints->end(); ++p_iter) {
-            const Obj<typename RecvOverlap::coneSequence>& points       = recvOverlap->cone(*p_iter);
-            const typename RecvOverlap::target_type&       localPoint   = *p_iter;
-            const typename cones_type::point_type&         remotePoint  = points->begin().color();
-	    const overlap_point_type                       overlapPoint = overlap_point_type(remotePoint.second, remotePoint.first);
-            const int                                      size         = overlapCones->getFiberDimension(overlapPoint);
-            const typename cones_type::value_type         *values       = overlapCones->restrictPoint(overlapPoint);
+          for(typename RecvOverlap::capSequence::iterator r_iter = rBegin; r_iter != rEnd; ++r_iter) {
+            const int                                             rank    = *r_iter;
+            const typename RecvOverlap::supportSequence::iterator pBegin  = recvOverlap->supportBegin(*r_iter);
+            const typename RecvOverlap::supportSequence::iterator pEnd    = recvOverlap->supportEnd(*r_iter);
 
-            newL->clearCone(localPoint);
-            for(int i = 0; i < size; ++i) {newL->addCone(values[i], localPoint);}
+            for(typename RecvOverlap::supportSequence::iterator p_iter = pBegin; p_iter != pEnd; ++p_iter) {
+              const typename RecvOverlap::target_type& localPoint   = *p_iter;
+              const typename RecvOverlap::target_type& remotePoint  = p_iter.color();
+              const overlap_point_type                 overlapPoint = overlap_point_type(rank, remotePoint);
+              const int                                size         = overlapCones->getFiberDimension(overlapPoint);
+              const typename cones_type::value_type   *values       = overlapCones->restrictPoint(overlapPoint);
+
+              newL->clearCone(localPoint);
+              for(int i = 0; i < size; ++i) {newL->addCone(values[i], localPoint);}
+            }
           }
         }
       }
@@ -537,9 +547,9 @@ namespace ALE {
           // Inserts cones into parallelMesh (must renumber here)
           //ALE::Pullback::InsertionBinaryFusion::fuse(overlapCones, recvMeshOverlap, renumbering, newSieve);
           {
-            const Obj<typename mesh_recv_overlap_type::traits::baseSequence> rPoints = recvMeshOverlap->base();
+            const Obj<typename mesh_recv_overlap_type::baseSequence> rPoints = recvMeshOverlap->base();
 
-            for(typename mesh_recv_overlap_type::traits::baseSequence::iterator p_iter = rPoints->begin(); p_iter != rPoints->end(); ++p_iter) {
+            for(typename mesh_recv_overlap_type::baseSequence::iterator p_iter = rPoints->begin(); p_iter != rPoints->end(); ++p_iter) {
               const Obj<typename mesh_recv_overlap_type::coneSequence>& points      = recvMeshOverlap->cone(*p_iter);
               const typename mesh_recv_overlap_type::target_type&       localPoint  = *p_iter;
               const typename cones_type::point_type&                    remotePoint = points->begin().color();

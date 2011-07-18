@@ -74,7 +74,8 @@ PetscErrorCode  PCMGGetCoarseSolve(PC pc,KSP *ksp)
    Input Parameters:
 +  pc       - the multigrid context
 .  l        - the level (0 is coarsest) to supply
-.  residual - function used to form residual (usually PCMGDefaultResidual)
+.  residual - function used to form residual, if none is provided the previously provide one is used, if no 
+              previous one were provided then PCMGDefaultResidual() is used
 -  mat      - matrix associated with residual
 
    Level: advanced
@@ -87,11 +88,18 @@ PetscErrorCode  PCMGSetResidual(PC pc,PetscInt l,PetscErrorCode (*residual)(Mat,
 {
   PC_MG          *mg = (PC_MG*)pc->data;
   PC_MG_Levels   **mglevels = mg->levels;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   if (!mglevels) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
-  mglevels[l]->residual = residual;  
+  if (residual) {
+    mglevels[l]->residual = residual;  
+  } if (!mglevels[l]->residual) {
+    mglevels[l]->residual = PCMGDefaultResidual;
+  }
+  if (mat) {ierr = PetscObjectReference((PetscObject)mat);CHKERRQ(ierr);}
+  ierr = MatDestroy(&mglevels[l]->A);CHKERRQ(ierr);
   mglevels[l]->A        = mat;
   PetscFunctionReturn(0);
 }
@@ -180,6 +188,43 @@ PetscErrorCode  PCMGSetRestriction(PC pc,PetscInt l,Mat mat)
   ierr = PetscObjectReference((PetscObject)mat);CHKERRQ(ierr);
   ierr = MatDestroy(&mglevels[l]->restrct);CHKERRQ(ierr);
   mglevels[l]->restrct  = mat;  
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PCMGSetRScale"
+/*@
+   PCMGSetRScale - Sets the pointwise scaling for the restriction operator from level l to l-1. 
+
+   Logically Collective on PC and Mat
+
+   Input Parameters:
++  pc - the multigrid context 
+.  rscale - the scaling
+-  l - the level (0 is coarsest) to supply [Do not supply 0]
+
+   Level: advanced
+
+   Notes: 
+       When evaluating a function on a coarse level one does not want to do F( R * x) one does F( rscale * R * x) where rscale is 1 over the row sums of R. 
+
+.keywords: MG, set, multigrid, restriction, level
+
+.seealso: PCMGSetInterpolation(), PCMGSetRestriction()
+@*/
+PetscErrorCode  PCMGSetRScale(PC pc,PetscInt l,Vec rscale)
+{
+  PetscErrorCode ierr;
+  PC_MG          *mg = (PC_MG*)pc->data;
+  PC_MG_Levels   **mglevels = mg->levels;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  if (!mglevels) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
+  if (!l) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Do not set restriction routine for coarsest level");
+  ierr = PetscObjectReference((PetscObject)rscale);CHKERRQ(ierr);
+  ierr = VecDestroy(&mglevels[l]->rscale);CHKERRQ(ierr);
+  mglevels[l]->rscale  = rscale;  
   PetscFunctionReturn(0);
 }
 

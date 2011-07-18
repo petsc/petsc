@@ -83,7 +83,7 @@ typedef struct {
    PetscBool    draw_contours;                /* flag - 1 indicates drawing contours */
 } AppCtx;
 
-PetscErrorCode FormInitialGuess(AppCtx*,DMDA,Vec);
+PetscErrorCode FormInitialGuess(AppCtx*,DM,Vec);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -136,11 +136,11 @@ int main(int argc,char **argv)
      Create nonlinear solver context
      
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = SNESSetFunction(snes,PETSC_NULL,FormFunction,&user);CHKERRQ(ierr);
+  ierr = DMSetApplicationContext(da,&user);CHKERRQ(ierr);
+  ierr = DMDASetLocalFunction(da,(DMDALocalFunction1)FormFunctionLocal);CHKERRQ(ierr);
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
   
-  ierr = PetscPrintf(comm,"lid velocity = %G, prandtl # = %G, grashof # = %G\n",
-		     user.lidvelocity,user.prandtl,user.grashof);CHKERRQ(ierr);
+  ierr = PetscPrintf(comm,"lid velocity = %G, prandtl # = %G, grashof # = %G\n",user.lidvelocity,user.prandtl,user.grashof);CHKERRQ(ierr);
 
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -158,7 +158,7 @@ int main(int argc,char **argv)
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  
+  ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);
   
@@ -229,6 +229,8 @@ PetscErrorCode FormInitialGuess(AppCtx *user,DM da,Vec X)
   return 0;
 }
  
+#undef __FUNCT__
+#define __FUNCT__ "FormFunctionLocal"
 PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field **x,Field **f,void *ptr)
  {
   AppCtx         *user = (AppCtx*)ptr;

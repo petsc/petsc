@@ -545,31 +545,6 @@ PetscErrorCode PetscViewerDestroy_MPIIO(PetscViewer v)
 #endif
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscViewerBinaryCreate"
-/*@
-   PetscViewerBinaryCreate - Create a binary viewer.
-
-   Collective on MPI_Comm
-
-   Input Parameters:
-.  comm - MPI communicator
-
-   Output Parameter:
-.  binv - PetscViewer for binary input/output
-
-   Level: beginner
-@*/
-PetscErrorCode  PetscViewerBinaryCreate(MPI_Comm comm,PetscViewer *binv)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscViewerCreate(comm,binv);CHKERRQ(ierr);
-  ierr = PetscViewerSetType(*binv,PETSCVIEWERBINARY);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
 #define __FUNCT__ "PetscViewerBinaryOpen"
 /*@C
    PetscViewerBinaryOpen - Opens a file for binary input/output.

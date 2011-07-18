@@ -200,11 +200,11 @@ PetscErrorCode  DMDAGetElementType(DM da, DMDAElementType *etype)
    Output Parameters:
 +     nel - number of local elements
 .     nen - number of element nodes
--     e - the indices of the elements vertices
+-     e - the local indices of the elements' vertices
 
    Level: intermediate
 
-.seealso: DMDAElementType, DMDASetElementType(), DMDARestoreElements()
+.seealso: DMDAElementType, DMDASetElementType(), DMDARestoreElements(), VecSetValuesLocal(), MatSetValuesLocal(), DMGlobalToLocalBegin(), DMLocalToGlobalBegin()
 @*/
 #undef __FUNCT__
 #define __FUNCT__ "DMDAGetElements"
@@ -240,7 +240,7 @@ PetscErrorCode  DMDAGetElements(DM dm,PetscInt *nel,PetscInt *nen,const PetscInt
 +     dm - the DM object
 .     nel - number of local elements
 .     nen - number of element nodes
--     e - the indices of the elements vertices
+-     e - the local indices of the elements' vertices
 
    Level: intermediate
 

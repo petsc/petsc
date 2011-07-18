@@ -114,9 +114,9 @@ PetscErrorCode  DMDASetBoundaryType(DM da,DMDABoundaryType bx,DMDABoundaryType b
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
-  PetscValidLogicalCollectiveInt(da,bx,2);
-  PetscValidLogicalCollectiveInt(da,by,3);
-  PetscValidLogicalCollectiveInt(da,bz,4);
+  PetscValidLogicalCollectiveEnum(da,bx,2);
+  PetscValidLogicalCollectiveEnum(da,by,3);
+  PetscValidLogicalCollectiveEnum(da,bz,4);
   dd->bx = bx;
   dd->by = by;
   dd->bz = bz;
@@ -139,12 +139,13 @@ PetscErrorCode  DMDASetBoundaryType(DM da,DMDABoundaryType bx,DMDABoundaryType b
 .keywords:  distributed array, degrees of freedom
 .seealso: DMDACreate(), DMDestroy(), DMDA
 @*/
-PetscErrorCode  DMDASetDof(DM da, int dof)
+PetscErrorCode  DMDASetDof(DM da, PetscInt dof)
 {
   DM_DA *dd = (DM_DA*)da->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
+  PetscValidLogicalCollectiveInt(da,dof,2);
   dd->w = dof;
   da->bs = dof;
   PetscFunctionReturn(0);
@@ -684,7 +685,7 @@ PetscErrorCode  DMRefine_DA(DM da,MPI_Comm comm,DM *daref)
 
   /* allow overloaded (user replaced) operations to be inherited by refinement clones */
   da2->ops->getmatrix        = da->ops->getmatrix;
-  da2->ops->getinterpolation = da->ops->getinterpolation;
+  /* da2->ops->getinterpolation = da->ops->getinterpolation; this causes problem with SNESVI */
   da2->ops->getcoloring      = da->ops->getcoloring;
   dd2->interptype            = dd->interptype;
   
@@ -705,6 +706,9 @@ PetscErrorCode  DMRefine_DA(DM da,MPI_Comm comm,DM *daref)
   /* copy vector type information */
   ierr = PetscFree(da2->vectype);CHKERRQ(ierr);
   ierr = PetscStrallocpy(da->vectype,&da2->vectype);CHKERRQ(ierr);
+
+  dd2->lf = dd->lf;
+  dd2->lj = dd->lj;
 
   /* interpolate coordinates if they are set on the coarse grid */
   if (dd->coordinates) {
@@ -779,9 +783,9 @@ PetscErrorCode  DMCoarsen_DA(DM da, MPI_Comm comm,DM *daref)
   }
   dd2 = (DM_DA*)da2->data;
 
-  /* allow overloaded (user replaced) operations to be inherited by refinement clones */
+  /* allow overloaded (user replaced) operations to be inherited by refinement clones; why are only some inherited and not all? */
+  /* da2->ops->getinterpolation = da->ops->getinterpolation; copying this one causes trouble for DMSetVI */
   da2->ops->getmatrix        = da->ops->getmatrix;
-  da2->ops->getinterpolation = da->ops->getinterpolation;
   da2->ops->getcoloring      = da->ops->getcoloring;
   dd2->interptype            = dd->interptype;
   
@@ -803,10 +807,13 @@ PetscErrorCode  DMCoarsen_DA(DM da, MPI_Comm comm,DM *daref)
   ierr = PetscFree(da2->vectype);CHKERRQ(ierr);
   ierr = PetscStrallocpy(da->vectype,&da2->vectype);CHKERRQ(ierr);
 
+  dd2->lf = dd->lf;
+  dd2->lj = dd->lj;
+
   /* inject coordinates if they are set on the fine grid */
   if (dd->coordinates) {
-    DM  cdaf,cdac;
-    Vec coordsc,coordsf;
+    DM         cdaf,cdac;
+    Vec        coordsc,coordsf;
     VecScatter inject;
     
     ierr = DMDAGetCoordinateDA(da,&cdaf);CHKERRQ(ierr);

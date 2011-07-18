@@ -5,6 +5,10 @@
 #include <sieve/Sections.hh>
 #endif
 
+#ifndef  included_ALE_SectionCompletion_hh
+#include <sieve/SectionCompletion.hh>
+#endif
+
 #ifndef  included_ALE_ParallelMapping_hh
 #include <sieve/ParallelMapping.hh>
 #endif

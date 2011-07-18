@@ -502,11 +502,13 @@ PETSC_STATIC_INLINE void UnPack_1(PetscInt n,const PetscScalar *x,const PetscInt
   PetscInt i;
   switch (addv) {
   case INSERT_VALUES: 
+  case INSERT_ALL_VALUES: 
     for (i=0; i<n; i++) {
       y[indicesy[i]] = x[i];
     }
     break;
   case ADD_VALUES: 
+  case ADD_ALL_VALUES: 
     for (i=0; i<n; i++) {
       y[indicesy[i]] += x[i];
     }
@@ -529,11 +531,13 @@ PETSC_STATIC_INLINE void Scatter_1(PetscInt n,const PetscInt *indicesx,const Pet
   PetscInt i;
   switch (addv) {
   case INSERT_VALUES: 
+  case INSERT_ALL_VALUES: 
     for (i=0; i<n; i++) {
       y[indicesy[i]] = x[indicesx[i]];
     }
     break;
   case ADD_VALUES: 
+  case ADD_ALL_VALUES: 
     for (i=0; i<n; i++) {
       y[indicesy[i]] += x[indicesx[i]];
     }
@@ -569,6 +573,7 @@ PETSC_STATIC_INLINE void UnPack_2(PetscInt n,const PetscScalar *x,const PetscInt
 
   switch (addv) {
   case INSERT_VALUES: 
+  case INSERT_ALL_VALUES: 
     for (i=0; i<n; i++) {
       idy       = *indicesy++;
       y[idy]    = x[0];
@@ -577,6 +582,7 @@ PETSC_STATIC_INLINE void UnPack_2(PetscInt n,const PetscScalar *x,const PetscInt
     }
     break;
   case ADD_VALUES:
+  case ADD_ALL_VALUES:
     for (i=0; i<n; i++) {
       idy       = *indicesy++;
       y[idy]    += x[0];
@@ -606,6 +612,7 @@ PETSC_STATIC_INLINE void Scatter_2(PetscInt n,const PetscInt *indicesx,const Pet
 
   switch (addv) {
   case INSERT_VALUES: 
+  case INSERT_ALL_VALUES: 
     for (i=0; i<n; i++) {
       idx       = *indicesx++;
       idy       = *indicesy++;
@@ -614,6 +621,7 @@ PETSC_STATIC_INLINE void Scatter_2(PetscInt n,const PetscInt *indicesx,const Pet
     }
     break;
   case ADD_VALUES:
+  case ADD_ALL_VALUES:
     for (i=0; i<n; i++) {
       idx       = *indicesx++;
       idy       = *indicesy++;
@@ -655,6 +663,7 @@ PETSC_STATIC_INLINE void UnPack_3(PetscInt n,const PetscScalar *x,const PetscInt
 
   switch (addv) {
   case INSERT_VALUES: 
+  case INSERT_ALL_VALUES: 
     for (i=0; i<n; i++) {
       idy       = *indicesy++;
       y[idy]    = x[0];
@@ -664,6 +673,7 @@ PETSC_STATIC_INLINE void UnPack_3(PetscInt n,const PetscScalar *x,const PetscInt
     }
     break;
   case ADD_VALUES:
+  case ADD_ALL_VALUES:
     for (i=0; i<n; i++) {
       idy       = *indicesy++;
       y[idy]    += x[0];
@@ -695,6 +705,7 @@ PETSC_STATIC_INLINE void Scatter_3(PetscInt n,const PetscInt *indicesx,const Pet
 
   switch (addv) {
   case INSERT_VALUES: 
+  case INSERT_ALL_VALUES: 
     for (i=0; i<n; i++) {
       idx       = *indicesx++;
       idy       = *indicesy++;
@@ -704,6 +715,7 @@ PETSC_STATIC_INLINE void Scatter_3(PetscInt n,const PetscInt *indicesx,const Pet
     }
     break;
   case ADD_VALUES:
+  case ADD_ALL_VALUES:
     for (i=0; i<n; i++) {
       idx       = *indicesx++;
       idy       = *indicesy++;
@@ -748,6 +760,7 @@ PETSC_STATIC_INLINE void UnPack_4(PetscInt n,const PetscScalar *x,const PetscInt
 
   switch (addv) {
   case INSERT_VALUES: 
+  case INSERT_ALL_VALUES: 
     for (i=0; i<n; i++) {
       idy       = *indicesy++;
       y[idy]    = x[0];
@@ -758,6 +771,7 @@ PETSC_STATIC_INLINE void UnPack_4(PetscInt n,const PetscScalar *x,const PetscInt
     }
     break;
   case ADD_VALUES:
+  case ADD_ALL_VALUES:
     for (i=0; i<n; i++) {
       idy       = *indicesy++;
       y[idy]    += x[0];
@@ -791,6 +805,7 @@ PETSC_STATIC_INLINE void Scatter_4(PetscInt n,const PetscInt *indicesx,const Pet
 
   switch (addv) {
   case INSERT_VALUES: 
+  case INSERT_ALL_VALUES: 
     for (i=0; i<n; i++) {
       idx       = *indicesx++;
       idy       = *indicesy++;
@@ -801,6 +816,7 @@ PETSC_STATIC_INLINE void Scatter_4(PetscInt n,const PetscInt *indicesx,const Pet
     }
     break;
   case ADD_VALUES:
+  case ADD_ALL_VALUES:
     for (i=0; i<n; i++) {
       idx       = *indicesx++;
       idy       = *indicesy++;
@@ -848,6 +864,7 @@ PETSC_STATIC_INLINE void UnPack_5(PetscInt n,const PetscScalar *x,const PetscInt
 
   switch (addv) {
   case INSERT_VALUES: 
+  case INSERT_ALL_VALUES: 
     for (i=0; i<n; i++) {
       idy       = *indicesy++;
       y[idy]    = x[0];
@@ -859,6 +876,7 @@ PETSC_STATIC_INLINE void UnPack_5(PetscInt n,const PetscScalar *x,const PetscInt
     }
     break;
   case ADD_VALUES:
+  case ADD_ALL_VALUES:
     for (i=0; i<n; i++) {
       idy       = *indicesy++;
       y[idy]    += x[0];
@@ -894,6 +912,7 @@ PETSC_STATIC_INLINE void Scatter_5(PetscInt n,const PetscInt *indicesx,const Pet
 
   switch (addv) {
   case INSERT_VALUES: 
+  case INSERT_ALL_VALUES: 
     for (i=0; i<n; i++) {
       idx       = *indicesx++;
       idy       = *indicesy++;
@@ -905,6 +924,7 @@ PETSC_STATIC_INLINE void Scatter_5(PetscInt n,const PetscInt *indicesx,const Pet
     }
     break;
   case ADD_VALUES:
+  case ADD_ALL_VALUES:
     for (i=0; i<n; i++) {
       idx       = *indicesx++;
       idy       = *indicesy++;
@@ -955,6 +975,7 @@ PETSC_STATIC_INLINE void UnPack_6(PetscInt n,const PetscScalar *x,const PetscInt
 
   switch (addv) {
   case INSERT_VALUES: 
+  case INSERT_ALL_VALUES: 
     for (i=0; i<n; i++) {
       idy       = *indicesy++;
       y[idy]    = x[0];
@@ -967,6 +988,7 @@ PETSC_STATIC_INLINE void UnPack_6(PetscInt n,const PetscScalar *x,const PetscInt
     }
     break;
   case ADD_VALUES:
+  case ADD_ALL_VALUES:
     for (i=0; i<n; i++) {
       idy       = *indicesy++;
       y[idy]    += x[0];
@@ -1004,6 +1026,7 @@ PETSC_STATIC_INLINE void Scatter_6(PetscInt n,const PetscInt *indicesx,const Pet
 
   switch (addv) {
   case INSERT_VALUES: 
+  case INSERT_ALL_VALUES: 
     for (i=0; i<n; i++) {
       idx       = *indicesx++;
       idy       = *indicesy++;
@@ -1016,6 +1039,7 @@ PETSC_STATIC_INLINE void Scatter_6(PetscInt n,const PetscInt *indicesx,const Pet
     }
     break;
   case ADD_VALUES:
+  case ADD_ALL_VALUES:
     for (i=0; i<n; i++) {
       idx       = *indicesx++;
       idy       = *indicesy++;
@@ -1069,6 +1093,7 @@ PETSC_STATIC_INLINE void UnPack_7(PetscInt n,const PetscScalar *x,const PetscInt
 
   switch (addv) {
   case INSERT_VALUES: 
+  case INSERT_ALL_VALUES: 
     for (i=0; i<n; i++) {
       idy       = *indicesy++;
       y[idy]    = x[0];
@@ -1082,6 +1107,7 @@ PETSC_STATIC_INLINE void UnPack_7(PetscInt n,const PetscScalar *x,const PetscInt
     }
     break;
   case ADD_VALUES:
+  case ADD_ALL_VALUES:
     for (i=0; i<n; i++) {
       idy       = *indicesy++;
       y[idy]    += x[0];
@@ -1121,6 +1147,7 @@ PETSC_STATIC_INLINE void Scatter_7(PetscInt n,const PetscInt *indicesx,const Pet
 
   switch (addv) {
   case INSERT_VALUES: 
+  case INSERT_ALL_VALUES: 
     for (i=0; i<n; i++) {
       idx       = *indicesx++;
       idy       = *indicesy++;
@@ -1134,6 +1161,7 @@ PETSC_STATIC_INLINE void Scatter_7(PetscInt n,const PetscInt *indicesx,const Pet
     }
     break;
   case ADD_VALUES:
+  case ADD_ALL_VALUES:
     for (i=0; i<n; i++) {
       idx       = *indicesx++;
       idy       = *indicesy++;
@@ -1190,6 +1218,7 @@ PETSC_STATIC_INLINE void UnPack_8(PetscInt n,const PetscScalar *x,const PetscInt
 
   switch (addv) {
   case INSERT_VALUES: 
+  case INSERT_ALL_VALUES: 
     for (i=0; i<n; i++) {
       idy       = *indicesy++;
       y[idy]    = x[0];
@@ -1204,6 +1233,7 @@ PETSC_STATIC_INLINE void UnPack_8(PetscInt n,const PetscScalar *x,const PetscInt
     }
     break;
   case ADD_VALUES:
+  case ADD_ALL_VALUES:
     for (i=0; i<n; i++) {
       idy       = *indicesy++;
       y[idy]    += x[0];
@@ -1245,6 +1275,7 @@ PETSC_STATIC_INLINE void Scatter_8(PetscInt n,const PetscInt *indicesx,const Pet
 
   switch (addv) {
   case INSERT_VALUES: 
+  case INSERT_ALL_VALUES: 
     for (i=0; i<n; i++) {
       idx       = *indicesx++;
       idy       = *indicesy++;
@@ -1259,6 +1290,7 @@ PETSC_STATIC_INLINE void Scatter_8(PetscInt n,const PetscInt *indicesx,const Pet
     }
     break;
   case ADD_VALUES:
+  case ADD_ALL_VALUES:
     for (i=0; i<n; i++) {
       idx       = *indicesx++;
       idy       = *indicesy++;
@@ -1322,6 +1354,7 @@ PETSC_STATIC_INLINE void UnPack_12(PetscInt n,const PetscScalar *x,const PetscIn
 
   switch (addv) {
   case INSERT_VALUES: 
+  case INSERT_ALL_VALUES: 
     for (i=0; i<n; i++) {
       idy       = *indicesy++;
       y[idy]    = x[0];
@@ -1340,6 +1373,7 @@ PETSC_STATIC_INLINE void UnPack_12(PetscInt n,const PetscScalar *x,const PetscIn
     }
     break;
   case ADD_VALUES:
+  case ADD_ALL_VALUES:
     for (i=0; i<n; i++) {
       idy       = *indicesy++;
       y[idy]    += x[0];
@@ -1389,6 +1423,7 @@ PETSC_STATIC_INLINE void Scatter_12(PetscInt n,const PetscInt *indicesx,const Pe
 
   switch (addv) {
   case INSERT_VALUES: 
+  case INSERT_ALL_VALUES: 
     for (i=0; i<n; i++) {
       idx       = *indicesx++;
       idy       = *indicesy++;
@@ -1407,6 +1442,7 @@ PETSC_STATIC_INLINE void Scatter_12(PetscInt n,const PetscInt *indicesx,const Pe
     }
     break;
   case ADD_VALUES:
+  case ADD_ALL_VALUES:
     for (i=0; i<n; i++) {
       idx       = *indicesx++;
       idy       = *indicesy++;
@@ -1562,7 +1598,10 @@ PetscErrorCode VecScatterCreateLocal(VecScatter ctx,PetscInt nsends,const PetscI
   to->type   = VEC_SCATTER_MPI_GENERAL; 
   from->bs = bs;
   to->bs   = bs;
-  ierr = VecScatterCreateCommon_PtoS(from, to, ctx); CHKERRQ(ierr);
+  ierr = VecScatterCreateCommon_PtoS(from, to, ctx);CHKERRQ(ierr);
+
+  /* mark lengths as negative so it won't check local vector lengths */
+  ctx->from_n = ctx->to_n = -1;
   PetscFunctionReturn(0);
 }
 

@@ -561,6 +561,9 @@ PetscErrorCode MatGetFactor_seqaij_superlu(Mat A,MatFactorType ftype,Mat *F)
 	options.ILU_MILU = SMILU_2;
     */    
     ilu_set_default_options(&lu->options);
+    /* there is a bug with options.RowPerm=LargeDiag causing src/ksp/ksp/examples/tutorials/runex52_superlu crashes
+       See email communication Betwen Hong and Sharry on Feb. Tue, Feb 22, 2011 */
+    lu->options.RowPerm = NOROWPERM; 
   }
   lu->options.PrintStat = NO;
   

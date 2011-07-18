@@ -39,6 +39,7 @@ E*/
 #define TSALPHA           "alpha"
 #define TSGL              "gl"
 #define TSSSP             "ssp"
+#define TSARKIMEX         "arkimex"
 
 /*E
     TSProblemType - Determines the type of problem this TS object is to be used to solve
@@ -48,6 +49,15 @@ E*/
 .seealso: TSCreate()
 E*/
 typedef enum {TS_LINEAR,TS_NONLINEAR} TSProblemType;
+
+typedef enum {
+  TS_CONVERGED_ITERATING      = 0,
+  TS_CONVERGED_TIME           = 1,
+  TS_CONVERGED_ITS            = 2,
+  TS_DIVERGED_NONLINEAR_SOLVE = -1,
+  TS_DIVERGED_STEP_REJECTED   = -2
+} TSConvergedReason;
+extern const char *const*TSConvergedReasons;
 
 /* Logging support */
 extern PetscClassId  TS_CLASSID;
@@ -74,12 +84,13 @@ extern PetscErrorCode   TSGetSolution(TS,Vec*);
 
 extern PetscErrorCode   TSSetDuration(TS,PetscInt,PetscReal);
 extern PetscErrorCode   TSGetDuration(TS,PetscInt*,PetscReal*);
+extern PetscErrorCode   TSSetExactFinalTime(TS,PetscBool);
 
 extern PetscErrorCode   TSMonitorDefault(TS,PetscInt,PetscReal,Vec,void*);
 extern PetscErrorCode   TSMonitorSolution(TS,PetscInt,PetscReal,Vec,void*);
-extern PetscErrorCode   TSStep(TS,PetscInt *,PetscReal*);
-extern PetscErrorCode   TSSolve(TS,Vec);
-
+extern PetscErrorCode   TSStep(TS);
+extern PetscErrorCode   TSSolve(TS,Vec,PetscReal*);
+extern PetscErrorCode   TSGetConvergedReason(TS,TSConvergedReason*);
 
 extern PetscErrorCode   TSSetInitialTimeStep(TS,PetscReal,PetscReal);
 extern PetscErrorCode   TSGetTimeStep(TS,PetscReal*);
@@ -88,22 +99,24 @@ extern PetscErrorCode   TSSetTime(TS,PetscReal);
 extern PetscErrorCode   TSGetTimeStepNumber(TS,PetscInt*);
 extern PetscErrorCode   TSSetTimeStep(TS,PetscReal);
 
-typedef PetscErrorCode (*TSMatrix)(TS,PetscReal,Mat*,Mat*,MatStructure*,void*);
-extern PetscErrorCode   TSSetMatrices(TS,Mat,TSMatrix,Mat,TSMatrix,MatStructure,void*);
-extern PetscErrorCode   TSGetMatrices(TS,Mat*,Mat*,void**);
-
 typedef PetscErrorCode (*TSRHSFunction)(TS,PetscReal,Vec,Vec,void*);
 typedef PetscErrorCode (*TSRHSJacobian)(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*);
-extern PetscErrorCode   TSSetRHSFunction(TS,TSRHSFunction,void*);
+extern PetscErrorCode   TSSetRHSFunction(TS,Vec,TSRHSFunction,void*);
+extern PetscErrorCode   TSGetRHSFunction(TS,Vec*,TSRHSFunction*,void**);
 extern PetscErrorCode   TSSetRHSJacobian(TS,Mat,Mat,TSRHSJacobian,void*);
-extern PetscErrorCode   TSGetRHSJacobian(TS,Mat*,Mat*,void**);
+extern PetscErrorCode   TSGetRHSJacobian(TS,Mat*,Mat*,TSRHSJacobian*,void**);
 
 typedef PetscErrorCode (*TSIFunction)(TS,PetscReal,Vec,Vec,Vec,void*);
 typedef PetscErrorCode (*TSIJacobian)(TS,PetscReal,Vec,Vec,PetscReal,Mat*,Mat*,MatStructure*,void*);
-extern PetscErrorCode   TSSetIFunction(TS,TSIFunction,void*);
+extern PetscErrorCode   TSSetIFunction(TS,Vec,TSIFunction,void*);
+extern PetscErrorCode   TSGetIFunction(TS,Vec*,TSIFunction*,void**);
 extern PetscErrorCode   TSSetIJacobian(TS,Mat,Mat,TSIJacobian,void*);
 extern PetscErrorCode   TSGetIJacobian(TS,Mat*,Mat*,TSIJacobian*,void**);
 
+extern PetscErrorCode   TSComputeRHSFunctionLinear(TS,PetscReal,Vec,Vec,void*);
+extern PetscErrorCode   TSComputeRHSJacobianConstant(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode   TSComputeIFunctionLinear(TS,PetscReal,Vec,Vec,Vec,void*);
+extern PetscErrorCode   TSComputeIJacobianConstant(TS,PetscReal,Vec,Vec,PetscReal,Mat*,Mat*,MatStructure*,void*);
 extern PetscErrorCode   TSDefaultComputeJacobianColor(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*);
 extern PetscErrorCode   TSDefaultComputeJacobian(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*);
 
@@ -111,6 +124,8 @@ extern PetscErrorCode   TSSetPreStep(TS, PetscErrorCode (*)(TS));
 extern PetscErrorCode   TSSetPostStep(TS, PetscErrorCode (*)(TS));
 extern PetscErrorCode   TSPreStep(TS);
 extern PetscErrorCode   TSPostStep(TS);
+extern PetscErrorCode   TSSetRetainStages(TS,PetscBool);
+extern PetscErrorCode   TSInterpolate(TS,PetscReal,Vec);
 
 extern PetscErrorCode   TSPseudoSetTimeStep(TS,PetscErrorCode(*)(TS,PetscReal*,void*),void*);
 extern PetscErrorCode   TSPseudoDefaultTimeStep(TS,PetscReal*,void*);
@@ -126,8 +141,8 @@ extern PetscErrorCode   TSPythonSetType(TS,const char[]);
 
 extern PetscErrorCode   TSComputeRHSFunction(TS,PetscReal,Vec,Vec);
 extern PetscErrorCode   TSComputeRHSJacobian(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*);
-extern PetscErrorCode   TSComputeIFunction(TS,PetscReal,Vec,Vec,Vec);
-extern PetscErrorCode   TSComputeIJacobian(TS,PetscReal,Vec,Vec,PetscReal,Mat*,Mat*,MatStructure*);
+extern PetscErrorCode   TSComputeIFunction(TS,PetscReal,Vec,Vec,Vec,PetscBool);
+extern PetscErrorCode   TSComputeIJacobian(TS,PetscReal,Vec,Vec,PetscReal,Mat*,Mat*,MatStructure*,PetscBool);
 
 /* Dynamic creation and loading functions */
 extern PetscFList TSList;
@@ -191,10 +206,9 @@ extern PetscErrorCode   TSGetSNES(TS,SNES*);
 extern PetscErrorCode   TSGetKSP(TS,KSP*);
 
 extern PetscErrorCode   TSView(TS,PetscViewer);
-extern PetscErrorCode   TSViewFromOptions(TS,const char[]);
 
 extern PetscErrorCode   TSSetApplicationContext(TS,void *);
-extern PetscErrorCode   TSGetApplicationContext(TS,void **);
+extern PetscErrorCode   TSGetApplicationContext(TS,void *);
 
 extern PetscErrorCode   TSMonitorLGCreate(const char[],const char[],int,int,int,int,PetscDrawLG *);
 extern PetscErrorCode   TSMonitorLG(TS,PetscInt,PetscReal,Vec,void *);
@@ -402,7 +416,7 @@ M*/
 #  define TSGLRegisterDynamic(a,b,c,d)       TSGLRegister(a,b,c,d)
 #endif
 
-extern PetscErrorCode   TSGLRegister(const char[],const char[],const char[],PetscErrorCode(*)(TS));
+extern PetscErrorCode  TSGLRegister(const char[],const char[],const char[],PetscErrorCode(*)(TS));
 extern PetscErrorCode  TSGLRegisterAll(const char[]);
 extern PetscErrorCode  TSGLRegisterDestroy(void);
 extern PetscErrorCode  TSGLInitializePackage(const char[]);
@@ -410,6 +424,21 @@ extern PetscErrorCode  TSGLFinalizePackage(void);
 extern PetscErrorCode  TSGLSetType(TS,const TSGLType);
 extern PetscErrorCode  TSGLGetAdapt(TS,TSGLAdapt*);
 extern PetscErrorCode  TSGLSetAcceptType(TS,const TSGLAcceptType);
+
+#define TSARKIMEXType char*
+#define TSARKIMEX2D "2d"
+#define TSARKIMEX2E "2e"
+#define TSARKIMEX3  "3"
+#define TSARKIMEX4  "4"
+#define TSARKIMEX5  "5"
+extern PetscErrorCode TSARKIMEXGetType(TS ts,const TSARKIMEXType*);
+extern PetscErrorCode TSARKIMEXSetType(TS ts,const TSARKIMEXType);
+extern PetscErrorCode TSARKIMEXSetFullyImplicit(TS,PetscBool);
+extern PetscErrorCode TSARKIMEXRegister(const TSARKIMEXType,PetscInt,PetscInt,const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[],PetscInt,const PetscReal[],const PetscReal[]);
+extern PetscErrorCode TSARKIMEXFinalizePackage(void);
+extern PetscErrorCode TSARKIMEXInitializePackage(const char path[]);
+extern PetscErrorCode TSARKIMEXRegisterDestroy(void);
+extern PetscErrorCode TSARKIMEXRegisterAll(void);
 
 /*
        PETSc interface to Sundials
@@ -428,7 +457,6 @@ extern PetscErrorCode   TSSundialsGetIterations(TS,PetscInt *,PetscInt *);
 extern PetscErrorCode   TSSundialsSetGramSchmidtType(TS,TSSundialsGramSchmidtType);
 extern PetscErrorCode   TSSundialsSetGMRESRestart(TS,PetscInt);
 extern PetscErrorCode   TSSundialsSetLinearTolerance(TS,PetscReal);
-extern PetscErrorCode   TSSundialsSetExactFinalTime(TS,PetscBool );
 extern PetscErrorCode   TSSundialsMonitorInternalSteps(TS,PetscBool );
 extern PetscErrorCode   TSSundialsGetParameters(TS,PetscInt *,long*[],double*[]);
 #endif
@@ -437,6 +465,7 @@ extern PetscErrorCode   TSRKSetTolerance(TS,PetscReal);
 
 extern PetscErrorCode  TSThetaSetTheta(TS,PetscReal);
 extern PetscErrorCode  TSThetaGetTheta(TS,PetscReal*);
+extern PetscErrorCode  TSThetaSetEndpoint(TS,PetscBool);
 
 extern PetscErrorCode  TSAlphaSetAdapt(TS,PetscErrorCode(*)(TS,PetscReal,Vec,Vec,PetscReal*,PetscBool*,void*),void*);
 extern PetscErrorCode  TSAlphaAdaptDefault(TS,PetscReal,Vec,Vec,PetscReal*,PetscBool*,void*);

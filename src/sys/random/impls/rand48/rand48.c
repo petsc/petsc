@@ -20,10 +20,10 @@ PetscErrorCode  PetscRandomGetValue_Rand48(PetscRandom r,PetscScalar *val)
   PetscFunctionBegin;
 #if defined(PETSC_USE_COMPLEX)  
   if (r->iset) {
-    *val = PetscRealPart(r->width)*drand48() + PetscRealPart(r->low) +
-      (PetscImaginaryPart(r->width)*drand48() + PetscImaginaryPart(r->low)) * PETSC_i;
+    *val = PetscRealPart(r->width)*(PetscReal)drand48() + PetscRealPart(r->low) +
+      (PetscImaginaryPart(r->width)*(PetscReal)drand48() + PetscImaginaryPart(r->low)) * PETSC_i;
   } else {
-    *val = drand48() + drand48()*PETSC_i;
+    *val = (PetscReal)drand48() + (PetscReal)drand48()*PETSC_i;
   } 
 #else
   if (r->iset) *val = r->width * drand48() + r->low;

@@ -634,6 +634,8 @@ PetscErrorCode PCSetUp_Exotic(PC pc)
     ierr = DMDAGetWireBasketInterpolation(pc->dm,ex,A,reuse,&ex->P);CHKERRQ(ierr);
   } else SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_PLIB,"Unknown exotic coarse space %d",ex->type);
   ierr = PCMGSetInterpolation(pc,1,ex->P);CHKERRQ(ierr);
+  /* if PC has attached DM we must remove it or the PCMG will use it to compute incorrect sized vectors and interpolations */
+  ierr = PCSetDM(pc,PETSC_NULL);CHKERRQ(ierr);
   ierr = PCSetUp_MG(pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

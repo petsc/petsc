@@ -582,7 +582,8 @@ PetscErrorCode  VecDestroyVecs(PetscInt m,Vec *vv[])
   if (!*vv) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(**vv,VEC_CLASSID,1);
   PetscValidType(**vv,1);
-  if (m < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Trying to destroy negative number of vectors %D",m);  ierr = (*(**vv)->ops->destroyvecs)(m,*vv);CHKERRQ(ierr);
+  if (m < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Trying to destroy negative number of vectors %D",m);
+  ierr = (*(**vv)->ops->destroyvecs)(m,*vv);CHKERRQ(ierr);
   *vv = 0;
   PetscFunctionReturn(0);
 }

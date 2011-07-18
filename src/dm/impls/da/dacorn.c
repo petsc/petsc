@@ -147,7 +147,7 @@ PetscErrorCode  DMDAGetCoordinateDA(DM da,DM *cda)
   if (!dd->da_coordinates) {
     ierr = MPI_Comm_size(((PetscObject)da)->comm,&size);CHKERRQ(ierr);
     if (dd->dim == 1) {
-      PetscInt            s,m,*lc,l;
+      PetscInt         s,m,*lc,l;
       DMDABoundaryType bx;
       ierr = DMDAGetInfo(da,0,&m,0,0,0,0,0,0,&s,&bx,0,0,0);CHKERRQ(ierr);
       ierr = DMDAGetCorners(da,0,0,0,&l,0,0);CHKERRQ(ierr);
@@ -156,7 +156,7 @@ PetscErrorCode  DMDAGetCoordinateDA(DM da,DM *cda)
       ierr = DMDACreate1d(((PetscObject)da)->comm,bx,m,1,s,lc,&dd->da_coordinates);CHKERRQ(ierr);
       ierr = PetscFree(lc);CHKERRQ(ierr);
     } else if (dd->dim == 2) {
-      PetscInt            i,s,m,*lc,*ld,l,k,n,M,N;
+      PetscInt         i,s,m,*lc,*ld,l,k,n,M,N;
       DMDABoundaryType bx,by;
       ierr = DMDAGetInfo(da,0,&m,&n,0,&M,&N,0,0,&s,&bx,&by,0,0);CHKERRQ(ierr);
       ierr = DMDAGetCorners(da,0,0,0,&l,&k,0);CHKERRQ(ierr);
@@ -171,7 +171,7 @@ PetscErrorCode  DMDAGetCoordinateDA(DM da,DM *cda)
       ierr = DMDACreate2d(((PetscObject)da)->comm,bx,by,DMDA_STENCIL_BOX,m,n,M,N,2,s,lc,ld,&dd->da_coordinates);CHKERRQ(ierr);
       ierr = PetscFree2(lc,ld);CHKERRQ(ierr);
     } else if (dd->dim == 3) {
-      PetscInt            i,s,m,*lc,*ld,*le,l,k,q,n,M,N,P,p;
+      PetscInt         i,s,m,*lc,*ld,*le,l,k,q,n,M,N,P,p;
       DMDABoundaryType bx,by,bz;
       ierr = DMDAGetInfo(da,0,&m,&n,&p,&M,&N,&P,0,&s,&bx,&by,&bz,0);CHKERRQ(ierr);
       ierr = DMDAGetCorners(da,0,0,0,&l,&k,&q);CHKERRQ(ierr);

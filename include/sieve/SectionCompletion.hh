@@ -30,10 +30,10 @@ namespace ALE {
       // Creates a DiscreteTopology with the overlap information
       template<typename SendOverlap>
       static Obj<topology_type> createSendTopology(const Obj<SendOverlap>& sendOverlap) {
-        const Obj<typename SendOverlap::traits::baseSequence> ranks = sendOverlap->base();
+        const Obj<typename SendOverlap::baseSequence> ranks = sendOverlap->base();
         Obj<topology_type> topology = new topology_type(sendOverlap->comm(), sendOverlap->debug());
 
-        for(typename SendOverlap::traits::baseSequence::iterator r_iter = ranks->begin(); r_iter != ranks->end(); ++r_iter) {
+        for(typename SendOverlap::baseSequence::iterator r_iter = ranks->begin(); r_iter != ranks->end(); ++r_iter) {
           Obj<dsieve_type> sendSieve = new dsieve_type(sendOverlap->cone(*r_iter));
           topology->setPatch(*r_iter, sendSieve);
         }
@@ -41,10 +41,10 @@ namespace ALE {
       };
       template<typename RecvOverlap>
       static Obj<topology_type> createRecvTopology(const Obj<RecvOverlap>& recvOverlap) {
-        const Obj<typename RecvOverlap::traits::capSequence> ranks = recvOverlap->cap();
+        const Obj<typename RecvOverlap::capSequence> ranks = recvOverlap->cap();
         Obj<topology_type> topology = new topology_type(recvOverlap->comm(), recvOverlap->debug());
 
-        for(typename RecvOverlap::traits::capSequence::iterator r_iter = ranks->begin(); r_iter != ranks->end(); ++r_iter) {
+        for(typename RecvOverlap::capSequence::iterator r_iter = ranks->begin(); r_iter != ranks->end(); ++r_iter) {
           Obj<dsieve_type> recvSieve = new dsieve_type();
           const Obj<typename RecvOverlap::supportSequence>& points  = recvOverlap->support(*r_iter);
 
@@ -83,10 +83,10 @@ namespace ALE {
       template<typename RecvOverlap, typename Sizer, typename Section>
       static void setupReceive(const Obj<RecvOverlap>& recvOverlap, const Obj<Sizer>& recvSizer, const Obj<Section>& recvSection) {
         // Create section
-        const Obj<typename RecvOverlap::traits::capSequence> ranks = recvOverlap->cap();
+        const Obj<typename RecvOverlap::capSequence> ranks = recvOverlap->cap();
 
         recvSection->clear();
-        for(typename RecvOverlap::traits::capSequence::iterator r_iter = ranks->begin(); r_iter != ranks->end(); ++r_iter) {
+        for(typename RecvOverlap::capSequence::iterator r_iter = ranks->begin(); r_iter != ranks->end(); ++r_iter) {
           const Obj<typename RecvOverlap::supportSequence>& points  = recvOverlap->support(*r_iter);
           const Obj<typename Section::section_type>&        section = recvSection->getSection(*r_iter);
 

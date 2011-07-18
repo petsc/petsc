@@ -195,8 +195,8 @@ EXTERN_C_BEGIN
 PetscErrorCode  AOCreate_Basic(AO ao)
 {
   AO_Basic       *aobasic;
-  PetscMPIInt    *lens,size,rank,napp,*disp;
-  PetscInt       *allpetsc,*allapp,ip,ia,N,i,*petsc=PETSC_NULL,start;
+  PetscMPIInt    size,rank,count,*lens,*disp;
+  PetscInt       napp,*allpetsc,*allapp,ip,ia,N,i,*petsc=PETSC_NULL,start;
   PetscErrorCode ierr;
   IS             isapp=ao->isapp,ispetsc=ao->ispetsc;
   MPI_Comm       comm;
@@ -212,15 +212,17 @@ PetscErrorCode  AOCreate_Basic(AO ao)
   ierr = ISGetLocalSize(isapp,&napp);CHKERRQ(ierr);
   ierr = ISGetIndices(isapp,&myapp);CHKERRQ(ierr);
 
+  count = PetscMPIIntCast(napp);
+
   /* transmit all lengths to all processors */
   ierr = PetscObjectGetComm((PetscObject)isapp,&comm);CHKERRQ(ierr);
   ierr  = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   ierr  = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr  = PetscMalloc2(size,PetscMPIInt, &lens,size,PetscMPIInt,&disp);CHKERRQ(ierr);
-  ierr  = MPI_Allgather(&napp, 1, MPI_INT, lens, 1, MPI_INT, comm);CHKERRQ(ierr);
+  ierr  = MPI_Allgather(&count, 1, MPI_INT, lens, 1, MPI_INT, comm);CHKERRQ(ierr);
   N    =  0;
   for(i = 0; i < size; i++) {
-    disp[i] = N; /* = sum(lens[j]), j< i */
+    disp[i] = PetscMPIIntCast(N); /* = sum(lens[j]), j< i */
     N += lens[i];
   }
   ao->N = N;
@@ -239,9 +241,9 @@ PetscErrorCode  AOCreate_Basic(AO ao)
   } 
 
   /* get all indices on all processors */
-  ierr   = PetscMalloc2(N,PetscInt, &allpetsc,N,PetscInt,&allapp);CHKERRQ(ierr);
-  ierr   = MPI_Allgatherv(petsc, napp, MPIU_INT, allpetsc, lens, disp, MPIU_INT, comm);CHKERRQ(ierr);
-  ierr   = MPI_Allgatherv((void*)myapp, napp, MPIU_INT, allapp, lens, disp, MPIU_INT, comm);CHKERRQ(ierr);
+  ierr   = PetscMalloc2(N,PetscInt,&allpetsc,N,PetscInt,&allapp);CHKERRQ(ierr);
+  ierr   = MPI_Allgatherv(petsc, count, MPIU_INT, allpetsc, lens, disp, MPIU_INT, comm);CHKERRQ(ierr);
+  ierr   = MPI_Allgatherv((void*)myapp, count, MPIU_INT, allapp, lens, disp, MPIU_INT, comm);CHKERRQ(ierr);
   ierr   = PetscFree2(lens,disp);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_DEBUG)

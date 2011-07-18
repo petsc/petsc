@@ -96,6 +96,12 @@ struct _n_PetscUniformSection {
   PetscInt numDof;       /* Describes layout of storage, point --> (constant # of values, (p - pStart)*constant # of values) */
 };
 
+#if 0
+// Should I protect these for C++?
+extern PetscErrorCode PetscSectionGetDof(PetscUniformSection, PetscInt, PetscInt*);
+extern PetscErrorCode PetscSectionGetOffset(PetscUniformSection, PetscInt, PetscInt*);
+#endif
+
 /*S
   PetscSection - This is a mapping from DMMESH points to sets of values, which is
   our presentation of a fibre bundle.
@@ -115,6 +121,7 @@ struct _n_PetscSection {
 };
 
 extern PetscErrorCode PetscSectionCreate(MPI_Comm,PetscSection*);
+extern PetscErrorCode PetscSectionGetChart(PetscSection, PetscInt *, PetscInt *);
 extern PetscErrorCode PetscSectionSetChart(PetscSection, PetscInt, PetscInt);
 extern PetscErrorCode PetscSectionGetDof(PetscSection, PetscInt, PetscInt*);
 extern PetscErrorCode PetscSectionSetDof(PetscSection, PetscInt, PetscInt);
@@ -123,6 +130,8 @@ extern PetscErrorCode PetscSectionSetConstraintDof(PetscSection, PetscInt, Petsc
 extern PetscErrorCode PetscSectionGetConstraintIndices(PetscSection, PetscInt, PetscInt**);
 extern PetscErrorCode PetscSectionSetConstraintIndices(PetscSection, PetscInt, PetscInt*);
 extern PetscErrorCode PetscSectionSetUp(PetscSection);
+extern PetscErrorCode PetscSectionGetStorageSize(PetscSection, PetscInt*);
+extern PetscErrorCode PetscSectionGetOffset(PetscSection, PetscInt, PetscInt*);
 extern PetscErrorCode PetscSectionDestroy(PetscSection*);
 
 extern PetscErrorCode VecGetValuesSection(Vec, PetscSection, PetscInt, PetscScalar **);

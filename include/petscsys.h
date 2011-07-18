@@ -1178,6 +1178,7 @@ extern PetscErrorCode    PetscStrtolower(char[]);
 extern PetscErrorCode    PetscStrrchr(const char[],char,char *[]);
 extern PetscErrorCode    PetscStrstr(const char[],const char[],char *[]);
 extern PetscErrorCode    PetscStrrstr(const char[],const char[],char *[]);
+extern PetscErrorCode    PetscStrendswith(const char[],const char[],PetscBool*);
 extern PetscErrorCode    PetscStrallocpy(const char[],char *[]);
 extern PetscErrorCode    PetscStrreplace(MPI_Comm,const char[],char[],size_t);
 
@@ -1211,6 +1212,9 @@ extern  MPI_Op MPIU_MIN;
 #define MPIU_MIN MPI_MIN
 #endif
 extern PetscErrorCode  PetscMaxSum(MPI_Comm,const PetscInt[],PetscInt*,PetscInt*);
+
+extern PetscErrorCode MPILong_Send(void*,PetscInt,MPI_Datatype,PetscMPIInt,PetscMPIInt,MPI_Comm);
+extern PetscErrorCode MPILong_Recv(void*,PetscInt,MPI_Datatype,PetscMPIInt,PetscMPIInt,MPI_Comm);
 
 /*S
      PetscObject - any PETSc object, PetscViewer, Mat, Vec, KSP etc
@@ -1302,6 +1306,7 @@ extern PetscErrorCode  PetscOpenMPMalloc(MPI_Comm,size_t,void**);
 extern PetscErrorCode  PetscPythonInitialize(const char[],const char[]);
 extern PetscErrorCode  PetscPythonFinalize(void);
 extern PetscErrorCode  PetscPythonPrintError(void);
+extern PetscErrorCode  PetscPythonMonitorSet(PetscObject,const char[]);
 
 /*
      These are so that in extern C code we can caste function pointers to non-extern C
@@ -1363,6 +1368,7 @@ extern PetscErrorCode  PetscObjectDereference(PetscObject);
 extern PetscErrorCode  PetscObjectGetNewTag(PetscObject,PetscMPIInt *);
 extern PetscErrorCode  PetscObjectView(PetscObject,PetscViewer);
 extern PetscErrorCode  PetscObjectCompose(PetscObject,const char[],PetscObject);
+extern PetscErrorCode  PetscObjectRemoveReference(PetscObject,const char[]);
 extern PetscErrorCode  PetscObjectQuery(PetscObject,const char[],PetscObject *);
 extern PetscErrorCode  PetscObjectComposeFunction(PetscObject,const char[],const char[],void (*)(void));
 extern PetscErrorCode  PetscObjectSetFromOptions(PetscObject);
@@ -1426,6 +1432,7 @@ extern PetscErrorCode  PetscObjectRegisterDestroy(PetscObject);
 extern PetscErrorCode  PetscObjectRegisterDestroyAll(void);
 extern PetscErrorCode  PetscObjectName(PetscObject);
 extern PetscErrorCode  PetscTypeCompare(PetscObject,const char[],PetscBool *);
+extern PetscErrorCode  PetscTypeCompareAny(PetscObject,PetscBool*,const char[],...);
 extern PetscErrorCode  PetscRegisterFinalize(PetscErrorCode (*)(void));
 extern PetscErrorCode  PetscRegisterFinalizeAll(void);
 
@@ -1447,8 +1454,9 @@ typedef struct _n_PetscOList *PetscOList;
 
 extern PetscErrorCode  PetscOListDestroy(PetscOList*);
 extern PetscErrorCode  PetscOListFind(PetscOList,const char[],PetscObject*);
-extern PetscErrorCode  PetscOListReverseFind(PetscOList,PetscObject,char**);
+extern PetscErrorCode  PetscOListReverseFind(PetscOList,PetscObject,char**,PetscBool*);
 extern PetscErrorCode  PetscOListAdd(PetscOList *,const char[],PetscObject);
+extern PetscErrorCode  PetscOListRemoveReference(PetscOList *,const char[]);
 extern PetscErrorCode  PetscOListDuplicate(PetscOList,PetscOList *);
 
 /*
@@ -2043,12 +2051,12 @@ extern PetscErrorCode MPIU_File_read_all(MPI_File,void*,PetscMPIInt,MPI_Datatype
 #if defined(PETSC_USE_64BIT_INDICES)
 #define PetscMPIIntCheck(a)  if ((a) > PETSC_MPI_INT_MAX) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Message too long for MPI")
 #define PetscBLASIntCheck(a)  if ((a) > PETSC_BLAS_INT_MAX) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Array too long for BLAS/LAPACK")
-#define PetscMPIIntCast(a) (a);PetscMPIIntCheck(a)
-#define PetscBLASIntCast(a) (a);PetscBLASIntCheck(a)
+#define PetscMPIIntCast(a) (PetscMPIInt)(a);PetscMPIIntCheck(a)
+#define PetscBLASIntCast(a) (PetscBLASInt)(a);PetscBLASIntCheck(a)
 
 #if (PETSC_SIZEOF_SIZE_T == 4)
 #define PetscHDF5IntCheck(a)  if ((a) > PETSC_HDF5_INT_MAX) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Array too long for HDF5")
-#define PetscHDF5IntCast(a) (a);PetscHDF5IntCheck(a)
+#define PetscHDF5IntCast(a) (hsize_t)(a);PetscHDF5IntCheck(a)
 #else
 #define PetscHDF5IntCheck(a)
 #define PetscHDF5IntCast(a) a

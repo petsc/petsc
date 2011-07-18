@@ -81,13 +81,11 @@ static double	a[N+OFFSET],
 		c[N+OFFSET];
 /*double *a,*b,*c;*/
 
-static double	rmstime[4] = {0}, maxtime[4] = {0},
-		mintime[4] = {FLT_MAX,FLT_MAX,FLT_MAX,FLT_MAX};
+static double mintime[4] = {FLT_MAX,FLT_MAX,FLT_MAX,FLT_MAX};
 
-static char	*label[4] = {"Copy:      ", "Scale:     ",
-   "Add:       ", "Triad:     "};
+static const char     *label[4] = {"Copy:      ", "Scale:     ", "Add:       ", "Triad:     "};
 
-static double	bytes[4] = {
+static double   bytes[4] = {
    2 * sizeof(double) * N,
    2 * sizeof(double) * N,
    3 * sizeof(double) * N,
@@ -100,25 +98,25 @@ extern double second();
 
 int main(int argc,char **args)
    {
-   int			quantum, checktick();
-   int			BytesPerWord;
-   register int	j, k;
-   double		scalar, t, times[4][NTIMES];
+   int          quantum, checktick();
+   int          BytesPerWord;
+   register int j, k;
+   double       scalar, t, times[4][NTIMES],irate[4],rate[4];
+   int          rank;
 
    MPI_Init(&argc,&args);
+   MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+
    /* --- SETUP --- determine precision and check timing --- */
 
-   printf(HLINE);
-   BytesPerWord = sizeof(double);
-   printf("This system uses %d bytes per DOUBLE PRECISION word.\n",
-	BytesPerWord);
-
-   printf(HLINE);
-   printf("Array size = %d, Offset = %d\n" , N, OFFSET);
-   printf("Total memory required = %.1f MB.\n",
-	(3 * N * BytesPerWord) / 1048576.0);
-   printf("Each test is run %d times, but only\n", NTIMES);
-   printf("the *best* time for each is used.\n");
+   if (!rank) {
+     printf(HLINE);
+     printf("Array size = %d, Offset = %d\n" , N, OFFSET);
+     printf("Total memory required = %.1f MB.\n", (3 * N * BytesPerWord) / 1048576.0);
+     printf("Each test is run %d times, but only\n", NTIMES);
+     printf("the *best* time for each is used.\n");
+     printf(HLINE);
+   }
 
    /* Get initial value for system clock. */
 
@@ -126,90 +124,86 @@ int main(int argc,char **args)
    b = malloc(N*sizeof(double));
    c = malloc(N*sizeof(double));*/
    for (j=0; j<N; j++) {
-	a[j] = 1.0;
-	b[j] = 2.0;
-	c[j] = 0.0;
-	}
+        a[j] = 1.0;
+        b[j] = 2.0;
+        c[j] = 0.0;
+        }
 
-   printf(HLINE);
-
-   if  ( (quantum = checktick()) >= 1) 
-	printf("Your clock granularity/precision appears to be "
-	    "%d microseconds.\n", quantum);
-   else
-	printf("Your clock granularity appears to be "
-	    "less than one microsecond.\n");
+   if (!rank) {
+     if  ( (quantum = checktick()) >= 1) 
+       printf("Your clock granularity/precision appears to be %d microseconds.\n", quantum);
+     else
+        printf("Your clock granularity appears to be less than one microsecond.\n");
+   }
 
    t = second();
    for (j = 0; j < N; j++)
-	a[j] = 2.0E0 * a[j];
+        a[j] = 2.0E0 * a[j];
    t = 1.0E6 * (second() - t);
 
-   printf("Each test below will take on the order"
-	" of %d microseconds.\n", (int) t  );
-   printf("   (= %d clock ticks)\n", (int) (t/quantum) );
-   printf("Increase the size of the arrays if this shows that\n");
-   printf("you are not getting at least 20 clock ticks per test.\n");
+   if (!rank) {
+     printf("Each test below will take on the order of %d microseconds.\n", (int) t  );
+     printf("   (= %d clock ticks)\n", (int) (t/quantum) );
+     printf("Increase the size of the arrays if this shows that\n");
+     printf("you are not getting at least 20 clock ticks per test.\n");
+     printf(HLINE);
+   }
 
-   printf(HLINE);
 
-
-   /*	--- MAIN LOOP --- repeat test cases NTIMES times --- */
+   /*   --- MAIN LOOP --- repeat test cases NTIMES times --- */
 
    scalar = 3.0;
    for (k=0; k<NTIMES; k++)
-	{
+        {
    MPI_Barrier(MPI_COMM_WORLD);
-	times[0][k] = second();
+        times[0][k] = second();
+   /* should all these barriers be pulled outside of the time call? */
    MPI_Barrier(MPI_COMM_WORLD);
-	for (j=0; j<N; j++)
-	    c[j] = a[j];
+        for (j=0; j<N; j++)
+            c[j] = a[j];
    MPI_Barrier(MPI_COMM_WORLD);
-	times[0][k] = second() - times[0][k];
+        times[0][k] = second() - times[0][k];
 
-	times[1][k] = second();
+        times[1][k] = second();
    MPI_Barrier(MPI_COMM_WORLD);
-	for (j=0; j<N; j++)
-	    b[j] = scalar*c[j];
+        for (j=0; j<N; j++)
+            b[j] = scalar*c[j];
    MPI_Barrier(MPI_COMM_WORLD);
-	times[1][k] = second() - times[1][k];
+        times[1][k] = second() - times[1][k];
 
-	times[2][k] = second();
+        times[2][k] = second();
    MPI_Barrier(MPI_COMM_WORLD);
-	for (j=0; j<N; j++)
-	    c[j] = a[j]+b[j];
+        for (j=0; j<N; j++)
+            c[j] = a[j]+b[j];
    MPI_Barrier(MPI_COMM_WORLD);
-	times[2][k] = second() - times[2][k];
+        times[2][k] = second() - times[2][k];
 
-	times[3][k] = second();
+        times[3][k] = second();
    MPI_Barrier(MPI_COMM_WORLD);
-	for (j=0; j<N; j++)
-	    a[j] = b[j]+scalar*c[j];
+        for (j=0; j<N; j++)
+            a[j] = b[j]+scalar*c[j];
    MPI_Barrier(MPI_COMM_WORLD);
-	times[3][k] = second() - times[3][k];
+        times[3][k] = second() - times[3][k];
      }
 
-   /*	--- SUMMARY --- */
+   /*   --- SUMMARY --- */
 
-       for (k=0; k<NTIMES; k++)
-	{
-	for (j=0; j<4; j++)
-	    {
-	    rmstime[j] = rmstime[j] + (times[j][k] * times[j][k]);
-	    mintime[j] = MIN(mintime[j], times[j][k]);
-	    maxtime[j] = MAX(maxtime[j], times[j][k]);
-	    }
-	}
+   for (k=0; k<NTIMES; k++){
+        for (j=0; j<4; j++) {
+           mintime[j] = MIN(mintime[j], times[j][k]);
+        }
+      }
 
-   printf("Function      Rate (MB/s)   RMS time     Min time     Max time\n");
    for (j=0; j<4; j++) {
-	rmstime[j] = sqrt(rmstime[j]/(double)NTIMES);
+     irate[j] = 1.0E-06 * bytes[j]/mintime[j];
+   }
+   MPI_Reduce(irate,rate,4,MPI_DOUBLE,MPI_SUM,0,MPI_COMM_WORLD);
 
-	printf("%s%11.4f  %11.4f  %11.4f  %11.4f\n", label[j],
-	       1.0E-06 * bytes[j]/mintime[j],
-	       rmstime[j],
-	       mintime[j],
-	       maxtime[j]);
+   if (!rank) {
+     printf("Function      Rate (MB/s) \n");
+     for (j=0; j<4; j++) {
+        printf("%s%11.4f\n", label[j],rate[j]);
+     }
    }
    MPI_Finalize();
    return 0;

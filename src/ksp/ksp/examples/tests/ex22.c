@@ -131,7 +131,7 @@ PetscErrorCode test_solve_matgetvecs( void )
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscPrintf( PETSC_COMM_WORLD, "%s \n", __func__ );
+  PetscPrintf( PETSC_COMM_WORLD, "%s \n", PETSC_FUNCTION_NAME );
 
   n = 3;
   np = 2;
@@ -193,9 +193,8 @@ PetscErrorCode test_solve_matgetvecs( void )
 
   ierr = KSPCreate( PETSC_COMM_WORLD, &ksp );CHKERRQ(ierr);
   ierr = KSPSetOperators( ksp, A, A, SAME_NONZERO_PATTERN );CHKERRQ(ierr);
-  ierr = KSPSetType( ksp, "gmres" );CHKERRQ(ierr);
   ierr = KSPGetPC( ksp, &pc );CHKERRQ(ierr);
-  ierr = PCSetType( pc, "none" );CHKERRQ(ierr);
+  ierr = PCSetType( pc, PCNONE );CHKERRQ(ierr);
   ierr = KSPSetFromOptions( ksp );CHKERRQ(ierr);
 
   ierr = KSPSolve( ksp, b, x );CHKERRQ(ierr);

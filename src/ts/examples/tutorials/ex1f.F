@@ -124,7 +124,7 @@
 !    is the application context used by the call-back functions.
 !
 
-      call TSSetRHSFunction(ts,FormFunction,user,ierr) 
+      call TSSetRHSFunction(ts,PETSC_NULL_OBJECT,FormFunction,user,ierr)
 
 !
 !     Set the Jacobian matrix and the function used to compute 
@@ -175,9 +175,9 @@
 !
 !      Perform the solve. This is where the timestepping takes place.
 !
- 
-      call TSStep(ts,its,ftime,ierr) 
-   
+      call TSSolve(ts,x,ftime,ierr)
+      call TSGetTimeStepNumber(ts,its,ierr)
+
       write(6,100) its,ftime
  100  format('Number of pseudo time-steps ',i5,' final time ',1pe8.2)
 

@@ -83,7 +83,7 @@ typedef struct {
   Vec			*U;	/* Vectors that form the basis of the invariant subspace */
   PetscScalar	*T;	/* T=U^T*M^{-1}*A*U */
   PetscScalar	*TF;	/* The factors L and U from T = P*L*U */
-  PetscInt 		*InvP;	/* Permutation Vector from the LU factorization of T */
+  PetscBLASInt 		*InvP;	/* Permutation Vector from the LU factorization of T */
   PetscInt		neig;	/* number of eigenvalues to extract at each restart */
   PetscInt		r;		/* current number of deflated eigenvalues */
   PetscInt 		max_neig;	/* Maximum number of eigenvalues to deflate */

@@ -12,7 +12,7 @@ MANSEC           = SNES
 EXAMPLESC	 = ex1.c ex2.c ex3.c ex5.c ex5s.c ex6.c \
                    ex10.c ex14.c ex18.c ex19.c ex20.c ex21.c ex22.c \
                    ex23.c ex24.c ex25.c ex26.c ex27.c ex28.c ex29.c ex30.c ex31.c ex38.c ex42.c ex43.c \
-                   ex44.c ex45.c ex48.c ex49.c ex50.c ex47cu.cu ex54.c
+                   ex44.c ex45.c ex48.c ex49.c ex50.c ex47cu.cu ex54.c ex55.c ex58.c ex59.c ex60.c ex61.c
 EXAMPLESF	 = ex1f.F ex5f.F ex5f90.F ex5fs.F 
 EXAMPLESCH	 = ex43-44.h
 EXAMPLESFH       = ex5f.h
@@ -200,6 +200,27 @@ ex53: ex53.o  chkopts
 ex54: ex54.o  chkopts
 	-${CLINKER} -o ex54 ex54.o ${PETSC_SNES_LIB}
 	${RM} ex54.o
+ex55: ex55.o  chkopts
+	-${CLINKER} -o ex55 ex55.o ${PETSC_SNES_LIB}
+	${RM} ex55.o
+ex56: ex56.o  chkopts
+	-${CLINKER} -o ex56 ex56.o ${PETSC_SNES_LIB}
+	${RM} ex56.o
+ex57: ex57.o  chkopts
+	-${CLINKER} -o ex57 ex57.o ${PETSC_SNES_LIB}
+	${RM} ex57.o
+ex58: ex58.o  chkopts
+	-${CLINKER} -o ex58 ex58.o ${PETSC_SNES_LIB}
+	${RM} ex58.o
+ex59: ex59.o  chkopts
+	-${CLINKER} -o ex59 ex59.o ${PETSC_SNES_LIB}
+	${RM} ex59.o
+ex60: ex60.o  chkopts
+	-${CLINKER} -o ex60 ex60.o ${PETSC_SNES_LIB}
+	${RM} ex60.o
+ex61: ex61.o  chkopts
+	-${CLINKER} -o ex61 ex61.o ${PETSC_SNES_LIB}
+	${RM} ex61.o
 
 #--------------------------------------------------------------------------
 runex1:
@@ -258,77 +279,29 @@ runex3_4:
 	   else echo "Possible problem with ex3_4, diffs above"; fi; \
 	   ${RM} -f ex3_4.tmp
 runex5:
-	-@${MPIEXEC} -n 4 ./ex5 -snes_mf -da_processors_x 4 -da_processors_y 1 -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex5_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex5 -pc_type mg -ksp_monitor_short  -snes_view -pc_mg_levels 3 -pc_mg_galerkin -da_grid_x 17 -da_grid_y 17 \
+                    -mg_levels_ksp_monitor_short -snes_monitor_short -mg_levels_pc_type sor -pc_mg_type full  > ex5_1.tmp 2>&1; \
 	   if (${DIFF} output/ex5_1.out ex5_1.tmp) then true; \
-	   else echo "Possible problem with ex5_1, diffs above"; fi; \
+	   else echo "Possible problem with ex5, diffs above"; fi; \
 	   ${RM} -f ex5_1.tmp
 runex5_2:
-	-@${MPIEXEC} -n 4 ./ex5 -da_processors_x 2 -da_processors_y 2 -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex5_2.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex5   -pc_type mg -ksp_monitor_short  -snes_view -pc_mg_galerkin -snes_grid_sequence 3 \
+                           -mg_levels_ksp_monitor_short -snes_monitor_short -mg_levels_pc_type sor -pc_mg_type full  > ex5_2.tmp 2>&1; \
 	   if (${DIFF} output/ex5_2.out ex5_2.tmp) then true; \
 	   else echo "Possible problem with ex5_2, diffs above"; fi; \
 	   ${RM} -f ex5_2.tmp
 runex5_3:
-	-@${MPIEXEC} -n 4 ./ex5 -snes_mf -da_processors_x 2 -da_processors_y 2 -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex5_3.tmp 2>&1;\
+	-@${MPIEXEC} -n 2 ./ex5 -snes_grid_sequence 2 -snes_monitor_short -ksp_monitor_short -snes_mf_operator -ksp_converged_reason \
+           -snes_converged_reason -snes_view -pc_type mg    > ex5_3.tmp 2>&1; \
 	   if (${DIFF} output/ex5_3.out ex5_3.tmp) then true; \
 	   else echo "Possible problem with ex5_3, diffs above"; fi; \
 	   ${RM} -f ex5_3.tmp
 runex5_4:
-	-@${MPIEXEC} -n 4 ./ex5 -da_processors_x 2 -da_processors_y 2 -snes_monitor_short -pc_type asm \
-	   -pc_asm_blocks 4 -pc_asm_overlap 1 -ksp_gmres_cgs_refinement_type refine_always > ex5_4.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex5 -snes_grid_sequence 2 -snes_monitor_short -ksp_monitor_short -ksp_converged_reason \
+           -snes_converged_reason -snes_view -pc_type mg    > ex5_4.tmp 2>&1; \
 	   if (${DIFF} output/ex5_4.out ex5_4.tmp) then true; \
 	   else echo "Possible problem with ex5_4, diffs above"; fi; \
 	   ${RM} -f ex5_4.tmp
-runex5_5:
-	-@${MPIEXEC} -n 4 ./ex5 -da_processors_x 2 -da_processors_y 2 -snes_monitor_short -pc_type bjacobi \
-	   -snes_view -ksp_gmres_cgs_refinement_type refine_always > ex5_5.tmp 2>&1; \
-	   if (${DIFF} output/ex5_5.out ex5_5.tmp) then true; \
-	   else echo "Possible problem with ex5_5, diffs above"; fi; \
-	   ${RM} -f ex5_5.tmp
-runex5_6:
-	-@${MPIEXEC} -n 4 ./ex5 -snes_fd -da_processors_x 2 -da_processors_y 2 -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex5_6.tmp 2>&1; \
-	   if (${DIFF} output/ex5_6.out ex5_6.tmp) then true; \
-	   else echo "Possible problem with ex5_6, diffs above"; fi; \
-	   ${RM} -f ex5_6.tmp
-runex5_7:
-	-@${MPIEXEC} -n 3 ./ex5 -snes_fd  -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex5_7.tmp 2>&1;\
-	   if (${DIFF} output/ex5_7.out ex5_7.tmp) then true; \
-	   else echo "Possible problem with ex5_7, diffs above"; fi; \
-	   ${RM} -f ex5_7.tmp
-runex5_8:
-	-@${MPIEXEC} -n 2 ./ex5 -snes_monitor_solution -ksp_gmres_cgs_refinement_type refine_always > /dev/null 2>&1
-runex5_9:
-	-@${MPIEXEC} -n 4 ./ex5 -snes_mf -snes_monitor_short>ex5_9.tmp 2>&1;\
-	   if (${DIFF} output/ex5_9.out ex5_9.tmp) then true; \
-	   else echo "Possible problem with ex5_9, diffs above"; fi; \
-	   ${RM} -f ex5_9.tmp
-runex5_10:
-	-@${MPIEXEC} -n 2 ./ex5 -ksp_diagonal_scale -ksp_monitor_short -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex5_10.tmp 2>&1;\
-	   if (${DIFF} output/ex5_10.out ex5_10.tmp) then true; \
-	   else echo "Possible problem with ex5_10, diffs above"; fi; \
-	   ${RM} -f ex5_10.tmp
-runex5_11:
-	-@${MPIEXEC} -n 4 ./ex5 -snes_mf -da_processors_x 4 -da_processors_y 1 -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always -matlab_function > ex5_11.tmp 2>&1; \
-	   if (${DIFF} output/ex5_1.out ex5_11.tmp) then true; \
-	   else echo "Possible problem with ex5_11, diffs above"; fi; \
-	   ${RM} -f ex5_11.tmp
-runex5_13:
-	-@for F in " " -matlab_function ; do \
-            for J in " " -fd_jacobian -adic_jacobian; do \
-              ${MPIEXEC} -n 2 ./ex5 -snes_monitor_short $$F $$J > ex5_13.tmp 2>&1; \
-              if (${DIFF} output/ex5_13.out ex5_13.tmp) then true; \
-	      else echo "Possible problem with ex5_13, diffs above " $F $J; fi; \
-              ${RM} -f ex5_13.tmp; \
-              ${MPIEXEC} -n 2 ./ex5 -snes_monitor_short $$F $$J -adicmf_jacobian > ex5_13.tmp 2>&1; \
-              if (${DIFF} output/ex5_13.out ex5_13.tmp) then true; \
-	      else echo "Possible problem with ex5_13, diffs above " $F $J; fi; \
-              ${RM} -f ex5_13.tmp; \
-            done; \
-          done
-runex5_14:
-	-@${MPIEXEC} -n 4 ./ex5 -snes_monitor_short -fd_jacobian_ghosted > ex5_14.tmp 2>&1; \
-	   if (${DIFF} output/ex5_13.out ex5_14.tmp) then true; \
-	   else echo "Possible problem with ex5_14, diffs above "; fi; \
-           ${RM} -f ex5_14.tmp; 
 runex5f:
 	-@${MPIEXEC} -n 4 ./ex5f -snes_mf -da_processors_x 4 -da_processors_y 1 -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex5f_1.tmp 2>&1; \
 	   if (${DIFF} output/ex5f_1.out ex5f_1.tmp) then true; \
@@ -432,6 +405,30 @@ runex14_2:
 	   if (${DIFF} output/ex14_2.out ex14_2.tmp) then true; \
 	   else echo "Possible problem with ex14_2, diffs above"; fi; \
 	   ${RM} -f ex14_2.tmp
+runex50:
+	-@${MPIEXEC} -n 2 ./ex50 -da_refine 3 -snes_monitor_short -pc_type mg -ksp_type fgmres -pc_mg_type full > ex19_1.tmp 2>&1; \
+	   if (${DIFF} output/ex19_1.out ex19_1.tmp) then true; \
+	   else echo "Possible problem with ex50, diffs above"; fi; \
+	   ${RM} -f ex19_1.tmp
+runex50_3: #test pc_redundant
+	-@${MPIEXEC} -n 4 ./ex50 -da_refine 3 -snes_monitor_short -pc_type redundant -mat_type mpiaij -redundant_ksp_type preonly -redundant_pc_factor_mat_solver_package mumps -pc_redundant_number 2 > ex19_3.tmp 2>&1; \
+	   if (${DIFF} output/ex19_3.out ex19_3.tmp) then true; \
+	   else echo "Possible problem with ex50_3, diffs above"; fi; \
+	   ${RM} -f ex19_3.tmp
+runex50_4: #test pc_redundant
+	-@${MPIEXEC} -n 12 ./ex50 -da_refine 3 -snes_monitor_short -pc_type redundant -mat_type mpiaij -redundant_ksp_type preonly -redundant_pc_factor_mat_solver_package mumps -pc_redundant_number 5 > ex19_4.tmp 2>&1; \
+	   if (${DIFF} output/ex19_3.out ex19_4.tmp) then true; \
+	   else echo "Possible problem with ex50_4, diffs above"; fi; \
+	   ${RM} -f ex19_4.tmp
+runex50_5: #test different scatters
+	-@for A in " " -vecscatter_rsend -vecscatter_ssend -vecscatter_alltoall "-vecscatter_alltoall -vecscatter_nopack" -vecscatter_window; do \
+           for B in " " -vecscatter_merge ; do \
+             ${MPIEXEC} -n 4 ./ex50 -da_refine 3 -ksp_type fgmres -pc_type mg -pc_mg_type full -snes_monitor_short $$A $$B > ex19_5.tmp 2>&1; \
+	     if (${DIFF} output/ex19_5.out ex19_5.tmp) then true; \
+	     else echo "Possible problem with ex50_5 " $$A $$B " diffs above"; fi; \
+           done;\
+         done;\
+	 ${RM} -f ex19_5.tmp
 runex19:
 	-@${MPIEXEC} -n 2 ./ex19 -dmmg_nlevels 4 -snes_monitor_short  > ex19_1.tmp 2>&1; \
 	   if (${DIFF} output/ex19_1.out ex19_1.tmp) then true; \
@@ -627,7 +624,7 @@ runex19_16a:
 	   else echo "Possible problem with ex19_16a, diffs above"; fi; \
 	   ${RM} -f ex19_16a.tmp
 runex19_superlu:
-	-@${MPIEXEC} -n 1 ./ex19 -nlevels 1 -da_grid_x 20 -da_grid_y 20 -pc_type lu -pc_factor_mat_solver_package superlu > ex19.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex19 -nlevels 1 -da_gridx 20 -da_grid_y 20 -pc_type lu -pc_factor_mat_solver_package superlu > ex19.tmp 2>&1; \
 	   if (${DIFF} output/ex19_superlu.out ex19.tmp) then true; \
 	   else echo "Possible problem with ex19_superlu, diffs above"; fi; \
 	   ${RM} -f ex19.tmp
@@ -647,7 +644,7 @@ runex19_superlu_dist_2:
 	   else echo "Possible problem with ex19_superlu_dist, diffs above"; fi; \
 	   ${RM} -f ex19.tmp
 runex19_cusp:
-	-@${MPIEXEC} -n 1 ./ex19 da_vec_type cusp -da_mat_type aijcusp -pc_type none -dmmg_nlevels 1 -snes_monitor_short -snes_rtol 1.e-5 > ex19.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex19 -da_vec_type cusp -da_mat_type aijcusp -pc_type none -dmmg_nlevels 1 -snes_monitor_short -snes_rtol 1.e-5 > ex19.tmp 2>&1; \
 	   if (${DIFF} output/ex19_cusp.out ex19.tmp) then true; \
 	   else echo "Possible problem with ex19_cusp, diffs above"; fi; \
 	   ${RM} -f ex19.tmp
@@ -766,10 +763,50 @@ runex48_4:
 	   ${DIFF} output/ex48_4.out ex48.tmp || echo "Possible problem with ex48_4, diffs above"; \
 	   ${RM} -f ex48.tmp
 
+testex50: ex50.PETSc
+	-@if [ "${PETSC_WITH_BATCH}" != "" ]; then \
+           echo "Running with batch filesystem; to test run src/snes/examples/tutorials/ex50 with" ; \
+           echo "your systems batch system"; \
+        elif [ "${MPIEXEC}" = "/bin/false" ]; then \
+           echo "*mpiexec not found*. Please run src/snes/examples/tutorials/ex50 manually"; \
+	elif [ -f ex50 ]; then \
+           ${MPIEXEC} -n 1 ./ex50 -da_refine 3  > ex50_1.tmp 2>&1; \
+	   if (${DIFF} output/ex19_1.testout ex50_1.tmp > /dev/null 2>&1) then \
+           echo "C/C++ example src/snes/examples/tutorials/ex50 run successfully with 1 MPI process"; \
+	   else echo "Possible error running C/C++ src/snes/examples/tutorials/ex50 with 1 MPI process"; \
+           echo "See http://www.mcs.anl.gov/petsc/petsc-as/documentation/faq.html";\
+           cat ex50_1.tmp; fi; \
+	if [ "${MPIEXEC}" != "${PETSC_DIR}/bin/mpiexec.uni" ]; then \
+           ${MPIEXEC} -n 2 ./ex50 -da_refine 3   > ex50_1.tmp 2>&1; \
+	   if (${DIFF} output/ex19_1.testout ex50_1.tmp > /dev/null 2>&1) then \
+           echo "C/C++ example src/snes/examples/tutorials/ex50 run successfully with 2 MPI processes"; \
+	   else echo "Possible error running C/C++ src/snes/examples/tutorials/ex50 with 2 MPI processes"; \
+           echo "See http://www.mcs.anl.gov/petsc/petsc-as/documentation/faq.html";\
+           cat ex50_1.tmp; fi; fi; \
+        ${RM} -f ex50_1.tmp; \
+        ${MAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ex50.rm ; fi
+
+testx11ex50: ex50.PETSc
+	-@if [ "${PETSC_WITH_BATCH}" != "" ]; then \
+           echo "Running with batch filesystem; to test run src/snes/examples/tutorials/ex50 with" ; \
+           echo "your systems batch system"; \
+        elif [ "${MPIEXEC}" = "/bin/false" ]; then \
+           echo "*mpiexec not found*. Please run src/snes/examples/tutorials/ex50 manually"; \
+	elif [ -f ex50 ]; then \
+          D2=`grep "#define PETSC_HAVE_X11 1" ${PETSC_DIR}/${PETSC_ARCH}/include/petscconf.h`; \
+          if [ "$$?" = 0 ]; then \
+             ${MPIEXEC} -n 1 ./ex50 -da_refine 3 -snes_monitor_draw  > ex50_1.tmp 2>&1; \
+	     if (${DIFF} output/ex19_1.testout ex50_1.tmp > /dev/null 2>&1) then \
+             echo "Graphics example src/snes/examples/tutorials/ex50 run successfully with 1 MPI process"; \
+	     else echo "Possible error running Graphics examples src/snes/examples/tutorials/ex50 1 MPI process"; \
+             echo "See http://www.mcs.anl.gov/petsc/petsc-as/documentation/faq.html";\
+             cat ex50_1.tmp; fi; \
+	  else echo "PETSc installed without X11. Not running src/snes/examples/tutorials/ex50"; fi; \
+        ${RM} -f ex50_1.tmp; \
+        ${MAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ex50.rm ; fi
 
 TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2  runex2_3 ex2.rm ex3.PETSc runex3 \
-                                 runex3_2 runex3_3 runex3_4 ex3.rm ex5.PETSc runex5 runex5_2 runex5_3 runex5_4 \
-                                 runex5_5 runex5_6 runex5_7 runex5_9 runex5_13 runex5_14 ex5.rm \
+                                 runex3_2 runex3_3 runex3_4 ex3.rm ex5.PETSc runex5 runex5_2 runex5_3 runex5_4 ex5.rm\
                                  ex6.PETSc runex6 runex6_2 ex6.rm\
                                  ex14.PETSc runex14 runex14_2 ex14.rm ex19.PETSc runex19 runex19_2 runex19_5 \
                                  runex19_6 runex19_fieldsplit_2 runex19_fieldsplit_3 runex19_fieldsplit_4 \
@@ -781,23 +818,25 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2  runex2_3 ex2.
                                  ex25.rm ex28.PETSc runex28_0 runex28_1 runex28_2 runex28_3 ex28.rm ex29.PETSc ex29.rm \
                                  ex31.PETSc ex31.rm ex32.PETSc ex32.rm ex42.PETSc runex42 ex42.rm ex43.PETSc ex43.rm \
                                  ex44.PETSc runex44 runex44_2 ex44.rm ex45.PETSc runex45 runex45_2 runex45_3 ex45.rm \
-                                 ex48.PETSc runex48 runex48_2 runex48_3 runex48_4 ex48.rm ex54.PETSc ex54.rm
-TESTEXAMPLES_C_X11	       = ex5.PETSc runex5_8 runex5_10 ex5.rm 
+                                 ex48.PETSc runex48 runex48_2 runex48_3 runex48_4 ex48.rm \
+                                 ex54.PETSc ex54.rm
+TESTEXAMPLES_C_X11	       = 
 TESTEXAMPLES_FORTRAN	       = ex1f.PETSc runex1f ex1f.rm
 TESTEXAMPLES_C_NOCOMPLEX       = ex26.PETSc ex26.rm ex30.PETSc ex30.rm
 TESTEXAMPLES_FORTRAN_NOCOMPLEX = ex5f.PETSc runex5f runex5f_3 ex5f.rm
 TESTEXAMPLES_FORTRAN_MPIUNI    = ex1f.PETSc runex1f ex1f.rm
 TESTEXAMPLES_C_X11_MPIUNI      = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 ex3.rm ex6.PETSc \
-                                 runex6 runex6_2 ex6.rm ex5.PETSc ex5.rm ex14.PETSc ex14.rm 
+                                 runex6 runex6_2 ex6.rm  ex14.PETSc ex14.rm 
 TESTEXAMPLES_F90	       = ex5f90.PETSc runex5f90 runex5f90_2 runex5f90_3 runex5f90_4 runex5f90_5 ex5f90.rm
 TESTEXAMPLES_13		       = 
-TESTEXAMPLES_MATLAB_ENGINE     = ex5.PETSc runex5_11 runex5_13 ex5.rm
+TESTEXAMPLES_MATLAB_ENGINE     = 
 TESTEXAMPLES_AMS	       = 
 TESTEXAMPLES_ADIFOR	       = ex5f.PETSc runex5f_2 ex5f.rm
-TESTEXAMPLES_MUMPS             = ex19.PETSc runex19_3 runex19_4 runex19_fieldsplit_mumps runex19_fieldsplit_redundant ex19.rm 
-TESTEXAMPLES_SUPERLU           = ex19.PETSc runex19_superlu ex19.rm 
-TESTEXAMPLES_SUPERLU_DIST      = ex19.PETSc runex19_superlu_dist runex19_superlu_dist_2 ex19.rm 
-TESTEXAMPLES_PASTIX            = ex19.PETSc runex19_11 runex19_12 ex19.rm 
-TESTEXAMPLES_CUSP              = ex19.PETSc runex19_cusp ex19.rm ex47cu.PETSc runex47cu ex47cu.rm
+TESTEXAMPLES_MUMPS             = ex19.PETSc runex19_3 runex19_4 runex19_fieldsplit_mumps runex19_fieldsplit_redundant ex19.rm  \
+                                 ex50.PETSc runex50_3 runex50_4 runex50_fieldsplit_mumps runex50_fieldsplit_redundant ex50.rm 
+TESTEXAMPLES_SUPERLU           = ex19.PETSc runex19_superlu ex19.rm  ex50.PETSc runex50_superlu ex50.rm 
+TESTEXAMPLES_SUPERLU_DIST      = ex19.PETSc runex19_superlu_dist runex19_superlu_dist_2 ex19.rm  ex50.PETSc runex50_superlu_dist runex50_superlu_dist_2 ex50.rm
+TESTEXAMPLES_PASTIX            = ex19.PETSc runex19_11 runex19_12 ex19.rm  ex50.PETSc runex50_11 runex50_12 ex50.rm
+TESTEXAMPLES_CUSP              = ex19.PETSc runex19_cusp ex19.rm ex47cu.PETSc runex47cu ex47cu.rm ex50.PETSc runex50_cusp ex50.rm
 
 include ${PETSC_DIR}/conf/test

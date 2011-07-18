@@ -20,9 +20,6 @@ PetscErrorCode MPIBSTRM_create_bstrm(Mat A)
   /* */
   Mat_SeqBSTRM   *bstrmA, *bstrmB;
   PetscInt       MROW = Aij->mbs, bs = a->A->rmap->bs;
-
-  PetscInt       m = A->rmap->n;  /* Number of rows in the matrix. */
-  PetscInt       nd = a->A->cmap->n; /* number of columns in diagonal portion */
   PetscInt       *ai = Aij->i, *bi = Bij->i;
   PetscInt       i,j,k;
   PetscScalar    *aa = Aij->a,*ba = Bij->a;
@@ -33,14 +30,10 @@ PetscErrorCode MPIBSTRM_create_bstrm(Mat A)
   PetscScalar **bsp;
 
   PetscFunctionBegin;
-  printf(" --- in MPIBSTRM_create_bstrm, m=%d, nd=%d, bs=%d, MROW=%d\n", m,nd,bs,MROW); 
-
   rbs = cbs = bs;
   bs2 = bs*bs;
   blen = ai[MROW]-ai[0];
   slen = blen*bs;
-  
-  printf(" --- blen=%d, slen=%d\n", blen, slen); 
 
   ierr = PetscNewLog(a->A,Mat_SeqBSTRM,&bstrmA);CHKERRQ(ierr);
   a->A->spptr = (void *) bstrmA;
@@ -183,7 +176,6 @@ PetscErrorCode MatConvert_MPIBAIJ_MPIBSTRM(Mat A,const MatType type,MatReuse reu
   if (reuse == MAT_INITIAL_MATRIX) {
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   }
-  printf(" --- in MatConvert_MPIBAIJ_MPIBSTRM  -- 1 \n"); 
 
   ierr = PetscNewLog(B,   Mat_SeqBSTRM,&bstrm);CHKERRQ(ierr);
   B->spptr    = (void *) bstrm;

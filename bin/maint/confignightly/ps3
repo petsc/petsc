@@ -3,6 +3,6 @@
 set MACH=ps3
 set USR=sbalay
 set LOC=/home/sbalay/petsc-dev
-set CONF=arch-win-ms
+set CONF=arch-mswin
 set PURL=http://petsc.cs.iit.edu/petsc/petsc-dev
 set BURL=http://petsc.cs.iit.edu/petsc/BuildSystem

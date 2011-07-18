@@ -935,6 +935,69 @@ PetscErrorCode MatCUSPCopyToGPU(Mat A)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MatCUSPCopyFromGPU"
+PetscErrorCode MatCUSPCopyFromGPU(Mat A, CUSPMATRIX *Agpu)
+{
+  Mat_SeqAIJCUSP *cuspstruct = (Mat_SeqAIJCUSP *) A->spptr;
+  Mat_SeqAIJ     *a          = (Mat_SeqAIJ *) A->data;
+  PetscInt        m          = A->rmap->n;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  if (A->valid_GPU_matrix == PETSC_CUSP_UNALLOCATED) {
+    if (A->valid_GPU_matrix == PETSC_CUSP_UNALLOCATED) {
+      try {
+        cuspstruct->mat = Agpu;
+        if (a->compressedrow.use) {
+          //PetscInt *ii, *ridx;
+          SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Cannot handle row compression for GPU matrices");
+        } else {
+          PetscInt i;
+
+          if (m+1 != (PetscInt) cuspstruct->mat->row_offsets.size()) {SETERRQ2(PETSC_COMM_WORLD, PETSC_ERR_ARG_SIZ, "GPU matrix has %d rows, should be %d", cuspstruct->mat->row_offsets.size()-1, m);}
+          a->nz    = cuspstruct->mat->values.size();
+          a->maxnz = a->nz; /* Since we allocate exactly the right amount */
+          A->preallocated = PETSC_TRUE;
+          // Copy ai, aj, aa
+          if (a->singlemalloc) {
+            if (a->a) {ierr = PetscFree3(a->a,a->j,a->i);CHKERRQ(ierr);}
+          } else {
+            if (a->i) {ierr = PetscFree(a->i);CHKERRQ(ierr);}
+            if (a->j) {ierr = PetscFree(a->j);CHKERRQ(ierr);}
+            if (a->a) {ierr = PetscFree(a->a);CHKERRQ(ierr);}
+          }
+          ierr = PetscMalloc3(a->nz,PetscScalar,&a->a,a->nz,PetscInt,&a->j,m+1,PetscInt,&a->i);CHKERRQ(ierr);
+          ierr = PetscLogObjectMemory(A, a->nz*(sizeof(PetscScalar)+sizeof(PetscInt))+(m+1)*sizeof(PetscInt));CHKERRQ(ierr);
+          a->singlemalloc = PETSC_TRUE;
+          thrust::copy(cuspstruct->mat->row_offsets.begin(), cuspstruct->mat->row_offsets.end(), a->i);
+          thrust::copy(cuspstruct->mat->column_indices.begin(), cuspstruct->mat->column_indices.end(), a->j);
+          thrust::copy(cuspstruct->mat->values.begin(), cuspstruct->mat->values.end(), a->a);
+          // Setup row lengths
+          if (a->imax) {ierr = PetscFree2(a->imax,a->ilen);CHKERRQ(ierr);}
+          ierr = PetscMalloc2(m,PetscInt,&a->imax,m,PetscInt,&a->ilen);CHKERRQ(ierr);
+          ierr = PetscLogObjectMemory(A, 2*m*sizeof(PetscInt));CHKERRQ(ierr);
+          for(i = 0; i < m; ++i) {
+            a->imax[i] = a->ilen[i] = a->i[i+1] - a->i[i];
+          }
+          // a->diag?
+        }
+        cuspstruct->tempvec = new CUSPARRAY;
+        cuspstruct->tempvec->resize(m);
+      } catch(char *ex) {
+        SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "CUSP error: %s", ex);
+      }
+    }
+    // This assembly prevents resetting the flag to PETSC_CUSP_CPU and recopying
+    ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    A->valid_GPU_matrix = PETSC_CUSP_BOTH;
+  } else {
+    SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_ARG_WRONG, "Only valid for unallocated GPU matrices");
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MatGetVecs_SeqAIJCUSP"
 PetscErrorCode MatGetVecs_SeqAIJCUSP(Mat mat, Vec *right, Vec *left)
 {

@@ -155,6 +155,7 @@
       call DMDASetLocalAdiforFunction(da,                                             &
      &         g_FormFunctionLocal,ierr)
 #endif
+      call SNESSetDM(snes,da,ierr)
       call SNESSetFunction(snes,r,SNESDAFormFunction,da,ierr)
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Create matrix data structure; set Jacobian evaluation routine

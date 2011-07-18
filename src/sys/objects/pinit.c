@@ -88,6 +88,8 @@ extern PetscBool PetscBeganMPI;
      indicate that it did NOT start MPI so that the PetscFinalize() does not end MPI, thus allowing PetscInitialize() to 
      be called multiple times from MATLAB without the problem of trying to initialize MPI more than once.
 
+     Turns off PETSc signal handling because that can interact with MATLAB's signal handling causing random crashes.
+
 .seealso: PetscInitialize(), PetscInitializeFortran(), PetscInitializeNoArguments()
 */
 PetscErrorCode  PetscInitializeMatlab(int argc,char **args,const char *filename,const char *help)
@@ -98,6 +100,7 @@ PetscErrorCode  PetscInitializeMatlab(int argc,char **args,const char *filename,
 
   PetscFunctionBegin;
   ierr = PetscInitialize(&myargc,&myargs,filename,help);
+  ierr = PetscPopSignalHandler();CHKERRQ(ierr);
   PetscBeganMPI = PETSC_FALSE;
   PetscFunctionReturn(ierr);
 }
@@ -588,7 +591,8 @@ PetscErrorCode  PetscFreeArguments(char **args)
 .  -not_shared_tmp - each processor has own /tmp
 .  -tmp - alternative name of /tmp directory
 .  -get_total_flops - returns total flops done by all processors
--  -memory_info - Print memory usage at end of run
+.  -memory_info - Print memory usage at end of run
+-  -server <port> - start PETSc webserver (default port is 8080)
 
    Options Database Keys for Profiling:
    See the <a href="../../docs/manual.pdf#nameddest=ch_profiling">profiling chapter of the users manual</a> for details.
@@ -1016,7 +1020,7 @@ PetscErrorCode  PetscFinalize(void)
       } else if (nopt == 1) {
 	ierr = PetscPrintf(PETSC_COMM_WORLD,"There is one unused database option. It is:\n");CHKERRQ(ierr);
       } else {
-	ierr = PetscPrintf(PETSC_COMM_WORLD,"There are %d unused database options. They are:\n",nopt);CHKERRQ(ierr);
+	ierr = PetscPrintf(PETSC_COMM_WORLD,"There are %D unused database options. They are:\n",nopt);CHKERRQ(ierr);
       }
     } 
 #if defined(PETSC_USE_DEBUG)

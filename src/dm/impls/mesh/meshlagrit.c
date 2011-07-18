@@ -50,10 +50,10 @@ void FlipCellOrientation(pylith::int_array * const cells, const int numCells, co
 
 namespace ALE {
   namespace LaGriT {
-    void Builder::readInpFile(MPI_Comm comm, const std::string& filename, const int dim, const int numCorners, int& numElements, int *vertices[], int& numVertices, double *coordinates[]) {
+    void Builder::readInpFile(MPI_Comm comm, const std::string& filename, const int dim, const int numCorners, int& numElements, int *vertices[], int& numVertices, PetscReal *coordinates[]) {
       PetscViewer    viewer;
       FILE          *f;
-      double        *coords;
+      PetscReal     *coords;
       PetscInt      *verts;
       PetscInt       commRank;
       char           buf[2048];
@@ -117,9 +117,9 @@ namespace ALE {
       Obj<FlexMesh>             m = new FlexMesh(comm, dim, debug);
       Obj<FlexMesh::sieve_type> s = new FlexMesh::sieve_type(comm, debug);
       std::map<Mesh::point_type,Mesh::point_type> renumbering;
-      int    *cells;
-      double *coordinates;
-      int     numCells = 0, numVertices = 0, numCorners = dim+1;
+      int       *cells;
+      PetscReal *coordinates;
+      int        numCells = 0, numVertices = 0, numCorners = dim+1;
       PetscErrorCode ierr;
 
       mesh->setSieve(sieve);

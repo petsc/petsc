@@ -47,7 +47,7 @@ typedef void* dlsymbol_t;
 @*/
 PetscErrorCode  PetscDLOpen(const char name[],int flags,PetscDLHandle *handle)
 {
-  int        dlflags1,dlflags2;
+  PETSC_UNUSED int dlflags1,dlflags2; /* There are some preprocessor paths where these variables are set, but not used */
   dlhandle_t dlhandle;
 
   PetscFunctionBegin;
@@ -145,19 +145,16 @@ PetscErrorCode  PetscDLOpen(const char name[],int flags,PetscDLHandle *handle)
 @*/
 PetscErrorCode  PetscDLClose(PetscDLHandle *handle)
 {
-  dlhandle_t dlhandle;
 
   PetscFunctionBegin;
   PetscValidPointer(handle,1);
-
-  dlhandle = (dlhandle_t) *handle;
 
   /* 
      --- FreeLibrary ---
   */  
 #if defined(PETSC_HAVE_WINDOWS_H)
 #if defined(PETSC_HAVE_FREELIBRARY)
-  if (FreeLibrary(dlhandle) == 0) {
+  if (FreeLibrary((dlhandle_t)*handle) == 0) {
 #if defined(PETSC_HAVE_GETLASTERROR)
     char  *buff = NULL;
     DWORD erc   = GetLastError();
@@ -179,7 +176,7 @@ PetscErrorCode  PetscDLClose(PetscDLHandle *handle)
 #if defined(PETSC_HAVE_DLERROR)
   dlerror(); /* clear any previous error */
 #endif
-  if (dlclose(dlhandle) < 0) {
+  if (dlclose((dlhandle_t)*handle) < 0) {
 #if defined(PETSC_HAVE_DLERROR)
     const char *errmsg = dlerror();
 #else
@@ -229,7 +226,7 @@ PetscErrorCode  PetscDLClose(PetscDLHandle *handle)
 @*/
 PetscErrorCode  PetscDLSym(PetscDLHandle handle,const char symbol[],void **value)
 {
-  dlhandle_t dlhandle;
+  PETSC_UNUSED dlhandle_t dlhandle;
   dlsymbol_t dlsymbol;
 
   PetscFunctionBegin;

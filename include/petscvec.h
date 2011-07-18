@@ -261,7 +261,7 @@ extern PetscErrorCode  VecDestroyVecs(PetscInt, Vec*[]);
 extern PetscErrorCode  VecStrideNormAll(Vec,NormType,PetscReal[]);
 extern PetscErrorCode  VecStrideMaxAll(Vec,PetscInt [],PetscReal []);
 extern PetscErrorCode  VecStrideMinAll(Vec,PetscInt [],PetscReal []);
-extern PetscErrorCode  VecStrideScaleAll(Vec,PetscScalar[]);
+extern PetscErrorCode  VecStrideScaleAll(Vec,const PetscScalar[]);
 
 extern PetscErrorCode  VecStrideNorm(Vec,PetscInt,NormType,PetscReal*);
 PetscPolymorphicFunction(VecStrideNorm,(Vec x,PetscInt i),(x,i,NORM_2,&r),PetscReal,r)
@@ -548,6 +548,9 @@ extern PetscErrorCode PetscCUSPIndicesCreate(PetscInt,const PetscInt*,PetscCUSPI
 extern PetscErrorCode PetscCUSPIndicesDestroy(PetscCUSPIndices*);
 extern PetscErrorCode VecCUSPCopyToGPUSome_Public(Vec,PetscCUSPIndices);
 extern PetscErrorCode VecCUSPCopyFromGPUSome_Public(Vec,PetscCUSPIndices);
+
+extern PetscErrorCode  VecCreateSeqCUSP(MPI_Comm,PetscInt,Vec*);
+extern PetscErrorCode  VecCreateMPICUSP(MPI_Comm,PetscInt,PetscInt,Vec*);
 #endif
 
 extern PetscErrorCode  VecNestGetSubVecs(Vec,PetscInt*,Vec**);

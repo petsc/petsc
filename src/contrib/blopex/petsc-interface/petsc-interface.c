@@ -115,8 +115,9 @@ BlopexInt
 PETSC_DestroyVector( void *vvector )
 {
    PetscErrorCode ierr;
+   Vec v=(Vec)vvector;
 
-   ierr=VecDestroy((Vec) vvector); CHKERRQ(ierr);
+   ierr=VecDestroy(&v); CHKERRQ(ierr);
    return(0);
 }
 

@@ -1,5 +1,10 @@
 
 /*
+       THIS EXAMPLE IS DEPRECATED, USE ex45.c
+*/
+
+
+/*
 Laplacian in 3D. Modeled by the partial differential equation
 
    - Laplacian u = 1,0 < x,y,z < 1,

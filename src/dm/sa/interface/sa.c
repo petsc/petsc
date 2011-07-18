@@ -1093,13 +1093,13 @@ PetscErrorCode SAHunkAddData(SAHunk hunk, PetscInt length, const PetscInt *i, co
   if(mask != hunk->mask) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Data components %D incompatible with the SAHunk mask", mask,hunk->mask);
   if(hunk->length + length > hunk->maxlength) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Cannot add data of length %D, hunk only has %D space left", length, hunk->maxlength-hunk->length);
   if(mask & SA_I) {
-    ierr = PetscMemcpy(hunk->i+hunk->length, i, sizeof(PetscInt)*length);
+    ierr = PetscMemcpy(hunk->i+hunk->length, i, sizeof(PetscInt)*length);CHKERRQ(ierr);
   }
   if(mask & SA_J) {
-    ierr = PetscMemcpy(hunk->j+hunk->length, j, sizeof(PetscInt)*length);
+    ierr = PetscMemcpy(hunk->j+hunk->length, j, sizeof(PetscInt)*length);CHKERRQ(ierr);
   }
   if(mask & SA_W) {
-    ierr = PetscMemcpy(hunk->w+hunk->length, w, sizeof(PetscScalar)*length);
+    ierr = PetscMemcpy(hunk->w+hunk->length, w, sizeof(PetscScalar)*length);CHKERRQ(ierr);
   }
   hunk->length += length;
   PetscFunctionReturn(0);
@@ -1284,7 +1284,7 @@ PetscErrorCode SAAddHunk(SA chain, SAHunk hunk)
   if(chain->mask & (~(hunk->mask))) {
     SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Hunk mask %D incompatible with the array mask %D", hunk->mask, chain->mask);
   }
-  ierr = PetscMalloc(sizeof(struct _n_SALink), &link);
+  ierr = PetscMalloc(sizeof(struct _n_SALink), &link);CHKERRQ(ierr);
   link->hunk = hunk;
   ++(hunk->refcnt);
   if(chain->last) {
@@ -1432,14 +1432,13 @@ PetscErrorCode SAGetLength(SA chain, PetscInt *_length)
 PetscErrorCode SAGetData(SA chain, PetscInt *ia, PetscScalar *wa, PetscInt *ja) 
 {
   PetscErrorCode ierr;
-  PetscInt len, mask, off;
+  PetscInt mask, off;
   SALink link;
   SAHunk hunk;
 
   PetscFunctionBegin;
   PetscValidPointer(chain,1);
   mask = ((ia != PETSC_NULL) & (chain->mask&SA_I)) | ((ja != PETSC_NULL)<<1 & (chain->mask&SA_J)) | ((wa != PETSC_NULL)<<2 & (chain->mask&SA_W));
-  len = chain->length;
   off = 0;
   link = chain->first;
   while(link) {
@@ -1611,8 +1610,8 @@ PetscErrorCode SAAssemble(SA chain, PetscInt mask, PetscLayout layout, SA achain
   PetscInt idx, lastidx;
   PetscInt i, j, p;
   PetscInt    *owner = PETSC_NULL;
-  PetscInt    nsends, nrecvs;
-  PetscMPIInt    *plengths, *sstarts = PETSC_NULL;
+  PetscMPIInt nsends, nrecvs;
+  PetscMPIInt *plengths, *sstarts = PETSC_NULL;
   PetscMPIInt *rnodes, *rlengths, *rstarts = PETSC_NULL, rlengthtotal;
   PetscInt    **rindices = PETSC_NULL, *sindices= PETSC_NULL;
   PetscScalar *svalues = PETSC_NULL, **rvalues = PETSC_NULL;

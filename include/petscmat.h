@@ -29,33 +29,33 @@ E*/
 #define MatType char*
 #define MATSAME            "same"
 #define MATMAIJ            "maij"
-#define MATSEQMAIJ           "seqmaij"
-#define MATMPIMAIJ           "mpimaij"
+#define MATSEQMAIJ         "seqmaij"
+#define MATMPIMAIJ         "mpimaij"
 #define MATIS              "is"
 #define MATAIJ             "aij"
-#define MATSEQAIJ            "seqaij"
+#define MATSEQAIJ          "seqaij"
 #define MATSEQPTHREADAIJ     "seqpthreadaij"
-#define MATMPIAIJ            "mpiaij"
-#define MATAIJCRL              "aijcrl"
-#define MATSEQAIJCRL             "seqaijcrl"
-#define MATMPIAIJCRL             "mpiaijcrl"
-#define MATAIJCUSP             "aijcusp"
-#define MATSEQAIJCUSP            "seqaijcusp"
-#define MATMPIAIJCUSP            "mpiaijcusp"
-#define MATAIJPERM             "aijperm"
-#define MATSEQAIJPERM            "seqaijperm"
-#define MATMPIAIJPERM            "mpiaijperm"
+#define MATMPIAIJ          "mpiaij"
+#define MATAIJCRL          "aijcrl"
+#define MATSEQAIJCRL       "seqaijcrl"
+#define MATMPIAIJCRL       "mpiaijcrl"
+#define MATAIJCUSP         "aijcusp"
+#define MATSEQAIJCUSP      "seqaijcusp"
+#define MATMPIAIJCUSP      "mpiaijcusp"
+#define MATAIJPERM         "aijperm"
+#define MATSEQAIJPERM      "seqaijperm"
+#define MATMPIAIJPERM      "mpiaijperm"
 #define MATSHELL           "shell"
 #define MATDENSE           "dense"
-#define MATSEQDENSE          "seqdense"
-#define MATMPIDENSE          "mpidense"
+#define MATSEQDENSE        "seqdense"
+#define MATMPIDENSE        "mpidense"
 #define MATBAIJ            "baij"
-#define MATSEQBAIJ           "seqbaij"
-#define MATMPIBAIJ           "mpibaij"
+#define MATSEQBAIJ         "seqbaij"
+#define MATMPIBAIJ         "mpibaij"
 #define MATMPIADJ          "mpiadj"
 #define MATSBAIJ           "sbaij"
-#define MATSEQSBAIJ          "seqsbaij"
-#define MATMPISBAIJ          "mpisbaij"
+#define MATSEQSBAIJ        "seqsbaij"
+#define MATMPISBAIJ        "mpisbaij"
 
 #define MATSEQBSTRM        "seqbstrm"
 #define MATMPIBSTRM        "mpibstrm"
@@ -72,8 +72,8 @@ E*/
 #define MATBLOCKMAT        "blockmat"
 #define MATCOMPOSITE       "composite"
 #define MATFFT             "fft"
-#define MATFFTW              "fftw"
-#define MATSEQCUFFT          "seqcufft"
+#define MATFFTW            "fftw"
+#define MATSEQCUFFT        "seqcufft"
 #define MATTRANSPOSEMAT    "transpose"
 #define MATSCHURCOMPLEMENT "schurcomplement"
 #define MATPYTHON          "python"
@@ -238,7 +238,7 @@ extern PetscFList MatPartitioningList;
 
 .seealso: MatCopy(), KSPSetOperators(), PCSetOperators()
 E*/
-typedef enum {SAME_NONZERO_PATTERN,DIFFERENT_NONZERO_PATTERN,SAME_PRECONDITIONER,SUBSET_NONZERO_PATTERN} MatStructure;
+typedef enum {DIFFERENT_NONZERO_PATTERN,SUBSET_NONZERO_PATTERN,SAME_NONZERO_PATTERN,SAME_PRECONDITIONER} MatStructure;
 
 extern PetscErrorCode  MatCreateSeqDense(MPI_Comm,PetscInt,PetscInt,PetscScalar[],Mat*);
 extern PetscErrorCode  MatCreateMPIDense(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscScalar[],Mat*); 
@@ -681,6 +681,9 @@ PETSC_STATIC_INLINE PetscErrorCode MatGetValue(Mat v,PetscInt i,PetscInt j,Petsc
 
 PETSC_STATIC_INLINE PetscErrorCode MatSetValueLocal(Mat v,PetscInt i,PetscInt j,PetscScalar va,InsertMode mode) {return MatSetValuesLocal(v,1,&i,1,&j,&va,mode);}
 
+extern PetscErrorCode MatSeqAIJSetValuesBatch(Mat, PetscInt, PetscInt, PetscInt *, PetscScalar *);
+extern PetscErrorCode MatMPIAIJSetValuesBatch(Mat, PetscInt, PetscInt, PetscInt *, PetscScalar *);
+
 /*MC
    MatPreallocateInitialize - Begins the block of code that will count the number of nonzeros per
        row in a matrix providing the data that one can use to correctly preallocate the matrix.
@@ -1000,7 +1003,7 @@ M*/
 
 
 /* Routines unique to particular data structures */
-extern PetscErrorCode  MatShellGetContext(Mat,void **);
+extern PetscErrorCode  MatShellGetContext(Mat,void *);
 PetscPolymorphicFunction(MatShellGetContext,(Mat A),(A,&t),void*,t)
 
 extern PetscErrorCode  MatInodeAdjustForInodes(Mat,IS*,IS*);
@@ -1739,12 +1742,27 @@ extern PetscErrorCode  MatMumpsSetIcntl(Mat,PetscInt,PetscInt);
 extern PetscErrorCode  MatSuperluSetILUDropTol(Mat,PetscReal);
 #endif
 
+#if defined(PETSC_HAVE_CUSP)
+extern PetscErrorCode  MatCreateSeqAIJCUSP(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscInt[],Mat*);
+extern PetscErrorCode  MatCreateMPIAIJCUSP(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],PetscInt,const PetscInt[],Mat*);
+#endif
+
+/* 
+   PETSc interface to FFTW
+*/
+#if defined(PETSC_HAVE_FFTW)
+extern PetscErrorCode InputTransformFFT(Mat,Vec,Vec);
+extern PetscErrorCode OutputTransformFFT(Mat,Vec,Vec);
+extern PetscErrorCode MatGetVecsFFTW(Mat,Vec*,Vec*,Vec*);
+#endif
+
 extern PetscErrorCode MatCreateNest(MPI_Comm,PetscInt,const IS[],PetscInt,const IS[],const Mat[],Mat*);
 extern PetscErrorCode MatNestGetSize(Mat,PetscInt*,PetscInt*);
 extern PetscErrorCode MatNestGetSubMats(Mat,PetscInt*,PetscInt*,Mat***);
 extern PetscErrorCode MatNestGetSubMat(Mat,PetscInt,PetscInt,Mat*);
 extern PetscErrorCode MatNestSetVecType(Mat,const VecType);
 extern PetscErrorCode MatNestSetSubMats(Mat,PetscInt,const IS[],PetscInt,const IS[],const Mat[]);
+extern PetscErrorCode MatNestSetSubMat(Mat,PetscInt,PetscInt,Mat);
 
 PETSC_EXTERN_CXX_END
 #endif

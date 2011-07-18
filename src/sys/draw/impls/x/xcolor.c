@@ -80,11 +80,8 @@ PetscErrorCode PetscDrawSetUpColormap_Shared(Display *display,int screen,Visual 
   PetscBool      fast = PETSC_FALSE;
 
   PetscFunctionBegin;
-  if (colormap) {
-    gColormap = colormap;
-  } else {
-    gColormap   = DefaultColormap(display,screen);
-  }
+  if (colormap) gColormap = colormap;
+  else          gColormap   = DefaultColormap(display,screen);
 
   /* set the basic colors into the color map */
   for (i=0; i<PETSC_DRAW_BASIC_COLORS; i++) {
@@ -133,11 +130,8 @@ PetscErrorCode PetscDrawSetUpColormap_Private(Display *display,int screen,Visual
 
   PetscFunctionBegin;
 
-  if (colormap) {
-    gColormap = colormap;
-  } else {
-    gColormap = XCreateColormap(display,RootWindow(display,screen),visual,AllocAll);
-  }
+  if (colormap)  gColormap = colormap;
+  else           gColormap = XCreateColormap(display,RootWindow(display,screen),visual,AllocAll);
 
   cmap_base = 0;
   ierr = PetscMemzero(cmap_pixvalues_used,256*sizeof(PetscBool));CHKERRQ(ierr);
@@ -145,7 +139,7 @@ PetscErrorCode PetscDrawSetUpColormap_Private(Display *display,int screen,Visual
   /* set the basic colors into the color map */
   for (i=0; i<PETSC_DRAW_BASIC_COLORS; i++) {
     XParseColor(display,gColormap,colornames[i],&colordef);
-      /* try to allocate the color in the default-map */
+    /* try to allocate the color in the default-map */
     found = XAllocColor(display,defaultmap,&colordef); 
     /* use it, if it it exists and is not already used in the new colormap */
     if (found && colordef.pixel < 256  && !cmap_pixvalues_used[colordef.pixel]) {
@@ -200,7 +194,6 @@ PetscErrorCode PetscDrawSetUpColormap_X(Display *display,int screen,Visual *visu
   XVisualInfo    vinfo;
 
   PetscFunctionBegin;
-
   /* 
      This is wrong; it needs to take the value from the visual 
   */
@@ -209,7 +202,6 @@ PetscErrorCode PetscDrawSetUpColormap_X(Display *display,int screen,Visual *visu
   ierr = PetscOptionsGetBool(PETSC_NULL,"-draw_x_shared_colormap",&sharedcolormap,PETSC_NULL);CHKERRQ(ierr);
   /*
         Need to determine if window supports allocating a private colormap,
-    if not, set flag to 1
   */
   if (XMatchVisualInfo(display,screen,24,StaticColor,&vinfo) ||
       XMatchVisualInfo(display,screen,24,TrueColor,&vinfo)   ||
@@ -226,7 +218,6 @@ PetscErrorCode PetscDrawSetUpColormap_X(Display *display,int screen,Visual *visu
   } else {
     ierr = PetscDrawSetUpColormap_Private(display,screen,visual,colormap);CHKERRQ(ierr);
   }
-  
   PetscFunctionReturn(0);
 }
 
@@ -284,18 +275,14 @@ PetscErrorCode XiSetVisualClass(PetscDraw_X* XiWin)
   PetscFunctionBegin;
   if (XMatchVisualInfo(XiWin->disp,XiWin->screen,24,DirectColor,&vinfo)) {
     XiWin->vis    = vinfo.visual;
-    PetscFunctionReturn(0);
-  }
-  if (XMatchVisualInfo(XiWin->disp,XiWin->screen,8,PseudoColor,&vinfo)) {
+  } else if (XMatchVisualInfo(XiWin->disp,XiWin->screen,8,PseudoColor,&vinfo)) {
     XiWin->vis    = vinfo.visual;
-    PetscFunctionReturn(0);
-  }
-  if (XMatchVisualInfo(XiWin->disp,XiWin->screen,
+  } else if (XMatchVisualInfo(XiWin->disp,XiWin->screen,
     DefaultDepth(XiWin->disp,XiWin->screen),PseudoColor,&vinfo)) {
     XiWin->vis    = vinfo.visual;
-    PetscFunctionReturn(0);
+  } else {
+    XiWin->vis    = DefaultVisual(XiWin->disp,XiWin->screen);
   }
-  XiWin->vis    = DefaultVisual(XiWin->disp,XiWin->screen);
   PetscFunctionReturn(0);
 }
 
@@ -330,8 +317,6 @@ PetscErrorCode XiGetBaseColor(PetscDraw_X* XiWin,PixVal* white_pix,PixVal* black
   *black_pix  = XiWin->cmapping[PETSC_DRAW_BLACK];
   PetscFunctionReturn(0);
 }
-
-
 
 /*
     This routine returns the pixel value for the specified color
@@ -374,60 +359,3 @@ PixVal XiGetColor(PetscDraw_X* XiWin,char *name,int is_fore)
   PetscFunctionReturn(pixval);
 }
 
-/*
-   This routine takes a named color and returns a color that is either
-   lighter or darker
- */
-#undef __FUNCT__  
-#define __FUNCT__ "XiSimColor" 
-PixVal XiSimColor(PetscDraw_X *XiWin,PixVal pixel,int intensity,int is_fore)
-{
-  XColor   colordef,colorsdef;
-  char     RGBcolor[20];
-  PixVal   red,green,blue;
-
-  PetscFunctionBegin;
-  colordef.pixel = pixel;
-  XQueryColor(XiWin->disp,XiWin->cmap,&colordef);
-  /* Adjust the color value up or down.  Get the RGB values for the color */
-  red   = colordef.red;
-  green = colordef.green;
-  blue  = colordef.blue;
-#define WHITE_AMOUNT 5000
-  if (intensity > 0) {
-    /* Add white to the color */
-    red   = PetscMin(65535,red + WHITE_AMOUNT);
-    green = PetscMin(65535,green + WHITE_AMOUNT);
-    blue  = PetscMin(65535,blue + WHITE_AMOUNT);
-  } else {
-    /* Subtract white from the color */
-    red   = (red   < WHITE_AMOUNT) ? 0 : red - WHITE_AMOUNT;
-    green = (green < WHITE_AMOUNT) ? 0 : green - WHITE_AMOUNT;
-    blue  = (blue  < WHITE_AMOUNT) ? 0 : blue - WHITE_AMOUNT;
-  }
-  sprintf(RGBcolor,"rgb:%4.4x/%4.4x/%4.4x",(unsigned int)red,
-                     (unsigned int)green,(unsigned int)blue);
-  XLookupColor(XiWin->disp,XiWin->cmap,RGBcolor,&colordef,&colorsdef);
-  PetscFunctionReturn(colorsdef.pixel);
-}
-
-/*
-  XiSetCmapLight - Create rgb values from a single color by adding white
-  
-  The initial color is (red[0],green[0],blue[0]).
-*/
-#undef __FUNCT__  
-#define __FUNCT__ "XiSetCmapLight" 
-PetscErrorCode XiSetCmapLight(unsigned char *red,unsigned char *green,unsigned char *blue,int mapsize)
-{
-  int     i ;
-
-  PetscFunctionBegin;
-  for (i=1; i<mapsize-1; i++) {
-      blue[i]  = i*(255-(int)blue[0])/(mapsize-2)+blue[0] ;
-      green[i] = i*(255-(int)green[0])/(mapsize-2)+green[0] ;
-      red[i]   = i*(255-(int)red[0])/(mapsize-2)+red[0] ;
-  }
-  red[mapsize-1] = green[mapsize-1] = blue[mapsize-1] = 255;
-  PetscFunctionReturn(0);
-}

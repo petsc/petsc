@@ -54,11 +54,10 @@ PetscErrorCode  TSSetType(TS ts,const TSType type)
 
   ierr = PetscFListFind( TSList,((PetscObject)ts)->comm, type,PETSC_TRUE, (void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown TS type: %s", type);
-  ierr = KSPDestroy(&ts->ksp);CHKERRQ(ierr);
-  ierr = SNESDestroy(&ts->snes);CHKERRQ(ierr);
   if (ts->ops->destroy) {
     ierr = (*(ts)->ops->destroy)(ts);CHKERRQ(ierr);
   }
+  ierr = PetscMemzero(ts->ops,sizeof(*ts->ops));CHKERRQ(ierr);
   ts->setupcalled = PETSC_FALSE;
   ierr = PetscObjectChangeTypeName((PetscObject)ts, type);CHKERRQ(ierr);
   ierr = (*r)(ts);CHKERRQ(ierr);

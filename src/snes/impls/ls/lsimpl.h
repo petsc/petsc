@@ -18,7 +18,7 @@ typedef struct {
   void                     *precheck;                                                        /* user-defined step-checking context (optional) */
   PetscErrorCode           (*postcheckstep)(SNES,Vec,Vec,Vec,void*,PetscBool *,PetscBool *); /* step-checking routine (optional) */
   void                     *postcheck;                                                       /* user-defined step-checking context (optional) */
-  PetscViewerASCIIMonitor  monitor;
+  PetscViewer              monitor;
 } SNES_LS;
 
 #endif

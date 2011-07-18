@@ -33,11 +33,14 @@ int main(int argc,char **args)
   PetscInt       i,n = 10,col[3],its;
   PetscMPIInt    size;
   PetscScalar    neg_one = -1.0,one = 1.0,value[3];
+  PetscBool      nonzeroguess = PETSC_FALSE;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_COMM_WORLD,1,"This is a uniprocessor example only!");
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-nonzero_guess",&nonzeroguess,PETSC_NULL);CHKERRQ(ierr);
+
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
          Compute the matrix and right-hand-side vector that define
@@ -123,6 +126,12 @@ int main(int argc,char **args)
     routines.
   */
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
+
+  if (nonzeroguess) {
+    PetscScalar p = .5;
+    ierr = VecSet(x,p);CHKERRQ(ierr);
+    ierr = KSPSetInitialGuessNonzero(ksp,PETSC_TRUE);CHKERRQ(ierr);
+  }
  
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
                       Solve the linear system

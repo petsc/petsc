@@ -111,6 +111,7 @@ extern PetscErrorCode   DMGetLocalVector(DM,Vec *);
 extern PetscErrorCode   DMRestoreLocalVector(DM,Vec *);
 extern PetscErrorCode   DMGetGlobalVector(DM,Vec *);
 extern PetscErrorCode   DMRestoreGlobalVector(DM,Vec *);
+extern PetscErrorCode   DMClearGlobalVectors(DM);
 extern PetscErrorCode   DMGetLocalToGlobalMapping(DM,ISLocalToGlobalMapping*);
 extern PetscErrorCode   DMGetLocalToGlobalMappingBlock(DM,ISLocalToGlobalMapping*);
 extern PetscErrorCode   DMGetBlockSize(DM,PetscInt*);
@@ -135,8 +136,8 @@ extern PetscErrorCode   DMConvert(DM,const DMType,DM*);
 
 extern PetscErrorCode   DMSetOptionsPrefix(DM,const char []);
 extern PetscErrorCode   DMSetVecType(DM,const VecType);
-extern PetscErrorCode   DMSetContext(DM,void*);
-extern PetscErrorCode   DMGetContext(DM,void**);
+extern PetscErrorCode   DMSetApplicationContext(DM,void*);
+extern PetscErrorCode   DMGetApplicationContext(DM,void*);
 extern PetscErrorCode   DMSetInitialGuess(DM,PetscErrorCode (*)(DM,Vec));
 extern PetscErrorCode   DMSetFunction(DM,PetscErrorCode (*)(DM,Vec,Vec));
 extern PetscErrorCode   DMSetJacobian(DM,PetscErrorCode (*)(DM,Vec,Mat,Mat,MatStructure *));
@@ -148,6 +149,7 @@ extern PetscErrorCode   DMComputeFunction(DM,Vec,Vec);
 extern PetscErrorCode   DMComputeJacobian(DM,Vec,Mat,Mat,MatStructure *);
 extern PetscErrorCode   DMComputeJacobianDefault(DM,Vec,Mat,Mat,MatStructure *);
 
+extern PetscErrorCode   DMGetRefineLevel(DM,PetscInt*);
 extern PetscErrorCode   DMFinalizePackage(void);
 
 typedef struct NLF_DAAD* NLF;

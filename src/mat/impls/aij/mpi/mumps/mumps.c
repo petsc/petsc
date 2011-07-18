@@ -99,7 +99,7 @@ PetscErrorCode MatConvertToTriples_seqbaij_seqaij(Mat A,int shift,MatReuse reuse
 {
   Mat_SeqBAIJ        *aa=(Mat_SeqBAIJ*)A->data;
   const PetscInt     *ai,*aj,*ajj,bs=A->rmap->bs,bs2=aa->bs2,M=A->rmap->N/bs;
-  PetscInt           nz,idx=0,rnz,i,j,k,m,ii;
+  PetscInt           nz,idx=0,rnz,i,j,k,m;
   PetscErrorCode     ierr;
   PetscInt           *row,*col;
 
@@ -113,7 +113,6 @@ PetscErrorCode MatConvertToTriples_seqbaij_seqaij(Mat A,int shift,MatReuse reuse
     col  = row + nz;
 
     for(i=0; i<M; i++) {
-      ii = 0;
       ajj = aj + ai[i];
       rnz = ai[i+1] - ai[i];
       for(k=0; k<rnz; k++) {
@@ -578,7 +577,7 @@ PetscErrorCode MatSolveTranspose_MUMPS(Mat A,Vec b,Vec x)
 
   PetscFunctionBegin; 
   lu->id.ICNTL(9) = 0;
-  ierr = MatSolve_MUMPS(A,b,x);
+  ierr = MatSolve_MUMPS(A,b,x);CHKERRQ(ierr);
   lu->id.ICNTL(9) = 1;
   PetscFunctionReturn(0);
 }

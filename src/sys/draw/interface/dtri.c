@@ -58,7 +58,7 @@ PetscErrorCode  PetscDrawTriangle(PetscDraw draw,PetscReal x1,PetscReal y_1,Pets
 @*/
 PetscErrorCode  PetscDrawScalePopup(PetscDraw popup,PetscReal min,PetscReal max)
 {
-  PetscReal      xl = 0.0,yl = 0.0,xr = 1.0,yr = 1.0,value;
+  PetscReal      xl = 0.0,yl = 0.0,xr = 2.0,yr = 1.0,value;
   PetscErrorCode ierr;
   int            i,c = PETSC_DRAW_BASIC_COLORS,rank;
   char           string[32];
@@ -78,7 +78,7 @@ PetscErrorCode  PetscDrawScalePopup(PetscDraw popup,PetscReal min,PetscReal max)
     value = min + i*(max-min)/9.0;
     /* look for a value that should be zero, but is not due to round-off */
     if (PetscAbsReal(value) < 1.e-10 && max-min > 1.e-6) value = 0.0;
-    sprintf(string,"%g",(double)value);
+    sprintf(string,"%18.16e",(double)value);
     ierr = PetscDrawString(popup,.2,.02 + i/10.0,PETSC_DRAW_BLACK,string);CHKERRQ(ierr);
   }
   ierr = PetscDrawSetTitle(popup,"Contour Scale");CHKERRQ(ierr);

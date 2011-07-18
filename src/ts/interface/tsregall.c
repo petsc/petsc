@@ -11,6 +11,7 @@ extern PetscErrorCode  TSCreate_Alpha(TS);
 extern PetscErrorCode  TSCreate_GL(TS);
 extern PetscErrorCode  TSCreate_SSP(TS);
 extern PetscErrorCode  TSCreate_RK(TS);
+extern PetscErrorCode  TSCreate_ARKIMEX(TS);
 EXTERN_C_END
 
 #undef __FUNCT__  
@@ -42,11 +43,12 @@ PetscErrorCode  TSRegisterAll(const char path[])
   ierr = TSRegisterDynamic(TSGL,              path, "TSCreate_GL",       TSCreate_GL);CHKERRQ(ierr);
   ierr = TSRegisterDynamic(TSSSP,             path, "TSCreate_SSP",      TSCreate_SSP);CHKERRQ(ierr);
   ierr = TSRegisterDynamic(TSTHETA,           path, "TSCreate_Theta",    TSCreate_Theta);CHKERRQ(ierr);
-  ierr = TSRegisterDynamic("alpha"/*TSALPHA*/,path, "TSCreate_Alpha",    TSCreate_Alpha);CHKERRQ(ierr);
+  ierr = TSRegisterDynamic(TSALPHA,           path, "TSCreate_Alpha",    TSCreate_Alpha);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_SUNDIALS)
   ierr = TSRegisterDynamic(TSSUNDIALS,        path, "TSCreate_Sundials", TSCreate_Sundials);CHKERRQ(ierr);
 #endif
   ierr = TSRegisterDynamic(TSRK,              path, "TSCreate_RK",       TSCreate_RK);CHKERRQ(ierr);
+  ierr = TSRegisterDynamic(TSARKIMEX,         path, "TSCreate_ARKIMEX",  TSCreate_ARKIMEX);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

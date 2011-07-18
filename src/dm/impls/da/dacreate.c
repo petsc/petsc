@@ -9,27 +9,32 @@ PetscErrorCode  DMSetFromOptions_DA(DM da)
   PetscBool      flg;
   char           typeName[256];
   DM_DA          *dd = (DM_DA*)da->data;
+  PetscInt       refine = 0;
+  PetscBool      negativeMNP = PETSC_FALSE,bM = PETSC_FALSE,bN = PETSC_FALSE, bP = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_CLASSID,1);
 
+  if (dd->M < 0) {
+    dd->M       = -dd->M;
+    bM          = PETSC_TRUE;
+    negativeMNP = PETSC_TRUE;
+  }
+  if (dd->dim > 1 && dd->N < 0) {
+    dd->N       = -dd->N;
+    bN          = PETSC_TRUE;
+    negativeMNP = PETSC_TRUE;
+  }
+  if (dd->dim > 2 && dd->P < 0) {
+    dd->P       = -dd->P;
+    bP          = PETSC_TRUE;
+    negativeMNP = PETSC_TRUE;
+  }
+
   ierr = PetscOptionsBegin(((PetscObject)da)->comm,((PetscObject)da)->prefix,"DMDA Options","DMDA");CHKERRQ(ierr);
-    /* Handle DMDA grid sizes */
-    if (dd->M < 0) {
-      PetscInt newM = -dd->M;
-      ierr = PetscOptionsInt("-da_grid_x","Number of grid points in x direction","DMDASetSizes",newM,&newM,PETSC_NULL);CHKERRQ(ierr);
-      dd->M = newM;
-    }
-    if (dd->dim > 1 && dd->N < 0) {
-      PetscInt newN = -dd->N;
-      ierr = PetscOptionsInt("-da_grid_y","Number of grid points in y direction","DMDASetSizes",newN,&newN,PETSC_NULL);CHKERRQ(ierr);
-      dd->N = newN;
-    }
-    if (dd->dim > 2 && dd->P < 0) {
-      PetscInt newP = -dd->P;
-      ierr = PetscOptionsInt("-da_grid_z","Number of grid points in z direction","DMDASetSizes",newP,&newP,PETSC_NULL);CHKERRQ(ierr);
-      dd->P = newP;
-    }
+    if (bM) {ierr = PetscOptionsInt("-da_grid_x","Number of grid points in x direction","DMDASetSizes",dd->M,&dd->M,PETSC_NULL);CHKERRQ(ierr);}
+    if (bN) {ierr = PetscOptionsInt("-da_grid_y","Number of grid points in y direction","DMDASetSizes",dd->N,&dd->N,PETSC_NULL);CHKERRQ(ierr);}
+    if (bP) {ierr = PetscOptionsInt("-da_grid_z","Number of grid points in z direction","DMDASetSizes",dd->P,&dd->P,PETSC_NULL);CHKERRQ(ierr);}
     /* Handle DMDA parallel distibution */
     ierr = PetscOptionsInt("-da_processors_x","Number of processors in x direction","DMDASetNumProcs",dd->m,&dd->m,PETSC_NULL);CHKERRQ(ierr);
     if (dd->dim > 1) {ierr = PetscOptionsInt("-da_processors_y","Number of processors in y direction","DMDASetNumProcs",dd->n,&dd->n,PETSC_NULL);CHKERRQ(ierr);}
@@ -44,11 +49,30 @@ PetscErrorCode  DMSetFromOptions_DA(DM da)
     if (flg) {
       ierr = DMSetVecType(da,typeName);CHKERRQ(ierr);
     }
+    if (negativeMNP) {ierr = PetscOptionsInt("-da_refine","Uniformly refine DA one or more times","None",refine,&refine,PETSC_NULL);CHKERRQ(ierr);}
 
     /* process any options handlers added with PetscObjectAddOptionsHandler() */
     ierr = PetscObjectProcessOptionsHandlers((PetscObject)da);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
+  while (refine--) {
+    if (dd->bx == DMDA_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0){
+      dd->M = dd->refine_x*dd->M;
+    } else {
+      dd->M = 1 + dd->refine_x*(dd->M - 1);
+    }
+    if (dd->by == DMDA_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0){
+      dd->N = dd->refine_y*dd->N;
+    } else {
+      dd->N = 1 + dd->refine_y*(dd->N - 1);
+    }
+    if (dd->bz == DMDA_BOUNDARY_PERIODIC || dd->interptype == DMDA_Q0){
+      dd->P = dd->refine_z*dd->P;
+    } else {
+      dd->P = 1 + dd->refine_z*(dd->P - 1);
+    }
+    da->levelup++;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -158,10 +182,12 @@ EXTERN_C_END
   Output Parameter:
 . da  - The DMDA object
 
-  Level: beginner
+  Level: advanced
+
+  Developers Note: Since there exists DMDACreate1/2/3d() should this routine even exist?
 
 .keywords: DMDA, create
-.seealso:  DMDASetSizes(), DMDADuplicate()
+.seealso:  DMDASetSizes(), DMDADuplicate(),  DMDACreate1d(), DMDACreate2d(), DMDACreate3d()
 @*/
 PetscErrorCode  DMDACreate(MPI_Comm comm, DM *da)
 {

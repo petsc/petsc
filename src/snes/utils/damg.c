@@ -15,6 +15,9 @@
     DMMGCreate - Creates a DM based multigrid solver object. This allows one to 
       easily implement MG methods on regular grids.
 
+     This is being deprecated. Use KSPSetDM() for linear problems and SNESSetDM() for nonlinear problems. 
+    See src/ksp/ksp/examples/tutorials/ex45.c and src/snes/examples/tutorials/ex57.c 
+
     Collective on MPI_Comm
 
     Input Parameter:
@@ -81,6 +84,9 @@ PetscErrorCode  DMMGCreate(MPI_Comm comm,PetscInt nlevels,void *user,DMMG **dmmg
 /*@C
     DMMGSetMatType - Sets the type of matrices that DMMG will create for its solvers.
 
+    This is being deprecated. Use KSPSetDM() for linear problems and SNESSetDM() for nonlinear problems. 
+    See src/ksp/ksp/examples/tutorials/ex45.c and src/snes/examples/tutorials/ex57.c 
+
     Logically Collective on MPI_Comm 
 
     Input Parameters:
@@ -110,6 +116,9 @@ PetscErrorCode  DMMGSetMatType(DMMG *dmmg,const MatType mtype)
 /*@C
     DMMGSetOptionsPrefix - Sets the prefix used for the solvers inside a DMMG
 
+    This is being deprecated. Use KSPSetDM() for linear problems and SNESSetDM() for nonlinear problems. 
+    See src/ksp/ksp/examples/tutorials/ex45.c and src/snes/examples/tutorials/ex57.c 
+
     Logically Collective on MPI_Comm 
 
     Input Parameters:
@@ -137,6 +146,9 @@ PetscErrorCode  DMMGSetOptionsPrefix(DMMG *dmmg,const char prefix[])
 #define __FUNCT__ "DMMGDestroy"
 /*@C
     DMMGDestroy - Destroys a DM based multigrid solver object. 
+
+    This is being deprecated. Use KSPSetDM() for linear problems and SNESSetDM() for nonlinear problems. 
+    See src/ksp/ksp/examples/tutorials/ex45.c and src/snes/examples/tutorials/ex57.c 
 
     Collective on DMMG
 
@@ -187,6 +199,9 @@ PetscErrorCode  DMMGDestroy(DMMG *dmmg)
 #define __FUNCT__ "DMMGSetDM"
 /*@C
     DMMGSetDM - Sets the coarse grid information for the grids
+
+    This is being deprecated. Use KSPSetDM() for linear problems and SNESSetDM() for nonlinear problems. 
+    See src/ksp/ksp/examples/tutorials/ex45.c and src/snes/examples/tutorials/ex57.c 
 
     Logically Collective on DMMG and DM
 
@@ -257,6 +272,9 @@ PetscErrorCode  DMMGSetDM(DMMG *dmmg, DM dm)
 #define __FUNCT__ "DMMGSolve"
 /*@C
     DMMGSolve - Actually solves the (non)linear system defined with the DMMG
+
+    This is being deprecated. Use KSPSetDM() for linear problems and SNESSetDM() for nonlinear problems. 
+    See src/ksp/ksp/examples/tutorials/ex45.c and src/snes/examples/tutorials/ex57.c 
 
     Collective on DMMG
 
@@ -419,6 +437,9 @@ PetscErrorCode  DMMGSetUpLevel(DMMG *dmmg,KSP ksp,PetscInt nlevels)
 /*@C
     DMMGSetKSP - Sets the linear solver object that will use the grid hierarchy
 
+    This is being deprecated. Use KSPSetDM() for linear problems and SNESSetDM() for nonlinear problems. 
+    See src/ksp/ksp/examples/tutorials/ex45.c and src/snes/examples/tutorials/ex57.c 
+
     Logically Collective on DMMG
 
     Input Parameter:
@@ -513,6 +534,9 @@ PetscErrorCode  DMMGSetKSP(DMMG *dmmg,PetscErrorCode (*rhs)(DMMG,Vec),PetscError
 /*@C
     DMMGView - prints information on a DM based multi-level preconditioner
 
+    This is being deprecated. Use KSPSetDM() for linear problems and SNESSetDM() for nonlinear problems. 
+    See src/ksp/ksp/examples/tutorials/ex45.c and src/snes/examples/tutorials/ex57.c 
+
     Collective on DMMG and PetscViewer
 
     Input Parameter:
@@ -580,6 +604,9 @@ PetscErrorCode  DMMGView(DMMG *dmmg,PetscViewer viewer)
 #define __FUNCT__ "DMMGSetNullSpace"
 /*@C
     DMMGSetNullSpace - Indicates the null space in the linear operator (this is needed by the linear solver)
+
+    This is being deprecated. Use KSPSetDM() for linear problems and SNESSetDM() for nonlinear problems. 
+    See src/ksp/ksp/examples/tutorials/ex45.c and src/snes/examples/tutorials/ex57.c 
 
     Logically Collective on DMMG
 
@@ -657,6 +684,9 @@ PetscErrorCode  DMMGSetNullSpace(DMMG *dmmg,PetscBool  has_cnst,PetscInt n,Petsc
        problems zero is used for the initial guess (unless grid sequencing is used). For nonlinear 
        problems this is not needed; it always uses the previous solution as the initial guess.
 
+    This is being deprecated. Use KSPSetDM() for linear problems and SNESSetDM() for nonlinear problems. 
+    See src/ksp/ksp/examples/tutorials/ex45.c and src/snes/examples/tutorials/ex57.c 
+
     Logically Collective on DMMG
 
     Input Parameter:
@@ -678,6 +708,9 @@ PetscErrorCode  DMMGInitialGuessCurrent(DMMG dmmg,Vec vec)
 #define __FUNCT__ "DMMGSetInitialGuess"
 /*@C
     DMMGSetInitialGuess - Sets the function that computes an initial guess.
+
+    This is being deprecated. Use KSPSetDM() for linear problems and SNESSetDM() for nonlinear problems. 
+    See src/ksp/ksp/examples/tutorials/ex45.c and src/snes/examples/tutorials/ex57.c 
 
     Logically Collective on DMMG
 

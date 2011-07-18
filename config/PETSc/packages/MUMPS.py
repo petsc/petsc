@@ -3,7 +3,7 @@ import PETSc.package
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
-    self.download  = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/MUMPS_4.9.2.tar.gz']
+    self.download  = ['http://mumps.enseeiht.fr/MUMPS_4.10.0.tar.gz']
     self.liblist   = [['libcmumps.a','libdmumps.a','libsmumps.a','libzmumps.a','libmumps_common.a','libpord.a'],
                      ['libcmumps.a','libdmumps.a','libsmumps.a','libzmumps.a','libmumps_common.a','libpord.a','libpthread.a']]
     self.functions = ['dmumps_c']
@@ -61,6 +61,7 @@ class Configure(PETSc.package.NewPackage):
     self.setCompilers.pushLanguage('C')
     g.write('CC = '+self.setCompilers.getCompiler()+'\n')
     g.write('OPTC    = ' + self.setCompilers.getCompilerFlags().replace('-Wall','').replace('-Wshadow','') +'\n')
+    g.write('OUTC = -o \n')
     self.setCompilers.popLanguage()
     if not self.compilers.fortranIsF90:
       raise RuntimeError('Installing MUMPS requires a F90 compiler') 
@@ -68,6 +69,7 @@ class Configure(PETSc.package.NewPackage):
     g.write('FC = '+self.setCompilers.getCompiler()+'\n')
     g.write('FL = '+self.setCompilers.getCompiler()+'\n')
     g.write('OPTF    = ' + self.setCompilers.getCompilerFlags().replace('-Wall','').replace('-Wshadow','').replace('-Mfree','') +'\n')
+    g.write('OUTF = -o \n')
     self.setCompilers.popLanguage()
 
     # set fortran name mangling
@@ -79,7 +81,8 @@ class Configure(PETSc.package.NewPackage):
     elif self.compilers.fortranMangling == 'caps':
       g.write('CDEFS   = -DUPPPER\n')
 
-    g.write('AR      = '+self.setCompilers.AR+' '+self.setCompilers.AR_FLAGS+'\n')
+    g.write('AR      = '+self.setCompilers.AR+' '+self.setCompilers.AR_FLAGS+' \n')
+    g.write('LIBEXT  = .'+self.setCompilers.AR_LIB_SUFFIX+'\n')
     g.write('RANLIB  = '+self.setCompilers.RANLIB+'\n') 
     g.write('SCALAP  = '+self.libraries.toString(self.scalapack.lib)+' '+self.libraries.toString(self.blacs.lib)+'\n')
     g.write('INCPAR  = '+self.headers.toString(self.mpi.include)+'\n')

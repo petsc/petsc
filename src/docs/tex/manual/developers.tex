@@ -9,6 +9,7 @@
 
 \usepackage{makeidx,xspace}
 \usepackage[bookmarksopen,colorlinks]{hyperref}
+\usepackage[all]{hypcap}
 \usepackage{color}
 \input pdfcolor.tex     
 
@@ -179,10 +180,10 @@ It calls the error handler with the current function name and location: line num
 file and directory, plus an error codes and an error message.
 The macro CHKERRQ() is defined by
 \begin{tabbing}
-  if (ierr) SETERRQ(PETSC_COMM_SELF,ierr,(char *)0);
+  if (ierr) SETERRQ(PETSC\_COMM\_SELF,ierr,(char *)0);
 \end{tabbing}
 
-In addition to SETERRQ() are the macros SETERRQ1(PETSC_COMM_SELF,), SETERRQ2(), SETERRQ3()
+In addition to SETERRQ() are the macros SETERRQ1(), SETERRQ2(), SETERRQ3()
 and SETERRQ4() that allow one to include additional arguments that the message
 string is formated. For example,
 \begin{tabbing}
@@ -195,7 +196,7 @@ of arguments.
 The error handling function PetscError() calls the ``current'' error handler
 with the code
 \begin{tabbing}
-PetscErrorCode PetscError(MPI_Comm,int line,char *func,char* file,char *dir,PetscErrorCode n,int p,char *mess)\\
+PetscErrorCode PetscError(MPI\_Comm,int line,char *func,char* file,char *dir,PetscErrorCode n,int p,char *mess)\\
 \{ \\
   PetscErrorCode ierr;\\
 \\
@@ -743,7 +744,7 @@ PetscErrorCode PetscObjectQueryFunction\_Petsc(PetscObject obj,char *name,void *
   PetscErrorCode ierr;\\
 \\
   PetscFunctionBegin;\\
-  ierr = PetscFListFind(obj-$>$qlist,obj-$>$comm,name,PETSC_FALSE,( int(**)(void *)) ptr);CHKERRQ(ierr);\\
+  ierr = PetscFListFind(obj-$>$qlist,obj-$>$comm,name,PETSC\_FALSE,( int(**)(void *)) ptr);CHKERRQ(ierr);\\
   PetscFunctionReturn(0);\\
 \}
 \end{tabbing}
@@ -949,6 +950,8 @@ instead write
     ierr = func(a,22.0);CHKERRQ(ierr);
 \end{tabbing}
 
+\item Subroutines that would normally have void ** argument to return a pointer to some data, should actually be protyped as as void*. This prevents the caller from having to put a (void**) caste in each function call. See, for example, DMDAVecGetArray().
+
 \item Do not use the {\em register} directive.
 \item Never use a local variable counter like PetscInt flops = 0; to accumulate flops and then call PetscLogFlops() {\em always} just
       call PetscLogFlops() directly when needed.
@@ -963,7 +966,7 @@ instead use {\em if (!rank)} or {\em if (!v)} or {\em if (flg)} or {\em if (!flg
     ierr  = MPI_Allgatherv(lens+A->rmap->rstart,sendcount,MPIU_INT,lens,recvcounts,displs,MPIU_INT,((PetscObject)A)->comm);CHKERRQ(ierr);
 #endif
 \end{verbatim}
-\item There shall be no PETSc routines introduced that provide essentially the same functionality as an available MPI routine. For example, one should not write a routine PetscGlobalSum() that takes a scalar value and performs an MPI_Allreduce() on it. One should use MPI_Allreduce() directly in the code. (Note: PetscGlobalSum() does exist but is ONLY to be used in code that is to be run through ADIC (since ADIC cannot handle MPI calls)).
+\item There shall be no PETSc routines introduced that provide essentially the same functionality as an available MPI routine. For example, one should not write a routine PetscGlobalSum() that takes a scalar value and performs an MPI\_Allreduce() on it. One should use MPI\_Allreduce() directly in the code. (Note: PetscGlobalSum() does exist but is ONLY to be used in code that is to be run through ADIC (since ADIC cannot handle MPI calls)).
 \item XXXTypes (for example KSPType) do not have an underscore in them, unless they refer to another package that uses an underscore, for example MATSOLVERSUPERLU\_DIST.
 \end{itemize}
 
@@ -1107,7 +1110,7 @@ sparse row format, CSR).
 
 This matrix type, which is the
 default parallel matrix format; additional implementation details are
-given in \cite{efficient}.
+given in \cite{petsc-efficient}.
 
 \subsection{Sequential Block AIJ Sparse Matrices}
 

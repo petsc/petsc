@@ -60,7 +60,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2(Mat B,Mat A,const MatFactorInfo *inf
     for(k=0;k < nzL;k++) {
       row = bjtmp[k];
       pc = rtmp + bs2*row;
-      for (flg=0,j=0; j<bs2; j++) { if (pc[j]!=0.0) { flg = 1; break; }}
+      for (flg=0,j=0; j<bs2; j++) { if (pc[j] != (PetscScalar)0.0) { flg = 1; break; }}
       if (flg) {
         pv = b->a + bs2*bdiag[row];      
         /* Kernel_A_gets_A_times_B(bs,pc,pv,mwork); *pc = *pc * (*pv); */
@@ -166,7 +166,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering(Mat B,Mat A,const Ma
     for(k=0;k < nzL;k++) {
       row = bjtmp[k];
       pc = rtmp + bs2*row;
-      for (flg=0,j=0; j<bs2; j++) { if (pc[j]!=0.0) { flg = 1; break; }}
+      for (flg=0,j=0; j<bs2; j++) { if (pc[j]!=(PetscScalar)0.0) { flg = 1; break; }}
       if (flg) {
         pv = b->a + bs2*bdiag[row];      
         /* Kernel_A_gets_A_times_B(bs,pc,pv,mwork); *pc = *pc * (*pv); */
@@ -266,7 +266,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2_inplace(Mat B,Mat A,const MatFactorI
     while (row < i) {
       pc = rtmp + 4*row;
       p1 = pc[0]; p2 = pc[1]; p3 = pc[2]; p4 = pc[3];
-      if (p1 != 0.0 || p2 != 0.0 || p3 != 0.0 || p4 != 0.0) { 
+      if (p1 != (PetscScalar)0.0 || p2 != (PetscScalar)0.0 || p3 != (PetscScalar)0.0 || p4 != (PetscScalar)0.0) { 
         pv = ba + 4*diag_offset[row];
         pj = bj + diag_offset[row] + 1;
         x1 = pv[0]; x2 = pv[1]; x3 = pv[2]; x4 = pv[3];
@@ -351,7 +351,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering_inplace(Mat C,Mat A,
     while (row < i) {
       pc  = rtmp + 4*row;
       p1  = pc[0];  p2  = pc[1];  p3  = pc[2];  p4  = pc[3];
-      if (p1 != 0.0 || p2 != 0.0 || p3 != 0.0 || p4 != 0.0) { 
+      if (p1 != (PetscScalar)0.0 || p2 != (PetscScalar)0.0 || p3 != (PetscScalar)0.0 || p4 != (PetscScalar)0.0) { 
         pv = ba + 4*diag_offset[row];
         pj = bj + diag_offset[row] + 1;
         x1  = pv[0];  x2  = pv[1];  x3  = pv[2];  x4  = pv[3];
@@ -491,7 +491,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_1(Mat B,Mat A,const MatFactorInfo *inf
       nzL   = bi[i+1] - bi[i];
       for(k=0; k < nzL;k++) {
         pc = rtmp + row;
-        if (*pc != 0.0) {
+        if (*pc != (PetscScalar)0.0) {
           pv         = b->a + bdiag[row];
           multiplier = *pc * (*pv); 
           *pc        = multiplier;
@@ -524,13 +524,13 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_1(Mat B,Mat A,const MatFactorInfo *inf
 
       sctx.rs  = rs;
       sctx.pv  = rtmp[i];
-      ierr = MatPivotCheck(info,&sctx,i);CHKERRQ(ierr);
+      ierr = MatPivotCheck(A,info,&sctx,i);CHKERRQ(ierr);
       if(sctx.newshift) break; /* break for-loop */
       rtmp[i] = sctx.pv; /* sctx.pv might be updated in the case of MAT_SHIFT_INBLOCKS */
 
       /* Mark diagonal and invert diagonal for simplier triangular solves */
       pv  = b->a + bdiag[i];
-      *pv = 1.0/rtmp[i];
+      *pv = (PetscScalar)1.0/rtmp[i];
 
     } /* endof for (i=0; i<n; i++){ */
 
@@ -801,7 +801,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N(Mat C,Mat A,const MatFactorInf
 
       sctx.rs = rs;
       sctx.pv = dk;
-      ierr = MatPivotCheck(info,&sctx,k);CHKERRQ(ierr);
+      ierr = MatPivotCheck(A,info,&sctx,k);CHKERRQ(ierr);
       if (sctx.newshift) break;    
       dk = sctx.pv;
 
@@ -919,7 +919,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N_NaturalOrdering(Mat C,Mat A,co
 
       sctx.rs = rs;
       sctx.pv = dk;
-      ierr = MatPivotCheck(info,&sctx,k);CHKERRQ(ierr);
+      ierr = MatPivotCheck(A,info,&sctx,k);CHKERRQ(ierr);
       if (sctx.newshift) break;    /* sctx.shift_amount is updated */
       dk = sctx.pv;
 

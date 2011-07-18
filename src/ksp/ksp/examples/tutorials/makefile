@@ -6,7 +6,7 @@ FPPFLAGS         =
 LOCDIR           = src/ksp/ksp/examples/tutorials/
 EXAMPLESC        = ex1.c ex2.c ex3.c ex5.c ex7.c ex8.c ex8g.c ex9.c ex10.c ex11.c \
                    ex12.c ex13.c ex15.c ex16.c ex22.c ex23.c ex25.c ex27.c ex28.c ex29.c ex32.c ex34.c ex35.c ex37.c ex38.c \
-                   ex39.c ex40.c ex41.c ex45.c ex47.c ex49.c ex51.c
+                   ex39.c ex40.c ex41.c ex42.c ex43.c ex45.c ex47.c ex49.c ex51.c
 EXAMPLESF        = ex1f.F ex2f.F ex6f.F ex11f.F ex13f90.F ex14f.F ex15f.F ex21f.F ex22f.F ex44f.F90
 MANSEC           = KSP
 CLEANFILES       = rhs.vtk solution.vtk
@@ -212,7 +212,7 @@ ex41: ex41.o chkopts
 	${RM} ex41.o
 
 ex42: ex42.o chkopts
-	-${CLINKER} -o ex42 ex42.o ${PETSC_SNES_LIB}
+	-${CLINKER} -o ex42 ex42.o ${PETSC_KSP_LIB}
 	${RM} ex42.o
 
 ex43: ex43.o chkopts
@@ -255,6 +255,11 @@ ex52: ex52.o chkopts
 ex53: ex53.o chkopts
 	-${CLINKER} -o ex53 ex53.o ${PETSC_KSP_LIB}
 	${RM} ex53.o
+
+ex54: ex54.o chkopts
+	-${CLINKER} -o ex54 ex54.o ${PETSC_KSP_LIB}
+	${RM} ex54.o
+
 #----------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 1 ./ex1 -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex1_1.tmp 2>&1;	  \
@@ -972,13 +977,18 @@ runex52_superlu:
 	   ${RM} -f ex52.tmp
 
 runex53:
-	-@${MPIEXEC} -n 1 ./ex53 > ex53.tmp 2>&1;	  \
-	   ${DIFF} output/ex53.out ex53.tmp || echo "Possible problem with ex53, diffs above"; \
-	   ${RM} -f ex53.tmp
+	-@${MPIEXEC} -n 1 ./ex53 > ex53.tmp 2>&1;         \
+        ${DIFF} output/ex53.out ex53.tmp || echo "Possible problem with ex53, diffs above"; \
+        ${RM} -f ex53.tmp
+
 runex53_2:
 	-@${MPIEXEC} -n 2 ./ex53 > ex53.tmp 2>&1;	  \
 	   ${DIFF} output/ex53.out ex53.tmp || echo "Possible problem with ex53_2, diffs above"; \
 	   ${RM} -f ex53.tmp
+
+runex54:
+	-@${MPIEXEC} -n 1 ./ex54 -m 12 -alpha 1.e-3 -ksp_monitor -ksp_rtol 1.e-12 
+
 
 TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 \
                                  runex2_4 runex2_bjacobi runex2_bjacobi_2 runex2_bjacobi_3 runex2_specest_1 runex2_specest_2 ex2.rm \

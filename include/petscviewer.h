@@ -120,7 +120,6 @@ extern PetscErrorCode  PetscViewerASCIIOpenWithFILE(MPI_Comm,FILE*,PetscViewer*)
 
 extern PetscErrorCode  PetscViewerASCIIOpen(MPI_Comm,const char[],PetscViewer*);
 extern PetscErrorCode  PetscViewerASCIISetFILE(PetscViewer,FILE*);
-extern PetscErrorCode  PetscViewerBinaryCreate(MPI_Comm,PetscViewer*);
 extern PetscErrorCode  PetscViewerBinaryOpen(MPI_Comm,const char[],PetscFileMode,PetscViewer*);
 extern PetscErrorCode  PetscViewerBinaryGetFlowControl(PetscViewer,PetscInt*);
 extern PetscErrorCode  PetscViewerBinarySetFlowControl(PetscViewer,PetscInt);
@@ -196,29 +195,6 @@ extern PetscErrorCode  PetscViewerPopFormat(PetscViewer);
 extern PetscErrorCode  PetscViewerGetFormat(PetscViewer,PetscViewerFormat*);
 extern PetscErrorCode  PetscViewerFlush(PetscViewer);
 
-/*S
-     PetscViewerASCIIMonitor - Context for the default KSP, SNES and TS monitors that print
-                                  ASCII strings of residual norms etc.
-
-
-   Level: advanced
-
-  Concepts: viewing, monitoring
-
-.seealso:  PetscViewerCreate(), PetscViewerSetType(), PetscViewerType, KSPMonitorSet(), SNESMonitorSet(), TSMonitorSet(),
-           KSPMonitorDefault(), SNESMonitorDefault()
-
-S*/
-struct _n_PetscViewerASCIIMonitor {
-  PetscViewer viewer;
-  PetscInt    tabs;
-};
-typedef struct _n_PetscViewerASCIIMonitor* PetscViewerASCIIMonitor;
-
-extern PetscErrorCode  PetscViewerASCIIMonitorCreate(MPI_Comm,const char *,PetscInt,PetscViewerASCIIMonitor*);
-extern PetscErrorCode  PetscViewerASCIIMonitorDestroy(PetscViewerASCIIMonitor*);
-extern PetscErrorCode  PetscViewerASCIIMonitorPrintf(PetscViewerASCIIMonitor,const char[],...);
-
 /*
    Operations explicit to a particular class of viewers
 */
@@ -233,6 +209,8 @@ extern PetscErrorCode  PetscViewerASCIIPushTab(PetscViewer);
 extern PetscErrorCode  PetscViewerASCIIPopTab(PetscViewer);
 extern PetscErrorCode  PetscViewerASCIIUseTabs(PetscViewer,PetscBool );
 extern PetscErrorCode  PetscViewerASCIISetTab(PetscViewer,PetscInt);
+extern PetscErrorCode  PetscViewerASCIIAddTab(PetscViewer,PetscInt);
+extern PetscErrorCode  PetscViewerASCIISubtractTab(PetscViewer,PetscInt);
 extern PetscErrorCode  PetscViewerBinaryGetDescriptor(PetscViewer,int*);
 extern PetscErrorCode  PetscViewerBinaryGetInfoPointer(PetscViewer,FILE **);
 extern PetscErrorCode  PetscViewerBinaryRead(PetscViewer,void*,PetscInt,PetscDataType);
@@ -285,6 +263,7 @@ extern PetscErrorCode  PetscViewerHDF5Open(MPI_Comm,const char[],PetscFileMode,P
 extern PetscErrorCode  PetscViewerHDF5PushGroup(PetscViewer,const char *);
 extern PetscErrorCode  PetscViewerHDF5PopGroup(PetscViewer);
 extern PetscErrorCode  PetscViewerHDF5GetGroup(PetscViewer, const char **);
+extern PetscErrorCode  PetscViewerHDF5IncrementTimestep(PetscViewer);
 extern PetscErrorCode  PetscViewerHDF5SetTimestep(PetscViewer,PetscInt);
 extern PetscErrorCode  PetscViewerHDF5GetTimestep(PetscViewer,PetscInt*);
 #ifdef PETSC_HAVE_HDF5

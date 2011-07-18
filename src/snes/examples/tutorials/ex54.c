@@ -8,6 +8,10 @@ Runtime options include:\n\
 -gamma <gamma>\n\
 -theta_c <theta_c>\n\n";
 
+/*
+    Run with for example: -pc_type mg -pc_mg_galerkin -T .01 -da_grid_x 65 -da_grid_y 65 -pc_mg_levels 4 -ksp_type fgmres -snes_atol 1.e-14 -mat_no_inode
+ */
+
 #include "petscsnes.h"
 #include "petscdmda.h"
 
@@ -19,6 +23,7 @@ typedef struct{
   Vec         q,u,work1;
   PetscScalar gamma,theta_c; /* physics parameters */
   PetscReal   xmin,xmax,ymin,ymax;
+  PetscBool   tsmonitor;
 }AppCtx;
 
 PetscErrorCode GetParams(AppCtx*);
@@ -28,7 +33,7 @@ PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
 PetscErrorCode FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 PetscErrorCode SetInitialGuess(Vec,AppCtx*);
 PetscErrorCode Update_q(Vec,Vec,Mat,AppCtx*);
-PetscErrorCode Update_u(Vec,Vec);
+PetscLogEvent event_update_q;
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -41,6 +46,7 @@ int main(int argc, char **argv)
   Vec            xl,xu; /* Upper and lower bounds on variables */
   Mat            J;
   PetscReal      t=0.0;
+  PetscLogStage  stage_timestep;
 
   PetscInitialize(&argc,&argv, (char*)0, help);
 
@@ -69,6 +75,7 @@ int main(int argc, char **argv)
 
   /* Create nonlinear solver context */
   ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
+  ierr = SNESSetDM(snes,user.da);CHKERRQ(ierr);
 
   /* Set Function evaluation and jacobian evaluation routines */
   ierr = SNESSetFunction(snes,r,FormFunction,(void*)&user);CHKERRQ(ierr);
@@ -81,16 +88,22 @@ int main(int argc, char **argv)
   ierr = SNESVISetVariableBounds(snes,xl,xu);CHKERRQ(ierr);
 
   ierr = SetInitialGuess(x,&user);CHKERRQ(ierr);
+  ierr = PetscLogStageRegister("Time stepping",&stage_timestep);
+  ierr = PetscLogEventRegister("Update q",MAT_CLASSID,&event_update_q);CHKERRQ(ierr);
+  ierr = PetscLogStagePush(stage_timestep);CHKERRQ(ierr);
   /* Begin time loop */
   while(t < user.T) {
     ierr = Update_q(user.q,user.u,user.M_0,&user);
     ierr = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(ierr);
     PetscInt its;
     ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"SNESVI solver converged at t = %5.4f in %d iterations\n",t,its);
-    ierr = Update_u(user.u,x);CHKERRQ(ierr);
+    if (user.tsmonitor) {
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"SNESVI solver converged at t = %5.4f in %d iterations\n",t,its);
+    }
+    ierr = VecStrideGather(x,1,user.u,INSERT_VALUES);CHKERRQ(ierr);
     t = t + user.dt;
   }
+  ierr = PetscLogStagePop();CHKERRQ(ierr);
 
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = VecDestroy(&r);CHKERRQ(ierr);
@@ -109,34 +122,15 @@ int main(int argc, char **argv)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "Update_u"
-PetscErrorCode Update_u(Vec u,Vec X)
-{
-  PetscErrorCode ierr;
-  PetscInt       i,n;
-  PetscScalar    *u_arr,*x_arr;
-
-  PetscFunctionBegin;
-  ierr = VecGetLocalSize(u,&n);CHKERRQ(ierr);
-  ierr = VecGetArray(u,&u_arr);CHKERRQ(ierr);
-  ierr = VecGetArray(X,&x_arr);CHKERRQ(ierr);
-  for(i=0;i<n;i++) {
-    u_arr[i] = x_arr[2*i+1];
-  }
-  ierr = VecRestoreArray(u,&u_arr);CHKERRQ(ierr);
-  ierr = VecRestoreArray(X,&x_arr);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "Update_q"
 PetscErrorCode Update_q(Vec q,Vec u,Mat M_0,AppCtx *user)
 {
   PetscErrorCode ierr;
   PetscScalar    *q_arr,*w_arr;
   PetscInt       i,n;
-
+  
   PetscFunctionBegin;
+  ierr = PetscLogEventBegin(event_update_q,0,0,0,0);CHKERRQ(ierr);
   ierr = MatMult(M_0,u,user->work1);CHKERRQ(ierr);
   ierr = VecScale(user->work1,-1.0);CHKERRQ(ierr);
   ierr = VecGetLocalSize(u,&n);CHKERRQ(ierr);
@@ -147,6 +141,7 @@ PetscErrorCode Update_q(Vec q,Vec u,Mat M_0,AppCtx *user)
   }
   ierr = VecRestoreArray(q,&q_arr);CHKERRQ(ierr);
   ierr = VecRestoreArray(user->work1,&w_arr);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(event_update_q,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -199,12 +194,18 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void* ctx)
 #define __FUNCT__ "FormJacobian"
 PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flg,void *ctx)
 {
-  PetscErrorCode ierr;
-  AppCtx         *user=(AppCtx*)ctx;
+  PetscErrorCode   ierr;
+  AppCtx           *user=(AppCtx*)ctx;
+  static PetscBool copied = PETSC_FALSE;
 
   PetscFunctionBegin;
-  *flg = SAME_NONZERO_PATTERN;
-  ierr = MatCopy(user->M,*J,*flg);CHKERRQ(ierr);
+  /* for active set method the matrix does not get changed, so do not need to copy each time, 
+     if the active set remains the same for several solves the preconditioner does not need to be rebuilt*/
+  *flg = SAME_PRECONDITIONER;  
+  if (!copied) {
+    ierr = MatCopy(user->M,*J,*flg);CHKERRQ(ierr);
+    copied = PETSC_TRUE;
+  }
   ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -248,11 +249,13 @@ PetscErrorCode GetParams(AppCtx* user)
   PetscFunctionBegin;
 
   /* Set default parameters */
+  user->tsmonitor = PETSC_FALSE;
   user->xmin = 0.0; user->xmax = 1.0;
   user->ymin = 0.0; user->ymax = 1.0;
-  user->T = 0.2;    user->dt = 0.0001;
+  user->T = 0.0002;    user->dt = 0.0001;
   user->gamma = 3.2E-4; user->theta_c = 0;
 
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-ts_monitor",&user->tsmonitor,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(PETSC_NULL,"-xmin",&user->xmin,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(PETSC_NULL,"-xmax",&user->xmax,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(PETSC_NULL,"-ymin",&user->ymin,&flg);CHKERRQ(ierr);

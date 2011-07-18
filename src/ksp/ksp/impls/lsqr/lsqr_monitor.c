@@ -10,7 +10,6 @@ PetscErrorCode KSPMonitorLSQR(KSP solksp, PetscInt iter, PetscReal rnorm, void *
   PetscReal        dtol;      /* Divergence tolerance */
   PetscReal        rtol;      /* Relative convergence tolerance */
   Vec              x_sol;
-  PetscReal        rdum;
   PetscReal        xnorm;
   PetscErrorCode   ierr;
   MPI_Comm         comm;      
@@ -18,7 +17,7 @@ PetscErrorCode KSPMonitorLSQR(KSP solksp, PetscInt iter, PetscReal rnorm, void *
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)solksp,&comm);CHKERRQ(ierr);
   ierr = KSPGetTolerances( solksp, &rtol, &atol, &dtol, &mxiter );CHKERRQ(ierr);
-  ierr = KSPLSQRGetArnorm( solksp, &arnorm, &rdum, &rdum);CHKERRQ(ierr);
+  ierr = KSPLSQRGetArnorm( solksp, &arnorm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   ierr = KSPGetSolution( solksp, &x_sol );CHKERRQ(ierr);
   ierr = VecNorm( x_sol, NORM_2, &xnorm ); CHKERRQ(ierr);
 

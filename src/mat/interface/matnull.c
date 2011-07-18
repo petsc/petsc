@@ -236,7 +236,7 @@ PetscErrorCode  MatNullSpaceRemove(MatNullSpace sp,Vec vec,Vec *out)
     ierr = VecGetSize(vec,&N);CHKERRQ(ierr);
     if (N > 0) {
       ierr = VecSum(vec,&sum);CHKERRQ(ierr);
-      sum  = sum/(-1.0*N);
+      sum  = sum/((PetscScalar)(-1.0*N));
       ierr = VecShift(vec,sum);CHKERRQ(ierr);
     }
   }

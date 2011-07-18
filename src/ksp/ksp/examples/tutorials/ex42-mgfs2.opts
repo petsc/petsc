@@ -1,0 +1,46 @@
+## Outer solver on the full block system
+-stokes_ksp_type gcr 
+-stokes_pc_type mg
+-levels 3
+-stokes_mg_levels_ksp_type fgmres
+-stokes_mg_levels_ksp_max_it 1
+-stokes_mg_levels_pc_type fieldsplit 
+
+	## Set three blocks for fieldsplit - u,v,w,p
+	-stokes_mg_levels_pc_fieldsplit_block_size 4 
+#	-stokes_mg_levels_pc_fieldsplit_type MULTIPLICATIVE
+#	-stokes_mg_levels_pc_fieldsplit_type SYMMETRIC_MULTIPLICATIVE
+	-stokes_mg_levels_pc_fieldsplit_type ADDITIVE
+
+			## u,v,w fields 0,1,2
+			## --------------------------------------------------
+			## configure the A_UU^{-1} block to be a iterative solve
+			-stokes_mg_levels_fieldsplit_0_ksp_type fgmres
+			-stokes_mg_levels_fieldsplit_0_ksp_max_it 5
+			-stokes_mg_levels_fieldsplit_0_ksp_rtol 1.0e-2
+			-stokes_mg_levels_fieldsplit_0_pc_type jacobi 
+
+			-stokes_mg_levels_fieldsplit_1_ksp_type fgmres
+			-stokes_mg_levels_fieldsplit_1_ksp_max_it 5
+			-stokes_mg_levels_fieldsplit_1_ksp_rtol 1.0e-2
+			-stokes_mg_levels_fieldsplit_1_pc_type jacobi 
+
+			-stokes_mg_levels_fieldsplit_2_ksp_type fgmres
+                        -stokes_mg_levels_fieldsplit_2_ksp_max_it 5
+                        -stokes_mg_levels_fieldsplit_2_ksp_rtol 1.0e-2
+                        -stokes_mg_levels_fieldsplit_2_pc_type jacobi
+
+			## -------------------------------------------------------------
+			## configure the A_pp^{-1} block to just be the diagonal of A_pp
+			-stokes_mg_levels_fieldsplit_3_ksp_type fgmres
+			-stokes_mg_levels_fieldsplit_3_ksp_max_it 1
+			-stokes_mg_levels_fieldsplit_3_pc_type jacobi 
+
+		## end fieldsplit block configuration
+	## end fieldsplit configuration
+## end solver configuration
+##
+-stokes_ksp_monitor_blocks
+-mx 16
+-model 3
+

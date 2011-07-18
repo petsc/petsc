@@ -16,7 +16,7 @@
 
     Level: advanced
 
-    Notes: See DMCompositeSetContext() and DMCompositeGetContext() for how to get user information into
+    Notes: See DMSetApplicationContext() and DMGetApplicationContext() for how to get user information into
         this routine
 
 @*/
@@ -26,57 +26,6 @@ PetscErrorCode  DMCompositeSetCoupling(DM dm,PetscErrorCode (*FormCoupleLocation
 
   PetscFunctionBegin;
   com->FormCoupleLocations = FormCoupleLocations;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "DMCompositeSetContext"
-/*@
-    DMCompositeSetContext - Allows user to stash data they may need within the form coupling routine they 
-      set with DMCompositeSetCoupling()
-
-
-    Not Collective
-
-    Input Parameter:
-+   dm - the composite object
--   ctx - the user supplied context
-
-    Level: advanced
-
-    Notes: Use DMCompositeGetContext() to retrieve the context when needed.
-
-@*/
-PetscErrorCode  DMCompositeSetContext(DM dm,void *ctx)
-{
-  PetscFunctionBegin;
-  dm->ctx = ctx;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "DMCompositeGetContext"
-/*@
-    DMCompositeGetContext - Access the context set with DMCompositeSetContext()
-
-
-    Not Collective
-
-    Input Parameter:
-.   dm - the composite object
-
-    Output Parameter:
-.    ctx - the user supplied context
-
-    Level: advanced
-
-    Notes: Use DMCompositeGetContext() to retrieve the context when needed.
-
-@*/
-PetscErrorCode  DMCompositeGetContext(DM dm,void **ctx)
-{
-  PetscFunctionBegin;
-  *ctx = dm->ctx;
   PetscFunctionReturn(0);
 }
 
@@ -737,7 +686,7 @@ PetscErrorCode  VecView_DMComposite(Vec gvec,PetscViewer viewer)
   DM_Composite           *com;
 
   PetscFunctionBegin;
-  ierr = PetscObjectQuery((PetscObject)gvec,"DMComposite",(PetscObject*)&dm);CHKERRQ(ierr);
+  ierr = PetscObjectQuery((PetscObject)gvec,"DM",(PetscObject*)&dm);CHKERRQ(ierr);
   if (!dm) SETERRQ(((PetscObject)gvec)->comm,PETSC_ERR_ARG_WRONG,"Vector not generated from a DMComposite");
   com = (DM_Composite*)dm->data;
   next = com->next;
@@ -791,7 +740,7 @@ PetscErrorCode  DMCreateGlobalVector_Composite(DM dm,Vec *gvec)
     ierr = DMSetUp(dm);CHKERRQ(ierr);
   }
   ierr = VecCreateMPI(((PetscObject)dm)->comm,com->n,com->N,gvec);CHKERRQ(ierr);
-  ierr = PetscObjectCompose((PetscObject)*gvec,"DMComposite",(PetscObject)dm);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject)*gvec,"DM",(PetscObject)dm);CHKERRQ(ierr);
   ierr = VecSetOperation(*gvec,VECOP_VIEW,(void(*)(void))VecView_DMComposite);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -809,7 +758,7 @@ PetscErrorCode  DMCreateLocalVector_Composite(DM dm,Vec *lvec)
     ierr = DMSetUp(dm);CHKERRQ(ierr);
   }
   ierr = VecCreateSeq(((PetscObject)dm)->comm,com->nghost,lvec);CHKERRQ(ierr);
-  ierr = PetscObjectCompose((PetscObject)*lvec,"DMComposite",(PetscObject)dm);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject)*lvec,"DM",(PetscObject)dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1255,7 +1204,35 @@ PetscErrorCode  DMRefine_Composite(DM dmi,MPI_Comm comm,DM *fine)
   PetscFunctionReturn(0);
 }
 
-#include <petscmat.h>
+#undef __FUNCT__  
+#define __FUNCT__ "DMCoarsen_Composite"
+PetscErrorCode  DMCoarsen_Composite(DM dmi,MPI_Comm comm,DM *fine)
+{
+  PetscErrorCode         ierr;
+  struct DMCompositeLink *next;
+  DM_Composite           *com = (DM_Composite*)dmi->data;
+  DM                     dm;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dmi,DM_CLASSID,1);
+  next = com->next;
+  ierr = DMCompositeCreate(comm,fine);CHKERRQ(ierr);
+
+  /* loop over packed objects, handling one at at time */
+  while (next) {
+    if (next->type == DMCOMPOSITE_ARRAY) {
+      ierr = DMCompositeAddArray(*fine,next->rank,next->nlocal);CHKERRQ(ierr);
+    } else if (next->type == DMCOMPOSITE_DM) {
+      ierr = DMCoarsen(next->dm,comm,&dm);CHKERRQ(ierr);
+      ierr = DMCompositeAddDM(*fine,dm);CHKERRQ(ierr);
+      ierr = PetscObjectDereference((PetscObject)dm);CHKERRQ(ierr);
+    } else {
+      SETERRQ(((PetscObject)dm)->comm,PETSC_ERR_SUP,"Cannot handle that object type yet");
+    }
+    next = next->next;
+  }
+  PetscFunctionReturn(0);
+}
 
 struct MatPackLink {
   Mat                A;
@@ -1507,26 +1484,13 @@ static PetscErrorCode DMCreateLocalToGlobalMapping_Composite(DM dm)
 {
   DM_Composite           *com = (DM_Composite*)dm->data;
   ISLocalToGlobalMapping *ltogs;
-  PetscInt               i,cnt,m,*idx;
+  PetscInt               i;
   PetscErrorCode         ierr;
 
   PetscFunctionBegin;
   /* Set the ISLocalToGlobalMapping on the new matrix */
   ierr = DMCompositeGetISLocalToGlobalMappings(dm,&ltogs);CHKERRQ(ierr);
-  for (cnt=0,i=0; i<(com->nDM+com->nredundant); i++) {
-    ierr = ISLocalToGlobalMappingGetSize(ltogs[i],&m);CHKERRQ(ierr);
-    cnt += m;
-  }
-  ierr = PetscMalloc(cnt*sizeof(PetscInt),&idx);CHKERRQ(ierr);
-  for (cnt=0,i=0; i<(com->nDM+com->nredundant); i++) {
-    const PetscInt *subidx;
-    ierr = ISLocalToGlobalMappingGetSize(ltogs[i],&m);CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingGetIndices(ltogs[i],&subidx);CHKERRQ(ierr);
-    ierr = PetscMemcpy(&idx[cnt],subidx,m*sizeof(PetscInt));CHKERRQ(ierr);
-    ierr = ISLocalToGlobalMappingRestoreIndices(ltogs[i],&subidx);CHKERRQ(ierr);
-    cnt += m;
-  }
-  ierr = ISLocalToGlobalMappingCreate(((PetscObject)dm)->comm,cnt,idx,PETSC_OWN_POINTER,&dm->ltogmap);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingConcatenate(((PetscObject)dm)->comm,com->nDM+com->nredundant,ltogs,&dm->ltogmap);CHKERRQ(ierr);
   for (i=0; i<com->nDM+com->nredundant; i++) {ierr = ISLocalToGlobalMappingDestroy(&ltogs[i]);CHKERRQ(ierr);}
   ierr = PetscFree(ltogs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1679,6 +1643,7 @@ PetscErrorCode  DMCreate_Composite(DM p)
   p->ops->createlocaltoglobalmapping      = DMCreateLocalToGlobalMapping_Composite;
   p->ops->createlocaltoglobalmappingblock = 0;
   p->ops->refine                          = DMRefine_Composite;
+  p->ops->coarsen                         = DMCoarsen_Composite;
   p->ops->getinterpolation                = DMGetInterpolation_Composite;
   p->ops->getmatrix                       = DMGetMatrix_Composite;
   p->ops->getcoloring                     = DMGetColoring_Composite;

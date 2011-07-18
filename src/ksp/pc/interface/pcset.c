@@ -221,7 +221,7 @@ PetscErrorCode  PCSetDM(PC pc,DM dm)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscObjectReference((PetscObject)dm);CHKERRQ(ierr);
+  if (dm) {ierr = PetscObjectReference((PetscObject)dm);CHKERRQ(ierr);}
   ierr = DMDestroy(&pc->dm);CHKERRQ(ierr);
   pc->dm = dm;
   PetscFunctionReturn(0);
@@ -250,6 +250,58 @@ PetscErrorCode  PCGetDM(PC pc,DM *dm)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
   *dm = pc->dm;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PCSetApplicationContext"
+/*@
+   PCSetApplicationContext - Sets the optional user-defined context for the linear solver.
+
+   Logically Collective on PC
+
+   Input Parameters:
++  pc - the PC context
+-  usrP - optional user context
+
+   Level: intermediate
+
+.keywords: PC, set, application, context
+
+.seealso: PCGetApplicationContext()
+@*/
+PetscErrorCode  PCSetApplicationContext(PC pc,void *usrP)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  pc->user = usrP;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PCGetApplicationContext"
+/*@
+   PCGetApplicationContext - Gets the user-defined context for the linear solver.
+
+   Not Collective
+
+   Input Parameter:
+.  pc - PC context
+
+   Output Parameter:
+.  usrP - user context
+
+   Level: intermediate
+
+.keywords: PC, get, application, context
+
+.seealso: PCSetApplicationContext()
+@*/
+PetscErrorCode  PCGetApplicationContext(PC pc,void *usrP)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_CLASSID,1);
+  *(void**)usrP = pc->user;
   PetscFunctionReturn(0);
 }
 

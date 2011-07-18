@@ -352,7 +352,7 @@ PetscErrorCode  VecStrideMin(Vec v,PetscInt start,PetscInt *idex,PetscReal *nrm)
 
 .seealso: VecNorm(), VecStrideScale(), VecScale(), VecStrideGather(), VecStrideScatter(), VecStrideMin(), VecStrideMax()
 @*/
-PetscErrorCode  VecStrideScaleAll(Vec v,PetscScalar *scales)
+PetscErrorCode  VecStrideScaleAll(Vec v,const PetscScalar *scales)
 {
   PetscErrorCode ierr;
   PetscInt       i,j,n,bs;
@@ -1026,7 +1026,7 @@ PetscErrorCode VecReciprocal_Default(Vec v)
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
-    if (x[i] != 0.0) x[i] = 1.0/x[i];
+    if (x[i] != (PetscScalar)0.0) x[i] = (PetscScalar)1.0/x[i];
   }
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);

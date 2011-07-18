@@ -33,18 +33,18 @@
       call MatCreate(PETSC_COMM_WORLD,A,ierr)
       call MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,N,N,ierr)
       call MatSetType(A,'python',ierr)
-      call MatPythonSetType(A,'example1.Laplace1D',ierr)
+      call MatPythonSetType(A,'example1.py:Laplace1D',ierr)
 
       call MatGetVecs(A,x,b,ierr)
       call VecSet(b,one,ierr)
 
       call KSPCreate(PETSC_COMM_WORLD,ksp,ierr)
       call KSPSetType(ksp,'python',ierr)
-      call KSPPythonSetType(ksp,'example1.ConjGrad',ierr)
+      call KSPPythonSetType(ksp,'example1.py:ConjGrad',ierr)
 
       call KSPGetPC(ksp,pc,ierr)
       call PCSetType(pc,'python',ierr)
-      call PCPythonSetType(pc,'example1.Jacobi',ierr)
+      call PCPythonSetType(pc,'example1.py:Jacobi',ierr)
 
       call KSPSetOperators(ksp,A,A,SAME_NONZERO_PATTERN,ierr)
       call KSPSetFromOptions(ksp,ierr)

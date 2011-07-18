@@ -12,7 +12,6 @@ static char help[] = "Model nonlinear multi-physics solver. Modified from mp.c \
   ----------------------------------------------------------------------------------------- */
 #include <petsctime.h>
 #include "mp1.h"
-#include "../src/sys/plog/logimpl.h"
 
 extern PetscErrorCode FormInitialGuessComp(DMMG,Vec);
 extern PetscErrorCode FormFunctionComp(SNES,Vec,Vec,void*);
@@ -211,9 +210,9 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free spaces 
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDestroy(pack);CHKERRQ(ierr);
-  ierr = DMDestroy(da1);CHKERRQ(ierr);
-  ierr = DMDestroy(da2);CHKERRQ(ierr);
+  ierr = DMDestroy(&pack);CHKERRQ(ierr);
+  ierr = DMDestroy(&da1);CHKERRQ(ierr);
+  ierr = DMDestroy(&da2);CHKERRQ(ierr);
   ierr = DMMGDestroy(dmmg_comp);CHKERRQ(ierr);
 
  
@@ -223,8 +222,8 @@ int main(int argc,char **argv)
   ierr = DMMGDestroy(dmmg1);CHKERRQ(ierr);
   ierr = DMMGDestroy(dmmg2);CHKERRQ(ierr);
 
-  ierr = VecDestroy(X1_local);CHKERRQ(ierr);
-  ierr = VecDestroy(X2_local);CHKERRQ(ierr);
+  ierr = VecDestroy(&X1_local);CHKERRQ(ierr);
+  ierr = VecDestroy(&X2_local);CHKERRQ(ierr);
   ierr = PetscFinalize();
   return 0;
 }

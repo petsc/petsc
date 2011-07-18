@@ -730,7 +730,7 @@ PetscErrorCode  KSPDGMRESComputeDeflationData_DGMRES (KSP ksp)
     PetscErrorCode ierr;
     PetscInt       i,j, k;
     PetscInt       r=dgmres->r;
-    PetscBLASInt   bmax, info;
+    PetscBLASInt   nr, bmax, info;
     PetscInt       neig; /* number of eigenvalues to extract at each restart */
     PetscInt       neig1 = dgmres->neig + EIG_OFFSET; /* max number of eig that can be extracted at each restart */
     PetscInt       max_neig = dgmres->max_neig; /* Max number of eigenvalues to extract during the iterative process */
@@ -859,6 +859,7 @@ PetscErrorCode  KSPDGMRESComputeDeflationData_DGMRES (KSP ksp)
 
     dgmres->r += neig;
     r=dgmres->r;
+    nr = PetscBLASIntCast (r);
     /*LU Factorize T with Lapack xgetrf routine */
 
     bmax = PetscBLASIntCast (max_neig);
@@ -869,11 +870,11 @@ PetscErrorCode  KSPDGMRESComputeDeflationData_DGMRES (KSP ksp)
     ierr=PetscMemcpy (TTF, TT, bmax*r*sizeof (PetscReal));
     CHKERRQ (ierr);
     if (!INVP) {
-        ierr=PetscMalloc (bmax*sizeof (PetscInt), &INVP);
+        ierr=PetscMalloc (bmax*sizeof (PetscBLASInt), &INVP);
         CHKERRQ (ierr);
     }
 #if !defined(PETSC_MISSING_LAPACK_GETRF) 
-    LAPACKgetrf_ (&r, &r, TTF, &bmax, INVP, &info);
+    LAPACKgetrf_ (&nr, &nr, TTF, &bmax, INVP, &info);
     if (info) SETERRQ1 (((PetscObject)ksp)->comm, PETSC_ERR_LIB,"Error in LAPACK routine XGETRF INFO=%d", (int) info);
 #endif
 
@@ -903,7 +904,7 @@ PetscErrorCode  KSPDGMRESComputeSchurForm_DGMRES (KSP ksp, PetscInt *neig) {
     KSP_DGMRES     	*dgmres = (KSP_DGMRES*) ksp->data;
     PetscErrorCode 	ierr;
     PetscInt       	N = dgmres->max_k + 1, n=dgmres->it+1;
-    PetscInt		bn, bN;
+    PetscBLASInt	bn, bN;
     PetscReal    	*A;
     PetscBLASInt 	ilo=1, ihi;
     PetscBLASInt 	ldA; 		/* leading dimension of A */
@@ -912,15 +913,15 @@ PetscErrorCode  KSPDGMRESComputeSchurForm_DGMRES (KSP ksp, PetscInt *neig) {
     PetscReal 		*work;		/* working vector */
     PetscBLASInt 	lwork;		/* size of the working vector */
     PetscBLASInt 	info;		/* Output info from Lapack routines */
-    PetscBLASInt 	*perm;		/* Permutation vector to sort eigenvalues */
+    PetscInt	 	*perm;		/* Permutation vector to sort eigenvalues */
     PetscInt	    i, j;
-    PetscInt		NbrEig; 	/* Number of eigenvalues really extracted */
+    PetscBLASInt	NbrEig; 	/* Number of eigenvalues really extracted */
     PetscReal		*wr, *wi, *modul; 	/* Real and imaginary part and modul of the eigenvalues of A*/
     PetscReal 		CondEig; /* lower bound on the reciprocal condition number for the selected cluster of eigenvalues */
     PetscReal 		CondSub; /* estimated reciprocal condition number of the specified invariant subspace. */
-    PetscInt *select;
-    PetscInt *iwork;
-    PetscInt liwork;
+    PetscBLASInt *select;
+    PetscBLASInt *iwork;
+    PetscBLASInt liwork;
 
     PetscFunctionBegin;
     bn=PetscBLASIntCast (n);
@@ -973,8 +974,8 @@ PetscErrorCode  KSPDGMRESComputeSchurForm_DGMRES (KSP ksp, PetscInt *neig) {
 	}
 	/* Reorder the Schur decomposition so that the cluster of smallest eigenvalues appears in the leading diagonal blocks of A */
 
-	ierr = PetscMalloc(n * sizeof(PetscInt), &select);	CHKERRQ(ierr);
-	ierr = PetscMemzero(select, n * sizeof(PetscInt));	CHKERRQ(ierr);
+	ierr = PetscMalloc(n * sizeof(PetscBLASInt), &select);	CHKERRQ(ierr);
+	ierr = PetscMemzero(select, n * sizeof(PetscBLASInt));	CHKERRQ(ierr);
 
 	if (dgmres->GreatestEig == PETSC_FALSE)
 	{
@@ -990,7 +991,7 @@ PetscErrorCode  KSPDGMRESComputeSchurForm_DGMRES (KSP ksp, PetscInt *neig) {
 	lwork  =  PetscMax(1, 4 * NbrEig * (bn-NbrEig));
 	liwork = PetscMax(1, 2 * NbrEig * (bn-NbrEig));
 	ierr = PetscMalloc(lwork * sizeof(PetscScalar), &work);	CHKERRQ(ierr);
-	ierr = PetscMalloc(liwork * sizeof(PetscInt), &iwork);	CHKERRQ(ierr);
+	ierr = PetscMalloc(liwork * sizeof(PetscBLASInt), &iwork);	CHKERRQ(ierr);
 #if !defined(PETSC_MISSING_LAPACK_TRSEN) 
 	LAPACKtrsen_("B", "V", select, &bn, A, &ldA, Q, &ldQ, wr, wi, &NbrEig, &CondEig, &CondSub, work, &lwork, iwork, &liwork, &info);
 	if (info == 1) SETERRQ(((PetscObject)ksp)->comm, PETSC_ERR_LIB, "UNABLE TO REORDER THE EIGENVALUES WITH THE LAPACK ROUTINE : ILL-CONDITIONED PROBLEM");
@@ -1023,7 +1024,7 @@ PetscErrorCode  KSPDGMRESApplyDeflation_DGMRES (KSP ksp, Vec x, Vec y) {
     KSP_DGMRES     	*dgmres = (KSP_DGMRES*) ksp->data;
     PetscInt	i, r = dgmres->r;
     PetscErrorCode 	ierr;
-    PetscInt	info, nrhs = 1;
+    PetscBLASInt	info, nrhs = 1;
     PetscReal	berr, ferr;
     PetscReal	alpha = 1.0;
     PetscInt	max_neig = dgmres->max_neig;
@@ -1086,7 +1087,8 @@ EXTERN_C_BEGIN
 PetscErrorCode  KSPDGMRESImproveEig_DGMRES (KSP ksp, PetscInt neig) 
 {
 	KSP_DGMRES		*dgmres = (KSP_DGMRES*) ksp->data;
-	PetscInt		j,i = 0, r_old, r = dgmres->r;
+	PetscInt		j,r_old, r = dgmres->r;
+	PetscBLASInt		i = 0;
 	PetscInt		neig1 = dgmres->neig + EIG_OFFSET;
 	PetscInt		bmax = dgmres->max_neig;
 	PetscInt		aug = r + neig; /* actual size of the augmented invariant basis */
@@ -1098,10 +1100,10 @@ PetscErrorCode  KSPDGMRESImproveEig_DGMRES (KSP ksp, PetscInt neig)
 	PetscReal 		*work;		/* working vector */
 	PetscBLASInt 	lwork;		/* size of the working vector */
 	PetscBLASInt 	info;		/* Output info from Lapack routines */
-	PetscBLASInt 	*perm;		/* Permutation vector to sort eigenvalues */
+	PetscInt 	*perm;		/* Permutation vector to sort eigenvalues */
 	PetscReal		*wr, *wi, *beta, *modul; 	/* Real and imaginary part and modul of the eigenvalues of A*/
 	PetscInt		ierr;
-	PetscInt NbrEig = 0;
+	PetscBLASInt NbrEig = 0,nr,bm;
 	PetscBLASInt *select;
 
 	PetscBLASInt wantQ = 1, wantZ = 1;
@@ -1218,7 +1220,7 @@ PetscErrorCode  KSPDGMRESImproveEig_DGMRES (KSP ksp, PetscInt neig)
 	ierr = PetscMalloc(lwork * sizeof(PetscReal), &work);	CHKERRQ(ierr);
 	ierr = PetscMalloc(liwork * sizeof(PetscBLASInt), &iwork);	CHKERRQ(ierr);
 #if !defined(PETSC_MISSING_LAPACK_TGSEN) 
-	LAPACKtgsen_(&ijob, &wantQ, &wantZ, select, &N, AUAU, &ldA, AUU, &ldA, wr, wi, beta, Q, &N, Z, &N, &NbrEig, NULL, NULL, & (Dif[0]), work, &lwork, iwork, &liwork, &ierr);
+	LAPACKtgsen_(&ijob, &wantQ, &wantZ, select, &N, AUAU, &ldA, AUU, &ldA, wr, wi, beta, Q, &N, Z, &N, &NbrEig, NULL, NULL, & (Dif[0]), work, &lwork, iwork, &liwork, &info);
 	if (info == 1) SETERRQ(((PetscObject)ksp)->comm, -1, "UNABLE TO REORDER THE EIGENVALUES WITH THE LAPACK ROUTINE : ILL-CONDITIONED PROBLEM");
 #endif
 		
@@ -1245,8 +1247,10 @@ PetscErrorCode  KSPDGMRESImproveEig_DGMRES (KSP ksp, PetscInt neig)
 	}
 	/* Factorize T */
 	ierr=PetscMemcpy (TTF, TT, bmax*r*sizeof (PetscReal));    CHKERRQ (ierr);
+	nr = PetscBLASIntCast (r);
+	bm = PetscBLASIntCast (bmax);
 #if !defined(PETSC_MISSING_LAPACK_GETRF) 
-	LAPACKgetrf_ (&r, &r, TTF, &bmax, INVP, &info);    
+	LAPACKgetrf_ (&nr, &nr, TTF, &bm, INVP, &info);    
 	if (info) SETERRQ1 (((PetscObject)ksp)->comm, PETSC_ERR_LIB,"Error in LAPACK routine XGETRF INFO=%d", (int) info);
 #endif
 	/* Free Memory */

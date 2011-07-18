@@ -316,6 +316,7 @@ extern PetscErrorCode  PCRedistributeGetKSP(PC,KSP*);
 E*/
 typedef enum {KSP_NORM_NONE = 0,KSP_NORM_PRECONDITIONED = 1,KSP_NORM_UNPRECONDITIONED = 2,KSP_NORM_NATURAL = 3} KSPNormType;
 extern const char *KSPNormTypes[];
+
 /*MC
     KSP_NORM_NONE - Do not compute a norm during the Krylov process. This will 
           possibly save some computation but means the convergence test cannot
@@ -605,6 +606,8 @@ extern PetscErrorCode  MatGetSchurComplement_Basic(Mat mat,IS isrow0,IS iscol0,I
 extern PetscErrorCode  KSPSetDM(KSP,DM);
 extern PetscErrorCode  KSPSetDMActive(KSP,PetscBool );
 extern PetscErrorCode  KSPGetDM(KSP,DM*);
+extern PetscErrorCode  KSPSetApplicationContext(KSP,void*);
+extern PetscErrorCode  KSPGetApplicationContext(KSP,void*);
 
 PETSC_EXTERN_CXX_END
 #endif

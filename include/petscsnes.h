@@ -34,6 +34,7 @@ E*/
 #define SNESPICARD  "picard"
 #define SNESKSPONLY "ksponly"
 #define SNESVI      "vi"
+#define SNESNGMRES  "ngmres"
 
 /* Logging support */
 extern PetscClassId  SNES_CLASSID;
@@ -125,6 +126,7 @@ extern PetscErrorCode  SNESSetOptionsPrefix(SNES,const char[]);
 extern PetscErrorCode  SNESAppendOptionsPrefix(SNES,const char[]);
 extern PetscErrorCode  SNESGetOptionsPrefix(SNES,const char*[]);
 extern PetscErrorCode  SNESSetFromOptions(SNES);
+extern PetscErrorCode  SNESDefaultGetWork(SNES,PetscInt);
 
 extern PetscErrorCode  MatCreateSNESMF(SNES,Mat*);
 extern PetscErrorCode  MatMFFDComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
@@ -135,7 +137,7 @@ extern PetscErrorCode  SNESGetType(SNES,const SNESType*);
 extern PetscErrorCode  SNESMonitorDefault(SNES,PetscInt,PetscReal,void *);
 extern PetscErrorCode  SNESMonitorRange(SNES,PetscInt,PetscReal,void *);
 extern PetscErrorCode  SNESMonitorRatio(SNES,PetscInt,PetscReal,void *);
-extern PetscErrorCode  SNESMonitorSetRatio(SNES,PetscViewerASCIIMonitor);
+extern PetscErrorCode  SNESMonitorSetRatio(SNES,PetscViewer);
 extern PetscErrorCode  SNESMonitorSolution(SNES,PetscInt,PetscReal,void *);
 extern PetscErrorCode  SNESMonitorResidual(SNES,PetscInt,PetscReal,void *);
 extern PetscErrorCode  SNESMonitorSolutionUpdate(SNES,PetscInt,PetscReal,void *);
@@ -155,6 +157,7 @@ extern PetscErrorCode  SNESSetLagPreconditioner(SNES,PetscInt);
 extern PetscErrorCode  SNESGetLagPreconditioner(SNES,PetscInt*);
 extern PetscErrorCode  SNESSetLagJacobian(SNES,PetscInt);
 extern PetscErrorCode  SNESGetLagJacobian(SNES,PetscInt*);
+extern PetscErrorCode  SNESSetGridSequence(SNES,PetscInt);
 
 extern PetscErrorCode  SNESGetLinearSolveIterations(SNES,PetscInt*);
 extern PetscErrorCode  SNESGetLinearSolveFailures(SNES,PetscInt*);
@@ -174,7 +177,8 @@ extern PetscErrorCode  SNESMonitorLGRange(SNES,PetscInt,PetscReal,void*);
 extern PetscErrorCode  SNESMonitorLGRangeDestroy(PetscDrawLG*);
 
 extern PetscErrorCode  SNESSetApplicationContext(SNES,void *);
-extern PetscErrorCode  SNESGetApplicationContext(SNES,void **);
+extern PetscErrorCode  SNESGetApplicationContext(SNES,void *);
+extern PetscErrorCode  SNESSetComputeApplicationContext(SNES,PetscErrorCode (*)(SNES,void**),PetscErrorCode (*)(void**));
 
 extern PetscErrorCode  SNESPythonSetType(SNES,const char[]);
 
@@ -353,6 +357,7 @@ extern PetscErrorCode  SNESSetJacobian(SNES,Mat,Mat,SNESJacobian,void*);
 extern PetscErrorCode  SNESGetJacobian(SNES,Mat*,Mat*,SNESJacobian*,void**);
 extern PetscErrorCode  SNESDefaultComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 extern PetscErrorCode  SNESDefaultComputeJacobianColor(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode  SNESSetComputeInitialGuess(SNES,PetscErrorCode (*)(SNES,Vec,void*),void*);
 
 /* --------- Routines specifically for line search methods --------------- */
 extern PetscErrorCode  SNESLineSearchSet(SNES,PetscErrorCode(*)(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal*,PetscReal*,PetscBool *),void*);
@@ -369,7 +374,8 @@ extern PetscErrorCode  SNESLineSearchSetMonitor(SNES,PetscBool );
 
 /* Routines for VI solver */
 extern PetscErrorCode  SNESVISetVariableBounds(SNES,Vec,Vec);
-extern PetscErrorCode  SNESVIGetActiveSetIS(SNES,Vec,Vec,IS*);
+extern PetscErrorCode  SNESVISetComputeVariableBounds(SNES, PetscErrorCode (*)(SNES,Vec,Vec));
+extern PetscErrorCode  SNESVIGetInactiveSet(SNES,IS*);
 extern PetscErrorCode  SNESVISetRedundancyCheck(SNES,PetscErrorCode(*)(SNES,IS,IS*,void*),void*);
 #define SNES_VI_INF   1.0e20
 #define SNES_VI_NINF -1.0e20
@@ -379,8 +385,16 @@ extern PetscErrorCode  SNESTestLocalMin(SNES);
 /* Should this routine be private? */
 extern PetscErrorCode  SNESComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*);
 
-extern PetscErrorCode  SNESSetDM(SNES,DM);
-extern PetscErrorCode  SNESGetDM(SNES,DM*);
+extern PetscErrorCode SNESSetDM(SNES,DM);
+extern PetscErrorCode SNESGetDM(SNES,DM*);
+extern PetscErrorCode SNESSetPC(SNES,SNES);
+extern PetscErrorCode SNESGetPC(SNES,SNES*);
+
+/* Routines for Multiblock solver */
+PetscErrorCode SNESMultiblockSetFields(SNES, const char [], PetscInt, const PetscInt *);
+PetscErrorCode SNESMultiblockSetIS(SNES, const char [], IS);
+PetscErrorCode SNESMultiblockSetBlockSize(SNES, PetscInt);
+PetscErrorCode SNESMultiblockSetType(SNES, PCCompositeType);
 
 PETSC_EXTERN_CXX_END
 #endif

@@ -8,6 +8,11 @@ The flow can be driven with the lid or with bouyancy or both:\n\
   -prandtl <pr>, where <pr> = dimensionless thermal/momentum diffusity ratio\n\
   -contours : draw contour plots of solution\n\n";
 
+/*
+      THIS EXAMPLE IS DEPRECATED, PLEASE SEE ex50.c FOR THE CURRENT APPROACH
+      DMMG operations are deprecated 
+*/
+
 /*T
    Concepts: SNES^solving a system of nonlinear equations (parallel multicomponent example);
    Concepts: DMDA^using distributed arrays;

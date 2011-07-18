@@ -24,6 +24,7 @@ typedef struct {
   KSP            smoothu;                      /* post smoother */
   Mat            interpolate; 
   Mat            restrct;                      /* restrict is a reserved word in C99 and on Cray */
+  Vec            rscale;                       /* scaling of restriction matrix */
   PetscLogEvent  eventsmoothsetup;             /* if logging times for each level */
   PetscLogEvent  eventsmoothsolve;
   PetscLogEvent  eventresidual;
@@ -39,6 +40,7 @@ typedef struct {
   PetscInt      maxlevels;                    /* total number of levels allocated */
   PetscBool     galerkin;                     /* use Galerkin process to compute coarser matrices */
   PetscBool     galerkinused;                 /* destroy the Mat created by the Galerkin process */
+  PetscBool     usedmfornumberoflevels;       /* sets the number of levels by getting this information out of the DM */
 
   PetscInt      nlevels;
   PC_MG_Levels  **levels;

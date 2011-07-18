@@ -128,7 +128,7 @@ extern PetscErrorCode     DMDASetFieldName(DM,PetscInt,const char[]);
 extern PetscErrorCode     DMDAGetFieldName(DM,PetscInt,const char**);
 
 extern PetscErrorCode  DMDASetBoundaryType(DM,DMDABoundaryType,DMDABoundaryType,DMDABoundaryType);
-extern PetscErrorCode  DMDASetDof(DM, int);
+extern PetscErrorCode  DMDASetDof(DM, PetscInt);
 extern PetscErrorCode  DMDASetStencilWidth(DM, PetscInt);
 extern PetscErrorCode  DMDASetOwnershipRanges(DM,const PetscInt[],const PetscInt[],const PetscInt[]);
 extern PetscErrorCode  DMDAGetOwnershipRanges(DM,const PetscInt**,const PetscInt**,const PetscInt**);
@@ -159,7 +159,7 @@ S*/
 typedef struct {
   PetscInt       dim,dof,sw;
   PetscInt       mx,my,mz;    /* global number of grid points in each direction */
-  PetscInt       xs,ys,zs;    /* starting pointd of this processor, excluding ghosts */
+  PetscInt       xs,ys,zs;    /* starting point of this processor, excluding ghosts */
   PetscInt       xm,ym,zm;    /* number of grid points on this processor, excluding ghosts */
   PetscInt       gxs,gys,gzs;    /* starting point of this processor including ghosts */
   PetscInt       gxm,gym,gzm;    /* number of grid points on this processor including ghosts */

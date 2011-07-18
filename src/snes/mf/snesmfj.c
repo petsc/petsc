@@ -47,6 +47,10 @@ PetscErrorCode  MatMFFDComputeJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStruct
 }
 
 PetscErrorCode MatAssemblyEnd_MFFD(Mat,MatAssemblyType);
+EXTERN_C_BEGIN
+PetscErrorCode MatMFFDSetBase_MFFD(Mat,Vec,Vec);
+EXTERN_C_END
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatAssemblyEnd_SNESMF"
 /*
@@ -66,12 +70,11 @@ PetscErrorCode MatAssemblyEnd_SNESMF(Mat J,MatAssemblyType mt)
 
   ierr = SNESGetSolution(snes,&u);CHKERRQ(ierr);
   ierr = SNESGetFunction(snes,&f,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatMFFDSetBase(J,u,f);CHKERRQ(ierr);
+  ierr = MatMFFDSetBase_MFFD(J,u,f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 EXTERN_C_BEGIN
-extern PetscErrorCode  MatMFFDSetBase_MFFD(Mat,Vec,Vec);
 /*
     This routine resets the MatAssemblyEnd() for the MatMFFD created from MatCreateSNESMF() so that it NO longer
   uses the solution in the SNES object to update the base. See the warning in MatCreateSNESMF().
@@ -127,10 +130,16 @@ PetscErrorCode  MatCreateSNESMF(SNES snes,Mat *J)
   PetscInt       n,N;
 
   PetscFunctionBegin;
-  if (!snes->vec_func) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"SNESSetFunction() must be called first");
-  
-  ierr = VecGetLocalSize(snes->vec_func,&n);CHKERRQ(ierr);
-  ierr = VecGetSize(snes->vec_func,&N);CHKERRQ(ierr);
+  if (snes->vec_func) {
+    ierr = VecGetLocalSize(snes->vec_func,&n);CHKERRQ(ierr);
+    ierr = VecGetSize(snes->vec_func,&N);CHKERRQ(ierr);
+  } else if (snes->dm) {
+    Vec tmp;
+    ierr = DMGetGlobalVector(snes->dm,&tmp);CHKERRQ(ierr);
+    ierr = VecGetLocalSize(tmp,&n);CHKERRQ(ierr);
+    ierr = VecGetSize(tmp,&N);CHKERRQ(ierr);
+    ierr = DMRestoreGlobalVector(snes->dm,&tmp);CHKERRQ(ierr);
+  } else SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_ARG_WRONGSTATE,"Must call SNESSetFunction() or SNESSetDM() first");
   ierr = MatCreateMFFD(((PetscObject)snes)->comm,n,n,N,N,J);CHKERRQ(ierr);
   ierr = MatMFFDSetFunction(*J,(PetscErrorCode (*)(void*,Vec,Vec))SNESComputeFunction,snes);CHKERRQ(ierr);
   (*J)->ops->assemblyend = MatAssemblyEnd_SNESMF;

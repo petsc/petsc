@@ -208,14 +208,16 @@ PetscErrorCode  MatSetFromOptions(Mat B)
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetUpPreallocation"
 /*@
-   MatSetUpPreallocation
+   MatSetUpPreallocation - If the user has not set preallocation for this matrix then a default preallocation that is likely to be inefficient is used.
 
    Collective on Mat
 
    Input Parameter:
 .  A - the matrix
 
-   Level: beginner
+   Level: advanced
+
+   Notes: See the Performance chapter of the PETSc users manual for how to preallocate matrices
 
 .keywords: matrix, create
 

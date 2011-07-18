@@ -366,6 +366,7 @@ provides faster speed for ethernet systems, we have not tried it but it
 claims it can dramatically reduce latency and increase bandwidth on
 Linux system. You must first install this software and then install
 MPICH or Open MPI to use it.</li>
+       <li>In ${PETSC_DIR} run make streams and when requested enter the number of cores your system has. The more the achieved memory bandwidth increases the more performance you can expect across your multiple cores. If the bandwidth does not increase significently then you cannot expect to get any improvement in parallel performance.
       </ul>
       <a name="license"><font color="#ff0000">What kind of
 license is PETSc released under?</font><br>
@@ -516,12 +517,12 @@ master.<br>
 speedup computations?</font></a><span style="font-weight: bold;"></span></p>
       <p>PETSc-dev has some support for running portions of the
 computation on Nvidia GPUs. See <a
- href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-dev/docs/installation.html#CUDA">installation.html</a>
-for how to install PETSc to use GPUs. PETSc has a Vec class VECCUSP
+ href="http://www.mcs.anl.gov/petsc/petsc-as/features/gpus.html">PETSc GPUs</a>
+for more information. PETSc has a Vec class VECCUSP
 that performs almost all the vector operations on the GPU. The Mat
 class MATCUSP performs matrix-vector products on the GPU but does not
 have matrix assembly on the GPU yet. Both of these classes run in
-parallel with MPI. All KPS methods, except KSPIBCGS, run all their
+parallel with MPI. All KSP methods, except KSPIBCGS, run all their
 vector operations on the GPU thus, for example Jacobi preconditioned
 Krylov methods run completely on the GPU. Preconditioners are a
 problem, we could do with some help for these. The example <a
@@ -1565,6 +1566,7 @@ parallel).</li>
 enough.</li>
         <li>The Jacobian system has a singularity that the linear
 solver is not handling.</li>
+        <li>There is a bug in the function evaluation routine.</li>
       </ul>
 Here are some of the ways to help debug lack of convergence of Newton.<br>
       <ul>

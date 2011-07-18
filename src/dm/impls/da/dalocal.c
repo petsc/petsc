@@ -24,7 +24,7 @@ PetscErrorCode  VecMatlabEnginePut_DA2d(PetscObject obj,void *mengine)
   DM             da;
 
   PetscFunctionBegin;
-  ierr = PetscObjectQuery((PetscObject)vec,"DMDA",(PetscObject*)&da);CHKERRQ(ierr);
+  ierr = PetscObjectQuery((PetscObject)vec,"DM",(PetscObject*)&da);CHKERRQ(ierr);
   if (!da) SETERRQ(((PetscObject)vec)->comm,PETSC_ERR_ARG_WRONGSTATE,"Vector not associated with a DMDA");
   ierr = DMDAGetGhostCorners(da,0,0,0,&m,&n,0);CHKERRQ(ierr);
 
@@ -59,7 +59,7 @@ PetscErrorCode  DMCreateLocalVector_DA(DM da,Vec* g)
   ierr = VecSetSizes(*g,dd->nlocal,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = VecSetType(*g,da->vectype);CHKERRQ(ierr);
   ierr = VecSetBlockSize(*g,dd->w);CHKERRQ(ierr);
-  ierr = PetscObjectCompose((PetscObject)*g,"DMDA",(PetscObject)da);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject)*g,"DM",(PetscObject)da);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
   if (dd->w == 1  && dd->dim == 2) {
     ierr = PetscObjectComposeFunctionDynamic((PetscObject)*g,"PetscMatlabEnginePut_C","VecMatlabEnginePut_DA2d",VecMatlabEnginePut_DA2d);CHKERRQ(ierr);
@@ -227,6 +227,40 @@ PetscErrorCode  DMGetGlobalVector(DM dm,Vec* g)
       dm->globalout[i] = *g;
       break;
     }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMClearGlobalVectors"
+/*@
+   DMClearGlobalVectors - Destroys all the global vectors that have been stashed in this DM
+
+   Collective on DM
+
+   Input Parameter:
+.  dm - the distributed array
+
+   Level: developer
+
+.keywords: distributed array, create, Global, vector
+
+.seealso: DMCreateGlobalVector(), VecDuplicate(), VecDuplicateVecs(),
+          DMDACreate1d(), DMDACreate2d(), DMDACreate3d(), DMGlobalToLocalBegin(),
+          DMGlobalToLocalEnd(), DMLocalToGlobalBegin(), DMCreateLocalVector(), DMRestoreLocalVector()
+          VecStrideMax(), VecStrideMin(), VecStrideNorm()
+
+@*/
+PetscErrorCode  DMClearGlobalVectors(DM dm)
+{
+  PetscErrorCode ierr;
+  PetscInt       i;
+
+  PetscFunctionBegin; 
+  PetscValidHeaderSpecific(dm,DM_CLASSID,1);
+  for (i=0; i<DM_MAX_WORK_VECTORS; i++) {
+    if (dm->globalout[i]) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Clearing DM of global vectors that has a global vector obtained with DMGetGlobalVector()");
+    ierr = VecDestroy(&dm->globalin[i]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -857,7 +891,7 @@ PetscErrorCode  DMDAGetAdicMFArray(DM da,PetscBool  ghosted,void *vptr,void *arr
 PetscErrorCode  DMDAGetAdicMFArray4(DM da,PetscBool  ghosted,void *vptr,void *array_start,PetscInt *tdof)
 {
   PetscErrorCode ierr;
-  PetscInt       j,i,xs,ys,xm,ym,zs,zm,itdof = 0;
+  PetscInt       j,i,xs,ys,xm,ym,itdof = 0;
   char           *iarray_start;
   void           **iptr = (void**)vptr;
   DM_DA          *dd = (DM_DA*)da->data;
@@ -878,10 +912,8 @@ PetscErrorCode  DMDAGetAdicMFArray4(DM da,PetscBool  ghosted,void *vptr,void *ar
     }
     xs = dd->Xs;
     ys = dd->Ys;
-    zs = dd->Zs;
     xm = dd->Xe-dd->Xs;
     ym = dd->Ye-dd->Ys;
-    zm = dd->Ze-dd->Zs;
   } else {
     for (i=0; i<DMDA_MAX_AD_ARRAYS; i++) {
       if (dd->admfarrayin[i]) {
@@ -896,10 +928,8 @@ PetscErrorCode  DMDAGetAdicMFArray4(DM da,PetscBool  ghosted,void *vptr,void *ar
     }
     xs = dd->xs;
     ys = dd->ys;
-    zs = dd->zs;
     xm = dd->xe-dd->xs;
     ym = dd->ye-dd->ys;
-    zm = dd->ze-dd->zs;
   }
 
   switch (dd->dim) {
@@ -951,7 +981,7 @@ PetscErrorCode  DMDAGetAdicMFArray4(DM da,PetscBool  ghosted,void *vptr,void *ar
 PetscErrorCode  DMDAGetAdicMFArray9(DM da,PetscBool  ghosted,void *vptr,void *array_start,PetscInt *tdof)
 {
   PetscErrorCode ierr;
-  PetscInt       j,i,xs,ys,xm,ym,zs,zm,itdof = 0;
+  PetscInt       j,i,xs,ys,xm,ym,itdof = 0;
   char           *iarray_start;
   void           **iptr = (void**)vptr;
   DM_DA          *dd = (DM_DA*)da->data;
@@ -972,10 +1002,8 @@ PetscErrorCode  DMDAGetAdicMFArray9(DM da,PetscBool  ghosted,void *vptr,void *ar
     }
     xs = dd->Xs;
     ys = dd->Ys;
-    zs = dd->Zs;
     xm = dd->Xe-dd->Xs;
     ym = dd->Ye-dd->Ys;
-    zm = dd->Ze-dd->Zs;
   } else {
     for (i=0; i<DMDA_MAX_AD_ARRAYS; i++) {
       if (dd->admfarrayin[i]) {
@@ -990,10 +1018,8 @@ PetscErrorCode  DMDAGetAdicMFArray9(DM da,PetscBool  ghosted,void *vptr,void *ar
     }
     xs = dd->xs;
     ys = dd->ys;
-    zs = dd->zs;
     xm = dd->xe-dd->xs;
     ym = dd->ye-dd->ys;
-    zm = dd->ze-dd->zs;
   }
 
   switch (dd->dim) {

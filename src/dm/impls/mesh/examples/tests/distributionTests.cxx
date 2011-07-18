@@ -2,11 +2,12 @@ static char help[] = "Sieve Package Parallel Correctness Tests.\n\n";
 
 #define ALE_HAVE_CXX_ABI
 #define ALE_MEM_LOGGING
-#include <petscmesh.hh>
-#include <petscmesh_viewers.hh>
+#include <petscdmmesh.hh>
+#include <petscdmmesh_viewers.hh>
 
 #include <IField.hh>
 #include <ParallelMapping.hh>
+#include <Overlap.hh>
 
 using ALE::Obj;
 
@@ -102,28 +103,28 @@ PetscErrorCode CreateScatterOverlap(const Obj<SendOverlap>& sendOverlap, const O
   PetscFunctionReturn(0);
 }
 
+#if 0
 #undef __FUNCT__
 #define __FUNCT__ "ConstantSectionTest"
 PetscErrorCode ConstantSectionTest(const Options *options)
 {
   typedef int point_type;
-  typedef ALE::Sifter<int,point_type,point_type> send_overlap_type;
-  typedef ALE::Sifter<point_type,int,point_type> recv_overlap_type;
+  typedef ALE::Sifter<point_type,int,point_type> send_overlap_type;
+  typedef ALE::Sifter<int,point_type,point_type> recv_overlap_type;
   typedef ALE::ConstantSection<point_type, double> section;
   Obj<send_overlap_type> sendOverlap     = new send_overlap_type(options->comm);
   Obj<recv_overlap_type> recvOverlap     = new recv_overlap_type(options->comm);
   Obj<section>           serialSection   = new section(options->comm, options->debug);
   Obj<section>           parallelSection = new section(options->comm, options->debug);
   section::value_type    value           = 7.0;
-  
+
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = CreateScatterOverlap(sendOverlap, recvOverlap, true, options);CHKERRQ(ierr);
   serialSection->addPoint(sendOverlap->cap());
   if (!options->rank) {
-    serialSection->update(0, &value);
-    parallelSection->update(0, &value);
+    serialSection->updatePoint(0, &value);
   }
   ALE::Completion::completeSection(sendOverlap, recvOverlap, serialSection, parallelSection);
   if (options->debug) {parallelSection->view("Parallel ConstantSection");}
@@ -143,7 +144,7 @@ PetscErrorCode UniformSectionTest(const Options *options)
   Obj<section>           serialSection   = new section(options->comm, options->debug);
   Obj<section>           parallelSection = new section(options->comm, options->debug);
   section::value_type    value[4];
-  
+
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -166,6 +167,7 @@ PetscErrorCode UniformSectionTest(const Options *options)
   if (options->debug) {parallelSection->view("Parallel UniformSection");}
   PetscFunctionReturn(0);
 }
+#endif
 
 // Describe the completion process as the composition of two pullbacks:
 //
@@ -256,8 +258,8 @@ PetscErrorCode SectionTests(const Options *options)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = ConstantSectionTest(options);CHKERRQ(ierr);
-  ierr = UniformSectionTest(options);CHKERRQ(ierr);
+  //ierr = ConstantSectionTest(options);CHKERRQ(ierr);
+  //ierr = UniformSectionTest(options);CHKERRQ(ierr);
   ierr = SectionTest(options);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -325,31 +327,23 @@ PetscErrorCode ISectionTests(const Options *options)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "ViewMesh"
-template<typename Partition>
-PetscErrorCode ViewMesh(const Obj<ALE::Mesh>& mesh, const Obj<Partition>& partition, const Options *options)
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "SieveISectionPartitionTest"
 PetscErrorCode SieveISectionPartitionTest(const Options *options)
 {
-  typedef ALE::Mesh::point_type                        point_type;
+  typedef ALE::Mesh<PetscInt,PetscScalar>              FlexMesh;
+  typedef FlexMesh::point_type                         point_type;
   typedef ALE::Partitioner<>::part_type                rank_type;
   typedef ALE::Sifter<point_type,rank_type,point_type> mesh_send_overlap_type;
   typedef ALE::Sifter<rank_type,point_type,point_type> mesh_recv_overlap_type;
-  typedef ALE::DistributionNew<ALE::Mesh>              distribution_type;
+  typedef ALE::DistributionNew<FlexMesh>               distribution_type;
   typedef distribution_type::partition_type            partition_type;
   double                            lower[2]        = {0.0, 0.0};
   double                            upper[2]        = {1.0, 1.0};
   int                               edges[2]        = {2, 2};
-  const Obj<ALE::Mesh>              mB              = ALE::MeshBuilder::createSquareBoundary(PETSC_COMM_WORLD, lower, upper, edges, 0);
-  const Obj<ALE::Mesh>              mesh            = ALE::Generator::generateMesh(mB, options->interpolate);
-  Obj<ALE::Mesh>                    parallelMesh    = new ALE::Mesh(options->comm, mesh->getDimension(), options->debug);
-  Obj<ALE::Mesh::sieve_type>        parallelSieve   = new ALE::Mesh::sieve_type(options->comm, options->debug);
+  const Obj<FlexMesh>               mB              = ALE::MeshBuilder<FlexMesh>::createSquareBoundary(PETSC_COMM_WORLD, lower, upper, edges, 0);
+  const Obj<FlexMesh>               mesh            = ALE::Generator<FlexMesh>::generateMesh(mB, options->interpolate);
+  Obj<FlexMesh>                     parallelMesh    = new FlexMesh(options->comm, mesh->getDimension(), options->debug);
+  Obj<FlexMesh::sieve_type>         parallelSieve   = new FlexMesh::sieve_type(options->comm, options->debug);
   const Obj<mesh_send_overlap_type> sendMeshOverlap = new mesh_send_overlap_type(mesh->comm(), mesh->debug());
   const Obj<mesh_recv_overlap_type> recvMeshOverlap = new mesh_recv_overlap_type(mesh->comm(), mesh->debug());
   const int                         height          = 0;
@@ -363,7 +357,7 @@ PetscErrorCode SieveISectionPartitionTest(const Options *options)
   if (options->debug) {parallelMesh->view("Parallel Mesh");}
   // Distribute the coordinates
   typedef ALE::ISection<point_type, double> real_section_type;
-  const Obj<ALE::Mesh::real_section_type>& coordinates    = mesh->getRealSection("coordinates");
+  const Obj<FlexMesh::real_section_type>& coordinates    = mesh->getRealSection("coordinates");
   const int                                firstVertex    = parallelMesh->heightStratum(0)->size();
   const int                                lastVertex     = firstVertex+parallelMesh->depthStratum(0)->size();
   const Obj<real_section_type>             newCoordinates = new real_section_type(parallelMesh->comm(), firstVertex, lastVertex, parallelMesh->debug());
@@ -386,8 +380,9 @@ PetscErrorCode SieveISectionPartitionTest(const Options *options)
 #define __FUNCT__ "ISieveISectionPartitionTest"
 PetscErrorCode ISieveISectionPartitionTest(const Options *options)
 {
-  typedef ALE::IMesh                                   mesh_type;
-  typedef ALE::Mesh::point_type                        point_type;
+  typedef ALE::Mesh<PetscInt,PetscScalar>              FlexMesh;
+  typedef ALE::IMesh<PetscInt,PetscScalar>             mesh_type;
+  typedef FlexMesh::point_type                         point_type;
   typedef ALE::Partitioner<>::part_type                rank_type;
   typedef ALE::Sifter<point_type,rank_type,point_type> mesh_send_overlap_type;
   typedef ALE::Sifter<rank_type,point_type,point_type> mesh_recv_overlap_type;
@@ -396,8 +391,8 @@ PetscErrorCode ISieveISectionPartitionTest(const Options *options)
   double                            lower[2]        = {0.0, 0.0};
   double                            upper[2]        = {1.0, 1.0};
   int                               edges[2]        = {2, 2};
-  const Obj<ALE::Mesh>              mB              = ALE::MeshBuilder::createSquareBoundary(PETSC_COMM_WORLD, lower, upper, edges, 0);
-  const Obj<ALE::Mesh>              m               = ALE::Generator::generateMesh(mB, options->interpolate);
+  const Obj<FlexMesh>               mB              = ALE::MeshBuilder<FlexMesh>::createSquareBoundary(PETSC_COMM_WORLD, lower, upper, edges, 0);
+  const Obj<FlexMesh>               m               = ALE::Generator<FlexMesh>::generateMesh(mB, options->interpolate);
   Obj<mesh_type>                    mesh            = new mesh_type(options->comm, m->getDimension(), options->debug);
   Obj<mesh_type::sieve_type>        sieve           = new mesh_type::sieve_type(options->comm, options->debug);
   Obj<mesh_type>                    parallelMesh    = new mesh_type(options->comm, m->getDimension(), options->debug);
@@ -437,6 +432,65 @@ PetscErrorCode ISieveISectionPartitionTest(const Options *options)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "ISieveISectionPartitionNewOverlapTest"
+PetscErrorCode ISieveISectionPartitionNewOverlapTest(const Options *options)
+{
+  typedef ALE::Mesh<PetscInt,PetscScalar>              FlexMesh;
+  typedef ALE::IMesh<PetscInt,PetscScalar>             mesh_type;
+  typedef FlexMesh::point_type                         point_type;
+  typedef ALE::Partitioner<>::part_type                rank_type;
+  typedef PETSc::SendOverlap<point_type,rank_type>     mesh_send_overlap_type;
+  typedef PETSc::RecvOverlap<point_type,rank_type>     mesh_recv_overlap_type;
+  typedef ALE::DistributionNew<mesh_type>              distribution_type;
+  typedef distribution_type::partition_type            partition_type;
+  double                            lower[2]        = {0.0, 0.0};
+  double                            upper[2]        = {1.0, 1.0};
+  int                               edges[2]        = {2, 2};
+  const Obj<FlexMesh>               mB              = ALE::MeshBuilder<FlexMesh>::createSquareBoundary(PETSC_COMM_WORLD, lower, upper, edges, 0);
+  const Obj<FlexMesh>               m               = ALE::Generator<FlexMesh>::generateMesh(mB, options->interpolate);
+  Obj<mesh_type>                    mesh            = new mesh_type(options->comm, m->getDimension(), options->debug);
+  Obj<mesh_type::sieve_type>        sieve           = new mesh_type::sieve_type(options->comm, options->debug);
+  Obj<mesh_type>                    parallelMesh    = new mesh_type(options->comm, m->getDimension(), options->debug);
+  Obj<mesh_type::sieve_type>        parallelSieve   = new mesh_type::sieve_type(options->comm, options->debug);
+  const Obj<mesh_send_overlap_type> sendMeshOverlap = new mesh_send_overlap_type(mesh->comm(), mesh->debug());
+  const Obj<mesh_recv_overlap_type> recvMeshOverlap = new mesh_recv_overlap_type(mesh->comm(), mesh->debug());
+  const int                         height          = 0;
+  std::map<point_type,point_type>   renumbering;
+
+  PetscFunctionBegin;
+  mesh->setSieve(sieve);
+  ALE::ISieveConverter::convertMesh(*m, *mesh, renumbering);
+  renumbering.clear();
+  parallelMesh->setSieve(parallelSieve);
+  sendMeshOverlap->setName("Send mesh overlap");
+  recvMeshOverlap->setName("Receive mesh overlap");
+  if (options->debug) {mesh->view("Serial Mesh");}
+  Obj<partition_type> partition = distribution_type::distributeMeshV(mesh, parallelMesh, renumbering, sendMeshOverlap, recvMeshOverlap, height);
+  if (options->debug) {parallelMesh->view("Parallel Mesh");}
+  //sendMeshOverlap->view("");
+  //recvMeshOverlap->view("");
+  // Distribute the coordinates
+  typedef mesh_type::real_section_type real_section_type;
+  const Obj<real_section_type>& coordinates         = mesh->getRealSection("coordinates");
+  const Obj<real_section_type>& parallelCoordinates = parallelMesh->getRealSection("coordinates");
+
+  if (options->debug) {coordinates->view("Serial Coordinates");}
+  parallelMesh->setupCoordinates(parallelCoordinates);
+  distribution_type::distributeSection(coordinates, partition, renumbering, sendMeshOverlap, recvMeshOverlap, parallelCoordinates);
+  if (options->debug) {parallelCoordinates->view("Parallel Coordinates");}
+  // Create the parallel overlap
+  Obj<mesh_send_overlap_type> sendParallelMeshOverlap = new mesh_send_overlap_type(options->comm);
+  Obj<mesh_recv_overlap_type> recvParallelMeshOverlap = new mesh_recv_overlap_type(options->comm);
+  //   Can I figure this out in a nicer way?
+  ALE::SetFromMap<std::map<point_type,point_type> > globalPoints(renumbering);
+
+  ALE::OverlapBuilder<>::constructOverlap(globalPoints, renumbering, sendParallelMeshOverlap, recvParallelMeshOverlap);
+  sendParallelMeshOverlap->view("Send parallel mesh overlap");
+  recvParallelMeshOverlap->view("Receive parallel mesh overlap");
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PartitionTests"
 PetscErrorCode PartitionTests(const Options *options)
 {
@@ -445,6 +499,7 @@ PetscErrorCode PartitionTests(const Options *options)
   PetscFunctionBegin;
   ierr = SieveISectionPartitionTest(options);CHKERRQ(ierr);
   ierr = ISieveISectionPartitionTest(options);CHKERRQ(ierr);
+  ierr = ISieveISectionPartitionNewOverlapTest(options);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

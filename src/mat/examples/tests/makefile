@@ -12,7 +12,7 @@ EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c\
 		   ex44.c ex45.c ex47.c ex48.c ex49.c ex50.c ex51.c ex52.c \
 		   ex53.c ex54.c ex55.c ex56.c ex57.c ex58.c ex59.c ex60.c ex61.c \
 		   ex62.c ex64.c ex65.c ex66.c ex68.c ex70.c ex71.c ex72.c ex73.c ex74.c \
-                   ex75.c ex76.c ex80.c ex81.c ex77.c ex78.c ex86.c ex87.c \
+                   ex75.c ex76.c ex80.c ex81.c ex77.c ex78.c ex86.c ex87.c ex88.c \
                    ex91.c ex92.c ex93.c ex94.c ex95.c ex96.c ex97.c ex98.c ex99.c ex100.c \
                    ex101.c ex102.c ex103.c ex104.c ex106.c ex107.c ex108.c ex109.c ex110.c\
                    ex111.c ex112.c ex113.c ex114.c ex115.c ex116.c ex117.c ex118.c ex119.c ex120.c ex121.c ex122.c ex123.c \
@@ -336,6 +336,10 @@ ex87: ex87.o chkopts
 	-${CLINKER} -o ex87 ex87.o ${PETSC_MAT_LIB}
 	${RM} ex87.o
 
+ex88: ex88.o chkopts
+	-${CLINKER} -o ex88 ex88.o ${PETSC_MAT_LIB}
+	${RM} ex88.o
+
 ex91: ex91.o chkopts
 	-${CLINKER} -o ex91 ex91.o ${PETSC_MAT_LIB}
 	${RM} ex91.o
@@ -552,6 +556,57 @@ ex143: ex143.o chkopts
 	-${CLINKER} -o ex143 ex143.o ${PETSC_MAT_LIB}
 	${RM} ex143.o
 
+ex144: ex144.o chkopts
+	-${CLINKER} -o ex144 ex144.o ${PETSC_MAT_LIB}
+	${RM} ex144.o
+
+ex145: ex145.o chkopts
+	-${CLINKER} -o ex145 ex145.o ${PETSC_MAT_LIB}
+	${RM} ex145.o
+
+ex146: ex146.o chkopts
+	-${CLINKER} -o ex146 ex146.o ${PETSC_MAT_LIB}
+	${RM} ex146.o
+
+ex147: ex147.o chkopts
+	-${CLINKER} -o ex147 ex147.o ${PETSC_MAT_LIB}
+	${RM} ex147.o
+
+ex148: ex148.o chkopts
+	-${CLINKER} -o ex148 ex148.o ${PETSC_MAT_LIB}
+	${RM} ex148.o
+
+ex149: ex149.o chkopts
+	-${CLINKER} -o ex149 ex149.o ${PETSC_MAT_LIB}
+	${RM} ex149.o
+
+ex150: ex150.o chkopts
+	-${CLINKER} -o ex150 ex150.o ${PETSC_MAT_LIB}
+	${RM} ex150.o
+
+ex151: ex151.o chkopts
+	-${CLINKER} -o ex151 ex151.o ${PETSC_MAT_LIB}
+	${RM} ex151.o
+
+ex152: ex152.o chkopts
+	-${CLINKER} -o ex152 ex152.o ${PETSC_MAT_LIB}
+	${RM} ex152.o
+
+ex153: ex153.o chkopts
+	-${CLINKER} -o ex153 ex153.o ${PETSC_MAT_LIB}
+	${RM} ex153.o
+
+ex154: ex154.o chkopts
+	-${CLINKER} -o ex154 ex154.o ${PETSC_MAT_LIB}
+	${RM} ex154.o
+
+ex155: ex155.o chkopts
+	-${CLINKER} -o ex155 ex155.o ${PETSC_MAT_LIB}
+	${RM} ex155.o
+
+ex156: ex156.o chkopts
+	-${CLINKER} -o ex156 ex156.o ${PETSC_MAT_LIB}
+	${RM} ex156.o
 #-----------------------------------------------------------------------------
 NPROCS    = 1 3
 MATSHAPES = A B
@@ -1161,6 +1216,10 @@ runex85f:
 	   if (${DIFF} output/ex85f_1.out ex85f_1.tmp) then true; \
 	   else echo "Possible problem with ex85f_1, diffs above"; fi; \
 	   ${RM} -f ex85f_1.tmp
+runex88:
+	-@${MPIEXEC} -n 1  ./ex88 > ex88_1.tmp 2>&1;   \
+	   ${DIFF} output/ex88_1.out ex88_1.tmp || echo "Possible problem with ex88_1, diffs above"; \
+	   ${RM} -f ex88_1.tmp
 runex91:
 	-@${MPIEXEC} -n 1  ./ex91 -ov 2 > ex91_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex91_1.out ex91_1.tmp) then true; \
@@ -1508,6 +1567,24 @@ runex143_2:
 	   ${DIFF} output/ex143.out ex143.tmp || echo "Possible problem with ex143_2, diffs above"; \
 	   ${RM} -f ex143.tmp
 
+runex144:
+	-@${MPIEXEC} -n 1 ./ex144  > ex144.tmp 2>&1; \
+	   ${DIFF} output/ex144.out ex144.tmp || echo "Possible problem with ex144, diffs above"; \
+	   ${RM} -f ex144.tmp
+runex144_2:
+	-@${MPIEXEC} -n 3 ./ex144  > ex144.tmp 2>&1; \
+	   ${DIFF} output/ex144.out ex144.tmp || echo "Possible problem with ex144_2, diffs above"; \
+	   ${RM} -f ex144.tmp
+
+runex148:
+	-@${MPIEXEC} -n 1 ./ex148  > ex148.tmp 2>&1; \
+	   ${DIFF} output/ex148.out ex148.tmp || echo "Possible problem with ex148, diffs above"; \
+	   ${RM} -f ex148.tmp
+runex148_2:
+	-@${MPIEXEC} -n 3 ./ex148  > ex148.tmp 2>&1; \
+	   ${DIFF} output/ex148.out ex148.tmp || echo "Possible problem with ex148_2, diffs above"; \
+	   ${RM} -f ex148.tmp
+
 TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex4.PETSc runex4 ex4.rm  ex5.PETSc runex5 runex5_2 ex5.rm \
                                  ex6.PETSc runex6 ex6.rm ex8.PETSc runex8 ex8.rm ex9.PETSc runex9 ex9.rm ex10.PETSc \
                                  runex10 ex10.rm ex11.PETSc runex11 runex11_2 runex11_3 runex11_4 ex11.rm ex14.PETSc \
@@ -1517,7 +1594,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex4.PET
                                  ex59.rm ex60.PETSc runex60 ex60.rm ex61.PETSc runex61 runex61_2 ex61.rm ex65.PETSc \
                                  ex65.rm ex66.PETSc ex66.rm ex98.PETSc runex98 ex98.rm ex102.PETSc runex102 ex102.rm\
                                  ex52.PETSc runex52_1 runex52_2 runex52_3 runex52_4 ex52.rm \
-                                 ex92.PETSc runex92 ex92.rm \
+                                 ex88.PETSc runex88 ex88.rm ex92.PETSc runex92 ex92.rm \
                                  ex97.PETSc runex97 ex97.rm ex104.PETSc runex104 ex104.rm \
                                  ex109.PETSc runex109 runex109_2 ex109.rm ex110.PETSc runex110 ex110.rm ex122.PETSc runex122 ex122.rm \
                                  ex114.PETSc runex114 runex114_2 runex114_3 ex114.rm ex117.PETSc ex117.rm ex118.PETSc ex118.rm ex119.PETSc ex119.rm \
@@ -1556,7 +1633,9 @@ TESTEXAMPLES_13		       = ex58f.PETSc ex58f.rm ex70.PETSc ex70.rm ex72.PETSc ex7
 TESTEXAMPLES_PARMETIS	       = ex73.PETSc ex73.rm
 TESTEXAMPLES_PLAPACK 	       = ex103.PETSc runex103_2 ex103.rm ex107.PETSc runex107 runex107_2 ex107.rm \
                                  ex115.PETSc ex115.rm ex123.PETSc ex123.rm
-TESTEXAMPLES_FFTW	       = ex112.PETSc runex112 runex112_2 runex112_3 runex112_4 ex112.rm ex121.PETSc runex121 ex121.rm
+TESTEXAMPLES_FFTW              = ex142.PETSc ex142.rm ex144.PETSc runex144 runex144_2 ex144.rm ex146.PETSc ex146.rm
+TESTEXAMPLES_FFTW_COMPLEX      = ex112.PETSc runex112 runex112_2 runex112_3 runex112_4 ex112.rm ex121.PETSc runex121 ex121.rm \
+                                 ex143.PETSc runex143 runex143_2 ex143.rm ex145.PETSc ex145.rm
 TESTEXAMPLES_C_COMPLEX	       = ex127.PETSc runex127 runex127_2 ex127.rm 
 
 include ${PETSC_DIR}/conf/test

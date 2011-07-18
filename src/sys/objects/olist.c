@@ -7,9 +7,52 @@
 
 struct _n_PetscOList {
     char        name[256];
+    PetscBool   skipdereference;   /* when the OList is destroyed do not call PetscObjectDereference() on this object */
     PetscObject obj;
     PetscOList  next;
 };
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscOListRemoveReference"
+/*@C
+     PetscOListRemoveReference - Calls PetscObjectDereference() on an object in the list immediately but keeps a pointer to the object in the list.
+
+    Input Parameters:
++     fl - the object list
+-     name - the name to use for the object
+
+    Level: developer
+
+       Notes: Use PetscOListAdd(PetscOList,const char name[],PETSC_NULL) to truly remove the object from the list
+ 
+              Use this routine ONLY if you know that the object referenced will remain in existence until the pointing object is destroyed
+
+      Developer Note: this is to handle some cases that otherwise would result in having circular references so reference counts never got to zero
+
+.seealso: PetscOListDestroy(), PetscOListFind(), PetscOListDuplicate(), PetscOListReverseFind(), PetscOListDuplicate(), PetscOListAdd()
+
+@*/
+PetscErrorCode  PetscOListRemoveReference(PetscOList *fl,const char name[])
+{
+  PetscOList     nlist;
+  PetscErrorCode ierr;
+  PetscBool      match;
+
+  PetscFunctionBegin;
+  nlist = *fl;
+  while (nlist) {
+    ierr = PetscStrcmp(name,nlist->name,&match);CHKERRQ(ierr);
+    if (match) { /* found it in the list */
+      if (!nlist->skipdereference) { 
+        ierr = PetscObjectDereference(nlist->obj);CHKERRQ(ierr);
+      }
+      nlist->skipdereference = PETSC_TRUE;
+      PetscFunctionReturn(0);
+    }
+    nlist = nlist->next;
+  }
+  PetscFunctionReturn(0); 
+}
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscOListAdd"
@@ -43,7 +86,9 @@ PetscErrorCode  PetscOListAdd(PetscOList *fl,const char name[],PetscObject obj)
     while (nlist) {
       ierr = PetscStrcmp(name,nlist->name,&match);CHKERRQ(ierr);
       if (match) {  /* found it already in the list */
-        ierr = PetscObjectDereference(nlist->obj);CHKERRQ(ierr);
+        if (!nlist->skipdereference) { 
+          ierr = PetscObjectDereference(nlist->obj);CHKERRQ(ierr);
+        }
         if (prev) prev->next = nlist->next;
         else if (nlist->next) {
           *fl = nlist->next;
@@ -64,15 +109,17 @@ PetscErrorCode  PetscOListAdd(PetscOList *fl,const char name[],PetscObject obj)
     ierr = PetscStrcmp(name,nlist->name,&match);CHKERRQ(ierr);
     if (match) {  /* found it in the list */
       ierr = PetscObjectReference(obj);CHKERRQ(ierr);
-      ierr = PetscObjectDereference(nlist->obj);CHKERRQ(ierr);
-      nlist->obj = obj;
+      if (!nlist->skipdereference) { 
+        ierr = PetscObjectDereference(nlist->obj);CHKERRQ(ierr);
+      }
+      nlist->skipdereference = PETSC_FALSE;
+      nlist->obj             = obj;
       PetscFunctionReturn(0);
     }
     nlist = nlist->next;
   }
 
   /* add it to list, because it was not already there */
-
   ierr        = PetscNew(struct _n_PetscOList,&olist);CHKERRQ(ierr);
   olist->next = 0;
   olist->obj  = obj;
@@ -112,7 +159,9 @@ PetscErrorCode  PetscOListDestroy(PetscOList *ifl)
   PetscFunctionBegin;
   while (fl) {
     tmp   = fl->next;
-    ierr  = PetscObjectDereference(fl->obj);CHKERRQ(ierr);
+    if (!fl->skipdereference) {
+      ierr  = PetscObjectDereference(fl->obj);CHKERRQ(ierr);
+    }
     ierr  = PetscFree(fl);CHKERRQ(ierr);
     fl    = tmp;
   }
@@ -136,8 +185,9 @@ PetscErrorCode  PetscOListDestroy(PetscOList *ifl)
     Level: developer
 
     Notes:
-    The name must have been registered with the PetscOListAdd() before calling this 
-    routine.
+    The name must have been registered with the PetscOListAdd() before calling this routine.
+
+    The reference count of the object is not increased
 
 .seealso: PetscOListDestroy(), PetscOListAdd(), PetscOListDuplicate(), PetscOListReverseFind(), PetscOListDuplicate()
 
@@ -148,7 +198,6 @@ PetscErrorCode  PetscOListFind(PetscOList fl,const char name[],PetscObject *obj)
   PetscBool      match;
 
   PetscFunctionBegin;
-
   *obj = 0;
   while (fl) {
     ierr = PetscStrcmp(name,fl->name,&match);CHKERRQ(ierr);
@@ -171,25 +220,27 @@ PetscErrorCode  PetscOListFind(PetscOList fl,const char name[],PetscObject *obj)
 -   ob - the PETSc object
 
     Output Parameters:
-.   name - name string
++  name - name string
+-  skipdereference - if the object is list but does not have the increased reference count for a circular dependency
 
     Level: developer
 
     Notes:
-    The name must have been registered with the PetscOListAdd() before calling this 
-    routine.
+    The name must have been registered with the PetscOListAdd() before calling this routine.
+
+    The reference count of the object is not increased
 
 .seealso: PetscOListDestroy(), PetscOListAdd(), PetscOListDuplicate(), PetscOListFind(), PetscOListDuplicate()
 
 @*/
-PetscErrorCode  PetscOListReverseFind(PetscOList fl,PetscObject obj,char **name)
+PetscErrorCode  PetscOListReverseFind(PetscOList fl,PetscObject obj,char **name,PetscBool *skipdereference)
 {
   PetscFunctionBegin;
-
   *name = 0;
   while (fl) {
     if (fl->obj == obj) {
       *name = fl->name;
+      if (skipdereference) *skipdereference = fl->skipdereference;
       break;
     }
     fl = fl->next;

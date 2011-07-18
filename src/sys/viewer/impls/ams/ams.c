@@ -192,7 +192,7 @@ PetscErrorCode PetscViewer_AMS_Destroy(MPI_Comm comm)
   }
   ierr = MPI_Attr_get(comm,Petsc_Viewer_Ams_keyval,(void **)&viewer,&flag);CHKERRQ(ierr);
   if (flag) { 
-    ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     ierr = MPI_Attr_delete(comm,Petsc_Viewer_Ams_keyval);CHKERRQ(ierr);
   } 
   PetscFunctionReturn(0);

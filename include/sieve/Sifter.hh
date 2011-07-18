@@ -698,6 +698,8 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
     PetscObject petscObj() const {return this->_petscObj;};
 #endif
 
+    // Added to allow optimized versions
+    void assemble() {};
     // FIX: need const_cap, const_base returning const capSequence etc, but those need to have const_iterators, const_begin etc.
     Obj<typename traits::capSequence> cap() {
       return typename traits::capSequence(::boost::multi_index::get<typename traits::capInd>(this->_cap.set));
@@ -705,6 +707,22 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
     Obj<typename traits::baseSequence> base() {
       return typename traits::baseSequence(::boost::multi_index::get<typename traits::baseInd>(this->_base.set));
     };
+    typename traits::capSequence::iterator capBegin() {
+      return this->cap()->begin();
+    };
+    typename traits::capSequence::iterator capEnd() {
+      return this->cap()->end();
+    };
+    typename traits::baseSequence::iterator baseBegin() {
+      return this->base()->begin();
+    };
+    typename traits::baseSequence::iterator baseEnd() {
+      return this->base()->end();
+    };
+    int getBaseSize() {return this->base()->size();};
+    void setBaseSize(int size) {};
+    int getCapSize() {return this->cap()->size();};
+    void setCapSize(int size) {};
     bool capContains(const typename traits::source_type& p) {
       typename traits::capSequence cap(::boost::multi_index::get<typename traits::capInd>(this->_cap.set));
 
@@ -740,6 +758,15 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
       this->_coneSeq->setUseSubkey(false);
       return this->_coneSeq;
     };
+    const typename traits::coneSequence::iterator
+    coneBegin(const typename traits::target_type& p) {
+      return this->cone(p)->begin();
+    };
+    const typename traits::coneSequence::iterator
+    coneEnd(const typename traits::target_type& p) {
+      return this->cone(p)->end();
+    };
+    void setConeSize(const typename traits::target_type& p, int size) {};
 #endif
     template<class InputSequence> 
     Obj<typename traits::coneSet> 
@@ -807,6 +834,23 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
       this->_supportSeq->setUseSubkey(false);
       return this->_supportSeq;
     };
+    const typename traits::supportSequence::iterator
+    supportBegin(const typename traits::source_type& p) {
+      return this->support(p)->begin();
+    };
+    const typename traits::supportSequence::iterator
+    supportEnd(const typename traits::source_type& p) {
+      return this->support(p)->end();
+    };
+    const typename traits::supportSequence::iterator
+    supportBegin(const typename traits::source_type& p, const typename traits::color_type& color) {
+      return this->support(p, color)->begin();
+    };
+    const typename traits::supportSequence::iterator
+    supportEnd(const typename traits::source_type& p, const typename traits::color_type& color) {
+      return this->support(p, color)->end();
+    };
+    void setSupportSize(const typename traits::source_type& p, int size) {};
 #endif
 #ifdef SLOW
     Obj<typename traits::supportSequence> 
@@ -861,6 +905,9 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
     }
     int getSupportSize(const typename traits::source_type& p) {
       return this->support(p)->size();
+    }
+    int getSupportSize(const typename traits::source_type& p, const typename traits::color_type& color) {
+      return this->support(p, color)->size();
     }
 
     template<typename ostream_type>
@@ -1030,6 +1077,25 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
       PetscFunctionReturn(0);
     };
   public:
+    void copy(ASifter *newSifter) {
+      const typename traits::baseSequence::iterator sBegin = this->baseBegin();
+      const typename traits::baseSequence::iterator sEnd   = this->baseEnd();
+
+      for(typename traits::baseSequence::iterator r_iter = sBegin; r_iter != sEnd; ++r_iter) {
+        const typename traits::coneSequence::iterator pBegin = this->coneBegin(*r_iter);
+        const typename traits::coneSequence::iterator pEnd   = this->coneEnd(*r_iter);
+
+        for(typename traits::coneSequence::iterator p_iter = pBegin; p_iter != pEnd; ++p_iter) {
+          const Obj<typename traits::supportSequence>&              support  = this->support(*p_iter);
+          const typename traits::supportSequence::iterator supBegin = support->begin();
+          const typename traits::supportSequence::iterator supEnd   = support->end();
+
+          for(typename traits::supportSequence::iterator s_iter = supBegin; s_iter != supEnd; ++s_iter) {
+            newSifter->addArrow(*p_iter, *s_iter, s_iter.color());
+          }
+        }
+      }
+    };
     //
     // Lattice queries
     //

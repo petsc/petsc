@@ -30,7 +30,7 @@ class Configure(PETSc.package.NewPackage):
        matlab_sys = ''
     self.lib = [matlab_sys,'-L'+os.path.join(self.matlab.matlab,'bin',self.matlab.matlab_arch),'-L'+os.path.join(self.matlab.matlab,'extern','lib',self.matlab.matlab_arch),'-leng','-lmex','-lmx','-lmat','-lut','-licudata','-licui18n','-licuuc'] + matlab_dl
     if self.setCompilers.isDarwin():
-      self.logPrintBox('You may need to set DYLD_LIBRARY_PATH to '+os.path.join(self.matlab.matlab,'bin',self.matlab.matlab_arch)+':'+os.path.join(self.matlab.matlab,'sys','os',self.matlab.matlab_arch))
+      self.logPrintBox('You may need to set DYLD_FALLBACK_LIBRARY_PATH to '+os.path.join(self.matlab.matlab,'bin',self.matlab.matlab_arch)+':'+os.path.join(self.matlab.matlab,'sys','os',self.matlab.matlab_arch))
     self.framework.packages.append(self)
     self.found = 1
     return

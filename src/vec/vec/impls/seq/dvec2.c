@@ -569,7 +569,7 @@ PetscErrorCode VecSet_Seq(Vec xin,PetscScalar alpha)
 
   PetscFunctionBegin;
   ierr = VecGetArray(xin,&xx);CHKERRQ(ierr);
-  if (alpha == 0.0) {
+  if (alpha == (PetscScalar)0.0) {
     ierr = PetscMemzero(xx,n*sizeof(PetscScalar));CHKERRQ(ierr);
   } else {
     for (i=0; i<n; i++) xx[i] = alpha;
@@ -663,11 +663,11 @@ PetscErrorCode VecAYPX_Seq(Vec yin,PetscScalar alpha,Vec xin)
   const PetscScalar *xx;
 
   PetscFunctionBegin;
-  if (alpha == 0.0) {
+  if (alpha == (PetscScalar)0.0) {
     ierr = VecCopy(xin,yin);CHKERRQ(ierr);
-  } else if (alpha == 1.0) {
+  } else if (alpha == (PetscScalar)1.0) {
     ierr = VecAXPY_Seq(yin,alpha,xin);CHKERRQ(ierr);
-  } else if (alpha == -1.0) {
+  } else if (alpha == (PetscScalar)-1.0) {
     PetscInt i;
     ierr = VecGetArrayRead(xin,&xx);CHKERRQ(ierr);
     ierr = VecGetArray(yin,&yy);CHKERRQ(ierr);
@@ -720,14 +720,14 @@ PetscErrorCode VecWAXPY_Seq(Vec win, PetscScalar alpha,Vec xin,Vec yin)
   ierr = VecGetArrayRead(xin,&xx);CHKERRQ(ierr);
   ierr = VecGetArrayRead(yin,&yy);CHKERRQ(ierr);
   ierr = VecGetArray(win,&ww);CHKERRQ(ierr);
-  if (alpha == 1.0) {
+  if (alpha == (PetscScalar)1.0) {
     ierr = PetscLogFlops(n);CHKERRQ(ierr);
     /* could call BLAS axpy after call to memcopy, but may be slower */
     for (i=0; i<n; i++) ww[i] = yy[i] + xx[i];
-  } else if (alpha == -1.0) {
+  } else if (alpha == (PetscScalar)-1.0) {
     ierr = PetscLogFlops(n);CHKERRQ(ierr);
     for (i=0; i<n; i++) ww[i] = yy[i] - xx[i];
-  } else if (alpha == 0.0) {
+  } else if (alpha == (PetscScalar)0.0) {
     ierr = PetscMemcpy(ww,yy,n*sizeof(PetscScalar));CHKERRQ(ierr);
   } else {
     PetscScalar oalpha = alpha;
@@ -758,7 +758,7 @@ PetscErrorCode VecMaxPointwiseDivide_Seq(Vec xin,Vec yin,PetscReal *max)
   ierr = VecGetArrayRead(xin,&xx);CHKERRQ(ierr);
   ierr = VecGetArrayRead(yin,&yy);CHKERRQ(ierr);
   for(i = 0; i < n; i++) {
-    if (yy[i] != 0.0) {
+    if (yy[i] != (PetscScalar)0.0) {
       m = PetscMax(PetscAbsScalar(xx[i]/yy[i]), m);
     } else {
       m = PetscMax(PetscAbsScalar(xx[i]), m);
