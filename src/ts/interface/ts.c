@@ -91,7 +91,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     if (opt) {ierr = TSSetInitialTimeStep(ts,ts->ptime,dt);CHKERRQ(ierr);}
     opt = ts->exact_final_time == PETSC_DECIDE ? PETSC_FALSE : (PetscBool)ts->exact_final_time;
     ierr = PetscOptionsBool("-ts_exact_final_time","Interpolate output to stop exactly at the final time","TSSetExactFinalTime",opt,&opt,&flg);CHKERRQ(ierr);
-    if (flg) {ierr = TSSetExactFinalTime(ts,flg);CHKERRQ(ierr);}
+    if (flg) {ierr = TSSetExactFinalTime(ts,opt);CHKERRQ(ierr);}
     ierr = PetscOptionsInt("-ts_max_snes_failures","Maximum number of nonlinear solve failures","",ts->max_snes_failures,&ts->max_snes_failures,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-ts_max_reject","Maximum number of step rejections","",ts->max_reject,&ts->max_reject,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-ts_error_if_step_failed","Error if no step succeeds","",ts->errorifstepfailed,&ts->errorifstepfailed,PETSC_NULL);CHKERRQ(ierr);
