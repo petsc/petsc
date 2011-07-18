@@ -469,7 +469,6 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
     //could take any of the above versions
     PetscThreadInitialize = &PetscThreadInitialize_True;
     PetscThreadFinalize   = &PetscThreadFinalize_True;
-    MainWait              = &MainWait_True;
     MainJob               = &MainJob_True;
   }
   PetscThreadInitialize(PetscMaxThreads);
