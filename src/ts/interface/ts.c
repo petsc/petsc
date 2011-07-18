@@ -1845,7 +1845,7 @@ PetscErrorCode TSSolve(TS ts,Vec x,PetscReal *ftime)
   if (ts->ops->solve) {         /* This private interface is transitional and should be removed when all implementations are updated. */
     ierr = (*ts->ops->solve)(ts);CHKERRQ(ierr);
     ierr = VecCopy(ts->vec_sol,x);CHKERRQ(ierr);
-    if (*ftime) *ftime = ts->ptime;
+    if (ftime) *ftime = ts->ptime;
   } else {
     i = 0;
     if (i >= ts->max_steps) ts->reason = TS_CONVERGED_ITS;
