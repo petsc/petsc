@@ -65,7 +65,6 @@ T*/
      petscviewer.h - viewers               petscpc.h  - preconditioners
      petscksp.h   - linear solvers 
 */
-#define _GNU_SOURCE
 #include <petscsnes.h>
 #include <petscdmda.h>
 #include <petscdmmg.h>
