@@ -114,33 +114,33 @@ void*          (*PetscThreadInitialize)(PetscInt) = NULL;
 PetscErrorCode (*PetscThreadFinalize)(void) = NULL;
 void           (*MainWait)(void) = NULL;
 PetscErrorCode (*MainJob)(void* (*pFunc)(void*),void**,PetscInt) = NULL;
-/**** Tree Functions ****/
+/**** Tree Thread Pool Functions ****/
 void*          PetscThreadFunc_Tree(void*);
 void*          PetscThreadInitialize_Tree(PetscInt);
 PetscErrorCode PetscThreadFinalize_Tree(void);
 void           MainWait_Tree(void);
 PetscErrorCode MainJob_Tree(void* (*pFunc)(void*),void**,PetscInt);
-/**** Main Functions ****/
+/**** Main Thread Pool Functions ****/
 void*          PetscThreadFunc_Main(void*);
 void*          PetscThreadInitialize_Main(PetscInt);
 PetscErrorCode PetscThreadFinalize_Main(void);
 void           MainWait_Main(void);
 PetscErrorCode MainJob_Main(void* (*pFunc)(void*),void**,PetscInt);
-/**** Chain Functions ****/
+/**** Chain Thread Pool Functions ****/
 void*          PetscThreadFunc_Chain(void*);
 void*          PetscThreadInitialize_Chain(PetscInt);
 PetscErrorCode PetscThreadFinalize_Chain(void);
 void           MainWait_Chain(void);
 PetscErrorCode MainJob_Chain(void* (*pFunc)(void*),void**,PetscInt);
-/**** True Functions ****/
+/**** True Thread Pool Functions ****/
 void*          PetscThreadFunc_True(void*);
 void*          PetscThreadInitialize_True(PetscInt);
 PetscErrorCode PetscThreadFinalize_True(void);
 void           MainWait_True(void);
 PetscErrorCode MainJob_True(void* (*pFunc)(void*),void**,PetscInt);
-/****  ****/
+/**** NO Thread Pool Function  ****/
 PetscErrorCode MainJob_Spawn(void* (*pFunc)(void*),void**,PetscInt);
-
+/****  ****/
 void* FuncFinish(void*);
 void* PetscThreadRun(MPI_Comm Comm,void* (*pFunc)(void*),int,pthread_t*,void**);
 void* PetscThreadStop(MPI_Comm Comm,int,pthread_t*);
@@ -1026,26 +1026,20 @@ void MainWait_Tree() {
 PetscErrorCode MainJob_Tree(void* (*pFunc)(void*),void** data,PetscInt n) {
   int i,ierr;
   PetscErrorCode ijoberr = 0;
-  if(PetscUseThreadPool) {
-    MainWait();
-    job_tree.pfunc = pFunc;
-    job_tree.pdata = data;
-    job_tree.startJob = PETSC_TRUE;
-    for(i=0; i<PetscMaxThreads; i++) {
-      *(job_tree.arrThreadStarted[i]) = PETSC_FALSE;
-    }
-    job_tree.eJobStat = JobInitiated;
-    ierr = pthread_cond_signal(job_tree.cond2array[0]);
-    if(pFunc!=FuncFinish) {
-      MainWait(); /* why wait after? guarantees that job gets done before proceeding with result collection (if any) */
-    }
+
+  MainWait();
+  job_tree.pfunc = pFunc;
+  job_tree.pdata = data;
+  job_tree.startJob = PETSC_TRUE;
+  for(i=0; i<PetscMaxThreads; i++) {
+    *(job_tree.arrThreadStarted[i]) = PETSC_FALSE;
   }
-  else {
-    pthread_t* apThread = (pthread_t*)malloc(n*sizeof(pthread_t));
-    PetscThreadRun(MPI_COMM_WORLD,pFunc,n,apThread,data);
-    PetscThreadStop(MPI_COMM_WORLD,n,apThread); /* ensures that all threads are finished with the job */
-    free(apThread);
+  job_tree.eJobStat = JobInitiated;
+  ierr = pthread_cond_signal(job_tree.cond2array[0]);
+  if(pFunc!=FuncFinish) {
+    MainWait(); /* why wait after? guarantees that job gets done before proceeding with result collection (if any) */
   }
+
   if(ithreaderr) {
     ijoberr = ithreaderr;
   }
@@ -1198,27 +1192,21 @@ void MainWait_Main() {
 PetscErrorCode MainJob_Main(void* (*pFunc)(void*),void** data,PetscInt n) {
   int i,ierr;
   PetscErrorCode ijoberr = 0;
-  if(PetscUseThreadPool) {
-    MainWait(); /* you know everyone is waiting to be signalled! */
-    job_main.pfunc = pFunc;
-    job_main.pdata = data;
-    for(i=0; i<PetscMaxThreads; i++) {
-      *(job_main.arrThreadReady[i]) = PETSC_FALSE; /* why do this?  suppose you get into MainWait first */
-    }
-    /* tell the threads to go to work */
-    for(i=0; i<PetscMaxThreads; i++) {
-      ierr = pthread_cond_signal(job_main.cond2array[i]);
-    }
-    if(pFunc!=FuncFinish) {
-      MainWait(); /* why wait after? guarantees that job gets done before proceeding with result collection (if any) */
-    }
+
+  MainWait(); /* you know everyone is waiting to be signalled! */
+  job_main.pfunc = pFunc;
+  job_main.pdata = data;
+  for(i=0; i<PetscMaxThreads; i++) {
+    *(job_main.arrThreadReady[i]) = PETSC_FALSE; /* why do this?  suppose you get into MainWait first */
   }
-  else {
-    pthread_t* apThread = (pthread_t*)malloc(n*sizeof(pthread_t));
-    PetscThreadRun(MPI_COMM_WORLD,pFunc,n,apThread,data);
-    PetscThreadStop(MPI_COMM_WORLD,n,apThread); /* ensures that all threads are finished with the job */
-    free(apThread);
+  /* tell the threads to go to work */
+  for(i=0; i<PetscMaxThreads; i++) {
+    ierr = pthread_cond_signal(job_main.cond2array[i]);
   }
+  if(pFunc!=FuncFinish) {
+    MainWait(); /* why wait after? guarantees that job gets done before proceeding with result collection (if any) */
+  }
+
   if(ithreaderr) {
     ijoberr = ithreaderr;
   }
@@ -1432,26 +1420,20 @@ void MainWait_Chain() {
 PetscErrorCode MainJob_Chain(void* (*pFunc)(void*),void** data,PetscInt n) {
   int i,ierr;
   PetscErrorCode ijoberr = 0;
-  if(PetscUseThreadPool) {
-    MainWait();
-    job_chain.pfunc = pFunc;
-    job_chain.pdata = data;
-    job_chain.startJob = PETSC_TRUE;
-    for(i=0; i<PetscMaxThreads; i++) {
-      *(job_chain.arrThreadStarted[i]) = PETSC_FALSE;
-    }
-    job_chain.eJobStat = JobInitiated;
-    ierr = pthread_cond_signal(job_chain.cond2array[0]);
-    if(pFunc!=FuncFinish) {
-      MainWait(); /* why wait after? guarantees that job gets done before proceeding with result collection (if any) */
-    }
+
+  MainWait();
+  job_chain.pfunc = pFunc;
+  job_chain.pdata = data;
+  job_chain.startJob = PETSC_TRUE;
+  for(i=0; i<PetscMaxThreads; i++) {
+    *(job_chain.arrThreadStarted[i]) = PETSC_FALSE;
   }
-  else {
-    pthread_t* apThread = (pthread_t*)malloc(n*sizeof(pthread_t));
-    PetscThreadRun(MPI_COMM_WORLD,pFunc,n,apThread,data);
-    PetscThreadStop(MPI_COMM_WORLD,n,apThread); /* ensures that all threads are finished with the job */
-    free(apThread);
+  job_chain.eJobStat = JobInitiated;
+  ierr = pthread_cond_signal(job_chain.cond2array[0]);
+  if(pFunc!=FuncFinish) {
+    MainWait(); /* why wait after? guarantees that job gets done before proceeding with result collection (if any) */
   }
+
   if(ithreaderr) {
     ijoberr = ithreaderr;
   }
@@ -1585,24 +1567,18 @@ void MainWait_True() {
 PetscErrorCode MainJob_True(void* (*pFunc)(void*),void** data,PetscInt n) {
   int ierr;
   PetscErrorCode ijoberr = 0;
-  if(PetscUseThreadPool) {
-    MainWait();
-    job_true.pfunc = pFunc;
-    job_true.pdata = data;
-    job_true.pbarr = &BarrPoint[n];
-    job_true.iNumJobThreads = n;
-    job_true.startJob = PETSC_TRUE;
-    ierr = pthread_cond_broadcast(&job_true.cond);
-    if(pFunc!=FuncFinish) {
-      MainWait(); /* why wait after? guarantees that job gets done */
-    }
+
+  MainWait();
+  job_true.pfunc = pFunc;
+  job_true.pdata = data;
+  job_true.pbarr = &BarrPoint[n];
+  job_true.iNumJobThreads = n;
+  job_true.startJob = PETSC_TRUE;
+  ierr = pthread_cond_broadcast(&job_true.cond);
+  if(pFunc!=FuncFinish) {
+    MainWait(); /* why wait after? guarantees that job gets done */
   }
-  else {
-    pthread_t* apThread = (pthread_t*)malloc(n*sizeof(pthread_t));
-    PetscThreadRun(MPI_COMM_WORLD,pFunc,n,apThread,data);
-    PetscThreadStop(MPI_COMM_WORLD,n,apThread); /* ensures that all threads are finished with the job */
-    free(apThread);
-  }
+
   if(ithreaderr) {
     ijoberr = ithreaderr;
   }
