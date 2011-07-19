@@ -15,6 +15,8 @@ T*/
 */
 
 #include <petscvec.h>
+#include <sys/time.h>
+#include <sys/sysinfo.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -22,8 +24,8 @@ int main(int argc,char **argv)
 {
   Vec            x,y,w;               /* vectors */
   Vec            *z;                    /* array of vectors */
-  PetscReal      norm,v,v1,v2;
-  PetscInt       n = 20;
+  PetscReal      norm,v,v1,v2,maxval;
+  PetscInt       n = 20,maxind;
   PetscErrorCode ierr;
   PetscScalar    one = 1.0,two = 2.0,three = 3.0,dots[3],dot;
 
@@ -49,6 +51,7 @@ int main(int argc,char **argv)
 y
 
   */
+
   ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
   ierr = VecSetSizes(x,PETSC_DECIDE,n);CHKERRQ(ierr);
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);
@@ -85,6 +88,9 @@ y
      PETSC_USE_COMPLEX is defined in the makefiles; otherwise,
      (when using real numbers) it is undefined.
   */
+  //printf("Size Of Void* =  %ld, Size Of PetscErrorCode =  %ld\n",sizeof(void*),sizeof(PetscErrorCode));
+  //printf("Size of PetscBool = %ld\n",sizeof(PetscBool));
+
 #if defined(PETSC_USE_COMPLEX)
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Vector length %D\n",(PetscInt) (PetscRealPart(dot)));CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Vector length %D %D %D\n",(PetscInt)PetscRealPart(dots[0]),
@@ -94,7 +100,25 @@ y
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Vector length %D %D %D\n",(PetscInt)dots[0],
                              (PetscInt)dots[1],(PetscInt)dots[2]);CHKERRQ(ierr);
 #endif
+  //struct timeval t1, t2, result;
+  //gettimeofday(&t1,NULL);
+  ierr = VecMax(x,&maxind,&maxval);CHKERRQ(ierr);
+  //gettimeofday(&t2,NULL);
+  //timersub(&t2,&t1,&result);
+  //printf("Time for VecMax = %lf\n",result.tv_sec+result.tv_usec/1000000.0);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"VecMax %G, VecInd %D\n",maxval,maxind);CHKERRQ(ierr);
 
+  ierr = VecMin(x,&maxind,&maxval);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"VecMin %G, VecInd %D\n",maxval,maxind);CHKERRQ(ierr);
+  /*
+  const PetscInt ix_kds[] = {3,7,14};
+  const PetscScalar y_kds[] = {13.2,69.3,-8.7};
+  ierr = VecSetValues(x,3,ix_kds,y_kds,INSERT_VALUES);CHKERRQ(ierr);
+  ierr = VecMax(x,&maxind,&maxval);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"VecMax %G, VecInd %D\n",maxval,maxind);CHKERRQ(ierr);
+  ierr = VecMin(x,&maxind,&maxval);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"VecMax %G, VecInd %D\n",maxval,maxind);CHKERRQ(ierr);
+   */
   ierr = PetscPrintf(PETSC_COMM_WORLD,"All other values should be near zero\n");CHKERRQ(ierr);
 
 

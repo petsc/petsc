@@ -13,15 +13,62 @@ Input parameters include:\n\
 /* ------------------------------------------------------------------------
 
    This program solves the van der Pol equation
-       y'' - \mu (1-y^2)*y' + y = 0
+       y'' - \mu (1-y^2)*y' + y = 0        (1)
    on the domain 0 <= x <= 1, with the boundary conditions
        y(0) = 2, y'(0) = 0,
    This is a nonlinear equation.
 
    Notes:
    This code demonstrates the TS solver interface to two variants of
-   linear problems, u_t = f(u,t), namely
-   PUT IN THE DERIVATION AND IJacobian STUFF
+   linear problems, u_t = f(u,t), namely turning (1) into a system of
+   first order differential equations,
+
+   [ y' ] = [          z          ]
+   [ z' ]   [ \mu (1 - y^2) z - y ]
+
+   which then we can write as a vector equation
+
+   [ u_1' ] = [             u_2           ]  (2)
+   [ u_2' ]   [ \mu (1 - u_1^2) u_2 - u_1 ]
+
+   which is now in the desired form of u_t = f(u,t). One way that we
+   can split f(u,t) in (2) is to split by component,
+
+   [ u_1' ] = [ u_2 ] + [            0              ]
+   [ u_2' ]   [  0  ]   [ \mu (1 - u_1^2) u_2 - u_1 ]
+
+   where
+
+   [ F(u,t) ] = [ u_2 ]
+                [  0  ]
+
+   and
+
+   [ G(u',u,t) ] = [ u_1' ] - [            0              ]
+                   [ u_2' ]   [ \mu (1 - u_1^2) u_2 - u_1 ]
+
+   Using the definition of the Jacobian of G (from the PETSc user manual),
+   in the equation G(u',u,t) = F(u,t),
+
+              dG   dG
+   J(G) = a * -- - --
+              du'  du
+
+   where d is the partial derivative. In this example,
+
+   dG   [ 1 ; 0 ]
+   -- = [       ]
+   du'  [ 0 ; 1 ]
+
+   dG   [       0       ;         0        ]
+   -- = [                                  ]
+   du   [ -2 \mu u_1 - 1;  \mu (1 - u_1^2) ]
+
+   Hence,
+
+          [      a       ;          0          ]
+   J(G) = [                                    ]
+          [ 2 \mu u_1 + 1; a - \mu (1 - u_1^2) ]
 
   ------------------------------------------------------------------------- */
 
