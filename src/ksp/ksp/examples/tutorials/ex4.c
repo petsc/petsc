@@ -132,13 +132,14 @@ int main(int argc, char **argv)
   PetscInt       Nl, Ne;
   PetscInt      *elemRows;
   PetscScalar   *elemMats;
-  PetscBool      doGPU = PETSC_TRUE, doCPU = PETSC_TRUE, doSolve = PETSC_FALSE;
+  PetscBool      doGPU = PETSC_TRUE, doCPU = PETSC_TRUE, doSolve = PETSC_FALSE, doView = PETSC_TRUE;
   PetscLogStage  gpuStage, cpuStage;
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, 0, help);CHKERRQ(ierr);
   ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE, DMDA_STENCIL_BOX, -3, -3, PETSC_DECIDE, PETSC_DECIDE, 1, 1, PETSC_NULL, PETSC_NULL, &dm);CHKERRQ(ierr);
   ierr = IntegrateCells(dm, &Ne, &Nl, &elemRows, &elemMats);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL, "-view", &doView, PETSC_NULL);CHKERRQ(ierr);
   /* Construct matrix using GPU */
   ierr = PetscOptionsGetBool(PETSC_NULL, "-gpu", &doGPU, PETSC_NULL);CHKERRQ(ierr);
   if (doGPU) {
@@ -159,10 +160,12 @@ int main(int argc, char **argv)
 
     ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD, PETSC_NULL, &viewer);CHKERRQ(ierr);
-    if (Ne > 500) {ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);}
-    ierr = MatView(A, viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+    if (doView) {
+      ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD, PETSC_NULL, &viewer);CHKERRQ(ierr);
+      if (Ne > 500) {ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);}
+      ierr = MatView(A, viewer);CHKERRQ(ierr);
+      ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+    }
     ierr = PetscLogStagePop();CHKERRQ(ierr);
     ierr = MatDestroy(&A);CHKERRQ(ierr);
   }
@@ -174,10 +177,12 @@ int main(int argc, char **argv)
     ierr = AssembleMatrix(dm, Ne, Nl, elemRows, elemMats, &A);CHKERRQ(ierr);
     ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD, PETSC_NULL, &viewer);CHKERRQ(ierr);
-    if (Ne > 500) {ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);}
-    ierr = MatView(A, viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+    if (doView) {
+      ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD, PETSC_NULL, &viewer);CHKERRQ(ierr);
+      if (Ne > 500) {ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);}
+      ierr = MatView(A, viewer);CHKERRQ(ierr);
+      ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+    }
     ierr = PetscLogStagePop();CHKERRQ(ierr);
   }
   /* Solve simple system with random rhs */
