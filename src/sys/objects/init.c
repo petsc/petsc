@@ -6,9 +6,13 @@
   what malloc is being used until it has already processed the input.
 */
 
-#define _GNU_SOURCE
-#include <sched.h>
 #include <petscsys.h>        /*I  "petscsys.h"   I*/
+#if defined(PETSC_HAVE_SCHED_H) && defined(PETSC_USE_PTHREAD)
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE
+#endif
+#include <sched.h>
+#endif
 #if defined(PETSC_USE_PTHREAD)
 #include <pthread.h>
 #endif
