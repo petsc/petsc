@@ -478,7 +478,7 @@ PetscErrorCode  MatGetVecsFFTW_FFTW(Mat A,Vec *fin,Vec *fout,Vec *bout)
                            ierr = VecGetSize(*bout,&vsize);CHKERRQ(ierr);
                            (*bout)->ops->destroy   = VecDestroy_MPIFFTW;
                           }
-                 n1 = 2*local_n1*dim[0];
+                 //n1 = 2*local_n1*dim[0];
                  if (fout) {
                             data_fout=(fftw_complex *)fftw_malloc(sizeof(fftw_complex)*alloc_local);
                             ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,(PetscInt)n1,N1,(PetscScalar*)data_fout,fout);CHKERRQ(ierr);
@@ -518,7 +518,7 @@ PetscErrorCode  MatGetVecsFFTW_FFTW(Mat A,Vec *fin,Vec *fout,Vec *bout)
                          ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,(PetscInt)n1,N1,(PetscScalar*)data_boutr,bout);CHKERRQ(ierr);
                          (*bout)->ops->destroy   = VecDestroy_MPIFFTW;
                           }
-                 n1 = 2*local_n1*dim[0]*(dim[2]/2+1);
+                 //n1 = 2*local_n1*dim[0]*(dim[2]/2+1);
                  if (fout) {
                           data_fout=(fftw_complex *)fftw_malloc(sizeof(fftw_complex)*alloc_local);
                           ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,n1,N1,(PetscScalar*)data_fout,fout);CHKERRQ(ierr);
@@ -561,9 +561,9 @@ PetscErrorCode  MatGetVecsFFTW_FFTW(Mat A,Vec *fin,Vec *fout,Vec *bout)
                          ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,(PetscInt)n,N1,(PetscScalar*)data_boutr,bout);CHKERRQ(ierr);
                          (*bout)->ops->destroy   = VecDestroy_MPIFFTW;
                         }
-                 temp = fftw->partial_dim;
-                 fftw->partial_dim = fftw->partial_dim * ((fftw->dim_fftw)[fftw->ndim_fftw-1]/2+1)*(fftw->dim_fftw)[1]/((fftw->dim_fftw)[2]*(fftw->dim_fftw)[fftw->ndim_fftw-1]);
-                 n1 = 2*local_n1*(fftw->partial_dim);  fftw->partial_dim = temp;
+                 //temp = fftw->partial_dim;
+                 //fftw->partial_dim = fftw->partial_dim * ((fftw->dim_fftw)[fftw->ndim_fftw-1]/2+1)*(fftw->dim_fftw)[1]/((fftw->dim_fftw)[2]*(fftw->dim_fftw)[fftw->ndim_fftw-1]);
+                 //n1 = 2*local_n1*(fftw->partial_dim);  fftw->partial_dim = temp;
                  if (fout) {
                           data_fout=(fftw_complex *)fftw_malloc(sizeof(fftw_complex)*alloc_local);
                           ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,n,N1,(PetscScalar*)data_fout,fout);CHKERRQ(ierr);
@@ -1471,8 +1471,9 @@ PetscErrorCode MatCreate_FFTW(Mat A)
 #else
       alloc_local = fftw_mpi_local_size_2d_transposed(dim[0],dim[1]/2+1,PETSC_COMM_WORLD,&local_n0,&local_0_start,&local_n1,&local_1_start);
       n = 2*(PetscInt)local_n0*(dim[1]/2+1);
-      n1 = 2*(PetscInt)local_n1*(dim[0]);
-      ierr = MatSetSizes(A,n1,n,2*dim[0]*(dim[1]/2+1),2*dim[0]*(dim[1]/2+1));
+//      n1 = 2*(PetscInt)local_n1*(dim[0]);
+//      ierr = MatSetSizes(A,n1,n,2*dim[0]*(dim[1]/2+1),2*dim[0]*(dim[1]/2+1));
+      ierr = MatSetSizes(A,n,n,2*dim[0]*(dim[1]/2+1),2*dim[0]*(dim[1]/2+1));
 #endif 
       break;
     case 3:
@@ -1483,8 +1484,9 @@ PetscErrorCode MatCreate_FFTW(Mat A)
 #else
       alloc_local = fftw_mpi_local_size_3d_transposed(dim[0],dim[1],dim[2]/2+1,PETSC_COMM_WORLD,&local_n0,&local_0_start,&local_n1,&local_1_start);
       n = 2*(PetscInt)local_n0*dim[1]*(dim[2]/2+1);
-      n1 = 2*local_n1*dim[0]*(dim[2]/2+1);
-      ierr = MatSetSizes(A,n1,n,2*dim[0]*dim[1]*(dim[2]/2+1),2*dim[0]*dim[1]*(dim[2]/2+1));
+//      n1 = 2*local_n1*dim[0]*(dim[2]/2+1);
+//      ierr = MatSetSizes(A,n1,n,2*dim[0]*dim[1]*(dim[2]/2+1),2*dim[0]*dim[1]*(dim[2]/2+1));
+      ierr = MatSetSizes(A,n,n,2*dim[0]*dim[1]*(dim[2]/2+1),2*dim[0]*dim[1]*(dim[2]/2+1));
 #endif 
       break;
     default:
@@ -1499,9 +1501,10 @@ PetscErrorCode MatCreate_FFTW(Mat A)
       n = 2*(PetscInt)local_n0*partial_dim*pdim[ndim-1]/temp; 
       N1 = 2*N*(PetscInt)pdim[ndim-1]/((PetscInt) temp);
       pdim[ndim-1] = temp;
-      temp = partial_dim*(dim[ndim-1]/2+1)*dim[0]/(dim[1]*dim[ndim-1]); 
-      n1 = 2*local_n1*temp; 
-      ierr = MatSetSizes(A,n1,n,N1,N1);CHKERRQ(ierr);
+//      temp = partial_dim*(dim[ndim-1]/2+1)*dim[0]/(dim[1]*dim[ndim-1]); 
+//      n1 = 2*local_n1*temp; 
+//      ierr = MatSetSizes(A,n1,n,N1,N1);CHKERRQ(ierr);
+      ierr = MatSetSizes(A,n,n,N1,N1);CHKERRQ(ierr);
 #endif  
       break;
     }

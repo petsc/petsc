@@ -7,22 +7,22 @@ PetscInt main(PetscInt argc,char **args)
 {
   PetscErrorCode  ierr;
   PetscMPIInt     rank,size;
-  PetscInt        N0=3,N1=3,N2=3,N3=5,N4=5,N=N0*N1*N2;
+  PetscInt        N0=3,N1=3,N2=4,N3=5,N4=5,N=N0*N1*N2;
   PetscRandom     rdm;
   PetscReal       enorm;
   Vec             x,y,z,input,output;
   Mat             A;
   PetscInt        DIM, dim[5],vsize;
   PetscReal       fac;
-  PetscScalar     one=1,two=2;
+  PetscScalar     one=1,two=2,three=3;
 
   ierr = PetscInitialize(&argc,&args,(char *)0,help);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
   
-#if !defined(PETSC_USE_COMPLEX)
-  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP, "Example for Complex DFT. Your current data type is real");
-#endif
+//#if !defined(PETSC_USE_COMPLEX)
+//  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP, "Example for Complex DFT. Your current data type is real");
+//#endif
   ierr = PetscRandomCreate(PETSC_COMM_WORLD, &rdm);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rdm);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&input);CHKERRQ(ierr);
@@ -30,6 +30,7 @@ PetscInt main(PetscInt argc,char **args)
   ierr = VecSetFromOptions(input);CHKERRQ(ierr);
   ierr = VecSet(input,one);CHKERRQ(ierr);
   ierr = VecSetValue(input,1,two,INSERT_VALUES);CHKERRQ(ierr);
+  ierr = VecSetValue(input,2,three,INSERT_VALUES);CHKERRQ(ierr);
 //  ierr = VecSetRandom(input,rdm);CHKERRQ(ierr);
 //  ierr = VecSetRandom(input,rdm);CHKERRQ(ierr);
 //  ierr = VecSetRandom(input,rdm);CHKERRQ(ierr);
