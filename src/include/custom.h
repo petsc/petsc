@@ -1,6 +1,9 @@
 #ifndef PETSC4PY_CUSTOM_H
 #define PETSC4PY_CUSTOM_H
 
+#undef  __FUNCT__
+#define __FUNCT__ "<petsc4py.PETSc>"
+
 #include "private/vecimpl.h"
 #include "private/matimpl.h"
 #include "private/kspimpl.h"
@@ -833,14 +836,16 @@ MatFDColoringSetOptionsPrefix(MatFDColoring fdc, const char prefix[]) {
 static PetscErrorCode
 SNESGetUseMFFD(SNES snes,PetscBool *flag)
 {
+  PetscErrorCode (*jac)(SNES,Vec,Mat*,Mat*,MatStructure*,void*) = PETSC_NULL;
   Mat            J = PETSC_NULL;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
   PetscValidPointer(flag,2);
   *flag = PETSC_FALSE;
-  ierr = SNESGetJacobian(snes,&J,0,0,0);CHKERRQ(ierr);
+  ierr = SNESGetJacobian(snes,&J,0,&jac,0);CHKERRQ(ierr);
   if (J) { ierr = PetscTypeCompare((PetscObject)J,MATMFFD,flag);CHKERRQ(ierr); }
+  else if (jac == MatMFFDComputeJacobian) *flag = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -898,32 +903,8 @@ SNESSetUseMFFD(SNES snes,PetscBool flag)
   } else {
     ierr = SNESSetJacobian(snes,J,0,0,0);CHKERRQ(ierr);
   }
-
   ierr = MatDestroy(&J);CHKERRQ(ierr);
 
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "SNESComputeJacobianFDColoring"
-static PetscErrorCode
-SNESComputeJacobianFDColoring(SNES snes,Vec x,Mat *J,Mat *B,MatStructure *flag,void *ctx)
-{
-  MatFDColoring  fdcoloring = PETSC_NULL;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
-  PetscValidHeaderSpecific(x,VEC_CLASSID,1);
-  PetscValidPointer(J,2);
-  PetscValidPointer(B,3);
-  PetscValidPointer(flag,4);
-  ierr = PetscObjectQuery((PetscObject)snes,"fdcoloring",(PetscObject*)&fdcoloring);CHKERRQ(ierr);
-  if (!fdcoloring) {
-    SETERRQQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE,
-             "SNESSetUseFDColoring() must be called first");
-  }
-  ierr = SNESDefaultComputeJacobianColor(snes,x,J,B,flag,fdcoloring);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -940,7 +921,6 @@ SNESGetUseFDColoring(SNES snes,PetscBool *flag)
   *flag = PETSC_FALSE;
   ierr = SNESGetJacobian(snes,0,0,&jac,0);CHKERRQ(ierr);
   if (jac == SNESDefaultComputeJacobianColor) *flag = PETSC_TRUE;
-  if (jac == SNESComputeJacobianFDColoring)   *flag = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -972,13 +952,12 @@ SNESSetUseFDColoring(SNES snes,PetscBool flag)
   }
 
   ierr = SNESGetFunction(snes,&f,&fun,&funP);CHKERRQ(ierr);
+  ierr = SNESGetJacobian(snes,&A,&B,0,&jacP);CHKERRQ(ierr);
   if (!f) {
     SETERRQQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,
              "SNESSetFunction() must be called first");
     PetscFunctionReturn(PETSC_ERR_ARG_WRONGSTATE);
   }
-
-  ierr = SNESGetJacobian(snes,&A,&B,0,&jacP);CHKERRQ(ierr);
   if (!A && !B) {
     SETERRQQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,
              "SNESSetJacobian() must be called first");
@@ -987,15 +966,16 @@ SNESSetUseFDColoring(SNES snes,PetscBool flag)
 
   J = B ? B : A;
   ierr = MatGetOptionsPrefix(J,&prefix);CHKERRQ(ierr);
+  if (!prefix) {ierr = SNESGetOptionsPrefix(snes,&prefix);CHKERRQ(ierr);}
   ierr = MatGetColoring(J,MATCOLORINGSL,&iscoloring);CHKERRQ(ierr);
   ierr = MatFDColoringCreate(J,iscoloring,&fdcoloring);CHKERRQ(ierr);
   ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
   ierr = MatFDColoringSetFunction(fdcoloring,(PetscErrorCode (*)(void))fun,funP);
   ierr = MatFDColoringSetOptionsPrefix(fdcoloring,prefix);CHKERRQ(ierr);
   ierr = MatFDColoringSetFromOptions(fdcoloring);CHKERRQ(ierr);
+  ierr = SNESSetJacobian(snes,A,B,SNESDefaultComputeJacobianColor,fdcoloring);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)snes,"fdcoloring",(PetscObject)fdcoloring);CHKERRQ(ierr);
   ierr = MatFDColoringDestroy(&fdcoloring);CHKERRQ(ierr);
-  ierr = SNESSetJacobian(snes,A,B,SNESComputeJacobianFDColoring,jacP);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -1025,6 +1005,7 @@ TSSetConvergedReason(TS ts,TSConvergedReason reason)
   PetscFunctionReturn(0);
 }
 #endif
+
 /* ---------------------------------------------------------------- */
 
 #if PETSC_VERSION_(3,1,0)
@@ -1119,6 +1100,9 @@ DACreateND(MPI_Comm comm,
 #endif
 
 /* ---------------------------------------------------------------- */
+
+#undef  __FUNCT__
+#define __FUNCT__ "<petsc4py.PETSc>"
 
 #endif/* PETSC4PY_CUSTOM_H*/
 

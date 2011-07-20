@@ -225,7 +225,7 @@ class BaseTestTSNonlinearI(BaseTestTSNonlinear):
         u[0], u[1], u[2] = 1, 2, 3
 
         ts.setSolution(u)
-        ode.rhsjacobian(ts,0,u,J,J)
+        ode.ijacobian(ts,0,u,0*u,1,J,J)
         ts.setUp()
         ts.snes.setUseFD(True)
         ts.solve(u)

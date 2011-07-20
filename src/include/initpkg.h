@@ -23,6 +23,8 @@ static PetscErrorCode PetscInitializePackageAll(const char path[])
   ierr = DMInitializePackage(path);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+#undef  __FUNCT__
+#define __FUNCT__ "<petsc4py.PETSc>"
 
 /* ------------------------------------------------------------------------- */
 
