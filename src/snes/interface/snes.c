@@ -2591,7 +2591,7 @@ PetscErrorCode SNESScaleStep_Private(SNES snes,Vec y,PetscReal *fnorm,PetscReal 
 
    Input Parameters:
 +  snes - the SNES context
-.  b - the constant part of the equation, or PETSC_NULL to use zero.
+.  b - the constant part of the equation F(x) = b, or PETSC_NULL to use zero.
 -  x - the solution vector.
 
    Notes:
