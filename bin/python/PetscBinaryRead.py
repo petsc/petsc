@@ -1,3 +1,18 @@
+"""PetscBinaryRead
+===============
+
+Provides
+  1. PETSc-named objects Vec, Mat, and IS that inherit numpy.ndarray
+  2. A function to read these objects from PETSc binary files.
+
+The standard usage of this module should look like:
+
+  >>> import PetscBinaryRead
+  >>> objects = PetscBinaryRead.readBinaryFile('filename')
+
+See readBinaryFile.__doc__
+"""
+
 import numpy as np
 import types
 
@@ -10,6 +25,23 @@ _classid = {1211216:'Mat',
 
 class DoneWithFile(Exception): pass
 
+class Vec(np.ndarray):
+    """Vec represented as 1D numpy array"""
+    pass
+
+class MatDense(np.matrix):
+    """Mat represented as 2D numpy array"""
+    pass
+
+class MatSparse(tuple):
+    """Mat represented as CSR tuple ((M, N), (row, col, val))"""
+    def __repr__(self):
+        return 'MatSparse: %s'%super(MatSparse, self).__repr__()
+
+class IS(np.ndarray):
+    """IS represented as 1D numpy array"""
+    pass
+
 def readVec(fh):
     """Reads a PETSc Vec from a binary file handle, returning just the data."""
 
@@ -18,7 +50,9 @@ def readVec(fh):
         vals = np.fromfile(fh, dtype=ScalarType, count=nz)
     except MemoryError:
         raise IOError('Inconsistent or invalid Vec data in file')
-    return vals
+    if (len(vals) is 0):
+        raise IOError('Inconsistent or invalid Vec data in file')
+    return vals.view(Vec)
 
 def readMatSparse(fh):
     """Reads a PETSc Mat, returning a sparse representation of the data.
@@ -42,11 +76,13 @@ def readMatSparse(fh):
         assert I[-1] == nz
         #
         J = np.fromfile(fh, dtype=IntType,    count=nz)
+        assert len(J) == nz
         V = np.fromfile(fh, dtype=ScalarType, count=nz)
-    except AssertionError, MemoryError:
+        assert len(V) == nz
+    except (AssertionError, MemoryError, IndexError):
         raise IOError('Inconsistent or invalid Mat data in file')
     #
-    return (M, N), (I, J, V)
+    return MatSparse(((M, N), (I, J, V)))
 
 def readMatDense(fh):
     """Reads a PETSc Mat, returning a dense represention of the data."""
@@ -59,15 +95,24 @@ def readMatDense(fh):
         np.cumsum(rownz, out=I[1:])
         assert I[-1] == nz
         #
-        J = np.fromfile(fh, dtype=IntType,    count=nz)
+        J = np.fromfile(fh, dtype=IntType, count=nz)
+        assert len(J) == nz
         V = np.fromfile(fh, dtype=ScalarType, count=nz)
-        mat = np.zeros((M,N), dtype=ScalarType)
-        for i,j,v in zip(I,J,V):
-            mat[i,j] = v
-    except AssertionError, MemoryError:
+        assert len(V) == nz
+
+    except (AssertionError, MemoryError, IndexError):
         raise IOError('Inconsistent or invalid Mat data in file')
     #
-    return mat
+    mat = np.zeros((M,N), dtype=ScalarType)
+    for row in range(M):
+        rstart, rend = I[row:row+2]
+        mat[row, J[rstart:rend]] = V[rstart:rend]
+    return mat.view(MatDense)
+
+def readMatSciPy(fh):
+    from scipy.sparse import csr_matrix
+    (M, N), (I, J, V) = readMatSparse(fh)
+    return csr_matrix((V, J, I), shape=(M, N))
 
 def readMat(fh, mattype='sparse'):
     """Reads a PETSc Mat from binary file handle.
@@ -80,6 +125,8 @@ def readMat(fh, mattype='sparse'):
         return readMatSparse(fh)
     elif mattype == 'dense':
         return readMatDense(fh)
+    elif mattype == 'scipy.sparse':
+        return readMatSciPy(fh)
     else:
         raise RuntimeError('Invalid matrix type requested: choose sparse/dense')
 
@@ -88,21 +135,25 @@ def readIS(fh):
     try:
         nz = np.fromfile(fh, dtype=IntType, count=1)[0]
         v = np.fromfile(fh, dtype=IntType, count=nz)
-    except MemoryError:
+        assert len(v) == nz
+    except (MemoryError,IndexError):
         raise IOError('Inconsistent or invalid IS data in file')
-    return v
+    return v.view(IS)
 
 def readBinaryFile(fid, mattype='sparse'):
-    """Reads a PETSc binary file, returning a tuple of objects contained in the file.
+    """Reads a PETSc binary file, returning a tuple of the contained objects.
 
     objects = readBinaryFile(fid, mattype='sparse')
 
     Input:
-      fid : either file handle to open binary file, or filename
-      mattype : ['sparse'] Read matrices as 'sparse' (row, col, val) or 'dense'.
+      fid : either file handle to an open binary file, or filename.
+      mattype :
+         'sparse': Return matrices as raw CSR: (M, N), (row, col, val).
+         'dense': Return matrices as MxN numpy arrays.
+         'scipy.sparse': Return matrices as scipy.sparse objects.
 
     Output:
-      objects : tuple of objects representing the data.
+      objects : tuple of objects representing the data in numpy arrays.
     """
     close = False
 
@@ -116,19 +167,19 @@ def readBinaryFile(fid, mattype='sparse'):
             # read header
             try:
                 header = np.fromfile(fid, dtype=IntType, count=1)[0]
-            except MemoryError:
+            except (MemoryError, IndexError):
                 raise DoneWithFile
             try:
                 objecttype = _classid[header]
             except KeyError:
-                raise IOError('Invalid PetscObject CLASSID or CLASSID not yet implemented')
+                raise IOError('Invalid PetscObject CLASSID or object not implemented for python')
 
             if objecttype == 'Vec':
-                objects.append(('Vec', readVec(fid)))
+                objects.append(readVec(fid))
             elif objecttype == 'IS':
-                objects.append(('IS', readIS(fid)))
+                objects.append(readIS(fid))
             elif objecttype == 'Mat':
-                objects.append(('Mat', readMat(fid,mattype)))
+                objects.append(readMat(fid,mattype))
             elif objecttype == 'Bag':
                 raise NotImplementedError('Bag Reader not yet implemented')
     except DoneWithFile:
@@ -141,10 +192,9 @@ def readBinaryFile(fid, mattype='sparse'):
 
 if __name__ == '__main__':
     import sys
-    objects = readBinaryFile(sys.argv[1])
-    for otype, data in objects:
-        print 'Read a', otype
-        print data
-        print '\n'
+    petsc_objects = readBinaryFile(sys.argv[1])
+    for petsc_obj in petsc_objects:
+        print 'Read a', petsc_obj
+        print ''
 
 
