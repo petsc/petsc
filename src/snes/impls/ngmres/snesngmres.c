@@ -314,7 +314,8 @@ static PetscErrorCode BuildNGmresSoln(PetscScalar* nrs, Vec Fold, SNES snes,Pets
   PetscInt       i,ii,j,l;
   SNES_NGMRES      *ngmres = (SNES_NGMRES *)(snes->data);
   Vec *dF=ngmres->v, *Q=ngmres->q,temp;
-  PetscReal      a,b,gam,c,s;
+  PetscReal      gam,areal;
+  PetscScalar    a,b,c,s;
  
   PetscFunctionBegin;
   ierr = VecDuplicate(Fold,&temp);CHKERRQ(ierr);
@@ -327,7 +328,7 @@ static PetscErrorCode BuildNGmresSoln(PetscScalar* nrs, Vec Fold, SNES snes,Pets
 	/* calculate the Givens rotation */
 	a=*HH(i,i);
 	b=*HH(i+1,i);
-        gam=1.0/PetscSqrtScalar(a*a+b*b);
+        gam=1.0/PetscRealPart(PetscSqrtScalar(PetscConj(a)*a+PetscConj(b)*b));
         c= a*gam;
         s= b*gam;
 	/* update the Q factor */
@@ -353,8 +354,8 @@ static PetscErrorCode BuildNGmresSoln(PetscScalar* nrs, Vec Fold, SNES snes,Pets
       ierr = VecAXPBY(temp,-*HH(i,it),1.0,Q[i]);CHKERRQ(ierr); /* temp= temp- h(i,l-1)*Q[i] */ 
     }
     ierr=VecCopy(temp,Q[it]);CHKERRQ(ierr); 
-    ierr=VecNormalize(Q[it],&a);CHKERRQ(ierr);
-    *HH(it,it)=a;
+    ierr=VecNormalize(Q[it],&areal);CHKERRQ(ierr);
+    *HH(it,it) = a = areal;
     
 
 

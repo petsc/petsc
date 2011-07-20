@@ -329,7 +329,7 @@ static PetscErrorCode BuildNGmresSoln(PetscScalar* nrs, Vec Fold, KSP ksp,PetscI
   PetscInt       i,ii,j,l;
   KSP_NGMRES      *ngmres = (KSP_NGMRES *)(ksp->data);
   Vec *dF=ngmres->w+ngmres->msize, *Q=ngmres->w+ngmres->msize*2,temp;
-  PetscReal      gam;
+  PetscReal      gam,areal;
   PetscScalar    a,b,c,s;
  
   PetscFunctionBegin;
@@ -343,11 +343,7 @@ static PetscErrorCode BuildNGmresSoln(PetscScalar* nrs, Vec Fold, KSP ksp,PetscI
 	/* calculate the Givens rotation */
 	a=*HH(i,i);
 	b=*HH(i+1,i);
-#if defined(PETSC_USE_COMPLEX)
-	gam = 1.0/ PetScSqrtScalar(PetscConj(a) * a + PetscConj(b) * b);
-#else
-        gam=1.0/PetscSqrtScalar(a*a+b*b);
-#endif
+        gam=1.0/PetscRealPart(PetscSqrtScalar(PetscConj(a)*a + PetscConj(b)*b));
         c= a*gam;
         s= b*gam;
      
@@ -390,8 +386,8 @@ static PetscErrorCode BuildNGmresSoln(PetscScalar* nrs, Vec Fold, KSP ksp,PetscI
       ierr = VecAXPBY(temp,-*HH(i,it),1.0,Q[i]);CHKERRQ(ierr); /* temp= temp- h(i,l-1)*Q[i] */ 
     }
     ierr=VecCopy(temp,Q[it]);CHKERRQ(ierr); 
-    ierr=VecNormalize(Q[it],&a);CHKERRQ(ierr);
-    *HH(it,it)=a;
+    ierr=VecNormalize(Q[it],&areal);CHKERRQ(ierr);
+    *HH(it,it) = a = areal;
     
 
 
