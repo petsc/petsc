@@ -37,7 +37,6 @@ PetscInt main(PetscInt argc,char **args)
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   ierr = PetscOptionsGetBool(PETSC_NULL,"-use_FFTW_interface",&use_interface,PETSC_NULL);CHKERRQ(ierr);
-  printf("interface value: %d\n",(int)use_interface);
 
   ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);

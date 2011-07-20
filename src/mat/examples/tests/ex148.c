@@ -41,7 +41,7 @@ PetscInt main(PetscInt argc,char **args)
   ierr = MatCreateFFT(PETSC_COMM_WORLD,DIM,dim,MATFFTW,&A);CHKERRQ(ierr);
   ierr = MatGetVecsFFTW(A,&x,&y,&z);CHKERRQ(ierr);
 
-  /* Scatter PETSc vector 'x' to FFTW vector 'x' */
+  /* Scatter PETSc vector 'input' to FFTW vector 'x' */
   ierr = InputTransformFFT(A,input,x);CHKERRQ(ierr);
 
   /* Apply forward FFT */
