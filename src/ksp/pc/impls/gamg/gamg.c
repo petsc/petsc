@@ -113,7 +113,7 @@ PetscErrorCode createCrsOp( Mat Amat, Mat P_inout, Mat *Acrs )
 extern PetscErrorCode PCSetFromOptions_MG(PC);
 extern PetscErrorCode PCReset_MG(PC);
 extern PetscErrorCode createProlongation( Mat, PetscReal [], const PetscInt,
-                                          Mat *, PetscReal ** );
+                                          Mat *, PetscReal **, PetscBool *a_isOK );
 #undef __FUNCT__
 #define __FUNCT__ "PCSetUp_GAMG"
 PetscErrorCode PCSetUp_GAMG( PC pc )
@@ -125,11 +125,14 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
   PetscBool        isSeq, isMPI;
   PetscInt         fine_level, level, level1, M, N, bs, lidx;
   MPI_Comm         wcomm = ((PetscObject)pc)->comm;
+  PetscMPIInt      mype,npe;
 
   PetscFunctionBegin;
+  ierr = MPI_Comm_rank(wcomm,&mype);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(wcomm,&npe);CHKERRQ(ierr);
   if (pc->setupcalled){
     /* no state data in GAMG to destroy (now) */
-    ierr = PCReset_MG(pc);CHKERRQ(ierr);
+    ierr = PCReset_MG(pc); CHKERRQ(ierr);
   }
   if (!pc_gamg->m_data) SETERRQ(wcomm,PETSC_ERR_SUP,"PCSetUp_GAMG called before PCSetCoordinates");
   /* setup special features of PCGAMG */
@@ -138,7 +141,7 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
   if (isMPI) {
   } else if (isSeq) {
   } else SETERRQ1(wcomm,PETSC_ERR_ARG_WRONG, "Matrix type '%s' cannot be used with GAMG. GAMG can only handle AIJ matrices.",((PetscObject)Amat)->type_name);
-
+  
   /* GAMG requires input of fine-grid matrix. It determines nlevels. */
   ierr = MatGetSize( Amat, &M, &N );CHKERRQ(ierr);
   ierr = MatGetBlockSize( Amat, &bs ); CHKERRQ(ierr);
@@ -147,22 +150,29 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
   /* Get A_i and R_i */
 #define GAMG_MAXLEVELS 10
   Mat Aarr[GAMG_MAXLEVELS], Rarr[GAMG_MAXLEVELS];  PetscReal *coarse_crds = 0, *crds = pc_gamg->m_data;
+  PetscBool isOK;
   for (level=0, Aarr[0] = Pmat; level < GAMG_MAXLEVELS-1; level++ ){
     ierr = MatGetSize( Aarr[level], &M, &N );CHKERRQ(ierr);
-    if( M < 100 ) { /* hard wire this for now */
+    if( M < npe*10 ) { /* hard wire this for now */
       break;
     }
     level1 = level + 1;
+    PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s make level %d N=%d\n",0,__FUNCT__,level+1,N);
     ierr = createProlongation( Aarr[level], crds, pc_gamg->m_dim,
-                               &Rarr[level1], &coarse_crds );
+                               &Rarr[level1], &coarse_crds, &isOK );
     CHKERRQ(ierr);
-    if(level==0) Aarr[0] = Amat; /* use Pmat for finest level setup, but use mat for solver */
-    ierr = createCrsOp( Aarr[level], Rarr[level1], &Aarr[level1] ); CHKERRQ(ierr);
     ierr = PetscFree( crds ); CHKERRQ( ierr );
     crds = coarse_crds;
+    if(level==0) Aarr[0] = Amat; /* use Pmat for finest level setup, but use mat for solver */
+    if( isOK ) {
+      ierr = createCrsOp( Aarr[level], Rarr[level1], &Aarr[level1] ); CHKERRQ(ierr);
+    }
+    else{
+      break;
+    }
   }
   ierr = PetscFree( coarse_crds ); CHKERRQ( ierr );
-
+PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s %d levels\n",0,__FUNCT__,level + 1);
   pc_gamg->m_data = 0; /* destroyed coordinate data */
   pc_gamg->m_Nlevels = level + 1;
   fine_level = level;

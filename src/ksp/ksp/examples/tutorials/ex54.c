@@ -61,21 +61,21 @@ PetscPrintf(PETSC_COMM_SELF,"[%d]%s npe=%d, npx=%d, npy=%d, myXpe=%d, myYpe=%d\n
   ierr = VecSet(bb,1.0);         CHKERRQ(ierr);
 
   ierr = MatGetOwnershipRange(Amat,&Istart,&Iend);CHKERRQ(ierr);
-PetscPrintf(PETSC_COMM_SELF,"[%d]%s Istart=%d, Iend=%d, m=%d\n",mype,__FUNCT__,Istart,Iend,m);
   PetscReal coords[2*m]; 
   /* forms the element stiffness for the Laplacian and coordinates */
   for (Ii=Istart,ix=0; Ii<Iend; Ii++,ix++) {
     j = Ii/(ne*npx+1); i = Ii - j*(ne*npx+1);
     /* coords */
     x = h*(Ii % (ne*npx+1)); y = h*(Ii/(ne*npx+1));
-    //PetscPrintf(PETSC_COMM_SELF,"\t[%d]%s i=%d, j=%d x=%e, y=%e\n",mype,__FUNCT__,i,j,x,y);
     coords[2*ix] = x; coords[2*ix+1] = y;
     if( i<ne*npx && j<ne*npy ) {
       PetscInt idx[4] = {Ii, Ii+1, Ii + (ne*npx+1) + 1, Ii + (ne*npx+1)};
       /* radius */
-      PetscReal radius = sqrt( (x-.5+h/2)*(x-.5+h/2) +  (y-.5+h/2)*(y-.5+h/2) );
+      PetscReal radius = sqrt( (x-.5+h/2)*(x-.5+h/2) + (y-.5+h/2)*(y-.5+h/2) );
       PetscReal alpha = 1.0;
-      if( radius < 0.25 ) alpha = soft_alpha;
+      if( radius < 0.25 ){ 
+        alpha = soft_alpha;
+      }
       for(int ii=0;ii<4;ii++)for(int jj=0;jj<4;jj++) DD[ii][jj] = alpha*DD1[ii][jj];
       /* no BCs in Pamt */
       ierr = MatSetValues(Pmat,4,idx,4,idx,(const PetscScalar*)DD,ADD_VALUES);CHKERRQ(ierr);
@@ -106,7 +106,7 @@ PetscPrintf(PETSC_COMM_SELF,"[%d]%s Istart=%d, Iend=%d, m=%d\n",mype,__FUNCT__,I
 
   if(!PETSC_TRUE) {
     PetscViewer        viewer;
-    ierr = PetscViewerASCIIOpen(PETSC_COMM_SELF, "Amat.m", &viewer);  CHKERRQ(ierr);
+    ierr = PetscViewerASCIIOpen(wcomm, "Amat.m", &viewer);  CHKERRQ(ierr);
     ierr = PetscViewerSetFormat( viewer, PETSC_VIEWER_ASCII_MATLAB);  CHKERRQ(ierr);
     ierr = MatView(Amat,viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy( &viewer );
