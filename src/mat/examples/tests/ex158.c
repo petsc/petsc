@@ -27,9 +27,9 @@ PetscInt main(PetscInt argc,char **args)
   PetscBool       view=PETSC_FALSE,use_interface=PETSC_TRUE;
 
   ierr = PetscInitialize(&argc,&args,(char *)0,help);CHKERRQ(ierr);
-//#if !defined(PETSC_USE_COMPLEX)
-//  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP, "This example requires complex numbers");
-//#endif
+#if defined(PETSC_USE_COMPLEX)
+  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP, "This example requires real numbers. Your current scalar type is complex!");
+#endif
 
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD, PETSC_NULL, "FFTW Options", "ex143");CHKERRQ(ierr);
     ierr = PetscOptionsBool("-vec_view_draw", "View the vectors", "ex143", view, &view, PETSC_NULL);CHKERRQ(ierr);
@@ -37,7 +37,6 @@ PetscInt main(PetscInt argc,char **args)
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   ierr = PetscOptionsGetBool(PETSC_NULL,"-use_FFTW_interface",&use_interface,PETSC_NULL);CHKERRQ(ierr);
-  printf("interface value: %d\n",(int)use_interface);
 
   ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
@@ -99,10 +98,11 @@ PetscInt main(PetscInt argc,char **args)
     /* Use PETSc-FFTW interface                  */
     /*-------------------------------------------*/
     PetscInt i,*dim,k,DIM;
-    Mat      A;
+    Mat      A; 
+    Vec input,output;
 
-    N=1;
-    for (i=1; i<5; i++){
+    N=30;
+    for (i=2; i<5; i++){
       DIM = i;
       ierr = PetscMalloc(i*sizeof(PetscInt),&dim);CHKERRQ(ierr);
       for(k=0;k<i;k++){
@@ -125,34 +125,49 @@ PetscInt main(PetscInt argc,char **args)
       ierr = PetscObjectSetName((PetscObject) z, "Reconstructed vector");CHKERRQ(ierr);
 
       /* Set values of space vector x */
-      ierr = VecSetRandom(x,rdm);CHKERRQ(ierr);
+      ierr = VecCreate(PETSC_COMM_WORLD,&input);CHKERRQ(ierr);
+      ierr = VecSetSizes(input,PETSC_DECIDE,N);CHKERRQ(ierr);
+      ierr = VecSetFromOptions(input);CHKERRQ(ierr);
+      ierr = VecSetRandom(input,rdm);CHKERRQ(ierr);
+      ierr = VecDuplicate(input,&output);CHKERRQ(ierr);
 
-      if (view){ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
+      if (view){ierr = VecView(input,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
 
-      // Apply FFTW_FORWARD and FFTW_BACKWARD 
+      /* Apply FFTW_FORWARD and FFTW_BACKWARD */
+      ierr = InputTransformFFT(A,input,x);CHKERRQ(ierr);
       ierr = MatMult(A,x,y);CHKERRQ(ierr);
       if (view){ierr = VecView(y,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
 
       ierr = MatMultTranspose(A,y,z);CHKERRQ(ierr);
+      ierr = OutputTransformFFT(A,z,output);CHKERRQ(ierr);
+//      ierr = VecAssemblyBegin(input);CHKERRQ(ierr);
+//      ierr = VecAssemblyEnd(input);CHKERRQ(ierr);
+//      ierr = VecView(input,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-      // Compare x and z. FFTW computes an unnormalized DFT, thus z = N*x 
+      /* Compare x and z. FFTW computes an unnormalized DFT, thus z = N*x */
       a = 1.0/(PetscReal)N;
-      ierr = VecScale(z,a);CHKERRQ(ierr);
-      if (view){ierr = VecView(z,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
-      ierr = VecAXPY(z,-1.0,x);CHKERRQ(ierr);
-      ierr = VecNorm(z,NORM_1,&enorm);CHKERRQ(ierr);
-//      if (enorm > 1.e-14){
-//        if(!rank)
-        ierr = PetscPrintf(PETSC_COMM_SELF,"  Error norm of |x - z| %e\n",enorm);CHKERRQ(ierr);
-//      }
+      ierr = VecScale(output,a);CHKERRQ(ierr);
+      //ierr = VecAssemblyBegin(z);CHKERRQ(ierr);
+      //ierr = VecAssemblyEnd(z);CHKERRQ(ierr);
+      //ierr = VecView(z,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+      if (view){ierr = VecView(output,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
+      ierr = VecAXPY(output,-1.0,input);CHKERRQ(ierr);
+      ierr = VecNorm(output,NORM_1,&enorm);CHKERRQ(ierr);
+      if (enorm > 1.e-09){
+      if(!rank)
+      ierr = PetscPrintf(PETSC_COMM_SELF,"  Error norm of |x - z| %e\n",enorm);CHKERRQ(ierr);
+
+      }
      
 
+      /* Free spaces */
+      ierr = PetscFree(dim);CHKERRQ(ierr);
+      ierr = VecDestroy(&input);CHKERRQ(ierr);
+      ierr = VecDestroy(&output);CHKERRQ(ierr);
       ierr = VecDestroy(&x);CHKERRQ(ierr);
       ierr = VecDestroy(&y);CHKERRQ(ierr);
       ierr = VecDestroy(&z);CHKERRQ(ierr);
-      ierr = MatDestroy(&A);CHKERRQ(ierr); 
-
-      ierr = PetscFree(dim);CHKERRQ(ierr);
+      ierr = MatDestroy(&A);CHKERRQ(ierr);
     }
   }
    
