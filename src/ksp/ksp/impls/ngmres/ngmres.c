@@ -264,7 +264,7 @@ PetscErrorCode KSPSetFromOptions_NGMRES(KSP ksp)
     It must be wrapped in EXTERN_C_BEGIN to be dynamically linkable in C++
 */
 /*MC
-     KSPNGMRES - The preconditioned conjugate gradient (NGMRES) iterative method
+     KSPNGMRES - The nonlinear generalized minimum residual (NGMRES) iterative method
 
    Level: beginner
 
