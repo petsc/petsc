@@ -154,11 +154,11 @@ PetscInt main(PetscInt argc,char **args)
       if (view){ierr = VecView(output,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
       ierr = VecAXPY(output,-1.0,input);CHKERRQ(ierr);
       ierr = VecNorm(output,NORM_1,&enorm);CHKERRQ(ierr);
-//      if (enorm > 1.e-14){
+      if (enorm > 1.e-09){
       if(!rank)
       ierr = PetscPrintf(PETSC_COMM_SELF,"  Error norm of |x - z| %e\n",enorm);CHKERRQ(ierr);
 
-//      }
+      }
      
 
       /* Free spaces */

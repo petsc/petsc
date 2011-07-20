@@ -415,7 +415,6 @@ PetscErrorCode  MatGetVecsFFTW_FFTW(Mat A,Vec *fin,Vec *fout,Vec *bout)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
   if (size == 1){ /* sequential case */
-  printf("Routine is getting called\n"); 
 #if defined(PETSC_USE_COMPLEX)
     if (fin) {ierr = VecCreateSeq(PETSC_COMM_SELF,N,fin);CHKERRQ(ierr);}
     if (fout){ierr = VecCreateSeq(PETSC_COMM_SELF,N,fout);CHKERRQ(ierr);}
@@ -1412,13 +1411,15 @@ PetscErrorCode MatCreate_FFTW(Mat A)
   PetscInt       n=fft->n,N=fft->N,ndim=fft->ndim,*dim = fft->dim;
   const char     *p_flags[]={"FFTW_ESTIMATE","FFTW_MEASURE","FFTW_PATIENT","FFTW_EXHAUSTIVE"};
   PetscBool      flg;
-  PetscInt       p_flag,partial_dim=1,ctr,n1;
+  PetscInt       p_flag,partial_dim=1,ctr;
   PetscMPIInt    size,rank;
   ptrdiff_t      *pdim;
   ptrdiff_t      local_n1,local_1_start;
 #if !defined(PETSC_USE_COMPLEX)
    ptrdiff_t     temp;
    PetscInt      N1;
+#else 
+   PetscInt n1;
 #endif
 
 
