@@ -7,7 +7,7 @@ PetscInt main(PetscInt argc,char **args)
 {
   PetscErrorCode  ierr;
   PetscMPIInt     rank,size;
-  PetscInt        N0=3,N1=3,N2=4,N3=5,N4=5,N=N0*N1*N2;
+  PetscInt        N0=2048,N1=2048,N2=3,N3=5,N4=5,N=N0*N1;
   PetscRandom     rdm;
   PetscReal       enorm;
   Vec             x,y,z,input,output;
@@ -28,15 +28,16 @@ PetscInt main(PetscInt argc,char **args)
   ierr = VecCreate(PETSC_COMM_WORLD,&input);CHKERRQ(ierr);
   ierr = VecSetSizes(input,PETSC_DECIDE,N);CHKERRQ(ierr);
   ierr = VecSetFromOptions(input);CHKERRQ(ierr);
-  ierr = VecSet(input,one);CHKERRQ(ierr);
-  ierr = VecSetValue(input,1,two,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = VecSetValue(input,2,three,INSERT_VALUES);CHKERRQ(ierr);
-//  ierr = VecSetRandom(input,rdm);CHKERRQ(ierr);
+//  ierr = VecSet(input,one);CHKERRQ(ierr);
+//  ierr = VecSetValue(input,1,two,INSERT_VALUES);CHKERRQ(ierr);
+//  ierr = VecSetValue(input,2,three,INSERT_VALUES);CHKERRQ(ierr);
+//  ierr = VecSetValue(input,3,three,INSERT_VALUES);CHKERRQ(ierr);
+  ierr = VecSetRandom(input,rdm);CHKERRQ(ierr);
 //  ierr = VecSetRandom(input,rdm);CHKERRQ(ierr);
 //  ierr = VecSetRandom(input,rdm);CHKERRQ(ierr);
   ierr = VecDuplicate(input,&output);
  
-  DIM = 3; dim[0] = N0; dim[1] = N1; dim[2] = N2; dim[3] = N3; dim[4] = N4;
+  DIM = 2; dim[0] = N0; dim[1] = N1; dim[2] = N2; dim[3] = N3; dim[4] = N4;
   ierr = MatCreateFFT(PETSC_COMM_WORLD,DIM,dim,MATFFTW,&A);CHKERRQ(ierr);
   ierr = MatGetVecsFFTW(A,&x,&y,&z);CHKERRQ(ierr);
 //  ierr = MatGetVecs(A,&x,&y);CHKERRQ(ierr);
