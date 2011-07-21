@@ -259,15 +259,15 @@ cdef class SNES(Object):
     # --- monitoring ---
 
     def setMonitor(self, monitor, args=None, kargs=None):
-        cdef object monitorlist = None
-        if monitor is not None:
+        if monitor is None: return
+        cdef object monitorlist = self.get_attr('__monitor__')
+        if monitorlist is None:
+            monitorlist = []
+            self.set_attr('__monitor__', monitorlist)
             CHKERR( SNESMonitorSet(self.snes, SNES_Monitor, NULL, NULL) )
-            monitorlist = self.get_attr('__monitor__')
-            if monitorlist is None: monitorlist = []
-            if args is None: args = ()
-            if kargs is None: kargs = {}
-            monitorlist.append((monitor, args, kargs))
-        self.set_attr('__monitor__', monitorlist)
+        if args is None: args = ()
+        if kargs is None: kargs = {}
+        monitorlist.append((monitor, args, kargs))
 
     def getMonitor(self):
         return self.get_attr('__monitor__')
