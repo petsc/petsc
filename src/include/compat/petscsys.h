@@ -43,4 +43,8 @@ static PetscErrorCode PetscOptionsHasName_Compat(const char pre[],
 #define PetscOptionsHasName PetscOptionsHasName_Compat
 #endif
 
+#if PETSC_VERSION_(3,0,0)
+#define MPIU_SUM PetscSum_Op
+#endif
+
 #endif /* _COMPAT_PETSC_SYS_H */

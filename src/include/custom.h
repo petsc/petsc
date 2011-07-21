@@ -286,10 +286,6 @@ VecRestoreArrayC(Vec v, PetscScalar *a[])
   PetscFunctionReturn(0);
 }
 
-#if PETSC_VERSION_(3,0,0)
-#define MPIU_SUM PetscSum_Op
-#endif
-
 #undef __FUNCT__
 #define __FUNCT__ "VecStrideSum"
 PETSC_STATIC_INLINE PetscErrorCode
