@@ -69,6 +69,9 @@ Input parameters include:\n";
    J(G) = [                                    ]
           [ 2 \mu u_1 + 1; a - \mu (1 - u_1^2) ]
 
+RHSFunction has an imex split with -u_2/(u_2^2-1) as part of Ifunc, and
+RHSFunction2 has the split with that as part of the RHS
+
   ------------------------------------------------------------------------- */
 
 #include <petscts.h>
@@ -95,6 +98,24 @@ static PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ctx)
   ierr = VecGetArray(F,&f);CHKERRQ(ierr);
   f[0] = (user->imex ? -1.*x[1] : 0.0);
   f[1] = 0.0;
+  ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "RHSFunction2"
+static PetscErrorCode RHSFunction2(TS ts,PetscReal t,Vec X,Vec F,void *ctx)
+{
+  PetscErrorCode ierr;
+  User user = (User)ctx;
+  PetscScalar *x,*f;
+
+  PetscFunctionBegin;
+  ierr = VecGetArray(X,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(F,&f);CHKERRQ(ierr);
+  f[0] = (user->imex ? -1.*x[1] : 0.0);
+  f[1] = (user->imex ? -1.*x[1]/(x[1]*x[1]-1) : 0.0);
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -202,7 +223,7 @@ int main(int argc,char **argv)
   Mat             A;            /* Jacobian matrix */
   PetscInt        steps;
   PetscReal       ftime=0.5;
-  PetscBool       monitor = PETSC_FALSE;
+  PetscBool       monitor = PETSC_FALSE,rhs2 = PETSC_FALSE;
   PetscScalar     *x_ptr;
   PetscMPIInt     size;
   struct _n_User  user;
@@ -225,6 +246,7 @@ int main(int argc,char **argv)
   user.next_output = 0.0;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-imex",&user.imex,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(PETSC_NULL,"-monitor",&monitor,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-rhs2",&rhs2,PETSC_NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Create necessary matrix and vectors, solve same ODE on every process
@@ -240,7 +262,12 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetType(ts,TSBEULER);CHKERRQ(ierr); /* General Linear method, TSTHETA can also solve DAE */
-  ierr = TSSetRHSFunction(ts,PETSC_NULL,RHSFunction,&user);CHKERRQ(ierr);
+  if(rhs2 == PETSC_FALSE){
+    ierr = TSSetRHSFunction(ts,PETSC_NULL,RHSFunction,&user);CHKERRQ(ierr);
+  }else{
+    ierr = TSSetRHSFunction(ts,PETSC_NULL,RHSFunction2,&user);CHKERRQ(ierr);
+  }
+
   ierr = TSSetIFunction(ts,PETSC_NULL,IFunction,&user);CHKERRQ(ierr);
   ierr = TSSetIJacobian(ts,A,A,IJacobian,&user);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,PETSC_DEFAULT,ftime);CHKERRQ(ierr);
