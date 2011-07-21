@@ -109,22 +109,30 @@ cdef class TS(Object):
     # --- user RHS Function/Jacobian routines ---
 
     def setRHSFunction(self, function, Vec f not None, args=None, kargs=None):
-        cdef PetscVec fvec = NULL
+        cdef PetscVec fvec=NULL
         if f is not None: fvec = f.vec
-        CHKERR( TSSetRHSFunction(self.ts, fvec, TS_RHSFunction, NULL) )
-        if args is None: args = ()
-        if kargs is None: kargs = {}
-        self.set_attr('__rhsfunction__', (function, args, kargs))
+        if function is not None:
+            if args is None: args = ()
+            if kargs is None: kargs = {}
+            self.set_attr('__rhsfunction__', (function, args, kargs))
+            CHKERR( TSSetRHSFunction(self.ts, fvec,
+                                     TS_RHSFunction, NULL) )
+        else:
+            CHKERR( TSSetRHSFunction(self.ts, fvec, NULL, NULL) )
 
     def setRHSJacobian(self, jacobian, Mat J, Mat P=None, args=None, kargs=None):
-        cdef PetscMat Jmat = NULL
+        cdef PetscMat Jmat=NULL
         if J is not None: Jmat = J.mat
-        cdef PetscMat Pmat = Jmat
+        cdef PetscMat Pmat=Jmat
         if P is not None: Pmat = P.mat
-        CHKERR( TSSetRHSJacobian(self.ts, Jmat, Pmat, TS_RHSJacobian, NULL) )
-        if args is None: args = ()
-        if kargs is None: kargs = {}
-        self.set_attr('__rhsjacobian__', (jacobian, args, kargs))
+        if jacobian is not None:
+            if args is None: args = ()
+            if kargs is None: kargs = {}
+            self.set_attr('__rhsjacobian__', (jacobian, args, kargs))
+            CHKERR( TSSetRHSJacobian(self.ts, Jmat, Pmat,
+                                     TS_RHSJacobian, NULL) )
+        else:
+            CHKERR( TSSetRHSJacobian(self.ts, Jmat, Pmat, NULL, NULL) )
 
     def computeRHSFunction(self, t, Vec x not None, Vec f not None):
         cdef PetscReal time = asReal(t)
@@ -156,26 +164,31 @@ cdef class TS(Object):
 
     # --- user Implicit Function/Jacobian routines ---
 
-    def setIFunction(self, function, Vec f not None, args=None, kargs=None):
+    def setIFunction(self, function, Vec f, args=None, kargs=None):
         cdef PetscVec fvec=NULL
         if f is not None: fvec = f.vec
-        CHKERR( TSSetIFunction(self.ts, fvec, TS_IFunction, NULL) )
-        if args is None: args = ()
-        if kargs is None: kargs = {}
-        self.set_attr('__ifunction__', (function, args, kargs))
+        if function is not None:
+            if args is None: args = ()
+            if kargs is None: kargs = {}
+            self.set_attr('__ifunction__', (function, args, kargs))
+            CHKERR( TSSetIFunction(self.ts, fvec,
+                                   TS_IFunction, NULL) )
+        else:
+            CHKERR( TSSetIFunction(self.ts, fvec, NULL, NULL) )
 
     def setIJacobian(self, jacobian, Mat J, Mat P=None, args=None, kargs=None):
-        cdef PetscMat Jmat = NULL
+        cdef PetscMat Jmat=NULL
         if J is not None: Jmat = J.mat
-        cdef PetscMat Pmat = Jmat
+        cdef PetscMat Pmat=Jmat
         if P is not None: Pmat = P.mat
-        CHKERR( TSSetIJacobian(self.ts, Jmat, Pmat, TS_IJacobian, NULL) )
-        if args is None: args = ()
-        if kargs is None: kargs = {}
-        self.set_attr('__ijacobian__', (jacobian, args, kargs))
-        if Pmat != NULL:
-            CHKERR( PetscObjectCompose(
-                    <PetscObject>self.ts,"__ijacpmat__", <PetscObject>Pmat) )
+        if jacobian is not None:
+            if args is None: args = ()
+            if kargs is None: kargs = {}
+            self.set_attr('__ijacobian__', (jacobian, args, kargs))
+            CHKERR( TSSetIJacobian(self.ts, Jmat, Pmat,
+                                   TS_IJacobian, NULL) )
+        else:
+            CHKERR( TSSetIJacobian(self.ts, Jmat, Pmat, NULL, NULL) )
 
     def computeIFunction(self,
                          t, Vec x not None, Vec xdot not None,

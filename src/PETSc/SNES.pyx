@@ -105,10 +105,14 @@ cdef class SNES(Object):
     # --- user Function/Jacobian routines ---
 
     def setInitialGuess(self, initialguess, args=None, kargs=None):
-        CHKERR( SNESSetInitialGuess(self.snes, SNES_InitialGuess, NULL) )
-        if args is None: args = ()
-        if kargs is None: kargs = {}
-        self.set_attr('__initialguess__', (initialguess, args, kargs))
+        if initialguess is not None:
+            if args is None: args = ()
+            if kargs is None: kargs = {}
+            self.set_attr('__initialguess__', (initialguess, args, kargs))
+            CHKERR( SNESSetInitialGuess(self.snes, SNES_InitialGuess, NULL) )
+        else:
+            self.set_attr('__initialguess__', None)
+            CHKERR( SNESSetInitialGuess(self.snes, NULL, NULL) )
 
     def getInitialGuess(self):
         return self.get_attr('__initialguess__')
@@ -116,10 +120,14 @@ cdef class SNES(Object):
     def setFunction(self, function, Vec f, args=None, kargs=None):
         cdef PetscVec fvec=NULL
         if f is not None: fvec = f.vec
-        CHKERR( SNESSetFunction(self.snes, fvec, SNES_Function, NULL) )
-        if args is None: args = ()
-        if kargs is None: kargs = {}
-        self.set_attr('__function__', (function, args, kargs))
+        if function is not None:
+            CHKERR( SNESSetFunction(self.snes, fvec,
+                                    SNES_Function, NULL) )
+            if args is None: args = ()
+            if kargs is None: kargs = {}
+            self.set_attr('__function__', (function, args, kargs))
+        else:
+            CHKERR( SNESSetFunction(self.snes, fvec, NULL, NULL) )
 
     def getFunction(self):
         cdef Vec f = Vec()
@@ -130,13 +138,13 @@ cdef class SNES(Object):
 
     def setUpdate(self, update, args=None, kargs=None):
         if update is not None:
-            CHKERR( SNESSetUpdate(self.snes, SNES_Update) )
             if args is None: args = ()
             if kargs is None: kargs = {}
             self.set_attr('__update__', (update, args, kargs))
+            CHKERR( SNESSetUpdate(self.snes, SNES_Update) )
         else:
-            CHKERR( SNESSetUpdate(self.snes, NULL) )
             self.set_attr('__update__', None)
+            CHKERR( SNESSetUpdate(self.snes, NULL) )
 
     def getUpdate(self):
         return self.get_attr('__update__')
@@ -144,12 +152,16 @@ cdef class SNES(Object):
     def setJacobian(self, jacobian, Mat J, Mat P=None, args=None, kargs=None):
         cdef PetscMat Jmat=NULL
         if J is not None: Jmat = J.mat
-        cdef PetscMat Pmat = Jmat
+        cdef PetscMat Pmat=Jmat
         if P is not None: Pmat = P.mat
-        CHKERR( SNESSetJacobian(self.snes, Jmat, Pmat, SNES_Jacobian, NULL) )
-        if args is None: args = ()
-        if kargs is None: kargs = {}
-        self.set_attr('__jacobian__', (jacobian, args, kargs))
+        if jacobian is not None:
+            CHKERR( SNESSetJacobian(self.snes, Jmat, Pmat,
+                                    SNES_Jacobian, NULL) )
+            if args is None: args = ()
+            if kargs is None: kargs = {}
+            self.set_attr('__jacobian__', (jacobian, args, kargs))
+        else:
+            CHKERR( SNESSetJacobian(self.snes, Jmat, Pmat, NULL, NULL) )
 
     def getJacobian(self):
         cdef Mat J = Mat()
