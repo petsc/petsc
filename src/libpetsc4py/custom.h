@@ -125,3 +125,6 @@ static void initlibpetsc4py(void)
   Py_DECREF(m);
 }
 #endif
+
+#undef  __FUNCT__
+#define __FUNCT__ "<libpetsc4py>"

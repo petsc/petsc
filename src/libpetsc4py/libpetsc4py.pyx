@@ -1693,8 +1693,8 @@ cdef extern from * nogil:
     PetscErrorCode SNESGetSolutionUpdate(PetscSNES,PetscVec*)
     PetscErrorCode SNESGetIterationNumber(PetscSNES,PetscInt*)
     PetscErrorCode SNESGetLinearSolveIterations(PetscSNES,PetscInt*)
+    PetscErrorCode SNESGetConvergedReason(PetscSNES,SNESConvergedReason*)
     PetscErrorCode SNES_KSPSolve(PetscSNES,PetscKSP,PetscVec,PetscVec,)
-
     PetscErrorCode SNESConverged(PetscSNES,PetscInt,PetscReal,PetscReal,PetscReal,SNESConvergedReason*)
     PetscErrorCode SNESLogHistory(PetscSNES,PetscInt,PetscReal,PetscInt)
     PetscErrorCode SNESMonitor(PetscSNES,PetscInt,PetscReal)
@@ -2000,6 +2000,8 @@ cdef extern from * nogil:
         TSProblemType problem_type
         PetscInt  nonlinear_its
         PetscInt  linear_its
+        PetscInt  reject
+        PetscInt  max_reject
         PetscInt  steps
         PetscReal ptime
         PetscVec  vec_sol
@@ -2096,22 +2098,11 @@ cdef PetscErrorCode TSDestroy_Python(
         ts.data = NULL
     return FunctionEnd()
 
-cdef PetscErrorCode TSSetUp_Python_LINEAR(
+cdef PetscErrorCode TSSetUp_Python(
     PetscTS ts,
     ) \
     except IERR with gil:
-    FunctionBegin(b"TSSetUp_Python_LINEAR")
-    cdef PetscKSP ksp = NULL
-    CHKERR( TSGetKSP(ts, &ksp) )
-    return FunctionEnd()
-
-cdef PetscErrorCode TSSetUp_Python_NONLINEAR(
-    PetscTS ts,
-    ) \
-    except IERR with gil:
-    FunctionBegin(b"TSSetUp_Python_NONLINEAR")
-    cdef PetscSNES snes = NULL
-    CHKERR( TSGetSNES(ts, &snes) )
+    FunctionBegin(b"TSSetUp_Python")
     #
     cdef PetscVec vec_update = NULL
     CHKERR( VecDuplicate(ts.vec_sol,&vec_update) )
@@ -2125,19 +2116,6 @@ cdef PetscErrorCode TSSetUp_Python_NONLINEAR(
                                 b"@ts.vec_dot",
                                 <PetscObject>vec_dot) )
     CHKERR( VecDestroy(&vec_dot) )
-    #
-    return FunctionEnd()
-
-cdef PetscErrorCode TSSetUp_Python(
-    PetscTS ts,
-    ) \
-    except IERR with gil:
-    FunctionBegin(b"TSSetUp_Python")
-    #
-    if ts.problem_type == TS_LINEAR:
-        TSSetUp_Python_LINEAR(ts)
-    if ts.problem_type == TS_NONLINEAR:
-        TSSetUp_Python_NONLINEAR(ts)
     #
     cdef char name[2048]
     cdef PetscBool found = PETSC_FALSE
@@ -2318,15 +2296,18 @@ cdef PetscErrorCode TSAdapt_Python(
     FunctionBegin(b"TSAdapt_Python")
     nextdt[0] = ts.time_step
     stepok[0] = PETSC_TRUE
+    #
+    cdef SNESConvergedReason snesreason = SNES_CONVERGED_ITERATING
+    CHKERR( SNESGetConvergedReason(ts.snes,&snesreason) )
+    if snesreason < 0: stepok[0] = PETSC_FALSE
+    #
     cdef adapt = PyTS(ts).adapt
     if adapt is None: return FunctionEnd()
     cdef object retval
     cdef double dt
     cdef bint   ok
     retval = adapt(TS_(ts), <double>t, Vec_(x))
-    if retval is None:
-        nextdt[0] = ts.time_step
-        stepok[0] = PETSC_TRUE
+    if retval is None: pass
     elif isinstance(retval, float):
         dt = retval
         nextdt[0] = <PetscReal>dt
@@ -2350,15 +2331,13 @@ cdef PetscErrorCode TSStep_Python_default(
     ) \
     except IERR with gil:
     FunctionBegin(b"TSStep_Python_default")
+    CHKERR( SNESSolve(ts.snes, NULL, x) )
+    cdef SNESConvergedReason snesreason = SNES_CONVERGED_ITERATING
+    CHKERR( SNESGetConvergedReason(ts.snes, &snesreason) )
+    if snesreason < 0: pass # XXX
     cdef PetscInt nits = 0, lits = 0
-    if ts.problem_type == TS_LINEAR:
-        return PetscSETERR(PETSC_ERR_SUP,"only for nonlinear problems")
-        #CHKERR( KSPSolve(ts.ksp, NULL, x)           )
-        #CHKERR( KSPGetIterationNumber(ts.ksp,&lits) )
-    if ts.problem_type == TS_NONLINEAR:
-        CHKERR( SNESSolve(ts.snes, NULL, x)                 )
-        CHKERR( SNESGetIterationNumber(ts.snes,&nits)        )
-        CHKERR( SNESGetLinearSolveIterations(ts.snes,&lits) )
+    CHKERR( SNESGetIterationNumber(ts.snes,&nits) )
+    CHKERR( SNESGetLinearSolveIterations(ts.snes,&lits) )
     ts.nonlinear_its += nits
     ts.linear_its    += lits
     return FunctionEnd()
@@ -2375,34 +2354,48 @@ cdef PetscErrorCode TSSolve_Python_default(
              b"@ts.vec_update",
              <PetscObject*>&vec_update) )
     #
-    cdef PetscInt  i  = 0
+    ts.steps = 0
+    ts.linear_its = 0
+    ts.nonlinear_its = 0
+    ts.reject = 0
+    ts.reason = TS_CONVERGED_ITERATING;
+    #
+    cdef PetscInt  i  = 0, r = 0
     cdef PetscReal tt = ts.ptime
     cdef PetscReal dt = ts.time_step
     cdef PetscBool ok = PETSC_TRUE
     #
-    TSMonitor(ts,ts.steps,ts.ptime,ts.vec_sol)
+    CHKERR( TSMonitor(ts,ts.steps,ts.ptime,ts.vec_sol) )
     for i from 0 <= i < ts.max_steps:
-        if (ts.ptime + ts.time_step) > ts.max_time: break
+        if ts.reason: break
         CHKERR( TSPreStep(ts) )
         #
         dt = ts.time_step
         ok = PETSC_TRUE
-        while True:
+        for r from 0 <= r < ts.max_reject:
             ts.time_step = dt
             tt = ts.ptime + ts.time_step
             CHKERR( VecCopy(ts.vec_sol,vec_update) )
             TSStep_Python(ts,tt,vec_update)
             TSAdapt_Python(ts,tt,vec_update,&dt,&ok)
-            if ok:
-                CHKERR( VecCopy(vec_update,ts.vec_sol) )
-                break
+            if ok:  break
+            ts.reject += 1
+        if not ok:
+            ts.reason = TS_DIVERGED_STEP_REJECTED
+            break
+        #
+        CHKERR( VecCopy(vec_update,ts.vec_sol) )
         ts.ptime += ts.time_step
         ts.time_step = dt
         ts.steps += 1
         #
+        if ts.ptime >= ts.max_time:
+            ts.reason = TS_CONVERGED_TIME
+        if ts.steps >= ts.max_steps:
+            ts.reason = TS_CONVERGED_ITS
+        #
         CHKERR( TSPostStep(ts) )
-        TSMonitor(ts,ts.steps,ts.ptime,ts.vec_sol)
-    #
+        CHKERR( TSMonitor(ts,ts.steps,ts.ptime,ts.vec_sol) )
     return FunctionEnd()
 
 # --------------------------------------------------------------------
