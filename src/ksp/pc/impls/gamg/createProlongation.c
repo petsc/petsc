@@ -333,7 +333,7 @@ PetscErrorCode triangulateAndFormProl( IS  a_selected_2, /* list of selected loc
     char args[] = "pczQ"; /* c is needed ? */
     triangulate(args, &in, &mid, (struct triangulateio *) NULL );
     /* output .poly files for 'showme' */
-    if( PETSC_TRUE ) {
+    if( !PETSC_TRUE ) {
       static int level = 0;
       FILE *file; char fname[32]; 
  
@@ -560,7 +560,7 @@ PetscErrorCode growCrsSupport( const IS a_selected_1,
 
     /* grow graph to get wider set of selected vertices to cover fine grid, invalidates 'llist', geo mg specific */
     ierr = MatMatMult(a_Gmat1, a_Gmat1, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &Gmat2 );   CHKERRQ(ierr);
-    
+
     mpimat2 = (Mat_MPIAIJ*)Gmat2->data;
     ierr = VecGetLocalSize( mpimat2->lvec, a_num_ghosts );          CHKERRQ(ierr);
     /* scane my coarse zero gid, set 'lid_state' with coarse ID */

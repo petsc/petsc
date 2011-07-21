@@ -5,6 +5,7 @@
 #include <../src/ksp/pc/impls/mg/mgimpl.h>                    /*I "petscpcmg.h" I*/
 #include <../src/mat/impls/aij/seq/aij.h>
 #include <../src/mat/impls/aij/mpi/mpiaij.h>
+#include <assert.h>
 
 /* Private context for the GAMG preconditioner */
 typedef struct gamg_TAG {
@@ -71,27 +72,144 @@ EXTERN_C_END
 
 /* -------------------------------------------------------------------------- */
 /*
-   createCrsOp
+   partitionLevel
 
    Input Parameter:
-   . Amat - matrix on this fine level
-   . P_out - prolongation operator to the next level
-   . Acrs - coarse matrix that is created
+   . Amat_fine - matrix on this fine (k) level
+   . a_dime - 2 or 3
+   Output Parameter:
+   . P_inout - prolongation operator to the next level (k-1)
+   . Amat_crs - coarse matrix that is created (k-1)
+   . coarse_crds - coordinates that need to be moved
 */
 #undef __FUNCT__
-#define __FUNCT__ "createCrsOp"
-PetscErrorCode createCrsOp( Mat Amat, Mat P_inout, Mat *Acrs )
+#define __FUNCT__ "partitionLevel"
+PetscErrorCode partitionLevel( Mat Amat_fine,
+                            PetscInt a_dim,
+                            Mat *P_inout,
+                            Mat *Amat_crs,
+                            PetscReal **coarse_crds
+                            )
 {
-  PetscErrorCode ierr;
+  PetscErrorCode   ierr;
+  Mat              Amat, Pnew, Pold = *P_inout;
+  IS               new_indices,isnum;
+  MPI_Comm         wcomm = ((PetscObject)Amat_fine)->comm;
+  PetscMPIInt      mype,npe;
+  PetscInt         Istart,Iend,Istart0,Iend0,ncrs0,ncrs_new,bs=1; /* bs ??? */
 
   PetscFunctionBegin;
-  Mat H;
-  ierr = MatPtAP( Amat, P_inout, MAT_INITIAL_MATRIX, 2.0, &H); CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(wcomm,&mype);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(wcomm,&npe);CHKERRQ(ierr);
+  /* RAP */
+  ierr = MatPtAP( Amat_fine, Pold, MAT_INITIAL_MATRIX, 2.0, &Amat ); CHKERRQ(ierr);
+  ierr = MatGetOwnershipRange( Amat, &Istart0, &Iend0 );    CHKERRQ(ierr); /* x2 size of 'coarse_crds' */
+  ncrs0 = (Iend0 - Istart0)/bs;
 
-  /* need to repartition H and move colums of P accordingly */
-  
+  /* Repartition Amat_{k} and move colums of P^{k}_{k-1} and coordinates accordingly */
+  { 
+    PetscInt        counts[npe];
+    IS              isnewproc;
+    { /* partition: get 'isnewproc' */
+      MatPartitioning  mpart;
+      ierr = MatPartitioningCreate( wcomm, &mpart ); CHKERRQ(ierr);
+      ierr = MatPartitioningSetAdjacency( mpart, Amat ); CHKERRQ(ierr);
+      ierr = MatPartitioningSetFromOptions( mpart ); CHKERRQ(ierr);
+      ierr = MatPartitioningApply( mpart, &isnewproc ); CHKERRQ(ierr);
+      ierr = MatPartitioningDestroy( &mpart ); CHKERRQ(ierr);
+    }
+    /*
+     Create an index set from the isnewproc index set to indicate the mapping TO
+     */
+    ierr = ISPartitioningToNumbering( isnewproc, &isnum ); CHKERRQ(ierr);
+    /*
+     Determine how many elements are assigned to each processor
+     */
+    ierr = ISPartitioningCount( isnewproc, npe, counts ); CHKERRQ(ierr);
+    ierr = ISDestroy( &isnewproc );                       CHKERRQ(ierr);
+    ncrs_new = counts[mype];
+  }
+  { /* Create a vector to contain the newly ordered element information */
+    const PetscInt *idx;
+    PetscInt        i,j,k;
+    IS              isscat;
+    PetscScalar    *array;
+    Vec             src_crd, dest_crd;
+    PetscReal      *coords = *coarse_crds;
+    VecScatter      vecscat;
 
-  *Acrs = H;  
+    ierr = VecCreate( wcomm, &dest_crd );
+    ierr = VecSetSizes( dest_crd, a_dim*ncrs_new, PETSC_DECIDE ); CHKERRQ(ierr);
+    ierr = VecSetFromOptions( dest_crd ); CHKERRQ(ierr); /*funny vector-get global options?*/
+    /*
+     There are three data items per cell (element), the integer vertex numbers of its three
+     coordinates (we convert to double to use the scatter) (one can think
+     of the vectors of having a block size of 3, then there is one index in idx[] for each element)
+     */
+ISGetLocalSize(isnum,&i); assert(i==ncrs0); // debug
+    {
+      PetscInt tidx[ncrs0*a_dim];
+      ierr = ISGetIndices( isnum, &idx ); CHKERRQ(ierr);
+      for (i=0,j=0; i<ncrs0; i++) {
+        for (k=0; k<a_dim; k++) tidx[j++] = idx[i]*a_dim + k;
+      }
+      ierr = ISCreateGeneral( wcomm, a_dim*ncrs0, tidx, PETSC_COPY_VALUES, &isscat );
+      CHKERRQ(ierr);
+      ierr = ISRestoreIndices( isnum, &idx ); CHKERRQ(ierr);
+    }
+    /*
+     Create a vector to contain the original vertex information for each element
+     */
+    ierr = VecCreateSeq( PETSC_COMM_SELF, a_dim*ncrs0, &src_crd ); CHKERRQ(ierr);
+    ierr = VecGetArray( src_crd, &array );                        CHKERRQ(ierr);
+    for (i=0; i<a_dim*ncrs0; i++) array[i] = coords[i];
+    ierr = VecRestoreArray( src_crd, &array );                     CHKERRQ(ierr);
+    /*
+     Scatter the element vertex information (still in the original vertex ordering)
+     to the correct processor
+     */
+    ierr = VecScatterCreate( src_crd, PETSC_NULL, dest_crd, isscat, &vecscat);
+    CHKERRQ(ierr);
+    ierr = ISDestroy( &isscat );       CHKERRQ(ierr);
+    ierr = VecScatterBegin(vecscat,src_crd,dest_crd,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(vecscat,src_crd,dest_crd,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterDestroy( &vecscat );       CHKERRQ(ierr);
+    ierr = VecDestroy( &src_crd );       CHKERRQ(ierr);
+    /*
+     Put the element vertex data into a new allocation of the gdata->ele
+     */
+    ierr = PetscFree( *coarse_crds );    CHKERRQ(ierr);
+    ierr = PetscMalloc( a_dim*ncrs_new*sizeof(PetscReal), coarse_crds );    CHKERRQ(ierr);
+    coords = *coarse_crds; /* convient */
+    ierr = VecGetArray( dest_crd, &array );    CHKERRQ(ierr);
+    for (i=0; i<a_dim*ncrs_new; i++) coords[i] = PetscRealPart(array[i]);
+    ierr = VecRestoreArray( dest_crd, &array );    CHKERRQ(ierr);
+    ierr = VecDestroy( &dest_crd );    CHKERRQ(ierr);
+  }
+  /*
+   Invert for MatGetSubMatrix
+   */
+  ierr = ISInvertPermutation( isnum, ncrs_new, &new_indices ); CHKERRQ(ierr);
+  ierr = ISSort( new_indices ); CHKERRQ(ierr); /* is this needed? */
+  ierr = ISDestroy( &isnum ); CHKERRQ(ierr);
+  /* A_crs output */
+  ierr = MatGetSubMatrix( Amat, new_indices, new_indices, MAT_INITIAL_MATRIX, Amat_crs );
+  CHKERRQ(ierr);
+  ierr = MatDestroy( &Amat ); CHKERRQ(ierr);
+  Amat = *Amat_crs;
+  /* prolongator */
+  ierr = MatGetOwnershipRange( Pold, &Istart, &Iend );    CHKERRQ(ierr);
+  {
+    IS findices;
+    ierr = ISCreateStride(wcomm,Iend-Istart,Istart,1,&findices);   CHKERRQ(ierr);
+    ierr = MatGetSubMatrix( Pold, findices, new_indices, MAT_INITIAL_MATRIX, &Pnew );
+    CHKERRQ(ierr);
+    ierr = ISDestroy( &findices ); CHKERRQ(ierr);
+  }
+  ierr = MatDestroy( P_inout ); CHKERRQ(ierr);
+  *P_inout = Pnew; /* output */
+
+  ierr = ISDestroy( &new_indices ); CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -141,35 +259,35 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
   if (isMPI) {
   } else if (isSeq) {
   } else SETERRQ1(wcomm,PETSC_ERR_ARG_WRONG, "Matrix type '%s' cannot be used with GAMG. GAMG can only handle AIJ matrices.",((PetscObject)Amat)->type_name);
-  
+
   /* GAMG requires input of fine-grid matrix. It determines nlevels. */
   ierr = MatGetSize( Amat, &M, &N );CHKERRQ(ierr);
   ierr = MatGetBlockSize( Amat, &bs ); CHKERRQ(ierr);
   if(bs!=1) SETERRQ1(wcomm,PETSC_ERR_ARG_WRONG, "GAMG only supports scalar prblems bs = '%d'.",bs);
 
   /* Get A_i and R_i */
-#define GAMG_MAXLEVELS 10
+#define GAMG_MAXLEVELS 20
   Mat Aarr[GAMG_MAXLEVELS], Rarr[GAMG_MAXLEVELS];  PetscReal *coarse_crds = 0, *crds = pc_gamg->m_data;
   PetscBool isOK;
   for (level=0, Aarr[0] = Pmat; level < GAMG_MAXLEVELS-1; level++ ){
     ierr = MatGetSize( Aarr[level], &M, &N );CHKERRQ(ierr);
-    if( M < npe*10 ) { /* hard wire this for now */
+    if( M < npe*20 ) { /* hard wire this for now */
       break;
     }
     level1 = level + 1;
-    PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s make level %d N=%d\n",0,__FUNCT__,level+1,N);
+PetscPrintf(PETSC_COMM_WORLD,"[%d]%s make level %d N=%d\n",0,__FUNCT__,level+1,N);
     ierr = createProlongation( Aarr[level], crds, pc_gamg->m_dim,
                                &Rarr[level1], &coarse_crds, &isOK );
     CHKERRQ(ierr);
     ierr = PetscFree( crds ); CHKERRQ( ierr );
-    crds = coarse_crds;
     if(level==0) Aarr[0] = Amat; /* use Pmat for finest level setup, but use mat for solver */
     if( isOK ) {
-      ierr = createCrsOp( Aarr[level], Rarr[level1], &Aarr[level1] ); CHKERRQ(ierr);
+      ierr = partitionLevel( Aarr[level], pc_gamg->m_dim, &Rarr[level1], &Aarr[level1], &coarse_crds ); CHKERRQ(ierr);
     }
     else{
       break;
     }
+    crds = coarse_crds;
   }
   ierr = PetscFree( coarse_crds ); CHKERRQ( ierr );
 PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s %d levels\n",0,__FUNCT__,level + 1);
@@ -200,15 +318,13 @@ PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s %d levels\n",0,__FUNCT__,level + 1);
   /* create coarse level and the interpolation between the levels */
   for (level=0,lidx=pc_gamg->m_Nlevels-1; level<fine_level; level++,lidx--){
     level1 = level + 1;
-    /* PetscInt MM,NN; */
-    /* ierr = MatGetSize( Rarr[lidx], &MM, &NN );CHKERRQ(ierr); */
-    /* PetscPrintf(PETSC_COMM_WORLD,"%s Set P(%d,%d) on level %d (%d)\n",__FUNCT__,MM,NN,level1,lidx); */
     ierr = PCMGSetInterpolation(pc,level1,Rarr[lidx]);CHKERRQ(ierr);
     if(!PETSC_TRUE) {
-      PetscViewer        viewer;
-      ierr = PetscViewerASCIIOpen(PETSC_COMM_SELF, "Rmat.m", &viewer);  CHKERRQ(ierr);
+      PetscViewer viewer; char fname[32];
+      sprintf(fname,"Amat_%d.m",lidx); 
+      ierr = PetscViewerASCIIOpen( wcomm, fname, &viewer );  CHKERRQ(ierr);
       ierr = PetscViewerSetFormat( viewer, PETSC_VIEWER_ASCII_MATLAB);  CHKERRQ(ierr);
-      ierr = MatView(Rarr[lidx],viewer);CHKERRQ(ierr);
+      ierr = MatView( Aarr[lidx], viewer ); CHKERRQ(ierr);
       ierr = PetscViewerDestroy( &viewer );
     }
     ierr = MatDestroy( &Rarr[lidx] );  CHKERRQ(ierr);
