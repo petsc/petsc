@@ -1,57 +1,60 @@
 #include "tao.h"
-/* -------------- User-defined constructs ---------- */
+
 typedef struct {
-  int n;          /* dimension */
-  double alpha;   /* condition parameter */
+  int n;             /* dimension */
+  PetscReal alpha;   /* condition parameter */
 } AppCtx;
-int FormFunctionGradient(TAO_APPLICATION,Vec,double*,Vec,void*);
-int FormHessian(TAO_APPLICATION,Vec,Mat*,Mat*,MatStructure*,void*);
+
+/* -------------- User-defined routines ---------- */
+PetscErrorCode FormFunctionGradient(TaoSolver,Vec,PetscReal*,Vec,void*);
+PetscErrorCode FormHessian(TaoSolver,Vec,Mat*,Mat*,MatStructure*,void*);
 
 int main(int argc,char **argv)
 {
-  int        info;                  /* used to check for functions returning nonzeros */
-  double     zero=0.0;
-  Vec        x;                     /* solution vector */
-  Mat        H;                     /* Hessian matrix */
-  TAO_SOLVER tao;                   /* TAO_SOLVER solver context */
-  TAO_APPLICATION taoapp;           /* TAO application context */
-  AppCtx     user;                  /* user-defined application context */
+  int        info;      /* used to check for functions returning nonzeros */
+  Vec        x;         /* solution vector */
+  Mat        H;         /* Hessian matrix */
+  TaoSolver  tao;       /* TaoSolver context */
+  AppCtx     user;      /* user-defined application context */
 
   /* Initialize TAO and PETSc */
   PetscInitialize(&argc,&argv,(char *)0,0);
-  TaoInitialize(&argc,&argv,(char *)0,0);
+  TaoInitialize(&argc,&argv,(char*)0,0);
+
+  /* Initialize problem parameters */
   user.n = 2; user.alpha = 99.0;
 
   /* Allocate vectors for the solution and gradient */
   info = VecCreateSeq(PETSC_COMM_SELF,user.n,&x); CHKERRQ(info);
-  info = MatCreateSeqBDiag(PETSC_COMM_SELF,user.n,user.n,0,2,0,0,&H);CHKERRQ(info);
+  info = MatCreateSeqBAIJ(PETSC_COMM_SELF,2,user.n,user.n,1,PETSC_NULL,&H); 
+  CHKERRQ(info);
 
   /* Create TAO solver with desired solution method */
-  info = TaoCreate(PETSC_COMM_SELF,"tao_lmvm",&tao); CHKERRQ(info);
-  info = TaoApplicationCreate(PETSC_COMM_SELF,&taoapp); CHKERRQ(info);
+  info = TaoSolverCreate(PETSC_COMM_SELF,&tao); CHKERRQ(info);
+  info = TaoSolverSetType(tao,"tao_lmvm"); CHKERRQ(info);
 
   /* Set solution vec and an initial guess */
-  info = VecSet(&zero,x); CHKERRQ(info);
-  info = TaoAppSetInitialSolutionVec(taoapp,x); CHKERRQ(info); 
+  info = VecSet(x, 0); CHKERRQ(info);
+  info = TaoSolverSetInitialVector(tao,x); CHKERRQ(info); 
 
   /* Set routines for function, gradient, hessian evaluation */
-  info = TaoAppSetObjectiveAndGradientRoutine(taoapp,FormFunctionGradient,(void *)&user); 
+  info = TaoSolverSetObjectiveAndGradientRoutine(tao,FormFunctionGradient,&user); 
   CHKERRQ(info);
-  info = TaoAppSetHessianMat(taoapp,H,H); CHKERRQ(info);
-  info = TaoAppSetHessianRoutine(taoapp,FormHessian,(void *)&user); CHKERRQ(info);
+  info = TaoSolverSetHessianRoutine(tao,H,H,FormHessian,&user); CHKERRQ(info);
+    
+  /* Check for TAO command line options */
+  info = TaoSolverSetFromOptions(tao); CHKERRQ(info);
 
   /* SOLVE THE APPLICATION */
-  info = TaoSolveApplication(taoapp,tao); CHKERRQ(info);
+  info = TaoSolverSolve(tao); CHKERRQ(info);
 
   /* Free TAO data structures */
-  info = TaoDestroy(tao); CHKERRQ(info);
-  info = TaoAppDestroy(taoapp); CHKERRQ(info);
+  info = TaoSolverDestroy(tao); CHKERRQ(info);
 
   /* Free PETSc data structures */
   info = VecDestroy(&x); CHKERRQ(info);
   info = MatDestroy(&H); CHKERRQ(info);
 
-  /* Finalize TAO */
   TaoFinalize();
   PetscFinalize();
   return 0;
