@@ -90,6 +90,22 @@ ex17: ex17.o  chkopts
 ex18: ex18.o  chkopts
 	-${CLINKER} -o ex18 ex18.o  ${PETSC_TS_LIB}
 	${RM} ex18.o
+
+ex19: ex19.o  chkopts
+	-${CLINKER} -o ex19 ex19.o  ${PETSC_TS_LIB}
+	${RM} ex19.o
+
+ex19a: ex19a.o  chkopts
+	-${CLINKER} -o ex19a ex19a.o  ${PETSC_TS_LIB}
+	${RM} ex19a.o
+
+ex20: ex20.o  chkopts
+	-${CLINKER} -o ex20 ex20.o  ${PETSC_TS_LIB}
+	${RM} ex20.o
+
+ex20a: ex20a.o  chkopts
+	-${CLINKER} -o ex20a ex20a.o  ${PETSC_TS_LIB}
+	${RM} ex20a.o
 #---------------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 1 ./ex1 -ksp_gmres_cgs_refinement_type refine_always -snes_type ls -ts_monitor_pseudo > ex1_1.tmp 2>&1;	  \
