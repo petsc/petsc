@@ -75,41 +75,64 @@ EXTERN_C_END
    partitionLevel
 
    Input Parameter:
-   . Amat_fine - matrix on this fine (k) level
+   . a_Amat_fine - matrix on this fine (k) level
    . a_dime - 2 or 3
+   In/Output Parameter:
+   . a_P_inout - prolongation operator to the next level (k-1)
+   . a_coarse_crds - coordinates that need to be moved
+   . a_active_proc - number of active procs
    Output Parameter:
-   . P_inout - prolongation operator to the next level (k-1)
-   . Amat_crs - coarse matrix that is created (k-1)
-   . coarse_crds - coordinates that need to be moved
+   . a_Amat_crs - coarse matrix that is created (k-1)
 */
 #undef __FUNCT__
 #define __FUNCT__ "partitionLevel"
-PetscErrorCode partitionLevel( Mat Amat_fine,
-                            PetscInt a_dim,
-                            Mat *P_inout,
-                            Mat *Amat_crs,
-                            PetscReal **coarse_crds
+PetscErrorCode partitionLevel( Mat a_Amat_fine,
+                               PetscInt a_dim,
+                               Mat *a_P_inout,
+                               PetscReal **a_coarse_crds,
+                               PetscMPIInt *a_active_proc,
+                               Mat *a_Amat_crs
                             )
 {
   PetscErrorCode   ierr;
-  Mat              Amat, Pnew, Pold = *P_inout;
+  Mat              Amat, Pnew, Pold = *a_P_inout;
   IS               new_indices,isnum;
-  MPI_Comm         wcomm = ((PetscObject)Amat_fine)->comm;
-  PetscMPIInt      mype,npe;
+  MPI_Comm         wcomm = ((PetscObject)a_Amat_fine)->comm;
+  PetscMPIInt      nactive,mype,npe;
   PetscInt         Istart,Iend,Istart0,Iend0,ncrs0,ncrs_new,bs=1; /* bs ??? */
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(wcomm,&mype);CHKERRQ(ierr);
   ierr = MPI_Comm_size(wcomm,&npe);CHKERRQ(ierr);
   /* RAP */
-  ierr = MatPtAP( Amat_fine, Pold, MAT_INITIAL_MATRIX, 2.0, &Amat ); CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange( Amat, &Istart0, &Iend0 );    CHKERRQ(ierr); /* x2 size of 'coarse_crds' */
+  ierr = MatPtAP( a_Amat_fine, Pold, MAT_INITIAL_MATRIX, 2.0, &Amat ); CHKERRQ(ierr);
+  ierr = MatGetOwnershipRange( Amat, &Istart0, &Iend0 );    CHKERRQ(ierr); /* x2 size of 'a_coarse_crds' */
   ncrs0 = (Iend0 - Istart0)/bs;
 
   /* Repartition Amat_{k} and move colums of P^{k}_{k-1} and coordinates accordingly */
-  { 
-    PetscInt        counts[npe];
+  {
+    PetscInt        neq,N,counts[npe];
     IS              isnewproc;
+    PetscMPIInt     factstart,fact,new_npe,targ_npe;
+
+    ierr = MatGetSize( Amat, &neq, &N );CHKERRQ(ierr);
+#define MIN_EQ_PROC 100
+    nactive = *a_active_proc;
+    targ_npe = neq/MIN_EQ_PROC; /* hardwire min. number of eq/proc */
+    if( targ_npe == 0 || neq < 1000 ) new_npe = 1; /* chop coarsest grid */
+    else if (targ_npe > nactive ) new_npe = nactive; /* no change */
+    else {
+      new_npe = -9999;
+      factstart = nactive;
+      for(fact=factstart;fact>0;fact--){ /* try to find a better number of procs */
+        if( nactive%fact==0 && neq/(nactive/fact) > MIN_EQ_PROC ) {
+          new_npe = nactive/fact;
+        }
+      }
+      assert(new_npe != -9999);
+    }
+    *a_active_proc = new_npe; /* output for next time */
+
     { /* partition: get 'isnewproc' */
       MatPartitioning  mpart;
       ierr = MatPartitioningCreate( wcomm, &mpart ); CHKERRQ(ierr);
@@ -135,7 +158,7 @@ PetscErrorCode partitionLevel( Mat Amat_fine,
     IS              isscat;
     PetscScalar    *array;
     Vec             src_crd, dest_crd;
-    PetscReal      *coords = *coarse_crds;
+    PetscReal      *coords = *a_coarse_crds;
     VecScatter      vecscat;
 
     ierr = VecCreate( wcomm, &dest_crd );
@@ -146,7 +169,6 @@ PetscErrorCode partitionLevel( Mat Amat_fine,
      coordinates (we convert to double to use the scatter) (one can think
      of the vectors of having a block size of 3, then there is one index in idx[] for each element)
      */
-ISGetLocalSize(isnum,&i); assert(i==ncrs0); // debug
     {
       PetscInt tidx[ncrs0*a_dim];
       ierr = ISGetIndices( isnum, &idx ); CHKERRQ(ierr);
@@ -178,9 +200,9 @@ ISGetLocalSize(isnum,&i); assert(i==ncrs0); // debug
     /*
      Put the element vertex data into a new allocation of the gdata->ele
      */
-    ierr = PetscFree( *coarse_crds );    CHKERRQ(ierr);
-    ierr = PetscMalloc( a_dim*ncrs_new*sizeof(PetscReal), coarse_crds );    CHKERRQ(ierr);
-    coords = *coarse_crds; /* convient */
+    ierr = PetscFree( *a_coarse_crds );    CHKERRQ(ierr);
+    ierr = PetscMalloc( a_dim*ncrs_new*sizeof(PetscReal), a_coarse_crds );    CHKERRQ(ierr);
+    coords = *a_coarse_crds; /* convient */
     ierr = VecGetArray( dest_crd, &array );    CHKERRQ(ierr);
     for (i=0; i<a_dim*ncrs_new; i++) coords[i] = PetscRealPart(array[i]);
     ierr = VecRestoreArray( dest_crd, &array );    CHKERRQ(ierr);
@@ -193,10 +215,10 @@ ISGetLocalSize(isnum,&i); assert(i==ncrs0); // debug
   ierr = ISSort( new_indices ); CHKERRQ(ierr); /* is this needed? */
   ierr = ISDestroy( &isnum ); CHKERRQ(ierr);
   /* A_crs output */
-  ierr = MatGetSubMatrix( Amat, new_indices, new_indices, MAT_INITIAL_MATRIX, Amat_crs );
+  ierr = MatGetSubMatrix( Amat, new_indices, new_indices, MAT_INITIAL_MATRIX, a_Amat_crs );
   CHKERRQ(ierr);
   ierr = MatDestroy( &Amat ); CHKERRQ(ierr);
-  Amat = *Amat_crs;
+  Amat = *a_Amat_crs;
   /* prolongator */
   ierr = MatGetOwnershipRange( Pold, &Istart, &Iend );    CHKERRQ(ierr);
   {
@@ -206,8 +228,8 @@ ISGetLocalSize(isnum,&i); assert(i==ncrs0); // debug
     CHKERRQ(ierr);
     ierr = ISDestroy( &findices ); CHKERRQ(ierr);
   }
-  ierr = MatDestroy( P_inout ); CHKERRQ(ierr);
-  *P_inout = Pnew; /* output */
+  ierr = MatDestroy( a_P_inout ); CHKERRQ(ierr);
+  *a_P_inout = Pnew; /* output */
 
   ierr = ISDestroy( &new_indices ); CHKERRQ(ierr);
 
@@ -243,7 +265,7 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
   PetscBool        isSeq, isMPI;
   PetscInt         fine_level, level, level1, M, N, bs, lidx;
   MPI_Comm         wcomm = ((PetscObject)pc)->comm;
-  PetscMPIInt      mype,npe;
+  PetscMPIInt      mype,npe,nactivepe;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(wcomm,&mype);CHKERRQ(ierr);
@@ -261,28 +283,30 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
   } else SETERRQ1(wcomm,PETSC_ERR_ARG_WRONG, "Matrix type '%s' cannot be used with GAMG. GAMG can only handle AIJ matrices.",((PetscObject)Amat)->type_name);
 
   /* GAMG requires input of fine-grid matrix. It determines nlevels. */
-  ierr = MatGetSize( Amat, &M, &N );CHKERRQ(ierr);
   ierr = MatGetBlockSize( Amat, &bs ); CHKERRQ(ierr);
   if(bs!=1) SETERRQ1(wcomm,PETSC_ERR_ARG_WRONG, "GAMG only supports scalar prblems bs = '%d'.",bs);
 
   /* Get A_i and R_i */
+  ierr = MatGetSize( Amat, &M, &N );CHKERRQ(ierr);
+  PetscPrintf(PETSC_COMM_WORLD,"[%d]%s level %d N=%d\n",0,__FUNCT__,0,N);
 #define GAMG_MAXLEVELS 20
   Mat Aarr[GAMG_MAXLEVELS], Rarr[GAMG_MAXLEVELS];  PetscReal *coarse_crds = 0, *crds = pc_gamg->m_data;
   PetscBool isOK;
-  for (level=0, Aarr[0] = Pmat; level < GAMG_MAXLEVELS-1; level++ ){
-    ierr = MatGetSize( Aarr[level], &M, &N );CHKERRQ(ierr);
-    if( M < npe*20 ) { /* hard wire this for now */
+  for (level=0, Aarr[0] = Pmat, nactivepe = npe; level < GAMG_MAXLEVELS-1; level++ ){
+    if( nactivepe == 1 ) { 
       break;
     }
     level1 = level + 1;
-PetscPrintf(PETSC_COMM_WORLD,"[%d]%s make level %d N=%d\n",0,__FUNCT__,level+1,N);
     ierr = createProlongation( Aarr[level], crds, pc_gamg->m_dim,
                                &Rarr[level1], &coarse_crds, &isOK );
     CHKERRQ(ierr);
     ierr = PetscFree( crds ); CHKERRQ( ierr );
     if(level==0) Aarr[0] = Amat; /* use Pmat for finest level setup, but use mat for solver */
     if( isOK ) {
-      ierr = partitionLevel( Aarr[level], pc_gamg->m_dim, &Rarr[level1], &Aarr[level1], &coarse_crds ); CHKERRQ(ierr);
+      ierr = partitionLevel( Aarr[level], pc_gamg->m_dim, &Rarr[level1], &coarse_crds, &nactivepe, &Aarr[level1] );
+      CHKERRQ(ierr);
+      ierr = MatGetSize( Aarr[level1], &M, &N );CHKERRQ(ierr);
+      PetscPrintf(PETSC_COMM_WORLD,"[%d]%s done level %d N=%d, active pe = %d\n",0,__FUNCT__,level1,N,nactivepe);
     }
     else{
       break;
