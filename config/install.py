@@ -73,6 +73,7 @@ class Installer(script.Script):
     self.rootDir    = self.petscdir.dir
     self.destDir    = os.path.abspath(self.argDB['destDir'])
     self.installDir = self.framework.argDB['prefix']
+    print self.installDir
     self.arch       = self.arch.arch
     self.rootIncludeDir    = os.path.join(self.rootDir, 'include')
     self.archIncludeDir    = os.path.join(self.rootDir, self.arch, 'include')
@@ -129,7 +130,7 @@ class Installer(script.Script):
       # catch the Error from the recursive copytree so that we can
       # continue with other files
       except shutil.Error, err:
-        errors.extend(err.args[0])
+        errors.extend((srcname,dstname,str(err.args[0])))
     try:
       shutil.copystat(src, dst)
     except OSError, e:
@@ -219,7 +220,7 @@ for src, dst in copies:
     return
 
 
-  def outputHelp(self):
+  def outputDone(self):
     print '''\
 ====================================
 Install complete. It is useable with PETSC_DIR=%s [and no more PETSC_ARCH].
@@ -261,11 +262,11 @@ make PETSC_DIR=%s test
       print '********************************************************************'
       return
 
-    self.outputHelp()
     self.installIncludes()
     self.installConf()
     self.installBin()
     self.installLib()
+    self.outputDone()
 
     return
 

@@ -2591,7 +2591,7 @@ PetscErrorCode SNESScaleStep_Private(SNES snes,Vec y,PetscReal *fnorm,PetscReal 
 
    Input Parameters:
 +  snes - the SNES context
-.  b - the constant part of the equation, or PETSC_NULL to use zero.
+.  b - the constant part of the equation F(x) = b, or PETSC_NULL to use zero.
 -  x - the solution vector.
 
    Notes:
@@ -3429,7 +3429,7 @@ PetscErrorCode  SNESGetDM(SNES snes,DM *dm)
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetPC"
 /*@
-  SNESSetPC - Sets the preconditioner to be used.
+  SNESSetPC - Sets the nonlinear preconditioner to be used.
 
   Collective on SNES
 
@@ -3464,7 +3464,7 @@ PetscErrorCode SNESSetPC(SNES snes, SNES pc)
 #undef __FUNCT__
 #define __FUNCT__ "SNESGetPC"
 /*@
-  SNESGetPC - Returns a pointer to the preconditioner context set with SNESSetPC().
+  SNESGetPC - Returns a pointer to the nonlinear preconditioning context set with SNESSetPC().
 
   Not Collective
 

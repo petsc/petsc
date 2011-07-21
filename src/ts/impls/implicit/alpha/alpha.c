@@ -60,7 +60,8 @@ static PetscErrorCode TSStep_Alpha(TS ts)
     ts->nonlinear_its += its; ts->linear_its += lits;
     ierr = PetscInfo3(ts,"step=%D, nonlinear solve iterations=%D, linear solve iterations=%D\n",ts->steps,its,lits);CHKERRQ(ierr);
     /* time step adaptativity */
-    if (th->adapt) {
+    if (!th->adapt) break;
+    else {
       PetscReal t1 = ts->ptime + ts->time_step;
       PetscBool stepok = (reject==0) ? PETSC_TRUE : PETSC_FALSE;
       ierr = th->adapt(ts,t1,th->X1,th->V1,&next_time_step,&stepok,th->adaptctx);CHKERRQ(ierr);

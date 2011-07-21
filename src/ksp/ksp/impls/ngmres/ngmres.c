@@ -159,7 +159,9 @@ PetscErrorCode  KSPSolve_NGMRES(KSP ksp)
         ierr = VecNorm(F,NORM_2,&gnorm);CHKERRQ(ierr);          
       } else SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"NormType not supported");
       KSPLogResidualHistory(ksp,gnorm);
+      //printf("k=%d",k);
       KSPMonitor(ksp,k,gnorm);
+      ksp->its=k;
       ierr = (*ksp->converged)(ksp,k,gnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr); 
       if (ksp->reason) PetscFunctionReturn(0);
 
@@ -262,7 +264,7 @@ PetscErrorCode KSPSetFromOptions_NGMRES(KSP ksp)
     It must be wrapped in EXTERN_C_BEGIN to be dynamically linkable in C++
 */
 /*MC
-     KSPNGMRES - The preconditioned conjugate gradient (NGMRES) iterative method
+     KSPNGMRES - The nonlinear generalized minimum residual (NGMRES) iterative method
 
    Level: beginner
 
@@ -327,7 +329,8 @@ static PetscErrorCode BuildNGmresSoln(PetscScalar* nrs, Vec Fold, KSP ksp,PetscI
   PetscInt       i,ii,j,l;
   KSP_NGMRES      *ngmres = (KSP_NGMRES *)(ksp->data);
   Vec *dF=ngmres->w+ngmres->msize, *Q=ngmres->w+ngmres->msize*2,temp;
-  PetscReal      a,b,gam,c,s;
+  PetscReal      gam,areal;
+  PetscScalar    a,b,c,s;
  
   PetscFunctionBegin;
   ierr = VecDuplicate(Fold,&temp);CHKERRQ(ierr);
@@ -340,9 +343,25 @@ static PetscErrorCode BuildNGmresSoln(PetscScalar* nrs, Vec Fold, KSP ksp,PetscI
 	/* calculate the Givens rotation */
 	a=*HH(i,i);
 	b=*HH(i+1,i);
-        gam=1.0/PetscSqrtScalar(a*a+b*b);
+        gam=1.0/PetscRealPart(PetscSqrtScalar(PetscConj(a)*a + PetscConj(b)*b));
         c= a*gam;
         s= b*gam;
+     
+#if defined(PETSC_USE_COMPLEX)
+	/* update the Q factor */
+        ierr= VecCopy(Q[i],temp); CHKERRQ(ierr); 
+	ierr = VecAXPBY(temp,s,PetscConj(c),Q[i+1]);CHKERRQ(ierr); /*temp= c*Q[i]+s*Q[i+1] */
+        ierr = VecAXPBY(Q[i+1],-s,c,Q[i]);CHKERRQ(ierr); /* Q[i+1]= -s*Q[i] + c*Q[i+1] */
+        ierr= VecCopy(temp,Q[i]); CHKERRQ(ierr);   /* Q[i]= c*Q[i] + s*Q[i+1] */
+        /* update the R factor */
+        for(j=0;j<l;j++){
+          a= *HH(i,j);
+          b=*HH(i+1,j);
+	  temps=PetscConj(c)* a+s* b;           
+          *HH(i+1,j)=-s*a+c*b;
+          *HH(i,j)=temps;
+        } 
+#else
 	/* update the Q factor */
         ierr= VecCopy(Q[i],temp); CHKERRQ(ierr); 
 	ierr = VecAXPBY(temp,s,c,Q[i+1]);CHKERRQ(ierr); /*temp= c*Q[i]+s*Q[i+1] */
@@ -355,7 +374,8 @@ static PetscErrorCode BuildNGmresSoln(PetscScalar* nrs, Vec Fold, KSP ksp,PetscI
 	  temps=c* a+s* b;           
           *HH(i+1,j)=-s*a+c*b;
           *HH(i,j)=temps;
-        } 
+        }
+#endif 
       }
     }
 
@@ -366,8 +386,8 @@ static PetscErrorCode BuildNGmresSoln(PetscScalar* nrs, Vec Fold, KSP ksp,PetscI
       ierr = VecAXPBY(temp,-*HH(i,it),1.0,Q[i]);CHKERRQ(ierr); /* temp= temp- h(i,l-1)*Q[i] */ 
     }
     ierr=VecCopy(temp,Q[it]);CHKERRQ(ierr); 
-    ierr=VecNormalize(Q[it],&a);CHKERRQ(ierr);
-    *HH(it,it)=a;
+    ierr=VecNormalize(Q[it],&areal);CHKERRQ(ierr);
+    *HH(it,it) = a = areal;
     
 
 

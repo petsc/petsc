@@ -1025,7 +1025,7 @@ PetscErrorCode MatGetDiagonal_SeqAIJ(Mat A,Vec v)
 }
 
 #include <../src/mat/impls/aij/seq/ftn-kernels/fmult.h>
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatMultTransposeAdd_SeqAIJ"
 PetscErrorCode MatMultTransposeAdd_SeqAIJ(Mat A,Vec xx,Vec zz,Vec yy)
 {
@@ -1038,7 +1038,7 @@ PetscErrorCode MatMultTransposeAdd_SeqAIJ(Mat A,Vec xx,Vec zz,Vec yy)
   PetscScalar       alpha;
   PetscInt          n,i,j,*idx,*ii,*ridx=PETSC_NULL;
   Mat_CompressedRow cprow = a->compressedrow;
-  PetscBool         usecprow = cprow.use; 
+  PetscBool         usecprow = cprow.use;
 #endif
 
   PetscFunctionBegin;

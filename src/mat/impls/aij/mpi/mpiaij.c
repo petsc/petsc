@@ -1068,7 +1068,7 @@ PetscErrorCode MatZeroRowsColumns_MPIAIJ(Mat A,PetscInt N,const PetscInt rows[],
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatMult_MPIAIJ"
 PetscErrorCode MatMult_MPIAIJ(Mat A,Vec xx,Vec yy)
 {
@@ -1086,19 +1086,19 @@ PetscErrorCode MatMult_MPIAIJ(Mat A,Vec xx,Vec yy)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatMultDiagonalBlock_MPIAIJ"
 PetscErrorCode MatMultDiagonalBlock_MPIAIJ(Mat A,Vec bb,Vec xx)
 {
   Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data;
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   ierr = MatMultDiagonalBlock(a->A,bb,xx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatMultAdd_MPIAIJ"
 PetscErrorCode MatMultAdd_MPIAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 {

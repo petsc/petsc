@@ -45,6 +45,7 @@ PetscErrorCode MatCheckCompressedRow(Mat A,Mat_CompressedRow *compressedrow,Pets
     nz = ai[i+1] - ai[i];       /* number of nonzeros */
     if (nz == 0) nrows++;
   }
+
   /* if a large number of zero rows is found, use compressedrow data structure */
   if (nrows < ratio*mbs) {
     compressedrow->use = PETSC_FALSE; 
