@@ -751,8 +751,8 @@ EXTERN_C_BEGIN
     Toy function that returns all the arguments it is passed
 */
 #undef __FUNCT__
-#define __FUNCT__ "echo"
-PetscErrorCode echo(PetscInt argc,char **args,PetscInt *argco,char ***argso)
+#define __FUNCT__ "YAML_echo"
+PetscErrorCode YAML_echo(PetscInt argc,char **args,PetscInt *argco,char ***argso)
 {
   PetscErrorCode ierr;
   PetscInt       i;
@@ -786,6 +786,27 @@ PetscErrorCode YAML_AMS_Connect(PetscInt argc,char **args,PetscInt *argco,char *
   *argco = 1;
   ierr = PetscMalloc(sizeof(char*),argso);CHKERRQ(ierr);
   ierr = PetscStrallocpy(list[0],&(*argso)[0]);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "YAML_AMS_Comm_attach"
+/*
+      Connects to the local AMS and gets only the first communication name
+*/
+PetscErrorCode YAML_AMS_Comm_attach(PetscInt argc,char **args,PetscInt *argco,char ***argso)
+{
+  PetscErrorCode ierr;
+  AMS_Comm       comm;
+
+  PetscFunctionBegin;
+  ierr = AMS_Comm_attach(args[0],&comm);CHKERRQ(ierr);
+  *argco = 1;
+  ierr = PetscMalloc(sizeof(char*),argso);CHKERRQ(ierr);
+  ierr = PetscMalloc(3*sizeof(char*),&argso[0][0]);CHKERRQ(ierr);
+  sprintf(argso[0][0],"%d",(int)comm);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
