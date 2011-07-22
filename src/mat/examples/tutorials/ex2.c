@@ -107,10 +107,10 @@ int main(int argc,char **argv)
   ierr = VecAXPY(Z,-1.0,Y);CHKERRQ(ierr);
   ierr = VecNorm(Z,NORM_2,&nrm);
   printf("Test1; error norm=%e\n",nrm);
-  /*
+  
   printf("MatMult the usual way:\n"); VecView(Y,0);
   printf("MatMult by subblock:\n"); VecView(Z,0);
-  */
+  
 
   /*
    * Next test: change both matrices

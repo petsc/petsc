@@ -300,73 +300,6 @@ PetscErrorCode VecDestroy_MPIFFTW(Vec v)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatGetVecsFFTW_1DC"
-/* 
-    - Get Vectors(s) compatible with matrix, i.e. with the 
-     parallel layout determined by FFTW-1D 
-
-*/
-PetscErrorCode MatGetVecsFFTW_1DC(Mat A,Vec *fin,Vec *fout,Vec *bout)
-{
-  PetscErrorCode ierr;
-  PetscMPIInt    size,rank;
-  MPI_Comm       comm=((PetscObject)A)->comm;
-  Mat_FFT        *fft = (Mat_FFT*)A->data;
-//  Mat_FFTW       *fftw = (Mat_FFTW*)fft->data;
-  PetscInt       N=fft->N;  
-  PetscInt       ndim=fft->ndim,*dim=fft->dim;
-  ptrdiff_t      f_alloc_local,f_local_n0,f_local_0_start;
-  ptrdiff_t      f_local_n1,f_local_1_end;
-  ptrdiff_t      b_alloc_local,b_local_n0,b_local_0_start;
-  ptrdiff_t      b_local_n1,b_local_1_end;
-  fftw_complex   *data_fin,*data_fout,*data_bout;
-
-  PetscFunctionBegin;
-#if !defined(PETSC_USE_COMPLEX)
-  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"not support for real numbers");
-#endif
-  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  if (size == 1){
-    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Works only for parallel 1D");
-  }
-  else {
-      if (ndim>1){
-        SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Works only for parallel 1D");}
-      else {
-          f_alloc_local = fftw_mpi_local_size_1d(dim[0],comm,FFTW_FORWARD,FFTW_ESTIMATE,&f_local_n0,&f_local_0_start,&f_local_n1,&f_local_1_end);
-          b_alloc_local = fftw_mpi_local_size_1d(dim[0],comm,FFTW_BACKWARD,FFTW_ESTIMATE,&b_local_n0,&b_local_0_start,&b_local_n1,&b_local_1_end);
-          if (fin) {
-            data_fin  = (fftw_complex*)fftw_malloc(sizeof(fftw_complex)*f_alloc_local);
-            ierr = VecCreateMPIWithArray(comm,f_local_n0,N,(const PetscScalar*)data_fin,fin);CHKERRQ(ierr);
-            (*fin)->ops->destroy   = VecDestroy_MPIFFTW;
-          } 
-          if (fout) {
-            data_fout = (fftw_complex*)fftw_malloc(sizeof(fftw_complex)*f_alloc_local);
-            ierr = VecCreateMPIWithArray(comm,f_local_n1,N,(const PetscScalar*)data_fout,fout);CHKERRQ(ierr);
-            (*fout)->ops->destroy   = VecDestroy_MPIFFTW;
-          }
-          if (bout) {
-            data_bout = (fftw_complex*)fftw_malloc(sizeof(fftw_complex)*b_alloc_local);
-            ierr = VecCreateMPIWithArray(comm,b_local_n1,N,(const PetscScalar*)data_bout,bout);CHKERRQ(ierr);
-            (*bout)->ops->destroy   = VecDestroy_MPIFFTW;
-          }
-  }
-  if (fin){
-    ierr = PetscLayoutReference(A->cmap,&(*fin)->map);CHKERRQ(ierr);
-  }
-  if (fout){
-    ierr = PetscLayoutReference(A->rmap,&(*fout)->map);CHKERRQ(ierr);
-  }
-  if (bout){
-    ierr = PetscLayoutReference(A->rmap,&(*bout)->map);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-           
-
-}
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetVecsFFTW"
@@ -420,9 +353,12 @@ PetscErrorCode  MatGetVecsFFTW_FFTW(Mat A,Vec *fin,Vec *fout,Vec *bout)
     if (fout){ierr = VecCreateSeq(PETSC_COMM_SELF,N,fout);CHKERRQ(ierr);}
     if (bout){ierr = VecCreateSeq(PETSC_COMM_SELF,N,bout);CHKERRQ(ierr);}
 #else
-    if (fin) {ierr = VecCreateSeq(PETSC_COMM_SELF,2*N*(dim[ndim-1]/2+1)/dim[ndim-1],fin);CHKERRQ(ierr);}
-    if (fout){ierr = VecCreateSeq(PETSC_COMM_SELF,2*N*(dim[ndim-1]/2+1)/dim[ndim-1],fout);CHKERRQ(ierr);}
-    if (bout){ierr = VecCreateSeq(PETSC_COMM_SELF,2*N*(dim[ndim-1]/2+1)/dim[ndim-1],bout);CHKERRQ(ierr);}
+//    if (fin) {ierr = VecCreateSeq(PETSC_COMM_SELF,2*N*(dim[ndim-1]/2+1)/dim[ndim-1],fin);CHKERRQ(ierr);}
+//    if (fout){ierr = VecCreateSeq(PETSC_COMM_SELF,2*N*(dim[ndim-1]/2+1)/dim[ndim-1],fout);CHKERRQ(ierr);}
+//    if (bout){ierr = VecCreateSeq(PETSC_COMM_SELF,2*N*(dim[ndim-1]/2+1)/dim[ndim-1],bout);CHKERRQ(ierr);}
+    if (fin) {ierr = VecCreateSeq(PETSC_COMM_SELF,n,fin);CHKERRQ(ierr);}
+    if (fout){ierr = VecCreateSeq(PETSC_COMM_SELF,n,fout);CHKERRQ(ierr);}
+    if (bout){ierr = VecCreateSeq(PETSC_COMM_SELF,n,bout);CHKERRQ(ierr);}
 #endif
   } else {
     ptrdiff_t      alloc_local,local_n0,local_0_start;
@@ -848,7 +784,7 @@ PetscErrorCode InputTransformFFT_FFTW(Mat A,Vec x,Vec y)
   PetscInt       N=fft->N;
   PetscInt       ndim=fft->ndim,*dim=fft->dim;//n=fft->n;
   PetscInt       low; 
-  PetscInt       rank,size; 
+  PetscInt       rank,size,vsize,vsize1; 
   ptrdiff_t      alloc_local,local_n0,local_0_start;
   ptrdiff_t      local_n1,local_1_start;
   VecScatter     vecscat;
@@ -916,6 +852,9 @@ PetscErrorCode InputTransformFFT_FFTW(Mat A,Vec x,Vec y)
           break;
      default:
 */
+          ierr = VecGetSize(x,&vsize);CHKERRQ(ierr);
+          ierr = VecGetSize(y,&vsize1);CHKERRQ(ierr);
+          printf("The values of sizes are %d and %d",vsize,vsize1);
           ierr = ISCreateStride(PETSC_COMM_SELF,N,0,1,&list1);CHKERRQ(ierr);
           ierr = VecScatterCreate(x,list1,y,list1,&vecscat);CHKERRQ(ierr);
           ierr = VecScatterBegin(vecscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -1417,7 +1356,7 @@ PetscErrorCode MatCreate_FFTW(Mat A)
   ptrdiff_t      local_n1,local_1_start;
 #if !defined(PETSC_USE_COMPLEX)
    ptrdiff_t     temp;
-   PetscInt      N1;
+   PetscInt      N1,tot_dim;
 #else 
    PetscInt n1;
 #endif
@@ -1430,10 +1369,19 @@ PetscErrorCode MatCreate_FFTW(Mat A)
 
   pdim = (ptrdiff_t *)calloc(ndim,sizeof(ptrdiff_t));
   pdim[0] = dim[0];
+#if !defined(PETSC_USE_COMPLEX)
+  tot_dim = 2*dim[0];
+#endif
   for (ctr=1;ctr<ndim;ctr++)
      {
           partial_dim *= dim[ctr]; 
           pdim[ctr] = dim[ctr];
+#if !defined(PETSC_USE_COMPLEX)
+          if (ctr==ndim-1)
+            tot_dim *= (dim[ctr]/2+1);
+          else 
+            tot_dim *= dim[ctr];
+#endif
      } 
        
   if (size == 1) {
@@ -1441,7 +1389,10 @@ PetscErrorCode MatCreate_FFTW(Mat A)
     ierr = MatSetSizes(A,N,N,N,N);CHKERRQ(ierr);  
     n = N;
 #else
-    PetscInt tot_dim = N*2*(dim[ndim-1]/2+1)/dim[ndim-1];
+    //printf("The value of N is %d\n",N);
+    //tot_dim = 2*N*(dim[ndim-1]/2+1);
+    //tot_dim = ((long int)tot_dim)/dim[ndim-1];
+    //printf("The value of is %ld and %d\n",tot_dim,dim[ndim-1]);
     ierr = MatSetSizes(A,tot_dim,tot_dim,tot_dim,tot_dim);CHKERRQ(ierr);  
     n = tot_dim;
 #endif
