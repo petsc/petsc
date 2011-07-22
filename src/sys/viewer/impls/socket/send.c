@@ -775,6 +775,13 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "YAML_AMS_Connect"
 /*
       Connects to the local AMS and gets only the first communication name
+
+   Input Parameters:
+.     none
+
+   Output Parameter:
+.     oarg1 - the string name of the first communicator
+
 */
 PetscErrorCode YAML_AMS_Connect(PetscInt argc,char **args,PetscInt *argco,char ***argso)
 {
@@ -794,15 +801,22 @@ EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "YAML_AMS_Comm_attach"
 /*
-      Connects to the local AMS and gets only the first communication name
+      Attaches to an AMS communicator
+
+   Input Parameter:
+.     arg1 - string name of the communicator
+
+   Output Parameter:
+.     oarg1 - the integer name of the communicator
+
 */
 PetscErrorCode YAML_AMS_Comm_attach(PetscInt argc,char **args,PetscInt *argco,char ***argso)
 {
   PetscErrorCode ierr;
-  AMS_Comm       comm;
+  AMS_Comm       comm = 0;
 
   PetscFunctionBegin;
-  ierr = AMS_Comm_attach(args[0],&comm);CHKERRQ(ierr);
+  ierr = AMS_Comm_attach(args[0],&comm);/* skip error check, hope it means just comm not found*/
   *argco = 1;
   ierr = PetscMalloc(sizeof(char*),argso);CHKERRQ(ierr);
   ierr = PetscMalloc(3*sizeof(char*),&argso[0][0]);CHKERRQ(ierr);
@@ -907,6 +921,8 @@ PetscErrorCode PetscProcessYAMLRPC(const char* request,char **result)
   if (fun) {
     ierr = PetscInfo1(PETSC_NULL,"Located function %s and running it\n",methodname);CHKERRQ(ierr);
     ierr = (*fun)(argc,args,&argco,&argso);CHKERRQ(ierr);
+  } else {
+    ierr = PetscInfo1(PETSC_NULL,"Did not locate function %s skipping it\n",methodname);CHKERRQ(ierr);
   }
 
   for (i=0; i<argc; i++) {

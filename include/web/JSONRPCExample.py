@@ -18,7 +18,7 @@ class JSONRPCExample:
     def onModuleLoad(self):
         self.TEXT_WAITING = "Waiting for response..."
         self.TEXT_ERROR = "Server Error"
-        self.METHOD_ECHO = "Echo"
+        self.METHOD_ECHO = "echo"
         self.METHOD_REVERSE = "Reverse"
         self.METHOD_UPPERCASE = "UPPERCASE"
         self.METHOD_LOWERCASE = "lowercase"
@@ -26,8 +26,7 @@ class JSONRPCExample:
         self.methods = [self.METHOD_ECHO, self.METHOD_REVERSE, 
                         self.METHOD_UPPERCASE, self.METHOD_LOWERCASE, 
                         self.METHOD_NONEXISTANT]
-
-        self.remote_py = EchoServicePython()
+        self.remote_py = ServicePython()
 
         self.status=Label()
         self.text_area = TextArea()
@@ -48,11 +47,13 @@ class JSONRPCExample:
         method_panel.setSpacing(8)
 
         self.button_py = Button("Send to echo Service", self)
-        self.button_ams = Button("Send to AMS Service", self)
+        self.button_ams_connect = Button("Connect to AMS", self)
+        self.button_ams_attach  = Button("Attach to AMS communicator", self)
 
         buttons = HorizontalPanel()
         buttons.add(self.button_py)
-        buttons.add(self.button_ams)
+        buttons.add(self.button_ams_connect)
+        buttons.add(self.button_ams_attach)
         buttons.setSpacing(8)
         
         info = """<h2>JSON-RPC Example</h2>
@@ -60,7 +61,7 @@ class JSONRPCExample:
            <a href="http://json-rpc.org/">JSON-RPC</a>.
         </p>
         <p>Enter some text below, and press a button to send the text
-           to an Echo service on your server. An echo service simply sends the exact same text back that it receives.
+           to an echo service on your server. An echo service simply sends the exact same text back that it receives.
            </p>"""
         
         panel = VerticalPanel()
@@ -79,12 +80,19 @@ class JSONRPCExample:
 
         # demonstrate proxy & callMethod()
         if sender == self.button_py:
-            id = self.remote_py.echo(text, self)
-        else:
+            id = self.remote_py.YAML_echo(text, self)
+        elif sender == self.button_ams_connect:
             id = self.remote_py.YAML_AMS_Connect(text, self)
+        elif sender == self.button_ams_attach:
+            id = self.remote_py.YAML_AMS_Comm_attach(self.commname, self)
+        self.lastsender = sender
 
     def onRemoteResponse(self, response, request_info):
         self.status.setText(response)
+        if self.lastsender == self.button_ams_connect:
+            self.commname = reponse
+        else:
+            self.commname = "joe"
 
     def onRemoteError(self, code, errobj, request_info):
         # onRemoteError gets the HTTP error code or 0 and
@@ -103,9 +111,9 @@ class JSONRPCExample:
 
 
 
-class EchoServicePython(JSONProxy):
+class ServicePython(JSONProxy):
     def __init__(self):
-        JSONProxy.__init__(self, "No service name", ["echo", "YAML_AMS_Connect"])
+        JSONProxy.__init__(self, "No service name", ["YAML_echo", "YAML_AMS_Connect", "YAML_AMS_Comm_attach"])
 
 if __name__ == '__main__':
     # for pyjd, set up a web server and load the HTML from there:
