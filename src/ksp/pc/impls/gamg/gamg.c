@@ -140,12 +140,28 @@ n_active_procs = new_npe; // hack!!!!!
 PetscPrintf(PETSC_COMM_WORLD,"\t\t%s n_active_procs=%d\n",__FUNCT__,n_active_procs);
     { /* partition: get 'isnewproc' */
       MatPartitioning  mpart;
+      PetscMPIInt factor = npe/new_npe;
+      /* create sub communicator */
+      MPI_Comm cm,new_comm;
+      int membershipKey = mype % factor;
+
+      ierr = MPI_Comm_split(wcomm, membershipKey, mype, &cm); CHKERRQ(ierr);
+      ierr = PetscCommDuplicate( cm, &new_comm, PETSC_NULL ); CHKERRQ(ierr);
+      ierr = MPI_Comm_free( &cm );                            CHKERRQ(ierr);
+
+      /* use 'new_comm' -- todo!!! */
       ierr = MatPartitioningCreate( wcomm, &mpart ); CHKERRQ(ierr);
       ierr = MatPartitioningSetAdjacency( mpart, Amat ); CHKERRQ(ierr);
       ierr = MatPartitioningSetFromOptions( mpart ); CHKERRQ(ierr);
       ierr = MatPartitioningApply( mpart, &isnewproc ); CHKERRQ(ierr);
       ierr = MatPartitioningDestroy( &mpart ); CHKERRQ(ierr);
+
+      ierr = MPI_Comm_free( &new_comm );    CHKERRQ(ierr);
+
+      /* spread partitioning across machine - probably the right thing to do but machine specific */
+      /* how to do this??? scale IS by 'factor' */
     }
+
     /*
      Create an index set from the isnewproc index set to indicate the mapping TO
      */

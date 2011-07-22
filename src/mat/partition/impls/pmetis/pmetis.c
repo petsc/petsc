@@ -21,6 +21,8 @@ typedef struct {
   MPI_Comm comm_pmetis;
 } MatPartitioning_Parmetis;
 
+/* extern PetscMPIInt n_active_procs; // hack for reduced partitions */
+
 /*
    Uses the ParMETIS parallel matrix partitioner to partition the matrix in parallel
 */
@@ -73,6 +75,8 @@ static PetscErrorCode MatPartitioningApply_Parmetis(MatPartitioning part,IS *par
 #endif
 
   ierr = PetscMalloc((mat->rmap->n+1)*sizeof(int),&locals);CHKERRQ(ierr);
+
+  /* nparts = n_active_procs; // hack for reduced partitions */
 
   if (PetscLogPrintInfo) {itmp = parmetis->printout; parmetis->printout = 127;}
   ierr = PetscMalloc(ncon*nparts*sizeof(float),&tpwgts);CHKERRQ(ierr);
