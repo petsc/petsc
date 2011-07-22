@@ -2,7 +2,10 @@
 /*
    Implements the sequential pthread based vectors.
 */
-
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE
+#endif
+#include <sched.h>
 #include <petscconf.h>
 #include <private/vecimpl.h>          /*I "petscvec.h" I*/
 #include <../src/vec/vec/impls/dvecimpl.h>
@@ -10,12 +13,16 @@
 #include <private/petscaxpy.h>
 #include <pthread.h>
 #include <unistd.h>
+
 void           (*MainWait)(void);
 PetscErrorCode (*MainJob)(void* (*pFunc)(void*),void**,PetscInt);
 extern PetscBool    PetscUseThreadPool;
 extern PetscMPIInt PetscMaxThreads;
+extern pthread_t*   PetscThreadPoint;
+extern int* ThreadCoreAffinity;
 void* PetscThreadRun(MPI_Comm Comm,void* (*pFunc)(void*),int,pthread_t*,void**);
 void* PetscThreadStop(MPI_Comm Comm,int,pthread_t*);
+void* DoCoreAffinity(void);
 
 typedef struct {
   const PetscScalar *x,*y;
@@ -148,6 +155,9 @@ void* PetscThreadStop(MPI_Comm Comm,int iTotThreads,pthread_t* ThreadId) {
 
 void* VecDot_Kernel(void *arg)
 {
+  if(PetscUseThreadPool==PETSC_FALSE) {
+    DoCoreAffinity();
+  }
   VecDot_KernelData *data = (VecDot_KernelData*)arg;
   const PetscScalar *x, *y;
   PetscBLASInt one = 1, bn;
@@ -211,6 +221,9 @@ PetscErrorCode VecDot_SeqPThread(Vec xin,Vec yin,PetscScalar *z)
 
 void* VecScale_Kernel(void *arg)
 {
+  if(PetscUseThreadPool==PETSC_FALSE) {
+    DoCoreAffinity();
+  }
   VecScale_KernelData *data = (VecScale_KernelData*)arg;
   PetscScalar a,*x;
   PetscBLASInt one = 1, bn;
@@ -263,6 +276,9 @@ PetscErrorCode VecScale_SeqPThread(Vec xin, PetscScalar alpha)
 
 void* VecAXPY_Kernel(void *arg)
 {
+  if(PetscUseThreadPool==PETSC_FALSE) {
+    DoCoreAffinity();
+  }
   VecAXPY_KernelData *data = (VecAXPY_KernelData*)arg;
   PetscScalar a,*y;
   const PetscScalar *x;
@@ -321,6 +337,9 @@ PetscErrorCode VecAXPY_SeqPThread(Vec yin,PetscScalar alpha,Vec xin)
 
 void* VecAYPX_Kernel(void *arg)
 {
+  if(PetscUseThreadPool==PETSC_FALSE) {
+    DoCoreAffinity();
+  }
   VecAYPX_KernelData *data = (VecAYPX_KernelData*)arg;
   PetscScalar a,*yy;
   const PetscScalar *xx;
@@ -408,6 +427,9 @@ PetscErrorCode VecAYPX_SeqPThread(Vec yin,PetscScalar alpha,Vec xin)
 
 void* VecWAXPY_Kernel(void *arg)
 {
+  if(PetscUseThreadPool==PETSC_FALSE) {
+    DoCoreAffinity();
+  }
   VecWAXPY_KernelData *data = (VecWAXPY_KernelData*)arg;
   PetscScalar a,*ww;
   const PetscScalar *xx,*yy;
@@ -498,6 +520,9 @@ PetscErrorCode VecWAXPY_SeqPThread(Vec win, PetscScalar alpha,Vec xin,Vec yin)
 
 void* VecNorm_Kernel(void *arg)
 {
+  if(PetscUseThreadPool==PETSC_FALSE) {
+    DoCoreAffinity();
+  }
   VecNorm_KernelData *data = (VecNorm_KernelData*)arg;
   const PetscScalar *x;
   NormType type;
@@ -594,6 +619,9 @@ PetscErrorCode VecNorm_SeqPThread(Vec xin,NormType type,PetscReal* z)
 
 void* VecMDot_Kernel(void *arg)
 {
+  if(PetscUseThreadPool==PETSC_FALSE) {
+    DoCoreAffinity();
+  }
   VecMDot_KernelData *data = (VecMDot_KernelData*)arg;
   const PetscScalar  *xbase = data->xvalin;
   Vec*               yin = data->yavecin;
@@ -828,6 +856,9 @@ PetscErrorCode VecMDot_SeqPThread(Vec xin,PetscInt nv,const Vec yin[],PetscScala
 
 void* VecMax_Kernel(void *arg)
 {
+  if(PetscUseThreadPool==PETSC_FALSE) {
+    DoCoreAffinity();
+  }
   VecMax_KernelData *data = (VecMax_KernelData*)arg;
   const PetscScalar *xx = data->x;
   PetscInt          i,j,n = data->localn;
@@ -905,6 +936,9 @@ PetscErrorCode VecMax_SeqPThread(Vec xin,PetscInt* idx,PetscReal * z)
 
 void* VecMin_Kernel(void *arg)
 {
+  if(PetscUseThreadPool==PETSC_FALSE) {
+    DoCoreAffinity();
+  }
   VecMin_KernelData *data = (VecMin_KernelData*)arg;
   const PetscScalar *xx = data->x;
   PetscInt          i,j,n = data->localn;
@@ -982,6 +1016,9 @@ PetscErrorCode VecMin_SeqPThread(Vec xin,PetscInt* idx,PetscReal * z)
 
 void* VecPointwiseMult_Kernel(void *arg)
 {
+  if(PetscUseThreadPool==PETSC_FALSE) {
+    DoCoreAffinity();
+  }
   VecPointwiseMult_KernelData *data = (VecPointwiseMult_KernelData*)arg;
   PetscScalar *ww = data->wpin,*xx = data->xpin,*yy = data->ypin;
   PetscInt    n = data->nlocal,i;
@@ -1046,6 +1083,9 @@ static PetscErrorCode VecPointwiseMult_SeqPThread(Vec win,Vec xin,Vec yin)
 
 void* VecPointwiseDivide_Kernel(void *arg)
 {
+  if(PetscUseThreadPool==PETSC_FALSE) {
+    DoCoreAffinity();
+  }
   VecPointwiseDivide_KernelData *data = (VecPointwiseDivide_KernelData*)arg;
   PetscScalar *ww = data->wpin,*xx = data->xpin,*yy = data->ypin;
   PetscInt    n = data->nlocal,i;
@@ -1101,6 +1141,9 @@ static PetscErrorCode VecPointwiseDivide_SeqPThread(Vec win,Vec xin,Vec yin)
 
 void* VecSwap_Kernel(void *arg)
 {
+  if(PetscUseThreadPool==PETSC_FALSE) {
+    DoCoreAffinity();
+  }
   VecSwap_KernelData *data = (VecSwap_KernelData*)arg;
   PetscScalar *xa = data->xpin,*ya = data->ypin;
   PetscBLASInt   one = 1,bn = PetscBLASIntCast(data->nlocal);
@@ -1149,6 +1192,9 @@ static PetscErrorCode VecSwap_SeqPThread(Vec xin,Vec yin)
 
 void* VecSetRandom_Kernel(void *arg)
 {
+  if(PetscUseThreadPool==PETSC_FALSE) {
+    DoCoreAffinity();
+  }
   VecSetRandom_KernelData *data = (VecSetRandom_KernelData*)arg;
   PetscScalar  *xx = data->xpin;
   PetscRandom  r = data->rin;
@@ -1197,6 +1243,9 @@ static PetscErrorCode VecSetRandom_SeqPThread(Vec xin,PetscRandom r)
 
 void* VecCopy_Kernel(void *arg)
 {
+  if(PetscUseThreadPool==PETSC_FALSE) {
+    DoCoreAffinity();
+  }
   VecCopy_KernelData *data = (VecCopy_KernelData*)arg;
   const PetscScalar  *xa = data->xpin;
   PetscScalar        *ya = data->ypin;
@@ -1249,6 +1298,9 @@ static PetscErrorCode VecCopy_SeqPThread(Vec xin,Vec yin)
 
 void* VecMAXPY_Kernel(void* arg)
 {
+  if(PetscUseThreadPool==PETSC_FALSE) {
+    DoCoreAffinity();
+  }
   VecMAXPY_KernelData *data = (VecMAXPY_KernelData*)arg;
   PetscErrorCode    ierr;
   PetscInt          n = data->nelem,nv=data->ntoproc,ibase=data->ibase,j,j_rem;
@@ -1361,10 +1413,13 @@ PetscErrorCode VecMAXPY_SeqPThread(Vec xin, PetscInt nv,const PetscScalar *alpha
 
   ierr = VecRestoreArray(xin,&xx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
-} 
+}
 
 void* VecSet_Kernel(void *arg)
 {
+  if(PetscUseThreadPool==PETSC_FALSE) {
+    DoCoreAffinity();
+  }
   VecSet_KernelData *data = (VecSet_KernelData*)arg;
   PetscScalar        *xx = data->xpin;
   PetscScalar        alpha = data->alphain;
@@ -1421,6 +1476,21 @@ PetscErrorCode VecDestroy_SeqPThread(Vec v)
   PetscFunctionBegin;
   ierr = VecDestroy_Seq(v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
+}
+
+void* DoCoreAffinity(void)
+{
+  int i,icorr=0; cpu_set_t mset;
+  pthread_t pThread = pthread_self();
+  for(i=0; i<PetscMaxThreads; i++) {
+    if(pthread_equal(pThread,PetscThreadPoint[i])) {
+      icorr = ThreadCoreAffinity[i];
+    }
+  }
+  CPU_ZERO(&mset);
+  CPU_SET(icorr,&mset);
+  sched_setaffinity(0,sizeof(cpu_set_t),&mset);
+  return(0);
 }
 
 EXTERN_C_BEGIN

@@ -25,7 +25,7 @@ extern PetscErrorCode PetscSequentialPhaseBegin_Private(MPI_Comm,int);
 extern PetscErrorCode PetscSequentialPhaseEnd_Private(MPI_Comm,int);
 extern PetscErrorCode PetscCloseHistoryFile(FILE **);
 extern PetscErrorCode (*PetscThreadFinalize)(void);
-
+extern int* ThreadCoreAffinity;
 /* this is used by the _, __, and ___ macros (see include/petscerror.h) */
 PetscErrorCode __gierr = 0;
 
@@ -901,8 +901,10 @@ PetscErrorCode  PetscFinalize(void)
   ierr = PetscOpenMPFinalize();CHKERRQ(ierr);
 #if defined(PETSC_USE_PTHREAD_CLASSES)
   if (PetscThreadFinalize) {
+    /* thread pool case */
     ierr = (*PetscThreadFinalize)();CHKERRQ(ierr);
   }
+  free(ThreadCoreAffinity);
 #endif
 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);

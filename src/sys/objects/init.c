@@ -660,28 +660,29 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
     sched_setaffinity(0,sizeof(cpu_set_t),&mset);
   }
 
+  PetscInt N_CORES = get_nprocs();
+  ThreadCoreAffinity = (int*)malloc(N_CORES*sizeof(int));
+  char tstr[9];
+  char tbuf[2];
+  strcpy(tstr,"-thread");
+  for(i=0;i<PetscMaxThreads;i++) {
+    ThreadCoreAffinity[i] = i;
+    sprintf(tbuf,"%d",i);
+    strcat(tstr,tbuf);
+    ierr = PetscOptionsHasName(PETSC_NULL,tstr,&flg1);CHKERRQ(ierr);
+    if(flg1) {
+      ierr = PetscOptionsGetInt(PETSC_NULL,tstr,&ThreadCoreAffinity[i],PETSC_NULL);CHKERRQ(ierr);
+      ThreadCoreAffinity[i] = ThreadCoreAffinity[i]%N_CORES; /* check on the user */
+    }
+    tstr[7] = '\0';
+  }
+
   /*
       Determine whether to use thread pool
    */
   ierr = PetscOptionsHasName(PETSC_NULL,"-use_thread_pool",&flg1);CHKERRQ(ierr);
   if (flg1) {
     PetscUseThreadPool = PETSC_TRUE;
-    PetscInt N_CORES = get_nprocs();
-    ThreadCoreAffinity = (int*)malloc(N_CORES*sizeof(int));
-    char tstr[9];
-    char tbuf[2];
-    strcpy(tstr,"-thread");
-    for(i=0;i<PetscMaxThreads;i++) {
-      ThreadCoreAffinity[i] = i;  
-      sprintf(tbuf,"%d",i);
-      strcat(tstr,tbuf);
-      ierr = PetscOptionsHasName(PETSC_NULL,tstr,&flg1);CHKERRQ(ierr);
-      if(flg1) {
-        ierr = PetscOptionsGetInt(PETSC_NULL,tstr,&ThreadCoreAffinity[i],PETSC_NULL);CHKERRQ(ierr);
-        ThreadCoreAffinity[i] = ThreadCoreAffinity[i]%N_CORES; /* check on the user */
-      }
-      tstr[7] = '\0';
-    }
     /* get the thread pool type */
     PetscInt ipool = 0;
     const char *choices[4] = {"true","tree","main","chain"};
@@ -992,24 +993,21 @@ PetscErrorCode PetscThreadFinalize_Tree() {
 
   PetscFunctionBegin;
 
-  if(PetscUseThreadPool) {
-    MainJob(FuncFinish,NULL,PetscMaxThreads);  /* set up job and broadcast work */
-    /* join the threads */
-    for(i=0; i<PetscMaxThreads; i++) {
-      ierr = pthread_join(PetscThreadPoint[i],&jstatus);
-      /* do error checking*/
-    }
-    free(PetscThreadPoint);
-    free(arrmutex);
-    free(arrcond1);
-    free(arrcond2);
-    free(arrstart);
-    free(arrready);
-    free(job_tree.pdata);
-    free(pVal);
+  MainJob(FuncFinish,NULL,PetscMaxThreads);  /* set up job and broadcast work */
+  /* join the threads */
+  for(i=0; i<PetscMaxThreads; i++) {
+    ierr = pthread_join(PetscThreadPoint[i],&jstatus);
+    /* do error checking*/
   }
-  else {
-  }
+  free(PetscThreadPoint);
+  free(arrmutex);
+  free(arrcond1);
+  free(arrcond2);
+  free(arrstart);
+  free(arrready);
+  free(job_tree.pdata);
+  free(pVal);
+
   PetscFunctionReturn(0);
 }
 
@@ -1159,21 +1157,20 @@ PetscErrorCode PetscThreadFinalize_Main() {
 
   PetscFunctionBegin;
 
-  if(PetscUseThreadPool) {
-    MainJob(FuncFinish,NULL,PetscMaxThreads);  /* set up job and broadcast work */
-    /* join the threads */
-    for(i=0; i<PetscMaxThreads; i++) {
-      ierr = pthread_join(PetscThreadPoint[i],&jstatus);CHKERRQ(ierr);
-    }
-    free(PetscThreadPoint);
-    free(arrmutex);
-    free(arrcond1);
-    free(arrcond2);
-    free(arrstart);
-    free(arrready);
-    free(job_main.pdata);
-    free(pVal);
+  MainJob(FuncFinish,NULL,PetscMaxThreads);  /* set up job and broadcast work */
+  /* join the threads */
+  for(i=0; i<PetscMaxThreads; i++) {
+    ierr = pthread_join(PetscThreadPoint[i],&jstatus);CHKERRQ(ierr);
   }
+  free(PetscThreadPoint);
+  free(arrmutex);
+  free(arrcond1);
+  free(arrcond2);
+  free(arrstart);
+  free(arrready);
+  free(job_main.pdata);
+  free(pVal);
+
   PetscFunctionReturn(0);
 }
 
@@ -1386,24 +1383,21 @@ PetscErrorCode PetscThreadFinalize_Chain() {
 
   PetscFunctionBegin;
 
-  if(PetscUseThreadPool) {
-    MainJob(FuncFinish,NULL,PetscMaxThreads);  /* set up job and broadcast work */
-    /* join the threads */
-    for(i=0; i<PetscMaxThreads; i++) {
-      ierr = pthread_join(PetscThreadPoint[i],&jstatus);
-      /* should check error */
-    }
-    free(PetscThreadPoint);
-    free(arrmutex);
-    free(arrcond1);
-    free(arrcond2);
-    free(arrstart);
-    free(arrready);
-    free(job_chain.pdata);
-    free(pVal);
+  MainJob(FuncFinish,NULL,PetscMaxThreads);  /* set up job and broadcast work */
+  /* join the threads */
+  for(i=0; i<PetscMaxThreads; i++) {
+    ierr = pthread_join(PetscThreadPoint[i],&jstatus);
+    /* should check error */
   }
-  else {
-  }
+  free(PetscThreadPoint);
+  free(arrmutex);
+  free(arrcond1);
+  free(arrcond2);
+  free(arrstart);
+  free(arrready);
+  free(job_chain.pdata);
+  free(pVal);
+
   PetscFunctionReturn(0);
 }
 
@@ -1538,19 +1532,15 @@ PetscErrorCode PetscThreadFinalize_True() {
   void* jstatus;
 
   PetscFunctionBegin;
-  //printf("Entering True Thread Pool Finalize Function\n");
-  if(PetscUseThreadPool) {
-    MainJob(FuncFinish,NULL,PetscMaxThreads);  /* set up job and broadcast work */
-    /* join the threads */
-    for(i=0; i<PetscMaxThreads; i++) {
-      ierr = pthread_join(PetscThreadPoint[i],&jstatus);
-      /* should check error */
-    }
-    free(BarrPoint);
-    free(PetscThreadPoint);
+
+  MainJob(FuncFinish,NULL,PetscMaxThreads);  /* set up job and broadcast work */
+  /* join the threads */
+  for(i=0; i<PetscMaxThreads; i++) {
+    ierr = pthread_join(PetscThreadPoint[i],&jstatus);
   }
-  else {
-  }
+  free(BarrPoint);
+  free(PetscThreadPoint);
+
   PetscFunctionReturn(0);
 }
 
@@ -1594,6 +1584,7 @@ PetscErrorCode MainJob_Spawn(void* (*pFunc)(void*),void** data,PetscInt n) {
   PetscErrorCode ijoberr = 0;
 
   pthread_t* apThread = (pthread_t*)malloc(n*sizeof(pthread_t));
+  PetscThreadPoint = apThread; /* point to same place */
   PetscThreadRun(MPI_COMM_WORLD,pFunc,n,apThread,data);
   PetscThreadStop(MPI_COMM_WORLD,n,apThread); /* ensures that all threads are finished with the job */
   free(apThread);
