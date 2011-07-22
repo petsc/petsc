@@ -60,23 +60,6 @@ class Configure(config.package.Package):
     if hasattr(self.compilers, 'FC'):
       self.liblist   = [['libhdf5_fortran.a', 'libhdf5.a']]
     config.package.Package.configureLibrary(self)
-    if hasattr(self.compilers, 'FC'):
-      # hdf5 puts its modules into the lib directory so add that directory to the include directories to search
-      # there is no correct way to determine the location of the library directory, this is a hack that will usually work
-
-      # should check that modules exist and work properly
-      if 'with-hdf5-dir' in self.framework.argDB:
-        libDir = self.framework.argDB['with-'+self.package+'-dir']
-        libDir = os.path.join(libDir,'lib')
-        self.include.append(libDir)
-      elif 'with-hdf5-lib' in self.framework.argDB:
-        self.include.append(os.path.dirname(self.framework.argDB['with-hdf5-lib'][0]))
-      elif self.framework.argDB['download-hdf5']:
-        libDir = self.installDir
-        libDir = os.path.join(libDir,'lib')
-        self.include.append(libDir)
-      else:
-        self.log('Cannot determine HDF5 library directory therefor skipping module include for HDF5')
     if self.libraries.check(self.dlib, 'H5Pset_fapl_mpio'):
       self.addDefine('HAVE_H5PSET_FAPL_MPIO', 1)
     return
