@@ -18,6 +18,20 @@ class Configure(config.package.Package):
     self.deps   = [self.thrust]
     return
 
+  def Install(self):
+    import shutil
+    import os
+    self.framework.log.write('cuspDir = '+self.packageDir+' installDir '+self.installDir+'\n')
+    srcdir = self.packageDir
+    destdir = os.path.join(self.installDir, 'include', 'cusp')
+    try:
+      if os.path.isdir(destdir): shutil.rmtree(destdir)
+      shutil.copytree(srcdir,destdir)
+    except RuntimeError,e:
+      raise RuntimeError('Error installing Cusp include files: '+str(e))
+    self.includedir = 'include' # default and --download have different includedirs
+    return self.installDir
+
   def getSearchDirectories(self):
     import os
     yield ''
@@ -35,9 +49,6 @@ class Configure(config.package.Package):
     self.compilers.CUDAPPFLAGS = oldFlags
     self.popLanguage()
     return
-
-  def configure(self):
-    self.configureLibrary()
 
   def configureLibrary(self):
     '''Calls the regular package configureLibrary and then does an additional tests needed by CUSP'''
