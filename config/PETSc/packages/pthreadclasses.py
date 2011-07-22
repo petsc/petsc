@@ -16,7 +16,7 @@ class Configure(PETSc.package.NewPackage):
     self.deps    = []
     return
 
-  def configure(self):
+  def configureLibrary(self):
     if not self.pthread.found:
        raise RuntimeError('Pthreads not found, pthread classes needs pthreads to run')
     self.addDefine('USE_PTHREAD',1)
