@@ -1295,7 +1295,7 @@ PetscErrorCode MatMult_SeqPThreadAIJ(Mat A,Vec xx,Vec yy)
 
     iindex = 0;
     for(i=0; i<iNumThreads;i++) {
-      S = (PetscBool) i<R;
+      S = (PetscBool)(i<R);
       kerneldatap[i].matdata  = aa;
       kerneldatap[i].vecdata  = x;
       kerneldatap[i].vecout   = y;

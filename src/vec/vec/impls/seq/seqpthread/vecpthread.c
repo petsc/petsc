@@ -191,7 +191,7 @@ PetscErrorCode VecDot_SeqPThread(Vec xin,Vec yin,PetscScalar *z)
   VecDot_KernelData** pdata = (VecDot_KernelData**)malloc(iNumThreads*sizeof(VecDot_KernelData*));
 
   for (i=0; i<iNumThreads; i++) {
-    S = (PetscBool)i<R;
+    S = (PetscBool)(i<R);
     kerneldatap[i].x = &xa[iIndex];
     kerneldatap[i].y = &ya[iIndex];
     kerneldatap[i].n = S?Q+1:Q;
@@ -258,7 +258,7 @@ PetscErrorCode VecScale_SeqPThread(Vec xin, PetscScalar alpha)
     ierr = VecGetArray(xin,&xarray);CHKERRQ(ierr); //get address of first element in data array
     xp = xarray;
     for (i=0; i<iNumThreads; i++) {
-      S = (PetscBool)i<R;
+      S = (PetscBool)(i<R);
       kerneldatap[i].x = xp;
       kerneldatap[i].alpha = a;
       kerneldatap[i].n = S?Q+1:Q;
@@ -316,7 +316,7 @@ PetscErrorCode VecAXPY_SeqPThread(Vec yin,PetscScalar alpha,Vec xin)
     xp = xarray;
     yp = yarray;
     for (i=0; i<iNumThreads; i++) {
-      S = (PetscBool)i<R;
+      S = (PetscBool)(i<R);
       kerneldatap[i].x = xp;
       kerneldatap[i].y = yp;
       kerneldatap[i].alpha = a;
@@ -399,7 +399,7 @@ PetscErrorCode VecAYPX_SeqPThread(Vec yin,PetscScalar alpha,Vec xin)
       VecAYPX_KernelData** pdata = (VecAYPX_KernelData**)malloc(iNumThreads*sizeof(VecAYPX_KernelData*));
 
       for (i=0; i<iNumThreads; i++) {
-        S = (PetscBool)i<R;
+        S = (PetscBool)(i<R);
         kerneldatap[i].xx = xp;
         kerneldatap[i].yy = yp;
         kerneldatap[i].alpha = a;
@@ -490,7 +490,7 @@ PetscErrorCode VecWAXPY_SeqPThread(Vec win, PetscScalar alpha,Vec xin,Vec yin)
     VecWAXPY_KernelData** pdata = (VecWAXPY_KernelData**)malloc(iNumThreads*sizeof(VecWAXPY_KernelData*));
 
     for (i=0; i<iNumThreads; i++) {
-      S = (PetscBool)i<R;
+      S = (PetscBool)(i<R);
       kerneldatap[i].ww = wp;
       kerneldatap[i].xx = xp;
       kerneldatap[i].yy = yp;
@@ -577,7 +577,7 @@ PetscErrorCode VecNorm_SeqPThread(Vec xin,NormType type,PetscReal* z)
    VecNorm_KernelData** pdata = (VecNorm_KernelData**)malloc(iNumThreads*sizeof(VecNorm_KernelData*));
 
    for (i=0; i<iNumThreads; i++) {
-     S = (PetscBool)i<R;
+     S = (PetscBool)(i<R);
      kerneldatap[i].x = xp;
      kerneldatap[i].typeUse = type;
      kerneldatap[i].n = S?Q+1:Q;
@@ -837,7 +837,7 @@ PetscErrorCode VecMDot_SeqPThread(Vec xin,PetscInt nv,const Vec yin[],PetscScala
   VecMDot_KernelData** pdata = (VecMDot_KernelData**)malloc(iNumThreads*sizeof(VecMDot_KernelData*));
   ierr   = VecGetArrayRead(xin,&xbase);CHKERRQ(ierr);
   for (i=0; i<iNumThreads; i++) {
-    S = (PetscBool)i<R;
+    S = (PetscBool)(i<R);
     kerneldatap[i].xvalin = xbase;
     kerneldatap[i].yavecin = &yy[j];
     kerneldatap[i].nelem = n;
@@ -907,7 +907,7 @@ PetscErrorCode VecMax_SeqPThread(Vec xin,PetscInt* idx,PetscReal * z)
   gind = 0;
   xp = xx;
   for (i=0; i<iNumThreads; i++) {
-    S = (PetscBool)i<R;
+    S = (PetscBool)(i<R);
     kerneldatap[i].x = xp;
     kerneldatap[i].gind = gind;
     kerneldatap[i].localn = S?Q+1:Q;
@@ -987,7 +987,7 @@ PetscErrorCode VecMin_SeqPThread(Vec xin,PetscInt* idx,PetscReal * z)
   gind = 0;
   xp = xx;
   for (i=0; i<iNumThreads; i++) {
-    S = (PetscBool)i<R;
+    S = (PetscBool)(i<R);
     kerneldatap[i].x = xp;
     kerneldatap[i].gind = gind;
     kerneldatap[i].localn = S?Q+1:Q;
@@ -1061,7 +1061,7 @@ static PetscErrorCode VecPointwiseMult_SeqPThread(Vec win,Vec xin,Vec yin)
 
   iIndex = 0;
   for (i=0; i<iNumThreads; i++) {
-    S = (PetscBool)i<R;
+    S = (PetscBool)(i<R);
     kerneldatap[i].wpin = ww+iIndex;
     kerneldatap[i].xpin = xx+iIndex;
     kerneldatap[i].ypin = yy+iIndex;
@@ -1119,7 +1119,7 @@ static PetscErrorCode VecPointwiseDivide_SeqPThread(Vec win,Vec xin,Vec yin)
 
   iIndex = 0;
   for (i=0; i<iNumThreads; i++) {
-    S = (PetscBool)i<R;
+    S = (PetscBool)(i<R);
     kerneldatap[i].wpin = ww+iIndex;
     kerneldatap[i].xpin = xx+iIndex;
     kerneldatap[i].ypin = yy+iIndex;
@@ -1173,7 +1173,7 @@ static PetscErrorCode VecSwap_SeqPThread(Vec xin,Vec yin)
 
     iIndex = 0;
     for (i=0; i<iNumThreads; i++) {
-      S = (PetscBool)i<R;
+      S = (PetscBool)(i<R);
       kerneldatap[i].xpin = xa+iIndex;
       kerneldatap[i].ypin = ya+iIndex;
       kerneldatap[i].nlocal = S?Q+1:Q;
@@ -1226,7 +1226,7 @@ static PetscErrorCode VecSetRandom_SeqPThread(Vec xin,PetscRandom r)
 
   iIndex = 0;
   for (i=0; i<iNumThreads; i++) {
-    S = (PetscBool)i<R;
+    S = (PetscBool)(i<R);
     kerneldatap[i].xpin   = xx+iIndex;
     kerneldatap[i].rin    = r;
     kerneldatap[i].nlocal = S?Q+1:Q;
@@ -1279,7 +1279,7 @@ static PetscErrorCode VecCopy_SeqPThread(Vec xin,Vec yin)
 
     iIndex = 0;
     for (i=0; i<iNumThreads; i++) {
-      S = (PetscBool)i<R;
+      S = (PetscBool)(i<R);
       kerneldatap[i].xpin   = xa+iIndex;
       kerneldatap[i].ypin   = ya+iIndex;
       kerneldatap[i].nlocal = S?Q+1:Q;
@@ -1397,7 +1397,7 @@ PetscErrorCode VecMAXPY_SeqPThread(Vec xin, PetscInt nv,const PetscScalar *alpha
     }
   }
   for (i=0; i<iNumThreads; i++) {
-    S = (PetscBool)i<R;
+    S = (PetscBool)(i<R);
     kerneldatap[i].xavalin = xx+j;
     kerneldatap[i].yavecin = &y[0];
     kerneldatap[i].amult   = &alpha[0];
@@ -1453,7 +1453,7 @@ PetscErrorCode VecSet_SeqPThread(Vec xin,PetscScalar alpha)
 
   iIndex = 0;
   for (i=0; i<iNumThreads; i++) {
-    S = (PetscBool)i<R;
+    S = (PetscBool)(i<R);
     kerneldatap[i].xpin   = xx+iIndex;
     kerneldatap[i].alphain   = alpha;
     kerneldatap[i].nelem = S?Q+1:Q;
