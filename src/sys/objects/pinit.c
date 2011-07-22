@@ -899,7 +899,7 @@ PetscErrorCode  PetscFinalize(void)
 #endif
 
   ierr = PetscOpenMPFinalize();CHKERRQ(ierr);
-#if defined(PETSC_USE_PTHREAD_CLASSES)
+#if defined(PETSC_HAVE_PTHREADCLASSES)
   if (PetscThreadFinalize) {
     ierr = (*PetscThreadFinalize)();CHKERRQ(ierr);
   }

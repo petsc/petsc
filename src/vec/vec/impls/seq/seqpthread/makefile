@@ -1,4 +1,4 @@
-#requirespackage 'PETSC_USE_PTHREAD_CLASSES'
+#requirespackage 'PETSC_HAVE_PTHREADCLASSES'
 ALL: lib
 
 CFLAGS   =
