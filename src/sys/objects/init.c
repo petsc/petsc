@@ -42,7 +42,7 @@ PetscBool    PetscThreadGo         = PETSC_TRUE;
 PetscMPIInt  PetscGlobalRank = -1;
 PetscMPIInt  PetscGlobalSize = -1;
 
-#if defined(PETSC_USE_PTHREAD_CLASSES)
+#if defined(PETSC_HAVE_PTHREADCLASSES)
 PetscMPIInt  PetscMaxThreads = 2;
 pthread_t*   PetscThreadPoint;
 #define PETSC_HAVE_PTHREAD_BARRIER
@@ -644,7 +644,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
 
   ierr = PetscOptionsGetBool(PETSC_NULL,"-options_gui",&PetscOptionsPublish,PETSC_NULL);CHKERRQ(ierr);
 
-#if defined(PETSC_USE_PTHREAD_CLASSES)
+#if defined(PETSC_HAVE_PTHREADCLASSES)
   /*
       Determine whether user specified maximum number of threads
    */
@@ -811,7 +811,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_USE_PTHREAD_CLASSES)
+#if defined(PETSC_HAVE_PTHREADCLASSES)
 
 /**** 'Tree' Thread Pool Functions ****/
 void* PetscThreadFunc_Tree(void* arg) {

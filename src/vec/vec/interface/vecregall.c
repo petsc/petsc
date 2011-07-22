@@ -5,7 +5,7 @@ extern PetscErrorCode  VecCreate_Seq(Vec);
 extern PetscErrorCode  VecCreate_MPI(Vec);
 extern PetscErrorCode  VecCreate_Standard(Vec);
 extern PetscErrorCode  VecCreate_Shared(Vec);
-#if defined(PETSC_USE_PTHREAD_CLASSES)
+#if defined(PETSC_HAVE_PTHREADCLASSES)
 extern PetscErrorCode  VecCreate_SeqPThread(Vec);
 #endif
 #if defined(PETSC_HAVE_CUSP)
@@ -46,7 +46,7 @@ PetscErrorCode  VecRegisterAll(const char path[])
   ierr = VecRegisterDynamic(VECMPI,       path, "VecCreate_MPI",       VecCreate_MPI);CHKERRQ(ierr);
   ierr = VecRegisterDynamic(VECSTANDARD,  path, "VecCreate_Standard",  VecCreate_Standard);CHKERRQ(ierr);
   ierr = VecRegisterDynamic(VECSHARED,    path, "VecCreate_Shared",    VecCreate_Shared);CHKERRQ(ierr);
-#if defined(PETSC_USE_PTHREAD_CLASSES)
+#if defined(PETSC_HAVE_PTHREADCLASSES)
   ierr = VecRegisterDynamic(VECSEQPTHREAD,path, "VecCreate_SeqPThread",VecCreate_SeqPThread);CHKERRQ(ierr);
 #endif
 #if defined PETSC_HAVE_CUSP

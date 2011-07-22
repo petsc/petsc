@@ -155,7 +155,7 @@ PetscErrorCode MatHYPRE_IJMatrixCopy(Mat A,HYPRE_IJMatrix ij)
 PetscErrorCode MatHYPRE_IJMatrixFastCopy_SeqAIJ(Mat A,HYPRE_IJMatrix ij)
 {
   PetscErrorCode        ierr;
-  Mat_SeqAIJ            *pdiag = (Mat_SeqAIJ*)A->data;;
+  Mat_SeqAIJ            *pdiag = (Mat_SeqAIJ*)A->data;
 
   hypre_ParCSRMatrix    *par_matrix;
   hypre_AuxParCSRMatrix *aux_matrix;

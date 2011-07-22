@@ -81,7 +81,7 @@ int main(int argc,char **argv)
   TS             ts;                     /* timestepping context */
   Mat            A;                      /* Jacobian matrix data structure */
   Vec            u;                      /* approximate solution vector */
-  PetscInt       time_steps_max = 1000;  /* default max timesteps */
+  PetscInt       time_steps_max = 100;  /* default max timesteps */
   PetscErrorCode ierr;
   PetscReal      dt;
   PetscReal      time_total_max = 100.0; /* default max total time */

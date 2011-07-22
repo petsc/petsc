@@ -1209,7 +1209,7 @@ void* MatMult_Kernel(void *arg)
   return NULL;
 }
 
-#if defined(PETSC_USE_PTHREAD_CLASSES)
+#if defined(PETSC_HAVE_PTHREADCLASSES)
 extern PetscMPIInt PetscMaxThreads;
 PetscErrorCode (*MainJob)(void* (*pFunc)(void*),void**,PetscInt);
 
@@ -3747,7 +3747,7 @@ PetscErrorCode  MatCreate_SeqAIJ(Mat B)
 }
 EXTERN_C_END
 
-#if defined(PETSC_USE_PTHREAD_CLASSES)
+#if defined(PETSC_HAVE_PTHREADCLASSES)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_SeqPThreadAIJ"
