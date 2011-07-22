@@ -1211,7 +1211,7 @@ void* MatMult_Kernel(void *arg)
 
 #if defined(PETSC_HAVE_PTHREADCLASSES)
 extern PetscMPIInt PetscMaxThreads;
-PetscErrorCode (*MainJob)(void* (*pFunc)(void*),void**,PetscInt);
+extern PetscErrorCode (*MainJob)(void* (*pFunc)(void*),void**,PetscInt);
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMult_SeqPThreadAIJ"
@@ -1295,7 +1295,7 @@ PetscErrorCode MatMult_SeqPThreadAIJ(Mat A,Vec xx,Vec yy)
 
     iindex = 0;
     for(i=0; i<iNumThreads;i++) {
-      S = i<R;
+      S = (PetscBool) i<R;
       kerneldatap[i].matdata  = aa;
       kerneldatap[i].vecdata  = x;
       kerneldatap[i].vecout   = y;
