@@ -283,6 +283,7 @@ class Package(config.base.Configure):
 
   def checkDownload(self, requireDownload = 1):
     '''Check if we should download the package, returning the install directory or the empty string indicating installation'''
+    if not self.download and self.framework.argDB.has_key('download-'+self.downloadname.lower()): raise RuntimeError('Does not support --download-'+self.downloadname.lower())
     if not self.download:
       return ''
     downloadPackage = 0
