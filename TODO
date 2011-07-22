@@ -1,6 +1,14 @@
-
+TaoInitializeFortran
 
 TRON using MatDiagonalSet -- mpiaij doesn't implement this
+
+
+test:
+  trust region tolerance
+  TaoSolverSetMaximumFunctionEvaluation
+  TaoSolverSetMaximumIterations
+  TaoSolverGetSolutionStatus
+
 
 replace default convergence test
 
@@ -24,10 +32,6 @@ POUNDer
 
 tabs for view()
 
-
-Decisions to make:
- - Tao or TaoSolver?
-
 Check documentation
 MT linesearch view
 
@@ -38,13 +42,10 @@ jbearing2_2 -- is bqpip not setting residual right, or fcn comp. wrong?
 Check fortran stubs 
 automatic testing, coverage
 
-
 update manual
+add pde_constrained section
 
 make install to put libs/headers in separate location
  Check TAO options in TaoSolverSetFromOptions
  Fix convergence explanations
 TaoSolverClearMonitor
-
-
-lcl

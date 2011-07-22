@@ -153,7 +153,6 @@ typedef struct {
   // Other parameters
   PetscReal min_radius;    // lower bound on initial radius value
   PetscReal max_radius;    // upper bound on trust region radius
-  PetscReal trust0;        // initial trust region radius
   PetscReal epsilon;       // tolerance used when computing ared/pred
 
   PetscInt newt;		// Newton directions attempted

@@ -96,6 +96,7 @@ struct _p_TaoSolver {
     TaoLineSearch linesearch;
     PetscBool lsflag; /* goes up when line search fails */
     KSP ksp;
+    PetscReal trust0; /* initial trust region radius */
 
     PetscReal fatol;
     PetscReal frtol;

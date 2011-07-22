@@ -39,7 +39,7 @@ PetscErrorCode TaoInitialize(int *argc, char ***args, const char file[],
     return(0);
   }
   if (PetscInitializeCalled) {
-    PetscInfo(0,"TAO successfully initialized.\n"); CHKERRQ(ierr);
+    ierr=PetscInfo(0,"TAO successfully initialized.\n"); CHKERRQ(ierr);
   } else {
     if (argc&&args) {
       PetscInitialize(argc,args,file,help); 
@@ -73,7 +73,6 @@ PetscErrorCode TaoInitialize(int *argc, char ***args, const char file[],
 @*/
 PetscErrorCode TaoFinalize()
 {
-  PetscErrorCode ierr;
   TaoFinalize_DynamicLibraries();
   if (TaoBeganPetsc) {
     PetscFinalize();

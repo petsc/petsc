@@ -65,8 +65,9 @@ extern PetscErrorCode TaoSolverRegister(const char [], const char[], const char[
 extern PetscErrorCode TaoSolverRegisterAll(const char[]);
 extern PetscErrorCode TaoSolverRegisterDestroy(void);
 
-extern PetscErrorCode TaoSolverGetConvergedReason(TaoSolver,TaoSolverTerminationReason*);
-
+extern PetscErrorCode TaoSolverGetTerminationReason(TaoSolver,TaoSolverTerminationReason*);
+extern PetscErrorCode TaoSolverGetSolutionStatus(TaoSolver, PetscInt*, PetscReal*, PetscReal*, PetscReal*, PetscReal*, TaoSolverTerminationReason*);
+extern PetscErrorCode TaoSolverSetTerminationReason(TaoSolver,TaoSolverTerminationReason);
 extern PetscErrorCode TaoSolverSetInitialVector(TaoSolver, Vec);
 extern PetscErrorCode TaoSolverGetSolutionVector(TaoSolver, Vec*);
 extern PetscErrorCode TaoSolverSetObjectiveRoutine(TaoSolver, PetscErrorCode(*)(TaoSolver, Vec, PetscReal*,void*), void*);
@@ -104,6 +105,10 @@ extern PetscErrorCode TaoSolverComputeVariableBounds(TaoSolver);
 
 extern PetscErrorCode TaoSolverGetTolerances(TaoSolver, PetscReal*, PetscReal*, PetscReal*, PetscReal*, PetscReal*);
 extern PetscErrorCode TaoSolverSetTolerances(TaoSolver, PetscReal, PetscReal, PetscReal, PetscReal, PetscReal);
+extern PetscErrorCode TaoSolverSetFunctionLowerBound(TaoSolver, PetscReal);
+extern PetscErrorCode TaoSolverSetTrustRegionRadius(TaoSolver, PetscReal);
+extern PetscErrorCode TaoSolverSetMaximumIterations(TaoSolver, PetscInt);
+extern PetscErrorCode TaoSolverSetMaximumFunctionEvaluations(TaoSolver, PetscInt);
 extern PetscErrorCode TaoSolverSetDefaultKSPType(TaoSolver, KSPType);
 extern PetscErrorCode TaoSolverSetDefaultPCType(TaoSolver, PCType);
 extern PetscErrorCode TaoSolverSetOptionsPrefix(TaoSolver, const char p[]);

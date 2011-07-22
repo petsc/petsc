@@ -187,7 +187,7 @@ PetscErrorCode main(int argc,char **argv)
   */
 
   /* Get information on termination */
-  ierr = TaoSolverGetConvergedReason(tao,&reason); CHKERRQ(ierr);
+  ierr = TaoSolverGetTerminationReason(tao,&reason); CHKERRQ(ierr);
   if (reason <= 0){
     PetscPrintf(PETSC_COMM_WORLD,"Try a different TAO method, adjust some parameters, or check the function evaluation routines\n");
   }

@@ -5,10 +5,11 @@ import difflib
 import TaoExamples    
 
 TAO = {'TAO_DIR':'/home/sarich/working/tao_c',
-        'PETSC_ARCH':'linux-gnu-cxx-debug',
+        'PETSC_ARCH':'arch-linux2-c-debug',
         'PETSC_DIR':'/home/sarich/software/petsc-dev'}
 
 if __name__=="__main__":
+    
     examples = TaoExamples.TaoExamples()
     examples.setWithTags(sys.argv[1:])
     if examples is None:
@@ -20,8 +21,9 @@ if __name__=="__main__":
     for ex in examples.list: #.withTag("eptorsion"):
         sys.stdout.write("\n\n*** Example %s ***\n" % ex.name)
 
-        os.environ.update(TAO)
-        cwd = os.path.join(TAO['TAO_DIR'],"tests")
+        #os.environ.update(TAO)
+        #cwd = os.path.join(TAO['TAO_DIR'],"tests")
+        cwd = os.path.join(os.environ['TAO_DIR'],"tests")
         (r,o,e) = examples.execute(['rm','-f',ex.executableName()])
         (r,o,e) = examples.execute(ex.buildCommand(),cwd=cwd,echo=True)
         sys.stdout.write(o)

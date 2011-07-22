@@ -15,8 +15,6 @@ typedef struct {
   Vec Gold;
   Vec Diag;
 
-  PetscReal trust0;
-
   /* Parameters when updating the trust-region radius based on steplength */
   PetscReal nu1;		/* used to compute trust-region radius */
   PetscReal nu2;		/* used to compute trust-region radius */

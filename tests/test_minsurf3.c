@@ -115,7 +115,7 @@ int main( int argc, char **argv )
   ierr = TaoSolverSolve(tao); CHKERRQ(ierr);
 
   /* Get information on termination */
-  ierr = TaoSolverGetConvergedReason(tao,&reason); CHKERRQ(ierr);
+  ierr = TaoSolverGetTerminationReason(tao,&reason); CHKERRQ(ierr);
   if (reason <= 0)
     PetscPrintf(MPI_COMM_WORLD,"Try a different TAO method, adjust some parameters, or check the function evaluation routines\n");
 
