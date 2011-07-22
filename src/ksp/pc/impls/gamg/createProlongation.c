@@ -323,13 +323,14 @@ PetscErrorCode triangulateAndFormProl( IS  a_selected_2, /* list of selected loc
   mid.segmentmarkerlist = 0;
   mid.edgelist = 0;             /* Needed only if -e switch used. */
   mid.edgemarkerlist = 0;   /* Needed if -e used and -B not used. */
+  mid.numberoftriangles = 0;
 
   /* Triangulate the points.  Switches are chosen to read and write a  */
   /*   PSLG (p), preserve the convex hull (c), number everything from  */
   /*   zero (z), assign a regional attribute to each element (A), and  */
   /*   produce an edge list (e), a Voronoi diagram (v), and a triangle */
   /*   neighbor list (n).                                            */
-  {
+  if(nselected_2 != 0){ /* inactive processor */
     char args[] = "pczQ"; /* c is needed ? */
     triangulate(args, &in, &mid, (struct triangulateio *) NULL );
     /* output .poly files for 'showme' */

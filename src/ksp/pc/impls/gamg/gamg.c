@@ -84,6 +84,9 @@ EXTERN_C_END
    Output Parameter:
    . a_Amat_crs - coarse matrix that is created (k-1)
 */
+
+PetscMPIInt n_active_procs; // hack!!!!!
+
 #undef __FUNCT__
 #define __FUNCT__ "partitionLevel"
 PetscErrorCode partitionLevel( Mat a_Amat_fine,
@@ -133,6 +136,8 @@ PetscErrorCode partitionLevel( Mat a_Amat_fine,
     }
     *a_active_proc = new_npe; /* output for next time */
 
+n_active_procs = new_npe; // hack!!!!!
+PetscPrintf(PETSC_COMM_WORLD,"\t\t%s n_active_procs=%d\n",__FUNCT__,n_active_procs);
     { /* partition: get 'isnewproc' */
       MatPartitioning  mpart;
       ierr = MatPartitioningCreate( wcomm, &mpart ); CHKERRQ(ierr);
@@ -151,6 +156,7 @@ PetscErrorCode partitionLevel( Mat a_Amat_fine,
     ierr = ISPartitioningCount( isnewproc, npe, counts ); CHKERRQ(ierr);
     ierr = ISDestroy( &isnewproc );                       CHKERRQ(ierr);
     ncrs_new = counts[mype];
+PetscPrintf(PETSC_COMM_SELF,"\t[%d]%s local equations = %d\n",mype,__FUNCT__,ncrs_new);
   }
   { /* Create a vector to contain the newly ordered element information */
     const PetscInt *idx;
