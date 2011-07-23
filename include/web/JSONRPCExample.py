@@ -14,6 +14,8 @@ from pyjamas.ui.HorizontalPanel import HorizontalPanel
 from pyjamas.ui.ListBox import ListBox
 from pyjamas.JSONService import JSONProxy
 
+commname = 'jeff'
+
 class JSONRPCExample:
     def onModuleLoad(self):
         self.TEXT_WAITING = "Waiting for response..."
@@ -27,7 +29,8 @@ class JSONRPCExample:
                         self.METHOD_UPPERCASE, self.METHOD_LOWERCASE, 
                         self.METHOD_NONEXISTANT]
         self.remote_py = ServicePython()
-
+        global commname
+        commname  = 'heff'
         self.status=Label()
         self.text_area = TextArea()
         self.text_area.setText("Simple text")
@@ -83,16 +86,19 @@ class JSONRPCExample:
             id = self.remote_py.YAML_echo(text, self)
         elif sender == self.button_ams_connect:
             id = self.remote_py.YAML_AMS_Connect(text, self)
-        elif sender == self.button_ams_attach:
-            id = self.remote_py.YAML_AMS_Comm_attach(self.commname, self)
+        else:
+            self.status.setText('trying comm attach'+commname)
+            id = self.remote_py.YAML_AMS_Comm_attach(commname, self)
         self.lastsender = sender
 
     def onRemoteResponse(self, response, request_info):
+        global commname
         self.status.setText(response)
         if self.lastsender == self.button_ams_connect:
-            self.commname = reponse
+            commname = str(response)
+            self.status.setText('was ams connect'+commname)
         else:
-            self.commname = "joe"
+            commname = "joe"
 
     def onRemoteError(self, code, errobj, request_info):
         # onRemoteError gets the HTTP error code or 0 and

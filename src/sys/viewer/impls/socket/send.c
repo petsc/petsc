@@ -789,7 +789,8 @@ PetscErrorCode YAML_AMS_Connect(PetscInt argc,char **args,PetscInt *argco,char *
   char           **list;
 
   PetscFunctionBegin;
-  ierr = AMS_Connect(0,-1,&list);CHKERRQ(ierr);
+  ierr = AMS_Connect(0,-1,&list);
+  if (ierr) {ierr = PetscInfo1(PETSC_NULL,"AMS_Connect() error %d\n",ierr);CHKERRQ(ierr);}
   *argco = 1;
   ierr = PetscMalloc(sizeof(char*),argso);CHKERRQ(ierr);
   ierr = PetscStrallocpy(list[0],&(*argso)[0]);CHKERRQ(ierr);
@@ -816,7 +817,8 @@ PetscErrorCode YAML_AMS_Comm_attach(PetscInt argc,char **args,PetscInt *argco,ch
   AMS_Comm       comm = 0;
 
   PetscFunctionBegin;
-  ierr = AMS_Comm_attach(args[0],&comm);/* skip error check, hope it means just comm not found*/
+  ierr = AMS_Comm_attach(args[0],&comm);
+  if (ierr) {ierr = PetscInfo1(PETSC_NULL,"AMS_Comm_attach() error %d\n",ierr);CHKERRQ(ierr);}
   *argco = 1;
   ierr = PetscMalloc(sizeof(char*),argso);CHKERRQ(ierr);
   ierr = PetscMalloc(3*sizeof(char*),&argso[0][0]);CHKERRQ(ierr);
@@ -824,6 +826,45 @@ PetscErrorCode YAML_AMS_Comm_attach(PetscInt argc,char **args,PetscInt *argco,ch
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "YAML_AMS_Comm_get_memory_list"
+/*
+      Gets the list of memories on an AMS Comm
+
+   Input Parameter:
+.     arg1 - integer name of the communicator
+
+   Output Parameter:
+.     oarg1 - the list of names
+
+*/
+PetscErrorCode YAML_AMS_Comm_get_memory_list(PetscInt argc,char **args,PetscInt *argco,char ***argso)
+{
+  PetscErrorCode ierr;
+  char           **mem_list;
+  AMS_Comm       comm;
+  PetscInt       i;
+
+  PetscFunctionBegin;
+  sscanf(args[0],"%d",&comm);
+  ierr = AMS_Comm_get_memory_list(comm,&mem_list);
+  if (ierr) {
+    ierr = PetscInfo1(PETSC_NULL,"AMS_Comm_get_memory_list() error %d\n",ierr);CHKERRQ(ierr);
+  } else {
+    *argco = 0;
+    while (mem_list[*argco++]) ;
+  
+    ierr = PetscMalloc((*argco)*sizeof(char*),argso);CHKERRQ(ierr);
+    for (i=0; i<*argco; i++) {
+      ierr = PetscStrallocpy(mem_list[i],args+i);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
 
 #include "yaml.h"
 #undef __FUNCT__

@@ -1783,6 +1783,30 @@ From that point,
 no new values will be inserted into those (boundary) rows of 
 the matrix. \findex{MAT_NEW_NONZERO_LOCATIONS} 
 
+The functions MatZeroRowsLocal() and MatZeroRowsLocalIS() can also be used if for each process one provides the Dirichlet locations in the local numbering of the matrix. 
+A drawback of MatZeroRows() is that it destroys the symmetry of a matrix. Thus one can use 
+\begin{tabbing}
+  MatZeroRowsColumns(Mat A,PetscInt numRows,PetscInt rows[],PetscScalar diag\_value,Vec x,Vec b),
+\end{tabbing}
+or equivalently,
+\begin{tabbing}
+  MatZeroRowsColumnsIS(Mat A,IS rows,PetscScalar diag\_value,Vec x,Vec b);
+\end{tabbing}
+Note that with all of these for a given assembled matrix it can be
+only called once to update the x and b vector. It cannot be used if
+one wishes to solve multiple right hand side problems for the same
+matrix since the matrix entries needed for updating the b vector are
+removed in its first use.
+
+Once the zeroed rows are removed the new matrix has possibly many rows
+with only a diagonal entry affecting the parallel load balancing. The
+PCREDISTRIBUTE preconditioner removes all the zeroed rows (and
+associated columns and adjusts the right hand side based on the
+removed columns) and then rebalances the resulting rows of smaller
+matrix across the processes. Thus one can use MatZeroRows() to set the Dirichlet points and then solve with the preconditioner PCREDISTRIBUTE. Note if the original matrix was symmetric the 
+smaller solved matrix will also be symmetric.
+
+
 Another matrix routine of interest is
 \begin{tabbing}
   MatConvert(Mat mat,MatType newtype,Mat *M)
