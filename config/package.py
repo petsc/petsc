@@ -297,7 +297,7 @@ class Package(config.base.Configure):
 
     if downloadPackage:
       if not self.download:
-        raise RuntimeError('URL missing for package'+self.package+'.\n')
+        raise RuntimeError('Package'+self.package+' does not support automatic download.\n')
       if self.license and not os.path.isfile('.'+self.package+'_license'):
         self.framework.logClear()
         self.logPrint("**************************************************************************************************", debugSection='screen')
@@ -480,6 +480,8 @@ class Package(config.base.Configure):
         raise RuntimeError('External package '+self.name+' does not work on Microsoft Windows')
       if self.download and self.framework.argDB.has_key('download-'+self.downloadname.lower()) and self.framework.argDB['download-'+self.downloadname.lower()] and not self.downloadonWindows and self.setCompilers.isCygwin():
         raise RuntimeError('External package '+self.name+' does not support --download-'+self.downloadname.lower()+' on Microsoft Windows')
+    if not self.download and self.framework.argDB.has_key('download-'+self.downloadname.lower()) and self.framework.argDB['download-'+self.downloadname.lower()]:
+      raise RuntimeError('External package '+self.name+' does not support --download-'+self.downloadname.lower())
     return
 
   def configure(self):
