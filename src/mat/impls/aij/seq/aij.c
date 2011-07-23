@@ -1150,6 +1150,7 @@ PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
 #if defined(PETSC_HAVE_PTHREADCLASSES)
 
 //*******************
+#if defined(PETSC_HAVE_PTHREADCLASSES)
 extern PetscBool    PetscUseThreadPool;
 void* DoCoreAffinity(void);
 
@@ -1210,6 +1211,7 @@ void* MatMult_Kernel(void *arg)
   data->nzr = nonzerorow;
   return NULL;
 }
+#endif
 
 extern PetscMPIInt PetscMaxThreads;
 extern PetscErrorCode (*MainJob)(void* (*pFunc)(void*),void**,PetscInt);
