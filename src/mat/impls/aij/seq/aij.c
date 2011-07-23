@@ -1147,6 +1147,8 @@ PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
   PetscFunctionReturn(0);
 }
 
+#if defined(PETSC_HAVE_PTHREADCLASSES)
+
 //*******************
 extern PetscBool    PetscUseThreadPool;
 void* DoCoreAffinity(void);
@@ -1209,7 +1211,6 @@ void* MatMult_Kernel(void *arg)
   return NULL;
 }
 
-#if defined(PETSC_HAVE_PTHREADCLASSES)
 extern PetscMPIInt PetscMaxThreads;
 extern PetscErrorCode (*MainJob)(void* (*pFunc)(void*),void**,PetscInt);
 
