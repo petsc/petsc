@@ -22,9 +22,11 @@ class Configure(config.base.Configure):
     help.addArgument('Compiler Flags', '-C_VERSION=<string>',   nargs.Arg(None, 'Unknown', 'The version of the C compiler'))
     help.addArgument('Compiler Flags', '-CXX_VERSION=<string>', nargs.Arg(None, 'Unknown', 'The version of the C++ compiler'))
     help.addArgument('Compiler Flags', '-FC_VERSION=<string>',  nargs.Arg(None, 'Unknown', 'The version of the Fortran compiler'))
+    help.addArgument('Compiler Flags', '-CUDA_VERSION=<string>',nargs.Arg(None, 'Unknown', 'The version of the CUDA compiler'))
     help.addArgument('Compiler Flags', '-COPTFLAGS=<string>',   nargs.Arg(None, None, 'Override the debugging/optimization flags for the C compiler'))
     help.addArgument('Compiler Flags', '-CXXOPTFLAGS=<string>', nargs.Arg(None, None, 'Override the debugging/optimization flags for the C++ compiler'))
     help.addArgument('Compiler Flags', '-FOPTFLAGS=<string>',   nargs.Arg(None, None, 'Override the debugging/optimization flags for the Fortran compiler'))
+    help.addArgument('Compiler Flags', '-CUDAOPTFLAGS=<string>',   nargs.Arg(None, None, 'Override the debugging/optimization flags for the CUDA compiler'))
     # not sure where to put this, currently gcov is handled in ../compilerOptions.py
     help.addArgument('Compiler Flags', '-with-gcov=<bool>', nargs.ArgBool(None, 0, 'Specify that GNUs coverage tool gcov is used'))
     return
@@ -44,6 +46,8 @@ class Configure(config.base.Configure):
         flagsArg = 'CXXOPTFLAGS'
     elif language == 'FC':
       flagsArg = 'FOPTFLAGS'
+    elif language == 'CUDA':
+      flagsArg = 'CUDAOPTFLAGS'
     else:
       raise RuntimeError('Unknown language: '+language)
     return flagsArg
@@ -69,7 +73,7 @@ class Configure(config.base.Configure):
     options = self.getOptionsObject()
     if not options:
       return
-    for language, compiler in [('C', 'CC'), ('Cxx', 'CXX'), ('FC', 'FC')]:
+    for language, compiler in [('C', 'CC'), ('Cxx', 'CXX'), ('FC', 'FC'), ('CUDA', 'CUDAC')]:
       if not hasattr(self.setCompilers, compiler):
         continue
       self.setCompilers.pushLanguage(language)

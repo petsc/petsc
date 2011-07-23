@@ -191,7 +191,7 @@ class CompilerOptions(config.base.Configure):
 
   def getCompilerFlags(self, language, compiler, bopt):
     flags = ''
-    if language == 'C':
+    if language == 'C' or language == 'CUDA':
       flags = self.getCFlags(compiler, bopt)
     elif language == 'Cxx':
       flags = self.getCxxFlags(compiler, bopt)
@@ -204,7 +204,7 @@ class CompilerOptions(config.base.Configure):
       raise RuntimeError('Invalid compiler for version determination')
     version = 'Unknown'
     try:
-      if language == 'C':
+      if language == 'C' or language == 'CUDA':
         if compiler.endswith('xlc') or compiler.endswith('mpcc'):
           flags = "lslpp -L vac.C | grep vac.C | awk '{print $2}'"
         else:
