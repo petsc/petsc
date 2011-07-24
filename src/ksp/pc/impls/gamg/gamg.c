@@ -172,7 +172,6 @@ PetscPrintf(PETSC_COMM_WORLD,"\t\t%s n_active_procs=%d\n",__FUNCT__,n_active_pro
     ierr = ISPartitioningCount( isnewproc, npe, counts ); CHKERRQ(ierr);
     ierr = ISDestroy( &isnewproc );                       CHKERRQ(ierr);
     ncrs_new = counts[mype];
-PetscPrintf(PETSC_COMM_SELF,"\t[%d]%s local equations = %d\n",mype,__FUNCT__,ncrs_new);
   }
   { /* Create a vector to contain the newly ordered element information */
     const PetscInt *idx;
@@ -288,6 +287,9 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
   PetscInt         fine_level, level, level1, M, N, bs, lidx;
   MPI_Comm         wcomm = ((PetscObject)pc)->comm;
   PetscMPIInt      mype,npe,nactivepe;
+#define GAMG_MAXLEVELS 20
+  Mat Aarr[GAMG_MAXLEVELS], Rarr[GAMG_MAXLEVELS];  PetscReal *coarse_crds = 0, *crds = pc_gamg->m_data;
+  PetscBool isOK;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(wcomm,&mype);CHKERRQ(ierr);
@@ -310,14 +312,10 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
 
   /* Get A_i and R_i */
   ierr = MatGetSize( Amat, &M, &N );CHKERRQ(ierr);
-  PetscPrintf(PETSC_COMM_WORLD,"[%d]%s level %d N=%d\n",0,__FUNCT__,0,N);
-#define GAMG_MAXLEVELS 20
-  Mat Aarr[GAMG_MAXLEVELS], Rarr[GAMG_MAXLEVELS];  PetscReal *coarse_crds = 0, *crds = pc_gamg->m_data;
-  PetscBool isOK;
-  for (level=0, Aarr[0] = Pmat, nactivepe = npe; level < GAMG_MAXLEVELS-1; level++ ){
-    if( nactivepe == 1 ) { 
-      break;
-    }
+PetscPrintf(PETSC_COMM_WORLD,"[%d]%s level %d N=%d\n",0,__FUNCT__,0,N);
+  for (level=0, Aarr[0] = Pmat, nactivepe = npe;
+       level < GAMG_MAXLEVELS-1 && (level==0 || M>1000); /* hard wired stopping logic */
+       level++ ) {
     level1 = level + 1;
     ierr = createProlongation( Aarr[level], crds, pc_gamg->m_dim,
                                &Rarr[level1], &coarse_crds, &isOK );
@@ -328,7 +326,7 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
       ierr = partitionLevel( Aarr[level], pc_gamg->m_dim, &Rarr[level1], &coarse_crds, &nactivepe, &Aarr[level1] );
       CHKERRQ(ierr);
       ierr = MatGetSize( Aarr[level1], &M, &N );CHKERRQ(ierr);
-      PetscPrintf(PETSC_COMM_WORLD,"[%d]%s done level %d N=%d, active pe = %d\n",0,__FUNCT__,level1,N,nactivepe);
+PetscPrintf(PETSC_COMM_WORLD,"[%d]%s done level %d N=%d, active pe = %d\n",0,__FUNCT__,level1,N,nactivepe);
     }
     else{
       break;

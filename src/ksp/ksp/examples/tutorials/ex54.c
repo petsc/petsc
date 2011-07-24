@@ -9,7 +9,7 @@ static char help[] = "Creates a matrix using simple quadirlateral finite element
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat            Amat,Pmat;
+  Mat            Amat;
   PetscErrorCode ierr;
   PetscInt       i,m,M,its,Istart,Iend,j,Ii,bs,ix,ne=4;
   PetscReal      x,y,h;
@@ -20,10 +20,11 @@ int main(int argc,char **args)
   PetscMPIInt    npe,mype;
   PC pc;
   PetscScalar DD[4][4];
-  PetscScalar DD1[4][4] = { {5.0, -2.0, -1.0, -2.0},
-                            {-2.0, 5.0, -2.0, -1.0},
-                            {-1.0, -2.0, 5.0, -2.0},
-                            {-2.0, -1.0, -2.0, 5.0} };
+#define DIAG_S 0.0
+  PetscScalar DD1[4][4] = { {5.0+DIAG_S, -2.0, -1.0, -2.0},
+                            {-2.0, 5.0+DIAG_S, -2.0, -1.0},
+                            {-1.0, -2.0, 5.0+DIAG_S, -2.0},
+                            {-2.0, -1.0, -2.0, 5.0+DIAG_S} };
 #define EPS 0.0
   PetscScalar DD2[4][4] = {{1.0, EPS,  EPS,  EPS},
                            {EPS, 5.0,  -2.0, EPS},
@@ -42,8 +43,6 @@ int main(int argc,char **args)
   /* create stiffness matrix */
   ierr = MatCreateMPIAIJ(wcomm,PETSC_DECIDE,PETSC_DECIDE,M,M,
                          18,PETSC_NULL,6,PETSC_NULL,&Amat);CHKERRQ(ierr);
-  ierr = MatCreateMPIAIJ(wcomm,PETSC_DECIDE,PETSC_DECIDE,M,M,
-                         18,PETSC_NULL,6,PETSC_NULL,&Pmat);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(Amat,&Istart,&Iend);CHKERRQ(ierr);
   m = Iend-Istart;
   bs = 1;
@@ -62,22 +61,21 @@ int main(int argc,char **args)
       x = h*(Ii % (ne+1)); y = h*(Ii/(ne+1));
       coords[2*ix] = x; coords[2*ix+1] = y;
       if( i<ne && j<ne ) {
-        PetscInt idx[4] = {Ii, Ii+1, Ii + (ne+1) + 1, Ii + (ne+1)};
+        PetscInt jj,ii,idx[4] = {Ii, Ii+1, Ii + (ne+1) + 1, Ii + (ne+1)};
         /* radius */
         PetscReal radius = sqrt( (x-.5+h/2)*(x-.5+h/2) + (y-.5+h/2)*(y-.5+h/2) );
         PetscReal alpha = 1.0;
         if( radius < 0.25 ){
           alpha = soft_alpha;
         }
-        for(int ii=0;ii<4;ii++)for(int jj=0;jj<4;jj++) DD[ii][jj] = alpha*DD1[ii][jj];
-        /* no BCs in Pamt */
-        ierr = MatSetValues(Pmat,4,idx,4,idx,(const PetscScalar*)DD,ADD_VALUES);CHKERRQ(ierr);
+
         if( i>0 ) {
+          for(ii=0;ii<4;ii++)for(jj=0;jj<4;jj++) DD[ii][jj] = alpha*DD1[ii][jj];
           ierr = MatSetValues(Amat,4,idx,4,idx,(const PetscScalar*)DD,ADD_VALUES);CHKERRQ(ierr);
         }
         else {
           /* a BC */
-          for(int ii=0;ii<4;ii++)for(int jj=0;jj<4;jj++) DD[ii][jj] = alpha*DD2[ii][jj];
+          for(ii=0;ii<4;ii++)for(jj=0;jj<4;jj++) DD[ii][jj] = alpha*DD2[ii][jj];
           ierr = MatSetValues(Amat,4,idx,4,idx,(const PetscScalar*)DD,ADD_VALUES);CHKERRQ(ierr);
         }
       }
@@ -85,12 +83,10 @@ int main(int argc,char **args)
 
     ierr = MatAssemblyBegin(Amat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(Amat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyBegin(Pmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(Pmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
     /* Setup solver */
     ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);  CHKERRQ(ierr);
-    ierr = KSPSetOperators(ksp,Amat,Pmat,SAME_NONZERO_PATTERN); CHKERRQ(ierr);
+    ierr = KSPSetOperators(ksp,Amat,Amat,SAME_NONZERO_PATTERN); CHKERRQ(ierr);
     ierr = KSPSetType(ksp,KSPCG);CHKERRQ(ierr);
     ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
@@ -116,7 +112,6 @@ int main(int argc,char **args)
   ierr = VecDestroy(&xx);CHKERRQ(ierr);
   ierr = VecDestroy(&bb);CHKERRQ(ierr);
   ierr = MatDestroy(&Amat);CHKERRQ(ierr);
-  ierr = MatDestroy(&Pmat);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
   return 0;
