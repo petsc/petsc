@@ -12,11 +12,10 @@ their needs.  The current version of TAO and the most recent help
 concerning the installation and usage of TAO can be found at  
 \url{http://www.mcs.anl.gov/tao/}.
 
-The current version (1.10.1) of TAO requires an ANSI C++ compiler, 
-an implementation of MPI, Version 3.1 of PETSc compiled with the C++ 
-compiler, (PETSc must be configured with the \texttt{--with-clanguage=C++}
-option) and at 
-least 15 MB of free disk space.
+The current version (2.0) of TAO requires an ANSI C or C++ compiler, 
+an implementation of MPI, and version ?.? of PETSc (PETSc must be 
+configured without complex variables).
+
 During the setup process, the user will have to set an environmental
 variable, \texttt{TAO\_DIR}\findex{TAO_DIR}, indicating the full path of 
 the TAO home directory.
@@ -30,7 +29,7 @@ The examples throughout the library demonstrate the software usage and
 can serve as templates for developing custom applications.  We suggest
 that new TAO users examine programs in
 \begin{verbatim}
-   ${TAO_DIR}/src/examples .
+   ${TAO_DIR}/src/examples
 \end{verbatim} % Needed to fool the xemacs coloring algorithm $
 \noindent
 Additional examples are available on our website and in
@@ -49,7 +48,7 @@ The HTML version of the manual pages located at
 \noindent
 or
 \begin{verbatim}
-   http://www.mcs.anl.gov/tao/documentation/manpages/index.html
+   http://www.mcs.anl.gov/tao/documentation/index.html
 \end{verbatim}
 \noindent
 provides indices (organized by both routine names and concepts) to the
@@ -60,10 +59,10 @@ program using TAO:
 
 \begin{enumerate}
 \item Install TAO according to the instructions in
-  \url{http://www.mcs.anl.gov/tao/documentation/index.html}.
+  \url{http://www.mcs.anl.gov/tao/documentation/installation.html}.
 \item Copy the examples and makefile from the directory
-  \url{${TAO\_DIR}/examples/}, compile the examples, and run the
-  programs.
+  \url{${TAO\_DIR}/examples/},%$
+  compile the examples, and run the programs. 
 \item Select the example program matching the application most
   closely, and use it as a starting point for developing a customized
   code.
@@ -121,7 +120,7 @@ within this high-level file.
 
 All TAO programs contain a call to \findex{TaoInitialize()}
 \begin{verbatim}
-   info = TaoInitialize(int *argc,char ***argv,char *file_name, 
+   ierr = TaoInitialize(int *argc,char ***argv,char *file_name, 
                         char *help_message);
 \end{verbatim}
 \noindent 
@@ -151,7 +150,7 @@ All TAO programs should call \texttt{TaoFinalize()}
 \findex{TaoFinalize()} as their final (or nearly final) statement
 \findex{TaoFinalize()}
 \begin{verbatim}
-   info = TaoFinalize();
+   ierr = TaoFinalize();
 \end{verbatim}
 \noindent
 This routine handles options to be called at the conclusion of the
@@ -164,43 +163,40 @@ the user is responsible for calling \texttt{PetscFinalize()}.
 
 The primary commands for solving an unconstrained optimization problem
 using TAO are shown in Figure \ref{fig:tao_commands}.
-\findex{TaoCreate()} \findex{TaoApplicationCreate()} \findex{TaoSetObjectiveAndGradientRoutine()}
-\findex{TaoSetHessianMat()} \findex{TaoSolveApplication()}
-\findex{TaoDestroy()} \findex{TaoSetInitialSolutionVec()}
-\findex{TaoSetHessianRoutine()} \findex{TaoSolveApplication()} 
-\findex{TaoApplicationDestroy()}
+\findex{TaoSolverCreate()} \findex{TaoSolverSetObjectiveAndGradientRoutine()}
+\findex{TaoSolverSetRoutine()} \findex{TaoSolverSolve()}
+\findex{TaoSolverDestroy()} \findex{TaoSolverSetInitialVector()}
 
 \begin{figure}[H]
 \begin{verbatim}
-   TaoCreate(MPI_Comm comm, TaoMethod method, TAO_SOLVER *tao); 
-   TaoApplicationCreate(MPI_Comm comm, TAO_APPLICATION *taoapp); 
-   TaoSetInitialSolutionVec(TAO_APPLICATION taoapp, Vec x);
-   TaoSetObjectiveAndGradientRoutine(TAO_APPLICATION taoapp,
-            int (*FormFGradient)(TAO_APPLICATION,Vec,double,Vec,void*),void *user);
-   TaoSetHessianMat(TAO_APPLICATION taoapp, Mat H, Mat Hpre);
-   TaoSetHessianRoutine(TAO_APPLICATION taoapp,
-            int (*Hessian)(TAO_APPLICATION, Vec, Mat*, Mat*, MatStructure*, void*),(void *)&user);
-   TaoSolveApplication(TAO_APPLICATION taoapp, TAO_SOLVER tao);
-   TaoApplicationDestroy(TAO_APPLICATION taoapp);
-   TaoDestroy(TAO_SOLVER tao);
+   TaoSolverCreate(MPI_Comm comm, TaoSolver *tao); 
+   TaoSolverSetType(TaoSolver tao, TaoSolverType type);
+   TaoSolverSetInitialVector(TaoSolver tao, Vec x);
+   TaoSolverSetObjectiveAndGradientRoutine(TaoSolver tao, 
+        int (*FormFGradient)(TaoSolver,Vec,PetscReal*,Vec,void*), void *user);
+   TaoSolverSetHessianRoutine(TaoSolver tao, Mat H, Mat Hpre,
+        int (*FormHessian)(TaoSolver,Vec,Mat*,Mat*,MatStructure*,void*), void *user);
+   TaoSolverSolve(TaoSolver tao);
+   TaoSolverDestroy(TaoSolver tao);
 \end{verbatim}
 \caption{Commands for solving an unconstrained optimization problem
 \label{fig:tao_commands}}
 \end{figure}
 
 \noindent
-The user first creates the \texttt{TAO\_SOLVER} and
-\texttt{TAO\_APPLICATION} contexts. He then sets call-back routines as
+The user first creates the \texttt{TaoSolver} context. 
+He then sets call-back routines as
 well as vector (\texttt{Vec}) and matrix (\texttt{Mat}) data
 structures that the TAO solver will use for evaluating the
 minimization function, gradient, and optionally the Hessian matrix.
 The user then solves the minimization problem, and finally destroys
-the \texttt{TAO\_SOLVER} and \texttt{TAO\_APPLICATION} contexts.
+the \texttt{TaoSolver} context.
 Details of these commands are presented in
 Chapter~\ref{chapter:tao_solver}.
 
-Note that \texttt{TaoCreate()} enables the user to select the solution
-method at runtime by using an options database.  Through this
+Note that the solver algorithm selected through the function 
+\texttt{TaoSolverSetType()} can be overridden
+at runtime by using an options database.  Through this
 database, the user not only can select a minimization method (e.g.,
 limited-memory variable metric, conjugate gradient, Newton with line
 search or trust region), but also can prescribe the convergence
@@ -218,14 +214,15 @@ write routines that evaluate the gradient vector and Hessian matrix.
 \label{sec:tao_programming}
 
 \subsection*{Include Files}
-
-Applications using the PETSc package for vectors, matrices, and linear
+Any applications using the PETSc package for vectors, matrices, and linear
 solvers should include the appropriate header files.  For example
 \begin{verbatim}
-   #include "petscksp.h"
+   #include "tao.h"
 \end{verbatim}
 \noindent
-includes the appropriate information for most TAO applications using PETSc.
+includes the appropriate information for most TAO applications using PETSc. 
+Fortran users should read Section~\ref{sec:fortran_includes}
+
 
 \subsection*{The Options Database}
 \label{sec:options}
@@ -279,21 +276,23 @@ in the PETSc users manual.
 
 Usage of matrices and vectors is similar. \sindex{matrix} 
 The user can create a new parallel or sequential matrix \texttt{H} with 
-\texttt{M} global rows and \texttt{N} global columns, with the routine
+\texttt{M} global rows and \texttt{N} global columns, with the routines
 %\findex{MatCreate()}
 \begin{verbatim}
-   info = MatCreate(MPI_Comm comm,int m,int n,int M,int N,Mat *H);
+   ierr = MatCreate(MPI_Comm comm,Mat *H);
+   ierr = MatSetSizes(H,PETSC_DECIDE,PETSC_DECIDE,M,N);
 \end{verbatim}
 \noindent
 where the matrix format can be specified at runtime.  The user could
 alternatively specify each processes' number of local rows and columns
-using \texttt{m} and \texttt{n}.  \texttt{H} can then be used to store
+using \texttt{m} and \texttt{n} instead of \texttt{PETSC\_DECIDE}.  
+\texttt{H} can then be used to store
 the Hessian matrix, as indicated by the above routine
 \texttt{TaoSetHessianMat()}.  Matrix entries can then be set with the
 command
 \begin{verbatim}
-   info = MatSetValues(Mat H,int m,int *im,int n,int *in,
-                       Scalar *values,INSERT_VALUES);
+   ierr = MatSetValues(Mat H,PetscInt m,PetscInt *im, PetscInt n,
+                       PetscInt *in, PetscScalar *values,INSERT_VALUES);
 \end{verbatim}
 \noindent
 After %\findex{MatSetValues()} 
@@ -301,8 +300,8 @@ all elements have been inserted into the
 matrix, it must be processed with the pair of commands
 %\findex{MatAssemblyBegin()} \findex{MatAssemblyEnd()}
 \begin{verbatim}
-   info = MatAssemblyBegin(Mat H,MAT_FINAL_ASSEMBLY);
-   info = MatAssemblyEnd(Mat H,MAT_FINAL_ASSEMBLY);
+   ierr = MatAssemblyBegin(Mat H,MAT_FINAL_ASSEMBLY);
+   ierr = MatAssemblyEnd(Mat H,MAT_FINAL_ASSEMBLY);
 \end{verbatim}
 \noindent
 The PETSc users manual discusses various matrix formats as
@@ -322,14 +321,14 @@ management of parallel data.
 
 %\sindex{collective operations} 
 The user must specify a communicator
-upon creation of any TAO objects (such as a vector, matrix, or solver)
+upon creation of any PETSc or TAO objects (such as a vector, matrix, or solver)
 to indicate the processors over which the object is to be distributed.
 For example, some commands for matrix, vector, and solver creation
 are:
 \begin{verbatim}
-   info = MatCreate(MPI_Comm comm,int m,int n,int M,int N,Mat *H);
-   info = VecCreate(MPI_Comm comm,int m,int M,Vec *x);
-   info = TaoCreate(MPI_Comm comm,TaoMethod method,TAO_SOLVER *tao); 
+   ierr = MatCreate(MPI_Comm comm,Mat *H);
+   ierr = VecCreate(MPI_Comm comm,Vec *x);
+   ierr = TaoSolverCreate(MPI_Comm comm,TaoSolver *tao); 
 \end{verbatim}
 \noindent
 The creation routines are collective over all processors in the
@@ -365,9 +364,9 @@ execute TAO programs, users must know the procedure for beginning MPI
 jobs on their selected computer system(s).  For instance, when using
 the MPICH implementation of MPI \cite{mpich-web-page} and many others,
 the following command initiates a program that uses eight processors:
-%\findex{mpirun} \sindex{running TAO programs} 
+%\findex{mpiexec} \sindex{running TAO programs} 
 \begin{verbatim}
-  mpirun -np 8 tao_program_name tao_options
+  mpiexec -np 8 tao_program_name tao_options
 \end{verbatim}
 
 \begin{comment}
@@ -379,7 +378,7 @@ the following command initiates a program that uses eight processors:
 \begin{comment}
   Users who are experiencing difficulties linking TAO programs should
   refer to the troubleshooting guide via the TAO home page {\tt
-    http://www.mcs.anl.gov/tao} or the source code given by the file
+    http://www.mcs.anl.gov/tao}. or the source code given by the file
   \texttt{{TAO\_DIR}/docs/troubleshooting.html}.
 \end{comment}
 
@@ -419,28 +418,38 @@ all subroutines to enable a complete error traceback.
 
 In Figure \ref{fig:traceback} we indicate a traceback generated by
 error detection within a sample program. The error occurred on line
-1007 of the file \texttt{\$\{TAO\_DIR\}/src/interface/tao.c} in the
-routine \texttt{TaoSetUp()} and was caused by nonconforming local lengths
-of the parallel gradient and solution vectors, which must be
-identically partitioned.  The \texttt{TaoSetUp()} routine was called from
-the \texttt{TaoSolveApplication()} routine, which was in turn called on line 229 of
-the \texttt{main()} routine in the program \texttt{ex2.c}.  The PETSc users
+2110 of the file \texttt{\$\{PETSC\_DIR\}/src/mat/interface/matrix.c} in the
+routine \texttt{MatMult()} and was caused by failure to assemble the 
+matrix in the Hessian evaluation routine.
+The \texttt{MatMult()} routine was called from
+the \texttt{TaoSolverSolve\_NLS()} routine, which was in turn called on line 
+154 of \texttt{TaoSolverSolve\_()}, called from the \texttt{main()} routine 
+in the program \texttt{rosenbrock1.c}.  The PETSc users
 manual provides further details regarding error checking, including
 information about the Fortran interface.
 
 \begin{figure}[htb]
 {\footnotesize
 \begin{verbatim}
-[ember] mpirun -np 2 ex2 -tao_lmvm
-[0]PETSC ERROR: TaoSetUp() line 1007 in src/interface/tao.c
-[0]PETSC ERROR:   Nonconforming object sizes!
-[0]PETSC ERROR:   Gradient and solution vectors must be identically partitioned!
-[0]PETSC ERROR: TaoSolveApplication() line 1739 in src/interface/tao.c
-[0]PETSC ERROR: main() line 229 in src/unconstrained/examples/tutorials/ex2.c
-[0] MPI Abort by user Aborting program !
-[0] Aborting program!
-p0_911:  p4_error: : 1
-bm_list_912:  p4_error: interrupt SIGINT: 2
+> rosenbrock1 -tao_method tao_nls
+[0]PETSC ERROR: --------------------- Error Message ------------------------------------
+[0]PETSC ERROR: Object is in wrong state!
+[0]PETSC ERROR: Not for unassembled matrix!
+[0]PETSC ERROR: ------------------------------------------------------------------------
+[0]PETSC ERROR: Petsc Development HG revision: b95ffff514b66a703d96e6ae8e78ea266ad2ca19  HG Date: Fri Jul 15 20:55:04 2011 -0500
+[0]PETSC ERROR: See docs/changes/index.html for recent updates.
+[0]PETSC ERROR: See docs/faq.html for hints about trouble shooting.
+[0]PETSC ERROR: See docs/index.html for manual pages.
+[0]PETSC ERROR: ------------------------------------------------------------------------
+[0]PETSC ERROR: Libraries linked from petsc-dev/arch-linux2-c-debug/lib
+[0]PETSC ERROR: Configure run at Tue Jul 19 14:13:14 2011
+[0]PETSC ERROR: Configure options --with-shared-libraries --with-dynamic-loading --with-mpi-dir=/usr/local
+[0]PETSC ERROR: ------------------------------------------------------------------------
+[0]PETSC ERROR: MatMult() line 2110 in petsc-dev/src/mat/interface/matrix.c
+[0]PETSC ERROR: TaoSolverSolve_NLS() line 291 in src/unconstrained/impls/nls/nls.c
+[0]PETSC ERROR: TaoSolverSolve() line 154 in src/interface/taosolver.c
+[0]PETSC ERROR: main() line 94 in src/unconstrained/examples/tutorials/rosenbrock1.c
+application called MPI_Abort(MPI_COMM_WORLD, 73) - process 0
 \end{verbatim}
 }
 \caption{Example of Error Traceback}
@@ -449,10 +458,11 @@ bm_list_912:  p4_error: interrupt SIGINT: 2
 
 \noindent
 When running the debugging version of the TAO software (PETSc configured 
-with the \texttt{--with-debugging} option), checking is performed for 
+with the (default) \texttt{--with-debugging} option), checking is performed for 
 memory corruption
 (writing outside of array bounds, etc). The macros \texttt{CHKMEMQ} and
-\texttt{CHKMEMA} can be called anywhere in the code to check the current
+\texttt{CHKMEMA} can be called anywhere in the code, and when used together 
+with the command line option \texttt{-malloc\_debug} check the current
 status of the memory for corruption.  By putting several (or many) of
 these macros into an application code, one can usually track
 down the code segment where corruption has occurred.
@@ -470,16 +480,23 @@ users manual for additional details.
 
 To make a program named \texttt{rosenbrock1}, one may use the command
 \begin{verbatim}
-   make PETSC_ARCH=arch rosenbrock1
+   make rosenbrock1
 \end{verbatim}
 \noindent
-which compiles a debugging or optimized version of the example and
-automatically link the appropriate libraries.  The architecture, {\tt
-  arch}, is one of \texttt{solaris, rs6000, IRIX, hpux}, etc. Note that
-when using command line options with make (as illustrated above), one
-must {\em not} place spaces on either side of the ``='' signs.  The
-variable \texttt{PETSC\_ARCH} can also be set as an
-environmental variable.
+The variables \texttt{TAO\_DIR}, \texttt{PETSC\_DIR}, and \texttt{PETSC\_ARCH}
+need to be set either as environment variables or as command line options to make.  Note that
+when using command line options with make, one
+must {\em not} place spaces on either side of an ``='' sign. Error messages
+such as 
+\begin{verbatim}
+   /conf/variables: No such file or directory
+\end{verbatim}
+or
+\begin{verbatim}
+   make: *** No rule to make target `conf/tao_base'. Stop.
+\end{verbatim}
+are usually the result of not setting these variables correctly.
+
 
 \subsection*{Sample Makefiles}
 
@@ -491,10 +508,10 @@ environmental variable.
        CPPFLAGS  =
        FPPFLAGS  =
        
-       include ${TAO_DIR}/bmake/tao_common
+       include ${TAO_DIR}/conf/tao_base
    
        rosenbrock1: rosenbrock1.o tao_chkopts
-            -${CLINKER} -o rosenbrock1 rosenbrock1.o ${TAO_LIB} ${PETSC_SNES_LIB}
+            -${CLINKER} -o rosenbrock1 rosenbrock1.o ${TAO_LIB} ${PETSC_LIB}
             ${RM} rosenbrock1.o
 \end{verbatim} 
 % $
@@ -508,7 +525,7 @@ Maintaining portable TAO makefiles is very simple.  Figure
 program that uses the TAO library.  The most important line in this
 makefile is the line starting with \texttt{include}:
 \begin{verbatim}
-   include ${TAO_DIR}/bmake/tao_common
+   include ${TAO_DIR}/conf/tao_base
 \end{verbatim} 
 % $
 \noindent
@@ -523,8 +540,8 @@ completely specified; the user should {\em not} alter this statement
 within the makefile.
 
 Note that the variable \texttt{\$\{TAO\_LIB\}} (as listed on the link
-line in this makefile) specifies {\em all} of the various TAO and
-supplementary libraries in the appropriate order for correct linking.
+line in this makefile) specifies {\em all} of the TAO libraries in 
+the appropriate order for correct linking.
 
 
 \begin{comment}
@@ -543,12 +560,12 @@ as follows:
         for the C++ preprocessor and fortran preprocesor.
 \item \texttt{CLINKER, FLINKER} - the C++ and Fortran linkers. 
 \item \texttt{RM} - the remove command for deleting files.
-\item \texttt{TAO\_LIB} - all of the base TAO libraries and required supplementary libraries.
+\item \texttt{TAO\_LIB} - all of the TAO libraries
              \findex{TAO_LIB}
 \item \texttt{TAO\_FORTRAN\_LIB} - the TAO Fortran interface
              library. \findex{TAO_FORTRAN_LIB}
-\item \texttt{PETSC\_FORTRAN\_LIB} - the PETSc Fortran interface
-             library. 
+\item \texttt{PETSC\_LIB} - all of the PETSc libraries
+
 \end{itemize}
 
 \section{Directory Structure}
@@ -562,7 +579,7 @@ The home directory of TAO contains the following subdirectories:
                    the subdirectory
  \subitem - \texttt{manpages} (manual pages for individual TAO routines).
 % \item \texttt{bin} - Utilities and short scripts for use with TAO, including
-\item \texttt{bmake} - Base TAO makefile directory.  
+\item \texttt{conf} - Base TAO makefile directory.  
 \item \texttt{include} - All include files for TAO that are visible to the user.
 \item \texttt{examples} - Example problems and makefile.
 % \item \texttt{include/finclude}    - TAO include files for Fortran programmers using 
@@ -574,8 +591,8 @@ The home directory of TAO contains the following subdirectories:
  \begin{itemize}
  \item \texttt{unconstrained} - unconstrained minimization,
  \item \texttt{bound} - bound constrained minimization.
- \item \texttt{complementarity} - mixed complementarity solvers.
  \item \texttt{least\_squares} - nonlinear least squares,
+ \item \texttt{pde\_constrained} - mixed complementarity solvers.
 % \item \texttt{constrained} - constrained minimization,
  \end{itemize}
 \end{itemize}

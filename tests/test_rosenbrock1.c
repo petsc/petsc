@@ -1,11 +1,7 @@
 /* Program usage: mpirun -np 1 rosenbrock1 [-help] [all TAO options] */
 
 /*  Include "tao.h" so we can use TAO solvers.  */
-#include "petsc.h"
-#include "petscvec.h"
-#include "petscmat.h"
 #include "tao.h"
-#include "taosolver.h"
 
 static  char help[] = "This example demonstrates use of the TAO package to \n\
 solve an unconstrained minimization problem on a single processor.  We \n\

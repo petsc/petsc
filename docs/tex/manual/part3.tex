@@ -20,7 +20,7 @@ the user can even specify a customized test\sindex{convergence tests}.
 
 Users can set their own customized convergence tests of the form
 \begin{verbatim}
-   int  conv(TAO_SOLVER tao, void *cctx);
+   PetscErrorCode  conv(TaoSolver tao, void *cctx);
 \end{verbatim}
 \noindent
 The second argument
@@ -28,14 +28,13 @@ is a pointer to a structure defined by the user.
 Within this routine, the solver
 can be queried for the solution vector, gradient vector,
 or other statistic at the current iteration through routines such as
-{\tt TaoGetSolutionStatus()} and  {\tt TaoGetTolerances()}.
+{\tt TaoSolverGetSolutionStatus()} and  {\tt TaoSolverGetTolerances()}.
 
 To use this convergence test within a TAO solver, use
-the command \findex{TaoSetConvergenceTest()}
+the command \findex{TaoSolverSetConvergenceTest()}
 \begin{verbatim}
-      int TaoSetConvergenceTest(TAO_SOLVER solver,
-                                int (*conv)(TAO_SOLVER tao,
-                                            void *cctx),
+      PetscErrorCode TaoSolverSetConvergenceTest(TaoSolver tao,
+                                PetscErrorCode (*conv)(TaoSolver,void*),
                                 void *cctx);
 \end{verbatim}
 \noindent
@@ -46,7 +45,7 @@ The convergence routine receives the TAO solver and this private data
 structure. 
 The termination flag can be set using the routine
 \begin{verbatim}
-   int TaoSetTerminationReason(TAO_SOLVER , TaoTerminationReason*);
+   PetscErrorCode TaoSolverSetTerminationReason(TaoSolver, TaoSolverTerminationReason);
 \end{verbatim}
 \noindent
 
@@ -55,8 +54,11 @@ The termination flag can be set using the routine
 \section{Line Searches} \sindex{line search}
 \label{sec:TaoLineSearch}
 
-Many solver in TAO require a line search.  While these solver always
-offer a default line search, alternative line searches can also be used.
+Many solvers in TAO require a line search.  While these solvers always
+offer a default line search, alternative line searches can also be used
+using the command line option 
+
+
 Line searches must have the form:
 \begin{verbatim}
     int L(TAO_SOLVER tao,TaoVec *xx,TaoVec *gg,TaoVec *dx, TaoVec *ww,
@@ -75,7 +77,7 @@ routine is finished the solution vector {\tt xx}, gradient vector {\tt gg},
 function value {\tt f}, step size {\tt step}, and {\tt flg} should be
 updated to reflect the new solution.
 
-This routine can be set with the function \findex{TaoSetLineSearch()}
+This routine can be set with the function \findex{TaoSolverSetLineSearch()}
 \begin{verbatim}
    int TaoSetLineSearch(TAO_SOLVER solver, 
                   int (*setup)(TAO_SOLVER, void*),

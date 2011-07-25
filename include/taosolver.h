@@ -50,6 +50,7 @@ extern PetscErrorCode TaoSolverInitializePackage(const char []);
 #endif
 extern PetscErrorCode TaoSolverCreate(MPI_Comm,TaoSolver*);
 extern PetscErrorCode TaoSolverSetFromOptions(TaoSolver);
+extern PetscErrorCode TaoSolverSetFiniteDifferencesOptions(TaoSolver);
 extern PetscErrorCode TaoSolverSetUp(TaoSolver);
 extern PetscErrorCode TaoSolverSetType(TaoSolver, const TaoSolverType);
 extern PetscErrorCode TaoSolverGetType(TaoSolver, TaoSolverType *);
