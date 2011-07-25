@@ -47,6 +47,7 @@ typedef struct {
   Vec r; 
   Vec s; 
   Vec g1,g2;
+  Vec con1;
 
   PetscInt m; /* number of constraints */
   PetscInt n; /* number of variables */
