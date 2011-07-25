@@ -1751,8 +1751,8 @@ extern PetscErrorCode  MatCreateMPIAIJCUSP(MPI_Comm,PetscInt,PetscInt,PetscInt,P
    PETSc interface to FFTW
 */
 #if defined(PETSC_HAVE_FFTW)
-extern PetscErrorCode InputTransformFFT(Mat,Vec,Vec);
-extern PetscErrorCode OutputTransformFFT(Mat,Vec,Vec);
+extern PetscErrorCode VecScatterPetscToFFTW(Mat,Vec,Vec);
+extern PetscErrorCode VecScatterFFTWToPetsc(Mat,Vec,Vec);
 extern PetscErrorCode MatGetVecsFFTW(Mat,Vec*,Vec*,Vec*);
 #endif
 

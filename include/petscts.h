@@ -144,6 +144,8 @@ extern PetscErrorCode   TSComputeRHSJacobian(TS,PetscReal,Vec,Mat*,Mat*,MatStruc
 extern PetscErrorCode   TSComputeIFunction(TS,PetscReal,Vec,Vec,Vec,PetscBool);
 extern PetscErrorCode   TSComputeIJacobian(TS,PetscReal,Vec,Vec,PetscReal,Mat*,Mat*,MatStructure*,PetscBool);
 
+extern PetscErrorCode   TSVISetVariableBounds(TS,Vec,Vec);
+
 /* Dynamic creation and loading functions */
 extern PetscFList TSList;
 extern PetscBool  TSRegisterAllCalled;

@@ -17,7 +17,10 @@ class PETSc(object):
 
   def mpiexec(self):
     '''Return the path for the mpi launch executable'''
-    return os.path.join(self.dir(), self.arch(), 'bin', 'mpiexec')
+    mpiexec = os.path.join(self.dir(), self.arch(), 'bin', 'mpiexec')
+    if not os.path.isexec(mpiexec):
+      return None
+    return mpiexec
 
   def example(self, num):
     '''Return the path to the executable for a given example number'''
@@ -54,7 +57,11 @@ class PETScExample(object):
     return ' '.join(a)
 
   def run(self, **opts):
-    cmd = ' '.join([self.petsc.mpiexec(), '-n 1', self.petsc.example(self.num)])+' '+self.optionsToString(**self.opts)+' '+self.optionsToString(**opts)
+    if self.petsc.mpiexec() is None:
+      cmd = self.petsc.example(self.num)
+    else:
+      cmd = ' '.join([self.petsc.mpiexec(), '-n 1', self.petsc.example(self.num)])
+    cmd += ' '+self.optionsToString(**self.opts)+' '+self.optionsToString(**opts)
     out, err, ret = self.runShellCommand(cmd)
     if ret:
       print err
@@ -82,7 +89,7 @@ def processSummary(moduleName, times, events):
       events[name].append((m.Solve.event[name].Time[0], m.Solve.event[name].Flops[0]/(m.Solve.event[name].Time[0] * 1e6)))
   return
 
-def plotSummary(library, num, sizes, times, events):
+def plotSummaryLine(library, num, sizes, times, events):
   from pylab import legend, plot, show, title, xlabel, ylabel
   import numpy as np
   showTime       = False
@@ -137,6 +144,39 @@ def plotSummary(library, num, sizes, times, events):
     show()
   return
 
+def plotSummaryBar(library, num, sizes, times, events):
+  import numpy as np
+  import matplotlib.pyplot as plt
+
+  eventNames  = ['VecMDot', 'VecMAXPY', 'MatMult']
+  eventColors = ['b',       'g',        'r']
+  arches = sizes.keys()
+  names  = []
+  N      = len(sizes[arches[0]])
+  width  = 0.2
+  ind    = np.arange(N) - 0.25
+  bars   = {}
+  for arch in arches:
+    bars[arch] = []
+    bottom = np.zeros(N)
+    for event, color in zip(eventNames, eventColors):
+      names.append(arch+' '+event)
+      times = np.array(events[arch][event])[:,0]
+      bars[arch].append(plt.bar(ind, times, width, color=color, bottom=bottom))
+      bottom += times
+    ind += 0.3
+
+  plt.xlabel('Number of Dof')
+  plt.ylabel('Time (s)')
+  plt.title('GPU vs. CPU Performance on '+library+' Example '+str(num))
+  plt.xticks(np.arange(N), map(str, sizes[arches[0]]))
+  #plt.yticks(np.arange(0,81,10))
+  #plt.legend( (p1[0], p2[0]), ('Men', 'Women') )
+  plt.legend([bar[0] for bar in bars[arches[0]]], eventNames, 'upper right', shadow = True)
+
+  plt.show()
+  return
+
 if __name__ == '__main__':
   library = 'SNES'
   num     = 19
@@ -153,4 +193,4 @@ if __name__ == '__main__':
       ex.run(da_grid_x=n, da_grid_y=n, da_vec_type=vecType, da_mat_type=matType, **opts)
       sizes[name].append(n*n * 4)
       processSummary('summary', times[name], events[name])
-  plotSummary(library, num, sizes, times, events)
+  plotSummaryLine(library, num, sizes, times, events)

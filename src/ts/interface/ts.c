@@ -2588,6 +2588,35 @@ PetscErrorCode  TSGetConvergedReason(TS ts,TSConvergedReason *reason)
   PetscFunctionReturn(0);
 }
 
+
+#undef __FUNCT__
+#define __FUNCT__ "TSVISetVariableBounds"
+/*@
+   TSVISetVariableBounds - Sets the lower and upper bounds for the solution vector. xl <= x <= xu
+
+   Input Parameters:
+.  ts   - the TS context.
+.  xl   - lower bound.
+.  xu   - upper bound.
+
+   Notes:
+   If this routine is not called then the lower and upper bounds are set to 
+   SNES_VI_INF and SNES_VI_NINF respectively during SNESSetUp().
+
+@*/
+PetscErrorCode TSVISetVariableBounds(TS ts, Vec xl, Vec xu)
+{
+  PetscErrorCode ierr;
+  SNES           snes;
+
+  PetscFunctionBegin;
+
+  ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
+  ierr = SNESVISetVariableBounds(snes,xl,xu);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
+
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
 #include <mex.h>
 
@@ -2881,5 +2910,4 @@ PetscErrorCode  TSMonitorSetMatlab(TS ts,const char *func,mxArray *ctx)
   ierr = TSMonitorSet(ts,TSMonitor_Matlab,sctx,PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 #endif
