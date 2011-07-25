@@ -66,7 +66,7 @@
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       CHKERRQ(ierr)
-!      call TaoInitialize(PETSC_NULL_CHARACTER,ierr)
+      call TaoInitialize(PETSC_NULL_CHARACTER,ierr)
       
 
 ! Specify default dimensions of the problem
@@ -208,7 +208,7 @@
 
 ! Finalize TAO 
 
-!      call TaoFinalize(ierr)
+      call TaoFinalize(ierr)
       call PetscFinalize(ierr)
 
       end

@@ -158,6 +158,12 @@ class TaoExamples(ExampleList):
         self.add(Example(example="rosenbrock1",nprocs=1,options="-tao_smonitor",method="lmvm",tags=["rosenbrock","single","unconstrained","c","lmvm"],name="rosenbrock1"))
         self.add(Example(example="rosenbrock1",nprocs=1,options="-tao_smonitor -tao_frtol 0 -tao_fatol 0",method="pounder",tags=["rosenbrock","single","unconstrained","c","pounder"],name="rosenbrock1_2"))
         self.add(Example(example="rosenbrock1f",nprocs=1,options="-tao_smonitor",method="lmvm",tags=["rosenbrock","single","unconstrained","fortran","lmvm"],name="rosenbrock1f"))
+        self.add(Example(example="limit_feval",nprocs=1,options="-tao_smonitor",method="lmvm",tags=["rosenbrock","single","unconstrained","c","lmvm"],name="limit_feval"))
+        self.add(Example(example="limit_minf",nprocs=1,options="-tao_smonitor",method="lmvm",tags=["rosenbrock","single","unconstrained","c","lmvm"],name="limit_minf"))
+        self.add(Example(example="limit_iter",nprocs=1,options="-tao_smonitor",method="lmvm",tags=["rosenbrock","single","unconstrained","c","lmvm"],name="limit_iter"))
+        self.add(Example(example="limit_fevalf",nprocs=1,options="-tao_smonitor",method="lmvm",tags=["rosenbrock","single","unconstrained","fortran","lmvm"],name="limit_fevalf"))
+        self.add(Example(example="limit_minff",nprocs=1,options="-tao_smonitor",method="lmvm",tags=["rosenbrock","single","unconstrained","fortran","lmvm"],name="limit_minff"))
+        self.add(Example(example="limit_iterf",nprocs=1,options="-tao_smonitor",method="lmvm",tags=["rosenbrock","single","unconstrained","fortran","lmvm"],name="limit_iterf"))
 
         self.add(Example(example="eptorsion1",nprocs=1,options="-tao_smonitor",method="lmvm",tags=["eptorsion","single","unconstrained","c","lmvm"],name="eptorsion1"))
         self.add(Example(example="eptorsion1",nprocs=1,options="-tao_smonitor",method="nls",tags=["eptorsion","single","unconstrained","c","nls"],name="eptorsion1_2"))

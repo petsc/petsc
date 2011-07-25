@@ -65,7 +65,7 @@
 
 !     Initialize TAO, PETSc  contexts
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-!      call TaoInitialize(PETSC_NULL_CHARACTER,ierr)
+      call TaoInitialize(PETSC_NULL_CHARACTER,ierr)
 
 !     Specify default parameters 
       param = 5.0d0
@@ -139,7 +139,7 @@
 
 !     Finalize TAO and PETSc
       call PetscFinalize(ierr)
-!      call TaoFinalize(ierr)
+      call TaoFinalize(ierr)
 
       end
 
