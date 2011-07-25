@@ -134,12 +134,12 @@ PetscInt main(PetscInt argc,char **args)
       if (view){ierr = VecView(input,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
 
       /* Apply FFTW_FORWARD and FFTW_BACKWARD */
-      ierr = InputTransformFFT(A,input,x);CHKERRQ(ierr);
+      ierr = VecScatterPetscToFFTW(A,input,x);CHKERRQ(ierr);
       ierr = MatMult(A,x,y);CHKERRQ(ierr);
       if (view){ierr = VecView(y,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
 
       ierr = MatMultTranspose(A,y,z);CHKERRQ(ierr);
-      ierr = OutputTransformFFT(A,z,output);CHKERRQ(ierr);
+      ierr = VecScatterFFTWToPetsc(A,z,output);CHKERRQ(ierr);
 //      ierr = VecAssemblyBegin(input);CHKERRQ(ierr);
 //      ierr = VecAssemblyEnd(input);CHKERRQ(ierr);
 //      ierr = VecView(input,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);

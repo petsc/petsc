@@ -735,12 +735,12 @@ PetscErrorCode  MatGetVecs_FFTW(Mat A,Vec *fin,Vec *fout)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "InputTransformFFT"
-PetscErrorCode InputTransformFFT(Mat A,Vec x,Vec y)
+#define __FUNCT__ "VecScatterPetscToFFTW"
+PetscErrorCode VecScatterPetscToFFTW(Mat A,Vec x,Vec y)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = PetscTryMethod(A,"InputTransformFFT_C",(Mat,Vec,Vec),(A,x,y));CHKERRQ(ierr);
+  ierr = PetscTryMethod(A,"VecScatterPetscToFFTW_C",(Mat,Vec,Vec),(A,x,y));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -760,8 +760,8 @@ PetscErrorCode InputTransformFFT(Mat A,Vec x,Vec y)
 
 EXTERN_C_BEGIN 
 #undef __FUNCT__  
-#define __FUNCT__ "InputTransformFFT_FTTW"
-PetscErrorCode InputTransformFFT_FFTW(Mat A,Vec x,Vec y)
+#define __FUNCT__ "VecScatterPetscToFFTW_FTTW"
+PetscErrorCode VecScatterPetscToFFTW_FFTW(Mat A,Vec x,Vec y)
 {
   PetscErrorCode ierr;
   MPI_Comm       comm=((PetscObject)A)->comm;
@@ -967,12 +967,12 @@ PetscErrorCode InputTransformFFT_FFTW(Mat A,Vec x,Vec y)
 EXTERN_C_END
 
 #undef __FUNCT__  
-#define __FUNCT__ "OutputTransformFFT"
-PetscErrorCode OutputTransformFFT(Mat A,Vec x,Vec y)
+#define __FUNCT__ "VecScatterFFTWToPetsc"
+PetscErrorCode VecScatterFFTWToPetsc(Mat A,Vec x,Vec y)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = PetscTryMethod(A,"OutputTransformFFT_C",(Mat,Vec,Vec),(A,x,y));CHKERRQ(ierr);
+  ierr = PetscTryMethod(A,"VecScatterFFTWToPetsc_C",(Mat,Vec,Vec),(A,x,y));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -991,8 +991,8 @@ PetscErrorCode OutputTransformFFT(Mat A,Vec x,Vec y)
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "OutputTransformFFT_FTTW"
-PetscErrorCode OutputTransformFFT_FFTW(Mat A,Vec x,Vec y)
+#define __FUNCT__ "VecScatterFFTWToPetsc_FFTW"
+PetscErrorCode VecScatterFFTWToPetsc_FFTW(Mat A,Vec x,Vec y)
 {
   PetscErrorCode ierr;
   MPI_Comm       comm=((PetscObject)A)->comm;
@@ -1341,8 +1341,8 @@ PetscErrorCode MatCreate_FFTW(Mat A)
   //A->ops->getvecs       = MatGetVecs_FFTW;
   A->assembled          = PETSC_TRUE;
   PetscObjectComposeFunctionDynamic((PetscObject)A,"MatGetVecsFFTW_C","MatGetVecsFFTW_FFTW",MatGetVecsFFTW_FFTW);   
-  PetscObjectComposeFunctionDynamic((PetscObject)A,"InputTransformFFT_C","InputTransformFFT_FFTW",InputTransformFFT_FFTW);   
-  PetscObjectComposeFunctionDynamic((PetscObject)A,"OutputTransformFFT_C","OutputTransformFFT_FFTW",OutputTransformFFT_FFTW);  
+  PetscObjectComposeFunctionDynamic((PetscObject)A,"VecScatterPetscToFFTW_C","VecScatterPetscToFFTW_FFTW",VecScatterPetscToFFTW_FFTW);   
+  PetscObjectComposeFunctionDynamic((PetscObject)A,"VecScatterFFTWToPetsc_C","VecScatterFFTWToPetsc_FFTW",VecScatterFFTWToPetsc_FFTW);  
     
   /* get runtime options */
   ierr = PetscOptionsBegin(((PetscObject)A)->comm,((PetscObject)A)->prefix,"FFTW Options","Mat");CHKERRQ(ierr);
