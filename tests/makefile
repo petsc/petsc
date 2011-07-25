@@ -53,9 +53,38 @@ test_rosenbrock1: test_rosenbrock1.o tao_chkopts
 	-${CLINKER} -o test_rosenbrock1 test_rosenbrock1.o ${TAO_LIB} ${PETSC_SNES_LIB}
 	${RM} test_rosenbrock1.o
 
+test_limit_feval: test_limit_feval.o tao_chkopts
+	-${CLINKER} -o test_limit_feval test_limit_feval.o ${TAO_LIB} ${PETSC_SNES_LIB}
+	${RM} test_limit_feval.o
+
+test_limit_iter: test_limit_iter.o tao_chkopts
+	-${CLINKER} -o test_limit_iter test_limit_iter.o ${TAO_LIB} ${PETSC_SNES_LIB}
+	${RM} test_limit_iter.o
+
+test_limit_minf: test_limit_minf.o tao_chkopts
+	-${CLINKER} -o test_limit_minf test_limit_minf.o ${TAO_LIB} ${PETSC_SNES_LIB}
+	${RM} test_limit_minf.o
+
+
 test_rosenbrock1f: test_rosenbrock1f.o tao_chkopts
 	-${FLINKER} -o  test_rosenbrock1f test_rosenbrock1f.o ${TAO_LIB} ${PETSC_SNES_LIB}
 	${RM} test_rosenbrock1f.o
+
+
+test_limit_fevalf: test_limit_fevalf.o tao_chkopts
+	-${FLINKER} -o  test_limit_fevalf test_limit_fevalf.o ${TAO_LIB} ${PETSC_SNES_LIB}
+	${RM} test_limit_fevalf.o
+
+
+test_limit_iterf: test_limit_iterf.o tao_chkopts
+	-${FLINKER} -o  test_limit_iterf test_limit_iterf.o ${TAO_LIB} ${PETSC_SNES_LIB}
+	${RM} test_limit_iterf.o
+
+
+test_limit_minff: test_limit_minff.o tao_chkopts
+	-${FLINKER} -o  test_limit_minff test_limit_minff.o ${TAO_LIB} ${PETSC_SNES_LIB}
+	${RM} test_limit_minff.o
+
 
 test_jbearing2: test_jbearing2.o tao_chkopts
 	-${CLINKER} -o test_jbearing2 test_jbearing2.o ${TAO_LIB} ${PETSC_LIB}

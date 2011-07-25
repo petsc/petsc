@@ -118,6 +118,8 @@
       call TaoSolverSetInitialVector(tao, x, ierr)
       CHKERRQ(ierr)
 
+      call TaoSolverSetFunctionLowerBound(tao,0.3,ierr)
+      CHKERRQ(ierr)
 
 !  Check for TAO command line options
       call TaoSolverSetFromOptions(tao,ierr)
@@ -125,8 +127,10 @@
 
 !  SOLVE THE APPLICATION
       call TaoSolverSolve(tao,ierr)
+      CHKERRQ(ierr)
 
       call TaoSolverGetTerminationReason(tao, reason, ierr)
+      CHKERRQ(ierr)
       if (reason .le. 0) then
          print *,'Try a different TAO method, adjust some parameters,'
          print *,'or check the function evaluation routines.'

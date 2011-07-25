@@ -10,6 +10,7 @@ test:
   TaoSolverGetSolutionStatus
 
 
+
 replace default convergence test
 
 MANSEC - do we need more than 1?
@@ -48,4 +49,6 @@ add pde_constrained section
 make install to put libs/headers in separate location
  Check TAO options in TaoSolverSetFromOptions
  Fix convergence explanations
+    -2 maxits
+
 TaoSolverClearMonitor

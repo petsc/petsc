@@ -752,7 +752,7 @@ PetscErrorCode TaoSolverSetFunctionLowerBound(TaoSolver tao,PetscReal fmin)
 .seealso: TaoSolverSetTolerances(), TaoSolverSetMaximumIterations()
 @*/
 
-PetscErrorCode TaoSetMaximumFunctionEvaluations(TaoSolver tao,PetscInt nfcn)
+PetscErrorCode TaoSolverSetMaximumFunctionEvaluations(TaoSolver tao,PetscInt nfcn)
 {
   PetscInt zero=0;
   PetscFunctionBegin;
@@ -765,7 +765,7 @@ PetscErrorCode TaoSetMaximumFunctionEvaluations(TaoSolver tao,PetscInt nfcn)
 #undef __FUNCT__
 #define __FUNCT__ "TaoSolverSetMaximumIterations"
 /*@
-   TaoSolverSetMaximumIterates - Sets a maximum number of iterates.
+   TaoSolverSetMaximumIterations - Sets a maximum number of iterates.
 
    Collective on TaoSolver
 
@@ -782,7 +782,7 @@ PetscErrorCode TaoSetMaximumFunctionEvaluations(TaoSolver tao,PetscInt nfcn)
 
 .seealso: TaoSolverSetTolerances(), TaoSolverSetMaximumFunctionEvaluations()
 @*/
-PetscErrorCode TaoSolverSetMaximumIterates(TaoSolver tao,PetscInt maxits)
+PetscErrorCode TaoSolverSetMaximumIterations(TaoSolver tao,PetscInt maxits)
 {
   PetscInt zero=0;
   PetscFunctionBegin;
@@ -1140,7 +1140,8 @@ PetscErrorCode TaoSolverDefaultCMonitor(TaoSolver tao, void *dummy)
 
 PetscErrorCode TaoSolverDefaultConvergenceTest(TaoSolver tao,void *dummy)
 {
-  PetscInt niter=tao->niter, nfuncs=tao->nfuncs, max_funcs=tao->max_funcs;
+  PetscInt niter=tao->niter, nfuncs=PetscMax(tao->nfuncs,tao->nfuncgrads);
+  PetscInt max_funcs=tao->max_funcs;
   PetscReal gnorm=tao->residual, gnorm0=tao->gnorm0;
   PetscReal f=tao->fc, trtol=tao->trtol,trradius=tao->step;
   PetscReal gatol=tao->gatol,grtol=tao->grtol,gttol=tao->gttol;
@@ -1186,8 +1187,8 @@ PetscErrorCode TaoSolverDefaultConvergenceTest(TaoSolver tao,void *dummy)
     ierr = PetscInfo2(tao,"Trust region/step size too small: %g < %g\n", trradius,trtol); CHKERRQ(ierr);
     reason = TAO_CONVERGED_TRTOL;
   } else if (niter > tao->max_its) {
-      ierr = PetscInfo2(tao,"Exceeded maximum number of iterations: %d > %d\n",niter,tao->max_its);
-      reason = TAO_DIVERGED_MAXITS;
+    ierr = PetscInfo2(tao,"Exceeded maximum number of iterations: %d > %d\n",niter,tao->max_its); CHKERRQ(ierr);
+    reason = TAO_DIVERGED_MAXITS;
   } else {
     reason = TAO_CONTINUE_ITERATING;
   }
