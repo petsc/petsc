@@ -119,7 +119,7 @@ static PetscErrorCode TaoSolverSolve_NTR(TaoSolver tao)
   if (radius < 0.0) {
     SETERRQ(PETSC_COMM_SELF,1, "Initial radius negative");
     }*/
-  radius = tr->trust0;
+  radius = tao->trust0;
   /* Modify the radius if it is too large or small */
   radius = PetscMax(radius, tr->min_radius);
   radius = PetscMin(radius, tr->max_radius);
@@ -414,7 +414,7 @@ static PetscErrorCode TaoSolverSolve_NTR(TaoSolver tao)
         else {
           /* The direction was bad; set radius to default value and re-solve 
 	     the trust-region subproblem to get a direction */
-	  radius = tr->trust0;
+	  radius = tao->trust0;
 
           /* Modify the radius if it is too large or small */
           radius = PetscMax(radius, tr->min_radius);
@@ -782,7 +782,7 @@ PetscErrorCode TaoSolverCreate_NTR(TaoSolver tao)
   tao->frtol = 1e-10;
   tao->data = (void*)tr;
 
-  tr->trust0 = 100.0;
+  tao->trust0 = 100.0;
 
     //ierr = TaoSetTrustRegionTolerance(tao, 1.0e-12); CHKERRQ(ierr);
 

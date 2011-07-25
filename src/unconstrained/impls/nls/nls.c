@@ -178,7 +178,7 @@ static PetscErrorCode TaoSolverSolve_NLS(TaoSolver tao)
   if (NLS_KSP_NASH == nlsP->ksp_type ||
       NLS_KSP_STCG == nlsP->ksp_type || 
       NLS_KSP_GLTR == nlsP->ksp_type) {
-    radius = nlsP->trust0;
+    radius = tao->trust0;
     if (radius < 0.0) {
       SETERRQ(PETSC_COMM_SELF,1, "Initial radius negative");
     }
@@ -494,7 +494,7 @@ static PetscErrorCode TaoSolverSolve_NLS(TaoSolver tao)
         else {
           // The direction was bad; set radius to default value and re-solve 
 	  // the trust-region subproblem to get a direction
-	  radius = nlsP->trust0;
+	  radius = tao->trust0;
 
           // Modify the radius if it is too large or small
           radius = PetscMax(radius, nlsP->min_radius);
@@ -1136,7 +1136,6 @@ static PetscErrorCode TaoSolverSetFromOptions_NLS(TaoSolver tao)
   ierr = PetscOptionsReal("-tao_nls_theta", "", "", nlsP->theta, &nlsP->theta, 0); CHKERRQ(ierr);
   ierr = PetscOptionsReal("-tao_nls_min_radius", "lower bound on initial radius", "", nlsP->min_radius, &nlsP->min_radius, 0); CHKERRQ(ierr);
   ierr = PetscOptionsReal("-tao_nls_max_radius", "upper bound on radius", "", nlsP->max_radius, &nlsP->max_radius, 0); CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-tao_nls_trust0", "initial trust region radius", "", nlsP->trust0, &nlsP->trust0, 0); CHKERRQ(ierr);
   ierr = PetscOptionsReal("-tao_nls_epsilon", "tolerance used when computing actual and predicted reduction", "", nlsP->epsilon, &nlsP->epsilon, 0); CHKERRQ(ierr);
   ierr = PetscOptionsTail(); CHKERRQ(ierr);
   ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
@@ -1204,7 +1203,7 @@ PetscErrorCode TaoSolverCreate_NLS(TaoSolver tao)
   tao->fatol = 1e-10;
   tao->frtol = 1e-10;
   tao->data = (void*)nlsP;
-  nlsP->trust0 = 100.0;
+  tao->trust0 = 100.0;
 
   //  ierr = TaoSetTrustRegionTolerance(tao, 1.0e-12); CHKERRQ(ierr);
 

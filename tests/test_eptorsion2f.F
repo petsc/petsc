@@ -120,7 +120,7 @@
       call TaoSolverSolve(tao,ierr)
 
 !     Get information on termination
-      call TaoSolverGetConvergedReason(tao,reason,ierr)
+      call TaoSolverGetTerminationReason(tao,reason,ierr)
       if (reason .lt. 0) then
           print *,'TAO did not terminate successfully'
       endif

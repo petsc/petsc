@@ -125,7 +125,7 @@ static PetscErrorCode TaoSolverSolve_NTL(TaoSolver tao)
   */
 
   /* Modify the radius if it is too large or small */
-  radius = tl->trust0;
+  radius = tao->trust0;
   radius = PetscMax(radius, tl->min_radius);
   radius = PetscMin(radius, tl->max_radius);
 
@@ -428,7 +428,7 @@ static PetscErrorCode TaoSolverSolve_NTL(TaoSolver tao)
       else {
 	/* The direction was bad; set radius to default value and re-solve 
 	   the trust-region subproblem to get a direction */
-	radius = tl->trust0;
+	radius = tao->trust0;
 
 	/* Modify the radius if it is too large or small */
 	radius = PetscMax(radius, tl->min_radius);
@@ -1039,7 +1039,7 @@ PetscErrorCode TaoSolverCreate_NTL(TaoSolver tao)
   tao->frtol = 1e-10;
   tao->data = (void*)tl;
   
-  tl->trust0 = 100.0;
+  tao->trust0 = 100.0;
 
 
   /* Default values for trust-region radius update based on steplength */

@@ -176,7 +176,7 @@ int main( int argc, char **argv )
   ierr = TaoSolverSolve(tao);  CHKERRQ(ierr);
 
   /* Get ierrrmation on termination */
-  ierr = TaoSolverGetConvergedReason(tao,&reason); CHKERRQ(ierr);
+  ierr = TaoSolverGetTerminationReason(tao,&reason); CHKERRQ(ierr);
   ierr = TaoSolverView(tao,PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
   if (reason <= 0){
     PetscPrintf(PETSC_COMM_WORLD,"Try a different TAO method, adjust some parameters, or check the function evaluation routines\n");

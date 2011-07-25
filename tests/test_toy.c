@@ -68,7 +68,7 @@ int main(int argc, char **argv)
   /* SOLVE THE APPLICATION */
   ierr = TaoSolverSolve(tao);  CHKERRQ(ierr);
 
-  ierr = TaoSolverGetConvergedReason(tao,&reason); CHKERRQ(ierr);
+  ierr = TaoSolverGetTerminationReason(tao,&reason); CHKERRQ(ierr);
 
   if (reason < 0)
   {

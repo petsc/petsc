@@ -126,7 +126,7 @@
 !  SOLVE THE APPLICATION
       call TaoSolverSolve(tao,ierr)
 
-      call TaoSolverGetConvergedReason(tao, reason, ierr)
+      call TaoSolverGetTerminationReason(tao, reason, ierr)
       if (reason .le. 0) then
          print *,'Try a different TAO method, adjust some parameters,'
          print *,'or check the function evaluation routines.'

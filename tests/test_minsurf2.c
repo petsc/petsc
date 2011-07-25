@@ -142,7 +142,7 @@ int main( int argc, char **argv )
       ierr = MatFDColoringCreate(user.H,iscoloring,&matfdcoloring);
       CHKERRQ(ierr);
 
-      ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
+      ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
       ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))FormGradient,(void*)&user); CHKERRQ(ierr);
       ierr = MatFDColoringSetFromOptions(matfdcoloring); CHKERRQ(ierr);
       
@@ -181,7 +181,7 @@ int main( int argc, char **argv )
   ierr = TaoSolverView(tao,PETSC_VIEWER_STDOUT_WORLD);
 
   /* Get information on termination */
-  ierr = TaoSolverGetConvergedReason(tao,&reason); CHKERRQ(ierr);
+  ierr = TaoSolverGetTerminationReason(tao,&reason); CHKERRQ(ierr);
   if (reason <= 0 ){
       PetscPrintf(MPI_COMM_WORLD,"Try a different TAO method \n");//, adjust some parameters, or check the function evaluation routines\n");
   }
@@ -194,7 +194,7 @@ int main( int argc, char **argv )
   ierr = VecDestroy(&x); CHKERRQ(ierr);
   ierr = MatDestroy(&user.H); CHKERRQ(ierr);
   if (fdcoloring) {
-      ierr = MatFDColoringDestroy(matfdcoloring); CHKERRQ(ierr);
+      ierr = MatFDColoringDestroy(&matfdcoloring); CHKERRQ(ierr);
   }
   ierr = PetscFree(user.bottom); CHKERRQ(ierr);
   ierr = PetscFree(user.top); CHKERRQ(ierr);
@@ -806,7 +806,7 @@ static PetscErrorCode MSA_InitialPoint(AppCtx * user, Vec X)
     for (i=0; i<start2; i++){
       ierr = VecSetRandom(X, rctx); CHKERRQ(ierr);
     }
-    ierr = PetscRandomDestroy(rctx); CHKERRQ(ierr);
+    ierr = PetscRandomDestroy(&rctx); CHKERRQ(ierr);
     ierr = VecShift(X, np5); CHKERRQ(ierr);
 
   } else { /* Take an average of the boundary conditions */

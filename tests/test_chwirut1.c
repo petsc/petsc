@@ -33,7 +33,6 @@ static char help[]="Finds the nonlinear least-squares solution to the model \n\
    Concepts: TAO - Solving a system of nonlinear equations, nonlinear ;east squares
    Routines: TaoInitialize(); TaoFinalize(); 
    Routines: TaoCreate(); TaoDestroy();
-   Routines: TaoPetscApplicationCreate(); TaoApplicationDestroy();
    Routines: TaoSetPetscFunction(); 
    Routines: TaoSetPetscConstraintsFunction(); TaoSetPetscJacobian(); 
    Routines: TaoSetPetscInitialVector();
@@ -100,7 +99,7 @@ int main(int argc,char **argv)
   ierr = TaoSolverCreate(MPI_COMM_SELF,&tao);CHKERRQ(ierr);
   ierr = TaoSolverSetType(tao,"tao_pounders"); CHKERRQ(ierr);
 
-  /* Set the function and Jacobian routines. */
+ /* Set the function and Jacobian routines. */
   ierr = InitializeData(&user); CHKERRQ(ierr);
   ierr = FormStartingPoint(x); CHKERRQ(ierr);
   ierr = TaoSolverSetInitialVector(tao,x); CHKERRQ(ierr);

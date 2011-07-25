@@ -117,7 +117,7 @@
       do i=1,20
          print *,hist(i),resid(i)
       enddo
-      call TaoSolverGetConvergedReason(tao, reason, ierr)
+      call TaoSolverGetTerminationReason(tao, reason, ierr)
       if (reason .le. 0) then
          print *,'Try a different TAO method, adjust some parameters,'
          print *,'or check the function evaluation routines.'

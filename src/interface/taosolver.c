@@ -96,6 +96,7 @@ PetscErrorCode TaoSolverCreate(MPI_Comm comm, TaoSolver *newtao)
     tao->crtol       = 0.0;
     tao->xtol        = 0.0;
     tao->trtol       = 0.0;
+    tao->trust0      = TAO_INFINITY;
     tao->fmin        = -1e100;
     tao->hist_reset = PETSC_TRUE;
     tao->hist_max = 0;
@@ -397,22 +398,22 @@ PetscErrorCode TaoSolverSetFromOptions(TaoSolver tao)
 	}
 
 
-	ierr = PetscOptionsName("-tao_view","view TAO_SOLVER info after each minimization has completed","TaoView",&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsName("-tao_view","view TAO_SOLVER info after each minimization has completed","TaoSolverView",&flg);CHKERRQ(ierr);
 	if (flg) tao->viewtao = PETSC_TRUE;
-	ierr = PetscOptionsReal("-tao_fatol","Stop if solution within","TaoSetTolerances",tao->fatol,&tao->fatol,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsReal("-tao_frtol","Stop if relative solution within","TaoSetTolerances",tao->frtol,&tao->frtol,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsReal("-tao_catol","Stop if constraints violations within","TaoSetTolerances",tao->catol,&tao->catol,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsReal("-tao_crtol","Stop if relative contraint violations within","TaoSetTolerances",tao->crtol,&tao->crtol,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsReal("-tao_gatol","Stop if norm of gradient less than","TaoSetGradientTolerances",tao->gatol,&tao->gatol,&flg);CHKERRQ(ierr);
-	ierr = PetscOptionsReal("-tao_grtol","Stop if norm of gradient divided by the function value is less than","TaoSetGradientTolerances",tao->grtol,&tao->grtol,&flg);CHKERRQ(ierr); 
-	ierr = PetscOptionsReal("-tao_gttol","Stop if the norm of the gradient is less than the norm of the initial gradient times","TaoSetGradientTolerances",tao->gttol,&tao->gttol,&flg);CHKERRQ(ierr); 
+	ierr = PetscOptionsReal("-tao_fatol","Stop if solution within","TaoSolverSetTolerances",tao->fatol,&tao->fatol,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsReal("-tao_frtol","Stop if relative solution within","TaoSolverSetTolerances",tao->frtol,&tao->frtol,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsReal("-tao_catol","Stop if constraints violations within","TaoSolverSetTolerances",tao->catol,&tao->catol,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsReal("-tao_crtol","Stop if relative contraint violations within","TaoSolverSetTolerances",tao->crtol,&tao->crtol,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsReal("-tao_gatol","Stop if norm of gradient less than","TaoSolverSetTolerances",tao->gatol,&tao->gatol,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsReal("-tao_grtol","Stop if norm of gradient divided by the function value is less than","TaoSolverSetTolerances",tao->grtol,&tao->grtol,&flg);CHKERRQ(ierr); 
+	ierr = PetscOptionsReal("-tao_gttol","Stop if the norm of the gradient is less than the norm of the initial gradient times","TaoSolverSetTolerances",tao->gttol,&tao->gttol,&flg);CHKERRQ(ierr); 
 	ierr = PetscOptionsInt("-tao_max_its","Stop if iteration number exceeds",
-			    "TaoSetMaximumIterates",tao->max_its,&tao->max_its,
+			    "TaoSolverSetMaximumIterations",tao->max_its,&tao->max_its,
 			    &flg);CHKERRQ(ierr);
-	ierr = PetscOptionsInt("-tao_max_funcs","Stop if number of function evaluations exceeds","TaoSetMaximumFunctionEvaluations",tao->max_funcs,&tao->max_funcs,&flg); CHKERRQ(ierr);
-	ierr = PetscOptionsReal("-tao_fmin","Stop if function less than","TaoSetFunctionLowerBound",tao->fmin,&tao->fmin,&flg); CHKERRQ(ierr);
-	ierr = PetscOptionsReal("-tao_steptol","Stop if step size or trust region radius less than","TaoSetTrustRegionRadius",tao->trtol,&tao->trtol,&flg);CHKERRQ(ierr);
-/*	ierr = PetscOptionsReal("-tao_trust0","Initial trust region radius","TaoSetTrustRegionRadius",tao->trust0,&tao->trust0,&flg);CHKERRQ(ierr); */
+	ierr = PetscOptionsInt("-tao_max_funcs","Stop if number of function evaluations exceeds","TaoSolverSetMaximumFunctionEvaluations",tao->max_funcs,&tao->max_funcs,&flg); CHKERRQ(ierr);
+	ierr = PetscOptionsReal("-tao_fmin","Stop if function less than","TaoSolverSetFunctionLowerBound",tao->fmin,&tao->fmin,&flg); CHKERRQ(ierr);
+	ierr = PetscOptionsReal("-tao_steptol","Stop if step size or trust region radius less than","",tao->trtol,&tao->trtol,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsReal("-tao_trust0","Initial trust region radius","TaoSolverSetTrustRegionRadius",tao->trust0,&tao->trust0,&flg);CHKERRQ(ierr); 
 
 
 /*	ierr = PetscOptionsName("-tao_unitstep","Always use unit step length","TaoCreateUnitLineSearch",&flg); CHKERRQ(ierr); 
@@ -698,6 +699,98 @@ PetscErrorCode TaoSolverSetTolerances(TaoSolver tao, PetscReal fatol, PetscReal 
     PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "TaoSolverSetFunctionLowerBound"
+/*@
+   TaoSolverSetFunctionLowerBound - Sets a bound on the solution objective value.
+   When an approximate solution with an objective value below this number
+   has been found, the solver will terminate.
+
+   Collective on TaoSolver
+
+   Input Parameters:
++  tao - the TaoSolver solver context
+-  fmin - the tolerance
+
+   Options Database Keys: 
+.    -tao_fmin <fmin> - sets the minimum function value
+
+   Level: intermediate
+
+.keywords: options, View, Bounds,
+
+.seealso: TaoSolverSetTolerances()
+@*/
+PetscErrorCode TaoSolverSetFunctionLowerBound(TaoSolver tao,PetscReal fmin)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
+  tao->fmin = fmin;
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__ 
+#define __FUNCT__ "TaoSolverSetMaximumFunctionEvaluations"
+/*@
+   TaoSolverSetMaximumFunctionEvaluations - Sets a maximum number of 
+   function evaluations.
+
+   Collective on TaoSolver
+
+   Input Parameters:
++  tao - the TaoSolver solver context
+-  nfcn - the maximum number of function evaluations (>=0)
+
+   Options Database Keys: 
+.    -tao_max_funcs <nfcn> - sets the maximum number of function evaluations
+
+   Level: intermediate
+
+.keywords: options, Iterate,  convergence
+
+.seealso: TaoSolverSetTolerances(), TaoSolverSetMaximumIterations()
+@*/
+
+PetscErrorCode TaoSetMaximumFunctionEvaluations(TaoSolver tao,PetscInt nfcn)
+{
+  PetscInt zero=0;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
+  tao->max_funcs = PetscMax(zero,nfcn);
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "TaoSolverSetMaximumIterations"
+/*@
+   TaoSolverSetMaximumIterates - Sets a maximum number of iterates.
+
+   Collective on TaoSolver
+
+   Input Parameters:
++  tao - the TaoSolver solver context
+-  maxits - the maximum number of iterates (>=0)
+
+   Options Database Keys: 
+.    -tao_max_its <its> - sets the maximum number of iterations
+
+   Level: intermediate
+
+.keywords: options, Iterate, convergence
+
+.seealso: TaoSolverSetTolerances(), TaoSolverSetMaximumFunctionEvaluations()
+@*/
+PetscErrorCode TaoSolverSetMaximumIterates(TaoSolver tao,PetscInt maxits)
+{
+  PetscInt zero=0;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
+  tao->max_its = PetscMax(zero,maxits);
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "TaoSolverGetTolerances"
 /*@
@@ -849,18 +942,18 @@ PetscErrorCode TaoSolverSetDefaultMonitors(TaoSolver tao)
    iteration of the unconstrained minimization solver to display the iteration's 
    progress.   
 
-   Collective on TAO_SOLVER
+   Collective on TaoSolver
 
    Input Parameters:
-+  tao - the TAO_SOLVER solver context
++  tao - the TaoSolver solver context
 .  mymonitor - monitoring routine
 -  mctx - [optional] user-defined context for private data for the 
           monitor routine (may be TAO_NULL)
 
    Calling sequence of mymonitor:
-$     int mymonitor(TAO_SOLVER tao,void *mctx)
+$     int mymonitor(TaoSolver tao,void *mctx)
 
-+    tao - the TAO_SOLVER solver context
++    tao - the TaoSolver solver context
 -    mctx - [optional] monitoring context
 
 
@@ -1025,10 +1118,10 @@ PetscErrorCode TaoSolverDefaultCMonitor(TaoSolver tao, void *dummy)
    TaoSolverDefaultConvergenceTest - Determines whether the solver should continue iterating
    or terminate. 
 
-   Collective on TAO_SOLVER
+   Collective on TaoSolver
 
    Input Parameters:
-+  tao - the TAO_SOLVER context
++  tao - the TaoSolver context
 -  dummy - unused dummy context
 
    Output Parameter:
@@ -1446,16 +1539,49 @@ PetscErrorCode TaoSolverRegisterDestroy(void)
     TaoSolverRegisterAllCalled = PETSC_FALSE;
     PetscFunctionReturn(0);
 }
+#undef __FUNCT__
+#define __FUNCT__ "TaoSolverSetTerminationReason"
+/*@
+  TaoSolverSetTerminationReason - Sets the termination flag on a TaoSolver object
+
+  Collective on TaoSolver
+
+  Input Parameters:
++ tao - the TaoSolver context
+- reason - one of
+$     TAO_CONVERGED_ATOL (2),
+$     TAO_CONVERGED_RTOL (3),
+$     TAO_CONVERGED_TRTOL (4),
+$     TAO_CONVERGED_MINF (5),
+$     TAO_CONVERGED_USER (6),
+$     TAO_DIVERGED_MAXITS (-2),
+$     TAO_DIVERGED_NAN (-4),
+$     TAO_DIVERGED_MAXFCN (-5),
+$     TAO_DIVERGED_LS_FAILURE (-6),
+$     TAO_DIVERGED_TR_REDUCTION (-7),
+$     TAO_DIVERGED_USER (-8),
+$     TAO_CONTINUE_ITERATING (0)
+
+   Level: intermediate
+
+@*/
+PetscErrorCode TaoSolverSetTerminationReason(TaoSolver tao, TaoSolverTerminationReason reason)
+{
+  PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
+  PetscFunctionBegin;
+  tao->reason = reason;
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
-#define __FUNCT__ "TaoSolverGetConvergedReason"
+#define __FUNCT__ "TaoSolverGetTerminationReason"
 /*@ 
-   TaoSolverGetConvergedReason - Gets the reason the TaoSolver iteration was stopped.
+   TaoSolverGetTerminationReason - Gets the reason the TaoSolver iteration was stopped.
 
    Not Collective
 
    Input Parameter:
-.  tao - the TAO_SOLVER solver context
+.  tao - the TaoSolver solver context
 
    Output Parameter:
 .  reason - one of
@@ -1493,7 +1619,7 @@ $    TAO_CONTINUE_ITERATING  (0)
 .seealso: TaoSolverSetConvergenceTest(), TaoSolverSetTolerances()
 
 @*/
-PetscErrorCode TaoSolverGetConvergedReason(TaoSolver tao, TaoSolverTerminationReason *reason) 
+PetscErrorCode TaoSolverGetTerminationReason(TaoSolver tao, TaoSolverTerminationReason *reason) 
 {
     PetscFunctionBegin;
     PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
@@ -1501,6 +1627,53 @@ PetscErrorCode TaoSolverGetConvergedReason(TaoSolver tao, TaoSolverTerminationRe
     *reason = tao->reason;
     PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "TaoSolverGetSolutionStatus"
+/*@C
+  TaoGetSolutionStatus - Get the current iterate, objective value, residual, 
+  infeasibility, and termination 
+
+   Input Parameters:
+.  tao - the TaoSolver context
+
+   Output Parameters:
++  iterate - the current iterate number (>=0)
+.  f - the current function value
+.  gnorm - the square of the gradient norm, duality gap, or other measure
+indicating distance from optimality.
+.  cnorm - the infeasibility of the current solution with regard to the constraints.
+.  xdiff - the step length or trust region radius of the most recent iterate.
+-  reason - The termination reason, which can equal TAO_CONTINUE_ITERATING
+
+   Level: intermediate
+
+   Note:
+   TAO returns the values set by the solvers in the routine TaoMonitor().
+
+   Note:
+   If any of the output arguments are set to TAO_NULL, no value will be 
+   returned.
+
+
+.seealso: TaoMonitor(), TaoGetTerminationReason()
+
+.keywords: convergence, monitor
+@*/
+PetscErrorCode TaoSolverGetSolutionStatus(TaoSolver tao, PetscInt *its, PetscReal *f, PetscReal *gnorm, PetscReal *cnorm, PetscReal *xdiff, TaoSolverTerminationReason *reason)
+{
+  PetscFunctionBegin;
+  if (its) *its=tao->niter;
+  if (f) *f=tao->fc;
+  if (gnorm) *gnorm=tao->residual;
+  if (cnorm) *cnorm=tao->cnorm;
+  if (reason) *reason=tao->reason;
+  if (xdiff) *xdiff=tao->step;
+
+  PetscFunctionReturn(0);
+  
+}
+
 
 #undef __FUNCT__ 
 #define __FUNCT__ "TaoSolverGetType"
@@ -1536,7 +1709,7 @@ PetscErrorCode TaoSolverGetType(TaoSolver tao, TaoSolverType *type)
   call any monitors specified by the user, and calls the convergence-check routine.
 
    Input Parameters:
-+  tao - the TAO_SOLVER context
++  tao - the TaoSolver context
 .  its - the current iterate number (>=0)
 .  f - the current objective function value
 .  res - the gradient norm, square root of the duality gap, or other measure
@@ -1551,7 +1724,7 @@ used for some termination tests.
    Options Database Key:
 .  -tao_monitor - Use the default monitor, which prints statistics to standard output
 
-.seealso TaoSolverGetConvergedReason(), TaoSolverDefaultMonitor(), TaoSolverSetMonitor()
+.seealso TaoSolverGetTerminationReason(), TaoSolverDefaultMonitor(), TaoSolverSetMonitor()
 
    Level: developer
 
@@ -1588,7 +1761,7 @@ PetscErrorCode TaoSolverMonitor(TaoSolver tao, PetscInt its, PetscReal f, PetscR
 /*@
    TaoSolverSetHistory - Sets the array used to hold the convergence history.
 
-   Collective on TAO_SOLVER
+   Collective on TaoSolver
 
    Input Parameters:
 +  tao - the TaoSolver solver context
