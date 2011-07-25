@@ -1147,7 +1147,13 @@ PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
   PetscFunctionReturn(0);
 }
 
+#if defined(PETSC_HAVE_PTHREADCLASSES)
+
 //*******************
+#if defined(PETSC_HAVE_PTHREADCLASSES)
+extern PetscBool    PetscUseThreadPool;
+void* DoCoreAffinity(void);
+
 typedef struct {
   const MatScalar* matdata;
   const PetscScalar* vecdata;
@@ -1158,11 +1164,12 @@ typedef struct {
   const PetscInt* specidx;
   PetscInt nzr;
 } MatMult_KernelData;
-MatMult_KernelData* kerneldatap_MatMult = NULL;
-MatMult_KernelData** pdata_MatMult = NULL;
 
 void* MatMult_Kernel(void *arg)
 {
+  if(PetscUseThreadPool==PETSC_FALSE) {
+    DoCoreAffinity();
+  }
   MatMult_KernelData *data = (MatMult_KernelData*)arg;
   PetscScalar       sum;
   const MatScalar   *aabase = data->matdata,*aa;
@@ -1180,12 +1187,10 @@ void* MatMult_Kernel(void *arg)
       aj  = ajbase + ii[i];
       aa  = aabase + ii[i];
       sum = 0.0;
-      /*if(n>0) {
+      if(n>0) {
         PetscSparseDensePlusDot(sum,x,aa,aj,n);
         nonzerorow++;
-      }*/
-      nonzerorow += (n>0);
-      PetscSparseDensePlusDot(sum,x,aa,aj,n);
+      }
       y[*ridx++] = sum;
     }
   }
@@ -1196,22 +1201,20 @@ void* MatMult_Kernel(void *arg)
       aj  = ajbase + ii[i];
       aa  = aabase + ii[i];
       sum  = 0.0;
-      /*if(n>0) {
+      if(n>0) {
         PetscSparseDensePlusDot(sum,x,aa,aj,n);
         nonzerorow++;
-      }*/
-      nonzerorow += (n>0);
-      PetscSparseDensePlusDot(sum,x,aa,aj,n);
+      }
       y[i+ibase] = sum;
     }
   }
   data->nzr = nonzerorow;
   return NULL;
 }
+#endif
 
-#if defined(PETSC_USE_PTHREAD_CLASSES)
 extern PetscMPIInt PetscMaxThreads;
-PetscErrorCode (*MainJob)(void* (*pFunc)(void*),void**,PetscInt);
+extern PetscErrorCode (*MainJob)(void* (*pFunc)(void*),void**,PetscInt);
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMult_SeqPThreadAIJ"
@@ -1238,17 +1241,8 @@ PetscErrorCode MatMult_SeqPThreadAIJ(Mat A,Vec xx,Vec yy)
     const PetscInt    *aj = a->j,*ii = a->compressedrow.i,*ridx=a->compressedrow.rindex;
     PetscInt          i,iStartVal,iEndVal,iStartIndex,iEndIndex;
     const PetscInt    iNumThreads = PetscMaxThreads;  //this number could be different
-    //MatMult_KernelData* kerneldatap = (MatMult_KernelData*)malloc(iNumThreads*sizeof(MatMult_KernelData));
-    //MatMult_KernelData** pdata = (MatMult_KernelData**)malloc(iNumThreads*sizeof(MatMult_KernelData*));
-
-    if(kerneldatap_MatMult==NULL) {
-      //only need to check 1 of them
-      kerneldatap_MatMult = (MatMult_KernelData*)malloc(iNumThreads*sizeof(MatMult_KernelData));
-      pdata_MatMult       = (MatMult_KernelData**)malloc(iNumThreads*sizeof(MatMult_KernelData*));
-      for(i=0; i<iNumThreads; i++) {
-        pdata_MatMult[i] = &kerneldatap_MatMult[i];
-      }
-    }
+    MatMult_KernelData* kerneldatap = (MatMult_KernelData*)malloc(iNumThreads*sizeof(MatMult_KernelData));
+    MatMult_KernelData** pdata = (MatMult_KernelData**)malloc(iNumThreads*sizeof(MatMult_KernelData*));
 
     m    = a->compressedrow.nrows;
     NumPerThread = ii[m]/iNumThreads;
@@ -1268,7 +1262,7 @@ PetscErrorCode MatMult_SeqPThreadAIJ(Mat A,Vec xx,Vec yy)
 	iEndVal = ii[iindex];
       }
       iEndIndex = iindex;
-      /*kerneldatap[i].matdata  = aa;
+      kerneldatap[i].matdata  = aa;
       kerneldatap[i].vecdata  = x;
       kerneldatap[i].vecout   = y;
       kerneldatap[i].colindnz = aj;
@@ -1276,26 +1270,16 @@ PetscErrorCode MatMult_SeqPThreadAIJ(Mat A,Vec xx,Vec yy)
       kerneldatap[i].numrows  = iEndIndex - iStartIndex + 1;
       kerneldatap[i].specidx  = ridx + iStartVal;
       kerneldatap[i].nzr      = 0;
-      pdata[i] = &kerneldatap[i];*/
-      kerneldatap_MatMult[i].matdata  = aa;
-      kerneldatap_MatMult[i].vecdata  = x;
-      kerneldatap_MatMult[i].vecout   = y;
-      kerneldatap_MatMult[i].colindnz = aj;
-      kerneldatap_MatMult[i].rownumnz = ii + iStartIndex;
-      kerneldatap_MatMult[i].numrows  = iEndIndex - iStartIndex + 1;
-      kerneldatap_MatMult[i].specidx  = ridx + iStartVal;
-      kerneldatap_MatMult[i].nzr      = 0;
+      pdata[i] = &kerneldatap[i];
       iindex++;
     }
-    //ierr = MainJob(MatMult_Kernel,(void**)pdata,iNumThreads);
-    ierr = MainJob(MatMult_Kernel,(void**)pdata_MatMult,iNumThreads);
-    //collect results
+    ierr = MainJob(MatMult_Kernel,(void**)pdata,iNumThreads);
+    /* collect results */
     for(i=0; i<iNumThreads; i++) {
-      //nonzerorow += kerneldatap[i].nzr;
-      nonzerorow += kerneldatap_MatMult[i].nzr;
+      nonzerorow += kerneldatap[i].nzr;
     }
-    //free(kerneldatap);
-    //free(pdata);
+    free(kerneldatap);
+    free(pdata);
   }
   else {
 #if defined(PETSC_USE_FORTRAN_KERNEL_MULTAIJ)
@@ -1314,7 +1298,7 @@ PetscErrorCode MatMult_SeqPThreadAIJ(Mat A,Vec xx,Vec yy)
 
     iindex = 0;
     for(i=0; i<iNumThreads;i++) {
-      S = i<R;
+      S = (PetscBool)(i<R);
       kerneldatap[i].matdata  = aa;
       kerneldatap[i].vecdata  = x;
       kerneldatap[i].vecout   = y;
@@ -1333,48 +1317,6 @@ PetscErrorCode MatMult_SeqPThreadAIJ(Mat A,Vec xx,Vec yy)
     }
     free(kerneldatap);
     free(pdata);
-    /*if(kerneldatap_MatMult==NULL) {
-      //only need to check 1 of them
-      kerneldatap_MatMult = (MatMult_KernelData*)malloc(iNumThreads*sizeof(MatMult_KernelData));
-      pdata_MatMult       = (MatMult_KernelData**)malloc(iNumThreads*sizeof(MatMult_KernelData*));
-      for(i=0; i<iNumThreads; i++) {
-        pdata_MatMult[i] = &kerneldatap_MatMult[i];
-      }
-    }
-
-    NumPerThread = ii[m]/iNumThreads;
-    iindex = 0;
-    for(i=0; i<iNumThreads;i++) {
-      iStartIndex = iindex;
-      iStartVal = ii[iStartIndex];
-      iEndVal = iStartVal;
-      //determine number of rows to process
-      while(iEndVal-iStartVal<NumPerThread) {
-	iindex++;
-	iEndVal = ii[iindex];
-      }
-      //determine whether to go back 1
-      if(iEndVal-iStartVal-NumPerThread>NumPerThread-(ii[iindex-1]-iStartVal)) {
-	iindex--;
-	iEndVal = ii[iindex];
-      }
-      iindex--; //needed b/c ii[k] gives # nonzero elements of rows 0 through k-1
-      iEndIndex = iindex;
-      kerneldatap_MatMult[i].matdata  = aa;
-      kerneldatap_MatMult[i].vecdata  = x;
-      kerneldatap_MatMult[i].vecout   = y;
-      kerneldatap_MatMult[i].colindnz = aj;
-      kerneldatap_MatMult[i].rownumnz = ii + iStartIndex;
-      kerneldatap_MatMult[i].numrows  = iEndIndex - iStartIndex + 1;
-      kerneldatap_MatMult[i].specidx  = PETSC_NULL;
-      kerneldatap_MatMult[i].nzr      = iStartIndex;
-      iindex++;
-    }
-    MainJob(MatMult_Kernel,(void**)pdata_MatMult,iNumThreads);
-    //collect results
-    for(i=0; i<iNumThreads; i++) {
-      nonzerorow += kerneldatap_MatMult[i].nzr;
-    }*/
 #endif
   }
 
@@ -3808,7 +3750,7 @@ PetscErrorCode  MatCreate_SeqAIJ(Mat B)
 }
 EXTERN_C_END
 
-#if defined(PETSC_USE_PTHREAD_CLASSES)
+#if defined(PETSC_HAVE_PTHREADCLASSES)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_SeqPThreadAIJ"

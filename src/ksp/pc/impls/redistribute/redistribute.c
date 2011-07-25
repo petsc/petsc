@@ -36,9 +36,7 @@ static PetscErrorCode PCView_Redistribute(PC pc,PetscViewer viewer)
   } else if (isstring) {
     ierr = PetscViewerStringSPrintf(viewer," Redistribute preconditioner");CHKERRQ(ierr);
     ierr = KSPView(red->ksp,viewer);CHKERRQ(ierr);
-  } else {
-    SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for PC redistribute",((PetscObject)viewer)->type_name);
-  }
+  } else SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for PC redistribute",((PetscObject)viewer)->type_name);
   PetscFunctionReturn(0);
 }
 
