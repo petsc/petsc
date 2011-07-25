@@ -67,6 +67,9 @@ typedef struct {
 extern PetscErrorCode FormInitialGuess(DM,AppCtx*,Vec);
 extern PetscErrorCode FormFunctionLocal(DMDALocalInfo*,PetscScalar**,PetscScalar**,AppCtx*);
 extern PetscErrorCode FormJacobianLocal(DMDALocalInfo*,PetscScalar**,Mat,AppCtx*);
+#if defined(PETSC_HAVE_MATLAB_ENGINE)
+extern PetscErrorCode FormFunctionMatlab(SNES,Vec,Vec,void *);
+#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -80,6 +83,7 @@ int main(int argc,char **argv)
   PetscReal              bratu_lambda_max = 6.81,bratu_lambda_min = 0.;
   PetscBool              flg = PETSC_FALSE;
   DM                     da;
+  PetscBool              matlab_function = PETSC_FALSE;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
@@ -122,6 +126,17 @@ int main(int argc,char **argv)
     ierr = DMDASetLocalJacobian(da,(DMDALocalFunction1)FormJacobianLocal);CHKERRQ(ierr); 
   }
 
+  /* Decide which FormFunction to use */
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-matlab_function",&matlab_function,0);CHKERRQ(ierr);
+
+#if defined(PETSC_HAVE_MATLAB_ENGINE)
+  Vec r;
+  if (matlab_function) {
+    ierr = VecDuplicate(x,&r);CHKERRQ(ierr);
+    ierr = SNESSetFunction(snes,r,FormFunctionMatlab,&user);CHKERRQ(ierr);
+  }
+#endif
+
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Customize nonlinear solver; set runtime options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -142,6 +157,9 @@ int main(int argc,char **argv)
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+#if defined(PETSC_HAVE_MATLAB_ENGINE)
+  if (r){ierr = VecDestroy(&r);CHKERRQ(ierr);}
+#endif
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
@@ -335,13 +353,15 @@ PetscErrorCode FormFunctionMatlab(SNES snes,Vec X,Vec F,void *ptr)
   PetscReal      lambda,hx,hy;
   Vec            localX,localF;
   MPI_Comm       comm;
+  DM             da;
 
   PetscFunctionBegin;
-  ierr = DMGetLocalVector(user->da,&localX);CHKERRQ(ierr);
-  ierr = DMGetLocalVector(user->da,&localF);CHKERRQ(ierr);
+  ierr = SNESGetDM(snes,&da);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(da,&localX);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(da,&localF);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)localX,"localX");CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)localF,"localF");CHKERRQ(ierr);
-  ierr = DMDAGetInfo(user->da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
+  ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
                    PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
 
   lambda = user->param;
@@ -355,8 +375,8 @@ PetscErrorCode FormFunctionMatlab(SNES snes,Vec X,Vec F,void *ptr)
      By placing code between these two statements, computations can be
      done while messages are in transition.
   */
-  ierr = DMGlobalToLocalBegin(user->da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(user->da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   ierr = PetscMatlabEnginePut(PETSC_MATLAB_ENGINE_(comm),(PetscObject)localX);CHKERRQ(ierr);
   ierr = PetscMatlabEngineEvaluate(PETSC_MATLAB_ENGINE_(comm),"localF=ex5m(localX,%18.16e,%18.16e,%18.16e)",hx,hy,lambda);CHKERRQ(ierr);
   ierr = PetscMatlabEngineGet(PETSC_MATLAB_ENGINE_(comm),(PetscObject)localF);CHKERRQ(ierr);
@@ -364,10 +384,10 @@ PetscErrorCode FormFunctionMatlab(SNES snes,Vec X,Vec F,void *ptr)
   /*
      Insert values into global vector
   */
-  ierr = DMLocalToGlobalBegin(user->da,localF,INSERT_VALUES,F);CHKERRQ(ierr);
-  ierr = DMLocalToGlobalEnd(user->da,localF,INSERT_VALUES,F);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(user->da,&localX);CHKERRQ(ierr);
-  ierr = DMRestoreLocalVector(user->da,&localF);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalBegin(da,localF,INSERT_VALUES,F);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd(da,localF,INSERT_VALUES,F);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(da,&localF);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
 } 
 #endif
