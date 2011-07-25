@@ -11,7 +11,7 @@ EXTERN_C_END
 
 typedef struct {
   ptrdiff_t   ndim_fftw,*dim_fftw;
-  PetscInt   partial_dim;
+  PetscInt    partial_dim;
   fftw_plan   p_forward,p_backward;
   unsigned    p_flag; /* planner flags, FFTW_ESTIMATE,FFTW_MEASURE, FFTW_PATIENT, FFTW_EXHAUSTIVE */
   PetscScalar *finarray,*foutarray,*binarray,*boutarray; /* keep track of arrays becaue fftw plan should be 
@@ -323,6 +323,7 @@ PetscErrorCode VecDestroy_MPIFFTW(Vec v)
 PetscErrorCode MatGetVecsFFTW(Mat A,Vec *x,Vec *y,Vec *z)
 {
   PetscErrorCode ierr;
+
   PetscFunctionBegin;
   ierr = PetscTryMethod(A,"MatGetVecsFFTW_C",(Mat,Vec*,Vec*,Vec*),(A,x,y,z));CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -378,7 +379,6 @@ PetscErrorCode  MatGetVecsFFTW_FFTW(Mat A,Vec *fin,Vec *fout,Vec *bout)
 #if !defined(PETSC_USE_COMPLEX)
                  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"FFTW does not allow parallel real 1D transform");
 #else
-                 //SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Not implemented yet");
                  alloc_local = fftw_mpi_local_size_1d(dim[0],comm,FFTW_FORWARD,FFTW_ESTIMATE,&local_n0,&local_0_start,&local_n1,&local_1_start);
                  if (fin) {
                          data_fin  = (fftw_complex*)fftw_malloc(sizeof(fftw_complex)*alloc_local);
@@ -600,7 +600,7 @@ PetscErrorCode  MatGetVecs_FFTW(Mat A,Vec *fin,Vec *fout)
       /* We need to write an error message here saying that one cannot call this routine when doing parallel 1D real FFTW */
 //      SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Works only for parallel Multi-dimensional FFTW, Dimension>1. Check Documentation for MatGetVecs_FFTW1D routine");
       alloc_local = fftw_mpi_local_size_1d(dim[0],comm,FFTW_FORWARD,FFTW_ESTIMATE,&local_n0,&local_0_start,&local_n1,&local_1_end);
-      printf("The values of local_n0 and local_n1 are %ld and %ld\n",local_n0,local_n1);
+      //printf("The values of local_n0 and local_n1 are %ld and %ld\n",local_n0,local_n1);
       if (fin) {
         data_fin  = (fftw_complex*)fftw_malloc(sizeof(fftw_complex)*alloc_local);
         ierr = VecCreateMPIWithArray(comm,local_n0,N,(const PetscScalar*)data_fin,fin);CHKERRQ(ierr);
@@ -625,7 +625,7 @@ PetscErrorCode  MatGetVecs_FFTW(Mat A,Vec *fin,Vec *fout)
       }
       n1 = 2*local_n1*(dim[0]);
       //n1 = 2*local_n1*dim[1];
-      printf("The values are %ld\n",local_n1);
+      //printf("The values are %ld\n",local_n1);
       if (fout) {
         data_fout=(fftw_complex *)fftw_malloc(sizeof(fftw_complex)*alloc_local);
         ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,n1,N1,(PetscScalar*)data_fout,fout);CHKERRQ(ierr);
@@ -790,7 +790,7 @@ PetscErrorCode VecScatterPetscToFFTW_FFTW(Mat A,Vec x,Vec y)
     {
           ierr = VecGetSize(x,&vsize);CHKERRQ(ierr);
           ierr = VecGetSize(y,&vsize1);CHKERRQ(ierr);
-          printf("The values of sizes are %d and %d",vsize,vsize1);
+          //printf("The values of sizes are %d and %d",vsize,vsize1);
           ierr = ISCreateStride(PETSC_COMM_SELF,N,0,1,&list1);CHKERRQ(ierr);
           ierr = VecScatterCreate(x,list1,y,list1,&vecscat);CHKERRQ(ierr);
           ierr = VecScatterBegin(vecscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -1228,11 +1228,9 @@ PetscErrorCode MatCreate_FFTW(Mat A)
    PetscInt n1;
 #endif
 
-
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  ierr = MPI_Barrier(PETSC_COMM_WORLD);
 
   pdim = (ptrdiff_t *)calloc(ndim,sizeof(ptrdiff_t));
   pdim[0] = dim[0];

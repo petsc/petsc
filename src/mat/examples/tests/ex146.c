@@ -1,5 +1,5 @@
 /* This program illustrates use of paralllel real FFT*/
-static char help[]="This program illustrates the use of parallel real 3D fftw";
+static char help[]="This program illustrates the use of parallel real 3D fftw (without PETSc interface)";
 #include <petscmat.h>
 #include <fftw3.h>
 #include <fftw3-mpi.h>
