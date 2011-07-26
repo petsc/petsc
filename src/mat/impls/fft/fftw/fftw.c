@@ -611,7 +611,7 @@ PetscErrorCode VecScatterPetscToFFTW_FFTW(Mat A,Vec x,Vec y)
   Mat_FFT        *fft = (Mat_FFT*)A->data;
   Mat_FFTW       *fftw = (Mat_FFTW*)fft->data;
   PetscInt       N=fft->N;
-  PetscInt       ndim=fft->ndim,*dim=fft->dim;//n=fft->n;
+  PetscInt       ndim=fft->ndim,*dim=fft->dim;
   PetscInt       low; 
   PetscInt       rank,size,vsize,vsize1; 
   ptrdiff_t      alloc_local,local_n0,local_0_start;
@@ -633,7 +633,6 @@ PetscErrorCode VecScatterPetscToFFTW_FFTW(Mat A,Vec x,Vec y)
     {
           ierr = VecGetSize(x,&vsize);CHKERRQ(ierr);
           ierr = VecGetSize(y,&vsize1);CHKERRQ(ierr);
-          //printf("The values of sizes are %d and %d",vsize,vsize1);
           ierr = ISCreateStride(PETSC_COMM_SELF,N,0,1,&list1);CHKERRQ(ierr);
           ierr = VecScatterCreate(x,list1,y,list1,&vecscat);CHKERRQ(ierr);
           ierr = VecScatterBegin(vecscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -1179,7 +1178,6 @@ PetscErrorCode MatCreate_FFTW(Mat A)
     A->ops->multtranspose = MatMultTranspose_MPIFFTW;
   }
   fft->matdestroy          = MatDestroy_FFTW;
-  //A->ops->getvecs       = MatGetVecs_FFTW;
   A->assembled          = PETSC_TRUE;
   PetscObjectComposeFunctionDynamic((PetscObject)A,"MatGetVecsFFTW_C","MatGetVecsFFTW_FFTW",MatGetVecsFFTW_FFTW);   
   PetscObjectComposeFunctionDynamic((PetscObject)A,"VecScatterPetscToFFTW_C","VecScatterPetscToFFTW_FFTW",VecScatterPetscToFFTW_FFTW);   
