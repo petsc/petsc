@@ -96,10 +96,10 @@ int main(int argc,char **args)
     ierr = KSPSetOperators(ksp,Amat,Amat,SAME_NONZERO_PATTERN); CHKERRQ(ierr);
     ierr = KSPSetType(ksp,KSPCG);CHKERRQ(ierr);
     ierr = KSPSetNormType( ksp, KSP_NORM_UNPRECONDITIONED ); CHKERRQ(ierr);
-    ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
     ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
     ierr = PCSetType(pc,PCGAMG); CHKERRQ(ierr);
     ierr = PCSetCoordinates( pc, 2, coords ); CHKERRQ(ierr);
+    ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
   }
 
   if( PETSC_TRUE ) {

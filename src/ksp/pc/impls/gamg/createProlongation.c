@@ -303,7 +303,7 @@ PetscErrorCode triangulateAndFormProl( IS  a_selected_2, /* list of selected loc
   in.segmentmarkerlist = 0;
   in.pointattributelist = 0;
   in.pointmarkerlist = 0;
-  in.triangleattributelist = 0; 
+  in.triangleattributelist = 0;
   in.trianglearealist = 0;
   in.segmentlist = 0;
   in.holelist = 0;
@@ -438,22 +438,23 @@ PetscErrorCode triangulateAndFormProl( IS  a_selected_2, /* list of selected loc
             for(tt=0;tt<3;tt++) alpha[tt] = fcoord[tt];
             /* SUBROUTINE DGESV( N, NRHS, A, LDA, IPIV, B, LDB, INFO ) */
             dgesv_(&N, &NRHS, (PetscScalar*)AA, &LDA, IPIV, alpha, &LDB, &INFO);
-            PetscBool have=PETSC_TRUE;  PetscScalar lowest=1.e10;
-            for( tt = 0 ; tt < 3 ; tt++ ) {
-              if( alpha[tt] > 1.0+EPS || alpha[tt] < 0.0-EPS ) have = PETSC_FALSE;
-              if( alpha[tt] < lowest ){
-                lowest = alpha[tt];
-                idx = tt;
+            {
+              PetscBool have=PETSC_TRUE;  PetscScalar lowest=1.e10;
+              for( tt = 0 ; tt < 3 ; tt++ ) {
+                if( alpha[tt] > 1.0+EPS || alpha[tt] < -EPS ) have = PETSC_FALSE;
+                if( alpha[tt] < lowest ){
+                  lowest = alpha[tt];
+                  idx = tt;
+                }
               }
+              haveit = have;
             }
-            haveit = have;
             tid = mid.neighborlist[3*tid + idx];
           }
 
           if( !haveit ) {
             /* brute force */
             for(tid=0 ; tid<mid.numberoftriangles && !haveit ; tid++ ){
-              PetscScalar AA[3][3];
               for(tt=0;tt<3;tt++){
                 PetscInt cid2 = mid.trianglelist[3*tid + tt];
                 PetscInt lid2 = selected_idx_2[cid2];
@@ -463,22 +464,22 @@ PetscErrorCode triangulateAndFormProl( IS  a_selected_2, /* list of selected loc
               for(tt=0;tt<3;tt++) alpha[tt] = fcoord[tt];
               /* SUBROUTINE DGESV( N, NRHS, A, LDA, IPIV, B, LDB, INFO ) */
               dgesv_(&N, &NRHS, (PetscScalar*)AA, &LDA, IPIV, alpha, &LDB, &INFO);
-              PetscBool have=PETSC_TRUE;  PetscScalar worst=0.0, v;
-              for(tt=0; tt<3 && have ;tt++) {
-#define EPS2 1.e-2
-                if(alpha[tt] > 1.0+EPS2 || alpha[tt] < 0.0-EPS2 ) have=PETSC_FALSE;
-                if( (v=PetscAbs(alpha[tt]-0.5)) > worst ) worst = v;
+              {
+                PetscBool have=PETSC_TRUE;  PetscScalar worst=0.0, v;
+                for(tt=0; tt<3 && have ;tt++) {
+                  if(alpha[tt] > 1.0+EPS || alpha[tt] < -EPS ) have=PETSC_FALSE;
+                  if( (v=PetscAbs(alpha[tt]-0.5)) > worst ) worst = v;
+                }
+                if( worst < best_alpha ) {
+                  best_alpha = worst; bestTID = tid;
+                }
+                haveit = have;
               }
-              if( worst < best_alpha ) {
-                best_alpha = worst; bestTID = tid;
-              }
-              haveit = have;
             }
           }
           if( !haveit ) {
             if( best_alpha > *a_worst_best ) *a_worst_best = best_alpha;
             /* use best one */
-            PetscScalar AA[3][3];
             for(tt=0;tt<3;tt++){
               PetscInt cid2 = mid.trianglelist[3*bestTID + tt];
               PetscInt lid2 = selected_idx_2[cid2];
@@ -487,7 +488,6 @@ PetscErrorCode triangulateAndFormProl( IS  a_selected_2, /* list of selected loc
             }
             for(tt=0;tt<3;tt++) alpha[tt] = fcoord[tt];
             /* SUBROUTINE DGESV( N, NRHS, A, LDA, IPIV, B, LDB, INFO ) */
-            PetscBLASInt N=3,NRHS=1,LDA=3,IPIV[3],LDB=3,INFO;
             dgesv_(&N, &NRHS, (PetscScalar*)AA, &LDA, IPIV, alpha, &LDB, &INFO);
           }
 
