@@ -1074,6 +1074,7 @@ PetscErrorCode MatCreate_FFTW(Mat A)
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
 
+  fftw_mpi_init();
   pdim = (ptrdiff_t *)calloc(ndim,sizeof(ptrdiff_t));
   pdim[0] = dim[0];
 #if !defined(PETSC_USE_COMPLEX)
