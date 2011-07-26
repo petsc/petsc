@@ -24,8 +24,17 @@ extern PetscErrorCode MatMult_MPIFFTW(Mat,Vec,Vec);
 extern PetscErrorCode MatMultTranspose_MPIFFTW(Mat,Vec,Vec);
 extern PetscErrorCode MatDestroy_FFTW(Mat);
 extern PetscErrorCode VecDestroy_MPIFFTW(Vec);
-extern PetscErrorCode MatGetVecs_FFTW(Mat,Vec*,Vec*); // to be removed!
 
+/* MatMult_SeqFFTW performs forward DFT in parallel
+   
+   Input parameter:
+   mat - the matrix
+   x   - the vector on which FDFT will be performed
+
+   Output parameter:
+   y   - vector that stores result of FDFT
+
+*/
 #undef __FUNCT__  
 #define __FUNCT__ "MatMult_SeqFFTW"
 PetscErrorCode MatMult_SeqFFTW(Mat A,Vec x,Vec y)
@@ -87,6 +96,17 @@ PetscErrorCode MatMult_SeqFFTW(Mat A,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
+/* MatMultTranspose_SeqFFTW performs serial backward DFT 
+   
+   Input parameter:
+   mat - the matrix
+   x   - the vector on which BDFT will be performed
+
+   Output parameter:
+   y   - vector that stores result of BDFT
+
+*/
+
 #undef __FUNCT__
 #define __FUNCT__ "MatMultTranspose_SeqFFTW"
 PetscErrorCode MatMultTranspose_SeqFFTW(Mat A,Vec x,Vec y)
@@ -146,6 +166,17 @@ PetscErrorCode MatMultTranspose_SeqFFTW(Mat A,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
+/* MatMult_MPIFFTW performs forward DFT in parallel
+   
+   Input parameter:
+   mat - the matrix
+   x   - the vector on which FDFT will be performed
+
+   Output parameter:
+   y   - vector that stores result of FDFT
+
+*/
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatMult_MPIFFTW"
 PetscErrorCode MatMult_MPIFFTW(Mat A,Vec x,Vec y)
@@ -170,7 +201,7 @@ PetscErrorCode MatMult_MPIFFTW(Mat A,Vec x,Vec y)
 #endif 
       break;
     case 2:
-#if defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_USE_COMPLEX) /* For complex transforms call fftw_mpi_plan_dft, for real transforms call fftw_mpi_plan_dft_r2c */ 
       fftw->p_forward = fftw_mpi_plan_dft_2d(dim[0],dim[1],(fftw_complex*)x_array,(fftw_complex*)y_array,comm,FFTW_FORWARD,fftw->p_flag);
 #else
       fftw->p_forward = fftw_mpi_plan_dft_r2c_2d(dim[0],dim[1],(double *)x_array,(fftw_complex*)y_array,comm,FFTW_ESTIMATE);
@@ -208,6 +239,16 @@ PetscErrorCode MatMult_MPIFFTW(Mat A,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
+/* MatMultTranspose_MPIFFTW performs parallel backward DFT 
+   
+   Input parameter:
+   mat - the matrix
+   x   - the vector on which BDFT will be performed
+
+   Output parameter:
+   y   - vector that stores result of BDFT
+
+*/
 #undef __FUNCT__
 #define __FUNCT__ "MatMultTranspose_MPIFFTW"
 PetscErrorCode MatMultTranspose_MPIFFTW(Mat A,Vec x,Vec y)
@@ -232,7 +273,7 @@ PetscErrorCode MatMultTranspose_MPIFFTW(Mat A,Vec x,Vec y)
 #endif 
       break;
     case 2:
-#if defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_USE_COMPLEX) /* For complex transforms call fftw_mpi_plan_dft with flag FFTW_BACKWARD, for real transforms call fftw_mpi_plan_dft_c2r */ 
       fftw->p_backward = fftw_mpi_plan_dft_2d(dim[0],dim[1],(fftw_complex*)x_array,(fftw_complex*)y_array,comm,FFTW_BACKWARD,fftw->p_flag);
 #else
       fftw->p_backward = fftw_mpi_plan_dft_c2r_2d(dim[0],dim[1],(fftw_complex*)x_array,(double *)y_array,comm,FFTW_ESTIMATE);
@@ -315,8 +356,16 @@ PetscErrorCode VecDestroy_MPIFFTW(Vec v)
    Output Parameter:
 +   fin - (optional) input vector of forward FFTW
 -   fout - (optional) output vector of forward FFTW
+-   bout - (optional) output vector of backward FFTW
 
   Level: advanced
+  Note: The parallel layout of output of forward FFTW is always same as the input
+        of the backward FFTW. But parallel layout of the input vector of forward
+        FFTW might not be same as the output of backward FFTW. 
+        Also note that we need to provide enough space while doing parallel real transform.
+        We need to pad extra zeros at the end of last dimension. For this reason the one needs to 
+        invoke the routine fftw_mpi_local_size_transposed routines. Remember one has to change the 
+        last dimension from n to n/2+1 while invoking this routine. 
 
 .seealso: MatCreateFFTW()
 @*/
@@ -354,14 +403,11 @@ PetscErrorCode  MatGetVecsFFTW_FFTW(Mat A,Vec *fin,Vec *fout,Vec *bout)
     if (fout){ierr = VecCreateSeq(PETSC_COMM_SELF,N,fout);CHKERRQ(ierr);}
     if (bout){ierr = VecCreateSeq(PETSC_COMM_SELF,N,bout);CHKERRQ(ierr);}
 #else
-//    if (fin) {ierr = VecCreateSeq(PETSC_COMM_SELF,2*N*(dim[ndim-1]/2+1)/dim[ndim-1],fin);CHKERRQ(ierr);}
-//    if (fout){ierr = VecCreateSeq(PETSC_COMM_SELF,2*N*(dim[ndim-1]/2+1)/dim[ndim-1],fout);CHKERRQ(ierr);}
-//    if (bout){ierr = VecCreateSeq(PETSC_COMM_SELF,2*N*(dim[ndim-1]/2+1)/dim[ndim-1],bout);CHKERRQ(ierr);}
     if (fin) {ierr = VecCreateSeq(PETSC_COMM_SELF,n,fin);CHKERRQ(ierr);}
     if (fout){ierr = VecCreateSeq(PETSC_COMM_SELF,n,fout);CHKERRQ(ierr);}
     if (bout){ierr = VecCreateSeq(PETSC_COMM_SELF,n,bout);CHKERRQ(ierr);}
 #endif
-  } else {
+  } else { /* parallel cases */
     ptrdiff_t      alloc_local,local_n0,local_0_start;
     ptrdiff_t      local_n1;
     fftw_complex   *data_fout;
@@ -399,7 +445,7 @@ PetscErrorCode  MatGetVecsFFTW_FFTW(Mat A,Vec *fin,Vec *fout,Vec *bout)
           break;
 #endif
           case 2:
-#if !defined(PETSC_USE_COMPLEX)
+#if !defined(PETSC_USE_COMPLEX) /* Note that N1 is no more the product of individual dimensions */
                  alloc_local =  fftw_mpi_local_size_2d_transposed(dim[0],dim[1]/2+1,comm,&local_n0,&local_0_start,&local_n1,&local_1_start);
                  N1 = 2*dim[0]*(dim[1]/2+1); n1 = 2*local_n0*(dim[1]/2+1);
                  if (fin) {
@@ -597,10 +643,7 @@ PetscErrorCode  MatGetVecs_FFTW(Mat A,Vec *fin,Vec *fout)
     switch (ndim){
     case 1:
       /* Get local size */
-      /* We need to write an error message here saying that one cannot call this routine when doing parallel 1D real FFTW */
-//      SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Works only for parallel Multi-dimensional FFTW, Dimension>1. Check Documentation for MatGetVecs_FFTW1D routine");
       alloc_local = fftw_mpi_local_size_1d(dim[0],comm,FFTW_FORWARD,FFTW_ESTIMATE,&local_n0,&local_0_start,&local_n1,&local_1_end);
-      //printf("The values of local_n0 and local_n1 are %ld and %ld\n",local_n0,local_n1);
       if (fin) {
         data_fin  = (fftw_complex*)fftw_malloc(sizeof(fftw_complex)*alloc_local);
         ierr = VecCreateMPIWithArray(comm,local_n0,N,(const PetscScalar*)data_fin,fin);CHKERRQ(ierr);
@@ -631,7 +674,6 @@ PetscErrorCode  MatGetVecs_FFTW(Mat A,Vec *fin,Vec *fout)
         ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,n1,N1,(PetscScalar*)data_fout,fout);CHKERRQ(ierr);
         (*fout)->ops->destroy   = VecDestroy_MPIFFTW;
       }
-      printf("Vector size from fftw.c is  given by %d, %d\n",n1,N1);
      
 #else
       /* Get local size */
@@ -745,9 +787,7 @@ PetscErrorCode VecScatterPetscToFFTW(Mat A,Vec x,Vec y)
 }
 
 /*
-      InputTransformFFT_FFTW - Copies the user data to the vector that goes into FFTW block. For real 
-      parallel FFT, this routine also performs padding of right number of zeros at the end of the fastetst 
-      changing dimension.
+      VecScatterPetscToFFTW_FFTW - Copies the user data to the vector that goes into FFTW block.  
   Input A, x, y
   A - FFTW matrix
   x - user data
@@ -755,6 +795,10 @@ PetscErrorCode VecScatterPetscToFFTW(Mat A,Vec x,Vec y)
 + -mat_fftw_plannerflags - set FFTW planner flags
 
    Level: intermediate
+   Note: For real parallel FFT, FFTW requires insertion of extra space at the end of last dimension. This required even when 
+         one is not doing in-place transform. The last dimension size must be changed to 2*(dim[last]/2+1) to accommodate these extra 
+         zeros. This routine does that job by scattering operation.     
+ 
    
 */
 
@@ -977,15 +1021,15 @@ PetscErrorCode VecScatterFFTWToPetsc(Mat A,Vec x,Vec y)
 }
 
 /*
-      OutputTransformFFT_FFTW - Copies the FFTW output to the PETSc vector that user can use 
+      VecScatterFFTWToPetsc_FFTW - Converts FFTW output to the PETSc vector that user can use.
   Input A, x, y
   A - FFTW matrix
   x - FFTW vector
   y - PETSc vector that user can read
-  Options Database Keys:
-+ -mat_fftw_plannerflags - set FFTW planner flags
 
    Level: intermediate
+   Note: While doing real transform the FFTW output of backward DFT contains extra zeros at the end of last dimension.
+         VecScatterFFTWToPetsc removes those extra zeros.
    
 */
 
