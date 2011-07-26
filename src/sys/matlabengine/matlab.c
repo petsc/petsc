@@ -25,6 +25,9 @@ PetscClassId MATLABENGINE_CLASSID = -1;
     Output Parameter:
 .   mengine - the resulting object
 
+   Options Database:
+.    -matlab_engine_graphics - allow the MATLAB engine to display graphics
+
    Level: advanced
 
 .seealso: PetscMatlabEngineDestroy(), PetscMatlabEnginePut(), PetscMatlabEngineGet(),
@@ -37,16 +40,22 @@ PetscErrorCode  PetscMatlabEngineCreate(MPI_Comm comm,const char machine[],Petsc
   PetscMPIInt       rank,size;
   char              buffer[256];
   PetscMatlabEngine e;
+  PetscBool         flg = PETSC_FALSE;
 
   PetscFunctionBegin;
   if (MATLABENGINE_CLASSID == -1) {
     ierr = PetscClassIdRegister("MATLAB Engine",&MATLABENGINE_CLASSID);CHKERRQ(ierr);
   }
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-matlab_engine_graphics",&flg,PETSC_NULL);CHKERRQ(ierr);
+
   ierr = PetscHeaderCreate(e,_p_PetscMatlabEngine,int,MATLABENGINE_CLASSID,0,"MatlabEngine",comm,PetscMatlabEngineDestroy,0);CHKERRQ(ierr);
 
   if (!machine) machine = "\0";
   ierr = PetscStrcpy(buffer,PETSC_MATLAB_COMMAND);CHKERRQ(ierr);
-  ierr = PetscStrcat(buffer," -nodisplay -nojvm");CHKERRQ(ierr);
+  if (!flg) {
+    ierr = PetscStrcat(buffer," -nodisplay ");CHKERRQ(ierr);
+  } 
+  ierr = PetscStrcat(buffer," -nojvm ");CHKERRQ(ierr);
   ierr = PetscInfo2(0,"Starting MATLAB engine on %s with command %s\n",machine,buffer);CHKERRQ(ierr);
   e->ep = engOpen(buffer);
   if (!e->ep) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Unable to start MATLAB engine on %s\n",machine);
