@@ -196,7 +196,7 @@ int main(int argc, char **argv)
    
     sprintf(cv_filename,"file_cv_%f.vtk",t);
     sprintf(eta_filename,"file_eta_%f.vtk",t);
-    ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,cv_filename,&view_vtk_cv);CHKERRQ(ierr);
+    /*    ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,cv_filename,&view_vtk_cv);CHKERRQ(ierr);
     ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,eta_filename,&view_vtk_eta);CHKERRQ(ierr);
     ierr = PetscViewerSetFormat(view_vtk_cv, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
     ierr = PetscViewerSetFormat(view_vtk_eta, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
@@ -207,7 +207,7 @@ int main(int argc, char **argv)
     ierr = VecView(user.cv,view_vtk_cv);CHKERRQ(ierr);
     ierr = VecView(user.eta,view_vtk_eta);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&view_vtk_cv);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&view_vtk_eta);CHKERRQ(ierr);
+     ierr = PetscViewerDestroy(&view_vtk_eta);CHKERRQ(ierr);*/
 
         
     ierr = VecNorm(user.q,NORM_INFINITY,&normq);CHKERRQ(ierr);
@@ -221,7 +221,7 @@ int main(int argc, char **argv)
 
     /*    ierr = VecView(x,view_out);CHKERRQ(ierr);*/
     ierr = VecView(x,PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD));CHKERRQ(ierr);
-    ierr = VecView(x,PETSC_VIEWER_BINARY_(PETSC_COMM_WORLD));CHKERRQ(ierr);
+    /*    ierr = VecView(x,PETSC_VIEWER_BINARY_(PETSC_COMM_WORLD));CHKERRQ(ierr);*/
     PetscInt its;
     ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"SNESVI solver converged at t = %g in %d iterations\n",t,its);CHKERRQ(ierr);
