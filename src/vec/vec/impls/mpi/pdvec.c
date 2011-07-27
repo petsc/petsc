@@ -754,12 +754,14 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
   offset[dim] = 0;
   ++dim;
 #endif
-  filespace = H5Dget_space(dset_id);
-  if (filespace == -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot H5Dget_space()");
-  status = H5Sselect_hyperslab(filespace, H5S_SELECT_SET, offset, NULL, count, NULL);CHKERRQ(status);
-  if (xin->map->n == 0) {
-    /* Reset filespace to none when not writing data. */
-    status = H5Sselect_none(filespace);CHKERRQ(status);
+  if (xin->map->n > 0) {
+    filespace = H5Dget_space(dset_id);
+    if (filespace == -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot H5Dget_space()");
+    status = H5Sselect_hyperslab(filespace, H5S_SELECT_SET, offset, NULL, count, NULL);CHKERRQ(status);
+  } else {
+    /* Create null filespace to match null memspace. */
+    filespace = H5Screate(H5S_NULL);
+    if (filespace == -1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Cannot H5Screate(H5S_NULL)");
   }
 
   /* Create property list for collective dataset write */

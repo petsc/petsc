@@ -132,48 +132,59 @@ int main(int argc, char **argv)
   PetscInt       Nl, Ne;
   PetscInt      *elemRows;
   PetscScalar   *elemMats;
-  PetscBool      doSolve = PETSC_FALSE;
+  PetscBool      doGPU = PETSC_TRUE, doCPU = PETSC_TRUE, doSolve = PETSC_FALSE, doView = PETSC_TRUE;
   PetscLogStage  gpuStage, cpuStage;
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, 0, help);CHKERRQ(ierr);
   ierr = DMDACreate2d(PETSC_COMM_WORLD, DMDA_BOUNDARY_NONE, DMDA_BOUNDARY_NONE, DMDA_STENCIL_BOX, -3, -3, PETSC_DECIDE, PETSC_DECIDE, 1, 1, PETSC_NULL, PETSC_NULL, &dm);CHKERRQ(ierr);
   ierr = IntegrateCells(dm, &Ne, &Nl, &elemRows, &elemMats);CHKERRQ(ierr);
-  ierr = PetscLogStageRegister("GPU Stage", &gpuStage);CHKERRQ(ierr);
-  ierr = PetscLogStageRegister("CPU Stage", &cpuStage);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL, "-view", &doView, PETSC_NULL);CHKERRQ(ierr);
   /* Construct matrix using GPU */
-  ierr = PetscLogStagePush(gpuStage);CHKERRQ(ierr);
-  ierr = DMGetMatrix(dm, MATAIJ, &A);CHKERRQ(ierr);
-  ierr = MatSetType(A, MATAIJCUSP);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(A, 0, PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(A, 0, PETSC_NULL, 0, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL, "-gpu", &doGPU, PETSC_NULL);CHKERRQ(ierr);
+  if (doGPU) {
+    ierr = PetscLogStageRegister("GPU Stage", &gpuStage);CHKERRQ(ierr);
+    ierr = PetscLogStagePush(gpuStage);CHKERRQ(ierr);
+    ierr = DMGetMatrix(dm, MATAIJ, &A);CHKERRQ(ierr);
+    ierr = MatSetType(A, MATAIJCUSP);CHKERRQ(ierr);
+    ierr = MatSeqAIJSetPreallocation(A, 0, PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatMPIAIJSetPreallocation(A, 0, PETSC_NULL, 0, PETSC_NULL);CHKERRQ(ierr);
 
-  PetscMPIInt numProcs;
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD, &numProcs);CHKERRQ(ierr);
-  if (numProcs == 1) {
-    ierr = MatSeqAIJSetValuesBatch(A, Ne, Nl, elemRows, elemMats);CHKERRQ(ierr);
-  } else {
-    ierr = MatMPIAIJSetValuesBatch(A, Ne, Nl, elemRows, elemMats);CHKERRQ(ierr);
+    PetscMPIInt numProcs;
+    ierr = MPI_Comm_size(PETSC_COMM_WORLD, &numProcs);CHKERRQ(ierr);
+    if (numProcs == 1) {
+      ierr = MatSeqAIJSetValuesBatch(A, Ne, Nl, elemRows, elemMats);CHKERRQ(ierr);
+    } else {
+      ierr = MatMPIAIJSetValuesBatch(A, Ne, Nl, elemRows, elemMats);CHKERRQ(ierr);
+    }
+
+    ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    if (doView) {
+      ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD, PETSC_NULL, &viewer);CHKERRQ(ierr);
+      if (Ne > 500) {ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);}
+      ierr = MatView(A, viewer);CHKERRQ(ierr);
+      ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+    }
+    ierr = PetscLogStagePop();CHKERRQ(ierr);
+    ierr = MatDestroy(&A);CHKERRQ(ierr);
   }
-
-  ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD, PETSC_NULL, &viewer);CHKERRQ(ierr);
-  if (Ne > 500) {ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);}
-  ierr = MatView(A, viewer);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  ierr = PetscLogStagePop();CHKERRQ(ierr);
   /* Construct matrix using CPU */
-  ierr = MatDestroy(&A);CHKERRQ(ierr);
-  ierr = PetscLogStagePush(cpuStage);CHKERRQ(ierr);
-  ierr = AssembleMatrix(dm, Ne, Nl, elemRows, elemMats, &A);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD, PETSC_NULL, &viewer);CHKERRQ(ierr);
-  if (Ne > 500) {ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);}
-  ierr = MatView(A, viewer);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  ierr = PetscLogStagePop();CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL, "-cpu", &doCPU, PETSC_NULL);CHKERRQ(ierr);
+  if (doCPU) {
+    ierr = PetscLogStageRegister("CPU Stage", &cpuStage);CHKERRQ(ierr);
+    ierr = PetscLogStagePush(cpuStage);CHKERRQ(ierr);
+    ierr = AssembleMatrix(dm, Ne, Nl, elemRows, elemMats, &A);CHKERRQ(ierr);
+    ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    if (doView) {
+      ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD, PETSC_NULL, &viewer);CHKERRQ(ierr);
+      if (Ne > 500) {ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);}
+      ierr = MatView(A, viewer);CHKERRQ(ierr);
+      ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+    }
+    ierr = PetscLogStagePop();CHKERRQ(ierr);
+  }
   /* Solve simple system with random rhs */
   ierr = PetscOptionsGetBool(PETSC_NULL, "-solve", &doSolve, PETSC_NULL);CHKERRQ(ierr);
   if (doSolve) {

@@ -32,59 +32,57 @@ typedef struct {
 static PetscErrorCode TSStep_Alpha(TS ts)
 {
   TS_Alpha            *th    = (TS_Alpha*)ts->data;
-  PetscInt            its,lits,rej;
-  SNESConvergedReason snesreason;
-  PetscBool           stepok = PETSC_TRUE;
-  PetscReal           nextdt = ts->time_step;
+  PetscInt            its,lits,reject;
+  PetscReal           next_time_step;
+  SNESConvergedReason snesreason = SNES_CONVERGED_ITERATING;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
+  if (!ts->steps) {ierr = VecSet(th->V0,0.0);CHKERRQ(ierr);}
   ierr = VecCopy(ts->vec_sol,th->X0);CHKERRQ(ierr);
-  for (rej=0; rej<ts->max_reject; rej++,ts->reject++) {
-    ts->time_step = ts->next_time_step;
+  next_time_step = ts->time_step;
+  for (reject=0; reject<ts->max_reject; reject++,ts->reject++) {
+    ts->time_step = next_time_step;
     th->stage_time = ts->ptime + th->Alpha_f*ts->time_step;
     th->shift = th->Alpha_m/(th->Alpha_f*th->Gamma*ts->time_step);
     /* predictor */
     ierr = VecCopy(th->X0,th->X1);CHKERRQ(ierr);
     /* solve R(X,V) = 0 */
     ierr = SNESSolve(ts->snes,PETSC_NULL,th->X1);CHKERRQ(ierr);
-    ierr = SNESGetIterationNumber(ts->snes,&its);CHKERRQ(ierr);
-    ierr = SNESGetLinearSolveIterations(ts->snes,&lits);CHKERRQ(ierr);
-    ts->nonlinear_its += its; ts->linear_its += lits;
-    ierr = SNESGetConvergedReason(ts->snes,&snesreason);CHKERRQ(ierr);
-    if (snesreason < 0) {
-      if (++ts->num_snes_failures >= ts->max_snes_failures) {
-        ts->reason = TS_DIVERGED_NONLINEAR_SOLVE;
-        ierr = PetscInfo2(ts,"step=%D, nonlinear solve solve failures %D greater than current TS allowed, stopping solve\n",ts->steps,ts->num_snes_failures);CHKERRQ(ierr);
-        break;
-      }
-    }
     /* V1 = (1-1/Gamma)*V0 + 1/(Gamma*dT)*(X1-X0) */
     ierr = VecWAXPY(th->V1,-1,th->X0,th->X1);CHKERRQ(ierr);
     ierr = VecAXPBY(th->V1,1-1/th->Gamma,1/(th->Gamma*ts->time_step),th->V0);CHKERRQ(ierr);
-
-    /* adapt time step */
-    if (th->adapt) {
-      PetscReal t = ts->ptime+ts->time_step;
-      PetscReal dtend = ts->max_time-t;
-      if (snesreason > 0) {
-        ierr = th->adapt(ts,t,th->X1,th->V1,&nextdt,&stepok,th->adaptctx);CHKERRQ(ierr);
-      } else {
-        stepok = PETSC_FALSE;
-        nextdt *= th->scale_min;
-      }
-      nextdt = PetscMax(nextdt,th->dt_min);
-      nextdt = PetscMin(nextdt,th->dt_max);
-      if (dtend > 0) nextdt = PetscMin(nextdt,dtend);
-      ierr = PetscInfo4(ts,"Step %D (t=%G) %s, next dt=%G\n",ts->steps,ts->ptime,
-                        stepok?"accepted":"rejected",nextdt);CHKERRQ(ierr);
+    /* nonlinear solve convergence */
+    ierr = SNESGetConvergedReason(ts->snes,&snesreason);CHKERRQ(ierr);
+    if (snesreason < 0 && !th->adapt) break;
+    ierr = SNESGetIterationNumber(ts->snes,&its);CHKERRQ(ierr);
+    ierr = SNESGetLinearSolveIterations(ts->snes,&lits);CHKERRQ(ierr);
+    ts->nonlinear_its += its; ts->linear_its += lits;
+    ierr = PetscInfo3(ts,"step=%D, nonlinear solve iterations=%D, linear solve iterations=%D\n",ts->steps,its,lits);CHKERRQ(ierr);
+    /* time step adaptativity */
+    if (!th->adapt) break;
+    else {
+      PetscReal t1 = ts->ptime + ts->time_step;
+      PetscBool stepok = (reject==0) ? PETSC_TRUE : PETSC_FALSE;
+      ierr = th->adapt(ts,t1,th->X1,th->V1,&next_time_step,&stepok,th->adaptctx);CHKERRQ(ierr);
+      ierr = PetscInfo5(ts,"Step %D (t=%G,dt=%G) %s, next dt=%G\n",ts->steps,ts->ptime,ts->time_step,stepok?"accepted":"rejected",next_time_step);CHKERRQ(ierr);
+      if (stepok) break;
     }
-    if (stepok) break;
+  }
+  if (snesreason < 0 && ++ts->num_snes_failures >= ts->max_snes_failures) {
+    ts->reason = TS_DIVERGED_NONLINEAR_SOLVE;
+    ierr = PetscInfo2(ts,"step=%D, nonlinear solve solve failures %D greater than current TS allowed, stopping solve\n",ts->steps,ts->num_snes_failures);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+  if (reject >= ts->max_reject) {
+    ts->reason = TS_DIVERGED_STEP_REJECTED;
+    ierr = PetscInfo2(ts,"step=%D, step rejections %D greater than current TS allowed, stopping solve\n",ts->steps,reject);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
   }
   ierr = VecCopy(th->V1,th->V0);CHKERRQ(ierr);
   ierr = VecCopy(th->X1,ts->vec_sol);CHKERRQ(ierr);
   ts->ptime += ts->time_step;
-  ts->next_time_step = nextdt;
+  ts->time_step = next_time_step;
   ts->steps++;
   PetscFunctionReturn(0);
 }
@@ -384,18 +382,28 @@ PetscErrorCode  TSAlphaSetAdapt(TS ts,TSAlphaAdaptFunction adapt,void *ctx)
 #define __FUNCT__ "TSAlphaAdaptDefault"
 PetscErrorCode  TSAlphaAdaptDefault(TS ts,PetscReal t,Vec X,Vec Xdot, PetscReal *nextdt,PetscBool *ok,void *ctx)
 {
-  TS_Alpha       *th;
-  PetscReal      dt,normX,normE,Emax,scale;
-  PetscErrorCode ierr;
+  TS_Alpha            *th;
+  SNESConvergedReason snesreason;
+  PetscReal           dt,normX,normE,Emax,scale;
+  PetscErrorCode      ierr;
   PetscFunctionBegin;
 
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
 #if PETSC_USE_DEBUG
-  { PetscBool match;
+  {
+    PetscBool match;
     ierr = PetscTypeCompare((PetscObject)ts,TSALPHA,&match);CHKERRQ(ierr);
-    if (!match) SETERRQ(((PetscObject)ts)->comm,1,"Only for TSALPHA"); }
+    if (!match) SETERRQ(((PetscObject)ts)->comm,1,"Only for TSALPHA");
+  }
 #endif
   th = (TS_Alpha*)ts->data;
+
+  ierr = SNESGetConvergedReason(ts->snes,&snesreason);CHKERRQ(ierr);
+  if (snesreason < 0) {
+    *ok = PETSC_FALSE;
+    *nextdt *= th->scale_min;
+    goto finally;
+  }
 
   /* first-order aproximation to the local error */
   /* E = (X0 + dt*Xdot) - X */
@@ -423,6 +431,11 @@ PetscErrorCode  TSAlphaAdaptDefault(TS ts,PetscReal t,Vec X,Vec Xdot, PetscReal 
   else
     *ok = PETSC_FALSE;
 
+  finally:
+  *nextdt = PetscMax(*nextdt,th->dt_min);
+  *nextdt = PetscMin(*nextdt,th->dt_max);
+  if (ts->max_time > t)
+    *nextdt = PetscMin(*nextdt,ts->max_time-t);
   PetscFunctionReturn(0);
 }
 

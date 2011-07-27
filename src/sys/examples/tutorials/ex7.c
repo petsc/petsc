@@ -10,9 +10,11 @@ static char help[] = "Demonstrates using PetscWebServe().\n\n";
 T*/
  
 #include <petscsys.h>
+#include <petscksp.h>
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
+  PetscRandom    rand;
 
   /*
     Every PETSc routine should begin with the PetscInitialize() routine.
@@ -24,13 +26,14 @@ int main(int argc,char **argv)
                  additional help messages in this printout.
   */
   ierr = PetscInitialize(&argc,&argv,(char *)0,help);CHKERRQ(ierr);
-
+  ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rand);CHKERRQ(ierr);
+  ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Starting up PetscWebServe()\n");CHKERRQ(ierr);
 #if defined(PETSC_USE_SERVER)
   ierr = PetscWebServe(PETSC_COMM_WORLD,8000);CHKERRQ(ierr);
   while (1) {;}
 #endif
-
+  ierr = PetscRandomDestroy(&rand);CHKERRQ(ierr);
   /*
      Always call PetscFinalize() before exiting a program.  This routine
        - finalizes the PETSc libraries as well as MPI

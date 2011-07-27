@@ -34,6 +34,7 @@ E*/
 #define MATIS              "is"
 #define MATAIJ             "aij"
 #define MATSEQAIJ          "seqaij"
+#define MATSEQPTHREADAIJ     "seqpthreadaij"
 #define MATMPIAIJ          "mpiaij"
 #define MATAIJCRL          "aijcrl"
 #define MATSEQAIJCRL       "seqaijcrl"
@@ -1750,10 +1751,10 @@ extern PetscErrorCode  MatCreateMPIAIJCUSP(MPI_Comm,PetscInt,PetscInt,PetscInt,P
    PETSc interface to FFTW
 */
 #if defined(PETSC_HAVE_FFTW)
-extern PetscErrorCode InputTransformFFT(Mat,Vec,Vec);
-extern PetscErrorCode OutputTransformFFT(Mat,Vec,Vec);
+extern PetscErrorCode VecScatterPetscToFFTW(Mat,Vec,Vec);
+extern PetscErrorCode VecScatterFFTWToPetsc(Mat,Vec,Vec);
+extern PetscErrorCode MatGetVecsFFTW(Mat,Vec*,Vec*,Vec*);
 #endif
-
 
 extern PetscErrorCode MatCreateNest(MPI_Comm,PetscInt,const IS[],PetscInt,const IS[],const Mat[],Mat*);
 extern PetscErrorCode MatNestGetSize(Mat,PetscInt*,PetscInt*);

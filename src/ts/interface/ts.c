@@ -91,7 +91,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     if (opt) {ierr = TSSetInitialTimeStep(ts,ts->ptime,dt);CHKERRQ(ierr);}
     opt = ts->exact_final_time == PETSC_DECIDE ? PETSC_FALSE : (PetscBool)ts->exact_final_time;
     ierr = PetscOptionsBool("-ts_exact_final_time","Interpolate output to stop exactly at the final time","TSSetExactFinalTime",opt,&opt,&flg);CHKERRQ(ierr);
-    if (flg) {ierr = TSSetExactFinalTime(ts,flg);CHKERRQ(ierr);}
+    if (flg) {ierr = TSSetExactFinalTime(ts,opt);CHKERRQ(ierr);}
     ierr = PetscOptionsInt("-ts_max_snes_failures","Maximum number of nonlinear solve failures","",ts->max_snes_failures,&ts->max_snes_failures,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-ts_max_reject","Maximum number of step rejections","",ts->max_reject,&ts->max_reject,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-ts_error_if_step_failed","Error if no step succeeds","",ts->errorifstepfailed,&ts->errorifstepfailed,PETSC_NULL);CHKERRQ(ierr);
@@ -837,7 +837,7 @@ PetscErrorCode  TSView(TS ts,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"  maximum time=%G\n",ts->max_time);CHKERRQ(ierr);
     if (ts->problem_type == TS_NONLINEAR) {
       ierr = PetscViewerASCIIPrintf(viewer,"  total number of nonlinear solver iterations=%D\n",ts->nonlinear_its);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  total number of nonlinear solve failures=%D\n",ts->max_snes_failures);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  total number of nonlinear solve failures=%D\n",ts->num_snes_failures);CHKERRQ(ierr);
     }
     ierr = PetscViewerASCIIPrintf(viewer,"  total number of linear solver iterations=%D\n",ts->linear_its);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  total number of rejected steps=%D\n",ts->reject);CHKERRQ(ierr);
@@ -1837,13 +1837,15 @@ PetscErrorCode TSSolve(TS ts,Vec x,PetscReal *ftime)
   ts->steps = 0;
   ts->linear_its = 0;
   ts->nonlinear_its = 0;
+  ts->num_snes_failures = 0;
+  ts->reject = 0;
   ts->reason = TS_CONVERGED_ITERATING;
   ierr = TSMonitor(ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
 
   if (ts->ops->solve) {         /* This private interface is transitional and should be removed when all implementations are updated. */
     ierr = (*ts->ops->solve)(ts);CHKERRQ(ierr);
     ierr = VecCopy(ts->vec_sol,x);CHKERRQ(ierr);
-    if (*ftime) *ftime = ts->ptime;
+    if (ftime) *ftime = ts->ptime;
   } else {
     i = 0;
     if (i >= ts->max_steps) ts->reason = TS_CONVERGED_ITS;
@@ -2586,6 +2588,35 @@ PetscErrorCode  TSGetConvergedReason(TS ts,TSConvergedReason *reason)
   PetscFunctionReturn(0);
 }
 
+
+#undef __FUNCT__
+#define __FUNCT__ "TSVISetVariableBounds"
+/*@
+   TSVISetVariableBounds - Sets the lower and upper bounds for the solution vector. xl <= x <= xu
+
+   Input Parameters:
+.  ts   - the TS context.
+.  xl   - lower bound.
+.  xu   - upper bound.
+
+   Notes:
+   If this routine is not called then the lower and upper bounds are set to 
+   SNES_VI_INF and SNES_VI_NINF respectively during SNESSetUp().
+
+@*/
+PetscErrorCode TSVISetVariableBounds(TS ts, Vec xl, Vec xu)
+{
+  PetscErrorCode ierr;
+  SNES           snes;
+
+  PetscFunctionBegin;
+
+  ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
+  ierr = SNESVISetVariableBounds(snes,xl,xu);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
+
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
 #include <mex.h>
 
@@ -2879,5 +2910,4 @@ PetscErrorCode  TSMonitorSetMatlab(TS ts,const char *func,mxArray *ctx)
   ierr = TSMonitorSet(ts,TSMonitor_Matlab,sctx,PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 #endif

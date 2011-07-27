@@ -524,4 +524,67 @@ PetscViewer  PETSC_VIEWER_DRAW_(MPI_Comm comm)
   PetscFunctionReturn(viewer);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerDrawSetBounds"
+/*@
+    PetscViewerDrawSetBounds - sets the upper and lower bounds to be used in plotting
 
+    Collective on PetscViewer
+
+    Input Parameters:
++   viewer - the PetscViewer (created with PetscViewerDrawOpen())
+.   nbounds - number of plots that can be made with this viewer, for example the dof passed to DMDACreate()
+-   bounds - the actual bounds, the size of this is 2*nbounds, the values are stored in the order min F_0, max F_0, min F_1, max F_1, .....
+
+    Level: intermediate
+
+   Concepts: drawing^accessing PetscDraw context from PetscViewer
+   Concepts: graphics
+
+.seealso: PetscViewerDrawGetLG(), PetscViewerDrawGetAxis(), PetscViewerDrawOpen()
+@*/
+PetscErrorCode  PetscViewerDrawSetBounds(PetscViewer viewer,PetscInt  nbounds,const PetscReal *bounds)
+{
+  PetscViewer_Draw *vdraw = (PetscViewer_Draw*)viewer->data;
+  PetscErrorCode   ierr;
+
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
+  vdraw->nbounds   = nbounds;
+  ierr = PetscMalloc(2*nbounds*sizeof(PetscReal),&vdraw->bounds);CHKERRQ(ierr);
+  ierr = PetscMemcpy(vdraw->bounds,bounds,2*nbounds*sizeof(PetscReal));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerDrawGetBounds"
+/*@
+    PetscViewerDrawGetBounds - gets the upper and lower bounds to be used in plotting set with PetscViewerDrawSetBounds()
+
+    Collective on PetscViewer
+
+    Input Parameter:
+.   viewer - the PetscViewer (created with PetscViewerDrawOpen())
+
+    Output Paramters:
++   nbounds - number of plots that can be made with this viewer, for example the dof passed to DMDACreate()
+-   bounds - the actual bounds, the size of this is 2*nbounds, the values are stored in the order min F_0, max F_0, min F_1, max F_1, .....
+
+    Level: intermediate
+
+   Concepts: drawing^accessing PetscDraw context from PetscViewer
+   Concepts: graphics
+
+.seealso: PetscViewerDrawGetLG(), PetscViewerDrawGetAxis(), PetscViewerDrawOpen()
+@*/
+PetscErrorCode  PetscViewerDrawGetBounds(PetscViewer viewer,PetscInt  *nbounds,const PetscReal **bounds)
+{
+  PetscViewer_Draw *vdraw = (PetscViewer_Draw*)viewer->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
+  *nbounds = vdraw->nbounds;
+  *bounds  = vdraw->bounds;
+  PetscFunctionReturn(0);
+}

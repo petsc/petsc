@@ -316,6 +316,7 @@ extern PetscErrorCode  PCRedistributeGetKSP(PC,KSP*);
 E*/
 typedef enum {KSP_NORM_NONE = 0,KSP_NORM_PRECONDITIONED = 1,KSP_NORM_UNPRECONDITIONED = 2,KSP_NORM_NATURAL = 3} KSPNormType;
 extern const char *KSPNormTypes[];
+
 /*MC
     KSP_NORM_NONE - Do not compute a norm during the Krylov process. This will 
           possibly save some computation but means the convergence test cannot

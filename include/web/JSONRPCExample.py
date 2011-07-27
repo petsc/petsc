@@ -14,11 +14,13 @@ from pyjamas.ui.HorizontalPanel import HorizontalPanel
 from pyjamas.ui.ListBox import ListBox
 from pyjamas.JSONService import JSONProxy
 
+commname = 'jeff'
+
 class JSONRPCExample:
     def onModuleLoad(self):
         self.TEXT_WAITING = "Waiting for response..."
         self.TEXT_ERROR = "Server Error"
-        self.METHOD_ECHO = "Echo"
+        self.METHOD_ECHO = "echo"
         self.METHOD_REVERSE = "Reverse"
         self.METHOD_UPPERCASE = "UPPERCASE"
         self.METHOD_LOWERCASE = "lowercase"
@@ -26,9 +28,9 @@ class JSONRPCExample:
         self.methods = [self.METHOD_ECHO, self.METHOD_REVERSE, 
                         self.METHOD_UPPERCASE, self.METHOD_LOWERCASE, 
                         self.METHOD_NONEXISTANT]
-
-        self.remote_py = EchoServicePython()
-
+        self.remote_py = ServicePython()
+        global commname
+        commname  = 'heff'
         self.status=Label()
         self.text_area = TextArea()
         self.text_area.setText("Simple text")
@@ -47,10 +49,14 @@ class JSONRPCExample:
         method_panel.add(self.method_list)
         method_panel.setSpacing(8)
 
-        self.button_py = Button("Send to Python Service", self)
+        self.button_py = Button("Send to echo Service", self)
+        self.button_ams_connect = Button("Connect to AMS", self)
+        self.button_ams_attach  = Button("Attach to AMS communicator", self)
 
         buttons = HorizontalPanel()
         buttons.add(self.button_py)
+        buttons.add(self.button_ams_connect)
+        buttons.add(self.button_ams_attach)
         buttons.setSpacing(8)
         
         info = """<h2>JSON-RPC Example</h2>
@@ -58,7 +64,7 @@ class JSONRPCExample:
            <a href="http://json-rpc.org/">JSON-RPC</a>.
         </p>
         <p>Enter some text below, and press a button to send the text
-           to an Echo service on your server. An echo service simply sends the exact same text back that it receives.
+           to an echo service on your server. An echo service simply sends the exact same text back that it receives.
            </p>"""
         
         panel = VerticalPanel()
@@ -76,19 +82,23 @@ class JSONRPCExample:
         text = self.text_area.getText()
 
         # demonstrate proxy & callMethod()
-        if method == self.METHOD_ECHO:
-            id = self.remote_py.echo(text, self)
-        elif method == self.METHOD_REVERSE:
-            id = self.remote_py.reverse(text, self)
-        elif method == self.METHOD_UPPERCASE:
-            id = self.remote_py.uppercase(text, self)
-        elif method == self.METHOD_LOWERCASE:
-            id = self.remote_py.lowercase(text, self)
-        elif method == self.METHOD_NONEXISTANT:
-            id = self.remote_py.nonexistant(text, self)
+        if sender == self.button_py:
+            id = self.remote_py.YAML_echo(text, self)
+        elif sender == self.button_ams_connect:
+            id = self.remote_py.YAML_AMS_Connect(text, self)
+        else:
+            self.status.setText('trying comm attach'+commname)
+            id = self.remote_py.YAML_AMS_Comm_attach(commname, self)
+        self.lastsender = sender
 
     def onRemoteResponse(self, response, request_info):
+        global commname
         self.status.setText(response)
+        if self.lastsender == self.button_ams_connect:
+            commname = str(response)
+            self.status.setText('was ams connect'+commname)
+        else:
+            commname = "joe"
 
     def onRemoteError(self, code, errobj, request_info):
         # onRemoteError gets the HTTP error code or 0 and
@@ -107,9 +117,9 @@ class JSONRPCExample:
 
 
 
-class EchoServicePython(JSONProxy):
+class ServicePython(JSONProxy):
     def __init__(self):
-        JSONProxy.__init__(self, "No service name", ["echo", "reverse", "uppercase", "lowercase", "nonexistant"])
+        JSONProxy.__init__(self, "No service name", ["YAML_echo", "YAML_AMS_Connect", "YAML_AMS_Comm_attach"])
 
 if __name__ == '__main__':
     # for pyjd, set up a web server and load the HTML from there:

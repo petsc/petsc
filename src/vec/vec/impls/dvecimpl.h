@@ -33,6 +33,7 @@ extern PetscErrorCode VecAXPY_Seq(Vec,PetscScalar,Vec);
 extern PetscErrorCode VecAXPBY_Seq(Vec,PetscScalar,PetscScalar,Vec);
 extern PetscErrorCode VecMax_Seq(Vec,PetscInt*,PetscReal *);
 extern PetscErrorCode VecNorm_Seq(Vec,NormType,PetscReal*);
+extern PetscErrorCode VecDestroy_Seq(Vec);
 EXTERN_C_BEGIN
 extern PetscErrorCode  VecCreate_Seq(Vec);
 EXTERN_C_END

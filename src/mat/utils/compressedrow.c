@@ -21,6 +21,8 @@
    Notes: By default PETSc will not check for compressed rows on sequential matrices. Call MatSetOption(Mat,MAT_CHECK_COMPRESSED_ROW,PETSC_TRUE); before 
           MatAssemblyBegin() to have it check.
 
+   Developer Note: The reason this takes the compressedrow, ai and mbs arguments is because it is called by both the SeqAIJ and SEQBAIJ matrices and 
+                   the values are not therefore obtained by directly taking the values from the matrix object.
    Level: developer
 @*/
 PetscErrorCode MatCheckCompressedRow(Mat A,Mat_CompressedRow *compressedrow,PetscInt *ai,PetscInt mbs,PetscReal ratio) 
@@ -43,6 +45,7 @@ PetscErrorCode MatCheckCompressedRow(Mat A,Mat_CompressedRow *compressedrow,Pets
     nz = ai[i+1] - ai[i];       /* number of nonzeros */
     if (nz == 0) nrows++;
   }
+
   /* if a large number of zero rows is found, use compressedrow data structure */
   if (nrows < ratio*mbs) {
     compressedrow->use = PETSC_FALSE; 

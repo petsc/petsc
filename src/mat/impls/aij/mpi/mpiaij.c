@@ -867,7 +867,6 @@ MAT_NEW_NONZERO_LOCATIONS,MAT_NEW_NONZERO_LOCATION_ERR,MAT_NEW_NONZERO_ALLOCATIO
   }
   ierr = PetscFree(send_waits);CHKERRQ(ierr);
   ierr = PetscFree(svalues);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -1035,11 +1034,11 @@ PetscErrorCode MatZeroRowsColumns_MPIAIJ(Mat A,PetscInt N,const PetscInt rows[],
     }
   } else { /* do not use compressed row format */
     m = l->B->rmap->n;
-   for (i=0; i<m; i++) {
-     n   = ii[i+1] - ii[i]; 
-     aj  = aij->j + ii[i];
-     aa  = aij->a + ii[i];
-     for (j=0; j<n; j++) {
+    for (i=0; i<m; i++) {
+      n   = ii[i+1] - ii[i]; 
+      aj  = aij->j + ii[i];
+      aa  = aij->a + ii[i];
+      for (j=0; j<n; j++) {
         if (PetscAbsScalar(mask[*aj])) {
           bb[i] -= *aa*xx[*aj];
           *aa    = 0.0;
@@ -1049,7 +1048,6 @@ PetscErrorCode MatZeroRowsColumns_MPIAIJ(Mat A,PetscInt N,const PetscInt rows[],
       }
     }
   }
-
   ierr = VecRestoreArray(b,&bb);CHKERRQ(ierr);
   ierr = VecRestoreArray(lmask,&mask);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(l->lvec,&xx);CHKERRQ(ierr);
@@ -1068,7 +1066,7 @@ PetscErrorCode MatZeroRowsColumns_MPIAIJ(Mat A,PetscInt N,const PetscInt rows[],
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatMult_MPIAIJ"
 PetscErrorCode MatMult_MPIAIJ(Mat A,Vec xx,Vec yy)
 {
@@ -1086,19 +1084,19 @@ PetscErrorCode MatMult_MPIAIJ(Mat A,Vec xx,Vec yy)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatMultDiagonalBlock_MPIAIJ"
 PetscErrorCode MatMultDiagonalBlock_MPIAIJ(Mat A,Vec bb,Vec xx)
 {
   Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data;
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
   ierr = MatMultDiagonalBlock(a->A,bb,xx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatMultAdd_MPIAIJ"
 PetscErrorCode MatMultAdd_MPIAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 {

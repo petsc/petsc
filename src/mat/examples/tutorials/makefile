@@ -4,7 +4,7 @@ FFLAGS	        =
 CPPFLAGS        = 
 FPPFLAGS        =
 LOCDIR          = src/mat/examples/tutorials/
-EXAMPLESC       = ex1.c ex2.c ex4.c ex5.c ex6.c ex8.c ex9.c ex10.c ex11.c ex12.c ex13.c
+EXAMPLESC       = ex1.c ex2.c ex2_kds.c ex4.c ex5.c ex6.c ex8.c ex9.c ex10.c ex11.c ex12.c ex13.c
 EXAMPLESF       =
 MANSEC          = Mat
 
@@ -18,6 +18,10 @@ ex1: ex1.o  chkopts
 ex2: ex2.o  chkopts
 	-${CLINKER}  -o ex2 ex2.o ${PETSC_MAT_LIB}
 	${RM} ex2.o
+
+ex2_kds: ex2_kds.o  chkopts
+	-${CLINKER}  -o ex2_kds ex2_kds.o ${PETSC_MAT_LIB}
+	${RM} ex2_kds.o
 
 ex4: ex4.o  chkopts
 	-${CLINKER}  -o ex4 ex4.o ${PETSC_MAT_LIB}

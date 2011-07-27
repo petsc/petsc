@@ -472,7 +472,7 @@ PetscErrorCode  SNESSkipConverged(SNES snes,PetscInt it,PetscReal xnorm,PetscRea
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESDefaultGetWork"
-/*
+/*@
   SNESDefaultGetWork - Gets a number of work vectors.
 
   Input Parameters:
@@ -483,7 +483,7 @@ PetscErrorCode  SNESSkipConverged(SNES snes,PetscInt it,PetscReal xnorm,PetscRea
 
   Notes:
   Call this only if no work vectors have been allocated
- */
+@*/
 PetscErrorCode SNESDefaultGetWork(SNES snes,PetscInt nw)
 {
   PetscErrorCode ierr;

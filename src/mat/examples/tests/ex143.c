@@ -27,9 +27,9 @@ PetscInt main(PetscInt argc,char **args)
   PetscBool       view=PETSC_FALSE,use_interface=PETSC_TRUE;
 
   ierr = PetscInitialize(&argc,&args,(char *)0,help);CHKERRQ(ierr);
-#if !defined(PETSC_USE_COMPLEX)
-  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP, "This example requires complex numbers");
-#endif
+//#if !defined(PETSC_USE_COMPLEX)
+//  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP, "This example requires complex numbers");
+//#endif
 
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD, PETSC_NULL, "FFTW Options", "ex143");CHKERRQ(ierr);
     ierr = PetscOptionsBool("-vec_view_draw", "View the vectors", "ex143", view, &view, PETSC_NULL);CHKERRQ(ierr);
@@ -102,7 +102,7 @@ PetscInt main(PetscInt argc,char **args)
     Mat      A;
 
     N=1;
-    for (i=1; i<6; i++){
+    for (i=1; i<5; i++){
       DIM = i;
       ierr = PetscMalloc(i*sizeof(PetscInt),&dim);CHKERRQ(ierr);
       for(k=0;k<i;k++){
@@ -118,41 +118,41 @@ PetscInt main(PetscInt argc,char **args)
 
       /* Create vectors that are compatible with parallel layout of A - must call MatGetVecs()! */
     
-      ierr = MatGetVecs(A,&x,&y);CHKERRQ(ierr); 
-      ierr = MatGetVecs(A,&z,PETSC_NULL);CHKERRQ(ierr); 
+      ierr = MatGetVecsFFTW(A,&x,&y,&z);CHKERRQ(ierr); 
+//      ierr = MatGetVecs(A,&z,PETSC_NULL);CHKERRQ(ierr); 
       ierr = PetscObjectSetName((PetscObject) x, "Real space vector");CHKERRQ(ierr);
       ierr = PetscObjectSetName((PetscObject) y, "Frequency space vector");CHKERRQ(ierr);
       ierr = PetscObjectSetName((PetscObject) z, "Reconstructed vector");CHKERRQ(ierr);
 
       /* Set values of space vector x */
-      ierr = VecSetRandom(x, rdm);CHKERRQ(ierr);
+      ierr = VecSetRandom(x,rdm);CHKERRQ(ierr);
 
       if (view){ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
 
-      /* Apply FFTW_FORWARD and FFTW_BACKWARD */
+      // Apply FFTW_FORWARD and FFTW_BACKWARD 
       ierr = MatMult(A,x,y);CHKERRQ(ierr);
       if (view){ierr = VecView(y,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
 
       ierr = MatMultTranspose(A,y,z);CHKERRQ(ierr);
 
-      /* Compare x and z. FFTW computes an unnormalized DFT, thus z = N*x */
+      // Compare x and z. FFTW computes an unnormalized DFT, thus z = N*x 
       a = 1.0/(PetscReal)N;
       ierr = VecScale(z,a);CHKERRQ(ierr);
       if (view){ierr = VecView(z,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
       ierr = VecAXPY(z,-1.0,x);CHKERRQ(ierr);
       ierr = VecNorm(z,NORM_1,&enorm);CHKERRQ(ierr);
-      if (enorm > 1.e-14){
-        if(!rank)
-        ierr = PetscPrintf(PETSC_COMM_SELF,"  Error norm of |x - z| %A\n",enorm);CHKERRQ(ierr);
-      }
+//      if (enorm > 1.e-14){
+//        if(!rank)
+        ierr = PetscPrintf(PETSC_COMM_SELF,"  Error norm of |x - z| %e\n",enorm);CHKERRQ(ierr);
+//      }
      
 
-      /* Free spaces */
-      ierr = PetscFree(dim);CHKERRQ(ierr);
       ierr = VecDestroy(&x);CHKERRQ(ierr);
       ierr = VecDestroy(&y);CHKERRQ(ierr);
       ierr = VecDestroy(&z);CHKERRQ(ierr);
-      ierr = MatDestroy(&A);CHKERRQ(ierr);
+      ierr = MatDestroy(&A);CHKERRQ(ierr); 
+
+      ierr = PetscFree(dim);CHKERRQ(ierr);
     }
   }
    

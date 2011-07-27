@@ -524,7 +524,6 @@ PetscErrorCode DataMoveElements(GridData *gdata)
     array[i] = gdata->ele[i];
   }
   ierr = VecRestoreArray(veleold,&array);CHKERRQ(ierr);
-  
   /* 
      Scatter the element vertex information (still in the original vertex ordering) to the correct processor
   */
