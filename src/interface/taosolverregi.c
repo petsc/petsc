@@ -60,7 +60,7 @@ const char *TaoSolverTerminationReasons_Shifted[] = {
     " ",
     "CONVERGED_ATOL",
     "CONVERGED_RTOL",
-    "CONVERGED_TRTOL",
+    "CONVERGED_STEPTOL",
     "CONVERGED_MINF",
     "CONVERGED_USER" };
 const char **TaoSolverTerminationReasons = TaoSolverTerminationReasons_Shifted + 8;

@@ -95,7 +95,7 @@ static PetscErrorCode TaoSolverSolve_NTL(TaoSolver tao)
   PetscReal step = 1.0;
 
   PetscReal delta;
-  PetscReal radius, norm_d = 0.0;
+  PetscReal norm_d = 0.0;
   MatStructure matflag;
   PetscErrorCode ierr;
   PetscInt stepType;
@@ -117,17 +117,11 @@ static PetscErrorCode TaoSolverSolve_NTL(TaoSolver tao)
   }
 
   /* Initialize trust-region radius */
-  /* TODO
-  ierr = TaoGetInitialTrustRegionRadius(tao, &radius); CHKERRQ(ierr);
-  if (radius < 0.0) {
-    SETERRQ(PETSC_COMM_SELF,1, "Initial radius negative");
-  }
-  */
+  tao->trust = tao->trust0;
 
   /* Modify the radius if it is too large or small */
-  radius = tao->trust0;
-  radius = PetscMax(radius, tl->min_radius);
-  radius = PetscMin(radius, tl->max_radius);
+  tao->trust = PetscMax(tao->trust, tl->min_radius);
+  tao->trust = PetscMin(tao->trust, tl->max_radius);
 
   if (NTL_PC_BFGS == tl->pc_type && !tl->M) {
     ierr = VecGetLocalSize(tao->solution,&n); CHKERRQ(ierr);
@@ -236,7 +230,7 @@ static PetscErrorCode TaoSolverSolve_NTL(TaoSolver tao)
   
       for (i = 0; i < i_max; ++i) {
 	ierr = VecCopy(tao->solution, tl->W); CHKERRQ(ierr);
-	ierr = VecAXPY(tl->W, -radius/gnorm, tao->gradient); CHKERRQ(ierr);
+	ierr = VecAXPY(tl->W, -tao->trust/gnorm, tao->gradient); CHKERRQ(ierr);
 
         ierr = TaoSolverComputeObjective(tao, tl->W, &ftrial); CHKERRQ(ierr);
         if (TaoInfOrNaN(ftrial)) {
@@ -245,13 +239,13 @@ static PetscErrorCode TaoSolverSolve_NTL(TaoSolver tao)
         else {
           if (ftrial < fmin) {
             fmin = ftrial;
-            sigma = -radius / gnorm;
+            sigma = -tao->trust / gnorm;
           }
 
 	  ierr = MatMult(tao->hessian, tao->gradient, tao->stepdirection); CHKERRQ(ierr);
 	  ierr = VecDot(tao->gradient, tao->stepdirection, &prered); CHKERRQ(ierr);
 
-          prered = radius * (gnorm - 0.5 * radius * prered / (gnorm * gnorm));
+          prered = tao->trust * (gnorm - 0.5 * tao->trust * prered / (gnorm * gnorm));
           actred = f - ftrial;
           if ((PetscAbsScalar(actred) <= tl->epsilon) && 
               (PetscAbsScalar(prered) <= tl->epsilon)) {
@@ -261,14 +255,14 @@ static PetscErrorCode TaoSolverSolve_NTL(TaoSolver tao)
             kappa = actred / prered;
           }
 
-          tau_1 = tl->theta_i * gnorm * radius / (tl->theta_i * gnorm * radius + (1.0 - tl->theta_i) * prered - actred);
-          tau_2 = tl->theta_i * gnorm * radius / (tl->theta_i * gnorm * radius - (1.0 + tl->theta_i) * prered + actred);
+          tau_1 = tl->theta_i * gnorm * tao->trust / (tl->theta_i * gnorm * tao->trust + (1.0 - tl->theta_i) * prered - actred);
+          tau_2 = tl->theta_i * gnorm * tao->trust / (tl->theta_i * gnorm * tao->trust - (1.0 + tl->theta_i) * prered + actred);
           tau_min = PetscMin(tau_1, tau_2);
           tau_max = PetscMax(tau_1, tau_2);
 
           if (PetscAbsScalar(kappa - 1.0) <= tl->mu1_i) {
             /* Great agreement */
-            max_radius = PetscMax(max_radius, radius);
+            max_radius = PetscMax(max_radius, tao->trust);
 
             if (tau_max < 1.0) {
               tau = tl->gamma3_i;
@@ -288,7 +282,7 @@ static PetscErrorCode TaoSolverSolve_NTL(TaoSolver tao)
           }
           else if (PetscAbsScalar(kappa - 1.0) <= tl->mu2_i) {
             /* Good agreement */
-            max_radius = PetscMax(max_radius, radius);
+            max_radius = PetscMax(max_radius, tao->trust);
 
             if (tau_max < tl->gamma2_i) {
 	      tau = tl->gamma2_i;
@@ -324,7 +318,7 @@ static PetscErrorCode TaoSolverSolve_NTL(TaoSolver tao)
 	    }
 	  }
 	}
-	radius = tau * radius;
+	tao->trust = tau * tao->trust;
       }
   
       if (fmin < f) {
@@ -344,16 +338,16 @@ static PetscErrorCode TaoSolverSolve_NTL(TaoSolver tao)
 	}
       }
     }
-    radius = PetscMax(radius, max_radius);
+    tao->trust = PetscMax(tao->trust, max_radius);
 
     /* Modify the radius if it is too large or small */
-    radius = PetscMax(radius, tl->min_radius);
-    radius = PetscMin(radius, tl->max_radius);
+    tao->trust = PetscMax(tao->trust, tl->min_radius);
+    tao->trust = PetscMin(tao->trust, tl->max_radius);
     break;
 
   default:
     /* Norm of the first direction will initialize radius */
-    radius = 0.0;
+    tao->trust = 0.0;
     break;
   }
 
@@ -371,7 +365,7 @@ static PetscErrorCode TaoSolverSolve_NTL(TaoSolver tao)
   }
 
   /* Set counter for gradient/reset steps */
-  tl->trust = 0;
+  tl->ntrust = 0;
   tl->newt = 0;
   tl->bfgs = 0;
   tl->sgrad = 0;
@@ -416,23 +410,23 @@ static PetscErrorCode TaoSolverSolve_NTL(TaoSolver tao)
       ierr = KSPGLTRGetNormD(tao->ksp, &norm_d); CHKERRQ(ierr);
     }
 
-    if (0.0 == radius) {
+    if (0.0 == tao->trust) {
       /* Radius was uninitialized; use the norm of the direction */
       if (norm_d > 0.0) {
-	radius = norm_d;
+	tao->trust = norm_d;
 
 	/* Modify the radius if it is too large or small */
-	radius = PetscMax(radius, tl->min_radius);
-	radius = PetscMin(radius, tl->max_radius);
+	tao->trust = PetscMax(tao->trust, tl->min_radius);
+	tao->trust = PetscMin(tao->trust, tl->max_radius);
       }
       else {
 	/* The direction was bad; set radius to default value and re-solve 
 	   the trust-region subproblem to get a direction */
-	radius = tao->trust0;
+	tao->trust = tao->trust0;
 
 	/* Modify the radius if it is too large or small */
-	radius = PetscMax(radius, tl->min_radius);
-	radius = PetscMin(radius, tl->max_radius);
+	tao->trust = PetscMax(tao->trust, tl->min_radius);
+	tao->trust = PetscMin(tao->trust, tl->max_radius);
 
 	if (NTL_KSP_NASH == tl->ksp_type) {
 	  ierr = KSPNASHSetRadius(tao->ksp,tl->max_radius); CHKERRQ(ierr);
@@ -490,7 +484,7 @@ static PetscErrorCode TaoSolverSolve_NTL(TaoSolver tao)
 	/* The predicted reduction has the wrong sign.  This cannot
 	   happen in infinite precision arithmetic.  Step should
 	   be rejected! */
-	radius = tl->alpha1 * PetscMin(radius, norm_d);
+	tao->trust = tl->alpha1 * PetscMin(tao->trust, norm_d);
 	tr_reject = 1;
       }
       else {
@@ -500,7 +494,7 @@ static PetscErrorCode TaoSolverSolve_NTL(TaoSolver tao)
 	ierr = TaoSolverComputeObjective(tao, tl->W, &ftrial); CHKERRQ(ierr);
 
 	if (TaoInfOrNaN(ftrial)) {
-	  radius = tl->alpha1 * PetscMin(radius, norm_d);
+	  tao->trust = tl->alpha1 * PetscMin(tao->trust, norm_d);
 	  tr_reject = 1;
 	}
 	else {
@@ -518,26 +512,26 @@ static PetscErrorCode TaoSolverSolve_NTL(TaoSolver tao)
 	  /* Accept of reject the step and update radius */
 	  if (kappa < tl->eta1) {
 	    /* Reject the step */
-	    radius = tl->alpha1 * PetscMin(radius, norm_d);
+	    tao->trust = tl->alpha1 * PetscMin(tao->trust, norm_d);
 	    tr_reject = 1;
 	  }
 	  else {
 	    /* Accept the step */
 	    if (kappa < tl->eta2) {
 	      /* Marginal bad step */
-	      radius = tl->alpha2 * PetscMin(radius, norm_d);
+	      tao->trust = tl->alpha2 * PetscMin(tao->trust, norm_d);
 	    }
 	    else if (kappa < tl->eta3) {
 	      /* Reasonable step */
-	      radius = tl->alpha3 * radius;
+	      tao->trust = tl->alpha3 * tao->trust;
 	    }
 	    else if (kappa < tl->eta4) {
 	      /* Good step */
-	      radius = PetscMax(tl->alpha4 * norm_d, radius);
+	      tao->trust = PetscMax(tl->alpha4 * norm_d, tao->trust);
 	    }
 	    else {
 	      /* Very good step */
-	      radius = PetscMax(tl->alpha5 * norm_d, radius);
+	      tao->trust = PetscMax(tl->alpha5 * norm_d, tao->trust);
 	    }
 	  }
 	}
@@ -557,7 +551,7 @@ static PetscErrorCode TaoSolverSolve_NTL(TaoSolver tao)
 	/* The predicted reduction has the wrong sign.  This cannot
 	   happen in infinite precision arithmetic.  Step should
 	   be rejected! */
-	radius = tl->gamma1 * PetscMin(radius, norm_d);
+	tao->trust = tl->gamma1 * PetscMin(tao->trust, norm_d);
 	tr_reject = 1;
       }
       else {
@@ -565,7 +559,7 @@ static PetscErrorCode TaoSolverSolve_NTL(TaoSolver tao)
 	ierr = VecAXPY(tl->W, 1.0, tao->stepdirection); CHKERRQ(ierr);
 	ierr = TaoSolverComputeObjective(tao, tl->W, &ftrial); CHKERRQ(ierr);
 	if (TaoInfOrNaN(ftrial)) {
-	  radius = tl->gamma1 * PetscMin(radius, norm_d);
+	  tao->trust = tl->gamma1 * PetscMin(tao->trust, norm_d);
 	  tr_reject = 1;
 	}
 	else {
@@ -589,51 +583,51 @@ static PetscErrorCode TaoSolverSolve_NTL(TaoSolver tao)
 	  if (kappa >= 1.0 - tl->mu1) {
 	    /* Great agreement; accept step and update radius */
 	    if (tau_max < 1.0) {
-	      radius = PetscMax(radius, tl->gamma3 * norm_d);
+	      tao->trust = PetscMax(tao->trust, tl->gamma3 * norm_d);
 	    }
 	    else if (tau_max > tl->gamma4) {
-	      radius = PetscMax(radius, tl->gamma4 * norm_d);
+	      tao->trust = PetscMax(tao->trust, tl->gamma4 * norm_d);
 	    }
 	    else {
-	      radius = PetscMax(radius, tau_max * norm_d);
+	      tao->trust = PetscMax(tao->trust, tau_max * norm_d);
 	    }
 	  }
 	  else if (kappa >= 1.0 - tl->mu2) {
 	    /* Good agreement */
 
 	    if (tau_max < tl->gamma2) {
-	      radius = tl->gamma2 * PetscMin(radius, norm_d);
+	      tao->trust = tl->gamma2 * PetscMin(tao->trust, norm_d);
 	    }
 	    else if (tau_max > tl->gamma3) {
-	      radius = PetscMax(radius, tl->gamma3 * norm_d);
+	      tao->trust = PetscMax(tao->trust, tl->gamma3 * norm_d);
 	    }              else if (tau_max < 1.0) {
-	      radius = tau_max * PetscMin(radius, norm_d);
+	      tao->trust = tau_max * PetscMin(tao->trust, norm_d);
 	    }
 	    else {
-	      radius = PetscMax(radius, tau_max * norm_d);
+	      tao->trust = PetscMax(tao->trust, tau_max * norm_d);
 	    }
 	  }
 	  else {
 	    /* Not good agreement */
 	    if (tau_min > 1.0) {
-	      radius = tl->gamma2 * PetscMin(radius, norm_d);
+	      tao->trust = tl->gamma2 * PetscMin(tao->trust, norm_d);
 	    }
 	    else if (tau_max < tl->gamma1) {
-	      radius = tl->gamma1 * PetscMin(radius, norm_d);
+	      tao->trust = tl->gamma1 * PetscMin(tao->trust, norm_d);
 	    }
 	    else if ((tau_min < tl->gamma1) && (tau_max >= 1.0)) {
-	      radius = tl->gamma1 * PetscMin(radius, norm_d);
+	      tao->trust = tl->gamma1 * PetscMin(tao->trust, norm_d);
 	    }
 	    else if ((tau_1 >= tl->gamma1) && (tau_1 < 1.0) &&
 		     ((tau_2 < tl->gamma1) || (tau_2 >= 1.0))) {
-	      radius = tau_1 * PetscMin(radius, norm_d);
+	      tao->trust = tau_1 * PetscMin(tao->trust, norm_d);
 	    }
 	    else if ((tau_2 >= tl->gamma1) && (tau_2 < 1.0) &&
 		     ((tau_1 < tl->gamma1) || (tau_2 >= 1.0))) {
-	      radius = tau_2 * PetscMin(radius, norm_d);
+	      tao->trust = tau_2 * PetscMin(tao->trust, norm_d);
 	    }
 	    else {
-	      radius = tau_max * PetscMin(radius, norm_d);
+	      tao->trust = tau_max * PetscMin(tao->trust, norm_d);
 	    }
 	    tr_reject = 1;
 	  }
@@ -822,38 +816,38 @@ static PetscErrorCode TaoSolverSolve_NTL(TaoSolver tao)
 	f = fold;
 	ierr = VecCopy(tl->Xold, tao->solution); CHKERRQ(ierr);
 	ierr = VecCopy(tl->Gold, tao->gradient); CHKERRQ(ierr);
-	radius = 0.0;
+	tao->trust = 0.0;
       }
       else if (stepType == NTL_NEWTON) {
 	if (step < tl->nu1) {
 	  /* Very bad step taken; reduce radius */
-	  radius = tl->omega1 * PetscMin(norm_d, radius);
+	  tao->trust = tl->omega1 * PetscMin(norm_d, tao->trust);
 	}
 	else if (step < tl->nu2) {
 	  /* Reasonably bad step taken; reduce radius */
-	  radius = tl->omega2 * PetscMin(norm_d, radius);
+	  tao->trust = tl->omega2 * PetscMin(norm_d, tao->trust);
 	}
 	else if (step < tl->nu3) {
 	  /* Reasonable step was taken; leave radius alone */
 	  if (tl->omega3 < 1.0) {
-	    radius = tl->omega3 * PetscMin(norm_d, radius);
+	    tao->trust = tl->omega3 * PetscMin(norm_d, tao->trust);
 	  }
 	  else if (tl->omega3 > 1.0) {
-	    radius = PetscMax(tl->omega3 * norm_d, radius);
+	    tao->trust = PetscMax(tl->omega3 * norm_d, tao->trust);
 	  }
 	}
 	else if (step < tl->nu4) {
 	  /* Full step taken; increase the radius */
-	  radius = PetscMax(tl->omega4 * norm_d, radius);
+	  tao->trust = PetscMax(tl->omega4 * norm_d, tao->trust);
 	}
 	else {
 	  /* More than full step taken; increase the radius */
-	  radius = PetscMax(tl->omega5 * norm_d, radius);
+	  tao->trust = PetscMax(tl->omega5 * norm_d, tao->trust);
 	}
       }
       else {
 	/* Newton step was not good; reduce the radius */
-	radius = tl->omega1 * PetscMin(norm_d, radius);
+	tao->trust = tl->omega1 * PetscMin(norm_d, tao->trust);
       }
     }
     else {
@@ -861,11 +855,11 @@ static PetscErrorCode TaoSolverSolve_NTL(TaoSolver tao)
       ierr = VecCopy(tl->W, tao->solution); CHKERRQ(ierr);
       f = ftrial;
       ierr = TaoSolverComputeGradient(tao, tao->solution, tao->gradient); CHKERRQ(ierr);
-      ++tl->trust;
+      ++tl->ntrust;
     }
 
     /* The radius may have been increased; modify if it is too large */
-    radius = PetscMin(radius, tl->max_radius);
+    tao->trust = PetscMin(tao->trust, tl->max_radius);
 
     /* Check for termination */
     ierr = VecNorm(tao->gradient, NORM_2, &gnorm); CHKERRQ(ierr);
@@ -874,7 +868,7 @@ static PetscErrorCode TaoSolverSolve_NTL(TaoSolver tao)
     }
     needH = 1;
     
-    ierr = TaoSolverMonitor(tao, iter, f, gnorm, 0.0, radius, &reason); CHKERRQ(ierr);
+    ierr = TaoSolverMonitor(tao, iter, f, gnorm, 0.0, tao->trust, &reason); CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1005,7 +999,7 @@ static PetscErrorCode TaoSolverView_NTL(TaoSolver tao, PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer, "  Rejected matrix updates: %d\n", &nrejects); CHKERRQ(ierr);
     }
 
-    ierr = PetscViewerASCIIPrintf(viewer, "  Trust-region steps: %d\n", tl->trust); CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "  Trust-region steps: %d\n", tl->ntrust); CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer, "  Newton search steps: %d\n", tl->newt); CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer, "  BFGS search steps: %d\n", tl->bfgs); CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer, "  Scaled gradient search steps: %d\n", tl->sgrad); CHKERRQ(ierr);

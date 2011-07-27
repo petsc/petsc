@@ -175,11 +175,11 @@ static PetscErrorCode TaoSolverSolve_TRON(TaoSolver tao){
     SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf pr NaN");
   }
 
-  if (tron->delta <= 0) {
-    tron->delta=PetscMax(tron->gnorm*tron->gnorm,1.0);
+  if (tao->trust <= 0) {
+    tao->trust=PetscMax(tron->gnorm*tron->gnorm,1.0);
   }
 
-  tron->stepsize=tron->delta;
+  tron->stepsize=tao->trust;
   ierr = TaoSolverMonitor(tao, iter, tron->f, tron->gnorm, 0.0, tron->stepsize, &reason); CHKERRQ(ierr);
   if (tron->R) {
     ierr = VecDestroy(&tron->R); CHKERRQ(ierr);
@@ -188,7 +188,7 @@ static PetscErrorCode TaoSolverSolve_TRON(TaoSolver tao){
   while (reason==TAO_CONTINUE_ITERATING){
 
     ierr = TronGradientProjections(tao,tron); CHKERRQ(ierr);
-    f=tron->f; delta=tron->delta; gnorm=tron->gnorm; 
+    f=tron->f; delta=tao->trust; gnorm=tron->gnorm; 
     
     tron->n_free_last = tron->n_free;
     ierr = ISGetSize(tron->Free_Local, &tron->n_free);  CHKERRQ(ierr);
@@ -281,7 +281,7 @@ static PetscErrorCode TaoSolverSolve_TRON(TaoSolver tao){
     } /* end linear solve loop */
 
 
-    tron->f=f; tron->actred=actred; tron->delta=delta;
+    tron->f=f; tron->actred=actred; tao->trust=delta;
     iter++;
     ierr = TaoSolverMonitor(tao, iter, tron->f, tron->gnorm, 0.0, delta, &reason); CHKERRQ(ierr);
   }  /* END MAIN LOOP  */
@@ -617,11 +617,11 @@ PetscErrorCode TaoSolverCreate_TRON(TaoSolver tao)
   tao->fatol = 1e-10;
   tao->frtol = 1e-10;
   tao->data = (void*)tron;
-  tao->trtol = 1e-12;
+  tao->steptol = 1e-12;
+  tao->trust        = 1.0;
 
   /* Initialize pointers and variables */
   tron->n            = 0;
-  tron->delta        = 1.0;
   tron->maxgpits     = 3;
   tron->pg_ftol      = 0.001;
 

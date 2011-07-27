@@ -2,7 +2,7 @@
 #include "src/matrix/lmvmmat.h"
 #include "src/matrix/approxmat.h"
 #include "src/matrix/submatfree.h"
-static PetscErrorCode SQPCONObjectiveAndGradient(TaoLineSearch,Vec,PetscReal*,Vec,void*);
+//static PetscErrorCode SQPCONObjectiveAndGradient(TaoLineSearch,Vec,PetscReal*,Vec,void*);
 
 
 #undef __FUNCT__
@@ -362,6 +362,7 @@ PetscErrorCode TaoSolverCreate_SQPCON(TaoSolver tao)
 EXTERN_C_END
 
 
+/*
 #undef __FUNCT__
 #define __FUNCT__ "SQPCONObjectiveAndGradient"
 static PetscErrorCode SQPCONObjectiveAndGradient(TaoLineSearch ls, Vec X, PetscReal *f, Vec G, void *ptr)
@@ -379,11 +380,11 @@ static PetscErrorCode SQPCONObjectiveAndGradient(TaoLineSearch ls, Vec X, PetscR
 
   //ierr = VecDot(tao->constraints,sqpconP->LM,&lmh); CHKERRQ(ierr);
 
-  //*f -= lmh;
+  // *f -= lmh;
   
-  /* Gradient of Lagrangian GL = G - J' * lamda */
-  /*      WU = A' * WL
-          WV = B' * WL */
+  // Gradient of Lagrangian GL = G - J' * lamda 
+  //      WU = A' * WL
+  //      WV = B' * WL 
   ierr = MatMultTranspose(tao->jacobian_state,sqpconP->LM,sqpconP->WU); CHKERRQ(ierr);
   ierr = MatMultTranspose(tao->jacobian_design,sqpconP->LM,sqpconP->WV); CHKERRQ(ierr);
   
@@ -398,3 +399,4 @@ static PetscErrorCode SQPCONObjectiveAndGradient(TaoLineSearch ls, Vec X, PetscR
   
   PetscFunctionReturn(0);
 }
+*/

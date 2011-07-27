@@ -95,7 +95,7 @@ PetscErrorCode TaoSolverCreate(MPI_Comm comm, TaoSolver *newtao)
     tao->catol       = 0.0;
     tao->crtol       = 0.0;
     tao->xtol        = 0.0;
-    tao->trtol       = 0.0;
+    tao->steptol       = 0.0;
     tao->trust0      = TAO_INFINITY;
     tao->fmin        = -1e100;
     tao->hist_reset = PETSC_TRUE;
@@ -412,7 +412,7 @@ PetscErrorCode TaoSolverSetFromOptions(TaoSolver tao)
 			    &flg);CHKERRQ(ierr);
 	ierr = PetscOptionsInt("-tao_max_funcs","Stop if number of function evaluations exceeds","TaoSolverSetMaximumFunctionEvaluations",tao->max_funcs,&tao->max_funcs,&flg); CHKERRQ(ierr);
 	ierr = PetscOptionsReal("-tao_fmin","Stop if function less than","TaoSolverSetFunctionLowerBound",tao->fmin,&tao->fmin,&flg); CHKERRQ(ierr);
-	ierr = PetscOptionsReal("-tao_steptol","Stop if step size or trust region radius less than","",tao->trtol,&tao->trtol,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsReal("-tao_steptol","Stop if step size or trust region radius less than","",tao->steptol,&tao->steptol,&flg);CHKERRQ(ierr);
 	ierr = PetscOptionsReal("-tao_trust0","Initial trust region radius","TaoSolverSetTrustRegionRadius",tao->trust0,&tao->trust0,&flg);CHKERRQ(ierr); 
 
 
@@ -513,7 +513,7 @@ PetscErrorCode TaoSolverView(TaoSolver tao, PetscViewer viewer)
 	ierr=PetscViewerASCIIPrintf(viewer," frtol=%g\n",tao->frtol);CHKERRQ(ierr);
 
 	ierr=PetscViewerASCIIPrintf(viewer,"  convergence tolerances: gatol=%g,",tao->gatol);CHKERRQ(ierr);
-//	ierr=PetscViewerASCIIPrintf(viewer," trtol=%g,",tao->trtol);CHKERRQ(ierr);
+	ierr=PetscViewerASCIIPrintf(viewer," steptol=%g,",tao->steptol);CHKERRQ(ierr);
 	ierr=PetscViewerASCIIPrintf(viewer," gttol=%g\n",tao->gttol);CHKERRQ(ierr);
 
 	ierr = PetscViewerASCIIPrintf(viewer,"  Residual in Function/Gradient:=%e\n",tao->residual);CHKERRQ(ierr);
@@ -525,9 +525,9 @@ PetscErrorCode TaoSolverView(TaoSolver tao, PetscViewer viewer)
 	    ierr = PetscViewerASCIIPrintf(viewer,"  Residual in Constraints:=%e\n",tao->cnorm);CHKERRQ(ierr);
 	}
 
-	if (tao->trtol>0){
-	    ierr=PetscViewerASCIIPrintf(viewer,"  convergence tolerances: trtol=%g\n",tao->trtol);CHKERRQ(ierr);
-	    ierr=PetscViewerASCIIPrintf(viewer,"  Final step size/trust region radius:=%g\n",tao->step);CHKERRQ(ierr);
+	if (tao->trust < tao->steptol){
+	    ierr=PetscViewerASCIIPrintf(viewer,"  convergence tolerances: steptol=%g\n",tao->steptol);CHKERRQ(ierr);
+	    ierr=PetscViewerASCIIPrintf(viewer,"  Final trust region radius:=%g\n",tao->trust);CHKERRQ(ierr);
 	}
 
 	if (tao->fmin>-1.e25){
@@ -585,8 +585,8 @@ PetscErrorCode TaoSolverView(TaoSolver tao, PetscViewer viewer)
 		case TAO_CONVERGED_RTOL:
 		    ierr = PetscViewerASCIIPrintf(viewer," Rtol -- F < F_mintol*F_init\n"); CHKERRQ(ierr);
 		    break;
-		case TAO_CONVERGED_TRTOL:
-		    ierr = PetscViewerASCIIPrintf(viewer," Trtol -- step size small\n"); CHKERRQ(ierr);
+		case TAO_CONVERGED_STEPTOL:
+		    ierr = PetscViewerASCIIPrintf(viewer," Steptol -- step size small\n"); CHKERRQ(ierr);
 		    break;
 		case TAO_CONVERGED_MINF:
 		    ierr = PetscViewerASCIIPrintf(viewer," Minf -- grad F < grad F_min\n"); CHKERRQ(ierr);
@@ -729,6 +729,36 @@ PetscErrorCode TaoSolverSetFunctionLowerBound(TaoSolver tao,PetscReal fmin)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "TaoSolverGetFunctionLowerBound"
+/*@
+   TaoSolverGetFunctionLowerBound - Sets a bound on the solution objective value.
+   When an approximate solution with an objective value below this number
+   has been found, the solver will terminate.
+
+   Collective on TaoSolver
+
+   Input Parameters:
+.  tao - the TaoSolver solver context
+
+   OutputParameters:
+.  fmin - the tolerance
+
+   Level: intermediate
+
+.keywords: options, View, Bounds,
+
+.seealso: TaoSolverSetFunctionLowerBound()
+@*/
+PetscErrorCode TaoSolverGetFunctionLowerBound(TaoSolver tao,PetscReal *fmin)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
+  *fmin = tao->fmin;
+  PetscFunctionReturn(0);
+}
+
+
 
 #undef __FUNCT__ 
 #define __FUNCT__ "TaoSolverSetMaximumFunctionEvaluations"
@@ -761,6 +791,35 @@ PetscErrorCode TaoSolverSetMaximumFunctionEvaluations(TaoSolver tao,PetscInt nfc
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__ 
+#define __FUNCT__ "TaoSolverGetMaximumFunctionEvaluations"
+/*@
+   TaoSolverGetMaximumFunctionEvaluations - Sets a maximum number of 
+   function evaluations.
+
+   Collective on TaoSolver
+
+   Input Parameters:
+.  tao - the TaoSolver solver context
+
+   Output Parameters
+.  nfcn - the maximum number of function evaluations
+
+   Level: intermediate
+
+.keywords: options, Iterate,  convergence
+
+.seealso: TaoSolverSetMaximumFunctionEvaluations(), TaoSolverGetMaximumIterations()
+@*/
+
+PetscErrorCode TaoSolverGetMaximumFunctionEvaluations(TaoSolver tao,PetscInt *nfcn)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
+  *nfcn = tao->max_funcs;
+  PetscFunctionReturn(0);
+}
+
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSolverSetMaximumIterations"
@@ -790,6 +849,118 @@ PetscErrorCode TaoSolverSetMaximumIterations(TaoSolver tao,PetscInt maxits)
   tao->max_its = PetscMax(zero,maxits);
   PetscFunctionReturn(0);
 }
+
+
+#undef __FUNCT__
+#define __FUNCT__ "TaoSolverGetMaximumIterations"
+/*@
+   TaoSolverGetMaximumIterations - Sets a maximum number of iterates.
+
+   Collective on TaoSolver
+
+   Input Parameters:
+.  tao - the TaoSolver solver context
+
+   Output Parameters:
+.  maxits - the maximum number of iterates 
+
+   Level: intermediate
+
+.keywords: options, Iterate, convergence
+
+.seealso: TaoSolverSetMaximumIterations(), TaoSolverGetMaximumFunctionEvaluations()
+@*/
+PetscErrorCode TaoSolverGetMaximumIterations(TaoSolver tao,PetscInt *maxits)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
+  *maxits = tao->max_its;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TaoSolverSetInitialTrustRegionRadius"
+/*@
+   TaoSolverSetInitialTrustRegionRadius - Sets the initial trust region radius.
+
+   Collective on TaoSolver
+
+   Input Parameter:
++  tao - a TAO optimization solver
+-  radius - the trust region radius
+
+   Level: intermediate
+
+   Options Database Key:
+.  -tao_trust0
+
+.keywords: trust region
+
+.seealso: TaoSolverGetTrustRegionRadius(), TaoSolverSetTrustRegionTolerance()
+@*/
+PetscErrorCode TaoSolverSetInitialTrustRegionRadius(TaoSolver tao, PetscReal radius)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
+  tao->trust0 = PetscMax(0.0,radius);
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "TaoSolverGetInitialTrustRegionRadius"
+/*@
+   TaoSolverGetInitialTrustRegionRadius - Sets the initial trust region radius.
+
+   Collective on TaoSolver
+
+   Input Parameter:
+.  tao - a TAO optimization solver
+
+   Output Parameter:
+.  radius - the trust region radius
+
+   Level: intermediate
+
+.keywords: trust region
+
+.seealso: TaoSolverSetTrustRegionRadius()
+@*/
+PetscErrorCode TaoSolverGetInitialTrustRegionRadius(TaoSolver tao, PetscReal *radius)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
+  *radius = tao->trust0;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TaoSolverGetCurrentTrustRegionRadius"
+/*@
+   TaoSolverGetCurrentTrustRegionRadius - Gets the currenttrust region radius.
+
+   Collective on TaoSolver
+
+   Input Parameter:
+.  tao - a TAO optimization solver
+
+   Output Parameter:
+.  radius - the trust region radius
+
+   Level: intermediate
+
+.keywords: trust region
+
+.seealso: TaoSolverSetTrustRegionRadius(), TaoSolverGetInitialTrustRegionRadius()
+@*/
+PetscErrorCode TaoSolverGetCurrentTrustRegionRadius(TaoSolver tao, PetscReal *radius)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
+  *radius = tao->trust;
+  PetscFunctionReturn(0);
+}
+
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSolverGetTolerances"
@@ -1143,7 +1314,7 @@ PetscErrorCode TaoSolverDefaultConvergenceTest(TaoSolver tao,void *dummy)
   PetscInt niter=tao->niter, nfuncs=PetscMax(tao->nfuncs,tao->nfuncgrads);
   PetscInt max_funcs=tao->max_funcs;
   PetscReal gnorm=tao->residual, gnorm0=tao->gnorm0;
-  PetscReal f=tao->fc, trtol=tao->trtol,trradius=tao->step;
+  PetscReal f=tao->fc, steptol=tao->steptol,trradius=tao->step;
   PetscReal gatol=tao->gatol,grtol=tao->grtol,gttol=tao->gttol;
   PetscReal fatol=tao->fatol,frtol=tao->frtol,catol=tao->catol,crtol=tao->crtol;
   PetscReal fmin=tao->fmin, cnorm=tao->cnorm, cnorm0=tao->cnorm0;
@@ -1183,9 +1354,9 @@ PetscErrorCode TaoSolverDefaultConvergenceTest(TaoSolver tao,void *dummy)
   } else if ( tao->lsflag != 0 ){
     ierr = PetscInfo(tao,"Tao Line Search failure.\n"); CHKERRQ(ierr);
     reason = TAO_DIVERGED_LS_FAILURE;
-  } else if (trradius < trtol && niter > 0){
-    ierr = PetscInfo2(tao,"Trust region/step size too small: %g < %g\n", trradius,trtol); CHKERRQ(ierr);
-    reason = TAO_CONVERGED_TRTOL;
+  } else if (trradius < steptol && niter > 0){
+    ierr = PetscInfo2(tao,"Trust region/step size too small: %g < %g\n", trradius,steptol); CHKERRQ(ierr);
+    reason = TAO_CONVERGED_STEPTOL;
   } else if (niter > tao->max_its) {
     ierr = PetscInfo2(tao,"Exceeded maximum number of iterations: %d > %d\n",niter,tao->max_its); CHKERRQ(ierr);
     reason = TAO_DIVERGED_MAXITS;
@@ -1552,7 +1723,7 @@ PetscErrorCode TaoSolverRegisterDestroy(void)
 - reason - one of
 $     TAO_CONVERGED_ATOL (2),
 $     TAO_CONVERGED_RTOL (3),
-$     TAO_CONVERGED_TRTOL (4),
+$     TAO_CONVERGED_STEPTOL (4),
 $     TAO_CONVERGED_MINF (5),
 $     TAO_CONVERGED_USER (6),
 $     TAO_DIVERGED_MAXITS (-2),
@@ -1589,7 +1760,7 @@ PetscErrorCode TaoSolverSetTerminationReason(TaoSolver tao, TaoSolverTermination
 
 $    TAO_CONVERGED_ATOL (2),        ||g||^2 <= atol
 $    TAO_CONVERGED_RTOL (3),        ||g||^2
-$    TAO_CONVERGED_TRTOL (4),       step size small
+$    TAO_CONVERGED_STEPTOL (4),       step size small
 $    TAO_CONVERGED_MINF (5),        F < F_min
 $    TAO_CONVERGED_USER (6),        (user defined)
 

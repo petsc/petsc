@@ -21,7 +21,7 @@ extern PetscClassId TAOSOLVER_CLASSID;
 typedef enum {/* converged */
               TAO_CONVERGED_ATOL          =  2, /* F < F_minabs */
               TAO_CONVERGED_RTOL          =  3, /* F < F_mintol*F_initial */
-              TAO_CONVERGED_TRTOL         =  4, /* step size small */
+              TAO_CONVERGED_STEPTOL         =  4, /* step size small */
               TAO_CONVERGED_MINF          =  5, /* grad F < grad F_min */
               TAO_CONVERGED_USER          =  6, /* User defined */
               /* diverged */
@@ -107,9 +107,14 @@ extern PetscErrorCode TaoSolverComputeVariableBounds(TaoSolver);
 extern PetscErrorCode TaoSolverGetTolerances(TaoSolver, PetscReal*, PetscReal*, PetscReal*, PetscReal*, PetscReal*);
 extern PetscErrorCode TaoSolverSetTolerances(TaoSolver, PetscReal, PetscReal, PetscReal, PetscReal, PetscReal);
 extern PetscErrorCode TaoSolverSetFunctionLowerBound(TaoSolver, PetscReal);
-extern PetscErrorCode TaoSolverSetTrustRegionRadius(TaoSolver, PetscReal);
+extern PetscErrorCode TaoSolverSetInitialTrustRegionRadius(TaoSolver, PetscReal);
 extern PetscErrorCode TaoSolverSetMaximumIterations(TaoSolver, PetscInt);
 extern PetscErrorCode TaoSolverSetMaximumFunctionEvaluations(TaoSolver, PetscInt);
+extern PetscErrorCode TaoSolverGetFunctionLowerBound(TaoSolver, PetscReal*);
+extern PetscErrorCode TaoSolverGetInitialTrustRegionRadius(TaoSolver, PetscReal*);
+extern PetscErrorCode TaoSolverGetCurrentTrustRegionRadius(TaoSolver, PetscReal*);
+extern PetscErrorCode TaoSolverGetMaximumIterations(TaoSolver, PetscInt*);
+extern PetscErrorCode TaoSolverGetMaximumFunctionEvaluations(TaoSolver, PetscInt*);
 extern PetscErrorCode TaoSolverSetDefaultKSPType(TaoSolver, KSPType);
 extern PetscErrorCode TaoSolverSetDefaultPCType(TaoSolver, PCType);
 extern PetscErrorCode TaoSolverSetOptionsPrefix(TaoSolver, const char p[]);

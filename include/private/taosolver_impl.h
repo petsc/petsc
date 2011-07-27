@@ -97,6 +97,7 @@ struct _p_TaoSolver {
     PetscBool lsflag; /* goes up when line search fails */
     KSP ksp;
     PetscReal trust0; /* initial trust region radius */
+    PetscReal trust;  /* Current trust region */
 
     PetscReal fatol;
     PetscReal frtol;
@@ -106,7 +107,7 @@ struct _p_TaoSolver {
     PetscReal catol;
     PetscReal crtol;
     PetscReal xtol;
-    PetscReal trtol;
+    PetscReal steptol;
     PetscReal fmin;
 
     PetscBool printreason;

@@ -5,7 +5,7 @@
 
       integer TAO_CONVERGED_ATOL
       integer TAO_CONVERGED_RTOL
-      integer TAO_CONVERGED_TRTOL
+      integer TAO_CONVERGED_STEPTOL
       integer TAO_CONVERGED_MINF
       integer TAO_CONVERGED_USER
       integer TAO_DIVERGED_MAXITS
@@ -18,7 +18,7 @@
 
       parameter ( TAO_CONVERGED_ATOL = 2)
       parameter ( TAO_CONVERGED_RTOL = 3)
-      parameter ( TAO_CONVERGED_TRTOL = 4)
+      parameter ( TAO_CONVERGED_STEPTOL = 4)
       parameter ( TAO_CONVERGED_MINF = 5)
       parameter ( TAO_CONVERGED_USER = 6)
       parameter ( TAO_DIVERGED_MAXITS = -2)

@@ -5,9 +5,6 @@ TRON using MatDiagonalSet -- mpiaij doesn't implement this
 
 test:
   trust region tolerance
-  TaoSolverSetMaximumFunctionEvaluation
-  TaoSolverSetMaximumIterations
-  TaoSolverGetSolutionStatus
 
 
 

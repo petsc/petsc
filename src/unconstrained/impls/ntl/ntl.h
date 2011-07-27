@@ -111,7 +111,7 @@ typedef struct {
   PetscReal max_radius;    /* upper bound on trust region radius */
   PetscReal epsilon;       /* tolerance used when computing ared/pred */
 
-  PetscInt trust;		/* Trust-region steps accepted */
+  PetscInt ntrust;		/* Trust-region steps accepted */
   PetscInt newt;		/* Newton directions attempted */
   PetscInt bfgs;		/* BFGS directions attempted */
   PetscInt sgrad;		/* Scaled gradient directions attempted */
