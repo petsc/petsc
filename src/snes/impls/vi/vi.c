@@ -1118,10 +1118,7 @@ PetscErrorCode SNESSolveVI_RS(SNES snes)
     ierr = SNESComputeJacobian(snes,X,&snes->jacobian,&snes->jacobian_pre,&flg);CHKERRQ(ierr);
 
 
-    /* remove later */
-    ierr = MatView(snes->jacobian,PETSC_VIEWER_BINARY_(PETSC_COMM_WORLD));CHKERRQ(ierr);
-
-    /* Create active and inactive index sets */
+        /* Create active and inactive index sets */
     
     /*original
     ierr = SNESVICreateIndexSets_RS(snes,X,F,&IS_act,&IS_inact);CHKERRQ(ierr);
@@ -1222,10 +1219,8 @@ PetscErrorCode SNESSolveVI_RS(SNES snes)
     /*      ierr = ISView(IS_act,0);CHKERRQ(ierr);*/
     /*      ierr = MatView(snes->jacobian_pre,0); */
 
-    /* remove later */
-    ierr = MatView(jac_inact_inact,PETSC_VIEWER_BINARY_(PETSC_COMM_WORLD));CHKERRQ(ierr);
-    ierr = ISView(IS_inact,PETSC_VIEWER_BINARY_(PETSC_COMM_WORLD));CHKERRQ(ierr);
-
+   
+   
     ierr = KSPSetOperators(snes->ksp,jac_inact_inact,prejac_inact_inact,flg);CHKERRQ(ierr);
     ierr = KSPSetUp(snes->ksp);CHKERRQ(ierr);
     {
