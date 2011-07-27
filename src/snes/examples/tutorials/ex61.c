@@ -18,7 +18,7 @@ Runtime options include:\n\
 ./ex61 -ksp_type fgmres -snes_vi_monitor   -snes_atol 1.e-11  -da_refine 5 -snes_converged_reason -ksp_converged_reason   -snes_ls_monitor -VG 1 -draw_fields 1,3,4  -pc_type mg -pc_mg_galerkin -log_summary -dt .0000000000001 -mg_coarse_pc_type svd  -ksp_monitor_true_residual -ksp_rtol 1.e-9
 
 Movie version
-./ex61 -ksp_type fgmres -snes_vi_monitor   -snes_atol 1.e-11  -da_refine 6 -snes_converged_reason -ksp_converged_reason   -snes_ls_monitor -VG 10000000 -draw_fields 1,3,4  -pc_type mg -pc_mg_galerkin -log_summary -dt .000001 -mg_coarse_pc_type svd  -ksp_monitor_true_residual -ksp_rtol 1.e-9 -snes_ls basic -T .0020 -P_casc .0005
+./ex61 -ksp_type fgmres -snes_vi_monitor   -snes_atol 1.e-11  -da_refine 6 -snes_converged_reason -ksp_converged_reason   -snes_ls_monitor -VG 10 -draw_fields 1,3,4  -pc_type mg -pc_mg_galerkin -log_summary -dt .000001 -mg_coarse_pc_type svd  -ksp_monitor_true_residual -ksp_rtol 1.e-9 -snes_ls basic -T .0020 
 
  */
 
@@ -43,12 +43,13 @@ Movie version
 
 typedef struct{
   PetscReal   dt,T; /* Time step and end time */
+  PetscReal   dtevent;  /* time scale of radiation events, roughly one event per dtevent */
   DM          da1,da2;
   Mat         M;    /* Jacobian matrix */
   Mat         M_0;
   Vec         q,wv,cv,wi,ci,eta,cvi,DPsiv,DPsii,DPsieta,Pv,Pi,Piv,logcv,logci,logcvi,Rr,Riv;
   Vec         work1,work2,work3,work4;
-  PetscScalar Dv,Di,Evf,Eif,A,kBT,kav,kai,kaeta,Rsurf,Rbulk,L,P_casc,VG; /* physics parameters */
+  PetscScalar Dv,Di,Evf,Eif,A,kBT,kav,kai,kaeta,Rsurf,Rbulk,L,VG; /* physics parameters */
   PetscReal   xmin,xmax,ymin,ymax;
   PetscInt    Mda, Nda;
 }AppCtx;
@@ -534,7 +535,7 @@ PetscErrorCode SetRandomVectors(AppCtx* user,PetscReal t)
     ierr = PetscMalloc(1000*sizeof(RandomValues),&randomvalues);CHKERRQ(ierr);
     ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"ex61.random",FILE_MODE_READ,&viewer);CHKERRQ(ierr);
     ierr = PetscViewerBinaryRead(viewer,randomvalues,4*1000,PETSC_DOUBLE);CHKERRQ(ierr);
-    for (i=0; i<1000; i++) randomvalues[i].dt = .1*randomvalues[i].dt*user->dt;
+    for (i=0; i<1000; i++) randomvalues[i].dt = randomvalues[i].dt*user->dtevent;
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
 
@@ -543,7 +544,7 @@ PetscErrorCode SetRandomVectors(AppCtx* user,PetscReal t)
   while (randtime + randomvalues[randindex].dt < t + user->dt) {  /* radiation event has occured since last time step */
     I = ((PetscInt) (randomvalues[randindex].x*M)) + M*((PetscInt) (randomvalues[randindex].y*N));
     /* need to make sure eta at the given point is not great than .8 */
-    ierr = VecSetValue(user->Pv,I, user->dt*randomvalues[randindex].strength*user->VG,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = VecSetValue(user->Pv,I, randomvalues[randindex].strength*user->VG,INSERT_VALUES);CHKERRQ(ierr);
     randtime += randomvalues[randindex++].dt;
     cnt++;
   }
@@ -673,15 +674,17 @@ PetscErrorCode GetParams(AppCtx* user)
   user->kBT = 0.11;
   user->kav = 1.0; user->kai = 1.0; user->kaeta = 1.0;
   user->Rsurf = 10.0; user->Rbulk = 1.0;
-  user->L = 10.0; user->P_casc = 0.05;
-  user->T = 1.0e-2;    user->dt = 1.0e-4;
+  user->L = 10.0; 
+  user->T = 1.0e-2;   
+  user->dt = 1.0e-4;
   user->VG = 100.0;
+  user->dtevent = user->dt;
 
   ierr = PetscOptionsGetReal(PETSC_NULL,"-xmin",&user->xmin,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(PETSC_NULL,"-xmax",&user->xmax,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(PETSC_NULL,"-T",&user->T,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(PETSC_NULL,"-dt",&user->dt,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-P_casc",&user->P_casc,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(PETSC_NULL,"-dtevent",&user->dtevent,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(PETSC_NULL,"-VG",&user->VG,&flg);CHKERRQ(ierr);
    
 
