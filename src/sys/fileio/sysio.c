@@ -552,7 +552,7 @@ PetscErrorCode  PetscBinarySeek(int fd,off_t off,PetscBinarySeekType whence,off_
 PetscErrorCode  PetscBinarySynchronizedRead(MPI_Comm comm,int fd,void *p,PetscInt n,PetscDataType type)
 {
   PetscErrorCode ierr;
-  PetscMPIInt    rank;
+  PetscMPIInt    rank
   MPI_Datatype   mtype;
 
   PetscFunctionBegin;

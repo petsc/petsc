@@ -54,7 +54,7 @@ typedef struct{
 }AppCtx;
 
 PetscErrorCode GetParams(AppCtx*);
-PetscErrorCode SetRandomVectors(AppCtx*);
+PetscErrorCode SetRandomVectors(AppCtx*,PetscReal);
 PetscErrorCode SetVariableBounds(DM,Vec,Vec);
 PetscErrorCode SetUpMatrices(AppCtx*);
 PetscErrorCode UpdateMatrices(AppCtx*);
@@ -176,7 +176,7 @@ int main(int argc, char **argv)
     ierr = SNESSetFunction(snes,r,FormFunction,(void*)&user);CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,J,J,FormJacobian,(void*)&user);CHKERRQ(ierr);
 
-    ierr = SetRandomVectors(&user);CHKERRQ(ierr);
+    ierr = SetRandomVectors(&user,t);CHKERRQ(ierr);
     /*    ierr = VecView(user.Pv,view_rand);CHKERRQ(ierr);
     ierr = VecView(user.Pi,view_rand);CHKERRQ(ierr);
      ierr = VecView(user.Piv,view_rand);CHKERRQ(ierr);*/
@@ -509,19 +509,50 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
   PetscFunctionReturn(0);
 }
 
+typedef struct {
+  PetscReal dt,x,y,strength;
+} RandomValues;
+
+
 #undef __FUNCT__
 #define __FUNCT__ "SetRandomVectors"
-PetscErrorCode SetRandomVectors(AppCtx* user)
+PetscErrorCode SetRandomVectors(AppCtx* user,PetscReal t)
 {
-  PetscErrorCode ierr;
-  PetscInt       i,n,count=0;
-  PetscScalar    *w1,*w2,*Pv_p,*eta_p;
-  /* static PetscViewer viewer = 0; */
+  PetscErrorCode        ierr;
+  PetscInt              i,n,count=0;
+  PetscScalar           *w1,*w2,*Pv_p,*eta_p;
   static PetscRandom    rand = 0;
-  static PetscInt       step = 0;
+
+  static RandomValues   *randomvalues = 0;
+  static PetscInt       randindex = 0; /* indicates how far into the randomvalues we have currently used */
+  static PetscReal      randtime = 0; /* indicates time of last radiation event */
+  PetscInt              I,M,N,cnt = 0;
 
   PetscFunctionBegin;
-  if (!rand) {
+  if (!randomvalues) {
+    PetscViewer viewer;
+    ierr = PetscMalloc(1000*sizeof(RandomValues),&randomvalues);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"ex61.random",FILE_MODE_READ,&viewer);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryRead(viewer,randomvalues,4*1000,PETSC_DOUBLE);CHKERRQ(ierr);
+    for (i=0; i<1000; i++) randomvalues[i].dt = .1*randomvalues[i].dt*user->dt;
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+  }
+
+  ierr = VecSet(user->Pv,0.0);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(user->da1,0,&M,&N,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  while (randtime + randomvalues[randindex].dt < t + user->dt) {  /* radiation event has occured since last time step */
+    I = ((PetscInt) (randomvalues[randindex].x*M)) + M*((PetscInt) (randomvalues[randindex].y*N));
+    /* need to make sure eta at the given point is not great than .8 */
+    ierr = VecSetValue(user->Pv,I, user->dt*randomvalues[randindex].strength*user->VG,INSERT_VALUES);CHKERRQ(ierr);
+    randtime += randomvalues[randindex++].dt;
+    cnt++;
+  }
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of radiation events %d\n",cnt);CHKERRQ(ierr);
+  ierr = VecAssemblyBegin(user->Pv);CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(user->Pv);CHKERRQ(ierr);
+
+
+  /*if (!rand) {
     PetscRandomCreate(PETSC_COMM_WORLD,&rand);CHKERRQ(ierr);
     PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
   }
@@ -546,22 +577,18 @@ PetscErrorCode SetRandomVectors(AppCtx* user)
     }
 
   }
-  step++;
 
-  ierr = VecCopy(user->Pv,user->Pi);CHKERRQ(ierr);
-  ierr = VecScale(user->Pi,0.9);CHKERRQ(ierr);
-  ierr = VecPointwiseMult(user->Piv,user->Pi,user->Pv);CHKERRQ(ierr);
   ierr = VecRestoreArray(user->work1,&w1);CHKERRQ(ierr);
   ierr = VecRestoreArray(user->work2,&w2);CHKERRQ(ierr);
   ierr = VecRestoreArray(user->Pv,&Pv_p);CHKERRQ(ierr);
   ierr = VecRestoreArray(user->eta,&eta_p);CHKERRQ(ierr);
-  printf("count %d n %d\n",count,n);
-  /*
-  if (!viewer) {
-    ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,PETSC_NULL,"Random",0,0,300,300,&viewer);CHKERRQ(ierr);
-  }
-  ierr = VecView(user->Pv,viewer);CHKERRQ(ierr);
-   */
+   printf("count %d n %d\n",count,n);
+  ierr = VecNorm(user->Pv,NORM_INFINITY,&max);CHKERRQ(ierr);
+   printf("max %g\n",max);*/
+
+  ierr = VecCopy(user->Pv,user->Pi);CHKERRQ(ierr);
+  ierr = VecScale(user->Pi,0.9);CHKERRQ(ierr);
+  ierr = VecPointwiseMult(user->Piv,user->Pi,user->Pv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
   
 }
