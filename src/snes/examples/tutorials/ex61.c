@@ -77,7 +77,7 @@ int main(int argc, char **argv)
   AppCtx              user; /* Application context */
   Vec                 xl,xu; /* Upper and lower bounds on variables */
   Mat                 J;
-  PetscScalar         t=0.0;
+  PetscScalar         t=0.0,normq;
   /*  PetscViewer         view_out, view_q, view_psi, view_mat;*/
   /*  PetscViewer         view_rand;*/
   IS                  inactiveconstraints;
@@ -188,6 +188,7 @@ int main(int argc, char **argv)
      ierr = VecView(user.DPsieta,view_psi);CHKERRQ(ierr);*/
 
     ierr = Update_q(&user);CHKERRQ(ierr);
+
     /*    ierr = VecView(user.q,view_q);CHKERRQ(ierr);*/
     /*  ierr = MatView(user.M,view_mat);CHKERRQ(ierr);*/
 
@@ -209,6 +210,8 @@ int main(int argc, char **argv)
     ierr = PetscViewerDestroy(&view_vtk_eta);CHKERRQ(ierr);
 
         
+    ierr = VecNorm(user.q,NORM_INFINITY,&normq);CHKERRQ(ierr);
+    printf("inf-norm of q = %f\n",normq);
     ierr = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(ierr);
     ierr = SNESGetConvergedReason(snes,&reason);CHKERRQ(ierr);
     if (reason < 0) SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_CONV_FAILED,"Nonlinear solver failed");
@@ -313,7 +316,7 @@ PetscErrorCode Update_u(Vec X,AppCtx *user)
 PetscErrorCode Update_q(AppCtx *user)
 {
   PetscErrorCode ierr;
-  PetscScalar    *q_p,*w1,*w2;
+  PetscScalar    *q_p,*w1,*w2,max1;
   PetscInt       i,n;
 
   PetscFunctionBegin;
@@ -331,14 +334,24 @@ PetscErrorCode Update_q(AppCtx *user)
   ierr = VecCopy(user->cv,user->work1);CHKERRQ(ierr);
   ierr = VecAXPY(user->work1,1.0,user->Pv);CHKERRQ(ierr); 
   ierr = VecScale(user->work1,-1.0);CHKERRQ(ierr);
+
+  ierr = VecNorm(user->work1,NORM_INFINITY,&max1);CHKERRQ(ierr);
+  printf("inf-norm of user->work1 = %f\n",max1);
+
   ierr = MatMult(user->M_0,user->work1,user->work2);CHKERRQ(ierr);
   ierr = VecGetLocalSize(user->work1,&n);CHKERRQ(ierr);
   
+  ierr = VecNorm(user->work2,NORM_INFINITY,&max1);CHKERRQ(ierr);
+  printf("inf-norm of wi = %f\n",max1);
+
  for (i=0;i<n;i++) {
        q_p[5*i]=w2[i];
   }
  
   ierr = MatMult(user->M_0,user->DPsiv,user->work1);CHKERRQ(ierr);
+
+  ierr = VecNorm(user->work1,NORM_INFINITY,&max1);CHKERRQ(ierr);
+  printf("inf-norm of cv = %f\n",max1);
   for (i=0;i<n;i++) {
        q_p[5*i+1]=w1[i];
   }
@@ -346,13 +359,23 @@ PetscErrorCode Update_q(AppCtx *user)
   ierr = VecCopy(user->ci,user->work1);CHKERRQ(ierr);
   ierr = VecAXPY(user->work1,1.0,user->Pi);CHKERRQ(ierr);
   ierr = VecScale(user->work1,-1.0);CHKERRQ(ierr);
+
+  ierr = VecNorm(user->work1,NORM_INFINITY,&max1);CHKERRQ(ierr);
+  printf("inf-norm of user->work1 = %f\n",max1);
+
   ierr = MatMult(user->M_0,user->work1,user->work2);CHKERRQ(ierr);
-  for (i=0;i<n;i++) {
+ 
+  ierr = VecNorm(user->work2,NORM_INFINITY,&max1);CHKERRQ(ierr);
+  printf("inf-norm of wi = %f\n",max1);
+ for (i=0;i<n;i++) {
        q_p[5*i+2]=w2[i];
   }
 
   ierr = MatMult(user->M_0,user->DPsii,user->work1);CHKERRQ(ierr);
-  for (i=0;i<n;i++) {
+
+  ierr = VecNorm(user->work1,NORM_INFINITY,&max1);CHKERRQ(ierr);
+  printf("inf-norm of ci = %f\n",max1);
+ for (i=0;i<n;i++) {
        q_p[5*i+3]=w1[i];
   }
 
@@ -361,6 +384,11 @@ PetscErrorCode Update_q(AppCtx *user)
   ierr = VecAXPY(user->work1,user->L,user->DPsieta);CHKERRQ(ierr);
   ierr = VecAXPY(user->work1,-1.0,user->Piv);CHKERRQ(ierr);
   ierr = MatMult(user->M_0,user->work1,user->work2);CHKERRQ(ierr);
+  /* newly added */
+  ierr = VecScale(user->work2,user->dt*user->dt);CHKERRQ(ierr);
+
+  ierr = VecNorm(user->work2,NORM_INFINITY,&max1);CHKERRQ(ierr);
+  printf("inf-norm of eta = %f\n",max1);
   for (i=0;i<n;i++) {
        q_p[5*i+4]=w2[i];
   }
@@ -769,8 +797,8 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
        
       //cv_sum = (cv_p[idx[0]] + cv_p[idx[1]] + cv_p[idx[2]])*user->Dv/(3.0*user->kBT);
       //ci_sum = (ci_p[idx[0]] + ci_p[idx[1]] + ci_p[idx[2]])*user->Di/(3.0*user->kBT);
-      cv_sum = .0000069*user->Dv/user->kBT;
-      ci_sum = .0000069*user->Di/user->kBT;
+      cv_sum = .00069*user->Dv/user->kBT;
+      ci_sum = .00069*user->Di/user->kBT;
       
 
         
@@ -824,9 +852,9 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
         cols3[1] = 5*idx[1]+4;   vals3[1] = eM_0[r][1]/dt + user->L*user->kaeta*dt*eM_2_odd[r][1];
         cols3[2] = 5*idx[2]+4;   vals3[2] = eM_0[r][2]/dt + user->L*user->kaeta*dt*eM_2_odd[r][2];
          */
-        cols3[0] = 5*idx[0]+4;   vals3[0] = eM_0[r][0]/dt + user->L*user->kaeta*eM_2_odd[r][0];
-        cols3[1] = 5*idx[1]+4;   vals3[1] = eM_0[r][1]/dt + user->L*user->kaeta*eM_2_odd[r][1];
-        cols3[2] = 5*idx[2]+4;   vals3[2] = eM_0[r][2]/dt + user->L*user->kaeta*eM_2_odd[r][2];
+        cols3[0] = 5*idx[0]+4;   vals3[0] = (eM_0[r][0]/dt + user->L*user->kaeta*eM_2_odd[r][0])*dt*dt;
+        cols3[1] = 5*idx[1]+4;   vals3[1] = (eM_0[r][1]/dt + user->L*user->kaeta*eM_2_odd[r][1])*dt*dt;
+        cols3[2] = 5*idx[2]+4;   vals3[2] = (eM_0[r][2]/dt + user->L*user->kaeta*eM_2_odd[r][2])*dt*dt;
         
         ierr = MatSetValuesLocal(M,1,&row,3,cols3,vals3,ADD_VALUES);CHKERRQ(ierr);
 
@@ -947,8 +975,8 @@ PetscErrorCode UpdateMatrices(AppCtx* user)
                       
         // cv_sum = (1.0e-3+cv_p[idx[0]] + cv_p[idx[1]] + cv_p[idx[2]])*user->Dv/(3.0*user->kBT);
         //ci_sum = (1.0e-3+ci_p[idx[0]] + ci_p[idx[1]] + ci_p[idx[2]])*user->Di/(3.0*user->kBT);
-        cv_sum = .0000069*user->Dv/(user->kBT);
-        ci_sum = .0000069*user->Di/user->kBT;
+        cv_sum = .00069*user->Dv/(user->kBT);
+        ci_sum = .00069*user->Di/user->kBT;
 
          
                 
