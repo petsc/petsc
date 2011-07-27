@@ -364,7 +364,8 @@ PetscErrorCode DMGetInterpolation_DA_2D_Q1(DM dac,DM daf,Mat *A)
   }
   
   /* loop over local fine grid nodes setting interpolation for those*/
-  if (!vcoors) {
+  // if (!vcoors) {
+  if (1) {
     
     for (j=j_start; j<j_start+n_f; j++) {
       for (i=i_start; i<i_start+m_f; i++) {
