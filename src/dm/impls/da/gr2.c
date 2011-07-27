@@ -88,11 +88,13 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
   PetscDrawViewPorts *ports = PETSC_NULL;
   PetscViewerFormat  format;
   PetscInt           *displayfields;
-  PetscInt           ndisplayfields,i;
+  PetscInt           ndisplayfields,i,nbounds;
   PetscBool          flg;
+  const PetscReal    *bounds;
 
   PetscFunctionBegin;
   zctx.showgrid = PETSC_FALSE;
+  ierr = PetscViewerDrawGetBounds(viewer,&nbounds,&bounds);CHKERRQ(ierr);
   ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
   ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
 
@@ -225,6 +227,10 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
     */
     ierr = VecStrideMin(xin,zctx.k,PETSC_NULL,&zctx.min);CHKERRQ(ierr);
     ierr = VecStrideMax(xin,zctx.k,PETSC_NULL,&zctx.max);CHKERRQ(ierr);
+    if (zctx.k < nbounds) {
+      zctx.min = PetscMin(zctx.min,bounds[2*zctx.k]);
+      zctx.max = PetscMax(zctx.max,bounds[2*zctx.k+1]);
+    }      
     if (zctx.min == zctx.max) {
       zctx.min -= 1.e-12;
       zctx.max += 1.e-12;
