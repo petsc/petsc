@@ -44,6 +44,8 @@ Movie version
 typedef struct{
   PetscReal   dt,T; /* Time step and end time */
   PetscReal   dtevent;  /* time scale of radiation events, roughly one event per dtevent */
+  PetscReal   initv;    /* initial value of phase variables */
+  PetscBool   degenerate;  /* use degenerate mobility */
   DM          da1,da2;
   Mat         M;    /* Jacobian matrix */
   Mat         M_0;
@@ -494,15 +496,14 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
   PetscInt          n,i;
   PetscScalar	   *xx,*cv_p,*ci_p,*wv_p,*wi_p;
   /*  PetscViewer       view; */
-  PetscScalar       initv = .00069;
 
   PetscFunctionBegin;
 
   /*  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"file_initial",FILE_MODE_WRITE,&view);CHKERRQ(ierr);*/
   ierr = VecGetLocalSize(X,&n);CHKERRQ(ierr);
 
-  ierr = VecSet(user->cv,initv);CHKERRQ(ierr);
-  ierr = VecSet(user->ci,initv);CHKERRQ(ierr);
+  ierr = VecSet(user->cv,user->initv);CHKERRQ(ierr);
+  ierr = VecSet(user->ci,user->initv);CHKERRQ(ierr);
   ierr = VecSet(user->eta,0.0);CHKERRQ(ierr);
 
   ierr = DPsi(user);CHKERRQ(ierr);
@@ -707,6 +708,8 @@ PetscErrorCode GetParams(AppCtx* user)
   user->dt = 1.0e-4;
   user->VG = 100.0;
   user->dtevent = user->dt;
+  user->initv = .00069; 
+  user->degenerate = PETSC_FALSE;
 
   ierr = PetscOptionsGetReal(PETSC_NULL,"-xmin",&user->xmin,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(PETSC_NULL,"-xmax",&user->xmax,&flg);CHKERRQ(ierr);
@@ -714,6 +717,7 @@ PetscErrorCode GetParams(AppCtx* user)
   ierr = PetscOptionsGetReal(PETSC_NULL,"-dt",&user->dt,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(PETSC_NULL,"-dtevent",&user->dtevent,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(PETSC_NULL,"-VG",&user->VG,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-degenerate",&user->degenerate,&flg);CHKERRQ(ierr);
    
 
   PetscFunctionReturn(0);
@@ -795,10 +799,13 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
      
       ierr = MatSetValuesLocal(M_0,1,&row_M_0,3,idx,vals_M_0,ADD_VALUES);CHKERRQ(ierr);
        
-      //cv_sum = (cv_p[idx[0]] + cv_p[idx[1]] + cv_p[idx[2]])*user->Dv/(3.0*user->kBT);
-      //ci_sum = (ci_p[idx[0]] + ci_p[idx[1]] + ci_p[idx[2]])*user->Di/(3.0*user->kBT);
-      cv_sum = .00069*user->Dv/user->kBT;
-      ci_sum = .00069*user->Di/user->kBT;
+      if (user->degenerate) {
+        cv_sum = (cv_p[idx[0]] + cv_p[idx[1]] + cv_p[idx[2]])*user->Dv/(3.0*user->kBT);
+        ci_sum = (ci_p[idx[0]] + ci_p[idx[1]] + ci_p[idx[2]])*user->Di/(3.0*user->kBT);
+      } else {
+        cv_sum = user->initv*user->Dv/user->kBT;
+        ci_sum = user->initv*user->Di/user->kBT;
+      }
       
 
         
@@ -972,11 +979,14 @@ PetscErrorCode UpdateMatrices(AppCtx* user)
       PetscScalar vals[3];
     
       for(r=0;r<3;r++) {
-                      
-        // cv_sum = (1.0e-3+cv_p[idx[0]] + cv_p[idx[1]] + cv_p[idx[2]])*user->Dv/(3.0*user->kBT);
-        //ci_sum = (1.0e-3+ci_p[idx[0]] + ci_p[idx[1]] + ci_p[idx[2]])*user->Di/(3.0*user->kBT);
-        cv_sum = .00069*user->Dv/(user->kBT);
-        ci_sum = .00069*user->Di/user->kBT;
+                 
+      if (user->degenerate) {     
+        cv_sum = (1.0e-3+cv_p[idx[0]] + cv_p[idx[1]] + cv_p[idx[2]])*user->Dv/(3.0*user->kBT);
+        ci_sum = (1.0e-3+ci_p[idx[0]] + ci_p[idx[1]] + ci_p[idx[2]])*user->Di/(3.0*user->kBT);
+      } else {
+        cv_sum = user->initv*user->Dv/(user->kBT);
+        ci_sum = user->initv*user->Di/user->kBT;
+      }
 
          
                 
