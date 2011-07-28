@@ -38,7 +38,7 @@
       Vec              f       ! vector of functions
       TaoSolver        tao     ! TaoSolver context
       PetscBool       flg     
-      PetscInt         i
+      PetscInt         i,nhist
       integer          size,rank    ! number of processes running
       PetscReal      zero
       PetscReal      hist(100) ! objective value history
@@ -57,7 +57,7 @@
 
 !  Initialize TAO and PETSc
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-!      call TaoInitialize(PETSC_NULL_CHARACTER,ierr)
+      call TaoInitialize(PETSC_NULL_CHARACTER,ierr)
 
       call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
@@ -114,7 +114,9 @@
 !  SOLVE THE APPLICATION
       call TaoSolverSolve(tao,ierr)
       CHKERRQ(ierr)
-      do i=1,20
+      call TaoSolverGetHistory(tao,nhist,ierr)
+      CHKERRQ(ierr)
+      do i=1,nhist
          print *,hist(i),resid(i)
       enddo
       call TaoSolverGetTerminationReason(tao, reason, ierr)
@@ -122,7 +124,6 @@
          print *,'Try a different TAO method, adjust some parameters,'
          print *,'or check the function evaluation routines.'
       endif
-
 !  TaoView() prints ierr about the TAO solver; the option
 !      -tao_view 
 !  can alternatively be used to activate this at runtime.
@@ -137,7 +138,7 @@
       call VecDestroy(f,ierr)
 
 !  Finalize TAO 
-!      call TaoFinalize(ierr)
+      call TaoFinalize(ierr)
       call PetscFinalize(ierr)
 
       end

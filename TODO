@@ -3,12 +3,14 @@ TaoInitializeFortran
 TRON using MatDiagonalSet -- mpiaij doesn't implement this
 
 
+
 test:
   trust region tolerance
 
+produce test reference output
+compare tests output to reference
 
-
-replace default convergence test
+replacing default convergence test
 
 MANSEC - do we need more than 1?
 
@@ -33,6 +35,7 @@ tabs for view()
 Check documentation
 MT linesearch view
 
+
 Set KSP Monitors
 LMVM options
 What's up with eptorsion2?
@@ -42,6 +45,7 @@ automatic testing, coverage
 
 update manual
 add pde_constrained section
+add pounders section
 
 make install to put libs/headers in separate location
  Check TAO options in TaoSolverSetFromOptions

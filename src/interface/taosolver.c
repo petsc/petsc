@@ -1974,7 +1974,7 @@ PetscErrorCode TaoSolverSetHistory(TaoSolver tao, PetscReal *obj, PetscReal *res
 
 #undef __FUNCT__  
 #define __FUNCT__ "TaoSolverGetHistory"
-/*@
+/*@C
    TaoSolverGetHistory - Gets the array used to hold the convergence history.
 
    Collective on TaoSolver
@@ -1986,12 +1986,12 @@ PetscErrorCode TaoSolverSetHistory(TaoSolver tao, PetscReal *obj, PetscReal *res
 +  obj   - array used to hold objective value history
 .  resid - array used to hold residual history
 .  cnorm - array used to hold constraint violation history
--  na  - size of obj, resid, and cnorm (will be less than or equal to na given in TaoSolverSetHistory)
+-  nhist  - size of obj, resid, and cnorm (will be less than or equal to na given in TaoSolverSetHistory)
 
 
    Notes:
     The calling sequence for this routine in Fortran is
-$   call TaoSolverGetHistory(TaoSolver tao, integer obj, integer resid, integer cnorm, integer na, integer info)
+$   call TaoSolverGetHistory(TaoSolver tao, integer nhist, integer info)
 
    This routine is useful, e.g., when running a code for purposes
    of accurate performance monitoring, when no I/O should be done
@@ -2001,17 +2001,17 @@ $   call TaoSolverGetHistory(TaoSolver tao, integer obj, integer resid, integer 
 
 .keywords: convergence, history, monitor, View
 
-.seealso: TaoSolverSetConvergencHistory()
+.seealso: TaoSolverSetHistory()
 
 @*/
-PetscErrorCode TaoSolverGetHistory(TaoSolver tao, PetscReal **obj, PetscReal **resid, PetscReal **cnorm, PetscInt *na)
+PetscErrorCode TaoSolverGetHistory(TaoSolver tao, PetscReal **obj, PetscReal **resid, PetscReal **cnorm, PetscInt *nhist)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
   if (obj)   *obj   = tao->hist_obj;
   if (cnorm) *cnorm = tao->hist_cnorm;
   if (resid) *resid = tao->hist_resid;
-  if (na) *na   = tao->hist_len;
+  if (nhist) *nhist   = tao->hist_len;
   PetscFunctionReturn(0);
 }
 

@@ -71,6 +71,7 @@ int main(int argc,char **argv)
   TaoSolver  tao;                /* TAO_SOLVER solver context */
   PetscInt   i;               /* iteration information */
   PetscReal  hist[100],resid[100];
+  PetscInt   nhist;
   AppCtx     user;               /* user-defined work context */
 
    /* Initialize TAO and PETSc */
@@ -113,8 +114,8 @@ int main(int argc,char **argv)
   ierr = TaoSolverSetHistory(tao,hist,resid,0,100,PETSC_TRUE); CHKERRQ(ierr);
   /* Perform the Solve */
   ierr = TaoSolverSolve(tao); CHKERRQ(ierr);
-
-  for (i=0;i<20;i++) {
+  ierr = TaoSolverGetHistory(tao,0,0,0,&nhist); CHKERRQ(ierr);
+  for (i=0;i<nhist;i++) {
     printf("%12.5f\t%12.5f\n",hist[i],resid[i]); 
   }
   ierr = TaoSolverView(tao,PETSC_VIEWER_STDOUT_SELF); CHKERRQ(ierr);

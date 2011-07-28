@@ -1,5 +1,6 @@
 #include "private/fortranimpl.h"
-#include "taosolver.h"
+#include "private/taosolver_impl.h"
+
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define taosolversetobjectiveroutine_            TAOSOLVERSETOBJECTIVEROUTINE
@@ -12,6 +13,7 @@
 #define taosolversetmonitor_                     TAOSOLVERSETMONITOR
 #define taosolversettype_                        TAOSOLVERSETTYPE
 #define taosolverview_                           TAOSOLVERVIEW
+#define taosolvergethistory_                     TAOSOLVERGETHISTORY
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 
 #define taosolversetobjectiveroutine_            taosolversetobjectiveroutine
@@ -24,6 +26,7 @@
 #define taosolversetmonitor_                     taosolversetmonitor
 #define taosolversettype_                        taosolversettype
 #define taosolverview_                           taosolverview
+#define taosolvergethistory_                     taosolvergethistory
 #endif
 
 static int OBJ=0;       // objective routine index
@@ -237,4 +240,11 @@ void PETSC_STDCALL taosolverview_(TaoSolver *tao, PetscViewer *viewer, PetscErro
     PetscPatchDefaultViewers_Fortran(viewer,v);
     *ierr = TaoSolverView(*tao,v);
 }
+
+void PETSC_STDCALL taosolvergethistory_(TaoSolver *tao, PetscInt *nhist, PetscErrorCode *ierr) 
+{
+  *nhist  = (*tao)->hist_len;
+  *ierr = 0;
+}
 EXTERN_C_END
+
