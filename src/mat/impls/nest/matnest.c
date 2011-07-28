@@ -1051,7 +1051,11 @@ static PetscErrorCode MatSetUp_NestIS_Private(Mat A,PetscInt nr,const IS is_row[
       nsum += n;
     }
     offset = 0;
+#if defined(PETSC_HAVE_MPI_EXSCAN)
     ierr = MPI_Exscan(&nsum,&offset,1,MPIU_INT,MPI_SUM,((PetscObject)A)->comm);CHKERRQ(ierr);
+#else 
+    SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONGSTATE,"Sorry but this code requires MPI_EXSCAN that doesn't exist on your machine's version of MPI, install a MPI2 with PETSc to get this functionality");
+#endif
     for (j=0; j<vs->nc; j++) {
       ierr = MatNestFindNonzeroSubMatCol(A,j,&sub);CHKERRQ(ierr);
       ierr = MatGetLocalSize(sub,PETSC_NULL,&n);CHKERRQ(ierr);

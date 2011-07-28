@@ -988,7 +988,7 @@ runex53_2:
 
 runex54:
 	-@echo ${MPIEXEC}
-	-@${MPIEXEC} -n 4 ./ex54 -ne 120 -alpha 1.e-12 -ksp_monitor -ksp_rtol 1.e-12 -malloc -malloc_debug -options_left -mat_ascii_output_large -ksp_type gmres -ksp_right_pc -malloc_dump -pc_mg_type full -log_summary
+	-@${MPIEXEC} -n 4 ./ex54 -ne 20 -alpha 1.e-12 -ksp_monitor -ksp_rtol 1.e-12 -malloc -malloc_debug -options_left -mat_ascii_output_large -ksp_type gmres -ksp_right_pc -malloc_dump -pc_mg_type full -log_summary
 
 TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 \
                                  runex2_4 runex2_bjacobi runex2_bjacobi_2 runex2_bjacobi_3 runex2_specest_1 runex2_specest_2 ex2.rm \
