@@ -128,21 +128,26 @@ PetscInt main(PetscInt argc,char **args)
       ierr = VecDuplicate(input,&output);CHKERRQ(ierr);
       if (view){ierr = VecView(input,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
 
-      /* Scatter PETSc vector 'input' to FFTW vector 'x' */
+      /* Vector input is copied to another vector x using VecScatterPetscToFFTW. This is because the user data 
+         can have any parallel layout. But FFTW requires special parallel layout of the data. Hence the original 
+         data which is in the vector "input" here, needs to be copied to a vector x, which has the correct parallel
+         layout for FFTW. Also, during parallel real transform, this pads extra zeros automatically
+         at the end of last  dimension. This padding is required by FFTW to perform parallel real D.F.T.  */
       ierr = VecScatterPetscToFFTW(A,input,x);CHKERRQ(ierr);
-
+      
       /* Apply FFTW_FORWARD and FFTW_BACKWARD */
       ierr = MatMult(A,x,y);CHKERRQ(ierr);
       if (view){ierr = VecView(y,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
       ierr = MatMultTranspose(A,y,z);CHKERRQ(ierr);
 
-      /* Scatter FFTW vector 'z' to PETSc vector 'output' */
+      /* Output from Backward DFT needs to be modified to obtain user readable data the routine VecScatterFFTWToPetsc 
+         performs the job. In some sense this is the reverse operation of VecScatterPetscToFFTW. This routine gets rid of 
+         the extra spaces that were artificially padded to perform real parallel transform.    */
       ierr = VecScatterFFTWToPetsc(A,z,output);CHKERRQ(ierr);
 
       /* Compare x and z. FFTW computes an unnormalized DFT, thus z = N*x */
       a = 1.0/(PetscReal)N;
       ierr = VecScale(output,a);CHKERRQ(ierr);
-      //ierr = VecView(z,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
       if (view){ierr = VecView(output,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
       ierr = VecAXPY(output,-1.0,input);CHKERRQ(ierr);
       ierr = VecNorm(output,NORM_1,&enorm);CHKERRQ(ierr);

@@ -24,8 +24,17 @@ extern PetscErrorCode MatMult_MPIFFTW(Mat,Vec,Vec);
 extern PetscErrorCode MatMultTranspose_MPIFFTW(Mat,Vec,Vec);
 extern PetscErrorCode MatDestroy_FFTW(Mat);
 extern PetscErrorCode VecDestroy_MPIFFTW(Vec);
-extern PetscErrorCode MatGetVecs_FFTW(Mat,Vec*,Vec*); // to be removed!
 
+/* MatMult_SeqFFTW performs forward DFT in parallel
+   
+   Input parameter:
+   mat - the matrix
+   x   - the vector on which FDFT will be performed
+
+   Output parameter:
+   y   - vector that stores result of FDFT
+
+*/
 #undef __FUNCT__  
 #define __FUNCT__ "MatMult_SeqFFTW"
 PetscErrorCode MatMult_SeqFFTW(Mat A,Vec x,Vec y)
@@ -87,6 +96,17 @@ PetscErrorCode MatMult_SeqFFTW(Mat A,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
+/* MatMultTranspose_SeqFFTW performs serial backward DFT 
+   
+   Input parameter:
+   mat - the matrix
+   x   - the vector on which BDFT will be performed
+
+   Output parameter:
+   y   - vector that stores result of BDFT
+
+*/
+
 #undef __FUNCT__
 #define __FUNCT__ "MatMultTranspose_SeqFFTW"
 PetscErrorCode MatMultTranspose_SeqFFTW(Mat A,Vec x,Vec y)
@@ -146,6 +166,17 @@ PetscErrorCode MatMultTranspose_SeqFFTW(Mat A,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
+/* MatMult_MPIFFTW performs forward DFT in parallel
+   
+   Input parameter:
+   mat - the matrix
+   x   - the vector on which FDFT will be performed
+
+   Output parameter:
+   y   - vector that stores result of FDFT
+
+*/
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatMult_MPIFFTW"
 PetscErrorCode MatMult_MPIFFTW(Mat A,Vec x,Vec y)
@@ -170,7 +201,7 @@ PetscErrorCode MatMult_MPIFFTW(Mat A,Vec x,Vec y)
 #endif 
       break;
     case 2:
-#if defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_USE_COMPLEX) /* For complex transforms call fftw_mpi_plan_dft, for real transforms call fftw_mpi_plan_dft_r2c */ 
       fftw->p_forward = fftw_mpi_plan_dft_2d(dim[0],dim[1],(fftw_complex*)x_array,(fftw_complex*)y_array,comm,FFTW_FORWARD,fftw->p_flag);
 #else
       fftw->p_forward = fftw_mpi_plan_dft_r2c_2d(dim[0],dim[1],(double *)x_array,(fftw_complex*)y_array,comm,FFTW_ESTIMATE);
@@ -208,6 +239,16 @@ PetscErrorCode MatMult_MPIFFTW(Mat A,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
+/* MatMultTranspose_MPIFFTW performs parallel backward DFT 
+   
+   Input parameter:
+   mat - the matrix
+   x   - the vector on which BDFT will be performed
+
+   Output parameter:
+   y   - vector that stores result of BDFT
+
+*/
 #undef __FUNCT__
 #define __FUNCT__ "MatMultTranspose_MPIFFTW"
 PetscErrorCode MatMultTranspose_MPIFFTW(Mat A,Vec x,Vec y)
@@ -232,7 +273,7 @@ PetscErrorCode MatMultTranspose_MPIFFTW(Mat A,Vec x,Vec y)
 #endif 
       break;
     case 2:
-#if defined(PETSC_USE_COMPLEX)
+#if defined(PETSC_USE_COMPLEX) /* For complex transforms call fftw_mpi_plan_dft with flag FFTW_BACKWARD, for real transforms call fftw_mpi_plan_dft_c2r */ 
       fftw->p_backward = fftw_mpi_plan_dft_2d(dim[0],dim[1],(fftw_complex*)x_array,(fftw_complex*)y_array,comm,FFTW_BACKWARD,fftw->p_flag);
 #else
       fftw->p_backward = fftw_mpi_plan_dft_c2r_2d(dim[0],dim[1],(fftw_complex*)x_array,(double *)y_array,comm,FFTW_ESTIMATE);
@@ -315,8 +356,16 @@ PetscErrorCode VecDestroy_MPIFFTW(Vec v)
    Output Parameter:
 +   fin - (optional) input vector of forward FFTW
 -   fout - (optional) output vector of forward FFTW
+-   bout - (optional) output vector of backward FFTW
 
   Level: advanced
+  Note: The parallel layout of output of forward FFTW is always same as the input
+        of the backward FFTW. But parallel layout of the input vector of forward
+        FFTW might not be same as the output of backward FFTW. 
+        Also note that we need to provide enough space while doing parallel real transform.
+        We need to pad extra zeros at the end of last dimension. For this reason the one needs to 
+        invoke the routine fftw_mpi_local_size_transposed routines. Remember one has to change the 
+        last dimension from n to n/2+1 while invoking this routine. 
 
 .seealso: MatCreateFFTW()
 @*/
@@ -354,14 +403,11 @@ PetscErrorCode  MatGetVecsFFTW_FFTW(Mat A,Vec *fin,Vec *fout,Vec *bout)
     if (fout){ierr = VecCreateSeq(PETSC_COMM_SELF,N,fout);CHKERRQ(ierr);}
     if (bout){ierr = VecCreateSeq(PETSC_COMM_SELF,N,bout);CHKERRQ(ierr);}
 #else
-//    if (fin) {ierr = VecCreateSeq(PETSC_COMM_SELF,2*N*(dim[ndim-1]/2+1)/dim[ndim-1],fin);CHKERRQ(ierr);}
-//    if (fout){ierr = VecCreateSeq(PETSC_COMM_SELF,2*N*(dim[ndim-1]/2+1)/dim[ndim-1],fout);CHKERRQ(ierr);}
-//    if (bout){ierr = VecCreateSeq(PETSC_COMM_SELF,2*N*(dim[ndim-1]/2+1)/dim[ndim-1],bout);CHKERRQ(ierr);}
     if (fin) {ierr = VecCreateSeq(PETSC_COMM_SELF,n,fin);CHKERRQ(ierr);}
     if (fout){ierr = VecCreateSeq(PETSC_COMM_SELF,n,fout);CHKERRQ(ierr);}
     if (bout){ierr = VecCreateSeq(PETSC_COMM_SELF,n,bout);CHKERRQ(ierr);}
 #endif
-  } else {
+  } else { /* parallel cases */
     ptrdiff_t      alloc_local,local_n0,local_0_start;
     ptrdiff_t      local_n1;
     fftw_complex   *data_fout;
@@ -399,7 +445,7 @@ PetscErrorCode  MatGetVecsFFTW_FFTW(Mat A,Vec *fin,Vec *fout,Vec *bout)
           break;
 #endif
           case 2:
-#if !defined(PETSC_USE_COMPLEX)
+#if !defined(PETSC_USE_COMPLEX) /* Note that N1 is no more the product of individual dimensions */
                  alloc_local =  fftw_mpi_local_size_2d_transposed(dim[0],dim[1]/2+1,comm,&local_n0,&local_0_start,&local_n1,&local_1_start);
                  N1 = 2*dim[0]*(dim[1]/2+1); n1 = 2*local_n0*(dim[1]/2+1);
                  if (fin) {
@@ -530,211 +576,6 @@ PetscErrorCode  MatGetVecsFFTW_FFTW(Mat A,Vec *fin,Vec *fout,Vec *bout)
 EXTERN_C_END 
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatGetVecs_FFTW"
-/*
-   MatGetVecs_FFTW - Get vector(s) compatible with the matrix, i.e. with the
-     parallel layout determined by FFTW
-
-   Collective on Mat
-
-   Input Parameter:
-.  mat - the matrix
-
-   Output Parameter:
-+   fin - (optional) input vector of forward FFTW
--   fout - (optional) output vector of forward FFTW
-
-  Level: advanced
-
-.seealso: MatCreateFFTW()
-*/
-PetscErrorCode  MatGetVecs_FFTW(Mat A,Vec *fin,Vec *fout)
-{
-  PetscErrorCode ierr;
-  PetscMPIInt    size,rank;
-  MPI_Comm       comm=((PetscObject)A)->comm;
-  Mat_FFT        *fft = (Mat_FFT*)A->data;
-  Mat_FFTW       *fftw = (Mat_FFTW*)fft->data;
-  PetscInt       N=fft->N;  
-  PetscInt       ndim=fft->ndim,*dim=fft->dim,n=fft->n;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(A,MAT_CLASSID,1);
-  PetscValidType(A,1);
-
-  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
-  if (size == 1){ /* sequential case */
-#if defined(PETSC_USE_COMPLEX)
-    if (fin) {ierr = VecCreateSeq(PETSC_COMM_SELF,N,fin);CHKERRQ(ierr);}
-    if (fout){ierr = VecCreateSeq(PETSC_COMM_SELF,N,fout);CHKERRQ(ierr);}
-#else
-    if (fin) {ierr = VecCreateSeq(PETSC_COMM_SELF,N*2*(dim[ndim-1]/2+1)/dim[ndim-1],fin);CHKERRQ(ierr);}
-    if (fout){ierr = VecCreateSeq(PETSC_COMM_SELF,2*N*(dim[ndim-1]/2+1)/dim[ndim-1],fout);CHKERRQ(ierr);}
-#endif
-  } else {        /* mpi case */
-    ptrdiff_t      alloc_local,local_n0,local_0_start;
-    ptrdiff_t      local_n1,local_1_end;
-    fftw_complex   *data_fin,*data_fout;
-#if !defined(PETSC_USE_COMPLEX)
-    double         *data_finr ;
-    ptrdiff_t      local_1_start,temp;
-    PetscInt       vsize,n1,N1;
-#endif
-   
-//    PetscInt ctr;
-//    ptrdiff_t      ndim1,*pdim;
-//    ndim1=(ptrdiff_t) ndim;
-//    pdim = (ptrdiff_t *)calloc(ndim,sizeof(ptrdiff_t));
-
-//    for(ctr=0;ctr<ndim;ctr++)
-//        {k
-//           pdim[ctr] = dim[ctr];
-//       }
-
- 
-
-    switch (ndim){
-    case 1:
-      /* Get local size */
-      /* We need to write an error message here saying that one cannot call this routine when doing parallel 1D real FFTW */
-//      SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP,"Works only for parallel Multi-dimensional FFTW, Dimension>1. Check Documentation for MatGetVecs_FFTW1D routine");
-      alloc_local = fftw_mpi_local_size_1d(dim[0],comm,FFTW_FORWARD,FFTW_ESTIMATE,&local_n0,&local_0_start,&local_n1,&local_1_end);
-      //printf("The values of local_n0 and local_n1 are %ld and %ld\n",local_n0,local_n1);
-      if (fin) {
-        data_fin  = (fftw_complex*)fftw_malloc(sizeof(fftw_complex)*alloc_local);
-        ierr = VecCreateMPIWithArray(comm,local_n0,N,(const PetscScalar*)data_fin,fin);CHKERRQ(ierr);
-        (*fin)->ops->destroy   = VecDestroy_MPIFFTW;
-      } 
-      if (fout) {
-        data_fout = (fftw_complex*)fftw_malloc(sizeof(fftw_complex)*alloc_local);
-        ierr = VecCreateMPIWithArray(comm,local_n1,N,(const PetscScalar*)data_fout,fout);CHKERRQ(ierr);
-        (*fout)->ops->destroy   = VecDestroy_MPIFFTW;
-      }
-      break;
-    case 2:
-#if !defined(PETSC_USE_COMPLEX)
-      alloc_local =  fftw_mpi_local_size_2d_transposed(dim[0],dim[1]/2+1,comm,&local_n0,&local_0_start,&local_n1,&local_1_start);
-      N1 = 2*dim[0]*(dim[1]/2+1); n1 = 2*local_n0*(dim[1]/2+1);
-      if (fin) {
-        data_finr=(double *)fftw_malloc(sizeof(double)*alloc_local*2);
-        ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,(PetscInt)n1,N1,(PetscScalar*)data_finr,fin);CHKERRQ(ierr);
-        ierr = VecGetSize(*fin,&vsize);CHKERRQ(ierr);
-        //printf("The code comes here with vector size %d\n",vsize);
-        (*fin)->ops->destroy   = VecDestroy_MPIFFTW;
-      }
-      n1 = 2*local_n1*(dim[0]);
-      //n1 = 2*local_n1*dim[1];
-      //printf("The values are %ld\n",local_n1);
-      if (fout) {
-        data_fout=(fftw_complex *)fftw_malloc(sizeof(fftw_complex)*alloc_local);
-        ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,n1,N1,(PetscScalar*)data_fout,fout);CHKERRQ(ierr);
-        (*fout)->ops->destroy   = VecDestroy_MPIFFTW;
-      }
-      printf("Vector size from fftw.c is  given by %d, %d\n",n1,N1);
-     
-#else
-      /* Get local size */
-     //printf("Hope this does not come here");
-      alloc_local = fftw_mpi_local_size_2d(dim[0],dim[1],comm,&local_n0,&local_0_start);
-      if (fin) {
-        data_fin  = (fftw_complex*)fftw_malloc(sizeof(fftw_complex)*alloc_local);
-        ierr = VecCreateMPIWithArray(comm,n,N,(const PetscScalar*)data_fin,fin);CHKERRQ(ierr);
-        (*fin)->ops->destroy   = VecDestroy_MPIFFTW;
-      }
-      if (fout) {
-        data_fout = (fftw_complex*)fftw_malloc(sizeof(fftw_complex)*alloc_local);
-        ierr = VecCreateMPIWithArray(comm,n,N,(const PetscScalar*)data_fout,fout);CHKERRQ(ierr);
-        (*fout)->ops->destroy   = VecDestroy_MPIFFTW;
-      }
-     //printf("Hope this does not come here");
-#endif
-      break;
-    case 3:
-      /* Get local size */
-#if !defined(PETSC_USE_COMPLEX)
-      alloc_local =  fftw_mpi_local_size_3d_transposed(dim[0],dim[1],dim[2]/2+1,comm,&local_n0,&local_0_start,&local_n1,&local_1_start);
-      N1 = 2*dim[0]*dim[1]*(dim[2]/2+1); n1 = 2*local_n0*dim[1]*(dim[2]/2+1);
-      if (fin) {
-        data_finr=(double *)fftw_malloc(sizeof(double)*alloc_local*2);
-        ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,(PetscInt)n1,N1,(PetscScalar*)data_finr,fin);CHKERRQ(ierr);
-        ierr = VecGetSize(*fin,&vsize);CHKERRQ(ierr);
-        //printf("The code comes here with vector size %d\n",vsize);
-        (*fin)->ops->destroy   = VecDestroy_MPIFFTW;
-      }
-      n1 = 2*local_n1*dim[0]*(dim[2]/2+1);
-      if (fout) {
-        data_fout=(fftw_complex *)fftw_malloc(sizeof(fftw_complex)*alloc_local);
-        ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,n1,N1,(PetscScalar*)data_fout,fout);CHKERRQ(ierr);
-        (*fout)->ops->destroy   = VecDestroy_MPIFFTW;
-      }
-
-
-#else
-      alloc_local = fftw_mpi_local_size_3d(dim[0],dim[1],dim[2],comm,&local_n0,&local_0_start);
-//      printf("The quantity n is %d",n);
-      if (fin) {
-        data_fin  = (fftw_complex*)fftw_malloc(sizeof(fftw_complex)*alloc_local);
-        ierr = VecCreateMPIWithArray(comm,n,N,(const PetscScalar*)data_fin,fin);CHKERRQ(ierr);
-        (*fin)->ops->destroy   = VecDestroy_MPIFFTW;
-      }
-      if (fout) {
-        data_fout = (fftw_complex*)fftw_malloc(sizeof(fftw_complex)*alloc_local);
-        ierr = VecCreateMPIWithArray(comm,n,N,(const PetscScalar*)data_fout,fout);CHKERRQ(ierr);
-        (*fout)->ops->destroy   = VecDestroy_MPIFFTW;
-      }
-#endif
-      break;
-    default:
-      /* Get local size */
-#if !defined(PETSC_USE_COMPLEX)
-      temp = (fftw->dim_fftw)[fftw->ndim_fftw-1];
-      (fftw->dim_fftw)[fftw->ndim_fftw-1] = temp/2 + 1; 
-      alloc_local = fftw_mpi_local_size_transposed(fftw->ndim_fftw,fftw->dim_fftw,comm,&local_n0,&local_0_start,&local_n1,&local_1_start);
-      N1 = 2*N*(PetscInt)((fftw->dim_fftw)[fftw->ndim_fftw-1])/((PetscInt) temp);
-      (fftw->dim_fftw)[fftw->ndim_fftw-1] = temp;
-      if (fin) {
-        data_finr=(double *)fftw_malloc(sizeof(double)*alloc_local*2);
-        ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,(PetscInt)n,N1,(PetscScalar*)data_finr,fin);CHKERRQ(ierr);
-        ierr = VecGetSize(*fin,&vsize);CHKERRQ(ierr);
-        (*fin)->ops->destroy   = VecDestroy_MPIFFTW;
-      }
-      temp = fftw->partial_dim;
-      fftw->partial_dim = fftw->partial_dim * ((fftw->dim_fftw)[fftw->ndim_fftw-1]/2+1)*(fftw->dim_fftw)[1]/((fftw->dim_fftw)[2]*(fftw->dim_fftw)[fftw->ndim_fftw-1]);
-      
-      n1 = 2*local_n1*(fftw->partial_dim);  fftw->partial_dim = temp;
-      if (fout) {
-        data_fout=(fftw_complex *)fftw_malloc(sizeof(fftw_complex)*alloc_local);
-        ierr = VecCreateMPIWithArray(PETSC_COMM_WORLD,n1,N1,(PetscScalar*)data_fout,fout);CHKERRQ(ierr);
-        (*fout)->ops->destroy   = VecDestroy_MPIFFTW;
-      }
- 
-#else
-      alloc_local = fftw_mpi_local_size(fftw->ndim_fftw,fftw->dim_fftw,comm,&local_n0,&local_0_start);
-      if (fin) {
-        data_fin  = (fftw_complex*)fftw_malloc(sizeof(fftw_complex)*alloc_local);
-        ierr = VecCreateMPIWithArray(comm,n,N,(const PetscScalar*)data_fin,fin);CHKERRQ(ierr);
-        (*fin)->ops->destroy   = VecDestroy_MPIFFTW;
-      }
-      if (fout) {
-        data_fout = (fftw_complex*)fftw_malloc(sizeof(fftw_complex)*alloc_local);
-        ierr = VecCreateMPIWithArray(comm,n,N,(const PetscScalar*)data_fout,fout);CHKERRQ(ierr);
-        (*fout)->ops->destroy   = VecDestroy_MPIFFTW;
-      }
-#endif
-      break;
-    }
-  } 
-//  if (fin){
-//    ierr = PetscLayoutReference(A->cmap,&(*fin)->map);CHKERRQ(ierr);
-//  }
-//  if (fout){
-//    ierr = PetscLayoutReference(A->rmap,&(*fout)->map);CHKERRQ(ierr);
-//  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
 #define __FUNCT__ "VecScatterPetscToFFTW"
 PetscErrorCode VecScatterPetscToFFTW(Mat A,Vec x,Vec y)
 {
@@ -745,9 +586,7 @@ PetscErrorCode VecScatterPetscToFFTW(Mat A,Vec x,Vec y)
 }
 
 /*
-      InputTransformFFT_FFTW - Copies the user data to the vector that goes into FFTW block. For real 
-      parallel FFT, this routine also performs padding of right number of zeros at the end of the fastetst 
-      changing dimension.
+      VecScatterPetscToFFTW_FFTW - Copies the user data to the vector that goes into FFTW block.  
   Input A, x, y
   A - FFTW matrix
   x - user data
@@ -755,6 +594,10 @@ PetscErrorCode VecScatterPetscToFFTW(Mat A,Vec x,Vec y)
 + -mat_fftw_plannerflags - set FFTW planner flags
 
    Level: intermediate
+   Note: For real parallel FFT, FFTW requires insertion of extra space at the end of last dimension. This required even when 
+         one is not doing in-place transform. The last dimension size must be changed to 2*(dim[last]/2+1) to accommodate these extra 
+         zeros. This routine does that job by scattering operation.     
+ 
    
 */
 
@@ -768,7 +611,7 @@ PetscErrorCode VecScatterPetscToFFTW_FFTW(Mat A,Vec x,Vec y)
   Mat_FFT        *fft = (Mat_FFT*)A->data;
   Mat_FFTW       *fftw = (Mat_FFTW*)fft->data;
   PetscInt       N=fft->N;
-  PetscInt       ndim=fft->ndim,*dim=fft->dim;//n=fft->n;
+  PetscInt       ndim=fft->ndim,*dim=fft->dim;
   PetscInt       low; 
   PetscInt       rank,size,vsize,vsize1; 
   ptrdiff_t      alloc_local,local_n0,local_0_start;
@@ -790,7 +633,6 @@ PetscErrorCode VecScatterPetscToFFTW_FFTW(Mat A,Vec x,Vec y)
     {
           ierr = VecGetSize(x,&vsize);CHKERRQ(ierr);
           ierr = VecGetSize(y,&vsize1);CHKERRQ(ierr);
-          //printf("The values of sizes are %d and %d",vsize,vsize1);
           ierr = ISCreateStride(PETSC_COMM_SELF,N,0,1,&list1);CHKERRQ(ierr);
           ierr = VecScatterCreate(x,list1,y,list1,&vecscat);CHKERRQ(ierr);
           ierr = VecScatterBegin(vecscat,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -977,15 +819,15 @@ PetscErrorCode VecScatterFFTWToPetsc(Mat A,Vec x,Vec y)
 }
 
 /*
-      OutputTransformFFT_FFTW - Copies the FFTW output to the PETSc vector that user can use 
+      VecScatterFFTWToPetsc_FFTW - Converts FFTW output to the PETSc vector that user can use.
   Input A, x, y
   A - FFTW matrix
   x - FFTW vector
   y - PETSc vector that user can read
-  Options Database Keys:
-+ -mat_fftw_plannerflags - set FFTW planner flags
 
    Level: intermediate
+   Note: While doing real transform the FFTW output of backward DFT contains extra zeros at the end of last dimension.
+         VecScatterFFTWToPetsc removes those extra zeros.
    
 */
 
@@ -1336,7 +1178,6 @@ PetscErrorCode MatCreate_FFTW(Mat A)
     A->ops->multtranspose = MatMultTranspose_MPIFFTW;
   }
   fft->matdestroy          = MatDestroy_FFTW;
-  //A->ops->getvecs       = MatGetVecs_FFTW;
   A->assembled          = PETSC_TRUE;
   PetscObjectComposeFunctionDynamic((PetscObject)A,"MatGetVecsFFTW_C","MatGetVecsFFTW_FFTW",MatGetVecsFFTW_FFTW);   
   PetscObjectComposeFunctionDynamic((PetscObject)A,"VecScatterPetscToFFTW_C","VecScatterPetscToFFTW_FFTW",VecScatterPetscToFFTW_FFTW);   

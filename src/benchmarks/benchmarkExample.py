@@ -18,7 +18,7 @@ class PETSc(object):
   def mpiexec(self):
     '''Return the path for the mpi launch executable'''
     mpiexec = os.path.join(self.dir(), self.arch(), 'bin', 'mpiexec')
-    if not os.path.isexec(mpiexec):
+    if not os.path.isfile(mpiexec):
       return None
     return mpiexec
 

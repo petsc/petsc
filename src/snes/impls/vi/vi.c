@@ -86,7 +86,6 @@ PetscErrorCode SNESVIComputeInactiveSetIS(Vec upper,Vec lower,Vec X,Vec F,IS* in
 typedef struct {
   PetscInt       n;                                        /* size of vectors in the reduced DM space */
   IS             inactive;
-  Vec            upper,lower,values,F;                    /* upper and lower bounds of all variables on this level, the values and the function values */
   PetscErrorCode (*getinterpolation)(DM,DM,Mat*,Vec*);    /* DM's original routines */
   PetscErrorCode (*coarsen)(DM, MPI_Comm, DM*); 
   PetscErrorCode (*createglobalvector)(DM,Vec*);
@@ -141,7 +140,7 @@ PetscErrorCode  DMGetInterpolation_SNESVI(DM dm1,DM dm2,Mat *mat,Vec *vec)
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode  DMSetVI(DM,Vec,Vec,Vec,Vec,IS);
+extern PetscErrorCode  DMSetVI(DM,IS);
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMCoarsen_SNESVI"
@@ -154,9 +153,12 @@ PetscErrorCode  DMCoarsen_SNESVI(DM dm1,MPI_Comm comm,DM *dm2)
   PetscErrorCode          ierr;
   PetscContainer          isnes;
   DM_SNESVI               *dmsnesvi1;
-  Vec                     upper,lower,values,F;
+  Vec                     finemarked,coarsemarked;
   IS                      inactive;
   VecScatter              inject;
+  const PetscInt          *index;
+  PetscInt                n,k,cnt = 0,rstart,*coarseindex;
+  PetscScalar             *marked;
 
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject)dm1,"VI",(PetscObject *)&isnes);CHKERRQ(ierr);
@@ -172,28 +174,49 @@ PetscErrorCode  DMCoarsen_SNESVI(DM dm1,MPI_Comm comm,DM *dm2)
   /* need to set back global vectors in order to use the original injection */
   ierr = DMClearGlobalVectors(dm1);CHKERRQ(ierr);
   dm1->ops->createglobalvector = dmsnesvi1->createglobalvector;
+  ierr = DMCreateGlobalVector(dm1,&finemarked);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(*dm2,&coarsemarked);CHKERRQ(ierr);
+
+  /*
+     fill finemarked with locations of inactive points
+  */
+  ierr = ISGetIndices(dmsnesvi1->inactive,&index);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(dmsnesvi1->inactive,&n);CHKERRQ(ierr);
+  ierr = VecSet(finemarked,0.0);CHKERRQ(ierr);
+  for (k=0;k<n;k++){
+      ierr = VecSetValue(finemarked,index[k],1.0,INSERT_VALUES);CHKERRQ(ierr);
+  }
+  ierr = VecAssemblyBegin(finemarked);CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(finemarked);CHKERRQ(ierr);
+
   ierr = DMGetInjection(*dm2,dm1,&inject);CHKERRQ(ierr);
-  ierr = DMCreateGlobalVector(*dm2,&upper);CHKERRQ(ierr);
-  ierr = VecScatterBegin(inject,dmsnesvi1->upper,upper,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(inject,dmsnesvi1->upper,upper,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = DMCreateGlobalVector(*dm2,&lower);CHKERRQ(ierr);
-  ierr = VecScatterBegin(inject,dmsnesvi1->lower,lower,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(inject,dmsnesvi1->lower,lower,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = DMCreateGlobalVector(*dm2,&values);CHKERRQ(ierr);
-  ierr = VecScatterBegin(inject,dmsnesvi1->values,values,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(inject,dmsnesvi1->values,values,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = DMCreateGlobalVector(*dm2,&F);CHKERRQ(ierr);
-  ierr = VecScatterBegin(inject,dmsnesvi1->F,F,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(inject,dmsnesvi1->F,F,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterBegin(inject,finemarked,coarsemarked,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(inject,finemarked,coarsemarked,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterDestroy(&inject);CHKERRQ(ierr);
+
+  /*
+     create index set list of coarse inactive points from coarsemarked
+  */
+  ierr = VecGetLocalSize(coarsemarked,&n);CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(coarsemarked,&rstart,PETSC_NULL);CHKERRQ(ierr);
+  ierr = VecGetArray(coarsemarked,&marked);CHKERRQ(ierr);
+  for (k=0; k<n; k++) {
+    if (marked[k]) cnt++;
+  }
+  ierr = PetscMalloc(cnt*sizeof(PetscInt),&coarseindex);CHKERRQ(ierr);
+  cnt  = 0;
+  for (k=0; k<n; k++) {
+    if (marked[k]) coarseindex[cnt++] = k + rstart;
+  }
+  ierr = VecRestoreArray(coarsemarked,&marked);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_WORLD,cnt,coarseindex,PETSC_OWN_POINTER,&inactive);CHKERRQ(ierr);
+
   ierr = DMClearGlobalVectors(dm1);CHKERRQ(ierr);
   dm1->ops->createglobalvector = DMCreateGlobalVector_SNESVI;
-  ierr = SNESVIComputeInactiveSetIS(upper,lower,values,F,&inactive);CHKERRQ(ierr);
-  ierr = DMSetVI(*dm2,upper,lower,values,F,inactive);CHKERRQ(ierr);
-  ierr = VecDestroy(&upper);CHKERRQ(ierr);
-  ierr = VecDestroy(&lower);CHKERRQ(ierr);
-  ierr = VecDestroy(&values);CHKERRQ(ierr);
-  ierr = VecDestroy(&F);CHKERRQ(ierr);
+  ierr = DMSetVI(*dm2,inactive);CHKERRQ(ierr);
+
+  ierr = VecDestroy(&finemarked);CHKERRQ(ierr);
+  ierr = VecDestroy(&coarsemarked);CHKERRQ(ierr);
   ierr = ISDestroy(&inactive);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -213,10 +236,6 @@ PetscErrorCode DMDestroy_SNESVI(DM_SNESVI *dmsnesvi)
     but they are counted as having references to the DM in DMDestroy() */
   ierr = DMClearGlobalVectors(dmsnesvi->dm);CHKERRQ(ierr);
 
-  ierr = VecDestroy(&dmsnesvi->upper);CHKERRQ(ierr);
-  ierr = VecDestroy(&dmsnesvi->lower);CHKERRQ(ierr);
-  ierr = VecDestroy(&dmsnesvi->values);CHKERRQ(ierr);
-  ierr = VecDestroy(&dmsnesvi->F);CHKERRQ(ierr);
   ierr = ISDestroy(&dmsnesvi->inactive);CHKERRQ(ierr);
   ierr = PetscFree(dmsnesvi);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -229,7 +248,7 @@ PetscErrorCode DMDestroy_SNESVI(DM_SNESVI *dmsnesvi)
                be restricted to only those variables NOT associated with active constraints.
 
 */
-PetscErrorCode  DMSetVI(DM dm,Vec upper,Vec lower,Vec values,Vec F,IS inactive)
+PetscErrorCode  DMSetVI(DM dm,IS inactive)
 {
   PetscErrorCode          ierr;
   PetscContainer          isnes;
@@ -238,10 +257,6 @@ PetscErrorCode  DMSetVI(DM dm,Vec upper,Vec lower,Vec values,Vec F,IS inactive)
   PetscFunctionBegin;
   if (!dm) PetscFunctionReturn(0);
 
-  ierr = PetscObjectReference((PetscObject)upper);CHKERRQ(ierr);
-  ierr = PetscObjectReference((PetscObject)lower);CHKERRQ(ierr);
-  ierr = PetscObjectReference((PetscObject)values);CHKERRQ(ierr);
-  ierr = PetscObjectReference((PetscObject)F);CHKERRQ(ierr);
   ierr = PetscObjectReference((PetscObject)inactive);CHKERRQ(ierr);
 
   ierr = PetscObjectQuery((PetscObject)dm,"VI",(PetscObject *)&isnes);CHKERRQ(ierr);
@@ -258,25 +273,12 @@ PetscErrorCode  DMSetVI(DM dm,Vec upper,Vec lower,Vec values,Vec F,IS inactive)
     dm->ops->coarsen             = DMCoarsen_SNESVI;
     dmsnesvi->createglobalvector = dm->ops->createglobalvector;
     dm->ops->createglobalvector  = DMCreateGlobalVector_SNESVI;
-    /* since these vectors may reference the DM, need to remove circle referencing */
-    ierr = PetscObjectRemoveReference((PetscObject)upper,"DM");CHKERRQ(ierr);
-    ierr = PetscObjectRemoveReference((PetscObject)lower,"DM");CHKERRQ(ierr);
-    ierr = PetscObjectRemoveReference((PetscObject)values,"DM");CHKERRQ(ierr);
-    ierr = PetscObjectRemoveReference((PetscObject)F,"DM");CHKERRQ(ierr);
   } else {
     ierr = PetscContainerGetPointer(isnes,(void**)&dmsnesvi);CHKERRQ(ierr);
-    ierr = VecDestroy(&dmsnesvi->upper);CHKERRQ(ierr);
-    ierr = VecDestroy(&dmsnesvi->lower);CHKERRQ(ierr);
-    ierr = VecDestroy(&dmsnesvi->values);CHKERRQ(ierr);
-    ierr = VecDestroy(&dmsnesvi->F);CHKERRQ(ierr);
     ierr = ISDestroy(&dmsnesvi->inactive);CHKERRQ(ierr);
   }
   ierr = DMClearGlobalVectors(dm);CHKERRQ(ierr);
   ierr = ISGetLocalSize(inactive,&dmsnesvi->n);CHKERRQ(ierr);
-  dmsnesvi->upper    = upper;
-  dmsnesvi->lower    = lower;
-  dmsnesvi->values   = values;
-  dmsnesvi->F        = F;
   dmsnesvi->inactive = inactive;
   dmsnesvi->dm       = dm;
   PetscFunctionReturn(0);
@@ -308,7 +310,7 @@ PetscErrorCode  SNESMonitorVI(SNES snes,PetscInt its,PetscReal fgnorm,void *dumm
   SNES_VI            *vi = (SNES_VI*)snes->data;
   PetscViewer        viewer = dummy ? (PetscViewer) dummy : PETSC_VIEWER_STDOUT_(((PetscObject)snes)->comm);
   const PetscScalar  *x,*xl,*xu,*f;
-  PetscInt           i,n,act = 0;
+  PetscInt           i,n,act[2] = {0,0},fact[2];
   PetscReal          rnorm,fnorm;
 
   PetscFunctionBegin;
@@ -321,16 +323,18 @@ PetscErrorCode  SNESMonitorVI(SNES snes,PetscInt its,PetscReal fgnorm,void *dumm
   rnorm = 0.0;
   for (i=0; i<n; i++) {
     if (((PetscRealPart(x[i]) > PetscRealPart(xl[i]) + 1.e-8 || (PetscRealPart(f[i]) < 0.0)) && ((PetscRealPart(x[i]) < PetscRealPart(xu[i]) - 1.e-8) || PetscRealPart(f[i]) > 0.0))) rnorm += PetscRealPart(PetscConj(f[i])*f[i]);
-    else act++;
+    else if (PetscRealPart(x[i]) <= PetscRealPart(xl[i]) + 1.e-8 && PetscRealPart(f[i]) > 0.0) act[0]++;
+    else act[1]++;
   }
   ierr = VecRestoreArrayRead(snes->vec_func,&f);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(vi->xl,&xl);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(vi->xu,&xu);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(snes->vec_sol,&x);CHKERRQ(ierr);
   ierr = MPI_Allreduce(&rnorm,&fnorm,1,MPIU_REAL,MPIU_SUM,((PetscObject)snes)->comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(act,fact,2,MPIU_INT,MPIU_SUM,((PetscObject)snes)->comm);CHKERRQ(ierr);
   fnorm = sqrt(fnorm);
   ierr = PetscViewerASCIIAddTab(viewer,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"%3D SNES VI Function norm %14.12e Active constraints %D\n",its,fnorm,act);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"%3D SNES VI Function norm %14.12e Active lower constraints %D upper constraints %D\n",its,fnorm,fact[0],fact[1]);CHKERRQ(ierr);
   ierr = PetscViewerASCIISubtractTab(viewer,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1097,6 +1101,7 @@ PetscErrorCode SNESSolveVI_RS(SNES snes)
   ierr = (*snes->ops->converged)(snes,0,0.0,0.0,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
   if (snes->reason) PetscFunctionReturn(0);
 
+
   for (i=0; i<maxits; i++) {
 
     IS         IS_act,IS_inact; /* _act -> active set _inact -> inactive set */
@@ -1114,7 +1119,8 @@ PetscErrorCode SNESSolveVI_RS(SNES snes)
     }
     ierr = SNESComputeJacobian(snes,X,&snes->jacobian,&snes->jacobian_pre,&flg);CHKERRQ(ierr);
 
-    /* Create active and inactive index sets */
+
+        /* Create active and inactive index sets */
     
     /*original
     ierr = SNESVICreateIndexSets_RS(snes,X,F,&IS_act,&IS_inact);CHKERRQ(ierr);
@@ -1140,7 +1146,8 @@ PetscErrorCode SNESSolveVI_RS(SNES snes)
     ierr = MatGetSubMatrix(snes->jacobian,IS_inact,IS_inact,MAT_INITIAL_MATRIX,&jac_inact_inact);CHKERRQ(ierr);
     
     ierr = MatFindNonzeroRows(jac_inact_inact,&keptrows);CHKERRQ(ierr);
-    if (keptrows) {
+    if (0 && keptrows) {
+    // if (keptrows) {
       PetscInt       cnt,*nrows,k;
       const PetscInt *krows,*inact;
       PetscInt       rstart=jac_inact_inact->rmap->rstart;
@@ -1164,7 +1171,16 @@ PetscErrorCode SNESSolveVI_RS(SNES snes)
       ierr = ISComplement(IS_inact,F->map->rstart,F->map->rend,&IS_act);CHKERRQ(ierr);
       ierr = MatGetSubMatrix(snes->jacobian,IS_inact,IS_inact,MAT_INITIAL_MATRIX,&jac_inact_inact);CHKERRQ(ierr);
     }
-    ierr = DMSetVI(snes->dm,vi->xu,vi->xl,X,F,IS_inact);CHKERRQ(ierr);
+    ierr = DMSetVI(snes->dm,IS_inact);CHKERRQ(ierr);
+    /* remove later */
+
+    /*
+  ierr = VecView(vi->xu,PETSC_VIEWER_BINARY_(PETSC_COMM_WORLD));CHKERRQ(ierr);
+  ierr = VecView(vi->xl,PETSC_VIEWER_BINARY_(PETSC_COMM_WORLD));CHKERRQ(ierr);
+  ierr = VecView(X,PETSC_VIEWER_BINARY_(PETSC_COMM_WORLD));CHKERRQ(ierr);
+  ierr = VecView(F,PETSC_VIEWER_BINARY_(PETSC_COMM_WORLD));CHKERRQ(ierr);
+  ierr = ISView(IS_inact,PETSC_VIEWER_BINARY_(PETSC_COMM_WORLD));CHKERRQ(ierr);
+     */
 
     /* Get sizes of active and inactive sets */
     ierr = ISGetLocalSize(IS_act,&nis_act);CHKERRQ(ierr);
@@ -1205,6 +1221,8 @@ PetscErrorCode SNESSolveVI_RS(SNES snes)
     /*      ierr = ISView(IS_act,0);CHKERRQ(ierr);*/
     /*      ierr = MatView(snes->jacobian_pre,0); */
 
+   
+   
     ierr = KSPSetOperators(snes->ksp,jac_inact_inact,prejac_inact_inact,flg);CHKERRQ(ierr);
     ierr = KSPSetUp(snes->ksp);CHKERRQ(ierr);
     {
