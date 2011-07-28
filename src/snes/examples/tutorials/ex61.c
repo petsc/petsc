@@ -168,12 +168,12 @@ int main(int argc, char **argv)
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"file_out",FILE_MODE_WRITE,&view_out);CHKERRQ(ierr);
    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"file_psi",FILE_MODE_WRITE,&view_psi);CHKERRQ(ierr);*/
  
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"file_out",FILE_MODE_WRITE,&view_out);CHKERRQ(ierr);
+  /*ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"file_out",FILE_MODE_WRITE,&view_out);CHKERRQ(ierr);
   
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"file_cv",FILE_MODE_WRITE,&view_cv);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"file_eta",FILE_MODE_WRITE,&view_eta);CHKERRQ(ierr);
+   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"file_eta",FILE_MODE_WRITE,&view_eta);CHKERRQ(ierr);*/
   
-  ierr = PetscViewerDrawSetBounds(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),5,bounds);CHKERRQ(ierr);
+  /* ierr = PetscViewerDrawSetBounds(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),5,bounds);CHKERRQ(ierr); */
   ierr = VecView(x,PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD));CHKERRQ(ierr);  
   while (t<user.T) {
     ierr = SNESSetFunction(snes,r,FormFunction,(void*)&user);CHKERRQ(ierr);
@@ -237,11 +237,11 @@ int main(int argc, char **argv)
   ierr = PetscViewerDestroy(&view_mat);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&view_q);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&view_out);CHKERRQ(ierr);
-   ierr = PetscViewerDestroy(&view_psi);CHKERRQ(ierr);*/
+   ierr = PetscViewerDestroy(&view_psi);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&view_out);CHKERRQ(ierr);
   
   ierr = PetscViewerDestroy(&view_cv);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&view_eta);CHKERRQ(ierr);
+   ierr = PetscViewerDestroy(&view_eta);CHKERRQ(ierr);*/
   
   
   ierr = VecDestroy(&x);CHKERRQ(ierr);
