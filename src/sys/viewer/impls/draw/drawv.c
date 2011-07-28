@@ -559,7 +559,7 @@ PetscErrorCode  PetscViewerDrawSetBounds(PetscViewer viewer,PetscInt  nbounds,co
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerDrawGetBounds"
-/*@
+/*@C
     PetscViewerDrawGetBounds - gets the upper and lower bounds to be used in plotting set with PetscViewerDrawSetBounds()
 
     Collective on PetscViewer
