@@ -562,8 +562,18 @@ PetscErrorCode SetRandomVectors(AppCtx* user,PetscReal t)
   PetscFunctionBegin;
   if (!randomvalues) {
     PetscViewer viewer;
+    char        filename[PETSC_MAX_PATH_LEN];
+    PetscBool   flg;
+    PetscInt    seed;
+
+    ierr = PetscOptionsGetInt(PETSC_NULL,"-random_seed",&seed,&flg);CHKERRQ(ierr);
+    if (flg) {
+      sprintf(filename,"ex61.random.%d",(int)seed);CHKERRQ(ierr);
+    } else {
+      ierr = PetscStrcpy(filename,"ex61.random");CHKERRQ(ierr);
+    }
     ierr = PetscMalloc(1000*sizeof(RandomValues),&randomvalues);CHKERRQ(ierr);
-    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"ex61.random",FILE_MODE_READ,&viewer);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
     ierr = PetscViewerBinaryRead(viewer,randomvalues,4*1000,PETSC_DOUBLE);CHKERRQ(ierr);
     for (i=0; i<1000; i++) randomvalues[i].dt = randomvalues[i].dt*user->dtevent;
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
