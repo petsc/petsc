@@ -44,6 +44,7 @@ Movie version
 typedef struct{
   PetscReal   dt,T; /* Time step and end time */
   PetscReal   dtevent;  /* time scale of radiation events, roughly one event per dtevent */
+  PetscInt    maxevents; /* once this number of events is reached no more events are generated */
   PetscReal   initv;    /* initial value of phase variables */
   PetscBool   degenerate;  /* use degenerate mobility */
   DM          da1,da2;
@@ -570,7 +571,7 @@ PetscErrorCode SetRandomVectors(AppCtx* user,PetscReal t)
 
   ierr = VecSet(user->Pv,0.0);CHKERRQ(ierr);
   ierr = DMDAGetInfo(user->da1,0,&M,&N,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
-  while (randtime + randomvalues[randindex].dt < t + user->dt) {  /* radiation event has occured since last time step */
+  while (user->maxevents > randindex && randtime + randomvalues[randindex].dt < t + user->dt) {  /* radiation event has occured since last time step */
     I = ((PetscInt) (randomvalues[randindex].x*M)) + M*((PetscInt) (randomvalues[randindex].y*N));
     /* need to make sure eta at the given point is not great than .8 */
     ierr = VecSetValue(user->Pv,I, randomvalues[randindex].strength*user->VG,INSERT_VALUES);CHKERRQ(ierr);
@@ -580,41 +581,6 @@ PetscErrorCode SetRandomVectors(AppCtx* user,PetscReal t)
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of radiation events %d\n",cnt);CHKERRQ(ierr);
   ierr = VecAssemblyBegin(user->Pv);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(user->Pv);CHKERRQ(ierr);
-
-
-  /*if (!rand) {
-    PetscRandomCreate(PETSC_COMM_WORLD,&rand);CHKERRQ(ierr);
-    PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
-  }
-  
-  ierr = VecSetRandom(user->work1,rand);CHKERRQ(ierr);
-  ierr = VecSetRandom(user->work2,rand);CHKERRQ(ierr);
-  ierr = VecGetArray(user->work1,&w1);CHKERRQ(ierr);
-  ierr = VecGetArray(user->work2,&w2);CHKERRQ(ierr);
-  ierr = VecGetArray(user->Pv,&Pv_p);CHKERRQ(ierr);
-  ierr = VecGetArray(user->eta,&eta_p);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(user->work1,&n);CHKERRQ(ierr);
-  for (i=0;i<n;i++) {
-   
-    if ( eta_p[i]>=0.8 || w1[i]>user->P_casc){
-      Pv_p[i]=0;
-   
-    }
-    else
-    {
-      Pv_p[i]=w2[i]*user->VG*user->dt;
-      count=count+1;
-    }
-
-  }
-
-  ierr = VecRestoreArray(user->work1,&w1);CHKERRQ(ierr);
-  ierr = VecRestoreArray(user->work2,&w2);CHKERRQ(ierr);
-  ierr = VecRestoreArray(user->Pv,&Pv_p);CHKERRQ(ierr);
-  ierr = VecRestoreArray(user->eta,&eta_p);CHKERRQ(ierr);
-   printf("count %d n %d\n",count,n);
-  ierr = VecNorm(user->Pv,NORM_INFINITY,&max);CHKERRQ(ierr);
-   printf("max %g\n",max);*/
 
   ierr = VecCopy(user->Pv,user->Pi);CHKERRQ(ierr);
   ierr = VecScale(user->Pi,0.9);CHKERRQ(ierr);
@@ -710,13 +676,17 @@ PetscErrorCode GetParams(AppCtx* user)
   user->dtevent = user->dt;
   user->initv = .00069; 
   user->degenerate = PETSC_FALSE;
+  user->maxevents = 1000;
 
+  ierr = PetscOptionsGetReal(PETSC_NULL,"-Dv",&user->Dv,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(PETSC_NULL,"-Di",&user->Di,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(PETSC_NULL,"-xmin",&user->xmin,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(PETSC_NULL,"-xmax",&user->xmax,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(PETSC_NULL,"-T",&user->T,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(PETSC_NULL,"-dt",&user->dt,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(PETSC_NULL,"-dtevent",&user->dtevent,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(PETSC_NULL,"-VG",&user->VG,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-maxevents",&user->maxevents,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(PETSC_NULL,"-degenerate",&user->degenerate,&flg);CHKERRQ(ierr);
    
 
