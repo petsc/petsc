@@ -444,6 +444,8 @@ class Configure(config.base.Configure):
         cmakegen.main(self.petscdir.dir)
       except (OSError), e:
         self.framework.logPrint('Generating CMakeLists.txt failed:\n' + str(e))
+    else:
+      self.framework.logPrint('Skipping cmakegen due to old python version: ' +str(sys.version_info) )
 
   def cmakeBoot(self):
     import sys
@@ -458,6 +460,8 @@ class Configure(config.base.Configure):
         self.framework.logPrint('Importing cmakeboot failed:\n' + str(e))
       if self.cmakeboot_success and not hasattr(self.compilers, 'CUDAC'): # Our CMake build does not support CUDA at this time
         self.addMakeMacro('PETSC_BUILD_USING_CMAKE',1)
+    else:
+      self.framework.logPrint('Skipping cmakeboot due to old python version: ' +str(sys.version_info) )
     return
 
   def configurePrefetch(self):
