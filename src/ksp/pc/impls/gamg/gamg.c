@@ -2,6 +2,9 @@
  GAMG geometric-algebric multiogrid PC - Mark Adams 2011
  */
 #include <../src/ksp/pc/impls/gamg/gamg.h>
+
+PetscLogEvent gamg_setup_stages[NUM_SET];
+
 /* Private context for the GAMG preconditioner */
 typedef struct gamg_TAG {
   PetscInt       m_dim;
