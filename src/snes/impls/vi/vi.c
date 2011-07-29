@@ -323,8 +323,9 @@ PetscErrorCode  SNESMonitorVI(SNES snes,PetscInt its,PetscReal fgnorm,void *dumm
   rnorm = 0.0;
   for (i=0; i<n; i++) {
     if (((PetscRealPart(x[i]) > PetscRealPart(xl[i]) + 1.e-8 || (PetscRealPart(f[i]) < 0.0)) && ((PetscRealPart(x[i]) < PetscRealPart(xu[i]) - 1.e-8) || PetscRealPart(f[i]) > 0.0))) rnorm += PetscRealPart(PetscConj(f[i])*f[i]);
-    else if (PetscRealPart(x[i]) <= PetscRealPart(xl[i]) + 1.e-8 && PetscRealPart(f[i]) > 0.0) act[0]++;
-    else act[1]++;
+    else if (PetscRealPart(x[i]) <= PetscRealPart(xl[i]) + 1.e-8 && PetscRealPart(f[i]) >= 0.0) act[0]++;
+    else if (PetscRealPart(x[i]) >= PetscRealPart(xu[i]) - 1.e-8 && PetscRealPart(f[i]) <= 0.0) act[1]++;
+    else SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_PLIB,"Can never get here");
   }
   ierr = VecRestoreArrayRead(snes->vec_func,&f);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(vi->xl,&xl);CHKERRQ(ierr);
