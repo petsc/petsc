@@ -18,7 +18,7 @@ Runtime options include:\n\
 ./ex61 -ksp_type fgmres -snes_vi_monitor   -snes_atol 1.e-11  -da_refine 5 -snes_converged_reason -ksp_converged_reason   -snes_ls_monitor -VG 1 -draw_fields 1,3,4  -pc_type mg -pc_mg_galerkin -log_summary -dt .0000000000001 -mg_coarse_pc_type svd  -ksp_monitor_true_residual -ksp_rtol 1.e-9
 
 Movie version
-./ex61 -ksp_type fgmres -snes_vi_monitor   -snes_atol 1.e-11  -da_refine 6 -snes_converged_reason -ksp_converged_reason   -snes_ls_monitor -VG 10 -draw_fields 1,3,4  -pc_type mg -pc_mg_galerkin -log_summary -dt .000001 -mg_coarse_pc_type svd  -ksp_monitor_true_residual -ksp_rtol 1.e-9 -snes_ls basic -T .0020 
+./ex61 -ksp_type fgmres -snes_vi_monitor   -snes_atol 1.e-11  -da_refine 6 -snes_converged_reason -ksp_converged_reason   -snes_ls_monitor -VG 10 -draw_fields 1,3,4  -pc_type mg -pc_mg_galerkin -log_summary -dt .000001 -mg_coarse_pc_type redundant -mg_coarse_redundant_pc_type svd  -ksp_monitor_true_residual -ksp_rtol 1.e-9 -snes_ls basic -T .0020 
 
  */
 
@@ -47,6 +47,7 @@ typedef struct{
   PetscInt    maxevents; /* once this number of events is reached no more events are generated */
   PetscReal   initv;    /* initial value of phase variables */
   PetscBool   degenerate;  /* use degenerate mobility */
+  PetscBool   graphics;
   DM          da1,da2;
   Mat         M;    /* Jacobian matrix */
   Mat         M_0;
@@ -175,7 +176,9 @@ int main(int argc, char **argv)
    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"file_eta",FILE_MODE_WRITE,&view_eta);CHKERRQ(ierr);*/
   
   /* ierr = PetscViewerDrawSetBounds(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),5,bounds);CHKERRQ(ierr); */
-  ierr = VecView(x,PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD));CHKERRQ(ierr);  
+  if (user.graphics) {
+    ierr = VecView(x,PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD));CHKERRQ(ierr);  
+  }
   while (t<user.T) {
     ierr = SNESSetFunction(snes,r,FormFunction,(void*)&user);CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,J,J,FormJacobian,(void*)&user);CHKERRQ(ierr);
@@ -223,7 +226,9 @@ int main(int argc, char **argv)
     /* if (ninactiveconstraints < .90*N) SETERRQ(PETSC_COMM_WORLD, PETSC_ERR_SUP,"To many active constraints, model has become non-physical"); */
 
     /*    ierr = VecView(x,view_out);CHKERRQ(ierr);*/
-    ierr = VecView(x,PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD));CHKERRQ(ierr);
+    if (user.graphics) {
+      ierr = VecView(x,PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD));CHKERRQ(ierr);
+    }
     /*    ierr = VecView(x,PETSC_VIEWER_BINARY_(PETSC_COMM_WORLD));CHKERRQ(ierr);*/
     PetscInt its;
     ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
@@ -550,14 +555,11 @@ typedef struct {
 PetscErrorCode SetRandomVectors(AppCtx* user,PetscReal t)
 {
   PetscErrorCode        ierr;
-  PetscInt              i,n,count=0;
-  PetscScalar           *w1,*w2,*Pv_p,*eta_p;
-  static PetscRandom    rand = 0;
-
   static RandomValues   *randomvalues = 0;
   static PetscInt       randindex = 0; /* indicates how far into the randomvalues we have currently used */
   static PetscReal      randtime = 0; /* indicates time of last radiation event */
-  PetscInt              I,M,N,cnt = 0;
+  PetscInt              i,j,M,N,cnt = 0;
+  PetscInt              xs,ys,xm,ym;
 
   PetscFunctionBegin;
   if (!randomvalues) {
@@ -581,10 +583,14 @@ PetscErrorCode SetRandomVectors(AppCtx* user,PetscReal t)
 
   ierr = VecSet(user->Pv,0.0);CHKERRQ(ierr);
   ierr = DMDAGetInfo(user->da1,0,&M,&N,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr = DMDAGetGhostCorners(user->da1,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
   while (user->maxevents > randindex && randtime + randomvalues[randindex].dt < t + user->dt) {  /* radiation event has occured since last time step */
-    I = ((PetscInt) (randomvalues[randindex].x*M)) + M*((PetscInt) (randomvalues[randindex].y*N));
-    /* need to make sure eta at the given point is not great than .8 */
-    ierr = VecSetValue(user->Pv,I, randomvalues[randindex].strength*user->VG,INSERT_VALUES);CHKERRQ(ierr);
+    i = ((PetscInt) (randomvalues[randindex].x*M)) - xs;
+    j = ((PetscInt) (randomvalues[randindex].y*N)) - ys;
+    if (i >= 0 && i < xm && j >= 0 && j < ym) { /* point is on this process */
+      /* need to make sure eta at the given point is not great than .8 */
+      ierr = VecSetValueLocal(user->Pv,i + 1 + xm*(j + 1), randomvalues[randindex].strength*user->VG,INSERT_VALUES);CHKERRQ(ierr);
+    }
     randtime += randomvalues[randindex++].dt;
     cnt++;
   }
@@ -683,10 +689,10 @@ PetscErrorCode GetParams(AppCtx* user)
   user->T = 1.0e-2;   
   user->dt = 1.0e-4;
   user->VG = 100.0;
-  user->dtevent = user->dt;
   user->initv = .00069; 
   user->degenerate = PETSC_FALSE;
   user->maxevents = 1000;
+  user->graphics = PETSC_TRUE;
 
   ierr = PetscOptionsGetReal(PETSC_NULL,"-Dv",&user->Dv,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(PETSC_NULL,"-Di",&user->Di,&flg);CHKERRQ(ierr);
@@ -694,10 +700,12 @@ PetscErrorCode GetParams(AppCtx* user)
   ierr = PetscOptionsGetReal(PETSC_NULL,"-xmax",&user->xmax,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(PETSC_NULL,"-T",&user->T,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(PETSC_NULL,"-dt",&user->dt,&flg);CHKERRQ(ierr);
+  user->dtevent = user->dt;
   ierr = PetscOptionsGetReal(PETSC_NULL,"-dtevent",&user->dtevent,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(PETSC_NULL,"-VG",&user->VG,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-maxevents",&user->maxevents,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(PETSC_NULL,"-degenerate",&user->degenerate,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-graphics",&user->graphics,&flg);CHKERRQ(ierr);
    
 
   PetscFunctionReturn(0);
