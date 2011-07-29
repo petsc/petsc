@@ -543,7 +543,7 @@ PetscViewer  PETSC_VIEWER_DRAW_(MPI_Comm comm)
 
 .seealso: PetscViewerDrawGetLG(), PetscViewerDrawGetAxis(), PetscViewerDrawOpen()
 @*/
-PetscErrorCode  PetscViewerDrawSetBounds(PetscViewer viewer,PetscInt  nbounds,const PetscReal *bounds)
+PetscErrorCode  PetscViewerDrawSetBounds(PetscViewer viewer,PetscInt nbounds,const PetscReal *bounds)
 {
   PetscViewer_Draw *vdraw = (PetscViewer_Draw*)viewer->data;
   PetscErrorCode   ierr;
@@ -578,7 +578,7 @@ PetscErrorCode  PetscViewerDrawSetBounds(PetscViewer viewer,PetscInt  nbounds,co
 
 .seealso: PetscViewerDrawGetLG(), PetscViewerDrawGetAxis(), PetscViewerDrawOpen()
 @*/
-PetscErrorCode  PetscViewerDrawGetBounds(PetscViewer viewer,PetscInt  *nbounds,const PetscReal **bounds)
+PetscErrorCode  PetscViewerDrawGetBounds(PetscViewer viewer,PetscInt *nbounds,const PetscReal **bounds)
 {
   PetscViewer_Draw *vdraw = (PetscViewer_Draw*)viewer->data;
 
