@@ -457,6 +457,8 @@ PETSC_STATIC_INLINE PetscErrorCode VecSetValueLocal(Vec v,PetscInt i,PetscScalar
 
 extern PetscErrorCode  VecSetLocalToGlobalMappingBlock(Vec,ISLocalToGlobalMapping);
 extern PetscErrorCode  VecSetValuesBlockedLocal(Vec,PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
+extern PetscErrorCode  VecGetLocalToGlobalMappingBlock(Vec,ISLocalToGlobalMapping*);
+extern PetscErrorCode  VecGetLocalToGlobalMapping(Vec,ISLocalToGlobalMapping*);
 
 extern PetscErrorCode  VecDotBegin(Vec,Vec,PetscScalar *);
 PetscPolymorphicSubroutine(VecDotBegin,(Vec x,Vec y),(x,y,PETSC_NULL))
