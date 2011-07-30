@@ -162,5 +162,6 @@ extern PetscErrorCode  PetscViewerBinaryMatlabOutputBag(PetscViewer, const char 
 extern PetscErrorCode  PetscViewerBinaryMatlabOutputVec(PetscViewer, const char [], Vec);
 extern PetscErrorCode  PetscViewerBinaryMatlabOutputVecDA(PetscViewer, const char [], Vec, DM);
 
+#define DM_FILE_CLASSID 1211218
 PETSC_EXTERN_CXX_END
 #endif

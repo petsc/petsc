@@ -1,4 +1,4 @@
-static char help[] = "Generates random numbers for radioactive events for ex61.c.\n ./ex61 [-random_seed <int>] \n";
+static char help[] = "Generates random numbers for radioactive events for ex61.c.\n ./ex61gen [-random_seed <int>] \n";
 
 
 
