@@ -1,0 +1,46 @@
+Residual:
+Vector Object: 1 MPI processes
+  type: seq
+-0.166667
+-0.291667
+0
+-0.291667
+0
+0.291667
+0
+0.291667
+0.166667
+  0 SNES Function norm 6.291528696052e-01 
+    0 KSP Residual norm 7.800046899162e-01 
+    1 KSP Residual norm 6.660904554745e-02 
+    2 KSP Residual norm 2.142817303983e-03 
+    3 KSP Residual norm 6.620558312887e-05 
+    4 KSP Residual norm 9.511170934379e-17 
+Residual:
+Vector Object: 1 MPI processes
+  type: seq
+0
+-1.38778e-16
+3.0087e-14
+3.01287e-14
+-1.94289e-16
+6.37546e-14
+6.3699e-14
+8.32667e-17
+8.32667e-17
+  1 SNES Function norm 9.967572580688e-14 
+Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE
+Number of Newton iterations = 1
+L_2 Error: 0.0709709
+Solution
+Vector Object: 1 MPI processes
+  type: seq
+0.416667
+0.25
+2.65685e-14
+0.25
+-3.52363e-15
+-0.25
+6.02424e-14
+-0.25
+-0.416667
