@@ -914,7 +914,8 @@ class PETScMaker(script.Script):
       ${DSYMUTIL} $@'''
    self.logWrite('Linking object '+str(objects)+' into '+executable+'\n', debugSection = self.debugSection, forceScroll = True)
    self.configInfo.compilers.pushLanguage(language)
-   cmd = self.configInfo.compilers.getFullLinkerCmd(' '.join(objects)+' -L'+self.petscLibDir+' -lpetsc'+' -L/usr/local/cuda/lib', executable)
+   packageIncludes, packageLibs = self.getPackageInfo()
+   cmd = self.configInfo.compilers.getFullLinkerCmd(' '.join(objects)+' -L'+self.petscLibDir+' -lpetsc '+packageLibs+' -L/usr/local/cuda/lib', executable)
    if not self.dryRun:
      (output, error, status) = self.executeShellCommand(cmd, checkCommand = noCheckCommand, log=self.log)
      if status:
