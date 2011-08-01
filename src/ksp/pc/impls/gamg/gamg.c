@@ -410,6 +410,7 @@ PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s %d levels\n",0,__FUNCT__,level + 1);
 
       ierr = MatGetSize( Amat, &N1, &tt );         CHKERRQ(ierr);
       ierr = MatGetSize( Aarr[lidx+1], &N0, &tt );CHKERRQ(ierr);
+      emax *= 1.05;
       emin = emax/((PetscReal)N1/(PetscReal)N0); /* this should be about the coarsening rate */
     }
     ierr = KSPChebychevSetEigenvalues( smoother, emax, emin );CHKERRQ(ierr);
