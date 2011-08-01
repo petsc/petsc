@@ -16,7 +16,7 @@ typedef struct {
   /* the coefficient matrix and orthogonalization information Hh holds the coefficient matrix */
   PetscScalar *hh_origin;
   PetscScalar *orthogwork; /*holds dot products computed in orthogonalization */ 
-  Vec       *v,*w;
+  Vec       *v,*w,*q;
   PetscReal *f2;     /* 2-norms of function (residual) at each stage */
   PetscInt  msize;   /* maximum size of space */
   PetscInt  csize;   /* current size of space */

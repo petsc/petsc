@@ -39,7 +39,8 @@ PetscErrorCode KSPSetUp_NGMRES(KSP ksp)
 
   ierr = PetscLogObjectMemory(ksp,(hh+msize)*sizeof(PetscScalar));CHKERRQ(ierr);
 
-  ierr = KSPGetVecs(ksp,ngmres->msize,&ngmres->v,ngmres->msize*3,&ngmres->w);CHKERRQ(ierr);
+  ierr = KSPGetVecs(ksp,ngmres->msize,&ngmres->v,ngmres->msize*2,&ngmres->w);CHKERRQ(ierr);
+  ierr = VecDuplicateVecs(ngmres->w[0], ngmres->msize, &ngmres->q);CHKERRQ(ierr);
   
   ierr = KSPDefaultGetWork(ksp,3);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -58,9 +59,10 @@ PetscErrorCode KSPSetUp_NGMRES(KSP ksp)
 PetscErrorCode  KSPSolve_NGMRES(KSP ksp)
 {
   PetscErrorCode ierr;
-  PetscInt       i,j,k,l,flag,it;
+  PetscInt       i,ivec,j,k,l,flag,it;
   KSP_NGMRES    *ngmres = (KSP_NGMRES*)ksp->data;
   Mat            Amat;
+  //  Vec            X,F,R, B,Fold, Xold,temp,*dX = ngmres->w,*dF = ngmres->w+ngmres->msize;
   Vec            X,F,R, B,Fold, Xold,temp,*dX = ngmres->w,*dF = ngmres->w+ngmres->msize;
   PetscScalar    *nrs=ngmres->nrs;
   PetscReal      gnorm;
@@ -120,7 +122,12 @@ PetscErrorCode  KSPSolve_NGMRES(KSP ksp)
 
   for (k=1; k<ksp->max_it; k += 1) {  /* begin the iteration */     
     l=ngmres->msize;
-    if(k<l) l=k;
+    if(k<l) {
+      l=k;
+      ivec=l;
+    }else{
+      ivec=l-1;
+    }
     it=l-1;
     ierr = BuildNGmresSoln(nrs,Fold,ksp,it,flag);CHKERRQ(ierr);
    
@@ -159,7 +166,7 @@ PetscErrorCode  KSPSolve_NGMRES(KSP ksp)
         ierr = VecNorm(F,NORM_2,&gnorm);CHKERRQ(ierr);          
       } else SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"NormType not supported");
       KSPLogResidualHistory(ksp,gnorm);
-      //printf("k=%d",k);
+
       KSPMonitor(ksp,k,gnorm);
       ksp->its=k;
       ierr = (*ksp->converged)(ksp,k,gnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr); 
@@ -167,17 +174,17 @@ PetscErrorCode  KSPSolve_NGMRES(KSP ksp)
 
 
     /* calculate dX and dF for k=0 */
-      if( k>l) {/* we need to replace the old vectors */
+      if( k>ivec) {/* we need to replace the old vectors */
 	flag=1;
-	for(i=0;i<l-1;i++){
+	for(i=0;i<it;i++){
 	  ierr= VecCopy(dX[i+1],dX[i]); CHKERRQ(ierr); /* X=Xold+Fold-(dX + dF) *nrd */
 	  ierr= VecCopy(dF[i+1],dF[i]); CHKERRQ(ierr); /* X=Xold+Fold-(dX + dF) *nrd */
           for(j=0;j<l;j++)
 	    *HH(j,i)=*HH(j,i+1);
 	}
       }
-      ierr= VecWAXPY(dX[l],-1.0, Xold, X); CHKERRQ(ierr); /* dX= X_1 - X_0 */
-      ierr= VecWAXPY(dF[l],-1.0, Fold, F); CHKERRQ(ierr); /* dF= f_1 - f_0 */
+      ierr= VecWAXPY(dX[ivec],-1.0, Xold, X); CHKERRQ(ierr); /* dX= X_1 - X_0 */
+      ierr= VecWAXPY(dF[ivec],-1.0, Fold, F); CHKERRQ(ierr); /* dF= f_1 - f_0 */
       ierr= VecCopy(X,Xold); CHKERRQ(ierr);
       ierr= VecCopy(F,Fold); CHKERRQ(ierr);
   
@@ -195,6 +202,7 @@ PetscErrorCode KSPReset_NGMRES(KSP ksp)
   PetscFunctionBegin;
   ierr = VecDestroyVecs(ngmres->msize,&ngmres->v);CHKERRQ(ierr);
   ierr = VecDestroyVecs(ngmres->msize,&ngmres->w);CHKERRQ(ierr);
+  ierr = VecDestroyVecs(ngmres->msize,&ngmres->q);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -252,7 +260,7 @@ PetscErrorCode KSPSetFromOptions_NGMRES(KSP ksp)
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("KSP NGMRES options");CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-ksp_gmres_restart","Number of directions","None",ngmres->msize,&ngmres->msize,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-ksp_ngmres_restart","Number of directions","None",ngmres->msize,&ngmres->msize,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -328,7 +336,8 @@ static PetscErrorCode BuildNGmresSoln(PetscScalar* nrs, Vec Fold, KSP ksp,PetscI
   PetscErrorCode ierr;
   PetscInt       i,ii,j,l;
   KSP_NGMRES      *ngmres = (KSP_NGMRES *)(ksp->data);
-  Vec *dF=ngmres->w+ngmres->msize, *Q=ngmres->w+ngmres->msize*2,temp;
+  //Vec *dF=ngmres->w+ngmres->msize, *Q=ngmres->w+ngmres->msize*2,temp;
+  Vec *dF=ngmres->w+ngmres->msize,*Q=ngmres->q,temp;
   PetscReal      gam,areal;
   PetscScalar    a,b,c,s;
  
@@ -387,7 +396,7 @@ static PetscErrorCode BuildNGmresSoln(PetscScalar* nrs, Vec Fold, KSP ksp,PetscI
     }
     ierr=VecCopy(temp,Q[it]);CHKERRQ(ierr); 
     ierr=VecNormalize(Q[it],&areal);CHKERRQ(ierr);
-    *HH(it,it) = a = areal;
+    *HH(it,it) = areal;
     
 
 
