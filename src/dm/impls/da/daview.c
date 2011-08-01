@@ -55,6 +55,7 @@ PetscErrorCode DMView_DA_Binary(DM da,PetscViewer viewer)
   MPI_Comm         comm;
   DM_DA            *dd = (DM_DA*)da->data;
   PetscInt         classid = DM_FILE_CLASSID,subclassid = DMDA_FILE_CLASSID ;
+  PetscBool        coors = PETSC_FALSE;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
@@ -75,6 +76,8 @@ PetscErrorCode DMView_DA_Binary(DM da,PetscViewer viewer)
     ierr = PetscViewerBinaryWrite(viewer,&by,1,PETSC_ENUM,PETSC_FALSE);CHKERRQ(ierr);
     ierr = PetscViewerBinaryWrite(viewer,&bz,1,PETSC_ENUM,PETSC_FALSE);CHKERRQ(ierr);
     ierr = PetscViewerBinaryWrite(viewer,&stencil,1,PETSC_ENUM,PETSC_FALSE);CHKERRQ(ierr);
+    if (dd->coordinates) coors = PETSC_TRUE;
+    ierr = PetscViewerBinaryWrite(viewer,&coors,1,PETSC_BOOL,PETSC_FALSE);CHKERRQ(ierr);
   } 
 
   /* save the coordinates if they exist to disk (in the natural ordering) */

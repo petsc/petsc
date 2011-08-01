@@ -439,3 +439,57 @@ PetscErrorCode  DMDAGetBoundingBox(DM da,PetscReal gmin[],PetscReal gmax[])
   if (gmax) {ierr = MPI_Allreduce(lmax,gmax,count,MPIU_REAL,MPIU_MAX,((PetscObject)da)->comm);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMDAGetReducedDA"
+/*@
+   DMDAGetReducedDA - Gets the DMDA with the same layout but with fewer or more fields
+
+   Collective on DMDA
+
+   Input Parameter:
++  da - the distributed array
+.  nfields - number of fields in new DMDA
+
+   Output Parameter:
+.  nda - the new DMDA
+
+  Level: intermediate
+
+.keywords: distributed array, get, corners, nodes, local indices, coordinates
+
+.seealso: DMDAGetGhostCorners(), DMDASetCoordinates(), DMDASetUniformCoordinates(), DMDAGetCoordinates(), DMDAGetGhostedCoordinates()
+@*/
+PetscErrorCode  DMDAGetReducedDA(DM da,PetscInt nfields,DM *nda)
+{
+  PetscErrorCode ierr;
+  DM_DA          *dd = (DM_DA*)da->data;
+
+  PetscFunctionBegin;
+  if (dd->dim == 1) {
+    PetscInt         s,m,l;
+    DMDABoundaryType bx;
+    ierr = DMDAGetInfo(da,0,&m,0,0,0,0,0,0,&s,&bx,0,0,0);CHKERRQ(ierr);
+    ierr = DMDAGetCorners(da,0,0,0,&l,0,0);CHKERRQ(ierr);
+    ierr = DMDACreate1d(((PetscObject)da)->comm,bx,m,nfields,s,dd->lx,nda);CHKERRQ(ierr);
+  } else if (dd->dim == 2) {
+    PetscInt         s,m,l,k,n,M,N;
+    DMDABoundaryType bx,by;
+    ierr = DMDAGetInfo(da,0,&m,&n,0,&M,&N,0,0,&s,&bx,&by,0,0);CHKERRQ(ierr);
+    ierr = DMDAGetCorners(da,0,0,0,&l,&k,0);CHKERRQ(ierr);
+    ierr = DMDACreate2d(((PetscObject)da)->comm,bx,by,DMDA_STENCIL_BOX,m,n,M,N,nfields,s,dd->lx,dd->ly,nda);CHKERRQ(ierr);
+  } else if (dd->dim == 3) {
+    PetscInt         s,m,l,k,q,n,M,N,P,p;
+    DMDABoundaryType bx,by,bz;
+    ierr = DMDAGetInfo(da,0,&m,&n,&p,&M,&N,&P,0,&s,&bx,&by,&bz,0);CHKERRQ(ierr);
+    ierr = DMDAGetCorners(da,0,0,0,&l,&k,&q);CHKERRQ(ierr);
+    ierr = DMDACreate3d(((PetscObject)da)->comm,bx,by,bz,DMDA_STENCIL_BOX,m,n,p,M,N,P,nfields,s,dd->lx,dd->ly,dd->lz,&dd->da_coordinates);CHKERRQ(ierr);
+  }
+  if (dd->coordinates) {
+    DM_DA *ndd = (DM_DA*)(*nda)->data;
+    ierr        = PetscObjectReference((PetscObject)dd->coordinates);CHKERRQ(ierr);
+    ndd->coordinates = dd->coordinates;
+  }
+  PetscFunctionReturn(0);
+}
+

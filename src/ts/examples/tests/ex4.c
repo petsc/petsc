@@ -25,6 +25,7 @@ typedef struct
   PetscReal     dy;     /* the grid space in y-direction */
   PetscReal     a;      /* the convection coefficient    */
   PetscReal     epsilon; /* the diffusion coefficient    */
+  PetscReal     tfinal;  
 } Data;
 
 extern PetscErrorCode Monitor(TS,PetscInt,PetscReal,Vec,void *);
@@ -41,7 +42,7 @@ int main(int argc,char **argv)
   PetscInt       time_steps=100,iout,NOUT=1;
   PetscMPIInt    size;
   Vec            global;
-  PetscReal      dt,ftime;
+  PetscReal      dt,ftime,ftime_original;
   TS             ts;
   PetscViewer    viewfile;
   MatStructure   J_structure;
@@ -53,6 +54,8 @@ int main(int argc,char **argv)
   ISColoring     iscoloring;
   MatFDColoring  matfdcoloring = 0;
   PetscBool      fd_jacobian_coloring = PETSC_FALSE;
+  SNES           snes;
+  KSP            ksp;
 #if defined(PETSC_HAVE_SUNDIALS)
   PC             pc;
   PetscViewer    viewer;
@@ -83,7 +86,7 @@ int main(int argc,char **argv)
 
   /* create timestep context */
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
-  ierr = TSMonitorSet(ts,Monitor,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = TSMonitorSet(ts,Monitor,&data,PETSC_NULL);CHKERRQ(ierr);
 
   /* set user provided RHSFunction and RHSJacobian */
   ierr = TSSetRHSFunction(ts,PETSC_NULL,RHSFunction,&data);CHKERRQ(ierr);
@@ -142,9 +145,10 @@ int main(int argc,char **argv)
 #else
   ierr = TSSetType(ts,TSEULER);CHKERRQ(ierr);
 #endif
-  dt   = 0.1;
+  dt             = 0.1;
+  ftime_original = data.tfinal = 1.0; 
   ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRQ(ierr);
-  ierr = TSSetDuration(ts,time_steps,1);CHKERRQ(ierr);
+  ierr = TSSetDuration(ts,time_steps,ftime_original);CHKERRQ(ierr);
   ierr = TSSetSolution(ts,global);CHKERRQ(ierr);
 
   /* Test TSSetPostStep() */
@@ -155,32 +159,33 @@ int main(int argc,char **argv)
 
   /* Pick up a Petsc preconditioner */
   /* one can always set method or preconditioner during the run time */
-#if defined(PETSC_HAVE_SUNDIALS)
-  ierr = TSSundialsGetPC(ts,&pc);CHKERRQ(ierr);
+  ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
+  ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
+  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
   ierr = PCSetType(pc,PCJACOBI);CHKERRQ(ierr);
-#endif
+
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
   ierr = TSSetUp(ts);CHKERRQ(ierr);
-
+  
   ierr = PetscOptionsGetInt(PETSC_NULL,"-NOUT",&NOUT,PETSC_NULL);CHKERRQ(ierr);
   for (iout=1; iout<=NOUT; iout++){
-    ierr = TSSetDuration(ts,time_steps,iout*1.0/NOUT);CHKERRQ(ierr);
+    ierr = TSSetDuration(ts,time_steps,iout*ftime_original/NOUT);CHKERRQ(ierr);
     ierr = TSSolve(ts,global,&ftime);CHKERRQ(ierr);
     ierr = TSSetInitialTimeStep(ts,ftime,dt);CHKERRQ(ierr);
   }
+  /* Interpolate solution at tfinal */
+  ierr = TSGetSolution(ts,&global);CHKERRQ(ierr);
+  ierr = TSInterpolate(ts,ftime_original,global);CHKERRQ(ierr);
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-matlab_view",&flg);CHKERRQ(ierr);
   if (flg){ /* print solution into a MATLAB file */
-    ierr = TSGetSolution(ts,&global);CHKERRQ(ierr);
     ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,"out.m",&viewfile);CHKERRQ(ierr);
     ierr = PetscViewerSetFormat(viewfile,PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
     ierr = VecView(global,viewfile);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewfile);CHKERRQ(ierr);
   }
 
-#if defined(PETSC_HAVE_SUNDIALS)
-  /* extracts the PC  from ts */ 
-  ierr = TSSundialsGetPC(ts,&pc);CHKERRQ(ierr);
+  /* display solver info for Sundials */ 
   ierr = TSGetType(ts,&tstype);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)ts,TSSUNDIALS,&sundials);CHKERRQ(ierr);
   if (sundials){
@@ -193,7 +198,6 @@ int main(int argc,char **argv)
                      size,tsinfo,pcinfo);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
-#endif
 
   /* free the memories */
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
@@ -262,8 +266,12 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec global,void *ctx)
   PetscErrorCode ierr;
   PetscScalar    *tmp;
   PetscReal      maxtime;
+  Data           *data = (Data*)ctx;
+  PetscReal      tfinal = data->tfinal;
 
   PetscFunctionBegin;
+  if (time > tfinal) PetscFunctionReturn(0);
+
   ierr = TSGetTimeStepNumber(ts,&nsteps);CHKERRQ(ierr);
   /* display output at selected time steps */
   ierr = TSGetDuration(ts, &maxsteps, &maxtime);CHKERRQ(ierr);

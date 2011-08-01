@@ -4,7 +4,6 @@
 
 #define PETSC_BAG_NAME_LENGTH 64
 #define PETSC_BAG_HELP_LENGTH 128
-#define PETSC_BAG_FILE_CLASSID 1211219
 
 struct _n_PetscBagItem {
   PetscDataType dtype;

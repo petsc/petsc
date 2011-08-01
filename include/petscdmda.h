@@ -122,7 +122,9 @@ extern PetscErrorCode     DMDASetUniformCoordinates(DM,PetscReal,PetscReal,Petsc
 extern PetscErrorCode     DMDAGetBoundingBox(DM,PetscReal[],PetscReal[]);
 extern PetscErrorCode     DMDAGetLocalBoundingBox(DM,PetscReal[],PetscReal[]);
 /* function to wrap coordinates around boundary */
-extern PetscErrorCode   DMDAMapCoordsToPeriodicDomain(DM,PetscScalar*,PetscScalar*);
+extern PetscErrorCode     DMDAMapCoordsToPeriodicDomain(DM,PetscScalar*,PetscScalar*);
+
+extern PetscErrorCode     DMDAGetReducedDA(DM,PetscInt,DM*);
 
 extern PetscErrorCode     DMDASetFieldName(DM,PetscInt,const char[]);
 extern PetscErrorCode     DMDAGetFieldName(DM,PetscInt,const char**);
