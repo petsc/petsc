@@ -338,7 +338,7 @@ PetscErrorCode triangulateAndFormProl( IS  a_selected_2, /* list of selected loc
     triangulate(args, &in, &mid, (struct triangulateio *) NULL );
     /* output .poly files for 'showme' */
     if( !PETSC_TRUE ) {
-      static int level = 0;
+      static int level = 1;
       FILE *file; char fname[32];
 
       sprintf(fname,"C%d_%d.poly",level,mype); file = fopen(fname, "w");
@@ -410,7 +410,7 @@ PetscErrorCode triangulateAndFormProl( IS  a_selected_2, /* list of selected loc
         nTri[cid]++;
       }
     }
-#define EPS 1.e-5
+#define EPS 1.e-12
     /* find points and set prolongation */
     ierr = ISGetIndices( a_selected_1, &selected_idx_1 );     CHKERRQ(ierr);
     ierr = ISGetIndices( a_locals_llist, &llist_idx );     CHKERRQ(ierr);
@@ -744,7 +744,7 @@ PetscErrorCode createProlongation( Mat a_Amat,
     }
   }
   /* view */
-  if(PETSC_FALSE) {
+  if( PETSC_FALSE ) {
     PetscViewer        viewer;
     ierr = PetscViewerASCIIOpen(PETSC_COMM_SELF, "Gmat.m", &viewer);  CHKERRQ(ierr);
     ierr = PetscViewerSetFormat( viewer, PETSC_VIEWER_ASCII_MATLAB);  CHKERRQ(ierr);
@@ -762,7 +762,7 @@ PetscErrorCode createProlongation( Mat a_Amat,
     const PetscInt *selected_idx;
     PetscInt *crsGID;
 
-    /* Mat subMat = Gmat; */
+    /* Mat subMat = Gmat -- get degree of vertices */
     ierr = MatGetOwnershipRange(Gmat,&Istart,&Iend);CHKERRQ(ierr);
     for (Ii=Istart; Ii<Iend; Ii++) { /* locals only? */
       ierr = MatGetRow(Gmat,Ii,&ncols,0,0); CHKERRQ(ierr);
@@ -774,8 +774,9 @@ PetscErrorCode createProlongation( Mat a_Amat,
       ierr = MatRestoreRow(Gmat,Ii,&ncols,0,0); CHKERRQ(ierr);
     }
     /* randomize */
-    {
+    if( PETSC_TRUE ) {
       PetscBool bIndexSet[nloc];
+      for ( Ii = 0; Ii < nloc ; Ii++) bIndexSet[Ii] = PETSC_FALSE;
       for ( Ii = 0; Ii < nloc ; Ii++)
       {
         PetscInt iSwapIndex = rand()%nloc;
@@ -867,7 +868,7 @@ PetscErrorCode createProlongation( Mat a_Amat,
                                      selected_1, llist_1, crsGID, Prol, &metric );
       CHKERRQ(ierr);
       ierr = PetscLogEventEnd(gamg_setup_stages[SET6],0,0,0,0);CHKERRQ(ierr);
-      if( metric > 1.0 ) {
+      if( metric > 1. ) {
         *a_isOK = PETSC_FALSE;
         PetscPrintf(PETSC_COMM_WORLD,"%s failed metric for coarse grid %e\n",__FUNCT__,metric);
         ierr = MatDestroy( &Prol );  CHKERRQ(ierr);
