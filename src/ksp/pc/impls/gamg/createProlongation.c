@@ -584,7 +584,8 @@ PetscErrorCode growCrsSupport( const IS a_selected_1,
 #if defined(PETSC_HAVE_MPI_EXSCAN)
     MPI_Exscan( &nLocalSelected, &myCrs0, 1, MPI_INT, MPI_SUM, wcomm );
 #else 
-    SETERRQ(wcomm,PETSC_ERR_SUP,"Sorry but this code requires MPI_EXSCAN that doesn't exist on your machine's version of MPI, install a MPI2 with PETSc to get this functionality");
+    MPI_Scan( &nLocalSelected, &myCrs0, 1, MPI_INT, MPI_SUM, wcomm );
+    myCrs0 -= nLocalSelected;
 #endif
     ierr = MatGetVecs( Gmat2, &locState, 0 );         CHKERRQ(ierr);
     ierr = VecSet( locState, (PetscScalar)(NOT_DONE) );  CHKERRQ(ierr); /* set with UNKNOWN state */

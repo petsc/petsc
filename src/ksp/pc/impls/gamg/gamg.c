@@ -13,7 +13,7 @@ typedef struct gamg_TAG {
   PetscReal     *m_data; /* blocked vector of vertex data on fine grid (coordinates) */
 } PC_GAMG;
  
-#define TOP_GRID_LIM 10
+#define TOP_GRID_LIM 100
 
 /* -----------------------------------------------------------------------------*/
 #undef __FUNCT__
@@ -367,18 +367,55 @@ PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s %d levels\n",0,__FUNCT__,level + 1);
   fine_level = level;
   ierr = PCMGSetLevels(pc,pc_gamg->m_Nlevels,PETSC_NULL);CHKERRQ(ierr);
 
-  /* set default smoothers -- need iegen estimates, 2.0 is too low for coarse grids !!! */
-  PetscReal emax = 3.0, emin;
-  for (level=1; level<=fine_level; level++){
+  /* set default smoothers */
+  for (level=1,lidx=pc_gamg->m_Nlevels-2;
+       level<=fine_level;
+       level++,lidx--) {
+    PetscReal emax = 3.0, emin;
     KSP smoother; PC subpc;
     ierr = PCMGGetSmoother(pc,level,&smoother);CHKERRQ(ierr);
     ierr = KSPSetType(smoother,KSPCHEBYCHEV);CHKERRQ(ierr);
-    emin = emax/5.0; /* fix!!! */
     ierr = KSPGetPC(smoother,&subpc);CHKERRQ(ierr);
     ierr = PCSetType(subpc,PCJACOBI);CHKERRQ(ierr);
-    ierr = KSPChebychevSetEigenvalues(smoother, emax, emin);CHKERRQ(ierr); /* need auto !!!!*/
+    { /* eigen estimate 'emax' */
+      KSP eksp; Mat Amat = Aarr[lidx];
+      Vec bb, xx; PC pc;
+      PetscInt N1, N0, tt;
+      ierr = MatGetVecs( Amat, &bb, 0 );         CHKERRQ(ierr);
+      ierr = MatGetVecs( Amat, &xx, 0 );         CHKERRQ(ierr);
+      {
+	PetscRandom    rctx;
+	ierr = PetscRandomCreate(wcomm,&rctx);CHKERRQ(ierr);
+	ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
+	ierr = VecSetRandom(bb,rctx);CHKERRQ(ierr);
+	ierr = PetscRandomDestroy( &rctx ); CHKERRQ(ierr);
+      }
+      ierr = KSPCreate(wcomm,&eksp);CHKERRQ(ierr);
+      ierr = KSPSetInitialGuessNonzero( eksp, PETSC_FALSE ); CHKERRQ(ierr);
+      ierr = KSPSetOperators( eksp, Amat, Amat, DIFFERENT_NONZERO_PATTERN ); CHKERRQ( ierr );
+      ierr = KSPGetPC( eksp, &pc );CHKERRQ( ierr );
+      ierr = PCSetType( pc, PCJACOBI ); CHKERRQ(ierr); /* should be same as above */
+      ierr = KSPSetTolerances( eksp, PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT, 5 );
+      CHKERRQ(ierr);
+      ierr = KSPSetConvergenceTest( eksp, KSPSkipConverged, 0, 0 ); CHKERRQ(ierr);
+      ierr = KSPSetNormType( eksp, KSP_NORM_NONE );                 CHKERRQ(ierr);
+
+      ierr = KSPSetComputeSingularValues( eksp,PETSC_TRUE ); CHKERRQ(ierr);
+      ierr = KSPSolve(eksp,bb,xx); CHKERRQ(ierr);
+      ierr = KSPComputeExtremeSingularValues( eksp, &emax, &emin ); CHKERRQ(ierr);
+
+      ierr = VecDestroy( &xx );       CHKERRQ(ierr);
+      ierr = VecDestroy( &bb );       CHKERRQ(ierr);
+      ierr = KSPDestroy( &eksp );       CHKERRQ(ierr);
+
+      ierr = MatGetSize( Amat, &N1, &tt );         CHKERRQ(ierr);
+      ierr = MatGetSize( Aarr[lidx+1], &N0, &tt );CHKERRQ(ierr);
+      emin = emax/((PetscReal)N1/(PetscReal)N0); /* this should be about the coarsening rate */
+    }
+    ierr = KSPChebychevSetEigenvalues( smoother, emax, emin );CHKERRQ(ierr);
   }
-  ierr = PCSetFromOptions_MG(pc); CHKERRQ(ierr); /* should be called in PCSetFromOptions_GAMG(), but cannot be called prior to PCMGSetLevels() */
+  /* should be called in PCSetFromOptions_GAMG(), but cannot be called prior to PCMGSetLevels() */
+  ierr = PCSetFromOptions_MG(pc); CHKERRQ(ierr);
   {
     PetscBool galerkin;
     ierr = PCMGGetGalerkin( pc,  &galerkin); CHKERRQ(ierr);
@@ -388,11 +425,13 @@ PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s %d levels\n",0,__FUNCT__,level + 1);
   }
   {
     char str[32];
-    sprintf(str,"MG Level %d (%d)",0,pc_gamg->m_Nlevels-1); 
+    sprintf(str,"MG Level %d (%d)",0,pc_gamg->m_Nlevels-1);
     PetscLogStageRegister(str, &gamg_stages[fine_level]);
   }
   /* create coarse level and the interpolation between the levels */
-  for (level=0,lidx=pc_gamg->m_Nlevels-1; level<fine_level; level++,lidx--){
+  for (level=0,lidx=pc_gamg->m_Nlevels-1;
+       level<fine_level;
+       level++,lidx--){
     level1 = level + 1;
     ierr = PCMGSetInterpolation(pc,level1,Parr[lidx]);CHKERRQ(ierr);
     if( !PETSC_TRUE ) {
