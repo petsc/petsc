@@ -70,6 +70,16 @@ class Configure(config.base.Configure):
     else:
       self.addMakeRule('libc','${OBJSC}','-${AR} ${AR_FLAGS} ${LIBNAME} ${OBJSC}')
     self.addMakeRule('libf','${OBJSF}','-${AR} ${AR_FLAGS} ${LIBNAME} ${OBJSF}')
+
+    # check no of cores on the build machine [perhaps to do make '-j ncores']
+    try:
+      import multiproc
+      make_np = multiproc.cpu_count()
+      self.framework.logPrint('module multiproc found: using make_np ='+str(make_np))
+    except (ImportError), e:
+        self.framework.logPrint('module multiproc not found: using default for make_np')
+        make_np = 2
+    self.addMakeMacro('MAKE_NP',str(make_np))
     return
 
   def configureMkdir(self):
