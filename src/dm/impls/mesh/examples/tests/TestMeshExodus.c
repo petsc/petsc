@@ -1,19 +1,17 @@
 static char help[] = "Test distribution of properties using a mesh\n\n";
 
-#include <stdio.h>
-#include <stdlib.h>
 #include <petscsys.h>
-#include <petscmesh.hh>
+#include <petscdmmesh.hh>
 #include <sieve/Selection.hh>
 #include <exodusII.h>
 
 PetscErrorCode MyPetscReadExodusII(MPI_Comm comm, const char filename[], ALE::Obj<PETSC_MESH_TYPE>& mesh);
-PetscErrorCode MeshCreateExodus(MPI_Comm comm, const char filename[], Mesh *mesh);
+PetscErrorCode MyDMMeshCreateExodus(MPI_Comm comm, const char filename[], DM *mesh);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main (int argc, char ** argv) {
-  Mesh           mesh;
+  DM             mesh;
   PetscBool      flag;
   char           filename[PETSC_MAX_PATH_LEN+1];
   PetscErrorCode ierr;
@@ -21,22 +19,17 @@ int main (int argc, char ** argv) {
   ierr = PetscInitialize(&argc,&argv,(char *)0,help);CHKERRQ(ierr);
   ierr = PetscOptionsGetString(PETSC_NULL, "-f", filename, PETSC_MAX_PATH_LEN, &flag);CHKERRQ(ierr);
   if (flag) {
-    try {
-      ierr = MeshCreateExodus(PETSC_COMM_WORLD, filename, &mesh);CHKERRQ(ierr);
-      ierr = MeshView(mesh, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    } catch(ALE::Exception e) {
-      std::cerr << "Error: " << e << std::endl;
-    }
+    ierr = DMMeshCreateExodus(PETSC_COMM_WORLD, filename, &mesh);CHKERRQ(ierr);
+    ierr = DMView(mesh, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
   ierr = PetscFinalize();
   return 0;
-
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MeshCreateExodus"
+#define __FUNCT__ "MyDMMeshCreateExodus"
 /*@C
-  MeshCreateExodus - Create a Mesh from an ExodusII file.
+  MyDMMeshCreateExodus - Create a Mesh from an ExodusII file.
 
   Not Collective
 
@@ -45,30 +38,34 @@ int main (int argc, char ** argv) {
 - filename - The ExodusII filename
 
   Output Parameter:
-. mesh - The Mesh object
+. dm - The DM object
 
   Level: beginner
 
 .keywords: mesh, ExodusII
 .seealso: MeshCreate()
 @*/
-PetscErrorCode MeshCreateExodus(MPI_Comm comm, const char filename[], Mesh *mesh)
+PetscErrorCode MyDMMeshCreateExodus(MPI_Comm comm, const char filename[], DM *dm)
 {
   PetscInt       debug = 1;
   PetscBool      flag;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MeshCreate(comm, mesh);CHKERRQ(ierr);
+  ierr = DMMeshCreate(comm, dm);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL, "-debug", &debug, &flag);CHKERRQ(ierr);
-  ALE::Obj<PETSC_MESH_TYPE> m = new PETSC_MESH_TYPE(comm, -1, debug);
+  ALE::Obj<PETSC_MESH_TYPE> mesh = new PETSC_MESH_TYPE(comm, -1, debug);
 #ifdef PETSC_HAVE_EXODUSII
-  ierr = MyPetscReadExodusII(comm, filename, m);CHKERRQ(ierr);
+  try {
+    ierr = MyPetscReadExodusII(comm, filename, mesh);CHKERRQ(ierr);
+  } catch(ALE::Exception e) {
+    std::cerr << "Error: " << e << std::endl;
+  }
 #else
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "This method requires ExodusII support. Reconfigure using --with-exodusii-dir=/path/to/exodus");
 #endif
-  if (debug) {m->view("Mesh");}
-  ierr = MeshSetMesh(*mesh, m);CHKERRQ(ierr);
+  if (debug) {mesh->view("Mesh");}
+  ierr = DMMeshSetMesh(*dm, mesh);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -77,8 +74,9 @@ PetscErrorCode MeshCreateExodus(MPI_Comm comm, const char filename[], Mesh *mesh
 #define __FUNCT__ "MyPetscReadExodusII"
 PetscErrorCode MyPetscReadExodusII(MPI_Comm comm, const char filename[], ALE::Obj<PETSC_MESH_TYPE>& mesh)
 {
-  typedef std::set<ALE::Mesh::point_type> PointSet;
-  ALE::Obj<ALE::Mesh> boundarymesh; 
+  typedef ALE::Mesh<PetscInt,PetscScalar> FlexMesh;
+  typedef std::set<FlexMesh::point_type> PointSet;
+  ALE::Obj<FlexMesh> boundarymesh;
   const PetscMPIInt   rank          = mesh->commRank();
   int                 CPU_word_size = 0;
   int                 IO_word_size  = 0;
@@ -147,7 +145,7 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm, const char filename[], ALE::Ob
       }
     }
   }
-  
+
   // Read side sets
   int  *ss_ids, *num_sides_in_set;
   int **side_set_elem_list, **side_set_side_list;
@@ -161,7 +159,7 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm, const char filename[], ALE::Ob
       ierr = ex_get_side_set(exoid, ss_ids[ss], side_set_elem_list[ss], side_set_side_list[ss]);
     }
   }
-      
+
   // Read node sets
   int  *ns_ids, *num_nodes_in_set;
   int **node_list;
@@ -173,7 +171,7 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm, const char filename[], ALE::Ob
       ierr = ex_get_node_set_param (exoid, ns_ids[ns], &num_nodes_in_set[ns], &num_df_in_set);CHKERRQ(ierr);
       ierr = PetscMalloc(num_nodes_in_set[ns] * sizeof(int), &node_list[ns]);CHKERRQ(ierr);
       ierr = ex_get_node_set(exoid, ns_ids[ns], node_list[ns]);
-	 }
+    }
   }
   ierr = ex_close(exoid);CHKERRQ(ierr);
 
@@ -185,7 +183,7 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm, const char filename[], ALE::Ob
     num_local_corners += num_nodes_per_elem[eb] * num_elem_in_block[eb];
   }
   mesh->setDimension(num_dim);
-  ierr = PetscMalloc2(num_local_corners,int,&cells, num_elem, int*, &connectivity_table);CHKERRQ(ierr); 
+  ierr = PetscMalloc2(num_local_corners,int,&cells, num_elem, int*, &connectivity_table);CHKERRQ(ierr);
   for(int eb = 0, k = 0; eb < num_elem_blk; ++eb) {
     for(int e = 0; e < num_elem_in_block[eb]; ++e, ++k) {
       for(int c = 0; c < num_nodes_per_elem[eb]; ++c) {
@@ -193,19 +191,18 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm, const char filename[], ALE::Ob
       }
       connectivity_table[k] = &cells[k*num_nodes_per_elem[eb]];
     }
-  ierr = PetscFree(connect[eb]);CHKERRQ(ierr);
+    ierr = PetscFree(connect[eb]);CHKERRQ(ierr);
   }
 
-
   ALE::Obj<PETSC_MESH_TYPE::sieve_type> sieve = new PETSC_MESH_TYPE::sieve_type(mesh->comm(), mesh->debug());
-  ALE::Obj<ALE::Mesh>                   m     = new ALE::Mesh(mesh->comm(), mesh->debug());
-  ALE::Obj<ALE::Mesh::sieve_type>       s     = new ALE::Mesh::sieve_type(mesh->comm(), mesh->debug());
+  ALE::Obj<FlexMesh>                    m     = new FlexMesh(mesh->comm(), mesh->debug());
+  ALE::Obj<FlexMesh::sieve_type>        s     = new FlexMesh::sieve_type(mesh->comm(), mesh->debug());
 
-  // Here we assume that num_nodes_per_elem is constant accross blocks (i.e.) 
+  // Here we assume that num_nodes_per_elem is constant accross blocks (i.e.)
   // that all elements in the mesh are of the same type
   int  numCorners = num_nodes_per_elem[0];
-  ALE::SieveBuilder<ALE::Mesh>::buildTopology(s, num_dim, num_elem, cells, num_nodes, interpolate, numCorners, PETSC_DECIDE, m->getArrowSection("orientation"));
-  
+  ALE::SieveBuilder<FlexMesh>::buildTopology(s, num_dim, num_elem, cells, num_nodes, interpolate, numCorners, PETSC_DECIDE, m->getArrowSection("orientation"));
+
   std::map<PETSC_MESH_TYPE::point_type,PETSC_MESH_TYPE::point_type> renumbering;
   ALE::ISieveConverter::convertSieve(*s, *sieve, renumbering, false);
   mesh->setSieve(sieve);
@@ -263,8 +260,8 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm, const char filename[], ALE::Ob
     boundarymesh = ALE::Selection<PETSC_MESH_TYPE>::boundaryV(mesh);
 //    const ALE::Obj<PETSC_MESH_TYPE::label_type>& sideSets = boundarymesh->createLabel("SideSets");
 
-    /* 
-      Find the parent block of each element 
+    /*
+      Find the parent block of each element
     */
     if (rank == 0) {
       int *parent_block;
@@ -283,16 +280,16 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm, const char filename[], ALE::Ob
         for (int s = 0; s < num_sides_in_set[ss]; ++s){
           int e = side_set_elem_list[ss][s];
           face->clear();
-          /* 
-            There is currently no easy way to recover the point number of a vertex if there are more 
+          /*
+            There is currently no easy way to recover the point number of a vertex if there are more
             than one type of elements present in the mesh.
-            The following will need to be adapted when we can deal with that 
-            hint: the connectivity table "cells" will have to be a 2 dimensional array, 
+            The following will need to be adapted when we can deal with that
+            hint: the connectivity table "cells" will have to be a 2 dimensional array,
                   or we will need to play with pointer arithmetic
           */
-          /* 
+          /*
             the numbering scheme for vertices, faces and edges in EXO has been designed by a maniac
-            cf. Figure 5 in exodus documentation or 
+            cf. Figure 5 in exodus documentation or
             https://redmine.schur.math.lsu.edu/attachments/36/Exodus_Sides_Ordering.png
           */
           // TRI
@@ -300,16 +297,16 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm, const char filename[], ALE::Ob
           if (flag1){
             switch (side_set_side_list[ss][s]){
               case 1:
-                face->insert(face->end(), connectivity_table[e-1][0]+num_elem-1); 
-                face->insert(face->end(), connectivity_table[e-1][1]+num_elem-1); 
+                face->insert(face->end(), connectivity_table[e-1][0]+num_elem-1);
+                face->insert(face->end(), connectivity_table[e-1][1]+num_elem-1);
                 break;
               case 2:
-                face->insert(face->end(), connectivity_table[e-1][1]+num_elem-1); 
-                face->insert(face->end(), connectivity_table[e-1][2]+num_elem-1); 
+                face->insert(face->end(), connectivity_table[e-1][1]+num_elem-1);
+                face->insert(face->end(), connectivity_table[e-1][2]+num_elem-1);
                 break;
               case 3:
-                face->insert(face->end(), connectivity_table[e-1][2]+num_elem-1); 
-                face->insert(face->end(), connectivity_table[e-1][0]+num_elem-1); 
+                face->insert(face->end(), connectivity_table[e-1][2]+num_elem-1);
+                face->insert(face->end(), connectivity_table[e-1][0]+num_elem-1);
                 break;
             }
           }
@@ -319,90 +316,90 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm, const char filename[], ALE::Ob
           if (flag1){
             switch (side_set_side_list[ss][s]){
               case 1:
-                face->insert(face->end(), connectivity_table[e-1][0]+num_elem-1); 
-                face->insert(face->end(), connectivity_table[e-1][1]+num_elem-1); 
+                face->insert(face->end(), connectivity_table[e-1][0]+num_elem-1);
+                face->insert(face->end(), connectivity_table[e-1][1]+num_elem-1);
                 face->insert(face->end(), connectivity_table[e-1][3]+num_elem-1);
                 break;
               case 2:
-                face->insert(face->end(), connectivity_table[e-1][1]+num_elem-1); 
-                face->insert(face->end(), connectivity_table[e-1][2]+num_elem-1); 
-                face->insert(face->end(), connectivity_table[e-1][3]+num_elem-1); 
+                face->insert(face->end(), connectivity_table[e-1][1]+num_elem-1);
+                face->insert(face->end(), connectivity_table[e-1][2]+num_elem-1);
+                face->insert(face->end(), connectivity_table[e-1][3]+num_elem-1);
                 break;
               case 3:
-                face->insert(face->end(), connectivity_table[e-1][2]+num_elem-1); 
-                face->insert(face->end(), connectivity_table[e-1][0]+num_elem-1); 
-                face->insert(face->end(), connectivity_table[e-1][3]+num_elem-1); 
+                face->insert(face->end(), connectivity_table[e-1][2]+num_elem-1);
+                face->insert(face->end(), connectivity_table[e-1][0]+num_elem-1);
+                face->insert(face->end(), connectivity_table[e-1][3]+num_elem-1);
                 break;
               case 4:
-                face->insert(face->end(), connectivity_table[e-1][0]+num_elem-1); 
-                face->insert(face->end(), connectivity_table[e-1][2]+num_elem-1); 
-                face->insert(face->end(), connectivity_table[e-1][1]+num_elem-1); 
+                face->insert(face->end(), connectivity_table[e-1][0]+num_elem-1);
+                face->insert(face->end(), connectivity_table[e-1][2]+num_elem-1);
+                face->insert(face->end(), connectivity_table[e-1][1]+num_elem-1);
                 break;
             }
           }
-          
+
           // QUAD
           ierr = PetscStrcasecmp(block_elem_sig[parent_block[side_set_elem_list[ss][s]-1]], "qua", &flag1);CHKERRQ(ierr);
           ierr = PetscStrcasecmp(block_elem_sig[parent_block[side_set_elem_list[ss][s]-1]], "she", &flag2);CHKERRQ(ierr);
           if (flag1 || flag2){
             switch (side_set_side_list[ss][s]){
               case 1:
-                face->insert(face->end(), connectivity_table[e-1][0]+num_elem-1); 
+                face->insert(face->end(), connectivity_table[e-1][0]+num_elem-1);
                 face->insert(face->end(), connectivity_table[e-1][1]+num_elem-1);
                 break;
               case 2:
-                face->insert(face->end(), connectivity_table[e-1][1]+num_elem-1); 
+                face->insert(face->end(), connectivity_table[e-1][1]+num_elem-1);
                 face->insert(face->end(), connectivity_table[e-1][2]+num_elem-1);
                 break;
               case 3:
-                face->insert(face->end(), connectivity_table[e-1][2]+num_elem-1); 
+                face->insert(face->end(), connectivity_table[e-1][2]+num_elem-1);
                 face->insert(face->end(), connectivity_table[e-1][3]+num_elem-1);
                 break;
               case 4:
-                face->insert(face->end(), connectivity_table[e-1][3]+num_elem-1); 
+                face->insert(face->end(), connectivity_table[e-1][3]+num_elem-1);
                 face->insert(face->end(), connectivity_table[e-1][0]+num_elem-1);
                 break;
             }
           }
-          
+
           //HEX
           ierr = PetscStrcasecmp(block_elem_sig[parent_block[side_set_elem_list[ss][s]-1]], "hex", &flag1);CHKERRQ(ierr);
           if (flag1){
             switch (side_set_side_list[ss][s]){
               case 1:
-                face->insert(face->end(), connectivity_table[e-1][0]+num_elem-1); 
-                face->insert(face->end(), connectivity_table[e-1][1]+num_elem-1); 
-                face->insert(face->end(), connectivity_table[e-1][5]+num_elem-1); 
+                face->insert(face->end(), connectivity_table[e-1][0]+num_elem-1);
+                face->insert(face->end(), connectivity_table[e-1][1]+num_elem-1);
+                face->insert(face->end(), connectivity_table[e-1][5]+num_elem-1);
                 face->insert(face->end(), connectivity_table[e-1][4]+num_elem-1);
                 break;
               case 2:
-                face->insert(face->end(), connectivity_table[e-1][1]+num_elem-1); 
-                face->insert(face->end(), connectivity_table[e-1][2]+num_elem-1); 
-                face->insert(face->end(), connectivity_table[e-1][6]+num_elem-1); 
+                face->insert(face->end(), connectivity_table[e-1][1]+num_elem-1);
+                face->insert(face->end(), connectivity_table[e-1][2]+num_elem-1);
+                face->insert(face->end(), connectivity_table[e-1][6]+num_elem-1);
                 face->insert(face->end(), connectivity_table[e-1][5]+num_elem-1);
                 break;
               case 3:
-                face->insert(face->end(), connectivity_table[e-1][2]+num_elem-1); 
-                face->insert(face->end(), connectivity_table[e-1][3]+num_elem-1); 
-                face->insert(face->end(), connectivity_table[e-1][7]+num_elem-1); 
+                face->insert(face->end(), connectivity_table[e-1][2]+num_elem-1);
+                face->insert(face->end(), connectivity_table[e-1][3]+num_elem-1);
+                face->insert(face->end(), connectivity_table[e-1][7]+num_elem-1);
                 face->insert(face->end(), connectivity_table[e-1][6]+num_elem-1);
                 break;
               case 4:
-                face->insert(face->end(), connectivity_table[e-1][3]+num_elem-1); 
-                face->insert(face->end(), connectivity_table[e-1][0]+num_elem-1); 
-                face->insert(face->end(), connectivity_table[e-1][4]+num_elem-1); 
+                face->insert(face->end(), connectivity_table[e-1][3]+num_elem-1);
+                face->insert(face->end(), connectivity_table[e-1][0]+num_elem-1);
+                face->insert(face->end(), connectivity_table[e-1][4]+num_elem-1);
                 face->insert(face->end(), connectivity_table[e-1][7]+num_elem-1);
                 break;
               case 5:
-                face->insert(face->end(), connectivity_table[e-1][3]+num_elem-1); 
-                face->insert(face->end(), connectivity_table[e-1][2]+num_elem-1); 
-                face->insert(face->end(), connectivity_table[e-1][1]+num_elem-1); 
+                face->insert(face->end(), connectivity_table[e-1][3]+num_elem-1);
+                face->insert(face->end(), connectivity_table[e-1][2]+num_elem-1);
+                face->insert(face->end(), connectivity_table[e-1][1]+num_elem-1);
                 face->insert(face->end(), connectivity_table[e-1][0]+num_elem-1);
                 break;
               case 6:
-                face->insert(face->end(), connectivity_table[e-1][4]+num_elem-1); 
-                face->insert(face->end(), connectivity_table[e-1][5]+num_elem-1); 
-                face->insert(face->end(), connectivity_table[e-1][6]+num_elem-1); 
+                face->insert(face->end(), connectivity_table[e-1][4]+num_elem-1);
+                face->insert(face->end(), connectivity_table[e-1][5]+num_elem-1);
+                face->insert(face->end(), connectivity_table[e-1][6]+num_elem-1);
                 face->insert(face->end(), connectivity_table[e-1][7]+num_elem-1);
                 break;
             }
@@ -423,7 +420,7 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm, const char filename[], ALE::Ob
   }
   ierr = PetscFree(connectivity_table);CHKERRQ(ierr);
   ierr = PetscFree(cells);CHKERRQ(ierr);
-  
+
   //cellBlocks->view("Cell Blocks");
   //vertexSets->view("Vertex Sets");
   PetscFunctionReturn(0);

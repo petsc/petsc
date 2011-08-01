@@ -27,6 +27,7 @@ PetscErrorCode SNESReset_NGMRES(SNES snes)
   PetscFunctionBegin;
   ierr = VecDestroyVecs(ngmres->msize, &ngmres->v);CHKERRQ(ierr);
   ierr = VecDestroyVecs(ngmres->msize, &ngmres->w);CHKERRQ(ierr);
+  ierr = VecDestroyVecs(ngmres->msize, &ngmres->q);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -63,7 +64,7 @@ PetscErrorCode SNESSetUp_NGMRES(SNES snes)
   ierr = PetscMemzero(ngmres->nrs,msize*sizeof(PetscScalar));CHKERRQ(ierr);
 
   //  ierr = PetscLogObjectMemory(ksp,(hh+msize)*sizeof(PetscScalar));CHKERRQ(ierr);
-  
+
   ierr = VecDuplicateVecs(snes->vec_sol, ngmres->msize, &ngmres->v);CHKERRQ(ierr);
   ierr = VecDuplicateVecs(snes->vec_sol, ngmres->msize, &ngmres->w);CHKERRQ(ierr);
   ierr = VecDuplicateVecs(snes->vec_sol, ngmres->msize, &ngmres->q);CHKERRQ(ierr);
@@ -80,7 +81,7 @@ PetscErrorCode SNESSetFromOptions_NGMRES(SNES snes)
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("SNES NGMRES options");CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-snes_gmres_restart", "Number of directions", "SNES", ngmres->msize, &ngmres->msize, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-snes_ngmres_restart", "Number of directions", "SNES", ngmres->msize, &ngmres->msize, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -107,10 +108,10 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
 {
   SNES           pc;
   SNES_NGMRES   *ngmres = (SNES_NGMRES *) snes->data;
-  Vec            X,F, Fold, Xold,temp,*dX = ngmres->w,*dF = ngmres->v;
+  Vec            X,F, Fold, Xold,temp,*dX = ngmres->v,*dF = ngmres->w;
   PetscScalar    *nrs=ngmres->nrs;
   PetscReal      gnorm;
-  PetscInt       i, j, k, l, flag, it;
+  PetscInt       i, j, k,ivec, l, flag, it;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -167,8 +168,7 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
 #else
   ierr = VecCopy(temp, F);CHKERRQ(ierr);                              /* p = r    */
 #endif
-
-
+ 
   /* calculate dX and dF for k=0 */
   ierr= VecWAXPY(dX[k],-1.0, Xold, X); CHKERRQ(ierr); /* dX= X_1 - X_0 */
   ierr= VecWAXPY(dF[k],-1.0, Fold, F); CHKERRQ(ierr); /* dF= f_1 - f_0 */
@@ -182,13 +182,22 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
 
 
   for (k=1; k<snes->max_its; k += 1) {  /* begin the iteration */     
+ 
+    printf("iteration %d\n",k);
     l=ngmres->msize;
-    if(k<l) l=k;
+  
+    if(k<l) { 
+      l=k;
+      ivec=k;
+    }
+    else{
+      ivec=l-1;
+    }
+
+
     it=l-1;
-
     ierr = BuildNGmresSoln(nrs,Fold,snes,it,flag);CHKERRQ(ierr);
-
-
+     
  
     /* to obtain the solution at k+1 step */
     ierr= VecCopy(Xold,X); CHKERRQ(ierr); /* X=Xold+Fold-(dX + dF) *nrd */
@@ -199,17 +208,7 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
     }
 
 
-    /* to test with GMRES */
-    //ierr= VecCopy(Xold,temp); CHKERRQ(ierr); /* X=Xold-(dX ) *nrd */
-    /*for(i=0;i<l;i++){      
-      ierr= VecAXPY(temp,-nrs[i], dX[i]);CHKERRQ(ierr);
-    }
-    ierr = KSP_MatMult(ksp,Amat,temp,R);CHKERRQ(ierr);            
-    ierr = VecAYPX(R,-1.0,B);CHKERRQ(ierr); 
-    ierr = PCApply(ksp->pc,R,F);CHKERRQ(ierr);                
-     ierr = VecNorm(R,NORM_2,&gnorm);CHKERRQ(ierr); 
-     printf("gmres residual norm=%g\n",gnorm);
-    */
+ 
 
     /* to calculate f_k+1 */
     ierr = SNESComputeFunction(snes, X, temp);CHKERRQ(ierr);               /* r = F(x) */
@@ -219,7 +218,7 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
     ierr = VecCopy(temp, F);CHKERRQ(ierr);                              /* p = r    */
 #endif
  
-   
+    
 
     /* check the convegence */
       ierr = VecNorm(F, NORM_2, &gnorm);CHKERRQ(ierr);                    /* fnorm = ||r||  */
@@ -233,17 +232,18 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
    
 
     /* calculate dX and dF for k=0 */
-      if( k>l) {/* we need to replace the old vectors */
-	flag=1;
-	for(i=0;i<l-1;i++){
+      if( k>ivec) {/* we need to replace the old vectors */
+ 	flag=1;
+	for(i=0;i<it;i++){
 	  ierr= VecCopy(dX[i+1],dX[i]); CHKERRQ(ierr); /* X=Xold+Fold-(dX + dF) *nrd */
 	  ierr= VecCopy(dF[i+1],dF[i]); CHKERRQ(ierr); /* X=Xold+Fold-(dX + dF) *nrd */
-          for(j=0;j<l;j++)
+	  for(j=0;j<l;j++)
 	    *HH(j,i)=*HH(j,i+1);
 	}
       }
-      ierr= VecWAXPY(dX[l],-1.0, Xold, X); CHKERRQ(ierr); /* dX= X_1 - X_0 */
-      ierr= VecWAXPY(dF[l],-1.0, Fold, F); CHKERRQ(ierr); /* dF= f_1 - f_0 */
+      
+      ierr= VecWAXPY(dX[ivec],-1.0, Xold, X); CHKERRQ(ierr); /* dX= X_1 - X_0 */
+      ierr= VecWAXPY(dF[ivec],-1.0, Fold, F); CHKERRQ(ierr); /* dF= f_1 - f_0 */
       ierr= VecCopy(X,Xold); CHKERRQ(ierr);
       ierr= VecCopy(F,Fold); CHKERRQ(ierr);
   
@@ -313,7 +313,7 @@ static PetscErrorCode BuildNGmresSoln(PetscScalar* nrs, Vec Fold, SNES snes,Pets
   PetscErrorCode ierr;
   PetscInt       i,ii,j,l;
   SNES_NGMRES      *ngmres = (SNES_NGMRES *)(snes->data);
-  Vec *dF=ngmres->v, *Q=ngmres->q,temp;
+  Vec *dF=ngmres->w, *Q=ngmres->q,temp;
   PetscReal      gam,areal;
   PetscScalar    a,b,c,s;
  
@@ -328,9 +328,32 @@ static PetscErrorCode BuildNGmresSoln(PetscScalar* nrs, Vec Fold, SNES snes,Pets
 	/* calculate the Givens rotation */
 	a=*HH(i,i);
 	b=*HH(i+1,i);
-        gam=1.0/PetscRealPart(PetscSqrtScalar(PetscConj(a)*a+PetscConj(b)*b));
+        gam=PetscRealPart(PetscSqrtScalar(PetscConj(a)*a+PetscConj(b)*b));
+	if (gam!= 0.0) {
+	  gam=1.0/gam;
+	} else {
+	  snes->reason = SNES_DIVERGED_MAX_IT;
+	  ierr = PetscInfo2(snes,"Likely your matrix or preconditioner is singular. HH(it,it) is identically zero; it = %D nrs(it) = %G",it,10);
+	  PetscFunctionReturn(0);
+	}
         c= a*gam;
         s= b*gam;
+
+#if defined(PETSC_USE_COMPLEX)
+	/* update the Q factor */
+        ierr= VecCopy(Q[i],temp); CHKERRQ(ierr); 
+	ierr = VecAXPBY(temp,s,PetscConj(c),Q[i+1]);CHKERRQ(ierr); /*temp= c*Q[i]+s*Q[i+1] */
+        ierr = VecAXPBY(Q[i+1],-s,c,Q[i]);CHKERRQ(ierr); /* Q[i+1]= -s*Q[i] + c*Q[i+1] */
+        ierr= VecCopy(temp,Q[i]); CHKERRQ(ierr);   /* Q[i]= c*Q[i] + s*Q[i+1] */
+        /* update the R factor */
+        for(j=0;j<l;j++){
+          a= *HH(i,j);
+          b=*HH(i+1,j);
+	  temps=PetscConj(c)* a+s* b;           
+          *HH(i+1,j)=-s*a+c*b;
+          *HH(i,j)=temps;
+        } 
+#else
 	/* update the Q factor */
         ierr= VecCopy(Q[i],temp); CHKERRQ(ierr); 
 	ierr = VecAXPBY(temp,s,c,Q[i+1]);CHKERRQ(ierr); /*temp= c*Q[i]+s*Q[i+1] */
@@ -343,7 +366,9 @@ static PetscErrorCode BuildNGmresSoln(PetscScalar* nrs, Vec Fold, SNES snes,Pets
 	  temps=c* a+s* b;           
           *HH(i+1,j)=-s*a+c*b;
           *HH(i,j)=temps;
-        } 
+        }
+#endif 
+ 
       }
     }
 
@@ -353,10 +378,12 @@ static PetscErrorCode BuildNGmresSoln(PetscScalar* nrs, Vec Fold, SNES snes,Pets
       ierr=VecDot(temp,Q[i],HH(i,it));CHKERRQ(ierr); /* h(i,l-1)= dF[l-1]'*Q[i] */
       ierr = VecAXPBY(temp,-*HH(i,it),1.0,Q[i]);CHKERRQ(ierr); /* temp= temp- h(i,l-1)*Q[i] */ 
     }
-    ierr=VecCopy(temp,Q[it]);CHKERRQ(ierr); 
-    ierr=VecNormalize(Q[it],&areal);CHKERRQ(ierr);
-    *HH(it,it) = a = areal;
     
+    ierr=VecCopy(temp,Q[it]);CHKERRQ(ierr); 
+
+    ierr=VecNormalize(Q[it],&areal);CHKERRQ(ierr);
+
+    *HH(it,it) = areal;
 
 
     /* modify the RHS with Q'*Fold*/
@@ -367,6 +394,7 @@ static PetscErrorCode BuildNGmresSoln(PetscScalar* nrs, Vec Fold, SNES snes,Pets
     /* start backsubstitution to solve the least square problem */      
 
      if (*HH(it,it) != 0.0) {
+
       nrs[it] =  nrs[it]/ *HH(it,it);
     } else {
        snes->reason = SNES_DIVERGED_MAX_IT;

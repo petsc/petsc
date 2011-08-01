@@ -104,7 +104,7 @@ double IntegrateDualBasis_gen_0(const double *v0, const double *J, const int dua
 {
   double refCoords[1];
   double coords[1];
-  
+
   switch(dualIndex) {
     case 0:
       refCoords[0] = -1.0;
@@ -135,7 +135,7 @@ double IntegrateBdDualBasis_gen_0(const double *v0, const double *J, const int d
 {
   double refCoords[1];
   double coords[2];
-  
+
   switch(dualIndex) {
     case 0:
       refCoords[0] = -1.0;
@@ -209,7 +209,7 @@ double IntegrateDualBasis_gen_1(const double *v0, const double *J, const int dua
 {
   double refCoords[2];
   double coords[2];
-  
+
   switch(dualIndex) {
     case 0:
       refCoords[0] = -1.0;
@@ -246,7 +246,7 @@ double IntegrateBdDualBasis_gen_1(const double *v0, const double *J, const int d
 {
   double refCoords[2];
   double coords[3];
-  
+
   switch(dualIndex) {
     case 0:
       refCoords[0] = -1.0;
@@ -341,7 +341,7 @@ double IntegrateDualBasis_gen_2(const double *v0, const double *J, const int dua
 {
   double refCoords[3];
   double coords[3];
-  
+
   switch(dualIndex) {
     case 0:
       refCoords[0] = -1.0;
@@ -386,7 +386,7 @@ double IntegrateBdDualBasis_gen_2(const double *v0, const double *J, const int d
 {
   double refCoords[3];
   double coords[4];
-  
+
   switch(dualIndex) {
     case 0:
       refCoords[0] = -1.0;
@@ -755,6 +755,13 @@ int main(int argc, char **argv)
       ierr = DMDestroy(&user.dm);CHKERRQ(ierr);
       user.dm = refinedMesh;
     }
+#if 0
+    {
+      ALE::Obj<PETSC_MESH_TYPE> oldMesh;
+      ierr = DMMeshGetMesh(user.dm, oldMesh);CHKERRQ(ierr);
+      oldMesh->setDebug(1);
+    }
+#endif
     /* Distribute mesh over processes */
     ierr = DMMeshDistribute(user.dm, user.partitioner, &distributedMesh);CHKERRQ(ierr);
     if (distributedMesh) {
@@ -791,7 +798,7 @@ int main(int argc, char **argv)
   }
 
   /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Extract global vectors from DMDA; then duplicate for remaining
+     Extract global vectors from DM; then duplicate for remaining
      vectors that are the same types
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = DMCreateGlobalVector(user.dm, &u);CHKERRQ(ierr);
@@ -1069,7 +1076,7 @@ PetscErrorCode FormFunctionLocal(DM dm, Vec X, Vec F, AppCtx *user)
   ierr = PetscFree4(coords,v0,J,invJ);CHKERRQ(ierr);
 
   ierr = PetscPrintf(PETSC_COMM_WORLD, "Residual:\n");CHKERRQ(ierr);
-  ierr = VecView(F, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = VecView(F, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
