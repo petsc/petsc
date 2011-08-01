@@ -363,10 +363,11 @@ PetscErrorCode TronSetupKSP(TaoSolver tao, TAO_TRON*tron)
       ierr = VecDestroy(&tron->DXFree);
       tron->DXFree = PETSC_NULL;
     }
+    ierr = ISGetLocalSize(tron->Free_Local, &nlocal); CHKERRQ(ierr);
     ierr = VecCreate(((PetscObject)tao)->comm,&tron->R); CHKERRQ(ierr);
     ierr = VecCreate(((PetscObject)tao)->comm,&tron->DXFree); CHKERRQ(ierr);
-    ierr = VecSetSizes(tron->R, PETSC_DECIDE, tron->n_free); CHKERRQ(ierr);
-    ierr = VecSetSizes(tron->DXFree, PETSC_DECIDE, tron->n_free); CHKERRQ(ierr);
+    ierr = VecSetSizes(tron->R, nlocal, tron->n_free); CHKERRQ(ierr);
+    ierr = VecSetSizes(tron->DXFree, nlocal, tron->n_free); CHKERRQ(ierr);
     ierr = VecSetType(tron->R,((PetscObject)(tao->solution))->type_name); CHKERRQ(ierr);
     ierr = VecSetType(tron->DXFree,((PetscObject)(tao->solution))->type_name); CHKERRQ(ierr);
     ierr = VecSetFromOptions(tron->R); CHKERRQ(ierr);
