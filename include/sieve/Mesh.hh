@@ -1208,12 +1208,12 @@ namespace ALE {
     typedef std::pair<int *, int>                                     indices_type;
     typedef NumberingFactory<this_type>                               MeshNumberingFactory;
     typedef typename ALE::Partitioner<>::part_type                    rank_type;
-#if 1
-    typedef typename ALE::Sifter<point_type,rank_type,point_type>     send_overlap_type;
-    typedef typename ALE::Sifter<rank_type,point_type,point_type>     recv_overlap_type;
-#else
+#ifdef USE_NEW_OVERLAP
     typedef typename PETSc::SendOverlap<point_type,rank_type>         send_overlap_type;
     typedef typename PETSc::RecvOverlap<point_type,rank_type>         recv_overlap_type;
+#else
+    typedef typename ALE::Sifter<point_type,rank_type,point_type>     send_overlap_type;
+    typedef typename ALE::Sifter<rank_type,point_type,point_type>     recv_overlap_type;
 #endif
     typedef typename MeshNumberingFactory::numbering_type             numbering_type;
     typedef typename MeshNumberingFactory::order_type                 order_type;
@@ -2011,7 +2011,7 @@ namespace ALE {
         }
       } else {
 #if 1
-        throw ALE::Exception("Rewrite this to first mark bounadry edges/faces.");
+        throw ALE::Exception("Rewrite this to first mark boundary edges/faces.");
 #else
         const int depth = this->depth();
 
@@ -5585,8 +5585,13 @@ namespace ALE {
         SectionSerializer::writeSection(fs, *mesh.getIntSection(*n_iter));
       }
       // Write overlap
+#ifdef USE_NEW_OVERLAP
+      PETSc::OverlapSerializer::writeOverlap(fs, *mesh.getSendOverlap());
+      PETSc::OverlapSerializer::writeOverlap(fs, *mesh.getRecvOverlap());
+#else
       SifterSerializer::writeSifter(fs, *mesh.getSendOverlap());
       SifterSerializer::writeSifter(fs, *mesh.getRecvOverlap());
+#endif
       // Write distribution overlap
       // Write renumbering
     };
@@ -5684,8 +5689,13 @@ namespace ALE {
         mesh.setIntSection(name, section);
       }
       // Load overlap
+#ifdef USE_NEW_OVERLAP
+      PETSc::OverlapSerializer::loadOverlap(fs, *mesh.getSendOverlap());
+      PETSc::OverlapSerializer::loadOverlap(fs, *mesh.getRecvOverlap());
+#else
       SifterSerializer::loadSifter(fs, *mesh.getSendOverlap());
       SifterSerializer::loadSifter(fs, *mesh.getRecvOverlap());
+#endif
       // Load distribution overlap
       // Load renumbering
     };

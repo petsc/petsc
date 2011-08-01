@@ -13,7 +13,7 @@ typedef struct gamg_TAG {
   PetscReal     *m_data; /* blocked vector of vertex data on fine grid (coordinates) */
 } PC_GAMG;
  
-#define TOP_GRID_LIM 1000
+#define TOP_GRID_LIM 10
 
 /* -----------------------------------------------------------------------------*/
 #undef __FUNCT__
@@ -367,13 +367,13 @@ PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s %d levels\n",0,__FUNCT__,level + 1);
   fine_level = level;
   ierr = PCMGSetLevels(pc,pc_gamg->m_Nlevels,PETSC_NULL);CHKERRQ(ierr);
 
-  /* set default smoothers */
-  PetscReal emax = 2.0, emin;
+  /* set default smoothers -- need iegen estimates, 2.0 is too low for coarse grids !!! */
+  PetscReal emax = 3.0, emin;
   for (level=1; level<=fine_level; level++){
     KSP smoother; PC subpc;
     ierr = PCMGGetSmoother(pc,level,&smoother);CHKERRQ(ierr);
     ierr = KSPSetType(smoother,KSPCHEBYCHEV);CHKERRQ(ierr);
-    emin = emax/10.0; /* fix!!! */
+    emin = emax/5.0; /* fix!!! */
     ierr = KSPGetPC(smoother,&subpc);CHKERRQ(ierr);
     ierr = PCSetType(subpc,PCJACOBI);CHKERRQ(ierr);
     ierr = KSPChebychevSetEigenvalues(smoother, emax, emin);CHKERRQ(ierr); /* need auto !!!!*/

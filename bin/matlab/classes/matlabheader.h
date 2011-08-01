@@ -163,7 +163,7 @@ int TSSetType(TS,const char*);
 int TSSetProblemType(TS,int);
 int TSSetDM(TS,DM);
 int TSSetFromOptions(TS);
-int TSSolve(TS,Vec);
+int TSSolve(TS,Vec,double*);
 int TSSetUp(TS);
 int TSView(TS,PetscViewer);
 int TSDestroy(TS*);
