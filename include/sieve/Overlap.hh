@@ -36,25 +36,28 @@ public:
     bool operator()(index_type i, index_type j) {return values[i] < values[j];};
   };
 protected:
-  PetscInt    numRanks;      // Number of partner processes
-  rank_type  *ranks;         // MPI Rank of each partner process
-  index_type *pointsOffset;  // Offset into points array for each partner process
-  point_type *points;        // Points array for each partner process, in sorted order
-  point_type *remotePoints;  // Remote points array for each partner process
-  index_type  numPointRanks; // Number of partner process ranks which share a given point (needs search)
-  rank_type  *pointRanks;    // Array of partner process ranks which share a given point (needs search and allocation)
+  PetscInt    numRanks;          // Number of partner processes
+  rank_type  *ranks;             // [numRanks]:   MPI Rank of each partner process
+  index_type *pointsOffset;      // [numRanks+1]: Offset into points array for each partner process
+  point_type *points;            // [pointsOffset[numRanks]]: Points array for each partner process, in sorted order
+  point_type *remotePoints;      // [pointsOffset[numRanks]]: Remote points array for each partner process
+  index_type  numPointRanks;     // Number of partner process ranks which share a given point (needs search)
+  rank_type  *pointRanks;        // [numPointRanks]: Array of partner process ranks which share a given point (needs search and allocation)
+  point_type *pointRemotePoints; // [numPointRanks]: Array of remote points linked to a given point (needs search and allocation)
 
   std::vector<rank_type> flexRanks;
   std::map<rank_type, std::vector<point_type> > flexPoints;
   std::map<rank_type, std::vector<point_type> > flexRemotePoints;
 public:
   Overlap(MPI_Comm comm, const int debug = 0) : ALE::ParallelObject(comm, debug) {
-    this->numRanks     = 0;
-    this->ranks        = PETSC_NULL;
-    this->pointsOffset = PETSC_NULL;
-    this->points       = PETSC_NULL;
-    this->remotePoints = PETSC_NULL;
-    this->pointRanks   = PETSC_NULL;
+    this->numRanks          = 0;
+    this->ranks             = PETSC_NULL;
+    this->pointsOffset      = PETSC_NULL;
+    this->points            = PETSC_NULL;
+    this->remotePoints      = PETSC_NULL;
+    this->numPointRanks     = 0;
+    this->pointRanks        = PETSC_NULL;
+    this->pointRemotePoints = PETSC_NULL;
   };
   ~Overlap() {
     PetscErrorCode ierr;
@@ -62,7 +65,7 @@ public:
     ierr = PetscFree(this->pointsOffset);CHKERRXX(ierr);
     ierr = PetscFree(this->points);CHKERRXX(ierr);
     ierr = PetscFree(this->remotePoints);CHKERRXX(ierr);
-    ierr = PetscFree(this->pointRanks);CHKERRXX(ierr);
+    ierr = PetscFree2(this->pointRanks, this->pointRemotePoints);CHKERRXX(ierr);
   };
   /* setNumRanks - Set the number of partner processes
 
@@ -121,24 +124,30 @@ public:
     return this->pointsOffset[r+1] - this->pointsOffset[r];
   };
   /* SLOW, since it involves a search */
-  void getRanks(point_type point, index_type *size, const rank_type **ranks) {
+  void getRanks(point_type point, index_type *size, const rank_type **ranks, const point_type **remotePoints) {
     std::vector<rank_type> pRanks;
+    std::vector<rank_type> pPoints;
     PetscErrorCode ierr;
 
-    ierr = PetscFree(pointRanks);CHKERRXX(ierr);
+    ierr = PetscFree2(pointRanks, pointRemotePoints);CHKERRXX(ierr);
     for(index_type r = 0; r < numRanks; ++r) {
       for(index_type p = pointsOffset[r]; p < pointsOffset[r+1]; ++p) {
         if (points[p] == point) {
           pRanks.push_back(this->ranks[r]);
+          pPoints.push_back(this->remotePoints[p]);
           break;
         }
       }
     }
     numPointRanks = pRanks.size();
-    ierr = PetscMalloc(numPointRanks * sizeof(rank_type), &pointRanks);CHKERRXX(ierr);
-    for(index_type i = 0; i < numPointRanks; ++i) {pointRanks[i] = pRanks[i];}
-    *size  = numPointRanks;
-    *ranks = pointRanks;
+    ierr = PetscMalloc2(numPointRanks,rank_type,&pointRanks,numPointRanks,point_type,&pointRemotePoints);CHKERRXX(ierr);
+    for(index_type i = 0; i < numPointRanks; ++i) {
+      pointRanks[i]        = pRanks[i];
+      pointRemotePoints[i] = pPoints[i];
+    }
+    *size         = numPointRanks;
+    *ranks        = pointRanks;
+    *remotePoints = pointRemotePoints;
   };
   /* assembleFlexible - Compress data from flexible construction into CR structures */
   void assembleFlexible() {
@@ -198,6 +207,34 @@ public:
       throw ALE::Exception("Cannot assemble overlap in an invalid state");
     }
   };
+  void copy(Overlap *o) {
+    PetscErrorCode ierr;
+
+    o->numRanks = this->numRanks;
+    if (o->numRanks) {
+      ierr = PetscMalloc(o->numRanks * sizeof(rank_type), &o->ranks);CHKERRXX(ierr);
+      ierr = PetscMemcpy(o->ranks, this->ranks, o->numRanks * sizeof(rank_type));CHKERRXX(ierr);
+      ierr = PetscMalloc((o->numRanks+1) * sizeof(index_type), &o->pointsOffset);CHKERRXX(ierr);
+      ierr = PetscMemcpy(o->pointsOffset, this->pointsOffset, (o->numRanks+1) * sizeof(index_type));CHKERRXX(ierr);
+      ierr = PetscMalloc(o->pointsOffset[numRanks] * sizeof(point_type), &o->points);CHKERRXX(ierr);
+      ierr = PetscMalloc(o->pointsOffset[numRanks] * sizeof(point_type), &o->remotePoints);CHKERRXX(ierr);
+      ierr = PetscMemcpy(o->points, this->points, o->pointsOffset[numRanks] * sizeof(point_type));CHKERRXX(ierr);
+      ierr = PetscMemcpy(o->remotePoints, this->remotePoints, o->pointsOffset[numRanks] * sizeof(point_type));CHKERRXX(ierr);
+    }
+    o->numPointRanks = this->numPointRanks;
+    if (o->numPointRanks) {
+      ierr = PetscMalloc(o->numPointRanks * sizeof(rank_type), &o->pointRanks);CHKERRXX(ierr);
+      ierr = PetscMemcpy(o->pointRanks, this->pointRanks, o->numPointRanks * sizeof(rank_type));CHKERRXX(ierr);
+    }
+  };
+  template<typename Labeling>
+  void relabel(Labeling& relabeling, Overlap& newLabel) {
+    this->copy(&newLabel);
+    for(index_type i = 0; i < pointsOffset[numRanks]; ++i) {
+      newLabel.points[i]       = relabeling.restrictPoint(points[i])[0];
+      newLabel.remotePoints[i] = relabeling.restrictPoint(remotePoints[i])[0];
+    }
+  };
   void view(const std::string& name, MPI_Comm comm = MPI_COMM_NULL) const {
     PetscErrorCode ierr;
 
@@ -238,6 +275,53 @@ public:
   iterator end()   {return endP;};
 };
 
+// This structure marches 2 pointers at the same time
+  template<typename FirstType, typename SecondType>
+class DualSequence {
+public:
+  typedef FirstType  first_type;
+  typedef SecondType second_type;
+  class iterator {
+  public:
+    typedef first_type  value_type;
+    typedef second_type color_type;
+    typedef int         difference_type;
+    typedef value_type* pointer;
+    typedef value_type& reference;
+  protected:
+    const first_type  *points;
+    const second_type *remotePoints;
+  public:
+    iterator(const value_type *points, const color_type *remotePoints) : points(points), remotePoints(remotePoints) {};
+    iterator(const iterator& iter) : points(iter.points), remotePoints(iter.remotePoints) {};
+    virtual bool             operator==(const iterator& iter) const {return points == iter.points;};
+    virtual bool             operator!=(const iterator& iter) const {return points != iter.points;};
+    virtual const value_type operator*() const {return *points;};
+    virtual const color_type color() const     {return *remotePoints;};
+    virtual iterator&        operator++() {++points; ++remotePoints; return *this;};
+    virtual iterator         operator++(int) {
+      iterator tmp(*this);
+      ++points; ++remotePoints;
+      return tmp;
+    };
+    iterator& operator=(const iterator& iter) {
+      points       = iter.points;
+      remotePoints = iter.remotePoints;
+      return *this;
+    };
+  };
+protected:
+  const first_type  *beginP;
+  const second_type *beginRemoteP;
+  const first_type  *endP;
+  const second_type *endRemoteP;
+public:
+  DualSequence(const first_type *begin, const second_type *beginRemote, const first_type *end, const second_type *endRemote) : beginP(begin), beginRemoteP(beginRemote), endP(end), endRemoteP(endRemote) {};
+  ~DualSequence() {};
+  iterator begin() {return iterator(beginP, beginRemoteP);};
+  iterator end()   {return iterator(endP,   endRemoteP);};
+};
+
 /* Compatibility wrapper which translates ALE::Sifter calls to Petsc::Overlap calls for a send overlap
 
    Note that addArrow() works for both flexible and optimized construction modes.
@@ -252,9 +336,9 @@ public:
   typedef point_type source_type;
   typedef rank_type  target_type;
   typedef point_type color_type;
-  typedef Sequence<rank_type>        baseSequence;
-  typedef Sequence<point_type>       coneSequence;
-  typedef PointerSequence<rank_type> supportSequence;
+  typedef Sequence<rank_type>                 baseSequence;
+  typedef DualSequence<point_type,point_type> coneSequence;
+  typedef DualSequence<rank_type,point_type>  supportSequence;
 public:
   SendOverlap(MPI_Comm comm, const int debug = 0) : Overlap<Point,Rank>(comm, debug) {};
   ~SendOverlap() {};
@@ -306,6 +390,8 @@ public:
     return &this->ranks[this->numRanks];
   };
   bool capContains(point_type point) {
+    if (!this->numRanks) return false;
+    assert(this->pointsOffset);
     // TODO This can be made fast by searching each sorted rank bucket
     for(index_type p = 0; p < this->pointsOffset[this->numRanks]; ++p) {
       if (this->points[p] == point) return false;
@@ -319,54 +405,35 @@ public:
     return this->getNumPointsByRank(rank);
   };
   typename coneSequence::iterator coneBegin(rank_type rank) {
+    assert(this->pointsOffset);
+    assert(this->points);
     const index_type r = this->getRankIndex(rank);
-    return &this->points[this->pointsOffset[r]];
+    return typename coneSequence::iterator(&this->points[this->pointsOffset[r]], &this->remotePoints[this->pointsOffset[r]]);
+  };
+  typename coneSequence::iterator coneBegin(rank_type rank, point_type remotePoint) {
+    assert(this->pointsOffset);
+    assert(this->points);
+    const index_type r = this->getRankIndex(rank);
+    index_type       p;
+
+    for(p = this->pointsOffset[r]; p < this->pointsOffset[r+1]; ++p) {
+      if (remotePoint == this->remotePoints[p]) break;
+    }
+    return typename coneSequence::iterator(&this->points[p], &this->remotePoints[p]);
   };
   typename coneSequence::iterator coneEnd(rank_type rank) {
+    assert(this->pointsOffset);
+    assert(this->points);
     const index_type r = this->getRankIndex(rank);
-    return &this->points[this->pointsOffset[r+1]];
+    return typename coneSequence::iterator(&this->points[this->pointsOffset[r+1]], &this->remotePoints[this->pointsOffset[r+1]]);
   };
   supportSequence support(point_type point) {
-    index_type       numPointRanks;
-    const rank_type *pointRanks;
+    index_type        numPointRanks;
+    const rank_type  *pointRanks;
+    const point_type *pointRemotePoints;
 
-    this->getRanks(point, &numPointRanks, &pointRanks);
-    return supportSequence(pointRanks, &pointRanks[numPointRanks]);
-  };
-};
-
-// This structure marches 2 pointers at the same time
-template<typename Point>
-class SupportSequence {
-public:
-  typedef Point point_type;
-  class iterator {
-  public:
-    typedef point_type  value_type;
-    typedef int         difference_type;
-    typedef value_type* pointer;
-    typedef value_type& reference;
-  protected:
-    const point_type *points;
-    const point_type *remotePoints;
-  public:
-    iterator(const point_type *points, const point_type *remotePoints) : points(points), remotePoints(remotePoints) {};
-    iterator(const iterator& iter) : points(iter.points), remotePoints(iter.remotePoints) {};
-    virtual bool             operator==(const iterator& iter) const {return points == iter.points;};
-    virtual bool             operator!=(const iterator& iter) const {return points != iter.points;};
-    virtual const value_type operator*() const {return *points;};
-    virtual const value_type color() const     {return *remotePoints;};
-    virtual iterator&        operator++() {++points; ++remotePoints; return *this;};
-    virtual iterator         operator++(int) {
-      iterator tmp(*this);
-      ++points; ++remotePoints;
-      return tmp;
-    };
-    iterator& operator=(const iterator& iter) {
-      points       = iter.points;
-      remotePoints = iter.remotePoints;
-      return *this;
-    };
+    this->getRanks(point, &numPointRanks, &pointRanks, &pointRemotePoints);
+    return supportSequence(pointRanks, pointRemotePoints, &pointRanks[numPointRanks], &pointRemotePoints[numPointRanks]);
   };
 };
 
@@ -384,9 +451,9 @@ public:
   typedef rank_type  source_type;
   typedef point_type target_type;
   typedef point_type color_type;
-  typedef Sequence<rank_type>         capSequence;
-  typedef SupportSequence<point_type> supportSequence;
-  typedef PointerSequence<rank_type>  coneSequence;
+  typedef Sequence<rank_type>                 capSequence;
+  typedef DualSequence<point_type,point_type> supportSequence;
+  typedef DualSequence<rank_type,point_type>  coneSequence;
 public:
   RecvOverlap(MPI_Comm comm, const int debug = 0) : Overlap<Point,Rank>(comm, debug) {};
   ~RecvOverlap() {};
@@ -454,10 +521,14 @@ public:
     return  n;
   };
   typename supportSequence::iterator supportBegin(rank_type rank) {
+    assert(this->pointsOffset);
+    assert(this->points);
     const index_type r = this->getRankIndex(rank);
     return typename supportSequence::iterator(&this->points[this->pointsOffset[r]], &this->remotePoints[this->pointsOffset[r]]);
   };
   typename supportSequence::iterator supportBegin(rank_type rank, point_type remotePoint) {
+    assert(this->pointsOffset);
+    assert(this->points);
     const index_type r = this->getRankIndex(rank);
     index_type       p;
 
@@ -467,16 +538,31 @@ public:
     return typename supportSequence::iterator(&this->points[p], &this->remotePoints[p]);
   };
   typename supportSequence::iterator supportEnd(rank_type rank) {
+    assert(this->pointsOffset);
+    assert(this->points);
     const index_type r = this->getRankIndex(rank);
     return typename supportSequence::iterator(&this->points[this->pointsOffset[r+1]], &this->remotePoints[this->pointsOffset[r+1]]);
   };
   coneSequence cone(point_type point) {
-    index_type       numPointRanks;
-    const rank_type *pointRanks;
+    index_type        numPointRanks;
+    const rank_type  *pointRanks;
+    const point_type *pointRemotePoints;
 
-    this->getRanks(point, &numPointRanks, &pointRanks);
-    return coneSequence(pointRanks, &pointRanks[numPointRanks]);
+    this->getRanks(point, &numPointRanks, &pointRanks, &pointRemotePoints);
+    return coneSequence(pointRanks, pointRemotePoints, &pointRanks[numPointRanks], &pointRemotePoints[numPointRanks]);
   };
+};
+
+class OverlapSerializer {
+public:
+  template<typename Overlap>
+  static void writeOverlap(std::ofstream& fs, Overlap& overlap) {
+    throw PETSc::Exception("Not implemented (should come from Sifter.hh:SifterSerializer::writeSifter()");
+  }
+  template<typename Overlap>
+  static void loadOverlap(std::ifstream& fs, Overlap& overlap) {
+    throw PETSc::Exception("Not implemented (should come from Sifter.hh:SifterSerializer::loadSifter()");
+  }
 };
 }
 
