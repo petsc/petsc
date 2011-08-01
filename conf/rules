@@ -66,7 +66,7 @@ chkopts: remote
 #
 # uses the cmake infrastructure to build/rebuild the libraries
 cmake:
-	make -j2 -C ${PETSC_DIR}/${PETSC_ARCH}
+	make -j ${MAKE_NP} -C ${PETSC_DIR}/${PETSC_ARCH}
 
 # Does nothing; needed for some rules that require actions.
 foo:
