@@ -369,20 +369,18 @@ PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s %d levels\n",0,__FUNCT__,level + 1);
 
   /* set default smoothers */
   for (level=1,lidx=pc_gamg->m_Nlevels-2;
-       level<=fine_level;
+       level <= fine_level;
        level++,lidx--) {
-    PetscReal emax = 3.0, emin;
+    PetscReal emax, emin;
     KSP smoother; PC subpc;
-    ierr = PCMGGetSmoother(pc,level,&smoother);CHKERRQ(ierr);
-    ierr = KSPSetType(smoother,KSPCHEBYCHEV);CHKERRQ(ierr);
-    ierr = KSPGetPC(smoother,&subpc);CHKERRQ(ierr);
-    ierr = PCSetType(subpc,PCJACOBI);CHKERRQ(ierr);
+    ierr = PCMGGetSmoother( pc, level, &smoother ); CHKERRQ(ierr);
+    ierr = KSPSetType( smoother, KSPCHEBYCHEV );CHKERRQ(ierr);
     { /* eigen estimate 'emax' */
-      KSP eksp; Mat Amat = Aarr[lidx];
+      KSP eksp; Mat Lmat = Aarr[lidx];
       Vec bb, xx; PC pc;
       PetscInt N1, N0, tt;
-      ierr = MatGetVecs( Amat, &bb, 0 );         CHKERRQ(ierr);
-      ierr = MatGetVecs( Amat, &xx, 0 );         CHKERRQ(ierr);
+      ierr = MatGetVecs( Lmat, &bb, 0 );         CHKERRQ(ierr);
+      ierr = MatGetVecs( Lmat, &xx, 0 );         CHKERRQ(ierr);
       {
 	PetscRandom    rctx;
 	ierr = PetscRandomCreate(wcomm,&rctx);CHKERRQ(ierr);
@@ -392,7 +390,7 @@ PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s %d levels\n",0,__FUNCT__,level + 1);
       }
       ierr = KSPCreate(wcomm,&eksp);CHKERRQ(ierr);
       ierr = KSPSetInitialGuessNonzero( eksp, PETSC_FALSE ); CHKERRQ(ierr);
-      ierr = KSPSetOperators( eksp, Amat, Amat, DIFFERENT_NONZERO_PATTERN ); CHKERRQ( ierr );
+      ierr = KSPSetOperators( eksp, Lmat, Lmat, DIFFERENT_NONZERO_PATTERN ); CHKERRQ( ierr );
       ierr = KSPGetPC( eksp, &pc );CHKERRQ( ierr );
       ierr = PCSetType( pc, PCJACOBI ); CHKERRQ(ierr); /* should be same as above */
       ierr = KSPSetTolerances( eksp, PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT, 5 );
@@ -401,22 +399,35 @@ PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s %d levels\n",0,__FUNCT__,level + 1);
       ierr = KSPSetNormType( eksp, KSP_NORM_NONE );                 CHKERRQ(ierr);
 
       ierr = KSPSetComputeSingularValues( eksp,PETSC_TRUE ); CHKERRQ(ierr);
-      ierr = KSPSolve(eksp,bb,xx); CHKERRQ(ierr);
+      ierr = KSPSolve( eksp, bb, xx ); CHKERRQ(ierr);
       ierr = KSPComputeExtremeSingularValues( eksp, &emax, &emin ); CHKERRQ(ierr);
+      ierr = MatGetSize( Lmat, &N1, &tt );         CHKERRQ(ierr);
+      ierr = MatGetSize( Aarr[lidx+1], &N0, &tt );CHKERRQ(ierr);
+PetscPrintf(PETSC_COMM_WORLD,"\t\t%s max eigen = %e (N=%d)\n",__FUNCT__,emax,N1);
+      emax *= 1.05;
 
       ierr = VecDestroy( &xx );       CHKERRQ(ierr);
       ierr = VecDestroy( &bb );       CHKERRQ(ierr);
       ierr = KSPDestroy( &eksp );       CHKERRQ(ierr);
 
-      ierr = MatGetSize( Amat, &N1, &tt );         CHKERRQ(ierr);
-      ierr = MatGetSize( Aarr[lidx+1], &N0, &tt );CHKERRQ(ierr);
-      emax *= 1.05;
       emin = emax/((PetscReal)N1/(PetscReal)N0); /* this should be about the coarsening rate */
+      ierr = KSPSetOperators( smoother, Lmat, Lmat, DIFFERENT_NONZERO_PATTERN );
     }
     ierr = KSPChebychevSetEigenvalues( smoother, emax, emin );CHKERRQ(ierr);
+    ierr = KSPGetPC( smoother, &subpc ); CHKERRQ(ierr);
+    ierr = PCSetType( subpc, PCJACOBI ); CHKERRQ(ierr);
+    ierr = KSPSetNormType( smoother, KSP_NORM_NONE ); CHKERRQ(ierr);
+  }
+  {
+    KSP smoother; /* coarse grid */
+    Mat Lmat = Aarr[pc_gamg->m_Nlevels-1];
+    ierr = PCMGGetSmoother( pc, 0, &smoother ); CHKERRQ(ierr);
+    ierr = KSPSetOperators( smoother, Lmat, Lmat, DIFFERENT_NONZERO_PATTERN );
+    CHKERRQ(ierr);
+    ierr = KSPSetNormType( smoother, KSP_NORM_NONE ); CHKERRQ(ierr);
   }
   /* should be called in PCSetFromOptions_GAMG(), but cannot be called prior to PCMGSetLevels() */
-  ierr = PCSetFromOptions_MG(pc); CHKERRQ(ierr);
+  ierr = PCSetFromOptions_MG(pc); CHKERRQ(ierr); 
   {
     PetscBool galerkin;
     ierr = PCMGGetGalerkin( pc,  &galerkin); CHKERRQ(ierr);
@@ -424,17 +435,18 @@ PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s %d levels\n",0,__FUNCT__,level + 1);
       SETERRQ(wcomm,PETSC_ERR_ARG_WRONG, "GAMG does galerkin manually so it must not be used in PC_MG.");
     }
   }
+
+  /* set interpolation between the levels, create timer stages, clean up */
   {
     char str[32];
-    sprintf(str,"MG Level %d (%d)",0,pc_gamg->m_Nlevels-1);
+    sprintf(str,"MG Level %d (%d)",0,pc_gamg->m_Nlevels-1); 
     PetscLogStageRegister(str, &gamg_stages[fine_level]);
   }
-  /* create coarse level and the interpolation between the levels */
-  for (level=0,lidx=pc_gamg->m_Nlevels-1;
-       level<fine_level;
-       level++,lidx--){
+  for (level=0,lidx=pc_gamg->m_Nlevels-1; 
+       level<fine_level; 
+       level++, lidx--){
     level1 = level + 1;
-    ierr = PCMGSetInterpolation(pc,level1,Parr[lidx]);CHKERRQ(ierr);
+    ierr = PCMGSetInterpolation( pc, level1, Parr[lidx] );CHKERRQ(ierr);
     if( !PETSC_TRUE ) {
       PetscViewer viewer; char fname[32];
       sprintf(fname,"Amat_%d.m",lidx); 
@@ -444,13 +456,6 @@ PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s %d levels\n",0,__FUNCT__,level + 1);
       ierr = PetscViewerDestroy( &viewer );
     }
     ierr = MatDestroy( &Parr[lidx] );  CHKERRQ(ierr);
-    {
-      KSP smoother;
-      ierr = PCMGGetSmoother(pc,level,&smoother); CHKERRQ(ierr);
-      ierr = KSPSetOperators( smoother, Aarr[lidx], Aarr[lidx], DIFFERENT_NONZERO_PATTERN );
-      CHKERRQ(ierr);
-      ierr = KSPSetNormType( smoother, KSP_NORM_NONE ); CHKERRQ(ierr);
-    }
     ierr = MatDestroy( &Aarr[lidx] );  CHKERRQ(ierr);
     {
       char str[32];
@@ -458,13 +463,7 @@ PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s %d levels\n",0,__FUNCT__,level + 1);
       PetscLogStageRegister(str, &gamg_stages[lidx-1]);
     }
   }
-  { /* fine level (no P) */
-    KSP smoother;
-    ierr = PCMGGetSmoother(pc,fine_level,&smoother); CHKERRQ(ierr);
-    ierr = KSPSetOperators( smoother, Aarr[0], Aarr[0], DIFFERENT_NONZERO_PATTERN );
-    CHKERRQ(ierr);
-    ierr = KSPSetNormType( smoother, KSP_NORM_NONE ); CHKERRQ(ierr);
-  }
+
   /* setupcalled is set to 0 so that MG is setup from scratch */
   pc->setupcalled = 0;
   ierr = PCSetUp_MG(pc);CHKERRQ(ierr);
