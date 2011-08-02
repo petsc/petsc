@@ -73,11 +73,11 @@ class Configure(config.base.Configure):
 
     # check no of cores on the build machine [perhaps to do make '-j ncores']
     try:
-      import multiproc
-      make_np = multiproc.cpu_count()
-      self.framework.logPrint('module multiproc found: using make_np ='+str(make_np))
+      import multiprocessing
+      make_np = multiprocessing.cpu_count()+1
+      self.framework.logPrint('module multiprocessing found: using make_np ='+str(make_np))
     except (ImportError), e:
-        self.framework.logPrint('module multiproc not found: using default for make_np')
+        self.framework.logPrint('module multiprocessing *not* found: using default for make_np')
         make_np = 2
     self.addMakeMacro('MAKE_NP',str(make_np))
     return
