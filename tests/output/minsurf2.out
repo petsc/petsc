@@ -1,0 +1,25 @@
+
+---- Minimum Surface Area Problem -----
+mx: 10     my: 8   
+
+iter = 0, Function value 1.45591, Residual: 0.213720 
+iter = 1, Function value 1.42961, Residual: 0.150207 
+iter = 2, Function value 1.42325, Residual: 0.148310 
+iter = 3, Function value 1.41903, Residual: 0.082060 
+iter = 4, Function value 1.41809, Residual: 0.035714 
+iter = 5, Function value 1.41792, Residual: 0.020811 
+iter = 6, Function value 1.41784, Residual: 0.015535 
+iter = 7, Function value 1.4178, Residual: 0.013660 
+iter = 8, Function value 1.41778, Residual: 0.007999 
+TaoSolver Object:
+  type: tao_lmvm
+    BFGS steps: 15
+    Scaled gradient steps: 1
+    Gradient steps: 0
+  convergence tolerances: fatol=0.0001, frtol=0.0001
+  convergence tolerances: gatol=1e-08, steptol=0, gttol=0
+  Residual in Function/Gradient:=7.999152e-03
+  Objective value=1.417783e+00
+  total number of iterations=8,                        (max: 2000)
+  total number of function/gradient evaluations=11,    (max: 4000)
+  Solution found:  Atol -- F < F_minabs

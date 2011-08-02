@@ -1,0 +1,12 @@
+ msa_plate
+ msa_plate
+iter = 0, Function value 1.67039, Residual: 0.475290 
+iter = 1, Function value 1.57666, Residual: 0.422933 
+iter = 2, Function value 1.53299, Residual: 0.282673 
+iter = 3, Function value 1.52033, Residual: 0.292830 
+iter = 4, Function value 1.51124, Residual: 0.091335 
+iter = 5, Function value 1.50954, Residual: 0.063530 
+iter = 6, Function value 1.50675, Residual: 0.040162 
+iter = 7, Function value 1.50598, Residual: 0.053267 
+iter = 8, Function value 1.50576, Residual: 0.027133 
+iter = 9, Function value 1.50568, Residual: 0.008079 

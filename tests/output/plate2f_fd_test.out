@@ -1,0 +1,16 @@
+ msa_plate
+ msa_plate
+Testing hand-coded gradient (hc) against finite difference gradient (fd), if the ratio ||fd - hc|| / ||hc|| is
+0 (1.e-8), the hand-coded gradient is probably correct.
+Run with -tao_fd_test_display to show difference
+between hand-coded and finite difference gradient.
+ratio ||fd-hc||/||hc|| = 1, difference ||fd-hc|| = 0.187158
+ratio ||fd-hc||/||hc|| = 0.999964, difference ||fd-hc|| = 0.611531
+ratio ||fd-hc||/||hc|| = 1.00004, difference ||fd-hc|| = 0.611575
+Testing hand-coded Hessian (hc) against finite difference Hessian (fd). If the ratio is
+O (1.e-8), the hand-coded Hessian is probably correct.
+Run with -tao_fd_test_display to show difference
+of hand-coded and finite difference Hessian.
+ratio ||fd-hc||/||hc|| = 2.02336e-08, difference ||fd-hc|| = 7.78239e-07
+ratio ||fd-hc||/||hc|| = 2.02336e-08, difference ||fd-hc|| = 7.78239e-07
+ratio ||fd-hc||/||hc|| = 2.02336e-08, difference ||fd-hc|| = 7.78239e-07

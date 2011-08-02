@@ -1,0 +1,18 @@
+
+---- Elastic-Plastic Torsion Problem -----
+mx: 10     my: 10   
+
+Testing hand-coded gradient (hc) against finite difference gradient (fd), if the ratio ||fd - hc|| / ||hc|| is
+0 (1.e-8), the hand-coded gradient is probably correct.
+Run with -tao_fd_test_display to show difference
+between hand-coded and finite difference gradient.
+ratio ||fd-hc||/||hc|| = 2.74353e-05, difference ||fd-hc|| = 1.99992e-05
+ratio ||fd-hc||/||hc|| = 2.78662e-06, difference ||fd-hc|| = 1.99932e-05
+ratio ||fd-hc||/||hc|| = 2.98535e-06, difference ||fd-hc|| = 1.99963e-05
+Testing hand-coded Hessian (hc) against finite difference Hessian (fd). If the ratio is
+O (1.e-8), the hand-coded Hessian is probably correct.
+Run with -tao_fd_test_display to show difference
+of hand-coded and finite difference Hessian.
+ratio ||fd-hc||/||hc|| = 8.07499e-11, difference ||fd-hc|| = 3.57495e-09
+ratio ||fd-hc||/||hc|| = 8.07499e-11, difference ||fd-hc|| = 3.57495e-09
+ratio ||fd-hc||/||hc|| = 8.07499e-11, difference ||fd-hc|| = 3.57495e-09

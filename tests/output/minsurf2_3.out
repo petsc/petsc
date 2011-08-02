@@ -1,0 +1,23 @@
+
+---- Minimum Surface Area Problem -----
+mx: 10     my: 10   
+
+iter = 0, Function value 1.46076, Residual: 0.207785 
+iter = 1, Function value 1.43295, Residual: 0.149451 
+iter = 2, Function value 1.42259, Residual: 0.097124 
+iter = 3, Function value 1.42074, Residual: 0.103371 
+iter = 4, Function value 1.41874, Residual: 0.017988 
+iter = 5, Function value 1.41862, Residual: 0.019860 
+iter = 6, Function value 1.41855, Residual: 0.010251 
+TaoSolver Object:
+  type: tao_cg
+    CG Type: fr
+    Gradient steps: 0
+    Reset steps: 0
+  convergence tolerances: fatol=0.0001, frtol=0.0001
+  convergence tolerances: gatol=1e-08, steptol=0, gttol=0
+  Residual in Function/Gradient:=1.025122e-02
+  Objective value=1.418549e+00
+  total number of iterations=6,                        (max: 2000)
+  total number of function/gradient evaluations=11,    (max: 4000)
+  Solution found:  Rtol -- F < F_mintol*F_init

@@ -1,0 +1,27 @@
+
+---- Minimum Surface Area With Plate Problem -----
+mx:10, my:10, bmx:5, bmy:5, height:0.10
+Testing hand-coded gradient (hc) against finite difference gradient (fd), if the ratio ||fd - hc|| / ||hc|| is
+0 (1.e-8), the hand-coded gradient is probably correct.
+Run with -tao_fd_test_display to show difference
+between hand-coded and finite difference gradient.
+ratio ||fd-hc||/||hc|| = 1, difference ||fd-hc|| = 0.187158
+ratio ||fd-hc||/||hc|| = 0.999964, difference ||fd-hc|| = 0.611531
+ratio ||fd-hc||/||hc|| = 1.00004, difference ||fd-hc|| = 0.611575
+Testing hand-coded Hessian (hc) against finite difference Hessian (fd). If the ratio is
+O (1.e-8), the hand-coded Hessian is probably correct.
+Run with -tao_fd_test_display to show difference
+of hand-coded and finite difference Hessian.
+ratio ||fd-hc||/||hc|| = 2.02333e-08, difference ||fd-hc|| = 7.78228e-07
+ratio ||fd-hc||/||hc|| = 2.02333e-08, difference ||fd-hc|| = 7.78228e-07
+ratio ||fd-hc||/||hc|| = 2.02333e-08, difference ||fd-hc|| = 7.78228e-07
+TaoSolver Object:
+  type: tao_fd_test
+  convergence tolerances: fatol=0.0001, frtol=0.0001
+  convergence tolerances: gatol=1e-08, steptol=0, gttol=0
+  Residual in Function/Gradient:=0.000000e+00
+  Objective value=0.000000e+00
+  total number of iterations=0,                        (max: 2000)
+  total number of function/gradient evaluations=612,    (max: 4000)
+  total number of Hessian evaluations=3
+  Solution found:  User Terminated
