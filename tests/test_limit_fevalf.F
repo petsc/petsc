@@ -43,7 +43,6 @@
       integer          size,rank    ! number of processes running
       PetscReal      zero
       TaoSolverTerminationReason reason
-      PetscLogDouble t1, t2
       
 
 
@@ -60,7 +59,6 @@
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       call TaoInitialize(PETSC_NULL_CHARACTER,ierr)
 
-      call PetscGetTime(t1)
       call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
       if (size .ne. 1) then
@@ -148,8 +146,7 @@
 !  Free PETSc data structures 
       call VecDestroy(x,ierr)
       call MatDestroy(H,ierr)
-      call PetscGetTime(t2)
-      print *,'Time: ',t2-t1
+
 !  Finalize TAO 
       call TaoFinalize(ierr)
       call PetscFinalize(ierr)

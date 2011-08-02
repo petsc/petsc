@@ -13,7 +13,7 @@ class Example:
         self.tags=tags
         self.name=name
 
-    def executableName(self,version=1):
+    def executableName(self,version=2):
         if version==1:
             return self.example
         elif version==2:

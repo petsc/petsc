@@ -2,6 +2,8 @@ TaoInitializeFortran
 
 TRON using MatDiagonalSet -- mpiaij doesn't implement this
 
+bad examples:
+  chwirut1 (pounders)
 
 
 test:
