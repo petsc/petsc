@@ -140,6 +140,16 @@ for l=1:narg
       varargout(l) = {b};
     end
 
+  elseif header == 1211221 % Petsc DM Object
+    m  = double(read(fd,7,'int32'));
+    me = double(read(fd,5,'int32'));
+    b = [' dm ' int2str(m(3)) ' by ' int2str(m(4)) ' by ' int2str(m(5))];
+    if strcmp(comp,'cell')
+      result{l} = b;
+    else 
+      varargout(l) = {b};
+    end
+
   else 
     disp(['Found unrecogonized header ' int2str(header) ' in file. If your file contains complex numbers'])
     disp(' then call PetscBinaryRead() with "complex" as the second argument')

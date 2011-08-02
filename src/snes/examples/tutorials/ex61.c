@@ -47,7 +47,7 @@ typedef struct{
   PetscInt    maxevents; /* once this number of events is reached no more events are generated */
   PetscReal   initv;    /* initial value of phase variables */
   PetscBool   degenerate;  /* use degenerate mobility */
-  PetscBool   graphics;
+  PetscBool   graphics,graphicsfile;
   DM          da1,da2;
   Mat         M;    /* Jacobian matrix */
   Mat         M_0;
@@ -87,7 +87,7 @@ int main(int argc, char **argv)
   IS                  inactiveconstraints;
   PetscInt            ninactiveconstraints,N;
   SNESConvergedReason reason;
-  PetscViewer         view_out, view_cv,view_eta,view_vtk_cv,view_vtk_eta;
+  PetscViewer         view_out, view_cv,view_eta,view_vtk_cv,view_vtk_eta,viewerfile;
   char                cv_filename[80],eta_filename[80];
   PetscReal           bounds[] = {1000.0,-1000.,0.0,1.0,1000.0,-1000.0,0.0,1.0,1000.0,-1000.0};
 
@@ -179,6 +179,22 @@ int main(int argc, char **argv)
   if (user.graphics) {
     ierr = VecView(x,PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD));CHKERRQ(ierr);  
   }
+  if (user.graphicsfile) {
+    PetscInt  seed;
+    PetscBool flg;
+    char      filename[PETSC_MAX_PATH_LEN];
+
+    ierr = PetscOptionsGetInt(PETSC_NULL,"-random_seed",&seed,&flg);CHKERRQ(ierr);
+    if (flg) {
+      sprintf(filename,"ex61.data.%d",seed);
+    } else {
+      ierr = PetscStrcpy(filename,"ex61.data");CHKERRQ(ierr);
+    }
+
+    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_WRITE,&viewerfile);CHKERRQ(ierr);
+    ierr = DMView(user.da1,viewerfile);CHKERRQ(ierr);
+    ierr = VecView(x,viewerfile);CHKERRQ(ierr);  
+  }
   while (t<user.T) {
     ierr = SNESSetFunction(snes,r,FormFunction,(void*)&user);CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,J,J,FormJacobian,(void*)&user);CHKERRQ(ierr);
@@ -229,6 +245,10 @@ int main(int argc, char **argv)
     if (user.graphics) {
       ierr = VecView(x,PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD));CHKERRQ(ierr);
     }
+    if (user.graphicsfile) {
+      ierr = VecView(x,viewerfile);CHKERRQ(ierr);  
+    }
+
     /*    ierr = VecView(x,PETSC_VIEWER_BINARY_(PETSC_COMM_WORLD));CHKERRQ(ierr);*/
     PetscInt its;
     ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
@@ -237,6 +257,10 @@ int main(int argc, char **argv)
     ierr = Update_u(x,&user);CHKERRQ(ierr);
     ierr = UpdateMatrices(&user);CHKERRQ(ierr);
     t = t + user.dt;
+  }
+
+  if (user.graphicsfile) {
+    ierr = PetscViewerDestroy(&viewerfile);CHKERRQ(ierr);
   }
    
   /*  ierr = PetscViewerDestroy(&view_rand);CHKERRQ(ierr);
@@ -693,6 +717,7 @@ PetscErrorCode GetParams(AppCtx* user)
   user->degenerate = PETSC_FALSE;
   user->maxevents = 1000;
   user->graphics = PETSC_TRUE;
+  user->graphicsfile = PETSC_FALSE;
 
   ierr = PetscOptionsGetReal(PETSC_NULL,"-Dv",&user->Dv,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(PETSC_NULL,"-Di",&user->Di,&flg);CHKERRQ(ierr);
@@ -706,6 +731,7 @@ PetscErrorCode GetParams(AppCtx* user)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-maxevents",&user->maxevents,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(PETSC_NULL,"-degenerate",&user->degenerate,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(PETSC_NULL,"-graphics",&user->graphics,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-graphicsfile",&user->graphicsfile,&flg);CHKERRQ(ierr);
    
 
   PetscFunctionReturn(0);

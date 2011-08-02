@@ -1071,9 +1071,8 @@ PetscErrorCode  VecLoad(Vec newvec, PetscViewer viewer)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,1);
+  PetscValidHeaderSpecific(newvec,VEC_CLASSID,1);
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
-  PetscValidPointer(newvec,1);
 
   ierr = PetscLogEventBegin(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
   if (!((PetscObject)newvec)->type_name && !newvec->ops->create) {

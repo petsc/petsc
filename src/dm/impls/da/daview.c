@@ -49,12 +49,13 @@ PetscErrorCode DMView_DA_Binary(DM da,PetscViewer viewer)
 {
   PetscErrorCode   ierr;
   PetscMPIInt      rank;
-  PetscInt         i,dim,m,n,p,dof,swidth,M,N,P;
-  size_t           j,len;
+  PetscInt         dim,m,n,p,dof,swidth,M,N,P;
   DMDAStencilType  stencil;
   DMDABoundaryType bx,by,bz;
   MPI_Comm         comm;
   DM_DA            *dd = (DM_DA*)da->data;
+  PetscInt         classid = DM_FILE_CLASSID,subclassid = DMDA_FILE_CLASSID ;
+  PetscBool        coors = PETSC_FALSE;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
@@ -62,52 +63,26 @@ PetscErrorCode DMView_DA_Binary(DM da,PetscViewer viewer)
   ierr = DMDAGetInfo(da,&dim,&m,&n,&p,&M,&N,&P,&dof,&swidth,&bx,&by,&bz,&stencil);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (!rank) {
-    FILE *file;
 
-    ierr = PetscViewerBinaryGetInfoPointer(viewer,&file);CHKERRQ(ierr);
-    if (file) {
-      char fieldname[PETSC_MAX_PATH_LEN];
-
-      ierr = PetscFPrintf(PETSC_COMM_SELF,file,"-daload_info %D,%D,%D,%D,%D,%D,%D,%D,%D,%D\n",dim,m,n,p,dof,swidth,stencil,bx,by,bz);CHKERRQ(ierr);
-      for (i=0; i<dof; i++) {
-        if (dd->fieldname[i]) {
-          ierr = PetscStrncpy(fieldname,dd->fieldname[i],PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
-          ierr = PetscStrlen(fieldname,&len);CHKERRQ(ierr);
-          len  = PetscMin(PETSC_MAX_PATH_LEN,len);CHKERRQ(ierr);
-          for (j=0; j<len; j++) {
-            if (fieldname[j] == ' ') fieldname[j] = '_';
-          }
-          ierr = PetscFPrintf(PETSC_COMM_SELF,file,"-daload_fieldname_%D %s\n",i,fieldname);CHKERRQ(ierr);
-        }
-      }
-      if (dd->coordinates) { /* save the DMDA's coordinates */
-        ierr = PetscFPrintf(PETSC_COMM_SELF,file,"-daload_coordinates\n");CHKERRQ(ierr);
-      }
-    }
+    ierr = PetscViewerBinaryWrite(viewer,&classid,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWrite(viewer,&subclassid,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWrite(viewer,&dim,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWrite(viewer,&m,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWrite(viewer,&n,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWrite(viewer,&p,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWrite(viewer,&dof,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWrite(viewer,&swidth,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWrite(viewer,&bx,1,PETSC_ENUM,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWrite(viewer,&by,1,PETSC_ENUM,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWrite(viewer,&bz,1,PETSC_ENUM,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWrite(viewer,&stencil,1,PETSC_ENUM,PETSC_FALSE);CHKERRQ(ierr);
+    if (dd->coordinates) coors = PETSC_TRUE;
+    ierr = PetscViewerBinaryWrite(viewer,&coors,1,PETSC_BOOL,PETSC_FALSE);CHKERRQ(ierr);
   } 
 
   /* save the coordinates if they exist to disk (in the natural ordering) */
   if (dd->coordinates) {
-    DM             dac;
-    const PetscInt *lx,*ly,*lz;
-    Vec            natural;
-
-    /* create the appropriate DMDA to map to natural ordering */
-    ierr = DMDAGetOwnershipRanges(da,&lx,&ly,&lz);CHKERRQ(ierr);
-    if (dim == 1) {
-      ierr = DMDACreate1d(comm,DMDA_BOUNDARY_NONE,m,dim,0,lx,&dac);CHKERRQ(ierr); 
-    } else if (dim == 2) {
-      ierr = DMDACreate2d(comm,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,m,n,M,N,dim,0,lx,ly,&dac);CHKERRQ(ierr); 
-    } else if (dim == 3) {
-      ierr = DMDACreate3d(comm,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,DMDA_STENCIL_BOX,m,n,p,M,N,P,dim,0,lx,ly,lz,&dac);CHKERRQ(ierr); 
-    } else SETERRQ1(comm,PETSC_ERR_ARG_CORRUPT,"Dimension is not 1 2 or 3: %D\n",dim);
-    ierr = DMDACreateNaturalVector(dac,&natural);CHKERRQ(ierr);
-    ierr = PetscObjectSetOptionsPrefix((PetscObject)natural,"coor_");CHKERRQ(ierr);
-    ierr = DMDAGlobalToNaturalBegin(dac,dd->coordinates,INSERT_VALUES,natural);CHKERRQ(ierr);
-    ierr = DMDAGlobalToNaturalEnd(dac,dd->coordinates,INSERT_VALUES,natural);CHKERRQ(ierr);
-    ierr = VecView(natural,viewer);CHKERRQ(ierr);
-    ierr = VecDestroy(&natural);CHKERRQ(ierr);
-    ierr = DMDestroy(&dac);CHKERRQ(ierr);
+    ierr = VecView(dd->coordinates,viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

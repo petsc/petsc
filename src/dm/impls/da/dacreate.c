@@ -95,6 +95,53 @@ extern PetscErrorCode  DMView_DA(DM,PetscViewer);
 extern PetscErrorCode  DMSetUp_DA(DM);
 extern PetscErrorCode  DMDestroy_DA(DM);
 
+#undef __FUNCT__  
+#define __FUNCT__ "DMLoad_DA"
+PetscErrorCode DMLoad_DA(DM da,PetscViewer viewer)
+{
+  PetscErrorCode   ierr;
+  PetscInt         dim,m,n,p,dof,swidth;
+  DMDAStencilType  stencil;
+  DMDABoundaryType bx,by,bz;
+  PetscInt         classid = DM_FILE_CLASSID,subclassid = DMDA_FILE_CLASSID;
+  PetscBool        coors;
+  DM               dac;
+  Vec              c;
+
+  PetscFunctionBegin;  
+  ierr = PetscViewerBinaryRead(viewer,&classid,1,PETSC_INT);CHKERRQ(ierr);
+  if (classid != DM_FILE_CLASSID) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_WRONG,"Not DM next in file");
+  ierr = PetscViewerBinaryRead(viewer,&subclassid,1,PETSC_INT);CHKERRQ(ierr);
+  if (subclassid != DMDA_FILE_CLASSID) SETERRQ(((PetscObject)da)->comm,PETSC_ERR_ARG_WRONG,"Not DM DA next in file");
+  ierr = PetscViewerBinaryRead(viewer,&dim,1,PETSC_INT);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer,&m,1,PETSC_INT);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer,&n,1,PETSC_INT);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer,&p,1,PETSC_INT);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer,&dof,1,PETSC_INT);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer,&swidth,1,PETSC_INT);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer,&bx,1,PETSC_ENUM);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer,&by,1,PETSC_ENUM);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer,&bz,1,PETSC_ENUM);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer,&stencil,1,PETSC_ENUM);CHKERRQ(ierr);
+
+  ierr = DMDASetDim(da, dim);CHKERRQ(ierr);
+  ierr = DMDASetSizes(da, m,n,p);CHKERRQ(ierr);
+  ierr = DMDASetBoundaryType(da, bx, by, bz);CHKERRQ(ierr);
+  ierr = DMDASetDof(da, dof);CHKERRQ(ierr);
+  ierr = DMDASetStencilType(da, stencil);CHKERRQ(ierr);
+  ierr = DMDASetStencilWidth(da, swidth);CHKERRQ(ierr);
+  ierr = DMSetUp(da);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer,&coors,1,PETSC_ENUM);CHKERRQ(ierr);
+  if (coors) {
+    ierr = DMDAGetCoordinateDA(da,&dac);CHKERRQ(ierr);
+    ierr = DMCreateGlobalVector(dac,&c);CHKERRQ(ierr);
+    ierr = VecLoad(c,viewer);CHKERRQ(ierr);
+    ierr = DMDASetCoordinates(da,c);CHKERRQ(ierr);
+    ierr = VecDestroy(&c);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "DMCreate_DA"
@@ -165,6 +212,7 @@ PetscErrorCode  DMCreate_DA(DM da)
   da->ops->view               = 0;
   da->ops->setfromoptions     = DMSetFromOptions_DA;
   da->ops->setup              = DMSetUp_DA;
+  da->ops->load               = DMLoad_DA;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -199,3 +247,5 @@ PetscErrorCode  DMDACreate(MPI_Comm comm, DM *da)
   ierr = DMSetType(*da,DMDA);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+

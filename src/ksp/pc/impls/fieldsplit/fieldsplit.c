@@ -1416,7 +1416,12 @@ PetscErrorCode  PCFieldSplitSetType(PC pc,PCCompositeType type)
      If only one set of indices (one IS) is provided with PCFieldSplitSetIS() then the complement of that IS
      is used automatically for a second block.
 
-     The fieldsplit preconditioner cannot be used with the BAIJ or SBAIJ data formats if the blocksize is larger than 1. Generally it should be used with the AIJ format.
+     The fieldsplit preconditioner cannot currently be used with the BAIJ or SBAIJ data formats if the blocksize is larger than 1. 
+     Generally it should be used with the AIJ format.
+
+     The forms of these preconditioners are closely related if not identical to forms derived as "Distributive Iterations", see, 
+     for example, page 294 in "Principles of Computational Fluid Dynamics" by Pieter Wesseling. Note that one can also use PCFIELDSPLIT 
+     inside a smoother resulting in "Distributive Smoothers".
 
    Concepts: physics based preconditioners, block preconditioners
 

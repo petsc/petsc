@@ -1622,3 +1622,57 @@ PetscErrorCode  DMSetJacobianMatlab(DM dm,const char *func)
   PetscFunctionReturn(0);
 }
 #endif
+
+#undef __FUNCT__
+#define __FUNCT__ "DMLoad"
+/*@C
+  DMLoad - Loads a DM that has been stored in binary or HDF5 format
+  with DMView().
+
+  Collective on PetscViewer 
+
+  Input Parameters:
++ newdm - the newly loaded DM, this needs to have been created with DMCreate() or
+           some related function before a call to DMLoad(). 
+- viewer - binary file viewer, obtained from PetscViewerBinaryOpen() or
+           HDF5 file viewer, obtained from PetscViewerHDF5Open()
+
+   Level: intermediate
+
+  Notes:
+  Defaults to the DM DA.
+
+  Notes for advanced users:
+  Most users should not need to know the details of the binary storage
+  format, since DMLoad() and DMView() completely hide these details.
+  But for anyone who's interested, the standard binary matrix storage
+  format is  
+.vb
+     has not yet been determined
+.ve
+
+   In addition, PETSc automatically does the byte swapping for
+machines that store the bytes reversed, e.g.  DEC alpha, freebsd,
+linux, Windows and the paragon; thus if you write your own binary
+read/write routines you have to swap the bytes; see PetscBinaryRead()
+and PetscBinaryWrite() to see how this may be done.
+
+  Concepts: vector^loading from file
+
+.seealso: PetscViewerBinaryOpen(), DMView(), MatLoad(), VecLoad() 
+@*/  
+PetscErrorCode  DMLoad(DM newdm, PetscViewer viewer)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(newdm,DM_CLASSID,1);
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_CLASSID,2);
+
+  if (!((PetscObject)newdm)->type_name) {
+    ierr = DMSetType(newdm, DMDA);CHKERRQ(ierr);
+  }
+  ierr = (*newdm->ops->load)(newdm,viewer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+

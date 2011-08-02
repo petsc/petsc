@@ -14,63 +14,36 @@ from pyjamas.ui.HorizontalPanel import HorizontalPanel
 from pyjamas.ui.ListBox import ListBox
 from pyjamas.JSONService import JSONProxy
 
-commname = 'jeff'
+commname = 'Set at program initialization'
 
 class JSONRPCExample:
     def onModuleLoad(self):
         self.TEXT_WAITING = "Waiting for response..."
         self.TEXT_ERROR = "Server Error"
-        self.METHOD_ECHO = "echo"
-        self.METHOD_REVERSE = "Reverse"
-        self.METHOD_UPPERCASE = "UPPERCASE"
-        self.METHOD_LOWERCASE = "lowercase"
-        self.METHOD_NONEXISTANT = "Non existant"
-        self.methods = [self.METHOD_ECHO, self.METHOD_REVERSE, 
-                        self.METHOD_UPPERCASE, self.METHOD_LOWERCASE, 
-                        self.METHOD_NONEXISTANT]
         self.remote_py = ServicePython()
         global commname
-        commname  = 'heff'
+        commname  = 'Set in onModuleLoad()'
         self.status=Label()
         self.text_area = TextArea()
         self.text_area.setText("Simple text")
         self.text_area.setCharacterWidth(80)
         self.text_area.setVisibleLines(8)
         
-        self.method_list = ListBox()
-        self.method_list.setName("hello")
-        self.method_list.setVisibleItemCount(1)
-        for method in self.methods:
-            self.method_list.addItem(method)
-        self.method_list.setSelectedIndex(0)
-
-        method_panel = HorizontalPanel()
-        method_panel.add(HTML("Remote string method to call: "))
-        method_panel.add(self.method_list)
-        method_panel.setSpacing(8)
-
-        self.button_py = Button("Send to echo Service", self)
-        self.button_ams_connect = Button("Connect to AMS", self)
-        self.button_ams_attach  = Button("Attach to AMS communicator", self)
+        self.button_echo = Button("Send to echo Service", self)
+        self.button_ams_memlist = Button("Get AMS memory list", self)
 
         buttons = HorizontalPanel()
-        buttons.add(self.button_py)
-        buttons.add(self.button_ams_connect)
-        buttons.add(self.button_ams_attach)
+        buttons.add(self.button_echo)
+        buttons.add(self.button_ams_memlist)
         buttons.setSpacing(8)
         
         info = """<h2>JSON-RPC Example</h2>
-        <p>This example demonstrates the calling of server services with
-           <a href="http://json-rpc.org/">JSON-RPC</a>.
-        </p>
-        <p>Enter some text below, and press a button to send the text
-           to an echo service on your server. An echo service simply sends the exact same text back that it receives.
-           </p>"""
+        <p>This example demonstrates the calling of AMS server in PETSc with <a href="http://json-rpc.org/">JSON-RPC</a>.
+        </p>"""
         
         panel = VerticalPanel()
         panel.add(HTML(info))
         panel.add(self.text_area)
-        panel.add(method_panel)
         panel.add(buttons)
         panel.add(self.status)
         
@@ -78,27 +51,23 @@ class JSONRPCExample:
 
     def onClick(self, sender):
         self.status.setText(self.TEXT_WAITING)
-        method = self.methods[self.method_list.getSelectedIndex()]
         text = self.text_area.getText()
 
-        # demonstrate proxy & callMethod()
-        if sender == self.button_py:
+        if sender == self.button_echo:
             id = self.remote_py.YAML_echo(text, self)
-        elif sender == self.button_ams_connect:
+        elif sender == self.button_ams_memlist:
             id = self.remote_py.YAML_AMS_Connect(text, self)
-        else:
-            self.status.setText('trying comm attach'+commname)
-            id = self.remote_py.YAML_AMS_Comm_attach(commname, self)
-        self.lastsender = sender
 
     def onRemoteResponse(self, response, request_info):
-        global commname
         self.status.setText(response)
-        if self.lastsender == self.button_ams_connect:
-            commname = str(response)
-            self.status.setText('was ams connect'+commname)
-        else:
-            commname = "joe"
+        method = str(request_info.method)
+        if method == "YAML_AMS_Connect":
+            id = self.remote_py.YAML_AMS_Comm_attach(str(response),self)
+        elif method == "YAML_AMS_Comm_attach":
+            id = self.remote_py.YAML_AMS_Comm_get_memory_list(str(response),self)
+        elif method == "YAML_AMS_Comm_get_memory_list":
+            pass
+
 
     def onRemoteError(self, code, errobj, request_info):
         # onRemoteError gets the HTTP error code or 0 and
@@ -119,7 +88,7 @@ class JSONRPCExample:
 
 class ServicePython(JSONProxy):
     def __init__(self):
-        JSONProxy.__init__(self, "No service name", ["YAML_echo", "YAML_AMS_Connect", "YAML_AMS_Comm_attach"])
+        JSONProxy.__init__(self, "No service name", ["YAML_echo", "YAML_AMS_Connect", "YAML_AMS_Comm_attach", "YAML_AMS_Comm_get_memory_list"])
 
 if __name__ == '__main__':
     # for pyjd, set up a web server and load the HTML from there:

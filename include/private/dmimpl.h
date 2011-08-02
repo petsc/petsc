@@ -8,6 +8,7 @@
 typedef struct _DMOps *DMOps;
 struct _DMOps {
   PetscErrorCode (*view)(DM,PetscViewer); 
+  PetscErrorCode (*load)(DM,PetscViewer); 
   PetscErrorCode (*setfromoptions)(DM); 
   PetscErrorCode (*setup)(DM); 
   PetscErrorCode (*createglobalvector)(DM,Vec*);

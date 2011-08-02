@@ -224,7 +224,9 @@ ex61: ex61.o  chkopts
 ex61gen: ex61gen.o  chkopts
 	-${CLINKER} -o ex61gen ex61gen.o ${PETSC_SNES_LIB}
 	${RM} ex61gen.o
-
+ex61view: ex61view.o  chkopts
+	-${CLINKER} -o ex61view ex61view.o ${PETSC_SNES_LIB}
+	${RM} ex61view.o
 ex62: ex62.o  chkopts
 	-${CLINKER} -o ex62 ex62.o ${PETSC_SNES_LIB}
 	${RM} ex62.o
