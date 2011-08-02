@@ -771,6 +771,11 @@ PetscErrorCode createProlongation( Mat a_Amat,
         PetscInt lid = Ii - Istart;
         gnodes[lid].m_lid = lid;
         gnodes[lid].m_degree = ncols;
+	// debug
+	/* if( (fabs(a_coords[2*lid])<1.e-12 || fabs(a_coords[2*lid]-1.)<1.e-12) && */
+/* 	    (fabs(a_coords[2*lid+1])<1.e-12 || fabs(a_coords[2*lid+1]-1.)<1.e-12) ) { */
+/* 	  gnodes[lid].m_degree = 1; */
+/* 	} */
       }
       ierr = MatRestoreRow(Gmat,Ii,&ncols,0,0); CHKERRQ(ierr);
     }
@@ -871,11 +876,11 @@ PetscErrorCode createProlongation( Mat a_Amat,
       ierr = PetscLogEventEnd(gamg_setup_stages[SET6],0,0,0,0);CHKERRQ(ierr);
       if( metric > 1. ) {
         *a_isOK = PETSC_FALSE;
-        PetscPrintf(PETSC_COMM_WORLD,"%s failed metric for coarse grid %e\n",__FUNCT__,metric);
+        PetscPrintf(PETSC_COMM_SELF,"[%d]%s failed metric for coarse grid %e\n",mype,__FUNCT__,metric);
         ierr = MatDestroy( &Prol );  CHKERRQ(ierr);
       }
       else if( metric > .0 ) {
-        PetscPrintf(PETSC_COMM_WORLD,"%s metric for coarse grid = %e\n",__FUNCT__,metric);
+        PetscPrintf(PETSC_COMM_SELF,"[%d]%s metric for coarse grid = %e\n",mype,__FUNCT__,metric);
       }
     } else {
       SETERRQ(wcomm,PETSC_ERR_LIB,"3D not implemented");

@@ -335,8 +335,8 @@ PetscErrorCode PCSetUp_GAMG( PC pc )
   /* Get A_i and R_i */
   ierr = MatGetSize( Amat, &M, &N );CHKERRQ(ierr);
 PetscPrintf(PETSC_COMM_WORLD,"[%d]%s level %d N=%d\n",0,__FUNCT__,0,N);
-  for (level=0, Aarr[0] = Pmat, nactivepe = npe;
-       level < GAMG_MAXLEVELS-1 && (level==0 || M>TOP_GRID_LIM); /* hard wired stopping logic */
+  for (level=0, Aarr[0] = Pmat, nactivepe = npe; /* hard wired stopping logic */
+       level < GAMG_MAXLEVELS-1 && (level==0 || M>TOP_GRID_LIM) && (npe==1 || nactivepe>1); 
        level++ ) {
     level1 = level + 1;
     ierr = PetscLogEventBegin(gamg_setup_stages[SET1],0,0,0,0);CHKERRQ(ierr);
@@ -437,7 +437,7 @@ PetscPrintf(PETSC_COMM_WORLD,"\t\t%s max eigen = %e (N=%d)\n",__FUNCT__,emax,N1)
   }
 
   /* set interpolation between the levels, create timer stages, clean up */
-  {
+  if( PETSC_FALSE ) {
     char str[32];
     sprintf(str,"MG Level %d (%d)",0,pc_gamg->m_Nlevels-1); 
     PetscLogStageRegister(str, &gamg_stages[fine_level]);
@@ -457,7 +457,7 @@ PetscPrintf(PETSC_COMM_WORLD,"\t\t%s max eigen = %e (N=%d)\n",__FUNCT__,emax,N1)
     }
     ierr = MatDestroy( &Parr[lidx] );  CHKERRQ(ierr);
     ierr = MatDestroy( &Aarr[lidx] );  CHKERRQ(ierr);
-    {
+    if( PETSC_FALSE ) {
       char str[32];
       sprintf(str,"MG Level %d (%d)",level+1,lidx-1); 
       PetscLogStageRegister(str, &gamg_stages[lidx-1]);

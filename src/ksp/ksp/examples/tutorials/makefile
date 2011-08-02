@@ -988,7 +988,7 @@ runex53_2:
 
 runex54:
 	-@echo ${MPIEXEC}
-	-@${MPIEXEC} -n 1 ./ex54 -ne 310 -alpha 1.e-0 -ksp_monitor -ksp_rtol 1.e-12 -ksp_type cg -pc_mg_type full -ksp_max_it 50 -options_left -ksp_norm_type unpreconditioned 
+	-@${MPIEXEC} -n 1 ./ex54 -ne 110 -alpha 1.e-0 -ksp_monitor -ksp_rtol 1.e-12 -ksp_type cg -pc_mg_type full -ksp_max_it 50 -options_left -ksp_norm_type unpreconditioned -log_summary
 #-log_summary -ksp_pc_side right 
 
 TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 \
