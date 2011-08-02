@@ -192,7 +192,7 @@ class TaoExamples(ExampleList):
         
 
         # Least squares
-        self.add(Example(example="chwirut1",nprocs=1,options="-tao_smonitor",method="pounders -tao_fatol 0 -tao_frtol 0",tags=["leastsquares","chwirut","single","c","pounders"],name="chwirut1"))
+        self.add(Example(example="chwirut1",nprocs=1,options="-tao_smonitor -tao_fatol 0 -tao_frtol 0",method="pounders",tags=["leastsquares","chwirut","single","c","pounders"],name="chwirut1"))
 
         # Check gradients and hessians of examples
         for n in ["minsurf1","eptorsion1","rosenbrock1","rosenbrock1f"]:
