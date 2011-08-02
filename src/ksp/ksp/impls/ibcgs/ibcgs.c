@@ -9,7 +9,6 @@ static PetscErrorCode KSPSetUp_IBCGS(KSP ksp)
   PetscBool      diagonalscale;
 
   PetscFunctionBegin;
-  if (ksp->pc_side == PC_SYMMETRIC) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"no symmetric preconditioning for KSPIBCGS");
   ierr = PCGetDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
   if (diagonalscale) SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
   ierr = KSPDefaultGetWork(ksp,9);CHKERRQ(ierr);
@@ -70,8 +69,6 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
   Mat            A;
 
   PetscFunctionBegin;
-  if (ksp->normtype == KSP_NORM_PRECONDITIONED && ksp->pc_side != PC_LEFT) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Use -ksp_norm_type unpreconditioned for right preconditioning and KSPIBCGS");
-  if (ksp->normtype == KSP_NORM_UNPRECONDITIONED && ksp->pc_side != PC_RIGHT) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Use -ksp_norm_type preconditioned for left preconditioning and KSPIBCGS");
   if (!ksp->vec_rhs->petscnative) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Only coded for PETSc vectors");
 
   ierr = PCGetOperators(ksp->pc,&A,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
@@ -302,8 +299,12 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "KSPCreate_IBCGS"
 PetscErrorCode  KSPCreate_IBCGS(KSP ksp)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   ksp->data                 = (void*)0;
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,1);CHKERRQ(ierr);
   ksp->ops->setup           = KSPSetUp_IBCGS;
   ksp->ops->solve           = KSPSolve_IBCGS;
   ksp->ops->destroy         = KSPDefaultDestroy;

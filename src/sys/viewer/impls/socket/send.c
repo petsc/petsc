@@ -814,7 +814,7 @@ EXTERN_C_BEGIN
 PetscErrorCode YAML_AMS_Comm_attach(PetscInt argc,char **args,PetscInt *argco,char ***argso)
 {
   PetscErrorCode ierr;
-  AMS_Comm       comm = 0;
+  AMS_Comm       comm = -1;
 
   PetscFunctionBegin;
   ierr = AMS_Comm_attach(args[0],&comm);
@@ -845,7 +845,7 @@ PetscErrorCode YAML_AMS_Comm_get_memory_list(PetscInt argc,char **args,PetscInt 
   PetscErrorCode ierr;
   char           **mem_list;
   AMS_Comm       comm;
-  PetscInt       i;
+  PetscInt       i,iargco = 0;
 
   PetscFunctionBegin;
   sscanf(args[0],"%d",&comm);
@@ -853,14 +853,15 @@ PetscErrorCode YAML_AMS_Comm_get_memory_list(PetscInt argc,char **args,PetscInt 
   if (ierr) {
     ierr = PetscInfo1(PETSC_NULL,"AMS_Comm_get_memory_list() error %d\n",ierr);CHKERRQ(ierr);
   } else {
-    *argco = 0;
-    while (mem_list[*argco++]) ;
-  
-    ierr = PetscMalloc((*argco)*sizeof(char*),argso);CHKERRQ(ierr);
-    for (i=0; i<*argco; i++) {
-      ierr = PetscStrallocpy(mem_list[i],args+i);CHKERRQ(ierr);
+    while (mem_list[iargco++]) ;
+    iargco--;
+
+    ierr = PetscMalloc((iargco)*sizeof(char*),argso);CHKERRQ(ierr);
+    for (i=0; i<iargco; i++) {
+      ierr = PetscStrallocpy(mem_list[i],(*argso)+i);CHKERRQ(ierr);
     }
   }
+  *argco = iargco;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

@@ -29,8 +29,6 @@ PetscErrorCode  KSPSolve_BiCG(KSP ksp)
   MatStructure   pflag;
 
   PetscFunctionBegin;
-  if (ksp->normtype == KSP_NORM_NATURAL) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Cannot use natural residual norm with KSPIBCGS");
-
   ierr    = PCGetDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
   if (diagonalscale) SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
 
@@ -161,10 +159,9 @@ PetscErrorCode  KSPCreate_BiCG(KSP ksp)
 
   PetscFunctionBegin;
   ksp->data                      = (void*)0;
-  if (ksp->pc_side != PC_LEFT) {
-    ierr = PetscInfo(ksp,"WARNING! Setting PC_SIDE for BiCG to left!\n");CHKERRQ(ierr);
-  }
-  ksp->pc_side                   = PC_LEFT;
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,1);CHKERRQ(ierr);
+
   ksp->ops->setup                = KSPSetUp_BiCG;
   ksp->ops->solve                = KSPSolve_BiCG;
   ksp->ops->destroy              = KSPDefaultDestroy;

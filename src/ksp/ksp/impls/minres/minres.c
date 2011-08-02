@@ -35,8 +35,6 @@ PetscErrorCode  KSPSolve_MINRES(KSP ksp)
   PetscBool      diagonalscale;
 
   PetscFunctionBegin;
-  if (ksp->normtype != KSP_NORM_PRECONDITIONED) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Only supports preconditioned residual norm for KSPMINRES");
-
   ierr    = PCGetDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
   if (diagonalscale) SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
 
@@ -217,11 +215,7 @@ PetscErrorCode  KSPCreate_MINRES(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-
-  if (ksp->pc_side != PC_LEFT) {
-    ierr = PetscInfo(ksp,"WARNING! Setting PC_SIDE for MINRES to left!\n");CHKERRQ(ierr);
-  }
-  ksp->pc_side   = PC_LEFT;
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
   ierr           = PetscNewLog(ksp,KSP_MINRES,&minres);CHKERRQ(ierr);
   minres->haptol = 1.e-18;
   ksp->data      = (void*)minres;

@@ -10,9 +10,6 @@ PetscErrorCode KSPSetUp_LCD(KSP ksp)
   PetscInt        restart = lcd->restart;
 
   PetscFunctionBegin;
-  if (ksp->pc_side == PC_RIGHT) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"No right preconditioning for KSPLCD");
-  else if (ksp->pc_side == PC_SYMMETRIC) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"No symmetric preconditioning for KSPLCD");
-
   /* get work vectors needed by LCD */
   ierr = KSPDefaultGetWork(ksp,2);CHKERRQ(ierr);
  
@@ -249,10 +246,7 @@ PetscErrorCode KSPCreate_LCD(KSP ksp)
   PetscFunctionBegin;
   ierr = PetscNewLog(ksp,KSP_LCD,&lcd);CHKERRQ(ierr);
   ksp->data                      = (void*)lcd;
-  if (ksp->pc_side != PC_LEFT) {
-     ierr = PetscInfo(ksp,"WARNING! Setting PC_SIDE for LCD to left!\n");CHKERRQ(ierr);
-  }
-  ksp->pc_side                   = PC_LEFT;
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
   lcd->restart                   = 30;
   lcd->haptol                    = 1.0e-30;
 
