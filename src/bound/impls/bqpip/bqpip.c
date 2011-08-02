@@ -543,6 +543,7 @@ PetscErrorCode TaoSolverCreate_BQPIP(TaoSolver tao)
   tao->frtol=1e-12;
   tao->gatol=1e-12;
   tao->grtol=1e-12;
+  tao->catol=1e-12;
 
 
   /* Initialize pointers and variables */
