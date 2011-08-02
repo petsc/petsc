@@ -706,7 +706,7 @@ PetscErrorCode  PetscContainerSetPointer(PetscContainer obj,void *ptr)
 
    Level: advanced
 
-.seealso: PetscContainerCreate()
+.seealso: PetscContainerCreate(), PetscContainerSetUserDestroy()
 @*/
 PetscErrorCode  PetscContainerDestroy(PetscContainer *obj)
 {

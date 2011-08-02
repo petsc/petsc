@@ -14,15 +14,14 @@ from pyjamas.ui.HorizontalPanel import HorizontalPanel
 from pyjamas.ui.ListBox import ListBox
 from pyjamas.JSONService import JSONProxy
 
-commname = 'Set at program initialization'
+comm   = -1  # Currently attached AMS communicator 
+memory = -1  #                        memory
 
 class JSONRPCExample:
     def onModuleLoad(self):
         self.TEXT_WAITING = "Waiting for response..."
         self.TEXT_ERROR = "Server Error"
         self.remote_py = ServicePython()
-        global commname
-        commname  = 'Set in onModuleLoad()'
         self.status=Label()
         self.text_area = TextArea()
         self.text_area.setText("Simple text")
@@ -59,14 +58,26 @@ class JSONRPCExample:
             id = self.remote_py.YAML_AMS_Connect(text, self)
 
     def onRemoteResponse(self, response, request_info):
+        global comm,memory
         self.status.setText(response)
         method = str(request_info.method)
         if method == "YAML_AMS_Connect":
             id = self.remote_py.YAML_AMS_Comm_attach(str(response),self)
         elif method == "YAML_AMS_Comm_attach":
-            id = self.remote_py.YAML_AMS_Comm_get_memory_list(str(response),self)
+            comm = response
+            id = self.remote_py.YAML_AMS_Comm_get_memory_list(comm,self)
         elif method == "YAML_AMS_Comm_get_memory_list":
+            memlist = response
+            id = self.remote_py.YAML_AMS_Memory_attach(comm,memlist[0],self)
+        elif method == "YAML_AMS_Memory_attach":
+            memory = response[0]
+            step   = response[1]
+            id = self.remote_py.YAML_AMS_Memory_get_field_list(memory,self)
+        elif method == "YAML_AMS_Memory_get_field_list":
+            id = self.remote_py.YAML_AMS_Memory_get_field_info(memory,response[0],self)
+        elif method == "YAML_AMS_Memory_get_field_info":
             pass
+
 
 
     def onRemoteError(self, code, errobj, request_info):
@@ -88,7 +99,7 @@ class JSONRPCExample:
 
 class ServicePython(JSONProxy):
     def __init__(self):
-        JSONProxy.__init__(self, "No service name", ["YAML_echo", "YAML_AMS_Connect", "YAML_AMS_Comm_attach", "YAML_AMS_Comm_get_memory_list"])
+        JSONProxy.__init__(self, "No service name", ["YAML_echo", "YAML_AMS_Connect", "YAML_AMS_Comm_attach", "YAML_AMS_Comm_get_memory_list","YAML_AMS_Memory_attach","YAML_AMS_Memory_get_field_list","YAML_AMS_Memory_get_field_info"])
 
 if __name__ == '__main__':
     # for pyjd, set up a web server and load the HTML from there:

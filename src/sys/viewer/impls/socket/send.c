@@ -866,6 +866,134 @@ PetscErrorCode YAML_AMS_Comm_get_memory_list(PetscInt argc,char **args,PetscInt 
 }
 EXTERN_C_END
 
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "YAML_AMS_Memory_attach"
+/*
+      Attaches to an AMS memory in a communicator
+
+   Input Parameter:
+.     arg1 - communicator
+.     arg2 - string name of the memory
+
+   Output Parameter:
+.     oarg1 - the integer name of the memory
+.     oarg2 - the integer step of the memory
+
+*/
+PetscErrorCode YAML_AMS_Memory_attach(PetscInt argc,char **args,PetscInt *argco,char ***argso)
+{
+  PetscErrorCode ierr;
+  AMS_Comm       comm;
+  AMS_Memory     mem;
+  unsigned int   step;
+
+  PetscFunctionBegin;
+  sscanf(args[0],"%d",&comm);
+  ierr = AMS_Memory_attach(comm,args[1],&mem,&step);
+  if (ierr) {ierr = PetscInfo1(PETSC_NULL,"AMS_Memory_attach() error %d\n",ierr);CHKERRQ(ierr);}
+  *argco = 2;
+  ierr = PetscMalloc(2*sizeof(char*),argso);CHKERRQ(ierr);
+  ierr = PetscMalloc(3*sizeof(char*),&argso[0][0]);CHKERRQ(ierr);
+  sprintf(argso[0][0],"%d",(int)mem);
+  ierr = PetscMalloc(3*sizeof(char*),&argso[0][1]);CHKERRQ(ierr);
+  sprintf(argso[0][1],"%d",(int)step);
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "YAML_AMS_Memory_get_field_list"
+/*
+      Gets the list of fields on an AMS Memory
+
+   Input Parameter:
+.     arg1 - integer name of the memory
+
+   Output Parameter:
+.     oarg1 - the list of names
+
+*/
+PetscErrorCode YAML_AMS_Memory_get_field_list(PetscInt argc,char **args,PetscInt *argco,char ***argso)
+{
+  PetscErrorCode ierr;
+  char           **field_list;
+  AMS_Memory     mem;
+  PetscInt       i,iargco = 0;
+
+  PetscFunctionBegin;
+  sscanf(args[0],"%d",&mem);
+  ierr = AMS_Memory_get_field_list(mem,&field_list);
+  if (ierr) {
+    ierr = PetscInfo1(PETSC_NULL,"AMS_Memory_get_field_list() error %d\n",ierr);CHKERRQ(ierr);
+  } else {
+    while (field_list[iargco++]) ;
+    iargco--;
+
+    ierr = PetscMalloc((iargco)*sizeof(char*),argso);CHKERRQ(ierr);
+    for (i=0; i<iargco; i++) {
+      ierr = PetscStrallocpy(field_list[i],(*argso)+i);CHKERRQ(ierr);
+    }
+  }
+  *argco = iargco;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+const char *AMS_Data_types[] = {"AMS_DATA_UNDEF","AMS_BOOLEAN","AMS_INT","AMS_FLOAT","AMS_DOUBLE","AMS_STRING","AMS_Data_type","AMS_",0};
+const char *AMS_Memory_types[] = {"AMS_MEMORY_UNDEF","AMS_READ","AMS_WRITE","AMS_Memory_type","AMS_",0};
+const char *AMS_Shared_types[] = {"AMS_SHARED_UNDEF","AMS_COMMON","AMS_REDUCED","AMS_DISTRIBUTED","AMS_Shared_type","AMS_",0};
+const char *AMS_Reduction_types[] = {"AMS_REDUCTION_WHY_NOT_UNDEF?","AMS_SUM","AMS_MAX","AMS_MIN","AMS_REDUCTION_UNDEF","AMS_Reduction_type","AMS_",0};
+
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "YAML_AMS_Memory_get_field_info"
+/*
+      Gets information about a field
+
+   Input Parameter:
+.     arg1 - memory
+.     arg2 - string name of the field
+
+   Output Parameter:
+
+*/
+PetscErrorCode YAML_AMS_Memory_get_field_info(PetscInt argc,char **args,PetscInt *argco,char ***argso)
+{
+  PetscErrorCode     ierr;
+  AMS_Memory         mem;
+  void               *addr;
+  int                len;
+  AMS_Data_type      dtype;
+  AMS_Memory_type    mtype;
+  AMS_Shared_type    stype;
+  AMS_Reduction_type rtype;
+  PetscInt           i;
+
+  PetscFunctionBegin;
+  sscanf(args[0],"%d",&mem);
+  ierr = AMS_Memory_get_field_info(mem,args[1],&addr,&len,&dtype,&mtype,&stype,&rtype);
+  if (ierr) {ierr = PetscInfo1(PETSC_NULL,"AMS_Memory_get_field_info() error %d\n",ierr);CHKERRQ(ierr);}
+  *argco = 4 + len;
+  ierr = PetscMalloc((*argco)*sizeof(char*),argso);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(AMS_Data_types[dtype],&argso[0][0]);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(AMS_Memory_types[mtype],&argso[0][1]);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(AMS_Shared_types[stype],&argso[0][2]);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(AMS_Reduction_types[rtype],&argso[0][3]);CHKERRQ(ierr);
+  for (i=0; i<len; i++) {
+    if (dtype == AMS_STRING) {
+      ierr = PetscStrallocpy(*(const char **)addr,&argso[0][4+i]);CHKERRQ(ierr);
+    } else if (dtype == AMS_DOUBLE) {
+      ierr = PetscMalloc(20*sizeof(char),&argso[0][4+i]);CHKERRQ(ierr);
+      sprintf(argso[0][4+i],"%18.16e",*(double*)addr);
+    } else {
+      ierr = PetscStrallocpy("joe",&argso[0][4+i]);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
 
 #include "yaml.h"
 #undef __FUNCT__
