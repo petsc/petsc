@@ -199,6 +199,7 @@
       call VecGetArray(G,g_v,g_i,ierr)
 
 
+
 !     Compute G(X)
       do i=0,nn-1
          t1 = x_v(x_i+2*i+1) - x_v(x_i+2*i)*x_v(x_i+2*i)
@@ -213,8 +214,8 @@
       call VecRestoreArray(G,g_v,g_i,ierr)
 
       f = ff
-      call PetscLogFlops(nn*15)
-      
+      call PetscLogFlops(nn*15.0d0,ierr)
+
       return
       end
 
@@ -298,7 +299,7 @@
       call MatAssemblyBegin(H,MAT_FINAL_ASSEMBLY,ierr)
       call MatAssemblyEnd(H,MAT_FINAL_ASSEMBLY,ierr)
 
-      call PetscLogFlops(nn*9)
+      call PetscLogFlops(nn*9.0d0,ierr)
 
 !  Set flag to indicate that the Hessian matrix retains an identical
 !  nonzero structure throughout all nonlinear iterations (although the

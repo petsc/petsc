@@ -465,7 +465,7 @@
       call DMLocalToGlobalBegin(dm,localV,INSERT_VALUES,G,ierr)
       call DMLocalToGlobalEnd(dm,localV,INSERT_VALUES,G,ierr)
 
-      call PetscLogFlops(70*xm*ym,ierr)
+      call PetscLogFlops(70.0d0*xm*ym,ierr)
 
       return
       end  !FormFunctionGradient
@@ -746,7 +746,7 @@
       call MatAssemblyBegin(Hessian,MAT_FINAL_ASSEMBLY,ierr)
       call MatAssemblyEnd(Hessian,MAT_FINAL_ASSEMBLY,ierr)
 
-      call PetscLogFlops(199*xm*ym,ierr)
+      call PetscLogFlops(199.0d0*xm*ym,ierr)
 
       return
       end  
