@@ -1751,22 +1751,18 @@ PetscErrorCode TSInterpolate(TS ts,PetscReal t,Vec X)
 #undef __FUNCT__  
 #define __FUNCT__ "TSStep"
 /*@
-   TSStep - Steps the requested number of timesteps.
+   TSStep - Steps one time step
 
    Collective on TS
 
    Input Parameter:
 .  ts - the TS context obtained from TSCreate()
 
-   Output Parameters:
-+  steps - number of iterations until termination
--  ptime - time until termination
-
-   Level: beginner
+   Level: intermediate
 
 .keywords: TS, timestep, solve
 
-.seealso: TSCreate(), TSSetUp(), TSDestroy()
+.seealso: TSCreate(), TSSetUp(), TSDestroy(), TSSolve()
 @*/
 PetscErrorCode  TSStep(TS ts)
 {
