@@ -1,33 +1,12 @@
-TaoInitializeFortran
-
 TRON using MatDiagonalSet -- mpiaij doesn't implement this
-
-bad examples:
-  chwirut1 (pounders)
-
 
 test:
   trust region tolerance
 
-produce test reference output
-compare tests output to reference
-
 replacing default convergence test
-
-MANSEC - do we need more than 1?
 
 finite differences
    add to tests (-tao_fd, -tao_fdgrad, -tao_fd_delta)
-
-Mesh Refinement
- - fd
- - adic?
- - matrix-free
- - examples
-  combustion3
-  ginzland3
-  jbearing3f
-  minsurf3
 
 Levenberg-Marquardt
 POUNDer
@@ -40,8 +19,6 @@ MT linesearch view
 
 Set KSP Monitors
 LMVM options
-What's up with eptorsion2?
-jbearing2_2 -- is bqpip not setting residual right, or fcn comp. wrong?
 Check fortran stubs 
 automatic testing, coverage
 
