@@ -93,7 +93,8 @@ extern PetscClassId  PC_CLASSID;
 
 .seealso: 
 E*/
-typedef enum { PC_LEFT,PC_RIGHT,PC_SYMMETRIC } PCSide;
+typedef enum { PC_SIDE_DEFAULT=-1,PC_LEFT,PC_RIGHT,PC_SYMMETRIC} PCSide;
+#define PC_SIDE_MAX (PC_SYMMETRIC + 1)
 extern const char *PCSides[];
 
 extern PetscErrorCode  PCCreate(MPI_Comm,PC*);

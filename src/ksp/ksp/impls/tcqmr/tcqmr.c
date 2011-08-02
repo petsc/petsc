@@ -185,7 +185,11 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "KSPCreate_TCQMR"
 PetscErrorCode  KSPCreate_TCQMR(KSP ksp)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,1);CHKERRQ(ierr);
   ksp->data                = (void*)0;
   ksp->ops->buildsolution  = KSPDefaultBuildSolution;
   ksp->ops->buildresidual  = KSPDefaultBuildResidual;

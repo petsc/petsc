@@ -45,8 +45,8 @@ struct _p_KSP {
   PetscBool       guess_zero,                  /* flag for whether initial guess is 0 */
                   calc_sings,                  /* calculate extreme Singular Values */
                   guess_knoll;                /* use initial guess of PCApply(ksp->B,b */
-  PCSide          pc_side;                  /* flag for left, right, or symmetric 
-                                      preconditioning */
+  PCSide          pc_side;                  /* flag for left, right, or symmetric preconditioning */
+  PetscInt        normsupporttable[KSP_NORM_MAX][PC_SIDE_MAX]; /* Table of supported norms and pc_side, see KSPSetSupportedNorm() */
   PetscReal       rtol,                     /* relative tolerance */
                   abstol,                     /* absolute tolerance */
                   ttol,                     /* (not set by user)  */
@@ -126,6 +126,7 @@ extern PetscErrorCode KSPMonitor(KSP,PetscInt,PetscReal);
 extern PetscErrorCode KSPDefaultDestroy(KSP);
 extern PetscErrorCode KSPGetVecs(KSP,PetscInt,Vec**,PetscInt,Vec**);
 extern PetscErrorCode KSPDefaultGetWork(KSP,PetscInt);
+extern PetscErrorCode KSPSetUpNorms_Private(KSP);
 
 /*
        These allow the various Krylov methods to apply to either the linear system or its transpose.

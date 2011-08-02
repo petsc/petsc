@@ -30,9 +30,6 @@ static PetscErrorCode KSPSetUp_LSQR(KSP ksp)
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)ksp->pc,PCNONE,&nopreconditioner);CHKERRQ(ierr);
-  if (ksp->pc_side == PC_SYMMETRIC) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"no symmetric preconditioning for KSPLSQR");
-  else if (ksp->pc_side == PC_RIGHT) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"no right preconditioning for KSPLSQR");
- 
   /*  nopreconditioner =PETSC_FALSE; */
 
   lsqr->nwork_m = 2;
@@ -486,10 +483,8 @@ PetscErrorCode  KSPCreate_LSQR(KSP ksp)
   lsqr->se_flg = PETSC_FALSE;
   lsqr->arnorm = 0.0;
   ksp->data                      = (void*)lsqr;
-  if (ksp->pc_side != PC_LEFT) {
-    ierr = PetscInfo(ksp,"WARNING! Setting PC_SIDE for LSQR to left!\n");CHKERRQ(ierr);
-  }
-  ksp->pc_side                   = PC_LEFT;
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
+
   ksp->ops->setup                = KSPSetUp_LSQR;
   ksp->ops->solve                = KSPSolve_LSQR;
   ksp->ops->destroy              = KSPDestroy_LSQR;
@@ -498,7 +493,6 @@ PetscErrorCode  KSPCreate_LSQR(KSP ksp)
   ksp->ops->setfromoptions       = KSPSetFromOptions_LSQR;
   ksp->ops->view                 = KSPView_LSQR;
   ksp->converged                 = KSPLSQRDefaultConverged;
-  ksp->normtype                  = KSP_NORM_UNPRECONDITIONED;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

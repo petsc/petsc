@@ -331,10 +331,6 @@ PetscErrorCode KSPSetUp_QCG(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  /* Check user parameters and functions */
-  if (ksp->pc_side == PC_RIGHT) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"no right preconditioning for QCG");
-  else if (ksp->pc_side == PC_LEFT) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"no left preconditioning for QCG");
-
   /* Get work vectors from user code */
   ierr = KSPDefaultGetWork(ksp,7);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -467,9 +463,9 @@ PetscErrorCode  KSPCreate_QCG(KSP ksp)
   KSP_QCG        *cgP;
 
   PetscFunctionBegin;
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_SYMMETRIC,2);CHKERRQ(ierr);
   ierr = PetscNewLog(ksp,KSP_QCG,&cgP);CHKERRQ(ierr);
   ksp->data                      = (void*)cgP;
-  ksp->pc_side                   = PC_SYMMETRIC;
   ksp->ops->setup                = KSPSetUp_QCG;
   ksp->ops->setfromoptions       = KSPSetFromOptions_QCG;
   ksp->ops->solve                = KSPSolve_QCG;

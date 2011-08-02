@@ -49,7 +49,10 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "KSPCreate_PREONLY"
 PetscErrorCode  KSPCreate_PREONLY(KSP ksp)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,2);CHKERRQ(ierr); /* LEFT is arbitrary */
   ksp->data                      = (void*)0;
   ksp->ops->setup                = KSPSetUp_PREONLY;
   ksp->ops->solve                = KSPSolve_PREONLY;

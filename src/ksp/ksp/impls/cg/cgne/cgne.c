@@ -23,13 +23,6 @@ PetscErrorCode KSPSetUp_CGNE(KSP ksp)
   PetscInt       maxit = ksp->max_it;
 
   PetscFunctionBegin;
-  /* 
-       This implementation of CGNE only handles left preconditioning
-     so generate an error otherwise.
-  */
-  if (ksp->pc_side == PC_RIGHT) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"No right preconditioning for KSPCGNE");
-  else if (ksp->pc_side == PC_SYMMETRIC) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"No symmetric preconditioning for KSPCGNE");
-
   /* get work vectors needed by CGNE */
   ierr = KSPDefaultGetWork(ksp,4);CHKERRQ(ierr);
 
@@ -260,10 +253,9 @@ PetscErrorCode  KSPCreate_CGNE(KSP ksp)
   cg->type                       = KSP_CG_HERMITIAN;
 #endif
   ksp->data                      = (void*)cg;
-  if (ksp->pc_side != PC_LEFT) {
-     ierr = PetscInfo(ksp,"WARNING! Setting PC_SIDE for CGNE to left!\n");CHKERRQ(ierr);
-  }
-  ksp->pc_side                   = PC_LEFT;
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,1);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NATURAL,PC_LEFT,1);CHKERRQ(ierr);
 
   /*
        Sets the functions that are associated with this data structure 

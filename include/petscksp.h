@@ -314,8 +314,9 @@ extern PetscErrorCode  PCRedistributeGetKSP(PC,KSP*);
 .seealso: KSPSolve(), KSPGetConvergedReason(), KSPSetNormType(),
           KSPSetConvergenceTest(), KSPSetPCSide()
 E*/
-typedef enum {KSP_NORM_NONE = 0,KSP_NORM_PRECONDITIONED = 1,KSP_NORM_UNPRECONDITIONED = 2,KSP_NORM_NATURAL = 3} KSPNormType;
-extern const char *KSPNormTypes[];
+typedef enum {KSP_NORM_DEFAULT = -1,KSP_NORM_NONE = 0,KSP_NORM_PRECONDITIONED = 1,KSP_NORM_UNPRECONDITIONED = 2,KSP_NORM_NATURAL = 3} KSPNormType;
+#define KSP_NORM_MAX (KSP_NORM_NATURAL + 1)
+extern const char *const*const KSPNormTypes;
 
 /*MC
     KSP_NORM_NONE - Do not compute a norm during the Krylov process. This will 
@@ -358,6 +359,7 @@ M*/
 
 extern PetscErrorCode  KSPSetNormType(KSP,KSPNormType);
 extern PetscErrorCode  KSPGetNormType(KSP,KSPNormType*);
+extern PetscErrorCode  KSPSetSupportedNorm(KSP ksp,KSPNormType,PCSide,PetscInt);
 extern PetscErrorCode  KSPSetCheckNormIteration(KSP,PetscInt);
 extern PetscErrorCode  KSPSetLagNorm(KSP,PetscBool );
 
