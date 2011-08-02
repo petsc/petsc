@@ -295,7 +295,7 @@ PetscErrorCode  PCFactorSetMatSolverPackage(PC pc,const MatSolverPackage stype)
 .  pc - the preconditioner context
 
    Output Parameter:
-.   stype - for example, spooles, superlu, superlu_dist
+.   stype - for example, spooles, superlu, superlu_dist (PETSC_NULL if the PC does not have a solver package)
 
    Level: intermediate
 
@@ -307,11 +307,16 @@ PetscErrorCode  PCFactorSetMatSolverPackage(PC pc,const MatSolverPackage stype)
 @*/
 PetscErrorCode  PCFactorGetMatSolverPackage(PC pc,const MatSolverPackage *stype)
 {
-  PetscErrorCode ierr;
+  PetscErrorCode ierr,(*f)(PC,const MatSolverPackage*);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  ierr = PetscTryMethod(pc,"PCFactorGetMatSolverPackage_C",(PC,const MatSolverPackage*),(pc,stype));CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCFactorGetMatSolverPackage_C",(void(**)(void))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(pc,stype);CHKERRQ(ierr);
+  } else {
+    *stype = PETSC_NULL;
+  }
   PetscFunctionReturn(0);
 }
 
