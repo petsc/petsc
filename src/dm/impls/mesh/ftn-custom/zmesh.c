@@ -17,6 +17,8 @@
 #define dmmeshgetsectionreal_       DMMESHGETSECTIONREAL
 #define dmmeshgetsectionint_        DMMESHGETSECTIONINT
 #define dmmeshcreatematrix_         DMMESHCREATEMATRIX
+#define dmmeshcreatesection_        DMMESHCREATESECTION
+#define dmmeshsetsection_           DMMESHSETSECTION
 #define alestagepush_               ALESTAGEPUSH
 #define alestagepop_                ALESTAGEPOP
 #define alestageprintmemory_        ALESTAGEPRINTMEMORY
@@ -36,6 +38,8 @@
 #define dmmeshgetsectionreal_        dmmeshgetsectionreal
 #define dmmeshgetsectionint_         dmmeshgetsectionint
 #define dmmeshcreatematrix_          dmmeshcreatematrix
+#define dmmeshcreatesection_         dmmeshcreatesection
+#define dmmeshsetsection_            dmmeshsetsection
 #define alestagepush_                alestagepush
 #define alestagepop_                 alestagepop
 #define alestageprintmemory_         alestageprintmemory
@@ -152,6 +156,20 @@ void PETSC_STDCALL  dmmeshcreatematrix_(DM *mesh, SectionReal *section, CHAR mat
   FIXCHAR(mattype,lenN,pN);
   *ierr = DMMeshCreateMatrix(*mesh, *section, pN, J);
   FREECHAR(mattype,pN);
+}
+
+void PETSC_STDCALL  dmmeshcreatesection_(DM *mesh, PetscInt *dim, PetscInt numDof[], CHAR bcLabel PETSC_MIXED_LEN(lenN), PetscInt *marker, PetscSection *section, int *ierr PETSC_END_LEN(lenN)){
+  char *pN;
+  FIXCHAR(bcLabel,lenN,pN);
+  *ierr = DMMeshCreateSection(*mesh, *dim, numDof, pN, *marker, section);
+  FREECHAR(bcLabel,pN);
+}
+
+void PETSC_STDCALL  dmmeshsetsection_(DM *mesh, CHAR name PETSC_MIXED_LEN(lenN), PetscSection *section, int *ierr PETSC_END_LEN(lenN)){
+  char *pN;
+  FIXCHAR(name,lenN,pN);
+  *ierr = DMMeshSetSection(*mesh, pN, *section);
+  FREECHAR(name,pN);
 }
 
 void PETSC_STDCALL  alestagepush_(CHAR name PETSC_MIXED_LEN(lenN), PetscInt *debug, int *ierr PETSC_END_LEN(lenN)){

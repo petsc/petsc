@@ -667,6 +667,34 @@ PetscErrorCode DMMeshInterpolatePoints(DM dm, SectionReal section, int numPoints
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMMeshGetDimension"
+/*@
+  DMMeshGetDimension - Return the topological mesh dimension
+
+  Collective on mesh
+
+  Input Parameter:
+. mesh - The DMMesh
+
+  Output Parameter:
+. dim - The topological mesh dimension
+
+  Level: beginner
+
+.seealso: DMMeshCreate()
+@*/
+PetscErrorCode DMMeshGetDimension(DM dm, PetscInt *dim)
+{
+  Obj<PETSC_MESH_TYPE> m;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
+  *dim = m->getDimension();
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMMeshGetMaximumDegree"
 /*@C
   DMMeshGetMaximumDegree - Return the maximum degree of any mesh vertex

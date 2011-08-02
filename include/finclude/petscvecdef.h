@@ -10,6 +10,7 @@
 #if !defined(PETSC_USE_FORTRAN_DATATYPES)
 #define Vec PetscFortranAddr
 #define VecScatter PetscFortranAddr
+#define PetscSection PetscFortranAddr
 #endif
 
 #define NormType PetscEnum
