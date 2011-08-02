@@ -35,7 +35,7 @@ if __name__=="__main__":
                 sys.stdout.write(e)
                 sys.stdout.write("** Error running %s. **\n\n" % ex.name)
             else:
-                goodname = os.path.join('output',ex.name)
+                goodname = os.path.join('output',ex.name+".out" )
                 if (not os.access(goodname,os.R_OK)):
                     sys.stderr.write("Error: Could not find file %s\n" % goodname)
                 else:
