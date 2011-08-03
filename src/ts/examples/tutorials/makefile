@@ -103,6 +103,10 @@ ex20: ex20.o  chkopts
 	-${CLINKER} -o ex20 ex20.o  ${PETSC_TS_LIB}
 	${RM} ex20.o
 
+ex21: ex21.o util2.o chkopts
+	-${CLINKER} -o ex21 ex21.o util2.o ${PETSC_TS_LIB}
+	${RM} ex21.o util2.o
+
 #---------------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 1 ./ex1 -ksp_gmres_cgs_refinement_type refine_always -snes_type ls -ts_monitor_pseudo > ex1_1.tmp 2>&1;	  \
