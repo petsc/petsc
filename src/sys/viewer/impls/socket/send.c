@@ -1015,8 +1015,8 @@ PetscErrorCode PetscProcessYAMLRPC(const char* request,char **result)
   int            count = 0;
   size_t         len;
   PetscErrorCode ierr;
-  PetscBool      method,params;
-  char           *methodname,**args,**argso = 0;
+  PetscBool      method,params,id;
+  char           *methodname,*idname,**args,**argso = 0;
   PetscInt       argc = 0,argco,i;
   PetscErrorCode (*fun)(PetscInt,char **,PetscInt*,char ***);
 
@@ -1059,11 +1059,17 @@ PetscErrorCode PetscProcessYAMLRPC(const char* request,char **result)
       ierr = PetscInfo1(PETSC_NULL,"Scalar event %s\n",event.data.scalar.value);CHKERRQ(ierr);
       ierr = PetscStrcmp((char*)event.data.scalar.value,"method",&method);CHKERRQ(ierr);
       ierr = PetscStrcmp((char*)event.data.scalar.value,"params",&params);CHKERRQ(ierr);
+      ierr = PetscStrcmp((char*)event.data.scalar.value,"id",&id);CHKERRQ(ierr);
       if (method) {
         yaml_event_delete(&event);
         ierr = yaml_parser_parse(&parser, &event);CHKERRQ(!ierr);
         ierr = PetscInfo1(PETSC_NULL,"Method %s\n",event.data.scalar.value);CHKERRQ(ierr);
         ierr = PetscStrallocpy((char*)event.data.scalar.value,&methodname);CHKERRQ(ierr);
+      } else if (id) {
+        yaml_event_delete(&event);
+        ierr = yaml_parser_parse(&parser, &event);CHKERRQ(!ierr);
+        ierr = PetscInfo1(PETSC_NULL,"Id %s\n",event.data.scalar.value);CHKERRQ(ierr);
+        ierr = PetscStrallocpy((char*)event.data.scalar.value,&idname);CHKERRQ(ierr);
       } else if (params) {
         yaml_event_delete(&event);
         ierr = yaml_parser_parse(&parser, &event);CHKERRQ(!ierr);
@@ -1112,7 +1118,9 @@ PetscErrorCode PetscProcessYAMLRPC(const char* request,char **result)
 
   /* convert the result back to YAML; should use YAML encoder, does not handle zero return arguments */
   ierr = PetscMalloc(1024,result);CHKERRQ(ierr);
-  ierr = PetscStrcpy(*result,"{\"error\": null, \"id\": 0, \"result\" : ");CHKERRQ(ierr);
+  ierr = PetscStrcpy(*result,"{\"error\": null, \"id\": \"");CHKERRQ(ierr);
+  ierr = PetscStrcat(*result,idname);CHKERRQ(ierr);
+  ierr = PetscStrcat(*result,"\", \"result\" : ");CHKERRQ(ierr);
   if (argco > 1) {ierr = PetscStrcat(*result,"[");CHKERRQ(ierr);}
   for (i=0; i<argco; i++) {
     ierr = PetscStrcat(*result,"\"");CHKERRQ(ierr);
@@ -1125,6 +1133,7 @@ PetscErrorCode PetscProcessYAMLRPC(const char* request,char **result)
   ierr = PetscInfo1(PETSC_NULL,"YAML result of function %s\n",*result);CHKERRQ(ierr);
 
   /* free work space */
+  ierr = PetscFree(idname);CHKERRQ(ierr);
   for (i=0; i<argco; i++) {
     ierr = PetscFree(argso[i]);CHKERRQ(ierr);
   }

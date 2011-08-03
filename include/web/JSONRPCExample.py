@@ -40,13 +40,13 @@ class JSONRPCExample:
         <p>This example demonstrates the calling of AMS server in PETSc with <a href="http://json-rpc.org/">JSON-RPC</a>.
         </p>"""
         
-        panel = VerticalPanel()
-        panel.add(HTML(info))
-        panel.add(self.text_area)
-        panel.add(buttons)
-        panel.add(self.status)
+        self.panel = VerticalPanel()
+        self.panel.add(HTML(info))
+        self.panel.add(buttons)
+        self.panel.add(self.status)
         
-        RootPanel().add(panel)
+        RootPanel().add(self.panel)
+        self.panel.add(self.text_area)
 
     def onClick(self, sender):
         self.status.setText(self.TEXT_WAITING)
@@ -68,15 +68,20 @@ class JSONRPCExample:
             id = self.remote_py.YAML_AMS_Comm_get_memory_list(comm,self)
         elif method == "YAML_AMS_Comm_get_memory_list":
             memlist = response
-            id = self.remote_py.YAML_AMS_Memory_attach(comm,memlist[0],self)
+            for i in memlist:
+                id = self.remote_py.YAML_AMS_Memory_attach(comm,i,self)
         elif method == "YAML_AMS_Memory_attach":
             memory = response[0]
             step   = response[1]
             id = self.remote_py.YAML_AMS_Memory_get_field_list(memory,self)
         elif method == "YAML_AMS_Memory_get_field_list":
-            id = self.remote_py.YAML_AMS_Memory_get_field_info(memory,response[0],self)
+            for i in response:
+                id = self.remote_py.YAML_AMS_Memory_get_field_info(memory,i,self)
         elif method == "YAML_AMS_Memory_get_field_info":
-            pass
+            newstatus=Label()
+            newstatus.setText(response)
+            self.panel.add(newstatus)
+
 
 
 
