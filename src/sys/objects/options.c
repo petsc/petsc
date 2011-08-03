@@ -541,7 +541,7 @@ static PetscErrorCode PetscOptionsInsertArgs_Private(int argc,char *args[])
     } else {
       PetscBool nextiskey = PETSC_FALSE;
       if (left >= 2) {ierr = PetscOptionsValidKey(eargs[1],&nextiskey);CHKERRQ(ierr);}
-      if (nextiskey) {
+      if (left < 2 || nextiskey) {
         ierr = PetscOptionsSetValue(eargs[0],PETSC_NULL);CHKERRQ(ierr);
         eargs++; left--;
       } else {
