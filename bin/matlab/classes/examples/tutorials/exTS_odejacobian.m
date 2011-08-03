@@ -1,4 +1,4 @@
-function [flg,err] = odejacobian(ts,time,x,xdot,shift,A,B,ctx)
+function [flg,err] = exTS_odejacobian(ts,time,x,xdot,shift,A,B,ctx)
 %
 %  Example of a nonlinear Jacobian needed by TS
 %  Use identity as approximation for Jacobian

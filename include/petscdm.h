@@ -104,6 +104,7 @@ M*/
 #endif
 
 extern PetscErrorCode   DMView(DM,PetscViewer);
+extern PetscErrorCode   DMLoad(DM,PetscViewer);
 extern PetscErrorCode   DMDestroy(DM*);
 extern PetscErrorCode   DMCreateGlobalVector(DM,Vec*);
 extern PetscErrorCode   DMCreateLocalVector(DM,Vec*);
@@ -162,5 +163,6 @@ extern PetscErrorCode  PetscViewerBinaryMatlabOutputBag(PetscViewer, const char 
 extern PetscErrorCode  PetscViewerBinaryMatlabOutputVec(PetscViewer, const char [], Vec);
 extern PetscErrorCode  PetscViewerBinaryMatlabOutputVecDA(PetscViewer, const char [], Vec, DM);
 
+#define DM_FILE_CLASSID 1211221
 PETSC_EXTERN_CXX_END
 #endif

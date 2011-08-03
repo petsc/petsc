@@ -12,8 +12,6 @@ PetscErrorCode KSPSetUp_SYMMLQ(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (ksp->pc_side == PC_RIGHT) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"No right preconditioning for KSPSYMMLQ");
-  else if (ksp->pc_side == PC_SYMMETRIC) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"No symmetric preconditioning for KSPSYMMLQ");
   ierr = KSPDefaultGetWork(ksp,9);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -216,10 +214,7 @@ PetscErrorCode  KSPCreate_SYMMLQ(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (ksp->pc_side != PC_LEFT) {
-     ierr = PetscInfo(ksp,"WARNING! Setting PC_SIDE for SYMMLQ to left!\n");CHKERRQ(ierr);
-  }
-  ksp->pc_side   = PC_LEFT;
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
   ierr           = PetscNewLog(ksp,KSP_SYMMLQ,&symmlq);CHKERRQ(ierr);
   symmlq->haptol = 1.e-18;
   ksp->data      = (void*)symmlq;

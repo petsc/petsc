@@ -190,6 +190,7 @@ PetscErrorCode  KSPSetUp(KSP ksp)
   if (!((PetscObject)ksp)->type_name){
     ierr = KSPSetType(ksp,KSPGMRES);CHKERRQ(ierr);
   }
+  ierr = KSPSetUpNorms_Private(ksp);CHKERRQ(ierr);
 
   if (ksp->dmActive && !ksp->setupstage) {
     /* first time in so build matrix and vector data structures using DM */
@@ -834,9 +835,12 @@ PetscErrorCode  KSPSetPCSide(KSP ksp,PCSide side)
 @*/
 PetscErrorCode  KSPGetPCSide(KSP ksp,PCSide *side) 
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
   PetscValidPointer(side,2);
+  ierr = KSPSetUpNorms_Private(ksp);CHKERRQ(ierr);
   *side = ksp->pc_side;
   PetscFunctionReturn(0);
 }

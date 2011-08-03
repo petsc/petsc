@@ -55,5 +55,7 @@ extern PetscErrorCode  PetscBagSetViewer(PetscBag,PetscErrorCode (*)(PetscBag,Pe
 extern PetscErrorCode  PetscBagSetLoader(PetscBag,PetscErrorCode (*)(PetscBag,PetscViewer));
 extern PetscErrorCode  PetscBagSetDestroy(PetscBag,PetscErrorCode (*)(PetscBag));
 
+#define PETSC_BAG_FILE_CLASSID 1211219
+
 PETSC_EXTERN_CXX_END
 #endif

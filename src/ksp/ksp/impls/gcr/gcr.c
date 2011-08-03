@@ -151,8 +151,6 @@ PetscErrorCode KSPSetUp_GCR( KSP ksp )
   PetscBool      diagonalscale;
 
   PetscFunctionBegin;
-  if (ksp->pc_side == PC_LEFT) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"No left preconditioning for GCR");
-  else if (ksp->pc_side == PC_SYMMETRIC) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"No symmetric preconditioning for GCR");
   ierr    = PCGetDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
   if (diagonalscale) SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
 
@@ -376,10 +374,7 @@ PetscErrorCode KSPCreate_GCR(KSP ksp)
   ctx->restart                   = 30;
   ctx->n_restarts                = 0;
   ksp->data                      = (void*)ctx;
-  if (ksp->pc_side != PC_RIGHT) {
-     ierr = PetscInfo(ksp,"WARNING! Setting PC_SIDE for GCR to right!\n");CHKERRQ(ierr);
-  }
-  ksp->pc_side                   = PC_RIGHT;
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,2);CHKERRQ(ierr);
 
   ksp->ops->setup                = KSPSetUp_GCR;
   ksp->ops->solve                = KSPSolve_GCR;

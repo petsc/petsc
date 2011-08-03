@@ -210,6 +210,85 @@ PetscErrorCode  KSPSetLagNorm(KSP ksp,PetscBool  flg)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "KSPSetSupportedNorm"
+/*@
+   KSPSetSupportedNorm - Sets a norm and preconditioner side supported by a KSP
+
+   Logically Collective
+
+   Input Arguments:
++  ksp - Krylov method
+.  normtype - supported norm type
+.  pcside - preconditioner side that can be used with this norm
+-  preference - integer preference for this combination, larger values have higher priority
+
+   Level: developer
+
+   Notes:
+   This function should be called from the implementation files KSPCreate_XXX() to declare
+   which norms and preconditioner sides are supported. Users should not need to call this
+   function.
+
+   KSP_NORM_NONE is supported by default with all KSP methods and any PC side. If a KSP explicitly does not support
+   KSP_NORM_NONE, it should set this by setting priority=0.
+
+.seealso: KSPSetNormType(), KSPSetPCSide()
+@*/
+PetscErrorCode KSPSetSupportedNorm(KSP ksp,KSPNormType normtype,PCSide pcside,PetscInt priority)
+{
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
+  ksp->normsupporttable[normtype][pcside] = priority;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "KSPNormSupportTableReset_Private"
+PetscErrorCode KSPNormSupportTableReset_Private(KSP ksp)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscMemzero(ksp->normsupporttable,sizeof ksp->normsupporttable);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,1);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_RIGHT,1);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "KSPSetUpNorms_Private"
+PetscErrorCode KSPSetUpNorms_Private(KSP ksp)
+{
+  PetscInt i,j,best,ibest,jbest;
+
+  PetscFunctionBegin; 
+  best = 0;
+  for (i=0; i<KSP_NORM_MAX; i++) {
+    for (j=0; j<PC_SIDE_MAX; j++) {
+      if ((ksp->normtype == KSP_NORM_DEFAULT || ksp->normtype == i)
+          && (ksp->pc_side == PC_SIDE_DEFAULT || ksp->pc_side == j)
+          && (ksp->normsupporttable[i][j] > best)) {
+        if (ksp->normtype == KSP_NORM_DEFAULT && i == KSP_NORM_NONE && ksp->normsupporttable[i][j] <= 1)
+          continue; /* Skip because we don't want to default to no norms unless set by the KSP (preonly). */
+        best = ksp->normsupporttable[i][j];
+        ibest = i;
+        jbest = j;
+      }
+    }
+  }
+  if (best < 1) {
+    if (ksp->normtype == KSP_NORM_DEFAULT && ksp->pc_side == PC_SIDE_DEFAULT) SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_PLIB,"The %s KSP implementation did not call KSPSetSupportedNorm()",((PetscObject)ksp)->type_name);
+    if (ksp->normtype == KSP_NORM_DEFAULT) SETERRQ2(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"KSP %s does not support %s",((PetscObject)ksp)->type_name,PCSides[ksp->pc_side]);
+    if (ksp->pc_side == PC_SIDE_DEFAULT) SETERRQ2(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"KSP %s does not support %s",((PetscObject)ksp)->type_name,KSPNormTypes[ksp->normtype]);
+    SETERRQ3(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"KSP %s does not support %s with %s",((PetscObject)ksp)->type_name,KSPNormTypes[ksp->normtype],PCSides[ksp->pc_side]);
+  }
+  ksp->normtype = (KSPNormType)ibest;
+  ksp->pc_side = (PCSide)jbest;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "KSPGetNormType"
 /*@
    KSPGetNormType - Gets the norm that is used for convergence testing.
@@ -228,10 +307,14 @@ PetscErrorCode  KSPSetLagNorm(KSP ksp,PetscBool  flg)
 
 .seealso: KSPNormType, KSPSetNormType(), KSPSkipConverged()
 @*/
-PetscErrorCode  KSPGetNormType(KSP ksp, KSPNormType *normtype) {
+PetscErrorCode  KSPGetNormType(KSP ksp, KSPNormType *normtype)
+{
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_CLASSID,1);
-  PetscValidPointer(normtype, 2);
+  PetscValidPointer(normtype,2);
+  ierr = KSPSetUpNorms_Private(ksp);CHKERRQ(ierr);
   *normtype = ksp->normtype;
   PetscFunctionReturn(0);
 }
@@ -474,13 +557,13 @@ PetscErrorCode  KSPCreate(MPI_Comm comm,KSP *inksp)
   ierr = PetscHeaderCreate(ksp,_p_KSP,struct _KSPOps,KSP_CLASSID,-1,"KSP",comm,KSPDestroy,KSPView);CHKERRQ(ierr);
 
   ksp->max_it        = 10000;
-  ksp->pc_side       = PC_LEFT;
+  ksp->pc_side       = PC_SIDE_DEFAULT;
   ksp->rtol          = 1.e-5;
   ksp->abstol        = 1.e-50;
   ksp->divtol        = 1.e4;
-  
+
   ksp->chknorm             = -1;
-  ksp->normtype            = KSP_NORM_PRECONDITIONED;
+  ksp->normtype            = KSP_NORM_DEFAULT;
   ksp->rnorm               = 0.0;
   ksp->its                 = 0;
   ksp->guess_zero          = PETSC_TRUE;
@@ -508,6 +591,8 @@ PetscErrorCode  KSPCreate(MPI_Comm comm,KSP *inksp)
   ksp->work            = 0;
   ksp->reason          = KSP_CONVERGED_ITERATING;
   ksp->setupstage      = KSP_SETUP_NEW;
+
+  ierr = KSPNormSupportTableReset_Private(ksp);CHKERRQ(ierr);
 
   *inksp = ksp;
   PetscFunctionReturn(0);
@@ -571,6 +656,7 @@ PetscErrorCode  KSPSetType(KSP ksp, const KSPType type)
   ierr = PetscMemzero(ksp->ops,sizeof(struct _KSPOps));CHKERRQ(ierr);
   ksp->ops->buildsolution = KSPDefaultBuildSolution;
   ksp->ops->buildresidual = KSPDefaultBuildResidual;
+  ierr = KSPNormSupportTableReset_Private(ksp);CHKERRQ(ierr);
   /* Call the KSPCreate_XXX routine for this particular Krylov solver */
   ksp->setupstage = KSP_SETUP_NEW;
   ierr = PetscObjectChangeTypeName((PetscObject)ksp,type);CHKERRQ(ierr);

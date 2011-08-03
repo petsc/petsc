@@ -26,6 +26,7 @@ extern PetscErrorCode DMMeshDistributeByFace(DM, const char[], DM*);
 extern PetscErrorCode DMMeshGenerate(DM, PetscBool , DM *);
 extern PetscErrorCode DMMeshRefine(DM, double, PetscBool , DM*);
 extern PetscErrorCode DMMeshLoad(PetscViewer, DM);
+extern PetscErrorCode DMMeshGetDimension(DM, PetscInt *);
 extern PetscErrorCode DMMeshGetMaximumDegree(DM, PetscInt *);
 
 extern PetscErrorCode DMMeshGetLabelSize(DM, const char[], PetscInt *);

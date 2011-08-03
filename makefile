@@ -22,7 +22,7 @@ include ${PETSC_DIR}/conf/test
 all:
 	@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} chkpetsc_dir
 	@if [ "${PETSC_BUILD_USING_CMAKE}" != "" ]; then \
-           echo "Building PETSc using CMake"; \
+           echo "Building PETSc using CMake with ${MAKE_NP} build threads"; \
 	   ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} all-cmake; \
 	 else \
 	   ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} all-legacy; \
@@ -39,7 +39,7 @@ all:
 	 fi
 
 all-cmake:
-	@${OMAKE} -j3 -C ${PETSC_DIR}/${PETSC_ARCH} VERBOSE=1 2>&1 | tee ${PETSC_ARCH}/conf/make.log \
+	@${OMAKE} -j ${MAKE_NP} -C ${PETSC_DIR}/${PETSC_ARCH} VERBOSE=1 2>&1 | tee ${PETSC_ARCH}/conf/make.log \
 	          | egrep -v '( --check-build-system |cmake -E | -o CMakeFiles/petsc[[:lower:]]*.dir/| -o lib/libpetsc|CMakeFiles/petsc[[:lower:]]*\.dir/(build|depend|requires)|-f CMakeFiles/Makefile2|Dependee .* is newer than depender |provides\.build. is up to date)'
 
 all-legacy:

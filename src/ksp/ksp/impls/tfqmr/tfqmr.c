@@ -152,7 +152,11 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "KSPCreate_TFQMR"
 PetscErrorCode  KSPCreate_TFQMR(KSP ksp)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,1);CHKERRQ(ierr);
   ksp->data                      = (void*)0;
   ksp->ops->setup                = KSPSetUp_TFQMR;
   ksp->ops->solve                = KSPSolve_TFQMR;

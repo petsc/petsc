@@ -436,19 +436,17 @@ PetscErrorCode DMCreateLocalToGlobalMapping_Mesh(DM dm)
   ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
   ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
   const ALE::Obj<PETSC_MESH_TYPE::order_type>& globalOrder = m->getFactory()->getGlobalOrder(m, s->getName(), s);
-  const ALE::Obj<PETSC_MESH_TYPE::order_type>& localOrder  = m->getFactory()->getLocalOrder(m, s->getName(), s);
   PetscInt *ltog;
 
-  ierr = PetscMalloc(localOrder->getLocalSize() * sizeof(PetscInt), &ltog);CHKERRQ(ierr);
-  for(PetscInt p = s->getChart().min(); p <= s->getChart().max(); ++p) {
-    PetscInt l = localOrder->getIndex(p);
+  ierr = PetscMalloc(s->size() * sizeof(PetscInt), &ltog);CHKERRQ(ierr); // We want the local+overlap size
+  for(PetscInt p = s->getChart().min(), l = 0; p < s->getChart().max(); ++p) {
     PetscInt g = globalOrder->getIndex(p);
 
-    for(PetscInt c = 0; c < s->getConstrainedFiberDimension(p); ++c) {
-      ltog[l+c] = g+c;
+    for(PetscInt c = 0; c < s->getConstrainedFiberDimension(p); ++c, ++l) {
+      ltog[l] = g+c;
     }
   }
-  ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF, localOrder->getLocalSize(), ltog, PETSC_OWN_POINTER, &dm->ltogmap);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF, s->size(), ltog, PETSC_OWN_POINTER, &dm->ltogmap);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(dm, dm->ltogmap);CHKERRQ(ierr);
   ierr = SectionRealDestroy(&section);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -665,6 +663,34 @@ PetscErrorCode DMMeshInterpolatePoints(DM dm, SectionReal section, int numPoints
     }
   }
   ierr = PetscFree3(v0, J, invJ);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMMeshGetDimension"
+/*@
+  DMMeshGetDimension - Return the topological mesh dimension
+
+  Collective on mesh
+
+  Input Parameter:
+. mesh - The DMMesh
+
+  Output Parameter:
+. dim - The topological mesh dimension
+
+  Level: beginner
+
+.seealso: DMMeshCreate()
+@*/
+PetscErrorCode DMMeshGetDimension(DM dm, PetscInt *dim)
+{
+  Obj<PETSC_MESH_TYPE> m;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
+  *dim = m->getDimension();
   PetscFunctionReturn(0);
 }
 

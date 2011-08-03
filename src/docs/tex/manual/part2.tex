@@ -6753,6 +6753,32 @@ It is also possible to use GNU Global with Vim, see the description for Emacs ab
 
 If you are interested in developing code that uses PETSc from Eclipse or developing PETSc in Eclipse and have knowledge of how to do indexing and build libraries in Eclipse please contact us at \trl{petsc-dev@mcs.anl.gov}.
 
+To allow an Eclipse code to compile with the PETSc include files and link with the PETSc libraries someone has suggested
+To do this, click on your managed C project with the right sided mouse button, select
+
+Properties -> C/C++ Build -> Settings
+
+Then you get a new window with on the right hand side the various setting options.
+
+Select Includes, and add the required PETSc paths. In my case I have added
+\begin{verbatim}
+${PETSC_DIR}/include
+${PETSC_DIR}/${PETSC_ARCH}/include
+\end{verbatim}
+
+Then select "Libraries" under the header Linker
+and you should set the Library search path:
+\begin{verbatim}
+${PETSC_DIR}/${PETSC_ARCH}/lib
+\end{verbatim}
+
+
+and then the libraries, in my case:
+\begin{verbatim}
+m, petsc, stdc++, mpichxx, mpich, lapack, blas, gfortran, dl, rt,gcc_s, pthread, X11
+\end{verbatim}
+
+
 To make PETSc an Eclipse package
 \begin{itemize}
 \item Install the Mecurial plugin for Eclipse and then import the PETSc repository to Eclipse.

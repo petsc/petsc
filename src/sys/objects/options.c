@@ -13,6 +13,7 @@
 */
 
 #include <petscsys.h>        /*I  "petscsys.h"   I*/
+#include <ctype.h>
 #if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
@@ -247,7 +248,8 @@ PetscErrorCode  PetscOptionsValidKey(const char in_str[],PetscBool  *key)
   *key = PETSC_FALSE;
   if (!in_str) PetscFunctionReturn(0);
   if (in_str[0] != '-') PetscFunctionReturn(0);
-  if ((in_str[1] < 'A') || (in_str[1] > 'z')) PetscFunctionReturn(0);
+  if (!(isalpha(in_str[1]))) PetscFunctionReturn(0);
+  if ((strncmp(in_str+1,"inf",3) || strncmp(in_str+1,"INF",3)) && !(in_str[4] == '_' || isalnum(in_str[4]))) PetscFunctionReturn(0);
   *key = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -536,13 +538,16 @@ static PetscErrorCode PetscOptionsInsertArgs_Private(int argc,char *args[])
       eargs += 1; left -= 1;
     } else if (isp4 || isp4yourname) {
       eargs += 2; left -= 2;
-    } else if ((left < 2) || ((eargs[1][0] == '-') &&
-                              ((eargs[1][1] > '9') || (eargs[1][1] < '0')))) {
-      ierr = PetscOptionsSetValue(eargs[0],PETSC_NULL);CHKERRQ(ierr);
-      eargs++; left--;
     } else {
-      ierr = PetscOptionsSetValue(eargs[0],eargs[1]);CHKERRQ(ierr);
-      eargs += 2; left -= 2;
+      PetscBool nextiskey = PETSC_FALSE;
+      if (left >= 2) {ierr = PetscOptionsValidKey(eargs[1],&nextiskey);CHKERRQ(ierr);}
+      if (nextiskey) {
+        ierr = PetscOptionsSetValue(eargs[0],PETSC_NULL);CHKERRQ(ierr);
+        eargs++; left--;
+      } else {
+        ierr = PetscOptionsSetValue(eargs[0],eargs[1]);CHKERRQ(ierr);
+        eargs += 2; left -= 2;
+      }
     }
   }
   PetscFunctionReturn(0);
