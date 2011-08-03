@@ -362,11 +362,15 @@ PetscErrorCode VecGetSubVec(Vec vfull, IS is, Vec *vreduced)
 	ierr = VecDuplicate(vfull,vreduced); CHKERRQ(ierr);
 	ierr = VecCopy(vfull,*vreduced); CHKERRQ(ierr);
     } else {
+      
 	ierr = VecGetType(vfull,&vtype); CHKERRQ(ierr);
 	ierr = VecGetOwnershipRange(vfull,&flow,&fhigh); CHKERRQ(ierr);
 	nfull_local = fhigh - flow;
 	ierr = ISGetLocalSize(is,&nreduced_local); CHKERRQ(ierr);
 	ierr = PetscObjectGetComm((PetscObject)vfull,&comm); CHKERRQ(ierr);
+	if (*vreduced) {
+	  ierr = VecDestroy(vreduced); CHKERRQ(ierr);
+	}
 	ierr = VecCreate(comm,vreduced); CHKERRQ(ierr);
 	ierr = VecSetType(*vreduced,vtype); CHKERRQ(ierr);
 	ierr = VecSetSizes(*vreduced,nreduced_local,nreduced); CHKERRQ(ierr);
@@ -377,6 +381,7 @@ PetscErrorCode VecGetSubVec(Vec vfull, IS is, Vec *vreduced)
 	ierr = VecScatterCreate(vfull,is,*vreduced,ident,&scatter); CHKERRQ(ierr);
 	ierr = VecScatterBegin(scatter,vfull,*vreduced,INSERT_VALUES,SCATTER_FORWARD); CHKERRQ(ierr);
 	ierr = VecScatterEnd(scatter,vfull,*vreduced,INSERT_VALUES,SCATTER_FORWARD); CHKERRQ(ierr);
+	ierr = VecScatterDestroy(&scatter); CHKERRQ(ierr);
 	ierr = ISDestroy(&ident); CHKERRQ(ierr);
     }
     PetscFunctionReturn(0);
@@ -409,6 +414,7 @@ PetscErrorCode VecReducedXPY(Vec vfull, Vec vreduced, IS is)
 	ierr = VecScatterCreate(vreduced,ident,vfull,is,&scatter); CHKERRQ(ierr);
 	ierr = VecScatterBegin(scatter,vreduced,vfull,ADD_VALUES,SCATTER_FORWARD); CHKERRQ(ierr);
 	ierr = VecScatterEnd(scatter,vreduced,vfull,ADD_VALUES,SCATTER_FORWARD); CHKERRQ(ierr);
+	ierr = VecScatterDestroy(&scatter); CHKERRQ(ierr);
 	ierr = ISDestroy(&ident); CHKERRQ(ierr);
     }
     

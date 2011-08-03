@@ -31,35 +31,14 @@ static PetscErrorCode TaoSolverDestroy_GPCG(TaoSolver tao)
   /* Free allocated memory in GPCG structure */
   PetscFunctionBegin;
   
-  if (gpcg->X_New) {
-    ierr = VecDestroy(&gpcg->X_New);CHKERRQ(ierr);
-  }
-  if (gpcg->G_New) {
-    ierr = VecDestroy(&gpcg->G_New);CHKERRQ(ierr);
-  }
-  if (gpcg->Work) {
-    ierr = VecDestroy(&gpcg->Work);CHKERRQ(ierr);
-  }
-  if (gpcg->DXFree) {
-    ierr = VecDestroy(&gpcg->DXFree);CHKERRQ(ierr);
-  }
-  if (gpcg->R) {
-    ierr = VecDestroy(&gpcg->R);CHKERRQ(ierr);
-  }
-  if (gpcg->B) {
-    ierr = VecDestroy(&gpcg->B);CHKERRQ(ierr);
-  }
-  if (gpcg->PG) {
-    ierr = VecDestroy(&gpcg->PG);CHKERRQ(ierr);
-  }
-  
-  if (tao->ksp) {
-    ierr = KSPDestroy(&tao->ksp); CHKERRQ(ierr);
-    tao->ksp = 0;
-  }
-  if (gpcg->Free_Local) {
-    ierr = ISDestroy(&gpcg->Free_Local);CHKERRQ(ierr);
-  }
+  ierr = VecDestroy(&gpcg->B);CHKERRQ(ierr);
+  ierr = VecDestroy(&gpcg->Work);CHKERRQ(ierr);
+  ierr = VecDestroy(&gpcg->X_New);CHKERRQ(ierr);
+  ierr = VecDestroy(&gpcg->G_New);CHKERRQ(ierr);
+  ierr = VecDestroy(&gpcg->DXFree);CHKERRQ(ierr);
+  ierr = VecDestroy(&gpcg->R);CHKERRQ(ierr);
+  ierr = VecDestroy(&gpcg->PG);CHKERRQ(ierr);
+  ierr = ISDestroy(&gpcg->Free_Local);CHKERRQ(ierr);
   ierr = PetscFree(tao->data); CHKERRQ(ierr);
   tao->data = PETSC_NULL;
 
@@ -468,8 +447,8 @@ PetscErrorCode TaoSolverCreate_GPCG(TaoSolver tao)
   ierr = TaoLineSearchCreate(((PetscObject)tao)->comm, &tao->linesearch); CHKERRQ(ierr);
   ierr = TaoLineSearchSetType(tao->linesearch, TAOLINESEARCH_GPCG); CHKERRQ(ierr);
   ierr = TaoLineSearchSetObjectiveAndGradient(tao->linesearch, GPCGObjectiveAndGradient, tao); CHKERRQ(ierr);
-  ierr = KSPCreate(((PetscObject)tao)->comm, &tao->ksp); CHKERRQ(ierr);
-  ierr = KSPSetOptionsPrefix(tao->ksp,"tao_"); CHKERRQ(ierr);
+  //ierr = KSPCreate(((PetscObject)tao)->comm, &tao->ksp); CHKERRQ(ierr);
+  //ierr = KSPSetOptionsPrefix(tao->ksp,"tao_"); CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
