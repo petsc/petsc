@@ -371,7 +371,8 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
   MPI_Comm         wcomm = ((PetscObject)a_pc)->comm;
   PetscMPIInt      mype,npe,nactivepe;
   PetscBool        isOK, useSA = PETSC_FALSE, flag;
-  Mat Aarr[GAMG_MAXLEVELS], Parr[GAMG_MAXLEVELS];  PetscReal *coarse_data = 0, *data;
+  Mat              Aarr[GAMG_MAXLEVELS], Parr[GAMG_MAXLEVELS];  
+  PetscReal       *coarse_data = 0, *data, emaxs[GAMG_MAXLEVELS];
   char             str[16];
  
   PetscFunctionBegin;
@@ -410,7 +411,7 @@ PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s level %d N=%d, data size=%d m_data_sz=%d 
     level1 = level + 1;
     ierr = PetscLogEventBegin(gamg_setup_stages[SET1],0,0,0,0);CHKERRQ(ierr);
     ierr = createProlongation( Aarr[level], data, pc_gamg->m_dim, &data_sz,
-                               &Parr[level1], &coarse_data, &isOK );
+                               &Parr[level1], &coarse_data, &isOK, &emaxs[level] );
     CHKERRQ(ierr);
     ierr = PetscLogEventEnd(gamg_setup_stages[SET1],0,0,0,0);CHKERRQ(ierr);
 
@@ -438,15 +439,18 @@ PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s %d levels\n",0,__FUNCT__,level + 1);
   ierr = PCMGSetLevels(a_pc,pc_gamg->m_Nlevels,PETSC_NULL);CHKERRQ(ierr);
 
   /* set default smoothers */
-  for (level=1,lidx=pc_gamg->m_Nlevels-2;
-       level <= fine_level;
-       level++,lidx--) {
+  for ( lidx=1, level = pc_gamg->m_Nlevels-2;
+        lidx <= fine_level;
+        lidx++, level--) {
     PetscReal emax, emin;
     KSP smoother; PC subpc;
-    ierr = PCMGGetSmoother( a_pc, level, &smoother ); CHKERRQ(ierr);
+    ierr = PCMGGetSmoother( a_pc, lidx, &smoother ); CHKERRQ(ierr);
     ierr = KSPSetType( smoother, KSPCHEBYCHEV );CHKERRQ(ierr);
-    { /* eigen estimate 'emax' */
-      KSP eksp; Mat Lmat = Aarr[lidx];
+    if( emaxs[level] > 0.0 ) {
+      emax = 1.05*emaxs[level];
+    }
+    else{ /* eigen estimate 'emax' */
+      KSP eksp; Mat Lmat = Aarr[level];
       Vec bb, xx; PC pc;
       PetscInt N1, N0, tt;
       ierr = MatGetVecs( Lmat, &bb, 0 );         CHKERRQ(ierr);
@@ -472,7 +476,7 @@ PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s %d levels\n",0,__FUNCT__,level + 1);
       ierr = KSPSolve( eksp, bb, xx ); CHKERRQ(ierr);
       ierr = KSPComputeExtremeSingularValues( eksp, &emax, &emin ); CHKERRQ(ierr);
       ierr = MatGetSize( Lmat, &N1, &tt );         CHKERRQ(ierr);
-      ierr = MatGetSize( Aarr[lidx+1], &N0, &tt );CHKERRQ(ierr);
+      ierr = MatGetSize( Aarr[level+1], &N0, &tt );CHKERRQ(ierr);
 PetscPrintf(PETSC_COMM_WORLD,"\t\t\t%s max eigen = %e (N=%d)\n",__FUNCT__,emax,N1/bs);
       emax *= 1.05;
 
@@ -481,8 +485,8 @@ PetscPrintf(PETSC_COMM_WORLD,"\t\t\t%s max eigen = %e (N=%d)\n",__FUNCT__,emax,N
       ierr = KSPDestroy( &eksp );       CHKERRQ(ierr);
 
       emin = emax/((PetscReal)N1/(PetscReal)N0); /* this should be about the coarsening rate */
-      ierr = KSPSetOperators( smoother, Lmat, Lmat, DIFFERENT_NONZERO_PATTERN );
     }
+    ierr = KSPSetOperators( smoother, Aarr[level], Aarr[level], DIFFERENT_NONZERO_PATTERN );
     ierr = KSPChebychevSetEigenvalues( smoother, emax, emin );CHKERRQ(ierr);
     ierr = KSPGetPC( smoother, &subpc ); CHKERRQ(ierr);
     ierr = PCSetType( subpc, PCJACOBI ); CHKERRQ(ierr);
@@ -512,25 +516,24 @@ PetscPrintf(PETSC_COMM_WORLD,"\t\t\t%s max eigen = %e (N=%d)\n",__FUNCT__,emax,N
     sprintf(str,"MG Level %d (%d)",0,pc_gamg->m_Nlevels-1); 
     PetscLogStageRegister(str, &gamg_stages[fine_level]);
   }
-  for (level=0,lidx=pc_gamg->m_Nlevels-1; 
-       level<fine_level; 
-       level++, lidx--){
-    level1 = level + 1;
-    ierr = PCMGSetInterpolation( a_pc, level1, Parr[lidx] );CHKERRQ(ierr);
+  for (lidx=0,level=pc_gamg->m_Nlevels-1; 
+       lidx<fine_level; 
+       lidx++, level--){
+    ierr = PCMGSetInterpolation( a_pc, lidx+1, Parr[level] );CHKERRQ(ierr);
     if( !PETSC_TRUE ) {
       PetscViewer viewer; char fname[32];
-      sprintf(fname,"Amat_%d.m",lidx); 
+      sprintf(fname,"Amat_%d.m",level); 
       ierr = PetscViewerASCIIOpen( wcomm, fname, &viewer );  CHKERRQ(ierr);
       ierr = PetscViewerSetFormat( viewer, PETSC_VIEWER_ASCII_MATLAB);  CHKERRQ(ierr);
-      ierr = MatView( Aarr[lidx], viewer ); CHKERRQ(ierr);
+      ierr = MatView( Aarr[level], viewer ); CHKERRQ(ierr);
       ierr = PetscViewerDestroy( &viewer );
     }
-    ierr = MatDestroy( &Parr[lidx] );  CHKERRQ(ierr);
-    ierr = MatDestroy( &Aarr[lidx] );  CHKERRQ(ierr);
+    ierr = MatDestroy( &Parr[level] );  CHKERRQ(ierr);
+    ierr = MatDestroy( &Aarr[level] );  CHKERRQ(ierr);
     if( PETSC_FALSE ) {
       char str[32];
-      sprintf(str,"MG Level %d (%d)",level+1,lidx-1); 
-      PetscLogStageRegister(str, &gamg_stages[lidx-1]);
+      sprintf(str,"MG Level %d (%d)",lidx+1,level-1); 
+      PetscLogStageRegister(str, &gamg_stages[level-1]);
     }
   }
 

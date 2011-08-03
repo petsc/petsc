@@ -235,6 +235,59 @@ if(mype==target)PetscPrintf(PETSC_COMM_SELF,"[%d]%s %d) finished MIS loop %d lef
 
 /* -------------------------------------------------------------------------- */
 /*
+ smoothAggs - adjust deleted vertices to nearer selected vertices.
+
+  Input Parameter:
+   . a_selected - selected IDs that go with base (1) graph
+  Input/Output Parameter:
+   . a_locals_llist - linked list with (some) locality info of base graph
+*/
+#undef __FUNCT__
+#define __FUNCT__ "smoothAggs"
+PetscErrorCode smoothAggs( IS  a_selected, /* list of selected local ID, includes selected ghosts */
+                           IS  a_locals_llist /* linked list from selected vertices of aggregate unselected vertices */
+                           )
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+
+  PetscFunctionReturn(0);
+}
+
+/* -------------------------------------------------------------------------- */
+/*
+ formProl0
+
+   Input Parameter:
+   . a_selected_2 - list of selected local ID, includes selected ghosts
+   . a_coords_x[a_nSubDom]  - 
+   . a_coords_y[a_nSubDom] - 
+   . a_selected_1 - selected IDs that go with base (1) graph
+   . a_locals_llist - linked list with (some) locality info of base graph
+   . a_crsGID[a_selected.size()] - make of ghost nodes to global index for prolongation operator
+  Output Parameter:
+   . a_Prol - prolongation operator
+*/
+#undef __FUNCT__
+#define __FUNCT__ "formProl0"
+PetscErrorCode formProl0( IS  a_selected, /* list of selected local ID, includes selected ghosts */
+                          IS  a_locals_llist, /* linked list from selected vertices of aggregate unselected vertices */
+                          const PetscInt a_dim,
+                          PetscInt *a_data_sz,
+                          PetscReal **a_data_out,
+                          Mat a_Prol /* prolongation operator (output)*/
+                          )
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+
+  PetscFunctionReturn(0);
+}
+
+/* -------------------------------------------------------------------------- */
+/*
  triangulateAndFormProl
 
    Input Parameter:
@@ -672,6 +725,7 @@ int compare (const void *a, const void *b)
    . a_P_out - prolongation operator to the next level
    . a_data_out - data of coarse grid points (num local columns in 'a_P_out')
    . a_isOK - flag for if this grid is usable
+   . a_emax - max iegen value
 */
 #undef __FUNCT__
 #define __FUNCT__ "createProlongation"
@@ -681,7 +735,8 @@ PetscErrorCode createProlongation( Mat a_Amat,
                                    PetscInt *a_data_sz,
                                    Mat *a_P_out,
                                    PetscReal **a_data_out,
-                                   PetscBool *a_isOK
+                                   PetscBool *a_isOK,
+                                   PetscReal *a_emax
                                    )
 {
   PetscErrorCode ierr;
@@ -764,7 +819,7 @@ PetscErrorCode createProlongation( Mat a_Amat,
     Gmat = Gmat2;
 
     /* square matrix - SA */
-    if ( !PETSC_TRUE ) {
+    if ( useSA ) {
       ierr = MatMatMult( Gmat, Gmat, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &Gmat2 );   CHKERRQ(ierr);
       ierr = MatDestroy( &Gmat );  CHKERRQ(ierr);
       Gmat = Gmat2;
@@ -853,11 +908,10 @@ PetscErrorCode createProlongation( Mat a_Amat,
   /* create prolongator, create P matrix */
   ierr = MatCreateMPIAIJ(wcomm, nloc*bs, nLocalSelected*bs,
                          PETSC_DETERMINE, PETSC_DETERMINE,
-                         3, PETSC_NULL, 2, PETSC_NULL,
+                         12, PETSC_NULL, 6, PETSC_NULL,
                          &Prol );
   ierr = MatSetBlockSize(Prol,bs);      CHKERRQ(ierr);
   CHKERRQ(ierr);
-  *a_P_out = Prol;  /* out */
 
   /* switch for SA or GAMG */
   if( !useSA ) {
@@ -942,10 +996,66 @@ PetscErrorCode createProlongation( Mat a_Amat,
     if (npe > 1) {
       ierr = ISDestroy( &selected_2 ); CHKERRQ(ierr); /* this is selected_1 in serial */
     }
+    *a_emax = -1.0; /* no estimate */
   }
   else { /* SA, change a_data_sz */
-    assert(0);
+    Mat Prol1, AA; Vec diag; PetscReal alpha,emax, emin;
+    /* adjust aggregates */
+    ierr = PetscLogEventBegin(gamg_setup_stages[SET5],0,0,0,0);CHKERRQ(ierr);
+    ierr = smoothAggs( selected_1, llist_1 ); CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(gamg_setup_stages[SET5],0,0,0,0);CHKERRQ(ierr);
+    /* get P0 */
+    ierr = PetscLogEventBegin(gamg_setup_stages[SET6],0,0,0,0);CHKERRQ(ierr);
+    ierr = formProl0( selected_1, llist_1, a_dim, a_data_sz, a_data_out, Prol ); CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(gamg_setup_stages[SET6],0,0,0,0);CHKERRQ(ierr);
+    /* smooth P0 */
+    { /* eigen estimate 'emax' - this is also use for cheb smoother */
+      KSP eksp; Mat Lmat = a_Amat;
+      Vec bb, xx; PC pc;
+      ierr = MatGetVecs( Lmat, &bb, 0 );         CHKERRQ(ierr);
+      ierr = MatGetVecs( Lmat, &xx, 0 );         CHKERRQ(ierr);
+      {
+	PetscRandom    rctx;
+	ierr = PetscRandomCreate(wcomm,&rctx);CHKERRQ(ierr);
+	ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
+	ierr = VecSetRandom(bb,rctx);CHKERRQ(ierr);
+	ierr = PetscRandomDestroy( &rctx ); CHKERRQ(ierr);
+      }
+      ierr = KSPCreate(wcomm,&eksp);CHKERRQ(ierr);
+      ierr = KSPSetInitialGuessNonzero( eksp, PETSC_FALSE ); CHKERRQ(ierr);
+      ierr = KSPSetOperators( eksp, Lmat, Lmat, DIFFERENT_NONZERO_PATTERN ); CHKERRQ( ierr );
+      ierr = KSPGetPC( eksp, &pc );CHKERRQ( ierr );
+      ierr = PCSetType( pc, PCJACOBI ); CHKERRQ(ierr); /* should be same as above */
+      ierr = KSPSetTolerances( eksp, PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT, 5 );
+      CHKERRQ(ierr);
+      ierr = KSPSetConvergenceTest( eksp, KSPSkipConverged, 0, 0 ); CHKERRQ(ierr);
+      ierr = KSPSetNormType( eksp, KSP_NORM_NONE );                 CHKERRQ(ierr);
+
+      ierr = KSPSetComputeSingularValues( eksp,PETSC_TRUE ); CHKERRQ(ierr);
+      ierr = KSPSolve( eksp, bb, xx ); CHKERRQ(ierr);
+      ierr = KSPComputeExtremeSingularValues( eksp, &emax, &emin ); CHKERRQ(ierr);
+PetscPrintf(PETSC_COMM_WORLD,"\t\t\t%s max eigen = %e\n",__FUNCT__,emax);
+      ierr = VecDestroy( &xx );       CHKERRQ(ierr);
+      ierr = VecDestroy( &bb );       CHKERRQ(ierr);
+      ierr = KSPDestroy( &eksp );     CHKERRQ(ierr);
+    }
+    ierr = MatDuplicate( a_Amat, MAT_COPY_VALUES, &AA ); CHKERRQ(ierr); /* AIJ */
+    ierr = MatGetVecs( AA, &diag, 0 );    CHKERRQ(ierr);
+    ierr = MatGetDiagonal( AA, diag );    CHKERRQ(ierr);
+    ierr = VecReciprocal( diag );         CHKERRQ(ierr);
+    ierr = MatDiagonalScale( AA, diag, PETSC_NULL ); CHKERRQ(ierr);
+    ierr = VecDestroy( &diag );           CHKERRQ(ierr);
+    alpha = -1.5/emax;
+    ierr = MatScale( AA, alpha ); CHKERRQ(ierr);
+    alpha = 1.;
+    ierr = MatShift( AA, alpha ); CHKERRQ(ierr);
+    ierr = MatMatMult( AA, Prol, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &Prol1 );   CHKERRQ(ierr);
+    ierr = MatDestroy( &Prol );  CHKERRQ(ierr);
+    ierr = MatDestroy( &AA );    CHKERRQ(ierr);
+    Prol = Prol1;
+    *a_emax = emax; /* re estimate for cheb smoother */
   }
+  *a_P_out = Prol;  /* out */
 
   ierr = ISDestroy(&llist_1); CHKERRQ(ierr);
   ierr = ISDestroy( &selected_1 ); CHKERRQ(ierr);

@@ -990,14 +990,14 @@ runex53_2:
 	   ${DIFF} output/ex53.out ex53.tmp || echo "Possible problem with ex53_2, diffs above"; \
 	   ${RM} -f ex53.tmp
 
-runex54:3
+runex54:
 	-@echo ${MPIEXEC}
 	-@${MPIEXEC} -n 1 ./ex54 -ne 110 -alpha 1.e-0 -ksp_monitor -ksp_rtol 1.e-12 -ksp_type cg -pc_mg_type full -ksp_max_it 50 -options_left -ksp_norm_type unpreconditioned
 #-log_summary -ksp_pc_side right
 
 runex55:
 	-@echo ${MPIEXEC}
-	-@${MPIEXEC} -n 1 ./ex55 -ne 40 -alpha 1.e-0 -ksp_monitor -ksp_rtol 1.e-12 -ksp_type cg -pc_mg_type full -ksp_max_it 50 -options_left -ksp_norm_type unpreconditioned
+	-@${MPIEXEC} -n 4 ./ex55 -ne 140 -alpha 1.e-0 -ksp_monitor -ksp_rtol 1.e-12 -ksp_type cg -pc_mg_type full -ksp_max_it 50 -options_left -ksp_norm_type unpreconditioned -hel
 
 
 TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 \
