@@ -987,8 +987,17 @@ PetscErrorCode YAML_AMS_Memory_get_field_info(PetscInt argc,char **args,PetscInt
     } else if (dtype == AMS_DOUBLE) {
       ierr = PetscMalloc(20*sizeof(char),&argso[0][4+i]);CHKERRQ(ierr);
       sprintf(argso[0][4+i],"%18.16e",*(double*)addr);
+    } else if (dtype == AMS_INT) {
+      ierr = PetscMalloc(10*sizeof(char),&argso[0][4+i]);CHKERRQ(ierr);
+      sprintf(argso[0][4+i],"%d",*(int*)addr);
+    } else if (dtype == AMS_BOOLEAN) {
+      if (*(int*)addr) {
+        ierr = PetscStrallocpy("true",&argso[0][4+i]);CHKERRQ(ierr);
+      } else {
+        ierr = PetscStrallocpy("false",&argso[0][4+i]);CHKERRQ(ierr);
+      }
     } else {
-      ierr = PetscStrallocpy("joe",&argso[0][4+i]);CHKERRQ(ierr);
+      ierr = PetscStrallocpy("Not yet done",&argso[0][4+i]);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
