@@ -365,7 +365,12 @@ PetscErrorCode VecDestroy_MPIFFTW(Vec v)
         Also note that we need to provide enough space while doing parallel real transform.
         We need to pad extra zeros at the end of last dimension. For this reason the one needs to 
         invoke the routine fftw_mpi_local_size_transposed routines. Remember one has to change the 
-        last dimension from n to n/2+1 while invoking this routine. 
+        last dimension from n to n/2+1 while invoking this routine. The number of zeros to be padded 
+        depends on if the last dimension is even or odd. If the last dimension is even need to pad two
+        zeros if it is odd only one zero is needed.
+        Lastly one needs some scratch space at the end of data set in each process. alloc_local
+        figures out how much space is needed, i.e. it figures out the data+scratch space for
+        each processor and returns that.
 
 .seealso: MatCreateFFTW()
 @*/
