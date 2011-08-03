@@ -1,5 +1,4 @@
-
-static char help[] = "Creates a matrix using simple quadirlateral finite elements, and uses it to test GAMG\n\
+static char help[] = "2D solid FE test proble, and uses it to test GAMG\n\
   -ne <size>       : problem size\n                                      \
   -alpha <v>      : scaling of material coeficient in embedded circle\n\n";
 
@@ -11,7 +10,7 @@ int main(int argc,char **args)
 {
   Mat            Amat,Pmat;
   PetscErrorCode ierr;
-  PetscInt       i,m,M,its,Istart,Iend,j,Ii,bs,ix,ne=4;
+  PetscInt       i,m,M,its,Istart,Iend,j,Ii,ix,ne=4;
   PetscReal      x,y,h;
   Vec            xx,bb;
   KSP            ksp;
@@ -19,15 +18,19 @@ int main(int argc,char **args)
   MPI_Comm       wcomm;
   PetscMPIInt    npe,mype;
   PC pc;
-  PetscScalar DD[4][4],DD2[4][4];
+  PetscScalar DD[8][8],DD2[8][8];
 #if defined(PETSC_USE_LOG)
   PetscLogStage  stage;
 #endif
-#define DIAG_S 0.0
-  PetscScalar DD1[4][4] = { {5.0+DIAG_S, -2.0, -1.0, -2.0},
-                            {-2.0, 5.0+DIAG_S, -2.0, -1.0},
-                            {-1.0, -2.0, 5.0+DIAG_S, -2.0},
-                            {-2.0, -1.0, -2.0, 5.0+DIAG_S} };
+  PetscScalar DD1[8][8] = {  {5.333333333333333E-01,  2.0000E-01, -3.333333333333333E-01,  0.0000E+00, -2.666666666666667E-01, -2.0000E-01, 6.666666666666667E-02, 0.0000E-00 },
+			     {2.0000E-01,  5.333333333333333E-01,  0.0000E-00,  6.666666666666667E-02, -2.0000E-01, -2.666666666666667E-01, 0.0000E-00, -3.333333333333333E-01 },
+			     {-3.333333333333333E-01,  0.0000E-00,  5.333333333333333E-01, -2.0000E-01,  6.666666666666667E-02, 0.0000E-00, -2.666666666666667E-01,  2.0000E-01 },
+			     {0.0000E+00,  6.666666666666667E-02, -2.0000E-01,  5.333333333333333E-01,  0.0000E-00, -3.333333333333333E-01, 2.0000E-01, -2.666666666666667E-01 },
+			     {-2.666666666666667E-01, -2.0000E-01,  6.666666666666667E-02,  0.0000E-00,  5.333333333333333E-01,  2.0000E-01, -3.333333333333333E-01,  0.0000E+00 },
+			     {-2.0000E-01, -2.666666666666667E-01, 0.0000E-00, -3.333333333333333E-01,  2.0000E-01,  5.333333333333333E-01, 0.0000E-00,  6.666666666666667E-02 },
+			     {6.666666666666667E-02, 0.0000E-00, -2.666666666666667E-01,  2.0000E-01, -3.333333333333333E-01,  0.0000E-00, 5.333333333333333E-01, -2.0000E-01 },
+			     {0.0000E-00, -3.333333333333333E-01,  2.0000E-01, -2.666666666666667E-01, 0.0000E-00,  6.666666666666667E-02, -2.0000E-01,  5.333333333333333E-01 } };
+
 
   PetscInitialize(&argc,&args,(char *)0,help);
   wcomm = PETSC_COMM_WORLD;
@@ -37,15 +40,17 @@ int main(int argc,char **args)
   h = 1./ne;
   /* ne*ne; number of global elements */
   ierr = PetscOptionsGetReal(PETSC_NULL,"-alpha",&soft_alpha,PETSC_NULL); CHKERRQ(ierr);
-  M = (ne+1)*(ne+1); /* global number of nodes */
+  M = 2*(ne+1)*(ne+1); /* global number of equations */
+  m = (ne+1)*(ne+1)/npe;
+  if(mype==npe-1) m = (ne+1)*(ne+1) - (npe-1)*m;
+  m *= 2;
   /* create stiffness matrix */
-  ierr = MatCreateMPIAIJ(wcomm,PETSC_DECIDE,PETSC_DECIDE,M,M,
-                         18,PETSC_NULL,6,PETSC_NULL,&Amat);CHKERRQ(ierr);
-  ierr = MatCreateMPIAIJ(wcomm,PETSC_DECIDE,PETSC_DECIDE,M,M,
-                         18,PETSC_NULL,6,PETSC_NULL,&Pmat);CHKERRQ(ierr);
+  ierr = MatCreateMPIAIJ(wcomm,m,m,M,M,18,PETSC_NULL,6,PETSC_NULL,&Amat);CHKERRQ(ierr);
+  ierr = MatCreateMPIAIJ(wcomm,m,m,M,M,18,PETSC_NULL,6,PETSC_NULL,&Pmat);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(Amat,&Istart,&Iend);CHKERRQ(ierr);
-  m = Iend-Istart;
-  bs = 1;
+  ierr = MatSetBlockSize(Amat,2);      CHKERRQ(ierr);
+  ierr = MatSetBlockSize(Pmat,2);      CHKERRQ(ierr);
+  m = Iend - Istart;
   /* Generate vectors */
   ierr = VecCreate(wcomm,&xx);   CHKERRQ(ierr);
   ierr = VecSetSizes(xx,m,M);    CHKERRQ(ierr);
@@ -55,20 +60,20 @@ int main(int argc,char **args)
   /* generate element matrices */
   {
     FILE *file;
-    char fname[] = "elem_2d_therm.txt";
+    char fname[] = "elem_2d_pln_strn_v_25.txt";
     file = fopen(fname, "r");
     if (file == 0) {
       PetscPrintf(PETSC_COMM_WORLD,"\t%s failed to open input file '%s'\n",__FUNCT__,fname);
     }
     else {
-      for(i=0;i<4;i++)
-        for(j=0;j<4;j++)
+      for(i=0;i<8;i++)
+        for(j=0;j<8;j++)
           fscanf(file, "%le", &DD1[i][j]);
     }
     /* BC version of element */
-    for(i=0;i<4;i++)
-      for(j=0;j<4;j++)
-        if(i<2 || j < 2)
+    for(i=0;i<8;i++)
+      for(j=0;j<8;j++)
+        if(i<4 || j < 4)
           if(i==j) DD2[i][j] = .1*DD1[i][j];
           else DD2[i][j] = 0.0;
         else DD2[i][j] = DD1[i][j];
@@ -76,7 +81,7 @@ int main(int argc,char **args)
   {
     PetscReal coords[2*m];
     /* forms the element stiffness for the Laplacian and coordinates */
-    for (Ii=Istart,ix=0; Ii<Iend; Ii++,ix++) {
+    for (Ii = Istart/2, ix = 0; Ii < Iend/2; Ii++, ix++ ) {
       j = Ii/(ne+1); i = Ii%(ne+1);
       /* coords */
       x = h*(Ii % (ne+1)); y = h*(Ii/(ne+1));
@@ -89,20 +94,19 @@ int main(int argc,char **args)
         if( radius < 0.25 ){
           alpha = soft_alpha;
         }
-
-        for(ii=0;ii<4;ii++)for(jj=0;jj<4;jj++) DD[ii][jj] = alpha*DD1[ii][jj];
-        ierr = MatSetValues(Pmat,4,idx,4,idx,(const PetscScalar*)DD,ADD_VALUES);CHKERRQ(ierr);
+        for(ii=0;ii<8;ii++)for(jj=0;jj<8;jj++) DD[ii][jj] = alpha*DD1[ii][jj];
+        ierr = MatSetValuesBlocked(Pmat,4,idx,4,idx,(const PetscScalar*)DD,ADD_VALUES);CHKERRQ(ierr);
         if( j>0 ) {
-          ierr = MatSetValues(Amat,4,idx,4,idx,(const PetscScalar*)DD,ADD_VALUES);CHKERRQ(ierr);
+          ierr = MatSetValuesBlocked(Amat,4,idx,4,idx,(const PetscScalar*)DD,ADD_VALUES);CHKERRQ(ierr);
         }
         else {
           /* a BC */
-          for(ii=0;ii<4;ii++)for(jj=0;jj<4;jj++) DD[ii][jj] = alpha*DD2[ii][jj];
-          ierr = MatSetValues(Amat,4,idx,4,idx,(const PetscScalar*)DD,ADD_VALUES);CHKERRQ(ierr);
+          for(ii=0;ii<8;ii++)for(jj=0;jj<8;jj++) DD[ii][jj] = alpha*DD2[ii][jj];
+          ierr = MatSetValuesBlocked(Amat,4,idx,4,idx,(const PetscScalar*)DD,ADD_VALUES);CHKERRQ(ierr);
         }
       }
       if( j>0 ) {
-        PetscInt jj = Ii;
+        PetscInt jj = 2*Ii; /* load in x direction */
         ierr = VecSetValues(bb,1,&jj,(const PetscScalar*)DD2,INSERT_VALUES);      CHKERRQ(ierr);
       }
     }
@@ -117,10 +121,10 @@ int main(int argc,char **args)
     ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);                    CHKERRQ(ierr);
     ierr = KSPSetOperators( ksp, Amat, Amat, SAME_NONZERO_PATTERN ); CHKERRQ(ierr);
     ierr = KSPSetType( ksp, KSPCG );                            CHKERRQ(ierr);
-    ierr = KSPGetPC(ksp,&pc);                                   CHKERRQ(ierr);
-    ierr = PCSetType(pc,PCGAMG);                                CHKERRQ(ierr);
+    ierr = KSPGetPC( ksp, &pc );                                   CHKERRQ(ierr);
+    ierr = PCSetType( pc, PCGAMG );                                CHKERRQ(ierr);
     ierr = PCSetCoordinates( pc, 2, coords );                   CHKERRQ(ierr);
-    ierr = KSPSetFromOptions(ksp);                              CHKERRQ(ierr);
+    ierr = KSPSetFromOptions( ksp );                              CHKERRQ(ierr);
   }
 
   if( !PETSC_TRUE ) {
@@ -134,16 +138,17 @@ int main(int argc,char **args)
   /* solve */
 #if defined(PETSC_USE_LOG)
   ierr = PetscLogStageRegister("Solve", &stage);      CHKERRQ(ierr);
-  ierr = PetscLogStagePush(stage);      CHKERRQ(ierr);
+  ierr = PetscLogStagePush(stage);                    CHKERRQ(ierr);
 #endif
+
   ierr = VecSet(xx,.0);          CHKERRQ(ierr);
   
   ierr = KSPSolve(ksp,bb,xx);     CHKERRQ(ierr);
-  
+
 #if defined(PETSC_USE_LOG)
   ierr = PetscLogStagePop();      CHKERRQ(ierr);
 #endif
-
+  
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
 
   if( !PETSC_TRUE ) {
