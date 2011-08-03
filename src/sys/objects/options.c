@@ -252,7 +252,7 @@ PetscErrorCode  PetscOptionsValidKey(const char in_str[],PetscBool  *key)
   if (!in_str) PetscFunctionReturn(0);
   if (in_str[0] != '-') PetscFunctionReturn(0);
   if (!(isalpha(in_str[1]))) PetscFunctionReturn(0);
-  if ((strncmp(in_str+1,"inf",3) || strncmp(in_str+1,"INF",3)) && !(in_str[4] == '_' || isalnum(in_str[4]))) PetscFunctionReturn(0);
+  if ((!strncmp(in_str+1,"inf",3) || !strncmp(in_str+1,"INF",3)) && !(in_str[4] == '_' || isalnum(in_str[4]))) PetscFunctionReturn(0);
   *key = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
