@@ -2748,6 +2748,18 @@ PetscErrorCode MatSOR_MPIBAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType flag,P
 
 extern PetscErrorCode  MatFDColoringApply_BAIJ(Mat,MatFDColoring,Vec,MatStructure*,void*);
 
+#undef __FUNCT__  
+#define __FUNCT__ "MatInvertBlockDiagonal_MPIBAIJ"
+PetscErrorCode  MatInvertBlockDiagonal_MPIBAIJ(Mat A,PetscScalar **values)
+{
+  Mat_MPIBAIJ    *a = (Mat_MPIBAIJ*) A->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatInvertBlockDiagonal(a->A,values);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {
@@ -2873,7 +2885,11 @@ static struct _MatOps MatOps_Values = {
 /*119*/0,
        0,
        0,
-       0
+       0,
+       0,
+/*124*/0,
+       0,
+       MatInvertBlockDiagonal_MPIBAIJ
 };
 
 EXTERN_C_BEGIN
