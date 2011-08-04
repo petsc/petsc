@@ -3532,6 +3532,8 @@ PetscErrorCode  MatSolveTransposeAdd(Mat mat,Vec b,Vec y,Vec x)
 
    Vectors x and b CANNOT be the same
 
+   Developer Note: We should add block SOR support for AIJ matrices with block size set to great than one and no inodes
+
    Level: developer
 
    Concepts: matrices^relaxation
