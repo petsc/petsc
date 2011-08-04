@@ -60,13 +60,6 @@ PetscErrorCode KSPSetUp_CG(KSP ksp)
   PetscInt        maxit = ksp->max_it,nwork = 3;
 
   PetscFunctionBegin;
-  /* 
-       This implementation of CG only handles left preconditioning
-     so generate an error otherwise.
-  */
-  if (ksp->pc_side == PC_RIGHT) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"No right preconditioning for KSPCG");
-  else if (ksp->pc_side == PC_SYMMETRIC) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"No symmetric preconditioning for KSPCG");
-
   /* get work vectors needed by CG */
   if (cgP->singlereduction) nwork += 2;
   ierr = KSPDefaultGetWork(ksp,nwork);CHKERRQ(ierr);
@@ -141,12 +134,15 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
     ierr = VecCopy(B,R);CHKERRQ(ierr);                         /*     r <- b (x is 0) */
   }
 
-  if (ksp->normtype == KSP_NORM_PRECONDITIONED) {
+  switch (ksp->normtype) {
+  case KSP_NORM_PRECONDITIONED:
     ierr = KSP_PCApply(ksp,R,Z);CHKERRQ(ierr);                   /*     z <- Br         */
     ierr = VecNorm(Z,NORM_2,&dp);CHKERRQ(ierr);                /*    dp <- z'*z = e'*A'*B'*B*A'*e'     */
-  } else if (ksp->normtype == KSP_NORM_UNPRECONDITIONED) {
+    break;
+  case KSP_NORM_UNPRECONDITIONED:
     ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);                /*    dp <- r'*r = e'*A'*A*e            */
-  } else if (ksp->normtype == KSP_NORM_NATURAL) {
+    break;
+  case KSP_NORM_NATURAL:
     ierr = KSP_PCApply(ksp,R,Z);CHKERRQ(ierr);                   /*     z <- Br         */
     if (cg->singlereduction) {
       ierr = KSP_MatMult(ksp,Amat,Z,S);CHKERRQ(ierr);  
@@ -155,7 +151,12 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
     ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);                     /*  beta <- z'*r       */
     if (PetscIsInfOrNanScalar(beta)) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_FP,"Infinite or not-a-number generated in dot product");
     dp = sqrt(PetscAbsScalar(beta));                           /*    dp <- r'*z = r'*B*r = e'*A'*B*A*e */
-  } else dp = 0.0;
+    break;
+  case KSP_NORM_NONE:
+    dp = 0.0;
+    break;
+  default: SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"%s",KSPNormTypes[ksp->normtype]);
+  }
   KSPLogResidualHistory(ksp,dp);
   ierr = KSPMonitor(ksp,0,dp);CHKERRQ(ierr);
   ksp->rnorm = dp;
@@ -436,10 +437,11 @@ PetscErrorCode  KSPCreate_CG(KSP ksp)
   cg->type                       = KSP_CG_HERMITIAN;
 #endif
   ksp->data                      = (void*)cg;
-  if (ksp->pc_side != PC_LEFT) {
-    ierr = PetscInfo(ksp,"WARNING! Setting PC_SIDE for CG to left!\n");CHKERRQ(ierr);
-  }
-  ksp->pc_side                   = PC_LEFT;
+
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,1);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NATURAL,PC_LEFT,1);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NONE,PC_LEFT,1);CHKERRQ(ierr);
 
   /*
        Sets the functions that are associated with this data structure 

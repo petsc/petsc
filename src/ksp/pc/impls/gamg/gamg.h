@@ -8,8 +8,8 @@
 
 extern PetscErrorCode PCSetFromOptions_MG(PC);
 extern PetscErrorCode PCReset_MG(PC);
-extern PetscErrorCode createProlongation( Mat, PetscReal [], const PetscInt,
-                                          Mat *, PetscReal **, PetscBool *a_isOK );
+extern PetscErrorCode createProlongation( Mat, PetscReal [], const PetscInt, PetscInt*,
+                                          Mat *, PetscReal **, PetscBool *, PetscReal *);
 enum tag {SET1,SET2,SET3,SET4,SET5,SET6,FIND_V,SET7,NUM_SET};
 extern PetscLogEvent gamg_setup_stages[NUM_SET];
 

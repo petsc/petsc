@@ -295,10 +295,8 @@ PetscErrorCode  KSPCreate_NGMRES(KSP ksp)
   ngmres->msize = 30;
   ngmres->csize = 0;
 
- if (ksp->pc_side != PC_LEFT) {
-    ierr = PetscInfo(ksp,"WARNING! Setting PC_SIDE for NGMRES to left!\n");CHKERRQ(ierr);
-  }
-  ksp->pc_side                   = PC_LEFT;
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,1);CHKERRQ(ierr);
 
   /*
        Sets the functions that are associated with this data structure 

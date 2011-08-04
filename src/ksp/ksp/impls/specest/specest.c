@@ -195,6 +195,11 @@ PetscErrorCode  KSPCreate_SpecEst(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_RIGHT,1);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,1);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,1);CHKERRQ(ierr);
+
   ierr = PetscNewLog(ksp,KSP_SpecEst,&spec);CHKERRQ(ierr);
 
   ksp->data                      = (void*)spec;

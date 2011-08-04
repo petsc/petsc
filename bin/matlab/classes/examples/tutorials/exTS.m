@@ -27,15 +27,15 @@ ts.SetProblemType(PetscTS.NONLINEAR);
 ts.SetType('theta');
 %%
 %  Provide a function 
-ts.SetFunction('odefunction',0);
-type odefunction.m
+ts.SetFunction('exTS_odefunction',0);
+type exTS_odefunction.m
 %%
 %  Provide a function that evaluates the Jacobian
-ts.SetJacobian(mat,mat,'odejacobian',0);
-type odejacobian.m
+ts.SetJacobian(mat,mat,'exTS_odejacobian',0);
+type exTS_odejacobian.m
 %%
 %  Solve the ODE
-ts.MonitorSet('tsmonitor');
+ts.MonitorSet('exTS_tsmonitor');
 ts.SetFromOptions();
 ts.Solve(x);
 x.View(viewer);

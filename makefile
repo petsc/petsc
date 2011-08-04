@@ -22,7 +22,7 @@ include ${PETSC_DIR}/conf/test
 all:
 	@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} chkpetsc_dir
 	@if [ "${PETSC_BUILD_USING_CMAKE}" != "" ]; then \
-           echo "Building PETSc using CMake"; \
+           echo "Building PETSc using CMake with ${MAKE_NP} build threads"; \
 	   ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} all-cmake; \
 	 else \
 	   ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} all-legacy; \

@@ -34,10 +34,6 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (ksp->normtype == KSP_NORM_NATURAL) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Cannot use natural norm with KSPBCGSL");
-  if (ksp->normtype == KSP_NORM_PRECONDITIONED && ksp->pc_side != PC_LEFT) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Use -ksp_norm_type unpreconditioned for right preconditioning and KSPBCGSL");
-  if (ksp->normtype == KSP_NORM_UNPRECONDITIONED && ksp->pc_side != PC_RIGHT) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Use -ksp_norm_type preconditioned for left preconditioning and KSPBCGSL");
-
   /* set up temporary vectors */
   vi = 0;
   ell = bcgsl->ell;
@@ -547,10 +543,9 @@ PetscErrorCode  KSPCreate_BCGSL(KSP ksp)
   ierr = PetscNewLog(ksp, KSP_BCGSL, &bcgsl);CHKERRQ(ierr);
   ksp->data = (void*)bcgsl;
 
-  if (ksp->pc_side != PC_LEFT) {
-    ierr = PetscInfo(ksp,"WARNING! Setting PC_SIDE for BCGSL to left!\n");CHKERRQ(ierr);
-  }
-  ksp->pc_side              = PC_LEFT;
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,1);CHKERRQ(ierr);
+
   ksp->ops->setup           = KSPSetUp_BCGSL;
   ksp->ops->solve           = KSPSolve_BCGSL;
   ksp->ops->reset           = KSPReset_BCGSL;

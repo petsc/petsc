@@ -88,6 +88,9 @@ ex21: ex21.o chkopts
 ex22: ex22.o chkopts
 	-${CLINKER} -o ex22 ex22.o  ${PETSC_SYS_LIB}
 	${RM} -f ex22.o
+ex23: ex23.o chkopts
+	-${CLINKER} -o ex23 ex23.o  ${PETSC_SYS_LIB}
+	${RM} -f ex23.o
 #----------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 1 ./ex1
@@ -135,9 +138,13 @@ runex20_3:
 	   ${DIFF} output/ex20_3.out ex20_3.tmp || echo "Possible problem with ex20_3, diffs above"; \
 	   ${RM} -f ex20_3.tmp
 runex22:
-	-@${MPIEXEC} -n 1 ./ex22  > ex22.tmp 2>&1;   \
+	-@${MPIEXEC} -n 1 ./ex22 > ex22.tmp 2>&1;   \
 	   ${DIFF} output/ex22.out ex22.tmp || echo "Possible problem with ex22, diffs above"; \
 	   ${RM} -f ex22.tmp
+runex23:
+	-@${MPIEXEC} -n 1 ./ex23 -options_file_yaml ex23options > ex23.tmp 2>&1;   \
+	   ${DIFF} output/ex23.out ex23.tmp || echo "Possible problem with ex23, diffs above"; \
+	   ${RM} -f ex23.tmp
 
 
 TESTEXAMPLES_C		       = ex19.PETSc runex19 ex19.rm \

@@ -1,50 +1,44 @@
 
 /* Program usage:  ./ex16 [-help] [all PETSc options] */
 
-static char help[] = "Solves the van der Pol equation.\n\
+static char help[] = "Solves the van der Pol DAE.\n\
 Input parameters include:\n";
 
 /*
    Concepts: TS^time-dependent nonlinear problems
-   Concepts: TS^van der Pol equation
+   Concepts: TS^van der Pol DAE
    Processors: 1
 */
 /* ------------------------------------------------------------------------
 
-   This program solves the van der Pol equation
-       y'' - \mu (1-y^2)*y' + y = 0        (1)
+   This program solves the van der Pol DAE
+       y' = -z = f(y,z)        (1)
+       0  = y-(z^3/3 - z) = g(y,z)
    on the domain 0 <= x <= 1, with the boundary conditions
-       y(0) = 2, y'(0) = 0,
+       y(0) = -2, y'(0) = −2.355301397608119909925287735864250951918
    This is a nonlinear equation.
 
    Notes:
-   This code demonstrates the TS solver interface to two variants of
-   linear problems, u_t = f(u,t), namely turning (1) into a system of
-   first order differential equations,
+   This code demonstrates the TS solver interface with the Van der Pol DAE,
+   namely it is the case when there is no RHS (meaning the RHS == 0), and the
+   equations are converted to two variants of linear problems, u_t = f(u,t),
+   namely turning (1) into a vector equation in terms of u,
 
-   [ y' ] = [          z          ]
-   [ z' ]   [ \mu (1 - y^2) z - y ]
+   [     y' + z      ] = [ 0 ]
+   [ (z^3/3 - z) - y ]   [ 0 ]
 
    which then we can write as a vector equation
 
-   [ u_1' ] = [             u_2           ]  (2)
-   [ u_2' ]   [ \mu (1 - u_1^2) u_2 - u_1 ]
+   [      u_1' + u_2       ] = [ 0 ]  (2)
+   [ (u_2^3/3 - u_2) - u_1 ]   [ 0 ]
 
-   which is now in the desired form of u_t = f(u,t). One way that we
-   can split f(u,t) in (2) is to split by component,
+   which is now in the desired form of u_t = f(u,t). As this is a DAE, and
+   there is no u_2', there is no need for a split, 
 
-   [ u_1' ] = [ u_2 ] + [            0              ]
-   [ u_2' ]   [  0  ]   [ \mu (1 - u_1^2) u_2 - u_1 ]
+   so
 
-   where
-
-   [ F(u,t) ] = [ u_2 ]
-                [  0  ]
-
-   and
-
-   [ G(u',u,t) ] = [ u_1' ] - [            0              ]
-                   [ u_2' ]   [ \mu (1 - u_1^2) u_2 - u_1 ]
+   [ G(u',u,t) ] = [ u_1' ] + [         u_2           ]
+                   [  0   ]   [ (u_2^3/3 - u_2) - u_1 ]
 
    Using the definition of the Jacobian of G (from the PETSc user manual),
    in the equation G(u',u,t) = F(u,t),
@@ -57,17 +51,17 @@ Input parameters include:\n";
 
    dG   [ 1 ; 0 ]
    -- = [       ]
-   du'  [ 0 ; 1 ]
+   du'  [ 0 ; 0 ]
 
-   dG   [       0       ;         0        ]
-   -- = [                                  ]
-   du   [ -2 \mu u_1 - 1;  \mu (1 - u_1^2) ]
+   dG   [  0 ;      1     ]
+   -- = [                 ]
+   du   [ -1 ; 1 - u_2^2  ]
 
    Hence,
 
-          [      a       ;          0          ]
-   J(G) = [                                    ]
-          [ 2 \mu u_1 + 1; a - \mu (1 - u_1^2) ]
+          [ a ;    -1     ]
+   J(G) = [               ]
+          [ 1 ; u_2^2 - 1 ]
 
   ------------------------------------------------------------------------- */
 

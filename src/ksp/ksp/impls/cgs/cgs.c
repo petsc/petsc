@@ -14,7 +14,6 @@ static PetscErrorCode KSPSetUp_CGS(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (ksp->pc_side == PC_SYMMETRIC) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"no symmetric preconditioning for KSPCGS");
   ierr = KSPDefaultGetWork(ksp,7);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -156,8 +155,15 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "KSPCreate_CGS"
 PetscErrorCode  KSPCreate_CGS(KSP ksp)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   ksp->data                      = (void*)0;
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_RIGHT,1);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NATURAL,PC_LEFT,1);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NATURAL,PC_RIGHT,1);CHKERRQ(ierr);
+
   ksp->ops->setup                = KSPSetUp_CGS;
   ksp->ops->solve                = KSPSolve_CGS;
   ksp->ops->destroy              = KSPDefaultDestroy;

@@ -1361,15 +1361,6 @@ PetscErrorCode KSPSetUp_GLTR(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-
-  /***************************************************************************/
-  /* This implementation of CG only handles left preconditioning so generate */
-  /* an error otherwise.                                                     */
-  /***************************************************************************/
-
-  if (ksp->pc_side == PC_RIGHT) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP, "No right preconditioning for KSPGLTR");
-  else if (ksp->pc_side == PC_SYMMETRIC) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP, "No symmetric preconditioning for KSPGLTR");
-
   /***************************************************************************/
   /* Determine the total maximum number of iterations.                       */
   /***************************************************************************/
@@ -1572,8 +1563,9 @@ PetscErrorCode  KSPCreate_GLTR(KSP ksp)
   cg->max_newton_its  = 10;
 
   ksp->data = (void *) cg;
-  ksp->pc_side = PC_LEFT;
-  ksp->normtype = KSP_NORM_UNPRECONDITIONED;
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_UNPRECONDITIONED,PC_LEFT,2);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_PRECONDITIONED,PC_LEFT,1);CHKERRQ(ierr);
+  ierr = KSPSetSupportedNorm(ksp,KSP_NORM_NATURAL,PC_LEFT,1);CHKERRQ(ierr);
 
   /***************************************************************************/
   /* Sets the functions that are associated with this data structure         */
