@@ -366,13 +366,13 @@ PetscErrorCode Update_q(AppCtx *user)
     ierr = VecCopy(user->cv,user->work3);CHKERRQ(ierr);
     ierr = VecShift(user->work3,-1.0*user->cv_eq);CHKERRQ(ierr);
     ierr = VecNorm(user->work3,NORM_INFINITY,&max1);CHKERRQ(ierr);
-    printf("inf-norm of cv-cv_eq = %f\n",max1);
+    //printf("inf-norm of cv-cv_eq = %f\n",max1);
     ierr = VecCopy(user->Phi2D_V,user->Sv);CHKERRQ(ierr);
     ierr = VecScale(user->Sv,-1.0);CHKERRQ(ierr);
     ierr = VecShift(user->Sv,1.0);CHKERRQ(ierr);
     ierr = VecScale(user->Sv,user->Svr);CHKERRQ(ierr);
     ierr = VecNorm(user->Sv,NORM_INFINITY,&max1);CHKERRQ(ierr);
-    printf("inf-norm of Svr*(1-Phi2D_V) = %f\n",max1);
+    //printf("inf-norm of Svr*(1-Phi2D_V) = %f\n",max1);
     ierr = VecPointwiseMult(user->Sv,user->Sv,user->work3);
 
     ierr = VecCopy(user->ci,user->work4);CHKERRQ(ierr);
@@ -394,13 +394,13 @@ PetscErrorCode Update_q(AppCtx *user)
   ierr = VecScale(user->work1,-1.0);CHKERRQ(ierr);
 
   ierr = VecNorm(user->work1,NORM_INFINITY,&max1);CHKERRQ(ierr);
-  printf("inf-norm of user->work1 = %f\n",max1);
+  //printf("inf-norm of user->work1 = %f\n",max1);
 
   /* newly added: user->Sv gets added to user->work1 */
   if (user->twodomain) {
-    printf("twodomain 1\n");
+    //printf("twodomain 1\n");
     ierr = VecNorm(user->Sv,NORM_INFINITY,&max1);CHKERRQ(ierr);
-    printf("inf-norm of user->Sv = %f\n",max1);
+    //printf("inf-norm of user->Sv = %f\n",max1);
     
     ierr = VecAXPY(user->work1,1.0,user->Sv);CHKERRQ(ierr);
   }
@@ -408,7 +408,7 @@ PetscErrorCode Update_q(AppCtx *user)
   ierr = VecGetLocalSize(user->work1,&n);CHKERRQ(ierr);
   
   ierr = VecNorm(user->work2,NORM_INFINITY,&max1);CHKERRQ(ierr);
-  printf("inf-norm of wi = %f\n",max1);
+  //printf("inf-norm of wi = %f\n",max1);
 
  for (i=0;i<n;i++) {
        q_p[5*i]=w2[i];
@@ -417,7 +417,7 @@ PetscErrorCode Update_q(AppCtx *user)
   ierr = MatMult(user->M_0,user->DPsiv,user->work1);CHKERRQ(ierr);
 
   ierr = VecNorm(user->work1,NORM_INFINITY,&max1);CHKERRQ(ierr);
-  printf("inf-norm of cv = %f\n",max1);
+  //printf("inf-norm of cv = %f\n",max1);
   for (i=0;i<n;i++) {
        q_p[5*i+1]=w1[i];
   }
@@ -427,19 +427,19 @@ PetscErrorCode Update_q(AppCtx *user)
   ierr = VecScale(user->work1,-1.0);CHKERRQ(ierr);
 
   ierr = VecNorm(user->work1,NORM_INFINITY,&max1);CHKERRQ(ierr);
-  printf("inf-norm of user->work1 = %f\n",max1);
+  //printf("inf-norm of user->work1 = %f\n",max1);
   /* newly added: user->Si gets added to user->work1 */
   if (user->twodomain) {
-    printf("twodomain 2\n");
+    //printf("twodomain 2\n");
     ierr = VecNorm(user->Si,NORM_INFINITY,&max1);CHKERRQ(ierr);
-    printf("inf-norm of user->Si = %f\n",max1);
+    //printf("inf-norm of user->Si = %f\n",max1);
 
     ierr = VecAXPY(user->work1,1.0,user->Si);CHKERRQ(ierr);
   }
   ierr = MatMult(user->M_0,user->work1,user->work2);CHKERRQ(ierr);
  
   ierr = VecNorm(user->work2,NORM_INFINITY,&max1);CHKERRQ(ierr);
-  printf("inf-norm of wi = %f\n",max1);
+  //printf("inf-norm of wi = %f\n",max1);
  for (i=0;i<n;i++) {
        q_p[5*i+2]=w2[i];
   }
@@ -447,7 +447,7 @@ PetscErrorCode Update_q(AppCtx *user)
   ierr = MatMult(user->M_0,user->DPsii,user->work1);CHKERRQ(ierr);
 
   ierr = VecNorm(user->work1,NORM_INFINITY,&max1);CHKERRQ(ierr);
-  printf("inf-norm of ci = %f\n",max1);
+  //printf("inf-norm of ci = %f\n",max1);
  for (i=0;i<n;i++) {
        q_p[5*i+3]=w1[i];
   }
@@ -461,7 +461,7 @@ PetscErrorCode Update_q(AppCtx *user)
   ierr = VecScale(user->work2,user->dt*user->dt);CHKERRQ(ierr);
 
   ierr = VecNorm(user->work2,NORM_INFINITY,&max1);CHKERRQ(ierr);
-  printf("inf-norm of eta = %f\n",max1);
+  //printf("inf-norm of eta = %f\n",max1);
   for (i=0;i<n;i++) {
        q_p[5*i+4]=w2[i];
   }
