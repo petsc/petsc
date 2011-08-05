@@ -46,6 +46,7 @@ typedef struct{
   PetscReal   dtevent;  /* time scale of radiation events, roughly one event per dtevent */
   PetscInt    maxevents; /* once this number of events is reached no more events are generated */
   PetscReal   initv;    /* initial value of phase variables */
+  PetscReal   initeta; 
   PetscBool   degenerate;  /* use degenerate mobility */
   PetscBool   graphics;
   PetscBool   twodomain;
@@ -564,7 +565,7 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
 {
   PetscErrorCode    ierr;
   PetscInt          n,i;
-  PetscScalar	   *xx,*cv_p,*ci_p,*wv_p,*wi_p;
+  PetscScalar	   *xx,*cv_p,*ci_p,*wv_p,*wi_p,*eta
   /*  PetscViewer       view; */
 
   PetscFunctionBegin;
@@ -574,7 +575,7 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
 
   ierr = VecSet(user->cv,user->initv);CHKERRQ(ierr);
   ierr = VecSet(user->ci,user->initv);CHKERRQ(ierr);
-  ierr = VecSet(user->eta,0.0);CHKERRQ(ierr);
+  ierr = VecSet(user->eta,user->initeta);CHKERRQ(ierr);
 
   ierr = DPsi(user);CHKERRQ(ierr);
   ierr = VecCopy(user->DPsiv,user->wv);CHKERRQ(ierr);
@@ -585,13 +586,14 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
   ierr = VecGetArray(user->ci,&ci_p);CHKERRQ(ierr);
   ierr = VecGetArray(user->wv,&wv_p);CHKERRQ(ierr);
   ierr = VecGetArray(user->wi,&wi_p);CHKERRQ(ierr);
+  ierr = VecGetArray(user->eta,&eta);CHKERRQ(ierr);
   for (i=0;i<n/5;i++)
   {
     xx[5*i]=wv_p[i];
     xx[5*i+1]=cv_p[i];
     xx[5*i+2]=wi_p[i];
     xx[5*i+3]=ci_p[i];
-    xx[5*i+4]=0.0;
+    xx[5*i+4]=eta[i];
   }
 
   /* ierr = VecView(user->wv,view);CHKERRQ(ierr);
@@ -605,6 +607,7 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
   ierr = VecRestoreArray(user->ci,&ci_p);CHKERRQ(ierr);
   ierr = VecRestoreArray(user->wv,&wv_p);CHKERRQ(ierr);
   ierr = VecRestoreArray(user->wi,&wi_p);CHKERRQ(ierr);
+  ierr = VecRestoreArray(user->eta,&eta);CHKERRQ(ierr);
   
   PetscFunctionReturn(0);
 }
@@ -762,6 +765,7 @@ PetscErrorCode GetParams(AppCtx* user)
   user->T          = 1.0e-2;   
   user->dt         = 1.0e-4;
   user->initv      = .00069; 
+  user->initeta    = 0.0;
   user->degenerate = PETSC_FALSE;
   user->maxevents  = 1000;
   user->graphics   = PETSC_TRUE;
@@ -773,10 +777,13 @@ PetscErrorCode GetParams(AppCtx* user)
   user->cv_eq     = 6.9e-4;
   user->ci_eq     = 6.9e-4;
 
+
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,PETSC_NULL,"Coupled Cahn-Hillard/Allen-Cahn Equations","Phasefield");CHKERRQ(ierr);
     ierr = PetscOptionsReal("-Dv","???\n","None",user->Dv,&user->Dv,&flg);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-Di","???\n","None",user->Di,&user->Di,&flg);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-VG","???","None",user->VG,&user->VG,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-initv","Initial solution of Cv and Ci","None",user->initv,&user->initv,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-initeta","Initial solution of Eta","None",user->initeta,&user->initeta,&flg);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-degenerate","Run with degenerate mobility\n","None",user->degenerate,&user->degenerate,&flg);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-twodomain","Run two domain model\n","None",user->twodomain,&user->twodomain,&flg);CHKERRQ(ierr);
 

@@ -310,11 +310,12 @@ PetscErrorCode  SNESMonitorVI(SNES snes,PetscInt its,PetscReal fgnorm,void *dumm
   SNES_VI            *vi = (SNES_VI*)snes->data;
   PetscViewer        viewer = dummy ? (PetscViewer) dummy : PETSC_VIEWER_STDOUT_(((PetscObject)snes)->comm);
   const PetscScalar  *x,*xl,*xu,*f;
-  PetscInt           i,n,act[2] = {0,0},fact[2];
+  PetscInt           i,n,act[2] = {0,0},fact[2],N;
   PetscReal          rnorm,fnorm;
 
   PetscFunctionBegin;
   ierr = VecGetLocalSize(snes->vec_sol,&n);CHKERRQ(ierr);
+  ierr = VecGetSize(snes->vec_sol,&N);CHKERRQ(ierr);
   ierr = VecGetArrayRead(vi->xl,&xl);CHKERRQ(ierr);
   ierr = VecGetArrayRead(vi->xu,&xu);CHKERRQ(ierr);
   ierr = VecGetArrayRead(snes->vec_sol,&x);CHKERRQ(ierr);
@@ -334,8 +335,9 @@ PetscErrorCode  SNESMonitorVI(SNES snes,PetscInt its,PetscReal fgnorm,void *dumm
   ierr = MPI_Allreduce(&rnorm,&fnorm,1,MPIU_REAL,MPIU_SUM,((PetscObject)snes)->comm);CHKERRQ(ierr);
   ierr = MPI_Allreduce(act,fact,2,MPIU_INT,MPIU_SUM,((PetscObject)snes)->comm);CHKERRQ(ierr);
   fnorm = sqrt(fnorm);
+  
   ierr = PetscViewerASCIIAddTab(viewer,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"%3D SNES VI Function norm %14.12e Active lower constraints %D upper constraints %D\n",its,fnorm,fact[0],fact[1]);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"%3D SNES VI Function norm %14.12e Active lower constraints %D upper constraints %D Percent of total %g Percent of bounded %g\n",its,fnorm,fact[0],fact[1],((double)(fact[0]+fact[1]))/((double)N),((double)(fact[0]+fact[1]))/((double)vi->ntruebounds));CHKERRQ(ierr);
   ierr = PetscViewerASCIISubtractTab(viewer,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -2404,8 +2406,10 @@ static PetscErrorCode SNESView_VI(SNES snes,PetscViewer viewer)
 @*/
 PetscErrorCode SNESVISetVariableBounds(SNES snes, Vec xl, Vec xu)
 {
-  SNES_VI        *vi;
-  PetscErrorCode ierr;
+  SNES_VI           *vi;
+  PetscErrorCode    ierr;
+  const PetscScalar *xxl,*xxu;
+  PetscInt          i,n, cnt = 0;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
@@ -2422,6 +2426,15 @@ PetscErrorCode SNESVISetVariableBounds(SNES snes, Vec xl, Vec xu)
   ierr = VecDestroy(&vi->xu);CHKERRQ(ierr);
   vi->xl = xl;
   vi->xu = xu;
+  ierr = VecGetLocalSize(xl,&n);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(xl,&xxl);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(xu,&xxu);CHKERRQ(ierr);
+  for (i=0; i<n; i++) {
+    cnt += ((xxl[i] != SNES_VI_NINF) || (xxu[i] != SNES_VI_INF));
+  }
+  ierr = MPI_Allreduce(&cnt,&vi->ntruebounds,1,MPIU_INT,MPI_SUM,((PetscObject)snes)->comm);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(xl,&xxl);CHKERRQ(ierr);
+  ierr = VecRestoreArrayRead(xu,&xxu);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
