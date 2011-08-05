@@ -1150,7 +1150,7 @@ PetscErrorCode MatView_MUMPS(Mat A,PetscViewer viewer)
         ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(4) (estimated integer workspace for factors on all processors after analysis): %d \n",lu->id.INFOG(4));CHKERRQ(ierr);
         ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(5) (estimated maximum front size in the complete tree): %d \n",lu->id.INFOG(5));CHKERRQ(ierr);
         ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(6) (number of nodes in the complete tree): %d \n",lu->id.INFOG(6));CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(7) (ordering option effectively uese after analysis): %d \n",lu->id.INFOG(7));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(7) (ordering option effectively use after analysis): %d \n",lu->id.INFOG(7));CHKERRQ(ierr);
         ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(8) (structural symmetry in percent of the permuted matrix after analysis): %d \n",lu->id.INFOG(8));CHKERRQ(ierr);
         ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(9) (total real/complex workspace to store the matrix factors after factorization): %d \n",lu->id.INFOG(9));CHKERRQ(ierr);
         ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(10) (total integer space store the matrix factors after factorization): %d \n",lu->id.INFOG(10));CHKERRQ(ierr);

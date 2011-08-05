@@ -630,7 +630,7 @@ PetscErrorCode SetRandomVectors(AppCtx* user,PetscReal t)
     PetscViewer viewer;
     char        filename[PETSC_MAX_PATH_LEN];
     PetscBool   flg;
-    PetscInt    seed;
+    PetscInt    seed,n;
 
     ierr = PetscOptionsGetInt(PETSC_NULL,"-random_seed",&seed,&flg);CHKERRQ(ierr);
     if (flg) {
@@ -638,12 +638,14 @@ PetscErrorCode SetRandomVectors(AppCtx* user,PetscReal t)
     } else {
       ierr = PetscStrcpy(filename,"ex61.random");CHKERRQ(ierr);
     }
-    ierr = PetscMalloc(1000*sizeof(RandomValues),&randomvalues);CHKERRQ(ierr);
     ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
-    ierr = PetscViewerBinaryRead(viewer,randomvalues,4*1000,PETSC_DOUBLE);CHKERRQ(ierr);
-    for (i=0; i<1000; i++) randomvalues[i].dt = randomvalues[i].dt*user->dtevent;
+    ierr = PetscViewerBinaryRead(viewer,&n,1,PETSC_INT);CHKERRQ(ierr);
+    ierr = PetscMalloc(n*sizeof(RandomValues),&randomvalues);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryRead(viewer,randomvalues,4*n,PETSC_DOUBLE);CHKERRQ(ierr);
+    for (i=0; i<n; i++) randomvalues[i].dt = randomvalues[i].dt*user->dtevent;
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
+  user->maxevents = PetscMin(user->maxevents,n);
 
   ierr = VecSet(user->Pv,0.0);CHKERRQ(ierr);
   ierr = DMDAGetInfo(user->da1,0,&M,&N,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
