@@ -788,7 +788,7 @@ PetscErrorCode GetParams(AppCtx* user)
     user->dtevent = user->dt;
     ierr = PetscOptionsReal("-dtevent","Average time between events\n","None",user->dtevent,&user->dtevent,&flg);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-maxevents","Maximum events allowed\n","None",user->maxevents,&user->maxevents,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-smallnumber",&user->smallnumber,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-smallnumber","Small number added to degenerate mobility\n","None",user->smallnumber,&user->smallnumber,&flg);CHKERRQ(ierr);
 
     ierr = PetscOptionsBool("-graphics","Contour plot solutions at each timestep\n","None",user->graphics,&user->graphics,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);   
