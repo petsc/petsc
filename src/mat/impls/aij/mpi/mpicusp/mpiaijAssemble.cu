@@ -187,21 +187,54 @@ struct is_nonlocal
 };
 
 EXTERN_C_BEGIN
-// Ne: Number of elements
-// Nl: Number of dof per element
-// Nr: Number of matrix rows (dof)
+/*@C
+  MatMPIAIJSetValuesBatch - Set multiple blocks of values into a matrix
+
+  Not collective
+
+  Input Parameters:
++ J  - the assembled Mat object
+. Ne -  the number of blocks (elements)
+. Nl -  the block size (number of dof per element)
+. elemRows - List of block row indices, in bunches of length Nl
+- elemMats - List of block values, in bunches of Nl*Nl
+
+  Level: advanced
+
+.seealso MatSetValues()
+@*/
 #undef __FUNCT__
 #define __FUNCT__ "MatMPIAIJSetValuesBatch"
 PetscErrorCode MatMPIAIJSetValuesBatch(Mat J, PetscInt Ne, PetscInt Nl, PetscInt *elemRows, PetscScalar *elemMats)
 {
+  // Assumptions:
+  //   1) Each elemMat is square, of size Nl x Nl
+  //
+  //      This means that any nonlocal entry (i,j) where i is owned by another process is matched to
+  //        a) an offdiagonal entry (j,i) if j is diagonal, or
+  //        b) another nonlocal entry (j,i) if j is offdiagonal
+  //
+  //      No - numSendEntries: The number of on-process  diagonal+offdiagonal entries
+  //      numRecvEntries:      The number of off-process diagonal+offdiagonal entries
+  //
+  //  Glossary:
+  //     diagonal: (i,j) such that i,j in [firstRow, lastRow)
+  //  offdiagonal: (i,j) such that i in [firstRow, lastRow), and j not in [firstRow, lastRow)
+  //     nonlocal: (i,j) such that i not in [firstRow, lastRow)
+  //  nondiagonal: (i,j) such that i not in [firstRow, lastRow), or j not in [firstRow, lastRow)
+  //   on-process: entries provided by elemMats
+  //  off-process: entries received from other processes
   MPI_Comm        comm = ((PetscObject) J)->comm;
   Mat_MPIAIJ     *j    = (Mat_MPIAIJ *) J->data;
-  size_t          N    = Ne * Nl;
-  size_t          No   = Ne * Nl*Nl;
+  size_t          N    = Ne * Nl;    // Length of elemRows (dimension of unassembled space)
+  size_t          No   = Ne * Nl*Nl; // Length of elemMats (total number of values)
+  PetscInt        Nr;                // Size of J          (dimension of assembled space)
+  PetscInt        firstRow, lastRow, firstCol;
   const PetscInt *rowRanges;
-  PetscInt       *offDiagRows;
-  PetscInt        numNonlocalRows, numSendEntries, numRecvEntries;
-  PetscInt        Nr, Nc, firstRow, lastRow, firstCol;
+  PetscInt        numNonlocalRows;   // Number of rows in elemRows not owned by this process
+  PetscInt        numSendEntries;    // Number of (i,j,v) entries sent to other processes
+  PetscInt        numRecvEntries;    // Number of (i,j,v) entries received from other processes
+  PetscInt        Nc;
   PetscMPIInt     numProcs, rank;
   PetscErrorCode  ierr;
 
@@ -218,7 +251,7 @@ PetscErrorCode MatMPIAIJSetValuesBatch(Mat J, PetscInt Ne, PetscInt Nl, PetscInt
   ierr = MatGetOwnershipRange(J, &firstRow, &lastRow);CHKERRQ(ierr);
   ierr = MatGetOwnershipRanges(J, &rowRanges);CHKERRQ(ierr);
   ierr = MatGetOwnershipRangeColumn(J, &firstCol, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscInfo3(J, "Making matrix of size %d (rows %d -- %d)\n", Nr, firstRow, lastRow);CHKERRQ(ierr);
+  ierr = PetscInfo3(J, "Assembling matrix of size %d (rows %d -- %d)\n", Nr, firstRow, lastRow);CHKERRQ(ierr);
 
   // repeat elemRows entries Nl times
   ierr = PetscInfo(J, "Making row indices\n");CHKERRQ(ierr);
@@ -228,35 +261,28 @@ PetscErrorCode MatMPIAIJSetValuesBatch(Mat J, PetscInt Ne, PetscInt Nl, PetscInt
   ierr = PetscInfo(J, "Making column indices\n");CHKERRQ(ierr);
   tiled_range<IndexArrayIterator> colInd(d_elemRows.begin(), d_elemRows.end(), Nl, Nl);
 
-  // Find number of nonlocal rows
+  // Find number of nonlocal rows, convert nonlocal rows to procs, and send sizes of off-proc entries (could send diag and offdiag sizes)
   // TODO: Ask Nathan how to do this on GPU
-  ierr = PetscMalloc(N * sizeof(PetscInt), &offDiagRows);CHKERRQ(ierr);
-  numNonlocalRows = 0;
-  for(PetscInt i = 0; i < N; ++i) {
-    const PetscInt row = elemRows[i];
-    if ((row < firstRow) || (row >= lastRow)) {
-      offDiagRows[numNonlocalRows++] = row;
-    }
-  }
-  numSendEntries  = numNonlocalRows*Nl;
-  ierr = PetscInfo2(J, "Nonlocal rows %d total entries %d\n", numNonlocalRows, No);CHKERRQ(ierr);
-  // Convert rows to procs
-  // TODO: Ask Nathan how to do this on GPU
-  //   Count up entries going to each proc (convert rows to procs and sum)
-  //   send sizes of off-proc entries (could send diag and offdiag sizes)
-  PetscInt      *procSendSizes, *procRecvSizes;
+  PetscInt *procSendSizes, *procRecvSizes;
   ierr = PetscMalloc2(numProcs, PetscInt, &procSendSizes, numProcs, PetscInt, &procRecvSizes);CHKERRQ(ierr);
   ierr = PetscMemzero(procSendSizes, numProcs * sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscMemzero(procRecvSizes, numProcs * sizeof(PetscInt));CHKERRQ(ierr);
-  for(PetscInt i = 0; i < numNonlocalRows; ++i) {
-    const IndexType row = offDiagRows[i];
-    for(IndexType p = 0; p < numProcs; ++p) {
-      if ((row >= rowRanges[p]) && (row < rowRanges[p+1])) {
-        procSendSizes[p] += Nl;
-        break;
+  numNonlocalRows = 0;
+  for(PetscInt i = 0; i < N; ++i) {
+    const PetscInt row = elemRows[i];
+
+    if ((row < firstRow) || (row >= lastRow)) {
+      numNonlocalRows++;
+      for(IndexType p = 0; p < numProcs; ++p) {
+        if ((row >= rowRanges[p]) && (row < rowRanges[p+1])) {
+          procSendSizes[p] += Nl;
+          break;
+        }
       }
     }
   }
+  numSendEntries = numNonlocalRows*Nl;
+  ierr = PetscInfo2(J, "Nonlocal rows %d total entries %d\n", numNonlocalRows, No);CHKERRQ(ierr);
   ierr = MPI_Alltoall(procSendSizes, 1, MPIU_INT, procRecvSizes, 1, MPIU_INT, comm);CHKERRQ(ierr);
   numRecvEntries = 0;
   for(PetscInt p = 0; p < numProcs; ++p) {
@@ -265,15 +291,15 @@ PetscErrorCode MatMPIAIJSetValuesBatch(Mat J, PetscInt Ne, PetscInt Nl, PetscInt
   ierr = PetscInfo2(j->A, "Send entries %d Recv Entries %d\n", numSendEntries, numRecvEntries);CHKERRQ(ierr);
   // Allocate storage for "fat" COO representation of matrix
   ierr = PetscInfo2(j->A, "Making COO matrices, diag entries %d, nondiag entries %d\n", No-numSendEntries+numRecvEntries, numSendEntries*2);CHKERRQ(ierr);
-  cusp::coo_matrix<IndexType,ValueType, memSpace> diagCOO(Nr, Nr, No-numSendEntries+numRecvEntries); // TODO: Currently oversized
-  IndexArray nondiagonalRows(numSendEntries*2); // TODO: Currently oversized
-  IndexArray nondiagonalCols(numSendEntries*2); // TODO: Currently oversized
-  ValueArray nondiagonalVals(numSendEntries*2); // TODO: Currently oversized
+  cusp::coo_matrix<IndexType,ValueType, memSpace> diagCOO(Nr, Nr, No-numSendEntries+numRecvEntries); // ALLOC: This is oversized because I also count offdiagonal entries
+  IndexArray nondiagonalRows(numSendEntries+numSendEntries); // ALLOC: This is oversized because numSendEntries > on-process offdiagonal entries
+  IndexArray nondiagonalCols(numSendEntries+numSendEntries); // ALLOC: This is oversized because numSendEntries > on-process offdiagonal entries
+  ValueArray nondiagonalVals(numSendEntries+numSendEntries); // ALLOC: This is oversized because numSendEntries > on-process offdiagonal entries
   IndexArray nonlocalRows(numSendEntries);
   IndexArray nonlocalCols(numSendEntries);
   ValueArray nonlocalVals(numSendEntries);
-  // partition entries into diagonal and off-diagonal+off-proc
-  ierr = PetscInfo(J, "Splitting into diagonal and off-diagonal+off-proc\n");CHKERRQ(ierr);
+  // partition on-process entries into diagonal and off-diagonal+nonlocal
+  ierr = PetscInfo(J, "Splitting on-process entries into diagonal and off-diagonal+nonlocal\n");CHKERRQ(ierr);
   thrust::fill(diagCOO.row_indices.begin(), diagCOO.row_indices.end(), -1);
   thrust::fill(nondiagonalRows.begin(),     nondiagonalRows.end(),     -1);
   thrust::partition_copy(thrust::make_zip_iterator(thrust::make_tuple(rowInd.begin(), colInd.begin(), d_elemMats.begin())),
@@ -287,11 +313,11 @@ PetscErrorCode MatMPIAIJSetValuesBatch(Mat J, PetscInt Ne, PetscInt Nl, PetscInt
   ierr = PetscInfo2(j->A, "Diagonal size %d Nondiagonal size %d\n", diagonalSize, nondiagonalSize);CHKERRQ(ierr);
   ///cusp::print(diagCOO);
   ///cusp::print(nondiagonalRows);
-  // partition again into off-diagonal and off-proc
-  ierr = PetscInfo(J, "Splitting into off-diagonal and off-proc\n");CHKERRQ(ierr);
+  // partition on-process entries again into off-diagonal and nonlocal
+  ierr = PetscInfo(J, "Splitting on-process entries into off-diagonal and nonlocal\n");CHKERRQ(ierr);
   thrust::stable_partition(thrust::make_zip_iterator(thrust::make_tuple(nondiagonalRows.begin(), nondiagonalCols.begin(), nondiagonalVals.begin())),
-                    thrust::make_zip_iterator(thrust::make_tuple(nondiagonalRows.end(),   nondiagonalCols.end(),   nondiagonalVals.end())),
-                    is_nonlocal(firstRow, lastRow));
+                           thrust::make_zip_iterator(thrust::make_tuple(nondiagonalRows.end(),   nondiagonalCols.end(),   nondiagonalVals.end())),
+                           is_nonlocal(firstRow, lastRow));
   PetscInt nonlocalSize    = numSendEntries;
   PetscInt offdiagonalSize = nondiagonalSize - nonlocalSize;
   ierr = PetscInfo2(j->A, "Nonlocal size %d Offdiagonal size %d\n", nonlocalSize, offdiagonalSize);CHKERRQ(ierr);
@@ -309,23 +335,37 @@ PetscErrorCode MatMPIAIJSetValuesBatch(Mat J, PetscInt Ne, PetscInt Nl, PetscInt
     procSendDispls[p] = procSendDispls[p-1] + procSendSizes[p-1];
     procRecvDispls[p] = procRecvDispls[p-1] + procRecvSizes[p-1];
   }
+#if 0
   thrust::copy(nondiagonalRows.begin(), nondiagonalRows.begin()+nonlocalSize, sendRows);
   thrust::copy(nondiagonalCols.begin(), nondiagonalCols.begin()+nonlocalSize, sendCols);
   thrust::copy(nondiagonalVals.begin(), nondiagonalVals.begin()+nonlocalSize, sendVals);
+#else
+  thrust::copy(thrust::make_zip_iterator(thrust::make_tuple(nondiagonalRows.begin(), nondiagonalCols.begin(), nondiagonalVals.begin())),
+               thrust::make_zip_iterator(thrust::make_tuple(nondiagonalRows.begin(), nondiagonalCols.begin(), nondiagonalVals.begin()))+nonlocalSize,
+               thrust::make_zip_iterator(thrust::make_tuple(sendRows,                sendCols,                sendVals)));
+#endif
+  //   could pack into a struct and unpack
   ierr = MPI_Alltoallv(sendRows, procSendSizes, procSendDispls, MPIU_INT,    recvRows, procRecvSizes, procRecvDispls, MPIU_INT,    comm);CHKERRQ(ierr);
   ierr = MPI_Alltoallv(sendCols, procSendSizes, procSendDispls, MPIU_INT,    recvCols, procRecvSizes, procRecvDispls, MPIU_INT,    comm);CHKERRQ(ierr);
   ierr = MPI_Alltoallv(sendVals, procSendSizes, procSendDispls, MPIU_SCALAR, recvVals, procRecvSizes, procRecvDispls, MPIU_SCALAR, comm);CHKERRQ(ierr);
+  ierr = PetscFree2(procSendSizes, procRecvSizes);CHKERRQ(ierr);
   ierr = PetscFree2(procSendDispls, procRecvDispls);CHKERRQ(ierr);
   ierr = PetscFree3(sendRows, sendCols, sendVals);CHKERRQ(ierr);
   // Create off-diagonal matrix
-  cusp::coo_matrix<IndexType,ValueType, memSpace> offdiagCOO(Nr, Nr, offdiagonalSize+numRecvEntries);
+  cusp::coo_matrix<IndexType,ValueType, memSpace> offdiagCOO(Nr, Nr, offdiagonalSize+numRecvEntries); // ALLOC: This is oversizes because we count diagonal entries in numRecvEntries
   // partition again into diagonal and off-diagonal
   IndexArray d_recvRows(recvRows, recvRows+numRecvEntries);
   IndexArray d_recvCols(recvCols, recvCols+numRecvEntries);
   ValueArray d_recvVals(recvVals, recvVals+numRecvEntries);
+#if 0
   thrust::copy(nondiagonalRows.end()-offdiagonalSize, nondiagonalRows.end(), offdiagCOO.row_indices.begin());
   thrust::copy(nondiagonalCols.end()-offdiagonalSize, nondiagonalCols.end(), offdiagCOO.column_indices.begin());
   thrust::copy(nondiagonalVals.end()-offdiagonalSize, nondiagonalVals.end(), offdiagCOO.values.begin());
+#else
+  thrust::copy(thrust::make_zip_iterator(thrust::make_tuple(nondiagonalRows.end(),          nondiagonalCols.end(),             nondiagonalVals.end()))-offdiagonalSize,
+               thrust::make_zip_iterator(thrust::make_tuple(nondiagonalRows.end(),          nondiagonalCols.end(),             nondiagonalVals.end())),
+               thrust::make_zip_iterator(thrust::make_tuple(offdiagCOO.row_indices.begin(), offdiagCOO.column_indices.begin(), offdiagCOO.values.begin())));
+#endif
   thrust::fill(diagCOO.row_indices.begin()+diagonalSize,       diagCOO.row_indices.end(),    -1);
   thrust::fill(offdiagCOO.row_indices.begin()+offdiagonalSize, offdiagCOO.row_indices.end(), -1);
   thrust::partition_copy(thrust::make_zip_iterator(thrust::make_tuple(d_recvRows.begin(), d_recvCols.begin(), d_recvVals.begin())),
@@ -428,7 +468,6 @@ PetscErrorCode MatMPIAIJSetValuesBatch(Mat J, PetscInt Ne, PetscInt Nl, PetscInt
 
   ierr = PetscInfo(J, "Converting to PETSc matrix\n");CHKERRQ(ierr);
   ierr = MatSetType(J, MATMPIAIJCUSP);CHKERRQ(ierr);
-  //cusp::csr_matrix<PetscInt,PetscScalar,cusp::device_memory> Jgpu;
   CUSPMATRIX *Agpu = new CUSPMATRIX;
   CUSPMATRIX *Bgpu = new CUSPMATRIX;
   cusp::convert(A, *Agpu);
