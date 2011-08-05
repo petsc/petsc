@@ -34,7 +34,7 @@ def processSummary(moduleName, times, events):
 def plotSummary(library, num, sizes, nonzeros, times, events):
   from pylab import legend, plot, show, title, xlabel, ylabel, ylim
   import numpy as np
-  showEventTime      = False
+  showEventTime      = True
   showTimePerRow     = False
   showTimePerNonzero = True
   print events
@@ -93,6 +93,7 @@ if __name__ == '__main__':
   parser.add_argument('--num',     type = int, default='4', help='The example number')
   parser.add_argument('--module',  default='summary',       help='The module for timing output')
   parser.add_argument('--saved',                            help='Name of saved data')
+  parser.add_argument('--small',   action='store_true', default=False, help='Use small sizes')
 
   args = parser.parse_args()
   print(args)
@@ -102,8 +103,11 @@ if __name__ == '__main__':
   times    = []
   if args.saved is None:
     events   = {}
-    #for n in [10, 20, 50, 100, 150, 200, 250, 300, 350]:
-    for n in [10, 20]:
+    if args.small:
+      grid   = [100, 150, 200, 250, 300]
+    else:
+      grid   = range(150, 1350, 100)
+    for n in grid:
       ex.run(da_grid_x=n, da_grid_y=n, cusp_synchronize=1)
       sizes.append(n*n)
       nonzeros.append(calculateNonzeros(n))
