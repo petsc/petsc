@@ -92,9 +92,9 @@ int main(int argc, char **argv)
   IS                  inactiveconstraints;
   PetscInt            ninactiveconstraints,N;
   SNESConvergedReason reason;
-  PetscViewer         view_out, view_cv,view_eta,view_vtk_cv,view_vtk_eta;
+  /*PetscViewer         view_out, view_cv,view_eta,view_vtk_cv,view_vtk_eta;*/
   char                cv_filename[80],eta_filename[80];
-  PetscReal           bounds[] = {1000.0,-1000.,0.0,1.0,1000.0,-1000.0,0.0,1.0,1000.0,-1000.0};
+  /*PetscReal           bounds[] = {1000.0,-1000.,0.0,1.0,1000.0,-1000.0,0.0,1.0,1000.0,-1000.0}; */
 
   PetscInitialize(&argc,&argv, (char*)0, help);
   
@@ -745,43 +745,51 @@ PetscErrorCode GetParams(AppCtx* user)
   /* Set default parameters */
   user->xmin = 0.0; user->xmax = 1.0;
   user->ymin = 0.0; user->ymax = 1.0;
-  user->Dv = 1.0; user->Di=4.0;
-  user->Evf = 0.8; user->Eif = 1.2;
-  user->A = 1.0;
-  user->kBT = 0.11;
-  user->kav = 1.0; user->kai = 1.0; user->kaeta = 1.0;
-  user->Rsurf = 10.0; user->Rbulk = 1.0;
-  user->L = 10.0; 
-  user->T = 1.0e-2;   
-  user->dt = 1.0e-4;
-  user->VG = 100.0;
-  user->initv = .00069; 
+  user->Dv    = 1.0; 
+  user->Di    = 4.0;
+  user->Evf   = 0.8; 
+  user->Eif   = 1.2;
+  user->A     = 1.0;
+  user->kBT   = 0.11;
+  user->kav   = 1.0; 
+  user->kai   = 1.0; 
+  user->kaeta = 1.0;
+  user->Rsurf = 10.0; 
+  user->Rbulk = 1.0;
+  user->VG    = 100.0;
+  user->L     = 10.0; 
+
+  user->T          = 1.0e-2;   
+  user->dt         = 1.0e-4;
+  user->initv      = .00069; 
   user->degenerate = PETSC_FALSE;
-  user->maxevents = 1000;
-  user->graphics = PETSC_TRUE;
+  user->maxevents  = 1000;
+  user->graphics   = PETSC_TRUE;
+
   /* twodomain modeling */
-  user->twodomain = PETSC_TRUE;
-  user->Svr = 0.5; 
-  user->Sir = 0.5;
-  user->cv_eq = 6.9e-4;
-  user->ci_eq = 6.9e-4;
+  user->twodomain = PETSC_FALSE;
+  user->Svr       = 0.5; 
+  user->Sir       = 0.5;
+  user->cv_eq     = 6.9e-4;
+  user->ci_eq     = 6.9e-4;
 
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,PETSC_NULL,"Coupled Cahn-Hillard/Allen-Cahn Equations","Phasefield");CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-Dv","???\n","None",user->Dv,&user->Dv,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-Di","???\n","None",user->Di,&user->Di,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-VG","???","None",user->VG,&user->VG,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-degenerate","Run with degenerate mobility\n","None",user->degenerate,&user->degenerate,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-twodomain","Run two domain model\n","None",user->twodomain,&user->twodomain,&flg);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-Dv",&user->Dv,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-Di",&user->Di,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-xmin",&user->xmin,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-xmax",&user->xmax,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-T",&user->T,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-dt",&user->dt,&flg);CHKERRQ(ierr);
-  user->dtevent = user->dt;
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-dtevent",&user->dtevent,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-VG",&user->VG,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-maxevents",&user->maxevents,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-degenerate",&user->degenerate,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-graphics",&user->graphics,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-twodomain",&user->twodomain,&flg);CHKERRQ(ierr);
-   
+    ierr = PetscOptionsReal("-xmin","Lower X coordinate of domain\n","None",user->xmin,&user->xmin,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-xmax","Upper X coordinate of domain\n","None",user->xmax,&user->xmax,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-T","Total runtime\n","None",user->T,&user->T,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-dt","Time step\n","None",user->dt,&user->dt,&flg);CHKERRQ(ierr);
+    user->dtevent = user->dt;
+    ierr = PetscOptionsReal("-dtevent","Average time between events\n","None",user->dtevent,&user->dtevent,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-maxevents","Maximum events allowed\n","None",user->maxevents,&user->maxevents,&flg);CHKERRQ(ierr);
 
+    ierr = PetscOptionsBool("-graphics","Contour plot solutions at each timestep\n","None",user->graphics,&user->graphics,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);   
   PetscFunctionReturn(0);
  }
 
@@ -1140,11 +1148,8 @@ PetscErrorCode Phi(AppCtx* user)
   PetscScalar        xmid, xqu, lambda, h,x[3],y[3];
   Vec                coords;
   const PetscScalar  *_coords;
-  PetscInt           nele,nen,n,i,idx[3],Mda,Nda,vecsize;
+  PetscInt           nele,nen,i,idx[3],Mda,Nda;
   const PetscInt     *ele;
-  PetscScalar        max1;
-  PetscReal          min1;
-  PetscInt           loc1;
   PetscViewer        view;
 
   PetscFunctionBegin;
@@ -1171,7 +1176,7 @@ PetscErrorCode Phi(AppCtx* user)
     //printf("x[0]=%f,x[1]=%f,x[2]=%f\n",x[0],x[1],x[2]);
     //printf("y[0]=%f,y[1]=%f,y[2]=%f\n",y[0],y[1],y[2]);
     
-    PetscScalar vals1[3],vals2[3],vals_sum[3],dist1,dist2,s1,r,hhr,xc1,xc2;
+    PetscScalar vals1[3],vals2[3],dist1,dist2,s1,r,hhr,xc1,xc2;
     PetscInt    k;
 
     xc1 = user->xmin;
