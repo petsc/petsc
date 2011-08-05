@@ -46,7 +46,7 @@ struct _p_TaoSolver {
     void *user_boundsP;
 
     PetscErrorCode (*monitor[MAXTAOMONITORS])(TaoSolver,void*);
-    PetscErrorCode (*monitordestroy[MAXTAOMONITORS])(void*);
+    PetscErrorCode (*monitordestroy[MAXTAOMONITORS])(void**);
     void *monitorcontext[MAXTAOMONITORS];
     PetscInt numbermonitors;
     void *cnvP; 
@@ -117,6 +117,7 @@ struct _p_TaoSolver {
     PetscBool viewconstraints;
     PetscBool viewhessian;
     PetscBool viewjacobian;
+    PetscViewer viewer;
 
     PetscInt hist_max;/* Number of iteration histories to keep */
     PetscReal *hist_obj; /* obj value at each iteration */

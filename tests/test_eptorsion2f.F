@@ -117,7 +117,8 @@
       call PetscOptionsHasName(PETSC_NULL_CHARACTER,"-testmonitor",flg,
      &     ierr)
       if (flg) then
-         call TaoSolverSetMonitor(tao,Monitor,dummy,ierr)
+         call TaoSolverSetMonitor(tao,Monitor,dummy,PETSC_NULL_FUNCTION,
+     &        ierr)
       endif
 
       call PetscOptionsHasName(PETSC_NULL_CHARACTER,"-testconvergence",

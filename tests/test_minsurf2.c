@@ -162,7 +162,7 @@ int main( int argc, char **argv )
   */
   ierr = PetscOptionsHasName(PETSC_NULL,"-my_monitor",&viewmat); CHKERRQ(ierr);
   if (viewmat){
-    ierr = TaoSolverSetMonitor(tao,My_Monitor,PETSC_NULL); CHKERRQ(ierr);
+    ierr = TaoSolverSetMonitor(tao,My_Monitor,PETSC_NULL,PETSC_NULL); CHKERRQ(ierr);
   }
 
   /* Check for any tao command line options */

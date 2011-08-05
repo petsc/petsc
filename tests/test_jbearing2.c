@@ -164,7 +164,7 @@ int main( int argc, char **argv )
 */
   info = PetscOptionsHasName(TAO_NULL,"-testmonitor",&flg);
   if (flg) {
-    info = TaoSolverSetMonitor(tao,Monitor,&user); CHKERRQ(info);
+    info = TaoSolverSetMonitor(tao,Monitor,&user,PETSC_NULL); CHKERRQ(info);
   }
   info = PetscOptionsHasName(TAO_NULL,"-testconvergence",&flg);
   if (flg) {

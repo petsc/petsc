@@ -39,8 +39,10 @@ static int SEPOBJ=4;    // separable objective routine index
 static int JAC=5;       // jacobian routine index
 static int BOUNDS=6;
 static int MON=7;       // monitor routine index
-static int CONVTEST=8;  //
-static int NFUNCS=9;
+static int MONCTX=8;       // monitor routine index
+static int MONDESTROY=9; // monitor destroy index
+static int CONVTEST=10;  //
+static int NFUNCS=11;
 
 static PetscErrorCode ourtaosolverobjectiveroutine(TaoSolver tao, Vec x, PetscReal *f, void *ctx)
 {
@@ -110,6 +112,14 @@ static PetscErrorCode ourtaosolvermonitor(TaoSolver tao, void *ctx)
     return 0;
 }
 
+static PetscErrorCode ourtaomondestroy(void **ctx) 
+{
+    PetscErrorCode ierr = 0;
+    TaoSolver tao = *(TaoSolver*)ctx;
+    void *mctx = (void*)((PetscObject)tao)->fortran_func_pointers[MONCTX];
+    (*(void (PETSC_STDCALL *)(void*,PetscErrorCode*))(((PetscObject)tao)->fortran_func_pointers[MONDESTROY]))(mctx,&ierr); CHKERRQ(ierr);
+    return 0;
+}
 static PetscErrorCode ourtaosolverconvergencetest(TaoSolver tao, void *ctx)
 {
     PetscErrorCode ierr = 0;
@@ -219,16 +229,18 @@ void PETSC_STDCALL taosolversetvariableboundsroutine_(TaoSolver *tao, void (PETS
     }
     
 }    
-void PETSC_STDCALL taosolversetmonitor_(TaoSolver *tao, void (PETSC_STDCALL *func)(TaoSolver*,void*,PetscErrorCode*),void *ctx, PetscErrorCode *ierr)
+void PETSC_STDCALL taosolversetmonitor_(TaoSolver *tao, void (PETSC_STDCALL *func)(TaoSolver*,void*,PetscErrorCode*),void *ctx, void (PETSC_STDCALL *mondestroy)(void*,PetscErrorCode*),PetscErrorCode *ierr)
 {
     CHKFORTRANNULLOBJECT(ctx);
     CHKFORTRANNULLFUNCTION(func);
     PetscObjectAllocateFortranPointers(*tao,NFUNCS);
-    if (!func) {
-	*ierr = TaoSolverSetMonitor(*tao,0,ctx);
-    } else {
+    if (func) {
 	((PetscObject)*tao)->fortran_func_pointers[MON] = (PetscVoidFunction)func;
-	*ierr = TaoSolverSetMonitor(*tao,ourtaosolvermonitor,ctx);
+	if (FORTRANNULLFUNCTION(mondestroy)){
+	  *ierr = TaoSolverSetMonitor(*tao,ourtaosolvermonitor,*tao,PETSC_NULL);
+	} else {
+	  *ierr = TaoSolverSetMonitor(*tao,ourtaosolvermonitor,*tao,ourtaomondestroy);
+	}
     }
 }
 

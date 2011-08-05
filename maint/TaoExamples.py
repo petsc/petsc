@@ -178,6 +178,8 @@ class TaoExamples(ExampleList):
         self.add(Example(example="eptorsion2f",nprocs=1,options="-tao_smonitor",method="nls",tags=["eptorsion","single","unconstrained","fortran","nls","dm"],name="eptorsion2f"))
         self.add(Example(example="eptorsion2f",nprocs=2,options="-tao_smonitor",method="nls",tags=["eptorsion","multiprocessor","unconstrained","fortran","nls","dm"],name="eptorsion2f_2"))
         self.add(Example(example="eptorsion2f",nprocs=3,options="-tao_smonitor -mx 16 -my 16",method="lmvm",tags=["eptorsion","multiprocessor","unconstrained","fortran","lmvm","dm"],name="eptorsion2f_3"))
+        self.add(Example(example="eptorsion2f",nprocs=3,options="-tao_smonitor -mx 16 -my 16 -testmonitor",method="lmvm",tags=["eptorsion","multiprocessor","unconstrained","fortran","lmvm","dm","monitor"],name="eptorsion2f_4"))
+        self.add(Example(example="eptorsion2f",nprocs=3,options="-tao_smonitor -mx 16 -my 16 -testconvergence",method="lmvm",tags=["eptorsion","multiprocessor","unconstrained","fortran","lmvm","dm","convergence"],name="eptorsion2f_5"))
 
         # Bound constrained
         self.add(Example(example="plate2",nprocs=1,options="-tao_smonitor -mx 8 -my 6 -bmx 3 -bmy 3 -bheight 0.2",method="tron",tags=["bound","plate","single","c","tron","dm"],name="plate2"))
@@ -189,6 +191,8 @@ class TaoExamples(ExampleList):
         self.add(Example(example="jbearing2",nprocs=1,options="-tao_smonitor -mx 8 -my 12",method="tron",tags=["bound","jbearing","single","c","tron","dm"],name="jbearing2"))
         self.add(Example(example="jbearing2",nprocs=2,options="-tao_smonitor -mx 50 -my 50 -ecc 0.99",method="gpcg",tags=["bound","jbearing","multiprocessor","c","gpcg","dm"],name="jbearing2_2"))
         self.add(Example(example="jbearing2",nprocs=2,options="-tao_smonitor -mx 10 -my 16 -ecc 0.9",method="bqpip",tags=["bound","jbearing","multiprocessor","c","bqpip","dm"],name="jbearing2_3"))
+        self.add(Example(example="jbearing2",nprocs=2,options="-tao_smonitor -mx 10 -my 16 -ecc 0.9 -testmonitor",method="bqpip",tags=["bound","jbearing","multiprocessor","c","bqpip","dm","monitor"],name="jbearing2_4"))
+        self.add(Example(example="jbearing2",nprocs=2,options="-tao_smonitor -mx 10 -my 16 -ecc 0.9 -testconvergence",method="bqpip",tags=["bound","jbearing","multiprocessor","c","bqpip","dm","convergence"],name="jbearing2_5"))
         
 
         # Least squares
