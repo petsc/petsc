@@ -620,7 +620,7 @@ PetscErrorCode SetRandomVectors(AppCtx* user,PetscReal t)
 {
   PetscErrorCode        ierr;
   static RandomValues   *randomvalues = 0;
-  static PetscInt       randindex = 0; /* indicates how far into the randomvalues we have currently used */
+  static PetscInt       randindex = 0,n; /* indicates how far into the randomvalues we have currently used */
   static PetscReal      randtime = 0; /* indicates time of last radiation event */
   PetscInt              i,j,M,N,cnt = 0;
   PetscInt              xs,ys,xm,ym;
@@ -630,7 +630,7 @@ PetscErrorCode SetRandomVectors(AppCtx* user,PetscReal t)
     PetscViewer viewer;
     char        filename[PETSC_MAX_PATH_LEN];
     PetscBool   flg;
-    PetscInt    seed,n;
+    PetscInt    seed;
 
     ierr = PetscOptionsGetInt(PETSC_NULL,"-random_seed",&seed,&flg);CHKERRQ(ierr);
     if (flg) {
