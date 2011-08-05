@@ -85,19 +85,22 @@ int main(int argc,char **argv)
   Mat            A;                      /* Jacobian matrix data structure */
   Vec            u;                      /* approximate solution vector */
   Vec            r;                      /* residual vector */
-  PetscInt       time_steps_max = 100;  /* default max timesteps */
+  PetscInt       time_steps_max = 1000;  /* default max timesteps */
   PetscErrorCode ierr;
   PetscReal      dt;
   PetscReal      time_total_max = 100.0; /* default max total time */
   PetscBool      flg;
   Vec            xl,xu; /* Lower and upper bounds on variables */
   PetscScalar    ul=0.0,uh = 3.0;
+  PetscBool      mymonitor;
+  PetscReal      bounds[] = {1.0, 3.3};
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program and set problem parameters
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
  
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
+  ierr = PetscViewerDrawSetBounds(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),1,bounds);CHKERRQ(ierr);
 
   appctx.comm = PETSC_COMM_WORLD;
   appctx.m    = 60;
@@ -105,6 +108,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetScalar(PETSC_NULL,"-ul",&ul,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetScalar(PETSC_NULL,"-uh",&uh,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-debug",&appctx.debug);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-mymonitor",&mymonitor);CHKERRQ(ierr);
   appctx.h    = 1.0/(appctx.m-1.0);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -154,7 +158,9 @@ int main(int argc,char **argv)
      Set optional user-defined monitoring routine
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = TSMonitorSet(ts,Monitor,&appctx,PETSC_NULL);CHKERRQ(ierr);
+  if (mymonitor) {
+    ierr = TSMonitorSet(ts,Monitor,&appctx,PETSC_NULL);CHKERRQ(ierr);
+  }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      For nonlinear problems, the user can provide a Jacobian evaluation
@@ -543,7 +549,7 @@ PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec global_in,Vec global_out,void *
   ierr = MPI_Comm_rank(appctx->comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(appctx->comm,&size);CHKERRQ(ierr);
   if (!rank)          copyptr[0]           = 1.0;
-  if (rank == size-1) copyptr[localsize-1] = 2.0;
+  if (rank == size-1) copyptr[localsize-1] = (t < .5) ? 2.0 : 0.0;
 
   /*
      Handle the interior nodes where the PDE is replace by finite 

@@ -100,7 +100,7 @@ PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
   DM                da;
   PetscErrorCode    ierr;
   PetscMPIInt       rank,size,tag1,tag2;
-  PetscInt          i,n,N,step,istart,isize,j;
+  PetscInt          i,n,N,step,istart,isize,j,nbounds;
   MPI_Status        status;
   PetscReal         coors[4],ymin,ymax,min,max,xmin,xmax,tmp,xgtmp;
   const PetscScalar *array,*xg;
@@ -110,10 +110,12 @@ PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
   PetscDrawAxis     axis;
   Vec               xcoor;
   DMDABoundaryType  bx;
+  const PetscReal   *bounds;
 
   PetscFunctionBegin;
   ierr = PetscViewerDrawGetDraw(v,0,&draw);CHKERRQ(ierr);
   ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
+  ierr = PetscViewerDrawGetBounds(v,&nbounds,&bounds);CHKERRQ(ierr);
 
   ierr = PetscObjectQuery((PetscObject)xin,"DM",(PetscObject*)&da);CHKERRQ(ierr);
   if (!da) SETERRQ(((PetscObject)xin)->comm,PETSC_ERR_ARG_WRONG,"Vector not generated from a DMDA");
@@ -171,6 +173,11 @@ PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
       min -= 1.e-5;
       max += 1.e-5;
     }
+    if (j < nbounds) {
+      min = PetscMin(min,bounds[2*j]);
+      max = PetscMax(max,bounds[2*j+1]);
+    }
+
     ierr = MPI_Reduce(&min,&ymin,1,MPIU_REAL,MPIU_MIN,0,comm);CHKERRQ(ierr);
     ierr = MPI_Reduce(&max,&ymax,1,MPIU_REAL,MPIU_MAX,0,comm);CHKERRQ(ierr);
 
