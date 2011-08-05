@@ -453,7 +453,7 @@ PetscErrorCode TaoSolverSetFromOptions(TaoSolver tao)
 	  ierr = TaoSolverSetMonitor(tao,TaoSolverDefaultSMonitor,monviewer,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
 	}
 
-	ierr = PetscOptionsString("-tao_monitor","Use the default convergence monitor with constraint norm","TaoSolverSetMonitor","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+	ierr = PetscOptionsString("-tao_cmonitor","Use the default convergence monitor with constraint norm","TaoSolverSetMonitor","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
 	if (flg) {
 	  ierr = PetscViewerASCIIOpen(((PetscObject)tao)->comm,monfilename,&monviewer); CHKERRQ(ierr);
 	  ierr = TaoSolverSetMonitor(tao,TaoSolverDefaultCMonitor,monviewer,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
@@ -617,13 +617,42 @@ PetscErrorCode TaoSolverView(TaoSolver tao, PetscViewer viewer)
 		    ierr = PetscViewerASCIIPrintf(viewer," User Terminated\n"); CHKERRQ(ierr);
 		    break;
 		default:
+  		    ierr = PetscViewerASCIIPrintf(viewer,"\n"); CHKERRQ(ierr);
 		    break;
 	    }		
 	    
 	} else {
-	    ierr = PetscViewerASCIIPrintf(viewer,"  Solver terminated: %d\n",tao->reason);CHKERRQ(ierr);
+	    ierr = PetscViewerASCIIPrintf(viewer,"  Solver terminated: %d",tao->reason);CHKERRQ(ierr);
+	    switch (tao->reason) {
+	    case TAO_DIVERGED_MAXITS:
+	      ierr = PetscViewerASCIIPrintf(viewer," Maximum Iterations\n");
+	      CHKERRQ(ierr);
+	      break;
+	    case TAO_DIVERGED_NAN:
+	      ierr = PetscViewerASCIIPrintf(viewer," NAN or Inf encountered\n");
+	      CHKERRQ(ierr);
+	      break;
+	    case TAO_DIVERGED_MAXFCN:
+	      ierr = PetscViewerASCIIPrintf(viewer," Maximum Function Evaluations\n");
+	      CHKERRQ(ierr);
+	      break;
+	    case TAO_DIVERGED_LS_FAILURE:
+	      ierr = PetscViewerASCIIPrintf(viewer," Line Search Failure\n");
+	      CHKERRQ(ierr);
+	      break;
+	    case TAO_DIVERGED_TR_REDUCTION:
+	      ierr = PetscViewerASCIIPrintf(viewer," Trust Region too small\n");
+	      CHKERRQ(ierr);
+	      break;
+	    case TAO_DIVERGED_USER:
+	      ierr = PetscViewerASCIIPrintf(viewer," User Terminated\n");
+	      CHKERRQ(ierr);
+	      break;
+	    default:
+	      ierr = PetscViewerASCIIPrintf(viewer,"\n"); CHKERRQ(ierr);
+	      break;
+	    }
 	}
-	
     } else if (isstring) {
 	ierr = TaoSolverGetType(tao,&type); CHKERRQ(ierr);
 	ierr = PetscViewerStringSPrintf(viewer," %-3.3s",type); CHKERRQ(ierr);

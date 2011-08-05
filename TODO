@@ -1,5 +1,3 @@
-view_hessian, view_gradient, view_jacobian
-
 finite differences
    add to tests (-tao_fd, -tao_fdgrad, -tao_fd_delta)
 
@@ -10,7 +8,6 @@ tabs for view()
 
 Check documentation
 MT linesearch view
-
 
 Set KSP Monitors
 Check fortran stubs 
