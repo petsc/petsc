@@ -35,12 +35,14 @@ class JSONRPCExample:
         self.button_ams_memlist = Button("Get AMS memory list", self)
         self.button_useclass = Button("Useclass", self)
         self.button_useclass2 = Button("Useclass2", self)
+        self.button_useclass3 = Button("Useclass3", self)
 
         buttons = HorizontalPanel()
         buttons.add(self.button_echo)
         buttons.add(self.button_ams_memlist)
         buttons.add(self.button_useclass)
         buttons.add(self.button_useclass2)
+        buttons.add(self.button_useclass3)
         buttons.setSpacing(8)
         
         info = """<h2>JSON-RPC Example</h2>
@@ -75,6 +77,23 @@ class JSONRPCExample:
         elif sender == self.button_useclass2:
             result = self.commobj.get_memory_list(func = self.joe)
             self.text_area.setText('old'+str(result))
+        elif sender == self.button_useclass3:
+            result = self.commobj.get_memory_list()
+            self.text_area.setText('1')
+            for i in result:
+               self.text_area.setText('2')
+               memory = self.commobj.memory_attach(i)
+               self.text_area.setText('3')
+               fields = memory.get_field_list()
+               self.text_area.setText('4')
+               for j in fields:
+                  self.text_area.setText('5'+j)
+                  field = memory.get_field_info(j)
+                  self.text_area.setText('6')
+                  newstatus2=Label()
+                  newstatus2.setText(i+j+str(field))
+                  self.panel.add(newstatus2)
+
 
     def onRemoteResponse(self, response, request_info):
         global comm
@@ -138,14 +157,37 @@ class AMS_Memory(JSONProxy):
         global args
         self.comm             = comm
         self.memory           = memory
+        self.fieldlist        = []
+        self.fields           = {}
         self.remote           = ServicePython()
         id = self.remote.YAML_AMS_Memory_attach(comm,memory,self)
         args[id] = ['YAML_AMS_Memory_attach',comm,memory]
 
+    def get_field_list(self,func = null):
+        '''If called with func (net yet supported) then calls func asynchronously with latest memory list;
+           otherwise returns current (possibly out-dated) memory list'''
+        return self.fieldlist
+
+    def get_field_info(self,field):
+        '''Pass in string name of AMS field
+           If called with func (not yet done) then first updates comm with latest field list and then calls func with field'''
+        return self.fields[field]
+
     def onRemoteResponse(self, response, request_info):
         method = str(request_info.method)
+        rid    = request_info.id
         if method == "YAML_AMS_Memory_attach":
             self.memory = response[0]
+            id = self.remote.YAML_AMS_Memory_get_field_list(self.memory,self)
+            args[id] = ['YAML_AMS_Memory_get_field_list',self.memory]
+        elif method == "YAML_AMS_Memory_get_field_list":
+            self.fieldlist = response
+            for i in self.fieldlist:
+                id = self.remote_py.YAML_AMS_Memory_get_field_info(self.memory,i,self)
+                args[id] = ['YAML_AMS_Memory_get_field_info',self.memory,i]
+        elif method == "YAML_AMS_Memory_get_field_info":
+            self.fields[args[rid][2]] = response
+
 
     def onRemoteError(self, code, errobj, request_info):
         pass
@@ -176,7 +218,7 @@ class AMS_Comm(JSONProxy):
 
     def memory_attach(self,memory):
         '''Pass in string name of AMS memory object
-           If called with func then first updates comm with latest memory list and then calls func with memory'''
+           If called with func (not yet done) then first updates comm with latest memory list and then calls func with memory'''
         return self.memories[memory]
 
     def onRemoteResponse(self, response, request_info):
