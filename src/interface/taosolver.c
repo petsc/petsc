@@ -430,8 +430,8 @@ PetscErrorCode TaoSolverSetFromOptions(TaoSolver tao)
 /*	ierr = PetscOptionsName("-tao_view_constraints","view constraint function after each evaluation","None",&flg);CHKERRQ(ierr);  
 	if (flg) tao->viewvfunc = PETSC_TRUE; */
 
-/*	ierr = PetscOptionsName("-tao_cancelmonitors","cancel all monitors hardwired in code","TaoSolverClearMonitor",&flg);CHKERRQ(ierr); 
-	if (flg) {ierr = TaoSolverClearMonitor(tao);CHKERRQ(ierr);} */
+	ierr = PetscOptionsName("-tao_cancelmonitors","cancel all monitors hardwired in code","TaoSolverClearMonitor",&flg);CHKERRQ(ierr); 
+	if (flg) {ierr = TaoSolverClearMonitor(tao);CHKERRQ(ierr);} 
 	ierr = PetscOptionsName("-tao_monitor","Use the default convergence monitor","TaoSetMonitor",&flg);CHKERRQ(ierr);
 	if (flg) {
 	  ierr = TaoSolverSetMonitor(tao,TaoSolverDefaultMonitor,PETSC_NULL);CHKERRQ(ierr);
@@ -1083,26 +1083,39 @@ PetscErrorCode TaoSolverResetStatistics(TaoSolver tao)
 
 
 #undef __FUNCT__
-#define __FUNCT__ "TaoSolverSetDefaultMonitors"
-/*@
-   TaoSolverSetDefaultMonitors - Set the default monitors and viewing options available in TAO.
-   This routine is generally called only in TaoSolverCreate().
+#define __FUNCT__ "TaoSolverSetConvergenceTest"
+/*@C
+  TaoSolverSetConvergenceTest - Sets the function that is to be used to test
+  for convergence o fthe iterative minimization solution.  The new convergence
+  testing routine will replace TAO's default convergence test.
 
-   Collective on TaoSolver
+  Collective on TaoSolver
 
-   Input Parameters:
-.  solver - the TaoSolver context
+  Input Parameters:
++ tao - the TaoSolver object
+. conv - the routine to test for convergence
+- ctx - [optional] context for private data for the convergence routine
+        (may be PETSC_NULL)
 
-   Level: developer
+  Calling sequence of conv:
+$   PetscErrorCode conv(TaoSolver tao, void *ctx)
 
-.seealso: TaoSolverCreate(), TaoSolverResetStatistics(), TaoSolverMonitor()
++ tao - the TaoSolver object
+- ctx - [optional] convergence context
+
+  Note: The new convergence testing routine should call TaoSolverSetTerminationReason().
+
+  Level: advanced
+
+.seealse: TaoSolverSetTerminationReason(), TaoSolverGetSolutionStatus(), TaoSolverGetTolerances(), TaoSolverSetMonitor
+
 @*/
-
-PetscErrorCode TaoSolverSetDefaultMonitors(TaoSolver tao)
+PetscErrorCode TaoSolverSetConvergenceTest(TaoSolver tao, PetscErrorCode (*conv)(TaoSolver,void*), void *ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
-  
+  (tao)->ops->convergencetest = conv;
+  (tao)->cnvP = ctx;
   PetscFunctionReturn(0);
 }
 
@@ -1157,6 +1170,39 @@ PetscErrorCode TaoSolverSetMonitor(TaoSolver tao, PetscErrorCode (*func)(TaoSolv
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "TaoSolverClearMonitor"
+/*@
+   TaoSolverClearMonitor - Clears all the monitor functions for a TaoSolver object.
+
+   Collective on TaoSolver
+
+   Input Parameters:
+.  tao - the TaoSolver solver context
+
+   Options Database:
+.  -tao_cancelmonitors - cancels all monitors that have been hardwired
+    into a code by calls to TaoSolverSetMonitor(), but does not cancel those 
+    set via the options database
+
+   Notes: 
+   There is no way to clear one specific monitor from a TaoSolver object.
+
+   Level: advanced
+
+.keywords: options, monitor, View
+
+.seealso: TaoSolverDefaultMonitor(), TaoSolverSetMonitor()
+@*/
+PetscErrorCode TaoSolverClearMonitor(TaoSolver tao)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
+  tao->numbermonitors=0;
+  PetscFunctionReturn(0);
+}
+
+
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSolverDefaultMonitor"
@@ -1177,7 +1223,7 @@ PetscErrorCode TaoSolverSetMonitor(TaoSolver tao, PetscErrorCode (*func)(TaoSolv
 
    Level: advanced
 
-.seealso: TaoSolverDefaultSMonitor(), TaoSolverSetMonitor
+.seealso: TaoSolverDefaultSMonitor(), TaoSolverSetMonitor()
 @*/
 PetscErrorCode TaoSolverDefaultMonitor(TaoSolver tao, void *dummy)
 {
@@ -1802,9 +1848,9 @@ PetscErrorCode TaoSolverGetTerminationReason(TaoSolver tao, TaoSolverTermination
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSolverGetSolutionStatus"
-/*@C
-  TaoGetSolutionStatus - Get the current iterate, objective value, residual, 
-  infeasibility, and termination 
+/*@
+  TaoSolverGetSolutionStatus - Get the current iterate, objective value,
+  residual, infeasibility, and termination 
 
    Input Parameters:
 .  tao - the TaoSolver context

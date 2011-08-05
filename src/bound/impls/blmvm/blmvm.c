@@ -207,12 +207,12 @@ static PetscErrorCode TaoSolverSetFromOptions_BLMVM(TaoSolver tao)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  //  info = TaoOptionsHead("Limited-memory variable-metric method for bound constrained optimization"); CHKERRQ(info);
+  ierr = PetscOptionsHead("Limited-memory variable-metric method for bound constrained optimization"); CHKERRQ(ierr);
   ierr = TaoLineSearchSetFromOptions(tao->linesearch);CHKERRQ(ierr);
-  //info = TaoOptionsTail();CHKERRQ(info);
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 
-    return 0;
+  PetscFunctionReturn(0);
 }
 
 

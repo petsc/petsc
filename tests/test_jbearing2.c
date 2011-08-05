@@ -58,7 +58,8 @@ static PetscReal p(PetscReal xi, PetscReal ecc);
 static PetscErrorCode FormFunctionGradient(TaoSolver, Vec, PetscReal *,Vec,void *);
 static PetscErrorCode FormHessian(TaoSolver,Vec,Mat *, Mat *, MatStructure *, void *);
 static PetscErrorCode ComputeB(AppCtx*);
-
+static PetscErrorCode Monitor(TaoSolver, void*);
+static PetscErrorCode ConvergenceTest(TaoSolver, void*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -161,7 +162,14 @@ int main( int argc, char **argv )
     info = KSPSetType(ksp,KSPCG); CHKERRQ(info);
   }
 */
-
+  info = PetscOptionsHasName(TAO_NULL,"-testmonitor",&flg);
+  if (flg) {
+    info = TaoSolverSetMonitor(tao,Monitor,&user); CHKERRQ(info);
+  }
+  info = PetscOptionsHasName(TAO_NULL,"-testconvergence",&flg);
+  if (flg) {
+    info = TaoSolverSetConvergenceTest(tao,ConvergenceTest,&user); CHKERRQ(info);
+  }
 
   /* Check for any tao command line options */
   info = TaoSolverSetFromOptions(tao); CHKERRQ(info);
@@ -448,4 +456,38 @@ PetscErrorCode FormHessian(TaoSolver tao,Vec X,Mat *H, Mat *Hpre, MatStructure *
   info = PetscLogFlops(9*xm*ym+49*xm); CHKERRQ(info);
   info = MatNorm(hes,NORM_1,&hx); CHKERRQ(info);
   return 0;
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "Monitor"
+PetscErrorCode Monitor(TaoSolver tao, void *ctx)
+{
+  PetscErrorCode ierr;
+  PetscInt its;
+  PetscReal f,gnorm,cnorm,xdiff;
+  TaoSolverTerminationReason reason;
+  PetscFunctionBegin;
+  ierr = TaoSolverGetSolutionStatus(tao, &its, &f, &gnorm, &cnorm, &xdiff, &reason); CHKERRQ(ierr);
+  if (!(its%5)) {
+    PetscPrintf(PETSC_COMM_WORLD,"iteration=%d\tf=%g\n",its,f);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "ConvergenceTest"
+PetscErrorCode ConvergenceTest(TaoSolver tao, void *ctx)
+{
+  PetscErrorCode ierr;
+  PetscInt its;
+  PetscReal f,gnorm,cnorm,xdiff;
+  TaoSolverTerminationReason reason;
+  PetscFunctionBegin;
+  ierr = TaoSolverGetSolutionStatus(tao, &its, &f, &gnorm, &cnorm, &xdiff, &reason); CHKERRQ(ierr);
+  if (its == 100) {
+    TaoSolverSetTerminationReason(tao,TAO_DIVERGED_MAXITS);
+  }
+  PetscFunctionReturn(0);
+  
 }

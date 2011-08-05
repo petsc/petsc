@@ -54,12 +54,14 @@
       PetscInt         iter           ! iteration information
       PetscReal      ff,gnorm,cnorm,xdiff
       PetscInt         i1
+      PetscInt         dummy
       
 
 !  Note: Any user-defined Fortran routines (such as FormGradient)
 !  MUST be declared as external.
 
       external FormInitialGuess,FormFunctionGradient,ComputeHessian
+      external Monitor,ConvergenceTest
 
       i1 = 1
 
@@ -111,6 +113,19 @@
 !     Set initial guess
       call FormInitialGuess(x,ierr)
       call TaoSolverSetInitialVector(tao,x,ierr)
+
+      call PetscOptionsHasName(PETSC_NULL_CHARACTER,"-testmonitor",flg,
+     &     ierr)
+      if (flg) then
+         call TaoSolverSetMonitor(tao,Monitor,dummy,ierr)
+      endif
+
+      call PetscOptionsHasName(PETSC_NULL_CHARACTER,"-testconvergence",
+     &     flg, ierr)
+      if (flg) then
+         call TaoSolverSetConvergenceTest(tao,ConvergenceTest,dummy,      &
+     &        ierr)
+      endif
 
 !     Check for any TAO command line options
       call TaoSolverSetFromOptions(tao,ierr)
@@ -485,8 +500,50 @@
       
                
       
+      subroutine Monitor(tao, dummy, ierr)
+      implicit none
+#include "eptorsion2f.h"      
+      TaoSolver tao
+      PetscInt dummy
+      PetscErrorCode ierr
 
+      PetscInt its
+      PetscReal f,gnorm,cnorm,xdiff
+      TaoSolverTerminationReason reason
+      
+      call TaoSolverGetSolutionStatus(tao,its,f,gnorm,cnorm,xdiff,
+     &     reason,ierr)
+      if (mod(its,5) .ne. 0) then
+         call PetscPrintf(PETSC_COMM_WORLD,"iteration multiple of 5\n",
+     &        ierr)
+      endif
+      
+      ierr = 0
 
+      return
+      end
+
+      subroutine ConvergenceTest(tao, dummy, ierr)
+      implicit none
+#include "eptorsion2f.h"      
+      TaoSolver tao
+      PetscInt dummy
+      PetscErrorCode ierr
+
+      PetscInt its
+      PetscReal f,gnorm,cnorm,xdiff
+      TaoSolverTerminationReason reason
+      
+      call TaoSolverGetSolutionStatus(tao,its,f,gnorm,cnorm,xdiff,
+     &     reason,ierr)
+      if (its .eq. 100) then
+         call TaoSolverSetTerminationReason(tao,TAO_DIVERGED_MAXITS)
+      endif
+      
+      ierr = 0
+
+      return
+      end
 
 
 

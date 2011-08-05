@@ -121,15 +121,20 @@ extern PetscErrorCode TaoSolverSetOptionsPrefix(TaoSolver, const char p[]);
 extern PetscErrorCode TaoSolverAppendOptionsPrefix(TaoSolver, const char p[]);
 extern PetscErrorCode TaoSolverGetOptionsPrefix(TaoSolver, const char *p[]);
 extern PetscErrorCode TaoSolverResetStatistics(TaoSolver);
-extern PetscErrorCode TaoSolverSetDefaultMonitors(TaoSolver);
+
 extern PetscErrorCode TaoSolverGetKSP(TaoSolver, KSP*);
-extern PetscErrorCode TaoSolverDefaultConvergenceTest(TaoSolver,void*);
+
 extern PetscErrorCode TaoSolverSetHistory(TaoSolver,PetscReal*,PetscReal*,PetscReal*,PetscInt,PetscBool);
 extern PetscErrorCode TaoSolverGetHistory(TaoSolver,PetscReal**,PetscReal**,PetscReal**,PetscInt*);
 extern PetscErrorCode TaoSolverSetMonitor(TaoSolver, PetscErrorCode (*)(TaoSolver,void*),void *);
+extern PetscErrorCode TaoSolverClearMonitor(TaoSolver);
 extern PetscErrorCode TaoSolverDefaultMonitor(TaoSolver, void*);
 extern PetscErrorCode TaoSolverDefaultSMonitor(TaoSolver, void*);
 extern PetscErrorCode TaoSolverDefaultCMonitor(TaoSolver, void*);
+
+extern PetscErrorCode TaoSolverDefaultConvergenceTest(TaoSolver,void*);
+extern PetscErrorCode TaoSolverSetConvergenceTest(TaoSolver, PetscErrorCode (*)(TaoSolver, void*),void *);
+
 extern PetscErrorCode TaoSolverSQPCONSetStateIS(TaoSolver, IS);
 extern PetscErrorCode TaoSolverLCLSetStateIS(TaoSolver, IS);
 PetscErrorCode TaoSolverMonitor(TaoSolver, PetscInt, PetscReal, PetscReal, PetscReal, PetscReal, TaoSolverTerminationReason*); 

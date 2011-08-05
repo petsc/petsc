@@ -14,6 +14,7 @@
 #define taosolversettype_                        TAOSOLVERSETTYPE
 #define taosolverview_                           TAOSOLVERVIEW
 #define taosolvergethistory_                     TAOSOLVERGETHISTORY
+#define taosolversetconvergencetest_             TAOSOLVERSETCONVERGENCETEST
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 
 #define taosolversetobjectiveroutine_            taosolversetobjectiveroutine
@@ -27,6 +28,7 @@
 #define taosolversettype_                        taosolversettype
 #define taosolverview_                           taosolverview
 #define taosolvergethistory_                     taosolvergethistory
+#define taosolversetconvergencetest_             taosolversetconvergencetest
 #endif
 
 static int OBJ=0;       // objective routine index
@@ -37,7 +39,8 @@ static int SEPOBJ=4;    // separable objective routine index
 static int JAC=5;       // jacobian routine index
 static int BOUNDS=6;
 static int MON=7;       // monitor routine index
-static int NFUNCS=8;
+static int CONVTEST=8;  //
+static int NFUNCS=9;
 
 static PetscErrorCode ourtaosolverobjectiveroutine(TaoSolver tao, Vec x, PetscReal *f, void *ctx)
 {
@@ -103,6 +106,15 @@ static PetscErrorCode ourtaosolvermonitor(TaoSolver tao, void *ctx)
     PetscErrorCode ierr = 0;
     (*(void (PETSC_STDCALL *)(TaoSolver *, void*, PetscErrorCode*))
      (((PetscObject)tao)->fortran_func_pointers[MON]))(&tao,ctx,&ierr);
+    CHKERRQ(ierr);
+    return 0;
+}
+
+static PetscErrorCode ourtaosolverconvergencetest(TaoSolver tao, void *ctx)
+{
+    PetscErrorCode ierr = 0;
+    (*(void (PETSC_STDCALL *)(TaoSolver *, void*, PetscErrorCode*))
+     (((PetscObject)tao)->fortran_func_pointers[CONVTEST]))(&tao,ctx,&ierr);
     CHKERRQ(ierr);
     return 0;
 }
@@ -217,6 +229,19 @@ void PETSC_STDCALL taosolversetmonitor_(TaoSolver *tao, void (PETSC_STDCALL *fun
     } else {
 	((PetscObject)*tao)->fortran_func_pointers[MON] = (PetscVoidFunction)func;
 	*ierr = TaoSolverSetMonitor(*tao,ourtaosolvermonitor,ctx);
+    }
+}
+
+void PETSC_STDCALL taosolversetconvergencetest_(TaoSolver *tao, void (PETSC_STDCALL *func)(TaoSolver*,void*,PetscErrorCode*),void *ctx, PetscErrorCode *ierr)
+{
+    CHKFORTRANNULLOBJECT(ctx);
+    CHKFORTRANNULLFUNCTION(func);
+    PetscObjectAllocateFortranPointers(*tao,NFUNCS);
+    if (!func) {
+	*ierr = TaoSolverSetConvergenceTest(*tao,0,ctx);
+    } else {
+	((PetscObject)*tao)->fortran_func_pointers[CONVTEST] = (PetscVoidFunction)func;
+	*ierr = TaoSolverSetConvergenceTest(*tao,ourtaosolverconvergencetest,ctx);
     }
 }
 

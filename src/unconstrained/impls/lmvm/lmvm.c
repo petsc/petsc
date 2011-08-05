@@ -244,12 +244,12 @@ static PetscErrorCode TaoSolverSetFromOptions_LMVM(TaoSolver tao)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  //  ierr = TaoOptionsHead("Limited-memory variable-metric method for unconstrained optimization"); CHKERRQ(ierr);
+  ierr = PetscOptionsHead("Limited-memory variable-metric method for unconstrained optimization"); CHKERRQ(ierr);
   ierr = TaoLineSearchSetFromOptions(tao->linesearch); CHKERRQ(ierr);
-  //  ierr = TaoOptionsTail(); CHKERRQ(ierr);
+  ierr = PetscOptionsTail(); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 
-    return 0;
+  PetscFunctionReturn(0);
 }
 
 /*------------------------------------------------------------*/

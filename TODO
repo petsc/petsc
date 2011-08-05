@@ -1,9 +1,4 @@
-TRON using MatDiagonalSet -- mpiaij doesn't implement this
-
-test:
-  trust region tolerance
-
-replacing default convergence test
+view_hessian, view_gradient, view_jacobian
 
 finite differences
    add to tests (-tao_fd, -tao_fdgrad, -tao_fd_delta)
@@ -18,7 +13,6 @@ MT linesearch view
 
 
 Set KSP Monitors
-LMVM options
 Check fortran stubs 
 automatic testing, coverage
 
@@ -27,8 +21,7 @@ add pde_constrained section
 add pounders section
 
 make install to put libs/headers in separate location
- Check TAO options in TaoSolverSetFromOptions
- Fix convergence explanations
+Check TAO options in TaoSolverSetFromOptions
+Fix convergence explanations
     -2 maxits
 
-TaoSolverClearMonitor
