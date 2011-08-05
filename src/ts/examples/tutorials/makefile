@@ -107,6 +107,10 @@ ex21: ex21.o util2.o chkopts
 	-${CLINKER} -o ex21 ex21.o util2.o ${PETSC_TS_LIB}
 	${RM} ex21.o util2.o
 
+ex22: ex22.o chkopts
+	-${CLINKER} -o ex22 ex22.o ${PETSC_TS_LIB}
+	${RM} ex22.o
+
 #---------------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 1 ./ex1 -ksp_gmres_cgs_refinement_type refine_always -snes_type ls -ts_monitor_pseudo > ex1_1.tmp 2>&1;	  \
@@ -292,6 +296,11 @@ runex17_2:
 	-@${MPIEXEC} -n 1 ./ex17 -da_grid_x 100 -ts_type theta -ts_theta_theta 0.5 > ex17_2.tmp 2>&1; \
 	   ${DIFF} output/ex17_2.out ex17_2.tmp || echo "Possible problem with ex17_2, diffs above";  \
 	   ${RM} -f ex17_2.tmp
+
+runex22:
+	-@${MPIEXEC} -n 1 ./ex22 -da_grid_x 200 -ts_monitor_solution -ts_arkimex_type 4 > ex22_1.tmp 2>&1; \
+	   ${DIFF} output/ex22_1.out ex22_1.tmp || echo "Possible problem with ex22_1, diffs above";  \
+	   ${RM} -f ex22_1.tmp
 
 
 TESTEXAMPLES_C		  = ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 runex3_2 ex3.rm \
