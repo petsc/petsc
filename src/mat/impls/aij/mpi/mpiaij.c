@@ -2965,6 +2965,20 @@ PetscErrorCode MatGetSeqNonzerostructure_MPIAIJ(Mat mat,Mat *newmat)
 }
 
 extern PetscErrorCode  MatFDColoringApply_AIJ(Mat,MatFDColoring,Vec,MatStructure*,void*);
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatInvertBlockDiagonal_MPIAIJ"
+PetscErrorCode  MatInvertBlockDiagonal_MPIAIJ(Mat A,PetscScalar **values)
+{
+  Mat_MPIAIJ    *a = (Mat_MPIAIJ*) A->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatInvertBlockDiagonal(a->A,values);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
        MatGetRow_MPIAIJ,
@@ -3065,18 +3079,18 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
 /*80*/ 0,
        0,
        0,
-/*83*/ MatLoad_MPIAIJ,				       
+/*83*/ MatLoad_MPIAIJ,
        0,
        0,
        0,
        0,
        0,
-/*89*/ MatMatMult_MPIAIJ_MPIAIJ, 
-       MatMatMultSymbolic_MPIAIJ_MPIAIJ,  
-       MatMatMultNumeric_MPIAIJ_MPIAIJ, 
+/*89*/ MatMatMult_MPIAIJ_MPIAIJ,
+       MatMatMultSymbolic_MPIAIJ_MPIAIJ,
+       MatMatMultNumeric_MPIAIJ_MPIAIJ,
        MatPtAP_Basic,
        MatPtAPSymbolic_MPIAIJ,
-/*94*/ MatPtAPNumeric_MPIAIJ,                                
+/*94*/ MatPtAPNumeric_MPIAIJ,
        0,
        0,
        0,
@@ -3108,7 +3122,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
        MatGetMultiProcBlock_MPIAIJ, 
 /*124*/MatFindNonZeroRows_MPIAIJ,
        MatGetColumnNorms_MPIAIJ,
-       0,
+       MatInvertBlockDiagonal_MPIAIJ,
        0,
        MatGetSubMatricesParallel_MPIAIJ
 };

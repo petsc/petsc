@@ -424,7 +424,9 @@ static PetscErrorCode TSView_CN(TS ts,PetscViewer viewer)
   Level: beginner
 
   Notes:
-  TSCN is equivalent to TSTHETA with Theta=0.5
+  TSCN is equivalent to TSTHETA with Theta=0.5 and the "endpoint" option set. I.e.
+
+$  -ts_type theta -ts_theta_theta 0.5 -ts_theta_endpoint
 
 .seealso:  TSCreate(), TS, TSSetType(), TSBEULER, TSTHETA
 

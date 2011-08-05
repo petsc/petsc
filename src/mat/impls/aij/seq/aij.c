@@ -841,7 +841,8 @@ PetscErrorCode MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
 
   ierr = MatAssemblyEnd_SeqAIJ_Inode(A,mode);CHKERRQ(ierr);
 
-  a->idiagvalid = PETSC_FALSE;
+  a->idiagvalid  = PETSC_FALSE;
+  a->ibdiagvalid = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -2905,6 +2906,102 @@ PetscErrorCode MatGetRowMin_SeqAIJ(Mat A,Vec v,PetscInt idx[])
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#include <petscblaslapack.h>
+#include <../src/mat/blockinvert.h>
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatInvertBlockDiagonal_SeqAIJ"
+PetscErrorCode  MatInvertBlockDiagonal_SeqAIJ(Mat A,PetscScalar **values)
+{
+  Mat_SeqAIJ    *a = (Mat_SeqAIJ*) A->data;
+  PetscErrorCode ierr;
+  PetscInt       *diag_offset,i,bs = A->rmap->bs,mbs = A->rmap->n/A->rmap->bs,ipvt[5],bs2 = bs*bs,*v_pivots,ij[7],*IJ,j;
+  MatScalar      *diag,work[25],*v_work;
+  PetscReal      shift = 0.0;
+
+  PetscFunctionBegin;
+  if (a->ibdiagvalid) PetscFunctionReturn(0);
+  ierr = MatMarkDiagonal_SeqAIJ(A);CHKERRQ(ierr);
+  diag_offset = a->diag;
+  if (!a->ibdiag) {
+    ierr = PetscMalloc(bs2*mbs*sizeof(PetscScalar),&a->ibdiag);CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory(A,bs2*mbs*sizeof(PetscScalar));CHKERRQ(ierr);
+  }
+  diag    = a->ibdiag;
+  if (values) *values = a->ibdiag;
+  /* factor and invert each block */
+  switch (bs){
+    case 1:
+      for (i=0; i<mbs; i++) {
+        ierr    = MatGetValues(A,1,&i,1,&i,diag+i);CHKERRQ(ierr);
+        diag[i] = (PetscScalar)1.0 / (diag[i] + shift);
+      }
+      break;
+    case 2:
+      for (i=0; i<mbs; i++) {
+        ij[0] = 2*i; ij[1] = 2*i + 1;
+        ierr  = MatGetValues(A,2,ij,2,ij,diag);CHKERRQ(ierr);
+	ierr  = Kernel_A_gets_inverse_A_2(diag,shift);CHKERRQ(ierr);
+	diag  += 4;
+      }
+      break;
+    case 3:
+      for (i=0; i<mbs; i++) {
+        ij[0] = 3*i; ij[1] = 3*i + 1; ij[2] = 3*i + 2;
+        ierr  = MatGetValues(A,3,ij,3,ij,diag);CHKERRQ(ierr);
+	ierr     = Kernel_A_gets_inverse_A_3(diag,shift);CHKERRQ(ierr);
+	diag    += 9;
+      }
+      break;
+    case 4:
+      for (i=0; i<mbs; i++) {
+        ij[0] = 4*i; ij[1] = 4*i + 1; ij[2] = 4*i + 2; ij[3] = 4*i + 3;
+        ierr  = MatGetValues(A,4,ij,4,ij,diag);CHKERRQ(ierr);
+	ierr   = Kernel_A_gets_inverse_A_4(diag,shift);CHKERRQ(ierr);
+	diag  += 16;
+      }
+      break;
+    case 5:
+      for (i=0; i<mbs; i++) {
+        ij[0] = 5*i; ij[1] = 5*i + 1; ij[2] = 5*i + 2; ij[3] = 5*i + 3; ij[4] = 5*i + 4;
+        ierr  = MatGetValues(A,5,ij,5,ij,diag);CHKERRQ(ierr);
+	ierr   = Kernel_A_gets_inverse_A_5(diag,ipvt,work,shift);CHKERRQ(ierr);
+	diag  += 25;
+      }
+      break;
+    case 6:
+      for (i=0; i<mbs; i++) {
+        ij[0] = 6*i; ij[1] = 6*i + 1; ij[2] = 6*i + 2; ij[3] = 6*i + 3; ij[4] = 6*i + 4; ij[5] = 6*i + 5;
+        ierr  = MatGetValues(A,6,ij,6,ij,diag);CHKERRQ(ierr);
+	ierr   = Kernel_A_gets_inverse_A_6(diag,shift);CHKERRQ(ierr);
+	diag  += 36;
+      }
+      break;
+    case 7:
+      for (i=0; i<mbs; i++) {
+        ij[0] = 7*i; ij[1] = 7*i + 1; ij[2] = 7*i + 2; ij[3] = 7*i + 3; ij[4] = 7*i + 4; ij[5] = 7*i + 5; ij[5] = 7*i + 6;
+        ierr  = MatGetValues(A,7,ij,7,ij,diag);CHKERRQ(ierr);
+	ierr   = Kernel_A_gets_inverse_A_7(diag,shift);CHKERRQ(ierr);
+	diag  += 49;
+      }
+      break;
+    default: 
+      ierr = PetscMalloc3(bs,MatScalar,&v_work,bs,PetscInt,&v_pivots,bs,PetscInt,&IJ);CHKERRQ(ierr);
+      for (i=0; i<mbs; i++) {
+        for (j=0; j<bs; j++) {
+          IJ[j] = bs*i + j;
+        }
+        ierr  = MatGetValues(A,bs,IJ,bs,IJ,diag);CHKERRQ(ierr);
+        ierr   = Kernel_A_gets_inverse_A(bs,diag,v_pivots,v_work);CHKERRQ(ierr);
+	diag  += bs2;
+      }
+      ierr = PetscFree3(v_work,v_pivots,IJ);CHKERRQ(ierr);
+  }
+  a->ibdiagvalid = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
 extern PetscErrorCode  MatFDColoringApply_AIJ(Mat,MatFDColoring,Vec,MatStructure*,void*);
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
@@ -3036,7 +3133,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
        0,
        MatGetMultiProcBlock_SeqAIJ,
 /*124*/MatFindNonzeroRows_SeqAIJ,
-       MatGetColumnNorms_SeqAIJ
+       MatGetColumnNorms_SeqAIJ,
+       MatInvertBlockDiagonal_SeqAIJ
 };
 
 EXTERN_C_BEGIN
@@ -3688,6 +3786,7 @@ PetscErrorCode  MatCreate_SeqAIJ(Mat B)
   b->omega             = 1.0;
   b->fshift            = 0.0;
   b->idiagvalid        = PETSC_FALSE;
+  b->ibdiagvalid       = PETSC_FALSE;
   b->keepnonzeropattern    = PETSC_FALSE;
   b->xtoy              = 0;
   b->XtoY              = 0;
@@ -3884,19 +3983,23 @@ PetscErrorCode MatLoad_SeqAIJ(Mat newMat, PetscViewer viewer)
   int            fd;
   PetscMPIInt    size;
   MPI_Comm       comm;
+  PetscInt       bs = 1;
   
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"view must have one processor");
+
+  ierr = PetscOptionsBegin(comm,PETSC_NULL,"Options for loading SEQAIJ matrix","Mat");CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-matload_block_size","Set the blocksize used to store the matrix","MatLoad",bs,&bs,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+
   ierr = PetscViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
   ierr = PetscBinaryRead(fd,header,4,PETSC_INT);CHKERRQ(ierr);
   if (header[0] != MAT_FILE_CLASSID) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"not matrix object in file");
   M = header[1]; N = header[2]; nz = header[3];
 
-  if (nz < 0) {
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Matrix stored in special format on disk,cannot load as SeqAIJ");
-  }
+  if (nz < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Matrix stored in special format on disk,cannot load as SeqAIJ");
 
   /* read in row lengths */
   ierr = PetscMalloc(M*sizeof(PetscInt),&rowlengths);CHKERRQ(ierr);
@@ -3932,6 +4035,7 @@ PetscErrorCode MatLoad_SeqAIJ(Mat newMat, PetscViewer viewer)
 
   ierr = MatAssemblyBegin(newMat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(newMat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (bs > 1) {ierr = MatSetBlockSize(newMat,bs);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 

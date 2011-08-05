@@ -6761,15 +6761,22 @@ Properties -> C/C++ Build -> Settings
 Then you get a new window with on the right hand side the various setting options.
 
 Select Includes, and add the required PETSc paths. In my case I have added
+\begin{verbatim}
 ${PETSC_DIR}/include
 ${PETSC_DIR}/${PETSC_ARCH}/include
+\end{verbatim}
 
 Then select "Libraries" under the header Linker
 and you should set the Library search path:
+\begin{verbatim}
 ${PETSC_DIR}/${PETSC_ARCH}/lib
+\end{verbatim}
+
 
 and then the libraries, in my case:
+\begin{verbatim}
 m, petsc, stdc++, mpichxx, mpich, lapack, blas, gfortran, dl, rt,gcc_s, pthread, X11
+\end{verbatim}
 
 
 To make PETSc an Eclipse package

@@ -260,7 +260,7 @@ PetscErrorCode KSPNormSupportTableReset_Private(KSP ksp)
 #define __FUNCT__ "KSPSetUpNorms_Private"
 PetscErrorCode KSPSetUpNorms_Private(KSP ksp)
 {
-  PetscInt i,j,best,ibest,jbest;
+  PetscInt i,j,best,ibest = 0,jbest = 0;
 
   PetscFunctionBegin; 
   best = 0;

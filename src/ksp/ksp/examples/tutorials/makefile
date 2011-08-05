@@ -260,6 +260,10 @@ ex54: ex54.o chkopts
 	-${CLINKER} -o ex54 ex54.o ${PETSC_KSP_LIB}
 	${RM} ex54.o
 
+ex55: ex55.o chkopts
+	-${CLINKER} -o ex55 ex55.o ${PETSC_KSP_LIB}
+	${RM} ex55.o
+
 #----------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 1 ./ex1 -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex1_1.tmp 2>&1;	  \
@@ -988,8 +992,13 @@ runex53_2:
 
 runex54:
 	-@echo ${MPIEXEC}
-	-@${MPIEXEC} -n 1 ./ex54 -ne 110 -alpha 1.e-0 -ksp_monitor -ksp_rtol 1.e-12 -ksp_type cg -pc_mg_type full -ksp_max_it 50 -options_left -ksp_norm_type unpreconditioned -log_summary
-#-log_summary -ksp_pc_side right 
+	-@${MPIEXEC} -n 1 ./ex54 -ne 110 -alpha 1.e-0 -ksp_monitor -ksp_rtol 1.e-12 -ksp_type cg -pc_mg_type full -ksp_max_it 50 -options_left -ksp_norm_type unpreconditioned
+#-log_summary -ksp_pc_side right
+
+runex55:
+	-@echo ${MPIEXEC}
+	-@${MPIEXEC} -n 4 ./ex55 -ne 140 -alpha 1.e-0 -ksp_monitor -ksp_rtol 1.e-12 -ksp_type cg -pc_mg_type full -ksp_max_it 50 -options_left -ksp_norm_type unpreconditioned -hel
+
 
 TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 \
                                  runex2_4 runex2_bjacobi runex2_bjacobi_2 runex2_bjacobi_3 runex2_specest_1 runex2_specest_2 ex2.rm \
