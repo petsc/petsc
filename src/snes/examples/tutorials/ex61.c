@@ -58,6 +58,7 @@ typedef struct{
   Vec         work1,work2,work3,work4;
   PetscScalar Dv,Di,Evf,Eif,A,kBT,kav,kai,kaeta,Rsurf,Rbulk,L,VG; /* physics parameters */
   PetscScalar Svr,Sir,cv_eq,ci_eq; /* for twodomain modeling */
+  PetscReal   smallnumber; /* gets added to degenerate mobility */
   PetscReal   xmin,xmax,ymin,ymax;
   PetscInt    Mda, Nda;
 }AppCtx;
@@ -366,13 +367,13 @@ PetscErrorCode Update_q(AppCtx *user)
     ierr = VecCopy(user->cv,user->work3);CHKERRQ(ierr);
     ierr = VecShift(user->work3,-1.0*user->cv_eq);CHKERRQ(ierr);
     ierr = VecNorm(user->work3,NORM_INFINITY,&max1);CHKERRQ(ierr);
-    printf("inf-norm of cv-cv_eq = %f\n",max1);
+    //printf("inf-norm of cv-cv_eq = %f\n",max1);
     ierr = VecCopy(user->Phi2D_V,user->Sv);CHKERRQ(ierr);
     ierr = VecScale(user->Sv,-1.0);CHKERRQ(ierr);
     ierr = VecShift(user->Sv,1.0);CHKERRQ(ierr);
     ierr = VecScale(user->Sv,user->Svr);CHKERRQ(ierr);
     ierr = VecNorm(user->Sv,NORM_INFINITY,&max1);CHKERRQ(ierr);
-    printf("inf-norm of Svr*(1-Phi2D_V) = %f\n",max1);
+    //printf("inf-norm of Svr*(1-Phi2D_V) = %f\n",max1);
     ierr = VecPointwiseMult(user->Sv,user->Sv,user->work3);
 
     ierr = VecCopy(user->ci,user->work4);CHKERRQ(ierr);
@@ -394,13 +395,13 @@ PetscErrorCode Update_q(AppCtx *user)
   ierr = VecScale(user->work1,-1.0);CHKERRQ(ierr);
 
   ierr = VecNorm(user->work1,NORM_INFINITY,&max1);CHKERRQ(ierr);
-  printf("inf-norm of user->work1 = %f\n",max1);
+  //printf("inf-norm of user->work1 = %f\n",max1);
 
   /* newly added: user->Sv gets added to user->work1 */
   if (user->twodomain) {
-    printf("twodomain 1\n");
+    //printf("twodomain 1\n");
     ierr = VecNorm(user->Sv,NORM_INFINITY,&max1);CHKERRQ(ierr);
-    printf("inf-norm of user->Sv = %f\n",max1);
+    //printf("inf-norm of user->Sv = %f\n",max1);
     
     ierr = VecAXPY(user->work1,1.0,user->Sv);CHKERRQ(ierr);
   }
@@ -408,7 +409,7 @@ PetscErrorCode Update_q(AppCtx *user)
   ierr = VecGetLocalSize(user->work1,&n);CHKERRQ(ierr);
   
   ierr = VecNorm(user->work2,NORM_INFINITY,&max1);CHKERRQ(ierr);
-  printf("inf-norm of wi = %f\n",max1);
+  //printf("inf-norm of wi = %f\n",max1);
 
  for (i=0;i<n;i++) {
        q_p[5*i]=w2[i];
@@ -417,7 +418,7 @@ PetscErrorCode Update_q(AppCtx *user)
   ierr = MatMult(user->M_0,user->DPsiv,user->work1);CHKERRQ(ierr);
 
   ierr = VecNorm(user->work1,NORM_INFINITY,&max1);CHKERRQ(ierr);
-  printf("inf-norm of cv = %f\n",max1);
+  //printf("inf-norm of cv = %f\n",max1);
   for (i=0;i<n;i++) {
        q_p[5*i+1]=w1[i];
   }
@@ -427,19 +428,19 @@ PetscErrorCode Update_q(AppCtx *user)
   ierr = VecScale(user->work1,-1.0);CHKERRQ(ierr);
 
   ierr = VecNorm(user->work1,NORM_INFINITY,&max1);CHKERRQ(ierr);
-  printf("inf-norm of user->work1 = %f\n",max1);
+  //printf("inf-norm of user->work1 = %f\n",max1);
   /* newly added: user->Si gets added to user->work1 */
   if (user->twodomain) {
-    printf("twodomain 2\n");
+    //printf("twodomain 2\n");
     ierr = VecNorm(user->Si,NORM_INFINITY,&max1);CHKERRQ(ierr);
-    printf("inf-norm of user->Si = %f\n",max1);
+    //printf("inf-norm of user->Si = %f\n",max1);
 
     ierr = VecAXPY(user->work1,1.0,user->Si);CHKERRQ(ierr);
   }
   ierr = MatMult(user->M_0,user->work1,user->work2);CHKERRQ(ierr);
  
   ierr = VecNorm(user->work2,NORM_INFINITY,&max1);CHKERRQ(ierr);
-  printf("inf-norm of wi = %f\n",max1);
+  //printf("inf-norm of wi = %f\n",max1);
  for (i=0;i<n;i++) {
        q_p[5*i+2]=w2[i];
   }
@@ -447,7 +448,7 @@ PetscErrorCode Update_q(AppCtx *user)
   ierr = MatMult(user->M_0,user->DPsii,user->work1);CHKERRQ(ierr);
 
   ierr = VecNorm(user->work1,NORM_INFINITY,&max1);CHKERRQ(ierr);
-  printf("inf-norm of ci = %f\n",max1);
+  //printf("inf-norm of ci = %f\n",max1);
  for (i=0;i<n;i++) {
        q_p[5*i+3]=w1[i];
   }
@@ -461,7 +462,7 @@ PetscErrorCode Update_q(AppCtx *user)
   ierr = VecScale(user->work2,user->dt*user->dt);CHKERRQ(ierr);
 
   ierr = VecNorm(user->work2,NORM_INFINITY,&max1);CHKERRQ(ierr);
-  printf("inf-norm of eta = %f\n",max1);
+  //printf("inf-norm of eta = %f\n",max1);
   for (i=0;i<n;i++) {
        q_p[5*i+4]=w2[i];
   }
@@ -776,8 +777,7 @@ PetscErrorCode GetParams(AppCtx* user)
   user->Sir       = 0.5;
   user->cv_eq     = 6.9e-4;
   user->ci_eq     = 6.9e-4;
-
-
+  user->smallnumber = 1.0e-3;
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,PETSC_NULL,"Coupled Cahn-Hillard/Allen-Cahn Equations","Phasefield");CHKERRQ(ierr);
     ierr = PetscOptionsReal("-Dv","???\n","None",user->Dv,&user->Dv,&flg);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-Di","???\n","None",user->Di,&user->Di,&flg);CHKERRQ(ierr);
@@ -794,6 +794,7 @@ PetscErrorCode GetParams(AppCtx* user)
     user->dtevent = user->dt;
     ierr = PetscOptionsReal("-dtevent","Average time between events\n","None",user->dtevent,&user->dtevent,&flg);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-maxevents","Maximum events allowed\n","None",user->maxevents,&user->maxevents,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-smallnumber","Small number added to degenerate mobility\n","None",user->smallnumber,&user->smallnumber,&flg);CHKERRQ(ierr);
 
     ierr = PetscOptionsBool("-graphics","Contour plot solutions at each timestep\n","None",user->graphics,&user->graphics,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);   
@@ -1096,8 +1097,8 @@ PetscErrorCode UpdateMatrices(AppCtx* user)
       for(r=0;r<3;r++) {
                  
       if (user->degenerate) {     
-        cv_sum = (1.0e-3+cv_p[idx[0]] + cv_p[idx[1]] + cv_p[idx[2]])*user->Dv/(3.0*user->kBT);
-        ci_sum = (1.0e-3+ci_p[idx[0]] + ci_p[idx[1]] + ci_p[idx[2]])*user->Di/(3.0*user->kBT);
+        cv_sum = (user->smallnumber + cv_p[idx[0]] + cv_p[idx[1]] + cv_p[idx[2]])*user->Dv/(3.0*user->kBT);
+        ci_sum = (user->smallnumber + ci_p[idx[0]] + ci_p[idx[1]] + ci_p[idx[2]])*user->Di/(3.0*user->kBT);
       } else {
         cv_sum = user->initv*user->Dv/(user->kBT);
         ci_sum = user->initv*user->Di/user->kBT;
