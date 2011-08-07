@@ -3532,6 +3532,8 @@ PetscErrorCode  MatSolveTransposeAdd(Mat mat,Vec b,Vec y,Vec x)
 
    Vectors x and b CANNOT be the same
 
+   Developer Note: We should add block SOR support for AIJ matrices with block size set to great than one and no inodes
+
    Level: developer
 
    Concepts: matrices^relaxation
@@ -8636,3 +8638,31 @@ PetscErrorCode  MatFindZeroDiagonals(Mat mat,IS *is)
   ierr = (*mat->ops->findzerodiagonals)(mat,is);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }   
+
+#undef __FUNCT__
+#define __FUNCT__ "MatInvertBlockDiagonal"
+/*@
+  MatInvertBlockDiagonal - Inverts the block diagonal entries.
+
+  Collective on Mat
+
+  Input Parameters:
+. mat - the matrix
+
+  Output Parameters:
+. values - the block inverses in column major order (FORTRAN-like)
+
+  Level: advanced
+@*/
+PetscErrorCode  MatInvertBlockDiagonal(Mat mat,PetscScalar **values)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  if (!mat->assembled) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (mat->factortype) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+  if (!mat->ops->invertblockdiagonal) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Not supported"); 
+  ierr = (*mat->ops->invertblockdiagonal)(mat,values);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}

@@ -59,7 +59,6 @@ int main(int argc,char **argv)
   MatStructure   A_structure;
   TSProblemType  tsproblem = TS_LINEAR;
   PetscDraw      draw;
-  PetscViewer    viewer;
   char           tsinfo[120];
  
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
@@ -214,6 +213,8 @@ int main(int argc,char **argv)
   ierr = PetscOptionsHasName(PETSC_NULL,"-testinfo",&flg);CHKERRQ(ierr);
   if (flg) {
     PetscBool  iseuler;
+    ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
+
     ierr = PetscTypeCompare((PetscObject)ts,"euler",&iseuler);CHKERRQ(ierr);
     if (iseuler) {
       if (!PETSC_NEAR(appctx.norm_2/steps,0.00257244,1.e-4)) {

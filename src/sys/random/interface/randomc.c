@@ -321,7 +321,7 @@ static PetscErrorCode PetscRandomPublish_Petsc(PetscObject obj)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = AMS_Memory_add_field(obj->amem,"seed",&rand->low,1,AMS_DOUBLE,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
+  ierr = AMS_Memory_add_field(obj->amem,"Low",&rand->low,1,AMS_DOUBLE,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #endif

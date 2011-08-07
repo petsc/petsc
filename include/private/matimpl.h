@@ -167,7 +167,7 @@ struct _MatOps {
   /*124*/
   PetscErrorCode (*findnonzerorows)(Mat,IS*);
   PetscErrorCode (*getcolumnnorms)(Mat,NormType,PetscReal*);
-  PetscErrorCode (*dummy3)(Mat,Vec,Vec);
+  PetscErrorCode (*invertblockdiagonal)(Mat,PetscScalar**);
   PetscErrorCode (*dummy4)(Mat,Vec,Vec,Vec);
   PetscErrorCode (*getsubmatricesparallel)(Mat,PetscInt,const IS[], const IS[], MatReuse, Mat**);
   /*129*/

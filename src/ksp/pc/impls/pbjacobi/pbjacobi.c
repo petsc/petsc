@@ -22,6 +22,29 @@ typedef struct {
 #include <../src/mat/blockinvert.h>
 
 #undef __FUNCT__  
+#define __FUNCT__ "PCApply_PBJacobi_1"
+static PetscErrorCode PCApply_PBJacobi_1(PC pc,Vec x,Vec y)
+{
+  PC_PBJacobi       *jac = (PC_PBJacobi*)pc->data;
+  PetscErrorCode    ierr;
+  PetscInt          i,m = jac->mbs;
+  const MatScalar   *diag = jac->diag;
+  const PetscScalar *xx;
+  PetscScalar       *yy;
+
+  PetscFunctionBegin;
+  ierr = VecGetArrayRead(x,&xx);CHKERRQ(ierr);
+  ierr = VecGetArray(y,&yy);CHKERRQ(ierr);
+  for (i=0; i<m; i++) {
+    yy[i] = diag[i]*xx[i];
+  }
+  ierr = VecRestoreArrayRead(x,&xx);CHKERRQ(ierr);
+  ierr = VecRestoreArray(y,&yy);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2.0*m);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "PCApply_PBJacobi_2"
 static PetscErrorCode PCApply_PBJacobi_2(PC pc,Vec x,Vec y)
 {
@@ -130,26 +153,18 @@ static PetscErrorCode PCSetUp_PBJacobi(PC pc)
 {
   PC_PBJacobi    *jac = (PC_PBJacobi*)pc->data;
   PetscErrorCode ierr;
-  PetscMPIInt    size;
-  PetscBool      seqbaij,mpibaij,baij;
   Mat            A = pc->pmat;
-  Mat_SeqBAIJ    *a;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)pc->pmat,MATSEQBAIJ,&seqbaij);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)pc->pmat,MATMPIBAIJ,&mpibaij);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)pc->pmat,MATBAIJ,&baij);CHKERRQ(ierr);
-  if (!seqbaij && !mpibaij && !baij) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_SUP,"Currently only supports BAIJ matrices");
-  ierr = MPI_Comm_size(((PetscObject)pc)->comm,&size);CHKERRQ(ierr);
-  if (mpibaij || (baij && (size > 1))) A = ((Mat_MPIBAIJ*)A->data)->A;
   if (A->rmap->n != A->cmap->n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Supported only for square matrices and square storage");
 
-  ierr        =  MatSeqBAIJInvertBlockDiagonal(A);CHKERRQ(ierr);
-  a           = (Mat_SeqBAIJ*)A->data;
-  jac->diag   = a->idiag;
+  ierr        = MatInvertBlockDiagonal(A,&jac->diag);CHKERRQ(ierr);
   jac->bs     = A->rmap->bs;
-  jac->mbs    = a->mbs;
+  jac->mbs    = A->rmap->n/A->rmap->bs;
   switch (jac->bs){
+    case 1:
+      pc->ops->apply = PCApply_PBJacobi_1;
+      break;
     case 2:
       pc->ops->apply = PCApply_PBJacobi_2;
       break;

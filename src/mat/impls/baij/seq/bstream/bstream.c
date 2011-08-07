@@ -165,9 +165,7 @@ PetscErrorCode MatCreate_SeqBSTRM(Mat A)
 }
 EXTERN_C_END
 /*=========================================================*/ 
-EXTERN_C_BEGIN
-extern PetscErrorCode  MatInvertBlockDiagonal_SeqBAIJ(Mat);
-EXTERN_C_END
+
 /*=========================================================*/ 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSOR_SeqBSTRM_4"
@@ -194,7 +192,7 @@ PetscErrorCode MatSOR_SeqBSTRM_4(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pe
   if ((flag & SOR_APPLY_UPPER) || (flag & SOR_APPLY_LOWER)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Sorry, no support for applying upper or lower triangular parts");
   if (its > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Sorry, no support yet for multiple point block SOR iterations");
 
-  if (!a->idiagvalid){ierr = MatInvertBlockDiagonal_SeqBAIJ(A);CHKERRQ(ierr);}
+  if (!a->idiagvalid){ierr = MatInvertBlockDiagonal(A,PETSC_NULL);CHKERRQ(ierr);}
 
   diag  = a->diag;
   idiag = a->idiag;
@@ -329,7 +327,7 @@ PetscErrorCode MatSOR_SeqBSTRM_5(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pe
   if ((flag & SOR_APPLY_UPPER) || (flag & SOR_APPLY_LOWER)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Sorry, no support for applying upper or lower triangular parts");
   if (its > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Sorry, no support yet for multiple point block SOR iterations");
 
-  if (!a->idiagvalid){ierr = MatInvertBlockDiagonal_SeqBAIJ(A);CHKERRQ(ierr);}
+  if (!a->idiagvalid){ierr = MatInvertBlockDiagonal(A,PETSC_NULL);CHKERRQ(ierr);}
 
   diag  = a->diag;
   idiag = a->idiag;

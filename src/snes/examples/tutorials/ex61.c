@@ -46,6 +46,7 @@ typedef struct{
   PetscReal   dtevent;  /* time scale of radiation events, roughly one event per dtevent */
   PetscInt    maxevents; /* once this number of events is reached no more events are generated */
   PetscReal   initv;    /* initial value of phase variables */
+  PetscReal   initeta; 
   PetscBool   degenerate;  /* use degenerate mobility */
   PetscBool   graphics;
   PetscBool   twodomain;
@@ -57,6 +58,7 @@ typedef struct{
   Vec         work1,work2,work3,work4;
   PetscScalar Dv,Di,Evf,Eif,A,kBT,kav,kai,kaeta,Rsurf,Rbulk,L,VG; /* physics parameters */
   PetscScalar Svr,Sir,cv_eq,ci_eq; /* for twodomain modeling */
+  PetscReal   smallnumber; /* gets added to degenerate mobility */
   PetscReal   xmin,xmax,ymin,ymax;
   PetscInt    Mda, Nda;
 }AppCtx;
@@ -92,9 +94,9 @@ int main(int argc, char **argv)
   IS                  inactiveconstraints;
   PetscInt            ninactiveconstraints,N;
   SNESConvergedReason reason;
-  PetscViewer         view_out, view_cv,view_eta,view_vtk_cv,view_vtk_eta;
+  /*PetscViewer         view_out, view_cv,view_eta,view_vtk_cv,view_vtk_eta;*/
   char                cv_filename[80],eta_filename[80];
-  PetscReal           bounds[] = {1000.0,-1000.,0.0,1.0,1000.0,-1000.0,0.0,1.0,1000.0,-1000.0};
+  /*PetscReal           bounds[] = {1000.0,-1000.,0.0,1.0,1000.0,-1000.0,0.0,1.0,1000.0,-1000.0}; */
 
   PetscInitialize(&argc,&argv, (char*)0, help);
   
@@ -365,13 +367,13 @@ PetscErrorCode Update_q(AppCtx *user)
     ierr = VecCopy(user->cv,user->work3);CHKERRQ(ierr);
     ierr = VecShift(user->work3,-1.0*user->cv_eq);CHKERRQ(ierr);
     ierr = VecNorm(user->work3,NORM_INFINITY,&max1);CHKERRQ(ierr);
-    printf("inf-norm of cv-cv_eq = %f\n",max1);
+    //printf("inf-norm of cv-cv_eq = %f\n",max1);
     ierr = VecCopy(user->Phi2D_V,user->Sv);CHKERRQ(ierr);
     ierr = VecScale(user->Sv,-1.0);CHKERRQ(ierr);
     ierr = VecShift(user->Sv,1.0);CHKERRQ(ierr);
     ierr = VecScale(user->Sv,user->Svr);CHKERRQ(ierr);
     ierr = VecNorm(user->Sv,NORM_INFINITY,&max1);CHKERRQ(ierr);
-    printf("inf-norm of Svr*(1-Phi2D_V) = %f\n",max1);
+    //printf("inf-norm of Svr*(1-Phi2D_V) = %f\n",max1);
     ierr = VecPointwiseMult(user->Sv,user->Sv,user->work3);
 
     ierr = VecCopy(user->ci,user->work4);CHKERRQ(ierr);
@@ -393,13 +395,13 @@ PetscErrorCode Update_q(AppCtx *user)
   ierr = VecScale(user->work1,-1.0);CHKERRQ(ierr);
 
   ierr = VecNorm(user->work1,NORM_INFINITY,&max1);CHKERRQ(ierr);
-  printf("inf-norm of user->work1 = %f\n",max1);
+  //printf("inf-norm of user->work1 = %f\n",max1);
 
   /* newly added: user->Sv gets added to user->work1 */
   if (user->twodomain) {
-    printf("twodomain 1\n");
+    //printf("twodomain 1\n");
     ierr = VecNorm(user->Sv,NORM_INFINITY,&max1);CHKERRQ(ierr);
-    printf("inf-norm of user->Sv = %f\n",max1);
+    //printf("inf-norm of user->Sv = %f\n",max1);
     
     ierr = VecAXPY(user->work1,1.0,user->Sv);CHKERRQ(ierr);
   }
@@ -407,7 +409,7 @@ PetscErrorCode Update_q(AppCtx *user)
   ierr = VecGetLocalSize(user->work1,&n);CHKERRQ(ierr);
   
   ierr = VecNorm(user->work2,NORM_INFINITY,&max1);CHKERRQ(ierr);
-  printf("inf-norm of wi = %f\n",max1);
+  //printf("inf-norm of wi = %f\n",max1);
 
  for (i=0;i<n;i++) {
        q_p[5*i]=w2[i];
@@ -416,7 +418,7 @@ PetscErrorCode Update_q(AppCtx *user)
   ierr = MatMult(user->M_0,user->DPsiv,user->work1);CHKERRQ(ierr);
 
   ierr = VecNorm(user->work1,NORM_INFINITY,&max1);CHKERRQ(ierr);
-  printf("inf-norm of cv = %f\n",max1);
+  //printf("inf-norm of cv = %f\n",max1);
   for (i=0;i<n;i++) {
        q_p[5*i+1]=w1[i];
   }
@@ -426,19 +428,19 @@ PetscErrorCode Update_q(AppCtx *user)
   ierr = VecScale(user->work1,-1.0);CHKERRQ(ierr);
 
   ierr = VecNorm(user->work1,NORM_INFINITY,&max1);CHKERRQ(ierr);
-  printf("inf-norm of user->work1 = %f\n",max1);
+  //printf("inf-norm of user->work1 = %f\n",max1);
   /* newly added: user->Si gets added to user->work1 */
   if (user->twodomain) {
-    printf("twodomain 2\n");
+    //printf("twodomain 2\n");
     ierr = VecNorm(user->Si,NORM_INFINITY,&max1);CHKERRQ(ierr);
-    printf("inf-norm of user->Si = %f\n",max1);
+    //printf("inf-norm of user->Si = %f\n",max1);
 
     ierr = VecAXPY(user->work1,1.0,user->Si);CHKERRQ(ierr);
   }
   ierr = MatMult(user->M_0,user->work1,user->work2);CHKERRQ(ierr);
  
   ierr = VecNorm(user->work2,NORM_INFINITY,&max1);CHKERRQ(ierr);
-  printf("inf-norm of wi = %f\n",max1);
+  //printf("inf-norm of wi = %f\n",max1);
  for (i=0;i<n;i++) {
        q_p[5*i+2]=w2[i];
   }
@@ -446,7 +448,7 @@ PetscErrorCode Update_q(AppCtx *user)
   ierr = MatMult(user->M_0,user->DPsii,user->work1);CHKERRQ(ierr);
 
   ierr = VecNorm(user->work1,NORM_INFINITY,&max1);CHKERRQ(ierr);
-  printf("inf-norm of ci = %f\n",max1);
+  //printf("inf-norm of ci = %f\n",max1);
  for (i=0;i<n;i++) {
        q_p[5*i+3]=w1[i];
   }
@@ -460,7 +462,7 @@ PetscErrorCode Update_q(AppCtx *user)
   ierr = VecScale(user->work2,user->dt*user->dt);CHKERRQ(ierr);
 
   ierr = VecNorm(user->work2,NORM_INFINITY,&max1);CHKERRQ(ierr);
-  printf("inf-norm of eta = %f\n",max1);
+  //printf("inf-norm of eta = %f\n",max1);
   for (i=0;i<n;i++) {
        q_p[5*i+4]=w2[i];
   }
@@ -564,7 +566,7 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
 {
   PetscErrorCode    ierr;
   PetscInt          n,i;
-  PetscScalar	   *xx,*cv_p,*ci_p,*wv_p,*wi_p;
+  PetscScalar	   *xx,*cv_p,*ci_p,*wv_p,*wi_p,*eta
   /*  PetscViewer       view; */
 
   PetscFunctionBegin;
@@ -574,7 +576,7 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
 
   ierr = VecSet(user->cv,user->initv);CHKERRQ(ierr);
   ierr = VecSet(user->ci,user->initv);CHKERRQ(ierr);
-  ierr = VecSet(user->eta,0.0);CHKERRQ(ierr);
+  ierr = VecSet(user->eta,user->initeta);CHKERRQ(ierr);
 
   ierr = DPsi(user);CHKERRQ(ierr);
   ierr = VecCopy(user->DPsiv,user->wv);CHKERRQ(ierr);
@@ -585,13 +587,14 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
   ierr = VecGetArray(user->ci,&ci_p);CHKERRQ(ierr);
   ierr = VecGetArray(user->wv,&wv_p);CHKERRQ(ierr);
   ierr = VecGetArray(user->wi,&wi_p);CHKERRQ(ierr);
+  ierr = VecGetArray(user->eta,&eta);CHKERRQ(ierr);
   for (i=0;i<n/5;i++)
   {
     xx[5*i]=wv_p[i];
     xx[5*i+1]=cv_p[i];
     xx[5*i+2]=wi_p[i];
     xx[5*i+3]=ci_p[i];
-    xx[5*i+4]=0.0;
+    xx[5*i+4]=eta[i];
   }
 
   /* ierr = VecView(user->wv,view);CHKERRQ(ierr);
@@ -605,6 +608,7 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
   ierr = VecRestoreArray(user->ci,&ci_p);CHKERRQ(ierr);
   ierr = VecRestoreArray(user->wv,&wv_p);CHKERRQ(ierr);
   ierr = VecRestoreArray(user->wi,&wi_p);CHKERRQ(ierr);
+  ierr = VecRestoreArray(user->eta,&eta);CHKERRQ(ierr);
   
   PetscFunctionReturn(0);
 }
@@ -620,7 +624,7 @@ PetscErrorCode SetRandomVectors(AppCtx* user,PetscReal t)
 {
   PetscErrorCode        ierr;
   static RandomValues   *randomvalues = 0;
-  static PetscInt       randindex = 0; /* indicates how far into the randomvalues we have currently used */
+  static PetscInt       randindex = 0,n; /* indicates how far into the randomvalues we have currently used */
   static PetscReal      randtime = 0; /* indicates time of last radiation event */
   PetscInt              i,j,M,N,cnt = 0;
   PetscInt              xs,ys,xm,ym;
@@ -638,12 +642,14 @@ PetscErrorCode SetRandomVectors(AppCtx* user,PetscReal t)
     } else {
       ierr = PetscStrcpy(filename,"ex61.random");CHKERRQ(ierr);
     }
-    ierr = PetscMalloc(1000*sizeof(RandomValues),&randomvalues);CHKERRQ(ierr);
     ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&viewer);CHKERRQ(ierr);
-    ierr = PetscViewerBinaryRead(viewer,randomvalues,4*1000,PETSC_DOUBLE);CHKERRQ(ierr);
-    for (i=0; i<1000; i++) randomvalues[i].dt = randomvalues[i].dt*user->dtevent;
+    ierr = PetscViewerBinaryRead(viewer,&n,1,PETSC_INT);CHKERRQ(ierr);
+    ierr = PetscMalloc(n*sizeof(RandomValues),&randomvalues);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryRead(viewer,randomvalues,4*n,PETSC_DOUBLE);CHKERRQ(ierr);
+    for (i=0; i<n; i++) randomvalues[i].dt = randomvalues[i].dt*user->dtevent;
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
+  user->maxevents = PetscMin(user->maxevents,n);
 
   ierr = VecSet(user->Pv,0.0);CHKERRQ(ierr);
   ierr = DMDAGetInfo(user->da1,0,&M,&N,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
@@ -743,43 +749,55 @@ PetscErrorCode GetParams(AppCtx* user)
   /* Set default parameters */
   user->xmin = 0.0; user->xmax = 1.0;
   user->ymin = 0.0; user->ymax = 1.0;
-  user->Dv = 1.0; user->Di=4.0;
-  user->Evf = 0.8; user->Eif = 1.2;
-  user->A = 1.0;
-  user->kBT = 0.11;
-  user->kav = 1.0; user->kai = 1.0; user->kaeta = 1.0;
-  user->Rsurf = 10.0; user->Rbulk = 1.0;
-  user->L = 10.0; 
-  user->T = 1.0e-2;   
-  user->dt = 1.0e-4;
-  user->VG = 100.0;
-  user->initv = .00069; 
+  user->Dv    = 1.0; 
+  user->Di    = 4.0;
+  user->Evf   = 0.8; 
+  user->Eif   = 1.2;
+  user->A     = 1.0;
+  user->kBT   = 0.11;
+  user->kav   = 1.0; 
+  user->kai   = 1.0; 
+  user->kaeta = 1.0;
+  user->Rsurf = 10.0; 
+  user->Rbulk = 1.0;
+  user->VG    = 100.0;
+  user->L     = 10.0; 
+
+  user->T          = 1.0e-2;   
+  user->dt         = 1.0e-4;
+  user->initv      = .00069; 
+  user->initeta    = 0.0;
   user->degenerate = PETSC_FALSE;
-  user->maxevents = 1000;
-  user->graphics = PETSC_TRUE;
+  user->maxevents  = 1000;
+  user->graphics   = PETSC_TRUE;
+
   /* twodomain modeling */
-  user->twodomain = PETSC_TRUE;
-  user->Svr = 0.5; 
-  user->Sir = 0.5;
-  user->cv_eq = 6.9e-4;
-  user->ci_eq = 6.9e-4;
+  user->twodomain = PETSC_FALSE;
+  user->Svr       = 0.5; 
+  user->Sir       = 0.5;
+  user->cv_eq     = 6.9e-4;
+  user->ci_eq     = 6.9e-4;
+  user->smallnumber = 1.0e-3;
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,PETSC_NULL,"Coupled Cahn-Hillard/Allen-Cahn Equations","Phasefield");CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-Dv","???\n","None",user->Dv,&user->Dv,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-Di","???\n","None",user->Di,&user->Di,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-VG","???","None",user->VG,&user->VG,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-initv","Initial solution of Cv and Ci","None",user->initv,&user->initv,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-initeta","Initial solution of Eta","None",user->initeta,&user->initeta,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-degenerate","Run with degenerate mobility\n","None",user->degenerate,&user->degenerate,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-twodomain","Run two domain model\n","None",user->twodomain,&user->twodomain,&flg);CHKERRQ(ierr);
 
+    ierr = PetscOptionsReal("-xmin","Lower X coordinate of domain\n","None",user->xmin,&user->xmin,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-xmax","Upper X coordinate of domain\n","None",user->xmax,&user->xmax,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-T","Total runtime\n","None",user->T,&user->T,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-dt","Time step\n","None",user->dt,&user->dt,&flg);CHKERRQ(ierr);
+    user->dtevent = user->dt;
+    ierr = PetscOptionsReal("-dtevent","Average time between events\n","None",user->dtevent,&user->dtevent,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-maxevents","Maximum events allowed\n","None",user->maxevents,&user->maxevents,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-smallnumber","Small number added to degenerate mobility\n","None",user->smallnumber,&user->smallnumber,&flg);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-Dv",&user->Dv,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-Di",&user->Di,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-xmin",&user->xmin,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-xmax",&user->xmax,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-T",&user->T,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-dt",&user->dt,&flg);CHKERRQ(ierr);
-  user->dtevent = user->dt;
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-dtevent",&user->dtevent,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-VG",&user->VG,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-maxevents",&user->maxevents,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-degenerate",&user->degenerate,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-graphics",&user->graphics,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-twodomain",&user->twodomain,&flg);CHKERRQ(ierr);
-   
-
+    ierr = PetscOptionsBool("-graphics","Contour plot solutions at each timestep\n","None",user->graphics,&user->graphics,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);   
   PetscFunctionReturn(0);
  }
 
@@ -1079,8 +1097,8 @@ PetscErrorCode UpdateMatrices(AppCtx* user)
       for(r=0;r<3;r++) {
                  
       if (user->degenerate) {     
-        cv_sum = (1.0e-3+cv_p[idx[0]] + cv_p[idx[1]] + cv_p[idx[2]])*user->Dv/(3.0*user->kBT);
-        ci_sum = (1.0e-3+ci_p[idx[0]] + ci_p[idx[1]] + ci_p[idx[2]])*user->Di/(3.0*user->kBT);
+        cv_sum = (user->smallnumber + cv_p[idx[0]] + cv_p[idx[1]] + cv_p[idx[2]])*user->Dv/(3.0*user->kBT);
+        ci_sum = (user->smallnumber + ci_p[idx[0]] + ci_p[idx[1]] + ci_p[idx[2]])*user->Di/(3.0*user->kBT);
       } else {
         cv_sum = user->initv*user->Dv/(user->kBT);
         ci_sum = user->initv*user->Di/user->kBT;
@@ -1138,11 +1156,8 @@ PetscErrorCode Phi(AppCtx* user)
   PetscScalar        xmid, xqu, lambda, h,x[3],y[3];
   Vec                coords;
   const PetscScalar  *_coords;
-  PetscInt           nele,nen,n,i,idx[3],Mda,Nda,vecsize;
+  PetscInt           nele,nen,i,idx[3],Mda,Nda;
   const PetscInt     *ele;
-  PetscScalar        max1;
-  PetscReal          min1;
-  PetscInt           loc1;
   PetscViewer        view;
 
   PetscFunctionBegin;
@@ -1169,7 +1184,7 @@ PetscErrorCode Phi(AppCtx* user)
     //printf("x[0]=%f,x[1]=%f,x[2]=%f\n",x[0],x[1],x[2]);
     //printf("y[0]=%f,y[1]=%f,y[2]=%f\n",y[0],y[1],y[2]);
     
-    PetscScalar vals1[3],vals2[3],vals_sum[3],dist1,dist2,s1,r,hhr,xc1,xc2;
+    PetscScalar vals1[3],vals2[3],dist1,dist2,s1,r,hhr,xc1,xc2;
     PetscInt    k;
 
     xc1 = user->xmin;
