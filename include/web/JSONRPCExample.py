@@ -18,7 +18,8 @@ import time
 
 comm   = -1  # Currently attached AMS communicator; only one is supported at a time
 args   = {}  # Arguments to each remote call 
-
+sent   = 0   # Number of calls sent to server
+recv   = 0   # Number of calls received from server 
 
 class JSONRPCExample:
     def onModuleLoad(self):
@@ -63,21 +64,26 @@ class JSONRPCExample:
         self.text_area.setText('kate'+str(response))
 
     def onClick(self, sender):
+        global args,sent,recv
         self.status.setText(self.TEXT_WAITING)
         text = self.text_area.getText()
 
         if sender == self.button_echo:
             id = self.remote_py.YAML_echo(text, self)
             args[id] = ['YAML_echo',text]
+            sent += 1
         elif sender == self.button_ams_memlist:
             id = self.remote_py.YAML_AMS_Connect(text, self)
             args[id] = ['YAML_AMS_Connect',text]
+            sent += 1
         elif sender == self.button_useclass:
             self.text_area.setText('joe'+str(self.commobj.get_memory_list())+str(self.commobj.commname))
         elif sender == self.button_useclass2:
             result = self.commobj.get_memory_list(func = self.joe)
             self.text_area.setText('old'+str(result))
         elif sender == self.button_useclass3:
+            if sent > recv: 
+               self.text_area.setText('sent '+str(sent)+' recv '+str(recv))
             result = self.commobj.get_memory_list()
             self.text_area.setText('1')
             for i in result:
@@ -91,37 +97,44 @@ class JSONRPCExample:
                   field = memory.get_field_info(j)
                   self.text_area.setText('6')
                   newstatus2=Label()
-                  newstatus2.setText(i+j+str(field))
+                  newstatus2.setText(i+'('+memory.name+':'+memory.memory+') : '+j+' : '+str(field))
                   self.panel.add(newstatus2)
 
 
     def onRemoteResponse(self, response, request_info):
+        global args,sent,recv
         global comm
+        recv += 1
         self.status.setText(response)
         method = str(request_info.method)
         rid    = request_info.id
         if method == "YAML_AMS_Connect":
             id = self.remote_py.YAML_AMS_Comm_attach(str(response),self)
             args[id] = ['YAML_AMS_Comm_attach',str(response)]
+            sent += 1
         elif method == "YAML_AMS_Comm_attach":
             comm = response  # will only work for one comm
             id = self.remote_py.YAML_AMS_Comm_get_memory_list(comm,self)
             args[id] = ['YAML_AMS_Comm_get_memory_list',comm]
+            sent += 1
         elif method == "YAML_AMS_Comm_get_memory_list":
             memlist = response
             for i in memlist:
                 id = self.remote_py.YAML_AMS_Memory_attach(comm,i,self)
                 args[id] = ['YAML_AMS_Memory_attach',comm,i]
+                sent += 1
         elif method == "YAML_AMS_Memory_attach":
             memory = response[0]
             step   = response[1]
             id = self.remote_py.YAML_AMS_Memory_get_field_list(memory,self)
             args[id] = ['YAML_AMS_Memory_get_field_list',memory]
+            sent += 1
         elif method == "YAML_AMS_Memory_get_field_list":
             localmemory = args[rid][1]
             for i in response:
                 id = self.remote_py.YAML_AMS_Memory_get_field_info(localmemory,i,self)
                 args[id] = ['YAML_AMS_Memory_get_field_info',localmemory,i]
+                sent += 1
         elif method == "YAML_AMS_Memory_get_field_info":
             newstatus2=Label()
             newstatus2.setText(str(args[rid])+str(response))
@@ -154,14 +167,15 @@ class ServicePython(JSONProxy):
 # ---------------------------------------------------------
 class AMS_Memory(JSONProxy):
     def __init__(self,comm,memory):
-        global args
+        global args,sent,recv
         self.comm             = comm
-        self.memory           = memory
+        self.name             = memory   # string name of memory
         self.fieldlist        = []
         self.fields           = {}
         self.remote           = ServicePython()
         id = self.remote.YAML_AMS_Memory_attach(comm,memory,self)
         args[id] = ['YAML_AMS_Memory_attach',comm,memory]
+        sent += 1
 
     def get_field_list(self,func = null):
         '''If called with func (net yet supported) then calls func asynchronously with latest memory list;
@@ -171,20 +185,26 @@ class AMS_Memory(JSONProxy):
     def get_field_info(self,field):
         '''Pass in string name of AMS field
            If called with func (not yet done) then first updates comm with latest field list and then calls func with field'''
+        if not self.fields.has_key(field):
+            return 'Memory does not have field named '+field
         return self.fields[field]
 
     def onRemoteResponse(self, response, request_info):
+        global args,sent,recv
+        recv += 1
         method = str(request_info.method)
         rid    = request_info.id
         if method == "YAML_AMS_Memory_attach":
             self.memory = response[0]
             id = self.remote.YAML_AMS_Memory_get_field_list(self.memory,self)
             args[id] = ['YAML_AMS_Memory_get_field_list',self.memory]
+            sent += 1
         elif method == "YAML_AMS_Memory_get_field_list":
             self.fieldlist = response
             for i in self.fieldlist:
-                id = self.remote_py.YAML_AMS_Memory_get_field_info(self.memory,i,self)
+                id = self.remote.YAML_AMS_Memory_get_field_info(self.memory,i,self)
                 args[id] = ['YAML_AMS_Memory_get_field_info',self.memory,i]
+                sent += 1
         elif method == "YAML_AMS_Memory_get_field_info":
             self.fields[args[rid][2]] = response
 
@@ -195,7 +215,7 @@ class AMS_Memory(JSONProxy):
 # ---------------------------------------------------------
 class AMS_Comm(JSONProxy):
     def __init__(self):
-        global args
+        global args,sent,recv
         self.comm             = -1
         self.commname         = ''
         self.memlist          = []
@@ -204,6 +224,7 @@ class AMS_Comm(JSONProxy):
         self.remote           = ServicePython()
         id = self.remote.YAML_AMS_Connect('No argument', self)
         args[id] = ['YAML_AMS_Connect']
+        sent += 1
   #      time.sleep(1)
 
     def get_memory_list(self,func = null):
@@ -213,6 +234,7 @@ class AMS_Comm(JSONProxy):
             self.memory_list_func = func
             id = self.remote.YAML_AMS_Comm_get_memory_list(self.comm,self)
             args[id] = ['YAML_AMS_Comm_get_memory_list',self.comm]
+            sent += 1
         else:
             return self.memlist
 
@@ -222,18 +244,21 @@ class AMS_Comm(JSONProxy):
         return self.memories[memory]
 
     def onRemoteResponse(self, response, request_info):
-        global args
+        global args,sent,recv
         global comm
+        recv += 1
         method = str(request_info.method)
         rid    = request_info.id
         if method == "YAML_AMS_Connect":
             self.commname = str(response)
             id = self.remote.YAML_AMS_Comm_attach(self.commname,self)
             args[id] = ['YAML_AMS_Comm_attach',self.commname]
+            sent += 1
         elif method == "YAML_AMS_Comm_attach":
             self.comm = str(response)
             id = self.remote.YAML_AMS_Comm_get_memory_list(self.comm,self)
             args[id] = ['YAML_AMS_Comm_get_memory_list',self.comm]
+            sent += 1
         elif method == "YAML_AMS_Comm_get_memory_list":
             self.memlist = response
             for i in self.memlist:
