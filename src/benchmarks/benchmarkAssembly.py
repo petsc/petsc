@@ -99,7 +99,7 @@ if __name__ == '__main__':
 
   args = parser.parse_args()
   print(args)
-  ex       = PETScExample(args.library, args.num, log_summary_python=args.module+'.py', preload='off')
+  ex       = PETScExample(args.library, args.num, log_summary_python = None if args.batch else args.module+'.py', preload='off')
   sizes    = []
   nonzeros = []
   times    = []
