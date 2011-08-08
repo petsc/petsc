@@ -32,6 +32,10 @@ ex4: ex4.o  chkopts
 	-${CLINKER} -o ex4 ex4.o ${PETSC_TS_LIB}
 	${RM} ex4.o
 
+ex5: ex5.o  chkopts
+	-${CLINKER} -o ex5 ex5.o ${PETSC_TS_LIB}
+	${RM} ex5.o
+
 #----------------------------------------------------------------------------------
 NPROCS    = 1  3
 runex1_euler:
@@ -199,10 +203,20 @@ runex4_7:
 	   ${DIFF} output/ex4_7.out ex4.tmp || echo "Possible problem with ex4_7, diffs above"; \
 	   ${RM} -f ex4.tmp
 
+runex5:
+	-@${MPIEXEC} -n 1 ./ex5 -ts_max_steps 130 > ex5.tmp 2>&1;	  \
+	   ${DIFF} output/ex5.out ex5.tmp || echo "Possible problem with ex5_1, diffs above"; \
+	   ${RM} -f ex5.tmp
+
+runex5_2:
+	-@${MPIEXEC} -n 4 ./ex5 -ts_max_steps 130 > ex5.tmp 2>&1;	  \
+	   ${DIFF} output/ex5.out ex5.tmp || echo "Possible problem with ex5_2, diffs above"; \
+	   ${RM} -f ex5.tmp
+
 TESTEXAMPLES_C		  = ex1.PETSc runex1_euler_4 runex1_euler_5 \
                             runex1_beuler_3 runex1_beuler_4 ex1.rm \
                             ex4.PETSc runex4 runex4_2 runex4_3 runex4_4 runex4_5 runex4_6 \
-                            runex4_7 ex4.rm
+                            runex4_7 ex4.rm ex5.PETSc runex5 runex5_2 ex5.rm
 
 testexamples_C_NoComplex  = ex3.PETSc runex3 runex3_2 ex3.rm
 TESTEXAMPLES_C_X11	  = 
