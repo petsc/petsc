@@ -15,13 +15,13 @@ solution of scientific applications modeled by partial differential
 equations. It employs the MPI_ standard for all message-passing
 communication.
 
-.. _PETSc: http://www-unix.mcs.anl.gov/petsc
+.. _PETSc: http://www.mcs.anl.gov/petsc
 .. _MPI:   http://www.mpi-forum.org
 
 """
 
 __author__    = 'Lisandro Dalcin'
-__version__   = '1.1.2'
+__version__   = '1.2'
 __credits__   = "PETSc Team <petsc-maint@mcs.anl.gov>"
 
 # --------------------------------------------------------------------
