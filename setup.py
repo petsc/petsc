@@ -5,8 +5,16 @@ PETSc for Python
 ================
 
 Python bindings for PETSc libraries.
-"""
 
+.. tip::
+
+  You can also install `petsc4py-dev`_ with::
+
+    $ pip install petsc4py==dev petsc==dev
+
+  .. _petsc4py-dev: http://petsc.cs.iit.edu/petsc4py/petsc4py-dev/
+                    archive/tip.tar.gz#egg=petsc4py-dev
+"""
 
 ## try:
 ##     import setuptools
@@ -86,14 +94,19 @@ from conf.petscconf import setup, Extension
 from conf.petscconf import config, build, build_src, build_ext
 from conf.petscconf import test, sdist
 
+CYTHON = '0.15'
+
 def run_setup():
-    if (('distribute' in sys.modules) or
-        ('setuptools' in sys.modules)):
-        metadata['install_requires'] = ['numpy']
-        if not os.environ.get('PETSC_DIR'):
-            metadata['install_requires'].append('petsc')
-    if 'setuptools' in sys.modules:
+    if ('setuptools' in sys.modules):
+        from os.path import exists, join
         metadata['zip_safe'] = False
+        metadata['install_requires'] = ['numpy']
+        if not exists(join('src', 'petsc4py.PETSc.c')):
+            metadata['install_requires'] += ['Cython>='+CYTHON]
+        PETSC_DIR = os.environ.get('PETSC_DIR')
+        if not (PETSC_DIR and os.path.isdir(PETSC_DIR)):
+            metadata['install_requires'] += ["petsc"]
+    #
     setup(packages     = ['petsc4py',
                           'petsc4py.lib',],
           package_dir  = {'petsc4py'     : 'src',
@@ -114,7 +127,8 @@ def run_setup():
                           },
           **metadata)
 
-def chk_cython(CYTHON_VERSION_REQUIRED):
+def chk_cython(VERSION):
+    CYTHON_VERSION_REQUIRED = VERSION
     from distutils import log
     from distutils.version import StrictVersion as Version
     warn = lambda msg='': sys.stderr.write(msg+'\n')
@@ -193,10 +207,10 @@ def run_cython(source, depends=(), includes=(),
             "Cython failure: '%s' -> '%s'" % (source, target))
 
 def build_sources(cmd):
-    CYTHON_VERSION_REQUIRED = '0.13'
-    if not (os.path.isdir('.hg')  or
-            os.path.isdir('.git') or
-            cmd.force): return
+    from os.path import exists, isdir, join
+    if (exists(join('src', 'petsc4py.PETSc.c')) and
+        not (isdir('.hg') or isdir('.git')) and
+        not cmd.force): return
     # petsc4py.PETSc
     source = 'petsc4py.PETSc.pyx'
     depends = ("include/*/*.pxd",
@@ -206,7 +220,7 @@ def build_sources(cmd):
     destdir_h = os.path.join('include', 'petsc4py')
     run_cython(source, depends, includes,
                destdir_c=None, destdir_h=destdir_h, wdir='src',
-               force=cmd.force, VERSION=CYTHON_VERSION_REQUIRED)
+               force=cmd.force, VERSION=CYTHON)
     # libpetsc4py
     source = os.path.join('libpetsc4py', 'libpetsc4py.pyx')
     depends = ["include/petsc4py/*.pxd",
@@ -215,7 +229,7 @@ def build_sources(cmd):
     includes = ['include']
     run_cython(source, depends, includes,
                destdir_c=None, destdir_h=None, wdir='src',
-               force=cmd.force, VERSION=CYTHON_VERSION_REQUIRED)
+               force=cmd.force, VERSION=CYTHON)
 
 build_src.run = build_sources
 
