@@ -21,7 +21,8 @@ mpirun -np $NPROCS ex%d %s
   namePattern = 'ex%d_%03d.batch'
   for n in range(1000):
     try:
-      f = file(namePattern % (num, n))
+      filename = namePattern % (num, n)
+      f = file(filename)
       f.close()
       n += 1
     except IOError, e:
@@ -29,9 +30,9 @@ mpirun -np $NPROCS ex%d %s
         break
       else:
         raise e
-  with file(namePattern % (num, n), 'w') as f:
+  with file(filename, 'w') as f:
     f.write(body)
-  return
+  return filename
 
 if __name__ == '__main__':
   # Waiting for argparse in 2.7

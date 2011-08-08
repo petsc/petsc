@@ -123,8 +123,9 @@ if __name__ == '__main__':
       nonzeros.append(calculateNonzeros(n))
       if not args.batch: processSummary(args.module, times, events)
   else:
+    if args.batch: raise RuntimeException('Cannot use batch option with saved data')
     events = savedTiming[args.saved]
     for n in range(150, 1350, 100):
       sizes.append(n*n)
       nonzeros.append(calculateNonzeros(n))
-  plotSummary(args.library, args.num, sizes, nonzeros, times, events)
+  if not args.batch: plotSummary(args.library, args.num, sizes, nonzeros, times, events)

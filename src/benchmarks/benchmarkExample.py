@@ -65,7 +65,12 @@ class PETScExample(object):
     cmd += ' '+self.optionsToString(**self.opts)+' '+self.optionsToString(**opts)
     if 'batch' in opts and opts['batch']:
       del opts['batch']
-      generateBatchScript(self.num, numProcs, 120, ' '+self.optionsToString(**self.opts)+' '+self.optionsToString(**opts))
+      filename = generateBatchScript(self.num, numProcs, 120, ' '+self.optionsToString(**self.opts)+' '+self.optionsToString(**opts))
+      # Submit job
+      out, err, ret = self.runShellCommand('qsub -q gpu '+filename)
+      if ret:
+        print err
+        print out
     else:
       out, err, ret = self.runShellCommand(cmd)
       if ret:
