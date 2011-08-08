@@ -48,6 +48,7 @@ typedef struct{
   PetscReal   initv;    /* initial value of phase variables */
   PetscReal   initeta; 
   PetscBool   degenerate;  /* use degenerate mobility */
+  PetscReal   smallnumber;
   PetscBool   graphics;
   PetscBool   twodomain;
   DM          da1,da2;
@@ -58,7 +59,7 @@ typedef struct{
   Vec         work1,work2,work3,work4;
   PetscScalar Dv,Di,Evf,Eif,A,kBT,kav,kai,kaeta,Rsurf,Rbulk,L,VG; /* physics parameters */
   PetscScalar Svr,Sir,cv_eq,ci_eq; /* for twodomain modeling */
-  PetscReal   smallnumber; /* gets added to degenerate mobility */
+  PetscReal   asmallnumber; /* gets added to degenerate mobility */
   PetscReal   xmin,xmax,ymin,ymax;
   PetscInt    Mda, Nda;
 }AppCtx;
@@ -781,10 +782,22 @@ PetscErrorCode GetParams(AppCtx* user)
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,PETSC_NULL,"Coupled Cahn-Hillard/Allen-Cahn Equations","Phasefield");CHKERRQ(ierr);
     ierr = PetscOptionsReal("-Dv","???\n","None",user->Dv,&user->Dv,&flg);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-Di","???\n","None",user->Di,&user->Di,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-Evf","???\n","None",user->Evf,&user->Evf,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-Eif","???\n","None",user->Eif,&user->Eif,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-A","???","None",user->A,&user->A,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-kBT","???","None",user->kBT,&user->kBT,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-kav","???","None",user->kav,&user->kav,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-kai","???","None",user->kai,&user->kai,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-kaeta","???","None",user->kaeta,&user->kaeta,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-Rsurf","???","None",user->Rsurf,&user->Rsurf,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-Rbulk","???","None",user->Rbulk,&user->Rbulk,&flg);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-VG","???","None",user->VG,&user->VG,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-L","???","None",user->L,&user->L,&flg);CHKERRQ(ierr);
+
     ierr = PetscOptionsReal("-initv","Initial solution of Cv and Ci","None",user->initv,&user->initv,&flg);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-initeta","Initial solution of Eta","None",user->initeta,&user->initeta,&flg);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-degenerate","Run with degenerate mobility\n","None",user->degenerate,&user->degenerate,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-smallnumber","Small number added to degenerate mobility\n","None",user->smallnumber,&user->smallnumber,&flg);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-twodomain","Run two domain model\n","None",user->twodomain,&user->twodomain,&flg);CHKERRQ(ierr);
 
     ierr = PetscOptionsReal("-xmin","Lower X coordinate of domain\n","None",user->xmin,&user->xmin,&flg);CHKERRQ(ierr);
@@ -792,9 +805,8 @@ PetscErrorCode GetParams(AppCtx* user)
     ierr = PetscOptionsReal("-T","Total runtime\n","None",user->T,&user->T,&flg);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-dt","Time step\n","None",user->dt,&user->dt,&flg);CHKERRQ(ierr);
     user->dtevent = user->dt;
-    ierr = PetscOptionsReal("-dtevent","Average time between events\n","None",user->dtevent,&user->dtevent,&flg);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-maxevents","Maximum events allowed\n","None",user->maxevents,&user->maxevents,&flg);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-smallnumber","Small number added to degenerate mobility\n","None",user->smallnumber,&user->smallnumber,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-dtevent","Average time between random events\n","None",user->dtevent,&user->dtevent,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-maxevents","Maximum random events allowed\n","None",user->maxevents,&user->maxevents,&flg);CHKERRQ(ierr);
 
     ierr = PetscOptionsBool("-graphics","Contour plot solutions at each timestep\n","None",user->graphics,&user->graphics,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);   
