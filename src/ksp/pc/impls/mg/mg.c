@@ -440,9 +440,9 @@ PetscErrorCode PCView_MG(PC pc,PetscViewer viewer)
     }
     for (i=0; i<levels; i++) {
       if (!i) {
-        ierr = PetscViewerASCIIPrintf(viewer,"Coarse grid solver -- level %D smooths=%D --------------------\n",i,mg->default_smoothd);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"Coarse grid solver -- level -------------------------------\n",i);CHKERRQ(ierr);
       } else {
-        ierr = PetscViewerASCIIPrintf(viewer,"Down solver (pre-smoother) on level %D smooths=%D --------------------\n",i,mg->default_smoothd);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"Down solver (pre-smoother) on level %D -------------------------------\n",i);CHKERRQ(ierr);
       }
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = KSPView(mglevels[i]->smoothd,viewer);CHKERRQ(ierr);
@@ -450,7 +450,7 @@ PetscErrorCode PCView_MG(PC pc,PetscViewer viewer)
       if (i && mglevels[i]->smoothd == mglevels[i]->smoothu) {
         ierr = PetscViewerASCIIPrintf(viewer,"Up solver (post-smoother) same as down solver (pre-smoother)\n");CHKERRQ(ierr);
       } else if (i){
-        ierr = PetscViewerASCIIPrintf(viewer,"Up solver (post-smoother) on level %D smooths=%D --------------------\n",i,mg->default_smoothu);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"Up solver (post-smoother) on level %D -------------------------------\n",i);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
         ierr = KSPView(mglevels[i]->smoothu,viewer);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);

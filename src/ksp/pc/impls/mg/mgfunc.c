@@ -279,6 +279,9 @@ PetscErrorCode  PCMGGetSmoother(PC pc,PetscInt l,KSP *ksp)
 
    Level: advanced
 
+   Notes: calling this will result in a different pre and post smoother so you may need to 
+         set options on the pre smoother also
+
 .keywords: MG, multigrid, get, smoother, up, post-smoother, level
 
 .seealso: PCMGGetSmootherUp(), PCMGGetSmootherDown()
@@ -328,6 +331,9 @@ PetscErrorCode  PCMGGetSmootherUp(PC pc,PetscInt l,KSP *ksp)
 .  ksp - the smoother
 
    Level: advanced
+
+   Notes: calling this will result in a different pre and post smoother so you may need to 
+         set options on the post smoother also
 
 .keywords: MG, multigrid, get, smoother, down, pre-smoother, level
 
