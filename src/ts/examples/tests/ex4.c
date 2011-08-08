@@ -56,13 +56,11 @@ int main(int argc,char **argv)
   PetscBool      fd_jacobian_coloring = PETSC_FALSE;
   SNES           snes;
   KSP            ksp;
-#if defined(PETSC_HAVE_SUNDIALS)
   PC             pc;
   PetscViewer    viewer;
   char           pcinfo[120],tsinfo[120];
   const TSType   tstype;
   PetscBool      sundials;
-#endif
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);

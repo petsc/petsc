@@ -93,7 +93,9 @@ if __name__ == '__main__':
   parser.add_argument('--num',     type = int, default='4', help='The example number')
   parser.add_argument('--module',  default='summary',       help='The module for timing output')
   parser.add_argument('--saved',                            help='Name of saved data')
+  parser.add_argument('--scaling',                          help='Run parallel scaling test')
   parser.add_argument('--small',   action='store_true', default=False, help='Use small sizes')
+  parser.add_argument('--batch',   action='store_true', default=False, help='Generate batch files for the runs instead')
 
   args = parser.parse_args()
   print(args)
@@ -103,15 +105,23 @@ if __name__ == '__main__':
   times    = []
   if args.saved is None:
     events   = {}
-    if args.small:
-      grid   = [100, 150, 200, 250, 300]
+    if args.scaling == 'strong':
+      procs  = [1, 2, 4, 8]
+      if args.small:
+        grid = [10]*len(procs)
+      else:
+        grid = [1250]*len(procs)
     else:
-      grid   = range(150, 1350, 100)
-    for n in grid:
-      ex.run(da_grid_x=n, da_grid_y=n, cusp_synchronize=1)
+      if args.small:
+        grid = [100, 150, 200, 250, 300]
+      else:
+        grid = range(150, 1350, 100)
+      procs  = [1]*len(grid)
+    for n, p in zip(grid, procs):
+      ex.run(p, da_grid_x=n, da_grid_y=n, cusp_synchronize=1, batch=args.batch)
       sizes.append(n*n)
       nonzeros.append(calculateNonzeros(n))
-      processSummary(args.module, times, events)
+      if not args.batch: processSummary(args.module, times, events)
   else:
     events = savedTiming[args.saved]
     for n in range(150, 1350, 100):

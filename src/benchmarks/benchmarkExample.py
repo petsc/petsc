@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import os
+from benchmarkBatch import generateBatchScript
 
 class PETSc(object):
   def __init__(self):
@@ -56,16 +57,20 @@ class PETScExample(object):
         a.append('-'+key+' '+str(value))
     return ' '.join(a)
 
-  def run(self, **opts):
+  def run(self, numProcs = 1, **opts):
     if self.petsc.mpiexec() is None:
       cmd = self.petsc.example(self.num)
     else:
-      cmd = ' '.join([self.petsc.mpiexec(), '-n 1', self.petsc.example(self.num)])
+      cmd = ' '.join([self.petsc.mpiexec(), '-n', str(numProcs), self.petsc.example(self.num)])
     cmd += ' '+self.optionsToString(**self.opts)+' '+self.optionsToString(**opts)
-    out, err, ret = self.runShellCommand(cmd)
-    if ret:
-      print err
-      print out
+    if 'batch' in opts and opts['batch']:
+      del opts['batch']
+      generateBatchScript(self.num, numProcs, 120, ' '+self.optionsToString(**self.opts)+' '+self.optionsToString(**opts))
+    else:
+      out, err, ret = self.runShellCommand(cmd)
+      if ret:
+        print err
+        print out
     return
 
 def processSummary(moduleName, times, events):

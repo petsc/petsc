@@ -118,8 +118,8 @@ PetscErrorCode  VecInitializePackage(const char path[])
   if (VecPackageInitialized) PetscFunctionReturn(0);
   VecPackageInitialized = PETSC_TRUE;
   /* Register Classes */
-  ierr = PetscClassIdRegister("Vec",&VEC_CLASSID);CHKERRQ(ierr);
-  ierr = PetscClassIdRegister("Vec Scatter",&VEC_SCATTER_CLASSID);CHKERRQ(ierr);
+  ierr = PetscClassIdRegister("Vector",&VEC_CLASSID);CHKERRQ(ierr);
+  ierr = PetscClassIdRegister("Vector Scatter",&VEC_SCATTER_CLASSID);CHKERRQ(ierr);
   /* Register Constructors */
   ierr = VecRegisterAll(path);CHKERRQ(ierr);
   /* Register Events */
