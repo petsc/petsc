@@ -221,6 +221,15 @@ int main(int argc,char **args)
     ierr = PCFactorSetMatSolverPackage(pc,MATSOLVERPETSC);CHKERRQ(ierr);
     ierr = PCFactorSetUpMatSolverPackage(pc);CHKERRQ(ierr); /* call MatGetFactor() to create F */
     ierr = PCFactorGetMatrix(pc,&F);CHKERRQ(ierr);
+
+    /* Test MatGetDiagonal() */
+    Vec diag;
+    ierr = KSPSetUp(ksp);CHKERRQ(ierr);
+    ierr = MatView(F,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = VecDuplicate(x,&diag);CHKERRQ(ierr);
+    ierr = MatGetDiagonal(F,diag);CHKERRQ(ierr);
+    ierr = VecView(diag,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = VecDestroy(&diag);CHKERRQ(ierr); 
   }
   
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
