@@ -7,7 +7,7 @@ ALL: lib
 
 CFLAGS   = ${GAMG_INCLUDE}
 FFLAGS   =
-SOURCEC  = gamg.c createProlongation.c
+SOURCEC  = gamg.c gamg.h createProlongation.c
 SOURCEF  =
 SOURCEH  = ../../../../../include/petscpcmg.h
 OBJSC    = gamg.o createProlongation.o

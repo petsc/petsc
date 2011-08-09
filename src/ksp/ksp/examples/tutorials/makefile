@@ -992,13 +992,13 @@ runex53_2:
 
 runex54:
 	-@echo ${MPIEXEC}
-	-@${MPIEXEC} -n 4 ./ex54 -ne 50 -alpha 1.e-0 -ksp_monitor -ksp_rtol 1.e-12 -ksp_type cg -pc_mg_type full -ksp_max_it 50 -options_left -ksp_norm_type unpreconditioned
-#-log_summary -ksp_pc_side right -pc_gamg_type sa
+	-@${MPIEXEC} -n 4 ./ex54 -ne 40 -alpha 1.e-0 -ksp_monitor -ksp_rtol 1.e-12 -ksp_type cg -pc_mg_type full -ksp_max_it 50 -options_left -ksp_norm_type unpreconditioned -pc_gamg_type sa
+#-log_summary -ksp_pc_side right -pc_gamg_type sa -pc_mg_type full
 
 runex55:
 	-@echo ${MPIEXEC}
-	-@${MPIEXEC} -n 1 ./ex55 -ne 140 -alpha 1.e-0 -ksp_monitor -ksp_rtol 1.e-12 -ksp_type cg -pc_mg_type full -ksp_max_it 50 -options_left -ksp_max_it 50 -ksp_norm_type unpreconditioned
-
+	-@${MPIEXEC} -n 2 ./ex55 -ne 215 -alpha 1.e-0 -ksp_monitor -ksp_rtol 1.e-12 -ksp_type gmres -ksp_max_it 5 -options_left -ksp_norm_type unpreconditioned -pc_gamg_type sa -pc_mg_type full -mat_ascii_output_large
+#-ksp_view -log_summary -pc_mg_type full valgrind --db-attach=yes 
 
 TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 \
                                  runex2_4 runex2_bjacobi runex2_bjacobi_2 runex2_bjacobi_3 runex2_specest_1 runex2_specest_2 ex2.rm \
@@ -1024,7 +1024,7 @@ TESTEXAMPLES_C_COMPLEX	       = ex10.PETSc runex10 ex10.rm ex11.PETSc runex11 ex
 TESTEXAMPLES_DATAFILESPATH     = ex10.PETSc runex10_2 runex10_3 runex10_4 runex10_5 runex10_6 runex10_7 runex10_8 \
                                  runex10_9 runex10_10 runex10_19 runex10_22 runex10_23 runex10_24 runex10_25  runex10_ILU runex10_ILUBAIJ runex10_cg \
                                  runex10_cg_single_reduction runex10_seqaijcrl runex10_mpiaijcrl runex10_seqaijperm runex10_mpiaijperm ex10.rm
-# even though ex10.c is a C example to run with -mat_type lusol requires a Fortran compiler, hence
+# even though ex10.c is -pc_mg_smoothdown na C example to run with -mat_type lusol requires a Fortran compiler, hence
 # we list it with the fortran examples
 TESTEXAMPLES_FORTRAN_NOCOMPLEX =
 TESTEXAMPLES_FORTRAN_COMPLEX   = ex11f.PETSc runex11f ex11f.rm

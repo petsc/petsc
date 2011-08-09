@@ -24,7 +24,7 @@ int main(int argc,char **args)
   PC pc;
   PetscScalar DD[8][8],DD2[8][8];
 #if defined(PETSC_USE_LOG)
-  PetscLogStage  stage;
+  PetscLogStage  stage[2];
 #endif
   PetscScalar DD1[8][8] = {  {5.333333333333333E-01,  2.0000E-01, -3.333333333333333E-01,  0.0000E+00, -2.666666666666667E-01, -2.0000E-01, 6.666666666666667E-02, 0.0000E-00 },
 			     {2.0000E-01,  5.333333333333333E-01,  0.0000E-00,  6.666666666666667E-02, -2.0000E-01, -2.666666666666667E-01, 0.0000E-00, -3.333333333333333E-01 },
@@ -123,7 +123,7 @@ int main(int argc,char **args)
 
     /* Setup solver */
     ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);                    CHKERRQ(ierr);
-    ierr = KSPSetOperators( ksp, Amat, Pmat, SAME_NONZERO_PATTERN ); CHKERRQ(ierr);
+    ierr = KSPSetOperators( ksp, Amat, Amat, SAME_NONZERO_PATTERN ); CHKERRQ(ierr);
     ierr = KSPSetType( ksp, KSPCG );                            CHKERRQ(ierr);
     ierr = KSPGetPC( ksp, &pc );                                   CHKERRQ(ierr);
     ierr = PCSetType( pc, PCGAMG );                                CHKERRQ(ierr);
@@ -141,44 +141,54 @@ int main(int argc,char **args)
 
   /* solve */
 #if defined(PETSC_USE_LOG)
-  ierr = PetscLogStageRegister("Solve", &stage);      CHKERRQ(ierr);
-  ierr = PetscLogStagePush(stage);                    CHKERRQ(ierr);
+  ierr = PetscLogStageRegister("Setup", &stage[0]);      CHKERRQ(ierr);
+  ierr = PetscLogStageRegister("Solve", &stage[1]);      CHKERRQ(ierr);
+  ierr = PetscLogStagePush(stage[0]);                    CHKERRQ(ierr);
 #endif
-
-  ierr = VecSet(xx,.0);          CHKERRQ(ierr);
-  
-  ierr = KSPSolve(ksp,bb,xx);     CHKERRQ(ierr);
-
+  ierr = KSPSetUp( ksp );         CHKERRQ(ierr);
 #if defined(PETSC_USE_LOG)
   ierr = PetscLogStagePop();      CHKERRQ(ierr);
 #endif
-  
+
+  ierr = VecSet(xx,.0);           CHKERRQ(ierr);
+
+#if defined(PETSC_USE_LOG)
+  ierr = PetscLogStagePush(stage[1]);                    CHKERRQ(ierr);
+#endif
+  ierr = KSPSolve( ksp, bb, xx );     CHKERRQ(ierr);
+#if defined(PETSC_USE_LOG)
+  ierr = PetscLogStagePop();      CHKERRQ(ierr);
+#endif
+
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
 
   if( !PETSC_TRUE ) {
     PetscReal norm,norm2;
     PetscViewer viewer;
     Vec res;
-    ierr = PetscViewerASCIIOpen(wcomm, "rhs.m", &viewer);  CHKERRQ(ierr);
-    ierr = PetscViewerSetFormat( viewer, PETSC_VIEWER_ASCII_MATLAB);  CHKERRQ(ierr);
-    ierr = VecView(bb,viewer); CHKERRQ(ierr);
-    ierr = PetscViewerDestroy( &viewer );
+
     ierr = VecNorm( bb, NORM_2, &norm2 );  CHKERRQ(ierr);
 
+    ierr = PetscViewerASCIIOpen(wcomm, "rhs.m", &viewer);  CHKERRQ(ierr);
+    ierr = PetscViewerSetFormat( viewer, PETSC_VIEWER_ASCII_MATLAB );
+    CHKERRQ( ierr );
+    ierr = VecView( bb,viewer );           CHKERRQ(ierr);
+    ierr = PetscViewerDestroy( &viewer );  CHKERRQ(ierr);
+
     ierr = PetscViewerASCIIOpen(wcomm, "solution.m", &viewer);  CHKERRQ(ierr);
-    ierr = PetscViewerSetFormat( viewer, PETSC_VIEWER_ASCII_MATLAB);  CHKERRQ(ierr);
-    ierr = VecView(xx,viewer); CHKERRQ(ierr);
-    ierr = PetscViewerDestroy( &viewer );
+    ierr = PetscViewerSetFormat( viewer, PETSC_VIEWER_ASCII_MATLAB );
+    CHKERRQ(ierr);
+    ierr = VecView( xx, viewer ); CHKERRQ(ierr);
+    ierr = PetscViewerDestroy( &viewer ); CHKERRQ(ierr);
 
     ierr = VecDuplicate( xx, &res );   CHKERRQ(ierr);
     ierr = MatMult( Amat, xx, res );   CHKERRQ(ierr);
-    ierr = VecAXPY( bb, -1.0, res );  CHKERRQ(ierr);
+    ierr = VecAXPY( bb, -1.0, res );   CHKERRQ(ierr);
     ierr = VecDestroy( &res );CHKERRQ(ierr);
-    ierr = VecNorm(bb,NORM_2,&norm);  CHKERRQ(ierr);
-    PetscPrintf(PETSC_COMM_WORLD,"[%d]%s |b-Ax|/|b|=%e, |b|=%e\n",0,__FUNCT__,norm/norm2,norm2);
-
+    ierr = VecNorm( bb, NORM_2, &norm );  CHKERRQ(ierr);
+PetscPrintf(PETSC_COMM_WORLD,"[%d]%s |b-Ax|/|b|=%e, |b|=%e\n",0,__FUNCT__,norm/norm2,norm2);
     ierr = PetscViewerASCIIOpen(wcomm, "residual.m", &viewer);  CHKERRQ(ierr);
-    ierr = PetscViewerSetFormat( viewer, PETSC_VIEWER_ASCII_MATLAB);  CHKERRQ(ierr);
+    ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_MATLAB);  CHKERRQ(ierr);
     ierr = VecView(bb,viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy( &viewer );
   }
