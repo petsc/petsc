@@ -153,12 +153,12 @@ PetscErrorCode partitionLevel( Mat a_Amat_fine,
   MPI_Comm         wcomm = ((PetscObject)a_Amat_fine)->comm;
   PetscMPIInt      nactive_procs,mype,npe;
   PetscInt         Istart,Iend,Istart0,Iend0,ncrs0,ncrs_new,fbs;
-  PetscInt        neq,NN,counts[npe];
-  PetscMPIInt     new_npe,targ_npe;
+  PetscInt         neq,NN;
+  PetscMPIInt      new_npe,targ_npe;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(wcomm,&mype);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(wcomm,&npe);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank( wcomm, &mype ); CHKERRQ(ierr);
+  ierr = MPI_Comm_size( wcomm, &npe );  CHKERRQ(ierr);
   ierr = MatGetBlockSize( a_Amat_fine, &fbs ); CHKERRQ(ierr);
   /* RAP */
   ierr = MatPtAP( a_Amat_fine, Pold, MAT_INITIAL_MATRIX, 2.0, &Cmat ); CHKERRQ(ierr);
@@ -190,11 +190,11 @@ PetscErrorCode partitionLevel( Mat a_Amat_fine,
     MatPartitioning  mpart;
     Mat              adj;
     const PetscInt  *is_idx;
-    PetscInt         is_sz,kk,jj,ii,old_fact=(npe/nactive_procs),new_fact=(npe/new_npe),*isnewproc_idx;
+    PetscInt         is_sz,kk,jj,ii,old_fact=(npe/nactive_procs),new_fact=(npe/new_npe),*isnewproc_idx,counts[npe];
     /* create sub communicator  */
-    MPI_Comm cm,new_comm;
-    int membershipKey = mype % old_fact;
-    IS              isnewproc;
+    MPI_Comm         cm,new_comm;
+    PetscInt         membershipKey = mype % old_fact;
+    IS               isnewproc;
 
     *a_active_proc = new_npe; /* output for next time */
     ierr = MPI_Comm_split(wcomm, membershipKey, mype, &cm); CHKERRQ(ierr);
