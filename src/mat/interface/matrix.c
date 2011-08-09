@@ -26,7 +26,7 @@ PetscLogEvent  MAT_Getsymtranspose, MAT_Getsymtransreduced, MAT_Transpose_SeqAIJ
 PetscLogEvent  MAT_GetBrowsOfAocols, MAT_Getlocalmat, MAT_Getlocalmatcondensed, MAT_Seqstompi, MAT_Seqstompinum, MAT_Seqstompisym;
 PetscLogEvent  MAT_Applypapt, MAT_Applypapt_numeric, MAT_Applypapt_symbolic, MAT_GetSequentialNonzeroStructure;
 PetscLogEvent  MAT_GetMultiProcBlock;
-PetscLogEvent  MAT_CUSPCopyToGPU, MAT_CUSPSetValuesBatch;
+PetscLogEvent  MAT_CUSPCopyToGPU, MAT_CUSPSetValuesBatch, MAT_CUSPSetValuesBatchI, MAT_CUSPSetValuesBatchII, MAT_CUSPSetValuesBatchIII, MAT_CUSPSetValuesBatchIV;
 
 /* nasty global values for MatSetValue() */
 PetscInt     MatSetValue_Row = 0;
