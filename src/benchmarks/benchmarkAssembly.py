@@ -121,7 +121,9 @@ if __name__ == '__main__':
       ex.run(p, da_grid_x=n, da_grid_y=n, cusp_synchronize=1, batch=args.batch)
       sizes.append(n*n)
       nonzeros.append(calculateNonzeros(n))
-      if not args.batch: processSummary(args.module, times, events)
+      if not args.batch:
+        processSummary(args.module, times, events)
+        os.remove(args.module+'.pyc')
   else:
     if args.batch: raise RuntimeException('Cannot use batch option with saved data')
     if args.saved in savedTiming:
