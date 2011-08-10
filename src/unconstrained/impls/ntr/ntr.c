@@ -743,10 +743,13 @@ static PetscErrorCode TaoSolverView_NTR(TaoSolver tao, PetscViewer viewer)
   
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {
+    ierr = PetscViewerASCIIPushTab(viewer); CHKERRQ(ierr);
     if (NTR_PC_BFGS == tr->pc_type && tr->M) {
       ierr = MatLMVMGetRejects(tr->M, &nrejects); CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer, "  Rejected matrix updates: %d\n", nrejects); CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer, "Rejected matrix updates: %d\n", nrejects); CHKERRQ(ierr);
     }
+    ierr = PetscViewerASCIIPopTab(viewer); CHKERRQ(ierr);
+
   } else {
     SETERRQ1(((PetscObject)tao)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for TAO NTR",((PetscObject)viewer)->type_name);
   }

@@ -58,23 +58,26 @@ PetscErrorCode TaoLineSearchView(TaoLineSearch ls, PetscViewer viewer)
     } else {
       info = PetscViewerASCIIPrintf(viewer,"TaoLineSearch Object:\n");CHKERRQ(info);
     }
+    info = PetscViewerASCIIPushTab(viewer); CHKERRQ(info);
     info = TaoLineSearchGetType(ls,&type);CHKERRQ(info);
     if (type) {
-      info = PetscViewerASCIIPrintf(viewer,"  type: %s\n",type);CHKERRQ(info);
+      info = PetscViewerASCIIPrintf(viewer,"type: %s\n",type);CHKERRQ(info);
     } else {
-      info = PetscViewerASCIIPrintf(viewer,"  type: not set yet\n");CHKERRQ(info);
+      info = PetscViewerASCIIPrintf(viewer,"type: not set yet\n");CHKERRQ(info);
     }
     if (ls->ops->view) {
       info = PetscViewerASCIIPushTab(viewer);CHKERRQ(info);
       info = (*ls->ops->view)(ls,viewer);CHKERRQ(info);
       info = PetscViewerASCIIPopTab(viewer);CHKERRQ(info);
     }
-    info = PetscViewerASCIIPrintf(viewer,"  maximum function evaluations=%D\n",ls->maxfev);CHKERRQ(info);
-    info = PetscViewerASCIIPrintf(viewer,"  tolerances: ftol=%G, rtol=%G, gtol=%G\n", ls->ftol, ls->rtol,ls->gtol);CHKERRQ(info); 
-    info = PetscViewerASCIIPrintf(viewer,"  total number of function evaluations=%D\n",ls->nfev);CHKERRQ(info);
+    info = PetscViewerASCIIPrintf(viewer,"maximum function evaluations=%D\n",ls->maxfev);CHKERRQ(info);
+    info = PetscViewerASCIIPrintf(viewer,"tolerances: ftol=%G, rtol=%G, gtol=%G\n", ls->ftol, ls->rtol,ls->gtol);CHKERRQ(info); 
+    info = PetscViewerASCIIPrintf(viewer,"total number of function evaluations=%D\n",ls->nfev);CHKERRQ(info);
     if (ls->bounded) {
-      info = PetscViewerASCIIPrintf(viewer,"  using variable bounds\n");CHKERRQ(info);
+      info = PetscViewerASCIIPrintf(viewer,"using variable bounds\n");CHKERRQ(info);
     }
+    info = PetscViewerASCIIPopTab(viewer); CHKERRQ(info);
+
   } else if (isstring) {
     info = TaoLineSearchGetType(ls,&type);CHKERRQ(info);
     info = PetscViewerStringSPrintf(viewer," %-3.3s",type);CHKERRQ(info);

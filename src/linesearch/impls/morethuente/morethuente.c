@@ -50,17 +50,15 @@ static PetscErrorCode TaoLineSearchSetFromOptions_MT(TaoLineSearch ls)
 #define __FUNCT__ "TaoLineSearchView_MT"
 static PetscErrorCode TaoLineSearchView_MT(TaoLineSearch ls, PetscViewer pv)
 {
-    //PetscErrorCode ierr;
-    //PetscBool isascii;
+    PetscErrorCode ierr;
+    PetscBool isascii;
     PetscFunctionBegin;
-    /*
     ierr = PetscTypeCompare((PetscObject)pv, PETSCVIEWERASCII, &isascii); CHKERRQ(ierr);
     if (isascii) {
 	ierr = PetscViewerASCIIPrintf(pv,"  maxf=%d, ftol=%g, gtol=%g\n",ls->maxfev, ls->rtol, ls->ftol); CHKERRQ(ierr);
     } else {
-	SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for MoreThuente TaoLineSearch",((PetscObject)pv)->type_name);
+      SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for MoreThuente TaoLineSearch",((PetscObject)pv)->type_name);
     }
-    */
     PetscFunctionReturn(0);
 }
 

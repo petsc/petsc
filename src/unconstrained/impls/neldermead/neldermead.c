@@ -88,11 +88,13 @@ PetscErrorCode TaoSolverView_NM(TaoSolver tao,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  expansions: %d\n",nm->nexpand); CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  reflections: %d\n",nm->nreflect); CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  inside contractions: %d\n",nm->nincontract); CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  outside contractionss: %d\n",nm->noutcontract); CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  Shrink steps: %d\n",nm->nshrink); CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPushTab(viewer); CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"expansions: %d\n",nm->nexpand); CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"reflections: %d\n",nm->nreflect); CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"inside contractions: %d\n",nm->nincontract); CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"outside contractionss: %d\n",nm->noutcontract); CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"Shrink steps: %d\n",nm->nshrink); CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPopTab(viewer); CHKERRQ(ierr);
   } else {
     SETERRQ1(((PetscObject)tao)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for TAO NelderMead",((PetscObject)viewer)->type_name);
   }

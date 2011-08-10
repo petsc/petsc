@@ -274,9 +274,11 @@ static PetscErrorCode TaoSolverView_CG(TaoSolver tao, PetscViewer viewer)
     PetscFunctionBegin;
     ierr = PetscTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii); CHKERRQ(ierr);
     if (isascii) {
-	ierr = PetscViewerASCIIPrintf(viewer, "  CG Type: %s\n", CG_Table[cgP->cg_type]); CHKERRQ(ierr);
-	ierr = PetscViewerASCIIPrintf(viewer, "  Gradient steps: %d\n", cgP->ngradsteps); CHKERRQ(ierr);
-	ierr= PetscViewerASCIIPrintf(viewer, "  Reset steps: %d\n", cgP->nresetsteps); CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPushTab(viewer); CHKERRQ(ierr);
+	ierr = PetscViewerASCIIPrintf(viewer, "CG Type: %s\n", CG_Table[cgP->cg_type]); CHKERRQ(ierr);
+	ierr = PetscViewerASCIIPrintf(viewer, "Gradient steps: %d\n", cgP->ngradsteps); CHKERRQ(ierr);
+	ierr= PetscViewerASCIIPrintf(viewer, "Reset steps: %d\n", cgP->nresetsteps); CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPopTab(viewer); CHKERRQ(ierr);
     } else {
       SETERRQ1(((PetscObject)tao)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for TAO CG",((PetscObject)viewer)->type_name);
     }

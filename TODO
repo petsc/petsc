@@ -4,11 +4,9 @@ finite differences
 Levenberg-Marquardt
 POUNDer
 
-tabs for view()
+Add line search hooks for source/step
 
 Check documentation
-MT linesearch view
-
 Set KSP Monitors
 Check fortran stubs 
 automatic testing, coverage
@@ -19,6 +17,5 @@ add pounders section
 
 make install to put libs/headers in separate location
 Check TAO options in TaoSolverSetFromOptions
-Fix convergence explanations
-    -2 maxits
+Convergence explanations
 
