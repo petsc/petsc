@@ -68,7 +68,7 @@ PetscErrorCode MatFindNonzeroRows(Mat mat,IS *keptrows)
    Not Collective
 
    Input Parameters:
-.  mat - the matrix
+.   A - the matrix
 
    Output Parameters:
 .   a - the diagonal part (which is a SEQUENTIAL matrix)
