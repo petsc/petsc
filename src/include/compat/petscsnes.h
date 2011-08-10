@@ -11,7 +11,24 @@
 #define SNESKSPONLY "ksponly"
 #define SNESPICARD  "picard"
 #define SNESVI      "vi"
+#define SNESNGMRES  "ngmres"
 #define SNES_DIVERGED_LINE_SEARCH SNES_DIVERGED_LS_FAILURE
+#endif
+
+#if (PETSC_VERSION_(3,1,0) || \
+     PETSC_VERSION_(3,0,0))
+#undef __FUNCT__  
+#define __FUNCT__ "SNESVISetVariableBounds"
+static PetscErrorCode  
+SNESVISetVariableBounds(SNES snes, Vec xl, Vec xu)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  PetscValidHeaderSpecific(xl,VEC_COOKIE,1);
+  PetscValidHeaderSpecific(xu,VEC_COOKIE,1);
+  SETERRQ(PETSC_ERR_SUP,__FUNCT__"() not supported in this PETSc version");
+  PetscFunctionReturn(0);
+}
 #endif
 
 #if (PETSC_VERSION_(3,1,0) || \
@@ -23,7 +40,7 @@ static PetscErrorCode  SNESSetComputeInitialGuess(SNES snes,
                                                   void *ctx)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
   SETERRQ(PETSC_ERR_SUP,__FUNCT__"() not supported in this PETSc version");
   PetscFunctionReturn(0);
 }

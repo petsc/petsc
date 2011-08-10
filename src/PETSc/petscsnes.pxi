@@ -8,6 +8,7 @@ cdef extern from * nogil:
     PetscSNESType SNESPICARD
     PetscSNESType SNESKSPONLY
     PetscSNESType SNESVI
+    PetscSNESType SNESNGMRES
 
     ctypedef enum PetscSNESConvergedReason "SNESConvergedReason":
       # iterating
@@ -134,6 +135,10 @@ cdef extern from * nogil:
                                PetscReal,PetscReal,PetscReal,PetscReal)
     int SNESKSPGetParametersEW(PetscSNES,PetscInt*,PetscReal*,PetscReal*,
                                PetscReal*,PetscReal*,PetscReal*,PetscReal*)
+
+    int SNESVISetVariableBounds(PetscSNES,PetscVec,PetscVec)
+    #ctypedef int (*PetscSNESVariableBoundsFunction)(PetscSNES,PetscVec,PetscVec)
+    #int SNESVISetComputeVariableBounds(PetscSNES,PetscSNESVariableBoundsFunction)
 
 cdef extern from "custom.h" nogil:
     int SNESSetUseMFFD(PetscSNES,PetscBool)

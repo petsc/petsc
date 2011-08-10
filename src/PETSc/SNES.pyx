@@ -8,6 +8,7 @@ class SNESType(object):
     PICARD  = S_(SNESPICARD)
     KSPONLY = S_(SNESKSPONLY)
     VI      = S_(SNESVI)
+    NGMRES  = S_(SNESNGMRES)
 
 class SNESConvergedReason(object):
     # iterating
@@ -470,6 +471,11 @@ cdef class SNES(Object):
         cdef PetscBool bval = PETSC_FALSE
         CHKERR( SNESGetUseFDColoring(self.snes, &bval) )
         return <bint> bval
+
+    # --- VI ---
+
+    def setVariableBounds(self, Vec xl not None, Vec xu not None):
+        CHKERR( SNESVISetVariableBounds(self.snes, xl.vec, xu.vec) )
 
     # --- Python ---
 
