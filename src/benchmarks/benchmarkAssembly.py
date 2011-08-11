@@ -99,7 +99,7 @@ if __name__ == '__main__':
 
   args = parser.parse_args()
   print(args)
-  ex       = PETScExample(args.library, args.num, log_summary_python=args.module+'.py', preload='off')
+  ex       = PETScExample(args.library, args.num, log_summary_python = None if args.batch else args.module+'.py', preload='off')
   sizes    = []
   nonzeros = []
   times    = []
@@ -121,10 +121,34 @@ if __name__ == '__main__':
       ex.run(p, da_grid_x=n, da_grid_y=n, cusp_synchronize=1, batch=args.batch)
       sizes.append(n*n)
       nonzeros.append(calculateNonzeros(n))
-      if not args.batch: processSummary(args.module, times, events)
+      if not args.batch:
+        processSummary(args.module, times, events)
+        os.remove(args.module+'.pyc')
   else:
-    events = savedTiming[args.saved]
+    if args.batch: raise RuntimeException('Cannot use batch option with saved data')
+    if args.saved in savedTiming:
+      events = savedTiming[args.saved]
+    else:
+      # Process output to produce module
+      events       = {}
+      filenameBase = args.saved[:-7]
+      jobnumBase   = int(args.saved[-7:])
+      for i, n in enumerate(range(150, 1350, 100)):
+        filename = filenameBase+str(jobnumBase+i)
+        print 'Processing',filename
+        headerSeen = False
+        with file(filename) as f, file(args.module+'.py', 'w') as o:
+          for line in f.readlines():
+            if not headerSeen:
+              if not line[0] == '#': continue
+              headerSeen = True
+            if line[0] == '#' and line[-6:] == '=====\n': break
+            o.write(line)
+            #print line
+        processSummary(args.module, times, events)
+        # I can't believe that this is necessary
+        os.remove(args.module+'.pyc')
     for n in range(150, 1350, 100):
       sizes.append(n*n)
       nonzeros.append(calculateNonzeros(n))
-  plotSummary(args.library, args.num, sizes, nonzeros, times, events)
+  if not args.batch: plotSummary(args.library, args.num, sizes, nonzeros, times, events)

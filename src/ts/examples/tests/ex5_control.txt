@@ -1,0 +1,33 @@
+1.  Description of inputs at end of file
+2.
+3.  INITIAL CONDITIONS:
+4.  Surface Temperature:..................46
+5.  Dew Point Temperature:................30
+6.  Air Temperature:......................35
+7.  Temperature at Cloud base:............29.5
+8.  Fraction of sky covered by clouds:....0
+9.  Wind speed:...........................4
+10. Precipitable Water in (cm):...........3
+11. Wind direction........................90
+13. RUNTIME...............................12
+
+14. INITAL DOMAIN:
+15. Initiation specifier..................1
+
+INITIAL DOMAIN DESCRIPTION:
+- To only diabatic dT/dt contributions (all fileds uniform throughout grid) enter 0 in line 15
+- Default initiation is a west-east temperature gradient, wind = 0, and two high pressure perturbations in the mass field
+
+
+DESCRIPTION OF INPUTS:
+- All temperature is in degrees Fahrenheit.
+- Fraction is from 0 to 1. where 0=0% of sky covered by clouds, 1 = 100% of sky covered by clouds (overcast)
+- Wind speed is in miles per hour
+- Precipitable water is in centimeters
+- Wind direction is from 0 to 360. where 0 is wind from north, 90 is east, 180 is south, 270 is west, 360 is also north.
+- Runtime is in hours
+
+NOTE:
+- Moisture if only used for radiative considerations
+- Wind input is only used for latent and sensible heat fluxes. The dynamic winds do not affect the surface energy budget 
+- Model is not designed to be run for longer than 15 hours

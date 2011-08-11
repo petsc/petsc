@@ -1,23 +1,30 @@
-"""PetscBinaryRead
+"""PetscBinaryIO
 ===============
 
 Provides
   1. PETSc-named objects Vec, Mat, and IS that inherit numpy.ndarray
-  2. A function to read these objects from PETSc binary files.
+  2. Functions to read and write these objects from PETSc binary files.
 
 The standard usage of this module should look like:
 
-  >>> import PetscBinaryRead
-  >>> objects = PetscBinaryRead.readBinaryFile('filename')
+  >>> import PetscBinaryIO
+  >>> objects = PetscBinaryIO.readBinaryFile('file.dat')
 
-See readBinaryFile.__doc__
+or
+
+  >>> import PetscBinaryIO
+  >>> import numpy
+  >>> vec = numpy.array([1., 2., 3.]).view(PetscBinaryIO.Vec)
+  >>> PetscBinaryIO.writeBinaryFile('file.dat', [vec,])
+
+See also readBinaryFile.__doc__ and writeBinaryFile.__doc__ 
 """
 
 import numpy as np
 import types
 
-IntType    = '>i4'   # big-endian, 4 byte integer
-ScalarType = '>f8'   # big-endian, 8 byte real floating
+IntType    = np.dtype('>i4')   # big-endian, 4 byte integer
+ScalarType = np.dtype('>f8')   # big-endian, 8 byte real floating
 _classid = {1211216:'Mat',
             1211214:'Vec',
             1211218:'IS',
@@ -26,21 +33,45 @@ _classid = {1211216:'Mat',
 class DoneWithFile(Exception): pass
 
 class Vec(np.ndarray):
-    """Vec represented as 1D numpy array"""
-    pass
+    """Vec represented as 1D numpy array
+
+    The best way to instantiate this class for use with writeBinaryFile()
+    is through the numpy view method:
+
+    vec = numpy.array([1,2,3]).view(Vec)
+    """
+    _classid = 1211214
 
 class MatDense(np.matrix):
-    """Mat represented as 2D numpy array"""
-    pass
+    """Mat represented as 2D numpy array
+
+    The best way to instantiate this class for use with writeBinaryFile()
+    is through the numpy view method:
+
+    mat = numpy.array([[1,0],[0,1]]).view(Mat)
+    """
+    _classid = 1211216
 
 class MatSparse(tuple):
-    """Mat represented as CSR tuple ((M, N), (row, col, val))"""
+    """Mat represented as CSR tuple ((M, N), (rowindices, col, val))
+
+    This should be instantiated from a tuple:
+
+    mat = MatSparse( ((M,N), (rowindices,col,val)) )
+    """
+    _classid = 1211216
     def __repr__(self):
         return 'MatSparse: %s'%super(MatSparse, self).__repr__()
 
 class IS(np.ndarray):
-    """IS represented as 1D numpy array"""
-    pass
+    """IS represented as 1D numpy array
+
+    The best way to instantiate this class for use with writeBinaryFile()
+    is through the numpy "view" method:
+
+    an_is = numpy.array([3,4,5]).view(IS)
+    """
+    _classid = 1211218
 
 def readVec(fh):
     """Reads a PETSc Vec from a binary file handle, returning just the data."""
@@ -53,6 +84,14 @@ def readVec(fh):
     if (len(vals) is 0):
         raise IOError('Inconsistent or invalid Vec data in file')
     return vals.view(Vec)
+
+def writeVec(fh, vec):
+    """Writes a PETSc Vec to a binary file handle."""
+
+    metadata = np.array([Vec._classid, len(vec)], dtype=IntType)
+    metadata.tofile(fh)
+    vec.astype(ScalarType).tofile(fh)
+    return
 
 def readMatSparse(fh):
     """Reads a PETSc Mat, returning a sparse representation of the data.
@@ -84,6 +123,27 @@ def readMatSparse(fh):
     #
     return MatSparse(((M, N), (I, J, V)))
 
+def writeMatSparse(fh, mat):
+    """Writes a Mat into a PETSc binary file handle"""
+
+    ((M,N), (I,J,V)) = mat
+    metadata = np.array([MatSparse._classid,M,N,I[-1]], dtype=IntType)
+    rownz = I[1:] - I[:-1]
+
+#    try:
+    assert len(J.shape) == len(V.shape) == len(I.shape) == 1
+    assert len(J) == len(V) == I[-1] == rownz.sum()
+    assert (rownz > -1).all()
+
+#    except AssertionError:
+#        raise ValueError('Invalid Mat data given')
+
+    metadata.tofile(fh)
+    rownz.astype(IntType).tofile(fh)
+    J.astype(IntType).tofile(fh)
+    V.astype(ScalarType).tofile(fh)
+    return
+
 def readMatDense(fh):
     """Reads a PETSc Mat, returning a dense represention of the data."""
     try:
@@ -114,6 +174,15 @@ def readMatSciPy(fh):
     (M, N), (I, J, V) = readMatSparse(fh)
     return csr_matrix((V, J, I), shape=(M, N))
 
+def writeMatSciPy(fh, mat):
+    from scipy.sparse import csr_matrix
+    assert isinstance(mat, csr_matrix)
+    V = mat.data
+    M,N = mat.shape
+    J = mat.indices
+    I = mat.indptr
+    return writeMatSparse(fh, (mat.shape, (mat.indptr,mat.indices,mat.data)))
+
 def readMat(fh, mattype='sparse'):
     """Reads a PETSc Mat from binary file handle.
 
@@ -139,6 +208,14 @@ def readIS(fh):
     except (MemoryError,IndexError):
         raise IOError('Inconsistent or invalid IS data in file')
     return v.view(IS)
+
+def writeIS(fh, anis):
+    """Writes a PETSc IS to binary file handle."""
+
+    metadata = np.array([IS._classid, len(anis)], dtype=IntType)
+    metadata.tofile(fh)
+    anis.astype(IntType).tofile(fh)
+    return
 
 def readBinaryFile(fid, mattype='sparse'):
     """Reads a PETSc binary file, returning a tuple of the contained objects.
@@ -190,11 +267,39 @@ def readBinaryFile(fid, mattype='sparse'):
     #
     return tuple(objects)
 
-if __name__ == '__main__':
-    import sys
-    petsc_objects = readBinaryFile(sys.argv[1])
-    for petsc_obj in petsc_objects:
-        print 'Read a', petsc_obj
-        print ''
+def writeBinaryFile(fid, objects):
+    """Writes a PETSc binary file containing the objects given.
 
+    readBinaryFile(fid, objects)
 
+    Input:
+      fid : either file handle to an open binary file, or filename.
+      objects : list of objects representing the data in numpy arrays,
+                which must be of type Vec, IS, MatSparse, or MatSciPy.
+    """
+    close = False
+    if type(fid) is types.StringType:
+        fid = open(fid, 'wb')
+        close = True
+
+    for petscobj in objects:
+        if (isinstance(petscobj, Vec)):
+            writeVec(fid, petscobj)
+        elif (isinstance(petscobj, IS)):
+            writeIS(fid, petscobj)
+        elif (isinstance(petscobj, MatSparse)):
+            writeMatSparse(fid, petscobj)
+        elif (isinstance(petscobj, MatDense)):
+            if close:
+                fid.close()
+            raise NotImplementedError('Writing a dense matrix is not yet supported')
+        else:
+            try:
+                writeMatSciPy(fid, petscobj)
+            except AssertionError:
+                if close:
+                    fid.close()
+                raise TypeError('Object %s is not a valid PETSc object'%(petscobj.__repr__()))
+    if close:
+        fid.close()
+    return

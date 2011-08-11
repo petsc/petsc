@@ -1262,37 +1262,40 @@ PetscErrorCode MatGetDiagonal_SeqSBAIJ(Mat A,Vec v)
 {
   Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data;
   PetscErrorCode ierr;
-  PetscInt       i,j,k,n,row,bs,*ai,*aj,ambs,bs2;
+  PetscInt       i,j,k,row,bs,*ai,*aj,ambs,bs2;
   PetscScalar    *x,zero = 0.0;
   MatScalar      *aa,*aa_j;
 
   PetscFunctionBegin;
   bs   = A->rmap->bs;
   if (A->factortype && bs>1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix with bs>1");   
-  
+ 
   aa   = a->a;
-  ai   = a->i;
-  aj   = a->j;
   ambs = a->mbs;
-  bs2  = a->bs2;  
 
-  ierr = VecSet(v,zero);CHKERRQ(ierr);
-  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
-  if (n != A->rmap->N) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Nonconforming matrix and vector");
-  for (i=0; i<ambs; i++) {
-    j=ai[i];              
-    if (aj[j] == i) {             /* if this is a diagonal element */
-      row  = i*bs;      
-      aa_j = aa + j*bs2;  
-      if (A->factortype && bs==1){
-        for (k=0; k<bs2; k+=(bs+1),row++) x[row] = 1.0/aa_j[k];
-      } else {
-        for (k=0; k<bs2; k+=(bs+1),row++) x[row] = aa_j[k];  
-      }     
-    }
+  if (A->factortype == MAT_FACTOR_CHOLESKY || A->factortype == MAT_FACTOR_ICC){
+    PetscInt *diag=a->diag;
+    aa   = a->a;
+    ambs = a->mbs;
+    ierr = VecGetArray(v,&x);CHKERRQ(ierr);
+    for (i=0; i<ambs; i++) x[i] = 1.0/aa[diag[i]];
+    ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
   }
   
+  ai   = a->i;
+  aj   = a->j;
+  bs2  = a->bs2;  
+  ierr = VecSet(v,zero);CHKERRQ(ierr);
+  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
+  for (i=0; i<ambs; i++) {
+    j=ai[i];              
+    if (aj[j] == i) {    /* if this is a diagonal element */
+      row  = i*bs;      
+      aa_j = aa + j*bs2;  
+      for (k=0; k<bs2; k+=(bs+1),row++) x[row] = aa_j[k];  
+    } 
+  }
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

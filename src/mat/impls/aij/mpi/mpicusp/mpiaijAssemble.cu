@@ -263,6 +263,7 @@ PetscErrorCode MatMPIAIJSetValuesBatch(Mat J, PetscInt Ne, PetscInt Nl, PetscInt
 
   // Find number of nonlocal rows, convert nonlocal rows to procs, and send sizes of off-proc entries (could send diag and offdiag sizes)
   // TODO: Ask Nathan how to do this on GPU
+  ierr = PetscLogEventBegin(MAT_CUSPSetValuesBatchI,0,0,0,0);CHKERRQ(ierr);
   PetscInt *procSendSizes, *procRecvSizes;
   ierr = PetscMalloc2(numProcs, PetscInt, &procSendSizes, numProcs, PetscInt, &procRecvSizes);CHKERRQ(ierr);
   ierr = PetscMemzero(procSendSizes, numProcs * sizeof(PetscInt));CHKERRQ(ierr);
@@ -289,7 +290,9 @@ PetscErrorCode MatMPIAIJSetValuesBatch(Mat J, PetscInt Ne, PetscInt Nl, PetscInt
     numRecvEntries += procRecvSizes[p];
   }
   ierr = PetscInfo2(j->A, "Send entries %d Recv Entries %d\n", numSendEntries, numRecvEntries);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_CUSPSetValuesBatchI,0,0,0,0);CHKERRQ(ierr);
   // Allocate storage for "fat" COO representation of matrix
+  ierr = PetscLogEventBegin(MAT_CUSPSetValuesBatchII,0,0,0,0);CHKERRQ(ierr);
   ierr = PetscInfo2(j->A, "Making COO matrices, diag entries %d, nondiag entries %d\n", No-numSendEntries+numRecvEntries, numSendEntries*2);CHKERRQ(ierr);
   cusp::coo_matrix<IndexType,ValueType, memSpace> diagCOO(Nr, Nr, No-numSendEntries+numRecvEntries); // ALLOC: This is oversized because I also count offdiagonal entries
   IndexArray nondiagonalRows(numSendEntries+numSendEntries); // ALLOC: This is oversized because numSendEntries > on-process offdiagonal entries
@@ -321,8 +324,10 @@ PetscErrorCode MatMPIAIJSetValuesBatch(Mat J, PetscInt Ne, PetscInt Nl, PetscInt
   PetscInt nonlocalSize    = numSendEntries;
   PetscInt offdiagonalSize = nondiagonalSize - nonlocalSize;
   ierr = PetscInfo2(j->A, "Nonlocal size %d Offdiagonal size %d\n", nonlocalSize, offdiagonalSize);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_CUSPSetValuesBatchII,0,0,0,0);CHKERRQ(ierr);
   ///cusp::print(nondiagonalRows);
   // send off-proc entries (pack this up later)
+  ierr = PetscLogEventBegin(MAT_CUSPSetValuesBatchIII,0,0,0,0);CHKERRQ(ierr);
   PetscInt    *procSendDispls, *procRecvDispls;
   PetscInt    *sendRows, *recvRows;
   PetscInt    *sendCols, *recvCols;
@@ -351,6 +356,9 @@ PetscErrorCode MatMPIAIJSetValuesBatch(Mat J, PetscInt Ne, PetscInt Nl, PetscInt
   ierr = PetscFree2(procSendSizes, procRecvSizes);CHKERRQ(ierr);
   ierr = PetscFree2(procSendDispls, procRecvDispls);CHKERRQ(ierr);
   ierr = PetscFree3(sendRows, sendCols, sendVals);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_CUSPSetValuesBatchIII,0,0,0,0);CHKERRQ(ierr);
+
+  ierr = PetscLogEventBegin(MAT_CUSPSetValuesBatchIV,0,0,0,0);CHKERRQ(ierr);
   // Create off-diagonal matrix
   cusp::coo_matrix<IndexType,ValueType, memSpace> offdiagCOO(Nr, Nr, offdiagonalSize+numRecvEntries); // ALLOC: This is oversizes because we count diagonal entries in numRecvEntries
   // partition again into diagonal and off-diagonal
@@ -490,6 +498,7 @@ PetscErrorCode MatMPIAIJSetValuesBatch(Mat J, PetscInt Ne, PetscInt Nl, PetscInt
     }
 #endif
   }
+  ierr = PetscLogEventEnd(MAT_CUSPSetValuesBatchIV,0,0,0,0);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_CUSPSetValuesBatch,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

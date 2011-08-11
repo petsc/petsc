@@ -605,14 +605,14 @@ PetscErrorCode MatView_SeqAIJ_ASCII(Mat A,PetscViewer viewer)
 	j = a->diag[i];
 #if defined(PETSC_USE_COMPLEX)
         if (PetscImaginaryPart(a->a[j]) > 0.0) {
-            ierr = PetscViewerASCIIPrintf(viewer," (%D, %G + %G i)",a->j[j]+shift,PetscRealPart(a->a[j]),PetscImaginaryPart(a->a[j]));CHKERRQ(ierr);
+            ierr = PetscViewerASCIIPrintf(viewer," (%D, %G + %G i)",a->j[j]+shift,PetscRealPart(1.0/a->a[j]),PetscImaginaryPart(1.0/a->a[j]));CHKERRQ(ierr);
           } else if (PetscImaginaryPart(a->a[j]) < 0.0) {
-            ierr = PetscViewerASCIIPrintf(viewer," (%D, %G - %G i)",a->j[j]+shift,PetscRealPart(a->a[j]),-PetscImaginaryPart(a->a[j]));CHKERRQ(ierr);
+            ierr = PetscViewerASCIIPrintf(viewer," (%D, %G - %G i)",a->j[j]+shift,PetscRealPart(1.0/a->a[j]),-PetscImaginaryPart(1.0/a->a[j]));CHKERRQ(ierr);
           } else {
-            ierr = PetscViewerASCIIPrintf(viewer," (%D, %G) ",a->j[j]+shift,PetscRealPart(a->a[j]));CHKERRQ(ierr);
+            ierr = PetscViewerASCIIPrintf(viewer," (%D, %G) ",a->j[j]+shift,PetscRealPart(1.0/a->a[j]));CHKERRQ(ierr);
           }
 #else
-          ierr = PetscViewerASCIIPrintf(viewer," (%D, %G) ",a->j[j]+shift,a->a[j]);CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer," (%D, %G) ",a->j[j]+shift,1.0/a->a[j]);CHKERRQ(ierr);
 #endif
 
 	/* U part */
@@ -1004,7 +1004,7 @@ PetscErrorCode MatGetDiagonal_SeqAIJ(Mat A,Vec v)
   if (A->factortype == MAT_FACTOR_ILU || A->factortype == MAT_FACTOR_LU){
     PetscInt *diag=a->diag;
     ierr = VecGetArray(v,&x);CHKERRQ(ierr);
-    for (i=0; i<n; i++) x[i] = aa[diag[i]];
+    for (i=0; i<n; i++) x[i] = 1.0/aa[diag[i]];
     ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
@@ -2916,14 +2916,13 @@ PetscErrorCode  MatInvertBlockDiagonal_SeqAIJ(Mat A,PetscScalar **values)
 {
   Mat_SeqAIJ    *a = (Mat_SeqAIJ*) A->data;
   PetscErrorCode ierr;
-  PetscInt       *diag_offset,i,bs = A->rmap->bs,mbs = A->rmap->n/A->rmap->bs,ipvt[5],bs2 = bs*bs,*v_pivots,ij[7],*IJ,j;
+  PetscInt       i,bs = A->rmap->bs,mbs = A->rmap->n/A->rmap->bs,ipvt[5],bs2 = bs*bs,*v_pivots,ij[7],*IJ,j;
   MatScalar      *diag,work[25],*v_work;
   PetscReal      shift = 0.0;
 
   PetscFunctionBegin;
   if (a->ibdiagvalid) PetscFunctionReturn(0);
   ierr = MatMarkDiagonal_SeqAIJ(A);CHKERRQ(ierr);
-  diag_offset = a->diag;
   if (!a->ibdiag) {
     ierr = PetscMalloc(bs2*mbs*sizeof(PetscScalar),&a->ibdiag);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory(A,bs2*mbs*sizeof(PetscScalar));CHKERRQ(ierr);

@@ -367,7 +367,7 @@ static PetscErrorCode MatView_SeqSBAIJ_ASCII(Mat A,PetscViewer viewer)
     ierr = MatConvert(A,MATSEQAIJ,MAT_INITIAL_MATRIX,&aij);CHKERRQ(ierr);
     ierr = MatView(aij,viewer);CHKERRQ(ierr);
     ierr = MatDestroy(&aij);CHKERRQ(ierr);
-  } else if (format == PETSC_VIEWER_ASCII_COMMON) {
+  } else if (format == PETSC_VIEWER_ASCII_COMMON) { 
     ierr = PetscViewerASCIIUseTabs(viewer,PETSC_FALSE);CHKERRQ(ierr);
     for (i=0; i<a->mbs; i++) {
       for (j=0; j<bs; j++) {
@@ -397,35 +397,73 @@ static PetscErrorCode MatView_SeqSBAIJ_ASCII(Mat A,PetscViewer viewer)
     ierr = PetscViewerASCIIUseTabs(viewer,PETSC_TRUE);CHKERRQ(ierr);
   } else if (format == PETSC_VIEWER_ASCII_FACTOR_INFO) {
      PetscFunctionReturn(0);
-  } else {
-    if (A->factortype && bs>1){
-      ierr = PetscPrintf(PETSC_COMM_SELF,"Warning: matrix is factored. MatView_SeqSBAIJ_ASCII() may not display complete or logically correct entries!\n");CHKERRQ(ierr);
-    }
+  } else { 
     ierr = PetscViewerASCIIUseTabs(viewer,PETSC_FALSE);CHKERRQ(ierr);
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)A,viewer,"Matrix Object");CHKERRQ(ierr);
-    for (i=0; i<a->mbs; i++) {
-      for (j=0; j<bs; j++) {
-        ierr = PetscViewerASCIIPrintf(viewer,"row %D:",i*bs+j);CHKERRQ(ierr);
-        for (k=a->i[i]; k<a->i[i+1]; k++) {
-          for (l=0; l<bs; l++) {
+    if (A->factortype){ /* for factored matrix */
+      if (bs>1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"matrix is factored with bs>1. Not implemented yet");
+
+      PetscInt *diag=a->diag;
+      for (i=0; i<a->mbs; i++) { // for row block i
+        ierr = PetscViewerASCIIPrintf(viewer,"row %D:",i);CHKERRQ(ierr);
+        /* diagonal entry */
 #if defined(PETSC_USE_COMPLEX)
-            if (PetscImaginaryPart(a->a[bs2*k + l*bs + j]) > 0.0) {
-              ierr = PetscViewerASCIIPrintf(viewer," (%D, %G + %G i) ",bs*a->j[k]+l,
-                                            PetscRealPart(a->a[bs2*k + l*bs + j]),PetscImaginaryPart(a->a[bs2*k + l*bs + j]));CHKERRQ(ierr);
-            } else if (PetscImaginaryPart(a->a[bs2*k + l*bs + j]) < 0.0) {
-              ierr = PetscViewerASCIIPrintf(viewer," (%D, %G - %G i) ",bs*a->j[k]+l,
-                                            PetscRealPart(a->a[bs2*k + l*bs + j]),-PetscImaginaryPart(a->a[bs2*k + l*bs + j]));CHKERRQ(ierr);
-            } else {
-              ierr = PetscViewerASCIIPrintf(viewer," (%D, %G) ",bs*a->j[k]+l,PetscRealPart(a->a[bs2*k + l*bs + j]));CHKERRQ(ierr);
-            }
+        if (PetscImaginaryPart(a->a[diag[i]]) > 0.0) {
+          ierr = PetscViewerASCIIPrintf(viewer," (%D, %G + %G i) ",a->j[diag[i]],
+                                        PetscRealPart(1.0/a->a[diag[i]]),PetscImaginaryPart(1.0/a->a[diag[i]]));CHKERRQ(ierr);
+        } else if (PetscImaginaryPart(a->a[diag[i]]) < 0.0) {
+          ierr = PetscViewerASCIIPrintf(viewer," (%D, %G - %G i) ",a->j[diag[i]],
+                                        PetscRealPart(1.0/a->a[diag[i]]),-PetscImaginaryPart(1.0/a->a[diag[i]]));CHKERRQ(ierr);
+        } else {
+          ierr = PetscViewerASCIIPrintf(viewer," (%D, %G) ",a->j[diag[i]],PetscRealPart(1.0/a->a[diag[i]]));CHKERRQ(ierr);
+        }
 #else
-            ierr = PetscViewerASCIIPrintf(viewer," (%D, %G) ",bs*a->j[k]+l,a->a[bs2*k + l*bs + j]);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer," (%D, %G) ",a->j[diag[i]],1.0/a->a[diag[i]]);CHKERRQ(ierr);
 #endif
+        /* off-diagonal entries */
+        for (k=a->i[i]; k<a->i[i+1]-1; k++) { 
+#if defined(PETSC_USE_COMPLEX)
+          if (PetscImaginaryPart(a->a[bs2*k + l*bs + j]) > 0.0) {
+            ierr = PetscViewerASCIIPrintf(viewer," (%D, %G + %G i) ",bs*a->j[k]+l,
+                                          PetscRealPart(a->a[bs2*k + l*bs + j]),PetscImaginaryPart(a->a[bs2*k + l*bs + j]));CHKERRQ(ierr);
+          } else if (PetscImaginaryPart(a->a[bs2*k + l*bs + j]) < 0.0) {
+            ierr = PetscViewerASCIIPrintf(viewer," (%D, %G - %G i) ",bs*a->j[k]+l,
+                                          PetscRealPart(a->a[bs2*k + l*bs + j]),-PetscImaginaryPart(a->a[bs2*k + l*bs + j]));CHKERRQ(ierr);
+          } else {
+            ierr = PetscViewerASCIIPrintf(viewer," (%D, %G) ",bs*a->j[k]+l,PetscRealPart(a->a[bs2*k + l*bs + j]));CHKERRQ(ierr);
           }
+#else
+          ierr = PetscViewerASCIIPrintf(viewer," (%D, %G) ",a->j[k],a->a[k]);CHKERRQ(ierr);
+#endif
         }
         ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
       }
-    } 
+      
+    } else { /* for non-factored matrix */
+      for (i=0; i<a->mbs; i++) { // for row block i
+        for (j=0; j<bs; j++) {   // for row bs*i + j
+          ierr = PetscViewerASCIIPrintf(viewer,"row %D:",i*bs+j);CHKERRQ(ierr);
+          for (k=a->i[i]; k<a->i[i+1]; k++) { // for column block 
+            for (l=0; l<bs; l++) {            // for column 
+#if defined(PETSC_USE_COMPLEX)
+              if (PetscImaginaryPart(a->a[bs2*k + l*bs + j]) > 0.0) {
+              ierr = PetscViewerASCIIPrintf(viewer," (%D, %G + %G i) ",bs*a->j[k]+l,
+                                            PetscRealPart(a->a[bs2*k + l*bs + j]),PetscImaginaryPart(a->a[bs2*k + l*bs + j]));CHKERRQ(ierr);
+              } else if (PetscImaginaryPart(a->a[bs2*k + l*bs + j]) < 0.0) {
+                ierr = PetscViewerASCIIPrintf(viewer," (%D, %G - %G i) ",bs*a->j[k]+l,
+                                            PetscRealPart(a->a[bs2*k + l*bs + j]),-PetscImaginaryPart(a->a[bs2*k + l*bs + j]));CHKERRQ(ierr);
+              } else {
+                ierr = PetscViewerASCIIPrintf(viewer," (%D, %G) ",bs*a->j[k]+l,PetscRealPart(a->a[bs2*k + l*bs + j]));CHKERRQ(ierr);
+              }
+#else
+              ierr = PetscViewerASCIIPrintf(viewer," (%D, %G) ",bs*a->j[k]+l,a->a[bs2*k + l*bs + j]);CHKERRQ(ierr);
+#endif
+            } 
+          } 
+          ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
+        } 
+      } 
+    }
     ierr = PetscViewerASCIIUseTabs(viewer,PETSC_TRUE);CHKERRQ(ierr);
   }
   ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
