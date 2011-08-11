@@ -64,6 +64,7 @@ typedef struct{
   PetscReal   asmallnumber; /* gets added to degenerate mobility */
   PetscReal   xmin,xmax,ymin,ymax;
   PetscInt    Mda, Nda;
+  PetscViewer graphicsfile;  /* output of solution at each times step */
 }AppCtx;
 
 PetscErrorCode GetParams(AppCtx*);
@@ -208,6 +209,10 @@ int main(int argc, char **argv)
   if (user.graphics) {
     ierr = VecView(x,PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD));CHKERRQ(ierr);  
   }
+  if (user.graphicsfile) {
+    ierr = DMView(user.da1,user.graphicsfile);CHKERRQ(ierr);
+    ierr = VecView(x,user.graphicsfile);CHKERRQ(ierr);  
+  }
   while (t<user.T) {
     ierr = SNESSetFunction(snes,r,FormFunction,(void*)&user);CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,J,J,FormJacobian,(void*)&user);CHKERRQ(ierr);
@@ -266,6 +271,9 @@ int main(int argc, char **argv)
     ierr = Update_u(x,&user);CHKERRQ(ierr);
     ierr = UpdateMatrices(&user);CHKERRQ(ierr);
     t = t + user.dt;
+    if (user.graphicsfile) {
+      ierr = VecView(x,user.graphicsfile);CHKERRQ(ierr);  
+    }
   }
    
   /*  ierr = PetscViewerDestroy(&view_rand);CHKERRQ(ierr);
@@ -278,6 +286,9 @@ int main(int argc, char **argv)
   ierr = PetscViewerDestroy(&view_cv);CHKERRQ(ierr);
    ierr = PetscViewerDestroy(&view_eta);CHKERRQ(ierr);*/
   
+  if (user.graphicsfile) {
+    ierr = PetscViewerDestroy(&user.graphicsfile);CHKERRQ(ierr);  
+  }
   
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = VecDestroy(&r);CHKERRQ(ierr);
@@ -747,7 +758,7 @@ PetscErrorCode SetVariableBounds(DM da,Vec xl,Vec xu)
 PetscErrorCode GetParams(AppCtx* user)
 {
   PetscErrorCode ierr;
-  PetscBool      flg;
+  PetscBool      flg,graphicsfile = PETSC_FALSE;
   
   PetscFunctionBegin;
   
@@ -820,6 +831,10 @@ PetscErrorCode GetParams(AppCtx* user)
     ierr = PetscOptionsInt("-maxevents","Maximum random events allowed\n","None",user->maxevents,&user->maxevents,&flg);CHKERRQ(ierr);
 
     ierr = PetscOptionsBool("-graphics","Contour plot solutions at each timestep\n","None",user->graphics,&user->graphics,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-graphicsfile","Save solution at each timestep\n","None",graphicsfile,&graphicsfile,&flg);CHKERRQ(ierr);
+    if (graphicsfile) {
+      ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"ex61.data",FILE_MODE_WRITE,&user->graphicsfile);CHKERRQ(ierr);
+    }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);   
   PetscFunctionReturn(0);
  }
