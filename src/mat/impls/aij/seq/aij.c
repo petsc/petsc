@@ -606,7 +606,7 @@ PetscErrorCode MatView_SeqAIJ_ASCII(Mat A,PetscViewer viewer)
 #if defined(PETSC_USE_COMPLEX)
         if (PetscImaginaryPart(a->a[j]) > 0.0) {
             ierr = PetscViewerASCIIPrintf(viewer," (%D, %G + %G i)",a->j[j]+shift,PetscRealPart(1.0/a->a[j]),PetscImaginaryPart(1.0/a->a[j]));CHKERRQ(ierr);
-          } else if (PetscImagminaryPart(a->a[j]) < 0.0) {
+          } else if (PetscImaginaryPart(a->a[j]) < 0.0) {
             ierr = PetscViewerASCIIPrintf(viewer," (%D, %G - %G i)",a->j[j]+shift,PetscRealPart(1.0/a->a[j]),-PetscImaginaryPart(1.0/a->a[j]));CHKERRQ(ierr);
           } else {
             ierr = PetscViewerASCIIPrintf(viewer," (%D, %G) ",a->j[j]+shift,PetscRealPart(1.0/a->a[j]));CHKERRQ(ierr);
