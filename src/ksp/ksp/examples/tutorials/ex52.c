@@ -22,7 +22,7 @@ int main(int argc,char **args)
   PetscReal      norm;     /* norm of solution error */
   PetscInt       i,j,Ii,J,Istart,Iend,m = 8,n = 7,its;
   PetscErrorCode ierr;
-  PetscBool      flg = PETSC_FALSE,flg_ilu=PETSC_FALSE;
+  PetscBool      flg,flg_ilu,flg_ch;
   PetscScalar    v;
 #if defined(PETSC_USE_LOG)
   PetscLogStage  stage;
@@ -148,8 +148,8 @@ int main(int argc,char **args)
           are equivalent to these procedual calls 
   */
 #ifdef PETSC_HAVE_MUMPS 
-  PetscBool  flg_ch=PETSC_FALSE;
-  flg = PETSC_FALSE;
+  flg    = PETSC_FALSE;
+  flg_ch = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-use_mumps_lu",&flg,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(PETSC_NULL,"-use_mumps_ch",&flg_ch,PETSC_NULL);CHKERRQ(ierr);
   if (flg || flg_ch){
@@ -206,9 +206,11 @@ int main(int argc,char **args)
   */
   flg     = PETSC_FALSE;
   flg_ilu = PETSC_FALSE;
+  flg_ch  = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-use_petsc_lu",&flg,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(PETSC_NULL,"-use_petsc_ilu",&flg_ilu,PETSC_NULL);CHKERRQ(ierr);
-  if (flg || flg_ilu){
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-use_petsc_ch",&flg_ch,PETSC_NULL);CHKERRQ(ierr);
+  if (flg || flg_ilu || flg_ch){
     ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
     PC       pc;
     Mat      F;
@@ -217,6 +219,8 @@ int main(int argc,char **args)
       ierr = PCSetType(pc,PCLU);CHKERRQ(ierr);
     } else if (flg_ilu) {
       ierr = PCSetType(pc,PCILU);CHKERRQ(ierr); 
+    } else if (flg_ch) {
+      ierr = PCSetType(pc,PCCHOLESKY);CHKERRQ(ierr); 
     }
     ierr = PCFactorSetMatSolverPackage(pc,MATSOLVERPETSC);CHKERRQ(ierr);
     ierr = PCFactorSetUpMatSolverPackage(pc);CHKERRQ(ierr); /* call MatGetFactor() to create F */
