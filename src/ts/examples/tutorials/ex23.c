@@ -35,6 +35,7 @@ PetscErrorCode FormIFunction(TS,PetscReal,Vec,Vec,Vec,void*);
 PetscErrorCode FormIJacobian(TS,PetscReal,Vec,Vec,PetscReal,Mat*,Mat*,MatStructure*,void*);
 PetscErrorCode SetInitialGuess(Vec,AppCtx*);
 PetscErrorCode Update_q(TS);
+PetscErrorCode Monitor(TS,PetscInt,PetscReal,Vec,void*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -97,6 +98,10 @@ int main(int argc, char **argv)
     ierr = TSSetSolution(ts,x);CHKERRQ(ierr);
     ierr = Update_q(ts);CHKERRQ(ierr);
     ierr = TSSetPostStep(ts,Update_q);
+  }
+
+  if(user.tsmonitor) {
+    ierr = TSMonitorSet(ts,Monitor,&user,PETSC_NULL);CHKERRQ(ierr);
   }
 
   ierr = TSSetInitialTimeStep(ts,0.0,user.dt);CHKERRQ(ierr);
@@ -443,6 +448,19 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
     ierr = ISDestroy(&isrow);CHKERRQ(ierr);
     ierr = ISDestroy(&iscol);CHKERRQ(ierr);
   }
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "Monitor"
+PetscErrorCode Monitor(TS ts,PetscInt steps,PetscReal time,Vec x,void* mctx)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Solution vector at t = %5.4f\n",time,steps);CHKERRQ(ierr);
+  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
