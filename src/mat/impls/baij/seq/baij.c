@@ -1431,7 +1431,7 @@ PetscErrorCode MatDestroy_SeqBAIJ(Mat A)
   ierr = PetscFree(A->data);CHKERRQ(ierr);
 
   ierr = PetscObjectChangeTypeName((PetscObject)A,0);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatSeqBAIJInvertBlockDiagonal_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatInvertBlockDiagonal_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatStoreValues_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatRetrieveValues_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatSeqBAIJSetColumnIndices_C","",PETSC_NULL);CHKERRQ(ierr);
@@ -3382,7 +3382,7 @@ PetscErrorCode  MatCreate_SeqBAIJ(Mat B)
 #if defined(PETSC_HAVE_MUMPS)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_mumps_C", "MatGetFactor_baij_mumps", MatGetFactor_baij_mumps);CHKERRQ(ierr);
 #endif
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSeqBAIJInvertBlockDiagonal_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatInvertBlockDiagonal_C",
                                      "MatInvertBlockDiagonal_SeqBAIJ",
                                       MatInvertBlockDiagonal_SeqBAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatStoreValues_C",
