@@ -8,8 +8,6 @@
 
    Level: beginner
 
-   Notes: Supports only left preconditioning
-
    "Krylov Subspace Acceleration of Nonlinear Multigrid with Application to Recirculating Flows", C. W. Oosterlee and T. Washio,
    SIAM Journal on Scientific Computing, 21(5), 2000.
 
@@ -40,7 +38,7 @@ PetscErrorCode SNESDestroy_NGMRES(SNES snes)
   if (snes->work) {ierr = VecDestroyVecs(snes->nwork, &snes->work);CHKERRQ(ierr);}
   if (snes->data) {
     SNES_NGMRES * ngmres = (SNES_NGMRES *)snes->data;
-    ierr = PetscFree4(ngmres->h, ngmres->beta, ngmres->xi, ngmres->q);CHKERRQ(ierr);
+    ierr = PetscFree5(ngmres->h, ngmres->beta, ngmres->xi, ngmres->r_norms, ngmres->q);CHKERRQ(ierr);
     ierr = PetscFree(ngmres->s);CHKERRQ(ierr);
 #if PETSC_USE_COMPLEX
     ierr = PetscFree(ngmres->rwork);
@@ -125,6 +123,7 @@ PetscErrorCode SNESView_NGMRES(SNES snes, PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer, "  Size of space %d\n", ngmres->msize);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "  Maximum iterations before restart %d\n", ngmres->k_rmax);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -426,9 +425,9 @@ PetscErrorCode SNESCreate_NGMRES(SNES snes)
 
   ngmres->gammaA = 2.;
   ngmres->gammaC = 2.;
-  ngmres->deltaB = 0.99;
-  ngmres->epsilonB = 0.01;
-  ngmres->k_rmax = 100;
+  ngmres->deltaB = 0.9;
+  ngmres->epsilonB = 0.1;
+  ngmres->k_rmax = 200;
 
   ierr = SNESGetPC(snes, &snes->pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
