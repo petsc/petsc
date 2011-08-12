@@ -174,7 +174,7 @@ int main(int argc,char **argv)
   airtemp = put.Ta;
   pwat = put.pwt;
 
-  if (!rank){printf("\nInitial Temperature = %.2f\n",sfctemp);}    //prints input surface temperature
+  if (!rank) PetscPrintf(PETSC_COMM_SELF,"Initial Temperature = %g\n",sfctemp); //input surface temperature
 
   deep_grnd_temp = sfctemp - 10;   //set underlying ground layer temperature
   emma = emission(pwat);           //accounts for radiative effects of water vapor

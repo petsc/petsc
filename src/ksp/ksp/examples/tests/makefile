@@ -757,10 +757,10 @@ runex35_2:
 	   ${RM} -f ex35.tmp
 
 runex35_inode:
-	-@${MPIEXEC} -n 1 ./ex35 -dof 2 -mat_view -check_final_residual> ex35.tmp 2>&1;\
-	${MPIEXEC} -n 1 ./ex35 -dof 3 -mat_view -check_final_residual>> ex35.tmp 2>&1;\
-	${MPIEXEC} -n 1 ./ex35 -dof 4 -mat_view -check_final_residual>> ex35.tmp 2>&1;\
-	${MPIEXEC} -n 1 ./ex35 -dof 5 -mat_view -check_final_residual>> ex35.tmp 2>&1;\
+	-@${MPIEXEC} -n 1 ./ex35 -dof 2 -check_final_residual> ex35.tmp 2>&1;\
+	${MPIEXEC} -n 1 ./ex35 -dof 3 -check_final_residual>> ex35.tmp 2>&1;\
+	${MPIEXEC} -n 1 ./ex35 -dof 4 -check_final_residual>> ex35.tmp 2>&1;\
+	${MPIEXEC} -n 1 ./ex35 -dof 5 -check_final_residual>> ex35.tmp 2>&1;\
 	if (${DIFF} output/ex35_3.out ex35.tmp) then true; \
 	   else echo "Possible problem with ex35_inode, diffs above"; fi; \
 	   ${RM} -f ex35.tmp

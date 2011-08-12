@@ -52,10 +52,10 @@ static PetscErrorCode MatGetDiagonal_User(Mat A,Vec X)
 static PetscErrorCode TestMatrix(Mat A,Vec X,Vec Y,Vec Z)
 {
   PetscErrorCode ierr;
-  Vec W1,W2;
-  Mat E;
-  const char *typename;
-  PetscViewer viewer = PETSC_VIEWER_STDOUT_WORLD;
+  Vec            W1,W2;
+  Mat            E;
+  const char     *mattypename;
+  PetscViewer    viewer = PETSC_VIEWER_STDOUT_WORLD;
 
   PetscFunctionBegin;
   ierr = VecDuplicate(X,&W1);CHKERRQ(ierr);
@@ -67,8 +67,8 @@ static PetscErrorCode TestMatrix(Mat A,Vec X,Vec Y,Vec Z)
   ierr = MatDiagonalScale(A,Y,Z);CHKERRQ(ierr);
   ierr = MatComputeExplicitOperator(A,&E);CHKERRQ(ierr);
 
-  ierr = PetscObjectGetType((PetscObject)A,&typename);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"Matrix of type: %s\n",typename);CHKERRQ(ierr);
+  ierr = PetscObjectGetType((PetscObject)A,&mattypename);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"Matrix of type: %s\n",mattypename);CHKERRQ(ierr);
   ierr = MatView(E,viewer);CHKERRQ(ierr);
   ierr = MatMult(A,Z,W1);CHKERRQ(ierr);
   ierr = MatMultTranspose(A,W1,W2);CHKERRQ(ierr);
