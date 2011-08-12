@@ -62,7 +62,7 @@ PetscErrorCode SNESSetUp_NGMRES(SNES snes)
   hsize         = msize * msize;
 
 
-  //explicit least squares minimization solve
+  /* explicit least squares minimization solve */
   ierr = PetscMalloc5(hsize,PetscScalar,&ngmres->h,
 		      msize,PetscScalar,&ngmres->beta,
 		      msize,PetscScalar,&ngmres->xi,
@@ -139,15 +139,15 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
 
   
   
-  //present solution, residual, and preconditioned residual
+  /* present solution, residual, and preconditioned residual */
   Vec            x, r, f, b, d;
   Vec            x_A, r_A;
 
-  //previous iterations to construct the subspace
+  /* previous iterations to construct the subspace */
   Vec            *rdot = ngmres->rdot;
   Vec            *xdot = ngmres->xdot;
 
-  //coefficients and RHS to the minimization problem
+  /* coefficients and RHS to the minimization problem */
   PetscScalar    *beta = ngmres->beta;
   PetscScalar    *xi = ngmres->xi;
   PetscReal      r_norm, r_A_norm;
@@ -156,7 +156,7 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
   PetscScalar    qentry;
   PetscInt       i, j, k, k_restart, l, ivec;
 
-  //solution selection data
+  /* solution selection data */
   PetscBool selectA, selectRestart;
   PetscReal d_norm, d_min_norm, d_cur_norm;
   PetscReal r_min_norm;
@@ -164,7 +164,7 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  //variable initialization
+  /* variable initialization */
   snes->reason  = SNES_CONVERGED_ITERATING;
   x             = snes->vec_sol;
   r             = snes->vec_func;
@@ -181,25 +181,25 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
   snes->norm = 0.;
   ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
 
-  //initialization -- 
+  /* initialization */
 
-  //r = F(u)
-  ierr = SNESComputeFunction(snes, x, r);CHKERRQ(ierr);               /* r = F(x) */
+  /* r = F(x) */
+  ierr = SNESComputeFunction(snes, x, r);CHKERRQ(ierr);
   if (snes->domainerror) {
     snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
     PetscFunctionReturn(0);
   }
 
-  //nu = (r, r);
+  /* nu = (r, r) */
   ierr = VecNorm(r, NORM_2, &r_norm);CHKERRQ(ierr);
   r_min_norm = r_norm;
   nu = r_norm*r_norm;
   if (PetscIsInfOrNanReal(r_norm)) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_FP, "Infinite or not-a-number generated in norm");
 
-  //q_{11} = nu  
+  /* q_{00} = nu  */
   Q(0,0) = nu;
   ngmres->r_norms[0] = r_norm;
-  //rdot[0] = r
+  /* rdot[0] = r */
   ierr = VecCopy(x, xdot[0]);CHKERRQ(ierr);
   ierr = VecCopy(r, rdot[0]);CHKERRQ(ierr);
 
@@ -214,30 +214,28 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
   k_restart = 1;
   l = 1;
   for (k=1; k<snes->max_its; k++) {
-    
-    //
 
-    //select which vector of the stored subspace will be updated
-    ivec = k_restart % ngmres->msize; //replace the last used part of the subspace
+    /* select which vector of the stored subspace will be updated */
+    ivec = k_restart % ngmres->msize; /* replace the last used part of the subspace */
 
 
-    //Computation of x^M
+    /* Computation of x^M */
     ierr = SNESSolve(pc, b, x);CHKERRQ(ierr);
-   //r = F(x)
+    /* r = F(x) */
     ierr = SNESComputeFunction(snes, x, r);CHKERRQ(ierr);
     ierr = VecNorm(r, NORM_2, &r_norm);CHKERRQ(ierr);
-    //nu = (r, r)
+    /* nu = (r, r) */
     ngmres->r_norms[ivec] = r_norm;
     nu = r_norm*r_norm;    
-    if (r_min_norm > r_norm) r_min_norm = r_norm;  //the minimum norm is now of r^M
+    if (r_min_norm > r_norm) r_min_norm = r_norm;  /* the minimum norm is now of r^M */
 
-    //construct the right hand side and xi factors
+    /* construct the right hand side and xi factors */
     for (i = 0; i < l; i++) {
       VecDot(rdot[i], r, &xi[i]);
       beta[i] = nu - xi[i]; 
     }
 
-    //construct h
+    /* construct h */
     for (j = 0; j < l; j++) {
       for (i = 0; i < l; i++) {
 	H(i, j) = Q(i, j) - xi[i] - xi[j] + nu;
@@ -299,14 +297,14 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
     ierr = VecNorm(r_A, NORM_2, &r_A_norm);CHKERRQ(ierr);
 
     selectA = PETSC_TRUE;
-    //Conditions for choosing the accelerated answer --
+    /* Conditions for choosing the accelerated answer */
 
-    //Criterion A -- the norm of the function isn't increased above the minimum by too much
+    /* Criterion A -- the norm of the function isn't increased above the minimum by too much */
     if (r_A_norm >= ngmres->gammaA*r_min_norm) {
       selectA = PETSC_FALSE;
     }
     
-    //Criterion B -- the choice of x^A isn't too close to some other choice
+    /* Criterion B -- the choice of x^A isn't too close to some other choice */
     ierr=VecCopy(x_A,d);CHKERRQ(ierr);   
     ierr=VecAXPY(d,-1,x);CHKERRQ(ierr);   
     ierr=VecNorm(d,NORM_2,&d_norm);CHKERRQ(ierr);     
@@ -326,7 +324,7 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
     if (selectA) {
       if (ngmres->debug) 
 	PetscPrintf(PETSC_COMM_WORLD, "picked r_A, ||r_A||_2 = %e, ||r_M||_2 = %e\n", r_A_norm, r_norm);
-      //copy it over
+      /* copy it over */
       r_norm = r_A_norm;
       nu = r_norm*r_norm;
       ierr = VecCopy(r_A, r);CHKERRQ(ierr);
@@ -338,12 +336,12 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
 
     selectRestart = PETSC_FALSE;
     
-    //maximum iteration criterion
+    /* maximum iteration criterion */
     if (k_restart > ngmres->k_rmax) {
       selectRestart = PETSC_TRUE;
     }
 
-    //difference stagnation restart
+    /* difference stagnation restart */
     if 	((ngmres->epsilonB*d_norm > d_min_norm) && 
 	 (sqrt(r_A_norm) > ngmres->deltaB*sqrt(r_min_norm))) {
       if (ngmres->debug)
@@ -351,7 +349,7 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
       selectRestart = PETSC_TRUE;
     }
     
-    // residual stagnation restart
+    /* residual stagnation restart */
     if (sqrt(r_A_norm) > ngmres->gammaC*sqrt(r_min_norm)) {
       if (ngmres->debug)
 	PetscPrintf(PETSC_COMM_WORLD, "residual restart: %e > %e\n", sqrt(r_A_norm), ngmres->gammaC*sqrt(r_min_norm));
@@ -363,24 +361,24 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
 	PetscPrintf(PETSC_COMM_WORLD, "Restarted at iteration %d\n", k_restart);
       k_restart = 1;
       l = 1;
-      //q_{11} = nu
+      /* q_{00} = nu */
       ngmres->r_norms[0] = r_norm;
       nu = r_norm*r_norm;
       Q(0,0) = nu;
-      //rdot[0] = r
+      /* rdot[0] = r */
       ierr = VecCopy(x, xdot[0]);CHKERRQ(ierr);
       ierr = VecCopy(r, rdot[0]);CHKERRQ(ierr);
     } else {
-      //select the current size of the subspace
+      /* select the current size of the subspace */
       if (l < ngmres->msize) {
 	l++;
       }
       k_restart++;
-      //place the current entry in the list of previous entries
+      /* place the current entry in the list of previous entries */
       ierr = VecCopy(r, rdot[ivec]);CHKERRQ(ierr);
       ierr = VecCopy(x, xdot[ivec]);CHKERRQ(ierr);
       ngmres->r_norms[ivec] = r_norm;
-      if (r_min_norm > r_norm) r_min_norm = r_norm;  //the minimum norm is now of r^A      
+      if (r_min_norm > r_norm) r_min_norm = r_norm;  /* the minimum norm is now of r^A */
       for (i = 0; i < l; i++) {
 	VecDot(r, rdot[i], &qentry);
 	Q(i, ivec) = qentry;
