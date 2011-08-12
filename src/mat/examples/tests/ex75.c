@@ -54,7 +54,7 @@ int main(int argc,char **args)
       ierr = MatSetValues(sA,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
     }
     else if (prob ==2){ /* matrix for the five point stencil */
-      n1 =  (int) sqrt((double)n); 
+      n1 =  (int) PetscSqrtReal((PetscReal)n); 
       if (n1*n1 != n){
         SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"n must be a perfect square of n1");
       }
@@ -123,7 +123,7 @@ int main(int argc,char **args)
       ierr = MatSetValues(A,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
     }
     else if (prob ==2){ /* matrix for the five point stencil */
-      n1 = (int) sqrt((double)n); 
+      n1 = (int) PetscSqrtReal((PetscReal)n); 
       for (i=0; i<n1; i++) {
         for (j=0; j<n1; j++) {
           Ii = j + n1*i;

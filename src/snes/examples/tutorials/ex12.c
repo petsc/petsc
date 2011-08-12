@@ -710,7 +710,7 @@ PetscErrorCode ComputeError(Vec X, PetscReal *error, AppCtx *user) {
   ierr = PetscFree4(coords,v0,J,invJ);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(user->dm, &localX);CHKERRQ(ierr);
   ierr = MPI_Allreduce(&localError, error, 1, MPIU_REAL, MPI_SUM, PETSC_COMM_WORLD);CHKERRQ(ierr);
-  *error = sqrt(*error);
+  *error = PetscSqrtReal(*error);
   PetscFunctionReturn(0);
 }
 

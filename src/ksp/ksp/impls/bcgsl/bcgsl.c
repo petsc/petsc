@@ -203,7 +203,7 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
       kappa1 = BLASdot_(&ldMZ, AYlc, &ione, AYtc, &ione);
 
       if (kappa1<0) kappa1 = -kappa1;
-      kappa1 = sqrt(kappa1);
+      kappa1 = PetscSqrtReal(kappa1);
 
       if (kappa0!=0.0 && kappa1!=0.0) {
         if (kappaA<0.7*kappa0*kappa1) {

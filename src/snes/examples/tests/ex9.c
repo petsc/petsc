@@ -135,7 +135,7 @@ PetscErrorCode  FormInitialGuess1(AppCtx *user,Vec X)
           x[loc] = 0.0; 
           continue;
         }
-        x[loc] = temp1*sqrt(PetscMin((PetscReal)(PetscMin(i,mx-i-1))*Hx,temp)); 
+        x[loc] = temp1*PetscSqrtReal(PetscMin((PetscReal)(PetscMin(i,mx-i-1))*Hx,temp)); 
       }
     }
   }

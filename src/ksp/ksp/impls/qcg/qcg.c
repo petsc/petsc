@@ -528,7 +528,7 @@ static PetscErrorCode QuadraticRoots_Private(Vec s,Vec p,PetscReal *delta,PetscR
   ierr = VecDot(s,s,&sts);CHKERRQ(ierr);
 #endif
   dsq  = (*delta)*(*delta);
-  rad  = sqrt((pts*pts) - ptp*(sts - dsq));
+  rad  = PetscSqrtReal((pts*pts) - ptp*(sts - dsq));
   if (pts > 0.0) {
     *step2 = -(pts + rad)/ptp;
     *step1 = (sts - dsq)/(ptp * *step2);

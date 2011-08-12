@@ -242,12 +242,12 @@ PetscErrorCode FormGradient(SNES snes, Vec X, Vec G, void *ptr){
       d7 /= hy;
       d8 /= hx;
 
-      f1 = sqrt( 1.0 + d1*d1 + d7*d7);
-      f2 = sqrt( 1.0 + d1*d1 + d4*d4);
-      f3 = sqrt( 1.0 + d3*d3 + d8*d8);
-      f4 = sqrt( 1.0 + d3*d3 + d2*d2);
-      f5 = sqrt( 1.0 + d2*d2 + d5*d5);
-      f6 = sqrt( 1.0 + d4*d4 + d6*d6);
+      f1 = PetscSqrtReal( 1.0 + d1*d1 + d7*d7);
+      f2 = PetscSqrtReal( 1.0 + d1*d1 + d4*d4);
+      f3 = PetscSqrtReal( 1.0 + d3*d3 + d8*d8);
+      f4 = PetscSqrtReal( 1.0 + d3*d3 + d2*d2);
+      f5 = PetscSqrtReal( 1.0 + d2*d2 + d5*d5);
+      f6 = PetscSqrtReal( 1.0 + d4*d4 + d6*d6);
       
       df1dxc /= f1;
       df2dxc /= f2;
@@ -385,12 +385,12 @@ PetscErrorCode FormJacobian(SNES snes, Vec X, Mat *tH, Mat* tHPre, MatStructure*
       d7 = (xlt-xl)/hy;
       d8 = (xlt-xt)/hx;
       
-      f1 = sqrt( 1.0 + d1*d1 + d7*d7);
-      f2 = sqrt( 1.0 + d1*d1 + d4*d4);
-      f3 = sqrt( 1.0 + d3*d3 + d8*d8);
-      f4 = sqrt( 1.0 + d3*d3 + d2*d2);
-      f5 = sqrt( 1.0 + d2*d2 + d5*d5);
-      f6 = sqrt( 1.0 + d4*d4 + d6*d6);
+      f1 = PetscSqrtReal( 1.0 + d1*d1 + d7*d7);
+      f2 = PetscSqrtReal( 1.0 + d1*d1 + d4*d4);
+      f3 = PetscSqrtReal( 1.0 + d3*d3 + d8*d8);
+      f4 = PetscSqrtReal( 1.0 + d3*d3 + d2*d2);
+      f5 = PetscSqrtReal( 1.0 + d2*d2 + d5*d5);
+      f6 = PetscSqrtReal( 1.0 + d4*d4 + d6*d6);
 
 
       hl = (-hydhx*(1.0+d7*d7)+d1*d7)/(f1*f1*f1)+
@@ -549,7 +549,7 @@ PetscErrorCode MSA_BoundaryConditions(AppCtx * user)
       for (k=0; k<maxits; k++){
 	nf1=u1 + u1*u2*u2 - u1*u1*u1/three-xt;
 	nf2=-u2 - u1*u1*u2 + u2*u2*u2/three-yt;
-	fnorm=sqrt(nf1*nf1+nf2*nf2);
+	fnorm=PetscSqrtReal(nf1*nf1+nf2*nf2);
 	if (fnorm <= tol) break;
 	njac11=one+u2*u2-u1*u1;
 	njac12=two*u1*u2;

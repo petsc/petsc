@@ -424,7 +424,7 @@ static PetscInt xyt_generate(xyt_ADT xyt_handle)
       /* compute sqrt(alpha) = sqrt(u_l^T.u_l) - comm portion */
       grop_hc(&alpha, &alpha_w, 1, op, dim);
 
-      alpha = (PetscScalar) sqrt((double)alpha);
+      alpha = (PetscScalar) PetscSqrtReal((PetscReal)alpha);
 
       /* check for small alpha                             */
       /* LATER use this to detect and determine null space */

@@ -537,7 +537,7 @@ PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Mat *F)
   ierr = MPI_Comm_dup(((PetscObject)A)->comm,&(lu->comm_superlu));CHKERRQ(ierr);
   ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);
   /* Default num of process columns and rows */
-  lu->npcol = PetscMPIIntCast((PetscInt)(0.5 + sqrt((PetscReal)size))); 
+  lu->npcol = PetscMPIIntCast((PetscInt)(0.5 + PetscSqrtReal((PetscReal)size))); 
   if (!lu->npcol) lu->npcol = 1;
   while (lu->npcol > 0) {
     lu->nprow = PetscMPIIntCast(size/lu->npcol);  

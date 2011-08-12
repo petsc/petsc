@@ -138,7 +138,7 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
       ksp->reason = KSP_DIVERGED_BREAKDOWN;
       PetscFunctionReturn(0);
     }
-    alpha = sqrt(PetscRealPart(alphac));
+    alpha = PetscSqrtReal(PetscRealPart(alphac));
     ierr = VecScale(Z,1.0/alpha); CHKERRQ(ierr);
   }
   ierr = VecScale(V,1.0/alpha);CHKERRQ(ierr);
@@ -179,7 +179,7 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
         ksp->reason = KSP_DIVERGED_BREAKDOWN;
         break;
       }
-      alpha = sqrt(PetscRealPart(alphac));
+      alpha = PetscSqrtReal(PetscRealPart(alphac));
       ierr = VecScale(Z,1.0/alpha);CHKERRQ(ierr);
     }
     ierr   = VecScale(V1,1.0/alpha);CHKERRQ(ierr);

@@ -36,7 +36,7 @@ PetscErrorCode MatGetColumnNorms_SeqAIJ(Mat A,NormType type,PetscReal *norms)
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Unknown NormType");
 
   if (type == NORM_2) {
-    for (i=0; i<n; i++) norms[i] = sqrt(norms[i]);
+    for (i=0; i<n; i++) norms[i] = PetscSqrtReal(norms[i]);
   }
   PetscFunctionReturn(0);
 }
@@ -1841,7 +1841,7 @@ PetscErrorCode MatNorm_SeqAIJ(Mat A,NormType type,PetscReal *nrm)
       sum += (*v)*(*v); v++;
 #endif
     }
-    *nrm = sqrt(sum);
+    *nrm = PetscSqrtReal(sum);
   } else if (type == NORM_1) {
     PetscReal *tmp;
     PetscInt    *jj = a->j;

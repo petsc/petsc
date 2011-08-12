@@ -249,7 +249,7 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
           /* boundary conditions are all zero Dirichlet */
           x[k][j][i] = 0.0; 
         } else {
-          x[k][j][i] = temp1*sqrt(PetscMin((PetscReal)(PetscMin(i,Mx-i-1))*hx,tempj));
+          x[k][j][i] = temp1*PetscSqrtReal(PetscMin((PetscReal)(PetscMin(i,Mx-i-1))*hx,tempj));
         }
       }
     }

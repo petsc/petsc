@@ -129,9 +129,9 @@ static PetscErrorCode KSPSolve_TCQMR(KSP ksp)
     /* Compute the upper bound on the residual norm r (See QMR paper p. 13) */
     sprod = sprod*PetscAbsScalar(s);
 #if defined(PETSC_USE_COMPLEX)
-    rnorm = rnorm0 * sqrt((double)ksp->its+2.0) * PetscRealPart(sprod);     
+    rnorm = rnorm0 * PetscSqrtReal((PetscReal)ksp->its+2.0) * PetscRealPart(sprod);     
 #else
-    rnorm = rnorm0 * sqrt((double)ksp->its+2.0) * sprod;     
+    rnorm = rnorm0 * PetscSqrtReal((PetscReal)ksp->its+2.0) * sprod;     
 #endif
     ierr = (*ksp->converged)(ksp,ksp->its,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
     if (ksp->its >= ksp->max_it) {

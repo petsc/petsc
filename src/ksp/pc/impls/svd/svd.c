@@ -9,6 +9,7 @@ typedef struct {
   Vec        diag,work;    
   Mat        A,U,V;
   PetscInt   nzero;
+  PetscReal  zerosing; /* measure of smallest singular value treated as nonzero */
 } PC_SVD;
 
 
@@ -42,15 +43,15 @@ static PetscErrorCode PCSetUp_SVD(PC pc)
   PetscFunctionBegin;
   if (!jac->diag) {
     /* assume square matrices */
-    ierr = MatGetVecs(pc->mat,&jac->diag,&jac->work);CHKERRQ(ierr);
+    ierr = MatGetVecs(pc->pmat,&jac->diag,&jac->work);CHKERRQ(ierr);
   }
   ierr = MatDestroy(&jac->A);CHKERRQ(ierr);
-  ierr = MatConvert(pc->mat,MATSEQDENSE,MAT_INITIAL_MATRIX,&jac->A);CHKERRQ(ierr);
+  ierr = MatConvert(pc->pmat,MATSEQDENSE,MAT_INITIAL_MATRIX,&jac->A);CHKERRQ(ierr);
   if (!jac->U) {
     ierr = MatDuplicate(jac->A,MAT_DO_NOT_COPY_VALUES,&jac->U);CHKERRQ(ierr);
     ierr = MatDuplicate(jac->A,MAT_DO_NOT_COPY_VALUES,&jac->V);CHKERRQ(ierr);
   }
-  ierr = MatGetSize(pc->mat,&n,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatGetSize(pc->pmat,&n,PETSC_NULL);CHKERRQ(ierr);
   nb    = PetscBLASIntCast(n);
   lwork = 5*nb;
   ierr  = PetscMalloc(lwork*sizeof(PetscScalar),&work);CHKERRQ(ierr); 
@@ -68,8 +69,10 @@ static PetscErrorCode PCSetUp_SVD(PC pc)
   ierr  = MatRestoreArray(jac->U,&u);CHKERRQ(ierr); 
   ierr  = MatRestoreArray(jac->V,&v);CHKERRQ(ierr); 
   jac->nzero = 0;
+  ierr = PetscInfo2(pc,"Largest and smallest singular values %14.12e %14.12e\n",(double)PetscRealPart(d[0]),(double)PetscRealPart(d[n-1]));
   for (i=0; i<n; i++) {
-    if (PetscRealPart(d[i]) < 1.e-12) {jac->nzero = n - i;break;}
+    if (i == 0 && PetscRealPart(d[i]) == 0.0) {jac->nzero = n;break;}
+    if (PetscRealPart(d[i]) < jac->zerosing /*PetscRealPart(d[0])*/) {jac->nzero = n - i;break;}
     d[i] = 1.0/d[i];
   }
   ierr = PetscInfo1(pc,"Number of zero or nearly singular values %D\n",jac->nzero);
@@ -161,9 +164,11 @@ static PetscErrorCode PCDestroy_SVD(PC pc)
 static PetscErrorCode PCSetFromOptions_SVD(PC pc)
 {
   PetscErrorCode ierr;
+  PC_SVD         *jac = (PC_SVD*)pc->data;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("SVD options");CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-pc_svd_zero_sing","Singular values smaller than this treated as zero","None",jac->zerosing,&jac->zerosing,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -187,7 +192,8 @@ static PetscErrorCode PCSetFromOptions_SVD(PC pc)
 
   Concepts: SVD
 
-         Zero entries along the diagonal are replaced with the value 0.0
+  Options Database:
+.  -pc_svd_zero_sing <rtol> Singular values smaller than this are treated as zero
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC
 M*/
@@ -205,8 +211,9 @@ PetscErrorCode PCCreate_SVD(PC pc)
      Creates the private data structure for this preconditioner and
      attach it to the PC object.
   */
-  ierr      = PetscNewLog(pc,PC_SVD,&jac);CHKERRQ(ierr);
-  pc->data  = (void*)jac;
+  ierr          = PetscNewLog(pc,PC_SVD,&jac);CHKERRQ(ierr);
+  jac->zerosing = 1.e-12;
+  pc->data      = (void*)jac;
 
   /*
       Set the pointers for the functions that are provided above.

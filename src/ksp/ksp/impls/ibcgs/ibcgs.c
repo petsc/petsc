@@ -212,7 +212,7 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
     etan     = outsums[3];
     thetan   = outsums[4];
     kappan   = outsums[5];
-    if (ksp->lagnorm && ksp->its > 1) rnorm = sqrt(PetscRealPart(outsums[6]));
+    if (ksp->lagnorm && ksp->its > 1) rnorm = PetscSqrtReal(PetscRealPart(outsums[6]));
 
     if (kappan == 0.0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_CONV_FAILED,"kappan is zero, iteration %D",ksp->its);
     if (thetan == 0.0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_CONV_FAILED,"thetan is zero, iteration %D",ksp->its);
@@ -237,7 +237,7 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
       ierr = PetscLogEventBarrierBegin(VEC_ReduceBarrier,0,0,0,0,((PetscObject)ksp)->comm);CHKERRQ(ierr);
       ierr = MPI_Allreduce(&rnormin,&rnorm,1,MPIU_REAL,MPIU_SUM,((PetscObject)ksp)->comm);CHKERRQ(ierr);
       ierr = PetscLogEventBarrierEnd(VEC_ReduceBarrier,0,0,0,0,((PetscObject)ksp)->comm);CHKERRQ(ierr);
-      rnorm = sqrt(rnorm);
+      rnorm = PetscSqrtReal(rnorm);
     } 
 
     /* Test for convergence */

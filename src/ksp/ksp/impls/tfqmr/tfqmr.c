@@ -79,12 +79,12 @@ static PetscErrorCode  KSPSolve_TFQMR(KSP ksp)
     ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);
     for (m=0; m<2; m++) {
       if (!m) {
-        w = sqrt(dp*dpold);
+        w = PetscSqrtReal(dp*dpold);
       } else {
         w = dp;
       }
       psi = w / tau;
-      cm  = 1.0 / sqrt(1.0 + psi * psi);
+      cm  = 1.0 / PetscSqrtReal(1.0 + psi * psi);
       tau = tau * psi * cm;
       eta = cm * cm * a;
       cf  = psiold * psiold * etaold / a;
@@ -95,7 +95,7 @@ static PetscErrorCode  KSPSolve_TFQMR(KSP ksp)
       }
       ierr = VecAXPY(X,eta,D);CHKERRQ(ierr);
 
-      dpest = sqrt(m + 1.0) * tau;
+      dpest = PetscSqrtReal(m + 1.0) * tau;
       ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
       ksp->rnorm                                    = dpest;
       ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);

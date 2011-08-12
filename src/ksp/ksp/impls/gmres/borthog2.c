@@ -88,7 +88,7 @@ PetscErrorCode  KSPGMRESClassicalGramSchmidtOrthogonalization(KSP  ksp,PetscInt 
     for (j=0; j<=it; j++) {
       hnrm  +=  PetscRealPart(lhh[j] * PetscConj(lhh[j]));
     }
-    hnrm = sqrt(hnrm);
+    hnrm = PetscSqrtReal(hnrm);
     ierr = VecNorm(VEC_VV(it+1),NORM_2, &wnrm);CHKERRQ(ierr);
     if (wnrm < 1.0286 * hnrm) {
       refine = PETSC_TRUE;

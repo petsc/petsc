@@ -150,7 +150,7 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
     }
     ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);                     /*  beta <- z'*r       */
     if (PetscIsInfOrNanScalar(beta)) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_FP,"Infinite or not-a-number generated in dot product");
-    dp = sqrt(PetscAbsScalar(beta));                           /*    dp <- r'*z = r'*B*r = e'*A'*B*A*e */
+    dp = PetscSqrtReal(PetscAbsScalar(beta));                           /*    dp <- r'*z = r'*B*r = e'*A'*B*A*e */
     break;
   case KSP_NORM_NONE:
     dp = 0.0;
@@ -197,7 +197,7 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
        b = beta/betaold;
        if (eigs) {
          if (ksp->max_it != stored_max_it) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"Can not change maxit AND calculate eigenvalues");
-         e[i] = sqrt(PetscAbsScalar(b))/a;  
+         e[i] = PetscSqrtReal(PetscAbsScalar(b))/a;  
        }
        ierr = VecAYPX(P,b,Z);CHKERRQ(ierr);    /*     p <- z + b* p   */
      }
@@ -219,7 +219,7 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
      }
      a = beta/dpi;                                 /*     a = beta/p'w   */
      if (eigs) {
-       d[i] = sqrt(PetscAbsScalar(b))*e[i] + 1.0/a;
+       d[i] = PetscSqrtReal(PetscAbsScalar(b))*e[i] + 1.0/a;
      }
      ierr = VecAXPY(X,a,P);CHKERRQ(ierr);          /*     x <- x + ap     */
      ierr = VecAXPY(R,-a,W);CHKERRQ(ierr);                      /*     r <- r - aw    */
@@ -246,7 +246,7 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
          ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);     /*  beta <- r'*z       */
        }
        if (PetscIsInfOrNanScalar(beta)) SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_FP,"Infinite or not-a-number generated in dot product");
-       dp = sqrt(PetscAbsScalar(beta));
+       dp = PetscSqrtReal(PetscAbsScalar(beta));
      } else {
        dp = 0.0;
      }

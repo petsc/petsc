@@ -191,7 +191,7 @@ static PetscErrorCode PCSetUp_Jacobi(PC pc)
     ierr = VecGetLocalSize(diagsqrt,&n);CHKERRQ(ierr);
     ierr = VecGetArray(diagsqrt,&x);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
-      if (x[i] != 0.0) x[i] = 1.0/sqrt(PetscAbsScalar(x[i]));
+      if (x[i] != 0.0) x[i] = 1.0/PetscSqrtReal(PetscAbsScalar(x[i]));
       else {
         x[i]     = 1.0;
         zeroflag = PETSC_TRUE;

@@ -1165,7 +1165,7 @@ PetscErrorCode MatNorm_SeqSBAIJ(Mat A,NormType type,PetscReal *norm)
         }        
       }        
     }
-    *norm = sqrt(sum_diag + 2*sum_off);
+    *norm = PetscSqrtReal(sum_diag + 2*sum_off);
   }  else if (type == NORM_INFINITY || type == NORM_1) { /* maximum row/column sum */
     ierr = PetscMalloc3(bs,PetscReal,&sum,mbs,PetscInt,&il,mbs,PetscInt,&jl);CHKERRQ(ierr);
     for (i=0; i<mbs; i++) jl[i] = mbs; 

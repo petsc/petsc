@@ -253,10 +253,10 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
     if (cg->radius) {
       if (r2 >= rr) {
         alpha = 1.0;
-        cg->norm_d = sqrt(rr);
+        cg->norm_d = PetscSqrtReal(rr);
       }
       else {
-        alpha = sqrt(r2 / rr);
+        alpha = PetscSqrtReal(r2 / rr);
         cg->norm_d = cg->radius;
       }
 
@@ -289,10 +289,10 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
     if (cg->radius) {
       if (r2 >= rr) {
         alpha = 1.0;
-        cg->norm_d = sqrt(rr);
+        cg->norm_d = PetscSqrtReal(rr);
       }
       else {
-        alpha = sqrt(r2 / rr);
+        alpha = PetscSqrtReal(r2 / rr);
         cg->norm_d = cg->radius;
       }
 
@@ -318,7 +318,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
   /* gradient iteration has been performed.                                  */
   /***************************************************************************/
 
-  cg->norm_r[0] = sqrt(rz);				/* norm_r = |r|_M    */
+  cg->norm_r[0] = PetscSqrtReal(rz);				/* norm_r = |r|_M    */
 
   switch(ksp->normtype) {
   case KSP_NORM_PRECONDITIONED:
@@ -326,7 +326,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
     break;
 
   case KSP_NORM_UNPRECONDITIONED:
-    norm_r = sqrt(rr);					/* norm_r = |r|      */
+    norm_r = PetscSqrtReal(rr);					/* norm_r = |r|      */
     break;
 
   case KSP_NORM_NATURAL:
@@ -370,10 +370,10 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
     if (cg->radius) {
       if (r2 >= rr) {
         alpha = 1.0;
-        cg->norm_d = sqrt(rr);
+        cg->norm_d = PetscSqrtReal(rr);
       }
       else {
-        alpha = sqrt(r2 / rr);
+        alpha = PetscSqrtReal(r2 / rr);
         cg->norm_d = cg->radius;
       }
 
@@ -437,7 +437,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
       /* trust region.                                                       */
       /***********************************************************************/
 
-      step = sqrt(r2 / norm_p);
+      step = PetscSqrtReal(r2 / norm_p);
       cg->norm_d = cg->radius;
 
       ierr = VecAXPY(d, step, p);CHKERRQ(ierr);	/* d = d + step p    */
@@ -456,10 +456,10 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
 
       if (r2 >= rr) {
         alpha = 1.0;
-        cg->norm_d = sqrt(rr);
+        cg->norm_d = PetscSqrtReal(rr);
       }
       else {
-        alpha = sqrt(r2 / rr);
+        alpha = PetscSqrtReal(r2 / rr);
         cg->norm_d = cg->radius;
       }
 
@@ -516,7 +516,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
         /* Follow direction of negative curvature to boundary.               */
         /*********************************************************************/
 
-        step = (sqrt(dMp*dMp+norm_p*(r2-norm_d))-dMp)/norm_p;
+        step = (PetscSqrtReal(dMp*dMp+norm_p*(r2-norm_d))-dMp)/norm_p;
         cg->norm_d = cg->radius;
 
         ierr = VecAXPY(d, step, p);CHKERRQ(ierr);	/* d = d + step p    */
@@ -555,7 +555,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
 	/* Follow the direction to the boundary of the trust region.         */
 	/*********************************************************************/
 
-        step = (sqrt(dMp*dMp+norm_p*(r2-norm_d))-dMp)/norm_p;
+        step = (PetscSqrtReal(dMp*dMp+norm_p*(r2-norm_d))-dMp)/norm_p;
         cg->norm_d = cg->radius;
 
         ierr = VecAXPY(d, step, p);CHKERRQ(ierr);	/* d = d + step p    */
@@ -591,7 +591,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
       ierr = VecDot(d, d, &norm_d);CHKERRQ(ierr);
       break;
     }
-    cg->norm_d = sqrt(norm_d);
+    cg->norm_d = PetscSqrtReal(norm_d);
 
     /*************************************************************************/
     /* Update objective function.                                            */
@@ -620,7 +620,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
     /* Compute the residual and check for convergence.                       */
     /*************************************************************************/
 
-    cg->norm_r[l_size+1] = sqrt(rz);			/* norm_r = |r|_M   */
+    cg->norm_r[l_size+1] = PetscSqrtReal(rz);			/* norm_r = |r|_M   */
 
     switch(ksp->normtype) {
     case KSP_NORM_PRECONDITIONED:
@@ -711,7 +711,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
     /*************************************************************************/
 
     ++l_size;
-    cg->offd[t_size] = sqrt(beta) / fabs(alpha);
+    cg->offd[t_size] = PetscSqrtReal(beta) / fabs(alpha);
     cg->diag[t_size] = kappa / rz + beta / alpha;
     ++t_size;
 
@@ -734,7 +734,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
         /* Follow direction to boundary.                                     */
         /*********************************************************************/
 
-        step = (sqrt(dMp*dMp+norm_p*(r2-norm_d))-dMp)/norm_p;
+        step = (PetscSqrtReal(dMp*dMp+norm_p*(r2-norm_d))-dMp)/norm_p;
         cg->norm_d = cg->radius;
 
         ierr = VecAXPY(d, step, p);CHKERRQ(ierr);	/* d = d + step p    */
@@ -824,7 +824,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
     /* the residual.  Do NOT check for convergence.                          */
     /*************************************************************************/
 
-    cg->norm_r[l_size+1] = sqrt(rz);			/* norm_r = |r|_M    */
+    cg->norm_r[l_size+1] = PetscSqrtReal(rz);			/* norm_r = |r|_M    */
 
     switch(ksp->normtype) {
     case KSP_NORM_PRECONDITIONED:
@@ -883,7 +883,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
     /*************************************************************************/
 
     ++l_size;
-    cg->offd[t_size] = sqrt(beta) / fabs(alpha);
+    cg->offd[t_size] = PetscSqrtReal(beta) / fabs(alpha);
     cg->diag[t_size] = kappa / rz + beta / alpha;
     ++t_size;
   }
@@ -1024,7 +1024,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
   for (i = 0; i < t_size; ++i) {
     norm_t += t_soln[i] * t_soln[i];
   }
-  norm_t = sqrt(norm_t);
+  norm_t = PetscSqrtReal(norm_t);
 
   /***************************************************************************/
   /* Determine the case we are in.                                           */
@@ -1071,7 +1071,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
 	coef3 += t_soln[i] * t_soln[i];
       }
       
-      coef3 = sqrt(coef2 * coef2 - coef1 * coef3);
+      coef3 = PetscSqrtReal(coef2 * coef2 - coef1 * coef3);
       root1 = (-coef2 + coef3) / coef1;
       root2 = (-coef2 - coef3) / coef1;
 
@@ -1238,7 +1238,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
       for (j = 0; j < t_size; ++j) {
 	norm_t += t_soln[j] * t_soln[j];
       }
-      norm_t = sqrt(norm_t);
+      norm_t = PetscSqrtReal(norm_t);
     }
 
     /*************************************************************************/

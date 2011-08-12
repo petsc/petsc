@@ -155,7 +155,7 @@ PetscErrorCode  FormInitialGuess1(AppCtx *user,Vec X)
         x[row] = 0.0; 
         continue;
       }
-      x[row] = temp1*sqrt(PetscMin((PetscReal)(PetscMin(i,mx-i-1))*hx,temp)); 
+      x[row] = temp1*PetscSqrtReal(PetscMin((PetscReal)(PetscMin(i,mx-i-1))*hx,temp)); 
     }
   }
   ierr = VecRestoreArray(X,&x);CHKERRQ(ierr);

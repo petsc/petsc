@@ -241,7 +241,7 @@ PetscErrorCode  KSPSetUp(KSP ksp)
     ierr = VecGetLocalSize(ksp->diagonal,&n);CHKERRQ(ierr);
     ierr = VecGetArray(ksp->diagonal,&xx);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
-      if (xx[i] != 0.0) xx[i] = 1.0/sqrt(PetscAbsScalar(xx[i]));
+      if (xx[i] != 0.0) xx[i] = 1.0/PetscSqrtReal(PetscAbsScalar(xx[i]));
       else {
         xx[i]     = 1.0;
         zeroflag  = PETSC_TRUE;

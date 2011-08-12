@@ -185,10 +185,10 @@ PetscErrorCode KSPSolve_NASH(KSP ksp)
     if (cg->radius) {
       if (r2 >= rr) {
         alpha = 1.0;
-        cg->norm_d = sqrt(rr);
+        cg->norm_d = PetscSqrtReal(rr);
       }
       else {
-        alpha = sqrt(r2 / rr);
+        alpha = PetscSqrtReal(r2 / rr);
         cg->norm_d = cg->radius;
       }
 
@@ -221,10 +221,10 @@ PetscErrorCode KSPSolve_NASH(KSP ksp)
     if (cg->radius) {
       if (r2 >= rr) {
         alpha = 1.0;
-        cg->norm_d = sqrt(rr);
+        cg->norm_d = PetscSqrtReal(rr);
       }
       else {
-        alpha = sqrt(r2 / rr);
+        alpha = PetscSqrtReal(r2 / rr);
         cg->norm_d = cg->radius;
       }
 
@@ -256,11 +256,11 @@ PetscErrorCode KSPSolve_NASH(KSP ksp)
     break;
 
   case KSP_NORM_UNPRECONDITIONED:
-    norm_r = sqrt(rr);					/* norm_r = |r|      */
+    norm_r = PetscSqrtReal(rr);					/* norm_r = |r|      */
     break;
 
   case KSP_NORM_NATURAL:
-    norm_r = sqrt(rz);					/* norm_r = |r|_M    */
+    norm_r = PetscSqrtReal(rz);					/* norm_r = |r|_M    */
     break;
 
   default:
@@ -300,10 +300,10 @@ PetscErrorCode KSPSolve_NASH(KSP ksp)
     if (cg->radius) {
       if (r2 >= rr) {
         alpha = 1.0;
-        cg->norm_d = sqrt(rr);
+        cg->norm_d = PetscSqrtReal(rr);
       }
       else {
-        alpha = sqrt(r2 / rr);
+        alpha = PetscSqrtReal(r2 / rr);
         cg->norm_d = cg->radius;
       }
 
@@ -358,7 +358,7 @@ PetscErrorCode KSPSolve_NASH(KSP ksp)
       /* trust region.                                                       */
       /***********************************************************************/
 
-      step = sqrt(r2 / norm_p);
+      step = PetscSqrtReal(r2 / norm_p);
       cg->norm_d = cg->radius;
 
       ierr = VecAXPY(d, step, p);CHKERRQ(ierr);	/* d = d + step p    */
@@ -377,10 +377,10 @@ PetscErrorCode KSPSolve_NASH(KSP ksp)
 
       if (r2 >= rr) {
         alpha = 1.0;
-        cg->norm_d = sqrt(rr);
+        cg->norm_d = PetscSqrtReal(rr);
       }
       else {
-        alpha = sqrt(r2 / rr);
+        alpha = PetscSqrtReal(r2 / rr);
         cg->norm_d = cg->radius;
       }
 
@@ -433,7 +433,7 @@ PetscErrorCode KSPSolve_NASH(KSP ksp)
 	/* Follow the direction to the boundary of the trust region.         */
 	/*********************************************************************/
 
-        step = (sqrt(dMp*dMp+norm_p*(r2-norm_d))-dMp)/norm_p;
+        step = (PetscSqrtReal(dMp*dMp+norm_p*(r2-norm_d))-dMp)/norm_p;
         cg->norm_d = cg->radius;
 
         ierr = VecAXPY(d, step, p);CHKERRQ(ierr);	/* d = d + step p    */
@@ -469,7 +469,7 @@ PetscErrorCode KSPSolve_NASH(KSP ksp)
       ierr = VecDot(d, d, &norm_d);CHKERRQ(ierr);
       break;
     }
-    cg->norm_d = sqrt(norm_d);
+    cg->norm_d = PetscSqrtReal(norm_d);
 
     /*************************************************************************/
     /* Update objective function.                                            */
@@ -508,7 +508,7 @@ PetscErrorCode KSPSolve_NASH(KSP ksp)
       break;
 
     case KSP_NORM_NATURAL:
-      norm_r = sqrt(rz);				/* norm_r = |r|_M    */
+      norm_r = PetscSqrtReal(rz);				/* norm_r = |r|_M    */
       break;
 
     default:

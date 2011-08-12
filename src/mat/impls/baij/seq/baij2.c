@@ -1918,7 +1918,7 @@ PetscErrorCode MatNorm_SeqBAIJ(Mat A,NormType type,PetscReal *norm)
       sum += (*v)*(*v); v++;
 #endif
     }
-    *norm = sqrt(sum);
+    *norm = PetscSqrtReal(sum);
   } else if (type == NORM_1) { /* maximum column sum */
     PetscReal *tmp;
     PetscInt  *bcol = a->j;

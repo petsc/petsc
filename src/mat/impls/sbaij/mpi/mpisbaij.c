@@ -422,7 +422,7 @@ PetscErrorCode MatNorm_MPISBAIJ(Mat mat,NormType type,PetscReal *norm)
       ierr =  MatNorm(baij->B,type,lnorm2);CHKERRQ(ierr);
       *lnorm2 = (*lnorm2)*(*lnorm2); lnorm2--;             /* squar power of norm(B) */
       ierr = MPI_Allreduce(lnorm2,&sum,2,MPIU_REAL,MPIU_SUM,((PetscObject)mat)->comm);CHKERRQ(ierr);
-      *norm = sqrt(sum[0] + 2*sum[1]);
+      *norm = PetscSqrtReal(sum[0] + 2*sum[1]);
       ierr = PetscFree(lnorm2);CHKERRQ(ierr);
     } else if (type == NORM_INFINITY || type == NORM_1) { /* max row/column sum */
       Mat_SeqSBAIJ *amat=(Mat_SeqSBAIJ*)baij->A->data;

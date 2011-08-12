@@ -936,7 +936,7 @@ PetscErrorCode MatNorm_MPIDense(Mat A,NormType type,PetscReal *nrm)
 #endif
       }
       ierr = MPI_Allreduce(&sum,nrm,1,MPIU_REAL,MPIU_SUM,((PetscObject)A)->comm);CHKERRQ(ierr);
-      *nrm = sqrt(*nrm);
+      *nrm = PetscSqrtReal(*nrm);
       ierr = PetscLogFlops(2.0*mdn->A->cmap->n*mdn->A->rmap->n);CHKERRQ(ierr);
     } else if (type == NORM_1) { 
       PetscReal *tmp,*tmp2;
@@ -1506,7 +1506,7 @@ PetscErrorCode MatGetColumnNorms_MPIDense(Mat A,NormType type,PetscReal *norms)
   }
   ierr = PetscFree(work);CHKERRQ(ierr);
   if (type == NORM_2) {
-    for (i=0; i<n; i++) norms[i] = sqrt(norms[i]);
+    for (i=0; i<n; i++) norms[i] = PetscSqrtReal(norms[i]);
   }
   PetscFunctionReturn(0);
 }

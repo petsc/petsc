@@ -61,7 +61,7 @@ static PetscErrorCode  KSPSolve_CR(KSP ksp)
     ierr = VecNormEnd  (R,NORM_2,&dp);CHKERRQ(ierr);        /*   dp <- RT'*RT       */
   } else if (ksp->normtype == KSP_NORM_NATURAL) {
     ierr = VecDotEnd   (RT,ART,&btop) ;CHKERRQ(ierr);          /*   (RT,ART)           */
-    dp = sqrt(PetscAbsScalar(btop));                    /* dp = sqrt(R,AR)      */
+    dp = PetscSqrtReal(PetscAbsScalar(btop));                    /* dp = sqrt(R,AR)      */
   }
   if (PetscAbsScalar(btop) < 0.0) {
     ksp->reason = KSP_DIVERGED_INDEFINITE_MAT;
@@ -102,7 +102,7 @@ static PetscErrorCode  KSPSolve_CR(KSP ksp)
       ierr = VecNormEnd  (RT,NORM_2,&dp);CHKERRQ(ierr);      /*   dp <- || RT ||      */
     } else if (ksp->normtype == KSP_NORM_NATURAL) {
       ierr = VecDotEnd(RT,ART,&btop);CHKERRQ(ierr);
-      dp = sqrt(PetscAbsScalar(btop));                  /* dp = sqrt(R,AR)       */
+      dp = PetscSqrtReal(PetscAbsScalar(btop));                  /* dp = sqrt(R,AR)       */
     } else if (ksp->normtype == KSP_NORM_NONE) {
       ierr = VecDotEnd(RT,ART,&btop);CHKERRQ(ierr);
       dp = 0.0; 

@@ -314,7 +314,7 @@ PetscErrorCode CalculateXYStdDev(DM da, Vec v, Vec *std) {
           var += PetscSqr(a[k][j][i] - avg);
         }
       }
-      r[k] = sqrt(var);
+      r[k] = PetscSqrtScalar(var);
 	}
     ierr = VecRestoreArray(*std, &r);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(da, v, &a);CHKERRQ(ierr);

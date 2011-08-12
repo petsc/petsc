@@ -317,7 +317,7 @@ PetscErrorCode PCComputeSpectralRadius_ASA(PC_ASA_level *asa_lev)
   PetscFunctionBegin;
   ierr = MatNorm(asa_lev->A, NORM_1, &norm_1);CHKERRQ(ierr);
   ierr = MatNorm(asa_lev->A, NORM_INFINITY, &norm_inf);CHKERRQ(ierr);
-  asa_lev->spec_rad = sqrt(norm_1*norm_inf);
+  asa_lev->spec_rad = PetscSqrtReal(norm_1*norm_inf);
   PetscFunctionReturn(0);
 }
 
@@ -1019,7 +1019,7 @@ PetscErrorCode PCAddCandidateToB_ASA(Mat B, PetscInt col_idx, Vec x, Mat A)
   ierr = MatGetVecs(A, PETSC_NULL, &Ax);CHKERRQ(ierr);
   ierr = MatMult(A, x, Ax);CHKERRQ(ierr);
   ierr = VecDot(Ax, x, &dotprod);CHKERRQ(ierr);
-  norm = sqrt(PetscAbsScalar(dotprod));
+  norm = PetscSqrtReal(PetscAbsScalar(dotprod));
   ierr = VecGetOwnershipRange(x, &loc_start, &loc_end);CHKERRQ(ierr);
   ierr = VecGetArray(x, &vecarray);CHKERRQ(ierr);
   for (i=loc_start; i<loc_end; i++) {
@@ -1627,7 +1627,7 @@ PetscErrorCode PCConstructMultigrid_ASA(PC pc)
 	d[i]     = 1.0;
 	zeroflag = PETSC_TRUE;
       } else {
-	d[i] = 1./sqrt(PetscAbsScalar(d[i]));
+	d[i] = 1./PetscSqrtReal(PetscAbsScalar(d[i]));
       }
     }
     ierr = VecRestoreArray(asa->invsqrtdiag,&d);CHKERRQ(ierr);

@@ -1304,7 +1304,7 @@ PetscErrorCode MatNorm_SeqDense(Mat A,NormType type,PetscReal *nrm)
 #endif
       }
     }
-    *nrm = sqrt(sum);
+    *nrm = PetscSqrtReal(sum);
     ierr = PetscLogFlops(2.0*A->cmap->n*A->rmap->n);CHKERRQ(ierr);
   } else if (type == NORM_1) {
     *nrm = 0.0;
@@ -1861,7 +1861,7 @@ PetscErrorCode MatGetColumnNorms_SeqDense(Mat A,NormType type,PetscReal *norms)
     }
   } else SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONG,"Unknown NormType");
   if (type == NORM_2) {
-    for (i=0; i<n; i++) norms[i] = sqrt(norms[i]);
+    for (i=0; i<n; i++) norms[i] = PetscSqrtReal(norms[i]);
   }
   PetscFunctionReturn(0);
 }

@@ -256,7 +256,7 @@ PetscErrorCode  SNESMonitorRatio(SNES snes,PetscInt its,PetscReal fgnorm,void *d
     ierr = PetscViewerASCIIPrintf(ctx->viewer,"%3D SNES Function norm %14.12e \n",its,(double)fgnorm);CHKERRQ(ierr);
   } else {
     PetscReal ratio = fgnorm/history[its-1];
-    ierr = PetscViewerASCIIPrintf(ctx->viewer,"%3D SNES Function norm %14.12e %G \n",its,(double)fgnorm,(double)ratio);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(ctx->viewer,"%3D SNES Function norm %14.12e %14.12e \n",its,(double)fgnorm,(double)ratio);CHKERRQ(ierr);
   }
   ierr = PetscViewerASCIISubtractTab(ctx->viewer,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -404,7 +404,7 @@ PetscErrorCode  SNESDefaultConverged(SNES snes,PetscInt it,PetscReal xnorm,Petsc
     ierr = PetscInfo(snes,"Failed to converged, function norm is NaN\n");CHKERRQ(ierr);
     *reason = SNES_DIVERGED_FNORM_NAN;
   } else if (fnorm < snes->abstol) {
-    ierr = PetscInfo2(snes,"Converged due to function norm %G < %G\n",fnorm,snes->abstol);CHKERRQ(ierr);
+    ierr = PetscInfo2(snes,"Converged due to function norm %14.12e < %14.12e\n",(double)fnorm,(double)snes->abstol);CHKERRQ(ierr);
     *reason = SNES_CONVERGED_FNORM_ABS;
   } else if (snes->nfuncs >= snes->max_funcs) {
     ierr = PetscInfo2(snes,"Exceeded maximum number of function evaluations: %D > %D\n",snes->nfuncs,snes->max_funcs);CHKERRQ(ierr);
@@ -413,10 +413,10 @@ PetscErrorCode  SNESDefaultConverged(SNES snes,PetscInt it,PetscReal xnorm,Petsc
 
   if (it && !*reason) {
     if (fnorm <= snes->ttol) {
-      ierr = PetscInfo2(snes,"Converged due to function norm %G < %G (relative tolerance)\n",fnorm,snes->ttol);CHKERRQ(ierr);
+      ierr = PetscInfo2(snes,"Converged due to function norm %14.12e < %14.12e (relative tolerance)\n",(double)fnorm,(double)snes->ttol);CHKERRQ(ierr);
       *reason = SNES_CONVERGED_FNORM_RELATIVE;
     } else if (pnorm < snes->xtol*xnorm) {
-      ierr = PetscInfo3(snes,"Converged due to small update length: %G < %G * %G\n",pnorm,snes->xtol,xnorm);CHKERRQ(ierr);
+      ierr = PetscInfo3(snes,"Converged due to small update length: %14.12e < %14.12e * %14.12e\n",(double)pnorm,(double)snes->xtol,(double)xnorm);CHKERRQ(ierr);
       *reason = SNES_CONVERGED_PNORM_RELATIVE;
     }
   }

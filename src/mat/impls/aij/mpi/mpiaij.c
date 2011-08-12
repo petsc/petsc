@@ -147,7 +147,7 @@ PetscErrorCode MatGetColumnNorms_MPIAIJ(Mat A,NormType type,PetscReal *norms)
   }
   ierr = PetscFree(work);CHKERRQ(ierr);
   if (type == NORM_2) {
-    for (i=0; i<n; i++) norms[i] = sqrt(norms[i]);
+    for (i=0; i<n; i++) norms[i] = PetscSqrtReal(norms[i]);
   }
   PetscFunctionReturn(0);
 }
@@ -1970,7 +1970,7 @@ PetscErrorCode MatNorm_MPIAIJ(Mat mat,NormType type,PetscReal *norm)
 #endif
       }
       ierr = MPI_Allreduce(&sum,norm,1,MPIU_REAL,MPIU_SUM,((PetscObject)mat)->comm);CHKERRQ(ierr);
-      *norm = sqrt(*norm);
+      *norm = PetscSqrtReal(*norm);
     } else if (type == NORM_1) { /* max column norm */
       PetscReal *tmp,*tmp2;
       PetscInt  *jj,*garray = aij->garray;
