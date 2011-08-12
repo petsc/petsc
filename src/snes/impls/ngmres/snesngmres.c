@@ -196,8 +196,7 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
   nu = r_norm*r_norm;
   if (PetscIsInfOrNanReal(r_norm)) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_FP, "Infinite or not-a-number generated in norm");
 
-  //q_{11} = nu
-  
+  //q_{11} = nu  
   Q(0,0) = nu;
   ngmres->r_norms[0] = r_norm;
   //rdot[0] = r
