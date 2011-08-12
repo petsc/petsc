@@ -4,6 +4,9 @@
 */
 
 static char help[] = "Used for Solving a linear system where the matrix has all zeros.\n\n";
+/*
+ Example: mpiexec -n <np> ./ex35 -dof 2 -mat_view -check_final_residual
+ */
 
 #include <petscdmda.h>
 #include <petscksp.h>

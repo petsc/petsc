@@ -1,7 +1,2 @@
 Solving a linear TS problem on 1 processor
 avg. error (2 norm) = 0.00135504, avg. error (max norm) = 0.00195424
-TS Object: 1 MPI processes
-  type: euler
-  maximum steps=4
-  maximum time=100
-  total number of linear solver iterations=0

@@ -216,11 +216,11 @@ runex5_2:
 TESTEXAMPLES_C		  = ex1.PETSc runex1_euler_4 runex1_euler_5 \
                             runex1_beuler_3 runex1_beuler_4 ex1.rm \
                             ex4.PETSc runex4 runex4_2 runex4_3 runex4_4 runex4_5 runex4_6 \
-                            runex4_7 ex4.rm ex5.PETSc runex5 runex5_2 ex5.rm
+                            runex4_7 ex4.rm 
 
-testexamples_C_NoComplex  = ex3.PETSc runex3 runex3_2 ex3.rm
+testexamples_C_NoComplex  = ex3.PETSc runex3 runex3_2 ex3.rm ex5.PETSc runex5 runex5_2 ex5.rm
 TESTEXAMPLES_C_X11	  = 
-TESTEXAMPLES_FORTRAN	  = ex1f.PETSc runex1f ex1f.rm
+TESTEXAMPLES_FORTRAN	  = ex1f.PETSc ex1f.rm
 TESTEXAMPLES_C_X11_MPIUNI = 
 TESTEXAMPLES_13		  = ex2.PETSc ex2.rm ex4.PETSc ex4.rm 
 
