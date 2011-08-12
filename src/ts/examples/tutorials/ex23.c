@@ -34,8 +34,8 @@ PetscErrorCode SetUpMatrices(AppCtx*);
 PetscErrorCode FormIFunction(TS,PetscReal,Vec,Vec,Vec,void*);
 PetscErrorCode FormIJacobian(TS,PetscReal,Vec,Vec,PetscReal,Mat*,Mat*,MatStructure*,void*);
 PetscErrorCode SetInitialGuess(Vec,AppCtx*);
-PetscErrorCode Update_q(Vec,Vec,Mat,AppCtx*);
-PetscLogEvent event_update_q;
+PetscErrorCode Update_q(TS);
+PetscErrorCode Monitor(TS,PetscInt,PetscReal,Vec,void*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -84,25 +84,33 @@ int main(int argc, char **argv)
   /* Set Function evaluation and jacobian evaluation routines */
   ierr = TSSetIFunction(ts,r,FormIFunction,(void*)&user);CHKERRQ(ierr);
   ierr = TSSetIJacobian(ts,J,J,FormIJacobian,(void*)&user);CHKERRQ(ierr);
-  ierr = TSSetType(ts,TSBEULER);CHKERRQ(ierr); /* General linear method */
+  ierr = TSSetType(ts,TSTHETA);CHKERRQ(ierr);
+  //  ierr = TSThetaSetTheta(ts,1.0);CHKERRQ(ierr);/* Explicit Euler */
   ierr = TSSetDuration(ts,PETSC_DEFAULT,user.T);CHKERRQ(ierr);
   /* Set lower and upper bound vectors */
   ierr = SetVariableBounds(user.da,xl,xu);CHKERRQ(ierr);
   ierr = TSVISetVariableBounds(ts,xl,xu);CHKERRQ(ierr);
 
+  ierr = SetInitialGuess(x,&user);CHKERRQ(ierr);
+
+  if(!user.implicit) {
+    ierr = TSSetApplicationContext(ts,&user);CHKERRQ(ierr);
+    ierr = TSSetSolution(ts,x);CHKERRQ(ierr);
+    ierr = Update_q(ts);CHKERRQ(ierr);
+    ierr = TSSetPostStep(ts,Update_q);
+  }
+
+  if(user.tsmonitor) {
+    ierr = TSMonitorSet(ts,Monitor,&user,PETSC_NULL);CHKERRQ(ierr);
+  }
+
   ierr = TSSetInitialTimeStep(ts,0.0,user.dt);CHKERRQ(ierr);
 
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
-  ierr = SetInitialGuess(x,&user);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("Update q",MAT_CLASSID,&event_update_q);CHKERRQ(ierr);
-
 
   /* Run the timestepping solver */
-  //    ierr = Update_q(user.q,user.u,user.M_0,&user);
   ierr = TSSolve(ts,x,PETSC_NULL);CHKERRQ(ierr);
-
-  //    ierr = VecStrideGather(x,1,user.u,INSERT_VALUES);CHKERRQ(ierr);
 
   ierr = VecDestroy(&x);CHKERRQ(ierr);
   ierr = VecDestroy(&r);CHKERRQ(ierr);
@@ -125,25 +133,30 @@ int main(int argc, char **argv)
 
 #undef __FUNCT__
 #define __FUNCT__ "Update_q"
-PetscErrorCode Update_q(Vec q,Vec u,Mat M_0,AppCtx *user)
+PetscErrorCode Update_q(TS ts)
 {
   PetscErrorCode ierr;
+  AppCtx         *user;
+  Vec            x;
   PetscScalar    *q_arr,*w_arr;
   PetscInt       i,n;
+  PetscScalar    scale;
   
   PetscFunctionBegin;
-  ierr = PetscLogEventBegin(event_update_q,0,0,0,0);CHKERRQ(ierr);
-  ierr = MatMult(M_0,u,user->work1);CHKERRQ(ierr);
-  ierr = VecScale(user->work1,-1.0);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(u,&n);CHKERRQ(ierr);
-  ierr = VecGetArray(q,&q_arr);CHKERRQ(ierr);
+  ierr = TSGetApplicationContext(ts,&user);CHKERRQ(ierr);
+  ierr = TSGetSolution(ts,&x);CHKERRQ(ierr);
+  ierr = VecStrideGather(x,1,user->u,INSERT_VALUES);CHKERRQ(ierr);
+  ierr = MatMult(user->M_0,user->u,user->work1);CHKERRQ(ierr);
+  scale = -(1.0 - user->implicit)*user->theta_c;
+  ierr = VecScale(user->work1,scale);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(user->u,&n);CHKERRQ(ierr);
+  ierr = VecGetArray(user->q,&q_arr);CHKERRQ(ierr);
   ierr = VecGetArray(user->work1,&w_arr);CHKERRQ(ierr);
   for(i=0;i<n;i++) {
-    q_arr[2*i]=q_arr[2*i+1] = w_arr[i];
+    q_arr[2*i+1] = w_arr[i];
   }
-  ierr = VecRestoreArray(q,&q_arr);CHKERRQ(ierr);
+  ierr = VecRestoreArray(user->q,&q_arr);CHKERRQ(ierr);
   ierr = VecRestoreArray(user->work1,&w_arr);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(event_update_q,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -244,75 +257,16 @@ PetscErrorCode FormIJacobian(TS ts, PetscReal t, Vec X, Vec Xdot, PetscReal a, M
   *flg = SAME_PRECONDITIONER;  
   if (!copied) {
     ierr = MatCopy(user->S,*J,*flg);CHKERRQ(ierr);
-
-    PetscInt          nele,nen,i;
-    const PetscInt    *ele;
-    Vec               coords;
-    const PetscScalar *_coords;
-    PetscScalar       x[3],y[3],xx[3],yy[3],w;
-    PetscInt          idx[3];
-    PetscScalar       phi[3],phider[3][2];
-    PetscScalar       eM_0[3][3];
-
-    /* Get ghosted coordinates */
-    ierr = DMDAGetGhostedCoordinates(user->da,&coords);CHKERRQ(ierr);
-    ierr = VecGetArrayRead(coords,&_coords);CHKERRQ(ierr);
-
-    /* Get local element info */
-    ierr = DMDAGetElements(user->da,&nele,&nen,&ele);CHKERRQ(ierr);
-    for(i=0;i < nele;i++) {
-      idx[0] = ele[3*i]; idx[1] = ele[3*i+1]; idx[2] = ele[3*i+2];
-      x[0] = _coords[2*idx[0]]; y[0] = _coords[2*idx[0]+1];
-      x[1] = _coords[2*idx[1]]; y[1] = _coords[2*idx[1]+1];
-      x[2] = _coords[2*idx[2]]; y[2] = _coords[2*idx[2]+1];
-    
-      ierr = PetscMemzero(xx,3*sizeof(PetscScalar));CHKERRQ(ierr);
-      ierr = PetscMemzero(yy,3*sizeof(PetscScalar));CHKERRQ(ierr);
-      Gausspoints(xx,yy,&w,x,y);
-    
-      eM_0[0][0]=eM_0[0][1]=eM_0[0][2]=0.0;
-      eM_0[1][0]=eM_0[1][1]=eM_0[1][2]=0.0;
-      eM_0[2][0]=eM_0[2][1]=eM_0[2][2]=0.0;
-
-      PetscInt m;
-      for(m=0;m<3;m++) {
-        ierr = PetscMemzero(phi,3*sizeof(PetscScalar));CHKERRQ(ierr);
-        phider[0][0]=phider[0][1]=0.0;
-        phider[1][0]=phider[1][1]=0.0;
-        phider[2][0]=phider[2][1]=0.0;
-      
-        ShapefunctionsT3(phi,phider,xx[m],yy[m],x,y);
-
-        PetscInt j,k;
-        for(j=0;j<3;j++) {
-          for(k=0;k<3;k++) {
-            eM_0[k][j] += phi[j]*phi[k]*w;
-          }
-        }
-      }
-
-      PetscInt    row,cols[6],r;
-      PetscScalar vals[6];
-      for(r=0;r<3;r++) {
-        row = 2*idx[r];
-        /* Insert values in the mass matrix */
-        cols[0] = 2*idx[0]+1;     vals[0] = eM_0[r][0];
-        cols[1] = 2*idx[1]+1;     vals[1] = eM_0[r][1];
-        cols[2] = 2*idx[2]+1;     vals[2] = eM_0[r][2];
-
-        ierr = MatSetValuesLocal(*J,1,&row,3,cols,vals,ADD_VALUES);CHKERRQ(ierr);
-      }
-    }
-
-    ierr = DMDARestoreElements(user->da,&nele,&nen,&ele);CHKERRQ(ierr);
-    ierr = VecRestoreArrayRead(coords,&_coords);CHKERRQ(ierr);
-
+    ierr = MatAXPY(*J,a,user->M,*flg);CHKERRQ(ierr);
     copied = PETSC_TRUE;
   }
   ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  //  ierr = MatView(*J,0);CHKERRQ(ierr);
+  // SETERRQ(PETSC_COMM_WORLD,1,"Stopped here\n");
   PetscFunctionReturn(0);
 }
+
 #undef __FUNCT__
 #define __FUNCT__ "SetVariableBounds"
 PetscErrorCode SetVariableBounds(DM da,Vec xl,Vec xu)
@@ -356,8 +310,8 @@ PetscErrorCode GetParams(AppCtx* user)
   user->xmin = 0.0; user->xmax = 1.0;
   user->ymin = 0.0; user->ymax = 1.0;
   user->T = 0.2;    user->dt = 0.0001;
-  user->gamma = 3.2E-4; user->theta_c = 0;
-  user->implicit = 1;
+  user->gamma = 3.2E-4; user->theta_c = 1;
+  user->implicit = 0;
 
   ierr = PetscOptionsGetBool(PETSC_NULL,"-ts_monitor",&user->tsmonitor,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(PETSC_NULL,"-xmin",&user->xmin,&flg);CHKERRQ(ierr);
@@ -372,7 +326,6 @@ PetscErrorCode GetParams(AppCtx* user)
 
   PetscFunctionReturn(0);
 }
-  
 
 #undef __FUNCT__
 #define __FUNCT__ "SetUpMatrices"
@@ -482,7 +435,7 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
     ierr = MatGetLocalSize(M,&n,PETSC_NULL);CHKERRQ(ierr);
     ierr = MatGetOwnershipRange(M,&rstart,PETSC_NULL);CHKERRQ(ierr);
     ierr = ISCreateStride(PETSC_COMM_WORLD,n/2,rstart,2,&isrow);CHKERRQ(ierr);
-    ierr = ISCreateStride(PETSC_COMM_WORLD,n/2,rstart,2,&iscol);CHKERRQ(ierr);
+    ierr = ISCreateStride(PETSC_COMM_WORLD,n/2,rstart+1,2,&iscol);CHKERRQ(ierr);
     
     /* Extract M_0 from M */
     ierr = MatGetSubMatrix(M,isrow,iscol,MAT_INITIAL_MATRIX,&user->M_0);CHKERRQ(ierr);
@@ -495,6 +448,19 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
     ierr = ISDestroy(&isrow);CHKERRQ(ierr);
     ierr = ISDestroy(&iscol);CHKERRQ(ierr);
   }
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "Monitor"
+PetscErrorCode Monitor(TS ts,PetscInt steps,PetscReal time,Vec x,void* mctx)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Solution vector at t = %5.4f\n",time,steps);CHKERRQ(ierr);
+  ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

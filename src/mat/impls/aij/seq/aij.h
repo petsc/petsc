@@ -77,7 +77,7 @@ typedef struct {
   PetscScalar      *idiag,*mdiag,*ssor_work;  /* inverse of diagonal entries, diagonal values and workspace for Eisenstat trick */
   PetscBool        idiagvalid;                     /* current idiag[] and mdiag[] are valid */
   PetscScalar      *ibdiag;                   /* inverses of block diagonals */
-  PetscScalar      ibdiagvalid;               /* inverses of block diagonals are valid. */
+  PetscBool        ibdiagvalid;               /* inverses of block diagonals are valid. */
   PetscScalar      fshift,omega;                   /* last used omega and fshift */
 
   ISColoring       coloring;                  /* set with MatADSetColoring() used by MatADSetValues() */

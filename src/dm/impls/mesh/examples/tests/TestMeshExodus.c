@@ -431,9 +431,8 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm, const char filename[],DM dm)
     Build side sets
   */
   char               SSSectionName[256];
-  SectionInt         *faceSet,faceParentSet;
-  PetscInt           **side_set_points;
-  PetscBool          flag1;
+  SectionInt        *faceSet,faceParentSet;
+  PetscInt         **side_set_points;
   PetscInt           e,facepoint=0;
   PetscInt          *parent_block;
   ALE::Obj<PointSet> face = new PointSet();
@@ -443,6 +442,7 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm, const char filename[],DM dm)
   ierr = DMMeshGetSectionInt(dm,"FaceParentSet",&faceParentSet);CHKERRQ(ierr);
 
   if (num_side_sets > 0) {
+    ALE::ISieveVisitor::PointRetriever<PETSC_MESH_TYPE::sieve_type> v(1);
     /*
       Build the boundary mesh
     */
@@ -571,10 +571,10 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm, const char filename[],DM dm)
           }
         }
 
-        /*
-          Matt, can you figure out how to get the facepoint from here?
-          facepoint = mesh->nJoin1(face);
-        */
+        sieve->nJoin(face->begin(), face->end(), 1, v);
+        assert(v.getSize() == 1);
+        facepoint = v.getPoints()[0];
+        v.clear();
         printf("************* sideset: %i\n",ss);
         printf("              side:    %i\n",s);
         printf("              element: %i\n",e);
