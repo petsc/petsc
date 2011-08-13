@@ -1,5 +1,4 @@
-
-Initial Temperature = 46.00
+Initial Temperature = 46
 Initial RH = 53.1 percent
 
 time 43200, ftime 12 hour, TIMESTEP 1

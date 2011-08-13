@@ -169,18 +169,6 @@ int main(int argc,char **args)
 
     ierr = VecNorm( bb, NORM_2, &norm2 );  CHKERRQ(ierr);
 
-    ierr = PetscViewerASCIIOpen(wcomm, "rhs.m", &viewer);  CHKERRQ(ierr);
-    ierr = PetscViewerSetFormat( viewer, PETSC_VIEWER_ASCII_MATLAB );
-    CHKERRQ( ierr );
-    ierr = VecView( bb,viewer );           CHKERRQ(ierr);
-    ierr = PetscViewerDestroy( &viewer );  CHKERRQ(ierr);
-
-    ierr = PetscViewerASCIIOpen(wcomm, "solution.m", &viewer);  CHKERRQ(ierr);
-    ierr = PetscViewerSetFormat( viewer, PETSC_VIEWER_ASCII_MATLAB );
-    CHKERRQ(ierr);
-    ierr = VecView( xx, viewer ); CHKERRQ(ierr);
-    ierr = PetscViewerDestroy( &viewer ); CHKERRQ(ierr);
-
     ierr = VecDuplicate( xx, &res );   CHKERRQ(ierr);
     ierr = MatMult( Amat, xx, res );   CHKERRQ(ierr);
     ierr = VecAXPY( bb, -1.0, res );   CHKERRQ(ierr);
@@ -191,6 +179,19 @@ PetscPrintf(PETSC_COMM_WORLD,"[%d]%s |b-Ax|/|b|=%e, |b|=%e\n",0,__FUNCT__,norm/n
     ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_MATLAB);  CHKERRQ(ierr);
     ierr = VecView(bb,viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy( &viewer );
+
+
+    /* ierr = PetscViewerASCIIOpen(wcomm, "rhs.m", &viewer);  CHKERRQ(ierr); */
+    /* ierr = PetscViewerSetFormat( viewer, PETSC_VIEWER_ASCII_MATLAB ); */
+    /* CHKERRQ( ierr ); */
+    /* ierr = VecView( bb,viewer );           CHKERRQ(ierr); */
+    /* ierr = PetscViewerDestroy( &viewer );  CHKERRQ(ierr); */
+
+    /* ierr = PetscViewerASCIIOpen(wcomm, "solution.m", &viewer);  CHKERRQ(ierr); */
+    /* ierr = PetscViewerSetFormat( viewer, PETSC_VIEWER_ASCII_MATLAB ); */
+    /* CHKERRQ(ierr); */
+    /* ierr = VecView( xx, viewer ); CHKERRQ(ierr); */
+    /* ierr = PetscViewerDestroy( &viewer ); CHKERRQ(ierr); */
   }
 
   /* Free work space */

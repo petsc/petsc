@@ -319,6 +319,16 @@ runex5_4:
 	   if (${DIFF} output/ex5_4.out ex5_4.tmp) then true; \
 	   else echo "Possible problem with ex5_4, diffs above"; fi; \
 	   ${RM} -f ex5_4.tmp
+
+runex5_5_ngmres:
+	-@${MPIEXEC} -n 2 ./ex5 -da_grid_x 20 -da_grid_y 20 \
+	-snes_type ngmres -npc_snes_picard_alpha 0.1 -npc_snes_picard quadratic -snes_monitor_short -snes_max_it 1000	 \
+	-npc_snes_type picard -npc_snes_max_it 1 -snes_ngmres_m 30 -snes_ngmres_restart 1000 -snes_ngmres_debug 0 	\
+	-par 6.0
+runex5_5_picard:
+	-@${MPIEXEC} -n 2 ./ex5 -da_grid_x 20 -da_grid_y 20 \
+	-snes_type picard -snes_picard_alpha 0.1 -snes_picard quadratic -snes_monitor_short -snes_max_it 10000 \
+	-par 6.0 
 runex5f:
 	-@${MPIEXEC} -n 4 ./ex5f -snes_mf -da_processors_x 4 -da_processors_y 1 -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex5f_1.tmp 2>&1; \
 	   if (${DIFF} output/ex5f_1.out ex5f_1.tmp) then true; \

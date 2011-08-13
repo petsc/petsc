@@ -28,17 +28,17 @@ typedef enum { NOT_DONE=-2, DELETED=-1, REMOVED=-3 } NState;
 #undef __FUNCT__
 #define __FUNCT__ "getDataWithGhosts"
 PetscErrorCode getDataWithGhosts( const Mat a_Gmat,
-                             const PetscInt a_data_sz,
-                             const PetscReal a_data_in[],
-                             PetscInt *a_stride,
-                             PetscReal **a_data_out
-                             )
+                                  const PetscInt a_data_sz,
+                                  const PetscReal a_data_in[],
+                                  PetscInt *a_stride,
+                                  PetscReal **a_data_out
+                                  )
 {
   PetscMPIInt    ierr,mype,npe;
   MPI_Comm       wcomm = ((PetscObject)a_Gmat)->comm;
   Vec            tmp_crds;
   Mat_MPIAIJ    *mpimat = (Mat_MPIAIJ*)a_Gmat->data;
-  PetscInt       nnodes,num_ghosts,dir,kk,jj,my0,Iend,bs,nloc;
+  PetscInt       nnodes,num_ghosts,dir,kk,jj,my0,Iend,nloc;
   PetscScalar   *data_arr;
   PetscReal     *datas;
 
@@ -47,7 +47,6 @@ PetscErrorCode getDataWithGhosts( const Mat a_Gmat,
   ierr = MPI_Comm_size(wcomm,&npe);CHKERRQ(ierr);                      assert(npe>1);
   ierr = MatGetOwnershipRange( a_Gmat, &my0, &Iend );    CHKERRQ(ierr);
   nloc = Iend - my0;
-  ierr = MatGetBlockSize( a_Gmat, &bs );    CHKERRQ(ierr);             assert(bs==1);
   ierr = VecGetLocalSize( mpimat->lvec, &num_ghosts );   CHKERRQ(ierr);
   nnodes = num_ghosts + nloc;
   *a_stride = nnodes;
@@ -89,6 +88,7 @@ static const PetscMPIInt target = -2;
 
    Input Parameter:
    . a_perm - serial permutation of rows of local to process in MIS
+   . a_rank - serial array of rank (priority) for MIS, lower can not be deleted by higher
    . Gmat - glabal matrix of graph (data not defined)
    . a_strict_aggs - flag for whether to keep strict (non overlapping) aggregates in 'llist';
    Output Parameter:
@@ -98,6 +98,7 @@ static const PetscMPIInt target = -2;
 #undef __FUNCT__
 #define __FUNCT__ "maxIndSetAgg"
 PetscErrorCode maxIndSetAgg( const IS a_perm,
+                             const IS a_ranks,
                              const Mat a_Gmat,
 			     const PetscBool a_strict_aggs,
                              IS *a_selected,
@@ -427,7 +428,7 @@ PetscErrorCode formProl0(IS a_selected, /* list of selected local ID, includes s
                          )
 {
   PetscErrorCode ierr;
-  PetscInt       Istart,Iend,nFineLoc,myFine0,clid,nselected,flid,aggID,kk,jj,ii,nLocalSelected,ndone;
+  PetscInt  Istart,Iend,nFineLoc,myFine0,clid,flid,aggID,kk,jj,ii,nLocalSelected,ndone, crs_start,crs_end;
   MPI_Comm       wcomm = ((PetscObject)a_Prol)->comm;
   PetscMPIInt    mype, npe;
   const PetscInt *selected_idx,*llist_idx;
@@ -439,52 +440,55 @@ PetscErrorCode formProl0(IS a_selected, /* list of selected local ID, includes s
   ierr = MatGetOwnershipRange( a_Prol, &Istart, &Iend );    CHKERRQ(ierr);
   nFineLoc = (Iend-Istart)/a_bs; myFine0 = Istart/a_bs; assert((Iend-Istart)%a_bs==0);
 
+  ierr = MatGetOwnershipRangeColumn( a_Prol, &crs_start, &crs_end );    CHKERRQ(ierr);
+  nLocalSelected = (crs_end-crs_start)/a_nSAvec;
+
   /* aloc space for coarse point data (output) */
-  ierr = ISGetLocalSize( a_selected, &nselected );        CHKERRQ(ierr);
-  ierr = ISGetIndices( a_selected, &selected_idx );       CHKERRQ(ierr);
-  for(kk=0,nLocalSelected=0;kk<nselected;kk++){
-    PetscInt lid = selected_idx[kk];
-    if(lid<nFineLoc) nLocalSelected++;
-  }
-  ierr = PetscMalloc( nLocalSelected*a_nSAvec*a_nSAvec*sizeof(PetscReal), &out_data ); CHKERRQ(ierr);
+#define DATA_OUT_STRIDE (nLocalSelected*a_nSAvec)
+  ierr = PetscMalloc( (DATA_OUT_STRIDE*a_nSAvec+1)*sizeof(PetscReal), &out_data ); CHKERRQ(ierr);
+  for(ii=0;ii<DATA_OUT_STRIDE*a_nSAvec+1;ii++) out_data[ii]=1.e300;
   *a_data_out = out_data; /* output - stride nLocalSelected*a_nSAvec */
 
   /* find points and set prolongation */
   ndone = 0;
   ierr = ISGetIndices( a_locals_llist, &llist_idx );      CHKERRQ(ierr);
-  for( clid = 0 ; clid < nselected ; clid++ ){
+  ierr = ISGetIndices( a_selected, &selected_idx );       CHKERRQ(ierr);
+  for( clid = 0 ; clid < nLocalSelected ; clid++ ){
     PetscInt cgid = a_my0crs + clid, cids[a_nSAvec];
-    /* count */
-    flid = selected_idx[clid]; assert(flid != -1);
-    if( flid >= nFineLoc ) break; /* only process local selected aggregates */
+
+    /* count agg */
     aggID = 0;
+    flid = selected_idx[clid]; assert(flid != -1);
     do{
       aggID++;
     } while( (flid=llist_idx[flid]) != -1 );
-    assert(aggID>0);
+   
     /* get block */
     {
       PetscInt       asz=aggID,M=asz*a_bs,N=a_nSAvec;
       PetscInt       Mdata=M+((N-M>0)?N-M:0),LDA=Mdata,LWORK=N*a_bs;
       PetscScalar    qqc[Mdata*N],qqr[M*N],TAU[N],WORK[LWORK];
       PetscInt       fids[M],INFO;
+
       flid = selected_idx[clid];
       aggID = 0;
       do{
         /* copy in B_i matrix - column oriented */
         PetscReal *data = &a_data_in[flid*a_bs];
-	for( jj = 0; jj < N ; jj++ ) {
-	  for( ii = 0; ii < a_bs ; ii++ ) {
+        for( kk = ii = 0; ii < a_bs ; ii++ ) {
+          for( jj = 0; jj < N ; jj++ ) {
             qqc[jj*Mdata + aggID*a_bs + ii] = data[jj*a_data_stride + ii];
           }
         }
+
         /* set fine IDs */
         for(kk=0;kk<a_bs;kk++) fids[aggID*a_bs + kk] = a_flid_fgid[flid]*a_bs + kk;
+        
         aggID++;
       }while( (flid=llist_idx[flid]) != -1 );
+
       /* pad with zeros */
       for( ii = asz*a_bs; ii < Mdata ; ii++ ) {
-	assert(asz==1);
 	for( jj = 0; jj < N ; jj++, kk++ ) {
 	  qqc[jj*Mdata + ii] = .0;
 	}
@@ -497,11 +501,11 @@ PetscErrorCode formProl0(IS a_selected, /* list of selected local ID, includes s
       // get R - column oriented - output B_{i+1}
       {
         PetscReal *data = &out_data[clid*a_nSAvec];
-	const PetscInt out_stride = nLocalSelected*a_nSAvec; /* stride into out data */
         for( jj = 0; jj < a_nSAvec ; jj++ ) {
           for( ii = 0; ii < a_nSAvec ; ii++ ) {
-            if( ii <= jj ) data[jj*out_stride + ii] = qqc[jj*Mdata + ii];
-	    else data[jj*out_stride + ii] = 0.;
+            assert(data[jj*DATA_OUT_STRIDE + ii] == 1.e300);
+            if( ii <= jj ) data[jj*DATA_OUT_STRIDE + ii] = qqc[jj*Mdata + ii];
+	    else data[jj*DATA_OUT_STRIDE + ii] = 0.;
           }
         }
       }
@@ -519,23 +523,9 @@ PetscErrorCode formProl0(IS a_selected, /* list of selected local ID, includes s
       /* add diagonal block of P0 */
       for(kk=0;kk<N;kk++) cids[kk] = N*cgid + kk; /* global col IDs in P0 */
       ierr = MatSetValues(a_Prol,M,fids,N,cids,qqr,INSERT_VALUES); CHKERRQ(ierr);
- 
-      if( asz==-1){
-	PetscPrintf(PETSC_COMM_SELF,"N_agg=%d clid=%d=%d=%d flid=",
-                    asz,cids[0],cids[1],cids[2]);
-	for( jj = 0 ; jj < M ; jj++ ) PetscPrintf(PETSC_COMM_SELF," %d",fids[jj]);
-        PetscPrintf(PETSC_COMM_SELF,"\n");
-	for( ii = 0 ; ii < M ; ii++ ){
-	  for( jj = 0 ; jj < N ; jj++ ) {
-	    PetscPrintf(PETSC_COMM_SELF,"%e ",qqr[jj + ii*N]);
-	  }
-	  PetscPrintf(PETSC_COMM_SELF,"\n");
-	}
-      }
-
-    }
-  }
-  assert(clid==nLocalSelected);
+    } /* scoping */
+  } /* for all coarse nodes */
+  assert(out_data[a_nSAvec*DATA_OUT_STRIDE]==1.e300);
 
 /* MPI_Allreduce( &ndone, &ii, 1, MPI_INT, MPI_SUM, wcomm ); /\* synchronous version *\/ */
 /* ierr = MatGetSize( a_Prol, &kk, &jj ); CHKERRQ(ierr); */
@@ -752,7 +742,9 @@ PetscErrorCode triangulateAndFormProl( IS  a_selected_2, /* list of selected loc
               AA[tt][0] = a_coords[lid2]; AA[tt][1] = a_coords[a_nnodes + lid2]; AA[tt][2] = 1.0;
               clids[tt] = cid2; /* store for interp */
             }
+
             for(tt=0;tt<3;tt++) alpha[tt] = fcoord[tt];
+
             /* SUBROUTINE DGESV( N, NRHS, A, LDA, IPIV, B, LDB, INFO ) */
             dgesv_(&N, &NRHS, (PetscScalar*)AA, &LDA, IPIV, alpha, &LDB, &INFO);
             {
@@ -768,6 +760,7 @@ PetscErrorCode triangulateAndFormProl( IS  a_selected_2, /* list of selected loc
             }
             tid = mid.neighborlist[3*tid + idx];
           }
+
           if( !haveit ) {
             /* brute force */
             for(tid=0 ; tid<mid.numberoftriangles && !haveit ; tid++ ){
@@ -974,9 +967,10 @@ int compare (const void *a, const void *b)
    . a_Amat - matrix on this fine level
    . a_data[nloc*a_data_sz(in)]
    . a_dim - dimention
+   . a_data_cols - number of colums in data (rows is infered from 
+   . a_useSA - do smoothed aggregation, otherwise do geometric
   Input/Output Parameter:
-   . a_bs - block size of fine grid (in) next grid (out)
-   . a_data_sz - size of each data
+   . a_bs - block size of fine grid (in) and coarse grid (out)
   Output Parameter:
    . a_P_out - prolongation operator to the next level
    . a_data_out - data of coarse grid points (num local columns in 'a_P_out')
@@ -988,8 +982,9 @@ int compare (const void *a, const void *b)
 PetscErrorCode createProlongation( const Mat a_Amat,
                                    const PetscReal a_data[],
                                    const PetscInt a_dim,
+                                   const PetscInt a_data_cols,
+                                   const PetscBool a_useSA,
 				   PetscInt *a_bs,
-                                   PetscInt *a_data_sz,
                                    Mat *a_P_out,
                                    PetscReal **a_data_out,
                                    PetscBool *a_isOK,
@@ -997,59 +992,53 @@ PetscErrorCode createProlongation( const Mat a_Amat,
                                    )
 {
   PetscErrorCode ierr;
-  PetscInt       ncols,Istart,Iend,Ii,nloc,jj,kk,my0,nLocalSelected,nSAvec,sz;
-  Mat            Prol, Gmat, Gmat2;
+  PetscInt       ncols,Istart,Iend,Ii,nloc,jj,kk,my0,nLocalSelected;
+  Mat            Prol, Gmat;
   PetscMPIInt    mype, npe;
   MPI_Comm       wcomm = ((PetscObject)a_Amat)->comm;
-  IS             permIS, llist_1, selected_1, selected_2;
+  IS             rankIS, permIS, llist_1, selected_1, selected_2;
   const PetscInt *selected_idx, *idx,bs_in=*a_bs;
   const PetscScalar *vals;
-  PetscScalar     v, vfilter;
+  PetscScalar     v,vfilter=0.05;
 
   PetscFunctionBegin;
   *a_isOK = PETSC_TRUE;
   ierr = MPI_Comm_rank(wcomm,&mype);CHKERRQ(ierr);
   ierr = MPI_Comm_size(wcomm,&npe);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange( a_Amat, &Istart, &Iend );    CHKERRQ(ierr);
+  ierr = MatGetOwnershipRange( a_Amat, &Istart, &Iend ); CHKERRQ(ierr);
   nloc = (Iend-Istart)/bs_in; my0 = Istart/bs_in; assert((Iend-Istart)%bs_in==0);
 
-  /* ierr  = PetscOptionsGetString(PETSC_NULL,"-pc_gamg_type",str,16,&flag);    CHKERRQ( ierr ); */
-  /* useSA = (PetscBool)(flag && strcmp(str,"sa") == 0); */
-  /* infer method and nSAvec from data sz (ugly) */
-  sz = *a_data_sz;
-  if( sz==2 || sz==3 ) {
-    nSAvec = 0;
-    assert(sz==a_dim);
-  }
-  else {
-    nSAvec = sz/bs_in; assert(sz%bs_in==0);
-  }
-
   ierr = PetscLogEventBegin(gamg_setup_stages[SET3],0,0,0,0);CHKERRQ(ierr);
-  /* get scalar copy (norms) of matrix */
-  if( bs_in == 1 ) {
-    ierr = MatDuplicate( a_Amat, MAT_COPY_VALUES, &Gmat ); CHKERRQ(ierr); /* AIJ */
-  }
-  else {
-    ierr = MatCreateMPIAIJ( wcomm, nloc, nloc,
-                            PETSC_DETERMINE, PETSC_DETERMINE,
-                            12, PETSC_NULL, 2, PETSC_NULL,
-                            &Gmat );
-
-    for (Ii=Istart; Ii<Iend; Ii++) {
-      PetscInt dest_row = Ii/bs_in;
-      ierr = MatGetRow(a_Amat,Ii,&ncols,&idx,&vals); CHKERRQ(ierr);
-      for(jj=0;jj<ncols;jj++){
-        PetscInt dest_col = idx[jj]/bs_in;
-        v = PetscAbs(vals[jj]);
-        ierr = MatSetValues(Gmat,1,&dest_row,1,&dest_col,&v,ADD_VALUES); CHKERRQ(ierr);
-      }
-      ierr = MatRestoreRow(a_Amat,Ii,&ncols,&idx,&vals); CHKERRQ(ierr);
+  
+  /* get scalar copy (norms) of matrix -- how to size this??? */
+  ierr = MatCreateMPIAIJ( wcomm, nloc, nloc,
+                          PETSC_DETERMINE, PETSC_DETERMINE,
+                          40, PETSC_NULL, 20, PETSC_NULL,
+                          &Gmat );
+  
+  for (Ii=Istart; Ii<Iend; Ii++) {
+    PetscInt dest_row = Ii/bs_in;
+    ierr = MatGetRow(a_Amat,Ii,&ncols,&idx,&vals); CHKERRQ(ierr);
+    for(jj=0;jj<ncols;jj++){
+      PetscInt dest_col = idx[jj]/bs_in;
+      v = PetscAbs(vals[jj]);
+      ierr = MatSetValues(Gmat,1,&dest_row,1,&dest_col,&v,ADD_VALUES); CHKERRQ(ierr);
     }
-    ierr = MatAssemblyBegin(Gmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(Gmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatRestoreRow(a_Amat,Ii,&ncols,&idx,&vals); CHKERRQ(ierr);
   }
+  ierr = MatAssemblyBegin(Gmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(Gmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
+  /* square matrix - SA */
+  if( a_useSA ){
+    Mat Gmat2;
+    ierr = MatMatMult( Gmat, Gmat, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &Gmat2 );
+    CHKERRQ(ierr);
+    ierr = MatDestroy( &Gmat );  CHKERRQ(ierr);
+    Gmat = Gmat2;
+    vfilter *= vfilter; /* sqaring matrix, need to square filter */
+  }
+  
   /* scale Gmat */
   {
     Vec diag;
@@ -1064,16 +1053,16 @@ PetscErrorCode createProlongation( const Mat a_Amat,
 
   /* filter Gmat */
   {
-    ierr = MatCreateMPIAIJ(wcomm,nloc,nloc,PETSC_DECIDE,PETSC_DECIDE,20,PETSC_NULL,10,PETSC_NULL,&Gmat2);
+    Mat Gmat2;
+    ierr = MatCreateMPIAIJ(wcomm,nloc,nloc,PETSC_DECIDE,PETSC_DECIDE,100,PETSC_NULL,40,PETSC_NULL,&Gmat2);
     CHKERRQ(ierr);
     for (Ii=Istart; Ii<Iend; Ii++) {
       ierr = MatGetRow(Gmat,Ii,&ncols,&idx,&vals); CHKERRQ(ierr);
-      vfilter = 0.05; /* hard wired filter */
       for(jj=0;jj<ncols;jj++){
         if( (v=PetscAbs(vals[jj])) > vfilter ) {
           ierr = MatSetValues(Gmat2,1,&Ii,1,&idx[jj],&v,INSERT_VALUES); CHKERRQ(ierr);
         }
-        /*else PetscPrintf(PETSC_COMM_SELF,"\t%s filtered %d, v=%e\n",__FUNCT__,Ii,vals[jj]); */
+        /* else PetscPrintf(PETSC_COMM_SELF,"\t%s filtered %d, v=%e\n",__FUNCT__,Ii,vals[jj]); */
       }
       ierr = MatRestoreRow(Gmat,Ii,&ncols,&idx,&vals); CHKERRQ(ierr);
     }
@@ -1081,24 +1070,16 @@ PetscErrorCode createProlongation( const Mat a_Amat,
     ierr = MatAssemblyEnd(Gmat2,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatDestroy( &Gmat );  CHKERRQ(ierr);
     Gmat = Gmat2;
-
-    /* square matrix - SA */
-    if( nSAvec > 0 ){
-      ierr = MatMatMult( Gmat, Gmat, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &Gmat2 );
-      CHKERRQ(ierr);
-      ierr = MatDestroy( &Gmat );  CHKERRQ(ierr);
-      Gmat = Gmat2;
-    }
-
-    /* force compressed row storage for B matrix */
-    if (npe > 1) {
-      Mat_MPIAIJ *mpimat = (Mat_MPIAIJ*)Gmat->data;
-      Mat_SeqAIJ *Bmat = (Mat_SeqAIJ*) mpimat->B->data;
-      Bmat->compressedrow.check = PETSC_TRUE;
-      ierr = MatCheckCompressedRow(mpimat->B,&Bmat->compressedrow,Bmat->i,Gmat->rmap->n,-1.0);
-      CHKERRQ(ierr);
-      assert( Bmat->compressedrow.use );
-    }
+  }
+  
+  /* force compressed row storage for B matrix */
+  if (npe > 1) {
+    Mat_MPIAIJ *mpimat = (Mat_MPIAIJ*)Gmat->data;
+    Mat_SeqAIJ *Bmat = (Mat_SeqAIJ*) mpimat->B->data;
+    Bmat->compressedrow.check = PETSC_TRUE;
+    ierr = MatCheckCompressedRow(mpimat->B,&Bmat->compressedrow,Bmat->i,Gmat->rmap->n,-1.0);
+    CHKERRQ(ierr);
+    assert( Bmat->compressedrow.use );
   }
 
   /* view */
@@ -1115,7 +1096,7 @@ PetscErrorCode createProlongation( const Mat a_Amat,
   /* Mat subMat = Gmat -- get degree of vertices */
   {
     GNode gnodes[nloc];
-    PetscInt permute[nloc];
+    PetscInt permute[nloc],ranks[nloc];
 
     for (Ii=Istart; Ii<Iend; Ii++) { /* locals only? */
       ierr = MatGetRow(Gmat,Ii,&ncols,0,0); CHKERRQ(ierr);
@@ -1152,17 +1133,21 @@ PetscErrorCode createProlongation( const Mat a_Amat,
     /* create IS of permutation */
     for(kk=0;kk<nloc;kk++) { /* locals only */
       permute[kk] = gnodes[kk].m_lid;
+      ranks[kk] = gnodes[kk].m_degree;
     }
-    ierr = ISCreateGeneral( PETSC_COMM_SELF, (Iend-Istart), permute, PETSC_COPY_VALUES, &permIS ); 
+    ierr = ISCreateGeneral( PETSC_COMM_SELF, (Iend-Istart), permute, PETSC_COPY_VALUES, &permIS );
+    CHKERRQ(ierr);
+    ierr = ISCreateGeneral( PETSC_COMM_SELF, (Iend-Istart), ranks, PETSC_COPY_VALUES, &rankIS );
     CHKERRQ(ierr);
   }
 
   /* SELECT COARSE POINTS */
   ierr = PetscLogEventBegin(gamg_setup_stages[SET4],0,0,0,0);CHKERRQ(ierr);
-  ierr = maxIndSetAgg( permIS, Gmat, (nSAvec<1) ? PETSC_FALSE : PETSC_TRUE ,&selected_1, &llist_1 ); 
+  ierr = maxIndSetAgg( permIS, rankIS, Gmat, (!a_useSA) ? PETSC_FALSE : PETSC_TRUE , &selected_1, &llist_1);
   CHKERRQ(ierr);
   ierr = PetscLogEventEnd(gamg_setup_stages[SET4],0,0,0,0);CHKERRQ(ierr);
   ierr = ISDestroy(&permIS); CHKERRQ(ierr);
+  ierr = ISDestroy(&rankIS); CHKERRQ(ierr);
 
   /* get 'nLocalSelected' */
   ierr = ISGetLocalSize( selected_1, &ncols );        CHKERRQ(ierr);
@@ -1172,20 +1157,20 @@ PetscErrorCode createProlongation( const Mat a_Amat,
     if(lid<nloc) nLocalSelected++;
   }
   ierr = ISRestoreIndices( selected_1, &selected_idx );     CHKERRQ(ierr);
-
+  
   /* create prolongator, create P matrix */
   ierr = MatCreateMPIAIJ(wcomm, nloc*bs_in,
-                         nLocalSelected*((nSAvec>0) ? nSAvec : bs_in),
+                         nLocalSelected*(a_useSA ? a_data_cols : bs_in),
                          PETSC_DETERMINE, PETSC_DETERMINE,
-                         12, PETSC_NULL, 6, PETSC_NULL,
+                         a_data_cols, PETSC_NULL, a_data_cols/2+1, PETSC_NULL,
                          &Prol );
   CHKERRQ(ierr);
 
   /* switch for SA or GAMG */
-  if( nSAvec < 1 ) {
-    PetscReal *coords; assert(a_dim==*a_data_sz); PetscInt nnodes;
-    PetscInt       *crsGID;
-
+  if( !a_useSA ) {
+    PetscReal *coords; assert(a_dim==a_data_cols); PetscInt nnodes;
+    PetscInt  *crsGID;
+    Mat        Gmat2;
     /* grow ghost data for better coarse grid cover of fine grid */
     ierr = PetscLogEventBegin(gamg_setup_stages[SET5],0,0,0,0);CHKERRQ(ierr);
     ierr = getGIDsOnSquareGraph( selected_1, Gmat, &selected_2, &Gmat2, &crsGID );
@@ -1216,7 +1201,7 @@ PetscErrorCode createProlongation( const Mat a_Amat,
 
       /* clean up and create coordinates for coarse grid (output) */
       if (npe > 1) ierr = PetscFree( coords ); CHKERRQ(ierr);
-
+      
       if( metric > 1. ) { /* needs to be globalized - should not happen */
         *a_isOK = PETSC_FALSE;
         PetscPrintf(PETSC_COMM_SELF,"[%d]%s failed metric for coarse grid %e\n",mype,__FUNCT__,metric);
@@ -1245,33 +1230,59 @@ PetscErrorCode createProlongation( const Mat a_Amat,
     }
     *a_emax = -1.0; /* no estimate */
   }
-  else { /* SA, change a_data_sz, a_bs */
-    PetscReal alpha,emax,emin,*data,*fiddata,fid_glid_loc[nloc];
-    PetscInt myCrs0, nnodes, *flid_fgid;
+  else { /* SA */
+    PetscReal alpha,emax,emin,*data_w_ghost;
+    PetscInt  myCrs0, nbnodes, *flid_fgid;
 
     /* create global vector of coorindates in 'coords' */
     ierr = PetscLogEventBegin(gamg_setup_stages[SET7],0,0,0,0);CHKERRQ(ierr);
     if (npe > 1) {
-      ierr = getDataWithGhosts( Gmat, bs_in*nSAvec, a_data, &nnodes, &data );
+      /* create blocked version for communication only */
+      Mat tMat;
+      PetscInt Ii,ncols; const PetscInt *idx; PetscScalar v = 1.0;
+      ierr = MatCreateMPIAIJ( wcomm, nloc*bs_in, nloc*bs_in,
+                              PETSC_DETERMINE, PETSC_DETERMINE,
+                              40, PETSC_NULL, 20, PETSC_NULL,
+                              &tMat );
+      ierr = MatSetBlockSize( tMat, bs_in );      CHKERRQ(ierr);
+      for ( Ii = Istart; Ii < Iend; Ii++ ) {
+        PetscInt dest_row = Ii*bs_in;
+        ierr = MatGetRow(Gmat,Ii,&ncols,&idx,0); CHKERRQ(ierr);
+        for( jj = 0 ; jj < ncols ; jj++ ){
+          PetscInt k,jjj,iii,dest_col = idx[jj]*bs_in;
+          for( k = 0 ; k < bs_in ; k++ ){
+            iii = dest_row + k; jjj = dest_col + k; 
+            ierr = MatSetValues(tMat,1,&iii,1,&jjj,&v,ADD_VALUES); CHKERRQ(ierr);
+          }
+        }
+        ierr = MatRestoreRow(Gmat,Ii,&ncols,&idx,0); CHKERRQ(ierr);
+      }
+      ierr = MatAssemblyBegin(tMat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+      ierr = MatAssemblyEnd(tMat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
+      ierr = getDataWithGhosts( tMat, a_data_cols, a_data, &nbnodes, &data_w_ghost );
       CHKERRQ(ierr);
+      ierr = MatDestroy( &tMat );  CHKERRQ(ierr);
     }
     else {
-      nnodes = nloc;
-      data = (PetscReal*)a_data;
+      nbnodes = bs_in*nloc;
+      data_w_ghost = (PetscReal*)a_data;
     }
-
+    
     /* scan my coarse zero gid */
     MPI_Scan( &nLocalSelected, &myCrs0, 1, MPI_INT, MPI_SUM, wcomm );
     myCrs0 -= nLocalSelected;
-
+    
     /* get P0 */
-    if (npe > 1) {
+    if( npe > 1 ){
+      PetscReal fid_glid_loc[nloc],*fiddata; PetscInt nnodes;
       for(kk=0;kk<nloc;kk++) fid_glid_loc[kk] = (PetscReal)(my0+kk);
-      ierr = getDataWithGhosts( Gmat, 1, fid_glid_loc, &nnodes, &fiddata );
+      ierr = getDataWithGhosts(Gmat, 1, fid_glid_loc, &nnodes, &fiddata);
       CHKERRQ(ierr);
       ierr = PetscMalloc( nnodes*sizeof(PetscInt), &flid_fgid ); CHKERRQ(ierr);
       for(kk=0;kk<nnodes;kk++) flid_fgid[kk] = (PetscInt)fiddata[kk];
       ierr = PetscFree( fiddata ); CHKERRQ(ierr);
+      assert(nnodes==nbnodes/bs_in);
     }
     else {
       ierr = PetscMalloc( nloc*sizeof(PetscInt), &flid_fgid ); CHKERRQ(ierr);
@@ -1280,9 +1291,9 @@ PetscErrorCode createProlongation( const Mat a_Amat,
     ierr = PetscLogEventEnd(gamg_setup_stages[SET7],0,0,0,0);CHKERRQ(ierr);
 
     ierr = PetscLogEventBegin(gamg_setup_stages[SET8],0,0,0,0);CHKERRQ(ierr);
-    ierr = formProl0(selected_1,llist_1,bs_in,nSAvec,myCrs0,bs_in*nnodes,data,flid_fgid,a_data_out,Prol);
+    ierr = formProl0(selected_1,llist_1,bs_in,a_data_cols,myCrs0,nbnodes,data_w_ghost,flid_fgid,a_data_out,Prol);
     CHKERRQ(ierr);
-    if (npe > 1) ierr = PetscFree( data );      CHKERRQ(ierr);
+    if (npe > 1) ierr = PetscFree( data_w_ghost );      CHKERRQ(ierr);
     ierr = PetscFree( flid_fgid ); CHKERRQ(ierr);
     ierr = PetscLogEventEnd(gamg_setup_stages[SET8],0,0,0,0);CHKERRQ(ierr);
 
@@ -1313,7 +1324,7 @@ PetscErrorCode createProlongation( const Mat a_Amat,
       ierr = KSPSetComputeSingularValues( eksp,PETSC_TRUE );        CHKERRQ(ierr);
       ierr = KSPSolve( eksp, bb, xx );                              CHKERRQ(ierr);
       ierr = KSPComputeExtremeSingularValues( eksp, &emax, &emin ); CHKERRQ(ierr);
-PetscPrintf(PETSC_COMM_WORLD,"%s max eigen = %e\n",__FUNCT__,emax);
+
       ierr = VecDestroy( &xx );       CHKERRQ(ierr);
       ierr = VecDestroy( &bb );       CHKERRQ(ierr);
       ierr = KSPDestroy( &eksp );     CHKERRQ(ierr);
@@ -1339,13 +1350,12 @@ PetscPrintf(PETSC_COMM_WORLD,"%s max eigen = %e\n",__FUNCT__,emax);
     ierr = PetscLogEventEnd(gamg_setup_stages[SET9],0,0,0,0);CHKERRQ(ierr);
     *a_emax = emax; /* estimate for cheb smoother */
 
-    *a_data_sz = nSAvec*nSAvec; /* invarient of SA algorithm */
-    *a_bs = nSAvec;
+    *a_bs = a_data_cols;
   }
 
   *a_P_out = Prol;  /* out */
 
-  ierr = ISDestroy(&llist_1); CHKERRQ(ierr);
+  ierr = ISDestroy( &llist_1 ); CHKERRQ(ierr);
   ierr = ISDestroy( &selected_1 ); CHKERRQ(ierr);
   ierr = MatDestroy( &Gmat );  CHKERRQ(ierr);
 

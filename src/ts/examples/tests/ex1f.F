@@ -7,6 +7,8 @@
 !
 !23456789012345678901234567890123456789012345678901234567890123456789012
 
+! This example need rewritten using newly developed TS interface!
+
       program main
       implicit none
 #include <finclude/petscsys.h>
