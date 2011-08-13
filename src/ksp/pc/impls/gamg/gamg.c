@@ -10,10 +10,104 @@ typedef struct gamg_TAG {
   PetscInt       m_dim;
   PetscInt       m_Nlevels;
   PetscInt       m_data_sz;
+  PetscInt       m_data_rows;
+  PetscInt       m_data_cols;
+  PetscBool      m_useSA;
   PetscReal     *m_data; /* blocked vector of vertex data on fine grid (coordinates) */
 } PC_GAMG;
 
-#define TOP_GRID_LIM 100
+/* -------------------------------------------------------------------------- */
+/*
+   PCSetCoordinates_GAMG
+
+   Input Parameter:
+   .  pc - the preconditioner context
+*/
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "PCSetCoordinates_GAMG"
+PetscErrorCode PCSetCoordinates_GAMG( PC a_pc, PetscInt a_ndm, PetscReal *a_coords )
+{
+  PC_MG          *mg = (PC_MG*)a_pc->data;
+  PC_GAMG        *pc_gamg = (PC_GAMG*)mg->innerctx;
+  PetscErrorCode ierr;
+  PetscInt       arrsz,bs,my0,kk,ii,jj,nloc,Iend;
+  Mat            Amat = a_pc->pmat;
+  PetscBool      flag;
+  char           str[16];
+
+  PetscFunctionBegin;
+  ierr  = MatGetBlockSize( Amat, &bs );               CHKERRQ( ierr );
+  ierr  = MatGetOwnershipRange( Amat, &my0, &Iend ); CHKERRQ(ierr);
+  nloc = (Iend-my0)/bs; 
+  if((Iend-my0)%bs!=0) SETERRQ1(((PetscObject)Amat)->comm,PETSC_ERR_ARG_WRONG, "Bad local size %d.",nloc);
+
+  ierr  = PetscOptionsGetString(PETSC_NULL,"-pc_gamg_type",str,16,&flag);    CHKERRQ( ierr );
+  pc_gamg->m_useSA = (PetscBool)(flag && strcmp(str,"sa") == 0);
+
+  pc_gamg->m_data_rows = 1; 
+  if(a_coords == 0) pc_gamg->m_useSA = PETSC_TRUE; /* use SA if no data */
+  if( !pc_gamg->m_useSA ) pc_gamg->m_data_cols = a_ndm; /* coordinates */
+  else{ /* SA: null space vectors */
+    if(a_coords != 0 && bs==1 ) pc_gamg->m_data_cols = 1; /* scalar w/ coords and SA (not needed) */
+    else if(a_coords != 0) pc_gamg->m_data_cols = (a_ndm==2 ? 3 : 6); /* elasticity */
+    else pc_gamg->m_data_cols = bs; /* no data, force SA with constant null space vectors */
+    pc_gamg->m_data_rows = bs; 
+  }
+  arrsz = nloc*pc_gamg->m_data_rows*pc_gamg->m_data_cols;
+
+  /* create data - syntactic sugar that should be refactored at some point */
+  if (!pc_gamg->m_data || (pc_gamg->m_data_sz != arrsz)) {
+    ierr = PetscFree( pc_gamg->m_data );  CHKERRQ(ierr);
+    ierr = PetscMalloc((arrsz+1)*sizeof(double), &pc_gamg->m_data ); CHKERRQ(ierr);
+  }
+  for(kk=0;kk<arrsz;kk++)pc_gamg->m_data[kk] = -999.;
+  pc_gamg->m_data[arrsz] = -99.;
+  /* copy data in - column oriented */
+  if( pc_gamg->m_useSA ) {
+    const PetscInt M = Iend - my0;
+    for(kk=0;kk<nloc;kk++){
+      PetscReal *data = &pc_gamg->m_data[kk*bs];
+      if( pc_gamg->m_data_cols==1 ) *data = 1.0;
+      else {
+        for(ii=0;ii<bs;ii++)
+	  for(jj=0;jj<bs;jj++)
+	    if(ii==jj)data[ii*M + jj] = 1.0; /* translational modes */
+	    else data[ii*M + jj] = 0.0;
+        if( a_coords != 0 ) {
+          if( a_ndm == 2 ){ /* rotational modes */
+            data += 2*M;
+            data[0] = -a_coords[2*kk+1];
+            data[1] =  a_coords[2*kk];
+          }
+          else {
+            data += 3*M;
+            data[0] = 0.0;               data[M+0] =  a_coords[3*kk+2]; data[2*M+0] = -a_coords[3*kk+1];
+            data[1] = -a_coords[3*kk+2]; data[M+1] = 0.0;               data[2*M+1] =  a_coords[3*kk];
+            data[2] =  a_coords[3*kk+1]; data[M+2] = -a_coords[3*kk];   data[2*M+2] = 0.0;
+          }          
+        }
+      }
+    }
+  }
+  else {
+    for( kk = 0 ; kk < nloc ; kk++ ){
+      for( ii = 0 ; ii < a_ndm ; ii++ ) {
+        pc_gamg->m_data[ii*nloc + kk] =  a_coords[kk*a_ndm + ii];
+      }
+    }
+  }
+
+  assert(pc_gamg->m_data[arrsz] == -99.);
+  for(kk=0;kk<arrsz;kk++) assert(pc_gamg->m_data[kk] != -999.); // debug
+    
+  pc_gamg->m_data_sz = arrsz;
+  pc_gamg->m_dim = a_ndm;
+
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
 
 /* -----------------------------------------------------------------------------*/
 #undef __FUNCT__
@@ -32,102 +126,12 @@ PetscErrorCode PCReset_GAMG(PC pc)
 
 /* -------------------------------------------------------------------------- */
 /*
-   PCSetCoordinates_GAMG
-
-   Input Parameter:
-   .  pc - the preconditioner context
-*/
-EXTERN_C_BEGIN
-#undef __FUNCT__
-#define __FUNCT__ "PCSetCoordinates_GAMG"
-PetscErrorCode PCSetCoordinates_GAMG( PC a_pc, PetscInt a_ndm, PetscReal *a_coords )
-{
-  PC_MG          *mg = (PC_MG*)a_pc->data;
-  PC_GAMG        *pc_gamg = (PC_GAMG*)mg->innerctx;
-  PetscErrorCode ierr;
-  PetscInt       arrsz,bs,my0,kk,ii,jj,nloc,sz,M;
-  Mat            Amat = a_pc->pmat;
-  PetscBool      useSA = PETSC_FALSE, flag;
-  char           str[16];
-
-  PetscFunctionBegin;
-  ierr  = MatGetBlockSize( Amat, &bs );               CHKERRQ( ierr );
-  ierr  = MatGetOwnershipRange( Amat, &my0, &kk ); CHKERRQ(ierr);
-  nloc = (kk-my0)/bs; M = kk - my0;
-  if((kk-my0)%bs!=0) SETERRQ1(((PetscObject)Amat)->comm,PETSC_ERR_ARG_WRONG, "Bad local size %d.",nloc);
-
-  ierr  = PetscOptionsGetString(PETSC_NULL,"-pc_gamg_type",str,16,&flag);    CHKERRQ( ierr );
-  useSA = (PetscBool)(flag && strcmp(str,"sa") == 0);
-
-  if(a_coords == 0) useSA = PETSC_TRUE; /* use SA if no data */
-  if( !useSA ) sz = a_ndm; /* coordinates */
-  else{ /* SA: null space vectors */
-    if(a_coords != 0) sz = (a_ndm==2 ? 3*bs : 6*bs); /* elasticity */
-    else sz = bs*bs; /* no data, force SA with constant null space vectors */
-    if(a_coords != 0 && bs==1 ) sz = 1; /* scalar problem with coords and SA (not needed) */
-  }
-  arrsz = nloc*sz;
-
-  /* create data - syntactic sugar that should be refactored at some point */
-  if (!pc_gamg->m_data || (pc_gamg->m_data_sz != arrsz)) {
-    ierr = PetscFree( pc_gamg->m_data );  CHKERRQ(ierr);
-    ierr = PetscMalloc((arrsz+1)*sizeof(double), &pc_gamg->m_data ); CHKERRQ(ierr);
-  }
-  for(kk=0;kk<arrsz;kk++)pc_gamg->m_data[kk] = -999.;
-  pc_gamg->m_data[arrsz] = -99.;
-  /* copy data in - column oriented */
-  if( useSA ) {
-    for(kk=0;kk<nloc;kk++){
-      PetscReal *data = &pc_gamg->m_data[kk*bs];
-      if( sz==1 ) *data = 1.0;
-      else {
-        for(ii=0;ii<bs;ii++)
-	  for(jj=0;jj<bs;jj++)
-	    if(ii==jj)data[ii*M + jj] = 1.0; /* translational modes */
-	    else data[ii*M + jj] = 0.0;
-        if( a_coords != 0 ) {
-          if( a_ndm == 2 ){ /* rotational modes */
-            data += 2*M;
-            data[0] = -a_coords[2*kk+1];
-            data[1] =  a_coords[2*kk];
-          }
-          else {
-            data += 3*M;
-            data[0] = 0.0;               data[M+0] =  a_coords[3*kk+2]; data[2*M+0] = -a_coords[3*kk+1];
-            data[1] = -a_coords[3*kk+2]; data[M+1] = 0.0;               data[2*M+1] =  a_coords[3*kk];
-            data[2] =  a_coords[3*kk+1]; data[M+2] = -a_coords[3*kk];   data[2*M+2] = 0.0;
-          }
-        }
-      }
-    }
-  }
-  else {
-    for( kk = 0 ; kk < nloc ; kk++ ){
-      for( ii = 0 ; ii < a_ndm ; ii++ ) {
-        pc_gamg->m_data[ii*nloc + kk] =  a_coords[kk*a_ndm + ii];
-      }
-    }
-  }
-
-  assert(pc_gamg->m_data[arrsz] == -99.);
-  for(kk=0;kk<arrsz;kk++){
-    assert(pc_gamg->m_data[kk] != -999.); // debug
-  }
-  
-  pc_gamg->m_data_sz = arrsz;
-  pc_gamg->m_dim = a_ndm;
-
-  PetscFunctionReturn(0);
-}
-EXTERN_C_END
-
-/* -------------------------------------------------------------------------- */
-/*
    partitionLevel
 
    Input Parameter:
    . a_Amat_fine - matrix on this fine (k) level
-   . a_data_sz - size of data to move (coarse grid)
+   . a_ndata_rows - size of data to move (coarse grid)
+   . a_ndata_cols - size of data to move (coarse grid)
    In/Output Parameter:
    . a_P_inout - prolongation operator to the next level (k-1)
    . a_coarse_data - data that need to be moved
@@ -139,7 +143,8 @@ EXTERN_C_END
 #undef __FUNCT__
 #define __FUNCT__ "partitionLevel"
 PetscErrorCode partitionLevel( Mat a_Amat_fine,
-                               PetscInt a_data_sz,
+                               PetscInt a_ndata_rows,
+                               PetscInt a_ndata_cols,
 			       PetscInt a_cbs,
                                Mat *a_P_inout,
                                PetscReal **a_coarse_data,
@@ -172,6 +177,7 @@ PetscErrorCode partitionLevel( Mat a_Amat_fine,
 #define MIN_EQ_PROC 100
   nactive_procs = *a_active_proc;
   targ_npe = neq/MIN_EQ_PROC; /* hardwire min. number of eq/proc */
+#define TOP_GRID_LIM 100
   if( targ_npe == 0 || neq < TOP_GRID_LIM ) new_npe = 1; /* chop coarsest grid */
   else if (targ_npe >= nactive_procs ) new_npe = nactive_procs; /* no change */
   else {
@@ -190,17 +196,17 @@ PetscErrorCode partitionLevel( Mat a_Amat_fine,
     MatPartitioning  mpart;
     Mat              adj;
     const PetscInt  *is_idx;
-    PetscInt         is_sz,kk,jj,ii,old_fact=(npe/nactive_procs),new_fact=(npe/new_npe),*isnewproc_idx,counts[npe];
+    PetscInt         is_sz,kk,jj,ii,old_fact=(npe/nactive_procs), *isnewproc_idx;
     /* create sub communicator  */
     MPI_Comm         cm,new_comm;
-    PetscInt         membershipKey = mype % old_fact;
+    PetscInt         membershipKey = mype%old_fact, new_fact=(npe/new_npe),counts[npe];
     IS               isnewproc;
 
-    *a_active_proc = new_npe; /* output for next time */
+    *a_active_proc = new_npe; /* output for next level */
     ierr = MPI_Comm_split(wcomm, membershipKey, mype, &cm); CHKERRQ(ierr);
     ierr = PetscCommDuplicate( cm, &new_comm, PETSC_NULL ); CHKERRQ(ierr);
     ierr = MPI_Comm_free( &cm );                            CHKERRQ(ierr);
-    
+
     /* MatPartitioningApply call MatConvert, which is collective */
     if( a_cbs==1) {
       ierr = MatConvert( Cmat, MATMPIADJ, MAT_INITIAL_MATRIX, &adj );   CHKERRQ(ierr);
@@ -226,9 +232,9 @@ PetscErrorCode partitionLevel( Mat a_Amat_fine,
       }
       ierr = MatAssemblyBegin(tMat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
       ierr = MatAssemblyEnd(tMat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-      
+
       ierr = MatConvert( tMat, MATMPIADJ, MAT_INITIAL_MATRIX, &adj );   CHKERRQ(ierr);
-      
+
       ierr = MatDestroy( &tMat );  CHKERRQ(ierr);
     }
     if( membershipKey == 0 ) {
@@ -280,37 +286,41 @@ PetscErrorCode partitionLevel( Mat a_Amat_fine,
     ncrs_new = counts[mype]/a_cbs;
   
     { /* Create a vector to contain the newly ordered element information */
-      const PetscInt *idx;
+      const PetscInt *idx, data_sz=a_ndata_rows*a_ndata_cols;
+      const PetscInt  stride0=ncrs0*a_ndata_rows,strideNew=ncrs_new*a_ndata_rows;
       PetscInt        ii,jj,kk;
       IS              isscat;
       PetscScalar    *array;
       Vec             src_crd, dest_crd;
       PetscReal      *data = *a_coarse_data;
       VecScatter      vecscat;
-      PetscInt        tidx[ncrs0*a_data_sz];
-      
+      PetscInt        tidx[ncrs0*data_sz];
+
       ierr = VecCreate( wcomm, &dest_crd );
-      ierr = VecSetSizes( dest_crd, a_data_sz*ncrs_new, PETSC_DECIDE ); CHKERRQ(ierr);
+      ierr = VecSetSizes( dest_crd, data_sz*ncrs_new, PETSC_DECIDE ); CHKERRQ(ierr);
       ierr = VecSetFromOptions( dest_crd ); CHKERRQ(ierr); /*funny vector-get global options?*/
       /*
-       There are 'a_data_sz' data items per node, (one can think of the vectors of having a 
-       block size of 'a_data_sz').  Note, ISs are expanded into equation space by 'a_cbs'.
+       There are 'a_ndata_rows*a_ndata_cols' data items per node, (one can think of the vectors of having 
+       a block size of ...).  Note, ISs are expanded into equation space by 'a_cbs'.
        */
       ierr = ISGetIndices( isnum, &idx ); CHKERRQ(ierr);
       for(ii=0,jj=0; ii<ncrs0 ; ii++) {
-        PetscInt id = idx[ii*a_cbs]/a_cbs;
-        for( kk=0; kk<a_data_sz ; kk++, jj++) tidx[jj] = id*a_data_sz + kk;
+        PetscInt id = idx[ii*a_cbs]/a_cbs; /* get node back */
+        for( kk=0; kk<data_sz ; kk++, jj++) tidx[jj] = id*data_sz + kk;
       }
       ierr = ISRestoreIndices( isnum, &idx ); CHKERRQ(ierr);
-      ierr = ISCreateGeneral( wcomm, a_data_sz*ncrs0, tidx, PETSC_COPY_VALUES, &isscat );
+      ierr = ISCreateGeneral( wcomm, data_sz*ncrs0, tidx, PETSC_COPY_VALUES, &isscat );
       CHKERRQ(ierr);
       /*
        Create a vector to contain the original vertex information for each element
        */
-      ierr = VecCreateSeq( PETSC_COMM_SELF, a_data_sz*ncrs0, &src_crd ); CHKERRQ(ierr);
-      for(ii=0, jj=0; ii<ncrs0 ; ii++) {
-        for( kk=0; kk < a_data_sz ; kk++, jj++) {
-          ierr = VecSetValues( src_crd, 1, &jj, &data[kk*ncrs0 + ii], INSERT_VALUES );  CHKERRQ(ierr);
+      ierr = VecCreateSeq( PETSC_COMM_SELF, data_sz*ncrs0, &src_crd ); CHKERRQ(ierr);
+      for( jj=0; jj<a_ndata_cols ; jj++ ) {
+        for( ii=0 ; ii<ncrs0 ; ii++) {
+          for( kk=0; kk<a_ndata_rows ; kk++ ) {
+            PetscInt ix = ii*a_ndata_rows + kk + jj*stride0, jx = ii*data_sz + kk*a_ndata_cols + jj;
+            ierr = VecSetValues( src_crd, 1, &jx, &data[ix], INSERT_VALUES );  CHKERRQ(ierr);
+          }
         }
       }
       ierr = VecAssemblyBegin(src_crd); CHKERRQ(ierr);
@@ -330,14 +340,17 @@ PetscErrorCode partitionLevel( Mat a_Amat_fine,
        Put the element vertex data into a new allocation of the gdata->ele
        */
       ierr = PetscFree( *a_coarse_data );    CHKERRQ(ierr);
-      ierr = PetscMalloc( a_data_sz*ncrs_new*sizeof(PetscReal), a_coarse_data );    CHKERRQ(ierr);
-      VecGetLocalSize( dest_crd, &ii ); assert(ii==a_data_sz*ncrs_new);
-      
+      ierr = PetscMalloc( data_sz*ncrs_new*sizeof(PetscReal), a_coarse_data );    CHKERRQ(ierr);
+
       ierr = VecGetArray( dest_crd, &array );    CHKERRQ(ierr);
       data = *a_coarse_data;
-      for(ii=0, jj=0; ii<ncrs_new ; ii++) {
-        for( kk=0; kk < a_data_sz ; kk++, jj++) {
-          data[kk*ncrs_new + ii] = PetscRealPart(array[jj]);
+      for( jj=0; jj<a_ndata_cols ; jj++ ) {
+        for( ii=0 ; ii<ncrs_new ; ii++) {
+          for( kk=0; kk<a_ndata_rows ; kk++ ) {
+            PetscInt ix = ii*a_ndata_rows + kk + jj*strideNew, jx = ii*data_sz + kk*a_ndata_cols + jj;
+            data[ix] = PetscRealPart(array[jx]);
+            array[jx] = 1.e300;
+          }
         }
       }
       ierr = VecRestoreArray( dest_crd, &array );    CHKERRQ(ierr);
@@ -377,7 +390,7 @@ PetscErrorCode partitionLevel( Mat a_Amat_fine,
   PetscFunctionReturn(0);
 }
 
-#define GAMG_MAXLEVELS 30
+#define GAMG_MAXLEVELS 3
 #if defined(PETSC_USE_LOG)
 PetscLogStage  gamg_stages[20];
 #endif
@@ -403,7 +416,7 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
   PC_MG           *mg = (PC_MG*)a_pc->data;
   PC_GAMG         *pc_gamg = (PC_GAMG*)mg->innerctx;
   Mat              Amat = a_pc->mat, Pmat = a_pc->pmat;
-  PetscInt         fine_level, level, level1, M, N, bs, nloc, lidx, data_sz, Istart, Iend;
+  PetscInt         fine_level, level, level1, M, N, bs, nloc, lidx, Istart, Iend;
   MPI_Comm         wcomm = ((PetscObject)a_pc)->comm;
   PetscMPIInt      mype,npe,nactivepe;
   PetscBool        isOK;
@@ -428,30 +441,30 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
     ierr  = PCSetCoordinates_GAMG( a_pc, -1, 0 );    CHKERRQ( ierr );
   }
   data = pc_gamg->m_data;
-  data_sz = pc_gamg->m_data_sz/nloc; assert(data!=0 || data_sz==0);
 
   /* Get A_i and R_i */
-PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s level %d N=%d, data size=%d m_data_sz=%d nloc=%d, np=%d\n",0,__FUNCT__,0,N,data_sz,pc_gamg->m_data_sz,nloc,npe);
+PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s level %d N=%d, n data rows=%d, n data cols=%d, nloc=%d, np=%d\n",0,__FUNCT__,0,N,pc_gamg->m_data_rows,pc_gamg->m_data_cols,nloc,npe);
   for ( level=0, Aarr[0] = Pmat, nactivepe = npe; /* hard wired stopping logic */
         level < GAMG_MAXLEVELS-1 && (level==0 || M/bs>TOP_GRID_LIM) && (npe==1 || nactivepe>1); 
         level++ ) {
     level1 = level + 1;
     ierr = PetscLogEventBegin(gamg_setup_stages[SET1],0,0,0,0);CHKERRQ(ierr);
-    ierr = createProlongation( Aarr[level], data, pc_gamg->m_dim, &bs, &data_sz,
-                               &Parr[level1], &coarse_data, &isOK, &emaxs[level] );
+    ierr = createProlongation(Aarr[level], data, pc_gamg->m_dim, pc_gamg->m_data_cols, pc_gamg->m_useSA,
+                              &bs, &Parr[level1], &coarse_data, &isOK, &emaxs[level] );
     CHKERRQ(ierr);
+    ierr = PetscFree( data ); CHKERRQ( ierr );
     ierr = PetscLogEventEnd(gamg_setup_stages[SET1],0,0,0,0);CHKERRQ(ierr);
 
-    ierr = PetscFree( data ); CHKERRQ( ierr );
     if(level==0) Aarr[0] = Amat; /* use Pmat for finest level setup, but use mat for solver */
+
     if( isOK ) {
       ierr = PetscLogEventBegin(gamg_setup_stages[SET2],0,0,0,0);CHKERRQ(ierr);
-      ierr = partitionLevel( Aarr[level], data_sz, bs,
+      ierr = partitionLevel( Aarr[level], pc_gamg->m_useSA ? bs : 1, pc_gamg->m_data_cols, bs,
                              &Parr[level1], &coarse_data, &nactivepe, &Aarr[level1] );
       CHKERRQ(ierr);
       ierr = PetscLogEventEnd(gamg_setup_stages[SET2],0,0,0,0);CHKERRQ(ierr);
       ierr = MatGetSize( Aarr[level1], &M, &N );CHKERRQ(ierr);
-      PetscPrintf(PETSC_COMM_WORLD,"\t\t[%d]%s %d) N=%d, %d data size, %d active pes\n",0,__FUNCT__,level1,N,data_sz,nactivepe);
+PetscPrintf(PETSC_COMM_WORLD,"\t\t[%d]%s %d) N=%d, bs=%d, n data cols=%d, %d active pes\n",0,__FUNCT__,level1,N,bs,pc_gamg->m_data_cols,nactivepe);
       /* coarse grids with SA can have zero row/cols from singleton aggregates */
       /* aggregation method can probably gaurrentee this does not happen! - be safe for now */
       if( PETSC_TRUE ){
@@ -463,10 +476,10 @@ PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s level %d N=%d, data size=%d m_data_sz=%d 
         ierr = VecGetArray( diag, &data_arr );   CHKERRQ(ierr);
         for(kk=0;kk<nloc;kk++){
           if(data_arr[kk]==0.0) {
-            id = kk + Istart; v = 1.0;
+            id = kk + Istart; v = 1.e-1;
             ierr = MatSetValues(Aarr[level1],1,&id,1,&id,&v,INSERT_VALUES);
             CHKERRQ(ierr);
-PetscPrintf(PETSC_COMM_SELF,"[%d]%s warning: added diag to zero (%d)\n",mype,__FUNCT__,id);
+            /* PetscPrintf(PETSC_COMM_SELF,"[%d]%s warning: added diag to zero (%d) on level %d \n",mype,__FUNCT__,id,level); */
           }
         }
         ierr = VecRestoreArray( diag, &data_arr ); CHKERRQ(ierr);
@@ -534,7 +547,6 @@ PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s %d levels\n",0,__FUNCT__,level + 1);
       ierr = MatGetSize( Aarr[level+1], &N0, &tt );       CHKERRQ(ierr);
       emin = .5*emax/((PetscReal)N1/(PetscReal)N0); /* this should be about the coarsening rate */
       emax *= 1.05;
-PetscPrintf(PETSC_COMM_WORLD,"\t%s eigen reduction factor = %g\n",__FUNCT__,emax/emin);
     }
 
     ierr = KSPSetOperators( smoother, Aarr[level], Aarr[level], DIFFERENT_NONZERO_PATTERN );

@@ -991,18 +991,11 @@ runex53_2:
 	   ${RM} -f ex53.tmp
 
 runex54:
-	-@echo ${MPIEXEC}
-	-@${MPIEXEC} -n 4 ./ex54 -ne 40 -alpha 1.e-0 -ksp_monitor -ksp_rtol 1.e-12 -ksp_type cg -pc_mg_type full -ksp_max_it 50 -options_left -ksp_norm_type unpreconditioned -pc_gamg_type sa -pc_mg_log
-#-log_summary -ksp_pc_side right -pc_gamg_type sa -pc_mg_type full
+	-@${MPIEXEC} -n 4 ./ex54 -ne 40 -alpha 1.e-0 -ksp_monitor -ksp_rtol 1.e-12 -ksp_type cg -pc_mg_type full -ksp_max_it 50 -options_left -ksp_norm_type unpreconditioned -pc_gamg_type sa
+#-log_summary -ksp_pc_side right -pc_gamg_type sa -pc_mg_type full -pc_gamg_type sa
 
 runex55:
-	-@echo ${MPIEXEC}
-	-@${MPIEXEC} -n 1 ./ex55 -ne 215 -alpha 1.e-0 -ksp_monitor -ksp_rtol 1.e-12 -ksp_type gmres -ksp_max_it 50 -options_left -ksp_norm_type unpreconditioned -pc_gamg_type sa -pc_mg_type full -mat_ascii_output_large -pc_mg_log
-
-runex55-valgrind:
-	-@echo ${MPIEXEC}
-	-@${MPIEXEC} -n 2 valgrind --tool=memcheck --dsymutil=yes --num-callers=20 ./ex55 -ne 40 -pc_gamg_type sa -ksp_monitor
-#-ksp_view -log_summary -pc_mg_type full valgrind --db-attach=yes
+	-@${MPIEXEC} -n 4 ./ex55 -ne 215 -alpha 1.e-6 -ksp_monitor -ksp_rtol 1.e-12 -ksp_type gmres -ksp_max_it 50 -options_left -ksp_norm_type unpreconditioned -pc_mg_type full -pc_gamg_type sa 
 
 TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 \
                                  runex2_4 runex2_bjacobi runex2_bjacobi_2 runex2_bjacobi_3 runex2_specest_1 runex2_specest_2 ex2.rm \
