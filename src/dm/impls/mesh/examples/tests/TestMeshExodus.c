@@ -1,11 +1,8 @@
 /*
   To do, bugs, questions:
-    - Do I need to destroy the sections?
-    - l. 378, shall I really free cellBlock?
-    - There must be a million leaks
     - Test parallel version
 */
-    
+
 static char help[] = "Test distribution of properties using a mesh\n\n";
 
 #include <petscsys.h>
@@ -20,25 +17,26 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm, const char filename[], DM dm);
 #define __FUNCT__ "main"
 int main (int argc, char ** argv) {
   DM             dm;
-  PetscBool      inflag,outflag;
-  char           infilename[PETSC_MAX_PATH_LEN+1],outfilename[PETSC_MAX_PATH_LEN+1];
+  PetscBool      inflag, outflag;
+  char           infilename[PETSC_MAX_PATH_LEN+1], outfilename[PETSC_MAX_PATH_LEN+1];
   PetscViewer    viewer;
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc,&argv,(char *)0,help);CHKERRQ(ierr);
   ierr = PetscOptionsGetString(PETSC_NULL, "-i", infilename, PETSC_MAX_PATH_LEN, &inflag);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL, "-o", outfilename, PETSC_MAX_PATH_LEN, &outflag);CHKERRQ(ierr);
   if (inflag) {
     ierr = MyDMMeshCreateExodus(PETSC_COMM_WORLD, infilename, &dm);CHKERRQ(ierr);
     //ierr = DMMeshCreateExodus(PETSC_COMM_WORLD, infilename, &dm);CHKERRQ(ierr);
     ierr = DMView(dm, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+
+    if (outflag) {
+      ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD, outfilename, FILE_MODE_WRITE, &viewer);CHKERRQ(ierr);
+      ierr = DMView(dm, viewer);CHKERRQ(ierr);
+      ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+    }
+    ierr = DMDestroy(&dm);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsGetString(PETSC_NULL, "-o", outfilename, PETSC_MAX_PATH_LEN, &outflag);CHKERRQ(ierr);
-  if (outflag) {
-    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,outfilename,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
-    ierr = DMView(dm,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-  }
-  ierr = DMDestroy(&dm);CHKERRQ(ierr);  
   ierr = PetscFinalize();
   return 0;
 }
@@ -141,7 +139,7 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm, const char filename[],DM dm)
 
   mesh->setDimension(num_dim);
 
-  /* 
+  /*
     Read element connectivity
   */
   int      *eb_ids,*num_elem_in_block,*num_nodes_per_elem,*num_attr;
@@ -171,7 +169,7 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm, const char filename[],DM dm)
       ierr = PetscStrcmp(eb_name[eb],"",&eb_hasnoname);CHKERRQ(ierr);
       if (eb_hasnoname) {
         ierr = PetscSNPrintf(eb_name[eb],MAX_STR_LENGTH,"CellBlock_%.4i",eb);CHKERRQ(ierr);
-      } 
+      }
     }
     ierr = ex_get_elem_blk_ids(exoid, eb_ids);CHKERRQ(ierr);
 
@@ -203,7 +201,7 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm, const char filename[],DM dm)
     ierr = MPI_Bcast(eb_name[eb],MAX_STR_LENGTH+1,MPI_CHAR,0,comm);
   }
 
-  /* 
+  /*
     Read side sets
   */
   int      *ss_ids, *num_sides_in_set;
@@ -211,7 +209,7 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm, const char filename[],DM dm)
   char    **ss_name;
   PetscBool ss_hasnoname;
   int       num_df_in_sset;
-  
+
   if (num_ss > 0) {
     ierr = PetscMalloc5(num_ss,int,&ss_ids,
                         num_ss,int,&num_sides_in_set,
@@ -233,7 +231,7 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm, const char filename[],DM dm)
         ierr = PetscStrcmp(ss_name[ss],"",&ss_hasnoname);CHKERRQ(ierr);
         if (ss_hasnoname) {
           ierr = PetscSNPrintf(ss_name[ss],MAX_STR_LENGTH,"FaceSet_%.4i",ss_ids[ss]);CHKERRQ(ierr);
-        } 
+        }
       }
     }
     /*
@@ -244,7 +242,7 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm, const char filename[],DM dm)
     }
   }
 
-  /* 
+  /*
     Read node sets
   */
   int  *ns_ids, *num_nodes_in_set;
@@ -272,7 +270,7 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm, const char filename[],DM dm)
         ierr = PetscStrcmp(ns_name[ns],"",&ns_hasnoname);CHKERRQ(ierr);
         if (ns_hasnoname) {
           ierr = PetscSNPrintf(ns_name[ns],MAX_STR_LENGTH,"VertexSet_%.4i",ns_ids[ns]);CHKERRQ(ierr);
-        } 
+        }
       }
     }
     /*
@@ -290,7 +288,7 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm, const char filename[],DM dm)
   }
 
 
-  /* 
+  /*
     Build mesh topology
   */
   int  *cells;
@@ -341,7 +339,7 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm, const char filename[],DM dm)
   mesh->stratify();
   ALE::ISieveConverter::convertOrientation(*s, *sieve, renumbering, m->getArrowSection("orientation").ptr());
 
-  /* 
+  /*
     Build coordinates
   */
   double *coords;
@@ -381,6 +379,7 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm, const char filename[],DM dm)
       ierr = SectionIntUpdate(cellParentBlock,k,&eb,INSERT_VALUES);CHKERRQ(ierr);
       ierr = SectionIntUpdate(cellBlock[eb],k,&eb,INSERT_VALUES);CHKERRQ(ierr);
     }
+    ierr = SectionIntDestroy(&cellBlock[eb]);CHKERRQ(ierr);
   }
 
   /*
@@ -397,7 +396,7 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm, const char filename[],DM dm)
     }
     if (debug) {cellBlocks->view("Cell Blocks");}
   }
-  ierr = PetscFree(cellBlock);CHKERRQ(ierr);  
+  ierr = PetscFree(cellBlock);CHKERRQ(ierr);
 
   /*
     Build side sets
@@ -427,7 +426,7 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm, const char filename[],DM dm)
       This will fail on more than one processor with the error message:
       Error: ERROR: IFSieve points have not been allocated.
       Should boundaryV just return an empty boundary mesh when mesh is empty instead of an error?
-    */      
+    */
     for (int ss = 0; ss < num_ss; ++ss) {
       ierr = DMMeshGetSectionInt(dm,ss_name[ss],&faceSet[ss]);CHKERRQ(ierr);
       ierr = PetscMalloc(num_sides_in_set[ss]*sizeof(PetscInt),&side_set_points[ss]);CHKERRQ(ierr);
@@ -471,7 +470,7 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm, const char filename[],DM dm)
         if (sz != 1) {
           SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Could not find face with requested vertices.\n");
         }
-        
+
         facepoint = faceVisitor.getPoints()[0];
         faceVisitor.clear();
         side_set_points[ss][s] = facepoint;
@@ -482,6 +481,7 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm, const char filename[],DM dm)
       }
       ierr = SectionIntAllocate(faceSet[ss]);CHKERRQ(ierr);
     }
+    ierr = SectionIntDestroy(&cellParentBlock);CHKERRQ(ierr);
 
     /*
       Initialize the faceSet sections
@@ -490,6 +490,7 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm, const char filename[],DM dm)
       for (int s = 0; s < num_sides_in_set[ss]; ++s) {
         ierr = SectionIntUpdate(faceSet[ss],side_set_points[ss][s],&ss,INSERT_VALUES);CHKERRQ(ierr);
       }
+      ierr = SectionIntDestroy(&faceSet[ss]);CHKERRQ(ierr);
     }
 
     /*
@@ -498,14 +499,14 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm, const char filename[],DM dm)
     PetscInt  *faceParentSetCount,*facecount;
     PetscInt **faceParentSetId;
     PetscInt   num_face = 0,faceid;
-    
+
     ierr = DMMeshGetSectionInt(dm,"FaceParentSet",&faceParentSet);CHKERRQ(ierr);
     if (rank == 0) {
       num_face = mesh->depthStratum(1)->size();
       ierr = PetscMalloc3(num_face,PetscInt,&faceParentSetCount,
                           num_face,PetscInt*,&faceParentSetId,
                           num_face,PetscInt,&facecount);CHKERRQ(ierr);
-      /* 
+      /*
         Count parent set for each face
         We assume that the side sets are properly formed and that each face is listed exactly once in each set
       */
@@ -528,14 +529,14 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm, const char filename[],DM dm)
         }
       }
       ierr = SectionIntAllocate(faceParentSet);CHKERRQ(ierr);
-      
+
       for (int ss = 0; ss < num_ss; ss++) {
         for (int s = 0; s < num_sides_in_set[ss]; s++) {
           faceid = side_set_points[ss][s] - num_elem - num_nodes;
           faceParentSetId[faceid][facecount[faceid]] = ss;
           facecount[faceid]++;
         }
-      }          
+      }
       for (int ss = 0; ss < num_ss; ss++) {
         for (int s = 0; s < num_sides_in_set[ss]; s++) {
           facepoint = side_set_points[ss][s];
@@ -548,6 +549,7 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm, const char filename[],DM dm)
     } else {
       ierr = SectionIntAllocate(faceParentSet);CHKERRQ(ierr);
     }
+    ierr = SectionIntDestroy(&faceParentSet);CHKERRQ(ierr);
 
     /*
       Create Face set label if needed
@@ -572,12 +574,10 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm, const char filename[],DM dm)
       ierr = PetscFree2(side_set_elem_list[ss],side_set_side_list[ss]);CHKERRQ(ierr);
       ierr = PetscFree(ss_name[ss]);CHKERRQ(ierr);
     }
-    
 
     ierr = PetscFree5(ss_ids,num_sides_in_set,side_set_elem_list,side_set_side_list,ss_name);CHKERRQ(ierr);
     ierr = PetscFree2(faceSet,side_set_points);CHKERRQ(ierr);
   }
-  
 
   /*
     Build vertex sets
@@ -618,8 +618,8 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm, const char filename[],DM dm)
     for (int ns = 0; ns < num_ns; ns++) {
       for (int v = 0; v < num_nodes_in_set[ns]; v++) {
         vertex_id = node_list[ns][v]-1;
-        ierr = SectionIntUpdate(vertexSet[ns],vertex_id+num_elem,&ns,INSERT_VALUES);CHKERRQ(ierr); 
-      
+        ierr = SectionIntUpdate(vertexSet[ns],vertex_id+num_elem,&ns,INSERT_VALUES);CHKERRQ(ierr);
+
         if (vertexParentSetCount[vertex_id] > 0) {
           vertexParentSetId[vertex_id][vertexcount[vertex_id]] = ns;
           vertexcount[vertex_id]++;
@@ -641,6 +641,10 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm, const char filename[],DM dm)
       }
     }
     ierr = PetscFree2(vertexParentSetCount,vertexParentSetId);CHKERRQ(ierr);
+  }
+  ierr = SectionIntDestroy(&vertexParentSet);CHKERRQ(ierr);
+  for(int ns = 0; ns < num_ns; ns++) {
+    ierr = SectionIntDestroy(&vertexSet[ns]);CHKERRQ(ierr);
   }
   ierr = PetscFree(vertexSet);CHKERRQ(ierr);
 
@@ -666,7 +670,7 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm, const char filename[],DM dm)
     ierr = PetscFree4(ns_ids,num_nodes_in_set,node_list,ns_name);CHKERRQ(ierr);
   }
 
-  /* 
+  /*
     Free remaining element block temporary variables
   */
   for (int eb = 0; eb < num_eb; ++eb) {
@@ -677,7 +681,7 @@ PetscErrorCode MyPetscReadExodusII(MPI_Comm comm, const char filename[],DM dm)
     ierr = PetscFree2(cells,connectivity_table);CHKERRQ(ierr);
   }
 
-  if (debug && num_ss > 0) {boundarymesh->view("\n\nBoundary Mesh");}
-  if (debug) {mesh->view("\n\nMesh");}
+  if (debug && num_ss > 0) {boundarymesh->view("Boundary Mesh");}
+  if (debug) {mesh->view("Mesh");}
   PetscFunctionReturn(0);
 }

@@ -1,0 +1,47 @@
+Creating new NumberingFactory
+Adding cell 0 dim 3
+Creating new real section: coordinates
+Adding coordinates for vertex 1
+Adding coordinates for vertex 2
+Adding coordinates for vertex 3
+Adding coordinates for vertex 4
+Creating new int section: CellParentBlock
+Creating new int section: CellBlock_0000
+Creating new int section: VertexParentSet
+viewing Mesh 'Mesh'
+Max sizes cone: 4 support: 1
+viewing IFSieve 'mesh sieve'
+cap --> base:
+[0]: 1 ----> 0
+[0]: 2 ----> 0
+[0]: 3 ----> 0
+[0]: 4 ----> 0
+base <-- cap:
+[0]: 0<----1
+[0]: 0<----2
+[0]: 0<----3
+[0]: 0<----4
+Orientation:
+[0]: 0<----1: 0
+[0]: 0<----2: 0
+[0]: 0<----3: 0
+[0]: 0<----4: 0
+viewing GeneralSection 'coordinates'
+  Fields: 0
+[0]:   1 dim 3 offset 0   0.5 0.866025 -0.5
+[0]:   2 dim 3 offset 3   -1 1.22465e-16 -0.5
+[0]:   3 dim 3 offset 6   0.5 -0.866025 -0.5
+[0]:   4 dim 3 offset 9   0 0 0.5
+viewing GeneralSection 'CellBlock_0000'
+  Fields: 0
+[0]:   0 dim 1 offset 0   0
+viewing GeneralSection 'CellParentBlock'
+  Fields: 0
+[0]:   0 dim 1 offset 0   0
+viewing GeneralSection 'VertexParentSet'
+  Fields: 0
+Mesh in 3 dimensions:
+  4 0-cells
+  1 1-cells
+  0 2-cells
+  0 3-cells
