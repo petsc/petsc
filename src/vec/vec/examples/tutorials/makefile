@@ -159,7 +159,7 @@ runex1e:
 	   ${RM} -f ex1_1.tmp
 runex1e_2:
 	-@${MPIEXEC}  -n 2 ./ex1e > ex1_2.tmp 2>&1;\
-	   if (${DIFF} output/ex1_1.out ex1_2.tmp) then true ;  \
+	   if (${DIFF} output/ex1e.out ex1_2.tmp) then true ;  \
 	   else echo "Possible problem with ex1e_2, diffs above"; fi ;\
 	   ${RM} -f ex1_2.tmp
 runex1f:
