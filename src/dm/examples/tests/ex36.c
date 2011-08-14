@@ -379,11 +379,9 @@ PetscErrorCode da_test_RefineCoords1D(PetscInt mx)
   ierr = DMGetInterpolation(dac,daf,&INTERP,PETSC_NULL);CHKERRQ(ierr);
   
   ierr = DMCreateGlobalVector(dac,&ac); CHKERRQ(ierr);
-  ierr = VecZeroEntries(ac);CHKERRQ(ierr);
   ierr = VecSet(ac,66.99);CHKERRQ(ierr);
   
   ierr = DMCreateGlobalVector(daf,&af); CHKERRQ(ierr);
-  ierr = VecZeroEntries(af);CHKERRQ(ierr);
   
   ierr = MatMult(INTERP,ac, af); CHKERRQ(ierr);
   
@@ -393,7 +391,6 @@ PetscErrorCode da_test_RefineCoords1D(PetscInt mx)
     PetscInt  N;
     
     ierr = DMCreateGlobalVector(daf,&afexact); CHKERRQ(ierr);
-    ierr = VecZeroEntries(afexact);CHKERRQ(ierr);
     ierr = VecSet(afexact,66.99);CHKERRQ(ierr);
     ierr = VecAXPY(afexact,-1.0,af);CHKERRQ(ierr); /* af <= af - afinterp */
     ierr = VecNorm(afexact,NORM_2,&nrm);CHKERRQ(ierr);
@@ -483,12 +480,9 @@ PetscErrorCode da_test_RefineCoords2D(PetscInt mx,PetscInt my)
   ierr = DMGetInterpolation(dac,daf,&INTERP,PETSC_NULL);CHKERRQ(ierr);
   
   ierr = DMCreateGlobalVector(dac,&ac); CHKERRQ(ierr);
-  ierr = VecZeroEntries(ac);CHKERRQ(ierr);
   ierr = DADefineXLinearField2D(dac,ac);CHKERRQ(ierr);
   
   ierr = DMCreateGlobalVector(daf,&af); CHKERRQ(ierr);
-  ierr = VecZeroEntries(af);CHKERRQ(ierr);
-  
   ierr = MatMult(INTERP,ac, af); CHKERRQ(ierr);
   
   {
