@@ -1375,7 +1375,7 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
 
 .seealso: DMDestroy(), DMView(), DMDACreate1d(), DMDACreate2d(), DMGlobalToLocalBegin(), DMDAGetRefinementFactor(),
           DMGlobalToLocalEnd(), DMLocalToGlobalBegin(), DMDALocalToLocalBegin(), DMDALocalToLocalEnd(), DMDASetRefinementFactor(),
-          DMDAGetInfo(), DMCreateGlobalVector(), DMCreateLocalVector(), DMDACreateNaturalVector(), DMDALoad(), DMDAGetOwnershipRanges()
+          DMDAGetInfo(), DMCreateGlobalVector(), DMCreateLocalVector(), DMDACreateNaturalVector(), DMLoad(), DMDAGetOwnershipRanges()
 
 @*/
 PetscErrorCode  DMDACreate3d(MPI_Comm comm,DMDABoundaryType bx,DMDABoundaryType by,DMDABoundaryType bz,DMDAStencilType stencil_type,PetscInt M,

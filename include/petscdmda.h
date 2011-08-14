@@ -97,7 +97,6 @@ extern PetscErrorCode     DMDALocalToLocalBegin(DM,Vec,InsertMode,Vec);
 extern PetscErrorCode     DMDALocalToLocalEnd(DM,Vec,InsertMode,Vec);
 extern PetscErrorCode     DMDACreateNaturalVector(DM,Vec *);
 
-extern PetscErrorCode     DMDALoad(PetscViewer,PetscInt,PetscInt,PetscInt,DM *);
 extern PetscErrorCode     DMDAGetCorners(DM,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
 extern PetscErrorCode     DMDAGetGhostCorners(DM,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
 extern PetscErrorCode     DMDAGetInfo(DM,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,DMDABoundaryType*,DMDABoundaryType*,DMDABoundaryType*,DMDAStencilType*);

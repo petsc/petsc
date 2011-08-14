@@ -9,7 +9,7 @@ lid velocity = 0.0204082, prandtl # = 1, grashof # = 1
 SNES Object: 1 MPI processes
   type: ls
     line search variant: SNESLineSearchCubic
-    alpha=0.0001, maxstep=1e+08, minlambda=1e-12
+    alpha=1.000000000000e-04, maxstep=1.000000000000e+08, minlambda=1.000000000000e-12
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
   total number of linear solver iterations=2
@@ -32,7 +32,7 @@ SNES Object: 1 MPI processes
         maximum iterations=10000, initial guess is zero
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
         left preconditioning
-        using PRECONDITIONED norm type for convergence test
+        using NONE norm type for convergence test
       PC Object:      (fieldsplit_0_)       1 MPI processes      
         type: lu
           LU: out-of-place factorization
@@ -60,7 +60,7 @@ SNES Object: 1 MPI processes
         maximum iterations=10000, initial guess is zero
         tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
         left preconditioning
-        using PRECONDITIONED norm type for convergence test
+        using NONE norm type for convergence test
       PC Object:      (fieldsplit_1_)       1 MPI processes      
         type: lu
           LU: out-of-place factorization

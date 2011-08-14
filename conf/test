@@ -54,6 +54,7 @@ testexamples_PASTIX: ${TESTEXAMPLES_PASTIX}
 testexamples_ML: ${TESTEXAMPLES_ML}
 testexamples_CUSP: ${TESTEXAMPLES_CUSP}
 testexamples_PTHREAD: ${TESTEXAMPLES_PTHREAD}
+testexamples_YAML: ${TESTEXAMPLES_YAML}
 testexamples_X11:
 testexamples_MPE:
 testexamples_ESSL:

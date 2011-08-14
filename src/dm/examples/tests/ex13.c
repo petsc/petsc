@@ -20,7 +20,9 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRQ(ierr);
 
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"daoutput",FILE_MODE_READ,&bviewer);CHKERRQ(ierr);
-  ierr = DMDALoad(bviewer,M,N,PETSC_DECIDE,&da);CHKERRQ(ierr);
+  ierr = DMCreate(PETSC_COMM_WORLD,&da);CHKERRQ(ierr);
+
+  ierr = DMLoad(da,bviewer);CHKERRQ(ierr);
   ierr = DMCreateGlobalVector(da,&global);CHKERRQ(ierr); 
   ierr = VecLoad(global,bviewer);CHKERRQ(ierr); 
   ierr = PetscViewerDestroy(&bviewer);CHKERRQ(ierr);
