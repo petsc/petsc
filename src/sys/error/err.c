@@ -252,7 +252,14 @@ static const char *PetscErrorStrings[] = {
   /*86 */ "Unknown type. Check for miss-spelling or missing external package needed for type\n seehttp://www.mcs.anl.gov/petsc/petsc-as/documentation/installation.html#external",
   /*87 */ "Not used",
   /*88 */ "Error in system call",
-  /*89 */ "Object Type not set: see http://www.mcs.anl.gov/petsc/petsc-as/documentation/faq.html#objecttypenotset"};
+  /*89 */ "Object Type not set: see http://www.mcs.anl.gov/petsc/petsc-as/documentation/faq.html#objecttypenotset"
+  /*90 */ "  ",
+  /*   */ "  ",
+  /*   */ "  ",
+  /*   */ "  ",
+  /*   */ "  ",
+  /*95 */ "  ",
+};
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscErrorMessage" 
