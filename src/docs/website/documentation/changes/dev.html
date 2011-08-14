@@ -111,7 +111,9 @@ figured out a way to handle the %G format. Can be run in parallel :-)</li>
 is set and the function is NOT found in the function list then the
 libraries and executable are searched (when shared or dynamic libraries
 are used). Previously it always search the libraries and executables if
-not found in the list.<br>
+not found in the list.</li>
+        <li>PetscOpenMPxxx() utilities are now PetscHMPIxxx() for
+hierarchical MPI, the previous name was bad<br>
         </li>
       </ul>
       <u><b>Logging:<br>
@@ -250,6 +252,9 @@ PCRedundantGetPC() is now changed to PCRedundantGetKSP()<br>
 "petscasa.h" is renamed to "petscpcasa.h".</li>
         <li>The preconditioner PCBFBT has been removed. The same
 functionality is available in PCFIELDSPLIT.</li>
+        <li>PCOPENMP is now PCHMPI and its prefix is now -hmpi_ for
+heirarchical MPI<br>
+        </li>
       </ul>
       <p><u><b>KSP:<br>
       </b></u></p>
@@ -288,11 +293,14 @@ is used, then one is created by the TS.</li>
 TSSetRHSFunction(), perhaps providing Jacobian matrices and
 TSComputeRHSFunctionLinear() and/or TSComputeRHSJacobianConstant(). See
 src/ts/examples/tutorials/ex{2,4,5,6}.c for an example.</li>
-        <li>Added TSARKIMEX: additive Runge-Kutta implicit-explicit methods
+        <li>Added TSARKIMEX: additive Runge-Kutta implicit-explicit
+methods
 for multi-rate systems.</li>
-        <li>Changed TSStep() interface to only perform one step, added TSSolve()
+        <li>Changed TSStep() interface to only perform one step, added
+TSSolve()
 to perform multiple steps with callbacks and monitors if desired.</li>
-        <li>Added TSSetExactFinalTime(), replaces TSSundialsSetExactFinalTime(). </li>
+        <li>Added TSSetExactFinalTime(), replaces
+TSSundialsSetExactFinalTime(). </li>
       </ul>
       <p><u><b>DM/DA:</b></u></p>
       <ul>
@@ -369,8 +377,8 @@ PetscOptionsStringToBool()</li>
         <li>PetscFListFind() takes an additional argument to look up
 the
 symbol in dynamically loaded libraries if not already in the list.</li>
-        <li>Added PetscBagSetOptionsPrefix(), which allows a prefix for the option names 
-of bag items.</li>
+        <li>Added PetscBagSetOptionsPrefix(), which allows a prefix for
+the option names of bag items.</li>
       </ul>
       <p><u><b>AO:<br>
       </b></u></p>

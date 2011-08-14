@@ -1295,13 +1295,13 @@ extern PetscErrorCode  PetscEnd(void);
 extern PetscErrorCode  PetscSysInitializePackage(const char[]);
 
 extern MPI_Comm PETSC_COMM_LOCAL_WORLD;
-extern PetscErrorCode  PetscOpenMPMerge(PetscMPIInt,PetscErrorCode (*)(void*),void*);
-extern PetscErrorCode  PetscOpenMPSpawn(PetscMPIInt);
-extern PetscErrorCode  PetscOpenMPFinalize(void);
-extern PetscErrorCode  PetscOpenMPRun(MPI_Comm,PetscErrorCode (*)(MPI_Comm,void *),void*);
-extern PetscErrorCode  PetscOpenMPRunCtx(MPI_Comm,PetscErrorCode (*)(MPI_Comm,void*,void *),void*);
-extern PetscErrorCode  PetscOpenMPFree(MPI_Comm,void*);
-extern PetscErrorCode  PetscOpenMPMalloc(MPI_Comm,size_t,void**);
+extern PetscErrorCode  PetscHMPIMerge(PetscMPIInt,PetscErrorCode (*)(void*),void*);
+extern PetscErrorCode  PetscHMPISpawn(PetscMPIInt);
+extern PetscErrorCode  PetscHMPIFinalize(void);
+extern PetscErrorCode  PetscHMPIRun(MPI_Comm,PetscErrorCode (*)(MPI_Comm,void *),void*);
+extern PetscErrorCode  PetscHMPIRunCtx(MPI_Comm,PetscErrorCode (*)(MPI_Comm,void*,void *),void*);
+extern PetscErrorCode  PetscHMPIFree(MPI_Comm,void*);
+extern PetscErrorCode  PetscHMPIMalloc(MPI_Comm,size_t,void**);
 
 extern PetscErrorCode  PetscPythonInitialize(const char[],const char[]);
 extern PetscErrorCode  PetscPythonFinalize(void);

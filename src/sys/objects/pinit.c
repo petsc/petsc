@@ -12,7 +12,7 @@
 #if defined(PETSC_USE_LOG)
 extern PetscErrorCode PetscLogBegin_Private(void);
 #endif
-extern PetscBool  PetscOpenMPWorker;
+extern PetscBool  PetscHMPIWorker;
 extern PetscBool  PetscUseThreadPool;
 /* -----------------------------------------------------------------------------------------*/
 
@@ -786,18 +786,18 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
 #endif  
 #endif
 
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-openmp_spawn_size",&nodesize,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-hmpi_spawn_size",&nodesize,&flg);CHKERRQ(ierr);
   if (flg) {
 #if defined(PETSC_HAVE_MPI_COMM_SPAWN)
-    ierr = PetscOpenMPSpawn((PetscMPIInt) nodesize);CHKERRQ(ierr); /* worker nodes never return from here; they go directly to PetscEnd() */
+    ierr = PetscHMPISpawn((PetscMPIInt) nodesize);CHKERRQ(ierr); /* worker nodes never return from here; they go directly to PetscEnd() */
 #else
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"PETSc built without MPI 2 (MPI_Comm_spawn) support, use -openmp_merge_size instead");
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"PETSc built without MPI 2 (MPI_Comm_spawn) support, use -hmpi_merge_size instead");
 #endif
   } else {
-    ierr = PetscOptionsGetInt(PETSC_NULL,"-openmp_merge_size",&nodesize,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(PETSC_NULL,"-hmpi_merge_size",&nodesize,&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PetscOpenMPMerge((PetscMPIInt) nodesize,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr); 
-      if (PetscOpenMPWorker) { /* if worker then never enter user code */
+      ierr = PetscHMPIMerge((PetscMPIInt) nodesize,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr); 
+      if (PetscHMPIWorker) { /* if worker then never enter user code */
         ierr = PetscEnd(); 
       }
     }
@@ -898,7 +898,7 @@ PetscErrorCode  PetscFinalize(void)
   }  
 #endif
 
-  ierr = PetscOpenMPFinalize();CHKERRQ(ierr);
+  ierr = PetscHMPIFinalize();CHKERRQ(ierr);
 #if defined(PETSC_HAVE_PTHREADCLASSES)
   if (PetscThreadFinalize) {
     /* thread pool case */
@@ -1009,7 +1009,7 @@ PetscErrorCode  PetscFinalize(void)
   ierr = PetscOptionsHasName(PETSC_NULL,"-nox_warning",&flg1);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(PETSC_NULL,"-objects_left",&objects_left,PETSC_NULL);CHKERRQ(ierr);
 
-  if (!PetscOpenMPWorker) { /* worker processes skip this because they do not usually process options */
+  if (!PetscHMPIWorker) { /* worker processes skip this because they do not usually process options */
     flg3 = PETSC_FALSE; /* default value is required */
     ierr = PetscOptionsGetBool(PETSC_NULL,"-options_left",&flg3,&flg1);CHKERRQ(ierr);
     ierr = PetscOptionsAllUsed(&nopt);CHKERRQ(ierr);

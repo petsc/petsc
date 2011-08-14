@@ -244,7 +244,7 @@ def main(args):
   classes['PetscBinary'] = {}
   classes['PetscOptions'] = {}
   classes['PetscMalloc'] = {}
-  classes['PetscOpenMP'] = {}
+  classes['PetscHMPI'] = {}
   classes['PetscToken'] = {}        
   for i in args:
     getclasses(i)

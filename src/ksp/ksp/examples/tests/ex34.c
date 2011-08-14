@@ -1,6 +1,6 @@
 
 
-static char help[] = "Demonstrates PetscOpenMPMerge() usage\n\n";
+static char help[] = "Demonstrates PetscHMPIMerge() usage\n\n";
 
 #include <petscmat.h>
 #include <petscksp.h>
@@ -49,10 +49,10 @@ PetscErrorCode MySubsolver(MyMultCtx *ctx)
   ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"MySubsolver\n");
   ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
   /* allocates memory on each process, both masters and workers */
-  ierr = PetscOpenMPMalloc(PETSC_COMM_LOCAL_WORLD,sizeof(int),&subctx);CHKERRQ(ierr);
+  ierr = PetscHMPIMalloc(PETSC_COMM_LOCAL_WORLD,sizeof(int),&subctx);CHKERRQ(ierr);
   /* runs MyMult() function on each process, both masters and workers */
-  ierr = PetscOpenMPRunCtx(PETSC_COMM_LOCAL_WORLD,(PetscErrorCode (*)(MPI_Comm,void*,void *))MyMult,subctx);CHKERRQ(ierr);
-  ierr = PetscOpenMPFree(PETSC_COMM_LOCAL_WORLD,subctx);CHKERRQ(ierr);
+  ierr = PetscHMPIRunCtx(PETSC_COMM_LOCAL_WORLD,(PetscErrorCode (*)(MPI_Comm,void*,void *))MyMult,subctx);CHKERRQ(ierr);
+  ierr = PetscHMPIFree(PETSC_COMM_LOCAL_WORLD,subctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -100,11 +100,11 @@ int main(int argc,char **args)
 
   /* 
      The master nodes call the function MySubsolver() while the worker nodes wait for requests to call functions
-     These requests are triggered by the calls from the masters on PetscOpenMPRunCtx()
+     These requests are triggered by the calls from the masters on PetscHMPIRunCtx()
   */
-  ierr = PetscOpenMPMerge(nodesize,(PetscErrorCode (*)(void*))MySubsolver,&ctx);CHKERRQ(ierr);
+  ierr = PetscHMPIMerge(nodesize,(PetscErrorCode (*)(void*))MySubsolver,&ctx);CHKERRQ(ierr);
 
-  ierr = PetscOpenMPFinalize();CHKERRQ(ierr);
+  ierr = PetscHMPIFinalize();CHKERRQ(ierr);
   ierr = MatDestroy(&ctx.A);CHKERRQ(ierr);
   ierr = VecDestroy(&ctx.x);CHKERRQ(ierr);
   ierr = VecDestroy(&ctx.y);CHKERRQ(ierr);

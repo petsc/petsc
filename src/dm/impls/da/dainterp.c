@@ -3,6 +3,8 @@
   Code for interpolating between grids represented by DMDAs
 */
 
+#define NEWVERSION 1 
+
 #include <private/daimpl.h>    /*I   "petscdmda.h"   I*/
 #include <petscpcmg.h>
 
@@ -50,11 +52,9 @@ PetscErrorCode DMGetInterpolation_DA_1D_Q1(DM dac,DM daf,Mat *A)
   PetscInt         m_ghost,*idx_c,m_ghost_c;
   PetscInt         row,col,i_start_ghost,mx,m_c,nc,ratio;
   PetscInt         i_c,i_start_c,i_start_ghost_c,cols[2],dof;
-  PetscScalar      v[2],x,*coors = 0,*ccoors;
+  PetscScalar      v[2],x;
   Mat              mat;
   DMDABoundaryType bx;
-  Vec              vcoors,cvcoors;
-  DM_DA            *ddc = (DM_DA*)dac->data, *ddf = (DM_DA*)daf->data;
   
   PetscFunctionBegin;
   ierr = DMDAGetInfo(dac,0,&Mx,0,0,0,0,0,0,0,&bx,0,0,0);CHKERRQ(ierr);
@@ -82,14 +82,8 @@ PetscErrorCode DMGetInterpolation_DA_1D_Q1(DM dac,DM daf,Mat *A)
   ierr = MatSeqAIJSetPreallocation(mat,2,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(mat,2,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
   
-  ierr = DMDAGetCoordinates(daf,&vcoors);CHKERRQ(ierr);
-  if (vcoors) {
-    ierr = DMDAGetGhostedCoordinates(dac,&cvcoors);CHKERRQ(ierr);
-    ierr = DMDAVecGetArray(ddf->da_coordinates,vcoors,&coors);CHKERRQ(ierr);
-    ierr = DMDAVecGetArray(ddc->da_coordinates,cvcoors,&ccoors);CHKERRQ(ierr);
-  }
   /* loop over local fine grid nodes setting interpolation for those*/
-  if (!vcoors) {
+  if (!NEWVERSION) {
 
     for (i=i_start; i<i_start+m_f; i++) {
       /* convert to local "natural" numbering and then to PETSc global numbering */
@@ -167,10 +161,6 @@ PetscErrorCode DMGetInterpolation_DA_1D_Q1(DM dac,DM daf,Mat *A)
       ierr = MatSetValues(mat,1,&row,2,cols,Ni,INSERT_VALUES);CHKERRQ(ierr); 
     }
     ierr = PetscFree(xi);CHKERRQ(ierr);
-  }
-  if (vcoors) {
-    ierr = DMDAVecRestoreArray(ddf->da_coordinates,vcoors,&coors);CHKERRQ(ierr);
-    ierr = DMDAVecRestoreArray(ddc->da_coordinates,cvcoors,&ccoors);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -264,9 +254,6 @@ PetscErrorCode DMGetInterpolation_DA_2D_Q1(DM dac,DM daf,Mat *A)
   PetscScalar      v[4],x,y;
   Mat              mat;
   DMDABoundaryType bx,by;
-  DMDACoor2d       **coors = 0,**ccoors;
-  Vec              vcoors,cvcoors;
-  DM_DA            *ddc = (DM_DA*)dac->data, *ddf = (DM_DA*)daf->data;
   
   PetscFunctionBegin;
   ierr = DMDAGetInfo(dac,0,&Mx,&My,0,0,0,0,0,0,&bx,&by,0,0);CHKERRQ(ierr);
@@ -356,16 +343,8 @@ PetscErrorCode DMGetInterpolation_DA_2D_Q1(DM dac,DM daf,Mat *A)
   ierr = MatMPIAIJSetPreallocation(mat,0,dnz,0,onz);CHKERRQ(ierr);
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
   
-  ierr = DMDAGetCoordinates(daf,&vcoors);CHKERRQ(ierr);
-  if (vcoors) {
-    ierr = DMDAGetGhostedCoordinates(dac,&cvcoors);CHKERRQ(ierr);
-    ierr = DMDAVecGetArray(ddf->da_coordinates,vcoors,&coors);CHKERRQ(ierr);
-    ierr = DMDAVecGetArray(ddc->da_coordinates,cvcoors,&ccoors);CHKERRQ(ierr);
-  }
-  
   /* loop over local fine grid nodes setting interpolation for those*/
-  // if (!vcoors) {
-  if (1) {
+  if (!NEWVERSION) {
     
     for (j=j_start; j<j_start+n_f; j++) {
       for (i=i_start; i<i_start+m_f; i++) {
@@ -478,10 +457,6 @@ PetscErrorCode DMGetInterpolation_DA_2D_Q1(DM dac,DM daf,Mat *A)
     ierr = PetscFree(xi);CHKERRQ(ierr);
     ierr = PetscFree(eta);CHKERRQ(ierr);
   }  
-  if (vcoors) {
-    ierr = DMDAVecRestoreArray(ddf->da_coordinates,vcoors,&coors);CHKERRQ(ierr);
-    ierr = DMDAVecRestoreArray(ddc->da_coordinates,cvcoors,&ccoors);CHKERRQ(ierr);
-  }
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatCreateMAIJ(mat,dof,A);CHKERRQ(ierr);
@@ -736,9 +711,6 @@ PetscErrorCode DMGetInterpolation_DA_3D_Q1(DM dac,DM daf,Mat *A)
   PetscScalar      v[8],x,y,z;
   Mat              mat;
   DMDABoundaryType bx,by,bz;
-  DMDACoor3d       ***coors = 0,***ccoors;
-  Vec              vcoors,cvcoors;
-  DM_DA            *ddc = (DM_DA*)dac->data, *ddf = (DM_DA*)daf->data;
   
   PetscFunctionBegin;
   ierr = DMDAGetInfo(dac,0,&Mx,&My,&Mz,0,0,0,0,0,&bx,&by,&bz,0);CHKERRQ(ierr);
@@ -837,15 +809,8 @@ PetscErrorCode DMGetInterpolation_DA_3D_Q1(DM dac,DM daf,Mat *A)
   ierr = MatMPIAIJSetPreallocation(mat,0,dnz,0,onz);CHKERRQ(ierr);
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
   
-  ierr = DMDAGetCoordinates(daf,&vcoors);CHKERRQ(ierr);
-  if (vcoors) {
-    ierr = DMDAGetGhostedCoordinates(dac,&cvcoors);CHKERRQ(ierr);
-    ierr = DMDAVecGetArray(ddf->da_coordinates,vcoors,&coors);CHKERRQ(ierr);
-    ierr = DMDAVecGetArray(ddc->da_coordinates,cvcoors,&ccoors);CHKERRQ(ierr);
-  }
-  
   /* loop over local fine grid nodes setting interpolation for those*/
-  if (!vcoors) {
+  if (NEWVERSION) {
 
     for (l=l_start; l<l_start+p_f; l++) {
       for (j=j_start; j<j_start+n_f; j++) {
@@ -1005,10 +970,6 @@ PetscErrorCode DMGetInterpolation_DA_3D_Q1(DM dac,DM daf,Mat *A)
     ierr = PetscFree(zeta);CHKERRQ(ierr);
   }
   
-  if (vcoors) {
-    ierr = DMDAVecRestoreArray(ddf->da_coordinates,vcoors,&coors);CHKERRQ(ierr);
-    ierr = DMDAVecRestoreArray(ddc->da_coordinates,cvcoors,&ccoors);CHKERRQ(ierr);
-  }
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   
@@ -1051,9 +1012,7 @@ PetscErrorCode  DMGetInterpolation_DA(DM dac,DM daf,Mat *A,Vec *scale)
       ierr = DMGetInterpolation_DA_2D_Q1(dac,daf,A);CHKERRQ(ierr);
     } else if (dimc == 3){
       ierr = DMGetInterpolation_DA_3D_Q1(dac,daf,A);CHKERRQ(ierr);
-    } else {
-      SETERRQ2(((PetscObject)daf)->comm,PETSC_ERR_SUP,"No support for this DMDA dimension %D for interpolation type %d",dimc,(int)ddc->interptype);
-    }
+    } else SETERRQ2(((PetscObject)daf)->comm,PETSC_ERR_SUP,"No support for this DMDA dimension %D for interpolation type %d",dimc,(int)ddc->interptype);
   } else if (ddc->interptype == DMDA_Q0){
     if (dimc == 1){
       ierr = DMGetInterpolation_DA_1D_Q0(dac,daf,A);CHKERRQ(ierr);
@@ -1061,9 +1020,7 @@ PetscErrorCode  DMGetInterpolation_DA(DM dac,DM daf,Mat *A,Vec *scale)
        ierr = DMGetInterpolation_DA_2D_Q0(dac,daf,A);CHKERRQ(ierr);
     } else if (dimc == 3){
        ierr = DMGetInterpolation_DA_3D_Q0(dac,daf,A);CHKERRQ(ierr);
-    } else {
-      SETERRQ2(((PetscObject)daf)->comm,PETSC_ERR_SUP,"No support for this DMDA dimension %D for interpolation type %d",dimc,(int)ddc->interptype);
-    }
+    } else SETERRQ2(((PetscObject)daf)->comm,PETSC_ERR_SUP,"No support for this DMDA dimension %D for interpolation type %d",dimc,(int)ddc->interptype);
   }
   if (scale) {
     ierr = DMGetInterpolationScale((DM)dac,(DM)daf,*A,scale);CHKERRQ(ierr);

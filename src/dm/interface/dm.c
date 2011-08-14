@@ -437,7 +437,11 @@ PetscErrorCode  DMGetBlockSize(DM dm,PetscInt *bs)
 
     Level: developer
 
-.seealso DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetColoring(), DMGetMatrix()
+    Notes:  For DMDA objects this only works for "uniform refinement", that is the refined mesh was obtained DMRefine() or the coarse mesh was obtained by 
+        DMCoarsen(). The coordinates set into the DMDA are completely ignored in computing the interpolation.
+   
+
+.seealso DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetColoring(), DMGetMatrix(), DMRefine(), DMCoarsen()
 
 @*/
 PetscErrorCode  DMGetInterpolation(DM dm1,DM dm2,Mat *mat,Vec *vec)
@@ -464,6 +468,9 @@ PetscErrorCode  DMGetInterpolation(DM dm1,DM dm2,Mat *mat,Vec *vec)
 .   ctx - the injection
 
     Level: developer
+
+   Notes:  For DMDA objects this only works for "uniform refinement", that is the refined mesh was obtained DMRefine() or the coarse mesh was obtained by 
+        DMCoarsen(). The coordinates set into the DMDA are completely ignored in computing the injection.
 
 .seealso DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetColoring(), DMGetMatrix(), DMGetInterpolation()
 

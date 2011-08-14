@@ -13,11 +13,11 @@ typedef struct {
   Vec          x,y,xdummy,ydummy;
   VecScatter   scatter;
   PetscBool    nonzero_guess; 
-} PC_OpenMP;
+} PC_HMPI;
 
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCView_OpenMP_OpenMP"
+#define __FUNCT__ "PCView_HMPI_HMPI"
 /*
     Would like to have this simply call PCView() on the inner PC. The problem is
   that the outter comm does not live on the inside so cannot do this. Instead 
@@ -25,9 +25,9 @@ typedef struct {
   for this call.
 */
 
-static PetscErrorCode PCView_OpenMP_MP(MPI_Comm comm,void *ctx)
+static PetscErrorCode PCView_HMPI_MP(MPI_Comm comm,void *ctx)
 {
-  PC_OpenMP      *red = (PC_OpenMP*)ctx;
+  PC_HMPI      *red = (PC_HMPI*)ctx;
   PetscErrorCode ierr;
   PetscViewer    viewer;
 
@@ -40,10 +40,10 @@ static PetscErrorCode PCView_OpenMP_MP(MPI_Comm comm,void *ctx)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCView_OpenMP"
-static PetscErrorCode PCView_OpenMP(PC pc,PetscViewer viewer)
+#define __FUNCT__ "PCView_HMPI"
+static PetscErrorCode PCView_HMPI(PC pc,PetscViewer viewer)
 {
-  PC_OpenMP      *red = (PC_OpenMP*)pc->data;
+  PC_HMPI      *red = (PC_HMPI*)pc->data;
   PetscMPIInt    size;
   PetscErrorCode ierr;
   PetscBool      iascii;
@@ -57,7 +57,7 @@ static PetscErrorCode PCView_OpenMP(PC pc,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"  Size of solver nodes %d\n",size);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Parallel sub-solver given next\n",size);CHKERRQ(ierr);
     /* should only make the next call if the viewer is associated with stdout */
-    ierr = PetscOpenMPRun(red->comm,PCView_OpenMP_MP,red);CHKERRQ(ierr);
+    ierr = PetscHMPIRun(red->comm,PCView_HMPI_MP,red);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -65,10 +65,10 @@ static PetscErrorCode PCView_OpenMP(PC pc,PetscViewer viewer)
 extern PetscErrorCode MatDistribute_MPIAIJ(MPI_Comm,Mat,PetscInt,MatReuse,Mat*);
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCApply_OpenMP_1"
-static PetscErrorCode PCApply_OpenMP_1(PC pc,Vec x,Vec y)
+#define __FUNCT__ "PCApply_HMPI_1"
+static PetscErrorCode PCApply_HMPI_1(PC pc,Vec x,Vec y)
 {
-  PC_OpenMP      *red = (PC_OpenMP*)pc->data;
+  PC_HMPI      *red = (PC_HMPI*)pc->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -78,10 +78,10 @@ static PetscErrorCode PCApply_OpenMP_1(PC pc,Vec x,Vec y)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCSetUp_OpenMP_MP"
-static PetscErrorCode PCSetUp_OpenMP_MP(MPI_Comm comm,void *ctx)
+#define __FUNCT__ "PCSetUp_HMPI_MP"
+static PetscErrorCode PCSetUp_HMPI_MP(MPI_Comm comm,void *ctx)
 {
-  PC_OpenMP      *red = (PC_OpenMP*)ctx;
+  PC_HMPI      *red = (PC_HMPI*)ctx;
   PetscErrorCode ierr;
   PetscInt       m;
   MatReuse       scal;
@@ -121,7 +121,7 @@ static PetscErrorCode PCSetUp_OpenMP_MP(MPI_Comm comm,void *ctx)
     /* create the solver */
     ierr = KSPCreate(comm,&red->ksp);CHKERRQ(ierr);
     /* would like to set proper tablevel for KSP, but do not have direct access to parent pc */
-    ierr = KSPSetOptionsPrefix(red->ksp,"openmp_");CHKERRQ(ierr); /* should actually append with global pc prefix */
+    ierr = KSPSetOptionsPrefix(red->ksp,"hmpi_");CHKERRQ(ierr); /* should actually append with global pc prefix */
     ierr = KSPSetOperators(red->ksp,red->mat,red->mat,red->flag);CHKERRQ(ierr);
     ierr = KSPSetFromOptions(red->ksp);CHKERRQ(ierr);
   } else {
@@ -131,10 +131,10 @@ static PetscErrorCode PCSetUp_OpenMP_MP(MPI_Comm comm,void *ctx)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCSetUp_OpenMP"
-static PetscErrorCode PCSetUp_OpenMP(PC pc)
+#define __FUNCT__ "PCSetUp_HMPI"
+static PetscErrorCode PCSetUp_HMPI(PC pc)
 {
-  PC_OpenMP      *red = (PC_OpenMP*)pc->data;
+  PC_HMPI      *red = (PC_HMPI*)pc->data;
   PetscErrorCode ierr;
   PetscMPIInt    size;
 
@@ -149,26 +149,26 @@ static PetscErrorCode PCSetUp_OpenMP(PC pc)
       /* create the solver */
       ierr = KSPCreate(((PetscObject)pc)->comm,&red->ksp);CHKERRQ(ierr);
       ierr = PetscObjectIncrementTabLevel((PetscObject)red->ksp,(PetscObject)pc,1);CHKERRQ(ierr);
-      ierr = KSPSetOptionsPrefix(red->ksp,"openmp_");CHKERRQ(ierr); /* should actually append with global pc prefix */
+      ierr = KSPSetOptionsPrefix(red->ksp,"hmpi_");CHKERRQ(ierr); /* should actually append with global pc prefix */
       ierr = KSPSetOperators(red->ksp,red->gmat,red->gmat,red->flag);CHKERRQ(ierr);
       ierr = KSPSetFromOptions(red->ksp);CHKERRQ(ierr);
     } else {
       ierr = KSPSetOperators(red->ksp,red->gmat,red->gmat,red->flag);CHKERRQ(ierr);
     }
-    pc->ops->apply = PCApply_OpenMP_1;
+    pc->ops->apply = PCApply_HMPI_1;
     PetscFunctionReturn(0);
   } else {
     ierr = MatGetSize(pc->mat,&red->n,PETSC_IGNORE);CHKERRQ(ierr); 
-    ierr = PetscOpenMPRun(red->comm,PCSetUp_OpenMP_MP,red);CHKERRQ(ierr);
+    ierr = PetscHMPIRun(red->comm,PCSetUp_HMPI_MP,red);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCApply_OpenMP_MP"
-static PetscErrorCode PCApply_OpenMP_MP(MPI_Comm comm,void *ctx)
+#define __FUNCT__ "PCApply_HMPI_MP"
+static PetscErrorCode PCApply_HMPI_MP(MPI_Comm comm,void *ctx)
 {
-  PC_OpenMP      *red = (PC_OpenMP*)ctx;
+  PC_HMPI      *red = (PC_HMPI*)ctx;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -189,25 +189,25 @@ static PetscErrorCode PCApply_OpenMP_MP(MPI_Comm comm,void *ctx)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCApply_OpenMP"
-static PetscErrorCode PCApply_OpenMP(PC pc,Vec x,Vec y)
+#define __FUNCT__ "PCApply_HMPI"
+static PetscErrorCode PCApply_HMPI(PC pc,Vec x,Vec y)
 {
-  PC_OpenMP      *red = (PC_OpenMP*)pc->data;
+  PC_HMPI      *red = (PC_HMPI*)pc->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   red->xdummy        = x;
   red->ydummy        = y;
   red->nonzero_guess = pc->nonzero_guess;
-  ierr = PetscOpenMPRun(red->comm,PCApply_OpenMP_MP,red);CHKERRQ(ierr);
+  ierr = PetscHMPIRun(red->comm,PCApply_HMPI_MP,red);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCDestroy_OpenMP_MP"
-static PetscErrorCode PCDestroy_OpenMP_MP(MPI_Comm comm,void *ctx)
+#define __FUNCT__ "PCDestroy_HMPI_MP"
+static PetscErrorCode PCDestroy_HMPI_MP(MPI_Comm comm,void *ctx)
 {
-  PC_OpenMP      *red = (PC_OpenMP*)ctx;
+  PC_HMPI      *red = (PC_HMPI*)ctx;
   PetscMPIInt    rank;
   PetscErrorCode ierr;
 
@@ -226,21 +226,21 @@ static PetscErrorCode PCDestroy_OpenMP_MP(MPI_Comm comm,void *ctx)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCDestroy_OpenMP"
-static PetscErrorCode PCDestroy_OpenMP(PC pc)
+#define __FUNCT__ "PCDestroy_HMPI"
+static PetscErrorCode PCDestroy_HMPI(PC pc)
 {
-  PC_OpenMP      *red = (PC_OpenMP*)pc->data;
+  PC_HMPI      *red = (PC_HMPI*)pc->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOpenMPRun(red->comm,PCDestroy_OpenMP_MP,red);CHKERRQ(ierr);
-  ierr = PetscOpenMPFree(red->comm,red);CHKERRQ(ierr);
+  ierr = PetscHMPIRun(red->comm,PCDestroy_HMPI_MP,red);CHKERRQ(ierr);
+  ierr = PetscHMPIFree(red->comm,red);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCSetFromOptions_OpenMP"
-static PetscErrorCode PCSetFromOptions_OpenMP(PC pc)
+#define __FUNCT__ "PCSetFromOptions_HMPI"
+static PetscErrorCode PCSetFromOptions_HMPI(PC pc)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
@@ -252,18 +252,18 @@ static PetscErrorCode PCSetFromOptions_OpenMP(PC pc)
      PCOPENMP - Runs a preconditioner for a single process matrix across several MPI processes
 
 $     This will usually be run with -pc_type openmp -ksp_type preonly
-$     solver options are set with -openmp_ksp_... and -openmp_pc_... for example
-$     -openmp_ksp_type cg would use cg as the Krylov method or -openmp_ksp_monitor or
-$     -openmp_pc_type hypre -openmp_pc_hypre_type boomeramg
+$     solver options are set with -hmpi_ksp_... and -hmpi_pc_... for example
+$     -hmpi_ksp_type cg would use cg as the Krylov method or -hmpi_ksp_monitor or
+$     -hmpi_pc_type hypre -hmpi_pc_hypre_type boomeramg
 
        Always run with -ksp_view (or -snes_view) to see what solver is actually being used.
 
-       Currently the solver options INSIDE the OpenMP preconditioner can ONLY be set via the
+       Currently the solver options INSIDE the HMPI preconditioner can ONLY be set via the
       options database.
 
    Level: intermediate
 
-   See PetscOpenMPMerge() and PetscOpenMPSpawn() for two ways to start up MPI for use with this preconditioner
+   See PetscHMPIMerge() and PetscHMPISpawn() for two ways to start up MPI for use with this preconditioner
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types)
 
@@ -271,27 +271,27 @@ M*/
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "PCCreate_OpenMP"
-PetscErrorCode  PCCreate_OpenMP(PC pc)
+#define __FUNCT__ "PCCreate_HMPI"
+PetscErrorCode  PCCreate_HMPI(PC pc)
 {
   PetscErrorCode ierr;
-  PC_OpenMP      *red;
+  PC_HMPI      *red;
   PetscMPIInt    size;
 
   PetscFunctionBegin;
   ierr      = MPI_Comm_size(((PetscObject)pc)->comm,&size);CHKERRQ(ierr);
-  if (size > 1) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_SIZ,"OpenMP preconditioner only works for sequential solves");
+  if (size > 1) SETERRQ(((PetscObject)pc)->comm,PETSC_ERR_ARG_SIZ,"HMPI preconditioner only works for sequential solves");
   /* caste the struct length to a PetscInt for easier MPI calls */
 
-  ierr      = PetscOpenMPMalloc(PETSC_COMM_LOCAL_WORLD,(PetscInt)sizeof(PC_OpenMP),(void**)&red);CHKERRQ(ierr);
+  ierr      = PetscHMPIMalloc(PETSC_COMM_LOCAL_WORLD,(PetscInt)sizeof(PC_HMPI),(void**)&red);CHKERRQ(ierr);
   red->comm = PETSC_COMM_LOCAL_WORLD;
   pc->data  = (void*) red;
 
-  pc->ops->apply          = PCApply_OpenMP;
-  pc->ops->destroy        = PCDestroy_OpenMP;
-  pc->ops->setfromoptions = PCSetFromOptions_OpenMP;
-  pc->ops->setup          = PCSetUp_OpenMP;
-  pc->ops->view           = PCView_OpenMP;
+  pc->ops->apply          = PCApply_HMPI;
+  pc->ops->destroy        = PCDestroy_HMPI;
+  pc->ops->setfromoptions = PCSetFromOptions_HMPI;
+  pc->ops->setup          = PCSetUp_HMPI;
+  pc->ops->view           = PCView_HMPI;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
