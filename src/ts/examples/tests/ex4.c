@@ -149,11 +149,6 @@ int main(int argc,char **argv)
   ierr = TSSetDuration(ts,time_steps,ftime_original);CHKERRQ(ierr);
   ierr = TSSetSolution(ts,global);CHKERRQ(ierr);
 
-  /* Test TSSetPostStep() */
-  ierr = PetscOptionsHasName(PETSC_NULL,"-test_PostStep",&flg);CHKERRQ(ierr);
-  if (flg){
-    ierr = TSSetPostStep(ts,PostStep);CHKERRQ(ierr);
-  }
 
   /* Pick up a Petsc preconditioner */
   /* one can always set method or preconditioner during the run time */
@@ -165,6 +160,12 @@ int main(int argc,char **argv)
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
   ierr = TSSetUp(ts);CHKERRQ(ierr);
   
+  /* Test TSSetPostStep() */
+  ierr = PetscOptionsHasName(PETSC_NULL,"-test_PostStep",&flg);CHKERRQ(ierr);
+  if (flg){
+    ierr = TSSetPostStep(ts,PostStep);CHKERRQ(ierr);
+  }
+
   ierr = PetscOptionsGetInt(PETSC_NULL,"-NOUT",&NOUT,PETSC_NULL);CHKERRQ(ierr);
   for (iout=1; iout<=NOUT; iout++){
     ierr = TSSetDuration(ts,time_steps,iout*ftime_original/NOUT);CHKERRQ(ierr);

@@ -351,6 +351,8 @@ static PetscErrorCode TSSetFromOptions_Pseudo(TS ts)
       ierr = TSPseudoIncrementDtFromInitialDt(ts);CHKERRQ(ierr);
     }
     ierr = PetscOptionsReal("-ts_pseudo_increment","Ratio to increase dt","TSPseudoSetTimeStepIncrement",pseudo->dt_increment,&pseudo->dt_increment,0);CHKERRQ(ierr);
+
+    ierr = SNESSetFromOptions(ts->snes);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -359,7 +361,10 @@ static PetscErrorCode TSSetFromOptions_Pseudo(TS ts)
 #define __FUNCT__ "TSView_Pseudo"
 static PetscErrorCode TSView_Pseudo(TS ts,PetscViewer viewer)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
+  ierr = SNESView(ts->snes,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

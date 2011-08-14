@@ -205,6 +205,7 @@ static PetscErrorCode TSSetFromOptions_Alpha(TS ts)
     ierr = PetscOptionsReal("-ts_alpha_adapt_max","maximum dt scale","",th->scale_max,&th->scale_max,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-ts_alpha_adapt_dt_min","minimum dt","",th->dt_min,&th->dt_min,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-ts_alpha_adapt_dt_max","maximum dt","",th->dt_max,&th->dt_max,PETSC_NULL);CHKERRQ(ierr);
+    ierr = SNESSetFromOptions(ts->snes);CHKERRQ(ierr);
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -223,6 +224,7 @@ static PetscErrorCode TSView_Alpha(TS ts,PetscViewer viewer)
   if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"  Alpha_m=%G, Alpha_f=%G, Gamma=%G\n",th->Alpha_m,th->Alpha_f,th->Gamma);CHKERRQ(ierr);
   }
+  ierr = SNESView(ts->snes,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -439,6 +439,9 @@ PetscErrorCode  DMGetBlockSize(DM dm,PetscInt *bs)
 
     Notes:  For DMDA objects this only works for "uniform refinement", that is the refined mesh was obtained DMRefine() or the coarse mesh was obtained by 
         DMCoarsen(). The coordinates set into the DMDA are completely ignored in computing the interpolation.
+
+        For DMDA objects you can use this interpolation (more precisely the interpolation from the DMDAGetCoordinateDA()) to interpolate the mesh coordinate vectors
+        EXCEPT in the periodic case where it does not make sense since the coordinate vectors are not periodic.
    
 
 .seealso DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetColoring(), DMGetMatrix(), DMRefine(), DMCoarsen()

@@ -158,6 +158,7 @@ static PetscErrorCode TSSetFromOptions_Theta(TS ts)
     ierr = PetscOptionsReal("-ts_theta_theta","Location of stage (0<Theta<=1)","TSThetaSetTheta",th->Theta,&th->Theta,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-ts_theta_extrapolate","Extrapolate stage solution from previous solution (sometimes unstable)","TSThetaSetExtrapolate",th->extrapolate,&th->extrapolate,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-ts_theta_endpoint","Use the endpoint instead of midpoint form of the Theta method","TSThetaSetEndpoint",th->endpoint,&th->endpoint,PETSC_NULL);CHKERRQ(ierr);
+    ierr = SNESSetFromOptions(ts->snes);CHKERRQ(ierr);
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -177,6 +178,7 @@ static PetscErrorCode TSView_Theta(TS ts,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"  Theta=%G\n",th->Theta);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Extrapolation=%s\n",th->extrapolate?"yes":"no");CHKERRQ(ierr);
   }
+  ierr = SNESView(ts->snes,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -383,7 +385,10 @@ PetscErrorCode TSThetaSetEndpoint(TS ts,PetscBool flg)
 #define __FUNCT__ "TSView_BEuler"
 static PetscErrorCode TSView_BEuler(TS ts,PetscViewer viewer)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
+  ierr = SNESView(ts->snes,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -414,7 +419,10 @@ EXTERN_C_END
 #define __FUNCT__ "TSView_CN"
 static PetscErrorCode TSView_CN(TS ts,PetscViewer viewer)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
+  ierr = SNESView(ts->snes,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

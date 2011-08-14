@@ -245,6 +245,7 @@ static PetscErrorCode TSSetFromOptions_SSP(TS ts)
       ierr = TSSSPSetType(ts,tname);CHKERRQ(ierr);
     }
     ierr = PetscOptionsInt("-ts_ssp_nstages","Number of stages","TSSSPSetNumStages",ssp->nstages,&ssp->nstages,PETSC_NULL);CHKERRQ(ierr);
+    ierr = SNESSetFromOptions(ts->snes);CHKERRQ(ierr);
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -254,7 +255,10 @@ static PetscErrorCode TSSetFromOptions_SSP(TS ts)
 #define __FUNCT__ "TSView_SSP"
 static PetscErrorCode TSView_SSP(TS ts,PetscViewer viewer)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
+  ierr = SNESView(ts->snes,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

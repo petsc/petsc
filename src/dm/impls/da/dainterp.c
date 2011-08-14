@@ -3,6 +3,11 @@
   Code for interpolating between grids represented by DMDAs
 */
 
+/*
+      For linear elements there are two branches of code to compute the interpolation. They should compute the same results but may not. The "new version" does 
+   not work for periodic domains, the old does. Change NEWVERSION to 1 to compile in the new version. Eventually when we are sure the two produce identical results
+   we will remove/merge the new version.
+*/
 #define NEWVERSION 0
 
 #include <private/daimpl.h>    /*I   "petscdmda.h"   I*/

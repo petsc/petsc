@@ -1117,6 +1117,7 @@ static PetscErrorCode TSSetFromOptions_GL(TS ts)
         ierr = TSGLSetAcceptType(ts,type);CHKERRQ(ierr);
       }
     }
+    ierr = SNESSetFromOptions(ts->snes);CHKERRQ(ierr);
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   {
@@ -1159,6 +1160,7 @@ static PetscErrorCode TSView_GL(TS ts,PetscViewer viewer)
     }
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   }
+  ierr = SNESView(ts->snes,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
