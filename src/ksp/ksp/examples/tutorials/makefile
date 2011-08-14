@@ -262,7 +262,11 @@ ex54: ex54.o chkopts
 
 ex55: ex55.o chkopts
 	-${CLINKER} -o ex55 ex55.o ${PETSC_KSP_LIB}
-#	${RM} ex55.o
+	${RM} ex55.o
+
+ex56: ex56.o chkopts
+	-${CLINKER} -o ex56 ex56.o ${PETSC_KSP_LIB}
+	${RM} ex56.o
 
 #----------------------------------------------------------------------------
 runex1:
@@ -995,7 +999,10 @@ runex54:
 #-log_summary -ksp_pc_side right -pc_gamg_type sa -pc_mg_type full -pc_gamg_type sa
 
 runex55:
-	-@${MPIEXEC} -n 4 ./ex55 -ne 215 -alpha 1.e-6 -ksp_monitor -ksp_rtol 1.e-12 -ksp_type gmres -ksp_max_it 50 -options_left -ksp_norm_type unpreconditioned -pc_mg_type full -pc_gamg_type sa 
+	-@${MPIEXEC} -n 4 ./ex55 -ne 40 -alpha 1.e-0 -ksp_monitor -ksp_rtol 1.e-12 -ksp_type cg -ksp_max_it 20 -options_left -ksp_norm_type unpreconditioned -pc_mg_type full -pc_gamg_type sa
+
+runex56:
+	-@${MPIEXEC} -n 4 ./ex56 -ne 10 -alpha 1.e-0 -ksp_monitor -ksp_rtol 1.e-12 -ksp_type cg -ksp_max_it 20 -options_left -ksp_norm_type unpreconditioned -pc_mg_type full -pc_gamg_type sa
 
 TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 \
                                  runex2_4 runex2_bjacobi runex2_bjacobi_2 runex2_bjacobi_3 runex2_specest_1 runex2_specest_2 ex2.rm \

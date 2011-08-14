@@ -1000,6 +1000,7 @@ PetscErrorCode createProlongation( const Mat a_Amat,
   const PetscInt *selected_idx, *idx,bs_in=*a_bs;
   const PetscScalar *vals;
   PetscScalar     v,vfilter=0.05;
+  MatInfo info;
 
   PetscFunctionBegin;
   *a_isOK = PETSC_TRUE;
@@ -1010,11 +1011,12 @@ PetscErrorCode createProlongation( const Mat a_Amat,
 
   ierr = PetscLogEventBegin(gamg_setup_stages[SET3],0,0,0,0);CHKERRQ(ierr);
   
-  /* get scalar copy (norms) of matrix -- how to size this??? */
+  /* get scalar copy (norms) of matrix */
+  ierr = MatGetInfo(a_Amat,MAT_LOCAL,&info); CHKERRQ(ierr);
+  kk = (PetscInt)info.nz_used/(nloc*bs_in*bs_in)+1;
   ierr = MatCreateMPIAIJ( wcomm, nloc, nloc,
                           PETSC_DETERMINE, PETSC_DETERMINE,
-                          40, PETSC_NULL, 20, PETSC_NULL,
-                          &Gmat );
+                          2*kk, PETSC_NULL, kk, PETSC_NULL, &Gmat );
   
   for (Ii=Istart; Ii<Iend; Ii++) {
     PetscInt dest_row = Ii/bs_in;
@@ -1054,7 +1056,9 @@ PetscErrorCode createProlongation( const Mat a_Amat,
   /* filter Gmat */
   {
     Mat Gmat2;
-    ierr = MatCreateMPIAIJ(wcomm,nloc,nloc,PETSC_DECIDE,PETSC_DECIDE,100,PETSC_NULL,40,PETSC_NULL,&Gmat2);
+    ierr = MatGetInfo(Gmat,MAT_LOCAL,&info); CHKERRQ(ierr);
+    kk = (PetscInt)info.nz_used/nloc+1;
+    ierr = MatCreateMPIAIJ(wcomm,nloc,nloc,PETSC_DECIDE,PETSC_DECIDE,2*kk,PETSC_NULL,kk,PETSC_NULL,&Gmat2);
     CHKERRQ(ierr);
     for (Ii=Istart; Ii<Iend; Ii++) {
       ierr = MatGetRow(Gmat,Ii,&ncols,&idx,&vals); CHKERRQ(ierr);
@@ -1162,7 +1166,7 @@ PetscErrorCode createProlongation( const Mat a_Amat,
   ierr = MatCreateMPIAIJ(wcomm, nloc*bs_in,
                          nLocalSelected*(a_useSA ? a_data_cols : bs_in),
                          PETSC_DETERMINE, PETSC_DETERMINE,
-                         a_data_cols, PETSC_NULL, a_data_cols/2+1, PETSC_NULL,
+                         a_data_cols, PETSC_NULL, a_data_cols, PETSC_NULL,
                          &Prol );
   CHKERRQ(ierr);
 
@@ -1240,9 +1244,12 @@ PetscErrorCode createProlongation( const Mat a_Amat,
       /* create blocked version for communication only */
       Mat tMat;
       PetscInt Ii,ncols; const PetscInt *idx; PetscScalar v = 1.0;
+
+      ierr = MatGetInfo(Gmat,MAT_LOCAL,&info); CHKERRQ(ierr);
+      kk = (PetscInt)info.nz_used*bs_in/nloc + 1;
       ierr = MatCreateMPIAIJ( wcomm, nloc*bs_in, nloc*bs_in,
                               PETSC_DETERMINE, PETSC_DETERMINE,
-                              40, PETSC_NULL, 20, PETSC_NULL,
+                              2*kk, PETSC_NULL, kk, PETSC_NULL,
                               &tMat );
       ierr = MatSetBlockSize( tMat, bs_in );      CHKERRQ(ierr);
       for ( Ii = Istart; Ii < Iend; Ii++ ) {

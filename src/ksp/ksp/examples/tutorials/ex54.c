@@ -102,8 +102,9 @@ int main(int argc,char **args)
         }
       }
       if( j>0 ) {
+        PetscScalar v = h*h;
         PetscInt jj = Ii;
-        ierr = VecSetValues(bb,1,&jj,(const PetscScalar*)DD2,INSERT_VALUES);      CHKERRQ(ierr);
+        ierr = VecSetValues(bb,1,&jj,&v,INSERT_VALUES);      CHKERRQ(ierr);
       }
     }
     ierr = MatAssemblyBegin(Amat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

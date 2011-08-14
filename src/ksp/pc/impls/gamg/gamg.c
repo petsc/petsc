@@ -215,11 +215,16 @@ PetscErrorCode partitionLevel( Mat a_Amat_fine,
       /* make a scalar matrix to partition */
       Mat tMat;
       PetscInt Ii,ncols; const PetscScalar *vals; const PetscInt *idx;
+      MatInfo info;
+      ierr = MatGetInfo(Cmat,MAT_LOCAL,&info); CHKERRQ(ierr);
+      ncols = (PetscInt)info.nz_used/(ncrs0*a_cbs*a_cbs)+1;
+      
       ierr = MatCreateMPIAIJ( wcomm, ncrs0, ncrs0,
                               PETSC_DETERMINE, PETSC_DETERMINE,
-                              25, PETSC_NULL, 10, PETSC_NULL,
+                              2*ncols, PETSC_NULL, ncols, PETSC_NULL,
                               &tMat );
-      
+      CHKERRQ(ierr);
+
       for ( Ii = Istart0; Ii < Iend0; Ii++ ) {
         PetscInt dest_row = Ii/a_cbs;
         ierr = MatGetRow(Cmat,Ii,&ncols,&idx,&vals); CHKERRQ(ierr);
