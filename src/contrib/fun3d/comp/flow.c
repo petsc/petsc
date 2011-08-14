@@ -1943,7 +1943,7 @@ int SetPetscDS(GRID *grid, TstepCtx *tsCtx)
        svertices[k++] = (bs*loc2pet[i] + j);
    /*ierr = MatSetLocalToGlobalMapping(grid->A,bs*nvertices,svertices);CHKERRQ(ierr);*/
    ierr = ISLocalToGlobalMappingCreate(MPI_COMM_SELF,bs*nvertices,svertices,PETSC_COPY_VALUES,&isl2g);CHKERRQ(ierr);
-   ierr = MatSetLocalToGlobalMapping(grid->A,isl2g);CHKERRQ(ierr);
+   ierr = MatSetLocalToGlobalMapping(grid->A,isl2g,isl2g);CHKERRQ(ierr);
    ierr = ISLocalToGlobalMappingDestroy(&isl2g);CHKERRQ(ierr);
 
 /* Now set the blockwise local to global mapping */
