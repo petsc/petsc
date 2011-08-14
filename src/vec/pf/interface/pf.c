@@ -104,7 +104,7 @@ PetscErrorCode  PFDestroy(PF *pf)
 
 .keywords: PF, create, context
 
-.seealso: PFSetUp(), PFApply(), PFDestroy(), PFApplyVec()
+.seealso: PFSet(), PFApply(), PFDestroy(), PFApplyVec()
 @*/
 PetscErrorCode  PFCreate(MPI_Comm comm,PetscInt dimin,PetscInt dimout,PF *pf)
 {
@@ -169,8 +169,11 @@ PetscErrorCode  PFApplyVec(PF pf,Vec x,Vec y)
     if (x == y) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_IDN,"x and y must be different vectors");
   } else {
     PetscScalar *xx;
+    PetscInt    lsize;
 
-    ierr = VecDuplicate(y,&x);CHKERRQ(ierr);
+    ierr = VecGetLocalSize(y,&lsize);CHKERRQ(ierr);
+    lsize = pf->dimin*lsize/pf->dimout;
+    ierr = VecCreateMPI(((PetscObject)y)->comm,lsize,PETSC_DETERMINE,&x);CHKERRQ(ierr);
     nox  = PETSC_TRUE;
     ierr = VecGetOwnershipRange(x,&rstart,&rend);CHKERRQ(ierr);
     ierr = VecGetArray(x,&xx);CHKERRQ(ierr);

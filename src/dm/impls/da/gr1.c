@@ -111,6 +111,9 @@ PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
   Vec               xcoor;
   DMDABoundaryType  bx;
   const PetscReal   *bounds;
+  PetscInt          *displayfields;
+  PetscInt          k,ndisplayfields;
+  PetscBool         flg;
 
   PetscFunctionBegin;
   ierr = PetscViewerDrawGetDraw(v,0,&draw);CHKERRQ(ierr);
@@ -152,8 +155,14 @@ PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
   ierr = MPI_Bcast(&xmin,1,MPIU_REAL,0,comm);CHKERRQ(ierr);
   ierr = MPI_Bcast(&xmax,1,MPIU_REAL,size-1,comm);CHKERRQ(ierr);
 
-  for (j=0; j<step; j++) {
-    ierr = PetscViewerDrawGetDraw(v,j,&draw);CHKERRQ(ierr);
+  ierr = PetscMalloc(step*sizeof(PetscInt),&displayfields);CHKERRQ(ierr);
+  for (i=0; i<step; i++) displayfields[i] = i;
+  ndisplayfields = step;
+  ierr = PetscOptionsGetIntArray(PETSC_NULL,"-draw_fields",displayfields,&ndisplayfields,&flg);CHKERRQ(ierr);
+  if (!flg) ndisplayfields = step;
+  for (k=0; k<ndisplayfields; k++) {
+    j = displayfields[k];
+    ierr = PetscViewerDrawGetDraw(v,k,&draw);CHKERRQ(ierr);
     ierr = PetscDrawCheckResizedWindow(draw);CHKERRQ(ierr);
 
     /*
@@ -182,7 +191,7 @@ PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
     ierr = MPI_Reduce(&max,&ymax,1,MPIU_REAL,MPIU_MAX,0,comm);CHKERRQ(ierr);
 
     ierr = PetscDrawSynchronizedClear(draw);CHKERRQ(ierr);
-    ierr = PetscViewerDrawGetDrawAxis(v,j,&axis);CHKERRQ(ierr);
+    ierr = PetscViewerDrawGetDrawAxis(v,k,&axis);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(draw,axis);CHKERRQ(ierr);
     if (!rank) {
       const char *title;
