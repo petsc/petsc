@@ -142,7 +142,7 @@ class CompilerOptions(config.base.Configure):
     flags = []
     if config.setCompilers.Configure.isGNU(compiler):
       if bopt == '':
-        flags.extend(['-Wall', '-Wno-unused-variable'])
+        flags.extend(['-Wall', '-Wno-unused-variable', '-Wno-unused-dummy-argument'])
         if config.setCompilers.Configure.isGfortran45x(compiler):
           flags.extend(['-Wno-line-truncation'])
       elif bopt == 'g':
