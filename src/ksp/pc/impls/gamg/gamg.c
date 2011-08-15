@@ -217,7 +217,7 @@ PetscErrorCode partitionLevel( Mat a_Amat_fine,
       PetscInt Ii,ncols; const PetscScalar *vals; const PetscInt *idx;
       MatInfo info;
       ierr = MatGetInfo(Cmat,MAT_LOCAL,&info); CHKERRQ(ierr);
-      ncols = (PetscInt)info.nz_used/(ncrs0*a_cbs*a_cbs)+1;
+      ncols = (PetscInt)info.nz_used/((ncrs0+1)*a_cbs*a_cbs)+1;
       
       ierr = MatCreateMPIAIJ( wcomm, ncrs0, ncrs0,
                               PETSC_DETERMINE, PETSC_DETERMINE,
