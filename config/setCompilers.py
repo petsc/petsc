@@ -134,6 +134,8 @@ class Configure(config.base.Configure):
                                          'gcc.gnu.org',
                                          'gcc version',
                                          'passed on to the various sub-processes invoked by gcc',
+                                         'passed on to the various sub-processes invoked by gfortran',
+                                         'passed on to the various sub-processes invoked by g++',
                                          ]])
               and not any([s in output for s in ['Intel(R)',
                                                  'Unrecognised option --help passed to ld', # NAG f95 compiler
