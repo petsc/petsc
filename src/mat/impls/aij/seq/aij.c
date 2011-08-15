@@ -1218,8 +1218,8 @@ extern PetscMPIInt PetscMaxThreads;
 extern PetscErrorCode (*MainJob)(void* (*pFunc)(void*),void**,PetscInt);
 
 #undef __FUNCT__
-#define __FUNCT__ "MatMult_SeqPThreadAIJ"
-PetscErrorCode MatMult_SeqPThreadAIJ(Mat A,Vec xx,Vec yy)
+#define __FUNCT__ "MatMult_SeqAIJPThread"
+PetscErrorCode MatMult_SeqAIJPThread(Mat A,Vec xx,Vec yy)
 {
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
   PetscScalar       *y;
@@ -3851,16 +3851,16 @@ EXTERN_C_END
 #if defined(PETSC_HAVE_PTHREADCLASSES)
 EXTERN_C_BEGIN
 #undef __FUNCT__
-#define __FUNCT__ "MatCreate_SeqPThreadAIJ"
-PetscErrorCode  MatCreate_SeqPThreadAIJ(Mat B)
+#define __FUNCT__ "MatCreate_SeqAIJPThread"
+PetscErrorCode  MatCreate_SeqAIJPThread(Mat B)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MatCreate_SeqAIJ(B);
   ierr = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
-  B->ops->mult = MatMult_SeqPThreadAIJ;
-  ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQPTHREADAIJ);CHKERRQ(ierr);
+  B->ops->mult = MatMult_SeqAIJPThread;
+  ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJPTHREAD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

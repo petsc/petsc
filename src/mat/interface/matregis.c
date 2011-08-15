@@ -10,7 +10,7 @@ extern PetscErrorCode  MatCreate_SeqAIJ(Mat);
 extern PetscErrorCode  MatCreate_MPIAIJ(Mat);
 
 #if defined(PETSC_HAVE_PTHREADCLASSES)
-extern PetscErrorCode  MatCreate_SeqPThreadAIJ(Mat);
+extern PetscErrorCode  MatCreate_SeqAIJPThread(Mat);
 #endif
 
 extern PetscErrorCode  MatCreate_SeqBAIJ(Mat);
@@ -98,7 +98,7 @@ PetscErrorCode  MatRegisterAll(const char path[])
   ierr = MatRegisterDynamic(MATMPIAIJ,         path,"MatCreate_MPIAIJ",      MatCreate_MPIAIJ);CHKERRQ(ierr);
   ierr = MatRegisterDynamic(MATSEQAIJ,         path,"MatCreate_SeqAIJ",      MatCreate_SeqAIJ);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_PTHREADCLASSES)
-  ierr = MatRegisterDynamic(MATSEQPTHREADAIJ,  path,"MatCreate_SeqPThreadAIJ",      MatCreate_SeqPThreadAIJ);CHKERRQ(ierr);
+  ierr = MatRegisterDynamic(MATSEQAIJPTHREAD,  path,"MatCreate_SeqAIJPThread",      MatCreate_SeqAIJPThread);CHKERRQ(ierr);
 #endif
 
   ierr = MatRegisterBaseName(MATAIJPERM,MATSEQAIJPERM,MATMPIAIJPERM);CHKERRQ(ierr);
