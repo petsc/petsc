@@ -189,6 +189,8 @@ class Configure(config.base.Configure):
     self.getExecutable('gzip', getFullPath=1, resultName = 'GZIP')
     if hasattr(self, 'GZIP'):
       self.addDefine('HAVE_GZIP', 1)
+    import sys
+    self.addMakeMacro('PYTHON',sys.executable)
     return
 
   def configure(self):
