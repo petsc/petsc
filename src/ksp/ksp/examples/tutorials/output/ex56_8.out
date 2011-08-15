@@ -1,0 +1,16 @@
+	[0]PCSetUp_GAMG level 0 N=5184, n data rows=3, n data cols=6, nloc=216, np=8
+		[0]PCSetUp_GAMG 1) N=414, bs=6, n data cols=6, 1 active pes
+	[0]PCSetUp_GAMG 2 levels
+  0 KSP Residual norm 3.289214668121e-01 
+  1 KSP Residual norm 1.079079299236e+00 
+  2 KSP Residual norm 3.811680391708e-01 
+  3 KSP Residual norm 1.755139422091e-01 
+  4 KSP Residual norm 2.846547736988e-02 
+  5 KSP Residual norm 8.677046754339e-03 
+  6 KSP Residual norm 4.812840617043e-03 
+  7 KSP Residual norm 1.342454173454e-03 
+  8 KSP Residual norm 3.775545822565e-04 
+  9 KSP Residual norm 8.344310361460e-05 
+ 10 KSP Residual norm 1.808217145941e-05 
+ 11 KSP Residual norm 4.474099409184e-06 
+ 12 KSP Residual norm 1.099188415122e-06 

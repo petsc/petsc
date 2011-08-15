@@ -995,14 +995,31 @@ runex53_2:
 	   ${RM} -f ex53.tmp
 
 runex54:
-	-@${MPIEXEC} -n 4 ./ex54 -ne 40 -alpha 1.e-0 -ksp_monitor -ksp_rtol 1.e-12 -ksp_type cg -pc_mg_type full -ksp_max_it 50 -options_left -ksp_norm_type unpreconditioned -pc_gamg_type sa
-#-log_summary -ksp_pc_side right -pc_gamg_type sa -pc_mg_type full -pc_gamg_type sa
+	-@${MPIEXEC} -n 4 ./ex54 -ne 40 -alpha 1.e-3 -ksp_monitor -ksp_type cg -ksp_norm_type unpreconditioned > ex54.tmp 2>&1;	  \
+         ${DIFF} output/ex54_4.out ex54.tmp || echo "Possible problem with ex54_4, diffs above"; \
+	   ${RM} -f ex54.tmp
+
+runex54_SA:
+	-@${MPIEXEC} -n 4 ./ex54 -ne 40 -alpha 1.e-3 -ksp_monitor -ksp_type cg -ksp_norm_type unpreconditioned -pc_gamg_type sa > ex54_sa.tmp 2>&1;	  \
+         ${DIFF} output/ex54_SA_4.out ex54_sa.tmp || echo "Possible problem with ex54_SA_4, diffs above"; \
+	   ${RM} -f ex54_sa.tmp
 
 runex55:
-	-@${MPIEXEC} -n 4 ./ex55 -ne 40 -alpha 1.e-0 -ksp_monitor -ksp_rtol 1.e-12 -ksp_type cg -ksp_max_it 30 -options_left -ksp_norm_type unpreconditioned -pc_mg_type full -pc_gamg_type sa
+	-@${MPIEXEC} -n 4 ./ex55 -ne 40 -alpha 1.e-3 -ksp_monitor -ksp_type cg -ksp_norm_type unpreconditioned  > ex55.tmp 2>&1;	  \
+         ${DIFF} output/ex55_4.out ex55.tmp || echo "Possible problem with ex55_4, diffs above"; \
+	   ${RM} -f ex55.tmp
+
+
+runex55_SA:
+	-@${MPIEXEC} -n 4 ./ex55 -ne 40 -alpha 1.e-3 -ksp_monitor -ksp_type cg -ksp_norm_type unpreconditioned -pc_gamg_type sa > ex55_sa.tmp 2>&1;	  \
+         ${DIFF} output/ex55_SA_4.out ex55_sa.tmp || echo "Possible problem with ex55_SA_4, diffs above"; \
+	   ${RM} -f ex55_sa.tmp
 
 runex56:
-	-@${MPIEXEC} -n 8 ./ex56 -ne 11 -alpha 1.e-0 -ksp_monitor -ksp_rtol 1.e-12 -ksp_type cg -ksp_max_it 30 -options_left -ksp_norm_type unpreconditioned -pc_mg_type full -pc_gamg_type sa
+	-@${MPIEXEC} -n 8 ./ex56 -ne 11 -alpha 1.e-3 -ksp_monitor -ksp_type cg -ksp_norm_type unpreconditioned -pc_gamg_type sa > ex56.tmp 2>&1;	  \
+         ${DIFF} output/ex56_8.out ex56.tmp || echo "Possible problem with ex56_8, diffs above"; \
+	   ${RM} -f ex56.tmp
+
 
 TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 \
                                  runex2_4 runex2_bjacobi runex2_bjacobi_2 runex2_bjacobi_3 runex2_specest_1 runex2_specest_2 ex2.rm \
