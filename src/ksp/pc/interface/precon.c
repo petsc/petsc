@@ -893,7 +893,7 @@ $     func (PC pc,PetscInt nsub,IS *row,IS *col,Mat *submat,void *ctx);
 
 .keywords: PC, set, modify, submatrices
 
-.seealso: PCModifySubMatrices()
+.seealso: PCModifySubMatrices(), PCASMGetSubMatrices()
 @*/
 PetscErrorCode  PCSetModifySubMatrices(PC pc,PetscErrorCode (*func)(PC,PetscInt,const IS[],const IS[],Mat[],void*),void *ctx)
 {
