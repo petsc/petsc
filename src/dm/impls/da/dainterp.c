@@ -6,7 +6,8 @@
 /*
       For linear elements there are two branches of code to compute the interpolation. They should compute the same results but may not. The "new version" does 
    not work for periodic domains, the old does. Change NEWVERSION to 1 to compile in the new version. Eventually when we are sure the two produce identical results
-   we will remove/merge the new version.
+   we will remove/merge the new version. Based on current tests, these both produce the same results. We are leaving NEWVERSION for now in the code since some 
+   consider it cleaner, but old version is turned on since it handles periodic case.
 */
 #define NEWVERSION 0
 
@@ -815,7 +816,7 @@ PetscErrorCode DMGetInterpolation_DA_3D_Q1(DM dac,DM daf,Mat *A)
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
   
   /* loop over local fine grid nodes setting interpolation for those*/
-  if (NEWVERSION) {
+  if (!NEWVERSION) {
 
     for (l=l_start; l<l_start+p_f; l++) {
       for (j=j_start; j<j_start+n_f; j++) {
