@@ -35,6 +35,7 @@ E*/
 #define MATAIJ             "aij"
 #define MATSEQAIJ          "seqaij"
 #define MATSEQAIJPTHREAD   "seqaijpthread"
+#define MATAIJPTHREAD      "aijpthread"
 #define MATMPIAIJ          "mpiaij"
 #define MATAIJCRL          "aijcrl"
 #define MATSEQAIJCRL       "seqaijcrl"

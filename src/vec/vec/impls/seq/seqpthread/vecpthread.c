@@ -1531,3 +1531,20 @@ PetscErrorCode  VecCreate_SeqPThread(Vec V)
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "VecCreate_PThread"
+PetscErrorCode  VecCreate_PThread(Vec v)
+{
+  PetscErrorCode ierr;
+  PetscMPIInt    size;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_size(((PetscObject)v)->comm,&size);CHKERRQ(ierr);
+  if (size == 1) {
+    ierr = VecSetType(v,VECSEQPTHREAD);CHKERRQ(ierr);
+  } else SETERRQ(((PetscObject)v)->comm,PETSC_ERR_SUP,"No parallel thread vector yet");
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END

@@ -1,0 +1,101 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html;
+      charset=ISO-8859-1">
+    <title>PETSc:&nbsp; Features:&nbsp; Component Details</title>
+  </head>
+  <body bgcolor="#d5eaff">
+    <table border="0" width="100%">
+      <tbody>
+        <tr>
+          <td valign="top" width="25%">
+            <h1><font color="#ff0000" size="7">PETSc</font></h1>
+            <ul>
+              <li><a href="../index.html"><strong>Home</strong></a></li>
+            </ul>
+          </td>
+          <td width="75%">
+            <h1>Features:&nbsp; Thread support<br>
+            </h1>
+          </td>
+        </tr>
+        <tr>
+          <td colspan="2" width="100%">
+            <hr color="#ff5b5b" size="4"> </td>
+        </tr>
+        <tr>
+          <td valign="top" width="25%">
+            <ul>
+              <li><a href="../download/index.html"><strong>Download</strong></a></li>
+              <li><a href="index.html"><strong>Features</strong></a>
+                <ul>
+                  <li><strong><a href="details.html"><strong>Component
+                          Details</strong></a></strong><font
+                      color="#ff0000"><strong> <br>
+                      </strong></font></li>
+                  <li><a href="diagram.html"><strong>Diagram</strong></a></li>
+                  <li><a href="gpus.html">GPUs</a></li>
+                  <li><font color="#ff0000"><strong>Threads<br>
+                      </strong></font></li>
+                </ul>
+              </li>
+              <li><a href="../documentation/index.html"><strong>Documentation</strong></a></li>
+              <li><strong><a href="../publications/index.html">Applications/Publications</a></strong></li>
+              <li><a href="../miscellaneous/index.html"><strong>Miscellaneous</strong></a></li>
+              <li><a href="../miscellaneous/external.html"><strong>External
+                    Software</strong></a></li>
+              <li><a href="../developers/index.html"><strong>Developers
+                    Site</strong></a></li>
+            </ul>
+          </td>
+          <td valign="top" width="75%">PETSc algebraic solvers can now
+            use pthreads on Vec and Mat operations. This sometimes
+            provides an alternative to the all MPI approach.<br>
+            <br>
+            Thread usage in PETSc is currently only available in <a
+              href="../developers/index.html">petsc-dev,</a> it will be
+            available in
+            the 3.2 release.<br>
+            <ul>
+              <li><a
+href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-dev/docs/installation.html#pthreads">Installing
+PETSc
+to
+use
+                  the pthreads<br>
+                </a></li>
+              <li>Quick summary of usage</li>
+              <ul>
+                <li>The VecType VECSEQPTHREAD or VECPTHREAD maybe used
+                  with VecSetType() or -vec_type seqpthread or pthread
+                  when
+                  VecSetFromOptions() is used.<br>
+                </li>
+                <li>The MatType MATSEQAIJPTHREAD,&nbsp; MATPTHREAD
+                  maybe used with MatSetType or -mat_type
+                  seqaijpthread&nbsp; or
+                  aijpthread when MatSetOptions() is used.<br>
+                </li>
+                <li>If you are creating the vectors and matrices with a
+                  DM
+                  you can use -da_vec_type pthread and -da_mat_type
+                  pthread</li>
+                <li>It is useful to develop your code with the default
+                  vectors and matrices and then run production runs with
+                  the command line options to
+                  use the pthread classes.</li>
+              </ul>
+              <li>We could use your help in further developing PETSc
+                with threads, <a href="../developers/index.html">petsc-dev</a>.</li>
+            </ul>
+          </td>
+        </tr>
+        <tr>
+          <td colspan="2" width="100%">
+            <hr color="#ff5b5b" size="4"> </td>
+        </tr>
+      </tbody>
+    </table>
+  </body>
+</html>

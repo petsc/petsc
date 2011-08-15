@@ -106,6 +106,7 @@ E*/
 #define VECCUSP        "cusp"       /* seqcusp on one process and mpicusp on several */
 #define VECNEST        "nest"
 #define VECSEQPTHREAD  "seqpthread"
+#define VECPTHREAD     "pthread"    /* seqpthread on one process and mpipthread on several */
 
 /* Logging support */
 #define    VEC_FILE_CLASSID 1211214
