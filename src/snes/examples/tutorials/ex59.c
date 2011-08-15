@@ -14,8 +14,6 @@ static char help[] = "Tries to solve u`` + u^{2} = f for an easy case and an imp
 
 #include <petscsnes.h>
 
-int dirichlet_at1 = PETSC_TRUE;
-int proper_scaling = PETSC_TRUE;
 int second_order = PETSC_FALSE;
 #define X0DOT -2 /* -2 */
 #define X1 5 /* 5 */
@@ -167,7 +165,7 @@ int main(int argc,char **argv)
  */
 PetscErrorCode FormFunction(SNES snes,Vec x,Vec f,void *dummy)
 {
-  PetscScalar    *xx,*ff,*FF,d,d2,g;
+  PetscScalar    *xx,*ff,*FF,d,d2;
   PetscErrorCode ierr;
   PetscInt       i,n;
 
@@ -176,28 +174,19 @@ PetscErrorCode FormFunction(SNES snes,Vec x,Vec f,void *dummy)
   ierr = VecGetArray((Vec)dummy,&FF);CHKERRQ(ierr);
   ierr = VecGetSize(x,&n);CHKERRQ(ierr);
   d = (PetscReal)(n - 1); d2 = d*d;
-  if (proper_scaling)
-    g = d;
-  else
-    g = 1.0;
-  
-  //  ff[0]   = 1 + xx[0]*xx[0];   //////THIS SHOWS in what manner SNES FAILS WHEN GIVEN UNSOLVABLE PROBLEM: WILL TELL YOU "line search failure"
-  //  ff[0]   = xx[0]*xx[0];
+
   if (second_order)
     {
-      ff[0] = g*(0.5*d*(-xx[2] + 4*xx[1] - 3*xx[0]) - X0DOT);
+      ff[0] = d*(0.5*d*(-xx[2] + 4*xx[1] - 3*xx[0]) - X0DOT);
     }
   else
-    ff[0] = g*(d*(xx[1] - xx[0]) - X0DOT);  // x'(0) = X0DOT
+    ff[0] = d*(d*(xx[1] - xx[0]) - X0DOT);  // x'(0) = X0DOT
 
 
   for (i=1; i<n-1; i++) {
     ff[i] = d2*(xx[i-1] - 2.0*xx[i] + xx[i+1]) + xx[i]*xx[i] - FF[i];
   }
-  if (dirichlet_at1)
-    ff[n-1] = g*g*(xx[n-1] - X1);
-  else
-    ff[n-1] = g*(d*(xx[n-1] - xx[n-2]) - X1DOT);  // x'(1)=X1DOT
+  ff[n-1] = d*d*(xx[n-1] - X1);
   ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
   ierr = VecRestoreArray(f,&ff);CHKERRQ(ierr);
   ierr = VecRestoreArray((Vec)dummy,&FF);CHKERRQ(ierr);
@@ -222,71 +211,46 @@ PetscErrorCode FormFunction(SNES snes,Vec x,Vec f,void *dummy)
 */
 PetscErrorCode FormJacobian(SNES snes,Vec x,Mat *jac,Mat *prejac,MatStructure *flag,void *dummy)
 {
-  PetscScalar    *xx,A[3],d,d2,g;
+  PetscScalar    *xx,A[3],d,d2;
   PetscInt       i,n,j[3];
   PetscErrorCode ierr;
-  PetscBool     nouse_jac;
 
   ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
   ierr = VecGetSize(x,&n);CHKERRQ(ierr);
   d = (PetscReal)(n - 1); d2 = d*d;
-  if (proper_scaling)
-    g = d;
-  else
-    g = 1.0;
 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-snes_mf_operator", &nouse_jac);CHKERRQ(ierr);
-  //  nouse_jac = (PetscBool)0;
 
-  /* Form Jacobian.  Also form a different preconditioning matrix that 
+  /* Form Jacobian.  Also form a different preconditionind matrix that 
      has only the diagonal elements. */
   i = 0; 
   //A[0] = 1.0; 
   A[0] = xx[0]; 
-  if (! nouse_jac)
-    {
+
       if (second_order)
 	{
-	  //	  ff[0] = g*(0.5*d*(-xx[2] + 4*xx[1] - 3*xx[0]));
+	  //	  ff[0] = d*(0.5*d*(-xx[2] + 4*xx[1] - 3*xx[0]));
 	  j[0] = 0; j[1] = 1; j[2] = 2;
-	  A[0] = -3*d*g*0.5; A[1] = 4*d*g*0.5;  A[2] = -1*d*g*0.5;   
+	  A[0] = -3*d*d*0.5; A[1] = 4*d*d*0.5;  A[2] = -1*d*d*0.5;   
 	  ierr = MatSetValues(*jac,1,&i,3,j,A,INSERT_VALUES);CHKERRQ(ierr);
 	}
       else
 	{
 	  j[0] = 0; j[1] = 1;
-	  A[0] = -d*g; A[1] = d*g;        // from x'(0) ~ (x[1] - x[0])/h          
+	  A[0] = -d*d; A[1] = d*d;        // from x'(0) ~ (x[1] - x[0])/h          
 	  ierr = MatSetValues(*jac,1,&i,2,j,A,INSERT_VALUES);CHKERRQ(ierr);
 	}
       //      ierr = MatSetValues(*jac,1,&i,1,&i,&A[0],INSERT_VALUES);CHKERRQ(ierr);
-    }
-  ierr = MatSetValues(*prejac,1,&i,1,&i,&A[0],INSERT_VALUES);CHKERRQ(ierr);
   for (i=1; i<n-1; i++) 
     {
       j[0] = i - 1; j[1] = i;                   j[2] = i + 1; 
       A[0] = d2;     A[1] = -2.0*d2 + 2.0*xx[i];  A[2] = d2; 
       //        A[0] = 0;     A[1] = -2.0*d + 2.0*xx[i];  A[2] = 0; 
-      if (! nouse_jac)
 	ierr = MatSetValues(*jac,1,&i,3,j,A,INSERT_VALUES);CHKERRQ(ierr);
-      /// ierr = MatSetValues(*prejac,1,&i,1,&i,&A[1],INSERT_VALUES);CHKERRQ(ierr);
     }
 
   i = n-1; 
-  if (dirichlet_at1)
-    {
-      A[0] = g*g; 
-      if (! nouse_jac)
+      A[0] = d*d; 
 	ierr = MatSetValues(*jac,1,&i,1,&i,&A[0],INSERT_VALUES);CHKERRQ(ierr);
-      //ierr = MatSetValues(*prejac,1,&i,1,&i,&A[0],INSERT_VALUES);CHKERRQ(ierr);
-    }
-  else
-    {
-      j[0] = n-2;
-      j[1] = n-1;
-      A[0] = -d*g; A[1] = d*g;        // from x'(1) ~ (x[n-1] - x[n-2])/h          
-      if (! nouse_jac)
-	ierr = MatSetValues(*jac,1,&i,2,j,A,INSERT_VALUES);CHKERRQ(ierr);
-    }
 
   ierr = MatAssemblyBegin(*jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(*prejac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
