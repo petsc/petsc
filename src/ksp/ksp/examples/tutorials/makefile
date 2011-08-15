@@ -996,28 +996,28 @@ runex53_2:
 
 runex54:
 	-@${MPIEXEC} -n 4 ./ex54 -ne 40 -alpha 1.e-3 -ksp_monitor -ksp_type cg -ksp_norm_type unpreconditioned > ex54.tmp 2>&1;	  \
-         ${DIFF} output/ex54_4.out ex54.tmp || echo "Possible problem with ex54_4, diffs above"; \
+         ${DIFF} output/ex54_0.out ex54.tmp || echo "Possible problem with ex54_0, diffs above"; \
 	   ${RM} -f ex54.tmp
 
 runex54_SA:
 	-@${MPIEXEC} -n 4 ./ex54 -ne 40 -alpha 1.e-3 -ksp_monitor -ksp_type cg -ksp_norm_type unpreconditioned -pc_gamg_type sa > ex54_sa.tmp 2>&1;	  \
-         ${DIFF} output/ex54_SA_4.out ex54_sa.tmp || echo "Possible problem with ex54_SA_4, diffs above"; \
+         ${DIFF} output/ex54_1.out ex54_sa.tmp || echo "Possible problem with ex54_1, diffs above"; \
 	   ${RM} -f ex54_sa.tmp
 
 runex55:
 	-@${MPIEXEC} -n 4 ./ex55 -ne 40 -alpha 1.e-3 -ksp_monitor -ksp_type cg -ksp_norm_type unpreconditioned  > ex55.tmp 2>&1;	  \
-         ${DIFF} output/ex55_4.out ex55.tmp || echo "Possible problem with ex55_4, diffs above"; \
+         ${DIFF} output/ex55_0.out ex55.tmp || echo "Possible problem with ex55_0, diffs above"; \
 	   ${RM} -f ex55.tmp
 
 
 runex55_SA:
 	-@${MPIEXEC} -n 4 ./ex55 -ne 40 -alpha 1.e-3 -ksp_monitor -ksp_type cg -ksp_norm_type unpreconditioned -pc_gamg_type sa > ex55_sa.tmp 2>&1;	  \
-         ${DIFF} output/ex55_SA_4.out ex55_sa.tmp || echo "Possible problem with ex55_SA_4, diffs above"; \
+         ${DIFF} output/ex55_1.out ex55_sa.tmp || echo "Possible problem with ex55_1, diffs above"; \
 	   ${RM} -f ex55_sa.tmp
 
 runex56:
 	-@${MPIEXEC} -n 8 ./ex56 -ne 11 -alpha 1.e-3 -ksp_monitor -ksp_type cg -ksp_norm_type unpreconditioned -pc_gamg_type sa > ex56.tmp 2>&1;	  \
-         ${DIFF} output/ex56_8.out ex56.tmp || echo "Possible problem with ex56_8, diffs above"; \
+         ${DIFF} output/ex56_0.out ex56.tmp || echo "Possible problem with ex56_0, diffs above"; \
 	   ${RM} -f ex56.tmp
 
 
