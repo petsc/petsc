@@ -66,10 +66,10 @@ iter = 32, Function value 2384.48, Residual: 0.000006
   2384.47714	     0.00001
 TaoSolver Object:
   type: tao_pounders
-  convergence tolerances: fatol=0, frtol=0
-  convergence tolerances: gatol=1e-08, steptol=0, gttol=0
+  convergence tolerances: fatol=0,   frtol=0
+  convergence tolerances: gatol=1e-08,   steptol=0,   gttol=0
   Residual in Function/Gradient:=6.060854e-06
   Objective value=2.384477e+03
-  total number of iterations=32,                        (max: 2000)
-  total number of function evaluations=36,                max: 4000
-  Solution found:  Atol -- F < F_minabs
+  total number of iterations=32,                          (max: 2000)
+  total number of function evaluations=36,                  max: 4000
+  Solution found:    Atol -- F < F_minabs

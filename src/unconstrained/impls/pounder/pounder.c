@@ -542,7 +542,10 @@ static PetscErrorCode TaoSolverView_POUNDER(TaoSolver tao, PetscViewer viewer)
   PetscErrorCode ierr;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  points in model: %d\n",mfqP->nmodelpoints); 
+    ierr = PetscViewerASCIIPushTab(viewer); CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"points in model: %d\n",mfqP->nmodelpoints); 
+    ierr = PetscViewerASCIIPopTab(viewer); CHKERRQ(ierr);
+
   } else {
     SETERRQ1(((PetscObject)tao)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for TAO POUNDER",((PetscObject)viewer)->type_name);
   }    

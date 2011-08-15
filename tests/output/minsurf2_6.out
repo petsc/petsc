@@ -21,12 +21,12 @@ iter = 12, Function value 1.41388, Residual: 0.000219
 iter = 13, Function value 1.41388, Residual: < 1.0e-6 
 TaoSolver Object:
   type: tao_ntr
-    Rejected matrix updates: 0
-  convergence tolerances: fatol=1e-10, frtol=1e-10
-  convergence tolerances: gatol=1e-08, steptol=0, gttol=0
+      Rejected matrix updates: 0
+  convergence tolerances: fatol=1e-10,   frtol=1e-10
+  convergence tolerances: gatol=1e-08,   steptol=0,   gttol=0
   Residual in Function/Gradient:=1.770032e-07
   Objective value=1.413883e+00
-  total number of iterations=13,                        (max: 50)
-  total number of function/gradient evaluations=35,    (max: 4000)
+  total number of iterations=13,                          (max: 50)
+  total number of function/gradient evaluations=35,      (max: 4000)
   total number of Hessian evaluations=14
-  Solution found:  Atol -- F < F_minabs
+  Solution found:    Atol -- F < F_minabs

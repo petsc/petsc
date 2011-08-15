@@ -88,10 +88,12 @@ static PetscErrorCode TaoSolverView_GPCG(TaoSolver tao, PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {
-    ierr = PetscViewerASCIIPrintf(viewer," Total PG its: %d,",gpcg->total_gp_its);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer," PG tolerance: %4.3f \n",gpcg->pg_ftol);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer," KSP type: %s\n",GPCG_KSP[gpcg->ksp_type]); CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer," Subset type: %s\n", TAOSUBSET[gpcg->subset_type]); CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPushTab(viewer); CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"Total PG its: %d,",gpcg->total_gp_its);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"PG tolerance: %4.3f \n",gpcg->pg_ftol);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"KSP type: %s\n",GPCG_KSP[gpcg->ksp_type]); CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"Subset type: %s\n", TAOSUBSET[gpcg->subset_type]); CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPopTab(viewer); CHKERRQ(ierr);
   } else {
     SETERRQ1(((PetscObject)tao)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for TAO GPCG",((PetscObject)viewer)->type_name);
   }

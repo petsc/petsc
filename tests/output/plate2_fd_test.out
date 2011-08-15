@@ -17,11 +17,11 @@ ratio ||fd-hc||/||hc|| = 2.02333e-08, difference ||fd-hc|| = 7.78228e-07
 ratio ||fd-hc||/||hc|| = 2.02333e-08, difference ||fd-hc|| = 7.78228e-07
 TaoSolver Object:
   type: tao_fd_test
-  convergence tolerances: fatol=0.0001, frtol=0.0001
-  convergence tolerances: gatol=1e-08, steptol=0, gttol=0
+  convergence tolerances: fatol=0.0001,   frtol=0.0001
+  convergence tolerances: gatol=1e-08,   steptol=0,   gttol=0
   Residual in Function/Gradient:=0.000000e+00
   Objective value=0.000000e+00
-  total number of iterations=0,                        (max: 2000)
-  total number of function/gradient evaluations=612,    (max: 4000)
+  total number of iterations=0,                          (max: 2000)
+  total number of function/gradient evaluations=612,      (max: 4000)
   total number of Hessian evaluations=3
-  Solution found:  User Terminated
+  Solution found:    User Terminated

@@ -9,23 +9,24 @@ iter = 2, Function value 1.41847, Residual: 0.000149
 iter = 3, Function value 1.41847, Residual: < 1.0e-6 
 TaoSolver Object:
   type: tao_nls
-    Rejected matrix updates: 0
-    Newton steps: 3
-    BFGS steps: 0
-    Scaled gradient steps: 0
-    Gradient steps: 0
-    nls ksp atol: 0
-    nls ksp rtol: 3
-    nls ksp ctol: 0
-    nls ksp negc: 0
-    nls ksp dtol: 0
-    nls ksp iter: 0
-    nls ksp othr: 0
-  convergence tolerances: fatol=1e-10, frtol=1e-10
-  convergence tolerances: gatol=1e-08, steptol=0, gttol=0
+      Rejected matrix updates: 0
+      Newton steps: 3
+      BFGS steps: 0
+      Scaled gradient steps: 0
+      Gradient steps: 0
+      nls ksp atol: 0
+      nls ksp rtol: 3
+      nls ksp ctol: 0
+      nls ksp negc: 0
+      nls ksp dtol: 0
+      nls ksp iter: 0
+      nls ksp othr: 0
+  Line Search   type: more-thuente
+  convergence tolerances: fatol=1e-10,   frtol=1e-10
+  convergence tolerances: gatol=1e-08,   steptol=0,   gttol=0
   Residual in Function/Gradient:=2.646849e-08
   Objective value=1.418469e+00
-  total number of iterations=3,                        (max: 50)
-  total number of function/gradient evaluations=10,    (max: 4000)
+  total number of iterations=3,                          (max: 50)
+  total number of function/gradient evaluations=10,      (max: 4000)
   total number of Hessian evaluations=4
-  Solution found:  Atol -- F < F_minabs
+  Solution found:    Atol -- F < F_minabs

@@ -99,6 +99,6 @@ iter = 97, Function value -0.434409, Residual: < 1.0e-11
 iter = 98, Function value -0.434409, Residual: < 1.0e-11 
 iter = 99, Function value -0.434409, Residual: < 1.0e-11 
 iter = 100, TAO did not terminate successfully
- Function value -0.434409, TAO did not terminate successfully
- Residual: < 1.0e-11 
+ TAO did not terminate successfully
+ Function value -0.434409, Residual: < 1.0e-11 
  TAO did not terminate successfully
