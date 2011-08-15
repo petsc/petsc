@@ -14,7 +14,7 @@ int main(int argc,char **args)
 {
   Mat            Amat,Pmat;
   PetscErrorCode ierr;
-  PetscInt       i,m,nn,M,its,Istart,Iend,j,k,Ii,ix,ne=4;
+  PetscInt       m,nn,M,its,Istart,Iend,i,j,k,ii,jj,kk,ic,ne=4,NP,Ni0,Nj0,Nk0,Ni1,Nj1,Nk1,ipx,ipy,ipz,id;
   PetscReal      x,y,z,h;
   Vec            xx,bb;
   KSP            ksp;
@@ -32,6 +32,7 @@ int main(int argc,char **args)
   wcomm = PETSC_COMM_WORLD;
   ierr = MPI_Comm_rank( wcomm, &mype );   CHKERRQ(ierr);
   ierr = MPI_Comm_size( wcomm, &npe );    CHKERRQ(ierr);
+  
   ierr = PetscOptionsGetInt(PETSC_NULL,"-ne",&ne,PETSC_NULL); CHKERRQ(ierr);
   h = 1./ne; nn = ne+1;
   /* ne*ne; number of global elements */
@@ -40,9 +41,10 @@ int main(int argc,char **args)
   m = nn*nn*nn/npe;
   if(mype==npe-1) m = nn*nn*nn - (npe-1)*m;
   m *= 3; /* number of equeations local*/
+
   /* create stiffness matrix */
-  ierr = MatCreateMPIAIJ(wcomm,m,m,M,M,81,PETSC_NULL,47,PETSC_NULL,&Amat);CHKERRQ(ierr);
-  ierr = MatCreateMPIAIJ(wcomm,m,m,M,M,81,PETSC_NULL,47,PETSC_NULL,&Pmat);CHKERRQ(ierr);
+  ierr = MatCreateMPIAIJ(wcomm,m,m,M,M,81,PETSC_NULL,57,PETSC_NULL,&Amat);CHKERRQ(ierr);
+  ierr = MatCreateMPIAIJ(wcomm,m,m,M,M,81,PETSC_NULL,57,PETSC_NULL,&Pmat);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(Amat,&Istart,&Iend);CHKERRQ(ierr);
   ierr = MatSetBlockSize(Amat,3);      CHKERRQ(ierr);
   ierr = MatSetBlockSize(Pmat,3);      CHKERRQ(ierr);
@@ -76,39 +78,88 @@ int main(int argc,char **args)
           else DD2[i][j] = 0.0;
         else DD2[i][j] = DD1[i][j];
   }
+
+  NP = (PetscInt)(pow((double)npe,1./3.) + .5);
+  if(npe!=NP*NP*NP)SETERRQ1(wcomm,PETSC_ERR_ARG_WRONG, "npe=%d: npe^{1/3} must be integer",npe);
+  if(nn!=NP*(nn/NP))SETERRQ1(wcomm,PETSC_ERR_ARG_WRONG, "-ne %d: (ne+1)%(npe^{1/3}) must equal zero",ne);
+  ipx = mype%NP; 
+  ipy = (mype%(NP*NP))/NP; 
+  ipz = mype/(NP*NP);
+  Ni0 = ipx*(nn/NP);
+  Nj0 = ipy*(nn/NP);
+  Nk0 = ipz*(nn/NP);
+  Ni1 = Ni0 + (nn/NP);
+  Nj1 = Nj0 + (nn/NP);
+  Nk1 = Nk0 + (nn/NP);
+  
   {
     PetscReal coords[3*m];
+    PetscInt NN = nn/NP, id0 = ipz*nn*nn*NN;
+    id0 += ipy*nn*NN*NN;
+    id0 += ipx*NN*NN*NN;
+    PetscPrintf(PETSC_COMM_SELF,"\t[%d]%s id0=%d (%d %d %d)\n",mype,__FUNCT__,id0,ipx,ipy,ipz);
     /* forms the element stiffness for the Laplacian and coordinates */
-    for (Ii = Istart/3, ix = 0; Ii < Iend/3; Ii++, ix++ ) {
-      i = Ii%nn; j = Ii%(nn*nn)/nn; k = Ii/(nn*nn);
-      /* coords */
-      x = h*i; y = h*j; z = h*k;
-      coords[3*ix] = x; coords[3*ix+1] = y; coords[3*ix+2] = z;
-      if( i<ne && j<ne && k<ne) {
-        PetscInt jj,ii,idx[8] = {Ii, Ii+1, Ii+nn+1, Ii+nn, 
-                                 Ii+nn*nn, Ii+1+nn*nn, 
-                                 Ii+nn+1+nn*nn, Ii+nn+nn*nn };
-        /* radius */
-        PetscReal radius = PetscSqrtScalar((x-.5+h/2)*(x-.5+h/2)+(y-.5+h/2)*(y-.5+h/2)+(z-.5+h/2)*(z-.5+h/2));
-        PetscReal alpha = 1.0;
-        if( radius < 0.25 ){
-          alpha = soft_alpha;
-        }
-        for(ii=0;ii<24;ii++)for(jj=0;jj<24;jj++) DD[ii][jj] = alpha*DD1[ii][jj];
-        ierr = MatSetValuesBlocked(Pmat,8,idx,8,idx,(const PetscScalar*)DD,ADD_VALUES);CHKERRQ(ierr);
-        if( k>0 ) {
-          ierr = MatSetValuesBlocked(Amat,8,idx,8,idx,(const PetscScalar*)DD,ADD_VALUES);CHKERRQ(ierr);
-        }
-        else {
-          /* a BC */
-          for(ii=0;ii<24;ii++)for(jj=0;jj<24;jj++) DD[ii][jj] = alpha*DD2[ii][jj];
-          ierr = MatSetValuesBlocked(Amat,8,idx,8,idx,(const PetscScalar*)DD,ADD_VALUES);CHKERRQ(ierr);
-        }
-      }
-      if( k>0 ) {
-        PetscScalar v = h*h;
-        PetscInt jj = 3*Ii; /* load in x direction */
-        ierr = VecSetValues(bb,1,&jj,&v,INSERT_VALUES);      CHKERRQ(ierr);
+    /* for (Ii = Istart/3, ic = 0; Ii < Iend/3; Ii++, ic++ ) { */
+    /*       i = Ii%nn; j = Ii%(nn*nn)/nn; k = Ii/(nn*nn); */
+    for(i=Ni0,ic=0,ii=0;i<Ni1;i++,ii++){
+      for(j=Nj0,jj=0;j<Nj1;j++,jj++){
+	for(k=Nk0,kk=0;k<Nk1;k++,kk++,ic++){
+	  /* coords */
+	  x = coords[3*ic] = h*(PetscReal)i; 
+	  y = coords[3*ic+1] = h*(PetscReal)j; 
+	  z = coords[3*ic+2] = h*(PetscReal)k;
+	  /* matrix */
+	  id = id0 + ii + NN*jj + NN*NN*kk; 
+	  PetscPrintf(PETSC_COMM_SELF,"\t\t[%d]%s id=%d\n",mype,__FUNCT__,id);
+	  if( i<ne && j<ne && k<ne) {
+	    /* radius */
+	    PetscReal radius = PetscSqrtScalar((x-.5+h/2)*(x-.5+h/2)+(y-.5+h/2)*(y-.5+h/2)+
+					       (z-.5+h/2)*(z-.5+h/2));
+	    PetscReal alpha = 1.0;
+	    PetscInt jx,ix,idx[8] = { id, id+1, id+NN+1, id+NN, 
+				      id        + NN*NN, id+1    + NN*NN, 
+				      id+NN+1 + NN*NN, id+NN + NN*NN };
+	    /* correct indices */
+	    if(i==Ni1-1 && Ni1!=nn){
+	      idx[1] += NN*(NN*NN-1);
+	      idx[2] += NN*(NN*NN-1);
+	      idx[5] += NN*(NN*NN-1);
+	      idx[6] += NN*(NN*NN-1);
+	    }
+	    if(j==Nj1-1 && Nj1!=nn) {
+	      idx[2] += NN*NN*(nn-1);
+	      idx[3] += NN*NN*(nn-1);
+	      idx[6] += NN*NN*(nn-1);
+	      idx[7] += NN*NN*(nn-1);
+	    }
+	    if(k==Nk1-1 && Nk1!=nn) {
+	      idx[5] += NN*(nn*nn-NN*NN);
+	      idx[6] += NN*(nn*nn-NN*NN);
+	      idx[7] += NN*(nn*nn-NN*NN);
+	      idx[8] += NN*(nn*nn-NN*NN);
+	    }
+	    
+	    if( radius < 0.25 ){
+	      alpha = soft_alpha;
+	    }
+	    for(ix=0;ix<24;ix++)for(jx=0;jx<24;jx++) DD[ix][jx] = alpha*DD1[ix][jx];
+PetscPrintf(PETSC_COMM_SELF,"\t[%d]%s idx = %d %d %d %d %d %d %d %d\n",mype,__FUNCT__,idx[0],idx[1],idx[2],idx[3],idx[4],idx[5],idx[6],idx[7]);
+	    ierr = MatSetValuesBlocked(Pmat,8,idx,8,idx,(const PetscScalar*)DD,ADD_VALUES);CHKERRQ(ierr);
+	    if( k>0 ) {
+	      ierr = MatSetValuesBlocked(Amat,8,idx,8,idx,(const PetscScalar*)DD,ADD_VALUES);CHKERRQ(ierr);
+	    }
+	    else {
+	      /* a BC */
+	      for(ix=0;ix<24;ix++)for(jx=0;jx<24;jx++) DD[ix][jx] = alpha*DD2[ix][jx];
+	      ierr = MatSetValuesBlocked(Amat,8,idx,8,idx,(const PetscScalar*)DD,ADD_VALUES);CHKERRQ(ierr);
+	    }
+	  }
+	  if( k>0 ) {
+	    PetscScalar v = h*h;
+	    PetscInt jx = 3*id; /* load in x direction */
+	    ierr = VecSetValues(bb,1,&jx,&v,INSERT_VALUES);      CHKERRQ(ierr);
+	  }
+	}
       }
     }
     ierr = MatAssemblyBegin(Amat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

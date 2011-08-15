@@ -287,7 +287,7 @@ getmpiexec:
 	${LGRIND} -lmake -d ${LGRIND_DIR}/lgrindef -i $< > $*.tex
 
 .tex.mtex:
-	PYTHONPATH=${PETSC_DIR}/bin/maint;export PYTHONPATH;cat $< | ${PETSC_DIR}/bin/maint/mapnameslatex.py > $*.mtex
+	PYTHONPATH=${PETSC_DIR}/bin/maint;export PYTHONPATH;cat $< | ${PYTHON} ${PETSC_DIR}/bin/maint/mapnameslatex.py > $*.mtex
 
 .fig.pdf:
 	fig2dev -L pdf $< $*.pdf
@@ -325,7 +325,7 @@ getmpiexec:
 
 .c.o .cpp.o .cxx.o .cc.o .C.o .ad.o: 
 	@if [ "${PETSCPORTABLE}" != "" ]; then \
-          ${PETSC_DIR}/bin/portabilitycheck.py $< ${SOURCEH};\
+          ${PYTHON} ${PETSC_DIR}/bin/portabilitycheck.py $< ${SOURCEH};\
         fi
 	-@mypwd=`pwd`; newpwd=`echo $${mypwd} | sed "s+/examples/tutorials+DUMMY+g"`;\
         if [ $${mypwd} != $${newpwd} ]; then \
@@ -348,7 +348,7 @@ getmpiexec:
                   c=`grep "Process adiC" $< | sed -e "s?[ ]*Process adiC(\([0-9]*\)): [a-zA-Z0-9 ]*?\1?g"`;\
                   r=`grep "Process adiC" $< | sed -e "s?[ ]*Process adiC([0-9]*): \([a-zA-Z0-9 ]*\)?\1?g"`;\
                   echo Running adiC on function $${r};\
-                  ${PETSC_DIR}/bin/adprocess.py $< $${r}; \
+                  ${PYTHON} ${PETSC_DIR}/bin/adprocess.py $< $${r}; \
                   ${CP} $<.tmp1 $<.tmp2;\
 	          echo '#include "petscdm.h"' > $*.ad.c ; \
 	          echo '#include "petscsnes.h"' >> $*.ad.c ;\
@@ -378,7 +378,7 @@ getmpiexec:
                   c=`grep "Process blockadiC" $< | sed -e "s?[ ]*Process blockadiC(\([0-9]*\)): [a-zA-Z0-9 ]*?\1?g"`;\
                   r=`grep "Process blockadiC" $< | sed -e "s?[ ]*Process blockadiC([0-9]*): \([a-zA-Z0-9 ]*\)?\1?g"`;\
                   echo Running adiC on function $${r};\
-                  ${PETSC_DIR}/bin/adprocess.py $< $${r}; \
+                  ${PYTHON} ${PETSC_DIR}/bin/adprocess.py $< $${r}; \
                   echo "#undef ad_GRAD_MAX" >> $*.ad.c ;\
                   echo '#define ad_GRAD_MAX ' $${c} >> $*.ad.c ;\
                   ${ADIC_CC} -t -h -i ${PETSC_DIR}/conf/adicmfb.init   $<.tmp1 ; \
@@ -402,7 +402,7 @@ getmpiexec:
 	  ${PETSC_COMPILE_SINGLE} $<; \
         fi
 	@if [ "${PETSCPORTABLE}" != "" ]; then \
-          ${PETSC_DIR}/bin/portabilitycheck.py $*.o ; \
+          ${PYTHON} ${PETSC_DIR}/bin/portabilitycheck.py $*.o ; \
         fi
 
 #

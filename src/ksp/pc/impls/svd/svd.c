@@ -72,7 +72,7 @@ static PetscErrorCode PCSetUp_SVD(PC pc)
   ierr = PetscInfo2(pc,"Largest and smallest singular values %14.12e %14.12e\n",(double)PetscRealPart(d[0]),(double)PetscRealPart(d[n-1]));
   for (i=0; i<n; i++) {
     if (i == 0 && PetscRealPart(d[i]) == 0.0) {jac->nzero = n;break;}
-    if (PetscRealPart(d[i]) < jac->zerosing /*PetscRealPart(d[0])*/) {jac->nzero = n - i;break;}
+    if (PetscRealPart(d[i]) < jac->zerosing /* PetscRealPart(d[0]) */) {jac->nzero = n - i;break;}
     d[i] = 1.0/d[i];
   }
   ierr = PetscInfo1(pc,"Number of zero or nearly singular values %D\n",jac->nzero);
