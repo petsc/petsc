@@ -364,7 +364,7 @@ testex5f: ex5f.PETSc
 	   ${MPIEXEC} -n 1 ./ex5f > ex5f_1.tmp 2>&1; \
 	   if (${DIFF} output/ex5f_1.testout ex5f_1.tmp > /dev/null 2>&1) then \
            echo "Fortran example src/snes/examples/tutorials/ex5f run successfully with 1 MPI process"; \
-	   else echo "Error running Fortran example src/snes/examples/tutorials/ex5f with 1 MPI process"; \
+	   else echo "Possible error running Fortran example src/snes/examples/tutorials/ex5f with 1 MPI process"; \
            echo "See http://www.mcs.anl.gov/petsc/petsc-as/documentation/faq.html";\
            cat ex5f_1.tmp; fi;  \
          ${RM} -f ex5f_1.tmp ;\
