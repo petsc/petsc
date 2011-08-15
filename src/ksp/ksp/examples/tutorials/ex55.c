@@ -167,7 +167,8 @@ int main(int argc,char **args)
     PetscReal norm,norm2;
     PetscViewer viewer;
     Vec res;
-
+    MPI_Comm  wcomm = ((PetscObject)bb)->comm;
+    
     ierr = VecNorm( bb, NORM_2, &norm2 );  CHKERRQ(ierr);
 
     ierr = VecDuplicate( xx, &res );   CHKERRQ(ierr);

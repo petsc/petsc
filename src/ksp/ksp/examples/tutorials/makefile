@@ -266,7 +266,7 @@ ex55: ex55.o chkopts
 
 ex56: ex56.o chkopts
 	-${CLINKER} -o ex56 ex56.o ${PETSC_KSP_LIB}
-	${RM} ex56.o
+#	${RM} ex56.o
 
 #----------------------------------------------------------------------------
 runex1:
@@ -1019,7 +1019,6 @@ runex56:
 	-@${MPIEXEC} -n 8 ./ex56 -ne 11 -alpha 1.e-3 -ksp_monitor -ksp_type cg -ksp_norm_type unpreconditioned -pc_gamg_type sa > ex56.tmp 2>&1;	  \
          ${DIFF} output/ex56_0.out ex56.tmp || echo "Possible problem with ex56_0, diffs above"; \
 	   ${RM} -f ex56.tmp
-
 
 TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 \
                                  runex2_4 runex2_bjacobi runex2_bjacobi_2 runex2_bjacobi_3 runex2_specest_1 runex2_specest_2 ex2.rm \

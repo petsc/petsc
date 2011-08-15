@@ -160,13 +160,15 @@ PetscErrorCode partitionLevel( Mat a_Amat_fine,
   PetscInt         Istart,Iend,Istart0,Iend0,ncrs0,ncrs_new,fbs;
   PetscInt         neq,NN;
   PetscMPIInt      new_npe,targ_npe;
-
+  PetscBool        flag = PETSC_FALSE;
+ 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank( wcomm, &mype ); CHKERRQ(ierr);
   ierr = MPI_Comm_size( wcomm, &npe );  CHKERRQ(ierr);
   ierr = MatGetBlockSize( a_Amat_fine, &fbs ); CHKERRQ(ierr);
   /* RAP */
   ierr = MatPtAP( a_Amat_fine, Pold, MAT_INITIAL_MATRIX, 2.0, &Cmat ); CHKERRQ(ierr);
+
   ierr = MatSetBlockSize( Cmat, a_cbs );      CHKERRQ(ierr);
 
   ierr = MatGetOwnershipRange( Cmat, &Istart0, &Iend0 ); CHKERRQ(ierr);
@@ -174,10 +176,10 @@ PetscErrorCode partitionLevel( Mat a_Amat_fine,
 
   /* Repartition Cmat_{k} and move colums of P^{k}_{k-1} and coordinates accordingly */
   ierr = MatGetSize( Cmat, &neq, &NN );CHKERRQ(ierr);
-#define MIN_EQ_PROC 200
+#define MIN_EQ_PROC 500
   nactive_procs = *a_active_proc;
   targ_npe = neq/MIN_EQ_PROC; /* hardwire min. number of eq/proc */
-#define TOP_GRID_LIM 1000
+#define TOP_GRID_LIM 500
   if( targ_npe == 0 || neq < TOP_GRID_LIM ) new_npe = 1; /* chop coarsest grid */
   else if (targ_npe >= nactive_procs ) new_npe = nactive_procs; /* no change */
   else {
@@ -191,8 +193,10 @@ PetscErrorCode partitionLevel( Mat a_Amat_fine,
     }
     if(new_npe == -9999) new_npe = nactive_procs;
   }
-
-  if( PETSC_TRUE ) { /* partition: get 'isnewproc' */
+  
+  ierr  = PetscOptionsHasName(PETSC_NULL,"-pc_gamg_avoid_repartitioning",&flag);
+  CHKERRQ( ierr );
+  if( !flag ) { /* re-partition */
     MatPartitioning  mpart;
     Mat              adj;
     const PetscInt  *is_idx;
@@ -201,13 +205,14 @@ PetscErrorCode partitionLevel( Mat a_Amat_fine,
     MPI_Comm         cm,new_comm;
     PetscInt         membershipKey = mype%old_fact, new_fact=(npe/new_npe),counts[npe];
     IS               isnewproc;
-
+    
     *a_active_proc = new_npe; /* output for next level */
     ierr = MPI_Comm_split(wcomm, membershipKey, mype, &cm); CHKERRQ(ierr);
     ierr = PetscCommDuplicate( cm, &new_comm, PETSC_NULL ); CHKERRQ(ierr);
     ierr = MPI_Comm_free( &cm );                            CHKERRQ(ierr);
 
     /* MatPartitioningApply call MatConvert, which is collective */
+    ierr = PetscLogEventBegin(gamg_setup_stages[SET12],0,0,0,0);CHKERRQ(ierr);
     if( a_cbs==1) {
       ierr = MatConvert( Cmat, MATMPIADJ, MAT_INITIAL_MATRIX, &adj );   CHKERRQ(ierr);
     }
@@ -243,7 +248,7 @@ PetscErrorCode partitionLevel( Mat a_Amat_fine,
       ierr = MatDestroy( &tMat );  CHKERRQ(ierr);
     }
     if( membershipKey == 0 ) {
-      if(ncrs0==0)SETERRQ(wcomm,PETSC_ERR_LIB,"zero local nodes -- increase min");
+      if(ncrs0==0)SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"zero local nodes -- increase min");
       /* hack to fix global data that pmetis.c uses in 'adj' */
       for( kk=0 , jj=0 ; kk<=npe ; jj++, kk += old_fact ) {
         adj->rmap->range[jj] = adj->rmap->range[kk];
@@ -289,7 +294,8 @@ PetscErrorCode partitionLevel( Mat a_Amat_fine,
     ierr = ISPartitioningCount( isnewproc, npe, counts ); CHKERRQ(ierr);
     ierr = ISDestroy( &isnewproc );                       CHKERRQ(ierr);
     ncrs_new = counts[mype]/a_cbs;
-  
+    ierr = PetscLogEventEnd(gamg_setup_stages[SET12],0,0,0,0);   CHKERRQ(ierr);
+
     { /* Create a vector to contain the newly ordered element information */
       const PetscInt *idx, data_sz=a_ndata_rows*a_ndata_cols;
       const PetscInt  stride0=ncrs0*a_ndata_rows,strideNew=ncrs_new*a_ndata_rows;
@@ -361,6 +367,7 @@ PetscErrorCode partitionLevel( Mat a_Amat_fine,
       ierr = VecRestoreArray( dest_crd, &array );    CHKERRQ(ierr);
       ierr = VecDestroy( &dest_crd );    CHKERRQ(ierr);
     }
+    
     /*
      Invert for MatGetSubMatrix
      */
@@ -427,7 +434,8 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
   PetscBool        isOK;
   Mat              Aarr[GAMG_MAXLEVELS], Parr[GAMG_MAXLEVELS];
   PetscReal       *coarse_data = 0, *data, emaxs[GAMG_MAXLEVELS];
- 
+  MatInfo          info;
+
   PetscFunctionBegin;
   if( a_pc->setupcalled ) {
     /* no state data in GAMG to destroy */
@@ -448,10 +456,12 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
   data = pc_gamg->m_data;
 
   /* Get A_i and R_i */
-PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s level %d N=%d, n data rows=%d, n data cols=%d, nloc=%d, np=%d\n",0,__FUNCT__,0,N,pc_gamg->m_data_rows,pc_gamg->m_data_cols,nloc,npe);
+  ierr = MatGetInfo(Amat,MAT_GLOBAL_SUM,&info); CHKERRQ(ierr);
+  PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s level %d N=%d, n data rows=%d, n data cols=%d, nnz/row (ave)=%d, np=%d\n",
+	      mype,__FUNCT__,0,N,pc_gamg->m_data_rows,pc_gamg->m_data_cols,(PetscInt)info.nz_used/N,npe);
   for ( level=0, Aarr[0] = Pmat, nactivepe = npe; /* hard wired stopping logic */
         level < GAMG_MAXLEVELS-1 && (level==0 || M/bs>TOP_GRID_LIM) && (npe==1 || nactivepe>1); 
-        level++ ) {
+        level++ ){
     level1 = level + 1;
     ierr = PetscLogEventBegin(gamg_setup_stages[SET1],0,0,0,0);CHKERRQ(ierr);
     ierr = createProlongation(Aarr[level], data, pc_gamg->m_dim, pc_gamg->m_data_cols, pc_gamg->m_useSA,
@@ -469,9 +479,12 @@ PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s level %d N=%d, n data rows=%d, n data col
       CHKERRQ(ierr);
       ierr = PetscLogEventEnd(gamg_setup_stages[SET2],0,0,0,0);CHKERRQ(ierr);
       ierr = MatGetSize( Aarr[level1], &M, &N );CHKERRQ(ierr);
-PetscPrintf(PETSC_COMM_WORLD,"\t\t[%d]%s %d) N=%d, bs=%d, n data cols=%d, %d active pes\n",0,__FUNCT__,level1,N,bs,pc_gamg->m_data_cols,nactivepe);
+      ierr = MatGetInfo(Aarr[level1],MAT_GLOBAL_SUM,&info); CHKERRQ(ierr);
+      PetscPrintf(PETSC_COMM_WORLD,"\t\t[%d]%s %d) N=%d, bs=%d, n data cols=%d, nnz/row (ave)=%d, %d active pes\n",
+		  mype,__FUNCT__,level1,N,bs,pc_gamg->m_data_cols,(PetscInt)info.nz_used/N,nactivepe);
       /* coarse grids with SA can have zero row/cols from singleton aggregates */
       /* aggregation method can probably gaurrentee this does not happen! - be safe for now */
+ 
       if( PETSC_TRUE ){
         Vec diag; PetscScalar *data_arr,v; PetscInt Istart,Iend,kk,nloc,id;
         ierr = MatGetOwnershipRange(Aarr[level1], &Istart, &Iend); CHKERRQ(ierr);
@@ -499,7 +512,7 @@ PetscPrintf(PETSC_COMM_WORLD,"\t\t[%d]%s %d) N=%d, bs=%d, n data cols=%d, %d act
     data = coarse_data;
   }
   ierr = PetscFree( coarse_data ); CHKERRQ( ierr );
-PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s %d levels\n",0,__FUNCT__,level + 1);
+  PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s %d levels\n",0,__FUNCT__,level + 1);
   pc_gamg->m_data = 0; /* destroyed coordinate data */
   pc_gamg->m_Nlevels = level + 1;
   fine_level = level;
@@ -569,6 +582,7 @@ PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s %d levels\n",0,__FUNCT__,level + 1);
     CHKERRQ(ierr);
     ierr = KSPSetNormType( smoother, KSP_NORM_NONE ); CHKERRQ(ierr);
   }
+
   /* should be called in PCSetFromOptions_GAMG(), but cannot be called prior to PCMGSetLevels() */
   ierr = PCSetFromOptions_MG(a_pc); CHKERRQ(ierr);
   {
@@ -722,15 +736,20 @@ PetscErrorCode  PCCreate_GAMG(PC pc)
 					    PCSetCoordinates_GAMG);CHKERRQ(ierr);
 
   PetscClassIdRegister("GAMG Setup",&cookie);
-  PetscLogEventRegister("GAMG-createProl", cookie, &gamg_setup_stages[SET1]);
-  PetscLogEventRegister("GAMG-partLevel", cookie, &gamg_setup_stages[SET2]);
-  PetscLogEventRegister("GAMG-MIS Graph", cookie, &gamg_setup_stages[SET3]);
-  PetscLogEventRegister("GAMG-MIS-Agg", cookie, &gamg_setup_stages[SET4]);
-  PetscLogEventRegister("GAMG-growSupp", cookie, &gamg_setup_stages[SET5]);
-  PetscLogEventRegister("GAMG-tri-Prol", cookie, &gamg_setup_stages[SET6]);
-  PetscLogEventRegister("GAMG-sa-init", cookie, &gamg_setup_stages[SET7]);
-  PetscLogEventRegister("GAMG-sa-frmProl0", cookie, &gamg_setup_stages[SET8]);
-  PetscLogEventRegister("GAMG-sa-smooth", cookie, &gamg_setup_stages[SET9]);
+  PetscLogEventRegister("GAMG: createProl", cookie, &gamg_setup_stages[SET1]);
+  PetscLogEventRegister(" make graph", cookie, &gamg_setup_stages[SET3]);
+  PetscLogEventRegister(" MIS/Agg", cookie, &gamg_setup_stages[SET4]);
+  PetscLogEventRegister("  geo: growSupp", cookie, &gamg_setup_stages[SET5]);
+  PetscLogEventRegister("  geo: triangle", cookie, &gamg_setup_stages[SET6]);
+  PetscLogEventRegister("   search & set", cookie, &gamg_setup_stages[FIND_V]);
+  PetscLogEventRegister("  SA: init", cookie, &gamg_setup_stages[SET7]);
+  /* PetscLogEventRegister("  SA: frmProl0", cookie, &gamg_setup_stages[SET8]); */
+  PetscLogEventRegister("  SA: smooth", cookie, &gamg_setup_stages[SET9]);
+  PetscLogEventRegister("GAMG: partLevel", cookie, &gamg_setup_stages[SET2]);
+  PetscLogEventRegister(" PL repartition", cookie, &gamg_setup_stages[SET12]);
+  /* PetscLogEventRegister(" PL move data", cookie, &gamg_setup_stages[SET13]); */
+  /* PetscLogEventRegister("GAMG: fix", cookie, &gamg_setup_stages[SET10]); */
+  /* PetscLogEventRegister("GAMG: set levels", cookie, &gamg_setup_stages[SET11]); */
 
   PetscFunctionReturn(0);
 }
