@@ -80,7 +80,8 @@ class Configure(config.base.Configure):
         self.framework.logPrint('module multiprocessing *not* found: using default for make_np')
         make_np = 2
     import os
-    if 'barry-smith' in os.uname()[1]:
+    import pwd
+    if 'barrysmith' == pwd.getpwuid(os.getuid()).pw_name:
       # Barry wants to use exactly the number of physical cores (not logical cores) because it breaks otherwise.
       # Since this works for everyone else who uses a Mac, something must be wrong with their systems. ;-)
       try:
