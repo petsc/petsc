@@ -1030,7 +1030,6 @@ PetscErrorCode createProlongation( const Mat a_Amat,
   }
   ierr = MatAssemblyBegin(Gmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(Gmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-
   /* square matrix - SA */
   if( a_useSA ){
     Mat Gmat2;
@@ -1058,7 +1057,7 @@ PetscErrorCode createProlongation( const Mat a_Amat,
     Mat Gmat2;
     ierr = MatGetInfo(Gmat,MAT_LOCAL,&info); CHKERRQ(ierr);
     kk = (PetscInt)info.nz_used/nloc+1;
-    ierr = MatCreateMPIAIJ(wcomm,nloc,nloc,PETSC_DECIDE,PETSC_DECIDE,2*kk,PETSC_NULL,kk,PETSC_NULL,&Gmat2);
+    ierr = MatCreateMPIAIJ(wcomm,nloc,nloc,PETSC_DECIDE,PETSC_DECIDE,3*kk,PETSC_NULL,2*kk,PETSC_NULL,&Gmat2);
     CHKERRQ(ierr);
     for (Ii=Istart; Ii<Iend; Ii++) {
       ierr = MatGetRow(Gmat,Ii,&ncols,&idx,&vals); CHKERRQ(ierr);
@@ -1266,7 +1265,6 @@ PetscErrorCode createProlongation( const Mat a_Amat,
       }
       ierr = MatAssemblyBegin(tMat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
       ierr = MatAssemblyEnd(tMat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-
       ierr = getDataWithGhosts( tMat, a_data_cols, a_data, &nbnodes, &data_w_ghost );
       CHKERRQ(ierr);
       ierr = MatDestroy( &tMat );  CHKERRQ(ierr);
@@ -1296,7 +1294,6 @@ PetscErrorCode createProlongation( const Mat a_Amat,
       for(kk=0;kk<nloc;kk++) flid_fgid[kk] = my0 + kk;
     }
     ierr = PetscLogEventEnd(gamg_setup_stages[SET7],0,0,0,0);CHKERRQ(ierr);
-
     ierr = PetscLogEventBegin(gamg_setup_stages[SET8],0,0,0,0);CHKERRQ(ierr);
     ierr = formProl0(selected_1,llist_1,bs_in,a_data_cols,myCrs0,nbnodes,data_w_ghost,flid_fgid,a_data_out,Prol);
     CHKERRQ(ierr);

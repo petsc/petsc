@@ -12,7 +12,7 @@ Load of 1.0 in x direction on all nodes (not a true uniform load).\n\
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat            Amat,Pmat;
+  Mat            Amat;
   PetscErrorCode ierr;
   PetscInt       m,nn,M,its,Istart,Iend,i,j,k,ii,jj,kk,ic,ne=4,NP,Ni0,Nj0,Nk0,Ni1,Nj1,Nk1,ipx,ipy,ipz,id;
   PetscReal      x,y,z,h;
@@ -44,10 +44,8 @@ int main(int argc,char **args)
 
   /* create stiffness matrix */
   ierr = MatCreateMPIAIJ(wcomm,m,m,M,M,81,PETSC_NULL,57,PETSC_NULL,&Amat);CHKERRQ(ierr);
-  ierr = MatCreateMPIAIJ(wcomm,m,m,M,M,81,PETSC_NULL,57,PETSC_NULL,&Pmat);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(Amat,&Istart,&Iend);CHKERRQ(ierr);
   ierr = MatSetBlockSize(Amat,3);      CHKERRQ(ierr);
-  ierr = MatSetBlockSize(Pmat,3);      CHKERRQ(ierr);
   m = Iend - Istart;
   /* Generate vectors */
   ierr = VecCreate(wcomm,&xx);   CHKERRQ(ierr);
@@ -97,7 +95,7 @@ int main(int argc,char **args)
     PetscInt NN = nn/NP, id0 = ipz*nn*nn*NN;
     id0 += ipy*nn*NN*NN;
     id0 += ipx*NN*NN*NN;
-    PetscPrintf(PETSC_COMM_SELF,"\t[%d]%s id0=%d (%d %d %d)\n",mype,__FUNCT__,id0,ipx,ipy,ipz);
+ 
     /* forms the element stiffness for the Laplacian and coordinates */
     /* for (Ii = Istart/3, ic = 0; Ii < Iend/3; Ii++, ic++ ) { */
     /*       i = Ii%nn; j = Ii%(nn*nn)/nn; k = Ii/(nn*nn); */
@@ -110,7 +108,7 @@ int main(int argc,char **args)
 	  z = coords[3*ic+2] = h*(PetscReal)k;
 	  /* matrix */
 	  id = id0 + ii + NN*jj + NN*NN*kk; 
-	  PetscPrintf(PETSC_COMM_SELF,"\t\t[%d]%s id=%d\n",mype,__FUNCT__,id);
+
 	  if( i<ne && j<ne && k<ne) {
 	    /* radius */
 	    PetscReal radius = PetscSqrtScalar((x-.5+h/2)*(x-.5+h/2)+(y-.5+h/2)*(y-.5+h/2)+
@@ -143,8 +141,6 @@ int main(int argc,char **args)
 	      alpha = soft_alpha;
 	    }
 	    for(ix=0;ix<24;ix++)for(jx=0;jx<24;jx++) DD[ix][jx] = alpha*DD1[ix][jx];
-PetscPrintf(PETSC_COMM_SELF,"\t[%d]%s idx = %d %d %d %d %d %d %d %d\n",mype,__FUNCT__,idx[0],idx[1],idx[2],idx[3],idx[4],idx[5],idx[6],idx[7]);
-	    ierr = MatSetValuesBlocked(Pmat,8,idx,8,idx,(const PetscScalar*)DD,ADD_VALUES);CHKERRQ(ierr);
 	    if( k>0 ) {
 	      ierr = MatSetValuesBlocked(Amat,8,idx,8,idx,(const PetscScalar*)DD,ADD_VALUES);CHKERRQ(ierr);
 	    }
@@ -164,8 +160,6 @@ PetscPrintf(PETSC_COMM_SELF,"\t[%d]%s idx = %d %d %d %d %d %d %d %d\n",mype,__FU
     }
     ierr = MatAssemblyBegin(Amat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(Amat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyBegin(Pmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(Pmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = VecAssemblyBegin(bb);  CHKERRQ(ierr);
     ierr = VecAssemblyEnd(bb);    CHKERRQ(ierr);
 
@@ -247,7 +241,6 @@ PetscPrintf(PETSC_COMM_WORLD,"[%d]%s |b-Ax|/|b|=%e, |b|=%e\n",0,__FUNCT__,norm/n
   ierr = VecDestroy(&xx);CHKERRQ(ierr);
   ierr = VecDestroy(&bb);CHKERRQ(ierr);
   ierr = MatDestroy(&Amat);CHKERRQ(ierr);
-  ierr = MatDestroy(&Pmat);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
   return 0;
