@@ -14,12 +14,11 @@ static char help[] = "Tries to solve u`` + u^{2} = f for an easy case and an imp
 
 #include <petscsnes.h>
 
-int second_order = PETSC_FALSE;
-#define X0DOT -2 /* -2 */
-#define X1 5 /* 5 */
-#define X1DOT -3
-#define KPOW 2 /* 2 */
-const PetscScalar perturb = 1.0; //1.1;
+PetscBool second_order = PETSC_FALSE;
+#define X0DOT      -2 
+#define X1          5 
+#define KPOW        2
+const PetscScalar perturb = 1.1;
 
 /* 
    User-defined routines
@@ -29,20 +28,23 @@ PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
 
 int main(int argc,char **argv)
 {
-  SNES           snes;                /* SNES context */
-  Vec            x,r,F;               /* vectors */
-  Mat            J,JPrec;             /* Jacobian,preconditioner matrices */
-  PetscErrorCode ierr;
-  PetscInt       it,n = 11,i;
-  PetscMPIInt    size;
-  PetscReal      h,xp = 0.0;
-  PetscScalar    v;
+  SNES              snes;                /* SNES context */
+  Vec               x,r,F;               /* vectors */
+  Mat               J;                   /* Jacobian */
+  PetscErrorCode    ierr;
+  PetscInt          it,n = 11,i;
+  PetscReal         h,xp = 0.0;
+  PetscScalar       v;
+  const PetscScalar a = X0DOT;
+  const PetscScalar b = X1;
+  const PetscScalar k = KPOW;
+  PetscScalar       v2;
+  PetscScalar       *xx;
   
 
   PetscInitialize(&argc,&argv,(char *)0,help);
-  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-  //  if (size != 1) SETERRQ(1,"This is a uniprocessor example only!");
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-second_order",&second_order,PETSC_NULL);CHKERRQ(ierr);
   h = 1.0/(n-1);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -68,7 +70,6 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,3,PETSC_NULL,&J);CHKERRQ(ierr);
-  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,1,PETSC_NULL,&JPrec);CHKERRQ(ierr);
 
   /*
      Note that in this case we create separate matrices for the Jacobian
@@ -85,55 +86,30 @@ int main(int argc,char **argv)
 
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
-  /*
-     Save all the linear residuals for all the Newton steps; this enables us
-     to retain complete convergence history for printing after the conclusion
-     of SNESSolve().  Alternatively, one could use the monitoring options
-           -snes_monitor -ksp_monitor
-     to see this information during the solver's execution; however, such
-     output during the run distorts performance evaluation data.  So, the
-     following is a good option when monitoring code performance, for example
-     when using -log_summary.
-  */
-
-
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize application:
      Store right-hand-side of PDE and exact solution
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  const PetscScalar a = X0DOT;
-  const PetscScalar b = X1;
-  const PetscScalar k = KPOW;
-  PetscScalar v2;
+  /* set right hand side and initial guess to be exact solution of continuim problem */
 #define SQR(x) ((x)*(x))
   xp = 0.0;
-  printf ("setting rhs for u'(0)=a=%e, u(1)=b=%e, exponent k=%e\n", a,b,k);
   for (i=0; i<n; i++) 
     {
-      //    v = 6.0*xp + pow(xp+1.e-12,6.0); /* +1.e-12 is to prevent 0^6 */
       v = k*(k-1)*(b-a)*PetscPowScalar(xp,k-2) + SQR(a*xp) + SQR(b-a)*PetscPowScalar(xp,2*k) + 2*a*(b-a)*PetscPowScalar(xp,k+1);
       ierr = VecSetValues(F,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
       v2 = a*xp + (b-a)*PetscPowScalar(xp,k);
-      printf ("%e %e %e\n", xp, v2, v);
       ierr = VecSetValues(x,1,&i,&v2,INSERT_VALUES);CHKERRQ(ierr);
       xp += h;
     }
 
-
-  // perturb
-   PetscScalar *xx;
+  /* perturb initial guess */
   ierr = VecGetArray(x,&xx);
-  for (i=0; i<n; i++) 
-    {
-      v2 = xx[i]*perturb;
-      ierr = VecSetValues(x,1,&i,&v2,INSERT_VALUES);CHKERRQ(ierr);
-    }
-    ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr); 
-
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Evaluate initial guess; then solve nonlinear system
-   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  for (i=0; i<n; i++) {
+    v2 = xx[i]*perturb;
+    ierr = VecSetValues(x,1,&i,&v2,INSERT_VALUES);CHKERRQ(ierr);
+  }
+  ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr); 
 
   
   ierr = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(ierr);
@@ -147,22 +123,12 @@ int main(int argc,char **argv)
 
   ierr = VecDestroy(&x);CHKERRQ(ierr);     ierr = VecDestroy(&r);CHKERRQ(ierr);
   ierr = VecDestroy(&F);CHKERRQ(ierr);     ierr = MatDestroy(&J);CHKERRQ(ierr);
-  ierr = MatDestroy(&JPrec);CHKERRQ(ierr); ierr = SNESDestroy(&snes);CHKERRQ(ierr);
+  ierr = SNESDestroy(&snes);CHKERRQ(ierr);
   ierr = PetscFinalize();CHKERRQ(ierr);
 
   return 0;
 }
-/* ------------------------------------------------------------------- */
-/* 
-   FormInitialGuess - Forms initial approximation.
 
-   Input Parameters:
-   user - user-defined application context
-   X - vector
-
-   Output Parameter:
-   X - vector
- */
 PetscErrorCode FormFunction(SNES snes,Vec x,Vec f,void *dummy)
 {
   PetscScalar    *xx,*ff,*FF,d,d2;
@@ -175,14 +141,11 @@ PetscErrorCode FormFunction(SNES snes,Vec x,Vec f,void *dummy)
   ierr = VecGetSize(x,&n);CHKERRQ(ierr);
   d = (PetscReal)(n - 1); d2 = d*d;
 
-  if (second_order)
-    {
-      ff[0] = d*(0.5*d*(-xx[2] + 4*xx[1] - 3*xx[0]) - X0DOT);
-    }
-  else
-    ff[0] = d*(d*(xx[1] - xx[0]) - X0DOT);  // x'(0) = X0DOT
-
-
+  if (second_order){
+    ff[0] = d*(0.5*d*(-xx[2] + 4*xx[1] - 3*xx[0]) - X0DOT);
+  } else {
+    ff[0] = d*(d*(xx[1] - xx[0]) - X0DOT); 
+  }
   for (i=1; i<n-1; i++) {
     ff[i] = d2*(xx[i-1] - 2.0*xx[i] + xx[i+1]) + xx[i]*xx[i] - FF[i];
   }
@@ -193,72 +156,42 @@ PetscErrorCode FormFunction(SNES snes,Vec x,Vec f,void *dummy)
   return 0;
 }
 
-
-/* ------------------------------------------------------------------- */
-/*
-   FormJacobian - This routine demonstrates the use of different
-   matrices for the Jacobian and preconditioner
-
-   Input Parameters:
-.  snes - the SNES context
-.  x - input vector
-.  ptr - optional user-defined context, as set by SNESSetJacobian()
-
-   Output Parameters:
-.  A - Jacobian matrix
-.  B - different preconditioning matrix
-.  flag - flag indicating matrix structure
-*/
 PetscErrorCode FormJacobian(SNES snes,Vec x,Mat *jac,Mat *prejac,MatStructure *flag,void *dummy)
 {
   PetscScalar    *xx,A[3],d,d2;
   PetscInt       i,n,j[3];
   PetscErrorCode ierr;
 
-  ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
   ierr = VecGetSize(x,&n);CHKERRQ(ierr);
+  ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
   d = (PetscReal)(n - 1); d2 = d*d;
 
-
-  /* Form Jacobian.  Also form a different preconditionind matrix that 
-     has only the diagonal elements. */
   i = 0; 
-  //A[0] = 1.0; 
-  A[0] = xx[0]; 
-
-      if (second_order)
-	{
-	  //	  ff[0] = d*(0.5*d*(-xx[2] + 4*xx[1] - 3*xx[0]));
-	  j[0] = 0; j[1] = 1; j[2] = 2;
-	  A[0] = -3*d*d*0.5; A[1] = 4*d*d*0.5;  A[2] = -1*d*d*0.5;   
-	  ierr = MatSetValues(*jac,1,&i,3,j,A,INSERT_VALUES);CHKERRQ(ierr);
-	}
-      else
-	{
-	  j[0] = 0; j[1] = 1;
-	  A[0] = -d*d; A[1] = d*d;        // from x'(0) ~ (x[1] - x[0])/h          
-	  ierr = MatSetValues(*jac,1,&i,2,j,A,INSERT_VALUES);CHKERRQ(ierr);
-	}
-      //      ierr = MatSetValues(*jac,1,&i,1,&i,&A[0],INSERT_VALUES);CHKERRQ(ierr);
-  for (i=1; i<n-1; i++) 
-    {
-      j[0] = i - 1; j[1] = i;                   j[2] = i + 1; 
-      A[0] = d2;     A[1] = -2.0*d2 + 2.0*xx[i];  A[2] = d2; 
-      //        A[0] = 0;     A[1] = -2.0*d + 2.0*xx[i];  A[2] = 0; 
-	ierr = MatSetValues(*jac,1,&i,3,j,A,INSERT_VALUES);CHKERRQ(ierr);
-    }
+  if (second_order) {
+    j[0] = 0; j[1] = 1; j[2] = 2;
+    A[0] = -3*d*d*0.5; A[1] = 4*d*d*0.5;  A[2] = -1*d*d*0.5;   
+    ierr = MatSetValues(*prejac,1,&i,3,j,A,INSERT_VALUES);CHKERRQ(ierr);
+  } else {
+    j[0] = 0; j[1] = 1;
+    A[0] = -d*d; A[1] = d*d;  
+    ierr = MatSetValues(*prejac,1,&i,2,j,A,INSERT_VALUES);CHKERRQ(ierr);
+  }
+  for (i=1; i<n-1; i++) {
+     j[0] = i - 1; j[1] = i;                   j[2] = i + 1; 
+     A[0] = d2;    A[1] = -2.0*d2 + 2.0*xx[i];  A[2] = d2; 
+     ierr = MatSetValues(*prejac,1,&i,3,j,A,INSERT_VALUES);CHKERRQ(ierr);
+  }
 
   i = n-1; 
-      A[0] = d*d; 
-	ierr = MatSetValues(*jac,1,&i,1,&i,&A[0],INSERT_VALUES);CHKERRQ(ierr);
+  A[0] = d*d; 
+  ierr = MatSetValues(*prejac,1,&i,1,&i,&A[0],INSERT_VALUES);CHKERRQ(ierr);
 
   ierr = MatAssemblyBegin(*jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(*prejac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(*prejac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*prejac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
   *flag = SAME_NONZERO_PATTERN;
-
   return 0;
 }
