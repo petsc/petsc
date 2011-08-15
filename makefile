@@ -201,16 +201,16 @@ chk_petsc_dir:
 #
 #
 install:
-	@./config/install.py -destDir=${DESTDIR}
+	@${PYTHON} ./config/install.py -destDir=${DESTDIR}
 
 newall:
-	-@cd src/sys; ${PETSC_DIR}/config/builder.py
-	-@cd src/vec; ${PETSC_DIR}/config/builder.py
-	-@cd src/mat; ${PETSC_DIR}/config/builder.py
-	-@cd src/dm; ${PETSC_DIR}/config/builder.py
-	-@cd src/ksp; ${PETSC_DIR}/config/builder.py
-	-@cd src/snes; ${PETSC_DIR}/config/builder.py
-	-@cd src/ts; ${PETSC_DIR}/config/builder.py
+	-@cd src/sys;  @${PYTHON} ${PETSC_DIR}/config/builder.py
+	-@cd src/vec;  @${PYTHON} ${PETSC_DIR}/config/builder.py
+	-@cd src/mat;  @${PYTHON} ${PETSC_DIR}/config/builder.py
+	-@cd src/dm;   @${PYTHON} ${PETSC_DIR}/config/builder.py
+	-@cd src/ksp;  @${PYTHON} ${PETSC_DIR}/config/builder.py
+	-@cd src/snes; @${PYTHON} ${PETSC_DIR}/config/builder.py
+	-@cd src/ts;   @${PYTHON} ${PETSC_DIR}/config/builder.py
 
 streams:
 	cd src/benchmarks/streams; ${OMAKE} test
@@ -222,13 +222,13 @@ streams:
 #  See the users manual for how the tags files may be used from Emacs and Vi/Vim
 #
 alletags:
-	-@bin/maint/generateetags.py
+	-@${PYTHON} bin/maint/generateetags.py
 	-@find config -type f -name "*.py" |grep -v SCCS | xargs etags -o TAGS_PYTHON
 
 allfortranstubs:
 	-@${RM} -rf include/finclude/ftn-auto/*-tmpdir
-	-@bin/maint/generatefortranstubs.py ${BFORT} 
-	-@bin/maint/generatefortranstubs.py -merge
+	-@${PYTHON} bin/maint/generatefortranstubs.py ${BFORT}
+	-@${PYTHON} bin/maint/generatefortranstubs.py -merge
 	-@${RM} -rf include/finclude/ftn-auto/*-tmpdir
 deletefortranstubs:
 	-@find . -type d -name ftn-auto | xargs rm -rf 
@@ -257,21 +257,21 @@ alldoc1: chk_loc deletemanualpages chk_concepts_dir
 	-cd src/docs/tex/manual; ${OMAKE} manual.pdf LOC=${LOC}
 	-cd src/docs/tex/manual; ${OMAKE} developers.pdf LOC=${LOC}
 	-${OMAKE} ACTION=manualpages tree_basic LOC=${LOC}
-	-bin/maint/wwwindex.py ${PETSC_DIR} ${LOC}
+	-${PYTHON} bin/maint/wwwindex.py ${PETSC_DIR} ${LOC}
 	-${OMAKE} ACTION=manexamples tree_basic LOC=${LOC}
 	-${OMAKE} manconcepts LOC=${LOC}
 	-${OMAKE} ACTION=getexlist tree_basic LOC=${LOC}
 	-${OMAKE} ACTION=exampleconcepts tree_basic LOC=${LOC}
-	-bin/maint/helpindex.py ${PETSC_DIR} ${LOC}
+	-${PYTHON} bin/maint/helpindex.py ${PETSC_DIR} ${LOC}
 	-grep -h Polymorphic include/*.h | grep -v '#define ' | sed "s?PetscPolymorphic[a-zA-Z]*(??g" | cut -f1 -d"{" > tmppoly
-	-bin/maint/processpoly.py ${PETSC_DIR} ${LOC}
+	-${PYTHON} bin/maint/processpoly.py ${PETSC_DIR} ${LOC}
 	-${RM} tmppoly
 
 # Builds .html versions of the source
 # html overwrites some stuff created by update-docs - hence this is done later.
 alldoc2: chk_loc
 	-${OMAKE} ACTION=html PETSC_DIR=${PETSC_DIR} alltree LOC=${LOC}
-	-bin/maint/update-docs.py ${PETSC_DIR} ${LOC}
+	-${PYTHON} bin/maint/update-docs.py ${PETSC_DIR} ${LOC}
 #
 # Builds HTML versions of Matlab scripts
 alldoc3: chk_loc
@@ -291,7 +291,7 @@ deletemanualpages: chk_loc
           ${RM} ${LOC}/docs/exampleconcepts ;\
           ${RM} ${LOC}/docs/manconcepts ;\
           ${RM} ${LOC}/docs/manualpages/manualpages.cit ;\
-          bin/maint/update-docs.py ${PETSC_DIR} ${LOC} clean;\
+          ${PYTHON} bin/maint/update-docs.py ${PETSC_DIR} ${LOC} clean;\
         fi
 
 allcleanhtml: 
