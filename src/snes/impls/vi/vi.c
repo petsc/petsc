@@ -311,6 +311,9 @@ PetscErrorCode  SNESMonitorVI(SNES snes,PetscInt its,PetscReal fgnorm,void *dumm
   PetscViewer        viewer = dummy ? (PetscViewer) dummy : PETSC_VIEWER_STDOUT_(((PetscObject)snes)->comm);
   const PetscScalar  *x,*xl,*xu,*f;
   PetscInt           i,n,act[2] = {0,0},fact[2],N;
+  /* remove later */
+  /* Number of components that actually hit the bounds (c.f. active variables) */
+  PetscInt           act_bound[2] = {0,0},fact_bound[2];
   PetscReal          rnorm,fnorm;
 
   PetscFunctionBegin;
@@ -328,16 +331,26 @@ PetscErrorCode  SNESMonitorVI(SNES snes,PetscInt its,PetscReal fgnorm,void *dumm
     else if (PetscRealPart(x[i]) >= PetscRealPart(xu[i]) - 1.e-8 && PetscRealPart(f[i]) <= 0.0) act[1]++;
     else SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_PLIB,"Can never get here");
   }
+
+  /* Remove later, number of components that actually hit the bounds */
+  for (i=0; i<n; i++) {
+    if (PetscRealPart(x[i]) <= PetscRealPart(xl[i]) + 1.e-8) act_bound[0]++;
+    else if (PetscRealPart(x[i]) >= PetscRealPart(xu[i]) - 1.e-8) act_bound[1]++;
+  }
   ierr = VecRestoreArrayRead(snes->vec_func,&f);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(vi->xl,&xl);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(vi->xu,&xu);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(snes->vec_sol,&x);CHKERRQ(ierr);
   ierr = MPI_Allreduce(&rnorm,&fnorm,1,MPIU_REAL,MPIU_SUM,((PetscObject)snes)->comm);CHKERRQ(ierr);
   ierr = MPI_Allreduce(act,fact,2,MPIU_INT,MPIU_SUM,((PetscObject)snes)->comm);CHKERRQ(ierr);
+  /* remove later */
+  ierr = MPI_Allreduce(act_bound,fact_bound,2,MPIU_INT,MPIU_SUM,((PetscObject)snes)->comm);CHKERRQ(ierr);
   fnorm = sqrt(fnorm);
   
   ierr = PetscViewerASCIIAddTab(viewer,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"%3D SNES VI Function norm %14.12e Active lower constraints %D upper constraints %D Percent of total %g Percent of bounded %g\n",its,fnorm,fact[0],fact[1],((double)(fact[0]+fact[1]))/((double)N),((double)(fact[0]+fact[1]))/((double)vi->ntruebounds));CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"%3D SNES VI lower constraints satisfied %D upper constraints satisfied %D\n",its,fact_bound[0],fact_bound[1]);CHKERRQ(ierr);
+  
   ierr = PetscViewerASCIISubtractTab(viewer,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
