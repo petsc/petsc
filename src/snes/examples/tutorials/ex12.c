@@ -68,23 +68,23 @@ typedef enum {NEUMANN, DIRICHLET} BCType;
 
 /* Quadrature points
    - (x1,y1,x2,y2,...) */
-static double points_0[1] = {0.0};
+static PetscReal points_0[1] = {0.0};
 
 /* Quadrature weights
    - (v1,v2,...) */
-static double weights_0[1] = {2.0};
+static PetscReal weights_0[1] = {2.0};
 
 #define NUM_BASIS_FUNCTIONS_0 2
 
 /* Nodal basis function evaluations
     - basis function is fastest varying, then point */
-static double Basis_0[2] = {
+static PetscReal Basis_0[2] = {
   0.5,
   0.5};
 
 /* Nodal basis function derivative evaluations,
     - derivative direction fastest varying, then basis function, then point */
-static double BasisDerivatives_0[2] = {
+static PetscReal BasisDerivatives_0[2] = {
   -0.5,
   0.5};
 
@@ -92,7 +92,7 @@ static double BasisDerivatives_0[2] = {
 
 /* Dual points
    - (x1,y1,x2,y2,...) */
-static double dualPoints_0[2] = {
+static PetscReal dualPoints_0[2] = {
   -1.0,
   1.0};
 
@@ -100,10 +100,10 @@ static double dualPoints_0[2] = {
 
 #define __FUNCT__ "IntegrateDualBasis_gen_0"
 
-double IntegrateDualBasis_gen_0(const double *v0, const double *J, const int dualIndex, double (*func)(const double *coords))
+PetscReal IntegrateDualBasis_gen_0(const PetscReal *v0, const PetscReal *J, const int dualIndex, PetscReal (*func)(const PetscReal *coords))
 {
-  double refCoords[1];
-  double coords[1];
+  PetscReal refCoords[1];
+  PetscReal coords[1];
 
   switch(dualIndex) {
     case 0:
@@ -131,10 +131,10 @@ double IntegrateDualBasis_gen_0(const double *v0, const double *J, const int dua
 
 #define __FUNCT__ "IntegrateBdDualBasis_gen_0"
 
-double IntegrateBdDualBasis_gen_0(const double *v0, const double *J, const int dualIndex, double (*func)(const double *coords))
+PetscReal IntegrateBdDualBasis_gen_0(const PetscReal *v0, const PetscReal *J, const int dualIndex, PetscReal (*func)(const PetscReal *coords))
 {
-  double refCoords[1];
-  double coords[2];
+  PetscReal refCoords[1];
+  PetscReal coords[2];
 
   switch(dualIndex) {
     case 0:
@@ -162,26 +162,26 @@ double IntegrateBdDualBasis_gen_0(const double *v0, const double *J, const int d
 
 /* Quadrature points
    - (x1,y1,x2,y2,...) */
-static double points_1[2] = {
+static PetscReal points_1[2] = {
   -0.333333333333,
   -0.333333333333};
 
 /* Quadrature weights
    - (v1,v2,...) */
-static double weights_1[1] = {2.0};
+static PetscReal weights_1[1] = {2.0};
 
 #define NUM_BASIS_FUNCTIONS_1 3
 
 /* Nodal basis function evaluations
     - basis function is fastest varying, then point */
-static double Basis_1[3] = {
+static PetscReal Basis_1[3] = {
   0.333333333333,
   0.333333333333,
   0.333333333333};
 
 /* Nodal basis function derivative evaluations,
     - derivative direction fastest varying, then basis function, then point */
-static double BasisDerivatives_1[6] = {
+static PetscReal BasisDerivatives_1[6] = {
   -0.5,
   -0.5,
   0.5,
@@ -193,7 +193,7 @@ static double BasisDerivatives_1[6] = {
 
 /* Dual points
    - (x1,y1,x2,y2,...) */
-static double dualPoints_1[6] = {
+static PetscReal dualPoints_1[6] = {
   -1.0,
   -1.0,
   1.0,
@@ -205,10 +205,10 @@ static double dualPoints_1[6] = {
 
 #define __FUNCT__ "IntegrateDualBasis_gen_1"
 
-double IntegrateDualBasis_gen_1(const double *v0, const double *J, const int dualIndex, double (*func)(const double *coords))
+PetscReal IntegrateDualBasis_gen_1(const PetscReal *v0, const PetscReal *J, const int dualIndex, PetscReal (*func)(const PetscReal *coords))
 {
-  double refCoords[2];
-  double coords[2];
+  PetscReal refCoords[2];
+  PetscReal coords[2];
 
   switch(dualIndex) {
     case 0:
@@ -242,10 +242,10 @@ double IntegrateDualBasis_gen_1(const double *v0, const double *J, const int dua
 
 #define __FUNCT__ "IntegrateBdDualBasis_gen_1"
 
-double IntegrateBdDualBasis_gen_1(const double *v0, const double *J, const int dualIndex, double (*func)(const double *coords))
+PetscReal IntegrateBdDualBasis_gen_1(const PetscReal *v0, const PetscReal *J, const int dualIndex, PetscReal (*func)(const PetscReal *coords))
 {
-  double refCoords[2];
-  double coords[3];
+  PetscReal refCoords[2];
+  PetscReal coords[3];
 
   switch(dualIndex) {
     case 0:
@@ -280,20 +280,20 @@ double IntegrateBdDualBasis_gen_1(const double *v0, const double *J, const int d
 
 /* Quadrature points
    - (x1,y1,x2,y2,...) */
-static double points_2[3] = {
+static PetscReal points_2[3] = {
   -0.5,
   -0.5,
   -0.5};
 
 /* Quadrature weights
    - (v1,v2,...) */
-static double weights_2[1] = {1.33333333333};
+static PetscReal weights_2[1] = {1.33333333333};
 
 #define NUM_BASIS_FUNCTIONS_2 4
 
 /* Nodal basis function evaluations
     - basis function is fastest varying, then point */
-static double Basis_2[4] = {
+static PetscReal Basis_2[4] = {
   0.25,
   0.25,
   0.25,
@@ -301,7 +301,7 @@ static double Basis_2[4] = {
 
 /* Nodal basis function derivative evaluations,
     - derivative direction fastest varying, then basis function, then point */
-static double BasisDerivatives_2[12] = {
+static PetscReal BasisDerivatives_2[12] = {
   -0.5,
   -0.5,
   -0.5,
@@ -319,7 +319,7 @@ static double BasisDerivatives_2[12] = {
 
 /* Dual points
    - (x1,y1,x2,y2,...) */
-static double dualPoints_2[12] = {
+static PetscReal dualPoints_2[12] = {
   -1.0,
   -1.0,
   -1.0,
@@ -337,10 +337,10 @@ static double dualPoints_2[12] = {
 
 #define __FUNCT__ "IntegrateDualBasis_gen_2"
 
-double IntegrateDualBasis_gen_2(const double *v0, const double *J, const int dualIndex, double (*func)(const double *coords))
+PetscReal IntegrateDualBasis_gen_2(const PetscReal *v0, const PetscReal *J, const int dualIndex, PetscReal (*func)(const PetscReal *coords))
 {
-  double refCoords[3];
-  double coords[3];
+  PetscReal refCoords[3];
+  PetscReal coords[3];
 
   switch(dualIndex) {
     case 0:
@@ -382,10 +382,10 @@ double IntegrateDualBasis_gen_2(const double *v0, const double *J, const int dua
 
 #define __FUNCT__ "IntegrateBdDualBasis_gen_2"
 
-double IntegrateBdDualBasis_gen_2(const double *v0, const double *J, const int dualIndex, double (*func)(const double *coords))
+PetscReal IntegrateBdDualBasis_gen_2(const PetscReal *v0, const PetscReal *J, const int dualIndex, PetscReal (*func)(const PetscReal *coords))
 {
-  double refCoords[3];
-  double coords[4];
+  PetscReal refCoords[3];
+  PetscReal coords[4];
 
   switch(dualIndex) {
     case 0:
@@ -470,23 +470,23 @@ PetscScalar zero(const PetscReal coords[]) {
   return 0.0;
 }
 
-PetscScalar constant(const double x[]) {
+PetscScalar constant(const PetscReal x[]) {
   return -4.0;
 };
 
-PetscScalar nonlinear_2d(const double x[]) {
+PetscScalar nonlinear_2d(const PetscReal x[]) {
   return -4.0 - lambda*PetscExpScalar(x[0]*x[0] + x[1]*x[1]);
 };
 
-PetscScalar linear_2d(const double x[]) {
+PetscScalar linear_2d(const PetscReal x[]) {
   return -6.0*(x[0] - 0.5) - 6.0*(x[1] - 0.5);
 };
 
-PetscScalar quadratic_2d(const double x[]) {
+PetscScalar quadratic_2d(const PetscReal x[]) {
   return x[0]*x[0] + x[1]*x[1];
 };
 
-PetscScalar cubic_2d(const double x[]) {
+PetscScalar cubic_2d(const PetscReal x[]) {
   return x[0]*x[0]*x[0] - 1.5*x[0]*x[0] + x[1]*x[1]*x[1] - 1.5*x[1]*x[1] + 0.5;
 };
 
@@ -871,7 +871,7 @@ int main(int argc, char **argv)
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);
   ierr = DMDestroy(&user.dm);CHKERRQ(ierr);
   ierr = PetscFinalize();
-  PetscFunctionReturn(0);
+  return 0;
 }
 
 #undef __FUNCT__
@@ -923,9 +923,9 @@ PetscErrorCode FormInitialGuess(Vec X, PetscScalar (*guessFunc)(const PetscReal 
   const Obj<PETSC_MESH_TYPE::real_section_type>&  coordinates = this->_mesh->getRealSection("coordinates");
   const int                                       localDof    = this->_mesh->sizeWithBC(s, *cells->begin());
   PETSC_MESH_TYPE::real_section_type::value_type *values      = new PETSC_MESH_TYPE::real_section_type::value_type[localDof];
-  double                                         *v0          = new double[dim()];
-  double                                         *J           = new double[dim()*dim()];
-  double                                          detJ;
+  PetscReal                                      *v0          = new PetscReal[dim()];
+  PetscReal                                      *J           = new PetscReal[dim()*dim()];
+  PetscReal                                       detJ;
   ALE::ISieveVisitor::PointRetriever<PETSC_MESH_TYPE::sieve_type> pV((int) pow(this->_mesh->getSieve()->getMaxConeSize(), this->_mesh->depth())+1, true);
 
   for(PETSC_MESH_TYPE::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
