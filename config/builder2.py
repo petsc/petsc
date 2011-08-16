@@ -77,7 +77,7 @@ def check(args):
       if maker.runTest(exampleDir, executable, 1, **params):
         print 'TEST FAILED (check make.log for details)'
         return 1
-    if os.path.isdir(objDir): shutil.rmtree(objDir)
+    if not args.retain and os.path.isdir(objDir): shutil.rmtree(objDir)
   print 'All tests pass'
   maker.cleanup()
   return 0
@@ -128,6 +128,7 @@ parser_build.set_defaults(func=build)
 parser_check = subparsers.add_parser('check', help='Check that build is functional')
 parser_check.add_argument('files', nargs='*', help='Extra examples to test')
 parser_check.add_argument('--args', action='append', default=[], help='Extra execution arguments for test')
+parser_check.add_argument('--retain', action='store_true', default=False, help='Retain the executable after testing')
 parser_check.set_defaults(func=check)
 parser_clean = subparsers.add_parser('clean', help='Remove source database and all objects')
 parser_clean.set_defaults(func=clean)

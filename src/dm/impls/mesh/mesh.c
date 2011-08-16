@@ -138,9 +138,14 @@ PetscErrorCode DMMeshView_Sieve_Ascii(const ALE::Obj<PETSC_MESH_TYPE>& mesh, Pet
     int dim = mesh->getDimension();
 
     ierr = PetscViewerASCIIPrintf(viewer, "Mesh in %d dimensions:\n", dim);CHKERRQ(ierr);
-    for(int d = 0; d <= dim; d++) {
-      // FIX: Need to globalize
-      ierr = PetscViewerASCIIPrintf(viewer, "  %d %d-cells\n", mesh->depthStratum(d)->size(), d);CHKERRQ(ierr);
+    if (mesh->depth() == 1) {
+      ierr = PetscViewerASCIIPrintf(viewer, "  %d %d-cells\n", mesh->depthStratum(0)->size(), 0);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer, "  %d %d-cells\n", mesh->heightStratum(0)->size(), dim);CHKERRQ(ierr);
+    } else {
+      for(int d = 0; d <= dim; d++) {
+        // FIX: Need to globalize
+        ierr = PetscViewerASCIIPrintf(viewer, "  %d %d-cells\n", mesh->depthStratum(d)->size(), d);CHKERRQ(ierr);
+      }
     }
   }
   ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);

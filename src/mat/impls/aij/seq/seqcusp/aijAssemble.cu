@@ -151,7 +151,6 @@ typedef cusp::array1d<ValueType, memSpace> ValueArray;
 typedef IndexArray::iterator IndexArrayIterator;
 typedef ValueArray::iterator ValueArrayIterator;
 
-EXTERN_C_BEGIN
 // Ne: Number of elements
 // Nl: Number of dof per element
 #undef __FUNCT__
@@ -299,4 +298,3 @@ PetscErrorCode MatSeqAIJSetValuesBatch(Mat J, PetscInt Ne, PetscInt Nl, PetscInt
   ierr = PetscLogEventEnd(MAT_CUSPSetValuesBatch,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
