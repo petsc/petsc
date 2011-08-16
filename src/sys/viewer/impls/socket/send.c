@@ -786,14 +786,19 @@ EXTERN_C_BEGIN
 PetscErrorCode YAML_AMS_Connect(PetscInt argc,char **args,PetscInt *argco,char ***argso)
 {
   PetscErrorCode ierr;
-  char           **list;
+  char           **list = 0;
 
   PetscFunctionBegin;
   ierr = AMS_Connect(0,-1,&list);
   if (ierr) {ierr = PetscInfo1(PETSC_NULL,"AMS_Connect() error %d\n",ierr);CHKERRQ(ierr);}
+  else if (!list) {ierr = PetscInfo(PETSC_NULL,"AMS_Connect() list empty, not running AMS server\n");CHKERRQ(ierr);}
   *argco = 1;
   ierr = PetscMalloc(sizeof(char*),argso);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(list[0],&(*argso)[0]);CHKERRQ(ierr);
+  if (list){
+    ierr = PetscStrallocpy(list[0],&(*argso)[0]);CHKERRQ(ierr);
+  } else {
+    ierr = PetscStrallocpy("No AMS publisher running",&(*argso)[0]);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

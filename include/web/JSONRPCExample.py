@@ -84,6 +84,9 @@ class JSONRPCExample:
         elif sender == self.button_useclass3:
             if sent > recv: 
                self.text_area.setText('sent '+str(sent)+' recv '+str(recv))
+            newstatus2=Label()
+            newstatus2.setText('Memories for AMS Comm: '+self.commobj.commname)
+            self.panel.add(newstatus2)
             result = self.commobj.get_memory_list()
             self.text_area.setText('1')
             for i in result:
@@ -182,7 +185,7 @@ class AMS_Memory(JSONProxy):
            otherwise returns current (possibly out-dated) memory list'''
         return self.fieldlist
 
-    def get_field_info(self,field):
+    def get_field_info(self,field, func = null):
         '''Pass in string name of AMS field
            If called with func (not yet done) then first updates comm with latest field list and then calls func with field'''
         if not self.fields.has_key(field):
@@ -238,7 +241,7 @@ class AMS_Comm(JSONProxy):
         else:
             return self.memlist
 
-    def memory_attach(self,memory):
+    def memory_attach(self,memory,func = null):
         '''Pass in string name of AMS memory object
            If called with func (not yet done) then first updates comm with latest memory list and then calls func with memory'''
         return self.memories[memory]
@@ -251,9 +254,12 @@ class AMS_Comm(JSONProxy):
         rid    = request_info.id
         if method == "YAML_AMS_Connect":
             self.commname = str(response)
-            id = self.remote.YAML_AMS_Comm_attach(self.commname,self)
-            args[id] = ['YAML_AMS_Comm_attach',self.commname]
-            sent += 1
+            if self.commname == 'No AMS publisher running':
+                 pass
+            else:
+                 id = self.remote.YAML_AMS_Comm_attach(self.commname,self)
+                 args[id] = ['YAML_AMS_Comm_attach',self.commname]
+                 sent += 1
         elif method == "YAML_AMS_Comm_attach":
             self.comm = str(response)
             id = self.remote.YAML_AMS_Comm_get_memory_list(self.comm,self)
@@ -271,9 +277,6 @@ class AMS_Comm(JSONProxy):
         pass
 
 if __name__ == '__main__':
-    # for pyjd, set up a web server and load the HTML from there:
-    # this convinces the browser engine that the AJAX will be loaded
-    # from the same URI base as the URL, it's all a bit messy...
     pyjd.setup()
     app = JSONRPCExample()
     app.onModuleLoad()
