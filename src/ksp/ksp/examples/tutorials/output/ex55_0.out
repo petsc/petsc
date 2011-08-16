@@ -2,10 +2,10 @@
 		[0]PCSetUp_GAMG 1) N=696, bs=2, n data cols=2, 1 active pes
 	[0]PCSetUp_GAMG 2 levels
 PCSetUp_GAMG max eigen = 2.186917e+00 min = 2.258067e-02
-  0 KSP Residual norm 2.531057091415e-02 
-  1 KSP Residual norm 1.064725173752e-01 
-  2 KSP Residual norm 6.658858948549e-03 
-  3 KSP Residual norm 5.606826369358e-04 
-  4 KSP Residual norm 3.957327935511e-05 
-  5 KSP Residual norm 2.332992836028e-06 
-  6 KSP Residual norm 1.700503029113e-07 
+  0 KSP Residual norm 0.0253106 
+  1 KSP Residual norm 0.106473 
+  2 KSP Residual norm 0.00665886 
+  3 KSP Residual norm 0.000560683 
+  4 KSP Residual norm 3.95733e-05 
+  5 KSP Residual norm 2.33299e-06 
+  6 KSP Residual norm 1.7005e-07 
