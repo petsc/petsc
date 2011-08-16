@@ -61,6 +61,7 @@ int main(int argc, char **argv)
   PetscViewer    view_out, view_p, view_q, view_psi, view_mat;
   PetscReal      bounds[] = {1000.0,-1000.,0.0,1.0,1000.0,-1000.0,0.0,1.0,1000.0,-1000.0}; 
 
+
   PetscInitialize(&argc,&argv, (char*)0, help);
   
   /* Get physics and time parameters */
@@ -140,6 +141,12 @@ int main(int argc, char **argv)
     ierr = VecView(x,PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD));CHKERRQ(ierr);
   }
   while(t<user.T) {
+    char         filename[PETSC_MAX_PATH_LEN];
+    PetscScalar  a = 1.0;
+    PetscInt     i;
+    PetscViewer  view;
+    
+
     ierr = SNESSetFunction(snes,r,FormFunction,(void*)&user);CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,J,J,FormJacobian,(void*)&user);CHKERRQ(ierr);
 
@@ -159,12 +166,23 @@ int main(int argc, char **argv)
     if (user.graphics) {
       ierr = VecView(x,PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD));CHKERRQ(ierr);
     }
-
+   
     PetscInt its;
     ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"SNESVI solver converged at t = %5.4g in %d iterations\n",t,its);CHKERRQ(ierr);
 
     ierr = Update_u(x,&user);CHKERRQ(ierr);
+    for (i=0; i < (int)(user.T/a) ; i++) {
+      if (t/a > i - user.dt/a && t/a < i + user.dt/a) {
+        sprintf(filename,"output_%f",t);
+        ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_WRITE,&view);CHKERRQ(ierr);
+        ierr = VecView(user.cv,view);CHKERRQ(ierr);
+        ierr = VecView(user.ci,view);CHKERRQ(ierr);
+        ierr = VecView(user.eta,view);CHKERRQ(ierr);
+        ierr = PetscViewerDestroy(&view);CHKERRQ(ierr);
+      }
+        
+    }
     ierr = UpdateMatrices(&user);CHKERRQ(ierr);
     t = t + user.dt;
     
@@ -674,16 +692,16 @@ PetscErrorCode GetParams(AppCtx* user)
   
   /* Set default parameters */
   user->xmin = 0.0; user->xmax = 128.0;
-  user->Dv = 1.0; user->Di=4.0;
-  user->Evf = 0.8; user->Eif = 1.2;
+  user->Dv = 1.0; user->Di=1.0;
+  user->Evf = 0.8; user->Eif = 0.8;
   user->A = 1.0;
   user->kBT = 0.11;
   user->kav = 1.0; user->kai = 1.0; user->kaeta = 1.0;
-  user->Rsurf = 10.0; user->Rbulk = 1.0;
+  user->Rsurf = 10.0; user->Rbulk = 0.0;
   user->L = 10.0; user->P_casc = 0.05;
   user->T = 1.0e-2;    user->dt = 1.0e-4;
   user->VG = 100.0;
-  user->initv = .00069;
+  user->initv = .0001;
   user->initeta = 0.0;
   user->graphics = PETSC_TRUE;
   
@@ -761,8 +779,8 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
       idx[0] = ele[2*i]; idx[1] = ele[2*i+1]; 
 
       if (user->degenerate) {
-        cv_sum = (user->smallnumber + cv_p[idx[0]]+cv_p[idx[1]])*user->Dv/(2.0*user->kBT);
-        ci_sum = (user->smallnumber + ci_p[idx[0]]+ci_p[idx[1]])*user->Di/(2.0*user->kBT);
+        cv_sum = (2.0*user->smallnumber + cv_p[idx[0]]+cv_p[idx[1]])*user->Dv/(2.0*user->kBT);
+        ci_sum = (2.0*user->smallnumber + ci_p[idx[0]]+ci_p[idx[1]])*user->Di/(2.0*user->kBT);
       } else {
         cv_sum = user->initv*user->Dv/user->kBT;
         ci_sum = user->initv*user->Di/user->kBT;
@@ -929,8 +947,8 @@ PetscErrorCode UpdateMatrices(AppCtx* user)
     for(r=0;r<2;r++) {
 
       if (user->degenerate) {
-        cv_sum = (user->smallnumber + cv_p[idx[0]] + cv_p[idx[1]])*user->Dv/(2.0*user->kBT);
-        ci_sum = (user->smallnumber + ci_p[idx[0]] + ci_p[idx[1]])*user->Di/(2.0*user->kBT);
+        cv_sum = (2.0*user->smallnumber + cv_p[idx[0]] + cv_p[idx[1]])*user->Dv/(2.0*user->kBT);
+        ci_sum = (2.0*user->smallnumber + ci_p[idx[0]] + ci_p[idx[1]])*user->Di/(2.0*user->kBT);
       } else {
         cv_sum = user->initv*user->Dv/user->kBT;
         ci_sum = user->initv*user->Di/user->kBT;
