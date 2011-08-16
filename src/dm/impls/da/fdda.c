@@ -148,8 +148,7 @@ PetscErrorCode  DMGetColoring_DA(DM da,ISColoringType ctype,const MatType mtype,
 
   /* Tell the DMDA it has 1 degree of freedom per grid point so that the coloring for BAIJ 
      matrices is for the blocks, not the individual matrix elements  */
-  ierr = PetscStrcmp(mtype,MATBAIJ,&isBAIJ);CHKERRQ(ierr);
-  if (!isBAIJ) {ierr = PetscStrcmp(mtype,MATMPIBAIJ,&isBAIJ);CHKERRQ(ierr);}
+  ierr = PetscStrcmp(mtype,MATMPIBAIJ,&isBAIJ);CHKERRQ(ierr);
   if (!isBAIJ) {ierr = PetscStrcmp(mtype,MATSEQBAIJ,&isBAIJ);CHKERRQ(ierr);}
   if (isBAIJ) {
     dd->w = 1;

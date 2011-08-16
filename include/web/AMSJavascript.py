@@ -13,6 +13,8 @@ from pyjamas.ui.VerticalPanel import VerticalPanel
 from pyjamas.ui.HorizontalPanel import HorizontalPanel
 from pyjamas.ui.ListBox import ListBox
 from pyjamas.JSONService import JSONProxy
+from pyjamas.ui.Tree import Tree
+from pyjamas.ui.TreeItem import TreeItem
 
 import time
 
@@ -40,6 +42,7 @@ class JSONRPCExample:
         self.panel.add(self.status)
         RootPanel().add(self.panel)
         self.commobj = AMS_Comm()
+        self.tree = None
 
     def onClick(self, sender):
         global args,sent,recv
@@ -55,14 +58,18 @@ class JSONRPCExample:
             else:
                self.status.setText('Memories for AMS Comm: '+self.commobj.commname)
                result = self.commobj.get_memory_list()
+               if self.tree: self.panel.remove(self.tree)
+               self.tree = Tree()
                for i in result:
+                  subtree = TreeItem(i)
                   memory = self.commobj.memory_attach(i)
                   fields = memory.get_field_list()
                   for j in fields:
                      field = memory.get_field_info(j)
-                     newstatus2=Label()
-                     newstatus2.setText(i+'('+memory.name+':'+memory.memory+') : '+j+' : '+str(field))
-                     self.panel.add(newstatus2)
+                     subtree.addItem(j+' = '+str(field[4]))
+                  self.tree.addItem(subtree)
+                  self.panel.add(self.tree)
+
 
 
     def onRemoteResponse(self, response, request_info):

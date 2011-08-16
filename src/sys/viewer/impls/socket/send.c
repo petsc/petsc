@@ -44,7 +44,7 @@ typedef unsigned long   u_long;
 #if defined(PETSC_HAVE_WINSOCK2_H)
 #include <Winsock2.h>
 #endif
-
+#include <sys/stat.h>
 #include <../src/sys/viewer/impls/socket/socket.h>
 
 EXTERN_C_BEGIN
@@ -1310,18 +1310,18 @@ PetscErrorCode  PetscWebServeRequest(int port)
     ierr = PetscStrreplace(PETSC_COMM_SELF,fullpath,truefullpath,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
     fdo  = fopen(truefullpath,"r"); 
     if (fdo) {      
-      ierr = PetscStrendswith(fullpath,".html",&flg);CHKERRQ(ierr);
-      if (flg) type = "text/html";
-      else {
-        ierr = PetscStrendswith(fullpath,".js",&flg);CHKERRQ(ierr);
-        if (flg) type = "text/javascript";
-        else type = "text/unknown";
-      }
-     
-      ierr = PetscWebSendHeader(fd, 200, "OK", NULL, type, -1);CHKERRQ(ierr);
-      while (fgets(buf, sizeof(buf), fdo)) {
-        fprintf(fd,"%s\n",buf);
-      }
+      PetscInt    length,index;
+      char        data[4096];
+      struct stat statbuf;
+      int         n;
+      const char  *suffixes[] = {".html",".js",".gif",0}, *mimes[] = {"text/html","text/javascript","image/gif","text/unknown"};
+
+      ierr = PetscStrendswithwhich(fullpath,suffixes,&index);CHKERRQ(ierr);
+      type = mimes[index];
+      if (!stat(truefullpath, &statbuf)) length = -1;
+      else length = S_ISREG(statbuf.st_mode) ? statbuf.st_size : -1;
+      ierr = PetscWebSendHeader(fd, 200, "OK", NULL, type, length);CHKERRQ(ierr);
+      while ((n = fread(data, 1, sizeof(data), fdo)) > 0) fwrite(data, 1, n, fd);
       fclose(fdo);
       ierr = PetscInfo2(PETSC_NULL,"Sent file %s to browser using format %s\n",fullpath,type);CHKERRQ(ierr);       
       goto theend;
