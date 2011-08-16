@@ -542,8 +542,8 @@ PetscErrorCode PetscWebSendError(FILE *f, int status, const char *title, const c
 
 #if defined(PETSC_HAVE_AMS)
 #undef __FUNCT__  
-#define __FUNCT__ "PetscAMSDisplay"
-PetscErrorCode PetscAMSDisplay(FILE *fd)
+#define __FUNCT__ "PetscAMSDisplayList"
+PetscErrorCode PetscAMSDisplayList(FILE *fd)
 {
   PetscErrorCode     ierr;
   char               host[256],**comm_list,**mem_list,**fld_list;
@@ -1282,18 +1282,18 @@ PetscErrorCode  PetscWebServeRequest(int port)
 #if defined(PETSC_HAVE_AMS)
       if (PetscAMSPublishAll) {
 	fprintf(fd, "<a href=\"./ams-tree\">Connect to Memory Snooper--Tree Display</a></p>\r\n\r\n");
-        fprintf(fd, "<a href=\"./ams\">Connect to Memory Snooper</a></p>\r\n\r\n");
+        fprintf(fd, "<a href=\"./ams-list\">Connect to Memory Snooper--List Display</a></p>\r\n\r\n");
       }
 #endif
-      fprintf(fd, "<a href=\"./JSONRPCExample.html\">JSONRPCExample.html</a></p>\r\n\r\n");
+      fprintf(fd, "<a href=\"./JSONRPCExample.html\">Connect to Memory Snooper--Interactive Javascript</a></p>\r\n\r\n");
       ierr = PetscWebSendFooter(fd);CHKERRQ(ierr);
       goto theend;
     }
 
 #if defined(PETSC_HAVE_AMS)
-    ierr = PetscStrcmp(path,"/ams",&flg);CHKERRQ(ierr);
+    ierr = PetscStrcmp(path,"/ams-list",&flg);CHKERRQ(ierr);
     if (flg) {      
-      ierr = PetscAMSDisplay(fd);CHKERRQ(ierr);
+      ierr = PetscAMSDisplayList(fd);CHKERRQ(ierr);
       goto theend;
     }
     printf("path %s\n",path);

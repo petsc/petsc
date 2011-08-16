@@ -23,85 +23,41 @@ recv   = 0   # Number of calls received from server
 
 class JSONRPCExample:
     def onModuleLoad(self):
-        self.TEXT_WAITING = "Waiting for response..."
-        self.TEXT_ERROR = "Server Error"
-        self.remote_py = ServicePython()
         self.status=Label()
-        self.text_area = TextArea()
-        self.text_area.setText("Simple text")
-        self.text_area.setCharacterWidth(80)
-        self.text_area.setVisibleLines(8)
-        
-        self.button_echo = Button("Send to echo Service", self)
-        self.button_ams_memlist = Button("Get AMS memory list", self)
-        self.button_useclass = Button("Useclass", self)
-        self.button_useclass2 = Button("Useclass2", self)
-        self.button_useclass3 = Button("Useclass3", self)
+        self.button = Button("Get list of all published memories and fields", self)
 
         buttons = HorizontalPanel()
-        buttons.add(self.button_echo)
-        buttons.add(self.button_ams_memlist)
-        buttons.add(self.button_useclass)
-        buttons.add(self.button_useclass2)
-        buttons.add(self.button_useclass3)
+        buttons.add(self.button)
         buttons.setSpacing(8)
         
-        info = """<h2>JSON-RPC Example</h2>
-        <p>This example demonstrates the calling of AMS server in PETSc with <a href="http://json-rpc.org/">JSON-RPC</a>.
-        </p>"""
+        info = """<p>This example demonstrates the calling of the Memory Snooper in PETSc with Pyjamas and <a href="http://json-rpc.org/">JSON-RPC</a>.</p>"""
         
         self.panel = VerticalPanel()
         self.panel.add(HTML(info))
         self.panel.add(buttons)
         self.panel.add(self.status)
-        
         RootPanel().add(self.panel)
-        self.panel.add(self.text_area)
-
         self.commobj = AMS_Comm()
-
-    def joe(self,response):
-        self.text_area.setText('kate'+str(response))
 
     def onClick(self, sender):
         global args,sent,recv
-        self.status.setText(self.TEXT_WAITING)
-        text = self.text_area.getText()
-
-        if sender == self.button_echo:
-            id = self.remote_py.YAML_echo(text, self)
-            args[id] = ['YAML_echo',text]
-            sent += 1
-        elif sender == self.button_ams_memlist:
-            id = self.remote_py.YAML_AMS_Connect(text, self)
-            args[id] = ['YAML_AMS_Connect',text]
-            sent += 1
-        elif sender == self.button_useclass:
-            self.text_area.setText('joe'+str(self.commobj.get_memory_list())+str(self.commobj.commname))
-        elif sender == self.button_useclass2:
-            result = self.commobj.get_memory_list(func = self.joe)
-            self.text_area.setText('old'+str(result))
-        elif sender == self.button_useclass3:
+        self.status.setText('Button pressed')
+        if sender == self.button:
             if sent > recv: 
-               self.text_area.setText('sent '+str(sent)+' recv '+str(recv))
-            newstatus2=Label()
-            newstatus2.setText('Memories for AMS Comm: '+self.commobj.commname)
-            self.panel.add(newstatus2)
-            result = self.commobj.get_memory_list()
-            self.text_area.setText('1')
-            for i in result:
-               self.text_area.setText('2')
-               memory = self.commobj.memory_attach(i)
-               self.text_area.setText('3')
-               fields = memory.get_field_list()
-               self.text_area.setText('4')
-               for j in fields:
-                  self.text_area.setText('5'+j)
-                  field = memory.get_field_info(j)
-                  self.text_area.setText('6')
-                  newstatus2=Label()
-                  newstatus2.setText(i+'('+memory.name+':'+memory.memory+') : '+j+' : '+str(field))
-                  self.panel.add(newstatus2)
+               self.status.setText('Press button again: sent '+str(sent)+' recv '+str(recv))
+            if self.commobj.commname == 'No AMS publisher running':
+               self.status.setText(self.commobj.commname)
+            else:
+               self.status.setText('Memories for AMS Comm: '+self.commobj.commname)
+               result = self.commobj.get_memory_list()
+               for i in result:
+                  memory = self.commobj.memory_attach(i)
+                  fields = memory.get_field_list()
+                  for j in fields:
+                     field = memory.get_field_info(j)
+                     newstatus2=Label()
+                     newstatus2.setText(i+'('+memory.name+':'+memory.memory+') : '+j+' : '+str(field))
+                     self.panel.add(newstatus2)
 
 
     def onRemoteResponse(self, response, request_info):
@@ -111,40 +67,6 @@ class JSONRPCExample:
         self.status.setText(response)
         method = str(request_info.method)
         rid    = request_info.id
-        if method == "YAML_AMS_Connect":
-            id = self.remote_py.YAML_AMS_Comm_attach(str(response),self)
-            args[id] = ['YAML_AMS_Comm_attach',str(response)]
-            sent += 1
-        elif method == "YAML_AMS_Comm_attach":
-            comm = response  # will only work for one comm
-            id = self.remote_py.YAML_AMS_Comm_get_memory_list(comm,self)
-            args[id] = ['YAML_AMS_Comm_get_memory_list',comm]
-            sent += 1
-        elif method == "YAML_AMS_Comm_get_memory_list":
-            memlist = response
-            for i in memlist:
-                id = self.remote_py.YAML_AMS_Memory_attach(comm,i,self)
-                args[id] = ['YAML_AMS_Memory_attach',comm,i]
-                sent += 1
-        elif method == "YAML_AMS_Memory_attach":
-            memory = response[0]
-            step   = response[1]
-            id = self.remote_py.YAML_AMS_Memory_get_field_list(memory,self)
-            args[id] = ['YAML_AMS_Memory_get_field_list',memory]
-            sent += 1
-        elif method == "YAML_AMS_Memory_get_field_list":
-            localmemory = args[rid][1]
-            for i in response:
-                id = self.remote_py.YAML_AMS_Memory_get_field_info(localmemory,i,self)
-                args[id] = ['YAML_AMS_Memory_get_field_info',localmemory,i]
-                sent += 1
-        elif method == "YAML_AMS_Memory_get_field_info":
-            newstatus2=Label()
-            newstatus2.setText(str(args[rid])+str(response))
-            self.panel.add(newstatus2)
-
-
-
 
     def onRemoteError(self, code, errobj, request_info):
         # onRemoteError gets the HTTP error code or 0 and
