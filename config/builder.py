@@ -1091,6 +1091,7 @@ class PETScMaker(script.Script):
    return
 
  def checkTestOutput(self, testDir, executable, output, testNum):
+   from difflib import unified_diff
    outputName = os.path.join(testDir, 'output', os.path.basename(executable)+'_'+str(testNum)+'.out')
    ret        = 0
    if not os.path.isfile(outputName):
@@ -1100,6 +1101,8 @@ class PETScMaker(script.Script):
        validOutput = f.read()
        if not validOutput == output:
          self.logPrint("TEST ERROR: Regression output for %s (test %d) does not match" % (executable, testNum))
+         for line in unified_diff(output.split('\n'), validOutput.split('\n'), fromfile='Current Output', tofile='Saved Output'):
+           self.logPrint(line)
          self.logPrint(validOutput, indent = 0)
          self.logPrint(output, indent = 0)
          ret = -1

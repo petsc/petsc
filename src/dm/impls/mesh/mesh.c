@@ -2124,3 +2124,36 @@ inline void ExpandInterval_New(ALE::Point interval, PetscInt indices[], PetscInt
     indices[(*indx)++] = -1;
   }
 }
+
+
+/******************************** FEM Support **********************************/
+
+#undef __FUNCT__
+#define __FUNCT__ "DMMeshPrintCellVector"
+PetscErrorCode DMMeshPrintCellVector(PetscInt c, const char name[], PetscInt len, const PetscScalar x[]) {
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscPrintf(PETSC_COMM_SELF, "Cell %d Element %s\n", c, name);CHKERRQ(ierr);
+  for(PetscInt f = 0; f < len; ++f) {
+    PetscPrintf(PETSC_COMM_SELF, "  | %g |\n", x[f]);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMMeshPrintCellMatrix"
+PetscErrorCode DMMeshPrintCellMatrix(PetscInt c, const char name[], PetscInt rows, PetscInt cols, const PetscScalar A[]) {
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscPrintf(PETSC_COMM_SELF, "Cell %d Element %s\n", c, name);CHKERRQ(ierr);
+  for(int f = 0; f < rows; ++f) {
+    PetscPrintf(PETSC_COMM_SELF, "  |");
+    for(int g = 0; g < cols; ++g) {
+      PetscPrintf(PETSC_COMM_SELF, " %g", A[f*cols+g]);
+    }
+    PetscPrintf(PETSC_COMM_SELF, " |\n");
+  }
+  PetscFunctionReturn(0);
+}
