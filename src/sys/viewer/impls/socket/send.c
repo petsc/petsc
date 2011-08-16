@@ -1285,7 +1285,7 @@ PetscErrorCode  PetscWebServeRequest(int port)
         fprintf(fd, "<a href=\"./ams-list\">Connect to Memory Snooper--List Display</a></p>\r\n\r\n");
       }
 #endif
-      fprintf(fd, "<a href=\"./JSONRPCExample.html\">Connect to Memory Snooper--Interactive Javascript</a></p>\r\n\r\n");
+      fprintf(fd, "<a href=\"./AMSJavascript.html\">Connect to Memory Snooper--Interactive Javascript</a></p>\r\n\r\n");
       ierr = PetscWebSendFooter(fd);CHKERRQ(ierr);
       goto theend;
     }

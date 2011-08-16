@@ -1,5 +1,5 @@
 #   
-#   Run python pyjsbuild --output . JSONRPCExample.py to generate the needed HTML and Javascript
+#   Run python pyjsbuild --output . AMSJavascript.py to generate the needed HTML and Javascript
 #
 
 import pyjd 
@@ -24,10 +24,12 @@ recv   = 0   # Number of calls received from server
 class JSONRPCExample:
     def onModuleLoad(self):
         self.status=Label()
-        self.button = Button("Get list of all published memories and fields", self)
+        self.button = Button("Display list of all published memories and fields", self)
+        self.buttonupdate = Button("Update data from AMS publisher", self)
 
         buttons = HorizontalPanel()
         buttons.add(self.button)
+        buttons.add(self.buttonupdate)
         buttons.setSpacing(8)
         
         info = """<p>This example demonstrates the calling of the Memory Snooper in PETSc with Pyjamas and <a href="http://json-rpc.org/">JSON-RPC</a>.</p>"""
@@ -42,6 +44,9 @@ class JSONRPCExample:
     def onClick(self, sender):
         global args,sent,recv
         self.status.setText('Button pressed')
+        if sender == self.buttonupdate:
+            self.commobj = AMS_Comm()
+            self.status.setText('Updating data: Press Display list button to refesh')
         if sender == self.button:
             if sent > recv: 
                self.status.setText('Press button again: sent '+str(sent)+' recv '+str(recv))
