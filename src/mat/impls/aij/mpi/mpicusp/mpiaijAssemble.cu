@@ -186,7 +186,6 @@ struct is_nonlocal
   }
 };
 
-EXTERN_C_BEGIN
 /*@C
   MatMPIAIJSetValuesBatch - Set multiple blocks of values into a matrix
 
@@ -502,4 +501,3 @@ PetscErrorCode MatMPIAIJSetValuesBatch(Mat J, PetscInt Ne, PetscInt Nl, PetscInt
   ierr = PetscLogEventEnd(MAT_CUSPSetValuesBatch,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
