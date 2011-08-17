@@ -98,12 +98,21 @@ static PetscErrorCode SNESSolve_SORQN(SNES snes)
       for (j = rs; j < re; j++) {
 	ierr = VecGetValues(dX, 1, &j, &dX_i);CHKERRQ(ierr);
 	ierr = VecGetValues(Y, 1, &j, &Y_i);CHKERRQ(ierr);
+#ifdef PETSC_USE_COMPLEX
+	if (PetscAbs(PetscRealPart(dX_i)) > 1e-18) {
+	  Y_i = Y_i / dX_i;
+	  if (PetscAbs(PetscRealPart(Y_i)) > 1e-18) {
+	    ierr = VecSetValues(B, 1, &j, &Y_i, INSERT_VALUES);CHKERRQ(ierr);
+	  }
+	}
+#else
 	if (PetscAbs(dX_i) > 1e-18) {
 	  Y_i = Y_i / dX_i;
 	  if (PetscAbs(Y_i) > 1e-18) {
 	    ierr = VecSetValues(B, 1, &j, &Y_i, INSERT_VALUES);CHKERRQ(ierr);
 	  }
 	}
+#endif
       }
       ierr = VecAssemblyBegin(B);
       ierr = VecAssemblyEnd(B);
