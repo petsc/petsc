@@ -171,6 +171,7 @@ struct _MatOps {
   PetscErrorCode (*dummy4)(Mat,Vec,Vec,Vec);
   PetscErrorCode (*getsubmatricesparallel)(Mat,PetscInt,const IS[], const IS[], MatReuse, Mat**);
   /*129*/
+  PetscErrorCode (*setvaluesbatch)(Mat,PetscInt,PetscInt,PetscInt*,const PetscScalar*);
 };
 /*
     If you add MatOps entries above also add them to the MATOP enum
@@ -1002,6 +1003,6 @@ extern PetscLogEvent  MAT_Getsymtranspose, MAT_Transpose_SeqAIJ, MAT_Getsymtrans
 
 extern PetscLogEvent  MATMFFD_Mult;
 extern PetscLogEvent  MAT_GetMultiProcBlock;
-extern PetscLogEvent  MAT_CUSPCopyToGPU, MAT_CUSPSetValuesBatch, MAT_CUSPSetValuesBatchI, MAT_CUSPSetValuesBatchII, MAT_CUSPSetValuesBatchIII, MAT_CUSPSetValuesBatchIV;
+extern PetscLogEvent  MAT_CUSPCopyToGPU, MAT_SetValuesBatch, MAT_SetValuesBatchI, MAT_SetValuesBatchII, MAT_SetValuesBatchIII, MAT_SetValuesBatchIV;
 
 #endif

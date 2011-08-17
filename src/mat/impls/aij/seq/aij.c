@@ -3133,7 +3133,10 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
        MatGetMultiProcBlock_SeqAIJ,
 /*124*/MatFindNonzeroRows_SeqAIJ,
        MatGetColumnNorms_SeqAIJ,
-       MatInvertBlockDiagonal_SeqAIJ
+       MatInvertBlockDiagonal_SeqAIJ,
+       0,
+       0,
+/*129*/0
 };
 
 EXTERN_C_BEGIN

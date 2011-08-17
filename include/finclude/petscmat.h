@@ -334,6 +334,7 @@
       PetscEnum MATOP_GETMULTIPROCBLOCK
       PetscEnum MATOP_GETCOLUMNNORMS
       PetscEnum MATOP_GET_SUBMATRICES_PARALLEL
+      PetscEnum MATOP_SET_VALUES_BATCH
 
       parameter(MATOP_SET_VALUES=0)
       parameter(MATOP_GET_ROW=1)
@@ -461,8 +462,9 @@
       parameter(MATOP_GETMULTIPROCBLOCK=123)
       parameter(MATOP_GETCOLUMNNORMS=125)
       parameter(MATOP_GET_SUBMATRICES_PARALLEL=128)
+      parameter(MATOP_SET_VALUES_BATCH=129)
 !
-!  
+!
 !
       PetscEnum MATRIX_BINARY_FORMAT_DENSE
       parameter (MATRIX_BINARY_FORMAT_DENSE=-1)

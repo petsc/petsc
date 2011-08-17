@@ -373,6 +373,7 @@ extern PetscErrorCode  MatSetValues(Mat,PetscInt,const PetscInt[],PetscInt,const
 extern PetscErrorCode  MatSetValuesBlocked(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
 extern PetscErrorCode  MatSetValuesRow(Mat,PetscInt,const PetscScalar[]);
 extern PetscErrorCode  MatSetValuesRowLocal(Mat,PetscInt,const PetscScalar[]);
+extern PetscErrorCode  MatSetValuesBatch(Mat, PetscInt, PetscInt, PetscInt *, PetscScalar *);
 
 /*S
      MatStencil - Data structure (C struct) for storing information about a single row or
@@ -682,9 +683,6 @@ PETSC_STATIC_INLINE PetscErrorCode MatSetValue(Mat v,PetscInt i,PetscInt j,Petsc
 PETSC_STATIC_INLINE PetscErrorCode MatGetValue(Mat v,PetscInt i,PetscInt j,PetscScalar *va) {return MatGetValues(v,1,&i,1,&j,va);}
 
 PETSC_STATIC_INLINE PetscErrorCode MatSetValueLocal(Mat v,PetscInt i,PetscInt j,PetscScalar va,InsertMode mode) {return MatSetValuesLocal(v,1,&i,1,&j,&va,mode);}
-
-extern PetscErrorCode MatSeqAIJSetValuesBatch(Mat, PetscInt, PetscInt, PetscInt *, PetscScalar *);
-extern PetscErrorCode MatMPIAIJSetValuesBatch(Mat, PetscInt, PetscInt, PetscInt *, PetscScalar *);
 
 /*MC
    MatPreallocateInitialize - Begins the block of code that will count the number of nonzeros per
@@ -1579,7 +1577,8 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_MULTHERMITIANTRANSPOSEADD=122,
                MATOP_GETMULTIPROCBLOCK=123,
                MATOP_GETCOLUMNNORMS=125,
-	       MATOP_GET_SUBMATRICES_PARALLEL=128
+	       MATOP_GET_SUBMATRICES_PARALLEL=128,
+               MATOP_SET_VALUES_BATCH=129
              } MatOperation;
 extern PetscErrorCode  MatHasOperation(Mat,MatOperation,PetscBool *);
 extern PetscErrorCode  MatShellSetOperation(Mat,MatOperation,void(*)(void));
