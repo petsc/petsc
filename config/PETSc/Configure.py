@@ -312,7 +312,7 @@ class Configure(config.base.Configure):
       self.setCompilers.popLanguage()
     fd.write('\"-----------------------------------------\\n\";\n')
     fd.write('static const char *petsccompilerflagsinfo = \"\\n\"\n')
-    fd.write('\"Using include paths: %s %s %s\\n\"\n' % ('-I'+os.path.join(self.petscdir.dir, self.arch.arch, 'include'), '-I'+os.path.join(self.petscdir.dir, 'include'), self.PETSC_CC_INCLUDES))
+    fd.write('\"Using include paths: %s %s %s\\n\"\n' % ('-I'+os.path.join(self.petscdir.dir, self.arch.arch, 'include'), '-I'+os.path.join(self.petscdir.dir, 'include'), self.PETSC_CC_INCLUDES.replace('\\ ','\\\\ ')))
     fd.write('\"-----------------------------------------\\n\";\n')
     fd.write('static const char *petsclinkerinfo = \"\\n\"\n')
     self.setCompilers.pushLanguage(self.languages.clanguage)
@@ -326,7 +326,7 @@ class Configure(config.base.Configure):
       petsclib = '-lpetsc'
     else:
       petsclib = '-lpetscts -lpetscsnes -lpetscksp -lpetscdm -lpetscmat -lpetscvec -lpetscsys'
-    fd.write('\"Using libraries: %s%s -L%s %s %s\\n\"\n' % (self.setCompilers.CSharedLinkerFlag, os.path.join(self.petscdir.dir, self.arch.arch, 'lib'), os.path.join(self.petscdir.dir, self.arch.arch, 'lib'), petsclib, self.PETSC_EXTERNAL_LIB_BASIC))
+    fd.write('\"Using libraries: %s%s -L%s %s %s\\n\"\n' % (self.setCompilers.CSharedLinkerFlag, os.path.join(self.petscdir.dir, self.arch.arch, 'lib'), os.path.join(self.petscdir.dir, self.arch.arch, 'lib'), petsclib, self.PETSC_EXTERNAL_LIB_BASIC.replace('\\ ','\\\\ ')))
     fd.write('\"-----------------------------------------\\n\";\n')
     fd.close()
     return
