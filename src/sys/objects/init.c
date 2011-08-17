@@ -21,7 +21,9 @@
 #if defined(PETSC_HAVE_SYS_SYSINFO_H)
 #include <sys/sysinfo.h>
 #endif
+#if defined(PETSC_HAVE_UNISTD_H)
 #include <unistd.h>
+#endif
 #if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif

@@ -353,6 +353,7 @@ static PetscErrorCode MatView_SeqSBAIJ_ASCII(Mat A,PetscViewer viewer)
   PetscErrorCode    ierr;
   PetscInt          i,j,bs = A->rmap->bs,k,l,bs2=a->bs2;
   PetscViewerFormat format;
+  PetscInt          *diag;
   
   PetscFunctionBegin;
   ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
@@ -403,8 +404,8 @@ static PetscErrorCode MatView_SeqSBAIJ_ASCII(Mat A,PetscViewer viewer)
     if (A->factortype){ /* for factored matrix */
       if (bs>1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"matrix is factored with bs>1. Not implemented yet");
 
-      PetscInt *diag=a->diag;
-      for (i=0; i<a->mbs; i++) { // for row block i
+      diag=a->diag;
+      for (i=0; i<a->mbs; i++) { /* for row block i */
         ierr = PetscViewerASCIIPrintf(viewer,"row %D:",i);CHKERRQ(ierr);
         /* diagonal entry */
 #if defined(PETSC_USE_COMPLEX)
