@@ -373,7 +373,7 @@ extern PetscErrorCode  MatSetValues(Mat,PetscInt,const PetscInt[],PetscInt,const
 extern PetscErrorCode  MatSetValuesBlocked(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
 extern PetscErrorCode  MatSetValuesRow(Mat,PetscInt,const PetscScalar[]);
 extern PetscErrorCode  MatSetValuesRowLocal(Mat,PetscInt,const PetscScalar[]);
-extern PetscErrorCode  MatSetValuesBatch(Mat, PetscInt, PetscInt, PetscInt *, PetscScalar *);
+extern PetscErrorCode  MatSetValuesBatch(Mat, PetscInt, PetscInt, PetscInt *, const PetscScalar *);
 
 /*S
      MatStencil - Data structure (C struct) for storing information about a single row or
