@@ -1583,14 +1583,14 @@ PetscErrorCode  TSPostStep(TS ts)
 
    Input Parameters:
 +  ts - the TS context obtained from TSCreate()
-.  func - monitoring routine
+.  monitor - monitoring routine
 .  mctx - [optional] user-defined context for private data for the 
              monitor routine (use PETSC_NULL if no context is desired)
 -  monitordestroy - [optional] routine that frees monitor context
           (may be PETSC_NULL)
 
-   Calling sequence of func:
-$    int func(TS ts,PetscInt steps,PetscReal time,Vec x,void *mctx)
+   Calling sequence of monitor:
+$    int monitor(TS ts,PetscInt steps,PetscReal time,Vec x,void *mctx)
 
 +    ts - the TS context
 .    steps - iteration number
