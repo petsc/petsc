@@ -292,7 +292,7 @@ PetscErrorCode MatSetValuesBatch_SeqAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, Pet
   CUSPMATRIX *Jgpu = new CUSPMATRIX;
   cusp::convert(A, *Jgpu);
   if (PetscLogPrintInfo) {cusp::print(*Jgpu);}
-  ierr = PetscInfo(J, "Copying to CPU matrix");CHKERRQ(ierr);
+  ierr = PetscInfo(J, "Copying to CPU matrix\n");CHKERRQ(ierr);
   ierr = MatCUSPCopyFromGPU(J, Jgpu);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
