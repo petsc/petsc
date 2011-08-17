@@ -308,12 +308,12 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
     ierr=VecCopy(x_A,d);CHKERRQ(ierr);   
     ierr=VecAXPY(d,-1,x);CHKERRQ(ierr);   
     ierr=VecNorm(d,NORM_2,&d_norm);CHKERRQ(ierr);     
-    d_min_norm=10000000;
+    d_min_norm = -1.0;
     for(i=0;i<l;i++) {
       ierr=VecCopy(x_A,d);CHKERRQ(ierr);   
       ierr=VecAXPY(d,-1,xdot[i]);CHKERRQ(ierr);   
       ierr=VecNorm(d,NORM_2,&d_cur_norm);CHKERRQ(ierr);        
-      if(d_cur_norm<d_min_norm) d_min_norm=d_cur_norm;
+      if((d_cur_norm < d_min_norm) || (d_min_norm < 0.0)) d_min_norm = d_cur_norm;
     }
     if (ngmres->epsilonB*d_norm<d_min_norm || sqrt(r_norm)<ngmres->deltaB*sqrt(r_min_norm)) {
     } else {

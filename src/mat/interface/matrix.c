@@ -26,7 +26,7 @@ PetscLogEvent  MAT_Getsymtranspose, MAT_Getsymtransreduced, MAT_Transpose_SeqAIJ
 PetscLogEvent  MAT_GetBrowsOfAocols, MAT_Getlocalmat, MAT_Getlocalmatcondensed, MAT_Seqstompi, MAT_Seqstompinum, MAT_Seqstompisym;
 PetscLogEvent  MAT_Applypapt, MAT_Applypapt_numeric, MAT_Applypapt_symbolic, MAT_GetSequentialNonzeroStructure;
 PetscLogEvent  MAT_GetMultiProcBlock;
-PetscLogEvent  MAT_CUSPCopyToGPU, MAT_CUSPSetValuesBatch, MAT_CUSPSetValuesBatchI, MAT_CUSPSetValuesBatchII, MAT_CUSPSetValuesBatchIII, MAT_CUSPSetValuesBatchIV;
+PetscLogEvent  MAT_CUSPCopyToGPU, MAT_SetValuesBatch, MAT_SetValuesBatchI, MAT_SetValuesBatchII, MAT_SetValuesBatchIII, MAT_SetValuesBatchIV;
 
 /* nasty global values for MatSetValue() */
 PetscInt     MatSetValue_Row = 0;
@@ -1689,6 +1689,57 @@ PetscErrorCode  MatGetValues(Mat mat,PetscInt m,const PetscInt idxm[],PetscInt n
   ierr = PetscLogEventBegin(MAT_GetValues,mat,0,0,0);CHKERRQ(ierr);
   ierr = (*mat->ops->getvalues)(mat,m,idxm,n,idxn,v);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_GetValues,mat,0,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatSetValuesBatch"
+/*@
+  MatSetValuesBatch - Inserts many blocks of values into a matrix at once. The blocks must all be square and the same size.
+
+  Not Collective
+
+  Input Parameters:
++ mat - the matrix
+. nb - the number of blocks
+. bs - the number of rows (and columns) in each block
+. rows - a concatenation of the rows for each block
+- v - a concatenation of logically two-dimensional arrays of values
+
+  Notes:
+  In the future, we may extend this routine to handle rectangular blocks, and additive mode.
+
+  Level: advanced
+
+  Concepts: matrices^putting entries in
+
+.seealso: MatSetOption(), MatAssemblyBegin(), MatAssemblyEnd(), MatSetValuesBlocked(), MatSetValuesLocal(),
+          InsertMode, INSERT_VALUES, ADD_VALUES, MatSetValues()
+@*/
+PetscErrorCode MatSetValuesBatch(Mat mat, PetscInt nb, PetscInt bs, PetscInt rows[], const PetscScalar v[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_CLASSID,1);
+  PetscValidType(mat,1);
+  PetscValidScalarPointer(rows,4);
+  PetscValidScalarPointer(v,5);
+#if defined(PETSC_USE_DEBUG)
+  if (mat->factortype) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
+  if (mat->assembled)  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for assembled matrix");
+#endif
+
+  if (mat->ops->setvaluesbatch) {
+    ierr = PetscLogEventBegin(MAT_SetValuesBatch,mat,0,0,0);CHKERRQ(ierr);
+    ierr = (*mat->ops->setvaluesbatch)(mat,nb,bs,rows,v);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(MAT_SetValuesBatch,mat,0,0,0);CHKERRQ(ierr);
+  } else {
+    PetscInt b;
+    for(b = 0; b > nb; ++b) {
+      ierr = MatSetValues(mat, bs, &rows[b*bs], bs, &rows[b*bs], &v[b*bs*bs], INSERT_VALUES);CHKERRQ(ierr);
+    }
+  }
   PetscFunctionReturn(0);
 }
 

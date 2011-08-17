@@ -1555,6 +1555,7 @@ PetscErrorCode MatDestroy_SeqAIJCUSP(Mat A)
 
 #endif // PETSC_HAVE_TXPETSCGPU
 
+PetscErrorCode MatSetValuesBatch_SeqAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, PetscInt *elemRows, const PetscScalar *elemMats);
 
 #ifdef PETSC_HAVE_TXPETSCGPU
 
@@ -1650,9 +1651,10 @@ PetscErrorCode  MatCreate_SeqAIJCUSP(Mat B)
     }
   }
 
-  B->ops->assemblyend = MatAssemblyEnd_SeqAIJCUSP;
-  B->ops->destroy     = MatDestroy_SeqAIJCUSP;
-  B->ops->getvecs     = MatGetVecs_SeqAIJCUSP;
+  B->ops->assemblyend    = MatAssemblyEnd_SeqAIJCUSP;
+  B->ops->destroy        = MatDestroy_SeqAIJCUSP;
+  B->ops->getvecs        = MatGetVecs_SeqAIJCUSP;
+  B->ops->setvaluesbatch = MatSetValuesBatch_SeqAIJCUSP;
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJCUSP);CHKERRQ(ierr);
   B->valid_GPU_matrix = PETSC_CUSP_UNALLOCATED;
 
@@ -1682,9 +1684,10 @@ PetscErrorCode  MatCreate_SeqAIJCUSP(Mat B)
   ((Mat_SeqAIJCUSP *)B->spptr)->tempvec = 0;
   ((Mat_SeqAIJCUSP *)B->spptr)->indices = 0;
   
-  B->ops->assemblyend = MatAssemblyEnd_SeqAIJCUSP;
-  B->ops->destroy     = MatDestroy_SeqAIJCUSP;
-  B->ops->getvecs     = MatGetVecs_SeqAIJCUSP;
+  B->ops->assemblyend    = MatAssemblyEnd_SeqAIJCUSP;
+  B->ops->destroy        = MatDestroy_SeqAIJCUSP;
+  B->ops->getvecs        = MatGetVecs_SeqAIJCUSP;
+  B->ops->setvaluesbatch = MatSetValuesBatch_SeqAIJCUSP;
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJCUSP);CHKERRQ(ierr);
   B->valid_GPU_matrix = PETSC_CUSP_UNALLOCATED;
   PetscFunctionReturn(0);

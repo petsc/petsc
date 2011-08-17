@@ -211,9 +211,17 @@ extern PetscErrorCode DMWritePyLithElements(DM, SectionReal, PetscViewer);
 extern PetscErrorCode DMWritePyLithVerticesLocal(DM, PetscViewer);
 extern PetscErrorCode DMWritePyLithElementsLocal(DM, SectionReal, PetscViewer);
 
+/* FEM support */
+extern PetscErrorCode DMMeshPrintCellVector(PetscInt, const char [], PetscInt, const PetscScalar []);
+extern PetscErrorCode DMMeshPrintCellMatrix(PetscInt, const char [], PetscInt, PetscInt, const PetscScalar []);
+
 typedef struct {
-  int           numQuadPoints, numBasisFuncs;
-  const double *quadPoints, *quadWeights, *basis, *basisDer;
+  PetscInt         numQuadPoints; /* The number of quadrature points on an element */
+  const PetscReal *quadPoints;    /* The quadrature point coordinates */
+  const PetscReal *quadWeights;   /* The quadrature weights */
+  PetscInt         numBasisFuncs; /* The number of finite element basis functions on an element */
+  const PetscReal *basis;         /* The basis functions tabulated at the quadrature points */
+  const PetscReal *basisDer;      /* The basis function derivatives tabulated at the quadrature points */
 } PetscQuadrature;
 
 #endif /* Mesh section */

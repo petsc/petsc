@@ -54,6 +54,11 @@ regressionParameters = {'src/sys/comm/examples/tests/ex1':    [{'numProcs': 2},
                                                                #{'numProcs': 1, 'args': '-info'}],
                         'src/ksp/ksp/examples/tutorials/ex12': {'numProcs': 2, 'args': '-ksp_gmres_cgs_refinement_type refine_always'},
                         'src/ksp/ksp/examples/tutorials/ex40': {'numProcs': 1, 'args': '-mat_no_inode -ksp_monitor_short'},
+                        'src/ksp/ksp/examples/tutorials/ex54':[{'numProcs': 4, 'args': '-ne 40 -alpha 1.e-3 -ksp_monitor_short -ksp_type cg -ksp_norm_type unpreconditioned'},
+                                                               {'numProcs': 4, 'args': '-ne 40 -alpha 1.e-3 -ksp_monitor_short -ksp_type cg -ksp_norm_type unpreconditioned -pc_gamg_type sa'}],
+                        'src/ksp/ksp/examples/tutorials/ex55':[{'numProcs': 4, 'args': '-ne 40 -alpha 1.e-3 -ksp_monitor_short -ksp_type cg -ksp_norm_type unpreconditioned'},
+                                                               {'numProcs': 4, 'args': '-ne 40 -alpha 1.e-3 -ksp_monitor_short -ksp_type cg -ksp_norm_type unpreconditioned -pc_gamg_type sa'}],
+                        'src/ksp/ksp/examples/tutorials/ex56':[{'numProcs': 8, 'args': '-ne 11 -alpha 1.e-3 -ksp_monitor_short -ksp_type cg -ksp_norm_type unpreconditioned -pc_gamg_type sa'}],
                         'src/snes/examples/tutorials/ex5':    [{'numProcs': 4, 'args': '-snes_mf -da_processors_x 4 -da_processors_y 1 -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always'},
                                                                {'numProcs': 1, 'args': '-pc_type mg -ksp_monitor_short  -snes_view -pc_mg_levels 3 -pc_mg_galerkin -da_grid_x 17 -da_grid_y 17 -mg_levels_ksp_monitor_short -snes_monitor_short -mg_levels_pc_type sor -pc_mg_type full'},
                                                                {'numProcs': 1, 'args': '-pc_type mg -ksp_monitor_short  -snes_view -pc_mg_galerkin -snes_grid_sequence 3 -mg_levels_ksp_monitor_short -snes_monitor_short -mg_levels_pc_type sor -pc_mg_type full'},
@@ -86,6 +91,7 @@ regressionParameters = {'src/sys/comm/examples/tests/ex1':    [{'numProcs': 2},
 -snes_mf_operator -pack_dm_mat_type aij -pc_type fieldsplit -pc_fieldsplit_type additive -fieldsplit_u_ksp_type gmres -fieldsplit_k_pc_type jacobi'},
                                                                {'numProcs': 1, 'args': '-da_grid_x 20 -snes_converged_reason -snes_monitor_short -ksp_monitor_short -problem_type 2 \
 -snes_mf_operator -pack_dm_mat_type nest -pc_type fieldsplit -pc_fieldsplit_type additive -fieldsplit_u_ksp_type gmres -fieldsplit_k_pc_type jacobi'}],
+                        'src/snes/examples/tutorials/ex52':   [{'numProcs': 1, 'args': '-dm_view -refinement_limit 0.0625'}],
                         'src/ts/examples/tutorials/ex18':      {'numProcs': 1, 'args': '-snes_mf -ts_monitor_solution -ts_monitor -snes_monitor'},
                         }
 
@@ -1086,6 +1092,7 @@ class PETScMaker(script.Script):
    return
 
  def checkTestOutput(self, testDir, executable, output, testNum):
+   from difflib import unified_diff
    outputName = os.path.join(testDir, 'output', os.path.basename(executable)+'_'+str(testNum)+'.out')
    ret        = 0
    if not os.path.isfile(outputName):
@@ -1095,6 +1102,8 @@ class PETScMaker(script.Script):
        validOutput = f.read()
        if not validOutput == output:
          self.logPrint("TEST ERROR: Regression output for %s (test %d) does not match" % (executable, testNum))
+         for line in unified_diff(output.split('\n'), validOutput.split('\n'), fromfile='Current Output', tofile='Saved Output'):
+           self.logPrint(line)
          self.logPrint(validOutput, indent = 0)
          self.logPrint(output, indent = 0)
          ret = -1

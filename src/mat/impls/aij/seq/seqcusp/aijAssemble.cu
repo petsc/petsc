@@ -151,12 +151,11 @@ typedef cusp::array1d<ValueType, memSpace> ValueArray;
 typedef IndexArray::iterator IndexArrayIterator;
 typedef ValueArray::iterator ValueArrayIterator;
 
-EXTERN_C_BEGIN
 // Ne: Number of elements
 // Nl: Number of dof per element
 #undef __FUNCT__
-#define __FUNCT__ "MatSeqAIJSetValuesBatch"
-PetscErrorCode MatSeqAIJSetValuesBatch(Mat J, PetscInt Ne, PetscInt Nl, PetscInt *elemRows, PetscScalar *elemMats)
+#define __FUNCT__ "MatSetValuesBatch_SeqAIJCUSP"
+PetscErrorCode MatSetValuesBatch_SeqAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, PetscInt *elemRows, const PetscScalar *elemMats)
 {
   size_t   N  = Ne * Nl;
   size_t   No = Ne * Nl*Nl;
@@ -168,7 +167,6 @@ PetscErrorCode MatSeqAIJSetValuesBatch(Mat J, PetscInt Ne, PetscInt Nl, PetscInt
   ValueArray d_elemMats(elemMats, elemMats + No);
 
   PetscFunctionBegin;
-  ierr = PetscLogEventBegin(MAT_CUSPSetValuesBatch,0,0,0,0);CHKERRQ(ierr);
   ierr = MatGetSize(J, &Nr, PETSC_NULL);CHKERRQ(ierr);
   // allocate storage for "fat" COO representation of matrix
   ierr = PetscInfo1(J, "Making COO matrix of size %d\n", Nr);CHKERRQ(ierr);
@@ -296,7 +294,5 @@ PetscErrorCode MatSeqAIJSetValuesBatch(Mat J, PetscInt Ne, PetscInt Nl, PetscInt
   if (PetscLogPrintInfo) {cusp::print(*Jgpu);}
   ierr = PetscInfo(J, "Copying to CPU matrix");CHKERRQ(ierr);
   ierr = MatCUSPCopyFromGPU(J, Jgpu);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(MAT_CUSPSetValuesBatch,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

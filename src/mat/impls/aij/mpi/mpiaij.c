@@ -3124,7 +3124,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
        MatGetColumnNorms_MPIAIJ,
        MatInvertBlockDiagonal_MPIAIJ,
        0,
-       MatGetSubMatricesParallel_MPIAIJ
+       MatGetSubMatricesParallel_MPIAIJ,
+/*129*/0
 };
 
 /* ----------------------------------------------------------------------------------------*/

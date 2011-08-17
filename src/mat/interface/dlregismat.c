@@ -170,11 +170,11 @@ PetscErrorCode  MatInitializePackage(const char path[])
   ierr = PetscLogEventRegister("MatGetSymTransR",MAT_CLASSID,&MAT_Getsymtransreduced);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatTranspose_SeqAIJ_FAST",MAT_CLASSID,&MAT_Transpose_SeqAIJ);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatCUSPCopyTo",MAT_CLASSID,&MAT_CUSPCopyToGPU);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatCUSPSetValBch",MAT_CLASSID,&MAT_CUSPSetValuesBatch);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatCUSPSetValBch1",MAT_CLASSID,&MAT_CUSPSetValuesBatchI);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatCUSPSetValBch2",MAT_CLASSID,&MAT_CUSPSetValuesBatchII);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatCUSPSetValBch3",MAT_CLASSID,&MAT_CUSPSetValuesBatchIII);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatCUSPSetValBch4",MAT_CLASSID,&MAT_CUSPSetValuesBatchIV);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatSetValBatch",MAT_CLASSID,&MAT_SetValuesBatch);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatSetValBatch1",MAT_CLASSID,&MAT_SetValuesBatchI);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatSetValBatch2",MAT_CLASSID,&MAT_SetValuesBatchII);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatSetValBatch3",MAT_CLASSID,&MAT_SetValuesBatchIII);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatSetValBatch4",MAT_CLASSID,&MAT_SetValuesBatchIV);CHKERRQ(ierr);
 
   /* Turn off high traffic events by default */
   ierr = PetscLogEventSetActiveAll(MAT_SetValues, PETSC_FALSE);CHKERRQ(ierr);

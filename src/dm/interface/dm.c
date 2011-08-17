@@ -220,12 +220,19 @@ PetscErrorCode  DMSetUp(DM dm)
 @*/
 PetscErrorCode  DMSetFromOptions(DM dm)
 {
+  PetscBool      flg1 = PETSC_FALSE;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscOptionsGetBool(((PetscObject) dm)->prefix, "-dm_preallocate_only", &dm->prealloc_only, PETSC_NULL);CHKERRQ(ierr);
   if (dm->ops->setfromoptions) {
     ierr = (*dm->ops->setfromoptions)(dm);CHKERRQ(ierr);
+  }
+  ierr = PetscOptionsBegin(((PetscObject)dm)->comm,((PetscObject)dm)->prefix,"DM Options","DM");CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-dm_view", "Information on DM", "DMView", flg1, &flg1, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  if (flg1) {
+    ierr = DMView(dm, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

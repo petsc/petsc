@@ -497,7 +497,7 @@ PetscErrorCode formProl0(IS a_selected, /* list of selected local ID, includes s
       ndone += aggID;
       /* QR */
       dgeqrf_( &Mdata, &N, qqc, &LDA, TAU, WORK, &LWORK, &INFO );
-      if( INFO != 0 ) SETERRQ(wcomm,PETSC_ERR_LIB,"xGEQRS error");
+      if( INFO != 0 ) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"xGEQRS error");
       // get R - column oriented - output B_{i+1}
       {
         PetscReal *data = &out_data[clid*a_nSAvec];
@@ -512,7 +512,7 @@ PetscErrorCode formProl0(IS a_selected, /* list of selected local ID, includes s
 
       // get Q - row oriented
       dorgqr_( &Mdata, &N, &N, qqc, &LDA, TAU, WORK, &LWORK, &INFO );
-      if( INFO != 0 ) SETERRQ1(wcomm,PETSC_ERR_LIB,"xORGQR error arg %d",-INFO);
+      if( INFO != 0 ) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"xORGQR error arg %d",-INFO);
 
       for( ii = 0 ; ii < M ; ii++ ){
         for( jj = 0 ; jj < N ; jj++ ) {
@@ -582,7 +582,7 @@ PetscErrorCode triangulateAndFormProl( IS  a_selected_2, /* list of selected loc
   ierr = ISGetLocalSize( a_selected_1, &nselected_1 );        CHKERRQ(ierr);
   ierr = ISGetLocalSize( a_selected_2, &nselected_2 );        CHKERRQ(ierr);
   if(nselected_2 == 1 || nselected_2 == 2 ){ /* 0 happens on idle processors */
-    /* SETERRQ1(wcomm,PETSC_ERR_LIB,"Not enough points - error in stopping logic",nselected_2); */
+    /* SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Not enough points - error in stopping logic",nselected_2); */
     *a_worst_best = 100.0; /* this will cause a stop, but not globalized (should not happen) */
     PetscPrintf(PETSC_COMM_SELF,"[%d]%s %d selected point - bailing out\n",mype,__FUNCT__,nselected_2);
     PetscFunctionReturn(0);
@@ -1013,7 +1013,7 @@ PetscErrorCode createProlongation( const Mat a_Amat,
   
   /* get scalar copy (norms) of matrix */
   ierr = MatGetInfo(a_Amat,MAT_LOCAL,&info); CHKERRQ(ierr);
-  kk = (PetscInt)info.nz_used/(nloc*bs_in*bs_in)+1;
+  kk = (PetscInt)info.nz_used/((nloc+1)*bs_in*bs_in)+1;
   ierr = MatCreateMPIAIJ( wcomm, nloc, nloc,
                           PETSC_DETERMINE, PETSC_DETERMINE,
                           2*kk, PETSC_NULL, kk, PETSC_NULL, &Gmat );
@@ -1030,7 +1030,8 @@ PetscErrorCode createProlongation( const Mat a_Amat,
   }
   ierr = MatAssemblyBegin(Gmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(Gmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  /* square matrix - SA */
+  
+  /* square matrix - SA */  
   if( a_useSA ){
     Mat Gmat2;
     ierr = MatMatMult( Gmat, Gmat, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &Gmat2 );
@@ -1056,7 +1057,7 @@ PetscErrorCode createProlongation( const Mat a_Amat,
   {
     Mat Gmat2;
     ierr = MatGetInfo(Gmat,MAT_LOCAL,&info); CHKERRQ(ierr);
-    kk = (PetscInt)info.nz_used/nloc+1;
+    kk = (PetscInt)info.nz_used/(nloc+1)+1;
     ierr = MatCreateMPIAIJ(wcomm,nloc,nloc,PETSC_DECIDE,PETSC_DECIDE,3*kk,PETSC_NULL,2*kk,PETSC_NULL,&Gmat2);
     CHKERRQ(ierr);
     for (Ii=Istart; Ii<Iend; Ii++) {
@@ -1093,8 +1094,6 @@ PetscErrorCode createProlongation( const Mat a_Amat,
     ierr = MatView(Gmat,viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy( &viewer );
   }
-
-  ierr = PetscLogEventEnd(gamg_setup_stages[SET3],0,0,0,0);   CHKERRQ(ierr);
 
   /* Mat subMat = Gmat -- get degree of vertices */
   {
@@ -1143,6 +1142,7 @@ PetscErrorCode createProlongation( const Mat a_Amat,
     ierr = ISCreateGeneral( PETSC_COMM_SELF, (Iend-Istart), ranks, PETSC_COPY_VALUES, &rankIS );
     CHKERRQ(ierr);
   }
+  ierr = PetscLogEventEnd(gamg_setup_stages[SET3],0,0,0,0);   CHKERRQ(ierr);
 
   /* SELECT COARSE POINTS */
   ierr = PetscLogEventBegin(gamg_setup_stages[SET4],0,0,0,0);CHKERRQ(ierr);
@@ -1245,7 +1245,7 @@ PetscErrorCode createProlongation( const Mat a_Amat,
       PetscInt Ii,ncols; const PetscInt *idx; PetscScalar v = 1.0;
 
       ierr = MatGetInfo(Gmat,MAT_LOCAL,&info); CHKERRQ(ierr);
-      kk = (PetscInt)info.nz_used*bs_in/nloc + 1;
+      kk = (PetscInt)info.nz_used*bs_in/(nloc+1) + 1;
       ierr = MatCreateMPIAIJ( wcomm, nloc*bs_in, nloc*bs_in,
                               PETSC_DETERMINE, PETSC_DETERMINE,
                               2*kk, PETSC_NULL, kk, PETSC_NULL,
@@ -1294,12 +1294,11 @@ PetscErrorCode createProlongation( const Mat a_Amat,
       for(kk=0;kk<nloc;kk++) flid_fgid[kk] = my0 + kk;
     }
     ierr = PetscLogEventEnd(gamg_setup_stages[SET7],0,0,0,0);CHKERRQ(ierr);
-    ierr = PetscLogEventBegin(gamg_setup_stages[SET8],0,0,0,0);CHKERRQ(ierr);
+
     ierr = formProl0(selected_1,llist_1,bs_in,a_data_cols,myCrs0,nbnodes,data_w_ghost,flid_fgid,a_data_out,Prol);
     CHKERRQ(ierr);
     if (npe > 1) ierr = PetscFree( data_w_ghost );      CHKERRQ(ierr);
     ierr = PetscFree( flid_fgid ); CHKERRQ(ierr);
-    ierr = PetscLogEventEnd(gamg_setup_stages[SET8],0,0,0,0);CHKERRQ(ierr);
 
     /* smooth P0 */
     ierr = PetscLogEventBegin(gamg_setup_stages[SET9],0,0,0,0);CHKERRQ(ierr);
