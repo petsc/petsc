@@ -101,14 +101,14 @@ static PetscErrorCode SNESSolve_SORQN(SNES snes)
 #ifdef PETSC_USE_COMPLEX
 	if (PetscAbs(PetscRealPart(dX_i)) > 1e-18) {
 	  Y_i = Y_i / dX_i;
-	  if (PetscAbs(PetscRealPart(Y_i)) > 1e-18) {
+	  if (PetscAbs(PetscRealPart(Y_i)) > 1e-6) {
 	    ierr = VecSetValues(B, 1, &j, &Y_i, INSERT_VALUES);CHKERRQ(ierr);
 	  }
 	}
 #else
 	if (PetscAbs(dX_i) > 1e-18) {
 	  Y_i = Y_i / dX_i;
-	  if (PetscAbs(Y_i) > 1e-18) {
+	  if (PetscAbs(Y_i) > 1e-6) {
 	    ierr = VecSetValues(B, 1, &j, &Y_i, INSERT_VALUES);CHKERRQ(ierr);
 	  }
 	}
@@ -180,6 +180,9 @@ static PetscErrorCode SNESSetFromOptions_SORQN(SNES snes)
 
       Martinez, J.M., SOR-Secant methods, 
       SIAM Journal on Numerical Analysis, Vol. 31, No. 1 (Feb. 1994), SIAM
+
+      This implementation is still very experimental, and needs to be modified to use
+      the inner quasi-Newton iteration on blocks of unknowns.
 
    Level: beginner
 

@@ -337,7 +337,7 @@ runex5_5_sorqn:
 runex5_5_ngmres_sorqn:
 	-@${MPIEXEC} -n 2 ./ex5 -da_grid_x 20 -da_grid_y 20 \
 	-snes_type ngmres -snes_ngmres_m 30 -snes_ngmres_restart 1000 -snes_monitor_short -snes_max_it 1000	 \
-	-npc_snes_type sorqn -npc_snes_sorqn_jacobian_start 1 -npc_snes_max_it 2 -npc_snes_sorqn_alpha 0.25 -npc_snes_monitor_short \
+	-npc_snes_type sorqn -npc_snes_sorqn_jacobian_start 0 -npc_snes_max_it 3 -npc_snes_sorqn_alpha 0.25 -npc_snes_monitor_short \
 	-par 6.0
 
 runex5f:
