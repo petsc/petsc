@@ -16,6 +16,8 @@ typedef struct {
   PetscBool     interpolate;       /* Generate intermediate mesh elements */
   PetscReal     refinementLimit;   /* The largest allowable cell volume */
   char          partitioner[2048]; /* The graph partitioner */
+  PetscBool     computeFunction;   /* The flag for computing a residual */
+  PetscBool     computeJacobian;   /* The flag for computing a Jacobian */
   /* Element quadrature */
   PetscQuadrature q;
 } AppCtx;
@@ -409,16 +411,20 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
   options->dim             = 2;
   options->interpolate     = PETSC_FALSE;
   options->refinementLimit = 0.0;
+  options->computeFunction = PETSC_FALSE;
+  options->computeJacobian = PETSC_FALSE;
 
   ierr = MPI_Comm_size(comm, &options->numProcs);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &options->rank);CHKERRQ(ierr);
   ierr = PetscOptionsBegin(comm, "", "Bratu Problem Options", "DMMESH");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-debug", "The debugging level", "ex12.c", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex12.c", options->dim, &options->dim, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-interpolate", "Generate intermediate mesh elements", "ex12.c", options->interpolate, &options->interpolate, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "ex12.c", options->refinementLimit, &options->refinementLimit, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-debug", "The debugging level", "ex52.c", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex52.c", options->dim, &options->dim, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-interpolate", "Generate intermediate mesh elements", "ex52.c", options->interpolate, &options->interpolate, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "ex52.c", options->refinementLimit, &options->refinementLimit, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscStrcpy(options->partitioner, "chaco");CHKERRQ(ierr);
   ierr = PetscOptionsString("-partitioner", "The graph partitioner", "pflotran.cxx", options->partitioner, options->partitioner, 2048, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-compute_function", "Compute the residual", "ex52.c", options->computeFunction, &options->computeFunction, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-compute_jacobian", "Compute the Jacobian", "ex52.c", options->computeJacobian, &options->computeJacobian, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
 };
@@ -606,8 +612,8 @@ PetscErrorCode FormFunctionLocal(DM dm, Vec X, Vec F, AppCtx *user)
           product += realSpaceDer[d]*fieldGrad[d];
         }
         elemVec[f] += product*quadWeights[q]*detJ;
-        /* Nonlinear term: -e^{u} */
-        elemVec[f] -= basis[q*numBasisFuncs+f]*PetscExpScalar(fieldVal)*quadWeights[q]*detJ;
+        /* Nonlinear term: -\lambda e^{u} */
+        elemVec[f] -= basis[q*numBasisFuncs+f]*0.0*PetscExpScalar(fieldVal)*quadWeights[q]*detJ;
       }
     }
     if (debug) {ierr = DMMeshPrintCellVector(c, "Residual", numBasisFuncs, elemVec);CHKERRQ(ierr);}
@@ -683,8 +689,8 @@ PetscErrorCode FormJacobianLocal(DM dm, Vec X, Mat Jac, AppCtx *user)
           PetscScalar product = 0.0;
           for(int d = 0; d < dim; ++d) product += realSpaceTestDer[d]*realSpaceBasisDer[d];
           elemMat[f*numBasisFuncs+g] += product*quadWeights[q]*detJ;
-          /* Nonlinear term: -e^{u} */
-          elemMat[f*numBasisFuncs+g] -= basis[q*numBasisFuncs+f]*basis[q*numBasisFuncs+g]*PetscExpScalar(fieldVal)*quadWeights[q]*detJ;
+          /* Nonlinear term: -\lambda e^{u} */
+          elemMat[f*numBasisFuncs+g] -= basis[q*numBasisFuncs+f]*basis[q*numBasisFuncs+g]*0.0*PetscExpScalar(fieldVal)*quadWeights[q]*detJ;
         }
       }
     }
@@ -711,9 +717,6 @@ int main(int argc, char **argv)
 {
   DM             dm;
   SNES           snes;
-  Vec            X, F;
-  Mat            J;
-  MatStructure   flag;
   AppCtx         user;
   PetscErrorCode ierr;
 
@@ -727,21 +730,28 @@ int main(int argc, char **argv)
   ierr = SetupSection(dm, &user);CHKERRQ(ierr);
 
   ierr = SNESCreate(PETSC_COMM_WORLD, &snes);CHKERRQ(ierr);
+  if (user.computeFunction) {
+    Vec            X, F;
 
-  ierr = DMGetGlobalVector(dm, &X);CHKERRQ(ierr);
-  ierr = DMGetGlobalVector(dm, &F);CHKERRQ(ierr);
-  ierr = DMMeshSetLocalFunction(dm, (PetscErrorCode (*)(DM, Vec, Vec, void*)) FormFunctionLocal);CHKERRQ(ierr);
-  ierr = SNESMeshFormFunction(snes, X, F, &user);CHKERRQ(ierr);
-  ierr = DMRestoreGlobalVector(dm, &X);CHKERRQ(ierr);
-  ierr = DMRestoreGlobalVector(dm, &F);CHKERRQ(ierr);
+    ierr = DMGetGlobalVector(dm, &X);CHKERRQ(ierr);
+    ierr = DMGetGlobalVector(dm, &F);CHKERRQ(ierr);
+    ierr = DMMeshSetLocalFunction(dm, (PetscErrorCode (*)(DM, Vec, Vec, void*)) FormFunctionLocal);CHKERRQ(ierr);
+    ierr = SNESMeshFormFunction(snes, X, F, &user);CHKERRQ(ierr);
+    ierr = DMRestoreGlobalVector(dm, &X);CHKERRQ(ierr);
+    ierr = DMRestoreGlobalVector(dm, &F);CHKERRQ(ierr);
+  }
+  if (user.computeJacobian) {
+    Vec            X;
+    Mat            J;
+    MatStructure   flag;
 
-  ierr = DMGetGlobalVector(dm, &X);CHKERRQ(ierr);
-  ierr = DMGetMatrix(dm, MATAIJ, &J);CHKERRQ(ierr);
-  ierr = DMMeshSetLocalJacobian(dm, (PetscErrorCode (*)(DM, Vec, Mat, void*)) FormJacobianLocal);CHKERRQ(ierr);
-  ierr = SNESMeshFormJacobian(snes, X, &J, &J, &flag, &user);CHKERRQ(ierr);
-  ierr = MatDestroy(&J);CHKERRQ(ierr);
-  ierr = DMRestoreGlobalVector(dm, &X);CHKERRQ(ierr);
-
+    ierr = DMGetGlobalVector(dm, &X);CHKERRQ(ierr);
+    ierr = DMGetMatrix(dm, MATAIJ, &J);CHKERRQ(ierr);
+    ierr = DMMeshSetLocalJacobian(dm, (PetscErrorCode (*)(DM, Vec, Mat, void*)) FormJacobianLocal);CHKERRQ(ierr);
+    ierr = SNESMeshFormJacobian(snes, X, &J, &J, &flag, &user);CHKERRQ(ierr);
+    ierr = MatDestroy(&J);CHKERRQ(ierr);
+    ierr = DMRestoreGlobalVector(dm, &X);CHKERRQ(ierr);
+  }
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);
   ierr = DMDestroy(&dm);CHKERRQ(ierr);
   ierr = PetscFinalize();
