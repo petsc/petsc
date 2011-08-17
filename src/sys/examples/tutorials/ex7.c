@@ -32,7 +32,7 @@ int main(int argc,char **argv)
   ierr = PetscRandomSetFromOptions(rand2);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Starting up PetscWebServe()\n");CHKERRQ(ierr);
 #if defined(PETSC_USE_SERVER)
-  ierr = PetscWebServe(PETSC_COMM_WORLD,8000);CHKERRQ(ierr);
+  /*   ierr = PetscWebServe(PETSC_COMM_WORLD,PETSC_DEFAULT);CHKERRQ(ierr); */
   while (1) {;}
 #endif
   ierr = PetscRandomDestroy(&rand1);CHKERRQ(ierr);

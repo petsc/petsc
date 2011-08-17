@@ -16,14 +16,13 @@ from pyjamas.JSONService import JSONProxy
 from pyjamas.ui.Tree import Tree
 from pyjamas.ui.TreeItem import TreeItem
 
-import time
 
 comm   = -1  # Currently attached AMS communicator; only one is supported at a time
 args   = {}  # Arguments to each remote call 
 sent   = 0   # Number of calls sent to server
 recv   = 0   # Number of calls received from server 
 
-class JSONRPCExample:
+class AMSJavascriptExample:
     def onModuleLoad(self):
         self.status=Label()
         self.button = Button("Display list of all published memories and fields", self)
@@ -45,7 +44,7 @@ class JSONRPCExample:
         self.tree = None
 
     def onClick(self, sender):
-        global args,sent,recv
+        global sent,recv
         self.status.setText('Button pressed')
         if sender == self.buttonupdate:
             self.commobj = AMS_Comm()
@@ -69,33 +68,6 @@ class JSONRPCExample:
                      subtree.addItem(j+' = '+str(field[4]))
                   self.tree.addItem(subtree)
                   self.panel.add(self.tree)
-
-
-
-    def onRemoteResponse(self, response, request_info):
-        global args,sent,recv
-        global comm
-        recv += 1
-        self.status.setText(response)
-        method = str(request_info.method)
-        rid    = request_info.id
-
-    def onRemoteError(self, code, errobj, request_info):
-        # onRemoteError gets the HTTP error code or 0 and
-        # errobj is an jsonrpc 2.0 error dict:
-        #     {
-        #       'code': jsonrpc-error-code (integer) ,
-        #       'message': jsonrpc-error-message (string) ,
-        #       'data' : extra-error-data
-        #     }
-        message = errobj['message']
-        if code != 0:
-            self.status.setText("HTTP error %d: %s" %(code, message))
-        else:
-            code = errobj['code']
-            self.status.setText("JSONRPC Error %s: %s" %(code, message))
-
-
 
 class ServicePython(JSONProxy):
     def __init__(self):
@@ -162,7 +134,6 @@ class AMS_Comm(JSONProxy):
         id = self.remote.YAML_AMS_Connect('No argument', self)
         args[id] = ['YAML_AMS_Connect']
         sent += 1
-  #      time.sleep(1)
 
     def get_memory_list(self,func = null):
         '''If called with func then calls func asynchronously with latest memory list;
@@ -200,6 +171,7 @@ class AMS_Comm(JSONProxy):
             args[id] = ['YAML_AMS_Comm_get_memory_list',self.comm]
             sent += 1
         elif method == "YAML_AMS_Comm_get_memory_list":
+            if not isinstance(response,list):response = [response]
             self.memlist = response
             for i in self.memlist:
                 self.memories[i] = AMS_Memory(comm,i)
@@ -212,7 +184,7 @@ class AMS_Comm(JSONProxy):
 
 if __name__ == '__main__':
     pyjd.setup()
-    app = JSONRPCExample()
+    app = AMSJavascriptExample()
     app.onModuleLoad()
     pyjd.run()
 
