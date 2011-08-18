@@ -56,7 +56,7 @@ class Configure(PETSc.package.NewPackage):
         self.logPrintBox('Compiling superlu; this may take several minutes')
         if not os.path.exists(os.path.join(self.packageDir,'lib')):
           os.makedirs(os.path.join(self.packageDir,'lib'))
-        output,err,ret = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && SUPERLU_INSTALL_DIR='+self.installDir+'/lib && export SUPERLU_INSTALL_DIR && make clean && make lib LAAUX="" SLASRC="" DLASRC="" CLASRC="" ZLASRC="" SCLAUX="" DZLAUX="" && cp -f lib/*.a '+os.path.join(self.installDir,'lib')+' &&  cp -f SRC/*.h '+os.path.join(self.installDir,self.includedir)+'/.', timeout=2500, log = self.framework.log)
+        output,err,ret = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && make clean && make lib LAAUX="" SLASRC="" DLASRC="" CLASRC="" ZLASRC="" SCLAUX="" DZLAUX="" && cp -f lib/*.a '+os.path.join(self.installDir,self.libdir,'')+' &&  cp -f SRC/*.h '+os.path.join(self.installDir,self.includedir,''), timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on SUPERLU: '+str(e))
       self.postInstall(output+err,'make.inc')
