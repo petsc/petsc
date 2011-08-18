@@ -44,7 +44,7 @@ typedef unsigned long   u_long;
 #if defined(PETSC_HAVE_WINSOCK2_H)
 #include <Winsock2.h>
 #endif
-
+#include <sys/stat.h>
 #include <../src/sys/viewer/impls/socket/socket.h>
 
 EXTERN_C_BEGIN
@@ -542,8 +542,8 @@ PetscErrorCode PetscWebSendError(FILE *f, int status, const char *title, const c
 
 #if defined(PETSC_HAVE_AMS)
 #undef __FUNCT__  
-#define __FUNCT__ "PetscAMSDisplay"
-PetscErrorCode PetscAMSDisplay(FILE *fd)
+#define __FUNCT__ "PetscAMSDisplayList"
+PetscErrorCode PetscAMSDisplayList(FILE *fd)
 {
   PetscErrorCode     ierr;
   char               host[256],**comm_list,**mem_list,**fld_list;
@@ -786,14 +786,19 @@ EXTERN_C_BEGIN
 PetscErrorCode YAML_AMS_Connect(PetscInt argc,char **args,PetscInt *argco,char ***argso)
 {
   PetscErrorCode ierr;
-  char           **list;
+  char           **list = 0;
 
   PetscFunctionBegin;
   ierr = AMS_Connect(0,-1,&list);
   if (ierr) {ierr = PetscInfo1(PETSC_NULL,"AMS_Connect() error %d\n",ierr);CHKERRQ(ierr);}
+  else if (!list) {ierr = PetscInfo(PETSC_NULL,"AMS_Connect() list empty, not running AMS server\n");CHKERRQ(ierr);}
   *argco = 1;
   ierr = PetscMalloc(sizeof(char*),argso);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(list[0],&(*argso)[0]);CHKERRQ(ierr);
+  if (list){
+    ierr = PetscStrallocpy(list[0],&(*argso)[0]);CHKERRQ(ierr);
+  } else {
+    ierr = PetscStrallocpy("No AMS publisher running",&(*argso)[0]);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -1277,18 +1282,18 @@ PetscErrorCode  PetscWebServeRequest(int port)
 #if defined(PETSC_HAVE_AMS)
       if (PetscAMSPublishAll) {
 	fprintf(fd, "<a href=\"./ams-tree\">Connect to Memory Snooper--Tree Display</a></p>\r\n\r\n");
-        fprintf(fd, "<a href=\"./ams\">Connect to Memory Snooper</a></p>\r\n\r\n");
+        fprintf(fd, "<a href=\"./ams-list\">Connect to Memory Snooper--List Display</a></p>\r\n\r\n");
       }
 #endif
-      fprintf(fd, "<a href=\"./JSONRPCExample.html\">JSONRPCExample.html</a></p>\r\n\r\n");
+      fprintf(fd, "<a href=\"./AMSJavascript.html\">Connect to Memory Snooper--Interactive Javascript</a></p>\r\n\r\n");
       ierr = PetscWebSendFooter(fd);CHKERRQ(ierr);
       goto theend;
     }
 
 #if defined(PETSC_HAVE_AMS)
-    ierr = PetscStrcmp(path,"/ams",&flg);CHKERRQ(ierr);
+    ierr = PetscStrcmp(path,"/ams-list",&flg);CHKERRQ(ierr);
     if (flg) {      
-      ierr = PetscAMSDisplay(fd);CHKERRQ(ierr);
+      ierr = PetscAMSDisplayList(fd);CHKERRQ(ierr);
       goto theend;
     }
     printf("path %s\n",path);
@@ -1305,18 +1310,18 @@ PetscErrorCode  PetscWebServeRequest(int port)
     ierr = PetscStrreplace(PETSC_COMM_SELF,fullpath,truefullpath,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
     fdo  = fopen(truefullpath,"r"); 
     if (fdo) {      
-      ierr = PetscStrendswith(fullpath,".html",&flg);CHKERRQ(ierr);
-      if (flg) type = "text/html";
-      else {
-        ierr = PetscStrendswith(fullpath,".js",&flg);CHKERRQ(ierr);
-        if (flg) type = "text/javascript";
-        else type = "text/unknown";
-      }
-     
-      ierr = PetscWebSendHeader(fd, 200, "OK", NULL, type, -1);CHKERRQ(ierr);
-      while (fgets(buf, sizeof(buf), fdo)) {
-        fprintf(fd,"%s\n",buf);
-      }
+      PetscInt    length,index;
+      char        data[4096];
+      struct stat statbuf;
+      int         n;
+      const char  *suffixes[] = {".html",".js",".gif",0}, *mimes[] = {"text/html","text/javascript","image/gif","text/unknown"};
+
+      ierr = PetscStrendswithwhich(fullpath,suffixes,&index);CHKERRQ(ierr);
+      type = mimes[index];
+      if (!stat(truefullpath, &statbuf)) length = -1;
+      else length = S_ISREG(statbuf.st_mode) ? statbuf.st_size : -1;
+      ierr = PetscWebSendHeader(fd, 200, "OK", NULL, type, length);CHKERRQ(ierr);
+      while ((n = fread(data, 1, sizeof(data), fdo)) > 0) fwrite(data, 1, n, fd);
       fclose(fdo);
       ierr = PetscInfo2(PETSC_NULL,"Sent file %s to browser using format %s\n",fullpath,type);CHKERRQ(ierr);       
       goto theend;

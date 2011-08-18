@@ -322,7 +322,7 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
-  PetscBool      flag1,flag2,viewed=PETSC_FALSE,flg = PETSC_FALSE,inXisinB=PETSC_FALSE,guess_zero;
+  PetscBool      flag1,flag2,flg = PETSC_FALSE,inXisinB=PETSC_FALSE,guess_zero;
   char           view[10];
   char           filename[PETSC_MAX_PATH_LEN];
   PetscViewer    viewer;
@@ -362,14 +362,11 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
   /* reset the residual history list if requested */
   if (ksp->res_hist_reset) ksp->res_hist_len = 0;
 
-  ierr = PetscOptionsGetString(((PetscObject)ksp)->prefix,"-ksp_view",view,10,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(((PetscObject)ksp)->prefix,"-ksp_view_before",view,10,&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = PetscStrcmp(view,"before",&viewed);CHKERRQ(ierr);
-    if (viewed){
-      PetscViewer viewer;
-      ierr = PetscViewerASCIIGetStdout(((PetscObject)ksp)->comm,&viewer);CHKERRQ(ierr);
-      ierr = KSPView(ksp,viewer);CHKERRQ(ierr);
-    }
+    PetscViewer viewer;
+    ierr = PetscViewerASCIIGetStdout(((PetscObject)ksp)->comm,&viewer);CHKERRQ(ierr);
+    ierr = KSPView(ksp,viewer);CHKERRQ(ierr);
   }
 
   ksp->transpose_solve = PETSC_FALSE;
@@ -594,13 +591,11 @@ PetscErrorCode  KSPSolve(KSP ksp,Vec b,Vec x)
     ierr = MatView(B,PETSC_VIEWER_BINARY_(((PetscObject)ksp)->comm));CHKERRQ(ierr);
     ierr = MatDestroy(&B);CHKERRQ(ierr);
   }
-  if (!viewed) {
-    ierr = PetscOptionsGetString(((PetscObject)ksp)->prefix,"-ksp_view",filename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
-    if (flg && !PetscPreLoadingOn) {
-      ierr = PetscViewerASCIIOpen(((PetscObject)ksp)->comm,filename,&viewer);CHKERRQ(ierr);
-      ierr = KSPView(ksp,viewer);CHKERRQ(ierr); 
-      ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
-    }
+  ierr = PetscOptionsGetString(((PetscObject)ksp)->prefix,"-ksp_view",filename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  if (flg && !PetscPreLoadingOn) {
+    ierr = PetscViewerASCIIOpen(((PetscObject)ksp)->comm,filename,&viewer);CHKERRQ(ierr);
+    ierr = KSPView(ksp,viewer);CHKERRQ(ierr); 
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   }
   flg  = PETSC_FALSE;
   ierr = PetscOptionsGetBool(((PetscObject)ksp)->prefix,"-ksp_final_residual",&flg,PETSC_NULL);CHKERRQ(ierr);

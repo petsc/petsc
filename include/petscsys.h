@@ -1179,6 +1179,7 @@ extern PetscErrorCode    PetscStrrchr(const char[],char,char *[]);
 extern PetscErrorCode    PetscStrstr(const char[],const char[],char *[]);
 extern PetscErrorCode    PetscStrrstr(const char[],const char[],char *[]);
 extern PetscErrorCode    PetscStrendswith(const char[],const char[],PetscBool*);
+extern PetscErrorCode    PetscStrendswithwhich(const char[],const char *const*,PetscInt*);
 extern PetscErrorCode    PetscStrallocpy(const char[],char *[]);
 extern PetscErrorCode    PetscStrreplace(MPI_Comm,const char[],char[],size_t);
 

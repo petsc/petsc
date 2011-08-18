@@ -1,38 +1,10 @@
-[0] PetscFileRetrieve(): Found file /PETSc3/petsc/petsc-dev/arch-cuda-single/lib/libpetsc.dylib
-[0] PetscDLLibraryOpen(): Retrieving /PETSc3/petsc/petsc-dev/arch-cuda-single/lib/libpetsc.dylib
-[0] PetscFileRetrieve(): Found file /PETSc3/petsc/petsc-dev/arch-cuda-single/lib/libpetsc.dylib
-[0] PetscDLLibraryOpen(): Opening dynamic library /PETSc3/petsc/petsc-dev/arch-cuda-single/lib/libpetsc
-[0] PetscDLLibraryOpen(): Loading registered routines from /PETSc3/petsc/petsc-dev/arch-cuda-single/lib/libpetsc
-[0] PetscDLLibraryAppend(): Appending /PETSc3/petsc/petsc-dev/arch-cuda-single/lib/libpetsc.dylib to dynamic library search path
-[0] PetscFileRetrieve(): Did not find file /PETSc3/petsc/petsc-dev/arch-cuda-single/lib/libpetscmesh.dylib
-[0] PetscFileRetrieve(): Did not find file /PETSc3/petsc/petsc-dev/arch-cuda-single/lib/libpetscmesh.dylib
-[0] PetscFileRetrieve(): Did not find file /PETSc3/petsc/petsc-dev/arch-cuda-single/lib/libpetsccontrib.dylib
-[0] PetscFileRetrieve(): Did not find file /PETSc3/petsc/petsc-dev/arch-cuda-single/lib/libpetsccontrib.dylib
-[0] PetscInitialize(): PETSc successfully started: number of processors = 1
-[0] PetscInitialize(): Running on machine: MATTHEW-KNEPLEYs-MacBook-Air-2.local
-[0] PetscCommDuplicate(): Duplicating a communicator 1140850688 -2080374784 max tags = 2147483647
-[0] PetscDLLibrarySym(): Loading function DMCreate_DA from dynamic library /PETSc3/petsc/petsc-dev/arch-cuda-single/lib/libpetsc
-[0] PetscCommDuplicate(): Duplicating a communicator 1140850689 -2080374783 max tags = 2147483647
-[0] PetscDLLibrarySym(): Loading function ISCreate_Stride from dynamic library /PETSc3/petsc/petsc-dev/arch-cuda-single/lib/libpetsc
-[0] PetscDLLibrarySym(): Loading symbol ISStrideSetStride_Stride from dynamic library /PETSc3/petsc/petsc-dev/arch-cuda-single/lib/libpetsc
-[0] PetscDLLibrarySym(): Loading function ISCreate_Block from dynamic library /PETSc3/petsc/petsc-dev/arch-cuda-single/lib/libpetsc
-[0] PetscDLLibrarySym(): Loading symbol ISBlockSetIndices_Block from dynamic library /PETSc3/petsc/petsc-dev/arch-cuda-single/lib/libpetsc
-[0] VecScatterCreate(): Special case: sequential copy
-[0] PetscDLLibrarySym(): Loading symbol ISBlockSetIndices_Block from dynamic library /PETSc3/petsc/petsc-dev/arch-cuda-single/lib/libpetsc
-[0] PetscDLLibrarySym(): Loading symbol ISBlockSetIndices_Block from dynamic library /PETSc3/petsc/petsc-dev/arch-cuda-single/lib/libpetsc
-[0] VecScatterCreate(): Special case: sequential copy
-[0] PetscDLLibrarySym(): Loading symbol ISBlockSetIndices_Block from dynamic library /PETSc3/petsc/petsc-dev/arch-cuda-single/lib/libpetsc
-[0] PetscDLLibrarySym(): Loading function MatCreate_SeqAIJ from dynamic library /PETSc3/petsc/petsc-dev/arch-cuda-single/lib/libpetsc
-[0] PetscDLLibrarySym(): Loading symbol MatSeqAIJSetPreallocation_SeqAIJ from dynamic library /PETSc3/petsc/petsc-dev/arch-cuda-single/lib/libpetsc
 [0] MatAssemblyEnd_SeqAIJ(): Matrix size: 9 X 9; storage space: 0 unneeded,49 used
 [0] MatAssemblyEnd_SeqAIJ(): Number of mallocs during MatSetValues() is 0
 [0] MatAssemblyEnd_SeqAIJ(): Maximum nonzeros in any row is 9
 [0] Mat_CheckInode(): Found 9 nodes out of 9 rows. Not using Inode routines
-[0] PetscDLLibrarySym(): Loading function MatCreate_SeqAIJCUSP from dynamic library /PETSc3/petsc/petsc-dev/arch-cuda-single/lib/libpetsc
-[0] PetscDLLibrarySym(): Loading symbol MatSeqAIJSetPreallocation_SeqAIJ from dynamic library /PETSc3/petsc/petsc-dev/arch-cuda-single/lib/libpetsc
-[0] MatSeqAIJSetValuesBatch(): Making COO matrix of size 9
-[0] MatSeqAIJSetValuesBatch(): Making row indices
-[0] MatSeqAIJSetValuesBatch(): Making column indices
+[0] MatSetValuesBatch_SeqAIJCUSP(): Making COO matrix of size 9
+[0] MatSetValuesBatch_SeqAIJCUSP(): Making row indices
+[0] MatSetValuesBatch_SeqAIJCUSP(): Making column indices
 sparse matrix <9, 9> with 72 entries
               0              0              1
               0              1           -0.5
@@ -106,7 +78,7 @@ sparse matrix <9, 9> with 72 entries
               5              8           -0.5
               5              7              0
               5              5            0.5
-[0] MatSeqAIJSetValuesBatch(): Sorting rows and columns
+[0] MatSetValuesBatch_SeqAIJCUSP(): Sorting rows and columns
 sparse matrix <9, 9> with 72 entries
               0              0              1
               0              1           -0.5
@@ -180,9 +152,9 @@ sparse matrix <9, 9> with 72 entries
               8              5           -0.5
               8              7           -0.5
               8              8              1
-[0] MatSeqAIJSetValuesBatch(): Computing number of unique entries
-[0] MatSeqAIJSetValuesBatch(): Allocating compressed matrix
-[0] MatSeqAIJSetValuesBatch(): Compressing matrix
+[0] MatSetValuesBatch_SeqAIJCUSP(): Computing number of unique entries
+[0] MatSetValuesBatch_SeqAIJCUSP(): Allocating compressed matrix
+[0] MatSetValuesBatch_SeqAIJCUSP(): Compressing matrix
 sparse matrix <9, 9> with 41 entries
               0              0              1
               0              1           -0.5
@@ -225,7 +197,7 @@ sparse matrix <9, 9> with 41 entries
               8              5           -0.5
               8              7           -0.5
               8              8              1
-[0] MatSeqAIJSetValuesBatch(): Converting to PETSc matrix
+[0] MatSetValuesBatch_SeqAIJCUSP(): Converting to PETSc matrix
 sparse matrix <9, 9> with 41 entries
               0              0              1
               0              1           -0.5
@@ -268,15 +240,13 @@ sparse matrix <9, 9> with 41 entries
               8              5           -0.5
               8              7           -0.5
               8              8              1
-[0] MatSeqAIJSetValuesBatch(): Copying to CPU matrix[0] MatAssemblyEnd_SeqAIJ(): Matrix size: 9 X 9; storage space: 0 unneeded,41 used
+[0] MatSetValuesBatch_SeqAIJCUSP(): Copying to CPU matrix
+[0] MatAssemblyEnd_SeqAIJ(): Matrix size: 9 X 9; storage space: 0 unneeded,41 used
 [0] MatAssemblyEnd_SeqAIJ(): Number of mallocs during MatSetValues() is 0
 [0] MatAssemblyEnd_SeqAIJ(): Maximum nonzeros in any row is 7
 [0] MatAssemblyEnd_SeqAIJ(): Matrix size: 9 X 9; storage space: 0 unneeded,41 used
 [0] MatAssemblyEnd_SeqAIJ(): Number of mallocs during MatSetValues() is 0
 [0] MatAssemblyEnd_SeqAIJ(): Maximum nonzeros in any row is 7
-[0] PetscCommDuplicate(): Using internal PETSc communicator 1140850688 -2080374784
-[0] PetscDLLibrarySym(): Loading function PetscViewerCreate_ASCII from dynamic library /PETSc3/petsc/petsc-dev/arch-cuda-single/lib/libpetsc
-[0] PetscDLLibrarySym(): Loading symbol PetscViewerFileSetName_ASCII from dynamic library /PETSc3/petsc/petsc-dev/arch-cuda-single/lib/libpetsc
 Matrix Object: 1 MPI processes
   type: seqaijcusp
 row 0: (0, 1)  (1, -0.5)  (3, -0.5) 
@@ -288,7 +258,6 @@ row 5: (2, -0.5)  (4, -1)  (5, 2)  (7, 0)  (8, -0.5)
 row 6: (3, -0.5)  (4, 0)  (6, 1)  (7, -0.5) 
 row 7: (4, -1)  (5, 0)  (6, -0.5)  (7, 2)  (8, -0.5) 
 row 8: (5, -0.5)  (7, -0.5)  (8, 1) 
-[0] PetscDLLibrarySym(): Loading symbol MatSeqAIJSetPreallocation_SeqAIJ from dynamic library /PETSc3/petsc/petsc-dev/arch-cuda-single/lib/libpetsc
 [0] MatAssemblyEnd_SeqAIJ(): Matrix size: 9 X 9; storage space: 0 unneeded,49 used
 [0] MatAssemblyEnd_SeqAIJ(): Number of mallocs during MatSetValues() is 0
 [0] MatAssemblyEnd_SeqAIJ(): Maximum nonzeros in any row is 9
@@ -296,7 +265,6 @@ row 8: (5, -0.5)  (7, -0.5)  (8, 1)
 [0] MatAssemblyEnd_SeqAIJ(): Matrix size: 9 X 9; storage space: 0 unneeded,49 used
 [0] MatAssemblyEnd_SeqAIJ(): Number of mallocs during MatSetValues() is 0
 [0] MatAssemblyEnd_SeqAIJ(): Maximum nonzeros in any row is 9
-[0] PetscCommDuplicate(): Using internal PETSc communicator 1140850688 -2080374784
 Matrix Object: 1 MPI processes
   type: seqaij
 row 0: (0, 1)  (1, -0.5)  (3, -0.5)  (4, 0) 
@@ -308,15 +276,3 @@ row 5: (1, 0)  (2, -0.5)  (4, -1)  (5, 2)  (7, 0)  (8, -0.5)
 row 6: (3, -0.5)  (4, 0)  (6, 1)  (7, -0.5) 
 row 7: (3, 0)  (4, -1)  (5, 0)  (6, -0.5)  (7, 2)  (8, -0.5) 
 row 8: (4, 0)  (5, -0.5)  (7, -0.5)  (8, 1) 
-[0] Petsc_DelComm(): Deleting PETSc communicator imbedded in a user MPI_Comm 1140850689
-[0] PetscCommDestroy(): Deleting PETSc MPI_Comm -2080374783
-[0] Petsc_DelComm(): Deleting PETSc communicator imbedded in a user MPI_Comm -2080374783
-[0] Petsc_DelCounter(): Deleting counter data in an MPI_Comm -2080374783
-[0] PetscFinalize(): PetscFinalize() called
-[0] Petsc_DelViewer(): Deleting viewer data in an MPI_Comm -2080374784
-[0] Petsc_DelComm(): Deleting PETSc communicator imbedded in a user MPI_Comm 1140850688
-[0] PetscCommDestroy(): Deleting PETSc MPI_Comm -2080374784
-[0] Petsc_DelViewer(): Deleting viewer data in an MPI_Comm -2080374784
-[0] Petsc_DelComm(): Deleting PETSc communicator imbedded in a user MPI_Comm -2080374784
-[0] Petsc_DelCounter(): Deleting counter data in an MPI_Comm -2080374784
-[0] PetscDLLibraryClose(): Closing dynamic library /PETSc3/petsc/petsc-dev/arch-cuda-single/lib/libpetsc

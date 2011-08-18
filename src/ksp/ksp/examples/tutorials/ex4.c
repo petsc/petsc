@@ -1,5 +1,5 @@
-static char help[] = "Test MatSeqAIJSetValuesBatch: setting batches of elements using the GPU.\n\
-This works with SeqAIJCUSP matrices.\n\n";
+static char help[] = "Test MatSetValuesBatch: setting batches of elements using the GPU.\n\
+This works with SeqAIJCUSP and MPIAIJCUSP matrices.\n\n";
 #include <petscdmda.h>
 #include <petscksp.h>
 
@@ -101,25 +101,6 @@ PetscErrorCode IntegrateCells(DM dm, PetscInt *Ne, PetscInt *Nl, PetscInt **elem
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "AssembleMatrix"
-PetscErrorCode AssembleMatrix(DM dm, PetscInt Ne, PetscInt Nl, PetscInt *elemRows, PetscScalar *elemMats, Mat *A) {
-  PetscInt       e;
-  PetscLogEvent  assemblyEvent;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscLogEventRegister("ElemAssembly", DM_CLASSID, &assemblyEvent);CHKERRQ(ierr);
-  ierr = PetscLogEventBegin(assemblyEvent,0,0,0,0);CHKERRQ(ierr);
-  ierr = DMGetMatrix(dm, MATAIJ, A);CHKERRQ(ierr);
-  ierr = MatZeroEntries(*A);CHKERRQ(ierr);
-  for(e = 0; e < Ne; ++e) {
-    ierr = MatSetValues(*A, Nl, &elemRows[Nl*e], Nl, &elemRows[Nl*e], &elemMats[Nl*Nl*e], ADD_VALUES);CHKERRQ(ierr);
-  }
-  ierr = PetscLogEventEnd(assemblyEvent,0,0,0,0);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc, char **argv)
 {
@@ -149,15 +130,7 @@ int main(int argc, char **argv)
     ierr = MatSetType(A, MATAIJCUSP);CHKERRQ(ierr);
     ierr = MatSeqAIJSetPreallocation(A, 0, PETSC_NULL);CHKERRQ(ierr);
     ierr = MatMPIAIJSetPreallocation(A, 0, PETSC_NULL, 0, PETSC_NULL);CHKERRQ(ierr);
-
-    PetscMPIInt numProcs;
-    ierr = MPI_Comm_size(PETSC_COMM_WORLD, &numProcs);CHKERRQ(ierr);
-    if (numProcs == 1) {
-      ierr = MatSeqAIJSetValuesBatch(A, Ne, Nl, elemRows, elemMats);CHKERRQ(ierr);
-    } else {
-      ierr = MatMPIAIJSetValuesBatch(A, Ne, Nl, elemRows, elemMats);CHKERRQ(ierr);
-    }
-
+    ierr = MatSetValuesBatch(A, Ne, Nl, elemRows, elemMats);CHKERRQ(ierr);
     ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     if (doView) {
@@ -174,7 +147,9 @@ int main(int argc, char **argv)
   if (doCPU) {
     ierr = PetscLogStageRegister("CPU Stage", &cpuStage);CHKERRQ(ierr);
     ierr = PetscLogStagePush(cpuStage);CHKERRQ(ierr);
-    ierr = AssembleMatrix(dm, Ne, Nl, elemRows, elemMats, &A);CHKERRQ(ierr);
+    ierr = DMGetMatrix(dm, MATAIJ, &A);CHKERRQ(ierr);
+    ierr = MatZeroEntries(A);CHKERRQ(ierr);
+    ierr = MatSetValuesBatch(A, Ne, Nl, elemRows, elemMats);CHKERRQ(ierr);
     ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     if (doView) {
