@@ -6,7 +6,8 @@ Runtime options include:\n\
 -T <T>, where <T> is the end time for the time domain simulation\n\
 -dt <dt>,where <dt> is the step size for the numerical integration\n\
 -gamma <gamma>\n\
--theta_c <theta_c>\n\n";
+-theta_c <theta_c>\n\
+-implicit <0,1> treat theta_c*M_0*u explicitly/implicitly\n\n";
 
 /*
     Run with for example: -pc_type mg -pc_mg_galerkin -T .01 -da_grid_x 65 -da_grid_y 65 -pc_mg_levels 4 -ksp_type fgmres -snes_atol 1.e-14 -mat_no_inode
@@ -43,7 +44,7 @@ int main(int argc, char **argv)
 {
   PetscErrorCode ierr;
   Vec            x,r;  /* Solution and residual vectors */
-  TS           ts;   /* Timestepping object */
+  TS             ts;   /* Timestepping object */
   AppCtx         user; /* Application context */
   Vec            xl,xu; /* Upper and lower bounds on variables */
   Mat            J;
