@@ -140,12 +140,10 @@ runex1f:
 	-@${MPIEXEC} -n 1 ./ex1f -test -nox -ts_type euler  -linear_no_matrix
 	-@${MPIEXEC} -n 1 ./ex1f -test -nox -ts_type euler -nonlinear_no_jacobian 
 	-@${MPIEXEC} -n 1 ./ex1f -test -nox -ts_type euler -linear_constant_matrix  
-	-@${MPIEXEC} -n 1 ./ex1f -test -nox -ts_type euler -linear_variable_matrix 
 	-@${MPIEXEC} -n 1 ./ex1f -test -nox -ts_type euler -nonlinear_jacobian 
 	-@${MPIEXEC} -n 1 ./ex1f -test -nox -ts_type beuler -ksp_gmres_cgs_refinement_type refine_always -linear_no_matrix -pc_type none
 	-@${MPIEXEC} -n 1 ./ex1f -test -nox -ts_type beuler -ksp_gmres_cgs_refinement_type refine_always -nonlinear_no_jacobian -pc_type none
 	-@${MPIEXEC} -n 1 ./ex1f -test -nox -ts_type beuler -ksp_gmres_cgs_refinement_type refine_always -linear_constant_matrix  -pc_type lu 
-	-@${MPIEXEC} -n 1 ./ex1f -test -nox -ts_type beuler -ksp_gmres_cgs_refinement_type refine_always -linear_variable_matrix 
 	-@${MPIEXEC} -n 1 ./ex1f -test -nox -ts_type beuler -ksp_gmres_cgs_refinement_type refine_always -nonlinear_jacobian 
 
 runex2_euler:
