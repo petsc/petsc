@@ -1,4 +1,4 @@
-static char help[] = "Cahn-Hilliard-2d problem for constant mobility and triangular elements.\n\
+static char help[] = "Cahn-Hilliard-2d problem for constant mobility and triangular elements solved using TSARKIMEX schemes.\n\
 Runtime options include:\n\
 -xmin <xmin>\n\
 -xmax <xmax>\n\
@@ -7,6 +7,17 @@ Runtime options include:\n\
 -dt <dt>,where <dt> is the step size for the numerical integration\n\
 -gamma <gamma>\n\
 -theta_c <theta_c>\n\n";
+
+/* The 2D Cahn-Hilliard problem using imex formulation is set up as follows
+
+   | 0  M_0 | |   0  |   | M_2       0     | | w |   | 0        0      | |w|
+                       +                           = 
+   | 0   0  | | du_dt|   |-M_0  \gamma*M_2 | | u |   | 0  \theta_c*M_0 | |u|
+
+which is in the imex form G(x,x',t) = F(x,t)
+By default imex treats RHS explicitly. Use the command line option -ts_arkimex_fully_implicit to have implicit RHS.
+
+ */
 
 /*
     Run with for example: -pc_type mg -pc_mg_galerkin -T .01 -da_grid_x 65 -da_grid_y 65 -pc_mg_levels 4 -ksp_type fgmres -snes_atol 1.e-14 -mat_no_inode
@@ -20,12 +31,10 @@ typedef struct{
   DM          da;
   Mat         M; /* Mass matrix */
   Mat         S; /* stiffness matrix */
-  Mat         M_0;
-  Vec         q,u,work1;
+  Mat         M_0,MatRHS;
   PetscScalar gamma,theta_c; /* physics parameters */
   PetscReal   xmin,xmax,ymin,ymax;
   PetscBool   tsmonitor;
-  PetscInt    implicit; /* Evaluate theta_c*Mo*u impliicitly or explicitly */
 }AppCtx;
 
 PetscErrorCode GetParams(AppCtx*);
@@ -34,7 +43,8 @@ PetscErrorCode SetUpMatrices(AppCtx*);
 PetscErrorCode FormIFunction(TS,PetscReal,Vec,Vec,Vec,void*);
 PetscErrorCode FormIJacobian(TS,PetscReal,Vec,Vec,PetscReal,Mat*,Mat*,MatStructure*,void*);
 PetscErrorCode SetInitialGuess(Vec,AppCtx*);
-PetscErrorCode Update_q(TS);
+PetscErrorCode RHSFunction(TS,PetscReal,Vec,Vec,void*);
+PetscErrorCode RHSJacobian(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*);
 PetscErrorCode Monitor(TS,PetscInt,PetscReal,Vec,void*);
 
 #undef __FUNCT__
@@ -43,10 +53,10 @@ int main(int argc, char **argv)
 {
   PetscErrorCode ierr;
   Vec            x,r;  /* Solution and residual vectors */
-  TS           ts;   /* Timestepping object */
+  TS             ts;   /* Timestepping object */
   AppCtx         user; /* Application context */
   Vec            xl,xu; /* Upper and lower bounds on variables */
-  Mat            J;
+  Mat            J,Jrhs;
 
   PetscInitialize(&argc,&argv, (char*)0, help);
 
@@ -65,14 +75,13 @@ int main(int argc, char **argv)
   ierr = VecDuplicate(x,&r);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&xl);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&xu);CHKERRQ(ierr);
-  if(!user.implicit) {
-    ierr = VecDuplicate(x,&user.q);CHKERRQ(ierr);
-  }
 
   /* Get mass,stiffness, and jacobian matrix structure from the da */
   ierr = DMGetMatrix(user.da,MATAIJ,&user.M);CHKERRQ(ierr);
   ierr = DMGetMatrix(user.da,MATAIJ,&user.S);CHKERRQ(ierr);
   ierr = DMGetMatrix(user.da,MATAIJ,&J);CHKERRQ(ierr);
+  ierr = DMGetMatrix(user.da,MATAIJ,&user.MatRHS);CHKERRQ(ierr);
+  ierr = DMGetMatrix(user.da,MATAIJ,&Jrhs);CHKERRQ(ierr);
   /* Form the mass,stiffness matrices and matrix M_0 */
   ierr = SetUpMatrices(&user);CHKERRQ(ierr);
 
@@ -84,8 +93,7 @@ int main(int argc, char **argv)
   /* Set Function evaluation and jacobian evaluation routines */
   ierr = TSSetIFunction(ts,r,FormIFunction,(void*)&user);CHKERRQ(ierr);
   ierr = TSSetIJacobian(ts,J,J,FormIJacobian,(void*)&user);CHKERRQ(ierr);
-  ierr = TSSetType(ts,TSBEULER);CHKERRQ(ierr);
-  //  ierr = TSThetaSetTheta(ts,1.0);CHKERRQ(ierr);/* Explicit Euler */
+  ierr = TSSetType(ts,TSARKIMEX);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,PETSC_DEFAULT,user.T);CHKERRQ(ierr);
   /* Set lower and upper bound vectors */
   ierr = SetVariableBounds(user.da,xl,xu);CHKERRQ(ierr);
@@ -93,12 +101,12 @@ int main(int argc, char **argv)
 
   ierr = SetInitialGuess(x,&user);CHKERRQ(ierr);
 
-  if(!user.implicit) {
-    ierr = TSSetApplicationContext(ts,&user);CHKERRQ(ierr);
-    ierr = TSSetSolution(ts,x);CHKERRQ(ierr);
-    ierr = Update_q(ts);CHKERRQ(ierr);
-    ierr = TSSetPostStep(ts,Update_q);
-  }
+  ierr = TSSetApplicationContext(ts,&user);CHKERRQ(ierr);
+  ierr = TSSetSolution(ts,x);CHKERRQ(ierr);
+
+  ierr = TSSetRHSFunction(ts,PETSC_NULL,RHSFunction,&user);CHKERRQ(ierr);
+  ierr = TSSetRHSJacobian(ts,Jrhs,Jrhs,RHSJacobian,&user);CHKERRQ(ierr);
+
 
   if(user.tsmonitor) {
     ierr = TSMonitorSet(ts,Monitor,&user,PETSC_NULL);CHKERRQ(ierr);
@@ -116,15 +124,11 @@ int main(int argc, char **argv)
   ierr = VecDestroy(&r);CHKERRQ(ierr);
   ierr = VecDestroy(&xl);CHKERRQ(ierr);
   ierr = VecDestroy(&xu);CHKERRQ(ierr);
-  if(!user.implicit) {
-    ierr = VecDestroy(&user.q);CHKERRQ(ierr);
-    ierr = VecDestroy(&user.u);CHKERRQ(ierr);
-    ierr = VecDestroy(&user.work1);CHKERRQ(ierr);
-    ierr = MatDestroy(&user.M_0);CHKERRQ(ierr);
-  }
   ierr = MatDestroy(&user.M);CHKERRQ(ierr);
   ierr = MatDestroy(&user.S);CHKERRQ(ierr);
+  ierr = MatDestroy(&user.MatRHS);CHKERRQ(ierr);
   ierr = MatDestroy(&J);CHKERRQ(ierr);
+  ierr = MatDestroy(&Jrhs);CHKERRQ(ierr);
   ierr = DMDestroy(&user.da);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   PetscFinalize();
@@ -132,31 +136,35 @@ int main(int argc, char **argv)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "Update_q"
-PetscErrorCode Update_q(TS ts)
+#define __FUNCT__ "RHSFunction"
+PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec X,Vec F,void* ctx)
 {
   PetscErrorCode ierr;
-  AppCtx         *user;
-  Vec            x;
-  PetscScalar    *q_arr,*w_arr;
-  PetscInt       i,n;
-  PetscScalar    scale;
+  AppCtx         *user = (AppCtx*)ctx;
   
   PetscFunctionBegin;
-  ierr = TSGetApplicationContext(ts,&user);CHKERRQ(ierr);
-  ierr = TSGetSolution(ts,&x);CHKERRQ(ierr);
-  ierr = VecStrideGather(x,1,user->u,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = MatMult(user->M_0,user->u,user->work1);CHKERRQ(ierr);
-  scale = -(1.0 - user->implicit)*user->theta_c;
-  ierr = VecScale(user->work1,scale);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(user->u,&n);CHKERRQ(ierr);
-  ierr = VecGetArray(user->q,&q_arr);CHKERRQ(ierr);
-  ierr = VecGetArray(user->work1,&w_arr);CHKERRQ(ierr);
-  for(i=0;i<n;i++) {
-    q_arr[2*i+1] = w_arr[i];
+  ierr = MatMult(user->MatRHS,X,F);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "RHSJacobian"
+PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec X,Mat* Jrhs,Mat* Prhs,MatStructure* flg,void* ctx)
+{
+  PetscErrorCode   ierr;
+  static PetscBool copied=PETSC_FALSE;
+  AppCtx*          user = (AppCtx*)ctx;
+
+  PetscFunctionBegin;
+
+  *flg = SAME_PRECONDITIONER;
+  if(!copied) {
+    ierr = MatCopy(user->MatRHS,*Jrhs,*flg);
+    copied = PETSC_TRUE;
   }
-  ierr = VecRestoreArray(user->q,&q_arr);CHKERRQ(ierr);
-  ierr = VecRestoreArray(user->work1,&w_arr);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(*Jrhs,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*Jrhs,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }
 
@@ -237,9 +245,7 @@ PetscErrorCode FormIFunction(TS ts,PetscReal t, Vec X,Vec Xdot,Vec F,void* ctx)
   PetscFunctionBegin;
   ierr = MatMult(user->M,Xdot,F);CHKERRQ(ierr);
   ierr = MatMultAdd(user->S,X,F,F);CHKERRQ(ierr);
-  if(!user->implicit) {
-    ierr = VecAXPY(F,1.0,user->q);CHKERRQ(ierr);
-  }
+
   PetscFunctionReturn(0);
 }
 
@@ -311,7 +317,6 @@ PetscErrorCode GetParams(AppCtx* user)
   user->ymin = 0.0; user->ymax = 1.0;
   user->T = 0.2;    user->dt = 0.0001;
   user->gamma = 3.2E-4; user->theta_c = 1;
-  user->implicit = 0;
 
   ierr = PetscOptionsGetBool(PETSC_NULL,"-ts_monitor",&user->tsmonitor,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(PETSC_NULL,"-xmin",&user->xmin,&flg);CHKERRQ(ierr);
@@ -322,7 +327,6 @@ PetscErrorCode GetParams(AppCtx* user)
   ierr = PetscOptionsGetReal(PETSC_NULL,"-dt",&user->dt,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetScalar(PETSC_NULL,"-gamma",&user->gamma,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetScalar(PETSC_NULL,"-theta_c",&user->theta_c,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-implicit",&user->implicit,&flg);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -342,8 +346,8 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
   PetscScalar       eM_0[3][3],eM_2[3][3];
   Mat               M=user->M;
   Mat               S=user->S;
+  Mat               MatRHS = user->MatRHS;
   PetscScalar       gamma=user->gamma,theta_c=user->theta_c;
-  PetscInt          implicit = user->implicit;
 
   PetscFunctionBegin;
   /* Get ghosted coordinates */
@@ -407,14 +411,18 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
 
       row = 2*idx[r]+1;
       cols[0] = 2*idx[0];     vals[0] = -eM_0[r][0];
-      cols[1] = 2*idx[0]+1;   vals[1] = gamma*eM_2[r][0]-implicit*theta_c*eM_0[r][0];
+      cols[1] = 2*idx[0]+1;   vals[1] = gamma*eM_2[r][0];
       cols[2] = 2*idx[1];     vals[2] = -eM_0[r][1];
-      cols[3] = 2*idx[1]+1;   vals[3] = gamma*eM_2[r][1]-implicit*theta_c*eM_0[r][1];
+      cols[3] = 2*idx[1]+1;   vals[3] = gamma*eM_2[r][1];
       cols[4] = 2*idx[2];     vals[4] = -eM_0[r][2];
-      cols[5] = 2*idx[2]+1;   vals[5] = gamma*eM_2[r][2]-implicit*theta_c*eM_2[r][2];
+      cols[5] = 2*idx[2]+1;   vals[5] = gamma*eM_2[r][2];
 
-      /* Insert values in matrix M for 2nd dof */
       ierr = MatSetValuesLocal(S,1,&row,6,cols,vals,ADD_VALUES);CHKERRQ(ierr);           
+      /* RHS matrix values */
+      cols[0] = 2*idx[0]+1;   vals[0] = theta_c*eM_0[r][0];
+      cols[1] = 2*idx[1]+1;   vals[1] = theta_c*eM_0[r][1];
+      cols[2] = 2*idx[2]+1;   vals[2] = theta_c*eM_2[r][2];
+      ierr = MatSetValuesLocal(MatRHS,1,&row,3,cols,vals,ADD_VALUES);CHKERRQ(ierr);
     }
   }
 
@@ -427,27 +435,8 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
   ierr = MatAssemblyBegin(S,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(S,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  if(!implicit) {
-    /* Create ISs to extract matrix M_0 from M */
-    PetscInt n,rstart;
-    IS       isrow,iscol;
-
-    ierr = MatGetLocalSize(M,&n,PETSC_NULL);CHKERRQ(ierr);
-    ierr = MatGetOwnershipRange(M,&rstart,PETSC_NULL);CHKERRQ(ierr);
-    ierr = ISCreateStride(PETSC_COMM_WORLD,n/2,rstart,2,&isrow);CHKERRQ(ierr);
-    ierr = ISCreateStride(PETSC_COMM_WORLD,n/2,rstart+1,2,&iscol);CHKERRQ(ierr);
-    
-    /* Extract M_0 from M */
-    ierr = MatGetSubMatrix(M,isrow,iscol,MAT_INITIAL_MATRIX,&user->M_0);CHKERRQ(ierr);
-    
-    ierr = VecCreate(PETSC_COMM_WORLD,&user->u);CHKERRQ(ierr);
-    ierr = VecSetSizes(user->u,n/2,PETSC_DECIDE);CHKERRQ(ierr);
-    ierr = VecSetFromOptions(user->u);CHKERRQ(ierr);
-    ierr = VecDuplicate(user->u,&user->work1);CHKERRQ(ierr);
-
-    ierr = ISDestroy(&isrow);CHKERRQ(ierr);
-    ierr = ISDestroy(&iscol);CHKERRQ(ierr);
-  }
+  ierr = MatAssemblyBegin(MatRHS,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(MatRHS,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
