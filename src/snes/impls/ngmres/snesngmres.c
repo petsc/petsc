@@ -86,7 +86,7 @@ PetscErrorCode SNESSetUp_NGMRES(SNES snes)
 
   ierr = VecDuplicateVecs(snes->vec_sol, ngmres->msize, &ngmres->xdot);CHKERRQ(ierr);
   ierr = VecDuplicateVecs(snes->vec_sol, ngmres->msize, &ngmres->rdot);CHKERRQ(ierr);
-  ierr = SNESDefaultGetWork(snes, 3);CHKERRQ(ierr);
+  ierr = SNESDefaultGetWork(snes, 2);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -140,7 +140,7 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
   
   
   /* present solution, residual, and preconditioned residual */
-  Vec            x, r, f, b, d;
+  Vec            x, r, b, d;
   Vec            x_A, r_A;
 
   /* previous iterations to construct the subspace */
@@ -168,11 +168,10 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
   snes->reason  = SNES_CONVERGED_ITERATING;
   x             = snes->vec_sol;
   r             = snes->vec_func;
-  f             = snes->work[0];
   b             = snes->vec_rhs;
   x_A           = snes->vec_sol_update;
-  r_A           = snes->work[1];
-  d             = snes->work[2];
+  r_A           = snes->work[0];
+  d             = snes->work[1];
   ierr = VecDuplicate(x,&r);CHKERRQ(ierr);
 
   ierr = SNESGetPC(snes, &pc);CHKERRQ(ierr);
