@@ -5,7 +5,7 @@ function PetscBinaryWrite(inarg,varargin)
 %  as a one dimensional array
 %
 %
-%   PetscBinaryWrite(inarg,args to write)
+%   PetscBinaryWrite(inarg,args to write,['indices','int32' or 'int64'],['precision','float64' or 'float32'])
 %   inarg may be:
 %      filename 
 %      socket number (0 for PETSc default)
@@ -24,6 +24,20 @@ else
 end
 end
 
+indices = 'int32';
+precision = 'float64';
+tnargin = nargin;
+for l=1:nargin-2
+  if ischar(varargin{l}) && strcmpi(varargin{l},'indices')
+    tnargin = min(l,tnargin-1);
+    indices = varargin{l+1};
+  end
+  if ischar(varargin{l}) && strcmpi(varargin{l},'precision')
+    tnargin = min(l,tnargin-1);
+    precision = varargin{l+1};
+  end
+end
+
 for l=1:nargin-1
   A = varargin{l}; 
   if issparse(A)
@@ -37,31 +51,31 @@ for l=1:nargin-1
       n_nz = full(sum(A' ~= 0));
     end
     nz   = sum(n_nz);
-    write(fd,[1211216,m,n,nz],'int32');
+    write(fd,[1211216,m,n,nz],indices);
 
-    write(fd,n_nz,'int32');   %nonzeros per row
+    write(fd,n_nz,indices);   %nonzeros per row
     [i,j,s] = find(A');
-    write(fd,i-1,'int32');
+    write(fd,i-1,indices);
     if ~isreal(s)
       s = conj(s);
-      l = length(s);
+      ll = length(s);
       sr = real(s);
       si = imag(s);
-      s(1:2:2*l) = sr;
-      s(2:2:2*l) = si;
+      s(1:2:2*ll) = sr;
+      s(2:2:2*ll) = si;
     end
-    write(fd,s,'double');
+    write(fd,s,precision);
   else
     [m,n] = size(A);
-    write(fd,[1211214,m*n],'int32');
+    write(fd,[1211214,m*n],indices);
     if ~isreal(A)
-      l = length(A);
+      ll = length(A);
       sr = real(A);
       si = imag(A);
-      A(1:2:2*l) = sr;
-      A(2:2:2*l) = si;
+      A(1:2:2*ll) = sr;
+      A(2:2:2*ll) = si;
     end
-    write(fd,A,'double');
+    write(fd,A,precision);
   end
 end
 if ischar(inarg) | isinteger(inarg) close(fd); end;
