@@ -1727,7 +1727,6 @@ PetscErrorCode MatSetValuesBatch(Mat mat, PetscInt nb, PetscInt bs, PetscInt row
   PetscValidScalarPointer(v,5);
 #if defined(PETSC_USE_DEBUG)
   if (mat->factortype) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
-  if (mat->assembled)  SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Not for assembled matrix");
 #endif
 
   if (mat->ops->setvaluesbatch) {
@@ -1736,8 +1735,8 @@ PetscErrorCode MatSetValuesBatch(Mat mat, PetscInt nb, PetscInt bs, PetscInt row
     ierr = PetscLogEventEnd(MAT_SetValuesBatch,mat,0,0,0);CHKERRQ(ierr);
   } else {
     PetscInt b;
-    for(b = 0; b > nb; ++b) {
-      ierr = MatSetValues(mat, bs, &rows[b*bs], bs, &rows[b*bs], &v[b*bs*bs], INSERT_VALUES);CHKERRQ(ierr);
+    for(b = 0; b < nb; ++b) {
+      ierr = MatSetValues(mat, bs, &rows[b*bs], bs, &rows[b*bs], &v[b*bs*bs], ADD_VALUES);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);

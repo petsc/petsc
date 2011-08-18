@@ -5,21 +5,25 @@
   This file uses regular malloc and free because it cannot know 
   what malloc is being used until it has already processed the input.
 */
-//#if defined(PETSC_HAVE_SCHED_H) && defined(PETSC_USE_PTHREAD)
+
+#include <petscsys.h>        /*I  "petscsys.h"   I*/
+
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
 #if defined(PETSC_HAVE_SCHED_H)
 #include <sched.h>
 #endif
-#include <petscsys.h>        /*I  "petscsys.h"   I*/
-#if defined(PETSC_USE_PTHREAD)
+#if defined(PETSC_HAVE_PTHREAD_H)
 #include <pthread.h>
 #endif
+
 #if defined(PETSC_HAVE_SYS_SYSINFO_H)
 #include <sys/sysinfo.h>
 #endif
+#if defined(PETSC_HAVE_UNISTD_H)
 #include <unistd.h>
+#endif
 #if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
