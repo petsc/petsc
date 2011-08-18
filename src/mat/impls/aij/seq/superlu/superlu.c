@@ -387,9 +387,14 @@ PetscErrorCode MatSolveTranspose_SuperLU(Mat A,Vec b,Vec x)
 PetscErrorCode MatMatSolve_SuperLU(Mat A,Mat B,Mat X)
 {
   Mat_SuperLU    *lu = (Mat_SuperLU*)A->spptr;
+  PetscBool      flg;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  lu->options.Trans = TRANS;
+  ierr = PetscTypeCompareAny((PetscObject)B,&flg,MATSEQDENSE,MATMPIDENSE,PETSC_NULL);CHKERRQ(ierr);
+  if (!flg) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONG,"Matrix B must be MATDENSE matrix");
+  ierr = PetscTypeCompareAny((PetscObject)X,&flg,MATSEQDENSE,MATMPIDENSE,PETSC_NULL);CHKERRQ(ierr);
+  if (!flg) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONG,"Matrix X must be MATDENSE matrix");  lu->options.Trans = TRANS;
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"MatMatSolve_SuperLU() is not implemented yet");
   PetscFunctionReturn(0);
 }

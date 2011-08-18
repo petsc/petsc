@@ -401,9 +401,9 @@ static PetscErrorCode MatView_SeqSBAIJ_ASCII(Mat A,PetscViewer viewer)
     ierr = PetscViewerASCIIUseTabs(viewer,PETSC_FALSE);CHKERRQ(ierr);
     ierr = PetscObjectPrintClassNamePrefixType((PetscObject)A,viewer,"Matrix Object");CHKERRQ(ierr);
     if (A->factortype){ /* for factored matrix */
+      PetscInt *diag=a->diag;
       if (bs>1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"matrix is factored with bs>1. Not implemented yet");
 
-      PetscInt *diag=a->diag;
       for (i=0; i<a->mbs; i++) { // for row block i
         ierr = PetscViewerASCIIPrintf(viewer,"row %D:",i);CHKERRQ(ierr);
         /* diagonal entry */

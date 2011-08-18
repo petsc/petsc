@@ -3118,8 +3118,14 @@ PetscErrorCode  MatMatSolve_Basic(Mat A,Mat B,Mat X)
   Vec            b,x;
   PetscInt       m,N,i;
   PetscScalar    *bb,*xx;
+  PetscBool      flg;
 
   PetscFunctionBegin;
+  ierr = PetscTypeCompareAny((PetscObject)B,&flg,MATSEQDENSE,MATMPIDENSE,PETSC_NULL);CHKERRQ(ierr);
+  if (!flg) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONG,"Matrix B must be MATDENSE matrix");
+  ierr = PetscTypeCompareAny((PetscObject)X,&flg,MATSEQDENSE,MATMPIDENSE,PETSC_NULL);CHKERRQ(ierr);
+  if (!flg) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONG,"Matrix X must be MATDENSE matrix");
+
   ierr = MatGetArray(B,&bb);CHKERRQ(ierr); 
   ierr = MatGetArray(X,&xx);CHKERRQ(ierr);
   ierr = MatGetLocalSize(B,&m,PETSC_NULL);CHKERRQ(ierr);  /* number local rows */

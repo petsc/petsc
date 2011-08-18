@@ -255,6 +255,7 @@ PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
     ierr = PetscDrawSynchronizedFlush(draw);CHKERRQ(ierr);
     ierr = PetscDrawPause(draw);CHKERRQ(ierr);
   }
+  ierr = PetscFree(displayfields);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(xcoor,&xg);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(xin,&array);CHKERRQ(ierr);
   PetscFunctionReturn(0);

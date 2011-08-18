@@ -25,13 +25,13 @@
       Type(Vec)  g,l
       Type   ada
 #else
-      Vec  g,l
+      Vec  g
       DM  ada
 #endif
       PetscScalar,pointer :: x1(:),x2(:,:)
       PetscScalar,pointer :: x3(:,:,:),x4(:,:,:,:)
       PetscErrorCode ierr
-      PetscInt m,n,p,dof,s,i,j,k,xs,xe,xl
+      PetscInt m,n,p,dof,s,i,j,k,xs,xl
       PetscInt ys,yl
       PetscInt zs,zl
 

@@ -9,8 +9,9 @@
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
+#if defined(PETSC_HAVE_SCHED_H)
 #include <sched.h>
-//#endif
+#endif
 #include <petscsys.h>        /*I  "petscsys.h"   I*/
 #if defined(PETSC_USE_PTHREAD)
 #include <pthread.h>

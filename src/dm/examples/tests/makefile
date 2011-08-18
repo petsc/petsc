@@ -321,7 +321,7 @@ runex37:
 	  ${RM} -f ex32_1.tmp
 
 
-TESTEXAMPLES_C		  = ex1.PETSc runex1 ex1.rm ex4.PETSc runex4 ex4.rm ex16.PETSc runex16 runex16_2 ex16.rm \
+TESTEXAMPLES_C		  = ex1.PETSc runex1 ex1.rm ex4.PETSc runex4 ex4.rm ex16.PETSc ex16.rm \
                             ex21.PETSc runex21 ex21.rm ex24.PETSc runex24 ex24.rm ex25.PETSc \
                             runex25 ex25.rm ex31.PETSc runex31 ex31.rm ex32.PETSc runex32 ex32.rm ex30.PETSc runex30 runex30_2 runex30_3 ex30.rm \
                             ex36.PETSc runex36_1d runex36_2d runex36_2dp1 runex36_2dp2 runex36_3d runex36_3dp1 ex36.rm
@@ -332,6 +332,7 @@ TESTEXAMPLES_FORTRAN	  =
 TESTEXAMPLES_C_X11_MPIUNI = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex4.PETSc ex4.rm ex5.PETSc ex5.rm\
                             ex6.PETSc ex6.rm ex12.PETSc ex12.rm
 TESTEXAMPLES_C_COMPLEX	  = 
+TESTEXAMPLES_C_NOCOMPLEX  = ex16.PETSc runex16 runex16_2 ex16.rm 
 TESTEXAMPLES_13		  = ex8.PETSc ex8.rm ex9.PETSc ex9.rm ex10.PETSc ex10.rm ex11.PETSc ex11.rm
 TESTEXAMPLES_MATLAB	  = ex12.PETSc runex12 ex12.rm
 

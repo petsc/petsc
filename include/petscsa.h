@@ -23,20 +23,17 @@ typedef enum{SA_I = 1, SA_J = 2} SAIndex;
 typedef PetscInt SAComponents;
 #define SA_W 4
 
-extern PetscErrorCode SACreate(SAComponents mask, SA *_arr);
-extern PetscErrorCode SACreateArrays(PetscInt mask, PetscInt count, SA **arrays);
-extern PetscErrorCode SAClear(SA arr);
-extern PetscErrorCode SADuplicate(SA arr, SA *darr);
-extern PetscErrorCode SADestroy(SA *arr);
-extern PetscErrorCode SAAddArray(SA arr, SA arr2);
-extern PetscErrorCode SAAddData(SA arr, const PetscInt len, const PetscInt *ia, const PetscScalar *wa, const PetscInt *ja);
-extern PetscErrorCode SAAddI(SA arr, const PetscInt len, PetscInt i, const PetscScalar* wa, const PetscInt *ja);
-extern PetscErrorCode SAAddJ(SA arr, const PetscInt len, const PetscInt *ia, const PetscScalar* wa, PetscInt j);
-extern PetscErrorCode SAGetLength(SA arr, PetscInt *_length);
-extern PetscErrorCode SAGetData(SA arr, PetscInt *ia, PetscScalar *wa, PetscInt *ja);
-
-
-
+extern PetscErrorCode SACreate(SAComponents, SA*);
+extern PetscErrorCode SACreateArrays(PetscInt, PetscInt, SA **);
+extern PetscErrorCode SAClear(SA);
+extern PetscErrorCode SADuplicate(SA, SA*);
+extern PetscErrorCode SADestroy(SA*);
+extern PetscErrorCode SAAddArray(SA, SA);
+extern PetscErrorCode SAAddData(SA, PetscInt, const PetscInt*, const PetscScalar*, const PetscInt*);
+extern PetscErrorCode SAAddI(SA, PetscInt, PetscInt, const PetscScalar*, const PetscInt*);
+extern PetscErrorCode SAAddJ(SA, PetscInt, const PetscInt*, const PetscScalar*, PetscInt);
+extern PetscErrorCode SAGetLength(SA, PetscInt*);
+extern PetscErrorCode SAGetData(SA, PetscInt*, PetscScalar*, PetscInt*);
 
 /*-------------------------------------------------------------------------*/
 /* SAMapping: Int-Scalar sparse array maps. */
@@ -131,48 +128,48 @@ extern PetscErrorCode  SAMappingRegisterDestroy(void);
 #define SAMappingType char*
 #define SA_MAPPING_GRAPH     "SAMappingGraph"
 
-extern  PetscErrorCode SAMappingCreate(MPI_Comm comm, SAMapping *mapping);
-extern  PetscErrorCode SAMappingView(SAMapping mapping, PetscViewer viewer);
-extern  PetscErrorCode SAMappingDestroy(SAMapping *mapping);
-extern  PetscErrorCode SAMappingSetType(SAMapping mapping, const SAMappingType maptype); 
-extern  PetscErrorCode SAMappingSetSizes(SAMapping mapping, PetscInt m, PetscInt n, PetscInt M, PetscInt N);
-extern  PetscErrorCode SAMappingGetSizes(SAMapping mapping, PetscInt *m, PetscInt *n, PetscInt *M, PetscInt *N);
+extern  PetscErrorCode SAMappingCreate(MPI_Comm, SAMapping *);
+extern  PetscErrorCode SAMappingView(SAMapping , PetscViewer viewer);
+extern  PetscErrorCode SAMappingDestroy(SAMapping *);
+extern  PetscErrorCode SAMappingSetType(SAMapping , const SAMappingType maptype); 
+extern  PetscErrorCode SAMappingSetSizes(SAMapping , PetscInt m, PetscInt n, PetscInt M, PetscInt N);
+extern  PetscErrorCode SAMappingGetSizes(SAMapping , PetscInt *m, PetscInt *n, PetscInt *M, PetscInt *N);
 
-extern  PetscErrorCode SAMappingSetUp(SAMapping mapping);
-extern  PetscErrorCode SAMappingAssemblyBegin(SAMapping mapping);
-extern  PetscErrorCode SAMappingAssemblyEnd(SAMapping mapping);
+extern  PetscErrorCode SAMappingSetUp(SAMapping );
+extern  PetscErrorCode SAMappingAssemblyBegin(SAMapping );
+extern  PetscErrorCode SAMappingAssemblyEnd(SAMapping );
 
-extern  PetscErrorCode SAMappingGetSupport(SAMapping mapping,  PetscInt *len, PetscInt *supp[]);
-extern  PetscErrorCode SAMappingGetSupportIS(SAMapping mapping, IS *supp);
-extern  PetscErrorCode SAMappingGetSupportSA(SAMapping mapping, SA *supp);
-extern  PetscErrorCode SAMappingGetImage(SAMapping mapping, PetscInt *len, PetscInt *image[]);
-extern  PetscErrorCode SAMappingGetImageIS(SAMapping mapping, IS *image);
-extern  PetscErrorCode SAMappingGetImageSA(SAMapping mapping, SA *image);
-extern  PetscErrorCode SAMappingGetMaxImageSize(SAMapping mapping, PetscInt *max_image_size);
+extern  PetscErrorCode SAMappingGetSupport(SAMapping ,  PetscInt *, PetscInt *[]);
+extern  PetscErrorCode SAMappingGetSupportIS(SAMapping , IS *);
+extern  PetscErrorCode SAMappingGetSupportSA(SAMapping , SA *);
+extern  PetscErrorCode SAMappingGetImage(SAMapping , PetscInt *, PetscInt *[]);
+extern  PetscErrorCode SAMappingGetImageIS(SAMapping , IS *);
+extern  PetscErrorCode SAMappingGetImageSA(SAMapping , SA *);
+extern  PetscErrorCode SAMappingGetMaxImageSize(SAMapping , PetscInt*);
 
-extern  PetscErrorCode SAMappingMapLocal(SAMapping mapping, SA inarr, SAIndex index, SA outarr);
-extern  PetscErrorCode SAMappingBinLocal(SAMapping mapping, SA array, SAIndex index, SA outarr);
-extern  PetscErrorCode SAMappingMap(SAMapping mapping, SA inarr, SAIndex index, SA outarr);
-extern  PetscErrorCode SAMappingBin(SAMapping mapping, SA array, SAIndex index, SA outarr);
+extern  PetscErrorCode SAMappingMapLocal(SAMapping , SA, SAIndex, SA);
+extern  PetscErrorCode SAMappingBinLocal(SAMapping , SA, SAIndex, SA);
+extern  PetscErrorCode SAMappingMap(SAMapping , SA, SAIndex, SA);
+extern  PetscErrorCode SAMappingBin(SAMapping , SA, SAIndex, SA);
 
-extern  PetscErrorCode SAMappingMapSplitLocal(SAMapping mapping, SA inarr, SAIndex index, SA *arrs);
-extern  PetscErrorCode SAMappingBinSplitLocal(SAMapping mapping, SA array, SAIndex index, SA *bins);
-extern  PetscErrorCode SAMappingMapSplit(SAMapping mapping, SA inarr, SAIndex index, SA *arrs);
-extern  PetscErrorCode SAMappingBinSplit(SAMapping mapping, SA array, SAIndex index, SA *bins);
+extern  PetscErrorCode SAMappingMapSplitLocal(SAMapping, SA , SAIndex , SA *);
+extern  PetscErrorCode SAMappingBinSplitLocal(SAMapping, SA , SAIndex , SA *);
+extern  PetscErrorCode SAMappingMapSplit(SAMapping, SA, SAIndex, SA *);
+extern  PetscErrorCode SAMappingBinSplit(SAMapping, SA, SAIndex, SA *);
 
-extern  PetscErrorCode SAMappingInvert(SAMapping mapping, SAMapping *imapping);
-extern  PetscErrorCode SAMappingPullback(SAMapping mapping1, SAMapping mapping2, SAMapping *mapping);
-extern  PetscErrorCode SAMappingPushforward(SAMapping mapping1, SAMapping mapping2, SAMapping *mapping);
+extern  PetscErrorCode SAMappingInvert(SAMapping, SAMapping *);
+extern  PetscErrorCode SAMappingPullback(SAMapping, SAMapping, SAMapping *);
+extern  PetscErrorCode SAMappingPushforward(SAMapping, SAMapping, SAMapping *);
 
-extern  PetscErrorCode SAMappingGetOperator(SAMapping mapping, Mat *op);
+extern  PetscErrorCode SAMappingGetOperator(SAMapping , Mat*);
 
 /* SA_MAPPING_GRAPH */
-extern  PetscErrorCode SAMappingGraphAddEdgesSA(SAMapping mapping, SA edges);
-extern  PetscErrorCode SAMappingGraphAddEdgesIS(SAMapping mapping, IS ix, IS iy);
-extern  PetscErrorCode SAMappingGraphAddEdges(SAMapping mapping, PetscInt len, const PetscInt x[], const PetscInt y[]);
-extern  PetscErrorCode SAMappingGraphGetEdgesSA(SAMapping mapping, SA *_edges);
-extern  PetscErrorCode SAMappingGraphGetEdgesIS(SAMapping mapping, IS *ix, IS *iy);
-extern  PetscErrorCode SAMappingGraphGetEdges(SAMapping mapping, PetscInt *len, PetscInt *x[], PetscInt *y[]);
+extern  PetscErrorCode SAMappingGraphAddEdgesSA(SAMapping , SA);
+extern  PetscErrorCode SAMappingGraphAddEdgesIS(SAMapping , IS, IS);
+extern  PetscErrorCode SAMappingGraphAddEdges(SAMapping , PetscInt, const PetscInt[], const PetscInt[]);
+extern  PetscErrorCode SAMappingGraphGetEdgesSA(SAMapping , SA *);
+extern  PetscErrorCode SAMappingGraphGetEdgesIS(SAMapping , IS *, IS *);
+extern  PetscErrorCode SAMappingGraphGetEdges(SAMapping, PetscInt *, PetscInt *[], PetscInt *[]);
 
 
 PETSC_EXTERN_CXX_END
