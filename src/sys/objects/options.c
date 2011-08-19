@@ -1,8 +1,6 @@
 
-/* Feature test macros to make sure atoll is available (SVr4, POSIX.1-2001, 4.3BSD, C99), not in (C89 and POSIX.1-1996) */
-/* This is not correct PETSc code; ./configure should determine what flags need to be set and set them when needed */
-#define _POSIX_C_SOURCE 200112L
-#define _BSD_SOURCE
+/* Define Feature test macros to make sure atoll is available (SVr4, POSIX.1-2001, 4.3BSD, C99), not in (C89 and POSIX.1-1996) */
+#define PETSC_DESIRE_FEATURE_TEST_MACROS
 
 /*
    These routines simplify the use of command line, file options, etc., and are used to manipulate the options database.

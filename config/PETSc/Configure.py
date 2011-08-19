@@ -525,6 +525,13 @@ class Configure(config.base.Configure):
       self.addDefine('Prefetch(a,b,c)', ' ')
     self.popLanguage()
 
+  def configureFeatureTestMacros(self):
+    '''Checks if certain feature test macros are support'''
+    if self.checkCompile('', '#define _POSIX_C_SOURCE 200112L'):
+       self.addDefine('_POSIX_C_SOURCE_200112L', '1')
+    if self.checkCompile('', '#define _BSD_SOURCE'):
+       self.addDefine('_BSD_SOURCE', '1')
+
   def configureUnused(self):
     '''Sees if __attribute((unused)) is supported'''
     if self.framework.argDB['with-iphone'] or self.framework.argDB['with-cuda']:
@@ -795,6 +802,7 @@ class Configure(config.base.Configure):
     self.executeTest(self.configureInstall)
     self.executeTest(self.configureGCOV)
     self.executeTest(self.configureFortranFlush)
+    self.executeTest(self.configureFeatureTestMacros)
     # dummy rules, always needed except for remote builds
     self.addMakeRule('remote','')
     self.addMakeRule('remoteclean','')
