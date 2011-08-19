@@ -151,8 +151,8 @@ class Configure(config.package.Package):
       raise RuntimeError('You cannot set both the library containing BLAS/LAPACK with --with-blas-lapack-lib=<lib>\nand the directory to search with --with-blas-lapack-dir=<dir>')
 
     if self.framework.argDB['download-c-blas-lapack']:
-      self.download= ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/f2cblaslapack-3.1.1.a.tar.gz']
-      self.downloadname = 'f2cblaslapack-3.1.1.a'
+      self.download= ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/f2cblaslapack-3.1.1.q.tar.gz']
+      self.downloadname = 'f2cblaslapack-3.1.1.q'
     elif self.framework.argDB['download-f-blas-lapack']:
       self.download= ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/fblaslapack-3.1.1.tar.gz']
       self.downloadname = 'fblaslapack-3.1.1'
