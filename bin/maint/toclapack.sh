@@ -2505,12 +2505,12 @@ typedef struct Namelist Namelist;
 #define abort_() { \
 sig_die("Fortran abort routine called", 1); \
 }
-#define c_abs(z) ( (double)f__cabs( (z)->r, (z)->i ) )
-extern double f__cabs(double real, double imag);
-#define c_cos(R,Z) {(R)->r = (real)(cos((double)(Z)->r) * cosh((double)(Z)->i)); (R)->i = (real)(-sin((double)(Z)->r) * sinh((double)(Z)->i));}
+#define c_abs(z) ( (real)f__cabs( (z)->r, (z)->i ) )
+extern real f__cabs(real re, real im);
+#define c_cos(R,Z) {(R)->r = (real)(cos((real)(Z)->r) * cosh((real)(Z)->i)); (R)->i = (real)(-sin((real)(Z)->r) * sinh((real)(Z)->i));}
 #define c_div(c, a, b) { \
-	double ratio, den; \
-	double abr, abi, cr; \
+	real ratio, den; \
+	real abr, abi, cr; \
 	if( (abr = (b)->r) < 0.) \
 		abr = - abr; \
 	if( (abi = (b)->i) < 0.) \
@@ -2519,26 +2519,26 @@ extern double f__cabs(double real, double imag);
 		{ \
 		if(abi == 0) \
 			sig_die("complex division by zero", 1); \
-		ratio = (double)(b)->r / (b)->i ; \
+		ratio = (real)(b)->r / (b)->i ; \
 		den = (b)->i * (1 + ratio*ratio); \
 		cr = ((a)->r*ratio + (a)->i) / den; \
 		(c)->i = ((a)->i*ratio - (a)->r) / den; \
 		} \
 	else \
 		{ \
-		ratio = (double)(b)->i / (b)->r ; \
+		ratio = (real)(b)->i / (b)->r ; \
 		den = (b)->r * (1 + ratio*ratio); \
 		cr = ((a)->r + (a)->i*ratio) / den; \
 		(c)->i = ((a)->i - (a)->r*ratio) / den; \
 		} \
 	(c)->r = cr; \
 	}
-#define c_exp(R, Z) {(R)->r = (real)(exp((double)(Z)->r) * cos((double)(Z)->i)); (R)->i = (real)(exp((double)(Z)->r) * sin((double)(Z)->i)); }
-#define c_log(R, Z) { (R)->i = (real)atan2((double)(Z)->i, (double)(Z)->r); (R)->r = (real)log( f__cabs((double)(Z)->r, (double)(Z)->i) ); }
-#define c_sin(R, Z) { (R)->r = (real)(sin((double)(Z)->r) * cosh((double)(Z)->i)); (R)->i = (real)(cos((double)(Z)->r) * sinh((double)(Z)->i)); }
+#define c_exp(R, Z) {(R)->r = (real)(exp((real)(Z)->r) * cos((real)(Z)->i)); (R)->i = (real)(exp((real)(Z)->r) * sin((real)(Z)->i)); }
+#define c_log(R, Z) { (R)->i = (real)atan2((real)(Z)->i, (real)(Z)->r); (R)->r = (real)log( f__cabs((real)(Z)->r, (real)(Z)->i) ); }
+#define c_sin(R, Z) { (R)->r = (real)(sin((real)(Z)->r) * cosh((real)(Z)->i)); (R)->i = (real)(cos((real)(Z)->r) * sinh((real)(Z)->i)); }
 #define c_sqrt(R, Z) { \
-	double mag, t; \
-	double zi = (Z)->i, zr = (Z)->r; \
+	real mag, t; \
+	real zi = (Z)->i, zr = (Z)->r; \
 	if( (mag = f__cabs(zr, zi)) == 0.) \
 		(R)->r = (R)->i = 0.; \
 	else if(zr > 0) \
@@ -2586,13 +2586,13 @@ extern double f__cabs(double real, double imag);
 #define i_nint(x) ((integer)(*(x) >= 0 ? floor(*(x) + .5) : -floor(.5 - *(x))))
 #define i_sign(a,b) ( *(b) >= 0 ? (*(a) >= 0 ? *(a) : - *(a)) : -(*(a) >= 0 ? *(a) : - *(a)))
 #define pow_ci(p, a, b) { pow_zi((p), (a), (b)); }
-#define pow_dd(ap, bp) ((double)pow(*(ap), *(bp)))
-#define pow_di(B,E) ((double)pow((double)*(B),(double)*(E)))
-#define pow_ii(B,E)    ((integer)pow((double)*(B),(double)*(E)))
-#define pow_ri(B,E) (pow((double)*(B),(double)*(E)))
+#define pow_dd(ap, bp) ((real)pow(*(ap), *(bp)))
+#define pow_di(B,E) ((real)pow((real)*(B),(real)*(E)))
+#define pow_ii(B,E)    ((integer)pow((real)*(B),(real)*(E)))
+#define pow_ri(B,E) (pow((real)*(B),(real)*(E)))
 #define pow_zi(p, a, b) { doublecomplex cb; cb.r = *(b); cb.i = 0.0; pow_zz((p), (a), &cb); }
 #define pow_zz(R,A,B) { \
-double logr, logi, x, y; \
+real logr, logi, x, y; \
 logr = log( f__cabs((A)->r, (A)->i) ); \
 logi = atan2((A)->i, (A)->r); \
 x = exp( logr * (B)->r - logi * (B)->i ); \
@@ -2602,7 +2602,7 @@ y = logr * (B)->i + logi * (B)->r; \
 }
 #define r_cnjg(R, Z) { (R)->r = (Z)->r;	(R)->i = -((Z)->i); }
 #define r_imag(z) ((z)->i)
-#define r_lg10(x) ( 0.43429448190325182765 * log((double)*(x)) )
+#define r_lg10(x) ( 0.43429448190325182765 * log((real)*(x)) )
 #define r_sign(a,b) ( *(b) >= 0 ? (*(a) >= 0 ? *(a) : - *(a)) : -(*(a) >= 0 ? *(a) : - *(a)))
 #define s_cat(lpp, rpp, rnp, np, llp) { \
 	ftnlen i, nc, ll; char *f__rp, *lp; \
@@ -2668,31 +2668,32 @@ EOF
 	cp ${TMP}/f2c.h ${LAPACKDIR}
 
 	cat <<EOF > ${BLASDIR}/cabs.c
+#include "f2c.h"
 #ifdef KR_headers
-extern double sqrt();
-double f__cabs(real, imag) double real, imag;
+extern real sqrt();
+real f__cabs(re, im) real re, im;
 #else
 #undef abs
 #include "math.h"
-double f__cabs(double real, double imag)
+real f__cabs(real re, real im)
 #endif
 {
-double temp;
+real temp;
 
-if(real < 0)
-	real = -real;
-if(imag < 0)
-	imag = -imag;
-if(imag > real){
-	temp = real;
-	real = imag;
-	imag = temp;
+if(re < 0)
+	re = -re;
+if(im < 0)
+	im = -im;
+if(im > re){
+	temp = re;
+	re = im;
+	im = temp;
 }
-if((real+imag) == real)
-	return(real);
+if((re+im) == re)
+	return(re);
 
-temp = imag/real;
-temp = real*sqrt(1.0 + temp*temp);  /*overflow!!*/
+temp = im/re;
+temp = re*sqrt(1.0 + temp*temp);  /*overflow!!*/
 return(temp);
 }
 EOF
@@ -2706,8 +2707,8 @@ VOID z_div(c, a, b) doublecomplex *a, *b, *c;
 void z_div(doublecomplex *c, doublecomplex *a, doublecomplex *b)
 #endif
 {
-	double ratio, den;
-	double abr, abi, cr;
+	real ratio, den;
+	real abr, abi, cr;
 
 	if( (abr = b->r) < 0.)
 		abr = - abr;
@@ -2738,16 +2739,16 @@ EOF
 #include "f2c.h"
 
 #ifdef KR_headers
-double sqrt(), f__cabs();
+real sqrt(), f__cabs();
 VOID z_sqrt(r, z) doublecomplex *r, *z;
 #else
 #undef abs
 #include "math.h"
-extern double f__cabs(double, double);
+extern real f__cabs(real, real);
 void z_sqrt(doublecomplex *r, doublecomplex *z)
 #endif
 {
-	double mag, zi = z->i, zr = z->r;
+	real mag, zi = z->i, zr = z->r;
 
 	if( (mag = f__cabs(zr, zi)) == 0.)
 		r->r = r->i = 0.;
