@@ -83,9 +83,7 @@ int TV_add_row(const char *field_name,
 #if defined(PETSC_HAVE__SNPRINTF) && !defined(PETSC_HAVE_SNPRINTF)
 #define snprintf _snprintf
 #endif
-  out = snprintf(TV_data_buffer_ptr, 
-                 remaining, "%s\t%s\t%p\n", 
-                 field_name, type_name, value);
+  out = snprintf(TV_data_buffer_ptr,remaining, "%s\t%s\t%p\n",field_name, type_name, value);
   
   if (out < 1)
     return ENOMEM;

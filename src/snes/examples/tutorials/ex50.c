@@ -369,9 +369,8 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info,Field **x,Field **f,void *p
 #define __FUNCT__ "FormFunction"
 PetscErrorCode FormFunction(SNES snes, Vec X, Vec F, void *user)
 {
-  DMDALocalInfo    info;
-  void          *u;
-  void          *fu;
+  DMDALocalInfo  info;
+  Field          **u,**fu;
   PetscErrorCode ierr;
   Vec            localX;
   DM             da;

@@ -1227,7 +1227,7 @@ PetscErrorCode  PetscOptionsReject(const char name[],const char mess[])
           In many cases you probably want to use PetscOptionsGetBool() instead of calling this, to allowing toggling values.
 
 .seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),
-           PetscOptionsGetString(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool(),g
+           PetscOptionsGetString(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool(),
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),

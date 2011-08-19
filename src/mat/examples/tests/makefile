@@ -1610,7 +1610,7 @@ runex158_3:
 	   ${DIFF} output/ex158_3.out ex158_3.tmp || echo "Possible problem with ex158_3, diffs above"; \
 	   ${RM} -f ex158_3.tmp
 
-TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex4.PETSc runex4 ex4.rm  ex5.PETSc runex5 runex5_2 ex5.rm \
+TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex4.PETSc ex4.rm  ex5.PETSc runex5 runex5_2 ex5.rm \
                                  ex6.PETSc runex6 ex6.rm ex8.PETSc runex8 ex8.rm ex9.PETSc runex9 ex9.rm ex10.PETSc \
                                  runex10 ex10.rm ex11.PETSc runex11 runex11_2 runex11_3 runex11_4 ex11.rm ex14.PETSc \
                                  runex14 ex14.rm ex15.PETSc runex15 ex15.rm ex19.PETSc ex19.rm ex20.PETSc runex20 \

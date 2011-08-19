@@ -873,7 +873,7 @@ TESTEXAMPLES_ADIFOR	       = ex5f.PETSc runex5f_2 ex5f.rm
 TESTEXAMPLES_MUMPS             = ex19.PETSc runex19_3 runex19_4 runex19_fieldsplit_mumps runex19_fieldsplit_redundant ex19.rm  \
                                  ex50.PETSc runex50_3 runex50_4 runex50_fieldsplit_mumps runex50_fieldsplit_redundant ex50.rm 
 TESTEXAMPLES_SUPERLU           = ex19.PETSc runex19_superlu ex19.rm  ex50.PETSc runex50_superlu ex50.rm 
-TESTEXAMPLES_SUPERLU_DIST      = ex19.PETSc runex19_superlu_dist runex19_superlu_dist_2 ex19.rm  ex50.PETSc runex50_superlu_dist runex50_superlu_dist_2 ex50.rm
+TESTEXAMPLES_SUPERLU_DIST      = ex19.PETSc runex19_superlu_dist runex19_superlu_dist_2 ex19.rm  ex50.PETSc  ex50.rm
 TESTEXAMPLES_PASTIX            = ex19.PETSc runex19_11 runex19_12 ex19.rm  ex50.PETSc runex50_11 runex50_12 ex50.rm
 TESTEXAMPLES_CUSP              = ex19.PETSc runex19_cusp ex19.rm ex47cu.PETSc runex47cu ex47cu.rm ex50.PETSc runex50_cusp ex50.rm
 

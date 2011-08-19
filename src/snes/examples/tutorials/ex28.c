@@ -78,7 +78,7 @@ static PetscErrorCode FormFunction_All(SNES snes,Vec X,Vec F,void *ctx)
   User              user = (User)ctx;
   DM                dau,dak;
   DMDALocalInfo     infou,infok;
-  const PetscScalar *u,*k;
+  PetscScalar       *u,*k;
   PetscScalar       *fu,*fk;
   PetscErrorCode    ierr;
   Vec               Uloc,Kloc,Fu,Fk;
@@ -230,7 +230,7 @@ static PetscErrorCode FormJacobian_All(SNES snes,Vec X,Mat *J,Mat *B,MatStructur
   User              user = (User)ctx;
   DM                dau,dak;
   DMDALocalInfo     infou,infok;
-  const PetscScalar *u,*k;
+  PetscScalar       *u,*k;
   PetscErrorCode    ierr;
   Vec               Uloc,Kloc;
 

@@ -15,7 +15,6 @@ T*/
 */
 
 #include <petscvec.h>
-#include <sys/time.h>
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

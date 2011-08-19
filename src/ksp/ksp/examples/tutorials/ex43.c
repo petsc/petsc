@@ -1342,7 +1342,7 @@ static PetscErrorCode solve_stokes_2d_coupled(PetscInt mx,PetscInt my)
           }
 
           element_props[j][i].fx[p] = 0.0;
-          element_props[j][i].fy[p] = sin((double)opts_nz*M_PI*coord_y)*cos(1.0*M_PI*coord_x);
+          element_props[j][i].fy[p] = sin((double)opts_nz*PETSC_PI*coord_y)*cos(1.0*PETSC_PI*coord_x);
         }
       } else if (coefficient_structure == 1) { /* square sinker */
         PetscReal opts_eta0,opts_eta1,opts_dx,opts_dy;

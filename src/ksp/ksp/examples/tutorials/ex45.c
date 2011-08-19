@@ -75,6 +75,9 @@ PetscErrorCode ComputeRHS(DM dm,Vec x,Vec b)
   PetscErrorCode ierr;
   PetscInt       mx,my,mz;
   PetscScalar    h;
+  PetscScalar    ***xx,***bb;
+  PetscInt       i,j,k,xm,ym,zm,xs,ys,zs;
+  PetscScalar    Hx,Hy,Hz,HxHydHz,HyHzdHx,HxHzdHy;
 
   PetscFunctionBegin;
   ierr = DMDAGetInfo(dm,0,&mx,&my,&mz,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
@@ -82,17 +85,13 @@ PetscErrorCode ComputeRHS(DM dm,Vec x,Vec b)
   ierr = VecSet(b,h);CHKERRQ(ierr);
 
   if (x) {
-    PetscScalar ***xx,***bb;
     ierr = DMDAVecGetArray(dm,x,&xx);CHKERRQ(ierr);
     ierr = DMDAVecGetArray(dm,b,&bb);CHKERRQ(ierr);
-  DM             da = dm;
-  PetscInt       i,j,k,mx,my,mz,xm,ym,zm,xs,ys,zs;
-  PetscScalar    Hx,Hy,Hz,HxHydHz,HyHzdHx,HxHzdHy;
 
-  ierr = DMDAGetInfo(da,0,&mx,&my,&mz,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);  
+  ierr = DMDAGetInfo(dm,0,&mx,&my,&mz,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);  
   Hx = 1.0 / (PetscReal)(mx-1); Hy = 1.0 / (PetscReal)(my-1); Hz = 1.0 / (PetscReal)(mz-1);
   HxHydHz = Hx*Hy/Hz; HxHzdHy = Hx*Hz/Hy; HyHzdHx = Hy*Hz/Hx;
-  ierr = DMDAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
+  ierr = DMDAGetCorners(dm,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
   
   for (k=zs; k<zs+zm; k++){
     for (j=ys; j<ys+ym; j++){

@@ -7,7 +7,7 @@ static char help[] = "Test MatMatMult(), MatMatMultTranspose() for SeqDense matr
 int main(int argc,char **argv) {
   Mat            A,B,C,D;
   PetscInt       i,j,k,M=10,N=5;
-  PetscScalar    *array;;
+  PetscScalar    *array;
   PetscErrorCode ierr;
   PetscRandom    r;
   PetscBool      equal;

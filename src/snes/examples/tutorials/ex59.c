@@ -15,10 +15,10 @@ static char help[] = "Tries to solve u`` + u^{2} = f for an easy case and an imp
 #include <petscsnes.h>
 
 PetscBool second_order = PETSC_FALSE;
-#define X0DOT      -2 
-#define X1          5 
-#define KPOW        2
-const PetscScalar perturb = 1.1;
+#define X0DOT      -2.0 
+#define X1          5.0 
+#define KPOW        2.0
+const PetscScalar sperturb = 1.1;
 
 /* 
    User-defined routines
@@ -96,7 +96,7 @@ int main(int argc,char **argv)
   xp = 0.0;
   for (i=0; i<n; i++) 
     {
-      v = k*(k-1)*(b-a)*PetscPowScalar(xp,k-2) + SQR(a*xp) + SQR(b-a)*PetscPowScalar(xp,2*k) + 2*a*(b-a)*PetscPowScalar(xp,k+1);
+      v = k*(k-1.)*(b-a)*PetscPowScalar(xp,k-2.) + SQR(a*xp) + SQR(b-a)*PetscPowScalar(xp,2.*k) + 2.*a*(b-a)*PetscPowScalar(xp,k+1.);
       ierr = VecSetValues(F,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
       v2 = a*xp + (b-a)*PetscPowScalar(xp,k);
       ierr = VecSetValues(x,1,&i,&v2,INSERT_VALUES);CHKERRQ(ierr);
@@ -106,7 +106,7 @@ int main(int argc,char **argv)
   /* perturb initial guess */
   ierr = VecGetArray(x,&xx);
   for (i=0; i<n; i++) {
-    v2 = xx[i]*perturb;
+    v2 = xx[i]*sperturb;
     ierr = VecSetValues(x,1,&i,&v2,INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr); 
@@ -142,12 +142,12 @@ PetscErrorCode FormFunction(SNES snes,Vec x,Vec f,void *dummy)
   d = (PetscReal)(n - 1); d2 = d*d;
 
   if (second_order){
-    ff[0] = d*(0.5*d*(-xx[2] + 4*xx[1] - 3*xx[0]) - X0DOT);
+    ff[0] = d*(0.5*d*(-xx[2] + 4.*xx[1] - 3.*xx[0]) - X0DOT);
   } else {
     ff[0] = d*(d*(xx[1] - xx[0]) - X0DOT); 
   }
   for (i=1; i<n-1; i++) {
-    ff[i] = d2*(xx[i-1] - 2.0*xx[i] + xx[i+1]) + xx[i]*xx[i] - FF[i];
+    ff[i] = d2*(xx[i-1] - 2.*xx[i] + xx[i+1]) + xx[i]*xx[i] - FF[i];
   }
   ff[n-1] = d*d*(xx[n-1] - X1);
   ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
@@ -169,7 +169,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec x,Mat *jac,Mat *prejac,MatStructure *f
   i = 0; 
   if (second_order) {
     j[0] = 0; j[1] = 1; j[2] = 2;
-    A[0] = -3*d*d*0.5; A[1] = 4*d*d*0.5;  A[2] = -1*d*d*0.5;   
+    A[0] = -3.*d*d*0.5; A[1] = 4.*d*d*0.5;  A[2] = -1.*d*d*0.5;   
     ierr = MatSetValues(*prejac,1,&i,3,j,A,INSERT_VALUES);CHKERRQ(ierr);
   } else {
     j[0] = 0; j[1] = 1;
@@ -178,7 +178,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec x,Mat *jac,Mat *prejac,MatStructure *f
   }
   for (i=1; i<n-1; i++) {
      j[0] = i - 1; j[1] = i;                   j[2] = i + 1; 
-     A[0] = d2;    A[1] = -2.0*d2 + 2.0*xx[i];  A[2] = d2; 
+     A[0] = d2;    A[1] = -2.*d2 + 2.*xx[i];  A[2] = d2; 
      ierr = MatSetValues(*prejac,1,&i,3,j,A,INSERT_VALUES);CHKERRQ(ierr);
   }
 

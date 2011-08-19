@@ -47,6 +47,7 @@ int main(int argc, char **argv)
   Mat            J;
   PetscReal      t=0.0;
   PetscLogStage  stage_timestep;
+  PetscInt       its;
 
   PetscInitialize(&argc,&argv, (char*)0, help);
 
@@ -95,7 +96,6 @@ int main(int argc, char **argv)
   while(t < user.T) {
     ierr = Update_q(user.q,user.u,user.M_0,&user);
     ierr = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(ierr);
-    PetscInt its;
     ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
     if (user.tsmonitor) {
       ierr = PetscPrintf(PETSC_COMM_WORLD,"SNESVI solver converged at t = %5.4f in %d iterations\n",t,its);
@@ -323,6 +323,12 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
   PetscScalar       eM_0[3][3],eM_2[3][3];
   Mat               M=user->M;
   PetscScalar       gamma=user->gamma,theta_c=user->theta_c;
+  PetscInt          m;
+  PetscInt          j,k;
+  PetscInt          row,cols[6],r;
+  PetscScalar       vals[6];
+  PetscInt          n,rstart;
+  IS                isrow,iscol;
 
   PetscFunctionBegin;
   /* Get ghosted coordinates */
@@ -348,7 +354,7 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
     eM_2[1][0]=eM_2[1][1]=eM_2[1][2]=0.0;
     eM_2[2][0]=eM_2[2][1]=eM_2[2][2]=0.0;
 
-    PetscInt m;
+
     for(m=0;m<3;m++) {
       ierr = PetscMemzero(phi,3*sizeof(PetscScalar));CHKERRQ(ierr);
       phider[0][0]=phider[0][1]=0.0;
@@ -357,7 +363,6 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
       
       ShapefunctionsT3(phi,phider,xx[m],yy[m],x,y);
 
-      PetscInt j,k;
       for(j=0;j<3;j++) {
 	for(k=0;k<3;k++) {
 	  eM_0[k][j] += phi[j]*phi[k]*w;
@@ -365,8 +370,6 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
 	}
       }
     }
-    PetscInt    row,cols[6],r;
-    PetscScalar vals[6];
 
     for(r=0;r<3;r++) {
       row = 2*idx[r];
@@ -399,8 +402,6 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
   ierr = MatAssemblyEnd(M,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /* Create ISs to extract matrix M_0 from M */
-  PetscInt n,rstart;
-  IS       isrow,iscol;
 
   ierr = MatGetLocalSize(M,&n,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(M,&rstart,PETSC_NULL);CHKERRQ(ierr);

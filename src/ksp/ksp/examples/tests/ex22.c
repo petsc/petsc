@@ -15,7 +15,7 @@ PetscErrorCode test_solve( void )
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscPrintf( PETSC_COMM_WORLD, "%s \n", __func__ );
+  PetscPrintf( PETSC_COMM_WORLD, "%s \n", PETSC_FUNCTION_NAME );
 
   n = 3;
   np = 2;
