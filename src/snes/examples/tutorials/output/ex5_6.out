@@ -1,6 +1,17 @@
-  0 SNES Function norm 0.207564 
-  1 SNES Function norm 0.0148968 
-  2 SNES Function norm 0.000113965 
-  3 SNES Function norm 6.90322e-09 
-  4 SNES Function norm < 1.e-11
-Number of Newton iterations = 4
+  0 SNES Function norm 1.08789 
+    0 KSP Residual norm 13.295 
+    1 KSP Residual norm 1.19589 
+    2 KSP Residual norm 0.00695165 
+    3 KSP Residual norm 8.27341e-05 
+  1 SNES Function norm 0.00870955 
+    0 KSP Residual norm 0.334088 
+    1 KSP Residual norm 0.0155678 
+    2 KSP Residual norm 0.000454042 
+    3 KSP Residual norm 5.2334e-06 
+    4 KSP Residual norm 1.21197e-07 
+  2 SNES Function norm 2.6828e-07 
+    0 KSP Residual norm 0.000332412 
+    1 KSP Residual norm 6.243e-06 
+    2 KSP Residual norm 8.35669e-08 
+    3 KSP Residual norm 9.247e-10 
+  3 SNES Function norm 4.741e-11 
