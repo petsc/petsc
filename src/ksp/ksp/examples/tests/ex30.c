@@ -139,6 +139,7 @@ int main(int argc,char **args)
         /* load B to get A = A + sigma*B */
         ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[2],FILE_MODE_READ,&fd);CHKERRQ(ierr);
 	ierr = MatCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
+        ierr = MatSetOptionsPrefix(B,"B_");CHKERRQ(ierr); /* e.g., ./ex30 -f0 <A> -fB <B> -mat_sigma 1.0 -B_mat_view_draw */
 	ierr = MatLoad(B,fd);CHKERRQ(ierr);
         ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr);
         ierr = MatAXPY(A,sigma,B,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr); /* A <- sigma*B + A */  

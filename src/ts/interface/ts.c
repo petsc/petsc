@@ -118,6 +118,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
 
     ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
     if (ts->problem_type == TS_LINEAR) {ierr = SNESSetType(snes,SNESKSPONLY);CHKERRQ(ierr);}
+    ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
     /* Handle specific TS options */
     if (ts->ops->setfromoptions) {
