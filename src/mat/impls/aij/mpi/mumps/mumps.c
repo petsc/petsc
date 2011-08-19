@@ -402,7 +402,7 @@ PetscErrorCode MatConvertToTriples_mpiaij_mpisbaij(Mat A,int shift,MatReuse reus
 {
   const PetscInt     *ai, *aj,*adiag, *bi, *bj,*garray,m=A->rmap->n,*ajj,*bjj;
   PetscErrorCode     ierr;
-  PetscInt           rstart,nz,nza,nzb_low,i,j,jj,irow,countA,countB;
+  PetscInt           rstart,nz,nza,nzb,i,j,jj,irow,countA,countB;
   PetscInt           *row,*col;
   const PetscScalar  *av, *bv,*v1,*v2;
   PetscScalar        *val;
@@ -417,20 +417,18 @@ PetscErrorCode MatConvertToTriples_mpiaij_mpisbaij(Mat A,int shift,MatReuse reus
   rstart = A->rmap->rstart;
 
   if (reuse == MAT_INITIAL_MATRIX) {
-    nza = 0;nzb_low = 0;
+    nza = 0;    /* num of upper triangular entries in mat->A, including diagonals */
+    nzb = 0;    /* num of upper triangular entries in mat->B */ 
     for(i=0; i<m; i++){
-      nza     = nza + (ai[i+1] - adiag[i]);
-      countB  = bi[i+1] - bi[i];
+      nza    += (ai[i+1] - adiag[i]); 
+      countB  = bi[i+1] - bi[i]; 
       bjj     = bj + bi[i];
-      
-      j = 0;
-      while(garray[bjj[j]] < rstart) {
-	if(j == countB) break;
-	j++;nzb_low++;
+      for (j=0; j<countB; j++){
+        if (garray[bjj[j]] > rstart) nzb++;
       }
     }
-    /* Total nz = nz for the upper triangular A part + nz for the 2nd B part */
-    nz = nza + (bb->nz - nzb_low); 
+    
+    nz = nza + nzb; /* total nz of upper triangular part of mat */
     *nnz = nz;
     ierr = PetscMalloc((2*nz*sizeof(PetscInt)+nz*sizeof(PetscScalar)), &row);CHKERRQ(ierr);
     col  = row + nz;
