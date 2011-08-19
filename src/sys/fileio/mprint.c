@@ -108,7 +108,7 @@ PetscErrorCode  PetscVSNPrintf(char *str,size_t len,const char *format,size_t *f
   /* no malloc since may be called by error handler */
   char          *newformat;
   char           formatbuf[8*1024];
-  size_t         oldLength,length;
+  size_t         oldLength,length,fullLengthInt;
   PetscErrorCode ierr;
  
   ierr = PetscStrlen(format, &oldLength);CHKERRQ(ierr);
@@ -125,14 +125,16 @@ PetscErrorCode  PetscVSNPrintf(char *str,size_t len,const char *format,size_t *f
   }
 #endif
 #if defined(PETSC_HAVE_VSNPRINTF_CHAR)
-  *fullLength = vsnprintf(str,len,newformat,(char *)Argp);
+  fullLengthInt = vsnprintf(str,len,newformat,(char *)Argp);
 #elif defined(PETSC_HAVE_VSNPRINTF)
-  *fullLength = vsnprintf(str,len,newformat,Argp);
+  fullLengthInt = vsnprintf(str,len,newformat,Argp);
 #elif defined(PETSC_HAVE__VSNPRINTF)
-  *fullLength = _vsnprintf(str,len,newformat,Argp);
+  fullLengthInt = _vsnprintf(str,len,newformat,Argp);
 #else
 #error "vsnprintf not found"
 #endif
+  if (fullLengthInt < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"vsnprintf() failed");
+  *fullLength = (size_t)fullLengthInt;
   if (oldLength >= 8*1024) {
     ierr = PetscFree(newformat);CHKERRQ(ierr);
   }
@@ -254,6 +256,36 @@ PetscErrorCode  PetscSNPrintf(char *str,size_t len,const char format[],...)
   PetscFunctionBegin;
   va_start(Argp,format);
   ierr = PetscVSNPrintf(str,len,format,&fullLength,Argp);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscSNPrintfCount"
+/*@C
+    PetscSNPrintfCount - Prints to a string of given length, returns count
+
+    Not Collective
+
+    Input Parameters:
++   str - the string to print to
+.   len - the length of str
+.   format - the usual printf() format string
+.   countused - number of characters used
+-   any arguments
+
+   Level: intermediate
+
+.seealso: PetscSynchronizedFlush(), PetscSynchronizedFPrintf(), PetscFPrintf(), PetscVSNPrintf(),
+          PetscPrintf(), PetscViewerASCIIPrintf(), PetscViewerASCIISynchronizedPrintf(), PetscSNPrintf()
+@*/
+PetscErrorCode  PetscSNPrintfCount(char *str,size_t len,const char format[],size_t *countused,...)
+{
+  PetscErrorCode ierr;
+  va_list        Argp;
+
+  PetscFunctionBegin;
+  va_start(Argp,countused);
+  ierr = PetscVSNPrintf(str,len,format,countused,Argp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -1201,8 +1201,8 @@ class PETScMaker(script.Script):
    from generatefortranstubs import main, processf90interfaces
    for d in os.listdir(os.path.join(self.petscDir, 'include', 'finclude', 'ftn-auto')):
      if d.endswith('-tmpdir'): shutil.rmtree(os.path.join(self.petscDir, 'include', 'finclude', 'ftn-auto', d))
-   main(self.petscDir, self.configInfo.sowing.bfort, os.getcwd())
-   processf90interfaces(self.petscDir)
+   main(self.petscDir, self.configInfo.sowing.bfort, os.getcwd(),0)
+   processf90interfaces(self.petscDir,0)
    for d in os.listdir(os.path.join(self.petscDir, 'include', 'finclude', 'ftn-auto')):
      if d.endswith('-tmpdir'): shutil.rmtree(os.path.join(self.petscDir, 'include', 'finclude', 'ftn-auto', d))
    sys.path = oldPath

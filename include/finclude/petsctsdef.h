@@ -10,6 +10,7 @@
 #define TS PetscFortranAddr
 #endif
 #define TSType character*(80)
+#define TSConvergedReason PetscEnum
 #define TSSundialsType PetscEnum
 #define TSProblemType PetscEnum 
 #define TSSundialsGramSchmidtType PetscEnum

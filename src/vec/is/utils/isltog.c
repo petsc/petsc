@@ -281,11 +281,10 @@ PetscErrorCode  ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping *mapping)
   PetscFunctionBegin;
   if (!*mapping) PetscFunctionReturn(0);
   PetscValidHeaderSpecific((*mapping),IS_LTOGM_CLASSID,1);
-  if (!--((PetscObject)(*mapping))->refct > 0) {
-    ierr = PetscFree((*mapping)->indices);CHKERRQ(ierr);
-    ierr = PetscFree((*mapping)->globals);CHKERRQ(ierr);
-    ierr = PetscHeaderDestroy(mapping);CHKERRQ(ierr);
-  }
+  if (--((PetscObject)(*mapping))->refct > 0) {*mapping = 0;PetscFunctionReturn(0);}
+  ierr = PetscFree((*mapping)->indices);CHKERRQ(ierr);
+  ierr = PetscFree((*mapping)->globals);CHKERRQ(ierr);
+  ierr = PetscHeaderDestroy(mapping);CHKERRQ(ierr);
   *mapping = 0;
   PetscFunctionReturn(0);
 }

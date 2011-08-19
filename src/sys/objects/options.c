@@ -1,8 +1,6 @@
 
-/* Feature test macros to make sure atoll is available (SVr4, POSIX.1-2001, 4.3BSD, C99), not in (C89 and POSIX.1-1996) */
-/* This is not correct PETSc code; ./configure should determine what flags need to be set and set them when needed */
-#define _POSIX_C_SOURCE 200112L
-#define _BSD_SOURCE
+/* Define Feature test macros to make sure atoll is available (SVr4, POSIX.1-2001, 4.3BSD, C99), not in (C89 and POSIX.1-1996) */
+#define PETSC_DESIRE_FEATURE_TEST_MACROS
 
 /*
    These routines simplify the use of command line, file options, etc., and are used to manipulate the options database.
@@ -108,10 +106,11 @@ PetscErrorCode  PetscOptionsStringToInt(const char name[],PetscInt *a)
         SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Input string %s has no integer value (do not include . in it)",name);
       }
     }
-#if defined(PETSC_USE_64BIT_INDICES)
+
+#if defined(PETSC_USE_64BIT_INDICES) && defined(PETSC_HAVE_ATOLL)
     *a = atoll(name);
 #else
-    *a = atoi(name);
+    *a = (PetscInt)atoi(name);
 #endif
   }
   PetscFunctionReturn(0);

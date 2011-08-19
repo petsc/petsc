@@ -13,6 +13,19 @@
 #include "petscconf.h"
 #include "petscfix.h"
 
+#if defined(PETSC_DESIRE_FEATURE_TEST_MACROS)
+/*
+   Feature test macros must be included before headers defined by IEEE Std 1003.1-2001
+   We only turn these in PETSc source files that require them by setting PETSC_DESIRE_FEATURE_TEST_MACROS
+*/
+#if defined(PETSC__POSIX_C_SOURCE_200112L)
+#define _POSIX_C_SOURCE 200112L
+#endif
+#if defined(PETSC__BSD_SOURCE)
+#define _BSD_SOURCE
+#endif
+#endif
+
 /* ========================================================================== */
 /* 
    This facilitates using C version of PETSc from C++ and 
@@ -1632,6 +1645,7 @@ extern PetscErrorCode   PetscFClose(MPI_Comm,FILE*);
 extern PetscErrorCode   PetscFPrintf(MPI_Comm,FILE*,const char[],...);
 extern PetscErrorCode   PetscPrintf(MPI_Comm,const char[],...);
 extern PetscErrorCode   PetscSNPrintf(char*,size_t,const char [],...);
+extern PetscErrorCode   PetscSNPrintfCount(char*,size_t,const char [],size_t*,...);
 
 
 

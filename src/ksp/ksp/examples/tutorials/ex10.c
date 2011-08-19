@@ -40,11 +40,11 @@ T*/
 int main(int argc,char **args)
 {
   KSP            ksp;             /* linear solver context */
-  Mat            A,B = 0;            /* matrix */
-  Vec            x,b,u;          /* approx solution, RHS, exact solution */
-  PetscViewer    fd;               /* viewer */
+  Mat            A;               /* matrix */
+  Vec            x,b,u;           /* approx solution, RHS, exact solution */
+  PetscViewer    fd;              /* viewer */
   char           file[4][PETSC_MAX_PATH_LEN];     /* input file name */
-  PetscBool      table=PETSC_FALSE,flg,flgB=PETSC_FALSE,trans=PETSC_FALSE,initialguess = PETSC_FALSE;
+  PetscBool      table=PETSC_FALSE,flg,trans=PETSC_FALSE,initialguess = PETSC_FALSE;
   PetscBool      outputSoln=PETSC_FALSE;
   PetscErrorCode ierr;
   PetscInt       its,num_numfac,m,n,M;
@@ -61,7 +61,6 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetBool(PETSC_NULL,"-initialguess",&initialguess,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(PETSC_NULL,"-output_solution",&outputSoln,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetString(PETSC_NULL,"-initialguessfilename",initialguessfilename,PETSC_MAX_PATH_LEN,&initialguessfile);CHKERRQ(ierr);
-  ierr = PetscOptionsGetBool(PETSC_NULL,"-B",&flgB,PETSC_NULL);CHKERRQ(ierr);
 
   /* 
      Determine files from which we read the two linear systems
@@ -108,12 +107,6 @@ int main(int argc,char **args)
     ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
     ierr = MatSetFromOptions(A);CHKERRQ(ierr);
     ierr = MatLoad(A,fd);CHKERRQ(ierr);
-    if (flgB) {
-      ierr = MatCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
-      ierr = MatSetOptionsPrefix(B,"B_");CHKERRQ(ierr);
-      ierr = MatSetFromOptions(B);CHKERRQ(ierr);
-      ierr = MatLoad(B,fd);CHKERRQ(ierr);
-    } else B = A;
 
     if (!preload){
       flg = PETSC_FALSE;
@@ -293,11 +286,11 @@ int main(int argc,char **args)
       }
       if (lsqr) {
 	Mat BtB;
-        ierr = MatMatMultTranspose(B,B,MAT_INITIAL_MATRIX,4,&BtB);CHKERRQ(ierr);
+        ierr = MatMatMultTranspose(A,A,MAT_INITIAL_MATRIX,4,&BtB);CHKERRQ(ierr);
         ierr = KSPSetOperators(ksp,A,BtB,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
         ierr = MatDestroy(&BtB);CHKERRQ(ierr);
       } else {
-        ierr = KSPSetOperators(ksp,A,B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+        ierr = KSPSetOperators(ksp,A,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
       }
       ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
@@ -429,7 +422,6 @@ int main(int argc,char **args)
     ierr = MatDestroy(&A);CHKERRQ(ierr); ierr = VecDestroy(&b);CHKERRQ(ierr);
     ierr = VecDestroy(&u);CHKERRQ(ierr); ierr = VecDestroy(&x);CHKERRQ(ierr);
     ierr = KSPDestroy(&ksp);CHKERRQ(ierr); 
-    if (flgB) { ierr = MatDestroy(&B);CHKERRQ(ierr); }
   PreLoadEnd();
   /* -----------------------------------------------------------
                       End of linear solver loop

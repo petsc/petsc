@@ -5,6 +5,6 @@
 #include "finclude/ftn-custom/petscdmcomposite.h90"
 #if defined(PETSC_USE_FORTRAN_INTERFACES)
       interface
-#include "finclude/ftn-auto/petscdmcomposite.h90"
+!     #include "finclude/ftn-auto/petscdmcomposite.h90"
       end interface
 #endif
