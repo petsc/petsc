@@ -115,10 +115,6 @@ ex23: ex23.o chkopts
 	-${CLINKER} -o ex23 ex23.o ${PETSC_TS_LIB}
 	${RM} ex23.o
 
-ex24: ex24.o chkopts
-	-${CLINKER} -o ex24 ex24.o ${PETSC_TS_LIB}
-	${RM} ex25.o
-
 #---------------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 1 ./ex1 -ksp_gmres_cgs_refinement_type refine_always -snes_type ls -ts_monitor_pseudo > ex1_1.tmp 2>&1;	  \
