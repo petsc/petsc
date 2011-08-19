@@ -108,7 +108,7 @@ PetscErrorCode  PetscVSNPrintf(char *str,size_t len,const char *format,size_t *f
   /* no malloc since may be called by error handler */
   char          *newformat;
   char           formatbuf[8*1024];
-  size_t         oldLength,length;
+  size_t         oldLength,length,fullLengthInt;
   PetscErrorCode ierr;
  
   ierr = PetscStrlen(format, &oldLength);CHKERRQ(ierr);
@@ -125,14 +125,16 @@ PetscErrorCode  PetscVSNPrintf(char *str,size_t len,const char *format,size_t *f
   }
 #endif
 #if defined(PETSC_HAVE_VSNPRINTF_CHAR)
-  *fullLength = vsnprintf(str,len,newformat,(char *)Argp);
+  fullLengthInt = vsnprintf(str,len,newformat,(char *)Argp);
 #elif defined(PETSC_HAVE_VSNPRINTF)
-  *fullLength = vsnprintf(str,len,newformat,Argp);
+  fullLengthInt = vsnprintf(str,len,newformat,Argp);
 #elif defined(PETSC_HAVE__VSNPRINTF)
-  *fullLength = _vsnprintf(str,len,newformat,Argp);
+  fullLengthInt = _vsnprintf(str,len,newformat,Argp);
 #else
 #error "vsnprintf not found"
 #endif
+  if (fullLengthInt < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"vsnprintf() failed");
+  *fullLength = (size_t)fullLengthInt;
   if (oldLength >= 8*1024) {
     ierr = PetscFree(newformat);CHKERRQ(ierr);
   }
