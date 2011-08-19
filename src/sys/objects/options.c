@@ -106,10 +106,11 @@ PetscErrorCode  PetscOptionsStringToInt(const char name[],PetscInt *a)
         SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Input string %s has no integer value (do not include . in it)",name);
       }
     }
-#if defined(PETSC_USE_64BIT_INDICES)
+
+#if defined(PETSC_USE_64BIT_INDICES) && defined(PETSC_HAVE_ATOLL)
     *a = atoll(name);
 #else
-    *a = atoi(name);
+    *a = (PetscInt)atoi(name);
 #endif
   }
   PetscFunctionReturn(0);
