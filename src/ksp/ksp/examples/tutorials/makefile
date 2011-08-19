@@ -346,6 +346,14 @@ runex2_specest_2:
 	-@${MPIEXEC} -n 1 ./ex2 -m 80 -n 80 -ksp_type fgmres -pc_type ksp -ksp_ksp_type specest -ksp_monitor_short -ksp_specest_ksp_type cg > ex2.tmp 2>&1; \
            ${DIFF} output/ex2_specest_2.out ex2.tmp || echo "Possible problem with ex2_specest_2, diffs above"; \
            ${RM} -f ex2.tmp
+runex2_chebyest_1:
+	-@${MPIEXEC} -n 1 ./ex2 -m 80 -n 80 -ksp_pc_side right -pc_type ksp -ksp_ksp_type chebychev -ksp_ksp_max_it 5 -ksp_ksp_chebychev_estimate_eigenvalues 0.9,0,0,1.1 -ksp_monitor_short > ex2.tmp 2>&1; \
+           ${DIFF} output/ex2_chebyest_1.out ex2.tmp || echo "Possible problem with ex2_chebyest_1, diffs above"; \
+           ${RM} -f ex2.tmp
+runex2_chebyest_2:
+	-@${MPIEXEC} -n 1 ./ex2 -m 80 -n 80 -ksp_pc_side right -pc_type ksp -ksp_ksp_type chebychev -ksp_ksp_max_it 5 -ksp_ksp_chebychev_estimate_eigenvalues 0.9,0,0,1.1 -ksp_est_ksp_type cg -ksp_monitor_short > ex2.tmp 2>&1; \
+           ${DIFF} output/ex2_chebyest_2.out ex2.tmp || echo "Possible problem with ex2_chebyest_2, diffs above"; \
+           ${RM} -f ex2.tmp
 runex2_umfpack:
 	-@${MPIEXEC} -n 1 ./ex2 -ksp_type preonly -pc_type lu -pc_factor_mat_solver_package umfpack > ex2_umfpack.tmp 2>&1; \
            if (${DIFF} output/ex2_umfpack.out ex2_umfpack.tmp) then true; \
