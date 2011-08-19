@@ -1632,6 +1632,7 @@ extern PetscErrorCode   PetscFClose(MPI_Comm,FILE*);
 extern PetscErrorCode   PetscFPrintf(MPI_Comm,FILE*,const char[],...);
 extern PetscErrorCode   PetscPrintf(MPI_Comm,const char[],...);
 extern PetscErrorCode   PetscSNPrintf(char*,size_t,const char [],...);
+extern PetscErrorCode   PetscSNPrintfCount(char*,size_t,const char [],size_t*,...);
 
 
 
