@@ -227,8 +227,8 @@ alletags:
 
 allfortranstubs:
 	-@${RM} -rf include/finclude/ftn-auto/*-tmpdir
-	-@${PYTHON} bin/maint/generatefortranstubs.py ${BFORT}
-	-@${PYTHON} bin/maint/generatefortranstubs.py -merge
+	-@${PYTHON} bin/maint/generatefortranstubs.py ${BFORT}  ${VERBOSE}
+	-@${PYTHON} bin/maint/generatefortranstubs.py -merge  ${VERBOSE}
 	-@${RM} -rf include/finclude/ftn-auto/*-tmpdir
 deletefortranstubs:
 	-@find . -type d -name ftn-auto | xargs rm -rf 
