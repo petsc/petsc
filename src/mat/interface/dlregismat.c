@@ -14,6 +14,7 @@ const char *MatOptions[] = {"ROW_ORIENTED","NEW_NONZERO_LOCATIONS",
               "CHECK_COMPRESSED_ROW",
               "IGNORE_LOWER_TRIANGULAR","ERROR_LOWER_TRIANGULAR","GETROW_UPPERTRIANGULAR","SPD","NO_OFF_PROC_ENTRIES","NO_OFF_PROC_ZERO_ROWS","MatOption","MAT_",0};
 const char *MatFactorShiftTypes[] = {"NONE","NONZERO","POSITIVE_DEFINITE","INBLOCKS","MatFactorShiftType","PC_FACTOR_",0};
+const char *MPScotchStrategyTypes[] = {"QUALITY","SPEED","BALANCE","SAFETY","SCALABILITY","MPScotchStrategyType","MP_SCOTCH_",0};
 
 extern PetscErrorCode  MatMFFDInitializePackage(const char[]);
 static PetscBool  MatPackageInitialized = PETSC_FALSE;

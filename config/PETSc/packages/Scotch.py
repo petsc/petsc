@@ -1,9 +1,5 @@
 import PETSc.package
-#
-#   Scotch is not currently usable as a partitioner for PETSc (the PETSc calls to Scotch need to be
-#   updated). But Scotch is needed for use of the PasTiX direct solver so --download-scotch or --with-scotch-dir do work but only
-#   in support of PasTiX or MUMPS.
-#
+
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
@@ -14,7 +10,6 @@ class Configure(PETSc.package.NewPackage):
     self.includes     = ['ptscotch.h']
     self.complex      = 1
     self.needsMath    = 1
-    self.useddirectly = 0 # see comment at top of file
     return
 
   def setupDependencies(self, framework):

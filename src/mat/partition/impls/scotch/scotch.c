@@ -1,728 +1,375 @@
 
 #include <../src/mat/impls/adj/mpi/mpiadj.h>       /*I "petscmat.h" I*/
 
-#ifdef PETSC_HAVE_UNISTD_H
-#include <unistd.h>
-#endif
-
-#ifdef PETSC_HAVE_STDLIB_H
-#include <stdlib.h>
-#endif
-
-/* 
-   Currently using Scotch-3.4
-*/
 EXTERN_C_BEGIN
-#include <scotch.h>
+#include <ptscotch.h>
 EXTERN_C_END
 
-/*************************************
- * 				     *
- * Note:			     *
- * 				     *
- * To make scotch compile I 	     *
- * modified all old mat->m/M into    *
- * mat->rmap->n/N		     *
- *				     *
- * Hope I was right		     *
- *				     *
- *************************************/
 typedef struct {
-    char arch[PETSC_MAX_PATH_LEN];
-    int multilevel;
-    char strategy[30];
-    int global_method;          /* global method */
-    int local_method;           /* local method */
-    int nbvtxcoarsed;           /* number of vertices for the coarse graph */
-    int map;                    /* to know if we map on archptr or just partionate the graph */
-    char *mesg_log;
-    char host_list[PETSC_MAX_PATH_LEN];
+  double     imbalance;
+  SCOTCH_Num strategy;
 } MatPartitioning_Scotch;
 
-#define SIZE_LOG 10000          /* size of buffer for msg_log */
-
 #undef __FUNCT__
-#define __FUNCT__ "MatPartitioningApply_Scotch"
-static PetscErrorCode MatPartitioningApply_Scotch(MatPartitioning part, IS * partitioning)
+#define __FUNCT__ "MatPartitioningScotchSetImbalance"
+/*@
+   MatPartitioningScotchSetImbalance - Sets the value of the load imbalance
+   ratio to be used during strategy selection.
+
+   Collective on MatPartitioning
+
+   Input Parameters:
++  part - the partitioning context
+-  imb  - the load imbalance ratio
+
+   Options Database:
+.  -mat_partitioning_scotch_imbalance <imb>
+
+   Note:
+   Must be in the range [0,1]. The default value is 0.01.
+
+   Level: advanced
+
+.seealso: MatPartitioningScotchSetStrategy(), MatPartitioningScotchGetImbalance()
+@*/
+PetscErrorCode MatPartitioningScotchSetImbalance(MatPartitioning part,PetscReal imb)
 {
-    PetscErrorCode ierr;
-    int  *parttab, *locals = PETSC_NULL, rank, i, size;
-    size_t                 j;
-    Mat                    mat = part->adj, matMPI, matSeq;
-    int                    nb_locals = mat->rmap->n;
-    Mat_MPIAdj             *adj = (Mat_MPIAdj *) mat->data;
-    MatPartitioning_Scotch *scotch = (MatPartitioning_Scotch *) part->data;
-    PetscBool              flg;
-#ifdef PETSC_HAVE_UNISTD_H
-    int                    fd_stdout, fd_pipe[2], count,err;
-#endif
+  PetscErrorCode ierr;
 
-    PetscFunctionBegin;
-
-    /* check if the matrix is sequential, use MatGetSubMatrices if necessary */
-    ierr = MPI_Comm_size(((PetscObject)mat)->comm, &size);CHKERRQ(ierr);
-    ierr = PetscTypeCompare((PetscObject) mat, MATMPIADJ, &flg);CHKERRQ(ierr);
-    if (size > 1) {
-        int M, N;
-        IS  isrow, iscol;
-        Mat *A;
-
-        if (flg) SETERRQ(PETSC_COMM_SELF,0, "Distributed matrix format MPIAdj is not supported for sequential partitioners");
-        ierr = PetscPrintf(((PetscObject)part)->comm, "Converting distributed matrix to sequential: this could be a performance loss\n");CHKERRQ(ierr);
-
-        ierr = MatGetSize(mat, &M, &N);CHKERRQ(ierr);
-        ierr = ISCreateStride(PETSC_COMM_SELF, M, 0, 1, &isrow);CHKERRQ(ierr);
-        ierr = ISCreateStride(PETSC_COMM_SELF, N, 0, 1, &iscol);CHKERRQ(ierr);
-        ierr = MatGetSubMatrices(mat, 1, &isrow, &iscol, MAT_INITIAL_MATRIX, &A);CHKERRQ(ierr);
-        matSeq = *A; 
-        ierr = PetscFree(A);CHKERRQ(ierr);
-        ierr = ISDestroy(isrow);CHKERRQ(ierr);
-        ierr = ISDestroy(iscol);CHKERRQ(ierr);
-    } else
-        matSeq = mat;
-
-    /* convert the the matrix to MPIADJ type if necessary */
-    if (!flg) {
-        ierr = MatConvert(matSeq, MATMPIADJ, MAT_INITIAL_MATRIX, &matMPI);CHKERRQ(ierr);
-    } else {
-        matMPI = matSeq;
-    }
-
-    adj = (Mat_MPIAdj *) matMPI->data;  /* finaly adj contains adjacency graph */
-
-    ierr = MPI_Comm_rank(((PetscObject)part)->comm, &rank);CHKERRQ(ierr);
-
-    {
-        /* definition of Scotch library arguments */
-        SCOTCH_Strat stratptr;      /* scotch strategy */
-        SCOTCH_Graph grafptr;       /* scotch graph */
-#if defined(DOES_NOT_COMPILE_DUE_TO_BROKEN_INTERFACE)
-        int vertnbr = mat->rmap->N; /* number of vertices in full graph */
-        int *verttab = adj->i;      /* start of edge list for each vertex */
-        int *edgetab = adj->j;      /* edge list data */
-        int edgenbr = adj->nz;      /* number of edges */
-        int *velotab = NULL;        /* not used by petsc interface */
-        int *vlbltab = NULL;    
-        int *edlotab = NULL; 
-        int flagval = 3;            /* (cf doc scotch no weight edge & vertices) */
-#endif  
-        int baseval = 0;            /* 0 for C array indexing */
-        char strategy[256];
-
-        ierr = PetscMalloc((mat->rmap->N) * sizeof(int), &parttab);CHKERRQ(ierr); 
-
-        /* redirect output to buffer scotch -> mesg_log */
-#ifdef PETSC_HAVE_UNISTD_H
-        fd_stdout = dup(1);
-        pipe(fd_pipe);
-        close(1);
-        dup2(fd_pipe[1], 1);
-        ierr = PetscMalloc(SIZE_LOG * sizeof(char), &(scotch->mesg_log));CHKERRQ(ierr);
-#endif
-
-        /* library call */
-
-        /* Construction of the scotch graph object */
-        ierr = SCOTCH_graphInit(&grafptr);
-#if defined(DOES_NOT_COMPILE_DUE_TO_BROKEN_INTERFACE)
-        ierr = SCOTCH_graphBuild((SCOTCH_Graph *)   &grafptr, 
-				 (const SCOTCH_Num)  vertnbr, 
-				 (const SCOTCH_Num)  verttab, 
-				 (const SCOTCH_Num *)velotab,
-				 (const SCOTCH_Num *)vlbltab, 
-				 (const SCOTCH_Num *)edgenbr, 
-				 (const SCOTCH_Num *)edgetab, 
-				 (const SCOTCH_Num)  edlotab, 
-				 (const SCOTCH_Num *)baseval, 
-				 (const SCOTCH_Num *)flagval);CHKERRQ(ierr);
-#else
-        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Scotch interface currently broken");
-#endif
-        ierr = SCOTCH_graphCheck(&grafptr);CHKERRQ(ierr);
-
-        /* Construction of the strategy */
-        if (scotch->strategy[0] != 0) {
-            ierr = PetscStrcpy(strategy, scotch->strategy);CHKERRQ(ierr);
-        } else {
-            PetscStrcpy(strategy, "b{strat=");
-
-            if (scotch->multilevel) {
-                /* PetscStrcat(strategy,"m{vert=");
-                   sprintf(strategy+strlen(strategy),"%d",scotch->nbvtxcoarsed);
-                   PetscStrcat(strategy,",asc="); */
-                sprintf(strategy, "b{strat=m{vert=%d,asc=",
-                    scotch->nbvtxcoarsed);
-            } else
-                PetscStrcpy(strategy, "b{strat=");
-
-            switch (scotch->global_method) {
-            case MP_SCOTCH_GREEDY:
-                PetscStrcat(strategy, "h");
-                break;
-            case MP_SCOTCH_GPS:
-                PetscStrcat(strategy, "g");
-                break;
-            case MP_SCOTCH_GR_GPS:
-                PetscStrcat(strategy, "g|h");
-            }
-
-            switch (scotch->local_method) {
-            case MP_SCOTCH_KERNIGHAN_LIN:
-                if (scotch->multilevel)
-                    PetscStrcat(strategy, ",low=f}");
-                else
-                    PetscStrcat(strategy, " f");
-                break;
-            case MP_SCOTCH_NONE:
-                if (scotch->multilevel)
-                    PetscStrcat(strategy, ",asc=x}");
-            default:
-                break;
-            }
-
-            PetscStrcat(strategy, " x}");
-        }
-
-        PetscPrintf(((PetscObject)part)->comm, "strategy=[%s]\n", strategy);
-
-        ierr = SCOTCH_stratInit(&stratptr);CHKERRQ(ierr);
-	/*
-
-	  TODO: Correct this part
-
-	  Commented because this doesn't exists anymore 
-
-	  
-	  ierr = SCOTCH_stratMap(&stratptr, strategy);CHKERRQ(ierr);
-	*/
-        /* check for option mapping */
-        if (!scotch->map) {
-	  /* ********************************************
-	   *						*
-	   *        TODO: Correct this part		*
-	   *						*
-	   * Won't work with this tmp SCOTCH_Strat...	*
-	   *						*
-	   * I just modified it to make scotch compile, *
-	   * to be able to use PaStiX...		*
-	   *						*
-	   **********************************************/
-#if defined (DOES_NOT_COMPILE_DUE_TO_BROKEN_INTERFACE)
-	  SCOTCH_Strat tmp;
-	  ierr = SCOTCH_graphPart((const SCOTCH_Graph *)&grafptr, 
-				  (const SCOTCH_Num)    &stratptr, 
-				  (const SCOTCH_Strat *)&tmp,        /* The Argument changed from scotch 3.04 it was part->n, */ 
-				  (SCOTCH_Num *)        parttab);CHKERRQ(ierr);
-#else
-        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Scotch interface currently broken");
-#endif
-            ierr = PetscPrintf(PETSC_COMM_SELF, "Partition simple without mapping\n");
-        } else {
-            SCOTCH_Graph grafarch;
-            SCOTCH_Num *listtab;
-            SCOTCH_Num listnbr = 0;
-            SCOTCH_Arch archptr;        /* file in scotch architecture format */
-            SCOTCH_Strat archstrat;
-            int arch_total_size, *parttab_tmp,err;
-            int cpt;
-            char buf[256];
-            FILE *file1, *file2;
-            char host_buf[256];
-
-            /* generate the graph that represents the arch */
-            file1 = fopen(scotch->arch, "r");
-            if (!file1) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN, "Scotch: unable to open architecture file %s", scotch->arch);
-
-            ierr = SCOTCH_graphInit(&grafarch);CHKERRQ(ierr);
-            ierr = SCOTCH_graphLoad(&grafarch, file1, baseval, 3);CHKERRQ(ierr);
-
-            ierr = SCOTCH_graphCheck(&grafarch);CHKERRQ(ierr);
-            SCOTCH_graphSize(&grafarch, &arch_total_size, &cpt);
-
-            err = fclose(file1);
-            if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");    
-
-            printf("total size = %d\n", arch_total_size);
-
-            /* generate the list of nodes currently working */
-            ierr = PetscGetHostName(host_buf, 256);CHKERRQ(ierr);
-            ierr = PetscStrlen(host_buf, &j);CHKERRQ(ierr);
-
-            file2 = fopen(scotch->host_list, "r");
-            if (!file2) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN, "Scotch: unable to open host list file %s", scotch->host_list);
-
-            i = -1;
-            flg = PETSC_FALSE;
-            while (!feof(file2) && !flg) {
-                i++;
-                fgets(buf, 256, file2);
-                PetscStrncmp(buf, host_buf, j, &flg);
-            }
-            err = fclose(file2);
-            if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");    
-            if (!flg) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB, "Scotch: unable to find '%s' in host list file", host_buf);
-
-            listnbr = size;
-            ierr = PetscMalloc(sizeof(SCOTCH_Num) * listnbr, &listtab);CHKERRQ(ierr);
-
-            ierr = MPI_Allgather(&i, 1, MPI_INT, listtab, 1, MPI_INT, ((PetscObject)part)->comm);CHKERRQ(ierr);
-
-            printf("listnbr = %d, listtab = ", listnbr);
-            for (i = 0; i < listnbr; i++)
-                printf("%d ", listtab[i]);
-
-            printf("\n");
-            err = fflush(stdout);
-            if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on file");    
-
-            ierr = SCOTCH_stratInit(&archstrat);CHKERRQ(ierr);
-	    /**************************************************************
-	     *								  *
-	     * TODO: Correct this part					  *
-	     * 								  *
-	     * Commented because this doesn't exists anymore 		  *
-	     * 								  *
-	     * ierr = SCOTCH_stratBipart(&archstrat, "fx");CHKERRQ(ierr); *
-	     **************************************************************/
-            ierr = SCOTCH_archInit(&archptr);CHKERRQ(ierr);
-            ierr = SCOTCH_archBuild(&archptr, &grafarch, listnbr, listtab,
-                &archstrat);CHKERRQ(ierr);
-
-            ierr = PetscMalloc((mat->rmap->N) * sizeof(int), &parttab_tmp);CHKERRQ(ierr);
-	    /************************************************************************************
-	     *											*
-	     * TODO: Correct this part								*
-	     *											*
-	     * Commented because this doesn't exists anymore 					*
-	     *											*
-	     * ierr = SCOTCH_mapInit(&mappptr, &grafptr, &archptr, parttab_tmp);CHKERRQ(ierr);	*
-	     *											*
-	     * ierr = SCOTCH_mapCompute(&mappptr, &stratptr);CHKERRQ(ierr);			*
-	     * 											*
-	     * ierr = SCOTCH_mapView(&mappptr, stdout);CHKERRQ(ierr);				*
-	     ************************************************************************************/
-            /* now we have to set in the real parttab at the good place */
-            /* because the ranks order are different than position in */
-            /* the arch graph */
-            for (i = 0; i < mat->rmap->N; i++) {
-                parttab[i] = parttab_tmp[i];
-            }
-
-            ierr = PetscFree(listtab);CHKERRQ(ierr);
-            SCOTCH_archExit(&archptr);
-	    /*************************************************
-   	     * TODO: Correct this part			     *
-	     * 						     *
-	     * Commented because this doesn't exists anymore *
-	     * SCOTCH_mapExit(&mappptr);		     *
-	     *************************************************/
-            SCOTCH_stratExit(&archstrat);
-        }
-
-        /* dump to mesg_log... */
-#ifdef PETSC_HAVE_UNISTD_H
-        err = fflush(stdout);
-        if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fflush() failed on stdout");    
-
-        count = read(fd_pipe[0], scotch->mesg_log, (SIZE_LOG - 1) * sizeof(char));
-        if (count < 0)
-            count = 0;
-        scotch->mesg_log[count] = 0;
-        close(1);
-        dup2(fd_stdout, 1);
-        close(fd_stdout);
-        close(fd_pipe[0]);
-        close(fd_pipe[1]);
-#endif
-
-        SCOTCH_graphExit(&grafptr);
-        SCOTCH_stratExit(&stratptr);
-    }
-    if (ierr) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB, scotch->mesg_log);
-
-    /* Creation of the index set */
-
-    ierr = MPI_Comm_rank(((PetscObject)part)->comm, &rank);CHKERRQ(ierr);
-    ierr = MPI_Comm_size(((PetscObject)part)->comm, &size);CHKERRQ(ierr);
-    nb_locals = mat->rmap->N / size;
-    locals = parttab + rank * nb_locals;
-    if (rank < mat->rmap->N % size) {
-        nb_locals++;
-        locals += rank;
-    } else
-        locals += mat->rmap->N % size;
-    ierr = ISCreateGeneral(((PetscObject)part)->comm, nb_locals, locals,PETSC_COPY_VALUES, partitioning);CHKERRQ(ierr);
-
-    /* destroying old objects */
-    ierr = PetscFree(parttab);CHKERRQ(ierr);
-    if (matSeq != mat) {
-        ierr = MatDestroy(matSeq);CHKERRQ(ierr);
-    }
-    if (matMPI != mat) {
-        ierr = MatDestroy(matMPI);CHKERRQ(ierr);
-    }
-
-    PetscFunctionReturn(0);
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(part,MAT_PARTITIONING_CLASSID,1);
+  PetscValidLogicalCollectiveReal(part,imb,2);
+  ierr = PetscTryMethod(part,"MatPartitioningScotchSetImbalance_C",(MatPartitioning,PetscReal),(part,imb));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "MatPartitioningScotchSetImbalance_Scotch" 
+PetscErrorCode MatPartitioningScotchSetImbalance_Scotch(MatPartitioning part,PetscReal imb)
+{
+  MatPartitioning_Scotch *scotch = (MatPartitioning_Scotch*)part->data;
+
+  PetscFunctionBegin;
+  if (imb==PETSC_DEFAULT) scotch->imbalance = 0.01;
+  else {
+    if (imb<0.0 || imb>1.0) SETERRQ(((PetscObject)part)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Illegal value of imb. Must be in range [0,1]");
+    scotch->imbalance = (double)imb;
+  }
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+#undef __FUNCT__
+#define __FUNCT__ "MatPartitioningScotchGetImbalance"
+/*@
+   MatPartitioningScotchGetImbalance - Gets the value of the load imbalance
+   ratio used during strategy selection.
+
+   Input Parameter:
+.  part - the partitioning context
+
+   Output Parameter:
+.  imb  - the load imbalance ratio
+
+   Level: advanced
+
+.seealso: MatPartitioningScotchSetImbalance()
+@*/
+PetscErrorCode MatPartitioningScotchGetImbalance(MatPartitioning part,PetscReal *imb)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(part,MAT_PARTITIONING_CLASSID,1);
+  PetscValidPointer(imb,2);
+  ierr = PetscTryMethod(part,"MatPartitioningScotchGetImbalance_C",(MatPartitioning,PetscReal*),(part,imb));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "MatPartitioningScotchGetImbalance_Scotch" 
+PetscErrorCode MatPartitioningScotchGetImbalance_Scotch(MatPartitioning part,PetscReal *imb)
+{
+  MatPartitioning_Scotch *scotch = (MatPartitioning_Scotch*)part->data;
+
+  PetscFunctionBegin;
+  *imb = scotch->imbalance;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatPartitioningScotchSetStrategy"
+/*@
+   MatPartitioningScotchSetStrategy - Sets the strategy to be used in Scotch.
+
+   Collective on MatPartitioning
+
+   Input Parameters:
++  part - the partitioning context
+-  strategy - the strategy, one of
+.vb
+     MP_SCOTCH_QUALITY     - Prioritize quality over speed
+     MP_SCOTCH_SPEED       - Prioritize speed over quality
+     MP_SCOTCH_BALANCE     - Enforce load balance
+     MP_SCOTCH_SAFETY      - Avoid methods that may fail
+     MP_SCOTCH_SCALABILITY - Favor scalability as much as possible
+.ve
+
+   Options Database:
+.  -mat_partitioning_scotch_strategy [quality,speed,balance,safety,scalability] - strategy 
+ 
+   Level: advanced
+
+   Notes:
+   The default is MP_SCOTCH_QUALITY. See the Scotch documentation for more information.
+
+.seealso: MatPartitioningScotchSetImbalance(), MatPartitioningScotchGetStrategy()
+@*/
+PetscErrorCode MatPartitioningScotchSetStrategy(MatPartitioning part,MPScotchStrategyType strategy)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(part,MAT_PARTITIONING_CLASSID,1);
+  PetscValidLogicalCollectiveEnum(part,strategy,2);
+  ierr = PetscTryMethod(part,"MatPartitioningScotchSetStrategy_C",(MatPartitioning,MPScotchStrategyType),(part,strategy));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "MatPartitioningScotchSetStrategy_Scotch"
+PetscErrorCode MatPartitioningScotchSetStrategy_Scotch(MatPartitioning part,MPScotchStrategyType strategy)
+{
+  MatPartitioning_Scotch *scotch = (MatPartitioning_Scotch*)part->data;
+
+  PetscFunctionBegin;
+  switch (strategy) {
+    case MP_SCOTCH_QUALITY:     scotch->strategy = SCOTCH_STRATQUALITY; break;
+    case MP_SCOTCH_SPEED:       scotch->strategy = SCOTCH_STRATSPEED; break;
+    case MP_SCOTCH_BALANCE:     scotch->strategy = SCOTCH_STRATBALANCE; break;
+    case MP_SCOTCH_SAFETY:      scotch->strategy = SCOTCH_STRATSAFETY; break;
+    case MP_SCOTCH_SCALABILITY: scotch->strategy = SCOTCH_STRATSCALABILITY; break;
+  }
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatPartitioningScotchGetStrategy"
+/*@
+   MatPartitioningScotchGetStrategy - Gets the strategy used in Scotch.
+
+   Not Collective
+
+   Input Parameter:
+.  part - the partitioning context
+
+   Output Parameter:
+.  strategy - the strategy
+ 
+   Level: advanced
+
+.seealso: MatPartitioningScotchSetStrategy()
+@*/
+PetscErrorCode MatPartitioningScotchGetStrategy(MatPartitioning part,MPScotchStrategyType *strategy)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(part,MAT_PARTITIONING_CLASSID,1);
+  PetscValidPointer(strategy,2);
+  ierr = PetscTryMethod(part,"MatPartitioningScotchGetStrategy_C",(MatPartitioning,MPScotchStrategyType*),(part,strategy));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "MatPartitioningScotchGetStrategy_Scotch"
+PetscErrorCode MatPartitioningScotchGetStrategy_Scotch(MatPartitioning part,MPScotchStrategyType *strategy)
+{
+  MatPartitioning_Scotch *scotch = (MatPartitioning_Scotch*)part->data;
+
+  PetscFunctionBegin;
+  switch (scotch->strategy) {
+    case SCOTCH_STRATQUALITY:     *strategy = MP_SCOTCH_QUALITY; break;
+    case SCOTCH_STRATSPEED:       *strategy = MP_SCOTCH_SPEED; break;
+    case SCOTCH_STRATBALANCE:     *strategy = MP_SCOTCH_BALANCE; break;
+    case SCOTCH_STRATSAFETY:      *strategy = MP_SCOTCH_SAFETY; break;
+    case SCOTCH_STRATSCALABILITY: *strategy = MP_SCOTCH_SCALABILITY; break;
+  }
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningView_Scotch"
 PetscErrorCode MatPartitioningView_Scotch(MatPartitioning part, PetscViewer viewer)
 {
-  MatPartitioning_Scotch *scotch = (MatPartitioning_Scotch *) part->data;
+  MatPartitioning_Scotch *scotch = (MatPartitioning_Scotch*)part->data;
   PetscErrorCode         ierr;
-  PetscMPIInt            rank;
-  PetscBool              iascii;
+  PetscBool              isascii;
+  const char             *str;
   
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(((PetscObject)part)->comm, &rank);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
-  if (iascii) {
-    if (!rank && scotch->mesg_log) {
-      ierr = PetscViewerASCIIPrintf(viewer, "%s\n", scotch->mesg_log);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
+  if (isascii) {
+    switch (scotch->strategy) {
+      case SCOTCH_STRATQUALITY:     str = "Prioritize quality over speed"; break;
+      case SCOTCH_STRATSPEED:       str = "Prioritize speed over quality"; break;
+      case SCOTCH_STRATBALANCE:     str = "Enforce load balance"; break;
+      case SCOTCH_STRATSAFETY:      str = "Avoid methods that may fail"; break;
+      case SCOTCH_STRATSCALABILITY: str = "Favor scalability as much as possible"; break;
     }
+    ierr = PetscViewerASCIIPrintf(viewer,"  Strategy=%s\n",str);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Load imbalance ratio=%g\n",scotch->imbalance);CHKERRQ(ierr);
   } else {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Viewer type %s not supported for this Scotch partitioner",((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for Scotch partitioner",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningScotchSetGlobal"
-/*@
-     MatPartitioningScotchSetGlobal - Set method for global partitioning.
-
-  Input Parameter:
-.  part - the partitioning context
-.  method - MP_SCOTCH_GREED, MP_SCOTCH_GIBBS or MP_SCOTCH_GR_GI (the combination of two)
-   Level: advanced
-
-@*/
-PetscErrorCode  MatPartitioningScotchSetGlobal(MatPartitioning part,
-    MPScotchGlobalType global)
-{
-    MatPartitioning_Scotch *scotch = (MatPartitioning_Scotch *) part->data;
-
-    PetscFunctionBegin;
-
-    switch (global) {
-    case MP_SCOTCH_GREEDY:
-    case MP_SCOTCH_GPS:
-    case MP_SCOTCH_GR_GPS:
-        scotch->global_method = global;
-        break;
-    default:
-        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP, "Scotch: Unknown or unsupported option");
-    }
-
-    PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningScotchSetCoarseLevel"
-/*@
-    MatPartitioningScotchSetCoarseLevel - Set the coarse level 
-    
-  Input Parameter:
-.  part - the partitioning context
-.  level - the coarse level in range [0.0,1.0]
-
-   Level: advanced
-
-@*/
-PetscErrorCode  MatPartitioningScotchSetCoarseLevel(MatPartitioning part, PetscReal level)
-{
-    MatPartitioning_Scotch *scotch = (MatPartitioning_Scotch *) part->data;
-
-    PetscFunctionBegin;
-    if (level < 0 || level > 1.0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE, "Scotcth: level of coarsening out of range [0.0-1.0]");
-      /* ********************************************
-       *					    *
-       *        TODO: Correct this part		    *
-       *					    *
-       * Won't work with this nbvxtcoarsed          *
-       *					    *
-       * I just modified it to make scotch compile, *
-       * to be able to use PaStiX...		    *
-       *					    *
-       **********************************************/
-    scotch->nbvtxcoarsed = 0;
-    /* with scotch 3.0.4 it was : scotch->nbvtxcoarsed = (int)(part->adj->N * level); */
-    if (scotch->nbvtxcoarsed < 20) scotch->nbvtxcoarsed = 20;
-    PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningScotchSetStrategy"
-/*@C
-    MatPartitioningScotchSetStrategy - Set the strategy to be used by Scotch.
-    This is an alternative way of specifying the global method, the local
-    method, the coarse level and the multilevel option.
-    
-  Input Parameter:
-.  part - the partitioning context
-.  level - the strategy in Scotch format. Check Scotch documentation.
-
-   Level: advanced
-
-.seealso: MatPartitioningScotchSetGlobal(), MatPartitioningScotchSetLocal(), MatPartitioningScotchSetCoarseLevel(), MatPartitioningScotchSetMultilevel(), 
-@*/
-PetscErrorCode  MatPartitioningScotchSetStrategy(MatPartitioning part, char *strat)
-{
-    MatPartitioning_Scotch *scotch = (MatPartitioning_Scotch *) part->data;
-
-    PetscFunctionBegin;
-
-    PetscStrcpy(scotch->strategy, strat);
-    PetscFunctionReturn(0);
-}
-
-
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningScotchSetLocal"
-/*@
-     MatPartitioningScotchSetLocal - Set method for local partitioning.
-
-  Input Parameter:
-.  part - the partitioning context
-.  method - MP_SCOTCH_KERNIGHAN_LIN or MP_SCOTCH_NONE
-
-   Level: advanced
-
-@*/
-PetscErrorCode  MatPartitioningScotchSetLocal(MatPartitioning part, MPScotchLocalType local)
-{
-    MatPartitioning_Scotch *scotch = (MatPartitioning_Scotch *) part->data;
-
-    PetscFunctionBegin;
-
-    switch (local) {
-    case MP_SCOTCH_KERNIGHAN_LIN:
-    case MP_SCOTCH_NONE:
-        scotch->local_method = local;
-        break;
-    default:
-        SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT, "Scotch: Unknown or unsupported option");
-    }
-
-    PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningScotchSetArch"
-/*@C
-     MatPartitioningScotchSetArch - Specify the file that describes the
-     architecture used for mapping. The format of this file is documented in
-     the Scotch manual.
-
-  Input Parameter:
-.  part - the partitioning context
-.  file - the name of file
-   Level: advanced
-
-  Note:
-  If the name is not set, then the default "archgraph.src" is used.
-
-.seealso: MatPartitioningScotchSetHostList(),MatPartitioningScotchSetMapping()
-@*/
-PetscErrorCode  MatPartitioningScotchSetArch(MatPartitioning part, const char *filename)
-{
-    MatPartitioning_Scotch *scotch = (MatPartitioning_Scotch *) part->data;
-
-    PetscFunctionBegin;
-
-    PetscStrcpy(scotch->arch, filename);
-
-    PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningScotchSetHostList"
-/*@C
-     MatPartitioningScotchSetHostList - Specify host list file for mapping.
-
-  Input Parameter:
-.  part - the partitioning context
-.  file - the name of file
-
-   Level: advanced
-
-  Notes:
-  The file must consist in a list of hostnames (one per line). These hosts
-  are the ones referred to in the architecture file (see 
-  MatPartitioningScotchSetArch()): the first host corresponds to index 0,
-  the second one to index 1, and so on.
-  
-  If the name is not set, then the default "host_list" is used.
-  
-.seealso: MatPartitioningScotchSetArch(), MatPartitioningScotchSetMapping()
-@*/
-PetscErrorCode  MatPartitioningScotchSetHostList(MatPartitioning part, const char *filename)
-{
-    MatPartitioning_Scotch *scotch = (MatPartitioning_Scotch *) part->data;
-
-    PetscFunctionBegin;
-
-    PetscStrcpy(scotch->host_list, filename);
-
-    PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningScotchSetMultilevel"
-/*@
-     MatPartitioningScotchSetMultilevel - Activates multilevel partitioning.
-
-  Input Parameter:
-.  part - the partitioning context
-
-   Level: advanced
-
-@*/
-PetscErrorCode  MatPartitioningScotchSetMultilevel(MatPartitioning part)
-{
-    MatPartitioning_Scotch *scotch = (MatPartitioning_Scotch *) part->data;
-
-    PetscFunctionBegin;
-
-    scotch->multilevel = 1;
-
-    PetscFunctionReturn(0);
-}
-
-
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningScotchSetMapping"
-/*@
-     MatPartitioningScotchSetMapping - Activates architecture mapping for the 
-     partitioning algorithm. Architecture mapping tries to enhance the quality
-     of partitioning by using network topology information. 
-
-  Input Parameter:
-.  part - the partitioning context
-
-   Level: advanced
-
-.seealso: MatPartitioningScotchSetArch(),MatPartitioningScotchSetHostList()
-@*/
-PetscErrorCode  MatPartitioningScotchSetMapping(MatPartitioning part)
-{
-    MatPartitioning_Scotch *scotch = (MatPartitioning_Scotch *) part->data;
-
-    PetscFunctionBegin;
-
-    scotch->map = 1;
-
-    PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningSetFromOptions_Scotch"
 PetscErrorCode MatPartitioningSetFromOptions_Scotch(MatPartitioning part)
 {
-    PetscErrorCode ierr;
-    PetscBool  flag;
-    char name[PETSC_MAX_PATH_LEN];
-    int i;
-    PetscReal r;
+  PetscErrorCode         ierr;
+  PetscBool              flag;
+  PetscReal              r;
+  MatPartitioning_Scotch *scotch = (MatPartitioning_Scotch*)part->data;
+  MPScotchStrategyType   strat;
 
-    const char *global[] = { "greedy", "gps", "gr_gps" };
-    const char *local[] = { "kernighan-lin", "none" };
+  PetscFunctionBegin;
+  ierr = PetscOptionsHead("Scotch partitioning options");CHKERRQ(ierr);
+    ierr = PetscOptionsEnum("-mat_partitioning_scotch_strategy","Strategy","MatPartitioningScotchSetStrategy",MPScotchStrategyTypes,MP_SCOTCH_QUALITY,(PetscEnum*)&strat,&flag);CHKERRQ(ierr);
+    if (flag) { ierr = MatPartitioningScotchSetStrategy(part,strat);CHKERRQ(ierr); }
+    ierr = PetscOptionsReal("-mat_partitioning_scotch_imbalance","Load imbalance ratio","MatPartitioningScotchSetImbalance",scotch->imbalance,&r,&flag);CHKERRQ(ierr);
+    if (flag) { ierr = MatPartitioningScotchSetImbalance(part,r);CHKERRQ(ierr); }
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
-    PetscFunctionBegin;
-    ierr = PetscOptionsHead("Set Scotch partitioning options");CHKERRQ(ierr);
+#undef __FUNCT__
+#define __FUNCT__ "MatPartitioningApply_Scotch"
+PetscErrorCode MatPartitioningApply_Scotch(MatPartitioning part,IS *partitioning)
+{
+  MatPartitioning_Scotch *scotch = (MatPartitioning_Scotch*)part->data;
+  PetscErrorCode         ierr;
+  PetscMPIInt            rank;
+  Mat                    mat = part->adj;
+  Mat_MPIAdj             *adj = (Mat_MPIAdj*)mat->data;
+  PetscBool              flg;
+  PetscInt               i,j,wgtflag=0,bs=1,nold;
+  PetscReal              *vwgttab,deltval;
+  SCOTCH_Num             *locals,*velotab,*veloloctab,*edloloctab,vertlocnbr,edgelocnbr,nparts=part->n;
+  SCOTCH_Arch            archdat;
+  SCOTCH_Dgraph          grafdat;
+  SCOTCH_Dmapping        mappdat;
+  SCOTCH_Strat           stradat;
 
-    ierr = PetscOptionsEList("-mat_partitioning_scotch_global",
-        "Global method to use", "MatPartitioningScotchSetGlobal", global, 3,
-        global[0], &i, &flag);CHKERRQ(ierr);
-    if (flag) {
-      ierr = MatPartitioningScotchSetGlobal(part, (MPScotchGlobalType)i);CHKERRQ(ierr);
+  PetscFunctionBegin;
+  ierr = MPI_Comm_rank(((PetscObject)part)->comm,&rank);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)mat,MATMPIADJ,&flg);CHKERRQ(ierr);
+  if (!flg) {
+    /* bs indicates if the converted matrix is "reduced" from the original and hence the 
+       resulting partition results need to be stretched to match the original matrix */
+    nold = mat->rmap->n;
+    ierr = MatConvert(mat,MATMPIADJ,MAT_INITIAL_MATRIX,&mat);CHKERRQ(ierr);
+    bs   = nold/mat->rmap->n;
+    adj  = (Mat_MPIAdj*)mat->data;
+  }
+
+  ierr = PetscMalloc((mat->rmap->n+1)*sizeof(SCOTCH_Num),&locals);CHKERRQ(ierr);
+  ierr = PetscMalloc(nparts*sizeof(PetscReal),&vwgttab);CHKERRQ(ierr);
+  ierr = PetscMalloc(nparts*sizeof(SCOTCH_Num),&velotab);CHKERRQ(ierr);
+  for (j=0;j<nparts;j++) {
+    if (part->part_weights) vwgttab[j] = part->part_weights[j]*nparts;
+    else vwgttab[j] = 1.0;
+  }
+  for (i=0;i<nparts;i++) {
+    deltval = PetscAbsReal(vwgttab[i]-floor(vwgttab[i]+0.5));
+    if (deltval>0.01) {
+      for (j=0;j<nparts;j++) vwgttab[j] /= deltval;
     }
+  }
+  for (i=0;i<nparts;i++)
+    velotab[i] = (SCOTCH_Num) (vwgttab[i] + 0.5);
+  ierr = PetscFree(vwgttab);CHKERRQ(ierr);
 
-    ierr = PetscOptionsEList("-mat_partitioning_scotch_local",
-        "Local method to use", "MatPartitioningScotchSetLocal", local, 2,
-        local[0], &i, &flag);CHKERRQ(ierr);
-    if (flag) {
-      ierr = MatPartitioningScotchSetLocal(part, (MPScotchLocalType)i);CHKERRQ(ierr);
+  ierr = SCOTCH_dgraphInit(&grafdat,((PetscObject)mat)->comm);CHKERRQ(ierr);
+
+  vertlocnbr = mat->rmap->range[rank+1] - mat->rmap->range[rank];
+  edgelocnbr = adj->i[vertlocnbr];
+  veloloctab = (!part->vertex_weights && !(wgtflag & 2)) ? part->vertex_weights: PETSC_NULL;
+  edloloctab = (!adj->values && !(wgtflag & 1)) ? adj->values: PETSC_NULL;
+
+  ierr = SCOTCH_dgraphBuild(&grafdat,0,vertlocnbr,vertlocnbr,adj->i,adj->i+1,veloloctab,
+                    PETSC_NULL,edgelocnbr,edgelocnbr,adj->j,PETSC_NULL,edloloctab);CHKERRQ(ierr);
+
+#if defined(PETSC_USE_DEBUG)
+  ierr = SCOTCH_dgraphCheck(&grafdat);CHKERRQ(ierr);
+#endif
+
+  ierr = SCOTCH_archInit(&archdat);CHKERRQ(ierr);
+  ierr = SCOTCH_stratInit(&stradat);CHKERRQ(ierr);
+  ierr = SCOTCH_stratDgraphMapBuild(&stradat,scotch->strategy,nparts,nparts,scotch->imbalance);CHKERRQ(ierr);
+
+  ierr = SCOTCH_archCmpltw(&archdat,nparts,velotab);CHKERRQ(ierr);
+  ierr = SCOTCH_dgraphMapInit(&grafdat,&mappdat,&archdat,locals);CHKERRQ(ierr);
+  ierr = SCOTCH_dgraphMapCompute(&grafdat,&mappdat,&stradat);CHKERRQ(ierr);
+
+  SCOTCH_dgraphMapExit (&grafdat,&mappdat);
+  SCOTCH_archExit(&archdat);
+  SCOTCH_stratExit(&stradat);
+  SCOTCH_dgraphExit(&grafdat);
+  ierr = PetscFree(velotab);CHKERRQ(ierr);
+
+  if (bs > 1) {
+    PetscInt *newlocals;
+    ierr = PetscMalloc(bs*mat->rmap->n*sizeof(PetscInt),&newlocals);CHKERRQ(ierr);
+    for (i=0;i<mat->rmap->n;i++) {
+      for (j=0;j<bs;j++) {
+        newlocals[bs*i+j] = locals[i];
+      }
     }
+    ierr = PetscFree(locals);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(((PetscObject)part)->comm,bs*mat->rmap->n,newlocals,PETSC_OWN_POINTER,partitioning);CHKERRQ(ierr);
+  } else {
+    ierr = ISCreateGeneral(((PetscObject)part)->comm,mat->rmap->n,locals,PETSC_OWN_POINTER,partitioning);CHKERRQ(ierr);
+  }
 
-    flag = PETSC_FALSE;
-    ierr = PetscOptionsBool("-mat_partitioning_scotch_mapping", "Use mapping","MatPartitioningScotchSetMapping", flag,&flag,PETSC_NULL);CHKERRQ(ierr);
-    if (flag) {
-      ierr = MatPartitioningScotchSetMapping(part);CHKERRQ(ierr);
-    }
-
-    ierr = PetscOptionsString("-mat_partitioning_scotch_arch",
-        "architecture file in scotch format", "MatPartitioningScotchSetArch",
-        "archgraph.src", name, PETSC_MAX_PATH_LEN, &flag);CHKERRQ(ierr);
-    if (flag)
-        ierr = MatPartitioningScotchSetArch(part, name);CHKERRQ(ierr);
-
-    ierr = PetscOptionsString("-mat_partitioning_scotch_hosts",
-        "host list filename", "MatPartitioningScotchSetHostList",
-        "host_list", name, PETSC_MAX_PATH_LEN, &flag);CHKERRQ(ierr);
-    if (flag)
-        ierr = MatPartitioningScotchSetHostList(part, name);CHKERRQ(ierr);
-
-    ierr = PetscOptionsReal("-mat_partitioning_scotch_coarse_level",
-        "coarse level", "MatPartitioningScotchSetCoarseLevel", 0, &r,
-        &flag);CHKERRQ(ierr);
-    if (flag)
-        ierr = MatPartitioningScotchSetCoarseLevel(part, r);CHKERRQ(ierr);
-
-    flag = PETSC_FALSE;
-    ierr = PetscOptionsBool("-mat_partitioning_scotch_mul", "Use coarse level","MatPartitioningScotchSetMultilevel", flag,&flag,PETSC_NULL);CHKERRQ(ierr);
-    if (flag) {
-      ierr = MatPartitioningScotchSetMultilevel(part);CHKERRQ(ierr);
-    }
-
-    ierr = PetscOptionsString("-mat_partitioning_scotch_strategy",
-        "Scotch strategy string",
-        "MatPartitioningScotchSetStrategy", "", name, PETSC_MAX_PATH_LEN,
-        &flag);CHKERRQ(ierr);
-    if (flag)
-        ierr = MatPartitioningScotchSetStrategy(part, name);CHKERRQ(ierr);
-
-    ierr = PetscOptionsTail();CHKERRQ(ierr);
-    PetscFunctionReturn(0);
+  if (!flg) {
+    ierr = MatDestroy(&mat);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningDestroy_Scotch"
 PetscErrorCode MatPartitioningDestroy_Scotch(MatPartitioning part)
 {
-    MatPartitioning_Scotch *scotch = (MatPartitioning_Scotch *) part->data;
-    PetscErrorCode         ierr;
+  MatPartitioning_Scotch *scotch = (MatPartitioning_Scotch*)part->data;
+  PetscErrorCode         ierr;
 
-    PetscFunctionBegin;
-    ierr = PetscFree(scotch->mesg_log);CHKERRQ(ierr);
-    ierr = PetscFree(scotch);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
+  PetscFunctionBegin;
+  ierr = PetscFree(scotch);CHKERRQ(ierr);
+  /* clear composed functions */
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)part,"MatPartitioningScotchSetImbalance_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)part,"MatPartitioningScotchGetImbalance_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)part,"MatPartitioningScotchSetStrategy_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)part,"MatPartitioningScotchGetStrategy_C","",PETSC_NULL);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
-
 
 /*MC
    MATPARTITIONINGSCOTCH - Creates a partitioning context via the external package SCOTCH.
 
-   Collective on MPI_Comm
-
-   Input Parameter:
-.  part - the partitioning context
-
-   Options Database Keys:
-+  -mat_partitioning_scotch_global <greedy> (one of) greedy gps gr_gps
-.  -mat_partitioning_scotch_local <kernighan-lin> (one of) kernighan-lin none
-.  -mat_partitioning_scotch_mapping: Use mapping (MatPartitioningScotchSetMapping)
-.  -mat_partitioning_scotch_arch <archgraph.src>: architecture file in scotch format (MatPartitioningScotchSetArch)
-.  -mat_partitioning_scotch_hosts <host_list>: host list filename (MatPartitioningScotchSetHostList)
-.  -mat_partitioning_scotch_coarse_level <0>: coarse level (MatPartitioningScotchSetCoarseLevel)
-.  -mat_partitioning_scotch_mul: Use coarse level (MatPartitioningScotchSetMultilevel)
--  -mat_partitioning_scotch_strategy <>: Scotch strategy string (MatPartitioningScotchSetStrategy)
-
    Level: beginner
 
-   Notes: See http://www.labri.fr/Perso/~pelegrin/scotch/
+   Notes: See http://www.labri.fr/perso/pelegrin/scotch/
 
 .keywords: Partitioning, create, context
 
@@ -735,31 +382,25 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatPartitioningCreate_Scotch"
 PetscErrorCode  MatPartitioningCreate_Scotch(MatPartitioning part)
 {
-    PetscErrorCode ierr;
-    MatPartitioning_Scotch *scotch;
+  PetscErrorCode         ierr;
+  MatPartitioning_Scotch *scotch;
 
-    PetscFunctionBegin;
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Sorry, the PETSc interface to scotch has not been updated to the latest Scotch version");
-    ierr = PetscNewLog(part,MatPartitioning_Scotch, &scotch);CHKERRQ(ierr);
-    part->data = (void*) scotch;
+  PetscFunctionBegin;
+  ierr = PetscNewLog(part,MatPartitioning_Scotch,&scotch);CHKERRQ(ierr);
+  part->data = (void*)scotch;
 
-    scotch->map = 0;
-    scotch->global_method = MP_SCOTCH_GR_GPS;
-    scotch->local_method = MP_SCOTCH_KERNIGHAN_LIN;
-    PetscStrcpy(scotch->arch, "archgraph.src");
-    scotch->nbvtxcoarsed = 200;
-    PetscStrcpy(scotch->strategy, "");
-    scotch->multilevel = 0;
-    scotch->mesg_log = NULL;
+  scotch->imbalance = 0.01;
+  scotch->strategy  = SCOTCH_STRATQUALITY;
 
-    PetscStrcpy(scotch->host_list, "host_list");
+  part->ops->apply          = MatPartitioningApply_Scotch;
+  part->ops->view           = MatPartitioningView_Scotch;
+  part->ops->setfromoptions = MatPartitioningSetFromOptions_Scotch;
+  part->ops->destroy        = MatPartitioningDestroy_Scotch;
 
-    part->ops->apply = MatPartitioningApply_Scotch;
-    part->ops->view = MatPartitioningView_Scotch;
-    part->ops->destroy = MatPartitioningDestroy_Scotch;
-    part->ops->setfromoptions = MatPartitioningSetFromOptions_Scotch;
-
-    PetscFunctionReturn(0);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)part,"MatPartitioningScotchSetImbalance_C","MatPartitioningScotchSetImbalance_Scotch",MatPartitioningScotchSetImbalance_Scotch);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)part,"MatPartitioningScotchGetImbalance_C","MatPartitioningScotchGetImbalance_Scotch",MatPartitioningScotchGetImbalance_Scotch);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)part,"MatPartitioningScotchSetStrategy_C","MatPartitioningScotchSetStrategy_Scotch",MatPartitioningScotchSetStrategy_Scotch);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)part,"MatPartitioningScotchGetStrategy_C","MatPartitioningScotchGetStrategy_Scotch",MatPartitioningScotchGetStrategy_Scotch);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
-
 EXTERN_C_END
