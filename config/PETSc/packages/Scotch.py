@@ -20,7 +20,7 @@ class Configure(PETSc.package.NewPackage):
   def Install(self):
     import os
 
-    self.framework.log.write('Creating Scotch '+os.path.join(os.path.join(self.packageDir,'src'),'Makefile.inc')+'\n')
+    self.framework.log.write('Creating PTScotch '+os.path.join(os.path.join(self.packageDir,'src'),'Makefile.inc')+'\n')
 
     
     g = open(os.path.join(self.packageDir,'src','Makefile.inc'),'w')
@@ -75,11 +75,14 @@ class Configure(PETSc.package.NewPackage):
 
     if self.installNeeded(os.path.join('src','Makefile.inc')):
       try:
-        self.logPrintBox('Compiling Scotch; this may take several minutes')
-#        output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+os.path.join(self.packageDir,'src')+' && make clean scotch', timeout=2500, log = self.framework.log)
+        self.logPrintBox('Compiling PTScotch; this may take several minutes')
+#
+#    If desired one can have this build Scotch as well as PTScoth as indicated here
+#        output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+os.path.join(self.packageDir,'src')+' && make clean scotch ptscotch', timeout=2500, log = self.framework.log)
+#
         output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+os.path.join(self.packageDir,'src')+' && make clean ptscotch', timeout=2500, log = self.framework.log)
       except RuntimeError, e:
-        raise RuntimeError('Error running make on Scotch: '+str(e))
+        raise RuntimeError('Error running make on PTScotch: '+str(e))
 
       #Scotch has a file identical to one in ParMetis, remove it so ParMetis will not use it by mistake
       try: # PTScotch installs parmetis.h by default, we need to remove it so it does not conflict with the ParMETIS native copy

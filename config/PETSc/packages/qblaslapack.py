@@ -3,13 +3,14 @@ import PETSc.package
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
-    self.download  = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/qblaslapack.tar.gz']
+    self.download  = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/f2cblaslapack-3.1.1.q.tar.gz']
     self.functions = ['ddot_']
     self.includes  = []
-    self.liblist   = [['libqlapack.a','libqblas.a']]
+    self.liblist   = [['libf2clapack.a','libf2cblas.a']]
     self.double    = 0
 
   def setupDependencies(self, framework):
+    self.scalartypes = framework.require('PETSc.utilities.scalarTypes', self)
     PETSc.package.NewPackage.setupDependencies(self, framework)
     return
 
@@ -36,6 +37,9 @@ class Configure(PETSc.package.NewPackage):
   def Install(self):
     import os
 
+    precision = self.scalartypes.precision
+    if precision == 'single': precision = 'float'
+
     libdir = self.libDir
     confdir = self.confDir
     blasDir = self.packageDir
@@ -50,15 +54,13 @@ class Configure(PETSc.package.NewPackage):
       if line.startswith('COPTFLAGS '):
         self.setCompilers.pushLanguage('C')
         line = 'COPTFLAGS  = '+self.setCompilers.getCompilerFlags()
-        #  the f2cblaslapack source code only supports double precision
-        line += ' -DDOUBLE=__float128 -DLONG=""\n'
+        line += ' -DDOUBLE='+precision+' -DLONG=""\n'
         self.setCompilers.popLanguage()
       if line.startswith('CNOOPT'):
         self.setCompilers.pushLanguage('C')
         noopt = self.checkNoOptFlag()
         line = 'CNOOPT = '+noopt+ ' '+self.getSharedFlag(self.setCompilers.getCompilerFlags())+' '+self.getPrecisionFlag(self.setCompilers.getCompilerFlags())+' '+self.getWindowsNonOptFlags(self.setCompilers.getCompilerFlags())
-        #  the f2cblaslapack source code only supports double precision
-        line += ' -DDOUBLE=__float128 -DLONG=""\n'
+        line += ' -DDOUBLE='+precision+' -DLONG=""\n'
         self.setCompilers.popLanguage()
       if line.startswith('AR  '):
         line = 'AR      = '+self.setCompilers.AR+'\n'
@@ -81,7 +83,7 @@ class Configure(PETSc.package.NewPackage):
     if not self.installNeeded('tmpmakefile'): return self.installDir
 
     try:
-      self.logPrintBox('Compiling QBLASLAPACK; this may take several minutes')
+      self.logPrintBox('Compiling BLASLAPACK; this may take several minutes')
       output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+blasDir+' && make -f tmpmakefile cleanblaslapck cleanlib && make -f tmpmakefile', timeout=2500, log = self.framework.log)
     except RuntimeError, e:
       raise RuntimeError('Error running make on '+blasDir+': '+str(e))
