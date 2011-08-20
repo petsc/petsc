@@ -6,7 +6,6 @@ import config.package
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.downloadname    = 'netcdf'
     self.downloadpath    = 'http://www.unidata.ucar.edu/downloads/netcdf/ftp/'
     self.downloadext     = 'tar.gz'
     self.downloadversion = '4.1.1'

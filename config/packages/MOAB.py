@@ -3,7 +3,6 @@ import config.package
 class Configure(config.package.GNUPackage):
   def __init__(self, framework):
     config.package.GNUPackage.__init__(self, framework)
-    self.downloadname  = 'moab'
     self.downloadpath  = 'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/'
     self.downloadversion = '3.99-10-18-2010'
     self.downloadext     = 'tar.gz'

@@ -15,7 +15,7 @@ class Package(config.base.Configure):
     self.substPrefix      = 'PETSC'
     self.arch             = None # The architecture identifier
     self.externalPackagesDir = os.path.abspath('externalpackages')
-    # These are derived by the configure tests
+    # These are gderived by the configure tests
     self.found            = 0
     self.setNames()
     self.include          = []
@@ -96,16 +96,18 @@ class Package(config.base.Configure):
     name:         The module name (usually the filename)
     package:      The lowercase name
     PACKAGE:      The uppercase name
-    downloadname: Name for download option and file (usually name)
+    downloadname:     Name for download option (usually name)
+    downloadfilename: name for downloaded file (first part of string) (usually downloadname)
     '''
     import sys
     if hasattr(sys.modules.get(self.__module__), '__file__'):
       self.name       = os.path.splitext(os.path.basename(sys.modules.get(self.__module__).__file__))[0]
     else:
-      self.name       = 'DEBUGGING'
-    self.PACKAGE      = self.name.upper()
-    self.package      = self.name.lower()
-    self.downloadname = self.name
+      self.name           = 'DEBUGGING'
+    self.PACKAGE          = self.name.upper()
+    self.package          = self.name.lower()
+    self.downloadname     = self.name
+    self.downloadfilename = self.downloadname;
     return
 
   def getDefaultLanguage(self):
@@ -340,13 +342,14 @@ class Package(config.base.Configure):
       os.makedirs(packages)
       self.framework.actions.addArgument('Framework', 'Directory creation', 'Created the external packages directory: '+packages)
     Dir = None
+    self.framework.logPrint('Looking for '+self.PACKAGE+' in directory starting with '+str(self.downloadfilename))
     for d in os.listdir(packages):
-      if d.startswith(self.downloadname) and os.path.isdir(os.path.join(packages, d)) and not self.matchExcludeDir(d):
+      if d.startswith(self.downloadfilename) and os.path.isdir(os.path.join(packages, d)) and not self.matchExcludeDir(d):
         self.framework.logPrint('Found a copy of '+self.PACKAGE+' in '+str(d))
         Dir = d
         break
     if Dir is None:
-      self.framework.logPrint('Could not locate an existing copy of '+self.downloadname+':')
+      self.framework.logPrint('Could not locate an existing copy of '+self.downloadfilename+':')
       self.framework.logPrint('  '+str(os.listdir(packages)))
       if retry <= 0:
         raise RuntimeError('Unable to download '+self.downloadname)
@@ -366,7 +369,7 @@ class Package(config.base.Configure):
     self.framework.logPrint('Downloading '+self.name)
     for url in self.download:
       try:
-        retriever.genericRetrieve(url, self.externalPackagesDir, self.downloadname)
+        retriever.genericRetrieve(url, self.externalPackagesDir, self.downloadfilename)
         self.framework.actions.addArgument(self.PACKAGE, 'Download', 'Downloaded '+self.name+' into '+self.getDir(0))
         return
       except RuntimeError, e:
@@ -551,6 +554,7 @@ Brief overview of how BuildSystem\'s configuration of packages works.
     self.package          - lowercase name                                [string]
     self.PACKAGE          - uppercase name                                [string]
     self.downloadname     - same as self.name (usage a bit inconsistent)  [string]
+    self.downloadfilename     - same as self.name (usage a bit inconsistent)  [string]
   Package subclass typically sets up the following state variables:
     self.download         - url to download source from                   [string]
     self.includes         - names of header files to locate               [list of strings]

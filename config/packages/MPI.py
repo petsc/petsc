@@ -315,8 +315,9 @@ class Configure(config.package.Package):
       if config.setCompilers.Configure.isCygwin() and not config.setCompilers.Configure.isGNU(self.setCompilers.CC):
         raise RuntimeError('Sorry, cannot download-install MPICH on Windows. Sugest installing windows version of MPICH manually')
       self.liblist      = [[]]
-      self.download     = self.download_mpich
-      self.downloadname = 'mpich'
+      self.download         = self.download_mpich
+      self.downloadname     = 'mpich'
+      self.downloadfilename = 'mpich'
       return config.package.Package.checkDownload(self, requireDownload)
 
     # Check for OpenMPI
@@ -324,8 +325,9 @@ class Configure(config.package.Package):
       if config.setCompilers.Configure.isCygwin() and not config.setCompilers.Configure.isGNU(self.setCompilers.CC):
         raise RuntimeError('Sorry, cannot download-install OpenMPI on Windows. Sugest installing windows version of MPICH manually')
       self.liblist      = [[]]
-      self.download     = self.download_openmpi
-      self.downloadname = 'openmpi'
+      self.download         = self.download_openmpi
+      self.downloadname     = 'openmpi'
+      self.downloadfilename = 'openmpi'
       return config.package.Package.checkDownload(self, requireDownload)
     return None
 
