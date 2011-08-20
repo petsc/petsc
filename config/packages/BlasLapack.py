@@ -545,11 +545,10 @@ class Configure(config.package.Package):
       return self.libraries.check(self.dlib,routine,fortranMangle = hasattr(self.compilers, 'FC'))
 
   def configure(self):
-    if self.defaultPrecision == 'double' or self.defaultPrecision == 'single':
-      self.executeTest(self.configureLibrary)
-      self.executeTest(self.checkESSL)
-      self.executeTest(self.checkPESSL)
-      self.executeTest(self.checkMissing)
+    self.executeTest(self.configureLibrary)
+    self.executeTest(self.checkESSL)
+    self.executeTest(self.checkPESSL)
+    self.executeTest(self.checkMissing)
     return
 
 if __name__ == '__main__':
