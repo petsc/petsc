@@ -21,8 +21,7 @@
 #define MPChacoGlobalType PetscEnum
 #define MPChacoLocalType PetscEnum
 #define MPChacoEigenType PetscEnum
-#define MPScotchGlobalType PetscEnum
-#define MPScotchLocalType PetscEnum
+#define MPPTScotchStragegyType PetscEnum
 #define MatAssemblyType PetscEnum
 #define MatFactorType PetscEnum
 #define MatFactorShiftType PetscEnum

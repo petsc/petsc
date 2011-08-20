@@ -1336,7 +1336,7 @@ E*/
 #define MATPARTITIONINGCHACO    "chaco"
 #define MATPARTITIONINGJOSTLE   "jostle"
 #define MATPARTITIONINGPARTY    "party"
-#define MATPARTITIONINGSCOTCH   "scotch"
+#define MATPARTITIONINGPTSCOTCH "ptscotch"
 
 
 extern PetscErrorCode  MatPartitioningCreate(MPI_Comm,MatPartitioning*);
@@ -1435,13 +1435,13 @@ extern PetscErrorCode  MatPartitioningPartySetCoarseLevel(MatPartitioning,PetscR
 extern PetscErrorCode  MatPartitioningPartySetBipart(MatPartitioning,PetscBool );
 extern PetscErrorCode  MatPartitioningPartySetMatchOptimization(MatPartitioning,PetscBool );
 
-typedef enum { MP_SCOTCH_QUALITY, MP_SCOTCH_SPEED, MP_SCOTCH_BALANCE, MP_SCOTCH_SAFETY, MP_SCOTCH_SCALABILITY } MPScotchStrategyType;
-extern const char *MPScotchStrategyTypes[];
+typedef enum { MP_PTSCOTCH_QUALITY, MP_PTSCOTCH_SPEED, MP_PTSCOTCH_BALANCE, MP_PTSCOTCH_SAFETY, MP_PTSCOTCH_SCALABILITY } MPPTScotchStrategyType;
+extern const char *MPPTScotchStrategyTypes[];
 
-extern PetscErrorCode MatPartitioningScotchSetImbalance(MatPartitioning,PetscReal);
-extern PetscErrorCode MatPartitioningScotchGetImbalance(MatPartitioning,PetscReal*);
-extern PetscErrorCode MatPartitioningScotchSetStrategy(MatPartitioning,MPScotchStrategyType);
-extern PetscErrorCode MatPartitioningScotchGetStrategy(MatPartitioning,MPScotchStrategyType*);
+extern PetscErrorCode MatPartitioningPTScotchSetImbalance(MatPartitioning,PetscReal);
+extern PetscErrorCode MatPartitioningPTScotchGetImbalance(MatPartitioning,PetscReal*);
+extern PetscErrorCode MatPartitioningPTScotchSetStrategy(MatPartitioning,MPPTScotchStrategyType);
+extern PetscErrorCode MatPartitioningPTScotchGetStrategy(MatPartitioning,MPPTScotchStrategyType*);
 
 extern PetscErrorCode MatMeshToVertexGraph(Mat,PetscInt,Mat*);
 extern PetscErrorCode MatMeshToCellGraph(Mat,PetscInt,Mat*);

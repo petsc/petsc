@@ -1,6 +1,6 @@
 ALL: lib
 
-#requirespackage 'PETSC_HAVE_SCOTCH'
+#requirespackage 'PETSC_HAVE_PTSCOTCH'
 
 CFLAGS   =
 FFLAGS   =

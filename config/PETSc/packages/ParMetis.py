@@ -59,8 +59,8 @@ class Configure(PETSc.package.NewPackage):
     self.setCompilers.popLanguage()
     g.close()
 
-#   Warning: Scotch also installs a file metis.h which will be incorrectly found by ParMetis when compiling so you cannot build PETSc to use
-#   both Scotch and ParMetis in the same PETSc build
+#   Warning: PTScotch also installs a file metis.h which will be incorrectly found by ParMetis when compiling so you cannot build PETSc to use
+#   both PTScotch and ParMetis in the same PETSc build
 #    if self.framework.argDB['download-scotch']:
 #      raise RuntimeError('Cannot use both --download-scotch and --download-parmetis')
    

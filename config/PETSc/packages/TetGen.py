@@ -120,7 +120,6 @@ class Configure(PETSc.package.NewPackage):
     self.cxx       = 1
     self.needsMath = 1
     self.complex   = 1
-    self.downloadname = 'tetgen'
     return
 
   def setupDependencies(self, framework):

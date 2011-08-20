@@ -4,7 +4,7 @@ class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
     self.download     = ['https://gforge.inria.fr/frs/download.php/28044/scotch_5.1.11_esmumps.tar.gz']
-    self.downloadname = self.name.lower()
+    self.downloadfilename = 'scotch'
     self.liblist      = [['libptesmumps.a', 'libptscotch.a','libptscotcherr.a']]
     self.functions    = ['SCOTCH_archBuild']
     self.includes     = ['ptscotch.h']

@@ -15,9 +15,9 @@ int main(int argc, char **args)
   Mat             A;
   MatPartitioning part;
   IS              is;
-  PetscInt        N = 10, start, end;
+  PetscInt        r,N = 10, start, end;
   PetscErrorCode  ierr;
-
+  
   ierr = PetscInitialize(&argc, &args, (char *) 0, help);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL, "-N", &N, PETSC_NULL);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD, &A);CHKERRQ(ierr);
@@ -28,7 +28,7 @@ int main(int argc, char **args)
 
   // Create a linear mesh
   ierr = MatGetOwnershipRange(A, &start, &end);CHKERRQ(ierr);
-  for(PetscInt r = start; r < end; ++r) {
+  for(r = start; r < end; ++r) {
     if (r == 0) {
       PetscInt    cols[2];
       PetscScalar vals[2];

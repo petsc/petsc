@@ -108,6 +108,18 @@ N=1
 runex14: 
 	-@${MPIEXEC}  -n $N ./ex14 ${ARGS}
 
+runex15: 
+	-@${MPIEXEC} -n 3 ./ex15 -mat_partitioning_type parmetis > ex15_1.tmp 2>&1;   \
+	   if (${DIFF} output/ex15_1.out ex15_1.tmp) then true; \
+	   else echo "Possible problem with ex15, diffs above"; fi; \
+	   ${RM} -f ex15_1.tmp
+
+runex15_2: 
+	-@${MPIEXEC} -n 3 ./ex15 -mat_partitioning_type ptscotch > ex15_2.tmp 2>&1;   \
+	   if (${DIFF} output/ex15_2.out ex15_2.tmp) then true; \
+	   else echo "Possible problem with ex15_2, diffs above"; fi; \
+	   ${RM} -f ex15_2.tmp
+
 #-------------------------------------------------------------
 TESTEXAMPLES_C		    = ex4.PETSc ex4.rm ex5.PETSc ex5.rm ex10.PETSc ex10.rm ex12.PETSc ex12.rm
 TESTEXAMPLES_C_X11	    = ex2.PETSc ex2.rm 
@@ -116,7 +128,8 @@ TESTEXAMPLES_C_X11_MPIUNI   =
 TESTEXAMPLES_DATAFILESPATH  = ex1.PETSc runex1 ex1.rm ex5.PETSc runex5 ex5.rm ex9.PETSc runex9 ex9.rm ex10.PETSc runex10_seqaij runex10_seqdense runex10_mpiaij runex10_mpidense ex10.rm  ex13.PETSc runex13 ex13.rm
 TESTEXAMPLES_FORTRAN_MPIUNI = 
 TESTEXAMPLES_13		    = ex1.PETSc ex1.rm
-TESTEXAMPLES_PARAMETIS      = ex11.PETSc runex11 ex11.rm
+TESTEXAMPLES_PARAMETIS      = ex11.PETSc runex11 ex11.rm ex15.PETSc runex15 ex15.rm
+TESTEXAMPLES_PTSCOTCH       = ex15.PETSc runex15_2 ex15.rm
 
 
 include ${PETSC_DIR}/conf/test

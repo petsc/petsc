@@ -4,7 +4,6 @@ class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
     self.download         = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/numpy-1.0.4.tar.gz']
-    self.downloadname     = 'numpy'
     self.includes         = ['']
     self.includedir       = ''
     self.libdir           = ''

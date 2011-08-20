@@ -1284,7 +1284,7 @@ can also install additional packages that are used by the TOPS packages."""
              if f > 0: i = i[0:f]
              args.append('--download-'+i+'=1')
 
-        packages = ["Spooles (parallel sparse direct solvers)","  DSCPack","  MUMPS","Parmetis (parallel partitioning)","  Chaco","  Jostle","  Party","  Scotch","Prometheus (parallel preconditioner)","  ml","  SPAI","Matlab"]
+        packages = ["Spooles (parallel sparse direct solvers)","  DSCPack","  MUMPS","Parmetis (parallel partitioning)","  Chaco","  Jostle","  Party","  PTScotch","Prometheus (parallel preconditioner)","  ml","  SPAI","Matlab"]
         reply = multchoicebox("Pick the other packages to install.\n\nAgain, only select the packages you truly need.",title, packages)
         for i in reply:
              i = i.lower().replace(' ','')
