@@ -3,11 +3,11 @@ import PETSc.package
 class Configure(PETSc.package.NewPackage):
   def __init__(self, framework):
     PETSc.package.NewPackage.__init__(self, framework)
-    self.download  = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/f2cblaslapack-3.1.1.q.tar.gz']
-    self.functions = ['ddot_']
-    self.includes  = []
-    self.liblist   = [['libf2clapack.a','libf2cblas.a']]
-    self.double    = 0
+    self.download         = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/f2cblaslapack-3.1.1.q.tar.gz']
+    self.functions        = ['ddot_']
+    self.includes         = []
+    self.liblist          = [['libf2clapack.a','libf2cblas.a']]
+    self.double           = 0
 
   def setupDependencies(self, framework):
     self.scalartypes = framework.require('PETSc.utilities.scalarTypes', self)
@@ -88,7 +88,7 @@ class Configure(PETSc.package.NewPackage):
     except RuntimeError, e:
       raise RuntimeError('Error running make on '+blasDir+': '+str(e))
     try:
-      output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+blasDir+' && mv -f libqblas.'+self.setCompilers.AR_LIB_SUFFIX+' libqlapack.'+self.setCompilers.AR_LIB_SUFFIX+' '+ libdir, timeout=30, log = self.framework.log)
+      output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+blasDir+' && mv -f libf2cblas.'+self.setCompilers.AR_LIB_SUFFIX+' libf2clapack.'+self.setCompilers.AR_LIB_SUFFIX+' '+ libdir, timeout=30, log = self.framework.log)
     except RuntimeError, e:
       raise RuntimeError('Error moving '+blasDir+' libraries: '+str(e))
 
