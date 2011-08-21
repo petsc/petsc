@@ -219,8 +219,8 @@ acfindx:
       if not self.libraryOptions.integerSize == 32:
         self.logPrintBox('Turning off X11 because integers are not 32 bit', debugSection = None)
         return
-      if not self.scalartypes.precision == 'double':
-        self.logPrintBox('Turning off X11 because scalars are not doubles', debugSection = None)
-        return
+#      if not self.scalartypes.precision == 'double':
+#        self.logPrintBox('Turning off X11 because scalars are not doubles', debugSection = None)
+#        return
       self.executeTest(self.configureLibrary)
     return

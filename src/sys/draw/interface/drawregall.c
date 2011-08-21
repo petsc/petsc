@@ -5,7 +5,9 @@
 #include <../src/sys/draw/drawimpl.h>  /*I "petscdraw.h" I*/
 
 EXTERN_C_BEGIN
+#if defined(PETSC_HAVE_X11)
 extern PetscErrorCode PetscDrawCreate_X(PetscDraw);
+#endif
 extern PetscErrorCode PetscDrawCreate_Null(PetscDraw);
 #if defined(PETSC_USE_WINDOWS_GRAPHICS)
 extern PetscErrorCode PetscDrawCreate_Win32(PetscDraw);

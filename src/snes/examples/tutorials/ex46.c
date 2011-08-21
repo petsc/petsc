@@ -130,7 +130,9 @@ int main(int argc,char **argv)
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
   ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
+  ierr = DMDestroy(&user.da);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
   PetscFunctionReturn(0);
@@ -216,8 +218,9 @@ PetscScalar funcU(DMDACoor2d *coords)
 PetscScalar funcA(PetscScalar z, AppCtx *user)
 {
   PetscScalar v = 1.0;
+  PetscInt    i;
 
-  for(PetscInt i = 0; i < user->m; ++i) {
+  for(i = 0; i < user->m; ++i) {
     v *= z;
   }
   return v;
@@ -228,8 +231,9 @@ PetscScalar funcA(PetscScalar z, AppCtx *user)
 PetscScalar funcADer(PetscScalar z, AppCtx *user)
 {
   PetscScalar v = 1.0;
+  PetscInt    i;
 
-  for(PetscInt i = 0; i < user->m-1; ++i) {
+  for(i = 0; i < user->m-1; ++i) {
     v *= z;
   }
   return user->m*v;
@@ -293,7 +297,7 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat jac,App
 {
   MatStencil     col[5], row;
   PetscScalar    D, K, A, v[5], hx, hy, hxdhy, hydhx, ux, uy, normGradZ;
-  PetscInt       i, j;
+  PetscInt       i, j,k;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -338,7 +342,7 @@ PetscErrorCode FormJacobianLocal(DMDALocalInfo *info,PetscScalar **x,Mat jac,App
         v[2] = D*2.0*(hydhx + hxdhy) + K*(funcADer(x[j][i], user)*normGradZ - A/normGradZ)*hx*hy; col[2].j = row.j; col[2].i = row.i;
         v[3] = -D*hydhx + K*A*hx*hy/(2.0*normGradZ);                                              col[3].j = j;     col[3].i = i+1;
         v[4] = -D*hxdhy + K*A*hx*hy/(2.0*normGradZ);                                              col[4].j = j + 1; col[4].i = i;
-        for(int k = 0; k < 5; ++k) {
+        for(k = 0; k < 5; ++k) {
           if (PetscIsInfOrNanScalar(v[k])) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_FP, "Invalid residual: %g", PetscRealPart(v[k]));
         }
         ierr = MatSetValuesStencil(jac,1,&row,5,col,v,INSERT_VALUES);CHKERRQ(ierr);
