@@ -63,12 +63,12 @@ int main(int argc, char **argv)
   ierr = GetParams(&user);CHKERRQ(ierr);
 
   if (user.periodic) {
-    ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_PERIODIC, -4, 5, 1,PETSC_NULL,&user.da1);CHKERRQ(ierr);
-    ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_PERIODIC, -4, 5, 1,PETSC_NULL,&user.da1_clone);CHKERRQ(ierr);
+    ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_PERIODIC, -4, 3, 1,PETSC_NULL,&user.da1);CHKERRQ(ierr);
+    ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_PERIODIC, -4, 3, 1,PETSC_NULL,&user.da1_clone);CHKERRQ(ierr);
     ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_PERIODIC, -4, 1, 1,PETSC_NULL,&user.da2);CHKERRQ(ierr);
   } else {
-    ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE, -4, 5, 1,PETSC_NULL,&user.da1);CHKERRQ(ierr);
-    ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE, -4, 5, 1,PETSC_NULL,&user.da1_clone);CHKERRQ(ierr);
+    ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE, -4, 3, 1,PETSC_NULL,&user.da1);CHKERRQ(ierr);
+    ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE, -4, 3, 1,PETSC_NULL,&user.da1_clone);CHKERRQ(ierr);
     ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE, -4, 1, 1,PETSC_NULL,&user.da2);CHKERRQ(ierr);
 
   }
@@ -229,7 +229,7 @@ PetscErrorCode Update_u(Vec X,AppCtx *user)
   for(i=0;i<n;i++) {
     wv_p[i] = xx[3*i];
     cv_p[i] = xx[3*i+1];
-    eta_p[i] = xx[3*i+4];
+    eta_p[i] = xx[3*i+2];
   }
   ierr = VecRestoreArray(X,&xx);CHKERRQ(ierr); 
   ierr = VecRestoreArray(user->wv,&wv_p);CHKERRQ(ierr);
@@ -380,7 +380,12 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
   ierr = DMDAGetGhostedCoordinates(user->da2,&coords);CHKERRQ(ierr);
   ierr = VecGetArrayRead(coords,&_coords);CHKERRQ(ierr);
 
-  h = (user->xmax-user->xmin)/(Mda-1.0);
+  if (user->periodic) {
+    h = (user->xmax-user->xmin)/Mda;
+  } else {
+    h = (user->xmax-user->xmin)/(Mda-1.0);
+  }
+
   xmid = (user->xmax + user->xmin)/2.0;
   lambda = 4.0*h;
   
@@ -538,14 +543,15 @@ PetscErrorCode GetParams(AppCtx* user)
   user->T     = 1.0e-2;   
   user->graphics = PETSC_TRUE;
   user->periodic = PETSC_FALSE;
-  user->lumpedmass = PETSC_TRUE;
+  user->lumpedmass = PETSC_FALSE;
   
   ierr = PetscOptionsGetReal(PETSC_NULL,"-xmin",&user->xmin,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(PETSC_NULL,"-xmax",&user->xmax,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(PETSC_NULL,"-T",&user->T,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(PETSC_NULL,"-dt",&user->dt,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-graphics","Contour plot solutions at each timestep\n","None",user->graphics,&user->graphics,&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-periodic","Use periodic condition\n","None",user->periodic,&user->periodic,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-periodic","Use periodic boundary conditions\n","None",user->periodic,&user->periodic,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-lumpedmass","Use lumped mass matrix\n","None",user->lumpedmass,&user->lumpedmass,&flg);CHKERRQ(ierr);
   
   PetscFunctionReturn(0);
  }
@@ -573,8 +579,11 @@ PetscErrorCode SetUpMatrices(AppCtx* user)
   ierr = MatGetLocalSize(M,&n,PETSC_NULL);CHKERRQ(ierr);
   ierr = DMDAGetInfo(user->da1,PETSC_NULL,&Mda,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
 
-  h = (user->xmax-user->xmin)/(Mda-1.0);
-  
+  if (user->periodic) {
+    h = (user->xmax-user->xmin)/Mda;
+  } else {
+    h = (user->xmax-user->xmin)/(Mda-1.0);
+  }
   if (user->lumpedmass) {
     eM_0[0][0] = h/2.0;
     eM_0[1][1] = h/2.0;
