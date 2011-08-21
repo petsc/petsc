@@ -8,7 +8,7 @@ SOURCEH  =
 OBJSC    = sbstream.o sbstrmfact.o
 OBJSF    = 
 LIBBASE  = libpetscmat
-DIRS     = ftn-kernels
+DIRS     =
 MANSEC   = Mat
 LOCDIR   = src/mat/impls/sbaij/seq/sbstream/
 
