@@ -60,8 +60,8 @@ static PetscErrorCode MatPartitioningApply_Party(MatPartitioning part, IS * part
         ierr = ISCreateStride(PETSC_COMM_SELF, M, 0, 1, &isrow);CHKERRQ(ierr);
         ierr = ISCreateStride(PETSC_COMM_SELF, N, 0, 1, &iscol);CHKERRQ(ierr);
         ierr = MatGetSubMatrices(mat, 1, &isrow, &iscol, MAT_INITIAL_MATRIX, &A);CHKERRQ(ierr);
-        ierr = ISDestroy(isrow);CHKERRQ(ierr);
-        ierr = ISDestroy(iscol);CHKERRQ(ierr);
+        ierr = ISDestroy(&isrow);CHKERRQ(ierr);
+        ierr = ISDestroy(&iscol);CHKERRQ(ierr);
         matSeq = *A;
         ierr   = PetscFree(A);CHKERRQ(ierr);
     } else {
@@ -151,10 +151,10 @@ static PetscErrorCode MatPartitioningApply_Party(MatPartitioning part, IS * part
     /* destroying old objects */
     ierr = PetscFree(parttab);CHKERRQ(ierr);
     if (matSeq != mat) {
-        ierr = MatDestroy(matSeq);CHKERRQ(ierr);
+        ierr = MatDestroy(&matSeq);CHKERRQ(ierr);
     }
     if (matMPI != mat) {
-        ierr = MatDestroy(matMPI);CHKERRQ(ierr);
+        ierr = MatDestroy(&matMPI);CHKERRQ(ierr);
     }
     PetscFunctionReturn(0);
 }
@@ -176,7 +176,7 @@ PetscErrorCode MatPartitioningView_Party(MatPartitioning part, PetscViewer viewe
       ierr = PetscViewerASCIIPrintf(viewer, "%s\n", party->mesg_log);CHKERRQ(ierr);
     }
   } else {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP, "Viewer type %s not supported for this Party partitioner",((PetscObject) viewer)((PetscObject))->type_name);
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for this Party partitioner",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
