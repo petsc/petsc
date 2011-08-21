@@ -98,5 +98,5 @@ class Configure(PETSc.package.NewPackage):
     if self.framework.argDB['with-'+self.package]:
       # SCALAPACK requires ALL of BLAS/LAPACK
       if self.blasLapack.f2c:
-        raise RuntimeError('SCALAPACK requires a COMPLETE BLAS and LAPACK, it cannot be used with the --download-c-blas-lapack\nUse --download-f-blas-lapack option instead.')
+        raise RuntimeError('SCALAPACK requires a COMPLETE BLAS and LAPACK, it cannot be used with the --download-f2cblaslapack\nUse --download-f-blas-lapack option instead.')
     return

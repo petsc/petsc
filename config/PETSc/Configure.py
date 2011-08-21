@@ -73,6 +73,8 @@ class Configure(config.base.Configure):
         packageObj.installDirProvider = self.petscdir
         setattr(self, package.lower(), packageObj)
     # Force blaslapack to depend on scalarType so precision is set before BlasLapack is built
+    framework.require('PETSc.utilities.scalarTypes', self.f2cblaslapack)
+    self.f2cblaslapack.precisionProvider = self.scalartypes
     framework.require('PETSc.utilities.scalarTypes', self.blaslapack)
     self.blaslapack.precisionProvider = self.scalartypes
 

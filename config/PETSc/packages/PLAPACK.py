@@ -67,7 +67,7 @@ class Configure(PETSc.package.NewPackage):
     PETSc.package.NewPackage.consistencyChecks(self)
     if self.framework.argDB['with-'+self.package]:
       if self.blasLapack.f2c:
-        raise RuntimeError('PLAPACK requires a COMPLETE BLAS and LAPACK, it cannot be used with --download-c-blas-lapack=1 \nUse --download-f-blas-lapack option instead.')
+        raise RuntimeError('PLAPACK requires a COMPLETE BLAS and LAPACK, it cannot be used with --download-f2cblaslapack=1 \nUse --download-f-blas-lapack option instead.')
       if not self.blasLapack.checkForRoutine('sscal') or not self.blasLapack.checkForRoutine('cscal'):
         raise RuntimeError('PLAPACK requires the complex and single precision BLAS routines, the current BLAS libraries '+str(self.blasLapack.lib)+' does not have it\nYou need a COMPLETE install of BLAS: --download-f-blas-lapack is NOT a complete BLAS library')
       self.framework.log.write('Found sscal() and cscal() in BLAS library as needed by PLAPACK\n')

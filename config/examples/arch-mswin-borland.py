@@ -6,7 +6,7 @@ configure_options = [
   '--with-fc=0',
   '--with-ranlib=true',
   '--with-blas-lapack-dir=/home/sbalay/soft/borland-f2cblas',
-  '--download-c-blas-lapack=1',
+  '--download-f2cblaslapack=1',
   '--with-mpi=0',
   'DATAFILESPATH=/home/sbalay/datafiles',
   ]

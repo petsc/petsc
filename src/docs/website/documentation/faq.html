@@ -694,7 +694,7 @@ href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-dev/src/snes/example
                   4.6 and later (and gfortran 4.6 and later) ./configure
                   PETSc using the
                   options --with-precision=__float128
-                  --download-qblaslapack.</font></a>
+                  --download-f2cblaslapack.</font></a>
               External packages cannot be used in this mode and some
               print statements
               in PETSc (those that use the %G format) will not print
@@ -2019,7 +2019,7 @@ in
                 working with a DM is all you need) to generate better
                 initial guess on your finer mesh</li>
               <li>Run with quad precision (./configure with
-                --with-precision=__float128 --download-c-blas-lapack
+                --with-precision=__float128 --download-f2cblaslapack
                 with PETSc 3.2 and later and recent versions of the GNU
                 compilers)</li>
               <li>Run with some continuation parameter from a point
