@@ -448,7 +448,7 @@ class Configure(config.base.Configure):
     if sys.version_info >= (2,5):
       import cmakegen
       try:
-        cmakegen.main(self.petscdir.dir)
+        cmakegen.main(self.petscdir.dir, log=self.framework.log)
       except (OSError), e:
         self.framework.logPrint('Generating CMakeLists.txt failed:\n' + str(e))
     else:

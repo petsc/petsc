@@ -7,6 +7,11 @@ from collections import defaultdict, deque
 
 # Run with --verbose
 VERBOSE = False
+MISTAKES = []
+
+class StdoutLogger(object):
+  def write(self,str):
+    print(str)
 
 def cmakeconditional(key,val):
   def unexpected():
@@ -42,9 +47,11 @@ def pkgsources(pkg):
   autodirs = set('ftn-auto ftn-custom f90-custom'.split()) # Automatically recurse into these, if they exist
   skipdirs = set('examples benchmarks'.split())            # Skip these during the build
   def compareDirLists(mdirs,dirs):
-    if not VERBOSE: return
     smdirs = set(mdirs)
     sdirs  = set(dirs).difference(autodirs)
+    if not smdirs.issubset(sdirs):
+      MISTAKES.append('Makefile contains directory not on filesystem: %s: %r' % (root, sorted(smdirs - sdirs)))
+    if not VERBOSE: return
     if smdirs != sdirs:
       from sys import stderr
       print >>stderr, ('Directory mismatch at %s:\n\t%s: %r\n\t%s: %r\n\t%s: %r'
@@ -53,9 +60,11 @@ def pkgsources(pkg):
                           'on filesystem ',sorted(sdirs),
                           'symmetric diff',sorted(smdirs.symmetric_difference(sdirs))))
   def compareSourceLists(msources, files):
-    if not VERBOSE: return
     smsources = set(msources)
     ssources  = set(f for f in files if os.path.splitext(f)[1] in ['.c', '.cxx', '.cc', '.cpp', '.F'])
+    if not smsources.issubset(ssources):
+      MISTAKES.append('Makefile contains file not on filesystem: %s: %r' % (root, sorted(smsources - ssources)))
+    if not VERBOSE: return
     if smsources != ssources:
       from sys import stderr
       print >>stderr, ('Source mismatch at %s:\n\t%s: %r\n\t%s: %r\n\t%s: %r'
@@ -137,7 +146,7 @@ if (NOT PETSC_USE_SINGLE_LIBRARY)
 endif ()
 ''' % dict(pkg=pkg, PKG=pkg.upper(), pkgdeps=' '.join('petsc%s'%p for p in pkgdeps)))
 
-def main(petscdir):
+def main(petscdir, log=StdoutLogger()):
   import tempfile, shutil
   written = False               # We delete the temporary file if it wasn't finished, otherwise rename (atomic)
   fd,tmplists = tempfile.mkstemp(prefix='CMakeLists.txt.',dir=petscdir,text=True)
@@ -179,6 +188,10 @@ endif()''' % ('\n  '.join([r'PETSC' + pkg.upper() + r'_SRCS' for (pkg,_) in pkgl
       shutil.move(tmplists,os.path.join(petscdir,'CMakeLists.txt'))
     else:
       os.remove(tmplists)
+  if MISTAKES:
+    for m in MISTAKES:
+      log.write(m + '\n')
+    raise RuntimeError('PETSc makefiles contain mistakes or files are missing on filesystem.\n%s\nPossible reasons:\n\t1. Files were deleted locally, try "hg update".\n\t2. Files were deleted from mercurial, but were not removed from makefile. Send mail to petsc-maint@mcs.anl.gov.\n\t3. Someone forgot "hg add" new files. Send mail to petsc-maint@mcs.anl.gov.' % ('\n'.join(MISTAKES)))
 
 if __name__ == "__main__":
   import optparse
