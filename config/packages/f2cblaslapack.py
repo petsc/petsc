@@ -1,8 +1,8 @@
-import PETSc.package
+import config.package
 
-class Configure(PETSc.package.NewPackage):
+class Configure(config.package.Package):
   def __init__(self, framework):
-    PETSc.package.NewPackage.__init__(self, framework)
+    config.package.Package.__init__(self, framework)
     self.download         = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/f2cblaslapack-3.1.1.q.tar.gz']
     self.functions        = ['ddot_']
     self.includes         = []
@@ -10,9 +10,20 @@ class Configure(PETSc.package.NewPackage):
     self.double           = 0
 
   def setupDependencies(self, framework):
-    self.scalartypes = framework.require('PETSc.utilities.scalarTypes', self)
-    PETSc.package.NewPackage.setupDependencies(self, framework)
+    config.package.Package.setupDependencies(self, framework)
     return
+
+  def getDefaultPrecision(self):
+    '''The precision of the library'''
+    if hasattr(self, 'precisionProvider'):
+      if hasattr(self.precisionProvider, 'precision'):
+        return self.precisionProvider.precision
+    return self._defaultPrecision
+  def setDefaultPrecision(self, defaultPrecision):
+    '''The precision of the library'''
+    self._defaultPrecision = defaultPrecision
+    return
+  defaultPrecision = property(getDefaultPrecision, setDefaultPrecision, doc = 'The precision of the library')
 
   def checkNoOptFlag(self):
     flag = '-O0'
@@ -37,7 +48,7 @@ class Configure(PETSc.package.NewPackage):
   def Install(self):
     import os
 
-    precision = self.scalartypes.precision
+    precision = self.defaultPrecision
     if precision == 'single': precision = 'float'
 
     libdir = self.libDir
@@ -84,30 +95,17 @@ class Configure(PETSc.package.NewPackage):
 
     try:
       self.logPrintBox('Compiling BLASLAPACK; this may take several minutes')
-      output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+blasDir+' && make -f tmpmakefile cleanblaslapck cleanlib && make -f tmpmakefile', timeout=2500, log = self.framework.log)
+      output,err,ret  = config.base.Configure.executeShellCommand('cd '+blasDir+' && make -f tmpmakefile cleanblaslapck cleanlib && make -f tmpmakefile', timeout=2500, log = self.framework.log)
     except RuntimeError, e:
       raise RuntimeError('Error running make on '+blasDir+': '+str(e))
     try:
-      output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+blasDir+' && mv -f libf2cblas.'+self.setCompilers.AR_LIB_SUFFIX+' libf2clapack.'+self.setCompilers.AR_LIB_SUFFIX+' '+ libdir, timeout=30, log = self.framework.log)
+      output,err,ret  = config.base.Configure.executeShellCommand('cd '+blasDir+' && mv -f libf2cblas.'+self.setCompilers.AR_LIB_SUFFIX+' libf2clapack.'+self.setCompilers.AR_LIB_SUFFIX+' '+ libdir, timeout=30, log = self.framework.log)
     except RuntimeError, e:
       raise RuntimeError('Error moving '+blasDir+' libraries: '+str(e))
 
     try:
-      output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+blasDir+' && cp -f tmpmakefile '+os.path.join(self.confDir, self.name), timeout=30, log = self.framework.log)
+      output,err,ret  = config.base.Configure.executeShellCommand('cd '+blasDir+' && cp -f tmpmakefile '+os.path.join(self.confDir, self.name), timeout=30, log = self.framework.log)
     except RuntimeError, e:
       raise RuntimeError('Error copying configure file')
     return self.installDir
 
-  #
-  # When BlasLapack.py is cleaned and the downloads in it put elsewhere then this will be tested in there and not needed here
-  #
-  def configureLibrary(self):
-    PETSc.package.NewPackage.configureLibrary(self)
-    self.addDefine('BLASLAPACK_UNDERSCORE',1)
-    for baseName in ['gges', 'tgsen', 'gesvd','getrf','getrs','geev','gelss','syev','syevx','sygv','sygvx','getrf','potrf','getrs','potrs','stebz','pttrf','pttrs','stein','orgqr','stebz']:
-      routine = 'd'+baseName+'_'
-      oldLibs = self.compilers.LIBS
-      if not self.libraries.check(self.lib, routine):
-        self.addDefine('MISSING_LAPACK_'+baseName.upper(), 1)
-      self.compilers.LIBS = oldLibs
-    return

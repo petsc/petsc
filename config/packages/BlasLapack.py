@@ -24,6 +24,7 @@ class Configure(config.package.Package):
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
     self.compilerFlags = framework.require('config.compilerFlags', self)
+    self.f2cblaslapack = framework.require('config.packages.f2cblaslapack', self)
     return
 
   
@@ -36,7 +37,6 @@ class Configure(config.package.Package):
     help.addArgument('BLAS/LAPACK', '-with-blas-lapack-lib=<libraries: e.g. [/Users/..../liblapack.a,libblas.a,...]>',nargs.ArgLibrary(None, None, 'Indicate the library containing BLAS and LAPACK'))
     help.addArgument('BLAS/LAPACK', '-with-blas-lib=<libraries: e.g. [/Users/..../libblas.a,...]>',    nargs.ArgLibrary(None, None, 'Indicate the library(s) containing BLAS'))
     help.addArgument('BLAS/LAPACK', '-with-lapack-lib=<libraries: e.g. [/Users/..../liblapack.a,...]>',nargs.ArgLibrary(None, None, 'Indicate the library(s) containing LAPACK'))
-    help.addArgument('BLAS/LAPACK', '-download-c-blas-lapack=<no,yes,filename>',                       nargs.ArgDownload(None, 0, 'Automatically install a C version of BLAS/LAPACK'))
     help.addArgument('BLAS/LAPACK', '-download-f-blas-lapack=<no,yes,filename>',                       nargs.ArgDownload(None, 0, 'Automatically install a Fortran version of BLAS/LAPACK'))
     return
 
@@ -141,6 +141,11 @@ class Configure(config.package.Package):
 
   def generateGuesses(self):
     # check that user has used the options properly
+    if self.f2cblaslapack.found:
+      self.f2c = 1
+      libDir = self.f2cblaslapack.libDir
+      yield ('f2cblaslapack',os.path.join(libDir,'libf2cblas.a') , os.path.join(libDir,'libf2clapack.a'), 0)
+      raise RuntimeError('--download-f2cblaslapack libraries cannot be used')
     if 'with-blas-lib' in self.framework.argDB and not 'with-lapack-lib' in self.framework.argDB:
       raise RuntimeError('If you use the --with-blas-lib=<lib> you must also use --with-lapack-lib=<lib> option')
     if not 'with-blas-lib' in self.framework.argDB and 'with-lapack-lib' in self.framework.argDB:
@@ -150,28 +155,10 @@ class Configure(config.package.Package):
     if 'with-blas-lapack-lib' in self.framework.argDB and 'with-blas-lapack-dir' in self.framework.argDB:
       raise RuntimeError('You cannot set both the library containing BLAS/LAPACK with --with-blas-lapack-lib=<lib>\nand the directory to search with --with-blas-lapack-dir=<dir>')
 
-    if self.framework.argDB['download-c-blas-lapack']:
-      self.download= ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/f2cblaslapack-3.1.1.a.tar.gz']
-      self.downloadname     = 'f2cblaslapack'
-      self.downloadfilename = 'f2cblaslapack'
-    elif self.framework.argDB['download-f-blas-lapack']:
+    if self.framework.argDB['download-f-blas-lapack']:
       self.download= ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/fblaslapack-3.1.1.tar.gz']
       self.downloadname     = 'fblaslapack'
       self.downloadfilename = 'fblaslapack'
-
-    if self.framework.argDB['download-c-blas-lapack'] == 1 or isinstance(self.framework.argDB['download-c-blas-lapack'], str):
-      if isinstance(self.framework.argDB['download-c-blas-lapack'], str):
-        self.download= [self.framework.argDB['download-c-blas-lapack']]
-      self.f2c = 1
-      
-#      if hasattr(self.compilers, 'FC'):
-#        raise RuntimeError('Should request f-blas-lapack, not --download-c-blas-lapack=yes since you have a fortran compiler?')
-      libdir = self.downLoadBlasLapack('f2c', 'c')
-      f2cLibs = [os.path.join(libdir,'libf2cblas.a')]
-      if self.libraries.math:
-        f2cLibs = f2cLibs+self.libraries.math
-      yield ('Downloaded BLAS/LAPACK library', f2cLibs, os.path.join(libdir,'libf2clapack.a'), 0)
-      raise RuntimeError('Could not use downloaded c-blas-lapack?')
 
     if self.framework.argDB['download-f-blas-lapack'] == 1  or isinstance(self.framework.argDB['download-f-blas-lapack'], str):
       if isinstance(self.framework.argDB['download-f-blas-lapack'], str):
@@ -179,7 +166,7 @@ class Configure(config.package.Package):
       self.fblaslapack = 1
       
       if not hasattr(self.compilers, 'FC'):
-        raise RuntimeError('Cannot request f-blas-lapack without Fortran compiler, maybe you want --download-c-blas-lapack=1?')
+        raise RuntimeError('Cannot request f-blas-lapack without Fortran compiler, maybe you want --download-f2cblaslapack=1?')
       libdir = self.downLoadBlasLapack('f','f')            
       yield ('Downloaded BLAS/LAPACK library', os.path.join(libdir,'libfblas.a'), os.path.join(libdir,'libflapack.a'), 1)
       raise RuntimeError('Could not use downloaded f-blas-lapack?')
@@ -305,17 +292,9 @@ class Configure(config.package.Package):
         yield ('Microsoft Windows, em64t Intel MKL library', None, os.path.join(mkldir,'mkl_dll.lib'), 1)      
         mkldir = os.path.join(mklpath, 'ia64', 'lib')
         yield ('Microsoft Windows, ia64 Intel MKL library', None, os.path.join(mkldir,'mkl_dll.lib'), 1)
-    if self.framework.argDB['download-c-blas-lapack'] == 2:
-      if hasattr(self.compilers, 'FC'):
-        raise RuntimeError('Should request f-blas-lapack, not --download-c-blas-lapack=yes since you have a fortran compiler?')
-      libdir = self.downLoadBlasLapack('f2c', 'c')
-      f2cLibs = [os.path.join(libdir,'libf2cblas.a')]
-      if self.libraries.math:
-        f2cLibs = f2cLibs+self.libraries.math
-      yield ('Downloaded BLAS/LAPACK library', f2cLibs, os.path.join(libdir,'libf2clapack.a'), 0)
     if self.framework.argDB['download-f-blas-lapack'] == 2:
       if not hasattr(self.compilers, 'FC'):
-        raise RuntimeError('Cannot request f-blas-lapack without Fortran compiler, maybe you want --download-c-blas-lapack=1?')
+        raise RuntimeError('Cannot request f-blas-lapack without Fortran compiler, maybe you want --download-f2cblaslapack=1?')
       libdir = self.downLoadBlasLapack('f','f')            
       yield ('Downloaded BLAS/LAPACK library', os.path.join(libdir,'libfblas.a'), os.path.join(libdir,'libflapack.a'), 1)
     return
@@ -365,15 +344,11 @@ class Configure(config.package.Package):
       if line.startswith('COPTFLAGS '):
         self.setCompilers.pushLanguage('C')
         line = 'COPTFLAGS  = '+self.setCompilers.getCompilerFlags()
-        #  the f2cblaslapack source code only supports double precision
-        line += ' -DDOUBLE=double -DLONG=""\n'
         noopt = self.checkNoOptFlag()
         self.setCompilers.popLanguage()
       if line.startswith('CNOOPT'):
         self.setCompilers.pushLanguage('C')
         line = 'CNOOPT = '+noopt+ ' '+self.getSharedFlag(self.setCompilers.getCompilerFlags())+' '+self.getPrecisionFlag(self.setCompilers.getCompilerFlags())+' '+self.getWindowsNonOptFlags(self.setCompilers.getCompilerFlags())
-        #  the f2cblaslapack source code only supports double precision
-        line += ' -DDOUBLE=double -DLONG=""\n'
         self.setCompilers.popLanguage()
       if line.startswith('FC  '):
         fc = self.compilers.FC
