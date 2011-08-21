@@ -2,8 +2,6 @@
 % using PETSc-MATLAB IO functions and the function laplacian.m from 
 % http://www.mathworks.com/matlabcentral/fileexchange/27279-laplacian-in-1d-2d-or-3d
 
-% PetscBinaryRead.m uses the `inputParser' function which is not 
-% yet, as of Version 3.4.0, implemented in Octave
 
 clear all; 
 nx=3; ny=4; n=nx*ny; % any sizes can be used

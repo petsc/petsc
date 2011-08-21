@@ -36,25 +36,42 @@ end
 end
 end
 
-p = inputParser;
-p.addParamValue('complex', false);
-p.addParamValue('indices', 'int32');
-p.addParamValue('precision','float64');
-p.addParamValue('cell', 0);
-p.parse(varargin{:});
-arglist = p.Results;
+indices = 'int32';
+precision = 'float64';
+arecell = 0;
+arecomplex = false;
 
-if arglist.cell
-  narg = arglist.cell;
+tnargin = nargin;
+for l=1:nargin-2
+  if ischar(varargin{l}) && strcmpi(varargin{l},'indices')
+    tnargin = min(l,tnargin-1);
+    indices = varargin{l+1};
+  end
+  if ischar(varargin{l}) && strcmpi(varargin{l},'precision')
+    tnargin = min(l,tnargin-1);
+    precision = varargin{l+1};
+  end
+  if ischar(varargin{l}) && strcmpi(varargin{l},'cell')
+    tnargin = min(l,tnargin-1);
+    arecell = varargin{l+1};
+  end
+  if ischar(varargin{l}) && strcmpi(varargin{l},'complex')
+    tnargin = min(l,tnargin-1);
+    arecomplex = varargin{l+1};
+  end
+end
+
+if arecell
+  narg = arecell;
   result = cell(1);
 else
   narg = nargout;
 end
 
 for l=1:narg
-  header = double(read(fd,1,arglist.indices));
+  header = double(read(fd,1,indices));
   if isempty(header)
-    if arglist.cell
+    if arecell
       varargout(1) = {result};
       return 
     else 
@@ -63,32 +80,32 @@ for l=1:narg
     return
   end
   if header == 1211216 % Petsc Mat Object 
-    header = double(read(fd,3,arglist.indices));
+    header = double(read(fd,3,indices));
     m      = header(1);
     n      = header(2);
     nz     = header(3);
     if (nz == -1)
-      if arglist.complex
-        s     = read(fd,2*m*n,arglist.precision);
+      if arecomplex
+        s     = read(fd,2*m*n,precision);
         iReal = linspace(1,n*m*2-1,n*m);
         iImag = iReal +1 ;
         A     = complex(reshape(s(iReal),n,m)',reshape(s(iImag),n,m)') ;
       else
-        s   = read(fd,m*n,arglist.precision);
+        s   = read(fd,m*n,precision);
         A   = reshape(s,n,m)';
       end
     else
-      nnz = double(read(fd,m,arglist.indices));  %nonzeros per row
+      nnz = double(read(fd,m,indices));  %nonzeros per row
       sum_nz = sum(nnz);
       if(sum_nz ~=nz)
         str = sprintf('No-Nonzeros sum-rowlengths do not match %d %d',nz,sum_nz);
         error(str);
       end
-      j   = double(read(fd,nz,arglist.indices)) + 1;
-      if arglist.complex
-        s   = read(fd,2*nz,arglist.precision);
+      j   = double(read(fd,nz,indices)) + 1;
+      if arecomplex
+        s   = read(fd,2*nz,precision);
       else 
-        s   = read(fd,nz,arglist.precision);
+        s   = read(fd,nz,precision);
       end
       i   = ones(nz,1);
       cnt = 1;
@@ -97,35 +114,35 @@ for l=1:narg
         i(cnt:next,1) = (double(k))*ones(nnz(k),1);
         cnt = next+1;
       end
-      if arglist.complex
+      if arecomplex
         A = sparse(i,j,complex(s(1:2:2*nz),s(2:2:2*nz)),m,n,nz);
       else
         A = sparse(i,j,s,m,n,nz);
       end
     end
-    if arglist.cell
+    if arecell
       result{l} = A;
     else 
       varargout(l) = {A};
     end
   elseif  header == 1211214 % Petsc Vec Object
-    m = double(read(fd,1,arglist.indices));
-    if arglist.complex
-      v = read(fd,2*m,arglist.precision);
+    m = double(read(fd,1,indices));
+    if arecomplex
+      v = read(fd,2*m,precision);
       v = complex(v(1:2:2*m),v(2:2:2*m));
     else
-      v = read(fd,m,arglist.precision);
+      v = read(fd,m,precision);
     end
-    if arglist.cell
+    if arecell
       result{l} = v;
     else 
       varargout(l) = {v};
     end
 
   elseif  header == 1211218 % Petsc IS Object
-    m = double(read(fd,1,arglist.indices));
+    m = double(read(fd,1,indices));
     v = read(fd,m,'int') + 1; % Indexing in Matlab starts at 1, 0 in PETSc
-    if arglist.cell
+    if arecell
       result{l} = v;
     else 
       varargout(l) = {v};
@@ -133,17 +150,17 @@ for l=1:narg
 
   elseif header == 1211219 % Petsc Bag Object
     b = PetscBagRead(fd);
-    if arglist.cell
+    if arecell
       result{l} = b;
     else 
       varargout(l) = {b};
     end
 
   elseif header == 1211221 % Petsc DM Object
-    m  = double(read(fd,7,arglist.indices));
-    me = double(read(fd,5,arglist.indices));
+    m  = double(read(fd,7,indices));
+    me = double(read(fd,5,indices));
     b = [' dm ' int2str(m(3)) ' by ' int2str(m(4)) ' by ' int2str(m(5))];
-    if arglist.cell
+    if arecell
       result{l} = b;
     else 
       varargout(l) = {b};
@@ -157,7 +174,7 @@ for l=1:narg
 
 end
 
-if arglist.cell
+if arecell
   varargout(1) = {result};
 end
 
