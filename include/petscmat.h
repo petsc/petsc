@@ -1334,7 +1334,6 @@ E*/
 #define MATPARTITIONINGSQUARE   "square"
 #define MATPARTITIONINGPARMETIS "parmetis"
 #define MATPARTITIONINGCHACO    "chaco"
-#define MATPARTITIONINGJOSTLE   "jostle"
 #define MATPARTITIONINGPARTY    "party"
 #define MATPARTITIONINGPTSCOTCH "ptscotch"
 
@@ -1404,9 +1403,6 @@ extern PetscErrorCode  MatPartitioningGetType(MatPartitioning,const MatPartition
 
 extern PetscErrorCode  MatPartitioningParmetisSetCoarseSequential(MatPartitioning);
 extern PetscErrorCode  MatPartitioningParmetisGetEdgeCut(MatPartitioning, PetscInt *);
-
-extern PetscErrorCode  MatPartitioningJostleSetCoarseLevel(MatPartitioning,PetscReal);
-extern PetscErrorCode  MatPartitioningJostleSetCoarseSequential(MatPartitioning);
 
 typedef enum {MP_CHACO_MULTILEVEL_KL,MP_CHACO_SPECTRAL,MP_CHACO_LINEAR,MP_CHACO_RANDOM, MP_CHACO_SCATTERED} MPChacoGlobalType;
 extern PetscErrorCode  MatPartitioningChacoSetGlobal(MatPartitioning, MPChacoGlobalType);

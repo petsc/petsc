@@ -6,7 +6,6 @@ extern PetscErrorCode  MatPartitioningCreate_Current(MatPartitioning);
 extern PetscErrorCode  MatPartitioningCreate_Square(MatPartitioning);
 extern PetscErrorCode  MatPartitioningCreate_Parmetis(MatPartitioning);
 extern PetscErrorCode  MatPartitioningCreate_Chaco(MatPartitioning);
-extern PetscErrorCode  MatPartitioningCreate_Jostle(MatPartitioning);
 extern PetscErrorCode  MatPartitioningCreate_Party(MatPartitioning);
 extern PetscErrorCode  MatPartitioningCreate_PTScotch(MatPartitioning);
 EXTERN_C_END
@@ -48,9 +47,6 @@ PetscErrorCode  MatPartitioningRegisterAll(const char path[])
 #endif
 #if defined(PETSC_HAVE_CHACO)
   ierr = MatPartitioningRegisterDynamic(MATPARTITIONINGCHACO,path,"MatPartitioningCreate_Chaco",MatPartitioningCreate_Chaco);CHKERRQ(ierr);
-#endif
-#if defined(PETSC_HAVE_JOSTLE)
-  ierr = MatPartitioningRegisterDynamic(MATPARTITIONINGJOSTLE,path,"MatPartitioningCreate_Jostle",MatPartitioningCreate_Jostle);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_PARTY)
   ierr = MatPartitioningRegisterDynamic(MATPARTITIONINGPARTY,path,"MatPartitioningCreate_Party",MatPartitioningCreate_Party);CHKERRQ(ierr);
