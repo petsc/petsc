@@ -1404,15 +1404,24 @@ extern PetscErrorCode  MatPartitioningGetType(MatPartitioning,const MatPartition
 extern PetscErrorCode  MatPartitioningParmetisSetCoarseSequential(MatPartitioning);
 extern PetscErrorCode  MatPartitioningParmetisGetEdgeCut(MatPartitioning, PetscInt *);
 
-typedef enum {MP_CHACO_MULTILEVEL_KL,MP_CHACO_SPECTRAL,MP_CHACO_LINEAR,MP_CHACO_RANDOM, MP_CHACO_SCATTERED} MPChacoGlobalType;
-extern PetscErrorCode  MatPartitioningChacoSetGlobal(MatPartitioning, MPChacoGlobalType);
-typedef enum { MP_CHACO_KERNIGHAN_LIN, MP_CHACO_NONE } MPChacoLocalType;
-extern PetscErrorCode  MatPartitioningChacoSetLocal(MatPartitioning, MPChacoLocalType);
+typedef enum { MP_CHACO_MULTILEVEL=1,MP_CHACO_SPECTRAL=2,MP_CHACO_LINEAR=4,MP_CHACO_RANDOM=5,MP_CHACO_SCATTERED=6 } MPChacoGlobalType;
+extern const char *MPChacoGlobalTypes[];
+typedef enum { MP_CHACO_KERNIGHAN=1,MP_CHACO_NONE=2 } MPChacoLocalType;
+extern const char *MPChacoLocalTypes[];
+typedef enum { MP_CHACO_LANCZOS=0,MP_CHACO_RQI=1 } MPChacoEigenType;
+extern const char *MPChacoEigenTypes[];
+
+extern PetscErrorCode  MatPartitioningChacoSetGlobal(MatPartitioning,MPChacoGlobalType);
+extern PetscErrorCode  MatPartitioningChacoGetGlobal(MatPartitioning,MPChacoGlobalType*);
+extern PetscErrorCode  MatPartitioningChacoSetLocal(MatPartitioning,MPChacoLocalType);
+extern PetscErrorCode  MatPartitioningChacoGetLocal(MatPartitioning,MPChacoLocalType*);
 extern PetscErrorCode  MatPartitioningChacoSetCoarseLevel(MatPartitioning,PetscReal);
-typedef enum { MP_CHACO_LANCZOS, MP_CHACO_RQI_SYMMLQ } MPChacoEigenType;
 extern PetscErrorCode  MatPartitioningChacoSetEigenSolver(MatPartitioning,MPChacoEigenType);
-extern PetscErrorCode  MatPartitioningChacoSetEigenTol(MatPartitioning, PetscReal);
-extern PetscErrorCode  MatPartitioningChacoSetEigenNumber(MatPartitioning, PetscInt);
+extern PetscErrorCode  MatPartitioningChacoGetEigenSolver(MatPartitioning,MPChacoEigenType*);
+extern PetscErrorCode  MatPartitioningChacoSetEigenTol(MatPartitioning,PetscReal);
+extern PetscErrorCode  MatPartitioningChacoGetEigenTol(MatPartitioning,PetscReal*);
+extern PetscErrorCode  MatPartitioningChacoSetEigenNumber(MatPartitioning,PetscInt);
+extern PetscErrorCode  MatPartitioningChacoGetEigenNumber(MatPartitioning,PetscInt*);
 
 #define MP_PARTY_OPT "opt"
 #define MP_PARTY_LIN "lin"
@@ -1431,7 +1440,7 @@ extern PetscErrorCode  MatPartitioningPartySetCoarseLevel(MatPartitioning,PetscR
 extern PetscErrorCode  MatPartitioningPartySetBipart(MatPartitioning,PetscBool );
 extern PetscErrorCode  MatPartitioningPartySetMatchOptimization(MatPartitioning,PetscBool );
 
-typedef enum { MP_PTSCOTCH_QUALITY, MP_PTSCOTCH_SPEED, MP_PTSCOTCH_BALANCE, MP_PTSCOTCH_SAFETY, MP_PTSCOTCH_SCALABILITY } MPPTScotchStrategyType;
+typedef enum { MP_PTSCOTCH_QUALITY,MP_PTSCOTCH_SPEED,MP_PTSCOTCH_BALANCE,MP_PTSCOTCH_SAFETY,MP_PTSCOTCH_SCALABILITY } MPPTScotchStrategyType;
 extern const char *MPPTScotchStrategyTypes[];
 
 extern PetscErrorCode MatPartitioningPTScotchSetImbalance(MatPartitioning,PetscReal);

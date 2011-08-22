@@ -66,6 +66,8 @@ EXTERN_C_END
    MatPartitioningPTScotchGetImbalance - Gets the value of the load imbalance
    ratio used during strategy selection.
 
+   Not Collective
+
    Input Parameter:
 .  part - the partitioning context
 
@@ -369,17 +371,11 @@ PetscErrorCode MatPartitioningDestroy_PTScotch(MatPartitioning part)
 
    Level: beginner
 
-   Options Database:
-+ -mat_partitioning_ptscotch_imbalance <imb>
--  -mat_partitioning_ptscotch_strategy [quality,speed,balance,safety,scalability] - strategy 
-
-
    Notes: See http://www.labri.fr/perso/pelegrin/scotch/
 
 .keywords: Partitioning, create, context
 
 .seealso: MatPartitioningSetType(), MatPartitioningType
-
 M*/
 
 EXTERN_C_BEGIN
