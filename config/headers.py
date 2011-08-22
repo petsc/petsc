@@ -22,6 +22,8 @@ class Configure(config.base.Configure):
     if not include:
       return []
     include = include.replace('\\ ',' ').replace(' ', '\\ ')
+    include = include.replace('\\(','(').replace('(', '\\(')
+    include = include.replace('\\)',')').replace(')', '\\)')
     if include[0] == '-':
       return [include]
     return ['-I'+include]
@@ -34,6 +36,8 @@ class Configure(config.base.Configure):
     if not include:
       return []
     include = include.replace('\\ ',' ').replace(' ', '\\ ')
+    include = include.replace('\\(','(').replace('(', '\\(')
+    include = include.replace('\\)',')').replace(')', '\\)')
     if include[0] == '-':
       return [include]
     

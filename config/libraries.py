@@ -43,13 +43,13 @@ class Configure(config.base.Configure):
     if library.lstrip()[0] == '-':
       return [library]
     if len(library) > 3 and library[-4:] == '.lib':
-      return [library.replace('\\ ',' ').replace(' ', '\\ ')]
+      return [library.replace('\\ ',' ').replace(' ', '\\ ').replace('\\(','(').replace('(', '\\(').replace('\\)',')').replace(')', '\\)')]
     if os.path.basename(library).startswith('lib'):
       name = self.getLibName(library)
       if ((len(library) > 2 and library[1] == ':') or os.path.isabs(library)):
         flagName  = self.language[-1]+'SharedLinkerFlag'
         flagSubst = self.language[-1].upper()+'_LINKER_SLFLAG'
-        dirname   = os.path.dirname(library).replace('\\ ',' ').replace(' ', '\\ ')
+        dirname   = os.path.dirname(library).replace('\\ ',' ').replace(' ', '\\ ').replace('\\(','(').replace('(', '\\(').replace('\\)',')').replace(')', '\\)')
         if hasattr(self.setCompilers, flagName) and not getattr(self.setCompilers, flagName) is None:
           return [getattr(self.setCompilers, flagName)+dirname,'-L'+dirname,'-l'+name]
         if flagSubst in self.framework.argDB:
