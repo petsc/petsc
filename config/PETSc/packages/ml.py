@@ -38,6 +38,7 @@ class Configure(PETSc.package.NewPackage):
     import os
 
     args = ['--prefix='+self.installDir]
+    args.append('--libdir='+os.path.join(self.installDir,self.libdir))
     args.append('--disable-ml-epetra')
     args.append('--disable-ml-aztecoo')
     args.append('--disable-ml-examples')

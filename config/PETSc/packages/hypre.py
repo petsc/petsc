@@ -29,6 +29,7 @@ class Configure(PETSc.package.NewPackage):
 
     self.framework.pushLanguage('C')
     args = ['--prefix='+self.installDir]
+    args.append('--libdir='+os.path.join(self.installDir,self.libdir))
     args.append('CC="'+self.framework.getCompiler()+'"')
     args.append('CFLAGS="'+self.framework.getCompilerFlags()+'"')
     self.framework.popLanguage()

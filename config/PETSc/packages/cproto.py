@@ -10,10 +10,10 @@ class Configure(PETSc.package.NewPackage):
     
   def Install(self):
     import os
-    if self.framework.argDB['with-batch']:
-       args = ['--prefix='+self.installDir]
-    else:
-       args = ['--prefix='+self.installDir, '--with-cc='+'"'+self.setCompilers.CC+'"']          
+    args = ['--prefix='+self.installDir]
+    args.append('--libdir='+os.path.join(self.installDir,self.libdir))
+    if not self.framework.argDB['with-batch']:
+       args.append('--with-cc='+'"'+self.setCompilers.CC+'"')
     args = ' '.join(args)
     fd = file(os.path.join(self.packageDir,'cproto.args'), 'w')
     fd.write(args)

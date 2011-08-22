@@ -20,7 +20,7 @@ class Configure(PETSc.package.NewPackage):
     import os
 
     args = ['--prefix='+self.installDir]
-    
+    args.append('--libdir='+os.path.join(self.installDir,self.libdir))
     self.framework.pushLanguage('C')
     args.append('CFLAGS="'+self.framework.getCompilerFlags()+'"')
     args.append('MPI_CFLAGS="'+self.framework.getCompilerFlags()+'"')

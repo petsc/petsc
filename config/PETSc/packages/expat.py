@@ -19,6 +19,7 @@ class Configure(PETSc.package.NewPackage):
     if config.setCompilers.Configure.isIntel(self.framework.getCompiler()):
       flags = flags + ' -gcc-sys'
     args = ['--prefix='+self.installDir, 'CC="'+self.framework.getCompiler()+' '+flags+'"']
+    args.append('--libdir='+os.path.join(self.installDir,self.libdir))
     self.framework.popLanguage()
     args = ' '.join(args)
     fd = file(os.path.join(self.packageDir,'expat'), 'w')

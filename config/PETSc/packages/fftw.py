@@ -19,7 +19,7 @@ class Configure(PETSc.package.NewPackage):
     import os
 
     args = ['--prefix='+self.installDir]
-
+    args.append('--libdir='+os.path.join(self.installDir,self.libdir))
     self.framework.pushLanguage('C')
     ccompiler=self.framework.getCompiler()
     args.append('CC="'+self.framework.getCompiler()+'"')
