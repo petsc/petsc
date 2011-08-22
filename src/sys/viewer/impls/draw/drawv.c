@@ -470,6 +470,149 @@ PetscErrorCode  PetscViewerDrawClear(PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerDrawGetPause" 
+/*@
+    PetscViewerDrawSetPause - Gets a pause for the first present draw
+
+    Not Collective
+
+    Input Parameter:
+.  viewer - the PetscViewer 
+
+    Output Parameter:
+.  pause - the pause value
+
+    Level: intermediate
+
+.seealso: PetscViewerDrawOpen(), PetscViewerDrawGetDraw(), 
+
+@*/
+PetscErrorCode  PetscViewerDrawGetPause(PetscViewer viewer,PetscReal *pause)
+{
+  PetscErrorCode   ierr;
+  PetscInt         i;
+  PetscBool        isdraw;
+  PetscViewer_Draw *vdraw;
+  PetscDraw        draw;
+
+  PetscFunctionBegin;
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
+  *pause = 0.0;
+  if (isdraw) {
+    vdraw = (PetscViewer_Draw*)viewer->data;
+    for (i=0; i<vdraw->draw_max; i++) {
+      if (vdraw->draw[i]) {
+        ierr = PetscDrawGetPause(vdraw->draw[i],pause);CHKERRQ(ierr);
+        PetscFunctionReturn(0);
+      }
+    }
+    /* none exist yet so create one and get its pause */
+    ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
+    ierr = PetscDrawGetPause(vdraw->draw[0],pause);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerDrawSetPause" 
+/*@
+    PetscViewerDrawSetPause - Sets a pause for each PetscDraw in the viewer
+
+    Not Collective
+
+    Input Parameters:
++  viewer - the PetscViewer 
+-  pause - the pause value
+
+    Level: intermediate
+
+.seealso: PetscViewerDrawOpen(), PetscViewerDrawGetDraw(), 
+
+@*/
+PetscErrorCode  PetscViewerDrawSetPause(PetscViewer viewer,PetscReal pause)
+{
+  PetscErrorCode   ierr;
+  PetscInt         i;
+  PetscBool        isdraw;
+  PetscViewer_Draw *vdraw;
+
+  PetscFunctionBegin;
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
+  if (isdraw) {
+    vdraw = (PetscViewer_Draw*)viewer->data;
+    for (i=0; i<vdraw->draw_max; i++) {
+      if (vdraw->draw[i]) {ierr = PetscDrawSetPause(vdraw->draw[i],pause);CHKERRQ(ierr);}
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerDrawSetHold" 
+/*@
+    PetscViewerDrawSetHold - Holds previous image when drawing new image
+
+    Not Collective
+
+    Input Parameters:
++  viewer - the PetscViewer 
+-  hold - indicates to hold or not
+
+    Level: intermediate
+
+.seealso: PetscViewerDrawOpen(), PetscViewerDrawGetDraw(), 
+
+@*/
+PetscErrorCode  PetscViewerDrawSetHold(PetscViewer viewer,PetscBool hold)
+{
+  PetscErrorCode   ierr;
+  PetscViewer_Draw *vdraw;
+  PetscBool        isdraw;
+
+  PetscFunctionBegin;
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
+  if (isdraw) {
+    vdraw = (PetscViewer_Draw*)viewer->data;
+    vdraw->hold = hold;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerDrawGetHold" 
+/*@
+    PetscViewerDrawGetHold - Holds previous image when drawing new image
+
+    Not Collective
+
+    Input Parameter:
+.  viewer - the PetscViewer 
+
+    Output Parameter:
+.  hold - indicates to hold or not
+
+    Level: intermediate
+
+.seealso: PetscViewerDrawOpen(), PetscViewerDrawGetDraw(), 
+
+@*/
+PetscErrorCode  PetscViewerDrawGetHold(PetscViewer viewer,PetscBool *hold)
+{
+  PetscErrorCode   ierr;
+  PetscViewer_Draw *vdraw;
+  PetscBool        isdraw;
+
+  PetscFunctionBegin;
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&isdraw);CHKERRQ(ierr);
+  if (isdraw) {
+    vdraw = (PetscViewer_Draw*)viewer->data;
+    *hold = vdraw->hold;
+  }
+  PetscFunctionReturn(0);
+}
+
 /* ---------------------------------------------------------------------*/
 /*
     The variable Petsc_Viewer_Draw_keyval is used to indicate an MPI attribute that

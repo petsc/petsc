@@ -113,7 +113,7 @@ PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
   const PetscReal   *bounds;
   PetscInt          *displayfields;
   PetscInt          k,ndisplayfields;
-  PetscBool         flg;
+  PetscBool         flg,hold;
 
   PetscFunctionBegin;
   ierr = PetscViewerDrawGetDraw(v,0,&draw);CHKERRQ(ierr);
@@ -185,7 +185,10 @@ PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
     ierr = MPI_Reduce(&min,&ymin,1,MPIU_REAL,MPIU_MIN,0,comm);CHKERRQ(ierr);
     ierr = MPI_Reduce(&max,&ymax,1,MPIU_REAL,MPIU_MAX,0,comm);CHKERRQ(ierr);
 
-    ierr = PetscDrawSynchronizedClear(draw);CHKERRQ(ierr);
+    ierr = PetscViewerDrawGetHold(v,&hold);CHKERRQ(ierr);
+    if (!hold) {
+      ierr = PetscDrawSynchronizedClear(draw);CHKERRQ(ierr);
+    }
     ierr = PetscViewerDrawGetDrawAxis(v,k,&axis);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(draw,axis);CHKERRQ(ierr);
     if (!rank) {

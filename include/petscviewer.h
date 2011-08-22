@@ -218,6 +218,10 @@ extern PetscErrorCode  PetscViewerBinaryWrite(PetscViewer,void*,PetscInt,PetscDa
 extern PetscErrorCode  PetscViewerStringSPrintf(PetscViewer,const char[],...);
 extern PetscErrorCode  PetscViewerStringSetString(PetscViewer,char[],PetscInt);
 extern PetscErrorCode  PetscViewerDrawClear(PetscViewer);
+extern PetscErrorCode  PetscViewerDrawSetHold(PetscViewer,PetscBool);
+extern PetscErrorCode  PetscViewerDrawGetHold(PetscViewer,PetscBool*);
+extern PetscErrorCode  PetscViewerDrawSetPause(PetscViewer,PetscReal);
+extern PetscErrorCode  PetscViewerDrawGetPause(PetscViewer,PetscReal*);
 extern PetscErrorCode  PetscViewerDrawSetInfo(PetscViewer,const char[],const char[],int,int,int,int);
 extern PetscErrorCode  PetscViewerDrawSetBounds(PetscViewer,PetscInt,const PetscReal*);
 extern PetscErrorCode  PetscViewerDrawGetBounds(PetscViewer,PetscInt*,const PetscReal**);

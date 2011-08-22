@@ -113,7 +113,9 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     opt  = PETSC_FALSE;
     ierr = PetscOptionsBool("-ts_monitor_solution","Monitor solution graphically","TSMonitorSolution",opt,&opt,PETSC_NULL);CHKERRQ(ierr);
     if (opt) {
-      ierr = TSMonitorSet(ts,TSMonitorSolution,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+      void *ctx;
+      ierr = TSMonitorSolutionCreate(ts,PETSC_NULL,&ctx);CHKERRQ(ierr);
+      ierr = TSMonitorSet(ts,TSMonitorSolution,ctx,TSMonitorSolutionDestroy);CHKERRQ(ierr);
     }
 
     ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
@@ -2234,6 +2236,12 @@ PetscErrorCode  TSGetIJacobian(TS ts,Mat *A,Mat *B,TSIJacobian *f,void **ctx)
   PetscFunctionReturn(0);
 }
 
+typedef struct {
+  PetscViewer viewer;
+  Vec         initialsolution;
+  PetscBool   showinitial;
+} TSMonitorSolutionCtx;
+
 #undef __FUNCT__
 #define __FUNCT__ "TSMonitorSolution"
 /*@C
@@ -2256,17 +2264,96 @@ PetscErrorCode  TSGetIJacobian(TS ts,Mat *A,Mat *B,TSIJacobian *f,void **ctx)
 @*/
 PetscErrorCode  TSMonitorSolution(TS ts,PetscInt step,PetscReal ptime,Vec x,void *dummy)
 {
-  PetscErrorCode ierr;
-  PetscViewer    viewer = (PetscViewer) dummy;
+  PetscErrorCode       ierr;
+  TSMonitorSolutionCtx *ictx = (TSMonitorSolutionCtx*)dummy;
 
   PetscFunctionBegin;
-  if (!dummy) {
-    viewer = PETSC_VIEWER_DRAW_(((PetscObject)ts)->comm);
+  if (!step && ictx->showinitial) {
+    if (!ictx->initialsolution) {
+      ierr = VecDuplicate(x,&ictx->initialsolution);CHKERRQ(ierr);
+    }
+    ierr = VecCopy(x,ictx->initialsolution);CHKERRQ(ierr);
   }
-  ierr = VecView(x,viewer);CHKERRQ(ierr);
+  if (ictx->showinitial) {
+    PetscReal pause;
+    ierr = PetscViewerDrawGetPause(ictx->viewer,&pause);CHKERRQ(ierr);
+    ierr = PetscViewerDrawSetPause(ictx->viewer,0.0);CHKERRQ(ierr);
+    ierr = VecView(ictx->initialsolution,ictx->viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDrawSetPause(ictx->viewer,pause);CHKERRQ(ierr);
+    ierr = PetscViewerDrawSetHold(ictx->viewer,PETSC_TRUE);CHKERRQ(ierr);
+  }
+  ierr = VecView(x,ictx->viewer);CHKERRQ(ierr);
+  if (ictx->showinitial) {
+    ierr = PetscViewerDrawSetHold(ictx->viewer,PETSC_FALSE);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
+
+#undef __FUNCT__
+#define __FUNCT__ "TSMonitorSolutionDestroy"
+/*@C
+   TSMonitorSolutionDestroy - Destroys the monitor context for TSMonitorSolution
+
+   Collective on TS
+
+   Input Parameters:
+.    ctx - the monitor context
+
+   Level: intermediate
+
+.keywords: TS,  vector, monitor, view
+
+.seealso: TSMonitorSet(), TSMonitorDefault(), VecView(), TSMonitorSolution()
+@*/
+PetscErrorCode  TSMonitorSolutionDestroy(void **ctx)
+{
+  PetscErrorCode       ierr;
+  TSMonitorSolutionCtx *ictx = *(TSMonitorSolutionCtx**)ctx;
+ 
+  PetscFunctionBegin;
+  ierr = PetscViewerDestroy(&ictx->viewer);CHKERRQ(ierr);
+  ierr = VecDestroy(&ictx->initialsolution);CHKERRQ(ierr);
+  ierr = PetscFree(ictx);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSMonitorSolutionCreate"
+/*@C
+   TSMonitorSolutionCreate - Creates the monitor context for TSMonitorSolution
+
+   Collective on TS
+
+   Input Parameter:
+.    ts - time-step context
+
+   Output Patameter:
+.    ctx - the monitor context
+
+   Level: intermediate
+
+.keywords: TS,  vector, monitor, view
+
+.seealso: TSMonitorSet(), TSMonitorDefault(), VecView(), TSMonitorSolution()
+@*/
+PetscErrorCode  TSMonitorSolutionCreate(TS ts,PetscViewer viewer,void **ctx)
+{
+  PetscErrorCode       ierr;
+  TSMonitorSolutionCtx *ictx;
+ 
+  PetscFunctionBegin;
+  ierr = PetscNew(TSMonitorSolutionCtx,&ictx);CHKERRQ(ierr);
+  *ctx = (void*)ictx;
+  if (!viewer) {
+    viewer = PETSC_VIEWER_DRAW_(((PetscObject)ts)->comm);
+  }
+  ierr = PetscObjectReference((PetscObject)viewer);CHKERRQ(ierr);
+  ictx->viewer      = viewer;
+  ictx->showinitial = PETSC_FALSE;
+  ierr = PetscOptionsGetBool(((PetscObject)ts)->prefix,"-ts_monitor_solution_initial",&ictx->showinitial,PETSC_NULL);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "TSSetDM"
