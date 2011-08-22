@@ -29,7 +29,7 @@ The availability
 of these tools means that the developers of the optimization
 solver do not have to write these utilities.
 
-\item TAO offers vectors, matrices, index sets, and linear solvers
+\item PETSc offers vectors, matrices, index sets, and linear solvers
 that can be used by the solver.  These objects are standard mathematical
 constructions that have many different implementations.
 The objects may be distributed over multiple processors, restricted to
@@ -38,7 +38,7 @@ use a sparse data structure, or vary in many other ways.
 TAO solvers do not need to know how
 these objects are represented or how the operations defined on them
 have been implemented.  Instead, the solvers apply these operations
-through an abstract interface that leaves the details to TAO
+through an abstract interface that leaves the details to PETSc
 and external libraries.
 This abstraction allows solvers to work seamlessly with a variety
 of data structures while allowing application developers to select 
@@ -52,7 +52,7 @@ method for setting options at runtime, performance profiling, and debugging.
 \end{enumerate}
 
 \section{TAO Interface with Solvers}
-TAO solvers must be written in C++ and include several routines with
+TAO solvers must be written in C or C++ and include several routines with
 a particular calling sequence.  Two of these routines are mandatory:
 one that initializes the TAO structure with the appropriate information
 and one that applies the algorithm to a problem instance.
@@ -70,17 +70,16 @@ search, and apply a convergence test.
 
 The second argument is specific to this solver.  This pointer will be set
 in  the initialization routine and cast to an appropriate type in
-the other routines.  To implement the Fletcher - Reeves conjugate
+the other routines.  To implement the conjugate
 gradient algorithm, for instance, the following structure may
 be useful.
 \begin{verbatim}
 typedef struct{
 
-  double beta;
+  PetscReal beta;
 
-  TaoVec *gg;
-  TaoVec *dx;   /* step direction */
-  TaoVec *ww;   /* work vector    */
+  Vec dx;   /* step direction */
+  Vec ww;   /* work vector    */
 
 } TAO_CG;
 \end{verbatim}
@@ -92,32 +91,33 @@ structure has pointers to them.
 All TAO solvers have a routine that accepts a TAO structure and
 computes a solution.  
 TAO will call this routine when the application
-program uses the routine {\tt TaoSolve()} and pass to the solver
+program uses the routine {\tt TaoSolverSolve()} and pass to the solver
 information
 about the objective function and constraints, pointers to the
 variable vector and gradient vector, and support for line searches,
 linear solvers, and convergence monitoring.  As an example, consider
 the following code which solves an unconstrained minimization problem
-using the Fletcher--Reeves conjugate gradient method.
+using the conjugate gradient method.
 
 \begin{verbatim}
-static int TaoSolve_CG_FR(TAO_SOLVER tao, void *solver){
+PetscErrorCode TaoSolverSolve_CG(TaoSolver tao, void *solver){
 
   TAO_CG  *cg = (TAO_CG *) solver;
-  TaoVec  *xx,*gg=cg->gg;    /* solution vector, gradient vector */
-  TaoVec  *dx=cg->dx, *ww=cg->ww;
-  int     iter=0,lsflag=0,info;
-  double  gnormPrev,gdx,f,gnorm,step=0;
-  TaoTerminateReason reason;
+  Vec x = tao->solution;
+  Vec g = tao->gradient;
+  Vec s = tao->stepdirection;
+  PetscInt     iter=0;
+  PetscReal  gnormPrev,gdx,f,gnorm,steplength=0;
+  TaoLineSearchTerminationReason lsflag=TAO_LINESEARCH_CONTINUE_ITERATING;
+  TaoSolverTerminationReason reason=TAO_CONTINUE_ITERATING;
+  PetscErrorCode ierr;
 
-  TaoFunctionBegin;
-  info=TaoCheckFG(tao);CHKERRQ(info);
-  info=TaoGetSolution(tao,&xx);CHKERRQ(info);
+  PetscFunctionBegin;
 
-  info = TaoComputeMeritFunctionGradient(tao,xx,&f,gg);CHKERRQ(info);
-  info = gg->Norm2(&gnorm);  CHKERRQ(info);
+  ierr = TaoSolverComputeObjectiveAndGradient(tao,x,&f,g);CHKERRQ(ierr);
+  ierr = VecNorm(g,NORM_2,&gnorm);  CHKERRQ(ierr);
 
-  info = dx->SetToZero(); CHKERRQ(info); 
+  ierr = VecSet(s,0); CHKERRQ(ierr); 
 
   cg->beta=0;
   gnormPrev = gnorm;
@@ -126,27 +126,29 @@ static int TaoSolve_CG_FR(TAO_SOLVER tao, void *solver){
   while (1){
 
     /* Test for convergence */
-    info = TaoMonitor(tao,iter++,f,gnorm,0.0,step,&reason);CHKERRQ(info);
+    ierr = TaoSolverMonitor(tao,iter,f,gnorm,0.0,step,&reason);CHKERRQ(ierr);
     if (reason!=TAO_CONTINUE_ITERATING) break;
 
     cg->beta=(gnorm*gnorm)/(gnormPrev*gnormPrev);
-    info = dx->Axpby(-1.0,gg,cg->beta); CHKERRQ(info);
+    ierr = VecScale(s,cg->beta); CHKERRQ(ierr);
+    ierr = VecAXPY(s,-1.0,g); CHKERRQ(ierr);
     
-    info = dx->Dot(gg,&gdx); CHKERRQ(info);
+    ierr = VecDot(s,g,&gdx); CHKERRQ(ierr);
     if (gdx>=0){     /* If not a descent direction, use gradient */
-      cg->beta=0.0;
-      info = dx->Axpby(-1.0,gg,cg->beta); CHKERRQ(info);
+      ierr = VecCopy(g,s); CHKERRQ(ierr);
+      ierr = VecScale(s,-1.0); CHKERRQ(ierr);
       gdx=-gnorm*gnorm;
     } 
 
     /* Line Search */
     gnormPrev = gnorm;  step=1.0;
-    info = TaoLineSearchApply(tao,xx,gg,dx,ww,&f,&step,&lsflag);
-    info = gg->Norm2(&gnorm);CHKERRQ(info);
-
+    ierr = TaoLineSearchSetInitialStepLength(tao->linesearch,1.0);
+    ierr = TaoLineSearchApply(tao->linesearch,x,&f,g,s,&steplength,&lsflag);
+    ierr = VecNorm(g,NORM_2,&gnorm);CHKERRQ(ierr);
+    iter++;
   }
   
-  TaoFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 \end{verbatim}
 
@@ -154,18 +156,10 @@ The first line of this routine cast the second argument to a pointer
 to a {\tt TAO\_CG} data structure.  This structure contains pointers
 to three vectors and a scalar which will be needed in the algorithm.
 
-After declaring an initializing several variables, the solver first
-checks that the function and gradient have been defined using the
-routine {\tt TaoCheckFG()}.  Next, the solver gets the variable
-vector which was passed to TAO by the application program.
-Other solvers may also want to get pointers to Hessian matrices,
-Jacobian matrices, or vectors containing bounds on the variables.
-The commands for these routines are
-{\tt TaoGetSolution()}, {\tt TaoGetVariableBounds()}, 
-{\tt TaoGetHessian()}, and {\tt TaoGetJacobian()}.
-
-This solver lets TAO evaluate the function and gradient at the
-current point in the using the routine {\tt TaoComputeFunctionGradient()}.
+After declaring an initializing several variables, the solver lets TAO 
+evaluate the function and gradient at the
+current point in the using the routine 
+{\tt TaoSolverComputeObjectiveAndGradient()}.
 Other routines may be used to evaluate the Hessian matrix or evaluate
 constraints.  TAO may obtain this information using direct evaluation 
 of other means, but the these details do not affect our implementation
@@ -178,7 +172,7 @@ The solver will pass this quantity, the current
 function value, the current iteration number, and a measure of
 infeasibility to TAO with the routine
 \begin{verbatim}
-   int TaoMonitor(TAO_SOLVER,int,double,double,double,double,
+   PetscErrorCode TaoSolverMonitor(TaoSolver,PetscInt,PetscReal,double,double,double,
                   TaoTerminateReason*);
 \end{verbatim}
 Most optimization algorithms are iterative in nature, and solvers should
