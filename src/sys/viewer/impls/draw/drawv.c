@@ -473,7 +473,7 @@ PetscErrorCode  PetscViewerDrawClear(PetscViewer viewer)
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerDrawGetPause" 
 /*@
-    PetscViewerDrawSetPause - Gets a pause for the first present draw
+    PetscViewerDrawGetPause - Gets a pause for the first present draw
 
     Not Collective
 
