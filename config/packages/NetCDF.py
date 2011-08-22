@@ -39,6 +39,7 @@ class Configure(config.package.GNUPackage):
     g.write('NETCDF_ROOT    = '+self.packageDir+'\n')
     g.write('PREFIX         = '+self.installDir+'\n')
     configOpts.append('--prefix='+self.installDir)
+    configOpts.append('--libdir='+os.path.join(self.installDir,self.libdir))
 
     self.setCompilers.pushLanguage('C')
     cflags = self.setCompilers.getCompilerFlags().replace('-Wall','').replace('-Wshadow','')
