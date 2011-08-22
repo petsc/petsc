@@ -1431,14 +1431,14 @@ extern PetscErrorCode  MatPartitioningChacoGetEigenNumber(MatPartitioning,PetscI
 #define MP_PARTY_GCF "gcf"
 #define MP_PARTY_BUB "bub"
 #define MP_PARTY_DEF "def"
-extern PetscErrorCode  MatPartitioningPartySetGlobal(MatPartitioning, const char*);
+extern PetscErrorCode  MatPartitioningPartySetGlobal(MatPartitioning,const char*);
 #define MP_PARTY_HELPFUL_SETS "hs"
 #define MP_PARTY_KERNIGHAN_LIN "kl"
 #define MP_PARTY_NONE "no"
-extern PetscErrorCode  MatPartitioningPartySetLocal(MatPartitioning, const char*);
+extern PetscErrorCode  MatPartitioningPartySetLocal(MatPartitioning,const char*);
 extern PetscErrorCode  MatPartitioningPartySetCoarseLevel(MatPartitioning,PetscReal);
-extern PetscErrorCode  MatPartitioningPartySetBipart(MatPartitioning,PetscBool );
-extern PetscErrorCode  MatPartitioningPartySetMatchOptimization(MatPartitioning,PetscBool );
+extern PetscErrorCode  MatPartitioningPartySetBipart(MatPartitioning,PetscBool);
+extern PetscErrorCode  MatPartitioningPartySetMatchOptimization(MatPartitioning,PetscBool);
 
 typedef enum { MP_PTSCOTCH_QUALITY,MP_PTSCOTCH_SPEED,MP_PTSCOTCH_BALANCE,MP_PTSCOTCH_SAFETY,MP_PTSCOTCH_SCALABILITY } MPPTScotchStrategyType;
 extern const char *MPPTScotchStrategyTypes[];
