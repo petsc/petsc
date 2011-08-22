@@ -27,9 +27,9 @@ PetscInt main(PetscInt argc,char **args)
   PetscBool       view=PETSC_FALSE,use_interface=PETSC_TRUE;
 
   ierr = PetscInitialize(&argc,&args,(char *)0,help);CHKERRQ(ierr);
-//#if !defined(PETSC_USE_COMPLEX)
-//  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP, "This example requires complex numbers");
-//#endif
+#if !defined(PETSC_USE_COMPLEX)
+  SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_SUP, "This example requires complex numbers");
+#endif
 
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD, PETSC_NULL, "FFTW Options", "ex143");CHKERRQ(ierr);
     ierr = PetscOptionsBool("-vec_view_draw", "View the vectors", "ex143", view, &view, PETSC_NULL);CHKERRQ(ierr);
@@ -37,8 +37,6 @@ PetscInt main(PetscInt argc,char **args)
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   ierr = PetscOptionsGetBool(PETSC_NULL,"-use_FFTW_interface",&use_interface,PETSC_NULL);CHKERRQ(ierr);
-  printf("interface value: %d\n",(int)use_interface);
-
   ierr = MPI_Comm_size(PETSC_COMM_WORLD, &size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
 
@@ -119,7 +117,6 @@ PetscInt main(PetscInt argc,char **args)
       /* Create vectors that are compatible with parallel layout of A - must call MatGetVecs()! */
     
       ierr = MatGetVecsFFTW(A,&x,&y,&z);CHKERRQ(ierr); 
-//      ierr = MatGetVecs(A,&z,PETSC_NULL);CHKERRQ(ierr); 
       ierr = PetscObjectSetName((PetscObject) x, "Real space vector");CHKERRQ(ierr);
       ierr = PetscObjectSetName((PetscObject) y, "Frequency space vector");CHKERRQ(ierr);
       ierr = PetscObjectSetName((PetscObject) z, "Reconstructed vector");CHKERRQ(ierr);
@@ -141,12 +138,10 @@ PetscInt main(PetscInt argc,char **args)
       if (view){ierr = VecView(z,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
       ierr = VecAXPY(z,-1.0,x);CHKERRQ(ierr);
       ierr = VecNorm(z,NORM_1,&enorm);CHKERRQ(ierr);
-//      if (enorm > 1.e-14){
-//        if(!rank)
+      if (enorm > 1.e-9 && !rank){
         ierr = PetscPrintf(PETSC_COMM_SELF,"  Error norm of |x - z| %e\n",enorm);CHKERRQ(ierr);
-//      }
+      }
      
-
       ierr = VecDestroy(&x);CHKERRQ(ierr);
       ierr = VecDestroy(&y);CHKERRQ(ierr);
       ierr = VecDestroy(&z);CHKERRQ(ierr);

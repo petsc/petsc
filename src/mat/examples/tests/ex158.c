@@ -6,8 +6,8 @@ static char help[] = "Illustrate how to use mpi FFTW and PETSc-FFTW interface \n
       must be run to enable this
 
  Usage:
-   mpiexec -n <np> ./ex143 -use_FFTW_interface NO
-   mpiexec -n <np> ./ex143 -use_FFTW_interface YES
+   mpiexec -n <np> ./ex158 -use_FFTW_interface NO
+   mpiexec -n <np> ./ex158 -use_FFTW_interface YES
 */
 
 #include <petscmat.h>

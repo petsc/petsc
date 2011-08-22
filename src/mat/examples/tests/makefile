@@ -1658,9 +1658,9 @@ TESTEXAMPLES_13		       = ex58f.PETSc ex58f.rm ex70.PETSc ex70.rm ex72.PETSc ex7
 TESTEXAMPLES_PARMETIS	       = ex73.PETSc ex73.rm
 TESTEXAMPLES_PLAPACK 	       = ex103.PETSc runex103_2 ex103.rm ex107.PETSc runex107 runex107_2 ex107.rm \
                                  ex115.PETSc ex115.rm ex123.PETSc ex123.rm
-TESTEXAMPLES_FFTW              = ex142.PETSc ex142.rm ex144.PETSc runex144 runex144_2 ex144.rm ex146.PETSc ex146.rm \
+TESTEXAMPLES_FFTW              = ex142.PETSc ex142.rm ex144.PETSc runex144 runex144_2 ex144.rm \
                                  ex158.PETsc runex158 runex158_2 runex158_3 ex158.rm
-TESTEXAMPLES_FFTW_COMPLEX      = ex112.PETSc runex112 runex112_2 runex112_3 runex112_4 ex112.rm ex121.PETSc runex121 ex121.rm \
+TESTEXAMPLES_FFTW_COMPLEX       = ex112.PETSc runex112 runex112_2 runex112_3 runex112_4 ex112.rm ex121.PETSc ex121.rm \
                                  ex143.PETSc runex143 runex143_2 ex143.rm ex145.PETSc ex145.rm \
 TESTEXAMPLES_C_COMPLEX	       = ex127.PETSc runex127 runex127_2 ex127.rm 
 
