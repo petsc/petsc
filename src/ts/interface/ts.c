@@ -2691,10 +2691,8 @@ PetscErrorCode TSVISetVariableBounds(TS ts, Vec xl, Vec xu)
   SNES           snes;
 
   PetscFunctionBegin;
-
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
   ierr = SNESVISetVariableBounds(snes,xl,xu);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 

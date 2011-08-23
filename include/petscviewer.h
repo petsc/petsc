@@ -223,6 +223,7 @@ extern PetscErrorCode  PetscViewerDrawGetHold(PetscViewer,PetscBool*);
 extern PetscErrorCode  PetscViewerDrawSetPause(PetscViewer,PetscReal);
 extern PetscErrorCode  PetscViewerDrawGetPause(PetscViewer,PetscReal*);
 extern PetscErrorCode  PetscViewerDrawSetInfo(PetscViewer,const char[],const char[],int,int,int,int);
+extern PetscErrorCode  PetscViewerDrawResize(PetscViewer,int,int);
 extern PetscErrorCode  PetscViewerDrawSetBounds(PetscViewer,PetscInt,const PetscReal*);
 extern PetscErrorCode  PetscViewerDrawGetBounds(PetscViewer,PetscInt*,const PetscReal**);
 extern PetscErrorCode  PetscViewerSocketSetConnection(PetscViewer,const char[],int);

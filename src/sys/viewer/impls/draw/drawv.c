@@ -271,6 +271,18 @@ PetscErrorCode  PetscViewerDrawGetDrawAxis(PetscViewer viewer,PetscInt  windownu
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "PetscViewerDrawResize" 
+PetscErrorCode  PetscViewerDrawResize(PetscViewer v,int w,int h)
+{
+  PetscViewer_Draw *vdraw = (PetscViewer_Draw*)v->data;
+
+  PetscFunctionBegin;
+  vdraw->h  = h;
+  vdraw->w  = w;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "PetscViewerDrawSetInfo" 
 PetscErrorCode  PetscViewerDrawSetInfo(PetscViewer v,const char display[],const char title[],int x,int y,int w,int h)
 {

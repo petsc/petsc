@@ -5878,8 +5878,8 @@ PetscErrorCode  MatGetLocalSize(Mat mat,PetscInt *m,PetscInt* n)
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetOwnershipRangeColumn"
 /*@
-   MatGetOwnershipRangeColumn - Returns the range of matrix columns owned by
-   this processor.
+   MatGetOwnershipRangeColumn - Returns the range of matrix columns associated with rows of a vector one multiplies by that owned by
+   this processor. (The columns of the "diagonal block")
 
    Not Collective, unless matrix has not been allocated, then collective on Mat
 
@@ -5991,7 +5991,8 @@ PetscErrorCode  MatGetOwnershipRanges(Mat mat,const PetscInt **ranges)
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetOwnershipRangesColumn"
 /*@C
-   MatGetOwnershipRangesColumn - Returns the range of local columns for each process
+   MatGetOwnershipRangesColumn - Returns the range of matrix columns associated with rows of a vector one multiplies by that owned by
+   this processor. (The columns of the "diagonal blocks" for each process)
 
    Not Collective, unless matrix has not been allocated, then collective on Mat
 

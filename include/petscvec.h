@@ -272,6 +272,7 @@ PetscPolymorphicFunction(VecStrideMax,(Vec x,PetscInt i),(x,i,PETSC_NULL,&r),Pet
 extern PetscErrorCode  VecStrideMin(Vec,PetscInt,PetscInt *,PetscReal *);
 PetscPolymorphicFunction(VecStrideMin,(Vec x,PetscInt i),(x,i,PETSC_NULL,&r),PetscReal,r)
 extern PetscErrorCode  VecStrideScale(Vec,PetscInt,PetscScalar);
+extern PetscErrorCode  VecStrideSet(Vec,PetscInt,PetscScalar);
 
 
 extern PetscErrorCode  VecStrideGather(Vec,PetscInt,Vec,InsertMode);

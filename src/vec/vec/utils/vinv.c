@@ -8,6 +8,59 @@ extern MPI_Op VecMax_Local_Op;
 extern MPI_Op VecMin_Local_Op;
 
 #undef __FUNCT__  
+#define __FUNCT__ "VecStrideSet"
+/*@
+   VecStrideSet - Sets a subvector of a vector defined 
+   by a starting point and a stride with a given value
+
+   Logically Collective on Vec
+
+   Input Parameter:
++  v - the vector 
+.  start - starting point of the subvector (defined by a stride)
+-  s - value to multiply each subvector entry by
+
+   Notes:
+   One must call VecSetBlockSize() before this routine to set the stride 
+   information, or use a vector created from a multicomponent DMDA.
+
+   This will only work if the desire subvector is a stride subvector
+
+   Level: advanced
+
+   Concepts: scale^on stride of vector
+   Concepts: stride^scale
+
+.seealso: VecNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMin(), VecStrideMax(), VecStrideScale()
+@*/
+PetscErrorCode  VecStrideSet(Vec v,PetscInt start,PetscScalar s)
+{
+  PetscErrorCode ierr;
+  PetscInt       i,n,bs;
+  PetscScalar    *x;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(v,VEC_CLASSID,1);
+  PetscValidLogicalCollectiveInt(v,start,2);  
+  PetscValidLogicalCollectiveScalar(v,s,3);  
+
+  ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
+  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
+  bs   = v->map->bs;
+  if (start < 0) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative start %D",start);
+  else if (start >= bs) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Start of stride subvector (%D) is too large for stride\n  Have you set the vector blocksize (%D) correctly with VecSetBlockSize()?",start,bs);
+  x += start;
+
+  for (i=0; i<n; i+=bs) {
+    x[i] = s;
+  }
+  x -= start;
+
+  ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "VecStrideScale"
 /*@
    VecStrideScale - Scales a subvector of a vector defined 
