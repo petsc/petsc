@@ -635,6 +635,49 @@ PetscErrorCode FormFunctionLocal(DM dm, Vec X, Vec F, AppCtx *user)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "FormFunctionLocalBatch"
+/*
+ dm - The mesh
+ X  - Local intput vector
+ F  - Local output vector
+ */
+PetscErrorCode FormFunctionLocalBatch(DM dm, Vec X, Vec F, AppCtx *user)
+{
+  //PetscScalar    (*rhsFunc)(const PetscReal []) = user->rhsFunc;
+  const PetscInt   debug         = user->debug;
+  const PetscInt   dim           = user->dim;
+  const PetscInt   numQuadPoints = user->q.numQuadPoints;
+  const PetscReal *quadPoints    = user->q.quadPoints;
+  const PetscReal *quadWeights   = user->q.quadWeights;
+  const PetscInt   numBasisFuncs = user->q.numBasisFuncs;
+  const PetscReal *basis         = user->q.basis;
+  const PetscReal *basisDer      = user->q.basisDer;
+  PetscReal       *coords, *v0, *J, *invJ, detJ;
+  PetscScalar     *realSpaceDer, *fieldGrad, *elemVec;
+  PetscInt         cStart, cEnd;
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  ierr = VecSet(F, 0.0);CHKERRQ(ierr);
+  ierr = PetscMalloc3(dim,PetscScalar,&realSpaceDer,dim,PetscScalar,&fieldGrad,numBasisFuncs,PetscScalar,&elemVec);CHKERRQ(ierr);
+  ierr = PetscMalloc4(dim,PetscReal,&coords,dim,PetscReal,&v0,dim*dim,PetscReal,&J,dim*dim,PetscReal,&invJ);CHKERRQ(ierr);
+  ierr = DMMeshGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+
+  //integrateIdentityQuadrature();
+
+  ierr = PetscLogFlops((cEnd-cStart)*numQuadPoints*numBasisFuncs*(dim*(dim*5+4)+14));CHKERRQ(ierr);
+  ierr = PetscFree3(realSpaceDer,fieldGrad,elemVec);CHKERRQ(ierr);
+  ierr = PetscFree4(coords,v0,J,invJ);CHKERRQ(ierr);
+
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "Residual:\n");CHKERRQ(ierr);
+  for(int p = 0; p < user->numProcs; ++p) {
+    if (p == user->rank) {ierr = VecView(F, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);}
+    ierr = PetscBarrier((PetscObject) dm);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "FormJacobianLocal"
 /*
   dm  - The mesh
@@ -818,7 +861,11 @@ int main(int argc, char **argv)
 
     ierr = DMGetGlobalVector(dm, &X);CHKERRQ(ierr);
     ierr = DMGetGlobalVector(dm, &F);CHKERRQ(ierr);
-    ierr = DMMeshSetLocalFunction(dm, (PetscErrorCode (*)(DM, Vec, Vec, void*)) FormFunctionLocal);CHKERRQ(ierr);
+    if (user.batch) {
+      ierr = DMMeshSetLocalFunction(dm, (PetscErrorCode (*)(DM, Vec, Vec, void*)) FormFunctionLocalBatch);CHKERRQ(ierr);
+    } else {
+      ierr = DMMeshSetLocalFunction(dm, (PetscErrorCode (*)(DM, Vec, Vec, void*)) FormFunctionLocal);CHKERRQ(ierr);
+    }
     ierr = SNESMeshFormFunction(snes, X, F, &user);CHKERRQ(ierr);
     ierr = DMRestoreGlobalVector(dm, &X);CHKERRQ(ierr);
     ierr = DMRestoreGlobalVector(dm, &F);CHKERRQ(ierr);
