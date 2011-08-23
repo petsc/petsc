@@ -245,9 +245,8 @@ PetscErrorCode MatPartitioningChacoSetGlobal_Chaco(MatPartitioning part,MPChacoG
   MatPartitioning_Chaco *chaco = (MatPartitioning_Chaco*)part->data;
 
   PetscFunctionBegin;
-  switch (method) {
-    case PETSC_DEFAULT:
-      chaco->global_method = MP_CHACO_MULTILEVEL; break;
+  if (method==PETSC_DEFAULT) chaco->global_method = MP_CHACO_MULTILEVEL;
+  else switch (method) {
     case MP_CHACO_MULTILEVEL:
     case MP_CHACO_SPECTRAL:
     case MP_CHACO_LINEAR:
@@ -343,9 +342,8 @@ PetscErrorCode MatPartitioningChacoSetLocal_Chaco(MatPartitioning part,MPChacoLo
   MatPartitioning_Chaco *chaco = (MatPartitioning_Chaco*)part->data;
 
   PetscFunctionBegin;
-  switch (method) {
-    case PETSC_DEFAULT:
-      chaco->local_method = MP_CHACO_KERNIGHAN; break;
+  if (method==PETSC_DEFAULT) chaco->local_method = MP_CHACO_KERNIGHAN;
+  else switch (method) {
     case MP_CHACO_KERNIGHAN:
     case MP_CHACO_NONE:
       chaco->local_method = method; break;
@@ -481,9 +479,8 @@ PetscErrorCode MatPartitioningChacoSetEigenSolver_Chaco(MatPartitioning part,MPC
   MatPartitioning_Chaco *chaco = (MatPartitioning_Chaco*)part->data;
 
   PetscFunctionBegin;
-  switch (method) {
-    case PETSC_DEFAULT:
-      chaco->eigen_method = MP_CHACO_LANCZOS; break;
+  if (method==PETSC_DEFAULT) chaco->eigen_method = MP_CHACO_LANCZOS;
+  else switch (method) {
     case MP_CHACO_LANCZOS:
     case MP_CHACO_RQI:
       chaco->eigen_method = method; break;
@@ -530,7 +527,7 @@ PetscErrorCode MatPartitioningChacoGetEigenSolver_Chaco(MatPartitioning part,MPC
   MatPartitioning_Chaco *chaco = (MatPartitioning_Chaco*)part->data;
 
   PetscFunctionBegin;
-  *method = chaco->local_method;
+  *method = chaco->eigen_method;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -732,13 +729,13 @@ PetscErrorCode MatPartitioningSetFromOptions_Chaco(MatPartitioning part)
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("Chaco partitioning options");CHKERRQ(ierr);
-    ierr = PetscOptionsEnum("-mat_partitioning_chaco_global","Global method","MatPartitioningChacoSetGlobal",MPChacoGlobalTypes,chaco->global_method,(PetscEnum*)&global,&flag);CHKERRQ(ierr);
+    ierr = PetscOptionsEnum("-mat_partitioning_chaco_global","Global method","MatPartitioningChacoSetGlobal",MPChacoGlobalTypes,(PetscEnum)chaco->global_method,(PetscEnum*)&global,&flag);CHKERRQ(ierr);
     if (flag) { ierr = MatPartitioningChacoSetGlobal(part,global);CHKERRQ(ierr); }
-    ierr = PetscOptionsEnum("-mat_partitioning_chaco_local","Local method","MatPartitioningChacoSetLocal",MPChacoLocalTypes,chaco->local_method,(PetscEnum*)&local,&flag);CHKERRQ(ierr);
+    ierr = PetscOptionsEnum("-mat_partitioning_chaco_local","Local method","MatPartitioningChacoSetLocal",MPChacoLocalTypes,(PetscEnum)chaco->local_method,(PetscEnum*)&local,&flag);CHKERRQ(ierr);
     if (flag) { ierr = MatPartitioningChacoSetLocal(part,local);CHKERRQ(ierr); }
     ierr = PetscOptionsReal("-mat_partitioning_chaco_coarse","Coarse level","MatPartitioningChacoSetCoarseLevel",0.0,&r,&flag);CHKERRQ(ierr);
     if (flag) { ierr = MatPartitioningChacoSetCoarseLevel(part,r);CHKERRQ(ierr); }
-    ierr = PetscOptionsEnum("-mat_partitioning_chaco_eigen_solver","Eigensolver method","MatPartitioningChacoSetEigenSolver",MPChacoEigenTypes,chaco->eigen_method,(PetscEnum*)&eigen,&flag);CHKERRQ(ierr);
+    ierr = PetscOptionsEnum("-mat_partitioning_chaco_eigen_solver","Eigensolver method","MatPartitioningChacoSetEigenSolver",MPChacoEigenTypes,(PetscEnum)chaco->eigen_method,(PetscEnum*)&eigen,&flag);CHKERRQ(ierr);
     if (flag) { ierr = MatPartitioningChacoSetEigenSolver(part,eigen);CHKERRQ(ierr); }
     ierr = PetscOptionsReal("-mat_partitioning_chaco_eigen_tol","Eigensolver tolerance","MatPartitioningChacoSetEigenTol",chaco->eigtol,&r,&flag);CHKERRQ(ierr);
     if (flag) { ierr = MatPartitioningChacoSetEigenTol(part,r);CHKERRQ(ierr); }
