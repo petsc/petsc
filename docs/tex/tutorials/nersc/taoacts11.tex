@@ -60,7 +60,7 @@
 \lecture{Numerical Optimization}{Optimization}
 \part{Nonlinear Optimization}
 \frame{\partpage}
-\section{ACTS Workshop 2009}
+\section{ACTS Workshop 2011}
 
 \frame{
 \frametitle{Nonlinear Optimization}
@@ -116,8 +116,8 @@ constrained optimization problems directly.
 \frame{
 \frametitle{Algorithms}
 Nonlinear optimization algorithms are iterative processes.  
-In many cases, each iteration involve calculating a 'search direction', 
-then function values along that direction are calculated until
+In many cases, each iteration involve calculating a \emph{search direction}, 
+then function values and gradients along that direction are calculated until
 certain conditions are met. 
 \begin{itemize}
 \item Newton's Method
@@ -276,10 +276,10 @@ gpcg &     yes        &      yes          &        no        \\
 \vspace{0.5em}
 \end{minipage} \hfil
 \begin{minipage}[b]{.45\linewidth}
-\ifpdf
-\includegraphics[height=1.2in]{../images/pjb5050}
-\else
-\fi
+%\ifpdf
+\includegraphics[height=1.2in]{../images/pjb_e}
+%\else
+%\fi
 \end{minipage}
 
 \medskip
@@ -304,12 +304,12 @@ Nearly degenerate problem. Solution $ v \notin C^2 $.
 \medskip
 
 \begin{center}
-\ifpdf
-\includegraphics[height=1.2in]{../images/mso_s}
-\qquad
+%\ifpdf
+%\includegraphics[height=1.2in]{../images/mso_s}
+%\qquad
 \includegraphics[height=1.2in]{../images/mso_e}
-\else
-\fi
+%\else
+%\fi
 \end{center}
 
 \bigskip
@@ -575,6 +575,7 @@ You need to write C, C++, or Fortran functions that:
 \item Set the variable bounds (for bounded optimization)
 \end{itemize}
 }
+
 
 \frame[containsverbatim]{
 \frametitle{TAO Examples}

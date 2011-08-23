@@ -95,9 +95,15 @@ domain by using the command
 
   > mpiexec -np 2 ./minsurf2 -tao_monitor -tao_view -mx 20 -my 20
 
-How does this affect the solution?
+How does this affect the solve?  more time? more iterations?
 Try different solvers using the option -tao_method followed by
-'tao_cg', 'tao_lmvm', 'tao_ntr', or 'tao_nls.
+'tao_cg', 'tao_lmvm', 'tao_ntr', 'tao_nls', or 'tao_nm'.
+   cg   = conjugate gradient 
+   lmvm = limited memory variable metric quasi-newton method
+   ntr  = newton trust region
+   nls  = newton line search
+   nm   = nelder-mead derivative-free
+
 
 How many iterations do the different solvers require to solve the problem?
 
