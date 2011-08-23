@@ -1069,7 +1069,7 @@ PetscErrorCode TaoSolverGetTolerances(TaoSolver tao, PetscReal *fatol, PetscReal
 #define __FUNCT__ "TaoSolverGetKSP"
 /*@C
   TaoGetKSP - Gets the linear solver used by the optimization solver.
-  Application writers should use TaoAppGetKSP if they need direct access
+  Application writers should use TaoSolverGetKSP if they need direct access
   to the PETSc KSP object.
   
    Input Parameters:
@@ -1089,6 +1089,29 @@ PetscErrorCode TaoSolverGetKSP(TaoSolver tao, KSP *ksp) {
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "TaoSolverGetLineSearch"
+/*@C
+  TaoGetKSP - Gets the line search used by the optimization solver.
+  Application writers should use TaoSolverGetLineSearch if they need direct access
+  to the TaoLineSearch object.
+  
+   Input Parameters:
+.  tao - the TAO solver
+
+   Output Parameters:
+.  ls - the line search used in the optimization solver
+
+   Level: intermediate
+
+.keywords: Application
+@*/
+PetscErrorCode TaoSolverGetLineSearch(TaoSolver tao, TaoLineSearch *ls) {
+  PetscFunctionBegin;
+  *ls = tao->linesearch;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "TaoSolverGetSolutionVector"
 /*@C
   TaoSolverGetSolutionVector - Returns the vector with the current TAO solution
@@ -1099,7 +1122,7 @@ PetscErrorCode TaoSolverGetKSP(TaoSolver tao, KSP *ksp) {
   Output Parameter:
 . X - the current solution
 
-  Level: advanced
+  Level: intermediate
  
   Note:  The returned vector will be the same object that was passed into TaoSolverSetInitialSolution()
 @*/
@@ -1107,6 +1130,27 @@ PetscErrorCode TaoSolverGetSolutionVector(TaoSolver tao, Vec *X)
 {
     PetscFunctionBegin;
     *X = tao->solution;
+    PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "TaoSolverGetGradientVector"
+/*@C
+  TaoSolverGetGradientVector - Returns the vector with the current TAO gradient
+
+  Input Parameter:
+. tao - the TaoSolver context
+
+  Output Parameter:
+. G - the current solution
+
+  Level: intermediate
+@*/
+PetscErrorCode TaoSolverGetGradientVector(TaoSolver tao, Vec *G)
+{
+    PetscFunctionBegin;
+    *X = tao->gradient;
     PetscFunctionReturn(0);
 }
 
@@ -1759,9 +1803,49 @@ PetscErrorCode TaoSolverSetDefaultKSPType(TaoSolver tao, KSPType ktype)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "TaoSolverSetDefaulLineSearchType"
+/*@
+  TaoSolverSetDefaultLineSearchType - Sets the default LineSearch type if a LineSearch object
+  is created.
+
+  Collective on TaoSolver
+
+  InputParameters:
++ tao - the TaoSolver context
+- lstype - the line search type TAO will use by default
+
+  Note: Some solvers may require a particular line search type and will not work 
+  correctly if the default value is changed
+
+  Options Database Key:
+- tao_ls_type
+
+  Level: advanced
+@*/
+PetscErrorCode TaoSolverSetDefaultLineSearchType(TaoSolver tao, LineSearchType lstype)
+{
+  PetscFunctionBegin;
+  const char *prefix=0;
+  char *option=0;
+  size_t n1,n2;
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  
+  PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
+  ierr = TaoSolverGetOptionsPrefix(tao,&prefix); CHKERRQ(ierr);
+  ierr = PetscStrlen(prefix,&n1);
+  ierr = PetscStrlen("_ls_type",&n2);
+  ierr = PetscMalloc(n1+n2+1,&option);
+  ierr = PetscStrncpy(option,prefix,n1+1);
+  ierr = PetscStrncat(option,"_ls_type",n2+1);
+  ierr = PetscOptionsSetValue(option,lstype); CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "TaoSolverSetDefaultPCType"
 /*@
-  TaoSolverSetDefaultPCType - Sets the default KSP type if a KSP object
+  TaoSolverSetDefaultPCType - Sets the default PC type if a PC object
   is created.
 
   Collective on TaoSolver

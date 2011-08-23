@@ -1,5 +1,15 @@
+update manual
+  add pde_constrained section
+  add pounders section
+
+Show KSP, LS info in TaoView
+
+ls_converged_reason
+
 finite differences
-   add to tests (-tao_fd, -tao_fdgrad, -tao_fd_delta)
+  add to tests (-tao_fd, -tao_fdgrad, -tao_fd_delta)
+
+Put examples in correct places
 
 Levenberg-Marquardt
 POUNDer
@@ -11,11 +21,16 @@ Set KSP Monitors
 Check fortran stubs 
 automatic testing, coverage
 
-update manual
-add pde_constrained section
-add pounders section
-
 make install to put libs/headers in separate location
 Check TAO options in TaoSolverSetFromOptions
 Convergence explanations
 
+Test on arches
+  Visual Studio
+  BG
+  Franklin
+  Mac
+  Solaris
+  Fusion
+  
+Buildbot

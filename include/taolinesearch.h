@@ -27,6 +27,7 @@ typedef struct _p_TaoLineSearch* TaoLineSearch;
 #define TAOLINESEARCH_UNIT "unit"
 #define TAOLINESEARCH_MT "more-thuente"
 #define TAOLINESEARCH_GPCG "gpcg"
+#define TAOLINESEARCH_ARMIJO "armijo"
 
 extern PetscClassId TAOLINESEARCH_CLASSID;
 

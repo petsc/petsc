@@ -71,6 +71,7 @@ extern PetscErrorCode TaoSolverGetSolutionStatus(TaoSolver, PetscInt*, PetscReal
 extern PetscErrorCode TaoSolverSetTerminationReason(TaoSolver,TaoSolverTerminationReason);
 extern PetscErrorCode TaoSolverSetInitialVector(TaoSolver, Vec);
 extern PetscErrorCode TaoSolverGetSolutionVector(TaoSolver, Vec*);
+extern PetscErrorCode TaoSolverGetGradientVector(TaoSolver, Vec*);
 extern PetscErrorCode TaoSolverSetObjectiveRoutine(TaoSolver, PetscErrorCode(*)(TaoSolver, Vec, PetscReal*,void*), void*);
 extern PetscErrorCode TaoSolverSetGradientRoutine(TaoSolver, PetscErrorCode(*)(TaoSolver, Vec, Vec, void*), void*);
 extern PetscErrorCode TaoSolverSetObjectiveAndGradientRoutine(TaoSolver, PetscErrorCode(*)(TaoSolver, Vec, PetscReal*, Vec, void*), void*);
@@ -117,12 +118,14 @@ extern PetscErrorCode TaoSolverGetMaximumIterations(TaoSolver, PetscInt*);
 extern PetscErrorCode TaoSolverGetMaximumFunctionEvaluations(TaoSolver, PetscInt*);
 extern PetscErrorCode TaoSolverSetDefaultKSPType(TaoSolver, KSPType);
 extern PetscErrorCode TaoSolverSetDefaultPCType(TaoSolver, PCType);
+extern PetscErrorCode TaoSolverSetDefaultLineSearchType(TaoSolver, TaoLineSearchType);
 extern PetscErrorCode TaoSolverSetOptionsPrefix(TaoSolver, const char p[]);
 extern PetscErrorCode TaoSolverAppendOptionsPrefix(TaoSolver, const char p[]);
 extern PetscErrorCode TaoSolverGetOptionsPrefix(TaoSolver, const char *p[]);
 extern PetscErrorCode TaoSolverResetStatistics(TaoSolver);
 
 extern PetscErrorCode TaoSolverGetKSP(TaoSolver, KSP*);
+extern PetscErrorCode TaoSolverGetLineSearch(TaoSolver, TaoLineSearch*);
 
 extern PetscErrorCode TaoSolverSetHistory(TaoSolver,PetscReal*,PetscReal*,PetscReal*,PetscInt,PetscBool);
 extern PetscErrorCode TaoSolverGetHistory(TaoSolver,PetscReal**,PetscReal**,PetscReal**,PetscInt*);
