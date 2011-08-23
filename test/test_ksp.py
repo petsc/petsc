@@ -44,26 +44,13 @@ class BaseTestKSP(object):
         ksp.appctx = None
         self.assertEqual(ksp.appctx, None)
         #
-        side_orig = ksp.pc_side
-        for ps_name in ('LEFT',
-                        'RIGHT',
-                        'SYMMETRIC'):
-            ps_value = getattr(PETSc.PC.Side, ps_name)
-            ksp.pc_side = ps_value
-            self.assertEqual(ksp.pc_side, ps_value)
-        ksp.pc_side = side_orig
-        self.assertEqual(ksp.pc_side, side_orig)
+        side = ksp.pc_side
+        ksp.pc_side = side
+        self.assertEqual(ksp.pc_side, side)
         #
-        nt_orig = ksp.norm_type
-        for nt_name in ('NONE',
-                        'PRECONDITIONED',
-                        'UNPRECONDITIONED',
-                        'NATURAL'):
-            nt_value = getattr(PETSc.KSP.NormType, nt_name)
-            ksp.norm_type = nt_value
-            self.assertEqual(ksp.norm_type, nt_value)
-        ksp.norm_type = nt_orig
-        self.assertEqual(ksp.norm_type, nt_orig)
+        nt = ksp.norm_type
+        ksp.norm_type = nt
+        self.assertEqual(ksp.norm_type, nt)
         #
         ksp.its = 1
         self.assertEqual(ksp.its, 1)

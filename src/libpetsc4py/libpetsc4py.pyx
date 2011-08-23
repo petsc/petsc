@@ -1326,7 +1326,17 @@ cdef PetscErrorCode PCApplySymmetricRight_Python(
 # --------------------------------------------------------------------
 
 cdef extern from * nogil:
-    ctypedef enum KSPConvergedReason: KSP_CONVERGED_ITERATING
+    ctypedef enum KSPNormType:
+        KSP_NORM_NONE
+        KSP_NORM_PRECONDITIONED
+        KSP_NORM_UNPRECONDITIONED
+        KSP_NORM_NATURAL
+    ctypedef enum PCSide:
+        PC_LEFT
+        PC_RIGHT
+        PC_SYMMETRIC
+    ctypedef enum KSPConvergedReason:
+        KSP_CONVERGED_ITERATING
 cdef extern from * nogil:
     struct _KSPOps:
       PetscErrorCode (*destroy)(PetscKSP)          except IERR
@@ -1346,6 +1356,7 @@ cdef extern from * nogil:
         PetscReal norm"rnorm"
         KSPConvergedReason reason
     PetscErrorCode KSPCreate(MPI_Comm,PetscKSP*)
+    PetscErrorCode KSPSetSupportedNorm(PetscKSP,KSPNormType,PCSide,PetscInt)
     PetscErrorCode KSPSolve(PetscKSP,PetscVec,PetscVec)
     PetscErrorCode KSPSetOperators(PetscKSP,PetscMat,PetscMat,MatStructure)
 cdef extern from * nogil:
@@ -1414,6 +1425,19 @@ cdef PetscErrorCode KSPCreate_Python(
     cdef ctx = PyKSP(NULL)
     ksp.data = <void*> ctx
     Py_INCREF(<PyObject*>ksp.data)
+    #
+    CHKERR( KSPSetSupportedNorm(
+            ksp, KSP_NORM_PRECONDITIONED,   PC_LEFT,      3) )
+    CHKERR( KSPSetSupportedNorm(
+            ksp, KSP_NORM_UNPRECONDITIONED, PC_RIGHT,     3) )
+    CHKERR( KSPSetSupportedNorm(
+            ksp, KSP_NORM_UNPRECONDITIONED, PC_LEFT,      2) )
+    CHKERR( KSPSetSupportedNorm(
+            ksp, KSP_NORM_PRECONDITIONED,   PC_RIGHT,     2) )
+    CHKERR( KSPSetSupportedNorm(
+            ksp, KSP_NORM_PRECONDITIONED,   PC_SYMMETRIC, 1) )
+    CHKERR( KSPSetSupportedNorm(
+            ksp, KSP_NORM_UNPRECONDITIONED, PC_SYMMETRIC, 1) )
     return FunctionEnd()
 
 cdef PetscErrorCode KSPDestroy_Python(
