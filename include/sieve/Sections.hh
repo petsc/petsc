@@ -25,7 +25,7 @@ namespace ALE {
     const chart_type& getChart() const {
       return this->_chart;
     };
-    const int getFiberDimension(const point_type& p) const {
+    int getFiberDimension(const point_type& p) const {
       return this->hasPoint(p) ? 1 : 0;
     };
     const value_type *restrictSpace() const {
@@ -67,7 +67,7 @@ namespace ALE {
     const Obj<atlas_type>& getAtlas() {return this->_atlas;};
     void setAtlas(const Obj<atlas_type>& atlas) {this->_atlas = atlas;};
   public:
-    const int getFiberDimension(const point_type& p) {
+    int getFiberDimension(const point_type& p) {
       return this->hasPoint(p) ? 1 : 0;
     };
     const value_type *restrictPoint(const point_type& p) {
@@ -165,7 +165,7 @@ namespace ALE {
     //const chart_type& getChart() const {
     //  return this->_chart;
     //};
-    const int getFiberDimension(const point_type& p) const {
+    int getFiberDimension(const point_type& p) const {
       return this->hasPoint(p) ? 1 : 0;
     };
     const value_type *restrictSpace() const {
@@ -207,7 +207,7 @@ namespace ALE {
     const Obj<atlas_type>& getAtlas() {return this->_atlas;};
     void setAtlas(const Obj<atlas_type>& atlas) {this->_atlas = atlas;};
   public:
-    const int getFiberDimension(const point_type& p) {
+    int getFiberDimension(const point_type& p) {
       return this->hasPoint(p) ? 1 : 0;
     };
     const value_type *restrictPoint(const point_type& p) {
@@ -341,7 +341,7 @@ namespace ALE {
     const chart_type& getChart() const {
       return this->_chart;
     };
-    const int getFiberDimension(const point_type& p) const {
+    int getFiberDimension(const point_type& p) const {
       return this->hasPoint(p) ? 1 : 0;
     };
     const value_type *restrictSpace() const {
@@ -386,7 +386,7 @@ namespace ALE {
     const Obj<atlas_type>& getAtlas() {return this->_atlas;};
     void setAtlas(const Obj<atlas_type>& atlas) {this->_atlas = atlas;};
   public:
-    const int getFiberDimension(const point_type& p) {
+    int getFiberDimension(const point_type& p) {
       return this->hasPoint(p) ? 1 : 0;
     };
     const value_type *restrictPoint(const point_type& p) {
@@ -422,7 +422,7 @@ namespace ALE {
     //const chart_type& getChart() const {
     //  return this->_chart;
     //};
-    const int getFiberDimension(const point_type& p) const {
+    int getFiberDimension(const point_type& p) const {
       return this->hasPoint(p) ? 1 : 0;
     };
     const value_type *restrictSpace() const {

@@ -122,7 +122,7 @@ namespace ALE {
         maxValue = std::max(maxValue, this->getValue(label, *p_iter, defValue));
       }
       return maxValue;
-    };
+    }
     void setValue(const Obj<patch_label_type>& label, const point_type& point, const int value) {
       label->setCone(value, point);
     };
@@ -184,7 +184,7 @@ namespace ALE {
       if(this->_modifiedPoints->size() > 0) {
         this->computeHeight(height, sieve, sieve->cone(this->_modifiedPoints), maxHeight);
       }
-    };
+    }
     void computeHeights() {
       const std::string name("height");
 
@@ -196,18 +196,18 @@ namespace ALE {
         this->computeHeight(label, s_iter->second, s_iter->second->leaves(), this->_maxHeights[s_iter->first]);
         if (this->_maxHeights[s_iter->first] > this->_maxHeight) this->_maxHeight = this->_maxHeights[s_iter->first];
       }
-    };
+    }
     int height() const {return this->_maxHeight;};
     int height(const patch_type& patch) {
       this->checkPatch(patch);
       return this->_maxHeights[patch];
-    };
+    }
     int height(const patch_type& patch, const point_type& point) {
       return this->getValue(this->_labels["height"][patch], point, -1);
-    };
+    }
     const Obj<label_sequence>& heightStratum(const patch_type& patch, int height) {
       return this->getLabelStratum(patch, "height", height);
-    };
+    }
     template<class InputPoints>
     void computeDepth(const Obj<patch_label_type>& depth, const Obj<sieve_type>& sieve, const Obj<InputPoints>& points, int& maxDepth) {
       this->_modifiedPoints->clear();
@@ -227,7 +227,7 @@ namespace ALE {
       if(this->_modifiedPoints->size() > 0) {
         this->computeDepth(depth, sieve, sieve->support(this->_modifiedPoints), maxDepth);
       }
-    };
+    }
     void computeDepths() {
       const std::string name("depth");
 
@@ -239,18 +239,18 @@ namespace ALE {
         this->computeDepth(label, s_iter->second, s_iter->second->roots(), this->_maxDepths[s_iter->first]);
         if (this->_maxDepths[s_iter->first] > this->_maxDepth) this->_maxDepth = this->_maxDepths[s_iter->first];
       }
-    };
+    }
     int depth() const {return this->_maxDepth;};
     int depth(const patch_type& patch) {
       this->checkPatch(patch);
       return this->_maxDepths[patch];
-    };
+    }
     int depth(const patch_type& patch, const point_type& point) {
       return this->getValue(this->_labels["depth"][patch], point, -1);
-    };
+    }
     const Obj<label_sequence>& depthStratum(const patch_type& patch, int depth) {
       return this->getLabelStratum(patch, "depth", depth);
-    };
+    }
 #undef __FUNCT__
 #define __FUNCT__ "Topology::stratify"
     void stratify() {
@@ -258,7 +258,7 @@ namespace ALE {
       this->computeHeights();
       this->computeDepths();
       ALE_LOG_EVENT_END;
-    };
+    }
   public: // Viewers
     void view(const std::string& name, MPI_Comm comm = MPI_COMM_NULL) {
       if (comm == MPI_COMM_NULL) {
@@ -280,7 +280,7 @@ namespace ALE {
       for(typename labels_type::const_iterator l_iter = this->_labels.begin(); l_iter != this->_labels.end(); ++l_iter) {
         PetscPrintf(comm, "  label %s constructed\n", l_iter->first.c_str());
       }
-    };
+    }
   public:
     void constructOverlap(const patch_type& patch) {
       if (this->_calculatedOverlap) return;
@@ -293,7 +293,7 @@ namespace ALE {
         this->_recvOverlap->view("Receive overlap");
       }
       this->_calculatedOverlap = true;
-    };
+    }
     template<typename Sequence>
     void constructOverlap(const Obj<Sequence>& points, const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap) {
       point_type *sendBuf = this->_allocator.allocate(points->size());
@@ -418,7 +418,7 @@ namespace ALE {
         delete [] remotePoints;
         delete [] sendPoints;
       }
-    };
+    }
   };
 
   // An Overlap is a Sifter describing the overlap of two Sieves

@@ -30,9 +30,9 @@ namespace ALE {
         template<typename Point>
         void visitPoint(const Point& point) {
           this->segmentlist[this->idx*dim + (this->v++)] = this->vNumbering.getIndex(point);
-        };
+        }
         template<typename Arrow>
-        void visitArrow(const Arrow& arrow) {};
+        void visitArrow(const Arrow& arrow) {}
         void setIndex(const int idx) {this->idx = idx; this->v = 0;};
       };
     public:
@@ -82,7 +82,7 @@ namespace ALE {
         const bool                   createConvexHull = false;
         struct triangulateio in;
         struct triangulateio out;
-        PetscErrorCode       ierr;
+        PetscErrorCode ierr;
 
         initInput(&in);
         initOutput(&out);
@@ -95,8 +95,8 @@ namespace ALE {
         if (in.numberofpoints > 0) {
           const typename Mesh::label_sequence::iterator vEnd = vertices->end();
 
-          ierr = PetscMalloc(in.numberofpoints * dim * sizeof(double), &in.pointlist);
-          ierr = PetscMalloc(in.numberofpoints * sizeof(int), &in.pointmarkerlist);
+          ierr = PetscMalloc(in.numberofpoints * dim * sizeof(double), &in.pointlist);CHKERRXX(ierr);
+          ierr = PetscMalloc(in.numberofpoints * sizeof(int), &in.pointmarkerlist);CHKERRXX(ierr);
           for(typename Mesh::label_sequence::iterator v_iter = vertices->begin(); v_iter != vEnd; ++v_iter) {
             const typename Mesh::real_section_type::value_type *array = coordinates->restrictPoint(*v_iter);
             const int                                  idx   = vNumbering->getIndex(*v_iter);
@@ -114,8 +114,8 @@ namespace ALE {
         if (in.numberofsegments > 0) {
           const typename Mesh::label_sequence::iterator eEnd = edges->end();
 
-          ierr = PetscMalloc(in.numberofsegments * 2 * sizeof(int), &in.segmentlist);
-          ierr = PetscMalloc(in.numberofsegments * sizeof(int), &in.segmentmarkerlist);
+          ierr = PetscMalloc(in.numberofsegments * 2 * sizeof(int), &in.segmentlist);CHKERRXX(ierr);
+          ierr = PetscMalloc(in.numberofsegments * sizeof(int), &in.segmentmarkerlist);CHKERRXX(ierr);
           for(typename Mesh::label_sequence::iterator e_iter = edges->begin(); e_iter != eEnd; ++e_iter) {
             const Obj<typename Mesh::sieve_type::traits::coneSequence>&     cone = sieve->cone(*e_iter);
             const typename Mesh::sieve_type::traits::coneSequence::iterator cEnd = cone->end();
@@ -132,7 +132,7 @@ namespace ALE {
 
         in.numberofholes = holes.size();
         if (in.numberofholes > 0) {
-          ierr = PetscMalloc(in.numberofholes*dim * sizeof(double), &in.holelist);
+          ierr = PetscMalloc(in.numberofholes*dim * sizeof(double), &in.holelist);CHKERRXX(ierr);
           for(int h = 0; h < in.numberofholes; ++h) {
             for(int d = 0; d < dim; ++d) {
               in.holelist[h*dim+d] = holes[h][d];
@@ -151,11 +151,11 @@ namespace ALE {
           triangulate((char *) args.c_str(), &in, &out, NULL);
         }
 
-        if (in.pointlist)         {ierr = PetscFree(in.pointlist);}
-        if (in.pointmarkerlist)   {ierr = PetscFree(in.pointmarkerlist);}
-        if (in.segmentlist)       {ierr = PetscFree(in.segmentlist);}
-        if (in.segmentmarkerlist) {ierr = PetscFree(in.segmentmarkerlist);}
-        if (in.holelist)          {ierr = PetscFree(in.holelist);}
+        if (in.pointlist)         {ierr = PetscFree(in.pointlist);CHKERRXX(ierr);}
+        if (in.pointmarkerlist)   {ierr = PetscFree(in.pointmarkerlist);CHKERRXX(ierr);}
+        if (in.segmentlist)       {ierr = PetscFree(in.segmentlist);CHKERRXX(ierr);}
+        if (in.segmentmarkerlist) {ierr = PetscFree(in.segmentmarkerlist);CHKERRXX(ierr);}
+        if (in.holelist)          {ierr = PetscFree(in.holelist);CHKERRXX(ierr);}
         const Obj<typename Mesh::sieve_type> newSieve = new typename Mesh::sieve_type(mesh->comm(), mesh->debug());
         int     numCorners  = 3;
         int     numCells    = out.numberoftriangles;
@@ -215,8 +215,8 @@ namespace ALE {
         if (in.numberofpoints > 0) {
           const typename Mesh::label_sequence::iterator vEnd = vertices->end();
 
-          ierr = PetscMalloc(in.numberofpoints * dim * sizeof(double), &in.pointlist);
-          ierr = PetscMalloc(in.numberofpoints * sizeof(int), &in.pointmarkerlist);
+          ierr = PetscMalloc(in.numberofpoints * dim * sizeof(double), &in.pointlist);CHKERRXX(ierr);
+          ierr = PetscMalloc(in.numberofpoints * sizeof(int), &in.pointmarkerlist);CHKERRXX(ierr);
           for(typename Mesh::label_sequence::iterator v_iter = vertices->begin(); v_iter != vEnd; ++v_iter) {
             const typename Mesh::real_section_type::value_type *array = coordinates->restrictPoint(*v_iter);
             const int                                           idx   = vNumbering->getIndex(*v_iter);
@@ -234,8 +234,8 @@ namespace ALE {
         if (in.numberofsegments > 0) {
           const typename Mesh::label_sequence::iterator eEnd = edges->end();
 
-          ierr = PetscMalloc(in.numberofsegments * 2 * sizeof(int), &in.segmentlist);
-          ierr = PetscMalloc(in.numberofsegments * sizeof(int), &in.segmentmarkerlist);
+          ierr = PetscMalloc(in.numberofsegments * 2 * sizeof(int), &in.segmentlist);CHKERRXX(ierr);
+          ierr = PetscMalloc(in.numberofsegments * sizeof(int), &in.segmentmarkerlist);CHKERRXX(ierr);
           SegmentVisitor sV(dim, in.segmentlist, *vNumbering);
           for(typename Mesh::label_sequence::iterator e_iter = edges->begin(); e_iter != eEnd; ++e_iter) {
             const int idx = eNumbering->getIndex(*e_iter);
@@ -249,7 +249,7 @@ namespace ALE {
 
         in.numberofholes = holes.size();
         if (in.numberofholes > 0) {
-          ierr = PetscMalloc(in.numberofholes*dim * sizeof(double), &in.holelist);
+          ierr = PetscMalloc(in.numberofholes*dim * sizeof(double), &in.holelist);CHKERRXX(ierr);
           for(int h = 0; h < in.numberofholes; ++h) {
             for(int d = 0; d < dim; ++d) {
               in.holelist[h*dim+d] = holes[h][d];
@@ -267,11 +267,11 @@ namespace ALE {
           }
           triangulate((char *) args.c_str(), &in, &out, NULL);
         }
-        if (in.pointlist)         {ierr = PetscFree(in.pointlist);}
-        if (in.pointmarkerlist)   {ierr = PetscFree(in.pointmarkerlist);}
-        if (in.segmentlist)       {ierr = PetscFree(in.segmentlist);}
-        if (in.segmentmarkerlist) {ierr = PetscFree(in.segmentmarkerlist);}
-        if (in.holelist)          {ierr = PetscFree(in.holelist);}
+        if (in.pointlist)         {ierr = PetscFree(in.pointlist);CHKERRXX(ierr);}
+        if (in.pointmarkerlist)   {ierr = PetscFree(in.pointmarkerlist);CHKERRXX(ierr);}
+        if (in.segmentlist)       {ierr = PetscFree(in.segmentlist);CHKERRXX(ierr);}
+        if (in.segmentmarkerlist) {ierr = PetscFree(in.segmentmarkerlist);CHKERRXX(ierr);}
+        if (in.holelist)          {ierr = PetscFree(in.holelist);CHKERRXX(ierr);}
         const Obj<typename Mesh::sieve_type> newSieve = new typename Mesh::sieve_type(mesh->comm(), mesh->debug());
         const Obj<FlexMesh>                  m        = new FlexMesh(boundary->comm(), dim, boundary->debug());
         const Obj<FlexMesh::sieve_type>      newS     = new FlexMesh::sieve_type(m->comm(), m->debug());
@@ -380,8 +380,8 @@ namespace ALE {
         if (in.numberofpoints > 0) {
           const typename Mesh::label_sequence::iterator vEnd = vertices->end();
 
-          ierr = PetscMalloc(in.numberofpoints * dim * sizeof(double), &in.pointlist);
-          ierr = PetscMalloc(in.numberofpoints * sizeof(int), &in.pointmarkerlist);
+          ierr = PetscMalloc(in.numberofpoints * dim * sizeof(double), &in.pointlist);CHKERRXX(ierr);
+          ierr = PetscMalloc(in.numberofpoints * sizeof(int), &in.pointmarkerlist);CHKERRXX(ierr);
           for(typename Mesh::label_sequence::iterator v_iter = vertices->begin(); v_iter != vEnd; ++v_iter) {
             const typename Mesh::real_section_type::value_type *array = coordinates->restrictPoint(*v_iter);
             const int                                  idx   = vNumbering->getIndex(*v_iter);
@@ -401,7 +401,7 @@ namespace ALE {
         if (in.numberoftriangles > 0) {
           const typename Mesh::label_sequence::iterator fEnd = faces->end();
 
-          ierr = PetscMalloc(in.numberoftriangles*in.numberofcorners * sizeof(int), &in.trianglelist);
+          ierr = PetscMalloc(in.numberoftriangles*in.numberofcorners * sizeof(int), &in.trianglelist);CHKERRXX(ierr);
           if (serialMesh->depth() == 1) {
             for(typename Mesh::label_sequence::iterator f_iter = faces->begin(); f_iter != fEnd; ++f_iter) {
               const Obj<typename Mesh::sieve_type::traits::coneSequence>&     cone = serialSieve->cone(*f_iter);
@@ -442,8 +442,8 @@ namespace ALE {
           if (in.numberofsegments > 0) {
             int s = 0;
 
-            ierr = PetscMalloc(in.numberofsegments * 2 * sizeof(int), &in.segmentlist);
-            ierr = PetscMalloc(in.numberofsegments * sizeof(int), &in.segmentmarkerlist);
+            ierr = PetscMalloc(in.numberofsegments * 2 * sizeof(int), &in.segmentlist);CHKERRXX(ierr);
+            ierr = PetscMalloc(in.numberofsegments * sizeof(int), &in.segmentmarkerlist);CHKERRXX(ierr);
             for(typename Mesh::label_sequence::iterator e_iter = edges->begin(); e_iter != edges->end(); ++e_iter) {
               const int edgeMarker = serialMesh->getValue(markers, *e_iter);
 
@@ -472,8 +472,8 @@ namespace ALE {
           if (in.numberofsegments > 0) {
             int s = 0;
 
-            ierr = PetscMalloc(in.numberofsegments * 2 * sizeof(int), &in.segmentlist);
-            ierr = PetscMalloc(in.numberofsegments * sizeof(int), &in.segmentmarkerlist);
+            ierr = PetscMalloc(in.numberofsegments * 2 * sizeof(int), &in.segmentlist);CHKERRXX(ierr);
+            ierr = PetscMalloc(in.numberofsegments * sizeof(int), &in.segmentmarkerlist);CHKERRXX(ierr);
             for(typename Mesh::label_type::baseSequence::iterator b_iter = boundary->begin(); b_iter != boundary->end(); ++b_iter) {
               for(typename Mesh::label_sequence::iterator e_iter = edges->begin(); e_iter != edges->end(); ++e_iter) {
                 if (*b_iter == *e_iter) {
@@ -493,18 +493,18 @@ namespace ALE {
 
         in.numberofholes = 0;
         if (in.numberofholes > 0) {
-          ierr = PetscMalloc(in.numberofholes * dim * sizeof(int), &in.holelist);
+          ierr = PetscMalloc(in.numberofholes * dim * sizeof(int), &in.holelist);CHKERRXX(ierr);
         }
         if (serialMesh->commRank() == 0) {
           std::string args("pqezQra");
 
           triangulate((char *) args.c_str(), &in, &out, NULL);
         }
-        if (in.pointlist)         {ierr = PetscFree(in.pointlist);}
-        if (in.pointmarkerlist)   {ierr = PetscFree(in.pointmarkerlist);}
-        if (in.segmentlist)       {ierr = PetscFree(in.segmentlist);}
-        if (in.segmentmarkerlist) {ierr = PetscFree(in.segmentmarkerlist);}
-        if (in.trianglelist)      {ierr = PetscFree(in.trianglelist);}
+        if (in.pointlist)         {ierr = PetscFree(in.pointlist);CHKERRXX(ierr);}
+        if (in.pointmarkerlist)   {ierr = PetscFree(in.pointmarkerlist);CHKERRXX(ierr);}
+        if (in.segmentlist)       {ierr = PetscFree(in.segmentlist);CHKERRXX(ierr);}
+        if (in.segmentmarkerlist) {ierr = PetscFree(in.segmentmarkerlist);CHKERRXX(ierr);}
+        if (in.trianglelist)      {ierr = PetscFree(in.trianglelist);CHKERRXX(ierr);}
         const Obj<typename Mesh::sieve_type> newSieve = new typename Mesh::sieve_type(serialMesh->comm(), serialMesh->debug());
         int     numCorners  = 3;
         int     numCells    = out.numberoftriangles;
@@ -588,8 +588,8 @@ namespace ALE {
         if (in.numberofpoints > 0) {
           const typename Mesh::label_sequence::iterator vEnd = vertices->end();
 
-          ierr = PetscMalloc(in.numberofpoints * dim * sizeof(double), &in.pointlist);
-          ierr = PetscMalloc(in.numberofpoints * sizeof(int), &in.pointmarkerlist);
+          ierr = PetscMalloc(in.numberofpoints * dim * sizeof(double), &in.pointlist);CHKERRXX(ierr);
+          ierr = PetscMalloc(in.numberofpoints * sizeof(int), &in.pointmarkerlist);CHKERRXX(ierr);
           for(typename Mesh::label_sequence::iterator v_iter = vertices->begin(); v_iter != vEnd; ++v_iter) {
             const typename Mesh::real_section_type::value_type *array = coordinates->restrictPoint(*v_iter);
             const int                                           idx   = vNumbering->getIndex(*v_iter);
@@ -607,7 +607,7 @@ namespace ALE {
         in.numberoftriangles = faces->size();
         in.trianglearealist  = (double *) maxVolumes;
         if (in.numberoftriangles > 0) {
-          ierr = PetscMalloc(in.numberoftriangles*in.numberofcorners * sizeof(int), &in.trianglelist);
+          ierr = PetscMalloc(in.numberoftriangles*in.numberofcorners * sizeof(int), &in.trianglelist);CHKERRXX(ierr);
           if (mesh->depth() == 1) {
             ALE::ISieveVisitor::PointRetriever<typename Mesh::sieve_type> pV(3);
             const typename Mesh::label_sequence::iterator fEnd = faces->end();
@@ -657,8 +657,8 @@ namespace ALE {
             ALE::ISieveVisitor::PointRetriever<typename Mesh::sieve_type> pV(2);
             int s = 0;
 
-            ierr = PetscMalloc(in.numberofsegments * 2 * sizeof(int), &in.segmentlist);
-            ierr = PetscMalloc(in.numberofsegments * sizeof(int), &in.segmentmarkerlist);
+            ierr = PetscMalloc(in.numberofsegments * 2 * sizeof(int), &in.segmentlist);CHKERRXX(ierr);
+            ierr = PetscMalloc(in.numberofsegments * sizeof(int), &in.segmentmarkerlist);CHKERRXX(ierr);
             for(typename Mesh::label_sequence::iterator e_iter = edges->begin(); e_iter != edges->end(); ++e_iter) {
               const int edgeMarker = mesh->getValue(markers, *e_iter);
 
@@ -681,7 +681,7 @@ namespace ALE {
 
         in.numberofholes = holes.size();
         if (in.numberofholes > 0) {
-          ierr = PetscMalloc(in.numberofholes*dim * sizeof(double), &in.holelist);
+          ierr = PetscMalloc(in.numberofholes*dim * sizeof(double), &in.holelist);CHKERRXX(ierr);
           for(int h = 0; h < in.numberofholes; ++h) {
             for(int d = 0; d < dim; ++d) {
               in.holelist[h*dim+d] = holes[h][d];
@@ -693,11 +693,11 @@ namespace ALE {
 
           triangulate((char *) args.c_str(), &in, &out, NULL);
         }
-        if (in.pointlist)         {ierr = PetscFree(in.pointlist);}
-        if (in.pointmarkerlist)   {ierr = PetscFree(in.pointmarkerlist);}
-        if (in.segmentlist)       {ierr = PetscFree(in.segmentlist);}
-        if (in.segmentmarkerlist) {ierr = PetscFree(in.segmentmarkerlist);}
-        if (in.trianglelist)      {ierr = PetscFree(in.trianglelist);}
+        if (in.pointlist)         {ierr = PetscFree(in.pointlist);CHKERRXX(ierr);}
+        if (in.pointmarkerlist)   {ierr = PetscFree(in.pointmarkerlist);CHKERRXX(ierr);}
+        if (in.segmentlist)       {ierr = PetscFree(in.segmentlist);CHKERRXX(ierr);}
+        if (in.segmentmarkerlist) {ierr = PetscFree(in.segmentmarkerlist);CHKERRXX(ierr);}
+        if (in.trianglelist)      {ierr = PetscFree(in.trianglelist);CHKERRXX(ierr);}
         const Obj<typename Mesh::sieve_type> newSieve = new typename Mesh::sieve_type(mesh->comm(), mesh->debug());
         const Obj<FlexMesh>                  m        = new FlexMesh(mesh->comm(), dim, mesh->debug());
         const Obj<FlexMesh::sieve_type>      newS     = new FlexMesh::sieve_type(m->comm(), m->debug());
@@ -798,8 +798,8 @@ namespace ALE {
 
         in.numberofpoints = vertices->size();
         if (in.numberofpoints > 0) {
-          ierr = PetscMalloc(in.numberofpoints * dim * sizeof(double), &in.pointlist);
-          ierr = PetscMalloc(in.numberofpoints * sizeof(int), &in.pointmarkerlist);
+          ierr = PetscMalloc(in.numberofpoints * dim * sizeof(double), &in.pointlist);CHKERRXX(ierr);
+          ierr = PetscMalloc(in.numberofpoints * sizeof(int), &in.pointmarkerlist);CHKERRXX(ierr);
           for(typename Mesh::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
             const typename Mesh::real_section_type::value_type *array = coordinates->restrictPoint(*v_iter);
             const int                                  idx   = vNumbering->getIndex(*v_iter);
@@ -817,7 +817,7 @@ namespace ALE {
         in.numberoftriangles = faces->size();
         in.trianglearealist  = (double *) maxVolumes;
         if (in.numberoftriangles > 0) {
-          ierr = PetscMalloc(in.numberoftriangles*in.numberofcorners * sizeof(int), &in.trianglelist);
+          ierr = PetscMalloc(in.numberoftriangles*in.numberofcorners * sizeof(int), &in.trianglelist);CHKERRXX(ierr);
           if (mesh->depth() == 1) {
             for(typename Mesh::label_sequence::iterator f_iter = faces->begin(); f_iter != faces->end(); ++f_iter) {
               const Obj<typename Mesh::sieve_type::traits::coneSequence>& cone = sieve->cone(*f_iter);
@@ -854,8 +854,8 @@ namespace ALE {
           if (in.numberofsegments > 0) {
             int s = 0;
 
-            ierr = PetscMalloc(in.numberofsegments * 2 * sizeof(int), &in.segmentlist);
-            ierr = PetscMalloc(in.numberofsegments * sizeof(int), &in.segmentmarkerlist);
+            ierr = PetscMalloc(in.numberofsegments * 2 * sizeof(int), &in.segmentlist);CHKERRXX(ierr);
+            ierr = PetscMalloc(in.numberofsegments * sizeof(int), &in.segmentmarkerlist);CHKERRXX(ierr);
             for(typename Mesh::label_sequence::iterator e_iter = edges->begin(); e_iter != edges->end(); ++e_iter) {
               const int edgeMarker = mesh->getValue(markers, *e_iter);
 
@@ -874,16 +874,16 @@ namespace ALE {
 
         in.numberofholes = 0;
         if (in.numberofholes > 0) {
-          ierr = PetscMalloc(in.numberofholes * dim * sizeof(int), &in.holelist);
+          ierr = PetscMalloc(in.numberofholes * dim * sizeof(int), &in.holelist);CHKERRXX(ierr);
         }
         std::string args("pqezQra");
 
         triangulate((char *) args.c_str(), &in, &out, NULL);
-        if (in.pointlist)         {ierr = PetscFree(in.pointlist);}
-        if (in.pointmarkerlist)   {ierr = PetscFree(in.pointmarkerlist);}
-        if (in.segmentlist)       {ierr = PetscFree(in.segmentlist);}
-        if (in.segmentmarkerlist) {ierr = PetscFree(in.segmentmarkerlist);}
-        if (in.trianglelist)      {ierr = PetscFree(in.trianglelist);}
+        if (in.pointlist)         {ierr = PetscFree(in.pointlist);CHKERRXX(ierr);}
+        if (in.pointmarkerlist)   {ierr = PetscFree(in.pointmarkerlist);CHKERRXX(ierr);}
+        if (in.segmentlist)       {ierr = PetscFree(in.segmentlist);CHKERRXX(ierr);}
+        if (in.segmentmarkerlist) {ierr = PetscFree(in.segmentmarkerlist);CHKERRXX(ierr);}
+        if (in.trianglelist)      {ierr = PetscFree(in.trianglelist);CHKERRXX(ierr);}
         const Obj<typename Mesh::sieve_type> newSieve = new typename Mesh::sieve_type(mesh->comm(), mesh->debug());
         int     numCorners  = 3;
         int     numCells    = out.numberoftriangles;
@@ -1192,7 +1192,7 @@ namespace ALE {
 
         in.numberofholes = holes.size();
         if (in.numberofholes > 0) {
-          ierr = PetscMalloc(in.numberofholes*dim * sizeof(double), &in.holelist);
+          ierr = PetscMalloc(in.numberofholes*dim * sizeof(double), &in.holelist);CHKERRXX(ierr);
           for(int h = 0; h < in.numberofholes; ++h) {
             for(int d = 0; d < dim; ++d) {
               in.holelist[h*dim+d] = holes[h][d];
@@ -1611,7 +1611,7 @@ namespace ALE {
 
         in.numberofholes = holes.size();
         if (in.numberofholes > 0) {
-          ierr = PetscMalloc(in.numberofholes*dim * sizeof(double), &in.holelist);
+          ierr = PetscMalloc(in.numberofholes*dim * sizeof(double), &in.holelist);CHKERRXX(ierr);
           for(int h = 0; h < in.numberofholes; ++h) {
             for(int d = 0; d < dim; ++d) {
               in.holelist[h*dim+d] = holes[h][d];

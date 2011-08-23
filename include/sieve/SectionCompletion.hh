@@ -38,7 +38,7 @@ namespace ALE {
           topology->setPatch(*r_iter, sendSieve);
         }
         return topology;
-      };
+      }
       template<typename RecvOverlap>
       static Obj<topology_type> createRecvTopology(const Obj<RecvOverlap>& recvOverlap) {
         const Obj<typename RecvOverlap::capSequence> ranks = recvOverlap->cap();
@@ -54,7 +54,7 @@ namespace ALE {
           topology->setPatch(*r_iter, recvSieve);
         }
         return topology;
-      };
+      }
       template<typename Sizer, typename Section>
       static void setupSend(const Obj<topology_type>& sendChart, const Obj<Sizer>& sendSizer, const Obj<Section>& sendSection) {
         // Here we should just use the overlap as the topology (once it is a new-style sieve)
@@ -64,7 +64,7 @@ namespace ALE {
         sendSection->allocate();
         if (sendSection->debug() > 10) {sendSection->view("Send section after setup", MPI_COMM_SELF);}
         sendSection->constructCommunication(Section::SEND);
-      };
+      }
       template<typename Filler, typename Section>
       static void fillSend(const Filler& sendFiller, const Obj<Section>& sendSection) {
         const typename Section::sheaf_type& patches = sendSection->getPatches();
@@ -79,7 +79,7 @@ namespace ALE {
             }
           }
         }
-      };
+      }
       template<typename RecvOverlap, typename Sizer, typename Section>
       static void setupReceive(const Obj<RecvOverlap>& recvOverlap, const Obj<Sizer>& recvSizer, const Obj<Section>& recvSection) {
         // Create section
@@ -100,7 +100,7 @@ namespace ALE {
         recvSection->construct(recvSizer);
         recvSection->allocate();
         recvSection->constructCommunication(Section::RECEIVE);
-      };
+      }
       template<typename SendOverlap, typename RecvOverlap, typename SizerFiller, typename Filler, typename SendSection, typename RecvSection>
       static void completeSection(const Obj<SendOverlap>& sendOverlap, const Obj<RecvOverlap>& recvOverlap, const Obj<SizerFiller>& sizerFiller, const Filler& filler, const Obj<SendSection>& sendSection, const Obj<RecvSection>& recvSection) {
         typedef typename alloc_type::template rebind<int>::other int_alloc_type;
@@ -152,7 +152,7 @@ namespace ALE {
         sendSection->endCommunication();
         recvSection->endCommunication();
         if (recvSection->debug()) {recvSection->view("Receive Section in Completion", MPI_COMM_SELF);}
-      };
+      }
     };
   }
 }

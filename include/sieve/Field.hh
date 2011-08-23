@@ -2322,7 +2322,7 @@ namespace ALE {
 
       for(typename chart_type::const_iterator c_iter = newChart.begin(); c_iter != newChart.end(); ++c_iter) {
         const int cDim   = field->getConstraintDimension(*c_iter);
-        const int dof[1] = {0};
+        //const int dof[1] = {0};
 
         if (cDim) {
           field->setConstraintDof(*c_iter, this->getConstraintDof(*c_iter, space));

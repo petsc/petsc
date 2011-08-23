@@ -1237,11 +1237,11 @@ namespace ALE {
     };
     bool orientedCones() const {return this->orientCones;};
     // Raw array access
-    const offsets_type      getConeOffsets() {return this->coneOffsets;};
-    const offsets_type      getSupportOffsets() {return this->supportOffsets;};
-    const cones_type        getCones() {return this->cones;};
-    const supports_type     getSupports() {return this->supports;};
-    const orientations_type getConeOrientations() {return this->coneOrientations;};
+    offsets_type      getConeOffsets() {return this->coneOffsets;};
+    offsets_type      getSupportOffsets() {return this->supportOffsets;};
+    cones_type        getCones() {return this->cones;};
+    supports_type     getSupports() {return this->supports;};
+    orientations_type getConeOrientations() {return this->coneOrientations;};
   public: // Construction
     index_type getConeSize(const point_type& p) const {
       if (!this->pointAllocated) {throw ALE::Exception("IFSieve points have not been allocated.");}
@@ -2118,7 +2118,7 @@ namespace ALE {
       if (sieve.commRank() == 0) {
         fs.close();
       }
-    };
+    }
     template<typename ISieve>
     static void writeSieve(std::ofstream& fs, ISieve& sieve) {
       typedef ISieveVisitor::PointRetriever<ISieve> Visitor;
@@ -2317,7 +2317,7 @@ namespace ALE {
       delete [] mins;
       delete [] maxs;
       // Output renumbering
-    };
+    }
     template<typename ISieve>
     static void loadSieve(const std::string& filename, ISieve& sieve) {
       std::ifstream fs;
@@ -2329,7 +2329,7 @@ namespace ALE {
       if (sieve.commRank() == 0) {
         fs.close();
       }
-    };
+    }
     template<typename ISieve>
     static void loadSieve(std::ifstream& fs, ISieve& sieve) {
       typename ISieve::point_type min, max;
@@ -2498,7 +2498,7 @@ namespace ALE {
         assert(off == size);
       }
       // Load renumbering
-    };
+    }
   };
 }
 

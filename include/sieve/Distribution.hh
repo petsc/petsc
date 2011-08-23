@@ -86,7 +86,7 @@ namespace ALE {
       // Inserts cones into parallelMesh (must renumber here)
       ALE::Pullback::InsertionBinaryFusion::fuse(overlapCones, recvMeshOverlap, renumbering, newSieve);
       return overlapCones;
-    };
+    }
     template<typename Sieve, typename NewSieve, typename SendOverlap, typename RecvOverlap>
     static Obj<oriented_cones_type> completeConesV(const Obj<Sieve>& sieve, const Obj<NewSieve>& newSieve, const Obj<SendOverlap>& sendMeshOverlap, const Obj<RecvOverlap>& recvMeshOverlap) {
       typedef ALE::OrientedConeSectionV<Sieve> oriented_cones_wrapper_type;
@@ -97,7 +97,7 @@ namespace ALE {
       if (sieve->debug()) {overlapCones->view("Overlap Cones");}
       ALE::Pullback::InsertionBinaryFusion::fuse(overlapCones, recvMeshOverlap, newSieve);
       return overlapCones;
-    };
+    }
     template<typename Sieve, typename NewSieve, typename Renumbering, typename SendOverlap, typename RecvOverlap>
     static Obj<oriented_cones_type> completeConesV(const Obj<Sieve>& sieve, const Obj<NewSieve>& newSieve, Renumbering& renumbering, const Obj<SendOverlap>& sendMeshOverlap, const Obj<RecvOverlap>& recvMeshOverlap) {
       typedef ALE::OrientedConeSectionV<Sieve> oriented_cones_wrapper_type;
@@ -109,7 +109,7 @@ namespace ALE {
       // Inserts cones into parallelMesh (must renumber here)
       ALE::Pullback::InsertionBinaryFusion::fuse(overlapCones, recvMeshOverlap, renumbering, newSieve);
       return overlapCones;
-    };
+    }
     // Given a partition of sieve points, copy the mesh pieces to each process and fuse into the new mesh
     //   Return overlaps for the cone communication
     template<typename Renumbering, typename NewMesh, typename SendOverlap, typename RecvOverlap>
@@ -153,7 +153,7 @@ namespace ALE {
       Partitioner::createDistributionMeshOverlap(partition, recvOverlap, renumbering, overlapPartition, sendMeshOverlap, recvMeshOverlap);
       // Send cones
       completeCones(mesh->getSieve(), newMesh->getSieve(), renumbering, sendMeshOverlap, recvMeshOverlap);
-    };
+    }
     template<typename Renumbering, typename NewMesh, typename SendOverlap, typename RecvOverlap>
     static void completeBaseV(const Obj<Mesh>& mesh, const Obj<partition_type>& partition, Renumbering& renumbering, const Obj<NewMesh>& newMesh, const Obj<SendOverlap>& sendMeshOverlap, const Obj<RecvOverlap>& recvMeshOverlap) {
       typedef ALE::Sifter<rank_type,rank_type,rank_type> part_send_overlap_type;
@@ -196,7 +196,7 @@ namespace ALE {
       // Create mesh overlap from partition overlap
       //   TODO: Generalize to redistribution (receive from multiple sources)
       Partitioner::createDistributionMeshOverlap(partition, recvOverlap, renumbering, overlapPartition, sendMeshOverlap, recvMeshOverlap);
-    };
+    }
     template<typename NewMesh, typename Renumbering, typename SendOverlap, typename RecvOverlap>
     static Obj<partition_type> distributeMesh(const Obj<Mesh>& mesh, const Obj<NewMesh>& newMesh, Renumbering& renumbering, const Obj<SendOverlap>& sendMeshOverlap, const Obj<RecvOverlap>& recvMeshOverlap, const int height = 0) {
       const Obj<partition_type> cellPartition = new partition_type(mesh->comm(), 0, mesh->commSize(), mesh->debug());
@@ -224,7 +224,7 @@ namespace ALE {
       Partitioner::createLocalMesh(mesh, partition, renumbering, newMesh, height);
       newMesh->stratify();
       return partition;
-    };
+    }
     template<typename NewMesh, typename Renumbering, typename SendOverlap, typename RecvOverlap>
     static Obj<partition_type> distributeMeshAndSections(const Obj<Mesh>& mesh, const Obj<NewMesh>& newMesh, Renumbering& renumbering, const Obj<SendOverlap>& sendMeshOverlap, const Obj<RecvOverlap>& recvMeshOverlap, const int height = 0) {
       Obj<partition_type> partition = distributeMesh(mesh, newMesh, renumbering, sendMeshOverlap, recvMeshOverlap, height);
@@ -267,7 +267,7 @@ namespace ALE {
         newLabel->add(origLabel, newMesh->getSieve(), renumbering);
       }
       return partition;
-    };
+    }
     template<typename NewMesh, typename Renumbering, typename SendOverlap, typename RecvOverlap>
     static Obj<partition_type> distributeMeshV(const Obj<Mesh>& mesh, const Obj<NewMesh>& newMesh, Renumbering& renumbering, const Obj<SendOverlap>& sendMeshOverlap, const Obj<RecvOverlap>& recvMeshOverlap, const int height = 0) {
       const Obj<partition_type> cellPartition = new partition_type(mesh->comm(), 0, mesh->commSize(), mesh->debug());
@@ -302,11 +302,11 @@ namespace ALE {
       newMesh->stratify();
       PETSc::Log::Event("DistributeMesh").end();
       return partition;
-    };
+    }
     // distributeMeshV:
     //   createPartitionV (can be dumb)
     //   createPartitionClosureV (should be low memory)
-    //   completeBaseV (???)
+    //   completeBaseV ( have not decided )
     //     Partitioner::createDistributionPartOverlap (low memory)
     //     copy points to partitions (uses small overlap and fake sections)
     //     renumber (map is potentially big, can measure)
@@ -314,7 +314,7 @@ namespace ALE {
     //       sendMeshOverlap is localPoint--- remotePoint --->remoteRank
     //       recvMeshOverlap is remoteRank--- remotePoint --->localPoint
     //   sizeLocalMeshV (should be low memory)
-    //   completeConesV (???)
+    //   completeConesV ( have not decided )
     //   createLocalMesh (should be low memory)
     //   symmetrize
     //   stratify
@@ -405,7 +405,7 @@ namespace ALE {
       ALE::OverlapBuilder<>::constructOverlap(globalPoints, renumbering, sendParallelMeshOverlap, recvParallelMeshOverlap);
       newMesh->setCalculatedOverlap(true);
       PETSc::Log::Event("CreateOverlap").end();
-    };
+    }
     template<typename Label, typename Partition, typename Renumbering, typename SendOverlap, typename RecvOverlap, typename NewLabel>
     static void distributeLabel(const Obj<typename Mesh::sieve_type>& sieve, const Obj<Label>& l, const Obj<Partition>& partition, Renumbering& renumbering, const Obj<SendOverlap>& sendOverlap, const Obj<RecvOverlap>& recvOverlap, const Obj<NewLabel>& newL) {
       Partitioner::createLocalSifter(l, partition, renumbering, newL);
@@ -438,7 +438,7 @@ namespace ALE {
           }
         }
       }
-    };
+    }
     template<typename Label, typename Partition, typename Renumbering, typename SendOverlap, typename RecvOverlap, typename NewLabel>
     static void distributeLabelV(const Obj<typename Mesh::sieve_type>& sieve, const Obj<Label>& l, const Obj<Partition>& partition, Renumbering& renumbering, const Obj<SendOverlap>& sendOverlap, const Obj<RecvOverlap>& recvOverlap, const Obj<NewLabel>& newL) {
       Partitioner::createLocalSifter(l, partition, renumbering, newL);
@@ -478,12 +478,12 @@ namespace ALE {
           }
         }
       }
-    };
+    }
     template<typename Section, typename Partition, typename Renumbering, typename SendOverlap, typename RecvOverlap, typename NewSection>
     static void distributeSection(const Obj<Section>& s, const Obj<Partition>& partition, Renumbering& renumbering, const Obj<SendOverlap>& sendOverlap, const Obj<RecvOverlap>& recvOverlap, const Obj<NewSection>& newS) {
       Partitioner::createLocalSection(s, partition, renumbering, newS);
       ALE::Completion::completeSection(sendOverlap, recvOverlap, s, newS);
-    };
+    }
     template<typename NewMesh, typename Renumbering, typename SendOverlap, typename RecvOverlap>
     static Obj<partition_type> unifyMesh(const Obj<Mesh>& mesh, const Obj<NewMesh>& newMesh, Renumbering& renumbering, const Obj<SendOverlap>& sendMeshOverlap, const Obj<RecvOverlap>& recvMeshOverlap) {
       const Obj<partition_type> cellPartition = new partition_type(mesh->comm(), 0, mesh->commSize(), mesh->debug());
@@ -509,7 +509,7 @@ namespace ALE {
       newMesh->stratify();
       newMesh->view("Unified mesh");
       return partition;
-    };
+    }
     static Obj<Mesh> unifyMesh(const Obj<Mesh>& mesh) {
       typedef ALE::Sifter<point_type,rank_type,point_type> mesh_send_overlap_type;
       typedef ALE::Sifter<rank_type,point_type,point_type> mesh_recv_overlap_type;
@@ -566,7 +566,7 @@ namespace ALE {
         newLabel->view(l_iter->first.c_str());
       }
       return newMesh;
-    };
+    }
   };
   template<typename Bundle_>
   class Distribution {
@@ -633,7 +633,7 @@ namespace ALE {
         return Partitioner::partitionSieveByFace(bundle, dim);
       }
       throw ALE::Exception("Invalid partition height");
-    };
+    }
     #undef __FUNCT__
     #define __FUNCT__ "scatterBundle"
     // Partition a bundle on process 0 and scatter to all processes
@@ -713,7 +713,7 @@ namespace ALE {
       } else {
         throw ALE::Exception("Invalid partition height");
       }
-    };
+    }
     template<typename Partitioner>
     static typename Partitioner::part_type *scatterBundle(const Obj<bundle_type>& bundle, const int dim, const Obj<bundle_type>& bundleNew, const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap, const int height = 0) {
       typename Partitioner::part_type *assignment = createAssignment<Partitioner>(bundle, dim, sendOverlap, recvOverlap, height);
@@ -724,7 +724,7 @@ namespace ALE {
       sieveCompletion::scatterSieve(bundle, sieve, dim, sieveNew, sendOverlap, recvOverlap, height, numPoints, assignment);
       bundleNew->stratify();
       return assignment;
-    };
+    }
     #undef __FUNCT__
     #define __FUNCT__ "distributeMesh"
     static Obj<ALE::Mesh<PetscInt,PetscScalar> > distributeMesh(const Obj<ALE::Mesh<PetscInt,PetscScalar> >& serialMesh, const int height = 0, const std::string& partitioner = "chaco") {
@@ -787,7 +787,7 @@ namespace ALE {
       if (parallelMesh->debug()) {parallelMesh->view("Parallel Mesh");}
       ALE_LOG_EVENT_END;
       return parallelMesh;
-    };
+    }
     #undef __FUNCT__
     #define __FUNCT__ "updateSectionLocal"
     template<typename Section>
@@ -806,7 +806,7 @@ namespace ALE {
       for(typename Section::atlas_type::chart_type::const_iterator c_iter = newChart.begin(); c_iter != newChart.end(); ++c_iter) {
         newSection->updatePointAll(*c_iter, oldSection->restrictPoint(*c_iter));
       }
-    };
+    }
     #undef __FUNCT__
     #define __FUNCT__ "updateSectionRemote"
     template<typename RecvSection, typename Section>
@@ -832,7 +832,7 @@ namespace ALE {
           }
         }
       }
-    };
+    }
     #undef __FUNCT__
     #define __FUNCT__ "distributeSection"
     template<typename Section>
@@ -856,7 +856,7 @@ namespace ALE {
         parallelSection->view("Parallel Section");
       }
       return parallelSection;
-    };
+    }
     #undef __FUNCT__
     #define __FUNCT__ "updateArrowSectionLocal"
     template<typename Section>
@@ -876,7 +876,7 @@ namespace ALE {
       for(typename Section::atlas_type::chart_type::const_iterator c_iter = newChart.begin(); c_iter != newChart.end(); ++c_iter) {
         newSection->updatePointAll(*c_iter, oldSection->restrictPoint(*c_iter));
       }
-    };
+    }
     #undef __FUNCT__
     #define __FUNCT__ "updateArrowSectionRemote"
     template<typename RecvSection, typename Section>
@@ -911,7 +911,7 @@ namespace ALE {
           }
         }
       }
-    };
+    }
     #undef __FUNCT__
     #define __FUNCT__ "distributeArrowSection"
     template<typename Section>
@@ -937,7 +937,7 @@ namespace ALE {
         parallelSection->view("Parallel ArrowSection");
       }
       return parallelSection;
-    };
+    }
     static void unifyBundle(const Obj<bundle_type>& bundle, const int dim, const Obj<bundle_type>& bundleNew, const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap) {
       typedef int part_type;
       const Obj<sieve_type>& sieve    = bundle->getSieve();
@@ -971,7 +971,7 @@ namespace ALE {
       bundleNew->stratify();
       // 4) Cleanup
       if (assignment != NULL) delete [] assignment;
-    };
+    }
     #undef __FUNCT__
     #define __FUNCT__ "unifyMesh"
     static Obj<ALE::Mesh<PetscInt,PetscScalar> > unifyMesh(const Obj<ALE::Mesh<PetscInt,PetscScalar> >& parallelMesh) {
@@ -1021,7 +1021,7 @@ namespace ALE {
       if (serialMesh->debug()) {serialMesh->view("Serial Mesh");}
       ALE_LOG_EVENT_END;
       return serialMesh;
-    };
+    }
   public: // Do not like these
     #undef __FUNCT__
     #define __FUNCT__ "updateOverlap"
@@ -1064,7 +1064,7 @@ namespace ALE {
           }
         }
       }
-    };
+    }
     #undef __FUNCT__
     #define __FUNCT__ "updateSieve"
     template<typename RecvOverlap, typename RecvSection>
@@ -1118,7 +1118,7 @@ namespace ALE {
         }
       }
 #endif
-    };
+    }
     #undef __FUNCT__
     #define __FUNCT__ "coneCompletion"
     template<typename SendOverlap, typename RecvOverlap, typename SendSection, typename RecvSection>
@@ -1132,7 +1132,7 @@ namespace ALE {
       sieveCompletion::completion::completeSection(sendOverlap, recvOverlap, coneSizeSection, coneSection, sendSection, recvSection);
       // Update cones
       updateSieve(recvOverlap, recvSection, sieve);
-    };
+    }
     #undef __FUNCT__
     #define __FUNCT__ "completeSection"
     template<typename Section>
@@ -1169,7 +1169,7 @@ namespace ALE {
           }
         }
       }
-    };
+    }
   };
 }
 #endif

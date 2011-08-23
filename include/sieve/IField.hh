@@ -697,7 +697,7 @@ namespace ALE {
         ierr = MPI_Send(sizes,  2, MPIU_INT,        0, 1, section.comm());CHKERRXX(ierr);
         ierr = MPI_Send(values, 2, mover.getType(), 0, 1, section.comm());CHKERRXX(ierr);
       }
-    };
+    }
     template<typename Point_, typename Value_, int fiberDim>
     static void writeSection(std::ofstream& fs, IUniformSection<Point_, Value_, fiberDim>& section) {
       typedef typename IUniformSection<Point_, Value_, fiberDim>::index_type index_type;
@@ -770,7 +770,7 @@ namespace ALE {
         for(int i = 0; i < fiberDim; ++i) {emptyValues[i] = ((value_type *) &defValue[i])[0];}
         ierr = MPI_Send(emptyValues, fiberDim, mover.getType(), 0, 1, section.comm());CHKERRXX(ierr);
       }
-    };
+    }
     template<typename Point_, typename Value_>
     static void writeSection(std::ofstream& fs, ISection<Point_, Value_>& section) {
       typedef typename ISection<Point_, Value_>::point_type point_type;
@@ -826,7 +826,7 @@ namespace ALE {
         }
         ierr = MPI_Send(values, size, mover.getType(), 0, 1, section.comm());CHKERRXX(ierr);
       }
-    };
+    }
     template<typename Point_, typename Value_>
     static void writeSection(std::ofstream& fs, IGeneralSection<Point_, Value_>& section) {
       typedef typename IGeneralSection<Point_, Value_>::point_type point_type;
@@ -887,7 +887,7 @@ namespace ALE {
       // Write spaces
       //   std::vector<Obj<atlas_type> > _spaces;
       //   std::vector<Obj<bc_type> >    _bcs;
-    };
+    }
     template<typename Point_, typename Value_>
     static void loadSection(std::ifstream& fs, IConstantSection<Point_, Value_>& section) {
       typedef typename IConstantSection<Point_, Value_>::index_type index_type;
@@ -931,7 +931,7 @@ namespace ALE {
         section.updatePoint(min, values);
         section.setDefaultValue(values[1]);
       }
-    };
+    }
     template<typename Point_, typename Value_, int fiberDim>
     static void loadSection(std::ifstream& fs, IUniformSection<Point_, Value_, fiberDim>& section) {
       typedef typename IUniformSection<Point_, Value_, fiberDim>::index_type index_type;
@@ -1008,7 +1008,7 @@ namespace ALE {
         ierr = MPI_Recv(emptyValues, fiberDim, mover.getType(), 0, 1, section.comm(), &status);CHKERRXX(ierr);
         section.setDefault(emptyValues);
       }
-    };
+    }
     template<typename Point_, typename Value_>
     static void loadSection(std::ifstream& fs, ISection<Point_, Value_>& section) {
       typedef typename ISection<Point_, Value_>::point_type point_type;
@@ -1076,7 +1076,7 @@ namespace ALE {
         delete [] pvalues;
         ierr = PetscFree(values);CHKERRXX(ierr);
       }
-    };
+    }
     template<typename Point_, typename Value_>
     static void loadSection(std::ifstream& fs, IGeneralSection<Point_, Value_>& section) {
       typedef typename IGeneralSection<Point_, Value_>::point_type point_type;
@@ -1150,7 +1150,7 @@ namespace ALE {
       // Load spaces
       //   std::vector<Obj<atlas_type> > _spaces;
       //   std::vector<Obj<bc_type> >    _bcs;
-    };
+    }
   };
 }
 

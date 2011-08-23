@@ -30,9 +30,9 @@ namespace ALE {
     const _Tp& x;
     IsEqual(const _Tp& x) : x(x) {};
     bool operator()(_Tp& y) const {return x == y;}
-    const bool operator()(const _Tp& y) const {return x == y;}
+    bool operator()(const _Tp& y) const {return x == y;}
     bool operator()(_Tp& y, _Tp& dummy) const {return x == y;}
-    const bool operator()(const _Tp& y, const _Tp& dummy) const {return x == y;}
+    bool operator()(const _Tp& y, const _Tp& dummy) const {return x == y;}
   };
 
   // Creates new global point names and renames local points globally
@@ -81,7 +81,7 @@ namespace ALE {
     template<typename Iterator>
     void renumberPoints(const Iterator& begin, const Iterator& end) {
       renumberPoints(begin, end, Identity<typename Iterator::value_type>());
-    };
+    }
     template<typename Iterator, typename KeyExtractor>
     void renumberPoints(const Iterator& begin, const Iterator& end, const KeyExtractor& ex) {
       int numPoints = 0, numGlobalPoints, firstPoint;
@@ -96,7 +96,7 @@ namespace ALE {
         this->renumbering[firstPoint]     = ex(*p_iter);
         this->invRenumbering[ex(*p_iter)] = firstPoint;
       }
-    };
+    }
   public:
     void constructRemoteRenumbering() {
       const int localSize   = this->renumbering.size();
@@ -192,7 +192,7 @@ namespace ALE {
         }
       }
       return __result;
-    };
+    }
   public:
     template<typename Sequence, typename Renumbering, typename SendOverlap, typename RecvOverlap>
     static void constructOverlap(const Sequence& points, Renumbering& renumbering, const Obj<SendOverlap>& sendOverlap, const Obj<RecvOverlap>& recvOverlap) {
@@ -340,7 +340,7 @@ namespace ALE {
       // TODO: Rewrite above to use optimized construction
       sendOverlap->assemble();
       recvOverlap->assemble();
-    };
+    }
   };
   namespace Pullback {
     class SimpleCopy {
@@ -408,7 +408,7 @@ namespace ALE {
         for(typename RecvOverlap::capSequence::iterator r_iter = rBegin; r_iter != rEnd; ++r_iter) {
           recvAllocator.deallocate(recvPoints[*r_iter], recvOverlap->getSupportSize(*r_iter));
         }
-      };
+      }
       // Specialize to ArrowSection
       template<typename SendOverlap, typename RecvOverlap, typename SendSection, typename RecvSection>
       static void copyConstantArrow(const Obj<SendOverlap>& sendOverlap, const Obj<RecvOverlap>& recvOverlap, const Obj<SendSection>& sendSection, const Obj<RecvSection>& recvSection) {
@@ -478,7 +478,7 @@ namespace ALE {
         for(typename RecvOverlap::traits::capSequence::iterator r_iter = rRanks->begin(); r_iter != rEnd; ++r_iter) {
           recvAllocator.deallocate(recvPoints[*r_iter], recvOverlap->getSupportSize(*r_iter)*recvOverlap->getSupportSize(*r_iter));
         }
-      };
+      }
       // Copy the overlap section to the related processes
       //   This version is for IConstant sections, meaning the same, single value over all points
       template<typename SendOverlap, typename RecvOverlap, typename SendSection, typename RecvSection>
@@ -574,7 +574,7 @@ namespace ALE {
         for(typename RecvOverlap::capSequence::iterator r_iter = rRanks->begin(); r_iter != rEnd; ++r_iter) {
           recvAllocator.deallocate(recvPoints[*r_iter], 2);
         }
-      };
+      }
       // Copy the overlap section to the related processes
       //   This version is for different sections, possibly with different data types
       // TODO: Can cache MPIMover objects (like a VecScatter)
@@ -688,7 +688,7 @@ namespace ALE {
           sendAllocator.deallocate(v, numVals);
         }
         //recvSection->view("After copy");
-      };
+      }
       // Copy the overlap section to the related processes
       //   This version is for sections with the same type
       template<typename SendOverlap, typename RecvOverlap, typename Section>
@@ -791,7 +791,7 @@ namespace ALE {
           allocator.deallocate(v, numVals);
         }
         //recvSection->view("After copy");
-      };
+      }
       // Specialize to ArrowSection
       template<typename SendOverlap, typename RecvOverlap>
       static void copy(const Obj<SendOverlap>& sendOverlap, const Obj<RecvOverlap>& recvOverlap, const Obj<UniformSection<MinimalArrow<int,int>,int> >& sendSection, const Obj<UniformSection<MinimalArrow<int,int>,int> >& recvSection, const MPI_Datatype datatype = MPI_DATATYPE_NULL) {
@@ -890,7 +890,7 @@ namespace ALE {
           allocator.deallocate(v, numVals);
         }
         //recvSection->view("After copy");
-      };
+      }
       // Specialize to a ConstantSection
 #if 0
       template<typename SendOverlap, typename RecvOverlap, typename Value>
@@ -905,11 +905,11 @@ namespace ALE {
       template<typename SendOverlap, typename RecvOverlap, typename Value>
       static void copy(const Obj<SendOverlap>& sendOverlap, const Obj<RecvOverlap>& recvOverlap, const Obj<ConstantSection<typename SendOverlap::source_type, Value> >& sendSection, const Obj<ConstantSection<ALE::Pair<int, typename SendOverlap::source_type>, Value> >& recvSection) {
         copyConstant(sendOverlap, recvOverlap, sendSection, recvSection);
-      };
+      }
       template<typename SendOverlap, typename RecvOverlap, typename Value>
       static void copy(const Obj<SendOverlap>& sendOverlap, const Obj<RecvOverlap>& recvOverlap, const Obj<IConstantSection<typename SendOverlap::source_type, Value> >& sendSection, const Obj<ConstantSection<ALE::Pair<int, typename SendOverlap::source_type>, Value> >& recvSection) {
         copyConstant(sendOverlap, recvOverlap, sendSection, recvSection);
-      };
+      }
 #endif
       // Specialize to an IConstantSection
       template<typename SendOverlap, typename RecvOverlap, typename Value>
@@ -922,7 +922,7 @@ namespace ALE {
         //   a) Too many items in the chart, copied from the remote sendSection
         //   b) A chart mapped to the local numbering, which we do not want
         copyIConstant(sendOverlap, recvOverlap, sendSection, recvSection);
-      };
+      }
       // Specialize to an BaseSection/ConstantSection pair
 #if 0
       template<typename SendOverlap, typename RecvOverlap, typename Sieve_>
@@ -933,7 +933,7 @@ namespace ALE {
       template<typename SendOverlap, typename RecvOverlap, typename Sieve_>
       static void copy(const Obj<SendOverlap>& sendOverlap, const Obj<RecvOverlap>& recvOverlap, const Obj<BaseSection<Sieve_> >& sendSection, const Obj<ConstantSection<ALE::Pair<int, typename SendOverlap::source_type>, int> >& recvSection) {
         copyConstant(sendOverlap, recvOverlap, sendSection, recvSection);
-      };
+      }
 #endif
       // Specialize to an BaseSectionV/ConstantSection pair
 #if 0
@@ -945,7 +945,7 @@ namespace ALE {
       template<typename SendOverlap, typename RecvOverlap, typename Sieve_>
       static void copy(const Obj<SendOverlap>& sendOverlap, const Obj<RecvOverlap>& recvOverlap, const Obj<BaseSectionV<Sieve_> >& sendSection, const Obj<ConstantSection<ALE::Pair<int, typename SendOverlap::source_type>, int> >& recvSection) {
         copyConstant(sendOverlap, recvOverlap, sendSection, recvSection);
-      };
+      }
 #endif
       // Specialize to an LabelBaseSection/ConstantSection pair
 #if 0
@@ -957,17 +957,17 @@ namespace ALE {
       template<typename SendOverlap, typename RecvOverlap, typename Sieve_, typename Label_>
       static void copy(const Obj<SendOverlap>& sendOverlap, const Obj<RecvOverlap>& recvOverlap, const Obj<LabelBaseSection<Sieve_, Label_> >& sendSection, const Obj<ConstantSection<ALE::Pair<int, typename SendOverlap::source_type>, int> >& recvSection) {
         copyConstant(sendOverlap, recvOverlap, sendSection, recvSection);
-      };
+      }
 #endif
       template<typename SendOverlap, typename RecvOverlap, typename Sieve_, typename Label_>
       static void copy(const Obj<SendOverlap>& sendOverlap, const Obj<RecvOverlap>& recvOverlap, const Obj<LabelBaseSectionV<Sieve_, Label_> >& sendSection, const Obj<ConstantSection<ALE::Pair<int, typename SendOverlap::source_type>, int> >& recvSection) {
         copyConstant(sendOverlap, recvOverlap, sendSection, recvSection);
-      };
+      }
       // Specialize to a ConstantSection for ArrowSection
       template<typename SendOverlap, typename RecvOverlap, typename Value>
       static void copy(const Obj<SendOverlap>& sendOverlap, const Obj<RecvOverlap>& recvOverlap, const Obj<ConstantSection<MinimalArrow<typename SendOverlap::source_type,typename SendOverlap::source_type>, Value> >& sendSection, const Obj<ConstantSection<MinimalArrow<typename SendOverlap::source_type,typename SendOverlap::source_type>, Value> >& recvSection) {
         copyConstantArrow(sendOverlap, recvOverlap, sendSection, recvSection);
-      };
+      }
     };
     class BinaryFusion {
     public:
@@ -994,7 +994,7 @@ namespace ALE {
           section->updatePoint(localPoint, values);
           delete [] values;
         }
-      };
+      }
     };
     class ReplacementBinaryFusion {
     public:
@@ -1012,7 +1012,7 @@ namespace ALE {
 
           section->update(localPoint, overlapSection->restrictPoint(remotePoint));
         }
-      };
+      }
     };
     class AdditiveBinaryFusion {
     public:
@@ -1035,7 +1035,7 @@ namespace ALE {
             section->updateAddPoint(localPoint, overlapSection->restrictPoint(overlap_point_type(rank, remotePoint)));
           }
         }
-      };
+      }
     };
     class InsertionBinaryFusion {
     public:
@@ -1111,7 +1111,7 @@ namespace ALE {
           }
         }
 #endif
-      };
+      }
       // Specialize to ArrowSection
       template<typename OverlapSection, typename RecvOverlap>
       static void fuse(const Obj<OverlapSection>& overlapSection, const Obj<RecvOverlap>& recvOverlap, const Obj<UniformSection<MinimalArrow<int,int>,int> >& section) {
@@ -1147,11 +1147,11 @@ namespace ALE {
             const typename RecvOverlap::target_type        remoteTarget = targets->begin().color();
             const typename Section::point_type             localPoint(localSource, localTarget);
             const typename OverlapSection::point_type      remotePoint(remoteSource, remoteTarget);
-              
+
             if (overlapSection->hasPoint(remotePoint)) {section->updatePoint(localPoint, overlapSection->restrictPoint(remotePoint));}
           }
         }
-      };
+      }
       // Specialize to the Sieve
       template<typename OverlapSection, typename RecvOverlap, typename Renumbering, typename Point>
       static void fuse(const Obj<OverlapSection>& overlapSection, const Obj<RecvOverlap>& recvOverlap, Renumbering& renumbering, const Obj<Sieve<Point,Point,int> >& sieve) {
@@ -1171,7 +1171,7 @@ namespace ALE {
           sieve->clearCone(localPoint);
           for(int i = 0; i < size; ++i, ++c) {sieve->addCone(renumbering[values[i]], localPoint, c);}
         }
-      };
+      }
       // Specialize to the ISieve
       template<typename OverlapSection, typename RecvOverlap, typename Renumbering, typename Point>
       static void fuse(const Obj<OverlapSection>& overlapSection, const Obj<RecvOverlap>& recvOverlap, Renumbering& renumbering, const Obj<IFSieve<Point> >& sieve) {
@@ -1264,7 +1264,7 @@ namespace ALE {
         delete [] localValues;
         delete [] localOrientation;
 #endif
-      };
+      }
       template<typename OverlapSection, typename RecvOverlap, typename Point>
       static void fuse(const Obj<OverlapSection>& overlapSection, const Obj<RecvOverlap>& recvOverlap, const Obj<IFSieve<Point> >& sieve) {
         typedef typename OverlapSection::point_type overlap_point_type;
@@ -1355,7 +1355,7 @@ namespace ALE {
         delete [] localValues;
         delete [] localOrientation;
 #endif
-      };
+      }
       // Generic
       template<typename OverlapSection, typename RecvOverlap, typename Section, typename Bundle>
       static void fuse(const Obj<OverlapSection>& overlapSection, const Obj<RecvOverlap>& recvOverlap, const Obj<Section>& section, const Obj<Bundle>& bundle) {
@@ -1380,7 +1380,7 @@ namespace ALE {
 
           section->update(localPoint, overlapSection->restrictPoint(overlap_point_type(rank, remotePoint)));
         }
-      };
+      }
     };
     class InterpolateMultipleFusion {
     public:
@@ -1453,7 +1453,7 @@ namespace ALE {
           }
         }
         delete [] interpolant;
-      };
+      }
     };
   }
 }

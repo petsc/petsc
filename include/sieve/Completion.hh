@@ -30,7 +30,7 @@ namespace ALE {
       if (overlapSection->debug()) {overlapSection->view("Overlap Section");}
       ALE::Pullback::InsertionBinaryFusion::fuse(overlapSection, recvOverlap, recvSection);
       if (recvSection->debug()) {recvSection->view("Receieve Section");}
-    };
+    }
     template<typename SendOverlap, typename RecvOverlap, typename SendSection, typename RecvSection>
     static void completeSectionAdd(const Obj<SendOverlap>& sendOverlap, const Obj<RecvOverlap>& recvOverlap, const Obj<SendSection>& sendSection, const Obj<RecvSection>& recvSection) {
       typedef ALE::Section<ALE::Pair<int, typename SendOverlap::source_type>, typename SendSection::value_type> OverlapSection;
@@ -41,7 +41,7 @@ namespace ALE {
       if (overlapSection->debug()) {overlapSection->view("Overlap Section");}
       ALE::Pullback::AdditiveBinaryFusion::fuse(overlapSection, recvOverlap, recvSection);
       if (recvSection->debug()) {recvSection->view("Receieve Section");}
-    };
+    }
     template<typename SendOverlap, typename RecvOverlap, typename SendSection, typename RecvSection, typename OverlapSection>
     static void completeSectionAdd(const Obj<SendOverlap>& sendOverlap, const Obj<RecvOverlap>& recvOverlap, const Obj<SendSection>& sendSection, const Obj<RecvSection>& recvSection, const Obj<OverlapSection>& overlapSection) {
       if (sendSection->debug()) {sendSection->view("Send Section");}
@@ -49,7 +49,7 @@ namespace ALE {
       if (overlapSection->debug()) {overlapSection->view("Overlap Section");}
       ALE::Pullback::AdditiveBinaryFusion::fuse(overlapSection, recvOverlap, recvSection);
       if (recvSection->debug()) {recvSection->view("Receieve Section");}
-    };
+    }
   };
   namespace New {
     template<typename Bundle_, typename Value_, typename Alloc_ = malloc_allocator<typename Bundle_::point_type> >
@@ -193,7 +193,7 @@ namespace ALE {
         if (height) {
           ALE::New::Completion<bundle_type, value_type>::scatterSupports(sieve, sieveNew, sendOverlap, recvOverlap, bundle, bundle->depth()-height);
         }
-      };
+      }
       template<typename SifterType>
       static void scatterCones(const Obj<SifterType>& sifter, const Obj<SifterType>& sifterNew, const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap, const Obj<bundle_type>& bundle = NULL, const int minimumHeight = 0) {
         typedef typename ALE::New::ConeSizeSection<bundle_type, SifterType> cone_size_section;
@@ -224,7 +224,7 @@ namespace ALE {
             }
           }
         }
-      };
+      }
       template<typename SifterType, typename Renumbering>
       static void scatterCones(const Obj<SifterType>& sifter, const Obj<SifterType>& sifterNew, const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap, Renumbering& renumbering, const Obj<bundle_type>& bundle = NULL) {
 	PETSc::Log::Event("ScatterCones").begin();
@@ -261,7 +261,7 @@ namespace ALE {
         }
 	PETSc::Log::Event("ScatterConesUpdate").end();
 	PETSc::Log::Event("ScatterCones").end();
-      };
+      }
       template<typename SifterType>
       static void scatterSupports(const Obj<SifterType>& sifter, const Obj<SifterType>& sifterNew, const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap, const Obj<bundle_type>& bundle = NULL, const int minimumDepth = 0) {
         typedef typename ALE::New::SupportSizeSection<bundle_type, SifterType> support_size_section;
@@ -292,7 +292,7 @@ namespace ALE {
             }
           }
         }
-      };
+      }
     };
 
     template<typename Value_>

@@ -47,7 +47,7 @@ namespace ALE {
       permutation->setChart(mesh->getSieve()->getChart());
       invPermutation->setChart(mesh->getSieve()->getChart());
       createOrderingClosureV(mesh, pointPermutation, permutation, invPermutation);
-     };
+     }
 
     template<typename Mesh, typename Section>
     static void createOrderingClosureV(const Obj<Mesh>& mesh, const Obj<Section>& pointPermutation, const Obj<Section>& permutation, const Obj<Section>& invPermutation, const int height = 0) {
@@ -115,7 +115,7 @@ namespace ALE {
         }
       }
       PETSc::Log::Event("PermutationClosure").end();
-    };
+    }
 
     template<typename Section, typename Labeling>
     static void relabelSection(Section& section, Labeling& relabeling, Section& newSection) {
@@ -132,7 +132,7 @@ namespace ALE {
 
         newSection.updatePoint(newP, section.restrictPoint(p));
       }
-    };
+    }
   };
 }
 #endif /* included_ALE_Ordering_hh */

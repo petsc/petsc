@@ -181,7 +181,7 @@ namespace ALE {
       }
       if (debug) {std::cout << "["<<numbering->commRank()<<"]   local points" << std::endl;}
       numbering->setLocalSize(localSize);
-    };
+    }
     // Order all local points
     //   points in the overlap are only ordered by the owner with the lowest rank
     template<typename Sequence_, typename Section_>
@@ -224,7 +224,7 @@ namespace ALE {
       }
       ///std::cout << "["<<order->commRank()<<"]   local size" << std::endl;
       order->setLocalSize(localSize);
-    };
+    }
   protected: // Global offsets
     // Calculate process offsets
     template<typename Numbering>
@@ -239,7 +239,7 @@ namespace ALE {
       }
       numbering->setGlobalOffsets(offsets);
       delete [] offsets;
-    };
+    }
     // Update local offsets based upon process offsets
     template<typename Numbering, typename Sequence>
     void updateOrder(const Obj<Numbering>& numbering, Sequence& points) {
@@ -250,7 +250,7 @@ namespace ALE {
           numbering->updateAddPoint(*l_iter, &val);
         }
       }
-    };
+    }
     template<typename OverlapSection, typename RecvOverlap>
     static void fuseNumbering(const Obj<OverlapSection>& overlapSection, const Obj<RecvOverlap>& recvOverlap, const Obj<numbering_type>& numbering) {
       typedef typename OverlapSection::point_type overlap_point_type;
@@ -289,7 +289,7 @@ namespace ALE {
           }
         }
       }
-    };
+    }
     template<typename OverlapSection, typename RecvOverlap>
     static void fuse(const Obj<OverlapSection>& overlapSection, const Obj<RecvOverlap>& recvOverlap, const Obj<order_type>& order) {
       typedef typename OverlapSection::point_type overlap_point_type;
@@ -327,7 +327,7 @@ namespace ALE {
           }
         }
       }
-    };
+    }
   public: // Completion
     void completeNumbering(const Obj<numbering_type>& numbering, const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap, bool allowDuplicates = false) {
 #if 0
@@ -342,7 +342,7 @@ namespace ALE {
       fuseNumbering(overlapSection, recvOverlap, numbering);
       if (numbering->debug()) {numbering->view("Global Numbering");}
 #endif
-    };
+    }
     void completeOrder(const Obj<order_type>& order, const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap, bool allowDuplicates = false) {
 #if 0
       ALE::Completion::completeSection(sendOverlap, recvOverlap, order, order);
@@ -356,7 +356,7 @@ namespace ALE {
       fuse(overlapSection, recvOverlap, order);
       if (order->debug()) {order->view("Global Order");}
 #endif
-    };
+    }
   public: // Construct a full global numberings
     template<typename Sequence>
     void constructNumbering(const Obj<numbering_type>& numbering, const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap, const Obj<Sequence>& points) {
@@ -364,21 +364,21 @@ namespace ALE {
       this->calculateOffsets(numbering);
       this->updateOrder(numbering, *points.ptr());
       this->completeNumbering(numbering, sendOverlap, recvOverlap);
-    };
+    }
     template<typename Sequence, typename Section>
     void constructOrder(const Obj<order_type>& order, const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap, const Sequence& points, const Obj<Section>& section) {
       this->constructLocalOrder(order, sendOverlap, points, section);
       this->calculateOffsets(order);
       this->updateOrder(order, points);
       this->completeOrder(order, sendOverlap, recvOverlap);
-    };
+    }
     template<typename Sequence, typename Section>
     void constructOrder(const Obj<order_type>& order, const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap, const Obj<Sequence>& points, const Obj<Section>& section) {
       this->constructLocalOrder(order, sendOverlap, *points.ptr(), section);
       this->calculateOffsets(order);
       this->updateOrder(order, *points.ptr());
       this->completeOrder(order, sendOverlap, recvOverlap);
-    };
+    }
   public: // Real interface
     template<typename ABundle_>
     const Obj<numbering_type>& getLocalNumbering(const Obj<ABundle_>& bundle, const int depth) {
@@ -395,7 +395,7 @@ namespace ALE {
         if (this->_debug) {std::cout << "Using old local numbering: ptr " << bundle.ptr() << " depth " << depth << std::endl;}
       }
       return this->_localNumberings[bundle.ptr()]["depth"][depth];
-    };
+    }
     template<typename ABundle_>
     const Obj<numbering_type>& getNumbering(const Obj<ABundle_>& bundle, const int depth) {
       if ((this->_numberings.find(bundle.ptr()) == this->_numberings.end()) ||
@@ -413,7 +413,7 @@ namespace ALE {
         if (this->_debug) {std::cout << "["<<bundle->commRank()<<"]Using old numbering: depth " << depth << std::endl;}
       }
       return this->_numberings[bundle.ptr()]["depth"][depth];
-    };
+    }
     template<typename ABundle_>
     const Obj<numbering_type>& getNumbering(const Obj<ABundle_>& bundle, const std::string& labelname, const int value) {
       if ((this->_numberings.find(bundle.ptr()) == this->_numberings.end()) ||
@@ -432,7 +432,7 @@ namespace ALE {
         if (this->_debug) {std::cout << "["<<bundle->commRank()<<"]Using old numbering: " << labelname << " value " << value << std::endl;}
       }
       return this->_numberings[bundle.ptr()][labelname][value];
-    };
+    }
     template<typename ABundle_, typename Section_>
     const Obj<order_type>& getGlobalOrder(const Obj<ABundle_>& bundle, const std::string& name, const Obj<Section_>& section) {
       if ((this->_orders.find(bundle.ptr()) == this->_orders.end()) ||
@@ -450,7 +450,8 @@ namespace ALE {
         if (this->_debug) {std::cout << "["<<bundle->commRank()<<"]Using old global order: " << name << std::endl;}
       }
       return this->_orders[bundle.ptr()][name];
-    };
+    }
+#if 0
     template<typename ABundle_, typename Section_>
     const Obj<order_type>& getGlobalOrderWithBC(const Obj<ABundle_>& bundle, const std::string& name, const Obj<Section_>& section) {
       if ((this->_orders.find(bundle.ptr()) == this->_orders.end()) ||
@@ -468,11 +469,12 @@ namespace ALE {
         if (this->_debug) {std::cout << "["<<bundle->commRank()<<"]Using old global order: " << name << std::endl;}
       }
       return this->_orders[bundle.ptr()][name];
-    };
+    }
+#endif
     template<typename ABundle_>
     void setGlobalOrder(const Obj<ABundle_>& bundle, const std::string& name, const Obj<order_type>& order) {
       this->_orders[bundle.ptr()][name] = order;
-    };
+    }
   };
 }
 #endif

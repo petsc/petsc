@@ -214,7 +214,7 @@ namespace ALE {
           }
         }
       }
-    };
+    }
     template<typename Section_>
     void orderPoint(const Obj<Section_>& section, const Obj<sieve_type>& sieve, const typename Section_::point_type& point, value_type& offset, value_type& bcOffset, const Obj<send_overlap_type>& sendOverlap = NULL) {
       const Obj<typename Section_::atlas_type>&     atlas = section->getAtlas();
@@ -261,7 +261,7 @@ namespace ALE {
           bcOffset += dim;
         }
       }
-    };
+    }
     template<typename Section_>
     void orderPatch(const Obj<Section_>& section, const Obj<sieve_type>& sieve, const Obj<send_overlap_type>& sendOverlap = NULL, const value_type offset = 0, const value_type bcOffset = -2) {
       const typename Section_::chart_type& chart = section->getChart();
@@ -281,7 +281,7 @@ namespace ALE {
           section->setIndex(*p_iter, off - (idx + 2));
         }
       }
-    };
+    }
   public: // Numbering
     // Number all local points
     //   points in the overlap are only numbered by the owner with the lowest rank
@@ -321,7 +321,7 @@ namespace ALE {
       }
       if (debug) {std::cout << "["<<numbering->commRank()<<"]   local points" << std::endl;}
       numbering->setLocalSize(localSize);
-    };
+    }
     // Order all local points
     //   points in the overlap are only ordered by the owner with the lowest rank
     template<typename Iterator_, typename Section_>
@@ -373,7 +373,7 @@ namespace ALE {
       }
       if (debug) {std::cout << "["<<order->commRank()<<"]   local size" << localSize << std::endl;}
       order->setLocalSize(localSize);
-    };
+    }
     // Calculate process offsets
     template<typename Numbering>
     void calculateOffsets(const Obj<Numbering>& numbering) {
@@ -387,7 +387,7 @@ namespace ALE {
       }
       numbering->setGlobalOffsets(offsets);
       delete [] offsets;
-    };
+    }
     // Update local offsets based upon process offsets
     template<typename Numbering, typename Iterator>
     void updateOrder(const Obj<Numbering>& numbering, const Iterator& pointsBegin, const Iterator& pointsEnd) {
@@ -398,7 +398,7 @@ namespace ALE {
           numbering->updateAddPoint(*l_iter, &val);
         }
       }
-    };
+    }
     // Communicate numbers in the overlap
     void completeNumbering(const Obj<numbering_type>& numbering, const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap, bool allowDuplicates = false) {
 #if 1
@@ -488,7 +488,7 @@ namespace ALE {
         }
       }
 #endif
-    };
+    }
     // Communicate (size,offset)s in the overlap
     void completeOrder(const Obj<order_type>& order, const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap, bool allowDuplicates = false) {
 #if 1
@@ -588,7 +588,7 @@ namespace ALE {
         }
       }
 #endif
-    };
+    }
     // Construct a full global numbering
     template<typename Iterator>
     void constructNumbering(const Obj<numbering_type>& numbering, const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap, const Iterator& pointsBegin, const Iterator& pointsEnd) {
@@ -596,7 +596,7 @@ namespace ALE {
       this->calculateOffsets(numbering);
       this->updateOrder(numbering, pointsBegin, pointsEnd);
       this->completeNumbering(numbering, sendOverlap, recvOverlap);
-    };
+    }
     // Construct a full global order
     template<typename Iterator, typename Section>
     void constructOrder(const Obj<order_type>& order, const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap, const Iterator& pointsBegin, const Iterator& pointsEnd, const Obj<Section>& section, const int space = -1, const Obj<label_type>& label = PETSC_NULL) {
@@ -604,14 +604,14 @@ namespace ALE {
       this->calculateOffsets(order);
       this->updateOrder(order, pointsBegin, pointsEnd);
       this->completeOrder(order, sendOverlap, recvOverlap);
-    };
+    }
     template<typename Iterator, typename Section>
     void constructOrderBC(const Obj<order_type>& order, const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap, const Iterator& pointsBegin, const Iterator& pointsEnd, const Obj<Section>& section, const int space = -1, const Obj<label_type>& label = PETSC_NULL) {
       this->constructLocalOrder(order, sendOverlap, pointsBegin, pointsEnd, section, space, true, label);
       this->calculateOffsets(order);
       this->updateOrder(order, pointsBegin, pointsEnd);
       this->completeOrder(order, sendOverlap, recvOverlap);
-    };
+    }
   public:
     // Construct the inverse map from numbers to points
     //   If we really need this, then we should consider using a label
@@ -621,7 +621,7 @@ namespace ALE {
       for(typename numbering_type::chart_type::iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
         numbering->setPoint(numbering->getIndex(*p_iter), *p_iter);
       }
-    };
+    }
   public: // Real interface
     template<typename ABundle_>
     const Obj<numbering_type>& getLocalNumbering(const Obj<ABundle_>& bundle, const int depth) {
@@ -638,7 +638,7 @@ namespace ALE {
         if (this->_debug) {std::cout << "Using old local numbering: ptr " << bundle.ptr() << " depth " << depth << std::endl;}
       }
       return this->_localNumberings[bundle.ptr()]["depth"][depth];
-    };
+    }
     template<typename ABundle_>
     const Obj<numbering_type>& getNumbering(const Obj<ABundle_>& bundle, const int depth) {
       if ((this->_numberings.find(bundle.ptr()) == this->_numberings.end()) ||
@@ -657,7 +657,7 @@ namespace ALE {
 //         std::cout << "["<<bundle->commRank()<<"]Using old numbering: fixed depth value " << depth << std::endl;
       }
       return this->_numberings[bundle.ptr()]["depth"][depth];
-    };
+    }
     template<typename ABundle_>
     const Obj<numbering_type>& getNumbering(const Obj<ABundle_>& bundle, const std::string& labelname, const int value) {
       if ((this->_numberings.find(bundle.ptr()) == this->_numberings.end()) ||
@@ -675,7 +675,7 @@ namespace ALE {
         if (this->_debug) {std::cout << "["<<bundle->commRank()<<"]Using old numbering: " << labelname << " value " << value << std::endl;}
       }
       return this->_numberings[bundle.ptr()][labelname][value];
-    };
+    }
     template<typename ABundle_, typename Section_>
     const Obj<order_type>& getLocalOrder(const Obj<ABundle_>& bundle, const std::string& name, const Obj<Section_>& section, const int space = -1, const Obj<label_type>& label = PETSC_NULL) {
       if ((this->_localOrders.find(bundle.ptr()) == this->_localOrders.end()) ||
@@ -691,7 +691,7 @@ namespace ALE {
         if (this->_debug) {std::cout << "["<<bundle->commRank()<<"]Using old local order: " << name << std::endl;}
       }
       return this->_localOrders[bundle.ptr()][name];
-    };
+    }
     template<typename ABundle_, typename Section_>
     const Obj<order_type>& getGlobalOrder(const Obj<ABundle_>& bundle, const std::string& name, const Obj<Section_>& section, const int space = -1, const Obj<label_type>& label = PETSC_NULL) {
       if ((this->_orders.find(bundle.ptr()) == this->_orders.end()) ||
@@ -708,7 +708,7 @@ namespace ALE {
         if (this->_debug) {std::cout << "["<<bundle->commRank()<<"]Using old global order: " << name << std::endl;}
       }
       return this->_orders[bundle.ptr()][name];
-    };
+    }
     template<typename ABundle_, typename Iterator_, typename Section_>
     const Obj<order_type>& getGlobalOrder(const Obj<ABundle_>& bundle, const std::string& name, const Iterator_& pointsBegin, const Iterator_& pointsEnd, const Obj<Section_>& section, const int space = -1, const Obj<label_type>& label = PETSC_NULL) {
       if ((this->_orders.find(bundle.ptr()) == this->_orders.end()) ||
@@ -725,7 +725,7 @@ namespace ALE {
         if (this->_debug) {std::cout << "["<<bundle->commRank()<<"]Using old global order: " << name << std::endl;}
       }
       return this->_orders[bundle.ptr()][name];
-    };
+    }
     template<typename ABundle_, typename Section_>
     const Obj<order_type>& getGlobalOrderWithBC(const Obj<ABundle_>& bundle, const std::string& name, const Obj<Section_>& section, const int space = -1, const Obj<label_type>& label = PETSC_NULL) {
       if ((this->_orders.find(bundle.ptr()) == this->_orders.end()) ||
@@ -742,7 +742,7 @@ namespace ALE {
         if (this->_debug) {std::cout << "["<<bundle->commRank()<<"]Using old global order: " << name << std::endl;}
       }
       return this->_orders[bundle.ptr()][name];
-    };
+    }
     template<typename ABundle_, typename Iterator_, typename Section_>
     const Obj<order_type>& getGlobalOrderWithBC(const Obj<ABundle_>& bundle, const std::string& name, const Iterator_& pointsBegin, const Iterator_& pointsEnd, const Obj<Section_>& section, const int space = -1, const Obj<label_type>& label = PETSC_NULL) {
       if ((this->_ordersBC.find(bundle.ptr()) == this->_ordersBC.end()) ||
@@ -759,11 +759,11 @@ namespace ALE {
         if (this->_debug) {std::cout << "["<<bundle->commRank()<<"]Using old global order: " << name << std::endl;}
       }
       return this->_orders[bundle.ptr()][name];
-    };
+    }
     template<typename ABundle_>
     void setGlobalOrder(const Obj<ABundle_>& bundle, const std::string& name, const Obj<order_type>& order) {
       this->_orders[bundle.ptr()][name] = order;
-    };
+    }
   };
 }
 #endif

@@ -877,7 +877,7 @@ namespace ALE {
         }
       }
       return size;
-    };
+    }
     template<typename Section_>
     int sizeWithBC(const Obj<Section_>& section, const point_type& p) {
       const typename Section_::chart_type& chart = section->getChart();
@@ -894,12 +894,12 @@ namespace ALE {
         }
       }
       return size;
-    };
+    }
   public: // Allocation
     template<typename Section_>
     void allocate(const Obj<Section_>& section) {
       section->allocatePoint();
-    };
+    }
   public: // Retrieval traversal
     // Return the values for the closure of this point
     //   use a smart pointer?
@@ -935,7 +935,7 @@ namespace ALE {
         throw ALE::Exception(txt.str().c_str());
       }
       return values;
-    };
+    }
     template<typename Section_>
     void update(const Obj<Section_>& section, const point_type& p, const typename Section_::value_type v[]) {
       int j = 0;
@@ -948,7 +948,7 @@ namespace ALE {
         section->updatePoint(*p_iter, &v[j]);
         j += section->getFiberDimension(*p_iter);
       }
-    };
+    }
     template<typename Section_>
     void updateAdd(const Obj<Section_>& section, const point_type& p, const typename Section_::value_type v[]) {
       int j = 0;
@@ -961,7 +961,7 @@ namespace ALE {
         section->updateAddPoint(*p_iter, &v[j]);
         j += section->getFiberDimension(*p_iter);
       }
-    };
+    }
     template<typename Section_>
     void updateBC(const Obj<Section_>& section, const point_type& p, const typename Section_::value_type v[]) {
       int j = 0;
@@ -974,7 +974,7 @@ namespace ALE {
         section->updatePointBC(*p_iter, &v[j]);
         j += section->getFiberDimension(*p_iter);
       }
-    };
+    }
     template<typename Section_>
     void updateAll(const Obj<Section_>& section, const point_type& p, const typename Section_::value_type v[]) {
       int j = 0;
@@ -987,7 +987,7 @@ namespace ALE {
         section->updatePointAll(*p_iter, &v[j]);
         j += section->getFiberDimension(*p_iter);
       }
-    };
+    }
   public: // Mesh geometry
     void computeElementGeometry(const Obj<real_section_type>& coordinates, const point_type& e, double v0[], double J[], double invJ[], double& detJ) {
       const double *coords = this->restrictClosure(coordinates, e);
@@ -1007,7 +1007,7 @@ namespace ALE {
           invJ[d] = 1.0/J[d];
         }
       }
-    };
+    }
   public: // Viewers
     void view(const std::string& name, MPI_Comm comm = MPI_COMM_NULL) {
       if (comm == MPI_COMM_NULL) {
@@ -1019,20 +1019,21 @@ namespace ALE {
         PetscPrintf(comm, "viewing CartesianMesh '%s'\n", name.c_str());
       }
       this->getSieve()->view("mesh sieve");
-    };
+    }
   };
 
   class CartesianMeshBuilder {
   public:
     static Obj<CartesianMesh> createCartesianMesh(const MPI_Comm comm, const int dim, const int numCells[], const int partitions[], const int debug = 0) {
-      PetscErrorCode ierr;
+
       // Steal PETSc code that calculates partitions
       //   We could conceivably allow multiple patches per partition
       int size, rank;
       int totalPartitions = 1;
+      PetscErrorCode ierr;
 
-      ierr = MPI_Comm_size(comm, &size);
-      ierr = MPI_Comm_rank(comm, &rank);
+      ierr = MPI_Comm_size(comm, &size);CHKERRXX(ierr);
+      ierr = MPI_Comm_rank(comm, &rank);CHKERRXX(ierr);
       for(int d = 0; d < dim; ++d) totalPartitions *= partitions[d];
       if (size != totalPartitions) throw ALE::Exception("Invalid partitioning");
       // Determine local sizes

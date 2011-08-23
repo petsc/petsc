@@ -1483,7 +1483,7 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
 
         newLabel.addArrow(newSource, newTarget);
       }
-    };
+    }
   };// class Sifter
 
   class SifterSerializer {
