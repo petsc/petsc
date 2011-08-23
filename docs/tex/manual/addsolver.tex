@@ -77,9 +77,10 @@ be useful.
 typedef struct{
 
   PetscReal beta;
+  PetscReal eta;
 
-  Vec dx;   /* step direction */
-  Vec ww;   /* work vector    */
+  Vec X_old;
+  Vec G_old; 
 
 } TAO_CG;
 \end{verbatim}
@@ -100,9 +101,9 @@ the following code which solves an unconstrained minimization problem
 using the conjugate gradient method.
 
 \begin{verbatim}
-PetscErrorCode TaoSolverSolve_CG(TaoSolver tao, void *solver){
+PetscErrorCode TaoSolverSolve_CG(TaoSolver tao){
 
-  TAO_CG  *cg = (TAO_CG *) solver;
+  TAO_CG  *cg = (TAO_CG *) tao->data;
   Vec x = tao->solution;
   Vec g = tao->gradient;
   Vec s = tao->stepdirection;
@@ -172,8 +173,9 @@ The solver will pass this quantity, the current
 function value, the current iteration number, and a measure of
 infeasibility to TAO with the routine
 \begin{verbatim}
-   PetscErrorCode TaoSolverMonitor(TaoSolver,PetscInt,PetscReal,double,double,double,
-                  TaoTerminateReason*);
+   PetscErrorCode TaoSolverMonitor(TaoSolver tao, PetscInt iter, PetscReal f,
+                  PetscReal res, PetscReal cnorm, PetscReal steplength,
+                  TaoTerminationReason *reason);
 \end{verbatim}
 Most optimization algorithms are iterative in nature, and solvers should
 include this command somewhere in each iteration.  This routine
@@ -187,16 +189,18 @@ distance between the current solution and the optimal solution.  Examples
 of this measure are the norm of the gradient or the square root of a duality 
 gap. The fifth measure is a nonnegative error 
 that is nonnegative and usually
-represents a residual between the current function value and the
-optimal solution, such as the norm of the
-gradient.  The sixth argument is a nonnegative steplength, 
+represents a measure of the infeasibility
+such as the norm of the constraints or violation of bounds.
+This number should be zero for unconstrained solvers.
+The sixth argument is a nonnegative steplength, 
 or the multiple of the step direction added to the previous iterate.
 The results of the convergence test are returned in the last argument.
 If the termination reason is {\tt TAO\_CONTINUE\_ITERATING}, the
 algorithm should continue.
 
 After this monitoring routine, the solver computes a step direction
-using methods defined on the TaoVec object.  These methods include
+using the conjugate gradient algorithm and computations using Vec objects.  
+These methods include
 adding vectors together and computing an inner product.  A full list
 of these methods can be found in the manual pages.
 
@@ -204,9 +208,9 @@ Nonlinear conjugate gradient algorithms also require a line search.  TAO
 provides several line searches and support for using them.
 The routine
 \begin{verbatim}
-   int TaoLineSearchApply(TAO_SOLVER tao, TaoVec *xx, TaoVec *gg, TaoVec *dx,
-                          TaoVec *ww, double *f, double *step,
-                          int*flag)
+   PetscErrorCode TaoLineSearchApply(TaoLineSearch ls, Vec x, PetscReal *f, Vec g, 
+                          TaoVec *s, PetscReal *steplength, 
+                          TaoLineSearchTerminationReason *lsflag)
 \end{verbatim}
 passes the current solution, gradient, and objective value to the
 solver and returns a new solution, gradient, and objective value.  More
@@ -214,10 +218,11 @@ details on line searches can be found in the Section~\ref{sec:TaoLineSearch}
 The details of this line search are should be specified elsewhere, when
 the line search is created.
 
-TAO also includes support for linear solvers.  Although this algorithm
+TAO also includes support for linear solvers using PETSc KSP objects.  
+Although this algorithm
 does not require one, linear solvers are an important part of many
 algorithms.  Details on the use of these solvers can be found in
-Section~\ref{sec:TaoLinearSolvers}.
+The PETSc Users Manual.
 
 \subsection{Creation Routine}
 The TAO solver is initialized to for a particular algorithm in a separate
@@ -227,102 +232,146 @@ by this solver.   For example, the routine that creates the nonlinear
 conjugate gradient algorithm shown above can be implemented as follows.
 \begin{verbatim}
 EXTERN_C_BEGIN
-int TaoCreate_CG_FR(TAO_SOLVER tao)
+PetscErrorCode TaoSolverCreate_CG(TaoSolver tao)
 {
-  TAO_CG *cg;
-  int    info;
+  TAO_CG *cg = (TAO_CG*)tao->data;
+  const char *morethuente_type = TAOLINESEARCH_MT;
+  PetscErrorCode ierr;
 
-  TaoFunctionBegin;
+  PetscFunctionBegin;
 
-  info = TaoNew(TAO_CG,&cg); CHKERRQ(info);
+  ierr = PetscNewLog(tao,TAO_CG,&cg); CHKERRQ(ierr);
+  tao->data = (void*)cg;
+  cg->eta = 0.1;
+  cg->delta_min = 1e-7;
+  cg->delta_max = 100;
+  cg->cg_type = CG_PolakRibierePlus;
 
-  info = TaoSetMaximumIterates(tao,2000); CHKERRQ(info);
-  info = TaoSetTolerances(tao,1e-4,1e-4,0,0); CHKERRQ(info);
-  info = TaoSetMaximumFunctionEvaluations(tao,4000); CHKERRQ(info);
+  tao->max_its = 2000;
+  tao->max_funcs = 4000;
+  tao->fatol = 1e-4;
+  tao->frtol = 1e-4;
 
-  info = TaoCreateMoreThuenteLineSearch(tao,0,0.1); CHKERRQ(info);
+  tao->ops->setup = TaoSolverSetUp_CG;
+  tao->ops->solve = TaoSolverSolve_CG;
+  tao->ops->view = TaoSolverView_CG;
+  tao->ops->setfromoptions = TaoSolverSetFromOptions_CG;
+  tao->ops->destroy = TaoSolverDestroy_CG;
 
-  info = TaoSetTaoSolveRoutine(tao,TaoSolve_CG_FR,(void*)cg); CHKERRQ(info);
-  info = TaoSetTaoSetUpDownRoutines(tao,TaoSetUp_CG,TaoDestroy_CG); CHKERRQ(info);
-  info = TaoSetTaoOptionsRoutine(tao,TaoSetOptions_CG_FR); CHKERRQ(info);
-  info = TaoSetTaoViewRoutine(tao,TaoView_CG); CHKERRQ(info);
+  ierr = TaoLineSearchCreate(((PetscObject)tao)->comm, &tao->linesearch);
+  CHKERRQ(ierr);
+  ierr = TaoLineSearchSetType(tao->linesearch, morethuente_type); CHKERRQ(ierr);
+  ierr = TaoLineSearchUseTaoSolverRoutines(tao->linesearch, tao); CHKERRQ(ierr);
 
-  TaoFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 EXTERN_C_END
 \end{verbatim}
 The first thing this routine does after declaring some variables, is allocate
-memory for the {\tt TAO\_CG} data structure.  Clones of the the 
-variable vector assed into TAO in the {\tt TaoCreate()} routine 
-are used as the two work vectors.
-This routine also sets some default convergence tolerances and creates
+memory for the {\tt TAO\_CG} data structure.
+This routine also sets some default parameters particular to the conjugate
+gradient algorithm, default convergence tolerances, and creates
 a particular line search.
 These defaults could be specified in the routine that solves the problem,
 but specifying them here gives the user the opportunity to modify these
-parameters.
+parameters either with direct calls setting parameters or by using options.
 
 Finally, this solvers passes to TAO the names of all the other routines
 used by the solver.  
 
 Note that the lines {\tt EXTERN\_C\_BEGIN} and {\tt EXTERN\_C\_END} surround
 this routine.  These macros are required to preserve the name of this
-function without any name-mangling from the C++ compiler.
+function without any name-mangling from the C++ compiler (if used).
 
 \subsection{Destroy Routine}
 Another routine needed by most solvers destroys the data structures
 creates by earlier routines.  For the nonlinear conjugate gradient
 method discussed earlier, the following routine destroys the two
-work vectors, the line search, and the {\tt TAO\_CG} structure. 
+work vectors and the {\tt TAO\_CG} structure. Any 
 \begin{verbatim}
-int TaoDestroy_CG(TAO_SOLVER tao, void *solver)
+PetscErrorCode TaoSolverDestroy_CG(TAO_SOLVER tao)
 {
-  TAO_CG *cg = (TAO_CG *) solver;
-  int    info;
+  TAO_CG *cg = (TAO_CG *) tao->data;
+  PetscErrorCode    ierr;
 
-  TaoFunctionBegin;
+  PetscFunctionBegin;
 
-  info = TaoVecDestroy(cg->gg); CHKERRQ(info);
-  info = TaoVecDestroy(cg->ww);CHKERRQ(info);
-  info = TaoVecDestroy(cg->dx);CHKERRQ(info);
+  ierr = VecDestroy(&cg->X_old); CHKERRQ(ierr);
+  ierr = VecDestroy(&cg->G_old);CHKERRQ(ierr);
 
-  info = TaoLineSearchDestroy(tao);CHKERRQ(info);
-  TaoFree(cg);
+  PetscFree(tao->data);
+  tao->data = PETSC_NULL;
 
-  TaoFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 \end{verbatim}
-Other algorithms may destroy matrices, linear solvers, index sets, or
-other objects needed by the solver.  This routine is called from within
-the {\tt TaoDestroy()} routine.
+This routine is called from within the {\tt TaoSolverDestroy()} routine.
+Only destroy algorithm-specific data objects here, any objects indexed by 
+TAO ({\tt tao->linesearch},{\tt tao->ksp}, {\tt tao->gradient}, etc.)
+will be destroyed by TAO after this algorithm-specific destroy routine.
 
 
 \subsection{SetUp Routine}
 If this routine has been set by the initialization routine, TAO
-will call it during the {\tt TaoSetApplication()}.  
+will call it during the TaoSolverSolve().
 This routine is optional, but is often a used to allocate
 the gradient vector, work vectors, and other data structures 
 required by the solver.
 It should have the form
 \begin{verbatim}
-int TaoSetUp_CG(TAO_SOLVER,void*);
+PetscErrorCode TaoSolverSetUp_CG(TaoSolver tao, void *solver);
 {
-  int    info;
-  TaoVec *xx;
-  TaoFunctionBegin;
+  PetscErrorCode ierr;
+  TAO_CG *cg = (TAO_CG*)solver;
+  PetscFunctionBegin;
 
-  info = TaoGetSolution(tao,&xx);CHKERRQ(info);
-  info = xx->Clone(&cg->gg); CHKERRQ(info);
-  info = xx->Clone(&cg->ww); CHKERRQ(info);
-  info = xx->Clone(&cg->dx); CHKERRQ(info);
-  TaoFunctionReturn(0);
+  ierr = VecDuplicate(tao->solution,&tao->gradient); CHKERRQ(ierr);
+  ierr = VecDuplicate(tao->solution,&tao->stepdirection); CHKERRQ(ierr);
+  ierr = VecDuplicate(tao->solution,&cg->X_old); CHKERRQ(ierr);
+  ierr = VecDuplicate(tao->solution,&cg->G_old); CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
 }
 \end{verbatim}
-The second argument can be cast to the appropriate data structure.
-Many solvers use a similar routine to allocate data structures
-needed by the solver but not created by the initialization routine.
 
+\subsection{SetFromOptions Routine}
+This routine should be used to check for any algorithm-specific options set 
+by the user. This routine will be called when the application makes a call
+to {\tt TaoSolverSetFromOptions()}, it should have the form
+\begin{verbatim}
+PetscErrorCode TaoSolverSetFromOptions_CG(TaoSolver tao, void *solver);
+{
+  PetscErrorCode ierr;
+  TAO_CG *cg = (TAO_CG*)solver;
+  PetscFunctionBegin;
+  ierr = PetscOptionsReal("-tao_cg_eta","restart tolerance","",cg->eta,&cg->eta,0);
+  CHKERRQ(ierr0;
+  ierr = PetscOptionsReal("-tao_cg_delta_min","minimum delta value","",cg->delta_min,
+                          &cg->delta_min,0); CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-tao_cg_delta_max","maximum delta value","",cg->delta_max,
+                          &cg->delta_max,0); CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+\end{verbatim}
 
-%%% Local Variables: 
-%%% mode: latex
-%%% TeX-master: "manual_tex"
-%%% End: 
+\subsection{View Routine}
+This routine should be used to output any algorithm-specific information
+or statistics at the end of a solve.
+This routine will be called when the application makes a call to 
+{\tt TaoSolverView()} or if the command line options {\tt -tao\_view} is used.
+It should have the form
+\begin{verbatim}
+PetscErrorCode TaoSolverView_CG(TaoSolver tao, PetscViewer viewer)
+{ 
+  TAO_CG *cg = (TAO_CG*)tao->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscViewerASCIIPushTab(viewer); CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer, "Gradient steps: %d\n",cg->ngradsteps);
+  ierr = PetscViewerASCIIPrintf(viewer, "Reset steps: %d\n",cg->nresetsteps);
+  ierr = PetscViewerASCIIPopTab(viewer); CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+\end{verbatim}
+
