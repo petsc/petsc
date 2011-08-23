@@ -7,10 +7,14 @@ Show KSP, LS info in TaoView
 ls_converged_reason
 
 finite differences
-  add to tests (-tao_fd, -tao_fdgrad, -tao_fd_delta)
+   coloring
+   fix manual (part2.tex)
+   add to tests (-tao_fd, -tao_fdgrad, -tao_fd_delta)
 
 Put examples in correct places
 
+TaoSolverGetDualVariables
+armijo line search
 Levenberg-Marquardt
 POUNDer
 

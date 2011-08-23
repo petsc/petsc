@@ -138,7 +138,8 @@
 !     Get information on termination
       call TaoSolverGetTerminationReason(tao,reason,ierr)
       if (reason .lt. 0) then
-          print *,'TAO did not terminate successfully'
+          call PetscPrintF(PETSC_COMM_WORLD,                              &
+     &        'TAO did not terminate successfully\n',ierr)
       endif
 
       
@@ -535,10 +536,11 @@
       PetscReal f,gnorm,cnorm,xdiff
       TaoSolverTerminationReason reason
       
-      call TaoSolverGetSolutionStatus(tao,its,f,gnorm,cnorm,xdiff,
+      call TaoSolverGetSolutionStatus(tao,its,f,gnorm,cnorm,xdiff,        &
      &     reason,ierr)
-      if (its .eq. 100) then
-         call TaoSolverSetTerminationReason(tao,TAO_DIVERGED_MAXITS)
+      if (its .eq. 7) then
+         call TaoSolverSetTerminationReason(tao,TAO_DIVERGED_MAXITS,      &
+     &        ierr)
       endif
       
       ierr = 0

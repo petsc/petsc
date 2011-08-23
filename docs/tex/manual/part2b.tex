@@ -693,7 +693,7 @@ it evaluates the function, gradient, and Hessian only once.
 In this algorithm all of the variables are free variables.
 This method also requires the solution of systems of linear equations,
 whose solver can be accessed and modified 
-with the command {\tt TaoGetLinearSolver()}.
+with the command {\tt TaoSolverGetKSP()}.
 
 \subsection{Limited Memory Variable Metric Method}
 
@@ -705,193 +705,241 @@ The command {\tt TaoLMVMSetSize()}, which sets the number
 of vectors to be used in the Hessian approximation, 
 also applies to this method.
 
-\subsection{KT Method} \sindex{Newton's method}
+\section{PDE-Constrained Optimization}
+\label{sec:pdeconstrained}
 
-This method calculates points satisfying the first-order necessary 
-optimality conditions.  The method uses the mixed complementarity
-problem solvers from Section \ref{sec:complementarity} to calculate
-the solutions.  The choice of complementarity solver is specified
-with the runtime option {\tt -tao\_kt\_method} with the default
-being the {\tt tao\_ssils} method.
-
-
-\section{Complementarity}
-\label{sec:complementarity}
-
-Mixed complementarity problems, or box-constrained variational inequalities,
-are related to nonlinear systems of equations.  They are defined by a 
-continuously differentiable function,
-$F:\Re^n \to \Re^n$, and bounds, $\ell \in \{\Re \cup \{-\infty\}\}^n$ 
-and $u \in \{\Re \cup \{\infty\}\}^n$, on the variables such that 
-$\ell \leq u$.  Given this information, $\x^* \in [\ell,u]$ is a solution to 
-MCP($F$, $\ell$, $u$) if for each $i \in \{1, \ldots, n\}$ we have at
-least one of the following:
-\begin{eqnarray*}
+TAO can solve PDE-constrained optimization problems of the form
+\[
 \begin{array}{ll}
-F_i(x^*) \geq 0 & \mbox{if } x^*_i = \ell_i \\
-F_i(x^*) = 0 & \mbox{if } \ell_i < x^*_i < u_i \\
-F_i(x^*) \leq 0 & \mbox{if } x^*_i = u_i.
+\displaystyle \min_{u,v} & f(u,v) \\
+\mbox{subject to} & g(u,v) = 0
 \end{array}
-\end{eqnarray*}
-Note that when $\ell = \{-\infty\}^n$ and $u = \{\infty\}^n$ we have a 
-nonlinear system of equations, and $\ell = \{0\}^n$ and $u = \{\infty\}^n$ 
-corresponds to the nonlinear complementarity problem \cite{cottle:nonlinear}.
+\]
+where the state variable $u$ is the solution to the partial differential 
+equation defined by $g$ and parametrized by the design variable $v$, and 
+$f$ is an objective function.  The Lagrange multipliers on the constraint
+will be denoted by $y$.  We make two main assumptions: the objective function 
+and partial differential equation constraint have been discretized so that 
+we can treat the optimization problem as finite dimensional and 
+$\nabla_u g(u,v)$ is invertible for all $u$ and $v$.  If required, we
+can assume $\|\nabla_u g(u,v)\|$ is uniformly bounded above and below 
+in an appropriate norm.
 
-Simple complementarity conditions arise from the first-order optimality 
-conditions from optimization \cite{karush:minima, kuhn.tucker:nonlinear}.  
-In the simple bound constrained optimization case, these conditions 
-correspond to MCP($\nabla f$, $\ell$, $u$), where $f: \Re^n \to \Re$ 
-is the objective function.  In a one-dimensional setting these conditions 
-are intuitive.  If the solution is at the lower bound, then the function must 
-be increasing and $\nabla f \geq 0$.  However, if the solution is at the 
-upper bound, then the function must be decreasing and $\nabla f \leq 0$.  
-Finally, if the solution 
-is strictly between the bounds, we must be at a stationary point and 
-$\nabla f = 0$.  Other complementarity problems arise in economics and 
-engineering \cite{ferris.pang:engineering}, game 
-theory \cite{nash:equilibrium}, and finance \cite{huang.pang:option}.
 
-Evaluation routines for $F$ and its Jacobian must be supplied prior
-to solving the application.
-The bounds, $[\ell,u]$, on the variables must also be 
-provided.  
-If no starting point is supplied, a default starting point of all zeros 
-is used.
-
-\subsection{Semismooth Methods}
-
-TAO has two implementations of semismooth algorithms 
-\cite{munson.facchinei.ea:semismooth, deluca.facchinei.ea:semismooth, 
-facchinei.fischer.ea:semismooth} for solving mixed complementarity problems.
-Both are based upon a reformulation of the mixed complementarity problem
-as a nonsmooth system of equations using the Fischer-Burmeister 
-function \cite{fischer:special}.  A nonsmooth Newton method is applied to
-the reformulated system to calculate a solution.  The theoretical properties
-of such methods are detailed in the aforementioned references.
-
-The Fischer-Burmeister function, $\phi:\Re^2 \to \Re$, is defined as,
-\begin{eqnarray*}
-\phi(a,b) := \sqrt{a^2 + b^2} - a - b.
-\end{eqnarray*}
-This function has the following key property
-\begin{eqnarray*}
-\begin{array}{lcr}
-        \phi(a,b) = 0 & \Leftrightarrow & a \geq 0,\; b \geq 0,\; ab = 0
+Given the current iterate $(u_k, v_k, y_k)$, the linearly-constrained
+augmented Lagrangian method approximately solves the optimization 
+problem
+\[
+\begin{array}{ll}
+\displaystyle \min_{u,v} & \tilde{f}_k(u, v) \\
+\mbox{subject to} & A_k (u-u_k) + B_k (v-v_k) + g_k = 0
 \end{array}
-\end{eqnarray*}
-used when reformulating the mixed complementarity problem the system of 
-equations $\Phi(x) = 0$ where $\Phi:\Re^n \to \Re^n$.  
-The reformulation is defined component-wise as
-\begin{eqnarray*}
-\Phi_i(x) := \left\{ \begin{array}{ll}
-   \phi(x_i - l_i, F_i(x)) & \mbox{if } -\infty < l_i < u_i = \infty, \\
-   -\phi(u_i-x_i, -F_i(x)) & \mbox{if } -\infty = l_i < u_i < \infty, \\
-   \phi(x_i - l_i, \phi(u_i - x_i, - F_i(x))) & \mbox{if } -\infty < l_i < u_i < \infty, \\
-   -F_i(x) & \mbox{if } -\infty = l_i < u_i = \infty, \\
-   l_i - x_i & \mbox{if } -\infty < l_i = u_i < \infty.
-   \end{array} \right.
-\end{eqnarray*}
-We note that $\Phi$ is not differentiable everywhere, but satisfies a
-semismoothness property 
-\cite{mifflin:semismooth, qi:convergence, qi.sun:nonsmooth}.  Furthermore,
-the natural merit function, $\Psi(x) := \frac{1}{2} \| \Phi(x) \|_2^2$, is 
-continuously differentiable.
+\]
+where $A_k = \nabla_u g(u_k,v_k)$, $B_k = \nabla_v g(u_k,v_k)$, 
+$g_k = g(u_k, v_k)$, and 
+\[
+\tilde{f}_k(u,v) = f(u,v) - g(u,v)^T y^k + \frac{\rho}{2} \| g(u,v) \|^2
+\]
+is the augmented Lagrangian function.  This optimization problem is
+solved in two stages.  The first computes the Newton direction and
+finds a feasible point for the linear constraints.  The second 
+computed a reduced-space direction that maintains feasibility
+with respect to the linearized constraints and improves the
+augmented Lagrangian merit function.
 
-The two semismooth TAO solvers both solve the system $\Phi(x) = 0$ by applying
-a nonsmooth newton method with a line-search.  We calculate a direction, $d^k$,
-by solving the system $H^kd^k = -\Phi(x^k)$ where $H^k$ is an element of the 
-$B$-subdifferential \cite{qi.sun:nonsmooth} of $\Phi$ at $x^k$.  If the 
-direction calculated does not satisfy a suitable descent condition, then 
-we use the negative gradient of the merit function, $-\nabla \Psi(x^k)$, as 
-the search direction.  A standard Armijo search \cite{armijo:minimization} is
-used to find the new iteration.  Non-monotone searches 
-\cite{grippo.lampariello.ea:nonmonotone} are also available by setting 
-appropriate run-time options.  See Section \ref{sec:TaoLineSearch} for further 
-details.
+\subsection{Newton Step}
 
-The first semismooth algorithm available in TAO is not guaranteed to 
-remain feasible with respect to the bounds, $[\ell, u]$, and is termed 
-an infeasible semismooth method.  This method can be specified using the 
-TaoMethod {\tt tao\_ssils}.  In this case, the descent test used is 
-that
-\begin{eqnarray*}
-\nabla \Psi(x^k)^Td^k \leq -\delta\| d^k \|^\rho.
-\end{eqnarray*}
-Both $\delta > 0$ and $\rho > 2$ can be modified using the
-run-time commands {\tt -tao\_ssils\_delta <delta>} and 
-{\tt -tao\_ssils\_rho <rho>} respectively. By default, 
-$\delta = 10^{-10}$ and $\rho = 2.1$.
+The Newton direction is obtained by fixing the design variables at
+their current value and solving the linearized constraint for the
+state variables.  In particular, we solve the system of equations
+\[
+A_k du = -g_k
+\]
+to obtain a direction $du$.  We need a direction that provides
+sufficient descent for the merit function
+\[
+  \frac{1}{2} \|g(u,v)\|^2
+\]
+That is, we require $g_k^T A_k du < 0$.  
 
-An alternative is to remain feasible with respect to the bounds by using a 
-projected Armijo line-search.  This method can be specified using the 
-TaoMethod {\tt tao\_ssfls}.  The descent test used is the same as above 
-where the direction in this case corresponds to the first part of the 
-piece-wise linear arc searched by the projected line-search.  
-Both $\delta > 0$ and $\rho > 2$ can be modified using the run-time 
-commands  {\tt -tao\_ssfls\_delta <delta>} and {\tt -tao\_ssfls\_rho <rho>} 
-respectively.  By default, $\delta = 10^{-10}$ and $\rho = 2.1$.
+If the Newton direction is a descent direction, then we choose a 
+penalty parameter $\rho$ so that $du$ is also a sufficient descent 
+direction for the augmented Lagrangian merit function.  We 
+then find $\alpha$ to approximately minimize the augmented 
+Lagrangian merit function along the Newton direction.
+\[
+\begin{array}{ll}
+\displaystyle \min_{\alpha \geq 0} & \tilde{f}_k(u_k + \alpha du, v_k)
+\end{array}
+\]
+We can enforce either the sufficient decrease condition or the 
+Wolfe conditions during the search procedure.  The new point, 
+\[
+\begin{array}{lcl}
+u_{k+\frac{1}{2}} & = & u_k + \alpha_k du \\
+v_{k+\frac{1}{2}} & = & v_k
+\end{array}
+\]
+satisfies the linear constraint
+\[
+A_k (u_{k+\frac{1}{2}} - u_k) + B_k (v_{k+\frac{1}{2}} - v_k) + \alpha_k g_k = 0
+\]
 
-The recommended algorithm is the infeasible semismooth method,
-{\tt tao\_ssils}, because of its strong global and local convergence 
-properties.  However, if it is known that $F$ is not defined outside 
-of the box, $[\ell,u]$, perhaps due to the presence of $log$ functions,
-the feasible algorithm, {\tt tao\_ssfls}, is a reasonable alternative.
+If the Newton direction computed does not provide descent for the merit 
+function, then we can use the steepest descent direction $du = -A_k^T g_k$ 
+during the search procedure.  However, the implication that the intermediate
+point approximately satisfied the linear constraint is not longer true.
+We many need to apply a feasibility restoration phase until the Newton
+direction provided sufficient descent for the merit function.
 
-\Comment{
+Note that we can update a limited memory quasi-Newton approximation
+to $\nabla^2_{u,u} \tilde{f}_k$ as this point, but doing so does not
+seem to be useful, unless it is being used perhaps to correct the 
+multiplier estimates.
+
+\subsection{Modified Reduced-space Step}
+
+We are now ready to compute a reduced-space step for the modified
+optimization problem:
+\[
+\begin{array}{ll}
+\displaystyle \min_{u,v} & \tilde{f}_k(u, v) \\
+\mbox{subject to} & A_k (u-u_k) + B_k (v-v_k) + \alpha_k g_k = 0
+\end{array}
+\]
+We begin with the change of variables
+\[
+\begin{array}{ll}
+\displaystyle \min_{du,dv} & \tilde{f}_k(u_k+du, v_k+dv) \\
+\mbox{subject to} & A_k du + B_k dv + \alpha_k g_k = 0
+\end{array}
+\]
+and make the substitution
+\[
+  du = -A_k^{-1}(B_k dv + \alpha_k g_k)
+\]
+Hence, the unconstrained optimization problem we need to solve is
+\[
+\begin{array}{ll}
+\displaystyle \min_{dv} & \tilde{f}_k(u_k-A_k^{-1}(B_k dv + \alpha_k g_k), v_k+dv) \\
+\end{array}
+\]
+which is equivalent to
+\[
+\begin{array}{ll}
+\displaystyle \min_{dv} & \tilde{f}_k(u_{k+\frac{1}{2}} - A_k^{-1} B_k dv, v_{k+\frac{1}{2}}+dv) \\
+\end{array}
+\]
+We apply one step of a limited-memory quasi-Newton method to this
+problem.  The direction is obtain by solving the quadratic problem
+\[
+\begin{array}{ll}
+\displaystyle \min_{dv} & \frac{1}{2} dv^T \tilde{H}_k dv + \tilde{g}_{k+\frac{1}{2}}^T dv
+\end{array}
+\]
+where $\tilde{H}_k$ is the limited-memory quasi-Newton approximation
+to the reduced Hessian matrix, a positive-definite matrix, and 
+$\tilde{g}_{k+\frac{1}{2}}$ is the reduced gradient.
+\[
+\begin{array}{lcl}
+\tilde{g}_{k+\frac{1}{2}} & = & \nabla_v \tilde{f}_k(u_{k+\frac{1}{2}}, v_{k+\frac{1}{2}}) -
+	      \nabla_u \tilde{f}_k(u_{k+\frac{1}{2}}, v_{k+\frac{1}{2}}) A_k^{-1} B_k \\
+	   & = & d_{k+\frac{1}{2}} + c_{k+\frac{1}{2}} A_k^{-1} B_k
+\end{array}
+\]
+The reduced gradient is obtain from one linearized adjoint solve
+\[
+y_{k+\frac{1}{2}} = A_k^{-T}c_{k+\frac{1}{2}}
+\]
+and some linear algebra
+\[
+\tilde{g}_{k+\frac{1}{2}} = d_{k+\frac{1}{2}} + y_{k+\frac{1}{2}}^T B_k
+\]
+Because the Hessian approximation is positive definite and we know its
+inverse, we obtain the direction
+\[
+  dv = -H_k^{-1} \tilde{g}_{k+\frac{1}{2}}
+\]
+and recover the full-space direction from one linearized forward solve
+\[
+  du = -A_k^{-1} B_k dv
+\]
+Having the full-space direction, which satisfies the linear constraint, 
+we now approximately minimize the augmented Lagrangian merit function 
+along the direction.
+\[
+\begin{array}{lcl}
+\displaystyle \min_{\beta \geq 0} & \tilde{f_k}(u_{k+\frac{1}{2}} + \beta du, v_{k+\frac{1}{2}} + \beta dv)
+\end{array}
+\]
+We enforce the Wolfe conditions during the search procedure.  The new point
+is
+\[
+\begin{array}{lcl}
+u_{k+1} & = & u_{k+\frac{1}{2}} + \beta_k du \\
+v_{k+1} & = & v_{k+\frac{1}{2}} + \beta_k dv
+\end{array}
+\]
+
+The reduced gradient at the new point is computed from
+\[
+\begin{array}{lcl}
+y_{k+1} & = & A_k^{-T}c_{k+1} \\
+\tilde{g}_{k+1} & = & d_{k+1} - y_{k+1}^T B_k
+\end{array}
+\]
+where $c_{k+1} = \nabla_u \tilde{f}_k (u_{k+1},v_{k+1})$ and
+$d_{k+1} = \nabla_v \tilde{f}_k (u_{k+1},v_{k+1})$.  The
+multipliers $y_{k+1}$ become the multipliers used in the
+next iteration of the code.  The quantities $v_{k+\frac{1}{2}}$,
+$v_{k+1}$, $\tilde{g}_{k+\frac{1}{2}}$ and $\tilde{g}_{k+1}$ are
+used to update $H_k$ to obtain the limited-memory quasi-Newton
+approximation to the reduced Hessian matrix used in the next
+iteration of the code.  The update is skipped if it cannot be
+performed.
+
+
+
+
+
 \section{Nonlinear Least Squares}
 \label{sec:leastsquares}
-Given a function $C  : \Re^n \to \Re^m$, the nonlinear least
-squares problem minimizes $\half \| C(X) \|_2$.
-The nonlinear equations $C$ should be specified with the function
-{\tt TaoSetPetscConstraintsFunction()}.
+Given a function $F  : \Re^n \to \Re^m$, the nonlinear least
+squares problem minimizes $\half \| F(X) \|_2$.
+The nonlinear equations $F$ should be specified with the function
+{\tt TaoSolverSetSeparableObjectiveFunction()}.
 Most solvers also require the Jacobian of this function.  
 The routine that evaluates this matrix should be set
-using the command {\tt TaoSetPetscJacobian()}.
+using the command {\tt TaoSolverSetJacobianRoutine()}.
 
 Using the constraint data provided by the user, the nonlinear
 least squares solver formulates a minimization problem, and
 solves the minimization problem using another TAO solver.  
-A nonlinear least squares solver should be chosen with
-the method \texttt{tao\_nlsq}. The underlying
-minimization solver can be chosen with the runtime
-option {\tt -nlsq\_tao\_method TaoMethod}.
+A nonlinear least squares application should be solved with
+the method \texttt{tao\_pounders} or \texttt{tao\_lm}.
+
+\subsection{POUNDerS}
+   One algorithm for solving the least squares problem is the model-based
+derivate-free POUNDerS algorithm (\texttt{tao\_pounders}).
+
 
 \subsection{Levenberg Marquardt}
-
    One algorithm for solving the least squares problem is a Levenberg
-Marquardt algorithm.  This implementation of the 
-algorithm applies the Newton trust region method to the minimization problem.
+Marquardt algorithm (\texttt{tao\_lm}).  This implementation of the 
+algorithm applies the Newton  method to the minimization problem.
 The gradient of the minimization
 problem is $J^T C(X)$ and the Hessian matrix is approximated by
 $J^T J$, where $J$ is the Jacobian of the constraints at $X$.
-In this algorithm the initial trust region radius can be set
-with the command {\tt TaoSetTrustRegionRadius()}.
 
 
-\subsection{Gauss--Newton Method}
-   One algorithm for solving the least squares problem is a
-Gauss-Newton algorithm.  This implementation of the 
-algorithm applies the Newton line search method to the minimization problem.
-The gradient of the minimization
-problem is $J^T C(X)$ and the Hessian matrix is approximated by
-$J^T J$, where $J$ is the Jacobian of the constraints at $X$.
 
 \subsection{Limited Memory Variable Metric Method}
    Another algorithm for solving the least squares problem is a
 limited memory variable metric algorithm.  This implementation of the 
 algorithm applies the LMVM method 
 to the unconstrained minimization problem.  This algorithm is generally not
-as efficient as Levenberg Marquardt or Gauss--Newton methods,
+as efficient as Levenberg Marquardt or POUNDerS methods,
 but can be efficient when the residual is large.
-
-
-\subsection{Levenberg Marquardt with Bound Constraints}
-If the least squares problem also imposes bound constraints on the
-variables, another Levenberg Marquardt algorithm can be used.  The
-TaoMethod should be set to {\tt tao\_blm}.
-a TAO solver of this type.
-In this algorithm the initial trust region radius can be set
-with the command {\tt TaoSetTrustRegionRadius()}.
 
 \subsection{Limited Memory Variable Metric Method with Bound Constraints}
    Another algorithm for solving the least squares problem when
@@ -903,4 +951,4 @@ This algorithm is generally not
 as efficient as the method based on the Newton Trust Region method
 for bound constrained optimization, 
 but it can be efficient when the residual is large.
-}
+

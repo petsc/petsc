@@ -1,6 +1,6 @@
 #!/bin/bash
 export BUILDDIR=$HOME/working/taobuild
-export VERSION=2.0-beta2
+export VERSION=2.0-beta3
 export REVISION=default
 export HERE=$PWD
 if [ ! -d "$BUILDDIR" ]
