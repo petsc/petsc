@@ -1351,7 +1351,7 @@ PetscErrorCode SAAddJ(SA chain, PetscInt length, const PetscInt ia[], const Pets
   PetscInt k;
   PetscFunctionBegin;
   PetscValidPointer(chain,1);
-  mask = ((ia != PETSC_NULL) | SA_J | (wa != PETSC_NULL)<<2);
+  mask = ((PetscInt)(ia != PETSC_NULL) | (PetscInt)SA_J | (PetscInt)(wa != PETSC_NULL)<<2);
   if(mask & (~(chain->mask))) SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONG, "Array components provided %D incompatible with array mask %D", mask, chain->mask);
   if(!length) PetscFunctionReturn(0);
   ierr = SAGetHunk(chain, length, &hunk);           CHKERRQ(ierr);
