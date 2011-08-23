@@ -108,7 +108,8 @@ PetscErrorCode  PetscVSNPrintf(char *str,size_t len,const char *format,size_t *f
   /* no malloc since may be called by error handler */
   char          *newformat;
   char           formatbuf[8*1024];
-  size_t         oldLength,length,fullLengthInt;
+  size_t         oldLength,length;
+  int            fullLengthInt;
   PetscErrorCode ierr;
  
   ierr = PetscStrlen(format, &oldLength);CHKERRQ(ierr);
