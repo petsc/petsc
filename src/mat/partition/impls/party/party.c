@@ -175,7 +175,7 @@ PetscErrorCode MatPartitioningView_Party(MatPartitioning part,PetscViewer viewer
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningPartySetGlobal"
-/*@
+/*@C
    MatPartitioningPartySetGlobal - Set global method for Party partitioner.
 
    Collective on MatPartitioning
@@ -223,7 +223,7 @@ EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "MatPartitioningPartySetLocal"
-/*@
+/*@C
    MatPartitioningPartySetLocal - Set local method for Party partitioner.
 
    Collective on MatPartitioning
