@@ -561,9 +561,10 @@ static struct _PetscDrawOps DvOps = { PetscDrawSetDoubleBuffer_X,
 #if defined(PETSC_HAVE_AFTERIMAGE) || defined(PETSC_HAVE_IMAGEMAGICK)
                                  PetscDrawSave_X,
 #else
-                                 0
+                                 0,
 #endif
-                                 PetscDrawSetSave_X};
+                                 PetscDrawSetSave_X,
+                                 0};
 
 
 extern PetscErrorCode XiQuickWindow(PetscDraw_X*,char*,char*,int,int,int,int);
