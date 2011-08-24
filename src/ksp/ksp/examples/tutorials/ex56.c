@@ -40,7 +40,7 @@ int main(int argc,char **args)
   M = 3*nn*nn*nn; /* global number of equations */
   m = nn*nn*nn/npe;
   if(mype==npe-1) m = nn*nn*nn - (npe-1)*m;
-  m *= 3; /* number of equeations local*/
+  m *= 3; /* number of equations local*/
 
   /* create stiffness matrix */
   ierr = MatCreateMPIAIJ(wcomm,m,m,M,M,81,PETSC_NULL,57,PETSC_NULL,&Amat);CHKERRQ(ierr);
@@ -71,7 +71,7 @@ int main(int argc,char **args)
     /* BC version of element */
     for(i=0;i<24;i++)
       for(j=0;j<24;j++)
-        if(i<8 || j < 8)
+        if(i<12 || j < 12)
           if(i==j) DD2[i][j] = .1*DD1[i][j];
           else DD2[i][j] = 0.0;
         else DD2[i][j] = DD1[i][j];
@@ -91,14 +91,13 @@ int main(int argc,char **args)
   Nk1 = Nk0 + (nn/NP);
   
   {
-    PetscReal coords[3*m];
-    PetscInt NN = nn/NP, id0 = ipz*nn*nn*NN;
-    id0 += ipy*nn*NN*NN;
-    id0 += ipx*NN*NN*NN;
- 
+    PetscReal *coords;
+    const PetscInt NN = nn/NP, id0 = ipz*nn*nn*NN + ipy*nn*NN*NN + ipx*NN*NN*NN;
+    
+    ierr = PetscMalloc( (m+1)*sizeof(PetscReal), &coords ); CHKERRQ(ierr);
+    coords[m] = -99.0;
+
     /* forms the element stiffness for the Laplacian and coordinates */
-    /* for (Ii = Istart/3, ic = 0; Ii < Iend/3; Ii++, ic++ ) { */
-    /*       i = Ii%nn; j = Ii%(nn*nn)/nn; k = Ii/(nn*nn); */
     for(i=Ni0,ic=0,ii=0;i<Ni1;i++,ii++){
       for(j=Nj0,jj=0;j<Nj1;j++,jj++){
 	for(k=Nk0,kk=0;k<Nk1;k++,kk++,ic++){
@@ -142,12 +141,14 @@ int main(int argc,char **args)
 	    }
 	    for(ix=0;ix<24;ix++)for(jx=0;jx<24;jx++) DD[ix][jx] = alpha*DD1[ix][jx];
 	    if( k>0 ) {
-	      ierr = MatSetValuesBlocked(Amat,8,idx,8,idx,(const PetscScalar*)DD,ADD_VALUES);CHKERRQ(ierr);
+	      ierr = MatSetValuesBlocked(Amat,8,idx,8,idx,(const PetscScalar*)DD,ADD_VALUES);
+              CHKERRQ(ierr);
 	    }
 	    else {
 	      /* a BC */
 	      for(ix=0;ix<24;ix++)for(jx=0;jx<24;jx++) DD[ix][jx] = alpha*DD2[ix][jx];
-	      ierr = MatSetValuesBlocked(Amat,8,idx,8,idx,(const PetscScalar*)DD,ADD_VALUES);CHKERRQ(ierr);
+	      ierr = MatSetValuesBlocked(Amat,8,idx,8,idx,(const PetscScalar*)DD,ADD_VALUES);
+              CHKERRQ(ierr);
 	    }
 	  }
 	  if( k>0 ) {
@@ -170,6 +171,7 @@ int main(int argc,char **args)
     ierr = KSPGetPC( ksp, &pc );                                   CHKERRQ(ierr);
     ierr = PCSetType( pc, PCGAMG );                                CHKERRQ(ierr);
     ierr = PCSetCoordinates( pc, 3, coords );                   CHKERRQ(ierr);
+    ierr = PetscFree( coords );  CHKERRQ(ierr);
     ierr = KSPSetFromOptions( ksp );                              CHKERRQ(ierr);
   }
 
