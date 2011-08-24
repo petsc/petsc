@@ -8,36 +8,6 @@ static PetscErrorCode LCLScatter(TAO_LCL*,Vec,Vec,Vec);
 static PetscErrorCode LCLGather(TAO_LCL*,Vec,Vec,Vec);
 
 #undef __FUNCT__
-#define __FUNCT__ "TaoSolverLCLSetStateDesignIS"
-PetscErrorCode TaoSolverLCLSetStateDesignIS(TaoSolver tao, IS s_is, IS d_is)
-{
-  TAO_LCL *lclP = (TAO_LCL*)tao->data;
-  const char *type;
-  PetscErrorCode ierr;
-  PetscBool islcl;
-  ierr = PetscObjectGetType((PetscObject)tao,&type); CHKERRQ(ierr);
-  ierr = PetscStrcmp(type,"tao_lcl",&islcl); CHKERRQ(ierr);
-  if (!islcl) {
-    ierr = PetscInfo(tao,"Ignored for non-pde_constrained solvers"); CHKERRQ(ierr);
-  }
-  if (lclP->UIS) {
-    ierr = PetscObjectDereference((PetscObject)lclP->UIS); CHKERRQ(ierr);
-  }
-  lclP->UIS = s_is;
-  if (s_is) {
-    ierr = PetscObjectReference((PetscObject)s_is); CHKERRQ(ierr);
-  }
-  if (lclP->UID) {
-    ierr = PetscObjectDereference((PetscObject)lclP->UID); CHKERRQ(ierr);
-  }
-  lclP->UID = d_is;
-  if (d_is) {
-    ierr = PetscObjectReference((PetscObject)d_is); CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "TaoSolverDestroy_LCL"
 static PetscErrorCode TaoSolverDestroy_LCL(TaoSolver tao)
 {
@@ -84,8 +54,8 @@ static PetscErrorCode TaoSolverDestroy_LCL(TaoSolver tao)
     ierr = VecDestroy(&lclP->r); CHKERRQ(ierr);
     ierr = VecDestroy(&lclP->s); CHKERRQ(ierr);
 
-    ierr = ISDestroy(&lclP->UIS); CHKERRQ(ierr);
-    ierr = ISDestroy(&lclP->UID); CHKERRQ(ierr);
+    ierr = ISDestroy(&tao->state_is); CHKERRQ(ierr);
+    ierr = ISDestroy(&tao->design_is); CHKERRQ(ierr);
     //ierr = ISDestroy(&lclP->UIM); CHKERRQ(ierr);
 
     ierr = VecScatterDestroy(&lclP->state_scatter); CHKERRQ(ierr);
@@ -130,8 +100,8 @@ static PetscErrorCode TaoSolverSetup_LCL(TaoSolver tao)
   PetscErrorCode ierr;
   PetscFunctionBegin;
   /* Check for state/design IS */
-  if (!lclP->UIS || !lclP->UID) {
-    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONGSTATE,"LCL Solver requires an initial state index set and design index set -- use TaoSolverLCLSetStateIS()");
+  if (!tao->state_is) {
+    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONGSTATE,"LCL Solver requires an initial state index set -- use TaoSolverSetStateIS()");
   }
   ierr = VecDuplicate(tao->solution, &tao->gradient); CHKERRQ(ierr);
   ierr = VecDuplicate(tao->solution, &tao->stepdirection); CHKERRQ(ierr);
@@ -153,9 +123,9 @@ static PetscErrorCode TaoSolverSetup_LCL(TaoSolver tao)
   ierr = VecGetSize(tao->constraints, &lclP->m); CHKERRQ(ierr);
 
   //ierr = VecGetOwnershipRange(tao->solution,&lo,&hi); CHKERRQ(ierr);
-  //ierr = ISComplement(lclP->UIS,lo,hi,&lclP->UID); CHKERRQ(ierr);
+  //ierr = ISComplement(tao->state_is,lo,hi,&tao->design_is); CHKERRQ(ierr);
   //ierr = VecGetOwnershipRange(tao->constraints,&lo,&hi); CHKERRQ(ierr);
-  //ierr = ISCreateStride(((PetscObject)tao)->comm,hi-lo,lo+lclP->n-lclP->m,1,&lclP->UID);
+  //ierr = ISCreateStride(((PetscObject)tao)->comm,hi-lo,lo+lclP->n-lclP->m,1,&tao->design_is);
 
   //ierr = VecGetOwnershipRange(tao->constraints,&lo,&hi); CHKERRQ(ierr);
   //ierr = ISCreateStride(((PetscObject)tao)->comm,hi-lo,lo,1,&lclP->UIM);
@@ -210,8 +180,8 @@ static PetscErrorCode TaoSolverSetup_LCL(TaoSolver tao)
   ierr = ISCreateStride(((PetscObject)lclP->U)->comm,hi-lo,lo,1,&is_state); CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(lclP->V,&lo,&hi); CHKERRQ(ierr);
   ierr = ISCreateStride(((PetscObject)lclP->V)->comm,hi-lo,lo,1,&is_design); CHKERRQ(ierr);
-  ierr = VecScatterCreate(tao->solution,lclP->UIS,lclP->U,is_state,&lclP->state_scatter); CHKERRQ(ierr);
-  ierr = VecScatterCreate(tao->solution,lclP->UID,lclP->V,is_design,&lclP->design_scatter); CHKERRQ(ierr);
+  ierr = VecScatterCreate(tao->solution,tao->state_is,lclP->U,is_state,&lclP->state_scatter); CHKERRQ(ierr);
+  ierr = VecScatterCreate(tao->solution,tao->design_is,lclP->V,is_design,&lclP->design_scatter); CHKERRQ(ierr);  //ierr = VecScatterCreate(tao->solution,tao->state_is,lclP->U,is_state,&lclP->state_scatter); CHKERRQ(ierr);
   ierr = ISDestroy(&is_state); CHKERRQ(ierr);
   ierr = ISDestroy(&is_design); CHKERRQ(ierr); 
 

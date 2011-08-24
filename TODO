@@ -21,6 +21,7 @@ POUNDer
 Add line search hooks for source/step
 
 Check documentation
+Add solver registration instructions to manual
 Set KSP Monitors
 Check fortran stubs 
 automatic testing, coverage

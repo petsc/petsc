@@ -71,6 +71,8 @@ struct _p_TaoSolver {
     Mat jacobian_design;
     Mat jacobian_state_pre;
     Mat jacobian_design_pre;
+    IS state_is;   
+    IS design_is;   
     PetscReal step;
     PetscReal residual;
     PetscReal gnorm0;

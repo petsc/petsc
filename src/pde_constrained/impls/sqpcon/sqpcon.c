@@ -4,37 +4,6 @@
 #include "src/matrix/submatfree.h"
 //static PetscErrorCode SQPCONObjectiveAndGradient(TaoLineSearch,Vec,PetscReal*,Vec,void*);
 
-
-#undef __FUNCT__
-#define __FUNCT__ "TaoSolverSQPCONSetStateDesignIS"
-PetscErrorCode TaoSolverSQPCONSetStateDesignIS(TaoSolver tao, IS s_is, IS d_is)
-{
-  TAO_SQPCON *sqpconP = (TAO_SQPCON*)tao->data;
-  const char *type;
-  PetscErrorCode ierr;
-  PetscBool issqpcon;
-  ierr = PetscObjectGetType((PetscObject)tao,&type); CHKERRQ(ierr);
-  ierr = PetscStrcmp(type,"tao_sqpcon",&issqpcon); CHKERRQ(ierr);
-  if (!issqpcon) {
-    ierr = PetscInfo(tao,"Ignored for non-pde_constrained solvers"); CHKERRQ(ierr);
-  }
-  if (sqpconP->UIS) {
-    ierr = PetscObjectDereference((PetscObject)sqpconP->UIS); CHKERRQ(ierr);
-  }
-  sqpconP->UIS = s_is;
-  if (s_is) {
-    ierr = PetscObjectReference((PetscObject)s_is); CHKERRQ(ierr);
-  }
-  if (sqpconP->UID) {
-    ierr = PetscObjectDereference((PetscObject)sqpconP->UID); CHKERRQ(ierr);
-  }
-  sqpconP->UID = d_is;
-  if (d_is) {
-    ierr = PetscObjectReference((PetscObject)d_is); CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
 #undef __FUNCT__
 #define __FUNCT__ "TaoSolverDestroy_SQPCON"
 static PetscErrorCode TaoSolverDestroy_SQPCON(TaoSolver tao)
@@ -65,8 +34,7 @@ static PetscErrorCode TaoSolverDestroy_SQPCON(TaoSolver tao)
     ierr = VecDestroy(&sqpconP->Tbar); CHKERRQ(ierr);
     ierr = VecDestroy(&sqpconP->aqwac); CHKERRQ(ierr);
 
-    ierr = ISDestroy(&sqpconP->UIS); CHKERRQ(ierr);
-    ierr = ISDestroy(&sqpconP->UID); CHKERRQ(ierr);
+    ierr = ISDestroy(&tao->design_is); CHKERRQ(ierr);
     ierr = ISDestroy(&sqpconP->UIM); CHKERRQ(ierr);
   }
   ierr = PetscFree(tao->data);
@@ -108,8 +76,8 @@ static PetscErrorCode TaoSolverSetup_SQPCON(TaoSolver tao)
   PetscErrorCode ierr;
   PetscFunctionBegin;
   /* Check for state IS */
-  if (!sqpconP->UIS || !sqpconP->UID) {
-    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONGSTATE,"SQPCON Solver requires an initial state index set -- use TaoSolverSQPCONSetStateIS()");
+  if (!tao->state_is) {
+    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONGSTATE,"SQPCON Solver requires an initial state index set -- use TaoSolverSetStateIS()");
   }
   ierr = VecDuplicate(tao->solution, &tao->gradient); CHKERRQ(ierr);
   ierr = VecDuplicate(tao->solution, &tao->stepdirection); CHKERRQ(ierr);
@@ -128,7 +96,7 @@ static PetscErrorCode TaoSolverSetup_SQPCON(TaoSolver tao)
   ierr = VecGetSize(tao->constraints, &sqpconP->m); CHKERRQ(ierr);
 
   //ierr = VecGetOwnershipRange(tao->solution,&lo,&hi); CHKERRQ(ierr);
-  //ierr = ISComplement(sqpconP->UIS,lo,hi,&sqpconP->UID); CHKERRQ(ierr);
+  ierr = ISComplement(tao->state_is,lo,hi,&tao->design_is); CHKERRQ(ierr);
 
   //ierr = VecGetOwnershipRange(tao->constraints,&lo,&hi); CHKERRQ(ierr);
   //ierr = ISCreateStride(((PetscObject)tao)->comm,hi-lo,lo,1,&sqpconP->UIM);
@@ -157,8 +125,8 @@ static PetscErrorCode TaoSolverSetup_SQPCON(TaoSolver tao)
   ierr = ISCreateStride(((PetscObject)sqpconP->U)->comm,hi-lo,lo,1,&is_state); CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(sqpconP->V,&lo,&hi); CHKERRQ(ierr);
   ierr = ISCreateStride(((PetscObject)sqpconP->V)->comm,hi-lo,lo,1,&is_design); CHKERRQ(ierr);
-  ierr = VecScatterCreate(tao->solution,sqpconP->UIS,sqpconP->U,is_state,&sqpconP->state_scatter); CHKERRQ(ierr);
-  ierr = VecScatterCreate(tao->solution,sqpconP->UID,sqpconP->V,is_design,&sqpconP->design_scatter); CHKERRQ(ierr);
+  ierr = VecScatterCreate(tao->solution,tao->state_is,sqpconP->U,is_state,&sqpconP->state_scatter); CHKERRQ(ierr);
+  ierr = VecScatterCreate(tao->solution,tao->design_is,sqpconP->V,is_design,&sqpconP->design_scatter); CHKERRQ(ierr);
   ierr = ISDestroy(&is_state); CHKERRQ(ierr);
   ierr = ISDestroy(&is_design); CHKERRQ(ierr);
 

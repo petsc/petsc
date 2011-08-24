@@ -181,8 +181,7 @@ int main(int argc, char **argv)
   ierr = TaoSolverSetJacobianDesignRoutine(tao, user.Jd, user.Jd, FormJacobianDesign, (void *)&user); CHKERRQ(ierr);
 
   ierr = TaoSolverSetFromOptions(tao); CHKERRQ(ierr);
-  ierr = TaoSolverLCLSetStateDesignIS(tao,user.s_is,user.d_is); CHKERRQ(ierr);
-  ierr = TaoSolverSQPCONSetStateDesignIS(tao,user.s_is,user.d_is); CHKERRQ(ierr); 
+  ierr = TaoSolverSetStateDesignIS(tao,user.s_is,user.d_is); CHKERRQ(ierr);
 
   /* SOLVE THE APPLICATION */
   PetscInt ntests = 1;
