@@ -55,6 +55,7 @@ typedef struct {
   Mat jacobian_state0;   /* Jacobian wrt U */
   Mat jacobian_state0_pre; /* preconditioning matrix wrt U */
   Mat jacobian_design0;   /* Jacobian wrt V */
+  Mat jacobian_state_inv0; /* Inverse of Jacobian wrt U */
   Mat R;
 
   Vec lamda;   /* Lagrange Multiplier */
@@ -67,6 +68,7 @@ typedef struct {
   PetscInt    subset_type;
   MatStructure statematflag,designmatflag;
   PetscBool recompute_jacobian_flag;
+  PetscInt phase2_niter;
   
 
 } TAO_LCL;

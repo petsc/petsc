@@ -90,7 +90,7 @@ extern PetscErrorCode TaoSolverSetHessianRoutine(TaoSolver,Mat,Mat, PetscErrorCo
 extern PetscErrorCode TaoSolverSetSeparableObjectiveRoutine(TaoSolver, Vec, PetscErrorCode(*)(TaoSolver, Vec, Vec, void*), void*);
 extern PetscErrorCode TaoSolverSetConstraintsRoutine(TaoSolver, Vec, PetscErrorCode(*)(TaoSolver, Vec, Vec, void*), void*);
 extern PetscErrorCode TaoSolverSetJacobianRoutine(TaoSolver,Mat,Mat, PetscErrorCode(*)(TaoSolver,Vec, Mat*, Mat*, MatStructure*, void*), void*);
-extern PetscErrorCode TaoSolverSetJacobianStateRoutine(TaoSolver,Mat,Mat, PetscErrorCode(*)(TaoSolver,Vec, Mat*, Mat*, MatStructure*, void*), void*);
+extern PetscErrorCode TaoSolverSetJacobianStateRoutine(TaoSolver,Mat,Mat,Mat, PetscErrorCode(*)(TaoSolver,Vec, Mat*, Mat*, Mat*, MatStructure*, void*), void*);
 extern PetscErrorCode TaoSolverSetJacobianDesignRoutine(TaoSolver,Mat,Mat, PetscErrorCode(*)(TaoSolver,Vec, Mat*, Mat*, MatStructure*, void*), void*);
 
 
@@ -103,7 +103,7 @@ extern PetscErrorCode TaoSolverDefaultComputeGradient(TaoSolver, Vec, Vec, void*
 
 extern PetscErrorCode TaoSolverComputeHessian(TaoSolver, Vec, Mat*, Mat*, MatStructure*);
 extern PetscErrorCode TaoSolverComputeJacobian(TaoSolver, Vec, Mat*, Mat*, MatStructure*);
-extern PetscErrorCode TaoSolverComputeJacobianState(TaoSolver, Vec, Mat*, Mat*, MatStructure*);
+extern PetscErrorCode TaoSolverComputeJacobianState(TaoSolver, Vec, Mat*, Mat*, Mat*, MatStructure*);
 extern PetscErrorCode TaoSolverComputeJacobianDesign(TaoSolver, Vec, Mat*, Mat*, MatStructure*);
 
 extern PetscErrorCode TaoSolverDefaultComputeHessian(TaoSolver, Vec, Mat*, Mat*, MatStructure*, void*);
@@ -151,8 +151,8 @@ extern PetscErrorCode TaoSolverGradientMonitor(TaoSolver, void*);
 extern PetscErrorCode TaoSolverDefaultConvergenceTest(TaoSolver,void*);
 extern PetscErrorCode TaoSolverSetConvergenceTest(TaoSolver, PetscErrorCode (*)(TaoSolver, void*),void *);
 
-extern PetscErrorCode TaoSolverSQPCONSetStateIS(TaoSolver, IS);
-extern PetscErrorCode TaoSolverLCLSetStateIS(TaoSolver, IS);
+extern PetscErrorCode TaoSolverSQPCONSetStateDesignIS(TaoSolver, IS, IS);
+extern PetscErrorCode TaoSolverLCLSetStateDesignIS(TaoSolver, IS, IS);
 PetscErrorCode TaoSolverMonitor(TaoSolver, PetscInt, PetscReal, PetscReal, PetscReal, PetscReal, TaoSolverTerminationReason*); 
 
 

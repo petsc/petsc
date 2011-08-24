@@ -15,7 +15,7 @@ struct _TaoSolverOps {
     PetscErrorCode (*computeseparableobjective)(TaoSolver, Vec, Vec, void*);
     PetscErrorCode (*computeconstraints)(TaoSolver, Vec, Vec, void*);
     PetscErrorCode (*computejacobian)(TaoSolver, Vec, Mat*, Mat*, MatStructure*, void*);
-    PetscErrorCode (*computejacobianstate)(TaoSolver, Vec, Mat*, Mat*, MatStructure*, void*);
+    PetscErrorCode (*computejacobianstate)(TaoSolver, Vec, Mat*, Mat*, Mat*, MatStructure*, void*);
     PetscErrorCode (*computejacobiandesign)(TaoSolver, Vec, Mat*, Mat*, MatStructure*, void*);
     PetscErrorCode (*computebounds)(TaoSolver, Vec, Vec, void*);
 
@@ -67,6 +67,7 @@ struct _p_TaoSolver {
     Mat jacobian;
     Mat jacobian_pre;
     Mat jacobian_state;
+    Mat jacobian_state_inv;
     Mat jacobian_design;
     Mat jacobian_state_pre;
     Mat jacobian_design_pre;

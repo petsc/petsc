@@ -122,7 +122,7 @@ PetscErrorCode TaoSolverComputeJacobian(TaoSolver tao, Vec X, Mat *J, Mat *Jpre,
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSolverComputeJacobianState"
-PetscErrorCode TaoSolverComputeJacobianState(TaoSolver tao, Vec X, Mat *J, Mat *Jpre, MatStructure *flg)
+PetscErrorCode TaoSolverComputeJacobianState(TaoSolver tao, Vec X, Mat *J, Mat *Jpre, Mat *Jinv, MatStructure *flg)
 {
     PetscErrorCode ierr;
     PetscFunctionBegin;
@@ -139,7 +139,7 @@ PetscErrorCode TaoSolverComputeJacobianState(TaoSolver tao, Vec X, Mat *J, Mat *
     ierr = PetscLogEventBegin(TaoSolver_JacobianEval,tao,X,*J,*Jpre); CHKERRQ(ierr);
     PetscStackPush("TaoSolver user Jacobian(state) function");
     CHKMEMQ;
-    ierr = (*tao->ops->computejacobianstate)(tao,X,J,Jpre,flg,tao->user_jac_stateP); CHKERRQ(ierr);
+    ierr = (*tao->ops->computejacobianstate)(tao,X,J,Jpre,Jinv,flg,tao->user_jac_stateP); CHKERRQ(ierr);
     CHKMEMQ;
     PetscStackPop;
     ierr = PetscLogEventEnd(TaoSolver_JacobianEval,tao,X,*J,*Jpre); CHKERRQ(ierr);
@@ -215,7 +215,7 @@ PetscErrorCode TaoSolverSetJacobianRoutine(TaoSolver tao, Mat J, Mat Jpre, Petsc
 
 #undef __FUNCT__ 
 #define __FUNCT__ "TaoSolverSetJacobianStateRoutine"
-PetscErrorCode TaoSolverSetJacobianStateRoutine(TaoSolver tao, Mat J, Mat Jpre, PetscErrorCode (*func)(TaoSolver, Vec, Mat*, Mat *, MatStructure *, void*), void *ctx)
+PetscErrorCode TaoSolverSetJacobianStateRoutine(TaoSolver tao, Mat J, Mat Jpre, Mat Jinv, PetscErrorCode (*func)(TaoSolver, Vec, Mat*, Mat *, Mat *, MatStructure *, void*), void *ctx)
 {
     PetscErrorCode ierr;
     PetscFunctionBegin;
@@ -228,6 +228,10 @@ PetscErrorCode TaoSolverSetJacobianStateRoutine(TaoSolver tao, Mat J, Mat Jpre, 
 	PetscValidHeaderSpecific(Jpre,MAT_CLASSID,3);
 	PetscCheckSameComm(tao,1,Jpre,3);
     }
+    if (Jinv) {
+      PetscValidHeaderSpecific(Jinv,MAT_CLASSID,4);
+      PetscCheckSameComm(tao,1,Jinv,4);
+    } 
     if (ctx) {
 	tao->user_jac_stateP = ctx;
     }
@@ -245,6 +249,11 @@ PetscErrorCode TaoSolverSetJacobianStateRoutine(TaoSolver tao, Mat J, Mat Jpre, 
 	ierr = PetscObjectReference((PetscObject)Jpre); CHKERRQ(ierr);
 	if (tao->jacobian_state_pre) { ierr = MatDestroy(&tao->jacobian_state_pre); CHKERRQ(ierr);}
 	tao->jacobian_state_pre=Jpre;
+    }
+    if (Jinv) {
+      ierr = PetscObjectReference((PetscObject)Jinv); CHKERRQ(ierr);
+      if (tao->jacobian_state_inv) {ierr = MatDestroy(&tao->jacobian_state_inv); CHKERRQ(ierr);}
+      tao->jacobian_state_inv=Jinv;
     }
     PetscFunctionReturn(0);
 }

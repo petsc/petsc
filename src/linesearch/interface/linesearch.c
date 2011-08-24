@@ -470,6 +470,7 @@ PetscErrorCode TaoLineSearchSetType(TaoLineSearch ls, const TaoLineSearchType ty
      ls->stepmin=1.0e-20;
      ls->stepmax=1.0e+20;
 
+
      ls->nfev=0;
      ls->ops->setup=0;
      ls->ops->apply=0;

@@ -258,6 +258,10 @@ PetscErrorCode TaoSolverDestroy(TaoSolver *tao)
 
   if ((*tao)->ops->convergencedestroy) {
     ierr = (*(*tao)->ops->convergencedestroy)((*tao)->cnvP); CHKERRQ(ierr);
+    if ((*tao)->jacobian_state_inv) {
+      ierr = MatDestroy(&(*tao)->jacobian_state_inv); CHKERRQ(ierr);
+      (*tao)->jacobian_state_inv = PETSC_NULL;
+    }
   }
   ierr = VecDestroy(&(*tao)->solution); CHKERRQ(ierr);
   ierr = VecDestroy(&(*tao)->gradient); CHKERRQ(ierr);

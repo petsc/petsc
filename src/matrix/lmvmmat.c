@@ -156,6 +156,7 @@ extern PetscErrorCode MatLMVMSolve(Mat A, Vec b, Vec x)
 
     info = VecCopy(b,x); CHKERRQ(info);
     for (ll = 0; ll < shell->lmnow; ++ll) {
+    //for (ll = 0; ll <= shell->lmnow; ++ll) { // ***
 	info = VecDot(x,shell->S[ll],&sq); CHKERRQ(info);
 	shell->beta[ll] = sq * shell->rho[ll];
 	info = VecAXPY(x,-shell->beta[ll],shell->Y[ll]); CHKERRQ(info);
@@ -198,6 +199,7 @@ extern PetscErrorCode MatLMVMSolve(Mat A, Vec b, Vec x)
     } 
 
     for (ll = shell->lmnow-1; ll >= 0; --ll) {
+    //for (ll = shell->lmnow; ll >= 0; --ll) { // ***
 	info = VecDot(x,shell->Y[ll],&yq); CHKERRQ(info);
 	info = VecAXPY(x,shell->beta[ll]-yq*shell->rho[ll],shell->S[ll]);
 	CHKERRQ(info);
@@ -858,9 +860,11 @@ extern PetscErrorCode MatLMVMSetPrev(Mat M, Vec x, Vec g)
   if (ctx->nupdates == 0) {
     ierr = MatLMVMUpdate(M,x,g); CHKERRQ(ierr);
   } else {
-    ierr = VecCopy(x,ctx->S[0]); CHKERRQ(ierr);
-    ierr = VecCopy(g,ctx->Y[0]); CHKERRQ(ierr);
-    ierr = VecDot(x,g,&ctx->rho[0]); CHKERRQ(ierr);
+    //ierr = VecCopy(x,ctx->S[0]); CHKERRQ(ierr);
+    //ierr = VecCopy(g,ctx->Y[0]); CHKERRQ(ierr);
+    //ierr = VecDot(x,g,&ctx->rho[0]); CHKERRQ(ierr);
+    ierr = VecCopy(x,ctx->Xprev); CHKERRQ(ierr);
+    ierr = VecCopy(g,ctx->Gprev); CHKERRQ(ierr);
     // TODO scaling specific terms
   }
   PetscFunctionReturn(0);
