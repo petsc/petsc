@@ -1300,7 +1300,7 @@ extern PetscErrorCode  PetscInitializeNoArguments(void);
 extern PetscErrorCode  PetscInitialized(PetscBool  *);
 extern PetscErrorCode  PetscFinalized(PetscBool  *);
 extern PetscErrorCode  PetscFinalize(void);
-extern PetscErrorCode PetscInitializeFortran(void);
+extern PetscErrorCode  PetscInitializeFortran(void);
 extern PetscErrorCode  PetscGetArgs(int*,char ***);
 extern PetscErrorCode  PetscGetArguments(char ***);
 extern PetscErrorCode  PetscFreeArguments(char **);

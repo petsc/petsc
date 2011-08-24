@@ -262,10 +262,12 @@ static PetscErrorCode PetscDrawSetViewport_X(PetscDraw draw,PetscReal xl,PetscRe
 #define __FUNCT__ "PetscDrawClear_X" 
 static PetscErrorCode PetscDrawClear_X(PetscDraw draw)
 {
-  PetscDraw_X* XiWin = (PetscDraw_X*)draw->data;
-  int          x, y, w, h;
+  PetscDraw_X*   XiWin = (PetscDraw_X*)draw->data;
+  int            x, y, w, h;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscDrawSave(draw);CHKERRQ(ierr);
   x = (int)(draw->port_xl*XiWin->w);
   w = (int)((draw->port_xr - draw->port_xl)*XiWin->w);
   y = (int)((1.0-draw->port_yr)*XiWin->h);
@@ -496,10 +498,26 @@ static PetscErrorCode PetscDrawRestoreSingleton_X(PetscDraw,PetscDraw*);
 #define __FUNCT__ "PetscDrawDestroy_X" 
 PetscErrorCode PetscDrawDestroy_X(PetscDraw draw)
 {
-  PetscDraw_X *win = (PetscDraw_X*)draw->data;
+  PetscDraw_X    *win = (PetscDraw_X*)draw->data;
   PetscErrorCode ierr;
+#if defined(PETSC_HAVE_POPEN)
+  char           command[PETSC_MAX_PATH_LEN];
+  PetscMPIInt    rank;
+  FILE           *fd;
+#endif
 
   PetscFunctionBegin;
+  ierr = PetscDrawSynchronizedClear(draw);CHKERRQ(ierr);
+
+#if defined(PETSC_HAVE_POPEN)
+  ierr = MPI_Comm_rank(((PetscObject)draw)->comm,&rank);CHKERRQ(ierr);
+  if (!rank) {
+    ierr = PetscSNPrintf(command,PETSC_MAX_PATH_LEN,"ffmpeg -i %s_%%d.Jpeg %s.Mpeg",draw->savefilename,draw->savefilename);CHKERRQ(ierr);
+    ierr = PetscPOpen(((PetscObject)draw)->comm,PETSC_NULL,command,"r",&fd);CHKERRQ(ierr);
+    ierr = PetscPClose(((PetscObject)draw)->comm,fd);CHKERRQ(ierr);
+  }
+#endif
+
   XFreeGC(win->disp,win->gc.set);
   XCloseDisplay(win->disp);
   ierr = PetscDrawDestroy(&draw->popup);CHKERRQ(ierr);
@@ -507,6 +525,9 @@ PetscErrorCode PetscDrawDestroy_X(PetscDraw draw)
   ierr = PetscFree(win);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+PetscErrorCode PetscDrawSave_X(PetscDraw);
+PetscErrorCode PetscDrawSetSave_X(PetscDraw,const char*);
 
 static struct _PetscDrawOps DvOps = { PetscDrawSetDoubleBuffer_X,
                                  PetscDrawFlush_X,PetscDrawLine_X,
@@ -536,7 +557,13 @@ static struct _PetscDrawOps DvOps = { PetscDrawSetDoubleBuffer_X,
                                  PetscDrawDestroy_X,
                                  0,
                                  PetscDrawGetSingleton_X,
-                                 PetscDrawRestoreSingleton_X };
+                                 PetscDrawRestoreSingleton_X,
+#if defined(PETSC_HAVE_AFTERIMAGE) || defined(PETSC_HAVE_IMAGEMAGICK)
+                                 PetscDrawSave_X,
+#else
+                                 0
+#endif
+                                 PetscDrawSetSave_X};
 
 
 extern PetscErrorCode XiQuickWindow(PetscDraw_X*,char*,char*,int,int,int,int);

@@ -34,3 +34,28 @@ PetscErrorCode  PetscDrawRectangle(PetscDraw draw,PetscReal xl,PetscReal yl,Pets
   ierr = (*draw->ops->rectangle)(draw,xl,yl,xr,yr,c1,c2,c3,c4);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawSave" 
+/*@
+   PetscDrawSave - Saves a drawn image in a viewer
+
+   Not Collective
+
+   Input Parameters:
+.  draw - the drawing context
+
+   Level: advanced
+
+@*/
+PetscErrorCode  PetscDrawSave(PetscDraw draw)
+{
+  PetscErrorCode ierr;
+  PetscBool  isnull;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
+  ierr = PetscTypeCompare((PetscObject)draw,PETSC_DRAW_NULL,&isnull);CHKERRQ(ierr);
+  if (isnull) PetscFunctionReturn(0);
+  ierr = (*draw->ops->save)(draw);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}

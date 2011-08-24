@@ -86,6 +86,7 @@ extern PetscErrorCode  PetscDrawGetType(PetscDraw,const PetscDrawType*);
 extern PetscErrorCode  PetscDrawSetType(PetscDraw,const PetscDrawType);
 extern PetscErrorCode  PetscDrawCreate(MPI_Comm,const char[],const char[],int,int,int,int,PetscDraw*);
 extern PetscErrorCode  PetscDrawSetFromOptions(PetscDraw);
+extern PetscErrorCode  PetscDrawSetSave(PetscDraw,const char*);
 
 /*
    Number of basic colors in the draw routines, the others are used
@@ -181,6 +182,7 @@ extern PetscErrorCode  PetscDrawSetDoubleBuffer(PetscDraw);
 extern PetscErrorCode  PetscDrawFlush(PetscDraw);
 extern PetscErrorCode  PetscDrawSynchronizedFlush(PetscDraw);
 extern PetscErrorCode  PetscDrawClear(PetscDraw);
+extern PetscErrorCode  PetscDrawSave(PetscDraw);
 extern PetscErrorCode  PetscDrawSynchronizedClear(PetscDraw);
 extern PetscErrorCode  PetscDrawBOP(PetscDraw);
 extern PetscErrorCode  PetscDrawEOP(PetscDraw);

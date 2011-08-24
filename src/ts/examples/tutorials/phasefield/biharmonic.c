@@ -15,9 +15,17 @@ Evolve with the restriction that 0 <= u <= 1; i.e. as a variational inequality
 ---------------
 ./biharmonic -ts_monitor -snes_monitor -ts_monitor_solution  -pc_type lu  -draw_pause .1 -snes_converged_reason -ts_monitor_solution_initial -wait   -ts_type beuler   -da_refine 5 -vi 
 
-Add a term to the right hand side so that the bulge grows/expands with time
+Add a simple term to the right hand side so that the bulge grows/expands with time
 ---------------
 ./biharmonic -ts_monitor -snes_monitor -ts_monitor_solution -pc_type lu  -draw_pause .1  -snes_converged_reason  -ts_monitor_solution_initial -wait   -ts_type beuler   -da_refine 5 -vi -growth
+
+   u_t =  kappa \Delta \Delta  u + 12(2u - 1)(u_x)^2 + (12u^2 - 12 u + 2) \Delta u
+    0 <= u <= 1 
+    Periodic boundary conditions
+
+Evolve the Cahn-Hillard equations:
+---------------
+./biharmonic -ts_monitor -snes_monitor -ts_monitor_solution  -pc_type lu  -draw_pause .1 -snes_converged_reason  -ts_monitor_solution_initial -wait   -ts_type beuler    -da_refine 6 -vi  -kappa .00001 -ts_dt 5.96046e-06 -cahn-hillard
 
 
 */
@@ -40,7 +48,7 @@ int main(int argc,char **argv)
   MatFDColoring          matfdcoloring;
   ISColoring             iscoloring;
   PetscReal              ftime,dt;
-  PetscReal              vbounds[] = {-.125,1.25};
+  PetscReal              vbounds[] = {-.05,1.05};
   PetscBool              wait,vi = PETSC_FALSE;
   Vec                    ul,uh;
   UserCtx                ctx;

@@ -240,12 +240,14 @@ PetscErrorCode  PetscDrawRegister(const char *sname,const char *path,const char 
 PetscErrorCode  PetscDrawSetFromOptions(PetscDraw draw)
 {
   PetscErrorCode ierr;
-  PetscBool  flg,nox;
-  char       vtype[256];
-  const char *def;
+  PetscBool      flg,nox;
+  char           vtype[256];
+  const char     *def;
+  PetscBool      save;
 #if !defined(PETSC_USE_WINDOWS_GRAPHICS) && !defined(PETSC_HAVE_X11)
-  PetscBool  warn;
+  PetscBool      warn;
 #endif
+  char           filename[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
@@ -278,9 +280,57 @@ PetscErrorCode  PetscDrawSetFromOptions(PetscDraw draw)
       ierr = PetscDrawSetType(draw,def);CHKERRQ(ierr);
     }
     ierr = PetscOptionsName("-nox","Run without graphics","None",&nox);CHKERRQ(ierr);
+    ierr = PetscOptionsString("-draw_save","Save graphics to file","PetscDrawSetSave",filename,filename,PETSC_MAX_PATH_LEN,&save);CHKERRQ(ierr);
+    if (save) {
+      ierr = PetscDrawSetSave(draw,filename);CHKERRQ(ierr);
+    }
 
     /* process any options handlers added with PetscObjectAddOptionsHandler() */
     ierr = PetscObjectProcessOptionsHandlers((PetscObject)draw);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawSetSave" 
+/*@C
+   PetscDrawSave - Saves images produced in a PetscDraw into a file as JPGEG
+
+   Collective on PetscDraw
+
+   Input Parameter:
++  draw      - the graphics context
+-  filename  - name of the file, if PETSC_NULL uses name of draw object
+
+   Options Database Command:
+.  -draw_save  <filename>
+
+   Level: intermediate
+
+   Concepts: X windows^graphics
+   Concepts: drawing^postscript
+   Concepts: postscript^graphics
+   Concepts: drawing^Microsoft Windows
+
+.seealso: PetscDrawSetFromOptions(), PetscDrawCreate(), PetscDrawDestroy()
+@*/
+PetscErrorCode  PetscDrawSetSave(PetscDraw draw,const char *filename)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
+  ierr = PetscFree(draw->savefilename);CHKERRQ(ierr);
+  draw->savefilecount = 0;
+  if (filename && filename[0]) {
+    ierr = PetscStrallocpy(filename,&draw->savefilename);CHKERRQ(ierr);
+  } else {
+    const char *name;
+    ierr = PetscObjectGetName((PetscObject)draw,&name);CHKERRQ(ierr);
+    ierr = PetscStrallocpy(name,&draw->savefilename);CHKERRQ(ierr);
+  }
+  if (draw->ops->setsave) {
+    ierr = (*draw->ops->setsave)(draw,filename);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }

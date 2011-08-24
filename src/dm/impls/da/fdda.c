@@ -366,8 +366,8 @@ PetscErrorCode DMGetColoring_DA_1d_MPIAIJ(DM da,ISColoringType ctype,ISColoring 
   col    = 2*s + 1;
 
   if (bx == DMDA_BOUNDARY_PERIODIC && (m % col)) {
-    SETERRQ(((PetscObject)da)->comm,PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points is divisible\n\
-                 by 2*stencil_width + 1\n");
+    SETERRQ2(((PetscObject)da)->comm,PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points %d is divisible\n\
+                 by 2*stencil_width + 1 %d\n",(int)m,(int)col);
   }
 
   ierr = DMDAGetCorners(da,&xs,0,0,&nx,0,0);CHKERRQ(ierr);

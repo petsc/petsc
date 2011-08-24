@@ -47,7 +47,7 @@ int main(int argc,char **argv)
   MatFDColoring          matfdcoloring;
   ISColoring             iscoloring;
   PetscReal              ftime,dt;
-  PetscReal              vbounds[] = {-100000,100000,-1.125,1.25};
+  PetscReal              vbounds[] = {-100000,100000,-1.1,1.1};
   PetscBool              wait;
   Vec                    ul,uh;
   SNES                   snes;
@@ -71,7 +71,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMDACreate1d(PETSC_COMM_WORLD, DMDA_BOUNDARY_PERIODIC, -10 ,2,1,PETSC_NULL,&da);CHKERRQ(ierr);
+  ierr = DMDACreate1d(PETSC_COMM_WORLD, DMDA_BOUNDARY_PERIODIC, -10 ,2,2,PETSC_NULL,&da);CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,0,"Biharmonic heat equation: w = -kappa*u_xx");CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,1,"Biharmonic heat equation: u");CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,0,&Mx,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
