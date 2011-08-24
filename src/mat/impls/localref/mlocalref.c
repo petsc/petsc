@@ -89,6 +89,7 @@ static PetscErrorCode MatSetValuesLocal_LocalRef_Scalar(Mat A,PetscInt nrow,cons
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISL2GCompose"
+/* Compose an IS with an ISLocalToGlobalMapping to map from IS source indices to global indices */
 static PetscErrorCode ISL2GCompose(IS is,ISLocalToGlobalMapping ltog,ISLocalToGlobalMapping *cltog)
 {
   PetscErrorCode ierr;
@@ -218,15 +219,18 @@ PetscErrorCode  MatCreateLocalRef(Mat A,IS isrow,IS iscol,Mat *newmat)
   B->data = (void*)lr;
 
   ierr = PetscTypeCompare((PetscObject)A,MATLOCALREF,&islr);CHKERRQ(ierr);
-  if (islr) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"Nesting MatLocalRef not implemented yet");
-  else {
+  if (islr) {
+    Mat_LocalRef *alr = (Mat_LocalRef*)A->data;
+    lr->Top = alr->Top;
+  } else {
+    /* This does not increase the reference count because MatLocalRef is not allowed to live longer than its parent */
+    lr->Top = A;
+  }
+  {
     ISLocalToGlobalMapping rltog,cltog;
     PetscInt abs,rbs,cbs;
 
-    /* This does not increase the reference count because MatLocalRef is not allowed to live longer than its parent */
-    lr->Top = A;
-
-    /* The immediate parent is the top level and we will translate directly to global indices */
+    /* We will translate directly to global indices for the top level */
     lr->SetValues        = MatSetValues;
     lr->SetValuesBlocked = MatSetValuesBlocked;
 

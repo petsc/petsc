@@ -64,7 +64,6 @@ int main(int argc, char *argv[])
     for (i=0; i<3; i++) for (j=0; j<3; j++) l2gind[3*i+j] = ((rank-1+j+size) % size)*3 + i;
     ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_WORLD,9,l2gind,PETSC_COPY_VALUES,&l2g);CHKERRQ(ierr);
     ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,3,3,PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,PETSC_NULL,PETSC_DECIDE,PETSC_NULL,&A);CHKERRQ(ierr);
-    ierr = MatSetBlockSize(A,3);CHKERRQ(ierr);
     ierr = MatSetLocalToGlobalMapping(A,l2g,l2g);CHKERRQ(ierr);
     ierr = ISLocalToGlobalMappingDestroy(&l2g);CHKERRQ(ierr);
   }
