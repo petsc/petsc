@@ -32,7 +32,7 @@ Evolve the Cahn-Hillard equations:
    User-defined routines
 */
 extern PetscErrorCode FormFunction(TS,PetscReal,Vec,Vec,Vec,void*),FormInitialSolution(DM,Vec,PetscReal);
-typedef struct {PetscBool cahnhillard;PetscReal kappa;} UserCtx;
+typedef struct {PetscBool cahnhillard;PetscReal kappa;PetscInt energy;PetscReal tol;} UserCtx;
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -63,7 +63,11 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetBool(PETSC_NULL,"-cahn-hillard",&ctx.cahnhillard,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscViewerDrawSetBounds(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),2,vbounds);CHKERRQ(ierr); 
   ierr = PetscViewerDrawResize(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),600,600);CHKERRQ(ierr); 
-
+  ctx.energy = 1;
+  //ierr = PetscOptionsGetInt(PETSC_NULL,"-energy",&ctx.energy,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-energy","type of energy (1=double well, 2=double obstacle, 3=logarithmic)","",ctx.energy,&ctx.energy,PETSC_NULL);CHKERRQ(ierr);
+  ctx.tol = 1.0e-8;
+  ierr = PetscOptionsGetReal(PETSC_NULL,"-tol",&ctx.tol,PETSC_NULL);CHKERRQ(ierr);
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -231,7 +235,25 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec Xdot,Vec F,void *ptr
   for (i=xs; i<xs+xm; i++) {
     f[i].w =  x[i].w + ctx->kappa*(x[i-1].u + x[i+1].u - 2.0*x[i].u)*sx;
     if (ctx->cahnhillard) {
-      f[i].w += -x[i].u*x[i].u*x[i].u + x[i].u;
+      switch (ctx->energy) {
+      case 1: // double well
+        f[i].w += -x[i].u*x[i].u*x[i].u + x[i].u;
+        break;
+      case 2: // double obstacle
+        f[i].w += x[i].u;
+        break;
+      case 3: // logarithmic
+        if (x[i].u < -1.0 + 2.0*ctx->tol) {
+          f[i].w += .001*(-log(ctx->tol) + log((1.0-x[i].u)/2.0)) + x[i].u;
+        }
+        else if (x[i].u > 1.0 - 2.0*ctx->tol) {
+          f[i].w += .001*(-log((1.0+x[i].u)/2.0) + log(ctx->tol)) + x[i].u;
+        }
+        else {
+          f[i].w += .001*(-log((1.0+x[i].u)/2.0) + log((1.0-x[i].u)/2.0)) + x[i].u;
+        }
+        break;
+      }
     }
     f[i].u = xdot[i].u - (x[i-1].w + x[i+1].w - 2.0*x[i].w)*sx;
   }
