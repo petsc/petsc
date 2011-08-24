@@ -284,3 +284,18 @@ PetscErrorCode TaoSolverSetJacobianDesignRoutine(TaoSolver tao, Mat J, Mat Jpre,
     }
     PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "TaoSolverSetStateIS"
+PetscErrorCode TaoSolverSetStateIS(TaoSolver tao, IS is)
+{
+  PetscErrorCode ierr;
+  if (tao->state_is) {
+    ierr = PetscObjectDereference((PetscObject)(tao->state_is)); CHKERRQ(ierr);
+  }
+  tao->state_is = is;
+  if (is) {
+    ierr = PetscObjectReference((PetscObject)(tao->state_is)); CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}

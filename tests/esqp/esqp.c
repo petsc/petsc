@@ -187,12 +187,9 @@ int main(int argc, char **argv)
   ierr = TaoSolverSetJacobianDesignRoutine(tao, user.Jd, user.Jd, FormJacobianDesign, (void *)&user); CHKERRQ(ierr);
 
   ierr = ISCreateStride(PETSC_COMM_SELF,user.m,0,1,&is_y); CHKERRQ(ierr);
+  ierr = TaoSolverSetStateIS(tao,is_y); CHKERRQ(ierr);
 
   ierr = TaoSolverSetFromOptions(tao); CHKERRQ(ierr);
-  //ierr = TaoSolverLCLSetStateIS(tao,user.s_is); CHKERRQ(ierr);
-  //ierr = TaoSolverSQPCONSetStateIS(tao,user.s_is); CHKERRQ(ierr);
-  ierr = TaoSolverLCLSetStateIS(tao,is_y); CHKERRQ(ierr);
-  ierr = TaoSolverSQPCONSetStateIS(tao,is_y); CHKERRQ(ierr);
 
   // SOLVE THE APPLICATION 
   /* SOLVE THE APPLICATION */

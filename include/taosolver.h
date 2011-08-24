@@ -92,7 +92,7 @@ extern PetscErrorCode TaoSolverSetConstraintsRoutine(TaoSolver, Vec, PetscErrorC
 extern PetscErrorCode TaoSolverSetJacobianRoutine(TaoSolver,Mat,Mat, PetscErrorCode(*)(TaoSolver,Vec, Mat*, Mat*, MatStructure*, void*), void*);
 extern PetscErrorCode TaoSolverSetJacobianStateRoutine(TaoSolver,Mat,Mat, PetscErrorCode(*)(TaoSolver,Vec, Mat*, Mat*, MatStructure*, void*), void*);
 extern PetscErrorCode TaoSolverSetJacobianDesignRoutine(TaoSolver,Mat,Mat, PetscErrorCode(*)(TaoSolver,Vec, Mat*, Mat*, MatStructure*, void*), void*);
-
+extern PetscErrorCode TaoSolverSetStateIS(TaoSolver, IS);
 
 extern PetscErrorCode TaoSolverComputeObjective(TaoSolver, Vec, PetscReal*);
 extern PetscErrorCode TaoSolverComputeSeparableObjective(TaoSolver, Vec, Vec);

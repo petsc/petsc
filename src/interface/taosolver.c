@@ -83,7 +83,14 @@ PetscErrorCode TaoSolverCreate(MPI_Comm comm, TaoSolver *newtao)
     tao->XL = PETSC_NULL;
     tao->XU = PETSC_NULL;
     tao->hessian = PETSC_NULL;
+    tao->hessian_pre = PETSC_NULL;
     tao->jacobian = PETSC_NULL;
+    tao->jacobian_pre = PETSC_NULL;
+    tao->jacobian_state = PETSC_NULL;
+    tao->jacobian_state_pre = PETSC_NULL;
+    tao->jacobian_design = PETSC_NULL;
+    tao->jacobian_design_pre = PETSC_NULL;
+    tao->state_is = PETSC_NULL;
 
     tao->max_its     = 10000;
     tao->max_funcs   = 10000;
@@ -273,7 +280,7 @@ PetscErrorCode TaoSolverDestroy(TaoSolver *tao)
   ierr = MatDestroy(&(*tao)->jacobian_state); CHKERRQ(ierr);
   ierr = MatDestroy(&(*tao)->jacobian_design_pre); CHKERRQ(ierr);
   ierr = MatDestroy(&(*tao)->jacobian_design); CHKERRQ(ierr);
-
+  ierr = ISDestroy(&(*tao)->state_is); CHKERRQ(ierr);
   ierr = TaoSolverCancelMonitors(*tao); CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(tao); CHKERRQ(ierr);
   PetscFunctionReturn(0);
