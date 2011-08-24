@@ -345,13 +345,24 @@ class VTKViewer {
         ALE::ISieveTraversal<sieve_type>::orientedClosure(*sieve, *e_iter, ncV);
         const typename visitor_type::oriented_point_type *cone = ncV.getOrientedPoints();
 
+        const int coneSize = ncV.getOrientedSize();
+        if (coneSize != corners) {
+          std::ostringstream msg;
+	  msg << "Inconsistency in topology found for mesh '"
+	      << mesh->getName() << "' during output.\n"
+	      << "Number of vertices (" << coneSize << ") in cell '"
+	      << *e_iter << "' does not expected number of vertices ("
+	      << corners << ").";
+	  throw ALE::Exception(msg.str());
+        } // if
+
         if (opt3) {
           ierr = PetscViewerASCIIPrintf(viewer, "3 %d %d %d\n", vNumbering->getIndex(cone[0].first), vNumbering->getIndex(cone[1].first), vNumbering->getIndex(cone[2].first));CHKERRQ(ierr);
         } else if (opt4) {
           ierr = PetscViewerASCIIPrintf(viewer, "4 %d %d %d %d\n", vNumbering->getIndex(cone[0].first), vNumbering->getIndex(cone[1].first), vNumbering->getIndex(cone[2].first), vNumbering->getIndex(cone[3].first));CHKERRQ(ierr);
         } else {
           ierr = PetscViewerASCIIPrintf(viewer, "%d ", corners);CHKERRQ(ierr);
-          for(int c = 0; c < ncV.getOrientedSize(); ++c) {
+          for(int c = 0; c < coneSize; ++c) {
             ierr = PetscViewerASCIIPrintf(viewer, " %d", vNumbering->getIndex(cone[c].first));CHKERRQ(ierr);
           }
           ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
