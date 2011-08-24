@@ -7,7 +7,7 @@ Load of 1.0 in x direction on all nodes (not a true uniform load).\n\
   -alpha <v>      : scaling of material coeficient in embedded circle\n\n";
 
 #include <petscksp.h>
-
+ 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **args)
@@ -130,10 +130,10 @@ int main(int argc,char **args)
 	      idx[7] += NN*NN*(nn-1);
 	    }
 	    if(k==Nk1-1 && Nk1!=nn) {
+	      idx[4] += NN*(nn*nn-NN*NN);
 	      idx[5] += NN*(nn*nn-NN*NN);
 	      idx[6] += NN*(nn*nn-NN*NN);
 	      idx[7] += NN*(nn*nn-NN*NN);
-	      idx[8] += NN*(nn*nn-NN*NN);
 	    }
 	    
 	    if( radius < 0.25 ){
