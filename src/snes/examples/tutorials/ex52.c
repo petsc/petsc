@@ -634,6 +634,8 @@ PetscErrorCode FormFunctionLocal(DM dm, Vec X, Vec F, AppCtx *user)
   PetscFunctionReturn(0);
 }
 
+extern PetscErrorCode IntegrateElementBatch(PetscInt Ne, PetscInt Nb, const PetscScalar coefficients[], const PetscReal jacobianDeterminants[], PetscInt Nq, const PetscReal quadPoints[], const PetscReal quadWeights[], const PetscReal basisTabulation[], PetscScalar elemVec[]);
+
 #undef __FUNCT__
 #define __FUNCT__ "FormFunctionLocalBatch"
 /*
@@ -652,21 +654,38 @@ PetscErrorCode FormFunctionLocalBatch(DM dm, Vec X, Vec F, AppCtx *user)
   const PetscInt   numBasisFuncs = user->q.numBasisFuncs;
   const PetscReal *basis         = user->q.basis;
   const PetscReal *basisDer      = user->q.basisDer;
-  PetscReal       *coords, *v0, *J, *invJ, detJ;
+  PetscReal       *coords, *v0, *J, *invJ, *detJ;
   PetscScalar     *realSpaceDer, *fieldGrad, *elemVec;
   PetscInt         cStart, cEnd;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   ierr = VecSet(F, 0.0);CHKERRQ(ierr);
-  ierr = PetscMalloc3(dim,PetscScalar,&realSpaceDer,dim,PetscScalar,&fieldGrad,numBasisFuncs,PetscScalar,&elemVec);CHKERRQ(ierr);
+  //ierr = PetscMalloc3(dim,PetscScalar,&realSpaceDer,dim,PetscScalar,&fieldGrad,numBasisFuncs,PetscScalar,&elemVec);CHKERRQ(ierr);
   ierr = PetscMalloc4(dim,PetscReal,&coords,dim,PetscReal,&v0,dim*dim,PetscReal,&J,dim*dim,PetscReal,&invJ);CHKERRQ(ierr);
   ierr = DMMeshGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
+  const PetscInt numCells = cEnd - cStart;
+  PetscScalar   *u;
 
-  //integrateIdentityQuadrature();
+  ierr = PetscMalloc3(numCells*numBasisFuncs,PetscScalar,&u,numCells,PetscReal,&detJ,numCells*numBasisFuncs,PetscScalar,&elemVec);CHKERRQ(ierr);
+  for(PetscInt c = cStart; c < cEnd; ++c) {
+    const PetscScalar *x;
 
-  ierr = PetscLogFlops((cEnd-cStart)*numQuadPoints*numBasisFuncs*(dim*(dim*5+4)+14));CHKERRQ(ierr);
-  ierr = PetscFree3(realSpaceDer,fieldGrad,elemVec);CHKERRQ(ierr);
+    ierr = DMMeshComputeCellGeometry(dm, c, v0, J, invJ, &detJ[c]);CHKERRQ(ierr);
+    ierr = DMMeshVecGetClosure(dm, X, c, &x);CHKERRQ(ierr);
+
+    for(int f = 0; f < numBasisFuncs; ++f) {
+      u[c*numBasisFuncs+f] = x[f];
+    }
+  }
+  ierr = IntegrateElementBatch(numCells, numBasisFuncs, u, detJ, numQuadPoints, quadPoints, quadWeights, basis, elemVec);CHKERRQ(ierr);
+  for(PetscInt c = cStart; c < cEnd; ++c) {
+    ierr = DMMeshVecSetClosure(dm, F, c, &elemVec[c*numBasisFuncs], ADD_VALUES);CHKERRQ(ierr);
+  }
+  ierr = PetscFree3(u,detJ,elemVec);CHKERRQ(ierr);
+
+  ierr = PetscLogFlops(0);CHKERRQ(ierr);
+  //ierr = PetscFree3(realSpaceDer,fieldGrad,elemVec);CHKERRQ(ierr);
   ierr = PetscFree4(coords,v0,J,invJ);CHKERRQ(ierr);
 
   ierr = PetscPrintf(PETSC_COMM_WORLD, "Residual:\n");CHKERRQ(ierr);

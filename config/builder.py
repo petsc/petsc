@@ -975,8 +975,9 @@ class PETScMaker(script.Script):
 
  def buildFile(self, filename, objDir):
    ''' This is run in a PETSc source directory'''
-   self.logWrite('Building '+filename+'\n', debugSection = 'screen', forceScroll = True)
-   sourceMap = self.sourceManager.sortSourceFiles([filename], objDir)
+   if not isinstance(filename, list): filename = [filename]
+   self.logWrite('Building '+str(filename)+'\n', debugSection = 'screen', forceScroll = True)
+   sourceMap = self.sourceManager.sortSourceFiles(filename, objDir)
    objects   = []
    for language in ['C', 'Cxx', 'Fortran', 'CUDA']:
      if sourceMap[language]:

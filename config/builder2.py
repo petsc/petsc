@@ -36,7 +36,12 @@ def check(args):
   maker.setup()
   # C test
   if len(args.files):
-    examples = [os.path.abspath(f) for f in args.files]
+    examples = []
+    for f in args.files:
+      if f[0] == '[':
+        examples.append(map(os.path.abspath, f[1:-1].split(',')))
+      else:
+        examples.append(os.path.abspath(f))
   else:
     examples = [os.path.join(maker.petscDir, 'src', 'snes', 'examples', 'tutorials', 'ex5.c')]
   # Fortran test
@@ -48,8 +53,12 @@ def check(args):
     else:
       examples.append(os.path.join(maker.petscDir, 'src', 'snes', 'examples', 'tutorials', 'ex5f.F'))
   for ex in examples:
-    exampleName = os.path.splitext(os.path.basename(ex))[0]
-    exampleDir  = os.path.dirname(ex)
+    if isinstance(ex, list):
+      exampleName = os.path.splitext(os.path.basename(ex[0]))[0]
+      exampleDir  = os.path.dirname(ex[0])
+    else:
+      exampleName = os.path.splitext(os.path.basename(ex))[0]
+      exampleDir  = os.path.dirname(ex)
     objDir      = maker.getObjDir(exampleName)
     if os.path.isdir(objDir): shutil.rmtree(objDir)
     os.mkdir(objDir)
