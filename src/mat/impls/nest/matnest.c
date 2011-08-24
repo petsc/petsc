@@ -329,10 +329,17 @@ static PetscErrorCode MatNestFindSubMat(Mat A,struct MatNestISPair *is,IS isrow,
   isFullCol = PETSC_FALSE;
   ierr = PetscTypeCompare((PetscObject)iscol,ISSTRIDE,&same);CHKERRQ(ierr);
   if (same) {
-    PetscInt n,first,step;
+    PetscInt n,first,step,i,an,am,afirst,astep;
     ierr = ISStrideGetInfo(iscol,&first,&step);CHKERRQ(ierr);
     ierr = ISGetLocalSize(iscol,&n);CHKERRQ(ierr);
-    if (A->cmap->n == n && A->cmap->rstart == first && step == 1) isFullCol = PETSC_TRUE;
+    isFullCol = PETSC_TRUE;
+    for (i=0,an=0; i<vs->nc; i++) {
+      ierr = ISStrideGetInfo(is->col[i],&afirst,&astep);CHKERRQ(ierr);
+      ierr = ISGetLocalSize(is->col[i],&am);CHKERRQ(ierr);
+      if (afirst != an || astep != step) isFullCol = PETSC_FALSE;
+      an += am;
+    }
+    if (an != n) isFullCol = PETSC_FALSE;
   }
 
   if (isFullCol) {
@@ -975,6 +982,81 @@ PetscErrorCode MatNestSetSubMats(Mat A,PetscInt nr,const IS is_row[],PetscInt nc
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "MatNestCreateAggregateL2G_Private"
+static PetscErrorCode MatNestCreateAggregateL2G_Private(Mat A,PetscInt n,const IS islocal[],const IS isglobal[],PetscBool colflg,ISLocalToGlobalMapping *ltog,ISLocalToGlobalMapping *ltogb)
+{
+  PetscErrorCode ierr;
+  PetscBool flg;
+  PetscInt i,j,m,mi,*ix;
+
+  PetscFunctionBegin;
+  for (i=0,m=0,flg=PETSC_FALSE; i<n; i++) {
+    if (islocal[i]) {
+      ierr = ISGetSize(islocal[i],&mi);CHKERRQ(ierr);
+      flg = PETSC_TRUE;       /* We found a non-trivial entry */
+    } else {
+      ierr = ISGetSize(isglobal[i],&mi);CHKERRQ(ierr);
+    }
+    m += mi;
+  }
+  if (flg) {
+    ierr = PetscMalloc(m*sizeof(*ix),&ix);CHKERRQ(ierr);
+    for (i=0,n=0; i<n; i++) {
+      ISLocalToGlobalMapping smap = PETSC_NULL;
+      VecScatter scat;
+      IS isreq;
+      Vec lvec,gvec;
+      union {PetscScalar scalar; PetscInt integer;} *x;
+      Mat sub;
+
+      if (sizeof (*x) != sizeof(PetscScalar)) SETERRQ(((PetscObject)A)->comm,PETSC_ERR_SUP,"No support when scalars smaller than integers");
+      if (colflg) {
+        ierr = MatNestFindNonzeroSubMatRow(A,i,&sub);CHKERRQ(ierr);
+      } else {
+        ierr = MatNestFindNonzeroSubMatCol(A,i,&sub);CHKERRQ(ierr);
+      }
+      if (sub) {ierr = MatGetLocalToGlobalMapping(sub,&smap,PETSC_NULL);CHKERRQ(ierr);}
+      if (islocal[i]) {
+        ierr = ISGetSize(islocal[i],&mi);CHKERRQ(ierr);
+      } else {
+        ierr = ISGetSize(isglobal[i],&mi);CHKERRQ(ierr);
+      }
+      for (j=0; j<mi; j++) ix[m+j] = j;
+      if (smap) {ierr = ISLocalToGlobalMappingApply(smap,mi,ix+m,ix+m);CHKERRQ(ierr);}
+      /*
+        Now we need to extract the monolithic global indices that correspond to the given split global indices.
+        In many/most cases, we only want MatGetLocalSubMatrix() to work, in which case we only need to know the size of the local spaces.
+        The approach here is ugly because it uses VecScatter to move indices.
+       */
+      ierr = VecCreateSeq(PETSC_COMM_SELF,mi,&lvec);CHKERRQ(ierr);
+      ierr = VecCreateMPI(((PetscObject)isglobal[i])->comm,mi,PETSC_DECIDE,&gvec);CHKERRQ(ierr);
+      ierr = ISCreateGeneral(((PetscObject)isglobal[i])->comm,mi,ix+m,PETSC_COPY_VALUES,&isreq);CHKERRQ(ierr);
+      ierr = VecScatterCreate(gvec,isreq,lvec,PETSC_NULL,&scat);CHKERRQ(ierr);
+      ierr = VecGetArray(gvec,(PetscScalar**)&x);CHKERRQ(ierr);
+      for (j=0; j<mi; j++) x[j].integer = ix[m+j];
+      ierr = VecRestoreArray(gvec,(PetscScalar**)&x);CHKERRQ(ierr);
+      ierr = VecScatterBegin(scat,gvec,lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterEnd(scat,gvec,lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecGetArray(lvec,(PetscScalar**)&x);CHKERRQ(ierr);
+      for (j=0; j<mi; j++) ix[m+j] = x[j].integer;
+      ierr = VecRestoreArray(lvec,(PetscScalar**)&x);CHKERRQ(ierr);
+      ierr = VecDestroy(&lvec);CHKERRQ(ierr);
+      ierr = VecDestroy(&gvec);CHKERRQ(ierr);
+      ierr = ISDestroy(&isreq);CHKERRQ(ierr);
+      ierr = VecScatterDestroy(&scat);CHKERRQ(ierr);
+      m += mi;
+    }
+    ierr = ISLocalToGlobalMappingCreate(((PetscObject)A)->comm,m,ix,PETSC_OWN_POINTER,ltog);CHKERRQ(ierr);
+    *ltogb = PETSC_NULL;
+  } else {
+    *ltog = PETSC_NULL;
+    *ltogb = PETSC_NULL;
+  }
+  PetscFunctionReturn(0);
+}
+
+
 /* If an IS was provided, there is nothing Nest needs to do, otherwise Nest will build a strided IS */
 /*
   nprocessors = NP
@@ -1108,6 +1190,19 @@ static PetscErrorCode MatSetUp_NestIS_Private(Mat A,PetscInt nr,const IS is_row[
     }
     vs->islocal.col[i] = isloc;
     offset += nlocal;
+  }
+
+  /* Set up the aggregate ISLocalToGlobalMapping */
+  {
+    ISLocalToGlobalMapping rmap,rmapb,cmap,cmapb;
+    ierr = MatNestCreateAggregateL2G_Private(A,vs->nr,vs->islocal.row,vs->isglobal.row,PETSC_FALSE,&rmap,&rmapb);CHKERRQ(ierr);
+    ierr = MatNestCreateAggregateL2G_Private(A,vs->nc,vs->islocal.col,vs->isglobal.col,PETSC_TRUE,&cmap,&cmapb);CHKERRQ(ierr);
+    if (rmap && cmap) {ierr = MatSetLocalToGlobalMapping(A,rmap,cmap);CHKERRQ(ierr);}
+    if (rmapb && cmapb) {ierr = MatSetLocalToGlobalMappingBlock(A,rmapb,cmapb);CHKERRQ(ierr);}
+    ierr = ISLocalToGlobalMappingDestroy(&rmap);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingDestroy(&rmapb);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingDestroy(&cmap);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingDestroy(&cmapb);CHKERRQ(ierr);
   }
 
 #if defined(PETSC_USE_DEBUG)
