@@ -239,17 +239,18 @@ PetscErrorCode TaoLineSearchSetUp(TaoLineSearch ls)
 
 .seealse: TaoLineSearchCreate(), TaoLineSearchSolve()
 @*/
-PetscErrorCode TaoLineSearchDestroy(TaoLineSearch ls)
+PetscErrorCode TaoLineSearchDestroy(TaoLineSearch *ls)
 {
      PetscErrorCode info;
      PetscFunctionBegin;
-     PetscValidHeaderSpecific(ls,TAOLINESEARCH_CLASSID,1);
-     if (--((PetscObject)ls)->refct > 0) PetscFunctionReturn(0);
-     if (ls->ops->destroy) {
-	 info = (*ls->ops->destroy)(ls); CHKERRQ(info);
+     if (!*ls) PetscFunctionReturn(0);
+     PetscValidHeaderSpecific(*ls,TAOLINESEARCH_CLASSID,1);
+     if (--((PetscObject)*ls)->refct > 0) {*ls=0; PetscFunctionReturn(0);}
+     if ((*ls)->ops->destroy) {
+       info = (*(*ls)->ops->destroy)(*ls); CHKERRQ(info);
      }
 
-     info = PetscHeaderDestroy(&ls); CHKERRQ(info);
+     info = PetscHeaderDestroy(ls); CHKERRQ(info);
      PetscFunctionReturn(0);
 }
 

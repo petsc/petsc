@@ -193,7 +193,7 @@ PetscErrorCode main(int argc,char **argv)
   }
 
   /* Free TAO data structures */
-  ierr = TaoSolverDestroy(tao); CHKERRQ(ierr);
+  ierr = TaoSolverDestroy(&tao); CHKERRQ(ierr);
 
   /* Free PETSc data structures */
   ierr = VecDestroy(&user.s); CHKERRQ(ierr);

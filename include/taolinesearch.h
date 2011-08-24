@@ -2,9 +2,8 @@
 #define __TAOLINESEARCH_H
 #include "petscvec.h"
 
-#include "taosolver.h"
 PETSC_EXTERN_CXX_BEGIN
-
+typedef struct _p_TaoLineSearch* TaoLineSearch;
 typedef enum {
     TAOLINESEARCH_CONTINUE_ITERATING = 0,
     TAOLINESEARCH_FAILED_OTHER = -1,
@@ -21,7 +20,6 @@ typedef enum {
     TAOLINESEARCH_SUCCESS_USER = 2,
 } TaoLineSearchTerminationReason;
 	      
-typedef struct _p_TaoLineSearch* TaoLineSearch;
 
 #define TaoLineSearchType  char*
 #define TAOLINESEARCH_UNIT "unit"
@@ -31,10 +29,16 @@ typedef struct _p_TaoLineSearch* TaoLineSearch;
 
 extern PetscClassId TAOLINESEARCH_CLASSID;
 
+PETSC_EXTERN_CXX_END
+
+#include "taosolver.h"
+
+PETSC_EXTERN_CXX_BEGIN
+
 extern PetscErrorCode TaoLineSearchCreate(MPI_Comm,TaoLineSearch*);
 extern PetscErrorCode TaoLineSearchSetFromOptions(TaoLineSearch);
 extern PetscErrorCode TaoLineSearchSetUp(TaoLineSearch);
-extern PetscErrorCode TaoLineSearchDestroy(TaoLineSearch);
+extern PetscErrorCode TaoLineSearchDestroy(TaoLineSearch*);
 extern PetscErrorCode TaoLineSearchView(TaoLineSearch,PetscViewer);
 extern PetscErrorCode TaoLineSearchSetOptionsPrefix(TaoLineSearch);
 extern PetscErrorCode TaoLineSearchApply(TaoLineSearch,Vec,PetscReal *,Vec,Vec, PetscReal *, TaoLineSearchTerminationReason *);

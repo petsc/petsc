@@ -49,7 +49,7 @@ int main(int argc,char **argv)
   info = TaoSolverSolve(tao); CHKERRQ(info);
 
   /* Free TAO data structures */
-  info = TaoSolverDestroy(tao); CHKERRQ(info);
+  info = TaoSolverDestroy(&tao); CHKERRQ(info);
 
   /* Free PETSc data structures */
   info = VecDestroy(&x); CHKERRQ(info);

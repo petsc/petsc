@@ -182,7 +182,7 @@ int main( int argc, char **argv )
     PetscPrintf(PETSC_COMM_WORLD,"Try a different TAO method, adjust some parameters, or check the function evaluation routines\n");
   }
   /* Free TAO data structures */
-  ierr = TaoSolverDestroy(tao); CHKERRQ(ierr);
+  ierr = TaoSolverDestroy(&tao); CHKERRQ(ierr);
 
   /* Free PETSc data structures */
   ierr = VecDestroy(&x); CHKERRQ(ierr);

@@ -4,9 +4,11 @@
 #include "petsc.h"
 #include "petscvec.h"
 #include "petscmat.h"
+#include "tao_version.h"
 #include "tao_sys.h"
 #include "tao_util.h"
-#include "tao_version.h"
+
+
 
 PETSC_EXTERN_CXX_BEGIN
 
@@ -35,6 +37,14 @@ typedef enum {/* converged */
               TAO_CONTINUE_ITERATING      =  0} TaoSolverTerminationReason;
 
 extern const char **TaoSolverTerminationReasons;
+
+PETSC_EXTERN_CXX_END
+
+
+#include "taolinesearch.h"
+
+PETSC_EXTERN_CXX_BEGIN
+
 extern PetscErrorCode TaoInitialize(int*,char***,const char[], const char[]);
 extern PetscErrorCode TaoFinalize();
 
@@ -55,7 +65,7 @@ extern PetscErrorCode TaoSolverSetUp(TaoSolver);
 extern PetscErrorCode TaoSolverSetType(TaoSolver, const TaoSolverType);
 extern PetscErrorCode TaoSolverGetType(TaoSolver, TaoSolverType *);
 
-extern PetscErrorCode TaoSolverDestroy(TaoSolver);
+extern PetscErrorCode TaoSolverDestroy(TaoSolver*);
 
 extern PetscErrorCode TaoSolverSetOptionsPrefix(TaoSolver,const char []);
 extern PetscErrorCode TaoSolverView(TaoSolver, PetscViewer);

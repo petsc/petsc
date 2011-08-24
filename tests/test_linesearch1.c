@@ -79,7 +79,7 @@ int main(int argc, char *argv[])
     ierr = VecView(g,PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
 
     
-    ierr = TaoLineSearchDestroy(ls); CHKERRQ(ierr);
+    ierr = TaoLineSearchDestroy(&ls); CHKERRQ(ierr);
     ierr = VecDestroy(&x); CHKERRQ(ierr);
     ierr = VecDestroy(&s); CHKERRQ(ierr);
     ierr = VecDestroy(&g); CHKERRQ(ierr);

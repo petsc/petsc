@@ -98,7 +98,7 @@ int main(int argc, char **argv)
 	
 	ierr = TaoSolverSolve(tao); CHKERRQ(ierr);
 	ierr = TaoSolverView(tao,PETSC_VIEWER_STDOUT_SELF); CHKERRQ(ierr);
-	ierr = TaoSolverDestroy(tao); CHKERRQ(ierr);
+	ierr = TaoSolverDestroy(&tao); CHKERRQ(ierr);
 	
 	ierr = VecDestroy(&X); CHKERRQ(ierr);
 	ierr = VecDestroy(&F); CHKERRQ(ierr);

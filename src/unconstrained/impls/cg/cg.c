@@ -232,10 +232,7 @@ static PetscErrorCode TaoSolverDestroy_CG(TaoSolver tao)
       ierr = VecDestroy(&cgP->X_old); CHKERRQ(ierr);
       ierr = VecDestroy(&cgP->G_old); CHKERRQ(ierr);
     }
-    if (tao->linesearch) {
-      ierr = TaoLineSearchDestroy(tao->linesearch); CHKERRQ(ierr);
-      tao->linesearch = PETSC_NULL;
-    }
+    ierr = TaoLineSearchDestroy(&tao->linesearch); CHKERRQ(ierr);
 
     ierr = PetscFree(tao->data); CHKERRQ(ierr);
     tao->data = PETSC_NULL;
