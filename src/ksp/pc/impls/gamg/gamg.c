@@ -34,7 +34,7 @@ PetscErrorCode PCSetCoordinates_GAMG( PC a_pc, PetscInt a_ndm, PetscReal *a_coor
   PetscInt       arrsz,bs,my0,kk,ii,jj,nloc,Iend;
   Mat            Amat = a_pc->pmat;
   PetscBool      flag;
-  char           str[16];
+  char           str[64];
 
   PetscFunctionBegin;
   ierr  = MatGetBlockSize( Amat, &bs );               CHKERRQ( ierr );
@@ -42,7 +42,7 @@ PetscErrorCode PCSetCoordinates_GAMG( PC a_pc, PetscInt a_ndm, PetscReal *a_coor
   nloc = (Iend-my0)/bs; 
   if((Iend-my0)%bs!=0) SETERRQ1(((PetscObject)Amat)->comm,PETSC_ERR_ARG_WRONG, "Bad local size %d.",nloc);
 
-  ierr  = PetscOptionsGetString(PETSC_NULL,"-pc_gamg_type",str,16,&flag);    CHKERRQ( ierr );
+  ierr  = PetscOptionsGetString(PETSC_NULL,"-pc_gamg_type",str,64,&flag);    CHKERRQ( ierr );
   pc_gamg->m_useSA = (PetscBool)(flag && strcmp(str,"sa") == 0);
 
   pc_gamg->m_data_rows = 1; 
@@ -97,9 +97,7 @@ PetscErrorCode PCSetCoordinates_GAMG( PC a_pc, PetscInt a_ndm, PetscReal *a_coor
       }
     }
   }
-
   assert(pc_gamg->m_data[arrsz] == -99.);
-  for(kk=0;kk<arrsz;kk++) assert(pc_gamg->m_data[kk] != -999.); // debug
     
   pc_gamg->m_data_sz = arrsz;
   pc_gamg->m_dim = a_ndm;
@@ -460,12 +458,12 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
   PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s level %d N=%d, n data rows=%d, n data cols=%d, nnz/row (ave)=%d, np=%d\n",
 	      mype,__FUNCT__,0,N,pc_gamg->m_data_rows,pc_gamg->m_data_cols,(PetscInt)info.nz_used/N,npe);
   for ( level=0, Aarr[0] = Pmat, nactivepe = npe; /* hard wired stopping logic */
-        level < GAMG_MAXLEVELS-1 && (level==0 || M/bs>TOP_GRID_LIM) && (npe==1 || nactivepe>1); 
+        level < GAMG_MAXLEVELS-1 && (level==0 || M>TOP_GRID_LIM) && (npe==1 || nactivepe>1); 
         level++ ){
     level1 = level + 1;
     ierr = PetscLogEventBegin(gamg_setup_stages[SET1],0,0,0,0);CHKERRQ(ierr);
     ierr = createProlongation(Aarr[level], data, pc_gamg->m_dim, pc_gamg->m_data_cols, pc_gamg->m_useSA,
-                              &bs, &Parr[level1], &coarse_data, &isOK, &emaxs[level] );
+                              level, &bs, &Parr[level1], &coarse_data, &isOK, &emaxs[level] );
     CHKERRQ(ierr);
     ierr = PetscFree( data ); CHKERRQ( ierr );
     ierr = PetscLogEventEnd(gamg_setup_stages[SET1],0,0,0,0);CHKERRQ(ierr);
@@ -486,18 +484,19 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
       /* aggregation method can probably gaurrentee this does not happen! - be safe for now */
  
       if( PETSC_TRUE ){
-        Vec diag; PetscScalar *data_arr,v; PetscInt Istart,Iend,kk,nloc,id;
+        Vec diag; PetscScalar *data_arr,v; PetscInt Istart,Iend,kk,nloceq,id;
+        v = 1.e-10; /* LU factor has hard wired numbers for small diags so this needs to match (yuk) */
         ierr = MatGetOwnershipRange(Aarr[level1], &Istart, &Iend); CHKERRQ(ierr);
-        nloc = Iend-Istart;
+        nloceq = Iend-Istart;
         ierr = MatGetVecs( Aarr[level1], &diag, 0 );    CHKERRQ(ierr);
         ierr = MatGetDiagonal( Aarr[level1], diag );    CHKERRQ(ierr);
         ierr = VecGetArray( diag, &data_arr );   CHKERRQ(ierr);
-        for(kk=0;kk<nloc;kk++){
+        for(kk=0;kk<nloceq;kk++){
           if(data_arr[kk]==0.0) {
-            id = kk + Istart; v = 1.e-1;
+            id = kk + Istart; 
             ierr = MatSetValues(Aarr[level1],1,&id,1,&id,&v,INSERT_VALUES);
             CHKERRQ(ierr);
-            /* PetscPrintf(PETSC_COMM_SELF,"[%d]%s warning: added diag to zero (%d) on level %d \n",mype,__FUNCT__,id,level); */
+            PetscPrintf(PETSC_COMM_SELF,"\t[%d]%s warning: added diag to zero (%d) on level %d \n",mype,__FUNCT__,id,level);
           }
         }
         ierr = VecRestoreArray( diag, &data_arr ); CHKERRQ(ierr);
@@ -557,14 +556,14 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
       ierr = VecDestroy( &xx );       CHKERRQ(ierr);
       ierr = VecDestroy( &bb );       CHKERRQ(ierr);
       ierr = KSPDestroy( &eksp );       CHKERRQ(ierr);
-      PetscPrintf(PETSC_COMM_WORLD,"%s max eigen = %e min = %e\n",__FUNCT__,emax,emin);
     }
     {
       PetscInt N1, N0, tt;
       ierr = MatGetSize( Aarr[level], &N1, &tt );         CHKERRQ(ierr);
       ierr = MatGetSize( Aarr[level+1], &N0, &tt );       CHKERRQ(ierr);
-      emin = .5*emax/((PetscReal)N1/(PetscReal)N0); /* this should be about the coarsening rate */
+      emin = 1.*emax/((PetscReal)N1/(PetscReal)N0); /* this should be about the coarsening rate */
       emax *= 1.05;
+PetscPrintf(PETSC_COMM_WORLD,"%s max eigen = %e min = %e\n",__FUNCT__,emax,emin);
     }
 
     ierr = KSPSetOperators( smoother, Aarr[level], Aarr[level], DIFFERENT_NONZERO_PATTERN );
@@ -734,22 +733,24 @@ PetscErrorCode  PCCreate_GAMG(PC pc)
 					    "PCSetCoordinates_C",
 					    "PCSetCoordinates_GAMG",
 					    PCSetCoordinates_GAMG);CHKERRQ(ierr);
-
-  PetscClassIdRegister("GAMG Setup",&cookie);
-  PetscLogEventRegister("GAMG: createProl", cookie, &gamg_setup_stages[SET1]);
-  PetscLogEventRegister(" make graph", cookie, &gamg_setup_stages[SET3]);
-  PetscLogEventRegister(" MIS/Agg", cookie, &gamg_setup_stages[SET4]);
-  PetscLogEventRegister("  geo: growSupp", cookie, &gamg_setup_stages[SET5]);
-  PetscLogEventRegister("  geo: triangle", cookie, &gamg_setup_stages[SET6]);
-  PetscLogEventRegister("   search & set", cookie, &gamg_setup_stages[FIND_V]);
-  PetscLogEventRegister("  SA: init", cookie, &gamg_setup_stages[SET7]);
-  /* PetscLogEventRegister("  SA: frmProl0", cookie, &gamg_setup_stages[SET8]); */
-  PetscLogEventRegister("  SA: smooth", cookie, &gamg_setup_stages[SET9]);
-  PetscLogEventRegister("GAMG: partLevel", cookie, &gamg_setup_stages[SET2]);
-  PetscLogEventRegister(" PL repartition", cookie, &gamg_setup_stages[SET12]);
-  /* PetscLogEventRegister(" PL move data", cookie, &gamg_setup_stages[SET13]); */
-  /* PetscLogEventRegister("GAMG: fix", cookie, &gamg_setup_stages[SET10]); */
-  /* PetscLogEventRegister("GAMG: set levels", cookie, &gamg_setup_stages[SET11]); */
+  static int count = 0;
+  if( count++ == 0 ) {
+    PetscClassIdRegister("GAMG Setup",&cookie);
+    PetscLogEventRegister("GAMG: createProl", cookie, &gamg_setup_stages[SET1]);
+    PetscLogEventRegister(" make graph", cookie, &gamg_setup_stages[SET3]);
+    PetscLogEventRegister(" MIS/Agg", cookie, &gamg_setup_stages[SET4]);
+    PetscLogEventRegister("  geo: growSupp", cookie, &gamg_setup_stages[SET5]);
+    PetscLogEventRegister("  geo: triangle", cookie, &gamg_setup_stages[SET6]);
+    PetscLogEventRegister("   search & set", cookie, &gamg_setup_stages[FIND_V]);
+    PetscLogEventRegister("  SA: init", cookie, &gamg_setup_stages[SET7]);
+    /* PetscLogEventRegister("  SA: frmProl0", cookie, &gamg_setup_stages[SET8]); */
+    PetscLogEventRegister("  SA: smooth", cookie, &gamg_setup_stages[SET9]);
+    PetscLogEventRegister("GAMG: partLevel", cookie, &gamg_setup_stages[SET2]);
+    PetscLogEventRegister(" PL repartition", cookie, &gamg_setup_stages[SET12]);
+    /* PetscLogEventRegister(" PL move data", cookie, &gamg_setup_stages[SET13]); */
+    /* PetscLogEventRegister("GAMG: fix", cookie, &gamg_setup_stages[SET10]); */
+    /* PetscLogEventRegister("GAMG: set levels", cookie, &gamg_setup_stages[SET11]); */
+  }
 
   PetscFunctionReturn(0);
 }
