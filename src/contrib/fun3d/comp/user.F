@@ -702,8 +702,8 @@ c============================================================================
 !     write(99,'(a)') 'TITLE= "',title,'"'
 !
 c================================== INIT =============================72
-       write(99,'(a)') 'VARIABLES="X     ","Y     ","Z     ","RHO   ",', $  
-     $      '"U     ","V     ","W     ","P/Pinf","S     ","Mach  "'  
+       write(99,'(a)') 'VARIABLES="X     ","Y     ","Z     ","RHO   ",',&
+     &      '"U     ","V     ","W     ","P/Pinf","S     ","Mach  "'
 !
       endif
 !
@@ -1194,8 +1194,9 @@ c
       cmx_loc = 0.0
       cmy_loc = 0.0
       cmz_loc = 0.0
-      call PetscDataTypeGetSize(PETSC_SCALAR,sizeofscalar,ierr)
-      call PetscMemzero(coef_glo,sizeofscalar*8,ierr)
+      do i = 1, 8
+         coef_glo(i) = 0.0
+      enddo
  
 c
 c     if(ntt.eq.ncyc) then
@@ -3060,17 +3061,15 @@ c
 !
 !    Initialize all the rij to 0.0 
 !
-!     do 1000 i = 1,nnodes
-!        r11(i) = 0.0
-!        r12(i) = 0.0
-!        r13(i) = 0.0
-!        r22(i) = 0.0
-!        r23(i) = 0.0
-!        r33(i) = 0.0
-!        r44(i) = 0.0
-!1000 continue
-      call PetscDataTypeGetSize(PETSC_SCALAR,sizeofscalar,ierr)
-      call PetscMemzero(rxy,sizeofscalar*7*nnodes,ierr)
+      do 1000 i = 1,nnodes
+         r11(i) = 0.0
+         r12(i) = 0.0
+         r13(i) = 0.0
+         r22(i) = 0.0
+         r23(i) = 0.0
+         r33(i) = 0.0
+         r44(i) = 0.0
+ 1000 continue
 !
 ! Now loop over the edges and accumulate the r's 
 !
@@ -3350,27 +3349,23 @@ c1001 continue
 c
 c Zero out the gradients
 c
-c     do 1000 i = 1,nnodes
-c
-c       gradx(1,i) = 0.0
-c       grady(1,i) = 0.0
-c       gradz(1,i) = 0.0
-c
-c       gradx(2,i) = 0.0
-c       grady(2,i) = 0.0
-c       gradz(2,i) = 0.0
-c
-c       gradx(3,i) = 0.0
-c       grady(3,i) = 0.0
-c       gradz(3,i) = 0.0
-c
-c       gradx(4,i) = 0.0
-c       grady(4,i) = 0.0
-c       gradz(4,i) = 0.0
-c
-c1000  continue
-      call PetscDataTypeGetSize(PETSC_SCALAR,sizeofscalar,ierr)
-      call PetscMemzero(grad,sizeofscalar*15*nnodes,ierr)
+      do 1000 i = 1,nnodes
+         gradx(1,i) = 0.0
+         grady(1,i) = 0.0
+         gradz(1,i) = 0.0
+
+         gradx(2,i) = 0.0
+         grady(2,i) = 0.0
+         gradz(2,i) = 0.0
+
+         gradx(3,i) = 0.0
+         grady(3,i) = 0.0
+         gradz(3,i) = 0.0
+
+         gradx(4,i) = 0.0
+         grady(4,i) = 0.0
+         gradz(4,i) = 0.0
+ 1000 continue
 c
 c Convert the energy to total enthalpy or pressure
 c

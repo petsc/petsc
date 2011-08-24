@@ -1091,7 +1091,6 @@
        integer ncolor,ncount(1)
 #elif defined(HAVE_REDUNDANT_WORK)
        PetscScalar resd(4,nnodes)
-       PetscSizeT sizeofscalar
 #undef res
 #define res(a,b) resd(a,b)
 #else
@@ -1134,8 +1133,11 @@
        do i = 1,ncolor
              last_edge = first_edge + ncount(i) - 1
 #elif defined(HAVE_REDUNDANT_WORK)
-      call PetscDataTypeGetSize(PETSC_SCALAR,sizeofscalar,ierr)
-       call PetscMemzero(resd,sizeofscalar*4*nnodes,ierr)
+       do i = 1,nnodes
+          do j = 1,4
+             resd(j,i) = 0.0
+          enddo
+       enddo
        first_edge = 1
        last_edge = nedge
 #endif
@@ -1840,23 +1842,19 @@
       PetscScalar x1,y1,z1,x2,y2,z2,dx,dy,dz
       PetscScalar dist,weight,w2,w11,w22,w33
       PetscScalar r12r11,r13r11,r23r22,rmess
-      PetscSizeT sizeofscalar
 
 !
 ! Initialize all the rij to 0.0 
 !
-!     do 1000 i = 1,nnodes
-!        r11(i) = 0.0
-!        r12(i) = 0.0
-!        r13(i) = 0.0
-!        r22(i) = 0.0
-!        r23(i) = 0.0
-!        r33(i) = 0.0
-!        r44(i) = 0.0
-!1000 continue
-      call PetscDataTypeGetSize(PETSC_SCALAR,sizeofscalar,ierr)
-      call PetscMemzero(rxy,sizeofscalar*7*nnodes,ierr)
-      
+      do 1000 i = 1,nnodes
+         r11(i) = 0.0
+         r12(i) = 0.0
+         r13(i) = 0.0
+         r22(i) = 0.0
+         r23(i) = 0.0
+         r33(i) = 0.0
+         r44(i) = 0.0
+ 1000 continue
 !
 ! Now loop over the edges and accumulate the r 
 !
@@ -2105,7 +2103,7 @@
 #endif
       PetscScalar  title(20),beta,alpha
       PetscScalar  Re,dt,tot,res0,resc
-      integer ntt,mseq,ivisc,irest,icyc,ihane,ntturb
+      integer i,ntt,mseq,ivisc,irest,icyc,ihane,ntturb
       PetscScalar  cfl1,cfl2
       integer nsmoth,iflim,itran,nbtran,jupdate,                          &
      &        nstage,ncyct,iramp,nitfo
@@ -2119,7 +2117,6 @@
      &        dq1,dq2,dq3,dq4,                                            &
      &        weight,w11,r12r11,r13r11,w22,r23r22,w33,rmess,              &
      &        coef1,coef2,termx,termy,termz
-      PetscSizeT sizeofscalar
 !     logging variables
 !     integer flag
 !     integer grad_event,node1_event,node2_event
@@ -2155,28 +2152,24 @@
 !
 ! Zero out the gradients
 !
-!     do 1000 i = 1,nnodes
-!
-!       gradx(1,i) = 0.0
-!       grady(1,i) = 0.0
-!       gradz(1,i) = 0.0
-!
-!       gradx(2,i) = 0.0
-!       grady(2,i) = 0.0
-!       gradz(2,i) = 0.0
-!
-!       gradx(3,i) = 0.0
-!       grady(3,i) = 0.0
-!       gradz(3,i) = 0.0
-!
-!       gradx(4,i) = 0.0
-!       grady(4,i) = 0.0
-!       gradz(4,i) = 0.0
-!
-!1000  continue
-      call PetscDataTypeGetSize(PETSC_SCALAR,sizeofscalar,ierr)
-      call PetscMemzero(grad,sizeofscalar*12*nnodes,ierr)
-!
+      do 1000 i = 1,nnodes
+         gradx(1,i) = 0.0
+         grady(1,i) = 0.0
+         gradz(1,i) = 0.0
+
+         gradx(2,i) = 0.0
+         grady(2,i) = 0.0
+         gradz(2,i) = 0.0
+
+         gradx(3,i) = 0.0
+         grady(3,i) = 0.0
+         gradz(3,i) = 0.0
+
+         gradx(4,i) = 0.0
+         grady(4,i) = 0.0
+         gradz(4,i) = 0.0
+ 1000 continue
+
 ! If second order, loop over all the faces accumulate sums
 !
 !     nitfo = 0
