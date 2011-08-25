@@ -1,13 +1,17 @@
-	[0]PCSetUp_GAMG level 0 N=3362, n data rows=2, n data cols=3, nloc=420, np=4
-		[0]PCSetUp_GAMG 1) N=450, bs=3, n data cols=3, 1 active pes
+	[0]PCSetUp_GAMG level 0 N=3362, n data rows=2, n data cols=3, nnz/row (ave)=17, np=4
+	createProlongation ave nnz/row 9 --> 7
+		[0]PCSetUp_GAMG 1) N=396, bs=3, n data cols=3, nnz/row (ave)=29, 1 active pes
 	[0]PCSetUp_GAMG 2 levels
-  0 KSP Residual norm 0.0253106 
-  1 KSP Residual norm 0.381339 
-  2 KSP Residual norm 0.0370952 
-  3 KSP Residual norm 0.00728267 
-  4 KSP Residual norm 0.000780771 
-  5 KSP Residual norm 0.000139181 
-  6 KSP Residual norm 1.82327e-05 
-  7 KSP Residual norm 2.82176e-06 
-  8 KSP Residual norm 3.91754e-07 
-  9 KSP Residual norm 5.14336e-08 
+PCSetUp_GAMG max eigen = 2.296263e+00 min = 2.575905e-01
+  0 KSP Residual norm 103.742 
+  1 KSP Residual norm 33.6843 
+  2 KSP Residual norm 16.7829 
+  3 KSP Residual norm 7.02838 
+  4 KSP Residual norm 2.67595 
+  5 KSP Residual norm 0.46074 
+  6 KSP Residual norm 0.123212 
+  7 KSP Residual norm 0.0477697 
+  8 KSP Residual norm 0.0245252 
+  9 KSP Residual norm 0.0082063 
+ 10 KSP Residual norm 0.00357784 
+ 11 KSP Residual norm 0.000870813 

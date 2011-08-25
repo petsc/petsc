@@ -1184,7 +1184,7 @@ PetscErrorCode createProlongation( const Mat a_Amat,
   nloc = (Iend-Istart)/bs_in; my0 = Istart/bs_in; assert((Iend-Istart)%bs_in==0);
 
   ierr = PetscLogEventBegin(gamg_setup_stages[SET3],0,0,0,0);CHKERRQ(ierr);
-  
+
   /* get scalar copy (norms) of matrix */
   ierr = MatGetInfo(a_Amat,MAT_LOCAL,&info); CHKERRQ(ierr);
   kk = (PetscInt)info.nz_used/((nloc+1)*bs_in*bs_in)+1;
@@ -1207,8 +1207,12 @@ PetscErrorCode createProlongation( const Mat a_Amat,
   ierr = MatGetInfo(Gmat,MAT_GLOBAL_SUM,&info); CHKERRQ(ierr);
   ierr = MatGetSize( Gmat, &M, &N );  CHKERRQ(ierr);
   nnz0 = (PetscInt)(info.nz_used/(PetscReal)M + 0.5);
-  vfilter = .01/(PetscScalar)nnz0;
-PetscPrintf(PETSC_COMM_WORLD,"[%d]%s filter=%e (nnz=%d)\n",mype,__FUNCT__,vfilter,nnz0);
+  if( a_useSA ){  
+    vfilter = .01/(PetscScalar)nnz0;
+  }
+  else {
+    vfilter = .1/(PetscScalar)nnz0;
+  }
   ierr = MatGetOwnershipRange(Gmat,&Istart,&Iend);CHKERRQ(ierr); /* use AIJ from here */
 
   /* filter Gmat */
