@@ -174,10 +174,10 @@ PetscErrorCode partitionLevel( Mat a_Amat_fine,
 
   /* Repartition Cmat_{k} and move colums of P^{k}_{k-1} and coordinates accordingly */
   ierr = MatGetSize( Cmat, &neq, &NN );CHKERRQ(ierr);
-#define MIN_EQ_PROC 500
+#define MIN_EQ_PROC 1000
   nactive_procs = *a_active_proc;
   targ_npe = neq/MIN_EQ_PROC; /* hardwire min. number of eq/proc */
-#define TOP_GRID_LIM 500
+#define TOP_GRID_LIM 1000
   if( targ_npe == 0 || neq < TOP_GRID_LIM ) new_npe = 1; /* chop coarsest grid */
   else if (targ_npe >= nactive_procs ) new_npe = nactive_procs; /* no change */
   else {

@@ -1218,8 +1218,8 @@ PetscErrorCode createProlongation( const Mat a_Amat,
   ierr = MatGetInfo(Gmat,MAT_GLOBAL_SUM,&info); CHKERRQ(ierr);
   ierr = MatGetSize( Gmat, &M, &N );  CHKERRQ(ierr);
   nnz0 = (PetscInt)(info.nz_used/(PetscReal)M + 0.5);
-  vfilter = .1/(PetscScalar)nnz0;
-PetscPrintf(PETSC_COMM_WORLD,"[%d]%s filter=%e\n",mype,__FUNCT__,vfilter);
+  vfilter = .01/(PetscScalar)nnz0;
+PetscPrintf(PETSC_COMM_WORLD,"[%d]%s filter=%e (nnz=%d)\n",mype,__FUNCT__,vfilter,nnz0);
   ierr = MatGetOwnershipRange(Gmat,&Istart,&Iend);CHKERRQ(ierr); /* use AIJ from here */
 
   /* filter Gmat */
