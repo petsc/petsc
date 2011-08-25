@@ -8,7 +8,7 @@
 
 #include <petscsys.h>         /*I "petscsys.h" I*/
 
-struct _p_DrawLG {
+struct _p_PetscDrawLG {
   PETSCHEADER(int);
   PetscErrorCode (*destroy)(PetscDrawLG);
   PetscErrorCode (*view)(PetscDrawLG,PetscViewer);
@@ -16,7 +16,7 @@ struct _p_DrawLG {
   PetscDraw     win;
   PetscDrawAxis axis;
   PetscReal     xmin,xmax,ymin,ymax,*x,*y;
-  int           nopts,dim;
+  int           nopts,dim,*colors;
   PetscBool     use_dots;
 };
 #define CHUNCKSIZE 100

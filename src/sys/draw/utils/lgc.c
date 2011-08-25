@@ -167,7 +167,7 @@ PetscErrorCode  PetscDrawLGCreate(PetscDraw draw,int dim,PetscDrawLG *outctx)
     ierr = PetscDrawOpenNull(((PetscObject)obj)->comm,(PetscDraw*)outctx);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
-  ierr = PetscHeaderCreate(lg,_p_DrawLG,int,DRAWLG_CLASSID,0,"PetscDrawLG",((PetscObject)obj)->comm,PetscDrawLGDestroy,0);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(lg,_p_PetscDrawLG,int,DRAWLG_CLASSID,0,"PetscDrawLG",((PetscObject)obj)->comm,PetscDrawLGDestroy,0);CHKERRQ(ierr);
   lg->view    = 0;
   lg->destroy = 0;
   lg->nopts   = 0;
@@ -185,6 +185,36 @@ PetscErrorCode  PetscDrawLGCreate(PetscDraw draw,int dim,PetscDrawLG *outctx)
   ierr = PetscDrawAxisCreate(draw,&lg->axis);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(lg,lg->axis);CHKERRQ(ierr);
   *outctx = lg;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawLGSetColors"
+/*@
+   PetscDrawLGSetColors - Sets the color of each line graph drawn
+
+   Logically Collective over PetscDrawLG
+
+   Input Parameter:
++  lg - the line graph context.
+-  colors - the colors
+
+   Level: intermediate
+
+   Concepts: line graph^setting number of lines
+
+@*/
+PetscErrorCode  PetscDrawLGSetColors(PetscDrawLG lg,const int *colors)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (lg && ((PetscObject)lg)->classid == PETSC_DRAW_CLASSID) PetscFunctionReturn(0);
+  PetscValidHeaderSpecific(lg,DRAWLG_CLASSID,1);
+    if (!lg->colors) {
+    ierr = PetscMalloc(lg->dim*sizeof(int),&lg->colors);CHKERRQ(ierr);
+  }
+  ierr = PetscMemcpy(lg->colors,colors,lg->dim*sizeof(int));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -280,6 +310,7 @@ PetscErrorCode  PetscDrawLGDestroy(PetscDrawLG *lg)
     ierr = PetscObjectDestroy((PetscObject*)lg);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
+  ierr = PetscFree((*lg)->colors);CHKERRQ(ierr);
   ierr = PetscDrawAxisDestroy(&(*lg)->axis);CHKERRQ(ierr);
   ierr = PetscFree2((*lg)->x,(*lg)->y);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(lg);CHKERRQ(ierr);
@@ -328,7 +359,7 @@ PetscErrorCode  PetscDrawLGDraw(PetscDrawLG lg)
 {
   PetscReal      xmin=lg->xmin,xmax=lg->xmax,ymin=lg->ymin,ymax=lg->ymax;
   PetscErrorCode ierr;
-  int            i,j,dim = lg->dim,nopts = lg->nopts,rank;
+  int            i,j,dim = lg->dim,nopts = lg->nopts,rank,cl;
   PetscDraw      draw = lg->win;
 
   PetscFunctionBegin;
@@ -344,7 +375,9 @@ PetscErrorCode  PetscDrawLGDraw(PetscDrawLG lg)
   
     for (i=0; i<dim; i++) {
       for (j=1; j<nopts; j++) {
-        ierr = PetscDrawLine(draw,lg->x[(j-1)*dim+i],lg->y[(j-1)*dim+i],lg->x[j*dim+i],lg->y[j*dim+i],PETSC_DRAW_BLACK+i);CHKERRQ(ierr);
+        if (lg->colors) cl = lg->colors[i];
+        else cl = PETSC_DRAW_BLACK+i;
+        ierr = PetscDrawLine(draw,lg->x[(j-1)*dim+i],lg->y[(j-1)*dim+i],lg->x[j*dim+i],lg->y[j*dim+i],cl);CHKERRQ(ierr);
         if (lg->use_dots) {
           ierr = PetscDrawString(draw,lg->x[j*dim+i],lg->y[j*dim+i],PETSC_DRAW_RED,"x");CHKERRQ(ierr);
         }

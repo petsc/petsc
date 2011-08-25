@@ -34,6 +34,30 @@ PetscErrorCode PetscDrawLine_X(PetscDraw draw,PetscReal xl,PetscReal yl,PetscRea
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "PetscDrawArrow_X" 
+PetscErrorCode PetscDrawArrow_X(PetscDraw draw,PetscReal xl,PetscReal yl,PetscReal xr,PetscReal yr,int cl)
+{
+  PetscDraw_X* XiWin = (PetscDraw_X*)draw->data;
+  int          x1,y_1,x2,y2;
+
+  PetscFunctionBegin;
+  XiSetColor(XiWin,cl);
+  x1 = XTRANS(draw,XiWin,xl);   x2  = XTRANS(draw,XiWin,xr); 
+  y_1 = YTRANS(draw,XiWin,yl);   y2  = YTRANS(draw,XiWin,yr); 
+  XDrawLine(XiWin->disp,XiDrawable(XiWin),XiWin->gc.set,x1,y_1,x2,y2);
+  if (x1 == x2 && PetscAbs(y_1 - y2) > 7) {
+    if (y2 > y_1) {
+       XDrawLine(XiWin->disp,XiDrawable(XiWin),XiWin->gc.set,x2,y2,x2-3,y2-3);
+       XDrawLine(XiWin->disp,XiDrawable(XiWin),XiWin->gc.set,x2,y2,x2+3,y2-3);
+    } else {
+       XDrawLine(XiWin->disp,XiDrawable(XiWin),XiWin->gc.set,x1,y_1,x1-3,y_1+3);
+       XDrawLine(XiWin->disp,XiDrawable(XiWin),XiWin->gc.set,x1,y_1,x1+3,y_1+3);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "PetscDrawPoint_X" 
 static PetscErrorCode PetscDrawPoint_X(PetscDraw draw,PetscReal x,PetscReal  y,int c)
 {
@@ -563,7 +587,9 @@ static struct _PetscDrawOps DvOps = { PetscDrawSetDoubleBuffer_X,
 #else
                                  0
 #endif
-                                 PetscDrawSetSave_X};
+                                 PetscDrawSetSave_X,
+                                 0,
+                                 PetscDrawArrow_X};
 
 
 extern PetscErrorCode XiQuickWindow(PetscDraw_X*,char*,char*,int,int,int,int);

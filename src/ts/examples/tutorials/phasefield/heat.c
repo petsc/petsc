@@ -43,6 +43,7 @@ int main(int argc,char **argv)
   PetscReal              vbounds[] = {-1.1,1.1};
   PetscBool              wait;
   UserCtx                ctx;
+  int                    colors[] = {PETSC_DRAW_YELLOW,PETSC_DRAW_BLACK,PETSC_DRAW_GREEN};
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
@@ -54,7 +55,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsHasName(PETSC_NULL,"-allen-cahn",&ctx.allencahn);CHKERRQ(ierr);
 
   ierr = PetscViewerDrawSetBounds(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),1,vbounds);CHKERRQ(ierr); 
-  ierr = PetscViewerDrawResize(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),600,600);CHKERRQ(ierr); 
+  ierr = PetscViewerDrawResize(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),1200,1000);CHKERRQ(ierr); 
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
@@ -120,6 +121,8 @@ int main(int argc,char **argv)
   } else {
     ierr = PetscDrawLGSetDimension(ctx.lg,2);CHKERRQ(ierr);
   }
+  ierr = PetscDrawLGSetColors(ctx.lg,colors);CHKERRQ(ierr);
+
   ierr = TSMonitorSet(ts,MyMonitor,&ctx,PETSC_NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -298,6 +301,9 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
   ierr = DMGlobalToLocalEnd(da,U,INSERT_VALUES,localU);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,localU,&u);CHKERRQ(ierr);
 
+  /*
+      Plot the energies
+  */
   maxe = 0;
   for (i=0; i<Mx; i++) {
     len   = PetscRealPart(.25*ctx->kappa*(u[i-1] - u[i+1])*(u[i-1] - u[i+1])*sx);
@@ -316,22 +322,29 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
   x = 0.;
   for (i=0; i<Mx; i++) {
     xx[0] = xx[1] = xx[2] = x;
-    yy[1] = PetscRealPart(u[i]);
-    yy[0] = .5*PetscRealPart(.25*ctx->kappa*(u[i-1] - u[i+1])*(u[i-1] - u[i+1])*sx/maxe) + 1.1;
-    yy[2] = .5*.25*PetscRealPart((1. - u[i]*u[i])*(1. - u[i]*u[i])) + 1.1;
+    yy[0] = PetscRealPart(u[i]);
+    yy[1] = .5*PetscRealPart(.25*ctx->kappa*(u[i-1] - u[i+1])*(u[i-1] - u[i+1])*sx/maxe) + 1.1;
+    if (ctx->allencahn) {
+      yy[2] = .5*.25*PetscRealPart((1. - u[i]*u[i])*(1. - u[i]*u[i])) + 1.1;
+    } 
+
     ierr = PetscDrawLGAddPoint(lg,xx,yy);CHKERRQ(ierr);
     x   += hx;
   }
   ierr = PetscDrawGetPause(draw,&pause);CHKERRQ(ierr);
   ierr = PetscDrawSetPause(draw,0.0);CHKERRQ(ierr);
   ierr = PetscDrawLGDraw(lg);CHKERRQ(ierr);
+
+  /*
+      Plot the forces
+  */
   x   = 0.;
   max = 0;
   for (i=0; i<Mx; i += cnt) {
     len  = PetscAbs(PetscRealPart(ctx->kappa*(u[i-1] + u[i+1] - 2.0*u[i])*sx));
     max  = PetscMax(max,len);
     if (ctx->allencahn) {
-      len   = PetscRealPart(u[i] - u[i]*u[i]*u[i]);
+      len   = PetscAbs(PetscRealPart(u[i] - u[i]*u[i]*u[i]));
       max   = PetscMax(max,len);
     }
     x   += cnt*hx;

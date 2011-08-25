@@ -11,7 +11,7 @@ Evolve the biharmonic heat equation:
 ---------------
 ./biharmonic -ts_monitor -snes_monitor -ts_monitor_solution  -pc_type lu  -draw_pause .1 -snes_converged_reason -ts_monitor_solution_initial -wait   -ts_type beuler  -da_refine 5
 
-Evolve with the restriction that 0 <= u <= 1; i.e. as a variational inequality
+Evolve with the restriction that -1 <= u <= 1; i.e. as a variational inequality
 ---------------
 ./biharmonic -ts_monitor -snes_monitor -ts_monitor_solution  -pc_type lu  -draw_pause .1 -snes_converged_reason -ts_monitor_solution_initial -wait   -ts_type beuler   -da_refine 5 -vi 
 
@@ -19,8 +19,8 @@ Add a simple term to the right hand side so that the bulge grows/expands with ti
 ---------------
 ./biharmonic -ts_monitor -snes_monitor -ts_monitor_solution -pc_type lu  -draw_pause .1  -snes_converged_reason  -ts_monitor_solution_initial -wait   -ts_type beuler   -da_refine 5 -vi -growth
 
-   u_t =  kappa \Delta \Delta  u + 12(2u - 1)(u_x)^2 + (12u^2 - 12 u + 2) \Delta u
-    0 <= u <= 1 
+   u_t =  kappa \Delta \Delta  6.*u*(u_x)^2 + (3*u^2 - 12) \Delta u
+    -1 <= u <= 1 
     Periodic boundary conditions
 
 Evolve the Cahn-Hillard equations:
@@ -32,8 +32,8 @@ Evolve the Cahn-Hillard equations:
 #include <petscdmda.h>
 #include <petscts.h>
 
-extern PetscErrorCode FormFunction(TS,PetscReal,Vec,Vec,void*),FormInitialSolution(DM,Vec);
-typedef struct {PetscBool growth;PetscBool cahnhillard;PetscReal kappa;} UserCtx;
+extern PetscErrorCode FormFunction(TS,PetscReal,Vec,Vec,void*),FormInitialSolution(DM,Vec),MyMonitor(TS,PetscInt,PetscReal,Vec,void*);
+typedef struct {PetscDrawLG lg;PetscBool growth;PetscBool cahnhillard;PetscReal kappa;} UserCtx;
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -48,10 +48,11 @@ int main(int argc,char **argv)
   MatFDColoring          matfdcoloring;
   ISColoring             iscoloring;
   PetscReal              ftime,dt;
-  PetscReal              vbounds[] = {-.05,1.05};
+  PetscReal              vbounds[] = {-1.1,1.1};
   PetscBool              wait,vi = PETSC_FALSE;
   Vec                    ul,uh;
   UserCtx                ctx;
+  int                    colors[] = {PETSC_DRAW_YELLOW,PETSC_DRAW_BLACK,PETSC_DRAW_GREEN};
   
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
@@ -115,7 +116,7 @@ int main(int argc,char **argv)
   if (vi) {
     ierr = VecDuplicate(x,&ul);CHKERRQ(ierr);
     ierr = VecDuplicate(x,&uh);CHKERRQ(ierr);
-    ierr = VecSet(ul,0.0);CHKERRQ(ierr);
+    ierr = VecSet(ul,-1.0);CHKERRQ(ierr);
     ierr = VecSet(uh,1.0);CHKERRQ(ierr);
     ierr = TSVISetVariableBounds(ts,ul,uh);CHKERRQ(ierr);
   }
@@ -131,6 +132,15 @@ int main(int argc,char **argv)
   ierr = FormInitialSolution(da,x);CHKERRQ(ierr);
   ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRQ(ierr);
   ierr = TSSetSolution(ts,x);CHKERRQ(ierr);
+
+  ierr = PetscViewerDrawGetDrawLG(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),1,&ctx.lg);CHKERRQ(ierr);
+  if (ctx.cahnhillard) {
+    ierr = PetscDrawLGSetDimension(ctx.lg,3);CHKERRQ(ierr);
+  } else {
+    ierr = PetscDrawLGSetDimension(ctx.lg,2);CHKERRQ(ierr);
+  }
+  ierr = PetscDrawLGSetColors(ctx.lg,colors);CHKERRQ(ierr);
+  ierr = TSMonitorSet(ts,MyMonitor,&ctx,PETSC_NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set runtime options
@@ -230,7 +240,7 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec F,void *ptr)
       f[i] += 100000*((x[i] < .2) ?  0: sx*x[i]);
     }
     if (ctx->cahnhillard) {
-      f[i] += 12.*(2.*x[i]-1.)*(x[i+1] - x[i-1])*(x[i+1] - x[i-1])/(4.*hx*hx) + (12.*x[i]*x[i] - 12.*x[i]+2.)*(x[i-1] + x[i+1] - 2.0*x[i])*sx;
+      f[i] += 6.*.25*x[i]*(x[i+1] - x[i-1])*(x[i+1] - x[i-1])*sx + (3.*x[i]*x[i] - 1.)*(x[i-1] + x[i+1] - 2.0*x[i])*sx;
     }
 
   }
@@ -279,7 +289,7 @@ PetscErrorCode FormInitialSolution(DM da,Vec U)
     if (r < .125) {
       u[i] = 1.0;
     } else {
-      u[i] = 0.25; //01;
+      u[i] = -.5;
     }
   }
 
@@ -290,3 +300,107 @@ PetscErrorCode FormInitialSolution(DM da,Vec U)
   PetscFunctionReturn(0); 
 } 
 
+#undef __FUNCT__  
+#define __FUNCT__ "MyMonitor"
+/*
+    This routine is not parallel
+*/
+PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
+{
+  UserCtx        *ctx = (UserCtx*)ptr;
+  PetscDrawLG    lg = (PetscDrawLG)ctx->lg;
+  PetscErrorCode ierr;
+  PetscScalar    *u,c,r,l;
+  PetscInt       Mx,i,xs,xm,cnt;
+  PetscReal      x,y,hx,pause,sx,len,max,maxe,xx[3],yy[3];
+  PetscDraw      draw;
+  Vec            localU;
+  DM             da;
+  int            cl;
+
+  PetscFunctionBegin;
+  ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(da,&localU);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
+                        PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
+  ierr = DMDAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  hx     = 1.0/(PetscReal)Mx; sx = 1.0/(hx*hx); cnt = Mx/200;
+  ierr = DMGlobalToLocalBegin(da,U,INSERT_VALUES,localU);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(da,U,INSERT_VALUES,localU);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da,localU,&u);CHKERRQ(ierr);
+
+  /*
+      Plot the energies
+  */
+  maxe = 0;
+  for (i=0; i<Mx; i++) {
+    len   = PetscRealPart(.25*ctx->kappa*(u[i-1] - u[i+1])*(u[i-1] - u[i+1])*sx);
+    maxe  = PetscMax(maxe,len);
+    if (ctx->cahnhillard) {
+      len   = .25*PetscRealPart((1. - u[i]*u[i])*(1. - u[i]*u[i]));
+      maxe  = PetscMax(maxe,len);
+    }
+    x   += hx;
+  }
+
+  ierr = PetscDrawLGGetDraw(lg,&draw);CHKERRQ(ierr);
+  ierr = PetscDrawCheckResizedWindow(draw);CHKERRQ(ierr);
+  ierr = PetscDrawLGReset(lg);
+  ierr = PetscDrawLGSetLimits(lg,0.0,1,-1.,1.6);CHKERRQ(ierr);
+  x = 0.;
+  for (i=0; i<Mx; i++) {
+    xx[0] = xx[1] = xx[2] = x;
+    yy[0] = PetscRealPart(u[i]);
+    yy[1] = .5*PetscRealPart(.25*ctx->kappa*(u[i-1] - u[i+1])*(u[i-1] - u[i+1])*sx/maxe) + 1.1;
+    if (ctx->cahnhillard) {
+      yy[2] = .5*.25*PetscRealPart((1. - u[i]*u[i])*(1. - u[i]*u[i])) + 1.1;
+    }
+    ierr = PetscDrawLGAddPoint(lg,xx,yy);CHKERRQ(ierr);
+    x   += hx;
+  }
+  ierr = PetscDrawGetPause(draw,&pause);CHKERRQ(ierr);
+  ierr = PetscDrawSetPause(draw,0.0);CHKERRQ(ierr);
+  ierr = PetscDrawLGDraw(lg);CHKERRQ(ierr);
+
+  /*
+        Plot the forces 
+  */
+  x   = 0.;
+  max = 0;
+  for (i=0; i<Mx; i += cnt) {
+    c = (u[i-1] + u[i+1] - 2.0*u[i])*sx;
+    r = (u[i] + u[i+2] - 2.0*u[i+1])*sx;
+    l = (u[i-2] + u[i] - 2.0*u[i-1])*sx;
+    len = PetscAbs(-ctx->kappa*(l + r - 2.0*c)*sx); 
+    max  = PetscMax(max,len);
+    if (ctx->cahnhillard) {
+      len   = PetscAbs( 6.*.25*u[i]*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (3.*u[i]*u[i] - 1.)*(u[i-1] + u[i+1] - 2.0*u[i])*sx);
+      max   = PetscMax(max,len);
+    }
+    x   += cnt*hx;
+  }
+  x = 0.;
+  for (i=0; i<Mx; i += cnt) {
+    y    = PetscRealPart(u[i]);
+    c = (u[i-1] + u[i+1] - 2.0*u[i])*sx;
+    r = (u[i] + u[i+2] - 2.0*u[i+1])*sx;
+    l = (u[i-2] + u[i] - 2.0*u[i-1])*sx;
+    len = -.5*ctx->kappa*(l + r - 2.0*c)*sx/max; 
+    cl   = len < 0. ? PETSC_DRAW_RED : PETSC_DRAW_MAGENTA;
+    ierr = PetscDrawLine(draw,x,y,x,y+len,cl);CHKERRQ(ierr);
+    if (ctx->cahnhillard) {
+      len   = .5*(6.*.25*u[i]*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (3.*u[i]*u[i] - 1.)*(u[i-1] + u[i+1] - 2.0*u[i])*sx)/max;
+      cl   = len < 0. ? PETSC_DRAW_GREEN : PETSC_DRAW_BLUE;
+      ierr = PetscDrawLine(draw,x,y,x,y+len,cl);CHKERRQ(ierr);
+    }
+    x   += cnt*hx; 
+  }
+  ierr = DMDAVecRestoreArray(da,localU,&x);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(da,&localU);CHKERRQ(ierr);
+  ierr = PetscDrawStringSetSize(draw,.2,.2);CHKERRQ(ierr);
+  ierr = PetscDrawString(draw,.75,1.5,PETSC_DRAW_BLACK,"Relative Energy");
+  ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
+  ierr = PetscDrawSetPause(draw,pause);CHKERRQ(ierr);
+  ierr = PetscDrawPause(draw);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}

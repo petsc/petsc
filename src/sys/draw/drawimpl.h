@@ -41,6 +41,7 @@ struct _PetscDrawOps {
   PetscErrorCode (*save)(PetscDraw);
   PetscErrorCode (*setsave)(PetscDraw,const char*);
   PetscErrorCode (*setcoordinates)(PetscDraw,PetscReal,PetscReal,PetscReal,PetscReal);
+  PetscErrorCode (*arrow)(PetscDraw,PetscReal,PetscReal,PetscReal,PetscReal,int);
 };
 
 struct _p_PetscDraw {

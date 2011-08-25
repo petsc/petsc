@@ -98,7 +98,7 @@ extern PetscErrorCode  PetscDrawSetSave(PetscDraw,const char*);
 #define PETSC_DRAW_WHITE            0
 #define PETSC_DRAW_BLACK            1
 #define PETSC_DRAW_RED              2
-#define PETSC_DRAW_GREEN            3
+#define PETSC_DRAW_GREEN           15 
 #define PETSC_DRAW_CYAN             4
 #define PETSC_DRAW_BLUE             5
 #define PETSC_DRAW_MAGENTA          6
@@ -110,7 +110,7 @@ extern PetscErrorCode  PetscDrawSetSave(PetscDraw,const char*);
 #define PETSC_DRAW_PINK            12
 #define PETSC_DRAW_CORAL           13
 #define PETSC_DRAW_GRAY            14
-#define PETSC_DRAW_YELLOW          15
+#define PETSC_DRAW_YELLOW          3
 
 #define PETSC_DRAW_GOLD            16
 #define PETSC_DRAW_LIGHTPINK       17
@@ -148,6 +148,7 @@ extern PetscErrorCode  PetscDrawResizeWindow(PetscDraw,int,int);
 extern PetscErrorCode  PetscDrawScalePopup(PetscDraw,PetscReal,PetscReal);
 
 extern PetscErrorCode  PetscDrawLine(PetscDraw,PetscReal,PetscReal,PetscReal,PetscReal,int);
+extern PetscErrorCode  PetscDrawArrow(PetscDraw,PetscReal,PetscReal,PetscReal,PetscReal,int);
 extern PetscErrorCode  PetscDrawLineSetWidth(PetscDraw,PetscReal);
 extern PetscErrorCode  PetscDrawLineGetWidth(PetscDraw,PetscReal*);
 
@@ -259,7 +260,7 @@ extern PetscErrorCode  PetscDrawAxisSetLabels(PetscDrawAxis,const char[],const c
 
 .seealso:  PetscDrawAxisCreate(), PetscDrawLGCreate(), PetscDrawLGAddPoint()
 S*/
-typedef struct _p_DrawLG*   PetscDrawLG;
+typedef struct _p_PetscDrawLG*   PetscDrawLG;
 
 extern PetscClassId DRAWLG_CLASSID;
 
@@ -275,6 +276,7 @@ extern PetscErrorCode  PetscDrawLGGetAxis(PetscDrawLG,PetscDrawAxis *);
 extern PetscErrorCode  PetscDrawLGGetDraw(PetscDrawLG,PetscDraw *);
 extern PetscErrorCode  PetscDrawLGIndicateDataPoints(PetscDrawLG);
 extern PetscErrorCode  PetscDrawLGSetLimits(PetscDrawLG,PetscReal,PetscReal,PetscReal,PetscReal);
+extern PetscErrorCode  PetscDrawLGSetColors(PetscDrawLG,const int*);
 
 /*S
      PetscDrawSP - Manages drawing scatter plots
