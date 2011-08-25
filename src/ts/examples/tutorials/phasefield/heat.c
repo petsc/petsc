@@ -11,6 +11,11 @@ Evolve the  heat equation:
 ---------------
 ./heat -ts_monitor -snes_monitor -ts_monitor_solution  -pc_type lu  -draw_pause .1 -snes_converged_reason -ts_monitor_solution_initial -wait   -ts_type beuler  -da_refine 5
 
+Evolve the  Allen-Cahn equation: 
+---------------
+./heat -ts_monitor -snes_monitor -ts_monitor_solution  -pc_type lu  -draw_pause .1 -snes_converged_reason -ts_monitor_solution_initial -wait   -ts_type beuler  -da_refine 5   -allen-cahn -kappa .001 -ts_max_time 5
+
+
 */
 #include <petscdmda.h>
 #include <petscts.h>
@@ -35,7 +40,7 @@ int main(int argc,char **argv)
   MatFDColoring          matfdcoloring;
   ISColoring             iscoloring;
   PetscReal              ftime,dt;
-  PetscReal              vbounds[] = {-.125,1.25};
+  PetscReal              vbounds[] = {-1.1,1.1};
   PetscBool              wait;
   UserCtx                ctx;
 
@@ -110,7 +115,11 @@ int main(int argc,char **argv)
   ierr = TSSetSolution(ts,x);CHKERRQ(ierr);
 
   ierr = PetscViewerDrawGetDrawLG(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),1,&ctx.lg);CHKERRQ(ierr);
-  ierr = PetscDrawLGSetDimension(ctx.lg,2);CHKERRQ(ierr);
+  if (ctx.allencahn) {
+    ierr = PetscDrawLGSetDimension(ctx.lg,3);CHKERRQ(ierr);
+  } else {
+    ierr = PetscDrawLGSetDimension(ctx.lg,2);CHKERRQ(ierr);
+  }
   ierr = TSMonitorSet(ts,MyMonitor,&ctx,PETSC_NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -136,7 +145,7 @@ int main(int argc,char **argv)
   ierr = MatDestroy(&J);CHKERRQ(ierr);
   ierr = MatFDColoringDestroy(&matfdcoloring);CHKERRQ(ierr);
   ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&r);CHKERRQ(ierr);      
+  ierr = VecDestroy(&r);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   ierr = DMDestroy(&da);CHKERRQ(ierr);
 
@@ -201,7 +210,7 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec F,void *ptr)
   for (i=xs; i<xs+xm; i++) {
     f[i] = ctx->kappa*(x[i-1] + x[i+1] - 2.0*x[i])*sx;
     if (ctx->allencahn) {
-      ;
+      f[i] += (x[i] - x[i]*x[i]*x[i]);
     }
   }
 
@@ -249,7 +258,7 @@ PetscErrorCode FormInitialSolution(DM da,Vec U)
     if (r < .125) {
       u[i] = 1.0;
     } else {
-      u[i] = 0.01;
+      u[i] = -.5;
     }
   }
 
@@ -272,7 +281,7 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
   PetscErrorCode ierr;
   PetscScalar    *u;
   PetscInt       Mx,i,xs,xm,cnt;
-  PetscReal      x,y,hx,pause,sx,len,max,maxe,xx[2],yy[2];
+  PetscReal      x,y,hx,pause,sx,len,max,maxe,xx[3],yy[3];
   PetscDraw      draw;
   Vec            localU;
   DM             da;
@@ -291,20 +300,25 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
 
   maxe = 0;
   for (i=0; i<Mx; i++) {
-    len   = PetscAbs(PetscRealPart(.25*ctx->kappa*(u[i-1] - u[i+1])*(u[i-1] - u[i+1])*sx));
+    len   = PetscRealPart(.25*ctx->kappa*(u[i-1] - u[i+1])*(u[i-1] - u[i+1])*sx);
     maxe  = PetscMax(maxe,len);
+    if (ctx->allencahn) {
+      len   = .25*PetscRealPart((1. - u[i]*u[i])*(1. - u[i]*u[i]));
+      maxe  = PetscMax(maxe,len);
+    }
     x   += hx;
   }
 
   ierr = PetscDrawLGGetDraw(lg,&draw);CHKERRQ(ierr);
   ierr = PetscDrawCheckResizedWindow(draw);CHKERRQ(ierr);
   ierr = PetscDrawLGReset(lg);
-  ierr = PetscDrawLGSetLimits(lg,0.0,1.0,0.0,1.6);CHKERRQ(ierr);
+  ierr = PetscDrawLGSetLimits(lg,0.0,1,-1.,1.6);CHKERRQ(ierr);
   x = 0.;
   for (i=0; i<Mx; i++) {
-    xx[0] = xx[1] = x;
+    xx[0] = xx[1] = xx[2] = x;
     yy[1] = PetscRealPart(u[i]);
-    yy[0] = .5*PetscAbs(PetscRealPart(.25*ctx->kappa*(u[i-1] - u[i+1])*(u[i-1] - u[i+1])*sx)/maxe) + 1.1;
+    yy[0] = .5*PetscRealPart(.25*ctx->kappa*(u[i-1] - u[i+1])*(u[i-1] - u[i+1])*sx/maxe) + 1.1;
+    yy[2] = .5*.25*PetscRealPart((1. - u[i]*u[i])*(1. - u[i]*u[i])) + 1.1;
     ierr = PetscDrawLGAddPoint(lg,xx,yy);CHKERRQ(ierr);
     x   += hx;
   }
@@ -316,14 +330,23 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
   for (i=0; i<Mx; i += cnt) {
     len  = PetscAbs(PetscRealPart(ctx->kappa*(u[i-1] + u[i+1] - 2.0*u[i])*sx));
     max  = PetscMax(max,len);
+    if (ctx->allencahn) {
+      len   = PetscRealPart(u[i] - u[i]*u[i]*u[i]);
+      max   = PetscMax(max,len);
+    }
     x   += cnt*hx;
   }
   x = 0.;
   for (i=0; i<Mx; i += cnt) {
     y    = PetscRealPart(u[i]);
     len  = .5*PetscRealPart(ctx->kappa*(u[i-1] + u[i+1] - 2.0*u[i])*sx)/max;
-    cl   = len < 0. ? PETSC_DRAW_BLUE : PETSC_DRAW_MAGENTA;
+    cl   = len < 0. ? PETSC_DRAW_RED : PETSC_DRAW_MAGENTA;
     ierr = PetscDrawLine(draw,x,y,x,y+len,cl);CHKERRQ(ierr);
+    if (ctx->allencahn) {
+      len   = .5*PetscRealPart(u[i] - u[i]*u[i]*u[i])/max;
+      cl   = len < 0. ? PETSC_DRAW_GREEN : PETSC_DRAW_BLUE;
+      ierr = PetscDrawLine(draw,x,y,x,y+len,cl);CHKERRQ(ierr);
+    }
     x   += cnt*hx; 
   }
   ierr = DMDAVecRestoreArray(da,localU,&x);CHKERRQ(ierr);
