@@ -12,6 +12,9 @@ extern PetscErrorCode  TSCreate_GL(TS);
 extern PetscErrorCode  TSCreate_SSP(TS);
 extern PetscErrorCode  TSCreate_RK(TS);
 extern PetscErrorCode  TSCreate_ARKIMEX(TS);
+#if defined(PETSC_HAVE_ROSW)
+extern PetscErrorCode  TSCreate_RosW(TS);
+#endif
 EXTERN_C_END
 
 #undef __FUNCT__  
@@ -49,6 +52,9 @@ PetscErrorCode  TSRegisterAll(const char path[])
 #endif
   ierr = TSRegisterDynamic(TSRK,              path, "TSCreate_RK",       TSCreate_RK);CHKERRQ(ierr);
   ierr = TSRegisterDynamic(TSARKIMEX,         path, "TSCreate_ARKIMEX",  TSCreate_ARKIMEX);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_ROSW)
+  ierr = TSRegisterDynamic(TSROSW,            path, "TSCreate_RosW",     TSCreate_RosW);CHKERRQ(ierr);
+#endif
   PetscFunctionReturn(0);
 }
 
