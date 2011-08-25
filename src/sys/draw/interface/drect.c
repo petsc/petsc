@@ -56,6 +56,7 @@ PetscErrorCode  PetscDrawSave(PetscDraw draw)
   PetscValidHeaderSpecific(draw,PETSC_DRAW_CLASSID,1);
   ierr = PetscTypeCompare((PetscObject)draw,PETSC_DRAW_NULL,&isnull);CHKERRQ(ierr);
   if (isnull) PetscFunctionReturn(0);
+  if (!draw->ops->save) PetscFunctionReturn(0);
   ierr = (*draw->ops->save)(draw);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
