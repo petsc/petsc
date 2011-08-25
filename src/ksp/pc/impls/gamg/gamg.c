@@ -467,7 +467,7 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
     CHKERRQ(ierr);
     ierr = PetscFree( data ); CHKERRQ( ierr );
     ierr = PetscLogEventEnd(gamg_setup_stages[SET1],0,0,0,0);CHKERRQ(ierr);
-
+    
     if(level==0) Aarr[0] = Amat; /* use Pmat for finest level setup, but use mat for solver */
 
     if( isOK ) {
@@ -506,11 +506,14 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
       }
     }
     else{
+      coarse_data = 0;
       break;
     }
     data = coarse_data;
   }
-  ierr = PetscFree( coarse_data ); CHKERRQ( ierr );
+  if( coarse_data ) {
+    ierr = PetscFree( coarse_data ); CHKERRQ( ierr );
+  }
   PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s %d levels\n",0,__FUNCT__,level + 1);
   pc_gamg->m_data = 0; /* destroyed coordinate data */
   pc_gamg->m_Nlevels = level + 1;

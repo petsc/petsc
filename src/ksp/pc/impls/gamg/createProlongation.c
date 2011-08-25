@@ -1177,7 +1177,7 @@ PetscErrorCode createProlongation( const Mat a_Amat,
                                    )
 {
   PetscErrorCode ierr;
-  PetscInt       ncols,Istart,Iend,Ii,nloc,jj,kk,my0,nLocalSelected;
+  PetscInt       ncols,Istart,Iend,Ii,nloc,jj,kk,my0,nLocalSelected,nnz0,nnz1,N,M;
   Mat            Prol, Gmat, AuxMat;
   PetscMPIInt    mype, npe;
   MPI_Comm       wcomm = ((PetscObject)a_Amat)->comm;
@@ -1215,19 +1215,17 @@ PetscErrorCode createProlongation( const Mat a_Amat,
   }
   ierr = MatAssemblyBegin(Gmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(Gmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  
-  if( a_useSA ){
-    for(jj=0;jj<a_level;jj++) vfilter *= .5;
-PetscPrintf(PETSC_COMM_WORLD,"\t%s filter = %g\n",__FUNCT__,vfilter);
-  }
+  ierr = MatGetInfo(Gmat,MAT_GLOBAL_SUM,&info); CHKERRQ(ierr);
+  ierr = MatGetSize( Gmat, &M, &N );  CHKERRQ(ierr);
+  nnz0 = (PetscInt)(info.nz_used/(PetscReal)M + 0.5);
+  vfilter = .1/(PetscScalar)nnz0;
+PetscPrintf(PETSC_COMM_WORLD,"[%d]%s filter=%e\n",mype,__FUNCT__,vfilter);
   ierr = MatGetOwnershipRange(Gmat,&Istart,&Iend);CHKERRQ(ierr); /* use AIJ from here */
 
   /* filter Gmat */
   {
-    Mat Gmat2;
-    ierr = MatGetInfo(Gmat,MAT_LOCAL,&info); CHKERRQ(ierr);
-    kk = (PetscInt)info.nz_used/(nloc+1)+1;
-    ierr = MatCreateMPIAIJ(wcomm,nloc,nloc,PETSC_DECIDE,PETSC_DECIDE,3*kk,PETSC_NULL,2*kk,PETSC_NULL,&Gmat2);
+    Mat Gmat2; 
+    ierr = MatCreateMPIAIJ(wcomm,nloc,nloc,PETSC_DECIDE,PETSC_DECIDE,3*nnz0,PETSC_NULL,2*nnz0,PETSC_NULL,&Gmat2);
     CHKERRQ(ierr);
     for (Ii=Istart; Ii<Iend; Ii++) {
       ierr = MatGetRow(Gmat,Ii,&ncols,&idx,&vals); CHKERRQ(ierr);
@@ -1243,9 +1241,11 @@ PetscPrintf(PETSC_COMM_WORLD,"\t%s filter = %g\n",__FUNCT__,vfilter);
     ierr = MatAssemblyEnd(Gmat2,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatDestroy( &Gmat );  CHKERRQ(ierr);
     Gmat = Gmat2;
+    ierr = MatGetInfo(Gmat,MAT_GLOBAL_SUM,&info); CHKERRQ(ierr);    
+    nnz1 = (PetscInt)(info.nz_used/(PetscReal)M + 0.5);
+    PetscPrintf(wcomm,"\t%s ave nnz/row %d --> %d\n",__FUNCT__,nnz0,nnz1); 
   }
 
-  
   /* square matrix - SA */  
   if( a_useSA ){
     Mat Gmat2;
@@ -1376,6 +1376,18 @@ PetscPrintf(PETSC_COMM_WORLD,"\t%s filter = %g\n",__FUNCT__,vfilter);
                          a_data_cols, PETSC_NULL, a_data_cols, PETSC_NULL,
                          &Prol );
   CHKERRQ(ierr);
+  
+  /* can get all points "removed" */
+  ierr = MatGetSize( Prol, &kk, &jj );  CHKERRQ(ierr);
+  if( jj==0 ) {
+    *a_isOK = PETSC_FALSE;
+    PetscPrintf(PETSC_COMM_WORLD,"[%d]%s no selected points on coarse grid\n",mype,__FUNCT__);
+    ierr = MatDestroy( &Prol );  CHKERRQ(ierr);
+    ierr = ISDestroy( &llist_1 ); CHKERRQ(ierr);
+    ierr = ISDestroy( &selected_1 ); CHKERRQ(ierr);
+    ierr = MatDestroy( &Gmat );  CHKERRQ(ierr);    
+    PetscFunctionReturn(0);
+  }
 
   /* switch for SA or GAMG */
   if( !a_useSA ) {
