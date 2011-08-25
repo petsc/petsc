@@ -354,11 +354,11 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
     y    = PetscRealPart(u[i]);
     len  = .5*PetscRealPart(ctx->kappa*(u[i-1] + u[i+1] - 2.0*u[i])*sx)/max;
     cl   = len < 0. ? PETSC_DRAW_RED : PETSC_DRAW_MAGENTA;
-    ierr = PetscDrawLine(draw,x,y,x,y+len,cl);CHKERRQ(ierr);
+    ierr = PetscDrawArrow(draw,x,y,x,y+len,cl);CHKERRQ(ierr);
     if (ctx->allencahn) {
       len   = .5*PetscRealPart(u[i] - u[i]*u[i]*u[i])/max;
       cl   = len < 0. ? PETSC_DRAW_GREEN : PETSC_DRAW_BLUE;
-      ierr = PetscDrawLine(draw,x,y,x,y+len,cl);CHKERRQ(ierr);
+      ierr = PetscDrawArrow(draw,x,y,x,y+len,cl);CHKERRQ(ierr);
     }
     x   += cnt*hx; 
   }
