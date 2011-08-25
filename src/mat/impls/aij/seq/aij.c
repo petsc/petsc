@@ -4017,6 +4017,9 @@ PetscErrorCode MatLoad_SeqAIJ(Mat newMat, PetscViewer viewer)
   } else {
     /* if sizes and type are already set, check if the vector global sizes are correct */
     ierr = MatGetSize(newMat,&rows,&cols);CHKERRQ(ierr);
+    if (rows < 0 && cols < 0){ /* user might provide local size instead of global size */
+      ierr = MatGetLocalSize(newMat,&rows,&cols);CHKERRQ(ierr);
+    } 
     if (M != rows ||  N != cols) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED, "Matrix in file of different length (%d, %d) than the input matrix (%d, %d)",M,N,rows,cols);
   }
   ierr = MatSeqAIJSetPreallocation_SeqAIJ(newMat,0,rowlengths);CHKERRQ(ierr);

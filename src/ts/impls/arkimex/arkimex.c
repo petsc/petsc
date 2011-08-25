@@ -79,7 +79,7 @@ PetscErrorCode TSARKIMEXRegisterAll(void)
     ierr = TSARKIMEXRegister(TSARKIMEX2D,2,3,&At[0][0],PETSC_NULL,PETSC_NULL,&A[0][0],PETSC_NULL,PETSC_NULL,2,binterpt[0],PETSC_NULL);CHKERRQ(ierr);
   }
   {                             /* Optimal for linear implicit part */
-    const PetscReal s2 = sqrt(2),
+    const PetscReal s2 = PetscSqrtReal((PetscReal)2.0),
       A[3][3] = {{0,0,0},
                  {2-s2,0,0},
                  {(3-2*s2)/6,(3+2*s2)/6,0}},

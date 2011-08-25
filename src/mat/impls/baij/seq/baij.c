@@ -3584,6 +3584,9 @@ PetscErrorCode MatLoad_SeqBAIJ(Mat newmat,PetscViewer viewer)
     ierr = MatSetSizes(newmat,PETSC_DECIDE,PETSC_DECIDE,M+extra_rows,N+extra_rows);CHKERRQ(ierr);
   } else { /* Check if the matrix global sizes are correct */
     ierr = MatGetSize(newmat,&rows,&cols);CHKERRQ(ierr);
+    if (rows < 0 && cols < 0){ /* user might provide local size instead of global size */
+      ierr = MatGetLocalSize(newmat,&rows,&cols);CHKERRQ(ierr);
+    } 
     if (M != rows ||  N != cols) SETERRQ4(PETSC_COMM_SELF,PETSC_ERR_FILE_UNEXPECTED,"Matrix in file of different length (%d, %d) than the input matrix (%d, %d)",M,N,rows,cols);
   }
  

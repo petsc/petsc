@@ -174,10 +174,10 @@ PetscErrorCode partitionLevel( Mat a_Amat_fine,
 
   /* Repartition Cmat_{k} and move colums of P^{k}_{k-1} and coordinates accordingly */
   ierr = MatGetSize( Cmat, &neq, &NN );CHKERRQ(ierr);
-#define MIN_EQ_PROC 500
+#define MIN_EQ_PROC 1000
   nactive_procs = *a_active_proc;
   targ_npe = neq/MIN_EQ_PROC; /* hardwire min. number of eq/proc */
-#define TOP_GRID_LIM 500
+#define TOP_GRID_LIM 1000
   if( targ_npe == 0 || neq < TOP_GRID_LIM ) new_npe = 1; /* chop coarsest grid */
   else if (targ_npe >= nactive_procs ) new_npe = nactive_procs; /* no change */
   else {
@@ -456,7 +456,7 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
   /* Get A_i and R_i */
   ierr = MatGetInfo(Amat,MAT_GLOBAL_SUM,&info); CHKERRQ(ierr);
   PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s level %d N=%d, n data rows=%d, n data cols=%d, nnz/row (ave)=%d, np=%d\n",
-	      mype,__FUNCT__,0,N,pc_gamg->m_data_rows,pc_gamg->m_data_cols,(PetscInt)info.nz_used/N,npe);
+	      mype,__FUNCT__,0,N,pc_gamg->m_data_rows,pc_gamg->m_data_cols,(PetscInt)(info.nz_used/(PetscReal)N),npe);
   for ( level=0, Aarr[0] = Pmat, nactivepe = npe; /* hard wired stopping logic */
         level < GAMG_MAXLEVELS-1 && (level==0 || M>TOP_GRID_LIM) && (npe==1 || nactivepe>1); 
         level++ ){
@@ -467,7 +467,7 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
     CHKERRQ(ierr);
     ierr = PetscFree( data ); CHKERRQ( ierr );
     ierr = PetscLogEventEnd(gamg_setup_stages[SET1],0,0,0,0);CHKERRQ(ierr);
-
+    
     if(level==0) Aarr[0] = Amat; /* use Pmat for finest level setup, but use mat for solver */
 
     if( isOK ) {
@@ -479,7 +479,7 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
       ierr = MatGetSize( Aarr[level1], &M, &N );CHKERRQ(ierr);
       ierr = MatGetInfo(Aarr[level1],MAT_GLOBAL_SUM,&info); CHKERRQ(ierr);
       PetscPrintf(PETSC_COMM_WORLD,"\t\t[%d]%s %d) N=%d, bs=%d, n data cols=%d, nnz/row (ave)=%d, %d active pes\n",
-		  mype,__FUNCT__,level1,N,bs,pc_gamg->m_data_cols,(PetscInt)info.nz_used/N,nactivepe);
+		  mype,__FUNCT__,level1,N,bs,pc_gamg->m_data_cols,(PetscInt)(info.nz_used/(PetscReal)N),nactivepe);
       /* coarse grids with SA can have zero row/cols from singleton aggregates */
       /* aggregation method can probably gaurrentee this does not happen! - be safe for now */
  
@@ -506,11 +506,14 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
       }
     }
     else{
+      coarse_data = 0;
       break;
     }
     data = coarse_data;
   }
-  ierr = PetscFree( coarse_data ); CHKERRQ( ierr );
+  if( coarse_data ) {
+    ierr = PetscFree( coarse_data ); CHKERRQ( ierr );
+  }
   PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s %d levels\n",0,__FUNCT__,level + 1);
   pc_gamg->m_data = 0; /* destroyed coordinate data */
   pc_gamg->m_Nlevels = level + 1;

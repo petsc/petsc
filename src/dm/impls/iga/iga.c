@@ -1555,24 +1555,22 @@ PetscErrorCode SetupGauss1D(PetscInt n,PetscReal *X,PetscReal *W)
 #define __FUNCT__ "CreateKnotVector"
 PetscErrorCode CreateKnotVector(PetscInt N,PetscInt p,PetscInt C,PetscInt m, PetscReal *U,PetscReal U0,PetscReal Uf)
 {
-  PetscInt i,j;
+  PetscInt  i,j;
   PetscReal dU;
-  PetscInt  k0;
 
   PetscFunctionBegin;
-  for(i=0;i<p+1;i++) /* open part */
+
+  dU = (Uf-U0)/N;
+  for(i=0;i<(N-1);i++) /* insert N-1 knots */
+    for(j=0;j<(p-C);j++) /* p-C times */
+      U[(p+1) + i*(p-C) + j] = U0 + (i+1)*dU;
+
+  for(i=0;i<(p+1);i++) /* open part */
   {
     U[i] = U0;
     U[m-i-1] = Uf;
   }
 
-  dU = (Uf-U0)/((PetscReal) N);
-  k0 = p+1;
-  for(i=0;i<(N-1);i++) /* insert N-1 knots */
-  {
-    for(j=0;j<(p-C);j++) /* p-C+1 times */
-      U[k0 + i*(p-C) + j] = U0+((PetscReal) (i+1))*dU;
-  }
   PetscFunctionReturn(0);
 }
 
@@ -1580,28 +1578,21 @@ PetscErrorCode CreateKnotVector(PetscInt N,PetscInt p,PetscInt C,PetscInt m, Pet
 #define __FUNCT__ "CreatePeriodicKnotVector"
 PetscErrorCode CreatePeriodicKnotVector(PetscInt N,PetscInt p,PetscInt C,PetscInt m, PetscReal *U,PetscReal U0,PetscReal Uf)
 {
-  PetscInt i,j;
+  PetscInt  i,j;
   PetscReal dU;
-  PetscInt  k0;
 
-  PetscFunctionBegin; /* periodic part */
-  U[p] = U0;
-  U[m-p-1] = Uf;
+  PetscFunctionBegin;
 
-  dU = (Uf-U0)/((PetscReal) N);
-  k0 = p+1;
-  for(i=0;i<(N-1);i++) /* insert N-1 knots */
+  dU = (Uf-U0)/N;
+  for(i=0;i<(N+1);i++) /* insert N+1 knots */
+    for(j=0;j<(p-C);j++) /* p-C times */
+      U[(C+1) + i*(p-C) + j] = U0 + i*dU;
+
+  for(i=0;i<(C+1);i++) /* periodic part */
   {
-    for(j=0;j<(p-C);j++) /* p-C+1 times */
-      U[k0 + i*(p-C) + j] = U0+((PetscReal) (i+1))*dU;
+    U[i] = U0 - (Uf - U[(m-1-p)-(C+1)+i]);
+    U[m-(C+1)+i] = Uf + (U[p+1+i] - U0);
   }
-
-  for(i=0;i<p;i++)
-    {
-      U[i] = -U[m-p-1]+U[m-p-1-(p-i)];
-      U[m-p+i] = U[m-p-1]+U[p+i+1];
-    }
-
 
   PetscFunctionReturn(0);
 }
