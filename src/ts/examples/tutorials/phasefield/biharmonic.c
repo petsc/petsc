@@ -66,7 +66,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetBool(PETSC_NULL,"-cahn-hillard",&ctx.cahnhillard,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(PETSC_NULL,"-vi",&vi,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscViewerDrawSetBounds(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),1,vbounds);CHKERRQ(ierr); 
-  ierr = PetscViewerDrawResize(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),600,600);CHKERRQ(ierr); 
+  ierr = PetscViewerDrawResize(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),1200,1000);CHKERRQ(ierr); 
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
@@ -353,7 +353,7 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
     yy[0] = PetscRealPart(u[i]);
     yy[1] = .5*PetscRealPart(.25*ctx->kappa*(u[i-1] - u[i+1])*(u[i-1] - u[i+1])*sx/maxe) + 1.1;
     if (ctx->cahnhillard) {
-      yy[2] = .5*.25*PetscRealPart((1. - u[i]*u[i])*(1. - u[i]*u[i])) + 1.1;
+      yy[2] = .5*.25*PetscRealPart((1. - u[i]*u[i])*(1. - u[i]*u[i])/maxe) + 1.1;
     }
     ierr = PetscDrawLGAddPoint(lg,xx,yy);CHKERRQ(ierr);
     x   += hx;
@@ -387,11 +387,11 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
     l = (u[i-2] + u[i] - 2.0*u[i-1])*sx;
     len = -.5*ctx->kappa*(l + r - 2.0*c)*sx/max; 
     cl   = len < 0. ? PETSC_DRAW_RED : PETSC_DRAW_MAGENTA;
-    ierr = PetscDrawLine(draw,x,y,x,y+len,cl);CHKERRQ(ierr);
+    ierr = PetscDrawArrow(draw,x,y,x,y+len,cl);CHKERRQ(ierr);
     if (ctx->cahnhillard) {
       len   = .5*(6.*.25*u[i]*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (3.*u[i]*u[i] - 1.)*(u[i-1] + u[i+1] - 2.0*u[i])*sx)/max;
       cl   = len < 0. ? PETSC_DRAW_GREEN : PETSC_DRAW_BLUE;
-      ierr = PetscDrawLine(draw,x,y,x,y+len,cl);CHKERRQ(ierr);
+      ierr = PetscDrawArrow(draw,x,y,x,y+len,cl);CHKERRQ(ierr);
     }
     x   += cnt*hx; 
   }

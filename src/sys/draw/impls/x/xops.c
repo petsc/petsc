@@ -50,8 +50,8 @@ PetscErrorCode PetscDrawArrow_X(PetscDraw draw,PetscReal xl,PetscReal yl,PetscRe
        XDrawLine(XiWin->disp,XiDrawable(XiWin),XiWin->gc.set,x2,y2,x2-3,y2-3);
        XDrawLine(XiWin->disp,XiDrawable(XiWin),XiWin->gc.set,x2,y2,x2+3,y2-3);
     } else {
-       XDrawLine(XiWin->disp,XiDrawable(XiWin),XiWin->gc.set,x2,y2,x2-3,y2-3);
-       XDrawLine(XiWin->disp,XiDrawable(XiWin),XiWin->gc.set,x2,y2,x2+3,y2-3);
+       XDrawLine(XiWin->disp,XiDrawable(XiWin),XiWin->gc.set,x2,y2,x2-3,y2+3);
+       XDrawLine(XiWin->disp,XiDrawable(XiWin),XiWin->gc.set,x2,y2,x2+3,y2+3);
     }
   }
   PetscFunctionReturn(0);

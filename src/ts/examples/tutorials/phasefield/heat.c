@@ -325,7 +325,7 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
     yy[0] = PetscRealPart(u[i]);
     yy[1] = .5*PetscRealPart(.25*ctx->kappa*(u[i-1] - u[i+1])*(u[i-1] - u[i+1])*sx/maxe) + 1.1;
     if (ctx->allencahn) {
-      yy[2] = .5*.25*PetscRealPart((1. - u[i]*u[i])*(1. - u[i]*u[i])) + 1.1;
+      yy[2] = .5*.25*PetscRealPart((1. - u[i]*u[i])*(1. - u[i]*u[i])/maxe) + 1.1;
     } 
 
     ierr = PetscDrawLGAddPoint(lg,xx,yy);CHKERRQ(ierr);
