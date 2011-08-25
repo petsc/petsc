@@ -4,6 +4,7 @@
      pcimpl.h - private include file intended for use by all preconditioners 
 */
 
+#include <private/matimpl.h>
 #include <private/pcimpl.h>   /*I "petscpc.h" I*/
 
 /* 
@@ -14,12 +15,6 @@ typedef struct {
   PetscInt    bs,mbs;
 } PC_PBJacobi;
 
-/*
-   Currently only implemented for baij matrices and directly access baij
-  data structures.
-*/
-#include <../src/mat/impls/baij/mpi/mpibaij.h>
-#include <../src/mat/blockinvert.h>
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCApply_PBJacobi_1"
@@ -205,7 +200,6 @@ static PetscErrorCode PCDestroy_PBJacobi(PC pc)
 
   Concepts: point block Jacobi
 
-   Notes: Only implemented for the BAIJ matrix formats.
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC
 

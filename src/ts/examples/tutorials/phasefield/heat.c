@@ -43,7 +43,7 @@ int main(int argc,char **argv)
   PetscReal              vbounds[] = {-1.1,1.1};
   PetscBool              wait;
   UserCtx                ctx;
-  int                    colors[] = {PETSC_DRAW_YELLOW,PETSC_DRAW_BLACK,PETSC_DRAW_GREEN};
+  int                    colors[] = {PETSC_DRAW_YELLOW,PETSC_DRAW_RED,PETSC_DRAW_RED,PETSC_DRAW_BLUE,PETSC_DRAW_BLUE};
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
@@ -117,9 +117,9 @@ int main(int argc,char **argv)
 
   ierr = PetscViewerDrawGetDrawLG(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),1,&ctx.lg);CHKERRQ(ierr);
   if (ctx.allencahn) {
-    ierr = PetscDrawLGSetDimension(ctx.lg,3);CHKERRQ(ierr);
+    ierr = PetscDrawLGSetDimension(ctx.lg,5);CHKERRQ(ierr);
   } else {
-    ierr = PetscDrawLGSetDimension(ctx.lg,2);CHKERRQ(ierr);
+    ierr = PetscDrawLGSetDimension(ctx.lg,3);CHKERRQ(ierr);
   }
   ierr = PetscDrawLGSetColors(ctx.lg,colors);CHKERRQ(ierr);
 
@@ -284,7 +284,7 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
   PetscErrorCode ierr;
   PetscScalar    *u;
   PetscInt       Mx,i,xs,xm,cnt;
-  PetscReal      x,y,hx,pause,sx,len,max,maxe,xx[3],yy[3];
+  PetscReal      x,y,hx,pause,sx,len,max,maxe,xx[5],yy[5];
   PetscDraw      draw;
   Vec            localU;
   DM             da;
@@ -305,6 +305,7 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
       Plot the energies
   */
   maxe = 0;
+  max  = 0;
   for (i=0; i<Mx; i++) {
     len   = PetscRealPart(.25*ctx->kappa*(u[i-1] - u[i+1])*(u[i-1] - u[i+1])*sx);
     maxe  = PetscMax(maxe,len);
@@ -312,20 +313,28 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
       len   = .25*PetscRealPart((1. - u[i]*u[i])*(1. - u[i]*u[i]));
       maxe  = PetscMax(maxe,len);
     }
+    len  = PetscAbs(PetscRealPart(ctx->kappa*(u[i-1] + u[i+1] - 2.0*u[i])*sx));
+    max  = PetscMax(max,len);
+    if (ctx->allencahn) {
+      len   = PetscAbs(PetscRealPart(u[i] - u[i]*u[i]*u[i]));
+      max   = PetscMax(max,len);
+    }
     x   += hx;
   }
 
   ierr = PetscDrawLGGetDraw(lg,&draw);CHKERRQ(ierr);
   ierr = PetscDrawCheckResizedWindow(draw);CHKERRQ(ierr);
   ierr = PetscDrawLGReset(lg);
-  ierr = PetscDrawLGSetLimits(lg,0.0,1,-1.,1.6);CHKERRQ(ierr);
+  ierr = PetscDrawLGSetLimits(lg,0.0,1,-1.,2.6);CHKERRQ(ierr);
   x = 0.;
   for (i=0; i<Mx; i++) {
-    xx[0] = xx[1] = xx[2] = x;
+    xx[0] = xx[1] = xx[2] = xx[3] = xx[4] = x;
     yy[0] = PetscRealPart(u[i]);
     yy[1] = .5*PetscRealPart(.25*ctx->kappa*(u[i-1] - u[i+1])*(u[i-1] - u[i+1])*sx/maxe) + 1.1;
+    yy[2] = .5*ctx->kappa*(u[i-1] + u[i+1] - 2.0*u[i])*sx/max + 2.1;
     if (ctx->allencahn) {
-      yy[2] = .5*.25*PetscRealPart((1. - u[i]*u[i])*(1. - u[i]*u[i])/maxe) + 1.1;
+      yy[3] = .5*.25*PetscRealPart((1. - u[i]*u[i])*(1. - u[i]*u[i])/maxe) + 1.1;
+      yy[4] = .5*PetscRealPart(u[i] - u[i]*u[i]*u[i])/max + 2.1;
     } 
 
     ierr = PetscDrawLGAddPoint(lg,xx,yy);CHKERRQ(ierr);
@@ -336,19 +345,8 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
   ierr = PetscDrawLGDraw(lg);CHKERRQ(ierr);
 
   /*
-      Plot the forces
+      Print the  forces as arrows on the solution
   */
-  x   = 0.;
-  max = 0;
-  for (i=0; i<Mx; i += cnt) {
-    len  = PetscAbs(PetscRealPart(ctx->kappa*(u[i-1] + u[i+1] - 2.0*u[i])*sx));
-    max  = PetscMax(max,len);
-    if (ctx->allencahn) {
-      len   = PetscAbs(PetscRealPart(u[i] - u[i]*u[i]*u[i]));
-      max   = PetscMax(max,len);
-    }
-    x   += cnt*hx;
-  }
   x = 0.;
   for (i=0; i<Mx; i += cnt) {
     y    = PetscRealPart(u[i]);
@@ -365,7 +363,9 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
   ierr = DMDAVecRestoreArray(da,localU,&x);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localU);CHKERRQ(ierr);
   ierr = PetscDrawStringSetSize(draw,.2,.2);CHKERRQ(ierr);
+  ierr = PetscDrawString(draw,.75,2.3,PETSC_DRAW_BLACK,"Relative Forcing");
   ierr = PetscDrawString(draw,.75,1.5,PETSC_DRAW_BLACK,"Relative Energy");
+  ierr = PetscDrawString(draw,.75,.8,PETSC_DRAW_BLACK,"Solution");
   ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
   ierr = PetscDrawSetPause(draw,pause);CHKERRQ(ierr);
   ierr = PetscDrawPause(draw);CHKERRQ(ierr);
