@@ -456,7 +456,7 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
   /* Get A_i and R_i */
   ierr = MatGetInfo(Amat,MAT_GLOBAL_SUM,&info); CHKERRQ(ierr);
   PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s level %d N=%d, n data rows=%d, n data cols=%d, nnz/row (ave)=%d, np=%d\n",
-	      mype,__FUNCT__,0,N,pc_gamg->m_data_rows,pc_gamg->m_data_cols,(PetscInt)info.nz_used/N,npe);
+	      mype,__FUNCT__,0,N,pc_gamg->m_data_rows,pc_gamg->m_data_cols,(PetscInt)(info.nz_used/(PetscReal)N),npe);
   for ( level=0, Aarr[0] = Pmat, nactivepe = npe; /* hard wired stopping logic */
         level < GAMG_MAXLEVELS-1 && (level==0 || M>TOP_GRID_LIM) && (npe==1 || nactivepe>1); 
         level++ ){
@@ -479,7 +479,7 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
       ierr = MatGetSize( Aarr[level1], &M, &N );CHKERRQ(ierr);
       ierr = MatGetInfo(Aarr[level1],MAT_GLOBAL_SUM,&info); CHKERRQ(ierr);
       PetscPrintf(PETSC_COMM_WORLD,"\t\t[%d]%s %d) N=%d, bs=%d, n data cols=%d, nnz/row (ave)=%d, %d active pes\n",
-		  mype,__FUNCT__,level1,N,bs,pc_gamg->m_data_cols,(PetscInt)info.nz_used/N,nactivepe);
+		  mype,__FUNCT__,level1,N,bs,pc_gamg->m_data_cols,(PetscInt)(info.nz_used/(PetscReal)N),nactivepe);
       /* coarse grids with SA can have zero row/cols from singleton aggregates */
       /* aggregation method can probably gaurrentee this does not happen! - be safe for now */
  
