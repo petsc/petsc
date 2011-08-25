@@ -266,7 +266,7 @@ ex55: ex55.o chkopts
 
 ex56: ex56.o chkopts
 	-${CLINKER} -o ex56 ex56.o ${PETSC_KSP_LIB}
-#	${RM} ex56.o
+	${RM} ex56.o
 
 #----------------------------------------------------------------------------
 runex1:
