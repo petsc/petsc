@@ -668,7 +668,7 @@ PetscErrorCode formProl0(IS a_selected, /* list of selected local ID, includes s
 
       ndone += aggID;
       /* QR */
-      dgeqrf_( &Mdata, &N, qqc, &LDA, TAU, WORK, &LWORK, &INFO );
+      LAPACKgeqrf_( &Mdata, &N, qqc, &LDA, TAU, WORK, &LWORK, &INFO );
       if( INFO != 0 ) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"xGEQRS error");
       // get R - column oriented - output B_{i+1}
       {
@@ -683,7 +683,7 @@ PetscErrorCode formProl0(IS a_selected, /* list of selected local ID, includes s
       }
 
       // get Q - row oriented
-      dorgqr_( &Mdata, &N, &N, qqc, &LDA, TAU, WORK, &LWORK, &INFO );
+      LAPACKungqr_( &Mdata, &N, &N, qqc, &LDA, TAU, WORK, &LWORK, &INFO );
       if( INFO != 0 ) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"xORGQR error arg %d",-INFO);
 
       for( ii = 0 ; ii < M ; ii++ ){
@@ -918,7 +918,7 @@ PetscErrorCode triangulateAndFormProl( IS  a_selected_2, /* list of selected loc
             for(tt=0;tt<3;tt++) alpha[tt] = fcoord[tt];
 
             /* SUBROUTINE DGESV( N, NRHS, A, LDA, IPIV, B, LDB, INFO ) */
-            dgesv_(&N, &NRHS, (PetscScalar*)AA, &LDA, IPIV, alpha, &LDB, &INFO);
+            LAPACKgesv_(&N, &NRHS, (PetscScalar*)AA, &LDA, IPIV, alpha, &LDB, &INFO);
             {
               PetscBool have=PETSC_TRUE;  PetscScalar lowest=1.e10;
               for( tt = 0, idx = 0 ; tt < 3 ; tt++ ) {
@@ -944,7 +944,7 @@ PetscErrorCode triangulateAndFormProl( IS  a_selected_2, /* list of selected loc
               }
               for(tt=0;tt<3;tt++) alpha[tt] = fcoord[tt];
               /* SUBROUTINE DGESV( N, NRHS, A, LDA, IPIV, B, LDB, INFO ) */
-              dgesv_(&N, &NRHS, (PetscScalar*)AA, &LDA, IPIV, alpha, &LDB, &INFO);
+              LAPACKgesv_(&N, &NRHS, (PetscScalar*)AA, &LDA, IPIV, alpha, &LDB, &INFO);
               {
                 PetscBool have=PETSC_TRUE;  PetscScalar worst=0.0, v;
                 for(tt=0; tt<3 && have ;tt++) {
@@ -969,7 +969,7 @@ PetscErrorCode triangulateAndFormProl( IS  a_selected_2, /* list of selected loc
             }
             for(tt=0;tt<3;tt++) alpha[tt] = fcoord[tt];
             /* SUBROUTINE DGESV( N, NRHS, A, LDA, IPIV, B, LDB, INFO ) */
-            dgesv_(&N, &NRHS, (PetscScalar*)AA, &LDA, IPIV, alpha, &LDB, &INFO);
+            LAPACKgesv_(&N, &NRHS, (PetscScalar*)AA, &LDA, IPIV, alpha, &LDB, &INFO);
           }
 
           /* put in row of P */
