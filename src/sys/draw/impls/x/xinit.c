@@ -280,7 +280,7 @@ PetscErrorCode  PetscDrawSetSave_X(PetscDraw draw,const char *filename)
 #if defined(PETSC_HAVE_POPEN)
   ierr = MPI_Comm_rank(((PetscObject)draw)->comm,&rank);CHKERRQ(ierr);
   if (!rank) {
-    ierr = PetscSNPrintf(command,PETSC_MAX_PATH_LEN,"rm -f %s_[0-9]*.Jpeg %s.Mpeg",draw->savefilename,draw->savefilename);CHKERRQ(ierr);
+    ierr = PetscSNPrintf(command,PETSC_MAX_PATH_LEN,"rm -f %s_[0-9]*.Gif %s.Mpeg",draw->savefilename,draw->savefilename);CHKERRQ(ierr);
     ierr = PetscPOpen(((PetscObject)draw)->comm,PETSC_NULL,command,"r",&fd);CHKERRQ(ierr);
     ierr = PetscPClose(((PetscObject)draw)->comm,fd);CHKERRQ(ierr);
   }
@@ -311,8 +311,8 @@ PetscErrorCode PetscDrawSave_X(PetscDraw draw,PetscViewer viewer)
   }
   image   = XGetImage(drawx->disp, drawx->win, 0, 0, drawx->w, drawx->h, AllPlanes, ZPixmap);if (!image) SETERRQ(((PetscObject)draw)->comm,PETSC_ERR_PLIB,"Cannot XGetImage()");
   asimage = picture_ximage2asimage (asv,image,0,0);if (!asimage) SETERRQ(((PetscObject)draw)->comm,PETSC_ERR_PLIB,"Cannot create AfterImage ASImage");
-  ierr = PetscSNPrintf(filename,PETSC_MAX_PATH_LEN,"%s_%d.Jpeg",draw->savefilename,draw->savefilecount++);CHKERRQ(ierr);
-  ASImage2file( asimage, 0, filename,ASIT_Jpeg,0);
+  ierr = PetscSNPrintf(filename,PETSC_MAX_PATH_LEN,"%s_%d.Gif",draw->savefilename,draw->savefilecount++);CHKERRQ(ierr);
+  ASImage2file( asimage, 0, filename,ASIT_Gif,0);
 
   XDestroyImage(image);
   PetscFunctionReturn(0);

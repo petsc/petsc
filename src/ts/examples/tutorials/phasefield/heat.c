@@ -19,7 +19,8 @@ Evolve the  heat equation:
 /* 
    User-defined routines
 */
-extern PetscErrorCode FormFunction(TS,PetscReal,Vec,Vec,void*),FormInitialSolution(DM,Vec);
+extern PetscErrorCode FormFunction(TS,PetscReal,Vec,Vec,void*),FormInitialSolution(DM,Vec),MyMonitor(TS,PetscInt,PetscReal,Vec,void*);
+typedef struct {PetscDrawLG lg;PetscReal kappa;PetscBool allencahn;} UserCtx;
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -34,14 +35,19 @@ int main(int argc,char **argv)
   MatFDColoring          matfdcoloring;
   ISColoring             iscoloring;
   PetscReal              ftime,dt;
-  PetscReal              kappa = 1.0,vbounds[] = {-.125,1.25};
+  PetscReal              vbounds[] = {-.125,1.25};
   PetscBool              wait;
+  UserCtx                ctx;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   PetscInitialize(&argc,&argv,(char *)0,help);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-kappa",&kappa,PETSC_NULL);CHKERRQ(ierr);
+  ctx.kappa = 1.0;
+  ierr = PetscOptionsGetReal(PETSC_NULL,"-kappa",&ctx.kappa,PETSC_NULL);CHKERRQ(ierr);
+  ctx.allencahn = PETSC_FALSE;
+  ierr = PetscOptionsHasName(PETSC_NULL,"-allen-cahn",&ctx.allencahn);CHKERRQ(ierr);
+
   ierr = PetscViewerDrawSetBounds(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),1,vbounds);CHKERRQ(ierr); 
   ierr = PetscViewerDrawResize(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),600,600);CHKERRQ(ierr); 
 
@@ -51,7 +57,7 @@ int main(int argc,char **argv)
   ierr = DMDACreate1d(PETSC_COMM_WORLD, DMDA_BOUNDARY_PERIODIC, -9 ,1,1,PETSC_NULL,&da);CHKERRQ(ierr);
   ierr = DMDASetFieldName(da,0,"Heat equation: u");CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,0,&Mx,0,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
-  dt   = 1.0/(kappa*Mx*Mx);
+  dt   = 1.0/(ctx.kappa*Mx*Mx);
 
   /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Extract global vectors from DMDA; then duplicate for remaining
@@ -66,7 +72,7 @@ int main(int argc,char **argv)
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetDM(ts,da);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
-  ierr = TSSetRHSFunction(ts,PETSC_NULL,FormFunction,&kappa);CHKERRQ(ierr);
+  ierr = TSSetRHSFunction(ts,PETSC_NULL,FormFunction,&ctx);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create matrix data structure; set Jacobian evaluation routine
@@ -84,7 +90,7 @@ int main(int argc,char **argv)
   ierr = DMGetMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
   ierr = MatFDColoringCreate(J,iscoloring,&matfdcoloring);CHKERRQ(ierr);
   ierr = ISColoringDestroy(&iscoloring);CHKERRQ(ierr);
-  ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))FormFunction,&kappa);CHKERRQ(ierr);
+  ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))FormFunction,&ctx);CHKERRQ(ierr);
   ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
   ierr = TSSetRHSJacobian(ts,J,J,TSDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr);
 
@@ -102,6 +108,10 @@ int main(int argc,char **argv)
   ierr = TSSetDuration(ts,maxsteps,.02);CHKERRQ(ierr);
   ierr = TSSetExactFinalTime(ts,PETSC_TRUE);CHKERRQ(ierr);
   ierr = TSSetSolution(ts,x);CHKERRQ(ierr);
+
+  ierr = PetscViewerDrawGetDrawLG(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),1,&ctx.lg);CHKERRQ(ierr);
+  ierr = PetscDrawLGSetDimension(ctx.lg,2);CHKERRQ(ierr);
+  ierr = TSMonitorSet(ts,MyMonitor,&ctx,PETSC_NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set runtime options
@@ -155,7 +165,7 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec F,void *ptr)
   PetscReal      hx,sx;
   PetscScalar    *x,*f;
   Vec            localX;
-  PetscReal      kappa = *(PetscReal*)ptr;
+  UserCtx        *ctx = (UserCtx*)ptr;
 
   PetscFunctionBegin;
   ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
@@ -189,7 +199,10 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec F,void *ptr)
      Compute function over the locally owned part of the grid
   */
   for (i=xs; i<xs+xm; i++) {
-    f[i] = kappa*(x[i-1] + x[i+1] - 2.0*x[i])*sx;
+    f[i] = ctx->kappa*(x[i-1] + x[i+1] - 2.0*x[i])*sx;
+    if (ctx->allencahn) {
+      ;
+    }
   }
 
   /*
@@ -247,3 +260,78 @@ PetscErrorCode FormInitialSolution(DM da,Vec U)
   PetscFunctionReturn(0); 
 } 
 
+#undef __FUNCT__  
+#define __FUNCT__ "MyMonitor"
+/*
+    This routine is not parallel
+*/
+PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
+{
+  UserCtx        *ctx = (UserCtx*)ptr;
+  PetscDrawLG    lg = (PetscDrawLG)ctx->lg;
+  PetscErrorCode ierr;
+  PetscScalar    *u;
+  PetscInt       Mx,i,xs,xm,cnt;
+  PetscReal      x,y,hx,pause,sx,len,max,maxe,xx[2],yy[2];
+  PetscDraw      draw;
+  Vec            localU;
+  DM             da;
+  int            cl;
+
+  PetscFunctionBegin;
+  ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
+  ierr = DMGetLocalVector(da,&localU);CHKERRQ(ierr);
+  ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
+                        PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
+  ierr = DMDAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  hx     = 1.0/(PetscReal)Mx; sx = 1.0/(hx*hx); cnt = Mx/60;
+  ierr = DMGlobalToLocalBegin(da,U,INSERT_VALUES,localU);CHKERRQ(ierr);
+  ierr = DMGlobalToLocalEnd(da,U,INSERT_VALUES,localU);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da,localU,&u);CHKERRQ(ierr);
+
+  maxe = 0;
+  for (i=0; i<Mx; i++) {
+    len   = PetscAbs(PetscRealPart(.25*ctx->kappa*(u[i-1] - u[i+1])*(u[i-1] - u[i+1])*sx));
+    maxe  = PetscMax(maxe,len);
+    x   += hx;
+  }
+
+  ierr = PetscDrawLGGetDraw(lg,&draw);CHKERRQ(ierr);
+  ierr = PetscDrawCheckResizedWindow(draw);CHKERRQ(ierr);
+  ierr = PetscDrawLGReset(lg);
+  ierr = PetscDrawLGSetLimits(lg,0.0,1.0,0.0,1.6);CHKERRQ(ierr);
+  x = 0.;
+  for (i=0; i<Mx; i++) {
+    xx[0] = xx[1] = x;
+    yy[1] = PetscRealPart(u[i]);
+    yy[0] = .5*PetscAbs(PetscRealPart(.25*ctx->kappa*(u[i-1] - u[i+1])*(u[i-1] - u[i+1])*sx)/maxe) + 1.1;
+    ierr = PetscDrawLGAddPoint(lg,xx,yy);CHKERRQ(ierr);
+    x   += hx;
+  }
+  ierr = PetscDrawGetPause(draw,&pause);CHKERRQ(ierr);
+  ierr = PetscDrawSetPause(draw,0.0);CHKERRQ(ierr);
+  ierr = PetscDrawLGDraw(lg);CHKERRQ(ierr);
+  x   = 0.;
+  max = 0;
+  for (i=0; i<Mx; i += cnt) {
+    len  = PetscAbs(PetscRealPart(ctx->kappa*(u[i-1] + u[i+1] - 2.0*u[i])*sx));
+    max  = PetscMax(max,len);
+    x   += cnt*hx;
+  }
+  x = 0.;
+  for (i=0; i<Mx; i += cnt) {
+    y    = PetscRealPart(u[i]);
+    len  = .5*PetscRealPart(ctx->kappa*(u[i-1] + u[i+1] - 2.0*u[i])*sx)/max;
+    cl   = len < 0. ? PETSC_DRAW_BLUE : PETSC_DRAW_MAGENTA;
+    ierr = PetscDrawLine(draw,x,y,x,y+len,cl);CHKERRQ(ierr);
+    x   += cnt*hx; 
+  }
+  ierr = DMDAVecRestoreArray(da,localU,&x);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(da,&localU);CHKERRQ(ierr);
+  ierr = PetscDrawStringSetSize(draw,.2,.2);CHKERRQ(ierr);
+  ierr = PetscDrawString(draw,.75,1.5,PETSC_DRAW_BLACK,"Relative Energy");
+  ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
+  ierr = PetscDrawSetPause(draw,pause);CHKERRQ(ierr);
+  ierr = PetscDrawPause(draw);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}

@@ -297,7 +297,7 @@ PetscErrorCode JacMatMultCompare(SNES snes,Vec x,Vec p,double hopt)
 
 static PetscInt lin_its_total = 0;
 
-PetscErrorCode MyMonitor(SNES snes,PetscInt its,double fnorm,void *dummy)
+PetscErrorCode SNESNoiseMonitor(SNES snes,PetscInt its,double fnorm,void *dummy)
 {
   PetscErrorCode ierr;
   PetscInt       lin_its;
