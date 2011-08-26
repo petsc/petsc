@@ -62,6 +62,8 @@ PetscErrorCode XiLoadFont(PetscDraw_X *XBWin,XiFont *font)
       the font has been loaded */
   FontInfo   = XQueryFont(XBWin->disp,font->fnt);
   font->font_descent   = FontInfo->descent;
+  font->font_w         = FontInfo->max_bounds.rbearing - FontInfo->min_bounds.lbearing;
+  font->font_h         = FontInfo->max_bounds.ascent + FontInfo->max_bounds.descent;
 
   XFreeFontInfo(0,FontInfo,1);
 

@@ -211,9 +211,8 @@ PetscErrorCode  PetscDrawLGSetColors(PetscDrawLG lg,const int *colors)
   PetscFunctionBegin;
   if (lg && ((PetscObject)lg)->classid == PETSC_DRAW_CLASSID) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(lg,DRAWLG_CLASSID,1);
-    if (!lg->colors) {
-    ierr = PetscMalloc(lg->dim*sizeof(int),&lg->colors);CHKERRQ(ierr);
-  }
+  ierr = PetscFree(lg->colors);CHKERRQ(ierr);
+  ierr = PetscMalloc(lg->dim*sizeof(int),&lg->colors);CHKERRQ(ierr);
   ierr = PetscMemcpy(lg->colors,colors,lg->dim*sizeof(int));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

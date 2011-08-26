@@ -194,8 +194,8 @@ PetscErrorCode PetscDrawStringGetSize_X(PetscDraw draw,PetscReal *x,PetscReal  *
 
   PetscFunctionBegin;
   w = XiWin->font->font_w; h = XiWin->font->font_h;
-  *x = w*(draw->coor_xr - draw->coor_xl)/(XiWin->w)*(draw->port_xr - draw->port_xl);
-  *y = h*(draw->coor_yr - draw->coor_yl)/(XiWin->h)*(draw->port_yr - draw->port_yl);
+  *x = w*(draw->coor_xr - draw->coor_xl)/((XiWin->w)*(draw->port_xr - draw->port_xl));
+  *y = h*(draw->coor_yr - draw->coor_yl)/((XiWin->h)*(draw->port_yr - draw->port_yl));
   PetscFunctionReturn(0);
 }
 
@@ -219,8 +219,7 @@ PetscErrorCode PetscDrawStringVertical_X(PetscDraw draw,PetscReal x,PetscReal  y
   for (i=0; i<n; i++) {
     tmp[0] = chrs[i];
     yy = YTRANS(draw,XiWin,y-th*i);
-    XDrawString(XiWin->disp,XiDrawable(XiWin),XiWin->gc.set,
-                xx,yy - XiWin->font->font_descent,tmp,1);
+    XDrawString(XiWin->disp,XiDrawable(XiWin),XiWin->gc.set, xx,yy - XiWin->font->font_descent,tmp,1);
   }
   PetscFunctionReturn(0);
 }
