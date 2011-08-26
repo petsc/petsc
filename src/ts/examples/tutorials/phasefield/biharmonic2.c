@@ -32,7 +32,7 @@ Evolve the Cahn-Hillard equations:
    User-defined routines
 */
 extern PetscErrorCode FormFunction(TS,PetscReal,Vec,Vec,Vec,void*),FormInitialSolution(DM,Vec,PetscReal);
-typedef struct {PetscBool cahnhillard;PetscReal kappa;PetscInt energy;PetscReal tol;} UserCtx;
+typedef struct {PetscBool cahnhillard;PetscReal kappa;PetscInt energy;PetscReal tol;PetscReal theta;PetscReal theta_c} UserCtx;
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -68,6 +68,11 @@ int main(int argc,char **argv)
   ierr = PetscOptionsInt("-energy","type of energy (1=double well, 2=double obstacle, 3=logarithmic)","",ctx.energy,&ctx.energy,PETSC_NULL);CHKERRQ(ierr);
   ctx.tol = 1.0e-8;
   ierr = PetscOptionsGetReal(PETSC_NULL,"-tol",&ctx.tol,PETSC_NULL);CHKERRQ(ierr);
+  ctx.theta = .001;
+  ctx.theta_c = 1.0;
+  ierr = PetscOptionsGetReal(PETSC_NULL,"-theta",&ctx.theta,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(PETSC_NULL,"-theta_c",&ctx.theta_c,PETSC_NULL);CHKERRQ(ierr);
+
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -244,13 +249,13 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec Xdot,Vec F,void *ptr
         break;
       case 3: // logarithmic
         if (x[i].u < -1.0 + 2.0*ctx->tol) {
-          f[i].w += .001*(-log(ctx->tol) + log((1.0-x[i].u)/2.0)) + x[i].u;
+          f[i].w += .5*ctx->theta*(-log(ctx->tol) + log((1.0-x[i].u)/2.0)) + ctx->theta_c*x[i].u;
         }
         else if (x[i].u > 1.0 - 2.0*ctx->tol) {
-          f[i].w += .001*(-log((1.0+x[i].u)/2.0) + log(ctx->tol)) + x[i].u;
+          f[i].w += .5*ctx->theta*(-log((1.0+x[i].u)/2.0) + log(ctx->tol)) + ctx->theta_c*x[i].u;
         }
         else {
-          f[i].w += .001*(-log((1.0+x[i].u)/2.0) + log((1.0-x[i].u)/2.0)) + x[i].u;
+          f[i].w += .5*ctx->theta*(-log((1.0+x[i].u)/2.0) + log((1.0-x[i].u)/2.0)) + ctx->theta_c*x[i].u;
         }
         break;
       }
