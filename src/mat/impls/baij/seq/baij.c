@@ -19,7 +19,10 @@ PetscErrorCode  MatInvertBlockDiagonal_SeqBAIJ(Mat A,PetscScalar **values)
   PetscReal      shift = 0.0;
 
   PetscFunctionBegin;
-  if (a->idiagvalid) PetscFunctionReturn(0);
+  if (a->idiagvalid) {
+    if (values)*values = a->idiag;
+    PetscFunctionReturn(0);
+  }
   ierr = MatMarkDiagonal_SeqBAIJ(A);CHKERRQ(ierr);
   diag_offset = a->diag;
   if (!a->idiag) {
