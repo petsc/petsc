@@ -249,9 +249,11 @@ PetscErrorCode  PetscDrawLGSetLegend(PetscDrawLG lg,const char *const *names)
     }
     ierr = PetscFree(lg->legend);CHKERRQ(ierr);
   }
-  ierr = PetscMalloc(lg->dim*sizeof(char**),&lg->legend);CHKERRQ(ierr);
-  for (i=0; i<lg->dim; i++) {
-    ierr = PetscStrallocpy(names[i],&lg->legend[i]);CHKERRQ(ierr);
+  if (names) {
+    ierr = PetscMalloc(lg->dim*sizeof(char**),&lg->legend);CHKERRQ(ierr);
+    for (i=0; i<lg->dim; i++) {
+      ierr = PetscStrallocpy(names[i],&lg->legend[i]);CHKERRQ(ierr);
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -436,6 +438,26 @@ PetscErrorCode  PetscDrawLGDraw(PetscDrawLG lg)
         }
       }
     }
+  }
+  if (lg->legend) {
+    PetscReal xl,yl,xr,yr,tw,th;
+    size_t    len,mlen = 0;
+    int       cl;
+    ierr = PetscDrawGetCoordinates(draw,&xl,&yl,&xr,&yr);CHKERRQ(ierr);
+    ierr = PetscDrawStringGetSize(draw,&tw,&th);CHKERRQ(ierr);
+    for (i=0; i<dim; i++) {
+      ierr = PetscStrlen(lg->legend[i],&len);CHKERRQ(ierr);
+      mlen = PetscMax(mlen,len);
+    }
+    ierr = PetscDrawLine(draw,xr - (mlen + 8)*tw,yr - 3*th,xr - 2*tw,yr - 3*th,PETSC_DRAW_BLACK);CHKERRQ(ierr);
+    ierr = PetscDrawLine(draw,xr - (mlen + 8)*tw,yr - 3*th,xr - (mlen + 8)*tw,yr - (4+lg->dim)*th,PETSC_DRAW_BLACK);CHKERRQ(ierr);
+    for  (i=0; i<dim; i++) {
+      cl = (lg->colors ? lg->colors[i] : i + 1);
+      ierr = PetscDrawLine(draw,xr - (mlen + 6.7)*tw,yr - (4 + i)*th,xr - (mlen + 3.2)*tw,yr - (4 + i)*th,cl);CHKERRQ(ierr);
+      ierr = PetscDrawString(draw,xr - (mlen + 3)*tw,yr - (4.5 + i)*th,PETSC_DRAW_BLACK,lg->legend[i]);CHKERRQ(ierr);
+    }
+    ierr = PetscDrawLine(draw,xr - 2*tw,yr - 3*th,xr - 2*tw,yr - (4+lg->dim)*th,PETSC_DRAW_BLACK);CHKERRQ(ierr);
+    ierr = PetscDrawLine(draw,xr - (mlen + 8)*tw,yr - (4+lg->dim)*th,xr - 2*tw,yr - (4+lg->dim)*th,PETSC_DRAW_BLACK);CHKERRQ(ierr);
   }
   ierr = PetscDrawFlush(lg->win);CHKERRQ(ierr);
   ierr = PetscDrawPause(lg->win);CHKERRQ(ierr);

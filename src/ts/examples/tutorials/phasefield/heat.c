@@ -282,6 +282,7 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
   Vec                       localU;
   DM                        da;
   int                       colors[] = {PETSC_DRAW_YELLOW,PETSC_DRAW_RED,PETSC_DRAW_BLUE};
+  const char *const         legend[] = {"-kappa (\\grad u,\\grad u)","(1 - u^2)^2"};
   PetscDrawAxis             axis;
   static PetscDrawViewPorts *ports = 0;
 
@@ -326,6 +327,7 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
   ierr = PetscDrawGetPause(draw,&pause);CHKERRQ(ierr);
   ierr = PetscDrawSetPause(draw,0.0);CHKERRQ(ierr);
   ierr = PetscDrawAxisSetLabels(axis,"Energy","","");CHKERRQ(ierr);
+  ierr = PetscDrawLGSetLegend(lg,legend);CHKERRQ(ierr);
   ierr = PetscDrawLGDraw(lg);CHKERRQ(ierr);
 
   /* 
@@ -347,6 +349,7 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
     x   += hx;
   }
   ierr = PetscDrawAxisSetLabels(axis,"Right hand side","","");CHKERRQ(ierr);
+  ierr = PetscDrawLGSetLegend(lg,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscDrawLGDraw(lg);CHKERRQ(ierr);
 
   /*

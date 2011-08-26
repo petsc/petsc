@@ -241,10 +241,10 @@ PetscErrorCode  PetscDrawViewPortsCreateRect(PetscDraw draw,PetscInt nx,PetscInt
       ierr = PetscDrawLine(draw,xr[k],yr[k],xr[k],yl[k],PETSC_DRAW_BLACK);CHKERRQ(ierr);
       ierr = PetscDrawLine(draw,xr[k],yl[k],xl[k],yl[k],PETSC_DRAW_BLACK);CHKERRQ(ierr);
 
-      xl[k] += .1*hx;
-      xr[k] -= .1*hx;
-      yl[k] += .1*hy;
-      yr[k] -= .1*hy;
+      xl[k] += .01*hx;
+      xr[k] -= .01*hx;
+      yl[k] += .01*hy;
+      yr[k] -= .01*hy;
     }
   }
   ierr = PetscDrawSynchronizedFlush(draw);CHKERRQ(ierr);
