@@ -48,6 +48,31 @@ PetscErrorCode PetscOptionsBegin_Private(MPI_Comm comm,const char prefix[],const
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscObjectOptionsBegin_Private"
+/*
+    Handles setting up the data structure in a call to PetscObjectOptionsBegin()
+*/
+PetscErrorCode PetscObjectOptionsBegin_Private(PetscObject obj)
+{
+  PetscErrorCode ierr;
+  char title[256];
+  PetscBool flg;
+
+  PetscFunctionBegin;
+  PetscValidHeader(obj,1);
+  PetscOptionsObject.object = obj;
+  PetscOptionsObject.alreadyprinted = obj->optionsprinted;
+  ierr = PetscStrcmp(obj->description,obj->class_name,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PetscSNPrintf(title,sizeof title,"%s options",obj->class_name);CHKERRQ(ierr);
+  } else {
+    ierr = PetscSNPrintf(title,sizeof title,"%s (%s) options",obj->description,obj->class_name);CHKERRQ(ierr);
+  }
+  ierr = PetscOptionsBegin_Private(obj->comm,obj->prefix,title,obj->mansec);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*
      Handles adding another option to the list of options within this particular PetscOptionsBegin() PetscOptionsEnd()
 */
@@ -467,6 +492,8 @@ PetscErrorCode PetscOptionsEnd_Private(void)
   if (PetscOptionsObject.changedmethod) PetscOptionsPublishCount = -2; 
   /* reset alreadyprinted flag */
   PetscOptionsObject.alreadyprinted = PETSC_FALSE;
+  if (PetscOptionsObject.object) PetscOptionsObject.object->optionsprinted = PETSC_TRUE;
+  PetscOptionsObject.object = PETSC_NULL;
 
   while (PetscOptionsObject.next) { 
     if (PetscOptionsObject.next->set) {

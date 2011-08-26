@@ -48,7 +48,7 @@ PetscErrorCode  PetscMatlabEngineCreate(MPI_Comm comm,const char machine[],Petsc
   }
   ierr = PetscOptionsGetBool(PETSC_NULL,"-matlab_engine_graphics",&flg,PETSC_NULL);CHKERRQ(ierr);
 
-  ierr = PetscHeaderCreate(e,_p_PetscMatlabEngine,int,MATLABENGINE_CLASSID,0,"MatlabEngine",comm,PetscMatlabEngineDestroy,0);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(e,_p_PetscMatlabEngine,int,MATLABENGINE_CLASSID,0,"MatlabEngine","MATLAB Engine","Sys",comm,PetscMatlabEngineDestroy,0);CHKERRQ(ierr);
 
   if (!machine) machine = "\0";
   ierr = PetscStrcpy(buffer,PETSC_MATLAB_COMMAND);CHKERRQ(ierr);

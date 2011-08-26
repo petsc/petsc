@@ -46,7 +46,7 @@ PetscErrorCode  PetscDrawCreate(MPI_Comm comm,const char display[],const char ti
   ierr = PetscDrawInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
   *indraw = 0;
-  ierr = PetscHeaderCreate(draw,_p_PetscDraw,struct _PetscDrawOps,PETSC_DRAW_CLASSID,-1,"Draw",comm,PetscDrawDestroy,0);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(draw,_p_PetscDraw,struct _PetscDrawOps,PETSC_DRAW_CLASSID,-1,"Draw","Graphics","Draw",comm,PetscDrawDestroy,0);CHKERRQ(ierr);
   draw->data    = 0;
   ierr          = PetscStrallocpy(title,&draw->title);CHKERRQ(ierr);
   ierr          = PetscStrallocpy(display,&draw->display);CHKERRQ(ierr);
@@ -272,7 +272,7 @@ PetscErrorCode  PetscDrawSetFromOptions(PetscDraw draw)
     }
 #endif
   }
-  ierr = PetscOptionsBegin(((PetscObject)draw)->comm,((PetscObject)draw)->prefix,"Graphics (PetscDraw) Options","Draw");CHKERRQ(ierr);
+  ierr = PetscObjectOptionsBegin((PetscObject)draw);CHKERRQ(ierr);
     ierr = PetscOptionsList("-draw_type","Type of graphical output","PetscDrawSetType",PetscDrawList,def,vtype,256,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PetscDrawSetType(draw,vtype);CHKERRQ(ierr);

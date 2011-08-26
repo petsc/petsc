@@ -40,7 +40,7 @@ PetscErrorCode  ISCreate(MPI_Comm comm,IS *is)
   ierr = ISInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
-  ierr = PetscHeaderCreate(*is,_p_IS,struct _ISOps,IS_CLASSID,-1,"IS",comm,ISDestroy,ISView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(*is,_p_IS,struct _ISOps,IS_CLASSID,-1,"IS","Index Set","IS",comm,ISDestroy,ISView);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

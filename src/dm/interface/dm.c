@@ -36,7 +36,7 @@ PetscErrorCode  DMCreate(MPI_Comm comm,DM *dm)
   ierr = DMInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
-  ierr = PetscHeaderCreate(v, _p_DM, struct _DMOps, DM_CLASSID, -1, "DM", comm, DMDestroy, DMView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(v, _p_DM, struct _DMOps, DM_CLASSID, -1, "DM", "Distribution Manager", "DM", comm, DMDestroy, DMView);CHKERRQ(ierr);
   ierr = PetscMemzero(v->ops, sizeof(struct _DMOps));CHKERRQ(ierr);
 
   v->ltogmap      = PETSC_NULL;
@@ -228,7 +228,7 @@ PetscErrorCode  DMSetFromOptions(DM dm)
   if (dm->ops->setfromoptions) {
     ierr = (*dm->ops->setfromoptions)(dm);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsBegin(((PetscObject)dm)->comm,((PetscObject)dm)->prefix,"DM Options","DM");CHKERRQ(ierr);
+  ierr = PetscObjectOptionsBegin((PetscObject)dm);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-dm_view", "Information on DM", "DMView", flg1, &flg1, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   if (flg1) {

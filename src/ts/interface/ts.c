@@ -79,7 +79,7 @@ PetscErrorCode  TSSetFromOptions(TS ts)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID,1);
-  ierr = PetscOptionsBegin(((PetscObject)ts)->comm, ((PetscObject)ts)->prefix, "Time step options", "TS");CHKERRQ(ierr);
+  ierr = PetscObjectOptionsBegin((PetscObject)ts);CHKERRQ(ierr);
     /* Handle TS type options */
     ierr = TSSetTypeFromOptions(ts);CHKERRQ(ierr);
 

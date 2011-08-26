@@ -424,7 +424,7 @@ PetscErrorCode AOSetFromOptions(AO ao)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao,AO_CLASSID,1);
 
-  ierr = PetscOptionsBegin(((PetscObject)ao)->comm,((PetscObject)ao)->prefix,"Application Ordering (AO) Options","AO");CHKERRQ(ierr);
+  ierr = PetscObjectOptionsBegin((PetscObject)ao);CHKERRQ(ierr);
     ierr = PetscOptionsList("-ao_type","AO type","AOSetType",AOList,def,type,256,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = AOSetType(ao,type);CHKERRQ(ierr);
@@ -513,7 +513,7 @@ PetscErrorCode  AOCreate(MPI_Comm comm,AO *ao)
   ierr = AOInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
-  ierr = PetscHeaderCreate(aonew,_p_AO,struct _AOOps,AO_CLASSID,-1,"AO",comm,AODestroy,AOView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(aonew,_p_AO,struct _AOOps,AO_CLASSID,-1,"AO","Application Ordering","AO",comm,AODestroy,AOView);CHKERRQ(ierr);
   ierr = PetscMemzero(aonew->ops, sizeof(struct _AOOps));CHKERRQ(ierr);
   *ao = aonew;
 

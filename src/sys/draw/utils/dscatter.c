@@ -57,7 +57,7 @@ PetscErrorCode  PetscDrawSPCreate(PetscDraw draw,int dim,PetscDrawSP *drawsp)
     ierr = PetscDrawOpenNull(((PetscObject)obj)->comm,(PetscDraw*)drawsp);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
-  ierr = PetscHeaderCreate(sp,_p_DrawSP,int,DRAWSP_CLASSID,0,"PetscDrawSP",((PetscObject)obj)->comm,PetscDrawSPDestroy,0);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(sp,_p_DrawSP,int,DRAWSP_CLASSID,0,"PetscDrawSP","Scatter plot","Draw",((PetscObject)obj)->comm,PetscDrawSPDestroy,0);CHKERRQ(ierr);
   sp->view    = 0;
   sp->destroy = 0;
   sp->nopts   = 0;

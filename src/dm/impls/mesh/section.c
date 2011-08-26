@@ -262,7 +262,7 @@ PetscErrorCode  SectionRealCreate(MPI_Comm comm, SectionReal *section)
   PetscValidPointer(section,2);
   *section = PETSC_NULL;
 
-  ierr = PetscHeaderCreate(s,_p_SectionReal,struct _SectionRealOps,SECTIONREAL_CLASSID,0,"SectionReal",comm,SectionRealDestroy,0);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(s,_p_SectionReal,struct _SectionRealOps,SECTIONREAL_CLASSID,0,"SectionReal","Section","DM",comm,SectionRealDestroy,0);CHKERRQ(ierr);
   s->ops->view     = SectionRealView_Sieve;
   s->ops->restrictClosure = SectionRealRestrict;
   s->ops->update   = SectionRealUpdate;
@@ -1372,7 +1372,7 @@ PetscErrorCode  SectionIntCreate(MPI_Comm comm, SectionInt *section)
   PetscValidPointer(section,2);
   *section = PETSC_NULL;
 
-  ierr = PetscHeaderCreate(s,_p_SectionInt,struct _SectionIntOps,SECTIONINT_CLASSID,0,"SectionInt",comm,SectionIntDestroy,0);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(s,_p_SectionInt,struct _SectionIntOps,SECTIONINT_CLASSID,0,"SectionInt","Section","DM",comm,SectionIntDestroy,0);CHKERRQ(ierr);
   s->ops->view     = SectionIntView_Sieve;
   s->ops->restrictClosure = SectionIntRestrict;
   s->ops->update   = SectionIntUpdate;

@@ -134,7 +134,7 @@ PetscErrorCode  MatNullSpaceCreate(MPI_Comm comm,PetscBool  has_cnst,PetscInt n,
   ierr = MatInitializePackage(PETSC_NULL);CHKERRQ(ierr); 
 #endif 
 
-  ierr = PetscHeaderCreate(sp,_p_MatNullSpace,int,MAT_NULLSPACE_CLASSID,0,"MatNullSpace",comm,MatNullSpaceDestroy,MatNullSpaceView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(sp,_p_MatNullSpace,int,MAT_NULLSPACE_CLASSID,0,"MatNullSpace","Null space","Mat",comm,MatNullSpaceDestroy,MatNullSpaceView);CHKERRQ(ierr);
 
   sp->has_cnst = has_cnst;
   sp->n        = n;

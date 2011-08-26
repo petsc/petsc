@@ -167,7 +167,7 @@ PetscErrorCode  PetscDrawLGCreate(PetscDraw draw,int dim,PetscDrawLG *outctx)
     ierr = PetscDrawOpenNull(((PetscObject)obj)->comm,(PetscDraw*)outctx);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
-  ierr = PetscHeaderCreate(lg,_p_PetscDrawLG,int,DRAWLG_CLASSID,0,"PetscDrawLG",((PetscObject)obj)->comm,PetscDrawLGDestroy,0);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(lg,_p_PetscDrawLG,int,DRAWLG_CLASSID,0,"PetscDrawLG","Line graph","Draw",((PetscObject)obj)->comm,PetscDrawLGDestroy,0);CHKERRQ(ierr);
   lg->view    = 0;
   lg->destroy = 0;
   lg->nopts   = 0;

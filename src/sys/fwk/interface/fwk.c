@@ -774,7 +774,7 @@ PetscErrorCode  PetscFwkCreate(MPI_Comm comm, PetscFwk *framework){
   ierr = PetscFwkInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
   PetscValidPointer(framework,2);
-  ierr = PetscHeaderCreate(fwk,_p_PetscFwk,PetscInt,PETSC_FWK_CLASSID,0,"PetscFwk",comm,PetscFwkDestroy,PetscFwkView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(fwk,_p_PetscFwk,PetscInt,PETSC_FWK_CLASSID,0,"PetscFwk","Dmitry, what the fwk is a fwk?","fwk",comm,PetscFwkDestroy,PetscFwkView);CHKERRQ(ierr);
   fwk->parent      = PETSC_NULL;
   fwk->component   = PETSC_NULL;
   fwk->vtable_type = PETSC_FWK_VTABLE_NONE;

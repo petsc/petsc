@@ -35,7 +35,7 @@ PetscErrorCode  PetscViewerCreate(MPI_Comm comm,PetscViewer *inviewer)
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = PetscViewerInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
-  ierr = PetscHeaderCreate(viewer,_p_PetscViewer,struct _PetscViewerOps,PETSC_VIEWER_CLASSID,-1,"PetscViewer",comm,PetscViewerDestroy,0);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(viewer,_p_PetscViewer,struct _PetscViewerOps,PETSC_VIEWER_CLASSID,-1,"PetscViewer","PetscViewer","Viewer",comm,PetscViewerDestroy,0);CHKERRQ(ierr);
   *inviewer           = viewer;
   viewer->data        = 0;
   PetscFunctionReturn(0);
@@ -158,7 +158,7 @@ PetscErrorCode  PetscViewerSetFromOptions(PetscViewer viewer)
   if (!PetscViewerList) {
     ierr = PetscViewerRegisterAll(PETSC_NULL);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsBegin(((PetscObject)viewer)->comm,((PetscObject)viewer)->prefix,"PetscViewer options","PetscViewer");CHKERRQ(ierr);
+  ierr = PetscObjectOptionsBegin((PetscObject)viewer);CHKERRQ(ierr);
     ierr = PetscOptionsList("-viewer_type","Type of PetscViewer","None",PetscViewerList,(char *)(((PetscObject)viewer)->type_name?((PetscObject)viewer)->type_name:PETSCVIEWERASCII),vtype,256,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PetscViewerSetType(viewer,vtype);CHKERRQ(ierr);

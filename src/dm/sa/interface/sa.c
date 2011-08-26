@@ -1032,7 +1032,7 @@ PetscErrorCode SAMappingCreate(MPI_Comm comm, SAMapping *_map)
   ierr = SAMappingInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
-  ierr = PetscHeaderCreate(map,_p_SAMapping,struct _SAMappingOps,SA_MAPPING_CLASSID,0,"SAMapping",comm,SAMappingDestroy,SAMappingView); CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(map,_p_SAMapping,struct _SAMappingOps,SA_MAPPING_CLASSID,0,"SAMapping","SAMapping","DM",comm,SAMappingDestroy,SAMappingView); CHKERRQ(ierr);
   ierr = PetscLayoutCreate(comm,&(map->xlayout)); CHKERRQ(ierr);
   ierr = PetscLayoutCreate(comm,&(map->ylayout)); CHKERRQ(ierr);
   *_map = map;

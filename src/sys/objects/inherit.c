@@ -19,8 +19,8 @@ extern PetscErrorCode PetscObjectQueryFunction_Petsc(PetscObject,const char[],vo
    PetscHeaderCreate_Private - Creates a base PETSc object header and fills
    in the default values.  Called by the macro PetscHeaderCreate().
 */
-PetscErrorCode  PetscHeaderCreate_Private(PetscObject h,PetscClassId classid,PetscInt type,const char class_name[],MPI_Comm comm,
-                                         PetscErrorCode (*des)(PetscObject*),PetscErrorCode (*vie)(PetscObject,PetscViewer))
+PetscErrorCode  PetscHeaderCreate_Private(PetscObject h,PetscClassId classid,PetscInt type,const char class_name[],const char descr[],const char mansec[],
+                                          MPI_Comm comm,PetscErrorCode (*des)(PetscObject*),PetscErrorCode (*vie)(PetscObject,PetscViewer))
 {
   static PetscInt idcnt = 1;
   PetscErrorCode  ierr;
@@ -31,6 +31,8 @@ PetscErrorCode  PetscHeaderCreate_Private(PetscObject h,PetscClassId classid,Pet
   h->classid                = classid;
   h->type                   = type;
   h->class_name             = (char*)class_name;
+  h->description            = (char*)descr;
+  h->mansec                 = (char*)mansec;
   h->prefix                 = 0;
   h->refct                  = 1;
   h->amem                   = -1;
@@ -772,7 +774,7 @@ PetscErrorCode  PetscContainerCreate(MPI_Comm comm,PetscContainer *container)
 
   PetscFunctionBegin;
   PetscValidPointer(container,2);
-  ierr = PetscHeaderCreate(contain,_p_PetscContainer,PetscInt,PETSC_CONTAINER_CLASSID,0,"PetscContainer",comm,PetscContainerDestroy,0);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(contain,_p_PetscContainer,PetscInt,PETSC_CONTAINER_CLASSID,0,"PetscContainer","Container","Sys",comm,PetscContainerDestroy,0);CHKERRQ(ierr);
   *container = contain;
   PetscFunctionReturn(0);
 }

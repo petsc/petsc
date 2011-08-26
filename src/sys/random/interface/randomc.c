@@ -186,7 +186,7 @@ PetscErrorCode  PetscRandomSetFromOptions(PetscRandom rnd)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(rnd,PETSC_RANDOM_CLASSID,1);
 
-  ierr = PetscOptionsBegin(((PetscObject)rnd)->comm, ((PetscObject)rnd)->prefix, "PetscRandom options", "PetscRandom");CHKERRQ(ierr);
+  ierr = PetscObjectOptionsBegin((PetscObject)rnd);CHKERRQ(ierr);
 
     /* Handle PetscRandom type options */
     ierr = PetscRandomSetTypeFromOptions_Private(rnd);CHKERRQ(ierr);
@@ -384,7 +384,7 @@ PetscErrorCode  PetscRandomCreate(MPI_Comm comm,PetscRandom *r)
   ierr = PetscRandomInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
-  ierr = PetscHeaderCreate(rr,_p_PetscRandom,struct _PetscRandomOps,PETSC_RANDOM_CLASSID,-1,"PetscRandom",comm,PetscRandomDestroy,0);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(rr,_p_PetscRandom,struct _PetscRandomOps,PETSC_RANDOM_CLASSID,-1,"PetscRandom","Random number generator","Sys",comm,PetscRandomDestroy,0);CHKERRQ(ierr);
 
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   rr->data  = PETSC_NULL;

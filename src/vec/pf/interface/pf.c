@@ -118,7 +118,7 @@ PetscErrorCode  PFCreate(MPI_Comm comm,PetscInt dimin,PetscInt dimout,PF *pf)
   ierr = PFInitializePackage(PETSC_NULL);CHKERRQ(ierr);   
 #endif
 
-  ierr = PetscHeaderCreate(newpf,_p_PF,struct _PFOps,PF_CLASSID,-1,"PF",comm,PFDestroy,PFView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(newpf,_p_PF,struct _PFOps,PF_CLASSID,-1,"PF","Mathematical functions","Vec",comm,PFDestroy,PFView);CHKERRQ(ierr);
   newpf->data             = 0;
 
   newpf->ops->destroy     = 0;
@@ -479,7 +479,7 @@ PetscErrorCode  PFSetFromOptions(PF pf)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pf,PF_CLASSID,1);
 
-  ierr = PetscOptionsBegin(((PetscObject)pf)->comm,((PetscObject)pf)->prefix,"Mathematical functions options","Vec");CHKERRQ(ierr);
+  ierr = PetscObjectOptionsBegin((PetscObject)pf);CHKERRQ(ierr);
     ierr = PetscOptionsList("-pf_type","Type of function","PFSetType",PFList,0,type,256,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PFSetType(pf,type,PETSC_NULL);CHKERRQ(ierr);

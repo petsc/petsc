@@ -36,7 +36,7 @@ PetscErrorCode  VecCreate(MPI_Comm comm, Vec *vec)
   ierr = VecInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
-  ierr = PetscHeaderCreate(v, _p_Vec, struct _VecOps, VEC_CLASSID, -1, "Vec", comm, VecDestroy, VecView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(v, _p_Vec, struct _VecOps, VEC_CLASSID, -1, "Vec", "Vector", "Vec", comm, VecDestroy, VecView);CHKERRQ(ierr);
   ierr = PetscMemzero(v->ops, sizeof(struct _VecOps));CHKERRQ(ierr);
 
   ierr            = PetscLayoutCreate(comm,&v->map);CHKERRQ(ierr);

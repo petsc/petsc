@@ -365,7 +365,7 @@ PetscErrorCode  SNESSetFromOptions(SNES snes)
   PetscValidHeaderSpecific(snes,SNES_CLASSID,1);
 
   if (!SNESRegisterAllCalled) {ierr = SNESRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
-  ierr = PetscOptionsBegin(((PetscObject)snes)->comm,((PetscObject)snes)->prefix,"Nonlinear solver (SNES) options","SNES");CHKERRQ(ierr);
+  ierr = PetscObjectOptionsBegin((PetscObject)snes);CHKERRQ(ierr);
     if (((PetscObject)snes)->type_name) { deft = ((PetscObject)snes)->type_name; }
     ierr = PetscOptionsList("-snes_type","Nonlinear solver method","SNESSetType",SNESList,deft,type,256,&flg);CHKERRQ(ierr);
     if (flg) {
@@ -1051,7 +1051,7 @@ PetscErrorCode  SNESCreate(MPI_Comm comm,SNES *outsnes)
   ierr = SNESInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
-  ierr = PetscHeaderCreate(snes,_p_SNES,struct _SNESOps,SNES_CLASSID,0,"SNES",comm,SNESDestroy,SNESView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(snes,_p_SNES,struct _SNESOps,SNES_CLASSID,0,"SNES","Nonlinear solver","SNES",comm,SNESDestroy,SNESView);CHKERRQ(ierr);
 
   snes->ops->converged    = SNESDefaultConverged;
   snes->max_its           = 50;

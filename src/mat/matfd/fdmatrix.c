@@ -294,7 +294,7 @@ PetscErrorCode  MatFDColoringSetFromOptions(MatFDColoring matfd)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(matfd,MAT_FDCOLORING_CLASSID,1);
 
-  ierr = PetscOptionsBegin(((PetscObject)matfd)->comm,((PetscObject)matfd)->prefix,"Jacobian computation via finite differences option","MatFD");CHKERRQ(ierr);
+  ierr = PetscObjectOptionsBegin((PetscObject)matfd);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-mat_fd_coloring_err","Square root of relative error in function","MatFDColoringSetParameters",matfd->error_rel,&matfd->error_rel,0);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-mat_fd_coloring_umin","Minimum allowable u magnitude","MatFDColoringSetParameters",matfd->umin,&matfd->umin,0);CHKERRQ(ierr);
     ierr = PetscOptionsString("-mat_fd_type","Algorithm to compute h, wp or ds","MatFDColoringCreate",matfd->htype,value,3,&flg);CHKERRQ(ierr);
@@ -378,7 +378,7 @@ PetscErrorCode  MatFDColoringCreate(Mat mat,ISColoring iscoloring,MatFDColoring 
   if (M != N) SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_SUP,"Only for square matrices");
 
   ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
-  ierr = PetscHeaderCreate(c,_p_MatFDColoring,int,MAT_FDCOLORING_CLASSID,0,"MatFDColoring",comm,MatFDColoringDestroy,MatFDColoringView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(c,_p_MatFDColoring,int,MAT_FDCOLORING_CLASSID,0,"MatFDColoring","Jacobian computation via finite differences with coloring","Mat",comm,MatFDColoringDestroy,MatFDColoringView);CHKERRQ(ierr);
 
   c->ctype = iscoloring->ctype;
 

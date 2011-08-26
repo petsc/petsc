@@ -61,7 +61,9 @@ typedef struct _p_PetscObject {
   PetscMPIInt    tag;                                           
   PetscFList     qlist;                                         
   PetscOList     olist;                                         
-  char           *class_name;                                   
+  char           *class_name;
+  char           *description;
+  char           *mansec;
   char           *type_name;                                    
   PetscObject    parent;                                        
   PetscInt       parentid;                                      
@@ -89,6 +91,7 @@ typedef struct _p_PetscObject {
   PetscErrorCode (*optiondestroy[PETSC_MAX_OPTIONS_HANDLER])(PetscObject,void*);
   void           *optionctx[PETSC_MAX_OPTIONS_HANDLER];
   PetscPrecision precision;
+  PetscBool      optionsprinted;
 } _p_PetscObject;
 
 #define PETSCHEADER(ObjectOps) \
@@ -121,16 +124,16 @@ typedef PetscErrorCode (*PetscObjectViewerFunction)(PetscObject,PetscViewer);
 .seealso: PetscHeaderDestroy(), PetscClassIdRegister()
 
 @*/ 
-#define PetscHeaderCreate(h,tp,pops,cook,t,class_name,com,des,vie)	\
+#define PetscHeaderCreate(h,tp,pops,cook,t,class_name,descr,mansec,com,des,vie) \
   (PetscNew(struct tp,&(h)) ||						\
    PetscNew(PetscOps,&(((PetscObject)(h))->bops)) ||			\
    PetscNew(pops,&((h)->ops)) ||					\
-   PetscHeaderCreate_Private((PetscObject)h,cook,t,class_name,com,(PetscObjectFunction)des,(PetscObjectViewerFunction)vie) || \
+   PetscHeaderCreate_Private((PetscObject)h,cook,t,class_name,descr,mansec,com,(PetscObjectFunction)des,(PetscObjectViewerFunction)vie) || \
    PetscLogObjectCreate(h) ||						\
    PetscLogObjectMemory(h, sizeof(struct tp) + sizeof(PetscOps) + sizeof(pops)))
 
 extern PetscErrorCode PetscComposedQuantitiesDestroy(PetscObject obj);
-extern PetscErrorCode PetscHeaderCreate_Private(PetscObject,PetscClassId,PetscInt,const char[],MPI_Comm,PetscErrorCode (*)(PetscObject*),PetscErrorCode (*)(PetscObject,PetscViewer));
+extern PetscErrorCode PetscHeaderCreate_Private(PetscObject,PetscClassId,PetscInt,const char[],const char[],const char[],MPI_Comm,PetscErrorCode (*)(PetscObject*),PetscErrorCode (*)(PetscObject,PetscViewer));
 
 /*@C
     PetscHeaderDestroy - Final step in destroying a PetscObject

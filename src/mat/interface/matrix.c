@@ -4819,7 +4819,7 @@ PetscErrorCode MatView_Private(Mat mat)
   PetscFunctionBegin;
   if (incall) PetscFunctionReturn(0);
   incall = PETSC_TRUE;
-  ierr = PetscOptionsBegin(((PetscObject)mat)->comm,((PetscObject)mat)->prefix,"Matrix Options","Mat");CHKERRQ(ierr);
+  ierr = PetscObjectOptionsBegin((PetscObject)mat);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-mat_view_info","Information on matrix size","MatView",flg1,&flg1,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-mat_view_info_detailed","Nonzeros in the matrix","MatView",flg2,&flg2,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-mat_view","Print matrix to stdout","MatView",flg3,&flg3,PETSC_NULL);CHKERRQ(ierr);

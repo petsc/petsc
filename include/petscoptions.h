@@ -107,9 +107,13 @@ $           currently set.
           PetscOptionsList(), PetscOptionsEList()
 
 M*/
-#define    PetscOptionsBegin(comm,prefix,mess,sec) 0; {\
+#define    PetscOptionsBegin(comm,prefix,mess,sec) 0; do {\
              for (PetscOptionsPublishCount=(PetscOptionsPublish?-1:1); PetscOptionsPublishCount<2; PetscOptionsPublishCount++) {\
              PetscErrorCode _5_ierr = PetscOptionsBegin_Private(comm,prefix,mess,sec);CHKERRQ(_5_ierr);
+
+#define PetscObjectOptionsBegin(obj) 0; do {                            \
+  for (PetscOptionsPublishCount=(PetscOptionsPublish?-1:1); PetscOptionsPublishCount<2; PetscOptionsPublishCount++) { \
+  PetscErrorCode _5_ierr = PetscObjectOptionsBegin_Private(obj);CHKERRQ(_5_ierr);
 
 /*MC
     PetscOptionsEnd - Ends a set of queries on the options database that are related and should be
@@ -132,9 +136,10 @@ M*/
           PetscOptionsList(), PetscOptionsEList()
 
 M*/
-#define    PetscOptionsEnd() _5_ierr = PetscOptionsEnd_Private();CHKERRQ(_5_ierr);}}
+#define    PetscOptionsEnd() _5_ierr = PetscOptionsEnd_Private();CHKERRQ(_5_ierr);}} while (0)
 
 extern PetscErrorCode  PetscOptionsBegin_Private(MPI_Comm,const char[],const char[],const char[]);
+extern PetscErrorCode  PetscObjectOptionsBegin_Private(PetscObject);
 extern PetscErrorCode  PetscOptionsEnd_Private(void);
 extern PetscErrorCode  PetscOptionsHead(const char[]);
 
@@ -217,5 +222,6 @@ typedef struct {
   char             *title;
   MPI_Comm         comm;
   PetscBool        printhelp,changedmethod,alreadyprinted;
+  PetscObject      object;
 } PetscOptionsObjectType;
 #endif

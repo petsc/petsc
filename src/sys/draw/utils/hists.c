@@ -59,7 +59,7 @@ PetscErrorCode  PetscDrawHGCreate(PetscDraw draw, int bins, PetscDrawHG *hist) {
   PetscValidHeaderSpecific(draw, PETSC_DRAW_CLASSID,1);
   PetscValidPointer(hist,3);
   ierr = PetscObjectGetComm((PetscObject) draw, &comm);CHKERRQ(ierr);
-  ierr = PetscHeaderCreate(h, _p_DrawHG, int, DRAWHG_CLASSID, 0, "PetscDrawHG", comm, PetscDrawHGDestroy, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(h, _p_DrawHG, int, DRAWHG_CLASSID, 0, "PetscDrawHG", "Histogram", "Draw", comm, PetscDrawHGDestroy, PETSC_NULL);CHKERRQ(ierr);
   h->view        = PETSC_NULL;
   h->destroy     = PETSC_NULL;
   h->win         = draw;

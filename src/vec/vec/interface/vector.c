@@ -238,7 +238,7 @@ PetscErrorCode  VecView_Private(Vec vec)
   PetscBool      flg = PETSC_FALSE;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsBegin(((PetscObject)vec)->comm,((PetscObject)vec)->prefix,"Vector Options","Vec");CHKERRQ(ierr);
+  ierr = PetscObjectOptionsBegin((PetscObject)vec);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-vec_view","Print vector to stdout","VecView",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
     if (flg) {
       PetscViewer viewer;
@@ -1410,7 +1410,7 @@ PetscErrorCode  VecSetFromOptions(Vec vec)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec,VEC_CLASSID,1);
 
-  ierr = PetscOptionsBegin(((PetscObject)vec)->comm, ((PetscObject)vec)->prefix, "Vector options", "Vec");CHKERRQ(ierr);
+  ierr = PetscObjectOptionsBegin((PetscObject)vec);CHKERRQ(ierr);
     /* Handle vector type options */
     ierr = VecSetTypeFromOptions_Private(vec);CHKERRQ(ierr);
 
