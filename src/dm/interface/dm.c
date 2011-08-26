@@ -162,7 +162,7 @@ PetscErrorCode  DMDestroy(DM *dm)
   ierr = ISLocalToGlobalMappingDestroy(&(*dm)->ltogmap);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingDestroy(&(*dm)->ltogmapb);CHKERRQ(ierr);
   ierr = PetscFree((*dm)->vectype);CHKERRQ(ierr);
-  
+  ierr = PetscFree((*dm)->mattype);CHKERRQ(ierr);
   /* if memory was published with AMS then destroy it */
   ierr = PetscObjectDepublish(*dm);CHKERRQ(ierr);
 
@@ -220,16 +220,22 @@ PetscErrorCode  DMSetUp(DM dm)
 @*/
 PetscErrorCode  DMSetFromOptions(DM dm)
 {
-  PetscBool      flg1 = PETSC_FALSE;
+  PetscBool      flg1 = PETSC_FALSE,flg;
   PetscErrorCode ierr;
+  char           mtype[256] = MATAIJ;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetBool(((PetscObject) dm)->prefix, "-dm_preallocate_only", &dm->prealloc_only, PETSC_NULL);CHKERRQ(ierr);
   if (dm->ops->setfromoptions) {
     ierr = (*dm->ops->setfromoptions)(dm);CHKERRQ(ierr);
   }
   ierr = PetscObjectOptionsBegin((PetscObject)dm);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-dm_view", "Information on DM", "DMView", flg1, &flg1, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsBool("-dm_preallocate_only","only preallocate matrix, but do not set column indices","DMSetMatrixPreallocateOnly",dm->prealloc_only,&dm->prealloc_only,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsList("-dm_mat_type","Matrix type","MatSetType",MatList,mtype,mtype,sizeof mtype,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = PetscFree(dm->mattype);CHKERRQ(ierr);
+      ierr = PetscStrallocpy(mtype,&dm->mattype);CHKERRQ(ierr);
+    }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   if (flg1) {
     ierr = DMView(dm, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
@@ -280,7 +286,7 @@ PetscErrorCode  DMView(DM dm,PetscViewer v)
     Output Parameter:
 .   vec - the global vector
 
-    Level: developer
+    Level: beginner
 
 .seealso DMDestroy(), DMView(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix()
 
@@ -307,7 +313,7 @@ PetscErrorCode  DMCreateGlobalVector(DM dm,Vec *vec)
     Output Parameter:
 .   vec - the local vector
 
-    Level: developer
+    Level: beginner
 
 .seealso DMDestroy(), DMView(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix()
 
@@ -539,7 +545,7 @@ PetscErrorCode  DMGetColoring(DM dm,ISColoringType ctype,const MatType mtype,ISC
     Output Parameter:
 .   mat - the empty Jacobian 
 
-    Level: developer
+    Level: beginner
 
     Notes: This properly preallocates the number of nonzeros in the sparse matrix so you 
        do not need to do it yourself. 
@@ -559,8 +565,6 @@ PetscErrorCode  DMGetColoring(DM dm,ISColoringType ctype,const MatType mtype,ISC
 PetscErrorCode  DMGetMatrix(DM dm,const MatType mtype,Mat *mat)
 {
   PetscErrorCode ierr;
-  char           ttype[256];
-  PetscBool      flg;
 
   PetscFunctionBegin;
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
@@ -568,15 +572,10 @@ PetscErrorCode  DMGetMatrix(DM dm,const MatType mtype,Mat *mat)
 #endif
   PetscValidHeaderSpecific(dm,DM_CLASSID,1);
   PetscValidPointer(mat,3);
-  ierr = PetscStrncpy(ttype,mtype,sizeof(ttype));CHKERRQ(ierr);
-  ttype[sizeof(ttype)-1] = 0;
-  ierr = PetscOptionsBegin(((PetscObject)dm)->comm,((PetscObject)dm)->prefix,"DM options","Mat");CHKERRQ(ierr);
-  ierr = PetscOptionsList("-dm_mat_type","Matrix type","MatSetType",MatList,ttype,ttype,sizeof(ttype),&flg);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();
-  if (flg || mtype) {
-    ierr = (*dm->ops->getmatrix)(dm,ttype,mat);CHKERRQ(ierr);
-  } else {                      /* Let the implementation decide */
-    ierr = (*dm->ops->getmatrix)(dm,PETSC_NULL,mat);CHKERRQ(ierr);
+  if (dm->mattype) {
+    ierr = (*dm->ops->getmatrix)(dm,dm->mattype,mat);CHKERRQ(ierr);
+  } else {
+    ierr = (*dm->ops->getmatrix)(dm,mtype,mat);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

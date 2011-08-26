@@ -53,6 +53,7 @@ struct _p_DM {
   Vec                    x;       /* location at which the functions/Jacobian are computed */  
   MatFDColoring          fd;      /* used by DMComputeJacobianDefault() */   
   VecType                vectype;  /* type of vector created with DMCreateLocalVector() and DMCreateGlobalVector() */
+  MatType                mattype;  /* type of matrix created with DMGetMatrix() */
   PetscInt               bs;
   ISLocalToGlobalMapping ltogmap,ltogmapb;
   PetscBool              prealloc_only; /* Flag indicating the DMGetMatrix() should only preallocate, not fill the matrix */

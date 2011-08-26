@@ -612,6 +612,8 @@ int main(int argc, char *argv[])
   ierr = DMDASetUniformCoordinates(dak, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);
   ierr = DMConvert(dau, DMMESH, &dmu);CHKERRQ(ierr);
   ierr = DMConvert(dak, DMMESH, &dmk);CHKERRQ(ierr);
+  ierr = DMSetOptionsPrefix(dmu, "u_");CHKERRQ(ierr);
+  ierr = DMSetOptionsPrefix(dmk, "k_");CHKERRQ(ierr);
   ierr = DMDestroy(&dau);CHKERRQ(ierr);
   ierr = DMDestroy(&dak);CHKERRQ(ierr);
 
@@ -647,9 +649,7 @@ int main(int argc, char *argv[])
   ierr = DMCompositeCreate(PETSC_COMM_WORLD, &pack);CHKERRQ(ierr);
   ierr = DMCompositeAddDM(pack, dmu);CHKERRQ(ierr);
   ierr = DMCompositeAddDM(pack, dmk);CHKERRQ(ierr);
-  ierr = PetscObjectSetOptionsPrefix((PetscObject) dmu, "u_");CHKERRQ(ierr);
-  ierr = PetscObjectSetOptionsPrefix((PetscObject) dmk, "k_");CHKERRQ(ierr);
-  ierr = PetscObjectSetOptionsPrefix((PetscObject) pack, "pack_");CHKERRQ(ierr);
+  ierr = DMSetOptionsPrefix(pack, "pack_");CHKERRQ(ierr);
 
   ierr = DMCreateGlobalVector(pack, &X);CHKERRQ(ierr);
   ierr = VecDuplicate(X, &F);CHKERRQ(ierr);

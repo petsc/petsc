@@ -343,6 +343,8 @@ int main(int argc, char *argv[])
 
   PetscInitialize(&argc,&argv,0,help);
   ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,-10,1,1,PETSC_NULL,&dau);CHKERRQ(ierr);
+  ierr = DMSetOptionsPrefix(dau,"u_");CHKERRQ(ierr);
+  ierr = DMSetFromOptions(dau);CHKERRQ(ierr);
   ierr = DMDACreateOwnershipRanges(dau);CHKERRQ(ierr); /* Ensure that the ownership ranges agree so that we can get a compatible grid for the coefficient */
   ierr = DMDAGetOwnershipRanges(dau,&lxu,0,0);CHKERRQ(ierr);
   ierr = DMDAGetInfo(dau,0, &m,0,0, &nprocs,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
@@ -350,16 +352,17 @@ int main(int argc, char *argv[])
   ierr = PetscMemcpy(lxk,lxu,nprocs*sizeof(*lxk));CHKERRQ(ierr);
   lxk[0]--;
   ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,m-1,1,1,lxk,&dak);CHKERRQ(ierr);
+  ierr = DMSetOptionsPrefix(dak,"k_");CHKERRQ(ierr);
+  ierr = DMSetFromOptions(dau);CHKERRQ(ierr);
   ierr = PetscFree(lxk);CHKERRQ(ierr);
 
   ierr = DMCompositeCreate(PETSC_COMM_WORLD,&pack);CHKERRQ(ierr);
+  ierr = DMSetOptionsPrefix(pack,"pack_");CHKERRQ(ierr);
   ierr = DMCompositeAddDM(pack,dau);CHKERRQ(ierr);
   ierr = DMCompositeAddDM(pack,dak);CHKERRQ(ierr);
   ierr = DMDASetFieldName(dau,0,"u");CHKERRQ(ierr);
   ierr = DMDASetFieldName(dak,0,"k");CHKERRQ(ierr);
-  ierr = PetscObjectSetOptionsPrefix((PetscObject)dau,"u_");CHKERRQ(ierr);
-  ierr = PetscObjectSetOptionsPrefix((PetscObject)dak,"k_");CHKERRQ(ierr);
-  ierr = PetscObjectSetOptionsPrefix((PetscObject)pack,"pack_");CHKERRQ(ierr);
+  ierr = DMSetFromOptions(pack);CHKERRQ(ierr);
 
   ierr = DMCreateGlobalVector(pack,&X);CHKERRQ(ierr);
   ierr = VecDuplicate(X,&F);CHKERRQ(ierr);
