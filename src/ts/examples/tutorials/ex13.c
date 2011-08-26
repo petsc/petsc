@@ -47,7 +47,7 @@ int main(int argc,char **argv)
   PetscReal      ftime,dt;
   MonitorCtx     usermonitor;       /* user-defined monitor context */
   AppCtx         user;              /* user-defined work context */
-  PetscBool      coloring;
+  PetscBool      coloring=PETSC_FALSE;
   MatFDColoring  matfdcoloring;
 
   PetscInitialize(&argc,&argv,(char *)0,help);

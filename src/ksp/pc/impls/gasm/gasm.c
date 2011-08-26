@@ -116,7 +116,7 @@ static PetscErrorCode PCView_GASM(PC pc,PetscViewer viewer)
   PetscErrorCode ierr;
   PetscMPIInt    rank, size;
   PetscInt       i,bsz;
-  PetscBool      iascii,isstring, print_subdomains;
+  PetscBool      iascii,isstring, print_subdomains=PETSC_FALSE;
   PetscViewer    sviewer;
 
 
