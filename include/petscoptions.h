@@ -104,13 +104,38 @@ $           currently set.
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
-          PetscOptionsList(), PetscOptionsEList()
+          PetscOptionsList(), PetscOptionsEList(), PetscObjectOptionsBegin()
 
 M*/
 #define    PetscOptionsBegin(comm,prefix,mess,sec) 0; do {\
              for (PetscOptionsPublishCount=(PetscOptionsPublish?-1:1); PetscOptionsPublishCount<2; PetscOptionsPublishCount++) {\
              PetscErrorCode _5_ierr = PetscOptionsBegin_Private(comm,prefix,mess,sec);CHKERRQ(_5_ierr);
 
+/*MC
+    PetscObjectOptionsBegin - Begins a set of queries on the options database that are related and should be
+     displayed on the same window of a GUI that allows the user to set the options interactively.
+
+   Synopsis: PetscErrorCode PetscObjectOptionsBegin(PetscObject obj)
+
+    Collective on PetscObject
+
+  Input Parameters:
+.   obj - object to set options for
+
+  Level: intermediate
+
+  Notes: Needs to be ended by a call the PetscOptionsEnd()
+         Can add subheadings with PetscOptionsHead()
+
+.seealso: PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(), PetscOptionsGetInt(),
+          PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsBool()
+          PetscOptionsInt(), PetscOptionsString(), PetscOptionsReal(), PetscOptionsBool(),
+          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
+          PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
+          PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
+          PetscOptionsList(), PetscOptionsEList()
+
+M*/
 #define PetscObjectOptionsBegin(obj) 0; do {                            \
   for (PetscOptionsPublishCount=(PetscOptionsPublish?-1:1); PetscOptionsPublishCount<2; PetscOptionsPublishCount++) { \
   PetscErrorCode _5_ierr = PetscObjectOptionsBegin_Private(obj);CHKERRQ(_5_ierr);
@@ -133,7 +158,7 @@ M*/
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
           PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
           PetscOptionsBoolGroupBegin(), PetscOptionsBoolGroup(), PetscOptionsBoolGroupEnd(),
-          PetscOptionsList(), PetscOptionsEList()
+          PetscOptionsList(), PetscOptionsEList(), PetscObjectOptionsBegin()
 
 M*/
 #define    PetscOptionsEnd() _5_ierr = PetscOptionsEnd_Private();CHKERRQ(_5_ierr);}} while (0)
