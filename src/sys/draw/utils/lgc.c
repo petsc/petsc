@@ -220,7 +220,7 @@ PetscErrorCode  PetscDrawLGSetColors(PetscDrawLG lg,const int *colors)
 #undef __FUNCT__  
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawLGSetLegend" 
-/*@
+/*@C
    PetscDrawLGSetLegend - sets the names of each curve plotted
 
    Logically Collective over PetscDrawLG
