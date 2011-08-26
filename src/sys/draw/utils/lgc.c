@@ -218,6 +218,45 @@ PetscErrorCode  PetscDrawLGSetColors(PetscDrawLG lg,const int *colors)
 }
 
 #undef __FUNCT__  
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawLGSetLegend" 
+/*@
+   PetscDrawLGSetLegend - sets the names of each curve plotted
+
+   Logically Collective over PetscDrawLG
+
+   Input Parameter:
++  lg - the line graph context.
+-  names - the names for each curve
+
+   Level: intermediate
+
+   Concepts: line graph^setting number of lines
+
+@*/
+PetscErrorCode  PetscDrawLGSetLegend(PetscDrawLG lg,const char *const *names)
+{
+  PetscErrorCode ierr;
+  PetscInt       i;
+
+  PetscFunctionBegin;
+  if (lg && ((PetscObject)lg)->classid == PETSC_DRAW_CLASSID) PetscFunctionReturn(0);
+  PetscValidHeaderSpecific(lg,DRAWLG_CLASSID,1);
+
+  if (lg->legend) {
+    for (i=0; i<lg->dim; i++) {
+      ierr = PetscFree(lg->legend[i]);CHKERRQ(ierr);
+    }
+    ierr = PetscFree(lg->legend);CHKERRQ(ierr);
+  }
+  ierr = PetscMalloc(lg->dim*sizeof(char**),&lg->legend);CHKERRQ(ierr);
+  for (i=0; i<lg->dim; i++) {
+    ierr = PetscStrallocpy(names[i],&lg->legend[i]);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "PetscDrawLGSetDimension" 
 /*@
    PetscDrawLGSetDimension - Change the number of lines that are to be drawn.
@@ -236,6 +275,7 @@ PetscErrorCode  PetscDrawLGSetColors(PetscDrawLG lg,const int *colors)
 PetscErrorCode  PetscDrawLGSetDimension(PetscDrawLG lg,PetscInt dim)
 {
   PetscErrorCode ierr;
+  PetscInt       i;
 
   PetscFunctionBegin;
   if (lg && ((PetscObject)lg)->classid == PETSC_DRAW_CLASSID) PetscFunctionReturn(0);
@@ -244,6 +284,13 @@ PetscErrorCode  PetscDrawLGSetDimension(PetscDrawLG lg,PetscInt dim)
   if (lg->dim == dim) PetscFunctionReturn(0);
 
   ierr    = PetscFree2(lg->x,lg->y);CHKERRQ(ierr);
+  if (lg->legend) {
+    for (i=0; i<lg->dim; i++) {
+      ierr = PetscFree(lg->legend[i]);CHKERRQ(ierr);
+    }
+    ierr = PetscFree(lg->legend);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(lg->colors);CHKERRQ(ierr);
   lg->dim = dim;
   ierr    = PetscMalloc2(dim*CHUNCKSIZE,PetscReal,&lg->x,dim*CHUNCKSIZE,PetscReal,&lg->y);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory(lg,2*dim*CHUNCKSIZE*sizeof(PetscReal));CHKERRQ(ierr);
@@ -297,6 +344,7 @@ PetscErrorCode  PetscDrawLGReset(PetscDrawLG lg)
 PetscErrorCode  PetscDrawLGDestroy(PetscDrawLG *lg)
 {
   PetscErrorCode ierr;
+  PetscInt       i;
 
   PetscFunctionBegin;
   if (!*lg) PetscFunctionReturn(0);
@@ -308,6 +356,12 @@ PetscErrorCode  PetscDrawLGDestroy(PetscDrawLG *lg)
   if (((PetscObject)(*lg))->classid == PETSC_DRAW_CLASSID) {
     ierr = PetscObjectDestroy((PetscObject*)lg);CHKERRQ(ierr);
     PetscFunctionReturn(0);
+  }
+  if ((*lg)->legend) {
+    for (i=0; i<(*lg)->dim; i++) {
+      ierr = PetscFree((*lg)->legend[i]);CHKERRQ(ierr);
+    }
+    ierr = PetscFree((*lg)->legend);CHKERRQ(ierr);
   }
   ierr = PetscFree((*lg)->colors);CHKERRQ(ierr);
   ierr = PetscDrawAxisDestroy(&(*lg)->axis);CHKERRQ(ierr);

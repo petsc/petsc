@@ -272,6 +272,7 @@ extern PetscErrorCode  PetscDrawLGDraw(PetscDrawLG);
 extern PetscErrorCode  PetscDrawLGPrint(PetscDrawLG);
 extern PetscErrorCode  PetscDrawLGReset(PetscDrawLG);
 extern PetscErrorCode  PetscDrawLGSetDimension(PetscDrawLG,PetscInt);
+extern PetscErrorCode  PetscDrawLGSetLegend(PetscDrawLG,const char *const*);
 extern PetscErrorCode  PetscDrawLGGetAxis(PetscDrawLG,PetscDrawAxis *);
 extern PetscErrorCode  PetscDrawLGGetDraw(PetscDrawLG,PetscDraw *);
 extern PetscErrorCode  PetscDrawLGIndicateDataPoints(PetscDrawLG);

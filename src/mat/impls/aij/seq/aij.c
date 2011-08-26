@@ -2921,7 +2921,10 @@ PetscErrorCode  MatInvertBlockDiagonal_SeqAIJ(Mat A,PetscScalar **values)
   PetscReal      shift = 0.0;
 
   PetscFunctionBegin;
-  if (a->ibdiagvalid) PetscFunctionReturn(0);
+  if (a->ibdiagvalid) {
+    if (values) *values = a->ibdiag;
+    PetscFunctionReturn(0);
+  }
   ierr = MatMarkDiagonal_SeqAIJ(A);CHKERRQ(ierr);
   if (!a->ibdiag) {
     ierr = PetscMalloc(bs2*mbs*sizeof(PetscScalar),&a->ibdiag);CHKERRQ(ierr);
