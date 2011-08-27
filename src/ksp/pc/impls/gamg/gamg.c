@@ -528,7 +528,7 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
     KSP smoother; PC subpc;
     ierr = PCMGGetSmoother( a_pc, lidx, &smoother ); CHKERRQ(ierr);
     ierr = KSPSetType( smoother, KSPCHEBYCHEV );CHKERRQ(ierr);
-    if( emaxs[level] > 0.0 ) emax = emaxs[level];
+    if( emaxs[level] > 0.0 ) emax=emaxs[level];
     else{ /* eigen estimate 'emax' */
       KSP eksp; Mat Lmat = Aarr[level];
       Vec bb, xx; PC pc;
@@ -547,7 +547,7 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
       ierr = KSPSetInitialGuessNonzero( eksp, PETSC_FALSE ); CHKERRQ(ierr);
       ierr = KSPSetOperators( eksp, Lmat, Lmat, DIFFERENT_NONZERO_PATTERN ); CHKERRQ( ierr );
       ierr = KSPGetPC( eksp, &pc );CHKERRQ( ierr );
-      ierr = PCSetType( pc, PETSC_GAMG_SMOOTHER ); CHKERRQ(ierr); /* should be same as above */
+      ierr = PCSetType( pc, PCPBJACOBI ); CHKERRQ(ierr); /* should be same as above */
       ierr = KSPSetTolerances( eksp, PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT, 10 );
       CHKERRQ(ierr);
       //ierr = KSPSetConvergenceTest( eksp, KSPSkipConverged, 0, 0 ); CHKERRQ(ierr);
@@ -557,8 +557,9 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
       ierr = KSPSolve( eksp, bb, xx ); CHKERRQ(ierr);
       ierr = KSPComputeExtremeSingularValues( eksp, &emax, &emin ); CHKERRQ(ierr);
       ierr = VecDestroy( &xx );       CHKERRQ(ierr);
-      ierr = VecDestroy( &bb );       CHKERRQ(ierr);
+      ierr = VecDestroy( &bb );       CHKERRQ(ierr); 
       ierr = KSPDestroy( &eksp );       CHKERRQ(ierr);
+      PetscPrintf(PETSC_COMM_WORLD,"\t\t\t%s max eigen=%e min=%e PC=%s\n",__FUNCT__,emax,emin,PETSC_GAMG_SMOOTHER);
     }
     {
       PetscInt N1, N0, tt;
@@ -566,7 +567,7 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
       ierr = MatGetSize( Aarr[level+1], &N0, &tt );       CHKERRQ(ierr);
       emin = 1.*emax/((PetscReal)N1/(PetscReal)N0); /* this should be about the coarsening rate */
       emax *= 1.05;
-PetscPrintf(PETSC_COMM_WORLD,"%s max eigen = %e min = %e\n",__FUNCT__,emax,emin);
+
     }
 
     ierr = KSPSetOperators( smoother, Aarr[level], Aarr[level], DIFFERENT_NONZERO_PATTERN );

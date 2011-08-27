@@ -1533,15 +1533,15 @@ PetscErrorCode createProlongation( const Mat a_Amat,
       ierr = KSPSetOperators( eksp, Lmat, Lmat, DIFFERENT_NONZERO_PATTERN );
       CHKERRQ( ierr );
       ierr = KSPGetPC( eksp, &pc );                              CHKERRQ( ierr );
-      ierr = PCSetType( pc, PETSC_GAMG_SMOOTHER ); CHKERRQ(ierr);
+      ierr = PCSetType( pc, PCPBJACOBI ); CHKERRQ(ierr); /* smoother */
       ierr = KSPSetTolerances(eksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,10);
       CHKERRQ(ierr);
       ierr = KSPSetNormType( eksp, KSP_NORM_NONE );                 CHKERRQ(ierr);
       ierr = KSPSetComputeSingularValues( eksp,PETSC_TRUE );        CHKERRQ(ierr);
       ierr = KSPSolve( eksp, bb, xx );                              CHKERRQ(ierr);
       ierr = KSPComputeExtremeSingularValues( eksp, &emax, &emin ); CHKERRQ(ierr);
-
-      ierr = VecDestroy( &xx );       CHKERRQ(ierr);
+      PetscPrintf(PETSC_COMM_WORLD,"\t\t\t%s max eigen=%e min=%e PC=%s\n",__FUNCT__,emax,emin,PCPBJACOBI);
+      ierr = VecDestroy( &xx );       CHKERRQ(ierr); 
       ierr = VecDestroy( &bb );       CHKERRQ(ierr);
       ierr = KSPDestroy( &eksp );     CHKERRQ(ierr);
     }
@@ -1550,7 +1550,7 @@ PetscErrorCode createProlongation( const Mat a_Amat,
       Mat Prol1, AA; Vec diag;
       ierr = MatDuplicate(a_Amat, MAT_COPY_VALUES, &AA); CHKERRQ(ierr); /*AIJ*/
       ierr = MatGetVecs( AA, &diag, 0 );    CHKERRQ(ierr);
-      ierr = MatGetDiagonal( AA, diag );    CHKERRQ(ierr);
+      ierr = MatGetDiagonal( AA, diag );    CHKERRQ(ierr); /* effectively PCJACOBI */
       ierr = VecReciprocal( diag );         CHKERRQ(ierr);
       ierr = MatDiagonalScale( AA, diag, 0 ); CHKERRQ(ierr);
       ierr = VecDestroy( &diag );           CHKERRQ(ierr);
