@@ -174,10 +174,10 @@ PetscErrorCode partitionLevel( Mat a_Amat_fine,
 
   /* Repartition Cmat_{k} and move colums of P^{k}_{k-1} and coordinates accordingly */
   ierr = MatGetSize( Cmat, &neq, &NN );CHKERRQ(ierr);
-#define MIN_EQ_PROC 1000
+#define MIN_EQ_PROC 2000
   nactive_procs = *a_active_proc;
   targ_npe = neq/MIN_EQ_PROC; /* hardwire min. number of eq/proc */
-#define TOP_GRID_LIM 1000
+#define TOP_GRID_LIM 2000
   if( targ_npe == 0 || neq < TOP_GRID_LIM ) new_npe = 1; /* chop coarsest grid */
   else if (targ_npe >= nactive_procs ) new_npe = nactive_procs; /* no change */
   else {
@@ -571,7 +571,7 @@ PetscPrintf(PETSC_COMM_WORLD,"%s max eigen = %e min = %e\n",__FUNCT__,emax,emin)
 
     ierr = KSPSetOperators( smoother, Aarr[level], Aarr[level], DIFFERENT_NONZERO_PATTERN );
     ierr = KSPChebychevSetEigenvalues( smoother, emax, emin );CHKERRQ(ierr);
-    ierr = KSPSetTolerances(smoother,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,2); CHKERRQ(ierr);
+    /*ierr = KSPSetTolerances(smoother,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,2); CHKERRQ(ierr);*/
     ierr = KSPGetPC( smoother, &subpc ); CHKERRQ(ierr);
     ierr = PCSetType( subpc, PETSC_GAMG_SMOOTHER ); CHKERRQ(ierr);
     ierr = KSPSetNormType( smoother, KSP_NORM_NONE ); CHKERRQ(ierr);

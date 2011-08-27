@@ -3802,7 +3802,7 @@ PetscErrorCode  MatConvert(Mat mat, const MatType newtype,MatReuse reuse,Mat *M)
       ierr = PetscStrcat(convname,((PetscObject)mat)->type_name);CHKERRQ(ierr);
       ierr = PetscStrcat(convname,"_");CHKERRQ(ierr);
       ierr = PetscStrcat(convname,prefix[i]);CHKERRQ(ierr);
-      ierr = PetscStrcat(convname,newtype);CHKERRQ(ierr);
+      ierr = PetscStrcat(convname,issame?((PetscObject)mat)->type_name:newtype);CHKERRQ(ierr);
       ierr = PetscStrcat(convname,"_C");CHKERRQ(ierr);
       ierr = PetscObjectQueryFunction((PetscObject)mat,convname,(void (**)(void))&conv);CHKERRQ(ierr);
       if (conv) goto foundconv;

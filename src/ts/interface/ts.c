@@ -1762,16 +1762,30 @@ PetscErrorCode TSInterpolate(TS ts,PetscReal t,Vec X)
 @*/
 PetscErrorCode  TSStep(TS ts)
 {
+  PetscReal      ptime_prev;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_CLASSID,1);
-
   ierr = TSSetUp(ts);CHKERRQ(ierr);
 
-  ierr = PetscLogEventBegin(TS_Step, ts, 0, 0, 0);CHKERRQ(ierr);
+  ts->reason = TS_CONVERGED_ITERATING;
+
+  ptime_prev = ts->ptime;
+  ierr = PetscLogEventBegin(TS_Step,ts,0,0,0);CHKERRQ(ierr);
   ierr = (*ts->ops->step)(ts);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(TS_Step, ts, 0, 0, 0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(TS_Step,ts,0,0,0);CHKERRQ(ierr);
+  ts->time_step_prev = ts->ptime - ptime_prev;
+
+  if (ts->reason < 0) {
+    if (ts->errorifstepfailed) SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_NOT_CONVERGED,"TSStep has failed");
+  } else if (!ts->reason) {
+    if (ts->steps >= ts->max_steps)
+      ts->reason = TS_CONVERGED_ITS;
+    else if (ts->ptime >= ts->max_time)
+      ts->reason = TS_CONVERGED_TIME;
+  }
+
   PetscFunctionReturn(0);
 }
 
@@ -1784,7 +1798,7 @@ PetscErrorCode  TSStep(TS ts)
 
    Input Parameter:
 +  ts - the TS context obtained from TSCreate()
--  x - the solution vector, or PETSC_NULL if it was set with TSSetSolution()
+-  x - the solution vector
 
    Output Parameter:
 .  ftime - time of the state vector x upon completion
@@ -1802,7 +1816,6 @@ PetscErrorCode  TSStep(TS ts)
 @*/
 PetscErrorCode TSSolve(TS ts,Vec x,PetscReal *ftime)
 {
-  PetscInt       i;
   PetscBool      flg;
   char           filename[PETSC_MAX_PATH_LEN];
   PetscViewer    viewer;
@@ -1815,12 +1828,10 @@ PetscErrorCode TSSolve(TS ts,Vec x,PetscReal *ftime)
     if (!ts->vec_sol || x == ts->vec_sol) {
       Vec y;
       ierr = VecDuplicate(x,&y);CHKERRQ(ierr);
-      ierr = VecCopy(x,y);CHKERRQ(ierr);
       ierr = TSSetSolution(ts,y);CHKERRQ(ierr);
       ierr = VecDestroy(&y);CHKERRQ(ierr); /* grant ownership */
-    } else {
-      ierr = VecCopy(x,ts->vec_sol);CHKERRQ(ierr);
     }
+    ierr = VecCopy(x,ts->vec_sol);CHKERRQ(ierr);
   } else {
     ierr = TSSetSolution(ts,x);CHKERRQ(ierr);
   }
@@ -1832,37 +1843,29 @@ PetscErrorCode TSSolve(TS ts,Vec x,PetscReal *ftime)
   ts->num_snes_failures = 0;
   ts->reject = 0;
   ts->reason = TS_CONVERGED_ITERATING;
-  ierr = TSMonitor(ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
 
   if (ts->ops->solve) {         /* This private interface is transitional and should be removed when all implementations are updated. */
     ierr = (*ts->ops->solve)(ts);CHKERRQ(ierr);
     ierr = VecCopy(ts->vec_sol,x);CHKERRQ(ierr);
     if (ftime) *ftime = ts->ptime;
   } else {
-    i = 0;
-    if (i >= ts->max_steps) ts->reason = TS_CONVERGED_ITS;
-    else if (ts->ptime >= ts->max_time) ts->reason = TS_CONVERGED_TIME;
     /* steps the requested number of timesteps. */
+    ierr = TSMonitor(ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
+    if (ts->steps >= ts->max_steps)
+      ts->reason = TS_CONVERGED_ITS;
+    else if (ts->ptime >= ts->max_time)
+      ts->reason = TS_CONVERGED_TIME;
     while (!ts->reason) {
       ierr = TSPreStep(ts);CHKERRQ(ierr);
       ierr = TSStep(ts);CHKERRQ(ierr);
-      if (ts->reason < 0) {
-        if (ts->errorifstepfailed) SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_NOT_CONVERGED,"TSStep has failed");
-      } else if (++i >= ts->max_steps) {
-        ts->reason = TS_CONVERGED_ITS;
-      } else if (ts->ptime >= ts->max_time) {
-        ts->reason = TS_CONVERGED_TIME;
-      }
       ierr = TSPostStep(ts);CHKERRQ(ierr);
       ierr = TSMonitor(ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
     }
-    if (ts->exact_final_time && ts->ptime >= ts->max_time) {
+    if (ts->exact_final_time && ts->ptime > ts->max_time) {
       ierr = TSInterpolate(ts,ts->max_time,x);CHKERRQ(ierr);
       if (ftime) *ftime = ts->max_time;
     } else {
-      if (x != ts->vec_sol) {
-        ierr = VecCopy(ts->vec_sol,x);CHKERRQ(ierr);
-      }
+      ierr = VecCopy(ts->vec_sol,x);CHKERRQ(ierr);
       if (ftime) *ftime = ts->ptime;
     }
   }

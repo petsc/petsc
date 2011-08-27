@@ -365,7 +365,6 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
   ierr = VecMAXPY(ts->vec_sol,s,w,YdotRHS);CHKERRQ(ierr);
 
   ts->ptime += ts->time_step;
-  ts->time_step_prev = ts->time_step;
   ts->time_step = next_time_step;
   ts->steps++;
   PetscFunctionReturn(0);
