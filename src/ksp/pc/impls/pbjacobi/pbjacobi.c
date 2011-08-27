@@ -141,6 +141,34 @@ static PetscErrorCode PCApply_PBJacobi_5(PC pc,Vec x,Vec y)
   ierr = PetscLogFlops(45.0*m);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+#undef __FUNCT__  
+#define __FUNCT__ "PCApply_PBJacobi_6"
+static PetscErrorCode PCApply_PBJacobi_6(PC pc,Vec x,Vec y)
+{
+  PC_PBJacobi     *jac = (PC_PBJacobi*)pc->data;
+  PetscErrorCode  ierr;
+  PetscInt        i,m = jac->mbs;
+  const MatScalar *diag = jac->diag;
+  PetscScalar     x0,x1,x2,x3,x4,x5,*xx,*yy;
+  
+  PetscFunctionBegin;
+  ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
+  ierr = VecGetArray(y,&yy);CHKERRQ(ierr);
+  for (i=0; i<m; i++) {
+    x0 = xx[6*i]; x1 = xx[6*i+1]; x2 = xx[6*i+2]; x3 = xx[6*i+3]; x4 = xx[6*i+4]; x5 = xx[6*i+5];
+    yy[6*i]   = diag[0]*x0 + diag[6]*x1  + diag[12]*x2  + diag[18]*x3 + diag[24]*x4 + diag[30]*x5;
+    yy[6*i+1] = diag[1]*x0 + diag[7]*x1  + diag[13]*x2  + diag[19]*x3 + diag[25]*x4 + diag[31]*x5;
+    yy[6*i+2] = diag[2]*x0 + diag[8]*x1  + diag[14]*x2  + diag[20]*x3 + diag[26]*x4 + diag[32]*x5;
+    yy[6*i+3] = diag[3]*x0 + diag[9]*x1  + diag[15]*x2  + diag[21]*x3 + diag[27]*x4 + diag[33]*x5;
+    yy[6*i+4] = diag[4]*x0 + diag[10]*x1 + diag[16]*x2  + diag[22]*x3 + diag[28]*x4 + diag[34]*x5;
+    yy[6*i+5] = diag[5]*x0 + diag[11]*x1 + diag[17]*x2  + diag[23]*x3 + diag[29]*x4 + diag[35]*x5;
+    diag     += 36;
+  }
+  ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
+  ierr = VecRestoreArray(y,&yy);CHKERRQ(ierr);
+  ierr = PetscLogFlops(66.0*m);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 /* -------------------------------------------------------------------------- */
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetUp_PBJacobi"
@@ -171,6 +199,9 @@ static PetscErrorCode PCSetUp_PBJacobi(PC pc)
       break;
     case 5:
       pc->ops->apply = PCApply_PBJacobi_5;
+      break;
+    case 6:
+      pc->ops->apply = PCApply_PBJacobi_6;
       break;
     default: 
       SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_SUP,"not supported for block size %D",jac->bs);

@@ -14,7 +14,7 @@ extern PetscErrorCode createProlongation( const Mat, const PetscReal [], const P
 enum tag {SET1,SET2,SET3,SET4,SET5,SET6,FIND_V,SET7,SET8,SET9,SET10,SET11,SET12,SET13,NUM_SET};
 extern PetscLogEvent gamg_setup_stages[NUM_SET];
 
-#define PETSC_GAMG_SMOOTHER PCJACOBI
+#define PETSC_GAMG_SMOOTHER PCPBJACOBI
 
 #endif
 
