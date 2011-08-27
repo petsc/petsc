@@ -29,6 +29,7 @@ PetscErrorCode PetscDrawLine_X(PetscDraw draw,PetscReal xl,PetscReal yl,PetscRea
   XiSetColor(XiWin,cl);
   x1 = XTRANS(draw,XiWin,xl);   x2  = XTRANS(draw,XiWin,xr); 
   y_1 = YTRANS(draw,XiWin,yl);   y2  = YTRANS(draw,XiWin,yr); 
+  if (x1 == x2 && y_1 == y2) PetscFunctionReturn(0);
   XDrawLine(XiWin->disp,XiDrawable(XiWin),XiWin->gc.set,x1,y_1,x2,y2);
   PetscFunctionReturn(0);
 }
@@ -44,6 +45,7 @@ PetscErrorCode PetscDrawArrow_X(PetscDraw draw,PetscReal xl,PetscReal yl,PetscRe
   XiSetColor(XiWin,cl);
   x1 = XTRANS(draw,XiWin,xl);   x2  = XTRANS(draw,XiWin,xr); 
   y_1 = YTRANS(draw,XiWin,yl);   y2  = YTRANS(draw,XiWin,yr); 
+  if (x1 == x2 && y_1 == y2) PetscFunctionReturn(0);
   XDrawLine(XiWin->disp,XiDrawable(XiWin),XiWin->gc.set,x1,y_1,x2,y2);
   if (x1 == x2 && PetscAbs(y_1 - y2) > 7) {
     if (y2 > y_1) {

@@ -9,23 +9,31 @@ static char help[] = "Solves biharmonic equation in 1d.\n";
 
 Evolve the biharmonic heat equation: 
 ---------------
-./biharmonic -ts_monitor -snes_monitor -ts_monitor_solution  -pc_type lu  -draw_pause .1 -snes_converged_reason -ts_monitor_solution_initial -wait   -ts_type beuler  -da_refine 5
+./biharmonic -ts_monitor -snes_monitor   -pc_type lu  -draw_pause .1 -snes_converged_reason  -wait   -ts_type beuler  -da_refine 5
 
 Evolve with the restriction that -1 <= u <= 1; i.e. as a variational inequality
 ---------------
-./biharmonic -ts_monitor -snes_monitor -ts_monitor_solution  -pc_type lu  -draw_pause .1 -snes_converged_reason -ts_monitor_solution_initial -wait   -ts_type beuler   -da_refine 5 -vi 
+./biharmonic -ts_monitor -snes_monitor   -pc_type lu  -draw_pause .1 -snes_converged_reason  -wait   -ts_type beuler   -da_refine 5 -vi 
 
 Add a simple term to the right hand side so that the bulge grows/expands with time
 ---------------
-./biharmonic -ts_monitor -snes_monitor -ts_monitor_solution -pc_type lu  -draw_pause .1  -snes_converged_reason  -ts_monitor_solution_initial -wait   -ts_type beuler   -da_refine 5 -vi -growth
+./biharmonic -ts_monitor -snes_monitor  -pc_type lu  -draw_pause .1  -snes_converged_reason  -wait   -ts_type beuler   -da_refine 5 -vi -growth
 
    u_t =  kappa \Delta \Delta  6.*u*(u_x)^2 + (3*u^2 - 12) \Delta u
     -1 <= u <= 1 
     Periodic boundary conditions
 
-Evolve the Cahn-Hillard equations:
+Evolve the Cahn-Hillard equations: double well
 ---------------
-./biharmonic -ts_monitor -snes_monitor -ts_monitor_solution  -pc_type lu  -draw_pause .1 -snes_converged_reason  -ts_monitor_solution_initial -wait   -ts_type beuler    -da_refine 6 -vi  -kappa .00001 -ts_dt 5.96046e-06 -cahn-hillard
+./biharmonic -ts_monitor -snes_monitor   -pc_type lu  -draw_pause .1 -snes_converged_reason   -wait   -ts_type beuler    -da_refine 6 -vi  -kappa .00001 -ts_dt 5.96046e-06 -cahn-hillard
+
+Evolve the Cahn-Hillard equations: double obstacle
+---------------
+./biharmonic -ts_monitor -snes_monitor  -pc_type lu  -draw_pause .1 -snes_converged_reason   -wait   -ts_type beuler    -da_refine 5 -vi  -kappa .00001 -ts_dt 5.96046e-06 -cahn-hillard -energy 2 -snes_ls_monitor   -vi 
+
+Evolve the Cahn-Hillard equations: logarithmic
+---------------
+./biharmonic -ts_monitor -snes_monitor  -pc_type lu  --snes_converged_reason  -wait   -ts_type beuler    -da_refine 5 -vi  -kappa .00001 -ts_dt 5.96046e-06 -cahn-hillard -energy 3 -snes_ls_monitor -theta .00000001  -vi 
 
 
 */
@@ -33,7 +41,7 @@ Evolve the Cahn-Hillard equations:
 #include <petscts.h>
 
 extern PetscErrorCode FormFunction(TS,PetscReal,Vec,Vec,void*),FormInitialSolution(DM,Vec),MyMonitor(TS,PetscInt,PetscReal,Vec,void*);
-                                                                                          typedef struct {PetscDrawLG lg;PetscBool growth;PetscBool cahnhillard;PetscReal kappa;PetscInt energy;PetscReal tol;PetscReal theta;PetscReal theta_c} UserCtx;
+typedef struct {PetscBool growth;PetscBool cahnhillard;PetscReal kappa;PetscInt energy;PetscReal tol;PetscReal theta,theta_c;} UserCtx;
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -52,7 +60,7 @@ int main(int argc,char **argv)
   PetscBool              wait,vi = PETSC_FALSE;
   Vec                    ul,uh;
   UserCtx                ctx;
-  int                    colors[] = {PETSC_DRAW_YELLOW,PETSC_DRAW_RED,PETSC_DRAW_RED,PETSC_DRAW_BLUE,PETSC_DRAW_BLUE};  
+
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -140,13 +148,6 @@ int main(int argc,char **argv)
   ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRQ(ierr);
   ierr = TSSetSolution(ts,x);CHKERRQ(ierr);
 
-  ierr = PetscViewerDrawGetDrawLG(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),1,&ctx.lg);CHKERRQ(ierr);
-  if (ctx.cahnhillard) {
-    ierr = PetscDrawLGSetDimension(ctx.lg,5);CHKERRQ(ierr);
-  } else {
-    ierr = PetscDrawLGSetDimension(ctx.lg,3);CHKERRQ(ierr);
-  }
-  ierr = PetscDrawLGSetColors(ctx.lg,colors);CHKERRQ(ierr);
   ierr = TSMonitorSet(ts,MyMonitor,&ctx,PETSC_NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -206,7 +207,7 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec F,void *ptr)
   PetscScalar    *x,*f,c,r,l;
   Vec            localX;
   UserCtx        *ctx = (UserCtx*)ptr;
-  PetscReal      tol=ctx->tol,theta=ctx->theta,theta_c=ctx->theta_c;
+  PetscReal      tol = ctx->tol, theta=ctx->theta,theta_c=ctx->theta_c;
 
   PetscFunctionBegin;
   ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
@@ -256,10 +257,10 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec F,void *ptr)
         f[i] += -(x[i-1] + x[i+1] - 2.0*x[i])*sx;
           break;
       case 3: // logarithmic
-        if (x[i] < -1.0 + 2.0*ctx->tol) {
-          f[i] += 2.0*theta*(2.0*ctx->tol-1.0)/(16.0*(ctx->tol-ctx->tol*ctx->tol)*(ctx->tol-ctx->tol*ctx->tol))*.25*(x[i+1] - x[i-1])*(x[i+1] - x[i-1])*sx + ( .25*theta/(ctx->tol-ctx->tol*ctx->tol) - theta_c)*(x[i-1] + x[i+1] - 2.0*x[i])*sx;
-        } else if (x[i] > 1.0 - 2.0*ctx->tol) {
-          f[i] += 2.0*theta*(-2.0*ctx->tol+1.0)/(16.0*(ctx->tol-ctx->tol*ctx->tol)*(ctx->tol-ctx->tol*ctx->tol))*.25*(x[i+1] - x[i-1])*(x[i+1] - x[i-1])*sx + ( .25*theta/(ctx->tol-ctx->tol*ctx->tol) - theta_c)*(x[i-1] + x[i+1] - 2.0*x[i])*sx;
+        if (x[i] < -1.0 + 2.0*tol) {
+          f[i] += 2.0*theta*(2.0*tol-1.0)/(16.0*(tol-tol*tol)*(tol-tol*tol))*.25*(x[i+1] - x[i-1])*(x[i+1] - x[i-1])*sx + (.25*theta/(tol-tol*tol) - theta_c)*(x[i-1] + x[i+1] - 2.0*x[i])*sx;
+        } else if (x[i] > 1.0 - 2.0*tol) {
+          f[i] += 2.0*theta*(-2.0*tol+1.0)/(16.0*(tol-tol*tol)*(tol-tol*tol))*.25*(x[i+1] - x[i-1])*(x[i+1] - x[i-1])*sx + (.25*theta/(tol-tol*tol) - theta_c)*(x[i-1] + x[i+1] - 2.0*x[i])*sx;
         } else {
           f[i] += 2.0*theta*x[i]/((1.0-x[i]*x[i])*(1.0-x[i]*x[i]))*.25*(x[i+1] - x[i-1])*(x[i+1] - x[i-1])*sx + (theta/(1.0-x[i]*x[i]) - theta_c)*(x[i-1] + x[i+1] - 2.0*x[i])*sx;
         }
@@ -331,134 +332,72 @@ PetscErrorCode FormInitialSolution(DM da,Vec U)
 */
 PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
 {
-  UserCtx        *ctx = (UserCtx*)ptr;
-  PetscDrawLG    lg = (PetscDrawLG)ctx->lg;
-  PetscErrorCode ierr;
-  PetscScalar    *u,c,r,l;
-  PetscInt       Mx,i,xs,xm,cnt;
-  PetscReal      x,y,y_pm[2],hx,pause,sx,len,max,maxe,xx[5],yy[5];
-  PetscDraw      draw;
-  Vec            localU;
-  DM             da;
-  int            cl;
-  PetscReal      tol=ctx->tol,theta=ctx->theta,theta_c=ctx->theta_c;
+  UserCtx                   *ctx = (UserCtx*)ptr;
+  PetscDrawLG               lg;
+  PetscErrorCode            ierr;
+  PetscScalar               *u,l,r,c;
+  PetscInt                  Mx,i,xs,xm,cnt;
+  PetscReal                 x,y,hx,pause,sx,len,max,xx[4],yy[4],yup,ydown,y2,len2;
+  PetscDraw                 draw;
+  Vec                       localU;
+  DM                        da;
+  int                       colors[] = {PETSC_DRAW_YELLOW,PETSC_DRAW_RED,PETSC_DRAW_BLUE,PETSC_DRAW_PLUM,PETSC_DRAW_BLACK};
+  const char *const         legend[3][3] = {{"-kappa (\\grad u,\\grad u)","(1 - u^2)^2"},{"-kappa (\\grad u,\\grad u)","(1 - u^2)"},{"-kappa (\\grad u,\\grad u)","logarithmic"}};
+  PetscDrawAxis             axis;
+  static PetscDrawViewPorts *ports = 0;
+  PetscReal                 tol = ctx->tol, theta=ctx->theta,theta_c=ctx->theta_c;
+
 
   PetscFunctionBegin;
   ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
   ierr = DMGetLocalVector(da,&localU);CHKERRQ(ierr);
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
-                        PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
+                        PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-  hx     = 1.0/(PetscReal)Mx; sx = 1.0/(hx*hx); cnt = Mx/200;
+  hx     = 1.0/(PetscReal)Mx; sx = 1.0/(hx*hx); 
   ierr = DMGlobalToLocalBegin(da,U,INSERT_VALUES,localU);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(da,U,INSERT_VALUES,localU);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,localU,&u);CHKERRQ(ierr);
- 
-  /*
-      Plot the solution, energies and forces
-  */
-  maxe = 0;
-  max = 0;
-  for (i=0; i<Mx; i++) {
-    len   = PetscRealPart(.25*ctx->kappa*(u[i-1] - u[i+1])*(u[i-1] - u[i+1])*sx);
-    maxe  = PetscMax(maxe,len);
-    if (ctx->cahnhillard) {
-      switch (ctx->energy) {
-      case 1: // double well
-        len   = .25*PetscRealPart((1. - u[i]*u[i])*(1. - u[i]*u[i]));
-        break;
-      case 2: // double obstacle 
-        len = .5*PetscRealPart(1. - u[i]*u[i]);
-        break;
-      case 3:
-        if (u[i] < -1.0 + 2.0*tol) {
-          len = .5*theta*(2.0*tol*log(tol) + (1.0-u[i])*log((1-u[i])/2.0)) + .5*theta_c*(1.0-u[i]*u[i]);
-        }
-        else if (u[i] > 1.0 - 2.0*tol) {
-          len = .5*theta*((1.0+u[i])*log((1.0+u[i])/2.0) + 2.0*tol*log(tol) ) + .5*theta_c*(1.0-u[i]*u[i]);
-        } else {
-          len = .5*theta*((1.0+u[i])*log((1.0+u[i])/2.0) + (1.0-u[i])*log((1.0-u[i])/2.0)) + .5*theta_c*(1.0-u[i]*u[i]);
-        }
-        break;
-      }
-      maxe  = PetscMax(maxe,len);
-    }
-    c = (u[i-1] + u[i+1] - 2.0*u[i])*sx;
-    r = (u[i] + u[i+2] - 2.0*u[i+1])*sx;
-    l = (u[i-2] + u[i] - 2.0*u[i-1])*sx;
-    len = PetscAbs(-ctx->kappa*(l + r - 2.0*c)*sx); 
-    max  = PetscMax(max,len);
-    if (ctx->cahnhillard) {
-      switch (ctx->energy) {
-      case 1: // double well
-        len   = PetscAbs( 6.*.25*u[i]*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (3.*u[i]*u[i] - 1.)*(u[i-1] + u[i+1] - 2.0*u[i])*sx);
-      break;
-      case 2: // double obstacle
-        len   = PetscAbs(-(u[i-1] + u[i+1] - 2.0*u[i])*sx);
-          break;
-      case 3: // logarithmic
-        if (u[i] < -1.0 + 2.0*tol) {
-          len = PetscAbs(2.0*theta*(2.0*tol-1.0)/(16.0*(tol-tol*tol)*(tol-tol*tol))*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + ( .25*theta/(tol-tol*tol) - theta_c)*(u[i-1] + u[i+1] - 2.0*u[i])*sx);
-        } else if (u[i] > 1.0 - 2.0*tol) {
-          len = PetscAbs(2.0*theta*(-2.0*tol+1.0)/(16.0*(tol-tol*tol)*(tol-tol*tol))*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + ( .25*theta/(tol-tol*tol) - theta_c)*(u[i-1] + u[i+1] - 2.0*u[i])*sx);
-        } else {
-          len = PetscAbs(- theta_c*(u[i-1] + u[i+1] - 2.0*u[i])*sx);
-          max = PetscMax(max,len);
-          len = PetscAbs(2.0*theta*u[i]/((1.0-u[i]*u[i])*(1.0-u[i]*u[i]))*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (theta/(1.0-u[i]*u[i]))*(u[i-1] + u[i+1] - 2.0*u[i])*sx);
-        }
-        break;
-      }
-      max   = PetscMax(max,len);
-    }
-    x   += hx;
-    //if (max > 7200150000.0)
-    //printf("max very big when i = %d\n",i);
-  }
 
+  ierr = PetscViewerDrawGetDrawLG(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),1,&lg);CHKERRQ(ierr);
   ierr = PetscDrawLGGetDraw(lg,&draw);CHKERRQ(ierr);
   ierr = PetscDrawCheckResizedWindow(draw);CHKERRQ(ierr);
-  ierr = PetscDrawLGReset(lg);
-  ierr = PetscDrawLGSetLimits(lg,0.0,1,-2.0,3.2);CHKERRQ(ierr);
-  x = 0.;
-  /*
-   yy[0] : phase variable u
-   yy[1] : pointwise value of the integrand of the energy functional,
-           penalizes large gradients
-   yy[3] : pointwise value of the integrand of the energy functional,
-           homogeneous free energy
-   yy[2] : right-hand side of u_t, corresponding to y[1]
-   yy[4] : right-hand side of u_t, corresponding to y[3]
-           
-           
-   */
-  for (i=0; i<Mx; i++) {
-    xx[0] = xx[1] = xx[2] = xx[3] = xx[4] = x;
-    yy[0] = PetscRealPart(u[i]);
-    yy[1] = .5*PetscRealPart(.25*ctx->kappa*(u[i-1] - u[i+1])*(u[i-1] - u[i+1])*sx/maxe) + 1.6;
-    c = (u[i-1] + u[i+1] - 2.0*u[i])*sx;
-    r = (u[i] + u[i+2] - 2.0*u[i+1])*sx;
-    l = (u[i-2] + u[i] - 2.0*u[i-1])*sx;
-    yy[2] = -.5*ctx->kappa*(l + r - 2.0*c)*sx/max + 2.6;
+  if (!ports) {
+    ierr = PetscDrawViewPortsCreateRect(draw,1,3,&ports);CHKERRQ(ierr);
+  }
+  ierr = PetscDrawLGGetAxis(lg,&axis);CHKERRQ(ierr);
+  ierr = PetscDrawLGReset(lg);CHKERRQ(ierr);
+
+  xx[0] = 0.0; xx[1] = 1.0; cnt = 2;
+  ierr = PetscOptionsGetRealArray(PETSC_NULL,"-zoom",xx,&cnt,PETSC_NULL);CHKERRQ(ierr);
+  xs = xx[0]/hx; xm = (xx[1] - xx[0])/hx;
+
+  /* 
+      Plot the  energies 
+  */
+  ierr = PetscDrawLGSetDimension(lg,1 + (ctx->cahnhillard ? 1 : 0) + (ctx->energy == 3));CHKERRQ(ierr);
+  ierr = PetscDrawLGSetColors(lg,colors+1);CHKERRQ(ierr);
+  ierr = PetscDrawViewPortsSet(ports,2);CHKERRQ(ierr);
+  x   = hx*xs;
+  for (i=xs; i<xs+xm; i++) {
+    xx[0] = xx[1]  = xx[2] = x;
+    yy[0] = PetscRealPart(.25*ctx->kappa*(u[i-1] - u[i+1])*(u[i-1] - u[i+1])*sx);
     if (ctx->cahnhillard) {
       switch (ctx->energy) {
       case 1: // double well
-        yy[3] = .5*.25*PetscRealPart((1. - u[i]*u[i])*(1. - u[i]*u[i])/maxe) + 1.6;
-        yy[4] = .5*(6.*.25*u[i]*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (3.*u[i]*u[i] - 1.)*(u[i-1] + u[i+1] - 2.0*u[i])*sx)/max + 2.6;
+        yy[1]   = .25*PetscRealPart((1. - u[i]*u[i])*(1. - u[i]*u[i]));
         break;
-      case 2: // double obstacle
-        yy[3] = .5*.5*PetscRealPart((1. - u[i]*u[i])/maxe) + 1.6;
-        yy[4] = .5*(-(u[i-1] + u[i+1] - 2.0*u[i])*sx/max) + 2.6;
+      case 2: // double obstacle 
+        yy[1] = .5*PetscRealPart(1. - u[i]*u[i]);
         break;
-      case 3: // logarithmic
+      case 3:
+        yy[1] = .5*theta_c*(1.0-u[i]*u[i]);
         if (u[i] < -1.0 + 2.0*tol) {
-          yy[3] = .5*PetscRealPart(.5*theta*(2.0*tol*log(tol) + (1.0-u[i])*log((1-u[i])/2.0)) + .5*theta_c*(1.0-u[i]*u[i]))/maxe + 1.6;
-          yy[4] = .5*(2.0*theta*(2.0*tol-1.0)/(16.0*(tol-tol*tol)*(tol-tol*tol))*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + ( .25*theta/(tol-tol*tol) - theta_c)*(u[i-1] + u[i+1] - 2.0*u[i])*sx)/max + 2.6;
+          yy[2] = .5*theta*(2.0*tol*log(tol) + (1.0-u[i])*log((1-u[i])/2.0));
         } else if (u[i] > 1.0 - 2.0*tol) {
-          yy[3] = .5*PetscRealPart(.5*theta*((1.0+u[i])*log((1.0+u[i])/2.0) + 2.0*tol*log(tol) ) + .5*theta_c*(1.0-u[i]*u[i]))/maxe + 1.6;
-          yy[4] = .5*(2.0*theta*(-2.0*tol+1.0)/(16.0*(tol-tol*tol)*(tol-tol*tol))*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + ( .25*theta/(tol-tol*tol) - theta_c)*(u[i-1] + u[i+1] - 2.0*u[i])*sx)/max + 2.6;
+          yy[2] = .5*theta*((1.0+u[i])*log((1.0+u[i])/2.0) + 2.0*tol*log(tol));
         } else {
-          yy[3] = .5*PetscRealPart(.5*theta*((1.0+u[i])*log((1.0+u[i])/2.0) + (1.0-u[i])*log((1.0-u[i])/2.0)) + .5*theta_c*(1.0-u[i]*u[i]))/maxe + 1.6;
-          yy[4] = .5*(2.0*theta*u[i]/((1.0-u[i]*u[i])*(1.0-u[i]*u[i]))*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (theta/(1.0-u[i]*u[i]) - theta_c)*(u[i-1] + u[i+1] - 2.0*u[i])*sx)/max + 2.6;
+          yy[2] = .5*theta*((1.0+u[i])*log((1.0+u[i])/2.0) + (1.0-u[i])*log((1.0-u[i])/2.0));
         }
         break;
       }
@@ -468,80 +407,135 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
   }
   ierr = PetscDrawGetPause(draw,&pause);CHKERRQ(ierr);
   ierr = PetscDrawSetPause(draw,0.0);CHKERRQ(ierr);
+  ierr = PetscDrawAxisSetLabels(axis,"Energy","","");CHKERRQ(ierr);
+  /*  ierr = PetscDrawLGSetLegend(lg,legend[ctx->energy-1]);CHKERRQ(ierr); */
   ierr = PetscDrawLGDraw(lg);CHKERRQ(ierr);
 
-  /*
-        Draw arrows for the forces
+  /* 
+      Plot the  forces
   */
-  x = 0.;
-  /*
-   y_pm[0] : y-coordinate of the initial point for the next force in the positive direction
-   y_pm[1] : y-coordinate of the initial point for the next force in the negative direction
-   */
-
-  for (i=0; i<Mx; i += cnt) {
-    y_pm[0]    = PetscRealPart(u[i]);
-    y_pm[1]    = PetscRealPart(u[i]);
-    y          = y_pm[0];
+  ierr = PetscDrawLGSetDimension(lg,1 + (ctx->cahnhillard ? 2 : 0) + (ctx->energy == 3));CHKERRQ(ierr);
+  ierr = PetscDrawLGSetColors(lg,colors+1);CHKERRQ(ierr);
+  ierr = PetscDrawViewPortsSet(ports,1);CHKERRQ(ierr);
+  ierr = PetscDrawLGReset(lg);CHKERRQ(ierr);
+  x   = xs*hx;;
+  max = 0.;
+  for (i=xs; i<xs+xm; i++) {
+    xx[0] = xx[1] = xx[2] = xx[3] = x;
     c = (u[i-1] + u[i+1] - 2.0*u[i])*sx;
     r = (u[i] + u[i+2] - 2.0*u[i+1])*sx;
     l = (u[i-2] + u[i] - 2.0*u[i-1])*sx;
-    len = -.5*ctx->kappa*(l + r - 2.0*c)*sx/max; 
-    cl   = len < 0. ? PETSC_DRAW_RED : PETSC_DRAW_MAGENTA;
-    ierr = PetscDrawArrow(draw,x,y,x,y+len,cl);CHKERRQ(ierr);
+    yy[0] = PetscRealPart(-ctx->kappa*(l + r - 2.0*c)*sx);
+    max   = PetscMax(max,PetscAbs(yy[0]));
+    if (ctx->cahnhillard) {
+      switch (ctx->energy) {
+      case 1: // double well
+        yy[1] = PetscRealPart(6.*.25*u[i]*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (3.*u[i]*u[i] - 1.)*(u[i-1] + u[i+1] - 2.0*u[i])*sx);
+        break;
+      case 2: // double obstacle
+        yy[1] = -(u[i-1] + u[i+1] - 2.0*u[i])*sx;
+        break;
+      case 3: // logarithmic
+        yy[1] = theta_c*(-(u[i-1] + u[i+1] - 2.0*u[i]))*sx;
+        if (u[i] < -1.0 + 2.0*tol) {
+          yy[2] = (2.0*theta*(2.0*tol-1.0)/(16.0*(tol-tol*tol)*(tol-tol*tol))*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (.25*theta/(tol-tol*tol))*(u[i-1] + u[i+1] - 2.0*u[i])*sx);
+        } else if (u[i] > 1.0 - 2.0*tol) {
+          yy[2] = (2.0*theta*(-2.0*tol+1.0)/(16.0*(tol-tol*tol)*(tol-tol*tol))*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + ( .25*theta/(tol-tol*tol))*(u[i-1] + u[i+1] - 2.0*u[i])*sx);
+        } else {
+          yy[2] = (2.0*theta*u[i]/((1.0-u[i]*u[i])*(1.0-u[i]*u[i]))*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (theta/(1.0-u[i]*u[i]))*(u[i-1] + u[i+1] - 2.0*u[i])*sx);
+        }
+        break;
+      }
+      if (ctx->energy != 3) {
+        max   = PetscMax(max,PetscAbs(yy[1]));
+        yy[2] = yy[0]+yy[1];
+      } else {
+        max   = PetscMax(max,PetscAbs(yy[1]+yy[2]));
+        yy[3] = yy[0]+yy[1]+yy[2];
+      }
+    }
+    ierr = PetscDrawLGAddPoint(lg,xx,yy);CHKERRQ(ierr);
+    x   += hx;
+    //if (max > 7200150000.0)
+    //printf("max very big when i = %d\n",i);
+  }
+  ierr = PetscDrawAxisSetLabels(axis,"Right hand side","","");CHKERRQ(ierr);
+  ierr = PetscDrawLGSetLegend(lg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscDrawLGDraw(lg);CHKERRQ(ierr);
+
+  /*
+        Plot the solution
+  */
+  ierr = PetscDrawLGSetDimension(lg,1);CHKERRQ(ierr);
+  ierr = PetscDrawViewPortsSet(ports,0);CHKERRQ(ierr);
+  ierr = PetscDrawLGReset(lg);
+  x = hx*xs;
+  ierr = PetscDrawLGSetLimits(lg,x,x+(xm-1)*hx,-1.1,1.1);CHKERRQ(ierr);
+  ierr = PetscDrawLGSetColors(lg,colors);CHKERRQ(ierr);
+  for (i=xs; i<xs+xm; i++) {
+    xx[0] = x;
+    yy[0] = PetscRealPart(u[i]);
+    ierr = PetscDrawLGAddPoint(lg,xx,yy);CHKERRQ(ierr);
+    x   += hx;
+  }
+  ierr = PetscDrawAxisSetLabels(axis,"Solution","","");CHKERRQ(ierr);
+  ierr = PetscDrawLGDraw(lg);CHKERRQ(ierr);
+
+  /*
+      Print the  forces as arrows on the solution
+  */
+  x = hx*xs;
+  cnt = xm/60;
+  cnt = (!cnt) ? 1 : cnt;
+
+  for (i=xs; i<xs+xm; i += cnt) {
+    y  = yup = ydown = PetscRealPart(u[i]);
+    c = (u[i-1] + u[i+1] - 2.0*u[i])*sx;
+    r = (u[i] + u[i+2] - 2.0*u[i+1])*sx;
+    l = (u[i-2] + u[i] - 2.0*u[i-1])*sx;
+    len  = -.5*PetscRealPart(ctx->kappa*(l + r - 2.0*c)*sx)/max;
+    ierr = PetscDrawArrow(draw,x,y,x,y+len,PETSC_DRAW_RED);CHKERRQ(ierr);
     if (ctx->cahnhillard) {
       if (len < 0.) {
-        y_pm[1] += len;
+        ydown += len;
       } else {
-        y_pm[0] += len;
+        yup += len;
       }
       switch (ctx->energy) {
       case 1: // double well
-        len   = .5*(6.*.25*u[i]*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (3.*u[i]*u[i] - 1.)*(u[i-1] + u[i+1] - 2.0*u[i])*sx)/max;
-        cl   = len < 0. ? PETSC_DRAW_GREEN : PETSC_DRAW_BLUE;
-        y    = len < 0. ? y_pm[1] : y_pm[0];
-        ierr = PetscDrawArrow(draw,x,y,x,y+len,cl);CHKERRQ(ierr);
+        len = .5*PetscRealPart(6.*.25*u[i]*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (3.*u[i]*u[i] - 1.)*(u[i-1] + u[i+1] - 2.0*u[i])*sx)/max;
         break;
       case 2: // double obstacle
-        len   = .5*(-(u[i-1] + u[i+1] - 2.0*u[i])*sx/max);
-        cl   = len < 0. ? PETSC_DRAW_GREEN : PETSC_DRAW_BLUE;
-        y    = len < 0. ? y_pm[1] : y_pm[0];
-        ierr = PetscDrawArrow(draw,x,y,x,y+len,cl);CHKERRQ(ierr);
+        len = -.5*(u[i-1] + u[i+1] - 2.0*u[i])*sx/max;
         break;
       case 3: // logarithmic
-        len   = .5*theta_c*(-(u[i-1] + u[i+1] - 2.0*u[i])*sx/max);
-        cl   = len < 0. ? PETSC_DRAW_GREEN : PETSC_DRAW_BLUE;
-        y    = len < 0. ? y_pm[1] : y_pm[0];
-        ierr = PetscDrawArrow(draw,x,y,x,y+len,cl);CHKERRQ(ierr);
-        if (len < 0.) {
-          y_pm[1] += len;
-        } else {
-          y_pm[0] += len;
+         len   = .5*theta_c*(-(u[i-1] + u[i+1] - 2.0*u[i])*sx/max);
+         if (len < 0.) {
+           ydown += len;
+         } else {
+           yup += len;
         }
-        /* Finally, the logarithmic component of the force */
         if (u[i] < -1.0 + 2.0*tol) {
-          len   = .5*(2.0*theta*( 2.0*tol-1.0)/(16.0*(tol-tol*tol)*(tol-tol*tol))*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (.25*theta/(tol-tol*tol))*(u[i-1] + u[i+1] - 2.0*u[i])*sx)/max;
+          len2 = .5*(2.0*theta*(2.0*tol-1.0)/(16.0*(tol-tol*tol)*(tol-tol*tol))*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (.25*theta/(tol-tol*tol))*(u[i-1] + u[i+1] - 2.0*u[i])*sx)/max;
         } else if (u[i] > 1.0 - 2.0*tol) {
-          len   = .5*(2.0*theta*(-2.0*tol+1.0)/(16.0*(tol-tol*tol)*(tol-tol*tol))*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (.25*theta/(tol-tol*tol))*(u[i-1] + u[i+1] - 2.0*u[i])*sx)/max;
+          len2 = .5*(2.0*theta*(-2.0*tol+1.0)/(16.0*(tol-tol*tol)*(tol-tol*tol))*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (.25*theta/(tol-tol*tol))*(u[i-1] + u[i+1] - 2.0*u[i])*sx)/max;
         } else {
-          len   = .5*(2.0*theta*u[i]/((1.0-u[i]*u[i])*(1.0-u[i]*u[i]))*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (theta/(1.0-u[i]*u[i]))*(u[i-1] + u[i+1] - 2.0*u[i])*sx)/max;
+          len2 = .5*(2.0*theta*u[i]/((1.0-u[i]*u[i])*(1.0-u[i]*u[i]))*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (theta/(1.0-u[i]*u[i]))*(u[i-1] + u[i+1] - 2.0*u[i])*sx)/max;
         }
-        cl   = len < 0. ? PETSC_DRAW_BLACK : PETSC_DRAW_PLUM;
-        y    = len < 0. ? y_pm[1] : y_pm[0];
-        ierr = PetscDrawArrow(draw,x,y,x,y+len,cl);CHKERRQ(ierr);
-        break ;
+        y2 = len < 0 ? ydown : yup;
+        ierr = PetscDrawArrow(draw,x,y2,x,y2+len2,PETSC_DRAW_PLUM);CHKERRQ(ierr);
+        break;
       }
+      ierr = PetscDrawArrow(draw,x,y,x,y+len,PETSC_DRAW_BLUE);CHKERRQ(ierr);
     }
     x   += cnt*hx; 
   }
   ierr = DMDAVecRestoreArray(da,localU,&x);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&localU);CHKERRQ(ierr);
   ierr = PetscDrawStringSetSize(draw,.2,.2);CHKERRQ(ierr);
-  ierr = PetscDrawString(draw,.75,2.3,PETSC_DRAW_BLACK,"Relative Forcing");
-  ierr = PetscDrawString(draw,.75,1.5,PETSC_DRAW_BLACK,"Relative Energy");
-  ierr = PetscDrawString(draw,.75,.8,PETSC_DRAW_BLACK,"Solution");
   ierr = PetscDrawFlush(draw);CHKERRQ(ierr);
   ierr = PetscDrawSetPause(draw,pause);CHKERRQ(ierr);
   ierr = PetscDrawPause(draw);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+

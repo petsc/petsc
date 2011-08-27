@@ -70,7 +70,6 @@ static PetscErrorCode TSSetTypeFromOptions(TS ts)
 @*/
 PetscErrorCode  TSSetFromOptions(TS ts)
 {
-  PetscReal      dt;
   PetscBool      opt,flg;
   PetscErrorCode ierr;
   PetscViewer    monviewer;
