@@ -85,7 +85,6 @@ static PetscErrorCode TSStep_Alpha(TS ts)
   }
   ierr = VecCopy(th->X1,ts->vec_sol);CHKERRQ(ierr);
   ts->ptime += ts->time_step;
-  ts->time_step_prev = ts->time_step;
   ts->time_step = next_time_step;
   ts->steps++;
   PetscFunctionReturn(0);

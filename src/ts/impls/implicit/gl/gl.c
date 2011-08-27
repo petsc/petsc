@@ -816,6 +816,8 @@ static PetscErrorCode TSSolve_GL(TS ts)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = TSMonitor(ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
+
   ierr = TSGLGetMaxSizes(ts,&max_r,&max_s);CHKERRQ(ierr);
   ierr = VecCopy(ts->vec_sol,gl->X[0]);CHKERRQ(ierr);
   for (i=1; i<max_r; i++) {
