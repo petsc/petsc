@@ -15,6 +15,10 @@ Evolve the  Allen-Cahn equation:
 ---------------
 ./heat -ts_monitor -snes_monitor  -pc_type lu  -draw_pause .1 -snes_converged_reason  -wait   -ts_type beuler  -da_refine 5   -allen-cahn -kappa .001 -ts_max_time 5
 
+Evolve the  Allen-Cahn equation: zoom in on part of the domain
+---------------
+./heat -ts_monitor -snes_monitor  -pc_type lu   -snes_converged_reason     -ts_type beuler  -da_refine 5   -allen-cahn -kappa .001 -ts_max_time 5  -zoom .25,.45 -wait
+
 
 */
 #include <petscdmda.h>
@@ -293,7 +297,7 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
   ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
                         PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-  hx     = 1.0/(PetscReal)Mx; sx = 1.0/(hx*hx); cnt = Mx/60;
+  hx     = 1.0/(PetscReal)Mx; sx = 1.0/(hx*hx); 
   ierr = DMGlobalToLocalBegin(da,U,INSERT_VALUES,localU);CHKERRQ(ierr);
   ierr = DMGlobalToLocalEnd(da,U,INSERT_VALUES,localU);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,localU,&u);CHKERRQ(ierr);
@@ -304,18 +308,21 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
   if (!ports) {
     ierr = PetscDrawViewPortsCreateRect(draw,1,3,&ports);CHKERRQ(ierr);
   }
-
   ierr = PetscDrawLGGetAxis(lg,&axis);CHKERRQ(ierr);
   ierr = PetscDrawLGReset(lg);CHKERRQ(ierr);
-  ierr = PetscDrawLGSetDimension(lg,1 + (ctx->allencahn ? 1 : 0));CHKERRQ(ierr);
-  ierr = PetscDrawLGSetColors(lg,colors+1);CHKERRQ(ierr);
+
+  xx[0] = 0.0; xx[1] = 1.0; cnt = 2;
+  ierr = PetscOptionsGetRealArray(PETSC_NULL,"-zoom",xx,&cnt,PETSC_NULL);CHKERRQ(ierr);
+  xs = xx[0]/hx; xm = (xx[1] - xx[0])/hx;
 
   /* 
       Plot the  energies 
   */
+  ierr = PetscDrawLGSetDimension(lg,1 + (ctx->allencahn ? 1 : 0));CHKERRQ(ierr);
+  ierr = PetscDrawLGSetColors(lg,colors+1);CHKERRQ(ierr);
   ierr = PetscDrawViewPortsSet(ports,2);CHKERRQ(ierr);
-  x   = 0.;
-  for (i=0; i<Mx; i++) {
+  x   = hx*xs;
+  for (i=xs; i<xs+xm; i++) {
     xx[0] = xx[1] = x;
     yy[0] = PetscRealPart(.25*ctx->kappa*(u[i-1] - u[i+1])*(u[i-1] - u[i+1])*sx);
     if (ctx->allencahn) {
@@ -335,9 +342,9 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
   */
   ierr = PetscDrawViewPortsSet(ports,1);CHKERRQ(ierr);
   ierr = PetscDrawLGReset(lg);CHKERRQ(ierr);
-  x   = 0.;
+  x   = xs*hx;;
   max = 0.;
-  for (i=0; i<Mx; i++) {
+  for (i=xs; i<xs+xm; i++) {
     xx[0] = xx[1] = x;
     yy[0] = PetscRealPart(ctx->kappa*(u[i-1] + u[i+1] - 2.0*u[i])*sx);
     max   = PetscMax(max,PetscAbs(yy[0]));
@@ -358,10 +365,10 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
   ierr = PetscDrawLGSetDimension(lg,1);CHKERRQ(ierr);
   ierr = PetscDrawViewPortsSet(ports,0);CHKERRQ(ierr);
   ierr = PetscDrawLGReset(lg);
-  ierr = PetscDrawLGSetLimits(lg,0.0,1,-1.1,1.1);CHKERRQ(ierr);
+  x = hx*xs;
+  ierr = PetscDrawLGSetLimits(lg,x,x+(xm-1)*hx,-1.1,1.1);CHKERRQ(ierr);
   ierr = PetscDrawLGSetColors(lg,colors);CHKERRQ(ierr);
-  x = 0.;
-  for (i=0; i<Mx; i++) {
+  for (i=xs; i<xs+xm; i++) {
     xx[0] = x;
     yy[0] = PetscRealPart(u[i]);
     ierr = PetscDrawLGAddPoint(lg,xx,yy);CHKERRQ(ierr);
@@ -373,8 +380,11 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
   /*
       Print the  forces as arrows on the solution
   */
-  x = 0.;
-  for (i=0; i<Mx; i += cnt) {
+  x = hx*xs;
+  cnt = xm/60;
+  cnt = (!cnt) ? 1 : cnt;
+
+  for (i=xs; i<xs+xm; i += cnt) {
     y    = PetscRealPart(u[i]);
     len  = .5*PetscRealPart(ctx->kappa*(u[i-1] + u[i+1] - 2.0*u[i])*sx)/max;
     ierr = PetscDrawArrow(draw,x,y,x,y+len,PETSC_DRAW_RED);CHKERRQ(ierr);
