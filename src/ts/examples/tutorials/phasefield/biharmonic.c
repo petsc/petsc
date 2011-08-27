@@ -451,7 +451,7 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
         yy[2] = yy[0]+yy[1];
       } else {
         max   = PetscMax(max,PetscAbs(yy[1]+yy[2]));
-        yy[2] = yy[0]+yy[1]+yy[2];
+        yy[3] = yy[0]+yy[1]+yy[2];
       }
     }
     ierr = PetscDrawLGAddPoint(lg,xx,yy);CHKERRQ(ierr);
