@@ -50,7 +50,6 @@ static PetscErrorCode TSStep_Theta(TS ts)
     ierr = VecAXPY(ts->vec_sol,ts->time_step,th->Xdot);CHKERRQ(ierr);
   }
   ts->ptime += ts->time_step;
-  ts->time_step_prev = ts->time_step;
   ts->time_step = next_time_step;
   ts->steps++;
   PetscFunctionReturn(0);

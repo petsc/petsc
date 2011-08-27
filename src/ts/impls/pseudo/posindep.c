@@ -179,7 +179,6 @@ static PetscErrorCode TSStep_Pseudo(TS ts)
   }
   ierr = VecCopy(pseudo->update,ts->vec_sol);CHKERRQ(ierr);
   ts->ptime += ts->time_step;
-  ts->time_step_prev = ts->time_step;
   ts->time_step = next_time_step;
   ts->steps++;
   PetscFunctionReturn(0);
