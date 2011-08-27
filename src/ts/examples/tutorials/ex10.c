@@ -433,7 +433,7 @@ static PetscErrorCode RDIJacobian_FD(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal 
     PetscScalar Em_t,rad,K[2][6];
     RDNode dEm_t,drad;
 
-    rad = (1.-Theta)*RDRadiation(rd,&x0[i],0) + Theta*RDRadiation(rd,&x[i],&drad);
+    rad = (1.-Theta)*RDRadiation(rd,&x0[i],0) + Theta*RDRadiation(rd,&x[i],&drad); rad=rad;
 
     if (rd->endpoint) {
       PetscScalar Em0,Em1;
@@ -457,6 +457,7 @@ static PetscErrorCode RDIJacobian_FD(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal 
       dEm_t.E = dEm.E * a;
       dEm_t.T = dEm.T * a + Em_TT * xdot[i].T;
     }
+    Em_t = Em_t;
 
     ierr = PetscMemzero(K,sizeof(K));CHKERRQ(ierr);
     /* Residuals are multiplied by the volume element (hx).  */
@@ -486,7 +487,7 @@ static PetscErrorCode RDIJacobian_FD(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal 
     } else {
       PetscScalar diff;
       RDNode      ddiff[3];
-      diff = (1.-Theta)*RDDiffusion(rd,hx,x0,i,0) + Theta*RDDiffusion(rd,hx,x,i,ddiff);
+      diff = (1.-Theta)*RDDiffusion(rd,hx,x0,i,0) + Theta*RDDiffusion(rd,hx,x,i,ddiff); diff=diff;
       K[0][0*2+0] = -hx*ddiff[0].E;
       K[0][0*2+1] = -hx*ddiff[0].T;
       K[0][1*2+0] = hx*(a - ddiff[1].E - drad.E);
