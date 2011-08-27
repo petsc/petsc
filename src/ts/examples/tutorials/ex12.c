@@ -155,7 +155,7 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec F,void *ptr)
   DM             da = (DM)ptr;
   PetscErrorCode ierr;
   PetscInt       i,j,Mx,My,xs,ys,xm,ym;
-  PetscReal      two = 2.0,hx,hy,hxdhy,hydhx,sx,sy;
+  PetscReal      two = 2.0,hx,hy,/*hxdhy,hydhx,*/sx,sy;
   PetscScalar    u,uxx,uyy,v,***x,***f;
   Vec            localX;
 
@@ -166,8 +166,8 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec F,void *ptr)
 
   hx     = 1.0/(PetscReal)(Mx-1); sx = 1.0/(hx*hx);
   hy     = 1.0/(PetscReal)(My-1); sy = 1.0/(hy*hy);
-  hxdhy  = hx/hy; 
-  hydhx  = hy/hx;
+  /*hxdhy  = hx/hy;*/
+  /*hydhx  = hy/hx;*/
 
   /*
      Scatter ghost points to local vector,using the 2-step process

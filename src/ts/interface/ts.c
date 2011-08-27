@@ -86,9 +86,8 @@ PetscErrorCode  TSSetFromOptions(TS ts)
     /* Handle generic TS options */
     ierr = PetscOptionsInt("-ts_max_steps","Maximum number of time steps","TSSetDuration",ts->max_steps,&ts->max_steps,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-ts_max_time","Time to run to","TSSetDuration",ts->max_time,&ts->max_time,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-ts_init_time","Initial time","TSSetInitialTime", ts->ptime, &ts->ptime, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-ts_dt","Initial time step","TSSetInitialTimeStep",ts->initial_time_step,&dt,&opt);CHKERRQ(ierr);
-    if (opt) {ierr = TSSetInitialTimeStep(ts,ts->ptime,dt);CHKERRQ(ierr);}
+    ierr = PetscOptionsReal("-ts_init_time","Initial time","TSSetTime",ts->ptime,&ts->ptime,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-ts_dt","Initial time step","TSSetTimeStep",ts->time_step,&ts->time_step,PETSC_NULL);CHKERRQ(ierr);
     opt = ts->exact_final_time == PETSC_DECIDE ? PETSC_FALSE : (PetscBool)ts->exact_final_time;
     ierr = PetscOptionsBool("-ts_exact_final_time","Interpolate output to stop exactly at the final time","TSSetExactFinalTime",opt,&opt,&flg);CHKERRQ(ierr);
     if (flg) {ierr = TSSetExactFinalTime(ts,opt);CHKERRQ(ierr);}
@@ -958,8 +957,7 @@ PetscErrorCode  TSSetInitialTimeStep(TS ts,PetscReal initial_time,PetscReal time
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   ierr = TSSetTimeStep(ts,time_step);CHKERRQ(ierr);
-  ts->initial_time_step = time_step;
-  ts->ptime             = initial_time;
+  ierr = TSSetTime(ts,initial_time);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -986,8 +984,7 @@ PetscErrorCode  TSSetTimeStep(TS ts,PetscReal time_step)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidLogicalCollectiveReal(ts,time_step,2);
-  ts->time_step      = time_step;
-  ts->next_time_step = time_step;
+  ts->time_step = time_step;
   PetscFunctionReturn(0);
 }
 
@@ -1013,6 +1010,7 @@ PetscErrorCode  TSSetExactFinalTime(TS ts,PetscBool flg)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidLogicalCollectiveBool(ts,flg,2);
   ts->exact_final_time = flg;
   PetscFunctionReturn(0);
 }
@@ -1382,7 +1380,7 @@ PetscErrorCode  TSGetDuration(TS ts, PetscInt *maxsteps, PetscReal *maxtime)
     PetscValidIntPointer(maxsteps,2);
     *maxsteps = ts->max_steps;
   }
-  if (maxtime ) {
+  if (maxtime) {
     PetscValidScalarPointer(maxtime,3);
     *maxtime  = ts->max_time;
   }
@@ -1741,7 +1739,7 @@ PetscErrorCode TSInterpolate(TS ts,PetscReal t,Vec X)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
-  if (t < ts->ptime - ts->time_step || ts->ptime < t) SETERRQ3(((PetscObject)ts)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Requested time %G not in last time steps [%G,%G]",t,ts->ptime-ts->time_step,ts->ptime);
+  if (t < ts->ptime - ts->time_step_prev || t > ts->ptime) SETERRQ3(((PetscObject)ts)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Requested time %G not in last time steps [%G,%G]",t,ts->ptime-ts->time_step_prev,ts->ptime);
   if (!ts->ops->interpolate) SETERRQ1(((PetscObject)ts)->comm,PETSC_ERR_SUP,"%s does not provide interpolation",((PetscObject)ts)->type_name);
   ierr = (*ts->ops->interpolate)(ts,t,X);CHKERRQ(ierr);
   PetscFunctionReturn(0);

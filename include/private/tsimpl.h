@@ -97,8 +97,7 @@ struct _p_TS {
   PetscInt  max_steps;              /* max number of steps */
   PetscReal max_time;               /* max time allowed */
   PetscReal time_step;              /* current/completed time increment */
-  PetscReal next_time_step;         /* expected next time step (but may end up being different, e.g. if the step is rejected) */
-  PetscReal initial_time_step;      /* initial time increment */
+  PetscReal time_step_prev;         /* previous time step  */
   PetscInt  steps;                  /* steps taken so far */
   PetscReal ptime;                  /* time at the start of the current step (stage time is internal if it exists) */
   PetscInt  linear_its;             /* total number of linear solver iterations */

@@ -15,9 +15,10 @@ typedef struct {
   PetscErrorCode (*verify)(TS,Vec,void*,PetscReal*,PetscBool *); /* verify previous timestep and related context */
   void           *verifyctx;
 
-  PetscReal  initial_fnorm,fnorm;                  /* original and current norm of F(u) */
+  PetscReal  fnorm_initial,fnorm;                  /* original and current norm of F(u) */
   PetscReal  fnorm_previous;
 
+  PetscReal  dt_initial;                    /* initial time-step */
   PetscReal  dt_increment;                  /* scaling that dt is incremented each time-step */
   PetscBool  increment_dt_from_initial_dt;
 } TS_Pseudo;
@@ -141,41 +142,45 @@ PetscErrorCode  TSPseudoVerifyTimeStep(TS ts,Vec update,PetscReal *dt,PetscBool 
 static PetscErrorCode TSStep_Pseudo(TS ts)
 {
   TS_Pseudo      *pseudo = (TS_Pseudo*)ts->data;
+  PetscInt       its,lits,reject;
+  PetscBool      stepok;
+  PetscReal      next_time_step;
+  SNESConvergedReason snesreason = SNES_CONVERGED_ITERATING;
   PetscErrorCode ierr;
-  PetscInt       its,lits,rej;
-  PetscBool      ok;
-  SNESConvergedReason snesreason;
 
   PetscFunctionBegin;
-  ierr = TSPreStep(ts);CHKERRQ(ierr);
+  if (ts->steps == 0) {
+    pseudo->dt_initial = ts->time_step;
+  }
   ierr = VecCopy(ts->vec_sol,pseudo->update);CHKERRQ(ierr);
-  ierr = TSPseudoComputeTimeStep(ts,&ts->next_time_step);CHKERRQ(ierr);
-  for (rej=0; ; ) {
-    ts->time_step = ts->next_time_step;
+  next_time_step = ts->time_step;
+  ierr = TSPseudoComputeTimeStep(ts,&next_time_step);CHKERRQ(ierr);
+  for (reject=0; reject<ts->max_reject; reject++,ts->reject++) {
+    ts->time_step = next_time_step;
     ierr = SNESSolve(ts->snes,PETSC_NULL,pseudo->update);CHKERRQ(ierr);
+    ierr = SNESGetConvergedReason(ts->snes,&snesreason);CHKERRQ(ierr);
     ierr = SNESGetLinearSolveIterations(ts->snes,&lits);CHKERRQ(ierr);
     ierr = SNESGetIterationNumber(ts->snes,&its);CHKERRQ(ierr);
     ts->nonlinear_its += its; ts->linear_its += lits;
+    ierr = PetscInfo3(ts,"step=%D, nonlinear solve iterations=%D, linear solve iterations=%D\n",ts->steps,its,lits);CHKERRQ(ierr);
     pseudo->fnorm = -1;         /* The current norm is no longer valid, monitor must recompute it. */
-    ierr = SNESGetConvergedReason(ts->snes,&snesreason);CHKERRQ(ierr);
-    if (snesreason < 0) {
-      if (++ts->num_snes_failures >= ts->max_snes_failures) {
-        ts->reason = TS_DIVERGED_NONLINEAR_SOLVE;
-        ierr = PetscInfo2(ts,"step=%D, nonlinear solve solve failures %D greater than current TS allowed, stopping solve\n",ts->steps,ts->num_snes_failures);CHKERRQ(ierr);
-        break;
-      }
-    }
-    ierr = TSPseudoVerifyTimeStep(ts,pseudo->update,&ts->next_time_step,&ok);CHKERRQ(ierr);
-    if (ok) {
-      ierr = VecCopy(pseudo->update,ts->vec_sol);CHKERRQ(ierr);
-      break;
-    }
-    ts->reject++;
-    if (++rej >= ts->max_reject) {
-      ts->reason = TS_DIVERGED_STEP_REJECTED;
-    }
+    ierr = TSPseudoVerifyTimeStep(ts,pseudo->update,&next_time_step,&stepok);CHKERRQ(ierr);
+    if (stepok) break;
   }
+  if (snesreason < 0 && ++ts->num_snes_failures >= ts->max_snes_failures) {
+    ts->reason = TS_DIVERGED_NONLINEAR_SOLVE;
+    ierr = PetscInfo2(ts,"step=%D, nonlinear solve solve failures %D greater than current TS allowed, stopping solve\n",ts->steps,ts->num_snes_failures);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+  if (reject >= ts->max_reject) {
+    ts->reason = TS_DIVERGED_STEP_REJECTED;
+    ierr = PetscInfo2(ts,"step=%D, step rejections %D greater than current TS allowed, stopping solve\n",ts->steps,reject);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+  ierr = VecCopy(pseudo->update,ts->vec_sol);CHKERRQ(ierr);
   ts->ptime += ts->time_step;
+  ts->time_step_prev = ts->time_step;
+  ts->time_step = next_time_step;
   ts->steps++;
   PetscFunctionReturn(0);
 }
@@ -700,15 +705,15 @@ PetscErrorCode  TSPseudoDefaultTimeStep(TS ts,PetscReal* newdt,void* dtctx)
   ierr = VecZeroEntries(pseudo->xdot);CHKERRQ(ierr);
   ierr = TSComputeIFunction(ts,ts->ptime,ts->vec_sol,pseudo->xdot,pseudo->func,PETSC_FALSE);CHKERRQ(ierr);
   ierr = VecNorm(pseudo->func,NORM_2,&pseudo->fnorm);CHKERRQ(ierr);
-  if (pseudo->initial_fnorm == 0.0) {
+  if (pseudo->fnorm_initial == 0.0) {
     /* first time through so compute initial function norm */
-    pseudo->initial_fnorm = pseudo->fnorm;
+    pseudo->fnorm_initial = pseudo->fnorm;
     fnorm_previous        = pseudo->fnorm;
   }
   if (pseudo->fnorm == 0.0) {
     *newdt = 1.e12*inc*ts->time_step;
   } else if (pseudo->increment_dt_from_initial_dt) {
-    *newdt = inc*ts->initial_time_step*pseudo->initial_fnorm/pseudo->fnorm;
+    *newdt = inc*pseudo->dt_initial*pseudo->fnorm_initial/pseudo->fnorm;
   } else {
     *newdt = inc*ts->time_step*fnorm_previous/pseudo->fnorm;
   }

@@ -334,7 +334,7 @@ PetscErrorCode TSSetUp_Sundials(TS ts)
   if (flag) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVodeSetUserData() fails");
 
   /* Sundials may choose to use a smaller initial step, but will never use a larger step. */
-  flag = CVodeSetInitStep(mem,(realtype)ts->initial_time_step);
+  flag = CVodeSetInitStep(mem,(realtype)ts->time_step);
   if (flag) SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_LIB,"CVodeSetInitStep() failed");
   if (cvode->mindt > 0) {
     flag = CVodeSetMinStep(mem,(realtype)cvode->mindt);
@@ -406,6 +406,7 @@ PetscErrorCode TSSetFromOptions_Sundials(TS ts)
   PetscErrorCode ierr;
   int            indx;
   PetscBool      flag;
+  PC             pc;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("SUNDIALS ODE solver options");CHKERRQ(ierr);
@@ -425,6 +426,8 @@ PetscErrorCode TSSetFromOptions_Sundials(TS ts)
     ierr = PetscOptionsInt("-ts_sundials_maxl","Max dimension of the Krylov subspace","TSSundialsSetMaxl",cvode->maxl,&cvode->maxl,&flag);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-ts_sundials_monitor_steps","Monitor SUNDIALS internel steps","TSSundialsMonitorInternalSteps",cvode->monitorstep,&cvode->monitorstep,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
+  ierr = TSSundialsGetPC(ts,&pc);CHKERRQ(ierr);
+  ierr = PCSetFromOptions(pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
