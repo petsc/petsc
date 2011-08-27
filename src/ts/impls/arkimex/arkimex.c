@@ -316,12 +316,14 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
   Vec             *Y   = ark->Y,*YdotI = ark->YdotI,*YdotRHS = ark->YdotRHS,Ydot = ark->Ydot,W = ark->Work,Z = ark->Z;
   SNES            snes;
   PetscInt        i,j,its,lits;
+  PetscReal       next_time_step;
   PetscReal       h,t;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
-  h = ts->time_step = ts->next_time_step;
+  next_time_step = ts->time_step;
+  h = ts->time_step;
   t = ts->ptime;
 
   for (i=0; i<s; i++) {
@@ -362,8 +364,9 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
   for (j=0; j<s; j++) w[j] = h*b[j];
   ierr = VecMAXPY(ts->vec_sol,s,w,YdotRHS);CHKERRQ(ierr);
 
-  ts->ptime          += ts->time_step;
-  ts->next_time_step  = ts->time_step;
+  ts->ptime += ts->time_step;
+  ts->time_step_prev = ts->time_step;
+  ts->time_step = next_time_step;
   ts->steps++;
   PetscFunctionReturn(0);
 }

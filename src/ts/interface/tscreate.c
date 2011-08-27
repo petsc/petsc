@@ -70,9 +70,11 @@ PetscErrorCode  TSCreate(MPI_Comm comm, TS *ts) {
   t->setupcalled        = 0;
   t->data               = PETSC_NULL;
   t->user               = PETSC_NULL;
-  t->max_steps          = 5000;
+  t->ptime              = 0.0;
+  t->time_step          = 0.1;
   t->max_time           = 5.0;
   t->steps              = 0;
+  t->max_steps          = 5000;
   t->linear_its         = 0;
   t->nonlinear_its      = 0;
   t->work               = PETSC_NULL;
@@ -83,7 +85,6 @@ PetscErrorCode  TSCreate(MPI_Comm comm, TS *ts) {
   t->rhsjacobian.time   = -1e20;
   t->ijacobian.time     = -1e20;
 
-  ierr = TSSetInitialTimeStep(t,0.,0.1);CHKERRQ(ierr);
   t->exact_final_time = PETSC_DECIDE;
 
   *ts = t;

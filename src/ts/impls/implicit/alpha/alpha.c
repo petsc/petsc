@@ -38,7 +38,11 @@ static PetscErrorCode TSStep_Alpha(TS ts)
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
-  if (!ts->steps) {ierr = VecSet(th->V0,0.0);CHKERRQ(ierr);}
+  if (ts->steps == 0) {
+    ierr = VecSet(th->V0,0.0);CHKERRQ(ierr);
+  } else {
+    ierr = VecCopy(th->V1,th->V0);CHKERRQ(ierr);
+  }
   ierr = VecCopy(ts->vec_sol,th->X0);CHKERRQ(ierr);
   next_time_step = ts->time_step;
   for (reject=0; reject<ts->max_reject; reject++,ts->reject++) {
@@ -71,19 +75,34 @@ static PetscErrorCode TSStep_Alpha(TS ts)
   }
   if (snesreason < 0 && ++ts->num_snes_failures >= ts->max_snes_failures) {
     ts->reason = TS_DIVERGED_NONLINEAR_SOLVE;
-    ierr = PetscInfo2(ts,"step=%D, nonlinear solve solve failures %D greater than current TS allowed, stopping solve\n",ts->steps,ts->num_snes_failures);CHKERRQ(ierr);
+    ierr = PetscInfo2(ts,"Step=%D, nonlinear solve solve failures %D greater than current TS allowed, stopping solve\n",ts->steps,ts->num_snes_failures);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
   if (reject >= ts->max_reject) {
     ts->reason = TS_DIVERGED_STEP_REJECTED;
-    ierr = PetscInfo2(ts,"step=%D, step rejections %D greater than current TS allowed, stopping solve\n",ts->steps,reject);CHKERRQ(ierr);
+    ierr = PetscInfo2(ts,"Step=%D, step rejections %D greater than current TS allowed, stopping solve\n",ts->steps,reject);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
-  ierr = VecCopy(th->V1,th->V0);CHKERRQ(ierr);
   ierr = VecCopy(th->X1,ts->vec_sol);CHKERRQ(ierr);
   ts->ptime += ts->time_step;
+  ts->time_step_prev = ts->time_step;
   ts->time_step = next_time_step;
   ts->steps++;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSInterpolate_Alpha"
+static PetscErrorCode TSInterpolate_Alpha(TS ts,PetscReal t,Vec X)
+{
+  TS_Alpha       *th = (TS_Alpha*)ts->data;
+  PetscReal      dt = t - ts->ptime;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecCopy(ts->vec_sol,X);CHKERRQ(ierr);
+  ierr = VecAXPY(X,th->Gamma*dt,th->V1);CHKERRQ(ierr);
+  ierr = VecAXPY(X,(1-th->Gamma)*dt,th->V0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -320,6 +339,7 @@ PetscErrorCode  TSCreate_Alpha(TS ts)
   ts->ops->view           = TSView_Alpha;
   ts->ops->setup          = TSSetUp_Alpha;
   ts->ops->step           = TSStep_Alpha;
+  ts->ops->interpolate    = TSInterpolate_Alpha;
   ts->ops->setfromoptions = TSSetFromOptions_Alpha;
   ts->ops->snesfunction   = SNESTSFormFunction_Alpha;
   ts->ops->snesjacobian   = SNESTSFormJacobian_Alpha;
@@ -436,8 +456,6 @@ PetscErrorCode  TSAlphaAdaptDefault(TS ts,PetscReal t,Vec X,Vec Xdot, PetscReal 
   finally:
   *nextdt = PetscMax(*nextdt,th->dt_min);
   *nextdt = PetscMin(*nextdt,th->dt_max);
-  if (ts->max_time > t)
-    *nextdt = PetscMin(*nextdt,ts->max_time-t);
   PetscFunctionReturn(0);
 }
 

@@ -334,7 +334,7 @@ PetscErrorCode TSSetUp_Sundials(TS ts)
   if (flag) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"CVodeSetUserData() fails");
 
   /* Sundials may choose to use a smaller initial step, but will never use a larger step. */
-  flag = CVodeSetInitStep(mem,(realtype)ts->initial_time_step);
+  flag = CVodeSetInitStep(mem,(realtype)ts->time_step);
   if (flag) SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_LIB,"CVodeSetInitStep() failed");
   if (cvode->mindt > 0) {
     flag = CVodeSetMinStep(mem,(realtype)cvode->mindt);
