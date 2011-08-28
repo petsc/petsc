@@ -483,6 +483,7 @@ extern PetscErrorCode   TSSundialsSetGMRESRestart(TS,PetscInt);
 extern PetscErrorCode   TSSundialsSetLinearTolerance(TS,PetscReal);
 extern PetscErrorCode   TSSundialsMonitorInternalSteps(TS,PetscBool );
 extern PetscErrorCode   TSSundialsGetParameters(TS,PetscInt *,long*[],double*[]);
+extern PetscErrorCode   TSSundialsSetMaxl(TS,PetscInt);
 #endif
 
 extern PetscErrorCode   TSRKSetTolerance(TS,PetscReal);
