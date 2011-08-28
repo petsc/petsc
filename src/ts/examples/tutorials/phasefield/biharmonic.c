@@ -41,7 +41,7 @@ Evolve the Cahn-Hillard equations: logarithmic
 #include <petscts.h>
 
 extern PetscErrorCode FormFunction(TS,PetscReal,Vec,Vec,void*),FormInitialSolution(DM,Vec),MyMonitor(TS,PetscInt,PetscReal,Vec,void*);
-typedef struct {PetscBool growth;PetscBool cahnhillard;PetscReal kappa;PetscInt energy;PetscReal tol;PetscReal theta,theta_c;} UserCtx;
+typedef struct {PetscBool growth;PetscBool cahnhillard;PetscBool degenerate;PetscReal kappa;PetscInt energy;PetscReal tol;PetscReal theta,theta_c;} UserCtx;
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -69,6 +69,8 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetReal(PETSC_NULL,"-kappa",&ctx.kappa,PETSC_NULL);CHKERRQ(ierr);
   ctx.growth = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-growth",&ctx.growth,PETSC_NULL);CHKERRQ(ierr);
+  ctx.degenerate = PETSC_FALSE;
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-degenerate",&ctx.degenerate,PETSC_NULL);CHKERRQ(ierr);
   ctx.cahnhillard = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-cahn-hillard",&ctx.cahnhillard,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(PETSC_NULL,"-vi",&vi,PETSC_NULL);CHKERRQ(ierr);
@@ -241,9 +243,15 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec F,void *ptr)
      Compute function over the locally owned part of the grid
   */
   for (i=xs; i<xs+xm; i++) {
-    c = (x[i-1] + x[i+1] - 2.0*x[i])*sx;
-    r = (x[i] + x[i+2] - 2.0*x[i+1])*sx;
-    l = (x[i-2] + x[i] - 2.0*x[i-1])*sx;
+    if (ctx->degenerate) {
+      c = (1. - x[i]*x[i])*(x[i-1] + x[i+1] - 2.0*x[i])*sx;
+      r = (1. - x[i+1]*x[i+1])*(x[i] + x[i+2] - 2.0*x[i+1])*sx;
+      l = (1. - x[i-1]*x[i-1])*(x[i-2] + x[i] - 2.0*x[i-1])*sx; 
+    } else {
+      c = (x[i-1] + x[i+1] - 2.0*x[i])*sx;
+      r = (x[i] + x[i+2] - 2.0*x[i+1])*sx;
+      l = (x[i-2] + x[i] - 2.0*x[i-1])*sx;
+    }
     f[i] = -ctx->kappa*(l + r - 2.0*c)*sx; 
     if (ctx->growth) {
       f[i] += 100000*((x[i] < .2) ?  0: sx*x[i]);
@@ -381,7 +389,11 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
   x   = hx*xs;
   for (i=xs; i<xs+xm; i++) {
     xx[0] = xx[1]  = xx[2] = x;
-    yy[0] = PetscRealPart(.25*ctx->kappa*(u[i-1] - u[i+1])*(u[i-1] - u[i+1])*sx);
+    if (ctx->degenerate) {
+      yy[0] = PetscRealPart(.25*(1. - u[i]*u[i])*ctx->kappa*(u[i-1] - u[i+1])*(u[i-1] - u[i+1])*sx);
+    } else {
+      yy[0] = PetscRealPart(.25*ctx->kappa*(u[i-1] - u[i+1])*(u[i-1] - u[i+1])*sx);
+    }
     if (ctx->cahnhillard) {
       switch (ctx->energy) {
       case 1: // double well
@@ -422,9 +434,15 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
   max = 0.;
   for (i=xs; i<xs+xm; i++) {
     xx[0] = xx[1] = xx[2] = xx[3] = x;
-    c = (u[i-1] + u[i+1] - 2.0*u[i])*sx;
-    r = (u[i] + u[i+2] - 2.0*u[i+1])*sx;
-    l = (u[i-2] + u[i] - 2.0*u[i-1])*sx;
+    if (ctx->degenerate) {
+      c = (1. - u[i]*u[i])*(u[i-1] + u[i+1] - 2.0*u[i])*sx;
+      r = (1. - u[i+1]*u[i+1])*(u[i] + u[i+2] - 2.0*u[i+1])*sx;
+      l = (1. - u[i-1]*u[i-1])*(u[i-2] + u[i] - 2.0*u[i-1])*sx;
+    } else {
+      c = (u[i-1] + u[i+1] - 2.0*u[i])*sx;
+      r = (u[i] + u[i+2] - 2.0*u[i+1])*sx;
+      l = (u[i-2] + u[i] - 2.0*u[i-1])*sx;
+    }
     yy[0] = PetscRealPart(-ctx->kappa*(l + r - 2.0*c)*sx);
     max   = PetscMax(max,PetscAbs(yy[0]));
     if (ctx->cahnhillard) {
