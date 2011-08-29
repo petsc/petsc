@@ -54,7 +54,7 @@ Evolve the Cahn-Hillard equations: logarithmic +  double obstacle (never shrinks
 #include <petscts.h>
 
 extern PetscErrorCode FormFunction(TS,PetscReal,Vec,Vec,void*),FormInitialSolution(DM,Vec),MyMonitor(TS,PetscInt,PetscReal,Vec,void*);
-typedef struct {PetscBool growth;PetscBool cahnhillard;PetscBool degenerate;PetscReal kappa;PetscInt energy;PetscReal tol;PetscReal theta,theta_c;} UserCtx;
+typedef struct {PetscBool growth;PetscBool cahnhillard;PetscBool degenerate;PetscReal kappa;PetscInt energy;PetscReal tol;PetscReal theta,theta_c;PetscBool netforce} UserCtx;
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -87,6 +87,8 @@ int main(int argc,char **argv)
   ctx.cahnhillard = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-cahn-hillard",&ctx.cahnhillard,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(PETSC_NULL,"-vi",&vi,PETSC_NULL);CHKERRQ(ierr);
+  ctx.netforce = PETSC_FALSE;
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-netforce",&ctx.netforce,PETSC_NULL);CHKERRQ(ierr);
   ctx.energy = 1;
   ierr = PetscOptionsInt("-energy","type of energy (1=double well, 2=double obstacle, 3=logarithmic+double well, 4=logarithmic+double obstacle)","",ctx.energy,&ctx.energy,PETSC_NULL);CHKERRQ(ierr);
   ctx.tol = 1.0e-8;
@@ -294,7 +296,8 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec F,void *ptr)
         } else if (x[i] > 1.0 - 2.0*tol) {
           f[i] += 2.0*theta*(-2.0*tol+1.0)/(16.0*(tol-tol*tol)*(tol-tol*tol))*.25*(x[i+1] - x[i-1])*(x[i+1] - x[i-1])*sx + (.25*theta/(tol-tol*tol))*(x[i-1] + x[i+1] - 2.0*x[i])*sx;
         } else {
-          f[i] += 2.0*theta*x[i]/((1.0-x[i]*x[i])*(1.0-x[i]*x[i]))*.25*(x[i+1] - x[i-1])*(x[i+1] - x[i-1])*sx + (theta/(1.0-x[i]*x[i]))*(x[i-1] + x[i+1] - 2.0*x[i])*sx;
+          //f[i] += 2.0*theta*x[i]/((1.0-x[i]*x[i])*(1.0-x[i]*x[i]))*.25*(x[i+1] - x[i-1])*(x[i+1] - x[i-1])*sx + (theta/(1.0-x[i]*x[i]))*(x[i-1] + x[i+1] - 2.0*x[i])*sx;
+          f[i] += (theta/(1.0-x[i]*x[i]))*(x[i-1] + x[i+1] - 2.0*x[i])*sx;
         }
         break;
       }
@@ -369,7 +372,7 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
   PetscErrorCode            ierr;
   PetscScalar               *u,l,r,c;
   PetscInt                  Mx,i,xs,xm,cnt;
-  PetscReal                 x,y,hx,pause,sx,len,max,xx[4],yy[4],yup,ydown,y2,len2;
+  PetscReal                 x,y,hx,pause,sx,len,max,xx[4],yy[4],xx_netforce,yy_netforce,yup,ydown,y2,len2;
   PetscDraw                 draw;
   Vec                       localU;
   DM                        da;
@@ -439,11 +442,11 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
       case 4: // logarithm + double obstacle
         yy[1] = .5*theta_c*(1.0-u[i]*u[i]);
         if (u[i] < -1.0 + 2.0*tol) {
-          yy[2] = -.5*theta*(2.0*tol*log(tol) + (1.0-u[i])*log((1-u[i])/2.0));
+          yy[2] = .5*theta*(2.0*tol*log(tol) + (1.0-u[i])*log((1-u[i])/2.0));
         } else if (u[i] > 1.0 - 2.0*tol) {
-          yy[2] = -.5*theta*((1.0+u[i])*log((1.0+u[i])/2.0) + 2.0*tol*log(tol));
+          yy[2] = .5*theta*((1.0+u[i])*log((1.0+u[i])/2.0) + 2.0*tol*log(tol));
         } else {
-          yy[2] = -.5*theta*((1.0+u[i])*log((1.0+u[i])/2.0) + (1.0-u[i])*log((1.0-u[i])/2.0));
+          yy[2] = .5*theta*((1.0+u[i])*log((1.0+u[i])/2.0) + (1.0-u[i])*log((1.0-u[i])/2.0));
         }
         break;
       }
@@ -468,6 +471,7 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
   max = 0.;
   for (i=xs; i<xs+xm; i++) {
     xx[0] = xx[1] = xx[2] = xx[3] = x;
+    xx_netforce = x;
     if (ctx->degenerate) {
       c = (1. - u[i]*u[i])*(u[i-1] + u[i+1] - 2.0*u[i])*sx;
       r = (1. - u[i+1]*u[i+1])*(u[i] + u[i+2] - 2.0*u[i+1])*sx;
@@ -478,6 +482,7 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
       l = (u[i-2] + u[i] - 2.0*u[i-1])*sx;
     }
     yy[0] = PetscRealPart(-ctx->kappa*(l + r - 2.0*c)*sx);
+    yy_netforce = yy[0];
     max   = PetscMax(max,PetscAbs(yy[0]));
     if (ctx->cahnhillard) {
       switch (ctx->energy) {
@@ -511,12 +516,18 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
       if (ctx->energy < 3) {
         max   = PetscMax(max,PetscAbs(yy[1]));
         yy[2] = yy[0]+yy[1];
+        yy_netforce = yy[2];
       } else {
         max   = PetscMax(max,PetscAbs(yy[1]+yy[2]));
-        //        yy[3] = yy[0]+yy[1]+yy[2];
+        yy[3] = yy[0]+yy[1]+yy[2];
+        yy_netforce = yy[3];
       }
     }
-    ierr = PetscDrawLGAddPoint(lg,xx,yy);CHKERRQ(ierr);
+    if (ctx->netforce) {
+      ierr = PetscDrawLGAddPoint(lg,&xx_netforce,&yy_netforce);CHKERRQ(ierr);
+    } else {
+      ierr = PetscDrawLGAddPoint(lg,xx,yy);CHKERRQ(ierr);
+    }
     x   += hx;
     //if (max > 7200150000.0)
     //printf("max very big when i = %d\n",i);
