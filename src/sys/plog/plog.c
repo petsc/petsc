@@ -49,21 +49,21 @@ int        numObjectsDestroyed = 0;
 PetscLogDouble  BaseTime        = 0.0;
 PetscLogDouble  _TotalFlops     = 0.0; /* The number of flops */
 PetscLogDouble  petsc_tmp_flops = 0.0; /* The incremental number of flops */
-PetscLogDouble  send_ct         = 0.0; /* The number of sends */
-PetscLogDouble  recv_ct         = 0.0; /* The number of receives */
-PetscLogDouble  send_len        = 0.0; /* The total length of all sent messages */
-PetscLogDouble  recv_len        = 0.0; /* The total length of all received messages */
-PetscLogDouble  isend_ct        = 0.0; /* The number of immediate sends */
-PetscLogDouble  irecv_ct        = 0.0; /* The number of immediate receives */
-PetscLogDouble  isend_len       = 0.0; /* The total length of all immediate send messages */
-PetscLogDouble  irecv_len       = 0.0; /* The total length of all immediate receive messages */
-PetscLogDouble  wait_ct         = 0.0; /* The number of waits */
-PetscLogDouble  wait_any_ct     = 0.0; /* The number of anywaits */
-PetscLogDouble  wait_all_ct     = 0.0; /* The number of waitalls */
-PetscLogDouble  sum_of_waits_ct = 0.0; /* The total number of waits */
-PetscLogDouble  allreduce_ct    = 0.0; /* The number of reductions */
-PetscLogDouble  gather_ct       = 0.0; /* The number of gathers and gathervs */
-PetscLogDouble  scatter_ct      = 0.0; /* The number of scatters and scattervs */
+PetscLogDouble  petsc_send_ct         = 0.0; /* The number of sends */
+PetscLogDouble  petsc_recv_ct         = 0.0; /* The number of receives */
+PetscLogDouble  petsc_send_len        = 0.0; /* The total length of all sent messages */
+PetscLogDouble  petsc_recv_len        = 0.0; /* The total length of all received messages */
+PetscLogDouble  petsc_isend_ct        = 0.0; /* The number of immediate sends */
+PetscLogDouble  petsc_irecv_ct        = 0.0; /* The number of immediate receives */
+PetscLogDouble  petsc_isend_len       = 0.0; /* The total length of all immediate send messages */
+PetscLogDouble  petsc_irecv_len       = 0.0; /* The total length of all immediate receive messages */
+PetscLogDouble  petsc_wait_ct         = 0.0; /* The number of waits */
+PetscLogDouble  petsc_wait_any_ct     = 0.0; /* The number of anywaits */
+PetscLogDouble  petsc_wait_all_ct     = 0.0; /* The number of waitalls */
+PetscLogDouble  petsc_sum_of_waits_ct = 0.0; /* The total number of waits */
+PetscLogDouble  petsc_allreduce_ct    = 0.0; /* The number of reductions */
+PetscLogDouble  petsc_gather_ct       = 0.0; /* The number of gathers and gathervs */
+PetscLogDouble  petsc_scatter_ct      = 0.0; /* The number of scatters and scattervs */
 
 /* Logging functions */
 PetscErrorCode  (*_PetscLogPHC)(PetscObject) = PETSC_NULL;
@@ -72,11 +72,11 @@ PetscErrorCode  (*_PetscLogPLB)(PetscLogEvent, int, PetscObject, PetscObject, Pe
 PetscErrorCode  (*_PetscLogPLE)(PetscLogEvent, int, PetscObject, PetscObject, PetscObject, PetscObject) = PETSC_NULL;
 
 /* Tracing event logging variables */
-static FILE          *tracefile       = PETSC_NULL;
-static int            tracelevel      = 0;
-static const char    *traceblanks     = "                                                                                                    ";
-static char           tracespace[128] = " ";
-static PetscLogDouble tracetime       = 0.0;
+FILE          *tracefile       = PETSC_NULL;
+int            tracelevel      = 0;
+const char    *traceblanks     = "                                                                                                    ";
+char           tracespace[128] = " ";
+PetscLogDouble tracetime       = 0.0;
 static PetscBool  PetscLogBegin_PrivateCalled = PETSC_FALSE;
 
 /*---------------------------------------------- General Functions --------------------------------------------------*/
@@ -122,21 +122,21 @@ PetscErrorCode  PetscLogDestroy(void)
   BaseTime        = 0.0;
   _TotalFlops     = 0.0; 
   petsc_tmp_flops = 0.0; 
-  send_ct         = 0.0; 
-  recv_ct         = 0.0; 
-  send_len        = 0.0; 
-  recv_len        = 0.0; 
-  isend_ct        = 0.0; 
-  irecv_ct        = 0.0; 
-  isend_len       = 0.0; 
-  irecv_len       = 0.0; 
-  wait_ct         = 0.0; 
-  wait_any_ct     = 0.0; 
-  wait_all_ct     = 0.0; 
-  sum_of_waits_ct = 0.0; 
-  allreduce_ct    = 0.0; 
-  gather_ct       = 0.0; 
-  scatter_ct      = 0.0; 
+  petsc_send_ct         = 0.0; 
+  petsc_recv_ct         = 0.0; 
+  petsc_send_len        = 0.0; 
+  petsc_recv_len        = 0.0; 
+  petsc_isend_ct        = 0.0; 
+  petsc_irecv_ct        = 0.0; 
+  petsc_isend_len       = 0.0; 
+  petsc_irecv_len       = 0.0; 
+  petsc_wait_ct         = 0.0; 
+  petsc_wait_any_ct     = 0.0; 
+  petsc_wait_all_ct     = 0.0; 
+  petsc_sum_of_waits_ct = 0.0; 
+  petsc_allreduce_ct    = 0.0; 
+  petsc_gather_ct       = 0.0; 
+  petsc_scatter_ct      = 0.0; 
   PETSC_LARGEST_EVENT  = PETSC_EVENT;
   _PetscLogPHC = PETSC_NULL;
   _PetscLogPHD = PETSC_NULL;
@@ -1323,7 +1323,7 @@ PetscErrorCode  PetscLogView(PetscViewer viewer)
   ierr = PetscFPrintf(comm, fd, "Using %s\n", version);CHKERRQ(ierr);
 
   /* Must preserve reduction count before we go on */
-  red  = allreduce_ct + gather_ct + scatter_ct;
+  red  = petsc_allreduce_ct + petsc_gather_ct + petsc_scatter_ct;
 
   /* Calculate summary information */
   ierr = PetscFPrintf(comm, fd, "\n                         Max       Max/Min        Avg      Total \n");CHKERRQ(ierr);
@@ -1370,7 +1370,7 @@ PetscErrorCode  PetscLogView(PetscViewer viewer)
     ierr = PetscFPrintf(comm, fd, "Memory:               %5.3e   %10.5f              %5.3e\n", max, ratio, tot);CHKERRQ(ierr);
   }
   /*   Messages */
-  mess = 0.5*(irecv_ct + isend_ct + recv_ct + send_ct);
+  mess = 0.5*(petsc_irecv_ct + petsc_isend_ct + petsc_recv_ct + petsc_send_ct);
   ierr = MPI_Allreduce(&mess,         &min, 1, MPIU_PETSCLOGDOUBLE, MPI_MIN, comm);CHKERRQ(ierr);
   ierr = MPI_Allreduce(&mess,         &max, 1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm);CHKERRQ(ierr);
   ierr = MPI_Allreduce(&mess,         &tot, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRQ(ierr);
@@ -1379,7 +1379,7 @@ PetscErrorCode  PetscLogView(PetscViewer viewer)
   ierr = PetscFPrintf(comm, fd, "MPI Messages:         %5.3e   %10.5f   %5.3e  %5.3e\n", max, ratio, avg, tot);CHKERRQ(ierr);
   numMessages = tot;
   /*   Message Lengths */
-  mess = 0.5*(irecv_len + isend_len + recv_len + send_len);
+  mess = 0.5*(petsc_irecv_len + petsc_isend_len + petsc_recv_len + petsc_send_len);
   ierr = MPI_Allreduce(&mess,         &min, 1, MPIU_PETSCLOGDOUBLE, MPI_MIN, comm);CHKERRQ(ierr);
   ierr = MPI_Allreduce(&mess,         &max, 1, MPIU_PETSCLOGDOUBLE, MPI_MAX, comm);CHKERRQ(ierr);
   ierr = MPI_Allreduce(&mess,         &tot, 1, MPIU_PETSCLOGDOUBLE, MPI_SUM, comm);CHKERRQ(ierr);
@@ -2125,7 +2125,7 @@ PetscErrorCode  PetscLogViewPython(PetscViewer viewer)
   ierr = PetscFPrintf(comm, fd, "Nproc = %d\n",size);CHKERRQ(ierr);
 
   /* Must preserve reduction count before we go on */
-  red  = (allreduce_ct + gather_ct + scatter_ct)/((PetscLogDouble) size);
+  red  = (petsc_allreduce_ct + petsc_gather_ct + petsc_scatter_ct)/((PetscLogDouble) size);
 
   /* Calculate summary information */
 
@@ -2179,7 +2179,7 @@ PetscErrorCode  PetscLogViewPython(PetscViewer viewer)
   }
 
   /*   Messages */
-  mess = 0.5*(irecv_ct + isend_ct + recv_ct + send_ct);
+  mess = 0.5*(petsc_irecv_ct + petsc_isend_ct + petsc_recv_ct + petsc_send_ct);
   ierr = MPI_Gather(&mess,1,MPIU_PETSCLOGDOUBLE,mydata,1,MPIU_PETSCLOGDOUBLE,0,comm);CHKERRQ(ierr);
   if (!rank){
     ierr = PetscFPrintf(comm, fd, "MPIMessages = [ " );CHKERRQ(ierr);
@@ -2193,7 +2193,7 @@ PetscErrorCode  PetscLogViewPython(PetscViewer viewer)
   }
 
   /*   Message Lengths */
-  mess = 0.5*(irecv_len + isend_len + recv_len + send_len);
+  mess = 0.5*(petsc_irecv_len + petsc_isend_len + petsc_recv_len + petsc_send_len);
   ierr = MPI_Gather(&mess,1,MPIU_PETSCLOGDOUBLE,mydata,1,MPIU_PETSCLOGDOUBLE,0,comm);CHKERRQ(ierr);
   if (!rank){
     ierr = PetscFPrintf(comm, fd, "MPIMessageLengths = [ " );CHKERRQ(ierr);

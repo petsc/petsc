@@ -185,9 +185,9 @@ PetscErrorCode  PetscStageLogPush(PetscStageLog stageLog, int stage)
     if (stageLog->stageInfo[curStage].perfInfo.active) {
       PetscTimeAdd(stageLog->stageInfo[curStage].perfInfo.time);
       stageLog->stageInfo[curStage].perfInfo.flops         += _TotalFlops;
-      stageLog->stageInfo[curStage].perfInfo.numMessages   += irecv_ct  + isend_ct  + recv_ct  + send_ct;
-      stageLog->stageInfo[curStage].perfInfo.messageLength += irecv_len + isend_len + recv_len + send_len;
-      stageLog->stageInfo[curStage].perfInfo.numReductions += allreduce_ct + gather_ct + scatter_ct;
+      stageLog->stageInfo[curStage].perfInfo.numMessages   += petsc_irecv_ct  + petsc_isend_ct  + petsc_recv_ct  + petsc_send_ct;
+      stageLog->stageInfo[curStage].perfInfo.messageLength += petsc_irecv_len + petsc_isend_len + petsc_recv_len + petsc_send_len;
+      stageLog->stageInfo[curStage].perfInfo.numReductions += petsc_allreduce_ct + petsc_gather_ct + petsc_scatter_ct;
     }
   }
   /* Activate the stage */
@@ -199,9 +199,9 @@ PetscErrorCode  PetscStageLogPush(PetscStageLog stageLog, int stage)
   if (stageLog->stageInfo[stage].perfInfo.active) {
     PetscTimeSubtract(stageLog->stageInfo[stage].perfInfo.time);
     stageLog->stageInfo[stage].perfInfo.flops         -= _TotalFlops;
-    stageLog->stageInfo[stage].perfInfo.numMessages   -= irecv_ct  + isend_ct  + recv_ct  + send_ct;
-    stageLog->stageInfo[stage].perfInfo.messageLength -= irecv_len + isend_len + recv_len + send_len;
-    stageLog->stageInfo[stage].perfInfo.numReductions -= allreduce_ct + gather_ct + scatter_ct;
+    stageLog->stageInfo[stage].perfInfo.numMessages   -= petsc_irecv_ct  + petsc_isend_ct  + petsc_recv_ct  + petsc_send_ct;
+    stageLog->stageInfo[stage].perfInfo.messageLength -= petsc_irecv_len + petsc_isend_len + petsc_recv_len + petsc_send_len;
+    stageLog->stageInfo[stage].perfInfo.numReductions -= petsc_allreduce_ct + petsc_gather_ct + petsc_scatter_ct;
   }
   PetscFunctionReturn(0);
 }
@@ -251,9 +251,9 @@ PetscErrorCode  PetscStageLogPop(PetscStageLog stageLog)
   if (stageLog->stageInfo[curStage].perfInfo.active) {
     PetscTimeAdd(stageLog->stageInfo[curStage].perfInfo.time);
     stageLog->stageInfo[curStage].perfInfo.flops         += _TotalFlops;
-    stageLog->stageInfo[curStage].perfInfo.numMessages   += irecv_ct  + isend_ct  + recv_ct  + send_ct;
-    stageLog->stageInfo[curStage].perfInfo.messageLength += irecv_len + isend_len + recv_len + send_len;
-    stageLog->stageInfo[curStage].perfInfo.numReductions += allreduce_ct + gather_ct + scatter_ct;
+    stageLog->stageInfo[curStage].perfInfo.numMessages   += petsc_irecv_ct  + petsc_isend_ct  + petsc_recv_ct  + petsc_send_ct;
+    stageLog->stageInfo[curStage].perfInfo.messageLength += petsc_irecv_len + petsc_isend_len + petsc_recv_len + petsc_send_len;
+    stageLog->stageInfo[curStage].perfInfo.numReductions += petsc_allreduce_ct + petsc_gather_ct + petsc_scatter_ct;
   }
   ierr = PetscIntStackEmpty(stageLog->stack, &empty);CHKERRQ(ierr);
   if (!empty) {
@@ -262,9 +262,9 @@ PetscErrorCode  PetscStageLogPop(PetscStageLog stageLog)
     if (stageLog->stageInfo[curStage].perfInfo.active) {
       PetscTimeSubtract(stageLog->stageInfo[curStage].perfInfo.time);
       stageLog->stageInfo[curStage].perfInfo.flops         -= _TotalFlops;
-      stageLog->stageInfo[curStage].perfInfo.numMessages   -= irecv_ct  + isend_ct  + recv_ct  + send_ct;
-      stageLog->stageInfo[curStage].perfInfo.messageLength -= irecv_len + isend_len + recv_len + send_len;
-      stageLog->stageInfo[curStage].perfInfo.numReductions -= allreduce_ct + gather_ct + scatter_ct;
+      stageLog->stageInfo[curStage].perfInfo.numMessages   -= petsc_irecv_ct  + petsc_isend_ct  + petsc_recv_ct  + petsc_send_ct;
+      stageLog->stageInfo[curStage].perfInfo.messageLength -= petsc_irecv_len + petsc_isend_len + petsc_recv_len + petsc_send_len;
+      stageLog->stageInfo[curStage].perfInfo.numReductions -= petsc_allreduce_ct + petsc_gather_ct + petsc_scatter_ct;
     }
     stageLog->curStage                           = curStage;
   } else {

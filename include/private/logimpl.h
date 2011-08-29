@@ -42,6 +42,11 @@ extern int        numActions, maxActions;
 extern int        numObjects, maxObjects;
 extern int        numObjectsDestroyed;
 
+extern FILE          *tracefile;
+extern int            tracelevel;
+extern const char    *traceblanks;
+extern char           tracespace[128];
+extern PetscLogDouble tracetime;
 
 #ifdef PETSC_USE_LOG
 
