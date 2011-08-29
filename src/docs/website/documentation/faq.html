@@ -271,6 +271,8 @@
               <li><a href="faq.html#newton">Why is Newton's method
                   (SNES) not
                   converging?</a></li>
+              
+              <li><a href="faq.html#kspdiverged">Why is the linear solver (KSP) not converging?</a></li>
             </menu>
             <a href="faq.html#Debugging"><span style="font-weight:
                 bold;"></span>Debugging</a>
@@ -1984,53 +1986,78 @@ in
               <li>The Jacobian system has a singularity that the linear
                 solver is not handling.</li>
               <li>There is a bug in the function evaluation routine.</li>
+              <li>The function is not continuous or does not have continuous first derivatives (e.g. phase change or TVD limiters).</li>
+              <li>The equations may not have a solution (e.g. limit cycle instead of a steady state) or there may be a "hill" between the initial guess and the steady state (e.g. reactants must ignite and burn before reaching a steady state, but the steady-state residual will be larger during combustion).</li>
             </ul>
             Here are some of the ways to help debug lack of convergence
             of Newton.<br>
             <ul>
-              <li>Run with the options -snes_monitor
-                -ksp_monitor_true_residual -snes_converged_reason
-                -ksp_converged_reason</li>
-              <li>Run with -pc_type lu or svd to see if the problem is a
+              <li>Run with the options
+                <tt>-snes_monitor -ksp_monitor_true_residual -snes_converged_reason -ksp_converged_reason</tt>.
+                <ul>
+                  <li>If the linear solve does not converge, check if the Jacobian is correct, then see <a href="faq.html#kspdiverged">this question</a>.</li>
+                  <li>If the preconditioned residual converges, but the true residual does not, the preconditioner may be singular.</li>
+                  <li>If the linear solve converges well, but the line search fails, the Jacobian may be incorrect.</li>
+                </ul>
+              </li>
+              <li>Run with <tt>-pc_type lu</tt> or <tt>-pc_type svd</tt> to see if the problem is a
                 poor linear
                 solver</li>
-              <li>Run with -mat_view to see if the Jacobian looks
-                reasonable<br>
-              </li>
-              <li>Run with -snes_type test -snes_test_display to see if
-                the
-                Jacobian you are using is wrong</li>
-              <li>Run with -snes_mf_operator to see if the Jacobian you
-                are
-                using is wrong</li>
+              <li>Run with <tt>-mat_view</tt> or <tt>-mat_view_draw</tt> to see if the Jacobian looks
+                reasonable</li>
+              <li>Run with <tt>-snes_type test -snes_test_display</tt> to see if
+                the Jacobian you are using is wrong. Compare the output
+                when you add <tt>-mat_fd_type ds</tt> to see if the result is sensitive
+                to the choice of differencing parameter.</li>
+              <li>Run with <tt>-snes_mf_operator -pc_type lu</tt> to see if the Jacobian you
+                are using is wrong. If the problem is too large for a direct solve, try
+                <tt>-snes_mf_operator -pc_type ksp -ksp_ksp_rtol 1e-12</tt>. Compare the output
+                when you add <tt>-mat_mffd_type ds</tt> to see if the result is sensitive to
+                choice of differencing parameter.</li>
               <li>Run on one processor to see if the problem is only in
                 parallel.</li>
-              <li>Run with -snes_ls_monitor to see if the line search is
+              <li>Run with <tt>-snes_ls_monitor</tt> to see if the line search is
                 failing (this is usually a sign of a bad Jacobian) use
                 -info in PETSc
                 3.1 and older versions</li>
-              <li>Run with -info to get more detailed information on the
+              <li>Run with <tt>-info</tt> to get more detailed information on the
                 solution process.</li>
             </ul>
             Here are some ways to help the Newton process if everything
             above checks out<br>
             <ul>
-              <li>Run with grid sequencing (-snes_grid_sequence if
+              <li>Run with grid sequencing (<tt>-snes_grid_sequence</tt> if
                 working with a DM is all you need) to generate better
                 initial guess on your finer mesh</li>
               <li>Run with quad precision (./configure with
                 --with-precision=__float128 --download-f2cblaslapack
                 with PETSc 3.2 and later and recent versions of the GNU
                 compilers)</li>
+              <li>Change the units (nondimensionalization), boundary condition scaling, or formulation so that the Jacobian is better conditioned.</li>
+              <li>Mollify features in the function that do not have continuous first derivatives (often occurs when there are "if" statements in the residual evaluation, e.g. phase change or TVD limiters). Use a variational inequality solver (SNESVI) if the discontinuities are of fundamental importance.</li>
+              <li>Try a trust region method (<tt>-ts_type tr</tt>, may have to adjust parameters).</li>
               <li>Run with some continuation parameter from a point
-                where you know the solution</li>
+                where you know the solution, see TSPSEUDO for steady-states.</li>
               <li>There are homotopy solver packages like PHCpack that
                 can get you all possible solutions (and tell you that it
                 has found them all) but those are not scalable and
                 cannot solve anything but small problems.<br>
               </li>
             </ul>
-            <p></p>
+            <p><a name="kspdiverged"><font color="#ff0000">Why is the linear solver (KSP) not converging?</font> </a></p>
+            <p>Always run with <tt>-ksp_converged_reason -ksp_monitor_true_residual</tt> when trying to learn why a method is not converging. Common reasons for KSP not converging are</p>
+            <ul>
+              <li>The equations are singular by accident (e.g. forgot to impose boundary conditions). Check this for a small problem using <tt>-pc_type svd -pc_svd_monitor</tt>.</li>
+              <li>The equations are intentionally singular (e.g. constant null space), but the Krylov method was not informed, see KSPSetNullSpace().</li>
+              <li>The equations are intentionally singular and KSPSetNullSpace() was used, but the right hand side is not consistent. You may have to call MatNullSpaceRemove() on the right hand side before calling KSPSolve().</li>
+              <li>The equations are indefinite so that standard preconditioners don't work. Usually you will know this from the physics, but you can check with <tt>-ksp_compute_eigenvalues -ksp_gmres_restart 1000 -pc_type none</tt>. For simple saddle point problems, try <tt>-pc_type fieldsplit -pc_fieldsplit_type schur -pc_fieldsplit_detect_saddle_point</tt>. For more difficult problems, read the literature to find robust methods and ask petsc-users@mcs.anl.gov or petsc-maint@mcs.anl.gov if you want advice about how to implement them.</li>
+              <li>The preconditioner is too weak or is unstable. See if <tt>-pc_type asm -sub_pc_type lu</tt> improves the convergence rate. If GMRES is losing too much progress in the restart, see if longer restarts help <tt>-ksp_gmres_restart 300</tt>. If a transpose is available, try <tt>-ksp_type bcgs</tt> or other methods that do not require a restart. (Note that convergence with these methods is frequently erratic.)</li>
+              <li>The preconditioner is nonlinear (e.g. a nested iterative solve), try <tt>-ksp_type fgmres</tt> or <tt>-ksp_type gcr</tt>.</li>
+              <li>The matrix is very ill-conditioned. Try to improve it by choosing the relative scaling of components/boundary conditions. Try <tt>-ksp_diagonal_scale -ksp_diagonal_scale_fix</tt>. Perhaps change the formulation of the problem to produce more friendly algebraic equations.</li>
+              <li>The matrix is nonlinear (e.g. evaluated using finite differencing of a nonlinear function). Try different differencing parameters, <tt>./configure --with-precision=__float128 --download-f2cblaslapack</tt>, check if it converges in "easier" parameter regimes.</li>
+              <li>A symmetric method is being used for a non-symmetric problem.</li>
+              <li>Classical Gram-Schmidt is becoming unstable, try <tt>-ksp_gmres_modifiedgramschmidt</tt> or use a method that orthogonalizes differently, e.g. <tt>-ksp_type gcr</tt>.</li>
+            </ul>
             <hr>
             <h3><a name="Debugging">Debugging</a></h3>
             <p><a name="debug-ibm"><font color="#ff0000">How

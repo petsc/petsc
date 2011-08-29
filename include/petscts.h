@@ -490,6 +490,7 @@ extern PetscErrorCode   TSRKSetTolerance(TS,PetscReal);
 
 extern PetscErrorCode  TSThetaSetTheta(TS,PetscReal);
 extern PetscErrorCode  TSThetaGetTheta(TS,PetscReal*);
+extern PetscErrorCode  TSThetaGetEndpoint(TS,PetscBool*);
 extern PetscErrorCode  TSThetaSetEndpoint(TS,PetscBool);
 
 extern PetscErrorCode  TSAlphaSetAdapt(TS,PetscErrorCode(*)(TS,PetscReal,Vec,Vec,PetscReal*,PetscBool*,void*),void*);
