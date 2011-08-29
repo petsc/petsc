@@ -494,7 +494,7 @@ PetscErrorCode  PetscDrawLGPrint(PetscDrawLG lg)
   for(i = 0; i < dim; i++) {
     PetscPrintf(((PetscObject)lg)->comm, "Line %d>\n", i);
     for(j = 0; j < nopts; j++) {
-      PetscPrintf(((PetscObject)lg)->comm, "  X: %G Y: %G\n", lg->x[j*dim+i], lg->y[j*dim+i]);
+      PetscPrintf(((PetscObject)lg)->comm, "  X: %g Y: %g\n", (double)lg->x[j*dim+i], (double)lg->y[j*dim+i]);
     }
   }
   PetscFunctionReturn(0);

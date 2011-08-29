@@ -99,7 +99,7 @@ PetscErrorCode PetscADefLabel(PetscReal val,PetscReal sep,char **p)
         ierr = PetscStripTrailingZeros(buf);CHKERRQ(ierr);
     }
   } else {
-    ierr = PetscSNPrintf(buf,40,"%G",val);
+    ierr = PetscSNPrintf(buf,40,"%g",(double)val);
     /* remove the extraneous 0 before the e */
     ierr = PetscStripZeros(buf);CHKERRQ(ierr);
     ierr = PetscStripZerosPlus(buf);CHKERRQ(ierr);
