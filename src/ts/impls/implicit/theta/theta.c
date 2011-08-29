@@ -96,6 +96,7 @@ static PetscErrorCode TSDestroy_Theta(TS ts)
   ierr = PetscFree(ts->data);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSThetaGetTheta_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSThetaSetTheta_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSThetaGetEndpoint_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSThetaSetEndpoint_C","",PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -209,6 +210,17 @@ PetscErrorCode  TSThetaSetTheta_Theta(TS ts,PetscReal theta)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSThetaSetEndpoint_Theta"
+PetscErrorCode  TSThetaGetEndpoint_Theta(TS ts,PetscBool *endpoint)
+{
+  TS_Theta *th = (TS_Theta*)ts->data;
+
+  PetscFunctionBegin;
+  *endpoint = th->endpoint;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSThetaSetEndpoint_Theta"
 PetscErrorCode  TSThetaSetEndpoint_Theta(TS ts,PetscBool flg)
 {
   TS_Theta *th = (TS_Theta*)ts->data;
@@ -285,6 +297,7 @@ PetscErrorCode  TSCreate_Theta(TS ts)
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSThetaGetTheta_C","TSThetaGetTheta_Theta",TSThetaGetTheta_Theta);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSThetaSetTheta_C","TSThetaSetTheta_Theta",TSThetaSetTheta_Theta);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSThetaGetEndpoint_C","TSThetaGetEndpoint_Theta",TSThetaGetEndpoint_Theta);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSThetaSetEndpoint_C","TSThetaSetEndpoint_Theta",TSThetaSetEndpoint_Theta);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -346,6 +359,34 @@ PetscErrorCode  TSThetaSetTheta(TS ts,PetscReal theta)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   ierr = PetscTryMethod(ts,"TSThetaSetTheta_C",(TS,PetscReal),(ts,theta));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSThetaGetEndpoint"
+/*@
+  TSThetaGetEndpoint - Gets whether to use the endpoint variant of the method (e.g. trapezoid/Crank-Nicolson instead of midpoint rule).
+
+  Not Collective
+
+  Input Parameter:
+.  ts - timestepping context
+
+  Output Parameter:
+.  endpoint - PETSC_TRUE when using the endpoint variant
+
+  Level: Advanced
+
+.seealso: TSThetaSetEndpoint(), TSTHETA, TSCN
+@*/
+PetscErrorCode TSThetaGetEndpoint(TS ts,PetscBool *endpoint)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidPointer(endpoint,2);
+  ierr = PetscTryMethod(ts,"TSThetaGetEndpoint_C",(TS,PetscBool*),(ts,endpoint));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
