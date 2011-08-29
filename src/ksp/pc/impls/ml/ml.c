@@ -50,6 +50,7 @@ typedef struct {
   PetscInt       Nlevels,MaxNlevels,MaxCoarseSize,CoarsenScheme,EnergyMinimization;
   PetscReal      Threshold,DampingFactor,EnergyMinimizationDropTol;
   PetscBool      SpectralNormScheme_Anorm,BlockScaling,EnergyMinimizationCheap,Symmetrize,OldHierarchy,KeepAggInfo,Reusable;
+  PetscBool      reuse_interpolation;
   PetscMPIInt    size; /* size of communicator for pc->pmat */
 } PC_ML;
 
@@ -521,22 +522,91 @@ PetscErrorCode PCSetUp_ML(PC pc)
   PetscBool       isSeq, isMPI;
   KSP             smoother;
   PC              subpc;
+  PetscInt        mesh_level, old_mesh_level;
+
 
   PetscFunctionBegin;
   /* Since PCMG tries to use DM assocated with PC must delete it */
   ierr = DMDestroy(&pc->dm);CHKERRQ(ierr);
 
-  if (pc->setupcalled){
-    /* since ML can change the size of vectors/matrices at any level we must destroy everything */
-    ierr = PCReset_ML(pc);CHKERRQ(ierr);
-    ierr = PCReset_MG(pc);CHKERRQ(ierr);
+  A = pc->pmat;
+  ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);
+
+  if (pc->setupcalled) {
+    if (pc->flag == SAME_NONZERO_PATTERN && pc_ml->reuse_interpolation) {
+      /*
+       Reuse interpolaton instead of recomputing aggregates and updating the whole hierarchy. This is less expensive for
+       multiple solves in which the matrix is not changing too quickly.
+       */
+      ml_object = pc_ml->ml_object;
+      gridctx = pc_ml->gridctx;
+      Nlevels = pc_ml->Nlevels;
+      fine_level = Nlevels - 1;
+      gridctx[fine_level].A = A;
+
+      ierr = PetscTypeCompare((PetscObject) A, MATSEQAIJ, &isSeq);CHKERRQ(ierr);
+      ierr = PetscTypeCompare((PetscObject) A, MATMPIAIJ, &isMPI);CHKERRQ(ierr);
+      if (isMPI){
+        ierr = MatConvert_MPIAIJ_ML(A,PETSC_NULL,MAT_INITIAL_MATRIX,&Aloc);CHKERRQ(ierr);
+      } else if (isSeq) {
+        Aloc = A;
+      } else SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONG, "Matrix type '%s' cannot be used with ML. ML can only handle AIJ matrices.",((PetscObject)A)->type_name);
+
+      ierr = MatGetSize(Aloc,&m,&nlocal_allcols);CHKERRQ(ierr);
+      PetscMLdata = pc_ml->PetscMLdata;
+      PetscMLdata->A    = A;
+      PetscMLdata->Aloc = Aloc;
+      ML_Init_Amatrix(ml_object,0,m,m,PetscMLdata);
+      ML_Set_Amatrix_Matvec(ml_object,0,PetscML_matvec);
+
+      mesh_level = ml_object->ML_finest_level;
+      while (ml_object->SingleLevel[mesh_level].Rmat->to) {
+        old_mesh_level = mesh_level;
+        mesh_level = ml_object->SingleLevel[mesh_level].Rmat->to->levelnum;
+
+        /* clean and regenerate A */
+        mlmat = &(ml_object->Amat[mesh_level]);
+        ML_Operator_Clean(mlmat);
+        ML_Operator_Init(mlmat,ml_object->comm);
+        ML_Gen_AmatrixRAP(ml_object, old_mesh_level, mesh_level);
+      }
+
+      level = fine_level - 1;
+      if (size == 1) { /* convert ML P, R and A into seqaij format */
+        for (mllevel=1; mllevel<Nlevels; mllevel++){
+          mlmat = &(ml_object->Amat[mllevel]);
+          ierr  = MatWrapML_SeqAIJ(mlmat,MAT_INITIAL_MATRIX,&gridctx[level].A);CHKERRQ(ierr);
+          level--;
+        }
+      } else { /* convert ML P and R into shell format, ML A into mpiaij format */
+        for (mllevel=1; mllevel<Nlevels; mllevel++){
+          mlmat  = &(ml_object->Amat[mllevel]);
+          ierr = MatWrapML_MPIAIJ(mlmat,&gridctx[level].A);CHKERRQ(ierr);
+          level--;
+        }
+      }
+
+      for (level=0; level<fine_level; level++) {
+        if (level > 0){
+          ierr = PCMGSetResidual(pc,level,PCMGDefaultResidual,gridctx[level].A);CHKERRQ(ierr);
+        }
+        ierr = KSPSetOperators(gridctx[level].ksp,gridctx[level].A,gridctx[level].A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+      }
+      ierr = PCMGSetResidual(pc,fine_level,PCMGDefaultResidual,gridctx[fine_level].A);CHKERRQ(ierr);
+      ierr = KSPSetOperators(gridctx[fine_level].ksp,gridctx[level].A,gridctx[fine_level].A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+
+      ierr = PCSetUp_MG(pc);CHKERRQ(ierr);
+      PetscFunctionReturn(0);
+    } else {
+      /* since ML can change the size of vectors/matrices at any level we must destroy everything */
+      ierr = PCReset_ML(pc);CHKERRQ(ierr);
+      ierr = PCReset_MG(pc);CHKERRQ(ierr);
+    }
   }
-  
+
   /* setup special features of PCML */
   /*--------------------------------*/
   /* covert A to Aloc to be used by ML at fine grid */
-  A = pc->pmat;
-  ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);
   pc_ml->size = size;
   ierr = PetscTypeCompare((PetscObject) A, MATSEQAIJ, &isSeq);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject) A, MATMPIAIJ, &isMPI);CHKERRQ(ierr);
@@ -758,6 +828,7 @@ PetscErrorCode PCSetFromOptions_ML(PC pc)
   ierr = PetscOptionsBool("-pc_ml_Symmetrize","Symmetrize aggregation","ML_Set_Symmetrize",pc_ml->Symmetrize,&pc_ml->Symmetrize,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-pc_ml_BlockScaling","Scale all dofs at each node together","None",pc_ml->BlockScaling,&pc_ml->BlockScaling,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_ml_EnergyMinimization","Energy minimization norm type (0=no minimization; see ML manual for 1,2,3; -1 and 4 undocumented)","None",pc_ml->EnergyMinimization,&pc_ml->EnergyMinimization,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBool("-pc_ml_reuse_interpolation","Reuse the interpolation operators when possible (cheaper, weaker when matrix entries change a lot)","None",pc_ml->reuse_interpolation,&pc_ml->reuse_interpolation,PETSC_NULL);CHKERRQ(ierr);
   /*
     The following checks a number of conditions.  If we let this stuff slip by, then ML's error handling will take over.
     This is suboptimal because it amounts to calling exit(1) so we check for the most common conditions.
