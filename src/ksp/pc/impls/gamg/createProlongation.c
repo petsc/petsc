@@ -141,7 +141,8 @@ PetscErrorCode smoothAggs( const Mat a_Gmat_2, /* base (squared) graph */
     ierr = VecAssemblyEnd( tempVec ); CHKERRQ(ierr);
     ierr = VecScatterBegin(mpimat_1->Mvctx,tempVec, mpimat_1->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr =   VecScatterEnd(mpimat_1->Mvctx,tempVec, mpimat_1->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecGetArray( mpimat_1->lvec, &cpcol_1_state ); CHKERRQ(ierr);    
+    ierr = VecGetArray( mpimat_1->lvec, &cpcol_1_state ); CHKERRQ(ierr);
+    ierr = VecDestroy( &tempVec ); CHKERRQ(ierr);
   } else {
     matA_2 = (Mat_SeqAIJ*)a_Gmat_2->data;
     matA_1 = (Mat_SeqAIJ*)a_Gmat_1->data;
