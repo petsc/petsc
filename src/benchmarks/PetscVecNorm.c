@@ -17,7 +17,7 @@ int main(int argc,char **argv)
   ierr = VecSetSizes(x,n,n);CHKERRQ(ierr);
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);
 
-  PreLoadBegin(PETSC_TRUE,"VecNorm");
+  PetscPreLoadBegin(PETSC_TRUE,"VecNorm");
   ierr = PetscGetTime(&t1);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
@@ -29,7 +29,7 @@ int main(int argc,char **argv)
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
-  PreLoadEnd();
+  PetscPreLoadEnd();
   ierr = PetscGetTime(&t2);CHKERRQ(ierr);
 
 

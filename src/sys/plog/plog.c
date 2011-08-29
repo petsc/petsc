@@ -560,7 +560,7 @@ PetscErrorCode  PetscLogStagePop(void)
 
   Level: intermediate
 
-.seealso: PetscLogStagePush(), PetscLogStagePop(), PetscLogEventBegin(), PetscLogEventEnd(), PreLoadBegin(), PreLoadEnd(), PreLoadStage()
+.seealso: PetscLogStagePush(), PetscLogStagePop(), PetscLogEventBegin(), PetscLogEventEnd(), PetscPreLoadBegin(), PetscPreLoadEnd(), PetscPreLoadStage()
 @*/
 PetscErrorCode  PetscLogStageSetActive(PetscLogStage stage, PetscBool  isActive)
 {
@@ -588,7 +588,7 @@ PetscErrorCode  PetscLogStageSetActive(PetscLogStage stage, PetscBool  isActive)
 
   Level: intermediate
 
-.seealso: PetscLogStagePush(), PetscLogStagePop(), PetscLogEventBegin(), PetscLogEventEnd(), PreLoadBegin(), PreLoadEnd(), PreLoadStage()
+.seealso: PetscLogStagePush(), PetscLogStagePop(), PetscLogEventBegin(), PetscLogEventEnd(), PetscPreLoadBegin(), PetscPreLoadEnd(), PetscPreLoadStage()
 @*/
 PetscErrorCode  PetscLogStageGetActive(PetscLogStage stage, PetscBool  *isActive)
 {
@@ -670,7 +670,7 @@ PetscErrorCode  PetscLogStageGetVisible(PetscLogStage stage, PetscBool  *isVisib
 
   Level: intermediate
 
-.seealso: PetscLogStagePush(), PetscLogStagePop(), PreLoadBegin(), PreLoadEnd(), PreLoadStage()
+.seealso: PetscLogStagePush(), PetscLogStagePop(), PetscPreLoadBegin(), PetscPreLoadEnd(), PetscPreLoadStage()
 @*/
 PetscErrorCode  PetscLogStageGetId(const char name[], PetscLogStage *stage)
 {
@@ -1965,11 +1965,11 @@ PetscErrorCode  PetscLogObjectState(PetscObject obj, const char format[], ...)
 M*/
 
 /*MC
-   PreLoadBegin - Begin a segment of code that may be preloaded (run twice)
+   PetscPreLoadBegin - Begin a segment of code that may be preloaded (run twice)
     to get accurate timings
 
    Synopsis:
-   void PreLoadBegin(PetscBool  flag,char *name);
+   void PetscPreLoadBegin(PetscBool  flag,char *name);
 
    Not Collective
 
@@ -1981,11 +1981,11 @@ M*/
 
    Usage:
 .vb
-     PreLoadBegin(PETSC_TRUE,"first stage);
+     PetscPreLoadBegin(PETSC_TRUE,"first stage);
        lines of code
-       PreLoadStage("second stage");
+       PetscPreLoadStage("second stage");
        lines of code
-     PreLoadEnd();
+     PetscPreLoadEnd();
 .ve
 
    Notes: Only works in C/C++, not Fortran
@@ -1993,14 +1993,14 @@ M*/
      Flags available within the macro. 
 +    PetscPreLoadingUsed - true if we are or have done preloading 
 .    PetscPreLoadingOn - true if it is CURRENTLY doing preload
-.    PreLoadIt - 0 for the first computation (with preloading turned off it is only 0) 1 for the second
--    PreLoadMax - number of times it will do the computation, only one when preloading is turned on
-     The first two variables are available throughout the program, the second two only between the PreLoadBegin()
-     and PreLoadEnd()
+.    PetscPreLoadIt - 0 for the first computation (with preloading turned off it is only 0) 1 for the second
+-    PetscPreLoadMax - number of times it will do the computation, only one when preloading is turned on
+     The first two variables are available throughout the program, the second two only between the PetscPreLoadBegin()
+     and PetscPreLoadEnd()
 
    Level: intermediate
 
-.seealso: PetscLogEventRegister(), PetscLogEventBegin(), PetscLogEventEnd(), PreLoadEnd(), PreLoadStage()
+.seealso: PetscLogEventRegister(), PetscLogEventBegin(), PetscLogEventEnd(), PetscPreLoadEnd(), PetscPreLoadStage()
 
    Concepts: preloading
    Concepts: timing^accurate
@@ -2010,54 +2010,54 @@ M*/
 M*/
 
 /*MC
-   PreLoadEnd - End a segment of code that may be preloaded (run twice)
+   PetscPreLoadEnd - End a segment of code that may be preloaded (run twice)
     to get accurate timings
 
    Synopsis:
-   void PreLoadEnd(void);
+   void PetscPreLoadEnd(void);
 
    Not Collective
 
    Usage:
 .vb
-     PreLoadBegin(PETSC_TRUE,"first stage);
+     PetscPreLoadBegin(PETSC_TRUE,"first stage);
        lines of code
-       PreLoadStage("second stage");
+       PetscPreLoadStage("second stage");
        lines of code
-     PreLoadEnd();
+     PetscPreLoadEnd();
 .ve
 
    Notes: only works in C/C++ not fortran
 
    Level: intermediate
 
-.seealso: PetscLogEventRegister(), PetscLogEventBegin(), PetscLogEventEnd(), PreLoadBegin(), PreLoadStage()
+.seealso: PetscLogEventRegister(), PetscLogEventBegin(), PetscLogEventEnd(), PetscPreLoadBegin(), PetscPreLoadStage()
 
 M*/
 
 /*MC
-   PreLoadStage - Start a new segment of code to be timed separately.
+   PetscPreLoadStage - Start a new segment of code to be timed separately.
     to get accurate timings
 
    Synopsis:
-   void PreLoadStage(char *name);
+   void PetscPreLoadStage(char *name);
 
    Not Collective
 
    Usage:
 .vb
-     PreLoadBegin(PETSC_TRUE,"first stage);
+     PetscPreLoadBegin(PETSC_TRUE,"first stage);
        lines of code
-       PreLoadStage("second stage");
+       PetscPreLoadStage("second stage");
        lines of code
-     PreLoadEnd();
+     PetscPreLoadEnd();
 .ve
 
    Notes: only works in C/C++ not fortran
 
    Level: intermediate
 
-.seealso: PetscLogEventRegister(), PetscLogEventBegin(), PetscLogEventEnd(), PreLoadBegin(), PreLoadEnd()
+.seealso: PetscLogEventRegister(), PetscLogEventBegin(), PetscLogEventEnd(), PetscPreLoadBegin(), PetscPreLoadEnd()
 
 M*/
 

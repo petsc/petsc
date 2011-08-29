@@ -102,7 +102,7 @@ int main(int argc,char **argv)
 
   PetscInitialize(&argc,&argv,(char *)0,help);
 
-  PreLoadBegin(PETSC_TRUE,"SetUp");
+  PetscPreLoadBegin(PETSC_TRUE,"SetUp");
 
     app.comm = PETSC_COMM_WORLD;
     app.nxv  = 6;
@@ -198,7 +198,7 @@ int main(int argc,char **argv)
        Solve the nonlinear system
        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  PreLoadStage("Solve");
+  PetscPreLoadStage("Solve");
     ierr = DMMGSolve(dmmg);CHKERRQ(ierr); 
 
 
@@ -212,7 +212,7 @@ int main(int argc,char **argv)
     ierr = PetscViewerDestroy(&v1);CHKERRQ(ierr);
     ierr = DMDestroy(&app.pack);CHKERRQ(ierr);
     ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
-  PreLoadEnd();
+  PetscPreLoadEnd();
 
   ierr = PetscFinalize();
   return 0;

@@ -30,7 +30,7 @@ int main(int argc,char **args)
   IS                    isrow,iscol;      /* row and column permutations */
   PetscErrorCode        ierr;
   const MatOrderingType rtype = MATORDERINGRCM;
-  PetscBool             flg,PreLoad = PETSC_FALSE;
+  PetscBool             flg,PetscPreLoad = PETSC_FALSE;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 
@@ -42,7 +42,7 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetString(PETSC_NULL,"-f0",file[0],PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_COMM_WORLD,1,"Must indicate binary file with the -f0 option");
   ierr = PetscOptionsGetString(PETSC_NULL,"-f1",file[1],PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
-  if (flg) PreLoad = PETSC_TRUE;
+  if (flg) PetscPreLoad = PETSC_TRUE;
 
   /* -----------------------------------------------------------
                   Beginning of loop
@@ -56,7 +56,7 @@ int main(int argc,char **args)
         -log_summary) can be done with the larger one (that actually
         is the system of interest). 
   */
-  PreLoadBegin(PreLoad,"Load");
+  PetscPreLoadBegin(PetscPreLoad,"Load");
 
     /* - - - - - - - - - - - New Stage - - - - - - - - - - - - -
                            Load system i
@@ -66,7 +66,7 @@ int main(int argc,char **args)
        Open binary file.  Note that we use FILE_MODE_READ to indicate
        reading from this file.
     */
-    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[PreLoadIt],FILE_MODE_READ,&fd);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[PetscPreLoadIt],FILE_MODE_READ,&fd);CHKERRQ(ierr);
 
     /*
        Load the matrix; then destroy the viewer.
@@ -80,7 +80,7 @@ int main(int argc,char **args)
     /* - - - - - - - - - - - New Stage - - - - - - - - - - - - -
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-    PreLoadStage("Reordering");
+    PetscPreLoadStage("Reordering");
     ierr = MatGetOrdering(A,rtype,&isrow,&iscol);CHKERRQ(ierr);
 
     /* 
@@ -90,7 +90,7 @@ int main(int argc,char **args)
     ierr = MatDestroy(&A);CHKERRQ(ierr);
     ierr = ISDestroy(&isrow);CHKERRQ(ierr);
     ierr = ISDestroy(&iscol);CHKERRQ(ierr);
-  PreLoadEnd();
+  PetscPreLoadEnd();
 
   ierr = PetscFinalize();
   return 0;
