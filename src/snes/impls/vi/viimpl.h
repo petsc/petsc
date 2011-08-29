@@ -49,6 +49,7 @@ typedef struct {
   void                     *ctxP; /* user defined check redundancy context */
 
   PetscErrorCode           (*computevariablebounds)(SNES,Vec,Vec);
+  PetscBool                ignorefunctionsign;    /* when computing active set ignore the sign of the function values */
 } SNES_VI;
 
 #endif

@@ -98,7 +98,7 @@ extern PetscErrorCode  PetscDrawSetSave(PetscDraw,const char*);
 #define PETSC_DRAW_WHITE            0
 #define PETSC_DRAW_BLACK            1
 #define PETSC_DRAW_RED              2
-#define PETSC_DRAW_GREEN           15 
+#define PETSC_DRAW_GREEN            3 
 #define PETSC_DRAW_CYAN             4
 #define PETSC_DRAW_BLUE             5
 #define PETSC_DRAW_MAGENTA          6
@@ -110,7 +110,7 @@ extern PetscErrorCode  PetscDrawSetSave(PetscDraw,const char*);
 #define PETSC_DRAW_PINK            12
 #define PETSC_DRAW_CORAL           13
 #define PETSC_DRAW_GRAY            14
-#define PETSC_DRAW_YELLOW          3
+#define PETSC_DRAW_YELLOW          15
 
 #define PETSC_DRAW_GOLD            16
 #define PETSC_DRAW_LIGHTPINK       17

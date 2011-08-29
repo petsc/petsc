@@ -19,21 +19,34 @@ Add a simple term to the right hand side so that the bulge grows/expands with ti
 ---------------
 ./biharmonic -ts_monitor -snes_monitor  -pc_type lu  -draw_pause .1  -snes_converged_reason  -wait   -ts_type beuler   -da_refine 5 -vi -growth
 
-   u_t =  kappa \Delta \Delta  6.*u*(u_x)^2 + (3*u^2 - 12) \Delta u
+   u_t =  kappa \Delta \Delta u +   6.*u*(u_x)^2 + (3*u^2 - 12) \Delta u
     -1 <= u <= 1 
     Periodic boundary conditions
 
-Evolve the Cahn-Hillard equations: double well
+Evolve the Cahn-Hillard equations: double well Initial hump shrinks then grows 
 ---------------
 ./biharmonic -ts_monitor -snes_monitor   -pc_type lu  -draw_pause .1 -snes_converged_reason   -wait   -ts_type beuler    -da_refine 6 -vi  -kappa .00001 -ts_dt 5.96046e-06 -cahn-hillard
+
+Initial hump neither shrinks nor grows when degenerate (otherwise similar solution)
+ 
+./biharmonic -ts_monitor -snes_monitor   -pc_type lu  -draw_pause .1 -snes_converged_reason   -wait   -ts_type beuler    -da_refine 6 -vi  -kappa .00001 -ts_dt 5.96046e-06 -cahn-hillard -degenerate 
 
 Evolve the Cahn-Hillard equations: double obstacle
 ---------------
 ./biharmonic -ts_monitor -snes_monitor  -pc_type lu  -draw_pause .1 -snes_converged_reason   -wait   -ts_type beuler    -da_refine 5 -vi  -kappa .00001 -ts_dt 5.96046e-06 -cahn-hillard -energy 2 -snes_ls_monitor   -vi 
 
-Evolve the Cahn-Hillard equations: logarithmic
+Evolve the Cahn-Hillard equations: logarithmic + double well (never shrinks and then grows)
 ---------------
-./biharmonic -ts_monitor -snes_monitor  -pc_type lu  --snes_converged_reason  -wait   -ts_type beuler    -da_refine 5 -vi  -kappa .00001 -ts_dt 5.96046e-06 -cahn-hillard -energy 3 -snes_ls_monitor -theta .00000001  -vi 
+./biharmonic -ts_monitor -snes_monitor  -pc_type lu  --snes_converged_reason  -wait   -ts_type beuler    -da_refine 5 -vi  -kappa .0001 -ts_dt 5.96046e-06 -cahn-hillard -energy 3 -snes_ls_monitor -theta .00000001  -vi  -ts_monitor_solution -ts_monitor_solution_initial -ts_max_time 1.
+
+./biharmonic -ts_monitor -snes_monitor  -pc_type lu  --snes_converged_reason  -wait   -ts_type beuler    -da_refine 5 -vi  -kappa .0001 -ts_dt 5.96046e-06 -cahn-hillard -energy 3 -snes_ls_monitor -theta .00000001  -vi  -ts_monitor_solution -ts_monitor_solution_initial -ts_max_time 1. -degenerate
+
+
+Evolve the Cahn-Hillard equations: logarithmic +  double obstacle (never shrinks, never grows)
+---------------
+./biharmonic -ts_monitor -snes_monitor  -pc_type lu  --snes_converged_reason  -wait   -ts_type beuler    -da_refine 5 -vi  -kappa .00001 -ts_dt 5.96046e-06 -cahn-hillard -energy 4 -snes_ls_monitor -theta .00000001  -vi 
+
+
 
 
 */
@@ -41,7 +54,7 @@ Evolve the Cahn-Hillard equations: logarithmic
 #include <petscts.h>
 
 extern PetscErrorCode FormFunction(TS,PetscReal,Vec,Vec,void*),FormInitialSolution(DM,Vec),MyMonitor(TS,PetscInt,PetscReal,Vec,void*);
-typedef struct {PetscBool growth;PetscBool cahnhillard;PetscReal kappa;PetscInt energy;PetscReal tol;PetscReal theta,theta_c;} UserCtx;
+typedef struct {PetscBool growth;PetscBool cahnhillard;PetscBool degenerate;PetscReal kappa;PetscInt energy;PetscReal tol;PetscReal theta,theta_c;} UserCtx;
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -69,11 +82,13 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetReal(PETSC_NULL,"-kappa",&ctx.kappa,PETSC_NULL);CHKERRQ(ierr);
   ctx.growth = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-growth",&ctx.growth,PETSC_NULL);CHKERRQ(ierr);
+  ctx.degenerate = PETSC_FALSE;
+  ierr = PetscOptionsGetBool(PETSC_NULL,"-degenerate",&ctx.degenerate,PETSC_NULL);CHKERRQ(ierr);
   ctx.cahnhillard = PETSC_FALSE;
   ierr = PetscOptionsGetBool(PETSC_NULL,"-cahn-hillard",&ctx.cahnhillard,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetBool(PETSC_NULL,"-vi",&vi,PETSC_NULL);CHKERRQ(ierr);
   ctx.energy = 1;
-  ierr = PetscOptionsInt("-energy","type of energy (1=double well, 2=double obstacle, 3=logarithmic)","",ctx.energy,&ctx.energy,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-energy","type of energy (1=double well, 2=double obstacle, 3=logarithmic+double well, 4=logarithmic+double obstacle)","",ctx.energy,&ctx.energy,PETSC_NULL);CHKERRQ(ierr);
   ctx.tol = 1.0e-8;
   ierr = PetscOptionsGetReal(PETSC_NULL,"-tol",&ctx.tol,PETSC_NULL);CHKERRQ(ierr);
   ctx.theta = .001;
@@ -241,9 +256,15 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec F,void *ptr)
      Compute function over the locally owned part of the grid
   */
   for (i=xs; i<xs+xm; i++) {
-    c = (x[i-1] + x[i+1] - 2.0*x[i])*sx;
-    r = (x[i] + x[i+2] - 2.0*x[i+1])*sx;
-    l = (x[i-2] + x[i] - 2.0*x[i-1])*sx;
+    if (ctx->degenerate) {
+      c = (1. - x[i]*x[i])*(x[i-1] + x[i+1] - 2.0*x[i])*sx;
+      r = (1. - x[i+1]*x[i+1])*(x[i] + x[i+2] - 2.0*x[i+1])*sx;
+      l = (1. - x[i-1]*x[i-1])*(x[i-2] + x[i] - 2.0*x[i-1])*sx; 
+    } else {
+      c = (x[i-1] + x[i+1] - 2.0*x[i])*sx;
+      r = (x[i] + x[i+2] - 2.0*x[i+1])*sx;
+      l = (x[i-2] + x[i] - 2.0*x[i-1])*sx;
+    }
     f[i] = -ctx->kappa*(l + r - 2.0*c)*sx; 
     if (ctx->growth) {
       f[i] += 100000*((x[i] < .2) ?  0: sx*x[i]);
@@ -256,13 +277,24 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec F,void *ptr)
       case 2: // double obstacle
         f[i] += -(x[i-1] + x[i+1] - 2.0*x[i])*sx;
           break;
-      case 3: // logarithmic
+      case 3: // logarithmic + double well
+        f[i] +=  6.*.25*x[i]*(x[i+1] - x[i-1])*(x[i+1] - x[i-1])*sx + (3.*x[i]*x[i] - 1.)*(x[i-1] + x[i+1] - 2.0*x[i])*sx;
         if (x[i] < -1.0 + 2.0*tol) {
-          f[i] += 2.0*theta*(2.0*tol-1.0)/(16.0*(tol-tol*tol)*(tol-tol*tol))*.25*(x[i+1] - x[i-1])*(x[i+1] - x[i-1])*sx + (.25*theta/(tol-tol*tol) - theta_c)*(x[i-1] + x[i+1] - 2.0*x[i])*sx;
+          f[i] += 2.0*theta*(2.0*tol-1.0)/(16.0*(tol-tol*tol)*(tol-tol*tol))*.25*(x[i+1] - x[i-1])*(x[i+1] - x[i-1])*sx + (.25*theta/(tol-tol*tol))*(x[i-1] + x[i+1] - 2.0*x[i])*sx;
         } else if (x[i] > 1.0 - 2.0*tol) {
-          f[i] += 2.0*theta*(-2.0*tol+1.0)/(16.0*(tol-tol*tol)*(tol-tol*tol))*.25*(x[i+1] - x[i-1])*(x[i+1] - x[i-1])*sx + (.25*theta/(tol-tol*tol) - theta_c)*(x[i-1] + x[i+1] - 2.0*x[i])*sx;
+          f[i] += 2.0*theta*(-2.0*tol+1.0)/(16.0*(tol-tol*tol)*(tol-tol*tol))*.25*(x[i+1] - x[i-1])*(x[i+1] - x[i-1])*sx + (.25*theta/(tol-tol*tol))*(x[i-1] + x[i+1] - 2.0*x[i])*sx;
         } else {
-          f[i] += 2.0*theta*x[i]/((1.0-x[i]*x[i])*(1.0-x[i]*x[i]))*.25*(x[i+1] - x[i-1])*(x[i+1] - x[i-1])*sx + (theta/(1.0-x[i]*x[i]) - theta_c)*(x[i-1] + x[i+1] - 2.0*x[i])*sx;
+          f[i] += 2.0*theta*x[i]/((1.0-x[i]*x[i])*(1.0-x[i]*x[i]))*.25*(x[i+1] - x[i-1])*(x[i+1] - x[i-1])*sx + (theta/(1.0-x[i]*x[i]))*(x[i-1] + x[i+1] - 2.0*x[i])*sx;
+        }
+        break;
+      case 4: // logarithmic + double obstacle
+        f[i] += - theta_c*(x[i-1] + x[i+1] - 2.0*x[i])*sx;
+        if (x[i] < -1.0 + 2.0*tol) {
+          f[i] += 2.0*theta*(2.0*tol-1.0)/(16.0*(tol-tol*tol)*(tol-tol*tol))*.25*(x[i+1] - x[i-1])*(x[i+1] - x[i-1])*sx + (.25*theta/(tol-tol*tol))*(x[i-1] + x[i+1] - 2.0*x[i])*sx;
+        } else if (x[i] > 1.0 - 2.0*tol) {
+          f[i] += 2.0*theta*(-2.0*tol+1.0)/(16.0*(tol-tol*tol)*(tol-tol*tol))*.25*(x[i+1] - x[i-1])*(x[i+1] - x[i-1])*sx + (.25*theta/(tol-tol*tol))*(x[i-1] + x[i+1] - 2.0*x[i])*sx;
+        } else {
+          f[i] += 2.0*theta*x[i]/((1.0-x[i]*x[i])*(1.0-x[i]*x[i]))*.25*(x[i+1] - x[i-1])*(x[i+1] - x[i-1])*sx + (theta/(1.0-x[i]*x[i]))*(x[i-1] + x[i+1] - 2.0*x[i])*sx;
         }
         break;
       }
@@ -381,7 +413,11 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
   x   = hx*xs;
   for (i=xs; i<xs+xm; i++) {
     xx[0] = xx[1]  = xx[2] = x;
-    yy[0] = PetscRealPart(.25*ctx->kappa*(u[i-1] - u[i+1])*(u[i-1] - u[i+1])*sx);
+    if (ctx->degenerate) {
+      yy[0] = PetscRealPart(.25*(1. - u[i]*u[i])*ctx->kappa*(u[i-1] - u[i+1])*(u[i-1] - u[i+1])*sx);
+    } else {
+      yy[0] = PetscRealPart(.25*ctx->kappa*(u[i-1] - u[i+1])*(u[i-1] - u[i+1])*sx);
+    }
     if (ctx->cahnhillard) {
       switch (ctx->energy) {
       case 1: // double well
@@ -390,14 +426,24 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
       case 2: // double obstacle 
         yy[1] = .5*PetscRealPart(1. - u[i]*u[i]);
         break;
-      case 3:
+      case 3: // logarithm + double well
+        yy[1] = .25*PetscRealPart((1. - u[i]*u[i])*(1. - u[i]*u[i]));
+        if (u[i] < -1.0 + 2.0*tol) {
+          yy[2] = -.5*theta*(2.0*tol*log(tol) + (1.0-u[i])*log((1-u[i])/2.0));
+        } else if (u[i] > 1.0 - 2.0*tol) {
+          yy[2] = -.5*theta*((1.0+u[i])*log((1.0+u[i])/2.0) + 2.0*tol*log(tol));
+        } else {
+          yy[2] = -.5*theta*((1.0+u[i])*log((1.0+u[i])/2.0) + (1.0-u[i])*log((1.0-u[i])/2.0));
+        }
+        break;
+      case 4: // logarithm + double obstacle
         yy[1] = .5*theta_c*(1.0-u[i]*u[i]);
         if (u[i] < -1.0 + 2.0*tol) {
-          yy[2] = .5*theta*(2.0*tol*log(tol) + (1.0-u[i])*log((1-u[i])/2.0));
+          yy[2] = -.5*theta*(2.0*tol*log(tol) + (1.0-u[i])*log((1-u[i])/2.0));
         } else if (u[i] > 1.0 - 2.0*tol) {
-          yy[2] = .5*theta*((1.0+u[i])*log((1.0+u[i])/2.0) + 2.0*tol*log(tol));
+          yy[2] = -.5*theta*((1.0+u[i])*log((1.0+u[i])/2.0) + 2.0*tol*log(tol));
         } else {
-          yy[2] = .5*theta*((1.0+u[i])*log((1.0+u[i])/2.0) + (1.0-u[i])*log((1.0-u[i])/2.0));
+          yy[2] = -.5*theta*((1.0+u[i])*log((1.0+u[i])/2.0) + (1.0-u[i])*log((1.0-u[i])/2.0));
         }
         break;
       }
@@ -414,7 +460,7 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
   /* 
       Plot the  forces
   */
-  ierr = PetscDrawLGSetDimension(lg,1 + (ctx->cahnhillard ? 2 : 0) + (ctx->energy == 3));CHKERRQ(ierr);
+  ierr = PetscDrawLGSetDimension(lg,0 + (ctx->cahnhillard ? 2 : 0) + (ctx->energy == 3));CHKERRQ(ierr);
   ierr = PetscDrawLGSetColors(lg,colors+1);CHKERRQ(ierr);
   ierr = PetscDrawViewPortsSet(ports,1);CHKERRQ(ierr);
   ierr = PetscDrawLGReset(lg);CHKERRQ(ierr);
@@ -422,9 +468,15 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
   max = 0.;
   for (i=xs; i<xs+xm; i++) {
     xx[0] = xx[1] = xx[2] = xx[3] = x;
-    c = (u[i-1] + u[i+1] - 2.0*u[i])*sx;
-    r = (u[i] + u[i+2] - 2.0*u[i+1])*sx;
-    l = (u[i-2] + u[i] - 2.0*u[i-1])*sx;
+    if (ctx->degenerate) {
+      c = (1. - u[i]*u[i])*(u[i-1] + u[i+1] - 2.0*u[i])*sx;
+      r = (1. - u[i+1]*u[i+1])*(u[i] + u[i+2] - 2.0*u[i+1])*sx;
+      l = (1. - u[i-1]*u[i-1])*(u[i-2] + u[i] - 2.0*u[i-1])*sx;
+    } else {
+      c = (u[i-1] + u[i+1] - 2.0*u[i])*sx;
+      r = (u[i] + u[i+2] - 2.0*u[i+1])*sx;
+      l = (u[i-2] + u[i] - 2.0*u[i-1])*sx;
+    }
     yy[0] = PetscRealPart(-ctx->kappa*(l + r - 2.0*c)*sx);
     max   = PetscMax(max,PetscAbs(yy[0]));
     if (ctx->cahnhillard) {
@@ -435,7 +487,17 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
       case 2: // double obstacle
         yy[1] = -(u[i-1] + u[i+1] - 2.0*u[i])*sx;
         break;
-      case 3: // logarithmic
+      case 3: // logarithmic + double well
+        yy[1] = PetscRealPart(6.*.25*u[i]*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (3.*u[i]*u[i] - 1.)*(u[i-1] + u[i+1] - 2.0*u[i])*sx);
+        if (u[i] < -1.0 + 2.0*tol) {
+          yy[2] = (2.0*theta*(2.0*tol-1.0)/(16.0*(tol-tol*tol)*(tol-tol*tol))*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (.25*theta/(tol-tol*tol))*(u[i-1] + u[i+1] - 2.0*u[i])*sx);
+        } else if (u[i] > 1.0 - 2.0*tol) {
+          yy[2] = (2.0*theta*(-2.0*tol+1.0)/(16.0*(tol-tol*tol)*(tol-tol*tol))*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + ( .25*theta/(tol-tol*tol))*(u[i-1] + u[i+1] - 2.0*u[i])*sx);
+        } else {
+          yy[2] = (2.0*theta*u[i]/((1.0-u[i]*u[i])*(1.0-u[i]*u[i]))*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (theta/(1.0-u[i]*u[i]))*(u[i-1] + u[i+1] - 2.0*u[i])*sx);
+        }
+        break;
+      case 4: // logarithmic + double obstacle
         yy[1] = theta_c*(-(u[i-1] + u[i+1] - 2.0*u[i]))*sx;
         if (u[i] < -1.0 + 2.0*tol) {
           yy[2] = (2.0*theta*(2.0*tol-1.0)/(16.0*(tol-tol*tol)*(tol-tol*tol))*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (.25*theta/(tol-tol*tol))*(u[i-1] + u[i+1] - 2.0*u[i])*sx);
@@ -446,12 +508,12 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
         }
         break;
       }
-      if (ctx->energy != 3) {
+      if (ctx->energy < 3) {
         max   = PetscMax(max,PetscAbs(yy[1]));
         yy[2] = yy[0]+yy[1];
       } else {
         max   = PetscMax(max,PetscAbs(yy[1]+yy[2]));
-        yy[3] = yy[0]+yy[1]+yy[2];
+        //        yy[3] = yy[0]+yy[1]+yy[2];
       }
     }
     ierr = PetscDrawLGAddPoint(lg,xx,yy);CHKERRQ(ierr);
@@ -508,8 +570,25 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
       case 2: // double obstacle
         len = -.5*(u[i-1] + u[i+1] - 2.0*u[i])*sx/max;
         break;
-      case 3: // logarithmic
-         len   = .5*theta_c*(-(u[i-1] + u[i+1] - 2.0*u[i])*sx/max);
+      case 3: // logarithmic + double well
+        len   = .5*PetscRealPart(6.*.25*u[i]*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (3.*u[i]*u[i] - 1.)*(u[i-1] + u[i+1] - 2.0*u[i])*sx)/max;
+         if (len < 0.) {
+           ydown += len;
+         } else {
+           yup += len;
+        }
+        if (u[i] < -1.0 + 2.0*tol) {
+          len2 = .5*(2.0*theta*(2.0*tol-1.0)/(16.0*(tol-tol*tol)*(tol-tol*tol))*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (.25*theta/(tol-tol*tol))*(u[i-1] + u[i+1] - 2.0*u[i])*sx)/max;
+        } else if (u[i] > 1.0 - 2.0*tol) {
+          len2 = .5*(2.0*theta*(-2.0*tol+1.0)/(16.0*(tol-tol*tol)*(tol-tol*tol))*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (.25*theta/(tol-tol*tol))*(u[i-1] + u[i+1] - 2.0*u[i])*sx)/max;
+        } else {
+          len2 = .5*(2.0*theta*u[i]/((1.0-u[i]*u[i])*(1.0-u[i]*u[i]))*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (theta/(1.0-u[i]*u[i]))*(u[i-1] + u[i+1] - 2.0*u[i])*sx)/max;
+        }
+        y2 = len < 0 ? ydown : yup;
+        ierr = PetscDrawArrow(draw,x,y2,x,y2+len2,PETSC_DRAW_PLUM);CHKERRQ(ierr);
+        break;
+      case 4: // logarithmic + double obstacle
+         len   = -.5*theta_c*(-(u[i-1] + u[i+1] - 2.0*u[i])*sx/max);
          if (len < 0.) {
            ydown += len;
          } else {
