@@ -19,13 +19,17 @@ Add a simple term to the right hand side so that the bulge grows/expands with ti
 ---------------
 ./biharmonic -ts_monitor -snes_monitor  -pc_type lu  -draw_pause .1  -snes_converged_reason  -wait   -ts_type beuler   -da_refine 5 -vi -growth
 
-   u_t =  kappa \Delta \Delta  6.*u*(u_x)^2 + (3*u^2 - 12) \Delta u
+   u_t =  kappa \Delta \Delta u +   6.*u*(u_x)^2 + (3*u^2 - 12) \Delta u
     -1 <= u <= 1 
     Periodic boundary conditions
 
-Evolve the Cahn-Hillard equations: double well
+Evolve the Cahn-Hillard equations: double well Initial hump shrinks then grows 
 ---------------
 ./biharmonic -ts_monitor -snes_monitor   -pc_type lu  -draw_pause .1 -snes_converged_reason   -wait   -ts_type beuler    -da_refine 6 -vi  -kappa .00001 -ts_dt 5.96046e-06 -cahn-hillard
+
+Initial hump neither shrinks nor grows when degenerate (otherwise similar solution)
+ 
+./biharmonic -ts_monitor -snes_monitor   -pc_type lu  -draw_pause .1 -snes_converged_reason   -wait   -ts_type beuler    -da_refine 6 -vi  -kappa .00001 -ts_dt 5.96046e-06 -cahn-hillard -degenerate 
 
 Evolve the Cahn-Hillard equations: double obstacle
 ---------------
