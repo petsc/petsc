@@ -54,7 +54,7 @@ Evolve the Cahn-Hillard equations: logarithmic +  double obstacle (never shrinks
 #include <petscts.h>
 
 extern PetscErrorCode FormFunction(TS,PetscReal,Vec,Vec,void*),FormInitialSolution(DM,Vec),MyMonitor(TS,PetscInt,PetscReal,Vec,void*);
-typedef struct {PetscBool growth;PetscBool cahnhillard;PetscBool degenerate;PetscReal kappa;PetscInt energy;PetscReal tol;PetscReal theta,theta_c;PetscBool netforce} UserCtx;
+typedef struct {PetscBool growth;PetscBool cahnhillard;PetscBool degenerate;PetscReal kappa;PetscInt energy;PetscReal tol;PetscReal theta,theta_c;PetscInt truncation;PetscBool netforce} UserCtx;
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -97,6 +97,8 @@ int main(int argc,char **argv)
   ctx.theta_c = 1.0;
   ierr = PetscOptionsGetReal(PETSC_NULL,"-theta",&ctx.theta,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(PETSC_NULL,"-theta_c",&ctx.theta_c,PETSC_NULL);CHKERRQ(ierr);
+  ctx.truncation = 1;
+  ierr = PetscOptionsInt("-truncation","order of log truncation (1=cubic, 2=quadratic)","",ctx.truncation,&ctx.truncation,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscViewerDrawSetBounds(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),1,vbounds);CHKERRQ(ierr); 
   ierr = PetscViewerDrawResize(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),1200,1000);CHKERRQ(ierr); 
 
@@ -224,7 +226,7 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec F,void *ptr)
   PetscScalar    *x,*f,c,r,l;
   Vec            localX;
   UserCtx        *ctx = (UserCtx*)ptr;
-  PetscReal      tol = ctx->tol, theta=ctx->theta,theta_c=ctx->theta_c;
+  PetscReal      tol = ctx->tol, theta=ctx->theta,theta_c=ctx->theta_c,a,b;//a and b are used in the cubic truncation of the log function
 
   PetscFunctionBegin;
   ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
@@ -281,23 +283,47 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec F,void *ptr)
           break;
       case 3: // logarithmic + double well
         f[i] +=  6.*.25*x[i]*(x[i+1] - x[i-1])*(x[i+1] - x[i-1])*sx + (3.*x[i]*x[i] - 1.)*(x[i-1] + x[i+1] - 2.0*x[i])*sx;
-        if (x[i] < -1.0 + 2.0*tol) {
-          f[i] += 2.0*theta*(2.0*tol-1.0)/(16.0*(tol-tol*tol)*(tol-tol*tol))*.25*(x[i+1] - x[i-1])*(x[i+1] - x[i-1])*sx + (.25*theta/(tol-tol*tol))*(x[i-1] + x[i+1] - 2.0*x[i])*sx;
-        } else if (x[i] > 1.0 - 2.0*tol) {
-          f[i] += 2.0*theta*(-2.0*tol+1.0)/(16.0*(tol-tol*tol)*(tol-tol*tol))*.25*(x[i+1] - x[i-1])*(x[i+1] - x[i-1])*sx + (.25*theta/(tol-tol*tol))*(x[i-1] + x[i+1] - 2.0*x[i])*sx;
-        } else {
-          f[i] += 2.0*theta*x[i]/((1.0-x[i]*x[i])*(1.0-x[i]*x[i]))*.25*(x[i+1] - x[i-1])*(x[i+1] - x[i-1])*sx + (theta/(1.0-x[i]*x[i]))*(x[i-1] + x[i+1] - 2.0*x[i])*sx;
+        if (ctx->truncation==2) { // log function with approximated with a quadratic polynomial outside -1.0+2*tol, 1.0-2*tol
+          if (x[i] < -1.0 + 2.0*tol) {
+            f[i] += (.25*theta/(tol-tol*tol))*(x[i-1] + x[i+1] - 2.0*x[i])*sx;
+          } else if (x[i] > 1.0 - 2.0*tol) {
+            f[i] += (.25*theta/(tol-tol*tol))*(x[i-1] + x[i+1] - 2.0*x[i])*sx;
+          } else {
+            f[i] += 2.0*theta*x[i]/((1.0-x[i]*x[i])*(1.0-x[i]*x[i]))*.25*(x[i+1] - x[i-1])*(x[i+1] - x[i-1])*sx + (theta/(1.0-x[i]*x[i]))*(x[i-1] + x[i+1] - 2.0*x[i])*sx;
+          }
+        } else { // log function is approximated with a cubic polynomial outside -1.0+2*tol, 1.0-2*tol
+          a = 2.0*theta*(1.0-2.0*tol)/(16.0*tol*tol*(1.0-tol)*(1.0-tol));
+          b = theta/(4.0*tol*(1.0-tol)) - a*(1.0-2.0*tol);
+          if (x[i] < -1.0 + 2.0*tol) {
+            f[i] += -1.0*a*.25*(x[i+1] - x[i-1])*(x[i+1] - x[i-1])*sx + (-1.0*a*x[i] + b)*(x[i-1] + x[i+1] - 2.0*x[i])*sx;
+          } else if (x[i] > 1.0 - 2.0*tol) {
+            f[i] +=  1.0*a*.25*(x[i+1] - x[i-1])*(x[i+1] - x[i-1])*sx + (     a*x[i] + b)*(x[i-1] + x[i+1] - 2.0*x[i])*sx;
+          } else {
+            f[i] += 2.0*theta*x[i]/((1.0-x[i]*x[i])*(1.0-x[i]*x[i]))*.25*(x[i+1] - x[i-1])*(x[i+1] - x[i-1])*sx + (theta/(1.0-x[i]*x[i]))*(x[i-1] + x[i+1] - 2.0*x[i])*sx;
+          }
+
         }
         break;
       case 4: // logarithmic + double obstacle
         f[i] += - theta_c*(x[i-1] + x[i+1] - 2.0*x[i])*sx;
-        if (x[i] < -1.0 + 2.0*tol) {
-          f[i] += 2.0*theta*(2.0*tol-1.0)/(16.0*(tol-tol*tol)*(tol-tol*tol))*.25*(x[i+1] - x[i-1])*(x[i+1] - x[i-1])*sx + (.25*theta/(tol-tol*tol))*(x[i-1] + x[i+1] - 2.0*x[i])*sx;
-        } else if (x[i] > 1.0 - 2.0*tol) {
-          f[i] += 2.0*theta*(-2.0*tol+1.0)/(16.0*(tol-tol*tol)*(tol-tol*tol))*.25*(x[i+1] - x[i-1])*(x[i+1] - x[i-1])*sx + (.25*theta/(tol-tol*tol))*(x[i-1] + x[i+1] - 2.0*x[i])*sx;
-        } else {
-          //f[i] += 2.0*theta*x[i]/((1.0-x[i]*x[i])*(1.0-x[i]*x[i]))*.25*(x[i+1] - x[i-1])*(x[i+1] - x[i-1])*sx + (theta/(1.0-x[i]*x[i]))*(x[i-1] + x[i+1] - 2.0*x[i])*sx;
-          f[i] += (theta/(1.0-x[i]*x[i]))*(x[i-1] + x[i+1] - 2.0*x[i])*sx;
+        if (ctx->truncation==2) { // quadratic
+          if (x[i] < -1.0 + 2.0*tol) {
+            f[i] += (.25*theta/(tol-tol*tol))*(x[i-1] + x[i+1] - 2.0*x[i])*sx;
+          } else if (x[i] > 1.0 - 2.0*tol) {
+            f[i] += (.25*theta/(tol-tol*tol))*(x[i-1] + x[i+1] - 2.0*x[i])*sx;
+          } else {
+            f[i] += 2.0*theta*x[i]/((1.0-x[i]*x[i])*(1.0-x[i]*x[i]))*.25*(x[i+1] - x[i-1])*(x[i+1] - x[i-1])*sx + (theta/(1.0-x[i]*x[i]))*(x[i-1] + x[i+1] - 2.0*x[i])*sx;
+          }
+        } else { // cubic
+          a = 2.0*theta*(1.0-2.0*tol)/(16.0*tol*tol*(1.0-tol)*(1.0-tol));
+          b = theta/(4.0*tol*(1.0-tol)) - a*(1.0-2.0*tol);
+          if (x[i] < -1.0 + 2.0*tol) {
+            f[i] += -1.0*a*.25*(x[i+1] - x[i-1])*(x[i+1] - x[i-1])*sx + (-1.0*a*x[i] + b)*(x[i-1] + x[i+1] - 2.0*x[i])*sx;
+          } else if (x[i] > 1.0 - 2.0*tol) {
+            f[i] +=  1.0*a*.25*(x[i+1] - x[i-1])*(x[i+1] - x[i-1])*sx + (     a*x[i] + b)*(x[i-1] + x[i+1] - 2.0*x[i])*sx;
+          } else {
+            f[i] +=  2.0*theta*x[i]/((1.0-x[i]*x[i])*(1.0-x[i]*x[i]))*.25*(x[i+1] - x[i-1])*(x[i+1] - x[i-1])*sx + (theta/(1.0-x[i]*x[i]))*(x[i-1] + x[i+1] - 2.0*x[i])*sx;
+          }
         }
         break;
       }
@@ -380,7 +406,7 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
   const char *const         legend[3][3] = {{"-kappa (\\grad u,\\grad u)","(1 - u^2)^2"},{"-kappa (\\grad u,\\grad u)","(1 - u^2)"},{"-kappa (\\grad u,\\grad u)","logarithmic"}};
   PetscDrawAxis             axis;
   static PetscDrawViewPorts *ports = 0;
-  PetscReal                 tol = ctx->tol, theta=ctx->theta,theta_c=ctx->theta_c;
+  PetscReal                 tol = ctx->tol, theta=ctx->theta,theta_c=ctx->theta_c,a,b; // a and b are used in the cubic truncation of the log function
 
 
   PetscFunctionBegin;
@@ -432,11 +458,11 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
       case 3: // logarithm + double well
         yy[1] = .25*PetscRealPart((1. - u[i]*u[i])*(1. - u[i]*u[i]));
         if (u[i] < -1.0 + 2.0*tol) {
-          yy[2] = -.5*theta*(2.0*tol*log(tol) + (1.0-u[i])*log((1-u[i])/2.0));
+          yy[2] = .5*theta*(2.0*tol*log(tol) + (1.0-u[i])*log((1-u[i])/2.0));
         } else if (u[i] > 1.0 - 2.0*tol) {
-          yy[2] = -.5*theta*((1.0+u[i])*log((1.0+u[i])/2.0) + 2.0*tol*log(tol));
+          yy[2] = .5*theta*((1.0+u[i])*log((1.0+u[i])/2.0) + 2.0*tol*log(tol));
         } else {
-          yy[2] = -.5*theta*((1.0+u[i])*log((1.0+u[i])/2.0) + (1.0-u[i])*log((1.0-u[i])/2.0));
+          yy[2] = .5*theta*((1.0+u[i])*log((1.0+u[i])/2.0) + (1.0-u[i])*log((1.0-u[i])/2.0));
         }
         break;
       case 4: // logarithm + double obstacle
@@ -467,7 +493,7 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
   ierr = PetscDrawLGSetColors(lg,colors+1);CHKERRQ(ierr);
   ierr = PetscDrawViewPortsSet(ports,1);CHKERRQ(ierr);
   ierr = PetscDrawLGReset(lg);CHKERRQ(ierr);
-  x   = xs*hx;;
+  x   = xs*hx;
   max = 0.;
   for (i=xs; i<xs+xm; i++) {
     xx[0] = xx[1] = xx[2] = xx[3] = x;
@@ -493,23 +519,48 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
         yy[1] = -(u[i-1] + u[i+1] - 2.0*u[i])*sx;
         break;
       case 3: // logarithmic + double well
-        yy[1] = PetscRealPart(6.*.25*u[i]*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (3.*u[i]*u[i] - 1.)*(u[i-1] + u[i+1] - 2.0*u[i])*sx);
-        if (u[i] < -1.0 + 2.0*tol) {
-          yy[2] = (2.0*theta*(2.0*tol-1.0)/(16.0*(tol-tol*tol)*(tol-tol*tol))*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (.25*theta/(tol-tol*tol))*(u[i-1] + u[i+1] - 2.0*u[i])*sx);
-        } else if (u[i] > 1.0 - 2.0*tol) {
-          yy[2] = (2.0*theta*(-2.0*tol+1.0)/(16.0*(tol-tol*tol)*(tol-tol*tol))*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + ( .25*theta/(tol-tol*tol))*(u[i-1] + u[i+1] - 2.0*u[i])*sx);
-        } else {
-          yy[2] = (2.0*theta*u[i]/((1.0-u[i]*u[i])*(1.0-u[i]*u[i]))*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (theta/(1.0-u[i]*u[i]))*(u[i-1] + u[i+1] - 2.0*u[i])*sx);
+        yy[1] =  6.*.25*u[i]*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (3.*u[i]*u[i] - 1.)*(u[i-1] + u[i+1] - 2.0*u[i])*sx;
+        if (ctx->truncation==2) { // quadratic
+          if (u[i] < -1.0 + 2.0*tol) {
+            yy[2] = (.25*theta/(tol-tol*tol))*(u[i-1] + u[i+1] - 2.0*u[i])*sx;
+          } else if (u[i] > 1.0 - 2.0*tol) {
+            yy[2] = (.25*theta/(tol-tol*tol))*(u[i-1] + u[i+1] - 2.0*u[i])*sx;
+          } else {
+            yy[2] = 2.0*theta*u[i]/((1.0-u[i]*u[i])*(1.0-u[i]*u[i]))*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (theta/(1.0-u[i]*u[i]))*(u[i-1] + u[i+1] - 2.0*u[i])*sx;
+          }
+        } else { // cubic
+          a = 2.0*theta*(1.0-2.0*tol)/(16.0*tol*tol*(1.0-tol)*(1.0-tol));
+          b = theta/(4.0*tol*(1.0-tol)) - a*(1.0-2.0*tol);
+          if (u[i] < -1.0 + 2.0*tol) {
+            yy[2] = -1.0*a*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (-1.0*a*u[i] + b)*(u[i-1] + u[i+1] - 2.0*u[i])*sx;
+          } else if (u[i] > 1.0 - 2.0*tol) {
+            yy[2] =  1.0*a*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (     a*u[i] + b)*(u[i-1] + u[i+1] - 2.0*u[i])*sx;
+          } else {
+            yy[2] = 2.0*theta*u[i]/((1.0-u[i]*u[i])*(1.0-u[i]*u[i]))*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (theta/(1.0-u[i]*u[i]))*(u[i-1] + u[i+1] - 2.0*u[i])*sx;
+          }
         }
         break;
       case 4: // logarithmic + double obstacle
         yy[1] = theta_c*(-(u[i-1] + u[i+1] - 2.0*u[i]))*sx;
-        if (u[i] < -1.0 + 2.0*tol) {
-          yy[2] = (2.0*theta*(2.0*tol-1.0)/(16.0*(tol-tol*tol)*(tol-tol*tol))*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (.25*theta/(tol-tol*tol))*(u[i-1] + u[i+1] - 2.0*u[i])*sx);
+        if (ctx->truncation==2) {
+          if (u[i] < -1.0 + 2.0*tol) {
+            yy[2] = (.25*theta/(tol-tol*tol))*(u[i-1] + u[i+1] - 2.0*u[i])*sx;
         } else if (u[i] > 1.0 - 2.0*tol) {
-          yy[2] = (2.0*theta*(-2.0*tol+1.0)/(16.0*(tol-tol*tol)*(tol-tol*tol))*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + ( .25*theta/(tol-tol*tol))*(u[i-1] + u[i+1] - 2.0*u[i])*sx);
-        } else {
-          yy[2] = (2.0*theta*u[i]/((1.0-u[i]*u[i])*(1.0-u[i]*u[i]))*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (theta/(1.0-u[i]*u[i]))*(u[i-1] + u[i+1] - 2.0*u[i])*sx);
+            yy[2] = (.25*theta/(tol-tol*tol))*(u[i-1] + u[i+1] - 2.0*u[i])*sx;
+          } else {
+            yy[2] = (2.0*theta*u[i]/((1.0-u[i]*u[i])*(1.0-u[i]*u[i]))*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (theta/(1.0-u[i]*u[i]))*(u[i-1] + u[i+1] - 2.0*u[i])*sx);
+          }
+        }
+        else {
+          a = 2.0*theta*(1.0-2.0*tol)/(16.0*tol*tol*(1.0-tol)*(1.0-tol));
+          b = theta/(4.0*tol*(1.0-tol)) - a*(1.0-2.0*tol);
+          if (u[i] < -1.0 + 2.0*tol) {
+            yy[2] = -1.0*a*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (-1.0*a*u[i] + b)*(u[i-1] + u[i+1] - 2.0*u[i])*sx;
+          } else if (u[i] > 1.0 - 2.0*tol) {
+            yy[2] =  1.0*a*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (     a*u[i] + b)*(u[i-1] + u[i+1] - 2.0*u[i])*sx;
+          } else {
+            yy[2] =  2.0*theta*u[i]/((1.0-u[i]*u[i])*(1.0-u[i]*u[i]))*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (theta/(1.0-u[i]*u[i]))*(u[i-1] + u[i+1] - 2.0*u[i])*sx;
+          }
         }
         break;
       }
@@ -587,30 +638,54 @@ PetscErrorCode  MyMonitor(TS ts,PetscInt step,PetscReal time,Vec U,void *ptr)
            ydown += len;
          } else {
            yup += len;
-        }
-        if (u[i] < -1.0 + 2.0*tol) {
-          len2 = .5*(2.0*theta*(2.0*tol-1.0)/(16.0*(tol-tol*tol)*(tol-tol*tol))*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (.25*theta/(tol-tol*tol))*(u[i-1] + u[i+1] - 2.0*u[i])*sx)/max;
-        } else if (u[i] > 1.0 - 2.0*tol) {
-          len2 = .5*(2.0*theta*(-2.0*tol+1.0)/(16.0*(tol-tol*tol)*(tol-tol*tol))*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (.25*theta/(tol-tol*tol))*(u[i-1] + u[i+1] - 2.0*u[i])*sx)/max;
-        } else {
-          len2 = .5*(2.0*theta*u[i]/((1.0-u[i]*u[i])*(1.0-u[i]*u[i]))*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (theta/(1.0-u[i]*u[i]))*(u[i-1] + u[i+1] - 2.0*u[i])*sx)/max;
-        }
-        y2 = len < 0 ? ydown : yup;
-        ierr = PetscDrawArrow(draw,x,y2,x,y2+len2,PETSC_DRAW_PLUM);CHKERRQ(ierr);
-        break;
+         }
+         if (ctx->truncation==2){ // quadratic
+           if (u[i] < -1.0 + 2.0*tol) {
+             len2 = .5*(.25*theta/(tol-tol*tol))*(u[i-1] + u[i+1] - 2.0*u[i])*sx/max;
+           } else if (u[i] > 1.0 - 2.0*tol) {
+             len2 = .5*(.25*theta/(tol-tol*tol))*(u[i-1] + u[i+1] - 2.0*u[i])*sx/max;
+           } else {
+             len2 = .5*(2.0*theta*u[i]/((1.0-u[i]*u[i])*(1.0-u[i]*u[i]))*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (theta/(1.0-u[i]*u[i]))*(u[i-1] + u[i+1] - 2.0*u[i])*sx)/max;
+           }
+         } else { // cubic
+           a = 2.0*theta*(1.0-2.0*tol)/(16.0*tol*tol*(1.0-tol)*(1.0-tol));
+           b = theta/(4.0*tol*(1.0-tol)) - a*(1.0-2.0*tol);
+           if (u[i] < -1.0 + 2.0*tol) {
+             len2 = .5*(-1.0*a*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (-1.0*a*u[i] + b)*(u[i-1] + u[i+1] - 2.0*u[i])*sx)/max;
+           } else if (u[i] > 1.0 - 2.0*tol) {
+             len2 = .5*(a*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (     a*u[i] + b)*(u[i-1] + u[i+1] - 2.0*u[i])*sx)/max;
+           } else {
+             len2 = .5*(2.0*theta*u[i]/((1.0-u[i]*u[i])*(1.0-u[i]*u[i]))*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (theta/(1.0-u[i]*u[i]))*(u[i-1] + u[i+1] - 2.0*u[i])*sx)/max;
+           }
+         }
+         y2 = len < 0 ? ydown : yup;
+         ierr = PetscDrawArrow(draw,x,y2,x,y2+len2,PETSC_DRAW_PLUM);CHKERRQ(ierr);
+         break;
       case 4: // logarithmic + double obstacle
-         len   = -.5*theta_c*(-(u[i-1] + u[i+1] - 2.0*u[i])*sx/max);
-         if (len < 0.) {
-           ydown += len;
-         } else {
-           yup += len;
-        }
-        if (u[i] < -1.0 + 2.0*tol) {
-          len2 = .5*(2.0*theta*(2.0*tol-1.0)/(16.0*(tol-tol*tol)*(tol-tol*tol))*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (.25*theta/(tol-tol*tol))*(u[i-1] + u[i+1] - 2.0*u[i])*sx)/max;
-        } else if (u[i] > 1.0 - 2.0*tol) {
-          len2 = .5*(2.0*theta*(-2.0*tol+1.0)/(16.0*(tol-tol*tol)*(tol-tol*tol))*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (.25*theta/(tol-tol*tol))*(u[i-1] + u[i+1] - 2.0*u[i])*sx)/max;
+        len   = -.5*theta_c*(-(u[i-1] + u[i+1] - 2.0*u[i])*sx/max);
+        if (len < 0.) {
+          ydown += len;
         } else {
-          len2 = .5*(2.0*theta*u[i]/((1.0-u[i]*u[i])*(1.0-u[i]*u[i]))*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (theta/(1.0-u[i]*u[i]))*(u[i-1] + u[i+1] - 2.0*u[i])*sx)/max;
+          yup += len;
+        }
+        if (ctx->truncation==2) { // quadratic
+          if (u[i] < -1.0 + 2.0*tol) {
+            len2 = .5*(.25*theta/(tol-tol*tol))*(u[i-1] + u[i+1] - 2.0*u[i])*sx/max;
+          } else if (u[i] > 1.0 - 2.0*tol) {
+            len2 = .5*(.25*theta/(tol-tol*tol))*(u[i-1] + u[i+1] - 2.0*u[i])*sx/max;
+          } else {
+            len2 = .5*(2.0*theta*u[i]/((1.0-u[i]*u[i])*(1.0-u[i]*u[i]))*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (theta/(1.0-u[i]*u[i]))*(u[i-1] + u[i+1] - 2.0*u[i])*sx)/max;
+          }
+        } else { // cubic
+          a = 2.0*theta*(1.0-2.0*tol)/(16.0*tol*tol*(1.0-tol)*(1.0-tol));
+          b = theta/(4.0*tol*(1.0-tol)) - a*(1.0-2.0*tol);
+          if (u[i] < -1.0 + 2.0*tol) {
+            len2 = .5*(-1.0*a*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (-1.0*a*u[i] + b)*(u[i-1] + u[i+1] - 2.0*u[i])*sx)/max;
+          } else if (u[i] > 1.0 - 2.0*tol) {
+            len2 =  .5*(a*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (     a*u[i] + b)*(u[i-1] + u[i+1] - 2.0*u[i])*sx)/max;
+          } else {
+            len2 =  .5*(2.0*theta*u[i]/((1.0-u[i]*u[i])*(1.0-u[i]*u[i]))*.25*(u[i+1] - u[i-1])*(u[i+1] - u[i-1])*sx + (theta/(1.0-u[i]*u[i]))*(u[i-1] + u[i+1] - 2.0*u[i])*sx)/max;
+          }
         }
         y2 = len < 0 ? ydown : yup;
         ierr = PetscDrawArrow(draw,x,y2,x,y2+len2,PETSC_DRAW_PLUM);CHKERRQ(ierr);
