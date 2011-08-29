@@ -334,6 +334,10 @@ cdef class TS(Object):
         CHKERR( TSGetDuration(self.ts, &ival, &rval) )
         return (toReal(rval), toInt(ival))
 
+    #def setExactFinalTime(self, flag=True):
+    #    cdef PetscBool bval = flag
+    #    CHKERR( TSSetExactFinalTime(self.ts, bval) )
+
     def setConvergedReason(self, reason):
         cdef PetscTSConvergedReason cval = reason
         CHKERR( TSSetConvergedReason(self.ts, cval) )
@@ -449,6 +453,15 @@ cdef class TS(Object):
         cdef PetscReal rval = 0
         CHKERR( TSThetaGetTheta(self.ts, &rval) )
         return toReal(rval)
+
+    def setThetaEndpoint(self, flag=True):
+        cdef PetscBool bval = flag
+        CHKERR( TSThetaSetEndpoint(self.ts, bval) )
+
+    def getThetaEndpoint(self):
+        cdef PetscBool bval = PETSC_FALSE
+        CHKERR( TSThetaGetEndpoint(self.ts, &bval) )
+        return <bint> bval
 
     # --- Alpha ---
 

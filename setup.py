@@ -239,7 +239,7 @@ def run_testsuite(cmd):
     try:
         from runtests import main
     finally:
-        del sys.path[-1]
+        del sys.path[0]
     err = main(cmd.args or [])
     if err:
         raise DistutilsError("test")

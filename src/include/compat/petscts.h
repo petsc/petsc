@@ -141,6 +141,18 @@ TSStep_Compat(TS ts)
 #if (PETSC_VERSION_(3,1,0) || \
      PETSC_VERSION_(3,0,0))
 #undef __FUNCT__  
+#define __FUNCT__ "TSThetaSetEndpoint"
+static PetscErrorCode TSThetaSetEndpoint(TS ts,PetscBool flg)
+{PetscTS_ERR_SUP(ts);}
+#undef __FUNCT__  
+#define __FUNCT__ "TSThetaGetEndpoint"
+static PetscErrorCode TSThetaGetEndpoint(TS ts,PetscBool *flg)
+{PetscTS_ERR_SUP(ts);}
+#endif
+
+#if (PETSC_VERSION_(3,1,0) || \
+     PETSC_VERSION_(3,0,0))
+#undef __FUNCT__  
 #define __FUNCT__ "TSAlphaSetRadius"
 static PetscErrorCode TSAlphaSetRadius(TS ts,PetscReal radius)
 {

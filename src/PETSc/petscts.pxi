@@ -113,6 +113,7 @@ cdef extern from * nogil:
     int TSGetTimeStepNumber(PetscTS,PetscInt*)
     int TSSetDuration(PetscTS,PetscInt,PetscReal)
     int TSGetDuration(PetscTS,PetscInt*,PetscReal*)
+    int TSSetExactFinalTime(PetscTS,PetscBool)
     int TSSetConvergedReason(PetscTS,PetscTSConvergedReason)
     int TSGetConvergedReason(PetscTS,PetscTSConvergedReason*)
 
@@ -130,6 +131,8 @@ cdef extern from * nogil:
 
     int TSThetaSetTheta(PetscTS,PetscReal)
     int TSThetaGetTheta(PetscTS,PetscReal*)
+    int TSThetaSetEndpoint(PetscTS,PetscBool)
+    int TSThetaGetEndpoint(PetscTS,PetscBool*)
 
     int TSAlphaSetRadius(PetscTS,PetscReal)
     int TSAlphaSetParams(PetscTS,PetscReal,PetscReal,PetscReal)
