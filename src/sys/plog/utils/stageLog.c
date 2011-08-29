@@ -7,24 +7,24 @@
 */
 #include <private/logimpl.h> /*I    "petscsys.h"   I*/
 
-StageLog  _stageLog = 0;
+PetscStageLog  _stageLog = 0;
 
 #undef __FUNCT__  
-#define __FUNCT__ "StageInfoDestroy"
+#define __FUNCT__ "PetscStageInfoDestroy"
 /*@C
-  StageInfoDestroy - This destroys a StageInfo object.
+  PetscStageInfoDestroy - This destroys a PetscStageInfo object.
 
   Not collective
 
   Input Paramter:
-. stageInfo - The StageInfo
+. stageInfo - The PetscStageInfo
 
   Level: developer
 
 .keywords: log, stage, destroy
-.seealso: StageLogCreate()
+.seealso: PetscStageLogCreate()
 @*/
-PetscErrorCode  StageInfoDestroy(StageInfo *stageInfo)
+PetscErrorCode  PetscStageInfoDestroy(PetscStageInfo *stageInfo)
 {
   PetscErrorCode ierr;
 
@@ -36,32 +36,32 @@ PetscErrorCode  StageInfoDestroy(StageInfo *stageInfo)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "StageLogDestroy"
+#define __FUNCT__ "PetscStageLogDestroy"
 /*@C
-  StageLogDestroy - This destroys a StageLog object.
+  PetscStageLogDestroy - This destroys a PetscStageLog object.
 
   Not collective
 
   Input Paramter:
-. stageLog - The StageLog
+. stageLog - The PetscStageLog
 
   Level: developer
 
 .keywords: log, stage, destroy
-.seealso: StageLogCreate()
+.seealso: PetscStageLogCreate()
 @*/
-PetscErrorCode  StageLogDestroy(StageLog stageLog)
+PetscErrorCode  PetscStageLogDestroy(PetscStageLog stageLog)
 {
   int            stage;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!stageLog) PetscFunctionReturn(0);
-  ierr = StackDestroy(stageLog->stack);CHKERRQ(ierr);
+  ierr = PetscIntStackDestroy(stageLog->stack);CHKERRQ(ierr);
   ierr = EventRegLogDestroy(stageLog->eventLog);CHKERRQ(ierr);
-  ierr = ClassRegLogDestroy(stageLog->classLog);CHKERRQ(ierr);
+  ierr = PetscClassRegLogDestroy(stageLog->classLog);CHKERRQ(ierr);
   for(stage = 0; stage < stageLog->numStages; stage++) {
-    ierr = StageInfoDestroy(&stageLog->stageInfo[stage]);CHKERRQ(ierr);
+    ierr = PetscStageInfoDestroy(&stageLog->stageInfo[stage]);CHKERRQ(ierr);
   }
   ierr = PetscFree(stageLog->stageInfo);CHKERRQ(ierr);
   ierr = PetscFree(stageLog);CHKERRQ(ierr);
@@ -69,14 +69,14 @@ PetscErrorCode  StageLogDestroy(StageLog stageLog)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "StageLogRegister"
+#define __FUNCT__ "PetscStageLogRegister"
 /*@C
-  StageLogRegister - Registers a stage name for logging operations in an application code.
+  PetscStageLogRegister - Registers a stage name for logging operations in an application code.
 
   Not Collective
 
   Input Parameter:
-+ stageLog - The StageLog
++ stageLog - The PetscStageLog
 - sname    - the name to associate with that stage
 
   Output Parameter:
@@ -85,11 +85,11 @@ PetscErrorCode  StageLogDestroy(StageLog stageLog)
   Level: developer
 
 .keywords: log, stage, register
-.seealso: StageLogPush(), StageLogPop(), StageLogCreate()
+.seealso: PetscStageLogPush(), PetscStageLogPop(), PetscStageLogCreate()
 @*/
-PetscErrorCode  StageLogRegister(StageLog stageLog, const char sname[], int *stage)
+PetscErrorCode  PetscStageLogRegister(PetscStageLog stageLog, const char sname[], int *stage)
 {
-  StageInfo      *stageInfo;
+  PetscStageInfo      *stageInfo;
   char           *str;
   int            s, st;
   PetscErrorCode ierr;
@@ -105,8 +105,8 @@ PetscErrorCode  StageLogRegister(StageLog stageLog, const char sname[], int *sta
   }
   s = stageLog->numStages++;
   if (stageLog->numStages > stageLog->maxStages) {
-    ierr = PetscMalloc(stageLog->maxStages*2 * sizeof(StageInfo), &stageInfo);CHKERRQ(ierr);
-    ierr = PetscMemcpy(stageInfo, stageLog->stageInfo, stageLog->maxStages * sizeof(StageInfo));CHKERRQ(ierr);
+    ierr = PetscMalloc(stageLog->maxStages*2 * sizeof(PetscStageInfo), &stageInfo);CHKERRQ(ierr);
+    ierr = PetscMemcpy(stageInfo, stageLog->stageInfo, stageLog->maxStages * sizeof(PetscStageInfo));CHKERRQ(ierr);
     ierr = PetscFree(stageLog->stageInfo);CHKERRQ(ierr);
     stageLog->stageInfo  = stageInfo;
     stageLog->maxStages *= 2;
@@ -130,14 +130,14 @@ PetscErrorCode  StageLogRegister(StageLog stageLog, const char sname[], int *sta
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "StageLogPush"
+#define __FUNCT__ "PetscStageLogPush"
 /*@C
-  StageLogPush - This function pushes a stage on the stack.
+  PetscStageLogPush - This function pushes a stage on the stack.
 
   Not Collective
 
   Input Parameters:
-+ stageLog   - The StageLog
++ stageLog   - The PetscStageLog
 - stage - The stage to log
 
   Database Options:
@@ -150,9 +150,9 @@ PetscErrorCode  StageLogRegister(StageLog stageLog, const char sname[], int *sta
 .vb
       PetscInitialize(int *argc,char ***args,0,0);
       [stage 0 of code]   
-      StageLogPush(stageLog,1);
+      PetscStageLogPush(stageLog,1);
       [stage 1 of code]
-      StageLogPop(stageLog);
+      PetscStageLogPop(stageLog);
       PetscBarrier(...);
       [more stage 0 of code]   
       PetscFinalize();
@@ -165,9 +165,9 @@ PetscErrorCode  StageLogRegister(StageLog stageLog, const char sname[], int *sta
   Level: developer
 
 .keywords: log, push, stage
-.seealso: StageLogPop(), StageLogGetCurrent(), StageLogRegister(), PetscLogGetStageLog()
+.seealso: PetscStageLogPop(), PetscStageLogGetCurrent(), PetscStageLogRegister(), PetscLogGetStageLog()
 @*/
-PetscErrorCode  StageLogPush(StageLog stageLog, int stage)
+PetscErrorCode  PetscStageLogPush(PetscStageLog stageLog, int stage)
 {
   int            curStage = 0;
   PetscBool      empty;
@@ -179,9 +179,9 @@ PetscErrorCode  StageLogPush(StageLog stageLog, int stage)
   }
 
   /* Record flops/time of previous stage */
-  ierr = StackEmpty(stageLog->stack, &empty);CHKERRQ(ierr);
+  ierr = PetscIntStackEmpty(stageLog->stack, &empty);CHKERRQ(ierr);
   if (!empty) {
-    ierr = StackTop(stageLog->stack, &curStage);CHKERRQ(ierr);
+    ierr = PetscIntStackTop(stageLog->stack, &curStage);CHKERRQ(ierr);
     if (stageLog->stageInfo[curStage].perfInfo.active) {
       PetscTimeAdd(stageLog->stageInfo[curStage].perfInfo.time);
       stageLog->stageInfo[curStage].perfInfo.flops         += _TotalFlops;
@@ -191,7 +191,7 @@ PetscErrorCode  StageLogPush(StageLog stageLog, int stage)
     }
   }
   /* Activate the stage */
-  ierr = StackPush(stageLog->stack, stage);CHKERRQ(ierr);
+  ierr = PetscIntStackPush(stageLog->stack, stage);CHKERRQ(ierr);
   stageLog->stageInfo[stage].used = PETSC_TRUE;
   stageLog->stageInfo[stage].perfInfo.count++;
   stageLog->curStage = stage;
@@ -207,14 +207,14 @@ PetscErrorCode  StageLogPush(StageLog stageLog, int stage)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "StageLogPop"
+#define __FUNCT__ "PetscStageLogPop"
 /*@C
-  StageLogPop - This function pops a stage from the stack.
+  PetscStageLogPop - This function pops a stage from the stack.
 
   Not Collective
 
   Input Parameter:
-. stageLog - The StageLog
+. stageLog - The PetscStageLog
 
   Usage:
   If the option -log_sumary is used to run the program containing the 
@@ -223,23 +223,23 @@ PetscErrorCode  StageLogPush(StageLog stageLog, int stage)
 .vb
       PetscInitialize(int *argc,char ***args,0,0);
       [stage 0 of code]   
-      StageLogPush(stageLog,1);
+      PetscStageLogPush(stageLog,1);
       [stage 1 of code]
-      StageLogPop(stageLog);
+      PetscStageLogPop(stageLog);
       PetscBarrier(...);
       [more stage 0 of code]   
       PetscFinalize();
 .ve
 
   Notes:
-  Use StageLogRegister() to register a stage.
+  Use PetscStageLogRegister() to register a stage.
 
   Level: developer
 
 .keywords: log, pop, stage
-.seealso: StageLogPush(), StageLogGetCurrent(), StageLogRegister(), PetscLogGetStageLog()
+.seealso: PetscStageLogPush(), PetscStageLogGetCurrent(), PetscStageLogRegister(), PetscLogGetStageLog()
 @*/
-PetscErrorCode  StageLogPop(StageLog stageLog)
+PetscErrorCode  PetscStageLogPop(PetscStageLog stageLog)
 {
   int             curStage;
   PetscBool       empty;
@@ -247,7 +247,7 @@ PetscErrorCode  StageLogPop(StageLog stageLog)
 
   PetscFunctionBegin;
   /* Record flops/time of current stage */
-  ierr = StackPop(stageLog->stack, &curStage);CHKERRQ(ierr);
+  ierr = PetscIntStackPop(stageLog->stack, &curStage);CHKERRQ(ierr);
   if (stageLog->stageInfo[curStage].perfInfo.active) {
     PetscTimeAdd(stageLog->stageInfo[curStage].perfInfo.time);
     stageLog->stageInfo[curStage].perfInfo.flops         += _TotalFlops;
@@ -255,10 +255,10 @@ PetscErrorCode  StageLogPop(StageLog stageLog)
     stageLog->stageInfo[curStage].perfInfo.messageLength += irecv_len + isend_len + recv_len + send_len;
     stageLog->stageInfo[curStage].perfInfo.numReductions += allreduce_ct + gather_ct + scatter_ct;
   }
-  ierr = StackEmpty(stageLog->stack, &empty);CHKERRQ(ierr);
+  ierr = PetscIntStackEmpty(stageLog->stack, &empty);CHKERRQ(ierr);
   if (!empty) {
     /* Subtract current quantities so that we obtain the difference when we pop */
-    ierr = StackTop(stageLog->stack, &curStage);CHKERRQ(ierr);
+    ierr = PetscIntStackTop(stageLog->stack, &curStage);CHKERRQ(ierr);
     if (stageLog->stageInfo[curStage].perfInfo.active) {
       PetscTimeSubtract(stageLog->stageInfo[curStage].perfInfo.time);
       stageLog->stageInfo[curStage].perfInfo.flops         -= _TotalFlops;
@@ -275,24 +275,24 @@ PetscErrorCode  StageLogPop(StageLog stageLog)
 
 
 #undef __FUNCT__  
-#define __FUNCT__ "StageLogGetClassRegLog"
+#define __FUNCT__ "PetscStageLogGetClassRegLog"
 /*@C
-  StageLogGetClassRegLog - This function returns the ClassRegLog for the given stage.
+  PetscStageLogGetClassRegLog - This function returns the PetscClassRegLog for the given stage.
 
   Not Collective
 
   Input Parameters:
-. stageLog - The StageLog
+. stageLog - The PetscStageLog
 
   Output Parameter:
-. classLog - The ClassRegLog
+. classLog - The PetscClassRegLog
 
   Level: developer
 
 .keywords: log, stage
-.seealso: StageLogPush(), StageLogPop(), PetscLogGetStageLog()
+.seealso: PetscStageLogPush(), PetscStageLogPop(), PetscLogGetStageLog()
 @*/
-PetscErrorCode  StageLogGetClassRegLog(StageLog stageLog, ClassRegLog *classLog)
+PetscErrorCode  PetscStageLogGetClassRegLog(PetscStageLog stageLog, PetscClassRegLog *classLog)
 {
   PetscFunctionBegin;
   PetscValidPointer(classLog,2);
@@ -301,24 +301,24 @@ PetscErrorCode  StageLogGetClassRegLog(StageLog stageLog, ClassRegLog *classLog)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "StageLogGetEventRegLog"
+#define __FUNCT__ "PetscStageLogGetEventRegLog"
 /*@C
-  StageLogGetEventRegLog - This function returns the EventRegLog.
+  PetscStageLogGetEventRegLog - This function returns the PetscEventRegLog.
 
   Not Collective
 
   Input Parameters:
-. stageLog - The StageLog
+. stageLog - The PetscStageLog
 
   Output Parameter:
-. eventLog - The EventRegLog
+. eventLog - The PetscEventRegLog
 
   Level: developer
 
 .keywords: log, stage
-.seealso: StageLogPush(), StageLogPop(), PetscLogGetStageLog()
+.seealso: PetscStageLogPush(), PetscStageLogPop(), PetscLogGetStageLog()
 @*/
-PetscErrorCode  StageLogGetEventRegLog(StageLog stageLog, EventRegLog *eventLog)
+PetscErrorCode  PetscStageLogGetEventRegLog(PetscStageLog stageLog, PetscEventRegLog *eventLog)
 {
   PetscFunctionBegin;
   PetscValidPointer(eventLog,2);
@@ -327,14 +327,14 @@ PetscErrorCode  StageLogGetEventRegLog(StageLog stageLog, EventRegLog *eventLog)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "StageLogGetClassPerfLog"
+#define __FUNCT__ "PetscStageLogGetClassPerfLog"
 /*@C
-  StageLogGetClassPerfLog - This function returns the ClassPerfLog for the given stage.
+  PetscStageLogGetClassPerfLog - This function returns the ClassPerfLog for the given stage.
 
   Not Collective
 
   Input Parameters:
-+ stageLog - The StageLog
++ stageLog - The PetscStageLog
 - stage    - The stage
 
   Output Parameter:
@@ -343,9 +343,9 @@ PetscErrorCode  StageLogGetEventRegLog(StageLog stageLog, EventRegLog *eventLog)
   Level: developer
 
 .keywords: log, stage
-.seealso: StageLogPush(), StageLogPop(), PetscLogGetStageLog()
+.seealso: PetscStageLogPush(), PetscStageLogPop(), PetscLogGetStageLog()
 @*/
-PetscErrorCode  StageLogGetClassPerfLog(StageLog stageLog, int stage, ClassPerfLog *classLog)
+PetscErrorCode  PetscStageLogGetClassPerfLog(PetscStageLog stageLog, int stage, PetscClassPerfLog *classLog)
 {
   PetscFunctionBegin;
   PetscValidPointer(classLog,2);
@@ -358,23 +358,23 @@ PetscErrorCode  StageLogGetClassPerfLog(StageLog stageLog, int stage, ClassPerfL
 
 
 #undef __FUNCT__  
-#define __FUNCT__ "StageLogSetActive"
+#define __FUNCT__ "PetscStageLogSetActive"
 /*@C
-  StageLogSetActive - This function determines whether events will be logged during this state.
+  PetscStageLogSetActive - This function determines whether events will be logged during this state.
 
   Not Collective
 
   Input Parameters:
-+ stageLog - The StageLog
++ stageLog - The PetscStageLog
 . stage    - The stage to log
 - isActive - The activity flag, PETSC_TRUE for logging, otherwise PETSC_FALSE (default is PETSC_TRUE)
 
   Level: developer
 
 .keywords: log, active, stage
-.seealso: StageLogGetActive(), StageLogGetCurrent(), StageLogRegister(), PetscLogGetStageLog()
+.seealso: PetscStageLogGetActive(), PetscStageLogGetCurrent(), PetscStageLogRegister(), PetscLogGetStageLog()
 @*/
-PetscErrorCode  StageLogSetActive(StageLog stageLog, int stage, PetscBool  isActive)
+PetscErrorCode  PetscStageLogSetActive(PetscStageLog stageLog, int stage, PetscBool  isActive)
 {
   PetscFunctionBegin;
   if ((stage < 0) || (stage >= stageLog->numStages)) {
@@ -385,14 +385,14 @@ PetscErrorCode  StageLogSetActive(StageLog stageLog, int stage, PetscBool  isAct
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "StageLogGetActive"
+#define __FUNCT__ "PetscStageLogGetActive"
 /*@C
-  StageLogGetActive - This function returns whether events will be logged suring this stage.
+  PetscStageLogGetActive - This function returns whether events will be logged suring this stage.
 
   Not Collective
 
   Input Parameters:
-+ stageLog - The StageLog
++ stageLog - The PetscStageLog
 - stage    - The stage to log
 
   Output Parameter:
@@ -401,9 +401,9 @@ PetscErrorCode  StageLogSetActive(StageLog stageLog, int stage, PetscBool  isAct
   Level: developer
 
 .keywords: log, visible, stage
-.seealso: StageLogSetActive(), StageLogGetCurrent(), StageLogRegister(), PetscLogGetStageLog()
+.seealso: PetscStageLogSetActive(), PetscStageLogGetCurrent(), PetscStageLogRegister(), PetscLogGetStageLog()
 @*/
-PetscErrorCode  StageLogGetActive(StageLog stageLog, int stage, PetscBool  *isActive)
+PetscErrorCode  PetscStageLogGetActive(PetscStageLog stageLog, int stage, PetscBool  *isActive)
 {
   PetscFunctionBegin;
   if ((stage < 0) || (stage >= stageLog->numStages)) {
@@ -415,14 +415,14 @@ PetscErrorCode  StageLogGetActive(StageLog stageLog, int stage, PetscBool  *isAc
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "StageLogSetVisible"
+#define __FUNCT__ "PetscStageLogSetVisible"
 /*@C
-  StageLogSetVisible - This function determines whether a stage is printed during PetscLogView()
+  PetscStageLogSetVisible - This function determines whether a stage is printed during PetscLogView()
 
   Not Collective
 
   Input Parameters:
-+ stageLog  - The StageLog
++ stageLog  - The PetscStageLog
 . stage     - The stage to log
 - isVisible - The visibility flag, PETSC_TRUE for printing, otherwise PETSC_FALSE (default is PETSC_TRUE)
 
@@ -432,9 +432,9 @@ PetscErrorCode  StageLogGetActive(StageLog stageLog, int stage, PetscBool  *isAc
   Level: developer
 
 .keywords: log, visible, stage
-.seealso: StageLogGetVisible(), StageLogGetCurrent(), StageLogRegister(), PetscLogGetStageLog()
+.seealso: PetscStageLogGetVisible(), PetscStageLogGetCurrent(), PetscStageLogRegister(), PetscLogGetStageLog()
 @*/
-PetscErrorCode  StageLogSetVisible(StageLog stageLog, int stage, PetscBool  isVisible)
+PetscErrorCode  PetscStageLogSetVisible(PetscStageLog stageLog, int stage, PetscBool  isVisible)
 {
   PetscFunctionBegin;
   if ((stage < 0) || (stage >= stageLog->numStages)) {
@@ -445,14 +445,14 @@ PetscErrorCode  StageLogSetVisible(StageLog stageLog, int stage, PetscBool  isVi
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "StageLogGetVisible"
+#define __FUNCT__ "PetscStageLogGetVisible"
 /*@C
-  StageLogGetVisible - This function returns whether a stage is printed during PetscLogView()
+  PetscStageLogGetVisible - This function returns whether a stage is printed during PetscLogView()
 
   Not Collective
 
   Input Parameters:
-+ stageLog  - The StageLog
++ stageLog  - The PetscStageLog
 - stage     - The stage to log
 
   Output Parameter:
@@ -464,9 +464,9 @@ PetscErrorCode  StageLogSetVisible(StageLog stageLog, int stage, PetscBool  isVi
   Level: developer
 
 .keywords: log, visible, stage
-.seealso: StageLogSetVisible(), StageLogGetCurrent(), StageLogRegister(), PetscLogGetStageLog()
+.seealso: PetscStageLogSetVisible(), PetscStageLogGetCurrent(), PetscStageLogRegister(), PetscLogGetStageLog()
 @*/
-PetscErrorCode  StageLogGetVisible(StageLog stageLog, int stage, PetscBool  *isVisible)
+PetscErrorCode  PetscStageLogGetVisible(PetscStageLog stageLog, int stage, PetscBool  *isVisible)
 {
   PetscFunctionBegin;
   if ((stage < 0) || (stage >= stageLog->numStages)) {
@@ -478,14 +478,14 @@ PetscErrorCode  StageLogGetVisible(StageLog stageLog, int stage, PetscBool  *isV
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "StageLogGetStage"
+#define __FUNCT__ "PetscStageLogGetStage"
 /*@C
-  StageLogGetStage - This function returns the stage id given the stage name.
+  PetscStageLogGetStage - This function returns the stage id given the stage name.
 
   Not Collective
 
   Input Parameters:
-+ stageLog - The StageLog
++ stageLog - The PetscStageLog
 - name     - The stage name
 
   Output Parameter:
@@ -494,9 +494,9 @@ PetscErrorCode  StageLogGetVisible(StageLog stageLog, int stage, PetscBool  *isV
   Level: developer 
 
 .keywords: log, stage
-.seealso: StageLogGetCurrent(), StageLogRegister(), PetscLogGetStageLog()
+.seealso: PetscStageLogGetCurrent(), PetscStageLogRegister(), PetscLogGetStageLog()
 @*/
-PetscErrorCode  StageLogGetStage(StageLog stageLog, const char name[], int *stage)
+PetscErrorCode  PetscStageLogGetStage(PetscStageLog stageLog, const char name[], int *stage)
 {
   PetscBool      match;
   int            s;
@@ -516,34 +516,34 @@ PetscErrorCode  StageLogGetStage(StageLog stageLog, const char name[], int *stag
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "StageLogCreate"
+#define __FUNCT__ "PetscStageLogCreate"
 /*@C
-  StageLogCreate - This creates a StageLog object.
+  PetscStageLogCreate - This creates a PetscStageLog object.
 
   Not collective
 
   Input Parameter:
-. stageLog - The StageLog
+. stageLog - The PetscStageLog
 
   Level: developer
 
 .keywords: log, stage, create
-.seealso: StageLogCreate()
+.seealso: PetscStageLogCreate()
 @*/
-PetscErrorCode  StageLogCreate(StageLog *stageLog)
+PetscErrorCode  PetscStageLogCreate(PetscStageLog *stageLog)
 {
-  StageLog       l;
+  PetscStageLog       l;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNew(struct _n_StageLog, &l);CHKERRQ(ierr);
+  ierr = PetscNew(struct _n_PetscStageLog, &l);CHKERRQ(ierr);
   l->numStages = 0;
   l->maxStages = 10;
   l->curStage  = -1;
-  ierr = StackCreate(&l->stack);CHKERRQ(ierr);
-  ierr = PetscMalloc(l->maxStages * sizeof(StageInfo), &l->stageInfo);CHKERRQ(ierr);
+  ierr = PetscIntStackCreate(&l->stack);CHKERRQ(ierr);
+  ierr = PetscMalloc(l->maxStages * sizeof(PetscStageInfo), &l->stageInfo);CHKERRQ(ierr);
   ierr = EventRegLogCreate(&l->eventLog);CHKERRQ(ierr);
-  ierr = ClassRegLogCreate(&l->classLog);CHKERRQ(ierr);
+  ierr = PetscClassRegLogCreate(&l->classLog);CHKERRQ(ierr);
   *stageLog = l;
   PetscFunctionReturn(0);
 }

@@ -47,13 +47,13 @@ namespace PETSc {
     PetscLogEvent getId() {return this->id;};
     PetscLogDouble time() {
       PetscInt       stage = 0;
-      StageLog       stageLog;
-      EventPerfLog   eventLog;
+      PetscStageLog       stageLog;
+      PetscEventPerfLog   eventLog;
       PetscErrorCode ierr;
 
       ierr = PetscLogGetStageLog(&stageLog);CHKERRXX(ierr);
-      ierr = StageLogGetEventPerfLog(stageLog, stage, &eventLog);CHKERRXX(ierr);
-      EventPerfInfo eventInfo = eventLog->eventInfo[this->id];
+      ierr = PetscStageLogGetEventPerfLog(stageLog, stage, &eventLog);CHKERRXX(ierr);
+      PetscEventPerfInfo eventInfo = eventLog->eventInfo[this->id];
 
       return eventInfo.time;
     };

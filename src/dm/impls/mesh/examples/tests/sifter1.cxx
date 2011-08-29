@@ -62,12 +62,12 @@ PetscErrorCode ConeTest(const ALE::Obj<sifter_type>& sifter, Options *options)
   ierr = PetscLogEventEnd(coneEvent,0,0,0,0);
   ALE::LogStagePop(stage);
   CPPUNIT_ASSERT_EQUAL(count, numConeArrows*options->iters);
-  StageLog     stageLog;
-  EventPerfLog eventLog;
+  PetscStageLog     stageLog;
+  PetscEventPerfLog eventLog;
 
   ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
-  ierr = StageLogGetEventPerfLog(stageLog, stage, &eventLog);CHKERRQ(ierr);
-  EventPerfInfo eventInfo = eventLog->eventInfo[coneEvent];
+  ierr = PetscStageLogGetEventPerfLog(stageLog, stage, &eventLog);CHKERRQ(ierr);
+  PetscEventPerfInfo eventInfo = eventLog->eventInfo[coneEvent];
 
   CPPUNIT_ASSERT_EQUAL(eventInfo.count, 1);
   CPPUNIT_ASSERT_EQUAL((int) eventInfo.flops, 0);
@@ -108,12 +108,12 @@ PetscErrorCode SupportTest(const ALE::Obj<sifter_type>& sifter, Options *options
   ierr = PetscLogEventEnd(supportEvent,0,0,0,0);
   ALE::LogStagePop(stage);
   CPPUNIT_ASSERT_EQUAL(count, numSupportArrows*options->iters);
-  StageLog     stageLog;
-  EventPerfLog eventLog;
+  PetscStageLog     stageLog;
+  PetscEventPerfLog eventLog;
 
   ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
-  ierr = StageLogGetEventPerfLog(stageLog, stage, &eventLog);CHKERRQ(ierr);
-  EventPerfInfo eventInfo = eventLog->eventInfo[supportEvent];
+  ierr = PetscStageLogGetEventPerfLog(stageLog, stage, &eventLog);CHKERRQ(ierr);
+  PetscEventPerfInfo eventInfo = eventLog->eventInfo[supportEvent];
 
   CPPUNIT_ASSERT_EQUAL(eventInfo.count, 1);
   CPPUNIT_ASSERT_EQUAL((int) eventInfo.flops, 0);
