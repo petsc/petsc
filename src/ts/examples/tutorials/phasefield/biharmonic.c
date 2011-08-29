@@ -39,6 +39,9 @@ Evolve the Cahn-Hillard equations: logarithmic + double well (never shrinks and 
 ---------------
 ./biharmonic -ts_monitor -snes_monitor  -pc_type lu  --snes_converged_reason  -wait   -ts_type beuler    -da_refine 5 -vi  -kappa .0001 -ts_dt 5.96046e-06 -cahn-hillard -energy 3 -snes_ls_monitor -theta .00000001  -vi  -ts_monitor_solution -ts_monitor_solution_initial -ts_max_time 1.
 
+./biharmonic -ts_monitor -snes_monitor  -pc_type lu  --snes_converged_reason  -wait   -ts_type beuler    -da_refine 5 -vi  -kappa .0001 -ts_dt 5.96046e-06 -cahn-hillard -energy 3 -snes_ls_monitor -theta .00000001  -vi  -ts_monitor_solution -ts_monitor_solution_initial -ts_max_time 1. -degenerate
+
+
 Evolve the Cahn-Hillard equations: logarithmic +  double obstacle (never shrinks, never grows)
 ---------------
 ./biharmonic -ts_monitor -snes_monitor  -pc_type lu  --snes_converged_reason  -wait   -ts_type beuler    -da_refine 5 -vi  -kappa .00001 -ts_dt 5.96046e-06 -cahn-hillard -energy 4 -snes_ls_monitor -theta .00000001  -vi 
