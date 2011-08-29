@@ -133,7 +133,7 @@ PetscErrorCode PCReset_GAMG(PC pc)
    In/Output Parameter:
    . a_P_inout - prolongation operator to the next level (k-1)
    . a_coarse_data - data that need to be moved
-   . a_active_proc - number of active procs
+   . a_nactive_proc - number of active procs
    Output Parameter:
    . a_Amat_crs - coarse matrix that is created (k-1)
 */
@@ -146,7 +146,7 @@ PetscErrorCode partitionLevel( Mat a_Amat_fine,
 			       PetscInt a_cbs,
                                Mat *a_P_inout,
                                PetscReal **a_coarse_data,
-                               PetscMPIInt *a_active_proc,
+                               PetscMPIInt *a_nactive_proc,
                                Mat *a_Amat_crs
                                )
 {
@@ -154,9 +154,8 @@ PetscErrorCode partitionLevel( Mat a_Amat_fine,
   Mat              Cmat,Pnew,Pold=*a_P_inout;
   IS               new_indices,isnum;
   MPI_Comm         wcomm = ((PetscObject)a_Amat_fine)->comm;
-  PetscMPIInt      nactive_procs,mype,npe;
-  PetscInt         Istart,Iend,Istart0,Iend0,ncrs0,ncrs_new,fbs;
-  PetscInt         neq,NN;
+  PetscMPIInt      mype,npe;
+  PetscInt         neq,NN,Istart,Iend,Istart0,Iend0,ncrs0,ncrs_new,fbs;
   PetscMPIInt      new_npe,targ_npe;
   PetscBool        flag = PETSC_FALSE;
  
@@ -174,47 +173,69 @@ PetscErrorCode partitionLevel( Mat a_Amat_fine,
 
   /* Repartition Cmat_{k} and move colums of P^{k}_{k-1} and coordinates accordingly */
   ierr = MatGetSize( Cmat, &neq, &NN );CHKERRQ(ierr);
-#define MIN_EQ_PROC 2000
-  nactive_procs = *a_active_proc;
+#define MIN_EQ_PROC 100
   targ_npe = neq/MIN_EQ_PROC; /* hardwire min. number of eq/proc */
-#define TOP_GRID_LIM 2000
-  if( targ_npe == 0 || neq < TOP_GRID_LIM ) new_npe = 1; /* chop coarsest grid */
-  else if (targ_npe >= nactive_procs ) new_npe = nactive_procs; /* no change */
-  else {
-    PetscMPIInt factstart,fact;
-    new_npe = -9999;
-    factstart = nactive_procs;
+#define TOP_GRID_LIM 1000
+  if( targ_npe == 0 || neq < TOP_GRID_LIM ) {
+    new_npe = 1; /* output for next level */
+  }
+  else if (targ_npe >= *a_nactive_proc ) new_npe = *a_nactive_proc; /* no change */
+  else{
+    PetscMPIInt factstart,fact,nactivepe=*a_nactive_proc;
+    factstart = nactivepe;
+    new_npe = -9999; /*???*/
     for(fact=factstart;fact>0;fact--){ /* try to find a better number of procs */
-      if( nactive_procs%fact==0 && neq/(nactive_procs/fact) > MIN_EQ_PROC ) {
-        new_npe = nactive_procs/fact;
+      if( nactivepe%fact==0 && neq/(nactivepe/fact) > MIN_EQ_PROC ) {
+	new_npe = nactivepe/fact;
       }
     }
-    if(new_npe == -9999) new_npe = nactive_procs;
+    if( new_npe == -9999 ){
+      new_npe = *a_nactive_proc; /*???*/
+      PetscPrintf(PETSC_COMM_WORLD,"[%d]%s warning: failed to find reduced PE number, targ_npe=%d\n",mype,__FUNCT__,targ_npe);
+    }
   }
-  
+  *a_nactive_proc = new_npe; /* this is a nominal value -- output */
+
+  PetscPrintf(PETSC_COMM_WORLD,"[%d]%s new_npe=%d neq=%d\n",mype,__FUNCT__,new_npe,neq);
+
   ierr  = PetscOptionsHasName(PETSC_NULL,"-pc_gamg_avoid_repartitioning",&flag);
   CHKERRQ( ierr );
   if( !flag ) { /* re-partition */
     MatPartitioning  mpart;
     Mat              adj;
     const PetscInt  *is_idx;
-    PetscInt         is_sz,kk,jj,ii,old_fact=(npe/nactive_procs), *isnewproc_idx;
+    PetscInt         is_sz,kk,jj,ii, *isnewproc_idx;
     /* create sub communicator  */
     MPI_Comm         cm,new_comm;
-    PetscInt         membershipKey = mype%old_fact, new_fact=(npe/new_npe),counts[npe];
     IS               isnewproc;
-    
-    *a_active_proc = new_npe; /* output for next level */
-    ierr = MPI_Comm_split(wcomm, membershipKey, mype, &cm); CHKERRQ(ierr);
-    ierr = PetscCommDuplicate( cm, &new_comm, PETSC_NULL ); CHKERRQ(ierr);
-    ierr = MPI_Comm_free( &cm );                            CHKERRQ(ierr);
+    MPI_Group        wg, g2;
+    PetscMPIInt      ranks[npe],counts[npe],nc=ncrs0;
 
+    ierr = MPI_Allgather( &nc, 1, MPI_INT, counts, 1, MPI_INT, wcomm ); CHKERRQ(ierr); 
+    assert(counts[mype]==ncrs0);
+    /* count real active pes */
+    for( new_npe = jj = 0 ; jj < npe ; jj++) {
+      if( counts[jj] != 0 ) {
+	ranks[new_npe++] = jj;
+      }
+    }
+
+    ierr = MPI_Comm_group( wcomm, &wg ); CHKERRQ(ierr); 
+    ierr = MPI_Group_incl( wg, new_npe, ranks, &g2 ); CHKERRQ(ierr); 
+    ierr = MPI_Comm_create( wcomm, g2, &cm ); CHKERRQ(ierr); 
+    if( cm != MPI_COMM_NULL ) {
+      ierr = PetscCommDuplicate( cm, &new_comm, PETSC_NULL ); CHKERRQ(ierr);
+      ierr = MPI_Comm_free( &cm );                             CHKERRQ(ierr);
+    }
+    ierr = MPI_Group_free( &wg );                            CHKERRQ(ierr);
+    ierr = MPI_Group_free( &g2 );                            CHKERRQ(ierr);
+    
     /* MatPartitioningApply call MatConvert, which is collective */
     ierr = PetscLogEventBegin(gamg_setup_stages[SET12],0,0,0,0);CHKERRQ(ierr);
-    if( a_cbs==1) {
+    if( a_cbs == 1) {
       ierr = MatConvert( Cmat, MATMPIADJ, MAT_INITIAL_MATRIX, &adj );   CHKERRQ(ierr);
     }
-    else {
+    else{
       /* make a scalar matrix to partition */
       Mat tMat;
       PetscInt Ii,ncols; const PetscScalar *vals; const PetscInt *idx;
@@ -245,12 +266,18 @@ PetscErrorCode partitionLevel( Mat a_Amat_fine,
 
       ierr = MatDestroy( &tMat );  CHKERRQ(ierr);
     }
-    if( membershipKey == 0 ) {
-      if(ncrs0==0)SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"zero local nodes -- increase min");
+    ierr = MatGetOwnershipRange( adj, &neq, &NN ); CHKERRQ(ierr);
+    assert(ncrs0==(NN-neq));
+
+    if( ncrs0 != 0 ){
       /* hack to fix global data that pmetis.c uses in 'adj' */
-      for( kk=0 , jj=0 ; kk<=npe ; jj++, kk += old_fact ) {
-        adj->rmap->range[jj] = adj->rmap->range[kk];
+      for( new_npe = jj = 0 ; jj < npe ; jj++ ) {
+	if( counts[jj] != 0 ) {
+	  adj->rmap->range[new_npe++] = adj->rmap->range[jj];
+	}
       }
+      adj->rmap->range[new_npe] = adj->rmap->range[npe];
+      
       ierr = MatPartitioningCreate( new_comm, &mpart ); CHKERRQ(ierr);
       ierr = MatPartitioningSetAdjacency( mpart, adj ); CHKERRQ(ierr);
       ierr = MatPartitioningSetFromOptions( mpart ); CHKERRQ(ierr);
@@ -263,22 +290,23 @@ PetscErrorCode partitionLevel( Mat a_Amat_fine,
       ierr = ISGetIndices( isnewproc, &is_idx );     CHKERRQ(ierr);
       /* spread partitioning across machine - probably the right thing to do but machine spec. */
       for(kk=0,jj=0;kk<is_sz;kk++){
-        for(ii=0 ; ii<a_cbs ; ii++, jj++ ) { /* expand for equation level by 'bs' */
-          isnewproc_idx[jj] = is_idx[kk] * new_fact;
+        for(ii=0 ; ii<a_cbs ; ii++, jj++ ) { 
+          isnewproc_idx[jj] = is_idx[kk]; /* distribution */
         }
       }
       ierr = ISRestoreIndices( isnewproc, &is_idx );     CHKERRQ(ierr);
       ierr = ISDestroy( &isnewproc );                    CHKERRQ(ierr);
       is_sz *= a_cbs;
+
+      ierr = MPI_Comm_free( &new_comm );    CHKERRQ(ierr);  
     }
-    else {
+    else{
       isnewproc_idx = 0;
       is_sz = 0;
     }
     ierr = MatDestroy( &adj );                       CHKERRQ(ierr);
-    ierr = MPI_Comm_free( &new_comm );    CHKERRQ(ierr);
     ierr = ISCreateGeneral( wcomm, is_sz, isnewproc_idx, PETSC_COPY_VALUES, &isnewproc );
-    if( membershipKey == 0 ) {
+    if( isnewproc_idx != 0 ) {
       ierr = PetscFree( isnewproc_idx );  CHKERRQ(ierr);
     }
     
@@ -335,8 +363,8 @@ PetscErrorCode partitionLevel( Mat a_Amat_fine,
       ierr = VecAssemblyBegin(src_crd); CHKERRQ(ierr);
       ierr = VecAssemblyEnd(src_crd); CHKERRQ(ierr);
       /*
-       Scatter the element vertex information (still in the original vertex ordering)
-       to the correct processor
+	Scatter the element vertex information (still in the original vertex ordering)
+	to the correct processor
        */
       ierr = VecScatterCreate( src_crd, PETSC_NULL, dest_crd, isscat, &vecscat);
       CHKERRQ(ierr);
@@ -346,8 +374,8 @@ PetscErrorCode partitionLevel( Mat a_Amat_fine,
       ierr = VecScatterDestroy( &vecscat );       CHKERRQ(ierr);
       ierr = VecDestroy( &src_crd );       CHKERRQ(ierr);
       /*
-       Put the element vertex data into a new allocation of the gdata->ele
-       */
+	Put the element vertex data into a new allocation of the gdata->ele
+      */
       ierr = PetscFree( *a_coarse_data );    CHKERRQ(ierr);
       ierr = PetscMalloc( data_sz*ncrs_new*sizeof(PetscReal), a_coarse_data );    CHKERRQ(ierr);
 
@@ -367,8 +395,8 @@ PetscErrorCode partitionLevel( Mat a_Amat_fine,
     }
     
     /*
-     Invert for MatGetSubMatrix
-     */
+      Invert for MatGetSubMatrix
+    */
     ierr = ISInvertPermutation( isnum, ncrs_new*a_cbs, &new_indices ); CHKERRQ(ierr);
     ierr = ISSort( new_indices ); CHKERRQ(ierr); /* is this needed? */
     ierr = ISDestroy( &isnum ); CHKERRQ(ierr);
@@ -396,7 +424,7 @@ PetscErrorCode partitionLevel( Mat a_Amat_fine,
   else {
     *a_Amat_crs = Cmat; /* output */
   }
-
+  
   PetscFunctionReturn(0);
 }
 

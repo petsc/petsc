@@ -600,7 +600,7 @@ PetscErrorCode formProl0(IS a_selected, /* list of selected local ID, includes s
                          )
 {
   PetscErrorCode ierr;
-  PetscInt  Istart,Iend,nFineLoc,myFine0,clid,flid,aggID,kk,jj,ii,nLocalSelected,ndone, crs_start,crs_end;
+  PetscInt  Istart,Iend,nFineLoc,myFine0,clid,flid,aggID,kk,jj,ii,nLocalSelected,ndone,nSelected;
   MPI_Comm       wcomm = ((PetscObject)a_Prol)->comm;
   PetscMPIInt    mype, npe;
   const PetscInt *selected_idx,*llist_idx;
@@ -611,9 +611,13 @@ PetscErrorCode formProl0(IS a_selected, /* list of selected local ID, includes s
   ierr = MPI_Comm_size(wcomm,&npe);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange( a_Prol, &Istart, &Iend );    CHKERRQ(ierr);
   nFineLoc = (Iend-Istart)/a_bs; myFine0 = Istart/a_bs; assert((Iend-Istart)%a_bs==0);
-
-  ierr = MatGetOwnershipRangeColumn( a_Prol, &crs_start, &crs_end );    CHKERRQ(ierr);
-  nLocalSelected = (crs_end-crs_start)/a_nSAvec;
+  
+  ierr = ISGetLocalSize( a_selected, &nSelected );        CHKERRQ(ierr);
+  ierr = ISGetIndices( a_selected, &selected_idx );       CHKERRQ(ierr);
+  for(kk=0,nLocalSelected=0;kk<nSelected;kk++){
+    PetscInt lid = selected_idx[kk];
+    if(lid<nFineLoc) nLocalSelected++;
+  }
 
   /* aloc space for coarse point data (output) */
 #define DATA_OUT_STRIDE (nLocalSelected*a_nSAvec)
@@ -624,7 +628,6 @@ PetscErrorCode formProl0(IS a_selected, /* list of selected local ID, includes s
   /* find points and set prolongation */
   ndone = 0;
   ierr = ISGetIndices( a_locals_llist, &llist_idx );      CHKERRQ(ierr);
-  ierr = ISGetIndices( a_selected, &selected_idx );       CHKERRQ(ierr);
   for( clid = 0 ; clid < nLocalSelected ; clid++ ){
     PetscInt cgid = a_my0crs + clid, cids[a_nSAvec];
 
@@ -1171,7 +1174,7 @@ PetscErrorCode createProlongation( const Mat a_Amat,
   PetscMPIInt    mype, npe;
   MPI_Comm       wcomm = ((PetscObject)a_Amat)->comm;
   IS             rankIS, permIS, llist_1, selected_1, selected_2;
-  const PetscInt *selected_idx, *idx,bs_in=*a_bs;
+  const PetscInt *selected_idx, *idx,bs_in=*a_bs,col_bs=(a_useSA ? a_data_cols : bs_in);
   const PetscScalar *vals;
   PetscScalar     v,vfilter=0.08;
   MatInfo info;
@@ -1361,10 +1364,9 @@ PetscErrorCode createProlongation( const Mat a_Amat,
     if(lid<nloc) nLocalSelected++;
   }
   ierr = ISRestoreIndices( selected_1, &selected_idx );     CHKERRQ(ierr);
-  
+
   /* create prolongator, create P matrix */
-  ierr = MatCreateMPIAIJ(wcomm, nloc*bs_in,
-                         nLocalSelected*(a_useSA ? a_data_cols : bs_in),
+  ierr = MatCreateMPIAIJ(wcomm, nloc*bs_in, nLocalSelected*col_bs,
                          PETSC_DETERMINE, PETSC_DETERMINE,
                          a_data_cols, PETSC_NULL, a_data_cols, PETSC_NULL,
                          &Prol );
@@ -1373,6 +1375,7 @@ PetscErrorCode createProlongation( const Mat a_Amat,
   /* can get all points "removed" */
   ierr = MatGetSize( Prol, &kk, &jj );  CHKERRQ(ierr);
   if( jj==0 ) {
+    assert(0);
     *a_isOK = PETSC_FALSE;
     PetscPrintf(PETSC_COMM_WORLD,"[%d]%s no selected points on coarse grid\n",mype,__FUNCT__);
     ierr = MatDestroy( &Prol );  CHKERRQ(ierr);
@@ -1453,10 +1456,10 @@ PetscErrorCode createProlongation( const Mat a_Amat,
     /* create global vector of coorindates in 'coords' */
     ierr = PetscLogEventBegin(gamg_setup_stages[SET7],0,0,0,0);CHKERRQ(ierr);
     if (npe > 1) {
-      /* create blocked version for communication only */
+      /* create blocked dummy matrix for communication only */
       Mat tMat;
       PetscInt Ii,ncols; const PetscInt *idx; PetscScalar v = 1.0;
-
+      
       ierr = MatGetInfo(Gmat,MAT_LOCAL,&info); CHKERRQ(ierr);
       kk = (PetscInt)info.nz_used*bs_in/(nloc+1) + 1;
       ierr = MatCreateMPIAIJ( wcomm, nloc*bs_in, nloc*bs_in,
@@ -1490,7 +1493,7 @@ PetscErrorCode createProlongation( const Mat a_Amat,
     /* scan my coarse zero gid */
     MPI_Scan( &nLocalSelected, &myCrs0, 1, MPI_INT, MPI_SUM, wcomm );
     myCrs0 -= nLocalSelected;
-    
+
     /* get P0 */
     if( npe > 1 ){
       PetscReal fid_glid_loc[nloc],*fiddata; PetscInt nnodes;
@@ -1508,7 +1511,8 @@ PetscErrorCode createProlongation( const Mat a_Amat,
     }
     ierr = PetscLogEventEnd(gamg_setup_stages[SET7],0,0,0,0);CHKERRQ(ierr);
 
-    ierr = formProl0(selected_1,llist_1,bs_in,a_data_cols,myCrs0,nbnodes,data_w_ghost,flid_fgid,a_data_out,Prol);
+    ierr = formProl0(selected_1,llist_1,bs_in,a_data_cols,myCrs0,nbnodes,
+		     data_w_ghost,flid_fgid,a_data_out,Prol);
     CHKERRQ(ierr);
     if (npe > 1) ierr = PetscFree( data_w_ghost );      CHKERRQ(ierr);
     ierr = PetscFree( flid_fgid ); CHKERRQ(ierr);
