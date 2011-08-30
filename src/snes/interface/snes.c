@@ -1948,11 +1948,26 @@ PetscErrorCode  SNESSetTolerances(SNES snes,PetscReal abstol,PetscReal rtol,Pets
   PetscValidLogicalCollectiveInt(snes,maxit,5);
   PetscValidLogicalCollectiveInt(snes,maxf,6);
 
-  if (abstol != PETSC_DEFAULT)  snes->abstol      = abstol;
-  if (rtol != PETSC_DEFAULT)  snes->rtol      = rtol;
-  if (stol != PETSC_DEFAULT)  snes->xtol      = stol;
-  if (maxit != PETSC_DEFAULT) snes->max_its   = maxit;
-  if (maxf != PETSC_DEFAULT)  snes->max_funcs = maxf;
+  if (abstol != PETSC_DEFAULT) {
+    if (abstol < 0.0) SETERRQ1(((PetscObject)snes)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Absolute tolerance %G must be non-negative",abstol);
+    snes->abstol = abstol;
+  }
+  if (rtol != PETSC_DEFAULT) {
+    if (rtol < 0.0 || 1.0 <= rtol) SETERRQ1(((PetscObject)snes)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Relative tolerance %G must be non-negative and less than 1.0",rtol);
+    snes->rtol = rtol;
+  }
+  if (stol != PETSC_DEFAULT) {
+    if (stol < 0.0) SETERRQ1(((PetscObject)snes)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Step tolerance %G must be non-negative",stol);
+    snes->xtol = stol;
+  }
+  if (maxit != PETSC_DEFAULT) {
+    if (maxit < 0) SETERRQ1(((PetscObject)snes)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Maximum number of iterations %D must be non-negative",maxit);
+    snes->max_its = maxit;
+  }
+  if (maxf != PETSC_DEFAULT) {
+    if (maxf < 0) SETERRQ1(((PetscObject)snes)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Maximum number of function evaluations %D must be non-negative",maxf);
+    snes->max_funcs = maxf;
+  }
   PetscFunctionReturn(0);
 }
 
