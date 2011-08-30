@@ -296,7 +296,7 @@
            write(6,110) its
         endif
       endif
-  100 format('Norm of error ',e10.4,' iterations ',i5)
+  100 format('Norm of error ',e11.4,' iterations ',i5)
   110 format('Norm of error < 1.e-12,iterations ',i5)
 
 !  Free work space.  All PETSc objects should be destroyed when they
@@ -358,7 +358,7 @@
       if (rank .eq. 0) write(6,200) n,rnorm
 
  100  format('iteration ',i5,' solution vector:')
- 200  format('iteration ',i5,' residual norm ',e10.4)
+ 200  format('iteration ',i5,' residual norm ',e11.4)
       ierr = 0
       end
 

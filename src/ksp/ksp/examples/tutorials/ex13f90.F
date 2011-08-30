@@ -153,7 +153,7 @@
  90      continue
          enorm =  PetscRealPart(cnorm*hx*hy)
          write(6,115) m,n,enorm
- 115     format ('m = ',I2,' n = ',I2,' error norm = ',1PE10.4)
+ 115     format ('m = ',I2,' n = ',I2,' error norm = ',1PE11.4)
  100  continue
 
 !  We are finished solving linear systems, so we clean up the

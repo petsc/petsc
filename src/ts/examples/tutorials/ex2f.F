@@ -209,8 +209,8 @@
       call VecNorm(u,NORM_2,norm,ierr)
 
       write(6,100) steps,ftime,norm
- 100  format('Number of pseudo time-steps ',i5,' final time ',1pe8.2,   &
-     & ' solution norm ',1pe8.2)
+ 100  format('Number of pseudo time-steps ',i5,' final time ',1pe9.2,   &
+     & ' solution norm ',1pe9.2)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Free work space.  All PETSc objects should be destroyed when they
@@ -421,8 +421,8 @@
 !  Print only from processor 0
       if (rank .eq. 0) write(6,100) step,time,en2s,enmax
  100  format('Timestep = ',i5,',time = ',f8.3,                          &
-     &       ' sec, error [2-norm] = ',e9.3,                            &
-     &       ', error [max-norm] = ',e9.3)
+     &       ' sec, error [2-norm] = ',e10.3,                            &
+     &       ', error [max-norm] = ',e10.3)
 
 !  Print debugging information if desired
       if (debug) then
