@@ -8,13 +8,7 @@
 
 #include <private/kspimpl.h>        /*I "petscksp.h" I*/
 #include <petscblaslapack.h>
-#if defined(PETSC_BLASLAPACK_UNDERSCORE)
-#include "petscdgmresblaslapack_uscore.h"
-#elif defined(PETSC_BLASLAPACK_CAPS)
-#include "petscdgmresblaslapack_caps.h"
-#else
-#include "petscdgmresblaslapack_c.h"
-#endif
+
 
 EXTERN_C_BEGIN
 #if !defined(PETSC_USE_COMPLEX)

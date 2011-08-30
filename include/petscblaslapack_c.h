@@ -23,6 +23,12 @@
 #  define LAPACKstein_ sstein /* eigenvectors of real symm tridiagonal matrix */
 #  define LAPACKgesv_  sgesv
 #  define LAPACKgelss_ sgelss
+#  define LAPACKhseqr_ shseqr
+#  define LAPACKhgeqz_ shgeqz
+#  define LAPACKgerfs_ sgerfs
+#  define LAPACKgges_ sgges
+#  define LAPACKtrsen_ strsen
+#  define LAPACKtgsen_ stgsen
 /* Real single precision with character string arguments. */
 #  define LAPACKormqr_ sormqr
 #  define LAPACKtrtrs_ strtrs
@@ -56,6 +62,12 @@
 #  define LAPACKstein_ dstein
 #  define LAPACKgesv_  dgesv
 #  define LAPACKgelss_ dgelss
+#  define LAPACKhseqr_ dhseqr
+#  define LAPACKhgeqz_ dhgeqz
+#  define LAPACKgerfs_ dgerfs
+#  define LAPACKgges_ dgges
+#  define LAPACKtrsen_ dtrsen
+#  define LAPACKtgsen_ dtgsen
 /* Real double precision with character string arguments. */
 #  define LAPACKormqr_ dormqr
 #  define LAPACKtrtrs_ dtrtrs
@@ -90,6 +102,12 @@
 #  define LAPACKpttrf_ cpttrf 
 #  define LAPACKstein_ cstein
 #  define LAPACKgelss_ cgelss
+#  define LAPACKhseqr_ chseqr
+#  define LAPACKhgeqz_ chgeqz
+#  define LAPACKgerfs_ cgerfs
+#  define LAPACKgges_ cgges
+#  define LAPACKtrsen_ ctrsen
+#  define LAPACKtgsen_ ctgsen
 /* Complex single precision with character string arguments */
 /* LAPACKormqr_ does not exist for complex. */
 #  define LAPACKtrtrs_ ctrtrs
@@ -125,6 +143,12 @@
 #  define LAPACKstein_ zstein
 # define LAPACKgesv_   zgesv
 # define LAPACKgelss_  zgelss
+#  define LAPACKhseqr_ zhseqr
+#  define LAPACKhgeqz_ zhgeqz
+#  define LAPACKgerfs_ zgerfs
+#  define LAPACKgges_ zgges
+#  define LAPACKtrsen_ ztrsen
+#  define LAPACKtgsen_ ztgsen
 /* Complex double precision with character string arguments */
 /* LAPACKormqr_ does not exist for complex. */
 #  define LAPACKtrtrs_ ztrtrs
