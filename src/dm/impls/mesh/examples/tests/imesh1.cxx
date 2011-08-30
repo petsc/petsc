@@ -698,15 +698,15 @@ public:
     }
     PETSc::Log::Event("PoolAllocatorTestTotal").end();
     PETSc::Log::Stage("LabelTests").pop();
-    StageLog             stageLog;
-    EventPerfLog         eventLog;
+    PetscStageLog        stageLog;
+    PetscEventPerfLog    eventLog;
     const PetscLogDouble maxTimePerInsertion = 2.0e-5;
     PetscErrorCode       ierr;
 
     ierr = PetscLogGetStageLog(&stageLog);CHKERRXX(ierr);
-    ierr = StageLogGetEventPerfLog(stageLog, PETSc::Log::Stage("LabelTests").getId(), &eventLog);CHKERRXX(ierr);
-    EventPerfInfo eventInfoALE = eventLog->eventInfo[PETSc::Log::Event("ALEAllocatorTest").getId()];
-    EventPerfInfo eventInfoALETotal = eventLog->eventInfo[PETSc::Log::Event("ALEAllocatorTestTotal").getId()];
+    ierr = PetscStageLogGetEventPerfLog(stageLog, PETSc::Log::Stage("LabelTests").getId(), &eventLog);CHKERRXX(ierr);
+    PetscEventPerfInfo eventInfoALE = eventLog->eventInfo[PETSc::Log::Event("ALEAllocatorTest").getId()];
+    PetscEventPerfInfo eventInfoALETotal = eventLog->eventInfo[PETSc::Log::Event("ALEAllocatorTestTotal").getId()];
 
     CPPUNIT_ASSERT_EQUAL(eventInfoALE.count, 1);
     CPPUNIT_ASSERT_EQUAL((int) eventInfoALE.flops, 0);
@@ -714,8 +714,8 @@ public:
       ierr = PetscPrintf(PETSC_COMM_WORLD, "\nInsertion time: %g  Total time: %g  Average time per insertion: %gs\n", eventInfoALE.time, eventInfoALETotal.time, eventInfoALE.time/(this->_iters*this->_size));CHKERRXX(ierr);
     }
     CPPUNIT_ASSERT((eventInfoALE.time < maxTimePerInsertion * this->_size * this->_iters));
-    EventPerfInfo eventInfoPool = eventLog->eventInfo[PETSc::Log::Event("PoolAllocatorTest").getId()];
-    EventPerfInfo eventInfoPoolTotal = eventLog->eventInfo[PETSc::Log::Event("PoolAllocatorTestTotal").getId()];
+    PetscEventPerfInfo eventInfoPool = eventLog->eventInfo[PETSc::Log::Event("PoolAllocatorTest").getId()];
+    PetscEventPerfInfo eventInfoPoolTotal = eventLog->eventInfo[PETSc::Log::Event("PoolAllocatorTestTotal").getId()];
 
     CPPUNIT_ASSERT_EQUAL(eventInfoPool.count, 1);
     CPPUNIT_ASSERT_EQUAL((int) eventInfoPool.flops, 0);
@@ -752,13 +752,13 @@ public:
     ierr = PetscLogEventEnd(closureEvent,0,0,0,0);
     ALE::LogStagePop(stage);
     CPPUNIT_ASSERT_EQUAL(count, (long) cells->size()*12*this->_iters);
-    StageLog     stageLog;
-    EventPerfLog eventLog;
+    PetscStageLog     stageLog;
+    PetscEventPerfLog eventLog;
     const long   numClosures = cells->size() * this->_iters;
 
     ierr = PetscLogGetStageLog(&stageLog);
-    ierr = StageLogGetEventPerfLog(stageLog, stage, &eventLog);
-    EventPerfInfo eventInfo = eventLog->eventInfo[closureEvent];
+    ierr = PetscStageLogGetEventPerfLog(stageLog, stage, &eventLog);
+    PetscEventPerfInfo eventInfo = eventLog->eventInfo[closureEvent];
 
     CPPUNIT_ASSERT_EQUAL(eventInfo.count, 1);
     CPPUNIT_ASSERT_EQUAL((int) eventInfo.flops, 0);

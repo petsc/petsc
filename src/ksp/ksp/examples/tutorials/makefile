@@ -460,6 +460,11 @@ runex8g_debug:
 	-@${MPIEXEC} -n ${NP} xterm -e gdb -ex 'set breakpoint pending on' -ex 'b ${BREAKPOINT}' -ex r -ex bt --args ./ex8g -print_error ${ARGS}
 
 
+#runex10_basic:
+#	-@${MPIEXEC} -n 2 ./ex10 -f0 ${PETSC_DIR}/include/datafiles/matrices/spd-${PETSC_SCALAR_TYPE}-${PETSC_INDEX_SIZE}-${PETSC_SCALAR_SIZE} -options_left off > ex10_1.tmp 2>&1; \
+#	   if (${DIFF} output/ex10_1.out ex10_1.tmp) then true; \
+#	   else echo "Possible problem with ex10_1, diffs above"; fi; \
+#	   ${RM} -f ex10_1.tmp
 runex10:
 	-@${MPIEXEC} -n 2 ./ex10 -f0 ../../../../mat/examples/matbinary.cplx.ex -ksp_gmres_cgs_refinement_type refine_always -options_left off > ex10_1.tmp 2>&1; \
 	   if (${DIFF} output/ex10_1.out ex10_1.tmp) then true; \

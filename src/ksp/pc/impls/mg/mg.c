@@ -196,8 +196,6 @@ PetscErrorCode  PCMGSetLevels(PC pc,PetscInt levels,MPI_Comm *comms)
   }
 
   mg->nlevels      = levels;
-  mg->galerkin     = PETSC_FALSE;
-  mg->galerkinused = PETSC_FALSE;
 
   ierr = PetscMalloc(levels*sizeof(PC_MG*),&mglevels);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory(pc,levels*(sizeof(PC_MG*)));CHKERRQ(ierr);
@@ -341,7 +339,7 @@ PetscErrorCode PCSetFromOptions_MG(PC pc)
 {
   PetscErrorCode ierr;
   PetscInt       m,levels = 1,cycles;
-  PetscBool      flg;
+  PetscBool      flg,set;
   PC_MG          *mg = (PC_MG*)pc->data;
   PC_MG_Levels   **mglevels = mg->levels;
   PCMGType       mgtype;
@@ -366,10 +364,10 @@ PetscErrorCode PCSetFromOptions_MG(PC pc)
       ierr = PCMGSetCycleType(pc,mgctype);CHKERRQ(ierr);
     };
     flg  = PETSC_FALSE;
-    ierr = PetscOptionsBool("-pc_mg_galerkin","Use Galerkin process to compute coarser operators","PCMGSetGalerkin",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
-    if (flg) {
-      ierr = PCMGSetGalerkin(pc);CHKERRQ(ierr);
-    } 
+    ierr = PetscOptionsBool("-pc_mg_galerkin","Use Galerkin process to compute coarser operators","PCMGSetGalerkin",flg,&flg,&set);CHKERRQ(ierr);
+    if (set) {
+      ierr = PCMGSetGalerkin(pc,flg);CHKERRQ(ierr);
+    }
     ierr = PetscOptionsInt("-pc_mg_smoothup","Number of post-smoothing steps","PCMGSetNumberSmoothUp",1,&m,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PCMGSetNumberSmoothUp(pc,m);CHKERRQ(ierr);
@@ -538,9 +536,8 @@ PetscErrorCode PCSetUp_MG(PC pc)
     ierr = KSPSetDMActive(mglevels[n-1]->smoothd,PETSC_FALSE);CHKERRQ(ierr);
   }
 
-  if (mg->galerkin) {
+  if (mg->galerkin == 1) {
     Mat B;
-    mg->galerkinused = PETSC_TRUE;
     /* currently only handle case where mat and pmat are the same on coarser levels */
     ierr = KSPGetOperators(mglevels[n-1]->smoothd,&dA,&dB,&uflag);CHKERRQ(ierr);
     if (!pc->setupcalled) {
@@ -869,7 +866,8 @@ PetscErrorCode  PCMGMultiplicativeSetCycles(PC pc,PetscInt n)
    Logically Collective on PC
 
    Input Parameters:
-.  pc - the multigrid context 
++  pc - the multigrid context
+-  use - PETSC_TRUE to use the Galerkin process to compute coarse-level operators
 
    Options Database Key:
 $  -pc_mg_galerkin
@@ -881,13 +879,13 @@ $  -pc_mg_galerkin
 .seealso: PCMGGetGalerkin()
 
 @*/
-PetscErrorCode  PCMGSetGalerkin(PC pc)
+PetscErrorCode PCMGSetGalerkin(PC pc,PetscBool use)
 { 
   PC_MG        *mg = (PC_MG*)pc->data;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  mg->galerkin = PETSC_TRUE;
+  mg->galerkin = (PetscInt)use;
   PetscFunctionReturn(0);
 }
 
@@ -921,7 +919,7 @@ PetscErrorCode  PCMGGetGalerkin(PC pc,PetscBool  *galerkin)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  *galerkin = mg->galerkin;
+  *galerkin = (PetscBool)mg->galerkin;
   PetscFunctionReturn(0);
 }
 

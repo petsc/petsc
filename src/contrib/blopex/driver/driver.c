@@ -173,10 +173,10 @@ int main(int argc,char **args)
     that all program code is actually loaded into memory; then we solve the problem
     we are interested in; this trick is done for accurate timing
   */
-  PreLoadBegin(PETSC_TRUE,"grid and matrix assembly");
+  PetscPreLoadBegin(PETSC_TRUE,"grid and matrix assembly");
 
   /* "create" the grid and stencil data; on first run we form small problem */
-  if (PreLoadIt==0)
+  if (PetscPreLoadIt==0)
   {
       /* small problem */
       ierr=DMDACreate3d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,DMDA_BOUNDARY_NONE,
@@ -234,7 +234,7 @@ int main(int argc,char **args)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 /* Here we START measuring time for preconditioner setup */
-  PreLoadStage("preconditioner setup");
+  PetscPreLoadStage("preconditioner setup");
   ierr = PetscGetTime(&t1);CHKERRQ(ierr);
 
   /*
@@ -261,11 +261,11 @@ int main(int argc,char **args)
    ierr = KSPSetUp(ksp);CHKERRQ(ierr);
 
 /* Here we STOP measuring time for preconditioner setup */
-   PreLoadStage("solution");
+   PetscPreLoadStage("solution");
 
    ierr = PetscGetTime(&t2);CHKERRQ(ierr);
    elapsed_time=t2-t1;
-   if (PreLoadIt==1)
+   if (PetscPreLoadIt==1)
     PetscPrintf(PETSC_COMM_WORLD,"Preconditioner setup, seconds: %f\n",elapsed_time);
 
    /* request memory for eig-vals */
@@ -334,8 +334,8 @@ int main(int argc,char **args)
               NULL,                     /*input-matrix Y */
               blap_fn,                  /*input-lapack functions */
               lobpcg_tol,               /*input-tolerances */
-              PreLoadIt? maxIt:1,       /*input-max iterations */
-              !rank && PreLoadIt,       /*input-verbosity level */
+              PetscPreLoadIt? maxIt:1,       /*input-max iterations */
+              !rank && PetscPreLoadIt,       /*input-verbosity level */
 
               &iterations,              /*output-actual iterations */
               (komplex *) eigs,                     /*output-eigenvalues */
@@ -358,8 +358,8 @@ int main(int argc,char **args)
               NULL,
               blap_fn,
               lobpcg_tol,
-              PreLoadIt? maxIt:1,
-              !rank && PreLoadIt,
+              PetscPreLoadIt? maxIt:1,
+              !rank && PetscPreLoadIt,
               &iterations,
 
           eigs,                    /* eigenvalues; "lambda_values" should point to array
@@ -394,10 +394,10 @@ int main(int argc,char **args)
 /* Here we STOP measuring time for solution process */
   ierr = PetscGetTime(&t2);CHKERRQ(ierr);
   elapsed_time=t2-t1;
-  if (PreLoadIt)
+  if (PetscPreLoadIt)
    PetscPrintf(PETSC_COMM_WORLD,"Solution process, seconds: %e\n",elapsed_time);
 
-  if (PreLoadIt && full_output)
+  if (PetscPreLoadIt && full_output)
   {
       PetscPrintf(PETSC_COMM_WORLD,"Output from LOBPCG, eigenvalues:\n");
       for (i=0;i<n_eigs;i++)
@@ -453,7 +453,7 @@ int main(int argc,char **args)
          options are chosen (e.g., -log_summary).
   */
 
-  PreLoadEnd();
+  PetscPreLoadEnd();
   ierr = PetscFinalize();
   return 0;
 }

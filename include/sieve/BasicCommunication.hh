@@ -130,8 +130,8 @@ namespace ALE {
         this->_requests.push_back(request);
 #if defined(PETSC_USE_LOG)
         // PETSc logging
-        isend_ct++;
-        TypeSize(&isend_len, num, this->_datatype);
+        petsc_isend_ct++;
+        PetscMPITypeSize(&petsc_isend_len, num, this->_datatype);
 #endif
       }
       for(typename moves_type::const_iterator r_iter = this->_recvs.begin(); r_iter != this->_recvs.end(); ++r_iter) {
@@ -146,8 +146,8 @@ namespace ALE {
         this->_requests.push_back(request);
 #if defined(PETSC_USE_LOG)
         // PETSc logging
-        irecv_ct++;
-        TypeSize(&irecv_len, num, this->_datatype);
+        petsc_irecv_ct++;
+        PetscMPITypeSize(&petsc_irecv_len, num, this->_datatype);
 #endif
       }
     };

@@ -51,7 +51,7 @@ int main(int argc,char **args)
         -log_summary) can be done with the larger one (that actually
         is the system of interest). 
   */
-  PreLoadBegin(PETSC_FALSE,"Load system");
+  PetscPreLoadBegin(PETSC_FALSE,"Load system");
 
     /* - - - - - - - - - - - New Stage - - - - - - - - - - - - -
                            Load system
@@ -121,7 +121,7 @@ int main(int argc,char **args)
     /*
        Conclude profiling last stage; begin profiling next stage.
     */
-    PreLoadStage("KSPSetUp");
+    PetscPreLoadStage("KSPSetUp");
 
     ierr = MatCreateNormal(A,&N);CHKERRQ(ierr);
     ierr = MatMultTranspose(A,b,Ab);CHKERRQ(ierr);
@@ -150,7 +150,7 @@ int main(int argc,char **args)
     /*
        Begin profiling next stage
     */
-    PreLoadStage("KSPSolve");
+    PetscPreLoadStage("KSPSolve");
 
     /*
        Solve linear system
@@ -160,7 +160,7 @@ int main(int argc,char **args)
    /* 
        Conclude profiling this stage
     */
-    PreLoadStage("Cleanup");
+    PetscPreLoadStage("Cleanup");
 
     /* - - - - - - - - - - - New Stage - - - - - - - - - - - - -
             Check error, print output, free data structures.
@@ -184,7 +184,7 @@ int main(int argc,char **args)
     ierr = MatDestroy(&N);CHKERRQ(ierr); ierr = VecDestroy(&Ab);CHKERRQ(ierr);
     ierr = VecDestroy(&u);CHKERRQ(ierr); ierr = VecDestroy(&x);CHKERRQ(ierr);
     ierr = KSPDestroy(&ksp);CHKERRQ(ierr); 
-  PreLoadEnd();
+  PetscPreLoadEnd();
   /* -----------------------------------------------------------
                       End of linear solver loop
      ----------------------------------------------------------- */

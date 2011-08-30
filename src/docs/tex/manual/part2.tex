@@ -5927,12 +5927,12 @@ details about interpreting such profiling data.
 
 In particular, the macros 
 \begin{tabbing}
-  PreLoadBegin(PetscBool ,char* stagename),\\
-  PreLoadStage(char *stagename),
+  PetscPreLoadBegin(PetscBool ,char* stagename),\\
+  PetscPreLoadStage(char *stagename),
 \end{tabbing}
 and 
 \begin{tabbing}
-  PreLoadEnd()
+  PetscPreLoadEnd()
 \end{tabbing}
 can be used to easily 
 convert a regular PETSc program to one that uses preloading. The command line options

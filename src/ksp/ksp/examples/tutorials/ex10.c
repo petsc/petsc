@@ -89,7 +89,7 @@ int main(int argc,char **args)
         -log_summary) can be done with the larger one (that actually
         is the system of interest). 
   */
-  PreLoadBegin(preload,"Load system");
+  PetscPreLoadBegin(preload,"Load system");
 
     /* - - - - - - - - - - - New Stage - - - - - - - - - - - - -
                            Load system
@@ -99,7 +99,7 @@ int main(int argc,char **args)
        Open binary file.  Note that we use FILE_MODE_READ to indicate
        reading from this file.
     */
-    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[PreLoadIt],FILE_MODE_READ,&fd);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[PetscPreLoadIt],FILE_MODE_READ,&fd);CHKERRQ(ierr);
     
     /*
        Load the matrix and vector; then destroy the viewer.
@@ -263,7 +263,7 @@ int main(int argc,char **args)
     /*
        Conclude profiling last stage; begin profiling next stage.
     */
-    PreLoadStage("KSPSetUpSolve");
+    PetscPreLoadStage("KSPSetUpSolve");
 
     /*
        We also explicitly time this stage via PetscGetTime()
@@ -370,7 +370,7 @@ int main(int argc,char **args)
         */
         ierr = PetscViewerStringOpen(PETSC_COMM_WORLD,kspinfo,120,&viewer);CHKERRQ(ierr);
         ierr = KSPView(ksp,viewer);CHKERRQ(ierr);
-        ierr = PetscStrrchr(file[PreLoadIt],'/',&matrixname);CHKERRQ(ierr);
+        ierr = PetscStrrchr(file[PetscPreLoadIt],'/',&matrixname);CHKERRQ(ierr);
         ierr = PetscPrintf(PETSC_COMM_WORLD,"%-8.8s %3D %2.0e %2.1e %2.1e %2.1e %s \n",
                 matrixname,its,norm,tsetup+tsolve,tsetup,tsolve,kspinfo);CHKERRQ(ierr);
 
@@ -422,7 +422,7 @@ int main(int argc,char **args)
     ierr = MatDestroy(&A);CHKERRQ(ierr); ierr = VecDestroy(&b);CHKERRQ(ierr);
     ierr = VecDestroy(&u);CHKERRQ(ierr); ierr = VecDestroy(&x);CHKERRQ(ierr);
     ierr = KSPDestroy(&ksp);CHKERRQ(ierr); 
-  PreLoadEnd();
+  PetscPreLoadEnd();
   /* -----------------------------------------------------------
                       End of linear solver loop
      ----------------------------------------------------------- */

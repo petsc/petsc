@@ -98,7 +98,7 @@ int main(int argc,char **argv)
   comm = PETSC_COMM_WORLD;
 
 
-  // in order only run once, I block it: PreLoadBegin(PETSC_TRUE,"SetUp");
+  // in order only run once, I block it: PetscPreLoadBegin(PETSC_TRUE,"SetUp");
     ierr = DMMGCreate(comm,2,&user,&dmmg);CHKERRQ(ierr);
 
 
@@ -158,7 +158,7 @@ int main(int argc,char **argv)
        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
     ierr = DMMGSetInitialGuess(dmmg,FormInitialGuess);CHKERRQ(ierr);
 
-    //I block it:  PreLoadStage("Solve");
+    //I block it:  PetscPreLoadStage("Solve");
     ierr = DMMGSolve(dmmg);CHKERRQ(ierr); 
 
     snes = DMMGGetSNES(dmmg);
@@ -180,7 +180,7 @@ int main(int argc,char **argv)
        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
     ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
-    //PreLoadEnd();
+    //PetscPreLoadEnd();
 
   ierr = PetscFinalize();
   return 0;

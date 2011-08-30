@@ -926,10 +926,21 @@ PetscErrorCode  KSPSetTolerances(KSP ksp,PetscReal rtol,PetscReal abstol,PetscRe
   PetscValidLogicalCollectiveReal(ksp,dtol,4);
   PetscValidLogicalCollectiveInt(ksp,maxits,5);
 
-  if (abstol != PETSC_DEFAULT)   ksp->abstol   = abstol;
-  if (rtol != PETSC_DEFAULT)   ksp->rtol   = rtol;
-  if (dtol != PETSC_DEFAULT)   ksp->divtol = dtol;
-  if (maxits != PETSC_DEFAULT) ksp->max_it = maxits;
+  if (rtol != PETSC_DEFAULT) {
+    if (rtol < 0.0 || 1.0 <= rtol) SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Relative tolerance %G must be non-negative and less than 1.0",rtol);        ksp->rtol = rtol;
+  }
+  if (abstol != PETSC_DEFAULT) {
+    if (abstol < 0.0) SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Absolute tolerance %G must be non-negative",abstol);
+    ksp->abstol = abstol;
+  }
+  if (dtol != PETSC_DEFAULT) {
+    if (dtol < 0.0) SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Divergence tolerance %G must be larger than 1.0",dtol);
+    ksp->divtol = dtol;
+  }
+  if (maxits != PETSC_DEFAULT) {
+    if (maxits < 0) SETERRQ1(((PetscObject)ksp)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Maximum number of iterations %D must be non-negative",maxits);
+    ksp->max_it = maxits;
+  }
   PetscFunctionReturn(0);
 }
 

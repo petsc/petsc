@@ -59,16 +59,16 @@ PetscInt main(PetscInt argc,char **args)
     ierr = PetscOptionsGetString(PETSC_NULL,"-fB",file[2],PETSC_MAX_PATH_LEN,&flgB);CHKERRQ(ierr);
   }
 
-  PreLoadBegin(preload,"Load system");
+  PetscPreLoadBegin(preload,"Load system");
     /* Load matrices */
-    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[PreLoadIt],FILE_MODE_READ,&fd);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[PetscPreLoadIt],FILE_MODE_READ,&fd);CHKERRQ(ierr);
     ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
     ierr = MatSetType(A,MATSBAIJ);CHKERRQ(ierr);
     ierr = MatLoad(A,fd);CHKERRQ(ierr); 
     ierr = PetscViewerDestroy(&fd);CHKERRQ(ierr); 
     ierr = MatGetSize(A,&m,&n);CHKERRQ(ierr);
-    if ((flgB && PreLoadIt) || (flgB && !preload)){
-      ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[PreLoadIt+1],FILE_MODE_READ,&fd);CHKERRQ(ierr);
+    if ((flgB && PetscPreLoadIt) || (flgB && !preload)){
+      ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[PetscPreLoadIt+1],FILE_MODE_READ,&fd);CHKERRQ(ierr);
       ierr = MatCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
       ierr = MatSetType(B,MATSBAIJ);CHKERRQ(ierr);
       ierr = MatLoad(B,fd);CHKERRQ(ierr);
@@ -99,7 +99,7 @@ PetscInt main(PetscInt argc,char **args)
       ierr = MatEqual(A, Trans, &isSymmetric);
       if (!isSymmetric) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"A must be symmetric");
       ierr = MatDestroy(&Trans);CHKERRQ(ierr);
-      if (flgB && PreLoadIt){
+      if (flgB && PetscPreLoadIt){
         ierr = MatTranspose(B,MAT_INITIAL_MATRIX, &Trans);
         ierr = MatEqual(B, Trans, &isSymmetric);
         if (!isSymmetric) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_USER,"B must be symmetric");
@@ -168,10 +168,10 @@ PetscInt main(PetscInt argc,char **args)
       ierr = PetscMalloc((m*n+1)*sizeof(PetscScalar),&evecs_array);CHKERRQ(ierr);
       ierr = PetscMalloc((6*n+1)*sizeof(PetscBLASInt),&iwork);CHKERRQ(ierr);
       ifail = iwork + 5*n;
-      if(PreLoadIt){ierr = PetscLogStagePush(stages[0]);CHKERRQ(ierr);}
+      if(PetscPreLoadIt){ierr = PetscLogStagePush(stages[0]);CHKERRQ(ierr);}
       /* in the case "I", vl and vu are not referenced */
       LAPACKsygvx_(&lone,"V","I","U",&bn,arrayA,&bn,arrayB,&bn,&vl,&vu,&il,&iu,&abstol,&nevs,evals,evecs_array,&n,work,&lwork,iwork,ifail,&lierr);
-      if(PreLoadIt){ierr = PetscLogStagePop();}
+      if(PetscPreLoadIt){ierr = PetscLogStagePop();}
       ierr = PetscFree(iwork);CHKERRQ(ierr);
     }
     ierr = MatRestoreArray(A,&arrayA);CHKERRQ(ierr);
@@ -186,7 +186,7 @@ PetscInt main(PetscInt argc,char **args)
     }
 
     /* Check residuals and orthogonality */
-    if(PreLoadIt){
+    if(PetscPreLoadIt){
       mats[0] = A; mats[1] = B;
       one = (PetscInt)one;
       ierr = PetscMalloc((nevs+1)*sizeof(Vec),&evecs);CHKERRQ(ierr);
@@ -217,7 +217,7 @@ PetscInt main(PetscInt argc,char **args)
     ierr = MatDestroy(&B);CHKERRQ(ierr);
     ierr = MatDestroy(&A);CHKERRQ(ierr);
 
-  PreLoadEnd();
+  PetscPreLoadEnd();
   ierr = PetscFinalize();
   return 0;
 }

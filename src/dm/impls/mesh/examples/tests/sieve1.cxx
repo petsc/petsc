@@ -87,12 +87,12 @@ public :
     ierr = PetscLogEventEnd(closureEvent,0,0,0,0);
     ALE::LogStagePop(stage);
     CPPUNIT_ASSERT_EQUAL(count, numClosurePoints*this->_iters);
-    StageLog     stageLog;
-    EventPerfLog eventLog;
+    PetscStageLog     stageLog;
+    PetscEventPerfLog eventLog;
 
     ierr = PetscLogGetStageLog(&stageLog);
-    ierr = StageLogGetEventPerfLog(stageLog, stage, &eventLog);
-    EventPerfInfo eventInfo = eventLog->eventInfo[closureEvent];
+    ierr = PetscStageLogGetEventPerfLog(stageLog, stage, &eventLog);
+    PetscEventPerfInfo eventInfo = eventLog->eventInfo[closureEvent];
 
     CPPUNIT_ASSERT_EQUAL(eventInfo.count, 1);
     CPPUNIT_ASSERT_EQUAL((int) eventInfo.flops, 0);
@@ -129,12 +129,12 @@ public :
     ierr = PetscLogEventEnd(starEvent,0,0,0,0);
     ALE::LogStagePop(stage);
     CPPUNIT_ASSERT_EQUAL(count, numStarPoints*this->_iters);
-    StageLog     stageLog;
-    EventPerfLog eventLog;
+    PetscStageLog     stageLog;
+    PetscEventPerfLog eventLog;
 
     ierr = PetscLogGetStageLog(&stageLog);
-    ierr = StageLogGetEventPerfLog(stageLog, stage, &eventLog);
-    EventPerfInfo eventInfo = eventLog->eventInfo[starEvent];
+    ierr = PetscStageLogGetEventPerfLog(stageLog, stage, &eventLog);
+    PetscEventPerfInfo eventInfo = eventLog->eventInfo[starEvent];
 
     CPPUNIT_ASSERT_EQUAL(eventInfo.count, 1);
     CPPUNIT_ASSERT_EQUAL((int) eventInfo.flops, 0);
@@ -185,12 +185,12 @@ public :
     }
     ierr = PetscLogEventEnd(closureEvent,0,0,0,0);
     ALE::LogStagePop(stage);
-    StageLog     stageLog;
-    EventPerfLog eventLog;
+    PetscStageLog     stageLog;
+    PetscEventPerfLog eventLog;
 
     ierr = PetscLogGetStageLog(&stageLog);
-    ierr = StageLogGetEventPerfLog(stageLog, stage, &eventLog);
-    EventPerfInfo eventInfo = eventLog->eventInfo[closureEvent];
+    ierr = PetscStageLogGetEventPerfLog(stageLog, stage, &eventLog);
+    PetscEventPerfInfo eventInfo = eventLog->eventInfo[closureEvent];
 
     CPPUNIT_ASSERT_EQUAL(eventInfo.count, 1);
     CPPUNIT_ASSERT_EQUAL((int) eventInfo.flops, 0);
@@ -227,12 +227,12 @@ public :
     }
     ierr = PetscLogEventEnd(starEvent,0,0,0,0);
     ALE::LogStagePop(stage);
-    StageLog     stageLog;
-    EventPerfLog eventLog;
+    PetscStageLog     stageLog;
+    PetscEventPerfLog eventLog;
 
     ierr = PetscLogGetStageLog(&stageLog);
-    ierr = StageLogGetEventPerfLog(stageLog, stage, &eventLog);
-    EventPerfInfo eventInfo = eventLog->eventInfo[starEvent];
+    ierr = PetscStageLogGetEventPerfLog(stageLog, stage, &eventLog);
+    PetscEventPerfInfo eventInfo = eventLog->eventInfo[starEvent];
 
     CPPUNIT_ASSERT_EQUAL(eventInfo.count, 1);
     CPPUNIT_ASSERT_EQUAL((int) eventInfo.flops, 0);

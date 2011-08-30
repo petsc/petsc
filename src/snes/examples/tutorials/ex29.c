@@ -96,7 +96,7 @@ typedef struct {
   PassiveReal  nu,eta,d_e,rho_s; /* physical parameters */
   PetscBool    draw_contours;    /* flag - 1 indicates drawing contours */
   PetscBool    second_order;
-  PetscBool    PreLoading;
+  PetscBool    PetscPreLoading;
 } Parameters;
 
 typedef struct {
@@ -139,9 +139,9 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,(char *)0,help);
 
 
-  PreLoadBegin(PETSC_TRUE,"SetUp");
+  PetscPreLoadBegin(PETSC_TRUE,"SetUp");
 
-  param.PreLoading = PreLoading;
+  param.PetscPreLoading = PetscPreLoading;
     ierr = DMMGCreate(PETSC_COMM_WORLD,1,&user,&dmmg);CHKERRQ(ierr);
     param.mglevels = DMMGGetLevels(dmmg);
 
@@ -222,7 +222,7 @@ int main(int argc,char **argv)
     {
       PetscBool  flg;
       ierr = PetscOptionsHasName(PETSC_NULL, "-socket_viewer", &flg);CHKERRQ(ierr);
-      if (flg && !PreLoading) {
+      if (flg && !PetscPreLoading) {
         tsCtx.ts_monitor = PETSC_TRUE;
         ierr = PetscViewerSocketOpen(PETSC_COMM_WORLD,0,PETSC_DECIDE,&tsCtx.socketviewer);CHKERRQ(ierr);
       }
@@ -261,7 +261,7 @@ int main(int argc,char **argv)
     
     ierr = PetscPrintf(PETSC_COMM_WORLD, "finish setupNull!");
 
-    if (PreLoading) {
+    if (PetscPreLoading) {
       ierr = PetscPrintf(PETSC_COMM_WORLD, "# viscosity = %G, resistivity = %G, "
 			 "skin_depth # = %G, larmor_radius # = %G\n",
 			 param.nu, param.eta, param.d_e, param.rho_s);CHKERRQ(ierr);
@@ -276,7 +276,7 @@ int main(int argc,char **argv)
        Solve the nonlinear system
        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
     
-    PreLoadStage("Solve");
+    PetscPreLoadStage("Solve");
 
     if (param.draw_contours) {
       ierr = VecView(((AppCtx*)DMMGGetUser(dmmg,param.mglevels-1))->Xold,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
@@ -296,7 +296,7 @@ int main(int argc,char **argv)
     ierr = PetscFree(user);CHKERRQ(ierr);
     ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
 
-    PreLoadEnd();
+    PetscPreLoadEnd();
     
   PetscFinalize();
   return 0;
@@ -626,11 +626,11 @@ PetscErrorCode Update(DMMG *dmmg)
   PetscInt        max_steps;
   PetscInt        nfailsCum = 0,nfails = 0;
   static PetscInt ic_out;
-  PetscBool       ts_monitor = (tsCtx->ts_monitor && !param->PreLoading) ? PETSC_TRUE : PETSC_FALSE;
+  PetscBool       ts_monitor = (tsCtx->ts_monitor && !param->PetscPreLoading) ? PETSC_TRUE : PETSC_FALSE;
 
   PetscFunctionBegin;
 
-  if (param->PreLoading) 
+  if (param->PetscPreLoading) 
     max_steps = 1;
   else
     max_steps = tsCtx->max_steps;
@@ -712,7 +712,7 @@ PetscErrorCode Update(DMMG *dmmg)
 			 tsCtx->itstep + 1, tsCtx->t, its, lits, PetscAbsScalar(tsCtx->fnorm));CHKERRQ(ierr);
 
       /* send solution over to MATLAB, to be visualized (using ex29.m) */
-      if (!param->PreLoading && tsCtx->socketviewer)
+      if (!param->PetscPreLoading && tsCtx->socketviewer)
       {
         Vec v;
         ierr = SNESGetSolution(snes, &v);CHKERRQ(ierr);
@@ -722,7 +722,7 @@ PetscErrorCode Update(DMMG *dmmg)
       }
     }
 
-    if (!param->PreLoading) {
+    if (!param->PetscPreLoading) {
       if (param->draw_contours) {
 	ierr = VecView(DMMGGetx(dmmg),PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
       }
@@ -748,13 +748,13 @@ PetscErrorCode Update(DMMG *dmmg)
     }
   } /* End of time step loop */
  
-  if (!param->PreLoading){ 
+  if (!param->PetscPreLoading){ 
     ierr = SNESGetFunctionNorm(snes,&tsCtx->fnorm);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD, "timesteps %D fnorm = %G\n",
 		       tsCtx->itstep, PetscAbsScalar(tsCtx->fnorm));CHKERRQ(ierr);
   }
 
-  if (param->PreLoading) {
+  if (param->PetscPreLoading) {
     tsCtx->fnorm_ini = 0.0;
   }
  

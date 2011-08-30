@@ -331,8 +331,7 @@
 
 !  Local variables:
       PetscInt  i,j
-      PetscScalar temp1,temp,hx,hy
-      PetscScalar one
+      PetscReal temp1,temp,one,hx,hy
 
 !  Set parameters
 
@@ -350,7 +349,7 @@
               x(i,j) = 0.0
             else
               x(i,j) = temp1 *                                          &
-     &          sqrt(min((min(i-1,mx-i)*hx),(temp)))
+     &          sqrt(min(min(i-1,mx-i)*hx,(temp)))
             endif
  10      continue
  20   continue
