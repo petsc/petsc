@@ -38,8 +38,7 @@ typedef struct {
   PCMGType      am;                           /* Multiplicative, additive or full */
   PetscInt      cyclesperpcapply;             /* Number of cycles to use in each PCApply(), multiplicative only*/
   PetscInt      maxlevels;                    /* total number of levels allocated */
-  PetscBool     galerkin;                     /* use Galerkin process to compute coarser matrices */
-  PetscBool     galerkinused;                 /* destroy the Mat created by the Galerkin process */
+  PetscInt      galerkin;                     /* use Galerkin process to compute coarser matrices, 0=no, 1=yes, 2=yes but computed externally */
   PetscBool     usedmfornumberoflevels;       /* sets the number of levels by getting this information out of the DM */
 
   PetscInt      nlevels;

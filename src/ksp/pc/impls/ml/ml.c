@@ -924,7 +924,7 @@ PetscErrorCode  PCCreate_ML(PC pc)
   /* Since PCMG tries to use DM assocated with PC must delete it */
   ierr = DMDestroy(&pc->dm);CHKERRQ(ierr);
   mg = (PC_MG*)pc->data;
-  mg->galerkin = PETSC_TRUE;
+  mg->galerkin = 2;             /* Use Galerkin, but it is computed externally */
 
   /* create a supporting struct and attach it to pc */
   ierr = PetscNewLog(pc,PC_ML,&pc_ml);CHKERRQ(ierr);
