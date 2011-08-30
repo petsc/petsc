@@ -209,7 +209,7 @@ PetscErrorCode  TSThetaSetTheta_Theta(TS ts,PetscReal theta)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TSThetaSetEndpoint_Theta"
+#define __FUNCT__ "TSThetaGetEndpoint_Theta"
 PetscErrorCode  TSThetaGetEndpoint_Theta(TS ts,PetscBool *endpoint)
 {
   TS_Theta *th = (TS_Theta*)ts->data;
