@@ -52,6 +52,16 @@ class Configure(config.package.Package):
     return
   defaultPrecision = property(getDefaultPrecision, setDefaultPrecision, doc = 'The precision of the library')
 
+  def getPrefix(self):
+    print  'ffusddlksddsds'
+    print self.defaultPrecision
+    print 'fdfdsfdsdfs'
+    if self.defaultPrecision == 'single': return 's'
+    if self.defaultPrecision == 'double': return 'd'
+    if self.defaultPrecision == 'quad': return 'q'
+    if self.defaultPrecision == '__float128': return 'q'
+    return 'Unknown precision'
+
   def getOtherLibs(self, foundBlas = None, blasLibrary = None, separateBlas = None):
     if foundBlas is None:
       foundBlas = self.foundBlas
@@ -67,11 +77,12 @@ class Configure(config.package.Package):
       otherLibs += self.compilers.flibs
     return otherLibs
 
-  def checkBlas(self, blasLibrary, otherLibs, fortranMangle, routine = 'ddot'):
-    '''This checks the given library for the routine, ddot by default'''
+  def checkBlas(self, blasLibrary, otherLibs, fortranMangle, routine = 'dot'):
+    '''This checks the given library for the routine, dot by default'''
     oldLibs = self.compilers.LIBS
     prototype = ''
     call      = ''
+    routine   = self.getPrefix()+routine
     if fortranMangle=='stdcall':
       if routine=='ddot':
         prototype = 'double __stdcall DDOT(int*,double*,int*,double*,int*);'
@@ -80,11 +91,14 @@ class Configure(config.package.Package):
     self.compilers.LIBS = oldLibs
     return found
 
-  def checkLapack(self, lapackLibrary, otherLibs, fortranMangle, routines = ['dgetrs', 'dgeev']):
+  def checkLapack(self, lapackLibrary, otherLibs, fortranMangle, routines = ['getrs', 'geev']):
     oldLibs = self.compilers.LIBS
     found   = 0
     prototypes = ['','']
     calls      = ['','']
+    for routine in range(len(routines)):
+      routines[routine] = self.getPrefix()+routines[routine]
+       
     if fortranMangle=='stdcall':
       if routines == ['dgetrs','dgeev']:
         prototypes = ['void __stdcall DGETRS(char*,int,int*,int*,double*,int*,int*,double*,int*,int*);',
@@ -114,7 +128,7 @@ class Configure(config.package.Package):
     self.f2c    = 0
     self.f2cpkg = 0
     mangleFunc = self.compilers.fortranMangling
-    foundBlas = self.checkBlas(blasLibrary, self.getOtherLibs(foundBlas, blasLibrary), mangleFunc)
+    foundBlas = self.checkBlas(blasLibrary, self.getOtherLibs(foundBlas, blasLibrary), mangleFunc,'dot')
     if foundBlas:
       foundLapack = self.checkLapack(lapackLibrary, self.getOtherLibs(foundBlas, blasLibrary), mangleFunc)
       if foundLapack:
@@ -122,16 +136,16 @@ class Configure(config.package.Package):
       self.framework.logPrint('Found Fortran mangling on BLAS/LAPACK which is '+self.compilers.fortranMangling)
     else:
       self.framework.logPrint('Checking for no name mangling on BLAS/LAPACK')
-      foundBlas = self.checkBlas(blasLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, 'ddot')
-      foundLapack = self.checkLapack(lapackLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, ['dgetrs', 'dgeev'])
+      foundBlas = self.checkBlas(blasLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, 'dot')
+      foundLapack = self.checkLapack(lapackLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, ['getrs', 'geev'])
       if foundBlas and foundLapack:
         self.framework.logPrint('Found no name mangling on BLAS/LAPACK')
         self.mangling = 'unchanged'
         self.f2c = 1
       else:
         self.framework.logPrint('Checking for underscore name mangling on BLAS/LAPACK')
-        foundBlas = self.checkBlas(blasLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, 'ddot_')
-        foundLapack = self.checkLapack(lapackLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, ['dgetrs_', 'dgeev_'])
+        foundBlas = self.checkBlas(blasLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, 'dot_')
+        foundLapack = self.checkLapack(lapackLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, ['getrs_', 'geev_'])
         if foundBlas and foundLapack:
           self.framework.logPrint('Found underscore name mangling on BLAS/LAPACK')
           self.mangling = 'underscore'
@@ -494,13 +508,14 @@ class Configure(config.package.Package):
     if self.foundLapack:
       mangleFunc = hasattr(self.compilers, 'FC') and not self.f2c
       for baseName in ['trsen','gerfs','gges', 'tgsen', 'gesvd','getrf','getrs','geev','gelss','syev','syevx','sygv','sygvx','getrf','potrf','getrs','potrs','stebz','pttrf','pttrs','stein','orgqr','stebz']:
+        prefix = self.getPrefix()
         if self.f2c:
           if self.mangling == 'underscore':
-            routine = 'd'+baseName+'_'
+            routine = prefix+baseName+'_'
           else:
-            routine = 'd'+baseName
+            routine = prefix+baseName
         else:
-          routine = 'd'+baseName
+          routine = prefix+baseName
         oldLibs = self.compilers.LIBS
         if not self.libraries.check(self.lapackLibrary, routine, otherLibs = self.getOtherLibs(), fortranMangle = mangleFunc):
           self.missingRoutines.append(baseName)

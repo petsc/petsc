@@ -4,9 +4,6 @@ class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
     self.download         = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/f2cblaslapack-3.1.1.q.tar.gz']
-    self.functions        = ['ddot_']
-    self.includes         = []
-    self.liblist          = [['libf2clapack.a','libf2cblas.a']]
     self.double           = 0
 
   def setupDependencies(self, framework):
@@ -49,7 +46,7 @@ class Configure(config.package.Package):
     import os
 
     precision = self.defaultPrecision
-    if precision == 'single': precision = 'float'
+    if precision == '__float128': precision = 'quad'
 
     libdir = self.libDir
     confdir = self.confDir
@@ -64,14 +61,12 @@ class Configure(config.package.Package):
         line = 'CC = '+cc+'\n'
       if line.startswith('COPTFLAGS '):
         self.setCompilers.pushLanguage('C')
-        line = 'COPTFLAGS  = '+self.setCompilers.getCompilerFlags()
-        line += ' -DDOUBLE='+precision+' -DLONG=""\n'
+        line = 'COPTFLAGS  = '+self.setCompilers.getCompilerFlags()+'\n'
         self.setCompilers.popLanguage()
       if line.startswith('CNOOPT'):
         self.setCompilers.pushLanguage('C')
         noopt = self.checkNoOptFlag()
-        line = 'CNOOPT = '+noopt+ ' '+self.getSharedFlag(self.setCompilers.getCompilerFlags())+' '+self.getPrecisionFlag(self.setCompilers.getCompilerFlags())+' '+self.getWindowsNonOptFlags(self.setCompilers.getCompilerFlags())
-        line += ' -DDOUBLE='+precision+' -DLONG=""\n'
+        line = 'CNOOPT = '+noopt+ ' '+self.getSharedFlag(self.setCompilers.getCompilerFlags())+' '+self.getPrecisionFlag(self.setCompilers.getCompilerFlags())+' '+self.getWindowsNonOptFlags(self.setCompilers.getCompilerFlags())+'\n'
         self.setCompilers.popLanguage()
       if line.startswith('AR  '):
         line = 'AR      = '+self.setCompilers.AR+'\n'
@@ -95,7 +90,7 @@ class Configure(config.package.Package):
 
     try:
       self.logPrintBox('Compiling BLASLAPACK; this may take several minutes')
-      output,err,ret  = config.base.Configure.executeShellCommand('cd '+blasDir+' && make -f tmpmakefile cleanblaslapck cleanlib && make -f tmpmakefile', timeout=2500, log = self.framework.log)
+      output,err,ret  = config.base.Configure.executeShellCommand('cd '+blasDir+' && make -f tmpmakefile cleanblaslapck cleanlib && make -f tmpmakefile '+precision, timeout=2500, log = self.framework.log)
     except RuntimeError, e:
       raise RuntimeError('Error running make on '+blasDir+': '+str(e))
     try:
