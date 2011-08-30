@@ -59,20 +59,27 @@ def check(args):
     else:
       exampleName = os.path.splitext(os.path.basename(ex))[0]
       exampleDir  = os.path.dirname(ex)
-    objDir      = maker.getObjDir(exampleName)
+    objDir        = maker.getObjDir(exampleName)
     if os.path.isdir(objDir): shutil.rmtree(objDir)
     os.mkdir(objDir)
-    objects     = maker.buildFile(ex, objDir)
-    if not len(objects):
-      print 'TEST FAILED (check make.log for details)'
-      return 1
-    executable = os.path.splitext(objects[0])[0]
-    paramKey   = os.path.join(os.path.relpath(exampleDir, maker.petscDir), os.path.basename(executable))
+    executable  = os.path.join(objDir, exampleName)
+    paramKey    = os.path.join(os.path.relpath(exampleDir, maker.petscDir), os.path.basename(executable))
     if paramKey in builder.regressionRequirements:
       if not builder.regressionRequirements[paramKey].issubset(packageNames):
         raise RuntimeError('This test requires packages: %s' % builder.regressionRequirements[paramKey])
-    maker.link(executable, objects, maker.configInfo.languages.clanguage)
     params = builder.regressionParameters.get(paramKey, {})
+    if isinstance(params, list):
+      if 'setup' in params[0]:
+        execfile(params[0]['setup'])
+        print params[0]['setup']
+    else:
+      if 'setup' in params:
+        print params['setup']
+    objects = maker.buildFile(ex, objDir)
+    if not len(objects):
+      print 'TEST FAILED (check make.log for details)'
+      return 1
+    maker.link(executable, objects, maker.configInfo.languages.clanguage)
     if isinstance(params, list):
       for testnum, param in enumerate(params):
         if not 'args' in param: param['args'] = ''
