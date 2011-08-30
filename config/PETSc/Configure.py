@@ -20,7 +20,7 @@ class Configure(config.base.Configure):
   def __str2__(self):
     desc = []
     desc.append('xxx=========================================================================xxx')
-    if self.cmakeboot_success:
+    if self.cmakeboot_success and not hasattr(self.compilers, 'CUDAC'):
       build_type = 'cmake build'
     else:
       build_type = 'legacy build'
