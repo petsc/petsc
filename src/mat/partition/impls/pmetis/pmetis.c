@@ -21,8 +21,6 @@ typedef struct {
   MPI_Comm comm_pmetis;
 } MatPartitioning_Parmetis;
 
-/* extern PetscMPIInt n_active_procs; // hack for reduced partitions */
-
 /*
    Uses the ParMETIS parallel matrix partitioner to partition the matrix in parallel
 */
@@ -58,8 +56,10 @@ static PetscErrorCode MatPartitioningApply_Parmetis(MatPartitioning part,IS *par
   xadj    = adj->i;
   adjncy  = adj->j;
   ierr    = MPI_Comm_rank(((PetscObject)part)->comm,&rank);CHKERRQ(ierr);
-#if 0
-  if (!(vtxdist[rank+1] - vtxdist[rank])) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"Does not support any processor with no entries");
+#if 1
+  if ((vtxdist[rank+1] - vtxdist[rank]) < 1) {
+    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Does not support any processor with %d entries",vtxdist[rank+1] - vtxdist[rank]);
+  }
 #endif
 #if defined(PETSC_USE_DEBUG)
   /* check that matrix has no diagonal entries */
@@ -75,8 +75,6 @@ static PetscErrorCode MatPartitioningApply_Parmetis(MatPartitioning part,IS *par
 #endif
 
   ierr = PetscMalloc((mat->rmap->n+1)*sizeof(int),&locals);CHKERRQ(ierr);
-
-  /* nparts = n_active_procs; // hack for reduced partitions */
 
   if (PetscLogPrintInfo) {itmp = parmetis->printout; parmetis->printout = 127;}
   ierr = PetscMalloc(ncon*nparts*sizeof(float),&tpwgts);CHKERRQ(ierr);

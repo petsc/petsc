@@ -64,19 +64,19 @@ extern PetscBool       PetscLogPrintInfo;  /* if true, indicates PetscInfo() is 
   
      The code that manipulates these structures is in src/sys/plog/utils.
 */
-typedef struct _n_IntStack *IntStack;
+typedef struct _n_PetscIntStack *PetscIntStack;
 
 /*
-    ClassRegInfo, ClassPerfInfo - Each class has two data structures associated with it. The first has 
+    PetscClassRegInfo, PetscClassPerfInfo - Each class has two data structures associated with it. The first has 
        static information about it, the second collects statistics on how many objects of the class are created,
        how much memory they use, etc.
 
-    ClassRegLog, ClassPerfLog - arrays of the ClassRegInfo and ClassPerfInfo for all classes.
+    PetscClassRegLog, PetscClassPerfLog - arrays of the PetscClassRegInfo and PetscClassPerfInfo for all classes.
 */
 typedef struct  {
   char           *name;   /* The class name */
   PetscClassId   classid; /* The integer identifying this class */
-} ClassRegInfo;
+} PetscClassRegInfo;
 
 typedef struct {
   PetscClassId   id;           /* The integer identifying this class */
@@ -84,28 +84,28 @@ typedef struct {
   int            destructions; /* The number of objects of this class destroyed */
   PetscLogDouble mem;          /* The total memory allocated by objects of this class */
   PetscLogDouble descMem;      /* The total memory allocated by descendents of these objects */
-} ClassPerfInfo;
+} PetscClassPerfInfo;
 
-typedef struct _n_ClassRegLog *ClassRegLog;
-struct _n_ClassRegLog {
-  int            numClasses; /* The number of classes registered */
-  int            maxClasses; /* The maximum number of classes */
-  ClassRegInfo * classInfo;  /* The structure for class information (classids are monotonicly increasing) */
+typedef struct _n_PetscClassRegLog *PetscClassRegLog;
+struct _n_PetscClassRegLog {
+  int               numClasses; /* The number of classes registered */
+  int               maxClasses; /* The maximum number of classes */
+  PetscClassRegInfo *classInfo; /* The structure for class information (classids are monotonicly increasing) */
 };
 
-typedef struct _n_ClassPerfLog *ClassPerfLog;
-struct _n_ClassPerfLog {
-  int            numClasses; /* The number of logging classes */
-  int            maxClasses; /* The maximum number of classes */
-  ClassPerfInfo *classInfo;  /* The structure for class information (classids are monotonicly increasing) */
+typedef struct _n_PetscClassPerfLog *PetscClassPerfLog;
+struct _n_PetscClassPerfLog {
+  int                numClasses; /* The number of logging classes */
+  int                maxClasses; /* The maximum number of classes */
+  PetscClassPerfInfo *classInfo; /* The structure for class information (classids are monotonicly increasing) */
 };
 /* -----------------------------------------------------------------------------------------------------*/
 /*
-    EventRegInfo, EventPerfInfo - Each event has two data structures associated with it. The first has 
+    PetscEventRegInfo, PetscEventPerfInfo - Each event has two data structures associated with it. The first has 
        static information about it, the second collects statistics on how many times the event is used, how 
        much time it takes, etc.
 
-    EventRegLog, EventPerfLog - an array of all EventRegInfo and EventPerfInfo for all events. There is one
+    PetscEventRegLog, PetscEventPerfLog - an array of all PetscEventRegInfo and PetscEventPerfInfo for all events. There is one
       of these for each stage.
 
 */
@@ -116,7 +116,7 @@ typedef struct {
   int          mpe_id_begin; /* MPE IDs that define the event */
   int          mpe_id_end;
 #endif
-} EventRegInfo;
+} PetscEventRegInfo;
 
 typedef struct {
   int            id;            /* The integer identifying this event */
@@ -129,45 +129,45 @@ typedef struct {
   PetscLogDouble numMessages;   /* The number of messages in this event */
   PetscLogDouble messageLength; /* The total message lengths in this event */
   PetscLogDouble numReductions; /* The number of reductions in this event */
-} EventPerfInfo;
+} PetscEventPerfInfo;
 
-typedef struct _n_EventRegLog *EventRegLog;
-struct _n_EventRegLog {
-  int           numEvents; /* The number of registered events */
-  int           maxEvents; /* The maximum number of events */
-  EventRegInfo *eventInfo; /* The registration information for each event */
+typedef struct _n_PetscEventRegLog *PetscEventRegLog;
+struct _n_PetscEventRegLog {
+  int               numEvents;  /* The number of registered events */
+  int               maxEvents;  /* The maximum number of events */
+  PetscEventRegInfo *eventInfo; /* The registration information for each event */
 };
 
-typedef struct _n_EventPerfLog *EventPerfLog;
-struct _n_EventPerfLog {
-  int            numEvents; /* The number of logging events */
-  int            maxEvents; /* The maximum number of events */
-  EventPerfInfo *eventInfo; /* The performance information for each event */
+typedef struct _n_PetscEventPerfLog *PetscEventPerfLog;
+struct _n_PetscEventPerfLog {
+  int                numEvents;  /* The number of logging events */
+  int                maxEvents;  /* The maximum number of events */
+  PetscEventPerfInfo *eventInfo; /* The performance information for each event */
 };
 /* ------------------------------------------------------------------------------------------------------------*/
 /*
-   StageInfo - Contains all the information about a particular stage.
+   PetscStageInfo - Contains all the information about a particular stage.
 
-   StageLog - An array of StageInfo for each registered stage. There is a single one of these in the code.
+   PetscStageLog - An array of PetscStageInfo for each registered stage. There is a single one of these in the code.
 */
-typedef struct _StageInfo {
-  char         *name;     /* The stage name */
-  PetscBool     used;     /* The stage was pushed on this processor */
-  EventPerfInfo perfInfo; /* The stage performance information */
-  EventPerfLog  eventLog; /* The event information for this stage */
-  ClassPerfLog  classLog; /* The class information for this stage */
-} StageInfo;
+typedef struct _PetscStageInfo {
+  char               *name;     /* The stage name */
+  PetscBool          used;      /* The stage was pushed on this processor */
+  PetscEventPerfInfo perfInfo;  /* The stage performance information */
+  PetscEventPerfLog  eventLog;  /* The event information for this stage */
+  PetscClassPerfLog  classLog;  /* The class information for this stage */
+} PetscStageInfo;
 
-typedef struct _n_StageLog *StageLog;
-extern  StageLog _stageLog;
-struct _n_StageLog {
-  int         numStages; /* The number of registered stages */
-  int         maxStages; /* The maximum number of stages */
-  IntStack    stack;     /* The stack for active stages */
-  int         curStage;  /* The current stage (only used in macros so we don't call StackTop) */
-  StageInfo  *stageInfo; /* The information for each stage */
-  EventRegLog eventLog;  /* The registered events */
-  ClassRegLog classLog;  /* The registered classes */
+typedef struct _n_PetscStageLog *PetscStageLog;
+extern  PetscStageLog _stageLog;
+struct _n_PetscStageLog {
+  int              numStages;   /* The number of registered stages */
+  int              maxStages;   /* The maximum number of stages */
+  PetscIntStack    stack;       /* The stack for active stages */
+  int              curStage;    /* The current stage (only used in macros so we don't call PetscIntStackTop) */
+  PetscStageInfo   *stageInfo;  /* The information for each stage */
+  PetscEventRegLog eventLog;    /* The registered events */
+  PetscClassRegLog classLog;    /* The registered classes */
 };
 
 #if defined(PETSC_USE_LOG)  /* --- Logging is turned on --------------------------------*/
@@ -267,21 +267,21 @@ extern PetscErrorCode  PetscLogEventDeactivateClass(PetscClassId);
 
 
 /* Global counters */
-extern  PetscLogDouble irecv_ct;
-extern  PetscLogDouble isend_ct;
-extern  PetscLogDouble recv_ct;
-extern  PetscLogDouble send_ct;
-extern  PetscLogDouble irecv_len;
-extern  PetscLogDouble isend_len;
-extern  PetscLogDouble recv_len;
-extern  PetscLogDouble send_len;
-extern  PetscLogDouble allreduce_ct;
-extern  PetscLogDouble gather_ct;
-extern  PetscLogDouble scatter_ct;
-extern  PetscLogDouble wait_ct;
-extern  PetscLogDouble wait_any_ct;
-extern  PetscLogDouble wait_all_ct;
-extern  PetscLogDouble sum_of_waits_ct;
+extern  PetscLogDouble petsc_irecv_ct;
+extern  PetscLogDouble petsc_isend_ct;
+extern  PetscLogDouble petsc_recv_ct;
+extern  PetscLogDouble petsc_send_ct;
+extern  PetscLogDouble petsc_irecv_len;
+extern  PetscLogDouble petsc_isend_len;
+extern  PetscLogDouble petsc_recv_len;
+extern  PetscLogDouble petsc_send_len;
+extern  PetscLogDouble petsc_allreduce_ct;
+extern  PetscLogDouble petsc_gather_ct;
+extern  PetscLogDouble petsc_scatter_ct;
+extern  PetscLogDouble petsc_wait_ct;
+extern  PetscLogDouble petsc_wait_any_ct;
+extern  PetscLogDouble petsc_wait_all_ct;
+extern  PetscLogDouble petsc_sum_of_waits_ct;
 
 #define PetscLogEventBarrierBegin(e,o1,o2,o3,o4,cm) \
   (((_PetscLogPLB && _stageLog->stageInfo[_stageLog->curStage].perfInfo.active &&  _stageLog->stageInfo[_stageLog->curStage].eventLog->eventInfo[e].active) ? \
@@ -320,12 +320,12 @@ extern PetscErrorCode PetscLogEventZeroFlops(PetscLogEvent);
 /*
    Logging of MPI activities
 */
-PETSC_STATIC_INLINE PetscErrorCode TypeSize(PetscLogDouble *buff,PetscMPIInt count,MPI_Datatype type) 
+PETSC_STATIC_INLINE PetscErrorCode PetscMPITypeSize(PetscLogDouble *buff,PetscMPIInt count,MPI_Datatype type) 
 {
   PetscMPIInt mysize; return  (MPI_Type_size(type,&mysize) || ((*buff += (PetscLogDouble) (count*mysize)),0));
 }
 
-PETSC_STATIC_INLINE PetscErrorCode TypeSizeComm(MPI_Comm comm, PetscLogDouble *buff,PetscMPIInt *counts,MPI_Datatype type) 
+PETSC_STATIC_INLINE PetscErrorCode PetscMPITypeSizeComm(MPI_Comm comm, PetscLogDouble *buff,PetscMPIInt *counts,MPI_Datatype type) 
 {
   PetscMPIInt mysize, commsize, p;
   PetscErrorCode _myierr;
@@ -339,61 +339,61 @@ PETSC_STATIC_INLINE PetscErrorCode TypeSizeComm(MPI_Comm comm, PetscLogDouble *b
 }
 
 #define MPI_Irecv(buf,count,datatype,source,tag,comm,request) \
- ((irecv_ct++,0) || TypeSize(&irecv_len,count,datatype) || MPI_Irecv(buf,count,datatype,source,tag,comm,request))
+ ((petsc_irecv_ct++,0) || PetscMPITypeSize(&petsc_irecv_len,count,datatype) || MPI_Irecv(buf,count,datatype,source,tag,comm,request))
 
 #define MPI_Isend(buf,count,datatype,dest,tag,comm,request) \
- ((isend_ct++,0) || TypeSize(&isend_len,count,datatype) || MPI_Isend(buf,count,datatype,dest,tag,comm,request))
+ ((petsc_isend_ct++,0) || PetscMPITypeSize(&petsc_isend_len,count,datatype) || MPI_Isend(buf,count,datatype,dest,tag,comm,request))
 
 #define MPI_Startall_irecv(count,number,requests) \
- ((irecv_ct += (PetscLogDouble)(number),0) || TypeSize(&irecv_len,count,MPIU_SCALAR) || MPI_Startall(number,requests))
+ ((petsc_irecv_ct += (PetscLogDouble)(number),0) || PetscMPITypeSize(&petsc_irecv_len,count,MPIU_SCALAR) || MPI_Startall(number,requests))
 
 #define MPI_Startall_isend(count,number,requests) \
- ((isend_ct += (PetscLogDouble)(number),0) || TypeSize(&isend_len,count,MPIU_SCALAR) || MPI_Startall(number,requests))
+ ((petsc_isend_ct += (PetscLogDouble)(number),0) || PetscMPITypeSize(&petsc_isend_len,count,MPIU_SCALAR) || MPI_Startall(number,requests))
 
 #define MPI_Start_isend(count,requests) \
- ((isend_ct++,0) || TypeSize(&isend_len,count,MPIU_SCALAR) || MPI_Start(requests))
+ ((petsc_isend_ct++,0) || PetscMPITypeSize(&petsc_isend_len,count,MPIU_SCALAR) || MPI_Start(requests))
 
 #define MPI_Recv(buf,count,datatype,source,tag,comm,status) \
- ((recv_ct++,0) || TypeSize(&recv_len,count,datatype) || MPI_Recv(buf,count,datatype,source,tag,comm,status))
+ ((petsc_recv_ct++,0) || PetscMPITypeSize(&petsc_recv_len,count,datatype) || MPI_Recv(buf,count,datatype,source,tag,comm,status))
 
 #define MPI_Send(buf,count,datatype,dest,tag,comm) \
- ((send_ct++,0) || TypeSize(&send_len,count,datatype) || MPI_Send(buf,count,datatype,dest,tag,comm))
+ ((petsc_send_ct++,0) || PetscMPITypeSize(&petsc_send_len,count,datatype) || MPI_Send(buf,count,datatype,dest,tag,comm))
 
 #define MPI_Wait(request,status) \
- ((wait_ct++,sum_of_waits_ct++,0) || MPI_Wait(request,status))
+ ((petsc_wait_ct++,petsc_sum_of_waits_ct++,0) || MPI_Wait(request,status))
   
 #define MPI_Waitany(a,b,c,d) \
- ((wait_any_ct++,sum_of_waits_ct++,0) || MPI_Waitany(a,b,c,d))
+ ((petsc_wait_any_ct++,petsc_sum_of_waits_ct++,0) || MPI_Waitany(a,b,c,d))
 
 #define MPI_Waitall(count,array_of_requests,array_of_statuses) \
- ((wait_all_ct++,sum_of_waits_ct += (PetscLogDouble) (count),0) || MPI_Waitall(count,array_of_requests,array_of_statuses))
+ ((petsc_wait_all_ct++,petsc_sum_of_waits_ct += (PetscLogDouble) (count),0) || MPI_Waitall(count,array_of_requests,array_of_statuses))
 
 #define MPI_Allreduce(sendbuf,recvbuf,count,datatype,op,comm) \
- ((allreduce_ct++,0) || MPI_Allreduce(sendbuf,recvbuf,count,datatype,op,comm))
+ ((petsc_allreduce_ct++,0) || MPI_Allreduce(sendbuf,recvbuf,count,datatype,op,comm))
 
 #define MPI_Alltoall(sendbuf,sendcount,sendtype,recvbuf,recvcount,recvtype,comm) \
- ((allreduce_ct++,0) || TypeSize(&send_len,sendcount,sendtype) || MPI_Alltoall(sendbuf,sendcount,sendtype,recvbuf,recvcount,recvtype,comm))
+ ((petsc_allreduce_ct++,0) || PetscMPITypeSize(&petsc_send_len,sendcount,sendtype) || MPI_Alltoall(sendbuf,sendcount,sendtype,recvbuf,recvcount,recvtype,comm))
 
 #define MPI_Alltoallv(sendbuf,sendcnts,sdispls,sendtype,recvbuf,recvcnts,rdispls,recvtype,comm) \
- ((allreduce_ct++,0) || TypeSizeComm(comm,&send_len,sendcnts,sendtype) || MPI_Alltoallv(sendbuf,sendcnts,sdispls,sendtype,recvbuf,recvcnts,rdispls,recvtype,comm))
+ ((petsc_allreduce_ct++,0) || PetscMPITypeSizeComm(comm,&petsc_send_len,sendcnts,sendtype) || MPI_Alltoallv(sendbuf,sendcnts,sdispls,sendtype,recvbuf,recvcnts,rdispls,recvtype,comm))
 
 #define MPI_Allgather(sendbuf,sendcount,sendtype,recvbuf,recvcount,recvtype,comm) \
- ((gather_ct++,0) || MPI_Allgather(sendbuf,sendcount,sendtype,recvbuf,recvcount,recvtype,comm))
+ ((petsc_gather_ct++,0) || MPI_Allgather(sendbuf,sendcount,sendtype,recvbuf,recvcount,recvtype,comm))
 
 #define MPI_Allgatherv(sendbuf,sendcount,sendtype,recvbuf,recvcount,displs,recvtype,comm) \
- ((gather_ct++,0) || MPI_Allgatherv(sendbuf,sendcount,sendtype,recvbuf,recvcount,displs,recvtype,comm))
+ ((petsc_gather_ct++,0) || MPI_Allgatherv(sendbuf,sendcount,sendtype,recvbuf,recvcount,displs,recvtype,comm))
 
 #define MPI_Gather(sendbuf,sendcount,sendtype,recvbuf,recvcount,recvtype,root,comm) \
- ((gather_ct++,0) || TypeSize(&send_len,sendcount,sendtype) || MPI_Gather(sendbuf,sendcount,sendtype,recvbuf,recvcount,recvtype,root,comm))
+ ((petsc_gather_ct++,0) || PetscMPITypeSize(&petsc_send_len,sendcount,sendtype) || MPI_Gather(sendbuf,sendcount,sendtype,recvbuf,recvcount,recvtype,root,comm))
 
 #define MPI_Gatherv(sendbuf,sendcount,sendtype,recvbuf,recvcount,displs,recvtype,root,comm) \
- ((gather_ct++,0) || TypeSize(&send_len,sendcount,sendtype) || MPI_Gatherv(sendbuf,sendcount,sendtype,recvbuf,recvcount,displs,recvtype,root,comm))
+ ((petsc_gather_ct++,0) || PetscMPITypeSize(&petsc_send_len,sendcount,sendtype) || MPI_Gatherv(sendbuf,sendcount,sendtype,recvbuf,recvcount,displs,recvtype,root,comm))
 
 #define MPI_Scatter(sendbuf,sendcount,sendtype,recvbuf,recvcount,recvtype,root,comm) \
-  ((scatter_ct++,0) || TypeSize(&recv_len,recvcount,recvtype) || MPI_Scatter(sendbuf,sendcount,sendtype,recvbuf,recvcount,recvtype,root,comm))
+ ((petsc_scatter_ct++,0) || PetscMPITypeSize(&petsc_recv_len,recvcount,recvtype) || MPI_Scatter(sendbuf,sendcount,sendtype,recvbuf,recvcount,recvtype,root,comm))
 
 #define MPI_Scatterv(sendbuf,sendcount,displs,sendtype,recvbuf,recvcount,recvtype,root,comm) \
-  ((scatter_ct++,0) || TypeSize(&recv_len,recvcount,recvtype) || MPI_Scatterv(sendbuf,sendcount,displs,sendtype,recvbuf,recvcount,recvtype,root,comm))
+  ((petsc_scatter_ct++,0) || PetscMPITypeSize(&petsc_recv_len,recvcount,recvtype) || MPI_Scatterv(sendbuf,sendcount,displs,sendtype,recvbuf,recvcount,recvtype,root,comm))
 
 #else
 
@@ -470,12 +470,12 @@ extern PetscErrorCode  PetscLogObjectState(PetscObject,const char[],...);
 
 #endif   /* PETSC_USE_LOG */
 
-extern PetscErrorCode StackCreate(IntStack *);
-extern PetscErrorCode StackDestroy(IntStack);
-extern PetscErrorCode StackPush(IntStack, int);
-extern PetscErrorCode StackPop(IntStack, int *);
-extern PetscErrorCode StackTop(IntStack, int *);
-extern PetscErrorCode StackEmpty(IntStack, PetscBool  *);
+extern PetscErrorCode PetscIntStackCreate(PetscIntStack *);
+extern PetscErrorCode PetscIntStackDestroy(PetscIntStack);
+extern PetscErrorCode PetscIntStackPush(PetscIntStack, int);
+extern PetscErrorCode PetscIntStackPop(PetscIntStack, int *);
+extern PetscErrorCode PetscIntStackTop(PetscIntStack, int *);
+extern PetscErrorCode PetscIntStackEmpty(PetscIntStack, PetscBool  *);
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLogGetStageLog"
@@ -485,16 +485,16 @@ extern PetscErrorCode StackEmpty(IntStack, PetscBool  *);
   Not collective
 
   Output Parameter:
-. stageLog - The default StageLog
+. stageLog - The default PetscStageLog
 
   Level: developer
 
   Developer Notes: Inline since called for EACH PetscEventLogBeginDefault() and PetscEventLogEndDefault()
 
 .keywords: log, stage
-.seealso: StageLogCreate()
+.seealso: PetscStageLogCreate()
 @*/
-PETSC_STATIC_INLINE PetscErrorCode  PetscLogGetStageLog(StageLog *stageLog)
+PETSC_STATIC_INLINE PetscErrorCode  PetscLogGetStageLog(PetscStageLog *stageLog)
 {
   PetscFunctionBegin;
   PetscValidPointer(stageLog,1);
@@ -507,14 +507,14 @@ PETSC_STATIC_INLINE PetscErrorCode  PetscLogGetStageLog(StageLog *stageLog)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "StageLogGetCurrent"
+#define __FUNCT__ "PetscStageLogGetCurrent"
 /*@C
-  StageLogGetCurrent - This function returns the stage from the top of the stack.
+  PetscStageLogGetCurrent - This function returns the stage from the top of the stack.
 
   Not Collective
 
   Input Parameter:
-. stageLog - The StageLog
+. stageLog - The PetscStageLog
 
   Output Parameter:
 . stage    - The current stage
@@ -527,19 +527,19 @@ PETSC_STATIC_INLINE PetscErrorCode  PetscLogGetStageLog(StageLog *stageLog)
   Developer Notes: Inline since called for EACH PetscEventLogBeginDefault() and PetscEventLogEndDefault()
 
 .keywords: log, stage
-.seealso: StageLogPush(), StageLogPop(), PetscLogGetStageLog()
+.seealso: PetscStageLogPush(), PetscStageLogPop(), PetscLogGetStageLog()
 @*/
-PETSC_STATIC_INLINE PetscErrorCode  StageLogGetCurrent(StageLog stageLog, int *stage)
+PETSC_STATIC_INLINE PetscErrorCode  PetscStageLogGetCurrent(PetscStageLog stageLog, int *stage)
 {
   PetscBool      empty;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = StackEmpty(stageLog->stack, &empty);CHKERRQ(ierr);
+  ierr = PetscIntStackEmpty(stageLog->stack, &empty);CHKERRQ(ierr);
   if (empty) {
     *stage = -1;
   } else {
-    ierr = StackTop(stageLog->stack, stage);CHKERRQ(ierr);
+    ierr = PetscIntStackTop(stageLog->stack, stage);CHKERRQ(ierr);
   }
 #ifdef PETSC_USE_DEBUG
   if (*stage != stageLog->curStage) {
@@ -550,27 +550,27 @@ PETSC_STATIC_INLINE PetscErrorCode  StageLogGetCurrent(StageLog stageLog, int *s
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "StageLogGetEventPerfLog"
+#define __FUNCT__ "PetscStageLogGetEventPerfLog"
 /*@C
-  StageLogGetEventPerfLog - This function returns the EventPerfLog for the given stage.
+  PetscStageLogGetEventPerfLog - This function returns the PetscEventPerfLog for the given stage.
 
   Not Collective
 
   Input Parameters:
-+ stageLog - The StageLog
++ stageLog - The PetscStageLog
 - stage    - The stage
 
   Output Parameter:
-. eventLog - The EventPerfLog
+. eventLog - The PetscEventPerfLog
 
   Level: developer
 
   Developer Notes: Inline since called for EACH PetscEventLogBeginDefault() and PetscEventLogEndDefault()
 
 .keywords: log, stage
-.seealso: StageLogPush(), StageLogPop(), PetscLogGetStageLog()
+.seealso: PetscStageLogPush(), PetscStageLogPop(), PetscLogGetStageLog()
 @*/
-PETSC_STATIC_INLINE PetscErrorCode  StageLogGetEventPerfLog(StageLog stageLog, int stage, EventPerfLog *eventLog)
+PETSC_STATIC_INLINE PetscErrorCode  PetscStageLogGetEventPerfLog(PetscStageLog stageLog, int stage, PetscEventPerfLog *eventLog)
 {
   PetscFunctionBegin;
   PetscValidPointer(eventLog,3);
@@ -584,41 +584,42 @@ PETSC_STATIC_INLINE PetscErrorCode  StageLogGetEventPerfLog(StageLog stageLog, i
 /* Special support for C++ */
 #include "petsclog.hh"
 
-#define PreLoadBegin(flag,name) \
-{\
-  PetscBool      PreLoading = flag;\
-  int            PreLoadMax,PreLoadIt;\
+#define PetscPreLoadBegin(flag,name) \
+do {\
+  PetscBool      PetscPreLoading = flag;\
+  int            PetscPreLoadMax,PetscPreLoadIt;\
   PetscLogStage  _stageNum;\
   PetscErrorCode _3_ierr;	\
-  _3_ierr = PetscOptionsGetBool(PETSC_NULL,"-preload",&PreLoading,PETSC_NULL);CHKERRQ(_3_ierr);\
-  PreLoadMax = (int)(PreLoading);\
-  PetscPreLoadingUsed = PreLoading ? PETSC_TRUE : PetscPreLoadingUsed;\
-  for (PreLoadIt=0; PreLoadIt<=PreLoadMax; PreLoadIt++) {\
-    PetscPreLoadingOn = PreLoading;\
+  _3_ierr = PetscOptionsGetBool(PETSC_NULL,"-preload",&PetscPreLoading,PETSC_NULL);CHKERRQ(_3_ierr);\
+  PetscPreLoadMax = (int)(PetscPreLoading);\
+  PetscPreLoadingUsed = PetscPreLoading ? PETSC_TRUE : PetscPreLoadingUsed;\
+  for (PetscPreLoadIt=0; PetscPreLoadIt<=PetscPreLoadMax; PetscPreLoadIt++) {\
+    PetscPreLoadingOn = PetscPreLoading;\
     _3_ierr = PetscBarrier(PETSC_NULL);CHKERRQ(_3_ierr);\
-    if (PreLoadIt>0) {\
+    if (PetscPreLoadIt>0) {\
       _3_ierr = PetscLogStageGetId(name,&_stageNum);CHKERRQ(_3_ierr);\
     } else {\
       _3_ierr = PetscLogStageRegister(name,&_stageNum);CHKERRQ(_3_ierr); \
     }\
-    _3_ierr = PetscLogStageSetActive(_stageNum,(PetscBool)(!PreLoadMax || PreLoadIt));\
+    _3_ierr = PetscLogStageSetActive(_stageNum,(PetscBool)(!PetscPreLoadMax || PetscPreLoadIt));\
     _3_ierr = PetscLogStagePush(_stageNum);CHKERRQ(_3_ierr);
 
-#define PreLoadEnd() \
+#define PetscPreLoadEnd() \
     _3_ierr = PetscLogStagePop();CHKERRQ(_3_ierr);\
-    PreLoading = PETSC_FALSE;\
+    PetscPreLoading = PETSC_FALSE;\
   }\
-}
+} while (0)
 
-#define PreLoadStage(name) \
-  _3_ierr = PetscLogStagePop();CHKERRQ(_3_ierr);\
-  if (PreLoadIt>0) {\
-    _3_ierr = PetscLogStageGetId(name,&_stageNum);CHKERRQ(_3_ierr);\
-  } else {\
-    _3_ierr = PetscLogStageRegister(name,&_stageNum);CHKERRQ(_3_ierr);	\
-  }\
-  _3_ierr = PetscLogStageSetActive(_stageNum,(PetscBool)(!PreLoadMax || PreLoadIt));\
-  _3_ierr = PetscLogStagePush(_stageNum);CHKERRQ(_3_ierr);
+#define PetscPreLoadStage(name) do {                                         \
+    _3_ierr = PetscLogStagePop();CHKERRQ(_3_ierr);                      \
+    if (PetscPreLoadIt>0) {                                                  \
+      _3_ierr = PetscLogStageGetId(name,&_stageNum);CHKERRQ(_3_ierr);   \
+    } else {                                                            \
+      _3_ierr = PetscLogStageRegister(name,&_stageNum);CHKERRQ(_3_ierr); \
+    }                                                                   \
+    _3_ierr = PetscLogStageSetActive(_stageNum,(PetscBool)(!PetscPreLoadMax || PetscPreLoadIt)); \
+    _3_ierr = PetscLogStagePush(_stageNum);CHKERRQ(_3_ierr);            \
+  } while (0)
 
 PETSC_EXTERN_CXX_END
 #endif

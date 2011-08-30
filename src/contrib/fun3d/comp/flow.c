@@ -201,8 +201,8 @@ int main(int argc,char **args)
      code twice, first to get the executable pages into memory and the second time for
      accurate timings.
     */
-    PreLoadBegin(PETSC_TRUE,"Time integration");
-    user.PreLoading = PreLoading;
+    PetscPreLoadBegin(PETSC_TRUE,"Time integration");
+    user.PreLoading = PetscPreLoading;
   /* Create nonlinear solver */
   ierr = SetPetscDS(&f_pntr, &tsCtx);CHKERRQ(ierr);
   ierr = SNESCreate(comm,&snes);CHKERRQ(ierr);
@@ -292,7 +292,7 @@ int main(int argc,char **args)
    if (flg) {
      ierr = PetscMemoryShowUsage(PETSC_VIEWER_STDOUT_WORLD,"Memory usage after destroying\n");CHKERRQ(ierr);
    }
-   PreLoadEnd();
+   PetscPreLoadEnd();
    ierr = AODestroy(&user.grid->ao);CHKERRQ(ierr);
    PetscPrintf(MPI_COMM_WORLD, "Time taken in gradient calculation is %g sec.\n",grad_time);
    PetscFinalize();

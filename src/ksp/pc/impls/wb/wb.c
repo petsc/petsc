@@ -787,7 +787,7 @@ PetscErrorCode  PCCreate_Exotic(PC pc)
 
   ierr = PCSetType(pc,PCMG);CHKERRQ(ierr);
   ierr = PCMGSetLevels(pc,2,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PCMGSetGalerkin(pc);CHKERRQ(ierr);
+  ierr = PCMGSetGalerkin(pc,PETSC_TRUE);CHKERRQ(ierr);
   ierr = PetscNew(PC_Exotic,&ex);CHKERRQ(ierr);\
   ex->type = PC_EXOTIC_FACE;
   mg = (PC_MG*) pc->data;

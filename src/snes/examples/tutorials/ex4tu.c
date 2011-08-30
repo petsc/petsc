@@ -95,7 +95,7 @@ comm = PETSC_COMM_WORLD;
   }
 
 
-  // in order only run once, I block it: PreLoadBegin(PETSC_TRUE,"SetUp");
+  // in order only run once, I block it: PetscPreLoadBegin(PETSC_TRUE,"SetUp");
     ierr = DMMGCreate(comm,2,&user,&dmmg);CHKERRQ(ierr);
 
 
@@ -135,7 +135,7 @@ comm = PETSC_COMM_WORLD;
        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
     ierr = DMMGSetInitialGuess(dmmg,FormInitialGuess);CHKERRQ(ierr);
 
-    //I block it:  PreLoadStage("Solve");
+    //I block it:  PetscPreLoadStage("Solve");
     ierr = DMMGSolve(dmmg);CHKERRQ(ierr); 
 
     snes = DMMGGetSNES(dmmg);
@@ -157,7 +157,7 @@ comm = PETSC_COMM_WORLD;
        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
     ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
-    //PreLoadEnd();
+    //PetscPreLoadEnd();
 
   ierr = PetscFinalize();
   return 0;

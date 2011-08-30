@@ -64,12 +64,12 @@ public :
     }
     ierr = PetscLogEventEnd(restrictEvent,0,0,0,0);
     ALE::LogStagePop(stage);
-    StageLog     stageLog;
-    EventPerfLog eventLog;
+    PetscStageLog     stageLog;
+    PetscEventPerfLog eventLog;
 
     ierr = PetscLogGetStageLog(&stageLog);
-    ierr = StageLogGetEventPerfLog(stageLog, stage, &eventLog);
-    EventPerfInfo eventInfo = eventLog->eventInfo[restrictEvent];
+    ierr = PetscStageLogGetEventPerfLog(stageLog, stage, &eventLog);
+    PetscEventPerfInfo eventInfo = eventLog->eventInfo[restrictEvent];
 
     CPPUNIT_ASSERT_EQUAL(eventInfo.count, 1);
     CPPUNIT_ASSERT_EQUAL((int) eventInfo.flops, 0);

@@ -8,9 +8,9 @@
 #include <private/logimpl.h> /*I    "petscsys.h"   I*/
 
 #undef __FUNCT__  
-#define __FUNCT__ "StackDestroy"
+#define __FUNCT__ "PetscIntStackDestroy"
 /*@C
-  StackDestroy - This function destroys a stack.
+  PetscIntStackDestroy - This function destroys a stack.
 
   Not Collective
 
@@ -20,9 +20,9 @@
   Level: developer
 
 .keywords: log, stack, destroy
-.seealso: StackCreate(), StackEmpty(), StackPush(), StackPop(), StackTop()
+.seealso: PetscIntStackCreate(), PetscIntStackEmpty(), PetscIntStackPush(), PetscIntStackPop(), PetscIntStackTop()
 @*/
-PetscErrorCode StackDestroy(IntStack stack)
+PetscErrorCode PetscIntStackDestroy(PetscIntStack stack)
 {
   PetscErrorCode ierr;
 
@@ -33,9 +33,9 @@ PetscErrorCode StackDestroy(IntStack stack)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "StackEmpty"
+#define __FUNCT__ "PetscIntStackEmpty"
 /*@C
-  StackEmpty - This function determines whether any items have been pushed.
+  PetscIntStackEmpty - This function determines whether any items have been pushed.
 
   Not Collective
 
@@ -48,9 +48,9 @@ PetscErrorCode StackDestroy(IntStack stack)
   Level: developer
 
 .keywords: log, stack, empty
-.seealso: StackCreate(), StackDestroy(), StackPush(), StackPop(), StackTop()
+.seealso: PetscIntStackCreate(), PetscIntStackDestroy(), PetscIntStackPush(), PetscIntStackPop(), PetscIntStackTop()
 @*/
-PetscErrorCode StackEmpty(IntStack stack, PetscBool  *empty)
+PetscErrorCode PetscIntStackEmpty(PetscIntStack stack, PetscBool  *empty)
 {
   PetscFunctionBegin;
   PetscValidIntPointer(empty,2);
@@ -63,9 +63,9 @@ PetscErrorCode StackEmpty(IntStack stack, PetscBool  *empty)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "StackTop"
+#define __FUNCT__ "PetscIntStackTop"
 /*@C
-  StackTop - This function returns the top of the stack.
+  PetscIntStackTop - This function returns the top of the stack.
 
   Not Collective
 
@@ -78,9 +78,9 @@ PetscErrorCode StackEmpty(IntStack stack, PetscBool  *empty)
   Level: developer
 
 .keywords: log, stack, top
-.seealso: StackCreate(), StackDestroy(), StackEmpty(), StackPush(), StackPop()
+.seealso: PetscIntStackCreate(), PetscIntStackDestroy(), PetscIntStackEmpty(), PetscIntStackPush(), PetscIntStackPop()
 @*/
-PetscErrorCode StackTop(IntStack stack, int *top)
+PetscErrorCode PetscIntStackTop(PetscIntStack stack, int *top)
 {
   PetscFunctionBegin;
   PetscValidIntPointer(top,2);
@@ -89,9 +89,9 @@ PetscErrorCode StackTop(IntStack stack, int *top)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "StackPush"
+#define __FUNCT__ "PetscIntStackPush"
 /*@C
-  StackPush - This function pushes an integer on the stack.
+  PetscIntStackPush - This function pushes an integer on the stack.
 
   Not Collective
 
@@ -102,9 +102,9 @@ PetscErrorCode StackTop(IntStack stack, int *top)
   Level: developer
 
 .keywords: log, stack, push
-.seealso: StackCreate(), StackDestroy(), StackEmpty(), StackPop(), StackTop()
+.seealso: PetscIntStackCreate(), PetscIntStackDestroy(), PetscIntStackEmpty(), PetscIntStackPop(), PetscIntStackTop()
 @*/
-PetscErrorCode StackPush(IntStack stack, int item)
+PetscErrorCode PetscIntStackPush(PetscIntStack stack, int item)
 {
   int            *array;
   PetscErrorCode ierr;
@@ -123,9 +123,9 @@ PetscErrorCode StackPush(IntStack stack, int item)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "StackPop"
+#define __FUNCT__ "PetscIntStackPop"
 /*@C
-  StackPop - This function pops an integer from the stack.
+  PetscIntStackPop - This function pops an integer from the stack.
 
   Not Collective
 
@@ -138,9 +138,9 @@ PetscErrorCode StackPush(IntStack stack, int item)
   Level: developer
 
 .keywords: log, stack, pop
-.seealso: StackCreate(), StackDestroy(), StackEmpty(), StackPush(), StackTop()
+.seealso: PetscIntStackCreate(), PetscIntStackDestroy(), PetscIntStackEmpty(), PetscIntStackPush(), PetscIntStackTop()
 @*/
-PetscErrorCode StackPop(IntStack stack, int *item)
+PetscErrorCode PetscIntStackPop(PetscIntStack stack, int *item)
 {
   PetscFunctionBegin;
   PetscValidPointer(item,2);
@@ -150,9 +150,9 @@ PetscErrorCode StackPop(IntStack stack, int *item)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "StackCreate"
+#define __FUNCT__ "PetscIntStackCreate"
 /*@C
-  StackCreate - This function creates a stack.
+  PetscIntStackCreate - This function creates a stack.
 
   Not Collective
 
@@ -162,16 +162,16 @@ PetscErrorCode StackPop(IntStack stack, int *item)
   Level: developer
 
 .keywords: log, stack, pop
-.seealso: StackDestroy(), StackEmpty(), StackPush(), StackPop(), StackTop()
+.seealso: PetscIntStackDestroy(), PetscIntStackEmpty(), PetscIntStackPush(), PetscIntStackPop(), PetscIntStackTop()
 @*/
-PetscErrorCode StackCreate(IntStack *stack)
+PetscErrorCode PetscIntStackCreate(PetscIntStack *stack)
 {
-  IntStack       s;
+  PetscIntStack       s;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidPointer(stack,1);
-  ierr = PetscNew(struct _n_IntStack, &s);CHKERRQ(ierr);
+  ierr = PetscNew(struct _n_PetscIntStack, &s);CHKERRQ(ierr);
   s->top = -1;
   s->max = 128;
   ierr = PetscMalloc(s->max * sizeof(int), &s->stack);CHKERRQ(ierr);

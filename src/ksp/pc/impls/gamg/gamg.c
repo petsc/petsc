@@ -195,7 +195,9 @@ PetscErrorCode partitionLevel( Mat a_Amat_fine,
     }
   }
   *a_nactive_proc = new_npe; /* this is a nominal value -- output */
+
   PetscPrintf(PETSC_COMM_WORLD,"[%d]%s new_npe=%d neq=%d\n",mype,__FUNCT__,new_npe,neq);
+
   ierr  = PetscOptionsHasName(PETSC_NULL,"-pc_gamg_avoid_repartitioning",&flag);
   CHKERRQ( ierr );
   if( !flag ) { /* re-partition */
@@ -209,9 +211,6 @@ PetscErrorCode partitionLevel( Mat a_Amat_fine,
     MPI_Group        wg, g2;
     PetscMPIInt      ranks[npe],counts[npe],nc=ncrs0;
 
-    /* if( ncrs0 == 0 ) { */
-/*       if(mype==0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"zero local nodes on root -- increase min"); */
-/*     } */
     ierr = MPI_Allgather( &nc, 1, MPI_INT, counts, 1, MPI_INT, wcomm ); CHKERRQ(ierr); 
     assert(counts[mype]==ncrs0);
     /* count real active pes */
@@ -220,6 +219,7 @@ PetscErrorCode partitionLevel( Mat a_Amat_fine,
 	ranks[new_npe++] = jj;
       }
     }
+
     ierr = MPI_Comm_group( wcomm, &wg ); CHKERRQ(ierr); 
     ierr = MPI_Group_incl( wg, new_npe, ranks, &g2 ); CHKERRQ(ierr); 
     ierr = MPI_Comm_create( wcomm, g2, &cm ); CHKERRQ(ierr); 
@@ -266,15 +266,18 @@ PetscErrorCode partitionLevel( Mat a_Amat_fine,
 
       ierr = MatDestroy( &tMat );  CHKERRQ(ierr);
     }
+    ierr = MatGetOwnershipRange( adj, &neq, &NN ); CHKERRQ(ierr);
+    assert(ncrs0==(NN-neq));
+
     if( ncrs0 != 0 ){
-      if(new_comm==MPI_COMM_NULL)SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"new_comm == MPI_COMM_NULL"); 
-      /* if(ncrs0==0)SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"zero local nodes -- increase min"); */
       /* hack to fix global data that pmetis.c uses in 'adj' */
-      for(new_npe=jj=0 ; jj<npe ; jj++) {
+      for( new_npe = jj = 0 ; jj < npe ; jj++ ) {
 	if( counts[jj] != 0 ) {
 	  adj->rmap->range[new_npe++] = adj->rmap->range[jj];
 	}
       }
+      adj->rmap->range[new_npe] = adj->rmap->range[npe];
+      
       ierr = MatPartitioningCreate( new_comm, &mpart ); CHKERRQ(ierr);
       ierr = MatPartitioningSetAdjacency( mpart, adj ); CHKERRQ(ierr);
       ierr = MatPartitioningSetFromOptions( mpart ); CHKERRQ(ierr);
@@ -417,8 +420,6 @@ PetscErrorCode partitionLevel( Mat a_Amat_fine,
     ierr = MatDestroy( a_P_inout ); CHKERRQ(ierr);
     *a_P_inout = Pnew; /* output */
     ierr = ISDestroy( &new_indices ); CHKERRQ(ierr);
-    
-    ierr = MatGetOwnershipRange(Cmat, &neq, &NN ); CHKERRQ(ierr);
   }
   else {
     *a_Amat_crs = Cmat; /* output */

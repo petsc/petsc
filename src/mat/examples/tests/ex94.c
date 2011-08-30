@@ -49,13 +49,13 @@ int main(int argc,char **args)
     if (!flg) SETERRQ(PETSC_COMM_WORLD,1,"Must indicate a file name for test matrix B with the -f3 option."); 
   }
 
-  PreLoadBegin(preload,"Load system");
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[2*PreLoadIt],FILE_MODE_READ,&viewer);CHKERRQ(ierr);
+  PetscPreLoadBegin(preload,"Load system");
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[2*PetscPreLoadIt],FILE_MODE_READ,&viewer);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&A_save);CHKERRQ(ierr);
   ierr = MatLoad(A_save,viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
 
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[2*PreLoadIt+1],FILE_MODE_READ,&viewer);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[2*PetscPreLoadIt+1],FILE_MODE_READ,&viewer);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
   ierr = MatLoad(B,viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
@@ -290,7 +290,7 @@ int main(int argc,char **args)
   ierr = MatDestroy(&A_save);CHKERRQ(ierr);
   ierr = MatDestroy(&B);CHKERRQ(ierr);
 
-  PreLoadEnd();
+  PetscPreLoadEnd();
   ierr = PetscFinalize();
 
   return 0;
