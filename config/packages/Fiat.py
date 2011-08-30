@@ -15,7 +15,7 @@ class Configure(config.package.Package):
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
-    self.scipy = framework.require('config.packages.ScientificPython', self)
+    self.scipy = framework.require('config.packages.scientificpython', self)
     self.deps  = [self.scipy]
     return
 

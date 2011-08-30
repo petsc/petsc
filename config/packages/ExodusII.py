@@ -18,7 +18,7 @@ class Configure(config.package.Package):
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
-    self.netcdf = framework.require('config.packages.NetCDF', self)
+    self.netcdf = framework.require('config.packages.netcdf', self)
     self.deps   = [self.netcdf]
     return
 
