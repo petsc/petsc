@@ -68,7 +68,7 @@ PetscErrorCode DMMeshCreatePCICE(MPI_Comm comm, const int dim, const char coordF
   ierr = DMMeshCreate(comm, mesh);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL, "-debug", &debug, &flag);CHKERRQ(ierr);
   try {
-    m  = ALE::PCICE::Builder::readMesh(comm, dim, std::string(coordFilename), std::string(adjFilename), false, interpolate, debug);
+    m  = ALE::PCICE::Builder::readMesh(comm, dim, std::string(coordFilename), std::string(adjFilename), true, interpolate, debug);
     if (debug) {m->view("Mesh");}
   } catch(ALE::Exception e) {
     SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FILE_OPEN, e.message());
