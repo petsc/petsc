@@ -212,6 +212,7 @@ acfindx:
         self.logPrint('Could not find X11 includes')
       if not foundLibrary:
         self.logPrint('Could not find X11 libraries')
+    self.dlib = self.lib
     return
 
   def configure(self):

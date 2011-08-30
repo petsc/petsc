@@ -38,7 +38,7 @@
 #  define LAPACKsygv_  ssygv_
 #  define LAPACKsygvx_ ssygvx_
 #  define LAPACKstebz_ sstebz_
-# else
+# elif defined(PETSC_USE_REAL_DOUBLE)
 /* Real double precision with no character string arguments */
 #  define LAPACKgeqrf_ dgeqrf_
 #  define LAPACKungqr_ dorgqr_
@@ -71,6 +71,39 @@
 #  define LAPACKsygv_  dsygv_
 #  define LAPACKsygvx_ dsygvx_
 #  define LAPACKstebz_ dstebz_
+# else
+/* Real double precision with no character string arguments */
+#  define LAPACKgeqrf_ qgeqrf_
+#  define LAPACKungqr_ qorgqr_
+#  define LAPACKgetrf_ qgetrf_
+#  define BLASdot_     qdot_
+#  define BLASnrm2_    qnrm2_
+#  define BLASscal_    qscal_
+#  define BLAScopy_    qcopy_
+#  define BLASswap_    qswap_
+#  define BLASaxpy_    qaxpy_
+#  define BLASasum_    qasum_
+#  define LAPACKpttrf_ qpttrf_
+#  define LAPACKpttrs_ qpttrs_
+#  define LAPACKstein_ qstein_
+#  define LAPACKgesv_  qgesv_
+#  define LAPACKgelss_ qgelss_
+/* Real double precision with character string arguments. */
+#  define LAPACKormqr_ qormqr_
+#  define LAPACKtrtrs_ qtrtrs_
+#  define LAPACKpotrf_ qpotrf_
+#  define LAPACKpotrs_ qpotrs_
+#  define BLASgemv_    qgemv_
+#  define LAPACKgetrs_ qgetrs_
+#  define BLAStrmv_    qtrmv_
+#  define BLASgemm_    qgemm_
+#  define LAPACKgesvd_ qgesvd_
+#  define LAPACKgeev_  qgeev_
+#  define LAPACKsyev_  qsyev_
+#  define LAPACKsyevx_ qsyevx_
+#  define LAPACKsygv_  qsygv_
+#  define LAPACKsygvx_ qsygvx_
+#  define LAPACKstebz_ qstebz_
 # endif
 #else
 # if defined(PETSC_USE_REAL_SINGLE)
