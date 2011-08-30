@@ -667,7 +667,7 @@ runex19_16a:
 	   else echo "Possible problem with ex19_16a, diffs above"; fi; \
 	   ${RM} -f ex19_16a.tmp
 runex19_superlu:
-	-@${MPIEXEC} -n 1 ./ex19 -nlevels 1 -da_gridx 20 -da_grid_y 20 -pc_type lu -pc_factor_mat_solver_package superlu > ex19.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex19 -nlevels 1 -da_grid_x 20 -da_grid_y 20 -pc_type lu -pc_factor_mat_solver_package superlu > ex19.tmp 2>&1; \
 	   if (${DIFF} output/ex19_superlu.out ex19.tmp) then true; \
 	   else echo "Possible problem with ex19_superlu, diffs above"; fi; \
 	   ${RM} -f ex19.tmp
