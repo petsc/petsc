@@ -1057,8 +1057,14 @@ PetscErrorCode SNESVIComputeInactiveSetFnorm(SNES snes,Vec F,Vec X,PetscReal *fn
   ierr = VecGetArrayRead(X,&x);CHKERRQ(ierr);
   ierr = VecGetArrayRead(F,&f);CHKERRQ(ierr);
   rnorm = 0.0;
-  for (i=0; i<n; i++) {
-    if (((PetscRealPart(x[i]) > PetscRealPart(xl[i]) + 1.e-8 || (PetscRealPart(f[i]) < 0.0)) && ((PetscRealPart(x[i]) < PetscRealPart(xu[i]) - 1.e-8) || PetscRealPart(f[i]) > 0.0))) rnorm += PetscRealPart(PetscConj(f[i])*f[i]);
+  if (!vi->ignorefunctionsign) {
+    for (i=0; i<n; i++) {
+      if (((PetscRealPart(x[i]) > PetscRealPart(xl[i]) + 1.e-8 || (PetscRealPart(f[i]) < 0.0)) && ((PetscRealPart(x[i]) < PetscRealPart(xu[i]) - 1.e-8) || PetscRealPart(f[i]) > 0.0))) rnorm += PetscRealPart(PetscConj(f[i])*f[i]);
+    }
+  } else {
+    for (i=0; i<n; i++) {
+      if ((PetscRealPart(x[i]) > PetscRealPart(xl[i]) + 1.e-8) && (PetscRealPart(x[i]) < PetscRealPart(xu[i]) - 1.e-8)) rnorm += PetscRealPart(PetscConj(f[i])*f[i]);
+    }
   }
   ierr = VecRestoreArrayRead(F,&f);CHKERRQ(ierr);
   ierr = VecRestoreArrayRead(vi->xl,&xl);CHKERRQ(ierr);
