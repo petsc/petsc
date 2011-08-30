@@ -919,7 +919,7 @@ PetscErrorCode  PCMGGetGalerkin(PC pc,PetscBool  *galerkin)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_CLASSID,1);
-  *galerkin = mg->galerkin;
+  *galerkin = (PetscBool)mg->galerkin;
   PetscFunctionReturn(0);
 }
 
