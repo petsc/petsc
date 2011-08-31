@@ -4,5 +4,5 @@ set MACH=wii
 set USR=balay
 set LOC=/home/balay/petsc32-3
 set CONF=arch-freebsd-cxx-cmplx-pkgs-dbg
-set PURL=http://petsc.cs.iit.edu/petsc/petsc-release-3.2
-set BURL=http://petsc.cs.iit.edu/petsc/BuildSystem-release-3.2
+set PURL=http://petsc.cs.iit.edu/petsc/releases/petsc-3.2
+set BURL=http://petsc.cs.iit.edu/petsc/releases/BuildSystem-3.2
