@@ -41,7 +41,7 @@ SED=sed
 TAR=tar
 
 # Some vars
-FBLASLAPACK=f2cblaslapack-3.1.1.a
+FBLASLAPACK=f2cblaslapack-3.1.1.q
 BIN=${TMP}/bin
 PAC=${TMP}/${FBLASLAPACK}
 BLASDIR=${PAC}/blas
@@ -4056,7 +4056,7 @@ EOF
 # 3) Make the package, copy it to the current directory
 #	 and remove temp directory
 cd $TMP
-$TAR --create --gzip --file $ORIG/f2cblaslapack.tar.gz ${FBLASLAPACK}
+$TAR --create --gzip --file $ORIG/${FBLASLAPACK}.tar.gz ${FBLASLAPACK}
 cd $ORIG 
 rm -r $TMP
 
