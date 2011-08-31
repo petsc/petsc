@@ -76,7 +76,9 @@ regressionParameters = {'src/sys/comm/examples/tests/ex1':    [{'numProcs': 2},
                                                                {'numProcs': 2, 'args': '-lambda 0.0 -snes_monitor -ksp_monitor -snes_converged_reason'},
                                                                {'numProcs': 2, 'args': '-lambda 0.0 -snes_monitor -ksp_monitor -snes_converged_reason -refinement_limit 0.0625'},
                                                                {'numProcs': 1, 'args': '-lambda 0.0 -snes_monitor -ksp_monitor -snes_converged_reason -bc_type neumann'},
-                                                               {'numProcs': 2, 'args': '-lambda 0.0 -snes_monitor -ksp_monitor -snes_converged_reason -bc_type neumann'}],
+                                                               {'numProcs': 2, 'args': '-lambda 0.0 -snes_monitor -ksp_monitor -snes_converged_reason -bc_type neumann'},
+                                                               {'numProcs': 1, 'args': '-dim 3 -lambda 0.0 -ksp_rtol 1.0e-9 -snes_monitor -ksp_monitor -snes_converged_reason -refinement_limit 0.005'},
+                                                               {'numProcs': 2, 'args': '-dim 3 -lambda 0.0 -ksp_rtol 1.0e-9 -snes_monitor -ksp_monitor -snes_converged_reason -refinement_limit 0.005'}],
                         'src/snes/examples/tutorials/ex10':   [{'numProcs': 2, 'args': '-da_grid_x 5 -snes_converged_reason -snes_monitor_short -problem_type 0'},
                                                                {'numProcs': 1, 'args': '-da_grid_x 20 -snes_converged_reason -snes_monitor_short -problem_type 1'},
                                                                {'numProcs': 1, 'args': '-da_grid_x 20 -snes_converged_reason -snes_monitor_short -problem_type 2'},
@@ -1106,7 +1108,9 @@ class PETScMaker(script.Script):
          self.logPrint("TEST ERROR: Regression output for %s (test %d) does not match" % (executable, testNum))
          for line in unified_diff(output.split('\n'), validOutput.split('\n'), fromfile='Current Output', tofile='Saved Output'):
            self.logPrint(line)
+         self.logPrintDivider()
          self.logPrint(validOutput, indent = 0)
+         self.logPrintDivider()
          self.logPrint(output, indent = 0)
          ret = -1
        else:
