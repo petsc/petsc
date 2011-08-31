@@ -28,9 +28,6 @@
 #define TSGL              'gl'
 #define TSSSP             'ssp'
 #define TSARKIMEX         'arkimex'
-#if defined(PETSC_HAVE_ROSW)
-#define TSROSW            'rosw'
-#endif
 
 #define TSGLADAPT_NONE 'none'
 #define TSGLADAPT_SIZE 'size'
@@ -41,13 +38,5 @@
 #define TSARKIMEX3  '3'
 #define TSARKIMEX4  '4'
 #define TSARKIMEX5  '5'
-
-#if defined(PETSC_HAVE_ROSW)
-#define TSARKIMEX2D '2d'
-#define TSARKIMEX2E '2e'
-#define TSARKIMEX3  '3'
-#define TSARKIMEX4  '4'
-#define TSARKIMEX5  '5'
-#endif
 
 #endif
