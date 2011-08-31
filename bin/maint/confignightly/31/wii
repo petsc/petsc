@@ -1,8 +1,0 @@
-#! /bin/csh
-#
-set MACH=140.221.123.61
-set USR=balay
-set LOC=/home/balay/petsc31
-set CONF=arch-freebsd-pkgs-opt
-set PURL=http://petsc.cs.iit.edu/petsc/petsc-release-3.1
-set BURL=http://petsc.cs.iit.edu/petsc/BuildSystem-release-3.1

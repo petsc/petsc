@@ -1,0 +1,8 @@
+#! /bin/csh
+
+set MACH=crush
+set USR=petsc
+set LOC=/sandbox/petsc/petsc32
+set CONF=arch-linux-gcov
+set PURL=http://petsc.cs.iit.edu/petsc/petsc-release-3.2
+set BURL=http://petsc.cs.iit.edu/petsc/BuildSystem-release-3.2

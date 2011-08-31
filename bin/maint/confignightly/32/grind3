@@ -1,0 +1,8 @@
+#! /bin/csh
+
+set MACH=grind
+set USR=petsc
+set LOC=/sandbox/petsc/petsc32-3
+set CONF=arch-linux-pkgs-cxx-mlib
+set PURL=http://petsc.cs.iit.edu/petsc/petsc-release-3.2
+set BURL=http://petsc.cs.iit.edu/petsc/BuildSystem-release-3.2
