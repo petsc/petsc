@@ -73,7 +73,7 @@ int main(int argc,char **args)
     } else {
       fscanf(Afile,"%d %d %d\n",&m,&n,&nz);
     }
-    printf("m: %d, n: %d, nz: %d \n", m,n,nz);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"m: %d, n: %d, nz: %d \n", m,n,nz);CHKERRQ(ierr);
     if (m != n) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "Number of rows, cols must be same for this example\n");
     ierr = MatCreate(PETSC_COMM_SELF,&A);CHKERRQ(ierr);
     ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m,n);CHKERRQ(ierr);
@@ -145,7 +145,7 @@ int main(int argc,char **args)
     ierr = MatMult(A,u,u_tmp);CHKERRQ(ierr);
     ierr = VecAXPY(u_tmp,-1.0,b);CHKERRQ(ierr);
     ierr = VecNorm(u_tmp,NORM_2,&res_norm);CHKERRQ(ierr);
-    printf("\n Accuracy of the reading data: | b - A*u |_2 : %g \n",res_norm); 
+    ierr = PetscPrintf(PETSC_COMM_SELF,"\n Accuracy of the reading data: | b - A*u |_2 : %g \n",res_norm);CHKERRQ(ierr);
     ierr = VecDestroy(&u_tmp);CHKERRQ(ierr);
   }
 
