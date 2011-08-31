@@ -25,15 +25,17 @@ Add a simple term to the right hand side so that the bulge grows/expands with ti
 
 Evolve the Cahn-Hillard equations: double well Initial hump shrinks then grows 
 ---------------
-./biharmonic -ts_monitor -snes_monitor   -pc_type lu  -draw_pause .1 -snes_converged_reason   -wait   -ts_type beuler    -da_refine 6 -vi  -kappa .00001 -ts_dt 5.96046e-06 -cahn-hillard
+./biharmonic -ts_monitor -snes_monitor   -pc_type lu  -draw_pause .1 -snes_converged_reason   -wait   -ts_type beuler    -da_refine 6 -vi  -kappa .00001 -ts_dt 5.96046e-06 -cahn-hillard -ts_monitor_solution -ts_monitor_solution_initial
 
 Initial hump neither shrinks nor grows when degenerate (otherwise similar solution)
  
-./biharmonic -ts_monitor -snes_monitor   -pc_type lu  -draw_pause .1 -snes_converged_reason   -wait   -ts_type beuler    -da_refine 6 -vi  -kappa .00001 -ts_dt 5.96046e-06 -cahn-hillard -degenerate 
+./biharmonic -ts_monitor -snes_monitor   -pc_type lu  -draw_pause .1 -snes_converged_reason   -wait   -ts_type beuler    -da_refine 6 -vi  -kappa .00001 -ts_dt 5.96046e-06 -cahn-hillard -degenerate -ts_monitor_solution -ts_monitor_solution_initial
+
+./biharmonic -ts_monitor -snes_monitor   -pc_type lu  -draw_pause .1 -snes_converged_reason   -wait   -ts_type beuler    -da_refine 6 -vi  -kappa .00001 -ts_dt 5.96046e-06 -cahn-hillard -snes_vi_ignore_function_sign -ts_monitor_solution -ts_monitor_solution_initial
 
 Evolve the Cahn-Hillard equations: double obstacle
 ---------------
-./biharmonic -ts_monitor -snes_monitor  -pc_type lu  -draw_pause .1 -snes_converged_reason   -wait   -ts_type beuler    -da_refine 5 -vi  -kappa .00001 -ts_dt 5.96046e-06 -cahn-hillard -energy 2 -snes_ls_monitor   -vi 
+./biharmonic -ts_monitor -snes_monitor  -pc_type lu  -draw_pause .1 -snes_converged_reason   -wait   -ts_type beuler    -da_refine 5 -vi  -kappa .00001 -ts_dt 5.96046e-06 -cahn-hillard -energy 2 -snes_ls_monitor   -vi -ts_monitor_solution -ts_monitor_solution_initial
 
 Evolve the Cahn-Hillard equations: logarithmic + double well (never shrinks and then grows)
 ---------------
@@ -44,7 +46,7 @@ Evolve the Cahn-Hillard equations: logarithmic + double well (never shrinks and 
 
 Evolve the Cahn-Hillard equations: logarithmic +  double obstacle (never shrinks, never grows)
 ---------------
-./biharmonic -ts_monitor -snes_monitor  -pc_type lu  --snes_converged_reason  -wait   -ts_type beuler    -da_refine 5 -vi  -kappa .00001 -ts_dt 5.96046e-06 -cahn-hillard -energy 4 -snes_ls_monitor -theta .00000001  -vi 
+./biharmonic -ts_monitor -snes_monitor  -pc_type lu  --snes_converged_reason  -wait   -ts_type beuler    -da_refine 5 -vi  -kappa .00001 -ts_dt 5.96046e-06 -cahn-hillard -energy 4 -snes_ls_monitor -theta .00000001  -vi -ts_monitor_solution -ts_monitor_solution_initial
 
 
 

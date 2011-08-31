@@ -880,6 +880,6 @@ TESTEXAMPLES_MUMPS             = ex19.PETSc runex19_3 runex19_4 runex19_fieldspl
 TESTEXAMPLES_SUPERLU           = ex19.PETSc runex19_superlu ex19.rm
 TESTEXAMPLES_SUPERLU_DIST      = ex19.PETSc runex19_superlu_dist runex19_superlu_dist_2 ex19.rm  ex50.PETSc  ex50.rm
 TESTEXAMPLES_PASTIX            = ex19.PETSc runex19_11 runex19_12 ex19.rm  ex50.PETSc runex50_11 runex50_12 ex50.rm
-TESTEXAMPLES_CUSP              = ex19.PETSc runex19_cusp ex19.rm ex47cu.PETSc runex47cu ex47cu.rm ex50.PETSc runex50_cusp ex50.rm
+TESTEXAMPLES_CUSP              = ex19.PETSc runex19_cusp ex19.rm ex47cu.PETSc runex47cu ex47cu.rm 
 
 include ${PETSC_DIR}/conf/test
