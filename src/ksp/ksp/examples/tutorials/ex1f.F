@@ -203,7 +203,7 @@
       else
         write(6,200) its
       endif
- 100  format('Norm of error = ',e10.4,',  Iterations = ',i5)
+ 100  format('Norm of error = ',e11.4,',  Iterations = ',i5)
  200  format('Norm of error < 1.e-12,Iterations = ',i5)
 
 !  Free work space.  All PETSc objects should be destroyed when they

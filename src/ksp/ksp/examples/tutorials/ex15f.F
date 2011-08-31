@@ -240,7 +240,7 @@
            write(6,110) its
         endif
       endif
-  100 format('Norm of error ',1pe10.4,' iterations ',i5)
+  100 format('Norm of error ',1pe11.4,' iterations ',i5)
   110 format('Norm of error < 1.e-12,iterations ',i5)
 
 !  Free work space.  All PETSc objects should be destroyed when they
