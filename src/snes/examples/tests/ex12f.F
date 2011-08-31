@@ -9,8 +9,8 @@
 !      ctx(1) = da    - distributed array
 !          2  = F     - global vector where the function is stored
 !          3  = xl    - local work vector
-!          4  = rank  - processor rank
-!          5  = size  - number of processors
+!          4  = comm  - MPI communictor
+!          5  = unused
 !          6  = N     - system size
 !
 !  Note: Any user-defined Fortran routines (such as FormJacobian)
@@ -52,11 +52,10 @@
       call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-n',N,flg,ierr)
       h = 1.d0/(N-1.d0)
       ctx(6) = N
+      ctx(4) = PETSC_COMM_WORLD
 
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
       call MPI_Comm_size(PETSC_COMM_WORLD,size,ierr)
-      ctx(4) = rank
-      ctx(5) = size
 
 ! Set up data structures
       call DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,N,i1,i1,            &
@@ -146,8 +145,8 @@
 #include <finclude/petscsnes.h>
 
 
-      rank  = ctx(4)
-      size  = ctx(5)
+      call MPI_Comm_rank(ctx(4),rank,ierr)
+      call MPI_Comm_size(ctx(4),size,ierr)
       h     = 1.d0/(ctx(6) - 1.d0)
       call DMGlobalToLocalBegin(ctx(1),x,INSERT_VALUES,ctx(3),ierr)
       call DMGlobalToLocalEnd(ctx(1),x,INSERT_VALUES,ctx(3),ierr)
@@ -248,8 +247,8 @@
       i1 = 1
       h = 1.d0/(ctx(6) - 1.d0)
       d = h*h
-      rank = ctx(4)
-      size = ctx(5)
+      call MPI_Comm_rank(ctx(4),rank,ierr)
+      call MPI_Comm_size(ctx(4),size,ierr)
 
       call VecGetArray(x,vxx,ixx,ierr)
       call VecGetOwnershipRange(x,start,end,ierr)

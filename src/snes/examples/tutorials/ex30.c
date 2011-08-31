@@ -1527,10 +1527,14 @@ PetscErrorCode InteractiveHandler(int signum, void *ctx)
 
   if (signum == SIGILL) {
     param->toggle_kspmon = PETSC_TRUE;
+#if !defined(PETSC_HAVE_MISSING_SIGCONT)
   } else if (signum == SIGCONT) {
     param->interrupted = PETSC_TRUE;
+#endif
+#if !defined(PETSC_HAVE_MISSING_SIGURG)
   } else if (signum == SIGURG) {
     param->stop_solve = PETSC_TRUE;
+#endif
   } 
   return 0;
 }
