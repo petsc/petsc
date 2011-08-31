@@ -9,26 +9,6 @@
 #include <private/kspimpl.h>        /*I "petscksp.h" I*/
 #include <petscblaslapack.h>
 
-
-EXTERN_C_BEGIN
-#if !defined(PETSC_USE_COMPLEX)
- extern void LAPACKhseqr_(const char *, const char *, PetscBLASInt *, PetscBLASInt *, PetscBLASInt *, PetscScalar *, PetscBLASInt *, PetscScalar *, PetscScalar *, PetscScalar *, PetscBLASInt *, PetscScalar *, PetscBLASInt *,PetscBLASInt * );
- extern void LAPACKhgeqz_(const char *, const char *, const char *, PetscBLASInt *, PetscBLASInt *, PetscBLASInt *, PetscScalar *, PetscBLASInt *, PetscScalar *, PetscBLASInt *, PetscScalar *, PetscScalar *, PetscScalar *, PetscScalar *, PetscBLASInt *, PetscScalar *, PetscBLASInt *, PetscScalar *, PetscBLASInt *, PetscBLASInt * );
- extern void LAPACKgerfs_(const char *, PetscBLASInt *, PetscBLASInt *, PetscScalar *, PetscBLASInt *, PetscScalar *, PetscBLASInt *, PetscBLASInt *, PetscScalar *, PetscBLASInt *, PetscScalar *, PetscBLASInt *, PetscScalar *, PetscScalar *, PetscScalar *, PetscInt *, PetscBLASInt *);
- extern void LAPACKgges_( const char *, const char *, const char *, void **, PetscBLASInt *, PetscScalar *, PetscBLASInt *, PetscScalar *, PetscBLASInt *, PetscBLASInt *, PetscScalar *, PetscScalar *, PetscScalar *, PetscScalar *, PetscBLASInt *, PetscScalar *, PetscBLASInt *, PetscScalar *, PetscBLASInt *, PetscBLASInt *, PetscBLASInt *); 
- extern void LAPACKtrsen_(const char *, const char *, PetscBLASInt *, PetscBLASInt *, PetscReal *, PetscBLASInt *, PetscReal *, PetscBLASInt *, PetscReal *, PetscReal *, PetscBLASInt *, PetscReal *, PetscReal *, PetscReal *, PetscBLASInt *, PetscBLASInt *, PetscBLASInt *, PetscBLASInt *);
- extern void LAPACKtgsen_(PetscBLASInt *, PetscBLASInt *, PetscBLASInt *, PetscBLASInt *, PetscBLASInt *, PetscReal *, PetscBLASInt *, PetscReal *, PetscBLASInt *, PetscReal *, PetscReal *, PetscReal *, PetscReal *, PetscBLASInt *, PetscReal *, PetscBLASInt *, PetscBLASInt *, PetscReal *, PetscReal *, PetscReal *, PetscReal *, PetscBLASInt *, PetscBLASInt *, PetscBLASInt *, PetscBLASInt *);
-
-#else
- extern void LAPACKhseqr_(const char *, const char *, PetscBLASInt *, PetscBLASInt *, PetscBLASInt *, PetscScalar *, PetscBLASInt *, PetscScalar *, PetscScalar *, PetscBLASInt *, PetscScalar *, PetscBLASInt *,PetscBLASInt * );
- extern void LAPACKhgeqz_(const char *, const char *, const char *, PetscBLASInt *, PetscBLASInt *, PetscBLASInt *, PetscScalar *, PetscBLASInt *, PetscScalar *, PetscBLASInt *, PetscScalar *, PetscScalar *, PetscScalar *, PetscBLASInt *, PetscScalar *, PetscBLASInt *, PetscScalar *, PetscBLASInt *, PetscBLASInt * );
- extern void LAPACKgerfs_(const char *, PetscBLASInt *, PetscBLASInt *, PetscScalar *, PetscBLASInt *, PetscScalar *, PetscBLASInt *, PetscBLASInt *, PetscScalar *, PetscBLASInt *, PetscScalar *, PetscBLASInt *, PetscScalar *, PetscScalar *, PetscScalar *, PetscReal *, PetscBLASInt *);
- extern void LAPACKgges_( const char *, const char *, const char *, void **, PetscBLASInt *, PetscReal *, PetscBLASInt *, PetscReal *, PetscBLASInt *, PetscBLASInt *, PetscReal *, PetscReal *, PetscReal *, PetscBLASInt *, PetscReal *, PetscBLASInt *, PetscReal *, PetscBLASInt *, PetscBLASInt *, PetscBLASInt *);
- extern void LAPACKtrsen_(const char *, const char *, PetscBLASInt *, PetscBLASInt *, PetscScalar *, PetscBLASInt *, PetscScalar *, PetscBLASInt *, PetscScalar *, PetscBLASInt *, PetscReal *, PetscReal *, PetscScalar *, PetscBLASInt *, PetscBLASInt *);
- extern void LAPACKtgsen_(PetscBLASInt *, PetscBLASInt *, PetscBLASInt *, PetscBLASInt *, PetscBLASInt *, PetscScalar *, PetscBLASInt *, PetscScalar *, PetscBLASInt *, PetscScalar *, PetscScalar *, PetscScalar *, PetscBLASInt *, PetscScalar *, PetscBLASInt *, PetscBLASInt *, PetscReal *, PetscReal *, PetscReal *, PetscReal *, PetscBLASInt *, PetscBLASInt *, PetscBLASInt *, PetscBLASInt *);
-#endif 
-EXTERN_C_END
-
 typedef struct {
   /* Hessenberg matrix and orthogonalization information.  Hes holds
        the original (unmodified) hessenberg matrix which may be used

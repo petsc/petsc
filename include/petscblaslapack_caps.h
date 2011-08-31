@@ -22,11 +22,8 @@
 #  define LAPACKstein_ SSTEIN
 #  define LAPACKgesv_  SGESV
 #  define LAPACKgelss_ SGELSS
-#  define LAPACKhseqr_ SHSEQR
-#  define LAPACKhgeqz_ SHGEQZ
 #  define LAPACKgerfs_ SGERFS
-#  define LAPACKgges_ SGGES
-#  define LAPACKtrsen_ STRSEN
+#  define LAPACKtgsen_ STGSEN
 /* Real single precision with character string arguments. */
 #  define LAPACKormqr_ SORMQR
 #  define LAPACKtrtrs_ STRTRS
@@ -43,6 +40,9 @@
 #  define LAPACKsygvx_ SSYGVX
 #  define BLASgemm_    SGEMM
 #  define LAPACKstebz_ SSTEBZ
+#  define LAPACKhseqr_ SHSEQR
+#  define LAPACKgges_  SGGES
+#  define LAPACKtrsen_ STRSEN
 # else
 /* Real double precision with no character string arguments */
 #  define LAPACKgeqrf_ DGEQRF
@@ -60,11 +60,7 @@
 #  define LAPACKstein_ DSTEIN
 #  define LAPACKgesv_  DGESV
 #  define LAPACKgelss_ DGELSS
-#  define LAPACKhseqr_ DHSEQR
-#  define LAPACKhgeqz_ DHGEQZ
 #  define LAPACKgerfs_ DGERFS
-#  define LAPACKgges_ DGGES
-#  define LAPACKtrsen_ DTRSEN
 #  define LAPACKtgsen_ DTGSEN
 /* Real double precision with character string arguments. */
 #  define LAPACKormqr_ DORMQR
@@ -82,6 +78,9 @@
 #  define LAPACKsygvx_ DSYGVX
 #  define BLASgemm_    DGEMM
 #  define LAPACKstebz_ DSTEBZ
+#  define LAPACKhseqr_ DHSEQR
+#  define LAPACKgges_  DGGES
+#  define LAPACKtrsen_ DTRSEN
 # endif
 
 #else
@@ -101,11 +100,7 @@
 #  define LAPACKstein_ CSTEIN
 #  define LAPACKgesv_  CGESV
 #  define LAPACKgelss_ CGELSS
-#  define LAPACKhseqr_ CHSEQR
-#  define LAPACKhgeqz_ CHGEQZ
 #  define LAPACKgerfs_ CGERFS
-#  define LAPACKgges_ CGGES
-#  define LAPACKtrsen_ CTRSEN
 #  define LAPACKtgsen_ CTGSEN
 /* Complex single precision with character string arguments */
 /* LAPACKormqr_ does not exist for complex. */
@@ -124,6 +119,9 @@
 #  define LAPACKsygvx_ CHEGVX
 #  define LAPACKpttrs_ CPTTRS 
 /* LAPACKstebz_ does not exist for complex. */
+#  define LAPACKhseqr_ CHSEQR
+#  define LAPACKgges_  CGGES
+#  define LAPACKtrsen_ CTRSEN
 # else
 /* Complex double precision with no character string arguments */
 #  define LAPACKgeqrf_ ZGEQRF
@@ -140,12 +138,8 @@
 #  define LAPACKstein_ ZSTEIN
 #  define LAPACKgesv_  ZGESV
 #  define LAPACKgelss_ ZGELSS
-#  define LAPACKhseqr_ ZHSEQR
-#  define LAPACKhgeqz_ ZHGEQZ
 #  define LAPACKgerfs_ ZGERFS
-#  define LAPACKgges_ ZGGES
-#  define LAPACKtrsen_ DTRSEN
-#  define LAPACKtgsen_ DTGSEN
+#  define LAPACKtgsen_ ZTGSEN
 /* Complex double precision with character string arguments */
 /* LAPACKormqr_ does not exist for complex. */
 #  define LAPACKtrtrs_ ZTRTRS
@@ -163,6 +157,9 @@
 #  define LAPACKsygvx_ ZHEGVX
 #  define LAPACKpttrs_ ZPTTRS 
 /* LAPACKstebz_ does not exist for complex. */
+#  define LAPACKhseqr_ ZHSEQR
+#  define LAPACKgges_  ZGGES
+#  define LAPACKtrsen_ ZTRSEN
 # endif
 #endif
 
