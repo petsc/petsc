@@ -877,12 +877,12 @@ PetscErrorCode MySolutionView(MPI_Comm comm,PetscInt phy_num,void *ctx)
     break;
   case 1:
     if (size == 1){
-      ierr = PetscPrintf(PETSC_COMM_SELF,"SubPhysics %d: U,V,Omega: \n",phy_num);
-      ierr = PetscPrintf(PETSC_COMM_SELF,"------------------------\n");
       DMMG *dmmg1=user->dmmg1;
       Vec  solu_true = DMMGGetx(dmmg1);
       DM   da=DMMGGetDM(dmmg1);
       Field1 **x1;
+      ierr = PetscPrintf(PETSC_COMM_SELF,"SubPhysics %d: U,V,Omega: \n",phy_num);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"------------------------\n");
       ierr = DMDAVecGetArray(da,solu_true,&x1);CHKERRQ(ierr);
       for (j=ys; j<ys+ym; j++) {
         for (i=xs; i<xs+xm; i++) {
@@ -896,12 +896,12 @@ PetscErrorCode MySolutionView(MPI_Comm comm,PetscInt phy_num,void *ctx)
     break;
   case 2:
     if (size == 1){
-      ierr = PetscPrintf(PETSC_COMM_SELF,"SubPhysics %d: Temperature: \n",phy_num);
-      ierr = PetscPrintf(PETSC_COMM_SELF,"--------------------------\n");
       DMMG *dmmg2=user->dmmg2;
       Vec  solu_true = DMMGGetx(dmmg2);
       DM   da=DMMGGetDM(dmmg2);
       Field2 **x2;
+      ierr = PetscPrintf(PETSC_COMM_SELF,"SubPhysics %d: Temperature: \n",phy_num);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"--------------------------\n");
       ierr = DMDAVecGetArray(da,solu_true,&x2);CHKERRQ(ierr);
       for (j=ys; j<ys+ym; j++) {
         for (i=xs; i<xs+xm; i++) {
