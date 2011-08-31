@@ -114,7 +114,7 @@ class Configure(PETSc.package.NewPackage):
     PETSc.package.NewPackage.__init__(self, framework)
     self.download  = ['http://tetgen.berlios.de/files/tetgen1.4.3.tar.gz']
     self.functions = ['tetrahedralize']
-    self.functionsCxx = [1, structDecl+'void tetrahedralize(char *switches, tetgenio *in, tetgenio *out,tetgenio *addin = NULL, tetgenio *bgmin = NULL);', 'tetrahedralize("", NULL, NULL)']
+    self.functionsCxx = [1, structDecl+'void tetrahedralize(char *switches, tetgenio *in, tetgenio *out);', 'tetrahedralize((char *) "", NULL, NULL)']
     self.includes  = ['tetgen.h']
     self.liblist   = [['libtet.a']]
     self.cxx       = 1
@@ -187,7 +187,7 @@ class Configure(PETSc.package.NewPackage):
       self.framework.outputHeader(configheader)
       try:
         self.logPrintBox('Compiling & installing TetGen; this may take several minutes')
-        output1,err1,ret1  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && make CXX="'+ self.setCompilers.getCompiler() + '" CXXFLAGS="' + cflags + '" PREDCXXFLAGS="' + predcflags + '" tetlib && mv tetgen_def.h tetgen.h && cp *.a ' + libDir + ' && rm *.o *.a', timeout=2500, log = self.framework.log)
+        output1,err1,ret1  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && make CXX="'+ self.setCompilers.getCompiler() + '" CXXFLAGS="' + cflags + '" PREDCXXFLAGS="' + predcflags + '" tetlib && mv tetgen_def.h tetgen.h && cp *.a ' + libDir + ' && rm *.a *.o', timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on TetGen: '+str(e))
       output2,err2,ret2  = PETSc.package.NewPackage.executeShellCommand('cp -f '+os.path.join(self.packageDir, 'tetgen.h')+' '+includeDir, timeout=5, log = self.framework.log)

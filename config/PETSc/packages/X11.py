@@ -23,15 +23,10 @@ class Configure(PETSc.package.NewPackage,config.autoconf.Configure):
     self.make = framework.require('config.programs', self)
     return
 
-  def generateGuesses(self):
-    '''Generate list of possible locations of X11'''
-    # This needs to be implemented
-    return
-
   def checkXMake(self):
     import shutil
     import time
-    
+
     includeDir = ''
     libraryDir = ''
     # Create Imakefile
@@ -73,6 +68,51 @@ acfindx:
     time.sleep(1)
     shutil.rmtree(testDir)
     return (includeDir, libraryDir)
+
+  def generateGuesses(self):
+    '''Generate list of possible locations of X11'''
+    useXt        = self.framework.argDB['with-xt']
+    includeDirs  = ['/Developer/SDKs/MacOSX10.5.sdk/usr/X11/include',
+                    '/Developer/SDKs/MacOSX10.4u.sdk/usr/X11R6/include',
+                    '/usr/X11/include',
+                   '/usr/X11R6/include',
+                   '/usr/X11R5/include',
+                   '/usr/X11R4/include',
+                   '/usr/include/X11',
+                   '/usr/include/X11R6',
+                   '/usr/include/X11R5',
+                   '/usr/include/X11R4',
+                   '/usr/local/X11/include',
+                   '/usr/local/X11R6/include',
+                   '/usr/local/X11R5/include',
+                   '/usr/local/X11R4/include',
+                   '/usr/local/include/X11',
+                   '/usr/local/include/X11R6',
+                   '/usr/local/include/X11R5',
+                   '/usr/local/include/X11R4',
+                   '/usr/X386/include',
+                   '/usr/x386/include',
+                   '/usr/XFree86/include/X11',
+                   '/usr/include',
+                   '/usr/local/include',
+                   '/usr/unsupported/include',
+                   '/usr/athena/include',
+                   '/usr/local/x11r5/include',
+                   '/usr/lpp/Xamples/include',
+                   '/usr/openwin/include',
+                   '/usr/openwin/share/include']
+    if self.framework.argDB.has_key('with-x-include'):
+      if not os.path.isdir(self.framework.argDB['with-x-include']):
+        raise RuntimeError('Invalid X include directory specified by --with-x-include='+os.path.abspath(self.framework.argDB['with-x-include']))
+      includeDir = self.framework.argDB['with-x-include']
+
+    testLibraries = ['libX11.a'] # 'XSetWMName'
+    if useXt:
+      testLibraries.append('libXt.a') # 'XtMalloc'
+    # Guess X location
+    (includeDirGuess, libraryDirGuess) = self.checkXMake()
+    yield ('Standard X11 Location', libraryDirGuess, testLibraries, includeDirGuess)
+    return
 
   def configureLibrary(self):
     '''Checks for X windows, sets PETSC_HAVE_X11 if found, and defines X_CFLAGS, X_PRE_LIBS, X_LIBS, and X_EXTRA_LIBS'''

@@ -490,6 +490,22 @@ PetscScalar cubic_2d(const PetscReal x[]) {
   return x[0]*x[0]*x[0] - 1.5*x[0]*x[0] + x[1]*x[1]*x[1] - 1.5*x[1]*x[1] + 0.5;
 };
 
+PetscScalar nonlinear_3d(const double x[]) {
+  return -4.0 - lambda*PetscExpScalar((2.0/3.0)*(x[0]*x[0] + x[1]*x[1] + x[2]*x[2]));
+};
+
+PetscScalar linear_3d(const double x[]) {
+  return -6.0*(x[0] - 0.5) - 6.0*(x[1] - 0.5) - 6.0*(x[2] - 0.5);
+};
+
+PetscScalar quadratic_3d(const double x[]) {
+  return (2.0/3.0)*(x[0]*x[0] + x[1]*x[1] + x[2]*x[2]);
+};
+
+PetscScalar cubic_3d(const double x[]) {
+  return x[0]*x[0]*x[0] - 1.5*x[0]*x[0] + x[1]*x[1]*x[1] - 1.5*x[1]*x[1] + x[2]*x[2]*x[2] - 1.5*x[2]*x[2] + 0.75;
+};
+
 #undef __FUNCT__
 #define __FUNCT__ "ProcessOptions"
 PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
@@ -619,6 +635,20 @@ PetscErrorCode SetupExactSolution(AppCtx *user) {
     } else {
       user->rhsFunc   = linear_2d;
       user->exactFunc = cubic_2d;
+    }
+    break;
+  case 3:
+    if (user->bcType == DIRICHLET) {
+      if (user->lambda > 0.0) {
+        user->rhsFunc   = nonlinear_3d;
+        user->exactFunc = quadratic_3d;
+      } else {
+        user->rhsFunc   = constant;
+        user->exactFunc = quadratic_3d;
+      }
+    } else {
+      user->rhsFunc   = linear_3d;
+      user->exactFunc = cubic_3d;
     }
     break;
   default:

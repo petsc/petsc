@@ -148,16 +148,19 @@ lapack_lib:
 	-@$(RANLIB) $(LAPACK_LIB_NAME)
 
 single:
+	-@cd blas;   $(MAKE) single $(MAKE_OPTIONS_BLAS)
 	-@cd lapack; $(MAKE) single $(MAKE_OPTIONS_LAPACK)
-	-@$(RANLIB) $(LAPACK_LIB_NAME)
+	-@$(RANLIB) $(BLAS_LIB_NAME) $(LAPACK_LIB_NAME)
 
 double:
+	-@cd blas;   $(MAKE) double $(MAKE_OPTIONS_BLAS)
 	-@cd lapack; $(MAKE) double $(MAKE_OPTIONS_LAPACK)
-	-@$(RANLIB) $(LAPACK_LIB_NAME)
+	-@$(RANLIB) $(BLAS_LIB_NAME) $(LAPACK_LIB_NAME)
 
 quad:
+	-@cd blas;   $(MAKE) quad $(MAKE_OPTIONS_BLAS)
 	-@cd lapack; $(MAKE) quad $(MAKE_OPTIONS_LAPACK)
-	-@$(RANLIB) $(LAPACK_LIB_NAME)
+	-@$(RANLIB) $(BLAS_LIB_NAME) $(LAPACK_LIB_NAME)
 
 cleanblaslapck:
 	$(RM) */*.o
@@ -226,7 +229,6 @@ for p in blas qblas lapack qlapack; do
 		SRC=$BLASSRC
 		DES=$BLASDIR
 		NOOP=""
-		echo 'lsame' > ${TMP}/AUX.list
 		cd $SRC
 		files="`ls *.f`"
 		cd -
@@ -242,7 +244,7 @@ for p in blas qblas lapack qlapack; do
 		SRC=$LAPACKSRC
 		DES=$LAPACKDIR
 		NOOP="slaruv dlaruv slamch dlamch"
-		echo $'lsamen' > ${TMP}/AUX.list
+		rm ${TMP}/AUX.list
 		echo $'slamch\nsecond' > ${TMP}/SINGLE.list
 		echo $'dlamch\ndsecnd' > ${TMP}/DOUBLE.list
 		rm ${TMP}/QUAD.list
@@ -3709,7 +3711,7 @@ typedef unsigned int uinteger;
 typedef char *address;
 typedef short int shortint;
 typedef float real;
-typedef LONG DOUBLE doublereal;
+typedef double doublereal;
 typedef struct { real r, i; } complex;
 typedef struct { doublereal r, i; } doublecomplex;
 typedef int logical;
