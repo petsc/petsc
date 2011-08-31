@@ -53,9 +53,6 @@ class Configure(config.package.Package):
   defaultPrecision = property(getDefaultPrecision, setDefaultPrecision, doc = 'The precision of the library')
 
   def getPrefix(self):
-    print  'ffusddlksddsds'
-    print self.defaultPrecision
-    print 'fdfdsfdsdfs'
     if self.defaultPrecision == 'single': return 's'
     if self.defaultPrecision == 'double': return 'd'
     if self.defaultPrecision == 'quad': return 'q'
