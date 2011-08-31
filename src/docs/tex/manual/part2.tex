@@ -1179,7 +1179,7 @@ MatSetValues().
 
 When using the block compressed sparse row matrix format (MATSEQBAIJ or
 MATMPIBAIJ), one can insert elements more efficiently using the block
-variant, MatSetValuesBlocked().
+variant, MatSetValuesBlocked() or MatSetValuesBlockedLocal().
 
 The function MatSetOption() accepts several other inputs; see
 the manual page for details.
@@ -1562,6 +1562,56 @@ PETSC\_DECIDE.
 
 PETSc does not provide parallel dense direct solvers. Our focus is on 
 sparse iterative solvers.
+
+\subsection{Block Matrices}
+\label{sec_matnest}
+Block matrices arise when coupling variables with different meaning, especially when solving problems with constraints (e.g. incompressible flow) and ``multi-physics'' problems.
+Usually the number of blocks is small and each block is partitioned in parallel.
+We illustrate for a $3\times 3$ system with components labeled $a,b,c$.
+With some numbering of unknowns, the matrix could be written as
+\[
+\left( \begin{array}{ccc}
+    A_{aa} & A_{ab} & A_{ac} \\
+    A_{ba} & A_{bb} & A_{bc} \\
+    A_{ca} & A_{cb} & A_{cc}
+  \end{array} \right) .
+\]
+There are two fundamentally different ways that this matrix could be stored, as a single assembled sparse matrix where entries from all blocks are merged together (``monolithic''), or as separate assembled matrices for each block (``nested'').
+These formats have different performance characteristics depending on the operation being performed.
+In particular, many preconditioners require a monolithic format, but some that are very effective for solving block systems (see Section~\ref{sec_block_matrices}) are more efficient when a nested format is used.
+In order to stay flexible, we would like to be able to use the same code to assemble block matrices in both monolithic and nested formats.
+Additionally, for software maintainability and testing, especially in a multi-physics context where different groups might be responsible for assembling each of the blocks, it is desirable to be able to use exactly the same code to assemble a single block independently as to assemble it as part of a larger system.
+To do this, we introduce the four spaces shown in Figure~\ref{fig_localspaces}.
+\begin{itemize}
+\item The monolithic global space is the space in which the Krylov and Newton solvers operate, with collective semantics across the entire block system.
+\item The split global space splits the blocks apart, but each split still has collective semantics.
+\item The split local space adds ghost points and sperates the blocks.
+  Operations in this space can be performed with no parallel communication.
+  This is often the most natural, and certainly the most powerful, space for matrix assembly code.
+\item The monolithic local space can be thought of as adding ghost points to the monolithic global space, but it is often more natural to use it simply as a concatenation of split local spaces on each process.
+  It is not common to explicitly manipulate vectors or matrices in this space (at least not during assembly), but it is a useful for declaring which part of a matrix is being assembled.
+\end{itemize}
+
+\begin{figure}
+\centerline{\includegraphics[width=\textwidth]{localspaces}}
+\caption{The relationship between spaces used for coupled assembly.}
+\label{fig_localspaces}
+\end{figure}
+
+The key to format-independent assembly is the function
+\begin{tabbing}
+  MatGetLocalSubMatrix(Mat A,IS isrow,IS iscol,Mat *submat);
+\end{tabbing}
+which provides a ``view'' \trl{submat} into a matrix \trl{A} that operates in the monolithic global space.
+The \trl{submat} transforms from the split local space defined by \trl{iscol} to the split local space defined by \trl{isrow}.
+The index sets specify the parts of the monolithic local space that \trl{submat} should operate in.
+If a nested matrix format is used, then MatGetLocalSubMatrix() finds the nested block and returns it without making any copies.
+In this case, \trl{submat} is fully functional and has a parallel communicator.
+If a monolithic matrix format is used, then MatGetLocalSubMatrix() returns a proxy matrix on \trl{PETSC_COMM_SELF} that does not provide values or implement MatMult(), but does implement MatSetValuesLocal() and, if \trl{isrow,iscol} have a constant block size, MatSetValuesBlockedLocal().
+Note that although \trl{submat} may not be a fully functional matrix and the caller does not even know a priori which communicator it will reside on, it always implements the local assembly functions (which are not collective).
+The index sets \trl{isrow,iscol} can be obtained using DMCompositeGetLocalISs() if DMComposite is being used.
+DMComposite can also be used to create matrices, in which case the MATNEST format can be specified using \trl{-prefix_dm_mat_type nest} and MATAIJ can be specified using \trl{-prefix_dm_mat_type aij}.
+See \trl{$PETSC_DIR/src/snes/examples/tutorials/ex28.c} for a simple example using this interface.
 
 \section{Basic Matrix Operations}
 \label{sec_matoptions}
@@ -3111,6 +3161,10 @@ A_{{10}_{10}}   & A_{{11}_{10}} & A_{{10}_{11}} & A_{{11}_{11}} & ...\\
 Note that for interlaced storage the number of rows/columns of each
 block must be the same size. Matrices obtained with DMGetMatrix()
 where the DM is a a DMDA are always stored interlaced.
+Block matrices can also be stored using the MATNEST format which holds separate assembled blocks.
+Each of these nested matrices is itself distributed in parallel.
+It is more efficient to use MATNEST with the methods described in this section because there are fewer copies and better formats (e.g. BAIJ or SBAIJ) can be used for the components, but it is not possible to use many other methods with MATNEST.
+See Section~\ref{sec_matnest} for more on assembling block matrices without depending on a specific matrix format.
 
 The PETSc PCFIELDSPLIT preconditioner is used to implement the
 ``block'' solvers in PETSc. There are three ways to provide the
