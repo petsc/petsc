@@ -104,10 +104,10 @@ y
   //gettimeofday(&t2,NULL);
   //timersub(&t2,&t1,&result);
   //printf("Time for VecMax = %lf\n",result.tv_sec+result.tv_usec/1000000.0);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"VecMax %g, VecInd %D\n",(double)maxval,(double)maxind);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"VecMax %g, VecInd %D\n",(double)maxval,maxind);CHKERRQ(ierr);
 
   ierr = VecMin(x,&maxind,&maxval);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"VecMin %g, VecInd %D\n",(double)maxval,(double)maxind);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"VecMin %g, VecInd %D\n",(double)maxval,maxind);CHKERRQ(ierr);
   /*
   const PetscInt ix_kds[] = {3,7,14};
   const PetscScalar y_kds[] = {13.2,69.3,-8.7};
