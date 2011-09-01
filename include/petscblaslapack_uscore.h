@@ -25,8 +25,6 @@
 #  define LAPACKgerfs_ sgerfs_
 #  define LAPACKtgsen_ stgsen_
 /* Real single precision with character string arguments. */
-#  define LAPACKormqr_ sormqr_
-#  define LAPACKtrtrs_ strtrs_
 #  define LAPACKpotrf_ spotrf_
 #  define LAPACKpotrs_ spotrs_
 #  define BLASgemv_    sgemv_
@@ -63,8 +61,6 @@
 #  define LAPACKgerfs_ dgerfs_
 #  define LAPACKtgsen_ dtgsen_
 /* Real double precision with character string arguments. */
-#  define LAPACKormqr_ dormqr_
-#  define LAPACKtrtrs_ dtrtrs_
 #  define LAPACKpotrf_ dpotrf_
 #  define LAPACKpotrs_ dpotrs_
 #  define BLASgemv_    dgemv_
@@ -101,8 +97,6 @@
 #  define LAPACKgerfs_ qgerfs_
 #  define LAPACKtgsen_ qtgsen_
 /* Real quad precision with character string arguments. */
-#  define LAPACKormqr_ qormqr_
-#  define LAPACKtrtrs_ qtrtrs_
 #  define LAPACKpotrf_ qpotrf_
 #  define LAPACKpotrs_ qpotrs_
 #  define BLASgemv_    qgemv_
@@ -139,8 +133,6 @@
 #  define LAPACKgerfs_ cgerfs_
 #  define LAPACKtgsen_ ctgsen_
 /* Complex single precision with character string arguments */
-/* LAPACKormqr_ does not exist for complex. */
-#  define LAPACKtrtrs_ ctrtrs_
 #  define LAPACKpotrf_ cpotrf_
 #  define LAPACKpotrs_ cpotrs_
 #  define BLASgemv_    cgemv_
@@ -178,8 +170,6 @@
 #  define LAPACKgerfs_ zgerfs_
 #  define LAPACKtgsen_ ztgsen_
 /* Complex double precision with character string arguments */
-/* LAPACKormqr_ does not exist for complex. */
-#  define LAPACKtrtrs_ ztrtrs_
 #  define LAPACKpotrf_ zpotrf_
 #  define LAPACKpotrs_ zpotrs_
 #  define BLASgemv_    zgemv_
