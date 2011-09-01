@@ -391,7 +391,7 @@ EXTERN_C_BEGIN
 /*
    Private routine to delete internal tag/name counter storage when a communicator is freed.
 
-   This is called by MPI, not by users.
+   This is called by MPI, not by users. This is called by MPI_Comm_free() when the communicator that has this  data as an attribute is freed.
 
    Note: this is declared extern "C" because it is passed to MPI_Keyval_create()
 
@@ -411,21 +411,33 @@ EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "Petsc_DelComm"
 /*
-  This does not actually free anything, it simply marks when a reference count to an internal MPI_Comm reaches zero and the
-  the external MPI_Comm drops its reference to the internal MPI_Comm
+  This does not actually free anything, it simply marks when a reference count to an internal or external MPI_Comm reaches zero and the
+  the external MPI_Comm drops its reference to the internal or external MPI_Comm
 
-  This is called by MPI, not by users.
+  This is called by MPI, not by users. This is called when MPI_Comm_free() is called on the communicator.
 
   Note: this is declared extern "C" because it is passed to MPI_Keyval_create()
 
 */
 PetscMPIInt  MPIAPI Petsc_DelComm(MPI_Comm comm,PetscMPIInt keyval,void *attr_val,void *extra_state)
 {
-  PetscErrorCode ierr;
+  PetscErrorCode   ierr;
+  PetscMPIInt      flg;
+  MPI_Comm         icomm;
+  void             *ptr;
 
   PetscFunctionBegin;
-  ierr = PetscInfo1(0,"Deleting PETSc communicator imbedded in a user MPI_Comm %ld\n",(long)comm);if (ierr) PetscFunctionReturn((PetscMPIInt)ierr);
-  /* actually don't delete anything because we cannot increase the reference count of the communicator anyways */
+  ierr  = MPI_Attr_get(comm,Petsc_InnerComm_keyval,&ptr,&flg);CHKERRQ(ierr);
+  if (flg) {
+    /*  Use PetscMemcpy() because casting from pointer to integer of different size is not allowed with some compilers  */
+    ierr = PetscMemcpy(&icomm,&ptr,sizeof(MPI_Comm));CHKERRQ(ierr);
+    ierr = MPI_Attr_get(icomm,Petsc_OuterComm_keyval,&ptr,&flg);CHKERRQ(ierr);
+    if (!flg) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Inner MPI_Comm does not have expected reference to outter comm");
+    ierr = MPI_Attr_delete(icomm,Petsc_OuterComm_keyval);CHKERRQ(ierr);
+    ierr = PetscInfo1(0,"User MPI_Comm m %ld is being freed, removing reference from inner PETSc comm to this outter comm\n",(long)comm);if (ierr) PetscFunctionReturn((PetscMPIInt)ierr);
+  } else {
+    ierr = PetscInfo1(0,"Removing reference to PETSc communicator imbedded in a user MPI_Comm m %ld\n",(long)comm);if (ierr) PetscFunctionReturn((PetscMPIInt)ierr);
+  }
   PetscFunctionReturn(MPI_SUCCESS);
 }
 EXTERN_C_END

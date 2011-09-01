@@ -168,7 +168,9 @@ EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "Petsc_DelViewer" 
 /*
-   Private routine to delete internal storage when a communicator is freed.
+   Called with MPI_Comm_free() is called on a communicator that has a viewer as an attribute. The viewer is not actually destroyed because that is managed by 
+   PetscObjectDestroyRegisterAll(). PetscViewerASCIIGetStdout() registers the viewer with PetscObjectDestroyRegister() to be destroyed when PetscFinalize() is called.
+
   This is called by MPI, not by users.
 
 */
@@ -177,7 +179,7 @@ PetscMPIInt  MPIAPI Petsc_DelViewer(MPI_Comm comm,PetscMPIInt keyval,void* attr_
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscInfo1(0,"Deleting viewer data in an MPI_Comm %ld\n",(long)comm);if (ierr) PetscFunctionReturn((PetscMPIInt)ierr);
+  ierr = PetscInfo1(0,"Removing viewer data attribute in an MPI_Comm %ld\n",(long)comm);if (ierr) PetscFunctionReturn((PetscMPIInt)ierr);
   PetscFunctionReturn(MPI_SUCCESS);
 }
 EXTERN_C_END
