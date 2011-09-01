@@ -70,8 +70,8 @@ def check(args):
     params = builder.regressionParameters.get(paramKey, {})
     if isinstance(params, list):
       if 'setup' in params[0]:
-        execfile(params[0]['setup'])
         print params[0]['setup']
+        os.system('python '+params[0]['setup'])
     else:
       if 'setup' in params:
         print params['setup']

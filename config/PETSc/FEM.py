@@ -81,8 +81,8 @@ class QuadratureGenerator(script.Script):
     numPoints.identifier = 'NUM_QUADRATURE_POINTS'+ext
     numPoints.replacementText = str(len(quadrature.get_points()))
     return [numPoints,
-            self.getArray(self.Cxx.getVar('points'+ext), quadrature.get_points(), 'Quadrature points\n   - (x1,y1,x2,y2,...)'),
-            self.getArray(self.Cxx.getVar('weights'+ext), quadrature.get_weights(), 'Quadrature weights\n   - (v1,v2,...)')]
+            self.getArray(self.Cxx.getVar('points'+ext), quadrature.get_points(), 'Quadrature points\n   - (x1,y1,x2,y2,...)', 'PetscReal'),
+            self.getArray(self.Cxx.getVar('weights'+ext), quadrature.get_weights(), 'Quadrature weights\n   - (v1,v2,...)', 'PetscReal')]
 
   def getBasisFuncOrder(self, element):
     '''Map from FIAT order to Sieve order
@@ -203,8 +203,8 @@ class QuadratureGenerator(script.Script):
             basisTab[q][i]    = basisTabOld[q][pi]
             basisDerTab[q][i] = basisDerTabOld[q][pi]
       code.extend([numFunctions,
-                   self.getArray(self.Cxx.getVar(basisName), basisTab, 'Nodal basis function evaluations\n    - basis function is fastest varying, then point'),
-                   self.getArray(self.Cxx.getVar(basisDerName), basisDerTab, 'Nodal basis function derivative evaluations,\n    - derivative direction fastest varying, then basis function, then point')])
+                   self.getArray(self.Cxx.getVar(basisName), basisTab, 'Nodal basis function evaluations\n    - basis function is fastest varying, then point', 'PetscReal'),
+                   self.getArray(self.Cxx.getVar(basisDerName), basisDerTab, 'Nodal basis function derivative evaluations,\n    - derivative direction fastest varying, then basis function, then point', 'PetscReal')])
     return code
 
   def getQuadratureBlock(self, num):
@@ -257,8 +257,8 @@ class QuadratureGenerator(script.Script):
     else:
       embedDim = dim
     if not decls is None:
-      decls.append(self.Cxx.getArray(refVar,  self.Cxx.getType('double'), dim))
-      decls.append(self.Cxx.getArray(realVar, self.Cxx.getType('double'), embedDim))
+      decls.append(self.Cxx.getArray(refVar,  self.Cxx.getType('PetscReal'), dim))
+      decls.append(self.Cxx.getArray(realVar, self.Cxx.getType('PetscReal'), embedDim))
     basisLoop = self.Cxx.getSimpleLoop(self.Cxx.getDeclarator('e', 'int'), 0, dim)
     basisLoop.children[0].children.append(self.Cxx.getExpStmt(self.Cxx.getAdditionAssignment(self.Cxx.getArrayRef(realVar, 'd'), self.Cxx.getMultiplication(self.Cxx.getArrayRef('J', self.Cxx.getAddition(self.Cxx.getMultiplication('d', embedDim), 'e')), self.Cxx.getGroup(self.Cxx.getAddition(self.Cxx.getArrayRef(refVar, 'e'), 1.0))))))
     testLoop = self.Cxx.getSimpleLoop(self.Cxx.getDeclarator('d', 'int'), 0, embedDim)
@@ -349,10 +349,10 @@ class QuadratureGenerator(script.Script):
     stmts.append(switch)
     self.mapToRealSpace(dim, decls, stmts, refVar, realVar, isBd)
     stmts.append(self.Cxx.getReturn(self.Cxx.getFunctionCall(self.Cxx.getGroup(self.Cxx.getIndirection('func')), [realVar])))
-    bcFunc = self.Cxx.getFunctionPointer('func', self.Cxx.getType('double'), [self.Cxx.getParameter('coords', self.Cxx.getType('double', 1, isConst = 1))])
+    bcFunc = self.Cxx.getFunctionPointer('func', self.Cxx.getType('double'), [self.Cxx.getParameter('coords', self.Cxx.getType('PetscReal', 1, isConst = 1))])
     func = self.Cxx.getFunction(funcName, self.Cxx.getType('double'),
-                                [self.Cxx.getParameter('v0', self.Cxx.getType('double', 1, isConst = 1)),
-                                 self.Cxx.getParameter('J',  self.Cxx.getType('double', 1, isConst = 1)),
+                                [self.Cxx.getParameter('v0', self.Cxx.getType('PetscReal', 1, isConst = 1)),
+                                 self.Cxx.getParameter('J',  self.Cxx.getType('PetscReal', 1, isConst = 1)),
                                  self.Cxx.getParameter(idxVar, self.Cxx.getType('int', isConst = 1)),
                                  self.Cxx.getParameter(None, bcFunc)],
                                 decls, stmts)
@@ -473,8 +473,8 @@ class QuadratureGenerator(script.Script):
                                    self.Cxx.getParameter('name', self.Cxx.getType('char pointer', isConst = 1)),
                                    self.Cxx.getParameter('numBC', self.Cxx.getType('int', isConst = 1)),
                                    self.Cxx.getParameter('markers', self.Cxx.getType('int pointer', isConst = 1)),
-                                   self.Cxx.getParameter(None, self.Cxx.getFunctionPointer(bcVar, self.Cxx.getType('double'), [self.Cxx.getParameter('coords', self.Cxx.getType('double', 1, isConst = 1))], numPointers = 2)),
-                                   self.Cxx.getParameter(None, self.Cxx.getFunctionPointer(exactVar, self.Cxx.getType('double'), [self.Cxx.getParameter('coords', self.Cxx.getType('double', 1, isConst = 1))]))],
+                                   self.Cxx.getParameter(None, self.Cxx.getFunctionPointer(bcVar, self.Cxx.getType('double'), [self.Cxx.getParameter('coords', self.Cxx.getType('PetscReal', 1, isConst = 1))], numPointers = 2)),
+                                   self.Cxx.getParameter(None, self.Cxx.getFunctionPointer(exactVar, self.Cxx.getType('double'), [self.Cxx.getParameter('coords', self.Cxx.getType('PetscReal', 1, isConst = 1))]))],
                                   decls, stmts)
       code.extend(self.Cxx.getFunctionHeader(funcName)+[func])
     return code
