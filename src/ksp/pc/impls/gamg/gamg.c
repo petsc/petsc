@@ -295,7 +295,7 @@ PetscErrorCode partitionLevel( Mat a_Amat_fine,
       ierr = ISDestroy( &isnewproc );                    CHKERRQ(ierr);
       is_sz *= a_cbs;
 
-      ierr = MPI_Comm_free( &new_comm );    CHKERRQ(ierr);  
+      ierr = PetscCommDestroy( &new_comm );    CHKERRQ(ierr);  
     }
     else{
       isnewproc_idx = 0;
