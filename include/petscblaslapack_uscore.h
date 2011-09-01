@@ -22,15 +22,9 @@
 #  define LAPACKstein_ sstein_
 #  define LAPACKgesv_  sgesv_
 #  define LAPACKgelss_ sgelss_
-#  define LAPACKhseqr_ shseqr_
-#  define LAPACKhgeqz_ shgeqz_
 #  define LAPACKgerfs_ sgerfs_
-#  define LAPACKgges_  sgges_
-#  define LAPACKtrsen_ strsen_
 #  define LAPACKtgsen_ stgsen_
 /* Real single precision with character string arguments. */
-#  define LAPACKormqr_ sormqr_
-#  define LAPACKtrtrs_ strtrs_
 #  define LAPACKpotrf_ spotrf_
 #  define LAPACKpotrs_ spotrs_
 #  define BLASgemv_    sgemv_
@@ -44,6 +38,9 @@
 #  define LAPACKsygv_  ssygv_
 #  define LAPACKsygvx_ ssygvx_
 #  define LAPACKstebz_ sstebz_
+#  define LAPACKhseqr_ shseqr_
+#  define LAPACKgges_  sgges_
+#  define LAPACKtrsen_ strsen_
 # elif defined(PETSC_USE_REAL_DOUBLE)
 /* Real double precision with no character string arguments */
 #  define LAPACKgeqrf_ dgeqrf_
@@ -61,15 +58,9 @@
 #  define LAPACKstein_ dstein_
 #  define LAPACKgesv_  dgesv_
 #  define LAPACKgelss_ dgelss_
-#  define LAPACKhseqr_ dhseqr_
-#  define LAPACKhgeqz_ dhgeqz_
 #  define LAPACKgerfs_ dgerfs_
-#  define LAPACKgges_  dgges_
-#  define LAPACKtrsen_ dtrsen_
 #  define LAPACKtgsen_ dtgsen_
 /* Real double precision with character string arguments. */
-#  define LAPACKormqr_ dormqr_
-#  define LAPACKtrtrs_ dtrtrs_
 #  define LAPACKpotrf_ dpotrf_
 #  define LAPACKpotrs_ dpotrs_
 #  define BLASgemv_    dgemv_
@@ -83,6 +74,9 @@
 #  define LAPACKsygv_  dsygv_
 #  define LAPACKsygvx_ dsygvx_
 #  define LAPACKstebz_ dstebz_
+#  define LAPACKhseqr_ dhseqr_
+#  define LAPACKgges_  dgges_
+#  define LAPACKtrsen_ dtrsen_
 # else
 /* Real quad precision with no character string arguments */
 #  define LAPACKgeqrf_ qgeqrf_
@@ -100,15 +94,9 @@
 #  define LAPACKstein_ qstein_
 #  define LAPACKgesv_  qgesv_
 #  define LAPACKgelss_ qgelss_
-#  define LAPACKhseqr_ qhseqr_
-#  define LAPACKhgeqz_ qhgeqz_
 #  define LAPACKgerfs_ qgerfs_
-#  define LAPACKgges_  qgges_
-#  define LAPACKtrsen_ qtrsen_
 #  define LAPACKtgsen_ qtgsen_
 /* Real quad precision with character string arguments. */
-#  define LAPACKormqr_ qormqr_
-#  define LAPACKtrtrs_ qtrtrs_
 #  define LAPACKpotrf_ qpotrf_
 #  define LAPACKpotrs_ qpotrs_
 #  define BLASgemv_    qgemv_
@@ -122,6 +110,9 @@
 #  define LAPACKsygv_  qsygv_
 #  define LAPACKsygvx_ qsygvx_
 #  define LAPACKstebz_ qstebz_
+#  define LAPACKhseqr_ qhseqr_
+#  define LAPACKgges_  qgges_
+#  define LAPACKtrsen_ qtrsen_
 # endif
 #else
 # if defined(PETSC_USE_REAL_SINGLE)
@@ -139,15 +130,9 @@
 #  define LAPACKpttrf_ cpttrf_
 #  define LAPACKstein_ cstein_
 #  define LAPACKgelss_ cgelss_
-#  define LAPACKhseqr_ chseqr_
-#  define LAPACKhgeqz_ chgeqz_
 #  define LAPACKgerfs_ cgerfs_
-#  define LAPACKgges_  cgges_
-#  define LAPACKtrsen_ ctrsen_
 #  define LAPACKtgsen_ ctgsen_
 /* Complex single precision with character string arguments */
-/* LAPACKormqr_ does not exist for complex. */
-#  define LAPACKtrtrs_ ctrtrs_
 #  define LAPACKpotrf_ cpotrf_
 #  define LAPACKpotrs_ cpotrs_
 #  define BLASgemv_    cgemv_
@@ -163,6 +148,9 @@
 #  define LAPACKsygvx_ chegvx_
 #  define LAPACKpttrs_ cpttrs_ 
 /* LAPACKstebz_ does not exist for complex. */
+#  define LAPACKhseqr_ chseqr_
+#  define LAPACKgges_  cgges_
+#  define LAPACKtrsen_ ctrsen_
 # else
 /* Complex double precision with no character string arguments */
 #  define LAPACKgeqrf_ zgeqrf_
@@ -179,15 +167,9 @@
 #  define LAPACKstein_ zstein_
 #  define LAPACKgesv_  zgesv_
 #  define LAPACKgelss_ zgelss_
-#  define LAPACKhseqr_ zhseqr_
-#  define LAPACKhgeqz_ zhgeqz_
 #  define LAPACKgerfs_ zgerfs_
-#  define LAPACKgges_ zgges_
-#  define LAPACKtrsen_ ztrsen_
 #  define LAPACKtgsen_ ztgsen_
 /* Complex double precision with character string arguments */
-/* LAPACKormqr_ does not exist for complex. */
-#  define LAPACKtrtrs_ ztrtrs_
 #  define LAPACKpotrf_ zpotrf_
 #  define LAPACKpotrs_ zpotrs_
 #  define BLASgemv_    zgemv_
@@ -202,6 +184,9 @@
 #  define LAPACKsygvx_ zhegvx_
 #  define LAPACKpttrs_ zpttrs_ 
 /* LAPACKstebz_ does not exist for complex. */
+#  define LAPACKhseqr_ zhseqr_
+#  define LAPACKgges_  zgges_
+#  define LAPACKtrsen_ ztrsen_
 # endif
 #endif
 
