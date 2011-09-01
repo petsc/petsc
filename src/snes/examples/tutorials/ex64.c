@@ -421,16 +421,17 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
     ierr = VecSetValuesLocal(user->eta,2,idx,vals_eta,INSERT_VALUES);CHKERRQ(ierr);
     ierr = VecSetValuesLocal(user->work2,2,idx,vals_DDcv,INSERT_VALUES);CHKERRQ(ierr);
     
+    
+    ierr = DMDARestoreElements(user->da2,&nele,&nen,&ele);CHKERRQ(ierr);
+    ierr = VecRestoreArrayRead(coords,&_coords);CHKERRQ(ierr);
+  } 
+
     ierr = VecAssemblyBegin(user->cv);CHKERRQ(ierr);
     ierr = VecAssemblyEnd(user->cv);CHKERRQ(ierr);
     ierr = VecAssemblyBegin(user->eta);CHKERRQ(ierr);
     ierr = VecAssemblyEnd(user->eta);CHKERRQ(ierr);
     ierr = VecAssemblyBegin(user->work2);CHKERRQ(ierr);
     ierr = VecAssemblyEnd(user->work2);CHKERRQ(ierr);
-    
-    ierr = DMDARestoreElements(user->da2,&nele,&nen,&ele);CHKERRQ(ierr);
-    ierr = VecRestoreArrayRead(coords,&_coords);CHKERRQ(ierr);
-  } 
 
   ierr = DPsi(user);CHKERRQ(ierr);
   ierr = VecCopy(user->DPsiv,user->wv);CHKERRQ(ierr);
