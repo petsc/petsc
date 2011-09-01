@@ -391,7 +391,7 @@ EXTERN_C_BEGIN
 /*
    Private routine to delete internal tag/name counter storage when a communicator is freed.
 
-   This is called by MPI, not by users.
+   This is called by MPI, not by users. This is called by MPI_Comm_free() when the communicator that has this  data as an attribute is freed.
 
    Note: this is declared extern "C" because it is passed to MPI_Keyval_create()
 
@@ -411,10 +411,10 @@ EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "Petsc_DelComm"
 /*
-  This does not actually free anything, it simply marks when a reference count to an internal MPI_Comm reaches zero and the
-  the external MPI_Comm drops its reference to the internal MPI_Comm
+  This does not actually free anything, it simply marks when a reference count to an internal or external MPI_Comm reaches zero and the
+  the external MPI_Comm drops its reference to the internal or external MPI_Comm
 
-  This is called by MPI, not by users.
+  This is called by MPI, not by users. This is called when MPI_Comm_free() is called on the communicator.
 
   Note: this is declared extern "C" because it is passed to MPI_Keyval_create()
 
@@ -424,7 +424,7 @@ PetscMPIInt  MPIAPI Petsc_DelComm(MPI_Comm comm,PetscMPIInt keyval,void *attr_va
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscInfo1(0,"Deleting PETSc communicator imbedded in a user MPI_Comm %ld\n",(long)comm);if (ierr) PetscFunctionReturn((PetscMPIInt)ierr);
+  ierr = PetscInfo1(0,"Removing reference to PETSc communicator imbedded in a user MPI_Comm or user MPI_Comm external to a PETSc comm %ld\n",(long)comm);if (ierr) PetscFunctionReturn((PetscMPIInt)ierr);
   /* actually don't delete anything because we cannot increase the reference count of the communicator anyways */
   PetscFunctionReturn(MPI_SUCCESS);
 }

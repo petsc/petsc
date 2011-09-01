@@ -240,12 +240,16 @@ PetscErrorCode  PetscCommDestroy(MPI_Comm *comm)
     if (flg) {
       /*  Use PetscMemcpy() because casting from pointer to integer of different size is not allowed with some compilers  */
       ierr = PetscMemcpy(&ocomm,&ptr,sizeof(MPI_Comm));CHKERRQ(ierr);
-      ierr = MPI_Attr_delete(ocomm,Petsc_InnerComm_keyval);CHKERRQ(ierr);
+      ierr  = MPI_Attr_get(ocomm,Petsc_InnerComm_keyval,&ptr,&flg);CHKERRQ(ierr);
+      if (flg) {
+        ierr = MPI_Attr_delete(ocomm,Petsc_InnerComm_keyval);CHKERRQ(ierr);
+      } else SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Outter MPI_Comm %ld does not have expected reference to inner comm %d, problem with corrupted memory",(long int)ocomm,(long int)icomm);
     }
 
     ierr = PetscInfo1(0,"Deleting PETSc MPI_Comm %ld\n",(long)icomm);CHKERRQ(ierr);
     ierr = MPI_Comm_free(&icomm);CHKERRQ(ierr);
   }
+  *comm = 0;
   PetscFunctionReturn(0);
 }
 
