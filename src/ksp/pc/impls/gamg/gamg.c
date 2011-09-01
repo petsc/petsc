@@ -181,27 +181,29 @@ PetscErrorCode partitionLevel( Mat a_Amat_fine,
     /* Repartition Cmat_{k} and move colums of P^{k}_{k-1} and coordinates accordingly */
     MatPartitioning  mpart;
     Mat              adj;
-    const PetscInt *idx, data_sz=a_ndata_rows*a_ndata_cols;
+    const PetscInt *idx,data_sz=a_ndata_rows*a_ndata_cols;
     const PetscInt  stride0=ncrs0*a_ndata_rows,*is_idx;
-    PetscInt         is_sz,*isnewproc_idx,ii,jj,kk,strideNew,tidx[ncrs0*data_sz];;
+    PetscInt         is_sz,*isnewproc_idx,ii,jj,kk,strideNew,*tidx;
     /* create sub communicator  */
     MPI_Comm         cm,new_comm;
     IS               isnewproc;
     MPI_Group        wg, g2;
-    PetscMPIInt      ranks[npe],counts[npe];
+    PetscMPIInt     *ranks,*counts;
     IS               isscat;
     PetscScalar    *array;
     Vec             src_crd, dest_crd;
     PetscReal      *data = *a_coarse_data;
     VecScatter      vecscat;
-    PetscInt        
 
     /* get number of PEs to make active, reduce */
     ierr = MatGetSize( Cmat, &neq, &NN );CHKERRQ(ierr);
     new_npe = neq/MIN_EQ_PROC; /* hardwire min. number of eq/proc */
     if( new_npe == 0 || neq < TOP_GRID_LIM ) new_npe = 1; 
     else if (new_npe >= *a_nactive_proc ) new_npe = *a_nactive_proc; /* no change, rare */
-
+    
+    ierr = PetscMalloc( npe*sizeof(PetscMPIInt), &ranks ); CHKERRQ(ierr); 
+    ierr = PetscMalloc( npe*sizeof(PetscMPIInt), &counts ); CHKERRQ(ierr); 
+    
     ierr = MPI_Allgather( &ncrs0, 1, MPI_INT, counts, 1, MPI_INT, wcomm ); CHKERRQ(ierr); 
     assert(counts[mype]==ncrs0);
     /* count real active pes */
@@ -326,6 +328,7 @@ PetscErrorCode partitionLevel( Mat a_Amat_fine,
       There are 'a_ndata_rows*a_ndata_cols' data items per node, (one can think of the vectors of having 
       a block size of ...).  Note, ISs are expanded into equation space by 'a_cbs'.
     */
+    ierr = PetscMalloc( (ncrs0*data_sz)*sizeof(PetscInt), &tidx ); CHKERRQ(ierr); 
     ierr = ISGetIndices( isnum, &idx ); CHKERRQ(ierr);
     for(ii=0,jj=0; ii<ncrs0 ; ii++) {
       PetscInt id = idx[ii*a_cbs]/a_cbs; /* get node back */
@@ -334,6 +337,7 @@ PetscErrorCode partitionLevel( Mat a_Amat_fine,
     ierr = ISRestoreIndices( isnum, &idx ); CHKERRQ(ierr);
     ierr = ISCreateGeneral( wcomm, data_sz*ncrs0, tidx, PETSC_COPY_VALUES, &isscat );
     CHKERRQ(ierr);
+    ierr = PetscFree( tidx );  CHKERRQ(ierr);
     /*
       Create a vector to contain the original vertex information for each element
     */
@@ -404,7 +408,10 @@ PetscErrorCode partitionLevel( Mat a_Amat_fine,
     }
     ierr = MatDestroy( a_P_inout ); CHKERRQ(ierr);
     *a_P_inout = Pnew; /* output */
+
     ierr = ISDestroy( &new_indices ); CHKERRQ(ierr);
+    ierr = PetscFree( counts );  CHKERRQ(ierr);
+    ierr = PetscFree( ranks );  CHKERRQ(ierr);
   }
   
   PetscFunctionReturn(0);
