@@ -182,8 +182,10 @@ static PetscErrorCode FormJacobianLocal_UK(User user,DMDALocalInfo *info,DMDALoc
   if (!Buk) PetscFunctionReturn(0); /* Not assembling this block */
   for (i=info->xs; i<info->xs+info->xm; i++) {
     if (i == 0 || i == info->mx-1) continue;
-    PetscInt row = i-info->gxs,cols[] = {i-1-infok->gxs,i-infok->gxs};
-    PetscScalar vals[] = {(u[i]-u[i-1])/hx,(u[i]-u[i+1])/hx};
+    PetscInt row = i-info->gxs,cols[2];
+    PetscScalar vals[2];
+    row[0] = i-1-infok->gxs;  vals[0] = (u[i]-u[i-1])/hx;
+    row[1] = i-infok->gxs;    vals[1] = (u[i]-u[i+1])/hx;
     ierr = MatSetValuesLocal(Buk,1,&row,2,cols,vals,INSERT_VALUES);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -200,7 +202,8 @@ static PetscErrorCode FormJacobianLocal_KU(User user,DMDALocalInfo *info,DMDALoc
   PetscFunctionBegin;
   if (!Bku) PetscFunctionReturn(0); /* Not assembling this block */
   for (i=infok->xs; i<infok->xs+infok->xm; i++) {
-    PetscInt row = i-infok->gxs,cols[] = {i-info->gxs,i+1-info->gxs};
+    PetscInt row = i-infok->gxs,cols[2];
+    PetscScalar vals[2];
     const PetscScalar
       ubar     = 0.5*(u[i]+u[i+1]),
       ubar_L   = 0.5,
@@ -215,9 +218,9 @@ static PetscErrorCode FormJacobianLocal_KU(User user,DMDALocalInfo *info,DMDALoc
       w_gradu  = -g_gradu/PetscSqr(g),
       iw       = 1./w,
       iw_ubar  = -w_ubar * PetscSqr(iw),
-      iw_gradu = -w_gradu * PetscSqr(iw),
-      vals[]   = {-hx*(iw_ubar*ubar_L + iw_gradu*gradu_L),
-                  -hx*(iw_ubar*ubar_R + iw_gradu*gradu_R)};
+      iw_gradu = -w_gradu * PetscSqr(iw);
+    cols[0] = i-info->gxs;         vals[0] = -hx*(iw_ubar*ubar_L + iw_gradu*gradu_L);
+    cols[1] = i+1-info->gxs;       vals[1] = -hx*(iw_ubar*ubar_R + iw_gradu*gradu_R);
     ierr = MatSetValuesLocal(Bku,1,&row,2,cols,vals,INSERT_VALUES);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

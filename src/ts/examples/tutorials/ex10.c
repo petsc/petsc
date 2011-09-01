@@ -839,11 +839,11 @@ static PetscErrorCode RDTestDifferentiation(RD rd)
   {
     RDNode dEm,fdEm;
     PetscScalar T0 = 1000.,T1 = T0*(1.+epsilon),Em0,Em1;
-    n = (RDNode){1.,T0};
+    n.E = 1.;            n.T = T0;
     rd->MaterialEnergy(rd,&n,&Em0,&dEm);
-    n = (RDNode){1.+epsilon,T0};
+    n.E = 1.+epsilon;    n.T = T0;
     rd->MaterialEnergy(rd,&n,&Em1,0); fdEm.E = (Em1-Em0)/epsilon;
-    n = (RDNode){1.,T1};
+    n.E = 1.;            n.T = T1;
     rd->MaterialEnergy(rd,&n,&Em1,0); fdEm.T = (Em1-Em0)/(T0*epsilon);
     ierr = PetscPrintf(comm,"dEm {%G,%G}, fdEm {%G,%G}, diff {%G,%G}\n",PetscRealPart(dEm.E),PetscRealPart(dEm.T),
                        PetscRealPart(fdEm.E),PetscRealPart(fdEm.T),PetscRealPart(dEm.E-fdEm.E),PetscRealPart(dEm.T-fdEm.T));CHKERRQ(ierr);
@@ -851,15 +851,15 @@ static PetscErrorCode RDTestDifferentiation(RD rd)
   {
     PetscScalar D0,D;
     RDNode dD,dxD,fdD,fdxD;
-    n = (RDNode){1.,1.}; nx = (RDNode){1.,1.};
+    n.E = 1.;          n.T = 1.;           nx.E = 1.;          n.T = 1.;
     RDDiffusionCoefficient(rd,rd->bclimit,&n,&nx,&D0,&dD,&dxD);
-    n = (RDNode){1.+epsilon,1.};
+    n.E = 1.+epsilon;  n.T = 1.;           nx.E = 1.;          n.T = 1.;
     RDDiffusionCoefficient(rd,rd->bclimit,&n,&nx,&D,0,0); fdD.E = (D-D0)/epsilon;
-    n = (RDNode){1.,1.+epsilon};
+    n.E = 1;           n.T = 1.+epsilon;   nx.E = 1.;          n.T = 1.;
     RDDiffusionCoefficient(rd,rd->bclimit,&n,&nx,&D,0,0); fdD.T = (D-D0)/epsilon;
-    n = (RDNode){1.,1.}; nx = (RDNode){1.+epsilon,1.};
+    n.E = 1;           n.T = 1.;           nx.E = 1.+epsilon;  n.T = 1.;
     RDDiffusionCoefficient(rd,rd->bclimit,&n,&nx,&D,0,0); fdxD.E = (D-D0)/epsilon;
-    nx = (RDNode){1.,1.+epsilon};
+    n.E = 1;           n.T = 1.;           nx.E = 1.;          n.T = 1.+epsilon;
     RDDiffusionCoefficient(rd,rd->bclimit,&n,&nx,&D,0,0); fdxD.T = (D-D0)/epsilon;
     ierr = PetscPrintf(comm,"dD {%G,%G}, fdD {%G,%G}, diff {%G,%G}\n",PetscRealPart(dD.E),PetscRealPart(dD.T),
                        PetscRealPart(fdD.E),PetscRealPart(fdD.T),PetscRealPart(dD.E-fdD.E),PetscRealPart(dD.T-fdD.T));CHKERRQ(ierr);
@@ -884,11 +884,11 @@ static PetscErrorCode RDTestDifferentiation(RD rd)
   {
     PetscScalar rad0,rad;
     RDNode drad,fdrad;
-    n = (RDNode){1.,1.};
+    n.E = 1.;         n.T = 1.;
     rad0 = RDRadiation(rd,&n,&drad);
-    n = (RDNode){1.+epsilon,1.};
+    n.E = 1.+epsilon; n.T = 1.;
     rad = RDRadiation(rd,&n,0); fdrad.E = (rad-rad0)/epsilon;
-    n = (RDNode){1.,1.+epsilon};
+    n.E = 1.;         n.T = 1.+epsilon;
     rad = RDRadiation(rd,&n,0); fdrad.T = (rad-rad0)/epsilon;
     ierr = PetscPrintf(((PetscObject)rd->da)->comm,"drad {%G,%G}, fdrad {%G,%G}, diff {%G,%G}\n",PetscRealPart(drad.E),PetscRealPart(drad.T),
                        PetscRealPart(fdrad.E),PetscRealPart(fdrad.T),PetscRealPart(drad.E-drad.E),PetscRealPart(drad.T-fdrad.T));CHKERRQ(ierr);
