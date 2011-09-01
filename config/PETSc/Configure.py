@@ -685,7 +685,7 @@ class Configure(config.base.Configure):
       self.addDefine('HAVE_LARGE_INTEGER_U',1)
 
     # Windows requires a Binary file creation flag when creating/opening binary files.  Is a better test in order?
-    if self.checkCompile('#include <Windows.h>\n', 'int flags = O_BINARY;'):
+    if self.checkCompile('#include <Windows.h>\n#include <fcntl.h>\n', 'int flags = O_BINARY;'):
       self.addDefine('HAVE_O_BINARY',1)
 
     if self.compilers.CC.find('win32fe') >= 0:
