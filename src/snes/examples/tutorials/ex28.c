@@ -177,15 +177,16 @@ static PetscErrorCode FormJacobianLocal_UK(User user,DMDALocalInfo *info,DMDALoc
   PetscReal hx = 1./info->mx;
   PetscErrorCode ierr;
   PetscInt       i;
+  PetscInt row,cols[2];
+  PetscScalar vals[2];
 
   PetscFunctionBegin;
   if (!Buk) PetscFunctionReturn(0); /* Not assembling this block */
   for (i=info->xs; i<info->xs+info->xm; i++) {
     if (i == 0 || i == info->mx-1) continue;
-    PetscInt row = i-info->gxs,cols[2];
-    PetscScalar vals[2];
-    row[0] = i-1-infok->gxs;  vals[0] = (u[i]-u[i-1])/hx;
-    row[1] = i-infok->gxs;    vals[1] = (u[i]-u[i+1])/hx;
+    row = i-info->gxs;
+    cols[0] = i-1-infok->gxs;  vals[0] = (u[i]-u[i-1])/hx;
+    cols[1] = i-infok->gxs;    vals[1] = (u[i]-u[i+1])/hx;
     ierr = MatSetValuesLocal(Buk,1,&row,2,cols,vals,INSERT_VALUES);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
