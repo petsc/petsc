@@ -117,9 +117,13 @@ PetscErrorCode smoothAggs( const Mat a_Gmat_2, /* base (squared) graph */
   /* get submatrices */
   ierr = PetscTypeCompare( (PetscObject)a_Gmat_2, MATMPIAIJ, &isMPI ); CHKERRQ(ierr);
   if (isMPI) {
-    PetscInt gids[nloc], gid;
-    PetscScalar real_gids[nloc];
-    Vec            tempVec;
+    PetscInt    *gids, gid;
+    PetscScalar *real_gids;
+    Vec          tempVec;
+
+    ierr = PetscMalloc( nloc*sizeof(PetscInt), &gids ); CHKERRQ(ierr);
+    ierr = PetscMalloc( nloc*sizeof(PetscScalar), &real_gids ); CHKERRQ(ierr);
+
     for(lid=0,gid=my0;lid<nloc;lid++,gid++){
       gids[lid] = gid;
       real_gids[lid] = (PetscScalar)gid;
@@ -142,7 +146,10 @@ PetscErrorCode smoothAggs( const Mat a_Gmat_2, /* base (squared) graph */
     ierr = VecScatterBegin(mpimat_1->Mvctx,tempVec, mpimat_1->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr =   VecScatterEnd(mpimat_1->Mvctx,tempVec, mpimat_1->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecGetArray( mpimat_1->lvec, &cpcol_1_state ); CHKERRQ(ierr);
-    ierr = VecDestroy( &tempVec ); CHKERRQ(ierr);
+    ierr = VecDestroy( &tempVec ); CHKERRQ(ierr); 
+
+    ierr = PetscFree( gids );  CHKERRQ(ierr);
+    ierr = PetscFree( real_gids );  CHKERRQ(ierr);
   } else {
     matA_2 = (Mat_SeqAIJ*)a_Gmat_2->data;
     matA_1 = (Mat_SeqAIJ*)a_Gmat_1->data;
@@ -150,10 +157,14 @@ PetscErrorCode smoothAggs( const Mat a_Gmat_2, /* base (squared) graph */
   }
   assert( matA_1 && !matA_1->compressedrow.use );
   assert( matB_1==0 || matB_1->compressedrow.use );
-  
+
   {
-    PetscInt lid_cprowID_1[nloc];
-    PetscInt lid_selectedid[nloc];
+    PetscInt *lid_cprowID_1;
+    PetscInt *lid_selectedid;
+
+    ierr = PetscMalloc( nloc*sizeof(PetscInt), &lid_cprowID_1 ); CHKERRQ(ierr);
+    ierr = PetscMalloc( nloc*sizeof(PetscInt), &lid_selectedid ); CHKERRQ(ierr);
+
     /*reverse map to selelected node */
     for(lid=0;lid<nloc;lid++) lid_cprowID_1[lid] = lid_selectedid[lid] = -1;
     for(lid=0;lid<nloc;lid++){
@@ -162,9 +173,10 @@ PetscErrorCode smoothAggs( const Mat a_Gmat_2, /* base (squared) graph */
         PetscInt flid = lid;
         do{
           lid_selectedid[flid] = lid;
-        } while( (flid=a_id_llist[flid]) != -1 );          
+        } while( (flid=a_id_llist[flid]) != -1 );
       }
     }
+
     /* set index into cmpressed row 'lid_cprowID' */
     if( matB_1 ) {
       ii = matB_1->compressedrow.i;
@@ -238,6 +250,9 @@ PetscErrorCode smoothAggs( const Mat a_Gmat_2, /* base (squared) graph */
         }
       }
     }
+    
+    ierr = PetscFree( lid_cprowID_1 );  CHKERRQ(ierr);
+    ierr = PetscFree( lid_selectedid );  CHKERRQ(ierr);
   }
   
   if(isMPI) {
@@ -329,10 +344,17 @@ PetscErrorCode maxIndSetAgg( const IS a_perm,
   else num_fine_ghosts = 0;
 
   {  /* need an inverse map - locals */
-    PetscInt lid_cprowID[nloc], lid_gid[nloc];
-    PetscScalar deleted_parent_gid[nloc]; /* only used for strict aggs */
-    PetscInt id_llist[nloc+num_fine_ghosts]; /* linked list with locality info - output */
-    PetscScalar lid_state[nloc];
+    PetscInt *lid_cprowID, *lid_gid;
+    PetscScalar *deleted_parent_gid; /* only used for strict aggs */
+    PetscInt *id_llist; /* linked list with locality info - output */
+    PetscScalar *lid_state;
+
+    ierr = PetscMalloc( nloc*sizeof(PetscInt), &lid_cprowID ); CHKERRQ(ierr);
+    ierr = PetscMalloc( nloc*sizeof(PetscInt), &lid_gid ); CHKERRQ(ierr);
+    ierr = PetscMalloc( nloc*sizeof(PetscScalar), &deleted_parent_gid ); CHKERRQ(ierr);
+    ierr = PetscMalloc( (nloc+num_fine_ghosts)*sizeof(PetscInt), &id_llist ); CHKERRQ(ierr);
+    ierr = PetscMalloc( nloc*sizeof(PetscScalar), &lid_state ); CHKERRQ(ierr);
+
     for(kk=0;kk<nloc;kk++) {
       id_llist[kk] = -1; /* terminates linked lists */
       lid_cprowID[kk] = -1;
@@ -558,6 +580,12 @@ if(mype==target||target==-1)PetscPrintf(PETSC_COMM_SELF,"\t\t\t[%d]%s post proce
     if( mpimat ) {
       ierr = VecRestoreArray( ghostState, &cpcol_state ); CHKERRQ(ierr);
     }
+
+    ierr = PetscFree( lid_cprowID );  CHKERRQ(ierr);
+    ierr = PetscFree( lid_gid );  CHKERRQ(ierr);
+    ierr = PetscFree( deleted_parent_gid );  CHKERRQ(ierr);
+    ierr = PetscFree( id_llist );  CHKERRQ(ierr);
+    ierr = PetscFree( lid_state );  CHKERRQ(ierr);
   } /* scoping */
 
   if(mpimat){
@@ -1089,7 +1117,8 @@ PetscErrorCode getGIDsOnSquareGraph( const IS a_selected_1,
     }
     ierr = PetscMalloc( (nLocalSelected+num_crs_ghost)*sizeof(PetscInt), &crsGID ); CHKERRQ(ierr); /* output */
     {
-      PetscInt selected_set[nLocalSelected+num_crs_ghost];
+      PetscInt *selected_set;
+      ierr = PetscMalloc( (nLocalSelected+num_crs_ghost)*sizeof(PetscInt), &selected_set ); CHKERRQ(ierr);
       /* do ghost of 'crsGID' */
       for(kk=0,idx=nLocalSelected;kk<num_fine_ghosts;kk++){
         if( (NState)cpcol_state[kk] != NOT_DONE ){
@@ -1116,6 +1145,7 @@ PetscErrorCode getGIDsOnSquareGraph( const IS a_selected_1,
         ierr = ISCreateGeneral(PETSC_COMM_SELF,(nLocalSelected+num_crs_ghost),selected_set,PETSC_COPY_VALUES,a_selected_2);
         CHKERRQ(ierr);
       }
+      ierr = PetscFree( selected_set );  CHKERRQ(ierr);
     }
     ierr = VecDestroy( &locState );                    CHKERRQ(ierr);
   }
@@ -1299,8 +1329,12 @@ PetscErrorCode createProlongation( const Mat a_Amat,
   
   /* Mat subMat = Gmat -- get degree of vertices */
   {
-    GNode gnodes[nloc];
-    PetscInt permute[nloc],ranks[nloc];
+    GNode *gnodes;
+    PetscInt *permute,*ranks;
+    
+    ierr = PetscMalloc( nloc*sizeof(GNode), &gnodes ); CHKERRQ(ierr);
+    ierr = PetscMalloc( nloc*sizeof(PetscInt), &permute ); CHKERRQ(ierr);
+    ierr = PetscMalloc( nloc*sizeof(PetscInt), &ranks ); CHKERRQ(ierr);
 
     for (Ii=Istart; Ii<Iend; Ii++) { /* locals only? */
       ierr = MatGetRow(Gmat,Ii,&ncols,0,0); CHKERRQ(ierr);
@@ -1317,7 +1351,8 @@ PetscErrorCode createProlongation( const Mat a_Amat,
     }
     /* randomize */
     if( PETSC_TRUE ) {
-      PetscBool bIndexSet[nloc];
+      PetscBool *bIndexSet;
+      ierr = PetscMalloc( nloc*sizeof(PetscBool), &bIndexSet ); CHKERRQ(ierr);
       for ( Ii = 0; Ii < nloc ; Ii++) bIndexSet[Ii] = PETSC_FALSE;
       for ( Ii = 0; Ii < nloc ; Ii++)
       {
@@ -1331,6 +1366,7 @@ PetscErrorCode createProlongation( const Mat a_Amat,
           bIndexSet[iSwapIndex] = PETSC_TRUE;
         }
       }
+      ierr = PetscFree( bIndexSet );  CHKERRQ(ierr);
     }
     /* only sort locals */
     qsort( gnodes, nloc, sizeof(GNode), compare );
@@ -1343,6 +1379,10 @@ PetscErrorCode createProlongation( const Mat a_Amat,
     CHKERRQ(ierr);
     ierr = ISCreateGeneral( PETSC_COMM_SELF, (Iend-Istart), ranks, PETSC_COPY_VALUES, &rankIS );
     CHKERRQ(ierr);
+
+    ierr = PetscFree( gnodes );  CHKERRQ(ierr);
+    ierr = PetscFree( permute );  CHKERRQ(ierr);
+    ierr = PetscFree( ranks );  CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(gamg_setup_stages[SET3],0,0,0,0);   CHKERRQ(ierr);
 
@@ -1497,7 +1537,10 @@ PetscErrorCode createProlongation( const Mat a_Amat,
 
     /* get P0 */
     if( npe > 1 ){
-      PetscReal fid_glid_loc[nloc],*fiddata; PetscInt nnodes;
+      PetscReal *fid_glid_loc,*fiddata; 
+      PetscInt nnodes;
+
+      ierr = PetscMalloc( nloc*sizeof(PetscReal), &fid_glid_loc ); CHKERRQ(ierr);
       for(kk=0;kk<nloc;kk++) fid_glid_loc[kk] = (PetscReal)(my0+kk);
       ierr = getDataWithGhosts(Gmat, 1, fid_glid_loc, &nnodes, &fiddata);
       CHKERRQ(ierr);
@@ -1505,6 +1548,7 @@ PetscErrorCode createProlongation( const Mat a_Amat,
       for(kk=0;kk<nnodes;kk++) flid_fgid[kk] = (PetscInt)fiddata[kk];
       ierr = PetscFree( fiddata ); CHKERRQ(ierr);
       assert(nnodes==nbnodes/bs_in);
+      ierr = PetscFree( fid_glid_loc ); CHKERRQ(ierr);
     }
     else {
       ierr = PetscMalloc( nloc*sizeof(PetscInt), &flid_fgid ); CHKERRQ(ierr);
