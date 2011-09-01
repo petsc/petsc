@@ -262,7 +262,7 @@ PetscErrorCode MatSetValuesBatch_MPIAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, Pet
   // Find number of nonlocal rows, convert nonlocal rows to procs, and send sizes of off-proc entries (could send diag and offdiag sizes)
   // TODO: Ask Nathan how to do this on GPU
   ierr = PetscLogEventBegin(MAT_SetValuesBatchI,0,0,0,0);CHKERRQ(ierr);
-  PetscInt *procSendSizes, *procRecvSizes;
+  PetscMPIInt *procSendSizes, *procRecvSizes;
   ierr = PetscMalloc2(numProcs, PetscInt, &procSendSizes, numProcs, PetscInt, &procRecvSizes);CHKERRQ(ierr);
   ierr = PetscMemzero(procSendSizes, numProcs * sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscMemzero(procRecvSizes, numProcs * sizeof(PetscInt));CHKERRQ(ierr);
@@ -326,7 +326,7 @@ PetscErrorCode MatSetValuesBatch_MPIAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, Pet
   ///cusp::print(nondiagonalRows);
   // send off-proc entries (pack this up later)
   ierr = PetscLogEventBegin(MAT_SetValuesBatchIII,0,0,0,0);CHKERRQ(ierr);
-  PetscInt    *procSendDispls, *procRecvDispls;
+  PetscMPIInt *procSendDispls, *procRecvDispls;
   PetscInt    *sendRows, *recvRows;
   PetscInt    *sendCols, *recvCols;
   PetscScalar *sendVals, *recvVals;
