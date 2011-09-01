@@ -116,6 +116,8 @@ PetscErrorCode  PetscSubcommSetTypeGeneral(PetscSubcomm psubcomm,PetscMPIInt col
   } 
   ierr = PetscCommDuplicate(dupcomm,&psubcomm->dupparent,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscCommDuplicate(subcomm,&psubcomm->comm,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MPI_Comm_free(&dupcomm);CHKERRQ(ierr);
+  ierr = MPI_Comm_free(&subcomm);CHKERRQ(ierr);
   psubcomm->color     = color;
   PetscFunctionReturn(0);
 }
@@ -209,6 +211,8 @@ PetscErrorCode PetscSubcommCreate_contiguous(PetscSubcomm psubcomm)
  
   ierr = PetscCommDuplicate(dupcomm,&psubcomm->dupparent,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscCommDuplicate(subcomm,&psubcomm->comm,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MPI_Comm_free(&dupcomm);CHKERRQ(ierr);
+  ierr = MPI_Comm_free(&subcomm);CHKERRQ(ierr);
   psubcomm->color     = color;
   PetscFunctionReturn(0);
 }
@@ -281,6 +285,8 @@ PetscErrorCode PetscSubcommCreate_interlaced(PetscSubcomm psubcomm)
  
   ierr = PetscCommDuplicate(dupcomm,&psubcomm->dupparent,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscCommDuplicate(subcomm,&psubcomm->comm,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MPI_Comm_free(&dupcomm);CHKERRQ(ierr);
+  ierr = MPI_Comm_free(&subcomm);CHKERRQ(ierr);
   psubcomm->color     = color;
   PetscFunctionReturn(0);
 }
