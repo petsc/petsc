@@ -22,8 +22,6 @@
 #  define LAPACKgesv_  sgesv_
 #  define LAPACKgelss_ sgelss_
 /* Real with character string arguments. */
-#  define LAPACKormqr_ sormqr_
-#  define LAPACKtrtrs_ strtrs_
 #  define LAPACKpotrf_ spotrf_
 #  define LAPACKpotrs_ spotrs_
 #  define BLASgemv_    sgemv_
@@ -52,8 +50,6 @@
 #  define LAPACKpttrf_ cpttrf_
 #  define LAPACKstein_ cstein_
 /* Complex with character string arguments */
-/* LAPACKormqr_ does not exist for complex. */
-#  define LAPACKtrtrs_ ctrtrs_
 #  define LAPACKpotrf_ cpotrf_
 #  define LAPACKpotrs_ cpotrs_
 #  define BLASgemv_    cgemv_
