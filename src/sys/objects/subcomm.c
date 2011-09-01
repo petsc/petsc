@@ -114,9 +114,8 @@ PetscErrorCode  PetscSubcommSetTypeGeneral(PetscSubcomm psubcomm,PetscMPIInt col
   } else if (duprank >= 0 && duprank < size){
     ierr = MPI_Comm_split(comm,0,duprank,&dupcomm);CHKERRQ(ierr);
   } 
-
-  psubcomm->dupparent = dupcomm;
-  psubcomm->comm      = subcomm;
+  ierr = PetscCommDuplicate(dupcomm,&psubcomm->dupparent,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscCommDuplicate(subcomm,&psubcomm->comm,PETSC_NULL);CHKERRQ(ierr);
   psubcomm->color     = color;
   PetscFunctionReturn(0);
 }
@@ -129,8 +128,8 @@ PetscErrorCode  PetscSubcommDestroy(PetscSubcomm *psubcomm)
 
   PetscFunctionBegin;
   if (!*psubcomm) PetscFunctionReturn(0);
-  ierr = MPI_Comm_free(&(*psubcomm)->dupparent);CHKERRQ(ierr);
-  ierr = MPI_Comm_free(&(*psubcomm)->comm);CHKERRQ(ierr);
+  ierr = PetscCommDestroy(&(*psubcomm)->dupparent);CHKERRQ(ierr);
+  ierr = PetscCommDestroy(&(*psubcomm)->comm);CHKERRQ(ierr);
   ierr = PetscFree((*psubcomm));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -208,8 +207,8 @@ PetscErrorCode PetscSubcommCreate_contiguous(PetscSubcomm psubcomm)
   /* create dupcomm with same size as comm, but its rank, duprank, maps subcomm's contiguously into dupcomm */   
   ierr = MPI_Comm_split(comm,0,duprank,&dupcomm);CHKERRQ(ierr);
  
-  psubcomm->dupparent = dupcomm;
-  psubcomm->comm      = subcomm;
+  ierr = PetscCommDuplicate(dupcomm,&psubcomm->dupparent,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscCommDuplicate(subcomm,&psubcomm->comm,PETSC_NULL);CHKERRQ(ierr);
   psubcomm->color     = color;
   PetscFunctionReturn(0);
 }
@@ -280,8 +279,8 @@ PetscErrorCode PetscSubcommCreate_interlaced(PetscSubcomm psubcomm)
   /* create dupcomm with same size as comm, but its rank, duprank, maps subcomm's contiguously into dupcomm */   
   ierr = MPI_Comm_split(comm,0,duprank,&dupcomm);CHKERRQ(ierr);
  
-  psubcomm->dupparent = dupcomm;
-  psubcomm->comm      = subcomm;
+  ierr = PetscCommDuplicate(dupcomm,&psubcomm->dupparent,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscCommDuplicate(subcomm,&psubcomm->comm,PETSC_NULL);CHKERRQ(ierr);
   psubcomm->color     = color;
   PetscFunctionReturn(0);
 }
