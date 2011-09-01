@@ -561,7 +561,8 @@ if(mype==target||target==-1)PetscPrintf(PETSC_COMM_SELF,"\t\t\t[%d]%s post proce
       if( IS_SELECTED((NState)cpcol_state[j]) ) nselected++;
     }
     {
-      PetscInt selected_set[nselected];
+      PetscInt *selected_set;
+      ierr = PetscMalloc( nselected*sizeof(PetscInt), &selected_set ); CHKERRQ(ierr); 
       for(kk=0,j=0;kk<nloc;kk++){
         NState state = (NState)lid_state[kk];
         if( IS_SELECTED(state) ) {
@@ -576,6 +577,7 @@ if(mype==target||target==-1)PetscPrintf(PETSC_COMM_SELF,"\t\t\t[%d]%s post proce
       assert(j==nselected);
       ierr = ISCreateGeneral(PETSC_COMM_SELF, nselected, selected_set, PETSC_COPY_VALUES, a_selected );
       CHKERRQ(ierr);
+      ierr = PetscFree( selected_set );  CHKERRQ(ierr);
     }
     if( mpimat ) {
       ierr = VecRestoreArray( ghostState, &cpcol_state ); CHKERRQ(ierr);
@@ -658,7 +660,7 @@ PetscErrorCode formProl0(IS a_selected, /* list of selected local ID, includes s
   ndone = 0;
   ierr = ISGetIndices( a_locals_llist, &llist_idx );      CHKERRQ(ierr);
   for( clid = 0 ; clid < nLocalSelected ; clid++ ){
-    PetscInt cgid = a_my0crs + clid, cids[a_nSAvec];
+    PetscInt cgid = a_my0crs + clid, cids[100];
 
     /* count agg */
     aggID = 0;
@@ -671,8 +673,14 @@ PetscErrorCode formProl0(IS a_selected, /* list of selected local ID, includes s
     {
       PetscInt       asz=aggID,M=asz*a_bs,N=a_nSAvec;
       PetscInt       Mdata=M+((N-M>0)?N-M:0),LDA=Mdata,LWORK=N*a_bs;
-      PetscScalar    qqc[Mdata*N],qqr[M*N],TAU[N],WORK[LWORK];
-      PetscInt       fids[M],INFO;
+      PetscScalar    *qqc,*qqr,*TAU,*WORK;
+      PetscInt       *fids,INFO;
+      
+      ierr = PetscMalloc( (Mdata*N)*sizeof(PetscScalar), &qqc ); CHKERRQ(ierr); 
+      ierr = PetscMalloc( (M*N)*sizeof(PetscScalar), &qqr ); CHKERRQ(ierr); 
+      ierr = PetscMalloc( N*sizeof(PetscScalar), &TAU ); CHKERRQ(ierr); 
+      ierr = PetscMalloc( LWORK*sizeof(PetscScalar), &WORK ); CHKERRQ(ierr); 
+      ierr = PetscMalloc( M*sizeof(PetscInt), &fids ); CHKERRQ(ierr); 
 
       flid = selected_idx[clid];
       aggID = 0;
@@ -727,6 +735,12 @@ PetscErrorCode formProl0(IS a_selected, /* list of selected local ID, includes s
       /* add diagonal block of P0 */
       for(kk=0;kk<N;kk++) cids[kk] = N*cgid + kk; /* global col IDs in P0 */
       ierr = MatSetValues(a_Prol,M,fids,N,cids,qqr,INSERT_VALUES); CHKERRQ(ierr);
+
+      ierr = PetscFree( qqc );  CHKERRQ(ierr);
+      ierr = PetscFree( qqr );  CHKERRQ(ierr);
+      ierr = PetscFree( TAU );  CHKERRQ(ierr);
+      ierr = PetscFree( WORK );  CHKERRQ(ierr);
+      ierr = PetscFree( fids );  CHKERRQ(ierr);
     } /* scoping */
   } /* for all coarse nodes */
   assert(out_data[a_nSAvec*DATA_OUT_STRIDE]==1.e300);
@@ -911,7 +925,11 @@ PetscErrorCode triangulateAndFormProl( IS  a_selected_2, /* list of selected loc
   ierr = PetscLogEventBegin(gamg_setup_stages[FIND_V],0,0,0,0);CHKERRQ(ierr);
   { /* form P - setup some maps */
     PetscInt clid_iterator;
-    PetscInt nTri[nselected_2], node_tri[nselected_2];
+    PetscInt *nTri, *node_tri;
+    
+    ierr = PetscMalloc( nselected_2*sizeof(PetscInt), &node_tri ); CHKERRQ(ierr); 
+    ierr = PetscMalloc( nselected_2*sizeof(PetscInt), &nTri ); CHKERRQ(ierr); 
+
     /* need list of triangles on node*/
     for(kk=0;kk<nselected_2;kk++) nTri[kk] = 0;
     for(tid=0,kk=0;tid<mid.numberoftriangles;tid++){
@@ -1023,6 +1041,9 @@ PetscErrorCode triangulateAndFormProl( IS  a_selected_2, /* list of selected loc
     ierr = ISRestoreIndices( a_locals_llist, &llist_idx );     CHKERRQ(ierr);
     ierr = MatAssemblyBegin(a_Prol,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(a_Prol,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
+    ierr = PetscFree( node_tri );  CHKERRQ(ierr);
+    ierr = PetscFree( nTri );  CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(gamg_setup_stages[FIND_V],0,0,0,0);CHKERRQ(ierr);
 
