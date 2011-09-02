@@ -49,8 +49,6 @@ PetscErrorCode CreateProblem_gen_0(DM dm, const char *name)
 
 typedef enum {NEUMANN, DIRICHLET} BCType;
 
-PetscErrorCode DMDACreateOwnershipRanges(DM); /* Import an internal function */
-
 typedef struct _UserCtx *User;
 struct _UserCtx {
   PetscInt  ptype;
@@ -600,7 +598,6 @@ int main(int argc, char *argv[])
   ierr = PetscInitialize(&argc,&argv,0,help);CHKERRQ(ierr);
   /* Create meshes */
   ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,-10,1,1,PETSC_NULL,&dau);CHKERRQ(ierr);
-  ierr = DMDACreateOwnershipRanges(dau);CHKERRQ(ierr); /* Ensure that the ownership ranges agree so that we can get a compatible grid for the coefficient */
   ierr = DMDAGetOwnershipRanges(dau,&lxu,0,0);CHKERRQ(ierr);
   ierr = DMDAGetInfo(dau,0, &m,0,0, &nprocs,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
   ierr = PetscMalloc(nprocs*sizeof(*lxk),&lxk);CHKERRQ(ierr);

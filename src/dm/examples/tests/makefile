@@ -7,7 +7,7 @@ LOCDIR          = src/dm/examples/tests/
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c\
                   ex11.c ex12.c ex12.m ex13.c ex14.c ex15.c ex16.c ex17.c ex18.c ex19.c \
 	          ex21.c ex22.c ex23.c ex24.c ex25.c ex26.c ex27.c ex28.c ex30.c \
-	          ex31.c ex32.c ex36.c ex37.c
+	          ex31.c ex32.c ex34.c ex36.c ex37.c
 EXAMPLESF       = 
 MANSEC          = DM
 
@@ -144,6 +144,9 @@ ex32: ex32.o   chkopts
 ex33: ex33.o   chkopts
 	-${CLINKER} -o ex33 ex33.o  ${PETSC_DM_LIB}
 	${RM} -f ex33.o
+ex34: ex34.o   chkopts
+	-${CLINKER} -o ex34 ex34.o  ${PETSC_DM_LIB}
+	${RM} -f ex34.o
 ex35: ex35.o   chkopts
 	-${CLINKER} -o ex35 ex35.o  ${PETSC_DM_LIB}
 	${RM} -f ex35.o
@@ -284,6 +287,10 @@ runex32:
 	-@${MPIEXEC} -n 2 ./ex32 > ex32_1.tmp; \
 	  ${DIFF} output/ex32_1.out ex32_1.tmp || echo "Possible problem with ex32, diffs above"; \
 	  ${RM} -f ex32_1.tmp
+runex34:
+	-@${MPIEXEC} -n 12 ./ex34 -da_view -dim 3 -da_grid_x 11 -da_grid_y 5 -da_grid_z 7 > ex34_1.tmp; \
+	  ${DIFF} output/ex34_1.out ex34_1.tmp || echo "Possible problem with ex34, diffs above"; \
+	  ${RM} -f ex34_1.tmp
 
 runex36_1d:
 	-@${MPIEXEC} -n 1 ./ex36 -mx 10 -nl 6 -dim 1 > ex36_1d.tmp; \
@@ -323,8 +330,8 @@ runex37:
 
 TESTEXAMPLES_C		  = ex1.PETSc runex1 ex1.rm ex4.PETSc runex4 ex4.rm ex16.PETSc ex16.rm \
                             ex21.PETSc runex21 ex21.rm ex24.PETSc runex24 ex24.rm ex25.PETSc \
-                            runex25 ex25.rm ex31.PETSc runex31 ex31.rm ex32.PETSc runex32 ex32.rm ex30.PETSc runex30 runex30_2 runex30_3 ex30.rm \
-                            ex36.PETSc runex36_1d runex36_2d runex36_2dp1 runex36_2dp2 runex36_3d runex36_3dp1 ex36.rm
+                            runex25 ex25.rm ex30.PETSc runex30 runex30_2 runex30_3 ex30.rm ex31.PETSc runex31 ex31.rm ex32.PETSc runex32 ex32.rm \
+                            ex34.PETSc runex34 ex34.rm ex36.PETSc runex36_1d runex36_2d runex36_2dp1 runex36_2dp2 runex36_3d runex36_3dp1 ex36.rm
 TESTEXAMPLES_C_X11	  = ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 ex3.rm ex5.PETSc runex5 ex5.rm ex6.PETSc runex6 \
                             ex6.rm ex7.PETSc ex7.rm  ex14.PETSc runex14 ex14.rm \
                             ex13.PETSc runex13 ex13.rm ex23.PETSc runex23 ex23.rm ex37.PETSc runex37 ex37.rm

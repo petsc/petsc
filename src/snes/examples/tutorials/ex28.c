@@ -27,8 +27,6 @@ static const char help[] = "Uses analytic Jacobians to solve individual problems
 #include <petscdmda.h>
 #include <petscdmcomposite.h>
 
-PetscErrorCode DMDACreateOwnershipRanges(DM); /* Import an internal function */
-
 typedef struct _UserCtx *User;
 struct _UserCtx {
   PetscInt ptype;
@@ -349,7 +347,6 @@ int main(int argc, char *argv[])
   ierr = DMDACreate1d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,-10,1,1,PETSC_NULL,&dau);CHKERRQ(ierr);
   ierr = DMSetOptionsPrefix(dau,"u_");CHKERRQ(ierr);
   ierr = DMSetFromOptions(dau);CHKERRQ(ierr);
-  ierr = DMDACreateOwnershipRanges(dau);CHKERRQ(ierr); /* Ensure that the ownership ranges agree so that we can get a compatible grid for the coefficient */
   ierr = DMDAGetOwnershipRanges(dau,&lxu,0,0);CHKERRQ(ierr);
   ierr = DMDAGetInfo(dau,0, &m,0,0, &nprocs,0,0, 0,0,0,0,0,0);CHKERRQ(ierr);
   ierr = PetscMalloc(nprocs*sizeof(*lxk),&lxk);CHKERRQ(ierr);
