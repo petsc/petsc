@@ -172,6 +172,7 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
      xs is the first local node number, x is the number of local nodes 
   */
   if (!lx) {
+    ierr = PetscMalloc(m*sizeof(PetscInt), &dd->lx);CHKERRQ(ierr);
     ierr = PetscOptionsGetBool(PETSC_NULL,"-da_partition_blockcomm",&flg1,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsGetBool(PETSC_NULL,"-da_partition_nodes_at_end",&flg2,PETSC_NULL);CHKERRQ(ierr);
     if (flg1) {      /* Block Comm type Distribution */
@@ -187,6 +188,9 @@ PetscErrorCode  DMSetUp_DA_1D(DM da)
       if (rank >= (M % m)) {xs = (rank * (PetscInt)(M/m) + M % m);}
       else                 {xs = rank * (PetscInt)(M/m) + rank;}
     }
+    ierr = MPI_Allgather(&xs,1,MPIU_INT,dd->lx,1,MPIU_INT,comm);CHKERRQ(ierr);
+    for (i=0; i<m-1; i++) dd->lx[i] = dd->lx[i+1] - dd->lx[i];
+    dd->lx[m-1] = M - dd->lx[m-1];
   } else {
     x  = lx[rank];
     xs = 0;

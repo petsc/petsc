@@ -85,10 +85,11 @@ int MPI_Attr_put(MPI_Comm comm,int keyval,void *attribute_val)
 int MPI_Attr_delete(MPI_Comm comm,int keyval)
 {
   if (attr[keyval].active && attr[keyval].del) {
-    (*(attr[keyval].del))(comm,keyval,attr[keyval].attribute_val,attr[keyval].extra_state);
+    void* save_attribute_val   = attr[keyval].attribute_val;
+    attr[keyval].active        = 0;
+    attr[keyval].attribute_val = 0;
+    (*(attr[keyval].del))(comm,keyval,save_attribute_val,attr[keyval].extra_state);
   }
-  attr[keyval].active        = 0;
-  attr[keyval].attribute_val = 0;
   return MPI_SUCCESS;
 }
 

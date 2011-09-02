@@ -181,5 +181,5 @@ end
 % close the reader if we opened it
 
 if nargin > 0
-  if ischar(inarg) | isinteger(inarg) close(fd); end;
+  if (ischar(inarg) || isinteger(inarg)) close(fd); end;
 end

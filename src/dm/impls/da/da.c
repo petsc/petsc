@@ -270,45 +270,6 @@ PetscErrorCode  DMDASetOwnershipRanges(DM da, const PetscInt lx[], const PetscIn
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DMDACreateOwnershipRanges"
-/*
- Ensure that da->lx, ly, and lz exist.  Collective on DMDA.
-*/
-PetscErrorCode  DMDACreateOwnershipRanges(DM da)
-{
-  DM_DA          *dd = (DM_DA*)da->data;
-  PetscErrorCode ierr;
-  PetscInt       n;
-  MPI_Comm       comm;
-  PetscMPIInt    size;
-
-  PetscFunctionBegin;
-  if (!dd->lx) {
-    ierr = PetscMalloc(dd->m*sizeof(PetscInt),&dd->lx);CHKERRQ(ierr);
-    ierr = DMDAGetProcessorSubset(da,DMDA_X,dd->xs/dd->w,&comm);CHKERRQ(ierr);
-    ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-    n = (dd->xe-dd->xs)/dd->w;
-    ierr = MPI_Allgather(&n,1,MPIU_INT,dd->lx,1,MPIU_INT,comm);CHKERRQ(ierr);
-    ierr = MPI_Comm_free(&comm);CHKERRQ(ierr);
-  }
-  if (dd->dim > 1 && !dd->ly) {
-    ierr = PetscMalloc(dd->n*sizeof(PetscInt),&dd->ly);CHKERRQ(ierr);
-    ierr = DMDAGetProcessorSubset(da,DMDA_Y,dd->ys,&comm);CHKERRQ(ierr);
-    n = dd->ye-dd->ys;
-    ierr = MPI_Allgather(&n,1,MPIU_INT,dd->ly,1,MPIU_INT,comm);CHKERRQ(ierr);
-    ierr = MPI_Comm_free(&comm);CHKERRQ(ierr);
-  }
-  if (dd->dim > 2 && !dd->lz) {
-    ierr = PetscMalloc(dd->p*sizeof(PetscInt),&dd->lz);CHKERRQ(ierr);
-    ierr = DMDAGetProcessorSubset(da,DMDA_Z,dd->zs,&comm);CHKERRQ(ierr);
-    n = dd->ze-dd->zs;
-    ierr = MPI_Allgather(&n,1,MPIU_INT,dd->lz,1,MPIU_INT,comm);CHKERRQ(ierr);
-    ierr = MPI_Comm_free(&comm);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
 #undef __FUNCT__  
 #define __FUNCT__ "DMDASetInterpolationType"
 /*@
@@ -661,7 +622,6 @@ PetscErrorCode  DMRefine_DA(DM da,MPI_Comm comm,DM *daref)
   } else {
     P = 1 + dd->refine_z*(dd->P - 1);
   }
-  ierr = DMDACreateOwnershipRanges(da);CHKERRQ(ierr);
   if (dd->dim == 3) {
     PetscInt *lx,*ly,*lz;
     ierr = PetscMalloc3(dd->m,PetscInt,&lx,dd->n,PetscInt,&ly,dd->p,PetscInt,&lz);CHKERRQ(ierr);
@@ -761,7 +721,6 @@ PetscErrorCode  DMCoarsen_DA(DM da, MPI_Comm comm,DM *daref)
   } else {
     P = 1 + (dd->P - 1) / dd->refine_z;
   }
-  ierr = DMDACreateOwnershipRanges(da);CHKERRQ(ierr);
   if (dd->dim == 3) {
     PetscInt *lx,*ly,*lz;
     ierr = PetscMalloc3(dd->m,PetscInt,&lx,dd->n,PetscInt,&ly,dd->p,PetscInt,&lz);CHKERRQ(ierr);
