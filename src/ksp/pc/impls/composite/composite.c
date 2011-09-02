@@ -566,7 +566,7 @@ PetscErrorCode  PCCompositeSetUseTrue(PC pc)
    Notes: To use a Krylov method inside the composite preconditioner, set the PCType of one or more
           inner PCs to be PCKSP. 
           Using a Krylov method inside another Krylov method can be dangerous (you get divergence or
-          the incorrect answer) unless you use KSPFGMRES as the outter Krylov method
+          the incorrect answer) unless you use KSPFGMRES as the outer Krylov method
 
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
