@@ -219,3 +219,46 @@ PetscErrorCode TaoSolverSetConstraintsRoutine(TaoSolver tao, Vec c, PetscErrorCo
     PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "TaoSolverComputeDual"
+/*@
+  TaoSolverComputeDual - Computes the dual vectors corresponding to the bounds
+  of the variables
+
+  Collective on TaoSolver
+
+  Input Parameters:
+. tao - the TaoSolver context
+
+  Output Parameter:
++ DL - dual variable vector for the lower bounds
+- DU - dual variable vector for the upper bounds
+
+  Level: advanced
+
+  Notes: DL and DU should be created before calling this routine.  If calling
+  this routine after using an unconstrained solver, DL and DU are set to all 
+  zeros.
+
+  Level: advanced
+
+.seealso: TaoSolverComputeObjective(), TaoSolverSetVariableBounds()
+@*/
+PetscErrorCode TaoSolverComputeDual(TaoSolver tao, Vec DL, Vec DU) 
+{
+    PetscErrorCode ierr;
+    PetscReal dummy;
+    PetscFunctionBegin;
+    PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
+    PetscValidHeaderSpecific(DL,VEC_CLASSID,2);
+    PetscValidHeaderSpecific(DU,VEC_CLASSID,2);
+    PetscCheckSameComm(tao,1,DL,2);
+    PetscCheckSameComm(tao,1,DU,3);
+    if (tao->ops->computedual) {
+      ierr = (*tao->ops->computedual)(tao,DL,DU); CHKERRQ(ierr);
+    }  else {
+      ierr = VecSet(DL,0.0); CHKERRQ(ierr);
+      ierr = VecSet(DU,0.0); CHKERRQ(ierr);
+    }
+    PetscFunctionReturn(0);
+}

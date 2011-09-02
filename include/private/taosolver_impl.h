@@ -8,6 +8,7 @@
 typedef struct _TaoSolverOps *TaoSolverOps;
 
 struct _TaoSolverOps {
+  /* Methods set by application */
     PetscErrorCode (*computeobjective)(TaoSolver, Vec, PetscReal*, void*);
     PetscErrorCode (*computeobjectiveandgradient)(TaoSolver, Vec, PetscReal*, Vec, void*);
     PetscErrorCode (*computegradient)(TaoSolver, Vec, Vec, void*);
@@ -22,6 +23,7 @@ struct _TaoSolverOps {
     PetscErrorCode (*convergencetest)(TaoSolver,void*);
     PetscErrorCode (*convergencedestroy)(void*);
 
+  /* Methods set by solver */
     PetscErrorCode (*computedual)(TaoSolver, Vec, Vec);
     PetscErrorCode (*setup)(TaoSolver);
     PetscErrorCode (*solve)(TaoSolver);
