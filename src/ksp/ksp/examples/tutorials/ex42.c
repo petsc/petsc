@@ -200,36 +200,30 @@ static PetscErrorCode DMDAGetLocalElementSize(DM da,PetscInt *mxl,PetscInt *myl,
 {
   PetscInt m,n,p,M,N,P;
   PetscInt sx,sy,sz;
-  PetscInt ml,nl,pl;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = DMDAGetInfo(da,0,&M,&N,&P,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&sx,&sy,&sz,&m,&n,&p);CHKERRQ(ierr);
 
-  ml = nl = pl = 0;
   if (mxl) {
     *mxl = m;
     if ((sx+m) == M) {  /* last proc */
       *mxl = m-1;
     }
-    ml = *mxl;
   }
   if (myl) {
     *myl = n;
     if ((sy+n) == N) {  /* last proc */
       *myl = n-1;
     }
-    nl = *myl;
   }
   if (mzl) {
     *mzl = p;
     if ((sz+p) == P) {  /* last proc */
       *mzl = p-1;
     }
-    pl = *mzl;
   }
-
   PetscFunctionReturn(0);
 }
 
@@ -494,9 +488,8 @@ static PetscInt ASS_MAP_wIwDI_uJuDJ(
   PetscInt ui,PetscInt ud,PetscInt u_NPE,PetscInt u_dof)
 {
   PetscInt ij;
-  PetscInt r,c,nr,nc;
+  PetscInt r,c,nc;
 
-  nr = w_NPE*w_dof;
   nc = u_NPE*u_dof;
 
   r = w_dof*wi+wd;
@@ -1811,7 +1804,7 @@ PetscErrorCode KSPMonitorStokesBlocks(KSP ksp,PetscInt n,PetscReal rnorm,void *d
 #define __FUNCT__ "PCMGSetupViaCoarsen"
 static PetscErrorCode PCMGSetupViaCoarsen(PC pc,DM da_fine)
 {
-  PetscInt       nlevels,k,finest;
+  PetscInt       nlevels,k;
   DM             *da_list,*daclist;
   Mat            R;
   PetscErrorCode ierr;
@@ -1826,7 +1819,6 @@ static PetscErrorCode PCMGSetupViaCoarsen(PC pc,DM da_fine)
   for( k=0; k<nlevels; k++ ) {  daclist[k] = PETSC_NULL;  }
 
   /* finest grid is nlevels - 1 */
-  finest = nlevels - 1;
   daclist[0] = da_fine;
   PetscObjectReference( (PetscObject)da_fine );
   ierr = DMCoarsenHierarchy(da_fine,nlevels-1,&daclist[1]);CHKERRQ(ierr);

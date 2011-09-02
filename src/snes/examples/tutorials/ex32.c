@@ -587,14 +587,14 @@ PetscErrorCode FormFunctionLocal1(DMDALocalInfo *info,Field1 **x,Field1 **f,void
   AppCtx         *user = (AppCtx*)ptr;
   PetscInt       xints,xinte,yints,yinte,i,j;
   PetscReal      hx,hy,dhx,dhy,hxdhy,hydhx;
-  PetscReal      grashof,prandtl,lid;
+  PetscReal      grashof,lid; /* ,prandtl */
   PetscScalar    u,uxx,uyy,vx,vy,avx,avy,vxp,vxm,vyp,vym;
   Field          **solu=user->x;
   Field2         **solu2=user->x2;
 
   PetscFunctionBegin;
   grashof = user->grashof;  
-  prandtl = user->prandtl;
+  /* prandtl = user->prandtl; */
   lid     = user->lidvelocity;
 
   dhx = (PetscReal)(info->mx-1);  dhy = (PetscReal)(info->my-1);
@@ -701,7 +701,7 @@ PetscErrorCode FormFunctionLocal2(DMDALocalInfo *info,Field2 **x,Field2 **f,void
   AppCtx         *user = (AppCtx*)ptr;
   PetscInt       xints,xinte,yints,yinte,i,j;
   PetscReal      hx,hy,dhx,dhy,hxdhy,hydhx;
-  PetscReal      grashof,prandtl,lid;
+  PetscReal      grashof,prandtl; /* ,lid */
   PetscScalar    u,uxx,uyy,vx,vy,avx,avy,vxp,vxm,vyp,vym;
   Field          **solu=user->x;
   Field1         **solu1=user->x1;
@@ -709,7 +709,7 @@ PetscErrorCode FormFunctionLocal2(DMDALocalInfo *info,Field2 **x,Field2 **f,void
   PetscFunctionBegin;
   grashof = user->grashof;  
   prandtl = user->prandtl;
-  lid     = user->lidvelocity;
+  /* lid     = user->lidvelocity; */
 
   dhx = (PetscReal)(info->mx-1);  dhy = (PetscReal)(info->my-1);
   hx = 1.0/dhx;                   hy = 1.0/dhy;

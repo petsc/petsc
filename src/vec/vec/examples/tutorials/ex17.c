@@ -10,9 +10,9 @@ int main(int argc,char **args)
 {
   PetscErrorCode ierr;
   Vec            x;
-  PetscReal      norm;
+  PETSC_UNUSED PetscReal   norm;
 #if defined(__cplusplus) && !defined(PETSC_USE_EXTERN_CXX)
-  PetscScalar    dot;
+  PETSC_UNUSED PetscScalar dot;
 #endif
 
 #if defined(__cplusplus) && !defined(PETSC_USE_EXTERN_CXX)

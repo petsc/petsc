@@ -673,7 +673,7 @@ static PetscErrorCode THIInitial(DMMG dmmg,Vec X)
   PetscFunctionReturn(0);
 }
 
-static void PointwiseNonlinearity(THI thi,const Node n[restrict 8],const PetscReal phi[restrict 3],PetscReal dphi[restrict 8][3],PetscScalar *restrict u,PetscScalar *restrict v,PetscScalar du[restrict 3],PetscScalar dv[restrict 3],PetscReal *eta,PetscReal *deta)
+static void PointwiseNonlinearity(THI thi,const Node n[restrict],const PetscReal phi[restrict],PetscReal dphi[restrict][3],PetscScalar *restrict u,PetscScalar *restrict v,PetscScalar du[restrict],PetscScalar dv[restrict],PetscReal *eta,PetscReal *deta)
 {
   PetscInt l,ll;
   PetscScalar gam;
@@ -1453,7 +1453,7 @@ int main(int argc,char *argv[])
   THI            thi;
   PetscInt       i;
   PetscErrorCode ierr;
-  PetscLogStage  stages[3];
+  PETSC_UNUSED PetscLogStage  stages[3];
   PetscBool      repeat_fine_solve = PETSC_FALSE;
 
   ierr = PetscInitialize(&argc,&argv,0,help);CHKERRQ(ierr);

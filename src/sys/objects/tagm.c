@@ -122,7 +122,7 @@ PetscErrorCode  PetscCommGetNewTag(MPI_Comm comm,PetscMPIInt *tag)
   PETSc communicators are just regular MPI communicators that keep track of which 
   tags have been used to prevent tag conflict. If you pass a non-PETSc communicator into
   a PETSc creation routine it will attach a private communicator for use in the objects communications.
-  The internal MPI_Comm is used to perform all the MPI calls for PETSc, the outter MPI_Comm is a user
+  The internal MPI_Comm is used to perform all the MPI calls for PETSc, the outer MPI_Comm is a user
   level MPI_Comm that may be performing communication for the user or other library and so IS NOT used by PETSc.
 
   Level: developer
@@ -235,7 +235,7 @@ PetscErrorCode  PetscCommDestroy(MPI_Comm *comm)
   counter->refcount--;
   if (!counter->refcount) {
 
-    /* if MPI_Comm has outter comm then remove reference to inner MPI_Comm from outter MPI_Comm */
+    /* if MPI_Comm has outer comm then remove reference to inner MPI_Comm from outer MPI_Comm */
     ierr  = MPI_Attr_get(icomm,Petsc_OuterComm_keyval,&ptr,&flg);CHKERRQ(ierr);
     if (flg) {
       /*  Use PetscMemcpy() because casting from pointer to integer of different size is not allowed with some compilers  */
@@ -243,7 +243,7 @@ PetscErrorCode  PetscCommDestroy(MPI_Comm *comm)
       ierr  = MPI_Attr_get(ocomm,Petsc_InnerComm_keyval,&ptr,&flg);CHKERRQ(ierr);
       if (flg) {
         ierr = MPI_Attr_delete(ocomm,Petsc_InnerComm_keyval);CHKERRQ(ierr);
-      } else SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Outter MPI_Comm %ld does not have expected reference to inner comm %d, problem with corrupted memory",(long int)ocomm,(long int)icomm);
+      } else SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_CORRUPT,"Outer MPI_Comm %ld does not have expected reference to inner comm %d, problem with corrupted memory",(long int)ocomm,(long int)icomm);
     }
 
     ierr = PetscInfo1(0,"Deleting PETSc MPI_Comm %ld\n",(long)icomm);CHKERRQ(ierr);

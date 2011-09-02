@@ -20,7 +20,7 @@ typedef struct {
 #define __FUNCT__ "PCView_HMPI_HMPI"
 /*
     Would like to have this simply call PCView() on the inner PC. The problem is
-  that the outter comm does not live on the inside so cannot do this. Instead 
+  that the outer comm does not live on the inside so cannot do this. Instead 
   handle the special case when the viewer is stdout, construct a new one just
   for this call.
 */

@@ -46,7 +46,7 @@ int main(int argc, char **argv)
   Vec            xl,xu; /* Upper and lower bounds on variables */
   Mat            J;
   PetscReal      t=0.0;
-  PetscLogStage  stage_timestep;
+  PETSC_UNUSED PetscLogStage  stage_timestep;
   PetscInt       its;
 
   PetscInitialize(&argc,&argv, (char*)0, help);

@@ -291,7 +291,7 @@ static PetscErrorCode MatWrapML_SeqAIJ(ML_Operator *mlmat,MatReuse reuse,Mat *ne
 { 
   struct ML_CSR_MSRdata *matdata = (struct ML_CSR_MSRdata *)mlmat->data;
   PetscErrorCode        ierr;
-  PetscInt              m=mlmat->outvec_leng,n=mlmat->invec_leng,*nnz,nz_max;
+  PetscInt              m=mlmat->outvec_leng,n=mlmat->invec_leng,*nnz = PETSC_NULL,nz_max;
   PetscInt              *ml_cols=matdata->columns,*ml_rowptr=matdata->rowptr,*aj,i,j,k;
   PetscScalar           *ml_vals=matdata->values,*aa;
   
@@ -318,23 +318,27 @@ static PetscErrorCode MatWrapML_SeqAIJ(ML_Operator *mlmat,MatReuse reuse,Mat *ne
       ierr = PetscFree(nnz);CHKERRQ(ierr); 
     }
     PetscFunctionReturn(0);
-  } 
-
-  /* ML Amat is in MSR format. Copy its data into SeqAIJ matrix */
-  ierr = MatCreate(PETSC_COMM_SELF,newmat);CHKERRQ(ierr);
-  ierr = MatSetSizes(*newmat,m,n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = MatSetType(*newmat,MATSEQAIJ);CHKERRQ(ierr);
-
-  ierr = PetscMalloc((m+1)*sizeof(PetscInt),&nnz);
-  nz_max = 1;
-  for (i=0; i<m; i++) {
-    nnz[i] = ml_cols[i+1] - ml_cols[i] + 1;
-    if (nnz[i] > nz_max) nz_max += nnz[i];
   }
 
-  ierr = MatSeqAIJSetPreallocation(*newmat,0,nnz);CHKERRQ(ierr);
+  /* ML Amat is in MSR format. Copy its data into SeqAIJ matrix */
+  if (reuse) {
+    for (nz_max=0,i=0; i<m; i++) nz_max = PetscMax(nz_max,ml_cols[i+1] - ml_cols[i] + 1);
+  } else {
+    ierr = MatCreate(PETSC_COMM_SELF,newmat);CHKERRQ(ierr);
+    ierr = MatSetSizes(*newmat,m,n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+    ierr = MatSetType(*newmat,MATSEQAIJ);CHKERRQ(ierr);
+
+    ierr = PetscMalloc((m+1)*sizeof(PetscInt),&nnz);
+    nz_max = 1;
+    for (i=0; i<m; i++) {
+      nnz[i] = ml_cols[i+1] - ml_cols[i] + 1;
+      if (nnz[i] > nz_max) nz_max = nnz[i];
+    }
+    ierr = MatSeqAIJSetPreallocation(*newmat,0,nnz);CHKERRQ(ierr);
+  }
   ierr = PetscMalloc2(nz_max,PetscScalar,&aa,nz_max,PetscInt,&aj);CHKERRQ(ierr);
-  for (i=0; i<m; i++){
+  for (i=0; i<m; i++) {
+    PetscInt ncols;
     k = 0;
     /* diagonal entry */
     aj[k] = i; aa[k++] = ml_vals[i]; 
@@ -342,9 +346,10 @@ static PetscErrorCode MatWrapML_SeqAIJ(ML_Operator *mlmat,MatReuse reuse,Mat *ne
     for (j=ml_cols[i]; j<ml_cols[i+1]; j++){
       aj[k] = ml_cols[j]; aa[k++] = ml_vals[j];
     }
+    ncols = ml_cols[i+1] - ml_cols[i] + 1;
     /* sort aj and aa */
-    ierr = PetscSortIntWithScalarArray(nnz[i],aj,aa);CHKERRQ(ierr); 
-    ierr = MatSetValues(*newmat,1,&i,nnz[i],aj,aa,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = PetscSortIntWithScalarArray(ncols,aj,aa);CHKERRQ(ierr); 
+    ierr = MatSetValues(*newmat,1,&i,ncols,aj,aa,INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(*newmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*newmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -394,14 +399,14 @@ static PetscErrorCode MatWrapML_SHELL(ML_Operator *mlmat,MatReuse reuse,Mat *new
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatWrapML_MPIAIJ"
-static PetscErrorCode MatWrapML_MPIAIJ(ML_Operator *mlmat,Mat *newmat) 
+static PetscErrorCode MatWrapML_MPIAIJ(ML_Operator *mlmat,MatReuse reuse,Mat *newmat) 
 {
   struct ML_CSR_MSRdata *matdata = (struct ML_CSR_MSRdata *)mlmat->data;
   PetscInt              *ml_cols=matdata->columns,*aj; 
   PetscScalar           *ml_vals=matdata->values,*aa;
   PetscErrorCode        ierr;
   PetscInt              i,j,k,*gordering;
-  PetscInt              m=mlmat->outvec_leng,n,*nnzA,*nnzB,*nnz,nz_max,row; 
+  PetscInt              m=mlmat->outvec_leng,n,nz_max,row; 
   Mat                   A;
 
   PetscFunctionBegin;
@@ -409,29 +414,37 @@ static PetscErrorCode MatWrapML_MPIAIJ(ML_Operator *mlmat,Mat *newmat)
   n = mlmat->invec_leng;
   if (m != n) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"m %d must equal to n %d",m,n);
 
-  ierr = MatCreate(mlmat->comm->USR_comm,&A);CHKERRQ(ierr);
-  ierr = MatSetSizes(A,m,n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = MatSetType(A,MATMPIAIJ);CHKERRQ(ierr);
-  ierr = PetscMalloc3(m,PetscInt,&nnzA,m,PetscInt,&nnzB,m,PetscInt,&nnz);CHKERRQ(ierr);
-  
-  nz_max = 0;
-  for (i=0; i<m; i++){
-    nnz[i] = ml_cols[i+1] - ml_cols[i] + 1;
-    if (nz_max < nnz[i]) nz_max = nnz[i];
-    nnzA[i] = 1; /* diag */
-    for (j=ml_cols[i]; j<ml_cols[i+1]; j++){
-      if (ml_cols[j] < m) nnzA[i]++;
+  if (reuse) {
+    A = *newmat;
+    for (nz_max=0,i=0; i<m; i++) nz_max = PetscMax(nz_max,ml_cols[i+1] - ml_cols[i] + 1);
+  } else {
+    PetscInt *nnzA,*nnzB,*nnz;
+    ierr = MatCreate(mlmat->comm->USR_comm,&A);CHKERRQ(ierr);
+    ierr = MatSetSizes(A,m,n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+    ierr = MatSetType(A,MATMPIAIJ);CHKERRQ(ierr);
+    ierr = PetscMalloc3(m,PetscInt,&nnzA,m,PetscInt,&nnzB,m,PetscInt,&nnz);CHKERRQ(ierr);
+
+    nz_max = 0;
+    for (i=0; i<m; i++){
+      nnz[i] = ml_cols[i+1] - ml_cols[i] + 1;
+      if (nz_max < nnz[i]) nz_max = nnz[i];
+      nnzA[i] = 1; /* diag */
+      for (j=ml_cols[i]; j<ml_cols[i+1]; j++){
+        if (ml_cols[j] < m) nnzA[i]++;
+      }
+      nnzB[i] = nnz[i] - nnzA[i];
     }
-    nnzB[i] = nnz[i] - nnzA[i];
+    ierr = MatMPIAIJSetPreallocation(A,0,nnzA,0,nnzB);CHKERRQ(ierr);
+    ierr = PetscFree3(nnzA,nnzB,nnz);
   }
-  ierr = MatMPIAIJSetPreallocation(A,0,nnzA,0,nnzB);CHKERRQ(ierr);
 
   /* insert mat values -- remap row and column indices */
   nz_max++;
   ierr = PetscMalloc2(nz_max,PetscScalar,&aa,nz_max,PetscInt,&aj);CHKERRQ(ierr);
   /* create global row numbering for a ML_Operator */
   ML_build_global_numbering(mlmat,&gordering,"rows"); 
-  for (i=0; i<m; i++){
+  for (i=0; i<m; i++) {
+    PetscInt ncols;
     row = gordering[i];
     k = 0;
     /* diagonal entry */
@@ -440,14 +453,14 @@ static PetscErrorCode MatWrapML_MPIAIJ(ML_Operator *mlmat,Mat *newmat)
     for (j=ml_cols[i]; j<ml_cols[i+1]; j++){
       aj[k] = gordering[ml_cols[j]]; aa[k++] = ml_vals[j];
     }
-    ierr = MatSetValues(A,1,&row,nnz[i],aj,aa,INSERT_VALUES);CHKERRQ(ierr);
+    ncols = ml_cols[i+1] - ml_cols[i] + 1;
+    ierr = MatSetValues(A,1,&row,ncols,aj,aa,INSERT_VALUES);CHKERRQ(ierr);
   }
   ML_free(gordering);
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   *newmat = A;
 
-  ierr = PetscFree3(nnzA,nnzB,nnz);
   ierr = PetscFree2(aa,aj);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -468,9 +481,9 @@ PetscErrorCode PCReset_ML(PC pc)
 
   if (pc_ml->PetscMLdata) {
     ierr = PetscFree(pc_ml->PetscMLdata->pwork);CHKERRQ(ierr);
-    if (pc_ml->size > 1)      {ierr = MatDestroy(&pc_ml->PetscMLdata->Aloc);CHKERRQ(ierr);} 
-    if (pc_ml->PetscMLdata->x){ierr = VecDestroy(&pc_ml->PetscMLdata->x);CHKERRQ(ierr);}
-    if (pc_ml->PetscMLdata->y){ierr = VecDestroy(&pc_ml->PetscMLdata->y);CHKERRQ(ierr);}
+    ierr = MatDestroy(&pc_ml->PetscMLdata->Aloc);CHKERRQ(ierr);
+    ierr = VecDestroy(&pc_ml->PetscMLdata->x);CHKERRQ(ierr);
+    ierr = VecDestroy(&pc_ml->PetscMLdata->y);CHKERRQ(ierr);
   }
   ierr = PetscFree(pc_ml->PetscMLdata);CHKERRQ(ierr);
 
@@ -550,10 +563,12 @@ PetscErrorCode PCSetUp_ML(PC pc)
         ierr = MatConvert_MPIAIJ_ML(A,PETSC_NULL,MAT_INITIAL_MATRIX,&Aloc);CHKERRQ(ierr);
       } else if (isSeq) {
         Aloc = A;
+        ierr = PetscObjectReference((PetscObject)Aloc);CHKERRQ(ierr);
       } else SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONG, "Matrix type '%s' cannot be used with ML. ML can only handle AIJ matrices.",((PetscObject)A)->type_name);
 
       ierr = MatGetSize(Aloc,&m,&nlocal_allcols);CHKERRQ(ierr);
       PetscMLdata = pc_ml->PetscMLdata;
+      ierr = MatDestroy(&PetscMLdata->Aloc);CHKERRQ(ierr);
       PetscMLdata->A    = A;
       PetscMLdata->Aloc = Aloc;
       ML_Init_Amatrix(ml_object,0,m,m,PetscMLdata);
@@ -575,13 +590,13 @@ PetscErrorCode PCSetUp_ML(PC pc)
       if (size == 1) { /* convert ML P, R and A into seqaij format */
         for (mllevel=1; mllevel<Nlevels; mllevel++){
           mlmat = &(ml_object->Amat[mllevel]);
-          ierr  = MatWrapML_SeqAIJ(mlmat,MAT_INITIAL_MATRIX,&gridctx[level].A);CHKERRQ(ierr);
+          ierr = MatWrapML_SeqAIJ(mlmat,MAT_REUSE_MATRIX,&gridctx[level].A);CHKERRQ(ierr);
           level--;
         }
       } else { /* convert ML P and R into shell format, ML A into mpiaij format */
         for (mllevel=1; mllevel<Nlevels; mllevel++){
           mlmat  = &(ml_object->Amat[mllevel]);
-          ierr = MatWrapML_MPIAIJ(mlmat,&gridctx[level].A);CHKERRQ(ierr);
+          ierr = MatWrapML_MPIAIJ(mlmat,MAT_REUSE_MATRIX,&gridctx[level].A);CHKERRQ(ierr);
           level--;
         }
       }
@@ -614,6 +629,7 @@ PetscErrorCode PCSetUp_ML(PC pc)
     ierr = MatConvert_MPIAIJ_ML(A,PETSC_NULL,MAT_INITIAL_MATRIX,&Aloc);CHKERRQ(ierr);
   } else if (isSeq) {
     Aloc = A;
+    ierr = PetscObjectReference((PetscObject)Aloc);CHKERRQ(ierr);
   } else SETERRQ1(((PetscObject)pc)->comm,PETSC_ERR_ARG_WRONG, "Matrix type '%s' cannot be used with ML. ML can only handle AIJ matrices.",((PetscObject)A)->type_name);
 
   /* create and initialize struct 'PetscMLdata' */
@@ -724,7 +740,7 @@ PetscErrorCode PCSetUp_ML(PC pc)
       ierr = MatWrapML_SHELL(mlmat,MAT_INITIAL_MATRIX,&gridctx[level].R);CHKERRQ(ierr);
 
       mlmat  = &(ml_object->Amat[mllevel]);
-      ierr = MatWrapML_MPIAIJ(mlmat,&gridctx[level].A);CHKERRQ(ierr);  
+      ierr = MatWrapML_MPIAIJ(mlmat,MAT_INITIAL_MATRIX,&gridctx[level].A);CHKERRQ(ierr);  
       level--;
     }
   }
