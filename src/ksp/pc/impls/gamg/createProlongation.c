@@ -864,7 +864,11 @@ PetscErrorCode triangulateAndFormProl( IS  a_selected_2, /* list of selected loc
   /*   neighbor list (n).                                            */
   if(nselected_2 != 0){ /* inactive processor */
     char args[] = "npczQ"; /* c is needed ? */
+#if defined(PETSC_HAVE_TRIANGLE) 
     triangulate(args, &in, &mid, (struct triangulateio *) NULL );
+#else
+    SETERRQ(wcomm,PETSC_ERR_LIB,"configure with TRIANGLE to use geometric MG");
+#endif
     /* output .poly files for 'showme' */
     if( !PETSC_TRUE ) {
       static int level = 1;
@@ -922,7 +926,9 @@ PetscErrorCode triangulateAndFormProl( IS  a_selected_2, /* list of selected loc
       level++;
     }
   }
-  ierr = PetscLogEventBegin(gamg_setup_stages[FIND_V],0,0,0,0);CHKERRQ(ierr);
+#if defined PETSC_USE_LOG
+  ierr = PetscLogEventBegin(gamg_setup_events[FIND_V],0,0,0,0);CHKERRQ(ierr);
+#endif
   { /* form P - setup some maps */
     PetscInt clid_iterator;
     PetscInt *nTri, *node_tri;
@@ -1045,8 +1051,9 @@ PetscErrorCode triangulateAndFormProl( IS  a_selected_2, /* list of selected loc
     ierr = PetscFree( node_tri );  CHKERRQ(ierr);
     ierr = PetscFree( nTri );  CHKERRQ(ierr);
   }
-  ierr = PetscLogEventEnd(gamg_setup_stages[FIND_V],0,0,0,0);CHKERRQ(ierr);
-
+#if defined PETSC_USE_LOG
+  ierr = PetscLogEventEnd(gamg_setup_events[FIND_V],0,0,0,0);CHKERRQ(ierr);
+#endif
   free( mid.trianglelist );
   free( mid.neighborlist );
   ierr = PetscFree( in.pointlist );  CHKERRQ(ierr);
@@ -1237,9 +1244,9 @@ PetscErrorCode createProlongation( const Mat a_Amat,
   ierr = MPI_Comm_size(wcomm,&npe);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange( a_Amat, &Istart, &Iend ); CHKERRQ(ierr);
   nloc = (Iend-Istart)/bs_in; my0 = Istart/bs_in; assert((Iend-Istart)%bs_in==0);
-
-  ierr = PetscLogEventBegin(gamg_setup_stages[SET3],0,0,0,0);CHKERRQ(ierr);
-
+#if defined PETSC_USE_LOG
+  ierr = PetscLogEventBegin(gamg_setup_events[SET3],0,0,0,0);CHKERRQ(ierr);
+#endif
   /* get scalar copy (norms) of matrix */
   ierr = MatGetInfo(a_Amat,MAT_LOCAL,&info); CHKERRQ(ierr);
   kk = (PetscInt)info.nz_used/((nloc+1)*bs_in*bs_in)+1;
@@ -1297,7 +1304,7 @@ PetscErrorCode createProlongation( const Mat a_Amat,
   /* square matrix - SA */  
   if( a_useSA ){
     Mat Gmat2;
-    ierr = MatMatMult( Gmat, Gmat, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &Gmat2 );
+    ierr = MatMatMult( Gmat, Gmat, MAT_INITIAL_MATRIX, 2.4, &Gmat2 );
     CHKERRQ(ierr);
     /* ierr = MatDestroy( &Gmat );  CHKERRQ(ierr); */
     AuxMat = Gmat;
@@ -1405,16 +1412,21 @@ PetscErrorCode createProlongation( const Mat a_Amat,
     ierr = PetscFree( permute );  CHKERRQ(ierr);
     ierr = PetscFree( ranks );  CHKERRQ(ierr);
   }
-  ierr = PetscLogEventEnd(gamg_setup_stages[SET3],0,0,0,0);   CHKERRQ(ierr);
-
+#if defined PETSC_USE_LOG
+  ierr = PetscLogEventEnd(gamg_setup_events[SET3],0,0,0,0);   CHKERRQ(ierr);
+#endif
   /* SELECT COARSE POINTS */
-  ierr = PetscLogEventBegin(gamg_setup_stages[SET4],0,0,0,0);CHKERRQ(ierr);
+#if defined PETSC_USE_LOG
+  ierr = PetscLogEventBegin(gamg_setup_events[SET4],0,0,0,0);CHKERRQ(ierr);
+#endif
   ierr = maxIndSetAgg( permIS, rankIS, Gmat, AuxMat, a_useSA, &selected_1, &llist_1 );
   CHKERRQ(ierr);
   if( a_useSA ) {
     ierr = MatDestroy( &AuxMat );  CHKERRQ(ierr); 
   }
-  ierr = PetscLogEventEnd(gamg_setup_stages[SET4],0,0,0,0);CHKERRQ(ierr);
+#if defined PETSC_USE_LOG
+  ierr = PetscLogEventEnd(gamg_setup_events[SET4],0,0,0,0);CHKERRQ(ierr);
+#endif
   ierr = ISDestroy(&permIS); CHKERRQ(ierr);
   ierr = ISDestroy(&rankIS); CHKERRQ(ierr);
 
@@ -1453,12 +1465,15 @@ PetscErrorCode createProlongation( const Mat a_Amat,
     PetscInt  *crsGID;
     Mat        Gmat2;
     /* grow ghost data for better coarse grid cover of fine grid */
-    ierr = PetscLogEventBegin(gamg_setup_stages[SET5],0,0,0,0);CHKERRQ(ierr);
+#if defined PETSC_USE_LOG
+    ierr = PetscLogEventBegin(gamg_setup_events[SET5],0,0,0,0);CHKERRQ(ierr);
+#endif
     ierr = getGIDsOnSquareGraph( selected_1, Gmat, &selected_2, &Gmat2, &crsGID );
     CHKERRQ(ierr);
     /* llist is now not valid wrt squared graph, but will work as iterator in 'triangulateAndFormProl' */
-    ierr = PetscLogEventEnd(gamg_setup_stages[SET5],0,0,0,0);CHKERRQ(ierr);
-
+#if defined PETSC_USE_LOG
+    ierr = PetscLogEventEnd(gamg_setup_events[SET5],0,0,0,0);CHKERRQ(ierr);
+#endif
     /* create global vector of coorindates in 'coords' */
     if (npe > 1) {
       ierr = getDataWithGhosts( Gmat2, a_dim, a_data, &nnodes, &coords );
@@ -1473,11 +1488,15 @@ PetscErrorCode createProlongation( const Mat a_Amat,
     /* triangulate */
     if( a_dim == 2 ) {
       PetscReal metric;
-      ierr = PetscLogEventBegin(gamg_setup_stages[SET6],0,0,0,0);CHKERRQ(ierr);
+#if defined PETSC_USE_LOG
+      ierr = PetscLogEventBegin(gamg_setup_events[SET6],0,0,0,0);CHKERRQ(ierr);
+#endif
       ierr = triangulateAndFormProl( selected_2, nnodes, coords,
                                      selected_1, llist_1, crsGID, bs_in, Prol, &metric );
       CHKERRQ(ierr);
-      ierr = PetscLogEventEnd(gamg_setup_stages[SET6],0,0,0,0); CHKERRQ(ierr);
+#if defined PETSC_USE_LOG
+      ierr = PetscLogEventEnd(gamg_setup_events[SET6],0,0,0,0); CHKERRQ(ierr);
+#endif
       ierr = PetscFree( crsGID );  CHKERRQ(ierr);
 
       /* clean up and create coordinates for coarse grid (output) */
@@ -1516,7 +1535,9 @@ PetscErrorCode createProlongation( const Mat a_Amat,
     PetscInt  myCrs0, nbnodes, *flid_fgid;
 
     /* create global vector of coorindates in 'coords' */
-    ierr = PetscLogEventBegin(gamg_setup_stages[SET7],0,0,0,0);CHKERRQ(ierr);
+#if defined PETSC_USE_LOG
+    ierr = PetscLogEventBegin(gamg_setup_events[SET7],0,0,0,0);CHKERRQ(ierr);
+#endif
     if (npe > 1) {
       /* create blocked dummy matrix for communication only */
       Mat tMat;
@@ -1575,8 +1596,9 @@ PetscErrorCode createProlongation( const Mat a_Amat,
       ierr = PetscMalloc( nloc*sizeof(PetscInt), &flid_fgid ); CHKERRQ(ierr);
       for(kk=0;kk<nloc;kk++) flid_fgid[kk] = my0 + kk;
     }
-    ierr = PetscLogEventEnd(gamg_setup_stages[SET7],0,0,0,0);CHKERRQ(ierr);
-
+#if defined PETSC_USE_LOG
+    ierr = PetscLogEventEnd(gamg_setup_events[SET7],0,0,0,0);CHKERRQ(ierr);
+#endif
     ierr = formProl0(selected_1,llist_1,bs_in,a_data_cols,myCrs0,nbnodes,
 		     data_w_ghost,flid_fgid,a_data_out,Prol);
     CHKERRQ(ierr);
@@ -1584,7 +1606,9 @@ PetscErrorCode createProlongation( const Mat a_Amat,
     ierr = PetscFree( flid_fgid ); CHKERRQ(ierr);
 
     /* smooth P0 */
-    ierr = PetscLogEventBegin(gamg_setup_stages[SET9],0,0,0,0);CHKERRQ(ierr);
+#if defined PETSC_USE_LOG
+    ierr = PetscLogEventBegin(gamg_setup_events[SET9],0,0,0,0);CHKERRQ(ierr);
+#endif
     { /* eigen estimate 'emax' - this is also use for cheb smoother */
       KSP eksp; Mat Lmat = a_Amat;
       Vec bb, xx; PC pc;
@@ -1633,7 +1657,9 @@ PetscErrorCode createProlongation( const Mat a_Amat,
       ierr = MatDestroy( &AA );    CHKERRQ(ierr);
       Prol = Prol1;
     }
-    ierr = PetscLogEventEnd(gamg_setup_stages[SET9],0,0,0,0);CHKERRQ(ierr);
+#if defined PETSC_USE_LOG
+    ierr = PetscLogEventEnd(gamg_setup_events[SET9],0,0,0,0);CHKERRQ(ierr);
+#endif
     *a_emax = emax; /* estimate for cheb smoother */
 
     *a_bs = a_data_cols;

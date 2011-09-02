@@ -767,6 +767,7 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ(Mat C,PetscInt ismax,const IS isrow[],co
 
   /* Determine the number of stages through which submatrices are done */
   nmax          = 20*1000000 / (C->cmap->N * sizeof(PetscInt));
+
   /* 
      Each stage will extract nmax submatrices.  
      nmax is determined by the matrix column dimension.

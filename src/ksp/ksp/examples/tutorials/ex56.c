@@ -23,9 +23,9 @@ int main(int argc,char **args)
   PetscMPIInt    npe,mype;
   PC pc;
   PetscScalar DD[24][24],DD2[24][24];
-#if defined(PETSC_USE_LOG)
-  PetscLogStage  stage[2];
-#endif
+/* #if defined(PETSC_USE_LOG) */
+/*   PetscLogStage  stage[2]; */
+/* #endif */
   PetscScalar DD1[24][24];
   const PCType type;
 
@@ -200,25 +200,25 @@ int main(int argc,char **args)
   }
 
   /* solve */
-#if defined(PETSC_USE_LOG)
-  ierr = PetscLogStageRegister("Setup", &stage[0]);      CHKERRQ(ierr);
-  ierr = PetscLogStageRegister("Solve", &stage[1]);      CHKERRQ(ierr);
-  ierr = PetscLogStagePush(stage[0]);                    CHKERRQ(ierr);
-#endif
+/* #if defined(PETSC_USE_LOG) */
+/*   ierr = PetscLogStageRegister("Setup", &stage[0]);      CHKERRQ(ierr); */
+/*   ierr = PetscLogStageRegister("Solve", &stage[1]);      CHKERRQ(ierr); */
+/*   ierr = PetscLogStagePush(stage[0]);                    CHKERRQ(ierr); */
+/* #endif */
   ierr = KSPSetUp( ksp );         CHKERRQ(ierr);
-#if defined(PETSC_USE_LOG)
-  ierr = PetscLogStagePop();      CHKERRQ(ierr);
-#endif
+/* #if defined(PETSC_USE_LOG) */
+/*   ierr = PetscLogStagePop();      CHKERRQ(ierr); */
+/* #endif */
 
   ierr = VecSet(xx,.0);           CHKERRQ(ierr);
 
-#if defined(PETSC_USE_LOG)
-  ierr = PetscLogStagePush(stage[1]);                    CHKERRQ(ierr);
-#endif
+/* #if defined(PETSC_USE_LOG) */
+/*   ierr = PetscLogStagePush(stage[1]);                    CHKERRQ(ierr); */
+/* #endif */
   ierr = KSPSolve( ksp, bb, xx );     CHKERRQ(ierr);
-#if defined(PETSC_USE_LOG)
-  ierr = PetscLogStagePop();      CHKERRQ(ierr);
-#endif
+/* #if defined(PETSC_USE_LOG) */
+/*   ierr = PetscLogStagePop();      CHKERRQ(ierr); */
+/* #endif */
 
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
 
