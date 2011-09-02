@@ -825,8 +825,6 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
   tag0   = ((PetscObject)C)->tag;
   size   = c->size;
   rank   = c->rank;
-  //printf("[%d] MatGetSubMatrices_MPIAIJ_Local() allcolumns %d\n",rank,allcolumns);
-  //allcolumns = PETSC_FALSE;
   
   /* Get some new tags to keep the communication clean */
   ierr = PetscObjectGetNewTag((PetscObject)C,&tag1);CHKERRQ(ierr);
@@ -1131,8 +1129,7 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
 
   /* Form the matrix */
   /* create col map: global col of C -> local col of submatrices */
-  if (!allcolumns)
-  {
+  if (!allcolumns){
     const PetscInt *icol_i;
 #if defined (PETSC_USE_CTABLE)
     ierr = PetscMalloc((1+ismax)*sizeof(PetscTable),&cmap);CHKERRQ(ierr);
@@ -1156,7 +1153,6 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
       cmap_i = cmap[i];
       for (j=0; j<jmax; j++) { 
         cmap_i[icol_i[j]] = j+1; 
-        //printf("[%d] cmap_i[%d]=%d\n",rank,icol_i[j],j+1);
       }
     }
 #endif
@@ -1175,7 +1171,7 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
     if (!allcolumns) cmap_i = cmap[i];
     irow_i = irow[i];
     lens_i = lens[i];
-    for (j=0; j<jmax; j++) { // for each row
+    for (j=0; j<jmax; j++) {
       l = 0;
       row  = irow_i[j];
       while (row >= C->rmap->range[l+1]) l++;
@@ -1188,18 +1184,16 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
             ierr = PetscTableFind(cmap_i,cols[k]+1,&tcol);CHKERRQ(ierr);
 #else
             tcol = cmap_i[cols[k]];
-            //printf("[%d] cmap_i[%d]=%d\n",rank,cols[k],tcol);
 #endif 
-            if (tcol) { lens_i[j]++;} // 
+            if (tcol) { lens_i[j]++;} 
           }
-        } else { // allcolumns
+        } else { /* allcolumns */
           lens_i[j] = ncols;
         }
-        //if (rank==0) printf("\n");
         ierr = MatRestoreRow_MPIAIJ(C,row,&ncols,&cols,0);CHKERRQ(ierr);
-      } //if (proc == rank) { -> lens_i[j]=ncols;
-    } //for (j=0; j<jmax; j++)
-  } // for (i=0; i<ismax; i++) 
+      }
+    } 
+  } 
   
   /* Create row map: global row of C -> local row of submatrices */
 #if defined (PETSC_USE_CTABLE)
@@ -1263,14 +1257,13 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
 #else
               tcol = cmap_i[rbuf3_i[ct2]];
 #endif
-              //printf("[%d] tcol %d\n",rank,tcol);
               if (tcol) { 
                 lens_i[row]++;
               }
-            } else { //allcolumns
-              lens_i[row]++; //lens_i[row] += max2 ?
+            } else { /* allcolumns */
+              lens_i[row]++; /* lens_i[row] += max2 ? */
             }
-          } //for (l=0; l<max2; l++,ct2++) {
+          } 
         }
       }
     }
@@ -1347,14 +1340,13 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
 #else
               tcol = cmap_i[cols[k]];
 #endif
-              //printf("[%d] cols %d, tcol-1 %d\n",rank,cols[k],tcol-1);
               if (tcol){
                 *mat_j++ = tcol - 1;
                 *mat_a++ = vals[k];
                 ilen_row++;
               }
             }
-          } else { //allcolumns
+          } else { /* allcolumns */
             for (k=0; k<ncols; k++) {
               *mat_j++ = cols[k] ; /* global col index! */
               *mat_a++ = vals[k];
@@ -1416,15 +1408,14 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
               tcol = cmap_i[rbuf3_i[ct2]];
 #endif
               if (tcol) { 
-                //if (rank) printf("[%d] rbuf3_i[ct2] %d, tcol %d\n",rank,rbuf3_i[ct2],tcol-1);
                 *mat_j++ = tcol - 1; 
                 *mat_a++ = rbuf4_i[ct2];
                 ilen++;
               }
             }
-          } else { //allcolumns
+          } else { /* allcolumns */
             for (l=0; l<max2; l++,ct2++) {
-              *mat_j++ = rbuf3_i[ct2]; /* global col index! */
+              *mat_j++ = rbuf3_i[ct2]; /* same global column index of C */
               *mat_a++ = rbuf4_i[ct2];
               ilen++;
             }
