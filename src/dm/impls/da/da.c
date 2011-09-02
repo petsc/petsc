@@ -286,22 +286,25 @@ PetscErrorCode  DMDACreateOwnershipRanges(DM da)
   PetscFunctionBegin;
   if (!dd->lx) {
     ierr = PetscMalloc(dd->m*sizeof(PetscInt),&dd->lx);CHKERRQ(ierr);
-    ierr = DMDAGetProcessorSubset(da,DMDA_X,dd->xs,&comm);CHKERRQ(ierr);
+    ierr = DMDAGetProcessorSubset(da,DMDA_X,dd->xs/dd->w,&comm);CHKERRQ(ierr);
     ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
     n = (dd->xe-dd->xs)/dd->w;
     ierr = MPI_Allgather(&n,1,MPIU_INT,dd->lx,1,MPIU_INT,comm);CHKERRQ(ierr);
+    ierr = MPI_Comm_free(&comm);CHKERRQ(ierr);
   }
   if (dd->dim > 1 && !dd->ly) {
     ierr = PetscMalloc(dd->n*sizeof(PetscInt),&dd->ly);CHKERRQ(ierr);
     ierr = DMDAGetProcessorSubset(da,DMDA_Y,dd->ys,&comm);CHKERRQ(ierr);
     n = dd->ye-dd->ys;
     ierr = MPI_Allgather(&n,1,MPIU_INT,dd->ly,1,MPIU_INT,comm);CHKERRQ(ierr);
+    ierr = MPI_Comm_free(&comm);CHKERRQ(ierr);
   }
   if (dd->dim > 2 && !dd->lz) {
     ierr = PetscMalloc(dd->p*sizeof(PetscInt),&dd->lz);CHKERRQ(ierr);
     ierr = DMDAGetProcessorSubset(da,DMDA_Z,dd->zs,&comm);CHKERRQ(ierr);
     n = dd->ze-dd->zs;
     ierr = MPI_Allgather(&n,1,MPIU_INT,dd->lz,1,MPIU_INT,comm);CHKERRQ(ierr);
+    ierr = MPI_Comm_free(&comm);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
