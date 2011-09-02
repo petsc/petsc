@@ -22,6 +22,8 @@ class Configure(PETSc.package.NewPackage):
 
     self.framework.log.write('Creating PTScotch '+os.path.join(os.path.join(self.packageDir,'src'),'Makefile.inc')+'\n')
 
+    self.programs.getExecutable('bison',   getFullPath = 1)
+    if not hasattr(self.programs, 'bison'): raise RuntimeError('PTScotch needs bison installed')
     
     g = open(os.path.join(self.packageDir,'src','Makefile.inc'),'w')
 
@@ -70,7 +72,7 @@ class Configure(PETSc.package.NewPackage):
     g.write('MKDIR      = '+self.programs.mkdir+'\n')
     g.write('MV         = '+self.programs.mv+'\n')
     g.write('RANLIB	= '+self.setCompilers.RANLIB+'\n')
-    g.write('YACC	= bison -y\n')
+    g.write('YACC	= '+self.programs.bison+' -y\n')
     g.close()
 
     if self.installNeeded(os.path.join('src','Makefile.inc')):
