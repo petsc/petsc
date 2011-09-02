@@ -166,38 +166,29 @@ static PetscErrorCode DMDAGetLocalElementSize(DM da,PetscInt *mxl,PetscInt *myl,
 {
   PetscInt m,n,p,M,N,P;
   PetscInt sx,sy,sz;
-  PetscInt ml,nl,pl;
 
   PetscFunctionBegin;
   DMDAGetInfo(da,0,&M,&N,&P,0,0,0,0,0,0,0,0,0);
   DMDAGetCorners(da,&sx,&sy,&sz,&m,&n,&p);
 
-  ml = nl = pl = 0;
   if (mxl != PETSC_NULL) {
     *mxl = m;
     if ((sx+m) == M) {  /* last proc */
       *mxl = m-1;
     }
-
-    ml = *mxl;
   }
   if (myl != PETSC_NULL) {
     *myl = n;
     if ((sy+n) == N) {  /* last proc */
       *myl = n-1;
     }
-
-    nl = *myl;
   }
   if (mzl != PETSC_NULL) {
     *mzl = p;
     if ((sz+p) == P) {  /* last proc */
       *mzl = p-1;
     }
-
-    pl = *mzl;
   }
-
   PetscFunctionReturn(0);
 }
 
@@ -521,9 +512,8 @@ static PetscInt ASS_MAP_wIwDI_uJuDJ(
   PetscInt ui,PetscInt ud,PetscInt u_NPE,PetscInt u_dof)
 {
   PetscInt ij;
-  PetscInt r,c,nr,nc;
+  PetscInt r,c,nc;
 
-  nr = w_NPE*w_dof;
   nc = u_NPE*u_dof;
 
   r = w_dof*wi+wd;
@@ -1604,14 +1594,10 @@ static PetscErrorCode BCApply_EAST(DM da,PetscInt d_idx,PetscScalar bc_val,Mat A
   i = nx-1;
   for (j = 0; j < ny; j++) {
     PetscInt    local_id;
-    PetscScalar coordx,coordy;
 
     local_id = i+j*nx;
 
     bc_global_ids[j] = g_idx[ n_dofs*local_id+d_idx ];
-
-    coordx = _coords[j+sj][i+si].x;
-    coordy = _coords[j+sj][i+si].y;
 
     bc_vals[j] =  bc_val;
   }
@@ -1676,14 +1662,10 @@ static PetscErrorCode BCApply_WEST(DM da,PetscInt d_idx,PetscScalar bc_val,Mat A
   i = 0;
   for (j = 0; j < ny; j++) {
     PetscInt    local_id;
-    PetscScalar coordx,coordy;
 
     local_id = i+j*nx;
 
     bc_global_ids[j] = g_idx[ n_dofs*local_id+d_idx ];
-
-    coordx = _coords[j+sj][i+si].x;
-    coordy = _coords[j+sj][i+si].y;
 
     bc_vals[j] =  bc_val;
   }
@@ -1748,14 +1730,10 @@ static PetscErrorCode BCApply_NORTH(DM da,PetscInt d_idx,PetscScalar bc_val,Mat 
   j = ny-1;
   for (i = 0; i < nx; i++) {
     PetscInt    local_id;
-    PetscScalar coordx,coordy;
 
     local_id = i+j*nx;
 
     bc_global_ids[i] = g_idx[ n_dofs*local_id+d_idx ];
-
-    coordx = _coords[j+sj][i+si].x;
-    coordy = _coords[j+sj][i+si].y;
 
     bc_vals[i] =  bc_val;
   }
@@ -1820,14 +1798,10 @@ static PetscErrorCode BCApply_SOUTH(DM da,PetscInt d_idx,PetscScalar bc_val,Mat 
   j = 0;
   for (i = 0; i < nx; i++) {
     PetscInt    local_id;
-    PetscScalar coordx,coordy;
 
     local_id = i+j*nx;
 
     bc_global_ids[i] = g_idx[ n_dofs*local_id+d_idx ];
-
-    coordx = _coords[j+sj][i+si].x;
-    coordy = _coords[j+sj][i+si].y;
 
     bc_vals[i] =  bc_val;
   }
