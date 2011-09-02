@@ -586,21 +586,10 @@ PetscErrorCode PCSetUp_ML(PC pc)
         ML_Gen_AmatrixRAP(ml_object, old_mesh_level, mesh_level);
       }
 
-#if 0
-      /*
-        The wrapped data structures are being reused, so wrappers do not need to be regenerated.
-        We increase state here in case another object is caching based on state.
-       */
-      for (level=0; level<fine_level; level++) {
-        ierr = PetscObjectStateIncrease((PetscObject)gridctx[level].A);CHKERRQ(ierr);
-      }
-#else
       level = fine_level - 1;
       if (size == 1) { /* convert ML P, R and A into seqaij format */
         for (mllevel=1; mllevel<Nlevels; mllevel++){
           mlmat = &(ml_object->Amat[mllevel]);
-          //ierr = MatDestroy(&gridctx[level].A);CHKERRQ(ierr);
-          //ierr = MatWrapML_SeqAIJ(mlmat,MAT_INITIAL_MATRIX,&gridctx[level].A);CHKERRQ(ierr);
           ierr = MatWrapML_SeqAIJ(mlmat,MAT_REUSE_MATRIX,&gridctx[level].A);CHKERRQ(ierr);
           level--;
         }
@@ -611,7 +600,6 @@ PetscErrorCode PCSetUp_ML(PC pc)
           level--;
         }
       }
-#endif
 
       for (level=0; level<fine_level; level++) {
         if (level > 0){
