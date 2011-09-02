@@ -93,6 +93,8 @@ extern PetscErrorCode   TSMonitorDefault(TS,PetscInt,PetscReal,Vec,void*);
 extern PetscErrorCode   TSMonitorSolution(TS,PetscInt,PetscReal,Vec,void*);
 extern PetscErrorCode   TSMonitorSolutionCreate(TS,PetscViewer,void**);
 extern PetscErrorCode   TSMonitorSolutionDestroy(void**);
+extern PetscErrorCode   TSMonitorSolutionBinary(TS,PetscInt,PetscReal,Vec,void*);
+
 extern PetscErrorCode   TSStep(TS);
 extern PetscErrorCode   TSSolve(TS,Vec,PetscReal*);
 extern PetscErrorCode   TSGetConvergedReason(TS,TSConvergedReason*);

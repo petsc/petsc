@@ -115,6 +115,17 @@ PetscErrorCode  TSSetFromOptions(TS ts)
       ierr = TSMonitorSolutionCreate(ts,PETSC_NULL,&ctx);CHKERRQ(ierr);
       ierr = TSMonitorSet(ts,TSMonitorSolution,ctx,TSMonitorSolutionDestroy);CHKERRQ(ierr);
     }
+    opt  = PETSC_FALSE;
+    ierr = PetscOptionsString("-ts_monitor_solution_binary","Save each solution to a binary file","TSMonitorSolutionBinary",0,monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+    if (flg) {
+      PetscViewer ctx;
+      if (monfilename[0]) {
+        ierr = PetscViewerBinaryOpen(((PetscObject)ts)->comm,monfilename,FILE_MODE_WRITE,&ctx);CHKERRQ(ierr);
+      } else {
+        ctx = PETSC_VIEWER_BINARY_(((PetscObject)ts)->comm);
+      }
+      ierr = TSMonitorSet(ts,TSMonitorSolutionBinary,ctx,(PetscErrorCode (*)(void**))PetscViewerDestroy);CHKERRQ(ierr);
+    }
 
     ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
     if (ts->problem_type == TS_LINEAR) {ierr = SNESSetType(snes,SNESKSPONLY);CHKERRQ(ierr);}
@@ -2665,6 +2676,35 @@ PetscErrorCode  TSGetConvergedReason(TS ts,TSConvergedReason *reason)
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidPointer(reason,2);
   *reason = ts->reason;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSMonitorSolutionBinary"
+/*@C
+   TSMonitorSolutionBinary - Monitors progress of the TS solvers by VecView() for the solution at each timestep. Normally the viewer is a binary file
+
+   Collective on TS
+
+   Input Parameters:
++  ts - the TS context
+.  step - current time-step
+.  ptime - current time
+-  viewer - binary viewer
+
+   Level: intermediate
+
+.keywords: TS,  vector, monitor, view
+
+.seealso: TSMonitorSet(), TSMonitorDefault(), VecView()
+@*/
+PetscErrorCode  TSMonitorSolutionBinary(TS ts,PetscInt step,PetscReal ptime,Vec x,void *dummy)
+{
+  PetscErrorCode       ierr;
+  PetscViewer          viewer = (PetscViewer)dummy;
+
+  PetscFunctionBegin;
+  ierr = VecView(x,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
