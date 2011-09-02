@@ -553,7 +553,7 @@ static PetscErrorCode TaoSolverSolve_POUNDERS(TaoSolver tao)
 	  mfqP->model_indices[ii++] = i;
 	  ierr = VecScatterBegin(mfqP->scatterx,mfqP->Xhist[ii],mfqP->localx,
 				 INSERT_VALUES, SCATTER_FORWARD); CHKERRQ(ierr);
-	  ierr = VecScatterBegin(mfqP->scatterx,mfqP->Xhist[ii],mfqP->localx,
+	  ierr = VecScatterEnd(mfqP->scatterx,mfqP->Xhist[ii],mfqP->localx,
 				 INSERT_VALUES, SCATTER_FORWARD); CHKERRQ(ierr);
 	  ierr = VecGetArray(mfqP->localx,&x); CHKERRQ(ierr);
 	  for (j=0;j<mfqP->n;j++) {
@@ -564,7 +564,7 @@ static PetscErrorCode TaoSolverSolve_POUNDERS(TaoSolver tao)
 	  
 	  ierr = VecScatterBegin(mfqP->scatterf,mfqP->Fhist[ii],mfqP->localf,
 				 INSERT_VALUES, SCATTER_FORWARD); CHKERRQ(ierr);
-	  ierr = VecScatterBegin(mfqP->scatterf,mfqP->Fhist[ii],mfqP->localf,
+	  ierr = VecScatterEnd(mfqP->scatterf,mfqP->Fhist[ii],mfqP->localf,
 				 INSERT_VALUES, SCATTER_FORWARD); CHKERRQ(ierr);
 	  ierr = VecGetArray(mfqP->localf,&f); CHKERRQ(ierr);
 	  for (j=0;j<mfqP->m;j++) {

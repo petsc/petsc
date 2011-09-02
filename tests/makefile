@@ -144,6 +144,10 @@ test_chwirut1: test_chwirut1.o tao_chkopts
 	-${CLINKER} -o test_chwirut1 test_chwirut1.o ${TAO_LIB} ${PETSC_LIB}
 	${RM} test_chwirut1.o
 
+test_chwirut2: test_chwirut2.o tao_chkopts
+	-${CLINKER} -o test_chwirut2 test_chwirut2.o ${TAO_LIB} ${PETSC_LIB}
+	${RM} test_chwirut2.o
+
 test_chebyq1: test_chebyq1.o tao_chkopts
 	-${CLINKER} -o test_chebyq1 test_chebyq1.o ${TAO_LIB} ${PETSC_LIB}
 	${RM} test_chebyq1.o

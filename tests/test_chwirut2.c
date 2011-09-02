@@ -9,6 +9,7 @@
 */
 
 #include "taosolver.h"
+#include "mpi.h"
 #include <math.h>  /*  For pow(), fabs(), log(), and exp()  */
 
 
@@ -34,7 +35,6 @@ static char help[]="Finds the nonlinear least-squares solution to the model \n\
    Routines: TaoInitialize(); TaoFinalize(); 
    Routines: TaoCreate(); TaoDestroy();
    Routines: TaoSetPetscFunction(); 
-   Routines: TaoSetPetscConstraintsFunction(); TaoSetPetscJacobian(); 
    Routines: TaoSetPetscInitialVector();
    Routines: TaoSetApplication(); TaoSetFromOptions(); TaoSolve(); TaoView(); 
    Processors: 1
@@ -43,22 +43,26 @@ T*/
 #define NOBSERVATIONS 214
 #define NPARAMETERS 3
 
+#define DIE_TAG 2000
+#define IDLE_TAG 1000
+
+
 /* User-defined application context */
 typedef struct {
   /* Working space */
   PetscReal t[NOBSERVATIONS];   /* array of independent variables of observation */
   PetscReal y[NOBSERVATIONS];   /* array of dependent variables */
-  PetscReal j[NOBSERVATIONS][NPARAMETERS]; /* dense jacobian matrix array*/
-  PetscInt idm[NOBSERVATIONS];  /* Matrix indices for jacobian */
-  PetscInt idn[NPARAMETERS];
+  PetscMPIInt size,rank;
 } AppCtx;
 
 /* User provided Routines */
 PetscErrorCode InitializeData(AppCtx *user);
 PetscErrorCode FormStartingPoint(Vec);
 PetscErrorCode EvaluateFunction(TaoSolver, Vec, Vec, void *);
-PetscErrorCode EvaluateJacobian(TaoSolver, Vec, Mat*, Mat*, MatStructure*,void *);
-
+PetscErrorCode MyMonitor(TaoSolver, void*);
+PetscErrorCode TaskWorker(AppCtx *user);
+PetscErrorCode StopWorkers(AppCtx *user);
+PetscErrorCode RunSimulation(PetscReal *x, PetscInt i, PetscReal*f, AppCtx *user);
 
 /*--------------------------------------------------------------------*/
 #undef __FUNCT__
@@ -67,73 +71,54 @@ int main(int argc,char **argv)
 {
   PetscErrorCode ierr;           /* used to check for functions returning nonzeros */
   Vec        x, f;               /* solution, function */
-  Mat        J;                  /* Jacobian matrix */ 
   TaoSolver  tao;                /* TAO_SOLVER solver context */
-  PetscInt   i;               /* iteration information */
-  PetscReal  hist[100],resid[100];
-  PetscInt   nhist;
   AppCtx     user;               /* user-defined work context */
 
    /* Initialize TAO and PETSc */
   PetscInitialize(&argc,&argv,(char *)0,help);
   TaoInitialize(&argc,&argv,(char *)0,help);
 
-  /* Allocate vectors */
-  ierr = VecCreateSeq(MPI_COMM_SELF,NPARAMETERS,&x); CHKERRQ(ierr);
-  ierr = VecCreateSeq(MPI_COMM_SELF,NOBSERVATIONS,&f); CHKERRQ(ierr);
-
-  /* Create the Jacobian matrix. */
-  ierr = MatCreateSeqDense(MPI_COMM_SELF,NOBSERVATIONS,NPARAMETERS,PETSC_NULL,&J);  
-  CHKERRQ(ierr);
-
-  for (i=0;i<NOBSERVATIONS;i++)
-    user.idm[i] = i;
-
-  for (i=0;i<NPARAMETERS;i++)
-    user.idn[i] = i;
-
-
-
-  /* TAO code begins here */
-
-  /* Create TAO solver and set desired solution method */
-  ierr = TaoSolverCreate(PETSC_COMM_SELF,&tao);CHKERRQ(ierr);
-  ierr = TaoSolverSetType(tao,"tao_pounders"); CHKERRQ(ierr);
-
- /* Set the function and Jacobian routines. */
+  MPI_Comm_size(MPI_COMM_WORLD,&user.size);
+  MPI_Comm_rank(MPI_COMM_WORLD,&user.rank);
   ierr = InitializeData(&user); CHKERRQ(ierr);
-  ierr = FormStartingPoint(x); CHKERRQ(ierr);
-  ierr = TaoSolverSetInitialVector(tao,x); CHKERRQ(ierr);
-  ierr = TaoSolverSetSeparableObjectiveRoutine(tao,f,EvaluateFunction,(void*)&user); CHKERRQ(ierr);
-  ierr = TaoSolverSetJacobianRoutine(tao, J, J, EvaluateJacobian, (void*)&user);  CHKERRQ(ierr);
 
+  /* Run optimization on rank 0 */
+  if (user.rank == 0) {
+    /* Allocate vectors */
+    ierr = VecCreateSeq(PETSC_COMM_SELF,NPARAMETERS,&x); CHKERRQ(ierr);
+    ierr = VecCreateSeq(PETSC_COMM_SELF,NOBSERVATIONS,&f); CHKERRQ(ierr);
 
-  /* Check for any TAO command line arguments */
-  ierr = TaoSolverSetFromOptions(tao); CHKERRQ(ierr);
+    /* TAO code begins here */
 
-  ierr = TaoSolverSetHistory(tao,hist,resid,0,100,PETSC_TRUE); CHKERRQ(ierr);
-  /* Perform the Solve */
-  ierr = TaoSolverSolve(tao); CHKERRQ(ierr);
-  ierr = TaoSolverGetHistory(tao,0,0,0,&nhist); CHKERRQ(ierr);
-  for (i=0;i<nhist;i++) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"%12.5f\t%12.5f\n",hist[i],resid[i]); 
+    /* Create TAO solver and set desired solution method */
+    ierr = TaoSolverCreate(PETSC_COMM_SELF,&tao);CHKERRQ(ierr);
+    ierr = TaoSolverSetType(tao,"tao_pounders"); CHKERRQ(ierr);
+
+    /* Set the function and Jacobian routines. */
+    ierr = FormStartingPoint(x); CHKERRQ(ierr);
+    ierr = TaoSolverSetInitialVector(tao,x); CHKERRQ(ierr);
+    ierr = TaoSolverSetSeparableObjectiveRoutine(tao,f,EvaluateFunction,(void*)&user); CHKERRQ(ierr);
+    ierr = TaoSolverSetMonitor(tao,MyMonitor,&user,PETSC_NULL); CHKERRQ(ierr);
+
+    
+    /* Check for any TAO command line arguments */
+    ierr = TaoSolverSetFromOptions(tao); CHKERRQ(ierr);
+
+    /* Perform the Solve */
+    ierr = TaoSolverSolve(tao); CHKERRQ(ierr);
+    
+    /* Free TAO data structures */
+    ierr = TaoSolverDestroy(&tao); CHKERRQ(ierr);
+
+    /* Free PETSc data structures */
+    ierr = VecDestroy(&x); CHKERRQ(ierr);
+    ierr = VecDestroy(&f); CHKERRQ(ierr);
+    StopWorkers(&user);
+  } else {
+    TaskWorker(&user);
   }
-  ierr = TaoSolverView(tao,PETSC_VIEWER_STDOUT_SELF); CHKERRQ(ierr);
 
-  /* Use VecView to print x to screen  */
-  //ierr = VecView(x,PETSC_VIEWER_STDOUT_SELF); CHKERRQ(ierr);
-
-
-  /* Free TAO data structures */
-  ierr = TaoSolverDestroy(&tao); CHKERRQ(ierr);
-
-   /* Free PETSc data structures */
-  ierr = VecDestroy(&x); CHKERRQ(ierr);
-  ierr = VecDestroy(&f); CHKERRQ(ierr);
-  ierr = MatDestroy(&J); CHKERRQ(ierr);
-
-
-  /* Finalize TAO */
+    /* Finalize TAO */
   TaoFinalize();
   PetscFinalize();
   
@@ -150,68 +135,55 @@ PetscErrorCode EvaluateFunction(TaoSolver tao, Vec X, Vec F, void *ptr)
 {
   AppCtx *user = (AppCtx *)ptr;
   PetscInt i;
-  PetscReal *y=user->y,*x,*f,*t=user->t;
+  PetscReal *x,*f;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = VecGetArray(X,&x); CHKERRQ(ierr);
   ierr = VecGetArray(F,&f); CHKERRQ(ierr);
 
-  for (i=0;i<NOBSERVATIONS;i++) {
-    f[i] = y[i] - exp(-x[0]*t[i])/(x[1] + x[2]*t[i]);
+
+  if (user->size == 1) {
+    /* Single processor */
+    for (i=0;i<NOBSERVATIONS;i++) {
+      ierr = RunSimulation(x,i,&f[i],user); CHKERRQ(ierr);
+    }
+  } else {
+    /* Multiprocessor master */
+    PetscMPIInt tag; 
+    PetscInt finishedtasks,next_task,checkedin;
+    PetscReal f_i;
+    MPI_Status status;
+    
+    next_task=0;
+    finishedtasks=0;
+    checkedin=0;
+    
+    while(finishedtasks < NOBSERVATIONS || checkedin < user->size-1) {
+      ierr = MPI_Recv(&f_i,1,MPIU_REAL,MPI_ANY_SOURCE,MPI_ANY_TAG,PETSC_COMM_WORLD,&status); CHKERRQ(ierr);
+      if (status.MPI_TAG == IDLE_TAG) {
+	checkedin++;
+      } else {
+
+	tag = status.MPI_TAG;
+	f[tag] = (PetscReal)f_i;
+	finishedtasks++;
+      }
+
+      if (next_task<NOBSERVATIONS) {
+	ierr = MPI_Send(x,3,MPIU_REAL,status.MPI_SOURCE,next_task,PETSC_COMM_WORLD); CHKERRQ(ierr);
+	next_task++;
+
+      } else {
+	/* Send idle message */
+	ierr = MPI_Send(x,3,MPIU_REAL,status.MPI_SOURCE,IDLE_TAG,PETSC_COMM_WORLD); CHKERRQ(ierr);
+      }	  
+    } 
   }
-
   
-
   ierr = VecRestoreArray(X,&x); CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&f); CHKERRQ(ierr);
-  PetscReal tmp;
-  ierr = VecNorm(F,NORM_2,&tmp); CHKERRQ(ierr);
-
   PetscLogFlops(6*NOBSERVATIONS);
-  PetscFunctionReturn(0);
-}
-
-/*------------------------------------------------------------*/
-/* J[i][j] = df[i]/dt[j] */
-#undef __FUNCT__
-#define __FUNCT__ "EvaluateJacobian"
-PetscErrorCode EvaluateJacobian(TaoSolver tao, Vec X, Mat *J, Mat *Jpre, MatStructure*matstruct,void *ptr)
-{
-  AppCtx *user = (AppCtx *)ptr;
-  PetscInt i;
-  PetscReal *x,*t=user->t;
-  PetscReal base;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-
-
-  /* Get handles to the Vectors */
-  ierr = VecGetArray(X,&x); CHKERRQ(ierr);
-
-
-
-  for (i=0;i<NOBSERVATIONS;i++) {
-    base = exp(-x[0]*t[i])/(x[1] + x[2]*t[i]);
-
-    user->j[i][0] = t[i]*base;
-    user->j[i][1] = base/(x[1] + x[2]*t[i]);
-    user->j[i][2] = base*t[i]/(x[1] + x[2]*t[i]);
-
-  }
-
-  /* Assemble the matrix */
-  ierr = MatSetValues(*J,NOBSERVATIONS,user->idm, NPARAMETERS, user->idn,(PetscReal *)user->j,
-		      INSERT_VALUES); CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-  
-  /* Return the handles */
-  ierr = VecRestoreArray(X,&x); CHKERRQ(ierr);
-
-  PetscLogFlops(NOBSERVATIONS * 13);
-
   PetscFunctionReturn(0);
 }
 
@@ -463,5 +435,86 @@ PetscErrorCode InitializeData(AppCtx *user)
   y[i] =    28.9000;  t[i++] =   1.7500;
   y[i] =    28.9500;  t[i++] =   1.7500;
 
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MyMonitor"
+PetscErrorCode MyMonitor(TaoSolver tao, void *ptr) 
+{
+  PetscReal fc,gnorm;
+  PetscInt its;
+  PetscViewer viewer = PETSC_VIEWER_STDOUT_SELF;
+  PetscErrorCode ierr;
+
+
+  PetscFunctionBegin;
+  ierr = TaoSolverGetSolutionStatus(tao,&its,&fc,&gnorm,0,0,0);
+  ierr=PetscViewerASCIIPrintf(viewer,"iter = %d,",its); CHKERRQ(ierr);
+  ierr=PetscViewerASCIIPrintf(viewer," Function value %g,",fc); CHKERRQ(ierr);
+  if (gnorm > 1.e-6) {
+    ierr=PetscViewerASCIIPrintf(viewer," Residual: %7.6f \n",gnorm);CHKERRQ(ierr);
+  } else if (gnorm > 1.e-11) {
+    ierr=PetscViewerASCIIPrintf(viewer," Residual: < 1.0e-6 \n"); CHKERRQ(ierr);
+  } else {
+    ierr=PetscViewerASCIIPrintf(viewer," Residual: < 1.0e-11 \n");CHKERRQ(ierr);
+  }
+  
+  PetscFunctionReturn(0);
+}
+  
+#undef __FUNCT__
+#define __FUNCT__ "TaskWorker"
+PetscErrorCode TaskWorker(AppCtx *user) 
+{
+  PetscReal x[NPARAMETERS],f;
+  PetscMPIInt  tag=IDLE_TAG;
+  PetscInt     index;
+  MPI_Status   status;
+  PetscErrorCode ierr;
+  
+  
+  PetscFunctionBegin;
+  ierr = MPI_Send(&f,1,MPIU_REAL,0,IDLE_TAG,PETSC_COMM_WORLD); CHKERRQ(ierr);
+  while (tag != DIE_TAG) {
+    ierr = MPI_Recv(x,3,MPIU_REAL,0,MPI_ANY_TAG,PETSC_COMM_WORLD,&status); CHKERRQ(ierr);
+    tag = status.MPI_TAG;
+    if (tag == IDLE_TAG) {
+      ierr = MPI_Send(&f,1,MPIU_REAL,0,IDLE_TAG,PETSC_COMM_WORLD);CHKERRQ(ierr);
+    } else if (tag != DIE_TAG) {
+      index = (PetscInt)tag;
+      ierr=RunSimulation(x,index,&f,user); CHKERRQ(ierr);
+      ierr=MPI_Send(&f,1,MPIU_REAL,0,tag,PETSC_COMM_WORLD);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "RunSimulation"
+PetscErrorCode RunSimulation(PetscReal *x, PetscInt i, PetscReal*f, AppCtx *user)
+{
+  PetscReal *t = user->t;
+  PetscReal *y = user->y;
+  *f = y[i] - exp(-x[0]*t[i])/(x[1] + x[2]*t[i]);
+  return(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "StopWorkers"
+PetscErrorCode StopWorkers(AppCtx *user)
+{
+  PetscInt checkedin;
+  MPI_Status status;
+  PetscReal f,x[NPARAMETERS];
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  checkedin=0;
+  while(checkedin < user->size-1) {
+    ierr = MPI_Recv(&f,1,MPIU_REAL,MPI_ANY_SOURCE,MPI_ANY_TAG,PETSC_COMM_WORLD,&status); CHKERRQ(ierr);
+    checkedin++;
+    ierr = MPI_Send(x,3,MPIU_REAL,status.MPI_SOURCE,DIE_TAG,PETSC_COMM_WORLD); CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
