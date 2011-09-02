@@ -235,13 +235,14 @@ PetscErrorCode FormInitialGuess1(AppCtx *user,Vec X)
 {
   PetscInt       i, j, row, mx, my, xs, ys, xm, ym, Xm, Ym, Xs, Ys;
   PetscErrorCode ierr;
-  double         one = 1.0, lambda, temp1, temp, hx, hy, hxdhy, hydhx,sc;
+  double         one = 1.0, lambda, temp1, temp, hx, hy;
+  /* double hxdhy, hydhx,sc; */
   PetscScalar    *x;
   Vec            localX = user->fine.localX;
 
   mx = user->fine.mx;       my = user->fine.my;            lambda = user->param;
   hx = one/(double)(mx-1);  hy = one/(double)(my-1);
-  sc = hx*hy*lambda;        hxdhy = hx/hy;            hydhx = hy/hx;
+  /* sc = hx*hy*lambda;        hxdhy = hx/hy;            hydhx = hy/hx; */
 
   temp1 = lambda/(lambda + one);
 

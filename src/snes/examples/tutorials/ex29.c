@@ -355,7 +355,7 @@ PetscErrorCode Initialize(DMMG *dmmg)
   PetscErrorCode ierr;
   PetscInt       i,j,mx,my,xs,ys,xm,ym;
   PetscReal      two = 2.0,one = 1.0;
-  PetscReal      hx,hy,dhx,dhy,hxdhy,hydhx,hxhy,dhxdhy;
+  PetscReal      hx,hy,dhx,dhy,hxdhy,hydhx,dhxdhy; /* hxhy */
   PetscReal      d_e,rho_s,de2,xx,yy;
   Field          **x, **localx;
   Vec            localX;
@@ -381,7 +381,7 @@ PetscErrorCode Initialize(DMMG *dmmg)
   dhx   = mx/lx;              dhy = my/ly;
   hx    = one/dhx;             hy = one/dhy;
   hxdhy = hx*dhy;           hydhx = hy*dhx;
-  hxhy  = hx*hy;           dhxdhy = dhx*dhy;
+  /* hxhy  = hx*hy; */      dhxdhy = dhx*dhy;
 
   /*
      Get local grid boundaries (for 2-dimensional DMDA):
@@ -874,7 +874,7 @@ PetscErrorCode FormFunctionLocali(DMDALocalInfo *info,MatStencil *st,Field **x,P
   Parameters      *param = user->param;
   PetscErrorCode ierr;
   PetscInt       i,j,c;
-  PetscInt       xints,xinte,yints,yinte;
+  /* PetscInt       xints,xinte,yints,yinte; */
   PassiveReal    hx,hy,dhx,dhy,hxdhy,hydhx,hxhy,dhxdhy;
   PassiveReal    de2,rhos2,nu,eta,dde2;
   PassiveReal    two = 2.0,one = 1.0,p5 = 0.5;
@@ -901,9 +901,10 @@ PetscErrorCode FormFunctionLocali(DMDALocalInfo *info,MatStencil *st,Field **x,P
   hxdhy = hx*dhy;           hydhx   = hy*dhx;
   hxhy  = hx*hy;             dhxdhy = dhx*dhy;
 
+  /*
   xints = info->xs; xinte = info->xs+info->xm;
   yints = info->ys; yinte = info->ys+info->ym;
-
+   */
 
   i = st->i; j = st->j; c = st->c;
 
@@ -996,7 +997,7 @@ PetscErrorCode FormFunctionLocali4(DMDALocalInfo *info,MatStencil *st,Field **x,
   Parameters     *param = user->param;
   PetscErrorCode ierr;
   PetscInt       i,j;
-  PetscInt       xints,xinte,yints,yinte;
+  /* PetscInt       xints,xinte,yints,yinte; */
   PassiveReal    hx,hy,dhx,dhy,hxdhy,hydhx,hxhy,dhxdhy;
   PassiveReal    de2,rhos2,nu,eta,dde2;
   PassiveReal    two = 2.0,one = 1.0,p5 = 0.5;
@@ -1023,9 +1024,10 @@ PetscErrorCode FormFunctionLocali4(DMDALocalInfo *info,MatStencil *st,Field **x,
   hxdhy = hx*dhy;           hydhx   = hy*dhx;
   hxhy  = hx*hy;             dhxdhy = dhx*dhy;
 
+  /*
   xints = info->xs; xinte = info->xs+info->xm;
   yints = info->ys; yinte = info->ys+info->ym;
-
+   */
 
   i = st->i; j = st->j; 
 

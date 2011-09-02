@@ -16,7 +16,6 @@ int main(int argc,char **args)
   PetscBool      flg;
   PetscScalar    v,one = 1.0;
   Vec            u,b;
-  PetscInt       bs,ndiag,diag[7];  bs = 1,ndiag = 5;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -26,13 +25,6 @@ int main(int argc,char **args)
   ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
   ierr = MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n);CHKERRQ(ierr);
   ierr = MatSetFromOptions(C);CHKERRQ(ierr);
-
-  diag[0] = n;
-  diag[1] = 1;
-  diag[2] = 0;
-  diag[3] = -1;
-  diag[4] = -n;
-  if (size>1) {ndiag = 7; diag[5] = 2; diag[6] = -2;}
 
   /* Create the matrix for the five point stencil, YET AGAIN */
   for (i=0; i<m; i++) { 

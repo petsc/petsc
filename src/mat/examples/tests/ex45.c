@@ -41,7 +41,7 @@ void Store2DArray(int m,int n,double *a,const char *filename,int *fdd)
 {
   int        fd = *fdd;
   int        i,j;
-  int        nz = -1,classid = 1211216,ierr;
+  int        nz = -1,classid = 1211216;
   double *vals;
 
   if (!fd) {
@@ -52,10 +52,10 @@ void Store2DArray(int m,int n,double *a,const char *filename,int *fdd)
     }
     *fdd = fd;
   }
-  ierr = write(fd,&classid,sizeof(int));
-  ierr = write(fd,&m,sizeof(int));
-  ierr = write(fd,&n,sizeof(int));
-  ierr = write(fd,&nz,sizeof(int));
+  write(fd,&classid,sizeof(int));
+  write(fd,&m,sizeof(int));
+  write(fd,&n,sizeof(int));
+  write(fd,&nz,sizeof(int));
 
   /*
      transpose the matrix, since it is stored by rows on the disk
@@ -70,7 +70,7 @@ void Store2DArray(int m,int n,double *a,const char *filename,int *fdd)
       vals[i+m*j] = a[j+i*n];
     }
   }
-  ierr = write(fd,vals,m*n*sizeof(double));
+  write(fd,vals,m*n*sizeof(double));
   free(vals);
 
 }
@@ -79,7 +79,7 @@ void Store2DArray(int m,int n,double *a,const char *filename,int *fdd)
 #define __FUNCT__ "Store1DArray"
 void Store1DArray(int m,double *a,const char *filename,int *fdd)
 {
-  int  fd = *fdd,ierr;
+  int  fd = *fdd;
   int  classid = 1211214; /* classid for vectors */
 
   if (fd == -1) {
@@ -90,9 +90,9 @@ void Store1DArray(int m,double *a,const char *filename,int *fdd)
     }
     *fdd = fd;
   }
-  ierr = write(fd,&classid,sizeof(int));
-  ierr = write(fd,&m,sizeof(int));
-  ierr = write(fd,a,m*sizeof(double));
+  write(fd,&classid,sizeof(int));
+  write(fd,&m,sizeof(int));
+  write(fd,a,m*sizeof(double));
 }
 
 

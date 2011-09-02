@@ -147,16 +147,16 @@ PetscErrorCode CkEigenSolutions(PetscInt cklvl,Mat A,PetscInt il,PetscInt iu,Pet
   nev = iu - il;
   if (nev <= 0) PetscFunctionReturn(0);
 
-  ierr = VecDuplicate(evec[0],&vt1);
-  ierr = VecDuplicate(evec[0],&vt2);
+  ierr = VecDuplicate(evec[0],&vt1);CHKERRQ(ierr);
+  ierr = VecDuplicate(evec[0],&vt2);CHKERRQ(ierr);
 
   switch (cklvl){
   case 2:  
     dot_max = 0.0;
     for (i = il; i<iu; i++){
-      ierr = VecCopy(evec[i], vt1);
+      ierr = VecCopy(evec[i], vt1);CHKERRQ(ierr);
       for (j=il; j<iu; j++){ 
-        ierr = VecDot(evec[j],vt1,&dot);
+        ierr = VecDot(evec[j],vt1,&dot);CHKERRQ(ierr);
         if (j == i){
           dot = PetscAbsScalar(dot - 1.0);
         } else {
@@ -165,22 +165,22 @@ PetscErrorCode CkEigenSolutions(PetscInt cklvl,Mat A,PetscInt il,PetscInt iu,Pet
         if (PetscAbsScalar(dot) > dot_max) dot_max = PetscAbsScalar(dot);
 #ifdef DEBUG_CkEigenSolutions
         if (dot > tols[1] ) {
-          ierr = VecNorm(evec[i],NORM_INFINITY,&norm);
-          ierr = PetscPrintf(PETSC_COMM_SELF,"|delta(%d,%d)|: %G, norm: %G\n",i,j,dot,norm);
+          ierr = VecNorm(evec[i],NORM_INFINITY,&norm);CHKERRQ(ierr);
+          ierr = PetscPrintf(PETSC_COMM_SELF,"|delta(%d,%d)|: %G, norm: %G\n",i,j,dot,norm);CHKERRQ(ierr);
         } 
 #endif
       } 
     } 
-    ierr = PetscPrintf(PETSC_COMM_SELF,"    max|(x_j^T*x_i) - delta_ji|: %G\n",dot_max);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"    max|(x_j^T*x_i) - delta_ji|: %G\n",dot_max);CHKERRQ(ierr);
 
   case 1: 
     norm_max = 0.0;
     for (i = il; i< iu; i++){
-      ierr = MatMult(A, evec[i], vt1);
-      ierr = VecCopy(evec[i], vt2);
+      ierr = MatMult(A, evec[i], vt1);CHKERRQ(ierr);
+      ierr = VecCopy(evec[i], vt2);CHKERRQ(ierr);
       tmp  = -eval[i];
-      ierr = VecAXPY(vt1,tmp,vt2);
-      ierr = VecNorm(vt1, NORM_INFINITY, &norm);
+      ierr = VecAXPY(vt1,tmp,vt2);CHKERRQ(ierr);
+      ierr = VecNorm(vt1, NORM_INFINITY, &norm);CHKERRQ(ierr);
       norm = PetscAbsScalar(norm); 
       if (norm > norm_max) norm_max = norm;
 #ifdef DEBUG_CkEigenSolutions
@@ -190,13 +190,13 @@ PetscErrorCode CkEigenSolutions(PetscInt cklvl,Mat A,PetscInt il,PetscInt iu,Pet
       }
 #endif
     }    
-    ierr = PetscPrintf(PETSC_COMM_SELF,"    max_resi:                    %G\n", norm_max);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"    max_resi:                    %G\n", norm_max);CHKERRQ(ierr);
    break;
   default:
-    ierr = PetscPrintf(PETSC_COMM_SELF,"Error: cklvl=%d is not supported \n",cklvl);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Error: cklvl=%d is not supported \n",cklvl);CHKERRQ(ierr);
   }
 
-  ierr = VecDestroy(&vt2); 
-  ierr = VecDestroy(&vt1);
+  ierr = VecDestroy(&vt2);CHKERRQ(ierr);
+  ierr = VecDestroy(&vt1);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

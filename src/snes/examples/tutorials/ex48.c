@@ -1453,7 +1453,7 @@ int main(int argc,char *argv[])
   THI            thi;
   PetscInt       i;
   PetscErrorCode ierr;
-  PetscLogStage  stages[3];
+  PETSC_UNUSED PetscLogStage  stages[3];
   PetscBool      repeat_fine_solve = PETSC_FALSE;
 
   ierr = PetscInitialize(&argc,&argv,0,help);CHKERRQ(ierr);

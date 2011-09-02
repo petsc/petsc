@@ -31,14 +31,14 @@ PetscErrorCode FormFunctionLocal1(DMDALocalInfo *info,Field1 **x,Field2 **x2,Fie
   AppCtx         *user = (AppCtx*)ptr;
   PetscInt       xints,xinte,yints,yinte,i,j;
   PetscReal      hx,hy,dhx,dhy,hxdhy,hydhx;
-  PetscReal      grashof,prandtl,lid;
+  PetscReal      grashof,lid; /* ,prandtl */
   PetscScalar    u,uxx,uyy,vx,vy,avx,avy,vxp,vxm,vyp,vym;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(EVENT_FORMFUNCTIONLOCAL1,0,0,0,0);CHKERRQ(ierr);
   grashof = user->grashof;  
-  prandtl = user->prandtl;
+  /* prandtl = user->prandtl; */
   lid     = user->lidvelocity;
 
   dhx = (PetscReal)(info->mx-1);  dhy = (PetscReal)(info->my-1);

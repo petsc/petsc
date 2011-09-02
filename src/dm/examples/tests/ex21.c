@@ -111,11 +111,11 @@ int main(int argc,char **argv)
   mx = 2;
   my = 2;
   mz = 2;
-  PetscOptionsGetInt(PETSC_NULL,"-mx", &mx, 0 );
-  PetscOptionsGetInt(PETSC_NULL,"-my", &my, 0 );
-  PetscOptionsGetInt(PETSC_NULL,"-mz", &mz, 0 );
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-mx", &mx, 0 );CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-my", &my, 0 );CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-mz", &mz, 0 );CHKERRQ(ierr);
 
-  test1_DAInjection3d(mx,my,mz);
+  ierr = test1_DAInjection3d(mx,my,mz);CHKERRQ(ierr);
 
   ierr = PetscFinalize();
   return 0;
