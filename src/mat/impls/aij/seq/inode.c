@@ -104,7 +104,7 @@ static PetscErrorCode MatGetRowIJ_SeqAIJ_Inode_Symmetric(Mat A,PetscInt *iia[],P
       ia[i1+1]++;
       ia[i2+1]++;
       i2++;                     /* Start col of next node */
-      while(((col=*j+ishift)<tns[i2]) && (j<jmax)) ++j;
+      while((j<jmax) && ((col=*j+ishift)<tns[i2])) ++j;
       i2 = tvc[col];
     }
     if(i2 == i1) ia[i2+1]++;    /* now the diagonal element */
@@ -133,7 +133,7 @@ static PetscErrorCode MatGetRowIJ_SeqAIJ_Inode_Symmetric(Mat A,PetscInt *iia[],P
       ja[work[i2]++] = i1 + oshift;
       ja[work[i1]++] = i2 + oshift;
       ++i2;
-      while(((col=*j+ishift)< tns[i2])&&(j<jmax)) ++j; /* Skip rest col indices in this node */
+      while((j<jmax) && ((col=*j+ishift)< tns[i2])) ++j; /* Skip rest col indices in this node */
       i2 = tvc[col];
     }
     if (i2 == i1) ja[work[i1]++] = i2 + oshift;
