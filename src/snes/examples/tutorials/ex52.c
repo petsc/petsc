@@ -28,6 +28,10 @@ typedef struct {
  -----------------------------------------------------------------------------*/
 #include "ex52.h"
 
+PetscScalar quadratic_2d(const PetscReal x[]) {
+  return x[0]*x[0] + x[1]*x[1];
+};
+
 #undef __FUNCT__
 #define __FUNCT__ "ProcessOptions"
 PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
@@ -143,6 +147,49 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user) {
   //}
   ierr = DMMeshCreateSection(dm, dim, numDof, bcLabel, 1, &section);CHKERRQ(ierr);
   ierr = DMMeshSetSection(dm, "default", section);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "FormInitialGuess"
+/*
+  FormInitialGuess - Forms initial approximation.
+
+  Input Parameters:
++ user - user-defined application context
+- guessFunc - The coordinate function to use for the guess
+
+  Output Parameter:
+. X - vector
+*/
+PetscErrorCode FormInitialGuess(Vec X, PetscScalar (*guessFunc)(const PetscReal []), InsertMode mode, AppCtx *user)
+{
+  Vec            localX, coordinates;
+  PetscSection   section, cSection;
+  PetscInt       vStart, vEnd;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DMGetLocalVector(user->dm, &localX);CHKERRQ(ierr);
+  ierr = DMMeshGetDepthStratum(user->dm, 0, &vStart, &vEnd);CHKERRQ(ierr);
+  ierr = DMMeshGetDefaultSection(user->dm, &section);CHKERRQ(ierr);
+  ierr = DMMeshGetCoordinateSection(user->dm, &cSection);CHKERRQ(ierr);
+  ierr = DMMeshGetCoordinateVec(user->dm, &coordinates);CHKERRQ(ierr);
+  for(PetscInt v = vStart; v < vEnd; ++v) {
+    PetscScalar  values[1];
+    PetscScalar *coords;
+
+    ierr = VecGetValuesSection(coordinates, cSection, v, &coords);CHKERRQ(ierr);
+    values[0] = (*guessFunc)(coords);
+    ierr = VecSetValuesSection(localX, section, v, values, mode);CHKERRQ(ierr);
+  }
+  ierr = VecDestroy(&coordinates);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&section);CHKERRQ(ierr);
+  ierr = PetscSectionDestroy(&cSection);CHKERRQ(ierr);
+
+  ierr = DMLocalToGlobalBegin(user->dm, localX, INSERT_VALUES, X);CHKERRQ(ierr);
+  ierr = DMLocalToGlobalEnd(user->dm, localX, INSERT_VALUES, X);CHKERRQ(ierr);
+  ierr = DMRestoreLocalVector(user->dm, &localX);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -265,7 +312,7 @@ PetscErrorCode FormFunctionLocalBatch(DM dm, Vec X, Vec F, AppCtx *user)
   const PetscReal *basis         = user->q.basis;
   const PetscReal *basisDer      = user->q.basisDer;
   PetscReal       *coords, *v0, *J, *invJ, *detJ;
-  PetscScalar     *realSpaceDer, *fieldGrad, *elemVec;
+  PetscScalar     *elemVec;
   PetscInt         cStart, cEnd;
   PetscErrorCode   ierr;
 
@@ -290,6 +337,7 @@ PetscErrorCode FormFunctionLocalBatch(DM dm, Vec X, Vec F, AppCtx *user)
   }
   ierr = IntegrateElementBatch(numCells, numBasisFuncs, u, detJ, numQuadPoints, quadPoints, quadWeights, basis, basisDer, elemVec);CHKERRQ(ierr);
   for(PetscInt c = cStart; c < cEnd; ++c) {
+    if (debug) {ierr = DMMeshPrintCellVector(c, "Residual", numBasisFuncs, &elemVec[c*numBasisFuncs]);CHKERRQ(ierr);}
     ierr = DMMeshVecSetClosure(dm, F, c, &elemVec[c*numBasisFuncs], ADD_VALUES);CHKERRQ(ierr);
   }
   ierr = PetscFree3(u,detJ,elemVec);CHKERRQ(ierr);
@@ -490,6 +538,7 @@ int main(int argc, char **argv)
 
     ierr = DMGetGlobalVector(dm, &X);CHKERRQ(ierr);
     ierr = DMGetGlobalVector(dm, &F);CHKERRQ(ierr);
+    ierr = FormInitialGuess(X, quadratic_2d, INSERT_VALUES, &user);CHKERRQ(ierr);
     if (user.batch) {
       ierr = DMMeshSetLocalFunction(dm, (PetscErrorCode (*)(DM, Vec, Vec, void*)) FormFunctionLocalBatch);CHKERRQ(ierr);
     } else {
