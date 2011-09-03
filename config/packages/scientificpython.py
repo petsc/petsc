@@ -24,9 +24,14 @@ class Configure(config.package.Package):
     self.logPrintBox('Installing Scientific Python (PETSc version)')
     # Copy ScientificPython into $PETSC_ARCH/lib/python2.*/site-packages
     installLoc = os.path.join(self.installDir, self.altlibdir)
+    initfile   = os.path.join(installLoc, '__init__.py')
     packageDir = os.path.join(installLoc, 'Scientific')
     if not os.path.isdir(installLoc):
       os.makedirs(installLoc)
+    if not os.path.exists(initfile):
+      f = file(initfile, 'w')
+      f.write('')
+      f.close()
     if os.path.exists(packageDir):
       shutil.rmtree(packageDir)
     shutil.copytree(os.path.join(self.packageDir, 'Scientific'), packageDir)
