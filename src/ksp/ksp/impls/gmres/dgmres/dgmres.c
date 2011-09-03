@@ -1224,6 +1224,7 @@ PetscErrorCode  KSPDGMRESImproveEig_DGMRES (KSP ksp, PetscInt neig)
 	
 	/* Select the eigenvalues to reorder */
 	ierr = PetscMalloc(N * sizeof(PetscBLASInt), &select);	CHKERRQ(ierr);
+        ierr = PetscMemzero(select, N * sizeof(PetscBLASInt)); CHKERRQ(ierr);
 	if (dgmres->GreatestEig == PETSC_FALSE)
 	{
 		for (j = 0; j < NbrEig; j++)
@@ -1312,9 +1313,10 @@ EXTERN_C_END
    Notes: Left and right preconditioning are supported, but not symmetric preconditioning. Complex arithmetic is not yet supported
 
    References:
-     [1]Restarted GMRES preconditioned by deflation,J. Computational and Applied Mathematics, 69(1996), 303-318.
-	[2]On the performance of various adaptive preconditioned GMRES strategies, 5(1998), 101-121.
+   [1]Restarted GMRES preconditioned by deflation,J. Computational and Applied Mathematics, 69(1996), 303-318.
+   [2]On the performance of various adaptive preconditioned GMRES strategies, 5(1998), 101-121.
 
+ Contributed by: Desire NUENTSA WAKAM,INRIA
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPFGMRES, KSPLGMRES,
            KSPGMRESSetRestart(), KSPGMRESSetHapTol(), KSPGMRESSetPreAllocateVectors(), KSPGMRESSetOrthogonalization(), KSPGMRESGetOrthogonalization(),
