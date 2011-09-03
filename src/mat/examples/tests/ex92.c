@@ -17,7 +17,7 @@ int main(int argc,char **args)
   IS             *is1,*is2;
   PetscRandom    rand;
   PetscBool      flg;
-  PetscLogStage  stages[2];
+  PETSC_UNUSED PetscLogStage  stages[2];
   PetscInt       vid = -1;
 
   PetscInitialize(&argc,&args,(char *)0,help);
