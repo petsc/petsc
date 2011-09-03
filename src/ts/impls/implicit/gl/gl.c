@@ -44,6 +44,7 @@ static PetscErrorCode TSGLSchemeCreate(PetscInt p,PetscInt q,PetscInt r,PetscInt
   PetscInt       j;
   PetscErrorCode ierr;
 
+
   PetscFunctionBegin;
   if (p < 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Scheme order must be positive");
   if (r < 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"At least one item must be carried between steps");
@@ -66,10 +67,14 @@ static PetscErrorCode TSGLSchemeCreate(PetscInt p,PetscInt q,PetscInt r,PetscInt
   ierr = PetscMalloc6(r,PetscScalar,&scheme->alpha,r,PetscScalar,&scheme->beta,r,PetscScalar,&scheme->gamma,3*s,PetscScalar,&scheme->phi,3*r,PetscScalar,&scheme->psi,r,PetscScalar,&scheme->stage_error);CHKERRQ(ierr);
   {
     PetscInt     i,j,k,ss=s+2;
-    PetscBLASInt m,n,one=1,*ipiv,lwork=4*((s+3)*3+3),info,rank,ldb;
+    PetscBLASInt m,n,one=1,*ipiv,lwork=4*((s+3)*3+3),info,ldb;
     PetscReal    rcond,*sing,*workreal;
     PetscScalar  *ImV,*H,*bmat,*workscalar,*c=scheme->c,*a=scheme->a,*b=scheme->b,*u=scheme->u,*v=scheme->v;
     ierr = PetscMalloc7(PetscSqr(r),PetscScalar,&ImV,3*s,PetscScalar,&H,3*ss,PetscScalar,&bmat,lwork,PetscScalar,&workscalar,5*(3+r),PetscReal,&workreal,r+s,PetscReal,&sing,r+s,PetscBLASInt,&ipiv);CHKERRQ(ierr);
+
+#if !defined(PETSC_MISSING_LAPACK_GELSS)
+    PetscBLASInt rank;
+#endif
 
     /* column-major input */
     for (i=0; i<r-1; i++) {
@@ -166,7 +171,7 @@ static PetscErrorCode TSGLSchemeCreate(PetscInt p,PetscInt q,PetscInt r,PetscInt
     n = PetscBLASIntCast(s);
     ldb = PetscBLASIntCast(ss);
     rcond = 1e-12;
-#if defined(PETSC_MISSING_LAPACK_GELSS)
+#if defined(PETSC_MISSING_LAPACK_GELS)
   /* ESSL does not have this routine */
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"GELSS - Lapack routine is unavailable\nNot able to run GL time stepping.");
 #else
