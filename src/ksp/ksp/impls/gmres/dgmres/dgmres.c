@@ -729,13 +729,16 @@ PetscErrorCode  KSPDGMRESComputeDeflationData_DGMRES (KSP ksp)
     PetscErrorCode ierr;
     PetscInt       i,j, k;
     PetscInt       r=dgmres->r;
-    PetscBLASInt   nr, bmax, info;
+    PetscBLASInt   nr, bmax;
     PetscInt       neig; /* number of eigenvalues to extract at each restart */
     PetscInt       neig1 = dgmres->neig + EIG_OFFSET; /* max number of eig that can be extracted at each restart */
     PetscInt       max_neig = dgmres->max_neig; /* Max number of eigenvalues to extract during the iterative process */
     PetscInt	   N = dgmres->max_k+1;
     PetscInt       n = dgmres->it+1;
     PetscReal	   alpha;
+#if !defined(PETSC_MISSING_LAPACK_GETRF) 
+    PetscBLASInt info;
+#endif
 
     PetscFunctionBegin;
     ierr=PetscLogEventBegin (KSP_DGMRESComputeDeflationData, ksp, 0,0,0);
@@ -907,22 +910,25 @@ PetscErrorCode  KSPDGMRESComputeSchurForm_DGMRES (KSP ksp, PetscInt *neig) {
     PetscInt       	N = dgmres->max_k + 1, n=dgmres->it+1;
     PetscBLASInt	bn, bN;
     PetscReal    	*A;
-    PetscBLASInt 	ilo=1, ihi;
+    PetscBLASInt 	ihi;
     PetscBLASInt 	ldA; 		/* leading dimension of A */
     PetscBLASInt	ldQ;		/* leading dimension of Q */
     PetscReal		*Q; 		/*  orthogonal matrix of  (left) schur vectors */
     PetscReal 		*work;		/* working vector */
     PetscBLASInt 	lwork;		/* size of the working vector */
-    PetscBLASInt 	info;		/* Output info from Lapack routines */
     PetscInt	 	*perm;		/* Permutation vector to sort eigenvalues */
-    PetscInt	    i, j;
+    PetscInt	        i, j;
     PetscBLASInt	NbrEig; 	/* Number of eigenvalues really extracted */
     PetscReal		*wr, *wi, *modul; 	/* Real and imaginary part and modul of the eigenvalues of A*/
-    PetscReal 		CondEig; /* lower bound on the reciprocal condition number for the selected cluster of eigenvalues */
-    PetscReal 		CondSub; /* estimated reciprocal condition number of the specified invariant subspace. */
     PetscBLASInt *select;
     PetscBLASInt *iwork;
     PetscBLASInt liwork;
+#if !defined(PETSC_MISSING_LAPACK_HSEQR) 
+    PetscBLASInt 	ilo=1;
+    PetscBLASInt        info;
+    PetscReal 		CondEig; /* lower bound on the reciprocal condition number for the selected cluster of eigenvalues */
+    PetscReal 		CondSub; /* estimated reciprocal condition number of the specified invariant subspace. */
+#endif
 
     PetscFunctionBegin;
     bn=PetscBLASIntCast (n);
@@ -1029,13 +1035,16 @@ PetscErrorCode  KSPDGMRESApplyDeflation_DGMRES (KSP ksp, Vec x, Vec y) {
     KSP_DGMRES     	*dgmres = (KSP_DGMRES*) ksp->data;
     PetscInt	i, r = dgmres->r;
     PetscErrorCode 	ierr;
-    PetscBLASInt	info, nrhs = 1;
-    PetscReal	berr, ferr;
+    PetscBLASInt	nrhs = 1;
     PetscReal	alpha = 1.0;
     PetscInt	max_neig = dgmres->max_neig;
     PetscBLASInt	br = PetscBLASIntCast (r);
     PetscBLASInt	bmax = PetscBLASIntCast (max_neig);
     PetscInt	lambda = dgmres->lambdaN;
+#if !defined(PETSC_MISSING_LAPACK_GETRS) 
+    PetscReal	berr, ferr;
+    PetscBLASInt info;
+#endif
 
     PetscFunctionBegin;
     ierr=PetscLogEventBegin (KSP_DGMRESApplyDeflation, ksp, 0, 0, 0);    CHKERRQ (ierr);
@@ -1114,11 +1123,12 @@ PetscErrorCode  KSPDGMRESImproveEig_DGMRES (KSP ksp, PetscInt neig)
 	PetscInt		ierr;
 	PetscBLASInt NbrEig = 0,nr,bm;
 	PetscBLASInt *select;
-
-	PetscBLASInt wantQ = 1, wantZ = 1;
 	PetscBLASInt liwork, *iwork; 
+#if !defined(PETSC_MISSING_LAPACK_TGSEN)
+        PetscReal Dif[2];
 	PetscBLASInt ijob = 2;
-	PetscReal Dif[2];
+	PetscBLASInt wantQ = 1, wantZ = 1;
+#endif
 
 	PetscFunctionBegin;
 	/* Block construction of the matrices AUU=(AU)'*U and (AU)'*AU*/
@@ -1214,6 +1224,7 @@ PetscErrorCode  KSPDGMRESImproveEig_DGMRES (KSP ksp, PetscInt neig)
 	
 	/* Select the eigenvalues to reorder */
 	ierr = PetscMalloc(N * sizeof(PetscBLASInt), &select);	CHKERRQ(ierr);
+        ierr = PetscMemzero(select, N * sizeof(PetscBLASInt)); CHKERRQ(ierr);
 	if (dgmres->GreatestEig == PETSC_FALSE)
 	{
 		for (j = 0; j < NbrEig; j++)
@@ -1230,7 +1241,7 @@ PetscErrorCode  KSPDGMRESImproveEig_DGMRES (KSP ksp, PetscInt neig)
 	ierr = PetscFree(work); CHKERRQ(ierr);
 	ierr = PetscMalloc(lwork * sizeof(PetscReal), &work);	CHKERRQ(ierr);
 	ierr = PetscMalloc(liwork * sizeof(PetscBLASInt), &iwork);	CHKERRQ(ierr);
-#if defined(PETSC_MISSING_LAPACK_TGSEN) 
+#if defined(PETSC_MISSING_LAPACK_TGSEN )
         SETERRQ(((PetscObject)ksp)->comm,PETSC_ERR_SUP,"TGSEN - Lapack routine is unavailable.");
 #else
 	LAPACKtgsen_(&ijob, &wantQ, &wantZ, select, &N, AUAU, &ldA, AUU, &ldA, wr, wi, beta, Q, &N, Z, &N, &NbrEig, NULL, NULL, & (Dif[0]), work, &lwork, iwork, &liwork, &info);
@@ -1302,9 +1313,10 @@ EXTERN_C_END
    Notes: Left and right preconditioning are supported, but not symmetric preconditioning. Complex arithmetic is not yet supported
 
    References:
-     [1]Restarted GMRES preconditioned by deflation,J. Computational and Applied Mathematics, 69(1996), 303-318.
-	[2]On the performance of various adaptive preconditioned GMRES strategies, 5(1998), 101-121.
+   [1]Restarted GMRES preconditioned by deflation,J. Computational and Applied Mathematics, 69(1996), 303-318.
+   [2]On the performance of various adaptive preconditioned GMRES strategies, 5(1998), 101-121.
 
+ Contributed by: Desire NUENTSA WAKAM,INRIA
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPFGMRES, KSPLGMRES,
            KSPGMRESSetRestart(), KSPGMRESSetHapTol(), KSPGMRESSetPreAllocateVectors(), KSPGMRESSetOrthogonalization(), KSPGMRESGetOrthogonalization(),

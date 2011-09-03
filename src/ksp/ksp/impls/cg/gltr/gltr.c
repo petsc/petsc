@@ -164,11 +164,11 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
   PetscReal      norm_t, norm_w, pert;
 
   PetscInt       i, j, max_cg_its, max_lanczos_its, max_newton_its, sigma;
-  PetscBLASInt   t_size = 0, l_size = 0, il, iu, e_valus, info;
+  PetscBLASInt   t_size = 0, l_size = 0, il, iu, info;
   PetscBLASInt   nrhs, nldb;
 
 #if !defined(PETSC_MISSING_LAPACK_STEBZ)
-  PetscBLASInt  e_splts;
+  PetscBLASInt  e_valus, e_splts;
 #endif
   PetscBool     diagonalscale;
 
