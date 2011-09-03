@@ -696,7 +696,7 @@ static PetscErrorCode RDIJacobian_FE(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal 
     const PetscInt rc[2] = {i,i+1};
     ierr = PetscMemzero(K,sizeof(K));CHKERRQ(ierr);
     for (q=0; q<nq; q++) {
-      PetscScalar D_R,rad;
+      PetscScalar D_R,PETSC_UNUSED rad;
       RDNode n,nx,nt,ntx,drad,dD_R,dxD_R,dEm;
       RDEvaluate(interp,deriv,q,x,i,&n,&nx);
       RDEvaluate(interp,deriv,q,xdot,i,&nt,&ntx);

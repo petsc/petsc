@@ -199,36 +199,28 @@ static PetscErrorCode DMDAGetLocalElementSize(DM da,PetscInt *mxl,PetscInt *myl,
   PetscErrorCode ierr;
   PetscInt m,n,p,M,N,P;
   PetscInt sx,sy,sz;
-  PetscInt ml,nl,pl;
 
   PetscFunctionBegin;
   ierr = DMDAGetInfo(da,0,&M,&N,&P,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   ierr = DMDAGetCorners(da,&sx,&sy,&sz,&m,&n,&p);CHKERRQ(ierr);
 
-  ml = nl = pl = 0;
   if (mxl != PETSC_NULL) {
     *mxl = m;
     if ((sx+m) == M) {  /* last proc */
       *mxl = m-1;
     }
-
-    ml = *mxl;
   }
   if (myl != PETSC_NULL) {
     *myl = n;
     if ((sy+n) == N) {  /* last proc */
       *myl = n-1;
     }
-
-    nl = *myl;
   }
   if (mzl != PETSC_NULL) {
     *mzl = p;
     if ((sz+p) == P) {  /* last proc */
       *mzl = p-1;
     }
-
-    pl = *mzl;
   }
 
   PetscFunctionReturn(0);
@@ -921,7 +913,7 @@ static PetscErrorCode solve_elasticity_2d(PetscInt mx,PetscInt my)
     for (i = si; i < si+nx; i++) {
       PetscScalar centroid_x = _prop_coords[j][i].x; /* centroids of cell */
       PetscScalar centroid_y = _prop_coords[j][i].y;
-      PetscScalar coord_x,coord_y;
+      PETSC_UNUSED PetscScalar coord_x,coord_y;
 
 
       if (coefficient_structure == 0) { /* isotropic */
@@ -1185,7 +1177,7 @@ static PetscErrorCode BCApply_EAST(DM da,PetscInt d_idx,PetscScalar bc_val,Mat A
   i = nx-1;
   for (j = 0; j < ny; j++) {
     PetscInt    local_id;
-    PetscScalar coordx,coordy;
+    PETSC_UNUSED PetscScalar coordx,coordy;
 
     local_id = i+j*nx;
 
@@ -1256,7 +1248,7 @@ static PetscErrorCode BCApply_WEST(DM da,PetscInt d_idx,PetscScalar bc_val,Mat A
   i = 0;
   for (j = 0; j < ny; j++) {
     PetscInt    local_id;
-    PetscScalar coordx,coordy;
+    PETSC_UNUSED PetscScalar coordx,coordy;
 
     local_id = i+j*nx;
 
