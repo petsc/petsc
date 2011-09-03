@@ -171,7 +171,7 @@ static PetscErrorCode TSGLSchemeCreate(PetscInt p,PetscInt q,PetscInt r,PetscInt
     n = PetscBLASIntCast(s);
     ldb = PetscBLASIntCast(ss);
     rcond = 1e-12;
-#if defined(PETSC_MISSING_LAPACK_GELS)
+#if defined(PETSC_MISSING_LAPACK_GELSS)
   /* ESSL does not have this routine */
   SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,"GELSS - Lapack routine is unavailable\nNot able to run GL time stepping.");
 #else
