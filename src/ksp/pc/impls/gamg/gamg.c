@@ -9,7 +9,7 @@ PetscLogEvent gamg_setup_events[NUM_SET];
 
 #define GAMG_MAXLEVELS 30
 
-#define GAMG_STAGES
+/*#define GAMG_STAGES*/
 #if (defined PETSC_USE_LOG && defined GAMG_STAGES)
 static PetscLogStage gamg_stages[GAMG_MAXLEVELS];
 #endif
@@ -208,7 +208,7 @@ PetscErrorCode partitionLevel( Mat a_Amat_fine,
     new_npe = neq/MIN_EQ_PROC; /* hardwire min. number of eq/proc */
     if( new_npe == 0 || neq < TOP_GRID_LIM ) new_npe = 1; 
     else if (new_npe >= *a_nactive_proc ) new_npe = *a_nactive_proc; /* no change, rare */
-    
+
     ierr = PetscMalloc( npe*sizeof(PetscMPIInt), &ranks ); CHKERRQ(ierr); 
     ierr = PetscMalloc( npe*sizeof(PetscMPIInt), &counts ); CHKERRQ(ierr); 
     
@@ -628,7 +628,7 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
 
     ierr = KSPSetOperators( smoother, Aarr[level], Aarr[level], DIFFERENT_NONZERO_PATTERN );
     ierr = KSPChebychevSetEigenvalues( smoother, emax, emin );CHKERRQ(ierr);
-    /*ierr = KSPSetTolerances(smoother,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,2); CHKERRQ(ierr);*/
+    /* ierr = KSPSetTolerances(smoother,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,2); CHKERRQ(ierr); */
     ierr = KSPGetPC( smoother, &subpc ); CHKERRQ(ierr);
     ierr = PCSetType( subpc, PETSC_GAMG_SMOOTHER ); CHKERRQ(ierr);
     ierr = KSPSetNormType( smoother, KSP_NORM_NONE ); CHKERRQ(ierr);

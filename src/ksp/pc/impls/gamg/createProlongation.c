@@ -140,7 +140,9 @@ PetscErrorCode smoothAggs( const Mat a_Gmat_2, /* base (squared) graph */
     ierr = VecGetLocalSize( mpimat_2->lvec, &nghosts_2 ); CHKERRQ(ierr);
     /* get 'cpcol_1_state' */
     ierr = MatGetVecs( a_Gmat_1, &tempVec, 0 );         CHKERRQ(ierr);
-    ierr = VecSetValues( tempVec, nloc, gids, a_lid_state, INSERT_VALUES );  CHKERRQ(ierr); 
+    if(nloc>0){
+      ierr = VecSetValues( tempVec, nloc, gids, a_lid_state, INSERT_VALUES );  CHKERRQ(ierr); 
+    }
     ierr = VecAssemblyBegin( tempVec ); CHKERRQ(ierr);
     ierr = VecAssemblyEnd( tempVec ); CHKERRQ(ierr);
     ierr = VecScatterBegin(mpimat_1->Mvctx,tempVec, mpimat_1->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
@@ -350,10 +352,10 @@ PetscErrorCode maxIndSetAgg( const IS a_perm,
     PetscScalar *lid_state;
 
     ierr = PetscMalloc( nloc*sizeof(PetscInt), &lid_cprowID ); CHKERRQ(ierr);
-    ierr = PetscMalloc( nloc*sizeof(PetscInt), &lid_gid ); CHKERRQ(ierr);
-    ierr = PetscMalloc( nloc*sizeof(PetscScalar), &deleted_parent_gid ); CHKERRQ(ierr);
+    ierr = PetscMalloc( (nloc+1)*sizeof(PetscInt), &lid_gid ); CHKERRQ(ierr);
+    ierr = PetscMalloc( (nloc+1)*sizeof(PetscScalar), &deleted_parent_gid ); CHKERRQ(ierr);
     ierr = PetscMalloc( (nloc+num_fine_ghosts)*sizeof(PetscInt), &id_llist ); CHKERRQ(ierr);
-    ierr = PetscMalloc( nloc*sizeof(PetscScalar), &lid_state ); CHKERRQ(ierr);
+    ierr = PetscMalloc( (nloc+1)*sizeof(PetscScalar), &lid_state ); CHKERRQ(ierr);
 
     for(kk=0;kk<nloc;kk++) {
       id_llist[kk] = -1; /* terminates linked lists */
@@ -1203,7 +1205,7 @@ int compare (const void *a, const void *b)
    . a_dim - dimention
    . a_data_cols - number of colums in data (rows is infered from 
    . a_useSA - do smoothed aggregation, otherwise do geometric
-   . a_level - 
+   . a_level - 0 for finest, +L-1 for coarsest
   Input/Output Parameter:
    . a_bs - block size of fine grid (in) and coarse grid (out)
   Output Parameter:
@@ -1266,18 +1268,30 @@ PetscErrorCode createProlongation( const Mat a_Amat,
   }
   ierr = MatAssemblyBegin(Gmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(Gmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
+  /* scale Gmat so filter works */
+  {
+    Vec diag;
+    ierr = MatGetVecs( Gmat, &diag, 0 );    CHKERRQ(ierr);
+    ierr = MatGetDiagonal( Gmat, diag );    CHKERRQ(ierr);
+    ierr = VecReciprocal( diag );           CHKERRQ(ierr);
+    ierr = VecSqrtAbs( diag );              CHKERRQ(ierr);
+    ierr = MatDiagonalScale( Gmat, diag, diag );CHKERRQ(ierr);
+    ierr = VecDestroy( &diag );           CHKERRQ(ierr);
+  }
+  
+  /* filter Gmat */
   ierr = MatGetInfo(Gmat,MAT_GLOBAL_SUM,&info); CHKERRQ(ierr);
   ierr = MatGetSize( Gmat, &M, &N );  CHKERRQ(ierr);
   nnz0 = (PetscInt)(info.nz_used/(PetscReal)M + 0.5);
   if( a_useSA ){  
-    vfilter = .01/(PetscScalar)nnz0;
+    vfilter = 1.5/(PetscScalar)nnz0;
+    for(jj=0;jj<a_level;jj++) vfilter *= .01;
   }
   else {
     vfilter = .1/(PetscScalar)nnz0;
   }
   ierr = MatGetOwnershipRange(Gmat,&Istart,&Iend);CHKERRQ(ierr); /* use AIJ from here */
-
-  /* filter Gmat */
   {
     Mat Gmat2; 
     ierr = MatCreateMPIAIJ(wcomm,nloc,nloc,PETSC_DECIDE,PETSC_DECIDE,3*nnz0,PETSC_NULL,2*nnz0,PETSC_NULL,&Gmat2);
@@ -1318,17 +1332,6 @@ PetscErrorCode createProlongation( const Mat a_Amat,
       CHKERRQ(ierr);
       assert( Bmat->compressedrow.use );
     }
-  }
-
-  /* scale Gmat */
-  {
-    Vec diag;
-    ierr = MatGetVecs( Gmat, &diag, 0 );    CHKERRQ(ierr);
-    ierr = MatGetDiagonal( Gmat, diag );    CHKERRQ(ierr);
-    ierr = VecReciprocal( diag );           CHKERRQ(ierr);
-    ierr = VecSqrtAbs( diag );              CHKERRQ(ierr);
-    ierr = MatDiagonalScale( Gmat, diag, diag );CHKERRQ(ierr);
-    ierr = VecDestroy( &diag );           CHKERRQ(ierr);
   }
   
   /* force compressed row storage for B matrix */
