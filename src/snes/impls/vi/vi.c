@@ -2478,12 +2478,12 @@ PetscErrorCode SNESVISetVariableBounds(SNES snes, Vec xl, Vec xu)
 #define __FUNCT__ "SNESSetFromOptions_VI"
 static PetscErrorCode SNESSetFromOptions_VI(SNES snes)
 {
-  SNES_VI        *vi = (SNES_VI *)snes->data;
-  const char     *lses[] = {"basic","basicnonorms","quadratic","cubic"};
-  const char     *vies[] = {"ss","rs","rsaug"};
-  PetscErrorCode ierr;
-  PetscInt       indx;
-  PetscBool      flg,set,flg2;
+  SNES_VI            *vi = (SNES_VI *)snes->data;
+  const char         *vies[] = {"ss","rs","rsaug"};
+  PetscErrorCode     ierr;
+  PetscInt           indx;
+  SNESLineSearchType inds;
+  PetscBool          flg,set,flg2;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("SNES semismooth method options");CHKERRQ(ierr);
@@ -2510,19 +2510,19 @@ static PetscErrorCode SNESSetFromOptions_VI(SNES snes)
       snes->ops->solve = SNESSolveVI_RSAUG;
     }
   }
-  ierr = PetscOptionsEList("-snes_ls","Line search used","SNESLineSearchSet",lses,4,"cubic",&indx,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsEnum("-snes_ls","Line search used","SNESLineSearchSet",SNESLineSearchTypes,(PetscEnum)SNES_LS_CUBIC,(PetscEnum*)&inds,&flg);CHKERRQ(ierr);
   if (flg) {
-    switch (indx) {
-    case 0:
+    switch (inds) {
+    case SNES_LS_BASIC:
       ierr = SNESLineSearchSet(snes,SNESLineSearchNo_VI,PETSC_NULL);CHKERRQ(ierr);
       break;
-    case 1:
+    case SNES_LS_BASIC_NONORMS:
       ierr = SNESLineSearchSet(snes,SNESLineSearchNoNorms_VI,PETSC_NULL);CHKERRQ(ierr);
       break;
-    case 2:
+    case SNES_LS_QUADRATIC:
       ierr = SNESLineSearchSet(snes,SNESLineSearchQuadratic_VI,PETSC_NULL);CHKERRQ(ierr);
       break;
-    case 3:
+    case SNES_LS_CUBIC:
       ierr = SNESLineSearchSet(snes,SNESLineSearchCubic_VI,PETSC_NULL);CHKERRQ(ierr);
       break;
     }

@@ -361,6 +361,16 @@ extern PetscErrorCode  SNESDefaultComputeJacobianColor(SNES,Vec,Mat*,Mat*,MatStr
 extern PetscErrorCode  SNESSetComputeInitialGuess(SNES,PetscErrorCode (*)(SNES,Vec,void*),void*);
 
 /* --------- Routines specifically for line search methods --------------- */
+/*E
+    SNESLineSearchType - type of line search used in Newton's method as well as VI solvers and Picard solvers
+
+    Level: beginner
+
+.seealso: SNESSetFromOptions(), SNESLineSearchSet()
+E*/
+typedef enum {SNES_LS_BASIC, SNES_LS_BASIC_NONORMS, SNES_LS_QUADRATIC, SNES_LS_CUBIC} SNESLineSearchType;
+extern const char *SNESLineSearchTypes[];
+
 extern PetscErrorCode  SNESLineSearchSet(SNES,PetscErrorCode(*)(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal*,PetscReal*,PetscBool *),void*);
 extern PetscErrorCode  SNESLineSearchNo(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal*,PetscReal*,PetscBool *);
 extern PetscErrorCode  SNESLineSearchNoNorms(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal*,PetscReal*,PetscBool *);

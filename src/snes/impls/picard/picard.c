@@ -66,25 +66,25 @@ PetscErrorCode PicardLineSearchQuadratic(SNES snes, void *lsctx, Vec X, Vec F, V
 #define __FUNCT__ "SNESSetFromOptions_Picard"
 static PetscErrorCode SNESSetFromOptions_Picard(SNES snes)
 {
-  SNES_Picard   *ls = (SNES_Picard *)snes->data;
-  const char    *types[] = {"basic", "quadratic", "cubic"};
-  PetscInt       indx = 0;
-  PetscBool      flg;
-  PetscErrorCode ierr;
+  SNES_Picard        *ls = (SNES_Picard *)snes->data;
+  SNESLineSearchType indx;
+  PetscBool          flg;
+  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("SNES Picard options");CHKERRQ(ierr);
-    ierr = PetscOptionsEList("-snes_picard","Picard Type","SNESLineSearchSet",types,3,"basic",&indx,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsEnum("-snes_ls","Picard Type","SNESLineSearchSet",SNESLineSearchTypes,(PetscEnum)SNES_LS_CUBIC,(PetscEnum*)&indx,&flg);CHKERRQ(ierr);
     ls->type = indx;
     if (flg) {
       switch (indx) {
-      case 0:
+      case SNES_LS_BASIC:
+      case SNES_LS_BASIC_NONORMS:
         ierr = SNESLineSearchSet(snes,SNESLineSearchNo,PETSC_NULL);CHKERRQ(ierr);
         break;
-      case 1:
+      case SNES_LS_QUADRATIC:
         ierr = SNESLineSearchSet(snes,PicardLineSearchQuadratic,PETSC_NULL);CHKERRQ(ierr);
         break;
-      case 2:
+      case SNES_LS_CUBIC:
         ierr = SNESLineSearchSet(snes,SNESLineSearchNo,PETSC_NULL);CHKERRQ(ierr);
         break;
       }

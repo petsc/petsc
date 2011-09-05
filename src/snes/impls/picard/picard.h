@@ -7,7 +7,7 @@
 #include <private/snesimpl.h>
 
 typedef struct {
-  int type; /* Type of Picard iteration */
+  SNESLineSearchType type; 
   /* Line Search */
   PetscErrorCode (*LineSearch)(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal*,PetscReal*,PetscBool *);
   /* Line Search Parameters */

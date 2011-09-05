@@ -1,6 +1,8 @@
 
 #include <../src/snes/impls/ls/lsimpl.h>
 
+const char *SNESLineSearchTypes[] = {"BASIC","BASICNONORMS","QUADRATIC","CUBIC","SNESLineSearchType","SNES_LS_",0};
+
 /*
      Checks if J^T F = 0 which implies we've found a local minimum of the norm of the function,
     || F(u) ||_2 but not a zero, F(u) = 0. In the case when one cannot compute J^T F we use the fact that
@@ -1193,11 +1195,10 @@ static PetscErrorCode SNESView_LS(SNES snes,PetscViewer viewer)
 #define __FUNCT__ "SNESSetFromOptions_LS"
 static PetscErrorCode SNESSetFromOptions_LS(SNES snes)
 {
-  SNES_LS        *ls = (SNES_LS *)snes->data;
-  const char     *lses[] = {"basic","basicnonorms","quadratic","cubic"};
-  PetscErrorCode ierr;
-  PetscInt       indx;
-  PetscBool      flg,set;
+  SNES_LS            *ls = (SNES_LS *)snes->data;
+  PetscErrorCode     ierr;
+  SNESLineSearchType indx;
+  PetscBool          flg,set;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("SNES Line search options");CHKERRQ(ierr);
@@ -1207,19 +1208,19 @@ static PetscErrorCode SNESSetFromOptions_LS(SNES snes)
     ierr = PetscOptionsBool("-snes_ls_monitor","Print progress of line searches","SNESLineSearchSetMonitor",ls->monitor ? PETSC_TRUE : PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
     if (set) {ierr = SNESLineSearchSetMonitor(snes,flg);CHKERRQ(ierr);}
 
-    ierr = PetscOptionsEList("-snes_ls","Line search used","SNESLineSearchSet",lses,4,"cubic",&indx,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsEnum("-snes_ls","Line search used","SNESLineSearchSet",SNESLineSearchTypes,(PetscEnum)SNES_LS_CUBIC,(PetscEnum*)&indx,&flg);CHKERRQ(ierr);
     if (flg) {
       switch (indx) {
-      case 0:
+      case SNES_LS_BASIC:
         ierr = SNESLineSearchSet(snes,SNESLineSearchNo,PETSC_NULL);CHKERRQ(ierr);
         break;
-      case 1:
+      case SNES_LS_BASIC_NONORMS:
         ierr = SNESLineSearchSet(snes,SNESLineSearchNoNorms,PETSC_NULL);CHKERRQ(ierr);
         break;
-      case 2:
+      case SNES_LS_QUADRATIC:
         ierr = SNESLineSearchSet(snes,SNESLineSearchQuadratic,PETSC_NULL);CHKERRQ(ierr);
         break;
-      case 3:
+      case SNES_LS_CUBIC:
         ierr = SNESLineSearchSet(snes,SNESLineSearchCubic,PETSC_NULL);CHKERRQ(ierr);
         break;
       }
