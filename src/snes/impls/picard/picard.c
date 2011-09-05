@@ -400,6 +400,11 @@ EXTERN_C_END
 
   Level: beginner
 
+  Notes: Solves F(x) - b = 0 using x^{n+1} = x^{n} - lambda (F(x^n) - b) where lambda is obtained either SNESLineSearchSetDampening() or 
+     a line search. 
+
+     This uses no derivative information thus will be much slower then Newton's method obtained with -snes_type ls
+
 .seealso:  SNESCreate(), SNES, SNESSetType(), SNESLS, SNESTR
 M*/
 EXTERN_C_BEGIN
