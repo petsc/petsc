@@ -6,7 +6,7 @@ class Configure(PETSc.package.NewPackage):
     self.download  = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/sprng-1.0.tar.gz']
     self.functions = ['make_new_seed_mpi'] 
     self.includes  = ['sprng.h'] 
-    self.liblist   = [['libcmrg.a','liblcg64.a','liblcg.a','liblfg.a','libmlfg.a']]
+    self.liblist   = [['liblcg.a']]
     return
 
   def setupDependencies(self, framework):
