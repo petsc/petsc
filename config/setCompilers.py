@@ -161,12 +161,26 @@ class Configure(config.base.Configure):
     try:
       (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --version')
       output = output +  error
-      if output.find('GNU Fortran (GCC) 4.5.') >=0 or output.find('GNU Fortran (GCC) 4.6.0 20100703') >=0:
+      import re
+      if re.match(r'GNU Fortran \(.*\) (4.5.\d+|4.6.0 20100703)', output):
         return 1
     except RuntimeError:
       pass
     return 0
   isGfortran45x = staticmethod(isGfortran45x)
+
+  def isGfortran46plus(compiler):
+    '''returns true if the compiler is gfortran-4.6.x or later'''
+    try:
+      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --version')
+      output = output +  error
+      import re
+      if re.match(r'GNU Fortran \(.*\) (4.([6789]|\d{2,}).\d+)', output):
+        return 1
+    except RuntimeError:
+      pass
+    return 0
+  isGfortran46plus = staticmethod(isGfortran46plus)
 
 
   def isG95(compiler):
