@@ -1,7 +1,12 @@
 
 #include <../src/snes/impls/ls/lsimpl.h>
 
-const char *SNESLineSearchTypes[] = {"BASIC","BASICNONORMS","QUADRATIC","CUBIC","SNESLineSearchType","SNES_LS_",0};
+const char *const SNESLineSearchTypes[] = {"BASIC","BASICNONORMS","QUADRATIC","CUBIC","SNESLineSearchType","SNES_LS_",0};
+
+const char *SNESLineSearchTypeName(SNESLineSearchType type)
+{
+  return (SNES_LS_BASIC <= type && type <= SNES_LS_CUBIC) ? SNESLineSearchTypes[type] : "unknown";
+}
 
 /*
      Checks if J^T F = 0 which implies we've found a local minimum of the norm of the function,
@@ -1174,6 +1179,7 @@ static PetscErrorCode SNESView_LS(SNES snes,PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     if (ls->LineSearch == SNESLineSearchNo)             cstr = "SNESLineSearchNo";
+    if (ls->LineSearch == SNESLineSearchNoNorms)        cstr = "SNESLineSearchNoNorms";
     else if (ls->LineSearch == SNESLineSearchQuadratic) cstr = "SNESLineSearchQuadratic";
     else if (ls->LineSearch == SNESLineSearchCubic)     cstr = "SNESLineSearchCubic";
     else                                                cstr = "unknown";

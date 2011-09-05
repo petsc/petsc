@@ -109,21 +109,13 @@ static PetscErrorCode SNESSetFromOptions_Picard(SNES snes)
 static PetscErrorCode SNESView_Picard(SNES snes, PetscViewer viewer)
 {
   SNES_Picard   *ls = (SNES_Picard *)snes->data;
-  const char    *cstr;
   PetscBool      iascii;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
   if (iascii) {
-    switch(ls->type) {
-    case 0:
-      cstr = "basic";
-      break;
-    default:
-      cstr = "unknown";
-    }
-    ierr = PetscViewerASCIIPrintf(viewer,"  picard variant: %s\n", cstr);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  picard variant: %s\n", SNESLineSearchTypeName(ls->type));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -245,7 +237,7 @@ PetscErrorCode SNESSolve_Picard(SNES snes)
     if (snes->ops->update) {
       ierr = (*snes->ops->update)(snes, snes->iter);CHKERRQ(ierr);
     }
-    if (neP->type == 0) {
+    if (neP->type == SNES_LS_BASIC || neP->type == SNES_LS_BASIC_NONORMS) {
       ierr = PetscPrintf(snes->hdr.comm, "Fixed alpha = %g\n", alpha);CHKERRQ(ierr);
       /* Update guess Y = X^n - F(X^n) */
       ierr = VecWAXPY(Y, -1.0, F, X);CHKERRQ(ierr);
@@ -425,9 +417,9 @@ PetscErrorCode  SNESCreate_Picard(SNES snes)
 
   ierr = PetscNewLog(snes, SNES_Picard, &neP);CHKERRQ(ierr);
   snes->data = (void*) neP;
-  neP->type  = 0;
-  neP->alpha		 = 1.e-4;
-  neP->maxstep		 = 1.e8;
+  neP->type          = SNES_LS_BASIC;
+  neP->alpha	     = 1.e-4;
+  neP->maxstep	     = 1.e8;
   neP->steptol       = 1.e-12;
   neP->LineSearch    = SNESLineSearchNo;
   neP->lsP           = PETSC_NULL;

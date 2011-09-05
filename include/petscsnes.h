@@ -369,7 +369,8 @@ extern PetscErrorCode  SNESSetComputeInitialGuess(SNES,PetscErrorCode (*)(SNES,V
 .seealso: SNESSetFromOptions(), SNESLineSearchSet()
 E*/
 typedef enum {SNES_LS_BASIC, SNES_LS_BASIC_NONORMS, SNES_LS_QUADRATIC, SNES_LS_CUBIC} SNESLineSearchType;
-extern const char *SNESLineSearchTypes[];
+extern const char *const SNESLineSearchTypes[];
+extern const char *SNESLineSearchTypeName(SNESLineSearchType); /* Does bounds checking, use this for viewing */
 
 extern PetscErrorCode  SNESLineSearchSet(SNES,PetscErrorCode(*)(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal*,PetscReal*,PetscBool *),void*);
 extern PetscErrorCode  SNESLineSearchNo(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal*,PetscReal*,PetscBool *);
