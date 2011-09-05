@@ -1,8 +1,10 @@
 function PetscBinaryWrite(inarg,varargin)
 %
-%  Writes in PETSc binary file sparse matrices and vectors
-%  if the array is multidimensional and dense it is saved
-%  as a one dimensional array
+%  Writes in PETSc binary file sparse matrices and vectors.
+%  If the array is multidimensional and dense it is saved
+%  as a one dimensional PETSc Vec. If you want to save the multidimensional
+%  array as a matrix that MatLoad() will read you must first convert it to 
+%  a sparse matrix: for example PetscBinaryWrite('myfile',sparse(A));
 %
 %
 %   PetscBinaryWrite(inarg,args to write,['indices','int32' or 'int64'],['precision','float64' or 'float32'])
