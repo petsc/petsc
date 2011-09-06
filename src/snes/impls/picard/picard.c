@@ -113,8 +113,7 @@ static PetscErrorCode SNESSetFromOptions_Picard(SNES snes)
         break;
       }
     }
-    ls->alpha = 1.0;
-    ierr = PetscOptionsReal("-snes_ls_damping","Momentum parameter","SNES",ls->alpha,&ls->alpha,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-snes_ls_damping","Damping parameter","SNES",ls->damping,&ls->damping,&flg);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-snes_ls_monitor","Print progress of line searches","SNESLineSearchSetMonitor",ls->monitor ? PETSC_TRUE : PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
     if (set) {ierr = SNESLineSearchSetMonitor(snes,flg);CHKERRQ(ierr);}
   ierr = PetscOptionsTail();CHKERRQ(ierr);
@@ -154,7 +153,7 @@ PetscErrorCode PicardLineSearchNo(SNES snes,void *lsctx,Vec X,Vec F,Vec dummyG,V
   SNES_Picard    *neP = (SNES_Picard *) snes->data;
 
   PetscFunctionBegin;
-  ierr = VecAXPY(X, -neP->alpha, F);CHKERRQ(ierr);
+  ierr = VecAXPY(X, -neP->damping, F);CHKERRQ(ierr);
   ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
   ierr = VecNorm(F, NORM_2, gnorm);CHKERRQ(ierr);
   if (PetscIsInfOrNanReal(*gnorm)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"Infinite or not-a-number generated norm");
@@ -169,14 +168,14 @@ PetscErrorCode PicardLineSearchNoNorms(SNES snes,void *lsctx,Vec X,Vec F,Vec dum
   SNES_Picard    *neP = (SNES_Picard *) snes->data;
 
   PetscFunctionBegin;
-  ierr = VecAXPY(X, -neP->alpha, F);CHKERRQ(ierr);
+  ierr = VecAXPY(X, -neP->damping, F);CHKERRQ(ierr);
   ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "PicardLineSearchQuadratic"
-PetscErrorCode PicardLineSearchQuadratic(SNES snes,void *lsctx,Vec X,Vec F,Vec dummyG,Vec Y,Vec W,PetscReal fnorm,PetscReal dummyXnorm,PetscReal *dummyYnorm,PetscReal *gnorm,PetscBool *flag)
+PetscErrorCode PicardLineSearchQuadratic(SNES snes,void *lsctx,Vec X,Vec F,Vec G,Vec Y,Vec W,PetscReal fnorm,PetscReal dummyXnorm,PetscReal *dummyYnorm,PetscReal *gnorm,PetscBool *flag)
 {
   PetscInt       i;
   PetscReal      alphas[3] = {0.0, 0.5, 1.0};
@@ -301,8 +300,8 @@ PetscErrorCode SNESSolve_Picard(SNES snes)
      Y <- X - lambda*Y 
      and evaluate G = function(Y) (depends on the line search). */
     /* Calculate the solution increment, Y = X^n - F(X^n) */
-    ierr = VecWAXPY(Y, -1.0, F, X);CHKERRQ(ierr);
-    ierr = (*neP->LineSearch)(snes, neP->lsP, X, F, F/*G*/, Y, W, fnorm, 0.0, &dummyNorm, &fnorm, &lsSuccess);CHKERRQ(ierr);
+    ierr = VecWAXPY(Y,-1.0,F,X);CHKERRQ(ierr);
+    ierr = (*neP->LineSearch)(snes, neP->lsP, X, F, 0, Y, W, fnorm, 0.0, &dummyNorm, &fnorm, &lsSuccess);CHKERRQ(ierr);
     if (!lsSuccess) {
       if (++snes->numFailures >= snes->maxFailures) {
         snes->reason = SNES_DIVERGED_LINE_SEARCH;
@@ -379,6 +378,10 @@ EXTERN_C_END
 
   Level: beginner
 
+  Options Database:
++   -snes_ls_damping - damping factor to apply to F(x) (used only if -snes_ls is basic or basicnonorms)
+-   -snes_ls <basic,basicnormnorms,quadratic>
+
   Notes: Solves F(x) - b = 0 using x^{n+1} = x^{n} - lambda (F(x^n) - b) where lambda is obtained either SNESLineSearchSetDamping(), -snes_damping or 
      a line search. 
 
@@ -405,7 +408,7 @@ PetscErrorCode  SNESCreate_Picard(SNES snes)
   ierr = PetscNewLog(snes, SNES_Picard, &neP);CHKERRQ(ierr);
   snes->data = (void*) neP;
   neP->type          = SNES_LS_BASIC;
-  neP->alpha	     = 1.e-4;
+  neP->damping	     = 1.0;
   neP->maxstep	     = 1.e8;
   neP->steptol       = 1.e-12;
   neP->LineSearch    = SNESLineSearchNo;

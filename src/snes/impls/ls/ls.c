@@ -376,12 +376,12 @@ PetscErrorCode  SNESLineSearchNo(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,V
   *flag = PETSC_TRUE; 
   ierr = PetscLogEventBegin(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
   ierr = VecNorm(y,NORM_2,ynorm);CHKERRQ(ierr);         /* ynorm = || y || */
-  ierr = VecWAXPY(w,-1.0,y,x);CHKERRQ(ierr);            /* w <- x - y   */
+  ierr = VecWAXPY(w,-neP->damping,y,x);CHKERRQ(ierr);            /* w <- x - y   */
   if (neP->postcheckstep) {
    ierr = (*neP->postcheckstep)(snes,x,y,w,neP->postcheck,&changed_y,&changed_w);CHKERRQ(ierr);
   }
   if (changed_y) {
-    ierr = VecWAXPY(w,-1.0,y,x);CHKERRQ(ierr);            /* w <- x - y   */
+    ierr = VecWAXPY(w,-neP->damping,y,x);CHKERRQ(ierr);            /* w <- x - y   */
   }
   ierr = SNESComputeFunction(snes,w,g);CHKERRQ(ierr);
   if (!snes->domainerror) {
@@ -457,12 +457,12 @@ PetscErrorCode  SNESLineSearchNoNorms(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Ve
   PetscFunctionBegin;
   *flag = PETSC_TRUE; 
   ierr = PetscLogEventBegin(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
-  ierr = VecWAXPY(w,-1.0,y,x);CHKERRQ(ierr);            /* w <- x - y      */
+  ierr = VecWAXPY(w,-neP->damping,y,x);CHKERRQ(ierr);            /* w <- x - y      */
   if (neP->postcheckstep) {
    ierr = (*neP->postcheckstep)(snes,x,y,w,neP->postcheck,&changed_y,&changed_w);CHKERRQ(ierr);
   }
   if (changed_y) {
-    ierr = VecWAXPY(w,-1.0,y,x);CHKERRQ(ierr);            /* w <- x - y   */
+    ierr = VecWAXPY(w,-neP->damping,y,x);CHKERRQ(ierr);            /* w <- x - y   */
   }
   
   /* don't evaluate function the last time through */
@@ -918,7 +918,7 @@ PetscErrorCode  SNESLineSearchQuadratic(SNES snes,void *lsctx,Vec x,Vec f,Vec g,
 
     Options Database Keys:
 +   -snes_ls [cubic,quadratic,basic,basicnonorms] - Selects line search
-.   -snes_ls_alpha <alpha> - Sets alpha
+.   -snes_ls_alpha <alpha> - Sets alpha used in determining if reduction in function norm is sufficient
 .   -snes_ls_maxstep <maxstep> - Sets maximum step the line search will use (if the 2-norm(y) > maxstep then scale y to be y = (maxstep/2-norm(y)) *y)
 -   -snes_ls_minlambda <minlambda> - Sets the minimum lambda the line search will use  minlambda / max_i ( y[i]/x[i] )
 
@@ -1185,6 +1185,7 @@ static PetscErrorCode SNESView_LS(SNES snes,PetscViewer viewer)
     else                                                cstr = "unknown";
     ierr = PetscViewerASCIIPrintf(viewer,"  line search variant: %s\n",cstr);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  alpha=%14.12e, maxstep=%14.12e, minlambda=%14.12e\n",(double)ls->alpha,(double)ls->maxstep,(double)ls->minlambda);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  damping factor=%14.12e\n",(double)ls->damping);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1211,6 +1212,7 @@ static PetscErrorCode SNESSetFromOptions_LS(SNES snes)
     ierr = PetscOptionsReal("-snes_ls_alpha","Function norm must decrease by","None",ls->alpha,&ls->alpha,0);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-snes_ls_maxstep","Step must be less than","None",ls->maxstep,&ls->maxstep,0);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-snes_ls_minlambda","Minimum lambda allowed","None",ls->minlambda,&ls->minlambda,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-snes_ls_damping","Damping parameter","SNES",ls->damping,&ls->damping,&flg);CHKERRQ(ierr);
     ierr = PetscOptionsBool("-snes_ls_monitor","Print progress of line searches","SNESLineSearchSetMonitor",ls->monitor ? PETSC_TRUE : PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
     if (set) {ierr = SNESLineSearchSetMonitor(snes,flg);CHKERRQ(ierr);}
 
@@ -1245,10 +1247,11 @@ EXTERN_C_END
 
    Options Database:
 +   -snes_ls [cubic,quadratic,basic,basicnonorms] - Selects line search
-.   -snes_ls_alpha <alpha> - Sets alpha
+.   -snes_ls_alpha <alpha> - Sets alpha used in determining if reduction in function norm is sufficient
 .   -snes_ls_maxstep <maxstep> - Sets the maximum stepsize the line search will use (if the 2-norm(y) > maxstep then scale y to be y = (maxstep/2-norm(y)) *y)
 .   -snes_ls_minlambda <minlambda>  - Sets the minimum lambda the line search will use  minlambda / max_i ( y[i]/x[i] )
--   -snes_ls_monitor - print information about progress of line searches 
+.   -snes_ls_monitor - print information about progress of line searches 
+-   -snes_ls_damping - damping factor used if -snes_ls is basic or basicnonorms
 
 
     Notes: This is the default nonlinear solver in SNES
@@ -1281,6 +1284,7 @@ PetscErrorCode  SNESCreate_LS(SNES snes)
   neP->alpha		= 1.e-4;
   neP->maxstep		= 1.e8;
   neP->minlambda        = 1.e-12;
+  neP->damping          = 1.0;
   neP->LineSearch       = SNESLineSearchCubic;
   neP->lsP              = PETSC_NULL;
   neP->postcheckstep    = PETSC_NULL;
