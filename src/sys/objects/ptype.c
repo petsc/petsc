@@ -34,7 +34,7 @@ PetscErrorCode  PetscDataTypeToMPIDataType(PetscDataType ptype,MPI_Datatype* mty
     *mtype = MPI_C_COMPLEX;
 #else
   } else if (ptype == PETSC_COMPLEX) {
-    *mtype = MPI_C_DOUBLE_COMPLEX;
+    *mtype = MPIU_C_DOUBLE_COMPLEX;
 #endif
 #endif
   } else if (ptype == PETSC_LONG) {
@@ -90,7 +90,7 @@ PetscErrorCode  PetscMPIDataTypeToPetscDataType(MPI_Datatype mtype,PetscDataType
   } else if (mtype == MPI_C_COMPLEX) {
     *ptype = PETSC_COMPLEX;
 #else
-  } else if (mtype == MPI_C_DOUBLE_COMPLEX) {
+  } else if (mtype == MPIU_C_DOUBLE_COMPLEX) {
     *ptype = PETSC_COMPLEX;
 #endif
 #endif

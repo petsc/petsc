@@ -715,10 +715,10 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
   }
 
 #if !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)
-  ierr = MPI_Type_contiguous(2,MPIU_REAL,&MPI_C_DOUBLE_COMPLEX);CHKERRQ(ierr);
-  ierr = MPI_Type_commit(&MPI_C_DOUBLE_COMPLEX);CHKERRQ(ierr);
-  ierr = MPI_Type_contiguous(2,MPI_FLOAT,&MPI_C_COMPLEX);CHKERRQ(ierr);
-  ierr = MPI_Type_commit(&MPI_C_COMPLEX);CHKERRQ(ierr);
+  ierr = MPI_Type_contiguous(2,MPIU_REAL,&MPIU_C_DOUBLE_COMPLEX);CHKERRQ(ierr);
+  ierr = MPI_Type_commit(&MPIU_C_DOUBLE_COMPLEX);CHKERRQ(ierr);
+  ierr = MPI_Type_contiguous(2,MPI_FLOAT,&MPIU_C_COMPLEX);CHKERRQ(ierr);
+  ierr = MPI_Type_commit(&MPIU_C_COMPLEX);CHKERRQ(ierr);
   ierr = MPI_Op_create(PetscSum_Local,1,&MPIU_SUM);CHKERRQ(ierr);
 #endif
 #endif
@@ -1160,8 +1160,8 @@ PetscErrorCode  PetscFinalize(void)
 #if defined(PETSC_USE_COMPLEX)
 #if !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)
   ierr = MPI_Op_free(&MPIU_SUM);CHKERRQ(ierr);
-  ierr = MPI_Type_free(&MPI_C_DOUBLE_COMPLEX);CHKERRQ(ierr);
-  ierr = MPI_Type_free(&MPI_C_COMPLEX);CHKERRQ(ierr);
+  ierr = MPI_Type_free(&MPIU_C_DOUBLE_COMPLEX);CHKERRQ(ierr);
+  ierr = MPI_Type_free(&MPIU_C_COMPLEX);CHKERRQ(ierr);
 #endif
 #endif
   ierr = MPI_Type_free(&MPIU_2SCALAR);CHKERRQ(ierr);
