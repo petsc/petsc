@@ -127,6 +127,7 @@ PetscPopErrorHandlerPython(void)
 
 #if (PETSC_VERSION_(3,1,0) || \
      PETSC_VERSION_(3,0,0))
+#define PetscStageLog StageLog
 #define PetscCLASSID(stageLog,index) \
         ((stageLog)->classLog->classInfo[(index)].cookie)
 #else
@@ -140,7 +141,7 @@ static PetscErrorCode
 PetscLogStageFindId(const char name[], PetscLogStage *stageid)
 {
   int            s;
-  StageLog       stageLog = 0;
+  PetscStageLog  stageLog = 0;
   PetscBool      match = PETSC_FALSE;
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -162,7 +163,7 @@ static PetscErrorCode
 PetscLogClassFindId(const char name[], PetscClassId *classid)
 {
   int            c;
-  StageLog       stageLog = 0;
+  PetscStageLog  stageLog = 0;
   PetscBool      match = PETSC_FALSE;
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -185,7 +186,7 @@ static PetscErrorCode
 PetscLogEventFindId(const char name[], PetscLogEvent *eventid)
 {
   int            e;
-  StageLog       stageLog = 0;
+  PetscStageLog  stageLog = 0;
   PetscBool      match = PETSC_FALSE;
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -207,7 +208,7 @@ static PetscErrorCode
 PetscLogStageFindName(PetscLogStage stageid,
                       const char *name[])
 {
-  StageLog stageLog = 0;
+  PetscStageLog stageLog = 0;
   PetscFunctionBegin;
   PetscValidPointer(name,3);
   *name = 0;
@@ -224,8 +225,8 @@ static PetscErrorCode
 PetscLogClassFindName(PetscClassId classid,
                       const char *name[])
 {
-  int      c;
-  StageLog stageLog = 0;
+  int           c;
+  PetscStageLog stageLog = 0;
   PetscFunctionBegin;
   PetscValidPointer(name,3);
   *name = 0;
@@ -245,7 +246,7 @@ static PetscErrorCode
 PetscLogEventFindName(PetscLogEvent eventid,
                       const char *name[])
 {
-  StageLog stageLog = 0;
+  PetscStageLog stageLog = 0;
   PetscFunctionBegin;
   PetscValidPointer(name,3);
   *name = 0;
