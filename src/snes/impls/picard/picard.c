@@ -53,7 +53,8 @@ PetscErrorCode SNESSetUp_Picard(SNES snes)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PicardLineSearchQuadratic(SNES snes, void *lsctx, Vec X, Vec F, Vec dummyG, Vec Y, Vec dummyW, PetscReal fnorm, PetscReal dummyXnorm, PetscReal *dummyYnorm, PetscReal *gnorm, PetscBool  *flag);
+PetscErrorCode PicardLineSearchNo(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal*,PetscReal*,PetscBool*);
+PetscErrorCode PicardLineSearchQuadratic(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal*,PetscReal*,PetscBool*);
 /*
   SNESSetFromOptions_Picard - Sets various parameters for the SNESLS method.
 
@@ -79,13 +80,13 @@ static PetscErrorCode SNESSetFromOptions_Picard(SNES snes)
       switch (indx) {
       case SNES_LS_BASIC:
       case SNES_LS_BASIC_NONORMS:
-        ierr = SNESLineSearchSet(snes,SNESLineSearchNo,PETSC_NULL);CHKERRQ(ierr);
+        ierr = SNESLineSearchSet(snes,PicardLineSearchNo,PETSC_NULL);CHKERRQ(ierr);
         break;
       case SNES_LS_QUADRATIC:
         ierr = SNESLineSearchSet(snes,PicardLineSearchQuadratic,PETSC_NULL);CHKERRQ(ierr);
         break;
       case SNES_LS_CUBIC:
-        ierr = SNESLineSearchSet(snes,SNESLineSearchNo,PETSC_NULL);CHKERRQ(ierr);
+        SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_SUP,"No support for cubic search");
         break;
       }
     }
@@ -117,6 +118,25 @@ static PetscErrorCode SNESView_Picard(SNES snes, PetscViewer viewer)
   if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"  picard variant: %s\n", SNESLineSearchTypeName(ls->type));CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PicardLineSearchNo"
+PetscErrorCode PicardLineSearchNo(SNES snes, void *lsctx, Vec X, Vec F, Vec dummyG, Vec Y, Vec W, PetscReal fnorm, PetscReal dummyXnorm, PetscReal *dummyYnorm, PetscReal *gnorm, PetscBool  *flag)
+{
+  PetscErrorCode ierr;
+  SNES_Picard    *neP = (SNES_Picard *) snes->data;
+
+  PetscFunctionBegin;
+  /* Update guess Y = X^n - F(X^n) */
+  ierr = VecWAXPY(Y, -1.0, F, X);CHKERRQ(ierr);
+  /* X^{n+1} = (1 - \alpha) X^n + \alpha Y */
+  ierr = VecAXPBY(X, neP->alpha, 1 - neP->alpha, Y);CHKERRQ(ierr);
+  /* Compute F(X^{new}) */
+  ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
+  ierr = VecNorm(F, NORM_2, gnorm);CHKERRQ(ierr);
+  if (PetscIsInfOrNanReal(*gnorm)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"Infinite or not-a-number generated norm");
   PetscFunctionReturn(0);
 }
 
@@ -193,7 +213,6 @@ PetscErrorCode SNESSolve_Picard(SNES snes)
 { 
   SNES_Picard   *neP = (SNES_Picard *) snes->data;
   Vec            X, Y, F, W;
-  PetscReal      alpha = neP->alpha;
   PetscReal      fnorm;
   PetscInt       maxits, i;
   PetscErrorCode ierr;
@@ -232,90 +251,18 @@ PetscErrorCode SNESSolve_Picard(SNES snes)
 
   for(i = 0; i < maxits; i++) {
     PetscBool  lsSuccess = PETSC_TRUE;
+    PetscReal  dummyNorm;
 
     /* Call general purpose update function */
     if (snes->ops->update) {
       ierr = (*snes->ops->update)(snes, snes->iter);CHKERRQ(ierr);
     }
-    if (neP->type == SNES_LS_BASIC || neP->type == SNES_LS_BASIC_NONORMS) {
-      ierr = PetscPrintf(snes->hdr.comm, "Fixed alpha = %g\n", alpha);CHKERRQ(ierr);
-      /* Update guess Y = X^n - F(X^n) */
-      ierr = VecWAXPY(Y, -1.0, F, X);CHKERRQ(ierr);
-      /* X^{n+1} = (1 - \alpha) X^n + \alpha Y */
-      ierr = VecAXPBY(X, alpha, 1 - alpha, Y);CHKERRQ(ierr);
-      /* Compute F(X^{new}) */
-      ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
-      ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr);
-      if (PetscIsInfOrNanReal(fnorm)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"Infinite or not-a-number generated norm");
-    } else {
-      PetscReal dummyNorm;
-      /* Compute a (scaled) negative update in the line search routine: 
-         Y <- X - lambda*Y 
-         and evaluate G = function(Y) (depends on the line search). */
-#if 1
-      /* Calculate the solution increment, Y = X^n - F(X^n) */
-      ierr = VecWAXPY(Y, -1.0, F, X);CHKERRQ(ierr);
-      ierr = (*neP->LineSearch)(snes, neP->lsP, X, F, F/*G*/, Y, W, fnorm, 0.0, &dummyNorm, &fnorm, &lsSuccess);CHKERRQ(ierr);
-#else
-      /* Put this in function after it works */
-      PetscReal alphas[3] = {0.0, 0.5, 1.0};
-      PetscReal norms[3];
-
-      norms[0] = fnorm;
-      /* Calculate the solution increment, Y = X^n - F(X^n) */
-      ierr = VecWAXPY(Y, -1.0, F, X);CHKERRQ(ierr);
-      {
-        PetscReal norm0, norm1;
-
-        ierr = VecNorm(n_3(X), NORM_INFINITY, &norm0);CHKERRQ(ierr);
-        ierr = VecNorm(n_3(Y), NORM_INFINITY, &norm1);CHKERRQ(ierr);
-        if (norm1 > 0.9) {
-          alpha[2] = (norm1 - 0.9)/(norm1 - norm0);
-        }
-      }
-      alpha[1] = 0.5*alpha[2];
-      /* Calculate trial solutions */
-      for(PetscInt i = 1; i < 3; ++i) {
-        /* Calculate X^{n+1} = (1 - \alpha) X^n + \alpha Y */
-        ierr = VecCopy(X, W);CHKERRQ(ierr);
-        ierr = VecAXPBY(W, alphas[i], 1 - alphas[i], Y);CHKERRQ(ierr);
-        ierr = SNESComputeFunction(snes, W, F);CHKERRQ(ierr);
-        ierr = VecNorm(F, NORM_2, &norms[i]);CHKERRQ(ierr);
-      }
-      for(PetscInt i = 0; i < 3; ++i) {
-        norms[i] = PetscSqr(norms[i]);
-      }
-      /* Fit a quadratic:
-           If we have x_{0,1,2} = 0, x_1, x_2 which generate norms y_{0,1,2}
-           a = (x_1 y_2 - x_2 y_1 + (x_2 - x_1) y_0)/(x^2_2 x_1 - x_2 x^2_1)
-           b = (x^2_1 y_2 - x^2_2 y_1 + (x^2_2 - x^2_1) y_0)/(x_2 x^2_1 - x^2_2 x_1)
-           c = y_0
-           x_min = -b/2a
-
-           If we let x_{0,1,2} = 0, 0.5, 1.0
-           a = 2 y_2 - 4 y_1 + 2 y_0
-           b =  -y_2 + 4 y_1 - 3 y_0
-           c =   y_0
-      */
-      const PetscReal a = (alphas[1]*norms[2] - alphas[2]*norms[1] + (alphas[2] - alphas[1])*norms[0])/
-        (PetscSqr(alphas[2])*alphas[1] - alphas[2]*PetscSqr(alphas[1]));
-      const PetscReal b = (PetscSqr(alphas[1])*norms[2] - PetscSqr(alphas[2])*norms[1] + (PetscSqr(alphas[2]) - PetscSqr(alphas[1]))*norms[0])/
-        (alphas[2]*PetscSqr(alphas[1]) - PetscSqr(alphas[2])*alphas[1]);
-      /* Check for positive a (concave up) */
-      if (a >= 0.0) {
-        alpha = -b/(2.0*a);
-        alpha = PetscMin(alpha, alphas[2]);
-        alpha = PetscMax(alpha, alphas[0]);
-      } else {
-        alpha = 1.0;
-      }
-      ierr = PetscPrintf(snes->hdr.comm, "norms[0] = %g, norms[1] = %g, norms[2] = %g\n", norms[0], norms[1], norms[2]);CHKERRQ(ierr);
-      ierr = PetscPrintf(snes->hdr.comm, "Choose alpha = %g\n", alpha);CHKERRQ(ierr);
-      ierr = VecAXPBY(X, alpha, 1 - alpha, Y);CHKERRQ(ierr);
-      ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
-      ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr);
-#endif
-    }
+    /* Compute a (scaled) negative update in the line search routine: 
+     Y <- X - lambda*Y 
+     and evaluate G = function(Y) (depends on the line search). */
+    /* Calculate the solution increment, Y = X^n - F(X^n) */
+    ierr = VecWAXPY(Y, -1.0, F, X);CHKERRQ(ierr);
+    ierr = (*neP->LineSearch)(snes, neP->lsP, X, F, F/*G*/, Y, W, fnorm, 0.0, &dummyNorm, &fnorm, &lsSuccess);CHKERRQ(ierr);
     if (!lsSuccess) {
       if (++snes->numFailures >= snes->maxFailures) {
         snes->reason = SNES_DIVERGED_LINE_SEARCH;
@@ -392,7 +339,7 @@ EXTERN_C_END
 
   Level: beginner
 
-  Notes: Solves F(x) - b = 0 using x^{n+1} = x^{n} - lambda (F(x^n) - b) where lambda is obtained either SNESLineSearchSetDampening() or 
+  Notes: Solves F(x) - b = 0 using x^{n+1} = x^{n} - lambda (F(x^n) - b) where lambda is obtained either SNESLineSearchSetDamping(), -snes_damping or 
      a line search. 
 
      This uses no derivative information thus will be much slower then Newton's method obtained with -snes_type ls
