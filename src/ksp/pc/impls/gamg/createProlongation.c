@@ -34,7 +34,8 @@ PetscErrorCode getDataWithGhosts( const Mat a_Gmat,
                                   PetscReal **a_data_out
                                   )
 {
-  PetscMPIInt    ierr,mype,npe;
+  PetscErrorCode ierr;
+  PetscMPIInt    mype,npe;
   MPI_Comm       wcomm = ((PetscObject)a_Gmat)->comm;
   Vec            tmp_crds;
   Mat_MPIAIJ    *mpimat = (Mat_MPIAIJ*)a_Gmat->data;
@@ -509,7 +510,7 @@ if(mype==target||target==-1)PetscPrintf(PETSC_COMM_SELF,"\t[%d]%s end %d loop: d
 
 	/* all done? */
         t1 = nloc - nDone; assert(t1>=0);
-        ierr = MPI_Allreduce ( &t1, &t2, 1, MPI_INT, MPI_SUM, wcomm ); /* synchronous version */
+        ierr = MPI_Allreduce ( &t1, &t2, 1, MPIU_INT, MPIU_SUM, wcomm ); /* synchronous version */
         if( t2 == 0 ) break;
 if(mype==target||target==-1)PetscPrintf(PETSC_COMM_SELF,"[%d]%s %d) finished MIS loop %d left to do\n",mype,__FUNCT__,iter,t1);
       }
@@ -673,10 +674,10 @@ PetscErrorCode formProl0(IS a_selected, /* list of selected local ID, includes s
 
     /* get block */
     {
-      PetscInt       asz=aggID,M=asz*a_bs,N=a_nSAvec;
-      PetscInt       Mdata=M+((N-M>0)?N-M:0),LDA=Mdata,LWORK=N*a_bs;
+      PetscBLASInt   asz=aggID,M=asz*a_bs,N=a_nSAvec,INFO;
+      PetscBLASInt   Mdata=M+((N-M>0)?N-M:0),LDA=Mdata,LWORK=N*a_bs;
       PetscScalar    *qqc,*qqr,*TAU,*WORK;
-      PetscInt       *fids,INFO;
+      PetscInt       *fids;
       
       ierr = PetscMalloc( (Mdata*N)*sizeof(PetscScalar), &qqc ); CHKERRQ(ierr); 
       ierr = PetscMalloc( (M*N)*sizeof(PetscScalar), &qqr ); CHKERRQ(ierr); 
@@ -747,7 +748,7 @@ PetscErrorCode formProl0(IS a_selected, /* list of selected local ID, includes s
   } /* for all coarse nodes */
   assert(out_data[a_nSAvec*DATA_OUT_STRIDE]==1.e300);
 
-/* MPI_Allreduce( &ndone, &ii, 1, MPI_INT, MPI_SUM, wcomm ); /\* synchronous version *\/ */
+/* MPI_Allreduce( &ndone, &ii, 1, MPIU_INT, MPIU_SUM, wcomm ); /\* synchronous version *\/ */
 /* MatGetSize( a_Prol, &kk, &jj );  */
 /* PetscPrintf(PETSC_COMM_WORLD," **** [%d]%s %d total done, N=%d (%d local done)\n",mype,__FUNCT__,ii,kk/a_bs,ndone); */
 
@@ -788,12 +789,13 @@ PetscErrorCode triangulateAndFormProl( IS  a_selected_2, /* list of selected loc
                                        PetscReal *a_worst_best /* measure of worst missed fine vertex, 0 is no misses */
                                        )
 {
-  PetscErrorCode ierr;
-  PetscInt       kk,jj,tid,tt,sid,idx,nselected_1,nselected_2,nPlotPts;
+  PetscErrorCode       ierr;
+  PetscInt             jj,tid,tt,idx,nselected_1,nselected_2;
   struct triangulateio in,mid;
-  const PetscInt *selected_idx_1,*selected_idx_2,*llist_idx;
-  PetscMPIInt    mype,npe;
-  PetscInt Istart,Iend,nFineLoc,myFine0;
+  const PetscInt      *selected_idx_1,*selected_idx_2,*llist_idx;
+  PetscMPIInt          mype,npe;
+  PetscInt             Istart,Iend,nFineLoc,myFine0;
+  int kk,nPlotPts,sid;
 
   PetscFunctionBegin;
   *a_worst_best = 0.0;
@@ -865,11 +867,11 @@ PetscErrorCode triangulateAndFormProl( IS  a_selected_2, /* list of selected loc
   /*   produce an edge list (e), a Voronoi diagram (v), and a triangle */
   /*   neighbor list (n).                                            */
   if(nselected_2 != 0){ /* inactive processor */
-    char args[] = "npczQ"; /* c is needed ? */
 #if defined(PETSC_HAVE_TRIANGLE) 
+    char args[] = "npczQ"; /* c is needed ? */
     triangulate(args, &in, &mid, (struct triangulateio *) NULL );
 #else
-    SETERRQ(wcomm,PETSC_ERR_LIB,"configure with TRIANGLE to use geometric MG");
+    SETERRQ(((PetscObject)a_Prol)->comm,PETSC_ERR_LIB,"configure with TRIANGLE to use geometric MG");
 #endif
     /* output .poly files for 'showme' */
     if( !PETSC_TRUE ) {
@@ -1083,7 +1085,8 @@ PetscErrorCode getGIDsOnSquareGraph( const IS a_selected_1,
                                      PetscInt **a_crsGID
                                      )
 {
-  PetscMPIInt    ierr,mype,npe;
+  PetscErrorCode ierr;
+  PetscMPIInt    mype,npe;
   PetscInt       *crsGID, kk,my0,Iend,nloc,nSelected_1;
   const PetscInt *selected_idx;
   MPI_Comm       wcomm = ((PetscObject)a_Gmat1)->comm;
@@ -1116,7 +1119,7 @@ PetscErrorCode getGIDsOnSquareGraph( const IS a_selected_1,
     }
     ierr = ISRestoreIndices( a_selected_1, &selected_idx );     CHKERRQ(ierr);
     /* scan my coarse zero gid, set 'lid_state' with coarse GID */
-    MPI_Scan( &nLocalSelected, &myCrs0, 1, MPI_INT, MPI_SUM, wcomm );
+    MPI_Scan( &nLocalSelected, &myCrs0, 1, MPIU_INT, MPIU_SUM, wcomm );
     myCrs0 -= nLocalSelected;
 
     if( a_Gmat_2 != 0 ) { /* output */
@@ -1318,7 +1321,7 @@ PetscErrorCode createProlongation( const Mat a_Amat,
   /* square matrix - SA */  
   if( a_useSA ){
     Mat Gmat2;
-    ierr = MatMatMult( Gmat, Gmat, MAT_INITIAL_MATRIX, 2.4, &Gmat2 );
+    ierr = MatMatMult( Gmat, Gmat, MAT_INITIAL_MATRIX, 2.4, &Gmat2 ); //PETSC_DEFAULT
     CHKERRQ(ierr);
     /* ierr = MatDestroy( &Gmat );  CHKERRQ(ierr); */
     AuxMat = Gmat;
@@ -1333,7 +1336,7 @@ PetscErrorCode createProlongation( const Mat a_Amat,
       assert( Bmat->compressedrow.use );
     }
   }
-  
+
   /* force compressed row storage for B matrix */
   if (npe > 1) {
     Mat_MPIAIJ *mpimat = (Mat_MPIAIJ*)Gmat->data;
@@ -1357,7 +1360,7 @@ PetscErrorCode createProlongation( const Mat a_Amat,
     ierr = MatView(AuxMat,viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy( &viewer );
   }
-  
+
   /* Mat subMat = Gmat -- get degree of vertices */
   {
     GNode *gnodes;
@@ -1422,6 +1425,7 @@ PetscErrorCode createProlongation( const Mat a_Amat,
 #if defined PETSC_USE_LOG
   ierr = PetscLogEventBegin(gamg_setup_events[SET4],0,0,0,0);CHKERRQ(ierr);
 #endif
+
   ierr = maxIndSetAgg( permIS, rankIS, Gmat, AuxMat, a_useSA, &selected_1, &llist_1 );
   CHKERRQ(ierr);
   if( a_useSA ) {
@@ -1577,7 +1581,7 @@ PetscErrorCode createProlongation( const Mat a_Amat,
     }
     
     /* scan my coarse zero gid */
-    MPI_Scan( &nLocalSelected, &myCrs0, 1, MPI_INT, MPI_SUM, wcomm );
+    MPI_Scan( &nLocalSelected, &myCrs0, 1, MPIU_INT, MPIU_SUM, wcomm );
     myCrs0 -= nLocalSelected;
 
     /* get P0 */

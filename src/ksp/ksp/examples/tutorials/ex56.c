@@ -7,6 +7,8 @@ Load of 1.0 in x direction on all nodes (not a true uniform load).\n\
   -alpha <v>      : scaling of material coeficient in embedded circle\n\n";
 
 #include <petscksp.h>
+
+#define ADD_STAGES
  
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -23,9 +25,9 @@ int main(int argc,char **args)
   PetscMPIInt    npe,mype;
   PC pc;
   PetscScalar DD[24][24],DD2[24][24];
-/* #if defined(PETSC_USE_LOG) */
-/*   PetscLogStage  stage[2]; */
-/* #endif */
+#if defined(PETSC_USE_LOG) && defined(ADD_STAGES)
+  PetscLogStage  stage[2];
+#endif
   PetscScalar DD1[24][24];
   const PCType type;
 
@@ -110,11 +112,10 @@ int main(int argc,char **args)
   Ni1 = Ni0 + (nn/NP);
   Nj1 = Nj0 + (nn/NP);
   Nk1 = Nk0 + (nn/NP);
-  
+
   {
     PetscReal *coords;
     const PetscInt NN = nn/NP, id0 = ipz*nn*nn*NN + ipy*nn*NN*NN + ipx*NN*NN*NN;
-
 
     ierr = PetscMalloc( (m+1)*sizeof(PetscReal), &coords ); CHKERRQ(ierr);
     coords[m] = -99.0;
@@ -180,12 +181,12 @@ int main(int argc,char **args)
 	  }
 	}
       }
+
     }
     ierr = MatAssemblyBegin(Amat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(Amat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = VecAssemblyBegin(bb);  CHKERRQ(ierr);
     ierr = VecAssemblyEnd(bb);    CHKERRQ(ierr);
-
     ierr = KSPSetOperators( ksp, Amat, Amat, SAME_NONZERO_PATTERN ); CHKERRQ(ierr);
     ierr = PCSetCoordinates( pc, 3, coords );                   CHKERRQ(ierr);
     ierr = PetscFree( coords );  CHKERRQ(ierr);
@@ -200,25 +201,29 @@ int main(int argc,char **args)
   }
 
   /* solve */
-/* #if defined(PETSC_USE_LOG) */
-/*   ierr = PetscLogStageRegister("Setup", &stage[0]);      CHKERRQ(ierr); */
-/*   ierr = PetscLogStageRegister("Solve", &stage[1]);      CHKERRQ(ierr); */
-/*   ierr = PetscLogStagePush(stage[0]);                    CHKERRQ(ierr); */
-/* #endif */
+#if defined(PETSC_USE_LOG) && defined(ADD_STAGES)
+  ierr = PetscLogStageRegister("Setup", &stage[0]);      CHKERRQ(ierr);
+  ierr = PetscLogStageRegister("Solve", &stage[1]);      CHKERRQ(ierr);
+  ierr = PetscLogStagePush(stage[0]);                    CHKERRQ(ierr);
+#endif
+
   ierr = KSPSetUp( ksp );         CHKERRQ(ierr);
-/* #if defined(PETSC_USE_LOG) */
-/*   ierr = PetscLogStagePop();      CHKERRQ(ierr); */
-/* #endif */
+
+#if defined(PETSC_USE_LOG) && defined(ADD_STAGES)
+  ierr = PetscLogStagePop();      CHKERRQ(ierr);
+#endif
 
   ierr = VecSet(xx,.0);           CHKERRQ(ierr);
 
-/* #if defined(PETSC_USE_LOG) */
-/*   ierr = PetscLogStagePush(stage[1]);                    CHKERRQ(ierr); */
-/* #endif */
+#if defined(PETSC_USE_LOG) && defined(ADD_STAGES)
+  ierr = PetscLogStagePush(stage[1]);                    CHKERRQ(ierr);
+#endif
+
   ierr = KSPSolve( ksp, bb, xx );     CHKERRQ(ierr);
-/* #if defined(PETSC_USE_LOG) */
-/*   ierr = PetscLogStagePop();      CHKERRQ(ierr); */
-/* #endif */
+
+#if defined(PETSC_USE_LOG) && defined(ADD_STAGES)
+  ierr = PetscLogStagePop();      CHKERRQ(ierr);
+#endif
 
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
 
