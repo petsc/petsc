@@ -247,7 +247,6 @@ PetscErrorCode TaoSolverSetConstraintsRoutine(TaoSolver tao, Vec c, PetscErrorCo
 PetscErrorCode TaoSolverComputeDual(TaoSolver tao, Vec DL, Vec DU) 
 {
     PetscErrorCode ierr;
-    PetscReal dummy;
     PetscFunctionBegin;
     PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
     PetscValidHeaderSpecific(DL,VEC_CLASSID,2);
