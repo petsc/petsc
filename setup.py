@@ -12,8 +12,8 @@ Python bindings for PETSc libraries.
 
     $ pip install petsc4py==dev petsc==dev
 
-  .. _petsc4py-dev: http://petsc.cs.iit.edu/petsc4py/petsc4py-dev/
-                    archive/tip.tar.gz#egg=petsc4py-dev
+  .. _petsc4py-dev: http://petsc.cs.iit.edu/petsc4py/
+                    petsc4py-dev/archive/tip.tar.gz#egg=petsc4py-dev
 """
 
 ## try:
