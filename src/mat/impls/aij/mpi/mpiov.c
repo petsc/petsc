@@ -836,9 +836,14 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
 
   for (i=0; i<ismax; i++) { 
     ierr = ISGetIndices(isrow[i],&irow[i]);CHKERRQ(ierr);
-    ierr = ISGetIndices(iscol[i],&icol[i]);CHKERRQ(ierr);
     ierr = ISGetLocalSize(isrow[i],&nrow[i]);CHKERRQ(ierr);
-    ierr = ISGetLocalSize(iscol[i],&ncol[i]);CHKERRQ(ierr);
+    if (allcolumns){
+      icol[i] = PETSC_NULL;
+      ncol[i] = C->cmap->N;
+    } else {
+      ierr = ISGetIndices(iscol[i],&icol[i]);CHKERRQ(ierr);
+      ierr = ISGetLocalSize(iscol[i],&ncol[i]);CHKERRQ(ierr);
+    }
   }
 
   /* evaluate communication - mesg to who, length of mesg, and buffer space
@@ -1435,7 +1440,9 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
   /* Restore the indices */
   for (i=0; i<ismax; i++) {
     ierr = ISRestoreIndices(isrow[i],irow+i);CHKERRQ(ierr);
-    ierr = ISRestoreIndices(iscol[i],icol+i);CHKERRQ(ierr);
+    if (!allcolumns){
+      ierr = ISRestoreIndices(iscol[i],icol+i);CHKERRQ(ierr);
+    }
   }
 
   /* Destroy allocated memory */
@@ -1460,17 +1467,23 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
   ierr = PetscFree(sbuf_aj);CHKERRQ(ierr);
   ierr = PetscFree(sbuf_aa[0]);CHKERRQ(ierr);
   ierr = PetscFree(sbuf_aa);CHKERRQ(ierr);
+
 #if defined (PETSC_USE_CTABLE)
-  for (i=0; i<ismax; i++) {
-    if (!allcolumns){ierr = PetscTableDestroy((PetscTable*)&cmap[i]);CHKERRQ(ierr);}
-    ierr = PetscTableDestroy((PetscTable*)&rmap[i]);CHKERRQ(ierr);
-  }
+  for (i=0; i<ismax; i++) {ierr = PetscTableDestroy((PetscTable*)&rmap[i]);CHKERRQ(ierr);}
 #else
-  if (!allcolumns){ierr = PetscFree(cmap[0]);CHKERRQ(ierr);}
   ierr = PetscFree(rmap[0]);CHKERRQ(ierr);
 #endif
-  if (!allcolumns){ierr = PetscFree(cmap);CHKERRQ(ierr);}
   ierr = PetscFree(rmap);CHKERRQ(ierr);
+
+  if (!allcolumns){
+#if defined (PETSC_USE_CTABLE)
+    for (i=0; i<ismax; i++) {ierr = PetscTableDestroy((PetscTable*)&cmap[i]);CHKERRQ(ierr);}
+#else
+    ierr = PetscFree(cmap[0]);CHKERRQ(ierr);
+#endif
+    ierr = PetscFree(cmap);CHKERRQ(ierr);
+  }
+ 
   ierr = PetscFree(lens[0]);CHKERRQ(ierr);
   ierr = PetscFree(lens);CHKERRQ(ierr);
 
