@@ -166,9 +166,8 @@ PetscErrorCode partitionLevel( Mat a_Amat_fine,
   Mat              Cmat,Pnew,Pold=*a_P_inout;
   IS               new_indices,isnum;
   MPI_Comm         wcomm = ((PetscObject)a_Amat_fine)->comm;
-  PetscMPIInt      mype,npe;
-  PetscInt         neq,NN,Istart,Iend,Istart0,Iend0,ncrs_new;
-  PetscMPIInt      new_npe,nactive,ncrs0;
+  PetscMPIInt      mype,npe,new_npe,nactive;
+  PetscInt         neq,NN,Istart,Iend,Istart0,Iend0,ncrs_new,ncrs0;
   PetscBool        flag = PETSC_FALSE;
  
   PetscFunctionBegin;  

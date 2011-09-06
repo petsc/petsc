@@ -4,8 +4,10 @@
 
 #include <../src/ksp/pc/impls/gamg/gamg.h>
 
+#if defined(PETSC_HAVE_TRIANGLE) 
 #define REAL PetscReal
 #include <triangle.h>
+#endif
 
 #include <assert.h>
 #include <petscblaslapack.h>
@@ -789,6 +791,7 @@ PetscErrorCode triangulateAndFormProl( IS  a_selected_2, /* list of selected loc
                                        PetscReal *a_worst_best /* measure of worst missed fine vertex, 0 is no misses */
                                        )
 {
+#if defined(PETSC_HAVE_TRIANGLE) 
   PetscErrorCode       ierr;
   PetscInt             jj,tid,tt,idx,nselected_1,nselected_2;
   struct triangulateio in,mid;
@@ -867,12 +870,8 @@ PetscErrorCode triangulateAndFormProl( IS  a_selected_2, /* list of selected loc
   /*   produce an edge list (e), a Voronoi diagram (v), and a triangle */
   /*   neighbor list (n).                                            */
   if(nselected_2 != 0){ /* inactive processor */
-#if defined(PETSC_HAVE_TRIANGLE) 
     char args[] = "npczQ"; /* c is needed ? */
     triangulate(args, &in, &mid, (struct triangulateio *) NULL );
-#else
-    SETERRQ(((PetscObject)a_Prol)->comm,PETSC_ERR_LIB,"configure with TRIANGLE to use geometric MG");
-#endif
     /* output .poly files for 'showme' */
     if( !PETSC_TRUE ) {
       static int level = 1;
@@ -1063,6 +1062,9 @@ PetscErrorCode triangulateAndFormProl( IS  a_selected_2, /* list of selected loc
   ierr = PetscFree( in.pointlist );  CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
+#else
+    SETERRQ(((PetscObject)a_Prol)->comm,PETSC_ERR_LIB,"configure with TRIANGLE to use geometric MG");
+#endif
 }
 /* -------------------------------------------------------------------------- */
 /*
