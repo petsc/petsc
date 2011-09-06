@@ -88,6 +88,8 @@ class Installer(script.Script):
     self.destBinDir        = os.path.join(self.destDir, 'bin')
     self.installIncludeDir = os.path.join(self.installDir, 'include')
     self.installBinDir     = os.path.join(self.installDir, 'bin')
+    self.rootShareDir      = os.path.join(self.rootDir, 'share')
+    self.destShareDir      = os.path.join(self.destDir, 'share')
 
     self.make      = self.makesys.make+' '+self.makesys.flags
     self.ranlib    = self.compilers.RANLIB
@@ -205,6 +207,10 @@ for src, dst in copies:
     self.copies.extend(self.copytree(self.archBinDir, self.destBinDir))
     return
 
+  def installShare(self):
+    self.copies.extend(self.copytree(self.rootShareDir, self.destShareDir))
+    return
+
   def copyLib(self, src, dst):
     '''Run ranlib on the destination library if it is an archive. Also run install_name_tool on dylib on Mac'''
     shutil.copy2(src, dst)
@@ -266,6 +272,7 @@ make PETSC_DIR=%s test
     self.installConf()
     self.installBin()
     self.installLib()
+    self.installShare()
     self.outputDone()
 
     return

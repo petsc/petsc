@@ -53,7 +53,7 @@ PetscErrorCode KSPSolve_GCR_cycle( KSP ksp )
     ierr = VecMAXPY(s,k,ctx->val,ctx->SS);CHKERRQ(ierr); /* s = s - sum_{i=0}^{k-1} alpha_i s_i */
 
     ierr = VecDotNorm2(r,v,&r_dot_v,&nrm);CHKERRQ(ierr);
-    nrm     = PetscSqrtReal(nrm);
+    nrm     = PetscSqrtScalar(nrm);
     r_dot_v = r_dot_v/nrm;
     ierr = VecScale( v, 1.0/nrm ); CHKERRQ(ierr);
     ierr = VecScale( s, 1.0/nrm ); CHKERRQ(ierr);

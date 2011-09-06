@@ -222,7 +222,10 @@ echo "
 	s/doublereal/quadreal/g;
 	s/doublecomplex/quadcomplex/g;
 	s/([^a-zA-Z_]+)real/\\1doublereal/g;
-	s/([^a-zA-Z_1-9]+)dlamch_([^a-zA-Z_1-9]+)/\\1qlamch_\\2/g" > $QL
+	s/([^a-zA-Z_1-9]+)dlamch_([^a-zA-Z_1-9]+)/\\1qlamch_\\2/g;
+	s/([^a-zA-Z_1-9]+)dlamc1_([^a-zA-Z_1-9]+)/\\1qlamc1_\\2/g;
+	s/([^a-zA-Z_1-9]+)dlamc2_([^a-zA-Z_1-9]+)/\\1qlamc2_\\2/g;
+	s/([^a-zA-Z_1-9]+)dlamc3_([^a-zA-Z_1-9]+)/\\1qlamc3_\\2/g;" > $QL
 for p in blas qblas lapack qlapack; do
 	case $p in
 	blas) 

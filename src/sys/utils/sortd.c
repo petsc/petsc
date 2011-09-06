@@ -180,10 +180,10 @@ PetscErrorCode  PetscSortSplitReal(PetscInt ncut,PetscInt n,PetscReal a[],PetscI
 
   while (1){
     mid = first;
-    abskey = (d = a[mid],PetscAbsScalar(d));
+    abskey = (d = a[mid],PetscAbsReal(d));
     i = last;
     for (j = first + 1; j <= i; ++j) {
-      if ((d = a[j],PetscAbsScalar(d)) >= abskey) {
+      if ((d = a[j],PetscAbsReal(d)) >= abskey) {
         ++mid;
         /* interchange */
         tmp = a[mid];  itmp = idx[mid];
