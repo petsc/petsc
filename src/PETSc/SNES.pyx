@@ -340,7 +340,7 @@ cdef class SNES(Object):
 
     def solve(self, Vec b, Vec x not None):
         cdef PetscVec rhs = NULL
-        if b is not None: rhs = (<Vec>b).vec
+        if b is not None: rhs = b.vec
         CHKERR( SNESSolve(self.snes, rhs, x.vec) )
 
     def setConvergedReason(self, reason):
