@@ -7,6 +7,8 @@ typedef struct {
   Vec       uold;
   Vec       Kappa;
   PetscReal phi;
+  PetscReal kappaWet;
+  PetscReal kappaNoWet;
   PetscReal dt;
   /* Boundary conditions */
   PetscReal sl, vl, pl;
@@ -45,11 +47,16 @@ PetscErrorCode FormPermeability(DM da, Vec Kappa, AppCtx *user)
   ierr = DMDAVecGetArray(da, Kappa, &K);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(cda, c, &coords);CHKERRQ(ierr);
   for(i = xs; i < xs+xm; ++i) {
+#if 1
+    K[i] = 1.0;
+#else
+    /* Notch */
     if (i == (xs+xm)/2) {
       K[i] = 0.00000001;
     } else {
       K[i] = 1.0;
     }
+#endif
   }
   ierr = DMDAVecRestoreArray(da, Kappa, &K);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(cda, c, &coords);CHKERRQ(ierr);
@@ -63,15 +70,22 @@ PetscErrorCode FormPermeability(DM da, Vec Kappa, AppCtx *user)
 */
 PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, Field *u, Field *f, AppCtx *user)
 {
+  Vec L;
   PetscReal      phi = user->phi;
   PetscReal      dt  = user->dt;
   PetscReal      dx  = 1.0/(PetscReal)(info->mx-1);
+  PetscReal      alpha = 2.0;
+  PetscReal      beta  = 2.0;
+  PetscReal      kappaWet   = user->kappaWet;
+  PetscReal      kappaNoWet = user->kappaNoWet;
   Field         *uold;
   PetscScalar   *Kappa;
   PetscInt       i;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = DMGetGlobalVector(user->cda, &L);CHKERRQ(ierr);
+
   ierr = DMDAVecGetArray(info->da, user->uold,  &uold);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(user->cda, user->Kappa, &Kappa);CHKERRQ(ierr);
   /* Compute residual over the locally owned part of the grid */
@@ -81,11 +95,15 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, Field *u, Field *f, AppCtx
       f[i].v = u[i].v - user->vl;
       f[i].p = u[i].p - user->pl;
     } else {
-      PetscScalar K = 2*dx/(dx/Kappa[i] + dx/Kappa[i-1]);
+      PetscScalar K          = 2*dx/(dx/Kappa[i] + dx/Kappa[i-1]);
+      PetscReal   lambdaWet  = kappaWet*pow(u[i].s, alpha);
+      PetscReal   lambda     = lambdaWet + kappaNoWet*pow(1-u[i].s, beta);
+      PetscReal   lambdaWetL = kappaWet*pow(u[i-1].s, alpha);
+      PetscReal   lambdaL    = lambdaWetL + kappaNoWet*pow(1-u[i-1].s, beta);
 
-      f[i].s = phi*(u[i].s - uold[i].s) + (dt/dx)*(u[i].s*u[i].v - u[i-1].s*u[i-1].v);
+      f[i].s = phi*(u[i].s - uold[i].s) + (dt/dx)*((lambdaWet/lambda)*u[i].v - (lambdaWetL/lambdaL)*u[i-1].v);
 
-      f[i].v = u[i].v + K*1.0*(u[i].p - u[i-1].p)/dx;
+      f[i].v = u[i].v + K*lambda*(u[i].p - u[i-1].p)/dx;
 
       //pxx     = (2.0*u[i].p - u[i-1].p - u[i+1].p)/dx;
       f[i].p = u[i].v - u[i-1].v;
@@ -94,6 +112,8 @@ PetscErrorCode FormFunctionLocal(DMDALocalInfo *info, Field *u, Field *f, AppCtx
   ierr = DMDAVecRestoreArray(info->da, user->uold, &uold);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(user->cda, user->Kappa, &Kappa);CHKERRQ(ierr);
   /* ierr = PetscLogFlops(11.0*info->ym*info->xm);CHKERRQ(ierr); */
+
+  ierr = DMRestoreGlobalVector(user->cda, &L);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -105,6 +125,7 @@ int main(int argc, char **argv)
   DM             da;     /* grid */
   Vec            u;      /* solution vector */
   AppCtx         user;   /* user-defined work context */
+  PetscReal      t;      /* time */
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc, &argv, PETSC_NULL, help);CHKERRQ(ierr);
@@ -127,9 +148,12 @@ int main(int argc, char **argv)
   user.vl  = 0.1;
   user.pl  = 1.0;
   user.phi = 1.0;
+  user.kappaWet   = 1.0;
+  user.kappaNoWet = 0.3;
   /* Time Loop */
-  user.dt = 1.0;
-  for(PetscInt n = 0; n < 10; ++n) {
+  user.dt = 0.1;
+  for(PetscInt n = 0; n < 100; ++n, t += user.dt) {
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "Starting time %g\n", t);CHKERRQ(ierr);
     ierr = VecView(u, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
     /* Solve */
     ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
