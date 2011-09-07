@@ -31,7 +31,7 @@ PetscErrorCode KSPSetUp_Broyden(KSP ksp)
 
 
    Input Parameter:
-.     ksp - the Krylov space object that was set to use conjugate gradient, by, for 
+   .     ksp - the Krylov space object that was set to use conjugate gradient, by, for 
             example, KSPCreate(MPI_Comm,KSP *ksp); KSPSetType(ksp,KSPBROYDEN);
 */
 #undef __FUNCT__  
@@ -70,7 +70,7 @@ PetscErrorCode  KSPSolve_Broyden(KSP ksp)
   ierr = KSPMonitor(ksp,0,gnorm);CHKERRQ(ierr);
   ierr = (*ksp->converged)(ksp,0,gnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr); 
 
-  if (1) {
+  if (0) {
     PetscScalar rdot,abr;
     Vec         y,w;
     ierr = VecDuplicate(P,&y);CHKERRQ(ierr);
@@ -102,7 +102,7 @@ PetscErrorCode  KSPSolve_Broyden(KSP ksp)
       ierr = (*ksp->converged)(ksp,1+k+i,gnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr); 
       if (ksp->reason) PetscFunctionReturn(0);
 
-      if (1) {
+      if (0) {
         ierr = VecScale(P,A0);CHKERRQ(ierr);
       }
 
@@ -110,24 +110,26 @@ PetscErrorCode  KSPSolve_Broyden(KSP ksp)
         ierr = VecDot(W[j],P,&gdot);CHKERRQ(ierr);
         ierr = VecAXPY(P,gdot,V[j]);CHKERRQ(ierr);
       }
-      ierr = VecCopy(Pold,W[i]);CHKERRQ(ierr);                   /* w[i] = Pold */
 
       ierr = VecAXPY(Pold,-1.0,P);CHKERRQ(ierr);                 /* v[i] =       p           */
-      ierr = VecDot(W[i],Pold,&gdot);CHKERRQ(ierr);             /*        ----------------- */
+      ierr = VecDot(Pold,Pold,&gdot);CHKERRQ(ierr);             /*        ----------------- */
       ierr = VecCopy(P,V[i]);CHKERRQ(ierr);                      /*         w[i]'*(Pold - p)    */
       ierr = VecScale(V[i],1.0/gdot);CHKERRQ(ierr);
+
+      ierr = VecCopy(Pold,W[i]);CHKERRQ(ierr);                   /* w[i] = P - Pold          */
+
 
       ierr = VecDot(W[i],P,&gdot);CHKERRQ(ierr);                /* p = (I + v[i]*w[i]')*p  */
       ierr = VecAXPY(P,gdot,V[i]);CHKERRQ(ierr);
       ierr = VecCopy(P,Pold);CHKERRQ(ierr);
 
-      if (1) {
+      if (0) {
         PetscScalar rdot,abr;
         Vec         y,w;
         ierr = VecDuplicate(P,&y);CHKERRQ(ierr);
         ierr = VecDuplicate(P,&w);CHKERRQ(ierr);
         ierr = MatMult(Amat,P,y);CHKERRQ(ierr);
-    ierr = KSP_PCApplyBAorAB(ksp,P,y,w);CHKERRQ(ierr);      /* y = BAp */
+	ierr = KSP_PCApplyBAorAB(ksp,P,y,w);CHKERRQ(ierr);      /* y = BAp */
 	ierr  = VecDotNorm2(P,y,&rdot,&abr);CHKERRQ(ierr);   /*   rdot = (p)^T(BAp); abr = (BAp)^T (BAp) */
         ierr = VecDestroy(&y);CHKERRQ(ierr);
         ierr = VecDestroy(&w);CHKERRQ(ierr);
