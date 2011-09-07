@@ -11,7 +11,7 @@ function err = PetscInitialize(args,argfile,arghelp)
 %
 %  Add ${PETSC_DIR}/bin/matlab/classes to your MATLAB path
 %
-%  In MATLAB use help Petsc to get started using PETSc from MATLAB
+%  In MATLAB use help PETSc to get started using PETSc from MATLAB
 %
 %
 
