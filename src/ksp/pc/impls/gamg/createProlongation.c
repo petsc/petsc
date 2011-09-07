@@ -1547,59 +1547,35 @@ PetscErrorCode createProlongation( const Mat a_Amat,
     PetscReal alpha,emax,emin,*data_w_ghost;
     PetscInt  myCrs0, nbnodes, *flid_fgid;
 
-    /* create global vector of coorindates in 'coords' */
+    /* create global vector of data in 'data_w_ghost' */
 #if defined PETSC_USE_LOG
     ierr = PetscLogEventBegin(gamg_setup_events[SET7],0,0,0,0);CHKERRQ(ierr);
 #endif
     if (npe > 1) {
-      /* create blocked dummy matrix for communication only */
-      Mat tMat;
-      PetscInt Ii,ncols; 
-      const PetscInt *idx; 
-      PetscScalar v = 1.0;
+      PetscReal *tmp_gdata,*tmp_ldata,*tp2;
 
-      /* count nnz, blocked */
-      ierr = PetscFree( d_nnz ); CHKERRQ(ierr);
-      ierr = PetscMalloc( nloc*bs_in*sizeof(PetscInt), &d_nnz ); CHKERRQ(ierr);
-      for ( Ii = Istart, nnz0 = kk = 0 ; Ii < Iend ; Ii++ ) {
-	ierr = MatGetRow(Gmat,Ii,&ncols,0,0); CHKERRQ(ierr);
-	for( jj = 0 ; jj < bs_in ; jj++, kk++ ){
-	  d_nnz[kk] = ncols/bs_in + 1;
-	  nnz0 += ncols/bs_in;
+      ierr = PetscMalloc( nloc*sizeof(PetscReal), &tmp_ldata ); CHKERRQ(ierr);
+      for( jj = 0 ; jj < a_data_cols ; jj++ ){
+        for( kk = 0 ; kk < bs_in ; kk++) {
+          PetscInt ii,nnodes;
+	  const PetscReal *tp = a_data + jj*bs_in*nloc + kk;
+	  for( ii = 0 ; ii < nloc ; ii++, tp += bs_in ){
+	    tmp_ldata[ii] = *tp;
+	  }
+	  ierr = getDataWithGhosts( Gmat, 1, tmp_ldata, &nnodes, &tmp_gdata );
+	  CHKERRQ(ierr);
+	  if(jj==0 && kk==0) { /* now I know how many todal nodes - allocate */
+	    ierr = PetscMalloc( nnodes*bs_in*a_data_cols*sizeof(PetscReal), &data_w_ghost ); CHKERRQ(ierr);
+	    nbnodes = bs_in*nnodes;
+	  }
+	  tp2 = data_w_ghost + jj*bs_in*nnodes + kk;
+	  for( ii = 0 ; ii < nnodes ; ii++, tp2 += bs_in ){
+	    *tp2 = tmp_gdata[ii];
+	  }
+	  ierr = PetscFree( tmp_gdata ); CHKERRQ(ierr);
 	}
-	ierr = MatRestoreRow(Gmat,Ii,&ncols,0,0); CHKERRQ(ierr);    
       }
-      assert(kk==nloc*bs_in);
-      nnz0 /= nloc*bs_in;
-
-MPI_Barrier(PETSC_COMM_WORLD);
- PetscPrintf(PETSC_COMM_WORLD,"\t%s tMat nloc=%d, bs_in=%d, nnz0=%d\n",__FUNCT__,nloc,bs_in,nnz0);
- 
-      ierr = MatCreateMPIAIJ( wcomm, nloc*bs_in, nloc*bs_in,
-                              PETSC_DETERMINE, PETSC_DETERMINE,
-                              0, d_nnz, 0, d_nnz, &tMat );
-      CHKERRQ(ierr);
-
-      //ierr = MatSetBlockSize( tMat, bs_in );      CHKERRQ(ierr);
-      for ( Ii = Istart; Ii < Iend; Ii++ ){
-        PetscInt dest_row = Ii*bs_in;
-        ierr = MatGetRow(Gmat,Ii,&ncols,&idx,0); CHKERRQ(ierr);
-        for( jj = 0 ; jj < ncols ; jj++ ){
-          PetscInt k,jjj,iii,dest_col = idx[jj]*bs_in;
-          for( k = 0 ; k < bs_in ; k++ ){
-            iii = dest_row + k; jjj = dest_col + k; 
-            ierr = MatSetValues(tMat,1,&iii,1,&jjj,&v,ADD_VALUES); CHKERRQ(ierr);
-          }
-        }
-        ierr = MatRestoreRow(Gmat,Ii,&ncols,&idx,0); CHKERRQ(ierr);
-      }
-PetscPrintf(PETSC_COMM_WORLD,"\t%s MatAssemblyBegin tMat\n",__FUNCT__);       
-      ierr = MatAssemblyBegin(tMat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-      ierr = MatAssemblyEnd(tMat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-PetscPrintf(PETSC_COMM_WORLD,"\t%s tMat done\n",__FUNCT__);       
-      ierr = getDataWithGhosts( tMat, a_data_cols, a_data, &nbnodes, &data_w_ghost );
-      CHKERRQ(ierr);
-      ierr = MatDestroy( &tMat );  CHKERRQ(ierr);
+      ierr = PetscFree( tmp_ldata ); CHKERRQ(ierr);
     }
     else {
       nbnodes = bs_in*nloc;
