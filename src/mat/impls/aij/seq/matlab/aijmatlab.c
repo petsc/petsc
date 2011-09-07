@@ -61,6 +61,8 @@ EXTERN_C_BEGIN
 +     mmat - a MATLAB sparse matris
 -     mat - a already created MATSEQAIJ
 
+  Level: intermediate
+
 @*/
 PetscErrorCode  MatSeqAIJFromMatlab(mxArray *mmat,Mat mat)
 {

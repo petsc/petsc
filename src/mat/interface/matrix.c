@@ -46,6 +46,8 @@ const char *const MatFactorTypes[] = {"NONE","LU","CHOLESKY","ILU","ICC","ILUDT"
   Output Parameter:
 .    keptrows - the rows that are not completely zero
 
+  Level: intermediate
+
  @*/
 PetscErrorCode MatFindNonzeroRows(Mat mat,IS *keptrows)
 {

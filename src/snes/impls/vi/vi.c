@@ -13,6 +13,7 @@
 +  snes - the SNES context
 -  compute - computes the bounds
 
+   Level: advanced
 
 @*/
 PetscErrorCode SNESVISetComputeVariableBounds(SNES snes, PetscErrorCode (*compute)(SNES,Vec,Vec))
@@ -2429,6 +2430,8 @@ static PetscErrorCode SNESView_VI(SNES snes,PetscViewer viewer)
    Notes:
    If this routine is not called then the lower and upper bounds are set to 
    SNES_VI_INF and SNES_VI_NINF respectively during SNESSetUp().
+
+   Level: advanced
 
 @*/
 PetscErrorCode SNESVISetVariableBounds(SNES snes, Vec xl, Vec xu)
