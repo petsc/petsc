@@ -1235,7 +1235,7 @@ PetscErrorCode createProlongation( const Mat a_Amat,
                                    )
 {
   PetscErrorCode ierr;
-  PetscInt       ncols,Istart,Iend,Ii,nloc,jj,kk,my0,nLocalSelected,nnz0,nnz1,N,M;
+  PetscInt       ncols,Istart,Iend,Ii,nloc,jj,kk,my0,nLocalSelected,nnz0,nnz1;
   Mat            Prol, Gmat, AuxMat;
   PetscMPIInt    mype, npe;
   MPI_Comm       wcomm = ((PetscObject)a_Amat)->comm;
@@ -1243,7 +1243,7 @@ PetscErrorCode createProlongation( const Mat a_Amat,
   const PetscInt *selected_idx, *idx,bs_in=*a_bs,col_bs=(a_useSA ? a_data_cols : bs_in);
   const PetscScalar *vals;
   PetscScalar     v,vfilter=0.08;
-  MatInfo info;
+  PetscInt *d_nnz;
 
   PetscFunctionBegin;
   *a_isOK = PETSC_TRUE;
@@ -1254,14 +1254,23 @@ PetscErrorCode createProlongation( const Mat a_Amat,
 #if defined PETSC_USE_LOG
   ierr = PetscLogEventBegin(gamg_setup_events[SET3],0,0,0,0);CHKERRQ(ierr);
 #endif
+
+  /* count nnz, there is sparcity in here so this might not be enough! */
+  ierr = PetscMalloc( nloc*sizeof(PetscInt), &d_nnz ); CHKERRQ(ierr);
+  for ( Ii = Istart, nnz0 = jj = 0 ; Ii < Iend ; Ii += bs_in, jj++ ) {
+    ierr = MatGetRow(a_Amat,Ii,&ncols,0,0); CHKERRQ(ierr);
+    d_nnz[jj] = ncols/bs_in + 3;
+    nnz0 += ncols/bs_in;
+    ierr = MatRestoreRow(a_Amat,Ii,&ncols,0,0); CHKERRQ(ierr);    
+  }
+  nnz0 /= nloc;
+
   /* get scalar copy (norms) of matrix */
-  ierr = MatGetInfo(a_Amat,MAT_LOCAL,&info); CHKERRQ(ierr);
-  kk = (PetscInt)info.nz_used/((nloc+1)*bs_in*bs_in)+1;
   ierr = MatCreateMPIAIJ( wcomm, nloc, nloc,
                           PETSC_DETERMINE, PETSC_DETERMINE,
-                          2*kk, PETSC_NULL, kk, PETSC_NULL, &Gmat );
-  
-  for (Ii=Istart; Ii<Iend; Ii++) {
+                          0, d_nnz, 0, d_nnz, &Gmat );
+
+  for( Ii = Istart; Ii < Iend ; Ii++ ) {
     PetscInt dest_row = Ii/bs_in;
     ierr = MatGetRow(a_Amat,Ii,&ncols,&idx,&vals); CHKERRQ(ierr);
     for(jj=0;jj<ncols;jj++){
@@ -1286,37 +1295,31 @@ PetscErrorCode createProlongation( const Mat a_Amat,
   }
   
   /* filter Gmat */
-  ierr = MatGetInfo(Gmat,MAT_GLOBAL_SUM,&info); CHKERRQ(ierr);
-  ierr = MatGetSize( Gmat, &M, &N );  CHKERRQ(ierr);
-  nnz0 = (PetscInt)(info.nz_used/(PetscReal)M + 0.5);
-  if( a_useSA ){  
-    vfilter = 1.5/(PetscScalar)nnz0;
-    for(jj=0;jj<a_level;jj++) vfilter *= .01;
-  }
-  else {
-    vfilter = .1/(PetscScalar)nnz0;
-  }
+  vfilter = 0.05;
+  for(jj=0;jj<a_level;jj++) vfilter *= .01; /* very fast decay for SA */
+
   ierr = MatGetOwnershipRange(Gmat,&Istart,&Iend);CHKERRQ(ierr); /* use AIJ from here */
   {
     Mat Gmat2; 
-    ierr = MatCreateMPIAIJ(wcomm,nloc,nloc,PETSC_DECIDE,PETSC_DECIDE,3*nnz0,PETSC_NULL,2*nnz0,PETSC_NULL,&Gmat2);
+    ierr = MatCreateMPIAIJ(wcomm,nloc,nloc,PETSC_DECIDE,PETSC_DECIDE,0,d_nnz,0,d_nnz,&Gmat2);
     CHKERRQ(ierr);
-    for (Ii=Istart; Ii<Iend; Ii++) {
+    for( Ii = Istart, nnz1 = 0 ; Ii < Iend; Ii++ ){
       ierr = MatGetRow(Gmat,Ii,&ncols,&idx,&vals); CHKERRQ(ierr);
       for(jj=0;jj<ncols;jj++){
         if( (v=PetscAbs(vals[jj])) > vfilter ) {
           ierr = MatSetValues(Gmat2,1,&Ii,1,&idx[jj],&v,INSERT_VALUES); CHKERRQ(ierr);
+	  nnz1++;
         }
         /* else PetscPrintf(PETSC_COMM_SELF,"\t%s filtered %d, v=%e\n",__FUNCT__,Ii,vals[jj]); */
       }
       ierr = MatRestoreRow(Gmat,Ii,&ncols,&idx,&vals); CHKERRQ(ierr);
     }
+    nnz1 /= nloc;
     ierr = MatAssemblyBegin(Gmat2,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(Gmat2,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatDestroy( &Gmat );  CHKERRQ(ierr);
     Gmat = Gmat2;
-    ierr = MatGetInfo(Gmat,MAT_GLOBAL_SUM,&info); CHKERRQ(ierr);    
-    nnz1 = (PetscInt)(info.nz_used/(PetscReal)M + 0.5);
+
     PetscPrintf(wcomm,"\t%s ave nnz/row %d --> %d\n",__FUNCT__,nnz0,nnz1); 
   }
 
@@ -1465,6 +1468,7 @@ PetscErrorCode createProlongation( const Mat a_Amat,
     ierr = ISDestroy( &llist_1 ); CHKERRQ(ierr);
     ierr = ISDestroy( &selected_1 ); CHKERRQ(ierr);
     ierr = MatDestroy( &Gmat );  CHKERRQ(ierr);    
+    ierr = PetscFree( d_nnz ); CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 
@@ -1550,16 +1554,34 @@ PetscErrorCode createProlongation( const Mat a_Amat,
     if (npe > 1) {
       /* create blocked dummy matrix for communication only */
       Mat tMat;
-      PetscInt Ii,ncols; const PetscInt *idx; PetscScalar v = 1.0;
-      
-      ierr = MatGetInfo(Gmat,MAT_LOCAL,&info); CHKERRQ(ierr);
-      kk = (PetscInt)info.nz_used*bs_in/(nloc+1) + 1;
+      PetscInt Ii,ncols; 
+      const PetscInt *idx; 
+      PetscScalar v = 1.0;
+
+      /* count nnz, blocked */
+      ierr = PetscFree( d_nnz ); CHKERRQ(ierr);
+      ierr = PetscMalloc( nloc*bs_in*sizeof(PetscInt), &d_nnz ); CHKERRQ(ierr);
+      for ( Ii = Istart, nnz0 = kk = 0 ; Ii < Iend ; Ii++ ) {
+	ierr = MatGetRow(Gmat,Ii,&ncols,0,0); CHKERRQ(ierr);
+	for( jj = 0 ; jj < bs_in ; jj++, kk++ ){
+	  d_nnz[kk] = ncols/bs_in + 1;
+	  nnz0 += ncols/bs_in;
+	}
+	ierr = MatRestoreRow(Gmat,Ii,&ncols,0,0); CHKERRQ(ierr);    
+      }
+      assert(kk==nloc*bs_in);
+      nnz0 /= nloc*bs_in;
+
+MPI_Barrier(PETSC_COMM_WORLD);
+ PetscPrintf(PETSC_COMM_WORLD,"\t%s tMat nloc=%d, bs_in=%d, nnz0=%d\n",__FUNCT__,nloc,bs_in,nnz0);
+ 
       ierr = MatCreateMPIAIJ( wcomm, nloc*bs_in, nloc*bs_in,
                               PETSC_DETERMINE, PETSC_DETERMINE,
-                              2*kk, PETSC_NULL, kk, PETSC_NULL,
-                              &tMat );
-      ierr = MatSetBlockSize( tMat, bs_in );      CHKERRQ(ierr);
-      for ( Ii = Istart; Ii < Iend; Ii++ ) {
+                              0, d_nnz, 0, d_nnz, &tMat );
+      CHKERRQ(ierr);
+
+      //ierr = MatSetBlockSize( tMat, bs_in );      CHKERRQ(ierr);
+      for ( Ii = Istart; Ii < Iend; Ii++ ){
         PetscInt dest_row = Ii*bs_in;
         ierr = MatGetRow(Gmat,Ii,&ncols,&idx,0); CHKERRQ(ierr);
         for( jj = 0 ; jj < ncols ; jj++ ){
@@ -1571,8 +1593,10 @@ PetscErrorCode createProlongation( const Mat a_Amat,
         }
         ierr = MatRestoreRow(Gmat,Ii,&ncols,&idx,0); CHKERRQ(ierr);
       }
+PetscPrintf(PETSC_COMM_WORLD,"\t%s MatAssemblyBegin tMat\n",__FUNCT__);       
       ierr = MatAssemblyBegin(tMat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
       ierr = MatAssemblyEnd(tMat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+PetscPrintf(PETSC_COMM_WORLD,"\t%s tMat done\n",__FUNCT__);       
       ierr = getDataWithGhosts( tMat, a_data_cols, a_data, &nbnodes, &data_w_ghost );
       CHKERRQ(ierr);
       ierr = MatDestroy( &tMat );  CHKERRQ(ierr);
@@ -1608,9 +1632,11 @@ PetscErrorCode createProlongation( const Mat a_Amat,
 #if defined PETSC_USE_LOG
     ierr = PetscLogEventEnd(gamg_setup_events[SET7],0,0,0,0);CHKERRQ(ierr);
 #endif
+
     ierr = formProl0(selected_1,llist_1,bs_in,a_data_cols,myCrs0,nbnodes,
 		     data_w_ghost,flid_fgid,a_data_out,Prol);
     CHKERRQ(ierr);
+
     if (npe > 1) ierr = PetscFree( data_w_ghost );      CHKERRQ(ierr);
     ierr = PetscFree( flid_fgid ); CHKERRQ(ierr);
 
@@ -1648,6 +1674,7 @@ PetscErrorCode createProlongation( const Mat a_Amat,
       ierr = VecDestroy( &bb );       CHKERRQ(ierr);
       ierr = KSPDestroy( &eksp );     CHKERRQ(ierr);
     }
+
     /* smooth P1 := (I - omega/lam D^{-1}A)P0 */
     if( PETSC_TRUE ) {
       Mat Prol1, AA; Vec diag;
@@ -1679,6 +1706,7 @@ PetscErrorCode createProlongation( const Mat a_Amat,
   ierr = ISDestroy( &llist_1 ); CHKERRQ(ierr);
   ierr = ISDestroy( &selected_1 ); CHKERRQ(ierr);
   ierr = MatDestroy( &Gmat );  CHKERRQ(ierr);
+  ierr = PetscFree( d_nnz ); CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

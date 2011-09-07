@@ -134,6 +134,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat B,PetscReal fill,Mat *
   mult->duplicate = (*C)->ops->duplicate;
   (*C)->ops->destroy   = MatDestroy_MPIAIJ_MatMatMult;
   (*C)->ops->duplicate = MatDuplicate_MPIAIJ_MatMatMult;
+
   PetscFunctionReturn(0);
 }
 
@@ -151,7 +152,6 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ(Mat A,Mat B,Mat C)
   ierr = PetscObjectQuery((PetscObject)C,"Mat_MatMatMultMPI",(PetscObject *)&container);CHKERRQ(ierr);
   if (!container) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_PLIB,"Container does not exit");
   ierr  = PetscContainerGetPointer(container,(void **)&mult);CHKERRQ(ierr);
-
   seq = &mult->B_seq;
   ierr = MatGetSubMatrices(B,1,&mult->isrowb,&mult->iscolb,MAT_REUSE_MATRIX,&seq);CHKERRQ(ierr);
   mult->B_seq = *seq;

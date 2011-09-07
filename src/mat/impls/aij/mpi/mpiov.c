@@ -1009,7 +1009,7 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
 
   /*  recv buffer sizes */
   /* Receive messages*/
-  
+
   ierr = PetscMalloc((nrqs+1)*sizeof(PetscInt*),&rbuf3);CHKERRQ(ierr);
   ierr = PetscMalloc((nrqs+1)*sizeof(PetscScalar*),&rbuf4);CHKERRQ(ierr);
   ierr = PetscMalloc((nrqs+1)*sizeof(MPI_Request),&r_waits3);CHKERRQ(ierr);
@@ -1440,7 +1440,8 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
         }
       }
     }
-  }    
+  }
+
   ierr = PetscFree(r_status4);CHKERRQ(ierr);
   ierr = PetscFree(r_waits4);CHKERRQ(ierr);
   if (nrqr) {ierr = MPI_Waitall(nrqr,s_waits4,s_status4);CHKERRQ(ierr);}
@@ -1495,7 +1496,6 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
     }
   }
   ierr = PetscFree(cmap);CHKERRQ(ierr);
- 
   ierr = PetscFree(lens[0]);CHKERRQ(ierr);
   ierr = PetscFree(lens);CHKERRQ(ierr);
 
