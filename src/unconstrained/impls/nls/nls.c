@@ -801,6 +801,9 @@ static PetscErrorCode TaoSolverSolve_NLS(TaoSolver tao)
       ierr = VecCopy(nlsP->Xold, tao->solution); CHKERRQ(ierr);
       ierr = VecCopy(nlsP->Gold, tao->gradient); CHKERRQ(ierr);
       step = 0.0;
+      reason = TAO_DIVERGED_LS_FAILURE;
+      tao->reason = TAO_DIVERGED_LS_FAILURE;
+      break;
     }
 
     // Update trust region radius
