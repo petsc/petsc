@@ -120,14 +120,17 @@ typedef long double complex PetscScalar;
 #endif /* PETSC_CLANGUAGE_CXX */
 
 #if !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)
-extern  MPI_Datatype  MPI_C_DOUBLE_COMPLEX;
-extern  MPI_Datatype  MPI_C_COMPLEX;
+extern  MPI_Datatype  MPIU_C_DOUBLE_COMPLEX;
+extern  MPI_Datatype  MPIU_C_COMPLEX;
+#else
+#define MPIU_C_DOUBLE_COMPLEX MPI_C_DOUBLE_COMPLEX
+#define MPIU_C_COMPLEX MPI_C_COMPLEX
 #endif /* PETSC_HAVE_MPI_C_DOUBLE_COMPLEX */
 
 #if defined(PETSC_USE_REAL_SINGLE)
-#define MPIU_SCALAR MPI_C_COMPLEX
+#define MPIU_SCALAR MPIU_C_COMPLEX
 #elif defined(PETSC_USE_REAL_DOUBLE)
-#define MPIU_SCALAR MPI_C_DOUBLE_COMPLEX
+#define MPIU_SCALAR MPIU_C_DOUBLE_COMPLEX
 #elif defined(PETSC_USE_REAL_LONG_DOUBLE)
 #define MPIU_SCALAR error
 #endif /* PETSC_USE_REAL_* */

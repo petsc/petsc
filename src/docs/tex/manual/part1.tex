@@ -26,15 +26,14 @@ vectors) and the operations one would like to perform on the objects.
 The objects and operations in PETSc are derived from our long 
 experiences with scientific computation. Some of the PETSc modules deal with 
 \begin{itemize} 
-\item index sets, including permutations, for indexing into vectors, renumbering, etc;
-\item vectors;
-\item matrices (generally sparse);
-\item distributed arrays (useful for parallelizing regular grid-based 
-      problems);
-\item over fifteen Krylov subspace methods;
-\item dozens of preconditioners, including multigrid, block solvers, and sparse direct solvers;
-\item nonlinear solvers; and
-\item timesteppers for solving time-dependent (nonlinear) PDEs, including support for differential algebraic equations (DAE).
+\item index sets (IS), including permutations, for indexing into vectors, renumbering, etc;
+\item vectors (Vec);
+\item matrices (Mat) (generally sparse);
+\item managing interactions between mesh data structures and vectors and matrices (DM);
+\item over fifteen Krylov subspace methods (KSP);
+\item dozens of preconditioners, including multigrid, block solvers, and sparse direct solvers (PC);
+\item nonlinear solvers (SNES); and
+\item timesteppers for solving time-dependent (nonlinear) PDEs, including support for differential algebraic equations (TS).
 \end{itemize}
 Each consists of an abstract interface 
 (simply a set of calling sequences) and one or more implementations 
@@ -167,12 +166,12 @@ are given in src/matlab/classes/examples/tutorials. Run the program demo in that
 
 Before using PETSc, the user must first set the environmental variable
 \trl{PETSC_DIR}, \findex{PETSC_DIR} indicating the full path of the PETSc home
-directory.  For example, under the UNIX C shell a command of the form
+directory.  For example, under the UNIX bash shell a command of the form
 \begin{tabbing}
-   setenv PETSC\_DIR \$HOME/petsc
+   export PETSC\_DIR=\$HOME/petsc
 \end{tabbing}
  can be placed in the user's \trl{
-.cshrc} file.  In addition, the user must set the environmental
+.bashrc} or other startup file.  In addition, the user must set the environmental
 variable {\trl{PETSC_ARCH}} to specify the architecture. Note that
 {\trl{PETSC_ARCH}} is just a name selected by the installer to refer to
 the libraries compiled for a particular set of compiler options and 
@@ -608,29 +607,29 @@ MPI Messages:         0.000e+00      0.0   0.000e+00  0.000e+00 (lengths)
 MPI Reductions:       0.000e+00      0.0
 
 --------------------------------------------------------------------------------------
-Phase             Count      Time (sec)       Flops/sec     Messages    -- Global --    
-                            Max     Ratio    Max    Ratio Avg len  Redc %T %F %M %L %R   
+Phase              Count      Time (sec)       Flops/sec     Messages    -- Global --    
+                             Max     Ratio    Max    Ratio Avg len  Redc %T %F %M %L %R   
 --------------------------------------------------------------------------------------
-MatMult               2  2.553e-03    1.0  3.9e+06    1.0  0.0 0.0 0.0  2 25  0  0  0
-MatAssemblyBegin      1  2.193e-05    1.0  0.0e+00    0.0  0.0 0.0 0.0  0  0  0  0  0
-MatAssemblyEnd        1  5.004e-03    1.0  0.0e+00    0.0  0.0 0.0 0.0  4  0  0  0  0
-MatGetReordering      1  3.004e-03    1.0  0.0e+00    0.0  0.0 0.0 0.0  3  0  0  0  0
-MatILUFctrSymbol      1  5.719e-03    1.0  0.0e+00    0.0  0.0 0.0 0.0  5  0  0  0  0
-MatLUFactorNumer      1  1.092e-02    1.0  2.7e+05    1.0  0.0 0.0 0.0  9  7  0  0  0
-MatSolve              2  4.193e-03    1.0  2.4e+06    1.0  0.0 0.0 0.0  4 25  0  0  0
-MatSetValues       1000  2.461e-02    1.0  0.0e+00    0.0  0.0 0.0 0.0 21  0  0  0  0
-VecDot                1     60e-04    1.0  9.7e+06    1.0  0.0 0.0 0.0  0  5  0  0  0
-VecNorm               3  5.870e-04    1.0  1.0e+07    1.0  0.0 0.0 0.0  1 15  0  0  0
-VecScale              1  1.640e-04    1.0  6.1e+06    1.0  0.0 0.0 0.0  0  3  0  0  0
-VecCopy               1  3.101e-04    1.0  0.0e+00    0.0  0.0 0.0 0.0  0  0  0  0  0
-VecSet                3  5.029e-04    1.0  0.0e+00    0.0  0.0 0.0 0.0  0  0  0  0  0
-VecAXPY               3  8.690e-04    1.0  6.9e+06    1.0  0.0 0.0 0.0  1 15  0  0  0
-VecMAXPY              1  2.550e-04    1.0  7.8e+06    1.0  0.0 0.0 0.0  0  5  0  0  0
-KSPSolve             1  1.288e-02    1.0  2.2e+06     1.0  0.0 0.0 0.0 11 70  0  0  0
-KSPSetUp             1  2.669e-02    1.0  1.1e+05     1.0  0.0 0.0 0.0 23  7  0  0  0
-KSPGMRESOrthog        1  1.151e-03    1.0  3.5e+06    1.0  0.0 0.0 0.0  1 10  0  0  0
-PCSetUp               1 24e-02    1.0  1.5e+05        1.0  0.0 0.0 0.0 18  7  0  0  0
-PCApply               2  4.474e-03    1.0  2.2e+06    1.0  0.0 0.0 0.0  4 25  0  0  0
+Mat Mult               2  2.553e-03    1.0  3.9e+06    1.0  0.0 0.0 0.0  2 25  0  0  0
+Mat AssemblyBegin      1  2.193e-05    1.0  0.0e+00    0.0  0.0 0.0 0.0  0  0  0  0  0
+Mat AssemblyEnd        1  5.004e-03    1.0  0.0e+00    0.0  0.0 0.0 0.0  4  0  0  0  0
+Mat GetOrdering        1  3.004e-03    1.0  0.0e+00    0.0  0.0 0.0 0.0  3  0  0  0  0
+Mat ILUFctrSymbol      1  5.719e-03    1.0  0.0e+00    0.0  0.0 0.0 0.0  5  0  0  0  0
+Mat LUFactorNumer      1  1.092e-02    1.0  2.7e+05    1.0  0.0 0.0 0.0  9  7  0  0  0
+Mat Solve              2  4.193e-03    1.0  2.4e+06    1.0  0.0 0.0 0.0  4 25  0  0  0
+Mat SetValues       1000  2.461e-02    1.0  0.0e+00    0.0  0.0 0.0 0.0 21  0  0  0  0
+Vec Dot                1     60e-04    1.0  9.7e+06    1.0  0.0 0.0 0.0  0  5  0  0  0
+Vec Norm               3  5.870e-04    1.0  1.0e+07    1.0  0.0 0.0 0.0  1 15  0  0  0
+Vec Scale              1  1.640e-04    1.0  6.1e+06    1.0  0.0 0.0 0.0  0  3  0  0  0
+Vec Copy               1  3.101e-04    1.0  0.0e+00    0.0  0.0 0.0 0.0  0  0  0  0  0
+Vec Set                3  5.029e-04    1.0  0.0e+00    0.0  0.0 0.0 0.0  0  0  0  0  0
+Vec AXPY               3  8.690e-04    1.0  6.9e+06    1.0  0.0 0.0 0.0  1 15  0  0  0
+Vec MAXPY              1  2.550e-04    1.0  7.8e+06    1.0  0.0 0.0 0.0  0  5  0  0  0
+KSP Solve              1  1.288e-02    1.0  2.2e+06    1.0  0.0 0.0 0.0 11 70  0  0  0
+KSP SetUp              1  2.669e-02    1.0  1.1e+05    1.0  0.0 0.0 0.0 23  7  0  0  0
+KSP GMRESOrthog        1  1.151e-03    1.0  3.5e+06    1.0  0.0 0.0 0.0  1 10  0  0  0
+PC SetUp               1  2.4e-02      1.0  1.5e+05    1.0  0.0 0.0 0.0 18  7  0  0  0
+PC Apply               2  4.474e-03    1.0  2.2e+06    1.0  0.0 0.0 0.0  4 25  0  0  0
 --------------------------------------------------------------------------------------
 
 Memory usage is given in bytes:
@@ -641,7 +640,6 @@ Vector                8              8      65728     0
 Matrix                2              2     184924     4140
 Krylov Solver         1              1      16892     41080
 Preconditioner        1              1          0     64872
-KSP                  1              1          0     122844
 
 \end{verbatim}
 }
@@ -696,9 +694,9 @@ When referencing PETSc in a publication please cite the following:
 @TechReport\{petsc-manual,\\
    \>Author      = "Satish Balay and William D. Gropp and Lois C. McInnes and Barry F. Smith",\\
    \>Title       = "PETSc Users Manual",\\
-   \>Number      = "ANL-95/11 - Revision 3.1",\\
+   \>Number      = "ANL-95/11 - Revision 3.2",\\
    \>Institution = "Argonne National Laboratory",\\
-   \>Year        = "2010"\}\\
+   \>Year        = "2011"\}\\
 
 @InProceedings\{petsc-efficient,\\
    \>Author    = "Satish Balay and William D. Gropp and Lois C. McInnes and Barry F. Smith",\\
@@ -736,6 +734,7 @@ The root directory of PETSc contains the following directories:
                                   the .F suffix (recommended).
 \item \trl{include/private}    - Private PETSc include files that should {\em not} 
                                   be used by application programmers.
+\item \trl{share} - Some small test matrices in data files
 \item \trl{src} - The source code for all PETSc libraries, which
                   currently includes
  \begin{itemize}
@@ -744,11 +743,7 @@ The root directory of PETSc contains the following directories:
      \item \trl{is} - index sets,
    \end{itemize}
  \item \trl{mat} - matrices,
- \item \trl{dm}
-   \begin{itemize}
-    \item \trl{da} - distributed arrays,
-    \item \trl{ao} - application orderings,
-   \end{itemize}
+ \item \trl{dm} - data management between meshes and vectors and matrices,
  \item \trl{ksp} - complete linear equations solvers,
  \begin{itemize}
    \item \trl{ksp} - Krylov subspace accelerators,

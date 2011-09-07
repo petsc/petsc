@@ -2497,7 +2497,7 @@ static PetscErrorCode SNESSetFromOptions_VI(SNES snes)
   ierr = PetscOptionsReal("-snes_vi_const_tol","constraint tolerance","None",vi->const_tol,&vi->const_tol,0);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-snes_ls_monitor","Print progress of line searches","SNESLineSearchSetMonitor",vi->lsmonitor ? PETSC_TRUE : PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
   if (set) {ierr = SNESLineSearchSetMonitor(snes,flg);CHKERRQ(ierr);}
-  ierr = PetscOptionsEList("-snes_vi_type","Semismooth algorithm used","",vies,3,"ss",&indx,&flg2);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-snes_vi_type","Semismooth algorithm used","",vies,3,"rs",&indx,&flg2);CHKERRQ(ierr);
   if (flg2) {
     switch (indx) {
     case 0:

@@ -159,8 +159,8 @@ void* PetscThreadStop(MPI_Comm Comm,int,pthread_t*);
 template <> class std::complex<double>; /* instantiate complex template class */
 #endif
 #if !defined(PETSC_HAVE_MPI_C_DOUBLE_COMPLEX)
-MPI_Datatype   MPI_C_DOUBLE_COMPLEX;
-MPI_Datatype   MPI_C_COMPLEX;
+MPI_Datatype   MPIU_C_DOUBLE_COMPLEX;
+MPI_Datatype   MPIU_C_COMPLEX;
 #endif
 PetscScalar    PETSC_i;
 #else

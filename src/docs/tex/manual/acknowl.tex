@@ -19,7 +19,7 @@ have been written by
 \begin{itemize}
   \item Asbjorn Hoiland Aarrestad - the explicit Runge-Kutta implementations;
   \item Mark Adams - scalability features of MPIBAIJ matrices;
-  \item G. Anciaux and J. Roman - the interfaces to the partitioning packages Jostle, PTScotch, Chaco, and Party;
+  \item G. Anciaux and J. Roman - the interfaces to the partitioning packages PTScotch, Chaco, and Party;
   \item Allison Baker - the flexible GMRES code and LGMRES;
   \item Chad Carroll - Win32 graphics;
   \item Ethan Coon - the PetscBag and many bug fixes;
@@ -37,6 +37,7 @@ have been written by
   \item Robert Scheichl - the MINRES implementation,
   \item Kerry Stevens - the pthread based Vec and Mat classes plus the various thread pools
   \item Karen Toonen - designed and implemented much of the PETSc web pages,
+  \item Desire Nuentsa Wakam - the deflated GMRES implementation,
   \item Liyang Xu - the interface to PVODE (now Sundials/CVODE).
 \end{itemize}
 
@@ -62,10 +63,6 @@ PETSc interfaces to the following external software:
   \item ADIC/ADIFOR -  automatic differentiation for the computation of sparse Jacobians,\\ 
                      \href{http://www.mcs.anl.gov/adic}{http://www.mcs.anl.gov/adic},
                      \href{http://www.mcs.anl.gov/adifor}{http://www.mcs.anl.gov/adifor},
-  \item AMG -         the algebraic multigrid code of John Ruge and Klaus Stueben,
-                     \href{http://www.mgnet.org/mgnet-codes-gmd.html}{http://www.mgnet.org/mgnet-codes-gmd.html}
-  \item BLOPEX - Block Locally Optimal Preconditioned Eigenvalue Xolvers developed by Andrew Knyazev,
-                    \href{http://www-math.cudenver.edu/~aknyazev/software/BLOPEX/},
   \item Chaco -     A graph partitioning package, \href{ http://www.cs.sandia.gov/CRF/chac.html}{ http://www.cs.sandia.gov/CRF/chac.html}
   \item DSCPACK -    see page \pageref{sec_externalsol}, Domain-Separator Codes for solving sparse symmetric
                       positive-definite systems, 
@@ -74,7 +71,6 @@ PETSc interfaces to the following external software:
   \item ESSL -         IBM's math library for fast sparse direct LU factorization,
   \item Euclid  -   parallel ILU(k) developed by David Hysom, accessed through the Hypre interface,
   \item Hypre -    the LLNL preconditioner library, \href{http://www.llnl.gov/CASC/hypre}{http://www.llnl.gov/CASC/hypre}
-  \item Jostle -     A graph partitioning package, \href{http://www.gre.ac.uk/~c.walshaw/jostle/}{http://www.gre.ac.uk/~c.walshaw/jostle/}
   \item LUSOL -       sparse LU factorization code (part of MINOS) developed by Michael Saunders,
                       Systems Optimization Laboratory, Stanford University,
                      \href{http://www.sbsi-sol-optimize.com/}{http://www.sbsi-sol-optimize.com/},

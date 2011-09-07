@@ -9,6 +9,15 @@ is a suite of data structures and routines for the scalable (parallel)
 solution of scientific applications modeled by partial differential
 equations. It employs the Message Passing Interface (MPI) standard for
 all message-passing communication.
+
+.. tip::
+
+  You can also install `petsc-dev`_ with::
+
+    $ pip install petsc==dev
+
+  .. _petsc-dev: http://petsc.cs.iit.edu/petsc/
+                 petsc-dev/archive/tip.tar.gz#egg=petsc-dev
 """
 
 import sys, os
@@ -54,7 +63,9 @@ def bootstrap():
     pkgdir = os.path.join('config', 'pypi')
     if not os.path.exists(pkgdir): mkpath(pkgdir)
     pkgfile = os.path.join(pkgdir, '__init__.py')
-    open(pkgfile, 'wt').write(init_py)
+    fh = open(pkgfile, 'wt')
+    fh.write(init_py)
+    fh.close()
     # Simple-minded lookup for MPI and mpi4py
     mpi4py = mpicc = None
     try:
@@ -62,15 +73,14 @@ def bootstrap():
         conf = mpi4py.get_config()
         mpicc = conf.get('mpicc')
     except ImportError: # mpi4py is not installed
+        mpi4py = None
         mpicc = os.environ.get('MPICC') or find_executable('mpicc')
     except AttributeError: # mpi4py is too old
         pass
-    if not mpi4py and mpicc:
-        if (('distribute' in sys.modules) or
-            ('setuptools' in sys.modules)):
-            metadata['install_requires']= ['mpi4py>=1.2.2']
-    if 'setuptools' in sys.modules:
+    if ('setuptools' in sys.modules):
         metadata['zip_safe'] = False
+        if not mpi4py and mpicc:
+            metadata['install_requires']= ['mpi4py>=1.2.2']
 
 def config(dry_run=False):
     log.info('PETSc: configure')
@@ -78,7 +88,9 @@ def config(dry_run=False):
         'PETSC_ARCH='+os.environ['PETSC_ARCH'],
         '--with-shared-libraries=1',
         '--with-debugging=0',
-        '--with-cmake=0', # not needed
+        '--with-c2html=0', # not needed
+        #'--with-sowing=0',
+        #'--with-cmake=0',
         ]
     # MPI
     try:
