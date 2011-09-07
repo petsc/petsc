@@ -536,7 +536,7 @@ PetscErrorCode TronSetupKSP(TaoSolver tao, TAO_TRON*tron)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "TaoGetDualVariables_TRON" 
+#define __FUNCT__ "TaoSolverComputeDual_TRON" 
 static PetscErrorCode TaoSolverComputeDual_TRON(TaoSolver tao, Vec DXL, Vec DXU) {
 
   TAO_TRON *tron = (TAO_TRON *)tao->data;
