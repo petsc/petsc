@@ -4234,12 +4234,10 @@ These parameters may be set from the options database with
 \end{tabbing}
 \findex{-mat_fd_coloring_err} \findex{-mat_fd_coloring_umin}
 
-Note that the MatGetColoring() routine currently 
-works only on sequential routines.  Extensions may be forthcoming. However,
-if one can compute the coloring \trl{iscoloring} some other way, the routine
-MatFDColoringCreate() does work in parallel. An example of this for 
-2D distributed arrays is given below that uses the utility routine
-DMGetColoring().
+Note that although MatGetColoring() works for parallel matrices, the routine currently uses a sequential algorithm.
+Extensions may be forthcoming.
+However, if one can compute the coloring \trl{iscoloring} some other way, the routine MatFDColoringCreate() is scalable.
+An example of this for 2D distributed arrays is given below that uses the utility routine DMGetColoring().
 
 \begin{tabbing}
    DMGetColoring(da,IS\_COLORING\_GHOSTED,\&iscoloring);\\
@@ -4248,8 +4246,7 @@ DMGetColoring().
    ISColoringDestroy(\&iscoloring);
 \end{tabbing}
 
-Note that the routine MatFDColoringCreate() currently is only 
-supported for the AIJ matrix format.
+Note that the routine MatFDColoringCreate() currently is only supported for the AIJ and BAIJ matrix formats.
 
 \section{Variational Inequalities}
 \label{sec_vi}
