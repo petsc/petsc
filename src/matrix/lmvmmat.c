@@ -290,10 +290,16 @@ extern PetscErrorCode MatLMVMReset(Mat M)
     PetscInt i;
     PetscFunctionBegin;
     ierr = MatShellGetContext(M,(void**)&ctx); CHKERRQ(ierr);
+    if (ctx->Gprev) {
+      ierr = PetscObjectDereference((PetscObject)ctx->Gprev); CHKERRQ(ierr);
+    }
+    if (ctx->Xprev) {
+      ierr = PetscObjectDereference((PetscObject)ctx->Xprev); CHKERRQ(ierr);
+    }
     ctx->Gprev = ctx->Y[ctx->lm];
     ctx->Xprev = ctx->S[ctx->lm];
-    ierr = PetscObjectReference((PetscObject)ctx->Gprev);
-    ierr = PetscObjectReference((PetscObject)ctx->Xprev);
+    ierr = PetscObjectReference((PetscObject)ctx->Gprev); CHKERRQ(ierr);
+    ierr = PetscObjectReference((PetscObject)ctx->Xprev); CHKERRQ(ierr);
     for (i=0; i<ctx->lm; ++i) {
       ctx->rho[i] = 0.0;
     }
@@ -791,19 +797,20 @@ extern PetscErrorCode MatLMVMSetScale(Mat m, Vec s)
     PetscBool same;
     PetscFunctionBegin;
     PetscValidHeaderSpecific(m,MAT_CLASSID,1);
-    PetscValidHeaderSpecific(s,VEC_CLASSID,2);
     ierr = PetscTypeCompare((PetscObject)m,MATSHELL,&same); CHKERRQ(ierr);
     if (!same) {
 	SETERRQ(PETSC_COMM_SELF,1,"Matrix m is not type MatLMVM");
     }
     ierr = MatShellGetContext(m,(void**)&ctx); CHKERRQ(ierr);
-
+    
     if (ctx->scale) {
       ierr = VecDestroy(&ctx->scale); CHKERRQ(ierr);
-      ctx->scale=PETSC_NULL;
     }
-
-    ierr = VecDuplicate(s,&ctx->scale); CHKERRQ(ierr);
+    if (s) {
+      ierr = VecDuplicate(s,&ctx->scale); CHKERRQ(ierr);
+    } else {
+      ctx->scale = PETSC_NULL;
+    }
     PetscFunctionReturn(0);
 }
 
