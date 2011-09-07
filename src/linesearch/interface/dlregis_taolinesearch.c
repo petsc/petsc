@@ -5,9 +5,11 @@ EXTERN_C_BEGIN
 extern PetscErrorCode TaoLineSearchCreate_Unit(TaoLineSearch);
 extern PetscErrorCode TaoLineSearchCreate_MT(TaoLineSearch);
 extern PetscErrorCode TaoLineSearchCreate_GPCG(TaoLineSearch);
+extern PetscErrorCode TaoLineSearchCreate_Armijo(TaoLineSearch);
 EXTERN_C_END
 
 
+extern PetscBool TaoLineSearchInitialized;
 
 //PetscClassId TAOLINESEARCH_CLASSID=0;
 
@@ -29,13 +31,7 @@ EXTERN_C_END
 #define TaoLineSearchRegisterDynamic(a,b,c,d) TaoLineSearchRegister(a,b,c,d)
 #endif
 
-EXTERN_C_BEGIN
-extern PetscErrorCode TaoLineSearchCreate_Unit(TaoLineSearch);
-extern PetscErrorCode TaoLineSearchCreate_MT(TaoLineSearch);
-extern PetscErrorCode TaoLineSearchCreate_GPCG(TaoLineSearch);
-EXTERN_C_END
     
-extern PetscBool TaoLineSearchInitialized;
 
 
 
@@ -69,6 +65,7 @@ PetscErrorCode TaoLineSearchInitializePackage(const char path[])
     info = TaoLineSearchRegisterDynamic("unit",path,"TaoLineSearchCreate_Unit",TaoLineSearchCreate_Unit); CHKERRQ(info);
     info = TaoLineSearchRegisterDynamic("more-thuente",path,"TaoLineSearchCreate_MT",TaoLineSearchCreate_MT); CHKERRQ(info);
     info = TaoLineSearchRegisterDynamic("gpcg",path,"TaoLineSearchCreate_GPCG",TaoLineSearchCreate_GPCG); CHKERRQ(info);
+    info = TaoLineSearchRegisterDynamic("armijo",path,"TaoLineSearchCreate_Armijo",TaoLineSearchCreate_Armijo); CHKERRQ(info);
 
     info = PetscLogEventRegister(  "TaoLineSearchApply",TAOLINESEARCH_CLASSID,&TaoLineSearch_ApplyEvent); CHKERRQ(info);
     info = PetscLogEventRegister("TaoLineSearchComputeObjective[Gradient]",TAOLINESEARCH_CLASSID,&TaoLineSearch_EvalEvent); CHKERRQ(info);

@@ -1,34 +1,32 @@
 update manual
-  add pde_constrained section
   add pounders section
 
 Show KSP, LS info in TaoView
 
 ls_converged_reason
 
+test GNU quad
+
 finite differences
-   coloring
    fix manual (part2.tex)
    add to tests (-tao_fd, -tao_fdgrad, -tao_fd_delta)
 
 Put examples in correct places
 
-TaoSolverGetDualVariables
-armijo line search
 Levenberg-Marquardt
 POUNDer
 
 Add line search hooks for source/step
 
-Check documentation
 Add solver registration instructions to manual
-Set KSP Monitors
-Check fortran stubs 
-automatic testing, coverage
 
 make install to put libs/headers in separate location
-Check TAO options in TaoSolverSetFromOptions
+
 Convergence explanations
+
+Check fortran stubs 
+Check documentation
+Check TAO options in TaoSolverSetFromOptions
 
 Test on arches
   Visual Studio
@@ -38,4 +36,5 @@ Test on arches
   Solaris
   Fusion
   
+automatic testing, coverage
 Buildbot
