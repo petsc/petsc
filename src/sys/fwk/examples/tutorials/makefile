@@ -6,7 +6,7 @@ FPPFLAGS        =
 LOCDIR          = src/sys/fwk/examples/tutorials/
 EXAMPLESC       = ex1.c
 EXAMPLESF       =
-MANSEC          = Fwk
+MANSEC          = Sys
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules
