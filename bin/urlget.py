@@ -23,13 +23,24 @@ import urllib
 import os
 import sys
 import ftplib
-import httplib
 import string
-import urlparse
+try:
+    from http.client import HTTPConnection
+except ImportError:
+    from httplib import HTTPConnection
+try:
+    from urllib.parse import urlparse, urlunparse
+except ImportError:
+    from urlparse import urlparse, urlunparse
 from time import *
-from exceptions import *
-from string import *
 
+def error(*args):
+    str = ' '.join(args)
+    if True:                  # Simplified error message, no stack trace
+        print(str)
+        sys.exit(1)
+    else:
+        raise RuntimeError(str)
 
 def parseargs(search_arg,return_nargs,arg_list):
     try:
@@ -43,9 +54,7 @@ def parseargs(search_arg,return_nargs,arg_list):
         return 1,None
     
     if index+1 == len(arg_list):
-        print 'Error! Option has no value!'
-        print 'Expecting value with option: ' + search_arg
-        sys.exit()
+        error('Error! Option has no value!\nExpecting value with option: ' + search_arg)
     else:
         ret_arg = arg_list[index+1]
         arg_list.remove(search_arg)
@@ -53,23 +62,21 @@ def parseargs(search_arg,return_nargs,arg_list):
         return 1,ret_arg
 
 def extension(filename):
-    return split(filename,'.')[-1]
+    return os.path.splitext(filename)[1]
 
 def basename(filename):
-    return join(split(filename,'.')[0:-1],'.')
+    return os.path.splitext(filename)[0]
 
 def uncompress(filename):
     ext = extension(filename)
     if ext == 'gz':
         err = os.system('gunzip ' + filename)
         if err != 0:
-            print 'Error unable to invoke gunzip on ' + filename
-            sys.exit()
+            error('Error unable to invoke gunzip on ' + filename)
     elif ext == 'Z':
         err = os.system('uncompress ' + filename)        
         if err != 0:
-            print 'Error unable to invoke uncompress on ' + filename
-            sys.exit()
+            error('Error unable to invoke uncompress on ' + filename)
 
 def compressed(filename):
     ext = extension(filename)
@@ -82,25 +89,22 @@ def compressed(filename):
 # by ftp/http object classes
 class url_object:
     def gettime(): 
-        print 'Error Derived function should be implemented'
-        sys.exit()
+        error('Error Derived function should be implemented')
     def getfile(filename):
-        print 'Error Derived function should be implemented'
-        sys.exit()
+        error('Error Derived function should be implemented')
 
 class local_object(url_object):
     def __init__(self,machine,urlpath):
         self.localfilename = urlpath
         if os.path.isfile(self.localfilename) == 0:
-            print 'Error! file:',self.localfilename,' does not exist'
-            sys.exit()
-            
+            error('Error! file:',self.localfilename,' does not exist')
+
     def gettime(self):
         return os.stat(self.localfilename)[7]
 
     def getfile(self,outfilename):
-        fp_in  = open(self.localfilename,'r')
-        fp_out = open(outfilename,'w')
+        fp_in  = open(self.localfilename,'rb')
+        fp_out = open(outfilename,'wb')
         fp_out.write(fp_in.read())
         fp_in.close()
         fp_out.close()
@@ -113,9 +117,7 @@ class ftp_object(url_object):
         try :
             self.ftp     = ftplib.FTP(self.machine)
         except:
-            print 'Error! accessing server',self.machine
-            sys.exit()
-            
+            error('Error! accessing server', self.machine)
         self.ftp.login()
 
     def __del__(self):
@@ -129,28 +131,27 @@ class ftp_object(url_object):
         self.buf       = ''
         self.ftp.retrlines('LIST ' +self.urlpath,self.readftplines)
         if self.buf == '':
-            print 'Error! file does not exist on the server'
             self.ftp.close()
-            sys.exit()
+            error('Error! file does not exist on the server')
 
-        month,day,year = split(self.buf)[5:8]
+        month,day,year = self.buf.split()[5:8]
         hour,min       = '0','0'
 
-        if len(split(year,':')) >=2:
-            hour,min   = split(year,':')
+        if len(year.split(':')) >=2:
+            hour,min   = year.split(':')
             year       = gmtime(time())[0]
         else:
-            year = atoi(year)
+            year = int(year)
 
         month_d = {'Jan':1,'Feb':2,'Mar':3,'Apr':4,'May':5,'Jun':6,
                    'Jul':7,'Aug':8,'Sep':9,'Oct':10,'Nov':11,'Dec':12}
 
-        newtime = mktime((year,month_d[month],atoi(day),atoi(hour),
-                          atoi(min),0,-1,-1,0))
+        newtime = mktime((year,month_d[month],int(day),int(hour),
+                          int(min),0,-1,-1,0))
         c_time  = time()
         if newtime > c_time:
-            newtime = mktime((year-1,month_d[month],atoi(day),
-                              atoi(hour),atoi(min),0,-1,-1,0))
+            newtime = mktime((year-1,month_d[month],split(day),
+                              split(hour),split(min),0,-1,-1,0))
         self.remotetime = newtime - timezone
         return self.remotetime
     
@@ -158,7 +159,7 @@ class ftp_object(url_object):
         self.fp.write(buf)
 
     def getfile(self,outfilename):
-        self.fp  = open(outfilename,'w')
+        self.fp  = open(outfilename,'wb')
         self.ftp.retrbinary('RETR '+ self.urlpath,self.writefile)
         self.fp.close()
 
@@ -167,25 +168,23 @@ class http_object(url_object):
     def __init__(self,machine,urlpath):
         self.machine = machine
         self.urlpath = urlpath
+        self.http = HTTPConnection(self.machine)
         try:
-            self.http = httplib.HTTP(self.machine)
+            self.http = HTTPConnection(self.machine)
         except:
-            print 'Error! accessing server',self.machine
-            sys.exit()
-        
+            error('Error! accessing server', self.machine)
         self.http.putrequest('GET',self.urlpath)
         self.http.putheader('Accept','*/*')
         self.http.endheaders()
-        errcode, errmesg, self.headers = self.http.getreply()
-        if errcode != 200:
-            print 'Error! Accessing url on the server.',errcode,errmesg
+        self.response = self.http.getresponse()
+        #errcode, errmesg, self.headers = self.http.getreply()
+        if self.response.status != 200:
             self.http.close()
-            sys.exit()
-        filesize   = self.headers.dict['content-length']
+            error('Error! Accessing url on the server.',res.status,res.reason)
+        filesize   = int(self.response.getheader('content-length'))
         if filesize < 2000 :
-            print 'Error! Accessing url on the server. bytes-received :',filesize
             self.http.close()
-            sys.exit()
+            error('Error! Accessing url on the server. bytes-received :',filesize)
 
     def __del__(self):
         self.http.close()
@@ -194,39 +193,42 @@ class http_object(url_object):
     def gettime(self):
 
         # Get the remote timestamps
-        urltimestamp = self.headers.dict['last-modified']
+        urltimestamp = self.response.getheader('last-modified')
         month_d             = {'Jan':1,'Feb':2,'Mar':3,'Apr':4,'May':5,'Jun':6,
                                'Jul':7,'Aug':8,'Sep':9,'Oct':10,'Nov':11,'Dec':12}
 
-        if len(split(urltimestamp)) == 6 :      #Sun, 06 Nov 1994 08:49:37 GMT
-            day,month,year,time = split(urltimestamp)[1:-1] 
-        elif len(split(urltimestamp)) == 4 :    #Sunday, 06-Nov-94 08:49:37 GMT
-            time           = split(urltimestamp)[2] 
-            day,month,year = split(split(urltimestamp)[1],'-')
+        urltimesplit = urltimestamp.split()
+        if len(urltimesplit) == 6 :      #Sun, 06 Nov 1994 08:49:37 GMT
+            day,month,year,time = urltimesplit[1:-1] 
+        elif len(urltimesplit) == 4 :    #Sunday, 06-Nov-94 08:49:37 GMT
+            time           = urltimesplit[2]
+            day,month,year = urltimesplits[1].split('-')
         else :                                  #Sun Nov  6 08:49:37 1994
-            month,day,time,year = split(urltimestamp)[1:]
+            month,day,time,year = urlsplit[1:]
 
-        hour,min,sec        = split(time,':')
-        newtime             = (atoi(year),month_d[month],atoi(day),atoi(hour),
-                               atoi(min),atoi(sec),-1,-1,0)
+        hour,min,sec        = time.split(':')
+        newtime             = (int(year),month_d[month],int(day),int(hour),
+                               int(min),int(sec),-1,-1,0)
         self.remotetime     = mktime(newtime) - timezone
         return self.remotetime
 
     def getfile(self,outfilename):
         #read the data
-        f    = self.http.getfile()
-        data = f.read()
-        f.close()
+        if False:
+            f    = self.http.getfile()
+            data = f.read()
+            f.close()
+        data = self.response.read()
         # Now write this data to a file
-        fp = open(outfilename,'w')
+        fp = open(outfilename,'wb')
         fp.write(data)
         fp.close()
         
 class urlget:
 
     def __init__(self,url,filename ='',tmpdir='/tmp'):
-        self.url                                = urlparse.urlunparse(urlparse.urlparse(url))
-        self.protocol,self.machine,self.urlpath = urlparse.urlparse(self.url)[0:3]
+        self.url                                = urlunparse(urlparse(url))
+        self.protocol,self.machine,self.urlpath = urlparse(self.url)[0:3]
         self.compressed = 0
         self.cachefilename = 0
 
@@ -237,7 +239,7 @@ class urlget:
             self.cachefilename = filename
         else:
             self.cache      = 1
-            self.filename   = tmpdir+'/'+replace(join(urlparse.urlparse(self.url)[0:3],'@'),'/','_')
+            self.filename   = os.path.join(tmpdir,'@'.join(urlparse(self.url)[0:3]).replace('/','_'))
             self.compressed = compressed(self.filename)
             if self.compressed == 1:
                 self.cachefilename = basename(self.filename)
@@ -251,8 +253,7 @@ class urlget:
         else:
             # Assume local file copy
             self.url_obj = local_object(self.machine,self.urlpath)
-            #print 'Error! Unknown protocol. use ftp or http protocols only'
-            #sys.exit()
+            #error('Error! Unknown protocol. use ftp or http protocols only')
         timestamp = self.url_obj.gettime()
         uselocalcopy = 0
         if os.path.isfile(self.cachefilename) == 1:
@@ -263,7 +264,7 @@ class urlget:
         if self.cache == 0 and os.path.isfile(self.cachefilename) == 1:
             flag = 0
             while flag == 0:
-                print self.filename,'exists. Would you like to replace it? (y/n)'
+                print('%s exists. Would you like to replace it? (y/n)' % (self.filename,))
                 c = stdin.readline()[0]
                 if c == 'y': 
                     uselocalcopy = 0
@@ -288,20 +289,20 @@ def main():
     flg_v,val_v = parseargs('-v',0,sys.argv)
 
     if flg_v:
-        print 'Version 1.0'
+        print('Version 1.1')
         sys.exit()
 
     arg_len = len(sys.argv)
     if arg_len < 2: 
-        print 'Error! Insufficient arguments.'
-        print 'Usage:', sys.argv[0], '[-v] [-tmp tmpdir] [-]  url-filename [local-filename]' 
-        sys.exit()
+        print('Error! Insufficient arguments.')
+        print('Usage: %s [-v] [-tmp tmpdir] [-]  url-filename [local-filename]' % (sys.argv[0],))
+        sys.exit(1)
 
     #Default Values
     tmpdir = '/tmp'
     outfilename = ''
     url = sys.argv[1]
-    
+
     if arg_len == 3:
         outfilename =  sys.argv[2]
     elif flg_hyp:
@@ -311,7 +312,7 @@ def main():
         tmpdir = val_tmp
 
     x = urlget(url,outfilename,tmpdir)
-    print x.cachefilename
+    print(x.cachefilename)
 
 # The classes in this file can also
 # be used in other python-programs by using 'import'
