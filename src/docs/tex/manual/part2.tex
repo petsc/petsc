@@ -555,10 +555,10 @@ Instead of specifying the process layout, one may use
 PETSC\_DECIDE for \trl{m} and \trl{n} 
 so that PETSc will determine the partition using MPI. The type of
 periodicity of the array is specified by \trl{xperiod} and \trl{yperiod}, which can be 
-DMDA_BOUNDARY_NONE \findex{DMDA_BOUNDARY_NONE} (no periodicity), 
-DMDA_BOUNDARY_PERIODIC \findex{DMDA_BOUNDARY_PERIODIC} (periodic in that direction),
-DMDA_BOUNDARY_GHOSTED \findex{DMDA_BOUNDARY_GHOSTED}, or 
-or DMDA_BOUNDARY_MIRROR.\findex{DMDA_BOUNDARY_MIRROR}  The argument \trl{dof} 
+DMDA\_BOUNDARY\_NONE \findex{DMDA_BOUNDARY_NONE} (no periodicity),
+DMDA\_BOUNDARY\_PERIODIC \findex{DMDA_BOUNDARY_PERIODIC} (periodic in that direction),
+DMDA\_BOUNDARY\_GHOSTED \findex{DMDA_BOUNDARY_GHOSTED},
+or DMDA\_BOUNDARY\_MIRROR.\findex{DMDA_BOUNDARY_MIRROR}  The argument \trl{dof}
 indicates the number of degrees of freedom at each array point,
 and \trl{s} is the stencil width (i.e., the width of the ghost point region).
 The optional arrays \trl{lx} and \trl{ly} may contain the number of nodes
@@ -2305,7 +2305,7 @@ Generalized Conjugate Residual            & KSPGCR        & gcr       \\
 BiCGSTAB \cite{v:92}                      & KSPBCGS       & bcgs         \\
 Conjugate Gradient Squared \cite{so:89}   & KSPCGS        & cgs          \\
 Transpose-Free Quasi-Minimal Residual (1) \cite{f:93} & KSPTFQMR & tfqmr  \\
-Transpose-Free Quasi-Minimal Residual (2) & KSPTCQMR & tcqmr & precond \\
+Transpose-Free Quasi-Minimal Residual (2) & KSPTCQMR      & tcqmr        \\
 Conjugate Residual                        & KSPCR         & cr           \\
 Least Squares Method                      & KSPLSQR       & lsqr         \\
 Shell for no KSP method                   & KSPPREONLY    & preonly      \\
@@ -4255,7 +4255,7 @@ supported for the AIJ matrix format.
 \label{sec_vi}
 
 SNES can also solve variational inequalities with box constraints. That is nonlinear algebraic systems with additional inequality constraints on some or all of the variables: $ Lu \le u_i \le Hu_i $.
-Some or all of the lower bounds may be negative infinity (indicated to PETSc with SNES_VI_NINF) and some or all of the upper bounds may be infinity (indicated by SNES_VI_INF). The command 
+Some or all of the lower bounds may be negative infinity (indicated to PETSc with SNES\_VI\_NINF) and some or all of the upper bounds may be infinity (indicated by SNES\_VI\_INF). The command
 \begin{tabbing}
    SNESVISetVariableBounds(SNES,Vec Lu,Vec Hu);
 \end{tabbing}
