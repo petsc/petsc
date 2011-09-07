@@ -2553,8 +2553,8 @@ PetscErrorCode MatFDColoringCreate_MPIBAIJ(Mat mat,ISColoring iscoloring,MatFDCo
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatGetSeqNonzerostructure_MPIBAIJ" 
-PetscErrorCode MatGetSeqNonzerostructure_MPIBAIJ(Mat A,Mat *newmat)
+#define __FUNCT__ "MatGetSeqNonzeroStructure_MPIBAIJ"
+PetscErrorCode MatGetSeqNonzeroStructure_MPIBAIJ(Mat A,Mat *newmat)
 {
   Mat            B;
   Mat_MPIBAIJ    *a = (Mat_MPIBAIJ *)A->data;
@@ -2877,7 +2877,7 @@ static struct _MatOps MatOps_Values = {
        0,
        0,
        0,
-/*114*/MatGetSeqNonzerostructure_MPIBAIJ,
+/*114*/MatGetSeqNonzeroStructure_MPIBAIJ,
        0,
        MatGetGhosts_MPIBAIJ,
        0,

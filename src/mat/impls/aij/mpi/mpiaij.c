@@ -2950,8 +2950,8 @@ PetscErrorCode MatGetRowMax_MPIAIJ(Mat A, Vec v, PetscInt idx[])
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatGetSeqNonzerostructure_MPIAIJ" 
-PetscErrorCode MatGetSeqNonzerostructure_MPIAIJ(Mat mat,Mat *newmat)
+#define __FUNCT__ "MatGetSeqNonzeroStructure_MPIAIJ"
+PetscErrorCode MatGetSeqNonzeroStructure_MPIAIJ(Mat mat,Mat *newmat)
 {
   PetscErrorCode ierr;
   Mat            *dummy;
@@ -3109,7 +3109,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
        MatGetRowMin_MPIAIJ,
        0,
        0,
-/*114*/MatGetSeqNonzerostructure_MPIAIJ,
+/*114*/MatGetSeqNonzeroStructure_MPIAIJ,
        0,
        0,
        0,
