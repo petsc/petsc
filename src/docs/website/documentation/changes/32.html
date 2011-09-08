@@ -1,0 +1,520 @@
+<!DOCTYPE html PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html;
+      charset=ISO-8859-1">
+    <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+    <title>PETSc: Docs:&nbsp; Changes: 3.2</title>
+  </head>
+  <body style="background-color: rgb(213, 234, 255);">
+    <table width="100%">
+      <tbody>
+        <tr>
+          <td valign="top" width="25%">
+            <h1><font color="#ff0000" size="7">PETSc</font></h1>
+            <ul>
+              <li><a href="../../index.html"><strong>Home</strong></a></li>
+            </ul>
+          </td>
+          <td width="75%"><!--##begin-->
+            <h1> Docs:&nbsp;Changes: 3.2</h1>
+            <!--##end--> </td>
+        </tr>
+        <tr>
+          <td colspan="2" width="100%">
+            <hr color="#ff5b5b" size="4"> </td>
+        </tr>
+        <tr>
+          <td valign="top" width="25%">
+            <ul>
+              <li><a href="../../download/index.html"><strong>Download</strong></a></li>
+              <li><a href="../../features/index.html"><strong>Features</strong></a></li>
+              <li><a href="../index.html"><strong>Documentation</strong></a>
+                <ul>
+                  <li><a href="../index.html#Manual"><strong>Manual
+                        pages and
+                        Users Manual</strong></a></li>
+                  <li><a href="../referencing.html"><strong>Referencing&nbsp;
+                        PETSc</strong></a></li>
+                  <li><a href="../tutorials/index.html"><strong>Tutorials</strong></a></li>
+                  <li><strong><a href="../installation.html">Installation</a>
+                    </strong></li>
+                  <li><strong><a href="index.html">Changes</a></strong>
+                    <ul>
+                      <li><a href="dev.html">dev</a><br>
+                      </li>
+                      <li><font color="#ff0000">3.2</font></li>
+                      <li><a href="31.html">3.1</a><br>
+                      </li>
+                      <li><a href="300.html">3.0.0</a></li>
+                      <li><a href="233.html">2.3.3</a></li>
+                      <li><a href="232.html">2.3.2</a></li>
+                      <li><a href="231.html">2.3.1</a></li>
+                      <li><a href="230.html">2.3.0</a></li>
+                      <li><a href="221.html">2.2.1</a></li>
+                      <li><a href="220.html">2.2.0</a></li>
+                      <li><a href="216.html">2.1.6</a></li>
+                      <li><a href="215.html">2.1.5</a></li>
+                      <li><a href="213.html">2.1.3</a></li>
+                      <li><a href="212.html">2.1.2</a></li>
+                      <li><a href="211.html">2.1.1</a></li>
+                      <li><a href="21.html">2.1.0</a></li>
+                      <li><a href="2029.html">2.0.29</a></li>
+                      <li><a href="2028.html">2.0.28</a></li>
+                      <li><a href="2024.html">2.0.24</a></li>
+                      <li><a href="2022.html">2.0.22</a></li>
+                      <li><a href="2918-21.html">2.0.21</a></li>
+                      <li><a href="2918-21.html">2.0.18-20</a></li>
+                      <li><a href="2017.html">2.0.17</a></li>
+                      <li><a href="2016.html">2.0.16</a></li>
+                      <li><a href="2015.html">2.0.15</a></li>
+                    </ul>
+                  </li>
+                  <li><strong><a href="../bugreporting.html">Bug
+                        Reporting</a></strong></li>
+                  <li><strong><a href="../codemanagement.html">Code
+                        Management</a></strong></li>
+                  <li><strong><a href="../faq.html">FAQ</a> </strong></li>
+                  <li><strong><a href="../copyright.html">Copyright</a></strong>
+                  </li>
+                </ul>
+              </li>
+              <li><a href="../../publications/index.html"><strong>Publications</strong></a></li>
+              <li><a href="../../miscellaneous/index.html"><strong>Miscellaneous</strong></a></li>
+              <li><a href="../miscellaneous/external.html"><strong>External
+                    Software</strong></a></li>
+              <li><a href="../developers/index.html"><strong>Developers
+                    Site</strong></a></li>
+            </ul>
+          </td>
+          <td valign="top" width="75%"><!--##begin-->
+            <p align="center"><font color="#ff0000" size="5"><a
+                  name="CHANGES">CHANGES</a>
+                in the PETSc 3.2</font></p>
+            <p><u><b>General:</b></u></p>
+            <ul>
+              <li> --download-c-blas-lapack is replaced with
+                --download-f2cblaslapack&lt;\li&gt; </li>
+              <li> --with-precision=__float128 --download-f2cblaslapack
+                is now support for newish GNU gcc compiler&lt;\li&gt; </li>
+              <li> Calling sequence of PetscBinarRead.m has been
+                changed&lt;\li&gt; </li>
+              <li>PetscError() and SETERRQX() now take a MPI_Comm as the
+                first argument to indicate where the error is known. If
+                you don't know
+                what communicator use then pass in PETSC_COMM_SELF </li>
+              <li>Added PetscObjectAddOptionsHandler() that allows
+                adding new
+                routines to any object that are called to process
+                options when
+                XXXSetFromOptions() is called.<br>
+              </li>
+              <li>Changed PetscTruth to PetscBool, PETSC_TRUTH to
+                PETSC_BOOL, PetscOptionsTruth to PetscOptionsBool, etc.</li>
+              <li>Introduced PetscCopyMode</li>
+              <li>Changed -log_history to -history and
+                PetscLogOpenHistory()
+                PetscLogCloseHistory() to PetscOpenHistory(),
+                PetscCloseHistory()
+                because "log" is reserved for related to the performance
+                logging</li>
+              <li>Changed PetscOptionsPrint() to PetscOptionsView()</li>
+              <li>Changed PetscLogPrintSummary() to PetscLogView()</li>
+              <li>Using gcc 4.6 you can now ./configure
+                --with-precision=__float128 --download-qblaslapack to
+                get computations
+                in quad precision. gfortran 4.6 is also supported.
+                Warning some of the
+                PETSc
+                printing of numbers in some places will print garbage. I
+                haven't
+                figured out a way to handle the %G format. Can be run in
+                parallel :-)</li>
+              <li>PetscFListFind() now takes a searchlibraries flag, if
+                this
+                is set and the function is NOT found in the function
+                list then the
+                libraries and executable are searched (when shared or
+                dynamic libraries
+                are used). Previously it always search the libraries and
+                executables if
+                not found in the list.</li>
+              <li>PetscOpenMPxxx() utilities are now PetscHMPIxxx() for
+                hierarchical MPI, the previous name was bad<br>
+              </li>
+            </ul>
+            <u><b>Logging:<br>
+              </b></u>
+            <ul>
+              <li>PetscCookie changed to PetscClassId in all forms.<br>
+              </li>
+            </ul>
+            <u><b> <br>
+              </b></u> <u><b>config/configure.py:<br>
+              </b></u> <u></u>
+            <ul>
+              <li>--with-64-bit-pointers option removed. It doesn't work
+                properly anway. The user should specify the correct
+                32bit or 64bit
+                compilers to configure. For eg:
+                <pre>configure --with-cc='gcc -m64' --with-fc='gfortran -m64'</pre>
+              </li>
+              <li>Python requirement is changed from 2.2 to 2.3</li>
+              <li>Changed --with-shared to --with-shared-libraries,
+                --known-mpi-shared to --known-mpi-shared-libraries and
+                --with-dynamic
+                to --with-dynamic-loading</li>
+              <li>'ifneeded' support removed.
+                '--download-package=ifneeded'
+                should now be '--download-package=1'</li>
+            </ul>
+            <p><u><b>IS:<br>
+                </b></u></p>
+            <ul>
+              <li>ISBlock(),ISStride() are removed. Use
+                PetscTypeCompare((PetscObject)is,ISBLOCK,&amp;flag),
+                PetscTypeCompare((PetscObject)is,ISSTRIDE,&amp;flag)
+                instead.</li>
+              <li>Added ISCreate(), ISSetType(), ISRegister() etc to
+                match
+                style of other PETSc objects. Also added
+                ISGeneralSetIndices(),
+                ISBlockSetIndices(), ISStrideSetStride()</li>
+              <li>ISCreateGeneral() and ISCreateBlock() now takes
+                PetscCopyMode as an argument
+                and hence ISCreateGeneralNC() and
+                ISCreateGeneralWithArray() are not
+                needed and removed. Use ISCreateGeneral() with the
+                argument
+                PETSC_OWN_POINTER and PETSC_USE_POINTER instead.</li>
+              <li>ISLocalToGlobalMappingCreate() now takes PetscCopyMode
+                as
+                an additional argument and
+                ISLocalToGlobalMappingCreateNC() is no
+                longer needed and removed</li>
+              <li>ISStrideToGeneral() is replaced with ISToGeneral()
+                that
+                works for all basic IS types.</li>
+              <li>ISCreateBlock() now takes indexing relative to block,
+                no
+                longer relative to element. This is to match the
+                paradigm of
+                Vec/MatSetValuesBlocked()<br>
+              </li>
+              <li>ISBlockGetBlockSize() is now ISGetBlockSize(). Block
+                sizes
+                can be set for conforming ISGENERAL and ISSTRIDE using
+                ISSetBlockSize(). </li>
+              <li>ISAllGatherIndices() is removed, use ISCreateGeneral()
+                then
+                ISAllGather().</li>
+            </ul>
+            <p><u><b>PF:</b></u></p>
+            <ul>
+              <li>The source array is marked constant in PFApply and the
+                callback.</li>
+            </ul>
+            <p><u><b>Vec: <br>
+                </b></u></p>
+            <ul>
+              <li>changed VecSqrt() to VecSqrtAbs()</li>
+              <li>VecLoad() and VecLoadIntoVector() have been merged
+                into a
+                single NEW VecLoad() that takes a partially constructed
+                vector as input
+                and loads according to any type or sizes that have
+                previously been set
+                into the Vec.</li>
+              <li>VecLoad() does NOT access the options database to
+                check for
+                the VecType, call VecSetFromOptions() first if you wish
+                to check it.</li>
+              <li>VecDestroyVecs() now takes the pointer to the first
+                array
+                and zeros it on return</li>
+              <li>VecDestroy() now zeros the pointer to the destroyed
+                vector
+                so it cannot be reused</li>
+              <li>VecDestroyVecs(PetscInt n,Vec **) instead of
+                VecDestroyVecs(Vec**,PetscInt n)<br>
+              </li>
+            </ul>
+            <p><u><b> </b></u></p>
+            <p><u><b>VecScatter:<br>
+                </b></u></p>
+            <ul>
+              <li>The ghost indices for VecCreateGhostBlock() and
+                VecCreateGhostBlockWithArray() are now by block instead
+                of by entry.</li>
+            </ul>
+            <p><u><b>Mat:</b></u></p>
+            <ul>
+              <li> MAT_SOLVER_XXX is now MATSOLVERXXX</li>
+              <li> MAT_PARTIONING_XXX is now MATPARTITIONINGXXX</li>
+              <li> MATCOLORING_XXX is now MATCOLORINGXXX</li>
+              <li> MATORDERING_XXX is now MATORDERINGXXX</li>
+              <li>It is an error to call MatSetOption() before the
+                implementation has been created (after MatSetSizes() and
+                MatSetType()).
+                Formerly, options were silently ignored in this
+                circumstance.</li>
+              <li> Added MatSetMumpsIcntl()</li>
+              <li>MatLoad() now takes a created Mat as input (and no
+                longer a
+                Mat type), if you provide the size and type in the Mat
+                then that is
+                used other defaults are used.</li>
+              <li>MATCRL -&gt; MATAIJCRL, MATSEQCRL -&gt; MATSEQAIJCRL,
+                MATMPICRL -&gt; MATMPIAIJCRL</li>
+              <li>MatCreateSeqCRL() -&gt; MatCreateSeqAIJCRL()
+                MatCreateMPICRL() -&gt; MatCreateMPIAIJCRL()</li>
+              <li>MATCSRPERM -&gt; MATAIJPERM, MATSEQCSRPERM -&gt;
+                MATSEQAIJPERM, MATMPICSRPERM -&gt; MATMPIAIJPERM</li>
+              <li>MatCreateSeqCSRPERM() -&gt; MatCreateSeqAIJPERM()
+                MatCreateMPICSRPERM() -&gt; MatCreateMPIAIJPERM()</li>
+              <li>Added MatZeroRowsColumns() and MatZeroRowsColumnsIS().</li>
+              <li>MatZeroRows() and MatZeroRowsIS() now take an x and b
+                vector as optional arguments; if these are provided then
+                the b[idx[i]]
+                is set to diag*x[idx[i]]] for all rows listed in idx[].<br>
+              </li>
+              <li>MatSetLocalToGlobalMapping() and
+                MatSetLocalToGlobalMappingBlock() now take separate row
+                and column
+                maps.
+                MatPreallocateSetLocal() has an extra argument for the
+                column mapping. </li>
+              <li>MatLoad() does NOT access the options database to
+                check for
+                the MatType, call MatSetFromOptions() first if you wish
+                to check it.</li>
+              <li>Removed MatMFFDSetFromOptions() since one can call
+                MatSetFromOptions()</li>
+              <li>MatGetLocalMat() and MatGetLocalMatCondensed() are now
+                MatMPIAIJGetLocalMat() and
+                MatMPIAIJGetLocalMatCondensed()</li>
+              <li>MatOption MAT_USE_COMPRESSEDROW changed to
+                MAT_CHECK_COMPRESSED_ROW<br>
+              </li>
+            </ul>
+            <u><b>PC:</b></u>
+            <ul>
+              <li>PCFieldSplitSetIS() and PCFieldSplitSetFields() now
+                take a
+                split-name parameter which is used to define the options
+                database keys.</li>
+              <li>CHOLMOD can be used for Cholesky factorization using
+                AIJ or
+                SBAIJ(1) matrix formats.</li>
+              <li>PCREDUNDANT now uses the inner KSP with the inner PC.
+                Default is still preonly for KSP and LU for PC so
+                default behavior is
+                the same but now you can use for example
+                -redundant_ksp_gmres.
+                PCRedundantGetPC() is now changed to PCRedundantGetKSP()<br>
+              </li>
+              <li>The header "petscmg.h" is renamed to "petscpcmg.h",
+                "petscasa.h" is renamed to "petscpcasa.h".</li>
+              <li>The preconditioner PCBFBT has been removed. The same
+                functionality is available in PCFIELDSPLIT.</li>
+              <li>PCOPENMP is now PCHMPI and its prefix is now -hmpi_
+                for
+                heirarchical MPI<br>
+              </li>
+              <li>PCMGSetGalerkin() has a second argument of type
+                PetscBool.</li>
+            </ul>
+            <p><u><b>KSP:<br>
+                </b></u></p>
+            <ul>
+              <li>KSPSetPreconditionerSide() changed to KSPSetPCSide()
+                to
+                match name of second argument</li>
+              <li>-ksp_right_pc -ksp_left_pc changed to
+                -ksp_pc_side left,right,symmetric to match
+                KSPSetPCSide()</li>
+              <li>Added KSPGMRESGetRestart() and
+                KSPGMRESGetCGSRefinementType()</li>
+              <li>Added KSPGMRESGetOrthogonalization()</li>
+              <li>KSPAddOptionsChecker() is replaced with
+                PetscObjectAddOptionsHandler()</li>
+              <li>Added KSPSPECEST which estimates the spectrum on the
+                first
+                solve and uses it to configure a reduction-free method
+                for subsequent
+                solves, intended for use when reductions are expensive
+                such as levels
+                of multigrid.</li>
+            </ul>
+            <p><u><b>SNES:</b></u></p>
+            <ul>
+              <li>Added SNESLineSearchSetMonitor() and -snes_ls_monitor.</li>
+              <li>Add SNESKSPONLY, for solving linear problems with
+                SNES.</li>
+              <li>Added the minlambda argument to
+                SNESLineSearchGetParams()
+                and SNESLineSearchSetParams().<br>
+              </li>
+            </ul>
+            <p><u><b>TS:</b></u></p>
+            <ul>
+              <li>Rename TSCRANK_NICHOLSON to TSCN and TSRUNGE_KUTTA to
+                TSRK
+                for consistency.</li>
+              <li>TSSetIFunction() and TSSetRHSFunction() have an
+                additional
+                argument for the vector to compute the function value
+                in. If PETSC_NULL
+                is used, then one is created by the TS.</li>
+              <li>TSSetMatrices() has been removed, use TSSetIFunction()
+                and
+                TSSetRHSFunction(), perhaps providing Jacobian matrices
+                and
+                TSComputeRHSFunctionLinear() and/or
+                TSComputeRHSJacobianConstant(). See
+                src/ts/examples/tutorials/ex{2,4,5,6}.c for an example.</li>
+              <li>Added TSARKIMEX: additive Runge-Kutta
+                implicit-explicit
+                methods
+                for multi-rate systems.</li>
+              <li>Changed TSStep() interface to only perform one step,
+                added
+                TSSolve()
+                to perform multiple steps with callbacks and monitors if
+                desired.</li>
+              <li>Added TSSetExactFinalTime(), replaces
+                TSSundialsSetExactFinalTime(). </li>
+            </ul>
+            <p><u><b>DM/DA:</b></u></p>
+            <ul>
+              <li>Change array argument of DAGetArray and related
+                functions
+                from void** to void* to avoid the need for an explicit
+                cast (the
+                argument still has the meaning of a pointer to
+                d-dimensionally indexed
+                array of user-defined node type, old code will still
+                compile correctly
+                but the cast is no longer necessary).</li>
+              <li>DAGetCoordinates(), DAGetGhostedCoordinates(), and
+                DAGetCoordinateDA() now return borrowed references. The
+                returned object
+                should not be destroyed by the user.</li>
+              <li>Added DAVecGetArrayF90()<br>
+              </li>
+              <li>Changed DASetVertexDivision to DASetOwnershipRanges</li>
+              <li>The SDA object and all its method have been removed<br>
+              </li>
+              <li>The DA, ADDA, Slice and DMComposite objects are now
+                all
+                represented by a DM object. <br>
+              </li>
+              <li>Routines that began with ADDA and Slice now begin with
+                DMADDA and DMSlice</li>
+              <li>DA/ADDA/Slice/DMCompositeGetMatrix() -&gt;
+                DMGetMatrix(),
+                similar for all other routines that have a DM version</li>
+              <li>Removed DASetType(), DARegister() etc since they will
+                all
+                be handled via DMSetType() etc</li>
+              <li>Added DMSetUp() that is called, for example, after all
+                the
+                parameters are passed to the DM object to actually
+                construct the data
+                structures; replace all calls to DASetType() with calls
+                to DMSetUp()</li>
+              <li>DAXXX() routines are now either DMXXX() or DMDAXXX()
+                see
+                petscdmda.h for details</li>
+              <li>petscda.h, petscdadef.h and petscda.h90 are now
+                petscdmda.h,
+                petscdmdadef.h, and petscdmda.h90<br>
+              </li>
+              <li>DAGetISLocalToGlobalMapping() and
+                DAGetISLocalToGlobalMappingBlck() are now
+                DMGetLocalToGlobalMapping()
+                and DMGetLocalToGlobalMappingBlock() and are collective
+                since they may
+                be constructed lazily.</li>
+              <li>DMGetBlockSize() is added.</li>
+              <li>Changed DMDAPeriodicType to DMDABoundaryType, and
+                changed
+                this enum to only specify one boundary (one for each
+                dimension). This
+                enum is now one of DMDA_BOUNDARY_NONE,
+                DMDA_BOUNDARY_GHOSTED, or
+                DMDA_BOUNDARY_PERIODIC. See DMDABoundaryType man page
+                for more.</li>
+              <li>DMDASetPeriodicity() is now DMDASetBoundaryType(), and
+                API
+                is changed to take three DMDABoundaryType arguments.</li>
+              <li>Changed API for DMDACreate*D(), DMDAGetInfo() to take
+                the
+                correct number of DMDABoundaryType enums for the
+                dimension.</li>
+              <li>DMDASetGhostedCoordinates() is added to set
+                coordinates of
+                non-periodic ghost cells.</li>
+            </ul>
+            <p><u><b>DMMG:</b></u></p>
+            <ul>
+            </ul>
+            <u><b>PetscViewer:<br>
+                <br>
+              </b></u>
+            <ul>
+              <li>PETSC_VIEWER_XXX is now PETSCVIEWERXXX</li>
+              <li>Added PetscViewerASCIIOpenWithFILE() and
+                PetscViewerASCIISetFILE()</li>
+              <li>Added PetscViewerASCIISynchronizedAllow() which must
+                be
+                called before using PetscViewerASCIISynchronizedPrintf()<br>
+              </li>
+            </ul>
+            <ul>
+            </ul>
+            <ul>
+            </ul>
+            <p><u><b>SYS:</b></u></p>
+            <ul>
+              <li>
+                PetscOptionsAtoi(),PetscOptionsAtod(),PetscOptionsAtol()
+                -&gt; PetscOptionsStringToInt(),
+                PetscOptionsStringToReal(),
+                PetscOptionsStringToBool()</li>
+              <li>PetscFListFind() takes an additional argument to look
+                up
+                the
+                symbol in dynamically loaded libraries if not already in
+                the list.</li>
+              <li>Added PetscBagSetOptionsPrefix(), which allows a
+                prefix for
+                the option names of bag items.</li>
+              <li>The preloading macros as well as developer-level
+                logging and profiling functions have been namespaced,
+                e.g. PreLoadBegin() is now PetscPreLoadBegin().</li>
+            </ul>
+            <p><u><b>AO:<br>
+                </b></u></p>
+            <p><u><b>Sieve:</b></u></p>
+            <p><u><b>Fortran:<br>
+                </b></u></p>
+            <ul>
+            </ul>
+            <p> </p>
+            <br>
+            <p></p>
+            <ul>
+            </ul>
+            <p><u><b><a
+                    href="http://www.mcs.anl.gov/petsc/petsc-as/miscellaneous/external.html">ExternalPackages</a>:</b></u></p>
+          </td>
+        </tr>
+        <tr>
+          <td colspan="2" width="100%">
+            <hr color="#ff5b5b" size="4"> </td>
+        </tr>
+      </tbody>
+    </table>
+  </body>
+</html>
