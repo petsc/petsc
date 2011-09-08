@@ -201,6 +201,7 @@ PetscErrorCode  PCCreate_ICC(PC pc)
 
   pc->data	               = (void*)icc;
   pc->ops->apply	       = PCApply_ICC;
+  pc->ops->applytranspose      = PCApply_ICC;
   pc->ops->setup               = PCSetup_ICC;
   pc->ops->reset  	       = PCReset_ICC;
   pc->ops->destroy	       = PCDestroy_ICC;

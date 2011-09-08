@@ -8,11 +8,11 @@
 Vector Object:
   type=nest, rows=2 
   VecNest  structure: 
-  (0) : name="(null)", type=nest, rows=6 
+  (0) : type=nest, rows=6 
     Vector Object:
       type=nest, rows=2 
       VecNest  structure: 
-      (0) : name="(null)", type=mpi, rows=3 
+      (0) : type=mpi, rows=3 
         Vector Object:         2 MPI processes        
           type: mpi
         Process [0]
@@ -20,7 +20,7 @@ Vector Object:
         1
         Process [1]
         1
-      (1) : name="(null)", type=mpi, rows=3 
+      (1) : type=mpi, rows=3 
         Vector Object:         2 MPI processes        
           type: mpi
         Process [0]
@@ -28,11 +28,11 @@ Vector Object:
         2
         Process [1]
         2
-  (1) : name="(null)", type=nest, rows=6 
+  (1) : type=nest, rows=6 
     Vector Object:
       type=nest, rows=2 
       VecNest  structure: 
-      (0) : name="(null)", type=mpi, rows=3 
+      (0) : type=mpi, rows=3 
         Vector Object:         2 MPI processes        
           type: mpi
         Process [0]
@@ -40,7 +40,7 @@ Vector Object:
         3
         Process [1]
         3
-      (1) : name="(null)", type=mpi, rows=3 
+      (1) : type=mpi, rows=3 
         Vector Object:         2 MPI processes        
           type: mpi
         Process [0]
