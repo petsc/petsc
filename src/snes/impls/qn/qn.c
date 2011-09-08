@@ -2,10 +2,10 @@
 #include <private/snesimpl.h>
 
 typedef struct {
-  PetscScalar lambda;   /* The default step length for the update */
-  Vec * dX;  /* The change in X */
-  Vec * dF;  /* The change in F */
-  PetscInt m;     /* the number of kept previous steps */
+  PetscReal lambda;   /* The default step length for the update */
+  Vec * dX;           /* The change in X */
+  Vec * dF;           /* The change in F */
+  PetscInt m;         /* the number of kept previous steps */
 } QNContext;
 
 #undef __FUNCT__
@@ -47,7 +47,6 @@ PetscErrorCode LBGFSApplyJinv_Private(SNES snes, PetscInt it, Vec g, Vec z) {
     k = (it - i) % m; 
     ierr = VecDot(dX[k], z, &t);CHKERRQ(ierr);
     alpha[k] = t / rho[k];
-    ierr = PetscPrintf(PETSC_COMM_WORLD, " %d: %e ", k, -alpha[k]);CHKERRQ(ierr);
     ierr = VecAXPY(z, -alpha[k], dF[k]);CHKERRQ(ierr);
   }
 
@@ -59,10 +58,8 @@ PetscErrorCode LBGFSApplyJinv_Private(SNES snes, PetscInt it, Vec g, Vec z) {
     k = (it - i) % m;
     ierr = VecDot(dF[k], z, &t);CHKERRQ(ierr);
     beta[k] = rho[k]*t;
-    ierr = PetscPrintf(PETSC_COMM_WORLD, " %d: %e %e", k, alpha[k] - beta[k], rho[k]);CHKERRQ(ierr);
     ierr = VecAXPY(z, (alpha[k] - beta[k]), dX[k]);
   }
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "\n", k);CHKERRQ(ierr);
   ierr = PetscFree3(alpha, beta, rho);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
@@ -157,7 +154,6 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
     ierr = VecAXPY(p,gdot,V[k]);CHKERRQ(ierr);
     ierr = VecCopy(p,pold);CHKERRQ(ierr);
     
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "Setting %d\n", k);CHKERRQ(ierr);
     ierr = VecAXPY(x, -1.0, p);CHKERRQ(ierr);
   }
   if (i == snes->max_its) {
