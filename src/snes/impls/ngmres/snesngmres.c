@@ -24,6 +24,7 @@ PetscErrorCode SNESReset_NGMRES(SNES snes)
   PetscFunctionBegin;
   ierr = VecDestroyVecs(ngmres->msize, &ngmres->rdot);CHKERRQ(ierr);
   ierr = VecDestroyVecs(ngmres->msize, &ngmres->xdot);CHKERRQ(ierr);
+  if (snes->work) {ierr = VecDestroyVecs(snes->nwork, &snes->work);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -35,7 +36,6 @@ PetscErrorCode SNESDestroy_NGMRES(SNES snes)
 
   PetscFunctionBegin;
   ierr = SNESReset_NGMRES(snes);CHKERRQ(ierr);
-  if (snes->work) {ierr = VecDestroyVecs(snes->nwork, &snes->work);CHKERRQ(ierr);}
   if (snes->data) {
     SNES_NGMRES * ngmres = (SNES_NGMRES *)snes->data;
     ierr = PetscFree5(ngmres->h, ngmres->beta, ngmres->xi, ngmres->r_norms, ngmres->q);CHKERRQ(ierr);
@@ -86,7 +86,7 @@ PetscErrorCode SNESSetUp_NGMRES(SNES snes)
 
   ierr = VecDuplicateVecs(snes->vec_sol, ngmres->msize, &ngmres->xdot);CHKERRQ(ierr);
   ierr = VecDuplicateVecs(snes->vec_sol, ngmres->msize, &ngmres->rdot);CHKERRQ(ierr);
-  ierr = SNESDefaultGetWork(snes, 2);CHKERRQ(ierr);
+  ierr = SNESDefaultGetWork(snes, 3);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -172,7 +172,7 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
   x_A           = snes->vec_sol_update;
   r_A           = snes->work[0];
   d             = snes->work[1];
-  ierr = VecDuplicate(x,&r);CHKERRQ(ierr);
+  r             = snes->work[2];
 
   ierr = SNESGetPC(snes, &pc);CHKERRQ(ierr);
   ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
