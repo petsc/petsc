@@ -12,7 +12,7 @@ It is copied and intended to move dirty codes from ksp/examples/tutorials/ex10.c
         -help -ksp_view                  \n\
         -num_numfac <num_numfac> -num_rhs <num_rhs> \n\
         -ksp_type preonly -pc_type lu -pc_factor_mat_solver_package spooles or superlu or superlu_dist or mumps \n\
-        -ksp_type preonly -pc_type cholesky -pc_factor_mat_solver_package spooles or dscpack or mumps \n\
+        -ksp_type preonly -pc_type cholesky -pc_factor_mat_solver_package spooles or mumps \n\
    mpiexec -n <np> ex30 -f0 <datafile> -ksp_type cg -pc_type asm -pc_asm_type basic -sub_pc_type icc -mat_type sbaij
 
    ./ex30 -f0 $D/small -mat_sigma -3.999999999999999 -ksp_type fgmres -pc_type lu -pc_factor_mat_solver_package superlu -mat_superlu_conditionnumber -ckerror -mat_superlu_diagpivotthresh 0

@@ -93,12 +93,12 @@
                   style="font-weight: bold;">regular/non-root user,</span>
                 perhaps in <span style="font-weight: bold;">/home/username/soft</span></li>
               <li><a href="../download/index.html">Download</a> latest
-                PETSc release tarball: petsc-3.1-p0.tar.gz<br>
+                PETSc release tarball: petsc-3.2-p0.tar.gz<br>
               </li>
               <li><font color="#ff0000">cd /home/username/soft</font></li>
-              <li><font color="#ff0000">gunzip -c petsc-3.1-p0.tar.gz |
+              <li><font color="#ff0000">gunzip -c petsc-3.2-p0.tar.gz |
                   tar -xof -</font></li>
-              <li><font color="#ff0000">cd petsc-3.1-p0</font></li>
+              <li><font color="#ff0000">cd petsc-3.2-p0</font></li>
               <li>sh/bash shell:&nbsp;&nbsp; <font color="#ff0000">PETSC_DIR=$PWD;
 
                   export PETSC_DIR</font><br>
@@ -165,7 +165,7 @@ href="http://www.mcs.anl.gov/petsc/petsc-as/documentation/bugreporting.html">bug
                 are not already installed on the system) :<br>
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font
                   color="#ff0000">export
-                  PETSC_DIR=/home/petsc/petsc-3.1-p0<br>
+                  PETSC_DIR=/home/petsc/petsc-3.2-p0<br>
                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; cd
                   $PETSC_DIR<br>
                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ./configure
@@ -180,7 +180,7 @@ href="http://www.mcs.anl.gov/petsc/petsc-as/documentation/bugreporting.html">bug
                 some systems):<br>
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font
                   color="#ff0000">export
-                  PETSC_DIR=/home/petsc/petsc-3.1-p0<br>
+                  PETSC_DIR=/home/petsc/petsc-3.2-p0<br>
                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; cd
                   $PETSC_DIR<br>
                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ./configure
@@ -197,7 +197,7 @@ href="http://www.mcs.anl.gov/petsc/petsc-as/documentation/bugreporting.html">bug
                 picked up from mpi-dir]<br>
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font
                   color="#ff0000">export
-                  PETSC_DIR=/home/petsc/petsc-3.1-p0<br>
+                  PETSC_DIR=/home/petsc/petsc-3.2-p0<br>
                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; cd
                   $PETSC_DIR<br>
                   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ./configure
@@ -261,17 +261,17 @@ make
             <ul>
               <li>specify enviornment variable for csh/tcsh [can be
                 specified in ~/.cshrc]<br>
-                <pre><font color="#ff0000">setenv PETSC_DIR /home/balay/petsc-3.1-p0<br>setenv PETSC_ARCH linux-gnu-c-debug</font></pre>
+                <pre><font color="#ff0000">setenv PETSC_DIR /home/balay/petsc-3.2-p0<br>setenv PETSC_ARCH linux-gnu-c-debug</font></pre>
               </li>
               <li>specify enviornment variable for bash [can be
                 specified in ~/.bashrc]<br>
-                <pre><font color="#ff0000">export PETSC_DIR=/home/balay/petsc-3.1-p0<br>export PETSC_ARCH=linux-gnu-c-debug</font>        </pre>
+                <pre><font color="#ff0000">export PETSC_DIR=/home/balay/petsc-3.2-p0<br>export PETSC_ARCH=linux-gnu-c-debug</font>        </pre>
               </li>
               <li>specify variable on commandline to configure<br>
-                <pre><font color="#ff0000">./configure PETSC_DIR=/home/balay/petsc-3.1-p0 PETSC_ARCH=linux-gnu-c-debug [other configure options]</font><br></pre>
+                <pre><font color="#ff0000">./configure PETSC_DIR=/home/balay/petsc-3.2-p0 PETSC_ARCH=linux-gnu-c-debug [other configure options]</font><br></pre>
               </li>
               <li>specify variables on command line to make<br>
-                <pre><font color="#ff0000">make PETSC_DIR=/home/balay/petsc-3.1-p0 PETSC_ARCH=linux-gnu-c-debug [other make options]</font></pre>
+                <pre><font color="#ff0000">make PETSC_DIR=/home/balay/petsc-3.2-p0 PETSC_ARCH=linux-gnu-c-debug [other make options]</font></pre>
               </li>
             </ul>
             <p><b><a name="PETSC_DIR"><font color="#551a8b">PETSC_DIR</font></a></b>:
@@ -923,8 +923,8 @@ this
                   style="color: rgb(255, 0, 0);"></span><span
                   style="color: rgb(255, 0, 0);">/opt/petsc</span></li>
               <li><span style="color: rgb(255, 0, 0);">tar -xzf
-                  petsc-3.1-p0.tar.gz</span></li>
-              <li><span style="color: rgb(255, 0, 0);">cd petsc-3.1-p0</span></li>
+                  petsc-3.2-p0.tar.gz</span></li>
+              <li><span style="color: rgb(255, 0, 0);">cd petsc-3.2-p0</span></li>
               <li><span style="color: rgb(255, 0, 0);">./configure</span></li>
               <li><span style="color: rgb(255, 0, 0);">make<br>
                 </span></li>
@@ -938,7 +938,7 @@ this
                   $PWD<br>
                 </span></li>
               <li><span style="color: rgb(255, 0, 0);">./configure
-                  --prefix=/opt/petsc/petsc-3.1-p0&nbsp; [other
+                  --prefix=/opt/petsc/petsc-3.2-p0&nbsp; [other
                   configure options]<br>
                 </span></li>
               <li><span style="color: rgb(255, 0, 0);">make</span></li>
@@ -947,7 +947,7 @@ this
                 </span></li>
             </ul>
             After the install is done, one has to switch to using <span
-              style="color: rgb(255, 0, 0);">PETSC_DIR=/opt/petsc/petsc-3.1-p0</span>.
+              style="color: rgb(255, 0, 0);">PETSC_DIR=/opt/petsc/petsc-3.2-p0</span>.
             &nbsp;If you've installed PETSc with the --prefix option
             then you DO NOT use a PETSC_ARCH variable. You should
             install different configurations using different --prefix

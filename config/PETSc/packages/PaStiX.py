@@ -8,6 +8,7 @@ class Configure(PETSc.package.NewPackage):
                          ['libpastix.a','libpthread.a','librt.a']]
     self.functions    = ['pastix']
     self.includes     = ['pastix.h']
+    self.downloadfilename = 'pastix'
     self.complex      = 0
     self.fc           = 1
     return

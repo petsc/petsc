@@ -1259,11 +1259,12 @@ PetscErrorCode createProlongation( const Mat a_Amat,
   ierr = PetscMalloc( nloc*sizeof(PetscInt), &d_nnz ); CHKERRQ(ierr);
   for ( Ii = Istart, nnz0 = jj = 0 ; Ii < Iend ; Ii += bs_in, jj++ ) {
     ierr = MatGetRow(a_Amat,Ii,&ncols,0,0); CHKERRQ(ierr);
-    d_nnz[jj] = ncols/bs_in + 3;
-    nnz0 += ncols/bs_in;
+    d_nnz[jj] = ncols/bs_in;
+    if( d_nnz[jj] > nloc ) d_nnz[jj] = nloc; 
+    nnz0 += d_nnz[jj];
     ierr = MatRestoreRow(a_Amat,Ii,&ncols,0,0); CHKERRQ(ierr);    
   }
-  nnz0 /= nloc;
+  nnz0 /= (nloc+1);
 
   /* get scalar copy (norms) of matrix */
   ierr = MatCreateMPIAIJ( wcomm, nloc, nloc,
@@ -1314,7 +1315,7 @@ PetscErrorCode createProlongation( const Mat a_Amat,
       }
       ierr = MatRestoreRow(Gmat,Ii,&ncols,&idx,&vals); CHKERRQ(ierr);
     }
-    nnz1 /= nloc;
+    nnz1 /= (nloc+1);
     ierr = MatAssemblyBegin(Gmat2,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(Gmat2,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatDestroy( &Gmat );  CHKERRQ(ierr);
@@ -1483,6 +1484,7 @@ PetscErrorCode createProlongation( const Mat a_Amat,
 #endif
     ierr = getGIDsOnSquareGraph( selected_1, Gmat, &selected_2, &Gmat2, &crsGID );
     CHKERRQ(ierr);
+    ierr = MatDestroy( &Gmat );  CHKERRQ(ierr);
     /* llist is now not valid wrt squared graph, but will work as iterator in 'triangulateAndFormProl' */
 #if defined PETSC_USE_LOG
     ierr = PetscLogEventEnd(gamg_setup_events[SET5],0,0,0,0);CHKERRQ(ierr);
@@ -1500,7 +1502,7 @@ PetscErrorCode createProlongation( const Mat a_Amat,
 
     /* triangulate */
     if( a_dim == 2 ) {
-      PetscReal metric;
+      PetscReal metric=0.0;
 #if defined PETSC_USE_LOG
       ierr = PetscLogEventBegin(gamg_setup_events[SET6],0,0,0,0);CHKERRQ(ierr);
 #endif
@@ -1545,7 +1547,7 @@ PetscErrorCode createProlongation( const Mat a_Amat,
   }
   else { /* SA */
     PetscReal alpha,emax,emin,*data_w_ghost;
-    PetscInt  myCrs0, nbnodes, *flid_fgid;
+    PetscInt  myCrs0, nbnodes=0, *flid_fgid;
 
     /* create global vector of data in 'data_w_ghost' */
 #if defined PETSC_USE_LOG
@@ -1605,6 +1607,7 @@ PetscErrorCode createProlongation( const Mat a_Amat,
       ierr = PetscMalloc( nloc*sizeof(PetscInt), &flid_fgid ); CHKERRQ(ierr);
       for(kk=0;kk<nloc;kk++) flid_fgid[kk] = my0 + kk;
     }
+    ierr = MatDestroy( &Gmat );  CHKERRQ(ierr);
 #if defined PETSC_USE_LOG
     ierr = PetscLogEventEnd(gamg_setup_events[SET7],0,0,0,0);CHKERRQ(ierr);
 #endif
@@ -1653,21 +1656,18 @@ PetscErrorCode createProlongation( const Mat a_Amat,
 
     /* smooth P1 := (I - omega/lam D^{-1}A)P0 */
     if( PETSC_TRUE ) {
-      Mat Prol1, AA; Vec diag;
-      ierr = MatDuplicate(a_Amat, MAT_COPY_VALUES, &AA); CHKERRQ(ierr); /*AIJ*/
-      ierr = MatGetVecs( AA, &diag, 0 );    CHKERRQ(ierr);
-      ierr = MatGetDiagonal( AA, diag );    CHKERRQ(ierr); /* effectively PCJACOBI */
+      Mat tMat; 
+      Vec diag;
+      ierr = MatMatMult( a_Amat, Prol, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &tMat );   CHKERRQ(ierr);
+      ierr = MatGetVecs( a_Amat, &diag, 0 );    CHKERRQ(ierr);
+      ierr = MatGetDiagonal( a_Amat, diag );    CHKERRQ(ierr); /* effectively PCJACOBI */
       ierr = VecReciprocal( diag );         CHKERRQ(ierr);
-      ierr = MatDiagonalScale( AA, diag, 0 ); CHKERRQ(ierr);
+      ierr = MatDiagonalScale( tMat, diag, 0 ); CHKERRQ(ierr);
       ierr = VecDestroy( &diag );           CHKERRQ(ierr);
       alpha = -1.5/emax;
-      ierr = MatScale( AA, alpha ); CHKERRQ(ierr);
-      alpha = 1.;
-      ierr = MatShift( AA, alpha ); CHKERRQ(ierr);
-      ierr = MatMatMult( AA, Prol, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &Prol1 );   CHKERRQ(ierr);
+      ierr = MatAYPX( tMat, alpha, Prol, SUBSET_NONZERO_PATTERN );           CHKERRQ(ierr);
       ierr = MatDestroy( &Prol );  CHKERRQ(ierr);
-      ierr = MatDestroy( &AA );    CHKERRQ(ierr);
-      Prol = Prol1;
+      Prol = tMat;
     }
 #if defined PETSC_USE_LOG
     ierr = PetscLogEventEnd(gamg_setup_events[SET9],0,0,0,0);CHKERRQ(ierr);
@@ -1676,12 +1676,10 @@ PetscErrorCode createProlongation( const Mat a_Amat,
 
     *a_bs = a_data_cols;
   }
-
   *a_P_out = Prol;  /* out */
 
   ierr = ISDestroy( &llist_1 ); CHKERRQ(ierr);
   ierr = ISDestroy( &selected_1 ); CHKERRQ(ierr);
-  ierr = MatDestroy( &Gmat );  CHKERRQ(ierr);
   ierr = PetscFree( d_nnz ); CHKERRQ(ierr);
 
   PetscFunctionReturn(0);

@@ -25,7 +25,6 @@ PKG3=''
 # party - ?
 # scotch - binary?
 # jostle - binary?
-# dscpack - download does not work
 # cblas/fblas ??
 
 GNUCOMP='CC=gcc FC=gfortran CXX=g++'

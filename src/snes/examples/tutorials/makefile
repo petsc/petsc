@@ -333,9 +333,9 @@ runex5_5_picard:
 	-@${MPIEXEC} -n 2 ./ex5 -da_grid_x 20 -da_grid_y 20 \
 	-snes_type picard -snes_ls_damping 0.1 -snes_ls quadratic -snes_monitor_short -snes_max_it 10000 \
 	-par 6.0 
-runex5_5_sorqn:
+runex5_5_qn:
 	-@${MPIEXEC} -n 2 ./ex5 -da_grid_x 10 -da_grid_y 10 \
-	-snes_type sorqn -snes_sorqn_jacobian_start 0 -snes_sorqn_restart 10 -snes_sorqn_alpha 0.25 -snes_monitor -snes_max_it 10000 \
+	-snes_type qn -snes_qn_lambda 0.1 -snes_qn_m 30 -snes_monitor -snes_max_it 10000 \
 	-par 6.0 
 
 runex5_5_ngmres_sorqn:

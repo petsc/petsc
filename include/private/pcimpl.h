@@ -37,7 +37,7 @@ struct _p_PC {
   Mat            mat,pmat;
   Vec            diagonalscaleright,diagonalscaleleft; /* used for time integration scaling */
   PetscBool      diagonalscale;
-  PetscBool      nonzero_guess; /* used by PCKSP, PCREDUNDANT and PCOPENMP */
+  PetscBool      nonzero_guess; /* used by PCKSP, PCREDUNDANT and PCHMPI */
   PetscErrorCode (*modifysubmatrices)(PC,PetscInt,const IS[],const IS[],Mat[],void*); /* user provided routine */
   void           *modifysubmatricesP; /* context for user routine */
   void           *data;

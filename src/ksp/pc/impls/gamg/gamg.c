@@ -289,7 +289,6 @@ PetscErrorCode partitionLevel( Mat a_Amat_fine,
 
       ierr = MatDestroy( &tMat );  CHKERRQ(ierr);
     }
-    
     if( ncrs0 != 0 ){
       const PetscInt *is_idx;
       MatPartitioning  mpart;
@@ -412,7 +411,6 @@ PetscErrorCode partitionLevel( Mat a_Amat_fine,
     }
     ierr = VecRestoreArray( dest_crd, &array );    CHKERRQ(ierr);
     ierr = VecDestroy( &dest_crd );    CHKERRQ(ierr);
-      
     /*
       Invert for MatGetSubMatrix
     */
@@ -432,10 +430,13 @@ PetscErrorCode partitionLevel( Mat a_Amat_fine,
     {
       IS findices;
       ierr = ISCreateStride(wcomm,Iend-Istart,Istart,1,&findices);   CHKERRQ(ierr);
+
       ierr = MatGetSubMatrix( Pold, findices, new_indices, MAT_INITIAL_MATRIX, &Pnew );
       CHKERRQ(ierr);
+
       ierr = ISDestroy( &findices ); CHKERRQ(ierr);
     }
+
     ierr = MatDestroy( a_P_inout ); CHKERRQ(ierr);
     *a_P_inout = Pnew; /* output */
 
