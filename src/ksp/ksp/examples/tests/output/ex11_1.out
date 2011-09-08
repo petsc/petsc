@@ -45,13 +45,13 @@
     0 KSP Residual norm 18874.5 
     Linear solve converged due to CONVERGED_RTOL iterations 30
     Linear solve converged due to CONVERGED_RTOL iterations 30
-    1 KSP Residual norm 5980.61 
+    1 KSP Residual norm 5980.6 
     Linear solve converged due to CONVERGED_RTOL iterations 34
     Linear solve converged due to CONVERGED_RTOL iterations 30
-    2 KSP Residual norm 4874.27 
+    2 KSP Residual norm 4874.25 
     Linear solve converged due to CONVERGED_RTOL iterations 33
     Linear solve converged due to CONVERGED_RTOL iterations 30
-    3 KSP Residual norm 735.443 
+    3 KSP Residual norm 735.445 
     Linear solve converged due to CONVERGED_RTOL iterations 30
     Linear solve converged due to CONVERGED_RTOL iterations 30
     4 KSP Residual norm 186.933 
@@ -60,42 +60,45 @@
     5 KSP Residual norm 49.2586 
     Linear solve converged due to CONVERGED_RTOL iterations 33
     Linear solve converged due to CONVERGED_RTOL iterations 30
-    6 KSP Residual norm 4.93617 
+    6 KSP Residual norm 4.93616 
     Linear solve converged due to CONVERGED_RTOL iterations 33
     Linear solve converged due to CONVERGED_RTOL iterations 30
-    7 KSP Residual norm 0.721076 
+    7 KSP Residual norm 0.721077 
     Linear solve converged due to CONVERGED_RTOL iterations 31
     Linear solve converged due to CONVERGED_RTOL iterations 30
     8 KSP Residual norm 0.104728 
-  3 KSP Residual norm 2.072e-10 
+  3 KSP Residual norm 2.073e-10 
     Linear solve converged due to CONVERGED_RTOL iterations 34
-    Linear solve converged due to CONVERGED_RTOL iterations 29
+    Linear solve converged due to CONVERGED_RTOL iterations 34
     Residual norms for fc_fieldsplit_pressure_ solve.
-    0 KSP Residual norm 5061.58 
-    Linear solve converged due to CONVERGED_RTOL iterations 32
+    0 KSP Residual norm 5052.31 
+    Linear solve converged due to CONVERGED_RTOL iterations 34
     Linear solve converged due to CONVERGED_RTOL iterations 33
-    1 KSP Residual norm 3963.48 
+    1 KSP Residual norm 3867.45 
     Linear solve converged due to CONVERGED_RTOL iterations 30
     Linear solve converged due to CONVERGED_RTOL iterations 30
-    2 KSP Residual norm 1285.3 
-    Linear solve converged due to CONVERGED_RTOL iterations 33
-    Linear solve converged due to CONVERGED_RTOL iterations 30
-    3 KSP Residual norm 744.933 
+    2 KSP Residual norm 1289.57 
     Linear solve converged due to CONVERGED_RTOL iterations 33
     Linear solve converged due to CONVERGED_RTOL iterations 30
-    4 KSP Residual norm 109.99 
+    3 KSP Residual norm 754.745 
+    Linear solve converged due to CONVERGED_RTOL iterations 33
+    Linear solve converged due to CONVERGED_RTOL iterations 30
+    4 KSP Residual norm 107.047 
     Linear solve converged due to CONVERGED_RTOL iterations 35
     Linear solve converged due to CONVERGED_RTOL iterations 30
-    5 KSP Residual norm 22.2872 
+    5 KSP Residual norm 22.3026 
     Linear solve converged due to CONVERGED_RTOL iterations 33
     Linear solve converged due to CONVERGED_RTOL iterations 30
-    6 KSP Residual norm 1.70277 
+    6 KSP Residual norm 1.71227 
     Linear solve converged due to CONVERGED_RTOL iterations 34
     Linear solve converged due to CONVERGED_RTOL iterations 30
-    7 KSP Residual norm 0.21094 
+    7 KSP Residual norm 0.20216 
     Linear solve converged due to CONVERGED_RTOL iterations 34
     Linear solve converged due to CONVERGED_RTOL iterations 30
-    8 KSP Residual norm 0.0373685 
+    8 KSP Residual norm 0.0518672 
+    Linear solve converged due to CONVERGED_RTOL iterations 31
+    Linear solve converged due to CONVERGED_RTOL iterations 30
+    9 KSP Residual norm 0.0102098 
   4 KSP Residual norm < 1.e-11
 KSP Object:(fc_) 1 MPI processes
   type: fgmres
@@ -134,7 +137,7 @@ PC Object:(fc_) 1 MPI processes
                 total number of mallocs used during MatSetValues calls =0
                     block size is 1
         linear system matrix = precond matrix:
-        Matrix Object:         1 MPI processes        
+        Matrix Object:        (a11_)         1 MPI processes        
           type: seqaij
           rows=2046, cols=2046
           total: nonzeros=34952, allocated nonzeros=34952
@@ -187,7 +190,7 @@ PC Object:(fc_) 1 MPI processes
           rows=1024, cols=1024
             Schur complement A11 - A10 inv(A00) A01
             A11
-              Matrix Object:               1 MPI processes              
+              Matrix Object:              (a22_)               1 MPI processes              
                 type: seqaij
                 rows=1024, cols=1024
                 total: nonzeros=1024, allocated nonzeros=1024
@@ -222,7 +225,7 @@ PC Object:(fc_) 1 MPI processes
                         total number of mallocs used during MatSetValues calls =0
                             block size is 1
                 linear system matrix = precond matrix:
-                Matrix Object:                 1 MPI processes                
+                Matrix Object:                (a11_)                 1 MPI processes                
                   type: seqaij
                   rows=2046, cols=2046
                   total: nonzeros=34952, allocated nonzeros=34952
@@ -235,7 +238,7 @@ PC Object:(fc_) 1 MPI processes
                 total: nonzeros=7936, allocated nonzeros=7936
                 total number of mallocs used during MatSetValues calls =0
                   using I-node routines: found 1085 nodes, limit used is 5
-        Matrix Object:         1 MPI processes        
+        Matrix Object:        (a22_)         1 MPI processes        
           type: seqaij
           rows=1024, cols=1024
           total: nonzeros=1024, allocated nonzeros=1024
@@ -248,10 +251,10 @@ PC Object:(fc_) 1 MPI processes
       Matrix object: 
         type=nest, rows=2, cols=2 
         MatNest structure: 
-        (0,0) : name="(null)", type=seqaij, rows=2046, cols=2046 
-        (0,1) : name="(null)", type=seqaij, rows=2046, cols=1024 
-        (1,0) : name="(null)", type=seqaij, rows=1024, cols=2046 
-        (1,1) : name="(null)", type=seqaij, rows=1024, cols=1024 
+        (0,0) : prefix="a11_", type=seqaij, rows=2046, cols=2046 
+        (0,1) : type=seqaij, rows=2046, cols=1024 
+        (1,0) : type=seqaij, rows=1024, cols=2046 
+        (1,1) : prefix="a22_", type=seqaij, rows=1024, cols=1024 
 -- vector vector values --
   Min(u)  = -0.017280 [loc=2035]
   Max(u)  = 0.018577 [loc=2024]
@@ -261,7 +264,7 @@ PC Object:(fc_) 1 MPI processes
   Min(p)  = -6.039639 [loc=844]
   Max(p)  = 4.836615 [loc=16]
   Norm(p) = 94.125988 
-  Sum(p)  = -0.000000 
+  Sum(p)  = 0.000000 
 -- Full vector values --
   Min(u,p)  = -6.039639 [loc=2890]
   Max(u,p)  = 4.836615 [loc=2062]

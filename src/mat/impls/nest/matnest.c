@@ -579,7 +579,7 @@ static PetscErrorCode MatView_Nest(Mat A,PetscViewer viewer)
     for (i=0; i<bA->nr; i++) {
       for (j=0; j<bA->nc; j++) {
         const MatType type;
-        const char *name;
+        char name[256] = "",prefix[256] = "";
         PetscInt NR,NC;
         PetscBool isNest = PETSC_FALSE;
 
@@ -589,15 +589,16 @@ static PetscErrorCode MatView_Nest(Mat A,PetscViewer viewer)
         }
         ierr = MatGetSize(bA->m[i][j],&NR,&NC);CHKERRQ(ierr);
         ierr = MatGetType( bA->m[i][j], &type );CHKERRQ(ierr);
-        name = ((PetscObject)bA->m[i][j])->prefix;
+        if (((PetscObject)bA->m[i][j])->name) {ierr = PetscSNPrintf(name,sizeof name,"name=\"%s\", ",((PetscObject)bA->m[i][j])->name);CHKERRQ(ierr);}
+        if (((PetscObject)bA->m[i][j])->prefix) {ierr = PetscSNPrintf(prefix,sizeof prefix,"prefix=\"%s\", ",((PetscObject)bA->m[i][j])->prefix);CHKERRQ(ierr);}
         ierr = PetscTypeCompare((PetscObject)bA->m[i][j],MATNEST,&isNest);CHKERRQ(ierr);
 
-        PetscViewerASCIIPrintf( viewer, "(%D,%D) : name=\"%s\", type=%s, rows=%D, cols=%D \n",i,j,name,type,NR,NC);
+        ierr = PetscViewerASCIIPrintf(viewer,"(%D,%D) : %s%stype=%s, rows=%D, cols=%D \n",i,j,name,prefix,type,NR,NC);CHKERRQ(ierr);
 
         if (isNest) {
-          PetscViewerASCIIPushTab( viewer );  /* push1 */
-          ierr = MatView( bA->m[i][j], viewer );CHKERRQ(ierr);
-          PetscViewerASCIIPopTab(viewer);    /* pop1 */
+          ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);  /* push1 */
+          ierr = MatView(bA->m[i][j],viewer);CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);    /* pop1 */
         }
       }
     }
