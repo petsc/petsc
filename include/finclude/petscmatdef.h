@@ -57,10 +57,6 @@
 #define MATORDERINGRCM 'rcm'
 #define MATORDERINGQMD 'qmd'
 #define MATORDERINGROWLENGTH 'rowlength'
-#define MATORDERINGDSC_ND 'dsc_nd'
-#define MATORDERINGDSC_MMD 'dsc_mmd'
-#define MATORDERINGDSC_MDF 'dsc_mdf'
-
 !
 !  Matrix types
 !
@@ -130,7 +126,6 @@
 #define MATSOLVERLUSOL        'lusol'
 #define MATSOLVERMUMPS        'mumps'
 #define MATSOLVERPASTIX       'pastix'
-#define MATSOLVERDSCPACK      'dscpack'
 #define MATSOLVERMATLAB       'matlab'
 #define MATSOLVERPETSC        'petsc'
 #define MATSOLVERPLAPACK      'plapack'

@@ -65,7 +65,7 @@ E*/
 #define PCPROMETHEUS      "prometheus"
 #define PCGALERKIN        "galerkin"
 #define PCEXOTIC          "exotic"
-#define PCOPENMP          "openmp"
+#define PCHMPI            "hmpi"
 #define PCSUPPORTGRAPH    "supportgraph"
 #define PCASA             "asa"
 #define PCCP              "cp"

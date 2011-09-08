@@ -351,9 +351,9 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("HYPRE BoomerAMG Options");CHKERRQ(ierr);
-  ierr = PetscOptionsEList("-pc_hypre_boomeramg_cycle_type","Cycle type","None",HYPREBoomerAMGCycleType,2,HYPREBoomerAMGCycleType[jac->cycletype],&indx,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-pc_hypre_boomeramg_cycle_type","Cycle type","None",HYPREBoomerAMGCycleType+1,2,HYPREBoomerAMGCycleType[jac->cycletype],&indx,&flg);CHKERRQ(ierr);
   if (flg) {
-    jac->cycletype = indx;
+    jac->cycletype = indx+1;
     PetscStackCallHypre(0,HYPRE_BoomerAMGSetCycleType,(jac->hsolver,jac->cycletype)); 
   }
   ierr = PetscOptionsInt("-pc_hypre_boomeramg_max_levels","Number of levels (of grids) allowed","None",jac->maxlevels,&jac->maxlevels,&flg);CHKERRQ(ierr);
