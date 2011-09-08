@@ -16,7 +16,7 @@ users manual for a discussion of preloading.  Input parameters include\n\
         -help -ksp_view                  \n\
         -num_numfac <num_numfac> -num_rhs <num_rhs> \n\
         -ksp_type preonly -pc_type lu -pc_factor_mat_solver_package spooles or superlu or superlu_dist or mumps \n\
-        -ksp_type preonly -pc_type cholesky -pc_factor_mat_solver_package spooles or dscpack or mumps \n\   
+        -ksp_type preonly -pc_type cholesky -pc_factor_mat_solver_package spooles or mumps \n\   
    mpiexec -n <np> ./ex10 -f0 <datafile> -ksp_type cg -pc_type asm -pc_asm_type basic -sub_pc_type icc -mat_type sbaij
  \n\n";
 */

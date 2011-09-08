@@ -105,7 +105,6 @@ E*/
 #define MATSOLVERLUSOL        "lusol"
 #define MATSOLVERMUMPS        "mumps"
 #define MATSOLVERPASTIX       "pastix"
-#define MATSOLVERDSCPACK      "dscpack"
 #define MATSOLVERMATLAB       "matlab"
 #define MATSOLVERPETSC        "petsc"
 #define MATSOLVERPLAPACK      "plapack"
@@ -1071,9 +1070,6 @@ E*/
 #define MATORDERINGRCM         "rcm"
 #define MATORDERINGQMD         "qmd"
 #define MATORDERINGROWLENGTH   "rowlength"
-#define MATORDERINGDSC_ND      "dsc_nd"         /* these three are only for DSCPACK, see its documentation for details */
-#define MATORDERINGDSC_MMD     "dsc_mmd"
-#define MATORDERINGDSC_MDF     "dsc_mdf"
 #define MATORDERINGAMD         "amd"            /* only works if UMFPACK is installed with PETSc */
 
 extern PetscErrorCode  MatGetOrdering(Mat,const MatOrderingType,IS*,IS*);
