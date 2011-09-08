@@ -218,6 +218,23 @@ extern PetscErrorCode   TSMonitorLGCreate(const char[],const char[],int,int,int,
 extern PetscErrorCode   TSMonitorLG(TS,PetscInt,PetscReal,Vec,void *);
 extern PetscErrorCode   TSMonitorLGDestroy(PetscDrawLG*);
 
+/*E
+   TSSSPType - string with the name of TSSSP scheme.
+
+   Level: beginner
+
+.seealso: TSSSPSetType(), TS
+E*/
+#define TSSSPType char*
+#define TSSSPRKS2  "rks2"
+#define TSSSPRKS3  "rks3"
+#define TSSSPRK104 "rk104"
+
+extern PetscErrorCode TSSSPSetType(TS,const TSSSPType);
+extern PetscErrorCode TSSSPGetType(TS,const TSSSPType*);
+extern PetscErrorCode TSSSPSetNumStages(TS,PetscInt);
+extern PetscErrorCode TSSSPGetNumStages(TS,PetscInt*);
+
 /*S
    TSGLAdapt - Abstract object that manages time-step adaptivity
 

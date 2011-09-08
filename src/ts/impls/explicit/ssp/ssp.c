@@ -4,14 +4,10 @@
 #include <private/tsimpl.h>                /*I   "petscts.h"   I*/
 
 PetscFList TSSSPList = 0;
-#define TSSSPType char*
-
-#define TSSSPRKS2  "rks2"
-#define TSSSPRKS3  "rks3"
-#define TSSSPRK104 "rk104"
 
 typedef struct {
   PetscErrorCode (*onestep)(TS,PetscReal,PetscReal,Vec);
+  char *typename;
   PetscInt nstages;
   Vec *work;
   PetscInt nwork;
@@ -57,8 +53,13 @@ static PetscErrorCode SSPRestoreWorkVectors(TS ts,PetscInt n,Vec **work)
 
 #undef __FUNCT__
 #define __FUNCT__ "SSPStep_RK_2"
-/* Optimal second order SSP Runge-Kutta, low-storage, c_eff=(s-1)/s */
-/* Pseudocode 2 of Ketcheson 2008 */
+/*MC
+   TSSSPRKS2 - Optimal second order SSP Runge-Kutta method, low-storage, c_eff=(s-1)/s
+
+   Pseudocode 2 of Ketcheson 2008
+
+.seealso: TSSSP, TSSSPSetType(), TSSSPSetNumStages()
+M*/
 static PetscErrorCode SSPStep_RK_2(TS ts,PetscReal t0,PetscReal dt,Vec sol)
 {
   TS_SSP *ssp = (TS_SSP*)ts->data;
@@ -83,8 +84,13 @@ static PetscErrorCode SSPStep_RK_2(TS ts,PetscReal t0,PetscReal dt,Vec sol)
 
 #undef __FUNCT__
 #define __FUNCT__ "SSPStep_RK_3"
-/* Optimal third order SSP Runge-Kutta, low-storage, c_eff=(sqrt(s)-1)/sqrt(s), where sqrt(s) is an integer */
-/* Pseudocode 2 of Ketcheson 2008 */
+/*MC
+   TSSSPRKS3 - Optimal third order SSP Runge-Kutta, low-storage, c_eff=(sqrt(s)-1)/sqrt(s), where sqrt(s) is an integer
+
+   Pseudocode 2 of Ketcheson 2008
+
+.seealso: TSSSP, TSSSPSetType(), TSSSPSetNumStages()
+M*/
 static PetscErrorCode SSPStep_RK_3(TS ts,PetscReal t0,PetscReal dt,Vec sol)
 {
   TS_SSP *ssp = (TS_SSP*)ts->data;
@@ -130,8 +136,13 @@ static PetscErrorCode SSPStep_RK_3(TS ts,PetscReal t0,PetscReal dt,Vec sol)
 
 #undef __FUNCT__
 #define __FUNCT__ "SSPStep_RK_10_4"
-/* Optimal fourth order SSP Runge-Kutta, low-storage (2N), c_eff=0.6 */
-/* SSPRK(10,4), Pseudocode 3 of Ketcheson 2008 */
+/*MC
+   TSSSPRKS2 - Optimal fourth order SSP Runge-Kutta, low-storage (2N), c_eff=0.6
+
+   SSPRK(10,4), Pseudocode 3 of Ketcheson 2008
+
+.seealso: TSSSP, TSSSPSetType()
+M*/
 static PetscErrorCode SSPStep_RK_10_4(TS ts,PetscReal t0,PetscReal dt,Vec sol)
 {
   const PetscReal c[10] = {0, 1./6, 2./6, 3./6, 4./6, 2./6, 3./6, 4./6, 5./6, 1};
@@ -165,8 +176,6 @@ static PetscErrorCode SSPStep_RK_10_4(TS ts,PetscReal t0,PetscReal dt,Vec sol)
 #define __FUNCT__ "TSSetUp_SSP"
 static PetscErrorCode TSSetUp_SSP(TS ts)
 {
-  /* TS_SSP       *ssp = (TS_SSP*)ts->data; */
-  /* PetscErrorCode ierr; */
 
   PetscFunctionBegin;
   PetscFunctionReturn(0);
@@ -205,18 +214,137 @@ static PetscErrorCode TSReset_SSP(TS ts)
 #define __FUNCT__ "TSDestroy_SSP"
 static PetscErrorCode TSDestroy_SSP(TS ts)
 {
+  TS_SSP         *ssp = (TS_SSP*)ts->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = TSReset_SSP(ts);CHKERRQ(ierr);
+  ierr = PetscFree(ssp->typename);CHKERRQ(ierr);
   ierr = PetscFree(ts->data);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSSSPGetType_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSSSPSetType_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSSSPGetNumStages_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSSSPSetNumStages_C","",PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /*------------------------------------------------------------*/
 
-#undef __FUNCT__
+#undef __FUNCT__  
 #define __FUNCT__ "TSSSPSetType"
-static PetscErrorCode TSSSPSetType(TS ts,const TSSSPType type)
+/*@C
+   TSSSPSetType - set the SSP time integration scheme to use
+
+   Logically Collective
+
+   Input Arguments:
+   ts - time stepping object
+   type - type of scheme to use
+
+   Options Database Keys:
+   -ts_ssp_type <rks2>: Type of SSP method (one of) rks2 rks3 rk104
+   -ts_ssp_nstages <5>: Number of stages
+
+   Level: beginner
+
+.seealso: TSSSP, TSSSPGetType(), TSSSPSetNumStages(), TSSSPRKS2, TSSSPRKS3, TSSSPRK104
+@*/
+PetscErrorCode TSSSPSetType(TS ts,const TSSSPType type)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  ierr = PetscTryMethod(ts,"TSSSPSetType_C",(TS,const TSSSPType),(ts,type));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "TSSSPGetType"
+/*@C
+   TSSSPGetType - get the SSP time integration scheme
+
+   Logically Collective
+
+   Input Argument:
+   ts - time stepping object
+
+   Output Argument:
+   type - type of scheme being used
+
+   Level: beginner
+
+.seealso: TSSSP, TSSSPSettype(), TSSSPSetNumStages(), TSSSPRKS2, TSSSPRKS3, TSSSPRK104
+@*/
+PetscErrorCode TSSSPGetType(TS ts,const TSSSPType *type)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  ierr = PetscTryMethod(ts,"TSSSPGetType_C",(TS,const TSSSPType*),(ts,type));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "TSSSPSetNumStages"
+/*@
+   TSSSPSetNumStages - set the number of stages to use with the SSP method
+
+   Logically Collective
+
+   Input Arguments:
+   ts - time stepping object
+   nstages - number of stages
+
+   Options Database Keys:
+   -ts_ssp_type <rks2>: NumStages of SSP method (one of) rks2 rks3 rk104
+   -ts_ssp_nstages <5>: Number of stages
+
+   Level: beginner
+
+.seealso: TSSSP, TSSSPGetNumStages(), TSSSPSetNumStages(), TSSSPRKS2, TSSSPRKS3, TSSSPRK104
+@*/
+PetscErrorCode TSSSPSetNumStages(TS ts,PetscInt nstages)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  ierr = PetscTryMethod(ts,"TSSSPSetNumStages_C",(TS,PetscInt),(ts,nstages));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "TSSSPGetNumStages"
+/*@
+   TSSSPGetNumStages - get the number of stages in the SSP time integration scheme
+
+   Logically Collective
+
+   Input Argument:
+   ts - time stepping object
+
+   Output Argument:
+   nstages - number of stages
+
+   Level: beginner
+
+.seealso: TSSSP, TSSSPGetType(), TSSSPSetNumStages(), TSSSPRKS2, TSSSPRKS3, TSSSPRK104
+@*/
+PetscErrorCode TSSSPGetNumStages(TS ts,PetscInt *nstages)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  ierr = PetscTryMethod(ts,"TSSSPGetNumStages_C",(TS,PetscInt*),(ts,nstages));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "TSSSPSetType_SSP"
+PetscErrorCode TSSSPSetType_SSP(TS ts,const TSSSPType type)
 {
   PetscErrorCode ierr,(*r)(TS,PetscReal,PetscReal,Vec);
   TS_SSP *ssp = (TS_SSP*)ts->data;
@@ -225,8 +353,41 @@ static PetscErrorCode TSSSPSetType(TS ts,const TSSSPType type)
   ierr = PetscFListFind(TSSSPList,((PetscObject)ts)->comm,type,PETSC_TRUE,(void(**)(void))&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown TS_SSP type %s given",type);
   ssp->onestep = r;
+  ierr = PetscFree(ssp->typename);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(type,&ssp->typename);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+#undef __FUNCT__
+#define __FUNCT__ "TSSSPGetType_SSP"
+PetscErrorCode TSSSPGetType_SSP(TS ts,const TSSSPType *type)
+{
+  TS_SSP *ssp = (TS_SSP*)ts->data;
+
+  PetscFunctionBegin;
+  *type = ssp->typename;
+  PetscFunctionReturn(0);
+}
+#undef __FUNCT__
+#define __FUNCT__ "TSSSPSetNumStages_SSP"
+PetscErrorCode TSSSPSetNumStages_SSP(TS ts,PetscInt nstages)
+{
+  TS_SSP *ssp = (TS_SSP*)ts->data;
+
+  PetscFunctionBegin;
+  ssp->nstages = nstages;
+  PetscFunctionReturn(0);
+}
+#undef __FUNCT__
+#define __FUNCT__ "TSSSPGetNumStages_SSP"
+PetscErrorCode TSSSPGetNumStages_SSP(TS ts,PetscInt *nstages)
+{
+  TS_SSP *ssp = (TS_SSP*)ts->data;
+
+  PetscFunctionBegin;
+  *nstages = ssp->nstages;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_BEGIN
 
 #undef __FUNCT__
 #define __FUNCT__ "TSSetFromOptions_SSP"
@@ -327,6 +488,11 @@ PetscErrorCode  TSCreate_SSP(TS ts)
 
   ierr = PetscNewLog(ts,TS_SSP,&ssp);CHKERRQ(ierr);
   ts->data = (void*)ssp;
+
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSSSPGetType_C","TSSSPGetType_SSP",TSSSPGetType_SSP);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSSSPSetType_C","TSSSPSetType_SSP",TSSSPSetType_SSP);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSSSPGetNumStages_C","TSSSPGetNumStages_SSP",TSSSPGetNumStages_SSP);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSSSPSetNumStages_C","TSSSPSetNumStages_SSP",TSSSPSetNumStages_SSP);CHKERRQ(ierr);
 
   ierr = TSSSPSetType(ts,TSSSPRKS2);CHKERRQ(ierr);
   ssp->nstages = 5;
