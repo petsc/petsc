@@ -69,18 +69,18 @@ def basename(filename):
 
 def uncompress(filename):
     ext = extension(filename)
-    if ext == 'gz':
+    if ext == '.gz':
         err = os.system('gunzip ' + filename)
         if err != 0:
             error('Error unable to invoke gunzip on ' + filename)
-    elif ext == 'Z':
+    elif ext == '.Z':
         err = os.system('uncompress ' + filename)        
         if err != 0:
             error('Error unable to invoke uncompress on ' + filename)
 
 def compressed(filename):
     ext = extension(filename)
-    if ext == 'gz' or ext == 'Z':
+    if ext == '.gz' or ext == '.Z':
         return 1
     else:
         return 0
