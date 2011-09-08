@@ -3,16 +3,7 @@
 #include <petscblaslapack.h>
 
 
-/*MC
-  SNESNGMRES - The Nonlinear Generalized Minimum Residual (NGMRES) method of Oosterlee and Washio.
 
-   Level: beginner
-
-   "Krylov Subspace Acceleration of Nonlinear Multigrid with Application to Recirculating Flows", C. W. Oosterlee and T. Washio,
-   SIAM Journal on Scientific Computing, 21(5), 2000.
-
-.seealso: SNESCreate(), SNES, SNESSetType(), SNESType (for list of available types)
-M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESReset_NGMRES"
@@ -53,8 +44,8 @@ PetscErrorCode SNESDestroy_NGMRES(SNES snes)
 #define __FUNCT__ "SNESSetUp_NGMRES"
 PetscErrorCode SNESSetUp_NGMRES(SNES snes)
 {
-  SNES_NGMRES   *ngmres = (SNES_NGMRES *) snes->data;
-  PetscInt msize,hsize;
+  SNES_NGMRES    *ngmres = (SNES_NGMRES *) snes->data;
+  PetscInt       msize,hsize;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -96,12 +87,16 @@ PetscErrorCode SNESSetFromOptions_NGMRES(SNES snes)
 {
   SNES_NGMRES   *ngmres = (SNES_NGMRES *) snes->data;
   PetscErrorCode ierr;
+  PetscBool      debug;
   
   PetscFunctionBegin;
   ierr = PetscOptionsHead("SNES NGMRES options");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-snes_ngmres_m", "Number of directions", "SNES", ngmres->msize, &ngmres->msize, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-snes_ngmres_restart", "Maximum iterations before restart.", "SNES", ngmres->k_rmax, &ngmres->k_rmax, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsBool("-snes_ngmres_debug", "Debugging output for NGMRES", "SNES", ngmres->debug, &ngmres->debug, PETSC_NULL);CHKERRQ(ierr); 
+  ierr = PetscOptionsBool("-snes_ngmres_monitor", "Monitor actions of NGMRES", "SNES", ngmres->monitor ? PETSC_TRUE: PETSC_FALSE, &debug, PETSC_NULL);CHKERRQ(ierr); 
+  if (debug) {
+    ngmres->monitor = PETSC_VIEWER_STDOUT_(((PetscObject)snes)->comm);CHKERRQ(ierr);
+  }
   ierr = PetscOptionsReal("-snes_ngmres_gammaA", "Residual selection constant", "SNES", ngmres->gammaA, &ngmres->gammaA, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-snes_ngmres_gammaC", "Residual restart constant", "SNES", ngmres->gammaC, &ngmres->gammaC, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-snes_ngmres_epsilonB", "Difference selection constant", "SNES", ngmres->epsilonB, &ngmres->epsilonB, PETSC_NULL);CHKERRQ(ierr);
@@ -157,9 +152,9 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
   PetscInt       i, j, k, k_restart, l, ivec;
 
   /* solution selection data */
-  PetscBool selectA, selectRestart;
-  PetscReal d_norm, d_min_norm, d_cur_norm;
-  PetscReal r_min_norm;
+  PetscBool      selectA, selectRestart;
+  PetscReal      d_norm, d_min_norm, d_cur_norm;
+  PetscReal      r_min_norm;
 
   PetscErrorCode ierr;
 
@@ -193,7 +188,7 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
   ierr = VecNorm(r, NORM_2, &r_norm);CHKERRQ(ierr);
   r_min_norm = r_norm;
   nu = r_norm*r_norm;
-  if (PetscIsInfOrNanReal(r_norm)) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_FP, "Infinite or not-a-number generated in norm");
+  if (PetscIsInfOrNanReal(r_norm)) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_FP, "Infinite or not-a-number generated in function evaluation");
 
   /* q_{00} = nu  */
   Q(0,0) = nu;
@@ -216,7 +211,6 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
 
     /* select which vector of the stored subspace will be updated */
     ivec = k_restart % ngmres->msize; /* replace the last used part of the subspace */
-
 
     /* Computation of x^M */
     ierr = SNESSolve(pc, b, x);CHKERRQ(ierr);
@@ -321,16 +315,18 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
 
 
     if (selectA) {
-      if (ngmres->debug) 
-	PetscPrintf(PETSC_COMM_WORLD, "picked r_A, ||r_A||_2 = %e, ||r_M||_2 = %e\n", r_A_norm, r_norm);
+      if (ngmres->monitor) {
+	ierr = PetscViewerASCIIPrintf(ngmres->monitor, "picked r_A, ||r_A||_2 = %e, ||r_M||_2 = %e\n", r_A_norm, r_norm);CHKERRQ(ierr);
+      }
       /* copy it over */
       r_norm = r_A_norm;
       nu = r_norm*r_norm;
       ierr = VecCopy(r_A, r);CHKERRQ(ierr);
       ierr = VecCopy(x_A, x);CHKERRQ(ierr);
     } else {
-      if(ngmres->debug)
-	PetscPrintf(PETSC_COMM_WORLD, "picked r_M, ||r_A||_2 = %e, ||r_M||_2 = %e\n", r_A_norm, r_norm);
+      if (ngmres->monitor) {
+	ierr = PetscViewerASCIIPrintf(ngmres->monitor, "picked r_M, ||r_A||_2 = %e, ||r_M||_2 = %e\n", r_A_norm, r_norm);CHKERRQ(ierr);
+      }
     }
 
     selectRestart = PETSC_FALSE;
@@ -341,23 +337,25 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
     }
 
     /* difference stagnation restart */
-    if 	((ngmres->epsilonB*d_norm > d_min_norm) && 
-	 (sqrt(r_A_norm) > ngmres->deltaB*sqrt(r_min_norm))) {
-      if (ngmres->debug)
-	PetscPrintf(PETSC_COMM_WORLD, "difference restart: %e > %e\n", ngmres->epsilonB*d_norm, d_min_norm);
+    if 	((ngmres->epsilonB*d_norm > d_min_norm) && (sqrt(r_A_norm) > ngmres->deltaB*sqrt(r_min_norm))) {
+      if (ngmres->monitor) {
+	ierr = PetscViewerASCIIPrintf(ngmres->monitor, "difference restart: %e > %e\n", ngmres->epsilonB*d_norm, d_min_norm);CHKERRQ(ierr);
+      }
       selectRestart = PETSC_TRUE;
     }
     
     /* residual stagnation restart */
     if (sqrt(r_A_norm) > ngmres->gammaC*sqrt(r_min_norm)) {
-      if (ngmres->debug)
-	PetscPrintf(PETSC_COMM_WORLD, "residual restart: %e > %e\n", sqrt(r_A_norm), ngmres->gammaC*sqrt(r_min_norm));
+      if (ngmres->monitor) {
+	ierr = PetscViewerASCIIPrintf(ngmres->monitor, "residual restart: %e > %e\n", sqrt(r_A_norm), ngmres->gammaC*sqrt(r_min_norm));CHKERRQ(ierr);
+      }
       selectRestart = PETSC_TRUE;
     }
 
     if (selectRestart) {
-      if (ngmres->debug)
-	PetscPrintf(PETSC_COMM_WORLD, "Restarted at iteration %d\n", k_restart);
+      if (ngmres->monitor){
+	ierr = PetscViewerASCIIPrintf(ngmres->monitor, "Restarted at iteration %d\n", k_restart);CHKERRQ(ierr);
+      }
       k_restart = 1;
       l = 1;
       /* q_{00} = nu */
@@ -396,7 +394,19 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
   PetscFunctionReturn(0);
 }
 
+/*MC
+  SNESNGMRES - The Nonlinear Generalized Minimum Residual (NGMRES) method of Oosterlee and Washio.
 
+   Level: beginner
+
+   "Krylov Subspace Acceleration of Nonlinear Multigrid with Application to Recirculating Flows", C. W. Oosterlee and T. Washio,
+   SIAM Journal on Scientific Computing, 21(5), 2000.
+
+   This is also the same as the algorithm called Anderson acceleration introduced in "D. G. Anderson. Iterative procedures for nonlinear integral equations. 
+   J. Assoc. Comput. Mach., 12:547–560, 1965."
+
+.seealso: SNESCreate(), SNES, SNESSetType(), SNESType (for list of available types)
+M*/
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
@@ -417,13 +427,12 @@ PetscErrorCode SNESCreate_NGMRES(SNES snes)
   ierr = PetscNewLog(snes, SNES_NGMRES, &ngmres);CHKERRQ(ierr);
   snes->data = (void*) ngmres;
   ngmres->msize = 10;
-  ngmres->debug = PETSC_FALSE;
 
-  ngmres->gammaA = 2.;
-  ngmres->gammaC = 2.;
-  ngmres->deltaB = 0.9;
+  ngmres->gammaA   = 2.;
+  ngmres->gammaC   = 2.;
+  ngmres->deltaB   = 0.9;
   ngmres->epsilonB = 0.1;
-  ngmres->k_rmax = 200;
+  ngmres->k_rmax   = 200;
 
   ierr = SNESGetPC(snes, &snes->pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
