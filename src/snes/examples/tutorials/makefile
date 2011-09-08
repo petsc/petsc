@@ -12,7 +12,7 @@ MANSEC           = SNES
 EXAMPLESC	 = ex1.c ex2.c ex3.c ex5.c ex5s.c ex6.c \
                    ex10.c ex14.c ex18.c ex19.c ex20.c ex21.c ex22.c \
                    ex23.c ex24.c ex25.c ex26.c ex27.c ex28.c ex29.c ex30.c ex31.c ex38.c ex42.c ex43.c \
-                   ex44.c ex45.c ex48.c ex49.c ex50.c ex47cu.cu ex54.c ex55.c ex58.c ex59.c ex60.c ex61.c ex63.c ex64.c ex65.c
+                   ex44.c ex45.c ex48.c ex49.c ex50.c ex47cu.cu ex54.c ex55.c ex58.c ex59.c ex60.c ex61.c ex63.c ex64.c ex65.c ex633D_DB.c
 EXAMPLESF	 = ex1f.F ex5f.F ex5f90.F ex5fs.F 
 EXAMPLESCH	 = ex43-44.h
 EXAMPLESFH       = ex5f.h
@@ -239,6 +239,9 @@ ex64: ex64.o  chkopts
 ex65: ex65.o  chkopts
 	-${CLINKER} -o ex65 ex65.o ${PETSC_SNES_LIB}
 	${RM} ex65.o
+ex633D_DB: ex633D_DB.o  chkopts
+	-${CLINKER} -o ex633D_DB ex633D_DB.o ${PETSC_SNES_LIB}
+	${RM} ex633D_DB.o
 #--------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 1 ./ex1 -ksp_gmres_cgs_refinement_type refine_always -snes_monitor_short > ex1_1.tmp 2>&1;   \

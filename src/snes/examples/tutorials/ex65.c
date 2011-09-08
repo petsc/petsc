@@ -9,7 +9,7 @@ Runtime options include:\n\
 -theta_c <theta_c>\n\n";
 
 /*
-./ex63 -ksp_type fgmres -snes_vi_monitor   -snes_atol 1.e-11 -snes_converged_reason -ksp_converged_reason   -snes_ls_monitor -VG 10000000 -draw_fields 1,3,4  -pc_type mg -pc_mg_galerkin -log_summary -dt .000001 -mg_coarse_pc_type svd  -ksp_monitor_true_residual -ksp_rtol 1.e-9 -snes_ls basic -T .0020 -P_casc .0005 -snes_monitor_solution -da_refine 10
+./ex65 -ksp_type fgmres  -snes_atol 1.e-13  -da_refine 6  -VG 10   -pc_type mg -pc_mg_galerkin -log_summary -dt .000001 -mg_coarse_pc_type redundant -mg_coarse_redundant_pc_type svd  -ksp_rtol 1.e-13 -snes_ls basic -T .0020  -voidgrowth -da_refine 5 -draw_fileds 0,1,2 -dt .0001 -T 1 -da_grid_x 5 -da_grid_y 5 -snes_rtol 1.e-13 -ksp_atol 1.e-13 -nox  -snes_vi_ignore_function_sign -twodomain
  */
 
 #include "petscsnes.h"
@@ -21,13 +21,17 @@ typedef struct{
   Mat         M;    /* Jacobian matrix */
   Mat         M_0;
   Vec         q,wv,cv,eta,DPsiv,DPsieta,logcv,logcv2;
+  Vec         phi1,phi2,Phi2D_V,Sv,Si; /* for twodomain modeling */
   Vec         work1,work2;
-  PetscScalar Mv,L,kaeta,kav,Evf,A,B,cv0,Sv;
+  PetscScalar Mv,L,kaeta,kav,Evf,A,B,cv0,Sv_scalar;
+  PetscScalar Svr,Sir,cv_eq,ci_eq; /* for twodomain modeling */
+  Vec         work3,work4; /* for twodomain modeling*/
   PetscReal   xmin,xmax,ymin,ymax;
   PetscInt    nx;
   PetscBool   graphics;
   PetscBool   periodic;
   PetscBool   lumpedmass;
+  PetscBool   twodomain;
 }AppCtx;
 
 PetscErrorCode GetParams(AppCtx*);
@@ -41,6 +45,7 @@ PetscErrorCode Update_u(Vec,AppCtx*);
 PetscErrorCode DPsi(AppCtx*);
 PetscErrorCode Llog(Vec,Vec);
 PetscErrorCode CheckRedundancy(SNES,IS,IS*,DM);
+PetscErrorCode Phi(AppCtx*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -95,6 +100,14 @@ int main(int argc, char **argv)
   ierr = VecDuplicate(user.wv,&user.logcv2);CHKERRQ(ierr);
   ierr = VecDuplicate(user.wv,&user.work1);CHKERRQ(ierr);
   ierr = VecDuplicate(user.wv,&user.work2);CHKERRQ(ierr);
+  /* for twodomain modeling */
+  ierr = VecDuplicate(user.wv,&user.phi1);CHKERRQ(ierr);
+  ierr = VecDuplicate(user.wv,&user.phi2);CHKERRQ(ierr);
+  ierr = VecDuplicate(user.wv,&user.Phi2D_V);CHKERRQ(ierr);
+  ierr = VecDuplicate(user.wv,&user.Sv);CHKERRQ(ierr);
+  ierr = VecDuplicate(user.wv,&user.Si);CHKERRQ(ierr);
+  ierr = VecDuplicate(user.wv,&user.work3);CHKERRQ(ierr);
+  ierr = VecDuplicate(user.wv,&user.work4);CHKERRQ(ierr);
 
   /* Get Jacobian matrix structure from the da for the entire thing, da1 */
   ierr = DMGetMatrix(user.da1,MATAIJ,&user.M);CHKERRQ(ierr);
@@ -128,6 +141,12 @@ int main(int argc, char **argv)
 
     ierr = VecView(x,PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD));CHKERRQ(ierr);
   }
+
+  /* twodomain modeling */
+  if (user.twodomain) {
+    ierr = Phi(&user);CHKERRQ(ierr);
+  }
+
   while(t<user.T) {
 
     char         filename[PETSC_MAX_PATH_LEN];
@@ -196,6 +215,15 @@ int main(int argc, char **argv)
   ierr = VecDestroy(&user.logcv2);CHKERRQ(ierr);
   ierr = VecDestroy(&user.work1);CHKERRQ(ierr);
   ierr = VecDestroy(&user.work2);CHKERRQ(ierr);
+  /* for twodomain modeling */
+  ierr = VecDestroy(&user.phi1);CHKERRQ(ierr);
+  ierr = VecDestroy(&user.phi2);CHKERRQ(ierr);
+  ierr = VecDestroy(&user.Phi2D_V);CHKERRQ(ierr);
+  ierr = VecDestroy(&user.Sv);CHKERRQ(ierr);
+  ierr = VecDestroy(&user.Si);CHKERRQ(ierr);
+  ierr = VecDestroy(&user.work3);CHKERRQ(ierr);
+  ierr = VecDestroy(&user.work4);CHKERRQ(ierr);
+
   ierr = MatDestroy(&user.M);CHKERRQ(ierr);
   ierr = MatDestroy(&user.M_0);CHKERRQ(ierr);
   ierr = DMDestroy(&user.da1);CHKERRQ(ierr);
@@ -253,6 +281,16 @@ PetscErrorCode Update_q(AppCtx *user)
 
   ierr = MatMult(user->M_0,user->cv,user->work1);CHKERRQ(ierr);
   ierr = VecScale(user->work1,-1.0);CHKERRQ(ierr);
+  if (user->twodomain) {
+    ierr = VecCopy(user->cv,user->work3);CHKERRQ(ierr);
+    ierr = VecShift(user->work3,-1.0*user->cv_eq);CHKERRQ(ierr);
+    ierr = VecCopy(user->Phi2D_V,user->work4);CHKERRQ(ierr);
+    ierr = VecScale(user->work4,-1.0);CHKERRQ(ierr);
+    ierr = VecShift(user->work4,1.0);CHKERRQ(ierr);
+    ierr = VecPointwiseMult(user->work4,user->work4,user->work3);CHKERRQ(ierr);
+    ierr = VecScale(user->work4,user->Svr);CHKERRQ(ierr);
+    ierr = VecAXPY(user->work1,1.0,user->work4);CHKERRQ(ierr);
+  }
   for (i=0;i<n;i++) {
     q_p[3*i]=w1[i];
   }
@@ -360,7 +398,7 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
   PetscScalar	   *xx,*cv_p,*wv_p,*eta_p;
   PetscViewer      view_out;
   /* needed for the void growth case */
-  PetscScalar       xmid,ymid,cv_v=1.0,cv_m=user->Sv*user->cv0,eta_v=1.0,eta_m=0.0,h,lambda;
+  PetscScalar       xmid,ymid,cv_v=1.0,cv_m=user->Sv_scalar*user->cv0,eta_v=1.0,eta_m=0.0,h,lambda;
   PetscInt          nele,nen,idx[3];
   const PetscInt    *ele;
   PetscScalar       x[3],y[3];
@@ -539,12 +577,19 @@ PetscErrorCode GetParams(AppCtx* user)
   user->A     = 9.09;
   user->B     = 9.09;
   user->cv0   = 1.13e-4;
-  user->Sv    = 500.0;
+  user->Sv_scalar    = 500.0;
   user->dt    = 1.0e-5;
   user->T     = 1.0e-2;   
   user->graphics = PETSC_TRUE;
   user->periodic = PETSC_FALSE;
   user->lumpedmass = PETSC_FALSE;
+  /* twodomain modeling */
+  user->twodomain = PETSC_FALSE;
+  user->Svr       = 0.5; 
+  user->Sir       = 0.5;
+  user->cv_eq     = 6.9e-4;
+  user->ci_eq     = 6.9e-4;
+
   
   ierr = PetscOptionsGetReal(PETSC_NULL,"-xmin",&user->xmin,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(PETSC_NULL,"-xmax",&user->xmax,&flg);CHKERRQ(ierr);
@@ -553,7 +598,7 @@ PetscErrorCode GetParams(AppCtx* user)
   ierr = PetscOptionsBool("-graphics","Contour plot solutions at each timestep\n","None",user->graphics,&user->graphics,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-periodic","Use periodic boundary conditions\n","None",user->periodic,&user->periodic,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-lumpedmass","Use lumped mass matrix\n","None",user->lumpedmass,&user->lumpedmass,&flg);CHKERRQ(ierr);
-  
+  ierr = PetscOptionsBool("-twodomain","Run two domain model\n","None",user->twodomain,&user->twodomain,&flg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
  }
 
@@ -727,3 +772,185 @@ PetscErrorCode CheckRedundancy(SNES snes, IS act, IS *outact, DM da)
   ierr = DMRestoreLocalVector(da,&UOUT);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "Phi"
+PetscErrorCode Phi(AppCtx* user)
+{
+  PetscErrorCode     ierr;
+  PetscScalar        xmid, xqu, lambda, h,x[3],y[3];
+  Vec                coords;
+  const PetscScalar  *_coords;
+  PetscInt           nele,nen,i,idx[3],Mda,Nda;
+  const PetscInt     *ele;
+  PetscViewer        view;
+
+  PetscFunctionBegin;
+
+  ierr = DMDAGetInfo(user->da1,PETSC_NULL,&Mda,&Nda,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMDAGetGhostedCoordinates(user->da2,&coords);CHKERRQ(ierr);
+  ierr = VecGetArrayRead(coords,&_coords);CHKERRQ(ierr);
+
+  h = (user->xmax - user->xmin)/Mda;
+  xmid = (user->xmin + user->xmax)/2.0;
+  xqu = (user->xmin + xmid)/2.0;
+  lambda = 4.0*h;
+
+
+  ierr = DMDAGetElements(user->da2,&nele,&nen,&ele);CHKERRQ(ierr);
+  for (i=0;i < nele; i++) {
+    idx[0] = ele[3*i]; idx[1] = ele[3*i+1]; idx[2] = ele[3*i+2];
+    //printf("idx[0]=%d,idx[1]=%d,idx[2]=%d\n",idx[0],idx[1],idx[2]);
+
+    x[0] = _coords[2*idx[0]]; y[0] = _coords[2*idx[0]+1];
+    x[1] = _coords[2*idx[1]]; y[1] = _coords[2*idx[1]+1];
+    x[2] = _coords[2*idx[2]]; y[2] = _coords[2*idx[2]+1];
+
+    //printf("x[0]=%f,x[1]=%f,x[2]=%f\n",x[0],x[1],x[2]);
+    //printf("y[0]=%f,y[1]=%f,y[2]=%f\n",y[0],y[1],y[2]);
+    
+    PetscScalar vals1[3],vals2[3],dist1,dist2,s1,r,hhr,xc1,xc2;
+    PetscInt    k;
+
+    xc1 = user->xmin;
+    xc2 = xmid;
+
+    //ierr = VecSet(user->phi1,0.0);CHKERRQ(ierr);
+    for (k=0;k < 3; k++) {
+      if (x[k]-xqu > 0) {
+        s1 = (x[k] - xqu);
+      } else {
+        s1 = -(x[k] - xqu);
+      }
+      if (x[k] - xc1 > 0) {
+        dist1 = (x[k] - xc1);
+      } else {
+        dist1 = -(x[k] - xc1);
+      }
+      if (x[k] - xc2 > 0) {
+        dist2 = (x[k] - xc2);
+      } else {
+        dist2 = -(x[k] - xc2);
+      }
+      if (dist1 <= 0.5*lambda) {
+        r = (x[k]-xc1)/(0.5*lambda);
+        hhr = 0.25*(-r*r*r + 3.0*r + 2.0);
+        vals1[k] = hhr;
+      }
+      else if (dist2 <= 0.5*lambda) {
+        r = (x[k]-xc2)/(0.5*lambda);
+        hhr = 0.25*(-r*r*r + 3.0*r + 2.0);
+        vals1[k] = 1.0 - hhr;
+      }
+      else if (s1 <= xqu - 2.0*h) {
+        vals1[k] = 1.0;
+      }
+      
+      //else if ( abs(x[k]-(user->xmax-h)) < 0.1*h ) {
+      else if ( (user->xmax-h)-x[k] < 0.1*h ) {
+        vals1[k] = .15625;
+       }
+      else {
+        vals1[k] = 0.0;
+      }
+    }
+      
+    ierr = VecSetValuesLocal(user->phi1,3,idx,vals1,INSERT_VALUES);CHKERRQ(ierr);
+
+    xc1 = xmid;
+    xc2 = user->xmax;
+
+    //ierr = VecSet(user->phi2,0.0);CHKERRQ(ierr);
+    for (k=0;k < 3; k++) {
+      /*
+      s1 = abs(x[k] - (xqu+xmid));
+      dist1 = abs(x[k] - xc1);
+      dist2 = abs(x[k] - xc2);
+       */
+      if (x[k]-(xqu + xmid) > 0) {
+        s1 = (x[k] - (xqu + xmid));
+      } else {
+        s1 = -(x[k] - (xqu + xmid));
+      }
+      if (x[k] - xc1 > 0) {
+        dist1 = (x[k] - xc1);
+      } else {
+        dist1 = -(x[k] - xc1);
+      }
+      if (x[k] - xc2 > 0) {
+        dist2 = (x[k] - xc2);
+      } else {
+        dist2 = -(x[k] - xc2);
+      }
+      
+      if (dist1 <= 0.5*lambda) {
+        r = (x[k]-xc1)/(0.5*lambda);
+        hhr = 0.25*(-r*r*r + 3.0*r + 2.0);
+        vals2[k] = hhr;
+      }
+      else if (dist2 <= 0.5*lambda) {
+        r = -(x[k]-xc2)/(0.5*lambda);
+        hhr = 0.25*(-r*r*r + 3.0*r + 2.0);
+        vals2[k] = hhr;
+      }
+      else if (s1 <= xqu - 2.0*h) {
+        vals2[k] = 1.0;
+      }
+      
+      else if ( x[k]-(user->xmin) < 0.1*h ) {
+        vals2[k] = 0.5;
+      }
+       
+      
+      else if ( (x[k]-(user->xmin+h)) < 0.1*h ) {
+        vals2[k] = .15625;
+      }
+       
+      else {
+        vals2[k] = 0.0;
+      }
+        
+    }
+
+    ierr = VecSetValuesLocal(user->phi2,3,idx,vals2,INSERT_VALUES);CHKERRQ(ierr);
+    /*
+    for (k=0;k < 3; k++) {
+      vals_sum[k] = vals1[k]*vals1[k] + vals2[k]*vals2[k];
+    }
+     */
+    //ierr = VecSetValuesLocal(user->Phi2D_V,3,idx,vals_sum,INSERT_VALUES);CHKERRQ(ierr);
+    
+  }
+  
+  ierr = VecAssemblyBegin(user->phi1);CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(user->phi1);CHKERRQ(ierr);
+  ierr = VecAssemblyBegin(user->phi2);CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(user->phi2);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"file_phi",FILE_MODE_WRITE,&view);CHKERRQ(ierr);
+
+  ierr = VecView(user->phi1,view);CHKERRQ(ierr);
+  ierr = VecView(user->phi2,view);CHKERRQ(ierr);
+
+  
+  //ierr = VecView(user->phi1,0);CHKERRQ(ierr);
+  //ierr = VecView(user->phi2,0);CHKERRQ(ierr);
+  
+  ierr = VecPointwiseMult(user->phi1,user->phi1,user->phi1);CHKERRQ(ierr);
+  ierr = VecPointwiseMult(user->phi2,user->phi2,user->phi2);CHKERRQ(ierr);
+  ierr = VecView(user->phi1,view);CHKERRQ(ierr);
+  ierr = VecView(user->phi2,view);CHKERRQ(ierr);
+
+  ierr = VecCopy(user->phi1,user->Phi2D_V);CHKERRQ(ierr);
+  ierr = VecAXPY(user->Phi2D_V,1.0,user->phi2);CHKERRQ(ierr);
+  //ierr = VecView(user->Phi2D_V,0);CHKERRQ(ierr);
+
+  ierr = VecView(user->Phi2D_V,view);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&view);CHKERRQ(ierr);
+  //  ierr = VecNorm(user->Phi2D_V,NORM_INFINITY,&max1);CHKERRQ(ierr);
+  //ierr = VecMin(user->Phi2D_V,&loc1,&min1);CHKERRQ(ierr);
+  //printf("norm phi = %f, min phi = %f\n",max1,min1);
+
+  PetscFunctionReturn(0);
+  
+}
+

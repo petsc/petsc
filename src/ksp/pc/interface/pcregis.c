@@ -36,7 +36,7 @@ extern PetscErrorCode  PCCreate_SupportGraph(PC);
 #if defined(PETSC_HAVE_ML)
 extern PetscErrorCode  PCCreate_ML(PC);
 #endif
-#if defined(PETSC_HAVE_TRIANGLE) && defined(PETSC_USE_REAL_DOUBLE) && defined(PETSC_USE_SCALAR_REAL)
+#if defined(PETSC_USE_REAL_DOUBLE) && defined(PETSC_USE_SCALAR_REAL)
 extern PetscErrorCode  PCCreate_GAMG(PC);
 #endif
 #if defined(PETSC_HAVE_SPAI)
@@ -123,7 +123,7 @@ PetscErrorCode  PCRegisterAll(const char path[])
 #if defined(PETSC_HAVE_ML)
   ierr = PCRegisterDynamic(PCML           ,path,"PCCreate_ML",PCCreate_ML);CHKERRQ(ierr);
 #endif
-#if defined(PETSC_HAVE_TRIANGLE) && defined(PETSC_USE_REAL_DOUBLE) && defined(PETSC_USE_SCALAR_REAL)
+#if defined(PETSC_USE_REAL_DOUBLE) && defined(PETSC_USE_SCALAR_REAL)
   ierr = PCRegisterDynamic(PCGAMG         ,path,"PCCreate_GAMG",PCCreate_GAMG);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_SPAI)

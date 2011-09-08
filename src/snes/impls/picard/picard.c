@@ -411,7 +411,8 @@ PetscErrorCode  SNESCreate_Picard(SNES snes)
   neP->damping	     = 1.0;
   neP->maxstep	     = 1.e8;
   neP->steptol       = 1.e-12;
-  neP->LineSearch    = SNESLineSearchNo;
+  neP->type          = SNES_LS_BASIC;
+  neP->LineSearch    = PicardLineSearchNo;
   neP->lsP           = PETSC_NULL;
   neP->postcheckstep = PETSC_NULL;
   neP->postcheck     = PETSC_NULL;

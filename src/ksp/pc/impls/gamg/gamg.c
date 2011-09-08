@@ -147,7 +147,7 @@ PetscErrorCode PCReset_GAMG(PC pc)
    . a_Amat_crs - coarse matrix that is created (k-1)
 */
 
-#define MIN_EQ_PROC 300
+#define MIN_EQ_PROC 600
 #define TOP_GRID_LIM 1000
 
 #undef __FUNCT__
@@ -166,9 +166,8 @@ PetscErrorCode partitionLevel( Mat a_Amat_fine,
   Mat              Cmat,Pnew,Pold=*a_P_inout;
   IS               new_indices,isnum;
   MPI_Comm         wcomm = ((PetscObject)a_Amat_fine)->comm;
-  PetscMPIInt      mype,npe;
-  PetscInt         neq,NN,Istart,Iend,Istart0,Iend0,ncrs_new;
-  PetscMPIInt      new_npe,nactive,ncrs0;
+  PetscMPIInt      mype,npe,new_npe,nactive;
+  PetscInt         neq,NN,Istart,Iend,Istart0,Iend0,ncrs_new,ncrs0;
   PetscBool        flag = PETSC_FALSE;
  
   PetscFunctionBegin;  
@@ -191,12 +190,13 @@ PetscErrorCode partitionLevel( Mat a_Amat_fine,
     Mat              adj;
     const PetscInt *idx,data_sz=a_ndata_rows*a_ndata_cols;
     const PetscInt  stride0=ncrs0*a_ndata_rows;
-    PetscInt         is_sz,*isnewproc_idx,ii,jj,kk,strideNew,*tidx;
+    PetscInt        is_sz,*isnewproc_idx,ii,jj,kk,strideNew,*tidx;
     /* create sub communicator  */
-    MPI_Comm         cm,new_comm;
-    MPI_Group        wg, g2;
-    PetscMPIInt     *ranks,*counts;
-    IS               isscat;
+    MPI_Comm        cm,new_comm;
+    MPI_Group       wg, g2;
+    PetscInt       *counts,inpe;
+    PetscMPIInt    *ranks;
+    IS              isscat;
     PetscScalar    *array;
     Vec             src_crd, dest_crd;
     PetscReal      *data = *a_coarse_data;
@@ -210,9 +210,9 @@ PetscErrorCode partitionLevel( Mat a_Amat_fine,
     else if (new_npe >= *a_nactive_proc ) new_npe = *a_nactive_proc; /* no change, rare */
 
     ierr = PetscMalloc( npe*sizeof(PetscMPIInt), &ranks ); CHKERRQ(ierr); 
-    ierr = PetscMalloc( npe*sizeof(PetscMPIInt), &counts ); CHKERRQ(ierr); 
+    ierr = PetscMalloc( npe*sizeof(PetscInt), &counts ); CHKERRQ(ierr); 
     
-    ierr = MPI_Allgather( &ncrs0, 1, MPI_INT, counts, 1, MPI_INT, wcomm ); CHKERRQ(ierr); 
+    ierr = MPI_Allgather( &ncrs0, 1, MPIU_INT, counts, 1, MPIU_INT, wcomm ); CHKERRQ(ierr); 
     assert(counts[mype]==ncrs0);
     /* count real active pes */
     for( nactive = jj = 0 ; jj < npe ; jj++) {
@@ -342,7 +342,8 @@ PetscErrorCode partitionLevel( Mat a_Amat_fine,
     /*
      Determine how many elements are assigned to each processor
      */
-    ierr = ISPartitioningCount( isnewproc, npe, counts ); CHKERRQ(ierr);
+    inpe = npe;
+    ierr = ISPartitioningCount( isnewproc, inpe, counts ); CHKERRQ(ierr);
     ierr = ISDestroy( &isnewproc );                       CHKERRQ(ierr);
     ncrs_new = counts[mype]/a_cbs;
     strideNew = ncrs_new*a_ndata_rows;
@@ -497,8 +498,9 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
 
   /* Get A_i and R_i */
   ierr = MatGetInfo(Amat,MAT_GLOBAL_SUM,&info); CHKERRQ(ierr);
-  PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s level %d N=%d, n data rows=%d, n data cols=%d, nnz/row (ave)=%d, np=%d\n",
-	      mype,__FUNCT__,0,N,pc_gamg->m_data_rows,pc_gamg->m_data_cols,(PetscInt)(info.nz_used/(PetscReal)N),npe);
+  PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s level %d N=%ld, n data rows=%d, n data cols=%d, nnz/row (ave)=%d, np=%d\n",
+	      mype,__FUNCT__,0,(long long int)N,(int)pc_gamg->m_data_rows,(int)pc_gamg->m_data_cols,
+	      (int)(info.nz_used/(PetscReal)N),(int)npe);
   for ( level=0, Aarr[0] = Pmat, nactivepe = npe; /* hard wired stopping logic */
         level < GAMG_MAXLEVELS-1 && (level==0 || M>TOP_GRID_LIM) && (npe==1 || nactivepe>1); 
         level++ ){
@@ -530,8 +532,9 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
 #endif
       ierr = MatGetSize( Aarr[level1], &M, &N );CHKERRQ(ierr);
       ierr = MatGetInfo(Aarr[level1],MAT_GLOBAL_SUM,&info); CHKERRQ(ierr);
-      PetscPrintf(PETSC_COMM_WORLD,"\t\t[%d]%s %d) N=%d, bs=%d, n data cols=%d, nnz/row (ave)=%d, %d active pes\n",
-		  mype,__FUNCT__,level1,N,bs,pc_gamg->m_data_cols,(PetscInt)(info.nz_used/(PetscReal)N),nactivepe);
+      PetscPrintf(PETSC_COMM_WORLD,"\t\t[%d]%s %d) N=%ld, bs=%d, n data cols=%d, nnz/row (ave)=%d, %d active pes\n",
+		  mype,__FUNCT__,(int)level1,(long long int)N,(int)bs,(int)pc_gamg->m_data_cols,
+		  (int)(info.nz_used/(PetscReal)N),(int)nactivepe);
       /* coarse grids with SA can have zero row/cols from singleton aggregates */
       /* aggregation method can probably gaurrentee this does not happen! - be safe for now */
  
@@ -659,12 +662,12 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
     ierr = PCMGSetInterpolation( a_pc, lidx+1, Parr[level] );CHKERRQ(ierr);
     if( !PETSC_TRUE ) {
       PetscViewer viewer; char fname[32];
-      sprintf(fname,"Pmat_%d.m",level);
+      sprintf(fname,"Pmat_%d.m",(int)level);
       ierr = PetscViewerASCIIOpen( wcomm, fname, &viewer );  CHKERRQ(ierr);
       ierr = PetscViewerSetFormat( viewer, PETSC_VIEWER_ASCII_MATLAB);  CHKERRQ(ierr);
       ierr = MatView( Parr[level], viewer ); CHKERRQ(ierr);
       ierr = PetscViewerDestroy( &viewer );
-      sprintf(fname,"Amat_%d.m",level);
+      sprintf(fname,"Amat_%d.m",(int)level);
       ierr = PetscViewerASCIIOpen( wcomm, fname, &viewer );  CHKERRQ(ierr);
       ierr = PetscViewerSetFormat( viewer, PETSC_VIEWER_ASCII_MATLAB);  CHKERRQ(ierr);
       ierr = MatView( Aarr[level], viewer ); CHKERRQ(ierr);

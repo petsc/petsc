@@ -1658,6 +1658,10 @@ PetscErrorCode  SNESReset(SNES snes)
     ierr       = (*snes->ops->userdestroy)((void**)&snes->user);CHKERRQ(ierr);
     snes->user = PETSC_NULL;
   }
+  if (snes->pc) {
+    ierr = SNESReset(snes->pc);CHKERRQ(ierr);
+  }
+
   if (snes->ops->reset) {
     ierr = (*snes->ops->reset)(snes);CHKERRQ(ierr);
   }
@@ -1702,6 +1706,7 @@ PetscErrorCode  SNESDestroy(SNES *snes)
   if (--((PetscObject)(*snes))->refct > 0) {*snes = 0; PetscFunctionReturn(0);}
 
   ierr = SNESReset((*snes));CHKERRQ(ierr);
+  ierr = SNESDestroy(&(*snes)->pc);CHKERRQ(ierr);
 
   /* if memory was published with AMS then destroy it */
   ierr = PetscObjectDepublish((*snes));CHKERRQ(ierr);
