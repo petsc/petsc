@@ -177,7 +177,7 @@ static PetscErrorCode SNESSetUp_QN(SNES snes)
   PetscFunctionBegin;
   ierr = VecDuplicateVecs(snes->vec_sol, qn->m, &qn->dX);CHKERRQ(ierr);
   ierr = VecDuplicateVecs(snes->vec_sol, qn->m, &qn->dF);CHKERRQ(ierr);
-  ierr = SNESDefaultGetWork(snes,3);CHKERRQ(ierr);
+  ierr = SNESDefaultGetWork(snes,1);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -234,7 +234,8 @@ static PetscErrorCode SNESSetFromOptions_QN(SNES snes)
 /* -------------------------------------------------------------------------- */
 /*MC
       SNESQN - Limited-Memory Quasi-Newton methods for the solution of nonlinear systems.
-
+      
+      Implements a limited-memory "good" Broyden update method.
 
    Level: beginner
 
