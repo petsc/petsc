@@ -1,7 +1,7 @@
 static const char help[] = "Time-dependent advection-reaction PDE in 1d. Demonstrates IMEX methods.\n";
 /*
-   u_t = a1*u_x = -k1*u + k2*v + s1
-   v_t = a2*v_x = k1*u - k2*v + s2
+   u_t + a1*u_x = -k1*u + k2*v + s1
+   v_t + a2*v_x = k1*u - k2*v + s2
    0 < x < 1;
    a1 = 1, k1 = 10^6, s1 = 0,
    a2 = 0, k2 = 2*k1, s2 = 1
