@@ -14,6 +14,8 @@
 
 .seealso: PCFactorSetMatSolverPackage(), PCFactorGetMatrix()
 
+  Level: intermediate
+
 @*/
 PetscErrorCode PCFactorSetUpMatSolverPackage(PC pc)
 {

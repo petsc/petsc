@@ -1,6 +1,7 @@
 petsc-dist/.hg
 petsc-dist/.hgignore
 petsc-dist/.hgtags
+petsc-dist/CMakeLists.txt
 petsc-dist/tmp
 petsc-dist/conf/petscvariables
 petsc-dist/config/BuildSystem/.hg
@@ -135,7 +136,5 @@ petsc-dist/src/mat/impls/dense/mpi/mdnfact.c
 petsc-dist/src/mat/impls/csn
 petsc-dist/config/BuildSystem/BitKeeper
 petsc-dist/config/BuildSystem/ChangeSet
-petsc-dist/src/contrib/blopex/driver_fiedler/DL-matrix.petsc
-petsc-dist/src/contrib/blopex/driver_fiedler/L-matrix.petsc
 petsc-dist/src/dm/mesh/examples/tutorials/illinois
 petsc-dist/src/dm/mesh/examples/tutorials/data

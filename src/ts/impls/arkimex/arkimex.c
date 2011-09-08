@@ -746,11 +746,14 @@ EXTERN_C_END
   of the equation using TSSetIFunction() and the non-stiff part with TSSetRHSFunction().
 
   Notes:
+  The default is TSARKIMEX2E, it can be changed with TSARKIMEXSetType() or -ts_arkimex_type
+
   This method currently only works with ODE, for which the stiff part G(t,X,Xdot) has the form Xdot + Ghat(t,X).
 
   Level: beginner
 
-.seealso:  TSCreate(), TS, TSSetType(), TSARKIMEXRegister()
+.seealso:  TSCreate(), TS, TSSetType(), TSARKIMEXSetType(), TSARKIMEXGetType(), TSARKIMEXSetFullyImplicit(), TSARKIMEX2D, TTSARKIMEX2E, TSARKIMEX3, 
+           TSARKIMEX4, TSARKIMEX5, TSARKIMEXType, SARKIMEXRegister()
 
 M*/
 EXTERN_C_BEGIN

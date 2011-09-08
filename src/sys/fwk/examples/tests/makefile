@@ -8,7 +8,7 @@ SOURCEF     =
 SOURCEH     =
 OBJSC       = testcomponentsI.o testcomponentsII.o
 OBJSF       = 
-MANSEC      = fwk
+MANSEC      = Sys
 LOCDIR      = src/sys/fwk/examples/tests/
 
 

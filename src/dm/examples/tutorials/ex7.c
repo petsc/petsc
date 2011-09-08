@@ -1,7 +1,8 @@
 static char help[] = "Demonstrates using the PetscViewerBinaryMatlab viewer\n\n";
 
 /*T
-   Concepts: viewers; bags;
+   Concepts: viewers
+   Concepts: bags
    Processors: n
 T*/
 #include <petscsys.h>

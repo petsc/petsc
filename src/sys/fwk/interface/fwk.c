@@ -384,8 +384,25 @@ PetscErrorCode PetscFwkCall_NONE(PetscFwk fwk, const char* message) {
   PetscFunctionReturn(0);
 }/* PetscFwkCall_NONE() */
 
+
 #undef  __FUNCT__
 #define __FUNCT__ "PetscFwkCall"
+/*@C 
+   PetscFwkCall -- send a string message to a PetscFwk object.  
+
+   Logically collective on PetscFwk.
+
+   Input paramters:
++  fwk     -- a PetscFwk object
+-  message -- a character string
+
+   Notes: In response to the message the object performs actions defined by its URL (see PetscFwkSetURL()). 
+          Side effects may include, in particular, actions on the composed objects (see PetscObjectCompose()).
+
+  Level: beginner.
+
+.seealso: PetscFwkSetURL(), PetscFwkGetURL(), PetscObjectCompose(), PetscObjectQuery()
+@*/
 PetscErrorCode PetscFwkCall(PetscFwk fwk, const char* message) {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -518,6 +535,30 @@ PetscErrorCode  PetscFwkClearURL_Private(PetscFwk fwk) {
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscFwkSetURL"
+/*@C 
+   PetscFwkSetURL -- set a backend implementing PetscFwk functionality from the URL string.
+
+   Logically collective on PetscFwk.
+
+   Input paramters:
++  fwk -- a PetscFwk object
+-  url -- URL string
+
+   Notes: URL can point to a backendn -- a .so file or a .py file.  
+     The .so file must contain symbols for function 'void call(const char[])' or symbols 'void <msg>(void)'
+   for any message <msg> that PetscFwk is expected to understand.  When PetscFwkCall() is invoked
+   with <msg>, a symbol for 'void <msg>(void)' is sought and called, if found.  If not, a symbol for
+   'void call(const char[])' is sought and called with <msg> as the argument. If neither symbol is found,
+   an error occurs.
+     The .py file must define a class that implements 'call(str)' or '<msg>()' methods, as above.
+     If no URL has been set, fwk attempts to reponsd to the message using function '<msg>' (failing that,
+   'call') retrieved from fwk using PetscObjectQueryFunction().  If neither '<msg>' nor 'call' have been
+   previusly composed with fwk (see PetscObjectComposeFunction()), an error occurs.
+
+   Level: intermediate.
+
+.seealso: PetscFwkGetURL(), PetscObjectCompose(), PetscObjectQuery(), PetscObjectComposeFunction()
+@*/
 PetscErrorCode  PetscFwkSetURL(PetscFwk fwk, const char url[]) {
   PetscErrorCode ierr;
   char *path, *name;
@@ -549,8 +590,24 @@ PetscErrorCode  PetscFwkSetURL(PetscFwk fwk, const char url[]) {
   PetscFunctionReturn(0);
 }/* PetscFwkSetURL() */
 
+
 #undef  __FUNCT__
 #define __FUNCT__ "PetscFwkGetURL"
+/*@C 
+   PetscFwkGetURL -- retrieve the URL defining the backend that implements the PetscFwkCall() functionality.
+
+   Not collective.
+
+   Input paramters:
+.  fwk -- a PetscFwk object
+
+   Output parameters:
+.  url -- the URL string
+
+   Level: beginner.
+
+.seealso: PetscFwkSetURL(), PetscFwkCall()
+@*/
 PetscErrorCode  PetscFwkGetURL(PetscFwk fwk, const char **url) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(fwk,PETSC_FWK_CLASSID,1);
@@ -746,6 +803,18 @@ PetscErrorCode  PetscFwkRegisterDependence(PetscFwk fwk, const char clientkey[],
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscFwkDestroy"
+/*@C 
+   PetscFwkDestroy -- destroy PetscFwk.
+
+   Not collective.
+
+   Input paramters:
+.  fwk -- a PetscFwk object
+
+   Level: beginner.
+
+.seealso: PetscFwkCreate(), PetscFwkSetURL(), PetscFwkCall()
+@*/
 PetscErrorCode  PetscFwkDestroy(PetscFwk *fwk)
 {
   PetscInt       i;
@@ -766,6 +835,21 @@ PetscErrorCode  PetscFwkDestroy(PetscFwk *fwk)
 
 #undef  __FUNCT__
 #define __FUNCT__ "PetscFwkCreate"
+/*@C 
+   PetscFwkCreate -- create an empty PetscFwk object.
+
+   Logically collective on comm.
+
+   Input paramters:
+.  comm      -- the MPI_Comm to create the PetscFwk object on.
+
+   Output parameters:
+.  framework -- the created PetscFwk object.
+
+   Level: beginner.
+
+.seealso: PetscFwkDestroy(), PetscFwkSetURL(), PetscFwkCall()
+@*/
 PetscErrorCode  PetscFwkCreate(MPI_Comm comm, PetscFwk *framework){
   PetscFwk fwk;
   PetscErrorCode ierr;
