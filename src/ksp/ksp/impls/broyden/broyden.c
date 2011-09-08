@@ -103,15 +103,15 @@ PetscErrorCode  KSPSolve_Broyden(KSP ksp)
       if (0) {
         ierr = VecScale(P,A0);CHKERRQ(ierr);
       }
-      for (j=0; j<i; j++) {                                     /* p = product_{j<i} [I+v(j)w(j)^T]*p */
+      for (j=0; j<i; j++) {                                     /* p = J^{-1}_{k-1} p = product_{j<i} [I+v(j)w(j)^T]*p */
         ierr = VecDot(W[j],P,&gdot);CHKERRQ(ierr);
         ierr = VecAXPY(P,gdot,V[j]);CHKERRQ(ierr);
       }
 
-      ierr = VecCopy(Pold, W[i]);CHKERRQ(ierr);
-      ierr = VecAXPY(Pold,-1.0,P);CHKERRQ(ierr);                 /* v[i] =       p           */
+      ierr = VecCopy(Pold, W[i]);CHKERRQ(ierr);                 /* w[i] = Pold */
+      ierr = VecAXPY(Pold,-1.0,P);CHKERRQ(ierr);                /* v[i] =       p           */
       ierr = VecDot(W[i],Pold,&gdot);CHKERRQ(ierr);             /*        ----------------- */
-      ierr = VecCopy(P,V[i]);CHKERRQ(ierr);                      /*         w[i]'*(Pold - p)    */
+      ierr = VecCopy(P,V[i]);CHKERRQ(ierr);                     /*         w[i]'*(Pold - p)    */
       ierr = VecScale(V[i],1.0/gdot);CHKERRQ(ierr);
 
       ierr = VecDot(W[i],P,&gdot);CHKERRQ(ierr);                /* p = (I + v[i]*w[i]')*p  */
@@ -124,12 +124,12 @@ PetscErrorCode  KSPSolve_Broyden(KSP ksp)
         ierr = VecDuplicate(P,&w);CHKERRQ(ierr);
         ierr = MatMult(Amat,P,y);CHKERRQ(ierr);
 	ierr = KSP_PCApplyBAorAB(ksp,P,y,w);CHKERRQ(ierr);      /* y = BAp */
-	ierr  = VecDotNorm2(P,y,&rdot,&abr);CHKERRQ(ierr);   /*   rdot = (p)^T(BAp); abr = (BAp)^T (BAp) */
+	ierr  = VecDotNorm2(P,y,&rdot,&abr);CHKERRQ(ierr);      /*   rdot = (p)^T(BAp); abr = (BAp)^T (BAp) */
         ierr = VecDestroy(&y);CHKERRQ(ierr);
         ierr = VecDestroy(&w);CHKERRQ(ierr);
 	ierr = VecAXPY(X,rdot/abr,P);CHKERRQ(ierr);             /*   x  <- x + scale p */
       } else {
-        ierr = VecAXPY(X,1.0,P);CHKERRQ(ierr);                    /* x = x + p */
+        ierr = VecAXPY(X,1.0,P);CHKERRQ(ierr);                  /* x = x + p */
       }
     }
   }
