@@ -10,6 +10,7 @@ extern PetscErrorCode  SNESCreate_KSPONLY(SNES);
 extern PetscErrorCode  SNESCreate_VI(SNES);
 extern PetscErrorCode  SNESCreate_NGMRES(SNES);
 extern PetscErrorCode  SNESCreate_SORQN(SNES);
+extern PetscErrorCode  SNESCreate_QN(SNES);
 EXTERN_C_END
 
 const char *SNESConvergedReasons_Shifted[]  = {" "," ","DIVERGED_LOCAL_MIN"," ","DIVERGED_LINE_SEARCH","DIVERGED_MAX_IT",
@@ -53,5 +54,6 @@ PetscErrorCode  SNESRegisterAll(const char path[])
   ierr = SNESRegisterDynamic(SNESVI,     path,"SNESCreate_VI",     SNESCreate_VI);CHKERRQ(ierr);
   ierr = SNESRegisterDynamic(SNESNGMRES, path,"SNESCreate_NGMRES", SNESCreate_NGMRES);CHKERRQ(ierr);
   ierr = SNESRegisterDynamic(SNESSORQN,  path,"SNESCreate_SORQN", SNESCreate_SORQN);CHKERRQ(ierr);
+  ierr = SNESRegisterDynamic(SNESQN,     path,"SNESCreate_QN",    SNESCreate_QN);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

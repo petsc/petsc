@@ -69,7 +69,6 @@ PetscErrorCode  KSPSolve_Broyden(KSP ksp)
   KSPLogResidualHistory(ksp,gnorm);
   ierr = KSPMonitor(ksp,0,gnorm);CHKERRQ(ierr);
   ierr = (*ksp->converged)(ksp,0,gnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr); 
-
   if (0) {
     PetscScalar rdot,abr;
     Vec         y,w;
@@ -85,7 +84,6 @@ PetscErrorCode  KSPSolve_Broyden(KSP ksp)
   } else {
     ierr = VecAXPY(X,1.0,Pold);CHKERRQ(ierr);                    /*     x = x + p */
   }
-
   for (k=0; k<ksp->max_it; k += cg->msize) {
     for (i=0; i<cg->msize && k+i<ksp->max_it; i++) {
       ierr = KSP_MatMult(ksp,Amat,X,R);CHKERRQ(ierr);            /*     r <- b - Ax     */
@@ -105,24 +103,20 @@ PetscErrorCode  KSPSolve_Broyden(KSP ksp)
       if (0) {
         ierr = VecScale(P,A0);CHKERRQ(ierr);
       }
-
       for (j=0; j<i; j++) {                                     /* p = product_{j<i} [I+v(j)w(j)^T]*p */
         ierr = VecDot(W[j],P,&gdot);CHKERRQ(ierr);
         ierr = VecAXPY(P,gdot,V[j]);CHKERRQ(ierr);
       }
 
+      ierr = VecCopy(Pold, W[i]);CHKERRQ(ierr);
       ierr = VecAXPY(Pold,-1.0,P);CHKERRQ(ierr);                 /* v[i] =       p           */
-      ierr = VecDot(Pold,Pold,&gdot);CHKERRQ(ierr);             /*        ----------------- */
+      ierr = VecDot(W[i],Pold,&gdot);CHKERRQ(ierr);             /*        ----------------- */
       ierr = VecCopy(P,V[i]);CHKERRQ(ierr);                      /*         w[i]'*(Pold - p)    */
       ierr = VecScale(V[i],1.0/gdot);CHKERRQ(ierr);
-
-      ierr = VecCopy(Pold,W[i]);CHKERRQ(ierr);                   /* w[i] = P - Pold          */
-
 
       ierr = VecDot(W[i],P,&gdot);CHKERRQ(ierr);                /* p = (I + v[i]*w[i]')*p  */
       ierr = VecAXPY(P,gdot,V[i]);CHKERRQ(ierr);
       ierr = VecCopy(P,Pold);CHKERRQ(ierr);
-
       if (0) {
         PetscScalar rdot,abr;
         Vec         y,w;
@@ -217,7 +211,7 @@ PetscErrorCode KSPSetFromOptions_Broyden(KSP ksp)
     It must be wrapped in EXTERN_C_BEGIN to be dynamically linkable in C++
 */
 /*MC
-     KSPBROYDEN - Limited memory "bad" Broyden method implemented for linear problems.
+     KSPBROYDEN - Limited memory "good" Broyden method implemented for linear problems.
 
    Level: beginner
 

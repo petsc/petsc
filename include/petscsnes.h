@@ -36,6 +36,7 @@ E*/
 #define SNESVI      "vi"
 #define SNESNGMRES  "ngmres"
 #define SNESSORQN   "sorqn"
+#define SNESQN      "qn"
 
 /* Logging support */
 extern PetscClassId  SNES_CLASSID;
