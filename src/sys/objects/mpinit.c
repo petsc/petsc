@@ -47,7 +47,7 @@ $   utilize all the CPUs on the node. The PETSc code will have p processes to fu
 $   PETSc calculations. The user THREADS and PETSc PROCESSES will NEVER run at the same time so the p CPUs 
 $   are always working on p task, never more than p.
 $
-$    See PCOPENMP for a PETSc preconditioner that can use this functionality
+$    See PCHMPI for a PETSc preconditioner that can use this functionality
 $
 
    For both PetscHMPISpawn() and PetscHMPIMerge() PETSC_COMM_WORLD consists of one process per "node", PETSC_COMM_LOCAL_WORLD
@@ -132,7 +132,7 @@ $   utilize all the CPUs on the node. The PETSc code will have p processes to fu
 $   PETSc calculations. The user THREADS and PETSc PROCESSES will NEVER run at the same time so the p CPUs 
 $   are always working on p task, never more than p.
 $
-$    See PCOPENMP for a PETSc preconditioner that can use this functionality
+$    See PCHMPI for a PETSc preconditioner that can use this functionality
 $
 
    For both PetscHMPISpawn() and PetscHMPIMerge() PETSC_COMM_WORLD consists of one process per "node", PETSC_COMM_LOCAL_WORLD

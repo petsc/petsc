@@ -810,6 +810,7 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
     if (flg) {
       ierr = PetscHMPIMerge((PetscMPIInt) nodesize,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr); 
       if (PetscHMPIWorker) { /* if worker then never enter user code */
+        PetscInitializeCalled = PETSC_TRUE;
         ierr = PetscEnd(); 
       }
     }
