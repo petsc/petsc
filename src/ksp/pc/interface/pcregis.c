@@ -111,7 +111,7 @@ PetscErrorCode  PCRegisterAll(const char path[])
   ierr = PCRegisterDynamic(PCFIELDSPLIT   ,path,"PCCreate_FieldSplit",PCCreate_FieldSplit);CHKERRQ(ierr);
   ierr = PCRegisterDynamic(PCGALERKIN     ,path,"PCCreate_Galerkin",PCCreate_Galerkin);CHKERRQ(ierr);
   ierr = PCRegisterDynamic(PCEXOTIC       ,path,"PCCreate_Exotic",PCCreate_Exotic);CHKERRQ(ierr);
-  ierr = PCRegisterDynamic(PCOPENMP       ,path,"PCCreate_HMPI",PCCreate_HMPI);CHKERRQ(ierr);
+  ierr = PCRegisterDynamic(PCHMPI         ,path,"PCCreate_HMPI",PCCreate_HMPI);CHKERRQ(ierr);
   ierr = PCRegisterDynamic(PCASA          ,path,"PCCreate_ASA",PCCreate_ASA);CHKERRQ(ierr);
   ierr = PCRegisterDynamic(PCCP           ,path,"PCCreate_CP",PCCreate_CP);CHKERRQ(ierr);
   ierr = PCRegisterDynamic(PCLSC          ,path,"PCCreate_LSC",PCCreate_LSC);CHKERRQ(ierr);

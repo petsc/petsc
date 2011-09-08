@@ -9,7 +9,7 @@ SOURCEH	 = mpibaij.h
 OBJSC	 = mpibaij.o mmbaij.o baijov.o
 OBJSF	 =
 LIBBASE	 = libpetscmat
-DIRS	 = bstream dscpack
+DIRS	 = bstream
 MANSEC	 = Mat
 LOCDIR	 = src/mat/impls/baij/mpi/
 

@@ -17,7 +17,7 @@ typedef struct {
 
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCView_HMPI_HMPI"
+#define __FUNCT__ "PCView_HMPI_MP"
 /*
     Would like to have this simply call PCView() on the inner PC. The problem is
   that the outer comm does not live on the inside so cannot do this. Instead 
@@ -249,9 +249,9 @@ static PetscErrorCode PCSetFromOptions_HMPI(PC pc)
 
 /* -------------------------------------------------------------------------------------*/
 /*MC
-     PCOPENMP - Runs a preconditioner for a single process matrix across several MPI processes
+     PCHMPI - Runs a preconditioner for a single process matrix across several MPI processes
 
-$     This will usually be run with -pc_type openmp -ksp_type preonly
+$     This will usually be run with -pc_type hmpi -ksp_type preonly
 $     solver options are set with -hmpi_ksp_... and -hmpi_pc_... for example
 $     -hmpi_ksp_type cg would use cg as the Krylov method or -hmpi_ksp_monitor or
 $     -hmpi_pc_type hypre -hmpi_pc_hypre_type boomeramg

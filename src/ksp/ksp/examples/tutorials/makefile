@@ -615,29 +615,29 @@ runex10_19:
 # spwan a parallel solver on 2 procs.
 # See http://www.mcs.anl.gov/petsc/petsc-as/documentation/faq.html#datafiles for how to obtain the datafiles used below
 runex10_22:
-	-@${MPIEXEC} -n 2 ./ex10 -options_left no -hmpi_merge_size 2 -pc_type openmp  -ksp_type preonly -hmpi_pc_type ksp -f0 ${DATAFILESPATH}/matrices/medium > ex10_22.tmp 2>&1;\
+	-@${MPIEXEC} -n 2 ./ex10 -options_left no -hmpi_merge_size 2 -pc_type hmpi  -ksp_type preonly -hmpi_pc_type ksp -f0 ${DATAFILESPATH}/matrices/medium > ex10_22.tmp 2>&1;\
 	   if (${DIFF} output/ex10_22.out ex10_22.tmp) then true; \
 	   else echo "Possible problem with ex10_22, diffs above"; fi; \
 	   ${RM} -f ex10_22.tmp
 runex10_23:
-	-@${MPIEXEC} -n 2 ./ex10 -options_left no -hmpi_merge_size 2 -pc_type openmp  -ksp_type preonly -hmpi_pc_type ksp -hmpi_ksp_pc_type bjacobi -hmpi_ksp_ksp_type gmres -f0 ${DATAFILESPATH}/matrices/medium > ex10_23.tmp 2>&1;\
+	-@${MPIEXEC} -n 2 ./ex10 -options_left no -hmpi_merge_size 2 -pc_type hmpi  -ksp_type preonly -hmpi_pc_type ksp -hmpi_ksp_pc_type bjacobi -hmpi_ksp_ksp_type gmres -f0 ${DATAFILESPATH}/matrices/medium > ex10_23.tmp 2>&1;\
 	   if (${DIFF} output/ex10_23.out ex10_23.tmp) then true; \
 	   else echo "Possible problem with ex10_23, diffs above"; fi; \
 	   ${RM} -f ex10_23.tmp
 
 runex10_24:
-	-@${MPIEXEC} -n 2 ./ex10 -options_left no -hmpi_merge_size 2 -pc_type openmp -hmpi_pc_type sor -f0 ${DATAFILESPATH}/matrices/medium -hmpi_ksp_monitor_short -initialguess -ksp_type gmres -ksp_monitor_short -ksp_view > ex10_24.tmp 2>&1;\
+	-@${MPIEXEC} -n 2 ./ex10 -options_left no -hmpi_merge_size 2 -pc_type hmpi -hmpi_pc_type sor -f0 ${DATAFILESPATH}/matrices/medium -hmpi_ksp_monitor_short -initialguess -ksp_type gmres -ksp_monitor_short -ksp_view > ex10_24.tmp 2>&1;\
 	   if (${DIFF} output/ex10_24.out ex10_24.tmp) then true; \
 	   else echo "Possible problem with ex10_24, diffs above"; fi; \
 	   ${RM} -f ex10_24.tmp
 
 # Start a parallel user code [on 4 nodes, assembling MPIAIJ with
 # np=4] and then spwan a parallel sub-domain-solver on each node
-# [with np=2]. This emulates mixed MPI/HMPI model [MPI between
-# nodes, HMPI within the nodes]
+# [with np=2]. This emulates mixed MPI-shared memory model [MPI between
+# nodes, MPI within the nodes]
 # See http://www.mcs.anl.gov/petsc/petsc-as/documentation/faq.html#datafiles for how to obtain the datafiles used below
 runex10_25:
-	-@${MPIEXEC} -n 8 ./ex10 -options_left no -hmpi_merge_size 2 -sub_pc_type openmp -f0 ${DATAFILESPATH}/matrices/medium -ksp_monitor> ex10_25.tmp 2>&1;\
+	-@${MPIEXEC} -n 8 ./ex10 -options_left no -hmpi_merge_size 2 -sub_pc_type hmpi -f0 ${DATAFILESPATH}/matrices/medium -ksp_monitor_short> ex10_25.tmp 2>&1;\
 	   if (${DIFF} output/ex10_25.out ex10_25.tmp) then true; \
 	   else echo "Possible problem with ex10_25, diffs above"; fi; \
 	   ${RM} -f ex10_25.tmp
