@@ -46,6 +46,51 @@ typedef struct {
   PetscBool   imex;
 } TS_ARKIMEX;
 
+/*MC
+     TSARKIMEX2D - Second order ARK IMEX scheme with L-stable implicit part.
+
+     This method has one explicit stage and two implicit stages.
+
+.seealso: TSARKIMEX
+M*/
+/*MC
+     TSARKIMEX2E - Second order ARK IMEX scheme with L-stable implicit part.
+
+     This method has one explicit stage and two implicit stages. It is is an optimal method developed by Emil Constantinescu.
+
+.seealso: TSARKIMEX
+M*/
+/*MC
+     TSARKIMEX3 - Third order ARK IMEX scheme with L-stable implicit part.
+
+     This method has one explicit stage and three implicit stages.
+
+     References:
+     Kennedy and Carpenter 2003.
+
+.seealso: TSARKIMEX
+M*/
+/*MC
+     TSARKIMEX4 - Fourth order ARK IMEX scheme with L-stable implicit part.
+
+     This method has one explicit stage and four implicit stages.
+
+     References:
+     Kennedy and Carpenter 2003.
+
+.seealso: TSARKIMEX
+M*/
+/*MC
+     TSARKIMEX5 - Fifth order ARK IMEX scheme with L-stable implicit part.
+
+     This method has one explicit stage and five implicit stages.
+
+     References:
+     Kennedy and Carpenter 2003.
+
+.seealso: TSARKIMEX
+M*/
+
 #undef __FUNCT__
 #define __FUNCT__ "TSARKIMEXRegisterAll"
 /*@C
@@ -701,11 +746,14 @@ EXTERN_C_END
   of the equation using TSSetIFunction() and the non-stiff part with TSSetRHSFunction().
 
   Notes:
+  The default is TSARKIMEX2E, it can be changed with TSARKIMEXSetType() or -ts_arkimex_type
+
   This method currently only works with ODE, for which the stiff part G(t,X,Xdot) has the form Xdot + Ghat(t,X).
 
   Level: beginner
 
-.seealso:  TSCreate(), TS, TSSetType(), TSARKIMEXRegister()
+.seealso:  TSCreate(), TS, TSSetType(), TSARKIMEXSetType(), TSARKIMEXGetType(), TSARKIMEXSetFullyImplicit(), TSARKIMEX2D, TTSARKIMEX2E, TSARKIMEX3, 
+           TSARKIMEX4, TSARKIMEX5, TSARKIMEXType, SARKIMEXRegister()
 
 M*/
 EXTERN_C_BEGIN

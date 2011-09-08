@@ -20,6 +20,10 @@ PetscErrorCode LSCLoadTestOperators(Mat *A11,Mat *A12,Mat *A21,Mat *A22,Vec *b1,
   ierr = MatCreate(PETSC_COMM_WORLD,A12);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,A21);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,A22);CHKERRQ(ierr);
+  ierr = MatSetOptionsPrefix(*A11,"a11_");CHKERRQ(ierr);
+  ierr = MatSetOptionsPrefix(*A22,"a22_");CHKERRQ(ierr);
+  ierr = MatSetFromOptions(*A11);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(*A22);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,b1);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,b2);CHKERRQ(ierr);
   /* Load matrices from a Q1-P0 discretisation of variable viscosity Stokes. The matrix blocks are packed into one file. */

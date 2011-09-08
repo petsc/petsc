@@ -8,33 +8,33 @@
 Vector Object:
   type=nest, rows=2 
   VecNest  structure: 
-  (0) : name="(null)", type=nest, rows=6 
+  (0) : type=nest, rows=6 
     Vector Object:
       type=nest, rows=2 
       VecNest  structure: 
-      (0) : name="(null)", type=seq, rows=3 
+      (0) : type=seq, rows=3 
         Vector Object:         1 MPI processes        
           type: seq
         1
         1
         1
-      (1) : name="(null)", type=seq, rows=3 
+      (1) : type=seq, rows=3 
         Vector Object:         1 MPI processes        
           type: seq
         2
         2
         2
-  (1) : name="(null)", type=nest, rows=6 
+  (1) : type=nest, rows=6 
     Vector Object:
       type=nest, rows=2 
       VecNest  structure: 
-      (0) : name="(null)", type=seq, rows=3 
+      (0) : type=seq, rows=3 
         Vector Object:         1 MPI processes        
           type: seq
         3
         3
         3
-      (1) : name="(null)", type=seq, rows=3 
+      (1) : type=seq, rows=3 
         Vector Object:         1 MPI processes        
           type: seq
         7.20032

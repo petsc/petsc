@@ -13,6 +13,7 @@
 +  snes - the SNES context
 -  compute - computes the bounds
 
+   Level: advanced
 
 @*/
 PetscErrorCode SNESVISetComputeVariableBounds(SNES snes, PetscErrorCode (*compute)(SNES,Vec,Vec))
@@ -498,12 +499,12 @@ static PetscErrorCode SNESVIComputeMeritFunction(Vec phi, PetscReal* merit,Petsc
 
 PETSC_STATIC_INLINE PetscScalar Phi(PetscScalar a,PetscScalar b)
 {
-  return a + b - sqrt(a*a + b*b);
+  return a + b - PetscSqrtScalar(a*a + b*b);
 }
 
 PETSC_STATIC_INLINE PetscScalar DPhi(PetscScalar a,PetscScalar b)
 {
-  if ((PetscAbsScalar(a) >= 1.e-6) || (PetscAbsScalar(b) >= 1.e-6)) return  1.0 - a/ sqrt(a*a + b*b);
+  if ((PetscAbsScalar(a) >= 1.e-6) || (PetscAbsScalar(b) >= 1.e-6)) return  1.0 - a/ PetscSqrtScalar(a*a + b*b);
   else return .5;
 }
 
@@ -2430,6 +2431,8 @@ static PetscErrorCode SNESView_VI(SNES snes,PetscViewer viewer)
    If this routine is not called then the lower and upper bounds are set to 
    SNES_VI_INF and SNES_VI_NINF respectively during SNESSetUp().
 
+   Level: advanced
+
 @*/
 PetscErrorCode SNESVISetVariableBounds(SNES snes, Vec xl, Vec xu)
 {
@@ -2497,7 +2500,7 @@ static PetscErrorCode SNESSetFromOptions_VI(SNES snes)
   ierr = PetscOptionsReal("-snes_vi_const_tol","constraint tolerance","None",vi->const_tol,&vi->const_tol,0);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-snes_ls_monitor","Print progress of line searches","SNESLineSearchSetMonitor",vi->lsmonitor ? PETSC_TRUE : PETSC_FALSE,&flg,&set);CHKERRQ(ierr);
   if (set) {ierr = SNESLineSearchSetMonitor(snes,flg);CHKERRQ(ierr);}
-  ierr = PetscOptionsEList("-snes_vi_type","Semismooth algorithm used","",vies,3,"ss",&indx,&flg2);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-snes_vi_type","Semismooth algorithm used","",vies,3,"rs",&indx,&flg2);CHKERRQ(ierr);
   if (flg2) {
     switch (indx) {
     case 0:

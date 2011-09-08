@@ -70,11 +70,10 @@ static PetscErrorCode TSGLSchemeCreate(PetscInt p,PetscInt q,PetscInt r,PetscInt
     PetscBLASInt m,n,one=1,*ipiv,lwork=4*((s+3)*3+3),info,ldb;
     PetscReal    rcond,*sing,*workreal;
     PetscScalar  *ImV,*H,*bmat,*workscalar,*c=scheme->c,*a=scheme->a,*b=scheme->b,*u=scheme->u,*v=scheme->v;
-    ierr = PetscMalloc7(PetscSqr(r),PetscScalar,&ImV,3*s,PetscScalar,&H,3*ss,PetscScalar,&bmat,lwork,PetscScalar,&workscalar,5*(3+r),PetscReal,&workreal,r+s,PetscReal,&sing,r+s,PetscBLASInt,&ipiv);CHKERRQ(ierr);
-
 #if !defined(PETSC_MISSING_LAPACK_GELSS)
     PetscBLASInt rank;
 #endif
+    ierr = PetscMalloc7(PetscSqr(r),PetscScalar,&ImV,3*s,PetscScalar,&H,3*ss,PetscScalar,&bmat,lwork,PetscScalar,&workscalar,5*(3+r),PetscReal,&workreal,r+s,PetscReal,&sing,r+s,PetscBLASInt,&ipiv);CHKERRQ(ierr);
 
     /* column-major input */
     for (i=0; i<r-1; i++) {
@@ -702,7 +701,7 @@ static PetscErrorCode TSGLVecNormWRMS(TS ts,Vec X,PetscReal *nrm)
   ierr = VecRestoreArray(gl->W,&w);CHKERRQ(ierr);
   ierr = MPI_Allreduce(&sum,&gsum,1,MPIU_REAL,MPIU_SUM,((PetscObject)ts)->comm);CHKERRQ(ierr);
   ierr = VecGetSize(gl->W,&N);CHKERRQ(ierr);
-  *nrm = PetscAbsScalar(PetscSqrtScalar(gsum/(1.*N)));
+  *nrm = PetscSqrtReal(gsum/(1.*N));
   PetscFunctionReturn(0);
 }
 

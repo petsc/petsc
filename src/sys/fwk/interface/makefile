@@ -9,7 +9,7 @@ SOURCEH  =
 OBJSC    = fwk.o
 OBJSF    =
 LIBBASE  = libpetscsys
-MANSEC   = fwk
+MANSEC   = Sys
 LOCDIR   = src/sys/fwk/interface/
 
 include ${PETSC_DIR}/conf/variables

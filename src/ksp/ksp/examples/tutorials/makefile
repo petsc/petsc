@@ -604,7 +604,7 @@ runex10_19:
 	-@touch ex10_19sbaij.tmp
 	-@for levels in ${LEVELS}; do \
 	${MPIEXEC} -n 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/poisson1 -ksp_type cg -pc_type icc -pc_factor_levels $$levels >> ex10_19aij.tmp 2>&1; \
-	 ${MPIEXEC} -n 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/poisson1 -ksp_type cg -pc_type icc -pc_factor_levels $$levels -matload_type seqsbaij >> ex10_19sbaij.tmp 2>&1; \
+	 ${MPIEXEC} -n 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/poisson1 -ksp_type cg -pc_type icc -pc_factor_levels $$levels -mat_type seqsbaij >> ex10_19sbaij.tmp 2>&1; \
 	done; 
 	-@if (${DIFF} ex10_19aij.tmp ex10_19sbaij.tmp) then true; \
 	   else echo "Possible problem with ex10_19, diffs above"; fi; \
@@ -775,37 +775,37 @@ runex10_ILU: # test ilu fill greater than zero
 	   else echo "Possible problem with ex10_ILU, diffs above"; fi; \
 	   ${RM} -f ex10_20.tmp
 runex10_ILUBAIJ: # test ilu fill greater than zero
-	-@${MPIEXEC} -n 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -pc_factor_levels 1 -matload_type baij > ex10_20.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -pc_factor_levels 1 -mat_type baij > ex10_20.tmp 2>&1; \
 	   if (${DIFF} output/ex10_ILU.out ex10_20.tmp) then true; \
 	   else echo "Possible problem with ex10_ILU, diffs above"; fi; \
 	   ${RM} -f ex10_20.tmp
 runex10_cg:
-	-@${MPIEXEC} -n 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -matload_type mpisbaij -ksp_type cg -pc_type eisenstat -ksp_monitor_short -ksp_converged_reason > ex10_20.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -mat_type mpisbaij -ksp_type cg -pc_type eisenstat -ksp_monitor_short -ksp_converged_reason > ex10_20.tmp 2>&1; \
 	   if (${DIFF} output/ex10_cg_singlereduction.out ex10_20.tmp) then true; \
 	   else echo "Possible problem with ex10_cg, diffs above"; fi; \
 	   ${RM} -f ex10_20.tmp
 runex10_cg_singlereduction:
-	-@${MPIEXEC} -n 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -matload_type mpisbaij -ksp_type cg -pc_type eisenstat -ksp_monitor_short -ksp_converged_reason -ksp_cg_single_reduction > ex10_20.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -mat_type mpisbaij -ksp_type cg -pc_type eisenstat -ksp_monitor_short -ksp_converged_reason -ksp_cg_single_reduction > ex10_20.tmp 2>&1; \
 	   if (${DIFF} output/ex10_cg_singlereduction.out ex10_20.tmp) then true; \
 	   else echo "Possible problem with ex10_cg_singlereduction, diffs above"; fi; \
 	   ${RM} -f ex10_20.tmp
 runex10_seqaijcrl:
-	-@${MPIEXEC} -n 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_monitor_short -ksp_view -mat_view_info -matload_type seqaijcrl > ex10_seqaijcrl.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_monitor_short -ksp_view -mat_view_info -mat_type seqaijcrl > ex10_seqaijcrl.tmp 2>&1; \
 	   if (${DIFF} output/ex10_seqcrl.out ex10_seqaijcrl.tmp) then true; \
 	   else echo "Possible problem with ex10_seqaijcrl, diffs above"; fi; \
 	   ${RM} -f ex10_seqaijcrl.tmp
 runex10_mpiaijcrl:
-	-@${MPIEXEC} -n 2 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_monitor_short -ksp_view -mat_view_info -matload_type mpiaijcrl > ex10_mpiaijcrl.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_monitor_short -ksp_view -mat_view_info -mat_type mpiaijcrl > ex10_mpiaijcrl.tmp 2>&1; \
 	   if (${DIFF} output/ex10_mpiaij.out ex10_mpiaijcrl.tmp) then true; \
 	   else echo "Possible problem with ex10_mpiaijcrl, diffs above"; fi; \
 	   ${RM} -f ex10_mpiaijcrl.tmp
 runex10_seqaijperm:
-	-@${MPIEXEC} -n 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_monitor_short -ksp_view -mat_view_info -matload_type seqaijperm > ex10_seqaijperm.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_monitor_short -ksp_view -mat_view_info -mat_type seqaijperm > ex10_seqaijperm.tmp 2>&1; \
 	   if (${DIFF} output/ex10_seqcsrperm.out ex10_seqaijperm.tmp) then true; \
 	   else echo "Possible problem with ex10_seqaijperm, diffs above"; fi; \
 	   ${RM} -f ex10_seqaijperm.tmp
 runex10_mpiaijperm:
-	-@${MPIEXEC} -n 2 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_monitor_short -ksp_view -mat_view_info -matload_type mpiaijperm > ex10_mpiaijperm.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_monitor_short -ksp_view -mat_view_info -mat_type mpiaijperm > ex10_mpiaijperm.tmp 2>&1; \
 	   if (${DIFF} output/ex10_mpicsrperm.out ex10_mpiaijperm.tmp) then true; \
 	   else echo "Possible problem with ex10_mpiaijperm, diffs above"; fi; \
 	   ${RM} -f ex10_mpiaijperm.tmp

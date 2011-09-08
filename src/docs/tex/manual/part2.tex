@@ -543,7 +543,7 @@ proper layout.
 One creates a distributed array communication data structure 
 in two dimensions with the command 
 \begin{tabbing}
-  DMDACreate2d(MPI\_Comm comm,DMDABoundaryType wrap,DMDAStencilType st,int M,\\
+  DMDACreate2d(MPI\_Comm comm,DMDABoundaryType xperiod,DMDABoundaryType yperiod,DMDAStencilType st,int M,\\
              int N,int m,int n,int dof,int s,int *lx,int *ly,DM *da);
 \end{tabbing}
 The  \sindex{array, distributed} arguments
@@ -554,11 +554,11 @@ the number of processes in the MPI communicator, \trl{comm}.
 Instead of specifying the process layout, one may use
 PETSC\_DECIDE for \trl{m} and \trl{n} 
 so that PETSc will determine the partition using MPI. The type of
-periodicity of the array is specified by \trl{wrap}, which can be 
-\trl{DA_NONPERIODIC} \findex{DA_NONPERIODIC} (no periodicity), 
-\trl{DA_XYPERIODIC} \findex{DA_XYPERIODIC} (periodic in
-both x- and y-directions), \trl{DA_XPERIODIC} \findex{DA_XPERIODIC}, 
-or \trl{DA_YPERIODIC}.\findex{DA_YPERIODIC}  The argument \trl{dof} 
+periodicity of the array is specified by \trl{xperiod} and \trl{yperiod}, which can be 
+DMDA\_BOUNDARY\_NONE \findex{DMDA_BOUNDARY_NONE} (no periodicity),
+DMDA\_BOUNDARY\_PERIODIC \findex{DMDA_BOUNDARY_PERIODIC} (periodic in that direction),
+DMDA\_BOUNDARY\_GHOSTED \findex{DMDA_BOUNDARY_GHOSTED},
+or DMDA\_BOUNDARY\_MIRROR.\findex{DMDA_BOUNDARY_MIRROR}  The argument \trl{dof}
 indicates the number of degrees of freedom at each array point,
 and \trl{s} is the stencil width (i.e., the width of the ghost point region).
 The optional arrays \trl{lx} and \trl{ly} may contain the number of nodes
@@ -591,15 +591,11 @@ discretization technique).
 The commands for creating distributed array communication data structures
 in one and three dimensions are analogous:
 \begin{tabbing}
-  DMDACreate1d(MPI\_Comm comm,DMDABoundaryType wrap,int M,int w,int s,int *lc,DM *inra);\\
-  DMDACreate3d\=(MPI\_Comm comm,DMDABoundaryType wrap,DMDAStencilType stencil\_type,\\
+  DMDACreate1d(MPI\_Comm comm,DMDABoundaryType xperiod,int M,int w,int s,int *lc,DM *inra);\\
+  DMDACreate3d\=(MPI\_Comm comm,DMDABoundaryType xperiod,DMDABoundaryType yperiod, \\
+             \> DMDABoundaryType zperiod, DMDAStencilType stencil\_type,\\
              \>int M,int N,int P,int m,int n,int p,int w,int s,int *lx,int *ly,int *lz,DM *inra);
 \end{tabbing}
-\trl{DA_ZPERIODIC}, \findex{DA_ZPERIODIC}
-\trl{DA_XZPERIODIC}, \findex{DA_XZPERIODIC}
-\trl{DA_YZPERIODIC}, and \findex{DA_YZPERIODIC}
-\trl{DA_XYZPERIODIC} \findex{DA_XYZPERIODIC}
-are additional options in three dimensions for DMDABoundaryType.
 The routines to create distributed arrays are collective, so that all
 processes in the communicator \trl{comm} must call \trl{DACreateXXX()}.
 
@@ -2293,29 +2289,31 @@ the options database command \trl{ksp_norm_type unpreconditioned } or by calling
 
 \begin{table}
 \begin{center}
-\begin{tabular}{llll}
-& & {\bf Options}       & {\bf Default}\\
-& & {\bf Database}      & {\bf Convergence}\\
-{\bf Method}    &{\bf KSPType}  & {\bf Name}    & {\bf Monitor$\dagger$}\\
+\begin{tabular}{lll}
+& & {\bf Options}       \\
+& & {\bf Database}      \\
+{\bf Method}    &{\bf KSPType}  & {\bf Name}    \\
 \hline
-Richardson                                & KSPRICHARDSON & richardson  & true\\
-Chebychev                                 & KSPCHEBYCHEV  & chebychev   & true\\
-Conjugate Gradient \cite{hs:52}           & KSPCG         & cg          & true\\
-BiConjugate Gradient                      & KSPBICG       & bicg        & true\\
-Generalized Minimal Residual \cite{ss:86} & KSPGMRES      & gmres       & precond\\
-BiCGSTAB \cite{v:92}                      & KSPBCGS       & bcgs        & precond \\
-Conjugate Gradient Squared \cite{so:89}   & KSPCGS        & cgs         & precond \\
-Transpose-Free Quasi-Minimal Residual (1) \cite{f:93} & KSPTFQMR & tfqmr & precond \\
-Transpose-Free Quasi-Minimal Residual (2) & KSPTCQMR & tcqmr & precond \\
-Conjugate Residual                        & KSPCR         & cr          & precond \\
-Least Squares Method                      & KSPLSQR       & lsqr        & precond \\
-Shell for no KSP method                   & KSPPREONLY    & preonly     & precond \\
+Richardson                                & KSPRICHARDSON & richardson \\
+Chebychev                                 & KSPCHEBYCHEV  & chebychev   \\
+Conjugate Gradient \cite{hs:52}           & KSPCG         & cg          \\
+BiConjugate Gradient                      & KSPBICG       & bicg        \\
+Generalized Minimal Residual \cite{ss:86} & KSPGMRES      & gmres       \\
+Flexible Generalized Minimal Residual     & KSPFGMRES     & fgmres       \\
+Deflated Generalized Minimal Residual     & KSPDGMRES     & dgmres       \\
+Generalized Conjugate Residual            & KSPGCR        & gcr       \\
+BiCGSTAB \cite{v:92}                      & KSPBCGS       & bcgs         \\
+Conjugate Gradient Squared \cite{so:89}   & KSPCGS        & cgs          \\
+Transpose-Free Quasi-Minimal Residual (1) \cite{f:93} & KSPTFQMR & tfqmr  \\
+Transpose-Free Quasi-Minimal Residual (2) & KSPTCQMR      & tcqmr        \\
+Conjugate Residual                        & KSPCR         & cr           \\
+Least Squares Method                      & KSPLSQR       & lsqr         \\
+Shell for no KSP method                   & KSPPREONLY    & preonly      \\
 \hline
 \end{tabular}
 \medskip \medskip
-$\dagger$true - denotes true residual norm, precond - denotes preconditioned residual norm
 \end{center}
-\caption{KSP Defaults.  All methods use left preconditioning by default.}
+\caption{KSP Objects.}
 \label{tab_kspdefaults}
 \end{table}
 
@@ -3362,7 +3360,7 @@ I   & 0 \\
 -A_{10} ksp(A_{00},Ap_{00}) & I \\
 \end{array} \right).
 \]
-Where $\hat{S} = A_{11} - A_{10} ksp(A_{00},Ap_{00}) A_{01}$ is the approximate Schur complement. By default $\hat{S}p$ is $Ap_{11}.$ One can provide an alternative with XXXX. Or one can provide a custom PC for the Schur complement system with YYYY.
+Where $\hat{S} = A_{11} - A_{10} ksp(A_{00},Ap_{00}) A_{01}$ is the approximate Schur complement. By default $\hat{S}p$ is $Ap_{11}.$ 
 
 There are several variants of the Schur complement preconditioner obtained by dropping some of the terms, these can be obtained with \trl{-pc_fieldsplit_schur_factorization_type <diag,lower,upper,full>} or NOTE WE NEED TO ADD A FUNCTIONAL INTERFACE. Note that the \trl{diag} form uses the preconditioner
 \[
@@ -4236,12 +4234,10 @@ These parameters may be set from the options database with
 \end{tabbing}
 \findex{-mat_fd_coloring_err} \findex{-mat_fd_coloring_umin}
 
-Note that the MatGetColoring() routine currently 
-works only on sequential routines.  Extensions may be forthcoming. However,
-if one can compute the coloring \trl{iscoloring} some other way, the routine
-MatFDColoringCreate() does work in parallel. An example of this for 
-2D distributed arrays is given below that uses the utility routine
-DMGetColoring().
+Note that although MatGetColoring() works for parallel matrices, the routine currently uses a sequential algorithm.
+Extensions may be forthcoming.
+However, if one can compute the coloring \trl{iscoloring} some other way, the routine MatFDColoringCreate() is scalable.
+An example of this for 2D distributed arrays is given below that uses the utility routine DMGetColoring().
 
 \begin{tabbing}
    DMGetColoring(da,IS\_COLORING\_GHOSTED,\&iscoloring);\\
@@ -4250,8 +4246,17 @@ DMGetColoring().
    ISColoringDestroy(\&iscoloring);
 \end{tabbing}
 
-Note that the routine MatFDColoringCreate() currently is only 
-supported for the AIJ matrix format.
+Note that the routine MatFDColoringCreate() currently is only supported for the AIJ and BAIJ matrix formats.
+
+\section{Variational Inequalities}
+\label{sec_vi}
+
+SNES can also solve variational inequalities with box constraints. That is nonlinear algebraic systems with additional inequality constraints on some or all of the variables: $ Lu \le u_i \le Hu_i $.
+Some or all of the lower bounds may be negative infinity (indicated to PETSc with SNES\_VI\_NINF) and some or all of the upper bounds may be infinity (indicated by SNES\_VI\_INF). The command
+\begin{tabbing}
+   SNESVISetVariableBounds(SNES,Vec Lu,Vec Hu);
+\end{tabbing}
+is \findex{SNESVISetVariableBounds} used to indicate that one is solving a variational inequality. The option \trl{-snes_vi_monitor} \findex{-snes_vi_monitor} turns on extra monitoring of the active set associated with the bounds and \trl{-snes_vi_type} \findex{-snes_vi_type} allows selecting from several VI solvers, the default is prefered.
 
 % ---------------------------------------------------------------
 \cleardoublepage
@@ -4702,7 +4707,7 @@ More details about the solver and code examples can be found at
 \chapter{High Level Support for Multigrid with DMMG}
 \label{chapter_dmmg}
 
-This infrastructure will be replaced in the next PETSc release.
+This infrastructure will be replaced in the next PETSc release. DO NOT USE IT.
 
 PETSc provides an easy to use high-level interface for multigrid on a
 single structured grid using the PETSc DMDA object (or the DMComposite
@@ -4883,12 +4888,12 @@ second approach will require some hand massaging. For example,
 \chapter{Using MATLAB with PETSc}
 \label{ch_matlab}\sindex{MATLAB}
 
-There are three basic ways to use MATLAB with PETSc: (1) dumping files to 
+There are four basic ways to use MATLAB with PETSc: (1) dumping files to 
 be read into MATLAB, (2) automatically sending data from a running PETSc program
 to a MATLAB process where you may interactively type MATLAB commands (or run
-scripts) and (3) automatically sending data back and forth between PETSc and 
+scripts), (3) automatically sending data back and forth between PETSc and 
 MATLAB where MATLAB commands are issued not interactively but from a script or
-the PETSc program.
+the PETSc program and (4) directly in MATLAB using PETSc objects.
 
 \section{Dumping Data for MATLAB}
 One can dump PETSc matrices and vectors to the screen (and thus save in a file via
@@ -4989,7 +4994,14 @@ PetscMatlabEnginedPrintOutput(PetscMatlabEngine,FILE*).
 There is a short-cut to starting the MATLAB engine
 with \trl{PETSC_MATLAB_ENGINE_(MPI_Comm)}.
 
+\section{Using PETSc objects directly in MATLAB}
 
+PETSc must be configured with \trl{--with-shared-libraries} \trl{--with-matlab-engine} \trl{--with-matlab} \trl{[--download-f2cblaslapack]}. The option \trl{--download-f2cblaslapack} must be used if using 64bit MATLAB on LINUX or 64bit MATLAB and the \trl{--download-ml} external package on Apple Mac OS X.
+You can build with or without MPI, but cannot run on more than one process
+There is currently no MPI in the API, the MPI_Comm is not in any of the argument lists but otherwise the argument lists try to mimic the C binding.
+Add \trl{${PETSC_DIR}/bin/matlab/classes} to your MATLAB path.
+
+In MATLAB use help PETSc to get started using PETSc from MATLAB once you have setup PETSc to support MATLAB.
 
 
 %------------------------------------------------------------------
@@ -6846,6 +6858,74 @@ To make PETSc an Eclipse package
 \item Right-click on the project in the project explorer, and choose "Index -> Rebuild". The index should now be build.
 \item Right-click on the PETSc symlink in the project explorer, and choose "Exclude from build..." to make sure Eclipse does not try to compile PETSc with the project.
 \end{itemize}
+
+\section{Qt Creator} \sindex{Qt Creator}
+
+ Qt Creator is developed as a part of Qt SDK for cross-platform GUI programming using \texttt{C++} and thus has excellent support for application developing using \texttt{C/C++}. This information was provided by Mohammad Mirzadeh.
+
+\begin{enumerate}
+\item Qt Creator supports automated and cross-platform \texttt{qmake} and \texttt{Cmake} build systems. What this means, is that, starting from a handful set of options, Qt Creator is able to generate makefiles that are used to compile and run your application package on Linux, Windows and Mac systems.
+\item Qt Creator makes the task of linking PETSc library to your application package easy.
+\item Qt Creator has visual debugger and supports both GNU's GDB and Microsoft's CDB (on Windows).
+\item Qt Creator (as of version 2.3) has interface to memory profiling softwares such as valgrind.
+\item Qt Creator has built-in auto-completion and function look-up. This feature of editor, makes it possible for the user to easily browse inside huge packages like PETSc and easily find relevant functions and objects.
+\item Qt Creator has inline error/warning messages. This feature of the editor greatly reduces programming bugs by informing the user of potential error/warning as the code is being written and even before the compile step.
+\item Qt Creator is an excellent environment for doing GUI programming using Qt framework. This means you can easily generate a nice GUI for you application package as well!
+\end{enumerate}
+
+Qt Creator is a part of Qt SDK, currently being developed by Nokia Inc. It is available under GPL v3, LGPL v2 and a commercial license and may be obtained, either as a part of Qt SDK or as an stand-alone software, via \url{http://qt.nokia.com/downloads/}.
+
+\section*{How to create a project?}
+Upon installation, all you really need to do to port your software package to Qt Creator is to build a \texttt{.pro} file. A \texttt{.pro} file is simply a configuration file that tells Qt Creator about all build/compile options and locations of source file. One may start with a blank \texttt{.pro} file and fill in the configuration options as needed:
+
+\begin{lstlisting}
+
+TARGET = name_of_your_app
+
+APP_DIR    = /home/path/to/your/app
+PETSC_DIR  = /home/path/to/your/petsc
+PETSC_ARCH = linux-gnu-cxx-debug
+PETSC_BINS = $$PETSC_DIR/$$PETSC_ARCH/bin
+
+INCLUDEPATH += $$APP_DIR/include \
+               $$PETSC_DIR/include \
+               $$PETSC_DIR/$$PETSC_ARCH/include
+
+LIBS += -L/path/to/petsc/libs -l_all_needed_petsc_libs
+
+QMAKE_CC  = $$PETSC_BINS/mpicc
+QMAKE_CXX = $$PETSC_BINS/mpicxx
+
+QMAKE_CFLAGS   += -O3 
+QMAKE_CXXFLAGS += -O3 
+QMAKE_LFLAGS   += -O3 
+
+SOURCES += \
+	$$APP_DIR/src/source1.cpp \
+	$$APP_DIR/src/source2.cpp \
+	$$APP_DIR/src/main.cpp
+HEADERS += \
+	$$APP_DIR/src/source1.h \
+	$$APP_DIR/src/source2.h 	
+OTHER_FILES += \
+	$$APP_DIR/src/some_file.cpp \
+	$$APP_DIR/dir/another_file.xyz 
+	
+\end{lstlisting}
+
+In this example, there are different keywords used. These include:
+\begin{itemize}
+\item \texttt{TARGET}: This defines the name of your application executable. You can choose it however you like.
+\item \texttt{INCLUDEPATH}: This is used in the compile time to point to all the needed include files. Essentially it is used as a \texttt{ -I \$\$INCLUDEPATH} flag for the compiler. This should include all your application-specific header files and those related to PETSc which may be found via \texttt{make getincludedirs}.
+\item \texttt{LIBS}: This defines all needed external libraries to link with your application. To get PETSc's linking libraries do \texttt{make getlinklibs}.
+\item \texttt{QMAKE\_CC} and \texttt{QMAKE\_CXX}: These define which \texttt{C/C++} compilers to choose for your application.
+\item \texttt{QMAKE\_CFLAGS}, \texttt{QMAKE\_CXXFLAGS} and \texttt{QMAKE\_LFLAGS}: These set the corresponding compile and linking flags.
+\item \texttt{SOURCES}: This sets all the source files that need to be compiled.
+\item \texttt{HEADERS}: This sets all the header files that are needed for your application. Note that since header files are merely included in the source files, they are not compiled. As a result this is an optional flag and is simply included to allow users to easily access the header files in their application (or even PETSc header files).
+\item \texttt{OTHER\_FILES}: This can be used to virtually include any other file (source, header or any other extension) just as a way to make accessing to auxiliary files easier. They could be anything from a text file to a PETSc source file. Note that none of the source files placed here are compiled.
+\end{itemize}
+
+Note that there are many more options available that one can feed into the \texttt{.pro} file. For more information, one should follow \url{http://doc.qt.nokia.com/latest/qmake-variable-reference.html}. Once the \texttt{.pro} file is generated, the user can simply open it via Qt Creator. Upon opening, generally one has the option to create two different build options, debug and release, and switch between the two easily at any time. For more information on how to use the Qt Creator interface, and other more advanced aspects of this IDE, one may refer to \url{http://doc.qt.nokia.com/qtcreator-snapshot/index.html}
 
 \section{Developers Studio Users} \sindex{developers studio}
 

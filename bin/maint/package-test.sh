@@ -15,7 +15,7 @@ PACKAGES='--download-mpich=1 --download-plapack=1
 --download-mpe=1 --download-fftw'
 
 PKG1='--download-spai=1 --download-chaco=1 --download-sundials=1 --download-umfpack=1
---download-hypre=1 --download-prometheus=1 --download-hdf5=1 --download-blopex=1'
+--download-hypre=1 --download-prometheus=1 --download-hdf5=1 '
 
 PKG2='--download-boost=1  --download-tetgen=1'
 

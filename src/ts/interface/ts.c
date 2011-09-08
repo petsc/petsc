@@ -2723,6 +2723,8 @@ PetscErrorCode  TSMonitorSolutionBinary(TS ts,PetscInt step,PetscReal ptime,Vec 
    If this routine is not called then the lower and upper bounds are set to 
    SNES_VI_INF and SNES_VI_NINF respectively during SNESSetUp().
 
+   Level: advanced
+
 @*/
 PetscErrorCode TSVISetVariableBounds(TS ts, Vec xl, Vec xu)
 {
