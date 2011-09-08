@@ -7,7 +7,7 @@ PetscFList TSSSPList = 0;
 
 typedef struct {
   PetscErrorCode (*onestep)(TS,PetscReal,PetscReal,Vec);
-  char *typename;
+  char *type_name;
   PetscInt nstages;
   Vec *work;
   PetscInt nwork;
@@ -219,7 +219,7 @@ static PetscErrorCode TSDestroy_SSP(TS ts)
 
   PetscFunctionBegin;
   ierr = TSReset_SSP(ts);CHKERRQ(ierr);
-  ierr = PetscFree(ssp->typename);CHKERRQ(ierr);
+  ierr = PetscFree(ssp->type_name);CHKERRQ(ierr);
   ierr = PetscFree(ts->data);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSSSPGetType_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSSSPSetType_C","",PETSC_NULL);CHKERRQ(ierr);
@@ -353,8 +353,8 @@ PetscErrorCode TSSSPSetType_SSP(TS ts,const TSSSPType type)
   ierr = PetscFListFind(TSSSPList,((PetscObject)ts)->comm,type,PETSC_TRUE,(void(**)(void))&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown TS_SSP type %s given",type);
   ssp->onestep = r;
-  ierr = PetscFree(ssp->typename);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(type,&ssp->typename);CHKERRQ(ierr);
+  ierr = PetscFree(ssp->type_name);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(type,&ssp->type_name);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #undef __FUNCT__
@@ -364,7 +364,7 @@ PetscErrorCode TSSSPGetType_SSP(TS ts,const TSSSPType *type)
   TS_SSP *ssp = (TS_SSP*)ts->data;
 
   PetscFunctionBegin;
-  *type = ssp->typename;
+  *type = ssp->type_name;
   PetscFunctionReturn(0);
 }
 #undef __FUNCT__
@@ -387,7 +387,7 @@ PetscErrorCode TSSSPGetNumStages_SSP(TS ts,PetscInt *nstages)
   *nstages = ssp->nstages;
   PetscFunctionReturn(0);
 }
-EXTERN_C_BEGIN
+EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "TSSetFromOptions_SSP"
