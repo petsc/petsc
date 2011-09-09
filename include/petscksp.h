@@ -153,6 +153,7 @@ extern PetscErrorCode  KSPGetVecs(KSP,PetscInt,Vec**,PetscInt,Vec**);
 extern PetscErrorCode  KSPSetPC(KSP,PC);
 extern PetscErrorCode  KSPGetPC(KSP,PC*);
 
+extern PetscErrorCode  KSPMonitor(KSP,PetscInt,PetscReal);
 extern PetscErrorCode  KSPMonitorSet(KSP,PetscErrorCode (*)(KSP,PetscInt,PetscReal,void*),void *,PetscErrorCode (*)(void**));
 extern PetscErrorCode  KSPMonitorCancel(KSP);
 extern PetscErrorCode  KSPGetMonitorContext(KSP,void **);

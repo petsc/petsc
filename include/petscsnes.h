@@ -47,6 +47,7 @@ extern PetscErrorCode  SNESCreate(MPI_Comm,SNES*);
 extern PetscErrorCode  SNESReset(SNES);
 extern PetscErrorCode  SNESDestroy(SNES*);
 extern PetscErrorCode  SNESSetType(SNES,const SNESType);
+extern PetscErrorCode  SNESMonitor(SNES,PetscInt,PetscReal);
 extern PetscErrorCode  SNESMonitorSet(SNES,PetscErrorCode(*)(SNES,PetscInt,PetscReal,void*),void *,PetscErrorCode (*)(void**));
 extern PetscErrorCode  SNESMonitorCancel(SNES);
 extern PetscErrorCode  SNESSetConvergenceHistory(SNES,PetscReal[],PetscInt[],PetscInt,PetscBool );

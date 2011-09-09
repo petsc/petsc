@@ -2173,9 +2173,24 @@ PetscErrorCode  SNESMonitorLGRangeDestroy(PetscDrawLG *draw)
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESMonitor"
-/*
-     Runs the user provided monitor routines, if they exists.
-*/
+/*@
+   SNESMonitor - runs the user provided monitor routines, if they exist
+
+   Collective on SNES
+
+   Input Parameters:
++  snes - nonlinear solver context obtained from SNESCreate()
+.  iter - iteration number
+-  rnorm - relative norm of the residual
+
+   Notes:
+   This routine is called by the SNES implementations.
+   It does not typically need to be called by the user.
+
+   Level: developer
+
+.seealso: SNESMonitorSet()
+@*/
 PetscErrorCode  SNESMonitor(SNES snes,PetscInt iter,PetscReal rnorm)
 {
   PetscErrorCode ierr;
