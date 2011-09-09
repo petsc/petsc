@@ -1,5 +1,4 @@
 syntax: glob
-*.d
 *.bkp
 *.info
 *.gcov
