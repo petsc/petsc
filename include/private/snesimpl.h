@@ -143,8 +143,6 @@ typedef struct {
       snes->conv_hist_len++;\
     }}
 
-extern PetscErrorCode SNESMonitor(SNES,PetscInt,PetscReal);
-
 extern PetscErrorCode SNESDefaultGetWork(SNES,PetscInt);
 
 PetscErrorCode SNES_KSPSolve(SNES,KSP,Vec,Vec);

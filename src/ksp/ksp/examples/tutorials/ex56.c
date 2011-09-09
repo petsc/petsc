@@ -7,6 +7,7 @@ Load of 1.0 in x direction on all nodes (not a true uniform load).\n\
   -alpha <v>      : scaling of material coeficient in embedded circle\n\n";
 
 #include <petscksp.h>
+#include <assert.h>
 
 #define ADD_STAGES
  
@@ -16,7 +17,7 @@ int main(int argc,char **args)
 {
   Mat            Amat;
   PetscErrorCode ierr;
-  PetscInt       m,nn,M,its,Istart,Iend,i,j,k,ii,jj,kk,ic,ne=4,NP,Ni0,Nj0,Nk0,Ni1,Nj1,Nk1,ipx,ipy,ipz,id;
+  PetscInt       m,nn,M,its,Istart,Iend,i,j,k,ii,jj,kk,ic,ne=4,id;
   PetscReal      x,y,z,h;
   Vec            xx,bb;
   KSP            ksp;
@@ -53,73 +54,90 @@ int main(int argc,char **args)
   ierr = KSPSetFromOptions( ksp );                              CHKERRQ(ierr);
   ierr = PCGetType( pc, &type );                              CHKERRQ(ierr);
 
-  /* create stiffness matrix */
-  if( strcmp(type, PCPROMETHEUS) == 0 ){
-    /* prometheus needs BAIJ */
-    ierr = MatCreateMPIBAIJ(wcomm,3,m,m,M,M,81,PETSC_NULL,57,PETSC_NULL,&Amat);CHKERRQ(ierr);
-  }
-  else {
-    ierr = MatCreateMPIAIJ(wcomm,m,m,M,M,81,PETSC_NULL,57,PETSC_NULL,&Amat);CHKERRQ(ierr);
-  }
-  ierr = MatGetOwnershipRange(Amat,&Istart,&Iend);CHKERRQ(ierr);
-  ierr = MatSetBlockSize(Amat,3);      CHKERRQ(ierr);
-  m = Iend - Istart;
-  /* Generate vectors */
-  ierr = VecCreate(wcomm,&xx);   CHKERRQ(ierr);
-  ierr = VecSetSizes(xx,m,M);    CHKERRQ(ierr);
-  ierr = VecSetFromOptions(xx);  CHKERRQ(ierr);
-  ierr = VecDuplicate(xx,&bb);   CHKERRQ(ierr);
-  ierr = VecSet(bb,.0);         CHKERRQ(ierr);
-  /* generate element matrices */
   {
-    FILE *file;
-    char fname[] = "elem_3d_elast_v_25.txt";
-    file = fopen(fname, "r");
-    if (file == 0) {
-      PetscPrintf(PETSC_COMM_WORLD,"\t%s failed to open input file '%s'\n",__FUNCT__,fname);
-      for(i=0;i<24;i++){
-        for(j=0;j<24;j++){
-          if(i==j)DD1[i][j] = 1.0;
-	  else DD1[i][j] = -.25;
-        }
+    /* configureation */
+    const PetscInt NP = (PetscInt)(pow((double)npe,1./3.) + .5);
+    if(npe!=NP*NP*NP)SETERRQ1(wcomm,PETSC_ERR_ARG_WRONG, "npe=%d: npe^{1/3} must be integer",npe);
+    if(nn!=NP*(nn/NP))SETERRQ1(wcomm,PETSC_ERR_ARG_WRONG, "-ne %d: (ne+1)%(npe^{1/3}) must equal zero",ne);
+    const PetscInt ipx = mype%NP, ipy = (mype%(NP*NP))/NP, ipz = mype/(NP*NP);
+    const PetscInt Ni0 = ipx*(nn/NP), Nj0 = ipy*(nn/NP), Nk0 = ipz*(nn/NP);
+    const PetscInt Ni1 = Ni0 + (nn/NP), Nj1 = Nj0 + (nn/NP), Nk1 = Nk0 + (nn/NP);
+    const PetscInt NN = nn/NP, id0 = ipz*nn*nn*NN + ipy*nn*NN*NN + ipx*NN*NN*NN;
+    PetscReal *coords;
+    PetscInt *d_nnz, *o_nnz,osz[4]={0,9,15,19},nbc;
+
+    /* count nnz */
+    ierr = PetscMalloc( (m+1)*sizeof(PetscInt), &d_nnz ); CHKERRQ(ierr);
+    ierr = PetscMalloc( (m+1)*sizeof(PetscInt), &o_nnz ); CHKERRQ(ierr);
+    for(i=Ni0,ic=0;i<Ni1;i++){
+      for(j=Nj0;j<Nj1;j++){
+	for(k=Nk0;k<Nk1;k++){
+	  nbc = 0;
+	  if(i==Ni0 || i==Ni1-1)nbc++;
+	  if(j==Nj0 || j==Nj1-1)nbc++;
+	  if(k==Nk0 || k==Nk1-1)nbc++;
+	  for(jj=0;jj<3;jj++,ic++){
+	    d_nnz[ic] = 3*(27-osz[nbc]);
+	    o_nnz[ic] = 3*osz[nbc];
+	  }
+	}
       }
+    }
+    assert(ic==m);
+
+    /* create stiffness matrix */
+    if( strcmp(type, PCPROMETHEUS) == 0 ){
+      /* prometheus needs BAIJ */
+      ierr = MatCreateMPIBAIJ(wcomm,3,m,m,M,M,81,d_nnz,57,o_nnz,&Amat);CHKERRQ(ierr);
     }
     else {
-      for(i=0;i<24;i++){
-        for(j=0;j<24;j++){
-          fscanf(file, "%le", &DD1[i][j]);
-        }
-      }
+      ierr = MatCreateMPIAIJ(wcomm,m,m,M,M,81,d_nnz,57,o_nnz,&Amat);CHKERRQ(ierr);
     }
-    /* BC version of element */
-    for(i=0;i<24;i++)
-      for(j=0;j<24;j++)
-        if(i<12 || j < 12)
-          if(i==j) DD2[i][j] = .1*DD1[i][j];
-          else DD2[i][j] = 0.0;
-        else DD2[i][j] = DD1[i][j];
-  }
+    ierr = PetscFree( d_nnz );  CHKERRQ(ierr);
+    ierr = PetscFree( o_nnz );  CHKERRQ(ierr);
 
-  NP = (PetscInt)(pow((double)npe,1./3.) + .5);
-  if(npe!=NP*NP*NP)SETERRQ1(wcomm,PETSC_ERR_ARG_WRONG, "npe=%d: npe^{1/3} must be integer",npe);
-  if(nn!=NP*(nn/NP))SETERRQ1(wcomm,PETSC_ERR_ARG_WRONG, "-ne %d: (ne+1)%(npe^{1/3}) must equal zero",ne);
-  ipx = mype%NP; 
-  ipy = (mype%(NP*NP))/NP; 
-  ipz = mype/(NP*NP);
-  Ni0 = ipx*(nn/NP);
-  Nj0 = ipy*(nn/NP);
-  Nk0 = ipz*(nn/NP);
-  Ni1 = Ni0 + (nn/NP);
-  Nj1 = Nj0 + (nn/NP);
-  Nk1 = Nk0 + (nn/NP);
-
-  {
-    PetscReal *coords;
-    const PetscInt NN = nn/NP, id0 = ipz*nn*nn*NN + ipy*nn*NN*NN + ipx*NN*NN*NN;
+    ierr = MatGetOwnershipRange(Amat,&Istart,&Iend);CHKERRQ(ierr);
+    ierr = MatSetBlockSize(Amat,3);      CHKERRQ(ierr);
+    assert(m == Iend - Istart);
+    /* Generate vectors */
+    ierr = VecCreate(wcomm,&xx);   CHKERRQ(ierr);
+    ierr = VecSetSizes(xx,m,M);    CHKERRQ(ierr);
+    ierr = VecSetFromOptions(xx);  CHKERRQ(ierr);
+    ierr = VecDuplicate(xx,&bb);   CHKERRQ(ierr);
+    ierr = VecSet(bb,.0);         CHKERRQ(ierr);
+    /* generate element matrices */
+    {
+      FILE *file;
+      char fname[] = "elem_3d_elast_v_25.txt";
+      file = fopen(fname, "r");
+      if (file == 0) {
+	PetscPrintf(PETSC_COMM_WORLD,"\t%s failed to open input file '%s'\n",__FUNCT__,fname);
+	for(i=0;i<24;i++){
+	  for(j=0;j<24;j++){
+	    if(i==j)DD1[i][j] = 1.0;
+	    else DD1[i][j] = -.25;
+	  }
+	}
+      }
+      else {
+	for(i=0;i<24;i++){
+	  for(j=0;j<24;j++){
+	    fscanf(file, "%le", &DD1[i][j]);
+	  }
+	}
+      }
+      /* BC version of element */
+      for(i=0;i<24;i++)
+	for(j=0;j<24;j++)
+	  if(i<12 || j < 12)
+	    if(i==j) DD2[i][j] = .1*DD1[i][j];
+	    else DD2[i][j] = 0.0;
+	  else DD2[i][j] = DD1[i][j];
+    }
 
     ierr = PetscMalloc( (m+1)*sizeof(PetscReal), &coords ); CHKERRQ(ierr);
     coords[m] = -99.0;
-
+    
     /* forms the element stiffness for the Laplacian and coordinates */
     for(i=Ni0,ic=0,ii=0;i<Ni1;i++,ii++){
       for(j=Nj0,jj=0;j<Nj1;j++,jj++){
@@ -130,7 +148,7 @@ int main(int argc,char **args)
 	  z = coords[3*ic+2] = h*(PetscReal)k;
 	  /* matrix */
 	  id = id0 + ii + NN*jj + NN*NN*kk; 
-
+	  
 	  if( i<ne && j<ne && k<ne) {
 	    /* radius */
 	    PetscReal radius = PetscSqrtScalar((x-.5+h/2)*(x-.5+h/2)+(y-.5+h/2)*(y-.5+h/2)+

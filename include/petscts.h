@@ -72,6 +72,7 @@ extern PetscErrorCode   TSDestroy(TS*);
 
 extern PetscErrorCode   TSSetProblemType(TS,TSProblemType);
 extern PetscErrorCode   TSGetProblemType(TS,TSProblemType*);
+extern PetscErrorCode   TSMonitor(TS,PetscInt,PetscReal,Vec);
 extern PetscErrorCode   TSMonitorSet(TS,PetscErrorCode(*)(TS,PetscInt,PetscReal,Vec,void*),void *,PetscErrorCode (*)(void**));
 extern PetscErrorCode   TSMonitorCancel(TS);
 
