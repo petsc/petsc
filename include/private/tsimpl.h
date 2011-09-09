@@ -48,6 +48,7 @@ struct _p_TS {
   DM            dm;
   TSProblemType problem_type;
   Vec           vec_sol;
+  TSAdapt adapt;
 
   /* ---------------- User (or PETSc) Provided stuff ---------------------*/
   PetscErrorCode (*monitor[MAXTSMONITORS])(TS,PetscInt,PetscReal,Vec,void*); /* returns control to user after */
@@ -116,6 +117,26 @@ struct _p_TS {
   Vec      *work;
 };
 
+struct _TSAdaptOps {
+  PetscErrorCode (*choose)(TSAdapt,TS,PetscReal,PetscInt*,PetscReal*,PetscBool*);
+  PetscErrorCode (*destroy)(TSAdapt);
+  PetscErrorCode (*view)(TSAdapt,PetscViewer);
+  PetscErrorCode (*setfromoptions)(TSAdapt);
+};
+
+struct _p_TSAdapt {
+  PETSCHEADER(struct _TSAdaptOps);
+  void *data;
+  struct {
+    PetscInt   n;                /* number of candidate schemes, including the one currently in use */
+    PetscBool  inuse_set;        /* the current scheme has been set */
+    const char *name[16];        /* name of the scheme */
+    PetscInt   order[16];        /* classical order of each scheme */
+    PetscInt   stageorder[16];   /* stage order of each scheme */
+    PetscReal  leadingerror[16]; /* relative measure of the leading error coefficient for each scheme, sometimes used to evaluate benefit of higher order method */
+    PetscReal  cost[16];         /* relative measure of the amount of work required for each scheme */
+  } candidates;
+};
 
 extern PetscLogEvent TS_Step, TS_PseudoComputeTimeStep, TS_FunctionEval, TS_JacobianEval;
 

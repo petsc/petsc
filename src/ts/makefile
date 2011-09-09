@@ -2,7 +2,7 @@
 ALL: lib
 
 SOURCEH  = ../../include/private/tsimpl.h ../../include/petscts.h
-DIRS     = interface impls examples f90-mod characteristic
+DIRS     = interface impls examples f90-mod characteristic adapt
 LOCDIR   = src/ts/
 MANSEC   = TS
 

@@ -1267,6 +1267,7 @@ PetscErrorCode  TSDestroy(TS *ts)
   ierr = PetscObjectDepublish((*ts));CHKERRQ(ierr);
   if ((*ts)->ops->destroy) {ierr = (*(*ts)->ops->destroy)((*ts));CHKERRQ(ierr);}
 
+  ierr = TSAdaptDestroy(&(*ts)->adapt);CHKERRQ(ierr);
   ierr = SNESDestroy(&(*ts)->snes);CHKERRQ(ierr);
   ierr = DMDestroy(&(*ts)->dm);CHKERRQ(ierr);
   ierr = TSMonitorCancel((*ts));CHKERRQ(ierr);
@@ -2788,6 +2789,34 @@ PetscErrorCode  TSMonitorSolutionBinary(TS ts,PetscInt step,PetscReal ptime,Vec 
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "TSGetAdapt"
+/*@
+   TSGetAdapt - Get the adaptive controller context for the current method
+
+   Not Collective
+
+   Input Arguments:
+
+   Output Arguments:
+
+   Level: intermediate
+
+.seealso:
+@*/
+PetscErrorCode TSGetAdapt(TS ts,TSAdapt *adapt)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidPointer(adapt,2);
+  if (!ts->adapt) {
+    ierr = TSAdaptCreate(((PetscObject)ts)->comm,&ts->adapt);CHKERRQ(ierr);
+  }
+  *adapt = ts->adapt;
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "TSVISetVariableBounds"

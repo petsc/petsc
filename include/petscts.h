@@ -97,6 +97,7 @@ extern PetscErrorCode   TSMonitorSolutionDestroy(void**);
 extern PetscErrorCode   TSMonitorSolutionBinary(TS,PetscInt,PetscReal,Vec,void*);
 
 extern PetscErrorCode   TSStep(TS);
+extern PetscErrorCode   TSEvaluateStep(TS,PetscInt,Vec);
 extern PetscErrorCode   TSSolve(TS,Vec,PetscReal*);
 extern PetscErrorCode   TSGetConvergedReason(TS,TSConvergedReason*);
 extern PetscErrorCode   TSGetNonlinearSolveIterations(TS,PetscInt*);
@@ -245,9 +246,97 @@ extern PetscErrorCode TSSSPSetNumStages(TS,PetscInt);
 extern PetscErrorCode TSSSPGetNumStages(TS,PetscInt*);
 
 /*S
+   TSAdapt - Abstract object that manages time-step adaptivity
+
+   Level: beginner
+
+.seealso: TS, TSAdaptCreate(), TSAdaptType
+S*/
+typedef struct _p_TSAdapt *TSAdapt;
+
+/*E
+    TSAdaptType - String with the name of TSAdapt scheme or the creation function
+       with an optional dynamic library name, for example
+       http://www.mcs.anl.gov/petsc/lib.a:mytsgladaptcreate()
+
+   Level: beginner
+
+.seealso: TSAdaptSetType(), TS
+E*/
+#define TSAdaptType  char*
+#define TSADAPTBASIC "basic"
+
+/*MC
+   TSAdaptRegisterDynamic - adds a TSAdapt implementation
+
+   Synopsis:
+   PetscErrorCode TSAdaptRegisterDynamic(const char *name_scheme,const char *path,const char *name_create,PetscErrorCode (*routine_create)(TS))
+
+   Not Collective
+
+   Input Parameters:
++  name_scheme - name of user-defined adaptivity scheme
+.  path - path (either absolute or relative) the library containing this scheme
+.  name_create - name of routine to create method context
+-  routine_create - routine to create method context
+
+   Notes:
+   TSAdaptRegisterDynamic() may be called multiple times to add several user-defined families.
+
+   If dynamic libraries are used, then the fourth input argument (routine_create)
+   is ignored.
+
+   Sample usage:
+.vb
+   TSAdaptRegisterDynamic("my_scheme",/home/username/my_lib/lib/libO/solaris/mylib.a,
+                            "MySchemeCreate",MySchemeCreate);
+.ve
+
+   Then, your scheme can be chosen with the procedural interface via
+$     TSAdaptSetType(ts,"my_scheme")
+   or at runtime via the option
+$     -ts_adapt_type my_scheme
+
+   Level: advanced
+
+   Notes: Environmental variables such as ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LIB_DIR},
+          and others of the form ${any_environmental_variable} occuring in pathname will be 
+          replaced with appropriate values.
+
+.keywords: TSAdapt, register
+
+.seealso: TSAdaptRegisterAll()
+M*/
+#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
+#  define TSAdaptRegisterDynamic(a,b,c,d)  TSAdaptRegister(a,b,c,0)
+#else
+#  define TSAdaptRegisterDynamic(a,b,c,d)  TSAdaptRegister(a,b,c,d)
+#endif
+
+extern PetscErrorCode TSGetAdapt(TS,TSAdapt*);
+extern PetscErrorCode TSAdaptRegister(const char[],const char[],const char[],PetscErrorCode (*)(TSAdapt));
+extern PetscErrorCode TSAdaptRegisterAll(const char[]);
+extern PetscErrorCode TSAdaptRegisterDestroy(void);
+extern PetscErrorCode TSAdaptInitializePackage(const char[]);
+extern PetscErrorCode TSAdaptFinalizePackage(void);
+extern PetscErrorCode TSAdaptCreate(MPI_Comm,TSAdapt*);
+extern PetscErrorCode TSAdaptSetType(TSAdapt,const TSAdaptType);
+extern PetscErrorCode TSAdaptSetOptionsPrefix(TSAdapt,const char[]);
+extern PetscErrorCode TSAdaptCandidatesClear(TSAdapt);
+extern PetscErrorCode TSAdaptCandidateAdd(TSAdapt,const char[],PetscInt,PetscInt,PetscReal,PetscReal,PetscBool);
+extern PetscErrorCode TSAdaptCandidatesGet(TSAdapt,PetscInt*,const PetscInt**,const PetscInt**,const PetscReal**,const PetscReal**);
+extern PetscErrorCode TSAdaptChoose(TSAdapt,TS,PetscReal,PetscInt*,PetscReal*,PetscBool*);
+extern PetscErrorCode TSAdaptView(TSAdapt,PetscViewer);
+extern PetscErrorCode TSAdaptSetFromOptions(TSAdapt);
+extern PetscErrorCode TSAdaptDestroy(TSAdapt*);
+
+/*S
    TSGLAdapt - Abstract object that manages time-step adaptivity
 
    Level: beginner
+
+   Developer Notes:
+   This functionality should be replaced by the TSAdapt.
 
 .seealso: TSGL, TSGLAdaptCreate(), TSGLAdaptType
 S*/
