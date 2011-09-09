@@ -67,7 +67,7 @@ extern void PETSC_STDCALL                          SGERFS(const char*,int,PetscB
 extern void PETSC_STDCALL                          STRSEN(const char*,int,const char*,int,PetscBLASInt*,PetscBLASInt*,PetscReal*,PetscBLASInt*,PetscReal*,PetscBLASInt*,PetscReal*,PetscReal*,PetscBLASInt*,PetscReal*,PetscReal*,PetscReal*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*);
 
 #  define LAPACKgges_(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u) SGEES((a),1,(b),1,(c),1,(d),(e),(f),(g),(h),(i),(j),(k),(l),(m),(n),(o),(p),(q),(r),(s),(t),(u))
-extern void PETSC_STDCALL                          SGEES(const char*,int,const char*,int,const char*,int,PetscBLASInt(*)(),PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*);
+extern void PETSC_STDCALL                          SGGES(const char*,int,const char*,int,const char*,int,PetscBLASInt(*)(),PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*);
 #  define LAPACKhseqr_(a,b,c,d,e,f,g,h,i,j,k,l,m,n) SHSEQR((a),1,(b),1,(c),(d),(e),(f),(g),(h),(i),(j),(k),(l),(m),(n))
 extern void PETSC_STDCALL                          SHSEQR(const char*,int,const char*,int,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
 # else
@@ -121,8 +121,8 @@ extern void PETSC_STDCALL                           DPTTRS(PetscBLASInt*,PetscBL
 extern void PETSC_STDCALL                           DGERFS(const char*,int,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscScalar*,PetscInt*,PetscBLASInt*);
 #  define LAPACKtrsen_(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r) DTRSEN((a),1,(b),1,(c),(d),(e),(f),(g),(h),(i),(j),(k),(l),(m),(n),(o),(p),(q),(r))
 extern void PETSC_STDCALL                          DTRSEN(const char*,int,const char*,int,PetscBLASInt*,PetscBLASInt*,PetscReal*,PetscBLASInt*,PetscReal*,PetscBLASInt*,PetscReal*,PetscReal*,PetscBLASInt*,PetscReal*,PetscReal*,PetscReal*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*);
-#  define LAPACKgges_(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u) DGEES((a),1,(b),1,(c),1,(d),(e),(f),(g),(h),(i),(j),(k),(l),(m),(n),(o),(p),(q),(r),(s),(t),(u))
-extern void PETSC_STDCALL                          DGEES(const char*,int,const char*,int,const char*,int,PetscBLASInt(*)(),PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*);
+#  define LAPACKgges_(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u) DGGES((a),1,(b),1,(c),1,(d),(e),(f),(g),(h),(i),(j),(k),(l),(m),(n),(o),(p),(q),(r),(s),(t),(u))
+extern void PETSC_STDCALL                          DGGES(const char*,int,const char*,int,const char*,int,PetscBLASInt(*)(),PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*);
 #  define LAPACKhseqr_(a,b,c,d,e,f,g,h,i,j,k,l,m,n) DHSEQR((a),1,(b),1,(c),(d),(e),(f),(g),(h),(i),(j),(k),(l),(m),(n))
 extern void PETSC_STDCALL                          DHSEQR(const char*,int,const char*,int,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
 # endif
@@ -176,8 +176,8 @@ extern void PETSC_STDCALL                           CPTTRS(const char*,int,Petsc
 extern void PETSC_STDCALL                          CGERFS(const char*,int,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscScalar*,PetscReal*,PetscBLASInt*);
 #  define LAPACKtrsen_(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o) CTRSEN((a),1,(b),1,(c),(d),(e),(f),(g),(h),(i),(j),(k),(l),(m),(n),(o))
 extern void PETSC_STDCALL                          CTRSEN(const char*,int,const char*,int,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscReal*,PetscReal*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
-#  define LAPACKgges_(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u) CGEES((a),1,(b),1,(c),1,(d),(e),(f),(g),(h),(i),(j),(k),(l),(m),(n),(o),(p),(q),(r),(s),(t),(u))
-extern void PETSC_STDCALL                          CGEES(const char*,int,const char*,int,const char*,int,PetscBLASInt(*)(),PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*);
+#  define LAPACKgges_(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u) CGGES((a),1,(b),1,(c),1,(d),(e),(f),(g),(h),(i),(j),(k),(l),(m),(n),(o),(p),(q),(r),(s),(t),(u))
+extern void PETSC_STDCALL                          CGGES(const char*,int,const char*,int,const char*,int,PetscBLASInt(*)(),PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*);
 #  define LAPACKhseqr_(a,b,c,d,e,f,g,h,i,j,k,l,m) CHSEQR((a),1,(b),1,(c),(d),(e),(f),(g),(h),(i),(j),(k),(l),(m))
 extern void PETSC_STDCALL                          CHSEQR(const char*,int,const char*,int,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
 # else
@@ -230,7 +230,7 @@ extern void PETSC_STDCALL                           ZPTTRS(const char*,int,Petsc
 extern void PETSC_STDCALL                           ZGERFS(const char*,int,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscScalar*,PetscReal*,PetscBLASInt*);
 #  define LAPACKtrsen_(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o) ZTRSEN((a),1,(b),1,(c),(d),(e),(f),(g),(h),(i),(j),(k),(l),(m),(n),(o))
 extern void PETSC_STDCALL                          ZTRSEN(const char*,int,const char*,int,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscReal*,PetscReal*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
-#  define LAPACKgges_(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u) ZGEES((a),1,(b),1,(c),1,(d),(e),(f),(g),(h),(i),(j),(k),(l),(m),(n),(o),(p),(q),(r),(s),(t),(u))
+#  define LAPACKgges_(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u) ZGGES((a),1,(b),1,(c),1,(d),(e),(f),(g),(h),(i),(j),(k),(l),(m),(n),(o),(p),(q),(r),(s),(t),(u))
 extern void PETSC_STDCALL                          ZGEES(const char*,int,const char*,int,const char*,int,PetscBLASInt(*)(),PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*);
 #  define LAPACKhseqr_(a,b,c,d,e,f,g,h,i,j,k,l,m) ZHSEQR((a),1,(b),1,(c),(d),(e),(f),(g),(h),(i),(j),(k),(l),(m))
 extern void PETSC_STDCALL                          ZHSEQR(const char*,int,const char*,int,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
