@@ -1880,9 +1880,25 @@ PetscErrorCode TSSolve(TS ts,Vec x,PetscReal *ftime)
 
 #undef __FUNCT__
 #define __FUNCT__ "TSMonitor"
-/*
-     Runs the user provided monitor routines, if they exists.
-*/
+/*@
+   TSMonitor - Runs all user-provided monitor routines set using TSMonitorSet()
+
+   Collective on TS
+
+   Input Parameters:
++  ts - time stepping context obtained from TSCreate()
+.  step - step number that has just completed
+.  ptime - model time of the state
+-  x - state at the current model time
+
+   Notes:
+   TSMonitor() is typically used within the time stepping implementations.
+   Users might call this function when using the TSStep() interface instead of TSSolve().
+
+   Level: advanced
+
+.keywords: TS, timestep
+@*/
 PetscErrorCode TSMonitor(TS ts,PetscInt step,PetscReal ptime,Vec x)
 {
   PetscErrorCode ierr;
