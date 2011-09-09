@@ -1401,9 +1401,24 @@ PetscErrorCode  KSPGetPC(KSP ksp,PC *pc)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPMonitor"
-/*
-     Runs the user provided monitor routines, if they exists.
-*/
+/*@
+   KSPMonitor - runs the user provided monitor routines, if they exist
+
+   Collective on KSP
+
+   Input Parameters:
++  ksp - iterative context obtained from KSPCreate()
+.  it - iteration number
+-  rnorm - relative norm of the residual
+
+   Notes:
+   This routine is called by the KSP implementations.
+   It does not typically need to be called by the user.
+
+   Level: developer
+
+.seealso: KSPMonitorSet()
+@*/
 PetscErrorCode KSPMonitor(KSP ksp,PetscInt it,PetscReal rnorm)
 {
   PetscInt       i, n = ksp->numbermonitors;

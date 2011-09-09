@@ -29,10 +29,17 @@
 #define TSSSP             'ssp'
 #define TSARKIMEX         'arkimex'
 
+#define TSSSPType character*(80)
+#define TSSSPRKS2  'rks2'
+#define TSSSPRKS3  'rks3'
+#define TSSSPRK104 'rk104'
+
+#define TSGLAdaptType character*(80)
 #define TSGLADAPT_NONE 'none'
 #define TSGLADAPT_SIZE 'size'
 #define TSGLADAPT_BOTH 'both'
 
+#define TSARKIMEXType character*(80)
 #define TSARKIMEX2D '2d'
 #define TSARKIMEX2E '2e'
 #define TSARKIMEX3  '3'
