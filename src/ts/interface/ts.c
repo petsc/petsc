@@ -1481,7 +1481,7 @@ PetscErrorCode  TSSetPreStep(TS ts, PetscErrorCode (*func)(TS))
 
 #undef __FUNCT__
 #define __FUNCT__ "TSPreStep"
-/*@C
+/*@
   TSPreStep - Runs the user-defined pre-step function.
 
   Collective on TS
@@ -1540,7 +1540,7 @@ PetscErrorCode  TSSetPostStep(TS ts, PetscErrorCode (*func)(TS))
 
 #undef __FUNCT__
 #define __FUNCT__ "TSPostStep"
-/*@C
+/*@
   TSPostStep - Runs the user-defined post-step function.
 
   Collective on TS
