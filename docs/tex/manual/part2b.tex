@@ -746,7 +746,6 @@ finds a feasible point for the linear constraints.  The second
 computed a reduced-space direction that maintains feasibility
 with respect to the linearized constraints and improves the
 augmented Lagrangian merit function.
-
 \subsection{Newton Step}
 
 The Newton direction is obtained by fixing the design variables at
@@ -768,9 +767,7 @@ direction for the augmented Lagrangian merit function.  We
 then find $\alpha$ to approximately minimize the augmented 
 Lagrangian merit function along the Newton direction.
 \[
-\begin{array}{ll}
 \displaystyle \min_{\alpha \geq 0} & \tilde{f}_k(u_k + \alpha du, v_k)
-\end{array}
 \]
 We can enforce either the sufficient decrease condition or the 
 Wolfe conditions during the search procedure.  The new point, 
@@ -784,21 +781,17 @@ satisfies the linear constraint
 \[
 A_k (u_{k+\frac{1}{2}} - u_k) + B_k (v_{k+\frac{1}{2}} - v_k) + \alpha_k g_k = 0
 \]
-
 If the Newton direction computed does not provide descent for the merit 
 function, then we can use the steepest descent direction $du = -A_k^T g_k$ 
 during the search procedure.  However, the implication that the intermediate
 point approximately satisfied the linear constraint is not longer true.
 We many need to apply a feasibility restoration phase until the Newton
 direction provided sufficient descent for the merit function.
-
 Note that we can update a limited memory quasi-Newton approximation
 to $\nabla^2_{u,u} \tilde{f}_k$ as this point, but doing so does not
 seem to be useful, unless it is being used perhaps to correct the 
 multiplier estimates.
-
 \subsection{Modified Reduced-space Step}
-
 We are now ready to compute a reduced-space step for the modified
 optimization problem:
 \[
@@ -880,13 +873,11 @@ u_{k+1} & = & u_{k+\frac{1}{2}} + \beta_k du \\
 v_{k+1} & = & v_{k+\frac{1}{2}} + \beta_k dv
 \end{array}
 \]
-
 The reduced gradient at the new point is computed from
 \[
 \begin{array}{lcl}
 y_{k+1} & = & A_k^{-T}c_{k+1} \\
 \tilde{g}_{k+1} & = & d_{k+1} - y_{k+1}^T B_k
-\end{array}
 \]
 where $c_{k+1} = \nabla_u \tilde{f}_k (u_{k+1},v_{k+1})$ and
 $d_{k+1} = \nabla_v \tilde{f}_k (u_{k+1},v_{k+1})$.  The
@@ -897,10 +888,6 @@ used to update $H_k$ to obtain the limited-memory quasi-Newton
 approximation to the reduced Hessian matrix used in the next
 iteration of the code.  The update is skipped if it cannot be
 performed.
-
-
-
-
 
 \section{Nonlinear Least Squares}
 \label{sec:leastsquares}
@@ -931,24 +918,9 @@ The gradient of the minimization
 problem is $J^T C(X)$ and the Hessian matrix is approximated by
 $J^T J$, where $J$ is the Jacobian of the constraints at $X$.
 
+\subsection{POUNDerS}
 
-
-\subsection{Limited Memory Variable Metric Method}
-   Another algorithm for solving the least squares problem is a
-limited memory variable metric algorithm.  This implementation of the 
-algorithm applies the LMVM method 
-to the unconstrained minimization problem.  This algorithm is generally not
 as efficient as Levenberg Marquardt or POUNDerS methods,
-but can be efficient when the residual is large.
-
-\subsection{Limited Memory Variable Metric Method with Bound Constraints}
-   Another algorithm for solving the least squares problem when
-the variables have upper and lower bounds is a
-limited memory variable metric algorithm.  This implementation of the 
-algorithm applies the BLMVM method 
-to the bound constrained minimization problem.  
-This algorithm is generally not
-as efficient as the method based on the Newton Trust Region method
-for bound constrained optimization, 
-but it can be efficient when the residual is large.
+\section{PDE-Constrained Optimization}
+\label{sec:pdeconstrained}
 
