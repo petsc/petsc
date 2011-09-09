@@ -4,14 +4,17 @@ update manual
   Add solver registration instructions
   Add linesearch info
 
+Add chwirut2 to tests
+
 Add line search hooks for source/step
 
-better convergence explanations in tao_view
-Show KSP, LS info in TaoView
-have ls_view show current ls info
+output:
+  better convergence explanations in tao_view
+  Show KSP, LS info in TaoView
+  have ls_view show current ls info
+  print ls reason
 
 add to tests (-tao_fd, -tao_fdgrad, -tao_fd_delta)
-
 
 test GNU quad
 

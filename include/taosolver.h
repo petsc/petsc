@@ -147,6 +147,10 @@ extern PetscErrorCode TaoSolverDefaultCMonitor(TaoSolver, void*);
 extern PetscErrorCode TaoSolverSolutionMonitor(TaoSolver, void*);
 extern PetscErrorCode TaoSolverSeparableObjectiveMonitor(TaoSolver, void*);
 extern PetscErrorCode TaoSolverGradientMonitor(TaoSolver, void*);
+extern PetscErrorCode TaoSolverDrawSolutionMonitor(TaoSolver, void*);
+extern PetscErrorCode TaoSolverDrawStepMonitor(TaoSolver, void*);
+extern PetscErrorCode TaoSolverDrawGradientMonitor(TaoSolver, void*);
+
 
 extern PetscErrorCode TaoSolverDefaultConvergenceTest(TaoSolver,void*);
 extern PetscErrorCode TaoSolverSetConvergenceTest(TaoSolver, PetscErrorCode (*)(TaoSolver, void*),void *);
