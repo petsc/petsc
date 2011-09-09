@@ -160,6 +160,10 @@ test_chwirut1f: test_chwirut1f.o tao_chkopts
 	-${FLINKER} -o  test_chwirut1f test_chwirut1f.o ${TAO_LIB} ${PETSC_LIB}
 	${RM} test_chwirut1f.o
 
+test_chwirut2f: test_chwirut2f.o tao_chkopts
+	-${FLINKER} -o  test_chwirut2f test_chwirut2f.o ${TAO_LIB} ${PETSC_LIB}
+	${RM} test_chwirut2f.o
+
 test_toy: test_toy.o tao_chkopts
 	-${CLINKER} -o test_toy test_toy.o ${TAO_LIB} ${PETSC_LIB}
 	${RM} test_toy.o

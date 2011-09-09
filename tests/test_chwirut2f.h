@@ -1,5 +1,5 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-!             Include file for program chwirut1f.F
+!             Include file for program chwirut2f.F
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 !
 !  This program uses CPP for preprocessing, as indicated by the use of
@@ -23,11 +23,9 @@
 !     petscvec.h   - vectors
 !     petsc.h      - basic PETSc routines
 
+
 #include "finclude/petscsys.h"
 #include "finclude/petscvec.h"
-#include "finclude/petscmat.h"
-#include "finclude/petscksp.h"
-#include "finclude/petscpc.h"
 #include "finclude/taosolver.h"
 
 !  Common blocks:
@@ -41,7 +39,14 @@
       PetscReal t(0:213)
       PetscReal y(0:213)
       PetscInt  m,n
-
-      common /params/ t,y,m,n
-
+      PetscInt  rank
+      PetscInt  size
+      PetscInt  idle_tag, die_tag
+      parameter (m=214) 
+      parameter (n=3)
+      parameter (idle_tag=2000)
+      parameter (die_tag=3000)
+  
+      common /params/ t,y,rank,size
+  
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 

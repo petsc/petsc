@@ -1,28 +1,26 @@
 update manual
+  fix finite differences (part2.tex)
   add pounders section
+  Add solver registration instructions
+  Add linesearch info
 
+Add line search hooks for source/step
+
+better convergence explanations in tao_view
 Show KSP, LS info in TaoView
+have ls_view show current ls info
 
-ls_converged_reason
+add to tests (-tao_fd, -tao_fdgrad, -tao_fd_delta)
+
 
 test GNU quad
-
-finite differences
-   fix manual (part2.tex)
-   add to tests (-tao_fd, -tao_fdgrad, -tao_fd_delta)
 
 Put examples in correct places
 
 Levenberg-Marquardt
 POUNDer
 
-Add line search hooks for source/step
-
-Add solver registration instructions to manual
-
 make install to put libs/headers in separate location
-
-Convergence explanations
 
 Check fortran stubs 
 Check documentation

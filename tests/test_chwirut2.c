@@ -171,12 +171,12 @@ PetscErrorCode EvaluateFunction(TaoSolver tao, Vec X, Vec F, void *ptr)
       }
 
       if (next_task<NOBSERVATIONS) {
-	ierr = MPI_Send(x,3,MPIU_REAL,status.MPI_SOURCE,next_task,PETSC_COMM_WORLD); CHKERRQ(ierr);
+	ierr = MPI_Send(x,NPARAMETERS,MPIU_REAL,status.MPI_SOURCE,next_task,PETSC_COMM_WORLD); CHKERRQ(ierr);
 	next_task++;
 
       } else {
 	/* Send idle message */
-	ierr = MPI_Send(x,3,MPIU_REAL,status.MPI_SOURCE,IDLE_TAG,PETSC_COMM_WORLD); CHKERRQ(ierr);
+	ierr = MPI_Send(x,NPARAMETERS,MPIU_REAL,status.MPI_SOURCE,IDLE_TAG,PETSC_COMM_WORLD); CHKERRQ(ierr);
       }	  
     } 
   }
@@ -475,9 +475,11 @@ PetscErrorCode TaskWorker(AppCtx *user)
   
   
   PetscFunctionBegin;
+  /* Send check-in message to master */
+
   ierr = MPI_Send(&f,1,MPIU_REAL,0,IDLE_TAG,PETSC_COMM_WORLD); CHKERRQ(ierr);
   while (tag != DIE_TAG) {
-    ierr = MPI_Recv(x,3,MPIU_REAL,0,MPI_ANY_TAG,PETSC_COMM_WORLD,&status); CHKERRQ(ierr);
+    ierr = MPI_Recv(x,NPARAMETERS,MPIU_REAL,0,MPI_ANY_TAG,PETSC_COMM_WORLD,&status); CHKERRQ(ierr);
     tag = status.MPI_TAG;
     if (tag == IDLE_TAG) {
       ierr = MPI_Send(&f,1,MPIU_REAL,0,IDLE_TAG,PETSC_COMM_WORLD);CHKERRQ(ierr);
@@ -514,7 +516,7 @@ PetscErrorCode StopWorkers(AppCtx *user)
   while(checkedin < user->size-1) {
     ierr = MPI_Recv(&f,1,MPIU_REAL,MPI_ANY_SOURCE,MPI_ANY_TAG,PETSC_COMM_WORLD,&status); CHKERRQ(ierr);
     checkedin++;
-    ierr = MPI_Send(x,3,MPIU_REAL,status.MPI_SOURCE,DIE_TAG,PETSC_COMM_WORLD); CHKERRQ(ierr);
+    ierr = MPI_Send(x,NPARAMETERS,MPIU_REAL,status.MPI_SOURCE,DIE_TAG,PETSC_COMM_WORLD); CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
