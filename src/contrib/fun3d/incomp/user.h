@@ -317,4 +317,10 @@ extern void PETSC_STDCALL f77FORCE(int*,int*,int*,int*,int*,int*,int*,int*,int*,
                      PetscScalar*,int*,int*,PetscScalar*,PetscScalar*,PetscScalar*,int*,int*);
 extern void PETSC_STDCALL f77GETIA(int*,int*,int*,int*,int*,int*);
 extern void PETSC_STDCALL f77GETJA(int*,int*,int*,int*,int*,int*,int*);
+extern void PETSC_STDCALL f77TECFLO(int* nnodes,int* nvbound,int* nvfacet,int* nvnode,
+                                    PetscScalar* x,PetscScalar* y,PetscScalar* z,
+                                    PetscScalar* qnode, int* nvpts, int* nvtet,
+                                    int* f2ntv, int* ivnode,
+                                    int* timeStep, int* rank, int* openFile, int* closeFile,
+                                    int* boundaryType,PetscScalar* title);
 EXTERN_C_END

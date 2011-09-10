@@ -242,7 +242,6 @@ int main(int argc,char **args)
              user.grid->amut);*/
 
 /* Write Tecplot solution file */
-   /*
    if (rank == 0) 
      f77TECFLO(&user.grid->nnodes,  
                &user.grid->nnbound, &user.grid->nvbound, &user.grid->nfbound,
@@ -257,7 +256,6 @@ int main(int argc,char **args)
                 user.grid->isnode,   user.grid->ivnode,   user.grid->ifnode,
                &rank, &nvertices); 
 
-	       */
    /*f77FASFLO(&user.grid->nnodes, &user.grid->nsnode, &user.grid->nnfacet,
               user.grid->isnode,  user.grid->f2ntn,
               user.grid->x,       user.grid->y,       user.grid->z,
@@ -312,7 +310,7 @@ int FormInitialGuess(SNES snes, GRID *grid)
    f77INIT(&grid->nnodesLoc, qnode, grid->turbre,
 	   grid->amut, &grid->nvnodeLoc, grid->ivnode, &rank);
    ierr = VecRestoreArray(grid->qnode,&qnode);CHKERRQ(ierr);
-   ierr = PetscOptionsHasName(0,"-restart",&flg);CHKERRQ(ierr);
+   ierr = PetscOptionsGetBool(0,"-restart",&flg,PETSC_NULL);CHKERRQ(ierr);
    if (flg) {
      ierr = ReadRestartFile(grid);CHKERRQ(ierr);
      PetscPrintf(MPI_COMM_WORLD,"Restarting from file restart.bin\n");
@@ -496,10 +494,10 @@ int Update(SNES snes, void *ctx)
  int            Converged = 0;
  int		nfailsCum = 0, nfails = 0;
  PetscScalar    cfl_damp_ratio = 1.0e-02, cfl_damp_power = 0.75;
- PetscBool      print_flag,cfl_damp_flag,flg;
+ PetscBool      print_flag = PETSC_FALSE,cfl_damp_flag = PETSC_FALSE,flg;
 
- ierr = PetscOptionsHasName(PETSC_NULL,"-print", &print_flag);
- ierr = PetscOptionsHasName(PETSC_NULL,"-cfl_damp", &cfl_damp_flag);
+ ierr = PetscOptionsGetBool(PETSC_NULL,"-print", &print_flag,PETSC_NULL);CHKERRQ(ierr);
+ ierr = PetscOptionsGetBool(PETSC_NULL,"-cfl_damp", &cfl_damp_flag,PETSC_NULL);CHKERRQ(ierr);
  ierr = PetscOptionsGetReal(PETSC_NULL,"-cfl_damp_ratio",&cfl_damp_ratio,&flg);CHKERRQ(ierr);
  ierr = PetscOptionsGetReal(PETSC_NULL,"-cfl_damp_power",&cfl_damp_power,&flg);CHKERRQ(ierr);
 /*
@@ -632,10 +630,10 @@ int Update(SNES snes, void *ctx)
     fprintf(fptr, "%d\t%g\t%g\t%g\t%g\t%g\t%g\n", 
             i, tsCtx->cfl, tsCtx->fnorm, clift, cdrag, cmom, cpuglo);
 /* Write Tecplot solution file */
-   /*if ((i != 0) && ((i % tsCtx->print_freq) == 0)) {
+   if ((i != 0) && ((i % tsCtx->print_freq) == 0)) {
      FieldOutput(grid, i); 
      WriteRestartFile(grid,i);
-   }*/
+   }
   }
   fratio = tsCtx->fnorm/tsCtx->fnorm_ini;
   if (((!SecondOrder) && (fratio <= tsCtx->fnorm_fo_rtol)) ||
@@ -964,7 +962,8 @@ int GetLocalOrdering(GRID *grid)
    printf("%d %d %d\n", i, tmp[i], eperm[i]);
   */
   ierr = PetscMemcpy(tmp,grid->eptr,2*nedgeLoc*sizeof(int));CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(0,"-no_edge_reordering",&flg);CHKERRQ(ierr);
+  flg = PETSC_FALSE;
+  ierr = PetscOptionsGetBool(0,"-no_edge_reordering",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (!flg) {
    ierr = PetscSortIntWithPermutation(nedgeLoc,tmp,eperm);CHKERRQ(ierr);
   }
@@ -1553,7 +1552,8 @@ int GetLocalOrdering(GRID *grid)
   ierr = PetscFree(ftmp);CHKERRQ(ierr);
   PetscPrintf(PETSC_COMM_WORLD, "Free boundaries partitioned\n");
 
-  ierr = PetscOptionsHasName(0,"-mem_use",&flg);CHKERRQ(ierr);
+  flg = PETSC_FALSE;
+  ierr = PetscOptionsGetBool(0,"-mem_use",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscMemoryShowUsage(PETSC_VIEWER_STDOUT_WORLD,"Memory usage after partitioning\n");CHKERRQ(ierr);
   }
@@ -1637,7 +1637,8 @@ int GetLocalOrdering(GRID *grid)
               partMin[6], partMax[6], partSum[6]/CommSize, partSum[6]);
   PetscPrintf(MPI_COMM_WORLD, "------------------------------------------------------------\n");
  }
- ierr = PetscOptionsHasName(0,"-partition_info",&flg);CHKERRQ(ierr);
+ flg = PETSC_FALSE;
+ ierr = PetscOptionsGetBool(0,"-partition_info",&flg,PETSC_NULL);CHKERRQ(ierr);
  if (flg) {
   char part_name[PETSC_MAX_PATH_LEN];
   sprintf(part_name,"output.%d",rank);
@@ -1928,7 +1929,8 @@ int SetPetscDS(GRID *grid, TstepCtx *tsCtx)
    ierr = PetscFree(val_offd);CHKERRQ(ierr);
 #endif
 
-   ierr = PetscOptionsHasName(0,"-mem_use",&flg);CHKERRQ(ierr);
+   flg = PETSC_FALSE;
+   ierr = PetscOptionsGetBool(0,"-mem_use",&flg,PETSC_NULL);CHKERRQ(ierr);
    if (flg) {
      ierr = PetscMemoryShowUsage(PETSC_VIEWER_STDOUT_WORLD,"Memory usage after allocating PETSc data structures\n");CHKERRQ(ierr);
    }
