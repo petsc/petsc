@@ -4,8 +4,8 @@ FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        =	 
 LOCDIR          = src/dm/ao/examples/tests/
-EXAMPLESC       = ex1.c ex2.c ex7.c
-EXAMPLESF       = 
+EXAMPLESC       = ex1.c ex2.c ex4.c ex7.c
+EXAMPLESF       = ex4f.F
 MANSEC          = AO
 
 include ${PETSC_DIR}/conf/variables

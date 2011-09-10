@@ -4,9 +4,12 @@ FFLAGS	         =
 CPPFLAGS         =
 FPPFLAGS         =
 LOCDIR           = src/ksp/ksp/examples/tutorials/
-EXAMPLESC        = ex1.c ex2.c ex3.c ex5.c ex7.c ex8.c ex8g.c ex9.c ex10.c ex11.c \
-                   ex12.c ex13.c ex15.c ex16.c ex22.c ex23.c ex25.c ex27.c ex28.c ex29.c ex32.c ex34.c ex35.c ex37.c ex38.c \
-                   ex39.c ex40.c ex41.c ex42.c ex43.c ex45.c ex47.c ex49.c ex51.c
+EXAMPLESC        = ex1.c ex2.c ex3.c ex4.c ex5.c ex7.c ex8.c ex8g.c ex9.c \
+                ex10.c ex11.c ex12.c ex13.c ex15.c ex16.c ex22.c ex23.c \
+                ex25.c ex27.c ex28.c ex29.c ex30.c ex31.c ex32.c ex34.c \
+                ex35.c ex37.c ex38.c ex39.c ex40.c ex41.c ex42.c ex43.c \
+                ex45.c ex46.c ex47.c ex49.c ex50.c ex51.c ex52.c ex53.c \
+                ex54.c ex55.c ex56.c
 EXAMPLESF        = ex1f.F ex2f.F ex6f.F ex11f.F ex13f90.F ex14f.F ex15f.F ex21f.F ex22f.F ex44f.F90
 MANSEC           = KSP
 CLEANFILES       = rhs.vtk solution.vtk
