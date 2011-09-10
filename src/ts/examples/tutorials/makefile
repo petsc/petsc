@@ -7,7 +7,7 @@ LOCDIR          = src/ts/examples/tutorials/
 EXAMPLESC       = ex1.c ex2.c util2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c \
                 ex9.c ex10.c ex12.c ex13.c ex14.c ex15.c ex16.c ex17.c \
                 ex18.c ex19.c ex20.c ex21.c ex22.c ex23.c 
-EXAMPLESF       = ex1f.F ex2f.F
+EXAMPLESF       = ex1f.F ex2f.F ex22f.F
 EXAMPLESFH      = ex2f.h
 MANSEC          = TS
 
@@ -112,6 +112,10 @@ ex21: ex21.o util2.o chkopts
 ex22: ex22.o chkopts
 	-${CLINKER} -o ex22 ex22.o ${PETSC_TS_LIB}
 	${RM} ex22.o
+
+ex22f: ex22f.o util2.o chkopts
+	-${FLINKER} -o ex22f ex22f.o ${PETSC_TS_LIB}
+	${RM} ex22f.o
 
 ex23: ex23.o chkopts
 	-${CLINKER} -o ex23 ex23.o ${PETSC_TS_LIB}
@@ -301,6 +305,10 @@ runex22:
 	-@${MPIEXEC} -n 1 ./ex22 -da_grid_x 200 -ts_monitor_solution -ts_arkimex_type 4 > ex22_1.tmp 2>&1; \
 	   ${DIFF} output/ex22_1.out ex22_1.tmp || echo "Possible problem with ex22_1, diffs above";  \
 	   ${RM} -f ex22_1.tmp
+runex22f:
+	-@${MPIEXEC} -n 1 ./ex22f -da_grid_x 200 -ts_monitor_solution -ts_arkimex_type 4 > ex22f_1.tmp 2>&1; \
+	   ${DIFF} output/ex22f_1.out ex22f_1.tmp || echo "Possible problem with ex22f_1, diffs above";  \
+	   ${RM} -f ex22f_1.tmp
 
 
 TESTEXAMPLES_C		  = ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 runex3_2 ex3.rm \
@@ -309,9 +317,9 @@ TESTEXAMPLES_C		  = ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc runex2 ex2.rm ex3
                             ex10.PETSc runex10 runex10_2 runex10_3 runex10_4 ex10.rm \
                             ex12.PETSc ex12.rm ex13.PETSc runex13 runex13_2 runex13_3 ex13.rm\
                             ex15.PETSc runex15 runex15_2 runex15_3 runex15_4 runex15_5 ex15.rm \
-                            ex17.PETSc runex17 runex17_2 ex17.rm
+                            ex17.PETSc runex17 runex17_2 ex17.rm ex22.PETSc ex22.rm
 TESTEXAMPLES_C_X11	  = 
-TESTEXAMPLES_FORTRAN	  = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f ex2f.rm
+TESTEXAMPLES_FORTRAN	  = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f ex2f.rm ex22f.PETSc ex22f.rm
 TESTEXAMPLES_C_X11_MPIUNI = 
 TESTEXAMPLES_13		  = ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex4.PETSc ex4.rm \
                             ex5.PETSc ex5.rm
