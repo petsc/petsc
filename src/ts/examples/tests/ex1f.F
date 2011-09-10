@@ -49,7 +49,6 @@
 
       external Monitor,RHSFunctionHeat,RHSMatrixFree,Initial
       external RHSMatrixHeat,RHSJacobianHeat
-      external TSComputeRHSFunctionLinear,TSComputeRHSJacobianConstant
 
       i1         = 1
       i60        = 60
