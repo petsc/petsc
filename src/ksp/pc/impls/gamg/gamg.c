@@ -147,7 +147,7 @@ PetscErrorCode PCReset_GAMG(PC pc)
    . a_Amat_crs - coarse matrix that is created (k-1)
 */
 
-#define MIN_EQ_PROC 600
+#define MIN_EQ_PROC 800
 #define TOP_GRID_LIM 1000
 
 #undef __FUNCT__
@@ -312,7 +312,7 @@ PetscErrorCode partitionLevel( Mat a_Amat_fine,
       ierr = PetscMalloc( a_cbs*is_sz*sizeof(PetscInt), &isnewproc_idx ); CHKERRQ(ierr);
       ierr = ISGetIndices( isnewproc, &is_idx );        CHKERRQ(ierr);
       /* spread partitioning across machine - best way ??? */
-      NN = npe/new_npe;
+      NN = 1; /*npe/new_npe;*/
       for( kk = jj = 0 ; kk < is_sz ; kk++ ){
         for( ii = 0 ; ii < a_cbs ; ii++, jj++ ) {
           isnewproc_idx[jj] = is_idx[kk] * NN; /* distribution */
@@ -552,7 +552,7 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
             id = kk + Istart; 
             ierr = MatSetValues(Aarr[level1],1,&id,1,&id,&v,INSERT_VALUES);
             CHKERRQ(ierr);
-            PetscPrintf(PETSC_COMM_SELF,"\t[%d]%s warning: added diag to zero (%d) on level %d \n",mype,__FUNCT__,id,level);
+            PetscPrintf(PETSC_COMM_SELF,"\t[%d]%s warning: added zero to diag (%d) on level %d \n",mype,__FUNCT__,id,level1);
           }
         }
         ierr = VecRestoreArray( diag, &data_arr ); CHKERRQ(ierr);
@@ -638,12 +638,20 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
     ierr = KSPSetNormType( smoother, KSP_NORM_NONE ); CHKERRQ(ierr);
   }
   {
-    KSP smoother; /* coarse grid */
+    /* coarse grid */
+    KSP smoother,*k2; PC subpc,pc2; PetscInt ii,first;
     Mat Lmat = Aarr[pc_gamg->m_Nlevels-1];
     ierr = PCMGGetSmoother( a_pc, 0, &smoother ); CHKERRQ(ierr);
     ierr = KSPSetOperators( smoother, Lmat, Lmat, DIFFERENT_NONZERO_PATTERN );
     CHKERRQ(ierr);
     ierr = KSPSetNormType( smoother, KSP_NORM_NONE ); CHKERRQ(ierr);
+    ierr = KSPGetPC( smoother, &subpc ); CHKERRQ(ierr);
+    ierr = PCSetType( subpc, PCBJACOBI ); CHKERRQ(ierr);
+    ierr = PCSetUp( subpc ); CHKERRQ(ierr);
+    ierr = PCBJacobiGetSubKSP(subpc,&ii,&first,&k2);CHKERRQ(ierr);
+    assert(ii==1); 
+    ierr = KSPGetPC(k2[0],&pc2);CHKERRQ(ierr); 
+    ierr = PCSetType( pc2, PCLU ); CHKERRQ(ierr);
   }
 
   /* should be called in PCSetFromOptions_GAMG(), but cannot be called prior to PCMGSetLevels() */

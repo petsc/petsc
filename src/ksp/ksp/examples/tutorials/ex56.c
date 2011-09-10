@@ -245,7 +245,7 @@ int main(int argc,char **args)
 
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
 
-  if( !PETSC_TRUE ) {
+  if( PETSC_TRUE ) {
     PetscReal norm,norm2;
     PetscViewer viewer;
     Vec res;
@@ -258,10 +258,10 @@ int main(int argc,char **args)
     ierr = VecDestroy( &res );CHKERRQ(ierr);
     ierr = VecNorm( bb, NORM_2, &norm );  CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"[%d]%s |b-Ax|/|b|=%e, |b|=%e\n",0,__FUNCT__,norm/norm2,norm2);
-    ierr = PetscViewerASCIIOpen(wcomm, "residual.m", &viewer);  CHKERRQ(ierr);
+    /*ierr = PetscViewerASCIIOpen(wcomm, "residual.m", &viewer);  CHKERRQ(ierr);
     ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_MATLAB);  CHKERRQ(ierr);
     ierr = VecView(bb,viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy( &viewer );
+    ierr = PetscViewerDestroy( &viewer );*/
 
 
     /* ierr = PetscViewerASCIIOpen(wcomm, "rhs.m", &viewer);  CHKERRQ(ierr); */
