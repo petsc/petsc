@@ -129,7 +129,19 @@ int MPI_Comm_free(MPI_Comm *comm)
   return MPI_SUCCESS;
 }
 
-int MPI_Abort(MPI_Comm comm,int errorcode) 
+int MPI_Comm_size(MPI_Comm comm, int*size)
+{
+  *size=1;
+  return MPI_SUCCESS;
+}
+
+int MPI_Comm_rank(MPI_Comm comm, int*rank)
+{
+  *rank=0;
+  return MPI_SUCCESS;
+}
+
+int MPI_Abort(MPI_Comm comm,int errorcode)
 {
   abort();
   return MPI_SUCCESS;

@@ -15,10 +15,15 @@
 #define matrestorearray_                 MATRESTOREARRAY
 #define matconvert_                      MATCONVERT
 #define matgetsubmatrices_               MATGETSUBMATRICES
+#define matzerorowscolumns_              MATZEROROWSCOLUMNS
+#define matzerorowscolumnsis_            MATZEROROWSCOLUMNSIS
+#define matzerorowsstencil_              MATZEROROWSSTENCIL
 #define matzerorows_                     MATZEROROWS
 #define matzerorowsis_                   MATZEROROWSIS
 #define matzerorowslocal_                MATZEROROWSLOCAL
 #define matzerorowslocalis_              MATZEROROWSLOCALIS
+#define matzerorowscolumnslocal_         MATZEROROWSCOLUMNSLOCAL
+#define matzerorowscolumnslocalis_       MATZEROROWSCOLUMNSLOCALIS
 #define matsetoptionsprefix_             MATSETOPTIONSPREFIX
 #define matgetvecs_                      MATGETVECS
 #define matnullspaceremove_              MATNULLSPACEREMOV
@@ -50,10 +55,15 @@
 #define matrestorearray_                 matrestorearray
 #define matconvert_                      matconvert
 #define matgetsubmatrices_               matgetsubmatrices
+#define matzerorowscolumns_              matzerorowscolumns
+#define matzerorowscolumnsis_            matzerorowscolumnsis
+#define matzerorowsstencil_              matzerorowsstencil
 #define matzerorows_                     matzerorows
 #define matzerorowsis_                   matzerorowsis
 #define matzerorowslocal_                matzerorowslocal
 #define matzerorowslocalis_              matzerorowslocalis
+#define matzerorowscolumnslocal_         matzerorowscolumnslocal
+#define matzerorowscolumnslocalis_       matzerorowscolumnslocalis
 #define matsetoptionsprefix_             matsetoptionsprefix
 #define matnullspaceremove_              matnullspaceremove
 #define matgetinfo_                      matgetinfo
@@ -258,6 +268,27 @@ void PETSC_STDCALL matdestroymatrices_(Mat *mat,PetscInt *n,Mat *smat,PetscError
   }
 }
 
+void PETSC_STDCALL matzerorowscolumns_(Mat *mat,PetscInt *numRows,PetscInt *rows,PetscScalar *diag,Vec *x,Vec *b,PetscErrorCode *ierr)
+{
+  CHKFORTRANNULLOBJECTDEREFERENCE(x);
+  CHKFORTRANNULLOBJECTDEREFERENCE(b);
+  *ierr = MatZeroRowsColumns(*mat,*numRows,rows,*diag,*x,*b);
+}
+
+void PETSC_STDCALL matzerorowscolumnsis_(Mat *mat,IS *is,PetscScalar *diag,Vec *x,Vec *b,PetscErrorCode *ierr)
+{
+  CHKFORTRANNULLOBJECTDEREFERENCE(x);
+  CHKFORTRANNULLOBJECTDEREFERENCE(b);
+  *ierr = MatZeroRowsColumnsIS(*mat,*is,*diag,*x,*b);
+}
+
+void PETSC_STDCALL matzerorowsstencil_(Mat *mat,PetscInt *numRows,MatStencil *rows,PetscScalar *diag,Vec *x,Vec *b,PetscErrorCode *ierr)
+{
+  CHKFORTRANNULLOBJECTDEREFERENCE(x);
+  CHKFORTRANNULLOBJECTDEREFERENCE(b);
+  *ierr = MatZeroRowsStencil(*mat,*numRows,rows,*diag,*x,*b);
+}
+
 void PETSC_STDCALL matzerorows_(Mat *mat,PetscInt *numRows,PetscInt *rows,PetscScalar *diag,Vec *x,Vec *b,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLOBJECTDEREFERENCE(x);
@@ -286,6 +317,19 @@ void PETSC_STDCALL matzerorowslocalis_(Mat *mat,IS *is,PetscScalar *diag,Vec *x,
   *ierr = MatZeroRowsLocalIS(*mat,*is,*diag,*x,*b);
 }
 
+void PETSC_STDCALL matzerorowscolumnslocal_(Mat *mat,PetscInt *numRows,PetscInt *rows,PetscScalar *diag,Vec *x,Vec *b,PetscErrorCode *ierr)
+{
+  CHKFORTRANNULLOBJECTDEREFERENCE(x);
+  CHKFORTRANNULLOBJECTDEREFERENCE(b);
+  *ierr = MatZeroRowsColumnsLocal(*mat,*numRows,rows,*diag,*x,*b);
+}
+
+void PETSC_STDCALL matzerorowscolumnslocalis_(Mat *mat,IS *is,PetscScalar *diag,Vec *x,Vec *b,PetscErrorCode *ierr)
+{
+  CHKFORTRANNULLOBJECTDEREFERENCE(x);
+  CHKFORTRANNULLOBJECTDEREFERENCE(b);
+  *ierr = MatZeroRowsColumnsLocalIS(*mat,*is,*diag,*x,*b);
+}
 
 void PETSC_STDCALL matsetoptionsprefix_(Mat *mat,CHAR prefix PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {

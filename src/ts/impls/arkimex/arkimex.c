@@ -51,12 +51,16 @@ typedef struct {
 
      This method has one explicit stage and two implicit stages.
 
+     Level: advanced
+
 .seealso: TSARKIMEX
 M*/
 /*MC
      TSARKIMEX2E - Second order ARK IMEX scheme with L-stable implicit part.
 
      This method has one explicit stage and two implicit stages. It is is an optimal method developed by Emil Constantinescu.
+
+     Level: advanced
 
 .seealso: TSARKIMEX
 M*/
@@ -68,6 +72,8 @@ M*/
      References:
      Kennedy and Carpenter 2003.
 
+     Level: advanced
+
 .seealso: TSARKIMEX
 M*/
 /*MC
@@ -78,6 +84,8 @@ M*/
      References:
      Kennedy and Carpenter 2003.
 
+     Level: advanced
+
 .seealso: TSARKIMEX
 M*/
 /*MC
@@ -87,6 +95,8 @@ M*/
 
      References:
      Kennedy and Carpenter 2003.
+
+     Level: advanced
 
 .seealso: TSARKIMEX
 M*/

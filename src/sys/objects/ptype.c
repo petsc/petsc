@@ -31,7 +31,7 @@ PetscErrorCode  PetscDataTypeToMPIDataType(PetscDataType ptype,MPI_Datatype* mty
 #if defined(PETSC_USE_COMPLEX)
 #if defined(PETSC_USE_REAL_SINGLE)
   } else if (ptype == PETSC_COMPLEX) {
-    *mtype = MPI_C_COMPLEX;
+    *mtype = MPIU_C_COMPLEX;
 #else
   } else if (ptype == PETSC_COMPLEX) {
     *mtype = MPIU_C_DOUBLE_COMPLEX;
@@ -87,7 +87,7 @@ PetscErrorCode  PetscMPIDataTypeToPetscDataType(MPI_Datatype mtype,PetscDataType
     *ptype = PETSC_DOUBLE;
 #if defined(PETSC_USE_COMPLEX)
 #if defined(PETSC_USE_REAL_SINGLE)
-  } else if (mtype == MPI_C_COMPLEX) {
+  } else if (mtype == MPIU_C_COMPLEX) {
     *ptype = PETSC_COMPLEX;
 #else
   } else if (mtype == MPIU_C_DOUBLE_COMPLEX) {

@@ -58,6 +58,8 @@ static PetscErrorCode SSPRestoreWorkVectors(TS ts,PetscInt n,Vec **work)
 
    Pseudocode 2 of Ketcheson 2008
 
+   Level: beginner
+
 .seealso: TSSSP, TSSSPSetType(), TSSSPSetNumStages()
 M*/
 static PetscErrorCode SSPStep_RK_2(TS ts,PetscReal t0,PetscReal dt,Vec sol)
@@ -88,6 +90,8 @@ static PetscErrorCode SSPStep_RK_2(TS ts,PetscReal t0,PetscReal dt,Vec sol)
    TSSSPRKS3 - Optimal third order SSP Runge-Kutta, low-storage, c_eff=(sqrt(s)-1)/sqrt(s), where sqrt(s) is an integer
 
    Pseudocode 2 of Ketcheson 2008
+
+   Level: beginner
 
 .seealso: TSSSP, TSSSPSetType(), TSSSPSetNumStages()
 M*/
@@ -137,9 +141,11 @@ static PetscErrorCode SSPStep_RK_3(TS ts,PetscReal t0,PetscReal dt,Vec sol)
 #undef __FUNCT__
 #define __FUNCT__ "SSPStep_RK_10_4"
 /*MC
-   TSSSPRKS2 - Optimal fourth order SSP Runge-Kutta, low-storage (2N), c_eff=0.6
+   TSSSPRKS104 - Optimal fourth order SSP Runge-Kutta, low-storage (2N), c_eff=0.6
 
    SSPRK(10,4), Pseudocode 3 of Ketcheson 2008
+
+   Level: beginner
 
 .seealso: TSSSP, TSSSPSetType()
 M*/
