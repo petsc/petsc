@@ -4,7 +4,7 @@ FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/sys/viewer/examples/tutorials/
-EXAMPLESC       = 
+EXAMPLESC       = ex1.c
 EXAMPLESF       = ex1f90.F90
 MANSEC          = Viewer
 
