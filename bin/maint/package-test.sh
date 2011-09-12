@@ -24,7 +24,6 @@ PKG3=''
 # missing package tests:
 # party - ?
 # scotch - binary?
-# jostle - binary?
 # cblas/fblas ??
 
 GNUCOMP='CC=gcc FC=gfortran CXX=g++'
