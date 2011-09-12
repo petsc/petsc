@@ -260,7 +260,7 @@ int main(int argc,char **args)
 
   if( PETSC_TRUE ) {
     PetscReal norm,norm2;
-    PetscViewer viewer;
+    /* PetscViewer viewer; */
     Vec res;
 
     ierr = VecNorm( bb, NORM_2, &norm2 );  CHKERRQ(ierr);
