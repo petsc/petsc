@@ -147,8 +147,8 @@ PetscErrorCode PCReset_GAMG(PC pc)
    . a_Amat_crs - coarse matrix that is created (k-1)
 */
 
-#define MIN_EQ_PROC 800
-#define TOP_GRID_LIM 1000
+#define MIN_EQ_PROC 1000
+#define TOP_GRID_LIM 2*MIN_EQ_PROC /* this will happen anyway */
 
 #undef __FUNCT__
 #define __FUNCT__ "partitionLevel"
