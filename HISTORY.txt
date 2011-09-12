@@ -9,6 +9,20 @@ HISTORY: PETSc for Python
 :Address:      CCT CONICET, 3000 Santa Fe, Argentina
 
 
+Release 1.2
+===========
+
+- Update to PETSc 3.2 release.
+
+- Add new ``DM`` class , make ``DA`` inherit from ``DM``.
+
+- Better interaction between Python garbage collector and PETSc
+  objects.
+
+- Now the ``Mat``/``PC``/``KSP``/``SNES``/``TS`` Python subtypes are
+  implemented with Cython.
+
+
 Release 1.1.2
 =============
 
