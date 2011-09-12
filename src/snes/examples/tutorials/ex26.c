@@ -198,7 +198,7 @@ int main(int argc,char **argv)
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = SNESDAFormFunction(snes,user.psi,user.r,(void*)&user);CHKERRQ(ierr);
   ierr = VecNorm(user.r,NORM_MAX,&fnorm);CHKERRQ(ierr); 
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %D fnorm %G\n",its,fnorm);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of SNES iterations = %D fnorm %G\n",its,fnorm);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
      Output the solution vector

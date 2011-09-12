@@ -156,7 +156,7 @@ int main(int argc,char **argv)
 
   snes = DMMGGetSNES(dmmg);
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
-  ierr = PetscPrintf(comm,"Origianl Physics: Number of Newton iterations = %D\n\n", its);CHKERRQ(ierr);
+  ierr = PetscPrintf(comm,"Origianl Physics: Number of SNES iterations = %D\n\n", its);CHKERRQ(ierr);
  
   /* Save the ghosted local solu_true to be used by Physics 1 and Physics 2 */
   da        = DMMGGetDM(dmmg);
@@ -200,7 +200,7 @@ int main(int argc,char **argv)
     ierr = DMMGSolve(dmmg1);CHKERRQ(ierr); 
     snes = DMMGGetSNES(dmmg1);
     ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
-    ierr = PetscPrintf(comm,"SubPhysics 1, Number of Newton iterations = %D\n\n", its);CHKERRQ(ierr);
+    ierr = PetscPrintf(comm,"SubPhysics 1, Number of SNES iterations = %D\n\n", its);CHKERRQ(ierr);
   
     if (ViewSolu){ /* View individial componets of the solution */   
       user.dmmg1 = dmmg1;
@@ -229,7 +229,7 @@ int main(int argc,char **argv)
     ierr = DMMGSolve(dmmg2);CHKERRQ(ierr); 
     snes = DMMGGetSNES(dmmg2);
     ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
-    ierr = PetscPrintf(comm,"SubPhysics 2, Number of Newton iterations = %D\n\n", its);CHKERRQ(ierr);
+    ierr = PetscPrintf(comm,"SubPhysics 2, Number of SNES iterations = %D\n\n", its);CHKERRQ(ierr);
 
     if (ViewSolu){ /* View individial componets of the solution */
       user.dmmg2 = dmmg2;
@@ -260,7 +260,7 @@ int main(int argc,char **argv)
   ierr = DMMGSolve(dmmg_comp);CHKERRQ(ierr); 
   snes = DMMGGetSNES(dmmg_comp);
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
-  ierr = PetscPrintf(comm,"Composite Physics: Number of Newton iterations = %D\n\n", its);CHKERRQ(ierr);
+  ierr = PetscPrintf(comm,"Composite Physics: Number of SNES iterations = %D\n\n", its);CHKERRQ(ierr);
 
   /* Compare the solutions obtained from dmmg and dmmg_comp */
   if (ViewSolu || CompSolu){ 

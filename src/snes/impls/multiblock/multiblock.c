@@ -975,6 +975,8 @@ PetscErrorCode  SNESCreate_Multiblock(SNES snes)
   snes->ops->solve	    = SNESSolve_Multiblock;
   snes->ops->reset          = SNESReset_Multiblock;
 
+  snes->usesksp             = PETSC_FALSE;
+
   ierr = PetscNewLog(snes, SNES_Multiblock, &mb);CHKERRQ(ierr);
   snes->data = (void*) mb;
   mb->defined   = PETSC_FALSE;

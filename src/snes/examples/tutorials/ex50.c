@@ -152,7 +152,7 @@ int main(int argc,char **argv)
   ierr = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(ierr); 
   
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
-  ierr = PetscPrintf(comm,"Number of Newton iterations = %D\n", its);CHKERRQ(ierr);
+  ierr = PetscPrintf(comm,"Number of SNES iterations = %D\n", its);CHKERRQ(ierr);
   
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they

@@ -48,6 +48,7 @@ struct _p_SNES {
   void *jacP;                    /* user-defined Jacobian context */
   void *initialguessP;           /* user-defined initial guess context */
   KSP  ksp;                      /* linear solver context */
+  PetscBool usesksp;
 
   Vec  vec_sol_update;           /* pointer to solution update */
 

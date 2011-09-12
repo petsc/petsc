@@ -193,15 +193,17 @@ PetscErrorCode  SNESView(SNES snes,PetscViewer viewer)
     ierr = SNESGetType(snes,&type);CHKERRQ(ierr);
     ierr = PetscViewerStringSPrintf(viewer," %-3.3s",type);CHKERRQ(ierr);
   }
-  ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
   if (snes->pc) {
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
     ierr = SNESView(snes->pc, viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   }
-  ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-  ierr = KSPView(ksp,viewer);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+  if (snes->usesksp) {
+    ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+    ierr = KSPView(ksp,viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -1054,6 +1056,7 @@ PetscErrorCode  SNESCreate(MPI_Comm comm,SNES *outsnes)
   ierr = PetscHeaderCreate(snes,_p_SNES,struct _SNESOps,SNES_CLASSID,0,"SNES","Nonlinear solver","SNES",comm,SNESDestroy,SNESView);CHKERRQ(ierr);
 
   snes->ops->converged    = SNESDefaultConverged;
+  snes->usesksp           = PETSC_TRUE;
   snes->max_its           = 50;
   snes->max_funcs	  = 10000;
   snes->norm		  = 0.0;
@@ -3432,6 +3435,9 @@ PetscErrorCode  SNESSetDM(SNES snes,DM dm)
   ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
   ierr = KSPSetDM(ksp,dm);CHKERRQ(ierr);
   ierr = KSPSetDMActive(ksp,PETSC_FALSE);CHKERRQ(ierr);
+  if (snes->pc) {
+    ierr = SNESSetDM(snes->pc, snes->dm);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

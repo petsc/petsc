@@ -852,7 +852,7 @@ int main(int argc, char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
     ierr = SNESSolve(snes, PETSC_NULL, u);CHKERRQ(ierr);
     ierr = SNESGetIterationNumber(snes, &its);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "Number of Newton iterations = %D\n", its);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "Number of SNES iterations = %D\n", its);CHKERRQ(ierr);
     ierr = ComputeError(u, &error, &user);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD, "L_2 Error: %g\n", error);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD, "Solution\n");CHKERRQ(ierr);

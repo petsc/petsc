@@ -134,6 +134,8 @@ PetscErrorCode  SNESCreate_Test(SNES  snes)
   snes->ops->setup           = 0;
   snes->ops->reset           = 0;
 
+  snes->usesksp             = PETSC_FALSE;
+
   ierr                  = PetscNewLog(snes,SNES_Test,&neP);CHKERRQ(ierr);
   snes->data            = (void*)neP;
   neP->complete_print   = PETSC_FALSE;

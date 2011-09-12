@@ -1088,7 +1088,7 @@ static PetscErrorCode THISolveStatistics(THI thi,DMMG *dmmg,PetscInt coarsened,c
     ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
     ierr = SNESGetConvergedReason(snes,&reason);CHKERRQ(ierr);
     ierr = SNESGetLinearSolveIterations(snes,&lits);CHKERRQ(ierr);
-    ierr = PetscPrintf(comm,"%s: Number of Newton iterations = %d, total linear iterations = %d\n",SNESConvergedReasons[reason],its,lits);CHKERRQ(ierr);
+    ierr = PetscPrintf(comm,"%s: Number of SNES iterations = %d, total linear iterations = %d\n",SNESConvergedReasons[reason],its,lits);CHKERRQ(ierr);
   }
   {
     PetscReal nrm2,tmin[3]={1e100,1e100,1e100},tmax[3]={-1e100,-1e100,-1e100},min[3],max[3];
