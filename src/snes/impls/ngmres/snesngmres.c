@@ -436,6 +436,7 @@ PetscErrorCode SNESCreate_NGMRES(SNES snes)
   ngmres->k_rmax   = 200;
 
   ierr = SNESGetPC(snes, &snes->pc);CHKERRQ(ierr);
+  ierr = SNESSetType(snes->pc,SNESPICARD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
