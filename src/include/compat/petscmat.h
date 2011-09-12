@@ -172,14 +172,6 @@ static PetscErrorCode MatLoad_Compat(Mat mat,PetscViewer viewer)
 #define MATORDERINGRCM          MATORDERING_RCM
 #define MATORDERINGQMD          MATORDERING_QMD
 #define MATORDERINGROWLENGTH    MATORDERING_ROWLENGTH
-#define MATORDERINGDSC_ND       MATORDERING_DSC_ND
-#define MATORDERINGDSC_MMD      MATORDERING_DSC_MMD
-#define MATORDERINGDSC_MDF      MATORDERING_DSC_MDF
-#define MATORDERINGCONSTRAINED  MATORDERING_CONSTRAINED
-#define MATORDERINGIDENTITY     MATORDERING_IDENTITY
-#define MATORDERINGREVERSE      MATORDERING_REVERSE
-#define MATORDERINGFLOW         MATORDERING_FLOW
-#define MATORDERINGAMD          MATORDERING_AMD
 #endif
 
 #if (PETSC_VERSION_(3,1,0) || \
@@ -188,6 +180,10 @@ static PetscErrorCode MatLoad_Compat(Mat mat,PetscViewer viewer)
 #define MATCOLORINGSL	    MATCOLORING_SL
 #define MATCOLORINGLF	    MATCOLORING_LF
 #define MATCOLORINGID       MATCOLORING_ID
+#endif
+
+#if PETSC_VERSION_(3,1,0)
+#define MATORDERINGAMD          MATORDERING_AMD
 #endif
 
 #if PETSC_VERSION_(3,0,0)
@@ -253,12 +249,11 @@ static PetscErrorCode MatNullSpaceView(MatNullSpace sp,PetscViewer viewer)
 }
 #endif
 
-#if (PETSC_VERSION_(3,0,0))
+#if PETSC_VERSION_(3,0,0)
 #define MATHYPRESTRUCT  "hyprestruct"
 #define MATHYPRESSTRUCT "hypresstruct"
 #define MATSUBMATRIX    "submatrix"
-#define MATORDERING_FLOW "flow"
-#define MATORDERING_AMD  "amd"
+#define MATORDERINGAMD  "amd"
 #endif
 
 #if (PETSC_VERSION_(3,0,0))

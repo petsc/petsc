@@ -5,6 +5,15 @@
 
 #include <petscda.h>
 
+#define DMType char*
+#define DMDA        "da"
+#define DMADDA      "adda"
+#define DMCOMPOSITE "composite"
+#define DMSLICED    "sliced"
+#define DMMESH      "mesh"
+#define DMCARTESIAN "cartesian"
+#define DMIGA       "iga"
+
 #undef __FUNCT__
 #define __FUNCT__ "DMCreate"
 static PetscErrorCode DMCreate(MPI_Comm comm,DM *dm)
@@ -23,7 +32,7 @@ static PetscErrorCode DMCreate(MPI_Comm comm,DM *dm)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMSetType"
-static PetscErrorCode DMSetType(DM dm, const char *method)
+static PetscErrorCode DMSetType(DM dm, const DMType method)
 {
   PetscTruth     flag;
   PetscErrorCode ierr;
@@ -38,7 +47,7 @@ static PetscErrorCode DMSetType(DM dm, const char *method)
 
 #undef __FUNCT__
 #define __FUNCT__ "DMGetType"
-static PetscErrorCode DMGetType(DM dm, const char **method)
+static PetscErrorCode DMGetType(DM dm, const DMType *method)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm,DM_COOKIE,1);
@@ -116,6 +125,19 @@ static PetscErrorCode DMGetBlockSize(DM dm, PetscInt *bs)
   ierr = DAGetInfo((DA)dm,0,
 		   0,0,0,0,0,0,
 		   bs,0,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMSetVecType"
+static PetscErrorCode DMSetVecType(DM dm, const VecType vec_type)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DM_COOKIE,1);
+  PetscValidCharPointer(vec_type,2);
+  ierr = PETSC_ERR_SUP;
+  SETERRQ(ierr,__FUNCT__"() not supported in this PETSc version");
   PetscFunctionReturn(0);
 }
 

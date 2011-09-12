@@ -12,11 +12,15 @@
   PetscFunctionReturn(PETSC_ERR_SUP);
 #endif
 
+#if (PETSC_VERSION_(3,1,0) || \
+     PETSC_VERSION_(3,0,0))
+#define TSALPHA   "alpha"
+#define TSARKIMEX "arkimex"
+#endif
 
 #if PETSC_VERSION_(3,1,0)
-#define TSCN    TSCRANK_NICHOLSON
-#define TSRK    TSRUNGE_KUTTA
-#define TSALPHA "alpha"
+#define TSCN      TSCRANK_NICHOLSON
+#define TSRK      TSRUNGE_KUTTA
 #endif
 
 typedef enum {
@@ -202,7 +206,6 @@ static PetscErrorCode TSAlphaGetParams(TS ts,PetscReal *alpha_m,PetscReal *alpha
 #define TSTHETA           "theta"
 #define TSGL              "gl"
 #define TSSSP             "ssp"
-#define TSALPHA           "alpha"
 #endif
 
 #undef __FUNCT__

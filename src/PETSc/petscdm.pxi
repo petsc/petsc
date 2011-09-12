@@ -3,7 +3,12 @@
 cdef extern from * nogil:
 
     ctypedef char* PetscDMType "const char*"
-    
+    PetscDMType DMDA
+    PetscDMType DMADDA
+    PetscDMType DMCOMPOSITE
+    PetscDMType DMSLICED
+    PetscDMType DMMESH
+    PetscDMType DMCARTESIAN
 
     int DMCreate(MPI_Comm,PetscDM*)
     int DMDestroy(PetscDM*)
@@ -15,6 +20,7 @@ cdef extern from * nogil:
     int DMSetUp(PetscDM)
 
     int DMGetBlockSize(PetscDM,PetscInt*)
+    int DMSetVecType(PetscDM,PetscVecType)
     int DMCreateLocalVector(PetscDM,PetscVec*)
     int DMCreateGlobalVector(PetscDM,PetscVec*)
     int DMGetMatrix(PetscDM,PetscMatType,PetscMat*)

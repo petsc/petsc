@@ -12,6 +12,8 @@
 #define VECSEQCUSP  "seqcusp"
 #define VECMPICUSP  "mpicusp"
 #define VECCUSP     "cusp"
+#define VECSEQPTHREAD "seqpthread"
+#define VECPTHREAD    "pthread"
 #endif
 
 #if (PETSC_VERSION_(3,1,0) || \

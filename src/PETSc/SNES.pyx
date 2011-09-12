@@ -9,6 +9,7 @@ class SNESType(object):
     KSPONLY = S_(SNESKSPONLY)
     VI      = S_(SNESVI)
     NGMRES  = S_(SNESNGMRES)
+    SORQN   = S_(SNESSORQN)
 
 class SNESConvergedReason(object):
     # iterating

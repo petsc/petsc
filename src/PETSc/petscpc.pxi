@@ -27,7 +27,7 @@ cdef extern from * nogil:
     PetscPCType PCPROMETHEUS
     PetscPCType PCGALERKIN
     PetscPCType PCEXOTIC
-    PetscPCType PCOPENMP
+    PetscPCType PCHMPI
     PetscPCType PCSUPPORTGRAPH
     PetscPCType PCASA
     PetscPCType PCCP
@@ -38,6 +38,11 @@ cdef extern from * nogil:
     PetscPCType PCSYSPFMG
     PetscPCType PCREDISTRIBUTE
     PetscPCType PCSACUSP
+    PetscPCType PCSACUSPPOLY
+    PetscPCType PCBICGSTABCUSP
+    PetscPCType PCSVD
+    PetscPCType PCAINVCUSP
+    PetscPCType PCGAMG
 
     ctypedef enum PetscPCSide "PCSide":
         PC_LEFT

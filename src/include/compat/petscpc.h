@@ -13,6 +13,8 @@
 #define PCBICGSTABCUSP    "bicgstabcusp"
 #define PCSVD             "svd"
 #define PCAINVCUSP        "ainvcusp"
+#define PCHMPI            "hmpi"
+#define PCGAMG            "amg"
 #endif
 
 #if (PETSC_VERSION_(3,1,0) || \

@@ -11,6 +11,10 @@ cdef extern from * nogil:
     PetscVecType VECSEQCUSP
     PetscVecType VECMPICUSP
     PetscVecType VECCUSP
+    PetscVecType VECNEST
+    PetscVecType VECSEQPTHREAD
+    PetscVecType VECMPIPTHREAD "VECPTHREAD"
+    PetscVecType VECPTHREAD
 
     ctypedef enum PetscVecOption "VecOption":
         VEC_IGNORE_OFF_PROC_ENTRIES

@@ -55,9 +55,6 @@ cdef extern from * nogil:
     PetscMatOrderingType MATORDERINGRCM
     PetscMatOrderingType MATORDERINGQMD
     PetscMatOrderingType MATORDERINGROWLENGTH
-    PetscMatOrderingType MATORDERINGDSC_ND
-    PetscMatOrderingType MATORDERINGDSC_MMD
-    PetscMatOrderingType MATORDERINGDSC_MDF
     PetscMatOrderingType MATORDERINGAMD
 
     ctypedef enum PetscMatReuse "MatReuse":

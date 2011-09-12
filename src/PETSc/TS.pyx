@@ -13,7 +13,7 @@ class TSType(object):
     ALPHA    = S_(TSALPHA)
     GL       = S_(TSGL)
     SSP      = S_(TSSSP)
-    #
+    ARKIMEX  = S_(TSARKIMEX)
     # aliases
     FE = EULER
     BE = BEULER

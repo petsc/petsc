@@ -8,6 +8,7 @@ PYTHON   = python
 
 PETSC_30=/home/devel/petsc/3.0
 PETSC_31=/home/devel/petsc/3.1
+PETSC_32=/home/devel/petsc/3.2
 PETSC_DEV=/home/devel/petsc/dev
 
 #PETSC_ARCH=linux-gnu
@@ -19,6 +20,8 @@ petsc-30:
 	${MAKE} ${MAKE_ARGS} PETSC_DIR=${PETSC_30} PETSC_ARCH=${PETSC_ARCH} test
 petsc-31:
 	${MAKE} ${MAKE_ARGS} PETSC_DIR=${PETSC_31} PETSC_ARCH=${PETSC_ARCH} test
+petsc-32:
+	${MAKE} ${MAKE_ARGS} PETSC_DIR=${PETSC_32} PETSC_ARCH=${PETSC_ARCH} test
 petsc-dev:
 	${MAKE} ${MAKE_ARGS} PETSC_DIR=${PETSC_DEV} PETSC_ARCH=${PETSC_ARCH} test
 

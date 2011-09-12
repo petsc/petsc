@@ -1,6 +1,20 @@
 # --------------------------------------------------------------------
 
+class DMType(object):
+    DA        = S_(DMDA)
+    ADDA      = S_(DMADDA)
+    COMPOSITE = S_(DMCOMPOSITE)
+    SLICED    = S_(DMSLICED)
+    MESH      = S_(DMMESH)
+    CARTESIAN = S_(DMCARTESIAN)
+
+# --------------------------------------------------------------------
+
 cdef class DM(Object):
+
+    Type = DMType
+
+    #
 
     def __cinit__(self):
         self.obj = <PetscObject*> &self.dm
@@ -58,6 +72,11 @@ cdef class DM(Object):
         cdef PetscInt bs = 1
         CHKERR( DMGetBlockSize(self.dm, &bs) )
         return toInt(bs)
+
+    def setVecType(self, vec_type):
+        cdef PetscMatType vtype = NULL
+        vec_type = str2bytes(vec_type, &vtype)
+        CHKERR( DMSetVecType(self.dm, vtype) )
 
     def createGlobalVec(self):
         cdef Vec vg = Vec()
@@ -168,5 +187,9 @@ cdef class DM(Object):
     createGlobalVector = createGlobalVec
     createLocalVector = createLocalVec
     getMatrix = createMatrix = createMat
+
+# --------------------------------------------------------------------
+
+del DMType
 
 # --------------------------------------------------------------------

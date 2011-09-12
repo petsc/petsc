@@ -12,6 +12,7 @@
 #define SNESPICARD  "picard"
 #define SNESVI      "vi"
 #define SNESNGMRES  "ngmres"
+#define SNESSORQN "sorqn"
 #define SNES_DIVERGED_LINE_SEARCH SNES_DIVERGED_LS_FAILURE
 #endif
 

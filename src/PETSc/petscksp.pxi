@@ -31,8 +31,6 @@ cdef extern from * nogil:
     PetscKSPType KSPNGMRES
     PetscKSPType KSPSPECEST
 
-
-
     ctypedef enum PetscKSPNormType "KSPNormType":
         KSP_NORM_NONE
         KSP_NORM_PRECONDITIONED

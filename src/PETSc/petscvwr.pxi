@@ -8,11 +8,10 @@ cdef extern from * nogil:
     PetscViewerType PETSCVIEWERDRAW
     PetscViewerType PETSCVIEWERVU
     PetscViewerType PETSCVIEWERMATHEMATICA
-    PetscViewerType PETSCVIEWERSILO
     PetscViewerType PETSCVIEWERNETCDF
     PetscViewerType PETSCVIEWERHDF5
     PetscViewerType PETSCVIEWERMATLAB
-
+    PetscViewerType PETSCVIEWERAMS
 
     ctypedef enum PetscViewerFormat:
         PETSC_VIEWER_DEFAULT

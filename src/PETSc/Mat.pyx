@@ -44,8 +44,6 @@ class MatType(object):
     SCHURCOMPLEMENT = S_(MATSCHURCOMPLEMENT)
     HYPRESTRUCT     = S_(MATHYPRESTRUCT)
     HYPRESSTRUCT    = S_(MATHYPRESSTRUCT)
-    SUBMATRIX       = S_(MATSUBMATRIX)
-    NEST            = S_(MATNEST)
 
 class MatOption(object):
     ROW_ORIENTED               = MAT_ROW_ORIENTED
@@ -93,9 +91,6 @@ class MatOrderingType(object):
     RCM         = S_(MATORDERINGRCM)
     QMD         = S_(MATORDERINGQMD)
     ROWLENGTH   = S_(MATORDERINGROWLENGTH)
-    DSC_ND      = S_(MATORDERINGDSC_ND)
-    DSC_MMD     = S_(MATORDERINGDSC_MMD)
-    DSC_MDF     = S_(MATORDERINGDSC_MDF)
     AMD         = S_(MATORDERINGAMD)
 
 # --------------------------------------------------------------------

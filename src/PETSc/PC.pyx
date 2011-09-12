@@ -28,7 +28,7 @@ class PCType(object):
     PROMETHEUS   = S_(PCPROMETHEUS)
     GALERKIN     = S_(PCGALERKIN)
     EXOTIC       = S_(PCEXOTIC)
-    OPENMP       = S_(PCOPENMP)
+    HMPI         = S_(PCHMPI)
     SUPPORTGRAPH = S_(PCSUPPORTGRAPH)
     ASA          = S_(PCASA)
     CP           = S_(PCCP)
@@ -39,6 +39,12 @@ class PCType(object):
     SYSPFMG      = S_(PCSYSPFMG)
     REDISTRIBUTE = S_(PCREDISTRIBUTE)
     SACUSP       = S_(PCSACUSP)
+    SACUSPPOLY   = S_(PCSACUSPPOLY)
+    BICGSTABCUSP = S_(PCBICGSTABCUSP)
+    SVD          = S_(PCSVD)
+    AINVCUSP     = S_(PCAINVCUSP)
+    GAMG         = S_(PCGAMG)
+
 
 class PCSide(object):
     # native
