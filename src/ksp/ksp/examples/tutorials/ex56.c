@@ -65,6 +65,7 @@ int main(int argc,char **args)
     const PetscInt NN = nn/NP, id0 = ipz*nn*nn*NN + ipy*nn*NN*NN + ipx*NN*NN*NN;
     PetscReal *coords;
     PetscInt *d_nnz, *o_nnz,osz[4]={0,9,15,19},nbc;
+    PetscScalar vv[24], v2[24];
 
     /* count nnz */
     ierr = PetscMalloc( (m+1)*sizeof(PetscInt), &d_nnz ); CHKERRQ(ierr);
@@ -105,6 +106,7 @@ int main(int argc,char **args)
     ierr = VecSetFromOptions(xx);  CHKERRQ(ierr);
     ierr = VecDuplicate(xx,&bb);   CHKERRQ(ierr);
     ierr = VecSet(bb,.0);         CHKERRQ(ierr);
+    ierr = VecSetBlockSize(bb,3);      CHKERRQ(ierr);
     /* generate element matrices */
     {
       FILE *file;
@@ -133,6 +135,18 @@ int main(int argc,char **args)
 	    if(i==j) DD2[i][j] = .1*DD1[i][j];
 	    else DD2[i][j] = 0.0;
 	  else DD2[i][j] = DD1[i][j];
+      /* element vector */
+      for(i=0;i<24;i++){
+        if(i%3==0) vv[i] = h*h;
+        else if(i%3==1) vv[i] = 2.0*h*h;
+        else vv[i] = .0;
+      }
+      for(i=0;i<24;i++){
+        if(i%3==0 && i>=12) v2[i] = h*h;
+        else if(i%3==1 && i>=12) v2[i] = 2.0*h*h;
+        else v2[i] = .0;
+      }
+      
     }
 
     ierr = PetscMalloc( (m+1)*sizeof(PetscReal), &coords ); CHKERRQ(ierr);
@@ -157,6 +171,7 @@ int main(int argc,char **args)
 	    PetscInt jx,ix,idx[8] = { id, id+1, id+NN+1, id+NN, 
 				      id        + NN*NN, id+1    + NN*NN, 
 				      id+NN+1 + NN*NN, id+NN + NN*NN };
+
 	    /* correct indices */
 	    if(i==Ni1-1 && Ni1!=nn){
 	      idx[1] += NN*(NN*NN-1);
@@ -184,18 +199,16 @@ int main(int argc,char **args)
 	    if( k>0 ) {
 	      ierr = MatSetValuesBlocked(Amat,8,idx,8,idx,(const PetscScalar*)DD,ADD_VALUES);
               CHKERRQ(ierr);
+	      ierr = VecSetValuesBlocked(bb,8,idx,(const PetscScalar*)vv,ADD_VALUES); CHKERRQ(ierr);
+              
 	    }
 	    else {
 	      /* a BC */
 	      for(ix=0;ix<24;ix++)for(jx=0;jx<24;jx++) DD[ix][jx] = alpha*DD2[ix][jx];
 	      ierr = MatSetValuesBlocked(Amat,8,idx,8,idx,(const PetscScalar*)DD,ADD_VALUES);
               CHKERRQ(ierr);
+              ierr = VecSetValuesBlocked(bb,8,idx,(const PetscScalar*)v2,ADD_VALUES); CHKERRQ(ierr);
 	    }
-	  }
-	  if( k>0 ) {
-	    PetscScalar v = h*h;
-	    PetscInt jx = 3*id; /* load in x direction */
-	    ierr = VecSetValues(bb,1,&jx,&v,INSERT_VALUES);      CHKERRQ(ierr);
 	  }
 	}
       }
