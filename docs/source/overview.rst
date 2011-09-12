@@ -20,8 +20,7 @@ and nonlinear equation solvers that are easily used in application
 codes written in C, C++, and Fortran. PETSc provides many of the
 mechanisms needed within parallel application codes, such as simple
 parallel matrix and vector assembly routines that allow the overlap of
-communication and computation. In addition, PETSc includes growing
-support for distributed arrays.
+communication and computation.
 
 .. [petsc-user-ref] Satish Balay, Kris Buschelman, Victor Eijkhout,
    William D. Gropp, Dinesh Kaushik, Matthew G. Knepley, Lois Curfman
@@ -38,17 +37,19 @@ support for distributed arrays.
 .. include:: links.txt
 
 
-Features
---------
-
-XXX To be written ...
-
-
 Components
 ----------
 
-PETSc components provide the functionality required for many parallel
-solutions of PDE's.
+PETSc is designed with an object-oriented style. Almost all
+user-visible types are abstract interfaces with implementations that
+may be chosen at runtime. Those objects are managed through handles to
+opaque data structures which are created, accessed and destroyed by
+calling appropriate library routines.
+
+PETSc consists of a variety of components. Each component manipulates
+a particular family of objects and the operations one would like to
+perform on these objects. These components provide the functionality
+required for many parallel solutions of PDEs.
 
 :Vec:  Provides the vector operations required for setting up and
        solving large-scale linear and nonlinear problems. Includes
