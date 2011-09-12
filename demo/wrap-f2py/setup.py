@@ -4,13 +4,11 @@
 
 # a bit of monkeypatching ...
 try:
-    from numpy.distutils.fcompiler     import FCompiler
-    from numpy.distutils.unixccompiler import UnixCCompiler
-    try: # Python 2
-        meth = UnixCCompiler.runtime_library_dir_option.im_func
-    except AttributeError: # Python 3
-        meth = UnixCCompiler.runtime_library_dir_option
-    FCompiler.runtime_library_dir_option = meth
+    from numpy.distutils.fcompiler import FCompiler
+    def runtime_library_dir_option(self, dir):
+        return self.c_compiler.runtime_library_dir_option(dir)
+    FCompiler.runtime_library_dir_option = \
+        runtime_library_dir_option
 except Exception:
     pass
 

@@ -82,6 +82,8 @@ A.setPythonContext(pde)
 ksp = PETSc.KSP().create()
 ksp.setOperators(A)
 ksp.setType('cg')
+pc = ksp.getPC()
+pc.setType('none')
 ksp.setFromOptions()
 
 pde.formRHS(b)

@@ -7,5 +7,5 @@ all:
 	-${MAKE} -C poisson2d
 	-${MAKE} -C poisson3d
 	-${MAKE} -C perftest
-#	-${MAKE} -C wrap-swig
-#	-${MAKE} -C wrap-f2py
+	-${MAKE} -C wrap-swig
+	-${MAKE} -C wrap-f2py
