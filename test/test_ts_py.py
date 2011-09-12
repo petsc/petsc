@@ -40,15 +40,18 @@ class MyTS:
 
     def create(self, ts, *args):
         self._log('create', *args)
+        self.vec_update = PETSc.Vec()
 
     def destroy(self, ts, *args):
         self._log('destroy', *args)
+        self.vec_update.destroy()
 
     def setFromOptions(self, ts, *args):
         self._log('setFromOptions', *args)
 
     def setUp(self, ts, *args):
         self._log('setUp', ts, *args)
+        self.vec_update = ts.getSolution().duplicate()
 
     def reset(self, ts, *args):
         self._log('reset', ts, *args)
@@ -59,12 +62,12 @@ class MyTS:
     def postStep(self, ts, *args):
         self._log('postStep', ts, *args)
 
-    def step(self, ts, t, u, *args):
-        self._log('step', ts, t, u, *args)
+    def solveStep(self, ts, t, u, *args):
+        self._log('solveStep', ts, t, u, *args)
         ts.snes.solve(None, u)
 
-    def adapt(self, ts, t, u, *args):
-        self._log('adapt', ts, t, u, *args)
+    def adaptStep(self, ts, t, u, *args):
+        self._log('adaptStep', ts, t, u, *args)
         return (ts.getTimeStep(), True)
 
 
@@ -118,10 +121,10 @@ class TestTSPython(unittest.TestCase):
         
         ctx = self.ts.getPythonContext()
         ncalls = self.nsolve * ts.step_number
-        self.assertTrue(ctx.log['preStep']  == ncalls)
-        self.assertTrue(ctx.log['postStep'] == ncalls)
-        self.assertTrue(ctx.log['step']     == ncalls)
-        self.assertTrue(ctx.log['adapt']    == ncalls)
+        self.assertTrue(ctx.log['preStep']   == ncalls)
+        self.assertTrue(ctx.log['postStep']  == ncalls)
+        self.assertTrue(ctx.log['solveStep'] == ncalls)
+        self.assertTrue(ctx.log['adaptStep'] == ncalls)
         del ctx
 
         dct = self.ts.getDict()
@@ -170,12 +173,7 @@ class TestTSPython(unittest.TestCase):
 # --------------------------------------------------------------------
 
 PETSC_VERSION = PETSc.Sys.getVersion()
-i = PETSc.Sys.getVersionInfo()
-if (PETSC_VERSION == (3, 1, 0) and
-    not i['release']):
-    PETSC_VERSION = (3, 2, 0)
-
-if  PETSC_VERSION < (3, 2, 0):
+if PETSC_VERSION < (3, 2, 0):
     del TestTSPython
 
 if __name__ == '__main__':

@@ -23,9 +23,7 @@ class TestFwkSELF(BaseTestFwk, unittest.TestCase):
 class TestFwkWORLD(BaseTestFwk, unittest.TestCase):
     COMM = PETSc.COMM_WORLD
 
-if (PETSc.Sys.getVersion() < (3,1,0) or
-    (PETSc.Sys.getVersion() == (3,1,0) and
-     PETSc.Sys.getVersionInfo()['release'])):
+if PETSc.Sys.getVersion() < (3,2,0):
     del BaseTestFwk
     del TestFwk
     del TestFwkSELF
