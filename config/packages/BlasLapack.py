@@ -155,7 +155,10 @@ class Configure(config.package.Package):
     if self.f2cblaslapack.found:
       self.f2c = 1
       libDir = self.f2cblaslapack.libDir
-      yield ('f2cblaslapack',os.path.join(libDir,'libf2cblas.a') , os.path.join(libDir,'libf2clapack.a'), 0)
+      f2cLibs = [os.path.join(libDir,'libf2cblas.a')]
+      if self.libraries.math:
+        f2cLibs = f2cLibs+self.libraries.math
+      yield ('f2cblaslapack', f2cLibs, os.path.join(libDir,'libf2clapack.a'), 0)
       raise RuntimeError('--download-f2cblaslapack libraries cannot be used')
     if 'with-blas-lib' in self.framework.argDB and not 'with-lapack-lib' in self.framework.argDB:
       raise RuntimeError('If you use the --with-blas-lib=<lib> you must also use --with-lapack-lib=<lib> option')
