@@ -143,7 +143,7 @@ void PETSC_STDCALL taolinesearchgetoptionsprefix_(TaoLineSearch *ls, CHAR prefix
   const char *name;
   *ierr = TaoLineSearchGetOptionsPrefix(*ls,&name);
   *ierr = PetscStrncpy(prefix,name,len); if (*ierr) return;
-  FIXRETURNCHAR(PETSC_TRUE,name,len);
+  FIXRETURNCHAR(PETSC_TRUE,prefix,len);
 
 }
 
@@ -163,7 +163,7 @@ void PETSC_STDCALL taolinesearchsetoptionsprefix_(TaoLineSearch *ls, CHAR prefix
   FREECHAR(prefix,t);
 }
 
-void PETSC_STDCALL taolinesearchgettype_(TaoLineSearch *ls, CHAR name PETSC_MIXED_LEN(len), PetscErrorCode *ierr, PETSC_END_LEN(len))
+void PETSC_STDCALL taolinesearchgettype_(TaoLineSearch *ls, CHAR name PETSC_MIXED_LEN(len), PetscErrorCode *ierr  PETSC_END_LEN(len))
 {
   const char *tname;
   *ierr = TaoLineSearchGetType(*ls,&tname);

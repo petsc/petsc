@@ -288,7 +288,7 @@ void PETSC_STDCALL taosolvergetoptionsprefix_(TaoSolver *tao, CHAR prefix PETSC_
   const char *name;
   *ierr = TaoSolverGetOptionsPrefix(*tao,&name);
   *ierr = PetscStrncpy(prefix,name,len); if (*ierr) return;
-  FIXRETURNCHAR(PETSC_TRUE,name,len);
+  FIXRETURNCHAR(PETSC_TRUE,prefix,len);
 
 }
 
@@ -308,7 +308,7 @@ void PETSC_STDCALL taosolversetoptionsprefix_(TaoSolver *tao, CHAR prefix PETSC_
   FREECHAR(prefix,t);
 }
 
-void PETSC_STDCALL taosolvergettype_(TaoSolver *tao, CHAR name PETSC_MIXED_LEN(len), PetscErrorCode *ierr, PETSC_END_LEN(len))
+void PETSC_STDCALL taosolvergettype_(TaoSolver *tao, CHAR name PETSC_MIXED_LEN(len), PetscErrorCode *ierr  PETSC_END_LEN(len))
 {
   const char *tname;
   *ierr = TaoSolverGetType(*tao,&tname);

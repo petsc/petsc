@@ -66,7 +66,7 @@ extern PetscErrorCode TaoSolverSetFromOptions(TaoSolver);
 extern PetscErrorCode TaoSolverSetFiniteDifferencesOptions(TaoSolver);
 extern PetscErrorCode TaoSolverSetUp(TaoSolver);
 extern PetscErrorCode TaoSolverSetType(TaoSolver, const TaoSolverType);
-extern PetscErrorCode TaoSolverGetType(TaoSolver, TaoSolverType *);
+extern PetscErrorCode TaoSolverGetType(TaoSolver, const TaoSolverType *);
 
 extern PetscErrorCode TaoSolverDestroy(TaoSolver*);
 

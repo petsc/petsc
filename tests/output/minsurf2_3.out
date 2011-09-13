@@ -21,4 +21,5 @@ TaoSolver Object:
   Objective value=1.418549e+00
   total number of iterations=6,                          (max: 2000)
   total number of function/gradient evaluations=11,      (max: 4000)
-  Solution found:    Rtol -- F < F_mintol*F_init
+  Solution found:    |f(x)-f(X*)|/|f(X*)| <= frtol
+   ||g(X)|| <= gatol

@@ -487,7 +487,7 @@ PetscErrorCode TaoSolverView(TaoSolver tao, PetscViewer viewer)
 {
     PetscErrorCode ierr;
     PetscBool isascii,isstring;
-    TaoSolverType type;
+    const TaoSolverType type;
     const TaoLineSearchType lstype;
     PetscFunctionBegin;
     PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
@@ -601,11 +601,19 @@ PetscErrorCode TaoSolverView(TaoSolver tao, PetscViewer viewer)
 	if (tao->reason>0){
 	    ierr = PetscViewerASCIIPrintf(viewer,    "Solution found: ");CHKERRQ(ierr);
 	    switch (tao->reason) {
-		case TAO_CONVERGED_ATOL:
-		    ierr = PetscViewerASCIIPrintf(viewer," Atol -- F < F_minabs\n"); CHKERRQ(ierr);
+		case TAO_CONVERGED_FATOL:
+		    ierr = PetscViewerASCIIPrintf(viewer," f(x)-f(X*) <= fatol\n"); CHKERRQ(ierr);
 		    break;
-		case TAO_CONVERGED_RTOL:
-		    ierr = PetscViewerASCIIPrintf(viewer," Rtol -- F < F_mintol*F_init\n"); CHKERRQ(ierr);
+		case TAO_CONVERGED_FRTOL:
+		    ierr = PetscViewerASCIIPrintf(viewer," |f(x)-f(X*)|/|f(X*)| <= frtol\n"); CHKERRQ(ierr);
+		case TAO_CONVERGED_GATOL:
+		    ierr = PetscViewerASCIIPrintf(viewer," ||g(X)|| <= gatol\n"); CHKERRQ(ierr);
+		    break;
+		case TAO_CONVERGED_GRTOL:
+		    ierr = PetscViewerASCIIPrintf(viewer," ||g(X)||/|f(X)| <= grtol\n"); CHKERRQ(ierr);
+		    break;
+		case TAO_CONVERGED_GTTOL:
+		    ierr = PetscViewerASCIIPrintf(viewer," ||g(X)||/||g(X0)|| <= gttol\n"); CHKERRQ(ierr);
 		    break;
 		case TAO_CONVERGED_STEPTOL:
 		    ierr = PetscViewerASCIIPrintf(viewer," Steptol -- step size small\n"); CHKERRQ(ierr);
@@ -1727,7 +1735,7 @@ PetscErrorCode TaoSolverDefaultConvergenceTest(TaoSolver tao,void *dummy)
     ierr = PetscInfo2(tao,"Converged due to residual norm ||g(X)||=%g < %g\n",gnorm,gatol); CHKERRQ(ierr);
     reason = TAO_CONVERGED_GATOL;
   } else if ( f!=0 && PetscAbsReal(gnorm/f) <= grtol && cnorm <= crtol) {
-    ierr = PetscInfo3(tao,"Converged due to residual ||g(X)||/|f(X)| =%g < %g\n",gnorm/f,grtol); CHKERRQ(ierr);
+    ierr = PetscInfo2(tao,"Converged due to residual ||g(X)||/|f(X)| =%g < %g\n",gnorm/f,grtol); CHKERRQ(ierr);
     reason = TAO_CONVERGED_GRTOL;
   } else if (gnorm/gnorm0 <= gttol && cnorm <= crtol) {
     ierr = PetscInfo2(tao,"Converged due to relative residual norm ||g(X)||/||g(X0)|| = %g < %g\n",gnorm/gnorm0,gttol); CHKERRQ(ierr);
@@ -1999,7 +2007,6 @@ PetscErrorCode TaoSolverSetDefaultPCType(TaoSolver tao, PCType pctype)
 .    tao_lmvm - Limited memory variable metric method for unconstrained minimization
 .    tao_cg - Nonlinear conjugate gradient method for unconstrained minimization
 .    tao_nm - Nelder-Mead algorithm for derivate-free unconstrained minimization
-.    tao_pounder - Model-based algorithm for derivate-free unconstrained minimization
 .    tao_tron - Newton Trust Region method for bound constrained minimization
 .    tao_gpcg - Newton Trust Region method for quadratic bound constrained minimization
 .    tao_blmvm - Limited memory variable metric method for bound constrained minimization
@@ -2280,7 +2287,7 @@ PetscErrorCode TaoSolverGetSolutionStatus(TaoSolver tao, PetscInt *its, PetscRea
 
 .keywords: method
 @*/
-PetscErrorCode TaoSolverGetType(TaoSolver tao, TaoSolverType *type)
+PetscErrorCode TaoSolverGetType(TaoSolver tao, const TaoSolverType *type)
 {
     PetscFunctionBegin;
     PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);

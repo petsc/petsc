@@ -24,4 +24,4 @@ TaoSolver Object:
   Objective value=1.601158e+00
   total number of iterations=12,                          (max: 2000)
   total number of function/gradient evaluations=15,      (max: 4000)
-  Solution found:    Atol -- F < F_minabs
+  Solution found:    f(x)-f(X*) <= fatol

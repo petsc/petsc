@@ -30,4 +30,4 @@ TaoSolver Object:
   total number of iterations=4,                          (max: 50)
   total number of function/gradient evaluations=11,      (max: 4000)
   total number of Hessian evaluations=5
-  Solution found:    Atol -- F < F_minabs
+  Solution found:    f(x)-f(X*) <= fatol
