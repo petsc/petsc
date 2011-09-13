@@ -1,33 +1,22 @@
+output:
+  Show KSP, LS info in TaoSolverView
+  have ls_view show current ls info
+  print ls reason
+
 update manual
   fix finite differences (part2.tex)
   add pounders section
   Add solver registration instructions
   Add linesearch info
 
-Add chwirut2 to tests
-
-Add line search hooks for source/step
-
-output:
-  better convergence explanations in tao_view
-  Show KSP, LS info in TaoView
-  have ls_view show current ls info
-  print ls reason
-
-add to tests (-tao_fd, -tao_fdgrad, -tao_fd_delta)
-
-test GNU quad
-
-Put examples in correct places
-
-Levenberg-Marquardt
-POUNDer
-
-make install to put libs/headers in separate location
-
 Check fortran stubs 
 Check documentation
-Check TAO options in TaoSolverSetFromOptions
+
+Examples/tests
+  Add chwirut2 to tests
+  add to tests (-tao_fd, -tao_fdgrad, -tao_fd_delta)
+  test GNU quad
+  Put examples in correct places
 
 Test on arches
   Visual Studio
@@ -39,3 +28,11 @@ Test on arches
   
 automatic testing, coverage
 Buildbot
+
+
+Levenberg-Marquardt
+POUNDer
+
+make install to put libs/headers in separate location
+
+

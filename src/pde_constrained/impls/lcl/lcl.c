@@ -515,7 +515,7 @@ PetscErrorCode TaoSolverCreate_LCL(TaoSolver tao)
   ierr = TaoLineSearchCreate(((PetscObject)tao)->comm, &tao->linesearch); CHKERRQ(ierr);
   ierr = TaoLineSearchSetType(tao->linesearch, morethuente_type); CHKERRQ(ierr);
 
-  ierr = TaoLineSearchSetObjectiveAndGradient(tao->linesearch,LCLComputeAugmentedLagrangianAndGradient, tao); CHKERRQ(ierr);
+  ierr = TaoLineSearchSetObjectiveAndGradientRoutine(tao->linesearch,LCLComputeAugmentedLagrangianAndGradient, tao); CHKERRQ(ierr);
   
   PetscFunctionReturn(0);
 

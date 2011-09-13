@@ -82,9 +82,6 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
 {
     PetscErrorCode ierr;
     TAOLINESEARCH_MT_CTX *mt;
-#if defined(PETSC_USE_COMPLEX)
-    PetscReal cdginit;
-#endif
     
     PetscReal    xtrapf = 4.0;
     PetscReal   finit, width, width1, dginit, fm, fxm, fym, dgm, dgxm, dgym;
@@ -92,6 +89,7 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
     PetscReal ftest1=0.0, ftest2=0.0;
     PetscInt  i, stage1,n1,n2,nn1,nn2;
     PetscReal bstepmin1, bstepmin2, bstepmax;
+    PetscBool g_computed=PETSC_FALSE;; /* to prevent extra gradient computation */
 
     PetscFunctionBegin;
     PetscValidHeaderSpecific(ls,TAOLINESEARCH_CLASSID,1);
@@ -140,11 +138,7 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
 	ls->stepmax = PetscMin(bstepmax,1.0e15);
     }
 
-#if defined(PETSC_USE_COMPLEX)
-    ierr = VecDot(g,s,&cdginit); CHKERRQ(ierr); dginit = PetscReal(cdginit);
-#else
     ierr = VecDot(g,s,&dginit);
-#endif
     
     if (PetscIsInfOrNanReal(dginit)) {
       ierr = PetscInfo1(ls,"Initial Line Search step * g is Inf or Nan (%g)\n",dginit); CHKERRQ(ierr);
@@ -204,34 +198,32 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
 	ls->step = stx;
       }
 
-#if defined(PETSC_USE_COMPLEX)
-      cstep = ls->step;
-      ierr = VecCopy(mt->work,x); CHKERRQ(ierr);
-      ierr = VecAXPY(x,cstep,s); CHKERRQ(ierr);
-#else
-      ierr = VecCopy(mt->work,x); CHKERRQ(ierr);
-      ierr = VecAXPY(x,ls->step,s); CHKERRQ(ierr);	/* X = W + step*S */
-#endif
+      ierr = VecCopy(x,mt->work); CHKERRQ(ierr);
+      ierr = VecAXPY(mt->work,ls->step,s); CHKERRQ(ierr);   /* W = X + step*S */
+
       if (ls->bounded) {
-	  ierr = VecMedian(ls->lower, x, ls->upper, x); CHKERRQ(ierr);
+	  ierr = VecMedian(ls->lower, mt->work, ls->upper, mt->work);CHKERRQ(ierr);
       }
-      ierr = TaoLineSearchComputeObjectiveAndGradient(ls,x,f,g); CHKERRQ(ierr);
+      if (ls->usegts) {
+	ierr = TaoLineSearchComputeObjectiveAndGTS(ls,mt->work,f,&dg); CHKERRQ(ierr); 
+	g_computed=PETSC_FALSE;
+      } else {
+	ierr = TaoLineSearchComputeObjectiveAndGradient(ls,mt->work,f,g); CHKERRQ(ierr);
+	g_computed=PETSC_TRUE;
+	if (ls->bounded) {
+	  ierr = VecDot(g,x,&dg); CHKERRQ(ierr);
+	  ierr = VecDot(g,mt->work,&dg2); CHKERRQ(ierr);
+	  dg = (dg2 - dg)/ls->step;
+	} else {
+	  ierr = VecDot(g,s,&dg); CHKERRQ(ierr);
+	}
+      }
+
       if (0 == i) {
 	ls->f_fullstep=*f;
       }
 
-#if defined(PETSC_USE_COMPLEX)
-      ierr = VecDot(g,s,&cdg); CHKERRQ(ierr); dg = PetscReal(cdg);
-#else
-      if (ls->bounded) {
-	  ierr = VecDot(g,mt->work,&dg); CHKERRQ(ierr);
-	  ierr = VecDot(g,x,&dg2); CHKERRQ(ierr);
-	  dg = (dg2 - dg)/ls->step;
-      } else {
-	  ierr = VecDot(g,s,&dg); CHKERRQ(ierr);
-      }
 
-#endif
 
       if (PetscIsInfOrNanReal(*f) || PetscIsInfOrNanReal(dg)) {
 	// User provided compute function generated Not-a-Number, assume 
@@ -332,7 +324,11 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
     /* Finish computations */
     ierr = PetscInfo2(ls,"%d function evals in line search, step = %10.5f\n",ls->nfev,ls->step); CHKERRQ(ierr);
     
-      
+    /* Set new solution vector and compute gradient if needed */
+    ierr = VecCopy(mt->work,x); CHKERRQ(ierr);
+    if (!g_computed) {
+      ierr = TaoLineSearchComputeGradient(ls,mt->work,g); CHKERRQ(ierr);
+    }
     PetscFunctionReturn(0);
 }
 

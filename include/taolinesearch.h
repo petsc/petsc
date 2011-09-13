@@ -40,9 +40,12 @@ extern PetscErrorCode TaoLineSearchSetFromOptions(TaoLineSearch);
 extern PetscErrorCode TaoLineSearchSetUp(TaoLineSearch);
 extern PetscErrorCode TaoLineSearchDestroy(TaoLineSearch*);
 extern PetscErrorCode TaoLineSearchView(TaoLineSearch,PetscViewer);
-extern PetscErrorCode TaoLineSearchSetOptionsPrefix(TaoLineSearch);
+extern PetscErrorCode TaoLineSearchSetOptionsPrefix(TaoLineSearch,const char prefix[]);
+extern PetscErrorCode TaoLineSearchAppendOptionsPrefix(TaoLineSearch,const char prefix[]);
+extern PetscErrorCode TaoLineSearchGetOptionsPrefix(TaoLineSearch,const char *prefix[]);
 extern PetscErrorCode TaoLineSearchApply(TaoLineSearch,Vec,PetscReal *,Vec,Vec, PetscReal *, TaoLineSearchTerminationReason *);
 extern PetscErrorCode TaoLineSearchGetStepLength(TaoLineSearch, PetscReal*);
+extern PetscErrorCode TaoLineSearchGetStartingVector(TaoLineSearch,Vec);
 extern PetscErrorCode TaoLineSearchSetInitialStepLength(TaoLineSearch, PetscReal);
 extern PetscErrorCode TaoLineSearchGetSolution(TaoLineSearch, Vec, PetscReal*, Vec, PetscReal*, TaoLineSearchTerminationReason*);
 extern PetscErrorCode TaoLineSearchGetFullStepObjective(TaoLineSearch, PetscReal*);
@@ -52,13 +55,15 @@ extern PetscErrorCode TaoLineSearchSetType(TaoLineSearch, const TaoLineSearchTyp
 
 extern PetscErrorCode TaoLineSearchUseTaoSolverRoutines(TaoLineSearch, TaoSolver);
 
-extern PetscErrorCode TaoLineSearchSetObjective(TaoLineSearch, PetscErrorCode(*)(TaoLineSearch, Vec, PetscReal*,void*), void*);
-extern PetscErrorCode TaoLineSearchSetGradient(TaoLineSearch, PetscErrorCode(*)(TaoLineSearch, Vec, Vec, void*), void*);
-extern PetscErrorCode TaoLineSearchSetObjectiveAndGradient(TaoLineSearch, PetscErrorCode(*)(TaoLineSearch, Vec, PetscReal*, Vec, void*), void*);
+extern PetscErrorCode TaoLineSearchSetObjectiveAndGTSRoutine(TaoLineSearch, PetscErrorCode(*)(TaoLineSearch, Vec, Vec, PetscReal*, PetscReal*, void*), void*);
+extern PetscErrorCode TaoLineSearchSetObjectiveRoutine(TaoLineSearch, PetscErrorCode(*)(TaoLineSearch, Vec, PetscReal*,void*), void*);
+extern PetscErrorCode TaoLineSearchSetGradientRoutine(TaoLineSearch, PetscErrorCode(*)(TaoLineSearch, Vec, Vec, void*), void*);
+extern PetscErrorCode TaoLineSearchSetObjectiveAndGradientRoutine(TaoLineSearch, PetscErrorCode(*)(TaoLineSearch, Vec, PetscReal*, Vec, void*), void*);
 
 extern PetscErrorCode TaoLineSearchComputeObjective(TaoLineSearch, Vec, PetscReal*);
 extern PetscErrorCode TaoLineSearchComputeGradient(TaoLineSearch, Vec, Vec);
 extern PetscErrorCode TaoLineSearchComputeObjectiveAndGradient(TaoLineSearch, Vec, PetscReal*, Vec);
+extern PetscErrorCode TaoLineSearchComputeObjectiveAndGTS(TaoLineSearch, Vec, PetscReal*, PetscReal*);
 extern PetscErrorCode TaoLineSearchSetVariableBounds(TaoLineSearch, Vec, Vec);
 
 extern PetscErrorCode TaoLineSearchInitializePackage(const char path[]); 

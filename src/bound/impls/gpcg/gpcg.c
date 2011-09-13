@@ -445,12 +445,9 @@ PetscErrorCode TaoSolverCreate_GPCG(TaoSolver tao)
 
 
       
-  //  ierr = TaoCreateProjectedLineSearch(tao); CHKERRQ(ierr);
   ierr = TaoLineSearchCreate(((PetscObject)tao)->comm, &tao->linesearch); CHKERRQ(ierr);
   ierr = TaoLineSearchSetType(tao->linesearch, TAOLINESEARCH_GPCG); CHKERRQ(ierr);
-  ierr = TaoLineSearchSetObjectiveAndGradient(tao->linesearch, GPCGObjectiveAndGradient, tao); CHKERRQ(ierr);
-  //ierr = KSPCreate(((PetscObject)tao)->comm, &tao->ksp); CHKERRQ(ierr);
-  //ierr = KSPSetOptionsPrefix(tao->ksp,"tao_"); CHKERRQ(ierr);
+  ierr = TaoLineSearchSetObjectiveAndGradientRoutine(tao->linesearch, GPCGObjectiveAndGradient, tao); CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

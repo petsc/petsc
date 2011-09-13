@@ -7,14 +7,7 @@ iter = 2, Function value 1.50566, Residual: 0.000018
 iter = 3, Function value 1.50566, Residual: < 1.0e-6 
 TaoSolver Object:
   type: tao_tron
-     Total PG its: 9,     PG tolerance: 0.001 
-    TaoLineSearch Object:
-      type: more-thuente
-          maxf=30, ftol=1e-10, gtol=0.0001
-      maximum function evaluations=30
-      tolerances: ftol=0.0001, rtol=1e-10, gtol=0.9
-      total number of function evaluations=1
-      using variable bounds
+      Total PG its: 9,      PG tolerance: 0.001 
   Line Search   type: more-thuente
   convergence tolerances: fatol=1e-10,   frtol=1e-10
   convergence tolerances: gatol=1e-08,   steptol=1e-12,   gttol=0

@@ -115,6 +115,7 @@ static PetscErrorCode TaoLineSearchApply_Armijo(TaoLineSearch ls, Vec x, PetscRe
   PetscInt i;
   PetscReal fact, ref, gdx;
   PetscInt idx;
+  PetscBool g_computed=PETSC_FALSE; /* to prevent extra gradient computation */
 
   PetscFunctionBegin;
 
@@ -248,7 +249,16 @@ static PetscErrorCode TaoLineSearchApply_Armijo(TaoLineSearch ls, Vec x, PetscRe
     ierr = VecAXPY(armP->work,ls->step,s); CHKERRQ(ierr);
 
     /* Calculate function at new iterate */
-    ierr = TaoLineSearchComputeObjective(ls,armP->work,f); CHKERRQ(ierr);
+    if (ls->hasobjective) {
+      ierr = TaoLineSearchComputeObjective(ls,armP->work,f); CHKERRQ(ierr);
+      g_computed=PETSC_FALSE;
+    } else if (ls->usegts) {
+      ierr = TaoLineSearchComputeObjectiveAndGTS(ls,armP->work,f,&gdx); CHKERRQ(ierr);
+      g_computed=PETSC_FALSE;
+    } else {
+      ierr = TaoLineSearchComputeObjectiveAndGradient(ls,armP->work,f,g); CHKERRQ(ierr);
+      g_computed=PETSC_TRUE;
+    }
     if (ls->step == ls->initstep) {
       ls->f_fullstep = *f;
     }
@@ -297,7 +307,9 @@ static PetscErrorCode TaoLineSearchApply_Armijo(TaoLineSearch ls, Vec x, PetscRe
 
   /* Update iterate and compute gradient */
   ierr = VecCopy(armP->work,x); CHKERRQ(ierr);
-  ierr = TaoLineSearchComputeGradient(ls, x, g); CHKERRQ(ierr);
+  if (!g_computed) {
+    ierr = TaoLineSearchComputeGradient(ls, x, g); CHKERRQ(ierr);
+  }
 
   /* Finish computations */
   ierr = PetscInfo2(ls, "%d function evals in line search, step = %10.4f\n",ls->nfev, ls->step); CHKERRQ(ierr);

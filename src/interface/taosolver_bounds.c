@@ -220,9 +220,9 @@ PetscErrorCode TaoSolverSetConstraintsRoutine(TaoSolver tao, Vec c, PetscErrorCo
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TaoSolverComputeDual"
+#define __FUNCT__ "TaoSolverComputeDualVariables"
 /*@
-  TaoSolverComputeDual - Computes the dual vectors corresponding to the bounds
+  TaoSolverComputeDualVariables - Computes the dual vectors corresponding to the bounds
   of the variables
 
   Collective on TaoSolver
@@ -244,7 +244,7 @@ PetscErrorCode TaoSolverSetConstraintsRoutine(TaoSolver tao, Vec c, PetscErrorCo
 
 .seealso: TaoSolverComputeObjective(), TaoSolverSetVariableBounds()
 @*/
-PetscErrorCode TaoSolverComputeDual(TaoSolver tao, Vec DL, Vec DU) 
+PetscErrorCode TaoSolverComputeDualVariables(TaoSolver tao, Vec DL, Vec DU) 
 {
     PetscErrorCode ierr;
     PetscFunctionBegin;

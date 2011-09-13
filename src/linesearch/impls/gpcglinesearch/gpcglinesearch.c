@@ -59,6 +59,7 @@ static PetscErrorCode TaoLineSearchApply_GPCG(TaoLineSearch ls, Vec x,
   TAOLINESEARCH_GPCG_CTX *neP = (TAOLINESEARCH_GPCG_CTX *)ls->data;
   PetscErrorCode  ierr;
   PetscInt i;
+  PetscBool g_computed=PETSC_FALSE; /* to prevent extra gradient computation */
   PetscReal d1,finit,actred,prered,rho, gdx;
 
   PetscFunctionBegin;
@@ -120,20 +121,33 @@ static PetscErrorCode TaoLineSearchApply_GPCG(TaoLineSearch ls, Vec x,
     ls->step = PetscMax(ls->step,ls->stepmin);
     ls->step = PetscMin(ls->step,ls->stepmax);
 
-    ierr = VecCopy(neP->W2,x); CHKERRQ(ierr);
-    ierr = VecAXPY(x,ls->step,s); CHKERRQ(ierr);
+    ierr = VecCopy(x,neP->W2); CHKERRQ(ierr);
+    ierr = VecAXPY(neP->W2,ls->step,s); CHKERRQ(ierr);
     if (ls->bounded) {
-	ierr = VecMedian(ls->lower,x,ls->upper,x); CHKERRQ(ierr);
+	ierr = VecMedian(ls->lower,neP->W2,ls->upper,neP->W2); CHKERRQ(ierr);
     }
-    ierr = TaoLineSearchComputeObjectiveAndGradient(ls,x,f,g); CHKERRQ(ierr);
+
+    /* Gradient is not needed here.  Unless there is a separate
+       gradient routine, compute it here anyway to prevent recomputing at
+       the end of the line search */
+    if (ls->hasobjective) {
+      ierr = TaoLineSearchComputeObjective(ls,neP->W2,f); CHKERRQ(ierr);
+      g_computed=PETSC_FALSE;
+    } else if (ls->usegts){
+      ierr = TaoLineSearchComputeObjectiveAndGTS(ls,neP->W2,f,&gdx); CHKERRQ(ierr);
+      g_computed=PETSC_FALSE;
+    } else {
+      ierr = TaoLineSearchComputeObjectiveAndGradient(ls,neP->W2,f,g); CHKERRQ(ierr);
+      g_computed=PETSC_TRUE;
+    }
 
     if (0 == i) {
 	ls->f_fullstep = *f;
     }
 
     actred = *f - finit;
-    ierr = VecCopy(x,neP->W1); CHKERRQ(ierr);
-    ierr = VecAXPY(neP->W1,-1.0,neP->W2); CHKERRQ(ierr);    /* W1 = X - W2 */
+    ierr = VecCopy(neP->W2,neP->W1); CHKERRQ(ierr);
+    ierr = VecAXPY(neP->W1,-1.0,x); CHKERRQ(ierr);    /* W1 = W2 - X */
     ierr = VecDot(neP->W1,neP->Gold,&prered); CHKERRQ(ierr);
     
     if (fabs(prered)<1.0e-100) prered=1.0e-12;
@@ -179,7 +193,11 @@ static PetscErrorCode TaoLineSearchApply_GPCG(TaoLineSearch ls, Vec x,
     }
   }
   ierr = PetscInfo2(ls,"%d function evals in line search, step = %10.4f\n",ls->nfev,ls->step); CHKERRQ(ierr);
-
+  /* set new solution vector and compute gradient if necessary */
+  ierr = VecCopy(neP->W2, x); CHKERRQ(ierr);
+  if (!g_computed) {
+    ierr = TaoLineSearchComputeGradient(ls,x,g); CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

@@ -391,4 +391,91 @@ PetscErrorCode TaoSolverSetObjectiveAndGradientRoutine(TaoSolver tao, PetscError
     PetscFunctionReturn(0);
 }
   
+#undef __FUNCT__
+#define __FUNCT__ "TaoSolverIsObjectiveDefined"
+/*@
+  TaoSolverIsObjectiveDefined -- Checks to see if the user has
+  declared an objective-only routine.  Useful for determining when
+  it is appropriate to call TaoSolverComputeObjective() or 
+  TaoSolverComputeObjectiveAndGradient()
+
+  Collective on TaoSolver
+
+  Input Parameter:
++ tao - the TaoSolver context
+- ctx - PETSC_TRUE if objective function routine is set by user, 
+        PETSC_FALSE otherwise
+  Level: developer
+
+.seealso: TaoSolverSetObjectiveRoutine(), TaoSolverIsGradientDefined(), TaoSolverIsObjectiveAndGradientDefined()
+@*/
+PetscErrorCode TaoSolverIsObjectiveDefined(TaoSolver tao, PetscBool *flg)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
+  if (tao->ops->computeobjective == 0) 
+    *flg = PETSC_FALSE;
+  else
+    *flg = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TaoSolverIsGradientDefined"
+/*@
+  TaoSolverIsGradientDefined -- Checks to see if the user has
+  declared an objective-only routine.  Useful for determining when
+  it is appropriate to call TaoSolverComputeGradient() or 
+  TaoSolverComputeGradientAndGradient()
+
+  Collective on TaoSolver
+
+  Input Parameter:
++ tao - the TaoSolver context
+- ctx - PETSC_TRUE if gradient routine is set by user, PETSC_FALSE otherwise
+  Level: developer
+
+.seealso: TaoSolverSetGradientRoutine(), TaoSolverIsObjectiveDefined(), TaoSolverIsObjectiveAndGradientDefined()
+@*/
+PetscErrorCode TaoSolverIsGradientDefined(TaoSolver tao, PetscBool *flg)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
+  if (tao->ops->computegradient == 0) 
+    *flg = PETSC_FALSE;
+  else
+    *flg = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "TaoSolverIsObjectiveAndGradientDefined"
+/*@
+  TaoSolverIsObjectiveAndGradientDefined -- Checks to see if the user has
+  declared a joint objective/gradient routine.  Useful for determining when
+  it is appropriate to call TaoSolverComputeObjective() or 
+  TaoSolverComputeGradientAndGradient()
+
+  Collective on TaoSolver
+
+  Input Parameter:
++ tao - the TaoSolver context
+- ctx - PETSC_TRUE if objective/gradient routine is set by user, PETSC_FALSE otherwise
+  Level: developer
+
+.seealso: TaoSolverSetObjectiveAndGradientRoutine(), TaoSolverIsObjectiveDefined(), TaoSolverIsGradientDefined()
+@*/
+PetscErrorCode TaoSolverIsObjectiveAndGradientDefined(TaoSolver tao, PetscBool *flg)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
+  if (tao->ops->computeobjectiveandgradient == 0) 
+    *flg = PETSC_FALSE;
+  else
+    *flg = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
+
 

@@ -90,6 +90,14 @@ test_jbearing2: test_jbearing2.o tao_chkopts
 	-${CLINKER} -o test_jbearing2 test_jbearing2.o ${TAO_LIB} ${PETSC_LIB}
 	${RM} test_jbearing2.o
 
+test_gts: test_gts.o tao_chkopts
+	-${CLINKER} -o test_gts test_gts.o ${TAO_LIB} ${PETSC_LIB}
+	${RM} test_gts.o
+
+test_gtsf: test_gtsf.o tao_chkopts
+	-${FLINKER} -o test_gtsf test_gtsf.o ${TAO_LIB} ${PETSC_LIB}
+	${RM} test_gtsf.o
+
 
 test_jbearingdm: test_jbearingdm.o tao_chkopts
 	-${CLINKER} -o test_jbearingdm test_jbearingdm.o ${TAO_LIB} ${PETSC_LIB}

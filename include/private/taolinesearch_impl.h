@@ -10,6 +10,7 @@ struct _TaoLineSearchOps {
     PetscErrorCode (*computeobjective)(TaoLineSearch, Vec, PetscReal*, void*);
     PetscErrorCode (*computegradient)(TaoLineSearch, Vec, Vec, void*);
     PetscErrorCode (*computeobjectiveandgradient)(TaoLineSearch, Vec, PetscReal *, Vec, void*);
+    PetscErrorCode (*computeobjectiveandgts)(TaoLineSearch, Vec, Vec, PetscReal*, PetscReal*,void*);
     PetscErrorCode (*setup)(TaoLineSearch);
     PetscErrorCode (*apply)(TaoLineSearch,Vec,PetscReal*,Vec,Vec);
     PetscErrorCode (*view)(TaoLineSearch,PetscViewer);
@@ -22,8 +23,14 @@ struct _p_TaoLineSearch {
     void *userctx_func;
     void *userctx_grad;
     void *userctx_funcgrad;
+    void *userctx_funcgts;
     
     PetscBool setupcalled;
+    PetscBool usegts;
+    PetscBool usetaoroutines;
+    PetscBool hasobjective;
+    PetscBool hasgradient;
+    PetscBool hasobjectiveandgradient;
     void *data;
 
     /* bounds used for some line searches */
@@ -32,10 +39,12 @@ struct _p_TaoLineSearch {
     PetscInt bounded;
 
     Vec start_x;
+    Vec stepdirection;
     PetscReal f_fullstep;
     PetscReal new_f;
     Vec new_x;
     Vec new_g;
+  
     PetscReal step;
     PetscReal initstep;
 

@@ -197,6 +197,9 @@ class TaoExamples(ExampleList):
 
         # Least squares
         self.add(Example(example="chwirut1",nprocs=1,options="-tao_smonitor -tao_fatol 0 -tao_frtol 0",method="pounders",tags=["leastsquares","chwirut","single","c","pounders"],name="chwirut1"))
+        self.add(Example(example="chwirut2",nprocs=3,options="-tao_smonitor -tao_fatol 0 -tao_frtol 0",method="pounders",tags=["leastsquares","chwirut","multiprocessor","c","pounders"],name="chwirut2"))
+        self.add(Example(example="chwirut2f",nprocs=3,options="-tao_smonitor -tao_fatol 0 -tao_frtol 0",method="pounders",tags=["leastsquares","chwirut","fortran","multiprocessor","pounders"],name="chwirut2f"))
+
 
         # Check gradients and hessians of examples
         for n in ["minsurf1","eptorsion1","rosenbrock1","rosenbrock1f"]:
@@ -205,6 +208,9 @@ class TaoExamples(ExampleList):
             self.add(Example(example=n,nprocs=2,options="-tao_fd_test_gradient -tao_fd_test_hessian",method="fd_test",tags=["fd_test"],name=n+"_fd_test"))
             
         
-        
+        # test line search options
+        self.add(Example(example="gts",nprocs=1,options="-tao_smonitor",method="lmvm",tags=["jbearing","lmvm","single","c","unconstrained","gts"],name="gts"))
+        self.add(Example(example="gtsf",nprocs=2,options="-tao_smonitor",method="nls",tags=["nls","eptorsion","multiprocessor","fortran","bound","gts"],name="gtsf"))
+
 
                 

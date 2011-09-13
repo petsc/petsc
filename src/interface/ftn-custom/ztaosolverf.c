@@ -15,6 +15,10 @@
 #define taosolverview_                           TAOSOLVERVIEW
 #define taosolvergethistory_                     TAOSOLVERGETHISTORY
 #define taosolversetconvergencetest_             TAOSOLVERSETCONVERGENCETEST
+#define taosolvergetoptionsprefix_               TAOSOLVERGETOPTIONSPREFIX
+#define taosolversetoptionsprefix_               TAOSOLVERSETOPTIONSPREFIX
+#define taosolverappendoptionsprefix_            TAOSOLVERAPPENDOPTIONSPREFIX
+#define taosolvergettype_                        TAOSOLVERGETTYPE
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 
 #define taosolversetobjectiveroutine_            taosolversetobjectiveroutine
@@ -29,6 +33,10 @@
 #define taosolverview_                           taosolverview
 #define taosolvergethistory_                     taosolvergethistory
 #define taosolversetconvergencetest_             taosolversetconvergencetest
+#define taosolvergetoptionsprefix_               taosolvergetoptionsprefix
+#define taosolversetoptionsprefix_               taosolversetoptionsprefix
+#define taosolverappendoptionsprefix_            taosolverappendoptionsprefix
+#define taosolvergettype_                        taosolvergettype
 #endif
 
 static int OBJ=0;       // objective routine index
@@ -136,7 +144,6 @@ EXTERN_C_BEGIN
 void PETSC_STDCALL taosolversetobjectiveroutine_(TaoSolver *tao, void (PETSC_STDCALL *func)(TaoSolver*, Vec *, PetscReal *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
 {
     CHKFORTRANNULLOBJECT(ctx);
-    CHKFORTRANNULLFUNCTION(func);
     PetscObjectAllocateFortranPointers(*tao,NFUNCS);
     if (!func) {
 	*ierr = TaoSolverSetObjectiveRoutine(*tao,0,ctx);
@@ -149,7 +156,6 @@ void PETSC_STDCALL taosolversetobjectiveroutine_(TaoSolver *tao, void (PETSC_STD
 void PETSC_STDCALL taosolversetgradientroutine_(TaoSolver *tao, void (PETSC_STDCALL *func)(TaoSolver*, Vec *, Vec *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
 {
     CHKFORTRANNULLOBJECT(ctx);
-    CHKFORTRANNULLFUNCTION(func);
     PetscObjectAllocateFortranPointers(*tao,NFUNCS);
     if (!func) {
 	*ierr = TaoSolverSetGradientRoutine(*tao,0,ctx);
@@ -162,7 +168,6 @@ void PETSC_STDCALL taosolversetgradientroutine_(TaoSolver *tao, void (PETSC_STDC
 void PETSC_STDCALL taosolversetobjectiveandgradientroutine_(TaoSolver *tao, void (PETSC_STDCALL *func)(TaoSolver*, Vec *, PetscReal *, Vec *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
 {
     CHKFORTRANNULLOBJECT(ctx);
-    CHKFORTRANNULLFUNCTION(func);
     PetscObjectAllocateFortranPointers(*tao,NFUNCS);
     if (!func) {
 	*ierr = TaoSolverSetObjectiveAndGradientRoutine(*tao,0,ctx);
@@ -178,7 +183,6 @@ void PETSC_STDCALL taosolversetobjectiveandgradientroutine_(TaoSolver *tao, void
 void PETSC_STDCALL taosolversetseparableobjectiveroutine_(TaoSolver *tao, Vec *F, void (PETSC_STDCALL *func)(TaoSolver*, Vec *, Vec *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
 {
     CHKFORTRANNULLOBJECT(ctx);
-    CHKFORTRANNULLFUNCTION(func);
     PetscObjectAllocateFortranPointers(*tao,NFUNCS);
     if (!func) {
 	*ierr = TaoSolverSetSeparableObjectiveRoutine(*tao,*F,0,ctx);
@@ -193,7 +197,6 @@ void PETSC_STDCALL taosolversetseparableobjectiveroutine_(TaoSolver *tao, Vec *F
 void PETSC_STDCALL taosolversetjacobianroutine_(TaoSolver *tao, Mat *J, Mat *Jp, void (PETSC_STDCALL *func)(TaoSolver*, Vec *, Mat *, Mat *, MatStructure *,void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
 {
     CHKFORTRANNULLOBJECT(ctx);
-    CHKFORTRANNULLFUNCTION(func);
     PetscObjectAllocateFortranPointers(*tao,NFUNCS);
     if (!func) {
 	*ierr = TaoSolverSetJacobianRoutine(*tao,*J,*Jp,0,ctx);
@@ -206,7 +209,6 @@ void PETSC_STDCALL taosolversetjacobianroutine_(TaoSolver *tao, Mat *J, Mat *Jp,
 void PETSC_STDCALL taosolversethessianroutine_(TaoSolver *tao, Mat *J, Mat *Jp, void (PETSC_STDCALL *func)(TaoSolver*, Vec *, Mat *, Mat *, MatStructure *,void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
 {
     CHKFORTRANNULLOBJECT(ctx);
-    CHKFORTRANNULLFUNCTION(func);
     PetscObjectAllocateFortranPointers(*tao,NFUNCS);
     if (!func) {
 	*ierr = TaoSolverSetHessianRoutine(*tao,*J,*Jp,0,ctx);
@@ -219,7 +221,6 @@ void PETSC_STDCALL taosolversethessianroutine_(TaoSolver *tao, Mat *J, Mat *Jp, 
 void PETSC_STDCALL taosolversetvariableboundsroutine_(TaoSolver *tao, void (PETSC_STDCALL *func)(TaoSolver*,Vec*,Vec*,void*,PetscErrorCode*),void *ctx, PetscErrorCode *ierr)
 {
     CHKFORTRANNULLOBJECT(ctx);
-    CHKFORTRANNULLFUNCTION(func);
     PetscObjectAllocateFortranPointers(*tao,NFUNCS);
     if (func) {
 	((PetscObject)*tao)->fortran_func_pointers[BOUNDS] = (PetscVoidFunction)func;
@@ -232,7 +233,6 @@ void PETSC_STDCALL taosolversetvariableboundsroutine_(TaoSolver *tao, void (PETS
 void PETSC_STDCALL taosolversetmonitor_(TaoSolver *tao, void (PETSC_STDCALL *func)(TaoSolver*,void*,PetscErrorCode*),void *ctx, void (PETSC_STDCALL *mondestroy)(void*,PetscErrorCode*),PetscErrorCode *ierr)
 {
     CHKFORTRANNULLOBJECT(ctx);
-    CHKFORTRANNULLFUNCTION(func);
     PetscObjectAllocateFortranPointers(*tao,NFUNCS);
     if (func) {
 	((PetscObject)*tao)->fortran_func_pointers[MON] = (PetscVoidFunction)func;
@@ -247,7 +247,6 @@ void PETSC_STDCALL taosolversetmonitor_(TaoSolver *tao, void (PETSC_STDCALL *fun
 void PETSC_STDCALL taosolversetconvergencetest_(TaoSolver *tao, void (PETSC_STDCALL *func)(TaoSolver*,void*,PetscErrorCode*),void *ctx, PetscErrorCode *ierr)
 {
     CHKFORTRANNULLOBJECT(ctx);
-    CHKFORTRANNULLFUNCTION(func);
     PetscObjectAllocateFortranPointers(*tao,NFUNCS);
     if (!func) {
 	*ierr = TaoSolverSetConvergenceTest(*tao,0,ctx);
@@ -283,5 +282,40 @@ void PETSC_STDCALL taosolvergethistory_(TaoSolver *tao, PetscInt *nhist, PetscEr
   *nhist  = (*tao)->hist_len;
   *ierr = 0;
 }
+
+void PETSC_STDCALL taosolvergetoptionsprefix_(TaoSolver *tao, CHAR prefix PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len))
+{
+  const char *name;
+  *ierr = TaoSolverGetOptionsPrefix(*tao,&name);
+  *ierr = PetscStrncpy(prefix,name,len); if (*ierr) return;
+  FIXRETURNCHAR(PETSC_TRUE,name,len);
+
+}
+
+void PETSC_STDCALL taosolverappendoptionsprefix_(TaoSolver *tao, CHAR prefix PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+{
+  char *name;
+  FIXCHAR(prefix,len,name);
+  *ierr = TaoSolverAppendOptionsPrefix(*tao,name);
+  FREECHAR(prefix,name);
+}
+
+void PETSC_STDCALL taosolversetoptionsprefix_(TaoSolver *tao, CHAR prefix PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+{
+  char *t;
+  FIXCHAR(prefix,len,t);
+  *ierr = TaoSolverSetOptionsPrefix(*tao,t);
+  FREECHAR(prefix,t);
+}
+
+void PETSC_STDCALL taosolvergettype_(TaoSolver *tao, CHAR name PETSC_MIXED_LEN(len), PetscErrorCode *ierr, PETSC_END_LEN(len))
+{
+  const char *tname;
+  *ierr = TaoSolverGetType(*tao,&tname);
+  *ierr = PetscStrncpy(name,tname,len); if (*ierr) return;
+  FIXRETURNCHAR(PETSC_TRUE,name,len);
+  
+}
 EXTERN_C_END
+
 
