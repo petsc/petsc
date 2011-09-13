@@ -232,6 +232,9 @@ for p in blas qblas lapack qlapack; do
 		SRC=$BLASSRC
 		DES=$BLASDIR
 		NOOP=""
+		echo "pow_ii" > ${TMP}/AUX.list
+		echo $'pow_si\nsmaxloc' > ${TMP}/SINGLE.list
+		echo $'pow_di\ndmaxloc' > ${TMP}/DOUBLE.list
 		cd $SRC
 		files="`ls *.f`"
 		cd -
@@ -240,6 +243,7 @@ for p in blas qblas lapack qlapack; do
 		SRC=$TMP
 		DES=$BLASDIR
 		NOOP=""
+		echo $'pow_qi\nqmaxloc' > ${TMP}/QUAD.list
 		files="`cat ${TMP}/ql.list`"
 		;;
 
@@ -3960,35 +3964,17 @@ sig_die("Fortran abort routine called", 1); \
 #define i_sign(a,b) ((integer)u_sign((integer)*(a),(integer)*(b)))
 #define pow_ci(p, a, b) { pow_zi((p), (a), (b)); }
 #define pow_dd(ap, bp) (M(pow)(*(ap), *(bp)))
-#define pow_di(B,E) pow_ui(*(B),*(E))
-#define pow_ii(B,E) ({ \
-	integer __x=*(B), __n=*(E), __pow; unsigned long int __u; \
-	if (__n <= 0) { \
-		if (__n == 0 || __x == 1) __pow = 1; \
-		else if (__x != -1) __pow = __x == 0 ? 1/__x : 0; \
-		else __n = -__n; \
-	} \
-	if ((__n > 0) || !(__n == 0 || __x == 1 || __x != -1)) { \
-		__u = __n; \
-		for(__pow = 1; ; ) { \
-			if(__u & 01) __pow *= __x; \
-			if(__u >>= 1) __x *= __x; \
-			else break; \
-		} \
-	} \
-	__pow; })
-#define pow_ri(B,E) pow_ui(*(B),*(E))
-#define pow_ui(B,E) ({ \
-	dscalar __x = (B); integer __n = (E); dscalar __pow=1.0; unsigned long int __u; \
-	if(__n != 0) { \
-		if(__n < 0) __n = -__n, __x = 1/__x; \
-		for(__u = __n; ; ) { \
-			if(__u & 01) __pow *= __x; \
-			if(__u >>= 1) __x *= __x; \
-			else break; \
-		} \
-	} \
-	__pow; })
+#if defined(__LAPACK_PRECISION_QUAD)
+#	define pow_di(B,E) qpow_ui((B),*(E))
+	extern dscalar qpow_ui(scalar *_x, integer n);
+#elif defined( __LAPACK_PRECISION_SINGLE)
+#	define pow_ri(B,E) spow_ui((B),*(E))
+	extern dscalar spow_ui(scalar *_x, integer n);
+#else
+#	define pow_di(B,E) dpow_ui((B),*(E))
+	extern dscalar dpow_ui(scalar *_x, integer n);
+#endif
+extern integer pow_ii(integer*,integer*);
 #define pow_zi(p, a, b) { \
 	integer __n=*(b); unsigned long __u; scalar __t; scalarcomplex __x; \
 	static scalarcomplex one = {1.0, 0.0}; \
@@ -4047,13 +4033,17 @@ static char junk[] = "\n@(#)LIBF77 VERSION 19990503\n";
 #define z_abs(z) c_abs(z)
 #define z_exp(R, Z) c_exp(R, Z)
 #define z_sqrt(R, Z) c_sqrt(R, Z)
-//#define myexit_() exit(EXIT_FAILURE)
 #define myexit_() break;
-#define mymaxloc_(w,s,e,n) ({ \
-	scalar __m; integer __i, __mi; \
-	for(__m=(w)[*(s)-1], __mi=*(s), __i=*(s)+1; __i<=*(e); __i++) \
-		if ((w)[__i-1]>__m) __mi=__i ,__m=(w)[__i-1]; \
-	__mi-*(s)+1; })
+#if defined(__LAPACK_PRECISION_QUAD)
+#	define mymaxloc_(w,s,e,n) qmaxloc_((w),*(s),*(e),n)
+	extern integer qmaxloc_(scalar *w, integer s, integer e, integer n);
+#elif defined( __LAPACK_PRECISION_SINGLE)
+#	define mymaxloc_(w,s,e,n) smaxloc_((w),*(s),*(e),n)
+	extern integer smaxloc_(scalar *w, integer s, integer e, integer n);
+#else
+#	define mymaxloc_(w,s,e,n) dmaxloc_((w),*(s),*(e),n)
+	extern integer dmaxloc_(scalar *w, integer s, integer e, integer n);
+#endif
 
 /* procedure parameter types for -A and -C++ */
 
@@ -4068,6 +4058,65 @@ EOF
 	cp ${TMP}/f2c.h ${BLASDIR}
 	cp ${TMP}/f2c.h ${LAPACKDIR}
 
+
+	cat <<EOF > ${BLASDIR}/pow_ii.c
+#include "f2c.h"
+integer pow_ii(integer *_x, integer *_n) {
+	integer x=*_x, n=*_n, pow; unsigned long int u;
+	if (n <= 0) {
+		if (n == 0 || x == 1) pow = 1;
+		else if (x != -1) pow = x == 0 ? 1/x : 0;
+		else n = -n;
+	}
+	if ((n > 0) || !(n == 0 || x == 1 || x != -1)) {
+		u = n;
+		for(pow = 1; ; ) {
+			if(u & 01) pow *= x;
+			if(u >>= 1) x *= x;
+			else break;
+		}
+	}
+	return pow;
+}
+EOF
+
+	for i in s d q; do
+		case $i in
+		s) P="SINGLE";;
+		d) P="DOUBLE";;
+		q) P="QUAD";;
+		esac
+
+		cat <<EOF > ${BLASDIR}/pow_${i}i.c
+#define __LAPACK_PRECISION_${P}
+#include "f2c.h"
+dscalar ${i}pow_ui(scalar *_x, integer n) {
+	dscalar x = *_x; dscalar pow=1.0; unsigned long int u;
+	if(n != 0) {
+		if(n < 0) n = -n, x = 1/x;
+		for(u = n; ; ) {
+			if(u & 01) pow *= x;
+			if(u >>= 1) x *= x;
+			else break;
+		}
+	}
+	return pow;
+}
+EOF
+		cat <<EOF > ${BLASDIR}/${i}maxloc.c
+#define __LAPACK_PRECISION_${P}
+#include "f2c.h"
+integer ${i}maxloc_(scalar *w, integer s, integer e, integer n)
+{
+	scalar m; integer i, mi;
+	for(m=w[s-1], mi=s, i=s+1; i<=e; i++)
+		if (w[i-1]>m) mi=i ,m=w[i-1];
+	return mi-s+1;
+}
+EOF
+	done
+
+		
 # 3) Make the package, copy it to the current directory
 #	 and remove temp directory
 cd $TMP
