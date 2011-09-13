@@ -4028,13 +4028,13 @@ static char junk[] = "\n@(#)LIBF77 VERSION 19990503\n";
 #define myexit_() break;
 #if defined(__LAPACK_PRECISION_QUAD)
 #	define mymaxloc_(w,s,e,n) qmaxloc_((w),*(s),*(e),n)
-	extern integer qmaxloc_(scalar *w, integer s, integer e, integer n);
+	extern integer qmaxloc_(scalar *w, integer s, integer e, integer *n);
 #elif defined( __LAPACK_PRECISION_SINGLE)
 #	define mymaxloc_(w,s,e,n) smaxloc_((w),*(s),*(e),n)
-	extern integer smaxloc_(scalar *w, integer s, integer e, integer n);
+	extern integer smaxloc_(scalar *w, integer s, integer e, integer *n);
 #else
 #	define mymaxloc_(w,s,e,n) dmaxloc_((w),*(s),*(e),n)
-	extern integer dmaxloc_(scalar *w, integer s, integer e, integer n);
+	extern integer dmaxloc_(scalar *w, integer s, integer e, integer *n);
 #endif
 
 /* procedure parameter types for -A and -C++ */
@@ -4098,7 +4098,7 @@ EOF
 		cat <<EOF > ${BLASDIR}/${i}maxloc.c
 #define __LAPACK_PRECISION_${P}
 #include "f2c.h"
-integer ${i}maxloc_(scalar *w, integer s, integer e, integer n)
+integer ${i}maxloc_(scalar *w, integer s, integer e, integer *n)
 {
 	scalar m; integer i, mi;
 	for(m=w[s-1], mi=s, i=s+1; i<=e; i++)
