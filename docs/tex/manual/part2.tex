@@ -896,14 +896,21 @@ parameters to change the behavior and convergence of various algorithms.
 
 One convergence criterion for most algorithms concerns the
 of digits of accuracy needed in the solution.  In particular,
-one convergence test employed by TAO attempts to stop when
+the convergence test employed by TAO attempts to stop when
 the error in the constraints is less than $\epsilon_{crtol}$,
  and either
-\[\frac{ |f(X) - f(X^*)|}{ |f(X)| + 1} \leq \epsilon_{frtol}
-\;\textnormal{or}\;
-f(X) - f(X^*)  \leq \epsilon_{fatol}, \]
-where $X^*$ is the current approximation to the true solution $X$.
-$X$ is unknown, so TAO estimates $f(X) - f(X^*)$ with either 
+\[
+\begin{array}{lcl}
+f(X) - f(X^*)  &\leq& \epsilon_{fatol}, \\
+|f(X) - f(X^*)| / |f(X^*)| &\leq& \epsilon_{frtol},\\
+||g(X)|| &\leq& \epsilon_{gatol}, \\
+||g(X)||/|f(X)| &\leq& \epsilon_{grtol}, or \\
+||g(X)||/|g(X_0)| &\leq& \epsilon_{gttol},
+\end{array}
+\]
+where $X$ is the current approximation to the true solution $X^*$
+and $X_0$ is the initial guess.
+$X^*$ is unknown, so TAO estimates $f(X) - f(X^*)$ with either 
 the square of the norm of the gradient or the duality gap.
 A relative tolerance of $\epsilon_{frtol}=0.01$ indicates that two
 significant digits are desired in the objective function.
@@ -964,7 +971,7 @@ The last argument returns
 a code that indicates the reason that the solver terminated.  Positive 
 numbers indicate that a solution has been found, while negative numbers
 indicate a failure.  A list of reasons can be found in the manual page
-for {\tt TaoSolverGetConvergedReason()}.
+for {\tt TaoSolverGetTerminationReason()}.
 
 The user set
 vectors containing the solution before solving

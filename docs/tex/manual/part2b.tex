@@ -767,7 +767,7 @@ direction for the augmented Lagrangian merit function.  We
 then find $\alpha$ to approximately minimize the augmented 
 Lagrangian merit function along the Newton direction.
 \[
-\displaystyle \min_{\alpha \geq 0} & \tilde{f}_k(u_k + \alpha du, v_k)
+\displaystyle \min_{\alpha \geq 0} \; \tilde{f}_k(u_k + \alpha du, v_k)
 \]
 We can enforce either the sufficient decrease condition or the 
 Wolfe conditions during the search procedure.  The new point, 
@@ -878,6 +878,7 @@ The reduced gradient at the new point is computed from
 \begin{array}{lcl}
 y_{k+1} & = & A_k^{-T}c_{k+1} \\
 \tilde{g}_{k+1} & = & d_{k+1} - y_{k+1}^T B_k
+\end{array}
 \]
 where $c_{k+1} = \nabla_u \tilde{f}_k (u_{k+1},v_{k+1})$ and
 $d_{k+1} = \nabla_v \tilde{f}_k (u_{k+1},v_{k+1})$.  The

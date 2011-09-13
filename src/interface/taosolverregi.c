@@ -57,9 +57,11 @@ const char *TaoSolverTerminationReasons_Shifted[] = {
  
     "CONTINUE_ITERATING",
     
-    " ",
-    "CONVERGED_ATOL",
-    "CONVERGED_RTOL",
+    "CONVERGED_FATOL",
+    "CONVERGED_FRTOL",
+    "CONVERGED_GATOL",
+    "CONVERGED_GRTOL",
+    "CONVERGED_GTTOL",
     "CONVERGED_STEPTOL",
     "CONVERGED_MINF",
     "CONVERGED_USER" };

@@ -343,6 +343,7 @@ PetscErrorCode TaoSolverSetFromOptions(TaoSolver tao)
     /* So no warnings are given about unused options */
     ierr = PetscOptionsHasName(prefix,"-tao_ksp_type",&flg);
     ierr = PetscOptionsHasName(prefix,"-tao_pc_type",&flg);
+    ierr = PetscOptionsHasName(prefix,"-tao_ls_type",&flg);
     
 
     ierr = PetscOptionsBegin(comm, ((PetscObject)tao)->prefix,"TaoSolver options","TaoSolver"); CHKERRQ(ierr);
@@ -674,20 +675,21 @@ PetscErrorCode TaoSolverView(TaoSolver tao, PetscViewer viewer)
 . frtol - relative convergence tolerance
 . gatol - stop if norm of gradient is less than this
 . grtol - stop if relative norm of gradient is less than this
-- gttol - stop if norm of gradient is reduced by a this factor
+- gttol - stop if norm of gradient is reduced by this factor
 
   Options Database Keys:
 + -tao_fatol <fatol> - Sets fatol
 . -tao_frtol <frtol> - Sets frtol
 . -tao_gatol <catol> - Sets gatol
-. -tao_grtol <catol> - Sets gatol
+. -tao_grtol <catol> - Sets grtol
 - .tao_gttol <crtol> - Sets gttol
 
-  Absolute Stopping Criteria
-$ f_{k+1} <= f_k + fatol
-
-  Relative Stopping Criteria
-$ f_{k+1} <= f_k + frtol*|f_k|
+  Stopping Criteria 
+$ f(X) - f(X*) (estimated)            <= fatol 
+$ |f(X) - f(X*)| (estimated) / |f(X)| <= frtol
+$ ||g(X)||                            <= gatol
+$ ||g(X)|| / |f(X)|                   <= grtol
+$ ||g(X)|| / ||g(X0)||                <= gttol
 
   Notes: Use PETSC_DEFAULT to leave one or more tolerances unchanged.
 
@@ -1050,8 +1052,8 @@ PetscErrorCode TaoSolverGetTolerances(TaoSolver tao, PetscReal *fatol, PetscReal
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSolverGetKSP"
-/*@C
-  TaoGetKSP - Gets the linear solver used by the optimization solver.
+/*@
+  TaoSolverGetKSP - Gets the linear solver used by the optimization solver.
   Application writers should use TaoSolverGetKSP if they need direct access
   to the PETSc KSP object.
   
@@ -1073,8 +1075,8 @@ PetscErrorCode TaoSolverGetKSP(TaoSolver tao, KSP *ksp) {
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSolverGetLineSearch"
-/*@C
-  TaoGetKSP - Gets the line search used by the optimization solver.
+/*@
+  TaoSolverGetLineSearch - Gets the line search used by the optimization solver.
   Application writers should use TaoSolverGetLineSearch if they need direct access
   to the TaoLineSearch object.
   
@@ -1096,7 +1098,7 @@ PetscErrorCode TaoSolverGetLineSearch(TaoSolver tao, TaoLineSearch *ls) {
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSolverGetSolutionVector"
-/*@C
+/*@
   TaoSolverGetSolutionVector - Returns the vector with the current TAO solution
 
   Input Parameter:
@@ -1119,7 +1121,7 @@ PetscErrorCode TaoSolverGetSolutionVector(TaoSolver tao, Vec *X)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSolverGetGradientVector"
-/*@C
+/*@
   TaoSolverGetGradientVector - Returns the vector with the current TAO gradient
 
   Input Parameter:
@@ -1664,7 +1666,7 @@ PetscErrorCode TaoSolverSeparableObjectiveMonitor(TaoSolver tao, void *ctx)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSolverDefaultConvergenceTest"
-/*@ 
+/*@C
    TaoSolverDefaultConvergenceTest - Determines whether the solver should continue iterating
    or terminate. 
 
@@ -1698,12 +1700,15 @@ PetscErrorCode TaoSolverDefaultConvergenceTest(TaoSolver tao,void *dummy)
   PetscReal fatol=tao->fatol,frtol=tao->frtol,catol=tao->catol,crtol=tao->crtol;
   PetscReal fmin=tao->fmin, cnorm=tao->cnorm, cnorm0=tao->cnorm0;
   PetscReal gnorm2;
-  TaoSolverTerminationReason reason=TAO_CONTINUE_ITERATING;
+  TaoSolverTerminationReason reason=tao->reason;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAOSOLVER_CLASSID,1);
-
+  
+  if (reason != TAO_CONTINUE_ITERATING) {
+    PetscFunctionReturn(0);
+  }
   gnorm2=gnorm*gnorm;
 
   if (PetscIsInfOrNanReal(f)) {
@@ -1713,20 +1718,20 @@ PetscErrorCode TaoSolverDefaultConvergenceTest(TaoSolver tao,void *dummy)
     ierr = PetscInfo2(tao,"Converged due to function value %g < minimum function value %g\n", f,fmin); CHKERRQ(ierr);
     reason = TAO_CONVERGED_MINF;
   } else if (gnorm2 <= fatol && cnorm <=catol) {
-    ierr = PetscInfo2(tao,"Converged due to residual norm %g < %g\n",gnorm2,fatol); CHKERRQ(ierr);
-    reason = TAO_CONVERGED_ATOL;
-  } else if (gnorm2 / PetscAbsReal(f+1.0e-10)<= frtol && cnorm/PetscMax(cnorm0,1.0) <= crtol) {
-    ierr = PetscInfo2(tao,"Converged due to relative residual norm %g < %g\n",gnorm2/PetscAbsReal(f+1.0e-10),frtol); CHKERRQ(ierr);
-    reason = TAO_CONVERGED_RTOL;
+    ierr = PetscInfo2(tao,"Converged due to estimated f(X) - f(X*) = %g < %g\n",gnorm2,fatol); CHKERRQ(ierr);
+    reason = TAO_CONVERGED_FATOL;
+  } else if (f != 0 && gnorm2 / PetscAbsReal(f)<= frtol && cnorm/PetscMax(cnorm0,1.0) <= crtol) {
+    ierr = PetscInfo2(tao,"Converged due to estimated |f(X)-f(X*)|/f(X) = %g < %g\n",gnorm2/PetscAbsReal(f),frtol); CHKERRQ(ierr);
+    reason = TAO_CONVERGED_FRTOL;
   } else if (gnorm<= gatol && cnorm <=catol) {
-    ierr = PetscInfo2(tao,"Converged due to residual norm %g < %g\n",gnorm,gatol); CHKERRQ(ierr);
-    reason = TAO_CONVERGED_ATOL;
+    ierr = PetscInfo2(tao,"Converged due to residual norm ||g(X)||=%g < %g\n",gnorm,gatol); CHKERRQ(ierr);
+    reason = TAO_CONVERGED_GATOL;
   } else if ( f!=0 && PetscAbsReal(gnorm/f) <= grtol && cnorm <= crtol) {
-    ierr = PetscInfo3(tao,"Converged due to residual norm %g < |%g| %g\n",gnorm,f,grtol); CHKERRQ(ierr);
-    reason = TAO_CONVERGED_ATOL;
+    ierr = PetscInfo3(tao,"Converged due to residual ||g(X)||/|f(X)| =%g < %g\n",gnorm/f,grtol); CHKERRQ(ierr);
+    reason = TAO_CONVERGED_GRTOL;
   } else if (gnorm/gnorm0 <= gttol && cnorm <= crtol) {
-    ierr = PetscInfo2(tao,"Converged due to relative residual norm %g < %g\n",gnorm/gnorm0,gttol); CHKERRQ(ierr);
-    reason = TAO_CONVERGED_RTOL;
+    ierr = PetscInfo2(tao,"Converged due to relative residual norm ||g(X)||/||g(X0)|| = %g < %g\n",gnorm/gnorm0,gttol); CHKERRQ(ierr);
+    reason = TAO_CONVERGED_GTTOL;
   } else if (nfuncs > max_funcs){
     ierr = PetscInfo2(tao,"Exceeded maximum number of function evaluations: %d > %d\n", nfuncs,max_funcs); CHKERRQ(ierr);
     reason = TAO_DIVERGED_MAXFCN;
@@ -2165,31 +2170,35 @@ PetscErrorCode TaoSolverSetTerminationReason(TaoSolver tao, TaoSolverTermination
    Output Parameter:
 .  reason - one of
 
-$    TAO_CONVERGED_ATOL (2),        ||g||^2 <= atol
-$    TAO_CONVERGED_RTOL (3),        ||g||^2
-$    TAO_CONVERGED_STEPTOL (4),       step size small
-$    TAO_CONVERGED_MINF (5),        F < F_min
-$    TAO_CONVERGED_USER (6),        (user defined)
 
-$    TAO_DIVERGED_MAXITS (-2),      (its>maxits)
-$    TAO_DIVERGED_NAN (-4),         (Numerical problems)
-$    TAO_DIVERGED_MAXFCN (-5),      (nfunc > maxnfuncts)
-$    TAO_DIVERGED_LS_FAILURE (-6),  (line search failure)
-$    TAO_DIVERGED_TR_REDUCTION (-7),
-$    TAO_DIVERGED_USER (-8),        (user defined)
+$  TAO_CONVERGED_FATOL (1)           f(X)-f(X*) <= fatol
+$  TAO_CONVERGED_FRTOL (2)           |f(X) - f(X*)|/|f(X)| < frtol 
+$  TAO_CONVERGED_GATOL (3)           ||g(X)|| < gatol 
+$  TAO_CONVERGED_GRTOL (4)           ||g(X)|| / f(X)  < grtol
+$  TAO_CONVERGED_GTTOL (5)           ||g(X)|| / ||g(X0)|| < gttol
+$  TAO_CONVERGED_STEPTOL (6)         step size small 
+$  TAO_CONVERGED_MINF (7)            F < F_min
+$  TAO_CONVERGED_USER (8)            User defined
 
-$    TAO_CONTINUE_ITERATING  (0)
+$  TAO_DIVERGED_MAXITS (-2)          its > maxits
+$  TAO_DIVERGED_NAN (-4)             Numerical problems
+$  TAO_DIVERGED_MAXFCN (-5)          fevals > maxfevals
+$  TAO_DIVERGED_LS_FAILURE (-6)      line search failure
+$  TAO_DIVERGED_TR_REDUCTION (-7)    trust region failure
+$  TAO_DIVERGED_USER(-8)             (user defined)
+
+$  TAO_CONTINUE_ITERATING (0)
 
    where
-+  F - current function value
-.  xdiff - current trust region size
-.  f - function value
-.  atol - absolute tolerance
-.  rtol - relative tolerance
++  X - current solution
+.  X0 - initial guess
+.  f(X) - current function value
+.  f(X*) - true solution (estimated)
+.  g(X) - current gradient
 .  its - current iterate number
 .  maxits - maximum number of iterates
-.  nfunc - number of function evaluations
--  maxnfuncts - maximum number of function evaluations
+.  fevals - number of function evaluations
+-  maxfevals - maximum number of function evaluations
 
    Level: intermediate
 

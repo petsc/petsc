@@ -21,20 +21,23 @@ extern PetscClassId TAOSOLVER_CLASSID;
     $TAO_DIR/include/finclude/tao_solver.h
 */
 typedef enum {/* converged */
-              TAO_CONVERGED_ATOL          =  2, /* F < F_minabs */
-              TAO_CONVERGED_RTOL          =  3, /* F < F_mintol*F_initial */
-              TAO_CONVERGED_STEPTOL         =  4, /* step size small */
-              TAO_CONVERGED_MINF          =  5, /* grad F < grad F_min */
-              TAO_CONVERGED_USER          =  6, /* User defined */
-              /* diverged */
-              TAO_DIVERGED_MAXITS         = -2,
-              TAO_DIVERGED_NAN            = -4,
-              TAO_DIVERGED_MAXFCN         = -5,
-              TAO_DIVERGED_LS_FAILURE     = -6,
-              TAO_DIVERGED_TR_REDUCTION   = -7,
-              TAO_DIVERGED_USER           = -8, /* User defined */
-              /* keep going */
-              TAO_CONTINUE_ITERATING      =  0} TaoSolverTerminationReason;
+  TAO_CONVERGED_FATOL          =  1, /* f(X)-f(X*) <= fatol */
+  TAO_CONVERGED_FRTOL          =  2, /* |F(X) - f(X*)|/|f(X)| < frtol */
+  TAO_CONVERGED_GATOL          =  3, /* ||g(X)|| < gatol */
+  TAO_CONVERGED_GRTOL          =  4, /* ||g(X)|| / f(X)  < grtol */
+  TAO_CONVERGED_GTTOL          =  5, /* ||g(X)|| / ||g(X0)|| < gttol */ 
+  TAO_CONVERGED_STEPTOL        =  6, /* step size small */
+  TAO_CONVERGED_MINF          =  7, /* F < F_min */
+  TAO_CONVERGED_USER          =  8, /* User defined */
+  /* diverged */
+  TAO_DIVERGED_MAXITS         = -2,
+  TAO_DIVERGED_NAN            = -4,
+  TAO_DIVERGED_MAXFCN         = -5,
+  TAO_DIVERGED_LS_FAILURE     = -6,
+  TAO_DIVERGED_TR_REDUCTION   = -7,
+  TAO_DIVERGED_USER           = -8, /* User defined */
+  /* keep going */
+  TAO_CONTINUE_ITERATING      =  0} TaoSolverTerminationReason;
 
 extern const char **TaoSolverTerminationReasons;
 
@@ -100,6 +103,9 @@ extern PetscErrorCode TaoSolverComputeGradient(TaoSolver, Vec, Vec);
 extern PetscErrorCode TaoSolverComputeObjectiveAndGradient(TaoSolver, Vec, PetscReal*, Vec);
 extern PetscErrorCode TaoSolverComputeConstraints(TaoSolver, Vec, Vec);
 extern PetscErrorCode TaoSolverDefaultComputeGradient(TaoSolver, Vec, Vec, void*);
+extern PetscErrorCode TaoSolverIsObjectiveDefined(TaoSolver,PetscBool*);
+extern PetscErrorCode TaoSolverIsGradientDefined(TaoSolver,PetscBool*);
+extern PetscErrorCode TaoSolverIsObjectiveAndGradientDefined(TaoSolver,PetscBool*);
 
 extern PetscErrorCode TaoSolverComputeHessian(TaoSolver, Vec, Mat*, Mat*, MatStructure*);
 extern PetscErrorCode TaoSolverComputeJacobian(TaoSolver, Vec, Mat*, Mat*, MatStructure*);
