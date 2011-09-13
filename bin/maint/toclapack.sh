@@ -233,8 +233,8 @@ for p in blas qblas lapack qlapack; do
 		DES=$BLASDIR
 		NOOP=""
 		echo "pow_ii" > ${TMP}/AUX.list
-		echo $'pow_si\nsmaxloc' > ${TMP}/SINGLE.list
-		echo $'pow_di\ndmaxloc' > ${TMP}/DOUBLE.list
+		echo $'pow_si\nsmaxloc\nsf__cabs' > ${TMP}/SINGLE.list
+		echo $'pow_di\ndmaxloc\ndf__cabs' > ${TMP}/DOUBLE.list
 		cd $SRC
 		files="`ls *.f`"
 		cd -
@@ -243,7 +243,7 @@ for p in blas qblas lapack qlapack; do
 		SRC=$TMP
 		DES=$BLASDIR
 		NOOP=""
-		echo $'pow_qi\nqmaxloc' > ${TMP}/QUAD.list
+		echo $'pow_qi\nqmaxloc\nqf__cabs' > ${TMP}/QUAD.list
 		files="`cat ${TMP}/ql.list`"
 		;;
 
@@ -3870,24 +3870,16 @@ typedef struct Namelist Namelist;
 #define abort_() { \
 sig_die("Fortran abort routine called", 1); \
 }
-#define f__cabs(_r, _i) ({ \
-	scalar __r=(_r), __i=(_i), __temp; \
-	if(__r < 0) \
-		__r = -__r; \
-	if(__i < 0) \
-		__i = -__i; \
-	if(__i > __r){ \
-		__temp = __r; \
-		__r = __i; \
-		__i = __temp; \
-	} \
-	if((__r+__i) == __r) \
-		__temp = __r; \
-	else { \
-		__temp = __i/__r; \
-		__temp = __r*M(sqrt)(M(1.0) + __temp*__temp);  /*overflow!!*/ \
-	} \
-	__temp; })
+#if defined(__LAPACK_PRECISION_QUAD)
+#	define f__cabs(r,i) qf__cabs((r),(i))
+	extern scalar qf__cabs(scalar r, scalar i);
+#elif defined( __LAPACK_PRECISION_SINGLE)
+#	define f__cabs(r,i) sf__cabs((r),(i))
+	extern scalar sf__cabs(scalar r, scalar i);
+#else
+#	define f__cabs(r,i) df__cabs((r),(i))
+	extern scalar df__cabs(scalar r, scalar i);
+#endif
 #define c_abs(z) ( f__cabs( (z)->r, (z)->i ) )
 #define c_cos(R,Z) {(R)->r = (M(cos)((Z)->r) * M(cosh)((Z)->i)); (R)->i = (-M(sin)((Z)->r) * M(sinh)((Z)->i));}
 #define c_div(c, a, b) { \
@@ -4112,6 +4104,28 @@ integer ${i}maxloc_(scalar *w, integer s, integer e, integer n)
 	for(m=w[s-1], mi=s, i=s+1; i<=e; i++)
 		if (w[i-1]>m) mi=i ,m=w[i-1];
 	return mi-s+1;
+}
+EOF
+
+		cat <<EOF > ${BLASDIR}/${i}f__cabs.c
+#define __LAPACK_PRECISION_${P}
+#include "f2c.h"
+scalar ${i}f__cabs(scalar r, scalar i) {
+	scalar temp;
+	if(r < 0) r = -r;
+	if(i < 0) i = -i;
+	if(i > r){
+		temp = r;
+		r = i;
+		i = temp;
+	}
+	if((r+i) == r)
+		temp = r;
+	else {
+		temp = i/r;
+		temp = r*M(sqrt)(M(1.0) + temp*temp);  /*overflow!!*/
+	}
+	return temp;
 }
 EOF
 	done
