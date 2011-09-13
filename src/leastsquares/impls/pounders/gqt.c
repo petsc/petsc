@@ -239,12 +239,12 @@ PetscErrorCode gqt(PetscInt n, PetscReal *a, PetscInt lda, PetscReal *b,
 		   PetscReal *z, PetscReal *wa1, PetscReal *wa2)
 {
     PetscErrorCode ierr;
-    PetscReal f,p001=0.001,p5=0.5,minusone=-1,delta2=delta*delta;
+    PetscReal f=0.0,p001=0.001,p5=0.5,minusone=-1,delta2=delta*delta;
     PetscInt iter, j, rednc,info;
     PetscBLASInt indef;
     PetscBLASInt blas1=1, blasn=n, iblas, blaslda = lda,blasldap1=lda+1,blasinfo;
     PetscReal alpha, anorm, bnorm, parc, parf, parl, pars, par=*retpar,
-	paru, prod, rxnorm, rznorm, temp, xnorm;
+	paru, prod, rxnorm, rznorm=0.0, temp, xnorm;
     
     PetscFunctionBegin;
     iter = 0;

@@ -232,9 +232,21 @@ PetscErrorCode TaoLineSearchSetUp(TaoLineSearch ls)
        ierr = TaoSolverIsObjectiveAndGradientDefined(ls->taosolver,&flg); CHKERRQ(ierr);
        ls->hasobjectiveandgradient = flg;
      } else {
-       ls->hasobjective=(ls->ops->computeobjective!=0);
-       ls->hasgradient=(ls->ops->computegradient!=0);
-       ls->hasobjectiveandgradient=(ls->ops->computeobjectiveandgradient!=0);
+       if (ls->ops->computeobjective) {
+	 ls->hasobjective = PETSC_TRUE;
+       } else {
+	 ls->hasobjective = PETSC_FALSE;
+       }
+       if (ls->ops->computegradient) {
+	 ls->hasgradient = PETSC_TRUE;
+       } else {
+	 ls->hasgradient = PETSC_FALSE;
+       }
+       if (ls->ops->computeobjectiveandgradient) {
+	 ls->hasobjectiveandgradient = PETSC_TRUE;
+       } else {
+	 ls->hasobjectiveandgradient = PETSC_FALSE;
+       }
      }
      ls->setupcalled = PETSC_TRUE;
      PetscFunctionReturn(0);
