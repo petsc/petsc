@@ -37,3 +37,4 @@ void taoinitialize_(CHAR filename PETSC_MIXED_LEN(len), PetscErrorCode *ierr PET
   *ierr = PetscInfo(0,"TAO succesfully started from Fortran\n");
   return;
 }
+EXTERN_C_END
