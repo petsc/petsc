@@ -52,6 +52,19 @@ class Example:
 
     def hasTag(self,tag):
         return (tag in self.tags)
+    def hasAllTags(self,tlist):
+        if (tlist is None or len(tlist)==0):
+            return True
+        if len(tlist)==1:
+            return self.hasTag(tlist[0])
+        return (self.hasTag(tlist[0]) and self.hasAllTags(tlist[1:]))
+    def hasNoTags(self,tlist):
+        if (tlist is None or len(tlist)==0):
+            return True
+        if (len(tlist)==1):
+            return not self.hasTag(tlist[0])
+        else:
+            return (not self.hasTag(tlist[0]) and self.hasNoTags(tlist[1:]))
 
 class ExampleList:
     def __init__(self):
@@ -112,8 +125,13 @@ class ExampleList:
 
     def setWithTags(self,taglist):
         negtags = []
+        postags = []
         retlist = []
         
+        if len(taglist) == 0: # No inclusion tags defaults to entire list
+            retlist = self.list[:]
+            return
+
         # First check for names
         for t in taglist:
             for e in self.list:
@@ -127,16 +145,13 @@ class ExampleList:
             if t.startswith('-'):
                 negtags.append(t[1:])
             else:
-                for e in self.list:
-                    if e.hasTag(t):
-                        retlist.append(e)
-        if len(retlist) == 0: # No inclusion tags defaults to entire list
-            retlist = self.list[:]
+                postags.append(t)
+
+        for e in self.list:
+            if e.hasAllTags(postags) and e.hasNoTags(negtags):
+                retlist.append(e)
+
         self.list = retlist
-        for t in negtags:
-            for e in retlist:
-                if e.hasTag(t):
-                    self.list.remove(e)
 
 class TaoExamples(ExampleList):
     def __init__(self):
