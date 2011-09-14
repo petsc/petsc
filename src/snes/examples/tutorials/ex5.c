@@ -70,12 +70,14 @@ extern PetscErrorCode FormJacobianLocal(DMDALocalInfo*,PetscScalar**,Mat,AppCtx*
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
 extern PetscErrorCode FormFunctionMatlab(SNES,Vec,Vec,void *);
 #endif
+extern PetscErrorCode NonlinearGS(SNES,Vec);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
   SNES                   snes;                 /* nonlinear solver */
+  SNES                   psnes;                /* nonlinear Gauss-Seidel approximate solver */
   Vec                    x;                    /* solution vector */
   AppCtx                 user;                 /* user-defined work context */
   PetscInt               its;                  /* iterations for convergence */
@@ -102,6 +104,9 @@ int main(int argc,char **argv)
      Create nonlinear solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
+  ierr = SNESGetPC(snes,&psnes);CHKERRQ(ierr);
+  ierr = SNESSetType(psnes,SNESSHELL);CHKERRQ(ierr);
+  ierr = SNESShellSetSolve(psnes,NonlinearGS);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
@@ -391,3 +396,71 @@ PetscErrorCode FormFunctionMatlab(SNES snes,Vec X,Vec F,void *ptr)
   PetscFunctionReturn(0); 
 } 
 #endif
+
+/* ------------------------------------------------------------------- */
+#undef __FUNCT__
+#define __FUNCT__ "NonlinearGS"
+/* 
+      Applies some sweeps on nonlinear Gauss-Seidel on each process
+
+ */
+PetscErrorCode NonlinearGS(SNES snes,Vec X)
+{
+  PetscInt       i,j,Mx,My,xs,ys,xm,ym;
+  PetscErrorCode ierr;
+  PetscReal      lambda,temp1,temp,hx,hy;
+  PetscScalar    **x;
+  DM             da;
+  AppCtx         *user;
+
+  PetscFunctionBegin;
+  ierr = SNESShellGetContext(snes,(void**)&da);CHKERRQ(ierr);
+  ierr = DMGetApplicationContext(da,(void**)&user);CHKERRQ(ierr);
+
+  ierr = DMDAGetInfo(da,PETSC_IGNORE,&Mx,&My,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,
+                   PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE,PETSC_IGNORE);
+
+  lambda = user->param;
+  hx     = 1.0/(PetscReal)(Mx-1);
+  hy     = 1.0/(PetscReal)(My-1);
+  temp1  = lambda/(lambda + 1.0);
+
+  /*
+     Get a pointer to vector data.
+       - For default PETSc vectors, VecGetArray() returns a pointer to
+         the data array.  Otherwise, the routine is implementation dependent.
+       - You MUST call VecRestoreArray() when you no longer need access to
+         the array.
+  */
+  ierr = DMDAVecGetArray(da,X,&x);CHKERRQ(ierr);
+
+  /*
+     Get local grid boundaries (for 2-dimensional DMDA):
+       xs, ys   - starting grid indices (no ghost points)
+       xm, ym   - widths of local grid (no ghost points)
+
+  */
+  ierr = DMDAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
+
+  /*
+     Compute initial guess over the locally owned part of the grid
+  */
+  for (j=ys; j<ys+ym; j++) {
+    temp = (PetscReal)(PetscMin(j,My-j-1))*hy;
+    for (i=xs; i<xs+xm; i++) {
+      if (i == 0 || j == 0 || i == Mx-1 || j == My-1) {
+        /* boundary conditions are all zero Dirichlet */
+        x[j][i] = 0.0; 
+      } else {
+        x[j][i] = temp1*sqrt(PetscMin((PetscReal)(PetscMin(i,Mx-i-1))*hx,temp)); 
+      }
+    }
+  }
+
+  /*
+     Restore vector
+  */
+  ierr = DMDAVecRestoreArray(da,X,&x);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+} 
