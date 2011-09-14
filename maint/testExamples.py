@@ -97,7 +97,9 @@ if __name__=="__main__":
             sys.stdout.write(o)
             sys.stdout.write(e)
             sys.stdout.write("** Error compiling %s. **\n\n" % ex.name)
-        elif r==0:
+        elif (r==0 and compileonly):
+            sys.stdout.write("%s compiled OK\n" % ex.name)
+        elif (r==0 and not compileonly):
             (r,o,e) = examples.execute(ex.runCommand(),cwd=cwd,echo=verbose)
             if (showoutput):
                 sys.stdout.write("\n")
