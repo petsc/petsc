@@ -50,6 +50,7 @@ BLASSRC="$1"
 LAPACKSRC="$2"
 ORIG=$PWD
 MAXPROCS="16"
+TESTING="0"   # 0: don't include second, dsecnd and qsecnd
 
 # 0) Create the temp directory and compile some scripts
 mkdir $TMP
@@ -252,8 +253,12 @@ for p in blas qblas lapack qlapack; do
 		DES=$LAPACKDIR
 		NOOP="slaruv dlaruv slamch dlamch"
 		rm ${TMP}/AUX.list
-		echo $'slamch\nsecond' > ${TMP}/SINGLE.list
-		echo $'dlamch\ndsecnd' > ${TMP}/DOUBLE.list
+		echo 'slamch' > ${TMP}/SINGLE.list
+		echo 'dlamch' > ${TMP}/DOUBLE.list
+		if [[ ${TESTING} != "0" ]]; then
+			echo 'second' > ${TMP}/SINGLE.list
+			echo 'dsecnd' > ${TMP}/DOUBLE.list
+		fi
 		rm ${TMP}/QUAD.list
 		cd $SRC
 		files="`ls *.f`"
@@ -3413,7 +3418,8 @@ L10:
 } /* qlamc5_ */
 EOF
 
-	cat << EOF > ${LAPACKDIR}/second.c
+	if [[ $TESTING != 0 ]]; then
+		cat << EOF > ${LAPACKDIR}/second.c
 #include "f2c.h"
 #include <sys/times.h>
 #include <sys/types.h>
@@ -3433,7 +3439,7 @@ real second_()
 } /* second_ */
 EOF
 
-	cat << EOF > ${LAPACKDIR}/dsecnd.c
+		cat << EOF > ${LAPACKDIR}/dsecnd.c
 #include "f2c.h"
 #include <sys/times.h>
 #include <sys/types.h>
@@ -3451,9 +3457,8 @@ doublereal dsecnd_()
   return (doublereal)(rusage.tms_utime) / CLK_TCK;
 
 } /* dsecnd_ */
-
 EOF
-
+	fi
 
 	cat << EOF > ${BLASDIR}/lsame.c
 #include "f2c.h"
