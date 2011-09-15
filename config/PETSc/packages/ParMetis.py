@@ -9,6 +9,7 @@ class Configure(PETSc.package.NewPackage):
     self.includes         = ['parmetis.h']
     self.liblist          = [['libparmetis.a','libmetis.a']]
     self.needsMath        = 1
+    self.double           = 0
     self.complex          = 1
     self.requires32bitint = 0 # see note in configureLibrary() method below
     self.worksonWindows    = 1
