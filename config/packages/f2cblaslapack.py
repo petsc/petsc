@@ -5,6 +5,8 @@ class Configure(config.package.Package):
     config.package.Package.__init__(self, framework)
     self.download         = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/f2cblaslapack-3.1.1.q.tar.gz']
     self.double           = 0
+    self.worksonWindows   = 1
+    self.downloadonWindows= 1
 
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
