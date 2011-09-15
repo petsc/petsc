@@ -99,6 +99,8 @@ extern PetscErrorCode   TSMonitorSolutionBinary(TS,PetscInt,PetscReal,Vec,void*)
 extern PetscErrorCode   TSStep(TS);
 extern PetscErrorCode   TSSolve(TS,Vec,PetscReal*);
 extern PetscErrorCode   TSGetConvergedReason(TS,TSConvergedReason*);
+extern PetscErrorCode   TSGetNonlinearSolveIterations(TS,PetscInt*);
+extern PetscErrorCode   TSGetLinearSolveIterations(TS,PetscInt*);
 
 extern PetscErrorCode   TSSetInitialTimeStep(TS,PetscReal,PetscReal);
 extern PetscErrorCode   TSGetTimeStep(TS,PetscReal*);

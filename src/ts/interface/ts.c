@@ -2695,6 +2695,70 @@ PetscErrorCode  TSGetConvergedReason(TS ts,TSConvergedReason *reason)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "TSGetNonlinearSolveIterations"
+/*@
+   TSGetLinearSolveIterations - Gets the total number of linear iterations
+   used by the time integrator.
+
+   Not Collective
+
+   Input Parameter:
+.  ts - TS context
+
+   Output Parameter:
+.  nits - number of nonlinear iterations
+
+   Notes:
+   This counter is reset to zero for each successive call to TSSolve().
+
+   Level: intermediate
+
+.keywords: TS, get, number, nonlinear, iterations
+
+.seealso:  TSGetLinearSolveIterations()
+@*/
+PetscErrorCode TSGetNonlinearSolveIterations(TS ts,PetscInt *nits)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidIntPointer(nits,2);
+  *nits = ts->nonlinear_its;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "TSGetLinearSolveIterations"
+/*@
+   TSGetLinearSolveIterations - Gets the total number of linear iterations
+   used by the time integrator.
+
+   Not Collective
+
+   Input Parameter:
+.  ts - TS context
+
+   Output Parameter:
+.  lits - number of linear iterations
+
+   Notes:
+   This counter is reset to zero for each successive call to TSSolve().
+
+   Level: intermediate
+
+.keywords: TS, get, number, linear, iterations
+
+.seealso:  TSGetNonlinearSolveIterations(), SNESGetLinearSolveIterations()
+@*/
+PetscErrorCode TSGetLinearSolveIterations(TS ts,PetscInt *lits)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidIntPointer(lits,2);
+  *lits = ts->linear_its;
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "TSMonitorSolutionBinary"
 /*@C
