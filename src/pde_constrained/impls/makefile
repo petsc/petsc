@@ -2,7 +2,7 @@
 
 ALL: lib
 
-DIRS     = sqpcon lcl
+DIRS     = lcl
 
 LOCDIR   = src/pde_constrained/impls/
 
