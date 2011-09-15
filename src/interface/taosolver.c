@@ -489,6 +489,7 @@ PetscErrorCode TaoSolverView(TaoSolver tao, PetscViewer viewer)
     PetscBool isascii,isstring;
     const TaoSolverType type;
     const TaoLineSearchType lstype;
+    const KSPType ksptype;
     PetscFunctionBegin;
     PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
     if (!viewer) {
@@ -520,17 +521,37 @@ PetscErrorCode TaoSolverView(TaoSolver tao, PetscViewer viewer)
 	}
 	if (tao->linesearch) {
 	  if (((PetscObject)(tao->linesearch))->prefix) {
-	    ierr = PetscViewerASCIIPrintf(viewer,"Line Search (%s)",((PetscObject)tao)->prefix); CHKERRQ(ierr);
+	    ierr = PetscViewerASCIIPrintf(viewer,"Line Search Object (%s)\n",((PetscObject)tao)->prefix); CHKERRQ(ierr);
 	  } else {
-	    ierr = PetscViewerASCIIPrintf(viewer,"Line Search"); CHKERRQ(ierr); CHKERRQ(ierr);
+	    ierr = PetscViewerASCIIPrintf(viewer,"Line Search Object\n"); CHKERRQ(ierr); CHKERRQ(ierr);
 	  }
+	  ierr = PetscViewerASCIIPushTab(viewer); CHKERRQ(ierr);
 	  ierr = TaoLineSearchGetType(tao->linesearch,&lstype);CHKERRQ(ierr);
 	  if (lstype) {
-	    ierr = PetscViewerASCIIPrintf(viewer," type: %s\n",lstype); CHKERRQ(ierr);
+	    ierr = PetscViewerASCIIPrintf(viewer,"type: %s\n",lstype); CHKERRQ(ierr);
 	  } else {
-	    ierr = PetscViewerASCIIPrintf(viewer," type: not set\n"); CHKERRQ(ierr);
+	    ierr = PetscViewerASCIIPrintf(viewer,"type: not set\n"); CHKERRQ(ierr);
 	  }
+	  
+	  ierr = PetscViewerASCIIPopTab(viewer); CHKERRQ(ierr);
 	}
+	if (tao->ksp) {
+	  if (((PetscObject)(tao->ksp))->prefix) {
+	    ierr = PetscViewerASCIIPrintf(viewer,"KSP Object (%s)\n",((PetscObject)tao)->prefix); CHKERRQ(ierr);
+	  } else {
+	    ierr = PetscViewerASCIIPrintf(viewer,"KSP Object\n"); CHKERRQ(ierr); CHKERRQ(ierr);
+	  }
+	  ierr = PetscViewerASCIIPushTab(viewer); CHKERRQ(ierr);
+	  ierr = KSPGetType(tao->ksp,&ksptype);CHKERRQ(ierr);
+	  if (ksptype) {
+	    ierr = PetscViewerASCIIPrintf(viewer,"type: %s\n",ksptype); CHKERRQ(ierr);
+	  } else {
+	    ierr = PetscViewerASCIIPrintf(viewer,"type: not set\n"); CHKERRQ(ierr);
+	  }
+	  
+	  ierr = PetscViewerASCIIPopTab(viewer); CHKERRQ(ierr);
+	}
+	  
 	ierr=PetscViewerASCIIPrintf(viewer,"convergence tolerances: fatol=%g,",tao->fatol);CHKERRQ(ierr);
 	ierr=PetscViewerASCIIPrintf(viewer," frtol=%g\n",tao->frtol);CHKERRQ(ierr);
 
@@ -599,13 +620,13 @@ PetscErrorCode TaoSolverView(TaoSolver tao, PetscViewer viewer)
 	}
 
 	if (tao->reason>0){
-	    ierr = PetscViewerASCIIPrintf(viewer,    "Solution found: ");CHKERRQ(ierr);
+	    ierr = PetscViewerASCIIPrintf(viewer,    "Solution converged: ");CHKERRQ(ierr);
 	    switch (tao->reason) {
 		case TAO_CONVERGED_FATOL:
-		    ierr = PetscViewerASCIIPrintf(viewer," f(x)-f(X*) <= fatol\n"); CHKERRQ(ierr);
+		    ierr = PetscViewerASCIIPrintf(viewer,"estimated f(x)-f(X*) <= fatol\n"); CHKERRQ(ierr);
 		    break;
 		case TAO_CONVERGED_FRTOL:
-		    ierr = PetscViewerASCIIPrintf(viewer," |f(x)-f(X*)|/|f(X*)| <= frtol\n"); CHKERRQ(ierr);
+		    ierr = PetscViewerASCIIPrintf(viewer,"estimated |f(x)-f(X*)|/|f(X*)| <= frtol\n"); CHKERRQ(ierr);
 		case TAO_CONVERGED_GATOL:
 		    ierr = PetscViewerASCIIPrintf(viewer," ||g(X)|| <= gatol\n"); CHKERRQ(ierr);
 		    break;
