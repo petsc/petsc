@@ -2698,7 +2698,7 @@ PetscErrorCode  TSGetConvergedReason(TS ts,TSConvergedReason *reason)
 #undef __FUNCT__  
 #define __FUNCT__ "TSGetNonlinearSolveIterations"
 /*@
-   TSGetLinearSolveIterations - Gets the total number of linear iterations
+   TSGetNonlinearSolveIterations - Gets the total number of linear iterations
    used by the time integrator.
 
    Not Collective
