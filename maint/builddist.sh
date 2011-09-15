@@ -27,6 +27,12 @@ make tao_allfortranstubs
 echo "Generating etags..."
 make tao_alletags
 
+echo "Building manual..."
+make tao_manual
+
+echo "Building manpages..."
+make tao_allmanpages
+
 echo "Building tarball $BUILDDIR/tao-$VERSION.tar.gz"
 cd $BUILDDIR
 tar czf tao-$VERSION.tar.gz --exclude-vcs --exclude="TODO" --exclude="oldtao" --exclude="nlstests" tao-$VERSION 
