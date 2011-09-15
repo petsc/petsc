@@ -875,7 +875,7 @@ PetscErrorCode SNESSolveVI_SS(SNES snes)
     */
     ierr = VecCopy(Y,snes->vec_sol_update);CHKERRQ(ierr);
     ynorm = 1; gnorm = vi->phinorm;
-    ierr = (*vi->LineSearch)(snes,vi->lsP,X,vi->phi,G,Y,W,vi->phinorm,xnorm,&ynorm,&gnorm,&lssucceed);CHKERRQ(ierr);
+    ierr = (*vi->LineSearch)(snes,vi->lsP,X,vi->phi,Y,vi->phinorm,xnorm,G,W,&ynorm,&gnorm,&lssucceed);CHKERRQ(ierr);
     ierr = PetscInfo4(snes,"fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, lssucceed=%d\n",vi->phinorm,gnorm,ynorm,(int)lssucceed);CHKERRQ(ierr);
     if (snes->reason == SNES_DIVERGED_FUNCTION_COUNT) break;
     if (snes->domainerror) {
@@ -1334,7 +1334,7 @@ PetscErrorCode SNESSolveVI_RS(SNES snes)
     */
     ierr = VecCopy(Y,snes->vec_sol_update);CHKERRQ(ierr);
     ynorm = 1; gnorm = fnorm;
-    ierr = (*vi->LineSearch)(snes,vi->lsP,X,F,G,Y,W,fnorm,xnorm,&ynorm,&gnorm,&lssucceed);CHKERRQ(ierr);
+    ierr = (*vi->LineSearch)(snes,vi->lsP,X,F,Y,fnorm,xnorm,G,W,&ynorm,&gnorm,&lssucceed);CHKERRQ(ierr);
     ierr = PetscInfo4(snes,"fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, lssucceed=%d\n",fnorm,gnorm,ynorm,(int)lssucceed);CHKERRQ(ierr);
     if (snes->reason == SNES_DIVERGED_FUNCTION_COUNT) break;
     if (snes->domainerror) {
@@ -1724,7 +1724,7 @@ PetscErrorCode SNESSolveVI_RSAUG(SNES snes)
     */
     ierr = VecCopy(Y,snes->vec_sol_update);CHKERRQ(ierr);
     ynorm = 1; gnorm = fnorm;
-    ierr = (*vi->LineSearch)(snes,vi->lsP,X,F,G,Y,W,fnorm,xnorm,&ynorm,&gnorm,&lssucceed);CHKERRQ(ierr);
+    ierr = (*vi->LineSearch)(snes,vi->lsP,X,F,Y,fnorm,xnorm,G,W,&ynorm,&gnorm,&lssucceed);CHKERRQ(ierr);
     ierr = PetscInfo4(snes,"fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, lssucceed=%d\n",fnorm,gnorm,ynorm,(int)lssucceed);CHKERRQ(ierr);
     if (snes->reason == SNES_DIVERGED_FUNCTION_COUNT) break;
     if (snes->domainerror) {
@@ -1895,7 +1895,7 @@ PetscErrorCode SNESDestroy_VI(SNES snes)
   step while ensuring that the new iterates remain within the constraints.
   
 */
-PetscErrorCode SNESLineSearchNo_VI(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,PetscReal fnorm,PetscReal xnorm,PetscReal *ynorm,PetscReal *gnorm,PetscBool *flag)
+PetscErrorCode SNESLineSearchNo_VI(SNES snes,void *lsctx,Vec x,Vec f,Vec y,PetscReal fnorm,PetscReal xnorm,Vec g,Vec w,PetscReal *ynorm,PetscReal *gnorm,PetscBool *flag)
 {
   PetscErrorCode ierr;
   SNES_VI        *vi = (SNES_VI*)snes->data;
@@ -1940,7 +1940,7 @@ PetscErrorCode SNESLineSearchNo_VI(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y
 /*
   This routine is a copy of SNESLineSearchNoNorms in snes/impls/ls/ls.c
 */
-PetscErrorCode SNESLineSearchNoNorms_VI(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,PetscReal fnorm,PetscReal xnorm,PetscReal *ynorm,PetscReal *gnorm,PetscBool *flag)
+PetscErrorCode SNESLineSearchNoNorms_VI(SNES snes,void *lsctx,Vec x,Vec f,Vec y,PetscReal fnorm,PetscReal xnorm,Vec g,Vec w,PetscReal *ynorm,PetscReal *gnorm,PetscBool *flag)
 {
   PetscErrorCode ierr;
   SNES_VI        *vi = (SNES_VI*)snes->data;
@@ -1973,7 +1973,7 @@ PetscErrorCode SNESLineSearchNoNorms_VI(SNES snes,void *lsctx,Vec x,Vec f,Vec g,
 /*
   This routine implements a cubic line search while doing a projection on the variable bounds
 */
-PetscErrorCode SNESLineSearchCubic_VI(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,PetscReal fnorm,PetscReal xnorm,PetscReal *ynorm,PetscReal *gnorm,PetscBool *flag)
+PetscErrorCode SNESLineSearchCubic_VI(SNES snes,void *lsctx,Vec x,Vec f,Vec y,PetscReal fnorm,PetscReal xnorm,Vec g,Vec w,PetscReal *ynorm,PetscReal *gnorm,PetscBool *flag)
 {
   PetscReal      initslope,lambdaprev,gnormprev,a,b,d,t1,t2,rellength;
   PetscReal      minlambda,lambda,lambdatemp;
@@ -2190,7 +2190,7 @@ PetscErrorCode SNESLineSearchCubic_VI(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Ve
 /*
   This routine does a quadratic line search while keeping the iterates within the variable bounds
 */
-PetscErrorCode SNESLineSearchQuadratic_VI(SNES snes,void *lsctx,Vec x,Vec f,Vec g,Vec y,Vec w,PetscReal fnorm,PetscReal xnorm,PetscReal *ynorm,PetscReal *gnorm,PetscBool *flag)
+PetscErrorCode SNESLineSearchQuadratic_VI(SNES snes,void *lsctx,Vec x,Vec f,Vec y,PetscReal fnorm,PetscReal xnorm,Vec g,Vec w,PetscReal *ynorm,PetscReal *gnorm,PetscBool *flag)
 {
   /* 
      Note that for line search purposes we work with with the related
@@ -2348,7 +2348,7 @@ PetscErrorCode SNESLineSearchQuadratic_VI(SNES snes,void *lsctx,Vec x,Vec f,Vec 
   PetscFunctionReturn(0);
 }
 
-typedef PetscErrorCode (*FCN2)(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal*,PetscReal*,PetscBool*); /* force argument to next function to not be extern C*/
+typedef PetscErrorCode (*FCN2)(SNES,void*,Vec,Vec,Vec,PetscReal,PetscReal,Vec,Vec,PetscReal*,PetscReal*,PetscBool*); /* force argument to next function to not be extern C*/
 /* -------------------------------------------------------------------------- */
 EXTERN_C_BEGIN
 #undef __FUNCT__  

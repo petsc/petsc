@@ -241,7 +241,7 @@ typedef enum {/* converged */
               SNES_CONVERGED_FNORM_RELATIVE    =  3, /* ||F|| < rtol*||F_initial|| */
               SNES_CONVERGED_PNORM_RELATIVE    =  4, /* Newton computed step size small; || delta x || < stol */
               SNES_CONVERGED_ITS               =  5, /* maximum iterations reached */
-              SNES_CONVERGED_TR_DELTA            =  7,
+              SNES_CONVERGED_TR_DELTA          =  7,
               /* diverged */
               SNES_DIVERGED_FUNCTION_DOMAIN     = -1, /* the new x location passed the function is not in the domain of F */
               SNES_DIVERGED_FUNCTION_COUNT      = -2,  
@@ -249,6 +249,7 @@ typedef enum {/* converged */
               SNES_DIVERGED_FNORM_NAN           = -4, 
               SNES_DIVERGED_MAX_IT              = -5,
               SNES_DIVERGED_LINE_SEARCH         = -6, /* the line search failed */ 
+              SNES_DIVERGED_INNER               = -7, /* inner solve failed */
               SNES_DIVERGED_LOCAL_MIN           = -8, /* || J^T b || is small, implies converged to local minimum of F() */
               SNES_CONVERGED_ITERATING          =  0} SNESConvergedReason;
 extern const char *const*SNESConvergedReasons;
@@ -375,11 +376,11 @@ typedef enum {SNES_LS_BASIC, SNES_LS_BASIC_NONORMS, SNES_LS_QUADRATIC, SNES_LS_C
 extern const char *const SNESLineSearchTypes[];
 extern const char *SNESLineSearchTypeName(SNESLineSearchType); /* Does bounds checking, use this for viewing */
 
-extern PetscErrorCode  SNESLineSearchSet(SNES,PetscErrorCode(*)(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal*,PetscReal*,PetscBool *),void*);
-extern PetscErrorCode  SNESLineSearchNo(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal*,PetscReal*,PetscBool *);
-extern PetscErrorCode  SNESLineSearchNoNorms(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal*,PetscReal*,PetscBool *);
-extern PetscErrorCode  SNESLineSearchCubic(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal*,PetscReal*,PetscBool *);
-extern PetscErrorCode  SNESLineSearchQuadratic(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal*,PetscReal*,PetscBool *);
+extern PetscErrorCode  SNESLineSearchSet(SNES,PetscErrorCode(*)(SNES,void*,Vec,Vec,Vec,PetscReal,PetscReal,Vec,Vec,PetscReal*,PetscReal*,PetscBool *),void*);
+extern PetscErrorCode  SNESLineSearchNo(SNES,void*,Vec,Vec,Vec,PetscReal,PetscReal,Vec,Vec,PetscReal*,PetscReal*,PetscBool *);
+extern PetscErrorCode  SNESLineSearchNoNorms(SNES,void*,Vec,Vec,Vec,PetscReal,PetscReal,Vec,Vec,PetscReal*,PetscReal*,PetscBool *);
+extern PetscErrorCode  SNESLineSearchCubic(SNES,void*,Vec,Vec,Vec,PetscReal,PetscReal,Vec,Vec,PetscReal*,PetscReal*,PetscBool *);
+extern PetscErrorCode  SNESLineSearchQuadratic(SNES,void*,Vec,Vec,Vec,PetscReal,PetscReal,Vec,Vec,PetscReal*,PetscReal*,PetscBool *);
 
 extern PetscErrorCode  SNESLineSearchSetPostCheck(SNES,PetscErrorCode(*)(SNES,Vec,Vec,Vec,void*,PetscBool *,PetscBool *),void*);
 extern PetscErrorCode  SNESLineSearchSetPreCheck(SNES,PetscErrorCode(*)(SNES,Vec,Vec,void*,PetscBool *),void*);

@@ -1615,7 +1615,7 @@ extern PetscErrorCode  MatNullSpaceCreate(MPI_Comm,PetscBool ,PetscInt,const Vec
 extern PetscErrorCode  MatNullSpaceSetFunction(MatNullSpace,PetscErrorCode (*)(MatNullSpace,Vec,void*),void*);
 extern PetscErrorCode  MatNullSpaceDestroy(MatNullSpace*);
 extern PetscErrorCode  MatNullSpaceRemove(MatNullSpace,Vec,Vec*);
-extern PetscErrorCode  MatNullSpaceAttach(Mat,MatNullSpace);
+extern PetscErrorCode  MatSetNullSpace(Mat,MatNullSpace);
 extern PetscErrorCode  MatNullSpaceTest(MatNullSpace,Mat,PetscBool  *);
 extern PetscErrorCode  MatNullSpaceView(MatNullSpace,PetscViewer);
 

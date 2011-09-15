@@ -1,3 +1,3 @@
-Number of Newton iterations = 5
+Number of SNES iterations = 5
 Number of Linear iterations = 21
-Average Linear its / Newton = 4.200000e+00
+Average Linear its / SNES = 4.200000e+00

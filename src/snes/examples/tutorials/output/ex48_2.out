@@ -63,7 +63,7 @@ Linear solve converged due to CONVERGED_RTOL iterations 4
   6 SNES Function norm 4.426e-11 
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE
 Solution statistics after solve: Full
-CONVERGED_FNORM_RELATIVE: Number of Newton iterations = 6, total linear iterations = 24
+CONVERGED_FNORM_RELATIVE: Number of SNES iterations = 6, total linear iterations = 24
 |X|_2 2912.8   u in [71.5883, 102.084]   v in [-4.89451, 4.85412]   c in [71.5884, 102.085] 
 Surface statistics: u in [8.869545e+01, 1.020845e+02] mean 9.688086e+01
 Global eta range   [3.0148e+10, 9.2273e+12], converged range [3.0148e+10, 1.00432e+12]

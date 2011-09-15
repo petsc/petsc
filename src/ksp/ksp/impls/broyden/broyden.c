@@ -217,7 +217,7 @@ PetscErrorCode KSPSetFromOptions_Broyden(KSP ksp)
 
    Notes: Supports only left preconditioning
 
-          Implemented for experimentation reasons, not intended to replace any of the Krylov methods
+   Developer Notes: this code should be rewritten by Peter Brune based on the nonlinear qn code.
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP
 

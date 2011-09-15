@@ -13,6 +13,6 @@ iter = 3,SNES Function norm 7.24709e-05
 Checking candidate step at iteration 3 with tolerance 1
   Altering entry 0: x=6.16298e-33, x_last=2.77556e-17, diff=4.5036e+15, x_new=1.38778e-17
 iter = 4,SNES Function norm 1.30878e-11
-Number of Newton iterations = 4
+Number of SNES iterations = 4
 
 Norm of error 1.26522e-12, Iterations 4

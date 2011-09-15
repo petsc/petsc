@@ -129,34 +129,33 @@ PetscErrorCode SNESView_NGMRES(SNES snes, PetscViewer viewer)
 
 PetscErrorCode SNESSolve_NGMRES(SNES snes)
 {
-  SNES           pc;
-  SNES_NGMRES   *ngmres = (SNES_NGMRES *) snes->data;
-
-  
+  SNES               pc;
+  SNES_NGMRES        *ngmres = (SNES_NGMRES *) snes->data;
   
   /* present solution, residual, and preconditioned residual */
-  Vec            x, r, b, d;
-  Vec            x_A, r_A;
+  Vec                 x, r, b, d;
+  Vec                 x_A, r_A;
 
   /* previous iterations to construct the subspace */
-  Vec            *rdot = ngmres->rdot;
-  Vec            *xdot = ngmres->xdot;
+  Vec                 *rdot = ngmres->rdot;
+  Vec                 *xdot = ngmres->xdot;
 
   /* coefficients and RHS to the minimization problem */
-  PetscScalar    *beta = ngmres->beta;
-  PetscScalar    *xi = ngmres->xi;
-  PetscReal      r_norm, r_A_norm;
-  PetscReal      nu;
-  PetscScalar    alph_total = 0.;
-  PetscScalar    qentry;
-  PetscInt       i, j, k, k_restart, l, ivec;
+  PetscScalar         *beta = ngmres->beta;
+  PetscScalar         *xi = ngmres->xi;
+  PetscReal           r_norm, r_A_norm;
+  PetscReal           nu;
+  PetscScalar         alph_total = 0.;
+  PetscScalar         qentry;
+  PetscInt            i, j, k, k_restart, l, ivec;
 
   /* solution selection data */
-  PetscBool      selectA, selectRestart;
-  PetscReal      d_norm, d_min_norm, d_cur_norm;
-  PetscReal      r_min_norm;
+  PetscBool           selectA, selectRestart;
+  PetscReal           d_norm, d_min_norm, d_cur_norm;
+  PetscReal           r_min_norm;
 
-  PetscErrorCode ierr;
+  SNESConvergedReason reason;
+  PetscErrorCode      ierr;
 
   PetscFunctionBegin;
   /* variable initialization */
@@ -214,6 +213,12 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
 
     /* Computation of x^M */
     ierr = SNESSolve(pc, b, x);CHKERRQ(ierr);
+    ierr = SNESGetConvergedReason(pc,&reason);CHKERRQ(ierr);
+    if (reason < 0 && reason != SNES_DIVERGED_MAX_IT) {
+      snes->reason = SNES_DIVERGED_INNER;
+      PetscFunctionReturn(0);
+    }
+
     /* r = F(x) */
     ierr = SNESComputeFunction(snes, x, r);CHKERRQ(ierr);
     ierr = VecNorm(r, NORM_2, &r_norm);CHKERRQ(ierr);
@@ -224,7 +229,7 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
 
     /* construct the right hand side and xi factors */
     for (i = 0; i < l; i++) {
-      VecDot(rdot[i], r, &xi[i]);
+      ierr = VecDot(rdot[i], r, &xi[i]);CHKERRQ(ierr);
       beta[i] = nu - xi[i]; 
     }
 
@@ -366,9 +371,7 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
       ierr = VecCopy(r, rdot[0]);CHKERRQ(ierr);
     } else {
       /* select the current size of the subspace */
-      if (l < ngmres->msize) {
-	l++;
-      }
+      if (l < ngmres->msize) l++;
       k_restart++;
       /* place the current entry in the list of previous entries */
       ierr = VecCopy(r, rdot[ivec]);CHKERRQ(ierr);
@@ -376,7 +379,7 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
       ngmres->r_norms[ivec] = r_norm;
       if (r_min_norm > r_norm) r_min_norm = r_norm;  /* the minimum norm is now of r^A */
       for (i = 0; i < l; i++) {
-	VecDot(r, rdot[i], &qentry);
+	ierr = VecDot(r, rdot[i], &qentry);CHKERRQ(ierr);
 	Q(i, ivec) = qentry;
 	Q(ivec, i) = qentry;
       }
@@ -435,8 +438,10 @@ PetscErrorCode SNESCreate_NGMRES(SNES snes)
   ngmres->epsilonB = 0.1;
   ngmres->k_rmax   = 200;
 
-  ierr = SNESGetPC(snes, &snes->pc);CHKERRQ(ierr);
-  ierr = SNESSetType(snes->pc,SNESPICARD);CHKERRQ(ierr);
+  if (!snes->pc) {
+    ierr = SNESGetPC(snes, &snes->pc);CHKERRQ(ierr);
+    ierr = SNESSetType(snes->pc,SNESPICARD);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

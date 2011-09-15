@@ -491,7 +491,7 @@ PC Object: 6 MPI processes
         type: submatrix
         rows=2048, cols=2048
 Solution statistics after solve: Full
-CONVERGED_FNORM_RELATIVE: Number of Newton iterations = 5, total linear iterations = 21
+CONVERGED_FNORM_RELATIVE: Number of SNES iterations = 5, total linear iterations = 21
 |X|_2 564267   u in [-187.04, 23814.8]   v in [-979.938, 5720.23]   c in [3.24766, 23904.5] 
 Surface statistics: u in [-6.945709e+01, 2.381387e+04] mean 1.520632e+04
 Global eta range   [2.50736e+09, 9.2273e+12], converged range [2.50736e+09, 3.8249e+10]

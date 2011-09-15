@@ -8,7 +8,7 @@
 
 typedef struct {
   SNESLineSearchType type; 
-  PetscErrorCode     (*LineSearch)(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal*,PetscReal*,PetscBool *);
+  PetscErrorCode     (*LineSearch)(SNES,void*,Vec,Vec,Vec,PetscReal,PetscReal,Vec,Vec,PetscReal*,PetscReal*,PetscBool *);
   /* Line Search Parameters */
   PetscReal          damping;		                                             
   PetscReal          maxstep;                                                        /* maximum step size */

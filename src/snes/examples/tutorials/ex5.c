@@ -108,6 +108,7 @@ int main(int argc,char **argv)
   ierr = SNESSetType(psnes,SNESSHELL);CHKERRQ(ierr);
   ierr = SNESShellSetSolve(psnes,NonlinearGS);CHKERRQ(ierr);
 
+
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array (DMDA) to manage parallel grid and vectors
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -115,6 +116,7 @@ int main(int argc,char **argv)
   ierr = DMDASetUniformCoordinates(da, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);
   ierr = DMSetApplicationContext(da,&user);CHKERRQ(ierr);
   ierr = SNESSetDM(snes,da);CHKERRQ(ierr);
+  ierr = SNESShellSetContext(psnes,da);CHKERRQ(ierr);
 
   /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Extract global vectors from DMDA; then duplicate for remaining
@@ -406,14 +408,15 @@ PetscErrorCode FormFunctionMatlab(SNES snes,Vec X,Vec F,void *ptr)
  */
 PetscErrorCode NonlinearGS(SNES snes,Vec X)
 {
-  PetscInt       i,j,Mx,My,xs,ys,xm,ym;
+  PetscInt       i,j,Mx,My,xs,ys,xm,ym,k,its,l;
   PetscErrorCode ierr;
-  PetscReal      lambda,temp1,temp,hx,hy;
-  PetscScalar    **x;
+  PetscReal      lambda,hx,hy,hxdhy,hydhx,sc;
+  PetscScalar    **x,F,J,u,uxx,uyy;
   DM             da;
   AppCtx         *user;
 
   PetscFunctionBegin;
+  ierr = SNESGetTolerances(snes,PETSC_NULL,PETSC_NULL,PETSC_NULL,&its,PETSC_NULL);CHKERRQ(ierr);
   ierr = SNESShellGetContext(snes,(void**)&da);CHKERRQ(ierr);
   ierr = DMGetApplicationContext(da,(void**)&user);CHKERRQ(ierr);
 
@@ -423,44 +426,55 @@ PetscErrorCode NonlinearGS(SNES snes,Vec X)
   lambda = user->param;
   hx     = 1.0/(PetscReal)(Mx-1);
   hy     = 1.0/(PetscReal)(My-1);
-  temp1  = lambda/(lambda + 1.0);
+  sc     = hx*hy*lambda;
+  hxdhy  = hx/hy; 
+  hydhx  = hy/hx;
 
-  /*
+  for (l=0; l<its; l++) {
+    /*
      Get a pointer to vector data.
-       - For default PETSc vectors, VecGetArray() returns a pointer to
-         the data array.  Otherwise, the routine is implementation dependent.
-       - You MUST call VecRestoreArray() when you no longer need access to
-         the array.
-  */
-  ierr = DMDAVecGetArray(da,X,&x);CHKERRQ(ierr);
+     - For default PETSc vectors, VecGetArray() returns a pointer to
+     the data array.  Otherwise, the routine is implementation dependent.
+     - You MUST call VecRestoreArray() when you no longer need access to
+     the array.
+     */
+    ierr = DMDAVecGetArray(da,X,&x);CHKERRQ(ierr);
 
-  /*
+    /*
      Get local grid boundaries (for 2-dimensional DMDA):
-       xs, ys   - starting grid indices (no ghost points)
-       xm, ym   - widths of local grid (no ghost points)
+     xs, ys   - starting grid indices (no ghost points)
+     xm, ym   - widths of local grid (no ghost points)
+     
+     */
+    ierr = DMDAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
+    
+    for (j=ys; j<ys+ym; j++) {
+      for (i=xs; i<xs+xm; i++) {
+        if (i == 0 || j == 0 || i == Mx-1 || j == My-1) {
+          /* boundary conditions are all zero Dirichlet */
+          x[j][i] = 0.0; 
+        } else {
+          u       = x[j][i];
 
-  */
-  ierr = DMDAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
-
-  /*
-     Compute initial guess over the locally owned part of the grid
-  */
-  for (j=ys; j<ys+ym; j++) {
-    temp = (PetscReal)(PetscMin(j,My-j-1))*hy;
-    for (i=xs; i<xs+xm; i++) {
-      if (i == 0 || j == 0 || i == Mx-1 || j == My-1) {
-        /* boundary conditions are all zero Dirichlet */
-        x[j][i] = 0.0; 
-      } else {
-        x[j][i] = temp1*sqrt(PetscMin((PetscReal)(PetscMin(i,Mx-i-1))*hx,temp)); 
+          for (k=0; k<10; k++) {
+            uxx     = (2.0*u - x[j][i-1] - x[j][i+1])*hydhx;
+            uyy     = (2.0*u - x[j-1][i] - x[j+1][i])*hxdhy;
+            F        = uxx + uyy - sc*PetscExpScalar(u);
+            J       = 2.0*(hydhx + hxdhy) - sc*PetscExpScalar(u);
+            u       = u - F/J;
+          }
+          
+          
+          x[j][i] = u;
+        }
       }
     }
-  }
-
-  /*
+    
+    /*
      Restore vector
-  */
-  ierr = DMDAVecRestoreArray(da,X,&x);CHKERRQ(ierr);
+     */
+    ierr = DMDAVecRestoreArray(da,X,&x);CHKERRQ(ierr);
+  }
 
   PetscFunctionReturn(0);
 } 

@@ -14,7 +14,7 @@ extern PetscErrorCode  SNESCreate_QN(SNES);
 extern PetscErrorCode  SNESCreate_Shell(SNES);
 EXTERN_C_END
 
-const char *SNESConvergedReasons_Shifted[]  = {" "," ","DIVERGED_LOCAL_MIN"," ","DIVERGED_LINE_SEARCH","DIVERGED_MAX_IT",
+const char *SNESConvergedReasons_Shifted[]  = {" "," ","DIVERGED_LOCAL_MIN","DIVERGED_INNER","DIVERGED_LINE_SEARCH","DIVERGED_MAX_IT",
                                                "DIVERGED_FNORM_NAN","DIVERGED_LINEAR_SOLVE","DIVERGED_FUNCTION_COUNT","DIVERGED_FUNCTION_DOMAIN",
                                                "CONVERGED_ITERATING"," ","CONVERGED_FNORM_ABS","CONVERGED_FNORM_RELATIVE",
                                                "CONVERGED_PNORM_RELATIVE","CONVERGED_ITS"," ","CONVERGED_TR_DELTA","SNESConvergedReason","",0};

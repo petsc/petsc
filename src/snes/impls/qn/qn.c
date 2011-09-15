@@ -65,7 +65,7 @@ PetscErrorCode LBGFSApplyJinv_Private(SNES snes, PetscInt it, Vec g, Vec z) {
 
 #undef __FUNCT__
 #define __FUNCT__ "QNLineSearchQuadratic"
-PetscErrorCode QNLineSearchQuadratic(SNES snes,void *lsctx,Vec X,Vec F,Vec G,Vec Y,Vec W,PetscReal fnorm,PetscReal dummyXnorm,PetscReal *dummyYnorm,PetscReal *gnorm,PetscBool *flag)
+PetscErrorCode QNLineSearchQuadratic(SNES snes,void *lsctx,Vec X,Vec F,Vec Y,PetscReal fnorm,PetscReal dummyXnorm,Vec G,Vec W,PetscReal *dummyYnorm,PetscReal *gnorm,PetscBool *flag)
 {
   PetscInt       i;
   PetscReal      alphas[3] = {0.0, 0.5, 1.0};
@@ -190,7 +190,7 @@ static PetscErrorCode SNESSolve_QN(SNES snes)
 
     /* line search for lambda */
     ierr = VecAYPX(y,-1.0,x);CHKERRQ(ierr);
-    ierr = QNLineSearchQuadratic(snes, PETSC_NULL, x, f, 0, y, w, fnorm, xnorm, &xnorm, &fnorm, &ls_OK);CHKERRQ(ierr);
+    ierr = QNLineSearchQuadratic(snes, PETSC_NULL, x, f, y, fnorm, xnorm, 0, w,&xnorm, &fnorm, &ls_OK);CHKERRQ(ierr);
     ierr = SNESComputeFunction(snes, x, f);CHKERRQ(ierr);
     ierr = VecNorm(f, NORM_2, &fnorm);CHKERRQ(ierr);
     if (PetscIsInfOrNanReal(fnorm)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"Infinite or not-a-number generated in norm");

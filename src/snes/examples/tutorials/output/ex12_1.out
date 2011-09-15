@@ -37,7 +37,7 @@ Vector Object: 1 MPI processes
 1.33227e-15
   1 SNES Function norm 1.336885555458e-15 
 Nonlinear solve converged due to CONVERGED_FNORM_RELATIVE
-Number of Newton iterations = 1
+Number of SNES iterations = 1
 L_2 Error: 0.0694444
 Solution
 Vector Object: 1 MPI processes

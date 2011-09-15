@@ -1653,6 +1653,7 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,const PetscInt *inidx,PetscInt 
         break;
       }
     }
+    if (j == size) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_PLIB,"ith %D block entry %D not owned by any process, upper bound %D",i,idx,owners[size]);
   }
 
   nprocslocal  = nprocs[rank]; 

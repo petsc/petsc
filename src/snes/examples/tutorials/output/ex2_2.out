@@ -28,6 +28,6 @@ SNES Object: 1 MPI processes
       total: nonzeros=11, allocated nonzeros=25
       total number of mallocs used during MatSetValues calls =0
         not using I-node routines
-number of Newton iterations = 3
+number of SNES iterations = 3
 
 Norm of error 1.49752e-10, Iterations 3

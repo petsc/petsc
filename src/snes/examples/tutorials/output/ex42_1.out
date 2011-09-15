@@ -235,5 +235,5 @@ Vector Object: 1 MPI processes
   type: seq
 1
 1
-CONVERGED number of Newton iterations = 232
+CONVERGED number of SNES iterations = 232
 

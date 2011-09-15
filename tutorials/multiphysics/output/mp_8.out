@@ -22,5 +22,5 @@
     9 KSP Residual norm 4.35139e-09 
    10 KSP Residual norm 2.08576e-09 
    11 KSP Residual norm 4.347e-10 
-Composite Physics: Number of Newton iterations = 2
+Composite Physics: Number of SNES iterations = 2
 

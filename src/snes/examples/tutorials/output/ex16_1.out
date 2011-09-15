@@ -33,6 +33,6 @@ Grid 2 size 17 by 17
   3 KSP Residual norm 2.46498e-07 
   4 KSP Residual norm 2.41889e-08 
   6 SNES Function norm 1.30314e-08 
-Number of Newton iterations = 6
+Number of SNES iterations = 6
 Number of Linear iterations = 19
-Average Linear its / Newton = 3.166667e+00
+Average Linear its / SNES = 3.166667e+00
