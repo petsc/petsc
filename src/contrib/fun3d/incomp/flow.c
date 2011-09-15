@@ -120,6 +120,7 @@ int main(int argc,char **args)
    
   c_runge->nitfo = 0;
 
+  ierr = PetscMemzero(&f_pntr,sizeof f_pntr);CHKERRQ(ierr);
   f_pntr.jvisc   = c_info->ivisc;
   f_pntr.ileast  = 4;
   ierr = PetscOptionsGetReal(PETSC_NULL,"-alpha",&c_info->alpha,PETSC_NULL);CHKERRQ(ierr);
@@ -191,6 +192,7 @@ int main(int argc,char **args)
     /*f77WREST(&user.grid->nnodes,qnode,user.grid->turbre,user.grid->amut);*/
 
     /* Write Tecplot solution file */
+#if 0
     if (!rank)
       f77TECFLO(&user.grid->nnodes,
                 &user.grid->nnbound,&user.grid->nvbound,&user.grid->nfbound,
@@ -204,6 +206,7 @@ int main(int argc,char **args)
                 user.grid->f2ntn,   user.grid->f2ntv,   user.grid->f2ntf,
                 user.grid->isnode,  user.grid->ivnode,  user.grid->ifnode,
                 &rank);
+#endif
 
     /* Write residual,lift,drag,and moment history file */
     /*
@@ -237,6 +240,66 @@ int main(int argc,char **args)
       ierr = PetscMemoryShowUsage(PETSC_VIEWER_STDOUT_WORLD,"Memory usage after destroying\n");CHKERRQ(ierr);
     }
   PetscPreLoadEnd();
+
+  /* allocated in set_up_grid() */
+  ierr = PetscFree(user.grid->isface);CHKERRQ(ierr);
+  ierr = PetscFree(user.grid->ivface);CHKERRQ(ierr);
+  ierr = PetscFree(user.grid->ifface);CHKERRQ(ierr);
+  ierr = PetscFree(user.grid->us);CHKERRQ(ierr);
+  ierr = PetscFree(user.grid->vs);CHKERRQ(ierr);
+  ierr = PetscFree(user.grid->as);CHKERRQ(ierr);
+
+  /* Allocated in GetLocalOrdering() */
+  ierr = PetscFree(user.grid->eptr);CHKERRQ(ierr);
+  ierr = PetscFree(user.grid->ia);CHKERRQ(ierr);
+  ierr = PetscFree(user.grid->ja);CHKERRQ(ierr);
+  ierr = PetscFree(user.grid->loc2glo);CHKERRQ(ierr);
+  ierr = PetscFree(user.grid->loc2pet);CHKERRQ(ierr);
+  ierr = PetscFree(user.grid->xyzn);CHKERRQ(ierr);
+#if defined(_OPENMP)
+#  if defined(HAVE_REDUNDANT_WORK)
+  ierr = PetscFree(user.grid->resd);CHKERRQ(ierr);
+#  else
+  ierr = PetscFree(user.grid->part_thr);CHKERRQ(ierr);
+  ierr = PetscFree(user.grid->nedge_thr);CHKERRQ(ierr);
+  ierr = PetscFree(user.grid->edge_thr);CHKERRQ(ierr);
+  ierr = PetscFree(user.grid->xyzn_thr);CHKERRQ(ierr);
+#  endif
+#endif
+  ierr = PetscFree(user.grid->xyz);CHKERRQ(ierr);
+  ierr = PetscFree(user.grid->area);CHKERRQ(ierr);
+
+  ierr = PetscFree(user.grid->nntet);CHKERRQ(ierr);
+  ierr = PetscFree(user.grid->nnpts);CHKERRQ(ierr);
+  ierr = PetscFree(user.grid->f2ntn);CHKERRQ(ierr);
+  ierr = PetscFree(user.grid->isnode);CHKERRQ(ierr);
+  ierr = PetscFree(user.grid->sxn);CHKERRQ(ierr);
+  ierr = PetscFree(user.grid->syn);CHKERRQ(ierr);
+  ierr = PetscFree(user.grid->szn);CHKERRQ(ierr);
+  ierr = PetscFree(user.grid->sa);CHKERRQ(ierr);
+  ierr = PetscFree(user.grid->sface_bit);CHKERRQ(ierr);
+
+  ierr = PetscFree(user.grid->nvtet);CHKERRQ(ierr);
+  ierr = PetscFree(user.grid->nvpts);CHKERRQ(ierr);
+  ierr = PetscFree(user.grid->f2ntv);CHKERRQ(ierr);
+  ierr = PetscFree(user.grid->ivnode);CHKERRQ(ierr);
+  ierr = PetscFree(user.grid->vxn);CHKERRQ(ierr);
+  ierr = PetscFree(user.grid->vyn);CHKERRQ(ierr);
+  ierr = PetscFree(user.grid->vzn);CHKERRQ(ierr);
+  ierr = PetscFree(user.grid->va);CHKERRQ(ierr);
+  ierr = PetscFree(user.grid->vface_bit);CHKERRQ(ierr);
+
+  ierr = PetscFree(user.grid->nftet);CHKERRQ(ierr);
+  ierr = PetscFree(user.grid->nfpts);CHKERRQ(ierr);
+  ierr = PetscFree(user.grid->f2ntf);CHKERRQ(ierr);
+  ierr = PetscFree(user.grid->ifnode);CHKERRQ(ierr);
+  ierr = PetscFree(user.grid->fxn);CHKERRQ(ierr);
+  ierr = PetscFree(user.grid->fyn);CHKERRQ(ierr);
+  ierr = PetscFree(user.grid->fzn);CHKERRQ(ierr);
+  ierr = PetscFree(user.grid->fa);CHKERRQ(ierr);
+  ierr = PetscFree(user.grid->cdt);CHKERRQ(ierr);
+  ierr = PetscFree(user.grid->phi);CHKERRQ(ierr);
+  ierr = PetscFree(user.grid->rxy);CHKERRQ(ierr);
 
   ierr = PetscPrintf(comm,"Time taken in gradient calculation %g sec.\n",grad_time);CHKERRQ(ierr);
 
@@ -626,7 +689,7 @@ int GetLocalOrdering(GRID *grid)
   int	       *tmp,*tmp1,*tmp2;
   PetscScalar  time_ini,time_fin;
   PetscScalar  *ftmp,*ftmp1;
-  char         mesh_file[PETSC_MAX_PATH_LEN];
+  char         mesh_file[PETSC_MAX_PATH_LEN] = "";
   AO           ao;
   FILE         *fptr,*fptr1;
   PetscBool    flg;
@@ -801,7 +864,7 @@ int GetLocalOrdering(GRID *grid)
       if ((v2p[node1] == rank) || (v2p[node2] == rank)) {
         grid->eptr[k] = a2l[node1];
         grid->eptr[k+nedgeLoc] = a2l[node2];
-        edge_bit[k] = i;
+        edge_bit[k] = i;        /* Record global file index of the edge */
         eperm[k] = k;
         k++;
       }
@@ -965,7 +1028,7 @@ int GetLocalOrdering(GRID *grid)
 #else
    grid->xyzn[2*nedgeLoc+i] = ftmp1[eperm[i]];
 #endif
-  /* Do the length */
+  /* Do the area */
   i = 0; k = 0;
   remEdges = nedge;
   while (remEdges > 0) {
@@ -1200,7 +1263,7 @@ int GetLocalOrdering(GRID *grid)
   }
 
 
-  /* Renumber dual volume */
+  /* Renumber dual volume "area" */
   FCALLOC(nvertices,&grid->area);
   remNodes = nnodes;
   i = 0;
@@ -1810,12 +1873,16 @@ int SetPetscDS(GRID *grid,TstepCtx *tsCtx)
    /* Set up the PETSc datastructures */
  
    ierr = VecCreateMPI(comm,bs*nnodesLoc,bs*nnodes,&grid->qnode);CHKERRQ(ierr);
+   ierr = VecSetBlockSize(grid->qnode,bs);CHKERRQ(ierr);
    ierr = VecDuplicate(grid->qnode,&grid->res);CHKERRQ(ierr);
    ierr = VecDuplicate(grid->qnode,&tsCtx->qold);CHKERRQ(ierr);
    ierr = VecDuplicate(grid->qnode,&tsCtx->func);CHKERRQ(ierr);
    ierr = VecCreateSeq(MPI_COMM_SELF,bs*nvertices,&grid->qnodeLoc);CHKERRQ(ierr);
+   ierr = VecSetBlockSize(grid->qnodeLoc,bs);CHKERRQ(ierr);
    ierr = VecCreateMPI(comm,3*bs*nnodesLoc,3*bs*nnodes,&grid->grad);
+   ierr = VecSetBlockSize(grid->grad,3*bs);CHKERRQ(ierr);
    ierr = VecCreateSeq(MPI_COMM_SELF,3*bs*nvertices,&grid->gradLoc);
+   ierr = VecSetBlockSize(grid->gradLoc,3*bs);CHKERRQ(ierr);
 /* Create Scatter between the local and global vectors */
 /* First create scatter for qnode */
    ierr = ISCreateStride(MPI_COMM_SELF,bs*nvertices,0,1,&islocal);CHKERRQ(ierr);
@@ -1942,6 +2009,7 @@ int SetPetscDS(GRID *grid,TstepCtx *tsCtx)
    ierr = MatCreateMPIAIJ(comm,bs*nnodesLoc,bs*nnodesLoc,
                              bs*nnodes,bs*nnodes,PETSC_NULL,val_diag,
                              PETSC_NULL,val_offd,&grid->A);CHKERRQ(ierr);
+   ierr = MatSetBlockSize(grid->A,bs);CHKERRQ(ierr);
    ierr = PetscFree(val_diag);CHKERRQ(ierr);
    ierr = PetscFree(val_offd);CHKERRQ(ierr);
 #endif

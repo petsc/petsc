@@ -8,9 +8,9 @@
 #define REAL double
 
 typedef struct gxy{                            /* GRID STRUCTURE             */
-   int nnodes;                                 /* Number of nodes            */
-   int ncell;                                  /* Number of cells            */
-   int nedge;                                  /* Number of edges            */
+   int nnodes;                                 /* Global number of nodes     */
+   int ncell;                                  /* Global number of cells     */
+   int nedge;                                  /* Global number of edges     */
    int ncolor;                                 /* Number of colors           */
    int nccolor;                                /* Number of colors for cells */
    int nncolor;                                /* Number of colors for nodes */
