@@ -35,7 +35,7 @@ make tao_allmanpages
 
 echo "Building tarball $BUILDDIR/tao-$VERSION.tar.gz"
 cd $BUILDDIR
-tar czf tao-$VERSION.tar.gz --exclude-vcs --exclude="TODO" --exclude="oldtao" --exclude="nlstests" tao-$VERSION 
+tar czf tao-$VERSION.tar.gz --exclude-vcs --exclude="TODO" --exclude="oldtao" --exclude="nlstests" tao-$VERSION --exclude="sqpcon"
 
 echo "mv tao-$VERSION.tar.gz $HERE"
 mv tao-$VERSION.tar.gz $HERE

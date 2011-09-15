@@ -1,7 +1,3 @@
-output:
-  Show KSP, LS info in TaoSolverView
-  have ls_view show current ls info
-  print ls reason
 
 update manual
   fix finite differences (part2.tex)
@@ -10,11 +6,14 @@ update manual
   Add linesearch info
 
 Check fortran stubs 
+  pde-constrained
+
 Check documentation
 
 Examples/tests
-  Add chwirut2 to tests
   add to tests (-tao_fd, -tao_fdgrad, -tao_fd_delta)
+  add pde examples
+  remake output
   test GNU quad
   Put examples in correct places
 
