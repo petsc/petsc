@@ -822,7 +822,7 @@ PetscErrorCode TaoLineSearchComputeObjective(TaoLineSearch ls, Vec x, PetscReal 
     } else {
       ierr = PetscLogEventBegin(TaoLineSearch_EvalEvent,ls,0,0,0); CHKERRQ(ierr);
       if (!ls->ops->computeobjective && !ls->ops->computeobjectiveandgradient
-	  && !ls->ops->computeobjective && gts) {
+	  && !ls->ops->computeobjectiveandgts) {
 	SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Line Search does not have objective function set");
       }
       PetscStackPush("TaoLineSearch user objective routine"); 
