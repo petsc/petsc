@@ -1027,12 +1027,10 @@ href="http://www.cca-forum.org/download/cca-tools/cca-tools-0.5.9.tar.gz">http:/
             <h3><a name="CUDA"><font color="#551a8b">Installing PETSc to
                   use NVidia GPUs (aka CUDA)</font></a></h3>
             <ul>
-              <li>Install CUDA, Thrust, Cusp in default locations;
-                /usr/local/cuda. The versions and locations of Thrust
-                and Cusp you should use are listed in
-                $PETSC_DIR/config/PETSc/packages/cuda.py. The required
-                version of CUDA may not be publically available, you may
-                need to register as an NVIDIA Developer (free) to access
+              <li>Install CUDA and Cusp in default locations;
+                /usr/local/cuda. The version of Cusp you should use is listed in
+                $PETSC_DIR/config/PETSc/packages/cuda.py. Thrust has been included in CUDA since the 4.0 release. The required
+                version of CUDA may not be publically available, you may need to register as an NVIDIA Developer (free) to access
                 them. <br>
               </li>
             </ul>
@@ -1045,16 +1043,13 @@ href="http://www.cca-forum.org/download/cca-tools/cca-tools-0.5.9.tar.gz">http:/
 
                     driver</a> by running the executable you download,
                   as root</li>
-                <li>make sure&nbsp; LD_LIBRARY_PATH is set to point to
-                  the CUDA libraries, for instance
+                <li>make sure&nbsp; LD_LIBRARY_PATH is set to point to the CUDA libraries, for instance
                   <ul>
                     <li>LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib</li>
                   </ul>
                 </li>
-                <li>verify CUDA installation with Nvidia CUDA SDK [by
-                  compiling the SDK - and then running 'deviceQuery'
-                  &amp;&amp; 'binomialOptions -type=double'] (how do you
-                  do this????)<br>
+                <li>It is possible to verify CUDA installation with the Nvidia CUDA SDK, by
+                  compiling the SDK and then running 'deviceQuery' &amp;&amp; 'binomialOptions -type=double']<br>
                 </li>
               </ul>
               <li>Configure and build PETSc with the additional
