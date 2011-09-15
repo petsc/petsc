@@ -414,6 +414,7 @@ PetscErrorCode NonlinearGS(SNES snes,Vec X)
   PetscScalar    **x,F,J,u,uxx,uyy;
   DM             da;
   AppCtx         *user;
+  Vec            localX;
 
   PetscFunctionBegin;
   ierr = SNESGetTolerances(snes,PETSC_NULL,PETSC_NULL,PETSC_NULL,&its,PETSC_NULL);CHKERRQ(ierr);
@@ -430,7 +431,13 @@ PetscErrorCode NonlinearGS(SNES snes,Vec X)
   hxdhy  = hx/hy; 
   hydhx  = hy/hx;
 
+
+  ierr = DMGetLocalVector(da,&localX);CHKERRQ(ierr);
+
   for (l=0; l<its; l++) {
+
+    ierr = DMGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+    ierr = DMGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
     /*
      Get a pointer to vector data.
      - For default PETSc vectors, VecGetArray() returns a pointer to
@@ -438,7 +445,7 @@ PetscErrorCode NonlinearGS(SNES snes,Vec X)
      - You MUST call VecRestoreArray() when you no longer need access to
      the array.
      */
-    ierr = DMDAVecGetArray(da,X,&x);CHKERRQ(ierr);
+    ierr = DMDAVecGetArray(da,localX,&x);CHKERRQ(ierr);
 
     /*
      Get local grid boundaries (for 2-dimensional DMDA):
@@ -473,8 +480,10 @@ PetscErrorCode NonlinearGS(SNES snes,Vec X)
     /*
      Restore vector
      */
-    ierr = DMDAVecRestoreArray(da,X,&x);CHKERRQ(ierr);
+    ierr = DMDAVecRestoreArray(da,localX,&x);CHKERRQ(ierr);
+    ierr = DMLocalToGlobalBegin(da,localX,INSERT_VALUES,X);CHKERRQ(ierr);
+    ierr = DMLocalToGlobalEnd(da,localX,INSERT_VALUES,X);CHKERRQ(ierr);
   }
-
+  ierr = DMRestoreLocalVector(da,&localX);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 } 
