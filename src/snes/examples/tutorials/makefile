@@ -330,18 +330,26 @@ runex5_4:
 
 runex5_5_ngmres:
 	-@${MPIEXEC} -n 2 ./ex5 -da_grid_x 20 -da_grid_y 20 -snes_type ngmres  -snes_monitor_short -snes_max_it 1000	 \
-	-npc_snes_max_it 2 -snes_ngmres_m 30 -snes_ngmres_restart 1000 -par 6.0
+	-npc_snes_max_it 2 -snes_ngmres_m 30 -snes_ngmres_restart 1000 -par 6.0  > ex5_5_ngmres.tmp 2>&1; \
+	   ${DIFF} output/ex5_5_ngmres.out ex5_5_ngmres.tmp || echo "Possible problem with ex5_5_ngmres, diffs above"; \
+	   ${RM} -f ex5_5_ngmres.tmp
 runex5_5_ngmres_picard:
 	-@${MPIEXEC} -n 2 ./ex5 -da_grid_x 20 -da_grid_y 20 -snes_type ngmres  -npc_snes_ls quadratic -snes_monitor_short -snes_max_it 1000	 \
-	-npc_snes_type picard -npc_snes_max_it 2 -snes_ngmres_m 30 -snes_ngmres_restart 1000 -par 6.0
+	-npc_snes_type picard -npc_snes_max_it 2 -snes_ngmres_m 30 -snes_ngmres_restart 1000 -par 6.0 > ex5_5_ngmres_picard.tmp 2>&1; \
+	   ${DIFF} output/ex5_5_ngmres_picard.out ex5_5_ngmres_picard.tmp || echo "Possible problem with ex5_5_ngmres_picard, diffs above"; \
+	   ${RM} -f ex5_5_ngmres_picard.tmp
 runex5_5_picard:
 	-@${MPIEXEC} -n 2 ./ex5 -da_grid_x 20 -da_grid_y 20 -npc_snes_max_it 2 \
 	-snes_type picard -snes_ls quadratic -snes_monitor_short -snes_max_it 10000 \
-	-par 6.0 
+	-par 6.0  > ex5_5_picard.tmp 2>&1; \
+	   ${DIFF} output/ex5_5_picard.out ex5_5_picard.tmp || echo "Possible problem with ex5_5_picard, diffs above"; \
+	   ${RM} -f ex5_5_picard.tmp
 runex5_5_qn:
-	-@${MPIEXEC} -n 1 ./ex5 -da_grid_x 20 -da_grid_y 20 \
-	-snes_type qn -snes_qn_m 100 -snes_monitor -snes_max_it 1000 \
-	-par 6.0
+	-@${MPIEXEC} -n 2 ./ex5 -da_grid_x 20 -da_grid_y 20 \
+	-snes_type qn -snes_qn_m 100 -snes_monitor_short -snes_max_it 1000 \
+	-par 6.0  > ex5_5_qn.tmp 2>&1; \
+	   ${DIFF} output/ex5_5_qn.out ex5_5_qn.tmp || echo "Possible problem with ex5_5_qn, diffs above"; \
+	   ${RM} -f ex5_5_qn.tmp
 
 runex5_5_ls:
 	-@${MPIEXEC} -n 2 ./ex5 -da_grid_x 20 -da_grid_y 20 \
