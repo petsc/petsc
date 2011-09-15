@@ -1061,6 +1061,12 @@ href="http://www.cca-forum.org/download/cca-tools/cca-tools-0.5.9.tar.gz">http:/
                   <li>if you did not install in default locations add
                     --with-thrust-dir=path_to_thrust and
                     --with-cusp-dir=path_to_cusp</li>
+                  <li>If you run a 64-bit OS,
+                    <ul>
+                      <li>you may need --with-cudac="nvcc -m64"</li>
+                      <li>make sure to put /usr/local/cuda/lib64 in LD_LIBRARY_PATH</li>
+                    </ul>
+                  </li>
                 </ul>
               </li>
               <li>Run a sample example with:</li>
