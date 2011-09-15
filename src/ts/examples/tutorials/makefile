@@ -292,7 +292,7 @@ runex16:
 	   ${RM} -f ex16_1.tmp
 
 runex17:
-	-@${MPIEXEC} -n 1 ./ex17 -da_grid_x 40 -ts_max_steps 2 -snes_monitor -ksp_monitor > ex17_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex17 -da_grid_x 40 -ts_max_steps 2 -snes_monitor_short -ksp_monitor_short > ex17_1.tmp 2>&1; \
 	   ${DIFF} output/ex17_1.out ex17_1.tmp || echo "Possible problem with ex17_1, diffs above"; \
 	   ${RM} -f ex17_1.tmp
 
