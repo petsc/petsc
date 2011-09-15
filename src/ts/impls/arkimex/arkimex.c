@@ -363,17 +363,18 @@ PetscErrorCode TSARKIMEXRegister(const TSARKIMEXType name,PetscInt order,PetscIn
 #define __FUNCT__ "TSStep_ARKIMEX"
 static PetscErrorCode TSStep_ARKIMEX(TS ts)
 {
-  TS_ARKIMEX      *ark = (TS_ARKIMEX*)ts->data;
-  ARKTableau      tab  = ark->tableau;
-  const PetscInt  s    = tab->s;
-  const PetscReal *At  = tab->At,*A = tab->A,*bt = tab->bt,*b = tab->b,*ct = tab->ct,*c = tab->c;
-  PetscScalar     *w   = ark->work;
-  Vec             *Y   = ark->Y,*YdotI = ark->YdotI,*YdotRHS = ark->YdotRHS,Ydot = ark->Ydot,W = ark->Work,Z = ark->Z;
-  SNES            snes;
-  PetscInt        i,j,its,lits;
-  PetscReal       next_time_step;
-  PetscReal       h,t;
-  PetscErrorCode  ierr;
+  TS_ARKIMEX          *ark = (TS_ARKIMEX*)ts->data;
+  ARKTableau          tab  = ark->tableau;
+  const PetscInt      s    = tab->s;
+  const PetscReal     *At  = tab->At,*A = tab->A,*bt = tab->bt,*b = tab->b,*ct = tab->ct,*c = tab->c;
+  PetscScalar         *w   = ark->work;
+  Vec                 *Y   = ark->Y,*YdotI = ark->YdotI,*YdotRHS = ark->YdotRHS,Ydot = ark->Ydot,W = ark->Work,Z = ark->Z;
+  SNES                snes;
+  SNESConvergedReason snesreason;
+  PetscInt            i,j,its,lits;
+  PetscReal           next_time_step;
+  PetscReal           h,t;
+  PetscErrorCode      ierr;
 
   PetscFunctionBegin;
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
@@ -404,7 +405,13 @@ static PetscErrorCode TSStep_ARKIMEX(TS ts)
       ierr = SNESSolve(snes,W,Y[i]);CHKERRQ(ierr);
       ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
       ierr = SNESGetLinearSolveIterations(snes,&lits);CHKERRQ(ierr);
+      ierr = SNESGetConvergedReason(ts->snes,&snesreason);CHKERRQ(ierr);
       ts->nonlinear_its += its; ts->linear_its += lits;
+      if (snesreason < 0 && ts->max_snes_failures > 0 && ++ts->num_snes_failures >= ts->max_snes_failures) {
+        ts->reason = TS_DIVERGED_NONLINEAR_SOLVE;
+        ierr = PetscInfo2(ts,"Step=%D, nonlinear solve solve failures %D greater than current TS allowed, stopping solve\n",ts->steps,ts->num_snes_failures);CHKERRQ(ierr);
+        PetscFunctionReturn(0);
+      }
     }
     ierr = VecZeroEntries(Ydot);CHKERRQ(ierr);
     ierr = TSComputeIFunction(ts,t+h*ct[i],Y[i],Ydot,YdotI[i],ark->imex);CHKERRQ(ierr);

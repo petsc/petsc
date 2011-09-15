@@ -1789,7 +1789,7 @@ PetscErrorCode  TSStep(TS ts)
   ts->time_step_prev = ts->ptime - ptime_prev;
 
   if (ts->reason < 0) {
-    if (ts->errorifstepfailed) SETERRQ(((PetscObject)ts)->comm,PETSC_ERR_NOT_CONVERGED,"TSStep has failed");
+    if (ts->errorifstepfailed) SETERRQ1(((PetscObject)ts)->comm,PETSC_ERR_NOT_CONVERGED,"TSStep has failed due to %s",TSConvergedReasons[ts->reason]);
   } else if (!ts->reason) {
     if (ts->steps >= ts->max_steps)
       ts->reason = TS_CONVERGED_ITS;
