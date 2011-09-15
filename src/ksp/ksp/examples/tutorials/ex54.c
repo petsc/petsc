@@ -55,7 +55,7 @@ int main(int argc,char **args)
   /* generate element matrices */
   {
     FILE *file;
-    char fname[] = "elem_2d_therm.txt";
+    char fname[] = "data/elem_2d_therm.txt";
     file = fopen(fname, "r");
     if (file == 0) {
       DD1[0][0] =  0.66666666666666663;

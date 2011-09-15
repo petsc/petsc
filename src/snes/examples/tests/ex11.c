@@ -197,7 +197,7 @@ int main( int argc, char **argv )
   ierr = FormInitialGuess1(&user,user.fine.x);CHKERRQ(ierr);
   ierr = SNESSolve(snes,PETSC_NULL,user.fine.x);CHKERRQ(ierr);
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %D\n", its );CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of SNES iterations = %D\n", its );CHKERRQ(ierr);
 
   /* Free data structures */
   if (user.redundant_build) {

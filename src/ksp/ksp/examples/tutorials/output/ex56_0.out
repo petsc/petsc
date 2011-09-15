@@ -1,16 +1,19 @@
-	[0]PCSetUp_GAMG level 0 N=5184, n data rows=3, n data cols=6, nnz/row (ave)=68, np=8
-	createProlongation ave nnz/row 23 --> 21
-		[0]PCSetUp_GAMG 1) N=360, bs=6, n data cols=6, nnz/row (ave)=117, 1 active pes
+	[0]PCSetUp_GAMG level 0 N=5184, n data rows=0, n data cols=3, nnz/row (ave)=6, np=68
+	createProlongation ave nnz/row 22 --> 18
+			createProlongation max eigen=3.110740e+00 min=8.753986e-03 PC=pbjacobi
+	[0]partitionLevel npe (active): 8 --> 8. new npe = 1, neq = 384
+		[0]PCSetUp_GAMG 1) N=384, bs=0, n data cols=6, nnz/row (ave)=6, 146 active pes
 	[0]PCSetUp_GAMG 2 levels
-PCSetUp_GAMG max eigen = 3.368662e+00 min = 2.227951e-01
-  0 KSP Residual norm 73.6627 
-  1 KSP Residual norm 34.2318 
-  2 KSP Residual norm 10.1506 
-  3 KSP Residual norm 2.43678 
-  4 KSP Residual norm 0.300919 
-  5 KSP Residual norm 0.0383077 
-  6 KSP Residual norm 0.0244548 
-  7 KSP Residual norm 0.00856266 
-  8 KSP Residual norm 0.00536436 
-  9 KSP Residual norm 0.00173613 
- 10 KSP Residual norm 0.000483957 
+  0 KSP Residual norm 1398.74 
+  1 KSP Residual norm 333.854 
+  2 KSP Residual norm 134.178 
+  3 KSP Residual norm 43.1024 
+  4 KSP Residual norm 13.2088 
+  5 KSP Residual norm 4.89035 
+  6 KSP Residual norm 2.55545 
+  7 KSP Residual norm 0.997162 
+  8 KSP Residual norm 0.285892 
+  9 KSP Residual norm 0.076363 
+ 10 KSP Residual norm 0.0190742 
+ 11 KSP Residual norm 0.00453287 
+[0]main |b-Ax|/|b|=8.303497e-05, |b|=4.969822e+00

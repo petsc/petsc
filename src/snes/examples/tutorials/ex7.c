@@ -180,7 +180,7 @@ int main(int argc,char **argv)
   ierr = SNESGetConvergedReason(snes, &reason);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %D, %s\n",its,SNESConvergedReasons[reason]);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of SNES iterations = %D, %s\n",its,SNESConvergedReasons[reason]);CHKERRQ(ierr);
   ierr = L_2Error(DMMGGetDM(dmmg), DMMGGetx(dmmg), &error, user);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"L_2 error in the solution: %G\n", error);CHKERRQ(ierr);
   ierr = PrintVector(dmmg[0], DMMGGetx(dmmg));CHKERRQ(ierr);

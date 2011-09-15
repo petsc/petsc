@@ -241,7 +241,6 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
     ngmres->n = PetscBLASIntCast(l);
     ngmres->info = PetscBLASIntCast(0);
     ngmres->rcond = -1.;
-    ngmres->nrhs = 1;
 #ifdef PETSC_USE_COMPLEX
     LAPACKgelss_(&ngmres->m,
 		 &ngmres->n,
@@ -424,6 +423,8 @@ PetscErrorCode SNESCreate_NGMRES(SNES snes)
   snes->ops->solve          = SNESSolve_NGMRES;
   snes->ops->reset          = SNESReset_NGMRES;
 
+  snes->usesksp             = PETSC_FALSE;
+
   ierr = PetscNewLog(snes, SNES_NGMRES, &ngmres);CHKERRQ(ierr);
   snes->data = (void*) ngmres;
   ngmres->msize = 10;
@@ -435,6 +436,7 @@ PetscErrorCode SNESCreate_NGMRES(SNES snes)
   ngmres->k_rmax   = 200;
 
   ierr = SNESGetPC(snes, &snes->pc);CHKERRQ(ierr);
+  ierr = SNESSetType(snes->pc,SNESPICARD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

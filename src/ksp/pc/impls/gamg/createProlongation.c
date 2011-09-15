@@ -88,17 +88,19 @@ PetscErrorCode getDataWithGhosts( const Mat a_Gmat,
    smoothAggs - 
 
    Input Parameter:
-   . a_Gmat - glabal matrix of graph (data not defined)
+   . a_Gmat_2 - glabal matrix of graph (data not defined)
+   . a_Gmat_1
+   . a_lid_state
    Input/Output Parameter:
-
-   . a_locals_llist - linked list of local nodes rooted at selected node (size is nloc + nghosts)
+   . a_id_llist - linked list rooted at selected node (size is nloc + nghosts_2)
+   . a_deleted_parent_gid
 */
 #undef __FUNCT__
 #define __FUNCT__ "smoothAggs"
 PetscErrorCode smoothAggs( const Mat a_Gmat_2, /* base (squared) graph */
                            const Mat a_Gmat_1, /* base graph */
                            const PetscScalar a_lid_state[], /* [nloc], states */
-                           PetscInt a_id_llist[], /* [nloc+nghost], aggragate list */
+                           PetscInt a_id_llist[], /* [nloc+nghost_2], aggragate list */
                            PetscScalar a_deleted_parent_gid[] /* [nloc], which pe owns my deleted */
 
                            )
@@ -165,24 +167,24 @@ PetscErrorCode smoothAggs( const Mat a_Gmat_2, /* base (squared) graph */
 
   {
     PetscInt *lid_cprowID_1;
-    PetscInt *lid_selectedid;
+    PetscInt *lid_sel_lid;
 
     ierr = PetscMalloc( nloc*sizeof(PetscInt), &lid_cprowID_1 ); CHKERRQ(ierr);
-    ierr = PetscMalloc( nloc*sizeof(PetscInt), &lid_selectedid ); CHKERRQ(ierr);
+    ierr = PetscMalloc( nloc*sizeof(PetscInt), &lid_sel_lid ); CHKERRQ(ierr);
 
     /*reverse map to selelected node */
-    for(lid=0;lid<nloc;lid++) lid_cprowID_1[lid] = lid_selectedid[lid] = -1;
+    for(lid=0;lid<nloc;lid++) lid_cprowID_1[lid] = lid_sel_lid[lid] = -1;
     for(lid=0;lid<nloc;lid++){
       NState state = (NState)a_lid_state[lid];
       if( IS_SELECTED(state) ){
         PetscInt flid = lid;
         do{
-          lid_selectedid[flid] = lid;
+          lid_sel_lid[flid] = lid; assert(flid<nloc); //?????
         } while( (flid=a_id_llist[flid]) != -1 );
       }
     }
 
-    /* set index into cmpressed row 'lid_cprowID' */
+    /* set index into compressed row 'lid_cprowID' */
     if( matB_1 ) {
       ii = matB_1->compressedrow.i;
       for (ix=0; ix<matB_1->compressedrow.nrows; ix++) {
@@ -200,28 +202,35 @@ PetscErrorCode smoothAggs( const Mat a_Gmat_2, /* base (squared) graph */
         for (j=0; j<n; j++) {
           PetscInt flid, lidj = idx[j];
           NState statej = (NState)a_lid_state[lidj];
-          if( statej==DELETED && lid_selectedid[lidj] != lid && lid_selectedid[lidj] != -1){ /* steal it */
-	    PetscInt hav=0, flid2 = lid_selectedid[lidj], lastid; assert(flid2!=-1);
-            /* lid_selectedid[lidj] = lid; don't really need to do this ... */
-            /* I'm stealing this local */
-            for( lastid=flid2, flid=a_id_llist[flid2] ; flid!=-1 ; flid=a_id_llist[flid] ) {
-              if( flid == lidj ) {
-                a_id_llist[lastid] = a_id_llist[lidj];                    /* remove lidj from list */
-                a_id_llist[lidj] = a_id_llist[lid]; a_id_llist[lid] = lidj; /* insert 'lidj' into head of llist */
-                hav=1;
-                //break;
-              }
-              lastid = flid;
-            }
-	    assert(hav==1);
-          }
+          if( statej==DELETED && lid_sel_lid[lidj] != lid ){ /* steal it */
+	    if( lid_sel_lid[lidj] != -1 ){
+	      /* I'm stealing this local */
+	      PetscInt hav=0, flid2 = lid_sel_lid[lidj], lastid; assert(flid2!=-1);
+	      for( lastid=flid2, flid=a_id_llist[flid2] ; flid!=-1 ; flid=a_id_llist[flid] ) {
+		if( flid == lidj ) {
+		  a_id_llist[lastid] = a_id_llist[lidj];                    /* remove lidj from list */
+		  a_id_llist[lidj] = a_id_llist[lid]; a_id_llist[lid] = lidj; /* insert 'lidj' into head of llist */
+		  hav++;
+		  /*break;*/
+		}
+		lastid = flid;
+	      }
+	      assert(hav==1);
+	    }
+	    else{
+	      /* I'm stealing this local, owned by a ghost */
+	      a_deleted_parent_gid[lidj] = (PetscScalar)(lid+my0); /* this makes it a no-op later */
+	      lid_sel_lid[lidj] = lid; /* not needed */
+	      a_id_llist[lidj] = a_id_llist[lid]; a_id_llist[lid] = lidj; /* insert 'lidj' into head of llist */
+	    }
+	  }
         }
         /* ghosts are done by 'DELETED' branch */
       }
       else if( state == DELETED ) {
         /* see if I have a selected ghost neighbors */
         if( (ix=lid_cprowID_1[lid]) != -1 ) { 
-          PetscInt hav = 0, old_sel_lid = lid_selectedid[lid], lastid; assert(old_sel_lid<nloc);
+          PetscInt hav = 0, old_sel_lid = lid_sel_lid[lid], lastid; assert(old_sel_lid<nloc);
           ii = matB_1->compressedrow.i; n = ii[ix+1] - ii[ix];
           idx = matB_1->j + ii[ix];
           for( j=0 ; j<n ; j++ ) {
@@ -230,34 +239,34 @@ PetscErrorCode smoothAggs( const Mat a_Gmat_2, /* base (squared) graph */
             if( IS_SELECTED(statej) ) {
               PetscInt new_sel_gid = (PetscInt)statej, hv=0, flid;
               hav++;
-              /* lid_selectedid[lid] = cpid; */
               /* remove from list */
-	      if(old_sel_lid != -1){ 
+	      if( old_sel_lid != -1 ){ 
 		assert(a_deleted_parent_gid[lid]==-1.0); 
 		for( lastid=old_sel_lid, flid=a_id_llist[old_sel_lid] ; flid != -1 ; flid=a_id_llist[flid] ) {
 		  if( flid == lid ) {
 		    a_id_llist[lastid] = a_id_llist[lid];   /* remove lid from 'old_sel_lid' list */
 		    hv++;
-		    //break;
+		    /*break;*/
 		  }
 		  lastid = flid;
 		}
 		assert(hv==1);
 	      }
 	      else {
-		assert(a_deleted_parent_gid[lid]!=-1.0);
+		assert(a_deleted_parent_gid[lid] != -1.0); /* stealing from one ghost, giving to another */
 	      }
-	      
-              a_deleted_parent_gid[lid] = (PetscScalar)new_sel_gid; /* this will get other proc to add this */
+
+	      /* this will get other proc to add this */
+              a_deleted_parent_gid[lid] = (PetscScalar)new_sel_gid; 
 	    }
           }
           assert(hav <= 1);
         }
       }
     }
-    
+ 
     ierr = PetscFree( lid_cprowID_1 );  CHKERRQ(ierr);
-    ierr = PetscFree( lid_selectedid );  CHKERRQ(ierr);
+    ierr = PetscFree( lid_sel_lid );  CHKERRQ(ierr);
   }
   
   if(isMPI) {
@@ -323,13 +332,6 @@ PetscErrorCode maxIndSetAgg( const IS a_perm,
   ierr = MatGetVecs( a_Gmat, &locState, 0 );         CHKERRQ(ierr);
 
   ierr = MatGetOwnershipRange(a_Gmat,&my0,&Iend);  CHKERRQ(ierr);
-
-/* PetscReal *fiddata,fid_glid_loc[nloc]; */
-/* for(kk=0;kk<nloc;kk++) fid_glid_loc[kk] = (PetscReal)(my0+kk); */
-/* ierr = getDataWithGhosts( a_Gmat, 1, fid_glid_loc, &n, &fiddata ); CHKERRQ(ierr); */
-/* PetscInt flid_fgid[n]; */
-/* for(kk=0;kk<n;kk++) flid_fgid[kk] = (PetscInt)fiddata[kk]; */
-/* ierr = PetscFree( fiddata ); CHKERRQ(ierr); */
 
   if( mpimat ) {
     PetscInt gid;
@@ -750,8 +752,8 @@ PetscErrorCode formProl0(IS a_selected, /* list of selected local ID, includes s
   } /* for all coarse nodes */
   assert(out_data[a_nSAvec*DATA_OUT_STRIDE]==1.e300);
 
-/* MPI_Allreduce( &ndone, &ii, 1, MPIU_INT, MPIU_SUM, wcomm ); /\* synchronous version *\/ */
-/* MatGetSize( a_Prol, &kk, &jj );  */
+/* ierr = MPI_Allreduce( &ndone, &ii, 1, MPIU_INT, MPIU_SUM, wcomm ); /\* synchronous version *\/ */
+/* MatGetSize( a_Prol, &kk, &jj ); */
 /* PetscPrintf(PETSC_COMM_WORLD," **** [%d]%s %d total done, N=%d (%d local done)\n",mype,__FUNCT__,ii,kk/a_bs,ndone); */
 
   ierr = ISRestoreIndices( a_selected, &selected_idx );     CHKERRQ(ierr);

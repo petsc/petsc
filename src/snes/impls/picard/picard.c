@@ -73,9 +73,9 @@ PetscErrorCode  SNESLineSearchSetMonitor_Picard(SNES snes,PetscBool  flg)
 }
 EXTERN_C_END
 
-PetscErrorCode PicardLineSearchNoNorms(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal*,PetscReal*,PetscBool*);
-PetscErrorCode PicardLineSearchNo(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal*,PetscReal*,PetscBool*);
-PetscErrorCode PicardLineSearchQuadratic(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal*,PetscReal*,PetscBool*);
+PetscErrorCode SNESLineSearchNoNorms_Picard(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal*,PetscReal*,PetscBool*);
+PetscErrorCode SNESLineSearchNo_Picard(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal*,PetscReal*,PetscBool*);
+PetscErrorCode SNESLineSearchQuadratic_Picard(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal*,PetscReal*,PetscBool*);
 /*
   SNESSetFromOptions_Picard - Sets various parameters for the SNESLS method.
 
@@ -95,18 +95,18 @@ static PetscErrorCode SNESSetFromOptions_Picard(SNES snes)
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("SNES Picard options");CHKERRQ(ierr);
-    ierr = PetscOptionsEnum("-snes_ls","Picard Type","SNESLineSearchSet",SNESLineSearchTypes,(PetscEnum)SNES_LS_CUBIC,(PetscEnum*)&indx,&flg);CHKERRQ(ierr);
-    ls->type = indx;
+    ierr = PetscOptionsEnum("-snes_ls","Picard line search type","SNESLineSearchSet",SNESLineSearchTypes,(PetscEnum)ls->type,(PetscEnum*)&indx,&flg);CHKERRQ(ierr);
     if (flg) {
+      ls->type = indx;
       switch (indx) {
       case SNES_LS_BASIC:
-        ierr = SNESLineSearchSet(snes,PicardLineSearchNo,PETSC_NULL);CHKERRQ(ierr);
+        ierr = SNESLineSearchSet(snes,SNESLineSearchNo_Picard,PETSC_NULL);CHKERRQ(ierr);
         break;
       case SNES_LS_BASIC_NONORMS:
-        ierr = SNESLineSearchSet(snes,PicardLineSearchNoNorms,PETSC_NULL);CHKERRQ(ierr);
+        ierr = SNESLineSearchSet(snes,SNESLineSearchNoNorms_Picard,PETSC_NULL);CHKERRQ(ierr);
         break;
       case SNES_LS_QUADRATIC:
-        ierr = SNESLineSearchSet(snes,PicardLineSearchQuadratic,PETSC_NULL);CHKERRQ(ierr);
+        ierr = SNESLineSearchSet(snes,SNESLineSearchQuadratic_Picard,PETSC_NULL);CHKERRQ(ierr);
         break;
       case SNES_LS_CUBIC:
         SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_SUP,"No support for cubic search");
@@ -121,7 +121,7 @@ static PetscErrorCode SNESSetFromOptions_Picard(SNES snes)
 }
 
 /*
-  SNESView_Picard - Prints info from the SNESPICARD data structure.
+  SNESView_Picard - Prints info from the SNESPicard data structure.
 
   Input Parameters:
 + SNES - the SNES context
@@ -146,8 +146,8 @@ static PetscErrorCode SNESView_Picard(SNES snes, PetscViewer viewer)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PicardLineSearchNo"
-PetscErrorCode PicardLineSearchNo(SNES snes,void *lsctx,Vec X,Vec F,Vec dummyG,Vec Y,Vec W,PetscReal fnorm,PetscReal dummyXnorm,PetscReal *dummyYnorm,PetscReal *gnorm,PetscBool *flag)
+#define __FUNCT__ "SNESLineSearchNo_Picard"
+PetscErrorCode SNESLineSearchNo_Picard(SNES snes,void *lsctx,Vec X,Vec F,Vec dummyG,Vec Y,Vec W,PetscReal fnorm,PetscReal dummyXnorm,PetscReal *dummyYnorm,PetscReal *gnorm,PetscBool *flag)
 {
   PetscErrorCode ierr;
   SNES_Picard    *neP = (SNES_Picard *) snes->data;
@@ -161,8 +161,8 @@ PetscErrorCode PicardLineSearchNo(SNES snes,void *lsctx,Vec X,Vec F,Vec dummyG,V
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PicardLineSearchNoNorms"
-PetscErrorCode PicardLineSearchNoNorms(SNES snes,void *lsctx,Vec X,Vec F,Vec dummyG,Vec Y,Vec W,PetscReal fnorm,PetscReal dummyXnorm,PetscReal *dummyYnorm,PetscReal *gnorm,PetscBool *flag)
+#define __FUNCT__ "SNESLineSearchNoNorms_Picard"
+PetscErrorCode SNESLineSearchNoNorms_Picard(SNES snes,void *lsctx,Vec X,Vec F,Vec dummyG,Vec Y,Vec W,PetscReal fnorm,PetscReal dummyXnorm,PetscReal *dummyYnorm,PetscReal *gnorm,PetscBool *flag)
 {
   PetscErrorCode ierr;
   SNES_Picard    *neP = (SNES_Picard *) snes->data;
@@ -174,8 +174,8 @@ PetscErrorCode PicardLineSearchNoNorms(SNES snes,void *lsctx,Vec X,Vec F,Vec dum
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "PicardLineSearchQuadratic"
-PetscErrorCode PicardLineSearchQuadratic(SNES snes,void *lsctx,Vec X,Vec F,Vec G,Vec Y,Vec W,PetscReal fnorm,PetscReal dummyXnorm,PetscReal *dummyYnorm,PetscReal *gnorm,PetscBool *flag)
+#define __FUNCT__ "SNESLineSearchQuadratic_Picard"
+PetscErrorCode SNESLineSearchQuadratic_Picard(SNES snes,void *lsctx,Vec X,Vec F,Vec G,Vec Y,Vec W,PetscReal fnorm,PetscReal dummyXnorm,PetscReal *dummyYnorm,PetscReal *gnorm,PetscBool *flag)
 {
   PetscInt       i;
   PetscReal      alphas[3] = {0.0, 0.5, 1.0};
@@ -225,13 +225,14 @@ PetscErrorCode PicardLineSearchQuadratic(SNES snes,void *lsctx,Vec X,Vec F,Vec G
     ierr = PetscViewerASCIISubtractTab(neP->monitor,((PetscObject)snes)->tablevel);CHKERRQ(ierr);
   }
   ierr = VecAXPBY(X, alpha, 1 - alpha, Y);CHKERRQ(ierr);
-  ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
   if (alpha != 1.0) {
+    ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
     ierr = VecNorm(F, NORM_2, gnorm);CHKERRQ(ierr);
   } else {
     *gnorm = PetscSqrtReal(norms[2]); 
   }
-  *flag = PETSC_TRUE;
+  if (alpha == 0.0) *flag = PETSC_FALSE;
+  else              *flag = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -405,14 +406,15 @@ PetscErrorCode  SNESCreate_Picard(SNES snes)
   snes->ops->solve	     = SNESSolve_Picard;
   snes->ops->reset           = SNESReset_Picard;
 
+  snes->usesksp              = PETSC_FALSE;
+
   ierr = PetscNewLog(snes, SNES_Picard, &neP);CHKERRQ(ierr);
   snes->data = (void*) neP;
-  neP->type          = SNES_LS_BASIC;
-  neP->damping	     = 1.0;
   neP->maxstep	     = 1.e8;
   neP->steptol       = 1.e-12;
-  neP->type          = SNES_LS_BASIC;
-  neP->LineSearch    = PicardLineSearchNo;
+  neP->type          = SNES_LS_QUADRATIC;
+  neP->damping	     = 1.0;
+  neP->LineSearch    = SNESLineSearchQuadratic_Picard;
   neP->lsP           = PETSC_NULL;
   neP->postcheckstep = PETSC_NULL;
   neP->postcheck     = PETSC_NULL;

@@ -37,6 +37,7 @@ E*/
 #define SNESNGMRES  "ngmres"
 #define SNESSORQN   "sorqn"
 #define SNESQN      "qn"
+#define SNESSHELL   "shell"
 
 /* Logging support */
 extern PetscClassId  SNES_CLASSID;
@@ -385,6 +386,10 @@ extern PetscErrorCode  SNESLineSearchSetPreCheck(SNES,PetscErrorCode(*)(SNES,Vec
 extern PetscErrorCode  SNESLineSearchSetParams(SNES,PetscReal,PetscReal,PetscReal);
 extern PetscErrorCode  SNESLineSearchGetParams(SNES,PetscReal*,PetscReal*,PetscReal*);
 extern PetscErrorCode  SNESLineSearchSetMonitor(SNES,PetscBool );
+
+extern PetscErrorCode  SNESShellGetContext(SNES,void**);
+extern PetscErrorCode  SNESShellSetContext(SNES,void*);
+extern PetscErrorCode  SNESShellSetSolve(SNES,PetscErrorCode (*)(SNES,Vec));
 
 /* Routines for VI solver */
 extern PetscErrorCode  SNESVISetVariableBounds(SNES,Vec,Vec);
