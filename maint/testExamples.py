@@ -125,7 +125,7 @@ if __name__=="__main__":
                             sys.stdout.write("\n")
                             for line in diff:
                                 sys.stdout.write(line)
-                                sys.stdout.write("** Possible error in %s. See diff above. **\n\n" % ex.name)
+                            sys.stdout.write("** Possible error in %s. See diff above. **\n\n" % ex.name)
                         else:
                             sys.stdout.write("%s OK\n" % ex.name)
 
