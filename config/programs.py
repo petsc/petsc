@@ -18,6 +18,7 @@ class Configure(config.base.Configure):
     import nargs
     import nargs
     help.addArgument('PETSc', '-with-make=<prog>', nargs.Arg(None, 'make', 'Specify make'))
+    help.addArgument('PETSc', '-with-make-np=<np>', nargs.ArgInt(None, None, min=1, help='Default number of threads to use for parallel builds'))
     return
 
   def configureMake(self):
@@ -72,27 +73,33 @@ class Configure(config.base.Configure):
     self.addMakeRule('libf','${OBJSF}','-${AR} ${AR_FLAGS} ${LIBNAME} ${OBJSF}')
 
     # check no of cores on the build machine [perhaps to do make '-j ncores']
-    try:
-      import multiprocessing
-      make_np = multiprocessing.cpu_count()+1
-      self.framework.logPrint('module multiprocessing found: using make_np ='+str(make_np))
-    except (ImportError), e:
-        self.framework.logPrint('module multiprocessing *not* found: using default for make_np')
-        make_np = 2
-    import os
-    import pwd
-    if 'barrysmith' == pwd.getpwuid(os.getuid()).pw_name:
-      # Barry wants to use exactly the number of physical cores (not logical cores) because it breaks otherwise.
-      # Since this works for everyone else who uses a Mac, something must be wrong with their systems. ;-)
+    make_np = self.framework.argDB.get('with-make-np')
+    import pdb; pdb.set_trace()
+    if make_np is not None:
+      self.framework.logPrint('using user-provided make_np = %d' % make_np)
+    else:
       try:
-        (output, error, status) = config.base.Configure.executeShellCommand('/usr/sbin/system_profiler -detailLevel full SPHardwareDataType', log = self.framework.log)
-        import re
-        match = re.search(r'.*Total Number Of Cores: (\d+)', output)
-        if match:
-          make_np = int(match.groups()[0])
-          self.framework.logPrint('Found number of cores using system_profiler: make_np = %d' % (make_np,))
-      except:
-        pass
+        import multiprocessing
+        cores = multiprocessing.cpu_count()
+        make_np = min(cores+1,5)
+        self.framework.logPrint('module multiprocessing found %d cores: using make_np = %d' % (cores,make_np))
+      except (ImportError), e:
+        make_np = 2
+        self.framework.logPrint('module multiprocessing *not* found: using default make_np = %d' % make_np)
+      import os
+      import pwd
+      if 'barrysmith' == pwd.getpwuid(os.getuid()).pw_name:
+        # Barry wants to use exactly the number of physical cores (not logical cores) because it breaks otherwise.
+        # Since this works for everyone else who uses a Mac, something must be wrong with their systems. ;-)
+        try:
+          (output, error, status) = config.base.Configure.executeShellCommand('/usr/sbin/system_profiler -detailLevel full SPHardwareDataType', log = self.framework.log)
+          import re
+          match = re.search(r'.*Total Number Of Cores: (\d+)', output)
+          if match:
+            make_np = int(match.groups()[0])
+            self.framework.logPrint('Found number of cores using system_profiler: make_np = %d' % (make_np,))
+        except:
+          pass
     self.addMakeMacro('MAKE_NP',str(make_np))
     return
 
