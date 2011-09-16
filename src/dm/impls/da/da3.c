@@ -1337,12 +1337,12 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
 .  m,n,p - corresponding number of processors in each dimension 
            (or PETSC_DECIDE to have calculated)
 .  dof - number of degrees of freedom per node
-.  lx, ly, lz - arrays containing the number of nodes in each cell along
+.  s - stencil width
+-  lx, ly, lz - arrays containing the number of nodes in each cell along
           the x, y, and z coordinates, or PETSC_NULL. If non-null, these
           must be of length as m,n,p and the corresponding
           m,n, or p cannot be PETSC_DECIDE. Sum of the lx[] entries must be M, sum of
           the ly[] must N, sum of the lz[] must be P
--  s - stencil width
 
    Output Parameter:
 .  da - the resulting distributed array object
