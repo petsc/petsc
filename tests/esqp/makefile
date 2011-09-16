@@ -26,3 +26,23 @@ testksp: testksp.o tao_chkopts
 testksp2: testksp2.o tao_chkopts
 	-${CLINKER} -o testksp2 testksp2.o ${TAO_LIB} ${PETSC_LIB}
 	${RM} testksp2.o
+
+elliptic_solve: elliptic_solve.o tao_chkopts
+	-${CLINKER} -o elliptic_solve elliptic_solve.o ${TAO_LIB} ${PETSC_LIB}
+	${RM} elliptic_solve.o
+
+elliptic_matmult: elliptic_matmult.o tao_chkopts
+	-${CLINKER} -o elliptic_matmult elliptic_matmult.o ${TAO_LIB} ${PETSC_LIB}
+	${RM} elliptic_matmult.o
+
+mydot: mydot.o tao_chkopts
+	-${CLINKER} -o mydot mydot.o ${TAO_LIB} ${PETSC_LIB}
+	${RM} mydot.o
+
+cavity: cavity.o tao_chkopts
+	-${CLINKER} -o cavity cavity.o ${TAO_LIB} ${PETSC_LIB}
+	${RM} cavity.o
+
+elliptic_stage: elliptic_stage.o tao_chkopts
+	-${CLINKER} -o elliptic_stage elliptic_stage.o ${TAO_LIB} ${PETSC_LIB}
+	${RM} elliptic_stage.o

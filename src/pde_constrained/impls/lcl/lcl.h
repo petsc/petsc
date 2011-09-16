@@ -69,6 +69,8 @@ typedef struct {
   MatStructure statematflag,designmatflag;
   PetscBool recompute_jacobian_flag;
   PetscInt phase2_niter;
+  PetscBool verbose;
+  PetscReal tola,tolb,tolc,told;
   
 
 } TAO_LCL;

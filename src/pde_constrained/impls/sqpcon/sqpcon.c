@@ -96,7 +96,7 @@ static PetscErrorCode TaoSolverSetup_SQPCON(TaoSolver tao)
   ierr = VecGetSize(tao->constraints, &sqpconP->m); CHKERRQ(ierr);
 
   //ierr = VecGetOwnershipRange(tao->solution,&lo,&hi); CHKERRQ(ierr);
-  ierr = ISComplement(tao->state_is,lo,hi,&tao->design_is); CHKERRQ(ierr);
+  //ierr = ISComplement(tao->state_is,lo,hi,&tao->design_is); CHKERRQ(ierr);
 
   //ierr = VecGetOwnershipRange(tao->constraints,&lo,&hi); CHKERRQ(ierr);
   //ierr = ISCreateStride(((PetscObject)tao)->comm,hi-lo,lo,1,&sqpconP->UIM);

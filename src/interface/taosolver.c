@@ -88,6 +88,7 @@ PetscErrorCode TaoSolverCreate(MPI_Comm comm, TaoSolver *newtao)
     tao->jacobian_pre = PETSC_NULL;
     tao->jacobian_state = PETSC_NULL;
     tao->jacobian_state_pre = PETSC_NULL;
+    tao->jacobian_state_inv = PETSC_NULL;
     tao->jacobian_design = PETSC_NULL;
     tao->jacobian_design_pre = PETSC_NULL;
     tao->state_is = PETSC_NULL;
@@ -283,6 +284,7 @@ PetscErrorCode TaoSolverDestroy(TaoSolver *tao)
   ierr = MatDestroy(&(*tao)->jacobian); CHKERRQ(ierr);
   ierr = MatDestroy(&(*tao)->jacobian_state_pre); CHKERRQ(ierr);
   ierr = MatDestroy(&(*tao)->jacobian_state); CHKERRQ(ierr);
+  ierr = MatDestroy(&(*tao)->jacobian_state_inv); CHKERRQ(ierr);
   ierr = MatDestroy(&(*tao)->jacobian_design_pre); CHKERRQ(ierr);
   ierr = MatDestroy(&(*tao)->jacobian_design); CHKERRQ(ierr);
   ierr = ISDestroy(&(*tao)->state_is); CHKERRQ(ierr);

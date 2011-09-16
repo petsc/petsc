@@ -1,12 +1,13 @@
 #include "taosolver.h"
 #include "petsctime.h"
+#include <sys/mman.h>
 typedef struct {
   PetscInt n; // Number of variables
   PetscInt m; // Number of constraints
   PetscInt mx; // grid points in each direction
   PetscInt ns; // Number of data samples (1<=ns<=8)
                // Currently only ns=1 is supported
-  PetscInt ndata; // Numbers of data points per sample
+  PetscInt ndata; // Number of data points per sample
   IS s_is;
   IS d_is;
   VecScatter state_scatter;
@@ -33,12 +34,12 @@ typedef struct {
 
   Vec y; // state variables
   Vec ywork;
-  Vec ysave;
+  //Vec ysave;
   Vec ytrue;
 
   Vec u; // design variables
   Vec uwork;
-  Vec usave;
+  //Vec usave;
   Vec utrue;
  
   Vec js_diag;
@@ -53,6 +54,11 @@ typedef struct {
 
   KSP solver;
   PC prec;
+
+  PetscInt solve_type;
+  PetscReal tola,tolb,tolc,told;
+  PetscInt ksp_its;
+  PetscInt ksp_its_initial;
 
 } AppCtx;
 
@@ -94,7 +100,8 @@ int main(int argc, char **argv)
   IS is_allstate,is_alldesign;
   PetscInt lo,hi,hi2,lo2;
   PetscBool flag;
-  
+
+  //mlockall(MCL_CURRENT || MCL_FUTURE);
 
   PetscInitialize(&argc, &argv, (char*)0,help);
   TaoInitialize(&argc, &argv, (char*)0,help);
@@ -111,6 +118,15 @@ int main(int argc, char **argv)
   ierr = PetscOptionsReal("-beta","Weight attributed to ||u||^2 in regularization functional","",user.beta,&user.beta,&flag); CHKERRQ(ierr);
   user.noise = 0.01;
   ierr = PetscOptionsReal("-noise","Amount of noise to add to data","",user.noise,&user.noise,&flag); CHKERRQ(ierr);
+
+  user.tola = 1e-4;
+  ierr = PetscOptionsReal("-tao_lcl_tola","Tolerance for first forward solve","",user.tola,&user.tola,&flag); CHKERRQ(ierr);
+  user.tolb = 1e-4;
+  ierr = PetscOptionsReal("-tao_lcl_tolb","Tolerance for first adjoint solve","",user.tolb,&user.tolb,&flag); CHKERRQ(ierr);
+  user.tolc = 1e-4;
+  ierr = PetscOptionsReal("-tao_lcl_tolc","Tolerance for second forward solve","",user.tolc,&user.tolc,&flag); CHKERRQ(ierr);
+  user.told = 1e-4;
+  ierr = PetscOptionsReal("-tao_lcl_told","Tolerance for second adjoint solve","",user.told,&user.told,&flag); CHKERRQ(ierr);
 
   user.m = user.mx*user.mx*user.mx; // number of constraints
   user.n = 2*user.m; // number of variables
@@ -176,7 +192,7 @@ int main(int argc, char **argv)
   ierr = TaoSolverSetObjectiveRoutine(tao, FormFunction, (void *)&user); CHKERRQ(ierr);
   ierr = TaoSolverSetGradientRoutine(tao, FormGradient, (void *)&user); CHKERRQ(ierr);
   ierr = TaoSolverSetConstraintsRoutine(tao, user.c, FormConstraints, (void *)&user); CHKERRQ(ierr);
-
+ 
   ierr = TaoSolverSetJacobianStateRoutine(tao, user.Js, user.Js, user.JsInv, FormJacobianState, (void *)&user); CHKERRQ(ierr); // TODO(?): remove JsInv, use MATOP_SOLVE and MATOP_SOLVE_TRANSPOSE
   ierr = TaoSolverSetJacobianDesignRoutine(tao, user.Jd, FormJacobianDesign, (void *)&user); CHKERRQ(ierr);
 
@@ -188,6 +204,10 @@ int main(int argc, char **argv)
   ierr = PetscOptionsInt("-ntests","Number of times to repeat TaoSolverSolve","",ntests,&ntests,&flag); CHKERRQ(ierr);
   PetscLogDouble v1,v2;
   PetscInt i;
+  int stages[1];
+  ierr = PetscLogStageRegister("Trials",&stages[0]); CHKERRQ(ierr);
+  ierr = PetscLogStagePush(stages[0]); CHKERRQ(ierr);
+  user.ksp_its_initial = user.ksp_its;
   for (i=0; i<ntests; i++){
     ierr = PetscGetTime(&v1); CHKERRQ(ierr);
     ierr = TaoSolverSolve(tao);  CHKERRQ(ierr);
@@ -195,8 +215,17 @@ int main(int argc, char **argv)
     PetscPrintf(PETSC_COMM_WORLD,"Elapsed time = %10.8f\n",v2-v1);
     ierr = VecCopy(x0,x); CHKERRQ(ierr);
     ierr = TaoSolverSetInitialVector(tao,x); CHKERRQ(ierr);
+    user.solve_type = 3;
     //ierr = TaoSolverSetFromOptions(tao); CHKERRQ(ierr);
   }
+  ierr = PetscLogStagePop(); CHKERRQ(ierr);
+  ierr = PetscBarrier((PetscObject)x); CHKERRQ(ierr);
+  PetscPrintf(PETSC_COMM_WORLD,"KSP iterations within initialization: ");
+  PetscPrintf(PETSC_COMM_WORLD,"%i\n",user.ksp_its_initial);
+  PetscPrintf(PETSC_COMM_WORLD,"Total KSP iterations over %i trial(s): ",ntests);
+  PetscPrintf(PETSC_COMM_WORLD,"%i\n",user.ksp_its);
+  PetscPrintf(PETSC_COMM_WORLD,"KSP iterations per trial: ");
+  PetscPrintf(PETSC_COMM_WORLD,"%i\n",(user.ksp_its-user.ksp_its_initial)/ntests);
 
   ierr = TaoSolverGetTerminationReason(tao,&reason); CHKERRQ(ierr);
 
@@ -221,7 +250,7 @@ int main(int argc, char **argv)
 
   /* Finalize TAO, PETSc */
   TaoFinalize();
-  PetscFinalize();
+  PetscFinalize(); 
 
   return 0;
 }
@@ -326,9 +355,11 @@ PetscErrorCode FormJacobianState(TaoSolver tao, Vec X, Mat *J, Mat* JPre, Mat* J
   PetscErrorCode ierr;
   AppCtx *user = (AppCtx*)ptr;
   PetscFunctionBegin;
-  ierr = Scatter(X,user->ysave,user->state_scatter,user->usave,user->design_scatter); CHKERRQ(ierr);
+  //ierr = Scatter(X,user->ysave,user->state_scatter,user->usave,user->design_scatter); CHKERRQ(ierr);
+  ierr = Scatter(X,user->y,user->state_scatter,user->u,user->design_scatter); CHKERRQ(ierr);
   ierr = VecSet(user->uwork,0); CHKERRQ(ierr);
-  ierr = VecAXPY(user->uwork,-1.0,user->usave); CHKERRQ(ierr);
+  //ierr = VecAXPY(user->uwork,-1.0,user->usave); CHKERRQ(ierr);
+  ierr = VecAXPY(user->uwork,-1.0,user->u); CHKERRQ(ierr);
   ierr = VecExp(user->uwork); CHKERRQ(ierr);
   ierr = MatMult(user->Av,user->uwork,user->Av_u); CHKERRQ(ierr);
   ierr = VecCopy(user->Av_u,user->Swork); CHKERRQ(ierr); 
@@ -406,6 +437,7 @@ PetscErrorCode StateMatMult(Mat J_shell, Vec X, Vec Y)
   ierr = MatMult(user->Grad,X,user->Swork); CHKERRQ(ierr);
   ierr = VecPointwiseDivide(user->S,user->Swork,user->Av_u); CHKERRQ(ierr); 
   ierr = MatMult(user->Div,user->S,Y); CHKERRQ(ierr);
+  //ierr = MatMult(user->DSG,X,Y); CHKERRQ(ierr);
   ierr = VecSum(X,&sum); CHKERRQ(ierr);
   sum /= user->m;
   ierr = VecShift(Y,sum); CHKERRQ(ierr);
@@ -527,7 +559,34 @@ PetscErrorCode StateMatInvMult(Mat J_shell, Vec X, Vec Y)
   ierr = MatShellGetContext(J_shell,&ptr); CHKERRQ(ierr);
   user = (AppCtx*)ptr;
 
+  switch(user->solve_type) {
+  case -1:
+    break;
+  case 0:
+    ierr = KSPSetTolerances(user->solver,user->tola,1e-20,1e3,500); CHKERRQ(ierr);
+    break;
+    
+  case 1:
+    ierr = KSPSetTolerances(user->solver,user->tolb,1e-20,1e3,500); CHKERRQ(ierr);
+    break;
+    
+  case 2:
+    ierr = KSPSetTolerances(user->solver,user->tolc,1e-20,1e3,500); CHKERRQ(ierr);
+    break;
+
+  case 3:
+    ierr = KSPSetTolerances(user->solver,user->told,1e-20,1e3,500); CHKERRQ(ierr);
+    break;
+  }
+
   ierr = KSPSolve(user->solver,X,Y); CHKERRQ(ierr);
+
+  if (user->solve_type >= 0){
+    user->solve_type = (user->solve_type+1) % 4;
+  }
+
+  ierr = KSPGetIterationNumber(user->solver,&its); CHKERRQ(ierr);
+  user->ksp_its = user->ksp_its + its;
 
   /*ierr = KSPGetConvergedReason(user->solver,&reason); CHKERRQ(ierr);
   if (reason==KSP_DIVERGED_INDEFINITE_PC) {
@@ -541,7 +600,7 @@ PetscErrorCode StateMatInvMult(Mat J_shell, Vec X, Vec Y)
   } else if (reason==KSP_CONVERGED_ATOL){
     KSPGetIterationNumber(user->solver,&its);
     PetscPrintf(PETSC_COMM_WORLD,"\nATOL, Convergence in %d iterations.\n",(int)its);
-    }*/
+  }*/
 
   PetscFunctionReturn(0);
 }
@@ -566,7 +625,6 @@ PetscErrorCode StateMatDuplicate(Mat J_shell, MatDuplicateOption opt, Mat *new_s
   ierr = MatShellSetOperation(*new_shell,MATOP_GET_DIAGONAL,(void(*)(void))StateMatGetDiagonal); CHKERRQ(ierr);
   ierr = MatSetOption(*new_shell,MAT_SYMMETRY_ETERNAL,PETSC_TRUE); CHKERRQ(ierr);
   ierr = MatSetOption(user->Js,MAT_SYMMETRY_ETERNAL,PETSC_TRUE); CHKERRQ(ierr);
-  
 
   
 
@@ -620,6 +678,7 @@ PetscErrorCode FormConstraints(TaoSolver tao, Vec X, Vec C, void *ptr)
    ierr = MatMult(user->Grad,user->y,user->Swork); CHKERRQ(ierr);
    ierr = VecPointwiseDivide(user->S,user->Swork,user->S); CHKERRQ(ierr);
    ierr = MatMult(user->Div,user->S,C); CHKERRQ(ierr);*/
+
    ierr = MatMult(user->Grad,user->y,user->Swork); CHKERRQ(ierr); 
    ierr = VecPointwiseDivide(user->Swork,user->Swork,user->Av_u); CHKERRQ(ierr);
    ierr = MatMult(user->Div,user->Swork,C); CHKERRQ(ierr); 
@@ -669,7 +728,7 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
 {
   PetscErrorCode ierr;
   PetscInt m,n,i,j,k,l,linear_index,is,js,ks,ls,istart,iend,iblock;
-  PetscInt nnz[user->mx * user->mx * user->mx + 3 * user->mx * user->mx * (user->mx-1)];
+  //PetscInt nnz[user->mx * user->mx * user->mx + 3 * user->mx * user->mx * (user->mx-1)];
   Vec XX,YY,ZZ,XXwork,YYwork,ZZwork,UTwork;
   PetscReal x[user->mx],y[user->mx],z[user->mx];
   PetscReal h,meanut;
@@ -681,6 +740,9 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
   PetscFunctionBegin;
   user->jformed = PETSC_FALSE;
   user->dsg_formed = PETSC_FALSE;
+
+  user->ksp_its = 0;
+  user->ksp_its_initial = 0;
 
   n = user->mx * user->mx * user->mx;
   m = 3 * user->mx * user->mx * (user->mx-1);
@@ -705,26 +767,26 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
   h = 1.0/user->mx;
   hinv = user->mx;
   neg_hinv = -hinv;
-  for (i=0; i<user->mx; i++){
-    for (j=0; j<user->mx; j++){
-      for (k=0; k<user->mx; k++){
-	linear_index = i + j*user->mx + k*user->mx*user->mx;
-	vx = h*(i+0.5); 
-	vy = h*(j+0.5);
-	vz = h*(k+0.5);	
-	ierr = VecSetValues(XX,1,&linear_index,&vx,INSERT_VALUES); CHKERRQ(ierr);
-	ierr = VecSetValues(YY,1,&linear_index,&vy,INSERT_VALUES); CHKERRQ(ierr);
-	ierr = VecSetValues(ZZ,1,&linear_index,&vz,INSERT_VALUES); CHKERRQ(ierr);
-	for (is=0; is<2; is++){
-	  for (js=0; js<2; js++){
-	    for (ks=0; ks<2; ks++){
-	      ls = is*4 + js*2 + ks;
-	      if (ls<user->ns){
-		l = ls*n + linear_index;
-		v = 100*sin(2*PI*(vx+0.25*is))*sin(2*PI*(vy+0.25*js))*sin(2*PI*(vz+0.25*ks));
-		ierr = VecSetValues(user->q,1,&l,&v,INSERT_VALUES); CHKERRQ(ierr);
-	      }
-	    }
+
+  ierr = VecGetOwnershipRange(XX,&istart,&iend); CHKERRQ(ierr);
+  for (linear_index=istart; linear_index<iend; linear_index++){
+    i = linear_index % user->mx;
+    j = ((linear_index-i)/user->mx) % user->mx;
+    k = ((linear_index-i)/user->mx-j) / user->mx;
+    vx = h*(i+0.5);
+    vy = h*(j+0.5);
+    vz = h*(k+0.5);	
+    ierr = VecSetValues(XX,1,&linear_index,&vx,INSERT_VALUES); CHKERRQ(ierr);
+    ierr = VecSetValues(YY,1,&linear_index,&vy,INSERT_VALUES); CHKERRQ(ierr);
+    ierr = VecSetValues(ZZ,1,&linear_index,&vz,INSERT_VALUES); CHKERRQ(ierr);
+    for (is=0; is<2; is++){
+      for (js=0; js<2; js++){
+	for (ks=0; ks<2; ks++){
+	  ls = is*4 + js*2 + ks;
+	  if (ls<user->ns){
+	    l = ls*n + linear_index;
+	    v = 100*sin(2*PI*(vx+0.25*is))*sin(2*PI*(vy+0.25*js))*sin(2*PI*(vz+0.25*ks));
+	    ierr = VecSetValues(user->q,1,&l,&v,INSERT_VALUES); CHKERRQ(ierr);
 	  }
 	}
       }
@@ -791,7 +853,7 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
  
   /* Initial guess and reference model */
   ierr = VecDuplicate(user->utrue,&user->ur); CHKERRQ(ierr);
-  ierr = VecDuplicate(user->utrue,&user->u); CHKERRQ(ierr);
+  //ierr = VecDuplicate(user->utrue,&user->u); CHKERRQ(ierr);
   ierr = VecSum(user->utrue,&meanut); CHKERRQ(ierr);
   meanut = meanut / n;
   ierr = VecSet(user->ur,meanut); CHKERRQ(ierr);
@@ -889,20 +951,20 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
 
 
   /* Generate regularization matrix L */
-  for (i=0; i<m+n; i++){
+  /*for (i=0; i<m+n; i++){
     if (i<m){
       nnz[i] = 2; 
     }
     else {
       nnz[i] = 1;
     }
-  }
+  }*/
 
   ierr = MatCreate(PETSC_COMM_WORLD,&user->L); CHKERRQ(ierr);
   ierr = MatSetSizes(user->L,PETSC_DECIDE,PETSC_DECIDE,m+n,n); CHKERRQ(ierr);
   ierr = MatSetFromOptions(user->L); CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(user->L,2,PETSC_NULL,2,PETSC_NULL); CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(user->L,2,nnz); CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(user->L,2,PETSC_NULL); CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(user->L,&istart,&iend);
 
   for (i=istart; i<iend; i++){
@@ -962,11 +1024,11 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
   ierr = VecDuplicate(user->S,&user->Av_u); CHKERRQ(ierr);
   ierr = VecDuplicate(user->S,&user->Twork); CHKERRQ(ierr);
   ierr = VecDuplicate(user->y,&user->ywork); CHKERRQ(ierr);
-  ierr = VecDuplicate(user->y,&user->ysave); CHKERRQ(ierr);
+  //ierr = VecDuplicate(user->y,&user->ysave); CHKERRQ(ierr);
   ierr = VecDuplicate(user->u,&user->uwork); CHKERRQ(ierr);
-  ierr = VecDuplicate(user->u,&user->usave); CHKERRQ(ierr);
+  //ierr = VecDuplicate(user->u,&user->usave); CHKERRQ(ierr);
   ierr = VecDuplicate(user->u,&user->js_diag); CHKERRQ(ierr);
-  ierr = VecDuplicate(user->u,&user->c); CHKERRQ(ierr);
+  //ierr = VecDuplicate(user->u,&user->c); CHKERRQ(ierr);
   ierr = VecDuplicate(user->c,&user->cwork); CHKERRQ(ierr);
   ierr = VecDuplicate(user->d,&user->dwork); CHKERRQ(ierr);
 
@@ -1004,7 +1066,8 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
   ierr = KSPSetType(user->solver,KSPCG); CHKERRQ(ierr);
   ierr = KSPSetOperators(user->solver,user->Js,user->JsPrec,DIFFERENT_NONZERO_PATTERN); CHKERRQ(ierr);
   ierr = KSPSetInitialGuessNonzero(user->solver,PETSC_FALSE); CHKERRQ(ierr);
-  ierr = KSPSetTolerances(user->solver,1e-4,1e-8,1e3,500); CHKERRQ(ierr);
+  ierr = KSPSetTolerances(user->solver,1e-4,1e-20,1e3,500); CHKERRQ(ierr);
+  user->solve_type = -1;
   ierr = KSPGetPC(user->solver,&user->prec); CHKERRQ(ierr);
   ierr = PCSetType(user->prec,PCSHELL); CHKERRQ(ierr);
 
@@ -1012,8 +1075,8 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
   ierr = PCShellSetApplyTranspose(user->prec,StateMatPrecMult); CHKERRQ(ierr);
   ierr = PCShellSetContext(user->prec,user); CHKERRQ(ierr);
 
-  ierr = KSPSetNormType(user->solver,KSP_NORM_UNPRECONDITIONED); CHKERRQ(ierr);
-  ierr = KSPSetFromOptions(user->solver); CHKERRQ(ierr);
+  //ierr = KSPSetNormType(user->solver,KSP_NORM_UNPRECONDITIONED); CHKERRQ(ierr);
+  //ierr = KSPSetFromOptions(user->solver); CHKERRQ(ierr);
 
   /* Compute true state function ytrue given utrue */
   ierr = VecCreate(PETSC_COMM_WORLD,&user->ytrue); CHKERRQ(ierr);
@@ -1027,12 +1090,13 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
   ierr = VecExp(user->uwork); CHKERRQ(ierr);
   ierr = MatMult(user->Av,user->uwork,user->Av_u); CHKERRQ(ierr);
 
-  PetscReal fill,nnz1,nnz2;
-  nnz1 = 8.0*n; // ~ nnz(DSG)
-  nnz2 = 4.0*m; // = nnz(Div) + nnz(Grad)
-  fill = nnz1/nnz2;
-  // Use MatMatMultSymbolic followed by MatMatMultNumeric to compute user->DSG in ComputeJacobianState
+  //PetscReal fill,nnz1,nnz2;
+  //nnz1 = 8.0*n; // ~ nnz(DSG)
+  //nnz2 = 4.0*m; // = nnz(Div) + nnz(Grad)
+  //fill = nnz1/nnz2;
+  /* Use MatMatMultSymbolic followed by MatMatMultNumeric to compute user->DSG in ComputeJacobianState */
   ierr = MatMatMultSymbolic(user->Div,user->Grad,PETSC_DEFAULT,&user->DSG); CHKERRQ(ierr);
+  user->dsg_formed = PETSC_TRUE;
   
 
   /* Next form DSG = Div*S*Grad */
@@ -1052,9 +1116,9 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
   ierr = StateMatInvMult(user->Js,user->q,user->ytrue); CHKERRQ(ierr);
 
   /* Initial guess y0 for state given u0 */
-  ierr = VecCreate(PETSC_COMM_WORLD,&user->y); CHKERRQ(ierr);
-  ierr = VecSetSizes(user->y,PETSC_DECIDE,n*user->ns); CHKERRQ(ierr);
-  ierr = VecSetFromOptions(user->y); CHKERRQ(ierr);
+  //ierr = VecCreate(PETSC_COMM_WORLD,&user->y); CHKERRQ(ierr);
+  //ierr = VecSetSizes(user->y,PETSC_DECIDE,n*user->ns); CHKERRQ(ierr);
+  //ierr = VecSetFromOptions(user->y); CHKERRQ(ierr);
   //ierr = StateMatInvMult(user->Js,user->q,user->u,user->y); CHKERRQ(ierr);
 
   /* First compute Av_u = Av*exp(-u) */
@@ -1212,6 +1276,10 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
   ierr = MatMult(user->Q,user->ywork,user->d); CHKERRQ(ierr);
 
 
+  /* Now that initial conditions have been set, let the user pass tolerance options to the KSP solver */
+  ierr = KSPSetFromOptions(user->solver); CHKERRQ(ierr);
+  user->solve_type = 3;
+
   //ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,user->m,user->n-user->m,7,PETSC_NULL,&user->Jd); CHKERRQ(ierr);
   //ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,user->m,user->m,0,PETSC_NULL,&user->Hsd); CHKERRQ(ierr);
 
@@ -1273,11 +1341,11 @@ PetscErrorCode EllipticDestroy(AppCtx *user)
   //ierr = MatDestroy(&user->Hsd); CHKERRQ(ierr);
   ierr = VecDestroy(&user->u); CHKERRQ(ierr);
   ierr = VecDestroy(&user->uwork); CHKERRQ(ierr);
-  ierr = VecDestroy(&user->usave); CHKERRQ(ierr);
+  //ierr = VecDestroy(&user->usave); CHKERRQ(ierr);
   ierr = VecDestroy(&user->utrue); CHKERRQ(ierr);
   ierr = VecDestroy(&user->y); CHKERRQ(ierr);
   ierr = VecDestroy(&user->ywork); CHKERRQ(ierr);
-  ierr = VecDestroy(&user->ysave); CHKERRQ(ierr);
+  //ierr = VecDestroy(&user->ysave); CHKERRQ(ierr);
   ierr = VecDestroy(&user->ytrue); CHKERRQ(ierr);
   ierr = VecDestroy(&user->c); CHKERRQ(ierr);
   ierr = VecDestroy(&user->cwork); CHKERRQ(ierr);
