@@ -57,7 +57,7 @@ PetscErrorCode  TaoDMCreate(MPI_Comm comm,PetscInt nlevels,void *user,TaoDM **ta
   }
   ierr = PetscMalloc(nlevels*sizeof(TaoDM),&p); CHKERRQ(ierr);
   for (i=0; i<nlevels; i++) {
-    ierr = PetscHeaderCreate(p[i],_p_TaoDM,struct _TaoDMOps,TAODM_CLASSID,0,"TaoDM",comm,TaoDMDestroyLevel,TaoDMView); CHKERRQ(ierr);
+    ierr = PetscHeaderCreate(p[i],_p_TaoDM,struct _TaoDMOps,TAODM_CLASSID,0,"TaoDM",0,0,comm,TaoDMDestroyLevel,TaoDMView); CHKERRQ(ierr);
     p[i]->nlevels  = nlevels - i;
     p[i]->coarselevel = p[0];
     p[i]->user     = user;

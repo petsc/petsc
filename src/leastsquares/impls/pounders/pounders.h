@@ -3,6 +3,7 @@
 #include "include/private/taosolver_impl.h"
 #include "petsc.h"
 #include "petscblaslapack.h"
+#include "taolapack.h"
 
 
 typedef struct {
