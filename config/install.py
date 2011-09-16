@@ -73,7 +73,6 @@ class Installer(script.Script):
     self.rootDir    = self.petscdir.dir
     self.destDir    = os.path.abspath(self.argDB['destDir'])
     self.installDir = self.framework.argDB['prefix']
-    print self.installDir
     self.arch       = self.arch.arch
     self.rootIncludeDir    = os.path.join(self.rootDir, 'include')
     self.archIncludeDir    = os.path.join(self.rootDir, self.arch, 'include')
