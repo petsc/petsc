@@ -7323,9 +7323,9 @@ PetscErrorCode  MatRestrict(Mat A,Vec x,Vec y)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatNullSpaceAttach"
+#define __FUNCT__ "MatSetNullSpace"
 /*@
-   MatNullSpaceAttach - attaches a null space to a matrix.
+   MatSetNullSpace - attaches a null space to a matrix.
         This null space will be removed from the resulting vector whenever
         MatMult() is called
 
@@ -7344,7 +7344,7 @@ PetscErrorCode  MatRestrict(Mat A,Vec x,Vec y)
 
 .seealso: MatCreate(), MatNullSpaceCreate()
 @*/
-PetscErrorCode  MatNullSpaceAttach(Mat mat,MatNullSpace nullsp)
+PetscErrorCode  MatSetNullSpace(Mat mat,MatNullSpace nullsp)
 {
   PetscErrorCode ierr;
 

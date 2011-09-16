@@ -752,7 +752,7 @@ PetscErrorCode  KSPRegister(const char sname[],const char path[],const char name
 
   Level: advanced
 
-.seealso: KSPSetOperators(), MatNullSpaceCreate(), KSPGetNullSpace(), MatNullSpaceAttach()
+.seealso: KSPSetOperators(), MatNullSpaceCreate(), KSPGetNullSpace(), MatSetNullSpace()
 @*/
 PetscErrorCode  KSPSetNullSpace(KSP ksp,MatNullSpace nullsp)
 {
