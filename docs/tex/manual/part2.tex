@@ -522,10 +522,11 @@ with {\tt TaoSolverSetObjectiveRoutine()} and {\tt TaoSolverSetGradientRoutine}.
 These vectors include the combined state and design variables, the index set
 containing the state variables must be passed to TAO using the function
 \begin{verbatim}
-  TaoSolverSetStateIS(TaoSolver, IS)
+  TaoSolverSetStateDesignIS(TaoSolver, IS, IS)
 \end{verbatim}
-where the IS is a PETSc Index Set describing which of the variables in the 
-solution vector are state variables.
+where the first IS is a PETSc Index Set describing which of the variables in the 
+solution vector are state variables and the second IS describes which are
+design variables.
 
 Constraints in the form of nonlinear equations have the form
 $C(X) = 0$ where $C: \Re^n \to \Re^m$.
@@ -561,28 +562,41 @@ to one variable.
 The evaluation of the Jacobian of {\tt f} should be performed in routines
 of the form
 \begin{verbatim}
-   PetscErrorCode JacobianState(TaoSolver,Vec,Mat*,Mat*,MatStructure*,void*);
-   PetscErrorCode JacobianDesign(TaoSolver,Vec,Mat*,Mat*,MatStructure*,void*);
+   PetscErrorCode JacobianState(TaoSolver,Vec,Mat*,Mat*,Mat*,MatStructure*,void*);
+   PetscErrorCode JacobianDesign(TaoSolver,Vec,Mat*,void*);
 \end{verbatim}
 \noindent
 In this function, the second argument is the variable vector at which to 
 evaluate the Jacobian matrix, the third argument is the Jacobian matrix,
-and the sixth argument is a pointer to a user-defined context.
-This routine should be specified using
+and the last argument is a pointer to a user-defined context. The fourth and
+fifth arguments of the state Jacobian evaluation are for providing a matrix
+object 
+for PETSc to apply the preconditioner on and a matrix for applying
+the inverse of the state Jacobian. This inverse matrix may be {\tt
+  PETSC\_NULL},
+in which case the inverse matrix need not be formed.
+These evaluation routines should be registered with TAO using the routines
 \begin{verbatim}
-   TaoSolverSetJacobianStateRoutine(TaoSolver,Mat,Mat,
+   TaoSolverSetJacobianStateRoutine(TaoSolver,Mat,Mat,Mat,
               PetscErrorCode (*)(TaoSolver,Vec,Mat*,Mat*,MatStructure*,void*), 
               void*);
-   TaoSolverSetJacobianDesignRoutine(TaoSolver,Mat,Mat,
-              PetscErrorCode (*)(TaoSolver,Vec,Mat*,Mat*,MatStructure*,void*), 
+   TaoSolverSetJacobianDesignRoutine(TaoSolver,Mat,
+              PetscErrorCode (*)(TaoSolver,Vec,Mat*,void*), 
               void*);
 \end{verbatim}
 \noindent
 The first argument is the TAO solver object, the second
-argument is the matrix in which the information can be stored,
+argument is the matrix in which the information can be stored.
+For the state Jacobian, 
 the third argument is the matrix that will be used for preconditioning,
-the fourth argument is the function pointer, and the fifth argument is
-an optional user-defined context.
+the fourth argument is an optional matrix for the inverse of the state 
+Jacobian.  You can use {\tt PETSC\_NULL} for this inverse argument and let 
+PETSc apply the inverse using a KSP operation, but you will get faster
+results if you can manipulate the structure of the Jacobian to provide your
+own inverse. The fifth argument is the function pointer, and the sixth argument is
+an optional user-defined context. There should be no solve performed with the
+design Jacobian, so there is no need to provide 
+
 
 \section{Monitors}
 
