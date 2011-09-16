@@ -108,7 +108,7 @@ namespace ALE {
     virtual bool isRemote(const point_type& p) {return this->restrictPoint(p)[0].prefix < 0;};
   };
   template<typename Bundle_, typename Value_ = int, typename Alloc_ = typename Bundle_::alloc_type>
-  class NumberingFactory : ALE::ParallelObject {
+  class NumberingFactory : public ALE::ParallelObject {
   public:
     typedef Bundle_                                         bundle_type;
     typedef Alloc_                                          alloc_type;
@@ -649,12 +649,11 @@ namespace ALE {
         Obj<send_overlap_type> sendOverlap = bundle->getSendOverlap();
         Obj<recv_overlap_type> recvOverlap = bundle->getRecvOverlap();
 
-//         std::cout << "["<<bundle->commRank()<<"]Creating new numbering: fixed depth value " << depth << std::endl;
+        if (this->_debug) {std::cout << "["<<bundle->commRank()<<"]Creating new numbering: fixed depth value " << depth << std::endl;}
         this->constructNumbering(numbering, sendOverlap, recvOverlap, bundle->depthStratum(depth)->begin(), bundle->depthStratum(depth)->end());
-        if (this->_debug) {std::cout << "Creating new numbering: depth " << depth << std::endl;}
         this->_numberings[bundle.ptr()]["depth"][depth] = numbering;
-//       } else {
-//         std::cout << "["<<bundle->commRank()<<"]Using old numbering: fixed depth value " << depth << std::endl;
+      } else {
+        if (this->_debug) {std::cout << "["<<bundle->commRank()<<"]Using old numbering: fixed depth value " << depth << std::endl;}
       }
       return this->_numberings[bundle.ptr()]["depth"][depth];
     }
