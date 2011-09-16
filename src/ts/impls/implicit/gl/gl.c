@@ -814,10 +814,11 @@ static PetscErrorCode TSGLGetMaxSizes(TS ts,PetscInt *max_r,PetscInt *max_s)
 #define __FUNCT__ "TSSolve_GL"
 static PetscErrorCode TSSolve_GL(TS ts)
 {
-  TS_GL          *gl = (TS_GL*)ts->data;
-  PetscInt       i,k,its,lits,max_r,max_s;
-  PetscBool      final_step,finish;
-  PetscErrorCode ierr;
+  TS_GL               *gl = (TS_GL*)ts->data;
+  PetscInt            i,k,its,lits,max_r,max_s;
+  PetscBool           final_step,finish;
+  SNESConvergedReason snesreason;
+  PetscErrorCode      ierr;
 
   PetscFunctionBegin;
   ierr = TSMonitor(ts,ts->steps,ts->ptime,ts->vec_sol);CHKERRQ(ierr);
@@ -839,7 +840,13 @@ static PetscErrorCode TSSolve_GL(TS ts)
     ierr = SNESSolve(ts->snes,PETSC_NULL,gl->Y);CHKERRQ(ierr);
     ierr = SNESGetIterationNumber(ts->snes,&its);CHKERRQ(ierr);
     ierr = SNESGetLinearSolveIterations(ts->snes,&lits);CHKERRQ(ierr);
+    ierr = SNESGetConvergedReason(ts->snes,&snesreason);CHKERRQ(ierr);
     ts->nonlinear_its += its; ts->linear_its += lits;
+    if (snesreason < 0 && ts->max_snes_failures > 0 && ++ts->num_snes_failures >= ts->max_snes_failures) {
+      ts->reason = TS_DIVERGED_NONLINEAR_SOLVE;
+      ierr = PetscInfo2(ts,"Step=%D, nonlinear solve solve failures %D greater than current TS allowed, stopping solve\n",ts->steps,ts->num_snes_failures);CHKERRQ(ierr);
+      PetscFunctionReturn(0);
+    }
   }
 
   if (gl->current_scheme < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ORDER,"A starting scheme has not been provided");
@@ -905,7 +912,13 @@ static PetscErrorCode TSSolve_GL(TS ts)
         ierr = SNESSolve(ts->snes,PETSC_NULL,Y);CHKERRQ(ierr);
         ierr = SNESGetIterationNumber(ts->snes,&its);CHKERRQ(ierr);
         ierr = SNESGetLinearSolveIterations(ts->snes,&lits);CHKERRQ(ierr);
+        ierr = SNESGetConvergedReason(ts->snes,&snesreason);CHKERRQ(ierr);
         ts->nonlinear_its += its; ts->linear_its += lits;
+        if (snesreason < 0 && ts->max_snes_failures > 0 && ++ts->num_snes_failures >= ts->max_snes_failures) {
+          ts->reason = TS_DIVERGED_NONLINEAR_SOLVE;
+          ierr = PetscInfo2(ts,"Step=%D, nonlinear solve solve failures %D greater than current TS allowed, stopping solve\n",ts->steps,ts->num_snes_failures);CHKERRQ(ierr);
+          PetscFunctionReturn(0);
+        }
       }
 
       gl->stage_time = ts->ptime + ts->time_step;

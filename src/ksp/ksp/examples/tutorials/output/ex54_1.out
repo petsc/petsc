@@ -1,13 +1,12 @@
-	[0]PCSetUp_GAMG level 0 N=1681, n data rows=1, n data cols=1, nnz/row (ave)=8, np=4
-	createProlongation ave nnz/row 9 --> 7
-		[0]PCSetUp_GAMG 1) N=130, bs=1, n data cols=1, nnz/row (ave)=10, 1 active pes
+	[0]PCSetUp_GAMG level 0 N=1681, n data rows=0, n data cols=1, nnz/row (ave)=1, np=8
+	createProlongation ave nnz/row 8 --> 7
+			createProlongation max eigen=1.454859e+00 min=2.182570e-02 PC=pbjacobi
+	[0]partitionLevel npe (active): 4 --> 4. new npe = 1, neq = 156
+		[0]PCSetUp_GAMG 1) N=156, bs=0, n data cols=1, nnz/row (ave)=1, 11 active pes
 	[0]PCSetUp_GAMG 2 levels
-PCSetUp_GAMG max eigen = 1.527602e+00 min = 1.125114e-01
-  0 KSP Residual norm 46.6121 
-  1 KSP Residual norm 24.6775 
-  2 KSP Residual norm 2.71799 
-  3 KSP Residual norm 0.394833 
-  4 KSP Residual norm 0.078056 
-  5 KSP Residual norm 0.00859127 
-  6 KSP Residual norm 0.000556404 
-  7 KSP Residual norm 2.86705e-05 
+  0 KSP Residual norm 140.361 
+  1 KSP Residual norm 4.00728 
+  2 KSP Residual norm 0.366297 
+  3 KSP Residual norm 0.039895 
+  4 KSP Residual norm 0.00303382 
+  5 KSP Residual norm 0.000392137 

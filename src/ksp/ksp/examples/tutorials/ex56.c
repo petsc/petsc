@@ -110,7 +110,7 @@ int main(int argc,char **args)
     /* generate element matrices */
     {
       FILE *file;
-      char fname[] = "elem_3d_elast_v_25.txt";
+      char fname[] = "data/elem_3d_elast_v_25.txt";
       file = fopen(fname, "r");
       if (file == 0) {
 	PetscPrintf(PETSC_COMM_WORLD,"\t%s failed to open input file '%s'\n",__FUNCT__,fname);

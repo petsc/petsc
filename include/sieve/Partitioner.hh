@@ -385,7 +385,7 @@ namespace ALE {
         int       c       = 0;
 
         for(typename Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter !=cells->end(); ++c_iter, ++c) {
-          const double *coords = mesh->restrictClosure(coordinates, *c_iter);
+          const typename Mesh::real_section_type::value_type *coords = mesh->restrictClosure(coordinates, *c_iter);
 
           for(int d = 0; d < dim; ++d) {
             vCoords[d][c] = 0.0;

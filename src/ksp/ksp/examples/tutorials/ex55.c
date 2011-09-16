@@ -64,7 +64,7 @@ int main(int argc,char **args)
   /* generate element matrices */
   {
     FILE *file;
-    char fname[] = "elem_2d_pln_strn_v_25.txt";
+    char fname[] = "data/elem_2d_pln_strn_v_25.txt";
     file = fopen(fname, "r");
     if (file == 0) {
       DD[0][0] =  0.53333333333333321     ;

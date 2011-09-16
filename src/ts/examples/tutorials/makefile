@@ -6,7 +6,7 @@ FPPFLAGS        =
 LOCDIR          = src/ts/examples/tutorials/
 EXAMPLESC       = ex1.c ex2.c util2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c \
                 ex9.c ex10.c ex12.c ex13.c ex14.c ex15.c ex16.c ex17.c \
-                ex18.c ex19.c ex20.c ex21.c ex22.c ex23.c 
+                ex18.c ex19.c ex20.c ex21.c ex22.c ex23.c ex24.c
 EXAMPLESF       = ex1f.F ex2f.F ex22f.F
 EXAMPLESFH      = ex2f.h
 MANSEC          = TS
@@ -120,6 +120,10 @@ ex22f: ex22f.o util2.o chkopts
 ex23: ex23.o chkopts
 	-${CLINKER} -o ex23 ex23.o ${PETSC_TS_LIB}
 	${RM} ex23.o
+
+ex24: ex24.o chkopts
+	-${CLINKER} -o ex24 ex24.o ${PETSC_TS_LIB}
+	${RM} ex24.o
 
 #---------------------------------------------------------------------------------
 runex1:
@@ -292,7 +296,7 @@ runex16:
 	   ${RM} -f ex16_1.tmp
 
 runex17:
-	-@${MPIEXEC} -n 1 ./ex17 -da_grid_x 40 -ts_max_steps 2 -snes_monitor -ksp_monitor > ex17_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex17 -da_grid_x 40 -ts_max_steps 2 -snes_monitor_short -ksp_monitor_short > ex17_1.tmp 2>&1; \
 	   ${DIFF} output/ex17_1.out ex17_1.tmp || echo "Possible problem with ex17_1, diffs above"; \
 	   ${RM} -f ex17_1.tmp
 
@@ -309,6 +313,11 @@ runex22f:
 	-@${MPIEXEC} -n 1 ./ex22f -da_grid_x 200 -ts_monitor_solution -ts_arkimex_type 4 > ex22f_1.tmp 2>&1; \
 	   ${DIFF} output/ex22f_1.out ex22f_1.tmp || echo "Possible problem with ex22f_1, diffs above";  \
 	   ${RM} -f ex22f_1.tmp
+
+runex24:                        # This is not in the nightlies because the convergence details are numerically sensitive
+	-@${MPIEXEC} -n 1 ./ex24 -pc_type lu -ts_dt 1e-5 -ts_max_time 1e5 -n 50 -monitor_short > ex24_1.tmp 2>&1; \
+	   ${DIFF} output/ex24_1.out ex24_1.tmp || echo "Possible problem with ex24_1, diffs above";  \
+	   ${RM} -f ex24_1.tmp
 
 
 TESTEXAMPLES_C		  = ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 runex3_2 ex3.rm \

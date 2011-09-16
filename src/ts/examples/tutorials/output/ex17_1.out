@@ -1,11 +1,11 @@
 timestep 0: time 0, solution norm 9.84774, max 0.999937, min 0
-    0 SNES Function norm 2.869477464079e+03 
-      0 KSP Residual norm 1.426064249483e+00 
-      1 KSP Residual norm 1.079604491190e-15 
-    1 SNES Function norm 9.889029700865e-13 
+    0 SNES Function norm 2869.48 
+      0 KSP Residual norm 1.42606 
+      1 KSP Residual norm < 1.e-11
+    1 SNES Function norm < 1.e-11
 timestep 1: time 0.01, solution norm 9.67453, max 0.714133, min 0
-    0 SNES Function norm 1.426064249483e+02 
-      0 KSP Residual norm 5.174148445795e-01 
-      1 KSP Residual norm 3.864491705260e-16 
-    1 SNES Function norm 3.741187699810e-13 
+    0 SNES Function norm 142.606 
+      0 KSP Residual norm 0.517415 
+      1 KSP Residual norm < 1.e-11
+    1 SNES Function norm < 1.e-11
 timestep 2: time 0.02, solution norm 9.28659, max 0.536609, min 0

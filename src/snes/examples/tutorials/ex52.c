@@ -1,5 +1,12 @@
 static char help[] = "Testbed for FEM operations on the GPU\n\n";
 
+MUST CHECK WITH:
+ - Different quadrature (1pt and 3pt)
+ - Different basis (linear and quadratic)
+ - Different number of blocks (have to change it in the CUDA, so need a #define)
+ - Different number of batches (use refinement)
+ - Need another division above batch to make a grid
+
 #include<petscdmmesh.h>
 #include<petscsnes.h>
 
