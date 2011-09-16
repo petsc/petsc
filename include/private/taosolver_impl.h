@@ -17,7 +17,7 @@ struct _TaoSolverOps {
     PetscErrorCode (*computeconstraints)(TaoSolver, Vec, Vec, void*);
     PetscErrorCode (*computejacobian)(TaoSolver, Vec, Mat*, Mat*, MatStructure*, void*);
     PetscErrorCode (*computejacobianstate)(TaoSolver, Vec, Mat*, Mat*, Mat*, MatStructure*, void*);
-    PetscErrorCode (*computejacobiandesign)(TaoSolver, Vec, Mat*, Mat*, MatStructure*, void*);
+    PetscErrorCode (*computejacobiandesign)(TaoSolver, Vec, Mat*, void*);
     PetscErrorCode (*computebounds)(TaoSolver, Vec, Vec, void*);
 
     PetscErrorCode (*convergencetest)(TaoSolver,void*);

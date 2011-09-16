@@ -94,7 +94,7 @@ extern PetscErrorCode TaoSolverSetSeparableObjectiveRoutine(TaoSolver, Vec, Pets
 extern PetscErrorCode TaoSolverSetConstraintsRoutine(TaoSolver, Vec, PetscErrorCode(*)(TaoSolver, Vec, Vec, void*), void*);
 extern PetscErrorCode TaoSolverSetJacobianRoutine(TaoSolver,Mat,Mat, PetscErrorCode(*)(TaoSolver,Vec, Mat*, Mat*, MatStructure*, void*), void*);
 extern PetscErrorCode TaoSolverSetJacobianStateRoutine(TaoSolver,Mat,Mat,Mat, PetscErrorCode(*)(TaoSolver,Vec, Mat*, Mat*, Mat*, MatStructure*, void*), void*);
-extern PetscErrorCode TaoSolverSetJacobianDesignRoutine(TaoSolver,Mat,Mat, PetscErrorCode(*)(TaoSolver,Vec, Mat*, Mat*, MatStructure*, void*), void*);
+extern PetscErrorCode TaoSolverSetJacobianDesignRoutine(TaoSolver,Mat,PetscErrorCode(*)(TaoSolver,Vec, Mat*, void*), void*);
 extern PetscErrorCode TaoSolverSetStateDesignIS(TaoSolver, IS, IS);
 
 extern PetscErrorCode TaoSolverComputeObjective(TaoSolver, Vec, PetscReal*);
@@ -110,7 +110,7 @@ extern PetscErrorCode TaoSolverIsObjectiveAndGradientDefined(TaoSolver,PetscBool
 extern PetscErrorCode TaoSolverComputeHessian(TaoSolver, Vec, Mat*, Mat*, MatStructure*);
 extern PetscErrorCode TaoSolverComputeJacobian(TaoSolver, Vec, Mat*, Mat*, MatStructure*);
 extern PetscErrorCode TaoSolverComputeJacobianState(TaoSolver, Vec, Mat*, Mat*, Mat*, MatStructure*);
-extern PetscErrorCode TaoSolverComputeJacobianDesign(TaoSolver, Vec, Mat*, Mat*, MatStructure*);
+extern PetscErrorCode TaoSolverComputeJacobianDesign(TaoSolver, Vec, Mat*);
 
 extern PetscErrorCode TaoSolverDefaultComputeHessian(TaoSolver, Vec, Mat*, Mat*, MatStructure*, void*);
 

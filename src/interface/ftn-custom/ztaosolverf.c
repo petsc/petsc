@@ -9,7 +9,10 @@
 #define taosolversethessianroutine_              TAOSOLVERSETHESSIANROUTINE
 #define taosolversetseparableobjectiveroutine_   TAOSOLVERSETSEPARABLEOBJECTIVEROUTINE
 #define taosolversetjacobianroutine_             TAOSOLVERSETJACOBIANROUTINE
+#define taosolversetjacobianstateroutine_        TAOSOLVERSETJACOBIANSTATEROUTINE
+#define taosolversetjacobiandesignroutine_       TAOSOLVERSETJACOBIANDESIGNROUTINE
 #define taosolversetvariableboundsroutine_       TAOSOLVERSETVARIABLEBOUNDSROUTINE
+#define taosolversetconstraintsroutine_          TAOSOLVERSETCONSTRAINTSROUTINE
 #define taosolversetmonitor_                     TAOSOLVERSETMONITOR
 #define taosolversettype_                        TAOSOLVERSETTYPE
 #define taosolverview_                           TAOSOLVERVIEW
@@ -27,7 +30,10 @@
 #define taosolversethessianroutine_              taosolversethessianroutine
 #define taosolversetseparableobjectiveroutine_   taosolversetseparableobjectiveroutine
 #define taosolversetjacobianroutine_             taosolversetjacobianroutine
+#define taosolversetjacobianstateroutine_        taosolversetjacobianstateroutine
+#define taosolversetjacobiandesignroutine_       taosolversetjacobiandesignroutine
 #define taosolversetvariableboundsroutine_       taosolversetvariableboundsroutine
+#define taosolversetconstraintsroutine_          taosolversetconstraintsroutine
 #define taosolversetmonitor_                     taosolversetmonitor
 #define taosolversettype_                        taosolversettype
 #define taosolverview_                           taosolverview
@@ -45,12 +51,15 @@ static int OBJGRAD=2;   // objective and gradient routine
 static int HESS=3;      // hessian routine index
 static int SEPOBJ=4;    // separable objective routine index
 static int JAC=5;       // jacobian routine index
-static int BOUNDS=6;
-static int MON=7;       // monitor routine index
-static int MONCTX=8;       // monitor routine index
-static int MONDESTROY=9; // monitor destroy index
-static int CONVTEST=10;  //
-static int NFUNCS=11;
+static int JACSTATE=6;  // jacobian state routine index
+static int JACDESIGN=7; // jacobian design routine index
+static int BOUNDS=8;
+static int MON=9;       // monitor routine index
+static int MONCTX=10;       // monitor routine index
+static int MONDESTROY=11; // monitor destroy index
+static int CONVTEST=12;  //
+static int CONSTRAINTS=13;
+static int NFUNCS=14;
 
 static PetscErrorCode ourtaosolverobjectiveroutine(TaoSolver tao, Vec x, PetscReal *f, void *ctx)
 {
@@ -96,6 +105,22 @@ static PetscErrorCode ourtaosolverjacobianroutine(TaoSolver tao, Vec x, Mat *H, 
     return 0;
 }
 
+static PetscErrorCode ourtaosolverjacobianstateroutine(TaoSolver tao, Vec x, Mat *H, Mat *Hpre, Mat *Hinv, MatStructure *type, void *ctx) 
+{
+    PetscErrorCode ierr = 0;
+    (*(void (PETSC_STDCALL *)(TaoSolver*,Vec*,Mat*,Mat*,Mat*,MatStructure*,void*,PetscErrorCode*))
+     (((PetscObject)tao)->fortran_func_pointers[JACSTATE]))(&tao,&x,H,Hpre,Hinv,type,ctx,&ierr); CHKERRQ(ierr);
+    return 0;
+}
+
+static PetscErrorCode ourtaosolverjacobiandesignroutine(TaoSolver tao, Vec x, Mat *H, void *ctx) 
+{
+    PetscErrorCode ierr = 0;
+    (*(void (PETSC_STDCALL *)(TaoSolver*,Vec*,Mat*,void*,PetscErrorCode*))
+     (((PetscObject)tao)->fortran_func_pointers[JACDESIGN]))(&tao,&x,H,ctx,&ierr); CHKERRQ(ierr);
+    return 0;
+}
+
 static PetscErrorCode ourtaosolverboundsroutine(TaoSolver tao, Vec xl, Vec xu, void *ctx)
 {
     PetscErrorCode ierr = 0;
@@ -137,6 +162,16 @@ static PetscErrorCode ourtaosolverconvergencetest(TaoSolver tao, void *ctx)
     return 0;
 }
 
+
+static PetscErrorCode ourtaosolverconstraintsroutine(TaoSolver tao, Vec x, Vec c, void *ctx)
+{
+    PetscErrorCode ierr = 0;
+    (*(void (PETSC_STDCALL *)(TaoSolver*,Vec*,Vec*,void*,PetscErrorCode*))
+       (((PetscObject)tao)->fortran_func_pointers[CONSTRAINTS]))(&tao,&x,&c,ctx,&ierr);
+    CHKERRQ(ierr);
+    return 0;
+    
+}
 
 EXTERN_C_BEGIN
 
@@ -206,6 +241,30 @@ void PETSC_STDCALL taosolversetjacobianroutine_(TaoSolver *tao, Mat *J, Mat *Jp,
     }
 }
 
+void PETSC_STDCALL taosolversetjacobianstateroutine_(TaoSolver *tao, Mat *J, Mat *Jp, Mat*Jinv, void (PETSC_STDCALL *func)(TaoSolver*, Vec *, Mat *, Mat *, Mat*, MatStructure *,void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
+{
+    CHKFORTRANNULLOBJECT(ctx);
+    PetscObjectAllocateFortranPointers(*tao,NFUNCS);
+    if (!func) {
+      *ierr = TaoSolverSetJacobianStateRoutine(*tao,*J,*Jp,*Jinv,0,ctx);
+    } else {
+      ((PetscObject)*tao)->fortran_func_pointers[JACSTATE] = (PetscVoidFunction)func;
+      *ierr = TaoSolverSetJacobianStateRoutine(*tao,*J, *Jp, *Jinv, ourtaosolverjacobianstateroutine,ctx);
+    }
+}
+
+void PETSC_STDCALL taosolversetjacobiandesignroutine_(TaoSolver *tao, Mat *J, void (PETSC_STDCALL *func)(TaoSolver*, Vec *, Mat *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
+{
+    CHKFORTRANNULLOBJECT(ctx);
+    PetscObjectAllocateFortranPointers(*tao,NFUNCS);
+    if (!func) {
+	*ierr = TaoSolverSetJacobianDesignRoutine(*tao,*J,0,ctx);
+    } else {
+	((PetscObject)*tao)->fortran_func_pointers[JACDESIGN] = (PetscVoidFunction)func;
+	*ierr = TaoSolverSetJacobianDesignRoutine(*tao,*J, ourtaosolverjacobiandesignroutine,ctx);
+    }
+}
+
 void PETSC_STDCALL taosolversethessianroutine_(TaoSolver *tao, Mat *J, Mat *Jp, void (PETSC_STDCALL *func)(TaoSolver*, Vec *, Mat *, Mat *, MatStructure *,void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
 {
     CHKFORTRANNULLOBJECT(ctx);
@@ -257,6 +316,17 @@ void PETSC_STDCALL taosolversetconvergencetest_(TaoSolver *tao, void (PETSC_STDC
 }
 
 	
+void PETSC_STDCALL taosolversetconstraintsroutine_(TaoSolver *tao, Vec *C, void (PETSC_STDCALL *func)(TaoSolver*, Vec *, Vec *, void *, PetscErrorCode *), void *ctx, PetscErrorCode *ierr)
+{
+    CHKFORTRANNULLOBJECT(ctx);
+    PetscObjectAllocateFortranPointers(*tao,NFUNCS);
+    if (!func) {
+      *ierr = TaoSolverSetConstraintsRoutine(*tao,*C,0,ctx);
+    } else {
+	((PetscObject)*tao)->fortran_func_pointers[CONSTRAINTS] = (PetscVoidFunction)func;
+	*ierr = TaoSolverSetConstraintsRoutine(*tao, *C, ourtaosolverconstraintsroutine,ctx);
+    }
+}
     
 
 void PETSC_STDCALL taosolversettype_(TaoSolver *tao, CHAR type_name PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len))

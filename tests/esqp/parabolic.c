@@ -66,7 +66,7 @@ PetscErrorCode FormFunction(TaoSolver, Vec, PetscReal*, void*);
 PetscErrorCode FormGradient(TaoSolver, Vec, Vec, void*);
 PetscErrorCode FormFunctionGradient(TaoSolver, Vec, PetscReal*, Vec, void*);
 PetscErrorCode FormJacobianState(TaoSolver, Vec, Mat*, Mat*, Mat*, MatStructure*,void*);
-PetscErrorCode FormJacobianDesign(TaoSolver, Vec, Mat*, Mat*, MatStructure*,void*);
+PetscErrorCode FormJacobianDesign(TaoSolver, Vec, Mat*, void*);
 PetscErrorCode FormConstraints(TaoSolver, Vec, Vec, void*);
 PetscErrorCode FormHessian(TaoSolver, Vec, Mat*, Mat*, MatStructure*, void*);
 PetscErrorCode Gather(Vec x, Vec state, VecScatter s_scat, Vec design, VecScatter d_scat);
@@ -189,8 +189,8 @@ int main(int argc, char **argv)
   ierr = TaoSolverSetGradientRoutine(tao, FormGradient, (void *)&user); CHKERRQ(ierr);
   ierr = TaoSolverSetConstraintsRoutine(tao, user.c, FormConstraints, (void *)&user); CHKERRQ(ierr);
 
-  ierr = TaoSolverSetJacobianStateRoutine(tao, user.Js, user.Js, user.JsInv, FormJacobianState, (void *)&user); CHKERRQ(ierr); // TODO(?): remove JsInv, use MATOP_SOLVE and MATOP_SOLVE_TRANSPOSE
-  ierr = TaoSolverSetJacobianDesignRoutine(tao, user.Jd, user.Jd, FormJacobianDesign, (void *)&user); CHKERRQ(ierr);
+  ierr = TaoSolverSetJacobianStateRoutine(tao, user.Js, user.JsBlockPrec, user.JsInv, FormJacobianState, (void *)&user); CHKERRQ(ierr); // TODO(?): remove JsInv, use MATOP_SOLVE and MATOP_SOLVE_TRANSPOSE
+  ierr = TaoSolverSetJacobianDesignRoutine(tao, user.Jd, FormJacobianDesign, (void *)&user); CHKERRQ(ierr);
 
   ierr = TaoSolverSetFromOptions(tao); CHKERRQ(ierr);
   ierr = TaoSolverSetStateDesignIS(tao,user.s_is,user.d_is); CHKERRQ(ierr);
@@ -402,7 +402,7 @@ PetscErrorCode FormJacobianState(TaoSolver tao, Vec X, Mat *J, Mat* JPre, Mat* J
 #undef __FUNCT__
 #define __FUNCT__ "FormJacobianDesign"
 /* B */
-PetscErrorCode FormJacobianDesign(TaoSolver tao, Vec X, Mat *J, Mat* JPre, MatStructure* flag, void *ptr)
+PetscErrorCode FormJacobianDesign(TaoSolver tao, Vec X, Mat *J, void *ptr)
 {
   PetscErrorCode ierr;
   AppCtx *user = (AppCtx*)ptr;
@@ -416,7 +416,7 @@ PetscErrorCode FormJacobianDesign(TaoSolver tao, Vec X, Mat *J, Mat* JPre, MatSt
   ierr = VecPointwiseMult(user->S,user->S,user->S); CHKERRQ(ierr);
   ierr = VecPointwiseDivide(user->Swork,user->Swork,user->S); CHKERRQ(ierr);
   ierr = MatCopy(user->Av,user->Avwork,SAME_NONZERO_PATTERN); CHKERRQ(ierr);
-  ierr = MatDiagonalScale(user->Avwork,user->Swork,user->u); CHKERRQ(ierr);
+  ierr = MatDiagtaonalScale(user->Avwork,user->Swork,user->u); CHKERRQ(ierr);
   if (user->jformed) {
     ierr = MatMatMult(user->Div,user->Avwork,MAT_REUSE_MATRIX,1,J); CHKERRQ(ierr);
   }
@@ -428,7 +428,6 @@ PetscErrorCode FormJacobianDesign(TaoSolver tao, Vec X, Mat *J, Mat* JPre, MatSt
   *flag = DIFFERENT_NONZERO_PATTERN;*/
 
   *J = user->Jd;
-  *flag = DIFFERENT_NONZERO_PATTERN;
 
   PetscFunctionReturn(0);
 }
