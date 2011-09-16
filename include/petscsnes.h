@@ -31,7 +31,7 @@ E*/
 #define SNESTR      "tr"
 #define SNESPYTHON  "python"
 #define SNESTEST    "test"
-#define SNESPICARD  "picard"
+#define SNESRICHARDSON  "richardson"
 #define SNESKSPONLY "ksponly"
 #define SNESVI      "vi"
 #define SNESNGMRES  "ngmres"
@@ -366,7 +366,7 @@ extern PetscErrorCode  SNESSetComputeInitialGuess(SNES,PetscErrorCode (*)(SNES,V
 
 /* --------- Routines specifically for line search methods --------------- */
 /*E
-    SNESLineSearchType - type of line search used in Newton's method as well as VI solvers and Picard solvers
+    SNESLineSearchType - type of line search used in Newton's method as well as VI solvers and Richardson solvers
 
     Level: beginner
 

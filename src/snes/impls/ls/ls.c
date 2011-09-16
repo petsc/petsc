@@ -1277,6 +1277,8 @@ PetscErrorCode  SNESCreate_LS(SNES snes)
   snes->ops->view            = SNESView_LS;
   snes->ops->reset           = SNESReset_LS;
 
+  snes->usesksp         = PETSC_TRUE;
+  snes->usespc          = PETSC_FALSE;
   ierr                  = PetscNewLog(snes,SNES_LS,&neP);CHKERRQ(ierr);
   snes->data    	= (void*)neP;
   neP->alpha		= 1.e-4;

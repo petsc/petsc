@@ -314,6 +314,9 @@ PetscErrorCode  SNESCreate_QN(SNES snes)
   snes->ops->view            = 0;
   snes->ops->reset           = SNESReset_QN;
 
+  snes->usespc          = PETSC_TRUE;
+  snes->usesksp         = PETSC_FALSE;
+
   ierr = PetscNewLog(snes, QNContext, &qn);CHKERRQ(ierr);
   snes->data = (void *) qn;
   qn->m = 100;

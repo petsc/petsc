@@ -426,7 +426,8 @@ PetscErrorCode SNESCreate_NGMRES(SNES snes)
   snes->ops->solve          = SNESSolve_NGMRES;
   snes->ops->reset          = SNESReset_NGMRES;
 
-  snes->usesksp             = PETSC_FALSE;
+  snes->usespc          = PETSC_TRUE;
+  snes->usesksp         = PETSC_FALSE;
 
   ierr = PetscNewLog(snes, SNES_NGMRES, &ngmres);CHKERRQ(ierr);
   snes->data = (void*) ngmres;
@@ -440,7 +441,7 @@ PetscErrorCode SNESCreate_NGMRES(SNES snes)
 
   if (!snes->pc) {
     ierr = SNESGetPC(snes, &snes->pc);CHKERRQ(ierr);
-    ierr = SNESSetType(snes->pc,SNESPICARD);CHKERRQ(ierr);
+    ierr = SNESSetType(snes->pc,SNESRICHARDSON);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

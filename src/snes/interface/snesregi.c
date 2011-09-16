@@ -5,7 +5,7 @@ EXTERN_C_BEGIN
 extern PetscErrorCode  SNESCreate_LS(SNES);
 extern PetscErrorCode  SNESCreate_TR(SNES);
 extern PetscErrorCode  SNESCreate_Test(SNES);
-extern PetscErrorCode  SNESCreate_Picard(SNES);
+extern PetscErrorCode  SNESCreate_Richardson(SNES);
 extern PetscErrorCode  SNESCreate_KSPONLY(SNES);
 extern PetscErrorCode  SNESCreate_VI(SNES);
 extern PetscErrorCode  SNESCreate_NGMRES(SNES);
@@ -50,7 +50,7 @@ PetscErrorCode  SNESRegisterAll(const char path[])
   ierr = SNESRegisterDynamic(SNESLS,     path,"SNESCreate_LS",     SNESCreate_LS);CHKERRQ(ierr);
   ierr = SNESRegisterDynamic(SNESTR,     path,"SNESCreate_TR",     SNESCreate_TR);CHKERRQ(ierr);
   ierr = SNESRegisterDynamic(SNESTEST,   path,"SNESCreate_Test",   SNESCreate_Test);CHKERRQ(ierr);
-  ierr = SNESRegisterDynamic(SNESPICARD, path,"SNESCreate_Picard", SNESCreate_Picard);CHKERRQ(ierr);
+  ierr = SNESRegisterDynamic(SNESRICHARDSON, path,"SNESCreate_Richardson", SNESCreate_Richardson);CHKERRQ(ierr);
   ierr = SNESRegisterDynamic(SNESKSPONLY,path,"SNESCreate_KSPONLY",SNESCreate_KSPONLY);CHKERRQ(ierr);
   ierr = SNESRegisterDynamic(SNESVI,     path,"SNESCreate_VI",     SNESCreate_VI);CHKERRQ(ierr);
   ierr = SNESRegisterDynamic(SNESNGMRES, path,"SNESCreate_NGMRES", SNESCreate_NGMRES);CHKERRQ(ierr);

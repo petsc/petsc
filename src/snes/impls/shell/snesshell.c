@@ -43,8 +43,6 @@ PetscErrorCode  SNESShellSetSolve(SNES snes,PetscErrorCode (*solve)(SNES,Vec))
 #define __FUNCT__ "SNESReset_Shell"
 PetscErrorCode SNESReset_Shell(SNES snes)
 {
-  SNES_Shell     *shell = (SNES_Shell*) snes->data;
-
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
@@ -65,8 +63,6 @@ PetscErrorCode SNESDestroy_Shell(SNES snes)
 #define __FUNCT__ "SNESSetUp_Shell"
 PetscErrorCode SNESSetUp_Shell(SNES snes)
 {
-  SNES_Shell    *shell = (SNES_Shell *) snes->data;
-
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
@@ -75,7 +71,6 @@ PetscErrorCode SNESSetUp_Shell(SNES snes)
 #define __FUNCT__ "SNESSetFromOptions_Shell"
 PetscErrorCode SNESSetFromOptions_Shell(SNES snes)
 {
-  SNES_Shell     *shell = (SNES_Shell *) snes->data;
   PetscErrorCode ierr;
   
   PetscFunctionBegin;
@@ -87,8 +82,6 @@ PetscErrorCode SNESSetFromOptions_Shell(SNES snes)
 #define __FUNCT__ "SNESView_Shell"
 PetscErrorCode SNESView_Shell(SNES snes, PetscViewer viewer)
 {
-  SNES_Shell     *shell = (SNES_Shell *) snes->data;
-
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
@@ -215,6 +208,7 @@ PetscErrorCode SNESCreate_Shell(SNES snes)
   snes->ops->reset          = SNESReset_Shell;
 
   snes->usesksp             = PETSC_FALSE;
+  snes->usespc              = PETSC_FALSE;
 
   ierr = PetscNewLog(snes, SNES_Shell, &shell);CHKERRQ(ierr);
   snes->data = (void*) shell;

@@ -91,6 +91,9 @@ PetscErrorCode  SNESCreate_KSPONLY(SNES snes)
   snes->ops->view            = 0;
   snes->ops->reset           = 0;
 
+  snes->usesksp         = PETSC_TRUE;
+  snes->usespc          = PETSC_FALSE;
+
   snes->data = 0;
   PetscFunctionReturn(0);
 }

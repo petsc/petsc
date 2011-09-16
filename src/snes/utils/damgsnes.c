@@ -796,11 +796,11 @@ PetscErrorCode  DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*function)(SNES,Vec,Vec,v
           ierr = PetscPrintf(dmmg[i]->comm,"FAS Solver Parameters\n");CHKERRQ(ierr);
           ierr = PetscPrintf(dmmg[i]->comm,"  rtol %G atol %G\n",dmmg[i]->rtol,dmmg[i]->abstol);CHKERRQ(ierr);
           ierr = PetscPrintf(dmmg[i]->comm,"             coarsesmooths %D\n",dmmg[i]->coarsesmooth);CHKERRQ(ierr);
-          ierr = PetscPrintf(dmmg[i]->comm,"             Newton iterations %D\n",fasMaxIter);CHKERRQ(ierr);
+          ierr = PetscPrintf(dmmg[i]->comm,"             SNES iterations %D\n",fasMaxIter);CHKERRQ(ierr);
         } else {
           ierr = PetscPrintf(dmmg[i]->comm,"  level %D   presmooths    %D\n",i,dmmg[i]->presmooth);CHKERRQ(ierr);
           ierr = PetscPrintf(dmmg[i]->comm,"             postsmooths   %D\n",dmmg[i]->postsmooth);CHKERRQ(ierr);
-          ierr = PetscPrintf(dmmg[i]->comm,"             Newton iterations %D\n",fasMaxIter);CHKERRQ(ierr);
+          ierr = PetscPrintf(dmmg[i]->comm,"             SNES iterations %D\n",fasMaxIter);CHKERRQ(ierr);
         }
         if (fasBlock) {
           ierr = PetscPrintf(dmmg[i]->comm,"  using point-block smoothing\n");CHKERRQ(ierr);

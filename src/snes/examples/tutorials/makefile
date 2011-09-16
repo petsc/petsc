@@ -333,17 +333,17 @@ runex5_5_ngmres:
 	-npc_snes_max_it 2 -snes_ngmres_m 30 -snes_ngmres_restart 1000 -par 6.0  > ex5_5_ngmres.tmp 2>&1; \
 	   ${DIFF} output/ex5_5_ngmres.out ex5_5_ngmres.tmp || echo "Possible problem with ex5_5_ngmres, diffs above"; \
 	   ${RM} -f ex5_5_ngmres.tmp
-runex5_5_ngmres_picard:
+runex5_5_ngmres_richardson:
 	-@${MPIEXEC} -n 2 ./ex5 -da_grid_x 20 -da_grid_y 20 -snes_type ngmres  -npc_snes_ls quadratic -snes_monitor_short -snes_max_it 1000	 \
-	-npc_snes_type picard -npc_snes_max_it 2 -snes_ngmres_m 30 -snes_ngmres_restart 1000 -par 6.0 > ex5_5_ngmres_picard.tmp 2>&1; \
-	   ${DIFF} output/ex5_5_ngmres_picard.out ex5_5_ngmres_picard.tmp || echo "Possible problem with ex5_5_ngmres_picard, diffs above"; \
-	   ${RM} -f ex5_5_ngmres_picard.tmp
-runex5_5_picard:
+	-npc_snes_type richardson -npc_snes_max_it 2 -snes_ngmres_m 30 -snes_ngmres_restart 1000 -par 6.0 > ex5_5_ngmres_richardson.tmp 2>&1; \
+	   ${DIFF} output/ex5_5_ngmres_richardson.out ex5_5_ngmres_richardson.tmp || echo "Possible problem with ex5_5_ngmres_richardson, diffs above"; \
+	   ${RM} -f ex5_5_ngmres_richardson.tmp
+runex5_5_richardson:
 	-@${MPIEXEC} -n 2 ./ex5 -da_grid_x 20 -da_grid_y 20 -npc_snes_max_it 2 \
-	-snes_type picard -snes_ls quadratic -snes_monitor_short -snes_max_it 10000 \
-	-par 6.0  > ex5_5_picard.tmp 2>&1; \
-	   ${DIFF} output/ex5_5_picard.out ex5_5_picard.tmp || echo "Possible problem with ex5_5_picard, diffs above"; \
-	   ${RM} -f ex5_5_picard.tmp
+	-snes_type richardson -snes_ls quadratic -snes_monitor_short -snes_max_it 10000 \
+	-par 6.0  > ex5_5_richardson.tmp 2>&1; \
+	   ${DIFF} output/ex5_5_richardson.out ex5_5_richardson.tmp || echo "Possible problem with ex5_5_richardson, diffs above"; \
+	   ${RM} -f ex5_5_richardson.tmp
 runex5_5_qn:
 	-@${MPIEXEC} -n 2 ./ex5 -da_grid_x 20 -da_grid_y 20 \
 	-snes_type qn -snes_qn_m 100 -snes_monitor_short -snes_max_it 1000 \
@@ -865,7 +865,7 @@ testx11ex50: ex50.PETSc
         ${MAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ex50.rm ; fi
 
 TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2  runex2_3 ex2.rm ex3.PETSc runex3 \
-                                 runex3_2 runex3_3 runex3_4 ex3.rm ex5.PETSc runex5 runex5_2 runex5_3 runex5_4 runex5_5 runex5_5_ngmres_picard runex5_5_ngmres runex5_5_picard runex5_5_qn runex5_6 ex5.rm\
+                                 runex3_2 runex3_3 runex3_4 ex3.rm ex5.PETSc runex5 runex5_2 runex5_3 runex5_4 runex5_5_ngmres_richardson runex5_5_ngmres runex5_5_richardson runex5_5_qn runex5_6 ex5.rm\
                                  ex6.PETSc runex6 runex6_2 ex6.rm\
                                  ex14.PETSc runex14 runex14_2 ex14.rm ex19.PETSc runex19 runex19_2 runex19_5 \
                                  runex19_6 runex19_fieldsplit_2 runex19_fieldsplit_3 runex19_fieldsplit_4 \

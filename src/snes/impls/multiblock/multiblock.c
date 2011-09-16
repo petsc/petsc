@@ -649,7 +649,7 @@ PetscErrorCode SNESMultiblockSetFields_Default(SNES snes, const char name[], Pet
   newblock->next    = PETSC_NULL;
   ierr = SNESCreate(((PetscObject) snes)->comm, &newblock->snes);CHKERRQ(ierr);
   ierr = PetscObjectIncrementTabLevel((PetscObject) newblock->snes, (PetscObject) snes, 1);CHKERRQ(ierr);
-  ierr = SNESSetType(newblock->snes, SNESPICARD);CHKERRQ(ierr);
+  ierr = SNESSetType(newblock->snes, SNESRICHARDSON);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject) snes, (PetscObject) newblock->snes);CHKERRQ(ierr);
   ierr = PetscSNPrintf(prefix, sizeof prefix, "%smultiblock_%s_", ((PetscObject) snes)->prefix ? ((PetscObject) snes)->prefix : "", newblock->name);CHKERRQ(ierr);
   ierr = SNESSetOptionsPrefix(newblock->snes, prefix);CHKERRQ(ierr);
@@ -698,7 +698,7 @@ PetscErrorCode SNESMultiblockSetIS_Default(SNES snes, const char name[], IS is)
   newblock->next = PETSC_NULL;
   ierr = SNESCreate(((PetscObject) snes)->comm, &newblock->snes);CHKERRQ(ierr);
   ierr = PetscObjectIncrementTabLevel((PetscObject) newblock->snes, (PetscObject) snes, 1);CHKERRQ(ierr);
-  ierr = SNESSetType(newblock->snes, SNESPICARD);CHKERRQ(ierr);
+  ierr = SNESSetType(newblock->snes, SNESRICHARDSON);CHKERRQ(ierr);
   ierr = PetscLogObjectParent((PetscObject) snes, (PetscObject) newblock->snes);CHKERRQ(ierr);
   ierr = PetscSNPrintf(prefix, sizeof prefix, "%smultiblock_%s_", ((PetscObject) snes)->prefix ? ((PetscObject) snes)->prefix : "", newblock->name);CHKERRQ(ierr);
   ierr = SNESSetOptionsPrefix(newblock->snes, prefix);CHKERRQ(ierr);
@@ -957,7 +957,7 @@ PetscErrorCode SNESMultiblockGetSubSNES(SNES snes, PetscInt *n, SNES *subsnes[])
 
   Level: beginner
 
-.seealso:  SNESCreate(), SNES, SNESSetType(), SNESLS, SNESTR, SNESPICARD
+.seealso:  SNESCreate(), SNES, SNESSetType(), SNESLS, SNESTR, SNESRICHARDSON
 M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__

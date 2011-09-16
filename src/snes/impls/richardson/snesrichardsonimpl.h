@@ -1,9 +1,9 @@
 /* 
-   Private context for Picard iteration
+   Private context for Richardson iteration
 */
 
-#ifndef __SNES_PICARD_H
-#define __SNES_PICARD_H
+#ifndef __SNES_RICHARDSON_H
+#define __SNES_RICHARDSON_H
 #include <private/snesimpl.h>
 
 typedef struct {
@@ -19,7 +19,7 @@ typedef struct {
   void               *postcheck;                                                      /* user-defined step-checking context (optional) */
   void               *lsP;                                                            /* user-defined line-search context (optional) */
   PetscViewer        monitor;
-} SNES_Picard;
+} SNES_Richardson;
 
 #endif
 

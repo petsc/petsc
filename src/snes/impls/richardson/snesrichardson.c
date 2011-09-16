@@ -1,9 +1,9 @@
 
-#include <../src/snes/impls/picard/picard.h>
+#include <../src/snes/impls/richardson/snesrichardsonimpl.h>
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESReset_Picard"
-PetscErrorCode SNESReset_Picard(SNES snes)
+#define __FUNCT__ "SNESReset_Richardson"
+PetscErrorCode SNESReset_Richardson(SNES snes)
 {
   PetscErrorCode ierr;
 
@@ -13,7 +13,7 @@ PetscErrorCode SNESReset_Picard(SNES snes)
 }
 
 /*
-  SNESDestroy_Picard - Destroys the private SNES_Picard context that was created with SNESCreate_Picard().
+  SNESDestroy_Richardson - Destroys the private SNES_Richardson context that was created with SNESCreate_Richardson().
 
   Input Parameter:
 . snes - the SNES context
@@ -21,22 +21,22 @@ PetscErrorCode SNESReset_Picard(SNES snes)
   Application Interface Routine: SNESDestroy()
 */
 #undef __FUNCT__  
-#define __FUNCT__ "SNESDestroy_Picard"
-PetscErrorCode SNESDestroy_Picard(SNES snes)
+#define __FUNCT__ "SNESDestroy_Richardson"
+PetscErrorCode SNESDestroy_Richardson(SNES snes)
 {
   PetscErrorCode ierr;
-  SNES_Picard    *neP = (SNES_Picard*)snes->data;
+  SNES_Richardson    *neP = (SNES_Richardson*)snes->data;
 
   PetscFunctionBegin;
-  ierr = SNESReset_Picard(snes);CHKERRQ(ierr);
+  ierr = SNESReset_Richardson(snes);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&neP->monitor);CHKERRQ(ierr);
   ierr = PetscFree(snes->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 /*
-   SNESSetUp_Picard - Sets up the internal data structures for the later use
-   of the SNESPICARD nonlinear solver.
+   SNESSetUp_Richardson - Sets up the internal data structures for the later use
+   of the SNESRICHARDSON nonlinear solver.
 
    Input Parameters:
 +  snes - the SNES context
@@ -45,8 +45,8 @@ PetscErrorCode SNESDestroy_Picard(SNES snes)
    Application Interface Routine: SNESSetUp()
  */
 #undef __FUNCT__  
-#define __FUNCT__ "SNESSetUp_Picard"
-PetscErrorCode SNESSetUp_Picard(SNES snes)
+#define __FUNCT__ "SNESSetUp_Richardson"
+PetscErrorCode SNESSetUp_Richardson(SNES snes)
 {
   PetscErrorCode ierr;
 
@@ -57,10 +57,10 @@ PetscErrorCode SNESSetUp_Picard(SNES snes)
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "SNESLineSearchSetMonitor_Picard"
-PetscErrorCode  SNESLineSearchSetMonitor_Picard(SNES snes,PetscBool  flg)
+#define __FUNCT__ "SNESLineSearchSetMonitor_Richardson"
+PetscErrorCode  SNESLineSearchSetMonitor_Richardson(SNES snes,PetscBool  flg)
 {
-  SNES_Picard    *neP = (SNES_Picard*)snes->data;
+  SNES_Richardson    *neP = (SNES_Richardson*)snes->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -73,11 +73,11 @@ PetscErrorCode  SNESLineSearchSetMonitor_Picard(SNES snes,PetscBool  flg)
 }
 EXTERN_C_END
 
-PetscErrorCode SNESLineSearchNoNorms_Picard(SNES,void*,Vec,Vec,Vec,PetscReal,PetscReal,Vec,Vec,PetscReal*,PetscReal*,PetscBool*);
-PetscErrorCode SNESLineSearchNo_Picard(SNES,void*,Vec,Vec,Vec,PetscReal,PetscReal,Vec,Vec,PetscReal*,PetscReal*,PetscBool*);
-PetscErrorCode SNESLineSearchQuadratic_Picard(SNES,void*,Vec,Vec,Vec,PetscReal,PetscReal,Vec,Vec,PetscReal*,PetscReal*,PetscBool*);
+PetscErrorCode SNESLineSearchNoNorms_Richardson(SNES,void*,Vec,Vec,Vec,PetscReal,PetscReal,Vec,Vec,PetscReal*,PetscReal*,PetscBool*);
+PetscErrorCode SNESLineSearchNo_Richardson(SNES,void*,Vec,Vec,Vec,PetscReal,PetscReal,Vec,Vec,PetscReal*,PetscReal*,PetscBool*);
+PetscErrorCode SNESLineSearchQuadratic_Richardson(SNES,void*,Vec,Vec,Vec,PetscReal,PetscReal,Vec,Vec,PetscReal*,PetscReal*,PetscBool*);
 /*
-  SNESSetFromOptions_Picard - Sets various parameters for the SNESLS method.
+  SNESSetFromOptions_Richardson - Sets various parameters for the SNESLS method.
 
   Input Parameter:
 . snes - the SNES context
@@ -85,28 +85,28 @@ PetscErrorCode SNESLineSearchQuadratic_Picard(SNES,void*,Vec,Vec,Vec,PetscReal,P
   Application Interface Routine: SNESSetFromOptions()
 */
 #undef __FUNCT__  
-#define __FUNCT__ "SNESSetFromOptions_Picard"
-static PetscErrorCode SNESSetFromOptions_Picard(SNES snes)
+#define __FUNCT__ "SNESSetFromOptions_Richardson"
+static PetscErrorCode SNESSetFromOptions_Richardson(SNES snes)
 {
-  SNES_Picard        *ls = (SNES_Picard *)snes->data;
+  SNES_Richardson        *ls = (SNES_Richardson *)snes->data;
   SNESLineSearchType indx;
   PetscBool          flg,set;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("SNES Picard options");CHKERRQ(ierr);
-    ierr = PetscOptionsEnum("-snes_ls","Picard line search type","SNESLineSearchSet",SNESLineSearchTypes,(PetscEnum)ls->type,(PetscEnum*)&indx,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHead("SNES Richardson options");CHKERRQ(ierr);
+    ierr = PetscOptionsEnum("-snes_ls","Richardson line search type","SNESLineSearchSet",SNESLineSearchTypes,(PetscEnum)ls->type,(PetscEnum*)&indx,&flg);CHKERRQ(ierr);
     if (flg) {
       ls->type = indx;
       switch (indx) {
       case SNES_LS_BASIC:
-        ierr = SNESLineSearchSet(snes,SNESLineSearchNo_Picard,PETSC_NULL);CHKERRQ(ierr);
+        ierr = SNESLineSearchSet(snes,SNESLineSearchNo_Richardson,PETSC_NULL);CHKERRQ(ierr);
         break;
       case SNES_LS_BASIC_NONORMS:
-        ierr = SNESLineSearchSet(snes,SNESLineSearchNoNorms_Picard,PETSC_NULL);CHKERRQ(ierr);
+        ierr = SNESLineSearchSet(snes,SNESLineSearchNoNorms_Richardson,PETSC_NULL);CHKERRQ(ierr);
         break;
       case SNES_LS_QUADRATIC:
-        ierr = SNESLineSearchSet(snes,SNESLineSearchQuadratic_Picard,PETSC_NULL);CHKERRQ(ierr);
+        ierr = SNESLineSearchSet(snes,SNESLineSearchQuadratic_Richardson,PETSC_NULL);CHKERRQ(ierr);
         break;
       case SNES_LS_CUBIC:
         SETERRQ(((PetscObject)snes)->comm,PETSC_ERR_SUP,"No support for cubic search");
@@ -121,7 +121,7 @@ static PetscErrorCode SNESSetFromOptions_Picard(SNES snes)
 }
 
 /*
-  SNESView_Picard - Prints info from the SNESPicard data structure.
+  SNESView_Richardson - Prints info from the SNESRichardson data structure.
 
   Input Parameters:
 + SNES - the SNES context
@@ -130,27 +130,27 @@ static PetscErrorCode SNESSetFromOptions_Picard(SNES snes)
   Application Interface Routine: SNESView()
 */
 #undef __FUNCT__  
-#define __FUNCT__ "SNESView_Picard"
-static PetscErrorCode SNESView_Picard(SNES snes, PetscViewer viewer)
+#define __FUNCT__ "SNESView_Richardson"
+static PetscErrorCode SNESView_Richardson(SNES snes, PetscViewer viewer)
 {
-  SNES_Picard   *ls = (SNES_Picard *)snes->data;
+  SNES_Richardson   *ls = (SNES_Richardson *)snes->data;
   PetscBool      iascii;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject) viewer, PETSCVIEWERASCII, &iascii);CHKERRQ(ierr);
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  picard variant: %s\n", SNESLineSearchTypeName(ls->type));CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  richardson variant: %s\n", SNESLineSearchTypeName(ls->type));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchNo_Picard"
-PetscErrorCode SNESLineSearchNo_Picard(SNES snes,void *lsctx,Vec X,Vec F,Vec Y,PetscReal fnorm,PetscReal dummyXnorm,Vec dummyG,Vec W,PetscReal *dummyYnorm,PetscReal *gnorm,PetscBool *flag)
+#define __FUNCT__ "SNESLineSearchNo_Richardson"
+PetscErrorCode SNESLineSearchNo_Richardson(SNES snes,void *lsctx,Vec X,Vec F,Vec Y,PetscReal fnorm,PetscReal dummyXnorm,Vec dummyG,Vec W,PetscReal *dummyYnorm,PetscReal *gnorm,PetscBool *flag)
 {
   PetscErrorCode ierr;
-  SNES_Picard    *neP = (SNES_Picard *) snes->data;
+  SNES_Richardson    *neP = (SNES_Richardson *) snes->data;
 
   PetscFunctionBegin;
   ierr = VecAXPY(X, neP->damping, Y);CHKERRQ(ierr);
@@ -161,11 +161,11 @@ PetscErrorCode SNESLineSearchNo_Picard(SNES snes,void *lsctx,Vec X,Vec F,Vec Y,P
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchNoNorms_Picard"
-PetscErrorCode SNESLineSearchNoNorms_Picard(SNES snes,void *lsctx,Vec X,Vec F,Vec Y,PetscReal fnorm,PetscReal dummyXnorm,Vec dummyG,Vec W,PetscReal *dummyYnorm,PetscReal *gnorm,PetscBool *flag)
+#define __FUNCT__ "SNESLineSearchNoNorms_Richardson"
+PetscErrorCode SNESLineSearchNoNorms_Richardson(SNES snes,void *lsctx,Vec X,Vec F,Vec Y,PetscReal fnorm,PetscReal dummyXnorm,Vec dummyG,Vec W,PetscReal *dummyYnorm,PetscReal *gnorm,PetscBool *flag)
 {
   PetscErrorCode ierr;
-  SNES_Picard    *neP = (SNES_Picard *) snes->data;
+  SNES_Richardson    *neP = (SNES_Richardson *) snes->data;
 
   PetscFunctionBegin;
   ierr = VecAXPY(X, neP->damping, Y);CHKERRQ(ierr);
@@ -174,15 +174,15 @@ PetscErrorCode SNESLineSearchNoNorms_Picard(SNES snes,void *lsctx,Vec X,Vec F,Ve
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SNESLineSearchQuadratic_Picard"
-PetscErrorCode SNESLineSearchQuadratic_Picard(SNES snes,void *lsctx,Vec X,Vec F,Vec Y,PetscReal fnorm,PetscReal dummyXnorm,Vec G,Vec W,PetscReal *dummyYnorm,PetscReal *gnorm,PetscBool *flag)
+#define __FUNCT__ "SNESLineSearchQuadratic_Richardson"
+PetscErrorCode SNESLineSearchQuadratic_Richardson(SNES snes,void *lsctx,Vec X,Vec F,Vec Y,PetscReal fnorm,PetscReal dummyXnorm,Vec G,Vec W,PetscReal *dummyYnorm,PetscReal *gnorm,PetscBool *flag)
 {
   PetscInt       i;
   PetscReal      alphas[3] = {0.0, 0.5, 1.0};
   PetscReal      norms[3];
   PetscReal      alpha,a,b;
   PetscErrorCode ierr;
-  SNES_Picard    *neP = (SNES_Picard *) snes->data;
+  SNES_Richardson    *neP = (SNES_Richardson *) snes->data;
 
   PetscFunctionBegin;
   norms[0]  = fnorm;
@@ -234,7 +234,7 @@ PetscErrorCode SNESLineSearchQuadratic_Picard(SNES snes,void *lsctx,Vec X,Vec F,
 }
 
 /*
-  SNESSolve_Picard - Solves a nonlinear system with the Picard method.
+  SNESSolve_Richardson - Solves a nonlinear system with the Richardson method.
 
   Input Parameters:
 . snes - the SNES context
@@ -245,10 +245,10 @@ PetscErrorCode SNESLineSearchQuadratic_Picard(SNES snes,void *lsctx,Vec X,Vec F,
   Application Interface Routine: SNESSolve()
 */
 #undef __FUNCT__  
-#define __FUNCT__ "SNESSolve_Picard"
-PetscErrorCode SNESSolve_Picard(SNES snes)
+#define __FUNCT__ "SNESSolve_Richardson"
+PetscErrorCode SNESSolve_Richardson(SNES snes)
 { 
-  SNES_Picard         *neP = (SNES_Picard *) snes->data;
+  SNES_Richardson         *neP = (SNES_Richardson *) snes->data;
   Vec                 X, Y, F, W;
   PetscReal           fnorm;
   PetscInt            maxits, i;
@@ -345,12 +345,12 @@ PetscErrorCode SNESSolve_Picard(SNES snes)
 typedef PetscErrorCode (*FCN1)(SNES,Vec,Vec,void*,PetscBool *);                 /* force argument to next function to not be extern C*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "SNESLineSearchSetPreCheck_Picard"
-PetscErrorCode  SNESLineSearchSetPreCheck_Picard(SNES snes, FCN1 func, void *checkctx)
+#define __FUNCT__ "SNESLineSearchSetPreCheck_Richardson"
+PetscErrorCode  SNESLineSearchSetPreCheck_Richardson(SNES snes, FCN1 func, void *checkctx)
 {
   PetscFunctionBegin;
-  ((SNES_Picard *)(snes->data))->precheckstep = func;
-  ((SNES_Picard *)(snes->data))->precheck     = checkctx;
+  ((SNES_Richardson *)(snes->data))->precheckstep = func;
+  ((SNES_Richardson *)(snes->data))->precheck     = checkctx;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -358,12 +358,12 @@ EXTERN_C_END
 typedef PetscErrorCode (*FCN2)(SNES,void*,Vec,Vec,Vec,PetscReal,PetscReal,Vec,Vec,PetscReal*,PetscReal*,PetscBool *); /* force argument to next function to not be extern C*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "SNESLineSearchSet_Picard"
-PetscErrorCode  SNESLineSearchSet_Picard(SNES snes, FCN2 func, void *lsctx)
+#define __FUNCT__ "SNESLineSearchSet_Richardson"
+PetscErrorCode  SNESLineSearchSet_Richardson(SNES snes, FCN2 func, void *lsctx)
 {
   PetscFunctionBegin;
-  ((SNES_Picard *)(snes->data))->LineSearch = func;
-  ((SNES_Picard *)(snes->data))->lsP        = lsctx;
+  ((SNES_Richardson *)(snes->data))->LineSearch = func;
+  ((SNES_Richardson *)(snes->data))->lsP        = lsctx;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -371,18 +371,18 @@ EXTERN_C_END
 typedef PetscErrorCode (*FCN3)(SNES,Vec,Vec,Vec,void*,PetscBool *,PetscBool *); /* force argument to next function to not be extern C*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "SNESLineSearchSetPostCheck_Picard"
-PetscErrorCode  SNESLineSearchSetPostCheck_Picard(SNES snes, FCN3 func, void *checkctx)
+#define __FUNCT__ "SNESLineSearchSetPostCheck_Richardson"
+PetscErrorCode  SNESLineSearchSetPostCheck_Richardson(SNES snes, FCN3 func, void *checkctx)
 {
   PetscFunctionBegin;
-  ((SNES_Picard *)(snes->data))->postcheckstep = func;
-  ((SNES_Picard *)(snes->data))->postcheck     = checkctx;
+  ((SNES_Richardson *)(snes->data))->postcheckstep = func;
+  ((SNES_Richardson *)(snes->data))->postcheck     = checkctx;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
 
 /*MC
-  SNESPICARD - Picard nonlinear solver that uses successive substitutions
+  SNESRICHARDSON - Richardson nonlinear solver that uses successive substitutions
 
   Level: beginner
 
@@ -399,39 +399,40 @@ EXTERN_C_END
 M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "SNESCreate_Picard"
-PetscErrorCode  SNESCreate_Picard(SNES snes)
+#define __FUNCT__ "SNESCreate_Richardson"
+PetscErrorCode  SNESCreate_Richardson(SNES snes)
 {
-  SNES_Picard   *neP;
+  SNES_Richardson   *neP;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  snes->ops->destroy	     = SNESDestroy_Picard;
-  snes->ops->setup	     = SNESSetUp_Picard;
-  snes->ops->setfromoptions  = SNESSetFromOptions_Picard;
-  snes->ops->view            = SNESView_Picard;
-  snes->ops->solve	     = SNESSolve_Picard;
-  snes->ops->reset           = SNESReset_Picard;
+  snes->ops->destroy	     = SNESDestroy_Richardson;
+  snes->ops->setup	     = SNESSetUp_Richardson;
+  snes->ops->setfromoptions  = SNESSetFromOptions_Richardson;
+  snes->ops->view            = SNESView_Richardson;
+  snes->ops->solve	     = SNESSolve_Richardson;
+  snes->ops->reset           = SNESReset_Richardson;
 
   snes->usesksp              = PETSC_FALSE;
+  snes->usespc               = PETSC_TRUE;
 
-  ierr = PetscNewLog(snes, SNES_Picard, &neP);CHKERRQ(ierr);
+  ierr = PetscNewLog(snes, SNES_Richardson, &neP);CHKERRQ(ierr);
   snes->data = (void*) neP;
   neP->maxstep	     = 1.e8;
   neP->steptol       = 1.e-12;
   neP->type          = SNES_LS_QUADRATIC;
   neP->damping	     = 1.0;
-  neP->LineSearch    = SNESLineSearchQuadratic_Picard;
+  neP->LineSearch    = SNESLineSearchQuadratic_Richardson;
   neP->lsP           = PETSC_NULL;
   neP->postcheckstep = PETSC_NULL;
   neP->postcheck     = PETSC_NULL;
   neP->precheckstep  = PETSC_NULL;
   neP->precheck      = PETSC_NULL;
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESLineSearchSetMonitor_C","SNESLineSearchSetMonitor_Picard",SNESLineSearchSetMonitor_Picard);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESLineSearchSet_C","SNESLineSearchSet_Picard",SNESLineSearchSet_Picard);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESLineSearchSetPostCheck_C","SNESLineSearchSetPostCheck_Picard",SNESLineSearchSetPostCheck_Picard);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESLineSearchSetPreCheck_C","SNESLineSearchSetPreCheck_Picard",SNESLineSearchSetPreCheck_Picard);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESLineSearchSetMonitor_C","SNESLineSearchSetMonitor_Richardson",SNESLineSearchSetMonitor_Richardson);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESLineSearchSet_C","SNESLineSearchSet_Richardson",SNESLineSearchSet_Richardson);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESLineSearchSetPostCheck_C","SNESLineSearchSetPostCheck_Richardson",SNESLineSearchSetPostCheck_Richardson);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESLineSearchSetPreCheck_C","SNESLineSearchSetPreCheck_Richardson",SNESLineSearchSetPreCheck_Richardson);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

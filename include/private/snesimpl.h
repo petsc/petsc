@@ -33,6 +33,7 @@ struct _p_SNES {
   PETSCHEADER(struct _SNESOps);
   DM   dm;
   SNES pc;
+  PetscBool usespc;
 
   /*  ------------------------ User-provided stuff -------------------------------*/
   void  *user;		          /* user-defined context */

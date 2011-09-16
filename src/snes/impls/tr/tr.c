@@ -344,6 +344,9 @@ PetscErrorCode  SNESCreate_TR(SNES snes)
   snes->ops->view            = SNESView_TR;
   snes->ops->reset           = SNESReset_TR;
 
+  snes->usesksp             = PETSC_TRUE;
+  snes->usespc              = PETSC_FALSE;
+
   ierr			= PetscNewLog(snes,SNES_TR,&neP);CHKERRQ(ierr);
   snes->data	        = (void*)neP;
   neP->mu		= 0.25;

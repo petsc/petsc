@@ -279,7 +279,7 @@ PetscErrorCode UpdateSolution(DMMG *dmmg, AppCtx *user, PetscInt *nits)
       ierr = SNESGetConvergedReason(snes,&reason);CHKERRQ(ierr);
       ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
       *nits += its;
-      if (!q) PetscPrintf(PETSC_COMM_WORLD," Newton iterations: %D, Cumulative: %D\n", its, *nits);
+      if (!q) PetscPrintf(PETSC_COMM_WORLD," SNES iterations: %D, Cumulative: %D\n", its, *nits);
       if (param->stop_solve) goto done;
 
       if (reason<0) {

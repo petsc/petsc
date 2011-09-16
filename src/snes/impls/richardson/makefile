@@ -2,14 +2,14 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = picard.c
+SOURCEC  = snesrichardson.c
 SOURCEF  =
-SOURCEH  = picard.h
-OBJSC    = picard.o
+SOURCEH  = snesrichardsonimpl.h
+OBJSC    = snesrichardson.o
 OBJSF    =
 LIBBASE  = libpetscsnes
 MANSEC   = SNES
-LOCDIR   = src/snes/impls/picard/
+LOCDIR   = src/snes/impls/richardson/
 
 include ${PETSC_DIR}/conf/variables
 include ${PETSC_DIR}/conf/rules

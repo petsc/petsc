@@ -186,14 +186,14 @@ PetscErrorCode  SNESView(SNES snes,PetscViewer viewer)
     if (snes->lagjacobian == -1) {
       ierr = PetscViewerASCIIPrintf(viewer,"  Jacobian is never rebuilt\n");CHKERRQ(ierr);
     } else if (snes->lagjacobian > 1) {
-      ierr = PetscViewerASCIIPrintf(viewer,"  Jacobian is rebuilt every %D Newton iterations\n",snes->lagjacobian);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  Jacobian is rebuilt every %D SNES iterations\n",snes->lagjacobian);CHKERRQ(ierr);
     }
   } else if (isstring) {
     const char *type;
     ierr = SNESGetType(snes,&type);CHKERRQ(ierr);
     ierr = PetscViewerStringSPrintf(viewer," %-3.3s",type);CHKERRQ(ierr);
   }
-  if (snes->pc) {
+  if (snes->pc && snes->usespc) {
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
     ierr = SNESView(snes->pc, viewer);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);

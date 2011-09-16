@@ -2568,6 +2568,9 @@ PetscErrorCode  SNESCreate_VI(SNES snes)
   snes->ops->view            = SNESView_VI;
   snes->ops->converged       = SNESDefaultConverged_VI;
 
+  snes->usesksp             = PETSC_TRUE;
+  snes->usespc              = PETSC_FALSE;
+
   ierr                  = PetscNewLog(snes,SNES_VI,&vi);CHKERRQ(ierr);
   snes->data            = (void*)vi;
   vi->alpha             = 1.e-4;
