@@ -818,6 +818,27 @@ PetscErrorCode  PetscInitialize(int *argc,char ***args,const char file[],const c
 
 #if defined(PETSC_HAVE_CUDA)
   cublasInit();
+
+  ierr = PetscOptionsHasName(PETSC_NULL,"-cuda_show_devices",&flg);CHKERRQ(ierr);
+  if (flg) {
+    struct cudaDeviceProp prop;
+    int devCount;
+    int device;
+
+    ierr = cudaGetDeviceCount(&devCount);CHKERRQ(ierr);
+    for(device = 0; device < devCount; ++device) {
+      ierr = cudaGetDeviceProperties(&prop, device);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD, "CUDA device %d: %s\n", device, prop.name);CHKERRQ(ierr);
+    }
+  }
+  {
+    int device;
+
+    ierr = PetscOptionsGetInt(PETSC_NULL,"-cuda_set_device", &device, &flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = cudaSetDevice(device);CHKERRQ(ierr);
+    }
+  }
 #endif
 
 #if defined(PETSC_HAVE_AMS)
