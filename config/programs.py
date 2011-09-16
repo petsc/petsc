@@ -74,7 +74,6 @@ class Configure(config.base.Configure):
 
     # check no of cores on the build machine [perhaps to do make '-j ncores']
     make_np = self.framework.argDB.get('with-make-np')
-    import pdb; pdb.set_trace()
     if make_np is not None:
       self.framework.logPrint('using user-provided make_np = %d' % make_np)
     else:
