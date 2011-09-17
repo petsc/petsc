@@ -363,7 +363,7 @@ public:
           break;
         }
       }
-      if (p < this->flexPoints[t].size()) {
+      if (p >= this->flexPoints[t].size()) {
         this->flexPoints[t].push_back(s);
         this->flexRemotePoints[t].push_back(c);
       }
@@ -485,17 +485,17 @@ public:
       // Add point
       //   check uniqueness
       index_type p;
-      for(p = 0; p < this->flexPoints[t].size(); ++p) {
-        if (this->flexPoints[t][p] == s) {
-          if ((c >= 0) && (this->flexRemotePoints[t][p] < 0)) {
-            this->flexRemotePoints[t][p] = c;
+      for(p = 0; p < this->flexPoints[s].size(); ++p) {
+        if (this->flexPoints[s][p] == t) {
+          if ((c >= 0) && (this->flexRemotePoints[s][p] < 0)) {
+            this->flexRemotePoints[s][p] = c;
           }
           break;
         }
       }
-      if (p < this->flexPoints[t].size()) {
-        this->flexPoints[t].push_back(s);
-        this->flexRemotePoints[t].push_back(c);
+      if (p >= this->flexPoints[s].size()) {
+        this->flexPoints[s].push_back(t);
+        this->flexRemotePoints[s].push_back(c);
       }
     } else {
       const index_type r = this->getRankIndex(s);
