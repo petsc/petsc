@@ -1672,7 +1672,7 @@ PetscErrorCode MatSOR_MPIAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType flag,Pe
     ierr = (*mat->A->ops->sor)(mat->A,bb1,omega,(MatSORType)(SOR_ZERO_INITIAL_GUESS | SOR_LOCAL_FORWARD_SWEEP),fshift,lits,1,xx1);CHKERRQ(ierr);
     ierr = VecAXPY(xx,1.0,xx1);CHKERRQ(ierr);
     ierr = VecDestroy(&xx1);CHKERRQ(ierr);
-  } else SETERRQ(((PetscObject)mat)->comm,PETSC_ERR_SUP,"Parallel SOR not supported");
+  } else SETERRQ(((PetscObject)matin)->comm,PETSC_ERR_SUP,"Parallel SOR not supported");
 
   ierr = VecDestroy(&bb1);CHKERRQ(ierr);
   PetscFunctionReturn(0);
