@@ -239,7 +239,7 @@ PetscErrorCode DMMeshInterpolationSetDim(DM dm, PetscInt dim, DMMeshInterpolatio
 PetscErrorCode DMMeshInterpolationGetDim(DM dm, PetscInt *dim, DMMeshInterpolationInfo ctx);
 PetscErrorCode DMMeshInterpolationSetDof(DM dm, PetscInt dof, DMMeshInterpolationInfo ctx);
 PetscErrorCode DMMeshInterpolationGetDof(DM dm, PetscInt *dof, DMMeshInterpolationInfo ctx);
-PetscErrorCode DMMeshInterpolationAddPoint(DM dm, PetscReal point[], DMMeshInterpolationInfo ctx);
+PetscErrorCode DMMeshInterpolationAddPoints(DM dm, PetscReal point[], DMMeshInterpolationInfo ctx);
 PetscErrorCode DMMeshInterpolationSetUp(DM dm, DMMeshInterpolationInfo ctx);
 PetscErrorCode DMMeshInterpolationGetCoordinates(DM dm, Vec *points, DMMeshInterpolationInfo ctx);
 PetscErrorCode DMMeshInterpolationGetVector(DM dm, Vec *values, DMMeshInterpolationInfo ctx);
