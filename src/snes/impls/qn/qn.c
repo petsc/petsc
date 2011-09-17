@@ -39,8 +39,8 @@ PetscErrorCode LBGFSApplyJinv_Private(SNES snes, PetscInt it, Vec g, Vec z) {
 
   /* outward recursion starting at iteration k's update and working back */
   for (i = 0; i < l; i++) {
-    /* k = (it - i - 1) % m; */
-    k = (it + i - l) % m; 
+    k = (it - i - 1) % m;
+    /* k = (it + i - l) % m; */ 
     ierr = VecDot(dX[k], z, &t);CHKERRQ(ierr);
     alpha[k] = t*rho[k];
     ierr = VecAXPY(z, -alpha[k], dF[k]);CHKERRQ(ierr);
@@ -51,8 +51,8 @@ PetscErrorCode LBGFSApplyJinv_Private(SNES snes, PetscInt it, Vec g, Vec z) {
 
   /* inward recursion starting at the first update and working forward*/
   for (i = 0; i < l; i++) {
-    k = (it - i - 1) % m; 
-    /* k = (it + i - l) % m; */
+    /* k = (it - i - 1) % m; */ 
+    k = (it + i - l) % m;
     ierr = VecDot(dF[k], z, &t);CHKERRQ(ierr);
     beta[k] = rho[k]*t;
     ierr = VecAXPY(z, (alpha[k] - beta[k]), dX[k]);

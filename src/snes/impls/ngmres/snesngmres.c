@@ -129,7 +129,6 @@ PetscErrorCode SNESView_NGMRES(SNES snes, PetscViewer viewer)
 
 PetscErrorCode SNESSolve_NGMRES(SNES snes)
 {
-  SNES               pc;
   SNES_NGMRES        *ngmres = (SNES_NGMRES *) snes->data;
   
   /* present solution, residual, and preconditioned residual */
@@ -168,7 +167,6 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
   d             = snes->work[1];
   r             = snes->work[2];
 
-  ierr = SNESGetPC(snes, &pc);CHKERRQ(ierr);
   ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
   snes->iter = 0;
   snes->norm = 0.;
@@ -212,11 +210,16 @@ PetscErrorCode SNESSolve_NGMRES(SNES snes)
     ivec = k_restart % ngmres->msize; /* replace the last used part of the subspace */
 
     /* Computation of x^M */
-    ierr = SNESSolve(pc, b, x);CHKERRQ(ierr);
-    ierr = SNESGetConvergedReason(pc,&reason);CHKERRQ(ierr);
-    if (reason < 0 && reason != SNES_DIVERGED_MAX_IT) {
-      snes->reason = SNES_DIVERGED_INNER;
-      PetscFunctionReturn(0);
+    if (!snes->pc) {
+      /* no preconditioner -- just take gradient descent */
+      ierr = VecAXPY(x, -1.0, r);CHKERRQ(ierr);
+    } else {
+      ierr = SNESSolve(snes->pc, b, x);CHKERRQ(ierr);
+      ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
+      if (reason < 0 && reason != SNES_DIVERGED_MAX_IT) {
+	snes->reason = SNES_DIVERGED_INNER;
+	PetscFunctionReturn(0);
+      }
     }
 
     /* r = F(x) */
@@ -439,10 +442,6 @@ PetscErrorCode SNESCreate_NGMRES(SNES snes)
   ngmres->epsilonB = 0.1;
   ngmres->k_rmax   = 200;
 
-  if (!snes->pc) {
-    ierr = SNESGetPC(snes, &snes->pc);CHKERRQ(ierr);
-    ierr = SNESSetType(snes->pc,SNESNRICHARDSON);CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
