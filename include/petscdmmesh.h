@@ -131,7 +131,6 @@ extern PetscErrorCode DMMeshGetLocalFunction(DM, PetscErrorCode (**)(DM, Vec, Ve
 extern PetscErrorCode DMMeshSetLocalFunction(DM, PetscErrorCode (*)(DM, Vec, Vec, void*));
 extern PetscErrorCode DMMeshGetLocalJacobian(DM, PetscErrorCode (**)(DM, Vec, Mat, void*));
 extern PetscErrorCode DMMeshSetLocalJacobian(DM, PetscErrorCode (*)(DM, Vec, Mat, void*));
-extern PetscErrorCode DMMeshInterpolatePoints(DM, SectionReal, int, double *, double **);
 
 /*S
   SectionInt - Abstract PETSc object that manages distributed field data over a topology (Sieve).
@@ -223,6 +222,30 @@ typedef struct {
   const PetscReal *basis;         /* The basis functions tabulated at the quadrature points */
   const PetscReal *basisDer;      /* The basis function derivatives tabulated at the quadrature points */
 } PetscQuadrature;
+
+struct _DMMeshInterpolationInfo {
+  PetscInt   dim;    // The spatial dimension of points
+  PetscInt   nInput; // The number of input points
+  PetscReal *points; // The input point coordinates
+  PetscInt  *cells;  // The cell containing each point
+  PetscInt   n;      // The number of local points
+  Vec        coords; // The point coordinates
+  PetscInt   dof;    // The number of components to interpolate
+};
+typedef struct _DMMeshInterpolationInfo *DMMeshInterpolationInfo;
+
+PetscErrorCode DMMeshInterpolationCreate(DM dm, DMMeshInterpolationInfo *ctx);
+PetscErrorCode DMMeshInterpolationSetDim(DM dm, PetscInt dim, DMMeshInterpolationInfo ctx);
+PetscErrorCode DMMeshInterpolationGetDim(DM dm, PetscInt *dim, DMMeshInterpolationInfo ctx);
+PetscErrorCode DMMeshInterpolationSetDof(DM dm, PetscInt dof, DMMeshInterpolationInfo ctx);
+PetscErrorCode DMMeshInterpolationGetDof(DM dm, PetscInt *dof, DMMeshInterpolationInfo ctx);
+PetscErrorCode DMMeshInterpolationAddPoint(DM dm, PetscReal point[], DMMeshInterpolationInfo ctx);
+PetscErrorCode DMMeshInterpolationSetUp(DM dm, DMMeshInterpolationInfo ctx);
+PetscErrorCode DMMeshInterpolationGetCoordinates(DM dm, Vec *points, DMMeshInterpolationInfo ctx);
+PetscErrorCode DMMeshInterpolationGetVector(DM dm, Vec *values, DMMeshInterpolationInfo ctx);
+PetscErrorCode DMMeshInterpolationRestoreVector(DM dm, Vec *values, DMMeshInterpolationInfo ctx);
+PetscErrorCode DMMeshInterpolationEvaluate(DM dm, SectionReal x, Vec v, DMMeshInterpolationInfo ctx);
+PetscErrorCode DMMeshInterpolationDestroy(DM dm, DMMeshInterpolationInfo *ctx);
 
 #endif /* Mesh section */
 #endif

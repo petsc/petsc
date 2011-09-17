@@ -629,25 +629,6 @@ PetscErrorCode DMMeshSetLocalJacobian(DM dm, PetscErrorCode (*lj)(DM, Vec, Mat, 
   PetscFunctionReturn(0);
 }
 
-#if 0
-struct _DMMeshInterpolationInfo {
-  PetscInt   dim;    // The spatial dimension of points
-  PetscInt   n;      // The number of points
-  PetscReal *points; // The point coordinates
-};
-typedef struct _DMMeshInterpolationInfo *DMMeshInterpolationInfo;
-
-PetscErrorCode DMMeshInterpolationCreate(DM dm, DMMeshInterpolationInfo *ctx);
-PetscErrorCode DMMeshInterpolationSetDim(DM dm, PetscInt dim, DMMeshInterpolationInfo ctx);
-PetscErrorCode DMMeshInterpolationAddPoint(DM dm, PetscReal point[], DMMeshInterpolationInfo ctx);
-PetscErrorCode DMMeshInterpolationSetUp(DM dm, DMMeshInterpolationInfo ctx);
-PetscErrorCode DMMeshInterpolationGetDim(DM dm, PetscInt *dim, DMMeshInterpolationInfo ctx);
-PetscErrorCode DMMeshInterpolationGetPoints(DM dm, Vec *points, DMMeshInterpolationInfo ctx);
-PetscErrorCode DMMeshInterpolationGetVector(DM dm, Vec *values, DMMeshInterpolationInfo ctx);
-PetscErrorCode DMMeshInterpolationRestoreVector(DM dm, Vec *values, DMMeshInterpolationInfo ctx);
-PetscErrorCode DMMeshInterpolationEvaluate(DM dm, SectionReal x, Vec v, DMMeshInterpolationInfo ctx);
-PetscErrorCode DMMeshInterpolationDestroy(DM dm, DMMeshInterpolationInfo *ctx);
-
 #undef __FUNCT__
 #define __FUNCT__ "DMMeshInterpolationCreate"
 PetscErrorCode DMMeshInterpolationCreate(DM dm, DMMeshInterpolationInfo *ctx) {
@@ -655,11 +636,14 @@ PetscErrorCode DMMeshInterpolationCreate(DM dm, DMMeshInterpolationInfo *ctx) {
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
-  PetscValidPointer(ctx, 2)
-  ierr = PetscMalloc(sizeof(struct _DMMeshInterpolationInfo), ctx);CKHERRQ(ierr);
-  ctx->dim    = -1;
-  ctx->n      = 0;
-  ctx->points = PETSC_NULL;
+  PetscValidPointer(ctx, 2);
+  ierr = PetscMalloc(sizeof(struct _DMMeshInterpolationInfo), ctx);CHKERRQ(ierr);
+  (*ctx)->dim    = -1;
+  (*ctx)->nInput = 0;
+  (*ctx)->points = PETSC_NULL;
+  (*ctx)->cells  = PETSC_NULL;
+  (*ctx)->n      = -1;
+  (*ctx)->coords = PETSC_NULL;
   PetscFunctionReturn(0);
 }
 
@@ -684,6 +668,26 @@ PetscErrorCode DMMeshInterpolationGetDim(DM dm, PetscInt *dim, DMMeshInterpolati
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DMMeshInterpolationSetDof"
+PetscErrorCode DMMeshInterpolationSetDof(DM dm, PetscInt dof, DMMeshInterpolationInfo ctx) {
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  if (dof < 1) {SETERRQ1(((PetscObject) dm)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Invalid number of components: %d", dof);}
+  ctx->dof = dof;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMMeshInterpolationGetDof"
+PetscErrorCode DMMeshInterpolationGetDof(DM dm, PetscInt *dof, DMMeshInterpolationInfo ctx) {
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidIntPointer(dof, 2);
+  *dof = ctx->dof;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DMMeshInterpolationAddPoints"
 PetscErrorCode DMMeshInterpolationAddPoints(DM dm, PetscInt n, PetscReal points[], DMMeshInterpolationInfo ctx) {
   PetscErrorCode ierr;
@@ -696,7 +700,7 @@ PetscErrorCode DMMeshInterpolationAddPoints(DM dm, PetscInt n, PetscReal points[
   if (ctx->points) {
     SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONGSTATE, "Cannot add points multiple times yet");
   }
-  ctx->n = n;
+  ctx->nInput = n;
   ierr = PetscMalloc(n*ctx->dim * sizeof(PetscReal), &ctx->points);CHKERRQ(ierr);
   ierr = PetscMemcpy(ctx->points, points, n*ctx->dim * sizeof(PetscReal));CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -705,13 +709,138 @@ PetscErrorCode DMMeshInterpolationAddPoints(DM dm, PetscInt n, PetscReal points[
 #undef __FUNCT__
 #define __FUNCT__ "DMMeshInterpolationSetUp"
 PetscErrorCode DMMeshInterpolationSetUp(DM dm, DMMeshInterpolationInfo ctx) {
+  Obj<PETSC_MESH_TYPE> m;
+  PetscScalar   *a;
+  PetscInt       p, i;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
   if (ctx->dim < 0) {
     SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONGSTATE, "The spatial dimension has not been set");
   }
+  // Locate points
+  PetscInt N, found;
+
+  ierr = MPI_Allreduce(&ctx->nInput, &N, 1, MPIU_INT, MPI_SUM, ((PetscObject) dm)->comm);CHKERRQ(ierr);
+  // Communicate all points to all processes
+  ctx->n = 0;
+  ierr = PetscMalloc(N * sizeof(PetscInt), &ctx->cells);CHKERRQ(ierr);
+  for(p = 0; p < N; ++p) {
+    ctx->cells[p] = m->locatePoint(&ctx->points[p*ctx->dim]);
+    if (ctx->cells[p] >= 0) ctx->n++;
+  }
+  // Check that exactly this many points were found
+  ierr = MPI_Allreduce(&ctx->n, &found, 1, MPIU_INT, MPI_SUM, ((PetscObject) dm)->comm);CHKERRQ(ierr);
+  if (found != N) {SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_PLIB, "Invalid number of points located %d should be %d", found, N);}
+  // Create coordinates vector
+  ierr = VecCreate(((PetscObject) dm)->comm, &ctx->coords);CHKERRQ(ierr);
+  ierr = VecSetSizes(ctx->coords, ctx->n*ctx->dim, PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(ctx->coords, ctx->dim);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(ctx->coords);CHKERRQ(ierr);
+  ierr = VecGetArray(ctx->coords, &a);CHKERRQ(ierr);
+  for(p = 0, i = 0; p < N; ++p) {
+    if (ctx->cells[p] >= 0) {
+      PetscInt d;
+
+      for(d = 0; d < ctx->dim; ++d, ++i) {
+        a[i] = ctx->points[p*ctx->dim+d];
+      }
+    }
+  }
+  ierr = VecRestoreArray(ctx->coords, &a);CHKERRQ(ierr);
+  // Compress cells array
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMMeshInterpolationGetCoordinates"
+PetscErrorCode DMMeshInterpolationGetCoordinates(DM dm, Vec *coordinates, DMMeshInterpolationInfo ctx) {
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(coordinates, 2);
+  if (!ctx->coords) {SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONGSTATE, "The interpolation context has not been setup.");}
+  *coordinates = ctx->coords;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMMeshInterpolationGetVector"
+PetscErrorCode DMMeshInterpolationGetVector(DM dm, Vec *v, DMMeshInterpolationInfo ctx) {
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(v, 2);
+  if (!ctx->coords) {SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONGSTATE, "The interpolation context has not been setup.");}
+  ierr = VecCreate(((PetscObject) dm)->comm, v);CHKERRQ(ierr);
+  ierr = VecSetSizes(*v, ctx->n*ctx->dof, PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(*v, ctx->dof);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(*v);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMMeshInterpolationRestoreVector"
+PetscErrorCode DMMeshInterpolationRestoreVector(DM dm, Vec *v, DMMeshInterpolationInfo ctx) {
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidPointer(v, 2);
+  if (!ctx->coords) {SETERRQ(((PetscObject) dm)->comm, PETSC_ERR_ARG_WRONGSTATE, "The interpolation context has not been setup.");}
+  ierr = VecDestroy(v);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DMMeshInterpolationEvaluate"
+PetscErrorCode DMMeshInterpolationEvaluate(DM dm, SectionReal x, Vec v, DMMeshInterpolationInfo ctx) {
+  Obj<PETSC_MESH_TYPE> m;
+  Obj<PETSC_MESH_TYPE::real_section_type> s;
+  PetscInt       p, n;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
+  PetscValidHeaderSpecific(x, SECTIONREAL_CLASSID, 2);
+  PetscValidHeaderSpecific(v, VEC_CLASSID, 3);
+  ierr = VecGetLocalSize(v, &n);CHKERRQ(ierr);
+  if (n != ctx->n*ctx->dof) {SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_ARG_SIZ, "Invalid input vector size %d should be %d", n, ctx->n*ctx->dof);}
+  ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
+  ierr = SectionRealGetSection(x, s);CHKERRQ(ierr);
+  const Obj<PETSC_MESH_TYPE::real_section_type>& coordinates = m->getRealSection("coordinates");
+  PetscReal   *v0, *J, *invJ, detJ;
+  PetscScalar *a, *coords;
+
+  ierr = PetscMalloc3(ctx->dim,PetscReal,&v0,ctx->dim*ctx->dim,PetscReal,&J,ctx->dim*ctx->dim,PetscReal,&invJ);CHKERRQ(ierr);
+  ierr = VecGetArray(ctx->coords, &coords);CHKERRQ(ierr);
+  ierr = VecGetArray(v, &a);CHKERRQ(ierr);
+  for(p = 0; p < ctx->n; ++p) {
+    PetscInt           e = ctx->cells[p];
+    const PetscScalar *c = m->restrictClosure(s, e);
+    PetscReal          xi[4];
+    PetscInt           d, f, comp;
+
+    if ((ctx->dim+1)*ctx->dof != m->sizeWithBC(s, e)) {SETERRQ2(((PetscObject) dm)->comm, PETSC_ERR_ARG_SIZ, "Invalid restrict size %d should be %d", m->sizeWithBC(s, e), (ctx->dim+1)*ctx->dof);}
+    m->computeElementGeometry(coordinates, e, v0, J, invJ, detJ);
+    for(comp = 0; comp < ctx->dof; ++comp) {
+      a[p*ctx->dof+comp] = c[0*ctx->dof+comp];
+    }
+    for(d = 0; d < ctx->dim; ++d) {
+      xi[d] = 0.0;
+      for(f = 0; f < ctx->dim; ++f) {
+        xi[d] += invJ[d*ctx->dim+f]*0.5*(coords[p*ctx->dim+f] - v0[f]);
+      }
+      for(comp = 0; comp < ctx->dof; ++comp) {
+        a[p*ctx->dof+comp] += (c[d*ctx->dof+comp] - c[0*ctx->dof+comp])*xi[d];
+      }
+    }
+  }
+  ierr = VecRestoreArray(v, &a);CHKERRQ(ierr);
+  ierr = VecRestoreArray(ctx->coords, &coords);CHKERRQ(ierr);
+  ierr = PetscFree3(v0, J, invJ);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -723,52 +852,11 @@ PetscErrorCode DMMeshInterpolationDestroy(DM dm, DMMeshInterpolationInfo *ctx) {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dm, DM_CLASSID, 1);
   PetscValidPointer(ctx, 2);
-  ierr = PetscFree((*ctx)->points);CKHERRQ(ierr);
-  ierr = PetscFree(*ctx);CKHERRQ(ierr);
+  ierr = VecDestroy(&(*ctx)->coords);CHKERRQ(ierr);
+  ierr = PetscFree((*ctx)->points);CHKERRQ(ierr);
+  ierr = PetscFree((*ctx)->cells);CHKERRQ(ierr);
+  ierr = PetscFree(*ctx);CHKERRQ(ierr);
   *ctx = PETSC_NULL;
-  PetscFunctionReturn(0);
-}
-#endif
-
-#undef __FUNCT__
-#define __FUNCT__ "DMMeshInterpolatePoints"
-// Here we assume:
-//  - Assumes 3D and tetrahedron
-//  - The section takes values on vertices and is P1
-//  - Points have the same dimension as the mesh
-//  - All values have the same dimension
-PetscErrorCode DMMeshInterpolatePoints(DM dm, SectionReal section, int numPoints, PetscReal *points, PetscScalar **values)
-{
-  Obj<PETSC_MESH_TYPE> m;
-  Obj<PETSC_MESH_TYPE::real_section_type> s;
-  PetscReal     *v0, *J, *invJ, detJ;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = DMMeshGetMesh(dm, m);CHKERRQ(ierr);
-  ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
-  const Obj<PETSC_MESH_TYPE::real_section_type>& coordinates = m->getRealSection("coordinates");
-  int embedDim = coordinates->getFiberDimension(*m->depthStratum(0)->begin());
-  int dim      = s->getFiberDimension(*m->depthStratum(0)->begin());
-
-  ierr = PetscMalloc3(embedDim,PetscReal,&v0,embedDim*embedDim,PetscReal,&J,embedDim*embedDim,PetscReal,&invJ);CHKERRQ(ierr);
-  ierr = PetscMalloc(numPoints*dim * sizeof(PetscScalar), &values);CHKERRQ(ierr);
-  for(int p = 0; p < numPoints; p++) {
-    PetscReal *point = &points[p*embedDim];
-
-    PETSC_MESH_TYPE::point_type e = m->locatePoint(point);
-    const PETSC_MESH_TYPE::real_section_type::value_type *coeff = s->restrictPoint(e);
-
-    m->computeElementGeometry(coordinates, e, v0, J, invJ, detJ);
-    PetscReal xi   = (invJ[0*embedDim+0]*(point[0] - v0[0]) + invJ[0*embedDim+1]*(point[1] - v0[1]) + invJ[0*embedDim+2]*(point[2] - v0[2]))*0.5;
-    PetscReal eta  = (invJ[1*embedDim+0]*(point[0] - v0[0]) + invJ[1*embedDim+1]*(point[1] - v0[1]) + invJ[1*embedDim+2]*(point[2] - v0[2]))*0.5;
-    PetscReal zeta = (invJ[2*embedDim+0]*(point[0] - v0[0]) + invJ[2*embedDim+1]*(point[1] - v0[1]) + invJ[2*embedDim+2]*(point[2] - v0[2]))*0.5;
-
-    for(int d = 0; d < dim; d++) {
-      (*values)[p*dim+d] = coeff[0*dim+d]*(1 - xi - eta - zeta) + coeff[1*dim+d]*xi + coeff[2*dim+d]*eta + coeff[3*dim+d]*zeta;
-    }
-  }
-  ierr = PetscFree3(v0, J, invJ);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
