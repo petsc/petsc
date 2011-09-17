@@ -1208,6 +1208,7 @@ namespace ALE {
     typedef std::pair<int *, int>                                     indices_type;
     typedef NumberingFactory<this_type>                               MeshNumberingFactory;
     typedef typename ALE::Partitioner<>::part_type                    rank_type;
+#define USE_NEW_OVERLAP
 #ifdef USE_NEW_OVERLAP
     typedef typename PETSc::SendOverlap<point_type,rank_type>         send_overlap_type;
     typedef typename PETSc::RecvOverlap<point_type,rank_type>         recv_overlap_type;
