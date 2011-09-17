@@ -202,8 +202,11 @@ PetscErrorCode  DMSetUp_DA_3D(DM da)
   PetscFunctionBegin;
   if (dof < 1) SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Must have 1 or more degrees of freedom per node: %D",dof);
   if (s < 0) SETERRQ1(((PetscObject)da)->comm,PETSC_ERR_ARG_OUTOFRANGE,"Stencil width cannot be negative: %D",s);
-
   ierr = PetscObjectGetComm((PetscObject) da, &comm);CHKERRQ(ierr);
+#if !defined(PETSC_USE_64BIT_INDICES)
+  if (((Petsc64bitInt) M)*((Petsc64bitInt) N)*((Petsc64bitInt) P)*((Petsc64bitInt) dof) > (Petsc64bitInt) PETSC_MPI_INT_MAX) SETERRQ3(comm,PETSC_ERR_INT_OVERFLOW,"Mesh of %D by %D by %D (dof) is too large for 32 bit indices",M,N,dof);
+#endif
+
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr); 
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr); 
 

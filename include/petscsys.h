@@ -220,6 +220,7 @@ typedef long long PetscInt;
 typedef int PetscInt;
 #define MPIU_INT MPI_INT
 #endif
+typedef long long Petsc64bitInt;
 
 /*EC
 
