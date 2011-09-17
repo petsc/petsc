@@ -441,7 +441,7 @@ PetscErrorCode SNESCreate_NGMRES(SNES snes)
 
   if (!snes->pc) {
     ierr = SNESGetPC(snes, &snes->pc);CHKERRQ(ierr);
-    ierr = SNESSetType(snes->pc,SNESRICHARDSON);CHKERRQ(ierr);
+    ierr = SNESSetType(snes->pc,SNESNRICHARDSON);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

@@ -335,12 +335,12 @@ runex5_5_ngmres:
 	   ${RM} -f ex5_5_ngmres.tmp
 runex5_5_ngmres_richardson:
 	-@${MPIEXEC} -n 2 ./ex5 -da_grid_x 20 -da_grid_y 20 -snes_type ngmres  -npc_snes_ls quadratic -snes_monitor_short -snes_max_it 1000	 \
-	-npc_snes_type richardson -npc_snes_max_it 2 -snes_ngmres_m 30 -snes_ngmres_restart 1000 -par 6.0 > ex5_5_ngmres_richardson.tmp 2>&1; \
+	-npc_snes_type nrichardson -npc_snes_max_it 2 -snes_ngmres_m 30 -snes_ngmres_restart 1000 -par 6.0 > ex5_5_ngmres_richardson.tmp 2>&1; \
 	   ${DIFF} output/ex5_5_ngmres_richardson.out ex5_5_ngmres_richardson.tmp || echo "Possible problem with ex5_5_ngmres_richardson, diffs above"; \
 	   ${RM} -f ex5_5_ngmres_richardson.tmp
 runex5_5_richardson:
 	-@${MPIEXEC} -n 2 ./ex5 -da_grid_x 20 -da_grid_y 20 -npc_snes_max_it 2 \
-	-snes_type richardson -snes_ls quadratic -snes_monitor_short -snes_max_it 10000 \
+	-snes_type nrichardson -snes_ls quadratic -snes_monitor_short -snes_max_it 10000 \
 	-par 6.0  > ex5_5_richardson.tmp 2>&1; \
 	   ${DIFF} output/ex5_5_richardson.out ex5_5_richardson.tmp || echo "Possible problem with ex5_5_richardson, diffs above"; \
 	   ${RM} -f ex5_5_richardson.tmp

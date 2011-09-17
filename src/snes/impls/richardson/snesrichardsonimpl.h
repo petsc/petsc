@@ -19,7 +19,7 @@ typedef struct {
   void               *postcheck;                                                      /* user-defined step-checking context (optional) */
   void               *lsP;                                                            /* user-defined line-search context (optional) */
   PetscViewer        monitor;
-} SNES_Richardson;
+} SNES_NRichardson;
 
 #endif
 

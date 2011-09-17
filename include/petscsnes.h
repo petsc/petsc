@@ -27,17 +27,18 @@ typedef struct _p_SNES* SNES;
 .seealso: SNESSetType(), SNES
 E*/
 #define SNESType char*
-#define SNESLS      "ls"
-#define SNESTR      "tr"
-#define SNESPYTHON  "python"
-#define SNESTEST    "test"
-#define SNESRICHARDSON  "richardson"
-#define SNESKSPONLY "ksponly"
-#define SNESVI      "vi"
-#define SNESNGMRES  "ngmres"
+#define SNESLS           "ls"
+#define SNESTR           "tr"
+#define SNESPYTHON       "python"
+#define SNESTEST         "test"
+#define SNESNRICHARDSON  "nrichardson"
+#define SNESKSPONLY      "ksponly"
+#define SNESVI           "vi"
+#define SNESNGMRES       "ngmres"
+#define SNESQN           "qn"
+#define SNESSHELL        "shell"
+
 #define SNESSORQN   "sorqn"
-#define SNESQN      "qn"
-#define SNESSHELL   "shell"
 
 /* Logging support */
 extern PetscClassId  SNES_CLASSID;
