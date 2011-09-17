@@ -2223,7 +2223,7 @@ extern PetscErrorCode  PetscProcessTree(PetscInt,const PetscBool [],const PetscI
 extern PetscErrorCode  PetscSetDisplay(void);
 extern PetscErrorCode  PetscGetDisplay(char[],size_t);
 
-/*E
+/*J
     PetscRandomType - String with the name of a PETSc randomizer
        with an optional dynamic library name, for example
        http://www.mcs.anl.gov/petsc/lib.a:myrandcreate()
@@ -2234,7 +2234,7 @@ extern PetscErrorCode  PetscGetDisplay(char[],size_t);
    with the option --download-sprng
 
 .seealso: PetscRandomSetType(), PetscRandom
-E*/
+J*/
 #define PetscRandomType char*
 #define PETSCRAND       "rand"
 #define PETSCRAND48     "rand48"

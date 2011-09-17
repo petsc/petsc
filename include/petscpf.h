@@ -12,13 +12,13 @@ PETSC_EXTERN_CXX_BEGIN
 */
 extern PetscFList PFList;
 
-/*E
+/*J
     PFType - Type of PETSc mathematical function, a string name
 
    Level: beginner
 
 .seealso: PFSetType(), PF
-E*/
+J*/
 #define PFType char*
 #define PFCONSTANT      "constant"
 #define PFMAT           "mat"

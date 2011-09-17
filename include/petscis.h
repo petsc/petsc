@@ -23,7 +23,7 @@ extern PetscErrorCode  ISInitializePackage(const char[]);
 S*/
 typedef struct _p_IS* IS;
 
-/*E
+/*J
     ISType - String with the name of a PETSc vector or the creation function
        with an optional dynamic library name, for example
        http://www.mcs.anl.gov/petsc/lib.a:myveccreate()
@@ -31,7 +31,7 @@ typedef struct _p_IS* IS;
    Level: beginner
 
 .seealso: ISSetType(), IS
-E*/
+J*/
 #define ISType char*
 #define ISGENERAL      "general"
 #define ISSTRIDE       "stride"

@@ -20,14 +20,14 @@ PETSC_EXTERN_CXX_BEGIN
 S*/
 typedef struct _p_AO* AO;
 
-/*E
+/*J
     AOType - String with the name of a PETSc application ordering or the creation function
        with an optional dynamic library name.
 
    Level: beginner
 
 .seealso: AOSetType(), AO
-E*/
+J*/
 #define AOType char*
 #define AOBASIC               "basic"
 #define AOADVANCED            "advanced"

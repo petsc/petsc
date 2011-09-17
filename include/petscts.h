@@ -18,7 +18,7 @@ PETSC_EXTERN_CXX_BEGIN
 S*/
 typedef struct _p_TS* TS;
 
-/*E
+/*J
     TSType - String with the name of a PETSc TS method or the creation function
        with an optional dynamic library name, for example
        http://www.mcs.anl.gov/petsc/lib.a:mytscreate()
@@ -26,7 +26,7 @@ typedef struct _p_TS* TS;
    Level: beginner
 
 .seealso: TSSetType(), TS
-E*/
+J*/
 #define TSType char*
 #define TSEULER           "euler"
 #define TSBEULER          "beuler"
@@ -219,13 +219,13 @@ extern PetscErrorCode   TSMonitorLGCreate(const char[],const char[],int,int,int,
 extern PetscErrorCode   TSMonitorLG(TS,PetscInt,PetscReal,Vec,void *);
 extern PetscErrorCode   TSMonitorLGDestroy(PetscDrawLG*);
 
-/*E
+/*J
    TSSSPType - string with the name of TSSSP scheme.
 
    Level: beginner
 
 .seealso: TSSSPSetType(), TS
-E*/
+J*/
 #define TSSSPType char*
 #define TSSSPRKS2  "rks2"
 #define TSSSPRKS3  "rks3"
@@ -245,7 +245,7 @@ extern PetscErrorCode TSSSPGetNumStages(TS,PetscInt*);
 S*/
 typedef struct _p_TSGLAdapt *TSGLAdapt;
 
-/*E
+/*J
     TSGLAdaptType - String with the name of TSGLAdapt scheme or the creation function
        with an optional dynamic library name, for example
        http://www.mcs.anl.gov/petsc/lib.a:mytsgladaptcreate()
@@ -253,7 +253,7 @@ typedef struct _p_TSGLAdapt *TSGLAdapt;
    Level: beginner
 
 .seealso: TSGLAdaptSetType(), TS
-E*/
+J*/
 #define TSGLAdaptType  char*
 #define TSGLADAPT_NONE "none"
 #define TSGLADAPT_SIZE "size"
@@ -319,7 +319,7 @@ extern PetscErrorCode  TSGLAdaptView(TSGLAdapt,PetscViewer);
 extern PetscErrorCode  TSGLAdaptSetFromOptions(TSGLAdapt);
 extern PetscErrorCode  TSGLAdaptDestroy(TSGLAdapt*);
 
-/*E
+/*J
     TSGLAcceptType - String with the name of TSGLAccept scheme or the function
        with an optional dynamic library name, for example
        http://www.mcs.anl.gov/petsc/lib.a:mytsglaccept()
@@ -327,7 +327,7 @@ extern PetscErrorCode  TSGLAdaptDestroy(TSGLAdapt*);
    Level: beginner
 
 .seealso: TSGLSetAcceptType(), TS
-E*/
+J*/
 #define TSGLAcceptType  char*
 #define TSGLACCEPT_ALWAYS "always"
 
@@ -381,13 +381,13 @@ M*/
 #  define TSGLAcceptRegisterDynamic(a,b,c,d) TSGLAcceptRegister(a,b,c,d)
 #endif
 
-/*E
+/*J
   TSGLType - family of time integration method within the General Linear class
 
   Level: beginner
 
 .seealso: TSGLSetType(), TSGLRegister()
-E*/
+J*/
 #define TSGLType char*
 #define TSGL_IRKS   "irks"
 

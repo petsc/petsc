@@ -26,7 +26,7 @@ typedef struct _p_DM* DM;
 
 extern PetscClassId  DM_CLASSID;
 
-/*E
+/*J
     DMType - String with the name of a PETSc DM or the creation function
        with an optional dynamic library name, for example
        http://www.mcs.anl.gov/petsc/lib.a:myveccreate()
@@ -34,8 +34,7 @@ extern PetscClassId  DM_CLASSID;
    Level: beginner
 
 .seealso: DMSetType(), DM
-E*/
-
+J*/
 #define DMType char*
 #define DMDA        "da"
 #define DMADDA      "adda"
