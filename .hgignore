@@ -91,3 +91,4 @@ session_*
 *.vim
 CTAGS
 CMakeLists.txt
+src/snes/examples/tutorials/ex52\.h
