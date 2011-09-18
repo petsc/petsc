@@ -2,6 +2,13 @@ static char help[] = "Testbed for FEM operations on the GPU\n\n";
 
 #if 0
 MUST CHECK WITH:
+ - Remove quadrature and basis tabulation from interface (use header)
+ - Add example for linear elasticity (require vector field, so f_1 is a tensor)
+ - Redo setup/cleanup in PyLith
+ - Test with examples/3d/hex8/step01.cfg (Brad is making a flag)
+ - Code up Jacobian (looks like original code)
+ - Consider taking in coordinates rather than J^{-T}/|J|
+
  - Different quadrature (1pt and 3pt)
  - Different basis (linear and quadratic)
  - Different number of blocks (have to change it in the CUDA, so need a #define)
