@@ -237,10 +237,11 @@ cdef extern from * nogil:
     int MatReorderForNonzeroDiagonal(PetscMat,PetscReal,PetscIS,PetscIS)
 
     ctypedef struct PetscMatFactorInfo "MatFactorInfo":
-        PetscReal shiftnz, shiftpd, shift_fraction, shiftinblocks
-        PetscReal fill, diagonal_fill
-        PetscReal dt, dtcol, dtcount, levels
+        PetscReal fill
+        PetscReal levels, diagonal_fill
+        PetscReal usedt, dt, dtcol, dtcount
         PetscReal zeropivot, pivotinblocks
+        PetscReal shifttype, shiftamount
     int MatFactorInfoInitialize(PetscMatFactorInfo*)
 
     int MatCholeskyFactor(PetscMat,PetscIS,PetscMatFactorInfo*)
@@ -777,13 +778,53 @@ cdef inline matgetvalues(PetscMat mat,
 # -----------------------------------------------------------------------------
 
 cdef extern from "custom.h":
-    int MatFactorInfoDefaults(PetscBool,PetscMatFactorInfo*)
+    int MatFactorInfoDefaults(PetscBool,PetscBool,PetscMatFactorInfo*)
 
-cdef int matfactorinfo(PetscBool incomplete, object options,
+cdef int matfactorinfo(PetscBool inc, PetscBool chol, object opts,
                        PetscMatFactorInfo *info) except -1:
-    CHKERR( MatFactorInfoDefaults(incomplete, info) )
-    if options is None: return 0
-    cdef dict opts = options
+    CHKERR( MatFactorInfoDefaults(inc,chol,info) )
+    if opts is None: return 0
+    cdef dict options = dict(opts)
+    #
+    cdef fill = options.pop('fill', None)
+    if fill is not None:
+        info.fill = toReal(fill)
+    #
+    cdef zeropivot = options.pop('zeropivot', None)
+    if zeropivot is not None:
+        info.zeropivot = toReal(zeropivot)
+    #
+    cdef levels = options.pop('levels', None)
+    if levels is not None:
+        info.levels  = <PetscReal>toInt(levels)
+    cdef diagonal_fill = options.pop('diagonal_fill', None)
+    if diagonal_fill is not None:
+        info.diagonal_fill = <PetscReal>(<bint>diagonal_fill)
+    #
+    cdef dt = options.pop('dt', None)
+    if dt is not None:
+        info.dt = toReal(dt)
+    cdef dtcol = options.pop('dtcol', None)
+    if dtcol is not None:
+        info.dtcol = toReal(dtcol)
+    cdef dtcount = options.pop('dtcount', None)
+    if dtcount is not None:
+        info.dtcount = toReal(dtcount)
+    if ((dt is not None) or 
+        (dtcol is not None) or
+        (dtcount is not None)):
+        info.usedt = <PetscReal>PETSC_TRUE
+    #
+    cdef shifttype = options.pop('shifttype', None)
+    if shifttype is not None:
+        info.shifttype = <PetscReal>toInt(shifttype)
+    cdef shiftamount = options.pop('shiftamount', None)
+    if shiftamount is not None:
+        info.shiftamount = toReal(shiftamount)
+    #
+    if options:
+        raise ValueError("unknown options: %s"
+                         % list(options.keys()))
     return 0
 
 # -----------------------------------------------------------------------------
