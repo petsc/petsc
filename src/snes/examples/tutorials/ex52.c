@@ -2,7 +2,7 @@ static char help[] = "Testbed for FEM operations on the GPU\n\n";
 
 #if 0
 MUST CHECK WITH:
- - Remove quadrature and basis tabulation from interface (use header)
+ - Automate quadrature and basis tabulation generation in device code
  - Add example for linear elasticity (require vector field, so f_1 is a tensor)
  - Redo setup/cleanup in PyLith
  - Test with examples/3d/hex8/step01.cfg (Brad is making a flag)
@@ -23,6 +23,8 @@ MUST CHECK WITH:
 #error This example requires Sieve. Reconfigure using --with-sieve
 #endif
 
+typedef enum {LAPLACIAN, ELASTICITY} OpType;
+
 typedef struct {
   DM            dm;                /* REQUIRED in order to use SNES evaluation functions */
   PetscInt      debug;             /* The debugging level */
@@ -36,6 +38,7 @@ typedef struct {
   PetscBool     computeJacobian;   /* The flag for computing a Jacobian */
   PetscBool     batch;             /* The flag for batch assembly */
   PetscBool     gpu;               /* The flag for GPU integration */
+  OpType        op;                /* The type of PDE operator (should use FFC/Ignition here) */
   /* Element quadrature */
   PetscQuadrature q;
 } AppCtx;
@@ -52,6 +55,8 @@ PetscScalar quadratic_2d(const PetscReal x[]) {
 #undef __FUNCT__
 #define __FUNCT__ "ProcessOptions"
 PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
+  const char    *opTypes[2]  = {"laplacian", "elasticity"};
+  PetscInt       op;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -63,6 +68,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
   options->computeJacobian = PETSC_FALSE;
   options->batch           = PETSC_FALSE;
   options->gpu             = PETSC_FALSE;
+  options->op              = LAPLACIAN;
 
   ierr = MPI_Comm_size(comm, &options->numProcs);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &options->rank);CHKERRQ(ierr);
@@ -77,6 +83,9 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, AppCtx *options) {
   ierr = PetscOptionsBool("-compute_jacobian", "Compute the Jacobian", "ex52.c", options->computeJacobian, &options->computeJacobian, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-batch", "Use the batch assembly method", "ex52.c", options->batch, &options->batch, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBool("-gpu", "Use the GPU for integration method", "ex52.c", options->gpu, &options->gpu, PETSC_NULL);CHKERRQ(ierr);
+  op = options->op;
+  ierr = PetscOptionsEList("-op_type","Type of PDE operator","ex52.c",opTypes,2,opTypes[options->op],&op,PETSC_NULL);CHKERRQ(ierr);
+  options->op = (OpType) op;
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
 };
@@ -139,27 +148,45 @@ PetscErrorCode SetupQuadrature(AppCtx *user) {
 PetscErrorCode SetupSection(DM dm, AppCtx *user) {
   PetscSection   section;
   /* These can be generated using config/PETSc/FEM.py */
-  PetscInt       numDof_0[2] = {1, 0};
-  PetscInt       numDof_1[3] = {1, 0, 0};
-  PetscInt       numDof_2[4] = {1, 0, 0, 0};
-  PetscInt       dim         = user->dim;
+  PetscInt       dim              = user->dim;
+  PetscInt       numDof_Lap_0[2]  = {1, 0};
+  PetscInt       numDof_Lap_1[3]  = {1, 0, 0};
+  PetscInt       numDof_Lap_2[4]  = {1, 0, 0, 0};
+  PetscInt       numDof_Elas_0[2] = {dim, 0};
+  PetscInt       numDof_Elas_1[3] = {dim, 0, 0};
+  PetscInt       numDof_Elas_2[4] = {dim, 0, 0, 0};
+  const char    *bcLabel          = PETSC_NULL;
   PetscInt      *numDof;
-  const char    *bcLabel = PETSC_NULL;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  switch(user->dim) {
-  case 1:
-    numDof = numDof_0;
+  switch(user->op) {
+  case LAPLACIAN:
+    switch(user->dim) {
+    case 1:
+      numDof = numDof_Lap_0;break;
+    case 2:
+      numDof = numDof_Lap_1;break;
+    case 3:
+      numDof = numDof_Lap_2;break;
+    default:
+      SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid spatial dimension %d", user->dim);
+    }
     break;
-  case 2:
-    numDof = numDof_1;
-    break;
-  case 3:
-    numDof = numDof_2;
+  case ELASTICITY:
+    switch(user->dim) {
+    case 1:
+      numDof = numDof_Elas_0;break;
+    case 2:
+      numDof = numDof_Elas_1;break;
+    case 3:
+      numDof = numDof_Elas_2;break;
+    default:
+      SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid spatial dimension %d", user->dim);
+    }
     break;
   default:
-    SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid spatial dimension %d", user->dim);
+    SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid PDE operator %d", user->op);
   }
   //if (user->bcType == DIRICHLET) {
   //  bcLabel = "marker";
@@ -310,7 +337,7 @@ PetscErrorCode FormFunctionLocal(DM dm, Vec X, Vec F, AppCtx *user)
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode IntegrateElementBatchGPU(PetscInt Nbatch, PetscInt Nbc, PetscInt Nb, const PetscScalar coefficients[], const PetscReal jacobianInverses[], const PetscReal jacobianDeterminants[], PetscInt Nq, const PetscReal quadPoints[], const PetscReal quadWeights[], const PetscReal basisTabulation[], const PetscReal basisDerTabulation[], PetscScalar elemVec[]);
+extern PetscErrorCode IntegrateElementBatchGPU(PetscInt Nbatch, PetscInt Nbc, const PetscScalar coefficients[], const PetscReal jacobianInverses[], const PetscReal jacobianDeterminants[], PetscScalar elemVec[]);
 
 void f1_laplacian(PetscScalar u, const PetscScalar gradU[], PetscScalar f1[]) {
   f1[0] = gradU[0];
@@ -426,7 +453,7 @@ PetscErrorCode FormFunctionLocalBatch(DM dm, Vec X, Vec F, AppCtx *user)
   PetscInt batchSize  = numBlocks * blockSize;
   PetscInt numBatches = numCells / batchSize;
   if (user->gpu) {
-    ierr = IntegrateElementBatchGPU(numBatches, batchSize, numBasisFuncs, u, invJ, detJ, numQuadPoints, quadPoints, quadWeights, basis, basisDer, elemVec);CHKERRQ(ierr);
+    ierr = IntegrateElementBatchGPU(numBatches, batchSize, u, invJ, detJ, elemVec);CHKERRQ(ierr);
   } else {
     ierr = IntegrateElementBatchCPU(numBatches, batchSize, numBasisFuncs, u, invJ, detJ, numQuadPoints, quadPoints, quadWeights, basis, basisDer, elemVec);CHKERRQ(ierr);
   }
