@@ -5,6 +5,7 @@ class Configure(PETSc.package.NewPackage):
     PETSc.package.NewPackage.__init__(self, framework)
     self.download = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/Generator.tar.gz']
     self.complex  = 1
+    self.double   = 0
     self.worksonWindows    = 1
     self.downloadonWindows = 1
     return
