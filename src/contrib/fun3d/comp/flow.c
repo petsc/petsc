@@ -242,6 +242,7 @@ int main(int argc,char **args)
              user.grid->amut);*/
 
 /* Write Tecplot solution file */
+#if 0
    if (rank == 0) 
      f77TECFLO(&user.grid->nnodes,  
                &user.grid->nnbound, &user.grid->nvbound, &user.grid->nfbound,
@@ -254,7 +255,8 @@ int main(int argc,char **args)
                 user.grid->nvtet,    user.grid->nfpts,    user.grid->nftet,    
                 user.grid->f2ntn,    user.grid->f2ntv,    user.grid->f2ntf, 
                 user.grid->isnode,   user.grid->ivnode,   user.grid->ifnode,
-               &rank, &nvertices); 
+               &rank, &nvertices);
+#endif
 
    /*f77FASFLO(&user.grid->nnodes, &user.grid->nsnode, &user.grid->nnfacet,
               user.grid->isnode,  user.grid->f2ntn,
