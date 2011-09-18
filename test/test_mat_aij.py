@@ -141,6 +141,33 @@ class BaseTestMatAnyAIJ(object):
         self.A.assemble()
         self._chk_aij(self.A, ai, aj)
 
+    def testGetValuesCSR(self):
+        self._preallocate()
+        self._set_values_ijv()
+        A = self.A
+        A.assemble()
+        ai, aj, av = A.getValuesCSR()
+        if not ('mpibaij' == self.A.type and
+                self.A.comm.size == 1):
+            B = PETSc.Mat()
+            A.convert('aij', B)
+            bi, bj, bv = B.getValuesCSR()
+            self.assertTrue(N.allclose(ai, bi))
+            self.assertTrue(N.allclose(aj, bj))
+            self.assertTrue(N.allclose(av, bv))
+            B.destroy()
+        if 'crl' not in self.A.getType():
+            C = A.duplicate()
+            C.setValuesCSR(ai, aj, av)
+            C.assemble()
+            ci, cj, cv = C.getValuesCSR()
+            self.assertTrue(N.allclose(ai, ci))
+            self.assertTrue(N.allclose(aj, cj))
+            self.assertTrue(N.allclose(av, cv))
+            eq = A.equal(C)
+            self.assertTrue(eq)
+            C.destroy()
+
     def testGetDiagonalBlock(self):
         self._preallocate()
         self._set_values_ijv()

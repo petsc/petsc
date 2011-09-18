@@ -571,6 +571,35 @@ cdef class Mat(Object):
     def getValues(self, rows, cols, values=None):
         return matgetvalues(self.mat, rows, cols, values)
 
+    def getValuesCSR(self):
+        # row ownership
+        cdef PetscInt rstart=0, rend=0, nrows=0
+        CHKERR( MatGetOwnershipRange(self.mat, &rstart, &rend) )
+        nrows = rend - rstart
+        # first pass: row pointer array
+        cdef PetscInt *AI = NULL
+        cdef ndarray ai = oarray_i(empty_i(nrows+1), NULL, &AI)
+        cdef PetscInt irow=0, ncols=0
+        AI[0] = 0
+        for irow from 0 <= irow < nrows:
+            CHKERR( MatGetRow(self.mat, irow+rstart, &ncols, NULL, NULL) )
+            AI[irow+1] = AI[irow] + ncols
+            CHKERR( MatRestoreRow(self.mat, irow+rstart, &ncols, NULL, NULL) )
+        # second pass: column indices and values
+        cdef PetscInt *AJ = NULL
+        cdef ndarray aj = oarray_i(empty_i(AI[nrows]), NULL, &AJ)
+        cdef PetscScalar *AV = NULL
+        cdef ndarray av = oarray_s(empty_s(AI[nrows]), NULL, &AV)
+        cdef const_PetscInt *cols = NULL
+        cdef const_PetscScalar *vals = NULL
+        for irow from 0 <= irow < nrows:
+            CHKERR( MatGetRow(self.mat, irow+rstart, &ncols, &cols, &vals) )
+            CHKERR( PetscMemcpy(AJ+AI[irow], cols, ncols*sizeof(PetscInt)) )
+            CHKERR( PetscMemcpy(AV+AI[irow], vals, ncols*sizeof(PetscScalar)) )
+            CHKERR( MatRestoreRow(self.mat, irow+rstart, &ncols, &cols, &vals) )
+        #
+        return (ai, aj, av)
+
     def getRow(self, row):
         cdef PetscInt irow = asInt(row)
         cdef PetscInt ncols = 0
