@@ -61,7 +61,7 @@ PetscErrorCode FormFunction(TS ts, PetscReal t, Vec X, Vec Xdot,Vec F, void *ctx
 #define __FUNCT__ "RunTest"
 PetscErrorCode RunTest(int nx, int ny, int nz, int loops, double *wt)
 {
-  Vec            x;
+  Vec            x,f;
   TS             ts;
   AppCtx         _app,*app=&_app;
   double         t1,t2;
@@ -75,6 +75,7 @@ PetscErrorCode RunTest(int nx, int ny, int nz, int loops, double *wt)
   ierr = VecCreate(PETSC_COMM_SELF,&x);CHKERRQ(ierr);
   ierr = VecSetSizes(x,nx*ny*nz,nx*ny*nz);CHKERRQ(ierr);
   ierr = VecSetUp(x);CHKERRQ(ierr);
+  ierr = VecDuplicate(x,&f);CHKERRQ(ierr);
 
   ierr = TSCreate(PETSC_COMM_SELF,&ts);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr);
@@ -85,16 +86,12 @@ PetscErrorCode RunTest(int nx, int ny, int nz, int loops, double *wt)
   ierr = TSSetDuration(ts,10,1.0);CHKERRQ(ierr);
 
   ierr = TSSetSolution(ts,x);CHKERRQ(ierr);
-  ierr = TSSetIFunction(ts,FormFunction,app);CHKERRQ(ierr);
+  ierr = TSSetIFunction(ts,f,FormFunction,app);CHKERRQ(ierr);
+  ierr = PetscOptionsSetValue("-snes_mf","1");CHKERRQ(ierr);
   {
-    Vec  f;
     SNES snes;
     KSP  ksp;
     ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
-    ierr = VecDuplicate(x,&f);CHKERRQ(ierr);
-    ierr = SNESSetFunction(snes,f,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-    ierr = VecDestroy(&f);CHKERRQ(ierr);
-    ierr = PetscOptionsSetValue("-snes_mf","1");CHKERRQ(ierr);
     ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
     ierr = KSPSetType(ksp,KSPCG);CHKERRQ(ierr);
   }
@@ -105,12 +102,13 @@ PetscErrorCode RunTest(int nx, int ny, int nz, int loops, double *wt)
   while (loops-- > 0) {
     ierr = FormInitial(0.0,x,app);CHKERRQ(ierr);
     ierr = PetscGetTime(&t1);CHKERRQ(ierr);
-    ierr = TSSolve(ts,x);CHKERRQ(ierr);
+    ierr = TSSolve(ts,x,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscGetTime(&t2);CHKERRQ(ierr);
     *wt = PetscMin(*wt,t2-t1);
   }
 
   ierr = VecDestroy(&x);CHKERRQ(ierr);
+  ierr = VecDestroy(&f);CHKERRQ(ierr);
   ierr = TSDestroy(&ts);CHKERRQ(ierr);
   
   PetscFunctionReturn(0);

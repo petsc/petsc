@@ -20,7 +20,7 @@ subject to change at any time.
 - To build and install this package, you must meet the following
   requirements.
 
-  + PETSc_ 3.0.0 or 3.1, built with *shared libraries* (i.e., by
+  + PETSc_ 3.2, 3.1 or 3.0.0, built with *shared libraries* (i.e., by
     passing ``--with-shared-libraries`` option to PETSc ``configure``
     script; this is not strictly required, but **highly** recommended).
 

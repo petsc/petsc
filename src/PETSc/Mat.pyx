@@ -943,7 +943,7 @@ cdef class Mat(Object):
 
     def factorLU(self, IS isrow not None, IS iscol not None, options=None):
         cdef PetscMatFactorInfo info
-        matfactorinfo(PETSC_FALSE, options, &info)
+        matfactorinfo(PETSC_FALSE, PETSC_FALSE, options, &info)
         CHKERR( MatLUFactor(self.mat, isrow.iset, iscol.iset, &info) )
     def factorSymbolicLU(self, Mat mat not None, IS isrow not None, IS iscol not None, options=None):
         mat = isrow = iscol = options = None
@@ -953,7 +953,7 @@ cdef class Mat(Object):
         raise NotImplementedError
     def factorILU(self, IS isrow not None, IS iscol not None, options=None):
         cdef PetscMatFactorInfo info
-        matfactorinfo(PETSC_TRUE, options, &info)
+        matfactorinfo(PETSC_TRUE, PETSC_FALSE, options, &info)
         CHKERR( MatILUFactor(self.mat, isrow.iset, iscol.iset, &info) )
     def factorSymbolicILU(self, IS isrow not None, IS iscol not None, options=None):
         isrow = iscol = options = None
@@ -961,7 +961,7 @@ cdef class Mat(Object):
 
     def factorCholesky(self, IS isperm not None, options=None):
         cdef PetscMatFactorInfo info
-        matfactorinfo(PETSC_FALSE, options, &info)
+        matfactorinfo(PETSC_FALSE, PETSC_TRUE, options, &info)
         CHKERR( MatCholeskyFactor(self.mat, isperm.iset, &info) )
     def factorSymbolicCholesky(self, IS isperm not None, options=None):
         isperm = options = None
@@ -971,20 +971,11 @@ cdef class Mat(Object):
         raise NotImplementedError
     def factorICC(self, IS isperm not None, options=None):
         cdef PetscMatFactorInfo info
-        matfactorinfo(PETSC_TRUE, options, &info)
+        matfactorinfo(PETSC_TRUE, PETSC_TRUE, options, &info)
         CHKERR( MatICCFactor(self.mat, isperm.iset, &info) )
     def factorSymbolicICC(self, IS isperm not None, options=None):
         isperm = options = None
         raise NotImplementedError
-
-    def factorILUDT(self, IS isrow not None, IS iscol not None, options=None):
-        isrow = iscol = options = None
-        raise NotImplementedError
-        ## cdef PetscMatFactorInfo info
-        ## matfactorinfo(PETSC_TRUE, options, &info)
-        ## cdef Mat mat = Mat()
-        ## CHKERR( MatILUDTFactor(self.mat, isrow.iset, iscol.iset, &info, &mat.mat) )
-        ## return mat
 
     def getInertia(self):
         cdef PetscInt ival1 = 0, ival2 = 0, ival3 = 0

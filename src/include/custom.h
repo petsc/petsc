@@ -608,39 +608,61 @@ typedef PetscErrorCode MatNullSpaceFunction(MatNullSpace,Vec,void*);
 #undef __FUNCT__
 #define __FUNCT__ "MatFactorInfoDefaults"
 static PetscErrorCode
-MatFactorInfoDefaults(PetscBool incomplete, MatFactorInfo *info)
+MatFactorInfoDefaults(PetscBool incomplete,PetscBool cholesky,
+                      MatFactorInfo *info)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidPointer(info,2);
   ierr = MatFactorInfoInitialize(info);CHKERRQ(ierr);
-
   if (incomplete) {
-    info->dt             = PETSC_DEFAULT;
-    info->dtcount        = PETSC_DEFAULT;
-    info->dtcol          = PETSC_DEFAULT;
-    info->fill           = PETSC_DEFAULT;
-    info->zeropivot      = 1.e-12;
-    info->pivotinblocks  = 1.0;
+    info->levels         = (PetscReal)0;
+    info->diagonal_fill  = (PetscReal)0;
+    info->fill           = (PetscReal)1.0;
+    info->usedt          = (PetscReal)0;
+    info->dt             = (PetscReal)PETSC_DEFAULT;
+    info->dtcount        = (PetscReal)PETSC_DEFAULT;
+    info->dtcol          = (PetscReal)PETSC_DEFAULT;
+    info->zeropivot      = (PetscReal)100.0*PETSC_MACHINE_EPSILON;
+    info->pivotinblocks  = (PetscReal)1;
   } else {
-    info->dtcol          = 1.e-6;
-    info->fill           = 5.0;
-    info->zeropivot      = 1.e-12;
-    info->pivotinblocks  = 1.0;
+    info->fill           = (PetscReal)5.0;
+    info->dtcol          = (PetscReal)1.e-6;
+    info->zeropivot      = (PetscReal)100.0*PETSC_MACHINE_EPSILON;
+    info->pivotinblocks  = (PetscReal)1;
   }
-
-#if 0
+#if !PETSC_VERSION_(3,0,0)
   if (incomplete) {
-    info->shiftnz        = 1.e-12;
-    info->shiftpd        = 0.0;
+    if (cholesky)
+      info->shifttype    = (PetscReal)MAT_SHIFT_POSITIVE_DEFINITE;
+    else
+      info->shifttype    = (PetscReal)MAT_SHIFT_NONZERO;
+    info->shiftamount    = (PetscReal)100.0*PETSC_MACHINE_EPSILON;
   } else {
-    info->shiftnz        = 0.0;
-    info->shiftpd        = 0.0;
+    info->shifttype      = (PetscReal)MAT_SHIFT_NONE;
+    info->shiftamount    = (PetscReal)0.0;
+  }
+#else
+  if (incomplete) {
+    if (cholesky) {
+      info->shiftpd      = (PetscReal)1;
+      info->shiftnz      = (PetscReal)0;
+    } else {
+      info->shiftpd      = (PetscReal)0;
+      info->shiftnz      = (PetscReal)100.0*PETSC_MACHINE_EPSILON;
+    }
+  } else {
+    info->shiftpd        = (PetscReal)0;
+    info->shiftnz        = (PetscReal)0;
   }
 #endif
-
   PetscFunctionReturn(0);
 }
+
+#if PETSC_VERSION_(3,0,0)
+#define shifttype   shiftpd
+#define shiftamount shiftnz
+#endif
 
 /* ---------------------------------------------------------------- */
 

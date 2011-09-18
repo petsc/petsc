@@ -269,10 +269,8 @@ class TestPCPYTHON4(TestPCPYTHON3):
 
 # --------------------------------------------------------------------
 
-v = PETSc.Sys.getVersion()
-i = PETSc.Sys.getVersionInfo()
-petsc_dev = v <  (3, 1, 0) or (v == (3, 1, 0) and i['release'])
-if petsc_dev:
+PETSC_VERSION = PETSc.Sys.getVersion()
+if PETSC_VERSION < (3, 2, 0):
     del TestPCPYTHON.testResetAndApply
     
 # --------------------------------------------------------------------

@@ -10,7 +10,7 @@ build *PETSc for Python*:
 * Any MPI_ implementation [#]_ (e.g., MPICH_ or `Open MPI`_), 
   built with **shared libraries**.
 
-* PETSc_ 3.0.0 or 3.1 release, built with **shared libraries** [#]_.
+* PETSc_  3.2, 3.1, or 3.0.0 built with **shared libraries** [#]_.
 
 * Python_ 2.4 to 2.7 and 3.1 to 3.2 [#]_.
 
@@ -33,8 +33,7 @@ Using **pip** or **easy_install**
 ---------------------------------
 
 If you already have a working PETSc, set environment variables
-:envvar:`PETSC_DIR` and perhaps :envvar:`PETSC_ARCH` to appropriate
-values::
+:envvar:`PETSC_DIR` and :envvar:`PETSC_ARCH` to appropriate values::
 
     $ export PETSC_DIR=/path/to/petsc
     $ export PETSC_ARCH=linux-gnu

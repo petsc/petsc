@@ -68,7 +68,7 @@ class BaseTestMatFactorLU(BaseTestMatFactor):
     def testFactorLU(self):
         r, c = self.A.getOrdering("nd")
         self.A.reorderForNonzeroDiagonal(r, c)
-        self.A.factorLU(r,c,{})
+        self.A.factorLU(r,c,{'zeropivot':1e-5})
         x = self.x.duplicate()
         self.A.solve(self.b, x)
         x.axpy(-1, self.x)
@@ -78,7 +78,7 @@ class BaseTestMatFactorILU(BaseTestMatFactor):
 
     def testFactorILU(self):
         r, c = self.A.getOrdering("natural")
-        self.A.factorILU(r,c)
+        self.A.factorILU(r,c,{'levels':0})
         x = self.x.duplicate()
         self.A.solve(self.b, x)
         x.axpy(-1, self.x)

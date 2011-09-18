@@ -2089,7 +2089,7 @@ cdef PetscErrorCode TSCreate_Python(
     ops.view           = TSView_Python
     ops.prestep        = TSPreStep_Python
     ops.poststep       = TSPostStep_Python
-    ops.solve          = TSSolve_Python
+    ops.step           = TSStep_Python
     ops.snesfunction   = SNESTSFormFunction_Python
     ops.snesjacobian   = SNESTSFormJacobian_Python
     #
@@ -2225,16 +2225,16 @@ cdef PetscErrorCode TSPostStep_Python(
         postStep(TS_(ts), <double>ts.ptime, Vec_(ts.vec_sol))
     return FunctionEnd()
 
-cdef PetscErrorCode TSSolve_Python(
+cdef PetscErrorCode TSStep_Python(
     PetscTS   ts,
     ) \
     except IERR with gil:
-    FunctionBegin(b"TSSolve_Python")
-    cdef solve = PyTS(ts).solve
-    if solve is not None:
-        solve(TS_(ts), <double>ts.ptime, Vec_(ts.vec_sol))
+    FunctionBegin(b"TSStep_Python")
+    cdef step = PyTS(ts).step
+    if step is not None:
+        step(TS_(ts))
     else:
-        TSSolve_Python_default(ts)
+        TSStep_Python_default(ts)
     return FunctionEnd()
 
 cdef PetscErrorCode SNESTSFormFunction_Python(
@@ -2295,21 +2295,32 @@ cdef PetscErrorCode SNESTSFormJacobian_Python(
     CHKERR( TSComputeIJacobian(ts,t,x,dx,a,A,B,s,PETSC_FALSE) )
     return FunctionEnd()
 
-cdef PetscErrorCode TSStep_Python(
+cdef PetscErrorCode TSSolveStep_Python(
     PetscTS   ts,
     PetscReal t,
     PetscVec  x,
     ) \
     except IERR with gil:
-    FunctionBegin(b"TSStep_Python")
-    cdef step = PyTS(ts).step
-    if step is not None:
-        step(TS_(ts), <double>t, Vec_(x))
-    else:
-        TSStep_Python_default(ts,t,x)
+    FunctionBegin(b"TSSolveStep_Python")
+    #
+    cdef solveStep = PyTS(ts).solveStep
+    if solveStep is not None:
+        solveStep(TS_(ts), <double>t, Vec_(x))
+        return FunctionEnd()
+    #
+    CHKERR( SNESSolve(ts.snes, NULL, x) )
+    cdef SNESConvergedReason snesreason = SNES_CONVERGED_ITERATING
+    CHKERR( SNESGetConvergedReason(ts.snes, &snesreason) )
+    if snesreason < 0: ts.reason = TS_DIVERGED_NONLINEAR_SOLVE
+    if snesreason < 0: return FunctionEnd()
+    cdef PetscInt nits = 0, lits = 0
+    CHKERR( SNESGetIterationNumber(ts.snes,&nits) )
+    CHKERR( SNESGetLinearSolveIterations(ts.snes,&lits) )
+    ts.nonlinear_its += nits
+    ts.linear_its    += lits
     return FunctionEnd()
 
-cdef PetscErrorCode TSAdapt_Python(
+cdef PetscErrorCode TSAdaptStep_Python(
     PetscTS   ts,
     PetscReal t,
     PetscVec  x,
@@ -2317,7 +2328,7 @@ cdef PetscErrorCode TSAdapt_Python(
     PetscBool *stepok,
     ) \
     except IERR with gil:
-    FunctionBegin(b"TSAdapt_Python")
+    FunctionBegin(b"TSAdaptStep_Python")
     nextdt[0] = ts.time_step
     stepok[0] = PETSC_TRUE
     #
@@ -2325,12 +2336,12 @@ cdef PetscErrorCode TSAdapt_Python(
     CHKERR( SNESGetConvergedReason(ts.snes,&snesreason) )
     if snesreason < 0: stepok[0] = PETSC_FALSE
     #
-    cdef adapt = PyTS(ts).adapt
-    if adapt is None: return FunctionEnd()
+    cdef adaptStep = PyTS(ts).adaptStep
+    if adaptStep is None: return FunctionEnd()
     cdef object retval
     cdef double dt
     cdef bint   ok
-    retval = adapt(TS_(ts), <double>t, Vec_(x))
+    retval = adaptStep(TS_(ts), <double>t, Vec_(x))
     if retval is None: pass
     elif isinstance(retval, float):
         dt = retval
@@ -2344,82 +2355,40 @@ cdef PetscErrorCode TSAdapt_Python(
         dt, ok = retval
         nextdt[0] = <PetscReal>dt
         stepok[0] = PETSC_TRUE if ok else PETSC_FALSE
-    cdef PetscReal dtmax = ts.max_time - (ts.ptime + ts.time_step)
-    if dtmax > 0: nextdt[0] = PetscMin(nextdt[0],dtmax)
     return FunctionEnd()
 
 cdef PetscErrorCode TSStep_Python_default(
-    PetscTS   ts,
-    PetscReal t,
-    PetscVec  x,
-    ) \
-    except IERR with gil:
-    FunctionBegin(b"TSStep_Python_default")
-    CHKERR( SNESSolve(ts.snes, NULL, x) )
-    cdef SNESConvergedReason snesreason = SNES_CONVERGED_ITERATING
-    CHKERR( SNESGetConvergedReason(ts.snes, &snesreason) )
-    if snesreason < 0: pass # XXX
-    cdef PetscInt nits = 0, lits = 0
-    CHKERR( SNESGetIterationNumber(ts.snes,&nits) )
-    CHKERR( SNESGetLinearSolveIterations(ts.snes,&lits) )
-    ts.nonlinear_its += nits
-    ts.linear_its    += lits
-    return FunctionEnd()
-
-cdef PetscErrorCode TSSolve_Python_default(
     PetscTS ts,
     ) \
     except IERR with gil:
-    FunctionBegin(b"TSSolve_Python_default")
-    #
+    FunctionBegin(b"TSStep_Python_default")
     cdef PetscVec vec_update = NULL
     CHKERR( PetscObjectQuery(
             <PetscObject>ts,
              b"@ts.vec_update",
              <PetscObject*>&vec_update) )
     #
-    ts.steps = 0
-    ts.linear_its = 0
-    ts.nonlinear_its = 0
-    ts.reject = 0
-    ts.reason = TS_CONVERGED_ITERATING;
-    #
-    cdef PetscInt  i  = 0, r = 0
+    cdef PetscInt  r = 0
     cdef PetscReal tt = ts.ptime
     cdef PetscReal dt = ts.time_step
     cdef PetscBool ok = PETSC_TRUE
-    #
-    CHKERR( TSMonitor(ts,ts.steps,ts.ptime,ts.vec_sol) )
-    for i from 0 <= i < ts.max_steps:
-        if ts.reason: break
-        CHKERR( TSPreStep(ts) )
-        #
-        dt = ts.time_step
-        ok = PETSC_TRUE
-        for r from 0 <= r < ts.max_reject:
-            ts.time_step = dt
-            tt = ts.ptime + ts.time_step
-            CHKERR( VecCopy(ts.vec_sol,vec_update) )
-            TSStep_Python(ts,tt,vec_update)
-            TSAdapt_Python(ts,tt,vec_update,&dt,&ok)
-            if ok:  break
-            ts.reject += 1
-        if not ok:
-            ts.reason = TS_DIVERGED_STEP_REJECTED
-            break
-        #
-        CHKERR( VecCopy(vec_update,ts.vec_sol) )
-        ts.ptime += ts.time_step
+    for r from 0 <= r < ts.max_reject:
         ts.time_step = dt
-        ts.steps += 1
-        #
-        if ts.ptime >= ts.max_time:
-            ts.reason = TS_CONVERGED_TIME
-        if ts.steps >= ts.max_steps:
-            ts.reason = TS_CONVERGED_ITS
-        #
-        CHKERR( TSPostStep(ts) )
-        CHKERR( TSMonitor(ts,ts.steps,ts.ptime,ts.vec_sol) )
+        tt = ts.ptime + ts.time_step
+        CHKERR( VecCopy(ts.vec_sol,vec_update) )
+        TSSolveStep_Python(ts,tt,vec_update)
+        TSAdaptStep_Python(ts,tt,vec_update,&dt,&ok)
+        if ok:  break
+        ts.reject += 1
+    if not ok:
+        if ts.reason == 0:
+            ts.reason = TS_DIVERGED_STEP_REJECTED
+        return FunctionEnd()
+    #
+    CHKERR( VecCopy(vec_update,ts.vec_sol) )
+    ts.ptime += ts.time_step
+    ts.time_step = dt
+    ts.steps += 1
     return FunctionEnd()
 
 # --------------------------------------------------------------------
