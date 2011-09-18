@@ -1471,6 +1471,9 @@ $     func (SNES snes,Vec x,Mat *A,Mat *B,int *flag,void *ctx);
    If using SNESDefaultComputeJacobianColor() to assemble a Jacobian, the ctx argument
    must be a MatFDColoring.
 
+   Other defect-correction schemes can be used by computing a different matrix in place of the Jacobian.  One common
+   example is to use the "Picard linearization" which only differentiates through the highest order parts of each term.
+
    Level: beginner
 
 .keywords: SNES, nonlinear, set, Jacobian, matrix

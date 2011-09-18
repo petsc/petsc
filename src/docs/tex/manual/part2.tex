@@ -3533,18 +3533,18 @@ solution process.
 The general form of the $n$-dimensional Newton's method for solving
 (\ref{eq_F=0}) is
 \begin{equation}
-     \x_{k+1} = \x_k - [ \F'(\x_k)]^{-1} \F(\x_k), \;\; k=0,1, \ldots, 
+     \x_{k+1} = \x_k - \J(\x_k)^{-1} \F(\x_k), \;\; k=0,1, \ldots, 
 \label{eq_n1}
 \end{equation}
 where $ \x_0 $ is an initial approximation to the solution and   
-$ \F'(\x_k) $, the Jacobian, is nonsingular at each iteration.  
+$ \J(\x_k) = \F'(\x_k) $, the Jacobian, is nonsingular at each iteration.  
 In practice, the Newton iteration (\ref{eq_n1}) is implemented by
 the following two steps:
 \begin{eqnarray}
-  1. & {\rm (Approximately) \;solve\;\;\;} \F'(\x_k) \Delta \x_k = -\F(\x_k).\\
+  1. & {\rm (Approximately) \;solve\;\;\;} \J(\x_k) \Delta \x_k = -\F(\x_k).\\
   2. & {\rm Update\;\;\;} \x_{k+1} = \x_k + \Delta \x_k. \hspace{.225in}
 \end{eqnarray}
-
+Other defect-correction algorithms can be implemented by using different choices for $J(\x_k)$.
 
 \section{Basic SNES Usage}
 \label{sec_snesusage}
@@ -3676,6 +3676,18 @@ method to verify the analytic Jacobian. Moreover, if the analytic Jacobian is
 incomplete (some terms are missing or approximate), \trl{-snes_mf_operator} may
 be used to obtain the exact solution, where the Jacobian approximation has been
 transferred to the preconditioner.
+
+One such approximate Jacobian comes from ``Picard linearization'' which writes the nonlinear system as
+\[ \F(\x) = \A(\x) \x - \b = 0 \]
+where $\A(\x)$ usually contains the lower-derivative parts of the equation.
+For example, the nonlinear diffusion problem
+\[ - \nabla\cdot(\kappa(u) \nabla u) = 0 \]
+would be linearized as
+\[ A(u) v \simeq -\nabla\cdot(\kappa(u) \nabla v). \]
+Usually this linearization is simpler to implement than Newton and the linear problems are somewhat easier to solve.
+In addition to using \trl{-snes_mf_operator} with this approximation to the Jacobian, the Picard iterative procedure can be performed by defining
+$\J(\x)$ to be $\A(\x)$.
+Sometimes this iteration exhibits better global convergence than Newton linearization.
 
 During successive calls to \trl{FormJacobian()}, the user can either
 insert new matrix contexts or reuse old ones, depending on the
