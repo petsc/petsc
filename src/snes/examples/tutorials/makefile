@@ -351,10 +351,13 @@ runex5_5_qn:
 	-par 6.0  > ex5_5_qn.tmp 2>&1; \
 	   ${DIFF} output/ex5_5_qn.out ex5_5_qn.tmp || echo "Possible problem with ex5_5_qn, diffs above"; \
 	   ${RM} -f ex5_5_qn.tmp
-
 runex5_5_ls:
 	-@${MPIEXEC} -n 2 ./ex5 -da_grid_x 20 -da_grid_y 20 \
 	-snes_type ls -snes_monitor_short -snes_max_it 1000 \
+	-par 6.0
+runex5_5_ncg:
+	-@${MPIEXEC} -n 2 ./ex5 -da_grid_x 20 -da_grid_y 20 \
+	-snes_type ncg -snes_monitor_short -snes_max_it 1000 \
 	-par 6.0
 
 runex5_6:
