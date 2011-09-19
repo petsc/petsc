@@ -281,7 +281,7 @@ static PetscErrorCode SNESSetFromOptions_QN(SNES snes)
   qn = (QNContext *)snes->data;
 
   ierr = PetscOptionsHead("SNES QN options");CHKERRQ(ierr);
-  ierr = PetscOptionsReal("-snes_qn_lambda", "SOR mixing parameter", "SNES", qn->lambda, &qn->lambda, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-snes_ls_damping", "Damping parameter", "SNES", qn->lambda, &qn->lambda, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-snes_qn_m", "Number of past states saved for L-Broyden methods", "SNES", qn->m, &qn->m, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -290,12 +290,26 @@ static PetscErrorCode SNESSetFromOptions_QN(SNES snes)
 /* -------------------------------------------------------------------------- */
 /*MC
       SNESQN - Limited-Memory Quasi-Newton methods for the solution of nonlinear systems.
-      
-      Implements a limited-memory "good" Broyden update method.
 
-   Level: beginner
+      Options Database:
+
++     -snes_qn_m - Number of past states saved for the L-Broyden methods.
++     -snes_ls_damping - The damping parameter on the update.
+
+      Notes: This implements the L-BFGS algorithm for the solution of F(x) = 0 using previous change in F(x) and x to
+      form the approximate inverse Jacobian using a series of multiplicative rank-one updates.  This will eventually be
+      generalized to implement several limited-memory Broyden methods.
+
+      References:
+      
+      L-Broyden Methods: a generalization of the L-BFGS method to the limited memory Broyden family, M. B. Reed,
+      International Journal of Computer Mathematics, vol. 86, 2009.
+      
+
+      Level: beginner
 
 .seealso:  SNESCreate(), SNES, SNESSetType(), SNESLS, SNESTR
+
 M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
