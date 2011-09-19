@@ -2359,7 +2359,7 @@ PetscErrorCode TaoSolverMonitor(TaoSolver tao, PetscInt its, PetscReal f, PetscR
     tao->step = steplength;
     tao->niter=its;
     TaoSolverLogHistory(tao,f,res,cnorm);
-    if (TaoInfOrNaN(f) || TaoInfOrNaN(res)) {
+    if (PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(res)) {
       SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf or NaN");
     }
     if (tao->ops->convergencetest) {

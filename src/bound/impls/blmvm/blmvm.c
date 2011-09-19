@@ -31,7 +31,7 @@ static PetscErrorCode TaoSolverSolve_BLMVM(TaoSolver tao)
 
 
   ierr = VecNorm(tao->gradient,NORM_2,&gnorm); CHKERRQ(ierr);
-  if (TaoInfOrNaN(f) || TaoInfOrNaN(gnorm)) {
+  if (PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(gnorm)) {
     SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf pr NaN");
   }
 
@@ -125,7 +125,7 @@ static PetscErrorCode TaoSolverSolve_BLMVM(TaoSolver tao)
     ierr = VecNorm(tao->gradient, NORM_2, &gnorm); CHKERRQ(ierr);
 
 
-    if (TaoInfOrNaN(f) || TaoInfOrNaN(gnorm)) {
+    if (PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(gnorm)) {
       SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Not-a-Number");
     }
     iter++;
