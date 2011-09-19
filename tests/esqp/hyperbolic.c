@@ -139,10 +139,6 @@ int main(int argc, char **argv)
   user.n = user.mx*user.mx*3*user.nt; // number of variables
   user.ht = user.T/user.nt; // Time step
   user.gamma = user.T*user.ht / (user.mx*user.mx);
-  /*ierr = PetscMalloc(user.m*sizeof(PetscInt),&idx); CHKERRQ(ierr);
-  for (i=0;i<user.m;i++) idx[i]=i;
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,user.m,idx,PETSC_COPY_VALUES,&user.s_is); CHKERRQ(ierr);
-  ierr = PetscFree(idx); CHKERRQ(ierr);*/
 
   ierr = VecCreate(PETSC_COMM_WORLD,&user.u); CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&user.y); CHKERRQ(ierr);
@@ -191,10 +187,8 @@ int main(int argc, char **argv)
 
   /* Create TAO solver and set desired solution method */
   ierr = TaoSolverCreate(PETSC_COMM_WORLD,&tao); CHKERRQ(ierr);
-  //ierr = TaoSolverSetType(tao,"tao_sqpcon"); CHKERRQ(ierr);
   ierr = TaoSolverSetType(tao,"tao_lcl"); CHKERRQ(ierr);
 
-  //ierr = TaoSolverSetMonitor(tao,HyperbolicMonitor,&user); CHKERRQ(ierr);
 
   /* Set solution vector with an initial guess */
   ierr = TaoSolverSetInitialVector(tao,x); CHKERRQ(ierr);
@@ -202,7 +196,8 @@ int main(int argc, char **argv)
   ierr = TaoSolverSetGradientRoutine(tao, FormGradient, (void *)&user); CHKERRQ(ierr);
   ierr = TaoSolverSetConstraintsRoutine(tao, user.c, FormConstraints, (void *)&user); CHKERRQ(ierr);
 
-  ierr = TaoSolverSetJacobianStateRoutine(tao, user.Js, user.Js, user.JsInv, FormJacobianState, (void *)&user); CHKERRQ(ierr); // TODO(?): remove JsInv, use MATOP_SOLVE and MATOP_SOLVE_TRANSPOSE
+  ierr = TaoSolverSetJacobianStateRoutine(tao, user.Js, user.Js, user.JsInv, FormJacobianState, (void *)&user); CHKERRQ(ierr); 
+
   ierr = TaoSolverSetJacobianDesignRoutine(tao, user.Jd, FormJacobianDesign, (void *)&user); CHKERRQ(ierr);
 
   ierr = TaoSolverSetFromOptions(tao); CHKERRQ(ierr);
@@ -225,7 +220,6 @@ int main(int argc, char **argv)
     ierr = VecCopy(x0,x); CHKERRQ(ierr);
     ierr = TaoSolverSetInitialVector(tao,x); CHKERRQ(ierr);
     user.solve_type = 3;
-    //ierr = TaoSolverSetFromOptions(tao); CHKERRQ(ierr);
   }
   ierr = PetscLogStagePop(); CHKERRQ(ierr);
   ierr = PetscBarrier((PetscObject)x); CHKERRQ(ierr);
@@ -254,7 +248,6 @@ int main(int argc, char **argv)
   /* Free PETSc data structures */
   ierr = VecDestroy(&x); CHKERRQ(ierr);
   ierr = VecDestroy(&x0); CHKERRQ(ierr);
-  //ierr = VecDestroy(&c); CHKERRQ(ierr);
   ierr = HyperbolicDestroy(&user); CHKERRQ(ierr);
 
   /* Finalize TAO, PETSc */
@@ -307,7 +300,7 @@ PetscErrorCode FormGradient(TaoSolver tao,Vec X,Vec G,void *ptr)
   ierr = Scatter(X,user->y,user->state_scatter,user->u,user->design_scatter); CHKERRQ(ierr);
   ierr = MatMult(user->Q,user->y,user->dwork); CHKERRQ(ierr);
   ierr = VecAXPY(user->dwork,-1.0,user->d); CHKERRQ(ierr);
-  //ierr = MatMultTranspose(user->Q,user->dwork,user->ywork); CHKERRQ(ierr);
+
   ierr = MatMult(user->QT,user->dwork,user->ywork); CHKERRQ(ierr);
   
   ierr = MatMult(user->LT,user->y,user->uwork); CHKERRQ(ierr);
@@ -337,7 +330,7 @@ PetscErrorCode FormFunctionGradient(TaoSolver tao, Vec X, PetscReal *f, Vec G, v
   ierr = Scatter(X,user->y,user->state_scatter,user->u,user->design_scatter); CHKERRQ(ierr);
   ierr = MatMult(user->Q,user->y,user->dwork); CHKERRQ(ierr);
   ierr = VecAXPY(user->dwork,-1.0,user->d); CHKERRQ(ierr);
-  //ierr = MatMultTranspose(user->Q,user->dwork,user->ywork); CHKERRQ(ierr);
+
   ierr = MatMult(user->QT,user->dwork,user->ywork); CHKERRQ(ierr);
   
   ierr = VecDot(user->dwork,user->dwork,&d1); CHKERRQ(ierr);
@@ -374,10 +367,8 @@ PetscErrorCode FormJacobianState(TaoSolver tao, Vec X, Mat *J, Mat* JPre, Mat* J
   PetscInt i;
   AppCtx *user = (AppCtx*)ptr;
   PetscFunctionBegin;
-  //ierr = Scatter(X,user->ysave,user->state_scatter,user->usave,user->design_scatter); CHKERRQ(ierr);
   ierr = Scatter(X,user->y,user->state_scatter,user->u,user->design_scatter); CHKERRQ(ierr);
   
-  //ierr = Scatter_yi(user->usave,user->ui,user->ui_scatter,user->nt); CHKERRQ(ierr);
   ierr = Scatter_yi(user->u,user->ui,user->ui_scatter,user->nt); CHKERRQ(ierr);
   ierr = Scatter_uxi_uyi(user->u,user->uxi,user->uxi_scatter,user->uyi,user->uyi_scatter,user->nt); CHKERRQ(ierr);
   for (i=0; i<user->nt; i++){
@@ -391,12 +382,6 @@ PetscErrorCode FormJacobianState(TaoSolver tao, Vec X, Mat *J, Mat* JPre, Mat* J
     ierr = MatShift(user->C[i],1.0); CHKERRQ(ierr);
   }
     
-  //*JPre = user->C;
-  //*flag = SAME_NONZERO_PATTERN;
-  
-  *JPre = user->JsBlockPrec;
-  *flag = DIFFERENT_NONZERO_PATTERN;
-
   *JInv = user->JsInv;
 
   PetscFunctionReturn(0);
@@ -616,9 +601,7 @@ PetscErrorCode StateMatBlockPrecMultTranspose(PC PC_shell, Vec X, Vec Y)
 
   i = user->block_index;
   if (user->c_formed) {
-    //ierr = MatSOR(user->C,X,1.0,(SOR_ZERO_INITIAL_GUESS | SOR_SYMMETRIC_SWEEP),0.0,1,1,Y); CHKERRQ(ierr);
     ierr = MatSOR(user->C[i],X,1.0,(SOR_ZERO_INITIAL_GUESS | SOR_LOCAL_SYMMETRIC_SWEEP),0.0,1,1,Y); CHKERRQ(ierr);
-    //VecCopy(X,Y);
   }
   else {
     printf("C not formed"); abort();
@@ -635,7 +618,6 @@ PetscErrorCode StateMatInvMult(Mat J_shell, Vec X, Vec Y)
   void *ptr;
   AppCtx *user;
   PetscInt its,i;
-  KSPConvergedReason reason;
   PetscFunctionBegin;
   ierr = MatShellGetContext(J_shell,&ptr); CHKERRQ(ierr);
   user = (AppCtx*)ptr;
@@ -670,19 +652,6 @@ PetscErrorCode StateMatInvMult(Mat J_shell, Vec X, Vec Y)
   ierr = KSPGetIterationNumber(user->solver,&its); CHKERRQ(ierr);
   user->ksp_its = user->ksp_its + its;
 
-  /*ierr = KSPGetConvergedReason(user->solver,&reason); CHKERRQ(ierr);
-  if (reason==KSP_DIVERGED_INDEFINITE_PC) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Divergence because of indefinite preconditioner;\n"); CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Run the executable again but with -pc_factor_shift_positive_definite option.\n"); CHKERRQ(ierr);
-  } else if (reason<0) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Other kind of divergence: this should not happen.\n"); CHKERRQ(ierr);
-  } else if (reason==KSP_CONVERGED_RTOL){
-    ierr = KSPGetIterationNumber(user->solver,&its); CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"RTOL, Convergence in %d iterations.\n",(int)its); CHKERRQ(ierr);
-  } else if (reason==KSP_CONVERGED_ATOL){
-    ierr = KSPGetIterationNumber(user->solver,&its); CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"ATOL, Convergence in %d iterations.\n",(int)its); CHKERRQ(ierr);
-    }*/
 
   for (i=1; i<user->nt; i++){
     ierr = MatMult(user->M,user->yiwork[i-1],user->ziwork[i-1]);
@@ -693,19 +662,6 @@ PetscErrorCode StateMatInvMult(Mat J_shell, Vec X, Vec Y)
     ierr = KSPGetIterationNumber(user->solver,&its); CHKERRQ(ierr);
     user->ksp_its = user->ksp_its + its;
 
-    /*ierr = KSPGetConvergedReason(user->solver,&reason); CHKERRQ(ierr);
-    if (reason==KSP_DIVERGED_INDEFINITE_PC) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"Divergence because of indefinite preconditioner;\n"); CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"Run the executable again but with -pc_factor_shift_positive_definite option.\n"); CHKERRQ(ierr);
-    } else if (reason<0) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"Other kind of divergence: this should not happen.\n"); CHKERRQ(ierr);
-    } else if (reason==KSP_CONVERGED_RTOL){
-      ierr = KSPGetIterationNumber(user->solver,&its); CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"RTOL, Convergence in %d iterations.\n",(int)its); CHKERRQ(ierr);
-    } else if (reason==KSP_CONVERGED_ATOL){
-      ierr = KSPGetIterationNumber(user->solver,&its); CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"ATOL, Convergence in %d iterations.\n",(int)its); CHKERRQ(ierr);
-      }*/
 
   }
 
@@ -726,7 +682,6 @@ PetscErrorCode StateMatInvTransposeMult(Mat J_shell, Vec X, Vec Y)
   void *ptr;
   AppCtx *user;
   PetscInt its,i;
-  KSPConvergedReason reason;
   PetscFunctionBegin;
   ierr = MatShellGetContext(J_shell,&ptr); CHKERRQ(ierr);
   user = (AppCtx*)ptr;
@@ -762,19 +717,6 @@ PetscErrorCode StateMatInvTransposeMult(Mat J_shell, Vec X, Vec Y)
   ierr = KSPGetIterationNumber(user->solver,&its); CHKERRQ(ierr);
   user->ksp_its = user->ksp_its + its;
 
-  /*KSPGetConvergedReason(user->solver,&reason);
-  if (reason==KSP_DIVERGED_INDEFINITE_PC) {
-    PetscPrintf(PETSC_COMM_WORLD,"Divergence because of indefinite preconditioner;\n");
-    PetscPrintf(PETSC_COMM_WORLD,"Run the executable again but with -pc_factor_shift_positive_definite option.\n");
-  } else if (reason<0) {
-      PetscPrintf(PETSC_COMM_WORLD,"Other kind of divergence: this should not happen.\n");
-  } else if (reason==KSP_CONVERGED_RTOL){
-    KSPGetIterationNumber(user->solver,&its);
-    PetscPrintf(PETSC_COMM_WORLD,"RTOL, Convergence in %d iterations.\n",(int)its);
-  } else if (reason==KSP_CONVERGED_ATOL){
-    KSPGetIterationNumber(user->solver,&its);
-    PetscPrintf(PETSC_COMM_WORLD,"ATOL, Convergence in %d iterations.\n",(int)its);
-    }*/
 
   for (i=user->nt-2; i>=0; i--){
     ierr = MatMult(user->M,user->yiwork[i+1],user->ziwork[i+1]); CHKERRQ(ierr);
@@ -785,19 +727,6 @@ PetscErrorCode StateMatInvTransposeMult(Mat J_shell, Vec X, Vec Y)
     ierr = KSPGetIterationNumber(user->solver,&its); CHKERRQ(ierr);
     user->ksp_its = user->ksp_its + its;
 
-    /*KSPGetConvergedReason(user->solver,&reason);
-    if (reason==KSP_DIVERGED_INDEFINITE_PC) {
-      PetscPrintf(PETSC_COMM_WORLD,"Divergence because of indefinite preconditioner;\n");
-      PetscPrintf(PETSC_COMM_WORLD,"Run the executable again but with -pc_factor_shift_positive_definite option.\n");
-    } else if (reason<0) {
-      PetscPrintf(PETSC_COMM_WORLD,"Other kind of divergence: this should not happen.\n");
-    } else if (reason==KSP_CONVERGED_RTOL){
-      KSPGetIterationNumber(user->solver,&its);
-      PetscPrintf(PETSC_COMM_WORLD,"RTOL, Convergence in %d iterations.\n",(int)its);
-    } else if (reason==KSP_CONVERGED_ATOL){
-      KSPGetIterationNumber(user->solver,&its);
-      PetscPrintf(PETSC_COMM_WORLD,"ATOL, Convergence in %d iterations.\n",(int)its);
-      }*/
   
   }
 
@@ -826,8 +755,6 @@ PetscErrorCode StateMatDuplicate(Mat J_shell, MatDuplicateOption opt, Mat *new_s
   ierr = MatShellSetOperation(*new_shell,MATOP_DUPLICATE,(void(*)(void))StateMatDuplicate); CHKERRQ(ierr);
   ierr = MatShellSetOperation(*new_shell,MATOP_MULT_TRANSPOSE,(void(*)(void))StateMatMultTranspose); CHKERRQ(ierr);
   ierr = MatShellSetOperation(*new_shell,MATOP_GET_DIAGONAL,(void(*)(void))StateMatGetDiagonal); CHKERRQ(ierr);
-  //ierr = MatSetOption(*new_shell,MAT_SYMMETRY_ETERNAL,PETSC_TRUE); CHKERRQ(ierr);
-  //ierr = MatSetOption(user->Js,MAT_SYMMETRY_ETERNAL,PETSC_TRUE); CHKERRQ(ierr);
   
 
   
@@ -1194,15 +1121,6 @@ PetscErrorCode HyperbolicInitialize(AppCtx *user)
     ierr = ISDestroy(&is_to_yi); CHKERRQ(ierr);
     ierr = ISDestroy(&is_from_y); CHKERRQ(ierr);
   }
-  /*ierr = VecGetOwnershipRange(user->y,&lo2,&hi2); CHKERRQ(ierr);
-  istart = 0;
-  for (i=0; i<user->nt; i++){
-    ierr = VecGetOwnershipRange(user->yi[i],&lo,&hi); CHKERRQ(ierr);
-    ierr = ISCreateStride(PETSC_COMM_SELF,hi-lo,lo,1,&is_to_yi); CHKERRQ(ierr);
-    ierr = ISCreateStride(PETSC_COMM_SELF,hi-lo,lo2+istart,1,&is_from_y); CHKERRQ(ierr);
-    ierr = VecScatterCreate(user->y,is_from_y,user->yi[i],is_to_yi,&user->yi_scatter[i]); CHKERRQ(ierr);
-    istart = istart + hi-lo;
-  }*/
 
   /* Create scatter from u to ux_1,uy_1,ux_2,uy_2,...,ux_nt,uy_nt */
   // TODO: reorder for better parallelism
@@ -1292,7 +1210,6 @@ PetscErrorCode HyperbolicInitialize(AppCtx *user)
     ierr = VecShift(user->uyi[i],-i*user->ht); CHKERRQ(ierr);
   }
   ierr = Gather_uxi_uyi(user->ur,user->uxi,user->uxi_scatter,user->uyi,user->uyi_scatter,user->nt); CHKERRQ(ierr);  
-  //ierr = VecCopy(user->ur,user->u); CHKERRQ(ierr);
 
   /* Generate regularization matrix L */
   ierr = MatCreate(PETSC_COMM_WORLD,&user->LT); CHKERRQ(ierr);
@@ -1450,33 +1367,6 @@ PetscErrorCode HyperbolicInitialize(AppCtx *user)
   ierr = KSPSetFromOptions(user->solver); CHKERRQ(ierr);
   user->solve_type = 3;
 
-  //ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,user->m,user->n-user->m,7,PETSC_NULL,&user->Jd); CHKERRQ(ierr);
-  //ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,user->m,user->m,0,PETSC_NULL,&user->Hsd); CHKERRQ(ierr);
-
-  /*ierr = MatCreate(PETSC_COMM_WORLD,&user->Jd); CHKERRQ(ierr);
-  ierr = MatSetSizes(user->Jd,PETSC_DECIDE,PETSC_DECIDE,user->m,user->m); CHKERRQ(ierr);
-  ierr = MatSetFromOptions(user->Jd); CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(user->Jd,7,PETSC_NULL,7,PETSC_NULL); CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(user->Jd,7,PETSC_NULL); CHKERRQ(ierr);*/
-
-  /*ierr = MatCreate(PETSC_COMM_WORLD,&user->Hsd); CHKERRQ(ierr);
-  ierr = MatSetSizes(user->Hsd,PETSC_DECIDE,PETSC_DECIDE,user->m,user->m); CHKERRQ(ierr);
-  ierr = MatSetFromOptions(user->Hsd); CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(user->Hsd,0,PETSC_NULL,0,PETSC_NULL); CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(user->Hsd,0,PETSC_NULL); CHKERRQ(ierr);
-
-  ierr = MatZeroEntries(user->Hsd); CHKERRQ(ierr);*/
-
-  //ierr = MatMatMultTranspose(user->Q,user->Q,MAT_INITIAL_MATRIX,2.0,&user->Hs); CHKERRQ(ierr);
-  //ierr = MatMatMultTranspose(user->L,user->L,MAT_INITIAL_MATRIX,2.0,&user->Hd); CHKERRQ(ierr);
-  //ierr = MatScale(user->Hd,user->alpha); CHKERRQ(ierr);
-
-
-  /* Assemble the matrix */
-/*  ierr = MatAssemblyBegin(user->Js,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(user->Js,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(user->Jd,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(user->Jd,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);*/
 
   PetscFunctionReturn(0);
 }
@@ -1498,7 +1388,7 @@ PetscErrorCode HyperbolicDestroy(AppCtx *user)
   ierr = KSPDestroy(&user->solver); CHKERRQ(ierr);
   ierr = MatDestroy(&user->Js); CHKERRQ(ierr);
   ierr = MatDestroy(&user->Jd); CHKERRQ(ierr);
-  //ierr = MatDestroy(&user->JsBlockPrec); CHKERRQ(ierr);
+  ierr = MatDestroy(&user->JsBlockPrec); CHKERRQ(ierr);
   ierr = MatDestroy(&user->JsInv); CHKERRQ(ierr);
   ierr = MatDestroy(&user->JsBlock); CHKERRQ(ierr);
   ierr = MatDestroy(&user->Divxy[0]); CHKERRQ(ierr);
@@ -1506,25 +1396,18 @@ PetscErrorCode HyperbolicDestroy(AppCtx *user)
   ierr = MatDestroy(&user->Gradxy[0]); CHKERRQ(ierr);
   ierr = MatDestroy(&user->Gradxy[1]); CHKERRQ(ierr);
   ierr = MatDestroy(&user->M); CHKERRQ(ierr);
-  //ierr = MatDestroy(user->C); CHKERRQ(ierr);
-  //ierr = MatDestroy(user->Cwork); CHKERRQ(ierr);
   for (i=0; i<user->nt; i++){
     ierr = MatDestroy(&user->C[i]); CHKERRQ(ierr);
     ierr = MatDestroy(&user->Cwork[i]); CHKERRQ(ierr);
   }
   ierr = PetscFree(user->C); CHKERRQ(ierr);
   ierr = PetscFree(user->Cwork); CHKERRQ(ierr);
-  //ierr = MatDestroy(&user->Hs); CHKERRQ(ierr);
-  //ierr = MatDestroy(&user->Hd); CHKERRQ(ierr);
-  //ierr = MatDestroy(&user->Hsd); CHKERRQ(ierr);
   ierr = VecDestroy(&user->u); CHKERRQ(ierr);
   ierr = VecDestroy(&user->uwork); CHKERRQ(ierr);
   ierr = VecDestroy(&user->vwork); CHKERRQ(ierr);
-  //ierr = VecDestroy(&user->usave); CHKERRQ(ierr);
   ierr = VecDestroy(&user->utrue); CHKERRQ(ierr);
   ierr = VecDestroy(&user->y); CHKERRQ(ierr);
   ierr = VecDestroy(&user->ywork); CHKERRQ(ierr);
-  //ierr = VecDestroy(&user->ysave); CHKERRQ(ierr);
   ierr = VecDestroy(&user->ytrue); CHKERRQ(ierr); 
   ierr = VecDestroyVecs(user->nt,&user->yi); CHKERRQ(ierr);
   ierr = VecDestroyVecs(user->nt,&user->yiwork); CHKERRQ(ierr);
@@ -1561,12 +1444,6 @@ PetscErrorCode HyperbolicDestroy(AppCtx *user)
   ierr = PetscFree(user->uy_scatter); CHKERRQ(ierr);
   ierr = PetscFree(user->ui_scatter); CHKERRQ(ierr);
   ierr = PetscFree(user->yi_scatter); CHKERRQ(ierr);
-  /*ierr = VecScatterDestroy(user->uxi_scatter); CHKERRQ(ierr);
-  ierr = VecScatterDestroy(user->uyi_scatter); CHKERRQ(ierr);
-  ierr = VecScatterDestroy(user->ux_scatter); CHKERRQ(ierr);
-  ierr = VecScatterDestroy(user->uy_scatter); CHKERRQ(ierr);
-  ierr = VecScatterDestroy(user->ui_scatter); CHKERRQ(ierr);
-  ierr = VecScatterDestroy(user->yi_scatter); CHKERRQ(ierr);*/
   PetscFunctionReturn(0);
 }
 
