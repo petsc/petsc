@@ -266,7 +266,7 @@ cdef class PC(Object):
     def setFactorShift(self, shift_type=None, amount=None):
         cdef PetscMatFactorShiftType cval = MAT_SHIFT_NONE
         if shift_type is not None:
-            cval = <PetscMatFactorShiftType>(<long>shift_type)
+            cval = matfactorshifttype(shift_type)
             CHKERR( PCFactorSetShiftType(self.pc, cval) )
         cdef PetscReal rval = 0
         if amount is not None:
