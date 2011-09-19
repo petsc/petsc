@@ -93,16 +93,26 @@ class MatOrderingType(object):
     ROWLENGTH   = S_(MATORDERINGROWLENGTH)
     AMD         = S_(MATORDERINGAMD)
 
+class MatFactorShiftType(object):
+    # native
+    NONE              = MAT_SHIFT_NONE
+    NONZERO           = MAT_SHIFT_NONZERO
+    POSITIVE_DEFINITE = MAT_SHIFT_POSITIVE_DEFINITE
+    INBLOCKS          = MAT_SHIFT_INBLOCKS
+    # aliases
+    NZ = MAT_SHIFT_NONZERO
+    PD = MAT_SHIFT_POSITIVE_DEFINITE
+
 # --------------------------------------------------------------------
 
 cdef class Mat(Object):
 
-    Type         = MatType
-    Option       = MatOption
-    AssemblyType = MatAssemblyType
-    Structure    = MatStructure
-    OrderingType = MatOrderingType
-
+    Type            = MatType
+    Option          = MatOption
+    AssemblyType    = MatAssemblyType
+    Structure       = MatStructure
+    OrderingType    = MatOrderingType
+    FactorShiftType = MatFactorShiftType
     #
 
     def __cinit__(self):
@@ -1145,5 +1155,6 @@ del MatOption
 del MatAssemblyType
 del MatStructure
 del MatOrderingType
+del MatFactorShiftType
 
 # --------------------------------------------------------------------

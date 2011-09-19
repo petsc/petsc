@@ -787,6 +787,18 @@ cdef inline matgetvalues(PetscMat mat,
 cdef extern from "custom.h":
     int MatFactorInfoDefaults(PetscBool,PetscBool,PetscMatFactorInfo*)
 
+cdef inline PetscMatFactorShiftType matfactorshifttype(object st) \
+    except <PetscMatFactorShiftType>(-1):
+    if isinstance(st, str):
+        if st == "none": return MAT_SHIFT_NONE
+        if st == "nonzero": return MAT_SHIFT_NONZERO
+        if st == "positive_definite": return MAT_SHIFT_POSITIVE_DEFINITE
+        if st == "inblocks": return MAT_SHIFT_INBLOCKS
+        if st == "na": return MAT_SHIFT_NONZERO
+        if st == "pd": return MAT_SHIFT_POSITIVE_DEFINITE
+        else: raise ValueError("unknown shift type: %s" % st)
+    return st
+
 cdef int matfactorinfo(PetscBool inc, PetscBool chol, object opts,
                        PetscMatFactorInfo *info) except -1:
     CHKERR( MatFactorInfoDefaults(inc,chol,info) )
@@ -824,7 +836,7 @@ cdef int matfactorinfo(PetscBool inc, PetscBool chol, object opts,
     #
     cdef shifttype = options.pop('shifttype', None)
     if shifttype is not None:
-        info.shifttype = <PetscReal>asInt(shifttype)
+        info.shifttype = <PetscReal>matfactorshifttype(shifttype)
     cdef shiftamount = options.pop('shiftamount', None)
     if shiftamount is not None:
         info.shiftamount = asReal(shiftamount)
