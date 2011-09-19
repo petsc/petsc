@@ -419,4 +419,8 @@ static PetscErrorCode MatMultHermitianTransposeAdd_Compat(Mat A,Vec x,Vec v,Vec 
 #define MAT_KEEP_NONZERO_PATTERN MAT_KEEP_ZEROED_ROWS
 #endif
 
+#if (PETSC_VERSION_(3,0,0))
+typedef enum {MAT_SHIFT_NONE,MAT_SHIFT_NONZERO,MAT_SHIFT_POSITIVE_DEFINITE,MAT_SHIFT_INBLOCKS} MatFactorShiftType;
+#endif
+
 #endif /* _COMPAT_PETSC_MAT_H */
