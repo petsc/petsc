@@ -43,13 +43,13 @@ extern  PetscClassId PETSC_VIEWER_CLASSID;
    process correctly.
 */
 PETSC_EXTERN_CXX_BEGIN
-/*E
+/*J
     PetscViewerType - String with the name of a PETSc PETScViewer
 
    Level: beginner
 
 .seealso: PetscViewerSetType(), PetscViewer
-E*/
+J*/
 #define PetscViewerType char*
 #define PETSCVIEWERSOCKET       "socket"
 #define PETSCVIEWERASCII        "ascii"

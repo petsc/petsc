@@ -19,7 +19,7 @@ extern PetscErrorCode  KSPInitializePackage(const char[]);
 S*/
 typedef struct _p_KSP*     KSP;
 
-/*E
+/*J
     KSPType - String with the name of a PETSc Krylov method or the creation function
        with an optional dynamic library name, for example
        http://www.mcs.anl.gov/petsc/lib.a:mykspcreate()
@@ -27,7 +27,7 @@ typedef struct _p_KSP*     KSP;
    Level: beginner
 
 .seealso: KSPSetType(), KSP
-E*/
+J*/
 #define KSPType char*
 #define KSPRICHARDSON "richardson"
 #define KSPCHEBYCHEV  "chebychev"

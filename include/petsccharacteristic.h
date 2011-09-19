@@ -20,7 +20,7 @@ extern PetscErrorCode CharacteristicInitializePackage(const char[]);
 S*/
 typedef struct _p_Characteristic *Characteristic;
 
-/*E
+/*J
     CharacteristicType - String with the name of a characteristics method or the creation function
        with an optional dynamic library name, for example
        http://www.mcs.anl.gov/petsc/lib.a:mymoccreate()
@@ -28,7 +28,7 @@ typedef struct _p_Characteristic *Characteristic;
    Level: beginner
 
 .seealso: CharacteristicSetType(), Characteristic
-E*/
+J*/
 #define CHARACTERISTICDA "da"
 #define CharacteristicType char*
 

@@ -1,4 +1,3 @@
-/* $Id: petscadic.h,v 1.5 1998/03/24 20:38:58 balay Exp bsmith $ */
 
 /*
         EXPERIMENTAL CODE - Use at your own risk.

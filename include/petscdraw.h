@@ -8,13 +8,13 @@ PETSC_EXTERN_CXX_BEGIN
 
 extern PetscClassId PETSC_DRAW_CLASSID;
 
-/*E
+/*J
     PetscDrawType - String with the name of a PetscDraw 
 
    Level: beginner
 
 .seealso: PetscDrawSetType(), PetscDraw, PetscViewer
-E*/
+J*/
 #define PetscDrawType  char*
 #define PETSC_DRAW_X     "x"
 #define PETSC_DRAW_NULL  "null"

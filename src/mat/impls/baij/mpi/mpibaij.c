@@ -3154,7 +3154,8 @@ PetscErrorCode  MatConvert_MPIBAIJ_MPIAIJ(Mat A,const MatType newtype,MatReuse r
 
   ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N);CHKERRQ(ierr);
-  ierr = MatSetType(B,newtype);CHKERRQ(ierr);
+  ierr = MatSetType(B,MATMPIAIJ);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(B,0,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(B,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
   b = (Mat_MPIAIJ*) B->data; 
 
