@@ -3,8 +3,21 @@ import sys
 import subprocess
 import signal
 import string
-sys.path.insert(0, os.path.join(os.environ['PETSC_DIR'], 'config'))
-sys.path.insert(0, os.path.join(os.environ['PETSC_DIR'], 'config', 'BuildSystem'))
+
+def findPetscVariable(key):
+    import re
+    value = None
+    configfile = os.path.join(os.environ['PETSC_DIR'],os.environ['PETSC_ARCH'],'conf','petscvariables')
+    if os.access(configfile,os.R_OK):
+        f = open(configfile)
+        lines = f.readlines()
+        for l in lines:
+            m = re.match(key+'\s*=\s*(\S+)',l)
+            if m and len(m.groups()):
+                value = m.groups()[0]
+    return value
+            
+
 
 class Example:
     def __init__(self,example,nprocs=1,options="",method=None,tags=[],name=""):
@@ -29,13 +42,8 @@ class Example:
 
         
     def runCommand(self,version=2):
-        import RDict
-        argDB = RDict.RDict(None, None, 0, 0)
-        argDB.saveFilename = os.path.join(os.environ['PETSC_DIR'], os.environ['PETSC_ARCH'], 'conf', 'RDict.db')
-        argDB.load()
-        if (argDB.has_key('MPIEXEC')):
-            mpiexec = argDB['MPIEXEC']
-        else:
+        mpiexec = findPetscVariable('MPIEXEC')
+        if mpiexec is None:
             mpiexec = "mpiexec"
         c = [mpiexec,"-np","%s" %self.nprocs]
         if version==1:
