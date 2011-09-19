@@ -20,6 +20,7 @@ typedef struct {
 
   PetscReal  dt_initial;                    /* initial time-step */
   PetscReal  dt_increment;                  /* scaling that dt is incremented each time-step */
+  PetscReal  dt_max;                        /* maximum time step */
   PetscBool  increment_dt_from_initial_dt;
 } TS_Pseudo;
 
@@ -210,6 +211,7 @@ static PetscErrorCode TSDestroy_Pseudo(TS ts)
   ierr = PetscFree(ts->data);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSPseudoSetVerifyTimeStep_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSPseudoSetTimeStepIncrement_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSPseudoSetMaxTimeStep_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSPseudoIncrementDtFromInitialDt_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSPseudoSetTimeStep_C","",PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -355,6 +357,7 @@ static PetscErrorCode TSSetFromOptions_Pseudo(TS ts)
       ierr = TSPseudoIncrementDtFromInitialDt(ts);CHKERRQ(ierr);
     }
     ierr = PetscOptionsReal("-ts_pseudo_increment","Ratio to increase dt","TSPseudoSetTimeStepIncrement",pseudo->dt_increment,&pseudo->dt_increment,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-ts_pseudo_max_dt","Maximum value for dt","TSPseudoSetMaxTimeStep",pseudo->dt_max,&pseudo->dt_max,0);CHKERRQ(ierr);
 
     ierr = SNESSetFromOptions(ts->snes);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
@@ -444,6 +447,38 @@ PetscErrorCode  TSPseudoSetTimeStepIncrement(TS ts,PetscReal inc)
   PetscValidHeaderSpecific(ts,TS_CLASSID,1);
   PetscValidLogicalCollectiveReal(ts,inc,2);
   ierr = PetscTryMethod(ts,"TSPseudoSetTimeStepIncrement_C",(TS,PetscReal),(ts,inc));CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TSPseudoSetMaxTimeStep"
+/*@
+    TSPseudoSetMaxTimeStep - Sets the maximum time step
+    when using the TSPseudoDefaultTimeStep() routine.
+
+   Logically Collective on TS
+
+    Input Parameters:
++   ts - the timestep context
+-   maxdt - the maximum time step, use a non-positive value to deactivate
+
+    Options Database Key:
+$    -ts_pseudo_max_dt <increment>
+
+    Level: advanced
+
+.keywords: timestep, pseudo, set
+
+.seealso: TSPseudoSetTimeStep(), TSPseudoDefaultTimeStep()
+@*/
+PetscErrorCode  TSPseudoSetMaxTimeStep(TS ts,PetscReal maxdt)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_CLASSID,1);
+  PetscValidLogicalCollectiveReal(ts,maxdt,2);
+  ierr = PetscTryMethod(ts,"TSPseudoSetMaxTimeStep_C",(TS,PetscReal),(ts,maxdt));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -548,6 +583,19 @@ PetscErrorCode  TSPseudoSetTimeStepIncrement_Pseudo(TS ts,PetscReal inc)
 
   PetscFunctionBegin;
   pseudo->dt_increment = inc;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "TSPseudoSetMaxTimeStep_Pseudo"
+PetscErrorCode  TSPseudoSetMaxTimeStep_Pseudo(TS ts,PetscReal maxdt)
+{
+  TS_Pseudo *pseudo = (TS_Pseudo*)ts->data;
+
+  PetscFunctionBegin;
+  pseudo->dt_max = maxdt;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -663,6 +711,9 @@ PetscErrorCode  TSCreate_Pseudo(TS ts)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSPseudoSetTimeStepIncrement_C",
                     "TSPseudoSetTimeStepIncrement_Pseudo",
                      TSPseudoSetTimeStepIncrement_Pseudo);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSPseudoSetMaxTimeStep_C",
+                    "TSPseudoSetMaxTimeStep_Pseudo",
+                     TSPseudoSetMaxTimeStep_Pseudo);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSPseudoIncrementDtFromInitialDt_C",
                     "TSPseudoIncrementDtFromInitialDt_Pseudo",
                      TSPseudoIncrementDtFromInitialDt_Pseudo);CHKERRQ(ierr);
@@ -716,6 +767,7 @@ PetscErrorCode  TSPseudoDefaultTimeStep(TS ts,PetscReal* newdt,void* dtctx)
   } else {
     *newdt = inc*ts->time_step*fnorm_previous/pseudo->fnorm;
   }
+  if (pseudo->dt_max > 0) *newdt = PetscMin(*newdt,pseudo->dt_max);
   pseudo->fnorm_previous = pseudo->fnorm;
   PetscFunctionReturn(0);
 }
