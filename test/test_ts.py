@@ -68,6 +68,9 @@ class BaseTestTSNonlinear(object):
         ptype = PETSc.TS.ProblemType.NONLINEAR
         self.ts.setProblemType(ptype)
         self.ts.setType(self.TYPE)
+        if PETSc.ScalarType().dtype.char in 'fF':
+            snes = self.ts.getSNES()
+            snes.setTolerances(rtol=1e-6)
 
     def tearDown(self):
         self.ts = None
