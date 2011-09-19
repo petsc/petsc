@@ -97,9 +97,15 @@ class PetscConfig:
         PETSC_DIR  = petsc_dir
         PETSC_ARCH = petsc_arch
         #
-        if (not PETSC_ARCH or
-            not os.path.isdir(os.path.join(PETSC_DIR, PETSC_ARCH))):
-            PETSC_ARCH    = ''
+        if not (PETSC_ARCH and os.path.isdir(
+                os.path.join(PETSC_DIR, PETSC_ARCH))):
+            petscvars = os.path.join(
+                PETSC_DIR, 'conf', 'petscvariables')
+            petscvars = open(petscvars)
+            PETSC_ARCH = makefile(petscvars).get('PETSC_ARCH')
+        if not (PETSC_ARCH and os.path.isdir(
+                os.path.join(PETSC_DIR, PETSC_ARCH))):
+            PETSC_ARCH = ''
         #
         variables = os.path.join(PETSC_DIR, 'conf', 'variables')
         if not os.path.exists(variables):
