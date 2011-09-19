@@ -294,7 +294,7 @@ static PetscErrorCode SNESSetFromOptions_QN(SNES snes)
       Options Database:
 
 +     -snes_qn_m - Number of past states saved for the L-Broyden methods.
-+     -snes_ls_damping - The damping parameter on the update.
++     -snes_ls_damping - The damping parameter on the update to x.
 
       Notes: This implements the L-BFGS algorithm for the solution of F(x) = 0 using previous change in F(x) and x to
       form the approximate inverse Jacobian using a series of multiplicative rank-one updates.  This will eventually be

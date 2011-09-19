@@ -37,8 +37,8 @@ E*/
 #define SNESNGMRES       "ngmres"
 #define SNESQN           "qn"
 #define SNESSHELL        "shell"
-
-#define SNESSORQN   "sorqn"
+#define SNESNCG          "ncg"
+#define SNESSORQN        "sorqn"
 
 /* Logging support */
 extern PetscClassId  SNES_CLASSID;
