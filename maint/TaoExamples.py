@@ -3,6 +3,8 @@ import sys
 import subprocess
 import signal
 import string
+sys.path.insert(0, os.path.join(os.environ['PETSC_DIR'], 'config'))
+sys.path.insert(0, os.path.join(os.environ['PETSC_DIR'], 'config', 'BuildSystem'))
 
 class Example:
     def __init__(self,example,nprocs=1,options="",method=None,tags=[],name=""):
@@ -27,7 +29,15 @@ class Example:
 
         
     def runCommand(self,version=2):
-        c = ["mpiexec","-np","%s" %self.nprocs]
+        import RDict
+        argDB = RDict.RDict(None, None, 0, 0)
+        argDB.saveFilename = os.path.join(os.environ['PETSC_DIR'], os.environ['PETSC_ARCH'], 'conf', 'RDict.db')
+        argDB.load()
+        if (argDB.has_key('MPIEXEC')):
+            mpiexec = argDB['MPIEXEC']
+        else:
+            mpiexec = "mpiexec"
+        c = [mpiexec,"-np","%s" %self.nprocs]
         if version==1:
             c.extend( [os.path.join('.',self.example)])
         elif version==2:
