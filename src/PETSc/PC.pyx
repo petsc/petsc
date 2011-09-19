@@ -211,7 +211,7 @@ cdef class PC(Object):
     # --- ASM ---
 
     def setASMType(self, asmtype):
-        cdef PetscPCASMType  cval = asmtype
+        cdef PetscPCASMType cval = asmtype
         CHKERR( PCASMSetType(self.pc, cval) )
 
     def setASMOverlap(self, overlap):
@@ -232,7 +232,58 @@ cdef class PC(Object):
         CHKERR( PCASMGetSubKSP(self.pc, &n, NULL, &p) )
         return [ref_KSP(p[i]) for i from 0 <= i <n]
 
-    # --- FieldSplit ---
+    # --- Factor ---
+
+    def setFactorSolverPackage(self, solver):
+        cdef PetscMatSolverPackage cval = NULL
+        solver = str2bytes(solver, &cval)
+        CHKERR( PCFactorSetMatSolverPackage(self.pc, cval) )
+
+    def setFactorOrdering(self, ord_type=None, nzdiag=None, reuse=None):
+        cdef PetscMatOrderingType cval = NULL
+        if ord_type is not None:
+            ord_type = str2bytes(ord_type, &cval)
+            CHKERR( PCFactorSetMatOrderingType(self.pc, cval) )
+        cdef PetscReal rval = 0
+        if nzdiag is not None:
+            rval = asReal(nzdiag)
+            CHKERR( PCFactorReorderForNonzeroDiagonal(self.pc, rval) )
+        cdef PetscBool bval = PETSC_FALSE
+        if reuse is not None:
+            bval = PETSC_TRUE if reuse else PETSC_FALSE
+            CHKERR( PCFactorSetReuseOrdering(self.pc, bval) )
+
+    def setFactorPivot(self, zeropivot=None, inblocks=None):
+        cdef PetscReal rval = 0
+        if zeropivot is not None:
+            rval = asReal(zeropivot)
+            CHKERR( PCFactorSetZeroPivot(self.pc, rval) )
+        cdef PetscBool bval = PETSC_FALSE
+        if inblocks is not None:
+            bval2 = PETSC_TRUE if inblocks else PETSC_FALSE
+            CHKERR( PCFactorSetPivotInBlocks(self.pc, bval) )
+
+    def setFactorShift(self, shift_type=None, amount=None):
+        cdef PetscMatFactorShiftType cval = MAT_SHIFT_NONE
+        if shift_type is not None:
+            cval = <PetscMatFactorShiftType>(<long>shift_type)
+            CHKERR( PCFactorSetShiftType(self.pc, cval) )
+        cdef PetscReal rval = 0
+        if amount is not None:
+            rval = asReal(amount)
+            CHKERR( PCFactorSetShiftAmount(self.pc, rval) )
+
+    def setFactorLevels(self, levels):
+        cdef PetscInt ival = asInt(levels)
+        CHKERR( PCFactorSetLevels(self.pc, ival) )
+
+    def getFactorMatrix(self):
+        cdef Mat mat = Mat()
+        CHKERR( PCFactorGetMatrix(self.pc, &mat.mat) )
+        PetscINCREF(mat.obj)
+        return mat
+
+   # --- FieldSplit ---
 
     def setFieldSplitType(self, ctype):
         cdef PetscPCCompositeType cval = ctype

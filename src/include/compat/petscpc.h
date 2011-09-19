@@ -51,7 +51,7 @@ static PetscErrorCode PCReset_Compat(PC pc)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
-  SETERRQ(PETSC_ERR_SUP,"not supported in this PETSc version");
+  SETERRQ(PETSC_ERR_SUP,__FUNCT__"() not supported in this PETSc version");
   PetscFunctionReturn(0);
 }
 #define PCReset PCReset_Compat
@@ -118,6 +118,40 @@ static PetscErrorCode PCASMSetTotalSubdomains_Compat(PC pc,PetscInt N,
 #define PCPFMG         "pfmg"
 #define PCSYSPFMG      "syspfmg"
 #define PCREDISTRIBUTE "redistribute"
+#endif
+
+#if (PETSC_VERSION_(3,0,0))
+#undef __FUNCT__
+#define __FUNCT__ "PCFactorSetShiftType"
+PetscErrorCode PCFactorSetShiftType(PC pc,MatFactorShiftType shifttype)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  if (shifttype == MAT_SHIFT_NONE) {
+    ierr = PCFactorSetShiftNonzero(pc,(PetscReal)0);CHKERRQ(ierr);
+    ierr = PCFactorSetShiftPd(pc,PETSC_FALSE);CHKERRQ(ierr);
+    ierr = PCFactorSetShiftInBlocks(pc,(PetscReal)0);CHKERRQ(ierr);
+  } else if (shifttype == MAT_SHIFT_NONZERO) {
+    ierr = PCFactorSetShiftNonzero(pc,(PetscReal)PETSC_DECIDE);CHKERRQ(ierr);
+  } else if (shifttype == MAT_SHIFT_POSITIVE_DEFINITE) {
+    ierr = PCFactorSetShiftPd(pc,PETSC_TRUE);CHKERRQ(ierr);
+  } else if (shifttype == MAT_SHIFT_INBLOCKS) {
+    ierr = PCFactorSetShiftInBlocks(pc,(PetscReal)PETSC_DECIDE);CHKERRQ(ierr);
+  } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"unknown value for shift type");
+  PetscFunctionReturn(0);
+}
+#undef __FUNCT__
+#define __FUNCT__ "PCFactorSetShiftType"
+PetscErrorCode PCFactorSetShiftAmount(PC pc,PetscReal shiftamount)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  ierr = PCFactorSetShiftNonzero(pc,shiftamount);CHKERRQ(ierr);
+  ierr = PCFactorSetShiftInBlocks(pc,shiftamount);CHKERRQ(ierr);
+  PetscFunctionReturn(PETSC_ERR_SUP);
+}
 #endif
 
 #endif /* _COMPAT_PETSC_PC_H */
