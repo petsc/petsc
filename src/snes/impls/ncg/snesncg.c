@@ -260,8 +260,8 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
 
   maxits = snes->max_its;            /* maximum number of iterations */
   X      = snes->vec_sol;            /* X^n */
-  dX     = snes->vec_sol_update;     /* the steepest direction */
-  lX     = snes->work[1];            /* the conjugate direction */
+  dX     = snes->work[1];            /* the steepest direction */
+  lX     = snes->vec_sol_update;     /* the conjugate direction */
   F      = snes->vec_func;           /* residual vector */
   W      = snes->work[0];            /* work vector for the line search */
   B      = snes->vec_rhs;            /* the right hand side */
@@ -333,7 +333,7 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
 
     /* Monitor convergence */
     ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
-    snes->iter = i+1;
+    snes->iter = i;
     snes->norm = fnorm;
     ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
     SNESLogConvHistory(snes,snes->norm,0);
@@ -347,7 +347,7 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
     if (snes->ops->update) {
       ierr = (*snes->ops->update)(snes, snes->iter);CHKERRQ(ierr);
     }
-    if (!snes->pc) {
+    if (snes->pc) {
       ierr = VecCopy(F,dX);CHKERRQ(ierr);
       ierr = VecScale(dX,-1.0);CHKERRQ(ierr);
     } else {
@@ -361,9 +361,11 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
       ierr = VecAXPY(dX,-1.0,X);CHKERRQ(ierr);
     }
 
-    /* compute the conjugate direction lX = dX + beta*lX with beta = (dX, dX) / (DX_old, dX_old) (Fletcher-Reeves Update)*/
+    /* compute the conjugate direction lX = dX + beta*lX with beta = ((dX, dX) / (dX_old, dX_old) (Fletcher-Reeves update)*/
     dXdot_old = dXdot;
     ierr = VecDot(dX, dX, &dXdot);CHKERRQ(ierr);
+    if (neP->monitor) 
+      ierr = PetscPrintf(PETSC_COMM_WORLD, "beta %e = %e / %e \n", dXdot / dXdot_old, dXdot, dXdot_old);CHKERRQ(ierr);
     ierr = VecAYPX(lX, dXdot / dXdot_old, dX);CHKERRQ(ierr);
     /* line search for the proper contribution of lX to the solution */
   }
