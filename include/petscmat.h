@@ -17,7 +17,7 @@ PETSC_EXTERN_CXX_BEGIN
 S*/
 typedef struct _p_Mat*           Mat;
 
-/*E
+/*J
     MatType - String with the name of a PETSc matrix or the creation function
        with an optional dynamic library name, for example
        http://www.mcs.anl.gov/petsc/lib.a:mymatcreate()
@@ -25,7 +25,7 @@ typedef struct _p_Mat*           Mat;
    Level: beginner
 
 .seealso: MatSetType(), Mat, MatSolverPackage
-E*/
+J*/
 #define MatType char*
 #define MATSAME            "same"
 #define MATMAIJ            "maij"
@@ -57,14 +57,12 @@ E*/
 #define MATSBAIJ           "sbaij"
 #define MATSEQSBAIJ        "seqsbaij"
 #define MATMPISBAIJ        "mpisbaij"
-
 #define MATSEQBSTRM        "seqbstrm"
 #define MATMPIBSTRM        "mpibstrm"
 #define MATBSTRM           "bstrm"
 #define MATSEQSBSTRM       "seqsbstrm"
 #define MATMPISBSTRM       "mpisbstrm"
 #define MATSBSTRM          "sbstrm"
-
 #define MATDAAD            "daad"
 #define MATMFFD            "mffd"
 #define MATNORMAL          "normal"
@@ -84,7 +82,7 @@ E*/
 #define MATLOCALREF        "localref"
 #define MATNEST            "nest"
 
-/*E
+/*J
     MatSolverPackage - String with the name of a PETSc matrix solver type. 
 
     For example: "petsc" indicates what PETSc provides, "superlu" indicates either 
@@ -94,7 +92,7 @@ E*/
    Level: beginner
 
 .seealso: MatGetFactor(), Mat, MatSetType(), MatType
-E*/
+J*/
 #define MatSolverPackage char*
 #define MATSOLVERSPOOLES      "spooles"
 #define MATSOLVERSUPERLU      "superlu"
@@ -1052,7 +1050,7 @@ extern PetscErrorCode  MatFindNonzeroRows(Mat,IS*);
   done through the KSP and PC interfaces.
 */
 
-/*E
+/*J
     MatOrderingType - String with the name of a PETSc matrix ordering or the creation function
        with an optional dynamic library name, for example 
        http://www.mcs.anl.gov/petsc/lib.a:orderingcreate()
@@ -1062,7 +1060,7 @@ extern PetscErrorCode  MatFindNonzeroRows(Mat,IS*);
    Cannot use const because the PC objects manipulate the string
 
 .seealso: MatGetOrdering()
-E*/
+J*/
 #define MatOrderingType char*
 #define MATORDERINGNATURAL     "natural"
 #define MATORDERINGND          "nd"
@@ -1210,7 +1208,7 @@ extern PetscErrorCode  MatSOR(Mat,Vec,PetscReal,MatSORType,PetscReal,PetscInt,Pe
     These routines are for efficiently computing Jacobians via finite differences.
 */
 
-/*E
+/*J
     MatColoringType - String with the name of a PETSc matrix coloring or the creation function
        with an optional dynamic library name, for example 
        http://www.mcs.anl.gov/petsc/lib.a:coloringcreate()
@@ -1218,7 +1216,7 @@ extern PetscErrorCode  MatSOR(Mat,Vec,PetscReal,MatSORType,PetscReal,PetscInt,Pe
    Level: beginner
 
 .seealso: MatGetColoring()
-E*/
+J*/
 #define MatColoringType char*
 #define MATCOLORINGNATURAL "natural"
 #define MATCOLORINGSL      "sl"
@@ -1316,7 +1314,7 @@ extern PetscErrorCode  MatFDColoringGetPerturbedColumns(MatFDColoring,PetscInt*,
 S*/
 typedef struct _p_MatPartitioning* MatPartitioning;
 
-/*E
+/*J
     MatPartitioningType - String with the name of a PETSc matrix partitioning or the creation function
        with an optional dynamic library name, for example 
        http://www.mcs.anl.gov/petsc/lib.a:partitioningcreate()
@@ -1324,7 +1322,7 @@ typedef struct _p_MatPartitioning* MatPartitioning;
    Level: beginner
 
 .seealso: MatPartitioningCreate(), MatPartitioning
-E*/
+J*/
 #define MatPartitioningType char*
 #define MATPARTITIONINGCURRENT  "current"
 #define MATPARTITIONINGSQUARE   "square"
@@ -1661,13 +1659,13 @@ extern PetscErrorCode  MatMFFDSetCheckh(Mat,PetscErrorCode (*)(void*,Vec,Vec,Pet
 S*/
 typedef struct _p_MatMFFD* MatMFFD;
 
-/*E
+/*J
     MatMFFDType - algorithm used to compute the h used in computing matrix-vector products via differencing of the function
 
    Level: beginner
 
 .seealso: MatMFFDSetType(), MatMFFDRegister()
-E*/
+J*/
 #define MatMFFDType char*
 #define MATMFFD_DS  "ds"
 #define MATMFFD_WP  "wp"

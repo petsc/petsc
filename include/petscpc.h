@@ -25,7 +25,7 @@ extern PetscFList PCList;
 S*/
 typedef struct _p_PC* PC;
 
-/*E
+/*J
     PCType - String with the name of a PETSc preconditioner method or the creation function
        with an optional dynamic library name, for example
        http://www.mcs.anl.gov/petsc/lib.a:mypccreate()
@@ -35,7 +35,7 @@ typedef struct _p_PC* PC;
    Notes: Click on the links below to see details on a particular solver
 
 .seealso: PCSetType(), PC, PCCreate()
-E*/
+J*/
 #define PCType char*
 #define PCNONE            "none"
 #define PCJACOBI          "jacobi"
