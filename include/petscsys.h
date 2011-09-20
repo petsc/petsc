@@ -1149,16 +1149,12 @@ extern const char *PetscDataTypes[];
 #else
 #if defined(PETSC_USE_REAL_SINGLE)
 #define  PETSC_SCALAR  PETSC_FLOAT
-#elif defined(PETSC_USE_REAL_LONG_DOUBLE)
-#define  PETSC_SCALAR  PETSC_LONG_DOUBLE
 #else
 #define  PETSC_SCALAR  PETSC_DOUBLE
 #endif
 #endif
 #if defined(PETSC_USE_REAL_SINGLE)
 #define  PETSC_REAL  PETSC_FLOAT
-#elif defined(PETSC_USE_REAL_LONG_DOUBLE)
-#define  PETSC_REAL  PETSC_LONG_DOUBLE
 #else
 #define  PETSC_REAL  PETSC_DOUBLE
 #endif
@@ -2459,6 +2455,8 @@ extern PetscErrorCode  PetscSubcommDestroy(PetscSubcomm*);
 extern PetscErrorCode  PetscSubcommSetNumber(PetscSubcomm,PetscInt);
 extern PetscErrorCode  PetscSubcommSetType(PetscSubcomm,const PetscSubcommType);
 extern PetscErrorCode  PetscSubcommSetTypeGeneral(PetscSubcomm,PetscMPIInt,PetscMPIInt,PetscMPIInt);
+
+#include <petscctable.h>
 
 PETSC_EXTERN_CXX_END
 

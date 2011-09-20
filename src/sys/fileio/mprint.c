@@ -70,9 +70,6 @@ PetscErrorCode  PetscFormatConvert(const char *format,char *newformat,size_t siz
       newformat[j++] = '%';
 #if defined(PETSC_USE_REAL_DOUBLE) || defined(PETSC_USE_REAL_SINGLE)
       newformat[j++] = 'g';
-#elif defined(PETSC_USE_REAL_LONG_DOUBLE)
-      newformat[j++] = 'L';
-      newformat[j++] = 'g';
 #elif defined(PETSC_USE_REAL___FLOAT128)
       newformat[j++] = 'Q';
       newformat[j++] = 'e';

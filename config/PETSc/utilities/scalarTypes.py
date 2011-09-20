@@ -77,8 +77,6 @@ class Configure(config.base.Configure):
     self.precision = self.framework.argDB['with-precision'].lower()
     if self.precision == 'single':
       self.addDefine('USE_REAL_SINGLE', '1')
-    elif self.precision == 'longdouble':
-      self.addDefine('USE_REAL_LONG_DOUBLE', '1')
     elif self.precision == '_quad': # source code currently does not support this
       self.pushLanguage('C')
       if not config.setCompilers.Configure.isIntel(self.compilers.getCompiler()): raise RuntimeError('Only Intel compiler supports _quad')

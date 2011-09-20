@@ -655,7 +655,7 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const IS isr
   ierr = PetscMalloc5(ismax,const PetscInt*,&irow,ismax,const PetscInt*,&icol,ismax,PetscInt,&nrow,ismax,PetscInt,&ncol,Mbs+1,PetscInt,&rtable);CHKERRQ(ierr);
   /* Create hash table for the mapping :row -> proc*/
   for (i=0,j=0; i<size; i++) {
-    jmax = c->rowners[i+1];
+    jmax = C->rmap->range[i+1]/bs;
     for (; j<jmax; j++) {
       rtable[j] = i;
     }
@@ -963,6 +963,7 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const IS isr
 #else
     ierr    = PetscMalloc(ismax*sizeof(PetscInt*),&cmap);CHKERRQ(ierr);
     ierr    = PetscMalloc(ismax*c->Nbs*sizeof(PetscInt),&cmap[0]);CHKERRQ(ierr);
+    ierr    = PetscMemzero(cmap[0],ismax*c->Nbs*sizeof(PetscInt));CHKERRQ(ierr);
     for (i=1; i<ismax; i++) { cmap[i] = cmap[i-1] + c->Nbs; }
 #endif
     for (i=0; i<ismax; i++) {

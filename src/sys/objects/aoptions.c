@@ -285,8 +285,6 @@ PetscErrorCode PetscOptionsGetFromTextInput()
           sscanf(str,"%e",&ir);
 #elif defined(PETSC_USE_REAL_DOUBLE)
           sscanf(str,"%le",&ir);
-#elif defined(PETSC_USE_REAL_LONG_DOUBLE)
-          sscanf(str,"%Le",&ir);
 #elif defined(PETSC_USE_REAL___FLOAT128)
           ir = strtoflt128(str,0);
 #else

@@ -605,7 +605,6 @@ extern PetscErrorCode  MatMPIAIJGetLocalMatCondensed(Mat,MatReuse,IS*,IS*,Mat*);
 extern PetscErrorCode  MatGetBrowsOfAcols(Mat,Mat,MatReuse,IS*,IS*,PetscInt*,Mat*);
 extern PetscErrorCode  MatGetBrowsOfAoCols(Mat,Mat,MatReuse,PetscInt**,PetscInt**,MatScalar**,Mat*);
 #if defined (PETSC_USE_CTABLE)
-#include "petscctable.h"
 extern PetscErrorCode  MatGetCommunicationStructs(Mat, Vec *, PetscTable *, VecScatter *);
 #else
 extern PetscErrorCode  MatGetCommunicationStructs(Mat, Vec *, PetscInt *[], VecScatter *);
