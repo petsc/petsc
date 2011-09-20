@@ -1,14 +1,10 @@
-
 update manual
-  fix finite differences (part2.tex)
   add pounders section
-  Add solver registration instructions
-  Add linesearch info
 
 Check fortran stubs 
-  pde-constrained
 
 Check documentation
+
 
 Examples/tests
   add to tests (-tao_fd, -tao_fdgrad, -tao_fd_delta)
@@ -16,6 +12,7 @@ Examples/tests
   remake output
   test GNU quad
   Put examples in correct places
+  Correct list of routines used in examples
 
 Test on arches
   Visual Studio
@@ -24,6 +21,11 @@ Test on arches
   Mac
   Solaris
   Fusion
+
+Test compilers
+  intel
+  gnu-4.6
+  cray
   
 automatic testing, coverage
 Buildbot

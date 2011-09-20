@@ -4,6 +4,21 @@ import subprocess
 import signal
 import string
 
+def findPetscVariable(key):
+    import re
+    value = None
+    configfile = os.path.join(os.environ['PETSC_DIR'],os.environ['PETSC_ARCH'],'conf','petscvariables')
+    if os.access(configfile,os.R_OK):
+        f = open(configfile)
+        lines = f.readlines()
+        for l in lines:
+            m = re.match(key+'\s*=\s*(\S+)',l)
+            if m and len(m.groups()):
+                value = m.groups()[0]
+    return value
+            
+
+
 class Example:
     def __init__(self,example,nprocs=1,options="",method=None,tags=[],name=""):
         self.example=example
@@ -27,7 +42,10 @@ class Example:
 
         
     def runCommand(self,version=2):
-        c = ["mpiexec","-np","%s" %self.nprocs]
+        mpiexec = findPetscVariable('MPIEXEC')
+        if mpiexec is None:
+            mpiexec = "mpiexec"
+        c = [mpiexec,"-np","%s" %self.nprocs]
         if version==1:
             c.extend( [os.path.join('.',self.example)])
         elif version==2:

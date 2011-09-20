@@ -35,7 +35,7 @@ static PetscErrorCode TaoSolverSolve_CG(TaoSolver tao)
     // Check convergence criteria
     ierr = TaoSolverComputeObjectiveAndGradient(tao, tao->solution, &f, tao->gradient); CHKERRQ(ierr);
     ierr = VecNorm(tao->gradient,NORM_2,&gnorm); CHKERRQ(ierr);
-    if (TaoInfOrNaN(f) || TaoInfOrNaN(gnorm)) {
+    if (PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(gnorm)) {
 	SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf or NaN");
     }
     
@@ -71,7 +71,7 @@ static PetscErrorCode TaoSolverSolve_CG(TaoSolver tao)
 	ierr = VecCopy(tao->solution, cgP->X_old); CHKERRQ(ierr);
 	ierr = VecCopy(tao->gradient, cgP->G_old); CHKERRQ(ierr);
 	ierr = VecDot(tao->gradient, tao->stepdirection, &gd); CHKERRQ(ierr);
-	if ((gd >= 0) || TaoInfOrNaN(gd)) {
+	if ((gd >= 0) || PetscIsInfOrNanReal(gd)) {
 	    ++cgP->ngradsteps;
 	    if (f != 0.0) {
 		delta = 2.0*PetscAbsScalar(f) / gnorm2;
@@ -141,7 +141,7 @@ static PetscErrorCode TaoSolverSolve_CG(TaoSolver tao)
 	
 	// Check for bad value
 	ierr = VecNorm(tao->gradient,NORM_2,&gnorm); CHKERRQ(ierr);
-	if (TaoInfOrNaN(f) || TaoInfOrNaN(gnorm)) {
+	if (PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(gnorm)) {
 	    SETERRQ(PETSC_COMM_SELF,1,"User-provided compute function generated Inf or NaN");
 	}
 	

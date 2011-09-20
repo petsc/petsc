@@ -133,7 +133,7 @@ static PetscErrorCode TaoSolverSolve_NTL(TaoSolver tao)
   /* Check convergence criteria */
   ierr = TaoSolverComputeObjectiveAndGradient(tao, tao->solution, &f, tao->gradient); CHKERRQ(ierr);
   ierr = VecNorm(tao->gradient, NORM_2, &gnorm); CHKERRQ(ierr);
-  if (TaoInfOrNaN(f) || TaoInfOrNaN(gnorm)) {
+  if (PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(gnorm)) {
     SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf or NaN");
   }
   needH = 1;
@@ -233,7 +233,7 @@ static PetscErrorCode TaoSolverSolve_NTL(TaoSolver tao)
 	ierr = VecAXPY(tl->W, -tao->trust/gnorm, tao->gradient); CHKERRQ(ierr);
 
         ierr = TaoSolverComputeObjective(tao, tl->W, &ftrial); CHKERRQ(ierr);
-        if (TaoInfOrNaN(ftrial)) {
+        if (PetscIsInfOrNanReal(ftrial)) {
           tau = tl->gamma1_i;
         }
         else {
@@ -327,7 +327,7 @@ static PetscErrorCode TaoSolverSolve_NTL(TaoSolver tao)
 	ierr = TaoSolverComputeGradient(tao, tao->solution, tao->gradient); CHKERRQ(ierr);
 
 	ierr = VecNorm(tao->gradient, NORM_2, &gnorm); CHKERRQ(ierr);
-	if (TaoInfOrNaN(f) || TaoInfOrNaN(gnorm)) {
+	if (PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(gnorm)) {
 	  SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf or NaN");
 	}
 	needH = 1;
@@ -493,7 +493,7 @@ static PetscErrorCode TaoSolverSolve_NTL(TaoSolver tao)
 	ierr = VecAXPY(tl->W, 1.0, tao->stepdirection); CHKERRQ(ierr);
 	ierr = TaoSolverComputeObjective(tao, tl->W, &ftrial); CHKERRQ(ierr);
 
-	if (TaoInfOrNaN(ftrial)) {
+	if (PetscIsInfOrNanReal(ftrial)) {
 	  tao->trust = tl->alpha1 * PetscMin(tao->trust, norm_d);
 	  tr_reject = 1;
 	}
@@ -558,7 +558,7 @@ static PetscErrorCode TaoSolverSolve_NTL(TaoSolver tao)
 	ierr = VecCopy(tao->solution, tl->W); CHKERRQ(ierr);
 	ierr = VecAXPY(tl->W, 1.0, tao->stepdirection); CHKERRQ(ierr);
 	ierr = TaoSolverComputeObjective(tao, tl->W, &ftrial); CHKERRQ(ierr);
-	if (TaoInfOrNaN(ftrial)) {
+	if (PetscIsInfOrNanReal(ftrial)) {
 	  tao->trust = tl->gamma1 * PetscMin(tao->trust, norm_d);
 	  tr_reject = 1;
 	}
@@ -639,7 +639,7 @@ static PetscErrorCode TaoSolverSolve_NTL(TaoSolver tao)
       /* The trust-region constraints rejected the step.  Apply a linesearch.
 	 Check for descent direction. */
       ierr = VecDot(tao->stepdirection, tao->gradient, &gdx); CHKERRQ(ierr);
-      if ((gdx >= 0.0) || TaoInfOrNaN(gdx)) {
+      if ((gdx >= 0.0) || PetscIsInfOrNanReal(gdx)) {
 	/* Newton step is not descent or direction produced Inf or NaN */
 	
 	if (NTL_PC_BFGS != tl->pc_type) {
@@ -657,7 +657,7 @@ static PetscErrorCode TaoSolverSolve_NTL(TaoSolver tao)
 	  
 	  /* Check for success (descent direction) */
 	  ierr = VecDot(tao->stepdirection, tao->gradient, &gdx); CHKERRQ(ierr);
-	  if ((gdx >= 0) || TaoInfOrNaN(gdx)) {
+	  if ((gdx >= 0) || PetscIsInfOrNanReal(gdx)) {
 	    /* BFGS direction is not descent or direction produced not a number
 	       We can assert bfgsUpdates > 1 in this case because
 	       the first solve produces the scaled gradient direction,
@@ -732,7 +732,7 @@ static PetscErrorCode TaoSolverSolve_NTL(TaoSolver tao)
 	    
 	    /* Check for success (descent direction) */
 	    ierr = VecDot(tao->stepdirection, tao->gradient, &gdx); CHKERRQ(ierr);
-	    if ((gdx <= 0) || TaoInfOrNaN(gdx)) {
+	    if ((gdx <= 0) || PetscIsInfOrNanReal(gdx)) {
 	      /* BFGS direction is not descent or direction produced 
 		 not a number.  We can assert bfgsUpdates > 1 in this case
 		 Use steepest descent direction (scaled) */
@@ -863,7 +863,7 @@ static PetscErrorCode TaoSolverSolve_NTL(TaoSolver tao)
 
     /* Check for termination */
     ierr = VecNorm(tao->gradient, NORM_2, &gnorm); CHKERRQ(ierr);
-    if (TaoInfOrNaN(f) || TaoInfOrNaN(gnorm)) {
+    if (PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(gnorm)) {
       SETERRQ(PETSC_COMM_SELF,1,"User provided compute function generated Not-a-Number");
     }
     needH = 1;

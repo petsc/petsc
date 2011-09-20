@@ -385,20 +385,20 @@ These routines are
                                 MatStructure*, void*);
 \end{verbatim}
 \noindent
-and \findex{TaoSolverDefaultComputeHessianColor()}
+These routines can be set using {\tt TaoSolverSetGradientRoutine()} and 
+{\tt TaoSolverSetHessianRoutine()} or through the options database with the
+options {\tt -tao\_fdgrad} and {\tt -tao\_fd}.
+
+The efficiency of the finite difference Hessian can be improved if the
+coloring of the matrix is known.  This coloring can be used by creating a
+PETSc {\tt MatFDColoring} object and registering the Hessian evaluation routine 
+using
+{\tt TaoSolverSetHessianRoutine()} with the {\tt MatFDColoring} object as
+the last argument.
 \begin{verbatim}
    TaoSolverDefaultComputeHessianColor(TaoSolver, Vec, Mat*, Mat*, 
                                       MatStructure*, void* );
 \end{verbatim}
-\noindent
-These routines can be set using {\tt TaoSolverSetGradientRoutine()} and 
-{\tt TaoSolverSetHessianRoutine()} or through the options database.
-If finite differencing is used with coloring, the routine \findex{TaoSolverSetColoring()}
-\begin{verbatim}
-   TaoSolverSetColoring(TaoSolver, ISColoring);
-\end{verbatim}
-\noindent
-should be used to specify the coloring.
 
 It is also possible to use finite difference approximations to directly check
 the correctness of an application's gradient and/or Hessian evaluation routines.

@@ -33,7 +33,7 @@ static PetscErrorCode TaoSolverSolve_LMVM(TaoSolver tao)
   // Check convergence criteria
   ierr = TaoSolverComputeObjectiveAndGradient(tao, tao->solution, &f, tao->gradient); CHKERRQ(ierr);
   ierr = VecNorm(tao->gradient,NORM_2,&gnorm); CHKERRQ(ierr);
-  if (TaoInfOrNaN(f) || TaoInfOrNaN(gnorm)) {
+  if (PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(gnorm)) {
     SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf or NaN");
   }
 
@@ -65,7 +65,7 @@ static PetscErrorCode TaoSolverSolve_LMVM(TaoSolver tao)
 
     // Check for success (descent direction)
     ierr = VecDot(lmP->D, tao->gradient, &gdx); CHKERRQ(ierr);
-    if ((gdx <= 0.0) || TaoInfOrNaN(gdx)) {
+    if ((gdx <= 0.0) || PetscIsInfOrNanReal(gdx)) {
       // Step is not descent or direction produced not a number
       // We can assert bfgsUpdates > 1 in this case because
       // the first solve produces the scaled gradient direction,
@@ -88,7 +88,7 @@ static PetscErrorCode TaoSolverSolve_LMVM(TaoSolver tao)
       // On a reset, the direction cannot be not a number; it is a 
       // scaled gradient step.  No need to check for this condition.
       // info = D->Norm2(&dnorm); CHKERRQ(info);
-      // if (TaoInfOrNaN(dnorm)) {
+      // if (PetscIsInfOrNanReal(dnorm)) {
       //   SETERRQ(PETSC_COMM_SELF,1, "Direction generated Not-a-Number");
       // }
 
@@ -143,7 +143,7 @@ static PetscErrorCode TaoSolverSolve_LMVM(TaoSolver tao)
         // On a reset, the direction cannot be not a number; it is a 
         // scaled gradient step.  No need to check for this condition.
         // info = D->Norm2(&dnorm); CHKERRQ(info);
-        // if (TaoInfOrNaN(dnorm)) {
+        // if (PetscIsInfOrNanReal(dnorm)) {
         //   SETERRQ(PETSC_COMM_SELF,1, "Direction generated Not-a-Number");
         // }
   

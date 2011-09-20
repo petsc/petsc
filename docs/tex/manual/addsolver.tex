@@ -375,3 +375,22 @@ PetscErrorCode TaoSolverView_CG(TaoSolver tao, PetscViewer viewer)
 }
 \end{verbatim}
 
+
+\subsection{Registering The Solver}
+Once a new solver is completely implemented, TAO needs to know the name of
+your solver and what function to use to create the solver.  This can be done
+with the routine
+\begin{verbatim}
+  TaoSolverRegister(const char *name, 
+                  const char *path,
+                  const char *cname, 
+                  PetscErrorCode (*create) (TaoSolver));
+\end{verbatim}
+\noindent
+where {\tt name} is the name of your solver (ie, {\tt ``-tao\_blmvm''}), {\tt
+path} is the path to the library containing the solver, {\tt cname} is the
+name of the routine that creates the solver (in our case, {\tt
+  ``TaoSolverCreate\_CG''}), and {\tt create} is a pointer to that creation
+routine.  If you are using dynamic loading, then the fourth argument will be
+ignored.
+

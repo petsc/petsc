@@ -172,7 +172,7 @@ static PetscErrorCode TaoSolverSolve_TRON(TaoSolver tao){
   ierr = VecBoundGradientProjection(tao->gradient,tao->solution, tao->XL, tao->XU, tao->gradient); CHKERRQ(ierr);
   ierr = VecNorm(tao->gradient,NORM_2,&tron->gnorm); CHKERRQ(ierr);
 
-  if (TaoInfOrNaN(tron->f) || TaoInfOrNaN(tron->gnorm)) {
+  if (PetscIsInfOrNanReal(tron->f) || PetscIsInfOrNanReal(tron->gnorm)) {
     SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf pr NaN");
   }
 

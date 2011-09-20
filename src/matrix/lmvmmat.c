@@ -2,6 +2,11 @@
 #include "tao_util.h"  /*I "tao_util.h" */
 #include "petscksp.h"
 
+#define TaoMid(a,b,c)    (((a) < (b)) ?                    \
+                           (((b) < (c)) ? (b) :            \
+                             (((a) < (c)) ? (c) : (a))) :  \
+                           (((a) < (c)) ? (a) :            \
+                             (((b) < (c)) ? (c) : (b))))
 
 /* These lists are used for setting options */
 static const char *Scale_Table[64] = {
@@ -166,7 +171,7 @@ extern PetscErrorCode MatLMVMSolve(Mat A, Vec b, Vec x)
     if (!scaled && !shell->useDefaultH0 && shell->H0) {
 	info = MatSolve(shell->H0,x,shell->U); CHKERRQ(info);
 	info = VecDot(x,shell->U,&dd); CHKERRQ(info);
-	if ((dd > 0.0) && !TaoInfOrNaN(dd)) {
+	if ((dd > 0.0) && !PetscIsInfOrNanReal(dd)) {
 	    // Accept Hessian solve
 	    info = VecCopy(shell->U,x); CHKERRQ(info);
 	    scaled = PETSC_TRUE;
@@ -176,7 +181,7 @@ extern PetscErrorCode MatLMVMSolve(Mat A, Vec b, Vec x)
     if (!scaled && shell->useScale) {
 	info = VecPointwiseMult(shell->U,x,shell->scale); CHKERRQ(info);
 	info = VecDot(x,shell->U,&dd); CHKERRQ(info);
-	if ((dd > 0.0) && !TaoInfOrNaN(dd)) {
+	if ((dd > 0.0) && !PetscIsInfOrNanReal(dd)) {
 	    // Accept scaling
 	    info = VecCopy(shell->U,x); CHKERRQ(info);	
 	    scaled = PETSC_TRUE;
@@ -698,7 +703,7 @@ extern PetscErrorCode MatLMVMUpdate(Mat M, Vec x, Vec g)
           // and ss_sum can be infinity.  In this case,
 	  // sigmanew can either be not-a-number or infinity.
 
-          if (TaoInfOrNaN(sigmanew)) {
+          if (PetscIsInfOrNanReal(sigmanew)) {
             // sigmanew is not-a-number; skip rescaling
           }
           else if (!sigmanew) {
