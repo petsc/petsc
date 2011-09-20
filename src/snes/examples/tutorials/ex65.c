@@ -1097,32 +1097,38 @@ PetscErrorCode Phi_read(AppCtx* user)
   case 6:
     ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"phi4",FILE_MODE_READ,&viewer);CHKERRQ(ierr);
     ierr = PetscViewerBinaryRead(viewer,values,4096,PETSC_DOUBLE);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     break;
   case 7:
     ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"phi3",FILE_MODE_READ,&viewer);CHKERRQ(ierr);
     ierr = PetscViewerBinaryRead(viewer,values,16384,PETSC_DOUBLE);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     break;
   case 8:
     ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"phi2",FILE_MODE_READ,&viewer);CHKERRQ(ierr);
     ierr = PetscViewerBinaryRead(viewer,values,65536,PETSC_DOUBLE);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     break;
   case 9:
     ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"phi1",FILE_MODE_READ,&viewer);CHKERRQ(ierr);
     ierr = PetscViewerBinaryRead(viewer,values,262144,PETSC_DOUBLE);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     break;
   case 10:
     ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"phi",FILE_MODE_READ,&viewer);CHKERRQ(ierr);
     ierr = PetscViewerBinaryRead(viewer,values,1048576,PETSC_DOUBLE);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     break;
   case 11:
     ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"phim1",FILE_MODE_READ,&viewer);CHKERRQ(ierr);
     ierr = PetscViewerBinaryRead(viewer,values,4194304,PETSC_DOUBLE);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     break;
   case 12:
     ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"phim2",FILE_MODE_READ,&viewer);CHKERRQ(ierr);
     ierr = PetscViewerBinaryRead(viewer,values,16777216,PETSC_DOUBLE);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     break;
   }
-  ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
