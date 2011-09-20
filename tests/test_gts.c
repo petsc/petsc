@@ -45,7 +45,7 @@ typedef struct {
   /* problem parameters */
   PetscReal      ecc;          /* test problem parameter */
   PetscReal      b;            /* A dimension of journal bearing */
-  int         nx,ny;        /* discretization in x, y directions */
+  PetscInt       nx,ny;        /* discretization in x, y directions */
 
   /* Working space */
   DM          dm;           /* distributed array data structure */
