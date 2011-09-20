@@ -78,7 +78,7 @@ typedef struct {
 } TAO_POUNDERS;
 
 
-void gqt(PetscInt n, PetscReal *a, PetscInt lda, PetscReal *b, PetscReal delta, PetscReal rtol, PetscReal atol, PetscInt itmax, PetscReal *par, PetscReal *f, PetscReal *x, PetscInt *info, int *its, PetscReal *z, PetscReal *wa1, PetscReal *wa2);
+void gqt(PetscInt n, PetscReal *a, PetscInt lda, PetscReal *b, PetscReal delta, PetscReal rtol, PetscReal atol, PetscInt itmax, PetscReal *par, PetscReal *f, PetscReal *x, PetscInt *info, PetscInt *its, PetscReal *z, PetscReal *wa1, PetscReal *wa2);
 PetscErrorCode gqtwrap(TAO_POUNDERS *mfqP,PetscReal *gnorm, PetscReal *qmin);
 PetscErrorCode phi2eval(PetscReal *x, PetscInt n, PetscReal *phi);
 PetscErrorCode getquadpounders(TAO_POUNDERS *mfqP);

@@ -492,7 +492,7 @@ PetscErrorCode MatGetColumnVector_ADA(Mat mat,Vec Y, PetscInt col)
 PetscErrorCode MatConvert_ADA(Mat mat,MatType newtype,Mat *NewMat)
 {
   PetscErrorCode info;
-  PetscInt size;
+  PetscMPIInt size;
   PetscBool sametype, issame, ismpidense, isseqdense;
   TaoMatADACtx  ctx;
 

@@ -26,7 +26,7 @@ T*/
    gradient, and hessian.
 */
 typedef struct {
-  int n;          /* dimension */
+  PetscInt n;          /* dimension */
   PetscReal alpha;   /* condition parameter */
 } AppCtx;
 
@@ -181,7 +181,8 @@ PetscErrorCode FormFunctionGradient(TaoSolver tao,Vec X,PetscReal *f, Vec G,void
 PetscErrorCode FormHessian(TaoSolver tao,Vec X,Mat *HH, Mat *Hpre, MatStructure *flag,void *ptr)
 {
   AppCtx  *user = (AppCtx*)ptr;
-  int     i, nn=user->n/2, info, ind[2];
+  PetscErrorCode info;
+  PetscInt     i, nn=user->n/2, ind[2];
   PetscReal  alpha=user->alpha;
   PetscReal  v[2][2],*x;
   Mat H=*HH;
