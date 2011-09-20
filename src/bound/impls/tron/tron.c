@@ -151,7 +151,7 @@ static PetscErrorCode TaoSolverSolve_TRON(TaoSolver tao){
 
   TaoSolverTerminationReason reason = TAO_CONTINUE_ITERATING;
   TaoLineSearchTerminationReason ls_reason = TAOLINESEARCH_CONTINUE_ITERATING;
-  PetscReal prered,actred,delta,f,f_new,rhok,gnorm,gdx,xdiff,stepsize;
+  PetscReal prered,actred,delta,f,f_new,rhok,gdx,xdiff,stepsize;
   PetscFunctionBegin;
 
   tron->pgstepsize=1.0;
@@ -189,7 +189,7 @@ static PetscErrorCode TaoSolverSolve_TRON(TaoSolver tao){
   while (reason==TAO_CONTINUE_ITERATING){
 
     ierr = TronGradientProjections(tao,tron); CHKERRQ(ierr);
-    f=tron->f; delta=tao->trust; gnorm=tron->gnorm; 
+    f=tron->f; delta=tao->trust; 
     
     tron->n_free_last = tron->n_free;
     ierr = ISGetSize(tron->Free_Local, &tron->n_free);  CHKERRQ(ierr);

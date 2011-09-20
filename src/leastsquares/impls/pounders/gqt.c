@@ -362,7 +362,7 @@ PetscErrorCode gqt(PetscInt n, PetscReal *a, PetscInt lda, PetscReal *b,
 
 	    iblas=blasn*blasn;
 	    
-	    ierr = estsv(n,a,lda,&rznorm,z);
+	    ierr = estsv(n,a,lda,&rznorm,z); CHKERRQ(ierr);
 	    //destsv_(&n, a, &lda, &rznorm, z);
 	    CHKMEMQ;
 	    pars = PetscMax(pars, par-rznorm*rznorm);

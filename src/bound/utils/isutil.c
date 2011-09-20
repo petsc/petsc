@@ -345,7 +345,7 @@ PetscErrorCode VecWhichBetweenOrEqual(Vec VecLow, Vec V, Vec VecHigh, IS * S)
 PetscErrorCode VecGetSubVec(Vec vfull, IS is, Vec *vreduced) 
 {
     PetscErrorCode ierr;
-    PetscInt nfull,nreduced,nreduced_local,rlow,rhigh,flow,fhigh,nfull_local;
+    PetscInt nfull,nreduced,nreduced_local,rlow,rhigh,flow,fhigh;
     IS ident;
     const VecType vtype;
     VecScatter scatter;
@@ -365,7 +365,6 @@ PetscErrorCode VecGetSubVec(Vec vfull, IS is, Vec *vreduced)
       
 	ierr = VecGetType(vfull,&vtype); CHKERRQ(ierr);
 	ierr = VecGetOwnershipRange(vfull,&flow,&fhigh); CHKERRQ(ierr);
-	nfull_local = fhigh - flow;
 	ierr = ISGetLocalSize(is,&nreduced_local); CHKERRQ(ierr);
 	ierr = PetscObjectGetComm((PetscObject)vfull,&comm); CHKERRQ(ierr);
 	if (*vreduced) {

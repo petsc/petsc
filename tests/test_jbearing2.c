@@ -45,7 +45,7 @@ typedef struct {
   /* problem parameters */
   PetscReal      ecc;          /* test problem parameter */
   PetscReal      b;            /* A dimension of journal bearing */
-  int         nx,ny;        /* discretization in x, y directions */
+  PetscInt         nx,ny;        /* discretization in x, y directions */
 
   /* Working space */
   DM          dm;           /* distributed array data structure */
@@ -88,10 +88,10 @@ int main( int argc, char **argv )
   user.nx = 50; user.ny = 50; user.ecc = 0.1; user.b = 10.0;
 
   /* Check for any command line arguments that override defaults */
-  info = PetscOptionsGetInt(TAO_NULL,"-mx",&user.nx,&flg); CHKERRQ(info);
-  info = PetscOptionsGetInt(TAO_NULL,"-my",&user.ny,&flg); CHKERRQ(info);
-  info = PetscOptionsGetReal(TAO_NULL,"-ecc",&user.ecc,&flg); CHKERRQ(info);
-  info = PetscOptionsGetReal(TAO_NULL,"-b",&user.b,&flg); CHKERRQ(info);
+  info = PetscOptionsGetInt(PETSC_NULL,"-mx",&user.nx,&flg); CHKERRQ(info);
+  info = PetscOptionsGetInt(PETSC_NULL,"-my",&user.ny,&flg); CHKERRQ(info);
+  info = PetscOptionsGetReal(PETSC_NULL,"-ecc",&user.ecc,&flg); CHKERRQ(info);
+  info = PetscOptionsGetReal(PETSC_NULL,"-b",&user.b,&flg); CHKERRQ(info);
 
 
   PetscPrintf(PETSC_COMM_WORLD,"\n---- Journal Bearing Problem SHB-----\n");
@@ -162,11 +162,11 @@ int main( int argc, char **argv )
     info = KSPSetType(ksp,KSPCG); CHKERRQ(info);
   }
 */
-  info = PetscOptionsHasName(TAO_NULL,"-testmonitor",&flg);
+  info = PetscOptionsHasName(PETSC_NULL,"-testmonitor",&flg);
   if (flg) {
     info = TaoSolverSetMonitor(tao,Monitor,&user,PETSC_NULL); CHKERRQ(info);
   }
-  info = PetscOptionsHasName(TAO_NULL,"-testconvergence",&flg);
+  info = PetscOptionsHasName(PETSC_NULL,"-testconvergence",&flg);
   if (flg) {
     info = TaoSolverSetConvergenceTest(tao,ConvergenceTest,&user); CHKERRQ(info);
   }
@@ -230,8 +230,8 @@ PetscErrorCode ComputeB(AppCtx* user)
   /*
      Get local grid boundaries
   */
-  info = DMDAGetCorners(user->dm,&xs,&ys,TAO_NULL,&xm,&ym,TAO_NULL); CHKERRQ(info);
-  info = DMDAGetGhostCorners(user->dm,&gxs,&gys,TAO_NULL,&gxm,&gym,TAO_NULL); CHKERRQ(info);
+  info = DMDAGetCorners(user->dm,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL); CHKERRQ(info);
+  info = DMDAGetGhostCorners(user->dm,&gxs,&gys,PETSC_NULL,&gxm,&gym,PETSC_NULL); CHKERRQ(info);
   
 
   /* Compute the linear term in the objective function */  
@@ -283,8 +283,8 @@ PetscErrorCode FormFunctionGradient(TaoSolver tao, Vec X, PetscReal *fcn,Vec G,v
   /*
     Get local grid boundaries
   */
-  info = DMDAGetCorners(user->dm,&xs,&ys,TAO_NULL,&xm,&ym,TAO_NULL); CHKERRQ(info);
-  info = DMDAGetGhostCorners(user->dm,&gxs,&gys,TAO_NULL,&gxm,&gym,TAO_NULL); CHKERRQ(info);
+  info = DMDAGetCorners(user->dm,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL); CHKERRQ(info);
+  info = DMDAGetGhostCorners(user->dm,&gxs,&gys,PETSC_NULL,&gxm,&gym,PETSC_NULL); CHKERRQ(info);
   
   info = VecGetArray(localX,&x); CHKERRQ(info);
   info = VecGetArray(G,&g); CHKERRQ(info);
@@ -388,8 +388,8 @@ PetscErrorCode FormHessian(TaoSolver tao,Vec X,Mat *H, Mat *Hpre, MatStructure *
   /*
     Get local grid boundaries
   */
-  info = DMDAGetCorners(user->dm,&xs,&ys,TAO_NULL,&xm,&ym,TAO_NULL); CHKERRQ(info);
-  info = DMDAGetGhostCorners(user->dm,&gxs,&gys,TAO_NULL,&gxm,&gym,TAO_NULL); CHKERRQ(info);
+  info = DMDAGetCorners(user->dm,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL); CHKERRQ(info);
+  info = DMDAGetGhostCorners(user->dm,&gxs,&gys,PETSC_NULL,&gxm,&gym,PETSC_NULL); CHKERRQ(info);
   
   info = MatAssembled(hes,&assembled); CHKERRQ(info);
   if (assembled){info = MatZeroEntries(hes);  CHKERRQ(info);}

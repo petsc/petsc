@@ -24,7 +24,6 @@ extern PetscErrorCode MatCreateAPPROX(MPI_Comm comm, PetscInt n, PetscInt N, Mat
 {
   MatApproxCtx *ctx;
   PetscErrorCode info;
-  PetscInt nhistory;
 
   PetscFunctionBegin;
 
@@ -35,7 +34,6 @@ extern PetscErrorCode MatCreateAPPROX(MPI_Comm comm, PetscInt n, PetscInt N, Mat
 
   info = PetscMalloc((ctx->lm+1)*sizeof(PetscReal),(void**)&ctx->rho); 
   CHKERRQ(info);
-  nhistory = 1;
 
   // Finish initializations
   ctx->lmnow = 0;
