@@ -24,4 +24,4 @@ TaoSolver Object:
   total number of iterations=0,                          (max: 2000)
   total number of function/gradient evaluations=612,      (max: 4000)
   total number of Hessian evaluations=3
-  Solution found:    User Terminated
+  Solution converged:    User Terminated

@@ -10,6 +10,8 @@ iter = 3, Function value 1.41775, Residual: 0.000008
 TaoSolver Object:
   type: tao_ntr
       Rejected matrix updates: 0
+  KSP Object ((null))
+    type: stcg
   convergence tolerances: fatol=1e-10,   frtol=1e-10
   convergence tolerances: gatol=1e-08,   steptol=0,   gttol=0
   Residual in Function/Gradient:=7.886271e-06
@@ -17,4 +19,4 @@ TaoSolver Object:
   total number of iterations=3,                          (max: 50)
   total number of function/gradient evaluations=13,      (max: 4000)
   total number of Hessian evaluations=4
-  Solution found:    f(x)-f(X*) <= fatol
+  Solution converged:   estimated f(x)-f(X*) <= fatol

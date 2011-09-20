@@ -72,4 +72,4 @@ TaoSolver Object:
   Objective value=2.384477e+03
   total number of iterations=32,                          (max: 2000)
   total number of function evaluations=36,                  max: 4000
-  Solution found:    ||g(X)||/|f(X)| <= grtol
+  Solution converged:    ||g(X)||/|f(X)| <= grtol

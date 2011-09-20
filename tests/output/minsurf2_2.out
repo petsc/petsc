@@ -21,7 +21,10 @@ TaoSolver Object:
       nls ksp dtol: 0
       nls ksp iter: 0
       nls ksp othr: 0
-  Line Search   type: more-thuente
+  Line Search Object
+    type: more-thuente
+  KSP Object
+    type: stcg
   convergence tolerances: fatol=1e-10,   frtol=1e-10
   convergence tolerances: gatol=1e-08,   steptol=0,   gttol=0
   Residual in Function/Gradient:=2.646849e-08
@@ -29,4 +32,4 @@ TaoSolver Object:
   total number of iterations=3,                          (max: 50)
   total number of function/gradient evaluations=10,      (max: 4000)
   total number of Hessian evaluations=4
-  Solution found:    f(x)-f(X*) <= fatol
+  Solution converged:   estimated f(x)-f(X*) <= fatol

@@ -17,11 +17,12 @@ iter = 12, Function value 1.60116, Residual: 0.005298
 TaoSolver Object:
   type: tao_blmvm
       Gradient steps: 0
-  Line Search   type: more-thuente
+  Line Search Object
+    type: more-thuente
   convergence tolerances: fatol=0.0001,   frtol=0.0001
   convergence tolerances: gatol=1e-08,   steptol=0,   gttol=0
   Residual in Function/Gradient:=5.297823e-03
   Objective value=1.601158e+00
   total number of iterations=12,                          (max: 2000)
   total number of function/gradient evaluations=15,      (max: 4000)
-  Solution found:    f(x)-f(X*) <= fatol
+  Solution converged:   estimated f(x)-f(X*) <= fatol
