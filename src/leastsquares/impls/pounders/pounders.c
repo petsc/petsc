@@ -23,7 +23,7 @@ PetscErrorCode gqtwrap(TAO_POUNDERS *mfqP,PetscReal *gnorm, PetscReal *qmin) {
 PetscErrorCode phi2eval(PetscReal *x, PetscInt n, PetscReal *phi) {
 /* Phi = .5*[x(1)^2  sqrt(2)*x(1)*x(2) ... sqrt(2)*x(1)*x(n) ... x(2)^2 sqrt(2)*x(2)*x(3) .. x(n)^2] */
     PetscInt i,j,k;
-    PetscReal sqrt2 = sqrt(2);
+    PetscReal sqrt2 = PetscSqrtReal(2.0);
     PetscFunctionBegin;
     j=0;
 
@@ -56,7 +56,7 @@ PetscErrorCode getquadpounders(TAO_POUNDERS *mfqP) {
     PetscBLASInt blasint = mfqP->n*(mfqP->n+1) / 2;
     PetscBLASInt blasint2 = np - mfqP->n-1;
     PetscBLASInt blasinfo,ione=1;
-    PetscReal sqrt2 = sqrt(2);
+    PetscReal sqrt2 = PetscSqrtReal(2.0);
 	
     PetscFunctionBegin;
 
@@ -690,7 +690,7 @@ static PetscErrorCode TaoSolverSolve_POUNDERS(TaoSolver tao)
     for (i=0;i<mfqP->n;i++) {
 	normxsp += mfqP->Xsubproblem[i]*mfqP->Xsubproblem[i];
     }
-    normxsp = sqrt(normxsp);
+    normxsp = PetscSqrtReal(normxsp);
     if (rho >= mfqP->eta1 && normxsp > 0.5*mfqP->delta) {
 	mfqP->delta = PetscMin(mfqP->delta*mfqP->gamma1,mfqP->deltamax); 
     } else if (valid == PETSC_TRUE) {
@@ -800,7 +800,7 @@ static PetscErrorCode TaoSolverSetUp_POUNDERS(TaoSolver tao)
     if (!tao->stepdirection) {ierr = VecDuplicate(tao->solution,&tao->stepdirection); CHKERRQ(ierr);  }
     ierr = VecGetSize(tao->solution,&mfqP->n); CHKERRQ(ierr);
     ierr = VecGetSize(tao->sep_objective,&mfqP->m); CHKERRQ(ierr);
-    mfqP->c1 = sqrt(mfqP->n);
+    mfqP->c1 = PetscSqrtReal((PetscReal)mfqP->n);
     mfqP->npmax = (mfqP->n+1)*(mfqP->n+2)/2; /* TODO check if manually set */
 
     ierr = PetscMalloc((tao->max_funcs+10)*sizeof(Vec),&mfqP->Xhist); CHKERRQ(ierr);

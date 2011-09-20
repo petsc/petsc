@@ -265,7 +265,7 @@ static PetscErrorCode TaoSolverSolve_POUNDER(TaoSolver tao)
     for (i=0;i<mfqP->n;i++) {
 	normxsp += mfqP->Xsubproblem[i]*mfqP->Xsubproblem[i];
     }
-    normxsp = sqrt(normxsp);
+    normxsp = PetscSqrtReal(normxsp);
     if (rho >= mfqP->eta1 && normxsp > 0.5*mfqP->delta) {
 	mfqP->delta = PetscMin(mfqP->delta*mfqP->gamma1,mfqP->deltamax); 
     } else if (valid == PETSC_TRUE) {
@@ -374,7 +374,7 @@ static PetscErrorCode TaoSolverSetUp_POUNDER(TaoSolver tao)
     if (!tao->gradient) {ierr = VecDuplicate(tao->solution,&tao->gradient); CHKERRQ(ierr);  }
     if (!tao->stepdirection) {ierr = VecDuplicate(tao->solution,&tao->stepdirection); CHKERRQ(ierr);  }
     ierr = VecGetSize(tao->solution,&mfqP->n); CHKERRQ(ierr);
-    mfqP->c1 = sqrt(mfqP->n);
+    mfqP->c1 = PetscSqrtReal((PetscReal)mfqP->n);
     mfqP->npmax = (mfqP->n+1)*(mfqP->n+2)/2; /* TODO check if manually set */
 
     ierr = PetscMalloc((tao->max_funcs+10)*sizeof(Vec),&mfqP->Xhist); CHKERRQ(ierr);
