@@ -75,7 +75,7 @@ PetscErrorCode  PetscFormatConvert(const char *format,char *newformat,size_t siz
       newformat[j++] = 'g';
 #elif defined(PETSC_USE_REAL___FLOAT128)
       newformat[j++] = 'Q';
-      newformat[j++] = 'e';
+      newformat[j++] = 'g';
 #endif
       i += 2;
     }else {
