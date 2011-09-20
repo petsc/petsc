@@ -12,12 +12,13 @@ static char help[] = "coarsening with DM.\n";
 int main(int argc, char **argv)
 {
   PetscErrorCode      ierr;
-  Vec                 x,y1,y2,y3;
+  Vec                 x,yp1,yp2,yp3,yp4,ym1,ym2,ym3,ym4;
   PetscReal           *values;
-  PetscViewer         viewer_in,viewer_out1,viewer_out2,viewer_out3;
-  DM                  daf,dac1,dac2,dac3;
-  Vec                 scaling1,scaling2,scaling3;
-  Mat                 interp1,interp2,interp3;
+  PetscViewer         viewer_in,viewer_outp1,viewer_outp2,viewer_outp3,viewer_outp4;
+  PetscViewer         viewer_outm1,viewer_outm2,viewer_outm3,viewer_outm4;
+  DM                  daf,dac1,dac2,dac3,dac4,daf1,daf2,daf3,daf4;
+  Vec                 scaling_p1,scaling_p2,scaling_p3,scaling_p4;
+  Mat                 interp_p1,interp_p2,interp_p3,interp_p4,interp_m1,interp_m2,interp_m3,interp_m4;
   PetscInt            i;
   
   PetscInitialize(&argc,&argv, (char*)0, help);
@@ -28,35 +29,84 @@ int main(int argc, char **argv)
   ierr = DMCoarsen(daf,PETSC_COMM_WORLD,&dac1);CHKERRQ(ierr);
   ierr = DMCoarsen(dac1,PETSC_COMM_WORLD,&dac2);CHKERRQ(ierr);
   ierr = DMCoarsen(dac2,PETSC_COMM_WORLD,&dac3);CHKERRQ(ierr);
-  ierr = DMCreateGlobalVector(dac1,&y1);CHKERRQ(ierr);
-  ierr = DMCreateGlobalVector(dac2,&y2);CHKERRQ(ierr);
-  ierr = DMCreateGlobalVector(dac3,&y3);CHKERRQ(ierr);
-  ierr = DMGetInterpolation(dac1,daf,&interp1,&scaling1);CHKERRQ(ierr);
-  ierr = DMGetInterpolation(dac2,dac1,&interp2,&scaling2);CHKERRQ(ierr);
-  ierr = DMGetInterpolation(dac3,dac2,&interp3,&scaling3);CHKERRQ(ierr);
+  ierr = DMCoarsen(dac3,PETSC_COMM_WORLD,&dac4);CHKERRQ(ierr);
+  ierr = DMRefine(daf,PETSC_COMM_WORLD,&daf1);CHKERRQ(ierr);
+  ierr = DMRefine(daf1,PETSC_COMM_WORLD,&daf2);CHKERRQ(ierr);
+  ierr = DMRefine(daf2,PETSC_COMM_WORLD,&daf3);CHKERRQ(ierr);
+  ierr = DMRefine(daf3,PETSC_COMM_WORLD,&daf4);CHKERRQ(ierr);
+
+  ierr = DMCreateGlobalVector(dac1,&yp1);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(dac2,&yp2);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(dac3,&yp3);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(dac4,&yp4);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(daf1,&ym1);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(daf2,&ym2);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(daf3,&ym3);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(daf4,&ym4);CHKERRQ(ierr);
+
+  ierr = DMGetInterpolation(dac1,daf,&interp_p1,&scaling_p1);CHKERRQ(ierr);
+  ierr = DMGetInterpolation(dac2,dac1,&interp_p2,&scaling_p2);CHKERRQ(ierr);
+  ierr = DMGetInterpolation(dac3,dac2,&interp_p3,&scaling_p3);CHKERRQ(ierr);
+  ierr = DMGetInterpolation(dac4,dac3,&interp_p4,&scaling_p4);CHKERRQ(ierr);
+  ierr = DMGetInterpolation(daf,daf1,&interp_m1,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMGetInterpolation(daf1,daf2,&interp_m2,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMGetInterpolation(daf2,daf3,&interp_m3,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMGetInterpolation(daf3,daf4,&interp_m4,PETSC_NULL);CHKERRQ(ierr);
+
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"phi",FILE_MODE_READ,&viewer_in);CHKERRQ(ierr);
   ierr = PetscViewerBinaryRead(viewer_in,values,1048576,PETSC_DOUBLE);CHKERRQ(ierr);
-  ierr = MatRestrict(interp1,x,y1);
-  ierr = VecPointwiseMult(y1,y1,scaling1);CHKERRQ(ierr);
-  ierr = MatRestrict(interp2,y1,y2);
-  ierr = VecPointwiseMult(y2,y2,scaling2);CHKERRQ(ierr);
-  ierr = MatRestrict(interp3,y2,y3);
-  ierr = VecPointwiseMult(y3,y3,scaling3);CHKERRQ(ierr);
+  ierr = MatRestrict(interp_p1,x,yp1);
+  ierr = VecPointwiseMult(yp1,yp1,scaling_p1);CHKERRQ(ierr);
+  ierr = MatRestrict(interp_p2,yp1,yp2);
+  ierr = VecPointwiseMult(yp2,yp2,scaling_p2);CHKERRQ(ierr);
+  ierr = MatRestrict(interp_p3,yp2,yp3);
+  ierr = VecPointwiseMult(yp3,yp3,scaling_p3);CHKERRQ(ierr);
+  ierr = MatRestrict(interp_p4,yp3,yp4);
+  ierr = VecPointwiseMult(yp4,yp4,scaling_p4);CHKERRQ(ierr);
+  ierr = MatRestrict(interp_m1,x,ym1);
+  ierr = MatRestrict(interp_m2,ym1,ym2);
+  ierr = MatRestrict(interp_m3,ym2,ym3);
+  ierr = MatRestrict(interp_m4,ym3,ym4);
   
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"phi1",FILE_MODE_WRITE,&viewer_out1);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"phi2",FILE_MODE_WRITE,&viewer_out2);CHKERRQ(ierr);
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"phi3",FILE_MODE_WRITE,&viewer_out3);CHKERRQ(ierr);
-  ierr = VecView(y1,viewer_out1);CHKERRQ(ierr);
-  ierr = VecView(x,viewer_out1);CHKERRQ(ierr);
-  ierr = VecView(y2,viewer_out2);CHKERRQ(ierr);
-  ierr = VecView(y3,viewer_out3);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"phi1",FILE_MODE_WRITE,&viewer_outp1);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"phi2",FILE_MODE_WRITE,&viewer_outp2);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"phi3",FILE_MODE_WRITE,&viewer_outp3);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"phi4",FILE_MODE_WRITE,&viewer_outp4);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"phim1",FILE_MODE_WRITE,&viewer_outm1);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"phim2",FILE_MODE_WRITE,&viewer_outm2);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"phim3",FILE_MODE_WRITE,&viewer_outm3);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"phim4",FILE_MODE_WRITE,&viewer_outm4);CHKERRQ(ierr);
+
+  ierr = VecView(yp1,viewer_outp1);CHKERRQ(ierr);
+  ierr = VecView(x,viewer_outp1);CHKERRQ(ierr);
+  ierr = VecView(yp2,viewer_outp2);CHKERRQ(ierr);
+  ierr = VecView(yp3,viewer_outp3);CHKERRQ(ierr);
+  ierr = VecView(yp4,viewer_outp4);CHKERRQ(ierr);
+  ierr = VecView(ym1,viewer_outm1);CHKERRQ(ierr);
+  ierr = VecView(ym2,viewer_outm2);CHKERRQ(ierr);
+  ierr = VecView(ym3,viewer_outm3);CHKERRQ(ierr);
+  ierr = VecView(ym4,viewer_outm4);CHKERRQ(ierr);
   
   ierr = PetscViewerDestroy(&viewer_in);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(&viewer_out1);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&viewer_outp1);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&viewer_outp2);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&viewer_outp3);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&viewer_outp4);CHKERRQ(ierr);
+
+  ierr = PetscViewerDestroy(&viewer_outm1);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&viewer_outm2);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&viewer_outm3);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(&viewer_outm4);CHKERRQ(ierr);
+
   ierr = VecDestroy(&x);CHKERRQ(ierr);
-  ierr = VecDestroy(&y1);CHKERRQ(ierr);
-  ierr = VecDestroy(&y2);CHKERRQ(ierr);
-  ierr = VecDestroy(&y3);CHKERRQ(ierr);
+  ierr = VecDestroy(&yp1);CHKERRQ(ierr);
+  ierr = VecDestroy(&yp2);CHKERRQ(ierr);
+  ierr = VecDestroy(&yp3);CHKERRQ(ierr);
+  ierr = VecDestroy(&yp4);CHKERRQ(ierr);
+  ierr = VecDestroy(&ym1);CHKERRQ(ierr);
+  ierr = VecDestroy(&ym2);CHKERRQ(ierr);
+  ierr = VecDestroy(&ym3);CHKERRQ(ierr);
+  ierr = VecDestroy(&ym4);CHKERRQ(ierr);
   PetscFinalize();
   return 0;
 }

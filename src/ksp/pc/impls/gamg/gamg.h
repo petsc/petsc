@@ -16,7 +16,8 @@ enum tag {SET1,SET2,SET3,SET4,SET5,SET6,FIND_V,SET7,SET8,SET9,SET10,SET11,SET12,
 extern PetscLogEvent gamg_setup_events[NUM_SET];
 #endif
 
-#define PETSC_GAMG_SMOOTHER PCPBJACOBI
+#define PETSC_GAMG_SMOOTHER PCJACOBI
+#define VERBOSE 1
 
 #endif
 

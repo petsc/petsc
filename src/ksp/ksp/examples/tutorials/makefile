@@ -1031,7 +1031,7 @@ runex55_SA:
 	   ${RM} -f ex55_sa.tmp
 
 runex56:
-	-@${MPIEXEC} -n 8 ./ex56 -ne 11 -alpha 1.e-3 -ksp_monitor_short -ksp_type cg -pc_gamg_type sa > ex56.tmp 2>&1;	\
+	-@${MPIEXEC} -n 8 ./ex56 -ne 19 -alpha 1.e-3 -ksp_monitor_short -ksp_type cg -pc_gamg_type sa > ex56.tmp 2>&1;	\
          ${DIFF} output/ex56_0.out ex56.tmp || echo "Possible problem with ex56_0, diffs above"; \
 	   ${RM} -f ex56.tmp
 

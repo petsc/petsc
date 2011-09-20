@@ -17,25 +17,33 @@ int main(int argc,char **args)
 {
   Mat            Amat;
   PetscErrorCode ierr;
-  PetscInt       m,nn,M,its,Istart,Iend,i,j,k,ii,jj,kk,ic,ne=4,id;
-  PetscReal      x,y,z,h;
+  PetscInt       m,nn,M,Istart,Iend,i,j,k,ii,jj,kk,ic,ne=4,id;
+  PetscReal      x,y,z,h,*coords,soft_alpha=1.e-3;
   Vec            xx,bb;
   KSP            ksp;
-  PetscReal      soft_alpha = 1.e-3;
   MPI_Comm       wcomm;
   PetscMPIInt    npe,mype;
   PC pc;
   PetscScalar DD[24][24],DD2[24][24];
 #if defined(PETSC_USE_LOG) && defined(ADD_STAGES)
-  PetscLogStage  stage[2];
+  PetscLogStage  stage[4];
 #endif
   PetscScalar DD1[24][24];
   const PCType type;
+  PetscReal emax, emin;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   wcomm = PETSC_COMM_WORLD;
   ierr = MPI_Comm_rank( wcomm, &mype );   CHKERRQ(ierr);
   ierr = MPI_Comm_size( wcomm, &npe );    CHKERRQ(ierr);
+
+  /* log */
+#if defined(PETSC_USE_LOG) && defined(ADD_STAGES)
+  ierr = PetscLogStageRegister("Setup", &stage[0]);      CHKERRQ(ierr);
+  ierr = PetscLogStageRegister("Solve", &stage[1]);      CHKERRQ(ierr);
+  ierr = PetscLogStageRegister("2nd Setup", &stage[2]);      CHKERRQ(ierr);
+  ierr = PetscLogStageRegister("2nd Solve", &stage[3]);      CHKERRQ(ierr);
+#endif
   
   ierr = PetscOptionsGetInt(PETSC_NULL,"-ne",&ne,PETSC_NULL); CHKERRQ(ierr);
   h = 1./ne; nn = ne+1;
@@ -46,9 +54,10 @@ int main(int argc,char **args)
   if(mype==npe-1) m = nn*nn*nn - (npe-1)*m;
   m *= 3; /* number of equations local*/
 
-  /* Setup solver */
+  /* Setup solver, get PC type and pc */
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);                    CHKERRQ(ierr);
   ierr = KSPSetType( ksp, KSPCG );                            CHKERRQ(ierr);
+  ierr = KSPSetComputeSingularValues( ksp, PETSC_TRUE ); CHKERRQ(ierr);
   ierr = KSPGetPC( ksp, &pc );                                   CHKERRQ(ierr);
   ierr = PCSetType( pc, PCGAMG ); CHKERRQ(ierr); /* default */
   ierr = KSPSetFromOptions( ksp );                              CHKERRQ(ierr);
@@ -63,10 +72,9 @@ int main(int argc,char **args)
     const PetscInt Ni0 = ipx*(nn/NP), Nj0 = ipy*(nn/NP), Nk0 = ipz*(nn/NP);
     const PetscInt Ni1 = Ni0 + (nn/NP), Nj1 = Nj0 + (nn/NP), Nk1 = Nk0 + (nn/NP);
     const PetscInt NN = nn/NP, id0 = ipz*nn*nn*NN + ipy*nn*NN*NN + ipx*NN*NN*NN;
-    PetscReal *coords;
     PetscInt *d_nnz, *o_nnz,osz[4]={0,9,15,19},nbc;
     PetscScalar vv[24], v2[24];
-
+  
     /* count nnz */
     ierr = PetscMalloc( (m+1)*sizeof(PetscInt), &d_nnz ); CHKERRQ(ierr);
     ierr = PetscMalloc( (m+1)*sizeof(PetscInt), &o_nnz ); CHKERRQ(ierr);
@@ -85,20 +93,21 @@ int main(int argc,char **args)
       }
     }
     assert(ic==m);
-
+    
     /* create stiffness matrix */
     if( strcmp(type, PCPROMETHEUS) == 0 ){
       /* prometheus needs BAIJ */
-      ierr = MatCreateMPIBAIJ(wcomm,3,m,m,M,M,81,d_nnz,57,o_nnz,&Amat);CHKERRQ(ierr);
+      ierr = MatCreateMPIBAIJ(wcomm,3,m,m,M,M,0,d_nnz,0,o_nnz,&Amat);CHKERRQ(ierr);
     }
     else {
-      ierr = MatCreateMPIAIJ(wcomm,m,m,M,M,81,d_nnz,57,o_nnz,&Amat);CHKERRQ(ierr);
+      ierr = MatCreateMPIAIJ(wcomm,m,m,M,M,0,d_nnz,0,o_nnz,&Amat);CHKERRQ(ierr);
+      ierr = MatSetBlockSize(Amat,3);      CHKERRQ(ierr);
     }
     ierr = PetscFree( d_nnz );  CHKERRQ(ierr);
     ierr = PetscFree( o_nnz );  CHKERRQ(ierr);
 
     ierr = MatGetOwnershipRange(Amat,&Istart,&Iend);CHKERRQ(ierr);
-    ierr = MatSetBlockSize(Amat,3);      CHKERRQ(ierr);
+
     assert(m == Iend - Istart);
     /* Generate vectors */
     ierr = VecCreate(wcomm,&xx);   CHKERRQ(ierr);
@@ -135,7 +144,7 @@ int main(int argc,char **args)
 	    if(i==j) DD2[i][j] = .1*DD1[i][j];
 	    else DD2[i][j] = 0.0;
 	  else DD2[i][j] = DD1[i][j];
-      /* element vector */
+      /* element residual/load vector */
       for(i=0;i<24;i++){
         if(i%3==0) vv[i] = h*h;
         else if(i%3==1) vv[i] = 2.0*h*h;
@@ -151,11 +160,12 @@ int main(int argc,char **args)
 
     ierr = PetscMalloc( (m+1)*sizeof(PetscReal), &coords ); CHKERRQ(ierr);
     coords[m] = -99.0;
-    
+
     /* forms the element stiffness for the Laplacian and coordinates */
     for(i=Ni0,ic=0,ii=0;i<Ni1;i++,ii++){
       for(j=Nj0,jj=0;j<Nj1;j++,jj++){
 	for(k=Nk0,kk=0;k<Nk1;k++,kk++,ic++){
+
 	  /* coords */
 	  x = coords[3*ic] = h*(PetscReal)i; 
 	  y = coords[3*ic+1] = h*(PetscReal)j; 
@@ -218,9 +228,6 @@ int main(int argc,char **args)
     ierr = MatAssemblyEnd(Amat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = VecAssemblyBegin(bb);  CHKERRQ(ierr);
     ierr = VecAssemblyEnd(bb);    CHKERRQ(ierr);
-    ierr = KSPSetOperators( ksp, Amat, Amat, SAME_NONZERO_PATTERN ); CHKERRQ(ierr);
-    ierr = PCSetCoordinates( pc, 3, coords );                   CHKERRQ(ierr);
-    ierr = PetscFree( coords );  CHKERRQ(ierr);
   }
   
   if( !PETSC_TRUE ) {
@@ -231,33 +238,49 @@ int main(int argc,char **args)
     ierr = PetscViewerDestroy( &viewer );
   }
 
-  /* solve */
+  /* finish KSP/PC setup */
+  ierr = KSPSetOperators( ksp, Amat, Amat, SAME_NONZERO_PATTERN ); CHKERRQ(ierr);
+  ierr = PCSetCoordinates( pc, 3, coords );                   CHKERRQ(ierr);
+
+
 #if defined(PETSC_USE_LOG) && defined(ADD_STAGES)
-  ierr = PetscLogStageRegister("Setup", &stage[0]);      CHKERRQ(ierr);
-  ierr = PetscLogStageRegister("Solve", &stage[1]);      CHKERRQ(ierr);
   ierr = PetscLogStagePush(stage[0]);                    CHKERRQ(ierr);
 #endif
 
+  /* PC setup basically */
   ierr = KSPSetUp( ksp );         CHKERRQ(ierr);
 
 #if defined(PETSC_USE_LOG) && defined(ADD_STAGES)
   ierr = PetscLogStagePop();      CHKERRQ(ierr);
-#endif
-
-  ierr = VecSet(xx,.0);           CHKERRQ(ierr);
-
-#if defined(PETSC_USE_LOG) && defined(ADD_STAGES)
   ierr = PetscLogStagePush(stage[1]);                    CHKERRQ(ierr);
 #endif
 
+  /* 1st solve */
   ierr = KSPSolve( ksp, bb, xx );     CHKERRQ(ierr);
 
 #if defined(PETSC_USE_LOG) && defined(ADD_STAGES)
   ierr = PetscLogStagePop();      CHKERRQ(ierr);
+  ierr = PetscLogStagePush(stage[2]);                    CHKERRQ(ierr);
 #endif
 
-  ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
+  /* PC setup basically */
+  ierr = MatScale( Amat, 100000.0 ); CHKERRQ(ierr);
+  ierr = KSPSetOperators( ksp, Amat, Amat, SAME_NONZERO_PATTERN ); CHKERRQ(ierr);
+  ierr = KSPSetUp( ksp );         CHKERRQ(ierr);
 
+#if defined(PETSC_USE_LOG) && defined(ADD_STAGES)
+  ierr = PetscLogStagePop();      CHKERRQ(ierr);
+  ierr = PetscLogStagePush(stage[3]);                    CHKERRQ(ierr);
+#endif
+
+  /* 2nd solve */
+  ierr = KSPSolve( ksp, bb, xx );     CHKERRQ(ierr);
+  ierr = KSPComputeExtremeSingularValues( ksp, &emax, &emin ); CHKERRQ(ierr);
+
+#if defined(PETSC_USE_LOG) && defined(ADD_STAGES)
+  ierr = PetscLogStagePop();      CHKERRQ(ierr);
+#endif
+  
   if( PETSC_TRUE ) {
     PetscReal norm,norm2;
     /* PetscViewer viewer; */
@@ -270,7 +293,7 @@ int main(int argc,char **args)
     ierr = VecAXPY( bb, -1.0, res );   CHKERRQ(ierr);
     ierr = VecDestroy( &res );CHKERRQ(ierr);
     ierr = VecNorm( bb, NORM_2, &norm );  CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"[%d]%s |b-Ax|/|b|=%e, |b|=%e\n",0,__FUNCT__,norm/norm2,norm2);
+    PetscPrintf(PETSC_COMM_WORLD,"[%d]%s |b-Ax|/|b|=%e, |b|=%e, emax=%e\n",0,__FUNCT__,norm/norm2,norm2,emax);
     /*ierr = PetscViewerASCIIOpen(wcomm, "residual.m", &viewer);  CHKERRQ(ierr);
     ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_MATLAB);  CHKERRQ(ierr);
     ierr = VecView(bb,viewer);CHKERRQ(ierr);
@@ -295,6 +318,7 @@ int main(int argc,char **args)
   ierr = VecDestroy(&xx);CHKERRQ(ierr);
   ierr = VecDestroy(&bb);CHKERRQ(ierr);
   ierr = MatDestroy(&Amat);CHKERRQ(ierr);
+  ierr = PetscFree( coords );  CHKERRQ(ierr);
 
   ierr = PetscFinalize();
   return 0;

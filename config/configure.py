@@ -37,16 +37,11 @@ def getBuildSystem(configDir,bsDir):
     downloadPackage('http://petsc.cs.iit.edu/petsc/BuildSystem/archive/tip.tar.gz', 'BuildSystem.tar.gz', configDir)
   else:
     print '++ Mercurial clone found. URL : ' + output
-    if output.find("petsc.cs.iit.edu") >=0:
-      bsurl = output.replace('petsc-dev','BuildSystem').replace('releases/petsc-','releases/BuildSystem-')
-      print '++ Using: hg clone '+ bsurl +' '+ bsDir
-      (status,output) = commands.getstatusoutput('hg clone '+ bsurl +' '+ bsDir)
-      if status:
-        print '++ Unable to clone BuildSystem. Please clone manually'
-        print '==============================================================================='
-        sys.exit(3)
-    else:
-      print '++ Nonstandard parent URL. Cannot determine appropriate BuildSystem URL. Please clone appropriate BuildSystem'
+    bsurl = output.replace('petsc-dev','BuildSystem').replace('releases/petsc-','releases/BuildSystem-')
+    print '++ Using: hg clone '+ bsurl +' '+ bsDir
+    (status,output) = commands.getstatusoutput('hg clone '+ bsurl +' '+ bsDir)
+    if status:
+      print '++ Unable to clone BuildSystem. Please clone manually'
       print '==============================================================================='
       sys.exit(3)
   print '==============================================================================='
