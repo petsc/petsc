@@ -302,7 +302,7 @@ PetscErrorCode SNESSolve_NRichardson(SNES snes)
       ierr = VecCopy(X,Y);CHKERRQ(ierr);
       ierr = SNESSolve(snes->pc, 0, Y);CHKERRQ(ierr);
       ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
-      if (reason < 0) {
+      if (reason < 0  && reason != SNES_DIVERGED_MAX_IT) {
         snes->reason = SNES_DIVERGED_INNER;
         PetscFunctionReturn(0);
       }
