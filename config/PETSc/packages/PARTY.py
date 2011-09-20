@@ -7,7 +7,7 @@ class Configure(PETSc.package.NewPackage):
     self.functions    = ['party_lib']
     self.includes     = ['party_lib.h']
     self.liblist      = [['libparty.a']]
-    self.license      = 'http://wwwcs.upb.de/fachbereich/AG/monien/RESEARCH/PART/party.html'
+    self.license      = 'http://www2.cs.uni-paderborn.de/cs/robsy/party.html'
     return
 
   def Install(self):
