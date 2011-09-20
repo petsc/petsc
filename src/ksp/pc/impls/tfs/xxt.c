@@ -575,7 +575,7 @@ static  PetscErrorCode det_separators(xxt_ADT xxt_handle)
   PetscInt  n=xxt_handle->mvi->n;
   PetscInt  m=xxt_handle->mvi->m;
   PetscInt level=xxt_handle->level;
-  PetscInt shared=FALSE; 
+  PetscInt shared=0; 
 
   PetscFunctionBegin;
   dir  = (PetscInt*)malloc(sizeof(PetscInt)*(level+1));
@@ -608,7 +608,7 @@ static  PetscErrorCode det_separators(xxt_ADT xxt_handle)
   rsum[1]+=0.1;
 
   if (fabs(rsum[0]-rsum[1])>EPS)
-    {shared=TRUE;}
+    {shared=1;}
 
   xxt_handle->info->n_global=xxt_handle->info->m_global=(PetscInt) rsum[0];
   xxt_handle->mvi->n_global =xxt_handle->mvi->m_global =(PetscInt) rsum[0];

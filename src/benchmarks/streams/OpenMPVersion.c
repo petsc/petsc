@@ -42,7 +42,6 @@
 /*-----------------------------------------------------------------------*/
 # include <stdio.h>
 # include <math.h>
-# include <float.h>
 # include <limits.h>
 # include <sys/time.h>
 

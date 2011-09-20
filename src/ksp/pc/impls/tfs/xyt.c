@@ -663,7 +663,7 @@ static PetscErrorCode det_separators(xyt_ADT xyt_handle)
   PetscInt  n=xyt_handle->mvi->n;
   PetscInt  m=xyt_handle->mvi->m;
   PetscInt level=xyt_handle->level;
-  PetscInt shared=FALSE; 
+  PetscInt shared=0; 
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -695,7 +695,7 @@ static PetscErrorCode det_separators(xyt_ADT xyt_handle)
 
       if (lhs[i]!=1.0)
 	{
-          shared=TRUE;
+          shared=1;
         }
     }
 
