@@ -140,6 +140,7 @@ extern PetscErrorCode   TSInterpolate(TS,PetscReal,Vec);
 extern PetscErrorCode   TSPseudoSetTimeStep(TS,PetscErrorCode(*)(TS,PetscReal*,void*),void*);
 extern PetscErrorCode   TSPseudoDefaultTimeStep(TS,PetscReal*,void*);
 extern PetscErrorCode   TSPseudoComputeTimeStep(TS,PetscReal *);
+extern PetscErrorCode   TSPseudoSetMaxTimeStep(TS,PetscReal);
 
 extern PetscErrorCode   TSPseudoSetVerifyTimeStep(TS,PetscErrorCode(*)(TS,Vec,void*,PetscReal*,PetscBool *),void*);
 extern PetscErrorCode   TSPseudoDefaultVerifyTimeStep(TS,Vec,void*,PetscReal*,PetscBool *);
