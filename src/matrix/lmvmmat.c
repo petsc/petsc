@@ -255,8 +255,12 @@ extern PetscErrorCode MatDestroy_LMVM(Mat M)
 
     ierr = MatShellGetContext(M,(void**)&ctx); CHKERRQ(ierr);
     if (ctx->allocated) {
-      ierr = PetscObjectDereference((PetscObject)ctx->Xprev); CHKERRQ(ierr);
-      ierr = PetscObjectDereference((PetscObject)ctx->Gprev); CHKERRQ(ierr);
+      if (ctx->Xprev) {
+	ierr = PetscObjectDereference((PetscObject)ctx->Xprev); CHKERRQ(ierr);
+      }
+      if (ctx->Gprev) {
+	ierr = PetscObjectDereference((PetscObject)ctx->Gprev); CHKERRQ(ierr);
+      }
 
       ierr = VecDestroyVecs(ctx->lm+1,&ctx->S); CHKERRQ(ierr);
       ierr = VecDestroyVecs(ctx->lm+1,&ctx->Y); CHKERRQ(ierr);
