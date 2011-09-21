@@ -90,6 +90,7 @@ static PetscErrorCode TaoSolverSolve_CG(TaoSolver tao)
 	// Search direction for improving point
 	ierr = TaoLineSearchSetInitialStepLength(tao->linesearch,delta);
 	ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &f, tao->gradient, tao->stepdirection, &step, &ls_status); CHKERRQ(ierr);
+	ierr = TaoSolverAddLineSearchCounts(tao); CHKERRQ(ierr);
 	if (ls_status < 0) {
 	    // Linesearch failed
 	    // Reset factors and use scaled gradient step
@@ -114,6 +115,7 @@ static PetscErrorCode TaoSolverSolve_CG(TaoSolver tao)
 
 	    ierr = TaoLineSearchSetInitialStepLength(tao->linesearch,delta);
 	    ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &f, tao->gradient, tao->stepdirection, &step, &ls_status); CHKERRQ(ierr);
+	    ierr = TaoSolverAddLineSearchCounts(tao); CHKERRQ(ierr);
 	    
 	    if (ls_status < 0) {
 		// Linesearch failed again
@@ -128,6 +130,7 @@ static PetscErrorCode TaoSolverSolve_CG(TaoSolver tao)
 
 		ierr = TaoLineSearchSetInitialStepLength(tao->linesearch,delta);
 		ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &f, tao->gradient, tao->stepdirection, &step, &ls_status); CHKERRQ(ierr);
+		ierr = TaoSolverAddLineSearchCounts(tao); CHKERRQ(ierr);
 		if (ls_status < 0) {
 		    // Line search failed for last time -- give up
 		    f = f_old;

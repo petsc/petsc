@@ -1128,6 +1128,43 @@ PetscErrorCode TaoSolverGetLineSearch(TaoSolver tao, TaoLineSearch *ls) {
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "TaoSolverAddLineSearchCounts"
+/*@
+  TaoSolverAddLineSearchCounts - Adds the number of function evaluations spent
+  in the line search to the running total.
+  
+   Input Parameters:
++  tao - the TAO solver
+-  ls - the line search used in the optimization solver
+
+   Level: developer
+
+.seealso: TaoLineSearchApply()
+
+.keywords: Application
+@*/
+PetscErrorCode TaoSolverAddLineSearchCounts(TaoSolver tao) {
+  PetscErrorCode ierr;
+  PetscBool      flg;
+  PetscInt       nfeval,ngeval,nfgeval;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
+  if (tao->linesearch) {
+    ierr = TaoLineSearchIsUsingTaoSolverRoutines(tao->linesearch,&flg);
+    if (flg == PETSC_FALSE) {
+      ierr = TaoLineSearchGetNumberFunctionEvaluations(tao->linesearch,&nfeval,
+						       &ngeval,&nfgeval);
+      tao->nfuncs+=nfeval;
+      tao->ngrads+=ngeval;
+      tao->nfuncgrads+=nfgeval;
+    }
+  }
+  
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
 #define __FUNCT__ "TaoSolverGetSolutionVector"
 /*@
   TaoSolverGetSolutionVector - Returns the vector with the current TAO solution
@@ -1145,6 +1182,7 @@ PetscErrorCode TaoSolverGetLineSearch(TaoSolver tao, TaoLineSearch *ls) {
 PetscErrorCode TaoSolverGetSolutionVector(TaoSolver tao, Vec *X)
 {
     PetscFunctionBegin;
+    PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
     *X = tao->solution;
     PetscFunctionReturn(0);
 }
@@ -1166,6 +1204,7 @@ PetscErrorCode TaoSolverGetSolutionVector(TaoSolver tao, Vec *X)
 PetscErrorCode TaoSolverGetGradientVector(TaoSolver tao, Vec *G)
 {
     PetscFunctionBegin;
+    PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
     *G = tao->gradient;
     PetscFunctionReturn(0);
 }

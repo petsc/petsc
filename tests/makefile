@@ -94,6 +94,10 @@ test_gts: test_gts.o tao_chkopts
 	-${CLINKER} -o test_gts test_gts.o ${TAO_LIB} ${PETSC_LIB}
 	${RM} test_gts.o
 
+test_linesearch_fg: test_linesearch_fg.o tao_chkopts
+	-${CLINKER} -o test_linesearch_fg test_linesearch_fg.o ${TAO_LIB} ${PETSC_LIB}
+	${RM} test_linesearch_fg.o
+
 test_gtsf: test_gtsf.o tao_chkopts
 	-${FLINKER} -o test_gtsf test_gtsf.o ${TAO_LIB} ${PETSC_LIB}
 	${RM} test_gtsf.o

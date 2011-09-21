@@ -68,7 +68,7 @@ static PetscErrorCode TaoLineSearchApply_GPCG(TaoLineSearch ls, Vec x,
   /* ls->rtol 	  - relative tolerance for an acceptable step */
   /* ls->ftol 	  - tolerance for sufficient decrease condition */
   /* ls->gtol 	  - tolerance for curvature condition */
-  /* ls->nfev 	  - number of function evaluations */
+  /* ls->nfeval	  - number of function evaluations */
   /* ls->maxfev  - maximum number of function evaluations */
 
   ls->reason = TAOLINESEARCH_CONTINUE_ITERATING;
@@ -113,7 +113,7 @@ static PetscErrorCode TaoLineSearchApply_GPCG(TaoLineSearch ls, Vec x,
   }
 
   /* Initialization */
-  ls->nfev = 0;
+  ls->nfeval = 0;
   finit = *f;
   for (i=0; i< ls->maxfev; i++) {
     
@@ -181,8 +181,8 @@ static PetscErrorCode TaoLineSearchApply_GPCG(TaoLineSearch ls, Vec x,
       ls->reason = TAOLINESEARCH_FAILED_LOWERBOUND;
       break;
     }
-    if (ls->nfev >= ls->maxfev) {
-      ierr = PetscInfo2(ls,"Number of line search function evals (%d) > maximum (%d)\n",ls->nfev,ls->maxfev); CHKERRQ(ierr);
+    if (ls->nfeval >= ls->maxfev) {
+      ierr = PetscInfo2(ls,"Number of line search function evals (%d) > maximum (%d)\n",ls->nfeval,ls->maxfev); CHKERRQ(ierr);
       ls->reason = TAOLINESEARCH_FAILED_MAXFCN;
       break;
     }
@@ -192,7 +192,7 @@ static PetscErrorCode TaoLineSearchApply_GPCG(TaoLineSearch ls, Vec x,
 	break;
     }
   }
-  ierr = PetscInfo2(ls,"%d function evals in line search, step = %10.4f\n",ls->nfev,ls->step); CHKERRQ(ierr);
+  ierr = PetscInfo2(ls,"%d function evals in line search, step = %10.4f\n",ls->nfeval,ls->step); CHKERRQ(ierr);
   /* set new solution vector and compute gradient if necessary */
   ierr = VecCopy(neP->W2, x); CHKERRQ(ierr);
   if (!g_computed) {
@@ -219,7 +219,7 @@ PetscErrorCode TaoLineSearchCreate_GPCG(TaoLineSearch ls)
   ls->gtol		  = 0.0;
   ls->stepmin		  = 1.0e-20;
   ls->stepmax		  = 1.0e+20;
-  ls->nfev		  = 0; 
+  ls->nfeval		  = 0; 
   ls->maxfev		  = 30;
   ls->step                = 1.0;
 

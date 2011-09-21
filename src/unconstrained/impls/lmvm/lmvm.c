@@ -115,6 +115,7 @@ static PetscErrorCode TaoSolverSolve_LMVM(TaoSolver tao)
     ierr = VecCopy(tao->gradient, lmP->Gold); CHKERRQ(ierr);
 
     ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &f, tao->gradient, lmP->D, &step,&ls_status); CHKERRQ(ierr);
+    ierr = TaoSolverAddLineSearchCounts(tao); CHKERRQ(ierr);
     
 
     while (((int)ls_status < 0) && (stepType != LMVM_GRADIENT)) {
@@ -170,6 +171,7 @@ static PetscErrorCode TaoSolverSolve_LMVM(TaoSolver tao)
         
       // Perform the linesearch
       ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &f, tao->gradient, lmP->D, &step, &ls_status); CHKERRQ(ierr);
+      ierr = TaoSolverAddLineSearchCounts(tao); CHKERRQ(ierr);
       
     }
 

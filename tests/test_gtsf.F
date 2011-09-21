@@ -62,7 +62,7 @@
 !  MUST be declared as external.
 
       external FormInitialGuess,FormFunctionGradient,ComputeHessian
-      external FormFunctionGTS
+      external FormFunctionGTS,FormLSGradient
       
 
       i1 = 1
@@ -140,6 +140,8 @@
       call TaoLineSearchSetObjectiveAndGTSRoutine(ls,FormFunctionGTS,     &
      &     GWork,ierr)
       CHKERRQ(ierr)
+      call TaoLineSearchSetGradientRoutine(ls,FormLSGradient,             &
+     &     GWork,ierr)
 
 !     SOLVE THE APPLICATION
       call TaoSolverSolve(tao,ierr)
@@ -725,3 +727,185 @@
       return
       end
 
+
+! ---------------------------------------------------------------------
+!
+!  FormLSGradient - Evaluates gradient G(X). 
+!
+!  Input Parameters:
+!  tao   - the TaoSolver context
+!  X     - input vector
+!  dummy - optional user-defined context (not used here)
+!    
+!  Output Parameters:
+!  G     - vector containing the newly evaluated gradient
+!  ierr  - error code
+!
+!  Notes:
+!  This routine serves as a wrapper for the lower-level routine
+!  "ApplicationGradient", where the actual computations are 
+!  done using the standard Fortran style of treating the local
+!  input vector data as an array over the local mesh.
+!
+      subroutine FormLSGradient(tao,X,G,dummy,ierr)
+      implicit none
+
+! dm, mx, my, param, localX declared in eptorsion2f.h
+#include "eptorsion2f.h"
+
+!  Input/output variables:
+      TaoSolver        tao
+      Vec              X, G
+      PetscErrorCode   ierr
+      PetscInt         dummy
+
+!  Declarations for use with local array:
+
+
+! PETSc's VecGetArray acts differently in Fortran than it does in C.
+! Calling VecGetArray((Vec) X, (PetscReal) x_array(0:1), (PetscOffset) x_index, ierr)
+! will return an array of doubles referenced by x_array offset by x_index.
+!  i.e.,  to reference the kth element of X, use x_array(k + x_index).
+! Notice that by declaring the arrays with range (0:1), we are using the C 0-indexing practice.
+      PetscReal      lx_v(0:1)
+      PetscOffset      lx_i
+
+!  Local variables:
+      PetscReal      zero, p5, area, cdiv3
+      PetscReal      val
+      PetscReal      v, vb, vl, vr, vt, dvdx
+      PetscReal      dvdy, hx, hy
+      PetscInt         xe, ye, xsm, ysm
+      PetscInt         xep, yep, i, j, k, ind
+      PetscInt         xs, ys, xm, ym 
+      PetscInt         gxs, gys, gxm, gym
+      PetscInt         i1
+
+      i1 = 1
+      ierr  = 0
+      cdiv3 = param/3.0d0
+      zero = 0.0d0
+      p5   = 0.5d0
+      hx = 1.0d0/(mx + 1)
+      hy = 1.0d0/(my + 1)
+
+!  Initialize gradient to zero
+      call VecSet(G,zero,ierr)
+
+!  Scatter ghost points to local vector
+      call DMGlobalToLocalBegin(dm,X,INSERT_VALUES,localX,ierr)
+      call DMGlobalToLocalEnd(dm,X,INSERT_VALUES,localX,ierr)
+
+
+!  Get corner information
+      call DMDAGetCorners(dm,xs,ys,PETSC_NULL_INTEGER,xm,ym,               &
+     &                  PETSC_NULL_INTEGER,ierr)
+      call DMDAGetGhostCorners(dm,gxs,gys,PETSC_NULL_INTEGER,              &
+     &                   gxm,gym,PETSC_NULL_INTEGER,ierr)
+
+!  Get pointer to vector data.
+      call VecGetArray(localX,lx_v,lx_i,ierr)
+
+
+!  Set local loop dimensions
+      xe = xs+xm
+      ye = ys+ym
+      if (xs .eq. 0) then
+         xsm = xs-1
+      else
+         xsm = xs
+      endif
+      if (ys .eq. 0) then
+         ysm = ys-1
+      else
+         ysm = ys
+      endif
+      if (xe .eq. mx) then
+         xep = xe+1
+      else
+         xep = xe
+      endif
+      if (ye .eq. my) then
+         yep = ye+1
+      else
+         yep = ye
+      endif
+
+!     Compute local gradient contributions over the lower triangular elements
+     
+      do j = ysm, ye-1
+         do i = xsm, xe-1
+            k  = (j-gys)*gxm + i-gxs
+            v  = zero
+            vr = zero
+            vt = zero
+            if (i .ge. 0 .and. j .ge. 0)      v = lx_v(lx_i+k)
+            if (i .lt. mx-1 .and. j .gt. -1) vr = lx_v(lx_i+k+1)
+            if (i .gt. -1 .and. j .lt. my-1) vt = lx_v(lx_i+k+gxm)
+            dvdx = (vr-v)/hx
+            dvdy = (vt-v)/hy
+            if (i .ne. -1 .and. j .ne. -1) then
+               ind = k
+               val = - dvdx/hx - dvdy/hy - cdiv3
+               call VecSetValuesLocal(G,i1,k,val,ADD_VALUES,ierr)
+            endif
+            if (i .ne. mx-1 .and. j .ne. -1) then
+               ind = k+1
+               val =  dvdx/hx - cdiv3
+               call VecSetValuesLocal(G,i1,ind,val,ADD_VALUES,ierr)
+            endif
+            if (i .ne. -1 .and. j .ne. my-1) then
+              ind = k+gxm
+              val = dvdy/hy - cdiv3
+              call VecSetValuesLocal(G,i1,ind,val,ADD_VALUES,ierr)
+            endif
+         end do
+      end do
+
+!     Compute local gradient contributions over the upper triangular elements
+
+      do j = ys, yep-1
+         do i = xs, xep-1
+            k  = (j-gys)*gxm + i-gxs
+            vb = zero
+            vl = zero
+            v  = zero
+            if (i .lt. mx .and. j .gt. 0) vb = lx_v(lx_i+k-gxm)
+            if (i .gt. 0 .and. j .lt. my) vl = lx_v(lx_i+k-1)
+            if (i .lt. mx .and. j .lt. my) v = lx_v(lx_i+k)
+            dvdx = (v-vl)/hx
+            dvdy = (v-vb)/hy
+            if (i .ne. mx .and. j .ne. 0) then
+               ind = k-gxm
+               val = - dvdy/hy - cdiv3
+               call VecSetValuesLocal(G,i1,ind,val,ADD_VALUES,ierr)
+            endif
+            if (i .ne. 0 .and. j .ne. my) then
+               ind = k-1
+               val =  - dvdx/hx - cdiv3
+               call VecSetValuesLocal(G,i1,ind,val,ADD_VALUES,ierr)
+            endif
+            if (i .ne. mx .and. j .ne. my) then
+               ind = k
+               val =  dvdx/hx + dvdy/hy - cdiv3
+               call VecSetValuesLocal(G,i1,ind,val,ADD_VALUES,ierr)
+            endif
+         end do
+      end do
+
+!  Restore vector
+      call VecRestoreArray(localX,lx_v,lx_i,ierr)
+
+!  Assemble gradient vector
+      call VecAssemblyBegin(G,ierr)
+      call VecAssemblyEnd(G,ierr)
+
+! Scale the gradient      
+      area = p5*hx*hy
+      call VecScale(G,area,ierr)
+
+      call PetscLogFlops((ye-ysm)*(xe-xsm)*20+(xep-xs)*(yep-ys)*16.0d0,     &
+     &                    ierr)
+
+      return
+      end

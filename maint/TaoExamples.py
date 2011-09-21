@@ -244,6 +244,7 @@ class TaoExamples(ExampleList):
         # test line search options
         self.add(Example(example="gts",nprocs=1,options="-tao_smonitor",method="lmvm",tags=["jbearing","lmvm","single","c","unconstrained","gts"],name="gts"))
         self.add(Example(example="gtsf",nprocs=2,options="-tao_smonitor",method="nls",tags=["nls","eptorsion","multiprocessor","fortran","bound","gts"],name="gtsf"))
+        self.add(Example(example="linesearch_fg",nprocs=1,options="-tao_smonitor",method="blmvm",tags=["jbearing","blmvm","single","c","unconstrained","linesearch_fg"],name="linesearch_fg"))
 
 
                 

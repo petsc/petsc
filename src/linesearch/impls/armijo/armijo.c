@@ -119,7 +119,7 @@ static PetscErrorCode TaoLineSearchApply_Armijo(TaoLineSearch ls, Vec x, PetscRe
 
   PetscFunctionBegin;
 
-  ls->nfev=0;
+  ls->nfeval=0;
   ls->reason = TAOLINESEARCH_CONTINUE_ITERATING;
   if (!armP->work) {
     ierr = VecDuplicate(x,&armP->work); CHKERRQ(ierr);
@@ -243,7 +243,7 @@ static PetscErrorCode TaoLineSearchApply_Armijo(TaoLineSearch ls, Vec x, PetscRe
     fact = armP->sigma * gdx;
   }
   ls->step = ls->initstep;
-  while (ls->step >= ls->stepmin && ls->nfev < ls->maxfev) {
+  while (ls->step >= ls->stepmin && ls->nfeval < ls->maxfev) {
     /* Calculate iterate */
     ierr = VecCopy(x,armP->work); CHKERRQ(ierr);
     ierr = VecAXPY(armP->work,ls->step,s); CHKERRQ(ierr);
@@ -285,8 +285,8 @@ static PetscErrorCode TaoLineSearchApply_Armijo(TaoLineSearch ls, Vec x, PetscRe
   } else if (ls->step < ls->stepmin) {
     ierr = PetscInfo(ls, "Step length is below tolerance.\n"); CHKERRQ(ierr);
     ls->reason = TAOLINESEARCH_FAILED_RTOL;
-  } else if (ls->nfev >= ls->maxfev) {
-    ierr = PetscInfo2(ls, "Number of line search function evals (%d) > maximum allowed (%d)\n",ls->nfev, ls->maxfev); CHKERRQ(ierr);
+  } else if (ls->nfeval >= ls->maxfev) {
+    ierr = PetscInfo2(ls, "Number of line search function evals (%d) > maximum allowed (%d)\n",ls->nfeval, ls->maxfev); CHKERRQ(ierr);
     ls->reason = TAOLINESEARCH_FAILED_MAXFCN;
   } 
   if (ls->reason) {
@@ -312,7 +312,7 @@ static PetscErrorCode TaoLineSearchApply_Armijo(TaoLineSearch ls, Vec x, PetscRe
   }
 
   /* Finish computations */
-  ierr = PetscInfo2(ls, "%d function evals in line search, step = %10.4f\n",ls->nfev, ls->step); CHKERRQ(ierr);
+  ierr = PetscInfo2(ls, "%d function evals in line search, step = %10.4f\n",ls->nfeval, ls->step); CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

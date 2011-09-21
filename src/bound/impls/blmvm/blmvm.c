@@ -87,6 +87,7 @@ static PetscErrorCode TaoSolverSolve_BLMVM(TaoSolver tao)
     ierr = VecCopy(blmP->unprojected_gradient, blmP->Gold); CHKERRQ(ierr);
     ierr = TaoLineSearchSetInitialStepLength(tao->linesearch,1.0); CHKERRQ(ierr);
     ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &f, blmP->unprojected_gradient, tao->stepdirection, &stepsize, &ls_status); CHKERRQ(ierr);
+    ierr = TaoSolverAddLineSearchCounts(tao); CHKERRQ(ierr);
 
     if (ls_status<0) {
       // Linesearch failed
@@ -113,6 +114,7 @@ static PetscErrorCode TaoSolverSolve_BLMVM(TaoSolver tao)
       // that should be reset.
       ierr = TaoLineSearchSetInitialStepLength(tao->linesearch,1.0);
       ierr = TaoLineSearchApply(tao->linesearch,tao->solution,&f, blmP->unprojected_gradient, tao->stepdirection,  &stepsize, &ls_status); CHKERRQ(ierr);
+      ierr = TaoSolverAddLineSearchCounts(tao); CHKERRQ(ierr);
 
       if ((int) ls_status < 0) {
         // Linesearch failed

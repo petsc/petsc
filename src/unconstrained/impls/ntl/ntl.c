@@ -706,6 +706,7 @@ static PetscErrorCode TaoSolverSolve_NTL(TaoSolver tao)
 
       step = 1.0;
       ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &f, tao->gradient, tao->stepdirection, &step, &ls_reason); CHKERRQ(ierr);
+      ierr = TaoSolverAddLineSearchCounts(tao); CHKERRQ(ierr);
 
       
       while (ls_reason < 0 && stepType != NTL_GRADIENT) {
@@ -809,6 +810,7 @@ static PetscErrorCode TaoSolverSolve_NTL(TaoSolver tao)
 	   that should be reset. */
 	step = 1.0;
 	ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &f, tao->gradient, tao->stepdirection, &step, &ls_reason); CHKERRQ(ierr);
+	ierr = TaoSolverAddLineSearchCounts(tao); CHKERRQ(ierr);
       }
 
       if (ls_reason < 0) {

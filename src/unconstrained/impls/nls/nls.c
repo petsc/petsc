@@ -681,6 +681,7 @@ static PetscErrorCode TaoSolverSolve_NLS(TaoSolver tao)
     ierr = VecCopy(tao->gradient, nlsP->Gold); CHKERRQ(ierr);
 
     ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &f, tao->gradient, nlsP->D, &step, &ls_reason); CHKERRQ(ierr);
+    ierr = TaoSolverAddLineSearchCounts(tao); CHKERRQ(ierr);
 
     while (ls_reason < 0  && stepType != NLS_GRADIENT) {
       // Linesearch failed
@@ -793,6 +794,7 @@ static PetscErrorCode TaoSolverSolve_NLS(TaoSolver tao)
 
       ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &f, tao->gradient, nlsP->D, &step, &ls_reason); CHKERRQ(ierr);
       ierr = TaoLineSearchGetFullStepObjective(tao->linesearch, &f_full); CHKERRQ(ierr);
+      ierr = TaoSolverAddLineSearchCounts(tao); CHKERRQ(ierr);
     }
 
     if (ls_reason < 0) {

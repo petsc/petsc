@@ -242,6 +242,7 @@ static PetscErrorCode TaoSolverSolve_SQPCON(TaoSolver tao)
     ierr = TaoLineSearchComputeObjectiveAndGradient(tao->linesearch,tao->solution,&fm,sqpconP->GL); CHKERRQ(ierr);
     ierr = TaoLineSearchSetInitialStepLength(tao->linesearch,1.0);
     ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &fm, sqpconP->GL, tao->stepdirection,&step, &ls_reason); CHKERRQ(ierr);
+    ierr = TaoSolverAddLineSearchCounts(tao); CHKERRQ(ierr);
     if (ls_reason < 0) {
       ierr = VecCopy(sqpconP->Xold, tao->solution);
       ierr = VecCopy(sqpconP->Gold, tao->gradient);

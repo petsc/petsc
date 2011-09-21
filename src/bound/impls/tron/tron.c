@@ -233,6 +233,7 @@ static PetscErrorCode TaoSolverSolve_TRON(TaoSolver tao){
       ierr = TaoLineSearchSetInitialStepLength(tao->linesearch,1.0); CHKERRQ(ierr);
       ierr = TaoLineSearchApply(tao->linesearch, tron->X_New, &f_new, tron->G_New, tao->stepdirection,
 				&stepsize,&ls_reason); CHKERRQ(ierr); CHKERRQ(ierr);
+      ierr = TaoSolverAddLineSearchCounts(tao); CHKERRQ(ierr);
       
       ierr = MatMult(tao->hessian, tao->stepdirection, tron->Work); CHKERRQ(ierr);
       ierr = VecAYPX(tron->Work, 0.5, tao->gradient); CHKERRQ(ierr);
@@ -326,6 +327,7 @@ static PetscErrorCode TronGradientProjections(TaoSolver tao,TAO_TRON *tron)
     ierr = TaoLineSearchSetInitialStepLength(tao->linesearch,tron->pgstepsize); CHKERRQ(ierr);
     ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &f_new, tao->gradient, tao->stepdirection,
 			      &tron->pgstepsize, &ls_reason); CHKERRQ(ierr);
+    ierr = TaoSolverAddLineSearchCounts(tao); CHKERRQ(ierr);
 
 
     /* Update the iterate */

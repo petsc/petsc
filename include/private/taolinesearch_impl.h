@@ -49,7 +49,9 @@ struct _p_TaoLineSearch {
     PetscReal initstep;
 
     PetscInt maxfev;
-    PetscInt nfev;
+    PetscInt nfeval;
+    PetscInt ngeval;
+    PetscInt nfgeval;
     TaoLineSearchTerminationReason reason;
 
     PetscReal rtol;	 /* relative tol for acceptable step (rtol>0) */
