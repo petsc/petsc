@@ -64,7 +64,8 @@ int main(int argc,char **argv)
 
   /* Initialize problem parameters */
   user.n = 2; user.alpha = 99.0;
-
+  PetscPrintf(PETSC_COMM_SELF,"alpha = %e\n",user.alpha);
+  PetscPrintf(PETSC_COMM_SELF,"alpha = %G\n",user.alpha);
   /* Check for command line arguments to override defaults */
   info = PetscOptionsGetInt(PETSC_NULL,"-n",&user.n,&flg); CHKERRQ(info);
   info = PetscOptionsGetReal(PETSC_NULL,"-alpha",&user.alpha,&flg); CHKERRQ(info);

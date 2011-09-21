@@ -295,9 +295,9 @@ static PetscErrorCode TaoSolverSolve_LCL(TaoSolver tao)
     
     ierr = VecDot(lclP->r,lclP->WU,&descent); CHKERRQ(ierr);
     if (descent <= 0) {
-      ierr = PetscInfo1(tao,"Newton direction not descent: %g\n",descent); CHKERRQ(ierr);
+      ierr = PetscInfo1(tao,"Newton direction not descent: %G\n",descent); CHKERRQ(ierr);
       if (lclP->verbose) {
-	ierr = PetscPrintf(PETSC_COMM_WORLD,"Newton direction not descent: %g\n",descent); CHKERRQ(ierr);
+	ierr = PetscPrintf(PETSC_COMM_WORLD,"Newton direction not descent: %G\n",descent); CHKERRQ(ierr);
       }
       ierr = PetscInfo(tao,"Using steepest descent direction instead.\n"); CHKERRQ(ierr);
       ierr = VecSet(lclP->r,0.0); CHKERRQ(ierr);
@@ -309,14 +309,14 @@ static PetscErrorCode TaoSolverSolve_LCL(TaoSolver tao)
     ierr = VecDot(lclP->r,lclP->GAugL_U,&descent); CHKERRQ(ierr); 
     adec = 1e-8 * r2;
     if (descent <= adec) {
-      ierr = PetscInfo1(tao,"Newton direction not descent for augmented Lagrangian: %g",descent); CHKERRQ(ierr);
+      ierr = PetscInfo1(tao,"Newton direction not descent for augmented Lagrangian: %G",descent); CHKERRQ(ierr);
       ierr = VecDot(tao->constraints,tao->constraints,&con2); CHKERRQ(ierr);
       ierr = VecDot(lclP->r,lclP->GL_U,&rGL_U);
       ierr = VecDot(lclP->r,lclP->WU,&rWU);
       lclP->rho = 2 * (adec - rGL_U) / rWU;
-      ierr = PetscInfo1(tao,"  Increasing penalty parameter to %g",lclP->rho);
+      ierr = PetscInfo1(tao,"  Increasing penalty parameter to %G",lclP->rho);
       if (lclP->verbose) {
-	ierr = PetscPrintf(PETSC_COMM_WORLD,"  Increasing penalty parameter to %g\n",lclP->rho); CHKERRQ(ierr);
+	ierr = PetscPrintf(PETSC_COMM_WORLD,"  Increasing penalty parameter to %G\n",lclP->rho); CHKERRQ(ierr);
       }
     }
 
@@ -338,7 +338,7 @@ static PetscErrorCode TaoSolverSolve_LCL(TaoSolver tao)
     ierr = TaoLineSearchSetFromOptions(tao->linesearch); CHKERRQ(ierr);
     ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &lclP->aug, lclP->GAugL, tao->stepdirection, &step, &ls_reason); CHKERRQ(ierr);
     if (lclP->verbose) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"Steplength = %10.8f\n",step); CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"Steplength = %10.8F\n",step); CHKERRQ(ierr);
     }
     
     ierr = LCLScatter(lclP,tao->solution,lclP->U,lclP->V); CHKERRQ(ierr);
@@ -393,7 +393,7 @@ static PetscErrorCode TaoSolverSolve_LCL(TaoSolver tao)
 	ierr = VecDot(lclP->s,lclP->g1,&descent); CHKERRQ(ierr);
 	if (descent < 0e-8) {
 	  if (lclP->verbose) {
-	    ierr = PetscPrintf(PETSC_COMM_WORLD,"Reduced-space direction not descent: %g\n",descent); CHKERRQ(ierr);
+	    ierr = PetscPrintf(PETSC_COMM_WORLD,"Reduced-space direction not descent: %G\n",descent); CHKERRQ(ierr);
 	  }
 	  ierr = VecCopy(lclP->g1,lclP->s); CHKERRQ(ierr);
 	}
@@ -423,7 +423,7 @@ static PetscErrorCode TaoSolverSolve_LCL(TaoSolver tao)
       ierr = TaoLineSearchSetFromOptions(tao->linesearch); CHKERRQ(ierr);
       ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &lclP->aug, lclP->GAugL, tao->stepdirection,&step,&ls_reason); CHKERRQ(ierr);
       if (lclP->verbose){
-	ierr = PetscPrintf(PETSC_COMM_WORLD,"Reduced-space steplength =  %10.8f\n",step); CHKERRQ(ierr);
+	ierr = PetscPrintf(PETSC_COMM_WORLD,"Reduced-space steplength =  %10.8F\n",step); CHKERRQ(ierr);
       }
 
       ierr = LCLScatter(lclP,tao->solution,lclP->U,lclP->V); CHKERRQ(ierr);

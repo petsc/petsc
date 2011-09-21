@@ -95,7 +95,7 @@ int main( int argc, char **argv )
 
 
   PetscPrintf(PETSC_COMM_WORLD,"\n---- Journal Bearing Problem SHB-----\n");
-  PetscPrintf(PETSC_COMM_WORLD,"mx: %d,  my: %d,  ecc: %4.3f \n\n",
+  PetscPrintf(PETSC_COMM_WORLD,"mx: %d,  my: %d,  ecc: %4.3F \n\n",
 	      user.nx,user.ny,user.ecc);
 
   /* Calculate any derived values from parameters */

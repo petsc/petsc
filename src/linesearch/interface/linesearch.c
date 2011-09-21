@@ -362,24 +362,24 @@ PetscErrorCode TaoLineSearchApply(TaoLineSearch ls, Vec x, PetscReal *f, Vec g, 
      ls->nfgeval=0;
      /* Check parameter values */
      if (ls->ftol < 0.0) {
-       ierr = PetscInfo1(ls,"Bad Line Search Parameter: ftol (%g) < 0\n",ls->ftol); CHKERRQ(ierr);
+       ierr = PetscInfo1(ls,"Bad Line Search Parameter: ftol (%G) < 0\n",ls->ftol); CHKERRQ(ierr);
        *reason=TAOLINESEARCH_FAILED_BADPARAMETER;
      }
      if (ls->rtol < 0.0) {
-       ierr = PetscInfo1(ls,"Bad Line Search Parameter: rtol (%g) < 0\n",ls->rtol); CHKERRQ(ierr);
+       ierr = PetscInfo1(ls,"Bad Line Search Parameter: rtol (%G) < 0\n",ls->rtol); CHKERRQ(ierr);
        *reason=TAOLINESEARCH_FAILED_BADPARAMETER;
      }      
 
      if (ls->gtol < 0.0) {
-       ierr = PetscInfo1(ls,"Bad Line Search Parameter: gtol (%g) < 0\n",ls->gtol); CHKERRQ(ierr);
+       ierr = PetscInfo1(ls,"Bad Line Search Parameter: gtol (%G) < 0\n",ls->gtol); CHKERRQ(ierr);
        *reason=TAOLINESEARCH_FAILED_BADPARAMETER;
      }      
      if (ls->stepmin < 0.0) {
-       ierr = PetscInfo1(ls,"Bad Line Search Parameter: stepmin (%g) < 0\n",ls->stepmin); CHKERRQ(ierr);
+       ierr = PetscInfo1(ls,"Bad Line Search Parameter: stepmin (%G) < 0\n",ls->stepmin); CHKERRQ(ierr);
        *reason=TAOLINESEARCH_FAILED_BADPARAMETER;
      }      
      if (ls->stepmax < ls->stepmin) {
-       ierr = PetscInfo2(ls,"Bad Line Search Parameter: stepmin (%g) > stepmax (%g)\n",ls->stepmin,ls->stepmax); CHKERRQ(ierr);
+       ierr = PetscInfo2(ls,"Bad Line Search Parameter: stepmin (%G) > stepmax (%G)\n",ls->stepmin,ls->stepmax); CHKERRQ(ierr);
        *reason=TAOLINESEARCH_FAILED_BADPARAMETER;
      }      
      if (ls->maxfev < 0) {
@@ -387,7 +387,7 @@ PetscErrorCode TaoLineSearchApply(TaoLineSearch ls, Vec x, PetscReal *f, Vec g, 
        *reason=TAOLINESEARCH_FAILED_BADPARAMETER;
      }      
      if (PetscIsInfOrNanReal(*f)) {
-       ierr = PetscInfo1(ls,"Initial Line Search Function Value is Inf or Nan (%g)\n",*f); CHKERRQ(ierr);
+       ierr = PetscInfo1(ls,"Initial Line Search Function Value is Inf or Nan (%G)\n",*f); CHKERRQ(ierr);
        *reason=TAOLINESEARCH_FAILED_INFORNAN;
      }
 

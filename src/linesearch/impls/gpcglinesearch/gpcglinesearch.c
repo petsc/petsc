@@ -107,7 +107,7 @@ static PetscErrorCode TaoLineSearchApply_GPCG(TaoLineSearch ls, Vec x,
   rho=0; actred=0;
 
   if (ls->step < 0) {
-    ierr = PetscInfo1(ls,"Line search error: initial step parameter %g < 0\n",ls->step); CHKERRQ(ierr);
+    ierr = PetscInfo1(ls,"Line search error: initial step parameter %G < 0\n",ls->step); CHKERRQ(ierr);
     ls->reason = TAOLINESEARCH_FAILED_OTHER;
     PetscFunctionReturn(0);
   }
@@ -172,12 +172,12 @@ static PetscErrorCode TaoLineSearchApply_GPCG(TaoLineSearch ls, Vec x,
      break;
     }
     if (ls->step == ls->stepmax) {
-      ierr = PetscInfo1(ls,"Step is at the upper bound, stepmax (%g)\n",ls->stepmax); CHKERRQ(ierr);
+      ierr = PetscInfo1(ls,"Step is at the upper bound, stepmax (%G)\n",ls->stepmax); CHKERRQ(ierr);
       ls->reason = TAOLINESEARCH_FAILED_UPPERBOUND;
       break;
     }
     if (ls->step == ls->stepmin) {
-      ierr = PetscInfo1(ls,"Step is at the lower bound, stepmin (%g)\n",ls->stepmin); CHKERRQ(ierr);
+      ierr = PetscInfo1(ls,"Step is at the lower bound, stepmin (%G)\n",ls->stepmin); CHKERRQ(ierr);
       ls->reason = TAOLINESEARCH_FAILED_LOWERBOUND;
       break;
     }
@@ -187,12 +187,12 @@ static PetscErrorCode TaoLineSearchApply_GPCG(TaoLineSearch ls, Vec x,
       break;
     }
     if ((neP->bracket) && (ls->stepmax - ls->stepmin <= ls->rtol*ls->stepmax)){
-        ierr = PetscInfo1(ls,"Relative width of interval of uncertainty is at most rtol (%g)\n",ls->rtol); CHKERRQ(ierr);
+        ierr = PetscInfo1(ls,"Relative width of interval of uncertainty is at most rtol (%G)\n",ls->rtol); CHKERRQ(ierr);
         ls->reason = TAOLINESEARCH_FAILED_RTOL;
 	break;
     }
   }
-  ierr = PetscInfo2(ls,"%d function evals in line search, step = %10.4f\n",ls->nfeval,ls->step); CHKERRQ(ierr);
+  ierr = PetscInfo2(ls,"%d function evals in line search, step = %10.4F\n",ls->nfeval,ls->step); CHKERRQ(ierr);
   /* set new solution vector and compute gradient if necessary */
   ierr = VecCopy(neP->W2, x); CHKERRQ(ierr);
   if (!g_computed) {

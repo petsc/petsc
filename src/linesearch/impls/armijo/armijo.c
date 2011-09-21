@@ -64,13 +64,13 @@ static PetscErrorCode TaoLineSearchView_Armijo(TaoLineSearch ls, PetscViewer pv)
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)pv, PETSCVIEWERASCII, &isascii); CHKERRQ(ierr);
   if (isascii) {
-    ierr = PetscViewerASCIIPrintf(pv,"  maxf=%d, ftol=%g, gtol=%g\n",ls->maxfev, ls->rtol, ls->ftol); CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(pv,"  maxf=%d, ftol=%G, gtol=%G\n",ls->maxfev, ls->rtol, ls->ftol); CHKERRQ(ierr);
     ierr=PetscViewerASCIIPrintf(pv,"  Armijo linesearch",armP->alpha);CHKERRQ(ierr);
     if (armP->nondescending) {
       ierr = PetscViewerASCIIPrintf(pv, " (nondescending)"); CHKERRQ(ierr);
     }
-    ierr=PetscViewerASCIIPrintf(pv,": alpha=%g beta=%g ",armP->alpha,armP->beta);CHKERRQ(ierr);
-    ierr=PetscViewerASCIIPrintf(pv,"sigma=%g ",armP->sigma);CHKERRQ(ierr);
+    ierr=PetscViewerASCIIPrintf(pv,": alpha=%G beta=%G ",armP->alpha,armP->beta);CHKERRQ(ierr);
+    ierr=PetscViewerASCIIPrintf(pv,"sigma=%G ",armP->sigma);CHKERRQ(ierr);
     ierr=PetscViewerASCIIPrintf(pv,"memsize=%d\n",armP->memorySize);CHKERRQ(ierr);
   } else {
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for Armijo TaoLineSearch",((PetscObject)pv)->type_name);
@@ -137,23 +137,23 @@ static PetscErrorCode TaoLineSearchApply_Armijo(TaoLineSearch ls, Vec x, PetscRe
 
   /* Check linesearch parameters */
   if (armP->alpha < 1) {
-    ierr = PetscInfo1(ls,"Armijo line search error: alpha (%g) < 1\n", armP->alpha); CHKERRQ(ierr);
+    ierr = PetscInfo1(ls,"Armijo line search error: alpha (%G) < 1\n", armP->alpha); CHKERRQ(ierr);
     ls->reason=TAOLINESEARCH_FAILED_BADPARAMETER;
   } 
   
   else if ((armP->beta <= 0) || (armP->beta >= 1)) {
-    ierr = PetscInfo1(ls,"Armijo line search error: beta (%g) invalid\n", armP->beta); CHKERRQ(ierr);
+    ierr = PetscInfo1(ls,"Armijo line search error: beta (%G) invalid\n", armP->beta); CHKERRQ(ierr);
     ls->reason=TAOLINESEARCH_FAILED_BADPARAMETER;
 
   } 
   
   else if ((armP->beta_inf <= 0) || (armP->beta_inf >= 1)) {
-    ierr = PetscInfo1(ls,"Armijo line search error: beta_inf (%g) invalid\n", armP->beta_inf); CHKERRQ(ierr);
+    ierr = PetscInfo1(ls,"Armijo line search error: beta_inf (%G) invalid\n", armP->beta_inf); CHKERRQ(ierr);
     ls->reason=TAOLINESEARCH_FAILED_BADPARAMETER;
   } 
 
   else if ((armP->sigma <= 0) || (armP->sigma >= 0.5)) {
-    ierr = PetscInfo1(ls,"Armijo line search error: sigma (%g) invalid\n", armP->sigma); CHKERRQ(ierr);
+    ierr = PetscInfo1(ls,"Armijo line search error: sigma (%G) invalid\n", armP->sigma); CHKERRQ(ierr);
     ls->reason=TAOLINESEARCH_FAILED_BADPARAMETER;
   } 
   
@@ -227,12 +227,12 @@ static PetscErrorCode TaoLineSearchApply_Armijo(TaoLineSearch ls, Vec x, PetscRe
   ierr = VecDot(g,s,&gdx); CHKERRQ(ierr);
 
   if (PetscIsInfOrNanReal(gdx)) {
-    ierr = PetscInfo1(ls,"Initial Line Search step * g is Inf or Nan (%g)\n",gdx); CHKERRQ(ierr);
+    ierr = PetscInfo1(ls,"Initial Line Search step * g is Inf or Nan (%G)\n",gdx); CHKERRQ(ierr);
     ls->reason=TAOLINESEARCH_FAILED_INFORNAN;
     PetscFunctionReturn(0);
   }
   if (gdx >= 0.0) {
-    ierr = PetscInfo1(ls,"Initial Line Search step is not descent direction (g's=%g)\n",gdx); CHKERRQ(ierr);
+    ierr = PetscInfo1(ls,"Initial Line Search step is not descent direction (g's=%G)\n",gdx); CHKERRQ(ierr);
     ls->reason = TAOLINESEARCH_FAILED_ASCENT;
     PetscFunctionReturn(0);
   }
@@ -312,7 +312,7 @@ static PetscErrorCode TaoLineSearchApply_Armijo(TaoLineSearch ls, Vec x, PetscRe
   }
 
   /* Finish computations */
-  ierr = PetscInfo2(ls, "%d function evals in line search, step = %10.4f\n",ls->nfeval, ls->step); CHKERRQ(ierr);
+  ierr = PetscInfo2(ls, "%d function evals in line search, step = %10.4F\n",ls->nfeval, ls->step); CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

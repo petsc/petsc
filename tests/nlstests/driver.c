@@ -104,7 +104,7 @@ int main(int argc, char **argv)
 	ierr = VecDestroy(&F); CHKERRQ(ierr);
 	wallclock_(&wctime2);
 	wctime = wctime2 - wctime1;
-	printf("time = %f\n",wctime);
+	printf("time = %F\n",wctime);
 
 	fscanf(datfile,"%d %d %d %d\n",&nprob,&n,&m,&nstart);
     }
@@ -127,7 +127,7 @@ PetscErrorCode FormStartingPoint(Vec X, AppCtx *ctx) {
     ctx->nfev = 0;
     //ierr = VecNorm(X,NORM_INFINITY,&ctx->delta);
     //ctx->delta = PetscMax(ctx->delta,0.01);
-    //snprintf(str,32,"%31f",ctx->delta);
+    //snprintf(str,32,"%31F",ctx->delta);
     //ierr = PetscOptionsSetValue("-tao_pounders_delta",str); CHKERRQ(ierr);
     PetscFunctionReturn(0);
 }

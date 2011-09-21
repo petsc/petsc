@@ -206,7 +206,7 @@ int main(int argc, char **argv)
     ierr = PetscGetTime(&v1); CHKERRQ(ierr);
     ierr = TaoSolverSolve(tao);  CHKERRQ(ierr);
     ierr = PetscGetTime(&v2); CHKERRQ(ierr);
-    PetscPrintf(PETSC_COMM_WORLD,"Elapsed time = %10.8f\n",v2-v1);
+    PetscPrintf(PETSC_COMM_WORLD,"Elapsed time = %10.8F\n",v2-v1);
     ierr = VecCopy(x0,x); CHKERRQ(ierr);
     ierr = TaoSolverSetInitialVector(tao,x); CHKERRQ(ierr);
     user.solve_type = 3;
@@ -1228,6 +1228,6 @@ PetscErrorCode EllipticMonitor(TaoSolver tao, void *ptr)
   ierr = VecAXPY(user->uwork,-1.0,user->utrue); CHKERRQ(ierr);
   ierr = VecNorm(user->uwork,NORM_2,&unorm); CHKERRQ(ierr);
   ierr = VecNorm(user->ywork,NORM_2,&ynorm); CHKERRQ(ierr);
-  ierr = PetscPrintf(MPI_COMM_WORLD, "||u-ut||=%7g ||y-yt||=%7g\n",unorm,ynorm); CHKERRQ(ierr);
+  ierr = PetscPrintf(MPI_COMM_WORLD, "||u-ut||=%7G ||y-yt||=%7G\n",unorm,ynorm); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
