@@ -58,8 +58,6 @@ typedef struct {
 static PetscReal p(PetscReal xi, PetscReal ecc);
 static PetscErrorCode FormFunctionGradient(TaoSolver, Vec, PetscReal *,Vec,void *);
 static PetscErrorCode FormLSFunctionGradient(TaoLineSearch, Vec, PetscReal *, Vec, void*);
-static PetscErrorCode FormLSGradient(TaoLineSearch, Vec, Vec,void *);
-static PetscErrorCode FormFunctionGTS(TaoLineSearch, Vec, Vec, PetscReal *,PetscReal*,void *);
 static PetscErrorCode FormHessian(TaoSolver,Vec,Mat *, Mat *, MatStructure *, void *);
 static PetscErrorCode ComputeB(AppCtx*);
 
@@ -165,7 +163,7 @@ int main( int argc, char **argv )
 
   ierr = TaoSolverGetLineSearch(tao,&ls); CHKERRQ(ierr);
   ierr = TaoLineSearchSetObjectiveAndGradientRoutine(ls,FormLSFunctionGradient,&user); CHKERRQ(ierr);
-  //  ierr = TaoLineSearchSetGradientRoutine(ls,FormLSGradient,&user); CHKERRQ(ierr);
+
   /* Solve the bound constrained problem */
   ierr = TaoSolverSolve(tao); CHKERRQ(ierr);
 
@@ -363,7 +361,7 @@ PetscErrorCode FormLSFunctionGradient(TaoLineSearch ls, Vec X, PetscReal *fcn,Ve
   PetscReal tt,f1,f2;
   PetscReal *x,*g,zero=0.0;
   Vec localX;
-  PetscReal normw,steplength;
+  PetscReal steplength;
   Vec ls_x,ls_s;
 
   PetscFunctionBegin;
@@ -458,215 +456,6 @@ PetscErrorCode FormLSFunctionGradient(TaoLineSearch ls, Vec X, PetscReal *fcn,Ve
 
   ierr = PetscLogFlops((91 + 10*ym) * xm); CHKERRQ(ierr);
   PetscFunctionReturn(0);
-
-}
-
-
-#undef __FUNCT__
-#define __FUNCT__ "FormLSGradient"
-PetscErrorCode FormLSGradient(TaoLineSearch ls, Vec X, Vec G,void *ptr)
-{
-  AppCtx* user=(AppCtx*)ptr;
-  PetscErrorCode ierr;
-  PetscInt i,j,k,kk;
-  PetscInt col[5],row,nx,ny,xs,xm,gxs,gxm,ys,ym,gys,gym;
-  PetscReal one=1.0, two=2.0, six=6.0,pi=4.0*atan(1.0);
-  PetscReal hx,hy,hxhy,hxhx,hyhy;
-  PetscReal xi,v[5];
-  PetscReal ecc=user->ecc, trule1,trule2,trule3,trule4,trule5,trule6;
-  PetscReal vmiddle, vup, vdown, vleft, vright;
-  PetscReal tt;
-  PetscReal *x,*g,zero=0.0;
-  Vec localX;
-
-  PetscFunctionBegin;
-  nx=user->nx;
-  ny=user->ny;
-  hx=two*pi/(nx+1.0);
-  hy=two*user->b/(ny+1.0);
-  hxhy=hx*hy;
-  hxhx=one/(hx*hx);
-  hyhy=one/(hy*hy);
-  ierr = DMGetLocalVector(user->dm,&localX);CHKERRQ(ierr);
-
-  ierr = DMGlobalToLocalBegin(user->dm,X,INSERT_VALUES,localX); CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(user->dm,X,INSERT_VALUES,localX); CHKERRQ(ierr);
-
-  ierr = VecSet(G, zero); CHKERRQ(ierr);
-  /*
-    Get local grid boundaries
-  */
-  ierr = DMDAGetCorners(user->dm,&xs,&ys,TAO_NULL,&xm,&ym,TAO_NULL); CHKERRQ(ierr);
-  ierr = DMDAGetGhostCorners(user->dm,&gxs,&gys,TAO_NULL,&gxm,&gym,TAO_NULL); CHKERRQ(ierr);
-  
-  ierr = VecGetArray(localX,&x); CHKERRQ(ierr);
-  ierr = VecGetArray(G,&g); CHKERRQ(ierr);
-
-  for (i=xs; i< xs+xm; i++){
-    xi=(i+1)*hx;
-    trule1=hxhy*( p(xi,ecc) + p(xi+hx,ecc) + p(xi,ecc) ) / six; /* L(i,j) */
-    trule2=hxhy*( p(xi,ecc) + p(xi-hx,ecc) + p(xi,ecc) ) / six; /* U(i,j) */
-    trule3=hxhy*( p(xi,ecc) + p(xi+hx,ecc) + p(xi+hx,ecc) ) / six; /* U(i+1,j) */
-    trule4=hxhy*( p(xi,ecc) + p(xi-hx,ecc) + p(xi-hx,ecc) ) / six; /* L(i-1,j) */
-    trule5=trule1; /* L(i,j-1) */
-    trule6=trule2; /* U(i,j+1) */
-
-    vdown=-(trule5+trule2)*hyhy;
-    vleft=-hxhx*(trule2+trule4);
-    vright= -hxhx*(trule1+trule3);
-    vup=-hyhy*(trule1+trule6);
-    vmiddle=(hxhx)*(trule1+trule2+trule3+trule4)+hyhy*(trule1+trule2+trule5+trule6);
-
-    for (j=ys; j<ys+ym; j++){
-      
-      row=(j-gys)*gxm + (i-gxs);
-       v[0]=0; v[1]=0; v[2]=0; v[3]=0; v[4]=0;
-       
-       k=0;
-       if (j>gys){ 
-	 v[k]=vdown; col[k]=row - gxm; k++;
-       }
-       
-       if (i>gxs){
-	 v[k]= vleft; col[k]=row - 1; k++;
-       }
-
-       v[k]= vmiddle; col[k]=row; k++;
-       
-       if (i+1 < gxs+gxm){
-	 v[k]= vright; col[k]=row+1; k++;
-       }
-       
-       if (j+1 <gys+gym){
-	 v[k]= vup; col[k] = row+gxm; k++;
-       }
-       tt=0;
-       for (kk=0;kk<k;kk++){
-	 tt+=v[kk]*x[col[kk]];
-       }
-       row=(j-ys)*xm + (i-xs);
-       g[row]=tt;
-
-     }
-
-  }
-
-  ierr = VecRestoreArray(localX,&x); CHKERRQ(ierr);
-  ierr = VecRestoreArray(G,&g); CHKERRQ(ierr);
-
-  ierr = DMRestoreLocalVector(user->dm,&localX); CHKERRQ(ierr);
-
-  ierr = VecAXPY(G, one, user->B); CHKERRQ(ierr);
-  
-
-  ierr = PetscLogFlops((91 + 10*ym) * xm); CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "FormFunctionGTS"
-PetscErrorCode FormFunctionGTS(TaoLineSearch ls, Vec X, Vec Step, PetscReal *fcn,PetscReal *gts, void *ptr)
-{
-  AppCtx* user=(AppCtx*)ptr;
-  PetscErrorCode ierr;
-  PetscInt i,j,k,kk;
-  PetscInt col[5],row,nx,ny,xs,xm,gxs,gxm,ys,ym,gys,gym;
-  PetscReal one=1.0, two=2.0, six=6.0,pi=4.0*atan(1.0);
-  PetscReal hx,hy,hxhy,hxhx,hyhy;
-  PetscReal xi,v[5];
-  PetscReal ecc=user->ecc, trule1,trule2,trule3,trule4,trule5,trule6;
-  PetscReal vmiddle, vup, vdown, vleft, vright;
-  PetscReal tt,f1,f2;
-  PetscReal *x,*g,zero=0.0;
-  Vec localX;
-
-  PetscFunctionBegin;
-  nx=user->nx;
-  ny=user->ny;
-  hx=two*pi/(nx+1.0);
-  hy=two*user->b/(ny+1.0);
-  hxhy=hx*hy;
-  hxhx=one/(hx*hx);
-  hyhy=one/(hy*hy);
-
-  ierr = DMGetLocalVector(user->dm,&localX);CHKERRQ(ierr);
-
-  ierr = DMGlobalToLocalBegin(user->dm,X,INSERT_VALUES,localX); CHKERRQ(ierr);
-  ierr = DMGlobalToLocalEnd(user->dm,X,INSERT_VALUES,localX); CHKERRQ(ierr);
-
-  ierr = VecSet(user->W, zero); CHKERRQ(ierr);
-  /*
-    Get local grid boundaries
-  */
-  ierr = DMDAGetCorners(user->dm,&xs,&ys,TAO_NULL,&xm,&ym,TAO_NULL); CHKERRQ(ierr);
-  ierr = DMDAGetGhostCorners(user->dm,&gxs,&gys,TAO_NULL,&gxm,&gym,TAO_NULL); CHKERRQ(ierr);
-  
-  ierr = VecGetArray(localX,&x); CHKERRQ(ierr);
-  ierr = VecGetArray(user->W,&g); CHKERRQ(ierr);
-
-  for (i=xs; i< xs+xm; i++){
-    xi=(i+1)*hx;
-    trule1=hxhy*( p(xi,ecc) + p(xi+hx,ecc) + p(xi,ecc) ) / six; /* L(i,j) */
-    trule2=hxhy*( p(xi,ecc) + p(xi-hx,ecc) + p(xi,ecc) ) / six; /* U(i,j) */
-    trule3=hxhy*( p(xi,ecc) + p(xi+hx,ecc) + p(xi+hx,ecc) ) / six; /* U(i+1,j) */
-    trule4=hxhy*( p(xi,ecc) + p(xi-hx,ecc) + p(xi-hx,ecc) ) / six; /* L(i-1,j) */
-    trule5=trule1; /* L(i,j-1) */
-    trule6=trule2; /* U(i,j+1) */
-
-    vdown=-(trule5+trule2)*hyhy;
-    vleft=-hxhx*(trule2+trule4);
-    vright= -hxhx*(trule1+trule3);
-    vup=-hyhy*(trule1+trule6);
-    vmiddle=(hxhx)*(trule1+trule2+trule3+trule4)+hyhy*(trule1+trule2+trule5+trule6);
-
-    for (j=ys; j<ys+ym; j++){
-      
-      row=(j-gys)*gxm + (i-gxs);
-       v[0]=0; v[1]=0; v[2]=0; v[3]=0; v[4]=0;
-       
-       k=0;
-       if (j>gys){ 
-	 v[k]=vdown; col[k]=row - gxm; k++;
-       }
-       
-       if (i>gxs){
-	 v[k]= vleft; col[k]=row - 1; k++;
-       }
-
-       v[k]= vmiddle; col[k]=row; k++;
-       
-       if (i+1 < gxs+gxm){
-	 v[k]= vright; col[k]=row+1; k++;
-       }
-       
-       if (j+1 <gys+gym){
-	 v[k]= vup; col[k] = row+gxm; k++;
-       }
-       tt=0;
-       for (kk=0;kk<k;kk++){
-	 tt+=v[kk]*x[col[kk]];
-       }
-       row=(j-ys)*xm + (i-xs);
-       g[row]=tt;
-
-     }
-
-  }
-
-  ierr = VecRestoreArray(localX,&x); CHKERRQ(ierr);
-  ierr = VecRestoreArray(user->W,&g); CHKERRQ(ierr);
-
-  ierr = DMRestoreLocalVector(user->dm,&localX); CHKERRQ(ierr);
-
-  ierr = VecDot(X,user->W,&f1); CHKERRQ(ierr);
-  ierr = VecDot(user->B,X,&f2); CHKERRQ(ierr);
-  ierr = VecAXPY(user->W, one, user->B); CHKERRQ(ierr);
-  *fcn = f1/2.0 + f2;
-  ierr = VecDot(Step,user->W,gts); CHKERRQ(ierr);
-  
-  ierr = PetscLogFlops((91 + 10*ym) * xm); CHKERRQ(ierr);
-  return 0;
 
 }
 
