@@ -16,7 +16,6 @@ static PetscLogStage gamg_stages[GAMG_MAXLEVELS];
 
 /* Private context for the GAMG preconditioner */
 typedef struct gamg_TAG {
-  gamg_TAG() : m_data_sz(0), m_data(0) {}
   PetscInt       m_dim;
   PetscInt       m_Nlevels;
   PetscInt       m_data_sz;
@@ -68,7 +67,7 @@ PetscErrorCode PCSetCoordinates_GAMG( PC a_pc, PetscInt a_ndm, PetscReal *a_coor
   arrsz = nloc*pc_gamg->m_data_rows*pc_gamg->m_data_cols;
 
   /* create data - syntactic sugar that should be refactored at some point */
-  if (!pc_gamg->m_data || (pc_gamg->m_data_sz != arrsz)) {
+  if (pc_gamg->m_data==0 || (pc_gamg->m_data_sz != arrsz)) {
     ierr = PetscFree( pc_gamg->m_data );  CHKERRQ(ierr);
     ierr = PetscMalloc((arrsz+1)*sizeof(double), &pc_gamg->m_data ); CHKERRQ(ierr);
   }
@@ -857,6 +856,7 @@ PetscErrorCode  PCCreate_GAMG(PC pc)
 
   /* create a supporting struct and attach it to pc */
   ierr = PetscNewLog(pc,PC_GAMG,&pc_gamg);CHKERRQ(ierr);
+  pc_gamg->m_data_sz = 0; pc_gamg->m_data = 0;
   mg = (PC_MG*)pc->data;
   mg->innerctx = pc_gamg;
 
