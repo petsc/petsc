@@ -53,7 +53,7 @@ class QuadratureGenerator(script.Script):
     '''Was ALE::Mesh, is now PETSC_MESH_TYPE'''
     return 'PETSC_MESH_TYPE'
 
-  def getArray(self, name, values, comment = None, typeName = 'double'):
+  def getArray(self, name, values, comment = None, typeName = 'double', static = True, packSize = 1):
     from Cxx import Array
     from Cxx import Initializer
     import numpy
@@ -65,8 +65,8 @@ class QuadratureGenerator(script.Script):
     arrayDecl = Array()
     arrayDecl.children = [name]
     arrayDecl.type = self.Cxx.typeMap[typeName]
-    arrayDecl.size = self.Cxx.getInteger(numpy.size(values))
-    arrayDecl.static = True
+    arrayDecl.size = self.Cxx.getInteger(numpy.size(values)/packSize)
+    arrayDecl.static = static
     arrayDecl.initializer = arrayInit
     return self.Cxx.getDecl(arrayDecl, comment)
 
@@ -83,6 +83,21 @@ class QuadratureGenerator(script.Script):
     return [numPoints,
             self.getArray(self.Cxx.getVar('points'+ext), quadrature.get_points(), 'Quadrature points\n   - (x1,y1,x2,y2,...)', 'PetscReal'),
             self.getArray(self.Cxx.getVar('weights'+ext), quadrature.get_weights(), 'Quadrature weights\n   - (v1,v2,...)', 'PetscReal')]
+
+  def getQuadratureStructsInline(self, degree, quadrature, num):
+    '''Return C arrays with the quadrature points and weights
+       - FIAT uses a reference element of (-1,-1):(1,-1):(-1,1)'''
+    from Cxx import Declarator
+
+    self.logPrint('Generating quadrature structures for degree '+str(degree), debugSection = 'codegen')
+    ext = '_'+str(num)
+    numPoints = Declarator()
+    numPoints.identifier  = 'numQuadraturePoints'+ext
+    numPoints.type        = self.Cxx.typeMap['const int']
+    numPoints.initializer = self.Cxx.getInteger(len(quadrature.get_points()))
+    return [self.Cxx.getDecl(numPoints),
+            self.getArray(self.Cxx.getVar('points'+ext), quadrature.get_points(), 'Quadrature points\n   - (x1,y1,x2,y2,...)', 'const PetscReal', static = False),
+            self.getArray(self.Cxx.getVar('weights'+ext), quadrature.get_weights(), 'Quadrature weights\n   - (v1,v2,...)', 'const PetscReal', static = False)]
 
   def getBasisFuncOrder(self, element):
     '''Map from FIAT order to Sieve order
@@ -205,6 +220,43 @@ class QuadratureGenerator(script.Script):
       code.extend([numFunctions,
                    self.getArray(self.Cxx.getVar(basisName), basisTab, 'Nodal basis function evaluations\n    - basis function is fastest varying, then point', 'PetscReal'),
                    self.getArray(self.Cxx.getVar(basisDerName), basisDerTab, 'Nodal basis function derivative evaluations,\n    - derivative direction fastest varying, then basis function, then point', 'PetscReal')])
+    return code
+
+  def getBasisStructsInline(self, name, element, quadrature, num):
+    '''Return C arrays with the basis functions and their derivatives evalauted at the quadrature points
+       - FIAT uses a reference element of (-1,-1):(1,-1):(-1,1)'''
+    from FIAT.polynomial_set import mis
+    from Cxx import Declarator
+    import numpy
+
+    self.logPrint('Generating basis structures for element '+str(element.__class__), debugSection = 'codegen')
+    points = quadrature.get_points()
+    code = []
+    #TODO: No longer handles vector elements, use element.value_shape()
+    for i in range(1):
+      basis = element.get_nodal_basis()
+      dim = element.get_reference_element().get_spatial_dimension()
+      ext = '_'+str(num+i)
+      numFunctions = Declarator()
+      numFunctions.identifier  = 'numBasisFunctions'+ext
+      numFunctions.type        = self.Cxx.typeMap['const int']
+      numFunctions.initializer = self.Cxx.getInteger(basis.get_num_members())
+      basisName    = name+'Basis'+ext
+      basisDerName = name+'BasisDerivatives'+ext
+      perm         = self.getBasisFuncOrder(element)
+      evals        = basis.tabulate(points, 1)
+      basisTab     = numpy.array(evals[mis(dim, 0)[0]]).transpose()
+      basisDerTab  = numpy.array([evals[alpha] for alpha in mis(dim, 1)]).transpose()
+      if not perm is None:
+        basisTabOld    = numpy.array(basisTab)
+        basisDerTabOld = numpy.array(basisDerTab)
+        for q in range(len(points)):
+          for i,pi in enumerate(perm):
+            basisTab[q][i]    = basisTabOld[q][pi]
+            basisDerTab[q][i] = basisDerTabOld[q][pi]
+      code.extend([self.Cxx.getDecl(numFunctions),
+                   self.getArray(self.Cxx.getVar(basisName), basisTab, 'Nodal basis function evaluations\n    - basis function is fastest varying, then point', 'const PetscReal', static = False),
+                   self.getArray(self.Cxx.getVar(basisDerName), basisDerTab, 'Nodal basis function derivative evaluations,\n    - derivative direction fastest varying, then basis function, then point', 'const float'+str(dim), static = False, packSize = dim)])
     return code
 
   def getQuadratureBlock(self, num):
@@ -650,7 +702,7 @@ class QuadratureGenerator(script.Script):
     header.purpose    = CodePurpose.SKELETON
     return header
 
-  def getElementSource(self, elements):
+  def getElementSource(self, elements, inline = False):
     from GenericCompiler import CompilerException
 
     self.logPrint('Generating element module', debugSection = 'codegen')
@@ -666,12 +718,16 @@ class QuadratureGenerator(script.Script):
           quadrature = self.createQuadrature(shape, order)
         else:
           quadrature = self.createQuadrature(shape, self.quadDegree)
-        defns.extend(self.getQuadratureStructs(2*len(quadrature.pts)-1, quadrature, n))
-        defns.extend(self.getBasisStructs(name, element, quadrature, n))
-        defns.extend(self.getIntegratorPoints(n, element))
-        defns.extend(self.getIntegratorSetup(n, element))
-        defns.extend(self.getIntegratorSetup(n, element, True))
-        defns.extend(self.getSectionSetup(n, element))
+        if inline:
+          defns.extend(self.getQuadratureStructsInline(2*len(quadrature.pts)-1, quadrature, n))
+          defns.extend(self.getBasisStructsInline(name, element, quadrature, n))
+        else:
+          defns.extend(self.getQuadratureStructs(2*len(quadrature.pts)-1, quadrature, n))
+          defns.extend(self.getBasisStructs(name, element, quadrature, n))
+          defns.extend(self.getIntegratorPoints(n, element))
+          defns.extend(self.getIntegratorSetup(n, element))
+          defns.extend(self.getIntegratorSetup(n, element, True))
+          defns.extend(self.getSectionSetup(n, element))
         if len(element.value_shape()) > 0:
           n += element.value_shape()[0]
         else:
@@ -704,6 +760,7 @@ class QuadratureGenerator(script.Script):
     return
 
   def run(self, elements, filename = ''):
+    import os
     if elements is None:
       from FIAT.reference_element import default_simplex
       from FIAT.Lagrange import lagrange
@@ -711,6 +768,7 @@ class QuadratureGenerator(script.Script):
       elements =[lagrange(default_simplex(2), order)]
       self.logPrint('Making a P'+str(order)+' Lagrange element on a triangle')
     self.outputElementSource(self.getElementSource(elements), filename)
+    self.outputElementSource(self.getElementSource(elements, inline = True), os.path.splitext(filename)[0]+'_inline'+os.path.splitext(filename)[1])
     return
 
 if __name__ == '__main__':
