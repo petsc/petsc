@@ -1,18 +1,6 @@
 #include <petscsys.h>
 #include <assert.h>
 
-#define NUM_QUADRATURE_POINTS_0 1
-
-#define NUM_BASIS_FUNCTIONS_0 3
-
-/* These will be generated */
-const static int dim  = 2;
-const static int N_b  = NUM_BASIS_FUNCTIONS_0;   // The number of basis functions
-const static int N_q  = NUM_QUADRATURE_POINTS_0; // The number of quadrature points
-const static int N_bs = N_b*N_q;                 // The block size, LCM(N_b, N_q), Notice that a block is not process simultaneously
-const static int N_bl = 1;                       // The number of concurrent blocks
-const static int N_t  = N_bs*N_bl;               // The number of threads, N_bs * N_bl
-
 __device__ float2 laplacian(float u, float2 gradU) {
   return gradU;
 }
@@ -30,33 +18,16 @@ __device__ float2 laplacian(float u, float2 gradU) {
 // N_{cb} Number of cell batches:
 // N_c    Number of total cells:        N_{cb}*N_{t} = 3
 __global__ void integrateLaplacianQuadrature(int N_cb, float *coefficients, float *jacobianInverses, float *jacobianDeterminants, float *elemVec) {
-/* Quadrature points
-   - (x1,y1,x2,y2,...) */
-  PetscReal points_0[2] = {
-  -0.333333333333,
-  -0.333333333333};
-/* Quadrature weights
-   - (v1,v2,...) */
-  PetscReal weights_0[1] = {2.0};
-/* Nodal basis function evaluations
-    - basis function is fastest varying, then point */
-  PetscReal Basis_0[3] = {
-  0.333333333333,
-  0.333333333333,
-  0.333333333333};
-/* Nodal basis function derivative evaluations,
-    - derivative direction fastest varying, then basis function, then point */
-  float2 BasisDerivatives_0[3] = {
-  -0.5,
-  -0.5,
-  0.5,
-  0.0,
-  0.0,
-  0.5};
-
-  const int         N_c     = N_cb * N_t;
-  const int         N_sbc   = N_bs / N_q;
-  const int         N_sqc   = N_bs / N_b;
+  #include "ex52_inline.h"
+  const int        dim  = 2;
+  const int        N_b  = numBasisFunctions_0;   // The number of basis functions
+  const int        N_q  = numQuadraturePoints_0; // The number of quadrature points
+  const int        N_bs = N_b*N_q;               // The block size, LCM(N_b, N_q), Notice that a block is not process simultaneously
+  const int        N_bl = 1;                     // The number of concurrent blocks
+  const int        N_t  = N_bs*N_bl;             // The number of threads, N_bs * N_bl
+  const int        N_c     = N_cb * N_t;
+  const int        N_sbc   = N_bs / N_q;
+  const int        N_sqc   = N_bs / N_b;
   /* Calculated indices */
   const int        tidx    = threadIdx.x + blockDim.x*threadIdx.y;
   const int        bidx    = tidx % N_b; // Basis function mapped to this thread
@@ -173,8 +144,11 @@ __global__ void integrateLaplacianJacobianQuadrature() {
 }
 
 // Calculate a conforming thread grid for N kernels
+#undef __FUNCT__
+#define __FUNCT__ "calculateGrid"
 PetscErrorCode calculateGrid(const int N, const int blockSize, unsigned int& x, unsigned int& y, unsigned int& z)
 {
+  PetscFunctionBegin;
   z = 1;
   if (N % blockSize) {SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Invalid block size %d for %d elements", blockSize, N);}
   const int Nblocks = N/blockSize;
@@ -183,11 +157,21 @@ PetscErrorCode calculateGrid(const int N, const int blockSize, unsigned int& x, 
     if (x*y == Nblocks) break;
   }
   if (x*y != Nblocks) {SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_SIZ, "Could not find partition for %d with block size %d", N, blockSize);}
-  return;
+  PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "IntegrateElementBatchGPU"
 PetscErrorCode IntegrateElementBatchGPU(PetscInt Ne, PetscInt Ncb, PetscInt Nbc, const PetscScalar coefficients[],
                                         const PetscReal jacobianInverses[], const PetscReal jacobianDeterminants[], PetscScalar elemVec[], PetscInt debug) {
+  #include "ex52_inline.h"
+  const int dim  = 2;
+  const int N_b  = numBasisFunctions_0;   // The number of basis functions
+  const int N_q  = numQuadraturePoints_0; // The number of quadrature points
+  const int N_bs = N_b*N_q;               // The block size, LCM(N_b, N_q), Notice that a block is not process simultaneously
+  const int N_bl = 1;                     // The number of concurrent blocks
+  const int N_t  = N_bs*N_bl;             // The number of threads, N_bs * N_bl
+
   float *d_coefficients;
   float *d_jacobianInverses;
   float *d_jacobianDeterminants;
