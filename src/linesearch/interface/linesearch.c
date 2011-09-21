@@ -1162,7 +1162,6 @@ PetscErrorCode TaoLineSearchGetSolution(TaoLineSearch ls, Vec x, PetscReal *f, V
 @*/
 PetscErrorCode TaoLineSearchGetStartingVector(TaoLineSearch ls, Vec *x)
 {
-  PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ls,TAOLINESEARCH_CLASSID,1);
   if (x) {
@@ -1190,7 +1189,6 @@ PetscErrorCode TaoLineSearchGetStartingVector(TaoLineSearch ls, Vec *x)
 @*/
 PetscErrorCode TaoLineSearchGetStepDirection(TaoLineSearch ls, Vec *s)
 {
-  PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ls,TAOLINESEARCH_CLASSID,1);
   if (s) {

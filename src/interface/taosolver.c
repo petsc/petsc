@@ -1153,7 +1153,7 @@ PetscErrorCode TaoSolverAddLineSearchCounts(TaoSolver tao) {
     ierr = TaoLineSearchIsUsingTaoSolverRoutines(tao->linesearch,&flg);
     if (flg == PETSC_FALSE) {
       ierr = TaoLineSearchGetNumberFunctionEvaluations(tao->linesearch,&nfeval,
-						       &ngeval,&nfgeval);
+						       &ngeval,&nfgeval); CHKERRQ(ierr);
       tao->nfuncs+=nfeval;
       tao->ngrads+=ngeval;
       tao->nfuncgrads+=nfgeval;
