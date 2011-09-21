@@ -53,7 +53,6 @@ PetscMPIInt  PetscGlobalSize = -1;
 #if defined(PETSC_HAVE_PTHREADCLASSES)
 PetscMPIInt  PetscMaxThreads = 2;
 pthread_t*   PetscThreadPoint;
-#define PETSC_HAVE_PTHREAD_BARRIER
 #if defined(PETSC_HAVE_PTHREAD_BARRIER)
 pthread_barrier_t* BarrPoint;   /* used by 'true' thread pool */
 #endif
@@ -361,6 +360,20 @@ PetscErrorCode  PetscSetHelpVersionFunctions(PetscErrorCode (*help)(MPI_Comm),Pe
   PetscFunctionReturn(0);
 }
 
+#if defined(PETSC_HAVE_CPU_SET_T)
+PETSC_STATIC_INLINE PetscErrorCode PetscPthreadSetAffinity(PetscInt icorr)
+{
+  cpu_set_t mset;
+  int ncorr = get_nprocs();
+
+  CPU_ZERO(&mset);
+  CPU_SET(icorr%ncorr,&mset);
+  sched_setaffinity(0,sizeof(cpu_set_t),&mset);
+  return 0;
+}
+#endif
+
+
 #undef __FUNCT__  
 #define __FUNCT__ "PetscOptionsCheckInitial_Private"
 PetscErrorCode  PetscOptionsCheckInitial_Private(void)
@@ -660,14 +673,14 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-main",&flg1);CHKERRQ(ierr);
   if(flg1) {
-    cpu_set_t mset;
-    int icorr,ncorr = get_nprocs();
+    PetscInt icorr;
     ierr = PetscOptionsGetInt(PETSC_NULL,"-main",&icorr,PETSC_NULL);CHKERRQ(ierr);
-    CPU_ZERO(&mset);
-    CPU_SET(icorr%ncorr,&mset);
-    sched_setaffinity(0,sizeof(cpu_set_t),&mset);
+#if defined(PETSC_HAVE_CPU_SET_T)
+    ierr = PetscPthreadSetAffinity(icorr);CHKERRQ(ierr);
+#endif
   }
 
+#if defined(PETSC_HAVE_CPU_SET_T)
   PetscInt N_CORES = get_nprocs();
   ThreadCoreAffinity = (int*)malloc(N_CORES*sizeof(int));
   char tstr[9];
@@ -684,6 +697,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
     }
     tstr[7] = '\0';
   }
+#endif
 
   /*
       Determine whether to use thread pool
@@ -713,11 +727,7 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
       MainJob               = &MainJob_Main;
       PetscInfo(PETSC_NULL,"Using main thread pool\n");
       break;
-#if defined(PETSC_HAVE_PTHREAD_BARRIER)
     case 3:
-#else
-    default:
-#endif
       PetscThreadFunc       = &PetscThreadFunc_Chain;
       PetscThreadInitialize = &PetscThreadInitialize_Chain;
       PetscThreadFinalize   = &PetscThreadFinalize_Chain;
@@ -733,6 +743,15 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
       MainWait              = &MainWait_True;
       MainJob               = &MainJob_True;
       PetscInfo(PETSC_NULL,"Using true thread pool\n");
+      break;
+# else
+    default:
+      PetscThreadFunc       = &PetscThreadFunc_Chain;
+      PetscThreadInitialize = &PetscThreadInitialize_Chain;
+      PetscThreadFinalize   = &PetscThreadFinalize_Chain;
+      MainWait              = &MainWait_Chain;
+      MainJob               = &MainJob_Chain;
+      PetscInfo(PETSC_NULL,"Cannot use true thread pool since pthread_barrier_t is not available,using chain thread pool instead\n");
       break;
 #endif
     }
@@ -824,16 +843,14 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
 /**** 'Tree' Thread Pool Functions ****/
 void* PetscThreadFunc_Tree(void* arg) {
   PetscErrorCode iterr;
-  int icorr,ierr;
+  int ierr;
   int* pId = (int*)arg;
   int ThreadId = *pId,Mary = 2,i,SubWorker;
   PetscBool PeeOn;
-  cpu_set_t mset;
+#if defined(PETSC_HAVE_CPU_SET_T)
+  iterr = PetscPthreadSetAffinity(ThreadCoreAffinity[ThreadId]);CHKERRQ(iterr);
+#endif
   //printf("Thread %d In Tree Thread Function\n",ThreadId);
-  icorr = ThreadCoreAffinity[ThreadId];
-  CPU_ZERO(&mset);
-  CPU_SET(icorr,&mset);
-  sched_setaffinity(0,sizeof(cpu_set_t),&mset);
 
   if((Mary*ThreadId+1)>(PetscMaxThreads-1)) {
     PeeOn = PETSC_TRUE;
@@ -949,6 +966,7 @@ void* PetscThreadInitialize_Tree(PetscInt N) {
   int status;
 
   if(PetscUseThreadPool) {
+#if defined(PETSC_HAVE_MEMALIGN)
     size_t Val1 = (size_t)CACHE_LINE_SIZE;
     size_t Val2 = (size_t)PetscMaxThreads*CACHE_LINE_SIZE;
     arrmutex = (char*)memalign(Val1,Val2);
@@ -956,6 +974,14 @@ void* PetscThreadInitialize_Tree(PetscInt N) {
     arrcond2 = (char*)memalign(Val1,Val2);
     arrstart = (char*)memalign(Val1,Val2);
     arrready = (char*)memalign(Val1,Val2);
+#else
+    size_t Val2 = (size_t)PetscMaxThreads*CACHE_LINE_SIZE;
+    arrmutex = (char*)malloc(Val2);
+    arrcond1 = (char*)malloc(Val2);
+    arrcond2 = (char*)malloc(Val2);
+    arrstart = (char*)malloc(Val2);
+    arrready = (char*)malloc(Val2);
+#endif
     job_tree.mutexarray       = (pthread_mutex_t**)malloc(PetscMaxThreads*sizeof(pthread_mutex_t*));
     job_tree.cond1array       = (pthread_cond_t**)malloc(PetscMaxThreads*sizeof(pthread_cond_t*));
     job_tree.cond2array       = (pthread_cond_t**)malloc(PetscMaxThreads*sizeof(pthread_cond_t*));
@@ -1059,15 +1085,13 @@ PetscErrorCode MainJob_Tree(void* (*pFunc)(void*),void** data,PetscInt n) {
 /**** 'Main' Thread Pool Functions ****/
 void* PetscThreadFunc_Main(void* arg) {
   PetscErrorCode iterr;
-  int icorr,ierr;
+  int ierr;
   int* pId = (int*)arg;
   int ThreadId = *pId;
-  cpu_set_t mset;
   //printf("Thread %d In Main Thread Function\n",ThreadId);
-  icorr = ThreadCoreAffinity[ThreadId];
-  CPU_ZERO(&mset);
-  CPU_SET(icorr,&mset);
-  sched_setaffinity(0,sizeof(cpu_set_t),&mset);
+#if defined(PETSC_HAVE_CPU_SET_T)
+    iterr = PetscPthreadSetAffinity(ThreadCoreAffinity[ThreadId]);CHKERRQ(iterr);
+#endif
 
   ierr = pthread_mutex_lock(job_main.mutexarray[ThreadId]);
   /* update your ready status */
@@ -1116,6 +1140,7 @@ void* PetscThreadInitialize_Main(PetscInt N) {
   int status;
 
   if(PetscUseThreadPool) {
+#if defined(PETSC_HAVE_MEMALIGN)
     size_t Val1 = (size_t)CACHE_LINE_SIZE;
     size_t Val2 = (size_t)PetscMaxThreads*CACHE_LINE_SIZE;
     arrmutex = (char*)memalign(Val1,Val2);
@@ -1123,6 +1148,15 @@ void* PetscThreadInitialize_Main(PetscInt N) {
     arrcond2 = (char*)memalign(Val1,Val2);
     arrstart = (char*)memalign(Val1,Val2);
     arrready = (char*)memalign(Val1,Val2);
+#else
+    size_t Val2 = (size_t)PetscMaxThreads*CACHE_LINE_SIZE;
+    arrmutex = (char*)malloc(Val2);
+    arrcond1 = (char*)malloc(Val2);
+    arrcond2 = (char*)malloc(Val2);
+    arrstart = (char*)malloc(Val2);
+    arrready = (char*)malloc(Val2);
+#endif
+
     job_main.mutexarray       = (pthread_mutex_t**)malloc(PetscMaxThreads*sizeof(pthread_mutex_t*));
     job_main.cond1array       = (pthread_cond_t**)malloc(PetscMaxThreads*sizeof(pthread_cond_t*));
     job_main.cond2array       = (pthread_cond_t**)malloc(PetscMaxThreads*sizeof(pthread_cond_t*));
@@ -1225,18 +1259,15 @@ PetscErrorCode MainJob_Main(void* (*pFunc)(void*),void** data,PetscInt n) {
 /**** Chain Thread Functions ****/
 void* PetscThreadFunc_Chain(void* arg) {
   PetscErrorCode iterr;
-  int icorr,ierr;
+  int ierr;
   int* pId = (int*)arg;
   int ThreadId = *pId;
   int SubWorker = ThreadId + 1;
   PetscBool PeeOn;
-  cpu_set_t mset;
   //printf("Thread %d In Chain Thread Function\n",ThreadId);
-  icorr = ThreadCoreAffinity[ThreadId];
-  CPU_ZERO(&mset);
-  CPU_SET(icorr,&mset);
-  sched_setaffinity(0,sizeof(cpu_set_t),&mset);
-
+#if defined(PETSC_HAVE_CPU_SET_T)
+  iterr = PetscPthreadSetAffinity(ThreadCoreAffinity[ThreadId]);CHKERRQ(iterr);
+#endif
   if(ThreadId==(PetscMaxThreads-1)) {
     PeeOn = PETSC_TRUE;
   }
@@ -1336,6 +1367,7 @@ void* PetscThreadInitialize_Chain(PetscInt N) {
   int status;
 
   if(PetscUseThreadPool) {
+#if defined(PETSC_HAVE_MEMALIGN)
     size_t Val1 = (size_t)CACHE_LINE_SIZE;
     size_t Val2 = (size_t)PetscMaxThreads*CACHE_LINE_SIZE;
     arrmutex = (char*)memalign(Val1,Val2);
@@ -1343,6 +1375,15 @@ void* PetscThreadInitialize_Chain(PetscInt N) {
     arrcond2 = (char*)memalign(Val1,Val2);
     arrstart = (char*)memalign(Val1,Val2);
     arrready = (char*)memalign(Val1,Val2);
+#else
+    size_t Val2 = (size_t)PetscMaxThreads*CACHE_LINE_SIZE;
+    arrmutex = (char*)malloc(Val2);
+    arrcond1 = (char*)malloc(Val2);
+    arrcond2 = (char*)malloc(Val2);
+    arrstart = (char*)malloc(Val2);
+    arrready = (char*)malloc(Val2);
+#endif
+
     job_chain.mutexarray       = (pthread_mutex_t**)malloc(PetscMaxThreads*sizeof(pthread_mutex_t*));
     job_chain.cond1array       = (pthread_cond_t**)malloc(PetscMaxThreads*sizeof(pthread_cond_t*));
     job_chain.cond2array       = (pthread_cond_t**)malloc(PetscMaxThreads*sizeof(pthread_cond_t*));
@@ -1449,17 +1490,14 @@ PetscErrorCode MainJob_Chain(void* (*pFunc)(void*),void** data,PetscInt n) {
 #if defined(PETSC_HAVE_PTHREAD_BARRIER)
 /**** True Thread Functions ****/
 void* PetscThreadFunc_True(void* arg) {
-  int icorr,ierr,iVal;
+  int ierr,iVal;
   int* pId = (int*)arg;
   int ThreadId = *pId;
   PetscErrorCode iterr;
-  cpu_set_t mset;
   //printf("Thread %d In True Pool Thread Function\n",ThreadId);
-  icorr = ThreadCoreAffinity[ThreadId];
-  CPU_ZERO(&mset);
-  CPU_SET(icorr,&mset);
-  sched_setaffinity(0,sizeof(cpu_set_t),&mset);
-
+#if defined(PETSC_HAVE_CPU_SET_T)
+  iterr = PetscPthreadSetAffinity(ThreadCoreAffinity[ThreadId]);CHKERRQ(iterr);
+#endif
   ierr = pthread_mutex_lock(&job_true.mutex);
   job_true.iNumReadyThreads++;
   if(job_true.iNumReadyThreads==PetscMaxThreads) {
@@ -1585,6 +1623,8 @@ PetscErrorCode MainJob_True(void* (*pFunc)(void*),void** data,PetscInt n) {
   }
   return ijoberr;
 }
+#endif
+
 /**** NO THREAD POOL FUNCTION ****/
 #undef __FUNCT__
 #define __FUNCT__ "MainJob_Spawn"
@@ -1606,5 +1646,3 @@ void* FuncFinish(void* arg) {
   PetscThreadGo = PETSC_FALSE;
   return(0);
 }
-
-#endif

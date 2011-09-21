@@ -1152,7 +1152,9 @@ PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
 //*******************
 #if defined(PETSC_HAVE_PTHREADCLASSES)
 extern PetscBool    PetscUseThreadPool;
+#if defined(PETSC_HAVE_CPU_SET_T)
 void* DoCoreAffinity(void);
+#endif
 
 typedef struct {
   const MatScalar* matdata;
@@ -1168,7 +1170,9 @@ typedef struct {
 void* MatMult_Kernel(void *arg)
 {
   if(PetscUseThreadPool==PETSC_FALSE) {
+#if defined(PETSC_HAVE_CPU_SET_T)
     DoCoreAffinity();
+#endif
   }
   MatMult_KernelData *data = (MatMult_KernelData*)arg;
   PetscScalar       sum;

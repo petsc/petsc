@@ -21,6 +21,7 @@ typedef struct gamg_TAG {
   PetscInt       m_data_sz;
   PetscInt       m_data_rows;
   PetscInt       m_data_cols;
+  PetscInt       m_count;
   PetscBool      m_useSA;
   PetscReal     *m_data; /* blocked vector of vertex data on fine grid (coordinates) */
 } PC_GAMG;
@@ -490,19 +491,13 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
   Mat              Aarr[GAMG_MAXLEVELS], Parr[GAMG_MAXLEVELS];
   PetscReal       *coarse_data = 0, *data, emaxs[GAMG_MAXLEVELS];
   MatInfo          info;
-  static int count = 0;
 
   PetscFunctionBegin;
-  count++;
+  pc_gamg->m_count++;
   if( a_pc->setupcalled > 0 ) {
-    /* just do Galerking coarse grids */
-    //ierr = PCMGSetGalerkin( a_pc, PETSC_TRUE );  CHKERRQ(ierr);
-    /* setupcalled is set to 0 so that MG is setup from scratch */
-    //a_pc->setupcalled = 0;
-    //ierr = PCSetUp_MG( a_pc );CHKERRQ( ierr );
-    //a_pc->setupcalled = 2;
+    /* just do Galerkin grids */
     Mat B,dA,dB;
-
+    
     /* PCSetUp_MG seems to insists on setting this to GMRES */
     ierr = KSPSetType( mglevels[0]->smoothd, KSPPREONLY ); CHKERRQ(ierr);
 
@@ -514,8 +509,16 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
 
     for (level=pc_gamg->m_Nlevels-2; level>-1; level--) {
       ierr = KSPGetOperators(mglevels[level]->smoothd,PETSC_NULL,&B,PETSC_NULL);CHKERRQ(ierr);
-      ierr = MatPtAP(dB,mglevels[level+1]->interpolate,MAT_REUSE_MATRIX,1.0,&B);CHKERRQ(ierr);
-      ierr = KSPSetOperators(mglevels[level]->smoothd,B,B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+      /* the first time through the matrix structure has changed from repartitioning */
+      if( pc_gamg->m_count == 2 ) {
+        ierr = MatDestroy( &B );  CHKERRQ(ierr);
+        ierr = MatPtAP(dB,mglevels[level+1]->interpolate,MAT_INITIAL_MATRIX,1.0,&B);CHKERRQ(ierr);
+        mglevels[level]->A = B;
+      }
+      else {
+        ierr = MatPtAP(dB,mglevels[level+1]->interpolate,MAT_REUSE_MATRIX,1.0,&B);CHKERRQ(ierr);
+      }
+      ierr = KSPSetOperators(mglevels[level]->smoothd,B,B,SAME_NONZERO_PATTERN); CHKERRQ(ierr);
       dB = B;
       /* setup KSP/PC */
       ierr = KSPSetUp( mglevels[level]->smoothd ); CHKERRQ(ierr);
@@ -529,14 +532,16 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
         char fname[32]; KSP smoother; Mat Tmat, TTm;
         ierr = PCMGGetSmoother( a_pc, lidx, &smoother ); CHKERRQ(ierr);
         ierr = KSPGetOperators( smoother, &Tmat, &TTm, 0 ); CHKERRQ(ierr);
-        sprintf(fname,"Amat_%d_%d.m",(int)count,(int)level);
+        sprintf(fname,"Amat_%d_%d.m",(int)pc_gamg->m_count,(int)level);
         ierr = PetscViewerASCIIOpen( wcomm, fname, &viewer );  CHKERRQ(ierr);
         ierr = PetscViewerSetFormat( viewer, PETSC_VIEWER_ASCII_MATLAB);  CHKERRQ(ierr);
         ierr = MatView( Tmat, viewer ); CHKERRQ(ierr);
         ierr = PetscViewerDestroy( &viewer );
       }
     }
-    
+
+    a_pc->setupcalled = 2;
+
     PetscFunctionReturn(0);
   }
   ierr = MPI_Comm_rank(wcomm,&mype);CHKERRQ(ierr);
@@ -699,7 +704,6 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
     ierr = KSPGetPC( smoother, &subpc ); CHKERRQ(ierr);
     ierr = PCSetType( subpc, PETSC_GAMG_SMOOTHER ); CHKERRQ(ierr);
     ierr = KSPSetNormType( smoother, KSP_NORM_NONE ); CHKERRQ(ierr);
-    ierr = KSPSetUp( smoother ); CHKERRQ(ierr);
   }
   { 
     /* coarse grid */
@@ -732,12 +736,12 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
     for (level=pc_gamg->m_Nlevels-1;level>0;level--){
       PetscViewer viewer;
       char fname[32];
-      sprintf(fname,"Pmat_%d_%d.m",(int)count,(int)level);
+      sprintf(fname,"Pmat_%d_%d.m",(int)pc_gamg->m_count,(int)level);
       ierr = PetscViewerASCIIOpen( wcomm, fname, &viewer );  CHKERRQ(ierr);
       ierr = PetscViewerSetFormat( viewer, PETSC_VIEWER_ASCII_MATLAB);  CHKERRQ(ierr);
       ierr = MatView( Parr[level], viewer ); CHKERRQ(ierr);
       ierr = PetscViewerDestroy( &viewer );
-      sprintf(fname,"Amat_%d_%d.m",(int)count,(int)level);
+      sprintf(fname,"Amat_%d_%d.m",(int)pc_gamg->m_count,(int)level);
       ierr = PetscViewerASCIIOpen( wcomm, fname, &viewer );  CHKERRQ(ierr);
       ierr = PetscViewerSetFormat( viewer, PETSC_VIEWER_ASCII_MATLAB);  CHKERRQ(ierr);
       ierr = MatView( Aarr[level], viewer ); CHKERRQ(ierr);
@@ -757,7 +761,7 @@ PetscErrorCode PCSetUp_GAMG( PC a_pc )
   /* setupcalled is set to 0 so that MG is setup from scratch */
   a_pc->setupcalled = 0;
   ierr = PCSetUp_MG( a_pc );CHKERRQ( ierr );
-  a_pc->setupcalled = 2;
+  a_pc->setupcalled = 1; /* use 1 as signal that this has not been re-setup */
   
   {
     KSP smoother;  /* PCSetUp_MG seems to insists on setting this to GMRES on coarse grid */
@@ -856,7 +860,7 @@ PetscErrorCode  PCCreate_GAMG(PC pc)
 
   /* create a supporting struct and attach it to pc */
   ierr = PetscNewLog(pc,PC_GAMG,&pc_gamg);CHKERRQ(ierr);
-  pc_gamg->m_data_sz = 0; pc_gamg->m_data = 0;
+  pc_gamg->m_data_sz = 0; pc_gamg->m_data = 0; pc_gamg->m_count = 0;
   mg = (PC_MG*)pc->data;
   mg->innerctx = pc_gamg;
 
