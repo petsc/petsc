@@ -25,6 +25,11 @@ FILE *PETSC_STDERR = 0;
 */
 FILE *PETSC_ZOPEFD = 0;
 
+/*
+     Return the maximum expected new size of the format
+*/
+#define PETSC_MAX_LENGTH_FORMAT(l) (l+l/8)
+
 #undef __FUNCT__  
 #define __FUNCT__ "PetscFormatConvert"
 /*@C 
@@ -122,10 +127,12 @@ PetscErrorCode  PetscVSNPrintf(char *str,size_t len,const char *format,size_t *f
   ierr = PetscStrlen(format, &oldLength);CHKERRQ(ierr);
   if (oldLength < 8*1024) {
     newformat = formatbuf;
+    oldLength = 8*1024-1;
   } else {
-    ierr = PetscMalloc((oldLength+1) * sizeof(char), &newformat);CHKERRQ(ierr);
+    oldLength = PETSC_MAX_LENGTH_FORMAT(oldLength);
+    ierr = PetscMalloc(oldLength * sizeof(char), &newformat);CHKERRQ(ierr);
   }
-  PetscFormatConvert(format,newformat,oldLength+1);
+  PetscFormatConvert(format,newformat,oldLength);
   ierr = PetscStrlen(newformat, &length);CHKERRQ(ierr);
 #if 0
   if (length > len) {
@@ -220,10 +227,12 @@ PetscErrorCode  PetscVFPrintfDefault(FILE *fd,const char *format,va_list Argp)
   PetscStrlen(format, &oldLength);
   if (oldLength < 8*1024) {
     newformat = formatbuf;
+    oldLength = 8*1024-1;
   } else {
-    (void)PetscMalloc((oldLength+1) * sizeof(char), &newformat);
+    oldLength = PETSC_MAX_LENGTH_FORMAT(oldLength);
+    (void)PetscMalloc(oldLength * sizeof(char), &newformat);
   }
-  PetscFormatConvert(format,newformat,oldLength+1);
+  PetscFormatConvert(format,newformat,oldLength);
 
 #if defined(PETSC_HAVE_VFPRINTF_CHAR)
   vfprintf(fd,newformat,(char *)Argp);
