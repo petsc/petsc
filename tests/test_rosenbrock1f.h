@@ -41,7 +41,7 @@
 !     alpha, n - define the extended Rosenbrock function: 
 !       sum_{i=0}^{n/2-1} ( alpha*(x_{2i+1}-x_{2i}^2)^2 + (1-x_{2i})^2 )
 
-      double precision alpha
+      PetscReal        alpha
       PetscInt         n
 
       common /params/ alpha, n

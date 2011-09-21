@@ -70,13 +70,13 @@ typedef struct {
 /* -------- User-defined Routines --------- */
 
 PetscErrorCode FormInitialGuess(AppCtx*,Vec);
-PetscErrorCode FormFunction(TaoSolver,Vec,double*,void*);
+PetscErrorCode FormFunction(TaoSolver,Vec,PetscReal*,void*);
 PetscErrorCode FormGradient(TaoSolver,Vec,Vec,void*);
 PetscErrorCode FormHessian(TaoSolver,Vec,Mat*,Mat*, MatStructure *,void*);
 PetscErrorCode HessianProductMat(Mat,Vec,Vec);
 PetscErrorCode HessianProduct(void*,Vec,Vec);
 PetscErrorCode MatrixFreeHessian(TaoSolver,Vec,Mat*,Mat*,MatStructure*,void*);
-PetscErrorCode FormFunctionGradient(TaoSolver,Vec,double *,Vec,void *);
+PetscErrorCode FormFunctionGradient(TaoSolver,Vec,PetscReal *,Vec,void *);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -256,7 +256,7 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
    f   - the newly evaluated function
    G   - the newly evaluated gradient
 */
-PetscErrorCode FormFunctionGradient(TaoSolver tao,Vec X,double *f,Vec G,void *ptr)
+PetscErrorCode FormFunctionGradient(TaoSolver tao,Vec X,PetscReal *f,Vec G,void *ptr)
 {
   PetscErrorCode ierr;
   ierr = FormFunction(tao,X,f,ptr);CHKERRQ(ierr);
