@@ -92,3 +92,4 @@ session_*
 CTAGS
 CMakeLists.txt
 src/snes/examples/tutorials/ex52\.h
+src/snes/examples/tutorials/ex52_inline\.h

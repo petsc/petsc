@@ -25,6 +25,11 @@ FILE *PETSC_STDERR = 0;
 */
 FILE *PETSC_ZOPEFD = 0;
 
+/*
+     Return the maximum expected new size of the format
+*/
+#define PETSC_MAX_LENGTH_FORMAT(l) (l+l/8)
+
 #undef __FUNCT__  
 #define __FUNCT__ "PetscFormatConvert"
 /*@C 
@@ -44,38 +49,45 @@ PetscErrorCode  PetscFormatConvert(const char *format,char *newformat,size_t siz
 {
   PetscInt i = 0,j = 0;
 
-  while (format[i] && i < (PetscInt)size-1) {
-    if (format[i] == '%' && format[i+1] == 'D') {
-      newformat[j++] = '%';
+  while (format[i] && j < (PetscInt)size-1) {
+    if (format[i] == '%' && format[i+1] != '%') {
+      /* Find the letter */
+      for ( ; format[i] && format[i] <= '9'; i++) newformat[j++] = format[i];
+      switch (format[i]) {
+      case 'D':
 #if !defined(PETSC_USE_64BIT_INDICES)
-      newformat[j++] = 'd';
+        newformat[j++] = 'd';
 #else
-      newformat[j++] = 'l';
-      newformat[j++] = 'l';
-      newformat[j++] = 'd';
+        newformat[j++] = 'l';
+        newformat[j++] = 'l';
+        newformat[j++] = 'd';
 #endif
-      i += 2;
-    } else if (format[i] == '%' && format[i+1] >= '1' && format[i+1] <= '9' && format[i+2] == 'D') {
-      newformat[j++] = '%';
-      newformat[j++] = format[i+1];
-#if !defined(PETSC_USE_64BIT_INDICES)
-      newformat[j++] = 'd';
-#else
-      newformat[j++] = 'l';
-      newformat[j++] = 'l';
-      newformat[j++] = 'd';
-#endif
-      i += 3;
-    } else if (format[i] == '%' && format[i+1] == 'G') {
-      newformat[j++] = '%';
+        break;
+      case 'G':
 #if defined(PETSC_USE_REAL_DOUBLE) || defined(PETSC_USE_REAL_SINGLE)
-      newformat[j++] = 'g';
+        newformat[j++] = 'g';
 #elif defined(PETSC_USE_REAL___FLOAT128)
-      newformat[j++] = 'Q';
-      newformat[j++] = 'e';
+        newformat[j++] = 'Q';
+        newformat[j++] = 'g';
 #endif
-      i += 2;
-    }else {
+        break;
+      case 'F':
+#if defined(PETSC_USE_REAL_DOUBLE) || defined(PETSC_USE_REAL_SINGLE)
+        newformat[j++] = 'f';
+#elif defined(PETSC_USE_REAL_LONG_DOUBLE)
+        newformat[j++] = 'L';
+        newformat[j++] = 'f';
+#elif defined(PETSC_USE_REAL___FLOAT128)
+        newformat[j++] = 'Q';
+        newformat[j++] = 'f';
+#endif
+        break;
+      default:
+        newformat[j++] = format[i];
+        break;
+      }
+      i++;
+    } else {
       newformat[j++] = format[i++];
     }
   }
@@ -112,10 +124,12 @@ PetscErrorCode  PetscVSNPrintf(char *str,size_t len,const char *format,size_t *f
   ierr = PetscStrlen(format, &oldLength);CHKERRQ(ierr);
   if (oldLength < 8*1024) {
     newformat = formatbuf;
+    oldLength = 8*1024-1;
   } else {
-    ierr = PetscMalloc((oldLength+1) * sizeof(char), &newformat);CHKERRQ(ierr);
+    oldLength = PETSC_MAX_LENGTH_FORMAT(oldLength);
+    ierr = PetscMalloc(oldLength * sizeof(char), &newformat);CHKERRQ(ierr);
   }
-  PetscFormatConvert(format,newformat,oldLength+1);
+  PetscFormatConvert(format,newformat,oldLength);
   ierr = PetscStrlen(newformat, &length);CHKERRQ(ierr);
 #if 0
   if (length > len) {
@@ -210,10 +224,12 @@ PetscErrorCode  PetscVFPrintfDefault(FILE *fd,const char *format,va_list Argp)
   PetscStrlen(format, &oldLength);
   if (oldLength < 8*1024) {
     newformat = formatbuf;
+    oldLength = 8*1024-1;
   } else {
-    (void)PetscMalloc((oldLength+1) * sizeof(char), &newformat);
+    oldLength = PETSC_MAX_LENGTH_FORMAT(oldLength);
+    (void)PetscMalloc(oldLength * sizeof(char), &newformat);
   }
-  PetscFormatConvert(format,newformat,oldLength+1);
+  PetscFormatConvert(format,newformat,oldLength);
 
 #if defined(PETSC_HAVE_VFPRINTF_CHAR)
   vfprintf(fd,newformat,(char *)Argp);
