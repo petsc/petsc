@@ -26,7 +26,7 @@ int main(int argc,char **args)
   PC pc;
   PetscScalar DD[24][24],DD2[24][24];
 #if defined(PETSC_USE_LOG) && defined(ADD_STAGES)
-  PetscLogStage  stage[4];
+  PetscLogStage  stage[6];
 #endif
   PetscScalar DD1[24][24];
   const PCType type;
@@ -43,6 +43,8 @@ int main(int argc,char **args)
   ierr = PetscLogStageRegister("Solve", &stage[1]);      CHKERRQ(ierr);
   ierr = PetscLogStageRegister("2nd Setup", &stage[2]);      CHKERRQ(ierr);
   ierr = PetscLogStageRegister("2nd Solve", &stage[3]);      CHKERRQ(ierr);
+  ierr = PetscLogStageRegister("3rd Setup", &stage[4]);      CHKERRQ(ierr);
+  ierr = PetscLogStageRegister("3rd Solve", &stage[5]);      CHKERRQ(ierr);
 #endif
   
   ierr = PetscOptionsGetInt(PETSC_NULL,"-ne",&ne,PETSC_NULL); CHKERRQ(ierr);
@@ -276,6 +278,23 @@ int main(int argc,char **args)
   /* 2nd solve */
   ierr = KSPSolve( ksp, bb, xx );     CHKERRQ(ierr);
   ierr = KSPComputeExtremeSingularValues( ksp, &emax, &emin ); CHKERRQ(ierr);
+
+#if defined(PETSC_USE_LOG) && defined(ADD_STAGES)
+  ierr = PetscLogStagePop();      CHKERRQ(ierr);
+  ierr = PetscLogStagePush(stage[4]);                    CHKERRQ(ierr);
+#endif
+  
+  /* 3rd solve */
+  ierr = MatScale( Amat, 100000.0 ); CHKERRQ(ierr);
+  ierr = KSPSetOperators( ksp, Amat, Amat, SAME_NONZERO_PATTERN ); CHKERRQ(ierr);
+  ierr = KSPSetUp( ksp );         CHKERRQ(ierr);
+  
+#if defined(PETSC_USE_LOG) && defined(ADD_STAGES)
+  ierr = PetscLogStagePop();      CHKERRQ(ierr);
+  ierr = PetscLogStagePush(stage[5]);                    CHKERRQ(ierr);
+#endif
+  
+  ierr = KSPSolve( ksp, bb, xx );     CHKERRQ(ierr);
 
 #if defined(PETSC_USE_LOG) && defined(ADD_STAGES)
   ierr = PetscLogStagePop();      CHKERRQ(ierr);
