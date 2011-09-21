@@ -9,7 +9,7 @@ Added at the request of Marc Garbey.
 
 Inhomogeneous Laplacian in 2D. Modeled by the partial differential equation
 
-   div \rho grad u = f,  0 < x,y < 1,
+   -div \rho grad u = f,  0 < x,y < 1,
 
 with forcing function
 
