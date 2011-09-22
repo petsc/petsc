@@ -595,7 +595,6 @@ PetscErrorCode VecMAXPY_Seq(Vec xin, PetscInt nv,const PetscScalar *alpha,Vec *y
   PetscFunctionBegin;
   ierr = PetscLogFlops(nv*2.0*n);CHKERRQ(ierr);
   ierr = VecGetArray(xin,&xx);CHKERRQ(ierr);
-  //printf("Number of Vectors = %d ** ",(int)nv);
   switch (j_rem=nv&0x3) {
   case 3: 
     ierr = VecGetArrayRead(y[0],&yy0);CHKERRQ(ierr);

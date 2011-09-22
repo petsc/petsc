@@ -31,7 +31,7 @@ PetscErrorCode KSPSetUp_NGMRES(KSP ksp)
   msize         = ngmres->msize;  /* restart size */
   hh            = msize * msize;
   
-  //  ierr = PetscMalloc1(hh,PetscScalar,&ngmres->hh_origin,bb,PetscScalar,&ngmres->bb_origin,rs,PetscScalar,&ngmres->rs_origin,cc,PetscScalar,&ngmres->cc_origin,cc,PetscScalar,&ngmres->ss_origin);CHKERRQ(ierr);
+  /*  ierr = PetscMalloc1(hh,PetscScalar,&ngmres->hh_origin,bb,PetscScalar,&ngmres->bb_origin,rs,PetscScalar,&ngmres->rs_origin,cc,PetscScalar,&ngmres->cc_origin,cc,PetscScalar,&ngmres->ss_origin);CHKERRQ(ierr); */
   ierr = PetscMalloc2(hh,PetscScalar,&ngmres->hh_origin,msize,PetscScalar,&ngmres->nrs);CHKERRQ(ierr);
 
   ierr = PetscMemzero(ngmres->hh_origin,hh*sizeof(PetscScalar));CHKERRQ(ierr);
@@ -62,7 +62,7 @@ PetscErrorCode  KSPSolve_NGMRES(KSP ksp)
   PetscInt       i,ivec,j,k,l,flag,it;
   KSP_NGMRES    *ngmres = (KSP_NGMRES*)ksp->data;
   Mat            Amat;
-  //  Vec            X,F,R, B,Fold, Xold,temp,*dX = ngmres->w,*dF = ngmres->w+ngmres->msize;
+  /*  Vec            X,F,R, B,Fold, Xold,temp,*dX = ngmres->w,*dF = ngmres->w+ngmres->msize; */
   Vec            X,F,R, B,Fold, Xold,temp,*dX = ngmres->w,*dF = ngmres->w+ngmres->msize;
   PetscScalar    *nrs=ngmres->nrs;
   PetscReal      gnorm;
@@ -141,8 +141,9 @@ PetscErrorCode  KSPSolve_NGMRES(KSP ksp)
 
 
     /* to test with GMRES */
-    //ierr= VecCopy(Xold,temp); CHKERRQ(ierr); /* X=Xold-(dX ) *nrd */
-    /*for(i=0;i<l;i++){      
+#if 0
+    ierr= VecCopy(Xold,temp); CHKERRQ(ierr); /* X=Xold-(dX ) *nrd */
+    for(i=0;i<l;i++){      
       ierr= VecAXPY(temp,-nrs[i], dX[i]);CHKERRQ(ierr);
     }
     ierr = KSP_MatMult(ksp,Amat,temp,R);CHKERRQ(ierr);            
@@ -150,7 +151,7 @@ PetscErrorCode  KSPSolve_NGMRES(KSP ksp)
     ierr = PCApply(ksp->pc,R,F);CHKERRQ(ierr);                
      ierr = VecNorm(R,NORM_2,&gnorm);CHKERRQ(ierr); 
      printf("gmres residual norm=%g\n",gnorm);
-    */
+#endif
 
     /* to calculate f_k+1 */
     ierr = KSP_MatMult(ksp,Amat,X,R);CHKERRQ(ierr);            /*     r <- b - Ax     */
@@ -334,7 +335,7 @@ static PetscErrorCode BuildNGmresSoln(PetscScalar* nrs, Vec Fold, KSP ksp,PetscI
   PetscErrorCode ierr;
   PetscInt       i,ii,j,l;
   KSP_NGMRES      *ngmres = (KSP_NGMRES *)(ksp->data);
-  //Vec *dF=ngmres->w+ngmres->msize, *Q=ngmres->w+ngmres->msize*2,temp;
+  /* Vec *dF=ngmres->w+ngmres->msize, *Q=ngmres->w+ngmres->msize*2,temp; */
   Vec *dF=ngmres->w+ngmres->msize,*Q=ngmres->q,temp;
   PetscReal      gam,areal;
   PetscScalar    a,b,c,s;
@@ -345,7 +346,7 @@ static PetscErrorCode BuildNGmresSoln(PetscScalar* nrs, Vec Fold, KSP ksp,PetscI
     
   /* Solve for solution vector that minimizes the residual */
 
-  if(flag==1) { // we need to replace the old vector and need to modify the QR factors, use Givens rotation
+  if(flag==1) { /* we need to replace the old vector and need to modify the QR factors, use Givens rotation */
       for(i=0;i<it;i++){
 	/* calculate the Givens rotation */
 	a=*HH(i,i);
@@ -386,7 +387,7 @@ static PetscErrorCode BuildNGmresSoln(PetscScalar* nrs, Vec Fold, KSP ksp,PetscI
       }
     }
 
-    // add a new vector, use modified Gram-Schmidt 
+    /* add a new vector, use modified Gram-Schmidt */
     ierr= VecCopy(dF[it],temp); CHKERRQ(ierr);
     for(i=0;i<it;i++){
       ierr=VecDot(temp,Q[i],HH(i,it));CHKERRQ(ierr); /* h(i,l-1)= dF[l-1]'*Q[i] */

@@ -8,6 +8,8 @@
 
 #include <petscsys.h>        /*I  "petscsys.h"   I*/
 
+#define PETSC_PTHREADCLASSES_DEBUG 0
+
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
@@ -738,8 +740,8 @@ PetscErrorCode  PetscOptionsCheckInitial_Private(void)
     }
     PetscThreadInitialize(PetscMaxThreads);
   } else {
-    //need to define these in the case on 'no threads' or 'thread create/destroy'
-    //could take any of the above versions
+    /* need to define these in the case on 'no threads' or 'thread create/destroy' */
+    /* could take any of the above versions */
     MainJob               = &MainJob_Spawn;
   }
 #endif
@@ -829,7 +831,7 @@ void* PetscThreadFunc_Tree(void* arg) {
   int ThreadId = *pId,Mary = 2,i,SubWorker;
   PetscBool PeeOn;
   cpu_set_t mset;
-  //printf("Thread %d In Tree Thread Function\n",ThreadId);
+  if (PETSC_PTHREADCLASSES_DEBUG) printf("Thread %d In Tree Thread Function\n",ThreadId);
   icorr = ThreadCoreAffinity[ThreadId];
   CPU_ZERO(&mset);
   CPU_SET(icorr,&mset);
@@ -1063,7 +1065,7 @@ void* PetscThreadFunc_Main(void* arg) {
   int* pId = (int*)arg;
   int ThreadId = *pId;
   cpu_set_t mset;
-  //printf("Thread %d In Main Thread Function\n",ThreadId);
+  if (PETSC_PTHREADCLASSES_DEBUG) printf("Thread %d In Main Thread Function\n",ThreadId);
   icorr = ThreadCoreAffinity[ThreadId];
   CPU_ZERO(&mset);
   CPU_SET(icorr,&mset);
@@ -1231,7 +1233,7 @@ void* PetscThreadFunc_Chain(void* arg) {
   int SubWorker = ThreadId + 1;
   PetscBool PeeOn;
   cpu_set_t mset;
-  //printf("Thread %d In Chain Thread Function\n",ThreadId);
+  if (PETSC_PTHREADCLASSES_DEBUG) printf("Thread %d In Chain Thread Function\n",ThreadId);
   icorr = ThreadCoreAffinity[ThreadId];
   CPU_ZERO(&mset);
   CPU_SET(icorr,&mset);
@@ -1454,7 +1456,7 @@ void* PetscThreadFunc_True(void* arg) {
   int ThreadId = *pId;
   PetscErrorCode iterr;
   cpu_set_t mset;
-  //printf("Thread %d In True Pool Thread Function\n",ThreadId);
+  if (PETSC_PTHREADCLASSES_DEBUG) printf("Thread %d In True Pool Thread Function\n",ThreadId);
   icorr = ThreadCoreAffinity[ThreadId];
   CPU_ZERO(&mset);
   CPU_SET(icorr,&mset);
@@ -1475,7 +1477,7 @@ void* PetscThreadFunc_True(void* arg) {
     while(job_true.startJob==PETSC_FALSE&&job_true.iNumJobThreads==0) {
       /* upon entry, automically releases the lock and blocks
        upon return, has the lock */
-      //printf("Thread %d Going to Sleep!\n",ThreadId);
+      if (PETSC_PTHREADCLASSES_DEBUG) printf("Thread %d Going to Sleep!\n",ThreadId);
       ierr = pthread_cond_wait(&job_true.cond,&job_true.mutex);
     }
     job_true.startJob = PETSC_FALSE;
@@ -1492,7 +1494,7 @@ void* PetscThreadFunc_True(void* arg) {
     if(iterr!=0) {
       ithreaderr = 1;
     }
-    //printf("Thread %d Finished Job\n",ThreadId);
+    if (PETSC_PTHREADCLASSES_DEBUG) printf("Thread %d Finished Job\n",ThreadId);
     /* the barrier is necessary BECAUSE: look at job_true.iNumReadyThreads
       what happens if a thread finishes before they all start? BAD!
      what happens if a thread finishes before any else start? BAD! */
@@ -1528,7 +1530,7 @@ void* PetscThreadInitialize_True(PetscInt N) {
     status = pthread_barrier_init(&BarrPoint[i+1],NULL,i+1);
     /* should check error */
   }
-  //printf("Finished True Thread Pool Initialization\n");
+  if (PETSC_PTHREADCLASSES_DEBUG) printf("Finished True Thread Pool Initialization\n");
   return NULL;
 }
 
