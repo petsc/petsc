@@ -142,13 +142,34 @@ PetscErrorCode MainJob_True(void* (*pFunc)(void*),void**,PetscInt);
 /* NO Thread Pool Function */
 PetscErrorCode MainJob_Spawn(void* (*pFunc)(void*),void**,PetscInt);
 
-void* PetscThreadRun(MPI_Comm Comm,void* (*pFunc)(void*),int,pthread_t*,void**);
-void* PetscThreadStop(MPI_Comm Comm,int,pthread_t*);
-
 void* FuncFinish(void* arg) {
   PetscThreadGo = PETSC_FALSE;
   return(0);
 }
+
+PetscErrorCode PetscThreadRun(MPI_Comm Comm,void* (*funcp)(void*),int iTotThreads,pthread_t* ThreadId,void** data) 
+{
+  PetscErrorCode    ierr;
+  PetscInt i;
+  for(i=0; i<iTotThreads; i++) {
+    ierr = pthread_create(&ThreadId[i],NULL,funcp,data[i]);
+  }
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode PetscThreadStop(MPI_Comm Comm,int iTotThreads,pthread_t* ThreadId) 
+{
+  PetscErrorCode ierr;
+  PetscInt i;
+
+  PetscFunctionBegin;
+  void* joinstatus;
+  for (i=0; i<iTotThreads; i++) {
+    ierr = pthread_join(ThreadId[i], &joinstatus);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 
 /*
   'Tree' Thread Pool Functions 

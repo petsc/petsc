@@ -20,8 +20,8 @@ extern PetscBool    PetscUseThreadPool;
 extern PetscMPIInt PetscMaxThreads;
 extern pthread_t*   PetscThreadPoint;
 extern int* ThreadCoreAffinity;
-void* PetscThreadRun(MPI_Comm Comm,void* (*pFunc)(void*),int,pthread_t*,void**);
-void* PetscThreadStop(MPI_Comm Comm,int,pthread_t*);
+extern PetscErrorCode PetscThreadRun(MPI_Comm Comm,void* (*pFunc)(void*),int,pthread_t*,void**);
+extern PetscErrorCode PetscThreadStop(MPI_Comm Comm,int,pthread_t*);
 void* DoCoreAffinity(void);
 
 typedef struct {
@@ -130,24 +130,6 @@ typedef struct {
   PetscScalar alphain;
   PetscInt nelem;
 } VecSet_KernelData;
-
-void* PetscThreadRun(MPI_Comm Comm,void* (*funcp)(void*),int iTotThreads,pthread_t* ThreadId,void** data) {
-  PetscInt    ierr;
-  int i;
-  for(i=0; i<iTotThreads; i++) {
-    ierr = pthread_create(&ThreadId[i],NULL,funcp,data[i]);
-  }
-  return NULL;
-}
-
-void* PetscThreadStop(MPI_Comm Comm,int iTotThreads,pthread_t* ThreadId) {
-  int i;
-  void* joinstatus;
-  for (i=0; i<iTotThreads; i++) {
-    pthread_join(ThreadId[i], &joinstatus);
-  }
-  return NULL;
-}
 
 /* Change these macros so can be used in thread kernels */
 #undef CHKERRQP
