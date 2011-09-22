@@ -211,7 +211,7 @@ PetscErrorCode smoothAggs( const Mat a_Gmat_2, /* base (squared) graph */
 		  a_id_llist[lastid] = a_id_llist[lidj];                    /* remove lidj from list */
 		  a_id_llist[lidj] = a_id_llist[lid]; a_id_llist[lid] = lidj; /* insert 'lidj' into head of llist */
 		  hav++;
-		  /*break;*/
+		  /* break; */
 		}
 		lastid = flid;
 	      }
@@ -889,16 +889,16 @@ PetscErrorCode triangulateAndFormProl( IS  a_selected_2, /* list of selected loc
 
       /* elems */
       sprintf(fname,"C%d_%d.ele",level,mype); file = fopen(fname, "w");
-      /*First line: <# of triangles> <nodes per triangle> <# of attributes> */
+      /* First line: <# of triangles> <nodes per triangle> <# of attributes> */
       fprintf(file, "%d %d %d\n",mid.numberoftriangles,3,0);
-      /*Remaining lines: <triangle #> <node> <node> <node> ... [attributes]*/
+      /* Remaining lines: <triangle #> <node> <node> <node> ... [attributes] */
       for(kk=0,sid=0;kk<mid.numberoftriangles;kk++,sid += 3){
         fprintf(file, "%d %d %d %d\n",kk,mid.trianglelist[sid],mid.trianglelist[sid+1],mid.trianglelist[sid+2]);
       }
       fclose(file);
 
       sprintf(fname,"C%d_%d.node",level,mype); file = fopen(fname, "w");
-      /*First line: <# of vertices> <dimension (must be 2)> <# of attributes> <# of boundary markers (0 or 1)>*/
+      /* First line: <# of vertices> <dimension (must be 2)> <# of attributes> <# of boundary markers (0 or 1)> */
       /* fprintf(file, "%d  %d  %d  %d\n",in.numberofpoints,2,0,0); */
       fprintf(file, "%d  %d  %d  %d\n",nPlotPts,2,0,0);
       /*Following lines: <vertex #> <x> <y> */
@@ -932,7 +932,7 @@ PetscErrorCode triangulateAndFormProl( IS  a_selected_2, /* list of selected loc
     ierr = PetscMalloc( nselected_2*sizeof(PetscInt), &node_tri ); CHKERRQ(ierr); 
     ierr = PetscMalloc( nselected_2*sizeof(PetscInt), &nTri ); CHKERRQ(ierr); 
 
-    /* need list of triangles on node*/
+    /* need list of triangles on node */
     for(kk=0;kk<nselected_2;kk++) nTri[kk] = 0;
     for(tid=0,kk=0;tid<mid.numberoftriangles;tid++){
       for(jj=0;jj<3;jj++) {
@@ -950,7 +950,7 @@ PetscErrorCode triangulateAndFormProl( IS  a_selected_2, /* list of selected loc
       PetscScalar AA[3][3];
       PetscBLASInt N=3,NRHS=1,LDA=3,IPIV[3],LDB=3,INFO;
       do{
-        if( flid < nFineLoc ) {  /*could be a ghost*/
+        if( flid < nFineLoc ) {  /* could be a ghost */
           PetscInt bestTID = -1; PetscScalar best_alpha = 1.e10; 
           const PetscInt fgid = flid + myFine0;
           /* compute shape function for gid */

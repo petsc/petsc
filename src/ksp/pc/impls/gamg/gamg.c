@@ -118,7 +118,7 @@ PetscErrorCode PCSetCoordinates_GAMG( PC a_pc, PetscInt a_ndm, PetscReal *a_coor
 EXTERN_C_END
 
 
-/* -----------------------------------------------------------------------------*/
+/* ----------------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "PCReset_GAMG"
 PetscErrorCode PCReset_GAMG(PC pc)
@@ -151,7 +151,7 @@ PetscErrorCode PCReset_GAMG(PC pc)
    . a_Amat_crs - coarse matrix that is created (k-1)
 */
 
-#define MIN_EQ_PROC 600
+static PetscInt MIN_EQ_PROC = 600;
 #define TOP_GRID_LIM 2*MIN_EQ_PROC /* this will happen anyway */
 
 #undef __FUNCT__
@@ -183,7 +183,7 @@ PetscErrorCode partitionLevel( Mat a_Amat_fine,
   ierr = MatSetBlockSize( Cmat, a_cbs );      CHKERRQ(ierr);
   ierr = MatGetOwnershipRange( Cmat, &Istart0, &Iend0 ); CHKERRQ(ierr);
   ncrs0 = (Iend0-Istart0)/a_cbs; assert((Iend0-Istart0)%a_cbs == 0);
-  
+
   ierr  = PetscOptionsHasName(PETSC_NULL,"-pc_gamg_avoid_repartitioning",&flag);
   CHKERRQ( ierr );
   if( flag ) { 
@@ -852,6 +852,8 @@ PetscErrorCode  PCCreate_GAMG(PC pc)
   PC_GAMG         *pc_gamg;
   PC_MG           *mg;
   PetscClassId     cookie;
+  PetscBool        flag;
+  PetscInt         lim;
 
   PetscFunctionBegin;
   /* PCGAMG is an inherited class of PCMG. Initialize pc as PCMG */
@@ -875,7 +877,12 @@ PetscErrorCode  PCCreate_GAMG(PC pc)
   ierr = PetscObjectComposeFunctionDynamic( (PetscObject)pc,
 					    "PCSetCoordinates_C",
 					    "PCSetCoordinates_GAMG",
-					    PCSetCoordinates_GAMG);CHKERRQ(ierr);
+					    PCSetCoordinates_GAMG);
+  CHKERRQ(ierr);
+
+  ierr  = PetscOptionsGetInt(PETSC_NULL,"-pc_gamg_process_eq_limit",&lim,&flag);    CHKERRQ( ierr );
+  if( flag ) MIN_EQ_PROC = lim;
+
 #if defined PETSC_USE_LOG
   static int count = 0;
   if( count++ == 0 ) {
