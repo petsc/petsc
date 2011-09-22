@@ -434,7 +434,7 @@ PetscErrorCode FormFunctionLocalElasticity(DM dm, Vec X, Vec F, AppCtx *user)
             for(int e = 0; e < dim; ++e) {
               realSpaceDer[d] += invJ[e*dim+d]*basisDer[(q*numBasisFuncs*numBasisComps+cidx)*dim+e];
             }
-            product += realSpaceDer[d]*fieldGrad[comp*dim+d];
+            product += realSpaceDer[d]*0.5*(fieldGrad[comp*dim+d] + fieldGrad[d*dim+comp]);
           }
           elemVec[cidx] += product*quadWeights[q]*detJ;
           /* Nonlinear term: -\lambda e^{u} */
