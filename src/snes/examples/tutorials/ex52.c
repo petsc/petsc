@@ -46,8 +46,8 @@ typedef struct {
 /*------------------------------------------------------------------------------
   This code can be generated using 'bin/pythonscripts/PetscGenerateFEMQuadrature.py 2 1 src/snes/examples/tutorials/ex52.h'
  -----------------------------------------------------------------------------*/
-#include "ex52.h"
-//#include "ex52_elas.h"
+//#include "ex52.h"
+#include "ex52_elas.h"
 
 void quadratic_2d(const PetscReal x[], PetscScalar u[]) {
   u[0] = x[0]*x[0] + x[1]*x[1];
@@ -466,8 +466,8 @@ void f1_laplacian(PetscScalar u, const PetscScalar gradU[], PetscScalar f1[]) {
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "IntegrateElementBatchCPU"
-PetscErrorCode IntegrateElementBatchCPU(PetscInt Ne, PetscInt Nb, const PetscScalar coefficients[], const PetscReal jacobianInverses[], const PetscReal jacobianDeterminants[], PetscInt Nq, const PetscReal quadPoints[], const PetscReal quadWeights[], const PetscReal basisTabulation[], const PetscReal basisDerTabulation[], PetscScalar elemVec[], AppCtx *user) {
+#define __FUNCT__ "IntegrateLaplacianBatchCPU"
+PetscErrorCode IntegrateLaplacianBatchCPU(PetscInt Ne, PetscInt Nb, const PetscScalar coefficients[], const PetscReal jacobianInverses[], const PetscReal jacobianDeterminants[], PetscInt Nq, const PetscReal quadPoints[], const PetscReal quadWeights[], const PetscReal basisTabulation[], const PetscReal basisDerTabulation[], PetscScalar elemVec[], AppCtx *user) {
   const PetscInt debug = user->debug;
   const PetscInt dim = 2;
   PetscErrorCode ierr;
@@ -525,6 +525,87 @@ PetscErrorCode IntegrateElementBatchCPU(PetscInt Ne, PetscInt Nb, const PetscSca
   PetscFunctionReturn(0);
 };
 
+void f1_elasticity(PetscScalar u[], const PetscScalar gradU[], PetscScalar f1[]) {
+  const int dim   = 2;
+  const int Ncomp = dim;
+
+  for(int comp = 0; comp < Ncomp; ++comp) {
+    for(int d = 0; d < dim; ++d) {
+      f1[comp*dim+d] = 0.5*(gradU[comp*dim+d] + gradU[d*dim+comp]);
+    }
+  }
+  return;
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "IntegrateElasticityBatchCPU"
+PetscErrorCode IntegrateElasticityBatchCPU(PetscInt Ne, PetscInt Nb, PetscInt Ncomp, const PetscScalar coefficients[], const PetscReal jacobianInverses[], const PetscReal jacobianDeterminants[], PetscInt Nq, const PetscReal quadPoints[], const PetscReal quadWeights[], const PetscReal basisTabulation[], const PetscReal basisDerTabulation[], PetscScalar elemVec[], AppCtx *user) {
+  const PetscInt debug = user->debug;
+  const PetscInt dim = 2;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  for(PetscInt e = 0; e < Ne; ++e) {
+    const PetscReal  detJ = jacobianDeterminants[e];
+    const PetscReal *invJ = &jacobianInverses[e*dim*dim];
+    PetscScalar      f1[1*dim*dim]; // Nq = 1
+
+    if (debug > 1) {
+      ierr = PetscPrintf(PETSC_COMM_SELF, "  detJ: %g\n", detJ);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF, "  invJ: %g %g %g %g\n", invJ[0], invJ[1], invJ[2], invJ[3]);CHKERRQ(ierr);
+    }
+    for(PetscInt q = 0; q < Nq; ++q) {
+      if (debug) {ierr = PetscPrintf(PETSC_COMM_SELF, "  quad point %d\n", q);CHKERRQ(ierr);}
+      PetscScalar u[dim]         = {0.0, 0.0};
+      PetscScalar gradU[dim*dim] = {0.0, 0.0, 0.0, 0.0};
+
+      for(PetscInt b = 0; b < Nb; ++b) {
+        for(int comp = 0; comp < Ncomp; ++comp) {
+          const PetscInt cidx = b*Ncomp+comp;
+          PetscScalar    realSpaceDer[dim];
+
+          u[comp] += coefficients[e*Nb*Ncomp+cidx]*basisTabulation[q*Nb*Ncomp+cidx];
+          for(PetscInt d = 0; d < dim; ++d) {
+            realSpaceDer[d] = 0.0;
+            for(PetscInt f = 0; f < dim; ++f) {
+              realSpaceDer[d] += invJ[f*dim+d]*basisDerTabulation[(q*Nb*Ncomp+cidx)*dim+f];
+            }
+            gradU[comp*dim+d] += coefficients[e*Nb*Ncomp+cidx]*realSpaceDer[d];
+          }
+        }
+      }
+      f1_elasticity(u, gradU, &f1[q*Ncomp*dim]);
+      for(int i = 0; i < Ncomp*dim; ++i) {
+        f1[q*Ncomp*dim+i] *= detJ*quadWeights[q];
+      }
+      if (debug > 1) {
+        for(int i = 0; i < Ncomp*dim; ++i) {
+          ierr = PetscPrintf(PETSC_COMM_SELF, "    f1[%d]: %g\n", i, f1[q*Ncomp*dim+i]);CHKERRQ(ierr);
+        }
+      }
+    }
+    for(PetscInt b = 0; b < Nb; ++b) {
+      for(int comp = 0; comp < Ncomp; ++comp) {
+        const PetscInt cidx = b*Ncomp+comp;
+
+        elemVec[e*Nb*Ncomp+cidx] = 0.0;
+        for(PetscInt q = 0; q < Nq; ++q) {
+          PetscScalar realSpaceDer[dim];
+
+          for(PetscInt d = 0; d < dim; ++d) {
+            realSpaceDer[d] = 0.0;
+            for(PetscInt f = 0; f < dim; ++f) {
+              realSpaceDer[d] += invJ[f*dim+d]*basisDerTabulation[(q*Nb*Ncomp+cidx)*dim+f];
+            }
+            elemVec[e*Nb*Ncomp+cidx] += realSpaceDer[d]*f1[(q*Ncomp+comp)*dim+d];
+          }
+        }
+      }
+    }
+  }
+  PetscFunctionReturn(0);
+};
+
 #undef __FUNCT__
 #define __FUNCT__ "FormFunctionLocalBatch"
 /*
@@ -541,6 +622,7 @@ PetscErrorCode FormFunctionLocalBatch(DM dm, Vec X, Vec F, AppCtx *user)
   const PetscReal *quadPoints    = user->q.quadPoints;
   const PetscReal *quadWeights   = user->q.quadWeights;
   const PetscInt   numBasisFuncs = user->q.numBasisFuncs;
+  const PetscInt   numBasisComps = user->q.numComponents;
   const PetscReal *basis         = user->q.basis;
   const PetscReal *basisDer      = user->q.basisDer;
   PetscReal       *coords, *v0, *J, *invJ, *detJ;
@@ -556,15 +638,15 @@ PetscErrorCode FormFunctionLocalBatch(DM dm, Vec X, Vec F, AppCtx *user)
   const PetscInt numCells = cEnd - cStart;
   PetscScalar   *u;
 
-  ierr = PetscMalloc4(numCells*numBasisFuncs,PetscScalar,&u,numCells*dim*dim,PetscReal,&invJ,numCells,PetscReal,&detJ,numCells*numBasisFuncs,PetscScalar,&elemVec);CHKERRQ(ierr);
+  ierr = PetscMalloc4(numCells*numBasisFuncs*numBasisComps,PetscScalar,&u,numCells*dim*dim,PetscReal,&invJ,numCells,PetscReal,&detJ,numCells*numBasisFuncs*numBasisComps,PetscScalar,&elemVec);CHKERRQ(ierr);
   for(PetscInt c = cStart; c < cEnd; ++c) {
     const PetscScalar *x;
 
     ierr = DMMeshComputeCellGeometry(dm, c, v0, J, &invJ[c*dim*dim], &detJ[c]);CHKERRQ(ierr);
     ierr = DMMeshVecGetClosure(dm, X, c, &x);CHKERRQ(ierr);
 
-    for(int f = 0; f < numBasisFuncs; ++f) {
-      u[c*numBasisFuncs+f] = x[f];
+    for(int f = 0; f < numBasisFuncs*numBasisComps; ++f) {
+      u[c*numBasisFuncs*numBasisComps+f] = x[f];
     }
   }
   // Conforming batches
@@ -576,16 +658,31 @@ PetscErrorCode FormFunctionLocalBatch(DM dm, Vec X, Vec F, AppCtx *user)
   if (user->gpu) {
     ierr = IntegrateElementBatchGPU(numChunks*numBatches*batchSize, numBatches, batchSize, u, invJ, detJ, elemVec, user->debug);CHKERRQ(ierr);
   } else {
-    ierr = IntegrateElementBatchCPU(numChunks*numBatches*batchSize, numBasisFuncs, u, invJ, detJ, numQuadPoints, quadPoints, quadWeights, basis, basisDer, elemVec, user);CHKERRQ(ierr);
+    switch(user->op) {
+    case LAPLACIAN:
+      ierr = IntegrateLaplacianBatchCPU(numChunks*numBatches*batchSize, numBasisFuncs, u, invJ, detJ, numQuadPoints, quadPoints, quadWeights, basis, basisDer, elemVec, user);CHKERRQ(ierr);break;
+    case ELASTICITY:
+      ierr = IntegrateElasticityBatchCPU(numChunks*numBatches*batchSize, numBasisFuncs, numBasisComps, u, invJ, detJ, numQuadPoints, quadPoints, quadWeights, basis, basisDer, elemVec, user);CHKERRQ(ierr);break;
+    default:
+      SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid PDE operator %d", user->op);
+    }
   }
   // Remainder
   PetscInt numRemainder = numCells % (numBatches * batchSize);
   PetscInt offset       = numCells - numRemainder;
-  ierr = IntegrateElementBatchCPU(numRemainder, numBasisFuncs, &u[offset*numBasisFuncs], &invJ[offset*dim*dim], &detJ[offset],
-                                  numQuadPoints, quadPoints, quadWeights, basis, basisDer, &elemVec[offset*numBasisFuncs], user);CHKERRQ(ierr);
+  switch(user->op) {
+  case LAPLACIAN:
+    ierr = IntegrateLaplacianBatchCPU(numRemainder, numBasisFuncs, &u[offset*numBasisFuncs*numBasisComps], &invJ[offset*dim*dim], &detJ[offset],
+                                      numQuadPoints, quadPoints, quadWeights, basis, basisDer, &elemVec[offset*numBasisFuncs*numBasisComps], user);CHKERRQ(ierr);break;
+  case ELASTICITY:
+    ierr = IntegrateElasticityBatchCPU(numRemainder, numBasisFuncs, numBasisComps, &u[offset*numBasisFuncs*numBasisComps], &invJ[offset*dim*dim], &detJ[offset],
+                                       numQuadPoints, quadPoints, quadWeights, basis, basisDer, &elemVec[offset*numBasisFuncs*numBasisComps], user);CHKERRQ(ierr);break;
+  default:
+    SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid PDE operator %d", user->op);
+  }
   for(PetscInt c = cStart; c < cEnd; ++c) {
-    if (debug) {ierr = DMMeshPrintCellVector(c, "Residual", numBasisFuncs, &elemVec[c*numBasisFuncs]);CHKERRQ(ierr);}
-    ierr = DMMeshVecSetClosure(dm, F, c, &elemVec[c*numBasisFuncs], ADD_VALUES);CHKERRQ(ierr);
+    if (debug) {ierr = DMMeshPrintCellVector(c, "Residual", numBasisFuncs*numBasisComps, &elemVec[c*numBasisFuncs*numBasisComps]);CHKERRQ(ierr);}
+    ierr = DMMeshVecSetClosure(dm, F, c, &elemVec[c*numBasisFuncs*numBasisComps], ADD_VALUES);CHKERRQ(ierr);
   }
   ierr = PetscFree4(u,invJ,detJ,elemVec);CHKERRQ(ierr);
 
@@ -866,7 +963,14 @@ int main(int argc, char **argv)
     ierr = DMGetGlobalVector(dm, &X);CHKERRQ(ierr);
     ierr = DMGetGlobalVector(dm, &F);CHKERRQ(ierr);
     if (user.batch) {
-      ierr = FormInitialGuess(X, quadratic_2d, INSERT_VALUES, &user);CHKERRQ(ierr);
+      switch(user.op) {
+      case LAPLACIAN:
+        ierr = FormInitialGuess(X, quadratic_2d, INSERT_VALUES, &user);CHKERRQ(ierr);break;
+      case ELASTICITY:
+        ierr = FormInitialGuess(X, quadratic_2d_elas, INSERT_VALUES, &user);CHKERRQ(ierr);break;
+      default:
+        SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid PDE operator %d", user.op);
+      }
       ierr = DMMeshSetLocalFunction(dm, (PetscErrorCode (*)(DM, Vec, Vec, void*)) FormFunctionLocalBatch);CHKERRQ(ierr);
     } else {
       switch(user.op) {
