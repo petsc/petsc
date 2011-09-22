@@ -35,14 +35,15 @@ static PetscErrorCode FormInitialSolution(TS,Vec,void*);
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  TS             ts;                   /* nonlinear solver */
-  Vec            X;                    /* solution, residual vectors */
-  Mat            J;                    /* Jacobian matrix */
-  PetscInt       steps,maxsteps,mx;
-  PetscErrorCode ierr;
-  DM             da;
-  PetscReal      ftime,dt;
-  struct _User    user;          /* user-defined work context */
+  TS                ts;         /* nonlinear solver */
+  Vec               X;          /* solution, residual vectors */
+  Mat               J;          /* Jacobian matrix */
+  PetscInt          steps,maxsteps,mx;
+  PetscErrorCode    ierr;
+  DM                da;
+  PetscReal         ftime,dt;
+  struct _User      user;       /* user-defined work context */
+  TSConvergedReason reason;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
 
@@ -100,6 +101,8 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = TSSolve(ts,X,&ftime);CHKERRQ(ierr);
   ierr = TSGetTimeStepNumber(ts,&steps);CHKERRQ(ierr);
+  ierr = TSGetConvergedReason(ts,&reason);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"%s at time %G after %D steps\n",TSConvergedReasons[reason],ftime,steps);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.

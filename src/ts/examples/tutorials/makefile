@@ -309,6 +309,10 @@ runex22:
 	-@${MPIEXEC} -n 1 ./ex22 -da_grid_x 200 -ts_monitor_solution -ts_arkimex_type 4 > ex22_1.tmp 2>&1; \
 	   ${DIFF} output/ex22_1.out ex22_1.tmp || echo "Possible problem with ex22_1, diffs above";  \
 	   ${RM} -f ex22_1.tmp
+runex22_2:
+	-@${MPIEXEC} -n 2 ./ex22 -da_grid_x 200 -ts_monitor_solution -ts_type rosw -ts_dt 1e-3 > ex22_2.tmp 2>&1; \
+	   ${DIFF} output/ex22_2.out ex22_2.tmp || echo "Possible problem with ex22_2, diffs above";  \
+	   ${RM} -f ex22_2.tmp
 runex22f:
 	-@${MPIEXEC} -n 1 ./ex22f -da_grid_x 200 -ts_monitor_solution -ts_arkimex_type 4 > ex22f_1.tmp 2>&1; \
 	   ${DIFF} output/ex22f_1.out ex22f_1.tmp || echo "Possible problem with ex22f_1, diffs above";  \
