@@ -83,7 +83,7 @@ PetscErrorCode DMView_Cartesian_Ascii(const ALE::Obj<ALE::CartesianMesh>& mesh, 
     int dim = mesh->getDimension();
 
     ierr = PetscViewerASCIIPrintf(viewer, "Mesh in %d dimensions:\n", dim);CHKERRQ(ierr);
-    // FIX: Need to globalize
+    /* FIX: Need to globalize */
     ierr = PetscViewerASCIIPrintf(viewer, "  %d vertices\n", mesh->getSieve()->getNumVertices());CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer, "  %d cells\n",    mesh->getSieve()->getNumCells());CHKERRQ(ierr);
   }
@@ -239,7 +239,7 @@ PetscErrorCode DMCartesianGetSectionReal(DM dm, const char name[], SectionReal *
 #define __FUNCT__ "DMSetFromOptions_Cartesian"
 PetscErrorCode  DMSetFromOptions_Cartesian(DM dm)
 {
-  //DM_Mesh       *mesh = (DM_Mesh *) dm->data;
+  /* DM_Mesh       *mesh = (DM_Mesh *) dm->data; */
   char           typeName[256];
   PetscBool      flg;
   PetscErrorCode ierr;
@@ -280,11 +280,11 @@ PetscErrorCode DMCreate_Cartesian(DM dm)
   dm->ops->globaltolocalend   = 0;
   dm->ops->localtoglobalbegin = 0;
   dm->ops->localtoglobalend   = 0;
-  dm->ops->createglobalvector = 0; //DMCreateGlobalVector_Cartesian;
-  dm->ops->createlocalvector  = 0; //DMCreateLocalVector_Cartesian;
+  dm->ops->createglobalvector = 0; /* DMCreateGlobalVector_Cartesian; */
+  dm->ops->createlocalvector  = 0; /* DMCreateLocalVector_Cartesian; */
   dm->ops->getinterpolation   = DMGetInterpolation_Cartesian;
   dm->ops->getcoloring        = 0;
-  dm->ops->getmatrix          = 0; //DMGetMatrix_Cartesian;
+  dm->ops->getmatrix          = 0; /* DMGetMatrix_Cartesian; */
   dm->ops->refine             = DMRefine_Cartesian;
   dm->ops->coarsen            = DMCoarsen_Cartesian;
   dm->ops->refinehierarchy    = 0;

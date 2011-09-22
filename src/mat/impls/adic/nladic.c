@@ -152,7 +152,7 @@ PetscErrorCode NLFNewton_DAAD9(NLF A,DMDALocalInfo *info,MatStencil *stencil,voi
   PetscInt       i,j,ngI[9];             
   PetscFunctionBegin;
    
-  // the order of the nodes
+  /* the order of the nodes */
    /*
          (6)      (7)         (8)
       i-1,j+1 --- i,j+1 --- i+1,j+1
@@ -165,7 +165,7 @@ PetscErrorCode NLFNewton_DAAD9(NLF A,DMDALocalInfo *info,MatStencil *stencil,voi
        (0)       (1)         (2)
   */
   
-  // the order of the derivative for the center nodes
+  /* the order of the derivative for the center nodes */
    /*
          (7)      (8)         (9)
       i-1,j+1 --- i,j+1 --- i+1,j+1
