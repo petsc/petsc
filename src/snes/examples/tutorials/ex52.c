@@ -12,8 +12,6 @@ MUST CHECK WITH:
  - Different quadrature (1pt and 3pt)
  - Different basis (linear and quadratic)
  - Different number of blocks (have to change it in the CUDA, so need a #define)
- - Different number of batches (use refinement)
- - Need another division above batch to make a grid
 #endif
 
 #include<petscdmmesh.h>
@@ -49,9 +47,15 @@ typedef struct {
   This code can be generated using 'bin/pythonscripts/PetscGenerateFEMQuadrature.py 2 1 src/snes/examples/tutorials/ex52.h'
  -----------------------------------------------------------------------------*/
 #include "ex52.h"
+//#include "ex52_elas.h"
 
-PetscScalar quadratic_2d(const PetscReal x[]) {
-  return x[0]*x[0] + x[1]*x[1];
+void quadratic_2d(const PetscReal x[], PetscScalar u[]) {
+  u[0] = x[0]*x[0] + x[1]*x[1];
+};
+
+void quadratic_2d_elas(const PetscReal x[], PetscScalar u[]) {
+  u[0] = x[0]*x[0] + x[1]*x[1];
+  u[1] = x[0]*x[0] + x[1]*x[1];
 };
 
 #undef __FUNCT__
@@ -138,6 +142,7 @@ PetscErrorCode SetupQuadrature(AppCtx *user) {
     user->q.quadPoints    = points_0;
     user->q.quadWeights   = weights_0;
     user->q.numBasisFuncs = NUM_BASIS_FUNCTIONS_0;
+    user->q.numComponents = NUM_BASIS_COMPONENTS_0;
     user->q.basis         = Basis_0;
     user->q.basisDer      = BasisDerivatives_0;
     break;
@@ -212,7 +217,7 @@ PetscErrorCode SetupSection(DM dm, AppCtx *user) {
   Output Parameter:
 . X - vector
 */
-PetscErrorCode FormInitialGuess(Vec X, PetscScalar (*guessFunc)(const PetscReal []), InsertMode mode, AppCtx *user)
+PetscErrorCode FormInitialGuess(Vec X, void (*guessFunc)(const PetscReal [], PetscScalar []), InsertMode mode, AppCtx *user)
 {
   Vec            localX, coordinates;
   PetscSection   section, cSection;
@@ -226,11 +231,11 @@ PetscErrorCode FormInitialGuess(Vec X, PetscScalar (*guessFunc)(const PetscReal 
   ierr = DMMeshGetCoordinateSection(user->dm, &cSection);CHKERRQ(ierr);
   ierr = DMMeshGetCoordinateVec(user->dm, &coordinates);CHKERRQ(ierr);
   for(PetscInt v = vStart; v < vEnd; ++v) {
-    PetscScalar  values[1];
+    PetscScalar  values[3];
     PetscScalar *coords;
 
     ierr = VecGetValuesSection(coordinates, cSection, v, &coords);CHKERRQ(ierr);
-    values[0] = (*guessFunc)(coords);
+    (*guessFunc)(coords, values);
     ierr = VecSetValuesSection(localX, section, v, values, mode);CHKERRQ(ierr);
   }
   ierr = VecDestroy(&coordinates);CHKERRQ(ierr);
@@ -357,6 +362,7 @@ PetscErrorCode FormFunctionLocalElasticity(DM dm, Vec X, Vec F, AppCtx *user)
   const PetscReal *quadPoints    = user->q.quadPoints;
   const PetscReal *quadWeights   = user->q.quadWeights;
   const PetscInt   numBasisFuncs = user->q.numBasisFuncs;
+  const PetscInt   numBasisComps = user->q.numComponents;
   const PetscReal *basis         = user->q.basis;
   const PetscReal *basisDer      = user->q.basisDer;
   PetscReal       *coords, *v0, *J, *invJ, detJ;
@@ -366,24 +372,26 @@ PetscErrorCode FormFunctionLocalElasticity(DM dm, Vec X, Vec F, AppCtx *user)
 
   PetscFunctionBegin;
   ierr = VecSet(F, 0.0);CHKERRQ(ierr);
-  ierr = PetscMalloc3(dim,PetscScalar,&realSpaceDer,dim,PetscScalar,&fieldGrad,numBasisFuncs,PetscScalar,&elemVec);CHKERRQ(ierr);
+  ierr = PetscMalloc3(dim,PetscScalar,&realSpaceDer,dim*numBasisComps,PetscScalar,&fieldGrad,numBasisFuncs*numBasisComps,PetscScalar,&elemVec);CHKERRQ(ierr);
   ierr = PetscMalloc4(dim,PetscReal,&coords,dim,PetscReal,&v0,dim*dim,PetscReal,&J,dim*dim,PetscReal,&invJ);CHKERRQ(ierr);
   ierr = DMMeshGetHeightStratum(dm, 0, &cStart, &cEnd);CHKERRQ(ierr);
   for(PetscInt c = cStart; c < cEnd; ++c) {
     const PetscScalar *x;
 
-    ierr = PetscMemzero(elemVec, numBasisFuncs * sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscMemzero(elemVec, numBasisFuncs*numBasisComps * sizeof(PetscScalar));CHKERRQ(ierr);
     ierr = DMMeshComputeCellGeometry(dm, c, v0, J, invJ, &detJ);CHKERRQ(ierr);
     if (detJ <= 0.0) {SETERRQ2(PETSC_COMM_SELF, PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, c);}
     ierr = DMMeshVecGetClosure(dm, X, c, &x);CHKERRQ(ierr);
-    if (debug > 1) {ierr = DMMeshPrintCellVector(c, "Solution", numBasisFuncs, x);CHKERRQ(ierr);}
+    if (debug > 1) {ierr = DMMeshPrintCellVector(c, "Solution", numBasisFuncs*numBasisComps, x);CHKERRQ(ierr);}
 
     for(int q = 0; q < numQuadPoints; ++q) {
-      PetscScalar fieldVal = 0.0;
+      PetscScalar fieldVal[3] = {0.0,0.0,0.0};
 
       if (debug > 1) {ierr = PetscPrintf(PETSC_COMM_SELF, "  quad point %d\n", q);CHKERRQ(ierr);}
       for(int d = 0; d < dim; ++d) {
-        fieldGrad[d] = 0.0;
+        for(int comp = 0; comp < numBasisComps; ++comp) {
+          fieldGrad[comp*dim+d] = 0.0;
+        }
         coords[d] = v0[d];
         for(int e = 0; e < dim; ++e) {
           coords[d] += J[d*dim+e]*(quadPoints[q*dim+e] + 1.0);
@@ -391,40 +399,50 @@ PetscErrorCode FormFunctionLocalElasticity(DM dm, Vec X, Vec F, AppCtx *user)
         if (debug > 1) {ierr = PetscPrintf(PETSC_COMM_SELF, "    coords[%d] %g\n", d, coords[d]);CHKERRQ(ierr);}
       }
       for(int f = 0; f < numBasisFuncs; ++f) {
-        fieldVal += x[f]*basis[q*numBasisFuncs+f];
+        for(int comp = 0; comp < numBasisComps; ++comp) {
+          const PetscInt cidx = f*numBasisComps+comp;
 
-        for(int d = 0; d < dim; ++d) {
-          realSpaceDer[d] = 0.0;
-          for(int e = 0; e < dim; ++e) {
-            realSpaceDer[d] += invJ[e*dim+d]*basisDer[(q*numBasisFuncs+f)*dim+e];
+          fieldVal[comp] += x[cidx]*basis[q*numBasisFuncs*numBasisComps+cidx];
+
+          for(int d = 0; d < dim; ++d) {
+            realSpaceDer[d] = 0.0;
+            for(int e = 0; e < dim; ++e) {
+              realSpaceDer[d] += invJ[e*dim+d]*basisDer[(q*numBasisFuncs*numBasisComps+cidx)*dim+e];
+            }
+            fieldGrad[comp*dim+d] += realSpaceDer[d]*x[cidx];
           }
-          fieldGrad[d] += realSpaceDer[d]*x[f];
         }
       }
       if (debug > 1) {
-        for(int d = 0; d < dim; ++d) {
-          PetscPrintf(PETSC_COMM_SELF, "    fieldGrad[%d] %g\n", d, fieldGrad[d]);
+        for(int comp = 0; comp < numBasisComps; ++comp) {
+          for(int d = 0; d < dim; ++d) {
+            PetscPrintf(PETSC_COMM_SELF, "    field %d gradient[%d] %g\n", comp, d, fieldGrad[comp*dim+d]);
+          }
         }
       }
-      const PetscScalar funcVal = 0.0; //(*rhsFunc)(coords);
+      const PetscScalar funcVal[3] = {0.0, 0.0, 0.0}; //(*rhsFunc)(coords);
       for(int f = 0; f < numBasisFuncs; ++f) {
-        /* Constant term: -f(x) */
-        elemVec[f] -= basis[q*numBasisFuncs+f]*funcVal*quadWeights[q]*detJ;
-        /* Linear term: -\Delta u */
-        PetscScalar product = 0.0;
-        for(int d = 0; d < dim; ++d) {
-          realSpaceDer[d] = 0.0;
-          for(int e = 0; e < dim; ++e) {
-            realSpaceDer[d] += invJ[e*dim+d]*basisDer[(q*numBasisFuncs+f)*dim+e];
+        for(int comp = 0; comp < numBasisComps; ++comp) {
+          const PetscInt cidx = f*numBasisComps+comp;
+
+          /* Constant term: -f(x) */
+          elemVec[cidx] -= basis[q*numBasisFuncs*numBasisComps+cidx]*funcVal[comp]*quadWeights[q]*detJ;
+          /* Linear term: -\Delta u */
+          PetscScalar product = 0.0;
+          for(int d = 0; d < dim; ++d) {
+            realSpaceDer[d] = 0.0;
+            for(int e = 0; e < dim; ++e) {
+              realSpaceDer[d] += invJ[e*dim+d]*basisDer[(q*numBasisFuncs*numBasisComps+cidx)*dim+e];
+            }
+            product += realSpaceDer[d]*fieldGrad[comp*dim+d];
           }
-          product += realSpaceDer[d]*fieldGrad[d];
+          elemVec[cidx] += product*quadWeights[q]*detJ;
+          /* Nonlinear term: -\lambda e^{u} */
+          elemVec[cidx] -= basis[q*numBasisFuncs*numBasisComps+cidx]*0.0*PetscExpScalar(fieldVal[comp])*quadWeights[q]*detJ;
         }
-        elemVec[f] += product*quadWeights[q]*detJ;
-        /* Nonlinear term: -\lambda e^{u} */
-        elemVec[f] -= basis[q*numBasisFuncs+f]*0.0*PetscExpScalar(fieldVal)*quadWeights[q]*detJ;
       }
     }
-    if (debug) {ierr = DMMeshPrintCellVector(c, "Residual", numBasisFuncs, elemVec);CHKERRQ(ierr);}
+    if (debug) {ierr = DMMeshPrintCellVector(c, "Residual", numBasisFuncs*numBasisComps, elemVec);CHKERRQ(ierr);}
     ierr = DMMeshVecSetClosure(dm, F, c, elemVec, ADD_VALUES);CHKERRQ(ierr);
   }
   ierr = PetscLogFlops((cEnd-cStart)*numQuadPoints*numBasisFuncs*(dim*(dim*5+4)+14));CHKERRQ(ierr);
@@ -847,14 +865,16 @@ int main(int argc, char **argv)
 
     ierr = DMGetGlobalVector(dm, &X);CHKERRQ(ierr);
     ierr = DMGetGlobalVector(dm, &F);CHKERRQ(ierr);
-    ierr = FormInitialGuess(X, quadratic_2d, INSERT_VALUES, &user);CHKERRQ(ierr);
     if (user.batch) {
+      ierr = FormInitialGuess(X, quadratic_2d, INSERT_VALUES, &user);CHKERRQ(ierr);
       ierr = DMMeshSetLocalFunction(dm, (PetscErrorCode (*)(DM, Vec, Vec, void*)) FormFunctionLocalBatch);CHKERRQ(ierr);
     } else {
       switch(user.op) {
       case LAPLACIAN:
+        ierr = FormInitialGuess(X, quadratic_2d, INSERT_VALUES, &user);CHKERRQ(ierr);
         ierr = DMMeshSetLocalFunction(dm, (PetscErrorCode (*)(DM, Vec, Vec, void*)) FormFunctionLocalLaplacian);CHKERRQ(ierr);break;
       case ELASTICITY:
+        ierr = FormInitialGuess(X, quadratic_2d_elas, INSERT_VALUES, &user);CHKERRQ(ierr);
         ierr = DMMeshSetLocalFunction(dm, (PetscErrorCode (*)(DM, Vec, Vec, void*)) FormFunctionLocalElasticity);CHKERRQ(ierr);break;
       default:
         SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_OUTOFRANGE, "Invalid PDE operator %d", user.op);
