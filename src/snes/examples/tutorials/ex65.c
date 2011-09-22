@@ -594,8 +594,9 @@ PetscErrorCode SetRandomVectors(AppCtx* user,PetscReal t)
     i = ((PetscInt) (randomvalues[randindex].x*M)) - xs;
     j = ((PetscInt) (randomvalues[randindex].y*N)) - ys;
     if (i >= 0 && i < xm && j >= 0 && j < ym) { /* point is on this process */
+      printf("i %d j %d xs %d ys %d M %d N %d xm %d ym %d\n",i,j,xs,ys,M,N,xm,ym);
       /* need to make sure eta at the given point is not great than .8 */
-      ierr = VecSetValueLocal(user->Pv,i + 1 + xm*(j + 1), randomvalues[randindex].strength*user->VG,INSERT_VALUES);CHKERRQ(ierr);
+      ierr = VecSetValueLocal(user->Pv,i  + xm*(j), randomvalues[randindex].strength*user->VG,INSERT_VALUES);CHKERRQ(ierr);
     }
     randtime += randomvalues[randindex++].dt;
     cnt++;
@@ -708,7 +709,9 @@ PetscErrorCode GetParams(AppCtx* user)
   user->VG        = 100.0;
   user->maxevents = 10;
   
-
+  user->dtevent = user->dt;
+  ierr = PetscOptionsReal("-dtevent","Average time between random events\n","None",user->dtevent,&user->dtevent,&flg);CHKERRQ(ierr);
+   
   
   ierr = PetscOptionsGetReal(PETSC_NULL,"-xmin",&user->xmin,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(PETSC_NULL,"-xmax",&user->xmax,&flg);CHKERRQ(ierr);
@@ -1091,42 +1094,51 @@ PetscErrorCode Phi_read(AppCtx* user)
 
   PetscFunctionBegin;
   
-  ierr = VecGetArray(user->Phi2D_V,&values);CHKERRQ(ierr);
   power = user->darefine + (PetscInt)(PetscLogScalar(user->dagrid)/PetscLogScalar(2.0));
   switch (power) {
   case 6:
     ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"phi4",FILE_MODE_READ,&viewer);CHKERRQ(ierr);
-    ierr = PetscViewerBinaryRead(viewer,values,4096,PETSC_DOUBLE);CHKERRQ(ierr);
+    ierr = VecLoad(user->Phi2D_V,viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     break;
   case 7:
     ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"phi3",FILE_MODE_READ,&viewer);CHKERRQ(ierr);
-    ierr = PetscViewerBinaryRead(viewer,values,16384,PETSC_DOUBLE);CHKERRQ(ierr);
+    ierr = VecLoad(user->Phi2D_V,viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     break;
   case 8:
     ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"phi2",FILE_MODE_READ,&viewer);CHKERRQ(ierr);
-    ierr = PetscViewerBinaryRead(viewer,values,65536,PETSC_DOUBLE);CHKERRQ(ierr);
+    ierr = VecLoad(user->Phi2D_V,viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     break;
   case 9:
     ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"phi1",FILE_MODE_READ,&viewer);CHKERRQ(ierr);
-    ierr = PetscViewerBinaryRead(viewer,values,262144,PETSC_DOUBLE);CHKERRQ(ierr);
+    ierr = VecLoad(user->Phi2D_V,viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     break;
   case 10:
     ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"phi",FILE_MODE_READ,&viewer);CHKERRQ(ierr);
-    ierr = PetscViewerBinaryRead(viewer,values,1048576,PETSC_DOUBLE);CHKERRQ(ierr);
+    ierr = VecLoad(user->Phi2D_V,viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     break;
   case 11:
     ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"phim1",FILE_MODE_READ,&viewer);CHKERRQ(ierr);
-    ierr = PetscViewerBinaryRead(viewer,values,4194304,PETSC_DOUBLE);CHKERRQ(ierr);
+    ierr = VecLoad(user->Phi2D_V,viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     break;
   case 12:
     ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"phim2",FILE_MODE_READ,&viewer);CHKERRQ(ierr);
-    ierr = PetscViewerBinaryRead(viewer,values,16777216,PETSC_DOUBLE);CHKERRQ(ierr);
+    ierr = VecLoad(user->Phi2D_V,viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+    break;
+  case 13:
+    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"phim3",FILE_MODE_READ,&viewer);CHKERRQ(ierr);
+    ierr = VecLoad(user->Phi2D_V,viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
+    break;
+  case 14:
+    ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"phim4",FILE_MODE_READ,&viewer);CHKERRQ(ierr);
+    ierr = VecLoad(user->Phi2D_V,viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(&viewer);CHKERRQ(ierr);
     break;
   }
