@@ -594,7 +594,7 @@ PetscErrorCode SetRandomVectors(AppCtx* user,PetscReal t)
     i = ((PetscInt) (randomvalues[randindex].x*M)) - xs;
     j = ((PetscInt) (randomvalues[randindex].y*N)) - ys;
     if (i >= 0 && i < xm && j >= 0 && j < ym) { /* point is on this process */
-      printf("i %d j %d xs %d ys %d M %d N %d xm %d ym %d\n",i,j,xs,ys,M,N,xm,ym);
+
       /* need to make sure eta at the given point is not great than .8 */
       ierr = VecSetValueLocal(user->Pv,i  + xm*(j), randomvalues[randindex].strength*user->VG,INSERT_VALUES);CHKERRQ(ierr);
     }
