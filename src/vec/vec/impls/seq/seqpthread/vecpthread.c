@@ -117,12 +117,12 @@ typedef struct {
 } VecCopy_KernelData;
 
 typedef struct {
-  PetscScalar*       xavalin; //vector out
-  Vec*               yavecin; //array of data vectors
-  const PetscScalar* amult;   //multipliers
-  PetscInt           nelem;   //number of elements in vector to process
-  PetscInt           ntoproc; //number of data vectors
-  PetscInt           ibase;   //used to properly index into other vectors
+  PetscScalar*       xavalin; /* vector out */
+  Vec*               yavecin; /* array of data vectors */
+  const PetscScalar* amult;   /* multipliers */
+  PetscInt           nelem;   /* number of elements in vector to process */
+  PetscInt           ntoproc; /* number of data vectors */
+  PetscInt           ibase;   /* used to properly index into other vectors */
 } VecMAXPY_KernelData;
 
 typedef struct {
@@ -162,7 +162,7 @@ PetscErrorCode VecDot_SeqPThread(Vec xin,Vec yin,PetscScalar *z)
   const PetscScalar *ya,*xa;
   PetscErrorCode    ierr;
   PetscInt          i, iIndex = 0;
-  const PetscInt    iNumThreads = PetscMaxThreads;  //this number could be different
+  const PetscInt    iNumThreads = PetscMaxThreads;  /* this number could be different */
   PetscInt          Q = xin->map->n/(iNumThreads);
   PetscInt          R = xin->map->n-Q*(iNumThreads);
   PetscBool         S;
@@ -185,7 +185,7 @@ PetscErrorCode VecDot_SeqPThread(Vec xin,Vec yin,PetscScalar *z)
 
   ierr = MainJob(VecDot_Kernel,(void**)pdata,iNumThreads);
 
-  //gather result
+  /* gather result */
   *z = 0.0;
   for(i=0; i<iNumThreads; i++) {
     *z += kerneldatap[i].result;
@@ -236,20 +236,20 @@ PetscErrorCode VecScale_SeqPThread(Vec xin, PetscScalar alpha)
     ierr = VecSet_Seq(xin,alpha);CHKERRQ(ierr);
   } else if (alpha != 1.0) {
     PetscScalar a = alpha,*xarray,*xp;
-    const PetscInt    iNumThreads = PetscMaxThreads;  //this number could be different
+    const PetscInt    iNumThreads = PetscMaxThreads;  /* this number could be different */
     PetscInt          i,Q = xin->map->n/(iNumThreads);
     PetscInt          R = xin->map->n-Q*(iNumThreads);
     PetscBool         S;
     VecScale_KernelData* kerneldatap = (VecScale_KernelData*)malloc(iNumThreads*sizeof(VecScale_KernelData));
     VecScale_KernelData** pdata = (VecScale_KernelData**)malloc(iNumThreads*sizeof(VecScale_KernelData*));
-    ierr = VecGetArray(xin,&xarray);CHKERRQ(ierr); //get address of first element in data array
+    ierr = VecGetArray(xin,&xarray);CHKERRQ(ierr); /* get address of first element in data array */
     xp = xarray;
     for (i=0; i<iNumThreads; i++) {
       S = (PetscBool)(i<R);
       kerneldatap[i].x = xp;
       kerneldatap[i].alpha = a;
       kerneldatap[i].n = S?Q+1:Q;
-      xp += kerneldatap[i].n; //pointer arithmetic
+      xp += kerneldatap[i].n; /* pointer arithmetic */
       pdata[i] = &kerneldatap[i];
     }
     ierr = MainJob(VecScale_Kernel,(void**)pdata,iNumThreads);
@@ -290,7 +290,7 @@ PetscErrorCode VecAXPY_SeqPThread(Vec yin,PetscScalar alpha,Vec xin)
   PetscErrorCode    ierr;
   const PetscScalar *xarray,*xp;
   PetscScalar       a=alpha,*yarray,*yp;
-  const PetscInt    iNumThreads = PetscMaxThreads;  //this number could be different
+  const PetscInt    iNumThreads = PetscMaxThreads;  /* this number could be different */
   PetscInt          i,Q = xin->map->n/(iNumThreads);
   PetscInt          R = xin->map->n-Q*(iNumThreads);
   PetscBool         S;
@@ -310,7 +310,7 @@ PetscErrorCode VecAXPY_SeqPThread(Vec yin,PetscScalar alpha,Vec xin)
       kerneldatap[i].y = yp;
       kerneldatap[i].alpha = a;
       kerneldatap[i].n = S?Q+1:Q;
-      xp += kerneldatap[i].n; //pointer arithmetic
+      xp += kerneldatap[i].n; /* pointer arithmetic */
       yp += kerneldatap[i].n;
       pdata[i] = &kerneldatap[i];
     }
@@ -382,7 +382,7 @@ PetscErrorCode VecAYPX_SeqPThread(Vec yin,PetscScalar alpha,Vec xin)
     {
       const PetscScalar *xp = xx;
       PetscScalar       a=alpha,*yp = yy;
-      const PetscInt    iNumThreads = PetscMaxThreads;  //this number could be different
+      const PetscInt    iNumThreads = PetscMaxThreads;  /* this number could be different */
       PetscInt          i,Q = xin->map->n/(iNumThreads);
       PetscInt          R = xin->map->n-Q*(iNumThreads);
       PetscBool         S;
@@ -395,7 +395,7 @@ PetscErrorCode VecAYPX_SeqPThread(Vec yin,PetscScalar alpha,Vec xin)
         kerneldatap[i].yy = yp;
         kerneldatap[i].alpha = a;
         kerneldatap[i].n = S?Q+1:Q;
-        xp += kerneldatap[i].n; //pointer arithmetic
+        xp += kerneldatap[i].n; /* pointer arithmetic */
         yp += kerneldatap[i].n;
         pdata[i] = &kerneldatap[i];
       }
@@ -475,7 +475,7 @@ PetscErrorCode VecWAXPY_SeqPThread(Vec win, PetscScalar alpha,Vec xin,Vec yin)
 #else
     const PetscScalar *xp = xx,*yp = yy;
     PetscScalar       a=alpha,*wp = ww;
-    const PetscInt    iNumThreads = PetscMaxThreads;  //this number could be different
+    const PetscInt    iNumThreads = PetscMaxThreads;  /* this number could be different */
     PetscInt          i,Q = n/(iNumThreads);
     PetscInt          R = n-Q*(iNumThreads);
     PetscBool         S;
@@ -489,7 +489,7 @@ PetscErrorCode VecWAXPY_SeqPThread(Vec win, PetscScalar alpha,Vec xin,Vec yin)
       kerneldatap[i].yy = yp;
       kerneldatap[i].alpha = a;
       kerneldatap[i].n = S?Q+1:Q;
-      wp += kerneldatap[i].n; //pointer arithmetic
+      wp += kerneldatap[i].n; /* pointer arithmetic */
       xp += kerneldatap[i].n;
       yp += kerneldatap[i].n;
       pdata[i] = &kerneldatap[i];
@@ -564,7 +564,7 @@ PetscErrorCode VecNorm_SeqPThread(Vec xin,NormType type,PetscReal* z)
   else {
    ierr = VecGetArrayRead(xin,&xx);CHKERRQ(ierr);
    const PetscScalar *xp = xx;
-   const PetscInt    iNumThreads = PetscMaxThreads;  //this number could be different
+   const PetscInt    iNumThreads = PetscMaxThreads;  /* this number could be different */
    PetscInt          i,Q = n/(iNumThreads);
    PetscInt          R = n-Q*(iNumThreads);
    PetscBool         S;
@@ -576,11 +576,11 @@ PetscErrorCode VecNorm_SeqPThread(Vec xin,NormType type,PetscReal* z)
      kerneldatap[i].x = xp;
      kerneldatap[i].typeUse = type;
      kerneldatap[i].n = S?Q+1:Q;
-     xp += kerneldatap[i].n; //pointer arithmetic
+     xp += kerneldatap[i].n; /* pointer arithmetic */
      pdata[i] = &kerneldatap[i];
    }
    ierr = MainJob(VecNorm_Kernel,(void**)pdata,iNumThreads);
-   //collect results
+   /* collect results */
    *z = 0.0;
    if(type == NORM_1) {
      for(i=0; i<iNumThreads; i++) {
@@ -826,7 +826,7 @@ PetscErrorCode VecMDot_SeqPThread(Vec xin,PetscInt nv,const Vec yin[],PetscScala
   const PetscScalar *xbase;
   PetscFunctionBegin;
 
-  const PetscInt    iNumThreads = PetscMaxThreads;  //this number could be different
+  const PetscInt    iNumThreads = PetscMaxThreads;  /* this number could be different */
   PetscInt          n=xin->map->n,Q = nv/(iNumThreads);
   PetscInt          R = nv-Q*(iNumThreads);
   PetscBool         S;
@@ -896,7 +896,7 @@ PetscErrorCode VecMax_SeqPThread(Vec xin,PetscInt* idx,PetscReal * z)
     max = PETSC_MIN_REAL;
     j   = -1;
   } else {
-  const PetscInt    iNumThreads = PetscMaxThreads;  //this number could be different
+    const PetscInt    iNumThreads = PetscMaxThreads;  /* this number could be different */
   PetscInt          gind,Q = n/(iNumThreads);
   PetscInt          R = n-Q*(iNumThreads);
   PetscBool         S;
@@ -910,12 +910,12 @@ PetscErrorCode VecMax_SeqPThread(Vec xin,PetscInt* idx,PetscReal * z)
     kerneldatap[i].x = xp;
     kerneldatap[i].gind = gind;
     kerneldatap[i].localn = S?Q+1:Q;
-    xp += kerneldatap[i].localn; //pointer arithmetic
+    xp += kerneldatap[i].localn; /* pointer arithmetic */
     gind += kerneldatap[i].localn;
     pdata[i] = &kerneldatap[i];
   }
   ierr = MainJob(VecMax_Kernel,(void**)pdata,iNumThreads);
-  //collect results, determine global max, global index
+  /* collect results, determine global max, global index */
   max = kerneldatap[0].localmax;
   j   = kerneldatap[0].localind;
   for(i=1; i<iNumThreads; i++) {
@@ -978,7 +978,7 @@ PetscErrorCode VecMin_SeqPThread(Vec xin,PetscInt* idx,PetscReal * z)
     min = PETSC_MAX_REAL;
     j   = -1;
   } else {
-  const PetscInt    iNumThreads = PetscMaxThreads;  //this number could be different
+    const PetscInt    iNumThreads = PetscMaxThreads;  /* this number could be different */
   PetscInt          gind,Q = n/(iNumThreads);
   PetscInt          R = n-Q*(iNumThreads);
   PetscBool         S;
@@ -992,12 +992,12 @@ PetscErrorCode VecMin_SeqPThread(Vec xin,PetscInt* idx,PetscReal * z)
     kerneldatap[i].x = xp;
     kerneldatap[i].gind = gind;
     kerneldatap[i].localn = S?Q+1:Q;
-    xp += kerneldatap[i].localn; //pointer arithmetic
+    xp += kerneldatap[i].localn; /* pointer arithmetic */
     gind += kerneldatap[i].localn;
     pdata[i] = &kerneldatap[i];
   }
   ierr = MainJob(VecMin_Kernel,(void**)pdata,iNumThreads);
-  //collect results, determine global max, global index
+  /* collect results, determine global max, global index */
   min = kerneldatap[0].localmin;
   j   = kerneldatap[0].localind;
   for(i=1; i<iNumThreads; i++) {
@@ -1048,7 +1048,7 @@ static PetscErrorCode VecPointwiseMult_SeqPThread(Vec win,Vec xin,Vec yin)
   PetscErrorCode ierr;
   PetscInt       n = win->map->n,i,iIndex;
   PetscScalar    *ww,*xx,*yy; /* cannot make xx or yy const since might be ww */
-  const PetscInt    iNumThreads = PetscMaxThreads;  //this number could be different
+  const PetscInt    iNumThreads = PetscMaxThreads;  /* this number could be different */
   PetscInt          Q = n/(iNumThreads);
   PetscInt          R = n-Q*(iNumThreads);
   PetscBool         S;
@@ -1108,7 +1108,7 @@ static PetscErrorCode VecPointwiseDivide_SeqPThread(Vec win,Vec xin,Vec yin)
   PetscErrorCode ierr;
   PetscInt       n = win->map->n,i,iIndex;
   PetscScalar    *ww,*xx,*yy; /* cannot make xx or yy const since might be ww */
-  const PetscInt    iNumThreads = PetscMaxThreads;  //this number could be different
+  const PetscInt    iNumThreads = PetscMaxThreads;  /* this number could be different */
   PetscInt          Q = n/(iNumThreads);
   PetscInt          R = n-Q*(iNumThreads);
   PetscBool         S;
@@ -1171,7 +1171,7 @@ static PetscErrorCode VecSwap_SeqPThread(Vec xin,Vec yin)
   if (xin != yin) {
     ierr = VecGetArray(xin,&xa);CHKERRQ(ierr);
     ierr = VecGetArray(yin,&ya);CHKERRQ(ierr);
-    const PetscInt    iNumThreads = PetscMaxThreads;  //this number could be different
+    const PetscInt    iNumThreads = PetscMaxThreads;  /* this number could be different */
     PetscInt          n = xin->map->n,Q = n/(iNumThreads),R = n-Q*(iNumThreads),i,iIndex;
     PetscBool         S;
 
@@ -1223,7 +1223,7 @@ static PetscErrorCode VecSetRandom_SeqPThread(Vec xin,PetscRandom r)
   PetscErrorCode ierr;
   PetscInt       n = xin->map->n,i;
   PetscScalar    *xx;
-  const PetscInt    iNumThreads = PetscMaxThreads;  //this number could be different
+  const PetscInt    iNumThreads = PetscMaxThreads;  /* this number could be different */
   PetscInt          Q = n/(iNumThreads),R = n-Q*(iNumThreads),iIndex;
   PetscBool         S;
 
@@ -1281,7 +1281,7 @@ static PetscErrorCode VecCopy_SeqPThread(Vec xin,Vec yin)
     ierr = VecGetArray(yin,&ya);CHKERRQ(ierr);
 
   PetscInt       n = xin->map->n,i;
-  const PetscInt    iNumThreads = PetscMaxThreads;  //this number could be different
+  const PetscInt    iNumThreads = PetscMaxThreads;  /* this number could be different */
   PetscInt          Q = n/(iNumThreads),R = n-Q*(iNumThreads),iIndex;
   PetscBool         S;
 
@@ -1330,7 +1330,7 @@ void* VecMAXPY_Kernel(void* arg)
     ierr = VecGetArrayRead(y[0],&yy0);CHKERRQP(ierr);
     ierr = VecGetArrayRead(y[1],&yy1);CHKERRQP(ierr);
     ierr = VecGetArrayRead(y[2],&yy2);CHKERRQP(ierr);
-    yy0 += ibase; yy1 += ibase; yy2 += ibase; //pointer arithmetic
+    yy0 += ibase; yy1 += ibase; yy2 += ibase; /* pointer arithmetic */
     alpha0 = alpha[0]; 
     alpha1 = alpha[1]; 
     alpha2 = alpha[2]; 
@@ -1392,11 +1392,8 @@ PetscErrorCode VecMAXPY_SeqPThread(Vec xin, PetscInt nv,const PetscScalar *alpha
   PetscInt          n = xin->map->n,i,j=0;
   PetscScalar       *xx;
 
-  const PetscInt    iNumThreads = PetscMaxThreads;  //this number could be different
+  const PetscInt    iNumThreads = PetscMaxThreads;  /* this number could be different */
   PetscInt          Q = n/(iNumThreads),R = n-Q*(iNumThreads);
-  //PetscInt          K = nv / 4; /*how many groups of 4 are present */
-  //PetscInt          Q = K / iNumThreads; /* how many groups of 4 to give to each thread */
-  //PetscInt          R = nv - Q*iNumThreads*4;
   PetscBool         S;
   VecMAXPY_KernelData* kerneldatap = (VecMAXPY_KernelData*)malloc(iNumThreads*sizeof(VecMAXPY_KernelData));
   VecMAXPY_KernelData** pdata = (VecMAXPY_KernelData**)malloc(iNumThreads*sizeof(VecMAXPY_KernelData*));
@@ -1459,7 +1456,7 @@ PetscErrorCode VecSet_SeqPThread(Vec xin,PetscScalar alpha)
 
   PetscFunctionBegin;
   ierr = VecGetArray(xin,&xx);CHKERRQ(ierr);
-  const PetscInt    iNumThreads = PetscMaxThreads;  //this number could be different
+  const PetscInt    iNumThreads = PetscMaxThreads;  /* this number could be different */
   PetscInt          Q = n/(iNumThreads),R = n-Q*(iNumThreads),iIndex;
   PetscBool         S;
 
