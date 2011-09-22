@@ -487,6 +487,7 @@ static PetscErrorCode TSDestroy_ARKIMEX(TS ts)
   ierr = PetscFree(ts->data);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSARKIMEXGetType_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSARKIMEXSetType_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSARKIMEXSetFullyImplicit_C","",PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
