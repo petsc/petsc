@@ -2,12 +2,7 @@
 /* Contributed by - Mark Adams */
 
 #include <petscsys.h>
-#include <../src/sys/ctable.h> 
-#if defined (PETSC_HAVE_LIMITS_H)
-#include <limits.h>
-#endif
-#define HASH_FACT 79943
-#define HASHT(ta,x) ((unsigned long)((HASH_FACT*(unsigned long)x)%ta->tablesize))
+
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscTableCreate"
@@ -25,7 +20,7 @@ PetscErrorCode  PetscTableCreate(const PetscInt n,PetscTable *rta)
   if (n < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"n < 0"); 
   ierr          = PetscNew(struct _n_PetscTable,&ta);CHKERRQ(ierr);
   ta->tablesize = (3*n)/2 + 17;
-  if (ta->tablesize < n) ta->tablesize = INT_MAX/4; /* overflow */
+  if (ta->tablesize < n) ta->tablesize = PETSC_MAX_INT/4; /* overflow */
   ierr          = PetscMalloc(sizeof(PetscInt)*ta->tablesize,&ta->keytable);CHKERRQ(ierr);
   ierr          = PetscMemzero(ta->keytable,sizeof(PetscInt)*ta->tablesize);CHKERRQ(ierr);
   ierr          = PetscMalloc(sizeof(PetscInt)*ta->tablesize,&ta->table);CHKERRQ(ierr);
@@ -83,6 +78,7 @@ PetscErrorCode  PetscTableDestroy(PetscTable *ta)
   ierr = PetscFree(*ta);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 } 
+
 #undef __FUNCT__  
 #define __FUNCT__ "PetscTableGetCount"
 /* PetscTableGetCount() ********************************************
@@ -137,9 +133,9 @@ PetscErrorCode  PetscTableAdd(PetscTable ta,const PetscInt key,const PetscInt da
     PetscInt *oldtab = ta->table,*oldkt = ta->keytable,newk,ndata;
 
     /* alloc new (bigger) table */
-    if (ta->tablesize == INT_MAX/4) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"ta->tablesize < 0");
+    if (ta->tablesize == PETSC_MAX_INT/4) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"ta->tablesize < 0");
     ta->tablesize = 2*tsize; 
-    if (ta->tablesize <= tsize) ta->tablesize = INT_MAX/4;
+    if (ta->tablesize <= tsize) ta->tablesize = PETSC_MAX_INT/4;
 
     ierr = PetscMalloc(ta->tablesize*sizeof(PetscInt),&ta->table);CHKERRQ(ierr);
     ierr = PetscMalloc(ta->tablesize*sizeof(PetscInt),&ta->keytable);CHKERRQ(ierr);
@@ -184,31 +180,7 @@ PetscErrorCode  PetscTableRemoveAll(PetscTable ta)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscTableFind"
-/* PetscTableFind() ********************************************
- *
- * returns data. If data==0, then no table entry exists.
- *
- */
-PetscErrorCode  PetscTableFind(PetscTable ta,const PetscInt key,PetscInt *data)
-{  
-  PetscInt hash,ii = 0;
 
-  PetscFunctionBegin;
-  if (!key) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Null key");
-  hash  = HASHT(ta,key);
-  *data = 0;
-  while (ii++ < ta->tablesize) {
-    if (!ta->keytable[hash]) break;
-    else if (ta->keytable[hash] == key) { 
-      *data = ta->table[hash]; 
-      break; 
-    }
-    hash = (hash == (ta->tablesize-1)) ? 0 : hash+1; 
-  }
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscTableGetHeadPosition"
@@ -309,9 +281,9 @@ PetscErrorCode  PetscTableAddCount(PetscTable ta,const PetscInt key)
     }  
 
     /* alloc new (bigger) table */
-    if (ta->tablesize == INT_MAX/4) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"ta->tablesize < 0");
+    if (ta->tablesize == PETSC_MAX_INT/4) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"ta->tablesize < 0");
     ta->tablesize = 2*tsize; 
-    if (ta->tablesize <= tsize) ta->tablesize = INT_MAX/4;
+    if (ta->tablesize <= tsize) ta->tablesize = PETSC_MAX_INT/4;
 
     ierr = PetscMalloc(ta->tablesize*sizeof(PetscInt),&ta->table);CHKERRQ(ierr);
     ierr = PetscMalloc(ta->tablesize*sizeof(PetscInt),&ta->keytable);CHKERRQ(ierr);
