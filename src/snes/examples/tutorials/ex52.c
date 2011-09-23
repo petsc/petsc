@@ -1,14 +1,13 @@
 static char help[] = "Testbed for FEM operations on the GPU\n\n";
 
 #if 0
-MUST CHECK WITH:
- - Automate quadrature and basis tabulation generation in device code
- - Add example for linear elasticity (require vector field, so f_1 is a tensor)
+ - Fix header generation with a vector field
  - Redo setup/cleanup in PyLith
  - Test with examples/3d/hex8/step01.cfg (Brad is making a flag)
  - Code up Jacobian (looks like original code)
  - Consider taking in coordinates rather than J^{-T}/|J|
 
+MUST CHECK WITH:
  - Different quadrature (1pt and 3pt)
  - Different basis (linear and quadratic)
  - Different number of blocks (have to change it in the CUDA, so need a #define)
@@ -579,8 +578,10 @@ PetscErrorCode IntegrateElasticityBatchCPU(PetscInt Ne, PetscInt Nb, PetscInt Nc
         f1[q*Ncomp*dim+i] *= detJ*quadWeights[q];
       }
       if (debug > 1) {
-        for(int i = 0; i < Ncomp*dim; ++i) {
-          ierr = PetscPrintf(PETSC_COMM_SELF, "    f1[%d]: %g\n", i, f1[q*Ncomp*dim+i]);CHKERRQ(ierr);
+        for(int c = 0; c < Ncomp; ++c) {
+          for(int d = 0; d < dim; ++d) {
+            ierr = PetscPrintf(PETSC_COMM_SELF, "    f1[%d]_%c: %g\n", c, 'x'+d, f1[(q*Ncomp + c)*dim+d]);CHKERRQ(ierr);
+          }
         }
       }
     }
