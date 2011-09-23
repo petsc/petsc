@@ -5,7 +5,7 @@
 #include <private/vecimpl.h>   /*I  "petscvec.h"   I*/
 
 #if 0
-// Should I protect these for C++?
+/* Should I protect these for C++? */
 #undef __FUNCT__
 #define __FUNCT__ "PetscSectionGetDof"
 PetscErrorCode PetscSectionGetDof(PetscUniformSection s, PetscInt point, PetscInt *numDof)
