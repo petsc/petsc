@@ -339,7 +339,7 @@ PetscErrorCode CreateColmap_MPIAIJ_Private(Mat mat)
 
   PetscFunctionBegin;
 #if defined (PETSC_USE_CTABLE)
-  ierr = PetscTableCreate(n,&aij->colmap);CHKERRQ(ierr); 
+  ierr = PetscTableCreate(n,mat->cmap->N+1,&aij->colmap);CHKERRQ(ierr); 
   for (i=0; i<n; i++){
     ierr = PetscTableAdd(aij->colmap,aij->garray[i]+1,i+1);CHKERRQ(ierr);
   }

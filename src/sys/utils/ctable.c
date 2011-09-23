@@ -6,12 +6,17 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscTableCreate"
-/* PetscTableCreate() ********************************************
- * 
- * hash table for non-zero data and keys 
- *
- */
-PetscErrorCode  PetscTableCreate(PetscInt n,PetscTable *rta)
+/* 
+   PetscTableCreate  Creates a PETSc look up table
+
+   Input Parameters:
++     n - expected number of keys
+-     maxkey- largest possible key
+
+   Notes: keys are between 1 and N inclusive
+
+*/
+PetscErrorCode  PetscTableCreate(PetscInt n,PetscInt maxkey,PetscTable *rta)
 {
   PetscTable     ta;
   PetscErrorCode ierr;
@@ -26,6 +31,7 @@ PetscErrorCode  PetscTableCreate(PetscInt n,PetscTable *rta)
   ierr          = PetscMalloc(sizeof(PetscInt)*ta->tablesize,&ta->table);CHKERRQ(ierr);
   ta->head      = 0;
   ta->count     = 0;
+  ta->maxkey    = maxkey;
   *rta          = ta;
   PetscFunctionReturn(0);
 }
@@ -55,9 +61,10 @@ PetscErrorCode  PetscTableCreateCopy(const PetscTable intable,PetscTable *rta)
     if (ta->keytable[i] < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"ta->keytable[i] < 0"); 
 #endif  
  }
-  ta->head  = 0;
-  ta->count = intable->count;
-  *rta      = ta;
+  ta->head   = 0;
+  ta->count  = intable->count;
+  ta->maxkey = intable->maxkey;
+  *rta       = ta;
   PetscFunctionReturn(0);
 }
 

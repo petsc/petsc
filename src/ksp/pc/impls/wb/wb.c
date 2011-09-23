@@ -229,7 +229,8 @@ PetscErrorCode DMDAGetWireBasketInterpolation(DM da,PC_Exotic *exotic,Mat Agloba
   ierr = MPI_Allgather(gl,26,MPIU_INT,globals,26,MPIU_INT,((PetscObject)da)->comm);CHKERRQ(ierr);
 
   /* Number the coarse grid points from 0 to Ntotal */
-  ierr = PetscTableCreate(Ntotal/3,&ht);CHKERRQ(ierr); 
+  ierr = MatGetLocalSize(Aglobal,&Ng,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscTableCreate(Ntotal/3,Ng+1,&ht);CHKERRQ(ierr); 
   for (i=0; i<26*mp*np*pp; i++){
     ierr = PetscTableAddCount(ht,globals[i]+1);CHKERRQ(ierr);
   }
@@ -244,7 +245,6 @@ PetscErrorCode DMDAGetWireBasketInterpolation(DM da,PC_Exotic *exotic,Mat Agloba
   /* PetscIntView(26,gl,PETSC_VIEWER_STDOUT_WORLD); */
 
   /* construct global interpolation matrix */
-  ierr = MatGetLocalSize(Aglobal,&Ng,PETSC_NULL);CHKERRQ(ierr);
   if (reuse == MAT_INITIAL_MATRIX) {
     ierr = MatCreateMPIAIJ(((PetscObject)da)->comm,Ng,PETSC_DECIDE,PETSC_DECIDE,Ntotal,Nint+Nsurf,PETSC_NULL,Nint+Nsurf,PETSC_NULL,P);CHKERRQ(ierr);
   } else {
@@ -499,7 +499,8 @@ PetscErrorCode DMDAGetFaceInterpolation(DM da,PC_Exotic *exotic,Mat Aglobal,MatR
   ierr = MPI_Allgather(gl,6,MPIU_INT,globals,6,MPIU_INT,((PetscObject)da)->comm);CHKERRQ(ierr);
 
   /* Number the coarse grid points from 0 to Ntotal */
-  ierr = PetscTableCreate(Ntotal/3,&ht);CHKERRQ(ierr); 
+  ierr = MatGetLocalSize(Aglobal,&Ng,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscTableCreate(Ntotal/3,Ng+1,&ht);CHKERRQ(ierr); 
   for (i=0; i<6*mp*np*pp; i++){
     ierr = PetscTableAddCount(ht,globals[i]+1);CHKERRQ(ierr);
   }
@@ -514,7 +515,6 @@ PetscErrorCode DMDAGetFaceInterpolation(DM da,PC_Exotic *exotic,Mat Aglobal,MatR
   /* PetscIntView(6,gl,PETSC_VIEWER_STDOUT_WORLD); */
 
   /* construct global interpolation matrix */
-  ierr = MatGetLocalSize(Aglobal,&Ng,PETSC_NULL);CHKERRQ(ierr);
   if (reuse == MAT_INITIAL_MATRIX) {
     ierr = MatCreateMPIAIJ(((PetscObject)da)->comm,Ng,PETSC_DECIDE,PETSC_DECIDE,Ntotal,Nint+Nsurf,PETSC_NULL,Nint,PETSC_NULL,P);CHKERRQ(ierr);
   } else {

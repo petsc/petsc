@@ -458,12 +458,17 @@ PetscErrorCode  KSPDefaultConvergedCreate(void **ctx)
    Options Database:
 .   -ksp_converged_use_initial_residual_norm
 
+   Notes:
    Use KSPSetTolerances() to alter the defaults for rtol, abstol, dtol.
 
    The precise values of reason are macros such as KSP_CONVERGED_RTOL, which
    are defined in petscksp.h.
 
    If the convergence test is not KSPDefaultConverged() then this is ignored.
+
+   If right preconditioning is being used then B does not appear in the above formula.
+
+ 
    Level: intermediate
 
 .keywords: KSP, default, convergence, residual
