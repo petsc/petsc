@@ -56,7 +56,6 @@ use compatible domain decomposition relative to the 3D DMDAs.
 #define USE_SSE2_KERNELS (!defined NO_SSE2                              \
                           && !defined PETSC_USE_COMPLEX                 \
                           && !defined PETSC_USE_REAL_SINGLE           \
-                          && !defined PETSC_USE_REAL_LONG_DOUBLE      \
                           && defined __SSE2__)
 
 #if !defined __STDC_VERSION__ || __STDC_VERSION__ < 199901L

@@ -779,9 +779,7 @@ PetscErrorCode MatView_SeqAIJ(Mat A,PetscViewer viewer)
     ierr = MatView_SeqAIJ_Binary(A,viewer);CHKERRQ(ierr);
   } else if (isdraw) {
     ierr = MatView_SeqAIJ_Draw(A,viewer);CHKERRQ(ierr);
-  } else {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported by SeqAIJ matrices",((PetscObject)viewer)->type_name);
-  }
+  } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported by SeqAIJ matrices",((PetscObject)viewer)->type_name);
   ierr = MatView_SeqAIJ_Inode(A,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1154,7 +1152,9 @@ PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
 //*******************
 #if defined(PETSC_HAVE_PTHREADCLASSES)
 extern PetscBool    PetscUseThreadPool;
+#if defined(PETSC_HAVE_CPU_SET_T)
 void* DoCoreAffinity(void);
+#endif
 
 typedef struct {
   const MatScalar* matdata;
@@ -1170,7 +1170,9 @@ typedef struct {
 void* MatMult_Kernel(void *arg)
 {
   if(PetscUseThreadPool==PETSC_FALSE) {
+#if defined(PETSC_HAVE_CPU_SET_T)
     DoCoreAffinity();
+#endif
   }
   MatMult_KernelData *data = (MatMult_KernelData*)arg;
   PetscScalar       sum;

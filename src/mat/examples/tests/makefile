@@ -624,6 +624,10 @@ ex158: ex158.o chkopts
 ex159: ex159.o chkopts
 	-${CLINKER} -o ex159 ex159.o ${PETSC_MAT_LIB}
 	${RM} ex159.o
+
+ex160: ex160.o chkopts
+	-${CLINKER} -o ex160 ex160.o ${PETSC_MAT_LIB}
+	${RM} ex160.o
 #-----------------------------------------------------------------------------
 NPROCS    = 1 3
 MATSHAPES = A B
@@ -1623,6 +1627,11 @@ runex159_nest:
 	   ${DIFF} output/ex159_nest.out ex159_nest.tmp || echo "Possible problem with ex159_nest, diffs above"; \
 	   ${RM} -f ex159_nest.tmp
 
+runex160:
+	-@${MPIEXEC} -n 1 ./ex160  > ex160.tmp 2>&1; \
+	   ${DIFF} output/ex160.out ex160.tmp || echo "Possible problem with ex160, diffs above"; \
+	   ${RM} -f ex160.tmp
+
 TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex4.PETSc ex4.rm  ex5.PETSc runex5 runex5_2 ex5.rm \
                                  ex6.PETSc runex6 ex6.rm ex8.PETSc runex8 ex8.rm ex9.PETSc runex9 ex9.rm ex10.PETSc \
                                  runex10 ex10.rm ex11.PETSc runex11 runex11_2 runex11_3 runex11_4 ex11.rm ex14.PETSc \
@@ -1638,7 +1647,8 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex4.PET
                                  ex114.PETSc runex114 runex114_2 runex114_3 ex114.rm ex117.PETSc ex117.rm ex118.PETSc ex118.rm ex119.PETSc ex119.rm \
                                  ex128.PETSc runex128 runex128_2 ex128.rm ex129.PETSc runex129 runex129_2 ex129.rm ex131.PETSc ex131.rm ex132.PETSc ex132.rm \
                                  ex133.PETSc ex133.rm ex134.PETSc runex134 ex134.rm ex135.PETSc runex135 ex135.rm ex136.PETSc ex136.rm ex137.PETSc runex137 ex137.rm \
-                                 ex138.PETSc ex138.rm ex139.PETSc runex139 ex139.rm ex141.PETSc runex141 ex141.rm ex159.PETSc runex159 runex159_nest ex159.rm
+                                 ex138.PETSc ex138.rm ex139.PETSc runex139 ex139.rm ex141.PETSc runex141 ex141.rm ex159.PETSc runex159 runex159_nest ex159.rm \
+                                 ex160.PETSc runex160 ex160.rm 
 TESTEXAMPLES_C_X11	       = ex2.PETSc runex2 ex2.rm ex7.PETSc runex7 ex7.rm \
                                  ex12.PETSc runex12 runex12_2 runex12_3 runex12_4 ex12.rm ex13.PETSc runex13 ex13.rm \
                                  ex17.PETSc runex17 ex17.rm ex19.PETSc runex19 ex19.rm ex24.PETSc ex24.rm ex25.PETSc \

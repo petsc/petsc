@@ -27,11 +27,6 @@ File Description:
 #if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
-#if defined(PETSC_HAVE_MALLOC_H)
-#include <malloc.h>
-#endif
-#include <limits.h>
-#include <float.h>
 
 #define X          0
 #define Y          1
@@ -61,11 +56,7 @@ File Description:
 #define BIT_5		0x20
 #define BIT_6		0x40
 #define BIT_7		0x80
-#define TOP_BIT         INT_MIN
-#define ALL_ONES        -1
-
-#define FALSE		0
-#define TRUE		1
+#define TOP_BIT         PETSC_MIN_INT
 
 #define C		0
 
@@ -77,9 +68,6 @@ File Description:
 #define   DELIM         " \n \t"
 #define LINE		12
 #define C_LINE		80
-
-#define REAL_MAX	DBL_MAX
-#define REAL_MIN	DBL_MIN
 
 #define   UT            5               /* dump upper 1/2 */
 #define   LT            6               /* dump lower 1/2 */

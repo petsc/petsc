@@ -74,7 +74,6 @@ There are two compile-time options:
 #define USE_SSE2_KERNELS (!defined NO_SSE2                              \
                           && !defined PETSC_USE_COMPLEX                 \
                           && !defined PETSC_USE_REAL_SINGLE           \
-                          && !defined PETSC_USE_REAL_LONG_DOUBLE      \
                           && defined __SSE2__)
 
 static PetscClassId THI_CLASSID;

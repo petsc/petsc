@@ -1,0 +1,15 @@
+Mesh in 2 dimensions:
+  9 0-cells
+  8 2-cells
+Residual:
+Vector Object: 1 MPI processes
+  type: seq
+-0.25
+-0.5
+0.25
+-0.5
+-1
+0.5
+0.25
+0.5
+0.75

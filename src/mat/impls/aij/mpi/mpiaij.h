@@ -3,7 +3,6 @@
 #define __MPIAIJ_H
 
 #include <../src/mat/impls/aij/seq/aij.h>
-#include <../src/sys/ctable.h>
 
 typedef struct {
   Mat           A,B;                   /* local submatrices: A (diag part),

@@ -179,7 +179,7 @@ PetscErrorCode smoothAggs( const Mat a_Gmat_2, /* base (squared) graph */
       if( IS_SELECTED(state) ){
         PetscInt flid = lid;
         do{
-          lid_sel_lid[flid] = lid; assert(flid<nloc); //?????
+          lid_sel_lid[flid] = lid; assert(flid<nloc); 
         } while( (flid=a_id_llist[flid]) != -1 );
       }
     }
@@ -211,7 +211,7 @@ PetscErrorCode smoothAggs( const Mat a_Gmat_2, /* base (squared) graph */
 		  a_id_llist[lastid] = a_id_llist[lidj];                    /* remove lidj from list */
 		  a_id_llist[lidj] = a_id_llist[lid]; a_id_llist[lid] = lidj; /* insert 'lidj' into head of llist */
 		  hav++;
-		  /*break;*/
+		  /* break; */
 		}
 		lastid = flid;
 	      }
@@ -392,7 +392,6 @@ PetscErrorCode maxIndSetAgg( const IS a_perm,
       for(kk=0;kk<nloc;kk++){
         PetscInt lid = perm_ix[kk];
         NState state = (NState)lid_state[lid];
-if(mype==target||target==-1)PetscPrintf(PETSC_COMM_SELF,"\t[%d]%s %d) try gid %d in state %s\n",mype,__FUNCT__,iter,lid+my0, (state==NOT_DONE) ? "not done" : (state!=DELETED) ? (state==REMOVED?"removed":"selected") : "deleted");
         if( state == NOT_DONE ) {
           /* parallel test, delete if selected ghost */
           PetscBool isOK = PETSC_TRUE;
@@ -403,10 +402,8 @@ if(mype==target||target==-1)PetscPrintf(PETSC_COMM_SELF,"\t[%d]%s %d) try gid %d
               PetscInt cpid = idx[j]; /* compressed row ID in B mat */
               PetscInt gid = (PetscInt)cpcol_gid[cpid];
               NState statej = (NState)cpcol_state[cpid];
-	      //if(mype==target||target==-1)PetscPrintf(PETSC_COMM_SELF,"\t\t[%d]%s %d) check (local id) ghost %d on pe %d, for local gid %d \n",mype,__FUNCT__,iter,cpid,pe,lid+my0);
               if( statej == NOT_DONE && gid >= Iend ) { /* should be (pe>mype), use gid as pe proxy */
                 isOK = PETSC_FALSE; /* can not delete */
-if(mype==target||target==-1)PetscPrintf(PETSC_COMM_SELF,"\t\t\t[%d]%s %d) skip gid %d \n",mype,__FUNCT__,iter,lid+my0);
               }
               else if( IS_SELECTED(statej) ) { /* lid is now deleted, do it */
 		assert(0);
@@ -421,7 +418,6 @@ if(mype==target||target==-1)PetscPrintf(PETSC_COMM_SELF,"\t\t\t[%d]%s %d) skip g
               /* if I have any ghost adj then not a sing */
               ix = lid_cprowID[lid];
               if( ix==-1 || (matB->compressedrow.i[ix+1]-matB->compressedrow.i[ix])==0 ){
-if(mype==target||target==-1)PetscPrintf(PETSC_COMM_SELF,"\t\t[%d]%s removing gid %d (n loc adj=%d, ghost ix = %d\n",mype,__FUNCT__,lid+my0,n,ix);
                 lid_state[lid] =  (PetscScalar)(REMOVED);
                 continue; /* one local adj (me) and no ghost - singleton - flag and continue */
               }
@@ -429,14 +425,12 @@ if(mype==target||target==-1)PetscPrintf(PETSC_COMM_SELF,"\t\t[%d]%s removing gid
             /* SELECTED state encoded with global index */
             lid_state[lid] =  (PetscScalar)(lid+my0);
             nselected++;
-if(mype==target||target==-1)PetscPrintf(PETSC_COMM_SELF,"\t\t[%d]%s select gid <%d>\n",mype,__FUNCT__,lid+my0);
 	    /* delete local adj */
 	    idx = matA->j + ii[lid];
 	    for (j=0; j<n; j++) {
               PetscInt lidj = idx[j];
               NState statej = (NState)lid_state[lidj];
               if( statej == NOT_DONE ){
-if(mype==target||target==-1)PetscPrintf(PETSC_COMM_SELF,"\t\t\t[%d]%s delete local <%d> with %d \n",mype,__FUNCT__,lidj+my0,lid+my0);
                 nDone++; 
                 id_llist[lidj] = id_llist[lid]; id_llist[lid] = lidj; /* insert 'lidj' into head of llist */
                 lid_state[lidj] = (PetscScalar)DELETED;  /* delete this */
@@ -454,7 +448,6 @@ if(mype==target||target==-1)PetscPrintf(PETSC_COMM_SELF,"\t\t\t[%d]%s delete loc
                   
 		  if( statej == NOT_DONE ) {
 		    PetscInt lidj = nloc + cpid;
-                    if(mype==target||target==-1)PetscPrintf(PETSC_COMM_SELF,"\t\t\t[%d]%s %d) selected %d deletes (local id) ghost <%d>\n",mype,__FUNCT__,iter,lid+my0,cpid);
 		    /* cpcol_state[cpid] = (PetscScalar)DELETED; this should happen later ... */
 		    id_llist[lidj] = id_llist[lid]; id_llist[lid] = lidj; /* insert 'lidj' into head of llist */
 		  }
@@ -498,12 +491,10 @@ if(mype==target||target==-1)PetscPrintf(PETSC_COMM_SELF,"\t\t\t[%d]%s delete loc
 		lid_state[lid] = (PetscScalar)DELETED; /* delete this */
 		if( !a_strict_aggs ) {	
 		  id_llist[lid] = id_llist[lidj]; id_llist[lidj] = lid; /* insert 'lid' into head of ghost llist */
-if(mype==target||target==-1)PetscPrintf(PETSC_COMM_SELF,"\t[%d]%s end %d loop: deleted local <%d> with selected ghost %d \n",mype,__FUNCT__,iter,lid+my0,(PetscInt)cpcol_state[cpid]);
 		}
 		else {
                   PetscInt gid = (PetscInt)cpcol_gid[cpid];  
 		  deleted_parent_gid[lid] = (PetscScalar)gid; /* keep track of proc that I belong to */
-if(mype==target||target==-1)PetscPrintf(PETSC_COMM_SELF,"\t[%d]%s end %d loop: deleted local %d with selected ghost %d \n",mype,__FUNCT__,iter,lid+my0,gid);
 		}
 		break;
 	      }
@@ -516,7 +507,6 @@ if(mype==target||target==-1)PetscPrintf(PETSC_COMM_SELF,"\t[%d]%s end %d loop: d
         t1 = nloc - nDone; assert(t1>=0);
         ierr = MPI_Allreduce ( &t1, &t2, 1, MPIU_INT, MPIU_SUM, wcomm ); /* synchronous version */
         if( t2 == 0 ) break;
-if(mype==target||target==-1)PetscPrintf(PETSC_COMM_SELF,"[%d]%s %d) finished MIS loop %d left to do\n",mype,__FUNCT__,iter,t1);
       }
       else break; /* all done */
     } /* outer parallel MIS loop */
@@ -548,7 +538,6 @@ if(mype==target||target==-1)PetscPrintf(PETSC_COMM_SELF,"[%d]%s %d) finished MIS
 	if( gid >= my0 && gid < Iend ) { /* I own this deleted */
 	  PetscInt lidj = nloc + cpid;
 	  PetscInt lid = gid - my0;
-if(mype==target||target==-1)PetscPrintf(PETSC_COMM_SELF,"\t\t\t[%d]%s post process: add (local id) ghost <%d> to selected node %d \n",mype,__FUNCT__,cpid,lid+my0);
 	  id_llist[lidj] = id_llist[lid]; id_llist[lid] = lidj; /* insert 'lidj' into head of llist */
 	  assert( IS_SELECTED((NState)lid_state[lid]) );
 	}
@@ -717,7 +706,7 @@ PetscErrorCode formProl0(IS a_selected, /* list of selected local ID, includes s
       /* QR */
       LAPACKgeqrf_( &Mdata, &N, qqc, &LDA, TAU, WORK, &LWORK, &INFO );
       if( INFO != 0 ) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,"xGEQRS error");
-      // get R - column oriented - output B_{i+1}
+      /* get R - column oriented - output B_{i+1} */
       {
         PetscReal *data = &out_data[clid*a_nSAvec];
         for( jj = 0; jj < a_nSAvec ; jj++ ) {
@@ -729,7 +718,7 @@ PetscErrorCode formProl0(IS a_selected, /* list of selected local ID, includes s
         }
       }
 
-      // get Q - row oriented
+      /* get Q - row oriented */
       LAPACKungqr_( &Mdata, &N, &N, qqc, &LDA, TAU, WORK, &LWORK, &INFO );
       if( INFO != 0 ) SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"xORGQR error arg %d",-INFO);
 
@@ -811,7 +800,9 @@ PetscErrorCode triangulateAndFormProl( IS  a_selected_2, /* list of selected loc
   if(nselected_2 == 1 || nselected_2 == 2 ){ /* 0 happens on idle processors */
     /* SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_LIB,"Not enough points - error in stopping logic",nselected_2); */
     *a_worst_best = 100.0; /* this will cause a stop, but not globalized (should not happen) */
+#ifdef VERBOSE
     PetscPrintf(PETSC_COMM_SELF,"[%d]%s %d selected point - bailing out\n",mype,__FUNCT__,nselected_2);
+#endif
     PetscFunctionReturn(0);
   }
   ierr = MatGetOwnershipRange( a_Prol, &Istart, &Iend );  CHKERRQ(ierr);
@@ -898,17 +889,17 @@ PetscErrorCode triangulateAndFormProl( IS  a_selected_2, /* list of selected loc
 
       /* elems */
       sprintf(fname,"C%d_%d.ele",level,mype); file = fopen(fname, "w");
-      /*First line: <# of triangles> <nodes per triangle> <# of attributes> */
+      /* First line: <# of triangles> <nodes per triangle> <# of attributes> */
       fprintf(file, "%d %d %d\n",mid.numberoftriangles,3,0);
-      /*Remaining lines: <triangle #> <node> <node> <node> ... [attributes]*/
+      /* Remaining lines: <triangle #> <node> <node> <node> ... [attributes] */
       for(kk=0,sid=0;kk<mid.numberoftriangles;kk++,sid += 3){
         fprintf(file, "%d %d %d %d\n",kk,mid.trianglelist[sid],mid.trianglelist[sid+1],mid.trianglelist[sid+2]);
       }
       fclose(file);
 
       sprintf(fname,"C%d_%d.node",level,mype); file = fopen(fname, "w");
-      /*First line: <# of vertices> <dimension (must be 2)> <# of attributes> <# of boundary markers (0 or 1)>*/
-      //fprintf(file, "%d  %d  %d  %d\n",in.numberofpoints,2,0,0);
+      /* First line: <# of vertices> <dimension (must be 2)> <# of attributes> <# of boundary markers (0 or 1)> */
+      /* fprintf(file, "%d  %d  %d  %d\n",in.numberofpoints,2,0,0); */
       fprintf(file, "%d  %d  %d  %d\n",nPlotPts,2,0,0);
       /*Following lines: <vertex #> <x> <y> */
       for(kk=0,sid=0;kk<in.numberofpoints;kk++,sid+=2){
@@ -941,7 +932,7 @@ PetscErrorCode triangulateAndFormProl( IS  a_selected_2, /* list of selected loc
     ierr = PetscMalloc( nselected_2*sizeof(PetscInt), &node_tri ); CHKERRQ(ierr); 
     ierr = PetscMalloc( nselected_2*sizeof(PetscInt), &nTri ); CHKERRQ(ierr); 
 
-    /* need list of triangles on node*/
+    /* need list of triangles on node */
     for(kk=0;kk<nselected_2;kk++) nTri[kk] = 0;
     for(tid=0,kk=0;tid<mid.numberoftriangles;tid++){
       for(jj=0;jj<3;jj++) {
@@ -959,7 +950,7 @@ PetscErrorCode triangulateAndFormProl( IS  a_selected_2, /* list of selected loc
       PetscScalar AA[3][3];
       PetscBLASInt N=3,NRHS=1,LDA=3,IPIV[3],LDB=3,INFO;
       do{
-        if( flid < nFineLoc ) {  /*could be a ghost*/
+        if( flid < nFineLoc ) {  /* could be a ghost */
           PetscInt bestTID = -1; PetscScalar best_alpha = 1.e10; 
           const PetscInt fgid = flid + myFine0;
           /* compute shape function for gid */
@@ -1194,8 +1185,8 @@ PetscErrorCode getGIDsOnSquareGraph( const IS a_selected_1,
 
 /* Private context for the GAMG preconditioner */
 typedef struct{
-  PetscInt       m_lid;      // local vertex index
-  PetscInt       m_degree;   // vertex degree
+  PetscInt       m_lid;      /* local vertex index */
+  PetscInt       m_degree;   /* vertex degree */
 } GNode;
 int compare (const void *a, const void *b)
 {
@@ -1322,14 +1313,15 @@ PetscErrorCode createProlongation( const Mat a_Amat,
     ierr = MatAssemblyEnd(Gmat2,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatDestroy( &Gmat );  CHKERRQ(ierr);
     Gmat = Gmat2;
-
+#ifdef VERBOSE
     PetscPrintf(wcomm,"\t%s ave nnz/row %d --> %d\n",__FUNCT__,nnz0,nnz1); 
+#endif
   }
 
   /* square matrix - SA */  
   if( a_useSA ){
     Mat Gmat2;
-    ierr = MatMatMult( Gmat, Gmat, MAT_INITIAL_MATRIX, 2.4, &Gmat2 ); //PETSC_DEFAULT
+    ierr = MatMatMult( Gmat, Gmat, MAT_INITIAL_MATRIX, PETSC_DEFAULT, &Gmat2 );
     CHKERRQ(ierr);
     /* ierr = MatDestroy( &Gmat );  CHKERRQ(ierr); */
     AuxMat = Gmat;
@@ -1384,14 +1376,11 @@ PetscErrorCode createProlongation( const Mat a_Amat,
         PetscInt lid = Ii - Istart;
         gnodes[lid].m_lid = lid;
         gnodes[lid].m_degree = ncols;
-        /* if( (fabs(a_data[2*lid])<1.e-12 || fabs(a_data[2*lid]-1.)<1.e-12) && */
-        /* 	    (fabs(a_data[2*lid+1])<1.e-12 || fabs(a_data[2*lid+1]-1.)<1.e-12) ) { */
-        /* 	  gnodes[lid].m_degree = 1; */
-        /* 	} HIT CORNERS of ex54/5 */
       }
       ierr = MatRestoreRow(Gmat,Ii,&ncols,0,0); CHKERRQ(ierr);
     }
     /* randomize */
+    srand(1); /* make determenant */
     if( PETSC_TRUE ) {
       PetscBool *bIndexSet;
       ierr = PetscMalloc( nloc*sizeof(PetscBool), &bIndexSet ); CHKERRQ(ierr);
@@ -1466,7 +1455,9 @@ PetscErrorCode createProlongation( const Mat a_Amat,
   if( jj==0 ) {
     assert(0);
     *a_isOK = PETSC_FALSE;
+#ifdef VERBOSE
     PetscPrintf(PETSC_COMM_WORLD,"[%d]%s no selected points on coarse grid\n",mype,__FUNCT__);
+#endif
     ierr = MatDestroy( &Prol );  CHKERRQ(ierr);
     ierr = ISDestroy( &llist_1 ); CHKERRQ(ierr);
     ierr = ISDestroy( &selected_1 ); CHKERRQ(ierr);
@@ -1521,11 +1512,15 @@ PetscErrorCode createProlongation( const Mat a_Amat,
       
       if( metric > 1. ) { /* needs to be globalized - should not happen */
         *a_isOK = PETSC_FALSE;
+#ifdef VERBOSE
         PetscPrintf(PETSC_COMM_SELF,"[%d]%s failed metric for coarse grid %e\n",mype,__FUNCT__,metric);
+#endif
         ierr = MatDestroy( &Prol );  CHKERRQ(ierr);
       }
       else if( metric > .0 ) {
+#ifdef VERBOSE
         PetscPrintf(PETSC_COMM_SELF,"[%d]%s metric for coarse grid = %e\n",mype,__FUNCT__,metric);
+#endif
       }
     } else {
       SETERRQ(wcomm,PETSC_ERR_LIB,"3D not implemented");
@@ -1620,37 +1615,40 @@ PetscErrorCode createProlongation( const Mat a_Amat,
 
     if (npe > 1) ierr = PetscFree( data_w_ghost );      CHKERRQ(ierr);
     ierr = PetscFree( flid_fgid ); CHKERRQ(ierr);
-
+ 
     /* smooth P0 */
 #if defined PETSC_USE_LOG
     ierr = PetscLogEventBegin(gamg_setup_events[SET9],0,0,0,0);CHKERRQ(ierr);
-#endif
+#endif 
     { /* eigen estimate 'emax' - this is also use for cheb smoother */
-      KSP eksp; Mat Lmat = a_Amat;
-      Vec bb, xx; PC pc;
-      ierr = MatGetVecs( Lmat, &bb, 0 );         CHKERRQ(ierr);
-      ierr = MatGetVecs( Lmat, &xx, 0 );         CHKERRQ(ierr);
+      KSP eksp; 
+      Vec bb, xx; 
+      PC pc;
+      ierr = MatGetVecs( a_Amat, &bb, 0 );         CHKERRQ(ierr);
+      ierr = MatGetVecs( a_Amat, &xx, 0 );         CHKERRQ(ierr);
       {
 	PetscRandom    rctx;
 	ierr = PetscRandomCreate(wcomm,&rctx);CHKERRQ(ierr);
 	ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
 	ierr = VecSetRandom(bb,rctx);CHKERRQ(ierr);
 	ierr = PetscRandomDestroy( &rctx ); CHKERRQ(ierr);
-      }
+      }  
       ierr = KSPCreate(wcomm,&eksp);                            CHKERRQ(ierr);
       ierr = KSPSetType( eksp, KSPCG );                         CHKERRQ(ierr);
       ierr = KSPSetInitialGuessNonzero( eksp, PETSC_FALSE );    CHKERRQ(ierr);
-      ierr = KSPSetOperators( eksp, Lmat, Lmat, DIFFERENT_NONZERO_PATTERN );
+      ierr = KSPSetOperators( eksp, a_Amat, a_Amat, SAME_NONZERO_PATTERN );
       CHKERRQ( ierr );
       ierr = KSPGetPC( eksp, &pc );                              CHKERRQ( ierr );
-      ierr = PCSetType( pc, PCPBJACOBI ); CHKERRQ(ierr); /* smoother */
+      ierr = PCSetType( pc, PETSC_GAMG_SMOOTHER ); CHKERRQ(ierr); /* smoother */
       ierr = KSPSetTolerances(eksp,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,10);
       CHKERRQ(ierr);
       ierr = KSPSetNormType( eksp, KSP_NORM_NONE );                 CHKERRQ(ierr);
       ierr = KSPSetComputeSingularValues( eksp,PETSC_TRUE );        CHKERRQ(ierr);
       ierr = KSPSolve( eksp, bb, xx );                              CHKERRQ(ierr);
       ierr = KSPComputeExtremeSingularValues( eksp, &emax, &emin ); CHKERRQ(ierr);
-      PetscPrintf(PETSC_COMM_WORLD,"\t\t\t%s max eigen=%e min=%e PC=%s\n",__FUNCT__,emax,emin,PCPBJACOBI);
+#ifdef VERBOSE
+      PetscPrintf(PETSC_COMM_WORLD,"\t\t\t%s max eigen=%e min=%e PC=%s\n",__FUNCT__,emax,emin,PETSC_GAMG_SMOOTHER);
+#endif
       ierr = VecDestroy( &xx );       CHKERRQ(ierr); 
       ierr = VecDestroy( &bb );       CHKERRQ(ierr);
       ierr = KSPDestroy( &eksp );     CHKERRQ(ierr);

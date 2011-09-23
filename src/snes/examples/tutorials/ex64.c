@@ -420,11 +420,10 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
     ierr = VecSetValuesLocal(user->cv,2,idx,vals_cv,INSERT_VALUES);CHKERRQ(ierr);
     ierr = VecSetValuesLocal(user->eta,2,idx,vals_eta,INSERT_VALUES);CHKERRQ(ierr);
     ierr = VecSetValuesLocal(user->work2,2,idx,vals_DDcv,INSERT_VALUES);CHKERRQ(ierr);
-    
-    
+        
+  } 
     ierr = DMDARestoreElements(user->da2,&nele,&nen,&ele);CHKERRQ(ierr);
     ierr = VecRestoreArrayRead(coords,&_coords);CHKERRQ(ierr);
-  } 
 
     ierr = VecAssemblyBegin(user->cv);CHKERRQ(ierr);
     ierr = VecAssemblyEnd(user->cv);CHKERRQ(ierr);

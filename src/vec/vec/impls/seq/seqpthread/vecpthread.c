@@ -156,7 +156,9 @@ void* PetscThreadStop(MPI_Comm Comm,int iTotThreads,pthread_t* ThreadId) {
 void* VecDot_Kernel(void *arg)
 {
   if(PetscUseThreadPool==PETSC_FALSE) {
+#if defined(PETSC_HAVE_CPU_SET_T)
     DoCoreAffinity();
+#endif
   }
   VecDot_KernelData *data = (VecDot_KernelData*)arg;
   const PetscScalar *x, *y;
@@ -222,7 +224,10 @@ PetscErrorCode VecDot_SeqPThread(Vec xin,Vec yin,PetscScalar *z)
 void* VecScale_Kernel(void *arg)
 {
   if(PetscUseThreadPool==PETSC_FALSE) {
+#if defined(PETSC_HAVE_CPU_SET_T)
     DoCoreAffinity();
+#endif
+
   }
   VecScale_KernelData *data = (VecScale_KernelData*)arg;
   PetscScalar a,*x;
@@ -277,7 +282,9 @@ PetscErrorCode VecScale_SeqPThread(Vec xin, PetscScalar alpha)
 void* VecAXPY_Kernel(void *arg)
 {
   if(PetscUseThreadPool==PETSC_FALSE) {
+#if defined(PETSC_HAVE_CPU_SET_T)
     DoCoreAffinity();
+#endif
   }
   VecAXPY_KernelData *data = (VecAXPY_KernelData*)arg;
   PetscScalar a,*y;
@@ -338,7 +345,9 @@ PetscErrorCode VecAXPY_SeqPThread(Vec yin,PetscScalar alpha,Vec xin)
 void* VecAYPX_Kernel(void *arg)
 {
   if(PetscUseThreadPool==PETSC_FALSE) {
+#if defined(PETSC_HAVE_CPU_SET_T)
     DoCoreAffinity();
+#endif
   }
   VecAYPX_KernelData *data = (VecAYPX_KernelData*)arg;
   PetscScalar a,*yy;
@@ -428,7 +437,9 @@ PetscErrorCode VecAYPX_SeqPThread(Vec yin,PetscScalar alpha,Vec xin)
 void* VecWAXPY_Kernel(void *arg)
 {
   if(PetscUseThreadPool==PETSC_FALSE) {
+#if defined(PETSC_HAVE_CPU_SET_T)
     DoCoreAffinity();
+#endif
   }
   VecWAXPY_KernelData *data = (VecWAXPY_KernelData*)arg;
   PetscScalar a,*ww;
@@ -521,7 +532,9 @@ PetscErrorCode VecWAXPY_SeqPThread(Vec win, PetscScalar alpha,Vec xin,Vec yin)
 void* VecNorm_Kernel(void *arg)
 {
   if(PetscUseThreadPool==PETSC_FALSE) {
+#if defined(PETSC_HAVE_CPU_SET_T)
     DoCoreAffinity();
+#endif
   }
   VecNorm_KernelData *data = (VecNorm_KernelData*)arg;
   const PetscScalar *x;
@@ -620,7 +633,9 @@ PetscErrorCode VecNorm_SeqPThread(Vec xin,NormType type,PetscReal* z)
 void* VecMDot_Kernel(void *arg)
 {
   if(PetscUseThreadPool==PETSC_FALSE) {
+#if defined(PETSC_HAVE_CPU_SET_T)
     DoCoreAffinity();
+#endif
   }
   VecMDot_KernelData *data = (VecMDot_KernelData*)arg;
   const PetscScalar  *xbase = data->xvalin;
@@ -857,7 +872,9 @@ PetscErrorCode VecMDot_SeqPThread(Vec xin,PetscInt nv,const Vec yin[],PetscScala
 void* VecMax_Kernel(void *arg)
 {
   if(PetscUseThreadPool==PETSC_FALSE) {
+#if defined(PETSC_HAVE_CPU_SET_T)
     DoCoreAffinity();
+#endif
   }
   VecMax_KernelData *data = (VecMax_KernelData*)arg;
   const PetscScalar *xx = data->x;
@@ -937,7 +954,9 @@ PetscErrorCode VecMax_SeqPThread(Vec xin,PetscInt* idx,PetscReal * z)
 void* VecMin_Kernel(void *arg)
 {
   if(PetscUseThreadPool==PETSC_FALSE) {
+#if defined(PETSC_HAVE_CPU_SET_T)
     DoCoreAffinity();
+#endif
   }
   VecMin_KernelData *data = (VecMin_KernelData*)arg;
   const PetscScalar *xx = data->x;
@@ -1017,7 +1036,9 @@ PetscErrorCode VecMin_SeqPThread(Vec xin,PetscInt* idx,PetscReal * z)
 void* VecPointwiseMult_Kernel(void *arg)
 {
   if(PetscUseThreadPool==PETSC_FALSE) {
+#if defined(PETSC_HAVE_CPU_SET_T)
     DoCoreAffinity();
+#endif
   }
   VecPointwiseMult_KernelData *data = (VecPointwiseMult_KernelData*)arg;
   PetscScalar *ww = data->wpin,*xx = data->xpin,*yy = data->ypin;
@@ -1084,7 +1105,9 @@ static PetscErrorCode VecPointwiseMult_SeqPThread(Vec win,Vec xin,Vec yin)
 void* VecPointwiseDivide_Kernel(void *arg)
 {
   if(PetscUseThreadPool==PETSC_FALSE) {
+#if defined(PETSC_HAVE_CPU_SET_T)
     DoCoreAffinity();
+#endif
   }
   VecPointwiseDivide_KernelData *data = (VecPointwiseDivide_KernelData*)arg;
   PetscScalar *ww = data->wpin,*xx = data->xpin,*yy = data->ypin;
@@ -1142,7 +1165,9 @@ static PetscErrorCode VecPointwiseDivide_SeqPThread(Vec win,Vec xin,Vec yin)
 void* VecSwap_Kernel(void *arg)
 {
   if(PetscUseThreadPool==PETSC_FALSE) {
+#if defined(PETSC_HAVE_CPU_SET_T)
     DoCoreAffinity();
+#endif
   }
   VecSwap_KernelData *data = (VecSwap_KernelData*)arg;
   PetscScalar *xa = data->xpin,*ya = data->ypin;
@@ -1193,7 +1218,9 @@ static PetscErrorCode VecSwap_SeqPThread(Vec xin,Vec yin)
 void* VecSetRandom_Kernel(void *arg)
 {
   if(PetscUseThreadPool==PETSC_FALSE) {
+#if defined(PETSC_HAVE_CPU_SET_T)
     DoCoreAffinity();
+#endif
   }
   VecSetRandom_KernelData *data = (VecSetRandom_KernelData*)arg;
   PetscScalar  *xx = data->xpin;
@@ -1244,7 +1271,9 @@ static PetscErrorCode VecSetRandom_SeqPThread(Vec xin,PetscRandom r)
 void* VecCopy_Kernel(void *arg)
 {
   if(PetscUseThreadPool==PETSC_FALSE) {
+#if defined(PETSC_HAVE_CPU_SET_T)
     DoCoreAffinity();
+#endif
   }
   VecCopy_KernelData *data = (VecCopy_KernelData*)arg;
   const PetscScalar  *xa = data->xpin;
@@ -1299,7 +1328,9 @@ static PetscErrorCode VecCopy_SeqPThread(Vec xin,Vec yin)
 void* VecMAXPY_Kernel(void* arg)
 {
   if(PetscUseThreadPool==PETSC_FALSE) {
+#if defined(PETSC_HAVE_CPU_SET_T)
     DoCoreAffinity();
+#endif
   }
   VecMAXPY_KernelData *data = (VecMAXPY_KernelData*)arg;
   PetscErrorCode    ierr;
@@ -1418,7 +1449,9 @@ PetscErrorCode VecMAXPY_SeqPThread(Vec xin, PetscInt nv,const PetscScalar *alpha
 void* VecSet_Kernel(void *arg)
 {
   if(PetscUseThreadPool==PETSC_FALSE) {
+#if defined(PETSC_HAVE_CPU_SET_T)
     DoCoreAffinity();
+#endif
   }
   VecSet_KernelData *data = (VecSet_KernelData*)arg;
   PetscScalar        *xx = data->xpin;
@@ -1478,6 +1511,7 @@ PetscErrorCode VecDestroy_SeqPThread(Vec v)
   PetscFunctionReturn(0);
 }
 
+#if defined(PETSC_HAVE_CPU_SET_T)
 void* DoCoreAffinity(void)
 {
   int i,icorr=0; cpu_set_t mset;
@@ -1492,6 +1526,7 @@ void* DoCoreAffinity(void)
   sched_setaffinity(0,sizeof(cpu_set_t),&mset);
   return(0);
 }
+#endif
 
 EXTERN_C_BEGIN
 #undef __FUNCT__

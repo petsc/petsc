@@ -10,7 +10,7 @@ class Configure(PETSc.package.NewPackage):
     self.double       = 0
     self.complex      = 1
     self.liblist      = [['libchaco.a']]
-    self.license      = 'http://www.cs.sandia.gov/~web9200/9200_download.html'
+    self.license      = 'http://www.cs.sandia.gov/web1400/1400_download.html'
     self.worksonWindows    = 1
     self.downloadonWindows = 1
     return

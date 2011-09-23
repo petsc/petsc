@@ -86,8 +86,6 @@
 
 #if defined(PETSC_USE_REAL_SINGLE)
 #define PETSC_REAL PETSC_FLOAT
-#elif defined(PETSC_USE_REAL_LONG_DOUBLE)
-#define PETSC_REAL PETSC_LONG_DOUBLE
 #else
 #define PETSC_REAL PETSC_DOUBLE
 #endif
@@ -154,8 +152,6 @@
 #else
 #if defined (PETSC_USE_REAL_SINGLE)
       parameter (MPIU_SCALAR = MPI_REAL)
-#elif defined(PETSC_USE_REAL_LONG_DOUBLE)
-      parameter(MPIU_SCALAR = MPI_2DOUBLE_PRECISION)
 #else
       parameter(MPIU_SCALAR = MPI_DOUBLE_PRECISION)
 #endif
