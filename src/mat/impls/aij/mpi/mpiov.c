@@ -1144,7 +1144,7 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
     ierr = PetscMalloc((1+ismax)*sizeof(PetscTable),&cmap);CHKERRQ(ierr);
     for (i=0; i<ismax; i++) {
       if (!allcolumns[i]){
-        ierr = PetscTableCreate(ncol[i]+1,&cmap[i]);CHKERRQ(ierr);
+        ierr = PetscTableCreate(ncol[i]+1,C->cmap->N+1,&cmap[i]);CHKERRQ(ierr);
         jmax   = ncol[i];
         icol_i = icol[i];
         cmap_i = cmap[i];
@@ -1215,7 +1215,7 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
 #if defined (PETSC_USE_CTABLE)
   ierr = PetscMalloc((1+ismax)*sizeof(PetscTable),&rmap);CHKERRQ(ierr);
     for (i=0; i<ismax; i++) {
-      ierr = PetscTableCreate(nrow[i]+1,&rmap[i]);CHKERRQ(ierr);
+      ierr = PetscTableCreate(nrow[i]+1,C->rmap->N+1,&rmap[i]);CHKERRQ(ierr);
       rmap_i = rmap[i];
       irow_i = irow[i];
       jmax   = nrow[i];

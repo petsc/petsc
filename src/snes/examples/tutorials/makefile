@@ -242,6 +242,9 @@ ex64: ex64.o  chkopts
 ex65: ex65.o  chkopts
 	-${CLINKER} -o ex65 ex65.o ${PETSC_SNES_LIB}
 	${RM} ex65.o
+ex653D: ex653D.o chkopts
+	-${CLINKER} -o ex653D ex653D.o ${PETSC_SNES_LIB}
+	${RM} ex653D.o
 ex65dm: ex65dm.o  chkopts
 	-${CLINKER} -o ex65dm ex65dm.o ${PETSC_SNES_LIB}
 	${RM} ex65dm.o
