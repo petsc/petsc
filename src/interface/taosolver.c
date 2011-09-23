@@ -490,8 +490,6 @@ PetscErrorCode TaoSolverView(TaoSolver tao, PetscViewer viewer)
     PetscErrorCode ierr;
     PetscBool isascii,isstring;
     const TaoSolverType type;
-    const TaoLineSearchType lstype;
-    const KSPType ksptype;
     PetscFunctionBegin;
     PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
     if (!viewer) {
