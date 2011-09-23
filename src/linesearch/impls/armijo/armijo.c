@@ -64,14 +64,14 @@ static PetscErrorCode TaoLineSearchView_Armijo(TaoLineSearch ls, PetscViewer pv)
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)pv, PETSCVIEWERASCII, &isascii); CHKERRQ(ierr);
   if (isascii) {
-    ierr = PetscViewerASCIIPrintf(pv,"  maxf=%d, ftol=%G, gtol=%G\n",ls->maxfev, ls->rtol, ls->ftol); CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(pv,"  maxf=%D, ftol=%G, gtol=%G\n",ls->maxfev, ls->rtol, ls->ftol); CHKERRQ(ierr);
     ierr=PetscViewerASCIIPrintf(pv,"  Armijo linesearch",armP->alpha);CHKERRQ(ierr);
     if (armP->nondescending) {
       ierr = PetscViewerASCIIPrintf(pv, " (nondescending)"); CHKERRQ(ierr);
     }
     ierr=PetscViewerASCIIPrintf(pv,": alpha=%G beta=%G ",armP->alpha,armP->beta);CHKERRQ(ierr);
     ierr=PetscViewerASCIIPrintf(pv,"sigma=%G ",armP->sigma);CHKERRQ(ierr);
-    ierr=PetscViewerASCIIPrintf(pv,"memsize=%d\n",armP->memorySize);CHKERRQ(ierr);
+    ierr=PetscViewerASCIIPrintf(pv,"memsize=%D\n",armP->memorySize);CHKERRQ(ierr);
   } else {
     SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for Armijo TaoLineSearch",((PetscObject)pv)->type_name);
   }
@@ -158,7 +158,7 @@ static PetscErrorCode TaoLineSearchApply_Armijo(TaoLineSearch ls, Vec x, PetscRe
   } 
   
   else if (armP->memorySize < 1) {
-    ierr = PetscInfo1(ls,"Armijo line search error: memory_size (%d) < 1\n", armP->memorySize); CHKERRQ(ierr);
+    ierr = PetscInfo1(ls,"Armijo line search error: memory_size (%D) < 1\n", armP->memorySize); CHKERRQ(ierr);
     ls->reason=TAOLINESEARCH_FAILED_BADPARAMETER;
   } 
   
@@ -286,7 +286,7 @@ static PetscErrorCode TaoLineSearchApply_Armijo(TaoLineSearch ls, Vec x, PetscRe
     ierr = PetscInfo(ls, "Step length is below tolerance.\n"); CHKERRQ(ierr);
     ls->reason = TAOLINESEARCH_FAILED_RTOL;
   } else if (ls->nfeval >= ls->maxfev) {
-    ierr = PetscInfo2(ls, "Number of line search function evals (%d) > maximum allowed (%d)\n",ls->nfeval, ls->maxfev); CHKERRQ(ierr);
+    ierr = PetscInfo2(ls, "Number of line search function evals (%D) > maximum allowed (%D)\n",ls->nfeval, ls->maxfev); CHKERRQ(ierr);
     ls->reason = TAOLINESEARCH_FAILED_MAXFCN;
   } 
   if (ls->reason) {
@@ -312,7 +312,7 @@ static PetscErrorCode TaoLineSearchApply_Armijo(TaoLineSearch ls, Vec x, PetscRe
   }
 
   /* Finish computations */
-  ierr = PetscInfo2(ls, "%d function evals in line search, step = %10.4F\n",ls->nfeval, ls->step); CHKERRQ(ierr);
+  ierr = PetscInfo2(ls, "%D function evals in line search, step = %G\n",ls->nfeval, ls->step); CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

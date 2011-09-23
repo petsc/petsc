@@ -383,7 +383,7 @@ PetscErrorCode TaoLineSearchApply(TaoLineSearch ls, Vec x, PetscReal *f, Vec g, 
        *reason=TAOLINESEARCH_FAILED_BADPARAMETER;
      }      
      if (ls->maxfev < 0) {
-       ierr = PetscInfo1(ls,"Bad Line Search Parameter: maxfev (%d) < 0\n",ls->maxfev); CHKERRQ(ierr);
+       ierr = PetscInfo1(ls,"Bad Line Search Parameter: maxfev (%D) < 0\n",ls->maxfev); CHKERRQ(ierr);
        *reason=TAOLINESEARCH_FAILED_BADPARAMETER;
      }      
      if (PetscIsInfOrNanReal(*f)) {

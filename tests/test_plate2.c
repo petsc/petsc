@@ -95,7 +95,7 @@ int main( int argc, char **argv )
   ierr = PetscOptionsGetInt(PETSC_NULL,"-bmy",&user.bmy,&flg); CHKERRQ(ierr);
 
   PetscPrintf(PETSC_COMM_WORLD,"\n---- Minimum Surface Area With Plate Problem -----\n");
-  PetscPrintf(PETSC_COMM_WORLD,"mx:%d, my:%d, bmx:%d, bmy:%d, height:%4.2F\n",
+  PetscPrintf(PETSC_COMM_WORLD,"mx:%D, my:%D, bmx:%D, bmy:%D, height:%G\n",
 	      user.mx,user.my,user.bmx,user.bmy,user.bheight);
 
   /* Calculate any derived values from parameters */
@@ -397,7 +397,7 @@ PetscErrorCode FormFunctionGradient(TaoSolver tao, Vec X, PetscReal *fcn, Vec G,
   }
 
   ft=ft*area;
-  ierr = MPI_Allreduce(&ft,fcn,1,MPIU_REAL,MPI_SUM,MPI_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&ft,fcn,1,MPIU_REAL,MPIU_SUM,MPI_COMM_WORLD);CHKERRQ(ierr);
 
   
   /* Restore vectors */

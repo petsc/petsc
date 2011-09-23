@@ -160,7 +160,7 @@ static PetscErrorCode TaoSolverSolve_POUNDER(TaoSolver tao)
   /* G = D(ModelIn,:) \ (F(ModelIn,1:m)-repmat(F(xkin,1:m),n,1)); */
   /* D (nxn) Fdiff (nxm)  => G (nxm) */
   LAPACKgesv_(&blasn,&blasm,mfqP->Disp,&blasnpmax,mfqP->iwork,mfqP->Fdiff,&blasn,&info);
-  ierr = PetscInfo1(tao,"gesv returned %d\n",info); CHKERRQ(ierr);
+  ierr = PetscInfo1(tao,"gesv returned %D\n",info); CHKERRQ(ierr);
 
   cres = minnorm;
   /* Gres = G*F(xkin,1:m)' //  G (nxm)   Fk (m)   */
@@ -543,7 +543,7 @@ static PetscErrorCode TaoSolverView_POUNDER(TaoSolver tao, PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {
     ierr = PetscViewerASCIIPushTab(viewer); CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"points in model: %d\n",mfqP->nmodelpoints); 
+    ierr = PetscViewerASCIIPrintf(viewer,"points in model: %D\n",mfqP->nmodelpoints); 
     ierr = PetscViewerASCIIPopTab(viewer); CHKERRQ(ierr);
 
   } else {

@@ -106,9 +106,9 @@ extern PetscErrorCode MatView_APPROX(Mat A, PetscViewer pv)
     info = PetscTypeCompare((PetscObject)pv,PETSCVIEWERASCII,&isascii); CHKERRQ(info);
     if (isascii) {
 	info = PetscViewerASCIIPrintf(pv,"Approx Matrix\n"); CHKERRQ(info);
-	info = PetscViewerASCIIPrintf(pv," Number of vectors: %d\n",lmP->lm); CHKERRQ(info);
-	info = PetscViewerASCIIPrintf(pv," updates: %d\n",lmP->nupdates); CHKERRQ(info);
-	info = PetscViewerASCIIPrintf(pv," rejects: %d\n",lmP->nrejects); CHKERRQ(info);
+	info = PetscViewerASCIIPrintf(pv," Number of vectors: %D\n",lmP->lm); CHKERRQ(info);
+	info = PetscViewerASCIIPrintf(pv," updates: %D\n",lmP->nupdates); CHKERRQ(info);
+	info = PetscViewerASCIIPrintf(pv," rejects: %D\n",lmP->nrejects); CHKERRQ(info);
 	
     }
     else {

@@ -456,7 +456,7 @@
 
  
     
-      subroutine TaskWorker
+      subroutine TaskWorker(ierr)
       implicit none
 #include "test_chwirut2f.h"
       PetscErrorCode ierr
@@ -506,7 +506,7 @@
       return
       end
 
-      subroutine StopWorkers
+      subroutine StopWorkers(ierr)
       implicit none
 #include "test_chwirut2f.h"
       integer checkedin

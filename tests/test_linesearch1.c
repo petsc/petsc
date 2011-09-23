@@ -68,7 +68,7 @@ int main(int argc, char *argv[])
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Final vector:\n"); CHKERRQ(ierr);
     ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(ierr); 
 
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Status: %d\n",reason); CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Status: %D\n",reason); CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Step length: %G\n",step); CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Orig vector:\n"); CHKERRQ(ierr);
     ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(ierr); 

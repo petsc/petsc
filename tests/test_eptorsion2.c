@@ -91,7 +91,7 @@ int main(int argc, char **argv)
     ierr = PetscOptionsGetInt(TAO_NULL,"-mx",&user.mx,&flg); CHKERRQ(ierr);
 
     PetscPrintf(PETSC_COMM_WORLD,"\n---- Elastic-Plastic Torsion Problem -----\n");
-    PetscPrintf(PETSC_COMM_WORLD,"mx: %d     my: %d   \n\n",user.mx,user.my);  
+    PetscPrintf(PETSC_COMM_WORLD,"mx: %D     my: %D   \n\n",user.mx,user.my);  
 
     /* Set up distributed array */
     ierr = DMDACreate2d(PETSC_COMM_WORLD,DMDA_BOUNDARY_NONE,
@@ -134,7 +134,7 @@ int main(int argc, char **argv)
     //ierr = TaoSolverView(tao,PETSC_VIEWER_STDOUT_WORLD);
     ierr = TaoSolverGetTerminationReason(tao,&reason); CHKERRQ(ierr);
     if (reason <= 0){
-	ierr=PetscPrintf(MPI_COMM_WORLD, "Try another method! \n");//Iterations: %d, f: %4.2e, residual: %4.2e\n", iter,ff,gnorm); 
+	ierr=PetscPrintf(MPI_COMM_WORLD, "Try another method! \n");//Iterations: %D, f: %4.2e, residual: %4.2e\n", iter,ff,gnorm); 
 	CHKERRQ(ierr); 
     }  
 
@@ -335,7 +335,7 @@ PetscErrorCode FormFunctionGradient(TaoSolver tao,Vec X,PetscReal *f,Vec G,void 
   ierr = VecScale(G, area); CHKERRQ(ierr);
 
   /* Sum function contributions from all processes */
-  ierr = (PetscErrorCode)MPI_Allreduce((void*)&floc,(void*)f,1,MPIU_REAL,MPI_SUM,MPI_COMM_WORLD); CHKERRQ(ierr);
+  ierr = (PetscErrorCode)MPI_Allreduce((void*)&floc,(void*)f,1,MPIU_REAL,MPIU_SUM,MPI_COMM_WORLD); CHKERRQ(ierr);
 
   ierr=PetscLogFlops((ye-ysm)*(xe-xsm)*20+(xep-xs)*(yep-ys)*16); CHKERRQ(ierr);
 

@@ -67,7 +67,7 @@ int main( int argc, char **argv )
 {
   PetscErrorCode        info;               /* used to check for functions returning nonzeros */
   PetscInt        Nx, Ny;             /* number of processors in x- and y- directions */
-  PetscInt        m, N;               /* number of local and global elements in vectors */
+  PetscInt        m;               /* number of local elements in vectors */
   Vec        x;                  /* variables vector */
   Vec        xl,xu;                  /* bounds vectors */
   PetscReal d1000 = 1000;
@@ -95,11 +95,8 @@ int main( int argc, char **argv )
 
 
   PetscPrintf(PETSC_COMM_WORLD,"\n---- Journal Bearing Problem SHB-----\n");
-  PetscPrintf(PETSC_COMM_WORLD,"mx: %d,  my: %d,  ecc: %4.3F \n\n",
+  PetscPrintf(PETSC_COMM_WORLD,"mx: %D,  my: %D,  ecc: %G \n\n",
 	      user.nx,user.ny,user.ecc);
-
-  /* Calculate any derived values from parameters */
-  N = user.nx*user.ny; 
 
   /* Let Petsc determine the grid division */
   Nx = PETSC_DECIDE; Ny = PETSC_DECIDE;
@@ -470,7 +467,7 @@ PetscErrorCode Monitor(TaoSolver tao, void *ctx)
   PetscFunctionBegin;
   ierr = TaoSolverGetSolutionStatus(tao, &its, &f, &gnorm, &cnorm, &xdiff, &reason); CHKERRQ(ierr);
   if (!(its%5)) {
-    PetscPrintf(PETSC_COMM_WORLD,"iteration=%d\tf=%G\n",its,f);
+    PetscPrintf(PETSC_COMM_WORLD,"iteration=%D\tf=%G\n",its,f);
   }
   PetscFunctionReturn(0);
 }

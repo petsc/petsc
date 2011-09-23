@@ -219,7 +219,7 @@ int main(int argc, char **argv)
     ierr = PetscGetTime(&v1); CHKERRQ(ierr);
     ierr = TaoSolverSolve(tao);  CHKERRQ(ierr);
     ierr = PetscGetTime(&v2); CHKERRQ(ierr);
-    PetscPrintf(PETSC_COMM_WORLD,"Elapsed time = %10.8F\n",v2-v1);
+    PetscPrintf(PETSC_COMM_WORLD,"Elapsed time = %G\n",v2-v1);
     ierr = VecCopy(x0,x); CHKERRQ(ierr);
     ierr = TaoSolverSetInitialVector(tao,x); CHKERRQ(ierr);
     user.solve_type = 3;
@@ -227,11 +227,11 @@ int main(int argc, char **argv)
   ierr = PetscLogStagePop(); CHKERRQ(ierr);
   ierr = PetscBarrier((PetscObject)x); CHKERRQ(ierr);
   PetscPrintf(PETSC_COMM_WORLD,"KSP iterations within initialization: ");
-  PetscPrintf(PETSC_COMM_WORLD,"%i\n",user.ksp_its_initial);
-  PetscPrintf(PETSC_COMM_WORLD,"Total KSP iterations over %i trial(s): ",ntests);
-  PetscPrintf(PETSC_COMM_WORLD,"%i\n",user.ksp_its);
+  PetscPrintf(PETSC_COMM_WORLD,"%D\n",user.ksp_its_initial);
+  PetscPrintf(PETSC_COMM_WORLD,"Total KSP iterations over %D trial(s): ",ntests);
+  PetscPrintf(PETSC_COMM_WORLD,"%D\n",user.ksp_its);
   PetscPrintf(PETSC_COMM_WORLD,"KSP iterations per trial: ");
-  PetscPrintf(PETSC_COMM_WORLD,"%i\n",(user.ksp_its-user.ksp_its_initial)/ntests);
+  PetscPrintf(PETSC_COMM_WORLD,"%D\n",(user.ksp_its-user.ksp_its_initial)/ntests);
 
   ierr = TaoSolverGetTerminationReason(tao,&reason); CHKERRQ(ierr);
 
@@ -241,7 +241,7 @@ int main(int argc, char **argv)
   }
   else
   {
-    PetscPrintf(MPI_COMM_WORLD, "Optimization terminated with status %2d.\n", reason);
+    PetscPrintf(MPI_COMM_WORLD, "Optimization terminated with status %D.\n", reason);
   }
 
 
@@ -1492,6 +1492,6 @@ PetscErrorCode ParabolicMonitor(TaoSolver tao, void *ptr)
   ierr = VecAXPY(user->uwork,-1.0,user->utrue); CHKERRQ(ierr);
   ierr = VecNorm(user->uwork,NORM_2,&unorm); CHKERRQ(ierr);
   ierr = VecNorm(user->ywork,NORM_2,&ynorm); CHKERRQ(ierr);
-  ierr = PetscPrintf(MPI_COMM_WORLD, "||u-ut||=%7G ||y-yt||=%7G\n",unorm,ynorm); CHKERRQ(ierr);
+  ierr = PetscPrintf(MPI_COMM_WORLD, "||u-ut||=%G ||y-yt||=%G\n",unorm,ynorm); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

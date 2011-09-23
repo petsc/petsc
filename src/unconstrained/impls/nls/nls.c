@@ -1167,20 +1167,20 @@ static PetscErrorCode TaoSolverView_NLS(TaoSolver tao, PetscViewer viewer)
     ierr = PetscViewerASCIIPushTab(viewer); CHKERRQ(ierr);
     if (NLS_PC_BFGS == nlsP->pc_type && nlsP->M) {
       ierr = MatLMVMGetRejects(nlsP->M,&nrejects); CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer, "Rejected matrix updates: %d\n",nrejects); CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer, "Rejected matrix updates: %D\n",nrejects); CHKERRQ(ierr);
     }
-    ierr = PetscViewerASCIIPrintf(viewer, "Newton steps: %d\n", nlsP->newt); CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer, "BFGS steps: %d\n", nlsP->bfgs); CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer, "Scaled gradient steps: %d\n", nlsP->sgrad); CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer, "Gradient steps: %d\n", nlsP->grad); CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "Newton steps: %D\n", nlsP->newt); CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "BFGS steps: %D\n", nlsP->bfgs); CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "Scaled gradient steps: %D\n", nlsP->sgrad); CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "Gradient steps: %D\n", nlsP->grad); CHKERRQ(ierr);
 
-    ierr = PetscViewerASCIIPrintf(viewer, "nls ksp atol: %d\n", nlsP->ksp_atol); CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer, "nls ksp rtol: %d\n", nlsP->ksp_rtol); CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer, "nls ksp ctol: %d\n", nlsP->ksp_ctol); CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer, "nls ksp negc: %d\n", nlsP->ksp_negc); CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer, "nls ksp dtol: %d\n", nlsP->ksp_dtol); CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer, "nls ksp iter: %d\n", nlsP->ksp_iter); CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer, "nls ksp othr: %d\n", nlsP->ksp_othr); CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "nls ksp atol: %D\n", nlsP->ksp_atol); CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "nls ksp rtol: %D\n", nlsP->ksp_rtol); CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "nls ksp ctol: %D\n", nlsP->ksp_ctol); CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "nls ksp negc: %D\n", nlsP->ksp_negc); CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "nls ksp dtol: %D\n", nlsP->ksp_dtol); CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "nls ksp iter: %D\n", nlsP->ksp_iter); CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "nls ksp othr: %D\n", nlsP->ksp_othr); CHKERRQ(ierr);
     ierr = PetscViewerASCIIPopTab(viewer); CHKERRQ(ierr);
   } else {
     SETERRQ1(((PetscObject)tao)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for TAO NLS",((PetscObject)viewer)->type_name);

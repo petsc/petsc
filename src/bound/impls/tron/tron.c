@@ -100,8 +100,8 @@ static PetscErrorCode TaoSolverView_TRON(TaoSolver tao, PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {
     ierr = PetscViewerASCIIPushTab(viewer); CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"Total PG its: %d,",tron->total_gp_its);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"PG tolerance: %4.3F \n",tron->pg_ftol);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"Total PG its: %D,",tron->total_gp_its);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"PG tolerance: %G \n",tron->pg_ftol);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPopTab(viewer); CHKERRQ(ierr);
   } else {
     SETERRQ1(((PetscObject)tao)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for TAO TRON",((PetscObject)viewer)->type_name);

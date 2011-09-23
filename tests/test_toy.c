@@ -76,7 +76,7 @@ int main(int argc, char **argv)
   }
   else
   {
-    PetscPrintf(MPI_COMM_SELF, "Optimization terminated with status %2d.\n", reason);
+    PetscPrintf(MPI_COMM_SELF, "Optimization terminated with status %D.\n", reason);
   }
 
 

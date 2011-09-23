@@ -338,7 +338,7 @@ static PetscErrorCode TaoSolverSolve_LCL(TaoSolver tao)
     ierr = TaoLineSearchSetFromOptions(tao->linesearch); CHKERRQ(ierr);
     ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &lclP->aug, lclP->GAugL, tao->stepdirection, &step, &ls_reason); CHKERRQ(ierr);
     if (lclP->verbose) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"Steplength = %10.8F\n",step); CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"Steplength = %G\n",step); CHKERRQ(ierr);
     }
     
     ierr = LCLScatter(lclP,tao->solution,lclP->U,lclP->V); CHKERRQ(ierr);
@@ -423,7 +423,7 @@ static PetscErrorCode TaoSolverSolve_LCL(TaoSolver tao)
       ierr = TaoLineSearchSetFromOptions(tao->linesearch); CHKERRQ(ierr);
       ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &lclP->aug, lclP->GAugL, tao->stepdirection,&step,&ls_reason); CHKERRQ(ierr);
       if (lclP->verbose){
-	ierr = PetscPrintf(PETSC_COMM_WORLD,"Reduced-space steplength =  %10.8F\n",step); CHKERRQ(ierr);
+	ierr = PetscPrintf(PETSC_COMM_WORLD,"Reduced-space steplength =  %G\n",step); CHKERRQ(ierr);
       }
 
       ierr = LCLScatter(lclP,tao->solution,lclP->U,lclP->V); CHKERRQ(ierr);
@@ -492,7 +492,7 @@ static PetscErrorCode TaoSolverSolve_LCL(TaoSolver tao)
     
   }
 
-   ierr = PetscPrintf(PETSC_COMM_WORLD,"Convergence in %i iterations\n",iter);
+   ierr = PetscPrintf(PETSC_COMM_WORLD,"Convergence in %D iterations\n",iter);
    ierr = MatDestroy(&lclP->R); CHKERRQ(ierr);
 
    PetscFunctionReturn(0);

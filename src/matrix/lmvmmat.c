@@ -229,12 +229,12 @@ extern PetscErrorCode MatView_LMVM(Mat A, PetscViewer pv)
     info = PetscTypeCompare((PetscObject)pv,PETSCVIEWERASCII,&isascii); CHKERRQ(info);
     if (isascii) {
 	info = PetscViewerASCIIPrintf(pv,"LMVM Matrix\n"); CHKERRQ(info);
-	info = PetscViewerASCIIPrintf(pv," Number of vectors: %d\n",lmP->lm); CHKERRQ(info);
+	info = PetscViewerASCIIPrintf(pv," Number of vectors: %D\n",lmP->lm); CHKERRQ(info);
 	info = PetscViewerASCIIPrintf(pv," scale type: %s\n",Scale_Table[lmP->scaleType]); CHKERRQ(info);
 	info = PetscViewerASCIIPrintf(pv," rescale type: %s\n",Rescale_Table[lmP->rScaleType]); CHKERRQ(info);
 	info = PetscViewerASCIIPrintf(pv," limit type: %s\n",Limit_Table[lmP->limitType]); CHKERRQ(info);
-	info = PetscViewerASCIIPrintf(pv," updates: %d\n",lmP->nupdates); CHKERRQ(info);
-	info = PetscViewerASCIIPrintf(pv," rejects: %d\n",lmP->nrejects); CHKERRQ(info);
+	info = PetscViewerASCIIPrintf(pv," updates: %D\n",lmP->nupdates); CHKERRQ(info);
+	info = PetscViewerASCIIPrintf(pv," rejects: %D\n",lmP->nrejects); CHKERRQ(info);
 	
     }
     else {

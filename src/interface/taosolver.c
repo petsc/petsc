@@ -561,13 +561,13 @@ PetscErrorCode TaoSolverView(TaoSolver tao, PetscViewer viewer)
 	ierr=PetscViewerASCIIPrintf(viewer," steptol=%G,",tao->steptol);CHKERRQ(ierr);
 	ierr=PetscViewerASCIIPrintf(viewer," gttol=%G\n",tao->gttol);CHKERRQ(ierr);
 
-	ierr = PetscViewerASCIIPrintf(viewer,"Residual in Function/Gradient:=%e\n",tao->residual);CHKERRQ(ierr);
+	ierr = PetscViewerASCIIPrintf(viewer,"Residual in Function/Gradient:=%G\n",tao->residual);CHKERRQ(ierr);
 
 	if (tao->cnorm>0 || tao->catol>0 || tao->crtol>0){
 	    ierr=PetscViewerASCIIPrintf(viewer,"convergence tolerances:");CHKERRQ(ierr);
 	    ierr=PetscViewerASCIIPrintf(viewer," catol=%G,",tao->catol);CHKERRQ(ierr);
 	    ierr=PetscViewerASCIIPrintf(viewer," crtol=%G\n",tao->crtol);CHKERRQ(ierr);
-	    ierr = PetscViewerASCIIPrintf(viewer,"Residual in Constraints:=%e\n",tao->cnorm);CHKERRQ(ierr);
+	    ierr = PetscViewerASCIIPrintf(viewer,"Residual in Constraints:=%G\n",tao->cnorm);CHKERRQ(ierr);
 	}
 
 	if (tao->trust < tao->steptol){
@@ -579,45 +579,45 @@ PetscErrorCode TaoSolverView(TaoSolver tao, PetscViewer viewer)
 	    ierr=PetscViewerASCIIPrintf(viewer,"convergence tolerances: function minimum=%G\n"
 					,tao->fmin);CHKERRQ(ierr);
 	}
-	ierr = PetscViewerASCIIPrintf(viewer,"Objective value=%e\n",
+	ierr = PetscViewerASCIIPrintf(viewer,"Objective value=%G\n",
 				      tao->fc);CHKERRQ(ierr);
 
-	ierr = PetscViewerASCIIPrintf(viewer,"total number of iterations=%d,          ",
+	ierr = PetscViewerASCIIPrintf(viewer,"total number of iterations=%D,          ",
 				      tao->niter);CHKERRQ(ierr);
-	ierr = PetscViewerASCIIPrintf(viewer,"              (max: %d)\n",tao->max_its);CHKERRQ(ierr);
+	ierr = PetscViewerASCIIPrintf(viewer,"              (max: %D)\n",tao->max_its);CHKERRQ(ierr);
 
 	if (tao->nfuncs>0){
-	    ierr = PetscViewerASCIIPrintf(viewer,"total number of function evaluations=%d,",
+	    ierr = PetscViewerASCIIPrintf(viewer,"total number of function evaluations=%D,",
 					  tao->nfuncs);CHKERRQ(ierr);
-	    ierr = PetscViewerASCIIPrintf(viewer,"                max: %d\n",
+	    ierr = PetscViewerASCIIPrintf(viewer,"                max: %D\n",
 					  tao->max_funcs);CHKERRQ(ierr);
 	}
 	if (tao->ngrads>0){
-	    ierr = PetscViewerASCIIPrintf(viewer,"total number of gradient evaluations=%d,",
+	    ierr = PetscViewerASCIIPrintf(viewer,"total number of gradient evaluations=%D,",
 					  tao->ngrads);CHKERRQ(ierr);
-	    ierr = PetscViewerASCIIPrintf(viewer,"                max: %d\n",
+	    ierr = PetscViewerASCIIPrintf(viewer,"                max: %D\n",
 					  tao->max_funcs);CHKERRQ(ierr);
 	}
 	if (tao->nfuncgrads>0){
-	    ierr = PetscViewerASCIIPrintf(viewer,"total number of function/gradient evaluations=%d,",
+	    ierr = PetscViewerASCIIPrintf(viewer,"total number of function/gradient evaluations=%D,",
 					  tao->nfuncgrads);CHKERRQ(ierr);
-	    ierr = PetscViewerASCIIPrintf(viewer,"    (max: %d)\n",
+	    ierr = PetscViewerASCIIPrintf(viewer,"    (max: %D)\n",
 					  tao->max_funcs);CHKERRQ(ierr);
 	}
 	if (tao->nhess>0){
-	    ierr = PetscViewerASCIIPrintf(viewer,"total number of Hessian evaluations=%d\n",
+	    ierr = PetscViewerASCIIPrintf(viewer,"total number of Hessian evaluations=%D\n",
 					  tao->nhess);CHKERRQ(ierr);
 	}
 /*	if (tao->linear_its>0){
-	    ierr = PetscViewerASCIIPrintf(viewer,"  total Krylov method iterations=%d\n",
+	    ierr = PetscViewerASCIIPrintf(viewer,"  total Krylov method iterations=%D\n",
 					  tao->linear_its);CHKERRQ(ierr);
 					  }*/
 	if (tao->nconstraints>0){
-	    ierr = PetscViewerASCIIPrintf(viewer,"total number of constraint function evaluations=%d\n",
+	    ierr = PetscViewerASCIIPrintf(viewer,"total number of constraint function evaluations=%D\n",
 					  tao->nconstraints);CHKERRQ(ierr);
 	}
 	if (tao->njac>0){
-	    ierr = PetscViewerASCIIPrintf(viewer,"total number of Jacobian evaluations=%d\n",
+	    ierr = PetscViewerASCIIPrintf(viewer,"total number of Jacobian evaluations=%D\n",
 					  tao->njac);CHKERRQ(ierr);
 	}
 
@@ -653,7 +653,7 @@ PetscErrorCode TaoSolverView(TaoSolver tao, PetscViewer viewer)
 	    }		
 	    
 	} else {
-	    ierr = PetscViewerASCIIPrintf(viewer,"Solver terminated: %d",tao->reason);CHKERRQ(ierr);
+	    ierr = PetscViewerASCIIPrintf(viewer,"Solver terminated: %D",tao->reason);CHKERRQ(ierr);
 	    switch (tao->reason) {
 	    case TAO_DIVERGED_MAXITS:
 	      ierr = PetscViewerASCIIPrintf(viewer," Maximum Iterations\n");
@@ -1420,9 +1420,9 @@ PetscErrorCode TaoSolverDefaultMonitor(TaoSolver tao, void *ctx)
   its=tao->niter;
   fct=tao->fc;
   gnorm=tao->residual;
-  ierr=PetscViewerASCIIPrintf(viewer,"iter = %d,",its); CHKERRQ(ierr);
-  ierr=PetscViewerASCIIPrintf(viewer," Function value: %12.10e,",fct); CHKERRQ(ierr);
-  ierr=PetscViewerASCIIPrintf(viewer,"  Residual: %12.10e \n",gnorm);CHKERRQ(ierr);
+  ierr=PetscViewerASCIIPrintf(viewer,"iter = %3D,",its); CHKERRQ(ierr);
+  ierr=PetscViewerASCIIPrintf(viewer," Function value: %G,",fct); CHKERRQ(ierr);
+  ierr=PetscViewerASCIIPrintf(viewer,"  Residual: %G \n",gnorm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1467,10 +1467,10 @@ PetscErrorCode TaoSolverDefaultSMonitor(TaoSolver tao, void *ctx)
   its=tao->niter;
   fct=tao->fc;
   gnorm=tao->residual;
-  ierr=PetscViewerASCIIPrintf(viewer,"iter = %d,",its); CHKERRQ(ierr);
+  ierr=PetscViewerASCIIPrintf(viewer,"iter = %3D,",its); CHKERRQ(ierr);
   ierr=PetscViewerASCIIPrintf(viewer," Function value %G,",fct); CHKERRQ(ierr);
   if (gnorm > 1.e-6) {
-    ierr=PetscViewerASCIIPrintf(viewer," Residual: %7.6F \n",gnorm);CHKERRQ(ierr);
+    ierr=PetscViewerASCIIPrintf(viewer," Residual: %G \n",gnorm);CHKERRQ(ierr);
   } else if (gnorm > 1.e-11) {
     ierr=PetscViewerASCIIPrintf(viewer," Residual: < 1.0e-6 \n"); CHKERRQ(ierr);
   } else {
@@ -1517,10 +1517,10 @@ PetscErrorCode TaoSolverDefaultCMonitor(TaoSolver tao, void *ctx)
   its=tao->niter;
   fct=tao->fc;
   gnorm=tao->residual;
-  ierr=PetscViewerASCIIPrintf(viewer,"iter = %d,",its); CHKERRQ(ierr);
-  ierr=PetscViewerASCIIPrintf(viewer," Function value: %12.10e,",fct); CHKERRQ(ierr);
-  ierr=PetscViewerASCIIPrintf(viewer,"  Residual: %12.10e ",gnorm);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  Constraint: %12.10e \n",tao->cnorm); CHKERRQ(ierr);
+  ierr=PetscViewerASCIIPrintf(viewer,"iter = %D,",its); CHKERRQ(ierr);
+  ierr=PetscViewerASCIIPrintf(viewer," Function value: %G,",fct); CHKERRQ(ierr);
+  ierr=PetscViewerASCIIPrintf(viewer,"  Residual: %G ",gnorm);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  Constraint: %G \n",tao->cnorm); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1803,7 +1803,7 @@ PetscErrorCode TaoSolverDefaultConvergenceTest(TaoSolver tao,void *dummy)
     ierr = PetscInfo2(tao,"Converged due to relative residual norm ||g(X)||/||g(X0)|| = %G < %G\n",gnorm/gnorm0,gttol); CHKERRQ(ierr);
     reason = TAO_CONVERGED_GTTOL;
   } else if (nfuncs > max_funcs){
-    ierr = PetscInfo2(tao,"Exceeded maximum number of function evaluations: %d > %d\n", nfuncs,max_funcs); CHKERRQ(ierr);
+    ierr = PetscInfo2(tao,"Exceeded maximum number of function evaluations: %D > %D\n", nfuncs,max_funcs); CHKERRQ(ierr);
     reason = TAO_DIVERGED_MAXFCN;
   } else if ( tao->lsflag != 0 ){
     ierr = PetscInfo(tao,"Tao Line Search failure.\n"); CHKERRQ(ierr);
@@ -1812,7 +1812,7 @@ PetscErrorCode TaoSolverDefaultConvergenceTest(TaoSolver tao,void *dummy)
     ierr = PetscInfo2(tao,"Trust region/step size too small: %G < %G\n", trradius,steptol); CHKERRQ(ierr);
     reason = TAO_CONVERGED_STEPTOL;
   } else if (niter > tao->max_its) {
-    ierr = PetscInfo2(tao,"Exceeded maximum number of iterations: %d > %d\n",niter,tao->max_its); CHKERRQ(ierr);
+    ierr = PetscInfo2(tao,"Exceeded maximum number of iterations: %D > %D\n",niter,tao->max_its); CHKERRQ(ierr);
     reason = TAO_DIVERGED_MAXITS;
   } else {
     reason = TAO_CONTINUE_ITERATING;

@@ -1,23 +1,5 @@
 LOCDIR=tests/
-EXAMPLESC = test_link1.c linesearch1.c
-TESTEXAMPLES_C = test_link1.tao runtest_link1 test_link1.rm clean \
-         test_linesearch1.tao runtest_linesearch1 test_linesearch1.rm \
-         test_lmvmmat1.tao runtest_lmvmmat1 test_lmvmmat1.rm \
-         test_approxmat1.tao runtest_approxmat1 test_approxmat1.rm \
-         test_rosenbrock1.tao runtest_rosenbrock1 test_rosenbrock1.rm \
-         test_jbearing2.tao runtest_jbearing2 test_jbearing2.rm \
-	 test_eptorsion1.tao runtest_eptorsion1 test_eptorsion2.rm \
-	 test_eptorsion2.tao runtest_eptorsion2 test_eptorsion2.rm \
-	 test_minsurf1.tao runtest_minsurf1 test_minsurf1.rm \
-	 test_minsurf2.tao runtest_minsurf2 test_minsurf2.rm \
-	 test_plate2.tao runtest_plate2 test_plate2.rm \
-         test_jbearingdm.tao runtest_jbearingdm test_jbearingdm.rm \
-         test_jbearingdmf.tao runtest_jbearingdmf test_jbearingdmf.rm \
-	 clean 
-TESTEXAMPLES_F=	 test_eptorsion2f.tao runtest_eptorsion2f test_eptorsion2f.rm \
-	 test_plate2f.tao runtest_plate2f test_plate2f.rm \
-         test_rosenbrock1f.tao runtest_rosenbrock1f test_rosenbrock1f.rm  \
-	 clean 
+
 
 include ${TAO_DIR}/conf/tao_base
 

@@ -55,7 +55,7 @@ static PetscErrorCode TaoLineSearchView_MT(TaoLineSearch ls, PetscViewer pv)
     PetscFunctionBegin;
     ierr = PetscTypeCompare((PetscObject)pv, PETSCVIEWERASCII, &isascii); CHKERRQ(ierr);
     if (isascii) {
-	ierr = PetscViewerASCIIPrintf(pv,"  maxf=%d, ftol=%G, gtol=%G\n",ls->maxfev, ls->rtol, ls->ftol); CHKERRQ(ierr);
+	ierr = PetscViewerASCIIPrintf(pv,"  maxf=%D, ftol=%G, gtol=%G\n",ls->maxfev, ls->rtol, ls->ftol); CHKERRQ(ierr);
     } else {
       SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported for MoreThuente TaoLineSearch",((PetscObject)pv)->type_name);
     }
@@ -269,7 +269,7 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
 	break;
       }
       if (ls->nfeval >= ls->maxfev) {
-	ierr = PetscInfo2(ls,"Number of line search function evals (%d) > maximum (%d)\n",ls->nfeval,ls->maxfev); CHKERRQ(ierr);
+	ierr = PetscInfo2(ls,"Number of line search function evals (%D) > maximum (%D)\n",ls->nfeval,ls->maxfev); CHKERRQ(ierr);
 	ls->reason = TAOLINESEARCH_FAILED_MAXFCN;
 	break;
       }
@@ -321,7 +321,7 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
     }
   
     /* Finish computations */
-    ierr = PetscInfo2(ls,"%d function evals in line search, step = %10.5F\n",ls->nfeval,ls->step); CHKERRQ(ierr);
+    ierr = PetscInfo2(ls,"%D function evals in line search, step = %G\n",ls->nfeval,ls->step); CHKERRQ(ierr);
     
     /* Set new solution vector and compute gradient if needed */
     ierr = VecCopy(mt->work,x); CHKERRQ(ierr);

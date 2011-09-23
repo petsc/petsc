@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
     step=1.0;
     info = TaoLineSearchApply(tao, X, G, S, W, &f, &f_full, &step, &flg);
     info = TaoLineSearchView(tao); CHKERRQ(info);
-    info = PetscPrintf(PETSC_COMM_WORLD,"Status: %d\n",flg); CHKERRQ(info);
+    info = PetscPrintf(PETSC_COMM_WORLD,"Status: %D\n",flg); CHKERRQ(info);
     info = PetscPrintf(PETSC_COMM_WORLD,"Step length: %G\n",step); CHKERRQ(info);
     info = PetscPrintf(PETSC_COMM_WORLD,"New Obj value: %G\n",f); CHKERRQ(info);
     info = PetscPrintf(PETSC_COMM_WORLD,"New gradient:\n"); CHKERRQ(info);

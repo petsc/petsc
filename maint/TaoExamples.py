@@ -230,7 +230,7 @@ class TaoExamples(ExampleList):
 
         # Least squares
         self.add(Example(example="chwirut1",nprocs=1,options="-tao_smonitor -tao_fatol 0 -tao_frtol 0",method="pounders",tags=["leastsquares","chwirut","single","c","pounders"],name="chwirut1"))
-        self.add(Example(example="chwirut2",nprocs=3,options="-tao_smonitor -tao_fatol 0 -tao_frtol 0",method="pounders",tags=["leastsquares","chwirut","multiprocessor","c","pounders"],name="chwirut2"))
+        self.add(Example(example="chwirut2",nprocs=3,options="-tao_fatol 0 -tao_frtol 0",method="pounders",tags=["leastsquares","chwirut","multiprocessor","c","pounders"],name="chwirut2"))
         self.add(Example(example="chwirut2f",nprocs=3,options="-tao_smonitor -tao_fatol 0 -tao_frtol 0",method="pounders",tags=["leastsquares","chwirut","fortran","multiprocessor","pounders"],name="chwirut2f"))
 
 

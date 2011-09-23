@@ -89,8 +89,8 @@ static PetscErrorCode TaoSolverView_GPCG(TaoSolver tao, PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {
     ierr = PetscViewerASCIIPushTab(viewer); CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"Total PG its: %d,",gpcg->total_gp_its);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"PG tolerance: %4.3F \n",gpcg->pg_ftol);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"Total PG its: %D,",gpcg->total_gp_its);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"PG tolerance: %G \n",gpcg->pg_ftol);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"KSP type: %s\n",GPCG_KSP[gpcg->ksp_type]); CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"Subset type: %s\n", TAOSUBSET[gpcg->subset_type]); CHKERRQ(ierr);
     ierr = PetscViewerASCIIPopTab(viewer); CHKERRQ(ierr);

@@ -116,7 +116,7 @@ int main(int argc,char **argv)
   ierr = TaoSolverSolve(tao); CHKERRQ(ierr);
   ierr = TaoSolverGetHistory(tao,0,0,0,&nhist); CHKERRQ(ierr);
   for (i=0;i<nhist;i++) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"%12.5F\t%12.5F\n",hist[i],resid[i]); 
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"%G\t%G\n",hist[i],resid[i]); 
   }
   ierr = TaoSolverView(tao,PETSC_VIEWER_STDOUT_SELF); CHKERRQ(ierr);
 

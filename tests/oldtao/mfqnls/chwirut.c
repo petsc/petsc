@@ -128,7 +128,7 @@ int main(int argc,char **argv)
 
   /* View iteration data */
   info = TaoGetIterationData(tao,&iter,&ff,0,0,0,0); CHKERRQ(info);
-  PetscPrintf(PETSC_COMM_SELF,"Solved: Iterations: %d, Residual: %5.3e\n",
+  PetscPrintf(PETSC_COMM_SELF,"Solved: Iterations: %D, Residual: %5.3e\n",
 	      iter,ff);
 
   /* Use VecView to print x to screen 

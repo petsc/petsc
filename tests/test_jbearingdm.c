@@ -135,7 +135,7 @@ PetscErrorCode Monitor(TaoDM taodm, PetscInt level, void *ctx) {
   ierr = TaoDMGetDM(taodm,&dm);
   ierr = DMDAGetLocalInfo(dm,&dminfo);
   
-  PetscPrintf(MPI_COMM_WORLD,"Grid: %d,    mx: %d     my: %d   \n",level,dminfo.mx,dminfo.my);
+  PetscPrintf(MPI_COMM_WORLD,"Grid: %D,    mx: %D     my: %D   \n",level,dminfo.mx,dminfo.my);
   PetscFunctionReturn(0);
   
 
@@ -628,7 +628,7 @@ PetscErrorCode FormFunctionGradient(TaoSolver tao, Vec X, PetscReal *fcn,Vec G,v
      }
 
   }
-  ierr = MPI_Allreduce(&floc,&f2,1,MPI_DOUBLE_PRECISION,MPI_SUM,PETSC_COMM_WORLD); CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&floc,&f2,1,MPIU_REAL,MPIU_SUM,PETSC_COMM_WORLD); CHKERRQ(ierr);
   ierr = VecRestoreArray(localX,&x); CHKERRQ(ierr);
   ierr = VecRestoreArray(G,&g); CHKERRQ(ierr);
 

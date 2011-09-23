@@ -73,13 +73,13 @@ PetscErrorCode getquadpounders(TAO_POUNDERS *mfqP) {
     /* factor Ltmp */
     LAPACKpotrf_("L",&blasint2,mfqP->L_tmp,&blasint,&blasinfo);
     if (blasinfo != 0) {
-	SETERRQ1(PETSC_COMM_SELF,1,"LAPACK routine potrf returned with value %d\n",blasinfo);
+	SETERRQ1(PETSC_COMM_SELF,1,"LAPACK routine potrf returned with value %D\n",blasinfo);
     }
 
     /* factor M */
     LAPACKgetrf_(&blasnplus1,&blasnpmax,mfqP->M,&blasnplus1,mfqP->npmaxiwork,&blasinfo);
     if (blasinfo != 0) {
-	SETERRQ1(PETSC_COMM_SELF,1,"LAPACK routine getrf returned with value %d\n",blasinfo);
+	SETERRQ1(PETSC_COMM_SELF,1,"LAPACK routine getrf returned with value %D\n",blasinfo);
     }
     
     for (k=0;k<mfqP->m;k++) {
@@ -88,7 +88,7 @@ PetscErrorCode getquadpounders(TAO_POUNDERS *mfqP) {
 
 	LAPACKpotrs_("L",&blasint2,&ione,mfqP->L_tmp,&blasint,mfqP->omega,&blasint2,&blasinfo);
 	if (blasinfo != 0) {
-	    SETERRQ1(PETSC_COMM_SELF,1,"LAPACK routine potrs returned with value %d\n",blasinfo);
+	    SETERRQ1(PETSC_COMM_SELF,1,"LAPACK routine potrs returned with value %D\n",blasinfo);
 	}
 	
 	
@@ -99,7 +99,7 @@ PetscErrorCode getquadpounders(TAO_POUNDERS *mfqP) {
 	BLASgemv_("T",&blasint,&blasnp,&negone,mfqP->N,&blasint,mfqP->beta,&ione,&one,&mfqP->RES[mfqP->npmax*k],&ione);
 	LAPACKgetrs_("T",&blasnplus1,&ione,mfqP->M,&blasnplus1,mfqP->npmaxiwork,&mfqP->RES[mfqP->npmax*k],&blasnplus1,&blasinfo);
 	if (blasinfo != 0) {
-	    SETERRQ1(PETSC_COMM_SELF,1,"LAPACK routine getrs returned with value %d\n",blasinfo);
+	    SETERRQ1(PETSC_COMM_SELF,1,"LAPACK routine getrs returned with value %D\n",blasinfo);
 	}
 
 	/* Gdel(:,k) = Alpha(2:n+1) */
@@ -206,7 +206,7 @@ PetscErrorCode morepoints(TAO_POUNDERS *mfqP) {
 	LAPACKgeqrf_(&blasnp,&blasnplus1,mfqP->Q_tmp,&blasnpmax,mfqP->tau_tmp,mfqP->mwork,&blasmaxmn,&blasinfo);
 
 	if (blasinfo != 0) {
-	    SETERRQ1(PETSC_COMM_SELF,1,"LAPACK routine geqrf returned with value %d\n",blasinfo);
+	    SETERRQ1(PETSC_COMM_SELF,1,"LAPACK routine geqrf returned with value %D\n",blasinfo);
 	}
 	
 	/* Reject if min(svd(N*Q(:,n+2:np+1)) <= theta2 */
@@ -224,7 +224,7 @@ PetscErrorCode morepoints(TAO_POUNDERS *mfqP) {
 		     mfqP->L_tmp,&blasint2,mfqP->npmaxwork,&blasnpmax_x_5,&blasinfo);
 
 	if (blasinfo != 0) {
-	    SETERRQ1(PETSC_COMM_SELF,1,"LAPACK routine ormqr returned with value %d\n",blasinfo);
+	    SETERRQ1(PETSC_COMM_SELF,1,"LAPACK routine ormqr returned with value %D\n",blasinfo);
 	}
 
 	/* Copy L_tmp to L_save */
@@ -238,7 +238,7 @@ PetscErrorCode morepoints(TAO_POUNDERS *mfqP) {
 		     mfqP->beta,mfqP->work,&blasn,mfqP->work,&blasn,mfqP->npmaxwork,&blasnpmax_x_5,
 		     &blasinfo);
 	if (blasinfo != 0) {
-	    SETERRQ1(PETSC_COMM_SELF,1,"LAPACK routine gesvd returned with value %d\n",blasinfo);
+	    SETERRQ1(PETSC_COMM_SELF,1,"LAPACK routine gesvd returned with value %D\n",blasinfo);
 	}
 
 	if (mfqP->beta[PetscMin(blasint,blasint2)-1] > mfqP->theta2) {
@@ -278,7 +278,7 @@ PetscErrorCode morepoints(TAO_POUNDERS *mfqP) {
     LAPACKormqr_("R","N",&blasnp,&blasnp,&blasnplus1,mfqP->Q,&blasnpmax,mfqP->tau,mfqP->Q_tmp,&blasnpmax,mfqP->npmaxwork,&blasnpmax_x_5,&blasinfo);
 
     if (blasinfo != 0) {
-	SETERRQ1(PETSC_COMM_SELF,1,"LAPACK routine ormqr returned with value %d\n",blasinfo);
+	SETERRQ1(PETSC_COMM_SELF,1,"LAPACK routine ormqr returned with value %D\n",blasinfo);
     }
 
     /* Copy Q_tmp(:,n+2:np) to Z) */
@@ -409,7 +409,7 @@ PetscErrorCode affpoints(TAO_POUNDERS *mfqP, PetscReal *xmin,
 			     mfqP->work2,&ione,mfqP->mwork,&blasm,&info);
 		
 		if (info < 0) {
-		    SETERRQ1(PETSC_COMM_SELF,1,"ormqr returned value %d\n",info);
+		    SETERRQ1(PETSC_COMM_SELF,1,"ormqr returned value %D\n",info);
 		}
 	    }
 	    proj = BLASnrm2_(&blasj,&mfqP->work2[mfqP->nmodelpoints],&ione);
@@ -426,7 +426,7 @@ PetscErrorCode affpoints(TAO_POUNDERS *mfqP, PetscReal *xmin,
 			     &blasmaxmn,&info);
 		mfqP->q_is_I = 0;
 		if (info < 0) {
-		    SETERRQ1(PETSC_COMM_SELF,1,"geqrf returned value %d\n",info);
+		    SETERRQ1(PETSC_COMM_SELF,1,"geqrf returned value %D\n",info);
 		}
 
 		    
@@ -588,7 +588,7 @@ static PetscErrorCode TaoSolverSolve_POUNDERS(TaoSolver tao)
   /* D (nxn) Fdiff (nxm)  => G (nxm) */
   PetscBLASInt blasn2 = blasn;
   LAPACKgesv_(&blasn,&blasm,mfqP->Disp,&blasnpmax,mfqP->iwork,mfqP->Fdiff,&blasn2,&info);
-  ierr = PetscInfo1(tao,"gesv returned %d\n",info); CHKERRQ(ierr);
+  ierr = PetscInfo1(tao,"gesv returned %D\n",info); CHKERRQ(ierr);
 
   cres = minnorm;
   /* Gres = G*F(xkin,1:m)' //  G (nxm)   Fk (m)   */

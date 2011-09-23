@@ -15,7 +15,7 @@ If multiple tags with no dash(-) are given, the example must match all tags.
 -s     : verbose + show all output (also --showoutput)
 -m     : only print example names that match tags (also --match)
 -c     : compile only, do not execute (also --compile)
--l     : list all examples and their tags (alse --list)
+-l     : list all examples and their tags (also --list)
 -d     : compare results against output in $TAO_DIR/tests/ouptut directory (also --diff)
 
 """)
@@ -85,7 +85,7 @@ if __name__=="__main__":
         #os.environ.update(TAO)
         #cwd = os.path.join(TAO['TAO_DIR'],"tests")
         cwd = os.path.join(os.environ['TAO_DIR'],"tests")
-        (r,o,e) = examples.execute(['rm','-f',ex.executableName()])
+        (r,o,e) = examples.execute(['rm','-f',ex.executableName()],cwd=cwd,echo=verbose)
         (r,o,e) = examples.execute(ex.buildCommand(),cwd=cwd,echo=verbose)
         if (showoutput):
             sys.stdout.write("\n")
@@ -112,7 +112,9 @@ if __name__=="__main__":
                 sys.stdout.write(e)
                 sys.stdout.write("** Error running %s. **\n\n" % ex.name)
             elif (r==0):
-                if (showdiff):
+                if (not showdiff):
+                    sys.stdout.write("%s executed\n" % ex.name)
+                else:
                     goodname = os.path.join(os.environ['TAO_DIR'],'tests','output',ex.name+".out" )
                     if (not os.access(goodname,os.R_OK)):
                         sys.stderr.write("Error: Could not find file %s\n" % goodname)

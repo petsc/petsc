@@ -1,3 +1,5 @@
+test_eptorsion2 -tao_method tao_gpcg
+
 update manual
   add pounders section
 

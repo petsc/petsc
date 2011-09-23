@@ -78,7 +78,7 @@ int main( int argc, char **argv )
   ierr = PetscOptionsGetInt(PETSC_NULL,"-my",&user.my,&flg); CHKERRQ(ierr);
 
   PetscPrintf(PETSC_COMM_SELF,"\n---- Minimum Surface Area Problem -----\n");
-  PetscPrintf(PETSC_COMM_SELF,"mx: %d     my: %d   \n\n",user.mx,user.my);
+  PetscPrintf(PETSC_COMM_SELF,"mx: %D     my: %D   \n\n",user.mx,user.my);
 
   /* Calculate any derived values from parameters */
   N    = user.mx*user.my;

@@ -84,7 +84,7 @@ int main( int argc, char **argv )
   ierr = PetscOptionsGetInt(PETSC_NULL,"-my",&user.my,&flg); CHKERRQ(ierr);
 
   PetscPrintf(MPI_COMM_WORLD,"\n---- Minimum Surface Area Problem -----\n");
-  PetscPrintf(MPI_COMM_WORLD,"mx: %d     my: %d   \n\n",user.mx,user.my);
+  PetscPrintf(MPI_COMM_WORLD,"mx: %D     my: %D   \n\n",user.mx,user.my);
 
 
   /* Let PETSc determine the vector distribution */
@@ -240,7 +240,7 @@ PetscErrorCode FormFunctionGradient(TaoSolver tao, Vec X, PetscReal *fcn,Vec G,v
   PetscInt i,j;
   PetscInt mx=user->mx, my=user->my;
   PetscInt xs,xm,gxs,gxm,ys,ym,gys,gym;
-  PetscReal ft=0;
+  PetscReal ft=0.0;
   PetscReal hx=1.0/(mx+1),hy=1.0/(my+1), hydhx=hy/hx, hxdhy=hx/hy, area=0.5*hx*hy;
   PetscReal rhx=mx+1, rhy=my+1;
   PetscReal f1,f2,f3,f4,f5,f6,d1,d2,d3,d4,d5,d6,d7,d8,xc,xl,xr,xt,xb,xlt,xrb;
@@ -330,15 +330,15 @@ PetscErrorCode FormFunctionGradient(TaoSolver tao, Vec X, PetscReal *fcn,Vec G,v
       d7 *= rhy;
       d8 *= rhx;
 
-      f1 = sqrt( 1.0 + d1*d1 + d7*d7);
-      f2 = sqrt( 1.0 + d1*d1 + d4*d4);
-      f3 = sqrt( 1.0 + d3*d3 + d8*d8);
-      f4 = sqrt( 1.0 + d3*d3 + d2*d2);
-      f5 = sqrt( 1.0 + d2*d2 + d5*d5);
-      f6 = sqrt( 1.0 + d4*d4 + d6*d6);
+      f1 = PetscSqrtReal( 1.0 + d1*d1 + d7*d7);
+      f2 = PetscSqrtReal( 1.0 + d1*d1 + d4*d4);
+      f3 = PetscSqrtReal( 1.0 + d3*d3 + d8*d8);
+      f4 = PetscSqrtReal( 1.0 + d3*d3 + d2*d2);
+      f5 = PetscSqrtReal( 1.0 + d2*d2 + d5*d5);
+      f6 = PetscSqrtReal( 1.0 + d4*d4 + d6*d6);
       
-      f2 = sqrt( 1.0 + d1*d1 + d4*d4);
-      f4 = sqrt( 1.0 + d3*d3 + d2*d2);
+      f2 = PetscSqrtReal( 1.0 + d1*d1 + d4*d4);
+      f4 = PetscSqrtReal( 1.0 + d3*d3 + d2*d2);
 
       ft = ft + (f2 + f4);
 
@@ -359,14 +359,14 @@ PetscErrorCode FormFunctionGradient(TaoSolver tao, Vec X, PetscReal *fcn,Vec G,v
     for (j=ys; j<ys+ym; j++){
       d3=(user->left[j-ys+1] - user->left[j-ys+2])*rhy;
       d2=(user->left[j-ys+1] - x[j][0]) *rhx;
-      ft = ft+sqrt( 1.0 + d3*d3 + d2*d2);
+      ft = ft+PetscSqrtReal( 1.0 + d3*d3 + d2*d2);
     }
   }
   if (ys==0){ /* bottom side */
     for (i=xs; i<xs+xm; i++){
       d2=(user->bottom[i+1-xs]-user->bottom[i-xs+2])*rhx;
       d3=(user->bottom[i-xs+1]-x[0][i])*rhy;
-      ft = ft+sqrt( 1.0 + d3*d3 + d2*d2);
+      ft = ft+PetscSqrtReal( 1.0 + d3*d3 + d2*d2);
     }
   }
 
@@ -374,30 +374,30 @@ PetscErrorCode FormFunctionGradient(TaoSolver tao, Vec X, PetscReal *fcn,Vec G,v
     for (j=ys; j< ys+ym; j++){
       d1=(x[j][mx-1] - user->right[j-ys+1])*rhx;
       d4=(user->right[j-ys]-user->right[j-ys+1])*rhy;
-      ft = ft+sqrt( 1.0 + d1*d1 + d4*d4);
+      ft = ft+PetscSqrtReal( 1.0 + d1*d1 + d4*d4);
     }
   }
   if (ys+ym==my){ /* top side */
     for (i=xs; i<xs+xm; i++){
       d1=(x[my-1][i] - user->top[i-xs+1])*rhy;
       d4=(user->top[i-xs+1] - user->top[i-xs])*rhx;
-      ft = ft+sqrt( 1.0 + d1*d1 + d4*d4);
+      ft = ft+PetscSqrtReal( 1.0 + d1*d1 + d4*d4);
     }
   }
 
   if (ys==0 && xs==0){
     d1=(user->left[0]-user->left[1])/hy;
     d2=(user->bottom[0]-user->bottom[1])*rhx;
-    ft +=sqrt( 1.0 + d1*d1 + d2*d2);
+    ft +=PetscSqrtReal( 1.0 + d1*d1 + d2*d2);
   }
   if (ys+ym == my && xs+xm == mx){
     d1=(user->right[ym+1] - user->right[ym])*rhy;
     d2=(user->top[xm+1] - user->top[xm])*rhx;
-    ft +=sqrt( 1.0 + d1*d1 + d2*d2);
+    ft +=PetscSqrtReal( 1.0 + d1*d1 + d2*d2);
   }
 
   ft=ft*area;
-  ierr = MPI_Allreduce(&ft,fcn,1,MPIU_REAL,MPI_SUM,MPI_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&ft,fcn,1,MPIU_REAL,MPIU_SUM,MPI_COMM_WORLD);CHKERRQ(ierr);
 
   /* Restore vectors */
   ierr = DMDAVecRestoreArray(user->dm,localX,(void**)&x);
@@ -549,12 +549,12 @@ PetscErrorCode QuadraticH(AppCtx *user, Vec X, Mat Hessian)
       d7 = (xlt-xl)/hy;
       d8 = (xlt-xt)/hx;
       
-      f1 = sqrt( 1.0 + d1*d1 + d7*d7);
-      f2 = sqrt( 1.0 + d1*d1 + d4*d4);
-      f3 = sqrt( 1.0 + d3*d3 + d8*d8);
-      f4 = sqrt( 1.0 + d3*d3 + d2*d2);
-      f5 = sqrt( 1.0 + d2*d2 + d5*d5);
-      f6 = sqrt( 1.0 + d4*d4 + d6*d6);
+      f1 = PetscSqrtReal( 1.0 + d1*d1 + d7*d7);
+      f2 = PetscSqrtReal( 1.0 + d1*d1 + d4*d4);
+      f3 = PetscSqrtReal( 1.0 + d3*d3 + d8*d8);
+      f4 = PetscSqrtReal( 1.0 + d3*d3 + d2*d2);
+      f5 = PetscSqrtReal( 1.0 + d2*d2 + d5*d5);
+      f6 = PetscSqrtReal( 1.0 + d4*d4 + d6*d6);
 
 
       hl = (-hydhx*(1.0+d7*d7)+d1*d7)/(f1*f1*f1)+
@@ -714,7 +714,7 @@ static PetscErrorCode MSA_BoundaryConditions(AppCtx * user)
       for (k=0; k<maxits; k++){
 	nf1=u1 + u1*u2*u2 - u1*u1*u1/three-xt;
 	nf2=-u2 - u1*u1*u2 + u2*u2*u2/three-yt;
-	fnorm=sqrt(nf1*nf1+nf2*nf2);
+	fnorm=PetscSqrtReal(nf1*nf1+nf2*nf2);
 	if (fnorm <= tol) break;
 	njac11=one+u2*u2-u1*u1;
 	njac12=two*u1*u2;

@@ -450,10 +450,10 @@ PetscErrorCode MyMonitor(TaoSolver tao, void *ptr)
 
   PetscFunctionBegin;
   ierr = TaoSolverGetSolutionStatus(tao,&its,&fc,&gnorm,0,0,0);
-  ierr=PetscViewerASCIIPrintf(viewer,"iter = %d,",its); CHKERRQ(ierr);
+  ierr=PetscViewerASCIIPrintf(viewer,"iter = %3D,",its); CHKERRQ(ierr);
   ierr=PetscViewerASCIIPrintf(viewer," Function value %G,",fc); CHKERRQ(ierr);
   if (gnorm > 1.e-6) {
-    ierr=PetscViewerASCIIPrintf(viewer," Residual: %7.6F \n",gnorm);CHKERRQ(ierr);
+    ierr=PetscViewerASCIIPrintf(viewer," Residual: %G \n",gnorm);CHKERRQ(ierr);
   } else if (gnorm > 1.e-11) {
     ierr=PetscViewerASCIIPrintf(viewer," Residual: < 1.0e-6 \n"); CHKERRQ(ierr);
   } else {

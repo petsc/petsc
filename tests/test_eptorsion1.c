@@ -116,7 +116,7 @@ PetscErrorCode main(int argc,char **argv)
 
 
   PetscPrintf(PETSC_COMM_SELF,"\n---- Elastic-Plastic Torsion Problem -----\n");
-  PetscPrintf(PETSC_COMM_SELF,"mx: %d     my: %d   \n\n",mx,my);  
+  PetscPrintf(PETSC_COMM_SELF,"mx: %D     my: %D   \n\n",mx,my);  
   user.ndim = mx * my; user.mx = mx; user.my = my;
 
   user.hx = one/(mx+1); user.hy = one/(my+1);

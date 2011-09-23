@@ -999,15 +999,15 @@ static PetscErrorCode TaoSolverView_NTL(TaoSolver tao, PetscViewer viewer)
     ierr = PetscViewerASCIIPushTab(viewer); CHKERRQ(ierr);
     if (NTL_PC_BFGS == tl->pc_type && tl->M) {
       ierr = MatLMVMGetRejects(tl->M, &nrejects); CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer, "Rejected matrix updates: %d\n", &nrejects); CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer, "Rejected matrix updates: %D\n", &nrejects); CHKERRQ(ierr);
 
     }
 
-    ierr = PetscViewerASCIIPrintf(viewer, "Trust-region steps: %d\n", tl->ntrust); CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer, "Newton search steps: %d\n", tl->newt); CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer, "BFGS search steps: %d\n", tl->bfgs); CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer, "Scaled gradient search steps: %d\n", tl->sgrad); CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer, "Gradient search steps: %d\n", tl->grad); CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "Trust-region steps: %D\n", tl->ntrust); CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "Newton search steps: %D\n", tl->newt); CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "BFGS search steps: %D\n", tl->bfgs); CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "Scaled gradient search steps: %D\n", tl->sgrad); CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "Gradient search steps: %D\n", tl->grad); CHKERRQ(ierr);
     ierr = PetscViewerASCIIPopTab(viewer); CHKERRQ(ierr);
   } else {
     SETERRQ1(((PetscObject)tao)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for TAO NTL",((PetscObject)viewer)->type_name);

@@ -235,7 +235,7 @@ static int TaoSolverView_BLMVM(TaoSolver tao, PetscViewer viewer)
     ierr = PetscTypeCompare((PetscObject)viewer, PETSCVIEWERASCII, &isascii); CHKERRQ(ierr);
     if (isascii) {
       ierr = PetscViewerASCIIPushTab(viewer); CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer, "Gradient steps: %d\n", lmP->grad); CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer, "Gradient steps: %D\n", lmP->grad); CHKERRQ(ierr);
       ierr = PetscViewerASCIIPopTab(viewer); CHKERRQ(ierr);
     } else {
       SETERRQ1(((PetscObject)tao)->comm,PETSC_ERR_SUP,"Viewer type %s not supported for TAO BLMVM",((PetscObject)viewer)->type_name);

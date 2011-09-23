@@ -1299,7 +1299,7 @@ PetscErrorCode TaoDMFormFunctionGradientLocal(TaoSolver tao, Vec X, PetscReal *f
   ierr = (*taodm->ops->computeobjectiveandgradientlocal)(&info,(PetscReal**)x,&floc,(PetscReal**)g,taodm->user); CHKERRQ(ierr);
   CHKMEMQ;
   ierr = PetscObjectGetComm((PetscObject)X,&comm); CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&floc,f,1,MPIU_SCALAR, MPI_SUM, comm); CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&floc,f,1,MPIU_SCALAR, MPIU_SUM, comm); CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(dm,X,&x);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(dm,G,&g);CHKERRQ(ierr);
 
@@ -1363,7 +1363,7 @@ PetscErrorCode TaoDMFormFunctionLocal(TaoSolver tao, Vec X, PetscReal *f, void *
   ierr = (*taodm->ops->computeobjectivelocal)(&info,(PetscReal**)x,&floc,taodm->user); CHKERRQ(ierr);
   CHKMEMQ;
   ierr = PetscObjectGetComm((PetscObject)X,&comm); CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&floc,f,1,MPIU_SCALAR, MPI_SUM, comm); CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&floc,f,1,MPIU_SCALAR, MPIU_SUM, comm); CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(dm,X,&x);CHKERRQ(ierr);
 
   if (n != N){
