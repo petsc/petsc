@@ -303,7 +303,7 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
     ierr = VecScale(lX, -1.0);CHKERRQ(ierr);
   } else {
     ierr = VecCopy(X, lX);CHKERRQ(ierr);
-    ierr = SNESSolve(snes->pc, B, lX);CHKERRQ(ierr);
+    ierr = SNESSolve(snes->pc, 0, lX);CHKERRQ(ierr);
     ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
     ierr = VecAXPY(lX, -1.0, X);CHKERRQ(ierr);
     if (reason < 0 && reason != SNES_DIVERGED_MAX_IT) {
@@ -312,7 +312,6 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
     }
   }
   ierr = VecDot(lX, lX, &dXdot);CHKERRQ(ierr);
-
   for(i = 1; i < maxits; i++) {
     lsSuccess = PETSC_TRUE;
     ierr = (*neP->LineSearch)(snes, neP->lsP, X, F, lX, fnorm, 0.0, 0, W, &dummyNorm, &fnorm, &lsSuccess);CHKERRQ(ierr);
@@ -352,7 +351,7 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
       ierr = VecScale(dX,-1.0);CHKERRQ(ierr);
     } else {
       ierr = VecCopy(X,dX);CHKERRQ(ierr);
-      ierr = SNESSolve(snes->pc, B, dX);CHKERRQ(ierr);
+      ierr = SNESSolve(snes->pc, 0, dX);CHKERRQ(ierr);
       ierr = SNESGetConvergedReason(snes->pc,&reason);CHKERRQ(ierr);
       if (reason < 0) {
         snes->reason = SNES_DIVERGED_INNER;
@@ -364,7 +363,7 @@ PetscErrorCode SNESSolve_NCG(SNES snes)
     /* compute the conjugate direction lX = dX + beta*lX with beta = ((dX, dX) / (dX_old, dX_old) (Fletcher-Reeves update)*/
     dXdot_old = dXdot;
     ierr = VecDot(dX, dX, &dXdot);CHKERRQ(ierr);
-    if (neP->monitor) 
+    if (1)
       ierr = PetscPrintf(PETSC_COMM_WORLD, "beta %e = %e / %e \n", dXdot / dXdot_old, dXdot, dXdot_old);CHKERRQ(ierr);
     ierr = VecAYPX(lX, dXdot / dXdot_old, dX);CHKERRQ(ierr);
     /* line search for the proper contribution of lX to the solution */

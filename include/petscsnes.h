@@ -39,6 +39,7 @@ J*/
 #define SNESSHELL        "shell"
 #define SNESNCG          "ncg"
 #define SNESSORQN        "sorqn"
+#define SNESFAS          "fas"
 
 /* Logging support */
 extern PetscClassId  SNES_CLASSID;
