@@ -23,14 +23,15 @@ struct _RosWTableau {
   char *name;
   PetscInt order;               /* Classical approximation order of the method */
   PetscInt s;                   /* Number of stages */
-  PetscInt pinterp;             /* Interpolation order */
   PetscReal *A;                 /* Propagation table, strictly lower triangular */
   PetscReal *Gamma;             /* Stage table, lower triangular with nonzero diagonal */
   PetscReal *b;                 /* Step completion table */
+  PetscReal *bembed;            /* Step completion table for embedded method of order one less */
   PetscReal *ASum;              /* Row sum of A */
   PetscReal *GammaSum;          /* Row sum of Gamma, only needed for non-autonomous systems */
   PetscReal *At;                /* Propagation table in transformed variables */
-  PetscReal *bt;                /* Step completion table in transformed variables  */
+  PetscReal *bt;                /* Step completion table in transformed variables */
+  PetscReal *bembedt;           /* Step completion table of order one less in transformed variables */
   PetscReal *GammaInv;          /* Inverse of Gamma, used for transformed variables */
 };
 typedef struct _RosWTableauLink *RosWTableauLink;
@@ -52,6 +53,56 @@ typedef struct {
   PetscReal   stage_time;
   PetscBool   recompute_jacobian; /* Recompute the Jacobian at each stage, default is to freeze the Jacobian at the start of each step */
 } TS_RosW;
+
+/*MC
+     TSROSW2M - Two stage second order L-stable Rosenbrock-W scheme.
+
+     Only an approximate Jacobian is needed. By default, it is only recomputed once per step. This method is a reflection of TSROSW2P.
+
+     Level: intermediate
+
+.seealso: TSROSW
+M*/
+
+/*MC
+     TSROSW2P - Two stage second order L-stable Rosenbrock-W scheme.
+
+     Only an approximate Jacobian is needed. By default, it is only recomputed once per step. This method is a reflection of TSROSW2M.
+
+     Level: intermediate
+
+.seealso: TSROSW
+M*/
+
+/*MC
+     TSROSWRA3PW - Three stage third order Rosenbrock-W scheme for PDAE of index 1.
+
+     Only an approximate Jacobian is needed. By default, it is only recomputed once per step.
+
+     This is strongly A-stable with R(infty) = 0.73. The embedded method of order 2 is strongly A-stable with R(infty) = 0.73.
+
+     References:
+     Rang and Angermann, New Rosenbrock-W methods of order 3 for partial differential algebraic equations of index 1, 2005.
+
+     Level: intermediate
+
+.seealso: TSROSW
+M*/
+
+/*MC
+     TSROSWRA34PW2 - Four stage third order L-stable Rosenbrock-W scheme for PDAE of index 1.
+
+     Only an approximate Jacobian is needed. By default, it is only recomputed once per step.
+
+     This is strongly A-stable with R(infty) = 0. The embedded method of order 2 is strongly A-stable with R(infty) = 0.48.
+
+     References:
+     Rang and Angermann, New Rosenbrock-W methods of order 3 for partial differential algebraic equations of index 1, 2005.
+
+     Level: intermediate
+
+.seealso: TSROSW
+M*/
 
 #undef __FUNCT__
 #define __FUNCT__ "TSRosWRegisterAll"
@@ -80,7 +131,7 @@ PetscErrorCode TSRosWRegisterAll(void)
       A[2][2] = {{0,0}, {1.,0}},
       Gamma[2][2] = {{g,0}, {-2.*g,g}},
       b[2] = {0.5,0.5};
-    ierr = TSRosWRegister(TSROSW2P,2,2,&A[0][0],&Gamma[0][0],b);CHKERRQ(ierr);
+    ierr = TSRosWRegister(TSROSW2P,2,2,&A[0][0],&Gamma[0][0],b,PETSC_NULL);CHKERRQ(ierr);
   }
   {
     const PetscReal g = 1. - 1./PetscSqrtReal(2.0);
@@ -88,7 +139,35 @@ PetscErrorCode TSRosWRegisterAll(void)
       A[2][2] = {{0,0}, {1.,0}},
       Gamma[2][2] = {{g,0}, {-2.*g,g}},
       b[2] = {0.5,0.5};
-    ierr = TSRosWRegister(TSROSW2M,2,2,&A[0][0],&Gamma[0][0],b);CHKERRQ(ierr);
+    ierr = TSRosWRegister(TSROSW2M,2,2,&A[0][0],&Gamma[0][0],b,PETSC_NULL);CHKERRQ(ierr);
+  }
+  {
+    const PetscReal g = 7.8867513459481287e-01;
+    const PetscReal
+      A[3][3] = {{0,0,0},
+                 {1.5773502691896257e+00,0,0},
+                 {0.5,0,0}},
+      Gamma[3][3] = {{g,0,0},
+                     {-1.5773502691896257e+00,g,0},
+                     {-6.7075317547305480e-01,1.7075317547305482e-01,g}},
+      b[3] = {1.0566243270259355e-01,4.9038105676657971e-02,8.4529946162074843e-01},
+      b2[3] = {-1.7863279495408180e-01,1./3.,8.4529946162074843e-01};
+    ierr = TSRosWRegister(TSROSWRA3PW,3,3,&A[0][0],&Gamma[0][0],b,b2);CHKERRQ(ierr);
+  }
+  {
+    const PetscReal g = 4.3586652150845900e-01;
+    const PetscReal
+      A[4][4] = {{0,0,0,0},
+                 {8.7173304301691801e-01,0,0,0},
+                 {8.4457060015369423e-01,-1.1299064236484185e-01,0,0},
+                 {0,0,1.,0}},
+      Gamma[4][4] = {{g,0,0,0},
+                     {-8.7173304301691801e-01,g,0,0},
+                     {-9.0338057013044082e-01,5.4180672388095326e-02,g,0},
+                     {2.4212380706095346e-01,-1.2232505839045147e+00,5.4526025533510214e-01,g}},
+      b[4] = {2.4212380706095346e-01,-1.2232505839045147e+00,1.5452602553351020e+00,4.3586652150845900e-01},
+      b2[4] = {3.7810903145819369e-01,-9.6042292212423178e-02,5.0000000000000000e-01,2.1793326075422950e-01};
+    ierr = TSRosWRegister(TSROSWRA34PW2,3,4,&A[0][0],&Gamma[0][0],b,b2);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -116,6 +195,7 @@ PetscErrorCode TSRosWRegisterDestroy(void)
     RosWTableauList = link->next;
     ierr = PetscFree5(t->A,t->Gamma,t->b,t->ASum,t->GammaSum);CHKERRQ(ierr);
     ierr = PetscFree3(t->At,t->bt,t->GammaInv);CHKERRQ(ierr);
+    ierr = PetscFree2(t->bembed,t->bembedt);CHKERRQ(ierr);
     ierr = PetscFree(t->name);CHKERRQ(ierr);
     ierr = PetscFree(link);CHKERRQ(ierr);
   }
@@ -184,7 +264,8 @@ PetscErrorCode TSRosWFinalizePackage(void)
 .  s - number of stages, this is the dimension of the matrices below
 .  A - Table of propagated stage coefficients (dimension s*s, row-major), strictly lower triangular
 .  Gamma - Table of coefficients in implicit stage equations (dimension s*s, row-major), lower triangular with nonzero diagonal
--  b - Step completion table (dimension s)
+.  b - Step completion table (dimension s)
+-  bembed - Step completion table for a scheme of order one less (dimension s, PETSC_NULL if no embedded scheme is available)
 
    Notes:
    Several Rosenbrock W methods are provided, this function is only needed to create new methods.
@@ -196,7 +277,7 @@ PetscErrorCode TSRosWFinalizePackage(void)
 .seealso: TSRosW
 @*/
 PetscErrorCode TSRosWRegister(const TSRosWType name,PetscInt order,PetscInt s,
-                              const PetscReal A[],const PetscReal Gamma[],const PetscReal b[])
+                              const PetscReal A[],const PetscReal Gamma[],const PetscReal b[],const PetscReal bembed[])
 {
   PetscErrorCode ierr;
   RosWTableauLink link;
@@ -205,6 +286,12 @@ PetscErrorCode TSRosWRegister(const TSRosWType name,PetscInt order,PetscInt s,
   PetscScalar *GammaInv;
 
   PetscFunctionBegin;
+  PetscValidCharPointer(name,1);
+  PetscValidPointer(A,4);
+  PetscValidPointer(Gamma,5);
+  PetscValidPointer(b,6);
+  if (bembed) PetscValidPointer(bembed,7);
+
   ierr = PetscMalloc(sizeof(*link),&link);CHKERRQ(ierr);
   ierr = PetscMemzero(link,sizeof(*link));CHKERRQ(ierr);
   t = &link->tab;
@@ -216,12 +303,16 @@ PetscErrorCode TSRosWRegister(const TSRosWType name,PetscInt order,PetscInt s,
   ierr = PetscMemcpy(t->A,A,s*s*sizeof(A[0]));CHKERRQ(ierr);
   ierr = PetscMemcpy(t->Gamma,Gamma,s*s*sizeof(Gamma[0]));CHKERRQ(ierr);
   ierr = PetscMemcpy(t->b,b,s*sizeof(b[0]));CHKERRQ(ierr);
+  if (bembed) {
+    ierr = PetscMalloc2(s,PetscReal,&t->bembed,s,PetscReal,&t->bembedt);CHKERRQ(ierr);
+    ierr = PetscMemcpy(t->bembed,bembed,s*sizeof(bembed[0]));CHKERRQ(ierr);
+  }
   for (i=0; i<s; i++) {
     t->ASum[i] = 0;
     t->GammaSum[i] = 0;
     for (j=0; j<s; j++) {
       t->ASum[i] += A[i*s+j];
-      t->GammaSum[i] = Gamma[i*s+j];
+      t->GammaSum[i] += Gamma[i*s+j];
     }
   }
   ierr = PetscMalloc(s*s*sizeof(PetscScalar),&GammaInv);CHKERRQ(ierr); /* Need to use Scalar for inverse, then convert back to Real */
@@ -252,6 +343,12 @@ PetscErrorCode TSRosWRegister(const TSRosWType name,PetscInt order,PetscInt s,
     t->bt[i] = 0;
     for (j=0; j<s; j++) {
       t->bt[i] += t->b[j] * t->GammaInv[j*s+i];
+    }
+    if (bembed) {
+      t->bembedt[i] = 0;
+      for (j=0; j<s; j++) {
+        t->bembedt[i] += t->bembed[j] * t->GammaInv[j*s+i];
+      }
     }
   }
   link->next = RosWTableauList;

@@ -472,12 +472,14 @@ extern PetscErrorCode TSARKIMEXRegisterAll(void);
 
 #if defined(PETSC_HAVE_ROSW)
 #define TSRosWType char*
-#define TSROSW2M "2m"
-#define TSROSW2P "2p"
+#define TSROSW2M      "2m"
+#define TSROSW2P      "2p"
+#define TSROSWRA3PW   "ra3pw"
+#define TSROSWRA34PW2 "ra34pw2"
 extern PetscErrorCode TSRosWGetType(TS ts,const TSRosWType*);
 extern PetscErrorCode TSRosWSetType(TS ts,const TSRosWType);
 extern PetscErrorCode TSRosWSetRecomputeJacobian(TS,PetscBool);
-extern PetscErrorCode TSRosWRegister(const TSRosWType,PetscInt,PetscInt,const PetscReal[],const PetscReal[],const PetscReal[]);
+extern PetscErrorCode TSRosWRegister(const TSRosWType,PetscInt,PetscInt,const PetscReal[],const PetscReal[],const PetscReal[],const PetscReal[]);
 extern PetscErrorCode TSRosWFinalizePackage(void);
 extern PetscErrorCode TSRosWInitializePackage(const char path[]);
 extern PetscErrorCode TSRosWRegisterDestroy(void);

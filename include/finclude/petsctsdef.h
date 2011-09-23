@@ -50,8 +50,11 @@
 #define TSARKIMEX5  '5'
 
 #if defined(PETSC_HAVE_ROSW)
-#define TSROSW2M '2m'
-#define TSROSW2P '2p'
+#define TSROSW2M      '2m'
+#define TSROSW2P      '2p'
+#define TSROSWRA3PW   'ra3pw'
+#define TSROSWRA34PW2 'ra34pw2'
+
 #endif
 
 #endif
