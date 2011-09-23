@@ -99,9 +99,6 @@ int main( int argc, char **argv )
   PetscPrintf(PETSC_COMM_WORLD,"mx: %D,  my: %D,  ecc: %G \n\n",
 	      user.nx,user.ny,user.ecc);
 
-  /* Calculate any derived values from parameters */
-  N = user.nx*user.ny; 
-
   /* Let Petsc determine the grid division */
   Nx = PETSC_DECIDE; Ny = PETSC_DECIDE;
 
