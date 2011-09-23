@@ -1799,7 +1799,7 @@ PetscErrorCode TaoSolverDefaultConvergenceTest(TaoSolver tao,void *dummy)
   } else if ( f!=0 && PetscAbsReal(gnorm/f) <= grtol && cnorm <= crtol) {
     ierr = PetscInfo2(tao,"Converged due to residual ||g(X)||/|f(X)| =%G < %G\n",gnorm/f,grtol); CHKERRQ(ierr);
     reason = TAO_CONVERGED_GRTOL;
-  } else if (gnorm/gnorm0 <= gttol && cnorm <= crtol) {
+  } else if (gnorm0 != 0 && gnorm/gnorm0 <= gttol && cnorm <= crtol) {
     ierr = PetscInfo2(tao,"Converged due to relative residual norm ||g(X)||/||g(X0)|| = %G < %G\n",gnorm/gnorm0,gttol); CHKERRQ(ierr);
     reason = TAO_CONVERGED_GTTOL;
   } else if (nfuncs > max_funcs){
