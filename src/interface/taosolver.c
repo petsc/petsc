@@ -503,55 +503,19 @@ PetscErrorCode TaoSolverView(TaoSolver tao, PetscViewer viewer)
     ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii); CHKERRQ(ierr);
     ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERSTRING,&isstring); CHKERRQ(ierr);
     if (isascii) {
-	if (((PetscObject)tao)->prefix) {
-	    ierr = PetscViewerASCIIPrintf(viewer,"TaoSolver Object:(%s)\n",((PetscObject)tao)->prefix); CHKERRQ(ierr);
-        } else {
-	    ierr = PetscViewerASCIIPrintf(viewer,"TaoSolver Object:\n"); CHKERRQ(ierr); CHKERRQ(ierr);
-	}
+        ierr = PetscObjectPrintClassNamePrefixType((PetscObject)tao,viewer,"TaoSolver"); CHKERRQ(ierr);
 	ierr = PetscViewerASCIIPushTab(viewer); CHKERRQ(ierr);
 
-	ierr = TaoSolverGetType(tao,&type);
-	if (type) {
-	    ierr = PetscViewerASCIIPrintf(viewer,"type: %s\n",type); CHKERRQ(ierr);
-	} else {
-	    ierr = PetscViewerASCIIPrintf(viewer,"type: not set yet\n"); CHKERRQ(ierr);
-	}
 	if (tao->ops->view) {
 	    ierr = PetscViewerASCIIPushTab(viewer); CHKERRQ(ierr);
 	    ierr = (*tao->ops->view)(tao,viewer); CHKERRQ(ierr);
 	    ierr = PetscViewerASCIIPopTab(viewer); CHKERRQ(ierr);
 	}
 	if (tao->linesearch) {
-	  if (((PetscObject)(tao->linesearch))->prefix) {
-	    ierr = PetscViewerASCIIPrintf(viewer,"Line Search Object (%s)\n",((PetscObject)tao)->prefix); CHKERRQ(ierr);
-	  } else {
-	    ierr = PetscViewerASCIIPrintf(viewer,"Line Search Object\n"); CHKERRQ(ierr); CHKERRQ(ierr);
-	  }
-	  ierr = PetscViewerASCIIPushTab(viewer); CHKERRQ(ierr);
-	  ierr = TaoLineSearchGetType(tao->linesearch,&lstype);CHKERRQ(ierr);
-	  if (lstype) {
-	    ierr = PetscViewerASCIIPrintf(viewer,"type: %s\n",lstype); CHKERRQ(ierr);
-	  } else {
-	    ierr = PetscViewerASCIIPrintf(viewer,"type: not set\n"); CHKERRQ(ierr);
-	  }
-	  
-	  ierr = PetscViewerASCIIPopTab(viewer); CHKERRQ(ierr);
+	  ierr = PetscObjectPrintClassNamePrefixType((PetscObject)(tao->linesearch),viewer,"TaoLineSearch"); CHKERRQ(ierr);
 	}
 	if (tao->ksp) {
-	  if (((PetscObject)(tao->ksp))->prefix) {
-	    ierr = PetscViewerASCIIPrintf(viewer,"KSP Object (%s)\n",((PetscObject)tao)->prefix); CHKERRQ(ierr);
-	  } else {
-	    ierr = PetscViewerASCIIPrintf(viewer,"KSP Object\n"); CHKERRQ(ierr); CHKERRQ(ierr);
-	  }
-	  ierr = PetscViewerASCIIPushTab(viewer); CHKERRQ(ierr);
-	  ierr = KSPGetType(tao->ksp,&ksptype);CHKERRQ(ierr);
-	  if (ksptype) {
-	    ierr = PetscViewerASCIIPrintf(viewer,"type: %s\n",ksptype); CHKERRQ(ierr);
-	  } else {
-	    ierr = PetscViewerASCIIPrintf(viewer,"type: not set\n"); CHKERRQ(ierr);
-	  }
-	  
-	  ierr = PetscViewerASCIIPopTab(viewer); CHKERRQ(ierr);
+	  ierr = PetscObjectPrintClassNamePrefixType((PetscObject)(tao->ksp),viewer,"KSP Solver"); CHKERRQ(ierr);
 	}
 	  
 	ierr=PetscViewerASCIIPrintf(viewer,"convergence tolerances: fatol=%G,",tao->fatol);CHKERRQ(ierr);

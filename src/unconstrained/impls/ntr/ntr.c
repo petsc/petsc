@@ -740,7 +740,6 @@ static PetscErrorCode TaoSolverView_NTR(TaoSolver tao, PetscViewer viewer)
   PetscInt nrejects;
   PetscBool isascii;
   PetscFunctionBegin;
-  
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&isascii);CHKERRQ(ierr);
   if (isascii) {
     ierr = PetscViewerASCIIPushTab(viewer); CHKERRQ(ierr);
@@ -831,7 +830,6 @@ PetscErrorCode TaoSolverCreate_NTR(TaoSolver tao)
 
   /* Set linear solver to default for trust region */
   ierr = KSPCreate(((PetscObject)tao)->comm, &tao->ksp); CHKERRQ(ierr);
-  ierr = KSPSetOptionsPrefix(tao->ksp, "tao_"); CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 
