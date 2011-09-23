@@ -13,7 +13,7 @@
 extern PetscErrorCode PetscLogBegin_Private(void);
 #endif
 extern PetscBool  PetscHMPIWorker;
-extern PetscBool  PetscUseThreadPool;
+
 /* -----------------------------------------------------------------------------------------*/
 
 extern FILE *petsc_history;
@@ -24,8 +24,9 @@ extern PetscErrorCode PetscFListDestroyAll(void);
 extern PetscErrorCode PetscSequentialPhaseBegin_Private(MPI_Comm,int);
 extern PetscErrorCode PetscSequentialPhaseEnd_Private(MPI_Comm,int);
 extern PetscErrorCode PetscCloseHistoryFile(FILE **);
-extern PetscErrorCode (*PetscThreadFinalize)(void);
+extern PetscBool  PetscUseThreadPool;
 extern int* ThreadCoreAffinity;
+extern PetscErrorCode (*PetscThreadFinalize)(void);
 /* this is used by the _, __, and ___ macros (see include/petscerror.h) */
 PetscErrorCode __gierr = 0;
 
@@ -933,7 +934,7 @@ PetscErrorCode  PetscFinalize(void)
 #endif
 
   ierr = PetscHMPIFinalize();CHKERRQ(ierr);
-#if defined(PETSC_HAVE_PTHREADCLASSES)
+#if defined(PETSC_USE_PTHREAD)
   if (PetscThreadFinalize) {
     /* thread pool case */
     ierr = (*PetscThreadFinalize)();CHKERRQ(ierr);
