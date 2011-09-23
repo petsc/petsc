@@ -581,12 +581,13 @@ static PetscErrorCode TSSetFromOptions_ARKIMEX(TS ts)
 static PetscErrorCode PetscFormatRealArray(char buf[],size_t len,const char *fmt,PetscInt n,const PetscReal x[])
 {
   PetscErrorCode ierr;
-  int i,left,count;
+  PetscInt i;
+  size_t left,count;
   char *p;
 
   PetscFunctionBegin;
-  for (i=0,p=buf,left=(int)len; i<n; i++) {
-    ierr = PetscSNPrintf(p,left,fmt,&count,x[i]);CHKERRQ(ierr);
+  for (i=0,p=buf,left=len; i<n; i++) {
+    ierr = PetscSNPrintfCount(p,left,fmt,&count,x[i]);CHKERRQ(ierr);
     if (count >= left) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Insufficient space in buffer");
     left -= count;
     p += count;

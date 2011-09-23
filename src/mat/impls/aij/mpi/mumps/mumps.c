@@ -770,6 +770,9 @@ PetscErrorCode PetscSetMUMPSOptions(Mat F, Mat A)
   ierr = PetscOptionsInt("-mat_mumps_icntl_27","ICNTL(27): experimental parameter","None",lu->id.ICNTL(27),&lu->id.ICNTL(27),PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-mat_mumps_icntl_28","ICNTL(28): use 1 for sequential analysis and ictnl(7) ordering, or 2 for parallel analysis and ictnl(29) ordering","None",lu->id.ICNTL(28),&lu->id.ICNTL(28),PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-mat_mumps_icntl_29","ICNTL(29): parallel ordering 1 = ptscotch 2 = parmetis","None",lu->id.ICNTL(29),&lu->id.ICNTL(29),PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mat_mumps_icntl_30","ICNTL(30): compute user-specified set of entries in inv(A)","None",lu->id.ICNTL(30),&lu->id.ICNTL(30),PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mat_mumps_icntl_31","ICNTL(31): factors can be discarded in the solve phase","None",lu->id.ICNTL(31),&lu->id.ICNTL(31),PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mat_mumps_icntl_33","ICNTL(33): compute determinant","None",lu->id.ICNTL(33),&lu->id.ICNTL(33),PETSC_NULL);CHKERRQ(ierr);
 
   ierr = PetscOptionsReal("-mat_mumps_cntl_1","CNTL(1): relative pivoting threshold","None",lu->id.CNTL(1),&lu->id.CNTL(1),PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-mat_mumps_cntl_2","CNTL(2): stopping criterion of refinement","None",lu->id.CNTL(2),&lu->id.CNTL(2),PETSC_NULL);CHKERRQ(ierr);
@@ -1113,8 +1116,12 @@ PetscErrorCode MatView_MUMPS(Mat A,PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(25) (computation of a null space basis):          %d \n",lu->id.ICNTL(25));CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(26) (Schur options for rhs or solution):          %d \n",lu->id.ICNTL(26));CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(27) (experimental parameter):                     %d \n",lu->id.ICNTL(27));CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(28) (Use parallel or sequential ordering):        %d \n",lu->id.ICNTL(28));CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(29) (Parallel ordering):                          %d \n",lu->id.ICNTL(29));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(28) (use parallel or sequential ordering):        %d \n",lu->id.ICNTL(28));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(29) (parallel ordering):                          %d \n",lu->id.ICNTL(29));CHKERRQ(ierr);
+      
+      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(30) (user-specified set of entries in inv(A)):    %d \n",lu->id.ICNTL(30));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(31) (factors is discarded in the solve phase):    %d \n",lu->id.ICNTL(31));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(33) (compute determinant):                        %d \n",lu->id.ICNTL(33));CHKERRQ(ierr);
       
       ierr = PetscViewerASCIIPrintf(viewer,"  CNTL(1) (relative pivoting threshold):      %g \n",lu->id.CNTL(1));CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  CNTL(2) (stopping criterion of refinement): %g \n",lu->id.CNTL(2));CHKERRQ(ierr);
@@ -1151,6 +1158,7 @@ PetscErrorCode MatView_MUMPS(Mat A,PetscViewer viewer)
         ierr = PetscViewerASCIIPrintf(viewer,"  RINFOG(1) (global estimated flops for the elimination after analysis): %g \n",lu->id.RINFOG(1));CHKERRQ(ierr);
         ierr = PetscViewerASCIIPrintf(viewer,"  RINFOG(2) (global estimated flops for the assembly after factorization): %g \n",lu->id.RINFOG(2));CHKERRQ(ierr);
         ierr = PetscViewerASCIIPrintf(viewer,"  RINFOG(3) (global estimated flops for the elimination after factorization): %g \n",lu->id.RINFOG(3));CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"  (RINFOG(12) RINFOG(13))*2^INFOG(34) (determinant): (%g,%g)*(2^%d)\n",lu->id.RINFOG(12),lu->id.RINFOG(13),lu->id.INFOG(34));CHKERRQ(ierr);
         
         ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(3) (estimated real workspace for factors on all processors after analysis): %d \n",lu->id.INFOG(3));CHKERRQ(ierr);
         ierr = PetscViewerASCIIPrintf(viewer,"  INFOG(4) (estimated integer workspace for factors on all processors after analysis): %d \n",lu->id.INFOG(4));CHKERRQ(ierr);
