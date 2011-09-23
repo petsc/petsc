@@ -11,7 +11,7 @@
  * hash table for non-zero data and keys 
  *
  */
-PetscErrorCode  PetscTableCreate(const PetscInt n,PetscTable *rta)
+PetscErrorCode  PetscTableCreate(PetscInt n,PetscTable *rta)
 {
   PetscTable     ta;
   PetscErrorCode ierr;
@@ -102,64 +102,46 @@ PetscErrorCode  PetscTableIsEmpty(const PetscTable ta,PetscInt *flag)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscTableAdd"
-/* PetscTableAdd() ********************************************
- *
- */
-PetscErrorCode  PetscTableAdd(PetscTable ta,const PetscInt key,const PetscInt data)
+#define __FUNCT__ "PetscTableAddExpand"
+/* 
+    PetscTableAddExpand - called PetscTableAdd() if more space needed
+
+*/
+PetscErrorCode  PetscTableAddExpand(PetscTable ta,PetscInt key,PetscInt data)
 {  
   PetscErrorCode ierr;
-  PetscInt       ii = 0,hash = HASHT(ta,key);
+  PetscInt       ii = 0;
   const PetscInt tsize = ta->tablesize,tcount = ta->count; 
+  PetscInt       *oldtab = ta->table,*oldkt = ta->keytable,newk,ndata;
   
   PetscFunctionBegin;
-  if (key <= 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"key <= 0");
-  if (!data) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Null data");
+  if (ta->tablesize == PETSC_MAX_INT/4) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"ta->tablesize < 0");
+  ta->tablesize = 2*tsize; 
+  if (ta->tablesize <= tsize) ta->tablesize = PETSC_MAX_INT/4;
   
-  if (ta->count < 5*(ta->tablesize/6) - 1) {
-    while (ii++ < ta->tablesize){
-      if (ta->keytable[hash] == key) {
-	ta->table[hash] = data; /* over write */
-	PetscFunctionReturn(0); 
-      } else if (!ta->keytable[hash]) {
-	ta->count++; /* add */
-	ta->keytable[hash] = key; ta->table[hash] = data;
-	PetscFunctionReturn(0);
-      }
-      hash = (hash == (ta->tablesize-1)) ? 0 : hash+1; 
-    }  
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"Full table");
-  } else {
-    PetscInt *oldtab = ta->table,*oldkt = ta->keytable,newk,ndata;
-
-    /* alloc new (bigger) table */
-    if (ta->tablesize == PETSC_MAX_INT/4) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"ta->tablesize < 0");
-    ta->tablesize = 2*tsize; 
-    if (ta->tablesize <= tsize) ta->tablesize = PETSC_MAX_INT/4;
-
-    ierr = PetscMalloc(ta->tablesize*sizeof(PetscInt),&ta->table);CHKERRQ(ierr);
-    ierr = PetscMalloc(ta->tablesize*sizeof(PetscInt),&ta->keytable);CHKERRQ(ierr);
-    ierr = PetscMemzero(ta->keytable,ta->tablesize*sizeof(PetscInt));CHKERRQ(ierr);
-
-    ta->count     = 0;
-    ta->head      = 0; 
+  ierr = PetscMalloc(ta->tablesize*sizeof(PetscInt),&ta->table);CHKERRQ(ierr);
+  ierr = PetscMalloc(ta->tablesize*sizeof(PetscInt),&ta->keytable);CHKERRQ(ierr);
+  ierr = PetscMemzero(ta->keytable,ta->tablesize*sizeof(PetscInt));CHKERRQ(ierr);
+  
+  ta->count     = 0;
+  ta->head      = 0; 
     
-    ierr = PetscTableAdd(ta,key,data);CHKERRQ(ierr); 
-    /* rehash */
-    for (ii = 0; ii < tsize; ii++) {
-      newk = oldkt[ii];
-      if (newk) {
-	ndata = oldtab[ii];
-	ierr  = PetscTableAdd(ta,newk,ndata);CHKERRQ(ierr); 
-      }
+  ierr = PetscTableAdd(ta,key,data);CHKERRQ(ierr); 
+  /* rehash */
+  for (ii = 0; ii < tsize; ii++) {
+    newk = oldkt[ii];
+    if (newk) {
+      ndata = oldtab[ii];
+      ierr  = PetscTableAdd(ta,newk,ndata);CHKERRQ(ierr); 
     }
-    if (ta->count != tcount + 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"corrupted ta->count");
-    
-    ierr = PetscFree(oldtab);CHKERRQ(ierr);
-    ierr = PetscFree(oldkt);CHKERRQ(ierr);
   }
+  if (ta->count != tcount + 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"corrupted ta->count");
+  
+  ierr = PetscFree(oldtab);CHKERRQ(ierr);
+  ierr = PetscFree(oldkt);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscTableRemoveAll"
@@ -244,68 +226,46 @@ PetscErrorCode  PetscTableGetNext(PetscTable ta,PetscTablePosition *rPosition,Pe
 
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscTableAddCount"
-/* 
-     PetscTableAddCount - adds another key to the hash table and gives it the data of the current size of the table,
-          if the entry already exists then just return
- *
- */
-PetscErrorCode  PetscTableAddCount(PetscTable ta,const PetscInt key)
+#define __FUNCT__ "PetscTableAddCountExpand"
+PetscErrorCode  PetscTableAddCountExpand(PetscTable ta,PetscInt key)
 {  
   PetscErrorCode ierr;
   PetscInt       ii = 0,hash = HASHT(ta,key);
   const PetscInt tsize = ta->tablesize,tcount = ta->count; 
+  PetscInt *oldtab = ta->table,*oldkt = ta->keytable,newk,ndata;
   
   PetscFunctionBegin;
-  if (key <= 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"key <= 0");
+  /* before making the table larger check if key is already in table */
+  while (ii++ < ta->tablesize){
+    if (ta->keytable[hash] == key) PetscFunctionReturn(0); 
+    hash = (hash == (ta->tablesize-1)) ? 0 : hash+1; 
+  }  
   
-  if (ta->count < 5*(ta->tablesize/6) - 1) {
-    while (ii++ < ta->tablesize){
-      if (ta->keytable[hash] == key) {
-	PetscFunctionReturn(0); 
-      } else if (!ta->keytable[hash]) {
-	ta->count++; /* add */
-	ta->keytable[hash] = key; ta->table[hash] = ta->count;
-	PetscFunctionReturn(0);
-      }
-      hash = (hash == (ta->tablesize-1)) ? 0 : hash+1; 
-    }  
-    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"Full table");
-  } else {
-    PetscInt *oldtab = ta->table,*oldkt = ta->keytable,newk,ndata;
-
-    /* before making the table larger check if key is already in table */
-    while (ii++ < ta->tablesize){
-      if (ta->keytable[hash] == key) PetscFunctionReturn(0); 
-      hash = (hash == (ta->tablesize-1)) ? 0 : hash+1; 
-    }  
-
-    /* alloc new (bigger) table */
-    if (ta->tablesize == PETSC_MAX_INT/4) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"ta->tablesize < 0");
-    ta->tablesize = 2*tsize; 
-    if (ta->tablesize <= tsize) ta->tablesize = PETSC_MAX_INT/4;
-
-    ierr = PetscMalloc(ta->tablesize*sizeof(PetscInt),&ta->table);CHKERRQ(ierr);
-    ierr = PetscMalloc(ta->tablesize*sizeof(PetscInt),&ta->keytable);CHKERRQ(ierr);
-    ierr = PetscMemzero(ta->keytable,ta->tablesize*sizeof(PetscInt));CHKERRQ(ierr);
-
-    ta->count     = 0;
-    ta->head      = 0; 
-    
-    /* Build a new copy of the data */
-    for (ii = 0; ii < tsize; ii++) {
-      newk = oldkt[ii];
-      if (newk) {
-	ndata = oldtab[ii];
-	ierr  = PetscTableAdd(ta,newk,ndata);CHKERRQ(ierr); 
-      }
+  /* alloc new (bigger) table */
+  if (ta->tablesize == PETSC_MAX_INT/4) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"ta->tablesize < 0");
+  ta->tablesize = 2*tsize; 
+  if (ta->tablesize <= tsize) ta->tablesize = PETSC_MAX_INT/4;
+  
+  ierr = PetscMalloc(ta->tablesize*sizeof(PetscInt),&ta->table);CHKERRQ(ierr);
+  ierr = PetscMalloc(ta->tablesize*sizeof(PetscInt),&ta->keytable);CHKERRQ(ierr);
+  ierr = PetscMemzero(ta->keytable,ta->tablesize*sizeof(PetscInt));CHKERRQ(ierr);
+  
+  ta->count     = 0;
+  ta->head      = 0; 
+  
+  /* Build a new copy of the data */
+  for (ii = 0; ii < tsize; ii++) {
+    newk = oldkt[ii];
+    if (newk) {
+      ndata = oldtab[ii];
+      ierr  = PetscTableAdd(ta,newk,ndata);CHKERRQ(ierr); 
     }
-    ierr = PetscTableAddCount(ta,key);CHKERRQ(ierr); 
-    if (ta->count != tcount + 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"corrupted ta->count");
-    
-    ierr = PetscFree(oldtab);CHKERRQ(ierr);
-    ierr = PetscFree(oldkt);CHKERRQ(ierr);
   }
+  ierr = PetscTableAddCount(ta,key);CHKERRQ(ierr); 
+  if (ta->count != tcount + 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_COR,"corrupted ta->count");
+  
+  ierr = PetscFree(oldtab);CHKERRQ(ierr);
+  ierr = PetscFree(oldkt);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
