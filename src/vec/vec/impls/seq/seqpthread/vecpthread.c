@@ -1,4 +1,3 @@
-
 /*
    Implements the sequential pthread based vectors.
 */
@@ -7,8 +6,8 @@
 #endif
 #include <sched.h>
 #include <petscconf.h>
-#include <private/vecimpl.h>          /*I "petscvec.h" I*/
 #include <../src/vec/vec/impls/dvecimpl.h>
+#include <../src/vec/vec/impls/seq/seqpthread/vecpthreadimpl.h>
 #include <petscblaslapack.h>
 #include <private/petscaxpy.h>
 #include <pthread.h>
@@ -1043,7 +1042,7 @@ void* VecPointwiseMult_Kernel(void *arg)
 #include <../src/vec/vec/impls/seq/ftn-kernels/fxtimesy.h>
 #undef __FUNCT__  
 #define __FUNCT__ "VecPointwiseMult_SeqPThread"
-static PetscErrorCode VecPointwiseMult_SeqPThread(Vec win,Vec xin,Vec yin)
+PetscErrorCode VecPointwiseMult_SeqPThread(Vec win,Vec xin,Vec yin)
 {
   PetscErrorCode ierr;
   PetscInt       n = win->map->n,i,iIndex;
@@ -1103,7 +1102,7 @@ void* VecPointwiseDivide_Kernel(void *arg)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecPointwiseDivide_SeqPThread"
-static PetscErrorCode VecPointwiseDivide_SeqPThread(Vec win,Vec xin,Vec yin)
+PetscErrorCode VecPointwiseDivide_SeqPThread(Vec win,Vec xin,Vec yin)
 {
   PetscErrorCode ierr;
   PetscInt       n = win->map->n,i,iIndex;
@@ -1162,7 +1161,7 @@ void* VecSwap_Kernel(void *arg)
 #include <petscblaslapack.h>
 #undef __FUNCT__
 #define __FUNCT__ "VecSwap_SeqPThread"
-static PetscErrorCode VecSwap_SeqPThread(Vec xin,Vec yin)
+PetscErrorCode VecSwap_SeqPThread(Vec xin,Vec yin)
 {
   PetscScalar    *ya, *xa;
   PetscErrorCode ierr;
@@ -1218,7 +1217,7 @@ void* VecSetRandom_Kernel(void *arg)
 
 #undef __FUNCT__
 #define __FUNCT__ "VecSetRandom_SeqPThread"
-static PetscErrorCode VecSetRandom_SeqPThread(Vec xin,PetscRandom r)
+PetscErrorCode VecSetRandom_SeqPThread(Vec xin,PetscRandom r)
 {
   PetscErrorCode ierr;
   PetscInt       n = xin->map->n,i;
@@ -1269,7 +1268,7 @@ void* VecCopy_Kernel(void *arg)
 
 #undef __FUNCT__
 #define __FUNCT__ "VecCopy_SeqPThread"
-static PetscErrorCode VecCopy_SeqPThread(Vec xin,Vec yin)
+PetscErrorCode VecCopy_SeqPThread(Vec xin,Vec yin)
 {
   PetscScalar       *ya;
   const PetscScalar *xa;
@@ -1507,41 +1506,111 @@ void* DoCoreAffinity(void)
 }
 #endif
 
+static struct _VecOps DvOps = {VecDuplicate_Seq, /* 1 */
+            VecDuplicateVecs_Default,
+            VecDestroyVecs_Default,
+            VecDot_SeqPThread,
+            VecMDot_SeqPThread,
+            VecNorm_SeqPThread, 
+            VecTDot_Seq,
+            VecMTDot_Seq,
+            VecScale_SeqPThread,
+            VecCopy_SeqPThread, /* 10 */
+            VecSet_SeqPThread,
+            VecSwap_Seq,
+            VecAXPY_SeqPThread,
+            VecAXPBY_Seq,
+            VecMAXPY_SeqPThread,
+            VecAYPX_SeqPThread,
+            VecWAXPY_SeqPThread,
+            VecAXPBYPCZ_Seq,
+            VecPointwiseMult_SeqPThread,
+            VecPointwiseDivide_SeqPThread, 
+            VecSetValues_Seq, /* 20 */
+            0,0,
+            0,
+            VecGetSize_Seq,
+            VecGetSize_Seq,
+            0,
+            VecMax_Seq,
+            VecMin_Seq,
+            VecSetRandom_SeqPThread,
+            VecSetOption_Seq, /* 30 */
+            VecSetValuesBlocked_Seq,
+            VecDestroy_SeqPThread,
+            VecView_Seq,
+            VecPlaceArray_Seq,
+            VecReplaceArray_Seq,
+            VecDot_SeqPThread,
+            VecTDot_Seq,
+            VecNorm_SeqPThread,
+            VecMDot_SeqPThread,
+            VecMTDot_Seq, /* 40 */
+	    VecLoad_Default,		       
+            VecReciprocal_Default,
+            VecConjugate_Seq,
+	    0,
+	    0,
+            VecResetArray_Seq,
+            0,
+            VecMaxPointwiseDivide_Seq,
+            VecPointwiseMax_Seq,
+            VecPointwiseMaxAbs_Seq,
+            VecPointwiseMin_Seq,
+            VecGetValues_Seq,
+    	    0,
+    	    0,
+    	    0,
+    	    0,
+    	    0,
+    	    0,
+   	    VecStrideGather_Default,
+   	    VecStrideScatter_Default
+          };
+
+#undef __FUNCT__  
+#define __FUNCT__ "VecCreate_SeqPThread_Private"
+PetscErrorCode VecCreate_SeqPThread_Private(Vec v,const PetscScalar array[])
+{
+  Vec_SeqPthread *s;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscNewLog(v,Vec_SeqPthread,&s);CHKERRQ(ierr);
+  ierr = PetscMemcpy(v->ops,&DvOps,sizeof(DvOps));CHKERRQ(ierr);
+  v->data            = (void*)s;
+  v->petscnative     = PETSC_TRUE;
+  s->array           = (PetscScalar *)array;
+  s->array_allocated = 0;
+
+  if (v->map->bs == -1) v->map->bs = 1;
+  ierr = PetscLayoutSetUp(v->map);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)v,VECSEQPTHREAD);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
+
 EXTERN_C_BEGIN
-#undef __FUNCT__
+#undef __FUNCT__  
 #define __FUNCT__ "VecCreate_SeqPThread"
 PetscErrorCode  VecCreate_SeqPThread(Vec V)
 {
-  PetscErrorCode ierr;
-  PetscMPIInt    size;
-  PetscScalar    *array;
-  PetscInt       n = PetscMax(V->map->n,V->map->N);
+  Vec_SeqPthread  *s;
+  PetscScalar     *array;
+  PetscErrorCode  ierr;
+  PetscInt        n = PetscMax(V->map->n,V->map->N);
+  PetscMPIInt     size;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(((PetscObject)V)->comm,&size);CHKERRQ(ierr);
-  if  (size > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot create VECSEQTHREAD on more than one process");
+  if (size > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot create VECSEQPTHREAD on more than one process");
   ierr = PetscMalloc(n*sizeof(PetscScalar),&array);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory(V, n*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = PetscMemzero(array,n*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr = VecCreate_Seq_Private(V,array);CHKERRQ(ierr);
-  ierr = PetscObjectChangeTypeName((PetscObject)V,VECSEQPTHREAD);CHKERRQ(ierr);
-  V->ops->dot             = VecDot_SeqPThread;
-  V->ops->mdot            = VecMDot_SeqPThread;
-  V->ops->scale           = VecScale_SeqPThread;
-  V->ops->axpy            = VecAXPY_SeqPThread;
-  V->ops->aypx            = VecAYPX_SeqPThread;
-  V->ops->waxpy           = VecWAXPY_SeqPThread;
-  V->ops->norm            = VecNorm_SeqPThread;
-  V->ops->max             = VecMax_SeqPThread;
-  V->ops->min             = VecMin_SeqPThread;
-  V->ops->pointwisemult   = VecPointwiseMult_SeqPThread;
-  V->ops->pointwisedivide = VecPointwiseDivide_SeqPThread;
-  V->ops->swap            = VecSwap_SeqPThread;
-  V->ops->setrandom       = VecSetRandom_SeqPThread;
-  V->ops->copy            = VecCopy_SeqPThread;
-  V->ops->maxpy           = VecMAXPY_SeqPThread;
-  V->ops->set             = VecSet_SeqPThread;
-  VecSet(V,0);
+  ierr = VecCreate_SeqPThread_Private(V,array);CHKERRQ(ierr);
+  s    = (Vec_SeqPthread*)V->data;
+  s->array_allocated = (PetscScalar*)array;
+
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
