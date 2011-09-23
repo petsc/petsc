@@ -177,7 +177,6 @@ PetscErrorCode SNESReset_FAS(SNES snes)
   if (fas->restrct)      ierr = MatDestroy(&fas->restrct);CHKERRQ(ierr);
   if (fas->rscale)       ierr = VecDestroy(&fas->rscale);CHKERRQ(ierr);
 
-  
   /* recurse -- reset should NOT destroy the structures -- destroy should destroy the structures recursively */
   if (fas->next) ierr = SNESReset(fas->next);CHKERRQ(ierr);
   if (snes->work) {ierr = VecDestroyVecs(snes->nwork,&snes->work);CHKERRQ(ierr);}
@@ -304,7 +303,7 @@ x = x + I(x^c - Rx)
 
 #undef __FUNCT__
 #define __FUNCT__ "FASCycle_Private"
-PetscErrorCode FASCycle_Private(SNES snes, Vec F, Vec X) {
+PetscErrorCode FASCycle_Private(SNES snes, Vec F, Vec X, Vec B) {
 
   PetscErrorCode ierr;
   Vec X_c, Xo_c, F_c, B_c;
@@ -312,7 +311,10 @@ PetscErrorCode FASCycle_Private(SNES snes, Vec F, Vec X) {
 
   PetscFunctionBegin;
   /* pre-smooth -- just update using the pre-smoother */
-
+  if (fas->presmooth) {
+    ierr = SNESSolve(fas->presmooth, B, X);CHKERRQ(ierr);
+  }
+  ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
   if (fas->next) {
     X_c  = fas->next->work[0];
     Xo_c = fas->next->work[1];
@@ -333,8 +335,11 @@ PetscErrorCode FASCycle_Private(SNES snes, Vec F, Vec X) {
     ierr = MatInterpolate(fas->interpolate, X_c, F);CHKERRQ(ierr);
     ierr = VecAXPY(X, -1.0, F);CHKERRQ(ierr);
   }
-  ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);  
   /* post-smooth -- just update using the post-smoother */
+  if (fas->postsmooth) {
+    
+  }
+  ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -345,10 +350,48 @@ PetscErrorCode FASCycle_Private(SNES snes, Vec F, Vec X) {
 PetscErrorCode SNESSolve_FAS(SNES snes)
 {
   PetscErrorCode ierr;
-  Vec X, F;
+  PetscInt i, maxits;
+  Vec X, F, B;
+  PetscReal fnorm;
   PetscFunctionBegin;
+  maxits = snes->max_its;	     /* maximum number of iterations */
+  snes->reason = SNES_CONVERGED_ITERATING;
   X = snes->vec_sol;
   F = snes->vec_func;
-  ierr = FASCycle_Private(snes, snes->vec_func, snes->vec_sol);CHKERRQ(ierr);
+  B = snes->vec_rhs;
+  /* initial iteration */
+  ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
+  snes->iter = 0;
+  snes->norm = 0.;
+  ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
+  ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
+  if (snes->domainerror) {
+    snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
+    PetscFunctionReturn(0);
+  }
+  ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr); /* fnorm <- ||F||  */
+  if (PetscIsInfOrNanReal(fnorm)) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_FP,"Infinite or not-a-number generated in norm");
+  ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
+  snes->norm = fnorm;
+  ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
+  SNESLogConvHistory(snes,fnorm,0);
+  ierr = SNESMonitor(snes,0,fnorm);CHKERRQ(ierr);
+
+  /* set parameter for default relative tolerance convergence test */
+  snes->ttol = fnorm*snes->rtol;
+  /* test convergence */
+  ierr = (*snes->ops->converged)(snes,0,0.0,0.0,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
+  if (snes->reason) PetscFunctionReturn(0);
+  for (i = 0; i < maxits; i++) {
+    /* Call general purpose update function */
+    if (snes->ops->update) {
+      ierr = (*snes->ops->update)(snes, snes->iter);CHKERRQ(ierr);
+    }
+    ierr = FASCycle_Private(snes, F, X, B);CHKERRQ(ierr);
+  }
+  if (i == maxits) {
+    ierr = PetscInfo1(snes, "Maximum number of iterations has been reached: %D\n", maxits);CHKERRQ(ierr);
+    if (!snes->reason) snes->reason = SNES_DIVERGED_MAX_IT;
+  }
   PetscFunctionReturn(0);
 }
