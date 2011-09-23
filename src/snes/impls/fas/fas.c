@@ -166,7 +166,7 @@ PetscErrorCode SNESFASSetRScale(SNES snes, PetscInt level, Vec rscale) {
 #define __FUNCT__ "SNESReset_FAS"
 PetscErrorCode SNESReset_FAS(SNES snes)
 {
-  PetscErrorCode ierr;
+  PetscErrorCode ierr = 0;
   SNES_FAS * fas = (SNES_FAS *)snes->data;
 
   PetscFunctionBegin;
