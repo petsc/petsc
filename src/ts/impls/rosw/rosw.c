@@ -456,12 +456,13 @@ static PetscErrorCode TSSetFromOptions_RosW(TS ts)
 static PetscErrorCode PetscFormatRealArray(char buf[],size_t len,const char *fmt,PetscInt n,const PetscReal x[])
 {
   PetscErrorCode ierr;
-  int i,left,count;
+  PetscInt i;
+  size_t left,count;
   char *p;
 
   PetscFunctionBegin;
-  for (i=0,p=buf,left=(int)len; i<n; i++) {
-    ierr = PetscSNPrintf(p,left,fmt,&count,x[i]);CHKERRQ(ierr);
+  for (i=0,p=buf,left=len; i<n; i++) {
+    ierr = PetscSNPrintfCount(p,left,fmt,&count,x[i]);CHKERRQ(ierr);
     if (count >= left) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Insufficient space in buffer");
     left -= count;
     p += count;
@@ -484,13 +485,16 @@ static PetscErrorCode TSView_RosW(TS ts,PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     const TSRosWType rostype;
+    PetscInt i;
+    PetscReal abscissa[512];
     char buf[512];
     ierr = TSRosWGetType(ts,&rostype);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  Rosenbrock-W %s\n",rostype);CHKERRQ(ierr);
-    ierr = PetscFormatRealArray(buf,sizeof buf,"% 8.6F",tab->s,tab->ASum);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  Abscissa of A     = %s\n",buf);CHKERRQ(ierr);
-    ierr = PetscFormatRealArray(buf,sizeof buf,"% 8.6F",tab->s,tab->GammaSum);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  Abscissa of Gamma = %s\n",buf);CHKERRQ(ierr);
+    ierr = PetscFormatRealArray(buf,sizeof buf,"% 8.6f",tab->s,tab->ASum);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Abscissa of A       = %s\n",buf);CHKERRQ(ierr);
+    for (i=0; i<tab->s; i++) abscissa[i] = tab->ASum[i] + tab->Gamma[i];
+    ierr = PetscFormatRealArray(buf,sizeof buf,"% 8.6f",tab->s,abscissa);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Abscissa of A+Gamma = %s\n",buf);CHKERRQ(ierr);
   }
   ierr = SNESView(ts->snes,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
