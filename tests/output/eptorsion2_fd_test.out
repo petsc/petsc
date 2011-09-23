@@ -13,6 +13,6 @@ Testing hand-coded Hessian (hc) against finite difference Hessian (fd). If the r
 O (1.e-8), the hand-coded Hessian is probably correct.
 Run with -tao_fd_test_display to show difference
 of hand-coded and finite difference Hessian.
-ratio ||fd-hc||/||hc|| = 8.08749e-11, difference ||fd-hc|| = 3.58049e-09
-ratio ||fd-hc||/||hc|| = 8.08749e-11, difference ||fd-hc|| = 3.58049e-09
-ratio ||fd-hc||/||hc|| = 8.08749e-11, difference ||fd-hc|| = 3.58049e-09
+ratio ||fd-hc||/||hc|| = 8.02342e-11, difference ||fd-hc|| = 3.55212e-09
+ratio ||fd-hc||/||hc|| = 8.02342e-11, difference ||fd-hc|| = 3.55212e-09
+ratio ||fd-hc||/||hc|| = 8.02342e-11, difference ||fd-hc|| = 3.55212e-09

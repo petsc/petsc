@@ -2,11 +2,11 @@
 ---- Minimum Surface Area Problem -----
 mx: 10     my: 10   
 
-iter = 0, Function value 1.46076, Residual: 0.207785 
-iter = 0, Function value 1.43581, Residual: 0.187715 
-iter = 1, Function value 1.41867, Residual: 0.015952 
-iter = 2, Function value 1.41847, Residual: 0.000149 
-iter = 3, Function value 1.41847, Residual: < 1.0e-6 
+iter =   0, Function value 1.46076, Residual: 0.207785 
+iter =   0, Function value 1.43581, Residual: 0.187715 
+iter =   1, Function value 1.41867, Residual: 0.0159523 
+iter =   2, Function value 1.41847, Residual: 0.00014867 
+iter =   3, Function value 1.41847, Residual: < 1.0e-6 
 TaoSolver Object:
   type: tao_nls
       Rejected matrix updates: 0
@@ -27,8 +27,8 @@ TaoSolver Object:
     type: stcg
   convergence tolerances: fatol=1e-10,   frtol=1e-10
   convergence tolerances: gatol=1e-08,   steptol=0,   gttol=0
-  Residual in Function/Gradient:=2.646849e-08
-  Objective value=1.418469e+00
+  Residual in Function/Gradient:=2.64276e-08
+  Objective value=1.41847
   total number of iterations=3,                          (max: 50)
   total number of function/gradient evaluations=10,      (max: 4000)
   total number of Hessian evaluations=4

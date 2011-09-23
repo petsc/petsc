@@ -1,9 +1,9 @@
-iter = 0, Function value -0.33218, Residual: 0.623913 
-iter = 1, Function value -0.378168, Residual: 0.374058 
-iter = 2, Function value -0.398441, Residual: 0.236372 
-iter = 3, Function value -0.419353, Residual: 0.165586 
-iter = 4, Function value -0.426263, Residual: 0.230984 
-iter = 5, Function value -0.431383, Residual: 0.081086 
-iter = 6, Function value -0.432616, Residual: 0.053576 
-iter = 7, Function value -0.433452, Residual: 0.038282 
+iter =   0, Function value -0.33218, Residual: 0.623913 
+iter =   1, Function value -0.378168, Residual: 0.374058 
+iter =   2, Function value -0.398441, Residual: 0.236372 
+iter =   3, Function value -0.419353, Residual: 0.165586 
+iter =   4, Function value -0.426263, Residual: 0.230984 
+iter =   5, Function value -0.431383, Residual: 0.0810856 
+iter =   6, Function value -0.432616, Residual: 0.053576 
+iter =   7, Function value -0.433452, Residual: 0.0382823 
 TAO did not terminate successfully 

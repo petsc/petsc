@@ -1,22 +1,22 @@
 
 ---- Journal Bearing Problem SHB-----
-mx: 10,  my: 16,  ecc: 0.900 
+mx: 10,  my: 16,  ecc: 0.9 
 
-iter = 0, Function value 0, Residual: 800.441943 
-iter = 1, Function value -0.00130451, Residual: 405.912559 
-iter = 2, Function value 357.43, Residual: 137.806664 
-iter = 3, Function value 90.9645, Residual: 33.762040 
-iter = 4, Function value 11.9055, Residual: 10.181794 
-iter = 5, Function value -9.0619, Residual: 4.167947 
-iter = 6, Function value -14.5069, Residual: 1.656268 
-iter = 7, Function value -15.4412, Residual: 0.573414 
-iter = 8, Function value -15.5824, Residual: 0.197133 
-iter = 9, Function value -15.6022, Residual: 0.077791 
-iter = 10, Function value -15.6065, Residual: 0.024140 
-iter = 11, Function value -15.607, Residual: 0.005749 
-iter = 12, Function value -15.607, Residual: 0.001291 
-iter = 13, Function value -15.607, Residual: 0.000289 
-iter = 14, Function value -15.607, Residual: 0.000065 
-iter = 15, Function value -15.607, Residual: 0.000014 
-iter = 16, Function value -15.607, Residual: 0.000003 
-iter = 17, Function value -15.607, Residual: < 1.0e-6 
+iter =   0, Function value 0, Residual: 800.442 
+iter =   1, Function value -0.00130451, Residual: 405.913 
+iter =   2, Function value 357.43, Residual: 137.807 
+iter =   3, Function value 90.9645, Residual: 33.762 
+iter =   4, Function value 11.9055, Residual: 10.1818 
+iter =   5, Function value -9.0619, Residual: 4.16795 
+iter =   6, Function value -14.5069, Residual: 1.65627 
+iter =   7, Function value -15.4412, Residual: 0.573414 
+iter =   8, Function value -15.5824, Residual: 0.197133 
+iter =   9, Function value -15.6022, Residual: 0.0777909 
+iter =  10, Function value -15.6065, Residual: 0.0241401 
+iter =  11, Function value -15.607, Residual: 0.0057494 
+iter =  12, Function value -15.607, Residual: 0.0012909 
+iter =  13, Function value -15.607, Residual: 0.000288714 
+iter =  14, Function value -15.607, Residual: 6.45593e-05 
+iter =  15, Function value -15.607, Residual: 1.44367e-05 
+iter =  16, Function value -15.607, Residual: 3.23152e-06 
+iter =  17, Function value -15.607, Residual: < 1.0e-6 

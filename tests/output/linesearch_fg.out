@@ -1,40 +1,40 @@
 
 ---- Journal Bearing Problem SHB-----
-mx: 50,  my: 50,  ecc: 0.100 
+mx: 50,  my: 50,  ecc: 0.1 
 
 FunctionGradient
-iter = 0, Function value 0, Residual: 0.121986 
-iter = 1, Function value -0.121361, Residual: 0.170738 
-iter = 2, Function value -0.131919, Residual: 0.239491 
-iter = 3, Function value -0.141515, Residual: 0.149802 
-iter = 4, Function value -0.148726, Residual: 0.124197 
-iter = 5, Function value -0.154141, Residual: 0.176931 
-iter = 6, Function value -0.159171, Residual: 0.120449 
-iter = 7, Function value -0.163505, Residual: 0.116378 
-iter = 8, Function value -0.167396, Residual: 0.147702 
-iter = 9, Function value -0.170533, Residual: 0.108390 
-iter = 10, Function value -0.172652, Residual: 0.082557 
-iter = 11, Function value -0.174665, Residual: 0.117736 
-iter = 12, Function value -0.175449, Residual: 0.144223 
-iter = 13, Function value -0.176451, Residual: 0.065488 
-iter = 14, Function value -0.177283, Residual: 0.051923 
-iter = 15, Function value -0.177889, Residual: 0.074223 
-iter = 16, Function value -0.178243, Residual: 0.091413 
-iter = 17, Function value -0.17866, Residual: 0.041242 
-iter = 18, Function value -0.178955, Residual: 0.039074 
-iter = 19, Function value -0.179235, Residual: 0.046417 
-iter = 20, Function value -0.179369, Residual: 0.069520 
-iter = 21, Function value -0.179571, Residual: 0.027477 
-iter = 22, Function value -0.179677, Residual: 0.023478 
-iter = 23, Function value -0.179789, Residual: 0.027112 
-iter = 24, Function value -0.179825, Residual: 0.060816 
-iter = 25, Function value -0.179951, Residual: 0.021140 
-iter = 26, Function value -0.180005, Residual: 0.015417 
-iter = 27, Function value -0.180072, Residual: 0.020401 
-iter = 28, Function value -0.180115, Residual: 0.039242 
-iter = 29, Function value -0.180176, Residual: 0.016597 
-iter = 30, Function value -0.18021, Residual: 0.012102 
-iter = 31, Function value -0.180244, Residual: 0.015294 
-iter = 32, Function value -0.180259, Residual: 0.030941 
-iter = 33, Function value -0.180293, Residual: 0.011549 
-iter = 34, Function value -0.180309, Residual: 0.009363 
+iter =   0, Function value 0, Residual: 0.121986 
+iter =   1, Function value -0.121361, Residual: 0.170738 
+iter =   2, Function value -0.131919, Residual: 0.239491 
+iter =   3, Function value -0.141515, Residual: 0.149802 
+iter =   4, Function value -0.148726, Residual: 0.124197 
+iter =   5, Function value -0.154141, Residual: 0.176931 
+iter =   6, Function value -0.159171, Residual: 0.120449 
+iter =   7, Function value -0.163505, Residual: 0.116378 
+iter =   8, Function value -0.167396, Residual: 0.147702 
+iter =   9, Function value -0.170533, Residual: 0.10839 
+iter =  10, Function value -0.172652, Residual: 0.0825568 
+iter =  11, Function value -0.174665, Residual: 0.117736 
+iter =  12, Function value -0.175449, Residual: 0.144223 
+iter =  13, Function value -0.176451, Residual: 0.0654877 
+iter =  14, Function value -0.177283, Residual: 0.0519232 
+iter =  15, Function value -0.177889, Residual: 0.0742231 
+iter =  16, Function value -0.178243, Residual: 0.0914131 
+iter =  17, Function value -0.17866, Residual: 0.0412417 
+iter =  18, Function value -0.178955, Residual: 0.0390742 
+iter =  19, Function value -0.179235, Residual: 0.0464167 
+iter =  20, Function value -0.179369, Residual: 0.0695199 
+iter =  21, Function value -0.179571, Residual: 0.027477 
+iter =  22, Function value -0.179677, Residual: 0.0234778 
+iter =  23, Function value -0.179789, Residual: 0.0271116 
+iter =  24, Function value -0.179825, Residual: 0.0608162 
+iter =  25, Function value -0.179951, Residual: 0.0211403 
+iter =  26, Function value -0.180005, Residual: 0.0154171 
+iter =  27, Function value -0.180072, Residual: 0.0204007 
+iter =  28, Function value -0.180115, Residual: 0.0392417 
+iter =  29, Function value -0.180176, Residual: 0.0165965 
+iter =  30, Function value -0.18021, Residual: 0.0121024 
+iter =  31, Function value -0.180244, Residual: 0.0152945 
+iter =  32, Function value -0.180259, Residual: 0.0309411 
+iter =  33, Function value -0.180293, Residual: 0.011549 
+iter =  34, Function value -0.180309, Residual: 0.00936253 

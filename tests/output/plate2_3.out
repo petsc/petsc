@@ -1,10 +1,10 @@
 
 ---- Minimum Surface Area With Plate Problem -----
-mx:8, my:12, bmx:4, bmy:10, height:0.10
-iter = 0, Function value 1.58854, Residual: 0.311154 
-iter = 1, Function value 1.49849, Residual: 0.092127 
-iter = 2, Function value 1.49406, Residual: 0.000874 
-iter = 3, Function value 1.49406, Residual: < 1.0e-6 
+mx:8, my:12, bmx:4, bmy:10, height:0.1
+iter =   0, Function value 1.58854, Residual: 0.311154 
+iter =   1, Function value 1.49849, Residual: 0.0921274 
+iter =   2, Function value 1.49406, Residual: 0.000874467 
+iter =   3, Function value 1.49406, Residual: < 1.0e-6 
 TaoSolver Object:
   type: tao_tron
       Total PG its: 9,      PG tolerance: 0.001 
@@ -14,8 +14,8 @@ TaoSolver Object:
     type: gmres
   convergence tolerances: fatol=1e-10,   frtol=1e-10
   convergence tolerances: gatol=1e-08,   steptol=1e-12,   gttol=0
-  Residual in Function/Gradient:=7.277370e-08
-  Objective value=1.494062e+00
+  Residual in Function/Gradient:=7.27737e-08
+  Objective value=1.49406
   total number of iterations=3,                          (max: 50)
   total number of function/gradient evaluations=15,      (max: 4000)
   total number of Hessian evaluations=3

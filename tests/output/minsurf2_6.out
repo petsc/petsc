@@ -2,23 +2,23 @@
 ---- Minimum Surface Area Problem -----
 mx: 4     my: 20   
 
-iter = 0, Function value 6.77984, Residual: 2.791806 
-iter = 0, Function value 3.56256, Residual: 2.356870 
-iter = 1, Function value 3.56256, Residual: 2.356870 
-iter = 1, Function value 2.65999, Residual: 1.683673 
-iter = 2, Function value 2.65999, Residual: 1.683673 
-iter = 2, Function value 2.14905, Residual: 1.395426 
-iter = 3, Function value 2.0794, Residual: 1.757156 
-iter = 4, Function value 1.66974, Residual: 1.289795 
-iter = 5, Function value 1.58579, Residual: 1.100036 
-iter = 6, Function value 1.4843, Residual: 0.879161 
-iter = 7, Function value 1.43721, Residual: 0.517073 
-iter = 8, Function value 1.43696, Residual: 0.388173 
-iter = 9, Function value 1.42138, Residual: 0.344693 
-iter = 10, Function value 1.41586, Residual: 0.180669 
-iter = 11, Function value 1.41389, Residual: 0.008498 
-iter = 12, Function value 1.41388, Residual: 0.000219 
-iter = 13, Function value 1.41388, Residual: < 1.0e-6 
+iter =   0, Function value 6.77984, Residual: 2.79181 
+iter =   0, Function value 3.56256, Residual: 2.35687 
+iter =   1, Function value 3.56256, Residual: 2.35687 
+iter =   1, Function value 2.65999, Residual: 1.68367 
+iter =   2, Function value 2.65999, Residual: 1.68367 
+iter =   2, Function value 2.14905, Residual: 1.39543 
+iter =   3, Function value 2.0794, Residual: 1.75716 
+iter =   4, Function value 1.66974, Residual: 1.28979 
+iter =   5, Function value 1.58579, Residual: 1.10004 
+iter =   6, Function value 1.4843, Residual: 0.879161 
+iter =   7, Function value 1.43721, Residual: 0.517074 
+iter =   8, Function value 1.43696, Residual: 0.388173 
+iter =   9, Function value 1.42138, Residual: 0.344692 
+iter =  10, Function value 1.41586, Residual: 0.180667 
+iter =  11, Function value 1.41389, Residual: 0.00849791 
+iter =  12, Function value 1.41388, Residual: 0.000218834 
+iter =  13, Function value 1.41388, Residual: < 1.0e-6 
 TaoSolver Object:
   type: tao_ntr
       Rejected matrix updates: 0
@@ -26,8 +26,8 @@ TaoSolver Object:
     type: stcg
   convergence tolerances: fatol=1e-10,   frtol=1e-10
   convergence tolerances: gatol=1e-08,   steptol=0,   gttol=0
-  Residual in Function/Gradient:=1.770032e-07
-  Objective value=1.413883e+00
+  Residual in Function/Gradient:=1.76993e-07
+  Objective value=1.41388
   total number of iterations=13,                          (max: 50)
   total number of function/gradient evaluations=35,      (max: 4000)
   total number of Hessian evaluations=14

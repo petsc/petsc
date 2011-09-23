@@ -1,19 +1,19 @@
 
 ---- Minimum Surface Area With Plate Problem -----
-mx:8, my:8, bmx:2, bmy:5, height:0.30
-iter = 0, Function value 1.83917, Residual: 0.448070 
-iter = 1, Function value 1.79522, Residual: 0.580770 
-iter = 2, Function value 1.68498, Residual: 0.330055 
-iter = 3, Function value 1.65331, Residual: 0.477444 
-iter = 4, Function value 1.61275, Residual: 0.139618 
-iter = 5, Function value 1.60879, Residual: 0.080833 
-iter = 6, Function value 1.60659, Residual: 0.064390 
-iter = 7, Function value 1.60341, Residual: 0.059180 
-iter = 8, Function value 1.60241, Residual: 0.064611 
-iter = 9, Function value 1.6016, Residual: 0.035973 
-iter = 10, Function value 1.60131, Residual: 0.025234 
-iter = 11, Function value 1.6012, Residual: 0.013205 
-iter = 12, Function value 1.60116, Residual: 0.005298 
+mx:8, my:8, bmx:2, bmy:5, height:0.3
+iter =   0, Function value 1.83917, Residual: 0.44807 
+iter =   1, Function value 1.79522, Residual: 0.58077 
+iter =   2, Function value 1.68498, Residual: 0.330055 
+iter =   3, Function value 1.65331, Residual: 0.477444 
+iter =   4, Function value 1.61275, Residual: 0.139618 
+iter =   5, Function value 1.60879, Residual: 0.0808325 
+iter =   6, Function value 1.60659, Residual: 0.0643898 
+iter =   7, Function value 1.60341, Residual: 0.0591805 
+iter =   8, Function value 1.60241, Residual: 0.0646111 
+iter =   9, Function value 1.6016, Residual: 0.0359725 
+iter =  10, Function value 1.60131, Residual: 0.0252336 
+iter =  11, Function value 1.6012, Residual: 0.0132051 
+iter =  12, Function value 1.60116, Residual: 0.00529782 
 TaoSolver Object:
   type: tao_blmvm
       Gradient steps: 0
@@ -21,8 +21,8 @@ TaoSolver Object:
     type: more-thuente
   convergence tolerances: fatol=0.0001,   frtol=0.0001
   convergence tolerances: gatol=1e-08,   steptol=0,   gttol=0
-  Residual in Function/Gradient:=5.297823e-03
-  Objective value=1.601158e+00
+  Residual in Function/Gradient:=0.00529782
+  Objective value=1.60116
   total number of iterations=12,                          (max: 2000)
   total number of function/gradient evaluations=15,      (max: 4000)
   Solution converged:   estimated f(x)-f(X*) <= fatol

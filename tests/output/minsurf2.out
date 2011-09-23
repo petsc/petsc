@@ -2,15 +2,15 @@
 ---- Minimum Surface Area Problem -----
 mx: 10     my: 8   
 
-iter = 0, Function value 1.45591, Residual: 0.213720 
-iter = 1, Function value 1.42961, Residual: 0.150207 
-iter = 2, Function value 1.42325, Residual: 0.148310 
-iter = 3, Function value 1.41903, Residual: 0.082060 
-iter = 4, Function value 1.41809, Residual: 0.035714 
-iter = 5, Function value 1.41792, Residual: 0.020811 
-iter = 6, Function value 1.41784, Residual: 0.015535 
-iter = 7, Function value 1.4178, Residual: 0.013660 
-iter = 8, Function value 1.41778, Residual: 0.007999 
+iter =   0, Function value 1.45591, Residual: 0.21372 
+iter =   1, Function value 1.42961, Residual: 0.150207 
+iter =   2, Function value 1.42325, Residual: 0.14831 
+iter =   3, Function value 1.41903, Residual: 0.0820603 
+iter =   4, Function value 1.41809, Residual: 0.0357139 
+iter =   5, Function value 1.41792, Residual: 0.0208106 
+iter =   6, Function value 1.41784, Residual: 0.0155354 
+iter =   7, Function value 1.4178, Residual: 0.0136601 
+iter =   8, Function value 1.41778, Residual: 0.00799915 
 TaoSolver Object:
   type: tao_lmvm
       BFGS steps: 15
@@ -20,8 +20,8 @@ TaoSolver Object:
     type: more-thuente
   convergence tolerances: fatol=0.0001,   frtol=0.0001
   convergence tolerances: gatol=1e-08,   steptol=0,   gttol=0
-  Residual in Function/Gradient:=7.999152e-03
-  Objective value=1.417783e+00
+  Residual in Function/Gradient:=0.00799915
+  Objective value=1.41778
   total number of iterations=8,                          (max: 2000)
   total number of function/gradient evaluations=11,      (max: 4000)
   Solution converged:   estimated f(x)-f(X*) <= fatol

@@ -1,23 +1,23 @@
-iter = 0, Function value -0.33218, Residual: 0.623913 
+iter =   0, Function value -0.33218, Residual: 0.623913 
 iteration multiple of 5 
-iter = 1, Function value -0.378168, Residual: 0.374058 
+iter =   1, Function value -0.378168, Residual: 0.374058 
 iteration multiple of 5 
-iter = 2, Function value -0.398441, Residual: 0.236372 
+iter =   2, Function value -0.398441, Residual: 0.236372 
 iteration multiple of 5 
-iter = 3, Function value -0.419353, Residual: 0.165586 
+iter =   3, Function value -0.419353, Residual: 0.165586 
 iteration multiple of 5 
-iter = 4, Function value -0.426263, Residual: 0.230984 
-iter = 5, Function value -0.431383, Residual: 0.081086 
+iter =   4, Function value -0.426263, Residual: 0.230984 
+iter =   5, Function value -0.431383, Residual: 0.0810856 
 iteration multiple of 5 
-iter = 6, Function value -0.432616, Residual: 0.053576 
+iter =   6, Function value -0.432616, Residual: 0.053576 
 iteration multiple of 5 
-iter = 7, Function value -0.433452, Residual: 0.038282 
+iter =   7, Function value -0.433452, Residual: 0.0382823 
 iteration multiple of 5 
-iter = 8, Function value -0.433881, Residual: 0.047372 
+iter =   8, Function value -0.433881, Residual: 0.0473719 
 iteration multiple of 5 
-iter = 9, Function value -0.434199, Residual: 0.023123 
-iter = 10, Function value -0.434351, Residual: 0.012333 
+iter =   9, Function value -0.434199, Residual: 0.0231229 
+iter =  10, Function value -0.434351, Residual: 0.012333 
 iteration multiple of 5 
-iter = 11, Function value -0.434383, Residual: 0.010686 
+iter =  11, Function value -0.434383, Residual: 0.010686 
 iteration multiple of 5 
-iter = 12, Function value -0.434396, Residual: 0.004779 
+iter =  12, Function value -0.434396, Residual: 0.00477936 

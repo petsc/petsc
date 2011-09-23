@@ -1,10 +1,10 @@
-iter = 0, Function value 1, Residual: 2.000000 
-iter = 1, Function value 0.773446, Residual: 6.077541 
-iter = 2, Function value 0.648599, Residual: 3.226191 
-iter = 3, Function value 0.560405, Residual: 5.471109 
-iter = 4, Function value 0.379185, Residual: 3.011633 
-iter = 5, Function value 0.280758, Residual: 2.686404 
-iter = 6, Function value 0.187322, Residual: 3.789993 
-iter = 7, Function value 0.129225, Residual: 6.257282 
+iter =   0, Function value 1, Residual: 2 
+iter =   1, Function value 0.773446, Residual: 6.07754 
+iter =   2, Function value 0.648599, Residual: 3.22619 
+iter =   3, Function value 0.560405, Residual: 5.47111 
+iter =   4, Function value 0.379185, Residual: 3.01163 
+iter =   5, Function value 0.280758, Residual: 2.6864 
+iter =   6, Function value 0.187322, Residual: 3.78999 
+iter =   7, Function value 0.129225, Residual: 6.25728 
  Try a different TAO method, adjust some parameters,
  or check the function evaluation routines.
