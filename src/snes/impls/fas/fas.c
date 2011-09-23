@@ -177,9 +177,10 @@ PetscErrorCode SNESReset_FAS(SNES snes)
   if (fas->restrct)      ierr = MatDestroy(&fas->restrct);CHKERRQ(ierr);
   if (fas->rscale)       ierr = VecDestroy(&fas->rscale);CHKERRQ(ierr);
 
-    /* recurse -- reset should NOT destroy the structures -- destroy should destroy the structures recursively */
+  
+  /* recurse -- reset should NOT destroy the structures -- destroy should destroy the structures recursively */
   if (fas->next) ierr = SNESReset(fas->next);CHKERRQ(ierr);
-
+  if (snes->work) {ierr = VecDestroyVecs(snes->nwork,&snes->work);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -206,7 +207,7 @@ PetscErrorCode SNESSetUp_FAS(SNES snes)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-
+  ierr = SNESDefaultGetWork(snes, 4);CHKERRQ(ierr); /* the four work vectors are used to transfer stuff BACK */
   /* gets the solver ready for solution */
   if (snes->dm) {
     /* construct EVERYTHING from the DM -- including the progressive set of smoothers */
@@ -220,10 +221,13 @@ PetscErrorCode SNESSetUp_FAS(SNES snes)
       }
       /* TODO LATER: Preconditioner setup goes here */
     }
-  } else {
-    SETERRQ(((PetscObject)snes)->comm, PETSC_ERR_SUP, "SNESSetup_FAS presently only works with DM Coarsening.  This will be fixed. ");
   }
-
+  if (fas->next) {
+    /* gotta set up the solution vector for this to work */
+    ierr = VecDuplicate(fas->rscale, &fas->next->vec_sol);CHKERRQ(ierr);
+    ierr = SNESSetUp(fas->next);CHKERRQ(ierr);
+  }
+  /* got to set them all up at once */
   PetscFunctionReturn(0);
 }
 
@@ -284,14 +288,55 @@ PetscErrorCode SNESView_FAS(SNES snes, PetscViewer viewer)
 }
 
 /*
+
+Defines the FAS cycle as:
+
+fine problem: F(x) = 0
+coarse problem: F^c(x) = b^c
+
+b^c = F^c(I^c_fx^f - I^c_fF(x))
+
+correction:
+
+x = x + I(x^c - Rx)
+
  */
+
 #undef __FUNCT__
 #define __FUNCT__ "FASCycle_Private"
-PetscErrorCode FASCycle_Private(SNES snes) {
-  
-  PetscFunctionBegin;
-  PetscFunctionReturn(0);
+PetscErrorCode FASCycle_Private(SNES snes, Vec F, Vec X) {
 
+  PetscErrorCode ierr;
+  Vec X_c, Xo_c, F_c, B_c;
+  SNES_FAS * fas = (SNES_FAS *)snes->data;
+
+  PetscFunctionBegin;
+  /* pre-smooth -- just update using the pre-smoother */
+
+  if (fas->next) {
+    X_c  = fas->next->work[0];
+    Xo_c = fas->next->work[1];
+    F_c  = fas->next->work[2];
+    B_c  = fas->next->work[3];
+    /* project to coarse */
+    ierr = MatRestrict(fas->restrct, X, X_c);CHKERRQ(ierr);
+    ierr = MatRestrict(fas->restrct, F, F_c);CHKERRQ(ierr);
+    ierr = VecPointwiseMult(Xo_c, fas->rscale, Xo_c);CHKERRQ(ierr);
+    ierr = VecPointwiseMult(F_c,  fas->rscale, F_c);CHKERRQ(ierr);
+    /* solve the coarse problem corresponding to F^c(x^c) = b^c = F^c(Rx) - RF(x) */
+    ierr = SNESComputeFunction(fas->next, Xo_c, B_c);CHKERRQ(ierr);   /* B_c = F(X_c) */
+    ierr = VecAXPY(B_c, -1.0, F_c);CHKERRQ(ierr);                     /* B_c = F(X_c) - F_C */
+    ierr = VecCopy(Xo_c, X_c);CHKERRQ(ierr);
+    ierr = SNESSolve(fas->next, B_c, X_c);CHKERRQ(ierr);
+    /* correct as x <- x + I(x^c - Rx)*/
+    ierr = VecAXPY(X_c, -1.0, Xo_c);CHKERRQ(ierr);
+    ierr = MatInterpolate(fas->interpolate, X_c, F);CHKERRQ(ierr);
+    ierr = VecAXPY(X, -1.0, F);CHKERRQ(ierr);
+  }
+  ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);  
+  /* post-smooth -- just update using the post-smoother */
+
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
@@ -299,7 +344,11 @@ PetscErrorCode FASCycle_Private(SNES snes) {
 
 PetscErrorCode SNESSolve_FAS(SNES snes)
 {
+  PetscErrorCode ierr;
+  Vec X, F;
   PetscFunctionBegin;
-
+  X = snes->vec_sol;
+  F = snes->vec_func;
+  ierr = FASCycle_Private(snes, snes->vec_func, snes->vec_sol);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
