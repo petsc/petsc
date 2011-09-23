@@ -43,10 +43,9 @@ typedef struct {
 } AppCtx;
 
 /*------------------------------------------------------------------------------
-  This code can be generated using 'bin/pythonscripts/PetscGenerateFEMQuadrature.py 2 1 src/snes/examples/tutorials/ex52.h'
+  This code can be generated using 'bin/pythonscripts/PetscGenerateFEMQuadrature.py 2 1 numComp src/snes/examples/tutorials/ex52.h'
  -----------------------------------------------------------------------------*/
-//#include "ex52.h"
-#include "ex52_elas.h"
+#include "ex52.h"
 
 void quadratic_2d(const PetscReal x[], PetscScalar u[]) {
   u[0] = x[0]*x[0] + x[1]*x[1];
