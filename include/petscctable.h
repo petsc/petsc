@@ -9,6 +9,7 @@ struct _n_PetscTable {
   PetscInt count;
   PetscInt tablesize;
   PetscInt head;
+  PetscInt maxkey;   /* largest key allowed */
 };
 
 typedef struct _n_PetscTable* PetscTable;
@@ -17,7 +18,7 @@ typedef PetscInt* PetscTablePosition;
 #define HASH_FACT 79943
 #define HASHT(ta,x) ((unsigned long)((HASH_FACT*(unsigned long)x)%ta->tablesize))
 
-extern PetscErrorCode  PetscTableCreate(const PetscInt,PetscTable*);
+extern PetscErrorCode  PetscTableCreate(const PetscInt,PetscInt,PetscTable*);
 extern PetscErrorCode  PetscTableCreateCopy(const PetscTable,PetscTable*);
 extern PetscErrorCode  PetscTableDestroy(PetscTable*);
 extern PetscErrorCode  PetscTableGetCount(const PetscTable,PetscInt*);
@@ -37,6 +38,7 @@ PETSC_STATIC_INLINE PetscErrorCode  PetscTableAdd(PetscTable ta,PetscInt key,Pet
     
   PetscFunctionBegin;
   if (key <= 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"key <= 0");
+  if (key > ta->maxkey) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"key %D is greater than largest key allowed %D",key,ta->maxkey);
   if (!data) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Null data");
   
   if (ta->count < 5*(ta->tablesize/6) - 1) {
@@ -67,7 +69,8 @@ PETSC_STATIC_INLINE PetscErrorCode  PetscTableAddCount(PetscTable ta,PetscInt ke
   
   PetscFunctionBegin;
   if (key <= 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"key <= 0");
-  
+  if (key > ta->maxkey) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"key %D is greater than largest key allowed %D",key,ta->maxkey);
+
   if (ta->count < 5*(ta->tablesize/6) - 1) {
     while (ii++ < ta->tablesize){
       if (ta->keytable[hash] == key) {
@@ -100,7 +103,9 @@ PETSC_STATIC_INLINE PetscErrorCode  PetscTableFind(PetscTable ta,PetscInt key,Pe
   PetscInt hash,ii = 0;
 
   PetscFunctionBegin;
-  if (!key) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Null key");
+  if (key <= 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Key <= 0");
+  if (key > ta->maxkey) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"key %D is greater than largest key allowed %D",key,ta->maxkey);
+
   hash  = HASHT(ta,key);
   *data = 0;
   while (ii++ < ta->tablesize) {

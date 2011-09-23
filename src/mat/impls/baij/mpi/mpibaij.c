@@ -91,7 +91,7 @@ PetscErrorCode CreateColmap_MPIBAIJ_Private(Mat mat)
 
   PetscFunctionBegin;
 #if defined (PETSC_USE_CTABLE)
-  ierr = PetscTableCreate(baij->nbs,&baij->colmap);CHKERRQ(ierr); 
+  ierr = PetscTableCreate(baij->nbs,baij->Nbs+1,&baij->colmap);CHKERRQ(ierr); 
   for (i=0; i<nbs; i++){
     ierr = PetscTableAdd(baij->colmap,baij->garray[i]+1,i*bs+1);CHKERRQ(ierr);
   }

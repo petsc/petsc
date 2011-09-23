@@ -36,7 +36,8 @@ PetscErrorCode  ISCompressIndicesGeneral(PetscInt n,PetscInt bs,PetscInt imax,co
   PetscFunctionBegin;
   Nbs =n/bs;
 #if defined (PETSC_USE_CTABLE)
-  ierr = PetscTableCreate(Nbs,&gid1_lid1);CHKERRQ(ierr);
+  /* I don't think the next line makes sense, it is allocating way to much space in the hash table */
+  ierr = PetscTableCreate(Nbs,Nbs,&gid1_lid1);CHKERRQ(ierr);
 #else
   ierr = PetscMalloc(Nbs*sizeof(PetscInt),&nidx);CHKERRQ(ierr); 
   ierr = PetscBTCreate(Nbs,table);CHKERRQ(ierr);
