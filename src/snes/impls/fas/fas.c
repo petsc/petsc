@@ -109,13 +109,13 @@ PetscErrorCode SNESFASSetLevels(SNES snes, PetscInt levels, MPI_Comm * comms) {
 #define __FUNCT__ "SNESFASSetInterpolation"
 PetscErrorCode SNESFASSetInterpolation(SNES snes, PetscInt level, Mat mat) {
   SNES_FAS * fas =  (SNES_FAS *)snes->data;
-  PetscInt top_level = fas->level;
+  PetscInt top_level = fas->level,i;
 
   PetscFunctionBegin;
   if (level > top_level)
     SETERRQ1(((PetscObject)snes)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Bad level number %d in SNESFASSetInterpolation", level);
   /* get to the correct level */
-  for (int i = fas->level; i > level; i--) {
+  for (i = fas->level; i > level; i--) {
     fas = (SNES_FAS *)fas->next->data;
   }
   if (fas->level != level)
@@ -128,13 +128,13 @@ PetscErrorCode SNESFASSetInterpolation(SNES snes, PetscInt level, Mat mat) {
 #define __FUNCT__ "SNESFASSetRestriction"
 PetscErrorCode SNESFASSetRestriction(SNES snes, PetscInt level, Mat mat) {
   SNES_FAS * fas =  (SNES_FAS *)snes->data;
-  PetscInt top_level = fas->level;
+  PetscInt top_level = fas->level,i;
 
   PetscFunctionBegin;
   if (level > top_level)
     SETERRQ1(((PetscObject)snes)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Bad level number %d in SNESFASSetRestriction", level);
   /* get to the correct level */
-  for (int i = fas->level; i > level; i--) {
+  for (i = fas->level; i > level; i--) {
     fas = (SNES_FAS *)fas->next->data;
   }
   if (fas->level != level)
@@ -147,13 +147,13 @@ PetscErrorCode SNESFASSetRestriction(SNES snes, PetscInt level, Mat mat) {
 #define __FUNCT__ "SNESFASSetRScale"
 PetscErrorCode SNESFASSetRScale(SNES snes, PetscInt level, Vec rscale) {
   SNES_FAS * fas =  (SNES_FAS *)snes->data;
-  PetscInt top_level = fas->level;
+  PetscInt top_level = fas->level,i;
 
   PetscFunctionBegin;
   if (level > top_level)
     SETERRQ1(((PetscObject)snes)->comm, PETSC_ERR_ARG_OUTOFRANGE, "Bad level number %d in SNESFASSetRestriction", level);
   /* get to the correct level */
-  for (int i = fas->level; i > level; i--) {
+  for (i = fas->level; i > level; i--) {
     fas = (SNES_FAS *)fas->next->data;
   }
   if (fas->level != level)
