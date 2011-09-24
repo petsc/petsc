@@ -1,29 +1,32 @@
-static const char help[] = "Time-dependent advection-reaction PDE in 1d. Demonstrates IMEX methods.\n";
+static const char help[] = "Time-dependent Brusselator reaction-diffusion PDE in 1d. Demonstrates IMEX methods.\n";
 /*
-   u_t + a1*u_x = -k1*u + k2*v + s1
-   v_t + a2*v_x = k1*u - k2*v + s2
+   u_t - alpha u_xx = A + u^2 v - (B+1) u
+   v_t - alpha v_xx = B u - u^2 v
    0 < x < 1;
-   a1 = 1, k1 = 10^6, s1 = 0,
-   a2 = 0, k2 = 2*k1, s2 = 1
+   A = 1, B = 3, alpha = 1/50
 
    Initial conditions:
-   u(x,0) = 1 * s2*x
-   v(x,0) = k0/k1*u(x,0) + s1/k1
+   u(x,0) = 1 + sin(2 pi x)
+   v(x,0) = 3
 
-   Upstream boundary conditions:
-   u(0,t) = 1-sin(12*t)^4
+   Boundary conditions:
+   u(0,t) = u(1,t) = 1
+   v(0,t) = v(1,t) = 3
 */
 
 #include <petscdmda.h>
 #include <petscts.h>
 
-typedef PetscScalar Field[2];
+typedef struct {
+  PetscScalar u,v;
+} Field;
 
 typedef struct _User *User;
 struct _User {
-  PetscReal      a[2];         /* Advection speeds */
-  PetscReal      k[2];         /* Reaction coefficients */
-  PetscReal      s[2];         /* Source terms */
+  PetscReal A,B;                /* Reaction coefficients */
+  PetscReal alpha;              /* Diffusion coefficient */
+  PetscReal uleft,uright;       /* Dirichlet boundary conditions */
+  PetscReal vleft,vright;       /* Dirichlet boundary conditions */
 };
 
 static PetscErrorCode FormRHSFunction(TS,PetscReal,Vec,Vec,void*);
@@ -59,12 +62,13 @@ int main(int argc,char **argv)
 
   /* Initialize user application context */
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,PETSC_NULL,"Advection-reaction options",""); {
-    ierr = PetscOptionsReal("-a0","Advection rate 0","",user.a[0]=1,&user.a[0],PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-a1","Advection rate 1","",user.a[1]=0,&user.a[1],PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-k0","Reaction rate 0","",user.k[0]=1e6,&user.k[0],PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-k1","Reaction rate 1","",user.k[1]=2*user.k[0],&user.k[1],PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-s0","Source 0","",user.s[0]=0,&user.s[0],PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-s1","Source 1","",user.s[1]=1,&user.s[1],PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-A","Reaction rate","",user.A=1,&user.A,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-B","Reaction rate","",user.B=3,&user.B,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-alpha","Diffusion coefficient","",user.alpha=0.02,&user.alpha,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-uleft","Dirichlet boundary condition","",user.uleft=1,&user.uleft,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-uright","Dirichlet boundary condition","",user.uright=1,&user.uright,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-vleft","Dirichlet boundary condition","",user.vleft=3,&user.vleft,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-vright","Dirichlet boundary condition","",user.vright=3,&user.vright,PETSC_NULL);CHKERRQ(ierr);
   } ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -78,7 +82,7 @@ int main(int argc,char **argv)
   ierr = DMGetMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
   ierr = TSSetIJacobian(ts,J,J,FormIJacobian,&user);CHKERRQ(ierr);
 
-  ftime = 1.0;
+  ftime = 10.0;
   maxsteps = 10000;
   ierr = TSSetDuration(ts,maxsteps,ftime);CHKERRQ(ierr);
 
@@ -88,7 +92,7 @@ int main(int argc,char **argv)
   ierr = FormInitialSolution(ts,X,&user);CHKERRQ(ierr);
   ierr = TSSetSolution(ts,X);CHKERRQ(ierr);
   ierr = VecGetSize(X,&mx);CHKERRQ(ierr);
-  dt   = .1 * PetscMax(user.a[0],user.a[1]) / mx; /* Advective CFL, I don't know why it needs so much safety factor. */
+  dt   = 0.4 * user.alpha / PetscSqr(mx); /* Diffusive CFL */
   ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -124,47 +128,14 @@ static PetscErrorCode FormIFunction(TS ts,PetscReal t,Vec X,Vec Xdot,Vec F,void 
   DMDALocalInfo  info;
   PetscInt       i;
   Field          *x,*xdot,*f;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
-  ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
-
-  /* Get pointers to vector data */
-  ierr = DMDAVecGetArray(da,X,&x);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(da,Xdot,&xdot);CHKERRQ(ierr);
-  ierr = DMDAVecGetArray(da,F,&f);CHKERRQ(ierr);
-
-  /* Compute function over the locally owned part of the grid */
-  for (i=info.xs; i<info.xs+info.xm; i++) {
-    f[i][0] = xdot[i][0] + user->k[0]*x[i][0] - user->k[1]*x[i][1] - user->s[0];
-    f[i][1] = xdot[i][1] - user->k[0]*x[i][0] + user->k[1]*x[i][1] - user->s[1];
-  }
-
-  /* Restore vectors */
-  ierr = DMDAVecRestoreArray(da,X,&x);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArray(da,Xdot,&xdot);CHKERRQ(ierr);
-  ierr = DMDAVecRestoreArray(da,F,&f);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "FormRHSFunction"
-static PetscErrorCode FormRHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
-{
-  User           user = (User)ptr;
-  DM             da;
-  Vec            Xloc;
-  DMDALocalInfo  info;
-  PetscInt       i,j;
   PetscReal      hx;
-  Field          *x,*f;
+  Vec            Xloc;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
   ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
-  hx = 1.0/(PetscReal)info.mx;
+  hx = 1.0/(PetscReal)(info.mx-1);
 
   /*
      Scatter ghost points to local vector,using the 2-step process
@@ -178,31 +149,62 @@ static PetscErrorCode FormRHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
 
   /* Get pointers to vector data */
   ierr = DMDAVecGetArray(da,Xloc,&x);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da,Xdot,&xdot);CHKERRQ(ierr);
   ierr = DMDAVecGetArray(da,F,&f);CHKERRQ(ierr);
 
   /* Compute function over the locally owned part of the grid */
   for (i=info.xs; i<info.xs+info.xm; i++) {
-    const PetscReal *a = user->a;
-    PetscReal u0t[2] = {1. - PetscPowScalar(sin(12*t),4.),0};
-    for (j=0; j<2; j++) {
-      if (i == 0) {
-        f[i][j] = a[j]/hx*(1./3*u0t[j] + 0.5*x[i][j] - x[i+1][j] + 1./6*x[i+2][j]);
-      } else if (i == 1) {
-        f[i][j] = a[j]/hx*(-1./12*u0t[j] + 2./3*x[i-1][j] - 2./3*x[i+1][j] + 1./12*x[i+2][j]);
-      } else if (i == info.mx-2) {
-        f[i][j] = a[j]/hx*(-1./6*x[i-2][j] + x[i-1][j] - 0.5*x[i][j] - 1./3*x[i+1][j]);
-      } else if (i == info.mx-1) {
-        f[i][j] = a[j]/hx*(-x[i][j] + x[i-1][j]);
-      } else {
-        f[i][j] = a[j]/hx*(-1./12*x[i-2][j] + 2./3*x[i-1][j] - 2./3*x[i+1][j] + 1./12*x[i+2][j]);
-      }
+    if (i == 0) {
+      f[i].u = hx * (x[i].u - user->uleft);
+      f[i].v = hx * (x[i].v - user->vleft);
+    } else if (i == info.mx-1) {
+      f[i].u = hx * (x[i].u - user->uright);
+      f[i].v = hx * (x[i].v - user->vright);
+    } else {
+      f[i].u = hx * xdot[i].u - user->alpha * (x[i-1].u - 2.*x[i].u + x[i+1].u) / hx;
+      f[i].v = hx * xdot[i].v - user->alpha * (x[i-1].v - 2.*x[i].v + x[i+1].v) / hx;
     }
   }
 
   /* Restore vectors */
   ierr = DMDAVecRestoreArray(da,Xloc,&x);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da,Xdot,&xdot);CHKERRQ(ierr);
   ierr = DMDAVecRestoreArray(da,F,&f);CHKERRQ(ierr);
   ierr = DMRestoreLocalVector(da,&Xloc);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "FormRHSFunction"
+static PetscErrorCode FormRHSFunction(TS ts,PetscReal t,Vec X,Vec F,void *ptr)
+{
+  User           user = (User)ptr;
+  DM             da;
+  DMDALocalInfo  info;
+  PetscInt       i;
+  PetscReal      hx;
+  Field          *x,*f;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
+  ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
+  hx = 1.0/(PetscReal)(info.mx-1);
+
+  /* Get pointers to vector data */
+  ierr = DMDAVecGetArray(da,X,&x);CHKERRQ(ierr);
+  ierr = DMDAVecGetArray(da,F,&f);CHKERRQ(ierr);
+
+  /* Compute function over the locally owned part of the grid */
+  for (i=info.xs; i<info.xs+info.xm; i++) {
+    PetscScalar u = x[i].u,v = x[i].v;
+    f[i].u = hx*(user->A + u*u*v - (user->B+1)*u);
+    f[i].v = hx*(user->B*u - u*u*v);
+  }
+
+  /* Restore vectors */
+  ierr = DMDAVecRestoreArray(da,X,&x);CHKERRQ(ierr);
+  ierr = DMDAVecRestoreArray(da,F,&f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -218,12 +220,14 @@ PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat *J
   PetscErrorCode ierr;
   DMDALocalInfo  info;
   PetscInt       i;
+  PetscReal      hx;
   DM             da;
   Field          *x,*xdot;
 
   PetscFunctionBegin;
   ierr = TSGetDM(ts,&da);CHKERRQ(ierr);
   ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
+  hx = 1.0/(PetscReal)(info.mx-1);
 
   /* Get pointers to vector data */
   ierr = DMDAVecGetArray(da,X,&x);CHKERRQ(ierr);
@@ -231,10 +235,17 @@ PetscErrorCode FormIJacobian(TS ts,PetscReal t,Vec X,Vec Xdot,PetscReal a,Mat *J
 
   /* Compute function over the locally owned part of the grid */
   for (i=info.xs; i<info.xs+info.xm; i++) {
-    const PetscReal *k = user->k;
-    PetscScalar v[2][2] = {{a + k[0], -k[1]},
-                           {-k[0], a+k[1]}};
-    ierr = MatSetValuesBlocked(*Jpre,1,&i,1,&i,&v[0][0],INSERT_VALUES);CHKERRQ(ierr);
+    if (i == 0 || i == info.mx-1) {
+      const PetscInt row = i,col = i;
+      const PetscScalar vals[2][2] = {{hx,0},{0,hx}};
+      ierr = MatSetValuesBlocked(*Jpre,1,&row,1,&col,&vals[0][0],INSERT_VALUES);CHKERRQ(ierr);
+    } else {
+      const PetscInt row = i,col[] = {i-1,i,i+1};
+      const PetscScalar dxxL = -user->alpha/hx,dxx0 = 2.*user->alpha/hx,dxxR = -user->alpha/hx;
+      const PetscScalar vals[2][3][2] = {{{dxxL,0},{a*hx+dxx0,0},{dxxR,0}},
+                                         {{0,dxxL},{0,a*hx+dxx0},{0,dxxR}}};
+      ierr = MatSetValuesBlocked(*Jpre,1,&row,3,col,&vals[0][0][0],INSERT_VALUES);CHKERRQ(ierr);
+    }
   }
 
   /* Restore vectors */
@@ -265,16 +276,16 @@ PetscErrorCode FormInitialSolution(TS ts,Vec X,void *ctx)
   PetscFunctionBegin;
   ierr = TSGetDM(ts,&da);
   ierr = DMDAGetLocalInfo(da,&info);CHKERRQ(ierr);
-  hx = 1.0/(PetscReal)info.mx;
+  hx = 1.0/(PetscReal)(info.mx-1);
 
   /* Get pointers to vector data */
   ierr = DMDAVecGetArray(da,X,&x);CHKERRQ(ierr);
 
   /* Compute function over the locally owned part of the grid */
   for (i=info.xs; i<info.xs+info.xm; i++) {
-    PetscReal r = (i+1)*hx,ik = user->k[1] != 0.0 ? 1.0/user->k[1] : 1.0;
-    x[i][0] = 1 + user->s[1]*r;
-    x[i][1] = user->k[0]*ik*x[i][0] + user->s[1]*ik;
+    PetscReal xi = i*hx;
+    x[i].u = user->uleft*(1.-xi) + user->uright*xi + sin(2.*PETSC_PI*xi);
+    x[i].v = user->vleft*(1.-xi) + user->vright*xi;
   }
   ierr = DMDAVecRestoreArray(da,X,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);

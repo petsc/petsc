@@ -6,7 +6,7 @@ FPPFLAGS        =
 LOCDIR          = src/ts/examples/tutorials/
 EXAMPLESC       = ex1.c ex2.c util2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c \
                 ex9.c ex10.c ex12.c ex13.c ex14.c ex15.c ex16.c ex17.c \
-                ex18.c ex19.c ex20.c ex21.c ex22.c ex23.c ex24.c
+                ex18.c ex19.c ex20.c ex21.c ex22.c ex23.c ex24.c ex25.c
 EXAMPLESF       = ex1f.F ex2f.F ex22f.F
 EXAMPLESFH      = ex2f.h
 MANSEC          = TS
@@ -124,6 +124,10 @@ ex23: ex23.o chkopts
 ex24: ex24.o chkopts
 	-${CLINKER} -o ex24 ex24.o ${PETSC_TS_LIB}
 	${RM} ex24.o
+
+ex25: ex25.o chkopts
+	-${CLINKER} -o ex25 ex25.o ${PETSC_TS_LIB}
+	${RM} ex25.o
 
 #---------------------------------------------------------------------------------
 runex1:
@@ -309,6 +313,14 @@ runex22:
 	-@${MPIEXEC} -n 1 ./ex22 -da_grid_x 200 -ts_monitor_solution -ts_arkimex_type 4 > ex22_1.tmp 2>&1; \
 	   ${DIFF} output/ex22_1.out ex22_1.tmp || echo "Possible problem with ex22_1, diffs above";  \
 	   ${RM} -f ex22_1.tmp
+runex22_2:
+	-@${MPIEXEC} -n 2 ./ex22 -da_grid_x 200 -ts_monitor_solution -ts_type rosw -ts_dt 1e-3 > ex22_2.tmp 2>&1; \
+	   ${DIFF} output/ex22_2.out ex22_2.tmp || echo "Possible problem with ex22_2, diffs above";  \
+	   ${RM} -f ex22_2.tmp
+runex22_3:
+	-@${MPIEXEC} -n 2 ./ex22 -da_grid_x 200 -ts_monitor_solution -ts_type rosw -ts_rosw_type ra34pw2 -ts_dt 5e-3 > ex22_3.tmp 2>&1; \
+	   ${DIFF} output/ex22_3.out ex22_3.tmp || echo "Possible problem with ex22_3, diffs above";  \
+	   ${RM} -f ex22_3.tmp
 runex22f:
 	-@${MPIEXEC} -n 1 ./ex22f -da_grid_x 200 -ts_monitor_solution -ts_arkimex_type 4 > ex22f_1.tmp 2>&1; \
 	   ${DIFF} output/ex22f_1.out ex22f_1.tmp || echo "Possible problem with ex22f_1, diffs above";  \
@@ -318,6 +330,11 @@ runex24:                        # This is not in the nightlies because the conve
 	-@${MPIEXEC} -n 1 ./ex24 -pc_type lu -ts_dt 1e-5 -ts_max_time 1e5 -n 50 -monitor_short > ex24_1.tmp 2>&1; \
 	   ${DIFF} output/ex24_1.out ex24_1.tmp || echo "Possible problem with ex24_1, diffs above";  \
 	   ${RM} -f ex24_1.tmp
+
+runex25:
+	-@${MPIEXEC} -n 1 ./ex25 -da_grid_x 20 -ts_monitor_solution -ts_type rosw -ts_dt 5e-2 > ex25_1.tmp 2>&1; \
+	   ${DIFF} output/ex25_1.out ex25_1.tmp || echo "Possible problem with ex25_1, diffs above";  \
+	   ${RM} -f ex25_1.tmp
 
 
 TESTEXAMPLES_C		  = ex1.PETSc runex1 runex1_2 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 runex3_2 ex3.rm \
