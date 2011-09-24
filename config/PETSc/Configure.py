@@ -465,8 +465,14 @@ class Configure(config.base.Configure):
         self.framework.logPrint('Booting CMake in PETSC_ARCH failed:\n' + str(e))
       except (ImportError, KeyError), e:
         self.framework.logPrint('Importing cmakeboot failed:\n' + str(e))
-      if self.cmakeboot_success and not hasattr(self.compilers, 'CUDAC'): # Our CMake build does not support CUDA at this time
-        self.addMakeMacro('PETSC_BUILD_USING_CMAKE',1)
+      if self.cmakeboot_success:
+        if self.framework.argDB['with-cuda']: # Our CMake build does not support CUDA at this time
+          self.framework.logPrint('CMake configured successfully, but could not be used by default because --with-cuda was used\n')
+        else:
+          self.framework.logPrint('CMake configured successfully, using as default build\n')
+          self.addMakeMacro('PETSC_BUILD_USING_CMAKE',1)
+      else:
+        self.framework.logPrint('CMake configuration was unsuccessful\n')
     else:
       self.framework.logPrint('Skipping cmakeboot due to old python version: ' +str(sys.version_info) )
     return
