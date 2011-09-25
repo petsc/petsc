@@ -131,6 +131,9 @@ class Configure(script.Script):
     self.makeMacros[name] = value
     return
 
+  def getMakeMacro(self, name):
+    return self.makeMacros.get(name)
+
   def delMakeMacro(self, name):
     '''Designate that "name" should be deleted (never put in) configuration header'''
     self.framework.logPrint('Deleting "'+name+'"')
