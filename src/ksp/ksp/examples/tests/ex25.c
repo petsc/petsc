@@ -48,7 +48,7 @@ int main(int argc,char **args)
   ierr = MatMult(C,u,u_tmp);CHKERRQ(ierr);
   ierr = VecAXPY(u_tmp,none,b);CHKERRQ(ierr);
   ierr = VecNorm(u_tmp,NORM_2,&res_norm);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Accuracy of the loading data: | b - A*u |_2 : %A \n",res_norm);CHKERRQ(ierr); 
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Accuracy of the loading data: | b - A*u |_2 : %G \n",res_norm);CHKERRQ(ierr); 
   */
 
   /* Setup and solve for system */
@@ -98,8 +98,8 @@ int main(int argc,char **args)
     ierr = VecNorm(u_tmp,NORM_2,&res_norm);CHKERRQ(ierr);
   
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3d\n",its);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm: %A;",res_norm);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Error norm: %A.\n",err_norm);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm: %G;",res_norm);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Error norm: %G.\n",err_norm);CHKERRQ(ierr);
 
     ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
   }

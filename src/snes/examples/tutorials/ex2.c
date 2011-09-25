@@ -169,7 +169,7 @@ int main(int argc,char **argv)
   */
   ierr = VecAXPY(x,none,U);CHKERRQ(ierr);
   ierr  = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %A, Iterations %D\n",norm,its);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm of error %G, Iterations %D\n",norm,its);CHKERRQ(ierr);
 
 
   /*

@@ -107,8 +107,8 @@ int main(int argc,char **args)
     ierr = VecNorm(u_tmp,NORM_2,&res_norm);CHKERRQ(ierr);
   
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3D\n",its);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %A;",res_norm);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Error norm %A.\n",err_norm);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %G;",res_norm);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"  Error norm %G.\n",err_norm);CHKERRQ(ierr);
 
     ierr = KSPDestroy(&ksp);CHKERRQ(ierr);
   }
