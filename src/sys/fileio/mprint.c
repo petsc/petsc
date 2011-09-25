@@ -716,3 +716,50 @@ PetscErrorCode  PetscVFPrintf_Matlab(FILE *fd,const char format[],va_list Argp)
  PetscFunctionReturn(0);
 }
 #endif
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscVFPrintfRegress"
+/*@C 
+     PetscVFPrintfRegress -  Special version of PetscVFPrintf() to help make clean PETSc regression tests
+
+  Level:  developer
+
+  Developer Notes: 
+       Since this routine knows exactly the data-types and formats of each of the arguments it could in theory do an appropriate 
+       diff for each argument, rather than using a string diff on the entire result.
+
+       So we should somehow loop over all the parts of the format string check that the string part matches and the arguments match
+       within a reasonable tolerance.
+
+.seealso: PetscVSNPrintf(), PetscErrorPrintf()
+
+@*/
+PetscErrorCode  PetscVFPrintfRegress(FILE *fd,const char *format,va_list Argp)
+{
+  char           *newformat;
+  char           formatbuf[8*1024];
+  size_t         oldLength;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscStrlen(format, &oldLength);CHKERRQ(ierr);
+  if (oldLength < 8*1024) {
+    newformat = formatbuf;
+    oldLength = 8*1024-1;
+  } else {
+    oldLength = PETSC_MAX_LENGTH_FORMAT(oldLength);
+    ierr = PetscMalloc(oldLength * sizeof(char), &newformat);CHKERRQ(ierr);
+  }
+  ierr = PetscFormatConvert(format,newformat,oldLength);CHKERRQ(ierr);
+
+#if defined(PETSC_HAVE_VFPRINTF_CHAR)
+  vfprintf(fd,newformat,(char *)Argp);
+#else
+  vfprintf(fd,newformat,Argp);
+#endif
+  fflush(fd);
+  if (oldLength >= 8*1024) {
+    ierr = PetscFree(newformat);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
