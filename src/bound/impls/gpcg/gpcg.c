@@ -244,6 +244,8 @@ static PetscErrorCode TaoSolverSolve_GPCG(TaoSolver tao)
     if (gpcg->n_free > 0){
       
       /* Create a reduced linear system */
+      ierr = VecDestroy(&gpcg->R); CHKERRQ(ierr);
+      ierr = VecDestroy(&gpcg->DXFree); CHKERRQ(ierr);
       ierr = VecGetSubVec(tao->gradient,gpcg->Free_Local, &gpcg->R); CHKERRQ(ierr);
       ierr = VecScale(gpcg->R, -1.0); CHKERRQ(ierr);
       ierr = VecGetSubVec(tao->stepdirection,gpcg->Free_Local, &gpcg->DXFree); CHKERRQ(ierr);
