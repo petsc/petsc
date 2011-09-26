@@ -1266,10 +1266,10 @@ PetscErrorCode  SNESComputeFunction(SNES snes,Vec x,Vec y)
     PetscStackPush("SNES user function");
     ierr = (*snes->ops->computefunction)(snes,x,y,snes->funP);CHKERRQ(ierr);
     PetscStackPop;
-  } else if (snes->vec_rhs) {
-    ierr = MatMult(snes->jacobian, x, y);CHKERRQ(ierr);
   } else if (snes->dm) {
     ierr = DMComputeFunction(snes->dm,x,y);CHKERRQ(ierr);
+  } else if (snes->vec_rhs) {
+    ierr = MatMult(snes->jacobian, x, y);CHKERRQ(ierr);
   } else SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE, "Must call SNESSetFunction() or SNESSetDM() before SNESComputeFunction(), likely called from SNESSolve().");
   if (snes->vec_rhs) {
     ierr = VecAXPY(y,-1.0,snes->vec_rhs);CHKERRQ(ierr);
