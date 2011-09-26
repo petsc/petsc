@@ -247,4 +247,10 @@ class TaoExamples(ExampleList):
         self.add(Example(example="linesearch_fg",nprocs=1,options="-tao_smonitor",method="blmvm",tags=["jbearing","blmvm","single","c","unconstrained","linesearch_fg"],name="linesearch_fg"))
 
 
-                
+        # PDE-constrained
+        self.add(Example(example="elliptic",nprocs=1,options="-tao_cmonitor",method="lcl",tags=["pde","elliptic","single","c"],name="elliptic"))
+        self.add(Example(example="elliptic",nprocs=2,options="-tao_cmonitor",method="lcl",tags=["pde","elliptic","multiprocessor","c"],name="elliptic2"))
+        self.add(Example(example="parabolic",nprocs=1,options="-tao_cmonitor",method="lcl",tags=["pde","parabolic","single","c"],name="parabolic"))
+        self.add(Example(example="hyperbolic",nprocs=1,options="-nt 2 -tao_cmonitor",method="lcl",tags=["pde","hyperbolic","single","c"],name="hyperbolic"))
+        self.add(Example(example="hyperbolic",nprocs=2,options="mx 2 -nt 1 -tao_cmonitor",method="lcl",tags=["pde","hyperbolic","multiprocessor","c"],name="hyperbolic2"))
+

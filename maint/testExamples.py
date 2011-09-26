@@ -122,7 +122,7 @@ if __name__=="__main__":
                         good = open(goodname,'r')
                         goodtext = good.readlines()
                         good.close()
-                        diff = list(difflib.context_diff(goodtext,o.splitlines(1),fromfile='TAO reference output',tofile='local output'))
+                        diff = list(difflib.unified_diff(goodtext,o.splitlines(1),fromfile='TAO reference output',tofile='local output'))
                         if len(diff) != 0:
                             sys.stdout.write("\n")
                             for line in diff:
