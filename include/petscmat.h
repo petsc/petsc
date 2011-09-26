@@ -81,6 +81,7 @@ J*/
 #define MATSUBMATRIX       "submatrix"
 #define MATLOCALREF        "localref"
 #define MATNEST            "nest"
+#define MATIJ              "ij"
 
 /*J
     MatSolverPackage - String with the name of a PETSc matrix solver type. 
@@ -1759,6 +1760,36 @@ extern PetscErrorCode MatNestGetSubMat(Mat,PetscInt,PetscInt,Mat*);
 extern PetscErrorCode MatNestSetVecType(Mat,const VecType);
 extern PetscErrorCode MatNestSetSubMats(Mat,PetscInt,const IS[],PetscInt,const IS[],const Mat[]);
 extern PetscErrorCode MatNestSetSubMat(Mat,PetscInt,PetscInt,Mat);
+
+/* 
+ MatIJ: 
+ An unweighted directed pseudograph
+ An interpretation of this matrix as a (pseudo)graph allows us to define additional operations on it:
+ A MatIJ can act on sparse arrays: arrays of indices, or index arrays of integers, scalars, or integer-scalar pairs
+ by mapping the indices to the indices connected to them by the (pseudo)graph ed
+ */
+typedef enum {MATIJ_LOCAL, MATIJ_GLOBAL} MatIJIndexType; 
+extern  PetscErrorCode MatIJSetMultivalued(Mat, PetscBool);
+extern  PetscErrorCode MatIJGetMultivalued(Mat, PetscBool*);
+extern  PetscErrorCode MatIJSetEdges(Mat, PetscInt, const PetscInt*, const PetscInt*);
+extern  PetscErrorCode MatIJGetEdges(Mat, PetscInt *, PetscInt **, PetscInt **);
+extern  PetscErrorCode MatIJSetEdgesIS(Mat, IS, IS);
+extern  PetscErrorCode MatIJGetEdgesIS(Mat, IS*, IS*);
+extern  PetscErrorCode MatIJGetRowSizes(Mat, MatIJIndexType, PetscInt, const PetscInt *, PetscInt **);
+extern  PetscErrorCode MatIJGetMinRowSize(Mat, PetscInt *);
+extern  PetscErrorCode MatIJGetMaxRowSize(Mat, PetscInt *);
+extern  PetscErrorCode MatIJGetSupport(Mat,  PetscInt *, PetscInt **);
+extern  PetscErrorCode MatIJGetSupportIS(Mat, IS *);
+extern  PetscErrorCode MatIJGetImage(Mat, PetscInt*, PetscInt**);
+extern  PetscErrorCode MatIJGetImageIS(Mat, IS *);
+extern  PetscErrorCode MatIJGetSupportSize(Mat, PetscInt *);
+extern  PetscErrorCode MatIJGetImageSize(Mat, PetscInt *);
+
+extern  PetscErrorCode MatIJBinRenumber(Mat, Mat*);
+
+extern  PetscErrorCode MatIJMap(Mat, MatIJIndexType, PetscInt,const PetscInt[],const PetscInt[],const PetscScalar[], MatIJIndexType,PetscInt*,PetscInt*[],PetscInt*[],PetscScalar*[],PetscInt*[]);
+extern  PetscErrorCode MatIJBin(Mat, MatIJIndexType, PetscInt,const PetscInt[],const PetscInt[],const PetscScalar[],PetscInt*,PetscInt*[],PetscInt*[],PetscScalar*[],PetscInt*[]);
+extern  PetscErrorCode MatIJBinMap(Mat,Mat, MatIJIndexType,PetscInt,const PetscInt[],const PetscInt[],const PetscScalar[],MatIJIndexType,PetscInt*,PetscInt*[],PetscInt*[],PetscScalar*[],PetscInt*[]);
 
 PETSC_EXTERN_CXX_END
 #endif
