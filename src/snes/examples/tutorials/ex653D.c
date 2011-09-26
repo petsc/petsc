@@ -170,36 +170,33 @@ int main(int argc, char **argv)
     ierr = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(ierr);
     //ierr = VecView(x,view_out);CHKERRQ(ierr);
 
+    /*
     PetscInt its;
     ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"SNESVI solver converged at t = %5.4g in %d iterations\n",t,its);CHKERRQ(ierr);
-
+     */
     ierr = Update_u(x,&user);CHKERRQ(ierr);
 
-    //for (i=0; i < (int)(user.T/a) ; i++)
-	//{
-      //  if (t/a > i - user.dt/a && t/a < i + user.dt/a)
-	  //  {
-	  if (j % 500 == 0)
-	  {
-		    sprintf(cv_filename,"file_cv_%f.vtk",t);
-			sprintf(eta_filename,"file_eta_%f.vtk",t);
-			ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,cv_filename,&view_vtk_cv);CHKERRQ(ierr);
-			ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,eta_filename,&view_vtk_eta);CHKERRQ(ierr);
-			ierr = PetscViewerSetFormat(view_vtk_cv, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
-			ierr = PetscViewerSetFormat(view_vtk_eta, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
-			ierr = DMView(user.da2,view_vtk_cv);CHKERRQ(ierr);
-			ierr = DMView(user.da2,view_vtk_eta);CHKERRQ(ierr);
-			ierr = VecView(user.cv,view_vtk_cv);CHKERRQ(ierr);
-			ierr = VecView(user.eta,view_vtk_eta);CHKERRQ(ierr);
-			ierr = PetscViewerDestroy(&view_vtk_cv);CHKERRQ(ierr);
-			ierr = PetscViewerDestroy(&view_vtk_eta);CHKERRQ(ierr);
-	  }
-			
-       // }
+    /*
+    if (j % 500 == 0)
+    {
+      sprintf(cv_filename,"file_cv_%f.vtk",t);
+      sprintf(eta_filename,"file_eta_%f.vtk",t);
+      ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,cv_filename,&view_vtk_cv);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,eta_filename,&view_vtk_eta);CHKERRQ(ierr);
+      ierr = PetscViewerSetFormat(view_vtk_cv, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
+      ierr = PetscViewerSetFormat(view_vtk_eta, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
+      ierr = DMView(user.da2,view_vtk_cv);CHKERRQ(ierr);
+      ierr = DMView(user.da2,view_vtk_eta);CHKERRQ(ierr);
+      ierr = VecView(user.cv,view_vtk_cv);CHKERRQ(ierr);
+      ierr = VecView(user.eta,view_vtk_eta);CHKERRQ(ierr);
+      ierr = PetscViewerDestroy(&view_vtk_cv);CHKERRQ(ierr);
+      ierr = PetscViewerDestroy(&view_vtk_eta);CHKERRQ(ierr);
+    }
+    
+     */
         
-      //}
-
+    
     t = t + user.dt;
 	j = j + 1;
   }
@@ -235,8 +232,6 @@ int main(int argc, char **argv)
   ierr = SNESDestroy(&snes);CHKERRQ(ierr);
  
 
-	
-  printf("I am finalized");	
   PetscFinalize();
   return 0;
 }
@@ -498,11 +493,13 @@ PetscErrorCode SetInitialGuess(Vec X,AppCtx* user)
     xx[3*i+2]=eta_p[i];
   }
 
+  /*
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"file_initial",FILE_MODE_WRITE,&view_out);CHKERRQ(ierr);
   ierr = VecView(user->wv,view_out);CHKERRQ(ierr);
   ierr = VecView(user->cv,view_out);CHKERRQ(ierr);
   ierr = VecView(user->eta,view_out);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(&view_out);CHKERRQ(ierr);
+   */
 
   ierr = VecRestoreArray(X,&xx);CHKERRQ(ierr);
   ierr = VecRestoreArray(user->wv,&wv_p);CHKERRQ(ierr);
