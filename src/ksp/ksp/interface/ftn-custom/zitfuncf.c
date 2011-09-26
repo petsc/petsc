@@ -8,6 +8,7 @@
 
 #define kspdefaultconverged_       KSPDEFAULTCONVERGED
 #define kspdefaultconvergedcreate_  KSPDEFAULTCONVERGEDCREATE
+#define kspdefaultconvergeddestroy_  KSPDEFAULTCONVERGEDDESTROY
 #define kspskipconverged_          KSPSKIPCONVERGED
 #define kspgmresmonitorkrylov_     KSPGMRESMONITORKRYLOV
 #define kspmonitordefault_         KSPMONITORDEFAULT
@@ -24,6 +25,7 @@
 #define kspgetresidualhistory_         kspgetresidualhistory
 #define kspdefaultconverged_           kspdefaultconverged
 #define kspdefaultconvergedcreate_     kspdefaultconvergedcreate
+#define kspdefaultconvergeddestroy_    kspdefaultconvergeddestroy
 #define kspskipconverged_              kspskipconverged
 #define kspmonitorsingularvalue_       kspmonitorsingularvalue
 #define kspgmresmonitorkrylov_         kspgmresmonitorkrylov
@@ -163,7 +165,7 @@ void PETSC_STDCALL kspmonitorset_(KSP *ksp,void (PETSC_STDCALL *monitor)(KSP*,Pe
 }
 
 void PETSC_STDCALL kspsetconvergencetest_(KSP *ksp,
-      void (PETSC_STDCALL *converge)(KSP*,PetscInt*,PetscReal*,KSPConvergedReason*,void*,PetscErrorCode*),void *cctx,
+      void (PETSC_STDCALL *converge)(KSP*,PetscInt*,PetscReal*,KSPConvergedReason*,void*,PetscErrorCode*),void **cctx,
       void (PETSC_STDCALL *destroy)(void*,PetscErrorCode*),PetscErrorCode *ierr)
 {
   CHKFORTRANNULLOBJECT(cctx);
@@ -171,7 +173,7 @@ void PETSC_STDCALL kspsetconvergencetest_(KSP *ksp,
 
   PetscObjectAllocateFortranPointers(*ksp,6);
   if ((PetscVoidFunction)converge == (PetscVoidFunction)kspdefaultconverged_) {
-    *ierr = KSPSetConvergenceTest(*ksp,KSPDefaultConverged,cctx,KSPDefaultConvergedDestroy);
+    *ierr = KSPSetConvergenceTest(*ksp,KSPDefaultConverged,*cctx,KSPDefaultConvergedDestroy);
   } else if ((PetscVoidFunction)converge == (PetscVoidFunction)kspskipconverged_) {
     *ierr = KSPSetConvergenceTest(*ksp,KSPSkipConverged,0,0);
   } else {
@@ -189,6 +191,11 @@ void PETSC_STDCALL kspsetconvergencetest_(KSP *ksp,
 void PETSC_STDCALL kspdefaultconvergedcreate_(PetscFortranAddr *ctx,PetscErrorCode *ierr)
 {
   *ierr = KSPDefaultConvergedCreate((void**)ctx);
+}
+
+void PETSC_STDCALL kspdefaultconvergeddestroy_(PetscFortranAddr *ctx,PetscErrorCode *ierr)
+{
+  *ierr = KSPDefaultConvergedDestroy(*(void**)ctx);
 }
 
 void PETSC_STDCALL kspgetresidualhistory_(KSP *ksp,PetscInt *na,PetscErrorCode *ierr)

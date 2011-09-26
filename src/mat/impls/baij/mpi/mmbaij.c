@@ -29,7 +29,7 @@ PetscErrorCode MatSetUpMultiply_MPIBAIJ(Mat mat)
 
 #if defined (PETSC_USE_CTABLE)
   /* use a table - Mark Adams */
-  ierr = PetscTableCreate(B->mbs,&gid1_lid1);CHKERRQ(ierr);
+  ierr = PetscTableCreate(B->mbs,baij->Nbs+1,&gid1_lid1);CHKERRQ(ierr);
   for (i=0; i<B->mbs; i++) {
     for (j=0; j<B->ilen[i]; j++) {
       PetscInt data,gid1 = aj[B->i[i]+j] + 1;

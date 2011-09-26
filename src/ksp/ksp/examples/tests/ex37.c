@@ -119,7 +119,7 @@ int main(int argc,char **args)
   ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
   if (norm > 1.e-4 && !rank){
     ierr = PetscPrintf(PETSC_COMM_WORLD,"[%D]  Number of iterations = %3D\n",rank,its);CHKERRQ(ierr);
-    printf("Error: Residual norm of each block |subb - subA*subx |= %A\n",norm);
+    printf("Error: Residual norm of each block |subb - subA*subx |= %G\n",norm);
   }
   ierr = VecResetArray(subb);CHKERRQ(ierr);
   ierr = VecResetArray(subx);CHKERRQ(ierr);

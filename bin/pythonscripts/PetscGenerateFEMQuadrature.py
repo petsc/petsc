@@ -12,9 +12,13 @@ import PETSc.FEM
 from FIAT.reference_element import default_simplex
 from FIAT.lagrange import Lagrange
 
-generator = PETSc.FEM.QuadratureGenerator()
+generator  = PETSc.FEM.QuadratureGenerator()
 generator.setup()
-dim      = int(sys.argv[1])
-order    = int(sys.argv[2])
-elements = [Lagrange(default_simplex(dim), order)]
-generator.run(elements, sys.argv[3])
+dim        = int(sys.argv[1])
+order      = int(sys.argv[2])
+components = int(sys.argv[3])
+filename   = sys.argv[4]
+element    = Lagrange(default_simplex(dim), order)
+element.numComponents = components
+elements   = [element]
+generator.run(elements, filename)

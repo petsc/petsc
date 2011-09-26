@@ -168,7 +168,7 @@ PetscErrorCode PetscViewerHDF5OpenGroup(PetscViewer viewer, hid_t *fileId, hid_t
     if (!root && !H5Lexists(file_id, groupName, H5P_DEFAULT)) {
 #if (H5_VERS_MAJOR * 10000 + H5_VERS_MINOR * 100 + H5_VERS_RELEASE >= 10800)
       group = H5Gcreate2(file_id, groupName, 0, H5P_DEFAULT, H5P_DEFAULT);
-#else // deprecated HDF5 1.6 API
+#else /* deprecated HDF5 1.6 API */
       group = H5Gcreate(file_id, groupName, 0);
 #endif
       if (group < 0) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_LIB, "Could not create group %s", groupName);

@@ -230,7 +230,7 @@ PetscErrorCode PetscOptionsGetFromTextInput()
 	    }
 	    ierr = PetscTokenFind(token,&value);CHKERRQ(ierr);
 	  }
-	  ierr = PetscTokenDestroy(token);CHKERRQ(ierr);
+	  ierr = PetscTokenDestroy(&token);CHKERRQ(ierr);
         }
         break;
       case OPTION_REAL_ARRAY: 
@@ -261,7 +261,7 @@ PetscErrorCode PetscOptionsGetFromTextInput()
 	    n++;
 	    ierr = PetscTokenFind(token,&value);CHKERRQ(ierr);
 	  }
-	  ierr = PetscTokenDestroy(token);CHKERRQ(ierr);
+	  ierr = PetscTokenDestroy(&token);CHKERRQ(ierr);
         }
         break;
       case OPTION_INT: 
@@ -384,7 +384,7 @@ PetscErrorCode PetscOptionsAMSInput()
   PetscOptionsObject.pprefix = PetscOptionsObject.prefix; /* AMS will change this, so cannot pass prefix directly */
 
   ierr = AMS_Memory_add_field(amem,PetscOptionsObject.title,&PetscOptionsObject.pprefix,1,AMS_STRING,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRAMSFieldName(ierr,PetscOptionsObject.title);
-  //  ierr = AMS_Memory_add_field(amem,"mansec",&PetscOptionsObject.pprefix,1,AMS_STRING,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRAMS(ierr);
+  /* ierr = AMS_Memory_add_field(amem,"mansec",&PetscOptionsObject.pprefix,1,AMS_STRING,AMS_READ,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRAMS(ierr); */
   ierr = AMS_Memory_add_field(amem,"ChangedMethod",&changedmethod,1,AMS_BOOLEAN,AMS_WRITE,AMS_COMMON,AMS_REDUCT_UNDEF);CHKERRAMSFieldName(ierr,"ChangedMethod");
 
   while (next) {

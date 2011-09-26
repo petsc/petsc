@@ -326,7 +326,7 @@ PetscErrorCode  PetscStrncat(char s[],const char t[],size_t n)
 -  b - pointer to second string
 
    Output Parameter:
-.  flg - if the two strings are equal
+.  flg - PETSC_TRUE if the two strings are equal
 
    Level: intermediate
 
@@ -801,13 +801,14 @@ PetscErrorCode  PetscTokenCreate(const char a[],const char b,PetscToken *t)
 
 .seealso: PetscTokenCreate(), PetscTokenFind()
 @*/
-PetscErrorCode  PetscTokenDestroy(PetscToken a)
+PetscErrorCode  PetscTokenDestroy(PetscToken *a)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFree(a->array);CHKERRQ(ierr);
-  ierr = PetscFree(a);CHKERRQ(ierr);
+  if (!*a) PetscFunctionReturn(0);
+  ierr = PetscFree((*a)->array);CHKERRQ(ierr);
+  ierr = PetscFree(*a);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

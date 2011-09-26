@@ -4340,6 +4340,8 @@ PetscErrorCode  MatGetRowSum(Mat mat, Vec v)
    Notes:
      If you  pass in &mat for B the transpose will be done in place, for example MatTranspose(mat,MAT_REUSE_MATRIX,&mat);
 
+     Consider using MatCreateTranspose() instead if you only need a matrix that behaves like the transpose, but don't need the storage to be changed.
+
    Level: intermediate
 
    Concepts: matrices^transposing

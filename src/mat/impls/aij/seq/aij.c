@@ -779,9 +779,7 @@ PetscErrorCode MatView_SeqAIJ(Mat A,PetscViewer viewer)
     ierr = MatView_SeqAIJ_Binary(A,viewer);CHKERRQ(ierr);
   } else if (isdraw) {
     ierr = MatView_SeqAIJ_Draw(A,viewer);CHKERRQ(ierr);
-  } else {
-    SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported by SeqAIJ matrices",((PetscObject)viewer)->type_name);
-  }
+  } else SETERRQ1(PETSC_COMM_SELF,PETSC_ERR_SUP,"Viewer type %s not supported by SeqAIJ matrices",((PetscObject)viewer)->type_name);
   ierr = MatView_SeqAIJ_Inode(A,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1151,7 +1149,7 @@ PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
 
 #if defined(PETSC_HAVE_PTHREADCLASSES)
 
-//*******************
+/* ******************* */
 #if defined(PETSC_HAVE_PTHREADCLASSES)
 extern PetscBool    PetscUseThreadPool;
 #if defined(PETSC_HAVE_CPU_SET_T)
@@ -1246,7 +1244,7 @@ PetscErrorCode MatMult_SeqAIJPThread(Mat A,Vec xx,Vec yy)
     const MatScalar   *aa = a->a;
     const PetscInt    *aj = a->j,*ii = a->compressedrow.i,*ridx=a->compressedrow.rindex;
     PetscInt          i,iStartVal,iEndVal,iStartIndex,iEndIndex;
-    const PetscInt    iNumThreads = PetscMaxThreads;  //this number could be different
+    const PetscInt    iNumThreads = PetscMaxThreads;  /* this number could be different */
     MatMult_KernelData* kerneldatap = (MatMult_KernelData*)malloc(iNumThreads*sizeof(MatMult_KernelData));
     MatMult_KernelData** pdata = (MatMult_KernelData**)malloc(iNumThreads*sizeof(MatMult_KernelData*));
 
@@ -1257,12 +1255,12 @@ PetscErrorCode MatMult_SeqAIJPThread(Mat A,Vec xx,Vec yy)
       iStartIndex = iindex;
       iStartVal = ii[iStartIndex];
       iEndVal = iStartVal;
-      //determine number of rows to process
+      /* determine number of rows to process */
       while(iEndVal-iStartVal<NumPerThread) {
 	iindex++;
 	iEndVal = ii[iindex];
       }
-      //determine whether to go back 1
+      /* determine whether to go back 1 */
       if(iEndVal-iStartVal-NumPerThread>NumPerThread-(ii[iindex-1]-iStartVal)) {
 	iindex--;
 	iEndVal = ii[iindex];
@@ -1294,7 +1292,7 @@ PetscErrorCode MatMult_SeqAIJPThread(Mat A,Vec xx,Vec yy)
   PetscInt            i,iindex;
     const MatScalar   *aa = a->a;
     const PetscInt    *aj = a->j,*ii = a->i;
-    const PetscInt    iNumThreads = PetscMaxThreads;  //this number could be different
+    const PetscInt    iNumThreads = PetscMaxThreads;  /* this number could be different */
     PetscInt          Q = m/iNumThreads;
     PetscInt          R = m-Q*iNumThreads;
     PetscBool         S;
@@ -1312,12 +1310,12 @@ PetscErrorCode MatMult_SeqAIJPThread(Mat A,Vec xx,Vec yy)
       kerneldatap[i].rownumnz = ii + iindex;
       kerneldatap[i].numrows  = S?Q+1:Q;
       kerneldatap[i].specidx  = PETSC_NULL;
-      kerneldatap[i].nzr      = iindex; //serves as the 'base' row (needed to access correctly into output vector y)
+      kerneldatap[i].nzr      = iindex; /* serves as the 'base' row (needed to access correctly into output vector y) */
       pdata[i] = &kerneldatap[i];
       iindex += kerneldatap[i].numrows;
     }
     MainJob(MatMult_Kernel,(void**)pdata,iNumThreads);
-    //collect results
+    /* collect results */
     for(i=0; i<iNumThreads; i++) {
       nonzerorow += kerneldatap[i].nzr;
     }
@@ -1331,7 +1329,7 @@ PetscErrorCode MatMult_SeqAIJPThread(Mat A,Vec xx,Vec yy)
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-//*******************
+/* ******************* */
 #endif
 
 #include <../src/mat/impls/aij/seq/ftn-kernels/fmultadd.h>
@@ -3263,12 +3261,12 @@ $      ierr = MatRetrieveValues(mat);
 $      Set nonlinear terms in matrix
  
   Common Usage without SNESSolve(), i.e. when you handle nonlinear solve yourself:
-$    // build linear portion of Jacobian 
+$    // build linear portion of Jacobian
 $    ierr = MatSetOption(mat,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);
 $    ierr = MatStoreValues(mat);
 $    loop over nonlinear iterations
 $       ierr = MatRetrieveValues(mat);
-$       // call MatSetValues(mat,...) to set nonliner portion of Jacobian 
+$       // call MatSetValues(mat,...) to set nonliner portion of Jacobian
 $       // call MatAssemblyBegin/End() on matrix
 $       Solve linear system with Jacobian
 $    endloop 

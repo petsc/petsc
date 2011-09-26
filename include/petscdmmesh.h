@@ -219,6 +219,7 @@ typedef struct {
   const PetscReal *quadPoints;    /* The quadrature point coordinates */
   const PetscReal *quadWeights;   /* The quadrature weights */
   PetscInt         numBasisFuncs; /* The number of finite element basis functions on an element */
+  PetscInt         numComponents; /* The number of components for each basis function */
   const PetscReal *basis;         /* The basis functions tabulated at the quadrature points */
   const PetscReal *basisDer;      /* The basis function derivatives tabulated at the quadrature points */
 } PetscQuadrature;

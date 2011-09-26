@@ -27,7 +27,7 @@ PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
 
 #if defined (PETSC_USE_CTABLE)
   /* use a table - Mark Adams */
-  ierr = PetscTableCreate(aij->B->rmap->n,&gid1_lid1);CHKERRQ(ierr);
+  ierr = PetscTableCreate(aij->B->rmap->n,mat->cmap->N+1,&gid1_lid1);CHKERRQ(ierr);
   for (i=0; i<aij->B->rmap->n; i++) {
     for (j=0; j<B->ilen[i]; j++) {
       PetscInt data,gid1 = aj[B->i[i] + j] + 1;

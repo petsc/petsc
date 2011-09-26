@@ -18,13 +18,13 @@ ex10: ex10.o  chkopts
 runex10:
 	-@$(MPIEXEC) -n 2 ./ex10 -snes_monitor_short > ex10_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex10_1.out ex10_1.tmp) then true; \
-	   else echo "Possible problem with ex10_1, diffs above"; fi; \
+	   else echo ${PWD} ; echo "Possible problem with with ex10_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex10_1.tmp
 
 runex10_2:
 	-@$(MPIEXEC) -n 2 ./ex10 -snes_monitor_short -fd_jacobian_coloring > ex10_2.tmp 2>&1;   \
 	   if (${DIFF} output/ex10_2.out ex10_2.tmp) then true; \
-	   else echo "Possible problem with ex10_2, diffs above"; fi; \
+	   else echo ${PWD} ; echo "Possible problem with with ex10_2, diffs above \n========================================="; fi; \
 	   ${RM} -f ex10_2.tmp
 
 TESTEXAMPLES_C_NOCOMPLEX	 = ex10.PETSc runex10 runex10_2 ex10.rm

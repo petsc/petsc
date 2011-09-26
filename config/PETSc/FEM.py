@@ -194,9 +194,10 @@ class QuadratureGenerator(script.Script):
     import numpy
 
     self.logPrint('Generating basis structures for element '+str(element.__class__), debugSection = 'codegen')
-    points = quadrature.get_points()
-    code = []
-    #TODO: No longer handles vector elements, use element.value_shape()
+    points  = quadrature.get_points()
+    numComp = getattr(element, 'numComponents', 1)
+    code    = []
+    # Handles vector elements which just repeat scalar values
     for i in range(1):
       basis = element.get_nodal_basis()
       dim = element.get_reference_element().get_spatial_dimension()
@@ -204,6 +205,9 @@ class QuadratureGenerator(script.Script):
       numFunctions = Define()
       numFunctions.identifier = 'NUM_BASIS_FUNCTIONS'+ext
       numFunctions.replacementText = str(basis.get_num_members())
+      numComponents = Define()
+      numComponents.identifier = 'NUM_BASIS_COMPONENTS'+ext
+      numComponents.replacementText = str(numComp)
       basisName    = name+'Basis'+ext
       basisDerName = name+'BasisDerivatives'+ext
       perm         = self.getBasisFuncOrder(element)
@@ -217,7 +221,22 @@ class QuadratureGenerator(script.Script):
           for i,pi in enumerate(perm):
             basisTab[q][i]    = basisTabOld[q][pi]
             basisDerTab[q][i] = basisDerTabOld[q][pi]
-      code.extend([numFunctions,
+      if numComp > 1:
+        newShape       = list(basisTab.shape)
+        newShape[1]    = newShape[1]*numComp
+        basisTabNew    = numpy.zeros(newShape)
+        newShape       = list(basisDerTab.shape)
+        newShape[1]    = newShape[1]*numComp
+        basisDerTabNew = numpy.zeros(newShape)
+        for q in range(basisTab.shape[0]):
+          for i in range(basisTab.shape[1]):
+            basisTabNew[q][i*2+0] = basisTab[q][i]
+            basisTabNew[q][i*2+1] = basisTab[q][i]
+            basisDerTabNew[q][i*2+0] = basisDerTab[q][i]
+            basisDerTabNew[q][i*2+1] = basisDerTab[q][i]
+        basisTab    = basisTabNew
+        basisDerTab = basisDerTabNew
+      code.extend([numFunctions, numComponents,
                    self.getArray(self.Cxx.getVar(basisName), basisTab, 'Nodal basis function evaluations\n    - basis function is fastest varying, then point', 'PetscReal'),
                    self.getArray(self.Cxx.getVar(basisDerName), basisDerTab, 'Nodal basis function derivative evaluations,\n    - derivative direction fastest varying, then basis function, then point', 'PetscReal')])
     return code
@@ -230,9 +249,10 @@ class QuadratureGenerator(script.Script):
     import numpy
 
     self.logPrint('Generating basis structures for element '+str(element.__class__), debugSection = 'codegen')
-    points = quadrature.get_points()
-    code = []
-    #TODO: No longer handles vector elements, use element.value_shape()
+    points  = quadrature.get_points()
+    numComp = getattr(element, 'numComponents', 1)
+    code    = []
+    # Handles vector elements which just repeat scalar values
     for i in range(1):
       basis = element.get_nodal_basis()
       dim = element.get_reference_element().get_spatial_dimension()
@@ -241,6 +261,10 @@ class QuadratureGenerator(script.Script):
       numFunctions.identifier  = 'numBasisFunctions'+ext
       numFunctions.type        = self.Cxx.typeMap['const int']
       numFunctions.initializer = self.Cxx.getInteger(basis.get_num_members())
+      numComponents = Declarator()
+      numComponents.identifier  = 'numBasisComponents'+ext
+      numComponents.type        = self.Cxx.typeMap['const int']
+      numComponents.initializer = self.Cxx.getInteger(numComp)
       basisName    = name+'Basis'+ext
       basisDerName = name+'BasisDerivatives'+ext
       perm         = self.getBasisFuncOrder(element)
@@ -254,7 +278,22 @@ class QuadratureGenerator(script.Script):
           for i,pi in enumerate(perm):
             basisTab[q][i]    = basisTabOld[q][pi]
             basisDerTab[q][i] = basisDerTabOld[q][pi]
-      code.extend([self.Cxx.getDecl(numFunctions),
+      if numComp > 1:
+        newShape       = list(basisTab.shape)
+        newShape[1]    = newShape[1]*numComp
+        basisTabNew    = numpy.zeros(newShape)
+        newShape       = list(basisDerTab.shape)
+        newShape[1]    = newShape[1]*numComp
+        basisDerTabNew = numpy.zeros(newShape)
+        for q in range(basisTab.shape[0]):
+          for i in range(basisTab.shape[1]):
+            basisTabNew[q][i*2+0] = basisTab[q][i]
+            basisTabNew[q][i*2+1] = basisTab[q][i]
+            basisDerTabNew[q][i*2+0] = basisDerTab[q][i]
+            basisDerTabNew[q][i*2+1] = basisDerTab[q][i]
+        basisTab    = basisTabNew
+        basisDerTab = basisDerTabNew
+      code.extend([self.Cxx.getDecl(numFunctions), self.Cxx.getDecl(numComponents),
                    self.getArray(self.Cxx.getVar(basisName), basisTab, 'Nodal basis function evaluations\n    - basis function is fastest varying, then point', 'const PetscReal', static = False),
                    self.getArray(self.Cxx.getVar(basisDerName), basisDerTab, 'Nodal basis function derivative evaluations,\n    - derivative direction fastest varying, then basis function, then point', 'const float'+str(dim), static = False, packSize = dim)])
     return code
@@ -724,10 +763,10 @@ class QuadratureGenerator(script.Script):
         else:
           defns.extend(self.getQuadratureStructs(2*len(quadrature.pts)-1, quadrature, n))
           defns.extend(self.getBasisStructs(name, element, quadrature, n))
-          defns.extend(self.getIntegratorPoints(n, element))
-          defns.extend(self.getIntegratorSetup(n, element))
-          defns.extend(self.getIntegratorSetup(n, element, True))
-          defns.extend(self.getSectionSetup(n, element))
+          #defns.extend(self.getIntegratorPoints(n, element))
+          #defns.extend(self.getIntegratorSetup(n, element))
+          #defns.extend(self.getIntegratorSetup(n, element, True))
+          #defns.extend(self.getSectionSetup(n, element))
         if len(element.value_shape()) > 0:
           n += element.value_shape()[0]
         else:

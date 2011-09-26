@@ -146,6 +146,9 @@ extern PetscErrorCode    ISDuplicate(IS,IS*);
 extern PetscErrorCode    ISCopy(IS,IS);
 extern PetscErrorCode    ISAllGather(IS,IS*);
 extern PetscErrorCode    ISComplement(IS,PetscInt,PetscInt,IS*);
+extern PetscErrorCode    ISConcatenate(MPI_Comm,PetscInt,const IS[],IS*);
+extern PetscErrorCode    ISListToColoring(MPI_Comm,PetscInt, IS[],IS*,IS*);
+extern PetscErrorCode    ISColoringToList(IS, IS, PetscInt*, IS *[]);
 extern PetscErrorCode    ISOnComm(IS,MPI_Comm,PetscCopyMode,IS*);
 
 /* --------------------------------------------------------------------------*/

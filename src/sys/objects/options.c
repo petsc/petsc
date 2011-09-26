@@ -315,7 +315,7 @@ PetscErrorCode  PetscOptionsInsertString(const char in_str[])
       ierr = PetscTokenFind(token,&first);CHKERRQ(ierr);        
     }
   }
-  ierr = PetscTokenDestroy(token);CHKERRQ(ierr);
+  ierr = PetscTokenDestroy(&token);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -446,7 +446,7 @@ PetscErrorCode  PetscOptionsInsertFile(MPI_Comm comm,const char file[],PetscBool
           }
         }
         destroy:
-        ierr = PetscTokenDestroy(token);CHKERRQ(ierr);
+        ierr = PetscTokenDestroy(&token);CHKERRQ(ierr);
       }
       err = fclose(fd);
       if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");
@@ -476,7 +476,7 @@ PetscErrorCode  PetscOptionsInsertFile(MPI_Comm comm,const char file[],PetscBool
       ierr = PetscOptionsSetAlias(first,second);CHKERRQ(ierr);
       ierr = PetscTokenFind(token,&first);CHKERRQ(ierr);
     }
-    ierr = PetscTokenDestroy(token);CHKERRQ(ierr);
+    ierr = PetscTokenDestroy(&token);CHKERRQ(ierr);
   }
 
   ierr = MPI_Bcast(&cnt,1,MPI_INT,0,comm);CHKERRQ(ierr);
@@ -1526,7 +1526,7 @@ PetscErrorCode  PetscOptionsGetBoolArray(const char pre[],const char name[],Pets
     dvalue++;
     n++;
   }
-  ierr  = PetscTokenDestroy(token);CHKERRQ(ierr);
+  ierr  = PetscTokenDestroy(&token);CHKERRQ(ierr);
   *nmax = n;
   PetscFunctionReturn(0); 
 }
@@ -1644,7 +1644,7 @@ PetscErrorCode  PetscOptionsGetScalar(const char pre[],const char name[],PetscSc
         ierr    = PetscOptionsStringToReal(tvalue,&im);CHKERRQ(ierr);
         *dvalue = re + PETSC_i*im;
       } 
-      ierr    = PetscTokenDestroy(token);CHKERRQ(ierr);
+      ierr    = PetscTokenDestroy(&token);CHKERRQ(ierr);
 #endif
       if (set) *set    = PETSC_TRUE;
     } 
@@ -1709,7 +1709,7 @@ PetscErrorCode  PetscOptionsGetRealArray(const char pre[],const char name[],Pets
     ierr = PetscTokenFind(token,&value);CHKERRQ(ierr);
     n++;
   }
-  ierr = PetscTokenDestroy(token);CHKERRQ(ierr);
+  ierr = PetscTokenDestroy(&token);CHKERRQ(ierr);
   *nmax = n;
   PetscFunctionReturn(0); 
 } 
@@ -1794,7 +1794,7 @@ PetscErrorCode  PetscOptionsGetIntArray(const char pre[],const char name[],Petsc
     }
     ierr      = PetscTokenFind(token,&value);CHKERRQ(ierr);
   }
-  ierr      = PetscTokenDestroy(token);CHKERRQ(ierr);
+  ierr      = PetscTokenDestroy(&token);CHKERRQ(ierr);
   *nmax = n;
   PetscFunctionReturn(0); 
 } 
@@ -1944,7 +1944,7 @@ PetscErrorCode  PetscOptionsGetStringArray(const char pre[],const char name[],ch
     ierr = PetscTokenFind(token,&value);CHKERRQ(ierr);
     n++;
   }
-  ierr = PetscTokenDestroy(token);CHKERRQ(ierr);
+  ierr = PetscTokenDestroy(&token);CHKERRQ(ierr);
   *nmax = n;
   PetscFunctionReturn(0); 
 }

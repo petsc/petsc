@@ -78,7 +78,7 @@ int main(int argc,char **args)
   ierr = VecAXPY(x,neg_one,u);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"1. Norm of error for Ax=b: %A, Iterations %D\n",
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"1. Norm of error for Ax=b: %G, Iterations %D\n",
                      norm,its);CHKERRQ(ierr);
  
   /* 2. Solve linear system A^T x = b*/
@@ -89,7 +89,7 @@ int main(int argc,char **args)
   ierr = VecAXPY(x2,neg_one,u);CHKERRQ(ierr);
   ierr = VecNorm(x2,NORM_2,&norm);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"2. Norm of error for A^T x=b: %A, Iterations %D\n",
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"2. Norm of error for A^T x=b: %G, Iterations %D\n",
                      norm,its);CHKERRQ(ierr);
 
   /* 3. Change A and solve A x = b with an iterative solver using A=LU as a preconditioner*/
@@ -107,7 +107,7 @@ int main(int argc,char **args)
   ierr = VecAXPY(x,neg_one,u);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"3. Norm of error for (A+Delta) x=b: %A, Iterations %D\n",
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"3. Norm of error for (A+Delta) x=b: %G, Iterations %D\n",
                      norm,its);CHKERRQ(ierr);
 
   /* Free work space. */

@@ -74,31 +74,31 @@ runex9:
 runex10_seqaij: 
 	-@${MPIEXEC} -n 1 ./ex10 -f ${DATAFILESPATH}/matrices/small -a_mat_type seqaij  > ex10_seqaij.tmp 2>&1;   \
 	   if (${DIFF} output/ex10_seqaij.out ex10_seqaij.tmp) then true; \
-	   else echo "Possible problem with ex10_seqaij, diffs above"; fi; \
+	   else echo ${PWD} ; echo "Possible problem with with ex10_seqaij, diffs above \n========================================="; fi; \
 	   ${RM} -f ex10_seqaij.tmp
 
 runex10_seqdense: 
 	-@${MPIEXEC} -n 1 ./ex10 -f ${DATAFILESPATH}/matrices/small -a_mat_type seqdense > ex10_seqdense.tmp 2>&1;   \
 	   if (${DIFF} output/ex10_seqdense.out ex10_seqdense.tmp) then true; \
-	   else echo "Possible problem with ex10_seqdense, diffs above"; fi; \
+	   else echo ${PWD} ; echo "Possible problem with with ex10_seqdense, diffs above \n========================================="; fi; \
 	   ${RM} -f ex10_seqdense.tmp
 
 runex10_mpiaij: 
 	-@${MPIEXEC} -n 2 ./ex10 -f ${DATAFILESPATH}/matrices/small -a_mat_type mpiaij > ex10_mpiaij.tmp 2>&1;   \
 	   if (${DIFF} output/ex10_mpiaij.out ex10_mpiaij.tmp) then true; \
-	   else echo "Possible problem with ex10_mpiaij, diffs above"; fi; \
+	   else echo ${PWD} ; echo "Possible problem with with ex10_mpiaij, diffs above \n========================================="; fi; \
 	   ${RM} -f ex10_mpiaij.tmp
 
 runex10_mpidense: 
 	-@${MPIEXEC} -n 2 ./ex10 -f ${DATAFILESPATH}/matrices/small -a_mat_type mpidense > ex10_mpidense.tmp 2>&1;   \
 	   if (${DIFF} output/ex10_mpidense.out ex10_mpidense.tmp) then true; \
-	   else echo "Possible problem with ex10_mpidense, diffs above"; fi; \
+	   else echo ${PWD} ; echo "Possible problem with with ex10_mpidense, diffs above \n========================================="; fi; \
 	   ${RM} -f ex10_mpidense.tmp
 
 runex11: 
 	-@${MPIEXEC} -n 2 ./ex11 > ex11_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex11_1.out ex11_1.tmp) then true; \
-	   else echo "Possible problem with ex11, diffs above"; fi; \
+	   else echo ${PWD} ; echo "Possible problem with with ex11, diffs above \n========================================="; fi; \
 	   ${RM} -f ex11_1.tmp
 
 runex13: 
@@ -111,13 +111,13 @@ runex14:
 runex15: 
 	-@${MPIEXEC} -n 3 ./ex15 -mat_partitioning_type parmetis > ex15_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex15_1.out ex15_1.tmp) then true; \
-	   else echo "Possible problem with ex15, diffs above"; fi; \
+	   else echo ${PWD} ; echo "Possible problem with with ex15, diffs above \n========================================="; fi; \
 	   ${RM} -f ex15_1.tmp
 
 runex15_2: 
 	-@${MPIEXEC} -n 3 ./ex15 -mat_partitioning_type ptscotch > ex15_2.tmp 2>&1;   \
 	   if (${DIFF} output/ex15_2.out ex15_2.tmp) then true; \
-	   else echo "Possible problem with ex15_2, diffs above"; fi; \
+	   else echo ${PWD} ; echo "Possible problem with with ex15_2, diffs above \n========================================="; fi; \
 	   ${RM} -f ex15_2.tmp
 
 #-------------------------------------------------------------
