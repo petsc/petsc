@@ -3,7 +3,7 @@
 ALL:
 
 LOCDIR	 = src/unconstrained/examples/
-DIRS	 = tests 
-#tutorials
+DIRS	 = tutorials
+
 
 include ${TAO_DIR}/conf/tao_base
