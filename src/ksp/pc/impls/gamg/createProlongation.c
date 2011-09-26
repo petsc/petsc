@@ -1314,7 +1314,7 @@ PetscErrorCode createProlongation( const Mat a_Amat,
     ierr = MatDestroy( &Gmat );  CHKERRQ(ierr);
     Gmat = Gmat2;
 #ifdef VERBOSE
-    PetscPrintf(wcomm,"\t%s ave nnz/row %d --> %d\n",__FUNCT__,nnz0,nnz1); 
+    PetscPrintf(PETSC_COMM_WORLD,"\t%s ave nnz/row %d --> %d\n",__FUNCT__,nnz0,nnz1); 
 #endif
   }
 

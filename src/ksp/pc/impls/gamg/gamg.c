@@ -222,14 +222,15 @@ PetscErrorCode partitionLevel( Mat a_Amat_fine,
     for( nactive = jj = 0 ; jj < npe ; jj++) {
       if( counts[jj] != 0 ) {
 	ranks[nactive++] = jj;
-      }
+        }
     }
-    assert(nactive>=new_npe);
 
+    if (nactive < new_npe) new_npe = nactive; /* this can happen with empty input procs */
+    
 #ifdef VERBOSE
     PetscPrintf(PETSC_COMM_WORLD,"\t[%d]%s npe (active): %d --> %d. new npe = %d, neq = %d\n",mype,__FUNCT__,*a_nactive_proc,nactive,new_npe,neq);
 #endif
-
+    
     *a_nactive_proc = new_npe; /* output */
     
     ierr = MPI_Comm_group( wcomm, &wg ); CHKERRQ(ierr); 
