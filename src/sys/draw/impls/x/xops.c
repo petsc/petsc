@@ -164,7 +164,7 @@ static PetscErrorCode PetscDrawString_X(PetscDraw draw,PetscReal x,PetscReal  y,
     XDrawString(XiWin->disp,XiDrawable(XiWin),XiWin->gc.set,xx,yy - XiWin->font->font_descent,substr,len);
     ierr = PetscTokenFind(token,&substr);CHKERRQ(ierr);
   }
-  ierr = PetscTokenDestroy(token);CHKERRQ(ierr);
+  ierr = PetscTokenDestroy(&token);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

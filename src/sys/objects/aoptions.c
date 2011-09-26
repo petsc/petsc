@@ -230,7 +230,7 @@ PetscErrorCode PetscOptionsGetFromTextInput()
 	    }
 	    ierr = PetscTokenFind(token,&value);CHKERRQ(ierr);
 	  }
-	  ierr = PetscTokenDestroy(token);CHKERRQ(ierr);
+	  ierr = PetscTokenDestroy(&token);CHKERRQ(ierr);
         }
         break;
       case OPTION_REAL_ARRAY: 
@@ -261,7 +261,7 @@ PetscErrorCode PetscOptionsGetFromTextInput()
 	    n++;
 	    ierr = PetscTokenFind(token,&value);CHKERRQ(ierr);
 	  }
-	  ierr = PetscTokenDestroy(token);CHKERRQ(ierr);
+	  ierr = PetscTokenDestroy(&token);CHKERRQ(ierr);
         }
         break;
       case OPTION_INT: 
