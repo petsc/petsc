@@ -1,6 +1,8 @@
 update manual
   add pounders section
 
+Allow separable objective function
+
 Check fortran stubs 
 
 Check documentation
@@ -8,7 +10,6 @@ Check documentation
 Examples/tests
   add to tests (-tao_fd, -tao_fdgrad, -tao_fd_delta)
   remake output
-  Put examples in correct places
   Correct list of routines used in examples
 
 Test on arches

@@ -31,5 +31,12 @@ eptorsion2f: eptorsion2f.o tao_chkopts
 	-${FLINKER} -o eptorsion2f eptorsion2f.o ${TAO_LIB} ${PETSC_LIB}
 	${RM} eptorsion2f.o
 
+minsurf1: minsurf1.o tao_chkopts
+	-${CLINKER} -o minsurf1 minsurf1.o ${TAO_LIB} ${PETSC_LIB}
+	${RM} minsurf1.o
+
+minsurf2: minsurf2.o tao_chkopts
+	-${CLINKER} -o minsurf2 minsurf2.o ${TAO_LIB} ${PETSC_LIB}
+	${RM} minsurf2.o
 
 

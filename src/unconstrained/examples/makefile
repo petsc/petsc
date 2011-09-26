@@ -1,5 +1,3 @@
-# $Id$ 
-
 ALL:
 
 LOCDIR	 = src/unconstrained/examples/
