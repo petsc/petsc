@@ -13,24 +13,21 @@
 #include <pthread.h>
 #include <unistd.h>
 
+/* Global variables */
 extern void           (*MainWait)(void);
 extern PetscErrorCode (*MainJob)(void* (*pFunc)(void*),void**,PetscInt);
 extern PetscBool    PetscUseThreadPool;
 extern PetscMPIInt PetscMaxThreads;
 extern pthread_t*   PetscThreadPoint;
 extern int* ThreadCoreAffinity;
+
 void* DoCoreAffinity(void);
 
 typedef struct {
-  PetscScalar   *x,*y;
+  PetscScalar   *x,*y,*w;
   PetscInt      n;
   PetscScalar   result;
   PetscScalar   alpha;
-
-  PetscScalar   *ww;
-  PetscScalar   *yy;
-  PetscScalar   *xx;
-
   NormType      typeUse;
 
   PetscScalar*  xvalin;
@@ -40,65 +37,19 @@ typedef struct {
   PetscScalar*  results;
 
   PetscInt      gind;
-  PetscInt      localn;
   PetscInt      localind;
   PetscReal     localmax;
   PetscReal     localmin;
 
-  PetscScalar   *wpin,*xpin,*ypin;
-  PetscInt      nlocal;
+  PetscRandom   rand;
+  PetscScalar*  amult;   /* multipliers */
+  PetscInt      ibase;   /* used to properly index into other vectors */
 
-  PetscRandom   rin;
-  PetscScalar*  amult;   //multipliers
-  PetscInt      ibase;   //used to properly index into other vectors
-
-  PetscScalar   alphain;
 } Kernel_Data;
 
 static Kernel_Data *kerneldatap;
 static Kernel_Data **pdata;
 static PetscInt vecs_created=0;
-
-typedef struct {
-  const PetscScalar *x,*y;
-  PetscInt          n;
-  PetscScalar       result;
-} VecDot_KernelData;
-
-typedef struct {
-  PetscScalar *x;
-  PetscScalar alpha;
-  PetscInt    n;
-} VecScale_KernelData;
-
-typedef struct {
-  PetscScalar *y;
-  const PetscScalar *x;
-  PetscScalar alpha;
-  PetscInt    n;
-} VecAXPY_KernelData;
-
-typedef struct {
-  PetscScalar *yy;
-  const PetscScalar *xx;
-  PetscScalar alpha;
-  PetscInt    n;
-} VecAYPX_KernelData;
-
-typedef struct {
-  PetscScalar *ww;
-  const PetscScalar *yy;
-  const PetscScalar *xx;
-  PetscScalar alpha;
-  PetscInt    n;
-} VecWAXPY_KernelData;
-
-typedef struct {
-  const PetscScalar *x;
-  NormType typeUse;
-  PetscInt    n;
-  PetscScalar result;
-} VecNorm_KernelData;
 
 typedef struct {
   const PetscScalar* xvalin;
@@ -109,49 +60,6 @@ typedef struct {
 } VecMDot_KernelData;
 
 typedef struct {
-  const PetscScalar *x;
-  PetscInt          gind;
-  PetscInt          localn;
-  PetscInt          localind;
-  PetscReal         localmax;
-} VecMax_KernelData;
-
-typedef struct {
-  const PetscScalar *x;
-  PetscInt          gind;
-  PetscInt          localn;
-  PetscInt          localind;
-  PetscReal         localmin;
-} VecMin_KernelData;
-
-typedef struct {
-  PetscScalar *wpin,*xpin,*ypin;
-  PetscInt          nlocal;
-} VecPointwiseMult_KernelData;
-
-typedef struct {
-  PetscScalar *wpin,*xpin,*ypin;
-  PetscInt          nlocal;
-} VecPointwiseDivide_KernelData;
-
-typedef struct {
-  PetscScalar *xpin,*ypin;
-  PetscInt nlocal;
-} VecSwap_KernelData;
-
-typedef struct {
-  PetscScalar *xpin;
-  PetscRandom   rin;
-  PetscInt nlocal;
-} VecSetRandom_KernelData;
-
-typedef struct {
-  const PetscScalar *xpin;
-  PetscScalar   *ypin;
-  PetscInt nlocal;
-} VecCopy_KernelData;
-
-typedef struct {
   PetscScalar*       xavalin; /* vector out */
   Vec*               yavecin; /* array of data vectors */
   const PetscScalar* amult;   /* multipliers */
@@ -159,12 +67,6 @@ typedef struct {
   PetscInt           ntoproc; /* number of data vectors */
   PetscInt           ibase;   /* used to properly index into other vectors */
 } VecMAXPY_KernelData;
-
-typedef struct {
-  PetscScalar *xpin;
-  PetscScalar alphain;
-  PetscInt nelem;
-} VecSet_KernelData;
 
 /* Change these macros so can be used in thread kernels */
 #undef CHKERRQP
@@ -212,7 +114,7 @@ PetscErrorCode VecDot_SeqPThread(Vec xin,Vec yin,PetscScalar *z)
   for (i=0; i<x->nthreads; i++) {
     kerneldatap[i].x = &xa[ix[i]];
     kerneldatap[i].y = &ya[iy[i]];
-    kerneldatap[i].n = nx[i]; /* Assuming the two vectors are equally distributed among the threads */
+    kerneldatap[i].n = nx[i];
     pdata[i]         = &kerneldatap[i];
   }
 
@@ -241,7 +143,7 @@ void* VecScale_Kernel(void *arg)
 #endif
 
   }
-  VecScale_KernelData *data = (VecScale_KernelData*)arg;
+  Kernel_Data *data = (Kernel_Data*)arg;
   PetscScalar a,*x;
   PetscBLASInt one = 1, bn;
   PetscInt    n;
@@ -254,38 +156,35 @@ void* VecScale_Kernel(void *arg)
   return(0);
 }
 
+PetscErrorCode VecSet_SeqPThread(Vec,PetscScalar);
+
 #undef __FUNCT__
 #define __FUNCT__ "VecScale_SeqPThread"
 PetscErrorCode VecScale_SeqPThread(Vec xin, PetscScalar alpha)
 {
-  PetscErrorCode ierr;
+  PetscErrorCode    ierr;
+  Vec_SeqPthread    *x =  (Vec_SeqPthread*)xin->data;
+  PetscInt          *ix = x->arrindex;
+  PetscInt          *nx = x->nelem;
 
   PetscFunctionBegin;
 
   if (alpha == 0.0) {
-    ierr = VecSet_Seq(xin,alpha);CHKERRQ(ierr);
+    ierr = VecSet_SeqPThread(xin,alpha);CHKERRQ(ierr);
   } else if (alpha != 1.0) {
-    PetscScalar a = alpha,*xarray,*xp;
-    const PetscInt    iNumThreads = PetscMaxThreads;  /* this number could be different */
-    PetscInt          i,Q = xin->map->n/(iNumThreads);
-    PetscInt          R = xin->map->n-Q*(iNumThreads);
-    PetscBool         S;
-    VecScale_KernelData* kerneldatap = (VecScale_KernelData*)malloc(iNumThreads*sizeof(VecScale_KernelData));
-    VecScale_KernelData** pdata = (VecScale_KernelData**)malloc(iNumThreads*sizeof(VecScale_KernelData*));
-    ierr = VecGetArray(xin,&xarray);CHKERRQ(ierr); /* get address of first element in data array */
-    xp = xarray;
-    for (i=0; i<iNumThreads; i++) {
-      S = (PetscBool)(i<R);
-      kerneldatap[i].x = xp;
-      kerneldatap[i].alpha = a;
-      kerneldatap[i].n = S?Q+1:Q;
-      xp += kerneldatap[i].n; /* pointer arithmetic */
-      pdata[i] = &kerneldatap[i];
+    PetscScalar *xa;
+    PetscInt    i;
+
+    ierr = VecGetArray(xin,&xa);CHKERRQ(ierr);
+    for (i=0; i<x->nthreads; i++) {
+      kerneldatap[i].x     = &xa[ix[i]];
+      kerneldatap[i].alpha = alpha;
+      kerneldatap[i].n     = nx[i];  
+      pdata[i]             = &kerneldatap[i];
     }
-    ierr = MainJob(VecScale_Kernel,(void**)pdata,iNumThreads);
-    free(kerneldatap);
-    free(pdata);
-    ierr = VecRestoreArray(xin,&xarray);CHKERRQ(ierr);
+    ierr = MainJob(VecScale_Kernel,(void**)pdata,x->nthreads);
+
+    ierr = VecRestoreArray(xin,&xa);CHKERRQ(ierr);
   }
   ierr = PetscLogFlops(xin->map->n);CHKERRQ(ierr);
   PetscFunctionReturn(ierr);
@@ -298,13 +197,13 @@ void* VecAXPY_Kernel(void *arg)
     DoCoreAffinity();
 #endif
   }
-  VecAXPY_KernelData *data = (VecAXPY_KernelData*)arg;
+  Kernel_Data *data = (Kernel_Data*)arg;
   PetscScalar a,*y;
   const PetscScalar *x;
   PetscBLASInt one = 1, bn;
   PetscInt    n;
 
-  x = data->x;
+  x = (const PetscScalar*)data->x;
   y = data->y;
   a = data->alpha;
   n = data->n;
@@ -318,39 +217,33 @@ void* VecAXPY_Kernel(void *arg)
 PetscErrorCode VecAXPY_SeqPThread(Vec yin,PetscScalar alpha,Vec xin)
 {
   PetscErrorCode    ierr;
-  const PetscScalar *xarray,*xp;
-  PetscScalar       a=alpha,*yarray,*yp;
-  const PetscInt    iNumThreads = PetscMaxThreads;  /* this number could be different */
-  PetscInt          i,Q = xin->map->n/(iNumThreads);
-  PetscInt          R = xin->map->n-Q*(iNumThreads);
-  PetscBool         S;
-  VecAXPY_KernelData* kerneldatap = (VecAXPY_KernelData*)malloc(iNumThreads*sizeof(VecAXPY_KernelData));
-  VecAXPY_KernelData** pdata = (VecAXPY_KernelData**)malloc(iNumThreads*sizeof(VecAXPY_KernelData*));
+  Vec_SeqPthread    *x =  (Vec_SeqPthread*)xin->data;
+  Vec_SeqPthread    *y =  (Vec_SeqPthread*)yin->data;
+  PetscInt          *ix = x->arrindex,*iy = y->arrindex;
+  PetscInt          *nx = x->nelem;
+  PetscScalar       *ya,*xa;
+  PetscInt          i;
 
   PetscFunctionBegin;
+  if(x->nthreads != y->nthreads) {
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Vectors created using different number of threads");
+  }
   /* assume that the BLAS handles alpha == 1.0 efficiently since we have no fast code for it */
   if (alpha != 0.0) {
-    ierr = VecGetArrayRead(xin,&xarray);CHKERRQ(ierr);
-    ierr = VecGetArray(yin,&yarray);CHKERRQ(ierr);
-    xp = xarray;
-    yp = yarray;
-    for (i=0; i<iNumThreads; i++) {
-      S = (PetscBool)(i<R);
-      kerneldatap[i].x = xp;
-      kerneldatap[i].y = yp;
-      kerneldatap[i].alpha = a;
-      kerneldatap[i].n = S?Q+1:Q;
-      xp += kerneldatap[i].n; /* pointer arithmetic */
-      yp += kerneldatap[i].n;
+    ierr = VecGetArray(xin,&xa);CHKERRQ(ierr);
+    ierr = VecGetArray(yin,&ya);CHKERRQ(ierr);
+    for (i=0; i<x->nthreads; i++) {
+      kerneldatap[i].x = &xa[ix[i]];
+      kerneldatap[i].y = &ya[iy[i]];
+      kerneldatap[i].n = nx[i];
+      kerneldatap[i].alpha = alpha;
       pdata[i] = &kerneldatap[i];
     }
-    ierr = MainJob(VecAXPY_Kernel,(void**)pdata,iNumThreads);
-    ierr = VecRestoreArrayRead(xin,&xarray);CHKERRQ(ierr);
-    ierr = VecRestoreArray(yin,&yarray);CHKERRQ(ierr);
+    ierr = MainJob(VecAXPY_Kernel,(void**)pdata,x->nthreads);
+    ierr = VecRestoreArray(xin,&xa);CHKERRQ(ierr);
+    ierr = VecRestoreArray(yin,&ya);CHKERRQ(ierr);
     ierr = PetscLogFlops(2.0*yin->map->n);CHKERRQ(ierr);
   }
-  free(kerneldatap);
-  free(pdata);
   PetscFunctionReturn(0);
 }
 
@@ -361,25 +254,31 @@ void* VecAYPX_Kernel(void *arg)
     DoCoreAffinity();
 #endif
   }
-  VecAYPX_KernelData *data = (VecAYPX_KernelData*)arg;
-  PetscScalar a,*yy;
-  const PetscScalar *xx;
-  PetscInt    i,n;
+  Kernel_Data       *data = (Kernel_Data*)arg;
+  PetscScalar       a,*y;
+  const PetscScalar *x;
+  PetscInt          n;
 
-  xx = data->xx;
-  yy = data->yy;
+  x = (const PetscScalar*)data->x;
+  y = data->y;
   a = data->alpha;
   n = data->n;
+
+#if defined(PETSC_USE_FORTRAN_KERNEL_AYPX)
+  fortranaypx_(&n,&a,x,y);
+#else
+  PetscInt i;
   if(a==-1.0) {
     for (i=0; i<n; i++) {
-      yy[i] = xx[i] - yy[i];
+      y[i] = x[i] - y[i];
     }
   }
   else {
     for (i=0; i<n; i++) {
-      yy[i] = xx[i] + a*yy[i];
+      y[i] = x[i] + a*y[i];
     }
   }
+#endif
   return(0);
 }
 
@@ -388,8 +287,17 @@ void* VecAYPX_Kernel(void *arg)
 PetscErrorCode VecAYPX_SeqPThread(Vec yin,PetscScalar alpha,Vec xin)
 {
   PetscErrorCode    ierr;
+  Vec_SeqPthread    *x =  (Vec_SeqPthread*)xin->data;
+  Vec_SeqPthread    *y =  (Vec_SeqPthread*)yin->data;
+  PetscInt          *ix = x->arrindex,*iy = y->arrindex;
+  PetscInt          *nx = x->nelem;
+  PetscScalar       *ya,*xa;
+  PetscInt          i;
 
   PetscFunctionBegin;
+  if(x->nthreads != y->nthreads) {
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Vectors created using different number of threads");
+  }
 
   if (alpha == 0.0) {
     ierr = VecCopy(xin,yin);CHKERRQ(ierr);
@@ -398,49 +306,23 @@ PetscErrorCode VecAYPX_SeqPThread(Vec yin,PetscScalar alpha,Vec xin)
     ierr = VecAXPY_SeqPThread(yin,alpha,xin);CHKERRQ(ierr);
   }
   else {
-    PetscInt          n = yin->map->n;
-    PetscScalar       *yy;
-    const PetscScalar *xx;
-    ierr = VecGetArrayRead(xin,&xx);CHKERRQ(ierr);
-    ierr = VecGetArray(yin,&yy);CHKERRQ(ierr);
-    #if defined(PETSC_USE_FORTRAN_KERNEL_AYPX)
-    {
-      PetscScalar oalpha = alpha;
-      fortranaypx_(&n,&oalpha,xx,yy);
+    ierr = VecGetArray(xin,&xa);CHKERRQ(ierr);
+    ierr = VecGetArray(yin,&ya);CHKERRQ(ierr);
+    for (i=0; i<x->nthreads; i++) {
+      kerneldatap[i].x     = &xa[ix[i]];
+      kerneldatap[i].y     = &ya[iy[i]];
+      kerneldatap[i].n     = nx[i];
+      kerneldatap[i].alpha = alpha;
+      pdata[i]             = &kerneldatap[i];
     }
-    #else
-    {
-      const PetscScalar *xp = xx;
-      PetscScalar       a=alpha,*yp = yy;
-      const PetscInt    iNumThreads = PetscMaxThreads;  /* this number could be different */
-      PetscInt          i,Q = xin->map->n/(iNumThreads);
-      PetscInt          R = xin->map->n-Q*(iNumThreads);
-      PetscBool         S;
-      VecAYPX_KernelData* kerneldatap = (VecAYPX_KernelData*)malloc(iNumThreads*sizeof(VecAYPX_KernelData));
-      VecAYPX_KernelData** pdata = (VecAYPX_KernelData**)malloc(iNumThreads*sizeof(VecAYPX_KernelData*));
-
-      for (i=0; i<iNumThreads; i++) {
-        S = (PetscBool)(i<R);
-        kerneldatap[i].xx = xp;
-        kerneldatap[i].yy = yp;
-        kerneldatap[i].alpha = a;
-        kerneldatap[i].n = S?Q+1:Q;
-        xp += kerneldatap[i].n; /* pointer arithmetic */
-        yp += kerneldatap[i].n;
-        pdata[i] = &kerneldatap[i];
-      }
-      ierr = MainJob(VecAYPX_Kernel,(void**)pdata,iNumThreads);
-      free(kerneldatap);
-      free(pdata);
-    }
-    #endif
-    ierr = VecRestoreArrayRead(xin,&xx);CHKERRQ(ierr);
-    ierr = VecRestoreArray(yin,&yy);CHKERRQ(ierr);
+    ierr = MainJob(VecAYPX_Kernel,(void**)pdata,x->nthreads);
+    ierr = VecRestoreArray(xin,&xa);CHKERRQ(ierr);
+    ierr = VecRestoreArray(yin,&ya);CHKERRQ(ierr);
     if(alpha==-1.0) {
-      ierr = PetscLogFlops(1.0*n);CHKERRQ(ierr);
+      ierr = PetscLogFlops(1.0*xin->map->n);CHKERRQ(ierr);
     }
     else {
-      ierr = PetscLogFlops(2.0*n);CHKERRQ(ierr);
+      ierr = PetscLogFlops(2.0*xin->map->n);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -453,17 +335,24 @@ void* VecWAXPY_Kernel(void *arg)
     DoCoreAffinity();
 #endif
   }
-  VecWAXPY_KernelData *data = (VecWAXPY_KernelData*)arg;
-  PetscScalar a,*ww;
+  Kernel_Data       *data = (Kernel_Data*)arg;
+  PetscScalar       a,*ww;
   const PetscScalar *xx,*yy;
-  PetscInt    i,n;
+  PetscInt          i,n;
+  PetscErrorCode    ierr;
 
-  ww = data->ww;
-  xx = data->xx;
-  yy = data->yy;
+  ww = data->w;
+  xx = (const PetscScalar*)data->x;
+  yy = (const PetscScalar*)data->y;
   a = data->alpha;
   n = data->n;
-  if(a==-1.0) {
+#if defined(PETSC_USE_FORTRAN_KERNEL_WAXPY)
+  fortranwaxpy_(&n,&a,xx,yy,ww);
+#else
+  if (a == 0.0) {
+    ierr = PetscMemcpy(ww,yy,n*sizeof(PetscScalar));CHKERRQP(ierr);
+  }
+  else if(a==-1.0) {
     for (i=0; i<n; i++) {
       ww[i] = yy[i] - xx[i];
     }
@@ -478,6 +367,7 @@ void* VecWAXPY_Kernel(void *arg)
       ww[i] = a*xx[i] + yy[i];
     }
   }
+#endif
   return(0);
 }
 
@@ -485,59 +375,44 @@ void* VecWAXPY_Kernel(void *arg)
 #define __FUNCT__ "VecWAXPY_SeqPThread"
 PetscErrorCode VecWAXPY_SeqPThread(Vec win, PetscScalar alpha,Vec xin,Vec yin)
 {
-  PetscErrorCode     ierr;
-  PetscInt           n = win->map->n;
-  PetscScalar        *ww;
-  const PetscScalar  *yy,*xx;
+  PetscErrorCode    ierr;
+  Vec_SeqPthread    *x =  (Vec_SeqPthread*)xin->data;
+  Vec_SeqPthread    *y =  (Vec_SeqPthread*)yin->data;
+  Vec_SeqPthread    *w =  (Vec_SeqPthread*)win->data;
+  PetscInt          *ix = x->arrindex,*iy = y->arrindex,*iw=w->arrindex;
+  PetscInt          *nw = w->nelem;
+  PetscScalar       *ya,*xa,*wa;
+  PetscInt          i;
 
   PetscFunctionBegin;
+  if((x->nthreads != y->nthreads) && (x->nthreads != w->nthreads)) {
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Vectors created using different number of threads");
+  }
 
-  ierr = VecGetArrayRead(xin,&xx);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(yin,&yy);CHKERRQ(ierr);
-  ierr = VecGetArray(win,&ww);CHKERRQ(ierr);
-  if (alpha == 0.0) {
-    ierr = PetscMemcpy(ww,yy,n*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = VecGetArray(xin,&xa);CHKERRQ(ierr);
+  ierr = VecGetArray(yin,&ya);CHKERRQ(ierr);
+  ierr = VecGetArray(win,&wa);CHKERRQ(ierr);
+
+  for (i=0; i<w->nthreads; i++) {
+    kerneldatap[i].x = &xa[ix[i]];
+    kerneldatap[i].y = &ya[iy[i]];
+    kerneldatap[i].w = &wa[iw[i]];
+    kerneldatap[i].alpha = alpha;
+    kerneldatap[i].n = nw[i];
+    pdata[i] = &kerneldatap[i];
+  }
+  ierr = MainJob(VecWAXPY_Kernel,(void**)pdata,w->nthreads);
+
+  if (alpha == 1.0 || alpha == -1.0) {
+    ierr = PetscLogFlops(1.0*win->map->n);CHKERRQ(ierr);
   }
   else {
-#if defined(PETSC_USE_FORTRAN_KERNEL_WAXPY)
-    PetscScalar oalpha = alpha;
-    fortranwaxpy_(&n,&oalpha,xx,yy,ww);
-#else
-    const PetscScalar *xp = xx,*yp = yy;
-    PetscScalar       a=alpha,*wp = ww;
-    const PetscInt    iNumThreads = PetscMaxThreads;  /* this number could be different */
-    PetscInt          i,Q = n/(iNumThreads);
-    PetscInt          R = n-Q*(iNumThreads);
-    PetscBool         S;
-    VecWAXPY_KernelData* kerneldatap = (VecWAXPY_KernelData*)malloc(iNumThreads*sizeof(VecWAXPY_KernelData));
-    VecWAXPY_KernelData** pdata = (VecWAXPY_KernelData**)malloc(iNumThreads*sizeof(VecWAXPY_KernelData*));
-
-    for (i=0; i<iNumThreads; i++) {
-      S = (PetscBool)(i<R);
-      kerneldatap[i].ww = wp;
-      kerneldatap[i].xx = xp;
-      kerneldatap[i].yy = yp;
-      kerneldatap[i].alpha = a;
-      kerneldatap[i].n = S?Q+1:Q;
-      wp += kerneldatap[i].n; /* pointer arithmetic */
-      xp += kerneldatap[i].n;
-      yp += kerneldatap[i].n;
-      pdata[i] = &kerneldatap[i];
-    }
-    ierr = MainJob(VecWAXPY_Kernel,(void**)pdata,iNumThreads);
-    free(kerneldatap);
-    free(pdata);
-#endif
-    if (alpha == 1.0 || alpha == -1.0) {
-      ierr = PetscLogFlops(1.0*n);CHKERRQ(ierr);
-    }
-    else {
-      ierr = PetscLogFlops(2.0*n);CHKERRQ(ierr);
-    }
+    ierr = PetscLogFlops(2.0*win->map->n);CHKERRQ(ierr);
   }
-  ierr = VecRestoreArrayRead(xin,&xx);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(yin,&yy);CHKERRQ(ierr);
-  ierr = VecRestoreArray(win,&ww);CHKERRQ(ierr);
+
+  ierr = VecRestoreArray(xin,&xa);CHKERRQ(ierr);
+  ierr = VecRestoreArray(yin,&ya);CHKERRQ(ierr);
+  ierr = VecRestoreArray(win,&wa);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -548,12 +423,12 @@ void* VecNorm_Kernel(void *arg)
     DoCoreAffinity();
 #endif
   }
-  VecNorm_KernelData *data = (VecNorm_KernelData*)arg;
+  Kernel_Data *data = (Kernel_Data*)arg;
   const PetscScalar *x;
   NormType type;
   PetscInt    i,n;
 
-  x = data->x;
+  x = (const PetscScalar*)data->x;
   type = data->typeUse;
   n = data->n;
   data->result = 0.0;
@@ -582,9 +457,12 @@ void* VecNorm_Kernel(void *arg)
 #define __FUNCT__ "VecNorm_SeqPThread"
 PetscErrorCode VecNorm_SeqPThread(Vec xin,NormType type,PetscReal* z)
 {
-  const PetscScalar *xx;
+
   PetscErrorCode    ierr;
-  PetscInt          n = xin->map->n;
+  Vec_SeqPthread    *x =  (Vec_SeqPthread*)xin->data;
+  PetscInt          *ix = x->arrindex;
+  PetscInt          *nx = x->nelem;
+  PetscScalar       *xa;
 
   PetscFunctionBegin;
   if(type == NORM_1_AND_2) {
@@ -592,52 +470,43 @@ PetscErrorCode VecNorm_SeqPThread(Vec xin,NormType type,PetscReal* z)
     ierr = VecNorm_SeqPThread(xin,NORM_2,z+1);CHKERRQ(ierr);
   }
   else {
-   ierr = VecGetArrayRead(xin,&xx);CHKERRQ(ierr);
-   const PetscScalar *xp = xx;
-   const PetscInt    iNumThreads = PetscMaxThreads;  /* this number could be different */
-   PetscInt          i,Q = n/(iNumThreads);
-   PetscInt          R = n-Q*(iNumThreads);
-   PetscBool         S;
-   VecNorm_KernelData* kerneldatap = (VecNorm_KernelData*)malloc(iNumThreads*sizeof(VecNorm_KernelData));
-   VecNorm_KernelData** pdata = (VecNorm_KernelData**)malloc(iNumThreads*sizeof(VecNorm_KernelData*));
+    PetscInt i;
 
-   for (i=0; i<iNumThreads; i++) {
-     S = (PetscBool)(i<R);
-     kerneldatap[i].x = xp;
-     kerneldatap[i].typeUse = type;
-     kerneldatap[i].n = S?Q+1:Q;
-     xp += kerneldatap[i].n; /* pointer arithmetic */
-     pdata[i] = &kerneldatap[i];
-   }
-   ierr = MainJob(VecNorm_Kernel,(void**)pdata,iNumThreads);
-   /* collect results */
-   *z = 0.0;
-   if(type == NORM_1) {
-     for(i=0; i<iNumThreads; i++) {
-       *z += kerneldatap[i].result;
-     }
-     ierr = PetscLogFlops(PetscMax(n-1.0,0.0));CHKERRQ(ierr);
-   }
-   else if(type == NORM_2 || type == NORM_FROBENIUS) {
-     for(i=0; i<iNumThreads; i++) {
-       *z += kerneldatap[i].result*kerneldatap[i].result;
-     }
-     *z = sqrt(*z);
-     ierr = PetscLogFlops(PetscMax(2.0*n-1,0.0));CHKERRQ(ierr);
-   }
-   else {
-     PetscReal    maxv = 0.0,tmp;
-     for(i=0; i<iNumThreads; i++) {
-       tmp = kerneldatap[i].result;
-       if(tmp>maxv) {
-         maxv = tmp;
-       }
-     }
-     *z = maxv;
-   }
-   free(kerneldatap);
-   free(pdata);
-   ierr = VecRestoreArrayRead(xin,&xx);CHKERRQ(ierr);
+    ierr = VecGetArray(xin,&xa);CHKERRQ(ierr);
+
+    for (i=0; i<x->nthreads; i++) {
+      kerneldatap[i].x = &xa[ix[i]];
+      kerneldatap[i].typeUse = type;
+      kerneldatap[i].n = nx[i];
+      pdata[i] = &kerneldatap[i];
+    }
+    ierr = MainJob(VecNorm_Kernel,(void**)pdata,x->nthreads);
+    /* collect results */
+    *z = 0.0;
+    if(type == NORM_1) {
+      for(i=0; i<x->nthreads; i++) {
+        *z += kerneldatap[i].result;
+      }
+      ierr = PetscLogFlops(PetscMax(xin->map->n-1.0,0.0));CHKERRQ(ierr);
+    }
+    else if(type == NORM_2 || type == NORM_FROBENIUS) {
+      for(i=0; i<x->nthreads; i++) {
+        *z += kerneldatap[i].result*kerneldatap[i].result;
+      }
+      *z = sqrt(*z);
+      ierr = PetscLogFlops(PetscMax(2.0*xin->map->n-1,0.0));CHKERRQ(ierr);
+    }
+    else {
+      PetscReal    maxv = 0.0,tmp;
+      for(i=0; i<x->nthreads; i++) {
+        tmp = kerneldatap[i].result;
+        if(tmp>maxv) {
+          maxv = tmp;
+        }
+      }
+      *z = maxv;
+    }
+    ierr = VecRestoreArray(xin,&xa);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -888,9 +757,9 @@ void* VecMax_Kernel(void *arg)
     DoCoreAffinity();
 #endif
   }
-  VecMax_KernelData *data = (VecMax_KernelData*)arg;
-  const PetscScalar *xx = data->x;
-  PetscInt          i,j,n = data->localn;
+  Kernel_Data *data = (Kernel_Data*)arg;
+  const PetscScalar *xx = (const PetscScalar*)data->x;
+  PetscInt          i,j,n = data->n;
   PetscReal         lmax,tmp;
 
 #if defined(PETSC_USE_COMPLEX)
@@ -915,51 +784,40 @@ void* VecMax_Kernel(void *arg)
 #define __FUNCT__ "VecMax_SeqPThread"
 PetscErrorCode VecMax_SeqPThread(Vec xin,PetscInt* idx,PetscReal * z)
 {
-  PetscInt          i,j=0,n = xin->map->n;
-  PetscReal         max;
-  const PetscScalar *xx,*xp;
   PetscErrorCode    ierr;
+  Vec_SeqPthread    *x =  (Vec_SeqPthread*)xin->data;
+  PetscInt          *ix = x->arrindex;
+  PetscInt          *nx = x->nelem;
+  PetscInt          i,j=0;
+  PetscScalar       *xa;
+  PetscReal         max;
 
   PetscFunctionBegin;
-  ierr = VecGetArrayRead(xin,&xx);CHKERRQ(ierr);
-  if (!n) {
+  ierr = VecGetArray(xin,&xa);CHKERRQ(ierr);
+  if (!xin->map->n) {
     max = PETSC_MIN_REAL;
     j   = -1;
   } else {
-    const PetscInt    iNumThreads = PetscMaxThreads;  /* this number could be different */
-  PetscInt          gind,Q = n/(iNumThreads);
-  PetscInt          R = n-Q*(iNumThreads);
-  PetscBool         S;
-  VecMax_KernelData* kerneldatap = (VecMax_KernelData*)malloc(iNumThreads*sizeof(VecMax_KernelData));
-  VecMax_KernelData** pdata = (VecMax_KernelData**)malloc(iNumThreads*sizeof(VecMax_KernelData*));
-
-  gind = 0;
-  xp = xx;
-  for (i=0; i<iNumThreads; i++) {
-    S = (PetscBool)(i<R);
-    kerneldatap[i].x = xp;
-    kerneldatap[i].gind = gind;
-    kerneldatap[i].localn = S?Q+1:Q;
-    xp += kerneldatap[i].localn; /* pointer arithmetic */
-    gind += kerneldatap[i].localn;
-    pdata[i] = &kerneldatap[i];
-  }
-  ierr = MainJob(VecMax_Kernel,(void**)pdata,iNumThreads);
-  /* collect results, determine global max, global index */
-  max = kerneldatap[0].localmax;
-  j   = kerneldatap[0].localind;
-  for(i=1; i<iNumThreads; i++) {
-    if(kerneldatap[i].localmax>max) {
-      max = kerneldatap[i].localmax;
-      j   = kerneldatap[i].gind+kerneldatap[i].localind;
+    for (i=0; i<x->nthreads; i++) {
+      kerneldatap[i].x    = &xa[ix[i]];
+      kerneldatap[i].gind = ix[i];
+      kerneldatap[i].n    = nx[i];
+      pdata[i]            = &kerneldatap[i];
     }
-  }
-  free(kerneldatap);
-  free(pdata);
+    ierr = MainJob(VecMax_Kernel,(void**)pdata,x->nthreads);
+    /* collect results, determine global max, global index */
+    max = kerneldatap[0].localmax;
+    j   = kerneldatap[0].localind;
+    for(i=1; i<x->nthreads; i++) {
+      if(kerneldatap[i].localmax > max) {
+        max = kerneldatap[i].localmax;
+        j   = kerneldatap[i].gind+kerneldatap[i].localind;
+      }
+    }
   }
   *z   = max;
   if (idx) *idx = j;
-  ierr = VecRestoreArrayRead(xin,&xx);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xin,&xa);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -970,9 +828,9 @@ void* VecMin_Kernel(void *arg)
     DoCoreAffinity();
 #endif
   }
-  VecMin_KernelData *data = (VecMin_KernelData*)arg;
-  const PetscScalar *xx = data->x;
-  PetscInt          i,j,n = data->localn;
+  Kernel_Data *data = (Kernel_Data*)arg;
+  const PetscScalar *xx = (const PetscScalar*)data->x;
+  PetscInt          i,j,n = data->n;
   PetscReal         lmin,tmp;
 
 #if defined(PETSC_USE_COMPLEX)
@@ -997,54 +855,45 @@ void* VecMin_Kernel(void *arg)
 #define __FUNCT__ "VecMin_SeqPThread"
 PetscErrorCode VecMin_SeqPThread(Vec xin,PetscInt* idx,PetscReal * z)
 {
-  PetscInt          i,j=0,n = xin->map->n;
-  PetscReal         min;
-  const PetscScalar *xx,*xp;
   PetscErrorCode    ierr;
+  Vec_SeqPthread    *x =  (Vec_SeqPthread*)xin->data;
+  PetscInt          *ix = x->arrindex;
+  PetscInt          *nx = x->nelem;
+  PetscInt          i,j=0;
+  PetscScalar       *xa;
+  PetscReal         min;
 
   PetscFunctionBegin;
-  ierr = VecGetArrayRead(xin,&xx);CHKERRQ(ierr);
-  if (!n) {
+  ierr = VecGetArray(xin,&xa);CHKERRQ(ierr);
+  if (!xin->map->n) {
     min = PETSC_MAX_REAL;
     j   = -1;
   } else {
-    const PetscInt    iNumThreads = PetscMaxThreads;  /* this number could be different */
-  PetscInt          gind,Q = n/(iNumThreads);
-  PetscInt          R = n-Q*(iNumThreads);
-  PetscBool         S;
-  VecMin_KernelData* kerneldatap = (VecMin_KernelData*)malloc(iNumThreads*sizeof(VecMin_KernelData));
-  VecMin_KernelData** pdata = (VecMin_KernelData**)malloc(iNumThreads*sizeof(VecMin_KernelData*));
-
-  gind = 0;
-  xp = xx;
-  for (i=0; i<iNumThreads; i++) {
-    S = (PetscBool)(i<R);
-    kerneldatap[i].x = xp;
-    kerneldatap[i].gind = gind;
-    kerneldatap[i].localn = S?Q+1:Q;
-    xp += kerneldatap[i].localn; /* pointer arithmetic */
-    gind += kerneldatap[i].localn;
-    pdata[i] = &kerneldatap[i];
-  }
-  ierr = MainJob(VecMin_Kernel,(void**)pdata,iNumThreads);
-  /* collect results, determine global max, global index */
-  min = kerneldatap[0].localmin;
-  j   = kerneldatap[0].localind;
-  for(i=1; i<iNumThreads; i++) {
-    if(kerneldatap[i].localmin<min) {
-      min = kerneldatap[i].localmin;
-      j   = kerneldatap[i].gind+kerneldatap[i].localind;
+    for (i=0; i<x->nthreads; i++) {
+      kerneldatap[i].x    = &xa[ix[i]];
+      kerneldatap[i].gind = ix[i];
+      kerneldatap[i].n    = nx[i];
+      pdata[i]            = &kerneldatap[i];
     }
-  }
-  free(kerneldatap);
-  free(pdata);
+
+    ierr = MainJob(VecMin_Kernel,(void**)pdata,x->nthreads);
+    /* collect results, determine global max, global index */
+    min = kerneldatap[0].localmin;
+    j   = kerneldatap[0].localind;
+    for(i=1; i<x->nthreads; i++) {
+      if(kerneldatap[i].localmin < min) {
+        min = kerneldatap[i].localmin;
+        j   = kerneldatap[i].gind+kerneldatap[i].localind;
+      }
+    }
   }
   *z   = min;
   if (idx) *idx = j;
-  ierr = VecRestoreArrayRead(xin,&xx);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xin,&xa);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
+#include <../src/vec/vec/impls/seq/ftn-kernels/fxtimesy.h>
 void* VecPointwiseMult_Kernel(void *arg)
 {
   if(PetscUseThreadPool==PETSC_FALSE) {
@@ -1052,9 +901,9 @@ void* VecPointwiseMult_Kernel(void *arg)
     DoCoreAffinity();
 #endif
   }
-  VecPointwiseMult_KernelData *data = (VecPointwiseMult_KernelData*)arg;
-  PetscScalar *ww = data->wpin,*xx = data->xpin,*yy = data->ypin;
-  PetscInt    n = data->nlocal,i;
+  Kernel_Data *data = (Kernel_Data*)arg;
+  PetscScalar *ww = data->w,*xx = data->x,*yy = data->y;
+  PetscInt    n = data->n,i;
 
   if (ww == xx) {
     for (i=0; i<n; i++) ww[i] *= yy[i];
@@ -1070,47 +919,42 @@ void* VecPointwiseMult_Kernel(void *arg)
   return(0);
 }
 
-#include <../src/vec/vec/impls/seq/ftn-kernels/fxtimesy.h>
 #undef __FUNCT__  
 #define __FUNCT__ "VecPointwiseMult_SeqPThread"
 PetscErrorCode VecPointwiseMult_SeqPThread(Vec win,Vec xin,Vec yin)
 {
-  PetscErrorCode ierr;
-  PetscInt       n = win->map->n,i,iIndex;
-  PetscScalar    *ww,*xx,*yy; /* cannot make xx or yy const since might be ww */
-  const PetscInt    iNumThreads = PetscMaxThreads;  /* this number could be different */
-  PetscInt          Q = n/(iNumThreads);
-  PetscInt          R = n-Q*(iNumThreads);
-  PetscBool         S;
-
-  VecPointwiseMult_KernelData* kerneldatap = (VecPointwiseMult_KernelData*)malloc(iNumThreads*sizeof(VecPointwiseMult_KernelData));
-  VecPointwiseMult_KernelData** pdata = (VecPointwiseMult_KernelData**)malloc(iNumThreads*sizeof(VecPointwiseMult_KernelData*));
-
+  PetscErrorCode    ierr;
+  Vec_SeqPthread    *x =  (Vec_SeqPthread*)xin->data;
+  Vec_SeqPthread    *y =  (Vec_SeqPthread*)yin->data;
+  Vec_SeqPthread    *w =  (Vec_SeqPthread*)win->data;
+  PetscInt          *ix = x->arrindex,*iy = y->arrindex,*iw=w->arrindex;
+  PetscInt          *nw = w->nelem;
+  PetscScalar       *ya,*xa,*wa;
+  PetscInt          i;
 
   PetscFunctionBegin;
-  ierr = VecGetArrayRead(xin,(const PetscScalar**)&xx);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(yin,(const PetscScalar**)&yy);CHKERRQ(ierr);
-  ierr = VecGetArray(win,&ww);CHKERRQ(ierr);
-
-  iIndex = 0;
-  for (i=0; i<iNumThreads; i++) {
-    S = (PetscBool)(i<R);
-    kerneldatap[i].wpin = ww+iIndex;
-    kerneldatap[i].xpin = xx+iIndex;
-    kerneldatap[i].ypin = yy+iIndex;
-    kerneldatap[i].nlocal = S?Q+1:Q;
-    iIndex += kerneldatap[i].nlocal;
-    pdata[i] = &kerneldatap[i];
+  if((x->nthreads != y->nthreads) && (x->nthreads != w->nthreads)) {
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Vectors created using different number of threads");
   }
 
-  ierr  = MainJob(VecPointwiseMult_Kernel,(void**)pdata,iNumThreads);
-  free(kerneldatap);
-  free(pdata);
+  ierr = VecGetArray(xin,&xa);CHKERRQ(ierr);
+  ierr = VecGetArray(yin,&ya);CHKERRQ(ierr);
+  ierr = VecGetArray(win,&wa);CHKERRQ(ierr);
 
-  ierr = VecRestoreArrayRead(xin,(const PetscScalar**)&xx);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(yin,(const PetscScalar**)&yy);CHKERRQ(ierr);
-  ierr = VecRestoreArray(win,&ww);CHKERRQ(ierr);
-  ierr = PetscLogFlops(n);CHKERRQ(ierr);
+  for (i=0; i<w->nthreads; i++) {
+    kerneldatap[i].w = &wa[iw[i]];
+    kerneldatap[i].x = &xa[ix[i]];
+    kerneldatap[i].y = &ya[iy[i]];
+    kerneldatap[i].n = nw[i];
+    pdata[i]         = &kerneldatap[i];
+  }
+
+  ierr  = MainJob(VecPointwiseMult_Kernel,(void**)pdata,w->nthreads);
+
+  ierr = VecRestoreArray(xin,&xa);CHKERRQ(ierr);
+  ierr = VecRestoreArray(yin,&ya);CHKERRQ(ierr);
+  ierr = VecRestoreArray(win,&wa);CHKERRQ(ierr);
+  ierr = PetscLogFlops(win->map->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1121,9 +965,9 @@ void* VecPointwiseDivide_Kernel(void *arg)
     DoCoreAffinity();
 #endif
   }
-  VecPointwiseDivide_KernelData *data = (VecPointwiseDivide_KernelData*)arg;
-  PetscScalar *ww = data->wpin,*xx = data->xpin,*yy = data->ypin;
-  PetscInt    n = data->nlocal,i;
+  Kernel_Data *data = (Kernel_Data*)arg;
+  PetscScalar *ww = data->w,*xx = data->x,*yy = data->y;
+  PetscInt    n = data->n,i;
 
   for (i=0; i<n; i++) {
     ww[i] = xx[i] / yy[i];
@@ -1135,45 +979,42 @@ void* VecPointwiseDivide_Kernel(void *arg)
 #define __FUNCT__ "VecPointwiseDivide_SeqPThread"
 PetscErrorCode VecPointwiseDivide_SeqPThread(Vec win,Vec xin,Vec yin)
 {
-  PetscErrorCode ierr;
-  PetscInt       n = win->map->n,i,iIndex;
-  PetscScalar    *ww,*xx,*yy; /* cannot make xx or yy const since might be ww */
-  const PetscInt    iNumThreads = PetscMaxThreads;  /* this number could be different */
-  PetscInt          Q = n/(iNumThreads);
-  PetscInt          R = n-Q*(iNumThreads);
-  PetscBool         S;
-
-  VecPointwiseDivide_KernelData* kerneldatap = (VecPointwiseDivide_KernelData*)malloc(iNumThreads*sizeof(VecPointwiseDivide_KernelData));
-  VecPointwiseDivide_KernelData** pdata = (VecPointwiseDivide_KernelData**)malloc(iNumThreads*sizeof(VecPointwiseDivide_KernelData*));
-
+  PetscErrorCode    ierr;
+  Vec_SeqPthread    *x =  (Vec_SeqPthread*)xin->data;
+  Vec_SeqPthread    *y =  (Vec_SeqPthread*)yin->data;
+  Vec_SeqPthread    *w =  (Vec_SeqPthread*)win->data;
+  PetscInt          *ix = x->arrindex,*iy = y->arrindex,*iw=w->arrindex;
+  PetscInt          *nw = x->nelem;
+  PetscScalar       *ya,*xa,*wa;
+  PetscInt          i;
 
   PetscFunctionBegin;
-  ierr = VecGetArrayRead(xin,(const PetscScalar**)&xx);CHKERRQ(ierr);
-  ierr = VecGetArrayRead(yin,(const PetscScalar**)&yy);CHKERRQ(ierr);
-  ierr = VecGetArray(win,&ww);CHKERRQ(ierr);
-
-  iIndex = 0;
-  for (i=0; i<iNumThreads; i++) {
-    S = (PetscBool)(i<R);
-    kerneldatap[i].wpin = ww+iIndex;
-    kerneldatap[i].xpin = xx+iIndex;
-    kerneldatap[i].ypin = yy+iIndex;
-    kerneldatap[i].nlocal = S?Q+1:Q;
-    iIndex += kerneldatap[i].nlocal;
-    pdata[i] = &kerneldatap[i];
+  if((x->nthreads != y->nthreads) && (x->nthreads != w->nthreads)) {
+    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Vectors created using different number of threads");
   }
 
-  ierr = MainJob(VecPointwiseDivide_Kernel,(void**)pdata,iNumThreads);
-  free(kerneldatap);
-  free(pdata);
+  ierr = VecGetArray(xin,&xa);CHKERRQ(ierr);
+  ierr = VecGetArray(yin,&ya);CHKERRQ(ierr);
+  ierr = VecGetArray(win,&wa);CHKERRQ(ierr);
 
-  ierr = PetscLogFlops(n);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(xin,(const PetscScalar**)&xx);CHKERRQ(ierr);
-  ierr = VecRestoreArrayRead(yin,(const PetscScalar**)&yy);CHKERRQ(ierr);
-  ierr = VecRestoreArray(win,&ww);CHKERRQ(ierr);
+  for (i=0; i<w->nthreads; i++) {
+    kerneldatap[i].w = &wa[iw[i]];
+    kerneldatap[i].x = &xa[ix[i]];
+    kerneldatap[i].y = &ya[iy[i]];
+    kerneldatap[i].n = nw[i];
+    pdata[i]         = &kerneldatap[i];
+  }
+
+  ierr  = MainJob(VecPointwiseDivide_Kernel,(void**)pdata,w->nthreads);
+
+  ierr = VecRestoreArray(xin,&xa);CHKERRQ(ierr);
+  ierr = VecRestoreArray(yin,&ya);CHKERRQ(ierr);
+  ierr = VecRestoreArray(win,&wa);CHKERRQ(ierr);
+  ierr = PetscLogFlops(win->map->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
+#include <petscblaslapack.h>
 void* VecSwap_Kernel(void *arg)
 {
   if(PetscUseThreadPool==PETSC_FALSE) {
@@ -1181,46 +1022,43 @@ void* VecSwap_Kernel(void *arg)
     DoCoreAffinity();
 #endif
   }
-  VecSwap_KernelData *data = (VecSwap_KernelData*)arg;
-  PetscScalar *xa = data->xpin,*ya = data->ypin;
-  PetscBLASInt   one = 1,bn = PetscBLASIntCast(data->nlocal);
+  Kernel_Data *data = (Kernel_Data*)arg;
+  PetscScalar *xa = data->x,*ya = data->y;
+  PetscBLASInt   one = 1,bn = PetscBLASIntCast(data->n);
 
   BLASswap_(&bn,xa,&one,ya,&one);
   return(0);
 }
 
-#include <petscblaslapack.h>
 #undef __FUNCT__
 #define __FUNCT__ "VecSwap_SeqPThread"
 PetscErrorCode VecSwap_SeqPThread(Vec xin,Vec yin)
 {
-  PetscScalar    *ya, *xa;
-  PetscErrorCode ierr;
+  PetscErrorCode    ierr;
+  Vec_SeqPthread    *x =  (Vec_SeqPthread*)xin->data;
+  Vec_SeqPthread    *y =  (Vec_SeqPthread*)yin->data;
+  PetscInt          *ix = x->arrindex,*iy = y->arrindex;
+  PetscInt          *nx = x->nelem;
+  PetscScalar       *ya,*xa;
+  PetscInt          i;
 
   PetscFunctionBegin;
   if (xin != yin) {
-    ierr = VecGetArray(xin,&xa);CHKERRQ(ierr);
-    ierr = VecGetArray(yin,&ya);CHKERRQ(ierr);
-    const PetscInt    iNumThreads = PetscMaxThreads;  /* this number could be different */
-    PetscInt          n = xin->map->n,Q = n/(iNumThreads),R = n-Q*(iNumThreads),i,iIndex;
-    PetscBool         S;
-
-    VecSwap_KernelData* kerneldatap = (VecSwap_KernelData*)malloc(iNumThreads*sizeof(VecSwap_KernelData));
-    VecSwap_KernelData** pdata = (VecSwap_KernelData**)malloc(iNumThreads*sizeof(VecSwap_KernelData*));
-
-    iIndex = 0;
-    for (i=0; i<iNumThreads; i++) {
-      S = (PetscBool)(i<R);
-      kerneldatap[i].xpin = xa+iIndex;
-      kerneldatap[i].ypin = ya+iIndex;
-      kerneldatap[i].nlocal = S?Q+1:Q;
-      iIndex += kerneldatap[i].nlocal;
-      pdata[i] = &kerneldatap[i];
+    if(x->nthreads != y->nthreads) {
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Vectors created using different number of threads");
     }
 
-    ierr = MainJob(VecSwap_Kernel,(void**)pdata,iNumThreads);
-    free(kerneldatap);
-    free(pdata);
+    ierr = VecGetArray(xin,&xa);CHKERRQ(ierr);
+    ierr = VecGetArray(yin,&ya);CHKERRQ(ierr);
+
+    for (i=0; i<x->nthreads; i++) {
+      kerneldatap[i].x = &xa[ix[i]];
+      kerneldatap[i].y = &ya[iy[i]];
+      kerneldatap[i].n = nx[i];
+      pdata[i]         = &kerneldatap[i];
+    }
+
+    ierr = MainJob(VecSwap_Kernel,(void**)pdata,x->nthreads);
     ierr = VecRestoreArray(xin,&xa);CHKERRQ(ierr);
     ierr = VecRestoreArray(yin,&ya);CHKERRQ(ierr);
   }
@@ -1234,10 +1072,10 @@ void* VecSetRandom_Kernel(void *arg)
     DoCoreAffinity();
 #endif
   }
-  VecSetRandom_KernelData *data = (VecSetRandom_KernelData*)arg;
-  PetscScalar  *xx = data->xpin;
-  PetscRandom  r = data->rin;
-  PetscInt     i,n = data->nlocal;
+  Kernel_Data *data = (Kernel_Data*)arg;
+  PetscScalar  *xx = data->x;
+  PetscRandom  r = data->rand;
+  PetscInt     i,n = data->n;
   PetscErrorCode ierr;
 
   for(i=0; i<n; i++) {
@@ -1250,33 +1088,24 @@ void* VecSetRandom_Kernel(void *arg)
 #define __FUNCT__ "VecSetRandom_SeqPThread"
 PetscErrorCode VecSetRandom_SeqPThread(Vec xin,PetscRandom r)
 {
-  PetscErrorCode ierr;
-  PetscInt       n = xin->map->n,i;
-  PetscScalar    *xx;
-  const PetscInt    iNumThreads = PetscMaxThreads;  /* this number could be different */
-  PetscInt          Q = n/(iNumThreads),R = n-Q*(iNumThreads),iIndex;
-  PetscBool         S;
-
-  VecSetRandom_KernelData* kerneldatap = (VecSetRandom_KernelData*)malloc(iNumThreads*sizeof(VecSetRandom_KernelData));
-  VecSetRandom_KernelData** pdata = (VecSetRandom_KernelData**)malloc(iNumThreads*sizeof(VecSetRandom_KernelData*));
+  PetscErrorCode    ierr;
+  Vec_SeqPthread    *x =  (Vec_SeqPthread*)xin->data;
+  PetscInt          *ix = x->arrindex;
+  PetscInt          i,*nx = x->nelem;
+  PetscScalar       *xa;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(xin,&xx);CHKERRQ(ierr);
+  ierr = VecGetArray(xin,&xa);CHKERRQ(ierr);
 
-  iIndex = 0;
-  for (i=0; i<iNumThreads; i++) {
-    S = (PetscBool)(i<R);
-    kerneldatap[i].xpin   = xx+iIndex;
-    kerneldatap[i].rin    = r;
-    kerneldatap[i].nlocal = S?Q+1:Q;
-    iIndex += kerneldatap[i].nlocal;
-    pdata[i] = &kerneldatap[i];
+  for (i=0; i<x->nthreads; i++) {
+    kerneldatap[i].x    = xa+ix[i];
+    kerneldatap[i].rand = r;
+    kerneldatap[i].n    = nx[i];
+    pdata[i]            = &kerneldatap[i];
    }
 
-  ierr = MainJob(VecSetRandom_Kernel,(void**)pdata,iNumThreads);
-  free(kerneldatap);
-  free(pdata);
-  ierr = VecRestoreArray(xin,&xx);CHKERRQ(ierr);
+  ierr = MainJob(VecSetRandom_Kernel,(void**)pdata,x->nthreads);
+  ierr = VecRestoreArray(xin,&xa);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1287,11 +1116,11 @@ void* VecCopy_Kernel(void *arg)
     DoCoreAffinity();
 #endif
   }
-  VecCopy_KernelData *data = (VecCopy_KernelData*)arg;
-  const PetscScalar  *xa = data->xpin;
-  PetscScalar        *ya = data->ypin;
-  PetscInt           n = data->nlocal;
-  PetscErrorCode ierr;
+  Kernel_Data        *data = (Kernel_Data*)arg;
+  const PetscScalar  *xa = (const PetscScalar*)data->x;
+  PetscScalar        *ya = data->y;
+  PetscInt           n = data->n;
+  PetscErrorCode     ierr;
 
   ierr = PetscMemcpy(ya,xa,n*sizeof(PetscScalar));CHKERRQP(ierr);
   return(0);
@@ -1301,37 +1130,33 @@ void* VecCopy_Kernel(void *arg)
 #define __FUNCT__ "VecCopy_SeqPThread"
 PetscErrorCode VecCopy_SeqPThread(Vec xin,Vec yin)
 {
-  PetscScalar       *ya;
-  const PetscScalar *xa;
+
   PetscErrorCode    ierr;
+  Vec_SeqPthread    *x =  (Vec_SeqPthread*)xin->data;
+  Vec_SeqPthread    *y =  (Vec_SeqPthread*)yin->data;
+  PetscInt          *ix = x->arrindex,*iy = y->arrindex;
+  PetscInt          *nx = x->nelem;
+  PetscScalar       *ya,*xa;
+  PetscInt          i;
 
   PetscFunctionBegin;
   if (xin != yin) {
-    ierr = VecGetArrayRead(xin,&xa);CHKERRQ(ierr);
+    if(x->nthreads != y->nthreads) {
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ,"Vectors created using different number of threads");
+    }
+
+    ierr = VecGetArray(xin,&xa);CHKERRQ(ierr);
     ierr = VecGetArray(yin,&ya);CHKERRQ(ierr);
 
-  PetscInt       n = xin->map->n,i;
-  const PetscInt    iNumThreads = PetscMaxThreads;  /* this number could be different */
-  PetscInt          Q = n/(iNumThreads),R = n-Q*(iNumThreads),iIndex;
-  PetscBool         S;
-
-  VecCopy_KernelData* kerneldatap = (VecCopy_KernelData*)malloc(iNumThreads*sizeof(VecCopy_KernelData));
-  VecCopy_KernelData** pdata = (VecCopy_KernelData**)malloc(iNumThreads*sizeof(VecCopy_KernelData*));
-
-    iIndex = 0;
-    for (i=0; i<iNumThreads; i++) {
-      S = (PetscBool)(i<R);
-      kerneldatap[i].xpin   = xa+iIndex;
-      kerneldatap[i].ypin   = ya+iIndex;
-      kerneldatap[i].nlocal = S?Q+1:Q;
-      iIndex += kerneldatap[i].nlocal;
-      pdata[i] = &kerneldatap[i];
+    for (i=0; i<x->nthreads; i++) {
+      kerneldatap[i].x   = xa+ix[i];
+      kerneldatap[i].y   = ya+iy[i];
+      kerneldatap[i].n   = nx[i];
+      pdata[i]           = &kerneldatap[i];
     }
-    ierr = MainJob(VecCopy_Kernel,(void**)pdata,iNumThreads);
-    free(kerneldatap);
-    free(pdata);
+    ierr = MainJob(VecCopy_Kernel,(void**)pdata,x->nthreads);
 
-    ierr = VecRestoreArrayRead(xin,&xa);CHKERRQ(ierr);
+    ierr = VecRestoreArray(xin,&xa);CHKERRQ(ierr);
     ierr = VecRestoreArray(yin,&ya);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -1462,10 +1287,10 @@ void* VecSet_Kernel(void *arg)
     DoCoreAffinity();
 #endif
   }
-  VecSet_KernelData *data = (VecSet_KernelData*)arg;
-  PetscScalar        *xx = data->xpin;
-  PetscScalar        alpha = data->alphain;
-  PetscInt           i,n = data->nelem;
+  Kernel_Data    *data = (Kernel_Data*)arg;
+  PetscScalar    *xx = data->x;
+  PetscScalar    alpha = data->alpha;
+  PetscInt       i,n = data->n;
   PetscErrorCode ierr;
 
   if (alpha == (PetscScalar)0.0) {
@@ -1480,32 +1305,23 @@ void* VecSet_Kernel(void *arg)
 #define __FUNCT__ "VecSet_SeqPThread"
 PetscErrorCode VecSet_SeqPThread(Vec xin,PetscScalar alpha)
 {
-  PetscInt       i,n = xin->map->n;
-  PetscScalar    *xx;
-  PetscErrorCode ierr;
+  PetscErrorCode    ierr;
+  Vec_SeqPthread    *x =  (Vec_SeqPthread*)xin->data;
+  PetscInt          *ix = x->arrindex;
+  PetscInt          i,*nx = x->nelem;
+  PetscScalar       *xa;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(xin,&xx);CHKERRQ(ierr);
-  const PetscInt    iNumThreads = PetscMaxThreads;  /* this number could be different */
-  PetscInt          Q = n/(iNumThreads),R = n-Q*(iNumThreads),iIndex;
-  PetscBool         S;
+  ierr = VecGetArray(xin,&xa);CHKERRQ(ierr);
 
-  VecSet_KernelData* kerneldatap = (VecSet_KernelData*)malloc(iNumThreads*sizeof(VecSet_KernelData));
-  VecSet_KernelData** pdata = (VecSet_KernelData**)malloc(iNumThreads*sizeof(VecSet_KernelData*));
-
-  iIndex = 0;
-  for (i=0; i<iNumThreads; i++) {
-    S = (PetscBool)(i<R);
-    kerneldatap[i].xpin   = xx+iIndex;
-    kerneldatap[i].alphain   = alpha;
-    kerneldatap[i].nelem = S?Q+1:Q;
-    iIndex += kerneldatap[i].nelem;
-    pdata[i] = &kerneldatap[i];
+  for (i=0; i<x->nthreads; i++) {
+    kerneldatap[i].x       = xa+ix[i];
+    kerneldatap[i].alpha   = alpha;
+    kerneldatap[i].n       = nx[i];
+    pdata[i]               = &kerneldatap[i];
   }
-  ierr = MainJob(VecSet_Kernel,(void**)pdata,iNumThreads);
-  free(kerneldatap);
-  free(pdata);
-  ierr = VecRestoreArray(xin,&xx);CHKERRQ(ierr);
+  ierr = MainJob(VecSet_Kernel,(void**)pdata,x->nthreads);
+  ierr = VecRestoreArray(xin,&xa);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1526,12 +1342,12 @@ PetscErrorCode VecDestroy_SeqPThread(Vec v)
   ierr = PetscFree(vs->arrindex);CHKERRQ(ierr);
   ierr = PetscFree(vs->nelem);CHKERRQ(ierr);
   ierr = PetscFree(vs);CHKERRQ(ierr);
-  vecs_created--;
+  /*  vecs_created--; */
   /* Free the kernel data structure on the destruction of the last vector */
-  if(vecs_created == 0) {
+  /*  if(vecs_created == 0) {
     ierr = PetscFree(kerneldatap);CHKERRQ(ierr);
     ierr = PetscFree(pdata);CHKERRQ(ierr);
-  }
+   } */
   PetscFunctionReturn(0);
 
 }
@@ -1552,6 +1368,38 @@ void* DoCoreAffinity(void)
   return(0);
 }
 #endif
+
+#undef __FUNCT__
+#define __FUNCT__ "VecSeqPThreadSetNThreads"
+/*@
+   VecSeqPThreadSetNThreads - Set the number of threads to be used for vector operations.
+
+   Input Parameters
++  v - the vector
+-  nthreads - number of threads
+
+   Notes:
+    If this routine is not called then the vector uses the default maximum number of threads (PetscMaxThreads).
+
+   Level: Beginner
+
+   Concepts: vectors^setting number of threads
+
+.seealso: VecCreateSeqPThread()
+@*/
+PetscErrorCode VecSeqPThreadSetNThreads(Vec v,PetscInt nthreads)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if(!v->data) {
+    Vec_SeqPthread *s;
+    ierr = PetscNewLog(v,Vec_SeqPthread,&s);CHKERRQ(ierr);
+    v->data = (void*)s;
+    s->nthreads = nthreads;
+  }
+  PetscFunctionReturn(0);
+}
 
 static struct _VecOps DvOps = {VecDuplicate_Seq, /* 1 */
             VecDuplicateVecs_Default,
@@ -1627,15 +1475,18 @@ PetscErrorCode VecCreate_SeqPThread_Private(Vec v,const PetscScalar array[],Pets
   PetscInt       i=0,iIndex=0;
 
   PetscFunctionBegin;
-  ierr = PetscNewLog(v,Vec_SeqPthread,&s);CHKERRQ(ierr);
   ierr = PetscMemcpy(v->ops,&DvOps,sizeof(DvOps));CHKERRQ(ierr);
-  v->data            = (void*)s;
+  if(!v->data) {
+    ierr = PetscNewLog(v,Vec_SeqPthread,&s);CHKERRQ(ierr);
+    v->data            = (void*)s;
+    s->nthreads        = NumThreads;
+  } else s = (Vec_SeqPthread*)v->data;
+
   v->petscnative     = PETSC_TRUE;
   s->array           = (PetscScalar *)array;
   s->array_allocated = 0;
-  s->nthreads        = NumThreads;
- 
-  /* If this is the first vector being created then also create the Kernel data structure */
+
+  /* If this is the first vector being created then also create the common Kernel data structure */
   if(vecs_created == 0) {
     ierr = PetscMalloc(NumThreads*sizeof(Kernel_Data),&kerneldatap);CHKERRQ(ierr);
     ierr = PetscMalloc(NumThreads*sizeof(Kernel_Data*),&pdata);CHKERRQ(ierr);
@@ -1660,16 +1511,16 @@ PetscErrorCode VecCreate_SeqPThread_Private(Vec v,const PetscScalar array[],Pets
 }
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecCreate_SeqPThread"
-PetscErrorCode  VecCreate_SeqPThread(Vec V)
+PetscErrorCode VecCreate_SeqPThread(Vec V)
 {
   Vec_SeqPthread  *s;
   PetscScalar     *array;
   PetscErrorCode  ierr;
   PetscInt        n = PetscMax(V->map->n,V->map->N);
   PetscMPIInt     size;
-  PetscInt        numThreads = PetscMaxThreads; /* This may be different and needs to be changed */
+  PetscInt        numThreads = PetscMaxThreads;
   PetscFunctionBegin;
   ierr = MPI_Comm_size(((PetscObject)V)->comm,&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"Cannot create VECSEQPTHREAD on more than one process");
@@ -1687,7 +1538,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "VecCreate_PThread"
-PetscErrorCode  VecCreate_PThread(Vec v)
+PetscErrorCode VecCreate_PThread(Vec v)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;
@@ -1700,3 +1551,40 @@ PetscErrorCode  VecCreate_PThread(Vec v)
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
+
+#undef __FUNCT__
+#define __FUNCT__ "VecCreateSeqPThread"
+/*@
+   VecCreateSeqPThread - Creates a standard, sequential array-style vector using posix threads.
+
+   Collective on MPI_Comm
+
+   Input Parameter:
++  comm - the communicator, should be PETSC_COMM_SELF
+-  n - the vector length 
+-  nthreads - number of threads.
+
+   Output Parameter:
+.  V - the vector
+
+   Notes:
+   Use VecDuplicate() or VecDuplicateVecs() to form additional vectors of the
+   same type as an existing vector.
+
+   Level: intermediate
+
+   Concepts: vectors^creating sequential with threads
+
+.seealso: VecCreateMPI(), VecCreate(), VecDuplicate(), VecDuplicateVecs(), VecCreateGhost()
+@*/
+PetscErrorCode VecCreateSeqPThread(MPI_Comm comm,PetscInt n,PetscInt nthreads,Vec *v)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecCreate(comm,v);CHKERRQ(ierr);
+  ierr = VecSetSizes(*v,n,n);CHKERRQ(ierr);
+  ierr = VecSeqPThreadSetNThreads(*v,nthreads);CHKERRQ(ierr);
+  ierr = VecSetType(*v,VECSEQPTHREAD);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
