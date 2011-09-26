@@ -390,7 +390,7 @@ PetscErrorCode  PetscDLLibraryAppend(MPI_Comm comm,PetscDLLibrary *outlist,const
     }
     ierr = PetscTokenFind(token,&libname);CHKERRQ(ierr);
   }
-  ierr = PetscTokenDestroy(token);CHKERRQ(ierr);
+  ierr = PetscTokenDestroy(&token);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -482,7 +482,7 @@ PetscErrorCode  PetscDLLibraryPrepend(MPI_Comm comm,PetscDLLibrary *outlist,cons
     }
     ierr = PetscTokenFind(token,&libname);CHKERRQ(ierr);
   }
-  ierr = PetscTokenDestroy(token);CHKERRQ(ierr);
+  ierr = PetscTokenDestroy(&token);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -599,13 +599,13 @@ PetscErrorCode  PetscDLLibraryCCAAppend(MPI_Comm comm,PetscDLLibrary *outlist,co
         ierr = PetscTokenFind(token2,&func);CHKERRQ(ierr);
         ierr = PetscTokenFind(token2,&funcname);CHKERRQ(ierr);
         ierr = PetscFListAdd(&CCAList,funcname,func,PETSC_NULL);CHKERRQ(ierr);
-        ierr = PetscTokenDestroy(token2);CHKERRQ(ierr);
+        ierr = PetscTokenDestroy(&token2);CHKERRQ(ierr);
       }
     }
     err = fclose(fp);
     if (err) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"fclose() failed on file");    
     ierr = PetscTokenFind(token1,&libname1);CHKERRQ(ierr);
   }
-  ierr = PetscTokenDestroy(token1);CHKERRQ(ierr);
+  ierr = PetscTokenDestroy(&token1);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

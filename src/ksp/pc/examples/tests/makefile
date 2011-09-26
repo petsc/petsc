@@ -47,35 +47,35 @@ ex8f: ex8f.o   chkopts
 runex1:
 	-@${MPIEXEC} -n 1 ./ex1 > ex1_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex1_1.out ex1_1.tmp) then true; \
-	   else echo "Possible problem with ex1_1, diffs above"; fi; \
+	   else echo ${PWD} ; echo "Possible problem with with ex1_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex1_1.tmp 
 runex2:
 	-@${MPIEXEC} -n 1 ./ex2 -ksp_type cg -ksp_monitor_short > ex2_1.tmp 2>&1;	 \
 	   if (${DIFF} output/ex2_1.out ex2_1.tmp) then true; \
-	   else echo "Possible problem with ex2_1, diffs above"; fi; \
+	   else echo ${PWD} ; echo "Possible problem with with ex2_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex2_1.tmp 
 runex3:
 	-@${MPIEXEC} -n 1 ./ex3 -ksp_type gmres -ksp_monitor_short -pc_type sor\
 			     -pc_sor_symmetric > ex3_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex3_1.out ex3_1.tmp) then true; \
-	   else echo "Possible problem with ex3_1, diffs above"; fi; \
+	   else echo ${PWD} ; echo "Possible problem with with ex3_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex3_1.tmp 
 runex4:
 	-@${MPIEXEC} -n 1 ./ex4	 > ex4_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex4_1.out ex4_1.tmp) then true; \
-	   else echo "Possible problem with ex4_1, diffs above"; fi; \
+	   else echo ${PWD} ; echo "Possible problem with with ex4_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex4_1.tmp 
 
 runex5:
 	-@${MPIEXEC} -n 1 ./ex5 > ex5_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex5_1.out ex5_1.tmp) then true; \
-	   else echo "Possible problem with ex5_1, diffs above"; fi; \
+	   else echo ${PWD} ; echo "Possible problem with with ex5_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex5_1.tmp 
 
 runex6:
 	-@${MPIEXEC} -n 1  ./ex6 -m 7 > ex6_1.tmp   2>&1;   \
 	   if (${DIFF} output/ex6_1.out ex6_1.tmp) then true; \
-	   else echo "Possible problem with ex6_1, diffs above"; fi; \
+	   else echo ${PWD} ; echo "Possible problem with with ex6_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex6_1.tmp
 
 runex8f:

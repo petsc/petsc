@@ -69,7 +69,7 @@ PetscErrorCode test1_DAInjection3d( PetscInt mx, PetscInt my, PetscInt mz )
     ierr = VecAXPY(coordsf2,-1.0,coordsf);CHKERRQ(ierr);
     ierr = VecNorm(coordsf2,NORM_MAX,&norm);CHKERRQ(ierr);
     /* The fine coordinates are only reproduced in certain cases */
-    if (!bx && !by && !bz && norm > 1.e-10) {ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm %A\n",norm);CHKERRQ(ierr);}
+    if (!bx && !by && !bz && norm > 1.e-10) {ierr = PetscPrintf(PETSC_COMM_WORLD,"Norm %G\n",norm);CHKERRQ(ierr);}
     ierr = VecDestroy(&coordsf2);CHKERRQ(ierr);
     ierr = MatDestroy(&interp);CHKERRQ(ierr);
   }

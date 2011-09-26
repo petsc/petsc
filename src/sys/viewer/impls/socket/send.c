@@ -1329,7 +1329,7 @@ PetscErrorCode  PetscWebServeRequest(int port)
     ierr = PetscWebSendError(fd, 501, "Not supported", NULL, "Unknown request.");CHKERRQ(ierr);
   }
   theend:
-  ierr = PetscTokenDestroy(tok);CHKERRQ(ierr);
+  ierr = PetscTokenDestroy(&tok);CHKERRQ(ierr);
   fclose(fd);
   ierr = PetscInfo(PETSC_NULL,"Finished processing request\n");CHKERRQ(ierr); 
 

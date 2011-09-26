@@ -1204,7 +1204,7 @@ typedef struct _p_PetscToken* PetscToken;
 
 extern PetscErrorCode    PetscTokenCreate(const char[],const char,PetscToken*);
 extern PetscErrorCode    PetscTokenFind(PetscToken,char *[]);
-extern PetscErrorCode    PetscTokenDestroy(PetscToken);
+extern PetscErrorCode    PetscTokenDestroy(PetscToken*);
 
 /*
    These are  MPI operations for MPI_Allreduce() etc
@@ -1651,6 +1651,8 @@ extern PetscErrorCode   PetscSNPrintfCount(char*,size_t,const char [],size_t*,..
 extern PetscErrorCode   PetscVSNPrintf(char*,size_t,const char[],size_t*,va_list);
 extern PetscErrorCode   (*PetscVFPrintf)(FILE*,const char[],va_list);
 extern PetscErrorCode   PetscVFPrintfDefault(FILE*,const char[],va_list);
+extern PetscErrorCode   PetscVFPrintfRegress(FILE*,const char *,va_list);
+extern PetscErrorCode   PetscVFPrintfRegressSetUp(MPI_Comm,const char *);
 
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
 extern PetscErrorCode  PetscVFPrintf_Matlab(FILE*,const char[],va_list);
@@ -2209,6 +2211,7 @@ extern PetscErrorCode  PetscSortRemoveDupsInt(PetscInt*,PetscInt[]);
 extern PetscErrorCode  PetscSortIntWithPermutation(PetscInt,const PetscInt[],PetscInt[]);
 extern PetscErrorCode  PetscSortStrWithPermutation(PetscInt,const char*[],PetscInt[]);
 extern PetscErrorCode  PetscSortIntWithArray(PetscInt,PetscInt[],PetscInt[]);
+extern PetscErrorCode  PetscSortIntWithArrayPair(PetscInt,PetscInt[],PetscInt[],PetscInt[]);
 extern PetscErrorCode  PetscSortMPIIntWithArray(PetscMPIInt,PetscMPIInt[],PetscMPIInt[]);
 extern PetscErrorCode  PetscSortIntWithScalarArray(PetscInt,PetscInt[],PetscScalar[]);
 extern PetscErrorCode  PetscSortReal(PetscInt,PetscReal[]);
@@ -2216,6 +2219,7 @@ extern PetscErrorCode  PetscSortRealWithPermutation(PetscInt,const PetscReal[],P
 extern PetscErrorCode  PetscSortSplit(PetscInt,PetscInt,PetscScalar[],PetscInt[]);
 extern PetscErrorCode  PetscSortSplitReal(PetscInt,PetscInt,PetscReal[],PetscInt[]);
 extern PetscErrorCode  PetscProcessTree(PetscInt,const PetscBool [],const PetscInt[],PetscInt*,PetscInt**,PetscInt**,PetscInt**,PetscInt**);
+extern PetscErrorCode  PetscMergeIntArrayPair(PetscInt,const PetscInt[],const PetscInt[],PetscInt,const PetscInt[],const PetscInt[],PetscInt*,PetscInt*[],PetscInt*[]);
 
 extern PetscErrorCode  PetscSetDisplay(void);
 extern PetscErrorCode  PetscGetDisplay(char[],size_t);

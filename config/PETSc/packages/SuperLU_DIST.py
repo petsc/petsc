@@ -7,11 +7,14 @@ class Configure(PETSc.package.NewPackage):
     self.functions  = ['set_default_options_dist']
     self.includes   = ['superlu_ddefs.h']
     self.liblist    = [['libsuperlu_dist_2.5.a']]
-    #
     #  SuperLU_dist supports 64 bit integers but uses ParMetis which does not, see the comment in ParMetis.py
     #  in the method configureLibrary()
     self.requires32bitint = 0
     self.complex          = 1
+    # SuperLU_Dist does not work with --download-f-blas-lapack with Compaqf90 compiler on windows.
+    # However it should work with intel ifort.
+    self.worksonWindows   = 1
+    self.downloadonWindows= 1
     return
 
   def setupDependencies(self, framework):
@@ -26,7 +29,7 @@ class Configure(PETSc.package.NewPackage):
 
     g = open(os.path.join(self.packageDir,'make.inc'),'w')
     g.write('DSuperLUroot = '+self.packageDir+'\n')
-    g.write('DSUPERLULIB  = $(DSuperLUroot)/libsuperlu_dist_2.5.a\n')
+    g.write('DSUPERLULIB  = $(DSuperLUroot)/libsuperlu_dist_2.5.'+self.setCompilers.AR_LIB_SUFFIX+'\n')
     g.write('BLASDEF      = -DUSE_VENDOR_BLAS\n')
     g.write('BLASLIB      = '+self.libraries.toString(self.blasLapack.dlib)+'\n')
     g.write('IMPI         = '+self.headers.toString(self.mpi.include)+'\n')
@@ -61,7 +64,7 @@ class Configure(PETSc.package.NewPackage):
         self.logPrintBox('Compiling superlu_dist; this may take several minutes')
         if not os.path.exists(os.path.join(self.packageDir,'lib')):
           os.makedirs(os.path.join(self.packageDir,'lib'))
-        output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && make clean && make lib LAAUX="" && mv -f *.a '+os.path.join(self.installDir,self.libdir,'')+' && cp -f SRC/*.h '+os.path.join(self.installDir,self.includedir,''), timeout=2500, log = self.framework.log)
+        output,err,ret  = PETSc.package.NewPackage.executeShellCommand('cd '+self.packageDir+' && make clean && make lib LAAUX="" && mv -f *.'+self.setCompilers.AR_LIB_SUFFIX+' '+os.path.join(self.installDir,self.libdir,'')+' && cp -f SRC/*.h '+os.path.join(self.installDir,self.includedir,''), timeout=2500, log = self.framework.log)
       except RuntimeError, e:
         raise RuntimeError('Error running make on SUPERLU_DIST: '+str(e))
       self.postInstall(output+err,'make.inc')

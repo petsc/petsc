@@ -69,7 +69,7 @@ int main(int argc,char **args)
   ierr = VecAXPY(u,-1.0,ustar);CHKERRQ(ierr);
   ierr = VecNorm(u,NORM_2,&norm);
   ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"2 norm of error %A Number of iterations %D\n",norm,its);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"2 norm of error %G Number of iterations %D\n",norm,its);
 
   /* Free data structures */
   ierr = KSPDestroy(&ksp);CHKERRQ(ierr);

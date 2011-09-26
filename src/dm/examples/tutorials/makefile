@@ -71,17 +71,17 @@ runex2:
 runex3:
 	-@${MPIEXEC} -n 3 ./ex3 -mat_view  > ex3_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex3_1.out ex3_1.tmp) then true; \
-	   else echo "Possible problem with ex3_1, diffs above"; fi; \
+	   else echo ${PWD} ; echo "Possible problem with with ex3_1, diffs above \n========================================="; fi; \
 	   ${RM} -f ex3_1.tmp
 runex3_2:
 	-@${MPIEXEC} -n 3 ./ex3 -mat_view -dim 2 > ex3_2.tmp 2>&1;   \
 	   if (${DIFF} output/ex3_2.out ex3_2.tmp) then true; \
-	   else echo "Possible problem with ex3_2, diffs above"; fi; \
+	   else echo ${PWD} ; echo "Possible problem with with ex3_2, diffs above \n========================================="; fi; \
 	   ${RM} -f ex3_2.tmp
 runex3_3:
 	-@${MPIEXEC} -n 3 ./ex3 -mat_view -dim 3 > ex3_3.tmp 2>&1;   \
 	   if (${DIFF} output/ex3_3.out ex3_3.tmp) then true; \
-	   else echo "Possible problem with ex3_3, diffs above"; fi; \
+	   else echo ${PWD} ; echo "Possible problem with with ex3_3, diffs above \n========================================="; fi; \
 	   ${RM} -f ex3_3.tmp
 runex10:
 	-@${MPIEXEC} -n 4 ./ex10
@@ -89,7 +89,7 @@ runex10:
 runex11f90:
 	-@${MPIEXEC} -n 1 ./ex11f90  > ex11f90.tmp 2>&1;   \
 	   if (${DIFF} output/ex11f90.out ex11f90.tmp) then true; \
-	   else echo "Possible problem with ex11f90, diffs above"; fi; \
+	   else echo ${PWD} ; echo "Possible problem with with ex11f90, diffs above \n========================================="; fi; \
 	   ${RM} -f ex11f90.tmp
 
 TESTEXAMPLES_C		  = ex3.PETSc runex3 runex3_2 runex3_3 ex3.rm ex4.PETSc ex4.rm ex12.PETSc ex12.rm

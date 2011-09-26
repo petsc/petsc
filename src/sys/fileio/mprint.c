@@ -40,7 +40,7 @@ FILE *PETSC_ZOPEFD = 0;
 .   newformat - the location to put the standard C format string values
 -   size - the length of newformat
 
-    Note: this exists so we can have the same code when PetscInt is either int or long long and PetscScalar is either double or float
+    Note: this exists so we can have the same code when PetscInt is either int or long long and PetscScalar is either __float128, double, or float
 
  Level: developer
 
@@ -49,6 +49,7 @@ PetscErrorCode  PetscFormatConvert(const char *format,char *newformat,size_t siz
 {
   PetscInt i = 0,j = 0;
 
+  PetscFunctionBegin;
   while (format[i] && j < (PetscInt)size-1) {
     if (format[i] == '%' && format[i+1] != '%') {
       /* Find the letter */
@@ -92,7 +93,7 @@ PetscErrorCode  PetscFormatConvert(const char *format,char *newformat,size_t siz
     }
   }
   newformat[j] = 0;
-  return 0;
+  PetscFunctionReturn(0);
 }
  
 #undef __FUNCT__  
@@ -107,20 +108,21 @@ PetscErrorCode  PetscFormatConvert(const char *format,char *newformat,size_t siz
 +   format - the PETSc format string
 -   fullLength - the amount of space in str actually used.
 
-    Note:  No error handling because may be called by error handler
+    Developer Notes: this function may be called from an error handler, if an error occurs when it is called by the error handler than likely
+      a recursion will occur and possible crash.
 
  Level: developer
 
 @*/
 PetscErrorCode  PetscVSNPrintf(char *str,size_t len,const char *format,size_t *fullLength,va_list Argp)
 {
-  /* no malloc since may be called by error handler */
   char          *newformat;
   char           formatbuf[8*1024];
   size_t         oldLength,length;
   int            fullLengthInt;
   PetscErrorCode ierr;
- 
+
+  PetscFunctionBegin; 
   ierr = PetscStrlen(format, &oldLength);CHKERRQ(ierr);
   if (oldLength < 8*1024) {
     newformat = formatbuf;
@@ -146,11 +148,11 @@ PetscErrorCode  PetscVSNPrintf(char *str,size_t len,const char *format,size_t *f
 #error "vsnprintf not found"
 #endif
   if (fullLengthInt < 0) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SYS,"vsnprintf() failed");
-  *fullLength = (size_t)fullLengthInt;
+  if (fullLength) *fullLength = (size_t)fullLengthInt;
   if (oldLength >= 8*1024) {
     ierr = PetscFree(newformat);CHKERRQ(ierr);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
@@ -207,7 +209,8 @@ $    PetscVFPrintf = mypetscvfprintf;
       Notes: For error messages this may be called by any process, for regular standard out it is
           called only by process 0 of a given communicator
 
-      No error handling because may be called by error handler
+      Developer Notes: this could be called by an error handler, if that happens then a recursion of the error handler may occur 
+                       and a crash
 
   Level:  developer
 
@@ -216,20 +219,21 @@ $    PetscVFPrintf = mypetscvfprintf;
 @*/
 PetscErrorCode  PetscVFPrintfDefault(FILE *fd,const char *format,va_list Argp)
 {
-  /* no malloc since may be called by error handler (assume no long messages in errors) */
-  char        *newformat;
-  char         formatbuf[8*1024];
-  size_t       oldLength;
+  char           *newformat;
+  char           formatbuf[8*1024];
+  size_t         oldLength;
+  PetscErrorCode ierr;
 
-  PetscStrlen(format, &oldLength);
+  PetscFunctionBegin;
+  ierr = PetscStrlen(format, &oldLength);CHKERRQ(ierr);
   if (oldLength < 8*1024) {
     newformat = formatbuf;
     oldLength = 8*1024-1;
   } else {
     oldLength = PETSC_MAX_LENGTH_FORMAT(oldLength);
-    (void)PetscMalloc(oldLength * sizeof(char), &newformat);
+    ierr = PetscMalloc(oldLength * sizeof(char), &newformat);CHKERRQ(ierr);
   }
-  PetscFormatConvert(format,newformat,oldLength);
+  ierr = PetscFormatConvert(format,newformat,oldLength);CHKERRQ(ierr);
 
 #if defined(PETSC_HAVE_VFPRINTF_CHAR)
   vfprintf(fd,newformat,(char *)Argp);
@@ -238,9 +242,9 @@ PetscErrorCode  PetscVFPrintfDefault(FILE *fd,const char *format,va_list Argp)
 #endif
   fflush(fd);
   if (oldLength >= 8*1024) {
-    (void)PetscFree(newformat);
+    ierr = PetscFree(newformat);CHKERRQ(ierr);
   }
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
@@ -564,7 +568,7 @@ PetscErrorCode  PetscFPrintf(MPI_Comm comm,FILE* fd,const char format[],...)
 #define __FUNCT__ "PetscPrintf" 
 /*@C
     PetscPrintf - Prints to standard out, only from the first
-    processor in the communicator.
+    processor in the communicator. Calls from other processes are ignored.
 
     Not Collective
 
@@ -578,10 +582,6 @@ PetscErrorCode  PetscFPrintf(MPI_Comm comm,FILE* fd,const char format[],...)
     The call sequence is PetscPrintf(MPI_Comm, character(*), PetscErrorCode ierr) from Fortran. 
     That is, you can only pass a single character string from Fortran.
 
-   Notes: The %A format specifier is special.  It assumes an argument of type PetscReal
-          and is replaced with %G unless the absolute value is < 1.e-12 when it is replaced
-          with "< 1.e-12" (1.e-6 for single precision).
-
    Concepts: printing^in parallel
    Concepts: printf^in parallel
 
@@ -591,9 +591,6 @@ PetscErrorCode  PetscPrintf(MPI_Comm comm,const char format[],...)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
-  size_t         len;
-  char           *nformat,*sub1,*sub2;
-  PetscReal      value;
 
   PetscFunctionBegin;
   if (!comm) comm = PETSC_COMM_WORLD;
@@ -601,40 +598,12 @@ PetscErrorCode  PetscPrintf(MPI_Comm comm,const char format[],...)
   if (!rank) {
     va_list Argp;
     va_start(Argp,format);
-
-    ierr = PetscStrstr(format,"%A",&sub1);CHKERRQ(ierr);
-    if (sub1) {
-      ierr = PetscStrstr(format,"%",&sub2);CHKERRQ(ierr);
-      if (sub1 != sub2) SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONG,"%%A format must be first in format string");
-      ierr    = PetscStrlen(format,&len);CHKERRQ(ierr);
-      ierr    = PetscMalloc((len+16)*sizeof(char),&nformat);CHKERRQ(ierr);
-      ierr    = PetscStrcpy(nformat,format);CHKERRQ(ierr);
-      ierr    = PetscStrstr(nformat,"%",&sub2);CHKERRQ(ierr);
-      sub2[0] = 0;
-      value   = va_arg(Argp,double);
-#if defined(PETSC_USE_REAL_SINGLE)
-      if (PetscAbsReal(value) < 1.e-6) {
-        ierr    = PetscStrcat(nformat,"< 1.e-6");CHKERRQ(ierr);
-#else
-      if (PetscAbsReal(value) < 1.e-12) {
-        ierr    = PetscStrcat(nformat,"< 1.e-12");CHKERRQ(ierr);
-#endif
-      } else {
-        ierr    = PetscStrcat(nformat,"%G");CHKERRQ(ierr);
-        va_end(Argp);
-        va_start(Argp,format);
-      }
-      ierr    = PetscStrcat(nformat,sub1+2);CHKERRQ(ierr);
-    } else {
-      nformat = (char*)format;
-    }
-    ierr = (*PetscVFPrintf)(PETSC_STDOUT,nformat,Argp);CHKERRQ(ierr);
+    ierr = (*PetscVFPrintf)(PETSC_STDOUT,format,Argp);CHKERRQ(ierr);
     if (petsc_history) {
       va_start(Argp,format);
-      ierr = (*PetscVFPrintf)(petsc_history,nformat,Argp);CHKERRQ(ierr);
+      ierr = (*PetscVFPrintf)(petsc_history,format,Argp);CHKERRQ(ierr);
     }
     va_end(Argp);
-    if (sub1) {ierr = PetscFree(nformat);CHKERRQ(ierr);}
   }
   PetscFunctionReturn(0);
 }
@@ -747,3 +716,190 @@ PetscErrorCode  PetscVFPrintf_Matlab(FILE *fd,const char format[],va_list Argp)
  PetscFunctionReturn(0);
 }
 #endif
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscFormatStrip"
+/*@C 
+     PetscFormatStrip - Takes a PETSc format string and removes all numerical modifiers to % operations
+
+   Input Parameters:
+.   format - the PETSc format string
+
+ Level: developer
+
+@*/
+PetscErrorCode  PetscFormatStrip(char *format)
+{
+  size_t   loc1 = 0, loc2 = 0;
+
+  PetscFunctionBegin;
+  while (format[loc2]){
+    if (format[loc2] == '%') {
+      format[loc1++] = format[loc2++];
+      while (format[loc2] && ((format[loc2] >= '0' && format[loc2] <= '9') || format[loc2] == '.')) loc2++;
+    } 
+    format[loc1++] = format[loc2++];
+  }
+  PetscFunctionReturn(0);
+}
+
+static PetscToken OriginalRun = 0;
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscVFPrintfRegressDestroy"
+static PetscErrorCode PetscVFPrintfRegressDestroy(void)
+{
+  PetscErrorCode ierr;
+  
+  PetscFunctionBegin;
+  ierr = PetscTokenDestroy(&OriginalRun);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscVFPrintfRegressSetUp"
+/*@C 
+     PetscVFPrintfRegressSetUp -  Reads in file of previous results of run to compare with current run using PetscVFPrintfRegress
+
+  Level:  developer
+
+.seealso: PetscVSNPrintf(), PetscErrorPrintf(), PetscVFPrintfRegress()
+
+@*/
+PetscErrorCode  PetscVFPrintfRegressSetUp(MPI_Comm comm,const char *filename)
+{
+  PetscErrorCode ierr;
+  FILE           *fp;
+  char           buffer[1024],*big;
+  size_t         cnt = 0,len;
+  char           *ptr;
+  PetscMPIInt    rank;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  if (!rank) {
+    ierr = PetscFOpen(comm,filename,"r",&fp);CHKERRQ(ierr);
+    
+    ptr = fgets(buffer, 1024, fp);
+    while (ptr) {
+      ierr = PetscStrlen(ptr,&len);CHKERRQ(ierr);
+      cnt  += len;
+      ptr = fgets(buffer, 1024, fp);
+    }
+    if (!feof(fp)) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_FILE_READ, "Error reading from file: %d", errno);
+    ierr = PetscFClose(comm,fp);CHKERRQ(ierr);
+    ierr = PetscMalloc(cnt*sizeof(char),&big);CHKERRQ(ierr);
+    big[0] = 0;
+    ierr = PetscFOpen(comm,filename,"r",&fp);CHKERRQ(ierr);
+    ptr = fgets(buffer, 1024, fp);
+    while (ptr) {
+      ierr = PetscStrcat(big,ptr);CHKERRQ(ierr);
+      ptr = fgets(buffer, 1024, fp);
+    }
+    if (!feof(fp)) SETERRQ1(PETSC_COMM_SELF, PETSC_ERR_FILE_READ, "Error reading from file: %d", errno);
+    ierr = PetscFClose(comm,fp);CHKERRQ(ierr);
+    ierr = PetscTokenCreate(big,'\n',&OriginalRun);CHKERRQ(ierr);
+    ierr = PetscFree(big);CHKERRQ(ierr);
+    PetscVFPrintf = PetscVFPrintfRegress;
+    ierr = PetscRegisterFinalize(PetscVFPrintfRegressDestroy);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscVFPrintfRegress"
+/*@C 
+     PetscVFPrintfRegress -  Special version of PetscVFPrintf() to help make clean PETSc regression tests
+
+  Level:  developer
+
+  Developer Notes: 
+       Since this routine knows exactly the data-types and formats of each of the arguments it could in theory do an appropriate 
+       diff for each argument, rather than using a string diff on the entire result.
+
+       So we should somehow loop over all the parts of the format string check that the string part matches and the arguments match
+       within a reasonable tolerance.
+
+.seealso: PetscVSNPrintf(), PetscErrorPrintf()
+
+@*/
+PetscErrorCode  PetscVFPrintfRegress(FILE *fd,const char *format,va_list Argp)
+{
+  char              *newformat,*nformat,*oresult;
+  char              formatbuf[8*1024],testbuf[8*1024];
+  size_t            oldLength;
+  PetscErrorCode    ierr;
+  char              *result;
+  PetscBool         same;
+  size_t            len;
+  int               found;
+  va_list           cArgp;
+
+  PetscFunctionBegin;
+  va_copy(cArgp,Argp);
+  ierr = PetscTokenFind(OriginalRun,&result);CHKERRQ(ierr);
+  if (!result) {
+    printf("Fewer lines in original, than in regression test\n");
+    exit(0);
+  }
+
+  ierr = PetscStrlen(format, &oldLength);CHKERRQ(ierr);
+  if (oldLength < 8*1024) {
+    newformat = formatbuf;
+    oldLength = 8*1024-1;
+  } else {
+    oldLength = PETSC_MAX_LENGTH_FORMAT(oldLength);
+    ierr = PetscMalloc(oldLength * sizeof(char), &newformat);CHKERRQ(ierr);
+  }
+  ierr = PetscFormatConvert(format,newformat,oldLength);CHKERRQ(ierr);
+  ierr = PetscVSNPrintf(testbuf,8*1024,newformat,&len,Argp);CHKERRQ(ierr);
+  testbuf[len-1] = 0; /* remove \n at end of line */
+  ierr = PetscStrcmp(result,testbuf,&same);CHKERRQ(ierr);
+  if (!same) {
+    char *sub;
+    same = PETSC_TRUE;
+    ierr = PetscFormatStrip(newformat);CHKERRQ(ierr);
+    nformat = newformat;
+    oresult = result;
+
+    ierr = PetscStrstr(nformat,"%",&sub);CHKERRQ(ierr);
+    while (sub) {
+      sub++;
+      if (*sub == 'g' || *sub == 'f') {
+        float  val;
+        double nval;
+        char   tsub = sub[1];
+        sub++; *sub = 0;
+        found = sscanf(oresult,nformat,&val);
+        if (!found) {same = PETSC_FALSE; break;}
+        nval = va_arg(cArgp,double);
+        if (PetscAbs((nval - val)/(nval + val)) > .1) {same = PETSC_FALSE; break;}
+        *sub = tsub;
+        while (*nformat == *oresult) {nformat++; oresult++;}
+        while ((*oresult >= '0' && *oresult <= '9') || *oresult == '.' || *oresult == '-' || *oresult == ' '  || *oresult == 'e') oresult++;
+      } else if (*sub == 'd') {
+        int   val,nval;
+        char  tsub = sub[1];
+        sub++; *sub = 0;
+        found = sscanf(oresult,nformat,&val);
+        if (!found) {same = PETSC_FALSE; break;}
+        nval = va_arg(cArgp,int);
+        if (val != nval) {same = PETSC_FALSE; break;}
+        *sub = tsub;
+        while (*nformat == *oresult) {nformat++; oresult++;}
+        while ((*oresult >= '0' && *oresult <= '9') || *oresult == '-' || *oresult == ' ') oresult++;
+      }
+      nformat = sub + 1;
+      ierr = PetscStrstr(nformat,"%",&sub);CHKERRQ(ierr);
+    }
+  }
+  if (!same) {
+    printf("Old::%s\nNew::%s\n",result,testbuf);
+  }
+
+  if (oldLength >= 8*1024) {
+    ierr = PetscFree(newformat);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}

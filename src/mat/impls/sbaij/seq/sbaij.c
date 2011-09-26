@@ -437,11 +437,11 @@ static PetscErrorCode MatView_SeqSBAIJ_ASCII(Mat A,PetscViewer viewer)
       }
       
     } else { /* for non-factored matrix */
-      for (i=0; i<a->mbs; i++) { // for row block i
-        for (j=0; j<bs; j++) {   // for row bs*i + j
+      for (i=0; i<a->mbs; i++) { /* for row block i */
+        for (j=0; j<bs; j++) {   /* for row bs*i + j */
           ierr = PetscViewerASCIIPrintf(viewer,"row %D:",i*bs+j);CHKERRQ(ierr);
-          for (k=a->i[i]; k<a->i[i+1]; k++) { // for column block 
-            for (l=0; l<bs; l++) {            // for column 
+          for (k=a->i[i]; k<a->i[i+1]; k++) { /* for column block */
+            for (l=0; l<bs; l++) {            /* for column */
 #if defined(PETSC_USE_COMPLEX)
               if (PetscImaginaryPart(a->a[bs2*k + l*bs + j]) > 0.0) {
               ierr = PetscViewerASCIIPrintf(viewer," (%D, %G + %G i) ",bs*a->j[k]+l,
