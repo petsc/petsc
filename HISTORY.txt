@@ -16,6 +16,9 @@ Release 1.2
 
 - Add new ``DM`` class , make ``DA`` inherit from ``DM``.
 
+- Better support for inplace LU/ILU and Cholesky/ICC factorization and
+  factor PC subtypes.
+
 - Now the ``Mat``/``PC``/``KSP``/``SNES``/``TS`` Python subtypes are
   implemented with Cython.
 

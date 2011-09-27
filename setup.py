@@ -105,7 +105,7 @@ def run_setup():
             metadata['install_requires'] += ['Cython>='+CYTHON]
         PETSC_DIR = os.environ.get('PETSC_DIR')
         if not (PETSC_DIR and os.path.isdir(PETSC_DIR)):
-            metadata['install_requires'] += ["petsc"]
+            metadata['install_requires'] += ["petsc>=3.2,<3.3"]
     #
     setup(packages     = ['petsc4py',
                           'petsc4py.lib',],

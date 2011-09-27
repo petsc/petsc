@@ -1,0 +1,4 @@
+#ifndef PETSC4PY_COMPAT_32_H
+#define PETSC4PY_COMPAT_32_H
+
+#endif/*PETSC4PY_COMPAT_32_H*/
