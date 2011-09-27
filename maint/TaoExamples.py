@@ -171,8 +171,6 @@ class TaoExamples(ExampleList):
     def __init__(self):
         self.list = []
 
-        self.add(Example(example="rosenbrock1",nprocs=1,options="-tao_smonitor",method="ntr",tags=["rosenbrock","single","unconstrained","c","ntr"],name="rosenbrockntr"))
-
             
                  
         # Unconstrained
@@ -184,9 +182,12 @@ class TaoExamples(ExampleList):
         self.add(Example(example="minsurf2",nprocs=3,options="-tao_smonitor -my 23 -my 17",method="nls",tags=["minsurf","multiprocessor","unconstrained","dm","c","nls"],name="minsurf2_5",section="unconstrained"))
         self.add(Example(example="minsurf2",nprocs=1,options="-tao_smonitor -mx 4 -my 20 -random 2",method="ntr",tags=["minsurf","single","unconstrained","dm","c","ntr"],name="minsurf2_6",section="unconstrained"))
 
+
         self.add(Example(example="rosenbrock1",nprocs=1,options="-tao_smonitor",method="lmvm",tags=["rosenbrock","single","unconstrained","c","lmvm"],name="rosenbrock1",section="unconstrained"))
         self.add(Example(example="rosenbrock1",nprocs=1,options="-tao_smonitor -tao_frtol 0 -tao_fatol 0",method="pounder",tags=["rosenbrock","single","unconstrained","c","pounder"],name="rosenbrock1_2",section="unconstrained"))
+        self.add(Example(example="rosenbrock1",nprocs=1,options="-tao_smonitor",method="ntr",tags=["rosenbrock","single","unconstrained","c","ntr"],name="rosenbrock1_3",section="unconstrained"))
         self.add(Example(example="rosenbrock1f",nprocs=1,options="-tao_smonitor",method="lmvm",tags=["rosenbrock","single","unconstrained","fortran","lmvm"],name="rosenbrock1f",section="unconstrained"))
+
         self.add(Example(example="limit_feval",nprocs=1,options="-tao_smonitor",method="lmvm",tags=["rosenbrock","single","unconstrained","c","lmvm"],name="limit_feval"))
         self.add(Example(example="limit_minf",nprocs=1,options="-tao_smonitor",method="lmvm",tags=["rosenbrock","single","unconstrained","c","lmvm"],name="limit_minf"))
         self.add(Example(example="limit_iter",nprocs=1,options="-tao_smonitor",method="lmvm",tags=["rosenbrock","single","unconstrained","c","lmvm"],name="limit_iter"))
@@ -232,10 +233,17 @@ class TaoExamples(ExampleList):
 
 
         # Check gradients and hessians of examples
-        for n in ["minsurf1","eptorsion1","rosenbrock1","rosenbrock1f"]:
-            self.add(Example(example=n,nprocs=1,options="-tao_fd_test_gradient -tao_fd_test_hessian",method="fd_test",tags=["fd_test"],name=n+"_fd_test"))
-        for n in ["plate2","plate2f","eptorsion2","eptorsion2f"]:
-            self.add(Example(example=n,nprocs=2,options="-tao_fd_test_gradient -tao_fd_test_hessian",method="fd_test",tags=["fd_test"],name=n+"_fd_test"))
+        self.add(Example(example="minsurf1",nprocs=1,options="-tao_fd_test_gradient -tao_fd_test_hessian",method="fd_test",tags=["fd_test"],name="minsurf1_fd_test",section="unconstrained"))
+        self.add(Example(example="eptorsion1",nprocs=1,options="-tao_fd_test_gradient -tao_fd_test_hessian",method="fd_test",tags=["fd_test"],name="eptorsion1_fd_test",section="unconstrained"))
+        self.add(Example(example="rosenbrock1",nprocs=1,options="-tao_fd_test_gradient -tao_fd_test_hessian",method="fd_test",tags=["fd_test"],name="rosenbrock1_fd_test",section="unconstrained"))
+        self.add(Example(example="rosenbrock1f",nprocs=1,options="-tao_fd_test_gradient -tao_fd_test_hessian",method="fd_test",tags=["fd_test"],name="rosenbrock1f_fd_test",section="unconstrained"))
+        
+                 
+                 
+        self.add(Example(example="plate2",nprocs=2,options="-tao_fd_test_gradient -tao_fd_test_hessian",method="fd_test",tags=["fd_test"],name="plate2_fd_test",section="bound"))
+        self.add(Example(example="plate2f",nprocs=2,options="-tao_fd_test_gradient -tao_fd_test_hessian",method="fd_test",tags=["fd_test"],name="plate2f_fd_test",section="bound"))
+        self.add(Example(example="eptorsion2",nprocs=2,options="-tao_fd_test_gradient -tao_fd_test_hessian",method="fd_test",tags=["fd_test"],name="eptorsion2_fd_test",section="unconstrained"))
+        self.add(Example(example="eptorsion2",nprocs=2,options="-tao_fd_test_gradient -tao_fd_test_hessian",method="fd_test",tags=["fd_test"],name="eptorsion2_fd_test",section="unconstrained"))
             
         
         # test line search options

@@ -77,6 +77,7 @@ int main( int argc, char **argv )
   TaoSolver tao;                /* TAO_SOLVER solver context */
 
   TaoSolverTerminationReason reason;
+  KSP        ksp;
   AppCtx     user;               /* user-defined work context */
   PetscReal     zero=0.0;           /* lower bound on all variables */
 
@@ -156,7 +157,7 @@ int main( int argc, char **argv )
   info = VecSet(xu, d1000); CHKERRQ(info);
   info = TaoSetVariableBounds(tao,xl,xu); CHKERRQ(info);
 
-  info = TaoAppGetKSP(jbearingapp,&ksp); CHKERRQ(info);
+  info = TaoGetKSP(tao,&ksp); CHKERRQ(info);
   if (ksp) {                                         
     info = KSPSetType(ksp,KSPCG); CHKERRQ(info);
   }

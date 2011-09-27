@@ -21,6 +21,6 @@ iter =  12, Function value -15.607, Residual: 0.0012909
 iter =  13, Function value -15.607, Residual: 0.000288714 
 iter =  14, Function value -15.607, Residual: 6.45593e-05 
 iteration=15	f=-15.607
-iter =  15, Function value -15.607, Residual: 1.44367e-05 
-iter =  16, Function value -15.607, Residual: 3.23152e-06 
+iter =  15, Function value -15.607, Residual: 1.44366e-05 
+iter =  16, Function value -15.607, Residual: 3.23084e-06 
 iter =  17, Function value -15.607, Residual: < 1.0e-6 

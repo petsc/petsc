@@ -5,12 +5,12 @@ iter =   0, Function value 1.67039, Residual: 0.47529
 iter =   1, Function value 1.506, Residual: 0.0373925 
 iter =   2, Function value 1.50566, Residual: 1.78393e-05 
 iter =   3, Function value 1.50566, Residual: < 1.0e-6 
-TaoSolver Object:
+TaoSolver: 1 MPI processes
   type: tao_tron
       Total PG its: 9,      PG tolerance: 0.001 
-  Line Search Object
+  TaoLineSearch:   1 MPI processes  
     type: more-thuente
-  KSP Object
+  KSP Solver:   1 MPI processes  
     type: gmres
   convergence tolerances: fatol=1e-10,   frtol=1e-10
   convergence tolerances: gatol=1e-08,   steptol=1e-12,   gttol=0

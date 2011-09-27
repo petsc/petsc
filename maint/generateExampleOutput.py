@@ -19,7 +19,10 @@ if __name__=="__main__":
 
         #os.environ.update(TAO)
         #cwd = os.path.join(TAO['TAO_DIR'],"tests")
-        cwd = os.path.join(os.environ['TAO_DIR'],"tests")
+        if ex.section is None:
+            cwd = os.path.join(os.environ['TAO_DIR'],"tests")
+        else:
+            cwd = os.path.join(os.environ['TAO_DIR'],"src",ex.section,"examples","tutorials")
         (r,o,e) = examples.execute(['rm','-f',ex.executableName()])
         (r,o,e) = examples.execute(ex.buildCommand(),cwd=cwd,echo=False)
         if (r != 0):
