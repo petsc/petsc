@@ -1441,6 +1441,7 @@ PetscErrorCode VecSeqPThreadSetNThreads(Vec v,PetscInt nthreads)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if(nthreads > PetscMaxThreads) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_SIZ, "Vec x: threads requested %D, Max. threads initialized %D",nthreads,PetscMaxThreads);
   if(!v->data) {
     Vec_SeqPthread *s;
     ierr = PetscNewLog(v,Vec_SeqPthread,&s);CHKERRQ(ierr);
