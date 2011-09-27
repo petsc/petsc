@@ -872,30 +872,49 @@ PetscErrorCode  PetscVFPrintfRegress(FILE *fd,const char *format,va_list Argp)
         char   tsub = sub[1];
         sub++; *sub = 0;
         found = sscanf(oresult,nformat,&val);
-        if (!found) {same = PETSC_FALSE; break;}
+        if (!found) {
+          printf("Old::%s\nNew::%s\n",result,testbuf);
+          printf("Different because not scan:%s: from :%s:\n",nformat,oresult);
+          same = PETSC_FALSE;
+          break;
+        }
         nval = va_arg(cArgp,double);
-        if (PetscAbs((nval - val)/(nval + val)) > .1) {same = PETSC_FALSE; break;}
+        if (PetscAbs((nval - val)/(nval + val)) > .1) {
+          printf("Old::%s\nNew::%s\n",result,testbuf);
+          printf("Different because float values %g to far from %g\n",val,nval);
+          same = PETSC_FALSE; 
+          break;
+        }
         *sub = tsub;
         while (*nformat == *oresult) {nformat++; oresult++;}
-        while ((*oresult >= '0' && *oresult <= '9') || *oresult == '.' || *oresult == '-' || *oresult == ' '  || *oresult == 'e') oresult++;
+        while (*oresult == ' ') oresult++;
+        while ((*oresult >= '0' && *oresult <= '9') || *oresult == '.' || *oresult == '-' || *oresult == 'e') oresult++;
       } else if (*sub == 'd') {
         int   val,nval;
         char  tsub = sub[1];
         sub++; *sub = 0;
         found = sscanf(oresult,nformat,&val);
-        if (!found) {same = PETSC_FALSE; break;}
+        if (!found) {
+          printf("Old::%s\nNew::%s\n",result,testbuf);
+          printf("Different because not scan:%s: from :%s:\n",nformat,oresult);
+          same = PETSC_FALSE; 
+          break;
+        }
         nval = va_arg(cArgp,int);
-        if (val != nval) {same = PETSC_FALSE; break;}
+        if (val != nval) {
+          printf("Old::%s\nNew::%s\n",result,testbuf);
+          printf("Different because integer value %d != %d\n",val,nval);
+          same = PETSC_FALSE; 
+          break; 
+        }
         *sub = tsub;
         while (*nformat == *oresult) {nformat++; oresult++;}
-        while ((*oresult >= '0' && *oresult <= '9') || *oresult == '-' || *oresult == ' ') oresult++;
+        while (*oresult == ' ') oresult++;
+        while ((*oresult >= '0' && *oresult <= '9') || *oresult == '-') oresult++;
       }
-      nformat = sub + 1;
+      nformat = sub;
       ierr = PetscStrstr(nformat,"%",&sub);CHKERRQ(ierr);
     }
-  }
-  if (!same) {
-    printf("Old::%s\nNew::%s\n",result,testbuf);
   }
 
   if (oldLength >= 8*1024) {

@@ -62,21 +62,6 @@ typedef struct {
 
 
 
-/*
- Increment ii by the number of unique elements of segment a[0,i-1] of a SORTED array a.
- */
-#define PetscIntArrayCountUnique(a, i, ii)  \
-  if(i) {                                   \
-    PetscInt _9_k = 0;                      \
-    ++(ii);                                 \
-    while(++_9_k < (i))                     \
-      if ((a)[_9_k] != (a)[_9_k-1]) {       \
-        ++ii;                               \
-      }                                     \
-  }                                         \
-
-
-
 #define MatIJGetSuppIndex_Private(A,mode,i,ii)                          \
   if((mode) == MATIJ_LOCAL) {                                           \
     ii = i;                                                             \

@@ -49,7 +49,7 @@ class Configure(PETSc.package.NewPackage):
         
       output      = ''
       try:
-        output,err,ret = PETSc.package.NewPackage.executeShellCommand(interpreter+' -nojvm -nodisplay -r "[\'Version \' version]; exit"', log = self.framework.log)
+        output,err,ret = PETSc.package.NewPackage.executeShellCommand(interpreter+' -nojvm -nodisplay -r "display([\'Version \' version]); exit"', log = self.framework.log)
       except:
         self.framework.log.write('WARNING: Found Matlab at '+matlab+' but unable to run\n')
         continue

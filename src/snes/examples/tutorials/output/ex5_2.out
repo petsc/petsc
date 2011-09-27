@@ -105,6 +105,7 @@
         type: ls
           line search variant: SNESLineSearchCubic
           alpha=1.000000000000e-04, maxstep=1.000000000000e+08, minlambda=1.000000000000e-12
+          damping factor=1.000000000000e+00
         maximum iterations=50, maximum function evaluations=10000
         tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
         total number of linear solver iterations=18
@@ -232,6 +233,7 @@
       type: ls
         line search variant: SNESLineSearchCubic
         alpha=1.000000000000e-04, maxstep=1.000000000000e+08, minlambda=1.000000000000e-12
+        damping factor=1.000000000000e+00
       maximum iterations=50, maximum function evaluations=10000
       tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
       total number of linear solver iterations=8
@@ -258,7 +260,7 @@
           PC Object:          (mg_coarse_)           1 MPI processes          
             type: lu
               LU: out-of-place factorization
-              tolerance for zero pivot 1e-12
+              tolerance for zero pivot 2.22045e-14
               matrix ordering: nd
               factor fill ratio given 5, needed 1.42
                 Factored matrix follows:
@@ -502,6 +504,7 @@
     type: ls
       line search variant: SNESLineSearchCubic
       alpha=1.000000000000e-04, maxstep=1.000000000000e+08, minlambda=1.000000000000e-12
+      damping factor=1.000000000000e+00
     maximum iterations=50, maximum function evaluations=10000
     tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
     total number of linear solver iterations=7
@@ -528,7 +531,7 @@
         PC Object:        (mg_coarse_)         1 MPI processes        
           type: lu
             LU: out-of-place factorization
-            tolerance for zero pivot 1e-12
+            tolerance for zero pivot 2.22045e-14
             matrix ordering: nd
             factor fill ratio given 5, needed 1.42
               Factored matrix follows:
@@ -861,6 +864,7 @@ SNES Object: 1 MPI processes
   type: ls
     line search variant: SNESLineSearchCubic
     alpha=1.000000000000e-04, maxstep=1.000000000000e+08, minlambda=1.000000000000e-12
+    damping factor=1.000000000000e+00
   maximum iterations=50, maximum function evaluations=10000
   tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
   total number of linear solver iterations=5
@@ -887,7 +891,7 @@ SNES Object: 1 MPI processes
       PC Object:      (mg_coarse_)       1 MPI processes      
         type: lu
           LU: out-of-place factorization
-          tolerance for zero pivot 1e-12
+          tolerance for zero pivot 2.22045e-14
           matrix ordering: nd
           factor fill ratio given 5, needed 1.42
             Factored matrix follows:
