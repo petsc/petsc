@@ -5,12 +5,21 @@ Allow separable objective function
 
 Check fortran stubs 
 
+C-style comments
+jacobian in leastsquares
+header /*I 
+
 Check documentation
 
 Examples/tests
   add to tests (-tao_fd, -tao_fdgrad, -tao_fd_delta)
   remake output
   Correct list of routines used in examples
+  Test src tree examples
+  Separate test examples from run tests
+
+TaoSolver -> Tao
+
 
 Test on arches
   Visual Studio

@@ -6,6 +6,10 @@ CPPFLAGS         =
 FPPFLAGS         =
 LOCDIR		 = src/unconstrained/examples/tutorials/
 MANSEC		 = Unconstrained
+EXAMPLESC        = chwirut1.c chwirut2.c
+EXAMPLESCH       =
+EXAMPLESF        = chwirut1f.F chwirut2f.F
+EXAMPLESFH       = chwirut2f.h
 DOCS		 = 
 DIRS		 = 
 

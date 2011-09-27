@@ -1,5 +1,25 @@
 #include "taosolver.h"
 #include "petsctime.h"
+
+/*T
+   Concepts: TAO - Solving a system of nonlinear equations, nonlinear ;east squares
+   Routines: TaoInitialize(); TaoFinalize(); 
+   Routines: TaoSolverCreate();
+   Routines: TaoSolverSetType(); 
+   Routines: TaoSolverSetInitialVector();
+   Routines: TaoSolverSetObjectiveRoutine();
+   Routines: TaoSolverSetGradientRoutine();
+   Routines: TaoSolverSetConstraintsRoutine();
+   Routines: TaoSolverSetJacobianStateRoutine();
+   Routines: TaoSolverSetJacobianDesignRoutine();
+   Routines: TaoSolverSetStateDesignIS();
+   Routines: TaoSolverSetFromOptions();
+   Routines: TaoSolverSetHistory(); TaoSolverGetHistory();
+   Routines: TaoSolverSolve();
+   Routines: TaoSolverGetTerminationReason(); TaoSolverDestroy(); 
+   Processors: n
+T*/
+
 typedef struct {
   PetscInt n; // Number of variables
   PetscInt m; // Number of constraints per time step

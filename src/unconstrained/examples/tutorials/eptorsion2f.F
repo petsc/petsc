@@ -11,13 +11,14 @@
 !/*T
 !   Concepts: TAO - Solving an unconstrained minimization problem
 !   Routines: TaoInitialize(); TaoFinalize(); 
-!   Routines: TaoCreate(); TaoDestroy();
-!   Routines: TaoApplicationCreate(); TaoAppDestroy();
-!   Routines: TaoAppSetObjectiveAndGradientRoutine();
-!   Routines: TaoAppSetHessianMat(); TaoAppSetHessianRoutine();
-!   Routines: TaoSetOptions();
-!   Routines: TaoAppSetInitialSolutionVec(); TaoSolveApplication(); TaoDestroy();
-!   Routines: TaoGetSolutionStatus();
+!   Routines: TaoSolverCreate(); TaoSolverSetType();
+!   Routines: TaoSolverSetInitialVector(); 
+!   Routines: TaoSolverSetObjectiveAndGradientRoutine();
+!   Routines: TaoSolverSetHessianRoutine(); TaoSolverSetFromOptions();
+!   Routines: TaoSolverSetMonitor(); TaoSolverSetConvergenceTest()
+!   Routines: TaoSolverSolve(); TaoSolverGetSolutionStatus()
+!   Routines: TaoSolverGetTerminationReason(); TaoSolverDestroy();
+
 !   Processors: n
 !T*/
 !

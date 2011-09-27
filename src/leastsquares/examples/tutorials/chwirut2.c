@@ -33,11 +33,15 @@ static char help[]="Finds the nonlinear least-squares solution to the model \n\
 /* T
    Concepts: TAO - Solving a system of nonlinear equations, nonlinear ;east squares
    Routines: TaoInitialize(); TaoFinalize(); 
-   Routines: TaoCreate(); TaoDestroy();
-   Routines: TaoSetPetscFunction(); 
-   Routines: TaoSetPetscInitialVector();
-   Routines: TaoSetApplication(); TaoSetFromOptions(); TaoSolve(); TaoView(); 
-   Processors: 1
+   Routines: TaoSolverCreate();
+   Routines: TaoSolverSetType(); 
+   Routines: TaoSolverSetSeparableObjectiveRoutine();
+   Routines: TaoSolverSetMonitor();
+   Routines: TaoSolverSetInitialVector();
+   Routines: TaoSolverSetFromOptions();
+   Routines: TaoSolverSolve();
+   Routines: TaoSolverDestroy(); 
+   Processors: n
 T*/
 
 #define NOBSERVATIONS 214

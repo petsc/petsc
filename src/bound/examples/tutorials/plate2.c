@@ -1,5 +1,4 @@
 /*$Id$*/
-#include "stdlib.h"
 #include "petscdm.h"
 #include "taosolver.h"
 
@@ -22,12 +21,14 @@ The command line options are:\n\
 /*T 
    Concepts: TAO - Solving a bound constrained minimization problem
    Routines: TaoInitialize(); TaoFinalize();
-   Routines: TaoApplicationCreate(); TaoAppDestroy();
-   Routines: TaoAppSetObjectiveAndGradientRoutine(); TaoAppSetHessianRoutine(); 
-   Routines: TaoAppSetInitialSolutionVec(); TaoAppSetHessianMat();
-   Routines: TaoAppSetVariableBounds();
-   Routines: TaoCreate();  TaoDestroy(); 
-   Routines: TaoSetOptions();
+   Routines: TaoSolverCreate();
+   Routines: TaoSolverSetType(); TaoSolverSetObjectiveAndGradientRoutine();
+   Routines: TaoSolverSetHessianRoutine();
+   Routines: TaoSolverSetInitialVector();
+   Routines: TaoSolverSetVariableBounds();
+   Routines: TaoSolverSetFromOptions();
+   Routines: TaoSolverSolve(); TaoSolverView();
+   Routines: TaoSolverGetTerminationReason(); TaoSolverDestroy(); 
    Processors: n
 T*/ 
 

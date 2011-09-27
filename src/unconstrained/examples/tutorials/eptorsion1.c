@@ -42,14 +42,12 @@ The command line options are:\n\
 /*T 
    Concepts: TAO - Solving an unconstrained minimization problem
    Routines: TaoInitialize(); TaoFinalize(); 
-   Routines: TaoApplicationCreate(); TaoAppDestroy();
-   Routines: TaoCreate(); TaoDestroy(); 
-   Routines: TaoAppSetObjectiveAndGradientRoutine();
-   Routines: TaoAppSetHessianMat(); TaoAppSetHessianRoutine();
-   Routines: TaoSetOptions();
-   Routines: TaoAppSetInitialSolutionVec();
-   Routines: TaoSolveApplication();
-   Routines: TaoGetSolutionStatus(); TaoAppGetKSP();
+   Routines: TaoSolverCreate(); TaoSolverSetType();
+   Routines: TaoSolverSetInitialVector(); 
+   Routines: TaoSolverSetObjectiveAndGradientRoutine();
+   Routines: TaoSolverSetHessianRoutine(); TaoSolverSetFromOptions();
+   Routines: TaoSolverGetKSP(); TaoSolverSolve();
+   Routines: TaoSolverGetTerminationReason(); TaoSolverDestroy();
    Processors: 1
 T*/ 
 

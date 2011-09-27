@@ -1,8 +1,7 @@
-/*$Id$*/
-
 /*
-  Include "tao.h" so we can use TAO solvers with PETSc support.  
+  Include "taosolver.h" so we can use TAO solvers
   Include "petscdm.h" so that we can use distributed arrays (DMs) for managing
+  Include "petscksp.h" so we can set KSP type
   the parallel mesh.
 */
 
@@ -27,12 +26,15 @@ The command line options are:\n\
 /*T
    Concepts: TAO - Solving a bound constrained minimization problem
    Routines: TaoInitialize(); TaoFinalize();
-   Routines: TaoApplicationCreate();  TaoAppDestroy();
-   Routines: TaoAppSetObjectiveAndGradientRoutine(); TaoAppSetHessianRoutine();
-   Routines: TaoAppSetInitialSolutionVec(); TaoAppSetHessianMat();
-   Routines: TaoCreate(); TaoDestroy();
-   Routines: TaoSetOptions(); TaoApplyGetKSP()
-   Routines: TaoSolveApplication(); TaoGetTerminationReason();
+   Routines: TaoSolverCreate();
+   Routines: TaoSolverSetType(); TaoSolverSetObjectiveAndGradientRoutine();
+   Routines: TaoSolverSetHessianRoutine();
+   Routines: TaoSolverSetVariableBounds();
+   Routines: TaoSolverSetMonitor(); TaoSolverSetConvergenceTest();
+   Routines: TaoSolverSetInitialVector();
+   Routines: TaoSolverSetFromOptions();
+   Routines: TaoSolverSolve();
+   Routines: TaoSolverGetTerminationReason(); TaoSolverDestroy(); 
    Processors: n
 T*/
 
@@ -154,11 +156,11 @@ int main( int argc, char **argv )
   info = VecSet(xu, d1000); CHKERRQ(info);
   info = TaoSolverSetVariableBounds(tao,xl,xu); CHKERRQ(info);
 
-/*  info = TaoAppGetKSP(jbearingapp,&ksp); CHKERRQ(info);
+  info = TaoAppGetKSP(jbearingapp,&ksp); CHKERRQ(info);
   if (ksp) {                                         
     info = KSPSetType(ksp,KSPCG); CHKERRQ(info);
   }
-*/
+
   info = PetscOptionsHasName(PETSC_NULL,"-testmonitor",&flg);
   if (flg) {
     info = TaoSolverSetMonitor(tao,Monitor,&user,PETSC_NULL); CHKERRQ(info);

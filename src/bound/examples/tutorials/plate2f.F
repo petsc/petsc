@@ -15,13 +15,14 @@
 !/*T
 !   Concepts: TAO - Solving a bound constrained minimization problem
 !   Routines: TaoInitialize(); TaoFinalize();
-!   Routines: TaoCreate(); TaoDestroy();
-!   Routines: TaoAppSetObjectiveAndGradientRoutine(); 
-!   Routines: TaoAppSetHessianMat(); TaoAppSetHessianRoutine();
-!   Routines: TaoAppSetInitialSolutionVec(); TaoAppSetVariableBounds();
-!   Routines: TaoSetOptions();
-!   Routines: TaoApplicationCreate(); TaoSolve();
-!   Routines: TaoView(); TaoAppDestroy();
+!   Routines: TaoSolverCreate();
+!   Routines: TaoSolverSetType(); TaoSolverSetObjectiveAndGradientRoutine();
+!   Routines: TaoSolverSetHessianRoutine();
+!   Routines: TaoSolverSetVariableBoundsRoutine();      
+!   Routines: TaoSolverSetInitialVector();
+!   Routines: TaoSolverSetFromOptions();
+!   Routines: TaoSolverSolve();
+!   Routines: TaoSolverDestroy(); 
 !   Processors: n
 !T*/
 
@@ -165,11 +166,8 @@
 ! Set Variable bounds 
       call MSA_BoundaryConditions(ierr)
       CHKERRQ(ierr)
-!      call MSA_Plate(xl,xu,ierr)
-!      CHKERRQ(ierr)
       call TaoSolverSetVariableBoundsRoutine(tao,MSA_Plate,              &
      &     PETSC_NULL_OBJECT,ierr)
-      !call TaoSolverSetVariableBounds(tao,xl,xu,ierr)
       CHKERRQ(ierr)
 
 ! Set the initial solution guess
@@ -186,17 +184,12 @@
       call TaoSolverSolve(tao,ierr)
       CHKERRQ(ierr)
 
-!     View TAO solver information
-!      call TaoView(tao,ierr)
-
 ! Free TAO data structures
       call TaoSolverDestroy(tao,ierr)
       CHKERRQ(ierr)
 
 ! Free PETSc data structures
       call VecDestroy(x,ierr)
-      !call VecDestroy(xl,ierr)
-      !call VecDestroy(xu,ierr)
       call VecDestroy(Top,ierr)
       call VecDestroy(Bottom,ierr)
       call VecDestroy(Left,ierr)

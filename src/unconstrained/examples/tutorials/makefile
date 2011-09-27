@@ -4,6 +4,12 @@ CFLAGS		 =
 FFLAGS		 = 
 CPPFLAGS         =
 FPPFLAGS         =
+EXAMPLESC        = eptorsion1.c eptorsion2.c minsurf2.c rosenbrock1.c
+EXAMPLESF        = eptorsion2f.F rosenbrock1f.F
+EXAMPLESCH       =
+EXAMPLESFH       = eptorsion2f.h rosenbrock1f.h
+TUTORIALS        = rosenbrock1.c eptorsion1.c minsurf1.c eptorsion2.c\
+                   minsurf2.c eptorsion2f.F
 LOCDIR		 = src/unconstrained/examples/tutorials/
 MANSEC		 = Unconstrained
 DOCS		 = 

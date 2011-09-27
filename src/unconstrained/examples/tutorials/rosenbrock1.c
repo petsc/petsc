@@ -10,12 +10,14 @@ minimize the extended Rosenbrock function: \n\
 
 /*T 
    Concepts: TAO - Solving an unconstrained minimization problem
-   Routines: TaoSolverCreate(); TaoSolverDestroy(); 
-   Routines: TaoSolverSetType();TaoSolverSetObjectiveAndGradient();
-   Routines: TaoSolverSetFromOptions();
+   Routines: TaoInitialize(); TaoFinalize();
+   Routines: TaoSolverCreate();
+   Routines: TaoSolverSetType(); TaoSolverSetObjectiveAndGradientRoutine();
+   Routines: TaoSolverSetHessianRoutine();
    Routines: TaoSolverSetInitialVector();
+   Routines: TaoSolverSetFromOptions();
    Routines: TaoSolverSolve();
-   Routines: TaoSolverGetTerminationReason;
+   Routines: TaoSolverGetTerminationReason(); TaoSolverDestroy(); 
    Processors: 1
 T*/ 
 
