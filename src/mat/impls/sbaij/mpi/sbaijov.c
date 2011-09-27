@@ -39,8 +39,7 @@ PetscErrorCode MatIncreaseOverlap_MPISBAIJ(Mat C,PetscInt is_max,IS is[],PetscIn
       ierr = MatIncreaseOverlap_MPISBAIJ_Once(C,is_max,is_new);CHKERRQ(ierr);
     }
   } else { /* scalable implementation using modified BAIJ routines */
-    //this is not scalable!!! - use CTABLE
-    //-------------------------------------------
+
   ierr = PetscMalloc((Mbs+1)*sizeof(PetscInt),&nidx);CHKERRQ(ierr); 
   ierr = PetscBTCreate(Mbs,table);CHKERRQ(ierr); /* for column search */
 
