@@ -283,9 +283,9 @@ extern PetscErrorCode  ISColoringRestoreIS(ISColoring,IS*[]);
 extern PetscErrorCode  ISPartitioningToNumbering(IS,IS*);
 extern PetscErrorCode  ISPartitioningCount(IS,PetscInt,PetscInt[]);
 
-extern PetscErrorCode  ISCompressIndicesGeneral(PetscInt,PetscInt,PetscInt,const IS[],IS[]);
+extern PetscErrorCode  ISCompressIndicesGeneral(PetscInt,PetscInt,PetscInt,PetscInt,const IS[],IS[]);
 extern PetscErrorCode  ISCompressIndicesSorted(PetscInt,PetscInt,PetscInt,const IS[],IS[]);
-extern PetscErrorCode  ISExpandIndicesGeneral(PetscInt,PetscInt,PetscInt,const IS[],IS[]);
+extern PetscErrorCode  ISExpandIndicesGeneral(PetscInt,PetscInt,PetscInt,PetscInt,const IS[],IS[]);
 
 PETSC_EXTERN_CXX_END
 

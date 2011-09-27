@@ -9,7 +9,8 @@
 /*@C
    ISCompressIndicesGeneral - convert the indices into block indices
    Input Parameters:
-+  n - the length of the index set
++  n - maximum possible length of the index set
+.  nkeys - expected number of keys when PETSC_USE_CTABLE
 .  bs - the size of block 
 .  imax - the number of index sets
 -  is_in - the non-blocked array of index sets 
@@ -18,15 +19,17 @@
 .  is_out - the blocked new index set
 
    Level: intermediate
+
+.seealso: ISExpandIndicesGeneral()
 @*/
-PetscErrorCode  ISCompressIndicesGeneral(PetscInt n,PetscInt bs,PetscInt imax,const IS is_in[],IS is_out[])
+PetscErrorCode  ISCompressIndicesGeneral(PetscInt n,PetscInt nkeys,PetscInt bs,PetscInt imax,const IS is_in[],IS is_out[])
 {
   PetscErrorCode     ierr;
   PetscInt           isz,len,i,j,ival,Nbs;
   const PetscInt     *idx;
 #if defined (PETSC_USE_CTABLE)
   PetscTable         gid1_lid1;
-  PetscInt           tt, gid1, *nidx;
+  PetscInt           tt, gid1, *nidx,Nkbs;
   PetscTablePosition tpos;
 #else
   PetscInt           *nidx;
@@ -36,8 +39,8 @@ PetscErrorCode  ISCompressIndicesGeneral(PetscInt n,PetscInt bs,PetscInt imax,co
   PetscFunctionBegin;
   Nbs =n/bs;
 #if defined (PETSC_USE_CTABLE)
-  /* I don't think the next line makes sense, it is allocating way to much space in the hash table */
-  ierr = PetscTableCreate(Nbs,Nbs,&gid1_lid1);CHKERRQ(ierr);
+  Nkbs = nkeys/bs;
+  ierr = PetscTableCreate(Nkbs,Nbs,&gid1_lid1);CHKERRQ(ierr);
 #else
   ierr = PetscMalloc(Nbs*sizeof(PetscInt),&nidx);CHKERRQ(ierr); 
   ierr = PetscBTCreate(Nbs,table);CHKERRQ(ierr);
@@ -65,6 +68,7 @@ PetscErrorCode  ISCompressIndicesGeneral(PetscInt n,PetscInt bs,PetscInt imax,co
 #endif
     }
     ierr = ISRestoreIndices(is_in[i],&idx);CHKERRQ(ierr);
+    
 #if defined (PETSC_USE_CTABLE)
     ierr = PetscMalloc(isz*sizeof(PetscInt),&nidx);CHKERRQ(ierr); 
     ierr = PetscTableGetHeadPosition(gid1_lid1,&tpos);CHKERRQ(ierr); 
@@ -162,37 +166,43 @@ PetscErrorCode  ISCompressIndicesSorted(PetscInt n,PetscInt bs,PetscInt imax,con
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISExpandIndicesGeneral"
-PetscErrorCode  ISExpandIndicesGeneral(PetscInt n,PetscInt bs,PetscInt imax,const IS is_in[],IS is_out[])
+/*@C
+   ISExpandIndicesGeneral - convert the indices into non-block indices
+   Input Parameters:
++  n - the length of the index set   (not being used)
+.  nkeys - expected number of keys when PETSC_USE_CTABLE (not being used)
+.  bs - the size of block 
+.  imax - the number of index sets
+-  is_in - the blocked array of index sets 
+
+   Output Parameter:
+.  is_out - the non-blocked new index set
+
+   Level: intermediate
+
+.seealso: ISCompressIndicesGeneral()
+@*/
+PetscErrorCode  ISExpandIndicesGeneral(PetscInt n,PetscInt nkeys,PetscInt bs,PetscInt imax,const IS is_in[],IS is_out[])
 {
   PetscErrorCode ierr;
   PetscInt       len,i,j,k,*nidx;
   const PetscInt *idx;
-#if defined (PETSC_USE_CTABLE)
   PetscInt       maxsz;
-#else
-  PetscInt       Nbs; 
-#endif
 
   PetscFunctionBegin;
-#if defined (PETSC_USE_CTABLE)
-  /* Now check max size */
-  for (i=0,maxsz=0; i<imax; i++) {
-    ierr = ISGetIndices(is_in[i],&idx);CHKERRQ(ierr);
+  /* Check max size of is_in[] */
+  maxsz=0;
+  for (i=0; i<imax; i++) {
     ierr = ISGetLocalSize(is_in[i],&len);CHKERRQ(ierr);
-    if (len*bs > maxsz) maxsz = len*bs;
+    if (len > maxsz) maxsz = len;
   }
-  ierr = PetscMalloc(maxsz*sizeof(PetscInt),&nidx);CHKERRQ(ierr);   
-#else
-  Nbs = n/bs; 
-  ierr = PetscMalloc(Nbs*bs*sizeof(PetscInt),&nidx);CHKERRQ(ierr); 
-#endif
+  ierr = PetscMalloc(maxsz*bs*sizeof(PetscInt),&nidx);CHKERRQ(ierr);   
 
   for (i=0; i<imax; i++) {
-    ierr = ISGetIndices(is_in[i],&idx);CHKERRQ(ierr);
     ierr = ISGetLocalSize(is_in[i],&len);CHKERRQ(ierr);
+    ierr = ISGetIndices(is_in[i],&idx);CHKERRQ(ierr);
     for (j=0; j<len ; ++j){
-      for (k=0; k<bs; k++)
-        nidx[j*bs+k] = idx[j]*bs+k;
+      for (k=0; k<bs; k++) nidx[j*bs+k] = idx[j]*bs+k;
     }
     ierr = ISRestoreIndices(is_in[i],&idx);CHKERRQ(ierr);
     ierr = ISCreateGeneral(PETSC_COMM_SELF,len*bs,nidx,PETSC_COPY_VALUES,is_out+i);CHKERRQ(ierr);

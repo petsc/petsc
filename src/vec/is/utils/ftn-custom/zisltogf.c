@@ -15,9 +15,9 @@
 
 EXTERN_C_BEGIN
 
-void PETSC_STDCALL iscompressindicesgeneral_(PetscInt *n,PetscInt *bs,PetscInt *imax,IS *is_in,IS *is_out,PetscErrorCode *ierr)
+void PETSC_STDCALL iscompressindicesgeneral_(PetscInt *n,PetscInt *nkeys,PetscInt *bs,PetscInt *imax,IS *is_in,IS *is_out,PetscErrorCode *ierr)
 {
-  *ierr = ISCompressIndicesGeneral(*n,*bs,*imax,is_in,is_out);
+  *ierr = ISCompressIndicesGeneral(*n,*nkeys,*bs,*imax,is_in,is_out);
 }
 
 void PETSC_STDCALL islocaltoglobalmappingview_(ISLocalToGlobalMapping *mapping,PetscViewer *viewer,PetscErrorCode *ierr)
