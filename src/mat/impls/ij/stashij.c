@@ -411,7 +411,7 @@ PetscErrorCode StashMPIIJAssemble_Private(StashMPIIJ stash) {
   ierr = PetscGatherNumberOfMessages(comm,PETSC_NULL,plengths,&nrecvs);CHKERRQ(ierr);
   ierr = PetscGatherMessageLengths(comm,nsends,nrecvs,plengths,&rnodes,&rlengths);CHKERRQ(ierr);
   /* Sort on the the receive nodes, so we can store the received ix indices in the order they were globally specified. */
-  ierr = PetscSortIntWithArray(nrecvs,rnodes,rlengths); CHKERRQ(ierr);
+  ierr = PetscSortMPIIntWithArray(nrecvs,rnodes,rlengths); CHKERRQ(ierr);
   /* sending/receiving pairs (ixidx[i],iyidx[i]) */
   for (i=0; i<nrecvs; ++i) rlengths[i] *=2;
 
