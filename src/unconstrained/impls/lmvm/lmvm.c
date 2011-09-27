@@ -7,8 +7,8 @@
 #define LMVM_GRADIENT            2
 
 #undef __FUNCT__  
-#define __FUNCT__ "TaoSolverSolve_LMVM"
-static PetscErrorCode TaoSolverSolve_LMVM(TaoSolver tao)
+#define __FUNCT__ "TaoSolve_LMVM"
+static PetscErrorCode TaoSolve_LMVM(TaoSolver tao)
 {
 
   TAO_LMVM *lmP = (TAO_LMVM *)tao->data;
@@ -31,13 +31,13 @@ static PetscErrorCode TaoSolverSolve_LMVM(TaoSolver tao)
   }
 
   // Check convergence criteria
-  ierr = TaoSolverComputeObjectiveAndGradient(tao, tao->solution, &f, tao->gradient); CHKERRQ(ierr);
+  ierr = TaoComputeObjectiveAndGradient(tao, tao->solution, &f, tao->gradient); CHKERRQ(ierr);
   ierr = VecNorm(tao->gradient,NORM_2,&gnorm); CHKERRQ(ierr);
   if (PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(gnorm)) {
     SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf or NaN");
   }
 
-  ierr = TaoSolverMonitor(tao, iter, f, gnorm, 0.0, step, &reason); CHKERRQ(ierr);
+  ierr = TaoMonitor(tao, iter, f, gnorm, 0.0, step, &reason); CHKERRQ(ierr);
   if (reason != TAO_CONTINUE_ITERATING) {
     PetscFunctionReturn(0);
   }
@@ -115,7 +115,7 @@ static PetscErrorCode TaoSolverSolve_LMVM(TaoSolver tao)
     ierr = VecCopy(tao->gradient, lmP->Gold); CHKERRQ(ierr);
 
     ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &f, tao->gradient, lmP->D, &step,&ls_status); CHKERRQ(ierr);
-    ierr = TaoSolverAddLineSearchCounts(tao); CHKERRQ(ierr);
+    ierr = TaoAddLineSearchCounts(tao); CHKERRQ(ierr);
     
 
     while (((int)ls_status < 0) && (stepType != LMVM_GRADIENT)) {
@@ -171,7 +171,7 @@ static PetscErrorCode TaoSolverSolve_LMVM(TaoSolver tao)
         
       // Perform the linesearch
       ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &f, tao->gradient, lmP->D, &step, &ls_status); CHKERRQ(ierr);
-      ierr = TaoSolverAddLineSearchCounts(tao); CHKERRQ(ierr);
+      ierr = TaoAddLineSearchCounts(tao); CHKERRQ(ierr);
       
     }
 
@@ -185,20 +185,20 @@ static PetscErrorCode TaoSolverSolve_LMVM(TaoSolver tao)
     // Check for termination
     ierr = VecNorm(tao->gradient, NORM_2, &gnorm); CHKERRQ(ierr);
     iter++;
-    ierr = TaoSolverMonitor(tao,iter,f,gnorm,0.0,step,&reason); CHKERRQ(ierr);
+    ierr = TaoMonitor(tao,iter,f,gnorm,0.0,step,&reason); CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 #undef __FUNCT__  
-#define __FUNCT__ "TaoSolverSetUp_LMVM"
-static PetscErrorCode TaoSolverSetUp_LMVM(TaoSolver tao)
+#define __FUNCT__ "TaoSetUp_LMVM"
+static PetscErrorCode TaoSetUp_LMVM(TaoSolver tao)
 {
   TAO_LMVM *lmP = (TAO_LMVM *)tao->data;
   PetscInt n,N;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  /* Existence of tao->solution checked in TaoSolverSetUp() */
+  /* Existence of tao->solution checked in TaoSetUp() */
   if (!tao->gradient) {ierr = VecDuplicate(tao->solution,&tao->gradient); CHKERRQ(ierr);  }
   if (!tao->stepdirection) {ierr = VecDuplicate(tao->solution,&tao->stepdirection); CHKERRQ(ierr);  }
   if (!lmP->D) {ierr = VecDuplicate(tao->solution,&lmP->D); CHKERRQ(ierr);  }
@@ -217,8 +217,8 @@ static PetscErrorCode TaoSolverSetUp_LMVM(TaoSolver tao)
 
 /* ---------------------------------------------------------- */
 #undef __FUNCT__  
-#define __FUNCT__ "TaoSolverDestroy_LMVM"
-static PetscErrorCode TaoSolverDestroy_LMVM(TaoSolver tao)
+#define __FUNCT__ "TaoDestroy_LMVM"
+static PetscErrorCode TaoDestroy_LMVM(TaoSolver tao)
 {
 
   TAO_LMVM *lmP = (TAO_LMVM *)tao->data;
@@ -239,8 +239,8 @@ static PetscErrorCode TaoSolverDestroy_LMVM(TaoSolver tao)
 
 /*------------------------------------------------------------*/
 #undef __FUNCT__  
-#define __FUNCT__ "TaoSolverSetFromOptions_LMVM"
-static PetscErrorCode TaoSolverSetFromOptions_LMVM(TaoSolver tao)
+#define __FUNCT__ "TaoSetFromOptions_LMVM"
+static PetscErrorCode TaoSetFromOptions_LMVM(TaoSolver tao)
 {
 
   PetscErrorCode ierr;
@@ -256,8 +256,8 @@ static PetscErrorCode TaoSolverSetFromOptions_LMVM(TaoSolver tao)
 
 /*------------------------------------------------------------*/
 #undef __FUNCT__  
-#define __FUNCT__ "TaoSolverView_LMVM"
-static PetscErrorCode TaoSolverView_LMVM(TaoSolver tao, PetscViewer viewer)
+#define __FUNCT__ "TaoView_LMVM"
+static PetscErrorCode TaoView_LMVM(TaoSolver tao, PetscViewer viewer)
 {
 
     TAO_LMVM *lm = (TAO_LMVM *)tao->data;
@@ -284,8 +284,8 @@ static PetscErrorCode TaoSolverView_LMVM(TaoSolver tao, PetscViewer viewer)
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "TaoSolverCreate_LMVM"
-PetscErrorCode TaoSolverCreate_LMVM(TaoSolver tao)
+#define __FUNCT__ "TaoCreate_LMVM"
+PetscErrorCode TaoCreate_LMVM(TaoSolver tao)
 {
     
   TAO_LMVM *lmP;
@@ -293,11 +293,11 @@ PetscErrorCode TaoSolverCreate_LMVM(TaoSolver tao)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  tao->ops->setup = TaoSolverSetUp_LMVM;
-  tao->ops->solve = TaoSolverSolve_LMVM;
-  tao->ops->view = TaoSolverView_LMVM;
-  tao->ops->setfromoptions = TaoSolverSetFromOptions_LMVM;
-  tao->ops->destroy = TaoSolverDestroy_LMVM;
+  tao->ops->setup = TaoSetUp_LMVM;
+  tao->ops->solve = TaoSolve_LMVM;
+  tao->ops->view = TaoView_LMVM;
+  tao->ops->setfromoptions = TaoSetFromOptions_LMVM;
+  tao->ops->destroy = TaoDestroy_LMVM;
 
   ierr = PetscNewLog(tao,TAO_LMVM, &lmP); CHKERRQ(ierr);
   lmP->D = 0;

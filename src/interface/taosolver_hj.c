@@ -1,9 +1,9 @@
 #include "include/private/taosolver_impl.h"
 
 #undef __FUNCT__ 
-#define __FUNCT__ "TaoSolverSetHessianRoutine"
+#define __FUNCT__ "TaoSetHessianRoutine"
 /*@C
-   TaoSolverSetHessianRoutine - Sets the function to compute the Hessian as well as the location to store the matrix.
+   TaoSetHessianRoutine - Sets the function to compute the Hessian as well as the location to store the matrix.
 
    Collective on TaoSolver
 
@@ -64,7 +64,7 @@ $      Hpre does not have the same nonzero structure.
    Level: beginner
 
 */
-PetscErrorCode TaoSolverSetHessianRoutine(TaoSolver tao, Mat H, Mat Hpre, PetscErrorCode (*func)(TaoSolver, Vec, Mat*, Mat *, MatStructure *, void*), void *ctx)
+PetscErrorCode TaoSetHessianRoutine(TaoSolver tao, Mat H, Mat Hpre, PetscErrorCode (*func)(TaoSolver, Vec, Mat*, Mat *, MatStructure *, void*), void *ctx)
 {
     PetscErrorCode ierr;
     PetscFunctionBegin;
@@ -99,7 +99,7 @@ PetscErrorCode TaoSolverSetHessianRoutine(TaoSolver tao, Mat H, Mat Hpre, PetscE
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TaoSolverComputeHessian"
+#define __FUNCT__ "TaoComputeHessian"
 /*@C
    TaoComputeHessian - Computes the Hessian matrix that has been
    set with TaoSetHessian().
@@ -127,10 +127,10 @@ PetscErrorCode TaoSolverSetHessianRoutine(TaoSolver tao, Mat H, Mat Hpre, PetscE
 
 .keywords: TAO_SOLVER, compute, Hessian, matrix
 
-.seealso:  TaoSolverComputeObjective(), TaoSolverComputeObjectiveAndGradient(), TaoSolverSetHessian()
+.seealso:  TaoComputeObjective(), TaoComputeObjectiveAndGradient(), TaoSetHessian()
 
 @*/
-PetscErrorCode TaoSolverComputeHessian(TaoSolver tao, Vec X, Mat *H, Mat *Hpre, MatStructure *flg)
+PetscErrorCode TaoComputeHessian(TaoSolver tao, Vec X, Mat *H, Mat *Hpre, MatStructure *flg)
 {
     PetscErrorCode ierr;
     PetscFunctionBegin;
@@ -140,7 +140,7 @@ PetscErrorCode TaoSolverComputeHessian(TaoSolver tao, Vec X, Mat *H, Mat *Hpre, 
     PetscCheckSameComm(tao,1,X,2);
     
     if (!tao->ops->computehessian) {
-	SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TaoSolverSetHessian() first");
+	SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TaoSetHessian() first");
     }
     *flg = DIFFERENT_NONZERO_PATTERN;
     ++tao->nhess;
@@ -156,10 +156,10 @@ PetscErrorCode TaoSolverComputeHessian(TaoSolver tao, Vec X, Mat *H, Mat *Hpre, 
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TaoSolverComputeJacobian"
+#define __FUNCT__ "TaoComputeJacobian"
 /*@C
-   TaoSolverComputeJacobian - Computes the Jacobian matrix that has been
-   set with TaoSolverSetJacobianRoutine().
+   TaoComputeJacobian - Computes the Jacobian matrix that has been
+   set with TaoSetJacobianRoutine().
 
    Collective on TAO_SOLVER and Mat
 
@@ -184,10 +184,10 @@ PetscErrorCode TaoSolverComputeHessian(TaoSolver tao, Vec X, Mat *H, Mat *Hpre, 
 
 .keywords: TAO_SOLVER, compute, Jacobian, matrix
 
-.seealso:  TaoSolverComputeObjective(), TaoSolverComputeObjectiveAndGradient(), TaoSolverSetJacobian()
+.seealso:  TaoComputeObjective(), TaoComputeObjectiveAndGradient(), TaoSetJacobian()
 
 @*/
-PetscErrorCode TaoSolverComputeJacobian(TaoSolver tao, Vec X, Mat *J, Mat *Jpre, MatStructure *flg)
+PetscErrorCode TaoComputeJacobian(TaoSolver tao, Vec X, Mat *J, Mat *Jpre, MatStructure *flg)
 {
     PetscErrorCode ierr;
     PetscFunctionBegin;
@@ -197,7 +197,7 @@ PetscErrorCode TaoSolverComputeJacobian(TaoSolver tao, Vec X, Mat *J, Mat *Jpre,
     PetscCheckSameComm(tao,1,X,2);
     
     if (!tao->ops->computejacobian) {
-	SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TaoSolverSetJacobian() first");
+	SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TaoSetJacobian() first");
     }
     *flg = DIFFERENT_NONZERO_PATTERN;
     ++tao->njac;
@@ -213,10 +213,10 @@ PetscErrorCode TaoSolverComputeJacobian(TaoSolver tao, Vec X, Mat *J, Mat *Jpre,
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TaoSolverComputeJacobianState"
+#define __FUNCT__ "TaoComputeJacobianState"
 /*@C
-   TaoSolverComputeJacobianState - Computes the Jacobian matrix that has been
-   set with TaoSolverSetJacobianStateRoutine().
+   TaoComputeJacobianState - Computes the Jacobian matrix that has been
+   set with TaoSetJacobianStateRoutine().
 
    Collective on TAO_SOLVER and Mat
 
@@ -233,7 +233,7 @@ PetscErrorCode TaoSolverComputeJacobian(TaoSolver tao, Vec X, Mat *J, Mat *Jpre,
    Most users should not need to explicitly call this routine, as it
    is used internally within the minimization solvers. 
 
-   TaoSolverComputeJacobianState() is typically used within minimization
+   TaoComputeJacobianState() is typically used within minimization
    implementations, so most users would not generally call this routine
    themselves.
 
@@ -241,10 +241,10 @@ PetscErrorCode TaoSolverComputeJacobian(TaoSolver tao, Vec X, Mat *J, Mat *Jpre,
 
 .keywords: TAO_SOLVER, compute, Jacobian, matrix
 
-.seealso:  TaoSolverComputeObjective(), TaoSolverComputeObjectiveAndGradient(), TaoSolverSetJacobianStateRoutine(), TaoSolverComputeJacobianDesign(), TaoSolverSetStateDesignIS()
+.seealso:  TaoComputeObjective(), TaoComputeObjectiveAndGradient(), TaoSetJacobianStateRoutine(), TaoComputeJacobianDesign(), TaoSetStateDesignIS()
 
 @*/
-PetscErrorCode TaoSolverComputeJacobianState(TaoSolver tao, Vec X, Mat *J, Mat *Jpre, Mat *Jinv, MatStructure *flg)
+PetscErrorCode TaoComputeJacobianState(TaoSolver tao, Vec X, Mat *J, Mat *Jpre, Mat *Jinv, MatStructure *flg)
 {
     PetscErrorCode ierr;
     PetscFunctionBegin;
@@ -254,7 +254,7 @@ PetscErrorCode TaoSolverComputeJacobianState(TaoSolver tao, Vec X, Mat *J, Mat *
     PetscCheckSameComm(tao,1,X,2);
     
     if (!tao->ops->computejacobianstate) {
-	SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TaoSolverSetJacobianState() first");
+	SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TaoSetJacobianState() first");
     }
     *flg = DIFFERENT_NONZERO_PATTERN;
     ++tao->njac_state;
@@ -270,10 +270,10 @@ PetscErrorCode TaoSolverComputeJacobianState(TaoSolver tao, Vec X, Mat *J, Mat *
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TaoSolverComputeJacobianDesign"
+#define __FUNCT__ "TaoComputeJacobianDesign"
 /*@C
-   TaoSolverComputeJacobianDesign - Computes the Jacobian matrix that has been
-   set with TaoSolverSetJacobianDesignRoutine().
+   TaoComputeJacobianDesign - Computes the Jacobian matrix that has been
+   set with TaoSetJacobianDesignRoutine().
 
    Collective on TAO_SOLVER and Mat
 
@@ -288,7 +288,7 @@ PetscErrorCode TaoSolverComputeJacobianState(TaoSolver tao, Vec X, Mat *J, Mat *
    Most users should not need to explicitly call this routine, as it
    is used internally within the minimization solvers. 
 
-   TaoSolverComputeJacobianDesign() is typically used within minimization
+   TaoComputeJacobianDesign() is typically used within minimization
    implementations, so most users would not generally call this routine
    themselves.
 
@@ -296,10 +296,10 @@ PetscErrorCode TaoSolverComputeJacobianState(TaoSolver tao, Vec X, Mat *J, Mat *
 
 .keywords: TAO_SOLVER, compute, Jacobian, matrix
 
-.seealso:  TaoSolverComputeObjective(), TaoSolverComputeObjectiveAndGradient(), TaoSolverSetJacobianDesignRoutine(), TaoSolverComputeJacobianDesign(), TaoSolverSetDesignDesignIS()
+.seealso:  TaoComputeObjective(), TaoComputeObjectiveAndGradient(), TaoSetJacobianDesignRoutine(), TaoComputeJacobianDesign(), TaoSetDesignDesignIS()
 
 @*/
-PetscErrorCode TaoSolverComputeJacobianDesign(TaoSolver tao, Vec X, Mat *J)
+PetscErrorCode TaoComputeJacobianDesign(TaoSolver tao, Vec X, Mat *J)
 {
     PetscErrorCode ierr;
     PetscFunctionBegin;
@@ -308,7 +308,7 @@ PetscErrorCode TaoSolverComputeJacobianDesign(TaoSolver tao, Vec X, Mat *J)
     PetscCheckSameComm(tao,1,X,2);
     
     if (!tao->ops->computejacobiandesign) {
-	SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TaoSolverSetJacobianDesign() first");
+	SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"Must call TaoSetJacobianDesign() first");
     }
     ++tao->njac_design;
     ierr = PetscLogEventBegin(TaoSolver_JacobianEval,tao,X,*J,PETSC_NULL); CHKERRQ(ierr);
@@ -325,9 +325,9 @@ PetscErrorCode TaoSolverComputeJacobianDesign(TaoSolver tao, Vec X, Mat *J)
 
 
 #undef __FUNCT__ 
-#define __FUNCT__ "TaoSolverSetJacobianRoutine"
+#define __FUNCT__ "TaoSetJacobianRoutine"
 /*@C
-   TaoSolverSetJacobianRoutine - Sets the function to compute the Jacobian as well as the location to store the matrix.
+   TaoSetJacobianRoutine - Sets the function to compute the Jacobian as well as the location to store the matrix.
 
    Collective on TaoSolver
 
@@ -388,7 +388,7 @@ $      Jpre does not have the same nonzero structure.
    Level: beginner
 
 */
-PetscErrorCode TaoSolverSetJacobianRoutine(TaoSolver tao, Mat J, Mat Jpre, PetscErrorCode (*func)(TaoSolver, Vec, Mat*, Mat *, MatStructure *, void*), void *ctx)
+PetscErrorCode TaoSetJacobianRoutine(TaoSolver tao, Mat J, Mat Jpre, PetscErrorCode (*func)(TaoSolver, Vec, Mat*, Mat *, MatStructure *, void*), void *ctx)
 {
     PetscErrorCode ierr;
     PetscFunctionBegin;
@@ -424,9 +424,9 @@ PetscErrorCode TaoSolverSetJacobianRoutine(TaoSolver tao, Mat J, Mat Jpre, Petsc
 
 
 #undef __FUNCT__ 
-#define __FUNCT__ "TaoSolverSetJacobianStateRoutine"
+#define __FUNCT__ "TaoSetJacobianStateRoutine"
 /*@C
-   TaoSolverSetJacobianStateRoutine - Sets the function to compute the Jacobian 
+   TaoSetJacobianStateRoutine - Sets the function to compute the Jacobian 
    (and its inverse) of the constraint function with respect to the state variables.
    Used only for pde-constrained optimization.
 
@@ -492,9 +492,9 @@ $      Jpre does not have the same nonzero structure.
    structure or not, use the flag DIFFERENT_NONZERO_PATTERN.
 
    Level: beginner
-.seealse: TaoSolverComputeJacobianState(), TaoSolverSetJacobianDesignRoutine(), TaoSolverSetStateDesignIS()
+.seealse: TaoComputeJacobianState(), TaoSetJacobianDesignRoutine(), TaoSetStateDesignIS()
 */
-PetscErrorCode TaoSolverSetJacobianStateRoutine(TaoSolver tao, Mat J, Mat Jpre, Mat Jinv, PetscErrorCode (*func)(TaoSolver, Vec, Mat*, Mat *, Mat *, MatStructure *, void*), void *ctx)
+PetscErrorCode TaoSetJacobianStateRoutine(TaoSolver tao, Mat J, Mat Jpre, Mat Jinv, PetscErrorCode (*func)(TaoSolver, Vec, Mat*, Mat *, Mat *, MatStructure *, void*), void *ctx)
 {
     PetscErrorCode ierr;
     PetscFunctionBegin;
@@ -538,9 +538,9 @@ PetscErrorCode TaoSolverSetJacobianStateRoutine(TaoSolver tao, Mat J, Mat Jpre, 
 }
 
 #undef __FUNCT__ 
-#define __FUNCT__ "TaoSolverSetJacobianDesignRoutine"
+#define __FUNCT__ "TaoSetJacobianDesignRoutine"
 /*@C
-   TaoSolverSetJacobianDesignRoutine - Sets the function to compute the Jacobian of 
+   TaoSetJacobianDesignRoutine - Sets the function to compute the Jacobian of 
    the constraint function with respect to the design variables.  Used only for 
    pde-constrained optimization.
 
@@ -571,9 +571,9 @@ $    jac (TaoSolver tao,Vec x,Mat *J,void *ctx);
    throughout the global iterations.
 
    Level: beginner
-.seealso: TaoSolverComputeJacobianDesign(), TaoSolverSetJacobianStateRoutine(), TaoSolverSetStateDesignIS()
+.seealso: TaoComputeJacobianDesign(), TaoSetJacobianStateRoutine(), TaoSetStateDesignIS()
 */
-PetscErrorCode TaoSolverSetJacobianDesignRoutine(TaoSolver tao, Mat J, PetscErrorCode (*func)(TaoSolver, Vec, Mat*, void*), void *ctx)
+PetscErrorCode TaoSetJacobianDesignRoutine(TaoSolver tao, Mat J, PetscErrorCode (*func)(TaoSolver, Vec, Mat*, void*), void *ctx)
 {
     PetscErrorCode ierr;
     PetscFunctionBegin;
@@ -599,9 +599,9 @@ PetscErrorCode TaoSolverSetJacobianDesignRoutine(TaoSolver tao, Mat J, PetscErro
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TaoSolverSetStateDesignIS"
+#define __FUNCT__ "TaoSetStateDesignIS"
 /*@
-   TaoSolverSetStateDesignIS - Indicate to the TaoSolver which variables in the 
+   TaoSetStateDesignIS - Indicate to the TaoSolver which variables in the 
    solution vector are state variables and which are design.  Only applies to
    pde-constrained optimization.
 
@@ -614,9 +614,9 @@ PetscErrorCode TaoSolverSetJacobianDesignRoutine(TaoSolver tao, Mat J, PetscErro
   
    Level: intermediate
 
-.seealso: TaoSolverSetJacobianStateRoutine(), TaoSolverSetJacobianDesignRoutine()
+.seealso: TaoSetJacobianStateRoutine(), TaoSetJacobianDesignRoutine()
 */
-PetscErrorCode TaoSolverSetStateDesignIS(TaoSolver tao, IS s_is, IS d_is)
+PetscErrorCode TaoSetStateDesignIS(TaoSolver tao, IS s_is, IS d_is)
 {
   PetscErrorCode ierr;
   if (tao->state_is) {

@@ -1,9 +1,9 @@
 #include "include/private/taosolver_impl.h" /*I "taosolver.h" I*/
 
 #undef __FUNCT__
-#define __FUNCT__ "TaoSolverSetVariableBounds"
+#define __FUNCT__ "TaoSetVariableBounds"
 /*@
-  TaoSolverSetVariableBounds - Sets the upper and lower bounds
+  TaoSetVariableBounds - Sets the upper and lower bounds
 
   Collective on TaoSolver
 
@@ -14,10 +14,10 @@
 
   Level: beginner
 
-.seealso: TaoSolverSetObjectiveRoutine(), TaoSolverSetHessianRoutine() TaoSolverSetObjectiveAndGradientRoutine()
+.seealso: TaoSetObjectiveRoutine(), TaoSetHessianRoutine() TaoSetObjectiveAndGradientRoutine()
 @*/
 
-PetscErrorCode TaoSolverSetVariableBounds(TaoSolver tao, Vec XL, Vec XU)
+PetscErrorCode TaoSetVariableBounds(TaoSolver tao, Vec XL, Vec XU)
 {
     PetscErrorCode ierr;
     PetscFunctionBegin;
@@ -43,9 +43,9 @@ PetscErrorCode TaoSolverSetVariableBounds(TaoSolver tao, Vec XL, Vec XU)
     PetscFunctionReturn(0);
 }
 #undef __FUNCT__
-#define __FUNCT__ "TaoSolverSetVariableBoundsRoutine"
+#define __FUNCT__ "TaoSetVariableBoundsRoutine"
 /*@C
-  TaoSolverSetVariableBoundsRoutine - Sets a function to be used to compute variable bounds
+  TaoSetVariableBoundsRoutine - Sets a function to be used to compute variable bounds
 
   Collective on TaoSolver
 
@@ -64,13 +64,13 @@ $      func (TaoSolver tao, Vec xl, Vec xu);
 
   Level: beginner
 
-.seealso: TaoSolverSetObjectiveRoutine(), TaoSolverSetHessianRoutine() TaoSolverSetObjectiveAndGradientRoutine(), TaoSolverSetVariableBounds()
+.seealso: TaoSetObjectiveRoutine(), TaoSetHessianRoutine() TaoSetObjectiveAndGradientRoutine(), TaoSetVariableBounds()
 
-Note: The func passed in to TaoSolverSetVariableBoundsRoutine() takes 
-precedence over any values set in TaoSolverSetVariableBounds().
+Note: The func passed in to TaoSetVariableBoundsRoutine() takes 
+precedence over any values set in TaoSetVariableBounds().
 
 @*/
-PetscErrorCode TaoSolverSetVariableBoundsRoutine(TaoSolver tao, PetscErrorCode (*func)(TaoSolver, Vec, Vec, void*), void *ctx)
+PetscErrorCode TaoSetVariableBoundsRoutine(TaoSolver tao, PetscErrorCode (*func)(TaoSolver, Vec, Vec, void*), void *ctx)
 {
     PetscFunctionBegin;
     PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
@@ -80,8 +80,8 @@ PetscErrorCode TaoSolverSetVariableBoundsRoutine(TaoSolver tao, PetscErrorCode (
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TaoSolverGetVariableBounds"
-PetscErrorCode TaoSolverGetVariableBounds(TaoSolver tao, Vec *XL, Vec *XU)
+#define __FUNCT__ "TaoGetVariableBounds"
+PetscErrorCode TaoGetVariableBounds(TaoSolver tao, Vec *XL, Vec *XU)
 {
     PetscFunctionBegin;
     PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
@@ -95,10 +95,10 @@ PetscErrorCode TaoSolverGetVariableBounds(TaoSolver tao, Vec *XL, Vec *XU)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TaoSolverComputeVariableBounds"
+#define __FUNCT__ "TaoComputeVariableBounds"
 /*@C
-   TaoSolverComputeVariableBounds - Compute the variable bounds using the
-   routine set by TaoSolverSetVariableBoundsRoutine(). 
+   TaoComputeVariableBounds - Compute the variable bounds using the
+   routine set by TaoSetVariableBoundsRoutine(). 
 
    Collective on TaoSolver
 
@@ -107,10 +107,10 @@ PetscErrorCode TaoSolverGetVariableBounds(TaoSolver tao, Vec *XL, Vec *XU)
 
    Level: developer
 
-.seealso: TaoSolverSetVariableBoundsRoutine(), TaoSolverSetVariableBounds()
+.seealso: TaoSetVariableBoundsRoutine(), TaoSetVariableBounds()
 @*/
 
-PetscErrorCode TaoSolverComputeVariableBounds(TaoSolver tao)
+PetscErrorCode TaoComputeVariableBounds(TaoSolver tao)
 {
     PetscErrorCode ierr;
 
@@ -121,7 +121,7 @@ PetscErrorCode TaoSolverComputeVariableBounds(TaoSolver tao)
     }
     if (tao->XL == PETSC_NULL || tao->XU == PETSC_NULL) {
 	if (tao->solution == PETSC_NULL) {
-	    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"TaoSolverSetInitialVector must be called before TaoSolverComputeVariableBounds");
+	    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"TaoSetInitialVector must be called before TaoComputeVariableBounds");
 	}
 	ierr = VecDuplicate(tao->solution, &tao->XL); CHKERRQ(ierr);
 	ierr = VecSet(tao->XL, TAO_NINFINITY); CHKERRQ(ierr);
@@ -138,10 +138,10 @@ PetscErrorCode TaoSolverComputeVariableBounds(TaoSolver tao)
 
 
 #undef __FUNCT__
-#define __FUNCT__ "TaoSolverComputeConstraints"
+#define __FUNCT__ "TaoComputeConstraints"
 /*@C
-   TaoSolverComputeConstraints - Compute the variable bounds using the
-   routine set by TaoSolverSetConstraintsRoutine(). 
+   TaoComputeConstraints - Compute the variable bounds using the
+   routine set by TaoSetConstraintsRoutine(). 
 
    Collective on TaoSolver
 
@@ -150,10 +150,10 @@ PetscErrorCode TaoSolverComputeVariableBounds(TaoSolver tao)
 
    Level: developer
 
-.seealso: TaoSolverSetConstraintsRoutine(), TaoSolverComputeJacobian()
+.seealso: TaoSetConstraintsRoutine(), TaoComputeJacobian()
 @*/
 
-PetscErrorCode TaoSolverComputeConstraints(TaoSolver tao, Vec X, Vec C)
+PetscErrorCode TaoComputeConstraints(TaoSolver tao, Vec X, Vec C)
 {
     PetscErrorCode ierr;
 
@@ -165,10 +165,10 @@ PetscErrorCode TaoSolverComputeConstraints(TaoSolver tao, Vec X, Vec C)
     PetscCheckSameComm(tao,1,C,3);
 
     if (tao->ops->computeconstraints == PETSC_NULL) {
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"TaoSolverSetConstraintsRoutine() has not been called");
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"TaoSetConstraintsRoutine() has not been called");
     }
     if (tao->solution == PETSC_NULL) {
-      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"TaoSolverSetInitialVector must be called before TaoSolverComputeConstraints");
+      SETERRQ(PETSC_COMM_SELF,PETSC_ERR_ARG_WRONGSTATE,"TaoSetInitialVector must be called before TaoComputeConstraints");
     }
     ierr = PetscLogEventBegin(TaoSolver_ConstraintsEval,tao,X,C,PETSC_NULL); CHKERRQ(ierr);
     PetscStackPush("TaoSolver constraints evaluation routine");
@@ -184,9 +184,9 @@ PetscErrorCode TaoSolverComputeConstraints(TaoSolver tao, Vec X, Vec C)
 
 
 #undef __FUNCT__
-#define __FUNCT__ "TaoSolverSetConstraintsRoutine"
+#define __FUNCT__ "TaoSetConstraintsRoutine"
 /*@C
-  TaoSolverSetConstraintsRoutine - Sets a function to be used to compute constraints.  TAO only handles constraints under certain conditions, see manual for details
+  TaoSetConstraintsRoutine - Sets a function to be used to compute constraints.  TAO only handles constraints under certain conditions, see manual for details
 
   Collective on TaoSolver
 
@@ -206,10 +206,10 @@ $      func (TaoSolver tao, Vec x, Vec c);
 
   Level: beginner
 
-.seealso: TaoSolverSetObjectiveRoutine(), TaoSolverSetHessianRoutine() TaoSolverSetObjectiveAndGradientRoutine(), TaoSolverSetVariableBounds()
+.seealso: TaoSetObjectiveRoutine(), TaoSetHessianRoutine() TaoSetObjectiveAndGradientRoutine(), TaoSetVariableBounds()
 
 @*/
-PetscErrorCode TaoSolverSetConstraintsRoutine(TaoSolver tao, Vec c, PetscErrorCode (*func)(TaoSolver, Vec, Vec, void*), void *ctx)
+PetscErrorCode TaoSetConstraintsRoutine(TaoSolver tao, Vec c, PetscErrorCode (*func)(TaoSolver, Vec, Vec, void*), void *ctx)
 {
     PetscFunctionBegin;
     PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
@@ -220,9 +220,9 @@ PetscErrorCode TaoSolverSetConstraintsRoutine(TaoSolver tao, Vec c, PetscErrorCo
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TaoSolverComputeDualVariables"
+#define __FUNCT__ "TaoComputeDualVariables"
 /*@
-  TaoSolverComputeDualVariables - Computes the dual vectors corresponding to the bounds
+  TaoComputeDualVariables - Computes the dual vectors corresponding to the bounds
   of the variables
 
   Collective on TaoSolver
@@ -242,9 +242,9 @@ PetscErrorCode TaoSolverSetConstraintsRoutine(TaoSolver tao, Vec c, PetscErrorCo
 
   Level: advanced
 
-.seealso: TaoSolverComputeObjective(), TaoSolverSetVariableBounds()
+.seealso: TaoComputeObjective(), TaoSetVariableBounds()
 @*/
-PetscErrorCode TaoSolverComputeDualVariables(TaoSolver tao, Vec DL, Vec DU) 
+PetscErrorCode TaoComputeDualVariables(TaoSolver tao, Vec DL, Vec DU) 
 {
     PetscErrorCode ierr;
     PetscFunctionBegin;

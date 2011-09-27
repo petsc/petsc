@@ -98,8 +98,8 @@ int main( int argc, char **argv )
   
 
   /* Create TAO solver and set desired solution method.*/
-  ierr = TaoSolverCreate(PETSC_COMM_WORLD,&tao); CHKERRQ(ierr);
-  ierr = TaoSolverSetType(tao,"tao_cg"); CHKERRQ(ierr);
+  ierr = TaoCreate(PETSC_COMM_WORLD,&tao); CHKERRQ(ierr);
+  ierr = TaoSetType(tao,"tao_cg"); CHKERRQ(ierr);
 
   /*
      Extract global vector from DA for the vector of variables --  PETSC routine
@@ -109,13 +109,13 @@ int main( int argc, char **argv )
   ierr = DMCreateGlobalVector(user.dm,&x); CHKERRQ(ierr);
   ierr = MSA_BoundaryConditions(&user); CHKERRQ(ierr);         
   ierr = MSA_InitialPoint(&user,x); CHKERRQ(ierr);
-  ierr = TaoSolverSetInitialVector(tao,x); CHKERRQ(ierr);
+  ierr = TaoSetInitialVector(tao,x); CHKERRQ(ierr);
 
   /* 
      Initialize the Application context for use in function evaluations  --  application specific, see below.
      Set routines for function and gradient evaluation 
   */
-  ierr = TaoSolverSetObjectiveAndGradientRoutine(tao,FormFunctionGradient,(void *)&user); CHKERRQ(ierr);
+  ierr = TaoSetObjectiveAndGradientRoutine(tao,FormFunctionGradient,(void *)&user); CHKERRQ(ierr);
 
   /* 
      Given the command line arguments, calculate the hessian with either the user-
@@ -146,13 +146,13 @@ int main( int argc, char **argv )
       ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))FormGradient,(void*)&user); CHKERRQ(ierr);
       ierr = MatFDColoringSetFromOptions(matfdcoloring); CHKERRQ(ierr);
       
-      ierr = TaoSolverSetHessianRoutine(tao,user.H,user.H,TaoSolverDefaultComputeHessianColor,(void *)matfdcoloring); CHKERRQ(ierr);
+      ierr = TaoSetHessianRoutine(tao,user.H,user.H,TaoDefaultComputeHessianColor,(void *)matfdcoloring); CHKERRQ(ierr);
 
   } else if (fddefault){
-      ierr = TaoSolverSetHessianRoutine(tao,user.H,user.H,TaoSolverDefaultComputeHessian,(void *)PETSC_NULL); CHKERRQ(ierr);
+      ierr = TaoSetHessianRoutine(tao,user.H,user.H,TaoDefaultComputeHessian,(void *)PETSC_NULL); CHKERRQ(ierr);
 
   } else { 
-      ierr = TaoSolverSetHessianRoutine(tao,user.H,user.H,FormHessian,(void *)&user); CHKERRQ(ierr);
+      ierr = TaoSetHessianRoutine(tao,user.H,user.H,FormHessian,(void *)&user); CHKERRQ(ierr);
   }
 
 
@@ -162,11 +162,11 @@ int main( int argc, char **argv )
   */
   ierr = PetscOptionsHasName(PETSC_NULL,"-my_monitor",&viewmat); CHKERRQ(ierr);
   if (viewmat){
-    ierr = TaoSolverSetMonitor(tao,My_Monitor,PETSC_NULL,PETSC_NULL); CHKERRQ(ierr);
+    ierr = TaoSetMonitor(tao,My_Monitor,PETSC_NULL,PETSC_NULL); CHKERRQ(ierr);
   }
 
   /* Check for any tao command line options */
-  ierr = TaoSolverSetFromOptions(tao); CHKERRQ(ierr);
+  ierr = TaoSetFromOptions(tao); CHKERRQ(ierr);
 
   /* Limit the number of iterations in the KSP linear solver */
   //ierr = TaoAppGetKSP(minsurfapp,&ksp); CHKERRQ(ierr);
@@ -176,19 +176,19 @@ int main( int argc, char **argv )
 //  }
 
   /* SOLVE THE APPLICATION */
-  ierr = TaoSolverSolve(tao); CHKERRQ(ierr);
+  ierr = TaoSolve(tao); CHKERRQ(ierr);
 
-  ierr = TaoSolverView(tao,PETSC_VIEWER_STDOUT_WORLD);
+  ierr = TaoView(tao,PETSC_VIEWER_STDOUT_WORLD);
 
   /* Get information on termination */
-  ierr = TaoSolverGetTerminationReason(tao,&reason); CHKERRQ(ierr);
+  ierr = TaoGetTerminationReason(tao,&reason); CHKERRQ(ierr);
   if (reason <= 0 ){
       PetscPrintf(MPI_COMM_WORLD,"Try a different TAO method \n");//, adjust some parameters, or check the function evaluation routines\n");
   }
 
 
   /* Free TAO data structures */
-  ierr = TaoSolverDestroy(&tao); CHKERRQ(ierr);
+  ierr = TaoDestroy(&tao); CHKERRQ(ierr);
 
   /* Free PETSc data structures */
   ierr = VecDestroy(&x); CHKERRQ(ierr);
@@ -845,7 +845,7 @@ PetscErrorCode My_Monitor(TaoSolver tao, void *ctx){
   PetscErrorCode ierr;
   Vec X;
   PetscFunctionBegin;
-  ierr = TaoSolverGetSolutionVector(tao,&X); CHKERRQ(ierr);
+  ierr = TaoGetSolutionVector(tao,&X); CHKERRQ(ierr);
   ierr = VecView(X,PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

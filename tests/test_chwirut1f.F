@@ -87,39 +87,39 @@
 !  The TAO code begins here 
 
 !  Create TAO solver
-      call TaoSolverCreate(PETSC_COMM_SELF,tao,ierr)
+      call TaoCreate(PETSC_COMM_SELF,tao,ierr)
       CHKERRQ(ierr)
-      call TaoSolverSetType(tao,'tao_pounders',ierr)
+      call TaoSetType(tao,'tao_pounders',ierr)
       CHKERRQ(ierr)
 !  Set routines for function, gradient, and hessian evaluation 
 
 !     TaoAppSetObjectiveAndGradientRoutine is shortened to 31 chars to comply with some compilers
-      call TaoSolverSetSeparableObjectiveRoutine(tao,f,                  &
+      call TaoSetSeparableObjectiveRoutine(tao,f,                       &
      &      FormFunction,PETSC_NULL_OBJECT,ierr)
       CHKERRQ(ierr)
 
 !  Optional: Set initial guess
       call InitializeData()
       call FormStartingPoint(x)
-      call TaoSolverSetInitialVector(tao, x, ierr)
+      call TaoSetInitialVector(tao, x, ierr)
       CHKERRQ(ierr)
 
 
 !  Check for TAO command line options
-      call TaoSolverSetFromOptions(tao,ierr)
+      call TaoSetFromOptions(tao,ierr)
       CHKERRQ(ierr)
-      call TaoSolverSetHistory(tao,hist,resid,PETSC_NULL_INTEGER,       &
+      call TaoSetHistory(tao,hist,resid,PETSC_NULL_INTEGER,       &
      &     100,PETSC_TRUE,ierr)
       CHKERRQ(ierr)
 !  SOLVE THE APPLICATION
-      call TaoSolverSolve(tao,ierr)
+      call TaoSolve(tao,ierr)
       CHKERRQ(ierr)
-      call TaoSolverGetHistory(tao,nhist,ierr)
+      call TaoGetHistory(tao,nhist,ierr)
       CHKERRQ(ierr)
       do i=1,nhist
          print *,hist(i),resid(i)
       enddo
-      call TaoSolverGetTerminationReason(tao, reason, ierr)
+      call TaoGetTerminationReason(tao, reason, ierr)
       if (reason .le. 0) then
          print *,'Try a different TAO method, adjust some parameters,'
          print *,'or check the function evaluation routines.'
@@ -127,11 +127,11 @@
 !  TaoView() prints ierr about the TAO solver; the option
 !      -tao_view 
 !  can alternatively be used to activate this at runtime.
-      call TaoSolverView(tao,PETSC_VIEWER_STDOUT_SELF,ierr)
+      call TaoView(tao,PETSC_VIEWER_STDOUT_SELF,ierr)
       
 
 !  Free TAO data structures
-      call TaoSolverDestroy(tao,ierr)
+      call TaoDestroy(tao,ierr)
 
 !  Free PETSc data structures 
       call VecDestroy(x,ierr)

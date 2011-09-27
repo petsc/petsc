@@ -23,8 +23,8 @@ static PetscErrorCode GPCGObjectiveAndGradient(TaoLineSearch,Vec,PetscReal*,Vec,
 
 /*------------------------------------------------------------*/
 #undef __FUNCT__  
-#define __FUNCT__ "TaoSolverDestroy_GPCG"
-static PetscErrorCode TaoSolverDestroy_GPCG(TaoSolver tao)
+#define __FUNCT__ "TaoDestroy_GPCG"
+static PetscErrorCode TaoDestroy_GPCG(TaoSolver tao)
 {
   TAO_GPCG *gpcg = (TAO_GPCG *)tao->data;
   PetscErrorCode      ierr;
@@ -47,8 +47,8 @@ static PetscErrorCode TaoSolverDestroy_GPCG(TaoSolver tao)
 
 /*------------------------------------------------------------*/
 #undef __FUNCT__  
-#define __FUNCT__ "TaoSolverSetFromOptions_GPCG"
-static PetscErrorCode TaoSolverSetFromOptions_GPCG(TaoSolver tao)
+#define __FUNCT__ "TaoSetFromOptions_GPCG"
+static PetscErrorCode TaoSetFromOptions_GPCG(TaoSolver tao)
 {
   TAO_GPCG *gpcg = (TAO_GPCG *)tao->data;
   PetscErrorCode      ierr;
@@ -78,8 +78,8 @@ static PetscErrorCode TaoSolverSetFromOptions_GPCG(TaoSolver tao)
 
 /*------------------------------------------------------------*/
 #undef __FUNCT__  
-#define __FUNCT__ "TaoSolverView_GPCG"
-static PetscErrorCode TaoSolverView_GPCG(TaoSolver tao, PetscViewer viewer)
+#define __FUNCT__ "TaoView_GPCG"
+static PetscErrorCode TaoView_GPCG(TaoSolver tao, PetscViewer viewer)
 {
   TAO_GPCG *gpcg = (TAO_GPCG *)tao->data;
   PetscBool           isascii;
@@ -131,8 +131,8 @@ static PetscErrorCode GPCGObjectiveAndGradient(TaoLineSearch ls, Vec X, PetscRea
 
 /* ---------------------------------------------------------- */
 #undef __FUNCT__  
-#define __FUNCT__ "TaoSolverSetup_GPCG"
-static PetscErrorCode TaoSolverSetup_GPCG(TaoSolver tao) {
+#define __FUNCT__ "TaoSetup_GPCG"
+static PetscErrorCode TaoSetup_GPCG(TaoSolver tao) {
 
   PetscErrorCode      ierr;
   TAO_GPCG *gpcg = (TAO_GPCG *)tao->data;
@@ -171,8 +171,8 @@ static PetscErrorCode TaoSolverSetup_GPCG(TaoSolver tao) {
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "TaoSolverSolve_GPCG"
-static PetscErrorCode TaoSolverSolve_GPCG(TaoSolver tao)
+#define __FUNCT__ "TaoSolve_GPCG"
+static PetscErrorCode TaoSolve_GPCG(TaoSolver tao)
 {
   TAO_GPCG *gpcg = (TAO_GPCG *)tao->data;
   PetscErrorCode ierr;
@@ -190,8 +190,8 @@ static PetscErrorCode TaoSolverSolve_GPCG(TaoSolver tao)
   ierr = VecMedian(tao->XL,tao->solution,tao->XU,tao->solution); CHKERRQ(ierr);
   
   /* Using f = .5*x'Hx + x'b + c and g=Hx + b,  compute b,c */
-  ierr = TaoSolverComputeHessian(tao,tao->solution,&tao->hessian, &tao->hessian_pre,&structure); CHKERRQ(ierr);
-  ierr = TaoSolverComputeObjectiveAndGradient(tao,tao->solution,&f,tao->gradient);  CHKERRQ(ierr);
+  ierr = TaoComputeHessian(tao,tao->solution,&tao->hessian, &tao->hessian_pre,&structure); CHKERRQ(ierr);
+  ierr = TaoComputeObjectiveAndGradient(tao,tao->solution,&f,tao->gradient);  CHKERRQ(ierr);
   ierr = VecCopy(tao->gradient, gpcg->B); CHKERRQ(ierr);
   ierr = MatMult(tao->hessian,tao->solution,gpcg->Work); CHKERRQ(ierr);
   ierr = VecDot(gpcg->Work, tao->solution, &xtHx); CHKERRQ(ierr);
@@ -211,7 +211,7 @@ static PetscErrorCode TaoSolverSolve_GPCG(TaoSolver tao)
   gpcg->f = f;
 
     /* Check Stopping Condition      */
-  ierr=TaoSolverMonitor(tao,iter,f,gpcg->gnorm,0.0,tao->step,&reason); CHKERRQ(ierr);
+  ierr=TaoMonitor(tao,iter,f,gpcg->gnorm,0.0,tao->step,&reason); CHKERRQ(ierr);
 
   while (reason == TAO_CONTINUE_ITERATING){
 
@@ -316,7 +316,7 @@ static PetscErrorCode TaoSolverSolve_GPCG(TaoSolver tao)
     }
 
     iter++;
-    ierr = TaoSolverMonitor(tao,iter,f,gnorm,0.0,gpcg->step,&reason); CHKERRQ(ierr);
+    ierr = TaoMonitor(tao,iter,f,gnorm,0.0,gpcg->step,&reason); CHKERRQ(ierr);
     gpcg->f=f;gpcg->gnorm=gnorm; gpcg->actred=actred;
     if (reason!=TAO_CONTINUE_ITERATING) break;
 
@@ -381,8 +381,8 @@ static PetscErrorCode GPCGGradProjections(TaoSolver tao)
 
 
 #undef __FUNCT__  
-#define __FUNCT__ "TaoSolverComputeDual_GPCG" 
-static PetscErrorCode TaoSolverComputeDual_GPCG(TaoSolver tao, Vec DXL, Vec DXU)
+#define __FUNCT__ "TaoComputeDual_GPCG" 
+static PetscErrorCode TaoComputeDual_GPCG(TaoSolver tao, Vec DXL, Vec DXU)
 {
 
   TAO_GPCG *gpcg = (TAO_GPCG *)tao->data;
@@ -407,19 +407,19 @@ static PetscErrorCode TaoSolverComputeDual_GPCG(TaoSolver tao, Vec DXL, Vec DXU)
 /*------------------------------------------------------------*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "TaoSolverCreate_GPCG"
-PetscErrorCode TaoSolverCreate_GPCG(TaoSolver tao)
+#define __FUNCT__ "TaoCreate_GPCG"
+PetscErrorCode TaoCreate_GPCG(TaoSolver tao)
 {
   TAO_GPCG *gpcg;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
-  tao->ops->setup = TaoSolverSetup_GPCG;
-  tao->ops->solve = TaoSolverSolve_GPCG;
-  tao->ops->view  = TaoSolverView_GPCG;
-  tao->ops->setfromoptions = TaoSolverSetFromOptions_GPCG;
-  tao->ops->destroy = TaoSolverDestroy_GPCG;
-  tao->ops->computedual = TaoSolverComputeDual_GPCG;
+  tao->ops->setup = TaoSetup_GPCG;
+  tao->ops->solve = TaoSolve_GPCG;
+  tao->ops->view  = TaoView_GPCG;
+  tao->ops->setfromoptions = TaoSetFromOptions_GPCG;
+  tao->ops->destroy = TaoDestroy_GPCG;
+  tao->ops->computedual = TaoComputeDual_GPCG;
 
   ierr = PetscNewLog(tao, TAO_GPCG, &gpcg); CHKERRQ(ierr);
   tao->data = (void*)gpcg;

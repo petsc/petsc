@@ -135,37 +135,37 @@ int main( int argc, char **argv )
      Create the optimization solver, Petsc application 
      Suitable methods: "tao_gpcg","tao_bqpip","tao_tron","tao_blmvm" 
   */
-  ierr = TaoSolverCreate(PETSC_COMM_WORLD,&tao); CHKERRQ(ierr);
-  ierr = TaoSolverSetType(tao,"tao_blmvm"); CHKERRQ(ierr);
+  ierr = TaoCreate(PETSC_COMM_WORLD,&tao); CHKERRQ(ierr);
+  ierr = TaoSetType(tao,"tao_blmvm"); CHKERRQ(ierr);
 
 
   /* Set the initial vector */
   ierr = VecSet(x, zero); CHKERRQ(ierr);
-  ierr = TaoSolverSetInitialVector(tao,x); CHKERRQ(ierr);
+  ierr = TaoSetInitialVector(tao,x); CHKERRQ(ierr);
 
   /* Set the user function, gradient, hessian evaluation routines and data structures */
-  ierr = TaoSolverSetObjectiveAndGradientRoutine(tao,FormFunctionGradient,(void*) &user);
+  ierr = TaoSetObjectiveAndGradientRoutine(tao,FormFunctionGradient,(void*) &user);
   CHKERRQ(ierr);
   
-  ierr = TaoSolverSetHessianRoutine(tao,user.A,user.A,FormHessian,(void*)&user); CHKERRQ(ierr);
+  ierr = TaoSetHessianRoutine(tao,user.A,user.A,FormHessian,(void*)&user); CHKERRQ(ierr);
 
   /* Set a routine that defines the bounds */
   ierr = VecDuplicate(x,&xl); CHKERRQ(ierr);
   ierr = VecDuplicate(x,&xu); CHKERRQ(ierr);
   ierr = VecSet(xl, zero); CHKERRQ(ierr);
   ierr = VecSet(xu, d1000); CHKERRQ(ierr);
-  ierr = TaoSolverSetVariableBounds(tao,xl,xu); CHKERRQ(ierr);
+  ierr = TaoSetVariableBounds(tao,xl,xu); CHKERRQ(ierr);
 
   /* Check for any tao command line options */
-  ierr = TaoSolverSetFromOptions(tao); CHKERRQ(ierr);
+  ierr = TaoSetFromOptions(tao); CHKERRQ(ierr);
 
-  ierr = TaoSolverGetLineSearch(tao,&ls); CHKERRQ(ierr);
+  ierr = TaoGetLineSearch(tao,&ls); CHKERRQ(ierr);
   ierr = TaoLineSearchSetObjectiveAndGTSRoutine(ls,FormFunctionGTS,&user); CHKERRQ(ierr);
   ierr = TaoLineSearchSetGradientRoutine(ls,FormGradient,&user); CHKERRQ(ierr);
   /* Solve the bound constrained problem */
-  ierr = TaoSolverSolve(tao); CHKERRQ(ierr);
+  ierr = TaoSolve(tao); CHKERRQ(ierr);
 
-  ierr = TaoSolverGetTerminationReason(tao,&reason); CHKERRQ(ierr);
+  ierr = TaoGetTerminationReason(tao,&reason); CHKERRQ(ierr);
   if (reason <= 0)
     PetscPrintf(PETSC_COMM_WORLD,"Try a different TAO method, adjust some parameters, or check the function evaluation routines\n");
 
@@ -178,7 +178,7 @@ int main( int argc, char **argv )
   ierr = VecDestroy(&user.B); CHKERRQ(ierr); 
   ierr = VecDestroy(&user.G); CHKERRQ(ierr);
   /* Free TAO data structures */
-  ierr = TaoSolverDestroy(&tao); CHKERRQ(ierr);
+  ierr = TaoDestroy(&tao); CHKERRQ(ierr);
 
   ierr = DMDestroy(&user.dm); CHKERRQ(ierr);
 

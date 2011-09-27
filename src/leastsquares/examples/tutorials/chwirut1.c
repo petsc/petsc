@@ -32,15 +32,15 @@ static char help[]="Finds the nonlinear least-squares solution to the model \n\
 /*T
    Concepts: TAO - Solving a system of nonlinear equations, nonlinear ;east squares
    Routines: TaoInitialize(); TaoFinalize(); 
-   Routines: TaoSolverCreate();
-   Routines: TaoSolverSetType(); 
-   Routines: TaoSolverSetSeparableObjectiveRoutine();
-   Routines: TaoSolverSetJacobianRoutine();
-   Routines: TaoSolverSetInitialVector();
-   Routines: TaoSolverSetFromOptions();
-   Routines: TaoSolverSetHistory(); TaoSolverGetHistory();
-   Routines: TaoSolverSolve();
-   Routines: TaoSolverView(); TaoSolverDestroy(); 
+   Routines: TaoCreate();
+   Routines: TaoSetType(); 
+   Routines: TaoSetSeparableObjectiveRoutine();
+   Routines: TaoSetJacobianRoutine();
+   Routines: TaoSetInitialVector();
+   Routines: TaoSetFromOptions();
+   Routines: TaoSetHistory(); TaoGetHistory();
+   Routines: TaoSolve();
+   Routines: TaoView(); TaoDestroy(); 
    Processors: 1
 T*/
 
@@ -101,35 +101,35 @@ int main(int argc,char **argv)
   /* TAO code begins here */
 
   /* Create TAO solver and set desired solution method */
-  ierr = TaoSolverCreate(PETSC_COMM_SELF,&tao);CHKERRQ(ierr);
-  ierr = TaoSolverSetType(tao,"tao_pounders"); CHKERRQ(ierr);
+  ierr = TaoCreate(PETSC_COMM_SELF,&tao);CHKERRQ(ierr);
+  ierr = TaoSetType(tao,"tao_pounders"); CHKERRQ(ierr);
 
  /* Set the function and Jacobian routines. */
   ierr = InitializeData(&user); CHKERRQ(ierr);
   ierr = FormStartingPoint(x); CHKERRQ(ierr);
-  ierr = TaoSolverSetInitialVector(tao,x); CHKERRQ(ierr);
-  ierr = TaoSolverSetSeparableObjectiveRoutine(tao,f,EvaluateFunction,(void*)&user); CHKERRQ(ierr);
-  ierr = TaoSolverSetJacobianRoutine(tao, J, J, EvaluateJacobian, (void*)&user);  CHKERRQ(ierr);
+  ierr = TaoSetInitialVector(tao,x); CHKERRQ(ierr);
+  ierr = TaoSetSeparableObjectiveRoutine(tao,f,EvaluateFunction,(void*)&user); CHKERRQ(ierr);
+  ierr = TaoSetJacobianRoutine(tao, J, J, EvaluateJacobian, (void*)&user);  CHKERRQ(ierr);
 
 
   /* Check for any TAO command line arguments */
-  ierr = TaoSolverSetFromOptions(tao); CHKERRQ(ierr);
+  ierr = TaoSetFromOptions(tao); CHKERRQ(ierr);
 
-  ierr = TaoSolverSetHistory(tao,hist,resid,0,100,PETSC_TRUE); CHKERRQ(ierr);
+  ierr = TaoSetHistory(tao,hist,resid,0,100,PETSC_TRUE); CHKERRQ(ierr);
   /* Perform the Solve */
-  ierr = TaoSolverSolve(tao); CHKERRQ(ierr);
-  ierr = TaoSolverGetHistory(tao,0,0,0,&nhist); CHKERRQ(ierr);
+  ierr = TaoSolve(tao); CHKERRQ(ierr);
+  ierr = TaoGetHistory(tao,0,0,0,&nhist); CHKERRQ(ierr);
   for (i=0;i<nhist;i++) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"%G\t%G\n",hist[i],resid[i]); 
   }
-  ierr = TaoSolverView(tao,PETSC_VIEWER_STDOUT_SELF); CHKERRQ(ierr);
+  ierr = TaoView(tao,PETSC_VIEWER_STDOUT_SELF); CHKERRQ(ierr);
 
   /* Use VecView to print x to screen  */
   //ierr = VecView(x,PETSC_VIEWER_STDOUT_SELF); CHKERRQ(ierr);
 
 
   /* Free TAO data structures */
-  ierr = TaoSolverDestroy(&tao); CHKERRQ(ierr);
+  ierr = TaoDestroy(&tao); CHKERRQ(ierr);
 
    /* Free PETSc data structures */
   ierr = VecDestroy(&x); CHKERRQ(ierr);

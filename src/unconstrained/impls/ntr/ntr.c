@@ -79,8 +79,8 @@ static PetscErrorCode MatLMVMSolveShell(PC pc, Vec xin, Vec xout);
 //        routine regardless of what the user may have previously specified.
 
 #undef __FUNCT__  
-#define __FUNCT__ "TaoSolverSolve_NTR"
-static PetscErrorCode TaoSolverSolve_NTR(TaoSolver tao)
+#define __FUNCT__ "TaoSolve_NTR"
+static PetscErrorCode TaoSolve_NTR(TaoSolver tao)
 {
   TAO_NTR *tr = (TAO_NTR *)tao->data;
 
@@ -128,14 +128,14 @@ static PetscErrorCode TaoSolverSolve_NTR(TaoSolver tao)
   }
 
   /* Check convergence criteria */
-  ierr = TaoSolverComputeObjectiveAndGradient(tao, tao->solution, &f, tao->gradient); CHKERRQ(ierr);
+  ierr = TaoComputeObjectiveAndGradient(tao, tao->solution, &f, tao->gradient); CHKERRQ(ierr);
   ierr = VecNorm(tao->gradient,NORM_2,&gnorm); CHKERRQ(ierr);
   if (PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(gnorm)) {
     SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf or NaN");
   }
   needH = 1;
 
-  ierr = TaoSolverMonitor(tao, iter, f, gnorm, 0.0, 1.0, &reason); CHKERRQ(ierr);
+  ierr = TaoMonitor(tao, iter, f, gnorm, 0.0, 1.0, &reason); CHKERRQ(ierr);
   if (reason != TAO_CONTINUE_ITERATING) {
     PetscFunctionReturn(0);
   }
@@ -219,7 +219,7 @@ static PetscErrorCode TaoSolverSolve_NTR(TaoSolver tao)
       sigma = 0.0;
 
       if (needH) {
-	  ierr = TaoSolverComputeHessian(tao, tao->solution, &tao->hessian, &tao->hessian_pre, &matflag); CHKERRQ(ierr);
+	  ierr = TaoComputeHessian(tao, tao->solution, &tao->hessian, &tao->hessian_pre, &matflag); CHKERRQ(ierr);
         needH = 0;
       }
 
@@ -227,7 +227,7 @@ static PetscErrorCode TaoSolverSolve_NTR(TaoSolver tao)
 
         ierr = VecCopy(tao->solution, tr->W); CHKERRQ(ierr);
 	ierr = VecAXPY(tr->W, -tao->trust/gnorm, tao->gradient); CHKERRQ(ierr);
-	ierr = TaoSolverComputeObjective(tao, tr->W, &ftrial); CHKERRQ(ierr);
+	ierr = TaoComputeObjective(tao, tr->W, &ftrial); CHKERRQ(ierr);
 
         if (PetscIsInfOrNanReal(ftrial)) {
 	  tau = tr->gamma1_i;
@@ -314,7 +314,7 @@ static PetscErrorCode TaoSolverSolve_NTR(TaoSolver tao)
       if (fmin < f) {
         f = fmin;
 	ierr = VecAXPY(tao->solution, sigma, tao->gradient); CHKERRQ(ierr);
-	ierr = TaoSolverComputeGradient(tao,tao->solution, tao->gradient); CHKERRQ(ierr);
+	ierr = TaoComputeGradient(tao,tao->solution, tao->gradient); CHKERRQ(ierr);
 	
 	ierr = VecNorm(tao->gradient, NORM_2, &gnorm); CHKERRQ(ierr);
 
@@ -323,7 +323,7 @@ static PetscErrorCode TaoSolverSolve_NTR(TaoSolver tao)
         }
         needH = 1;
 
-        ierr = TaoSolverMonitor(tao, iter, f, gnorm, 0.0, 1.0, &reason); CHKERRQ(ierr);
+        ierr = TaoMonitor(tao, iter, f, gnorm, 0.0, 1.0, &reason); CHKERRQ(ierr);
         if (reason != TAO_CONTINUE_ITERATING) {
           PetscFunctionReturn(0);
         }
@@ -361,7 +361,7 @@ static PetscErrorCode TaoSolverSolve_NTR(TaoSolver tao)
 
     /* Compute the Hessian */
     if (needH) {
-      ierr = TaoSolverComputeHessian(tao, tao->solution, &tao->hessian, &tao->hessian_pre, &matflag); CHKERRQ(ierr);
+      ierr = TaoComputeHessian(tao, tao->solution, &tao->hessian, &tao->hessian_pre, &matflag); CHKERRQ(ierr);
       needH = 0;
     }
 
@@ -473,7 +473,7 @@ static PetscErrorCode TaoSolverSolve_NTR(TaoSolver tao)
 	  /* Compute trial step and function value */
 	  ierr = VecCopy(tao->solution,tr->W); CHKERRQ(ierr);
 	  ierr = VecAXPY(tr->W, 1.0, tao->stepdirection); CHKERRQ(ierr);
-	  ierr = TaoSolverComputeObjective(tao, tr->W, &ftrial); CHKERRQ(ierr);
+	  ierr = TaoComputeObjective(tao, tr->W, &ftrial); CHKERRQ(ierr);
 
 	  if (PetscIsInfOrNanReal(ftrial)) {
 	    tao->trust = tr->alpha1 * PetscMin(tao->trust, norm_d);
@@ -536,7 +536,7 @@ static PetscErrorCode TaoSolverSolve_NTR(TaoSolver tao)
 	else {
 	  ierr = VecCopy(tao->solution, tr->W); CHKERRQ(ierr);
 	  ierr = VecAXPY(tr->W, 1.0, tao->stepdirection); CHKERRQ(ierr);
-	  ierr = TaoSolverComputeObjective(tao, tr->W, &ftrial); CHKERRQ(ierr);
+	  ierr = TaoComputeObjective(tao, tr->W, &ftrial); CHKERRQ(ierr);
 	  if (PetscIsInfOrNanReal(ftrial)) {
 	    tao->trust = tr->gamma1 * PetscMin(tao->trust, norm_d);
 	  }
@@ -616,7 +616,7 @@ static PetscErrorCode TaoSolverSolve_NTR(TaoSolver tao)
 
       /* The step computed was not good and the radius was decreased.
 	 Monitor the radius to terminate. */
-      ierr = TaoSolverMonitor(tao, iter, f, gnorm, 0.0, tao->trust, &reason); CHKERRQ(ierr);
+      ierr = TaoMonitor(tao, iter, f, gnorm, 0.0, tao->trust, &reason); CHKERRQ(ierr);
     }
 
     /* The radius may have been increased; modify if it is too large */
@@ -625,13 +625,13 @@ static PetscErrorCode TaoSolverSolve_NTR(TaoSolver tao)
     if (reason == TAO_CONTINUE_ITERATING) {
       ierr = VecCopy(tr->W, tao->solution); CHKERRQ(ierr);
       f = ftrial;
-      ierr = TaoSolverComputeGradient(tao, tao->solution, tao->gradient);
+      ierr = TaoComputeGradient(tao, tao->solution, tao->gradient);
       ierr = VecNorm(tao->gradient, NORM_2, &gnorm); CHKERRQ(ierr);
       if (PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(gnorm)) {
 	SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf or NaN");
       }
       needH = 1;
-      ierr = TaoSolverMonitor(tao, iter, f, gnorm, 0.0, tao->trust, &reason); CHKERRQ(ierr);
+      ierr = TaoMonitor(tao, iter, f, gnorm, 0.0, tao->trust, &reason); CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -639,8 +639,8 @@ static PetscErrorCode TaoSolverSolve_NTR(TaoSolver tao)
 
 /*------------------------------------------------------------*/
 #undef __FUNCT__  
-#define __FUNCT__ "TaoSolverSetUp_NTR"
-static PetscErrorCode TaoSolverSetUp_NTR(TaoSolver tao)
+#define __FUNCT__ "TaoSetUp_NTR"
+static PetscErrorCode TaoSetUp_NTR(TaoSolver tao)
 {
   TAO_NTR *tr = (TAO_NTR *)tao->data;
   PetscErrorCode ierr;
@@ -660,8 +660,8 @@ static PetscErrorCode TaoSolverSetUp_NTR(TaoSolver tao)
 
 /*------------------------------------------------------------*/
 #undef __FUNCT__  
-#define __FUNCT__ "TaoSolverDestroy_NTR"
-static PetscErrorCode TaoSolverDestroy_NTR(TaoSolver tao)
+#define __FUNCT__ "TaoDestroy_NTR"
+static PetscErrorCode TaoDestroy_NTR(TaoSolver tao)
 {
   TAO_NTR *tr = (TAO_NTR *)tao->data;
   PetscErrorCode ierr;
@@ -686,8 +686,8 @@ static PetscErrorCode TaoSolverDestroy_NTR(TaoSolver tao)
 
 /*------------------------------------------------------------*/
 #undef __FUNCT__  
-#define __FUNCT__ "TaoSolverSetFromOptions_NTR"
-static PetscErrorCode TaoSolverSetFromOptions_NTR(TaoSolver tao)
+#define __FUNCT__ "TaoSetFromOptions_NTR"
+static PetscErrorCode TaoSetFromOptions_NTR(TaoSolver tao)
 {
   TAO_NTR *tr = (TAO_NTR *)tao->data;
   PetscErrorCode ierr;
@@ -732,8 +732,8 @@ static PetscErrorCode TaoSolverSetFromOptions_NTR(TaoSolver tao)
 
 /*------------------------------------------------------------*/
 #undef __FUNCT__  
-#define __FUNCT__ "TaoSolverView_NTR"
-static PetscErrorCode TaoSolverView_NTR(TaoSolver tao, PetscViewer viewer)
+#define __FUNCT__ "TaoView_NTR"
+static PetscErrorCode TaoView_NTR(TaoSolver tao, PetscViewer viewer)
 {
   TAO_NTR *tr = (TAO_NTR *)tao->data;
   PetscErrorCode ierr;
@@ -758,8 +758,8 @@ static PetscErrorCode TaoSolverView_NTR(TaoSolver tao, PetscViewer viewer)
 /*------------------------------------------------------------*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "TaoSolverCreate_NTR"
-PetscErrorCode TaoSolverCreate_NTR(TaoSolver tao)
+#define __FUNCT__ "TaoCreate_NTR"
+PetscErrorCode TaoCreate_NTR(TaoSolver tao)
 {
   TAO_NTR *tr;
   PetscErrorCode ierr;
@@ -768,11 +768,11 @@ PetscErrorCode TaoSolverCreate_NTR(TaoSolver tao)
 
   ierr = PetscNewLog(tao, TAO_NTR, &tr); CHKERRQ(ierr);
 
-  tao->ops->setup = TaoSolverSetUp_NTR;
-  tao->ops->solve = TaoSolverSolve_NTR;
-  tao->ops->view = TaoSolverView_NTR;
-  tao->ops->setfromoptions = TaoSolverSetFromOptions_NTR;
-  tao->ops->destroy = TaoSolverDestroy_NTR;
+  tao->ops->setup = TaoSetUp_NTR;
+  tao->ops->solve = TaoSolve_NTR;
+  tao->ops->view = TaoView_NTR;
+  tao->ops->setfromoptions = TaoSetFromOptions_NTR;
+  tao->ops->destroy = TaoDestroy_NTR;
   
   tao->max_its = 50;
   tao->fatol = 1e-10;

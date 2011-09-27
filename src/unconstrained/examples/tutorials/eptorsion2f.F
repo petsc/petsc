@@ -11,13 +11,13 @@
 !/*T
 !   Concepts: TAO - Solving an unconstrained minimization problem
 !   Routines: TaoInitialize(); TaoFinalize(); 
-!   Routines: TaoSolverCreate(); TaoSolverSetType();
-!   Routines: TaoSolverSetInitialVector(); 
-!   Routines: TaoSolverSetObjectiveAndGradientRoutine();
-!   Routines: TaoSolverSetHessianRoutine(); TaoSolverSetFromOptions();
-!   Routines: TaoSolverSetMonitor(); TaoSolverSetConvergenceTest()
-!   Routines: TaoSolverSolve(); TaoSolverGetSolutionStatus()
-!   Routines: TaoSolverGetTerminationReason(); TaoSolverDestroy();
+!   Routines: TaoCreate(); TaoSetType();
+!   Routines: TaoSetInitialVector(); 
+!   Routines: TaoSetObjectiveAndGradientRoutine();
+!   Routines: TaoSetHessianRoutine(); TaoSetFromOptions();
+!   Routines: TaoSetMonitor(); TaoSetConvergenceTest()
+!   Routines: TaoSolve(); TaoGetSolutionStatus()
+!   Routines: TaoGetTerminationReason(); TaoDestroy();
 
 !   Processors: n
 !T*/
@@ -101,43 +101,43 @@
 !     The TAO code begins here
 
 !     Create TAO solver
-      call TaoSolverCreate(PETSC_COMM_WORLD,tao,ierr)
-      call TaoSolverSetType(tao,"tao_cg",ierr)
+      call TaoCreate(PETSC_COMM_WORLD,tao,ierr)
+      call TaoSetType(tao,"tao_cg",ierr)
 
 !     Set routines for function and gradient evaluation
 
-      call TaoSolverSetObjectiveAndGradientRoutine(tao,                  &
+      call TaoSetObjectiveAndGradientRoutine(tao,                       &
      &     FormFunctionGradient,PETSC_NULL_OBJECT,ierr)
-      call TaoSolverSetHessianRoutine(tao,H,H,ComputeHessian,            &
+      call TaoSetHessianRoutine(tao,H,H,ComputeHessian,                 &
      &     PETSC_NULL_OBJECT,ierr)
 
 !     Set initial guess
       call FormInitialGuess(x,ierr)
-      call TaoSolverSetInitialVector(tao,x,ierr)
+      call TaoSetInitialVector(tao,x,ierr)
 
-      call PetscOptionsHasName(PETSC_NULL_CHARACTER,"-testmonitor",flg,
+      call PetscOptionsHasName(PETSC_NULL_CHARACTER,"-testmonitor",flg, &
      &     ierr)
       if (flg) then
-         call TaoSolverSetMonitor(tao,Monitor,dummy,PETSC_NULL_FUNCTION,
+         call TaoSetMonitor(tao,Monitor,dummy,PETSC_NULL_FUNCTION,      &
      &        ierr)
       endif
 
-      call PetscOptionsHasName(PETSC_NULL_CHARACTER,"-testconvergence",
+      call PetscOptionsHasName(PETSC_NULL_CHARACTER,"-testconvergence", &
      &     flg, ierr)
       if (flg) then
-         call TaoSolverSetConvergenceTest(tao,ConvergenceTest,dummy,      &
+         call TaoSetConvergenceTest(tao,ConvergenceTest,dummy,          &
      &        ierr)
       endif
 
 !     Check for any TAO command line options
-      call TaoSolverSetFromOptions(tao,ierr)
+      call TaoSetFromOptions(tao,ierr)
 
 
 !     SOLVE THE APPLICATION
-      call TaoSolverSolve(tao,ierr)
+      call TaoSolve(tao,ierr)
 
 !     Get information on termination
-      call TaoSolverGetTerminationReason(tao,reason,ierr)
+      call TaoGetTerminationReason(tao,reason,ierr)
       if (reason .lt. 0) then
           call PetscPrintF(PETSC_COMM_WORLD,                              &
      &        'TAO did not terminate successfully\n',ierr)
@@ -145,7 +145,7 @@
 
       
 !     Free TAO data structures
-      call TaoSolverDestroy(tao,ierr)
+      call TaoDestroy(tao,ierr)
 
   
 !     Free PETSc data structures 
@@ -514,10 +514,10 @@
       PetscReal f,gnorm,cnorm,xdiff
       TaoSolverTerminationReason reason
       
-      call TaoSolverGetSolutionStatus(tao,its,f,gnorm,cnorm,xdiff,
+      call TaoGetSolutionStatus(tao,its,f,gnorm,cnorm,xdiff,             &
      &     reason,ierr)
       if (mod(its,5) .ne. 0) then
-         call PetscPrintf(PETSC_COMM_WORLD,"iteration multiple of 5\n",
+         call PetscPrintf(PETSC_COMM_WORLD,"iteration multiple of 5\n",  &
      &        ierr)
       endif
       
@@ -537,10 +537,10 @@
       PetscReal f,gnorm,cnorm,xdiff
       TaoSolverTerminationReason reason
       
-      call TaoSolverGetSolutionStatus(tao,its,f,gnorm,cnorm,xdiff,        &
+      call TaoGetSolutionStatus(tao,its,f,gnorm,cnorm,xdiff,            &
      &     reason,ierr)
       if (its .eq. 7) then
-         call TaoSolverSetTerminationReason(tao,TAO_DIVERGED_MAXITS,      &
+         call TaoSetTerminationReason(tao,TAO_DIVERGED_MAXITS,          &
      &        ierr)
       endif
       

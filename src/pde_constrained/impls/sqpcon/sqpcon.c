@@ -5,8 +5,8 @@
 //static PetscErrorCode SQPCONObjectiveAndGradient(TaoLineSearch,Vec,PetscReal*,Vec,void*);
 
 #undef __FUNCT__
-#define __FUNCT__ "TaoSolverDestroy_SQPCON"
-static PetscErrorCode TaoSolverDestroy_SQPCON(TaoSolver tao)
+#define __FUNCT__ "TaoDestroy_SQPCON"
+static PetscErrorCode TaoDestroy_SQPCON(TaoSolver tao)
 {
   TAO_SQPCON *sqpconP = (TAO_SQPCON*)tao->data;
   PetscErrorCode ierr;
@@ -44,8 +44,8 @@ static PetscErrorCode TaoSolverDestroy_SQPCON(TaoSolver tao)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TaoSolverSetFromOptions_SQPCON"
-static PetscErrorCode TaoSolverSetFromOptions_SQPCON(TaoSolver tao)
+#define __FUNCT__ "TaoSetFromOptions_SQPCON"
+static PetscErrorCode TaoSetFromOptions_SQPCON(TaoSolver tao)
 {
   /*TAO_SQPCON *sqpconP = (TAO_SQPCON*)tao->data;*/
   PetscErrorCode ierr;
@@ -55,8 +55,8 @@ static PetscErrorCode TaoSolverSetFromOptions_SQPCON(TaoSolver tao)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TaoSolverView_SQPCON"
-static PetscErrorCode TaoSolverView_SQPCON(TaoSolver tao, PetscViewer viewer)
+#define __FUNCT__ "TaoView_SQPCON"
+static PetscErrorCode TaoView_SQPCON(TaoSolver tao, PetscViewer viewer)
 {
   /*
   TAO_SQPCON *sqpconP = (TAO_SQPCON*)tao->data;
@@ -68,8 +68,8 @@ static PetscErrorCode TaoSolverView_SQPCON(TaoSolver tao, PetscViewer viewer)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TaoSolverSetup_SQPCON"
-static PetscErrorCode TaoSolverSetup_SQPCON(TaoSolver tao)
+#define __FUNCT__ "TaoSetup_SQPCON"
+static PetscErrorCode TaoSetup_SQPCON(TaoSolver tao)
 {
   TAO_SQPCON *sqpconP = (TAO_SQPCON*)tao->data;
   PetscInt lo, hi, nlocal;
@@ -77,7 +77,7 @@ static PetscErrorCode TaoSolverSetup_SQPCON(TaoSolver tao)
   PetscFunctionBegin;
   /* Check for state IS */
   if (!tao->state_is) {
-    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONGSTATE,"SQPCON Solver requires an initial state index set -- use TaoSolverSetStateIS()");
+    SETERRQ(PETSC_COMM_WORLD,PETSC_ERR_ARG_WRONGSTATE,"SQPCON Solver requires an initial state index set -- use TaoSetStateIS()");
   }
   ierr = VecDuplicate(tao->solution, &tao->gradient); CHKERRQ(ierr);
   ierr = VecDuplicate(tao->solution, &tao->stepdirection); CHKERRQ(ierr);
@@ -142,8 +142,8 @@ static PetscErrorCode TaoSolverSetup_SQPCON(TaoSolver tao)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TaoSolverSolve_SQPCON"
-static PetscErrorCode TaoSolverSolve_SQPCON(TaoSolver tao)
+#define __FUNCT__ "TaoSolve_SQPCON"
+static PetscErrorCode TaoSolve_SQPCON(TaoSolver tao)
 {
   TAO_SQPCON *sqpconP = (TAO_SQPCON*)tao->data;
   PetscInt iter=0;
@@ -165,10 +165,10 @@ static PetscErrorCode TaoSolverSolve_SQPCON(TaoSolver tao)
   ierr = VecScatterEnd(sqpconP->design_scatter, tao->solution, sqpconP->V, INSERT_VALUES, SCATTER_FORWARD); CHKERRQ(ierr);
   
   /* Evaluate Function, Gradient, Constraints, and Jacobian */
-  ierr = TaoSolverComputeObjectiveAndGradient(tao,tao->solution,&f,tao->gradient); CHKERRQ(ierr);
-  ierr = TaoSolverComputeConstraints(tao,tao->solution, tao->constraints); CHKERRQ(ierr);
-  ierr = TaoSolverComputeJacobianState(tao,tao->solution, &tao->jacobian_state, &tao->jacobian_state_pre, &tao->jacobian_state_inv, &sqpconP->statematflag); CHKERRQ(ierr);
-  ierr = TaoSolverComputeJacobianDesign(tao,tao->solution, &tao->jacobian_design, &tao->jacobian_design_pre, &sqpconP->statematflag); CHKERRQ(ierr);
+  ierr = TaoComputeObjectiveAndGradient(tao,tao->solution,&f,tao->gradient); CHKERRQ(ierr);
+  ierr = TaoComputeConstraints(tao,tao->solution, tao->constraints); CHKERRQ(ierr);
+  ierr = TaoComputeJacobianState(tao,tao->solution, &tao->jacobian_state, &tao->jacobian_state_pre, &tao->jacobian_state_inv, &sqpconP->statematflag); CHKERRQ(ierr);
+  ierr = TaoComputeJacobianDesign(tao,tao->solution, &tao->jacobian_design, &tao->jacobian_design_pre, &sqpconP->statematflag); CHKERRQ(ierr);
   
   /* Scatter gradient to GU,GV */
   ierr = VecScatterBegin(sqpconP->state_scatter, tao->gradient, sqpconP->GU, INSERT_VALUES, SCATTER_FORWARD); CHKERRQ(ierr);
@@ -183,7 +183,7 @@ static PetscErrorCode TaoSolverSolve_SQPCON(TaoSolver tao)
   ierr = VecNorm(tao->constraints, NORM_2, &cnorm); CHKERRQ(ierr);
   
   /* Monitor convergence */
-  ierr = TaoSolverMonitor(tao, iter,f,mnorm,cnorm,step,&reason); CHKERRQ(ierr);
+  ierr = TaoMonitor(tao, iter,f,mnorm,cnorm,step,&reason); CHKERRQ(ierr);
 
   while (reason == TAO_CONTINUE_ITERATING) {
 
@@ -242,7 +242,7 @@ static PetscErrorCode TaoSolverSolve_SQPCON(TaoSolver tao)
     ierr = TaoLineSearchComputeObjectiveAndGradient(tao->linesearch,tao->solution,&fm,sqpconP->GL); CHKERRQ(ierr);
     ierr = TaoLineSearchSetInitialStepLength(tao->linesearch,1.0);
     ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &fm, sqpconP->GL, tao->stepdirection,&step, &ls_reason); CHKERRQ(ierr);
-    ierr = TaoSolverAddLineSearchCounts(tao); CHKERRQ(ierr);
+    ierr = TaoAddLineSearchCounts(tao); CHKERRQ(ierr);
     if (ls_reason < 0) {
       ierr = VecCopy(sqpconP->Xold, tao->solution);
       ierr = VecCopy(sqpconP->Gold, tao->gradient);
@@ -263,10 +263,10 @@ static PetscErrorCode TaoSolverSolve_SQPCON(TaoSolver tao)
 
     
     /* Evaluate Function, Gradient, Constraints, and Jacobian */
-    ierr = TaoSolverComputeObjectiveAndGradient(tao,tao->solution,&f,tao->gradient); CHKERRQ(ierr);
-    ierr = TaoSolverComputeConstraints(tao,tao->solution, tao->constraints); CHKERRQ(ierr);
-    ierr = TaoSolverComputeJacobianState(tao,tao->solution, &tao->jacobian_state, &tao->jacobian_state_pre, &tao->jacobian_state_inv, &sqpconP->statematflag); CHKERRQ(ierr);
-    ierr = TaoSolverComputeJacobianDesign(tao,tao->solution, &tao->jacobian_design, &tao->jacobian_design_pre, &sqpconP->designmatflag); CHKERRQ(ierr);
+    ierr = TaoComputeObjectiveAndGradient(tao,tao->solution,&f,tao->gradient); CHKERRQ(ierr);
+    ierr = TaoComputeConstraints(tao,tao->solution, tao->constraints); CHKERRQ(ierr);
+    ierr = TaoComputeJacobianState(tao,tao->solution, &tao->jacobian_state, &tao->jacobian_state_pre, &tao->jacobian_state_inv, &sqpconP->statematflag); CHKERRQ(ierr);
+    ierr = TaoComputeJacobianDesign(tao,tao->solution, &tao->jacobian_design, &tao->jacobian_design_pre, &sqpconP->designmatflag); CHKERRQ(ierr);
 
 
 
@@ -292,7 +292,7 @@ static PetscErrorCode TaoSolverSolve_SQPCON(TaoSolver tao)
   
     /* Monitor convergence */
     iter++;
-    ierr = TaoSolverMonitor(tao, iter,f,mnorm,cnorm,step,&reason); CHKERRQ(ierr);
+    ierr = TaoMonitor(tao, iter,f,mnorm,cnorm,step,&reason); CHKERRQ(ierr);
     
   }
 
@@ -301,19 +301,19 @@ static PetscErrorCode TaoSolverSolve_SQPCON(TaoSolver tao)
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
-#define __FUNCT__ "TaoSolverCreate_SQPCON"
-PetscErrorCode TaoSolverCreate_SQPCON(TaoSolver tao)
+#define __FUNCT__ "TaoCreate_SQPCON"
+PetscErrorCode TaoCreate_SQPCON(TaoSolver tao)
 {
   TAO_SQPCON *sqpconP;
   PetscErrorCode ierr;
   const char *morethuente_type = TAOLINESEARCH_MT;
   PetscFunctionBegin;
   
-  tao->ops->setup = TaoSolverSetup_SQPCON;
-  tao->ops->solve = TaoSolverSolve_SQPCON;
-  tao->ops->view = TaoSolverView_SQPCON;
-  tao->ops->setfromoptions = TaoSolverSetFromOptions_SQPCON;
-  tao->ops->destroy = TaoSolverDestroy_SQPCON;
+  tao->ops->setup = TaoSetup_SQPCON;
+  tao->ops->solve = TaoSolve_SQPCON;
+  tao->ops->view = TaoView_SQPCON;
+  tao->ops->setfromoptions = TaoSetFromOptions_SQPCON;
+  tao->ops->destroy = TaoDestroy_SQPCON;
   
 
   ierr = PetscNewLog(tao,TAO_SQPCON,&sqpconP); CHKERRQ(ierr);
@@ -331,7 +331,7 @@ PetscErrorCode TaoSolverCreate_SQPCON(TaoSolver tao)
   ierr = TaoLineSearchCreate(((PetscObject)tao)->comm, &tao->linesearch); CHKERRQ(ierr);
   ierr = TaoLineSearchSetType(tao->linesearch, morethuente_type); CHKERRQ(ierr);
 
-  ierr = TaoLineSearchUseTaoSolverRoutines(tao->linesearch,tao); CHKERRQ(ierr);
+  ierr = TaoLineSearchUseTaoRoutines(tao->linesearch,tao); CHKERRQ(ierr);
 
     //SetObjectiveAndGradient(tao->linesearch,SQPCONObjectiveAndGradient, tao); CHKERRQ(ierr);
 
@@ -357,10 +357,10 @@ static PetscErrorCode SQPCONObjectiveAndGradient(TaoLineSearch ls, Vec X, PetscR
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = TaoSolverComputeObjectiveAndGradient(tao,X,f,G); CHKERRQ(ierr);
-  ierr = TaoSolverComputeConstraints(tao,X,tao->constraints); CHKERRQ(ierr);
-  //ierr = TaoSolverComputeJacobianState(tao,X,&tao->jacobian_state,&tao->jacobian_state_pre,&sqpconP->statematflag); CHKERRQ(ierr);
-  //ierr = TaoSolverComputeJacobianDesign(tao,X,&tao->jacobian_design,&tao->jacobian_design_pre,&sqpconP->designmatflag); CHKERRQ(ierr);
+  ierr = TaoComputeObjectiveAndGradient(tao,X,f,G); CHKERRQ(ierr);
+  ierr = TaoComputeConstraints(tao,X,tao->constraints); CHKERRQ(ierr);
+  //ierr = TaoComputeJacobianState(tao,X,&tao->jacobian_state,&tao->jacobian_state_pre,&sqpconP->statematflag); CHKERRQ(ierr);
+  //ierr = TaoComputeJacobianDesign(tao,X,&tao->jacobian_design,&tao->jacobian_design_pre,&sqpconP->designmatflag); CHKERRQ(ierr);
 
   //ierr = VecDot(tao->constraints,sqpconP->LM,&lmh); CHKERRQ(ierr);
 

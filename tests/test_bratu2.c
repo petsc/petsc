@@ -145,23 +145,23 @@ int main( int argc, char **argv )
   /* The Tao code begins here */
 
   /* Create the optimization solver, Petsc application   */
-  info = TaoSolverCreate(PETSC_COMM_WORLD,&tao);CHKERRQ(info);
-  info = TaoSolverSetType(tao,"tao_pounders"); CHKERRQ(info);
+  info = TaoCreate(PETSC_COMM_WORLD,&tao);CHKERRQ(info);
+  info = TaoSetType(tao,"tao_pounders"); CHKERRQ(info);
 
   /* Set the initial vector */
   info = FormInitialGuess(&user,x); CHKERRQ(info);
-  info = TaoSolverSetInitialVector(tao,x); CHKERRQ(info);
+  info = TaoSetInitialVector(tao,x); CHKERRQ(info);
 
   /* Set the user function, constraints, jacobian evaluation routines */
-  info = TaoSolverSetSeparableObjectiveRoutine(tao,f,FormFunction,(void*)&user); CHKERRQ(info);
-  info = TaoSolverSetJacobianRoutine(tao,J,J,FormJacobian,(void*)&user); CHKERRQ(info);
+  info = TaoSetSeparableObjectiveRoutine(tao,f,FormFunction,(void*)&user); CHKERRQ(info);
+  info = TaoSetJacobianRoutine(tao,J,J,FormJacobian,(void*)&user); CHKERRQ(info);
 
 
   /* Check for any TAO command line options */ 
-  info = TaoSolverSetFromOptions(tao); CHKERRQ(info);
+  info = TaoSetFromOptions(tao); CHKERRQ(info);
 
   /* SOLVE THE LEAST-SQUARES APPLICATION */
-  info = TaoSolverSolve(tao); CHKERRQ(info);
+  info = TaoSolve(tao); CHKERRQ(info);
 
   /*
     To view TAO solver information,
@@ -169,7 +169,7 @@ int main( int argc, char **argv )
   */
 
   /* Free TAO data structures */
-  info = TaoSolverDestroy(&tao); CHKERRQ(info);  
+  info = TaoDestroy(&tao); CHKERRQ(info);  
 
   /* Free PETSc data structures */
   info = VecDestroy(&x); CHKERRQ(info);

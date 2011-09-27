@@ -26,15 +26,15 @@ The command line options are:\n\
 /*T
    Concepts: TAO - Solving a bound constrained minimization problem
    Routines: TaoInitialize(); TaoFinalize();
-   Routines: TaoSolverCreate();
-   Routines: TaoSolverSetType(); TaoSolverSetObjectiveAndGradientRoutine();
-   Routines: TaoSolverSetHessianRoutine();
-   Routines: TaoSolverSetVariableBounds();
-   Routines: TaoSolverSetMonitor(); TaoSolverSetConvergenceTest();
-   Routines: TaoSolverSetInitialVector();
-   Routines: TaoSolverSetFromOptions();
-   Routines: TaoSolverSolve();
-   Routines: TaoSolverGetTerminationReason(); TaoSolverDestroy(); 
+   Routines: TaoCreate();
+   Routines: TaoSetType(); TaoSetObjectiveAndGradientRoutine();
+   Routines: TaoSetHessianRoutine();
+   Routines: TaoSetVariableBounds();
+   Routines: TaoSetMonitor(); TaoSetConvergenceTest();
+   Routines: TaoSetInitialVector();
+   Routines: TaoSetFromOptions();
+   Routines: TaoSolve();
+   Routines: TaoGetTerminationReason(); TaoDestroy(); 
    Processors: n
 T*/
 
@@ -135,26 +135,26 @@ int main( int argc, char **argv )
      Create the optimization solver, Petsc application 
      Suitable methods: "tao_gpcg","tao_bqpip","tao_tron","tao_blmvm" 
   */
-  info = TaoSolverCreate(PETSC_COMM_WORLD,&tao); CHKERRQ(info);
-  info = TaoSolverSetType(tao,"tao_blmvm"); CHKERRQ(info);
+  info = TaoCreate(PETSC_COMM_WORLD,&tao); CHKERRQ(info);
+  info = TaoSetType(tao,"tao_blmvm"); CHKERRQ(info);
 
 
   /* Set the initial vector */
   info = VecSet(x, zero); CHKERRQ(info);
-  info = TaoSolverSetInitialVector(tao,x); CHKERRQ(info);
+  info = TaoSetInitialVector(tao,x); CHKERRQ(info);
 
   /* Set the user function, gradient, hessian evaluation routines and data structures */
-  info = TaoSolverSetObjectiveAndGradientRoutine(tao,FormFunctionGradient,(void*) &user); 
+  info = TaoSetObjectiveAndGradientRoutine(tao,FormFunctionGradient,(void*) &user); 
   CHKERRQ(info);
   
-  info = TaoSolverSetHessianRoutine(tao,user.A,user.A,FormHessian,(void*)&user); CHKERRQ(info);
+  info = TaoSetHessianRoutine(tao,user.A,user.A,FormHessian,(void*)&user); CHKERRQ(info);
 
   /* Set a routine that defines the bounds */
   info = VecDuplicate(x,&xl); CHKERRQ(info);
   info = VecDuplicate(x,&xu); CHKERRQ(info);
   info = VecSet(xl, zero); CHKERRQ(info);
   info = VecSet(xu, d1000); CHKERRQ(info);
-  info = TaoSolverSetVariableBounds(tao,xl,xu); CHKERRQ(info);
+  info = TaoSetVariableBounds(tao,xl,xu); CHKERRQ(info);
 
   info = TaoAppGetKSP(jbearingapp,&ksp); CHKERRQ(info);
   if (ksp) {                                         
@@ -163,22 +163,22 @@ int main( int argc, char **argv )
 
   info = PetscOptionsHasName(PETSC_NULL,"-testmonitor",&flg);
   if (flg) {
-    info = TaoSolverSetMonitor(tao,Monitor,&user,PETSC_NULL); CHKERRQ(info);
+    info = TaoSetMonitor(tao,Monitor,&user,PETSC_NULL); CHKERRQ(info);
   }
   info = PetscOptionsHasName(PETSC_NULL,"-testconvergence",&flg);
   if (flg) {
-    info = TaoSolverSetConvergenceTest(tao,ConvergenceTest,&user); CHKERRQ(info);
+    info = TaoSetConvergenceTest(tao,ConvergenceTest,&user); CHKERRQ(info);
   }
 
   /* Check for any tao command line options */
-  info = TaoSolverSetFromOptions(tao); CHKERRQ(info);
+  info = TaoSetFromOptions(tao); CHKERRQ(info);
 
   /* Solve the bound constrained problem */
-  info = TaoSolverSolve(tao); CHKERRQ(info);
+  info = TaoSolve(tao); CHKERRQ(info);
 
-  //info = TaoSolverView(tao,PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(info);
+  //info = TaoView(tao,PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(info);
 
-  info = TaoSolverGetTerminationReason(tao,&reason); CHKERRQ(info);
+  info = TaoGetTerminationReason(tao,&reason); CHKERRQ(info);
   if (reason <= 0)
     PetscPrintf(PETSC_COMM_WORLD,"Try a different TAO method, adjust some parameters, or check the function evaluation routines\n");
 
@@ -190,7 +190,7 @@ int main( int argc, char **argv )
   info = MatDestroy(&user.A); CHKERRQ(info);
   info = VecDestroy(&user.B); CHKERRQ(info); 
   /* Free TAO data structures */
-  info = TaoSolverDestroy(&tao); CHKERRQ(info);
+  info = TaoDestroy(&tao); CHKERRQ(info);
 
   info = DMDestroy(&user.dm); CHKERRQ(info);
 
@@ -467,7 +467,7 @@ PetscErrorCode Monitor(TaoSolver tao, void *ctx)
   PetscReal f,gnorm,cnorm,xdiff;
   TaoSolverTerminationReason reason;
   PetscFunctionBegin;
-  ierr = TaoSolverGetSolutionStatus(tao, &its, &f, &gnorm, &cnorm, &xdiff, &reason); CHKERRQ(ierr);
+  ierr = TaoGetSolutionStatus(tao, &its, &f, &gnorm, &cnorm, &xdiff, &reason); CHKERRQ(ierr);
   if (!(its%5)) {
     PetscPrintf(PETSC_COMM_WORLD,"iteration=%D\tf=%G\n",its,f);
   }
@@ -483,9 +483,9 @@ PetscErrorCode ConvergenceTest(TaoSolver tao, void *ctx)
   PetscReal f,gnorm,cnorm,xdiff;
   TaoSolverTerminationReason reason;
   PetscFunctionBegin;
-  ierr = TaoSolverGetSolutionStatus(tao, &its, &f, &gnorm, &cnorm, &xdiff, &reason); CHKERRQ(ierr);
+  ierr = TaoGetSolutionStatus(tao, &its, &f, &gnorm, &cnorm, &xdiff, &reason); CHKERRQ(ierr);
   if (its == 100) {
-    TaoSolverSetTerminationReason(tao,TAO_DIVERGED_MAXITS);
+    TaoSetTerminationReason(tao,TAO_DIVERGED_MAXITS);
   }
   PetscFunctionReturn(0);
   

@@ -307,7 +307,7 @@ PetscErrorCode addpoint(TaoSolver tao, TAO_POUNDERS *mfqP, PetscInt index)
   /* Compute value of new vector */
   ierr = VecDuplicate(mfqP->Fhist[0],&mfqP->Fhist[mfqP->nHist]); CHKERRQ(ierr);
   CHKMEMQ;
-  ierr = TaoSolverComputeSeparableObjective(tao,mfqP->Xhist[mfqP->nHist],mfqP->Fhist[mfqP->nHist]); CHKERRQ(ierr);
+  ierr = TaoComputeSeparableObjective(tao,mfqP->Xhist[mfqP->nHist],mfqP->Fhist[mfqP->nHist]); CHKERRQ(ierr);
   ierr = VecNorm(mfqP->Fhist[mfqP->nHist],NORM_2,&mfqP->Fres[mfqP->nHist]); CHKERRQ(ierr);
   mfqP->Fres[mfqP->nHist]*=mfqP->Fres[mfqP->nHist];
 
@@ -440,8 +440,8 @@ PetscErrorCode affpoints(TAO_POUNDERS *mfqP, PetscReal *xmin,
     PetscFunctionReturn(0);
 }
 #undef __FUNCT__
-#define __FUNCT__ "TaoSolverSolve_POUNDERS"
-static PetscErrorCode TaoSolverSolve_POUNDERS(TaoSolver tao)
+#define __FUNCT__ "TaoSolve_POUNDERS"
+static PetscErrorCode TaoSolve_POUNDERS(TaoSolver tao)
 {
   TAO_POUNDERS *mfqP = (TAO_POUNDERS *)tao->data;
 
@@ -472,7 +472,7 @@ static PetscErrorCode TaoSolverSolve_POUNDERS(TaoSolver tao)
 
   ierr = VecCopy(tao->solution,mfqP->Xhist[0]); CHKERRQ(ierr);
   CHKMEMQ;
-  ierr = TaoSolverComputeSeparableObjective(tao,tao->solution,mfqP->Fhist[0]); CHKERRQ(ierr);
+  ierr = TaoComputeSeparableObjective(tao,tao->solution,mfqP->Fhist[0]); CHKERRQ(ierr);
   ierr = VecNorm(mfqP->Fhist[0],NORM_2,&mfqP->Fres[0]); CHKERRQ(ierr);
   mfqP->Fres[0]*=mfqP->Fres[0];
   mfqP->minindex = 0;
@@ -486,7 +486,7 @@ static PetscErrorCode TaoSolverSolve_POUNDERS(TaoSolver tao)
 	  ierr = VecRestoreArray(mfqP->Xhist[i],&x); CHKERRQ(ierr);
       }
       CHKMEMQ;
-      ierr = TaoSolverComputeSeparableObjective(tao,mfqP->Xhist[i],mfqP->Fhist[i]); CHKERRQ(ierr);
+      ierr = TaoComputeSeparableObjective(tao,mfqP->Xhist[i],mfqP->Fhist[i]); CHKERRQ(ierr);
       ierr = VecNorm(mfqP->Fhist[i],NORM_2,&mfqP->Fres[i]); CHKERRQ(ierr);
       mfqP->Fres[i]*=mfqP->Fres[i];
       if (mfqP->Fres[i] < minnorm) {
@@ -605,7 +605,7 @@ static PetscErrorCode TaoSolverSolve_POUNDERS(TaoSolver tao)
   ierr = VecNorm(tao->gradient,NORM_2,&gnorm); CHKERRQ(ierr);
   gnorm *= mfqP->delta;
   ierr = VecCopy(mfqP->Xhist[mfqP->minindex],tao->solution); CHKERRQ(ierr);
-  ierr = TaoSolverMonitor(tao, iter, minnorm, gnorm, 0.0, step, &reason); CHKERRQ(ierr);
+  ierr = TaoMonitor(tao, iter, minnorm, gnorm, 0.0, step, &reason); CHKERRQ(ierr);
   mfqP->nHist = mfqP->n+1;
   mfqP->nmodelpoints = mfqP->n+1;
 
@@ -626,7 +626,7 @@ static PetscErrorCode TaoSolverSolve_POUNDERS(TaoSolver tao)
     ierr = VecAssemblyBegin(mfqP->Xhist[mfqP->nHist]); CHKERRQ(ierr);
     ierr = VecAssemblyEnd(mfqP->Xhist[mfqP->nHist]); CHKERRQ(ierr);
     CHKMEMQ;
-    ierr = TaoSolverComputeSeparableObjective(tao,mfqP->Xhist[mfqP->nHist],mfqP->Fhist[mfqP->nHist]); CHKERRQ(ierr);
+    ierr = TaoComputeSeparableObjective(tao,mfqP->Xhist[mfqP->nHist],mfqP->Fhist[mfqP->nHist]); CHKERRQ(ierr);
     ierr = VecNorm(mfqP->Fhist[mfqP->nHist],NORM_2,&mfqP->Fres[mfqP->nHist]); CHKERRQ(ierr);
     mfqP->Fres[mfqP->nHist]*=mfqP->Fres[mfqP->nHist];
     rho = (mfqP->Fres[mfqP->minindex] - mfqP->Fres[mfqP->nHist]) / mdec;
@@ -780,14 +780,14 @@ static PetscErrorCode TaoSolverSolve_POUNDERS(TaoSolver tao)
     ierr = VecNorm(tao->gradient,NORM_2,&gnorm); CHKERRQ(ierr);
     gnorm *= mfqP->delta;
     /*  final criticality test */
-    ierr = TaoSolverMonitor(tao, iter, minnorm, gnorm, 0.0, step, &reason); CHKERRQ(ierr);
+    ierr = TaoMonitor(tao, iter, minnorm, gnorm, 0.0, step, &reason); CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TaoSolverSetUp_POUNDERS"
-static PetscErrorCode TaoSolverSetUp_POUNDERS(TaoSolver tao)
+#define __FUNCT__ "TaoSetUp_POUNDERS"
+static PetscErrorCode TaoSetUp_POUNDERS(TaoSolver tao)
 {
     TAO_POUNDERS *mfqP = (TAO_POUNDERS*)tao->data;
     PetscInt i;
@@ -876,8 +876,8 @@ static PetscErrorCode TaoSolverSetUp_POUNDERS(TaoSolver tao)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TaoSolverDestroy_POUNDERS"
-static PetscErrorCode TaoSolverDestroy_POUNDERS(TaoSolver tao)
+#define __FUNCT__ "TaoDestroy_POUNDERS"
+static PetscErrorCode TaoDestroy_POUNDERS(TaoSolver tao)
 {
   TAO_POUNDERS *mfqP = (TAO_POUNDERS*)tao->data;
   PetscInt i;
@@ -948,8 +948,8 @@ static PetscErrorCode TaoSolverDestroy_POUNDERS(TaoSolver tao)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TaoSolverSetFromOptions_POUNDERS"
-static PetscErrorCode TaoSolverSetFromOptions_POUNDERS(TaoSolver tao)
+#define __FUNCT__ "TaoSetFromOptions_POUNDERS"
+static PetscErrorCode TaoSetFromOptions_POUNDERS(TaoSolver tao)
 {
   TAO_POUNDERS *mfqP = (TAO_POUNDERS*)tao->data;
   PetscErrorCode ierr;
@@ -962,27 +962,27 @@ static PetscErrorCode TaoSolverSetFromOptions_POUNDERS(TaoSolver tao)
 }
 
 #undef __FUNCT__ 
-#define __FUNCT__ "TaoSolverView_POUNDERS"
-static PetscErrorCode TaoSolverView_POUNDERS(TaoSolver tao, PetscViewer viewer)
+#define __FUNCT__ "TaoView_POUNDERS"
+static PetscErrorCode TaoView_POUNDERS(TaoSolver tao, PetscViewer viewer)
 {
   return 0;
 }
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
-#define __FUNCT__ "TaoSolverCreate_POUNDERS"
-PetscErrorCode TaoSolverCreate_POUNDERS(TaoSolver tao)
+#define __FUNCT__ "TaoCreate_POUNDERS"
+PetscErrorCode TaoCreate_POUNDERS(TaoSolver tao)
 {
   TAO_POUNDERS *mfqP = (TAO_POUNDERS*)tao->data;
   PetscErrorCode ierr;
   
   PetscFunctionBegin;
 
-  tao->ops->setup = TaoSolverSetUp_POUNDERS;
-  tao->ops->solve = TaoSolverSolve_POUNDERS;
-  tao->ops->view = TaoSolverView_POUNDERS;
-  tao->ops->setfromoptions = TaoSolverSetFromOptions_POUNDERS;
-  tao->ops->destroy = TaoSolverDestroy_POUNDERS;
+  tao->ops->setup = TaoSetUp_POUNDERS;
+  tao->ops->solve = TaoSolve_POUNDERS;
+  tao->ops->view = TaoView_POUNDERS;
+  tao->ops->setfromoptions = TaoSetFromOptions_POUNDERS;
+  tao->ops->destroy = TaoDestroy_POUNDERS;
 
 
   ierr = PetscNewLog(tao, TAO_POUNDERS, &mfqP); CHKERRQ(ierr);

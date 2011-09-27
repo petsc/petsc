@@ -14,14 +14,14 @@ static PetscErrorCode Fsnes(SNES snes ,Vec X,Vec G,void*ctx){
   TaoSolver tao = (TaoSolver)ctx;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ctx,TAOSOLVER_CLASSID,4);
-  ierr=TaoSolverComputeGradient(tao,X,G); CHKERRQ(ierr);
+  ierr=TaoComputeGradient(tao,X,G); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "TaoSolverDefaultComputeGradient"
+#define __FUNCT__ "TaoDefaultComputeGradient"
 /*@C
-  TaoSolverDefaultComputeGradient - computes the gradient using finite differences.
+  TaoDefaultComputeGradient - computes the gradient using finite differences.
  
   Collective on TAO_APPLICATION
 
@@ -59,7 +59,7 @@ static PetscErrorCode Fsnes(SNES snes ,Vec X,Vec G,void*ctx){
 .seealso: TaoAppDefaultComputeGradient(),  TaoAppSetGradientRoutine()
 
 @*/
-PetscErrorCode TaoSolverDefaultComputeGradient(TaoSolver tao,Vec X,Vec G,void *dummy) 
+PetscErrorCode TaoDefaultComputeGradient(TaoSolver tao,Vec X,Vec G,void *dummy) 
 {
   PetscReal *g;
   PetscReal f, f2;
@@ -68,7 +68,7 @@ PetscErrorCode TaoSolverDefaultComputeGradient(TaoSolver tao,Vec X,Vec G,void *d
   PetscBool flg;
   PetscReal h=1.0e-6;
   PetscFunctionBegin;
-  ierr = TaoSolverComputeObjective(tao, X,&f); CHKERRQ(ierr);
+  ierr = TaoComputeObjective(tao, X,&f); CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(PETSC_NULL,"-tao_fd_delta",&h,&flg); CHKERRQ(ierr);
   ierr = VecGetSize(X,&N); CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(X,&low,&high); CHKERRQ(ierr);
@@ -78,7 +78,7 @@ PetscErrorCode TaoSolverDefaultComputeGradient(TaoSolver tao,Vec X,Vec G,void *d
       ierr = VecAssemblyBegin(X); CHKERRQ(ierr);
       ierr = VecAssemblyEnd(X); CHKERRQ(ierr);
 
-      ierr = TaoSolverComputeObjective(tao,X,&f2); CHKERRQ(ierr);
+      ierr = TaoComputeObjective(tao,X,&f2); CHKERRQ(ierr);
 
       ierr = VecSetValue(X,i,-h,ADD_VALUES);
       ierr = VecAssemblyBegin(X); CHKERRQ(ierr);
@@ -93,9 +93,9 @@ PetscErrorCode TaoSolverDefaultComputeGradient(TaoSolver tao,Vec X,Vec G,void *d
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "TaoSolverDefaultComputeHessian"
+#define __FUNCT__ "TaoDefaultComputeHessian"
 /*@C
-   TaoSolverDefaultComputeHessian - Computes the Hessian using finite differences. 
+   TaoDefaultComputeHessian - Computes the Hessian using finite differences. 
 
    Collective on TaoSolver
 
@@ -131,7 +131,7 @@ PetscErrorCode TaoSolverDefaultComputeGradient(TaoSolver tao,Vec X,Vec G,void *d
           TaoAppSetGradientRoutine(), TaoAppDefaultComputeGradient()
 
 @*/
-PetscErrorCode TaoSolverDefaultComputeHessian(TaoSolver tao,Vec V,Mat *H,Mat *B,
+PetscErrorCode TaoDefaultComputeHessian(TaoSolver tao,Vec V,Mat *H,Mat *B,
 			     MatStructure *flag,void *ctx){
   PetscErrorCode       ierr;
   MPI_Comm             comm;
@@ -144,7 +144,7 @@ PetscErrorCode TaoSolverDefaultComputeHessian(TaoSolver tao,Vec V,Mat *H,Mat *B,
 
   ierr = PetscInfo(tao,"TAO Using finite differences w/o coloring to compute Hessian matrix\n"); CHKERRQ(ierr);
 
-  ierr = TaoSolverComputeGradient(tao,V,G); CHKERRQ(ierr);
+  ierr = TaoComputeGradient(tao,V,G); CHKERRQ(ierr);
 
   ierr = PetscObjectGetComm((PetscObject)(*H),&comm);CHKERRQ(ierr);
   ierr = SNESCreate(comm,&snes);CHKERRQ(ierr);
@@ -163,9 +163,9 @@ PetscErrorCode TaoSolverDefaultComputeHessian(TaoSolver tao,Vec V,Mat *H,Mat *B,
 
 
 #undef __FUNCT__  
-#define __FUNCT__ "TaoSolverDefaultComputeHessianColor"
+#define __FUNCT__ "TaoDefaultComputeHessianColor"
 /*@C
-   TaoSolverDefaultComputeHessianColor - Computes the Hessian using colored finite differences. 
+   TaoDefaultComputeHessianColor - Computes the Hessian using colored finite differences. 
 
    Collective on TaoSolver
 
@@ -193,7 +193,7 @@ PetscErrorCode TaoSolverDefaultComputeHessian(TaoSolver tao,Vec V,Mat *H,Mat *B,
           TaoAppSetGradientRoutine(), TaoAppSetColoring()
 
 @*/
-PetscErrorCode TaoSolverDefaultComputeHessianColor(TaoSolver tao, Vec V, Mat *HH,Mat *BB,MatStructure *flag,void *ctx){
+PetscErrorCode TaoDefaultComputeHessianColor(TaoSolver tao, Vec V, Mat *HH,Mat *BB,MatStructure *flag,void *ctx){
   PetscErrorCode      ierr;
   Mat                 H=*HH,B=*BB;
   MatFDColoring       coloring = (MatFDColoring)ctx;
@@ -219,9 +219,9 @@ PetscErrorCode TaoSolverDefaultComputeHessianColor(TaoSolver tao, Vec V, Mat *HH
 
 /*
 #undef __FUNCT__  
-#define __FUNCT__ "TaoSolverSetFiniteDifferencesOptions"
+#define __FUNCT__ "TaoSetFiniteDifferencesOptions"
 @C
-  TaoSolverSetFiniteDifferencesOptions - Sets various TAO parameters from user options
+  TaoSetFiniteDifferencesOptions - Sets various TAO parameters from user options
 
    Collective on TAO_SOLVER
 
@@ -233,7 +233,7 @@ PetscErrorCode TaoSolverDefaultComputeHessianColor(TaoSolver tao, Vec V, Mat *HH
 .keywords:  options, finite differences
 
 
- PetscErrorCode TaoSolverSetFiniteDifferencesOptions(TaoSolver tao){
+ PetscErrorCode TaoSetFiniteDifferencesOptions(TaoSolver tao){
   PetscErrorCode ierr;
   PetscBool flg;
 
@@ -242,25 +242,25 @@ PetscErrorCode TaoSolverDefaultComputeHessianColor(TaoSolver tao, Vec V, Mat *HH
   PetscValidHeaderSpecific(tao,TAOSOLVER_CLASSID,1);
 
   flg=PETSC_FALSE;
-  ierr = PetscOptionsName("-tao_fd","use finite differences for Hessian","TaoSolverDefaultComputeHessian",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsName("-tao_fd","use finite differences for Hessian","TaoDefaultComputeHessian",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = TaoSolverSetHessianRoutine(tao,TaoSolverDefaultComputeHessian,(void*)tao);CHKERRQ(ierr);
+    ierr = TaoSetHessianRoutine(tao,TaoDefaultComputeHessian,(void*)tao);CHKERRQ(ierr);
     ierr = PetscInfo(tao,"Setting default finite difference Hessian matrix\n"); CHKERRQ(ierr);
   }
 
   flg=PETSC_FALSE;
-.  ierr = PetscOptionsName("-tao_fdgrad","use finite differences for gradient","TaoSolverDefaultComputeGradient",&flg);CHKERRQ(ierr);
+.  ierr = PetscOptionsName("-tao_fdgrad","use finite differences for gradient","TaoDefaultComputeGradient",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = TaoSolverSetGradientRoutine(tao,TaoSolverDefaultComputeGradient,(void*)tao);CHKERRQ(ierr);
+    ierr = TaoSetGradientRoutine(tao,TaoDefaultComputeGradient,(void*)tao);CHKERRQ(ierr);
     ierr = PetscInfo(tao,"Setting default finite difference gradient routine\n"); CHKERRQ(ierr);
   }
 
 
   flg=PETSC_FALSE;
-  ierr = PetscOptionsName("-tao_fd_coloring","use finite differences with coloring to compute Hessian","TaoSolverDefaultComputeHessianColor",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsName("-tao_fd_coloring","use finite differences with coloring to compute Hessian","TaoDefaultComputeHessianColor",&flg);CHKERRQ(ierr);
   if (flg) {
     
-    ierr = TaoSolverSetHessianRoutine(tao,TaoSolverDefaultComputeHessianColor,(void*)tao);CHKERRQ(ierr);
+    ierr = TaoSetHessianRoutine(tao,TaoDefaultComputeHessianColor,(void*)tao);CHKERRQ(ierr);
     ierr = PetscInfo(tao,"Use finite differencing with coloring to compute Hessian \n"); CHKERRQ(ierr);
   }
     

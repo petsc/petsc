@@ -89,16 +89,16 @@ int main(int argc, char **argv)
 	printf(" Number of variables: %D\n",user.m);
 
 	wallclock_(&wctime1);
-	ierr = TaoSolverCreate(PETSC_COMM_SELF,&tao); CHKERRQ(ierr);
-	ierr = TaoSolverSetType(tao,"tao_pounders"); CHKERRQ(ierr);
-	ierr = TaoSolverSetInitialVector(tao,X); CHKERRQ(ierr);
-	ierr = TaoSolverSetSeparableObjectiveRoutine(tao,F,EvaluateFunction,
+	ierr = TaoCreate(PETSC_COMM_SELF,&tao); CHKERRQ(ierr);
+	ierr = TaoSetType(tao,"tao_pounders"); CHKERRQ(ierr);
+	ierr = TaoSetInitialVector(tao,X); CHKERRQ(ierr);
+	ierr = TaoSetSeparableObjectiveRoutine(tao,F,EvaluateFunction,
 						     (void*)&user); CHKERRQ(ierr);
-	ierr = TaoSolverSetFromOptions(tao); CHKERRQ(ierr);
+	ierr = TaoSetFromOptions(tao); CHKERRQ(ierr);
 	
-	ierr = TaoSolverSolve(tao); CHKERRQ(ierr);
-	ierr = TaoSolverView(tao,PETSC_VIEWER_STDOUT_SELF); CHKERRQ(ierr);
-	ierr = TaoSolverDestroy(&tao); CHKERRQ(ierr);
+	ierr = TaoSolve(tao); CHKERRQ(ierr);
+	ierr = TaoView(tao,PETSC_VIEWER_STDOUT_SELF); CHKERRQ(ierr);
+	ierr = TaoDestroy(&tao); CHKERRQ(ierr);
 	
 	ierr = VecDestroy(&X); CHKERRQ(ierr);
 	ierr = VecDestroy(&F); CHKERRQ(ierr);

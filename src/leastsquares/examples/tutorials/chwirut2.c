@@ -33,14 +33,14 @@ static char help[]="Finds the nonlinear least-squares solution to the model \n\
 /* T
    Concepts: TAO - Solving a system of nonlinear equations, nonlinear ;east squares
    Routines: TaoInitialize(); TaoFinalize(); 
-   Routines: TaoSolverCreate();
-   Routines: TaoSolverSetType(); 
-   Routines: TaoSolverSetSeparableObjectiveRoutine();
-   Routines: TaoSolverSetMonitor();
-   Routines: TaoSolverSetInitialVector();
-   Routines: TaoSolverSetFromOptions();
-   Routines: TaoSolverSolve();
-   Routines: TaoSolverDestroy(); 
+   Routines: TaoCreate();
+   Routines: TaoSetType(); 
+   Routines: TaoSetSeparableObjectiveRoutine();
+   Routines: TaoSetMonitor();
+   Routines: TaoSetInitialVector();
+   Routines: TaoSetFromOptions();
+   Routines: TaoSolve();
+   Routines: TaoDestroy(); 
    Processors: n
 T*/
 
@@ -95,24 +95,24 @@ int main(int argc,char **argv)
     /* TAO code begins here */
 
     /* Create TAO solver and set desired solution method */
-    ierr = TaoSolverCreate(PETSC_COMM_SELF,&tao);CHKERRQ(ierr);
-    ierr = TaoSolverSetType(tao,"tao_pounders"); CHKERRQ(ierr);
+    ierr = TaoCreate(PETSC_COMM_SELF,&tao);CHKERRQ(ierr);
+    ierr = TaoSetType(tao,"tao_pounders"); CHKERRQ(ierr);
 
     /* Set the function and Jacobian routines. */
     ierr = FormStartingPoint(x); CHKERRQ(ierr);
-    ierr = TaoSolverSetInitialVector(tao,x); CHKERRQ(ierr);
-    ierr = TaoSolverSetSeparableObjectiveRoutine(tao,f,EvaluateFunction,(void*)&user); CHKERRQ(ierr);
-    ierr = TaoSolverSetMonitor(tao,MyMonitor,&user,PETSC_NULL); CHKERRQ(ierr);
+    ierr = TaoSetInitialVector(tao,x); CHKERRQ(ierr);
+    ierr = TaoSetSeparableObjectiveRoutine(tao,f,EvaluateFunction,(void*)&user); CHKERRQ(ierr);
+    ierr = TaoSetMonitor(tao,MyMonitor,&user,PETSC_NULL); CHKERRQ(ierr);
 
     
     /* Check for any TAO command line arguments */
-    ierr = TaoSolverSetFromOptions(tao); CHKERRQ(ierr);
+    ierr = TaoSetFromOptions(tao); CHKERRQ(ierr);
 
     /* Perform the Solve */
-    ierr = TaoSolverSolve(tao); CHKERRQ(ierr);
+    ierr = TaoSolve(tao); CHKERRQ(ierr);
     
     /* Free TAO data structures */
-    ierr = TaoSolverDestroy(&tao); CHKERRQ(ierr);
+    ierr = TaoDestroy(&tao); CHKERRQ(ierr);
 
     /* Free PETSc data structures */
     ierr = VecDestroy(&x); CHKERRQ(ierr);
@@ -453,7 +453,7 @@ PetscErrorCode MyMonitor(TaoSolver tao, void *ptr)
 
 
   PetscFunctionBegin;
-  ierr = TaoSolverGetSolutionStatus(tao,&its,&fc,&gnorm,0,0,0);
+  ierr = TaoGetSolutionStatus(tao,&its,&fc,&gnorm,0,0,0);
   ierr=PetscViewerASCIIPrintf(viewer,"iter = %3D,",its); CHKERRQ(ierr);
   ierr=PetscViewerASCIIPrintf(viewer," Function value %G,",fc); CHKERRQ(ierr);
   if (gnorm > 1.e-6) {

@@ -136,7 +136,7 @@ struct _p_TaoSolver {
 
 extern PetscLogEvent TaoSolver_Solve, TaoSolver_ObjectiveEval, TaoSolver_ObjGradientEval, TaoSolver_GradientEval, TaoSolver_HessianEval, TaoSolver_ConstraintsEval, TaoSolver_JacobianEval;
 
-#define TaoSolverLogHistory(tao,obj,resid,cnorm) \
+#define TaoLogHistory(tao,obj,resid,cnorm) \
   { if (tao->hist_max > tao->hist_len) \
       { if (tao->hist_obj) tao->hist_obj[tao->hist_len]=obj;\
         if (tao->hist_resid) tao->hist_resid[tao->hist_len]=resid;\

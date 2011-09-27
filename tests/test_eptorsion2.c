@@ -111,35 +111,35 @@ int main(int argc, char **argv)
     /* The TAO code begins here */
 
     /* Create TAO solver and set desired solution method */
-    ierr = TaoSolverCreate(PETSC_COMM_WORLD,&tao); CHKERRQ(ierr);
-    ierr = TaoSolverSetType(tao,"tao_cg"); CHKERRQ(ierr);
+    ierr = TaoCreate(PETSC_COMM_WORLD,&tao); CHKERRQ(ierr);
+    ierr = TaoSetType(tao,"tao_cg"); CHKERRQ(ierr);
 
     /* Set initial solution guess */
     ierr = FormInitialGuess(&user,x); CHKERRQ(ierr);
-    ierr = TaoSolverSetInitialVector(tao,x); CHKERRQ(ierr);
+    ierr = TaoSetInitialVector(tao,x); CHKERRQ(ierr);
 
     /* Set routine for function and gradient evaluation */
-    ierr = TaoSolverSetObjectiveAndGradientRoutine(tao,FormFunctionGradient,(void *)&user); CHKERRQ(ierr);
+    ierr = TaoSetObjectiveAndGradientRoutine(tao,FormFunctionGradient,(void *)&user); CHKERRQ(ierr);
 
-    ierr = TaoSolverSetHessianRoutine(tao,H,H,FormHessian,(void*)&user); CHKERRQ(ierr);
+    ierr = TaoSetHessianRoutine(tao,H,H,FormHessian,(void*)&user); CHKERRQ(ierr);
 
 
     /* Check for any TAO command line options */
-    ierr = TaoSolverSetFromOptions(tao); CHKERRQ(ierr);
+    ierr = TaoSetFromOptions(tao); CHKERRQ(ierr);
 
     /* SOLVE THE APPLICATION */
-    ierr = TaoSolverSolve(tao);  CHKERRQ(ierr);
+    ierr = TaoSolve(tao);  CHKERRQ(ierr);
 
     /* Get information on termination */
-    //ierr = TaoSolverView(tao,PETSC_VIEWER_STDOUT_WORLD);
-    ierr = TaoSolverGetTerminationReason(tao,&reason); CHKERRQ(ierr);
+    //ierr = TaoView(tao,PETSC_VIEWER_STDOUT_WORLD);
+    ierr = TaoGetTerminationReason(tao,&reason); CHKERRQ(ierr);
     if (reason <= 0){
 	ierr=PetscPrintf(MPI_COMM_WORLD, "Try another method! \n");//Iterations: %D, f: %4.2e, residual: %4.2e\n", iter,ff,gnorm); 
 	CHKERRQ(ierr); 
     }  
 
     /* Free TAO data structures */
-    ierr = TaoSolverDestroy(&tao); CHKERRQ(ierr);
+    ierr = TaoDestroy(&tao); CHKERRQ(ierr);
 
     /* Free PETSc data structures */
     ierr = VecDestroy(&x); CHKERRQ(ierr);

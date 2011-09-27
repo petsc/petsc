@@ -7,12 +7,12 @@ typedef struct {
 } FD_Test;
 
 /*
-     TaoSolverSolve_FD - Tests whether a hand computed Hessian 
+     TaoSolve_FD - Tests whether a hand computed Hessian 
      matches one compute via finite differences.
 */
 #undef __FUNCT__  
-#define __FUNCT__ "TaoSolverSolve_FD"
-PetscErrorCode TaoSolverSolve_FD(TaoSolver tao)
+#define __FUNCT__ "TaoSolve_FD"
+PetscErrorCode TaoSolve_FD(TaoSolver tao)
 {
   Mat            A = tao->hessian,B;
   Vec            x = tao->solution,g1,g2;
@@ -41,8 +41,8 @@ PetscErrorCode TaoSolverSolve_FD(TaoSolver tao)
       else if (i == 2) {ierr = VecSet(x,1.0);CHKERRQ(ierr);}
     
       /* Compute both version of gradient */
-      ierr = TaoSolverComputeGradient(tao,x,g1); CHKERRQ(ierr);
-      ierr = TaoSolverDefaultComputeGradient(tao,x,g2,PETSC_NULL); CHKERRQ(ierr);
+      ierr = TaoComputeGradient(tao,x,g1); CHKERRQ(ierr);
+      ierr = TaoDefaultComputeGradient(tao,x,g2,PETSC_NULL); CHKERRQ(ierr);
       if (fd->complete_print) {
 	MPI_Comm gcomm;
 	PetscViewer viewer;
@@ -84,9 +84,9 @@ PetscErrorCode TaoSolverSolve_FD(TaoSolver tao)
     }
     for (i=0;i<3;i++) {
       /* compute both versions of Hessian */
-      ierr = TaoSolverComputeHessian(tao,x,&A,&A,&flg);CHKERRQ(ierr);
+      ierr = TaoComputeHessian(tao,x,&A,&A,&flg);CHKERRQ(ierr);
       if (!i) {ierr = MatConvert(A,MATSAME,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);}
-      ierr = TaoSolverDefaultComputeHessian(tao,x,&B,&B,&flg,tao->user_hessP);CHKERRQ(ierr);
+      ierr = TaoDefaultComputeHessian(tao,x,&B,&B,&flg,tao->user_hessP);CHKERRQ(ierr);
       if (fd->complete_print) {
 	MPI_Comm    bcomm;
 	PetscViewer viewer;
@@ -120,8 +120,8 @@ PetscErrorCode TaoSolverSolve_FD(TaoSolver tao)
 }
 /* ------------------------------------------------------------ */
 #undef __FUNCT__  
-#define __FUNCT__ "TaoSolverDestroy_FD"
-PetscErrorCode TaoSolverDestroy_FD(TaoSolver tao)
+#define __FUNCT__ "TaoDestroy_FD"
+PetscErrorCode TaoDestroy_FD(TaoSolver tao)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -130,8 +130,8 @@ PetscErrorCode TaoSolverDestroy_FD(TaoSolver tao)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "TaoSolverSetFromOptions_FD"
-static PetscErrorCode TaoSolverSetFromOptions_FD(TaoSolver tao)
+#define __FUNCT__ "TaoSetFromOptions_FD"
+static PetscErrorCode TaoSetFromOptions_FD(TaoSolver tao)
 {
   FD_Test      *fd = (FD_Test *)tao->data;
   PetscErrorCode ierr;
@@ -159,22 +159,22 @@ static PetscErrorCode TaoSolverSetFromOptions_FD(TaoSolver tao)
 
    Level: intermediate
 
-.seealso:  TaoSolverCreate(), TaoSolverSetType()
+.seealso:  TaoCreate(), TaoSetType()
 
 M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "TaoSolverCreate_FD"
-PetscErrorCode  TaoSolverCreate_FD(TaoSolver  tao)
+#define __FUNCT__ "TaoCreate_FD"
+PetscErrorCode  TaoCreate_FD(TaoSolver  tao)
 {
   FD_Test      *fd;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   tao->ops->setup	     = 0;
-  tao->ops->solve	     = TaoSolverSolve_FD;
-  tao->ops->destroy	     = TaoSolverDestroy_FD;
-  tao->ops->setfromoptions  = TaoSolverSetFromOptions_FD;
+  tao->ops->solve	     = TaoSolve_FD;
+  tao->ops->destroy	     = TaoDestroy_FD;
+  tao->ops->setfromoptions  = TaoSetFromOptions_FD;
   tao->ops->view            = 0;
 
   

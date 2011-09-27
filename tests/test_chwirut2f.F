@@ -70,31 +70,31 @@
 !     The TAO code begins here 
 
 !     Create TAO solver
-         call TaoSolverCreate(PETSC_COMM_SELF,tao,ierr)
+         call TaoCreate(PETSC_COMM_SELF,tao,ierr)
          CHKERRQ(ierr)
-         call TaoSolverSetType(tao,'tao_pounders',ierr)
+         call TaoSetType(tao,'tao_pounders',ierr)
          CHKERRQ(ierr)
 
 !     Set routines for function, gradient, and hessian evaluation 
-         call TaoSolverSetSeparableObjectiveRoutine(tao,f,                  &
+         call TaoSetSeparableObjectiveRoutine(tao,f,                     &
      &        FormFunction,PETSC_NULL_OBJECT,ierr)
          CHKERRQ(ierr)
 
 !     Optional: Set initial guess
          call FormStartingPoint(x)
-         call TaoSolverSetInitialVector(tao, x, ierr)
+         call TaoSetInitialVector(tao, x, ierr)
          CHKERRQ(ierr)
 
 
 !     Check for TAO command line options
-         call TaoSolverSetFromOptions(tao,ierr)
+         call TaoSetFromOptions(tao,ierr)
          CHKERRQ(ierr)
 !     SOLVE THE APPLICATION
-         call TaoSolverSolve(tao,ierr)
+         call TaoSolve(tao,ierr)
          CHKERRQ(ierr)
 
 !     Free TAO data structures
-         call TaoSolverDestroy(tao,ierr)
+         call TaoDestroy(tao,ierr)
          CHKERRQ(ierr)
 
 !     Free PETSc data structures 

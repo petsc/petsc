@@ -20,8 +20,8 @@ static PetscErrorCode TronApplyMask(TAO_TRON *tron, Mat M, Vec mask);
 
 /*------------------------------------------------------------*/
 #undef __FUNCT__  
-#define __FUNCT__ "TaoSolverDestroy_TRON"
-static PetscErrorCode TaoSolverDestroy_TRON(TaoSolver tao)
+#define __FUNCT__ "TaoDestroy_TRON"
+static PetscErrorCode TaoDestroy_TRON(TaoSolver tao)
 {
   TAO_TRON *tron = (TAO_TRON *)tao->data;
   PetscErrorCode ierr;
@@ -65,8 +65,8 @@ static PetscErrorCode TaoSolverDestroy_TRON(TaoSolver tao)
 
 /*------------------------------------------------------------*/
 #undef __FUNCT__  
-#define __FUNCT__ "TaoSolverSetFromOptions_TRON"
-static PetscErrorCode TaoSolverSetFromOptions_TRON(TaoSolver tao)
+#define __FUNCT__ "TaoSetFromOptions_TRON"
+static PetscErrorCode TaoSetFromOptions_TRON(TaoSolver tao)
 {
   TAO_TRON  *tron = (TAO_TRON *)tao->data;
   PetscErrorCode        ierr;
@@ -89,8 +89,8 @@ static PetscErrorCode TaoSolverSetFromOptions_TRON(TaoSolver tao)
 
 /*------------------------------------------------------------*/
 #undef __FUNCT__  
-#define __FUNCT__ "TaoSolverView_TRON"
-static PetscErrorCode TaoSolverView_TRON(TaoSolver tao, PetscViewer viewer)
+#define __FUNCT__ "TaoView_TRON"
+static PetscErrorCode TaoView_TRON(TaoSolver tao, PetscViewer viewer)
 {
   TAO_TRON  *tron = (TAO_TRON *)tao->data;
   PetscBool isascii;
@@ -112,8 +112,8 @@ static PetscErrorCode TaoSolverView_TRON(TaoSolver tao, PetscViewer viewer)
 
 /* ---------------------------------------------------------- */
 #undef __FUNCT__  
-#define __FUNCT__ "TaoSolverSetup_TRON"
-static PetscErrorCode TaoSolverSetup_TRON(TaoSolver tao)
+#define __FUNCT__ "TaoSetup_TRON"
+static PetscErrorCode TaoSetup_TRON(TaoSolver tao)
 {
   PetscErrorCode ierr;
   TAO_TRON *tron = (TAO_TRON *)tao->data;
@@ -142,8 +142,8 @@ static PetscErrorCode TaoSolverSetup_TRON(TaoSolver tao)
 
 
 #undef __FUNCT__  
-#define __FUNCT__ "TaoSolverSolve_TRON"
-static PetscErrorCode TaoSolverSolve_TRON(TaoSolver tao){
+#define __FUNCT__ "TaoSolve_TRON"
+static PetscErrorCode TaoSolve_TRON(TaoSolver tao){
 
   TAO_TRON *tron = (TAO_TRON *)tao->data;;
   PetscErrorCode ierr;
@@ -161,7 +161,7 @@ static PetscErrorCode TaoSolverSolve_TRON(TaoSolver tao){
   ierr = VecMedian(tao->XL,tao->solution,tao->XU,tao->solution); CHKERRQ(ierr);
 
   
-  ierr = TaoSolverComputeObjectiveAndGradient(tao,tao->solution,&tron->f,tao->gradient);CHKERRQ(ierr);
+  ierr = TaoComputeObjectiveAndGradient(tao,tao->solution,&tron->f,tao->gradient);CHKERRQ(ierr);
   if (tron->Free_Local) {
     ierr = ISDestroy(&tron->Free_Local); CHKERRQ(ierr);
     tron->Free_Local = PETSC_NULL;
@@ -181,7 +181,7 @@ static PetscErrorCode TaoSolverSolve_TRON(TaoSolver tao){
   }
 
   tron->stepsize=tao->trust;
-  ierr = TaoSolverMonitor(tao, iter, tron->f, tron->gnorm, 0.0, tron->stepsize, &reason); CHKERRQ(ierr);
+  ierr = TaoMonitor(tao, iter, tron->f, tron->gnorm, 0.0, tron->stepsize, &reason); CHKERRQ(ierr);
   if (tron->R) {
     ierr = VecDestroy(&tron->R); CHKERRQ(ierr);
     tron->R = PETSC_NULL;
@@ -193,7 +193,7 @@ static PetscErrorCode TaoSolverSolve_TRON(TaoSolver tao){
     
     tron->n_free_last = tron->n_free;
     ierr = ISGetSize(tron->Free_Local, &tron->n_free);  CHKERRQ(ierr);
-    ierr = TaoSolverComputeHessian(tao,tao->solution,&tao->hessian, &tao->hessian_pre, &tron->matflag);CHKERRQ(ierr);
+    ierr = TaoComputeHessian(tao,tao->solution,&tao->hessian, &tao->hessian_pre, &tron->matflag);CHKERRQ(ierr);
 
     /* Create a reduced linear system using free variables */
     ierr = ISGetSize(tron->Free_Local, &tron->n_free);  CHKERRQ(ierr);
@@ -233,7 +233,7 @@ static PetscErrorCode TaoSolverSolve_TRON(TaoSolver tao){
       ierr = TaoLineSearchSetInitialStepLength(tao->linesearch,1.0); CHKERRQ(ierr);
       ierr = TaoLineSearchApply(tao->linesearch, tron->X_New, &f_new, tron->G_New, tao->stepdirection,
 				&stepsize,&ls_reason); CHKERRQ(ierr); CHKERRQ(ierr);
-      ierr = TaoSolverAddLineSearchCounts(tao); CHKERRQ(ierr);
+      ierr = TaoAddLineSearchCounts(tao); CHKERRQ(ierr);
       
       ierr = MatMult(tao->hessian, tao->stepdirection, tron->Work); CHKERRQ(ierr);
       ierr = VecAYPX(tron->Work, 0.5, tao->gradient); CHKERRQ(ierr);
@@ -285,7 +285,7 @@ static PetscErrorCode TaoSolverSolve_TRON(TaoSolver tao){
 
     tron->f=f; tron->actred=actred; tao->trust=delta;
     iter++;
-    ierr = TaoSolverMonitor(tao, iter, tron->f, tron->gnorm, 0.0, delta, &reason); CHKERRQ(ierr);
+    ierr = TaoMonitor(tao, iter, tron->f, tron->gnorm, 0.0, delta, &reason); CHKERRQ(ierr);
   }  /* END MAIN LOOP  */
 
   PetscFunctionReturn(0);
@@ -327,7 +327,7 @@ static PetscErrorCode TronGradientProjections(TaoSolver tao,TAO_TRON *tron)
     ierr = TaoLineSearchSetInitialStepLength(tao->linesearch,tron->pgstepsize); CHKERRQ(ierr);
     ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &f_new, tao->gradient, tao->stepdirection,
 			      &tron->pgstepsize, &ls_reason); CHKERRQ(ierr);
-    ierr = TaoSolverAddLineSearchCounts(tao); CHKERRQ(ierr);
+    ierr = TaoAddLineSearchCounts(tao); CHKERRQ(ierr);
 
 
     /* Update the iterate */
@@ -538,8 +538,8 @@ PetscErrorCode TronSetupKSP(TaoSolver tao, TAO_TRON*tron)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "TaoSolverComputeDual_TRON" 
-static PetscErrorCode TaoSolverComputeDual_TRON(TaoSolver tao, Vec DXL, Vec DXU) {
+#define __FUNCT__ "TaoComputeDual_TRON" 
+static PetscErrorCode TaoComputeDual_TRON(TaoSolver tao, Vec DXL, Vec DXU) {
 
   TAO_TRON *tron = (TAO_TRON *)tao->data;
   PetscErrorCode       ierr;
@@ -600,20 +600,20 @@ static PetscErrorCode TronApplyMask(TAO_TRON *tron, Mat M, Vec mask)
 /*------------------------------------------------------------*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "TaoSolverCreate_TRON"
-PetscErrorCode TaoSolverCreate_TRON(TaoSolver tao)
+#define __FUNCT__ "TaoCreate_TRON"
+PetscErrorCode TaoCreate_TRON(TaoSolver tao)
 {
   TAO_TRON *tron;
   PetscErrorCode   ierr;
   const char *morethuente_type = TAOLINESEARCH_MT;
   PetscFunctionBegin;
 
-  tao->ops->setup = TaoSolverSetup_TRON;
-  tao->ops->solve = TaoSolverSolve_TRON;
-  tao->ops->view = TaoSolverView_TRON;
-  tao->ops->setfromoptions = TaoSolverSetFromOptions_TRON;
-  tao->ops->destroy = TaoSolverDestroy_TRON;
-  tao->ops->computedual = TaoSolverComputeDual_TRON;
+  tao->ops->setup = TaoSetup_TRON;
+  tao->ops->solve = TaoSolve_TRON;
+  tao->ops->view = TaoView_TRON;
+  tao->ops->setfromoptions = TaoSetFromOptions_TRON;
+  tao->ops->destroy = TaoDestroy_TRON;
+  tao->ops->computedual = TaoComputeDual_TRON;
 
   ierr = PetscNewLog(tao,TAO_TRON,&tron); CHKERRQ(ierr);
 

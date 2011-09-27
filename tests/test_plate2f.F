@@ -12,18 +12,6 @@
 !    -bmy <byg>, where <byg> = number of grid points under plate in 2nd direction
 !    -bheight <ht>, where <ht> = height of the plate
 !
-!/*T
-!   Concepts: TAO - Solving a bound constrained minimization problem
-!   Routines: TaoInitialize(); TaoFinalize();
-!   Routines: TaoCreate(); TaoDestroy();
-!   Routines: TaoAppSetObjectiveAndGradientRoutine(); 
-!   Routines: TaoAppSetHessianMat(); TaoAppSetHessianRoutine();
-!   Routines: TaoAppSetInitialSolutionVec(); TaoAppSetVariableBounds();
-!   Routines: TaoSetOptions();
-!   Routines: TaoApplicationCreate(); TaoSolve();
-!   Routines: TaoView(); TaoAppDestroy();
-!   Processors: n
-!T*/
 
 
 
@@ -147,18 +135,18 @@
 ! This problems uses bounded variables, so the
 ! method must either be 'tao_tron' or 'tao_blmvm'
 
-      call TaoSolverCreate(PETSC_COMM_WORLD,tao,ierr)
+      call TaoCreate(PETSC_COMM_WORLD,tao,ierr)
       CHKERRQ(ierr)
-      call TaoSolverSetType(tao,'tao_blmvm',ierr)
+      call TaoSetType(tao,'tao_blmvm',ierr)
       CHKERRQ(ierr)
 
 !     Set minimization function and gradient, hessian evaluation functions
 
-      call TaoSolverSetObjectiveAndGradientRoutine(tao,                  &
+      call TaoSetObjectiveAndGradientRoutine(tao,                       &
      &     FormFunctionGradient,PETSC_NULL_OBJECT,ierr)
       CHKERRQ(ierr)
 
-      call TaoSolverSetHessianRoutine(tao,H,H,FormHessian,               &
+      call TaoSetHessianRoutine(tao,H,H,FormHessian,                    &
      &     PETSC_NULL_OBJECT, ierr)
       CHKERRQ(ierr)
 
@@ -167,30 +155,30 @@
       CHKERRQ(ierr)
 !      call MSA_Plate(xl,xu,ierr)
 !      CHKERRQ(ierr)
-      call TaoSolverSetVariableBoundsRoutine(tao,MSA_Plate,              &
+      call TaoSetVariableBoundsRoutine(tao,MSA_Plate,                   &
      &     PETSC_NULL_OBJECT,ierr)
-      !call TaoSolverSetVariableBounds(tao,xl,xu,ierr)
+      !call TaoSetVariableBounds(tao,xl,xu,ierr)
       CHKERRQ(ierr)
 
 ! Set the initial solution guess
       call MSA_InitialPoint(x, ierr)
       CHKERRQ(ierr)
-      call TaoSolverSetInitialVector(tao,x,ierr)
+      call TaoSetInitialVector(tao,x,ierr)
       CHKERRQ(ierr)
 
 ! Check for any tao command line options
-      call TaoSolverSetFromOptions(tao,ierr)
+      call TaoSetFromOptions(tao,ierr)
       CHKERRQ(ierr)
 
 ! Solve the application
-      call TaoSolverSolve(tao,ierr)
+      call TaoSolve(tao,ierr)
       CHKERRQ(ierr)
 
 !     View TAO solver information
 !      call TaoView(tao,ierr)
 
 ! Free TAO data structures
-      call TaoSolverDestroy(tao,ierr)
+      call TaoDestroy(tao,ierr)
       CHKERRQ(ierr)
 
 ! Free PETSc data structures

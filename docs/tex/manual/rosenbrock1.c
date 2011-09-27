@@ -30,26 +30,26 @@ int main(int argc,char **argv)
   CHKERRQ(info);
 
   /* Create TAO solver with desired solution method */
-  info = TaoSolverCreate(PETSC_COMM_SELF,&tao); CHKERRQ(info);
-  info = TaoSolverSetType(tao,"tao_lmvm"); CHKERRQ(info);
+  info = TaoCreate(PETSC_COMM_SELF,&tao); CHKERRQ(info);
+  info = TaoSetType(tao,"tao_lmvm"); CHKERRQ(info);
 
   /* Set solution vec and an initial guess */
   info = VecSet(x, 0); CHKERRQ(info);
-  info = TaoSolverSetInitialVector(tao,x); CHKERRQ(info); 
+  info = TaoSetInitialVector(tao,x); CHKERRQ(info); 
 
   /* Set routines for function, gradient, hessian evaluation */
-  info = TaoSolverSetObjectiveAndGradientRoutine(tao,FormFunctionGradient,&user); 
+  info = TaoSetObjectiveAndGradientRoutine(tao,FormFunctionGradient,&user); 
   CHKERRQ(info);
-  info = TaoSolverSetHessianRoutine(tao,H,H,FormHessian,&user); CHKERRQ(info);
+  info = TaoSetHessianRoutine(tao,H,H,FormHessian,&user); CHKERRQ(info);
     
   /* Check for TAO command line options */
-  info = TaoSolverSetFromOptions(tao); CHKERRQ(info);
+  info = TaoSetFromOptions(tao); CHKERRQ(info);
 
   /* SOLVE THE APPLICATION */
-  info = TaoSolverSolve(tao); CHKERRQ(info);
+  info = TaoSolve(tao); CHKERRQ(info);
 
   /* Free TAO data structures */
-  info = TaoSolverDestroy(&tao); CHKERRQ(info);
+  info = TaoDestroy(&tao); CHKERRQ(info);
 
   /* Free PETSc data structures */
   info = VecDestroy(&x); CHKERRQ(info);

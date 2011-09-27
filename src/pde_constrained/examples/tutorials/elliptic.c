@@ -6,19 +6,19 @@
 /*T
    Concepts: TAO - Solving a system of nonlinear equations, nonlinear ;east squares
    Routines: TaoInitialize(); TaoFinalize(); 
-   Routines: TaoSolverCreate();
-   Routines: TaoSolverSetType(); 
-   Routines: TaoSolverSetInitialVector();
-   Routines: TaoSolverSetObjectiveRoutine();
-   Routines: TaoSolverSetGradientRoutine();
-   Routines: TaoSolverSetConstraintsRoutine();
-   Routines: TaoSolverSetJacobianStateRoutine();
-   Routines: TaoSolverSetJacobianDesignRoutine();
-   Routines: TaoSolverSetStateDesignIS();
-   Routines: TaoSolverSetFromOptions();
-   Routines: TaoSolverSetHistory(); TaoSolverGetHistory();
-   Routines: TaoSolverSolve();
-   Routines: TaoSolverGetTerminationReason(); TaoSolverDestroy(); 
+   Routines: TaoCreate();
+   Routines: TaoSetType(); 
+   Routines: TaoSetInitialVector();
+   Routines: TaoSetObjectiveRoutine();
+   Routines: TaoSetGradientRoutine();
+   Routines: TaoSetConstraintsRoutine();
+   Routines: TaoSetJacobianStateRoutine();
+   Routines: TaoSetJacobianDesignRoutine();
+   Routines: TaoSetStateDesignIS();
+   Routines: TaoSetFromOptions();
+   Routines: TaoSetHistory(); TaoGetHistory();
+   Routines: TaoSolve();
+   Routines: TaoGetTerminationReason(); TaoDestroy(); 
    Processors: n
 T*/
 
@@ -198,25 +198,25 @@ int main(int argc, char **argv)
 
 
   /* Create TAO solver and set desired solution method */
-  ierr = TaoSolverCreate(PETSC_COMM_WORLD,&tao); CHKERRQ(ierr);
-  ierr = TaoSolverSetType(tao,"tao_lcl"); CHKERRQ(ierr);
+  ierr = TaoCreate(PETSC_COMM_WORLD,&tao); CHKERRQ(ierr);
+  ierr = TaoSetType(tao,"tao_lcl"); CHKERRQ(ierr);
 
 
   /* Set solution vector with an initial guess */
-  ierr = TaoSolverSetInitialVector(tao,x); CHKERRQ(ierr);
-  ierr = TaoSolverSetObjectiveRoutine(tao, FormFunction, (void *)&user); CHKERRQ(ierr);
-  ierr = TaoSolverSetGradientRoutine(tao, FormGradient, (void *)&user); CHKERRQ(ierr);
-  ierr = TaoSolverSetConstraintsRoutine(tao, user.c, FormConstraints, (void *)&user); CHKERRQ(ierr);
+  ierr = TaoSetInitialVector(tao,x); CHKERRQ(ierr);
+  ierr = TaoSetObjectiveRoutine(tao, FormFunction, (void *)&user); CHKERRQ(ierr);
+  ierr = TaoSetGradientRoutine(tao, FormGradient, (void *)&user); CHKERRQ(ierr);
+  ierr = TaoSetConstraintsRoutine(tao, user.c, FormConstraints, (void *)&user); CHKERRQ(ierr);
  
-  ierr = TaoSolverSetJacobianStateRoutine(tao, user.Js, user.Js, user.JsInv, FormJacobianState, (void *)&user); CHKERRQ(ierr); 
-  ierr = TaoSolverSetJacobianDesignRoutine(tao, user.Jd, FormJacobianDesign, (void *)&user); CHKERRQ(ierr);
+  ierr = TaoSetJacobianStateRoutine(tao, user.Js, user.Js, user.JsInv, FormJacobianState, (void *)&user); CHKERRQ(ierr); 
+  ierr = TaoSetJacobianDesignRoutine(tao, user.Jd, FormJacobianDesign, (void *)&user); CHKERRQ(ierr);
 
-  ierr = TaoSolverSetFromOptions(tao); CHKERRQ(ierr);
-  ierr = TaoSolverSetStateDesignIS(tao,user.s_is,user.d_is); CHKERRQ(ierr);
+  ierr = TaoSetFromOptions(tao); CHKERRQ(ierr);
+  ierr = TaoSetStateDesignIS(tao,user.s_is,user.d_is); CHKERRQ(ierr);
 
   /* SOLVE THE APPLICATION */
   PetscInt ntests = 1;
-  ierr = PetscOptionsInt("-ntests","Number of times to repeat TaoSolverSolve","",ntests,&ntests,&flag); CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-ntests","Number of times to repeat TaoSolve","",ntests,&ntests,&flag); CHKERRQ(ierr);
   PetscLogDouble v1,v2;
   PetscInt i;
   int stages[1];
@@ -225,11 +225,11 @@ int main(int argc, char **argv)
   user.ksp_its_initial = user.ksp_its;
   for (i=0; i<ntests; i++){
     ierr = PetscGetTime(&v1); CHKERRQ(ierr);
-    ierr = TaoSolverSolve(tao);  CHKERRQ(ierr);
+    ierr = TaoSolve(tao);  CHKERRQ(ierr);
     ierr = PetscGetTime(&v2); CHKERRQ(ierr);
     PetscPrintf(PETSC_COMM_WORLD,"Elapsed time = %G\n",v2-v1);
     ierr = VecCopy(x0,x); CHKERRQ(ierr);
-    ierr = TaoSolverSetInitialVector(tao,x); CHKERRQ(ierr);
+    ierr = TaoSetInitialVector(tao,x); CHKERRQ(ierr);
     user.solve_type = 3;
   }
   ierr = PetscLogStagePop(); CHKERRQ(ierr);
@@ -241,7 +241,7 @@ int main(int argc, char **argv)
   PetscPrintf(PETSC_COMM_WORLD,"KSP iterations per trial: ");
   PetscPrintf(PETSC_COMM_WORLD,"%D\n",(user.ksp_its-user.ksp_its_initial)/ntests);
 
-  ierr = TaoSolverGetTerminationReason(tao,&reason); CHKERRQ(ierr);
+  ierr = TaoGetTerminationReason(tao,&reason); CHKERRQ(ierr);
 
   if (reason < 0)
   {
@@ -254,7 +254,7 @@ int main(int argc, char **argv)
 
 
   /* Free TAO data structures */
-  ierr = TaoSolverDestroy(&tao); CHKERRQ(ierr);
+  ierr = TaoDestroy(&tao); CHKERRQ(ierr);
 
   /* Free PETSc data structures */
   ierr = VecDestroy(&x); CHKERRQ(ierr);
@@ -1243,7 +1243,7 @@ PetscErrorCode EllipticMonitor(TaoSolver tao, void *ptr)
   PetscReal unorm,ynorm;
   AppCtx *user = (AppCtx*)ptr;
   PetscFunctionBegin;
-  ierr = TaoSolverGetSolutionVector(tao,&X); CHKERRQ(ierr);
+  ierr = TaoGetSolutionVector(tao,&X); CHKERRQ(ierr);
   ierr = Scatter(X,user->ywork,user->state_scatter,user->uwork,user->design_scatter); CHKERRQ(ierr);
   ierr = VecAXPY(user->ywork,-1.0,user->ytrue); CHKERRQ(ierr);
   ierr = VecAXPY(user->uwork,-1.0,user->utrue); CHKERRQ(ierr);

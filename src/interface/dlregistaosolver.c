@@ -3,14 +3,14 @@
 #include "include/private/taosolver_impl.h"
 #include "include/private/taodm_impl.h"
 
-static PetscBool TaoSolverPackageInitialized = PETSC_FALSE;
+static PetscBool TaoPackageInitialized = PETSC_FALSE;
 
 #undef __FUNCT__
-#define __FUNCT__ "TaoSolverInitializePackage"
+#define __FUNCT__ "TaoInitializePackage"
 /*@C
-  TaoSolverInitializePackage - This function sets up PETSc to use the TaoSolver 
+  TaoInitializePackage - This function sets up PETSc to use the TaoSolver 
   package.  When using static libraries, this function is called from the
-  first entry to TaoSolverCreate(); when using shared libraries, it is called
+  first entry to TaoCreate(); when using shared libraries, it is called
   from PetscDLLibraryRegister()
 
   Input parameter:
@@ -18,29 +18,29 @@ static PetscBool TaoSolverPackageInitialized = PETSC_FALSE;
 
   Level: developer
 
-.seealso: TaoSolverCreate()
+.seealso: TaoCreate()
 @*/
-PetscErrorCode TaoSolverInitializePackage(const char path[])
+PetscErrorCode TaoInitializePackage(const char path[])
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
 
-  if (TaoSolverPackageInitialized) PetscFunctionReturn(0);
-  TaoSolverPackageInitialized = PETSC_TRUE;
+  if (TaoPackageInitialized) PetscFunctionReturn(0);
+  TaoPackageInitialized = PETSC_TRUE;
 
   ierr = PetscClassIdRegister("TaoSolver",&TAOSOLVER_CLASSID); CHKERRQ(ierr);
   
   /* Tell PETSc what solvers are available */
-  ierr = TaoSolverRegisterAll(path); CHKERRQ(ierr);
+  ierr = TaoRegisterAll(path); CHKERRQ(ierr);
 
   /* Tell PETSc what events are associated with TaoSolver */
-  ierr = PetscLogEventRegister("TaoSolverSolve",TAOSOLVER_CLASSID,&TaoSolver_Solve); CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("TaoSolverObjectiveEval",TAOSOLVER_CLASSID,&TaoSolver_ObjectiveEval); CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("TaoSolverGradientEval",TAOSOLVER_CLASSID,&TaoSolver_GradientEval); CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("TaoSolverHessianEval",TAOSOLVER_CLASSID,&TaoSolver_HessianEval); CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("TaoSolverConstraintsEval",TAOSOLVER_CLASSID,&TaoSolver_ConstraintsEval); CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("TaoSolverJacobianEval",TAOSOLVER_CLASSID,&TaoSolver_JacobianEval); CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("TaoSolve",TAOSOLVER_CLASSID,&TaoSolver_Solve); CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("TaoObjectiveEval",TAOSOLVER_CLASSID,&TaoSolver_ObjectiveEval); CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("TaoGradientEval",TAOSOLVER_CLASSID,&TaoSolver_GradientEval); CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("TaoHessianEval",TAOSOLVER_CLASSID,&TaoSolver_HessianEval); CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("TaoConstraintsEval",TAOSOLVER_CLASSID,&TaoSolver_ConstraintsEval); CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("TaoJacobianEval",TAOSOLVER_CLASSID,&TaoSolver_JacobianEval); CHKERRQ(ierr);
 
 
   PetscFunctionReturn(0);
@@ -69,7 +69,7 @@ PetscErrorCode PetscDLLibraryRegister_taosolver(const char path[])
     if (ierr)
 	return 1;
     PetscFunctionBegin;
-    ierr = TaoSolverInitializePackage(path); CHKERRQ(ierr);
+    ierr = TaoInitializePackage(path); CHKERRQ(ierr);
     PetscFunctionReturn(0);
 }
 EXTERN_C_END

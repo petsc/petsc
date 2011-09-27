@@ -5,8 +5,8 @@
 
 /*------------------------------------------------------------*/
 #undef __FUNCT__  
-#define __FUNCT__ "TaoSolverSolve_BLMVM"
-static PetscErrorCode TaoSolverSolve_BLMVM(TaoSolver tao)
+#define __FUNCT__ "TaoSolve_BLMVM"
+static PetscErrorCode TaoSolve_BLMVM(TaoSolver tao)
 {
   PetscErrorCode ierr;
   TAO_BLMVM *blmP = (TAO_BLMVM *)tao->data;
@@ -26,7 +26,7 @@ static PetscErrorCode TaoSolverSolve_BLMVM(TaoSolver tao)
   ierr = VecMedian(tao->XL,tao->solution,tao->XU,tao->solution); CHKERRQ(ierr);
 
   // Check convergence criteria
-  ierr = TaoSolverComputeObjectiveAndGradient(tao, tao->solution,&f,blmP->unprojected_gradient); CHKERRQ(ierr);
+  ierr = TaoComputeObjectiveAndGradient(tao, tao->solution,&f,blmP->unprojected_gradient); CHKERRQ(ierr);
   ierr = VecBoundGradientProjection(blmP->unprojected_gradient,tao->solution, tao->XL,tao->XU,tao->gradient); CHKERRQ(ierr);
 
 
@@ -35,7 +35,7 @@ static PetscErrorCode TaoSolverSolve_BLMVM(TaoSolver tao)
     SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf pr NaN");
   }
 
-  ierr = TaoSolverMonitor(tao, iter, f, gnorm, 0.0, stepsize, &reason); CHKERRQ(ierr);
+  ierr = TaoMonitor(tao, iter, f, gnorm, 0.0, stepsize, &reason); CHKERRQ(ierr);
   if (reason != TAO_CONTINUE_ITERATING) {
     PetscFunctionReturn(0);
   }
@@ -87,7 +87,7 @@ static PetscErrorCode TaoSolverSolve_BLMVM(TaoSolver tao)
     ierr = VecCopy(blmP->unprojected_gradient, blmP->Gold); CHKERRQ(ierr);
     ierr = TaoLineSearchSetInitialStepLength(tao->linesearch,1.0); CHKERRQ(ierr);
     ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &f, blmP->unprojected_gradient, tao->stepdirection, &stepsize, &ls_status); CHKERRQ(ierr);
-    ierr = TaoSolverAddLineSearchCounts(tao); CHKERRQ(ierr);
+    ierr = TaoAddLineSearchCounts(tao); CHKERRQ(ierr);
 
     if (ls_status<0) {
       // Linesearch failed
@@ -114,7 +114,7 @@ static PetscErrorCode TaoSolverSolve_BLMVM(TaoSolver tao)
       // that should be reset.
       ierr = TaoLineSearchSetInitialStepLength(tao->linesearch,1.0);
       ierr = TaoLineSearchApply(tao->linesearch,tao->solution,&f, blmP->unprojected_gradient, tao->stepdirection,  &stepsize, &ls_status); CHKERRQ(ierr);
-      ierr = TaoSolverAddLineSearchCounts(tao); CHKERRQ(ierr);
+      ierr = TaoAddLineSearchCounts(tao); CHKERRQ(ierr);
 
       if ((int) ls_status < 0) {
         // Linesearch failed
@@ -131,7 +131,7 @@ static PetscErrorCode TaoSolverSolve_BLMVM(TaoSolver tao)
       SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Not-a-Number");
     }
     iter++;
-    ierr = TaoSolverMonitor(tao, iter, f, gnorm, 0.0, stepsize, &reason); CHKERRQ(ierr);
+    ierr = TaoMonitor(tao, iter, f, gnorm, 0.0, stepsize, &reason); CHKERRQ(ierr);
   }
 
 
@@ -140,15 +140,15 @@ static PetscErrorCode TaoSolverSolve_BLMVM(TaoSolver tao)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "TaoSolverSetup_BLMVM"
-static PetscErrorCode TaoSolverSetup_BLMVM(TaoSolver tao)
+#define __FUNCT__ "TaoSetup_BLMVM"
+static PetscErrorCode TaoSetup_BLMVM(TaoSolver tao)
 {
   TAO_BLMVM *blmP = (TAO_BLMVM *)tao->data;
   PetscInt n,N;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  /* Existence of tao->solution checked in TaoSolverSetup() */
+  /* Existence of tao->solution checked in TaoSetup() */
   
   ierr = VecDuplicate(tao->solution,&blmP->Xold); CHKERRQ(ierr);
   ierr = VecDuplicate(tao->solution,&blmP->Gold); CHKERRQ(ierr);
@@ -181,8 +181,8 @@ static PetscErrorCode TaoSolverSetup_BLMVM(TaoSolver tao)
 
 /* ---------------------------------------------------------- */
 #undef __FUNCT__  
-#define __FUNCT__ "TaoSolverDestroy_BLMVM"
-static PetscErrorCode TaoSolverDestroy_BLMVM(TaoSolver tao)
+#define __FUNCT__ "TaoDestroy_BLMVM"
+static PetscErrorCode TaoDestroy_BLMVM(TaoSolver tao)
 {
   TAO_BLMVM *blmP = (TAO_BLMVM *)tao->data;
   PetscErrorCode ierr;
@@ -202,8 +202,8 @@ static PetscErrorCode TaoSolverDestroy_BLMVM(TaoSolver tao)
 
 /*------------------------------------------------------------*/
 #undef __FUNCT__  
-#define __FUNCT__ "TaoSolverSetFromOptions_BLMVM"
-static PetscErrorCode TaoSolverSetFromOptions_BLMVM(TaoSolver tao)
+#define __FUNCT__ "TaoSetFromOptions_BLMVM"
+static PetscErrorCode TaoSetFromOptions_BLMVM(TaoSolver tao)
 {
 
   PetscErrorCode ierr;
@@ -220,8 +220,8 @@ static PetscErrorCode TaoSolverSetFromOptions_BLMVM(TaoSolver tao)
 
 /*------------------------------------------------------------*/
 #undef __FUNCT__  
-#define __FUNCT__ "TaoSolverView_BLMVM"
-static int TaoSolverView_BLMVM(TaoSolver tao, PetscViewer viewer)
+#define __FUNCT__ "TaoView_BLMVM"
+static int TaoView_BLMVM(TaoSolver tao, PetscViewer viewer)
 {
 
     
@@ -244,8 +244,8 @@ static int TaoSolverView_BLMVM(TaoSolver tao, PetscViewer viewer)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "TaoSolverComputeDual_BLMVM" 
-static PetscErrorCode TaoSolverComputeDual_BLMVM(TaoSolver tao, Vec DXL, Vec DXU)
+#define __FUNCT__ "TaoComputeDual_BLMVM" 
+static PetscErrorCode TaoComputeDual_BLMVM(TaoSolver tao, Vec DXL, Vec DXU)
 {
   TAO_BLMVM *blm = (TAO_BLMVM *) tao->data;
   PetscErrorCode ierr;
@@ -274,20 +274,20 @@ static PetscErrorCode TaoSolverComputeDual_BLMVM(TaoSolver tao, Vec DXL, Vec DXU
 /* ---------------------------------------------------------- */
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "TaoSolverCreate_BLMVM"
-PetscErrorCode TaoSolverCreate_BLMVM(TaoSolver tao)
+#define __FUNCT__ "TaoCreate_BLMVM"
+PetscErrorCode TaoCreate_BLMVM(TaoSolver tao)
 {
   TAO_BLMVM *blmP;
   const char *morethuente_type = TAOLINESEARCH_MT;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  tao->ops->setup = TaoSolverSetup_BLMVM;
-  tao->ops->solve = TaoSolverSolve_BLMVM;
-  tao->ops->view = TaoSolverView_BLMVM;
-  tao->ops->setfromoptions = TaoSolverSetFromOptions_BLMVM;
-  tao->ops->destroy = TaoSolverDestroy_BLMVM;
-  tao->ops->computedual = TaoSolverComputeDual_BLMVM;
+  tao->ops->setup = TaoSetup_BLMVM;
+  tao->ops->solve = TaoSolve_BLMVM;
+  tao->ops->view = TaoView_BLMVM;
+  tao->ops->setfromoptions = TaoSetFromOptions_BLMVM;
+  tao->ops->destroy = TaoDestroy_BLMVM;
+  tao->ops->computedual = TaoComputeDual_BLMVM;
 
   ierr = PetscNewLog(tao, TAO_BLMVM, &blmP); CHKERRQ(ierr);
   tao->data = (void*)blmP;

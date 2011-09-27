@@ -47,28 +47,28 @@ int main(int argc, char **argv)
   ierr = MatAssemblyEnd(Jd,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
 
   /* Create TAO solver and set desired solution method */
-  ierr = TaoSolverCreate(PETSC_COMM_SELF,&tao); CHKERRQ(ierr);
-  ierr = TaoSolverSetType(tao,"tao_rsqn"); CHKERRQ(ierr);
+  ierr = TaoCreate(PETSC_COMM_SELF,&tao); CHKERRQ(ierr);
+  ierr = TaoSetType(tao,"tao_rsqn"); CHKERRQ(ierr);
 
   /* Set solution vector with an initial guess */
   ierr = VecSet(c, 0); CHKERRQ(ierr);
   ierr = VecSet(x, 0); CHKERRQ(ierr);
 
-  ierr = TaoSolverSetInitialVector(tao,x); CHKERRQ(ierr);
-  ierr = TaoSolverSetObjectiveRoutine(tao, FormFunction, (void *)&user); CHKERRQ(ierr);
-  ierr = TaoSolverSetGradientRoutine(tao, FormGradient, (void *)&user); CHKERRQ(ierr);
-  ierr = TaoSolverSetConstraintsRoutine(tao, c, FormConstraints, (void *)&user); CHKERRQ(ierr);
+  ierr = TaoSetInitialVector(tao,x); CHKERRQ(ierr);
+  ierr = TaoSetObjectiveRoutine(tao, FormFunction, (void *)&user); CHKERRQ(ierr);
+  ierr = TaoSetGradientRoutine(tao, FormGradient, (void *)&user); CHKERRQ(ierr);
+  ierr = TaoSetConstraintsRoutine(tao, c, FormConstraints, (void *)&user); CHKERRQ(ierr);
 
-  ierr = TaoSolverSetJacobianStateRoutine(tao, Js, Js, FormJacobianState, (void *)&user); CHKERRQ(ierr);
-  ierr = TaoSolverSetJacobianDesignRoutine(tao, Jd, Jd, FormJacobianDesign, (void *)&user); CHKERRQ(ierr);
-  //ierr = TaoSolverSetHessianRoutine(tao, H, H, FormHessian,  (void *)&user); CHKERRQ(ierr);
-  ierr = TaoSolverRSQNSetStateIS(tao,user.ais); CHKERRQ(ierr);
-  ierr = TaoSolverSetFromOptions(tao); CHKERRQ(ierr);
+  ierr = TaoSetJacobianStateRoutine(tao, Js, Js, FormJacobianState, (void *)&user); CHKERRQ(ierr);
+  ierr = TaoSetJacobianDesignRoutine(tao, Jd, Jd, FormJacobianDesign, (void *)&user); CHKERRQ(ierr);
+  //ierr = TaoSetHessianRoutine(tao, H, H, FormHessian,  (void *)&user); CHKERRQ(ierr);
+  ierr = TaoRSQNSetStateIS(tao,user.ais); CHKERRQ(ierr);
+  ierr = TaoSetFromOptions(tao); CHKERRQ(ierr);
 
   /* SOLVE THE APPLICATION */
-  ierr = TaoSolverSolve(tao);  CHKERRQ(ierr);
+  ierr = TaoSolve(tao);  CHKERRQ(ierr);
 
-  ierr = TaoSolverGetTerminationReason(tao,&reason); CHKERRQ(ierr);
+  ierr = TaoGetTerminationReason(tao,&reason); CHKERRQ(ierr);
 
   if (reason < 0)
   {
@@ -81,7 +81,7 @@ int main(int argc, char **argv)
 
 
   /* Free TAO data structures */
-  ierr = TaoSolverDestroy(&tao); CHKERRQ(ierr);
+  ierr = TaoDestroy(&tao); CHKERRQ(ierr);
 
   /* Free PETSc data structures */
   ierr = VecDestroy(&x); CHKERRQ(ierr);

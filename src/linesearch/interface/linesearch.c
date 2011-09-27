@@ -204,11 +204,11 @@ PetscErrorCode TaoLineSearchSetUp(TaoLineSearch ls)
 	 info = (*ls->ops->setup)(ls); CHKERRQ(info);
      }
      if (ls->usetaoroutines) {
-       ierr = TaoSolverIsObjectiveDefined(ls->taosolver,&flg); CHKERRQ(ierr);
+       ierr = TaoIsObjectiveDefined(ls->taosolver,&flg); CHKERRQ(ierr);
        ls->hasobjective = flg;
-       ierr = TaoSolverIsGradientDefined(ls->taosolver,&flg); CHKERRQ(ierr);
+       ierr = TaoIsGradientDefined(ls->taosolver,&flg); CHKERRQ(ierr);
        ls->hasgradient = flg;
-       ierr = TaoSolverIsObjectiveAndGradientDefined(ls->taosolver,&flg); CHKERRQ(ierr);
+       ierr = TaoIsObjectiveAndGradientDefined(ls->taosolver,&flg); CHKERRQ(ierr);
        ls->hasobjectiveandgradient = flg;
      } else {
        if (ls->ops->computeobjective) {
@@ -312,12 +312,12 @@ PetscErrorCode TaoLineSearchDestroy(TaoLineSearch *ls)
   
   Note:
   You may or may not need to follow this with a call to 
-  TaoSolverAddLineSearchCounts(), depending on whether you want these
+  TaoAddLineSearchCounts(), depending on whether you want these
   evaluations to count toward the total function/gradient evaluations.
 
   Level: developer
 
-  .seealso: TaoLineSearchCreate(), TaoLineSearchSetType(), TaoLineSearchSetInitialStepLength(), TaoSolverAddLineSearchCounts()
+  .seealso: TaoLineSearchCreate(), TaoLineSearchSetType(), TaoLineSearchSetInitialStepLength(), TaoAddLineSearchCounts()
  @*/
 
 PetscErrorCode TaoLineSearchApply(TaoLineSearch ls, Vec x, PetscReal *f, Vec g, Vec s, PetscReal *steplength, TaoLineSearchTerminationReason *reason)
@@ -897,7 +897,7 @@ PetscErrorCode TaoLineSearchComputeObjective(TaoLineSearch ls, Vec x, PetscReal 
     PetscValidPointer(f,3);
     PetscCheckSameComm(ls,1,x,2);
     if (ls->usetaoroutines) {
-      ierr = TaoSolverComputeObjective(ls->taosolver,x,f); CHKERRQ(ierr);
+      ierr = TaoComputeObjective(ls->taosolver,x,f); CHKERRQ(ierr);
     } else {
       ierr = PetscLogEventBegin(TaoLineSearch_EvalEvent,ls,0,0,0); CHKERRQ(ierr);
       if (!ls->ops->computeobjective && !ls->ops->computeobjectiveandgradient
@@ -958,7 +958,7 @@ PetscErrorCode TaoLineSearchComputeObjectiveAndGradient(TaoLineSearch ls, Vec x,
     PetscCheckSameComm(ls,1,x,2);
     PetscCheckSameComm(ls,1,g,4);
     if (ls->usetaoroutines) {
-      ierr = TaoSolverComputeObjectiveAndGradient(ls->taosolver,x,f,g); 
+      ierr = TaoComputeObjectiveAndGradient(ls->taosolver,x,f,g); 
       CHKERRQ(ierr); 
     } else {
       ierr = PetscLogEventBegin(TaoLineSearch_EvalEvent,ls,0,0,0); CHKERRQ(ierr);
@@ -1018,7 +1018,7 @@ PetscErrorCode TaoLineSearchComputeGradient(TaoLineSearch ls, Vec x, Vec g)
     PetscCheckSameComm(ls,1,x,2);
     PetscCheckSameComm(ls,1,g,3);
     if (ls->usetaoroutines) {
-      ierr = TaoSolverComputeGradient(ls->taosolver,x,g); CHKERRQ(ierr);
+      ierr = TaoComputeGradient(ls->taosolver,x,g); CHKERRQ(ierr);
     } else {
       ierr = PetscLogEventBegin(TaoLineSearch_EvalEvent,ls,0,0,0); CHKERRQ(ierr);
       if (!ls->ops->computegradient && !ls->ops->computeobjectiveandgradient) {
@@ -1239,7 +1239,7 @@ PetscErrorCode TaoLineSearchGetFullStepObjective(TaoLineSearch ls, PetscReal *f_
 
   Level: developer
 
-.seealso: TaoSolverSetVariableBounds(), TaoLineSearchCreate()
+.seealso: TaoSetVariableBounds(), TaoLineSearchCreate()
 @*/
 PetscErrorCode TaoLineSearchSetVariableBounds(TaoLineSearch ls,Vec xl, Vec xu)
 {

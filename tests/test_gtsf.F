@@ -10,14 +10,6 @@
 !
 !/*T
 !   Concepts: TAO - Solving an unconstrained minimization problem
-!   Routines: TaoInitialize(); TaoFinalize(); 
-!   Routines: TaoCreate(); TaoDestroy();
-!   Routines: TaoApplicationCreate(); TaoAppDestroy();
-!   Routines: TaoAppSetObjectiveAndGradientRoutine();
-!   Routines: TaoAppSetHessianMat(); TaoAppSetHessianRoutine();
-!   Routines: TaoSetOptions();
-!   Routines: TaoAppSetInitialSolutionVec(); TaoSolveApplication(); TaoDestroy();
-!   Routines: TaoGetSolutionStatus();
 !   Processors: n
 !T*/
 !
@@ -112,29 +104,29 @@
 !     The TAO code begins here
 
 !     Create TAO solver
-      call TaoSolverCreate(PETSC_COMM_WORLD,tao,ierr)
+      call TaoCreate(PETSC_COMM_WORLD,tao,ierr)
       CHKERRQ(ierr)
-      call TaoSolverSetType(tao,"tao_cg",ierr)
+      call TaoSetType(tao,"tao_cg",ierr)
       CHKERRQ(ierr)
 
 !     Set routines for function and gradient evaluation
 
-      call TaoSolverSetObjectiveAndGradientRoutine(tao,                  &
+      call TaoSetObjectiveAndGradientRoutine(tao,                       &
      &     FormFunctionGradient,PETSC_NULL_OBJECT,ierr)
       CHKERRQ(ierr)
-      call TaoSolverSetHessianRoutine(tao,H,H,ComputeHessian,            &
+      call TaoSetHessianRoutine(tao,H,H,ComputeHessian,                 &
      &     PETSC_NULL_OBJECT,ierr)
       CHKERRQ(ierr)
 
 !     Set initial guess
       call FormInitialGuess(x,ierr)
       CHKERRQ(ierr)
-      call TaoSolverSetInitialVector(tao,x,ierr)
+      call TaoSetInitialVector(tao,x,ierr)
       CHKERRQ(ierr)
 !     Check for any TAO command line options
-      call TaoSolverSetFromOptions(tao,ierr)
+      call TaoSetFromOptions(tao,ierr)
       CHKERRQ(ierr)
-      call TaoSolverGetLineSearch(tao,ls,ierr)
+      call TaoGetLineSearch(tao,ls,ierr)
       CHKERRQ(ierr)
 
       call TaoLineSearchSetObjectiveAndGTSRoutine(ls,FormFunctionGTS,     &
@@ -144,11 +136,11 @@
      &     GWork,ierr)
 
 !     SOLVE THE APPLICATION
-      call TaoSolverSolve(tao,ierr)
+      call TaoSolve(tao,ierr)
       CHKERRQ(ierr)
 
 !     Get information on termination
-      call TaoSolverGetTerminationReason(tao,reason,ierr)
+      call TaoGetTerminationReason(tao,reason,ierr)
       CHKERRQ(ierr)
       if (reason .lt. 0) then
           call PetscPrintF(PETSC_COMM_WORLD,                              &
@@ -158,7 +150,7 @@
 
       
 !     Free TAO data structures
-      call TaoSolverDestroy(tao,ierr)
+      call TaoDestroy(tao,ierr)
       CHKERRQ(ierr)
 
   

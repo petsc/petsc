@@ -337,16 +337,16 @@ PetscErrorCode  TaoDMSolve(TaoDM *taodm)
   ierr = TaoDMSetUp(taodm);
   if (taodm[0]->ops->computeinitialguess) {
     ierr = (*taodm[0]->ops->computeinitialguess)(taodm[0],taodm[0]->x);CHKERRQ(ierr);
-    ierr = TaoSolverSetInitialVector(taodm[0]->tao,taodm[0]->x); CHKERRQ(ierr);
+    ierr = TaoSetInitialVector(taodm[0]->tao,taodm[0]->x); CHKERRQ(ierr);
   }
   for (i=0; i<nlevels; i++) {
     /* generate hessian for this level */
     ierr = DMGetMatrix(taodm[i]->dm,taodm[nlevels-1]->mtype,&taodm[i]->hessian);CHKERRQ(ierr);
     taodm[i]->hessian_pre = 0;
     if (taodm[i]->ops->computehessianlocal) {
-      ierr = TaoSolverSetHessianRoutine(taodm[i]->tao,taodm[i]->hessian,taodm[i]->hessian,TaoDMFormHessianLocal,taodm[i]); CHKERRQ(ierr);
+      ierr = TaoSetHessianRoutine(taodm[i]->tao,taodm[i]->hessian,taodm[i]->hessian,TaoDMFormHessianLocal,taodm[i]); CHKERRQ(ierr);
     } else if (taodm[i]->ops->computehessian) {
-      ierr = TaoSolverSetHessianRoutine(taodm[i]->tao,taodm[i]->hessian,taodm[i]->hessian,taodm[i]->ops->computehessian,taodm[i]); CHKERRQ(ierr);
+      ierr = TaoSetHessianRoutine(taodm[i]->tao,taodm[i]->hessian,taodm[i]->hessian,taodm[i]->ops->computehessian,taodm[i]); CHKERRQ(ierr);
     }
 
 
@@ -354,7 +354,7 @@ PetscErrorCode  TaoDMSolve(TaoDM *taodm)
       ierr = (*taodm[i]->prelevelmonitor[j])(taodm[i],i,taodm[i]->userpremonitor[j]); CHKERRQ(ierr);
     }
 
-    ierr = TaoSolverSolve(taodm[i]->tao);CHKERRQ(ierr);
+    ierr = TaoSolve(taodm[i]->tao);CHKERRQ(ierr);
     if (vecmonitor) {
       ierr = VecView(taodm[i]->x,PETSC_VIEWER_DRAW_(((PetscObject)(taodm[i]))->comm));CHKERRQ(ierr);
     }
@@ -365,7 +365,7 @@ PetscErrorCode  TaoDMSolve(TaoDM *taodm)
     /* get ready for next level (if another exists) */
     if (i < nlevels-1) {
       ierr = MatInterpolate(taodm[i+1]->R,taodm[i]->x,taodm[i+1]->x);CHKERRQ(ierr);
-      ierr = TaoSolverSetInitialVector(taodm[i+1]->tao,taodm[i+1]->x);
+      ierr = TaoSetInitialVector(taodm[i+1]->tao,taodm[i+1]->x);
     }
   }
   
@@ -394,7 +394,7 @@ PetscErrorCode  TaoDMSolve(TaoDM *taodm)
 #undef __FUNCT__
 #define __FUNCT__ "TaoDMSetTolerances"
 /*
-  TaoSolverSetTolerances - Sets parameters used in TAO convergence tests
+  TaoSetTolerances - Sets parameters used in TAO convergence tests
 
   Collective on TaoSolver
 

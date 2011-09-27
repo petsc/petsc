@@ -21,14 +21,14 @@ The command line options are:\n\
 /*T 
    Concepts: TAO - Solving a bound constrained minimization problem
    Routines: TaoInitialize(); TaoFinalize();
-   Routines: TaoSolverCreate();
-   Routines: TaoSolverSetType(); TaoSolverSetObjectiveAndGradientRoutine();
-   Routines: TaoSolverSetHessianRoutine();
-   Routines: TaoSolverSetInitialVector();
-   Routines: TaoSolverSetVariableBounds();
-   Routines: TaoSolverSetFromOptions();
-   Routines: TaoSolverSolve(); TaoSolverView();
-   Routines: TaoSolverGetTerminationReason(); TaoSolverDestroy(); 
+   Routines: TaoCreate();
+   Routines: TaoSetType(); TaoSetObjectiveAndGradientRoutine();
+   Routines: TaoSetHessianRoutine();
+   Routines: TaoSetInitialVector();
+   Routines: TaoSetVariableBounds();
+   Routines: TaoSetFromOptions();
+   Routines: TaoSolve(); TaoView();
+   Routines: TaoGetTerminationReason(); TaoDestroy(); 
    Processors: n
 T*/ 
 
@@ -136,16 +136,16 @@ int main( int argc, char **argv )
      The method must either be 'tao_tron' or 'tao_blmvm'
      If blmvm is used, then hessian function is not called.
   */
-  ierr = TaoSolverCreate(PETSC_COMM_WORLD,&tao); CHKERRQ(ierr);
-  ierr = TaoSolverSetType(tao,"tao_blmvm"); CHKERRQ(ierr);
+  ierr = TaoCreate(PETSC_COMM_WORLD,&tao); CHKERRQ(ierr);
+  ierr = TaoSetType(tao,"tao_blmvm"); CHKERRQ(ierr);
 
   /* Set initial solution guess; */
   ierr = MSA_BoundaryConditions(&user); CHKERRQ(ierr);
   ierr = MSA_InitialPoint(&user,x); CHKERRQ(ierr);
-  ierr = TaoSolverSetInitialVector(tao,x); CHKERRQ(ierr);
+  ierr = TaoSetInitialVector(tao,x); CHKERRQ(ierr);
   
   /* Set routines for function, gradient and hessian evaluation */
-  ierr = TaoSolverSetObjectiveAndGradientRoutine(tao,FormFunctionGradient,(void*) &user); 
+  ierr = TaoSetObjectiveAndGradientRoutine(tao,FormFunctionGradient,(void*) &user); 
   CHKERRQ(ierr);
 
   ierr = VecGetLocalSize(x,&m); CHKERRQ(ierr);
@@ -160,30 +160,30 @@ int main( int argc, char **argv )
       ierr = MatCreateShell(PETSC_COMM_WORLD,m,m,m,m,(void*)&user,&H_shell);
       ierr = MatShellSetOperation(H_shell,MATOP_MULT,(void(*)())MyMatMult); CHKERRQ(ierr);
       ierr = MatSetOption(H_shell,MAT_SYMMETRIC,PETSC_TRUE); CHKERRQ(ierr);
-      ierr = TaoSolverSetHessianRoutine(tao,H_shell,H_shell,MatrixFreeHessian,(void*)&user); CHKERRQ(ierr);
+      ierr = TaoSetHessianRoutine(tao,H_shell,H_shell,MatrixFreeHessian,(void*)&user); CHKERRQ(ierr);
   } else {
-      ierr = TaoSolverSetHessianRoutine(tao,user.H,user.H,FormHessian,(void*)&user); 
+      ierr = TaoSetHessianRoutine(tao,user.H,user.H,FormHessian,(void*)&user); 
   }
   CHKERRQ(ierr);
 
   /* Set Variable bounds */
   ierr = MSA_Plate(xl,xu,(void*)&user); CHKERRQ(ierr);
-  ierr = TaoSolverSetVariableBounds(tao,xl,xu); CHKERRQ(ierr);
+  ierr = TaoSetVariableBounds(tao,xl,xu); CHKERRQ(ierr);
 
   /* Check for any tao command line options */
-  ierr = TaoSolverSetFromOptions(tao); CHKERRQ(ierr);
+  ierr = TaoSetFromOptions(tao); CHKERRQ(ierr);
 
   /* SOLVE THE APPLICATION */
-  ierr = TaoSolverSolve(tao);  CHKERRQ(ierr);
+  ierr = TaoSolve(tao);  CHKERRQ(ierr);
 
   /* Get ierrrmation on termination */
-  ierr = TaoSolverGetTerminationReason(tao,&reason); CHKERRQ(ierr);
-  ierr = TaoSolverView(tao,PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
+  ierr = TaoGetTerminationReason(tao,&reason); CHKERRQ(ierr);
+  ierr = TaoView(tao,PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
   if (reason <= 0){
     PetscPrintf(PETSC_COMM_WORLD,"Try a different TAO method, adjust some parameters, or check the function evaluation routines\n");
   }
   /* Free TAO data structures */
-  ierr = TaoSolverDestroy(&tao); CHKERRQ(ierr);
+  ierr = TaoDestroy(&tao); CHKERRQ(ierr);
 
   /* Free PETSc data structures */
   ierr = VecDestroy(&x); CHKERRQ(ierr);

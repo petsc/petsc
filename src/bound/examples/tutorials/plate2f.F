@@ -15,14 +15,14 @@
 !/*T
 !   Concepts: TAO - Solving a bound constrained minimization problem
 !   Routines: TaoInitialize(); TaoFinalize();
-!   Routines: TaoSolverCreate();
-!   Routines: TaoSolverSetType(); TaoSolverSetObjectiveAndGradientRoutine();
-!   Routines: TaoSolverSetHessianRoutine();
-!   Routines: TaoSolverSetVariableBoundsRoutine();      
-!   Routines: TaoSolverSetInitialVector();
-!   Routines: TaoSolverSetFromOptions();
-!   Routines: TaoSolverSolve();
-!   Routines: TaoSolverDestroy(); 
+!   Routines: TaoCreate();
+!   Routines: TaoSetType(); TaoSetObjectiveAndGradientRoutine();
+!   Routines: TaoSetHessianRoutine();
+!   Routines: TaoSetVariableBoundsRoutine();      
+!   Routines: TaoSetInitialVector();
+!   Routines: TaoSetFromOptions();
+!   Routines: TaoSolve();
+!   Routines: TaoDestroy(); 
 !   Processors: n
 !T*/
 
@@ -148,44 +148,44 @@
 ! This problems uses bounded variables, so the
 ! method must either be 'tao_tron' or 'tao_blmvm'
 
-      call TaoSolverCreate(PETSC_COMM_WORLD,tao,ierr)
+      call TaoCreate(PETSC_COMM_WORLD,tao,ierr)
       CHKERRQ(ierr)
-      call TaoSolverSetType(tao,'tao_blmvm',ierr)
+      call TaoSetType(tao,'tao_blmvm',ierr)
       CHKERRQ(ierr)
 
 !     Set minimization function and gradient, hessian evaluation functions
 
-      call TaoSolverSetObjectiveAndGradientRoutine(tao,                  &
+      call TaoSetObjectiveAndGradientRoutine(tao,                       &
      &     FormFunctionGradient,PETSC_NULL_OBJECT,ierr)
       CHKERRQ(ierr)
 
-      call TaoSolverSetHessianRoutine(tao,H,H,FormHessian,               &
+      call TaoSetHessianRoutine(tao,H,H,FormHessian,                    &
      &     PETSC_NULL_OBJECT, ierr)
       CHKERRQ(ierr)
 
 ! Set Variable bounds 
       call MSA_BoundaryConditions(ierr)
       CHKERRQ(ierr)
-      call TaoSolverSetVariableBoundsRoutine(tao,MSA_Plate,              &
+      call TaoSetVariableBoundsRoutine(tao,MSA_Plate,                   &
      &     PETSC_NULL_OBJECT,ierr)
       CHKERRQ(ierr)
 
 ! Set the initial solution guess
       call MSA_InitialPoint(x, ierr)
       CHKERRQ(ierr)
-      call TaoSolverSetInitialVector(tao,x,ierr)
+      call TaoSetInitialVector(tao,x,ierr)
       CHKERRQ(ierr)
 
 ! Check for any tao command line options
-      call TaoSolverSetFromOptions(tao,ierr)
+      call TaoSetFromOptions(tao,ierr)
       CHKERRQ(ierr)
 
 ! Solve the application
-      call TaoSolverSolve(tao,ierr)
+      call TaoSolve(tao,ierr)
       CHKERRQ(ierr)
 
 ! Free TAO data structures
-      call TaoSolverDestroy(tao,ierr)
+      call TaoDestroy(tao,ierr)
       CHKERRQ(ierr)
 
 ! Free PETSc data structures
@@ -547,7 +547,7 @@
       i1=1
       
 ! Set various matrix options 
-      call MatSetOption(Hessian,MAT_IGNORE_OFF_PROC_ENTRIES,
+      call MatSetOption(Hessian,MAT_IGNORE_OFF_PROC_ENTRIES,              &
      &                  PETSC_TRUE,ierr)
 
 ! Get local mesh boundaries

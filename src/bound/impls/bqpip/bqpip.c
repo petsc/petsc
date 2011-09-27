@@ -2,8 +2,8 @@
 #include "petscksp.h"
 
 #undef __FUNCT__  
-#define __FUNCT__ "TaoSolverSetUp_BQPIP"
-static PetscErrorCode TaoSolverSetUp_BQPIP(TaoSolver tao)
+#define __FUNCT__ "TaoSetUp_BQPIP"
+static PetscErrorCode TaoSetUp_BQPIP(TaoSolver tao)
 {
   TAO_BQPIP *qp =(TAO_BQPIP*)tao->data;
   PetscErrorCode ierr;
@@ -151,8 +151,8 @@ static PetscErrorCode  QPIPSetInitialPoint(TAO_BQPIP *qp, TaoSolver tao)
 
 
 #undef __FUNCT__  
-#define __FUNCT__ "TaoSolverDestroy_BQPIP"
-static PetscErrorCode TaoSolverDestroy_BQPIP(TaoSolver tao)
+#define __FUNCT__ "TaoDestroy_BQPIP"
+static PetscErrorCode TaoDestroy_BQPIP(TaoSolver tao)
 {
   TAO_BQPIP *qp = (TAO_BQPIP*)tao->data;
   PetscErrorCode ierr;
@@ -187,8 +187,8 @@ static PetscErrorCode TaoSolverDestroy_BQPIP(TaoSolver tao)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "TaoSolverSolve_BQPIP"
-static PetscErrorCode TaoSolverSolve_BQPIP(TaoSolver tao)
+#define __FUNCT__ "TaoSolve_BQPIP"
+static PetscErrorCode TaoSolve_BQPIP(TaoSolver tao)
 {
   TAO_BQPIP *qp = (TAO_BQPIP*)tao->data;
   PetscErrorCode ierr;
@@ -201,8 +201,8 @@ static PetscErrorCode TaoSolverSolve_BQPIP(TaoSolver tao)
   MatStructure matflag;
   
   PetscFunctionBegin;
-  ierr = TaoSolverComputeObjectiveAndGradient(tao,tao->solution,&qp->c,qp->C0); CHKERRQ(ierr);
-  ierr = TaoSolverComputeHessian(tao,tao->solution,&tao->hessian,&tao->hessian_pre,&matflag); CHKERRQ(ierr);
+  ierr = TaoComputeObjectiveAndGradient(tao,tao->solution,&qp->c,qp->C0); CHKERRQ(ierr);
+  ierr = TaoComputeHessian(tao,tao->solution,&tao->hessian,&tao->hessian_pre,&matflag); CHKERRQ(ierr);
   ierr = MatMult(tao->hessian, tao->solution, qp->Work); CHKERRQ(ierr);
   ierr = VecDot(tao->solution, qp->Work, &d1); CHKERRQ(ierr);
   ierr = VecAXPY(qp->C0, -1.0, qp->Work); CHKERRQ(ierr);
@@ -217,7 +217,7 @@ static PetscErrorCode TaoSolverSolve_BQPIP(TaoSolver tao)
   while (1){
 
     /* Check Stopping Condition      */
-    ierr = TaoSolverMonitor(tao,iter++,qp->pobj,sqrt(qp->gap + qp->dinfeas),
+    ierr = TaoMonitor(tao,iter++,qp->pobj,sqrt(qp->gap + qp->dinfeas),
 			    qp->pinfeas, step, &reason); CHKERRQ(ierr);
     if (reason != TAO_CONTINUE_ITERATING) break;
 
@@ -448,8 +448,8 @@ static PetscErrorCode QPStepLength(TAO_BQPIP *qp)
 
 
 #undef __FUNCT__
-#define __FUNCT__ "TaoSolverComputeDual_BQPIP"
-PetscErrorCode TaoSolverComputeDual_BQPIP(TaoSolver tao,Vec DXL, Vec DXU)
+#define __FUNCT__ "TaoComputeDual_BQPIP"
+PetscErrorCode TaoComputeDual_BQPIP(TaoSolver tao,Vec DXL, Vec DXU)
 {
   TAO_BQPIP *qp = (TAO_BQPIP*)tao->data;
   PetscErrorCode       ierr;
@@ -494,8 +494,8 @@ PetscErrorCode QPIPComputeNormFromCentralPath(TAO_BQPIP *qp, PetscReal *norm)
 
 
 #undef __FUNCT__  
-#define __FUNCT__ "TaoSolverSetFromOptions_BQPIP"
-static PetscErrorCode TaoSolverSetFromOptions_BQPIP(TaoSolver tao) 
+#define __FUNCT__ "TaoSetFromOptions_BQPIP"
+static PetscErrorCode TaoSetFromOptions_BQPIP(TaoSolver tao) 
 {
   TAO_BQPIP *qp = (TAO_BQPIP*)tao->data;
   PetscErrorCode       ierr;
@@ -511,8 +511,8 @@ static PetscErrorCode TaoSolverSetFromOptions_BQPIP(TaoSolver tao)
 
 
 #undef __FUNCT__  
-#define __FUNCT__ "TaoSolverView_BQPIP"
-static PetscErrorCode TaoSolverView_BQPIP(TaoSolver tao, PetscViewer viewer)
+#define __FUNCT__ "TaoView_BQPIP"
+static PetscErrorCode TaoView_BQPIP(TaoSolver tao, PetscViewer viewer)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
@@ -522,20 +522,20 @@ static PetscErrorCode TaoSolverView_BQPIP(TaoSolver tao, PetscViewer viewer)
 /* --------------------------------------------------------- */
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "TaoSolverCreate_BQPIP"
-PetscErrorCode TaoSolverCreate_BQPIP(TaoSolver tao)
+#define __FUNCT__ "TaoCreate_BQPIP"
+PetscErrorCode TaoCreate_BQPIP(TaoSolver tao)
 {
   TAO_BQPIP *qp;
   PetscErrorCode       ierr;
 
   PetscFunctionBegin;
   ierr = PetscNewLog(tao, TAO_BQPIP, &qp); CHKERRQ(ierr);
-  tao->ops->setup = TaoSolverSetUp_BQPIP;
-  tao->ops->solve = TaoSolverSolve_BQPIP;
-  tao->ops->view = TaoSolverView_BQPIP;
-  tao->ops->setfromoptions = TaoSolverSetFromOptions_BQPIP;
-  tao->ops->destroy = TaoSolverDestroy_BQPIP;
-  tao->ops->computedual = TaoSolverComputeDual_BQPIP;
+  tao->ops->setup = TaoSetUp_BQPIP;
+  tao->ops->solve = TaoSolve_BQPIP;
+  tao->ops->view = TaoView_BQPIP;
+  tao->ops->setfromoptions = TaoSetFromOptions_BQPIP;
+  tao->ops->destroy = TaoDestroy_BQPIP;
+  tao->ops->computedual = TaoComputeDual_BQPIP;
 
   tao->max_its=100;
   tao->max_funcs = 500;

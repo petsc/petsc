@@ -77,8 +77,8 @@ static PetscErrorCode MatLMVMSolveShell(PC pc, Vec b, Vec x) ;
 #define NLS_GRADIENT 		3
 
 #undef __FUNCT__  
-#define __FUNCT__ "TaoSolverSolve_NLS"
-static PetscErrorCode TaoSolverSolve_NLS(TaoSolver tao)
+#define __FUNCT__ "TaoSolve_NLS"
+static PetscErrorCode TaoSolve_NLS(TaoSolver tao)
 {
   PetscErrorCode ierr;
   TAO_NLS *nlsP = (TAO_NLS *)tao->data;
@@ -199,14 +199,14 @@ static PetscErrorCode TaoSolverSolve_NLS(TaoSolver tao)
   }
 
   // Check convergence criteria
-  ierr = TaoSolverComputeObjectiveAndGradient(tao, tao->solution, &f, tao->gradient); CHKERRQ(ierr);
+  ierr = TaoComputeObjectiveAndGradient(tao, tao->solution, &f, tao->gradient); CHKERRQ(ierr);
   ierr = VecNorm(tao->gradient,NORM_2,&gnorm); CHKERRQ(ierr);
   if (PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(gnorm)) {
     SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf or NaN");
   }
   needH = 1;
 
-  ierr = TaoSolverMonitor(tao, iter, f, gnorm, 0.0, 1.0, &reason); CHKERRQ(ierr);
+  ierr = TaoMonitor(tao, iter, f, gnorm, 0.0, 1.0, &reason); CHKERRQ(ierr);
   if (reason != TAO_CONTINUE_ITERATING) {
     PetscFunctionReturn(0);
   }
@@ -272,14 +272,14 @@ static PetscErrorCode TaoSolverSolve_NLS(TaoSolver tao)
         sigma = 0.0;
   
         if (needH) {
-	    ierr = TaoSolverComputeHessian(tao, tao->solution, &tao->hessian, &tao->hessian_pre, &matflag); CHKERRQ(ierr);
+	    ierr = TaoComputeHessian(tao, tao->solution, &tao->hessian, &tao->hessian_pre, &matflag); CHKERRQ(ierr);
 	    needH = 0;
         }
   
         for (i = 0; i < i_max; ++i) {
           ierr = VecCopy(tao->solution,nlsP->W); CHKERRQ(ierr);
 	  ierr = VecAXPY(nlsP->W,-tao->trust/gnorm,tao->gradient); CHKERRQ(ierr);
-	  ierr = TaoSolverComputeObjective(tao, nlsP->W, &ftrial); CHKERRQ(ierr);
+	  ierr = TaoComputeObjective(tao, nlsP->W, &ftrial); CHKERRQ(ierr);
           if (PetscIsInfOrNanReal(ftrial)) {
             tau = nlsP->gamma1_i;
           }
@@ -371,7 +371,7 @@ static PetscErrorCode TaoSolverSolve_NLS(TaoSolver tao)
         if (fmin < f) {
           f = fmin;
 	  ierr = VecAXPY(tao->solution,sigma,tao->gradient); CHKERRQ(ierr);
-	  ierr = TaoSolverComputeGradient(tao,tao->solution,tao->gradient); CHKERRQ(ierr);
+	  ierr = TaoComputeGradient(tao,tao->solution,tao->gradient); CHKERRQ(ierr);
 
 	  ierr = VecNorm(tao->gradient,NORM_2,&gnorm); CHKERRQ(ierr);
           if (PetscIsInfOrNanReal(gnorm)) {
@@ -379,7 +379,7 @@ static PetscErrorCode TaoSolverSolve_NLS(TaoSolver tao)
           }
           needH = 1;
   
-          ierr = TaoSolverMonitor(tao, iter, f, gnorm, 0.0, 1.0, &reason); CHKERRQ(ierr);
+          ierr = TaoMonitor(tao, iter, f, gnorm, 0.0, 1.0, &reason); CHKERRQ(ierr);
           if (reason != TAO_CONTINUE_ITERATING) {
             PetscFunctionReturn(0);
           }
@@ -424,7 +424,7 @@ static PetscErrorCode TaoSolverSolve_NLS(TaoSolver tao)
 
     // Compute the Hessian
     if (needH) {
-	ierr = TaoSolverComputeHessian(tao, tao->solution, &tao->hessian, &tao->hessian_pre, &matflag); CHKERRQ(ierr);
+	ierr = TaoComputeHessian(tao, tao->solution, &tao->hessian, &tao->hessian_pre, &matflag); CHKERRQ(ierr);
       needH = 0;
     }
 
@@ -681,7 +681,7 @@ static PetscErrorCode TaoSolverSolve_NLS(TaoSolver tao)
     ierr = VecCopy(tao->gradient, nlsP->Gold); CHKERRQ(ierr);
 
     ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &f, tao->gradient, nlsP->D, &step, &ls_reason); CHKERRQ(ierr);
-    ierr = TaoSolverAddLineSearchCounts(tao); CHKERRQ(ierr);
+    ierr = TaoAddLineSearchCounts(tao); CHKERRQ(ierr);
 
     while (ls_reason < 0  && stepType != NLS_GRADIENT) {
       // Linesearch failed
@@ -794,7 +794,7 @@ static PetscErrorCode TaoSolverSolve_NLS(TaoSolver tao)
 
       ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &f, tao->gradient, nlsP->D, &step, &ls_reason); CHKERRQ(ierr);
       ierr = TaoLineSearchGetFullStepObjective(tao->linesearch, &f_full); CHKERRQ(ierr);
-      ierr = TaoSolverAddLineSearchCounts(tao); CHKERRQ(ierr);
+      ierr = TaoAddLineSearchCounts(tao); CHKERRQ(ierr);
     }
 
     if (ls_reason < 0) {
@@ -1027,15 +1027,15 @@ static PetscErrorCode TaoSolverSolve_NLS(TaoSolver tao)
     }
     needH = 1;
 
-    ierr = TaoSolverMonitor(tao, iter, f, gnorm, 0.0, step, &reason); CHKERRQ(ierr);
+    ierr = TaoMonitor(tao, iter, f, gnorm, 0.0, step, &reason); CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
 /* ---------------------------------------------------------- */
 #undef __FUNCT__  
-#define __FUNCT__ "TaoSolverSetUp_NLS"
-static PetscErrorCode TaoSolverSetUp_NLS(TaoSolver tao)
+#define __FUNCT__ "TaoSetUp_NLS"
+static PetscErrorCode TaoSetUp_NLS(TaoSolver tao)
 {
   TAO_NLS *nlsP = (TAO_NLS *)tao->data;
   PetscErrorCode ierr;
@@ -1057,8 +1057,8 @@ static PetscErrorCode TaoSolverSetUp_NLS(TaoSolver tao)
 
 /*------------------------------------------------------------*/
 #undef __FUNCT__  
-#define __FUNCT__ "TaoSolverDestroy_NLS"
-static PetscErrorCode TaoSolverDestroy_NLS(TaoSolver tao)
+#define __FUNCT__ "TaoDestroy_NLS"
+static PetscErrorCode TaoDestroy_NLS(TaoSolver tao)
 {
   TAO_NLS *nlsP = (TAO_NLS *)tao->data;
   PetscErrorCode ierr;
@@ -1085,8 +1085,8 @@ static PetscErrorCode TaoSolverDestroy_NLS(TaoSolver tao)
 
 /*------------------------------------------------------------*/
 #undef __FUNCT__  
-#define __FUNCT__ "TaoSolverSetFromOptions_NLS"
-static PetscErrorCode TaoSolverSetFromOptions_NLS(TaoSolver tao)
+#define __FUNCT__ "TaoSetFromOptions_NLS"
+static PetscErrorCode TaoSetFromOptions_NLS(TaoSolver tao)
 {
   TAO_NLS *nlsP = (TAO_NLS *)tao->data;
   PetscErrorCode ierr;
@@ -1152,8 +1152,8 @@ static PetscErrorCode TaoSolverSetFromOptions_NLS(TaoSolver tao)
 
 /*------------------------------------------------------------*/
 #undef __FUNCT__  
-#define __FUNCT__ "TaoSolverView_NLS"
-static PetscErrorCode TaoSolverView_NLS(TaoSolver tao, PetscViewer viewer)
+#define __FUNCT__ "TaoView_NLS"
+static PetscErrorCode TaoView_NLS(TaoSolver tao, PetscViewer viewer)
 {
   TAO_NLS *nlsP = (TAO_NLS *)tao->data;
   PetscInt nrejects;
@@ -1191,8 +1191,8 @@ static PetscErrorCode TaoSolverView_NLS(TaoSolver tao, PetscViewer viewer)
 /* ---------------------------------------------------------- */
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "TaoSolverCreate_NLS"
-PetscErrorCode TaoSolverCreate_NLS(TaoSolver tao)
+#define __FUNCT__ "TaoCreate_NLS"
+PetscErrorCode TaoCreate_NLS(TaoSolver tao)
 {
   TAO_NLS *nlsP;
   const char *morethuente_type = TAOLINESEARCH_MT;
@@ -1201,11 +1201,11 @@ PetscErrorCode TaoSolverCreate_NLS(TaoSolver tao)
   PetscFunctionBegin;
   ierr = PetscNewLog(tao,TAO_NLS,&nlsP); CHKERRQ(ierr);
 
-  tao->ops->setup = TaoSolverSetUp_NLS;
-  tao->ops->solve = TaoSolverSolve_NLS;
-  tao->ops->view = TaoSolverView_NLS;
-  tao->ops->setfromoptions = TaoSolverSetFromOptions_NLS;
-  tao->ops->destroy = TaoSolverDestroy_NLS;
+  tao->ops->setup = TaoSetUp_NLS;
+  tao->ops->solve = TaoSolve_NLS;
+  tao->ops->view = TaoView_NLS;
+  tao->ops->setfromoptions = TaoSetFromOptions_NLS;
+  tao->ops->destroy = TaoDestroy_NLS;
 
   tao->max_its = 50;
   tao->fatol = 1e-10;

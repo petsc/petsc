@@ -14,8 +14,8 @@ static const char *CG_Table[64] = {
 
 
 #undef __FUNCT__
-#define __FUNCT__ "TaoSolverSolve_CG"
-static PetscErrorCode TaoSolverSolve_CG(TaoSolver tao)
+#define __FUNCT__ "TaoSolve_CG"
+static PetscErrorCode TaoSolve_CG(TaoSolver tao)
 {
     TAO_CG *cgP = (TAO_CG*)tao->data;
     PetscErrorCode ierr;
@@ -33,13 +33,13 @@ static PetscErrorCode TaoSolverSolve_CG(TaoSolver tao)
     }
 
     // Check convergence criteria
-    ierr = TaoSolverComputeObjectiveAndGradient(tao, tao->solution, &f, tao->gradient); CHKERRQ(ierr);
+    ierr = TaoComputeObjectiveAndGradient(tao, tao->solution, &f, tao->gradient); CHKERRQ(ierr);
     ierr = VecNorm(tao->gradient,NORM_2,&gnorm); CHKERRQ(ierr);
     if (PetscIsInfOrNanReal(f) || PetscIsInfOrNanReal(gnorm)) {
 	SETERRQ(PETSC_COMM_SELF,1, "User provided compute function generated Inf or NaN");
     }
     
-    ierr = TaoSolverMonitor(tao, iter, f, gnorm, 0.0, step, &reason); CHKERRQ(ierr);
+    ierr = TaoMonitor(tao, iter, f, gnorm, 0.0, step, &reason); CHKERRQ(ierr);
     if (reason != TAO_CONTINUE_ITERATING) {
 	PetscFunctionReturn(0);
     }
@@ -90,7 +90,7 @@ static PetscErrorCode TaoSolverSolve_CG(TaoSolver tao)
 	// Search direction for improving point
 	ierr = TaoLineSearchSetInitialStepLength(tao->linesearch,delta);
 	ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &f, tao->gradient, tao->stepdirection, &step, &ls_status); CHKERRQ(ierr);
-	ierr = TaoSolverAddLineSearchCounts(tao); CHKERRQ(ierr);
+	ierr = TaoAddLineSearchCounts(tao); CHKERRQ(ierr);
 	if (ls_status < 0) {
 	    // Linesearch failed
 	    // Reset factors and use scaled gradient step
@@ -115,7 +115,7 @@ static PetscErrorCode TaoSolverSolve_CG(TaoSolver tao)
 
 	    ierr = TaoLineSearchSetInitialStepLength(tao->linesearch,delta);
 	    ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &f, tao->gradient, tao->stepdirection, &step, &ls_status); CHKERRQ(ierr);
-	    ierr = TaoSolverAddLineSearchCounts(tao); CHKERRQ(ierr);
+	    ierr = TaoAddLineSearchCounts(tao); CHKERRQ(ierr);
 	    
 	    if (ls_status < 0) {
 		// Linesearch failed again
@@ -130,7 +130,7 @@ static PetscErrorCode TaoSolverSolve_CG(TaoSolver tao)
 
 		ierr = TaoLineSearchSetInitialStepLength(tao->linesearch,delta);
 		ierr = TaoLineSearchApply(tao->linesearch, tao->solution, &f, tao->gradient, tao->stepdirection, &step, &ls_status); CHKERRQ(ierr);
-		ierr = TaoSolverAddLineSearchCounts(tao); CHKERRQ(ierr);
+		ierr = TaoAddLineSearchCounts(tao); CHKERRQ(ierr);
 		if (ls_status < 0) {
 		    // Line search failed for last time -- give up
 		    f = f_old;
@@ -151,7 +151,7 @@ static PetscErrorCode TaoSolverSolve_CG(TaoSolver tao)
 	// Check for termination
 	gnorm2 =gnorm * gnorm;
 	iter++;
-	ierr = TaoSolverMonitor(tao, iter, f, gnorm, 0.0, step, &reason); CHKERRQ(ierr);
+	ierr = TaoMonitor(tao, iter, f, gnorm, 0.0, step, &reason); CHKERRQ(ierr);
 	if (reason != TAO_CONTINUE_ITERATING) {
 	    break;
 	}
@@ -206,8 +206,8 @@ static PetscErrorCode TaoSolverSolve_CG(TaoSolver tao)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TaoSolverSetUp_CG"
-static PetscErrorCode TaoSolverSetUp_CG(TaoSolver tao)
+#define __FUNCT__ "TaoSetUp_CG"
+static PetscErrorCode TaoSetUp_CG(TaoSolver tao)
 {
     TAO_CG *cgP = (TAO_CG*)tao->data;
     PetscErrorCode ierr;
@@ -223,8 +223,8 @@ static PetscErrorCode TaoSolverSetUp_CG(TaoSolver tao)
 
 
 #undef __FUNCT__
-#define __FUNCT__ "TaoSolverDestroy_CG"
-static PetscErrorCode TaoSolverDestroy_CG(TaoSolver tao)
+#define __FUNCT__ "TaoDestroy_CG"
+static PetscErrorCode TaoDestroy_CG(TaoSolver tao)
 {
     TAO_CG *cgP = (TAO_CG*) tao->data;
     PetscErrorCode ierr;
@@ -244,8 +244,8 @@ static PetscErrorCode TaoSolverDestroy_CG(TaoSolver tao)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TaoSolverSetFromOptions_CG"
-static PetscErrorCode TaoSolverSetFromOptions_CG(TaoSolver tao)
+#define __FUNCT__ "TaoSetFromOptions_CG"
+static PetscErrorCode TaoSetFromOptions_CG(TaoSolver tao)
 {
     TAO_CG *cgP = (TAO_CG*)tao->data;
     PetscErrorCode ierr;
@@ -264,8 +264,8 @@ delta_max,&cgP->delta_max,0); CHKERRQ(ierr);
 }       
 
 #undef __FUNCT__
-#define __FUNCT__ "TaoSolverView_CG"
-static PetscErrorCode TaoSolverView_CG(TaoSolver tao, PetscViewer viewer)
+#define __FUNCT__ "TaoView_CG"
+static PetscErrorCode TaoView_CG(TaoSolver tao, PetscViewer viewer)
 {
     PetscBool isascii;
     TAO_CG *cgP = (TAO_CG*)tao->data;
@@ -288,18 +288,18 @@ static PetscErrorCode TaoSolverView_CG(TaoSolver tao, PetscViewer viewer)
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
-#define __FUNCT__ "TaoSolverCreate_CG"
-PetscErrorCode TaoSolverCreate_CG(TaoSolver tao)
+#define __FUNCT__ "TaoCreate_CG"
+PetscErrorCode TaoCreate_CG(TaoSolver tao)
 {
     TAO_CG *cgP;
     const char *morethuente_type = TAOLINESEARCH_MT;
     PetscErrorCode ierr;
     PetscFunctionBegin;
-    tao->ops->setup = TaoSolverSetUp_CG;
-    tao->ops->solve = TaoSolverSolve_CG;
-    tao->ops->view = TaoSolverView_CG;
-    tao->ops->setfromoptions = TaoSolverSetFromOptions_CG;
-    tao->ops->destroy = TaoSolverDestroy_CG;
+    tao->ops->setup = TaoSetUp_CG;
+    tao->ops->solve = TaoSolve_CG;
+    tao->ops->view = TaoView_CG;
+    tao->ops->setfromoptions = TaoSetFromOptions_CG;
+    tao->ops->destroy = TaoDestroy_CG;
     
     tao->max_its = 2000;
     tao->max_funcs = 4000;

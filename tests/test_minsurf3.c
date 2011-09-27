@@ -83,8 +83,8 @@ int main( int argc, char **argv )
   N    = user.mx*user.my;
 
   /* Create TAO solver and set desired solution method  */
-  ierr = TaoSolverCreate(PETSC_COMM_SELF,&tao); CHKERRQ(ierr);
-  ierr = TaoSolverSetType(tao,"tao_pounders"); CHKERRQ(ierr);
+  ierr = TaoCreate(PETSC_COMM_SELF,&tao); CHKERRQ(ierr);
+  ierr = TaoSetType(tao,"tao_pounders"); CHKERRQ(ierr);
 
   /* Initialize minsurf application data structure for use in the function evaluations  */
   ierr = MSA_BoundaryConditions(&user); CHKERRQ(ierr);            /* Application specific routine */
@@ -95,14 +95,14 @@ int main( int argc, char **argv )
   */
   ierr = VecCreateSeq(PETSC_COMM_SELF,N,&x);                      /* PETSc routine                */
   ierr = MSA_InitialPoint(&user,x); CHKERRQ(ierr);                /* Application specific routine */
-  ierr = TaoSolverSetInitialVector(tao,x); CHKERRQ(ierr);   /* A TAO routine                */
+  ierr = TaoSetInitialVector(tao,x); CHKERRQ(ierr);   /* A TAO routine                */
 
   /* Provide TAO routines for function, gradient, and Hessian evaluation */
   ierr = VecCreateSeq(PETSC_COMM_SELF,1,&F); CHKERRQ(ierr);
-  ierr = TaoSolverSetSeparableObjectiveRoutine(tao,F,FormSeparableFunction,(void *)&user); CHKERRQ(ierr);
+  ierr = TaoSetSeparableObjectiveRoutine(tao,F,FormSeparableFunction,(void *)&user); CHKERRQ(ierr);
 
   /* Check for any TAO command line options */
-  ierr = TaoSolverSetFromOptions(tao); CHKERRQ(ierr);
+  ierr = TaoSetFromOptions(tao); CHKERRQ(ierr);
 
   /* Limit the number of iterations in the KSP linear solver */
 /*  ierr = TaoAppGetKSP(minsurfapp,&ksp); CHKERRQ(ierr);
@@ -112,10 +112,10 @@ int main( int argc, char **argv )
     }*/
 
   /* SOLVE THE APPLICATION */
-  ierr = TaoSolverSolve(tao); CHKERRQ(ierr);
+  ierr = TaoSolve(tao); CHKERRQ(ierr);
 
   /* Get information on termination */
-  ierr = TaoSolverGetTerminationReason(tao,&reason); CHKERRQ(ierr);
+  ierr = TaoGetTerminationReason(tao,&reason); CHKERRQ(ierr);
   if (reason <= 0)
     PetscPrintf(MPI_COMM_WORLD,"Try a different TAO method, adjust some parameters, or check the function evaluation routines\n");
 
@@ -125,7 +125,7 @@ int main( int argc, char **argv )
   */
 
   /* Free TAO data structures */
-  ierr = TaoSolverDestroy(&tao); CHKERRQ(ierr);
+  ierr = TaoDestroy(&tao); CHKERRQ(ierr);
 
   /* Free PETSc data structures */
   ierr = VecDestroy(&x); CHKERRQ(ierr);
