@@ -4185,7 +4185,7 @@ PetscErrorCode  MatCreateSeqAIJWithArrays(MPI_Comm comm,PetscInt m,PetscInt n,Pe
 }
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreateSeqAIJFromTriple"
-/*@
+/*@C
      MatCreateSeqAIJWithTriples - Creates an sequential AIJ matrix using matrix elements (in COO format)
               provided by the user.
 
