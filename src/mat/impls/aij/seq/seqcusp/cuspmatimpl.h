@@ -4,7 +4,8 @@
 #include <../src/vec/vec/impls/seq/seqcusp/cuspvecimpl.h>
 #include <cusp/csr_matrix.h>
 #include <cusp/multiply.h>
-
+/*for MatCreateSeqAIJCUSPFromTriple*/
+#include <cusp/coo_matrix.h>
 
 #define CUSPMATRIX cusp::csr_matrix<PetscInt,PetscScalar,cusp::device_memory>
 

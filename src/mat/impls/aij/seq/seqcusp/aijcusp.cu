@@ -1554,6 +1554,19 @@ PetscErrorCode MatDestroy_SeqAIJCUSP(Mat A)
 }
 
 #endif // PETSC_HAVE_TXPETSCGPU
+/*
+#undef __FUNCT__
+#define __FUNCT__ "MatCreateSeqAIJCUSPFromTriple"
+PetscErrorCode MatCreateSeqAIJCUSPFromTriple(MPI_Comm comm, PetscInt m, PetscInt n, PetscInt* i, PetscInt* j, PetscScalar*a, Mat *mat, PetscInt nz, PetscBool idx)
+{
+  CUSPMATRIX *gpucsr;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (idx){
+  }
+  PetscFunctionReturn(0);
+}*/
 
 PetscErrorCode MatSetValuesBatch_SeqAIJCUSP(Mat J, PetscInt Ne, PetscInt Nl, PetscInt *elemRows, const PetscScalar *elemMats);
 

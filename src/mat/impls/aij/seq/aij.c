@@ -4229,7 +4229,6 @@ PetscErrorCode  MatCreateSeqAIJFromTriple(MPI_Comm comm,PetscInt m,PetscInt n,Pe
 {
   PetscErrorCode ierr;
   PetscInt       ii, nnz[m], one = 1,row,col;
-  PetscScalar    value;
 
 
   PetscFunctionBegin;
