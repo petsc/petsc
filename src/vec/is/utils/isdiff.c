@@ -475,7 +475,7 @@ PetscErrorCode ISColoringToList(IS indis, IS coloris, PetscInt *listlen, IS **is
   PetscInt *inds, *colors, llen, ilen, lstart, lend, lcount,l;
   PetscMPIInt rank, size, llow, lhigh, low, high,color,subsize;
   const PetscInt *ccolors, *cinds;
-  PetscMPIInt comm, subcomm;
+  MPI_Comm comm, subcomm;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(indis, IS_CLASSID, 1);
   PetscValidHeaderSpecific(coloris, IS_CLASSID, 2);
