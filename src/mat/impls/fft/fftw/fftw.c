@@ -604,7 +604,7 @@ PetscErrorCode VecScatterPetscToFFTW(Mat A,Vec x,Vec y)
 
 EXTERN_C_BEGIN 
 #undef __FUNCT__  
-#define __FUNCT__ "VecScatterPetscToFFTW_FTTW"
+#define __FUNCT__ "VecScatterPetscToFFTW_FFTW"
 PetscErrorCode VecScatterPetscToFFTW_FFTW(Mat A,Vec x,Vec y)
 {
   PetscErrorCode ierr;
