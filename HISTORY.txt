@@ -25,7 +25,7 @@ Release 1.2
 - Better interaction between Python garbage collector and PETSc
   objects.
 
-- Support for PEP 3118 and legacy Python's buffer interfase.
+- Support for PEP 3118 and legacy Python's buffer interface.
 
 
 Release 1.1.2
