@@ -60,8 +60,8 @@ PetscErrorCode getDataWithGhosts( const Mat a_Gmat,
     /* set local, and global */
     for(kk=0; kk<nloc; kk++) {
       PetscInt gid = my0 + kk;
-      PetscScalar crd = a_data_in[dir*nloc + kk]; /* col oriented */
-      datas[dir*nnodes + kk] = crd;
+      PetscScalar crd = (PetscScalar)a_data_in[dir*nloc + kk]; /* col oriented */
+      datas[dir*nnodes + kk] = PetscRealPart(crd);
       ierr = VecSetValues(tmp_crds, 1, &gid, &crd, INSERT_VALUES ); CHKERRQ(ierr);
     }
     ierr = VecAssemblyBegin( tmp_crds ); CHKERRQ(ierr);
@@ -73,7 +73,7 @@ PetscErrorCode getDataWithGhosts( const Mat a_Gmat,
     CHKERRQ(ierr);
     ierr = VecGetArray( mpimat->lvec, &data_arr );   CHKERRQ(ierr);
     for(kk=nloc,jj=0;jj<num_ghosts;kk++,jj++){
-      datas[dir*nnodes + kk] = data_arr[jj];
+      datas[dir*nnodes + kk] = PetscRealPart(data_arr[jj]);
     }
     ierr = VecRestoreArray( mpimat->lvec, &data_arr ); CHKERRQ(ierr);
   }
@@ -175,7 +175,7 @@ PetscErrorCode smoothAggs( const Mat a_Gmat_2, /* base (squared) graph */
     /*reverse map to selelected node */
     for(lid=0;lid<nloc;lid++) lid_cprowID_1[lid] = lid_sel_lid[lid] = -1;
     for(lid=0;lid<nloc;lid++){
-      NState state = (NState)a_lid_state[lid];
+      NState state = (NState)PetscRealPart(a_lid_state[lid]);
       if( IS_SELECTED(state) ){
         PetscInt flid = lid;
         do{
@@ -194,14 +194,14 @@ PetscErrorCode smoothAggs( const Mat a_Gmat_2, /* base (squared) graph */
     }
     
     for(lid=0;lid<nloc;lid++){
-      NState state = (NState)a_lid_state[lid];
+      NState state = (NState)PetscRealPart(a_lid_state[lid]);
       if( IS_SELECTED(state) ) {
         /* steal locals */
         ii = matA_1->i; n = ii[lid+1] - ii[lid]; 
         idx = matA_1->j + ii[lid];
         for (j=0; j<n; j++) {
           PetscInt flid, lidj = idx[j];
-          NState statej = (NState)a_lid_state[lidj];
+          NState statej = (NState)PetscRealPart(a_lid_state[lidj]);
           if( statej==DELETED && lid_sel_lid[lidj] != lid ){ /* steal it */
 	    if( lid_sel_lid[lidj] != -1 ){
 	      /* I'm stealing this local */
@@ -235,7 +235,7 @@ PetscErrorCode smoothAggs( const Mat a_Gmat_2, /* base (squared) graph */
           idx = matB_1->j + ii[ix];
           for( j=0 ; j<n ; j++ ) {
             PetscInt cpid = idx[j];
-            NState statej = (NState)cpcol_1_state[cpid];
+            NState statej = (NState)PetscRealPart(cpcol_1_state[cpid]);
             if( IS_SELECTED(statej) ) {
               PetscInt new_sel_gid = (PetscInt)statej, hv=0, flid;
               hav++;
@@ -346,7 +346,7 @@ PetscErrorCode maxIndSetAgg( const IS a_perm,
     ierr = VecGetArray( mpimat->lvec, &cpcol_gid ); CHKERRQ(ierr); /* get proc ID in 'cpcol_gid' */
     ierr = VecDuplicate( mpimat->lvec, &ghostState ); CHKERRQ(ierr); /* need 2nd compressed col. of off proc data */
     ierr = VecGetLocalSize( mpimat->lvec, &num_fine_ghosts ); CHKERRQ(ierr);
-    ierr = VecSet( ghostState, (PetscScalar)(NOT_DONE) );  CHKERRQ(ierr); /* set with UNKNOWN state */
+    ierr = VecSet( ghostState, (PetscScalar)((PetscReal)NOT_DONE) );  CHKERRQ(ierr); /* set with UNKNOWN state */
   }
   else num_fine_ghosts = 0;
 
@@ -367,7 +367,7 @@ PetscErrorCode maxIndSetAgg( const IS a_perm,
       lid_cprowID[kk] = -1;
       deleted_parent_gid[kk] = -1.0;
       lid_gid[kk] = kk + my0;
-      lid_state[kk] =  (PetscScalar)(NOT_DONE);
+      lid_state[kk] =  (PetscScalar)((PetscReal)NOT_DONE);
     }
     for(ix=0;kk<nloc+num_fine_ghosts;kk++,ix++) {
       id_llist[kk] = -1; /* terminates linked lists */
@@ -391,7 +391,7 @@ PetscErrorCode maxIndSetAgg( const IS a_perm,
       /* check all vertices */
       for(kk=0;kk<nloc;kk++){
         PetscInt lid = perm_ix[kk];
-        NState state = (NState)lid_state[lid];
+        NState state = (NState)PetscRealPart(lid_state[lid]);
         if( state == NOT_DONE ) {
           /* parallel test, delete if selected ghost */
           PetscBool isOK = PETSC_TRUE;
@@ -400,8 +400,8 @@ PetscErrorCode maxIndSetAgg( const IS a_perm,
             idx = matB->j + ii[ix];
             for( j=0 ; j<n ; j++ ) {
               PetscInt cpid = idx[j]; /* compressed row ID in B mat */
-              PetscInt gid = (PetscInt)cpcol_gid[cpid];
-              NState statej = (NState)cpcol_state[cpid];
+              PetscInt gid = (PetscInt)PetscRealPart(cpcol_gid[cpid]);
+              NState statej = (NState)PetscRealPart(cpcol_state[cpid]);
               if( statej == NOT_DONE && gid >= Iend ) { /* should be (pe>mype), use gid as pe proxy */
                 isOK = PETSC_FALSE; /* can not delete */
               }
@@ -418,7 +418,7 @@ PetscErrorCode maxIndSetAgg( const IS a_perm,
               /* if I have any ghost adj then not a sing */
               ix = lid_cprowID[lid];
               if( ix==-1 || (matB->compressedrow.i[ix+1]-matB->compressedrow.i[ix])==0 ){
-                lid_state[lid] =  (PetscScalar)(REMOVED);
+                lid_state[lid] =  (PetscScalar)((PetscReal)REMOVED);
                 continue; /* one local adj (me) and no ghost - singleton - flag and continue */
               }
             }
@@ -429,11 +429,11 @@ PetscErrorCode maxIndSetAgg( const IS a_perm,
 	    idx = matA->j + ii[lid];
 	    for (j=0; j<n; j++) {
               PetscInt lidj = idx[j];
-              NState statej = (NState)lid_state[lidj];
+              NState statej = (NState)PetscRealPart(lid_state[lidj]);
               if( statej == NOT_DONE ){
                 nDone++; 
                 id_llist[lidj] = id_llist[lid]; id_llist[lid] = lidj; /* insert 'lidj' into head of llist */
-                lid_state[lidj] = (PetscScalar)DELETED;  /* delete this */
+                lid_state[lidj] = (PetscScalar)(PetscReal)DELETED;  /* delete this */
               }
             }
 
@@ -444,7 +444,8 @@ PetscErrorCode maxIndSetAgg( const IS a_perm,
                 idx = matB->j + ii[ix];
                 for( j=0 ; j<n ; j++ ) {
                   PetscInt cpid = idx[j]; /* compressed row ID in B mat */
-                  NState statej = (NState)cpcol_state[cpid]; assert( !IS_SELECTED(statej) );
+                  NState statej = (NState)PetscRealPart(cpcol_state[cpid]); 
+                  assert( !IS_SELECTED(statej) );
                   
 		  if( statej == NOT_DONE ) {
 		    PetscInt lidj = nloc + cpid;
@@ -477,23 +478,23 @@ PetscErrorCode maxIndSetAgg( const IS a_perm,
 	ii = matB->compressedrow.i;        
 	for (ix=0; ix<matB->compressedrow.nrows; ix++) {
 	  PetscInt lid = matB->compressedrow.rindex[ix];
-	  NState state = (NState)lid_state[lid];
+	  NState state = (NState)PetscRealPart(lid_state[lid]);
 	  if( state == NOT_DONE ) {
 	    /* look at ghosts */
 	    n = ii[ix+1] - ii[ix];
 	    idx = matB->j + ii[ix];
             for( j=0 ; j<n ; j++ ) {
               PetscInt cpid = idx[j]; /* compressed row ID in B mat */
-              NState statej = (NState)cpcol_state[cpid];
+              NState statej = (NState)PetscRealPart(cpcol_state[cpid]);
               if( IS_SELECTED(statej) ) { /* lid is now deleted, do it */
                 PetscInt lidj = nloc + cpid;
                 nDone++;
-		lid_state[lid] = (PetscScalar)DELETED; /* delete this */
+		lid_state[lid] = (PetscScalar)(PetscReal)DELETED; /* delete this */
 		if( !a_strict_aggs ) {	
 		  id_llist[lid] = id_llist[lidj]; id_llist[lidj] = lid; /* insert 'lid' into head of ghost llist */
 		}
 		else {
-                  PetscInt gid = (PetscInt)cpcol_gid[cpid];  
+                  PetscInt gid = (PetscInt)PetscRealPart(cpcol_gid[cpid]);  
 		  deleted_parent_gid[lid] = (PetscScalar)gid; /* keep track of proc that I belong to */
 		}
 		break;
@@ -534,12 +535,12 @@ PetscErrorCode maxIndSetAgg( const IS a_perm,
       ierr =   VecScatterEnd(mpimat->Mvctx,locState,mpimat->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = VecGetArray( mpimat->lvec, &cpcol_sel_gid ); CHKERRQ(ierr); /* has pe that owns ghost */
       for(cpid=0; cpid<num_fine_ghosts; cpid++) {
-        PetscInt gid = (PetscInt)cpcol_sel_gid[cpid];
+        PetscInt gid = (PetscInt)PetscRealPart(cpcol_sel_gid[cpid]);
 	if( gid >= my0 && gid < Iend ) { /* I own this deleted */
 	  PetscInt lidj = nloc + cpid;
 	  PetscInt lid = gid - my0;
 	  id_llist[lidj] = id_llist[lid]; id_llist[lid] = lidj; /* insert 'lidj' into head of llist */
-	  assert( IS_SELECTED((NState)lid_state[lid]) );
+	  assert(IS_SELECTED( (NState)PetscRealPart(lid_state[lid]) ));
 	}
       }
       ierr = VecRestoreArray( mpimat->lvec, &cpcol_sel_gid ); CHKERRQ(ierr);
@@ -554,19 +555,19 @@ PetscErrorCode maxIndSetAgg( const IS a_perm,
       ierr = VecGetArray( ghostState, &cpcol_state ); CHKERRQ(ierr);
     }
     for (j=0; j<num_fine_ghosts; j++) {
-      if( IS_SELECTED((NState)cpcol_state[j]) ) nselected++;
+      if( IS_SELECTED( (NState)PetscRealPart(cpcol_state[j]) ) ) nselected++;
     }
     {
       PetscInt *selected_set;
       ierr = PetscMalloc( nselected*sizeof(PetscInt), &selected_set ); CHKERRQ(ierr); 
       for(kk=0,j=0;kk<nloc;kk++){
-        NState state = (NState)lid_state[kk];
+        NState state = (NState)PetscRealPart(lid_state[kk]);
         if( IS_SELECTED(state) ) {
           selected_set[j++] = kk;
         }
       }
       for (kk=0; kk<num_fine_ghosts; kk++) {
-        if( IS_SELECTED((NState)cpcol_state[kk]) ) {
+        if( IS_SELECTED( (NState)PetscRealPart(cpcol_state[kk]) ) ) {
           selected_set[j++] = nloc + kk;
         }
       }
@@ -712,7 +713,7 @@ PetscErrorCode formProl0(IS a_selected, /* list of selected local ID, includes s
         for( jj = 0; jj < a_nSAvec ; jj++ ) {
           for( ii = 0; ii < a_nSAvec ; ii++ ) {
             assert(data[jj*DATA_OUT_STRIDE + ii] == 1.e300);
-            if( ii <= jj ) data[jj*DATA_OUT_STRIDE + ii] = qqc[jj*Mdata + ii];
+            if( ii <= jj ) data[jj*DATA_OUT_STRIDE + ii] = PetscRealPart(qqc[jj*Mdata + ii]);
 	    else data[jj*DATA_OUT_STRIDE + ii] = 0.;
           }
         }
@@ -1126,7 +1127,7 @@ PetscErrorCode getGIDsOnSquareGraph( const IS a_selected_1,
     /* get coarse grid GIDS for selected (locals and ghosts) */
     mpimat2 = (Mat_MPIAIJ*)Gmat2->data;
     ierr = MatGetVecs( Gmat2, &locState, 0 );         CHKERRQ(ierr);
-    ierr = VecSet( locState, (PetscScalar)(NOT_DONE) );  CHKERRQ(ierr); /* set with UNKNOWN state */
+    ierr = VecSet( locState, (PetscScalar)(PetscReal)(NOT_DONE) );  CHKERRQ(ierr); /* set with UNKNOWN state */
     ierr = ISGetIndices( a_selected_1, &selected_idx );     CHKERRQ(ierr);
     for(kk=0;kk<nLocalSelected;kk++){
       PetscInt fgid = selected_idx[kk] + my0;
@@ -1141,7 +1142,7 @@ PetscErrorCode getGIDsOnSquareGraph( const IS a_selected_1,
     ierr = VecGetLocalSize( mpimat2->lvec, &num_fine_ghosts ); CHKERRQ(ierr);
     ierr = VecGetArray( mpimat2->lvec, &cpcol_state ); CHKERRQ(ierr); 
     for(kk=0,num_crs_ghost=0;kk<num_fine_ghosts;kk++){
-      if( (NState)cpcol_state[kk] != NOT_DONE ) num_crs_ghost++;
+      if( (NState)PetscRealPart(cpcol_state[kk]) != NOT_DONE ) num_crs_ghost++;
     }
     ierr = PetscMalloc( (nLocalSelected+num_crs_ghost)*sizeof(PetscInt), &crsGID ); CHKERRQ(ierr); /* output */
     {
@@ -1149,8 +1150,8 @@ PetscErrorCode getGIDsOnSquareGraph( const IS a_selected_1,
       ierr = PetscMalloc( (nLocalSelected+num_crs_ghost)*sizeof(PetscInt), &selected_set ); CHKERRQ(ierr);
       /* do ghost of 'crsGID' */
       for(kk=0,idx=nLocalSelected;kk<num_fine_ghosts;kk++){
-        if( (NState)cpcol_state[kk] != NOT_DONE ){
-          PetscInt cgid = (PetscInt)cpcol_state[kk];
+        if( (NState)PetscRealPart(cpcol_state[kk]) != NOT_DONE ){
+          PetscInt cgid = (PetscInt)PetscRealPart(cpcol_state[kk]);
           selected_set[idx] = nloc + kk;
           crsGID[idx++] = cgid;
         }
@@ -1160,8 +1161,8 @@ PetscErrorCode getGIDsOnSquareGraph( const IS a_selected_1,
       /* do locals in 'crsGID' */
       ierr = VecGetArray( locState, &cpcol_state ); CHKERRQ(ierr);
       for(kk=0,idx=0;kk<nloc;kk++){
-        if( (NState)cpcol_state[kk] != NOT_DONE ){
-          PetscInt cgid = (PetscInt)cpcol_state[kk];
+        if( (NState)PetscRealPart(cpcol_state[kk]) != NOT_DONE ){
+          PetscInt cgid = (PetscInt)PetscRealPart(cpcol_state[kk]);
           selected_set[idx] = kk;
           crsGID[idx++] = cgid;
         }
@@ -1235,8 +1236,8 @@ PetscErrorCode createProlongation( const Mat a_Amat,
   IS             rankIS, permIS, llist_1, selected_1, selected_2;
   const PetscInt *selected_idx, *idx,bs_in=*a_bs,col_bs=(a_useSA ? a_data_cols : bs_in);
   const PetscScalar *vals;
-  PetscScalar     v,vfilter=0.08;
-  PetscInt *d_nnz;
+  PetscReal       vfilter;
+  PetscInt       *d_nnz;
 
   PetscFunctionBegin;
   *a_isOK = PETSC_TRUE;
@@ -1269,8 +1270,8 @@ PetscErrorCode createProlongation( const Mat a_Amat,
     ierr = MatGetRow(a_Amat,Ii,&ncols,&idx,&vals); CHKERRQ(ierr);
     for(jj=0;jj<ncols;jj++){
       PetscInt dest_col = idx[jj]/bs_in;
-      v = PetscAbs(vals[jj]);
-      ierr = MatSetValues(Gmat,1,&dest_row,1,&dest_col,&v,ADD_VALUES); CHKERRQ(ierr);
+      PetscScalar sv = PetscAbs(PetscRealPart(vals[jj]));
+      ierr = MatSetValues(Gmat,1,&dest_row,1,&dest_col,&sv,ADD_VALUES); CHKERRQ(ierr);
     }
     ierr = MatRestoreRow(a_Amat,Ii,&ncols,&idx,&vals); CHKERRQ(ierr);
   }
@@ -1300,8 +1301,9 @@ PetscErrorCode createProlongation( const Mat a_Amat,
     for( Ii = Istart, nnz1 = 0 ; Ii < Iend; Ii++ ){
       ierr = MatGetRow(Gmat,Ii,&ncols,&idx,&vals); CHKERRQ(ierr);
       for(jj=0;jj<ncols;jj++){
-        if( (v=PetscAbs(vals[jj])) > vfilter ) {
-          ierr = MatSetValues(Gmat2,1,&Ii,1,&idx[jj],&v,INSERT_VALUES); CHKERRQ(ierr);
+        PetscScalar sv = PetscAbs(PetscRealPart(vals[jj]));
+        if( PetscRealPart(sv) > vfilter ) {
+          ierr = MatSetValues(Gmat2,1,&Ii,1,&idx[jj],&sv,INSERT_VALUES); CHKERRQ(ierr);
 	  nnz1++;
         }
         /* else PetscPrintf(PETSC_COMM_SELF,"\t%s filtered %d, v=%e\n",__FUNCT__,Ii,vals[jj]); */
