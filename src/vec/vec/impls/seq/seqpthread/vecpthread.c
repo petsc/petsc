@@ -30,10 +30,8 @@ typedef struct {
   PetscScalar   alpha;
   NormType      typeUse;
 
-  PetscScalar*  xvalin;
-  Vec*          yavecin;
-  PetscInt      nelem;
-  PetscInt      ntoproc;
+  Vec*          yvec;
+  PetscInt      nvec;
   PetscScalar*  results;
 
   PetscInt      gind;
@@ -511,6 +509,97 @@ PetscErrorCode VecNorm_SeqPThread(Vec xin,NormType type,PetscReal* z)
   PetscFunctionReturn(0);
 }
 
+
+#if defined(PETSC_USE_FORTRAN_KERNEL_MDOT)
+#include <../src/vec/vec/impls/seq/ftn-kernels/fmdot.h>
+void* VecMDot1_Kernel(void *arg)
+{
+  if(PetscUseThreadPool==PETSC_FALSE) {
+#if defined(PETSC_HAVE_CPU_SET_T)
+    DoCoreAffinity();
+#endif
+  }
+  PetscErrorCode     ierr;
+  Kernel_Data        *data = (Kernel_Data*)arg;
+  const PetscScalar  *x = (const PetscScalar*)data->x;
+  Vec*               yin = (Vec*)data->yvec;
+  PetscInt           nv = data->nvec;
+  PetscInt           n = data->n;
+  PetscScalar        *z = data->results;
+  PetscInt           i,nv_rem;
+  PetscScalar        sum0,sum1,sum2,sum3;
+  const PetscScalar  *yy0,*yy1,*yy2,*yy3;
+  Vec                *yy;
+
+  PetscFunctionBegin;
+  sum0 = 0.0;
+  sum1 = 0.0;
+  sum2 = 0.0;
+
+  i      = nv;
+  nv_rem = nv&0x3;
+  yy     = (Vec*)yin;
+
+  switch (nv_rem) {
+  case 3:
+    ierr = VecGetArrayRead(yy[0],&yy0);CHKERRQP(ierr);
+    ierr = VecGetArrayRead(yy[1],&yy1);CHKERRQP(ierr);
+    ierr = VecGetArrayRead(yy[2],&yy2);CHKERRQP(ierr);
+    fortranmdot3_(x,yy0,yy1,yy2,&n,&sum0,&sum1,&sum2);
+    ierr = VecRestoreArrayRead(yy[0],&yy0);CHKERRQP(ierr);
+    ierr = VecRestoreArrayRead(yy[1],&yy1);CHKERRQP(ierr);
+    ierr = VecRestoreArrayRead(yy[2],&yy2);CHKERRQP(ierr);
+    z[0] = sum0;
+    z[1] = sum1;
+    z[2] = sum2;
+    break;
+  case 2:
+    ierr = VecGetArrayRead(yy[0],&yy0);CHKERRQP(ierr);
+    ierr = VecGetArrayRead(yy[1],&yy1);CHKERRQP(ierr);
+    fortranmdot2_(x,yy0,yy1,&n,&sum0,&sum1);
+    ierr = VecRestoreArrayRead(yy[0],&yy0);CHKERRQP(ierr);
+    ierr = VecRestoreArrayRead(yy[1],&yy1);CHKERRQP(ierr);
+    z[0] = sum0; 
+    z[1] = sum1;
+    break;
+  case 1:
+    ierr = VecGetArrayRead(yy[0],&yy0);CHKERRQP(ierr);
+    fortranmdot1_(x,yy0,&n,&sum0);
+    ierr = VecRestoreArrayRead(yy[0],&yy0);CHKERRQP(ierr);
+    z[0] = sum0;
+    break;
+  case 0:
+    break;
+  }
+  z  += nv_rem;
+  i  -= nv_rem;
+  yy += nv_rem;
+
+  while (i >0) {
+    sum0 = 0.;
+    sum1 = 0.;
+    sum2 = 0.;
+    sum3 = 0.;
+    ierr = VecGetArrayRead(yy[0],&yy0);CHKERRQP(ierr);
+    ierr = VecGetArrayRead(yy[1],&yy1);CHKERRQP(ierr);
+    ierr = VecGetArrayRead(yy[2],&yy2);CHKERRQP(ierr);
+    ierr = VecGetArrayRead(yy[3],&yy3);CHKERRQP(ierr);
+    fortranmdot4_(x,yy0,yy1,yy2,yy3,&n,&sum0,&sum1,&sum2,&sum3);
+    ierr = VecRestoreArrayRead(yy[0],&yy0);CHKERRQP(ierr);
+    ierr = VecRestoreArrayRead(yy[1],&yy1);CHKERRQP(ierr);
+    ierr = VecRestoreArrayRead(yy[2],&yy2);CHKERRQP(ierr);
+    ierr = VecRestoreArrayRead(yy[3],&yy3);CHKERRQP(ierr);
+    yy  += 4;
+    z[0] = sum0;
+    z[1] = sum1;
+    z[2] = sum2;
+    z[3] = sum3;
+    z   += 4;
+    i   -= 4;
+  }
+  return(0);
+}
+#else
 void* VecMDot_Kernel(void *arg)
 {
   if(PetscUseThreadPool==PETSC_FALSE) {
@@ -518,12 +607,12 @@ void* VecMDot_Kernel(void *arg)
     DoCoreAffinity();
 #endif
   }
-  VecMDot_KernelData *data = (VecMDot_KernelData*)arg;
-  const PetscScalar  *xbase = data->xvalin;
-  Vec*               yin = data->yavecin;
-  PetscInt           n = data->nelem;
-  PetscInt           nv = data->ntoproc;
-  PetscScalar*       z = data->result;
+  Kernel_Data        *data = (Kernel_Data*)arg;
+  const PetscScalar  *xbase = (const PetscScalar*)data->x;
+  Vec*               yin = (Vec*)data->yvec;
+  PetscInt           n = data->n;
+  PetscInt           nv = data->nvec;
+  PetscScalar*       z = data->results;
   PetscErrorCode     ierr;
   PetscInt           i,j,nv_rem,j_rem;
   PetscScalar        sum0,sum1,sum2,sum3,x0,x1,x2,x3;
@@ -714,6 +803,7 @@ void* VecMDot_Kernel(void *arg)
   }
   return(0);
 }
+#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "VecMDot_SeqPThread"
@@ -722,30 +812,26 @@ PetscErrorCode VecMDot_SeqPThread(Vec xin,PetscInt nv,const Vec yin[],PetscScala
   PetscErrorCode    ierr;
   PetscInt          i,j=0;
   Vec               *yy = (Vec *)yin;
-  const PetscScalar *xbase;
-  PetscFunctionBegin;
-
-  const PetscInt    iNumThreads = PetscMaxThreads;  /* this number could be different */
-  PetscInt          n=xin->map->n,Q = nv/(iNumThreads);
-  PetscInt          R = nv-Q*(iNumThreads);
+  PetscScalar       *xa;
+  PetscInt          n=xin->map->n,Q = nv/(PetscMaxThreads);
+  PetscInt          R = nv-Q*(PetscMaxThreads);
   PetscBool         S;
-  VecMDot_KernelData* kerneldatap = (VecMDot_KernelData*)malloc(iNumThreads*sizeof(VecMDot_KernelData));
-  VecMDot_KernelData** pdata = (VecMDot_KernelData**)malloc(iNumThreads*sizeof(VecMDot_KernelData*));
-  ierr   = VecGetArrayRead(xin,&xbase);CHKERRQ(ierr);
-  for (i=0; i<iNumThreads; i++) {
+
+  PetscFunctionBegin;
+  ierr   = VecGetArray(xin,&xa);CHKERRQ(ierr);
+  for (i=0; i<PetscMaxThreads; i++) {
     S = (PetscBool)(i<R);
-    kerneldatap[i].xvalin = xbase;
-    kerneldatap[i].yavecin = &yy[j];
-    kerneldatap[i].nelem = n;
-    kerneldatap[i].ntoproc = S?Q+1:Q;
-    kerneldatap[i].result = &z[j];
-    j += kerneldatap[i].ntoproc;
-    pdata[i] = &kerneldatap[i];
+    kerneldatap[i].x       = xa;
+    kerneldatap[i].yvec    = &yy[j];
+    kerneldatap[i].n       = n;
+    kerneldatap[i].nvec    = S?Q+1:Q;
+    kerneldatap[i].results = &z[j];
+    pdata[i]               = &kerneldatap[i];
+    j += kerneldatap[i].nvec;
   }
-  ierr = MainJob(VecMDot_Kernel,(void**)pdata,iNumThreads);
-  free(kerneldatap);
-  free(pdata);
-  ierr = VecRestoreArrayRead(xin,&xbase);CHKERRQ(ierr);
+  ierr = MainJob(VecMDot_Kernel,(void**)pdata,PetscMaxThreads);
+
+  ierr = VecRestoreArray(xin,&xa);CHKERRQ(ierr);
   ierr = PetscLogFlops(PetscMax(nv*(2.0*xin->map->n-1),0.0));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
