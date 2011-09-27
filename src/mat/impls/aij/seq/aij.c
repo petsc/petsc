@@ -4193,11 +4193,13 @@ PetscErrorCode  MatCreateSeqAIJWithArrays(MPI_Comm comm,PetscInt m,PetscInt n,Pe
 
    Input Parameters:
 +   comm - must be an MPI communicator of size 1
-.   m - number of rows
-.   n - number of columns
-.   i - row indices
-.   j - column indices
--   a - matrix values
+.   m   - number of rows
+.   n   - number of columns
+.   i   - row indices
+.   j   - column indices
+.   a   - matrix values
+.   nz  - number of nonzeros
+-   idx - 0 or 1 based
 
    Output Parameter:
 .   mat - the matrix
@@ -4205,11 +4207,6 @@ PetscErrorCode  MatCreateSeqAIJWithArrays(MPI_Comm comm,PetscInt m,PetscInt n,Pe
    Level: intermediate
 
    Notes:
-       The i, j, and a arrays are not copied by this routine, the user must free these arrays
-    once the matrix is destroyed and not before
-
-       You cannot set new nonzero locations into this matrix, that will generate an error.
-
        The i and j indices are 0 based
 
        The format which is used for the sparse matrix input, is equivalent to a
@@ -4228,45 +4225,33 @@ PetscErrorCode  MatCreateSeqAIJWithArrays(MPI_Comm comm,PetscInt m,PetscInt n,Pe
 .seealso: MatCreate(), MatCreateMPIAIJ(), MatCreateSeqAIJ(), MatCreateSeqAIJWithArrays(), MatMPIAIJSetPreallocationCSR()
 
 @*/
-PetscErrorCode  MatCreateSeqAIJFromTriple(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt* i,PetscInt*j,PetscScalar *a,Mat *mat)
+PetscErrorCode  MatCreateSeqAIJFromTriple(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt* i,PetscInt*j,PetscScalar *a,Mat *mat,PetscInt nz,PetscBool idx)
 {
   PetscErrorCode ierr;
-  PetscInt       ii;
-  Mat_SeqAIJ     *aij;
+  PetscInt       ii, nnz[m], one = 1,row,col;
+  PetscScalar    value;
 
 
   PetscFunctionBegin;
-
+  ierr = PetscMemzero(nnz,m*sizeof(PetscInt));CHKERRQ(ierr);
+  for (ii = 0; ii < nz; ii++){
+    nnz[i[ii]] += 1;
+  }
+  //ierr = MatSeqAIJCreate(comm,m,n,0,nnz,mat);CHKERRQ(ierr);
   ierr = MatCreate(comm,mat);CHKERRQ(ierr);
   ierr = MatSetSizes(*mat,m,n,m,n);CHKERRQ(ierr);
   ierr = MatSetType(*mat,MATSEQAIJ);CHKERRQ(ierr);
- 
-
-
- ierr = MatSeqAIJSetPreallocation_SeqAIJ(*mat,MAT_SKIP_ALLOCATION,0);CHKERRQ(ierr);
-  aij  = (Mat_SeqAIJ*)(*mat)->data;
-  ierr = PetscMalloc2(m,PetscInt,&aij->imax,m,PetscInt,&aij->ilen);CHKERRQ(ierr);
-
-  aij->i = i;
-  aij->j = j;
-  aij->a = a;
-  aij->singlemalloc = PETSC_FALSE;
-  aij->nonew        = -1;             /*this indicates that inserting a new value in the matrix that generates a new nonzero is an error*/
-  aij->free_a       = PETSC_FALSE;
-  aij->free_ij      = PETSC_FALSE;
-
-  for (ii=0; ii<m; ii++) {
-    aij->ilen[ii] = aij->imax[ii] = i[ii+1] - i[ii];
-#if defined(PETSC_USE_DEBUG)
-    if (i[ii+1] - i[ii] < 0) SETERRQ2(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Negative row length in i (row indices) row = %d length = %d",ii,i[ii+1] - i[ii]);
-    for (jj=i[ii]+1; jj<i[ii+1]; jj++) {
-      if (j[jj] < j[jj-1]) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column entry number %D (actual colum %D) in row %D is not sorted",jj-i[ii],j[jj],ii);
-      if (j[jj] == j[jj]-1) SETERRQ3(PETSC_COMM_SELF,PETSC_ERR_ARG_OUTOFRANGE,"Column entry number %D (actual colum %D) in row %D is identical to previous entry",jj-i[ii],j[jj],ii);
+  ierr = MatSeqAIJSetPreallocation_SeqAIJ(*mat,0,nnz);CHKERRQ(ierr);
+  for (ii = 0; ii < nz; ii++){
+    if (idx){
+      row = i[ii] - 1;
+      col = j[ii] - 1;
+    } else {
+      row = i[ii];
+      col = j[ii];
     }
-#endif    
+    ierr = MatSetValues(*mat,one,&row,one,&col,&a[ii],ADD_VALUES);CHKERRQ(ierr);
   }
-
-
   ierr = MatAssemblyBegin(*mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -1011,7 +1011,7 @@ extern PetscErrorCode  MatSeqBAIJSetColumnIndices(Mat,PetscInt[]);
 extern PetscErrorCode  MatCreateSeqAIJWithArrays(MPI_Comm,PetscInt,PetscInt,PetscInt[],PetscInt[],PetscScalar[],Mat*);
 extern PetscErrorCode  MatCreateSeqBAIJWithArrays(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt[],PetscInt[],PetscScalar[],Mat*);
 extern PetscErrorCode  MatCreateSeqSBAIJWithArrays(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt[],PetscInt[],PetscScalar[],Mat*);
-extern PetscErrorCode MatCreateSeqAIJFromTriple(MPI_Comm,PetscInt,PetscInt,PetscInt[],PetscInt[],PetscScalar[],Mat*);
+extern PetscErrorCode MatCreateSeqAIJFromTriple(MPI_Comm,PetscInt,PetscInt,PetscInt[],PetscInt[],PetscScalar[],Mat*,PetscInt,PetscBool);
 
 #define MAT_SKIP_ALLOCATION -4
 
