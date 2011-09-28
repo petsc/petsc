@@ -363,8 +363,14 @@ runex5_5_ncg:
 	-snes_type ncg -npc_snes_max_it 2 -snes_monitor_short -snes_max_it 10000 \
 	-par 6.0
 runex5_5_fas:
-	-@${MPIEXEC} -n 2 ./ex5 -da_grid_x 21 -da_grid_y 21   \
+	-@${MPIEXEC} -n 1 ./ex5 -da_grid_x 21 -da_grid_y 21   \
 	-snes_type fas -snes_fas_coarse_smoother_type ls -snes_fas_monitor -snes_fas_levels 2 -snes_monitor_short -snes_max_it 10000 \
+	-par 6.0
+
+runex5_5_ngmres_fas:
+	-@${MPIEXEC} -n 1 ./ex5 -da_grid_x 21 -da_grid_y 21   \
+	-snes_type ngmres -snes_monitor_short -snes_max_it 10000 \
+        -npc_snes_type fas -npc_snes_max_it 1 -npc_snes_fas_coarse_smoother_type ls -npc_snes_fas_monitor -npc_snes_fas_levels 2 \
 	-par 6.0
 
 runex5_6:

@@ -55,7 +55,7 @@ EXTERN_C_END
 PetscErrorCode SNESFASGetLevels(SNES snes, PetscInt * levels) {
   SNES_FAS * fas = (SNES_FAS *)snes->data;
   PetscFunctionBegin;
-  *levels = fas->level;
+  *levels = fas->levels;
   PetscFunctionReturn(0);
 }
 
@@ -89,16 +89,22 @@ PetscErrorCode SNESFASSetLevels(SNES snes, PetscInt levels, MPI_Comm * comms) {
   SNES_FAS * fas = (SNES_FAS *)snes->data;
   MPI_Comm comm;
   PetscFunctionBegin;
- comm = PETSC_COMM_WORLD;
+  comm = ((PetscObject)snes)->comm;
+  if (levels == fas->levels) {
+    if (!comms)
+      PetscFunctionReturn(0);
+  }
   /* user has changed the number of levels; reset */
   ierr = SNESReset(snes);CHKERRQ(ierr);
   /* destroy any coarser levels if necessary */
   if (fas->next) SNESDestroy(&fas->next);CHKERRQ(ierr);
+  fas->next = PETSC_NULL;
   /* setup the finest level */
   for (i = levels - 1; i >= 0; i--) {
     if (comms) comm = comms[i];
     fas->level = i;
     fas->levels = levels;
+    fas->next = PETSC_NULL;
     if (i > 0) {
       ierr = SNESCreate(comm, &fas->next);CHKERRQ(ierr);
       ierr = PetscObjectIncrementTabLevel((PetscObject)fas->next, (PetscObject)snes, levels - i);CHKERRQ(ierr);
@@ -185,10 +191,8 @@ PetscErrorCode SNESReset_FAS(SNES snes)
     if (fas->restrct)      ierr = MatDestroy(&fas->restrct);CHKERRQ(ierr);
   }
   if (fas->rscale)       ierr = VecDestroy(&fas->rscale);CHKERRQ(ierr);
-
   /* recurse -- reset should destroy the structures -- destroy should destroy the structures recursively */
-  if (fas->next) ierr = SNESDestroy(&fas->next);CHKERRQ(ierr);
-
+  if (fas->next) ierr = SNESReset_FAS(fas->next);CHKERRQ(ierr);
   if (snes->work) {ierr = VecDestroyVecs(snes->nwork,&snes->work);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
@@ -205,6 +209,7 @@ PetscErrorCode SNESDestroy_FAS(SNES snes)
   ierr = SNESReset_FAS(snes);CHKERRQ(ierr);
   if (fas->next) ierr = SNESDestroy(&fas->next);CHKERRQ(ierr);
   ierr = PetscFree(fas);CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }
 
@@ -317,7 +322,7 @@ PetscErrorCode SNESSetFromOptions_FAS(SNES snes)
   }
 
   /* recursive option setting for the smoothers */
-  if (fas->next)ierr = SNESSetFromOptions(fas->next);CHKERRQ(ierr);
+  if (fas->next)ierr = SNESSetFromOptions_FAS(fas->next);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -449,9 +454,10 @@ PetscErrorCode FASInitialGuess_Private(SNES snes, Vec B, Vec X) {
 
   PetscErrorCode ierr;
   Vec X_c, B_c;
-  SNES_FAS * fas = (SNES_FAS *)snes->data;
+  SNES_FAS * fas;
 
   PetscFunctionBegin;
+  fas = (SNES_FAS *)snes->data;
   /* pre-smooth -- just update using the pre-smoother */
   if (fas->level == 0) {
     if (fas->upsmooth) {
@@ -502,8 +508,6 @@ PetscErrorCode SNESSolve_FAS(SNES snes)
   X = snes->vec_sol;
   F = snes->vec_func;
   B = snes->vec_rhs;
-  /* initial iteration */
-  ierr = FASInitialGuess_Private(snes, B, X);CHKERRQ(ierr);
 
   /*norm setup */
   ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
