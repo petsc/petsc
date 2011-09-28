@@ -676,7 +676,7 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
   PetscInt m,n,i,j,k,l,linear_index,is,js,ks,ls,istart,iend,iblock;
   //PetscInt nnz[user->mx * user->mx * user->mx + 3 * user->mx * user->mx * (user->mx-1)];
   Vec XX,YY,ZZ,XXwork,YYwork,ZZwork,UTwork;
-  PetscReal x[user->mx],y[user->mx],z[user->mx];
+  PetscReal *x,*y,*z;
   PetscReal h,meanut;
   PetscScalar PI = 3.141592653589793238,hinv,neg_hinv,half = 0.5,sqrt_beta;
   PetscInt im,indx1,indx2,indy1,indy2,indz1,indz2,nx,ny,nz;
@@ -684,6 +684,9 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
   PetscScalar v,vx,vy,vz;
 
   PetscFunctionBegin;
+  ierr = PetscMalloc(user->mx*sizeof(PetscReal),&x); CHKERRQ(ierr);
+  ierr = PetscMalloc(user->mx*sizeof(PetscReal),&y); CHKERRQ(ierr);
+  ierr = PetscMalloc(user->mx*sizeof(PetscReal),&z); CHKERRQ(ierr);
   user->jformed = PETSC_FALSE;
   user->dsg_formed = PETSC_FALSE;
 
@@ -1179,6 +1182,9 @@ PetscErrorCode EllipticInitialize(AppCtx *user)
   /* Now that initial conditions have been set, let the user pass tolerance options to the KSP solver */
   ierr = KSPSetFromOptions(user->solver); CHKERRQ(ierr);
   user->solve_type = 3;
+  ierr = PetscFree(x); CHKERRQ(ierr);
+  ierr = PetscFree(y); CHKERRQ(ierr);
+  ierr = PetscFree(z); CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
