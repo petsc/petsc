@@ -362,6 +362,10 @@ runex5_5_ncg:
 	-@${MPIEXEC} -n 2 ./ex5 -da_grid_x 20 -da_grid_y 20 -snes_ls quadratic  \
 	-snes_type ncg -npc_snes_max_it 2 -snes_monitor_short -snes_max_it 10000 \
 	-par 6.0
+runex5_5_fas:
+	-@${MPIEXEC} -n 2 ./ex5 -da_grid_x 21 -da_grid_y 21   \
+	-snes_type fas -snes_fas_coarse_smoother_type ls -snes_fas_monitor -snes_fas_levels 2 -snes_monitor_short -snes_max_it 10000 \
+	-par 6.0
 
 runex5_6:
 	-@${MPIEXEC} -n 4 ./ex5 -snes_monitor_short -ksp_monitor_short -da_grid_x 129 -da_grid_y 129  -pc_type mg -pc_mg_levels 8 -mg_levels_ksp_type chebychev -mg_levels_ksp_chebychev_estimate_eigenvalues 0,0.5,0,1.1 -mg_levels_ksp_max_it 2 > ex5_6.tmp 2>&1; \
