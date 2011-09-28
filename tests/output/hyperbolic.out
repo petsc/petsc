@@ -1,0 +1,27 @@
+iter = 0, Function value: 0.689939,  Residual: 0.0271253   Constraint: 1.46869e-16 
+iter = 0, Function value: 0.689939,  Residual: 0.0271253   Constraint: 0 
+iter = 1, Function value: 0.632235,  Residual: 0.0817181   Constraint: 0.00118844 
+iter = 1, Function value: 0.626049,  Residual: 0.0777314   Constraint: 0.00475376 
+iter = 2, Function value: 0.494691,  Residual: 0.311279   Constraint: 0.0424384 
+iter = 2, Function value: 0.460188,  Residual: 0.282454   Constraint: 7.85046e-17 
+iter = 3, Function value: 0.457527,  Residual: 0.0215632   Constraint: 0.00176398 
+iter = 3, Function value: 0.457527,  Residual: 0.0215632   Constraint: 0.00176398 
+iter = 4, Function value: 0.457504,  Residual: 0.0309112   Constraint: 0.00176849 
+iter = 4, Function value: 0.45847,  Residual: 0.00334707   Constraint: 1.37927e-08 
+iter = 5, Function value: 0.458473,  Residual: 0.00285122   Constraint: 1.17711e-05 
+iter = 5, Function value: 0.458426,  Residual: 0.00287964   Constraint: 4.70831e-05 
+iter = 6, Function value: 0.458423,  Residual: 0.00119463   Constraint: 4.69648e-05 
+iter = 6, Function value: 0.458461,  Residual: 0.00109305   Constraint: 2.75792e-09 
+iter = 7, Function value: 0.45846,  Residual: 0.000192549   Constraint: 1.38269e-07 
+iter = 7, Function value: 0.458462,  Residual: 0.000137192   Constraint: 2.76536e-06 
+iter = 8, Function value: 0.458462,  Residual: 0.000299027   Constraint: 2.73983e-06 
+iter = 8, Function value: 0.45846,  Residual: 0.000253273   Constraint: 5.55112e-17 
+iter = 9, Function value: 0.45846,  Residual: 0.00013334   Constraint: 2.98032e-08 
+iter = 9, Function value: 0.45846,  Residual: 0.00013334   Constraint: 2.98032e-08 
+iter = 10, Function value: 0.45846,  Residual: 9.75805e-05   Constraint: 4.19739e-08 
+Convergence in 10 iterations
+Elapsed time = 3.73603
+KSP iterations within initialization: 4
+Total KSP iterations over 1 trial(s): 115
+KSP iterations per trial: 111
+Optimization terminated with status 1.

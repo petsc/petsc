@@ -1,0 +1,47 @@
+iter = 0, Function value: 0.467125,  Residual: 0.285555   Constraint: 0.0781767 
+iter = 0, Function value: 0.467671,  Residual: 0.285483   Constraint: 5.10598e-06 
+iter = 1, Function value: 0.391583,  Residual: 0.247878   Constraint: 0.131136 
+iter = 1, Function value: 0.391485,  Residual: 0.247934   Constraint: 9.77692e-06 
+iter = 2, Function value: 0.0863722,  Residual: 0.206057   Constraint: 9.83882 
+iter = 2, Function value: 0.0799777,  Residual: 0.0857505   Constraint: 0.000595339 
+iter = 3, Function value: 0.0561266,  Residual: 0.0555986   Constraint: 1.04924 
+iter = 3, Function value: 0.0556313,  Residual: 0.0525679   Constraint: 0.000112955 
+iter = 4, Function value: 0.0451605,  Residual: 0.0265846   Constraint: 0.378537 
+iter = 4, Function value: 0.045092,  Residual: 0.0255914   Constraint: 2.74968e-05 
+iter = 5, Function value: 0.0414234,  Residual: 0.0205933   Constraint: 0.0686021 
+iter = 5, Function value: 0.0414188,  Residual: 0.0205072   Constraint: 5.01209e-06 
+iter = 6, Function value: 0.0358439,  Residual: 0.0202618   Constraint: 0.496321 
+iter = 6, Function value: 0.0358811,  Residual: 0.0144322   Constraint: 3.4364e-05 
+iter = 7, Function value: 0.0354249,  Residual: 0.022609   Constraint: 0.204359 
+iter = 7, Function value: 0.0354041,  Residual: 0.0220644   Constraint: 1.40008e-05 
+iter = 8, Function value: 0.0338455,  Residual: 0.00643159   Constraint: 0.0329726 
+iter = 8, Function value: 0.0338452,  Residual: 0.00647736   Constraint: 2.16441e-06 
+iter = 9, Function value: 0.0335208,  Residual: 0.00344738   Constraint: 0.00662595 
+iter = 9, Function value: 0.0335206,  Residual: 0.00344153   Constraint: 3.47017e-07 
+iter = 10, Function value: 0.0333053,  Residual: 0.00293589   Constraint: 0.0141055 
+iter = 10, Function value: 0.0333055,  Residual: 0.00290708   Constraint: 6.35091e-07 
+iter = 11, Function value: 0.03329,  Residual: 0.00811761   Constraint: 0.0123406 
+iter = 11, Function value: 0.0332913,  Residual: 0.00810387   Constraint: 1.05036e-06 
+iter = 12, Function value: 0.0331743,  Residual: 0.00168653   Constraint: 0.0014951 
+iter = 12, Function value: 0.0331744,  Residual: 0.00168288   Constraint: 1.10369e-07 
+iter = 13, Function value: 0.0331578,  Residual: 0.00122142   Constraint: 0.000188779 
+iter = 13, Function value: 0.0331578,  Residual: 0.00122142   Constraint: 0.000188779 
+iter = 14, Function value: 0.0331331,  Residual: 0.00115225   Constraint: 0.00161037 
+iter = 14, Function value: 0.0331332,  Residual: 0.00104268   Constraint: 1.31558e-07 
+iter = 15, Function value: 0.03312,  Residual: 0.000981728   Constraint: 0.00194386 
+iter = 15, Function value: 0.0331201,  Residual: 0.000700867   Constraint: 1.63661e-07 
+iter = 16, Function value: 0.0331184,  Residual: 0.00064744   Constraint: 0.000984725 
+iter = 16, Function value: 0.0331185,  Residual: 0.000592037   Constraint: 9.40368e-08 
+iter = 17, Function value: 0.0331168,  Residual: 0.000339001   Constraint: 8.62028e-05 
+iter = 17, Function value: 0.0331168,  Residual: 0.000338158   Constraint: 6.98806e-09 
+iter = 18, Function value: 0.0331164,  Residual: 0.000157307   Constraint: 1.48653e-05 
+iter = 18, Function value: 0.0331164,  Residual: 0.000157307   Constraint: 1.48653e-05 
+iter = 19, Function value: 0.0331163,  Residual: 0.000107805   Constraint: 1.58756e-05 
+iter = 19, Function value: 0.0331163,  Residual: 0.000107   Constraint: 1.51628e-09 
+iter = 20, Function value: 0.0331161,  Residual: 7.09595e-05   Constraint: 1.9295e-05 
+Convergence in 20 iterations
+Elapsed time = 11.3445
+KSP iterations within initialization: 36
+Total KSP iterations over 1 trial(s): 1382
+KSP iterations per trial: 1346
+Optimization terminated with status 1.

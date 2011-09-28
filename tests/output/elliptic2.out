@@ -1,0 +1,10 @@
+iter = 0, Function value: 0.467766,  Residual: 0.28576   Constraint: 0.0881869 
+iter = 0, Function value: 0.4677,  Residual: 0.28573   Constraint: 4.17653e-06 
+iter = 1, Function value: 0.391613,  Residual: 0.247879   Constraint: 0.131827 
+iter = 1, Function value: 0.391516,  Residual: 0.247934   Constraint: 7.90308e-06 
+Convergence in 1 iterations
+Elapsed time = 8.82235
+KSP iterations within initialization: 45
+Total KSP iterations over 1 trial(s): 169
+KSP iterations per trial: 124
+TAO failed to converge.
